@@ -1,20 +1,21 @@
-import type { StudentRecord, User } from '@mms/shared';
-import { getRequestTenant } from '../../lib/tenantContext.js';
-import { activeDb, runInTransaction } from '../../db/database.js';
-import { broadcastCollection } from '../../lib/livePush.js';
-import { canDeleteCollection } from '../../lib/rbacCanHelpers.js';
-import type { StudentsRepository } from '../repository/studentsRepository.js';
-import { studentsRepository } from '../repository/studentsRepositoryAdapter.js';
+import { studentStatusEndsEnrollments, type StudentRecord, type User } from "@mms/shared";
+import { getRequestTenant } from "../../lib/tenantContext.js";
+import { activeDb, runInTransaction } from "../../db/database.js";
+import { broadcastCollection } from "../../lib/livePush.js";
+import { canDeleteCollection } from "../../lib/rbacCanHelpers.js";
+import type { StudentsRepository } from "../repository/studentsRepository.js";
+import { studentsRepository } from "../repository/studentsRepositoryAdapter.js";
 import {
   mergeStudentPatch,
   prepareStudentRecord,
   throwGrUniqueConflict,
   StudentPermissionError,
   StudentRestoreConflictError,
-} from './studentNormalizeUseCases.js';
-import { recordRestoreEvents } from './studentAuditEvents.js';
-import { restoreCascadedEnrollmentsForStudents } from '../../db/repositories/studentEnrollmentCascade.js';
-import { loadStudentModulePreferences } from './studentPreferencesService.js';
+} from "./studentNormalizeUseCases.js";
+import { recordRestoreEvents } from "./studentAuditEvents.js";
+import { restoreCascadedEnrollmentsForStudents } from "../../db/repositories/studentEnrollmentCascade.js";
+import { loadStudentModulePreferences } from "./studentPreferencesService.js";
+import { withdrawEnrollmentsForStudentStatus } from "../../enrollments/use-cases/enrollmentEndUseCases.js";
 
 interface CreateStudentResult {
   record: StudentRecord;
@@ -40,11 +41,12 @@ export async function createStudent(
 ): Promise<CreateStudentResult> {
   const result = await runInTransaction(async () => {
     const tenant = getRequestTenant();
-    if (!tenant) throw new Error('Tenant context required');
+    if (!tenant) throw new Error("Tenant context required");
     const normalized = prepareStudentRecord(record);
-    const contactId = normalized.contactId != null ? String(normalized.contactId).trim() : '';
+    const contactId = normalized.contactId != null ? String(normalized.contactId).trim() : "";
 
-    const user = options && 'role' in options ? (options as User) : (options as CreateStudentOptions)?.user;
+    const user =
+      options && "role" in options ? (options as User) : (options as CreateStudentOptions)?.user;
     const userId = user?.id ? String(user.id) : undefined;
     if (userId) {
       normalized.createdBy = normalized.createdBy ?? userId;
@@ -54,8 +56,10 @@ export async function createStudent(
     if (contactId) {
       const archived = await repo.findSoftDeletedByContactId(tenant, contactId);
       if (archived) {
-        if (!user || !canDeleteCollection(user, 'students')) {
-          throw new StudentPermissionError('Restoring soft-deleted students requires delete permissions');
+        if (!user || !canDeleteCollection(user, "students")) {
+          throw new StudentPermissionError(
+            "Restoring soft-deleted students requires delete permissions",
+          );
         }
         const merged = prepareStudentRecord({
           ...archived,
@@ -68,20 +72,27 @@ export async function createStudent(
           grNumber: merged.grNumber as string | undefined,
           excludeId: String(archived.id),
         });
-        if (conflict === 'grNumber') {
+        if (conflict === "grNumber") {
           throw new StudentRestoreConflictError();
         }
         if (merged.studentId?.trim() && repo.findActiveStudentIdOwners) {
-          const activeSidOwners = await repo.findActiveStudentIdOwners(tenant, [merged.studentId.trim()]);
+          const activeSidOwners = await repo.findActiveStudentIdOwners(tenant, [
+            merged.studentId.trim(),
+          ]);
           const normalizedSid = merged.studentId.trim().toLowerCase();
           const activeOwner = activeSidOwners.get(normalizedSid);
           if (activeOwner && activeOwner !== String(archived.id)) {
-            throw new StudentRestoreConflictError('A student with this Student ID already exists', 'studentId');
+            throw new StudentRestoreConflictError(
+              "A student with this Student ID already exists",
+              "studentId",
+            );
           }
         }
         await repo.save(tenant, merged);
         const restoredAt =
-          typeof merged.restoredAt === 'string' && merged.restoredAt ? merged.restoredAt : new Date().toISOString();
+          typeof merged.restoredAt === "string" && merged.restoredAt
+            ? merged.restoredAt
+            : new Date().toISOString();
         await restoreCascadedEnrollmentsForStudents(
           activeDb(),
           tenant,
@@ -98,13 +109,13 @@ export async function createStudent(
       const prefs = await loadStudentModulePreferences();
       if (!prefs || prefs.autoGenerateId !== false) {
         const regDateStr =
-          typeof normalized.registeredDate === 'string' && normalized.registeredDate.trim()
+          typeof normalized.registeredDate === "string" && normalized.registeredDate.trim()
             ? normalized.registeredDate.trim()
             : new Date().toISOString().slice(0, 10);
         normalized.grNumber = await repo.generateNextGrNumber(tenant, {
           regDate: regDateStr,
           settings: {
-            grNumberTemplate: prefs?.grNumberTemplate ?? '{seq}-{year}',
+            grNumberTemplate: prefs?.grNumberTemplate ?? "{seq}-{year}",
             grNumberDigits: prefs?.grNumberDigits ?? 4,
             grNumberRestartAnnually: prefs?.grNumberRestartAnnually ?? true,
           },
@@ -119,7 +130,7 @@ export async function createStudent(
     }
     return { record: normalized, restored: false };
   });
-  await broadcastCollection('students');
+  await broadcastCollection("students");
   return result;
 }
 
@@ -130,23 +141,28 @@ export async function updateStudentById(
   repo: StudentsRepository = studentsRepository,
 ): Promise<StudentRecord | null> {
   const actualRepo =
-    options && typeof (options as StudentsRepository).findById === 'function'
+    options && typeof (options as StudentsRepository).findById === "function"
       ? (options as StudentsRepository)
       : repo;
   const user =
-    options && 'role' in options
+    options && "role" in options
       ? (options as User)
-      : (options && 'user' in options ? (options as { user?: User }).user : undefined);
-  const userId =
-    user?.id
-      ? String(user.id)
-      : (options && 'userId' in options ? (options as { userId?: string }).userId : undefined);
+      : options && "user" in options
+        ? (options as { user?: User }).user
+        : undefined;
+  const userId = user?.id
+    ? String(user.id)
+    : options && "userId" in options
+      ? (options as { userId?: string }).userId
+      : undefined;
 
+  let previousStatus: string | undefined;
   const saved = await runInTransaction(async () => {
     const tenant = getRequestTenant();
     if (!tenant) return null;
     const existing = await actualRepo.findById(tenant, id);
     if (!existing || existing.deletedAt) return null;
+    previousStatus = existing.status;
     const patched = mergeStudentPatch(existing, record);
     const normalized = prepareStudentRecord({
       ...patched,
@@ -162,6 +178,15 @@ export async function updateStudentById(
     }
     return normalized;
   });
-  if (saved) await broadcastCollection('students');
+  if (saved) await broadcastCollection("students");
+  const tenant = getRequestTenant();
+  if (saved && tenant && studentStatusEndsEnrollments(previousStatus, saved.status)) {
+    await withdrawEnrollmentsForStudentStatus(
+      tenant,
+      id,
+      String(saved.status),
+      user ? { userId: String(user.id), label: user.name || user.email } : undefined,
+    );
+  }
   return saved;
 }

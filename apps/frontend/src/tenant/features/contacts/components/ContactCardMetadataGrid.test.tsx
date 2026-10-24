@@ -5,10 +5,12 @@ import { DEFAULT_CONTACT_PREFERENCES, type Contact } from "@mms/shared";
 import { ContactCardMetadataGrid } from "./ContactCardMetadataGrid";
 
 vi.mock("@/tenant/features/contacts/components/ContactMetadataCell", () => ({
-  ContactMetadataCell: ({ colId }: { colId: string }) => <div data-testid="meta-cell">Cell: {colId}</div>,
+  ContactMetadataCell: ({ colId }: { colId: string }) => (
+    <div data-testid="meta-cell">Cell: {colId}</div>
+  ),
 }));
 
-vi.mock("@/tenant/features/contacts/components/contactCardColumnData", () => ({
+vi.mock("@/tenant/features/contacts/lib/contactCardColumnData", () => ({
   hasContactCardColumnData: () => true,
 }));
 

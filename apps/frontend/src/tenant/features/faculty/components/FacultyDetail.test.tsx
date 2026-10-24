@@ -14,7 +14,7 @@ vi.mock("@/hooks/useStandardModuleConfig", () => {
   };
 });
 
-vi.mock("@/tenant/features/faculty/components/useFacultyDetailModel", () => {
+vi.mock("@/tenant/features/faculty/hooks/useFacultyDetailModel", () => {
   const model = (_faculty: FacultyMember) => ({
     statusConfig: {},
     detailFields: [],
@@ -32,8 +32,20 @@ vi.mock("@/tenant/features/faculty/components/useFacultyDetailModel", () => {
   };
 });
 
-vi.mock("@/components/ui/Drawer", () => ({
-  Drawer: ({ title, subtitle, children, headerActions, footer }: {
+vi.mock("@/tenant/features/faculty/hooks/useFacultyMutations", () => ({
+  useFacultyMutations: () => ({
+    updateFaculty: { mutateAsync: vi.fn() },
+  }),
+}));
+
+vi.mock("@/components/app/Drawer", () => ({
+  Drawer: ({
+    title,
+    subtitle,
+    children,
+    headerActions,
+    footer,
+  }: {
     title: string;
     subtitle: string;
     children: React.ReactNode;

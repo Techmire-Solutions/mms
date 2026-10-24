@@ -9,19 +9,19 @@ vi.mock("@/hooks/useTranslation", () => ({
   }),
 }));
 
-vi.mock("@/components/ui/ModuleTierMotion", () => ({
+vi.mock("@/components/app/ModuleTierMotion", () => ({
   ModuleTierMotion: ({ children }: { children: React.ReactNode }) => (
     <div data-testid="module-tier-motion">{children}</div>
   ),
 }));
 
-vi.mock("@/components/ui/SetupReadOnlyMessage", () => ({
+vi.mock("@/components/app/SetupReadOnlyMessage", () => ({
   SetupReadOnlyMessage: ({ title }: { title: string }) => (
     <div data-testid="setup-read-only-message">{title}</div>
   ),
 }));
 
-vi.mock("@/components/ui/SubTabBar", () => ({
+vi.mock("@/components/app/SubTabBar", () => ({
   SubTabBar: () => <div data-testid="sub-tab-bar">SubTabBar</div>,
 }));
 
@@ -56,9 +56,7 @@ describe("HasanatSetupTier Component", () => {
   });
 
   it("renders read-only message when canEditSetup is false", () => {
-    const html = renderToStaticMarkup(
-      <HasanatSetupTier {...defaultProps} canEditSetup={false} />,
-    );
+    const html = renderToStaticMarkup(<HasanatSetupTier {...defaultProps} canEditSetup={false} />);
     expect(html).toContain("setup-read-only-message");
     expect(html).toContain("hasanat.setup.readOnly");
   });

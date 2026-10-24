@@ -37,10 +37,7 @@ const mockUser: SystemUser = {
 describe("UserCardMetadata Component", () => {
   it("renders metadata fields according to entity descriptor", () => {
     const html = renderToStaticMarkup(
-      <UserCardMetadata
-        user={mockUser}
-        formatLoginDate={(d) => d}
-      />
+      <UserCardMetadata user={mockUser} formatLoginDate={(d) => d} />,
     );
 
     expect(html).toContain("Role");
@@ -53,7 +50,7 @@ describe("UserCardMetadata Component", () => {
         user={mockUser}
         formatLoginDate={(d) => d}
         isColumnVisible={(key) => key === "role"}
-      />
+      />,
     );
 
     expect(html).toContain("Role");
@@ -62,11 +59,7 @@ describe("UserCardMetadata Component", () => {
 
   it("returns empty output when no columns are visible", () => {
     const html = renderToStaticMarkup(
-      <UserCardMetadata
-        user={mockUser}
-        formatLoginDate={(d) => d}
-        isColumnVisible={() => false}
-      />
+      <UserCardMetadata user={mockUser} formatLoginDate={(d) => d} isColumnVisible={() => false} />,
     );
 
     expect(html).toBe("");

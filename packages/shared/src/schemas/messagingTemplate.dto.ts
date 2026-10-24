@@ -1,8 +1,14 @@
-import { z } from 'zod';
-import { messageCategorySchema, messageChannelSchema } from '../messagingCategorySchemas.js';
-import { type MessageCategory, type MessageChannel } from '../messagingCategorySchemas.js';
-import { findUnknownPersonalizationTokens } from '../messagingPersonalizeUtils.js';
-import { deepSanitizeStrings } from './sanitize.js';
+import { z } from "zod";
+import {
+  messageCategorySchema,
+  messageChannelSchema,
+} from "../messaging/messagingCategorySchemas.js";
+import {
+  type MessageCategory,
+  type MessageChannel,
+} from "../messaging/messagingCategorySchemas.js";
+import { findUnknownPersonalizationTokens } from "../messaging/messagingPersonalizeUtils.js";
+import { deepSanitizeStrings } from "./sanitize.js";
 
 const messageTemplateInputObjectSchema = z
   .object({
@@ -10,29 +16,27 @@ const messageTemplateInputObjectSchema = z
     label: z.string().min(1).max(200),
     labelKey: z.string().optional(),
     body: z.string().min(1).max(10_000),
-    category: messageCategorySchema.default('general'),
-    channel: messageChannelSchema.default('all'),
+    category: messageCategorySchema.default("general"),
+    channel: messageChannelSchema.default("all"),
   })
   .strict();
 
-function refineUnknownTokens(
-  data: { body?: string },
-  ctx: z.RefinementCtx,
-): void {
-  if (typeof data.body !== 'string' || !data.body) return;
+function refineUnknownTokens(data: { body?: string }, ctx: z.RefinementCtx): void {
+  if (typeof data.body !== "string" || !data.body) return;
   const unknown = findUnknownPersonalizationTokens(data.body);
   if (unknown.length === 0) return;
   ctx.addIssue({
     code: z.ZodIssueCode.custom,
-    path: ['body'],
-    message: `Unknown personalization tokens: ${unknown.map((token) => `{${token}}`).join(', ')}`,
+    path: ["body"],
+    message: `Unknown personalization tokens: ${unknown.map((token) => `{${token}}`).join(", ")}`,
   });
 }
 
-const messageTemplateInputBaseSchema = messageTemplateInputObjectSchema.superRefine(refineUnknownTokens);
+const messageTemplateInputBaseSchema =
+  messageTemplateInputObjectSchema.superRefine(refineUnknownTokens);
 
 export const messageTemplateInputSchema = z.preprocess((raw) => {
-  if (!raw || typeof raw !== 'object' || Array.isArray(raw)) return raw;
+  if (!raw || typeof raw !== "object" || Array.isArray(raw)) return raw;
   return deepSanitizeStrings(raw);
 }, messageTemplateInputBaseSchema);
 
@@ -43,7 +47,7 @@ export const messageTemplateInsertSchema = messageTemplateInputSchema;
 export type MessageTemplateInsert = z.infer<typeof messageTemplateInputObjectSchema>;
 
 export const messageTemplateUpdateSchema = z.preprocess((raw) => {
-  if (!raw || typeof raw !== 'object' || Array.isArray(raw)) return raw;
+  if (!raw || typeof raw !== "object" || Array.isArray(raw)) return raw;
   return deepSanitizeStrings(raw);
 }, messageTemplateInputObjectSchema.partial().strict().superRefine(refineUnknownTokens));
 

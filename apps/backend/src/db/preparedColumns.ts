@@ -1,4 +1,4 @@
-import { tenantUsers, contacts, sessions } from './schema.js';
+import { tenantUsers, contacts, sessions } from "./schema.js";
 
 export const preparedTenantUserColumns = {
   id: tenantUsers.id,
@@ -49,7 +49,8 @@ export const preparedContactColumns = {
   updatedBy: contacts.updatedBy,
 };
 
-import { STUDENT_COLUMNS } from './repositories/studentRepositoryColumns.js';
+import { STUDENT_COLUMNS } from "./repositories/studentRepositoryColumns.js";
+import { sessionTypeSql } from "./repositories/academicCatalogNameSql.js";
 
 export const preparedStudentColumns = STUDENT_COLUMNS;
 
@@ -57,13 +58,17 @@ export const preparedSessionColumns = {
   id: sessions.id,
   workspaceSubdomain: sessions.workspaceSubdomain,
   name: sessions.name,
-  type: sessions.type,
+  type: sessionTypeSql,
+  categoryId: sessions.categoryId,
+  programId: sessions.programId,
   status: sessions.status,
   startDate: sessions.startDate,
   endDate: sessions.endDate,
   baseFee: sessions.baseFee,
   currency: sessions.currency,
   description: sessions.description,
+  minAttendancePct: sessions.minAttendancePct,
+  requiresExamPass: sessions.requiresExamPass,
   deletedAt: sessions.deletedAt,
   deletedBy: sessions.deletedBy,
   deletionReason: sessions.deletionReason,

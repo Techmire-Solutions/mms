@@ -1,3 +1,3 @@
-import { ClassDetailModal } from './ClassDetailModal';
+import { ClassDetailModal } from "./ClassDetailModal";
 export { ClassDetailModal, ClassDetailModal as ClassModal };
 export default ClassDetailModal;

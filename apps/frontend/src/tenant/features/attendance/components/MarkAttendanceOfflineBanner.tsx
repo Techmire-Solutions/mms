@@ -2,9 +2,9 @@ import { AnimatePresence, motion } from "framer-motion";
 import { UploadCloud, Wifi, WifiOff } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { WarningCallout } from "@/components/ui/WarningCallout";
+import { WarningCallout } from "@/components/app/WarningCallout";
 import { useTranslation } from "@/hooks/useTranslation";
-import type { OfflinePayload } from "@/tenant/features/attendance/components/markAttendanceTypes";
+import type { OfflinePayload } from "@/tenant/features/attendance/lib/markAttendanceTypes";
 
 export interface MarkAttendanceOfflineBannerProps {
   offline: boolean;
@@ -12,7 +12,11 @@ export interface MarkAttendanceOfflineBannerProps {
   onSync: () => void;
 }
 
-export function MarkAttendanceOfflineBanner({ offline, queue, onSync }: MarkAttendanceOfflineBannerProps): React.JSX.Element {
+export function MarkAttendanceOfflineBanner({
+  offline,
+  queue,
+  onSync,
+}: MarkAttendanceOfflineBannerProps): React.JSX.Element {
   const { t } = useTranslation();
   return (
     <AnimatePresence>
@@ -42,9 +46,10 @@ export function MarkAttendanceOfflineBanner({ offline, queue, onSync }: MarkAtte
                 onClick={onSync}
                 variant="ghost"
                 size="sm"
-                className="text-xs font-bold px-2.5 py-2 rounded-lg bg-warning/30 hover:bg-warning/40 hover:text-warning transition-colors flex min-h-11 shrink-0 items-center gap-1"
+                className="text-xs font-bold px-2.5 py-2 rounded-lg bg-warning/30 hover:bg-warning/40 transition-colors flex min-h-11 shrink-0 items-center gap-1"
               >
-                <UploadCloud className="w-3 h-3" aria-hidden="true" /> {t("attendance.mark.syncNow")}
+                <UploadCloud className="w-3 h-3" aria-hidden="true" />{" "}
+                {t("attendance.mark.syncNow")}
               </Button>
             }
           />
@@ -59,13 +64,15 @@ export function MarkAttendanceOfflineBanner({ offline, queue, onSync }: MarkAtte
         >
           <div className="flex min-w-0 flex-wrap items-center gap-2 text-sm font-semibold">
             <Wifi className="w-4 h-4 shrink-0" aria-hidden="true" />
-            <span className="min-w-0">{t("attendance.mark.offlineBannerOnline", { count: queue.length })}</span>
+            <span className="min-w-0">
+              {t("attendance.mark.offlineBannerOnline", { count: queue.length })}
+            </span>
           </div>
           <Button
             onClick={onSync}
             variant="ghost"
             size="sm"
-            className="text-xs font-bold px-2.5 py-2 rounded-lg bg-success/30 hover:bg-success/40 hover:text-success transition-colors flex min-h-11 shrink-0 items-center gap-1"
+            className="text-xs font-bold px-2.5 py-2 rounded-lg bg-success/30 hover:bg-success/40 transition-colors flex min-h-11 shrink-0 items-center gap-1"
           >
             <UploadCloud className="w-3 h-3" aria-hidden="true" /> {t("attendance.mark.syncNow")}
           </Button>

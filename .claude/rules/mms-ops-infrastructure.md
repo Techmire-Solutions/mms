@@ -21,7 +21,7 @@ paths:
 **Workflow skills:** local install/run → `mms-dev-setup` · production Hetzner/Apache → `mms-ops-deploy` · VPS casing/LF/PM2 → `mms-linux-compatibility`.
 
 ## 1. Prerequisites & Environment Setup
-- **Runtimes & Tooling:** Node.js `>=24.14.0` (native `--env-file=.env` and `--experimental-strip-types`; `dotenv` is banned), Corepack `pnpm@11.15.1`, Turbo `^2.11.3`, PostgreSQL 16.
+- **Runtimes & Tooling:** Node.js `>=24.14.0` (native `--env-file=.env` and `--experimental-strip-types`; `dotenv` is banned), Corepack `pnpm@11.15.1`, Turbo `^2.11.7`, PostgreSQL 16.
 - **Root Commands:** `pnpm dev` (concurrent apps), `pnpm build`, `pnpm typecheck`, `pnpm test`. Local screen session: `./restart_servers.sh [status|stop|--foreground]`.
 
 ## 2. Environment Variables & Ports Configuration
@@ -37,9 +37,9 @@ paths:
 - **Structured Logging:** Pino emits structured JSON directly to `stdout`. Host process managers handle rotation.
 
 ## 4. CI/CD & Deploy Procedures
-- **Local CI (before commit):** `pnpm ci:local` runs the pre-PR gates plus path-aware FE/BE/shared unit tests (`scripts/ci/local-ci.sh`). `pnpm ci:local:full` adds i18n/build/bundle. Opt-in `--with-db` / `--with-e2e` when those buckets changed. `.githooks/pre-commit` enforces `pnpm ci:local` (override only with `SKIP_LOCAL_CI=1` when the user explicitly asks). `.githooks/pre-push` blocks direct pushes to `main` and does **not** re-run local CI — run `pnpm ci:local:full` manually before opening a PR when needed. This is not a full GitHub Actions replay (`act` is out of scope). Norm owner for the gate: `mms-completion-review.md` → skill `mms-code-review`.
-- **CI DAG (`ci.yml`):** `changes` path filter, `workflow-lint` (actionlint + zizmor), `lint-and-typecheck` (typecheck, audit, gitleaks, lint, build, ratchets, mirror sync), PR-only `dependency-review`, and path-gated `test-frontend` (sharded, blob merge → `test-frontend-coverage`), `test-backend-unit`, `test-backend-db`, `e2e` (sharded Playwright → `merge-reports`) all feed `ci-gate`. On push to `main`, `lint-and-typecheck` also packages, attests, and uploads the `mms-dist` release artifact.
-- **Deployment Flow:** `deploy.yml` triggers on a successful same-repo CI push run for `main`, downloads and attestation-verifies that run's `mms-dist` artifact (build once, promote), SCPs it to the VPS, and runs `scripts/deploy-on-server.sh` pinned to `DEPLOY_SHA` via `scripts/ci/ssh-exec.sh`. Rollback via `scripts/deploy-rollback.sh` (restores `dist/` only — migrations must be expand/contract). DDL runs before the PM2 swap and on boot via `initDb`.
+- **Local CI (before push):** `pnpm ci:local` runs the pre-PR gates plus path-aware FE/BE/shared unit tests (`scripts/ci/local-ci.sh`), scoped to the change set: `turbo typecheck --affected`, ESLint on changed files (`scripts/ci/lint-changed.sh`), code-norm / DB-projection ratchets with `--changed` (per-file vs merge-base), `vitest --changed <merge-base>`, with the gates run in parallel; tooling/config or `packages/shared` changes fall back to full runs. `pnpm ci:local:full` runs every suite in full and adds i18n/build/bundle. Opt-in `--with-db` / `--with-e2e` when those buckets changed. `.githooks/pre-commit` checks staged secrets and lints staged files; `.githooks/pre-push` blocks direct pushes to `main` and enforces `pnpm ci:local` (override either only with `SKIP_LOCAL_CI=1` when the user explicitly asks). Run `pnpm ci:local:full` manually before opening a PR when needed. This is not a full GitHub Actions replay (`act` is out of scope). Norm owner for the gate: `mms-completion-review.md` → skill `mms-code-review`.
+- **CI DAG (`ci.yml`):** `changes` path filter, `workflow-lint` (actionlint + zizmor), three parallel quality jobs — `typecheck-lint` (typecheck, lint, audit, ratchets, i18n, mirror sync), `build` (build, bundle budget) and `secret-scan` (gitleaks, full history) — PR-only `dependency-review`, and path-gated `test-frontend` (sharded, blob merge → `test-frontend-coverage`), `test-backend-unit`, `test-backend-db`, `e2e` (sharded Playwright → `merge-reports`) all feed `ci-gate`. **Unit test scope:** `changes` sets `test_scope` — PRs that touch only app code run `vitest --changed HEAD^1` (unsharded, no coverage; `test-frontend-coverage` skipped); PRs touching `packages/shared`, any `package.json`/lockfile/`pnpm-workspace.yaml`/`.nvmrc`, `turbo.json`, tsconfig, Vitest config or test setup, or `.github/**` run the full sharded suites with coverage; every non-PR run is full, and `ci-gate` fails a non-PR run that is not. On push to `main`, `build` also packages, attests, and uploads the `mms-dist` release artifact; it is the only job with `id-token`/`attestations` write.
+- **Deployment Flow:** `deploy.yml` triggers on a successful same-repo CI push run for `main`, downloads and attestation-verifies that run's `mms-dist` artifact (build once, promote); a manual dispatch promotes the `mms-dist` artifact of the green push CI run for that exact commit (only the `allow_unverified` incident hatch rebuilds), SCPs it to the VPS, and runs `scripts/deploy-on-server.sh` pinned to `DEPLOY_SHA` via `scripts/ci/ssh-exec.sh`. Rollback via `scripts/deploy-rollback.sh` (restores `dist/` only — migrations must be expand/contract). DDL runs before the PM2 swap and on boot via `initDb`.
 - **Workflow Security:** Third-party actions pinned to full commit SHAs; checkouts set `persist-credentials: false`; secrets reach `run:` only through `env:`; the production host key is pinned via `SSH_KNOWN_HOSTS`. Enforced by the `workflow-lint` job.
 - **Health Endpoints:**
   - `GET /health`: 200 liveness check (unauthenticated).
@@ -48,8 +48,7 @@ paths:
 
 ## 5. Audit Operations, Statement Auditing & Storage Tiering
 - **Database Auditing (`pgAudit`):** Preload `postgresql-16-pgaudit` (`pgaudit.log = 'write, ddl, role'`) to capture direct console queries and DDL bypassing Fastify.
-- **Scheduled Verification:** Background cron runs `runAuditVerificationJob`, recording results in `audit_verification_runs` and triggering P1 alerts on hash discrepancies.
-- **Storage Tiering:** Cold audit archives (>90 days) export to WORM-locked storage (S3 Object Lock / MinIO) with Merkle roots. Monthly partitions detached via automated lifecycle.
+- **Verification Cron & Tiering:** Scheduled `runAuditVerificationJob` validates Merkle roots and hash chains (`mms-data-layer.md` §5). Cold audit archives (>90 days) export to WORM-locked storage (S3 Object Lock / MinIO); monthly partitions detached via automated lifecycle.
 
 ## 6. Environment Variables & Secret Lifecycle
 - **Documentation & Hygiene:** Document variable shape and safe defaults in `apps/backend/.env.example` in the same change. Never commit real `.env` files.
@@ -57,6 +56,3 @@ paths:
 - **Fail Closed:** Fail process startup immediately if required security credentials (`JWT_SECRET`, `DATABASE_URL`) are missing or defaulted.
 - **Zero Echo:** Never log or output secrets into error messages, health endpoints, CI logs, or transcripts.
 
-## 7. Workflow & Output Speed Rules
-- **Zero Output Bloat:** Output surgical diffs or targeted snippets only. Never rewrite entire files unless creating a new file from scratch. Omit conversational filler.
-- **Verification Gates:** Verify with `pnpm typecheck` and scoped tests before marking tasks done. If standards are modified, execute `bash .agent/scripts/sync-all.sh` and verify with `node scripts/verify-rules-integrity.mjs`.

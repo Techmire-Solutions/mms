@@ -1,4 +1,4 @@
-import { boolean, text, timestamp, varchar } from 'drizzle-orm/pg-core';
+import { boolean, text, timestamp, varchar } from "drizzle-orm/pg-core";
 
 /**
  * Creates fresh soft-delete column builder definitions matching the 4-Bucket deletion taxonomy (§2.1).
@@ -6,12 +6,12 @@ import { boolean, text, timestamp, varchar } from 'drizzle-orm/pg-core';
  */
 export function getSoftDeleteColumns() {
   return {
-    deletedAt: timestamp('deleted_at', { withTimezone: true, mode: 'date' }),
-    deletedBy: text('deleted_by'),
-    deletionReason: varchar('deletion_reason', { length: 500 }),
-    restoredAt: timestamp('restored_at', { withTimezone: true, mode: 'date' }),
-    restoredBy: text('restored_by'),
-    deletedWithCascade: boolean('deleted_with_cascade').default(false),
+    deletedAt: timestamp("deleted_at", { withTimezone: true, mode: "date" }),
+    deletedBy: text("deleted_by"),
+    deletionReason: varchar("deletion_reason", { length: 500 }),
+    restoredAt: timestamp("restored_at", { withTimezone: true, mode: "date" }),
+    restoredBy: text("restored_by"),
+    deletedWithCascade: boolean("deleted_with_cascade").default(false),
   };
 }
 
@@ -22,22 +22,22 @@ export function getSoftDeleteColumns() {
  */
 export const softDeleteColumns = {
   get deletedAt() {
-    return timestamp('deleted_at', { withTimezone: true, mode: 'date' });
+    return timestamp("deleted_at", { withTimezone: true, mode: "date" });
   },
   get deletedBy() {
-    return text('deleted_by');
+    return text("deleted_by");
   },
   get deletionReason() {
-    return varchar('deletion_reason', { length: 500 });
+    return varchar("deletion_reason", { length: 500 });
   },
   get restoredAt() {
-    return timestamp('restored_at', { withTimezone: true, mode: 'date' });
+    return timestamp("restored_at", { withTimezone: true, mode: "date" });
   },
   get restoredBy() {
-    return text('restored_by');
+    return text("restored_by");
   },
   get deletedWithCascade() {
-    return boolean('deleted_with_cascade').default(false);
+    return boolean("deleted_with_cascade").default(false);
   },
 };
 

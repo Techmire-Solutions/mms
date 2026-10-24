@@ -1,9 +1,9 @@
 import React from "react";
-import { SequenceNumberingCard } from "@/components/ui/sequence-numbering";
+import { SequenceNumberingCard } from "@/components/sequence-numbering";
 import { Button } from "@/components/ui/button";
-import { FieldErrorMessage } from "@/components/ui/FormPrimitives";
+import { FieldErrorMessage } from "@/components/app/FormPrimitives";
 import { useTranslation } from "@/hooks/useTranslation";
-import { useVoucherNumberingSettings } from "./useVoucherNumberingSettings";
+import { useVoucherNumberingSettings } from "../hooks/useVoucherNumberingSettings";
 
 export interface AccountingSettingsNumberingSectionProps {
   canEdit: boolean;
@@ -33,16 +33,23 @@ export function AccountingSettingsNumberingSection({
         restartLabel={t("accounting.settings.voucher.restartAnnually")}
         restartDesc={t("accounting.settings.voucher.restartAnnuallyDesc")}
       />
-      <FieldErrorMessage id="accounting-voucher-prefix-error" message={prefixValid ? undefined : t("accounting.settings.voucher.prefixInvalid")} />
+      <FieldErrorMessage
+        id="accounting-voucher-prefix-error"
+        message={prefixValid ? undefined : t("accounting.settings.voucher.prefixInvalid")}
+      />
       <p className="m-0 text-xs text-muted-foreground">{t("accounting.settings.voucher.hint")}</p>
       {formatChanged && (
-        <p className="m-0 text-xs text-muted-foreground" role="note">{t("accounting.settings.voucher.formatChangeNote")}</p>
+        <p className="m-0 text-xs text-muted-foreground" role="note">
+          {t("accounting.settings.voucher.formatChangeNote")}
+        </p>
       )}
       {canEdit && (
         <Button
           type="button"
           className="min-h-11"
-          onClick={() => { void handleSave(); }}
+          onClick={() => {
+            void handleSave();
+          }}
           disabled={isSaving || !dirty || !prefixValid}
         >
           {t("common.save")}

@@ -1,4 +1,5 @@
 import type React from "react";
+import type { TableCellAlign, TableCellVariant } from "@/components/ui/table";
 
 /**
  * Computes allSelected / someSelected from a list of items and a selection set.
@@ -10,8 +11,10 @@ export function deriveSelectionState<T extends { id: string | number }>(
 ): { allSelected: boolean; someSelected: boolean } {
   const has = (id: string | number): boolean => {
     if (selectedIds instanceof Set) {
-      return (selectedIds as ReadonlySet<string | number>).has(id) ||
-        (selectedIds as ReadonlySet<string | number>).has(String(id));
+      return (
+        (selectedIds as ReadonlySet<string | number>).has(id) ||
+        (selectedIds as ReadonlySet<string | number>).has(String(id))
+      );
     }
     const arr = selectedIds as ReadonlyArray<string | number>;
     return arr.includes(id) || arr.includes(String(id));
@@ -33,6 +36,14 @@ export interface WorkBatchTableColumn<TData> {
   headerClassName?: string;
   cellClassName?: string | ((row: TData) => string | undefined);
   render: (row: TData, index: number) => React.ReactNode;
+  /** Prevents text wrapping; ideal for fixed-width columns (IDs, dates, badges, actions). */
+  noWrap?: boolean;
+  /** Truncates overflowing text with an ellipsis. */
+  truncate?: boolean;
+  /** Standardized text alignment: right for numbers/currency, left for text, center for badges/actions. */
+  align?: TableCellAlign;
+  /** Column data variant automatically configuring alignment and formatting. */
+  variant?: TableCellVariant;
 }
 
 export interface WorkBatchTableFooterCell {

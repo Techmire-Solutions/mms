@@ -1,13 +1,13 @@
 import React from "react";
 import { WorkBatchTable, type WorkBatchTableColumn } from "@/components/common/work";
-import { MODULE_ROW_ACTIONS_TRIGGER_CLASS } from "@/components/ui/ModuleRowActionsMenu";
+import { MODULE_ROW_ACTIONS_TRIGGER_CLASS } from "@/components/app/ModuleRowActionsMenu";
 import { useTranslation } from "@/hooks/useTranslation";
 import { EnrollmentRowActions } from "@/tenant/features/enrollments/components/EnrollmentRowActions";
 import { renderEnrollmentWorkColumnValue } from "@/tenant/features/enrollments/components/enrollmentWorkColumnCell";
 import {
   findEnrollmentStudent,
   type EnrollmentListContentProps,
-} from "@/tenant/features/enrollments/components/enrollmentListContentShared";
+} from "@/tenant/features/enrollments/lib/enrollmentListContentShared";
 import type { Enrollment } from "@/lib/data/enrollmentData";
 
 export type EnrollmentsListDesktopTableProps = Omit<
@@ -15,7 +15,9 @@ export type EnrollmentsListDesktopTableProps = Omit<
   "filteredCount" | "page" | "pageSize" | "onPageChange"
 >;
 
-export function EnrollmentsListDesktopTable(props: EnrollmentsListDesktopTableProps): React.JSX.Element {
+export function EnrollmentsListDesktopTable(
+  props: EnrollmentsListDesktopTableProps,
+): React.JSX.Element {
   const {
     enrollments,
     students,
@@ -62,8 +64,10 @@ export function EnrollmentsListDesktopTable(props: EnrollmentsListDesktopTablePr
       cols.push({
         id: "student",
         label: t("enrollments.columns.student"),
-        cellClassName: "px-3 py-2.5 whitespace-nowrap",
-        render: (enrollment: Enrollment) => renderEnrollmentWorkColumnValue(enrollment, "student", columnOptions),
+        noWrap: true,
+        cellClassName: "px-3 py-2.5",
+        render: (enrollment: Enrollment) =>
+          renderEnrollmentWorkColumnValue(enrollment, "student", columnOptions),
       });
     }
 
@@ -71,8 +75,10 @@ export function EnrollmentsListDesktopTable(props: EnrollmentsListDesktopTablePr
       cols.push({
         id: "session",
         label: t("enrollments.columns.session"),
-        cellClassName: "px-3 py-2.5 text-xs text-foreground max-w-cell-sm truncate",
-        render: (enrollment: Enrollment) => renderEnrollmentWorkColumnValue(enrollment, "session", columnOptions),
+        truncate: true,
+        cellClassName: "px-3 py-2.5 text-xs text-foreground max-w-cell-sm",
+        render: (enrollment: Enrollment) =>
+          renderEnrollmentWorkColumnValue(enrollment, "session", columnOptions),
       });
     }
 
@@ -80,8 +86,10 @@ export function EnrollmentsListDesktopTable(props: EnrollmentsListDesktopTablePr
       cols.push({
         id: "class",
         label: t("enrollments.columns.class"),
-        cellClassName: "px-3 py-2.5 text-xs text-muted-foreground whitespace-nowrap",
-        render: (enrollment: Enrollment) => renderEnrollmentWorkColumnValue(enrollment, "class", columnOptions),
+        noWrap: true,
+        cellClassName: "px-3 py-2.5 text-xs text-muted-foreground",
+        render: (enrollment: Enrollment) =>
+          renderEnrollmentWorkColumnValue(enrollment, "class", columnOptions),
       });
     }
 
@@ -89,8 +97,10 @@ export function EnrollmentsListDesktopTable(props: EnrollmentsListDesktopTablePr
       cols.push({
         id: "enrolledDate",
         label: t("enrollments.columns.enrolledDate"),
-        cellClassName: "px-3 py-2.5 font-mono text-xs text-muted-foreground whitespace-nowrap",
-        render: (enrollment: Enrollment) => renderEnrollmentWorkColumnValue(enrollment, "enrolledDate", columnOptions),
+        noWrap: true,
+        cellClassName: "px-3 py-2.5 font-mono text-xs text-muted-foreground",
+        render: (enrollment: Enrollment) =>
+          renderEnrollmentWorkColumnValue(enrollment, "enrolledDate", columnOptions),
       });
     }
 
@@ -99,8 +109,10 @@ export function EnrollmentsListDesktopTable(props: EnrollmentsListDesktopTablePr
         id: "finalFee",
         label: t("enrollments.columns.finalFee"),
         headerClassName: "text-end",
-        cellClassName: "px-3 py-2.5 text-end font-semibold text-foreground whitespace-nowrap",
-        render: (enrollment: Enrollment) => renderEnrollmentWorkColumnValue(enrollment, "finalFee", columnOptions),
+        noWrap: true,
+        cellClassName: "px-3 py-2.5 text-end font-semibold text-foreground",
+        render: (enrollment: Enrollment) =>
+          renderEnrollmentWorkColumnValue(enrollment, "finalFee", columnOptions),
       });
     }
 
@@ -109,7 +121,8 @@ export function EnrollmentsListDesktopTable(props: EnrollmentsListDesktopTablePr
         id: "status",
         label: t("enrollments.columns.status"),
         cellClassName: "px-3 py-2.5",
-        render: (enrollment: Enrollment) => renderEnrollmentWorkColumnValue(enrollment, "status", columnOptions),
+        render: (enrollment: Enrollment) =>
+          renderEnrollmentWorkColumnValue(enrollment, "status", columnOptions),
       });
     }
 
@@ -118,7 +131,8 @@ export function EnrollmentsListDesktopTable(props: EnrollmentsListDesktopTablePr
         id: "payment",
         label: t("enrollments.columns.payment"),
         cellClassName: "px-3 py-2.5",
-        render: (enrollment: Enrollment) => renderEnrollmentWorkColumnValue(enrollment, "payment", columnOptions),
+        render: (enrollment: Enrollment) =>
+          renderEnrollmentWorkColumnValue(enrollment, "payment", columnOptions),
       });
     }
 
@@ -126,8 +140,10 @@ export function EnrollmentsListDesktopTable(props: EnrollmentsListDesktopTablePr
       cols.push({
         id: "notes",
         label: t("enrollments.columns.notes"),
-        cellClassName: "px-3 py-2.5 text-xs text-muted-foreground max-w-cell-sm truncate",
-        render: (enrollment: Enrollment) => renderEnrollmentWorkColumnValue(enrollment, "notes", columnOptions),
+        truncate: true,
+        cellClassName: "px-3 py-2.5 text-xs text-muted-foreground max-w-cell-sm",
+        render: (enrollment: Enrollment) =>
+          renderEnrollmentWorkColumnValue(enrollment, "notes", columnOptions),
       });
     }
 
@@ -138,7 +154,6 @@ export function EnrollmentsListDesktopTable(props: EnrollmentsListDesktopTablePr
     <WorkBatchTable
       data={enrollments}
       columns={columns}
-      bordered={false}
       stickyColumnId={canSelectEnrollments ? "student" : undefined}
       selection={
         canSelectEnrollments

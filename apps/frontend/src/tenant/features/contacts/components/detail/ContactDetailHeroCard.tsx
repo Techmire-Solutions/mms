@@ -3,18 +3,17 @@ import { BrainCircuit } from "lucide-react";
 import { type Contact, getDisplayName, getContactTags } from "@mms/shared";
 import { useTranslation } from "@/hooks/useTranslation";
 import { ContactIdentityMeta } from "../ContactIdentityMeta";
-import { PersonDetailHeroCard } from "@/components/ui/PersonDetailHeroCard";
-import { DetailNotesBlock } from "@/components/ui/DetailNotesBlock";
+import { PersonDetailHeroCard } from "@/components/app/PersonDetailHeroCard";
+import { DetailNotesBlock } from "@/components/app/DetailNotesBlock";
 import { Badge } from "@/components/ui/badge";
-import { getGenderCardAccent } from "@/lib/genderUi";
+import { Card } from "@/components/ui/card";
+import { getGenderCardAccent } from "@/lib/ui/genderUi";
 
 export interface ContactDetailHeroCardProps {
   contact: Contact;
 }
 
-export function ContactDetailHeroCard({
-  contact,
-}: ContactDetailHeroCardProps): React.JSX.Element {
+export function ContactDetailHeroCard({ contact }: ContactDetailHeroCardProps): React.JSX.Element {
   const { t } = useTranslation();
   const aiSummary = typeof contact.aiSummary === "string" ? contact.aiSummary.trim() : "";
   const notes = typeof contact.notes === "string" ? contact.notes.trim() : "";
@@ -33,11 +32,7 @@ export function ContactDetailHeroCard({
         {contactTags.length > 0 && (
           <div className="flex flex-wrap gap-1.5 mt-1.5">
             {contactTags.map((tag) => (
-              <Badge
-                key={tag}
-                tone="primary"
-                className="px-2 py-0.5 text-xs font-medium"
-              >
+              <Badge key={tag} tone="primary" size="sm" className="font-medium">
                 {tag}
               </Badge>
             ))}
@@ -53,9 +48,9 @@ export function ContactDetailHeroCard({
               {t("contacts.detail.aiIntelligence")}
             </span>
           </div>
-          <div className="p-4 rounded-2xl bg-primary/5 border border-primary/20 text-sm text-foreground leading-relaxed italic relative break-words">
+          <Card className="p-4 rounded-2xl bg-primary/5 border-primary/20 shadow-none text-sm text-foreground leading-relaxed italic relative break-words">
             {aiSummary}
-          </div>
+          </Card>
         </div>
       ) : null}
 

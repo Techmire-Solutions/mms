@@ -1,16 +1,13 @@
-import React, { useState } from 'react';
-import { FACULTY_DESIGNATION_NAME_MAX } from '@mms/shared';
-import { Field } from '@/components/ui/FormPrimitives';
-import { FORM_INPUT } from '@/components/ui/formStyles';
-import { FormSelect, type FormSelectOption } from '@/components/ui/FormSelect';
-import { FormSelectWithQuickCreate } from '@/components/ui/FormSelectWithQuickCreate';
-import { Input } from '@/components/ui/input';
-import { useTranslation } from '@/hooks/useTranslation';
-import { FacultyDesignationRolesField } from '@/tenant/features/faculty/components/FacultyDesignationRolesField';
-import {
-  RoleFormModal,
-  useCreateWorkspaceRole,
-} from '@/tenant/hooks/collections/users';
+import React, { useState } from "react";
+import { FACULTY_DESIGNATION_NAME_MAX } from "@mms/shared";
+import { Field } from "@/components/app/FormPrimitives";
+import { FORM_INPUT } from "@/components/ui/formStyles";
+import { FormSelect, type FormSelectOption } from "@/components/app/FormSelect";
+import { FormSelectWithQuickCreate } from "@/components/app/FormSelectWithQuickCreate";
+import { Input } from "@/components/ui/input";
+import { useTranslation } from "@/hooks/useTranslation";
+import { FacultyDesignationRolesField } from "@/tenant/features/faculty/components/FacultyDesignationRolesField";
+import { RoleFormModal, useCreateWorkspaceRole } from "@/tenant/hooks/collections/users";
 
 export interface FacultyDesignationFormFieldsProps {
   departmentId: string;
@@ -58,40 +55,48 @@ export function FacultyDesignationFormFields({
   return (
     <div className="space-y-4 py-1 text-start">
       <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
-        <Field label={t('faculty.designations.department')} id="modal-designation-department" required>
+        <Field
+          label={t("faculty.designations.department")}
+          id="modal-designation-department"
+          required
+        >
           <FormSelectWithQuickCreate
             id="modal-designation-department"
             name="departmentId"
             value={departmentId}
             onChange={onDepartmentChange}
             options={departmentOptions}
-            placeholder={t('faculty.designations.departmentRequired')}
+            placeholder={t("faculty.designations.departmentRequired")}
             disabled={isPending}
             canAdd={Boolean(onOpenCreateDepartment)}
             onOpenAdd={onOpenCreateDepartment}
-            addAriaLabel={t('faculty.setup.addDepartment')}
+            addAriaLabel={t("faculty.setup.addDepartment")}
           />
         </Field>
 
-        <Field label={t('faculty.designations.name')} id="modal-designation-name" required error={nameError}>
+        <Field
+          label={t("faculty.designations.name")}
+          id="modal-designation-name"
+          required
+          error={nameError}
+        >
           <Input
             id="modal-designation-name"
             name="name"
             value={name}
             onChange={(e) => onNameChange(e.target.value)}
-            placeholder={t('faculty.designations.namePlaceholder')}
+            placeholder={t("faculty.designations.namePlaceholder")}
             className={FORM_INPUT}
             maxLength={FACULTY_DESIGNATION_NAME_MAX}
             disabled={isPending}
             aria-invalid={nameError ? true : undefined}
-            autoFocus
           />
         </Field>
 
         <Field
-          label={t('faculty.designations.parentDesignation')}
+          label={t("faculty.designations.parentDesignation")}
           id="modal-designation-parent"
-          hint={!departmentId ? t('faculty.designations.selectDepartmentFirst') : undefined}
+          hint={!departmentId ? t("faculty.designations.selectDepartmentFirst") : undefined}
         >
           <FormSelect
             id="modal-designation-parent"
@@ -103,7 +108,7 @@ export function FacultyDesignationFormFields({
           />
         </Field>
 
-        <Field label={t('common.status')} id="modal-designation-status" required>
+        <Field label={t("common.status")} id="modal-designation-status" required>
           <FormSelect
             id="modal-designation-status"
             name="status"
@@ -124,8 +129,7 @@ export function FacultyDesignationFormFields({
       />
       <RoleFormModal
         open={createRoleOpen}
-        title={t('faculty.designations.addRole')}
-        role={null}
+        title={t("faculty.designations.addRole")}
         visibleModules={visibleModules}
         onSave={(role) => {
           void (async () => {

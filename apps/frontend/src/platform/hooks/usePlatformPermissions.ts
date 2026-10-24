@@ -1,5 +1,5 @@
-import { platformUserCan, type PlatformAdminPermissionKey } from '@mms/shared';
-import { usePlatformAuth } from '@/platform/lib/PlatformAuthContext';
+import { platformUserCan, type PlatformAdminPermissionKey } from "@mms/shared";
+import { usePlatformAuth } from "@/platform/lib/PlatformAuthContext";
 
 /** Platform capability checks from the live session user (DB-backed permissions). */
 export function usePlatformPermissions() {
@@ -11,12 +11,12 @@ export function usePlatformPermissions() {
   return {
     platformUser,
     isPlatformAuthenticated,
-    isSuperUser: platformUser?.role === 'super_user',
-    canWorkspaces: can('workspaces'),
-    canOnboard: can('onboard'),
-    canSettings: can('settings'),
-    canAdmins: can('admins'),
-    canSystem: can('system'),
+    isSuperUser: platformUser?.role === "super_user",
+    canWorkspaces: can("workspaces"),
+    canOnboard: can("onboard"),
+    canSettings: can("settings"),
+    canAdmins: can("admins"),
+    canSystem: can("system"),
     can,
   };
 }

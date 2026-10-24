@@ -1,11 +1,11 @@
-import { and, eq, isNull, sql } from 'drizzle-orm';
+import { and, eq, isNull, sql } from "drizzle-orm";
 import {
   MODULE_METRICS_DEFAULT_PERIOD_DAYS,
   type StudentsCommandMetricsSnapshot,
-} from '@mms/shared';
-import { students } from '../schema.js';
-import { withTenantRead } from '../tenant-context.js';
-import { statusExpr } from './studentRepositoryListQuery.js';
+} from "@mms/shared";
+import { students } from "../schema.js";
+import { withTenantRead } from "../tenant-context.js";
+import { statusExpr } from "./studentRepositoryListQuery.js";
 
 /** SQL aggregates for Students command-centre metrics (active rows only). */
 export async function aggregateStudentsCommandMetrics(
@@ -23,7 +23,7 @@ export async function aggregateStudentsCommandMetrics(
         inactive: sql<number>`count(*) FILTER (WHERE ${statusExpr()} = 'inactive')::int`,
         suspended: sql<number>`count(*) FILTER (WHERE ${statusExpr()} = 'suspended')::int`,
         newThisPeriod: sql<number>`count(*) FILTER (WHERE COALESCE(
-          CASE WHEN ${students.registeredDate} ~ '^[0-9]{4}-[0-9]{2}-[0-9]{2}' THEN ${students.registeredDate}::timestamptz ELSE NULL END,
+          ${students.registeredDate}::timestamptz,
           ${students.createdAt}
         ) >= ${sinceInterval})::int`,
       })

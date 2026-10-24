@@ -1,27 +1,42 @@
-import React, { useState } from 'react';
-import type { FacultyDesignationDefinition } from '@mms/shared';
-import { ConfirmAlertDialog } from '@/components/ui/ConfirmAlertDialog';
-import { ErrorBoundary } from '@/components/ui/ErrorBoundary';
-import { ErrorState } from '@/components/ui/ErrorState';
-import { ModuleTierMotion } from '@/components/ui/ModuleTierMotion';
-import { useFacultyDepartments } from '../hooks/useFacultyDepartments';
-import { useFacultyDesignationsController } from '../hooks/useFacultyDesignationsController';
-import { FacultyDesignationsTable } from './FacultyDesignationsTable';
-import { FacultyDesignationFormModal } from './FacultyDesignationFormModal';
+import React, { useState } from "react";
+import type { FacultyDesignationDefinition } from "@mms/shared";
+import { ConfirmAlertDialog } from "@/components/app/ConfirmAlertDialog";
+import { ErrorBoundary } from "@/components/app/ErrorBoundary";
+import { ErrorState } from "@/components/app/ErrorState";
+import { ModuleTierMotion } from "@/components/app/ModuleTierMotion";
+import { ModuleTrashToggle } from "@/components/app/ModuleTrashToggle";
+import { useFacultyDepartments } from "../hooks/useFacultyDepartments";
+import { useFacultyDesignationsController } from "../hooks/useFacultyDesignationsController";
+import { FacultyDesignationsTable } from "./FacultyDesignationsTable";
+import { FacultyDesignationFormModal } from "./FacultyDesignationFormModal";
 
-/** Designations work surface — same directory chrome as Faculties (toolbar + table/cards). */
+/** Designations work surface — includes trash recovery toggle and restore actions. */
 export function FacultyDesignationsSetupSection({
   canWrite = true,
 }: {
   canWrite?: boolean;
 }): React.JSX.Element {
-  const { t, query, designations, isPending, isSaving, saveDesignation, handleDelete } =
-    useFacultyDesignationsController();
+  const {
+    t,
+    query,
+    designations,
+    isLoading,
+    isPending,
+    isSaving,
+    showDeleted,
+    setShowDeleted,
+    saveDesignation,
+    handleDelete,
+    handleRestore,
+  } = useFacultyDesignationsController();
   const { data: departments = [] } = useFacultyDepartments();
 
   const [modalOpen, setModalOpen] = useState(false);
-  const [editingDesignation, setEditingDesignation] = useState<FacultyDesignationDefinition | null>(null);
-  const [designationToDelete, setDesignationToDelete] = useState<FacultyDesignationDefinition | null>(null);
+  const [editingDesignation, setEditingDesignation] = useState<FacultyDesignationDefinition | null>(
+    null,
+  );
+  const [designationToDelete, setDesignationToDelete] =
+    useState<FacultyDesignationDefinition | null>(null);
 
   const handleStartEdit = (designation: FacultyDesignationDefinition) => {
     if (!canWrite) return;
@@ -41,13 +56,22 @@ export function FacultyDesignationsSetupSection({
     setDesignationToDelete(null);
   };
 
+  const primaryAction = canWrite ? (
+    <ModuleTrashToggle
+      viewingDeleted={showDeleted}
+      onToggle={() => setShowDeleted((prev) => !prev)}
+      activeLabel={t("faculty.showActive")}
+      deletedLabel={t("faculty.showDeleted")}
+    />
+  ) : null;
+
   return (
     <ErrorBoundary>
       <ModuleTierMotion tier="work-designations" className="space-y-5">
         {query.isError ? (
           <ErrorState
-            title={t('faculty.designations.loadFailed')}
-            description={t('faculty.loadFailedHint')}
+            title={t("faculty.designations.loadFailed")}
+            description={t("faculty.loadFailedHint")}
             onRetry={() => void query.refetch()}
           />
         ) : (
@@ -55,13 +79,15 @@ export function FacultyDesignationsSetupSection({
             designations={designations}
             editingDesignationId={editingDesignation?.id}
             isPending={isPending}
-            isLoading={query.isLoading}
+            isLoading={isLoading}
             canWrite={canWrite}
+            primaryAction={primaryAction}
             onEdit={handleStartEdit}
             onDelete={(d) => {
               if (!canWrite) return;
               setDesignationToDelete(d);
             }}
+            onRestore={handleRestore}
           />
         )}
 
@@ -80,14 +106,16 @@ export function FacultyDesignationsSetupSection({
         <ConfirmAlertDialog
           open={Boolean(designationToDelete)}
           onOpenChange={(open) => !open && setDesignationToDelete(null)}
-          title={t('faculty.designations.deleteDesignation')}
+          title={t("faculty.designations.deleteDesignation")}
           description={
             designationToDelete
-              ? t('faculty.designations.deleteDesignationConfirm', { name: designationToDelete.name })
-              : ''
+              ? t("faculty.designations.deleteDesignationConfirm", {
+                  name: designationToDelete.name,
+                })
+              : ""
           }
-          confirmLabel={t('common.delete')}
-          cancelLabel={t('common.cancel')}
+          confirmLabel={t("common.delete")}
+          cancelLabel={t("common.cancel")}
           destructive
           onConfirm={handleConfirmDelete}
         />

@@ -1,11 +1,5 @@
 import type React from "react";
-import {
-  AlertCircle,
-  Check,
-  Copy,
-  Filter,
-  RotateCcw,
-} from "lucide-react";
+import { AlertCircle, Check, Copy, Filter, RotateCcw } from "lucide-react";
 import {
   calculateSmsSegments,
   formatDateTime,
@@ -14,13 +8,13 @@ import {
   type Message,
 } from "@mms/shared";
 import { Button } from "@/components/ui/button";
-import { ChannelBadge } from "@/components/ui/ChannelBadge";
-import { ModuleTableSelectionCell } from "@/components/ui/ModuleTableSelectionCell";
-import { StatusBadge, type StatusBadgeConfigItem } from "@/components/ui/StatusBadge";
+import { ChannelBadge } from "@/components/app/ChannelBadge";
+import { ModuleTableSelectionCell } from "@/components/app/ModuleTableSelectionCell";
+import { StatusBadge, type StatusBadgeConfigItem } from "@/components/app/StatusBadge";
 import { TableCell, TableRow } from "@/components/ui/table";
 import { useTranslation } from "@/hooks/useTranslation";
 import { cn } from "@/lib/utils";
-import { SEMANTIC_TEXT, SEMANTIC_BG } from "@/lib/semanticTone";
+import { SEMANTIC_TEXT, SEMANTIC_BG } from "@/lib/ui/semanticTone";
 
 export interface MessagingListDesktopRowProps {
   log: Message;
@@ -59,8 +53,9 @@ export function MessagingListDesktopRow({
 }: MessagingListDesktopRowProps): React.JSX.Element {
   const { t } = useTranslation();
   const isFailed = log.status === "failed";
-  const smsSegments = log.channel === "sms" ? calculateSmsSegments(log.body) : null;
+  const smsSegments = showChannel && log.channel === "sms" ? calculateSmsSegments(log.body) : null;
   const categoryKey = log.category ? getMessageCategoryLabelKey(log.category) : null;
+  const isFallbackName = name.startsWith("Contact #") || name === String(log.contactId);
 
   return (
     <TableRow
@@ -87,13 +82,27 @@ export function MessagingListDesktopRow({
           <div className="flex items-center justify-between gap-2">
             <div className="flex items-center gap-2 min-w-0">
               <span
-                className={`flex h-6 w-6 shrink-0 items-center justify-center rounded-full ${SEMANTIC_BG.primary} text-xs font-black ${SEMANTIC_TEXT.primary}`}
+                className={cn(
+                  "flex h-6 w-6 shrink-0 items-center justify-center rounded-full text-xs font-black",
+                  isFallbackName
+                    ? "bg-muted text-muted-foreground animate-pulse"
+                    : `${SEMANTIC_BG.primary} ${SEMANTIC_TEXT.primary}`,
+                )}
               >
-                {getInitials(name)}
+                {isFallbackName ? null : getInitials(name)}
               </span>
-              <span className={`truncate hover:${SEMANTIC_TEXT.primary} transition-colors`}>
-                {name}
-              </span>
+              {isFallbackName ? (
+                <span
+                  className="inline-block h-4 w-24 animate-pulse rounded bg-muted/60"
+                  aria-label={name}
+                />
+              ) : (
+                <span
+                  className={cn("truncate transition-colors", `hover:${SEMANTIC_TEXT.primary}`)}
+                >
+                  {name}
+                </span>
+              )}
             </div>
             {onFilterContact && (
               <Button
@@ -142,9 +151,7 @@ export function MessagingListDesktopRow({
           <div className="flex items-center justify-between gap-2">
             <span className="truncate">
               {log.channel === "email" && log.subject && (
-                <strong className="text-foreground font-semibold me-1.5">
-                  {log.subject}:
-                </strong>
+                <strong className="text-foreground font-semibold me-1.5">{log.subject}:</strong>
               )}
               {log.body}
             </span>

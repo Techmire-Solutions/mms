@@ -1,19 +1,19 @@
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it } from "vitest";
 import {
   generateCsvStreamChunks,
   streamCsvExportFromGenerator,
-} from '../lib/csvExportStreamFactory.js';
-import { pipeline } from 'node:stream/promises';
-import { Writable } from 'node:stream';
+} from "../lib/csvExportStreamFactory.js";
+import { pipeline } from "node:stream/promises";
+import { Writable } from "node:stream";
 
-describe('Memory-Bounded Backpressure Streaming', () => {
-  it('streams 50,000 records while maintaining heap delta < 50 MB', async () => {
+describe("Memory-Bounded Backpressure Streaming", () => {
+  it("streams 50,000 records while maintaining heap delta < 50 MB", async () => {
     const totalRecords = 50_000;
     const columns = [
-      { label: 'ID', key: 'id' },
-      { label: 'Name', key: 'name' },
-      { label: 'Email', key: 'email' },
-      { label: 'Role', key: 'role' },
+      { label: "ID", key: "id" },
+      { label: "Name", key: "name" },
+      { label: "Email", key: "email" },
+      { label: "Role", key: "role" },
     ];
 
     const loadPage = async (page: number, limit: number) => {
@@ -26,7 +26,7 @@ describe('Memory-Bounded Backpressure Streaming', () => {
           id: `usr_${i}`,
           name: `User Number ${i}`,
           email: `user${i}@example.com`,
-          role: i % 2 === 0 ? 'Admin' : 'Member',
+          role: i % 2 === 0 ? "Admin" : "Member",
         });
       }
       return { rows, hasMore: end < totalRecords };
@@ -42,7 +42,7 @@ describe('Memory-Bounded Backpressure Streaming', () => {
     const heapBefore = process.memoryUsage().heapUsed;
 
     const generator = generateCsvStreamChunks({
-      filename: 'large_export.csv',
+      filename: "large_export.csv",
       chunkSize: 500,
       columns,
       loadByIds: async () => [],

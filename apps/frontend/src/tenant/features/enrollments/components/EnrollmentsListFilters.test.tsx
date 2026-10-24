@@ -9,8 +9,16 @@ vi.mock("@/hooks/useTranslation", () => ({
   }),
 }));
 
-vi.mock("@/components/ui/ModuleWorkToolbar", () => ({
-  ModuleWorkToolbar: ({ search, filterButton, filterChips }: { search: string; filterButton: React.ReactNode; filterChips?: React.ReactNode }) => (
+vi.mock("@/components/app/ModuleWorkToolbar", () => ({
+  ModuleWorkToolbar: ({
+    search,
+    filterButton,
+    filterChips,
+  }: {
+    search: string;
+    filterButton: React.ReactNode;
+    filterChips?: React.ReactNode;
+  }) => (
     <div data-testid="work-toolbar">
       <span>Search: {search}</span>
       <div>{filterButton}</div>
@@ -19,7 +27,7 @@ vi.mock("@/components/ui/ModuleWorkToolbar", () => ({
   ),
 }));
 
-vi.mock("@/components/ui/FilterChips", () => ({
+vi.mock("@/components/app/FilterChips", () => ({
   FilterChips: () => <div data-testid="filter-chips">Filter Chips</div>,
 }));
 
@@ -38,7 +46,7 @@ describe("EnrollmentsListFilters Component", () => {
         showDeleted={false}
         canDelete={true}
         statusConfig={{}}
-        columnCustomizer={{} as any}
+        columnCustomizer={{} as unknown as never}
         onSearchChange={vi.fn()}
         onStatusChange={vi.fn()}
         onSessionChange={vi.fn()}

@@ -1,16 +1,16 @@
 import { Suspense, lazy, useState } from "react";
 import { MessageSquare, type LucideIcon } from "lucide-react";
-import {
-  type Message,
-  type MessageTemplate,
-  type StandardMessagingRecipient as MessagingRecipient,
-  messagingTransferSchema,
+import type {
+  Message,
+  MessageTemplate,
+  StandardMessagingRecipient as MessagingRecipient,
 } from "@mms/shared";
-import { useGenericModuleExport } from "@/lib/backgroundJobs/useGenericModuleExport";
-import { ConfirmAlertDialog } from "@/components/ui/ConfirmAlertDialog";
-import { ErrorState } from "@/components/ui/ErrorState";
-import { ModulePageShell } from "@/components/ui/ModulePageShell";
-import { ResponsiveAccordionTabs } from "@/components/ui/ResponsiveAccordionTabs";
+import { notify } from "@/lib/notify";
+import { exportMessagingLogsFiltered } from "../lib/messagingReportsExport";
+import { ConfirmAlertDialog } from "@/components/app/ConfirmAlertDialog";
+import { ErrorState } from "@/components/app/ErrorState";
+import { ModulePageShell } from "@/components/app/ModulePageShell";
+import { ResponsiveAccordionTabs } from "@/components/app/ResponsiveAccordionTabs";
 import RouteStatusFallback from "@/components/routing/RouteStatusFallback";
 import { useTranslation } from "@/hooks/useTranslation";
 import type { MessagingTarget } from "@/hooks/useMessageComposerState";
@@ -19,8 +19,12 @@ import { MessagingPageHeaderActions } from "./MessagingPageHeaderActions";
 import { MessagingWorkTier } from "./MessagingWorkTier";
 import { MessagingCsvImportDialog } from "./MessagingCsvImportDialog";
 
-const MessagingReportsTier = lazy(() => import("./MessagingReportsTier").then((m) => ({ default: m.MessagingReportsTier })));
-const MessagingSetupTier = lazy(() => import("./MessagingSetupTier").then((m) => ({ default: m.MessagingSetupTier })));
+const MessagingReportsTier = lazy(() =>
+  import("@/tenant/components/moduleReports").then((m) => ({ default: m.ModuleReportsTier })),
+);
+const MessagingSetupTier = lazy(() =>
+  import("./MessagingSetupTier").then((m) => ({ default: m.MessagingSetupTier })),
+);
 
 const MessageComposer = lazy(() => import("@/tenant/components/messaging/TenantMessageComposer"));
 
@@ -46,7 +50,11 @@ export interface MessagingPageViewProps {
   setConfirmClearLogsOpen: (open: boolean) => void;
   startCampaign: (channel: "whatsapp" | "sms" | "email") => void;
   resend: (log: Message, recipient: MessagingRecipient) => void;
-  handleBulkResend: (logs: Message[], recipients: MessagingRecipient[], targetChannel?: "whatsapp" | "sms" | "email") => void;
+  handleBulkResend: (
+    logs: Message[],
+    recipients: MessagingRecipient[],
+    targetChannel?: "whatsapp" | "sms" | "email",
+  ) => void;
   confirmDeleteTemplate: () => Promise<void>;
   confirmClearLogs: () => Promise<void>;
   handleDispatchSent: () => void;
@@ -57,12 +65,25 @@ export interface MessagingPageViewProps {
 export function MessagingPageView(p: MessagingPageViewProps): React.JSX.Element {
   const { t } = useTranslation();
   const [importOpen, setImportOpen] = useState(false);
-  const { handleExport, isExporting } = useGenericModuleExport({
-    path: '/api/messaging/export/csv',
-    filename: 'messaging-logs.csv',
-    columns: messagingTransferSchema.exportColumns,
-    canExport: p.canWrite,
-  });
+  const [isExporting, setIsExporting] = useState(false);
+
+  const handleExport = async (): Promise<void> => {
+    if (!p.canWrite || isExporting) return;
+    setIsExporting(true);
+    try {
+      await exportMessagingLogsFiltered({
+        channel: p.channelFilter,
+        category: "all",
+        debouncedSearch: "",
+        status: "all",
+        t,
+      });
+    } catch {
+      notify.error(t("messaging.exportFailed"), { description: t("messaging.loadFailedHint") });
+    } finally {
+      setIsExporting(false);
+    }
+  };
 
   return (
     <ModulePageShell
@@ -118,7 +139,7 @@ export function MessagingPageView(p: MessagingPageViewProps): React.JSX.Element 
           )}
           {p.activeTab === "reports" && (
             <Suspense fallback={<RouteStatusFallback />}>
-              <MessagingReportsTier canWrite={p.canWrite} />
+              <MessagingReportsTier category="messaging" />
             </Suspense>
           )}
           {p.activeTab === "setup" && (

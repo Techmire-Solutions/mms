@@ -32,9 +32,10 @@ vi.mock("@/hooks/useTranslation", () => ({
 }));
 
 vi.mock("@/tenant/features/accounting/hooks/useAccountingLedgerOps", async (importOriginal) => {
-  const actual = await importOriginal<
-    typeof import("@/tenant/features/accounting/hooks/useAccountingLedgerOps")
-  >();
+  const actual =
+    await importOriginal<
+      typeof import("@/tenant/features/accounting/hooks/useAccountingLedgerOps")
+    >();
   return {
     ...actual,
     useOpeningBalances: () => mocks.openingQuery,
@@ -53,8 +54,20 @@ const accounts: Account[] = [
 ] as unknown as Account[];
 
 const fiscalYears: FiscalYear[] = [
-  { id: "fy-open", label: "FY 2026", startDate: "2026-01-01", endDate: "2026-12-31", status: "active" },
-  { id: "fy-closed", label: "FY 2025", startDate: "2025-01-01", endDate: "2025-12-31", status: "closed" },
+  {
+    id: "fy-open",
+    label: "FY 2026",
+    startDate: "2026-01-01",
+    endDate: "2026-12-31",
+    status: "active",
+  },
+  {
+    id: "fy-closed",
+    label: "FY 2025",
+    startDate: "2025-01-01",
+    endDate: "2025-12-31",
+    status: "closed",
+  },
 ] as unknown as FiscalYear[];
 
 describe("AccountingSettingsOpeningSection", () => {
@@ -122,10 +135,8 @@ describe("AccountingSettingsOpeningSection", () => {
     return button as HTMLButtonElement;
   }
 
-  const postButton = (): HTMLButtonElement =>
-    buttonByLabel("accounting.settings.opening.post");
-  const addButton = (): HTMLButtonElement =>
-    buttonByLabel("accounting.settings.opening.add");
+  const postButton = (): HTMLButtonElement => buttonByLabel("accounting.settings.opening.post");
+  const addButton = (): HTMLButtonElement => buttonByLabel("accounting.settings.opening.add");
 
   it("reports an idempotent replay instead of a fresh posting", async () => {
     mocks.openingQuery.data = [

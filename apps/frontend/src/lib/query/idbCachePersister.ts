@@ -1,9 +1,9 @@
-import type { DehydratedState } from '@tanstack/react-query';
+import type { DehydratedState } from "@tanstack/react-query";
 
-const DB_NAME = 'mms_offline_cache';
+const DB_NAME = "mms_offline_cache";
 const DB_VERSION = 1;
-const STORE_NAME = 'query_cache';
-const CACHE_RECORD_KEY = 'mms_dehydrated_state';
+const STORE_NAME = "query_cache";
+const CACHE_RECORD_KEY = "mms_dehydrated_state";
 const DEFAULT_MAX_AGE_MS = 24 * 60 * 60 * 1000; // 24 hours
 
 interface PersistedPayload {
@@ -17,7 +17,7 @@ export interface IdbPersisterOptions {
 }
 
 function openDatabase(): Promise<IDBDatabase | null> {
-  if (typeof window === 'undefined' || typeof indexedDB === 'undefined') {
+  if (typeof window === "undefined" || typeof indexedDB === "undefined") {
     return Promise.resolve(null);
   }
 
@@ -60,7 +60,7 @@ export function createIdbCachePersister(options?: IdbPersisterOptions) {
 
       return new Promise<void>((resolve) => {
         try {
-          const tx = db.transaction(STORE_NAME, 'readwrite');
+          const tx = db.transaction(STORE_NAME, "readwrite");
           const store = tx.objectStore(STORE_NAME);
           const payload: PersistedPayload = {
             timestamp: Date.now(),
@@ -81,7 +81,7 @@ export function createIdbCachePersister(options?: IdbPersisterOptions) {
 
       return new Promise<DehydratedState | undefined>((resolve) => {
         try {
-          const tx = db.transaction(STORE_NAME, 'readonly');
+          const tx = db.transaction(STORE_NAME, "readonly");
           const store = tx.objectStore(STORE_NAME);
           const getReq = store.get(storageKey);
 
@@ -112,7 +112,7 @@ export function createIdbCachePersister(options?: IdbPersisterOptions) {
 
       return new Promise<void>((resolve) => {
         try {
-          const tx = db.transaction(STORE_NAME, 'readwrite');
+          const tx = db.transaction(STORE_NAME, "readwrite");
           const store = tx.objectStore(STORE_NAME);
           const delReq = store.delete(storageKey);
           delReq.onsuccess = () => resolve();

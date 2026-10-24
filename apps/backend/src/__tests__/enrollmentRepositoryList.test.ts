@@ -1,18 +1,23 @@
-import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { beforeEach, describe, expect, it, vi } from "vitest";
+import {
+  listEnrollmentsPage,
+  aggregateEnrollmentsCommandMetrics,
+} from "../db/repositories/enrollmentRepositoryList.js";
 
 const mockWithTenantTransaction = vi.fn();
 
-vi.mock('../db/tenant-context.js', () => ({
+vi.mock("../db/tenant-context.js", () => ({
   withTenant: (...args: unknown[]) => mockWithTenantTransaction(...args),
   // Read paths now go through withTenantRead (read replica + read-only tx).
   withTenantRead: (...args: unknown[]) => mockWithTenantTransaction(...args),
 }));
 
-vi.mock('../db/repositories/enrollmentRepository.js', () => ({
+vi.mock("../db/repositories/enrollmentProjection.js", () => ({
   enrollmentRowToRecord: (row: Record<string, unknown>, timeline: unknown[] = []) => ({
     ...row,
     timeline,
   }),
+  loadTimelineMapTx: async () => new Map(),
 }));
 
 function createSelectMock(selectQueue: unknown[][]) {
@@ -35,20 +40,20 @@ function createSelectMock(selectQueue: unknown[][]) {
   return { select, where, orderBy, limit, offset };
 }
 
-describe('enrollmentRepositoryList', () => {
+describe("enrollmentRepositoryList", () => {
   beforeEach(() => {
     vi.clearAllMocks();
   });
 
-  it('listEnrollmentsPage filters active rows and paginates', async () => {
+  it("listEnrollmentsPage filters active rows and paginates", async () => {
     const selectQueue: unknown[][] = [
       [{ count: 2 }],
       [
         {
-          id: 'enr-1',
-          studentName: 'Ali',
-          status: 'confirmed',
-          sessionId: 's1',
+          id: "enr-1",
+          studentName: "Ali",
+          status: "confirmed",
+          sessionId: "s1",
           deletedAt: null,
         },
       ],
@@ -61,20 +66,26 @@ describe('enrollmentRepositoryList', () => {
         fn({ select }),
     );
 
-    const { listEnrollmentsPage } = await import('../db/repositories/enrollmentRepositoryList.js');
-    const result = await listEnrollmentsPage('Demo', {
+    const result = await listEnrollmentsPage("Demo", {
       page: 1,
       limit: 1,
-      status: 'confirmed',
-      sessionId: 's1',
-      search: 'ali',
+      status: "confirmed",
+      sessionId: "s1",
+      search: "ali",
     });
 
-    expect(mockWithTenantTransaction).toHaveBeenCalledWith('demo', expect.any(Function));
+    expect(mockWithTenantTransaction).toHaveBeenCalledWith("demo", expect.any(Function));
     expect(select).toHaveBeenCalled();
     expect(result).toEqual({
       enrollments: [
-        { id: 'enr-1', studentName: 'Ali', status: 'confirmed', sessionId: 's1', deletedAt: null, timeline: [] },
+        {
+          id: "enr-1",
+          studentName: "Ali",
+          status: "confirmed",
+          sessionId: "s1",
+          deletedAt: null,
+          timeline: [],
+        },
       ],
       total: 2,
       page: 1,
@@ -83,7 +94,7 @@ describe('enrollmentRepositoryList', () => {
     });
   });
 
-  it('listEnrollmentsPage scopes includeDeleted to deleted-only rows', async () => {
+  it("listEnrollmentsPage scopes includeDeleted to deleted-only rows", async () => {
     const selectQueue: unknown[][] = [[{ count: 0 }], []];
     const { select, where } = createSelectMock(selectQueue);
 
@@ -92,14 +103,13 @@ describe('enrollmentRepositoryList', () => {
         fn({ select }),
     );
 
-    const { listEnrollmentsPage } = await import('../db/repositories/enrollmentRepositoryList.js');
-    await listEnrollmentsPage('demo', { includeDeleted: true, page: 1, limit: 12 });
+    await listEnrollmentsPage("demo", { includeDeleted: true, page: 1, limit: 12 });
 
     expect(where).toHaveBeenCalled();
     expect(select).toHaveBeenCalledTimes(2);
   });
 
-  it('aggregateEnrollmentsCommandMetrics returns snapshot fields', async () => {
+  it("aggregateEnrollmentsCommandMetrics returns snapshot fields", async () => {
     const where = vi.fn(async () => [
       {
         total: 5,
@@ -119,10 +129,7 @@ describe('enrollmentRepositoryList', () => {
         fn({ select }),
     );
 
-    const { aggregateEnrollmentsCommandMetrics } = await import(
-      '../db/repositories/enrollmentRepositoryList.js'
-    );
-    const metrics = await aggregateEnrollmentsCommandMetrics('demo');
+    const metrics = await aggregateEnrollmentsCommandMetrics("demo");
 
     expect(metrics).toEqual({
       total: 5,

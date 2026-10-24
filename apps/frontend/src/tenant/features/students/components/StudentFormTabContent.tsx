@@ -6,7 +6,7 @@ import {
   type StudentFieldErrorGetter,
   type StudentStatusSelectOption,
 } from "@/tenant/features/students/components/StudentFormSections";
-import { EntityNotesFormSection } from "@/components/ui/EntityNotesFormSection";
+import { EntityNotesFormSection } from "@/components/app/EntityNotesFormSection";
 import { useTranslation } from "@/hooks/useTranslation";
 import { resolveStudentFieldLabel } from "@/tenant/features/students/components/StudentFormSectionShared";
 import React from "react";
@@ -37,7 +37,7 @@ export interface StudentFormTabContentProps {
   onDraftChange: (patch: Partial<Student>) => void;
 }
 
-export const StudentFormTabContent = (function StudentFormTabContent({
+export const StudentFormTabContent = function StudentFormTabContent({
   formInstanceId,
   studentDraft,
   linkedContact,
@@ -112,7 +112,13 @@ export const StudentFormTabContent = (function StudentFormTabContent({
         <EntityNotesFormSection
           title={t("students.form.notesSection")}
           subtitle={t("students.form.notesSectionDesc")}
-          label={resolveStudentFieldLabel(fields, "registration", "notes", "students.form.notesLabel", t)}
+          label={resolveStudentFieldLabel(
+            fields,
+            "registration",
+            "notes",
+            "students.form.notesLabel",
+            t,
+          )}
           placeholder={t("students.form.notesPlaceholder")}
           value={studentDraft.notes}
           required={isFieldRequired("notes")}
@@ -121,4 +127,4 @@ export const StudentFormTabContent = (function StudentFormTabContent({
       ) : null}
     </div>
   );
-});
+};

@@ -3,7 +3,7 @@ import { usePersistedTabState } from "@/hooks/usePersistedTabState";
 import { useModuleShortcuts } from "@/hooks/useModuleShortcuts";
 import { useTranslation } from "@/hooks/useTranslation";
 import { useFilteredModuleTierTabs } from "@/tenant/hooks/useModuleTierTabs";
-import { ClipboardList, UserCheck } from "lucide-react";
+import { ClipboardList, UserCheck, Inbox } from "lucide-react";
 import { useModulePermissions } from "@/tenant/hooks/usePermissions";
 import { type Enrollment } from "@/lib/data/enrollmentData";
 import {
@@ -18,14 +18,15 @@ import {
   useEnrollmentsExportActions,
 } from "@/tenant/features/enrollments/hooks/useEnrollmentsExportActions";
 import { useEnrollmentColumnLayout } from "@/tenant/features/enrollments/hooks/useEnrollmentColumnLayout";
-import { useEnrollmentsSelection } from "@/tenant/features/enrollments/hooks/useEnrollmentsSelection";
+import { useWorkSelection } from "@/hooks/useWorkSelection";
 
 export function useEnrollmentsPageState() {
   const { t } = useTranslation();
   const SUB_TABS = (() => [
-      { id: "directory", label: t("enrollments.list"), icon: ClipboardList },
-      { id: "eligibility", label: t("enrollments.eligibility"), icon: UserCheck },
-    ])();
+    { id: "directory", label: t("enrollments.list"), icon: ClipboardList },
+    { id: "eligibility", label: t("enrollments.eligibility"), icon: UserCheck },
+    { id: "admissions", label: t("enrollments.admissions.title"), icon: Inbox },
+  ])();
   const permissions = useModulePermissions(ENROLLMENTS_MODULE_MANIFEST);
   const {
     canWrite: canWriteEnrollments,
@@ -45,10 +46,7 @@ export function useEnrollmentsPageState() {
   const directoryFilters = useEnrollmentsDirectoryFilters();
   const {
     listPage,
-    setListPage,
     showDeleted,
-    setShowDeleted,
-    search,
     setSearch,
     debouncedSearch,
     statusFilter,
@@ -75,7 +73,8 @@ export function useEnrollmentsPageState() {
     enabled: useServerWork,
   });
 
-  const pageData = (workPageData?.body ?? workPageData) as { enrollments?: Enrollment[]; total?: number } | undefined;
+  const pageData = (workPageData?.body ?? workPageData) as
+    { enrollments?: Enrollment[]; total?: number } | undefined;
 
   const enrollments = (() => (pageData?.enrollments ?? []) as Enrollment[])();
   const filteredCount = pageData?.total ?? enrollments.length;
@@ -86,10 +85,11 @@ export function useEnrollmentsPageState() {
   const [confirmBulkDeleteOpen, setConfirmBulkDeleteOpen] = useState(false);
   const [confirmBulkRestoreOpen, setConfirmBulkRestoreOpen] = useState(false);
   const columnLayout = useEnrollmentColumnLayout();
-  const selection = useEnrollmentsSelection(enrollments);
+  const selection = useWorkSelection(enrollments);
 
   useEffect(() => {
     selection.setSelectedIds([]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- selection.setSelectedIds is a stable useState setter; depending on the whole `selection` object would re-run this clear on every render.
   }, [debouncedSearch, statusFilter, sessionFilter, showDeleted, selection.setSelectedIds]);
 
   const { logExportAudit } = useEnrollmentMutations();

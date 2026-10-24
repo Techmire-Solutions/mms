@@ -1,12 +1,12 @@
-import type { Contact } from '@mms/shared';
+import type { Contact } from "@mms/shared";
 
 export function extractPhoneKeys(contact: Contact): string[] {
   const keys = new Set<string>();
   for (const phone of contact.phones ?? []) {
-    const raw = String(phone.number || '').trim();
+    const raw = String(phone.number || "").trim();
     if (!raw) continue;
-    const digits = raw.replace(/\D/g, '');
-    const cc = String(phone.countryCode || '').replace(/\D/g, '');
+    const digits = raw.replace(/\D/g, "");
+    const cc = String(phone.countryCode || "").replace(/\D/g, "");
     const withCountry = `${cc}${digits}`;
     if (digits) keys.add(digits);
     if (withCountry) keys.add(withCountry);
@@ -19,7 +19,9 @@ export function extractPhoneKeys(contact: Contact): string[] {
 export function extractEmails(contact: Contact): string[] {
   const emails = new Set<string>();
   for (const email of contact.emails ?? []) {
-    const raw = String(email.address || '').trim().toLowerCase();
+    const raw = String(email.address || "")
+      .trim()
+      .toLowerCase();
     if (raw) emails.add(raw);
   }
   return [...emails];

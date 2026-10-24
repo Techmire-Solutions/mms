@@ -1,9 +1,16 @@
-import { sql, type SQL } from 'drizzle-orm';
-import { normalizeSearchString, toSqlSearchPattern } from '@mms/shared';
+import { sql, type SQL } from "drizzle-orm";
+import { normalizeSearchString, toSqlSearchPattern } from "@mms/shared";
 import {
-  contacts, students, faculty, facultyEmployments, tenantUsers, contactEmails, contactAddresses, contactPhones,
-} from '../schema.js';
-import { primaryPhoneDigitsSql } from './contactRepositorySql.js';
+  contacts,
+  students,
+  faculty,
+  facultyEmployments,
+  tenantUsers,
+  contactEmails,
+  contactAddresses,
+  contactPhones,
+} from "../schema.js";
+import { primaryPhoneDigitsSql } from "./contactRepositorySql.js";
 
 export const FACULTY_USER_ROLES_SQL = sql`('faculty', 'teacher', 'assistant_teacher')`;
 
@@ -48,8 +55,8 @@ export function isSyedSql(): SQL {
  * NFD → strip Latin combining marks → strip Arabic harakat → Yeh/Kaf → lower.
  */
 export function sqlNormalizeSearchExpr(expr: SQL): SQL {
-  const fromChars = '\u064A\u0643';
-  const toChars = '\u06CC\u06A9';
+  const fromChars = "\u064A\u0643";
+  const toChars = "\u06CC\u06A9";
   return sql`lower(
     translate(
       regexp_replace(
@@ -70,7 +77,7 @@ export function sqlNormalizeSearchExpr(expr: SQL): SQL {
 }
 
 export function buildSearchSql(search: string): SQL | null {
-  const normalized = normalizeSearchString(typeof search === 'string' ? search.trim() : '');
+  const normalized = normalizeSearchString(typeof search === "string" ? search.trim() : "");
   if (!normalized) return null;
   const pattern = toSqlSearchPattern(normalized);
   const haystack = sql`concat_ws(' ',

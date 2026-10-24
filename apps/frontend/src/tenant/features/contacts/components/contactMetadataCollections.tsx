@@ -1,5 +1,11 @@
 import { Globe, ExternalLink } from "lucide-react";
-import { formatSocialPlatformUrl, mergeStoredAndDerivedSiblingLinks, type AppTranslationKey, type Contact } from "@mms/shared";
+import { Badge } from "@/components/ui/badge";
+import {
+  formatSocialPlatformUrl,
+  mergeStoredAndDerivedSiblingLinks,
+  type AppTranslationKey,
+  type Contact,
+} from "@mms/shared";
 import { formatLocalizedRelationshipLabel } from "@/lib/contacts/formatLocalizedRelationshipLabel";
 
 export function renderSocialMetadata({
@@ -12,8 +18,7 @@ export function renderSocialMetadata({
   t: (key: AppTranslationKey, params?: Record<string, string | number>) => string;
 }): React.ReactNode {
   const socials = (contact.socials || []).filter(
-    (social) =>
-      (social.platform || "").trim().length > 0 || (social.url || "").trim().length > 0,
+    (social) => (social.platform || "").trim().length > 0 || (social.url || "").trim().length > 0,
   );
   if (socials.length === 0) return emptyNode;
 
@@ -24,7 +29,8 @@ export function renderSocialMetadata({
         const url = (social.url || "").trim();
         const href = url ? formatSocialPlatformUrl(platform, url) : undefined;
         const displayUrl = url ? url.replace(/^https?:\/\//i, "").replace(/\/$/, "") : "";
-        const label = platform && displayUrl ? `${platform}: ${displayUrl}` : (platform || displayUrl);
+        const label =
+          platform && displayUrl ? `${platform}: ${displayUrl}` : platform || displayUrl;
 
         if (href) {
           return (
@@ -34,7 +40,7 @@ export function renderSocialMetadata({
               target="_blank"
               rel="noopener noreferrer"
               onClick={(event) => event.stopPropagation()}
-              className="inline-flex items-center min-h-11 gap-1 px-2 py-0.5 rounded-lg bg-primary/10 hover:bg-primary/20 text-primary border border-primary/20 text-xs font-semibold transition-colors truncate max-w-cell-trunc"
+              className="inline-flex items-center min-h-11 gap-1 px-2 py-0.5 rounded-lg bg-primary/10 hover:bg-primary/15 text-primary border border-primary/20 text-xs font-semibold transition-colors truncate max-w-cell-trunc"
               title={`${platform || t("contacts.form.link")}: ${url}`}
             >
               <Globe className="w-3 h-3 shrink-0 text-primary" />
@@ -45,13 +51,10 @@ export function renderSocialMetadata({
         }
 
         return (
-          <span
-            key={index}
-            className="inline-flex items-center gap-1 px-2 py-0.5 rounded-lg bg-muted text-muted-foreground border border-border/40 text-xs font-medium"
-          >
+          <Badge key={index} as="span" tone="muted" size="sm" className="font-medium gap-1">
             <Globe className="w-3 h-3 shrink-0" />
             <span>{platform || displayUrl}</span>
-          </span>
+          </Badge>
         );
       })}
     </div>
@@ -73,10 +76,7 @@ export function renderRelationshipMetadata({
 }): React.ReactNode {
   const peers = contactsMap ? [...contactsMap.values()] : [];
   const list = mergeStoredAndDerivedSiblingLinks(contact, peers).filter(
-    (link) =>
-      (link.name || "").trim() ||
-      link.contactId ||
-      (link.relationship || "").trim(),
+    (link) => (link.name || "").trim() || link.contactId || (link.relationship || "").trim(),
   );
   if (list.length === 0) return emptyNode;
 
@@ -87,11 +87,7 @@ export function renderRelationshipMetadata({
       name = linked ? linked.name : `${t("contacts.table.contactIdPrefix")}${link.contactId}`;
     }
     const relationship = link.relationship
-      ? formatLocalizedRelationshipLabel(
-          link.relationship.trim(),
-          linked?.gender ?? link.gender,
-          t,
-        )
+      ? formatLocalizedRelationshipLabel(link.relationship.trim(), linked?.gender ?? link.gender, t)
       : "";
     if (name && relationship) return `${name} (${relationship})`;
     return name || relationship;
@@ -115,14 +111,11 @@ export function renderEducationMetadata({
   return (
     <div className="flex flex-wrap items-center gap-1.5 text-xs">
       {educations.map((edu, idx) => (
-        <span
-          key={edu.id || idx}
-          className="inline-flex items-center gap-1 px-2 py-0.5 rounded-lg bg-primary/10 text-primary border border-primary/20 text-xs font-medium"
-        >
+        <Badge key={edu.id || idx} as="span" tone="primary" size="sm" className="font-normal gap-1">
           {edu.degree ? <span className="font-semibold">{edu.degree}</span> : null}
           {edu.degree && edu.institution ? <span className="opacity-60">·</span> : null}
           <span className="truncate max-w-cell-sm">{edu.institution}</span>
-        </span>
+        </Badge>
       ))}
     </div>
   );
@@ -143,14 +136,11 @@ export function renderExperienceMetadata({
   return (
     <div className="flex flex-wrap items-center gap-1.5 text-xs">
       {experiences.map((exp, idx) => (
-        <span
-          key={exp.id || idx}
-          className="inline-flex items-center gap-1 px-2 py-0.5 rounded-lg bg-primary/10 text-primary border border-primary/20 text-xs font-medium"
-        >
+        <Badge key={exp.id || idx} as="span" tone="primary" size="sm" className="font-normal gap-1">
           {exp.title ? <span className="font-semibold">{exp.title}</span> : null}
           {exp.title && exp.organization ? <span className="opacity-60">·</span> : null}
           <span className="truncate max-w-cell-sm">{exp.organization}</span>
-        </span>
+        </Badge>
       ))}
     </div>
   );
@@ -163,18 +153,13 @@ export function renderSkillsMetadata({
   contact: Contact;
   emptyNode: React.ReactNode;
 }): React.ReactNode {
-  const skills = (contact.skills || []).filter(
-    (s) => (s.name || "").trim(),
-  );
+  const skills = (contact.skills || []).filter((s) => (s.name || "").trim());
   if (skills.length === 0) return emptyNode;
 
   return (
     <div className="flex flex-wrap items-center gap-1.5 text-xs">
       {skills.map((s, idx) => (
-        <span
-          key={s.id || idx}
-          className="inline-flex items-center gap-1 px-2 py-0.5 rounded-lg bg-primary/10 text-primary border border-primary/20 text-xs font-medium"
-        >
+        <Badge key={s.id || idx} as="span" tone="primary" size="sm" className="font-normal gap-1">
           <span className="font-semibold">{s.name}</span>
           {s.proficiency ? (
             <>
@@ -182,9 +167,8 @@ export function renderSkillsMetadata({
               <span className="text-3xs opacity-85">{s.proficiency}</span>
             </>
           ) : null}
-        </span>
+        </Badge>
       ))}
     </div>
   );
 }
-

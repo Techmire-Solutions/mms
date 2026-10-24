@@ -27,7 +27,30 @@ vi.mock("@/components/ui/dropdown-menu", () => ({
 }));
 
 describe("FacultyPageHeaderActions", () => {
-  it("renders import/export choosers and Add Faculty / Add Designation", () => {
+  it("renders import/export choosers and Add Faculty / Add Department / Add Designation", () => {
+    const html = renderToStaticMarkup(
+      <FacultyPageHeaderActions
+        canExport={true}
+        canWrite={true}
+        viewingDeleted={false}
+        onExportEntity={vi.fn()}
+        onImportEntity={vi.fn()}
+        onAddFaculty={vi.fn()}
+        onAddDepartment={vi.fn()}
+        onAddDesignation={vi.fn()}
+      />,
+    );
+
+    expect(html).toContain("faculty.io.export");
+    expect(html).toContain("faculty.io.import");
+    expect(html).toContain("faculty.tabs.faculties");
+    expect(html).toContain("faculty.tabs.designations");
+    expect(html).toContain("action.addFaculty");
+    expect(html).toContain("faculty.setup.addDepartment");
+    expect(html).toContain("faculty.designations.addDesignation");
+  });
+
+  it("omits onAddDepartment when prop is not supplied", () => {
     const html = renderToStaticMarkup(
       <FacultyPageHeaderActions
         canExport={true}
@@ -40,13 +63,9 @@ describe("FacultyPageHeaderActions", () => {
       />,
     );
 
-    expect(html).toContain("faculty.io.export");
-    expect(html).toContain("faculty.io.import");
-    expect(html).toContain("faculty.tabs.faculties");
-    expect(html).toContain("faculty.tabs.designations");
+    expect(html).not.toContain("faculty.setup.addDepartment");
     expect(html).toContain("action.addFaculty");
     expect(html).toContain("faculty.designations.addDesignation");
-    expect(html).not.toContain("faculty.setup.addDepartment");
   });
 
   it("hides actions when viewingDeleted is true", () => {

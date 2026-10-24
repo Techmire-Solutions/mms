@@ -5,15 +5,12 @@ import { formatDirectoryPageCountLabel } from "@/lib/formatDirectoryPageCountLab
 import {
   getJournalBalanceDifference,
   isJournalBalanced,
-} from "@/tenant/features/accounting/components/journalEntriesListShared";
-import { EntityCardsGrid } from "@/components/ui/EntityCardsGrid";
-import { StatGrid, StatRow } from "@/components/ui/StatGrid";
+} from "@/tenant/features/accounting/lib/journalEntriesListShared";
+import { EntityCardsGrid } from "@/components/app/EntityCardsGrid";
+import { StatGrid, StatRow } from "@/components/app/StatGrid";
 import { useReducedMotion } from "@/hooks/useReducedMotion";
 import { cn } from "@/lib/utils";
-import {
-  JournalEntryCard,
-  type JournalEntriesListCardsProps,
-} from "./JournalEntryCard";
+import { JournalEntryCard, type JournalEntriesListCardsProps } from "./JournalEntryCard";
 
 export type { JournalEntriesListCardsProps };
 
@@ -61,7 +58,12 @@ export function JournalEntriesListCards(props: JournalEntriesListCardsProps): Re
           />
         )}
       />
-      <div className={cn(WORK_SURFACE, "flex flex-col gap-2 p-3 sm:flex-row sm:items-center sm:justify-between")}>
+      <div
+        className={cn(
+          WORK_SURFACE,
+          "flex flex-col gap-2 p-3 sm:flex-row sm:items-center sm:justify-between",
+        )}
+      >
         <p className="text-xs font-bold text-muted-foreground uppercase m-0">{pageCountLabel}</p>
         <StatGrid>
           {isColumnVisible("debit") && (
@@ -84,7 +86,9 @@ export function JournalEntriesListCards(props: JournalEntriesListCardsProps): Re
             <span className="text-success">{t("accounting.journal.dashboard.balanced")}</span>
           ) : (
             <span className="text-destructive">
-              {t("accounting.journal.dashboard.difference", { diff: getJournalBalanceDifference(grandDebit, grandCredit, formatAmount) })}
+              {t("accounting.journal.dashboard.difference", {
+                diff: getJournalBalanceDifference(grandDebit, grandCredit, formatAmount),
+              })}
             </span>
           )}
         </p>
@@ -92,4 +96,3 @@ export function JournalEntriesListCards(props: JournalEntriesListCardsProps): Re
     </div>
   );
 }
-

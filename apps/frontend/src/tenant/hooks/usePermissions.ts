@@ -65,7 +65,8 @@ export function usePermissions(): UsePermissionsResult {
   const canAccessRoles = useMemo(() => sharedCanAccessRoles(role), [role]);
 
   const canManageRole = useCallback(
-    (targetRoleOrId: WorkspaceRole | string | undefined) => sharedCanManageRole(role, targetRoleOrId),
+    (targetRoleOrId: WorkspaceRole | string | undefined) =>
+      sharedCanManageRole(role, targetRoleOrId),
     [role],
   );
 
@@ -103,6 +104,7 @@ export interface ModulePermissionsManifest {
     reports?: Permission;
     setupView?: Permission;
     setupWrite?: Permission;
+    overrideLock?: Permission;
     clearLogs?: Permission;
   };
 }
@@ -115,11 +117,14 @@ export interface UseModulePermissionsResult {
   canReports: boolean;
   canViewSetup: boolean;
   canEditSetup: boolean;
+  canOverrideLock: boolean;
   canClearLogs: boolean;
 }
 
 /** Resolves all standard tier & action permissions for a module manifest (Rule 11 / DRY). */
-export function useModulePermissions(manifest: ModulePermissionsManifest): UseModulePermissionsResult {
+export function useModulePermissions(
+  manifest: ModulePermissionsManifest,
+): UseModulePermissionsResult {
   const { can } = usePermissions();
   const p = manifest.permissions;
 
@@ -129,10 +134,11 @@ export function useModulePermissions(manifest: ModulePermissionsManifest): UseMo
     canDelete: p.delete ? can(p.delete) : false,
     canExport: p.export ? can(p.export) : false,
     canReports: p.reports ? can(p.reports) : false,
-    canViewSetup: p.setupView ? (can(p.setupView) || (p.setupWrite ? can(p.setupWrite) : false)) : false,
+    canViewSetup: p.setupView
+      ? can(p.setupView) || (p.setupWrite ? can(p.setupWrite) : false)
+      : false,
     canEditSetup: p.setupWrite ? can(p.setupWrite) : false,
+    canOverrideLock: p.overrideLock ? can(p.overrideLock) : false,
     canClearLogs: p.clearLogs ? can(p.clearLogs) : false,
   };
 }
-
-

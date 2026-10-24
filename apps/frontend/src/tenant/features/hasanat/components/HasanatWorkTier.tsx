@@ -1,6 +1,6 @@
-import { ErrorBoundary } from "@/components/ui/ErrorBoundary";
-import { ErrorState } from "@/components/ui/ErrorState";
-import { SubTabBar } from "@/components/ui/SubTabBar";
+import { ErrorBoundary } from "@/components/app/ErrorBoundary";
+import { ErrorState } from "@/components/app/ErrorState";
+import { SubTabBar } from "@/components/app/SubTabBar";
 import { useTranslation } from "@/hooks/useTranslation";
 import { DistributionsList } from "@/tenant/features/hasanat/components/DistributionsList";
 import { HasanatDashboard } from "@/tenant/features/hasanat/components/HasanatDashboard";

@@ -1,8 +1,9 @@
 import React, { type JSX } from "react";
 import { AnimatePresence } from "framer-motion";
 import { Checkbox } from "@/components/ui/checkbox";
-import { ModuleTableFooterCount } from "@/components/ui/ModuleTableFooterCount";
+import { ModuleTableFooterCount } from "@/components/app/ModuleTableFooterCount";
 import { useListRowMotion } from "@/hooks/useListRowMotion";
+import { useTranslation } from "@/hooks/useTranslation";
 import { cn } from "@/lib/utils";
 import {
   type WorkQueueItemStatus,
@@ -38,8 +39,9 @@ export function WorkQueue<TData extends { id: string | number }>({
   onItemClick,
   className,
   containerClassName,
-  "aria-label": ariaLabel = "Operational work queue",
+  "aria-label": ariaLabel,
 }: WorkQueueProps<TData>): JSX.Element {
+  const { t } = useTranslation();
   const rowMotion = useListRowMotion({ layout: "position", fade: true, duration: 0.12 });
 
   const selectedSet = React.useMemo(() => {
@@ -61,7 +63,7 @@ export function WorkQueue<TData extends { id: string | number }>({
   return (
     <div
       role="region"
-      aria-label={ariaLabel}
+      aria-label={ariaLabel ?? t("common.workQueue")}
       className={cn("space-y-3", containerClassName)}
     >
       {/* Queue Header */}
@@ -76,9 +78,11 @@ export function WorkQueue<TData extends { id: string | number }>({
             {selection && (
               <div className="flex items-center gap-2">
                 <Checkbox
-                  checked={selection.allSelected ? true : selection.someSelected ? "indeterminate" : false}
+                  checked={
+                    selection.allSelected ? true : selection.someSelected ? "indeterminate" : false
+                  }
                   onCheckedChange={() => selection.onSelectAll()}
-                  aria-label={selection.selectAllAriaLabel ?? "Select all queue items"}
+                  aria-label={selection.selectAllAriaLabel ?? t("common.selectAllQueueItems")}
                   className="size-4"
                 />
               </div>
@@ -86,21 +90,17 @@ export function WorkQueue<TData extends { id: string | number }>({
             {title && (
               <div>
                 <h3 className="text-sm font-semibold text-foreground tracking-tight">{title}</h3>
-                {description && (
-                  <p className="text-xs text-muted-foreground">{description}</p>
-                )}
+                {description && <p className="text-xs text-muted-foreground">{description}</p>}
               </div>
             )}
           </div>
 
-          {headerActions && (
-            <div className="flex items-center gap-2 ms-auto">{headerActions}</div>
-          )}
+          {headerActions && <div className="flex items-center gap-2 ms-auto">{headerActions}</div>}
         </div>
       )}
 
       {/* Queue Items Feed */}
-      <ul role="list" className={cn("space-y-2", className)}>
+      <ul className={cn("space-y-2", className)}>
         <AnimatePresence initial={false}>
           {activeItems.map((item, index) => {
             const idStr = String(item.id);

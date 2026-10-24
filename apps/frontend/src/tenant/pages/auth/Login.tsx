@@ -63,7 +63,12 @@ export default function Login(): React.ReactElement {
           </div>
         }
       >
-        <form onSubmit={(event) => void handleSubmit(event)} className="space-y-4" noValidate aria-busy={isBusy}>
+        <form
+          onSubmit={(event) => void handleSubmit(event)}
+          className="space-y-4"
+          noValidate
+          aria-busy={isBusy}
+        >
           {handoffProcessing ? (
             <AuthStatusBanner variant="loading" message={t("auth.handoffProcessing")} />
           ) : (location.state as { passwordChanged?: boolean } | null)?.passwordChanged ? (
@@ -106,7 +111,10 @@ export default function Login(): React.ReactElement {
                   onCheckedChange={handleRememberMeChange}
                   className="cursor-pointer"
                 />
-                <label htmlFor={rememberFieldId} className="cursor-pointer text-sm text-muted-foreground select-none">
+                <label
+                  htmlFor={rememberFieldId}
+                  className="cursor-pointer text-sm text-muted-foreground select-none"
+                >
                   {t("auth.rememberMe")}
                 </label>
               </div>

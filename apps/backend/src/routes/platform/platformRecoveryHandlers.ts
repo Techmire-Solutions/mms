@@ -1,19 +1,19 @@
-import type { FastifyInstance, FastifyReply, FastifyRequest } from 'fastify';
-import { issuePlatformSession } from '../../services/platform/platformAuthService.js';
-import { startPlatformSetup } from '../../services/platform/platformSetupService.js';
-import { toPublicPlatformUser } from '../../services/platform/platformUserService.js';
+import type { FastifyInstance, FastifyReply, FastifyRequest } from "fastify";
+import { issuePlatformSession } from "../../services/platform/platformAuthService.js";
+import { startPlatformSetup } from "../../services/platform/platformSetupService.js";
+import { toPublicPlatformUser } from "../../services/platform/platformUserService.js";
 import {
   completePlatformPasswordReset,
   requestPlatformPasswordReset,
   resendPlatformPasswordReset,
-} from '../../services/platform/platformPasswordResetService.js';
+} from "../../services/platform/platformPasswordResetService.js";
 import {
   platformPasswordForgotBodySchema,
   platformPasswordResendBodySchema,
   platformPasswordResetBodySchema,
   platformSetupRegisterBodySchema,
-} from '@mms/shared';
-import { parseRequest, replyValidationError } from '../../lib/zodRequest.js';
+} from "@mms/shared";
+import { parseRequest, replyValidationError } from "../../lib/zodRequest.js";
 
 export async function handlePlatformSetupRegister(
   fastify: FastifyInstance,

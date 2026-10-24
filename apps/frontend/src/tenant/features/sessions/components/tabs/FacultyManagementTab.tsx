@@ -5,7 +5,7 @@
 import React from "react";
 import { UserCheck, Plus } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { EmptyState } from "@/components/ui/EmptyState";
+import { EmptyState } from "@/components/app/EmptyState";
 import { useTranslation } from "@/hooks/useTranslation";
 import { SessionFacultyCard } from "./faculty/SessionFacultyCard";
 import { SessionFacultyFormModal } from "./faculty/SessionFacultyFormModal";
@@ -46,12 +46,8 @@ export function FacultyManagementTab({
     <div className="space-y-4">
       <div className="flex items-center justify-between">
         <div>
-          <h3 className="text-sm font-semibold text-foreground">
-            {t("sessions.faculty.title")}
-          </h3>
-          <p className="text-xs text-muted-foreground">
-            {t("sessions.faculty.subtitle")}
-          </p>
+          <h3 className="text-sm font-semibold text-foreground">{t("sessions.faculty.title")}</h3>
+          <p className="text-xs text-muted-foreground">{t("sessions.faculty.subtitle")}</p>
         </div>
         {canMutate && (
           <Button size="sm" onClick={handleOpenAdd} className="gap-1.5">

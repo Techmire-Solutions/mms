@@ -1,15 +1,15 @@
 import React from "react";
 import { Scan } from "lucide-react";
-import { SegmentedPillFilter } from "@/components/ui/SegmentedPillFilter";
+import { CompactSegmentedControl } from "@/components/app/CompactSegmentedControl";
 import { Badge } from "@/components/ui/badge";
-import { SEMANTIC_BADGE } from "@/lib/semanticTone";
+import { SEMANTIC_BADGE } from "@/lib/ui/semanticTone";
 import { cn } from "@/lib/utils";
 import type { AttendanceSettings } from "@mms/shared";
 import { useTranslation } from "@/hooks/useTranslation";
-import { SectionCard } from "@/components/ui/SectionCard";
-import { ToggleRow } from "@/components/ui/ToggleRow";
+import { SectionCard } from "@/components/app/SectionCard";
+import { ToggleRow } from "@shared/ui";
 import { SETUP_SECTION_CARD_CLASS } from "@/components/ui/formStyles";
-import { ModuleSetupSaveFooter } from "@/components/ui/ModuleSetupSaveFooter";
+import { ModuleSetupSaveFooter } from "@/components/app/ModuleSetupSaveFooter";
 
 export interface AttendanceAdvancedRulesSectionProps {
   settingsDraft: AttendanceSettings;
@@ -60,9 +60,11 @@ export function AttendanceAdvancedRulesSection({
               {t("attendance.settings.defaultLayoutDesc")}
             </p>
           </div>
-          <SegmentedPillFilter
-            size="sm"
-            value={((settingsDraft.defaultViewLayout as string | undefined) || "list") as "list" | "cards"}
+          <CompactSegmentedControl
+            value={
+              ((settingsDraft.defaultViewLayout as string | undefined) || "list") as
+                "list" | "cards"
+            }
             onChange={(value) => upd("defaultViewLayout", value)}
             options={[
               { value: "list", label: t("attendance.settings.listView") },
@@ -80,7 +82,11 @@ export function AttendanceAdvancedRulesSection({
               {t("attendance.settings.facialRecognitionDesc")}
             </p>
           </div>
-          <Badge pill variant="outline" className={cn("px-2 font-bold", SEMANTIC_BADGE.warningStrong)}>
+          <Badge
+            pill
+            variant="outline"
+            className={cn("px-2 font-bold", SEMANTIC_BADGE.warningStrong)}
+          >
             {t("attendance.settings.comingSoon")}
           </Badge>
         </div>
@@ -94,7 +100,11 @@ export function AttendanceAdvancedRulesSection({
               {t("attendance.settings.auditLoggingDesc")}
             </p>
           </div>
-          <Badge pill variant="outline" className={cn("px-2 font-bold", SEMANTIC_BADGE.successStrong)}>
+          <Badge
+            pill
+            variant="outline"
+            className={cn("px-2 font-bold", SEMANTIC_BADGE.successStrong)}
+          >
             {t("attendance.settings.active")}
           </Badge>
         </div>

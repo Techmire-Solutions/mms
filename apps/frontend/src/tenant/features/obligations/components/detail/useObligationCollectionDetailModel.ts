@@ -1,8 +1,8 @@
 import { useState, useMemo } from "react";
 import { useTranslation } from "@/hooks/useTranslation";
 import { DEFAULT_CURRENCIES } from "@mms/shared";
-import { SEMANTIC_BADGE } from "@/lib/semanticTone";
-import type { StatusBadgeConfigItem } from "@/components/ui/StatusBadge";
+import { SEMANTIC_BADGE } from "@/lib/ui/semanticTone";
+import type { StatusBadgeConfigItem } from "@/components/app/StatusBadge";
 import type {
   ObligationCollection,
   ObligationType,
@@ -70,7 +70,10 @@ export function useObligationCollectionDetailModel({
     [contacts, collection.sender_id],
   );
   const reference = useMemo(
-    () => (collection.reference_id ? contacts.find((c) => String(c.id) === String(collection.reference_id)) : null),
+    () =>
+      collection.reference_id
+        ? contacts.find((c) => String(c.id) === String(collection.reference_id))
+        : null,
     [contacts, collection.reference_id],
   );
   const currency = useMemo(

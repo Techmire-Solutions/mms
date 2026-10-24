@@ -1,5 +1,5 @@
 import React from "react";
-import { ModuleSetupSaveFooter } from "@/components/ui/ModuleSetupSaveFooter";
+import { ModuleSetupSaveFooter } from "@/components/app/ModuleSetupSaveFooter";
 import { useTranslation } from "@/hooks/useTranslation";
 import type { FacultySettings } from "@mms/shared";
 import { FacultyIdSettingsCard } from "./FacultyIdSettingsCard";
@@ -28,10 +28,7 @@ export function FacultyPreferencesSection({
 
   return (
     <div className="space-y-4 text-start">
-      <FacultyIdSettingsCard
-        settingsDraft={settingsDraft}
-        upd={upd}
-      />
+      <FacultyIdSettingsCard settingsDraft={settingsDraft} upd={upd} />
 
       <ModuleSetupSaveFooter
         dirty={Boolean(isPrefsDirty)}

@@ -1,4 +1,16 @@
-import { and, asc, desc, eq, ilike, inArray, isNotNull, isNull, or, sql, type SQL } from 'drizzle-orm';
+import {
+  and,
+  asc,
+  desc,
+  eq,
+  ilike,
+  inArray,
+  isNotNull,
+  isNull,
+  or,
+  sql,
+  type SQL,
+} from "drizzle-orm";
 import {
   dedupeTrimmedIds,
   isQueryFlagTrue,
@@ -6,20 +18,22 @@ import {
   type SessionsCommandMetricsSnapshot,
   type SessionsListPageResult,
   type SessionsListQuery,
-} from '@mms/shared';
-import { sessions } from '../schema.js';
-import { withTenant, withTenantRead } from '../tenant-context.js';
-import { runListPage } from './listPageHelper.js';
-import { findSessionsSummaryByIds } from './sessionRepository.js';
+} from "@mms/shared";
+import { sessions } from "../schema.js";
+import { withTenant, withTenantRead } from "../tenant-context.js";
+import { runListPage } from "./listPageHelper.js";
+import { findSessionsSummaryByIds } from "./sessionRepository.js";
+import { enrollmentHoldsSeatSql } from "./enrollmentSeatSql.js";
+import { sessionTypeSql } from "./academicCatalogNameSql.js";
 
 const SESSION_SORT_FIELDS = new Set([
-  'name',
-  'type',
-  'status',
-  'baseFee',
-  'startDate',
-  'endDate',
-  'updatedAt',
+  "name",
+  "type",
+  "status",
+  "baseFee",
+  "startDate",
+  "endDate",
+  "updatedAt",
 ]);
 
 function buildSearchSql(search: string): SQL | null {
@@ -28,39 +42,42 @@ function buildSearchSql(search: string): SQL | null {
   const pattern = toSqlSearchPattern(normalized);
   return or(
     ilike(sessions.name, pattern),
-    ilike(sessions.type, pattern),
+    ilike(sessionTypeSql, pattern),
     ilike(sessions.description, pattern),
   )!;
 }
 
-function buildOrderBy(sortField: string | undefined, sortDir: 'asc' | 'desc' | '' | undefined): SQL {
-  const dir = sortDir === 'desc' ? 'desc' : 'asc';
+function buildOrderBy(
+  sortField: string | undefined,
+  sortDir: "asc" | "desc" | "" | undefined,
+): SQL {
+  const dir = sortDir === "desc" ? "desc" : "asc";
   const field = sortField?.trim();
   if (!field || !SESSION_SORT_FIELDS.has(field)) {
     return sql`${sessions.id} asc`;
   }
-  if (field === 'updatedAt') {
-    return dir === 'desc'
+  if (field === "updatedAt") {
+    return dir === "desc"
       ? sql`${sessions.updatedAt} desc nulls last`
       : sql`${sessions.updatedAt} asc nulls last`;
   }
-  if (field === 'name') {
-    return dir === 'desc' ? desc(sessions.name) : asc(sessions.name);
+  if (field === "name") {
+    return dir === "desc" ? desc(sessions.name) : asc(sessions.name);
   }
-  if (field === 'status') {
-    return dir === 'desc' ? desc(sessions.status) : asc(sessions.status);
+  if (field === "status") {
+    return dir === "desc" ? desc(sessions.status) : asc(sessions.status);
   }
-  if (field === 'type') {
-    return dir === 'desc' ? desc(sessions.type) : asc(sessions.type);
+  if (field === "type") {
+    return dir === "desc" ? desc(sessionTypeSql) : asc(sessionTypeSql);
   }
-  if (field === 'baseFee') {
-    return dir === 'desc' ? desc(sessions.baseFee) : asc(sessions.baseFee);
+  if (field === "baseFee") {
+    return dir === "desc" ? desc(sessions.baseFee) : asc(sessions.baseFee);
   }
-  if (field === 'startDate') {
-    return dir === 'desc' ? desc(sessions.startDate) : asc(sessions.startDate);
+  if (field === "startDate") {
+    return dir === "desc" ? desc(sessions.startDate) : asc(sessions.startDate);
   }
-  if (field === 'endDate') {
-    return dir === 'desc' ? desc(sessions.endDate) : asc(sessions.endDate);
+  if (field === "endDate") {
+    return dir === "desc" ? desc(sessions.endDate) : asc(sessions.endDate);
   }
   return sql`${sessions.id} asc`;
 }
@@ -83,7 +100,7 @@ function buildListConditions(subdomain: string, query: SessionsListQuery): SQL[]
   const rawTypes = dedupeTrimmedIds(query.type);
   if (rawTypes.length > 0) {
     const types = rawTypes.map((type) => type.toLowerCase());
-    conditions.push(inArray(sql`lower(${sessions.type})`, types));
+    conditions.push(inArray(sql`lower(${sessionTypeSql})`, types));
   }
 
   const search = query.search?.trim();
@@ -170,30 +187,34 @@ export async function aggregateSessionsCommandMetrics(
     const result = await tx.execute(sql`
       SELECT
         COUNT(*)::int AS total,
-        COUNT(*) FILTER (WHERE lower(s.status) = 'active')::int AS active,
-        COUNT(*) FILTER (WHERE lower(s.status) = 'upcoming')::int AS upcoming,
+        -- Lifecycle buckets (migration 0169): active = in progress, upcoming = draft or open.
+        COUNT(*) FILTER (WHERE s.status = 'in_progress')::int AS active,
+        COUNT(*) FILTER (WHERE s.status IN ('draft', 'open'))::int AS upcoming,
         COUNT(*) FILTER (WHERE lower(s.status) = 'completed')::int AS completed,
         COUNT(*) FILTER (WHERE lower(s.status) = 'cancelled')::int AS cancelled,
         COALESCE(SUM(cls.total_enrolled), 0)::int AS total_enrolled,
         COALESCE(SUM(cls.total_capacity), 0)::int AS total_capacity,
         COALESCE(SUM(cls.class_count), 0)::int AS total_classes,
         COUNT(*) FILTER (WHERE
-          s.start_date ~ '^[0-9]{4}-[0-9]{2}-[0-9]{2}'
-          AND (s.start_date)::date >= (CURRENT_DATE - INTERVAL '6 days')
-          AND (s.start_date)::date <= CURRENT_DATE
+          s.start_date >= (CURRENT_DATE - INTERVAL '6 days')
+          AND s.start_date <= CURRENT_DATE
         )::int AS sessions_this_week,
         COUNT(*) FILTER (WHERE
-          s.start_date ~ '^[0-9]{4}-[0-9]{2}-[0-9]{2}'
-          AND (s.start_date)::date >= (CURRENT_DATE - INTERVAL '13 days')
-          AND (s.start_date)::date <= (CURRENT_DATE - INTERVAL '7 days')
+          s.start_date >= (CURRENT_DATE - INTERVAL '13 days')
+          AND s.start_date <= (CURRENT_DATE - INTERVAL '7 days')
         )::int AS sessions_last_week
       FROM sessions s
       LEFT JOIN LATERAL (
         SELECT
-          SUM(c.enrolled)::int AS total_enrolled,
+          SUM(ce.enrolled)::int AS total_enrolled,
           SUM(c.capacity)::int AS total_capacity,
           COUNT(*)::int AS class_count
         FROM session_classes c
+        CROSS JOIN LATERAL (
+          SELECT count(*)::int AS enrolled FROM enrollments e
+          WHERE e.workspace_subdomain = c.workspace_subdomain AND e.session_id = c.session_id
+            AND e.class_id = c.id AND e.deleted_at IS NULL AND ${enrollmentHoldsSeatSql("e")}
+        ) ce
         WHERE c.workspace_subdomain = s.workspace_subdomain
           AND c.session_id = s.id
       ) cls ON true
@@ -201,22 +222,23 @@ export async function aggregateSessionsCommandMetrics(
         AND s.deleted_at IS NULL
     `);
 
-    const rows = ((result as { rows?: Record<string, unknown>[] }).rows ?? (Array.isArray(result) ? result : [])) as Record<string, unknown>[];
+    const rows = ((result as { rows?: Record<string, unknown>[] }).rows ??
+      (Array.isArray(result) ? result : [])) as Record<string, unknown>[];
     const row = (Array.isArray(rows) ? rows[0] : {}) ?? {};
 
     const num = (k: string): number => Number(row[k] ?? 0) || 0;
 
     return {
-      total: num('total'),
-      active: num('active'),
-      upcoming: num('upcoming'),
-      completed: num('completed'),
-      cancelled: num('cancelled'),
-      totalEnrolled: num('total_enrolled'),
-      totalCapacity: num('total_capacity'),
-      totalClasses: num('total_classes'),
-      sessionsThisWeek: num('sessions_this_week'),
-      sessionsLastWeek: num('sessions_last_week'),
+      total: num("total"),
+      active: num("active"),
+      upcoming: num("upcoming"),
+      completed: num("completed"),
+      cancelled: num("cancelled"),
+      totalEnrolled: num("total_enrolled"),
+      totalCapacity: num("total_capacity"),
+      totalClasses: num("total_classes"),
+      sessionsThisWeek: num("sessions_this_week"),
+      sessionsLastWeek: num("sessions_last_week"),
     };
   });
 }
@@ -233,7 +255,7 @@ export async function bulkUpdateSessionsStatusSql(
   const subdomain = workspaceSubdomain.trim().toLowerCase();
   const uniqueIds = dedupeTrimmedIds(ids);
   if (!subdomain || uniqueIds.length === 0) return { succeeded: 0, failed: 0 };
-  const normalizedStatus = status.trim().toLowerCase() || 'active';
+  const normalizedStatus = status.trim().toLowerCase() || "active";
 
   return withTenant(subdomain, async (tx) => {
     const updated = await tx

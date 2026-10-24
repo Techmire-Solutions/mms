@@ -2,9 +2,9 @@ import type React from "react";
 import { ExternalLink, Globe, Link2, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Field, FieldErrorMessage } from "@/components/ui/FormField";
+import { Field, FieldErrorMessage } from "@/components/app/FormField";
 import { FORM_ERROR_BOX } from "@/components/ui/formStyles";
-import { WarningCallout } from "@/components/ui/WarningCallout";
+import { WarningCallout } from "@/components/app/WarningCallout";
 import type { TranslationFunction } from "@/lib/contexts/TranslationContext";
 
 export interface GoogleContactsConnectStepProps {
@@ -35,7 +35,7 @@ export function GoogleContactsConnectStep({
         type="button"
         variant="outline"
         onClick={onConnect}
-        className="flex min-h-11 w-full items-center justify-start gap-2 rounded-xl border border-border bg-card px-4 text-sm font-semibold text-foreground shadow-none transition-colors hover:bg-muted"
+        className="flex min-h-11 w-full items-center justify-start gap-2 px-4 text-sm font-semibold text-foreground shadow-none"
       >
         <Globe className="h-4 w-4 text-muted-foreground" />
         <span>{t("contacts.sync.connectGoogle")}</span>
@@ -55,9 +55,11 @@ export function GoogleContactsConnectStep({
             </Field>
             <Button
               type="button"
+              variant="default"
+              size="sm"
               onClick={onExchangeCode}
               disabled={!authCode.trim() || exchanging}
-              className="flex min-h-11 items-center gap-2 rounded-lg border border-transparent bg-info px-4 text-xs font-bold text-info-foreground shadow-none transition-colors hover:bg-info/90 disabled:opacity-60"
+              className="gap-2 font-bold shadow-none"
             >
               {exchanging ? (
                 <Loader2 className="h-3.5 w-3.5 animate-spin" />
@@ -70,10 +72,7 @@ export function GoogleContactsConnectStep({
         </WarningCallout>
       )}
 
-      <FieldErrorMessage
-        message={!showAuthCode ? error : undefined}
-        className={FORM_ERROR_BOX}
-      />
+      <FieldErrorMessage message={!showAuthCode ? error : undefined} className={FORM_ERROR_BOX} />
     </div>
   );
 }

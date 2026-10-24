@@ -3,7 +3,11 @@ import { ReceiptText } from "lucide-react";
 import type { Invoice } from "@/lib/data/financeData";
 import { useTranslation } from "@/hooks/useTranslation";
 import { useFinanceCurrency } from "@/hooks/useCurrency";
-import { formatDate, getCollectedAmountForInvoice, getOutstandingAmountForInvoice } from "@mms/shared";
+import {
+  formatDate,
+  getCollectedAmountForInvoice,
+  getOutstandingAmountForInvoice,
+} from "@mms/shared";
 import { cn } from "@/lib/utils";
 
 export interface ReceiptVoucherProps {
@@ -23,9 +27,23 @@ function ReceiptRow({
   neg?: boolean;
 }) {
   return (
-    <div className={cn("flex items-center justify-between px-4 py-2 text-sm", highlight && "bg-primary/5")}>
-      <span className={cn("text-muted-foreground", highlight && "font-semibold text-foreground")}>{label}</span>
-      <span className={cn("font-semibold", highlight ? "text-primary" : neg ? "text-destructive" : "text-foreground")}>{value}</span>
+    <div
+      className={cn(
+        "flex items-center justify-between px-4 py-2 text-sm",
+        highlight && "bg-primary/5",
+      )}
+    >
+      <span className={cn("text-muted-foreground", highlight && "font-semibold text-foreground")}>
+        {label}
+      </span>
+      <span
+        className={cn(
+          "font-semibold",
+          highlight ? "text-primary" : neg ? "text-destructive" : "text-foreground",
+        )}
+      >
+        {value}
+      </span>
     </div>
   );
 }
@@ -51,7 +69,9 @@ export function ReceiptVoucher({ invoice, madrasaName }: ReceiptVoucherProps): R
       <div className="flex items-center justify-between border-b border-border pb-4">
         <div>
           <h2 className="text-lg font-bold text-foreground">{madrasaName}</h2>
-          <p className="text-xs text-muted-foreground mt-0.5">{t("finance.receipt.officialReceipt")}</p>
+          <p className="text-xs text-muted-foreground mt-0.5">
+            {t("finance.receipt.officialReceipt")}
+          </p>
         </div>
         <div className="flex items-center gap-2 rounded-lg bg-primary/10 px-3 py-2">
           <ReceiptText className="w-5 h-5 text-primary" />
@@ -67,38 +87,73 @@ export function ReceiptVoucher({ invoice, madrasaName }: ReceiptVoucherProps): R
         </div>
         <div>
           <span className="text-muted-foreground">{t("finance.receipt.dateIssued")}: </span>
-          <span className="font-semibold text-foreground">{formatDate(invoice.paidDate ?? invoice.dueDate)}</span>
+          <span className="font-semibold text-foreground">
+            {formatDate(invoice.paidDate ?? invoice.dueDate)}
+          </span>
         </div>
       </div>
 
       {/* Student info */}
       <div className="rounded-lg bg-muted/50 p-3 space-y-1 text-sm">
-        <p className="font-semibold text-xs text-muted-foreground uppercase tracking-wide">{t("finance.receipt.studentInfo")}</p>
+        <p className="font-semibold text-xs text-muted-foreground uppercase tracking-wide">
+          {t("finance.receipt.studentInfo")}
+        </p>
         <p className="font-bold text-foreground">{invoice.studentName}</p>
-        <p className="text-muted-foreground">{invoice.class} · {invoice.session}</p>
+        <p className="text-muted-foreground">
+          {invoice.class} · {invoice.session}
+        </p>
       </div>
 
       {/* Fee summary */}
       <div className="space-y-2">
-        <p className="font-semibold text-xs text-muted-foreground uppercase tracking-wide">{t("finance.receipt.feeSummary")}</p>
+        <p className="font-semibold text-xs text-muted-foreground uppercase tracking-wide">
+          {t("finance.receipt.feeSummary")}
+        </p>
         <div className="divide-y divide-border/60 rounded-lg border border-border overflow-hidden">
-          <ReceiptRow label={t("finance.columns.baseFee")} value={formatCurrency(invoice.baseFee)} />
+          <ReceiptRow
+            label={t("finance.columns.baseFee")}
+            value={formatCurrency(invoice.baseFee)}
+          />
           {invoice.discountAmt > 0 && (
-            <ReceiptRow label={t("finance.detail.discount", { type: invoice.discountType ?? "", value: invoice.discountValue ?? 0 })} value={`- ${formatCurrency(invoice.discountAmt)}`} neg />
+            <ReceiptRow
+              label={t("finance.detail.discount", {
+                type: invoice.discountType ?? "",
+                value: invoice.discountValue ?? 0,
+              })}
+              value={`- ${formatCurrency(invoice.discountAmt)}`}
+              neg
+            />
           )}
-          <ReceiptRow label={t("finance.form.finalAmount")} value={formatCurrency(invoice.finalAmt)} highlight />
-          {collected > 0 && <ReceiptRow label={t("finance.detail.amountPaid")} value={formatCurrency(collected)} />}
-          {outstanding > 0 && <ReceiptRow label={t("finance.balanceDue")} value={formatCurrency(outstanding)} neg />}
+          <ReceiptRow
+            label={t("finance.form.finalAmount")}
+            value={formatCurrency(invoice.finalAmt)}
+            highlight
+          />
+          {collected > 0 && (
+            <ReceiptRow label={t("finance.detail.amountPaid")} value={formatCurrency(collected)} />
+          )}
+          {outstanding > 0 && (
+            <ReceiptRow label={t("finance.balanceDue")} value={formatCurrency(outstanding)} neg />
+          )}
         </div>
       </div>
 
       {/* Payment details */}
       {(invoice.paidDate ?? invoice.method) && (
         <div className="space-y-2">
-          <p className="font-semibold text-xs text-muted-foreground uppercase tracking-wide">{t("finance.receipt.paymentDetails")}</p>
+          <p className="font-semibold text-xs text-muted-foreground uppercase tracking-wide">
+            {t("finance.receipt.paymentDetails")}
+          </p>
           <div className="divide-y divide-border/60 rounded-lg border border-border overflow-hidden">
-            {invoice.paidDate && <ReceiptRow label={t("finance.detail.due", { date: "" }).replace(": ", "")} value={formatDate(invoice.paidDate)} />}
-            {invoice.method && <ReceiptRow label={t("finance.columns.method")} value={invoice.method} />}
+            {invoice.paidDate && (
+              <ReceiptRow
+                label={t("finance.detail.due", { date: "" }).replace(": ", "")}
+                value={formatDate(invoice.paidDate)}
+              />
+            )}
+            {invoice.method && (
+              <ReceiptRow label={t("finance.columns.method")} value={invoice.method} />
+            )}
           </div>
         </div>
       )}

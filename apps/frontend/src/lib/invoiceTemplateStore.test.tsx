@@ -25,7 +25,7 @@ describe("invoiceTemplateStore facade", () => {
   beforeEach(() => {
     localStorage.clear();
     vi.spyOn(globalThis, "fetch").mockImplementation(() =>
-      Promise.resolve(new Response(JSON.stringify({ ok: true }), { status: 200 }))
+      Promise.resolve(new Response(JSON.stringify({ ok: true }), { status: 200 })),
     );
     vi.spyOn(console, "error").mockImplementation(() => {});
   });
@@ -90,7 +90,9 @@ describe("invoiceTemplateStore facade", () => {
     });
 
     expect(container.querySelector('[data-testid="page-size"]')?.textContent).toBe("A6");
-    expect(Number(container.querySelector('[data-testid="element-count"]')?.textContent)).toBeGreaterThan(0);
+    expect(
+      Number(container.querySelector('[data-testid="element-count"]')?.textContent),
+    ).toBeGreaterThan(0);
 
     root.unmount();
     container.remove();
@@ -156,7 +158,7 @@ describe("invoiceTemplateStore facade", () => {
     });
 
     expect(container.querySelector('[data-testid="preset-test"]')?.textContent).toBe(
-      firstPreset.template.pageSize
+      firstPreset.template.pageSize,
     );
 
     // Applying non-existent preset returns null

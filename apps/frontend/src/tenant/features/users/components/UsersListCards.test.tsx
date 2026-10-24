@@ -64,7 +64,7 @@ describe("UsersListCards", () => {
         onDelete={vi.fn()}
         onRestore={vi.fn()}
         onResetPassword={vi.fn()}
-      />
+      />,
     );
 
     expect(html).toContain("Admin User");
@@ -95,7 +95,7 @@ describe("UsersListCards", () => {
         onDelete={vi.fn()}
         onRestore={vi.fn()}
         onResetPassword={vi.fn()}
-      />
+      />,
     );
 
     expect(html).toContain("Teacher User");
@@ -120,7 +120,7 @@ describe("UsersListCards", () => {
         onDelete={vi.fn()}
         onRestore={vi.fn()}
         onResetPassword={vi.fn()}
-      />
+      />,
     );
 
     expect(html).not.toContain('role="checkbox"');
@@ -147,7 +147,7 @@ describe("UsersListCards", () => {
         onRestore={vi.fn()}
         onResetPassword={vi.fn()}
         isColumnVisible={(key) => key === "role"}
-      />
+      />,
     );
 
     expect(html).toContain("Admin User");
@@ -173,7 +173,7 @@ describe("UsersListCards", () => {
         onDelete={vi.fn()}
         onRestore={vi.fn()}
         onResetPassword={vi.fn()}
-      />
+      />,
     );
 
     expect(html).not.toContain("Admin User");

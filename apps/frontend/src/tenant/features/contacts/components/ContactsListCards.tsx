@@ -1,14 +1,10 @@
 import React, { useMemo } from "react";
-import {
-  CONTACT_CARD_FACE_COLUMN_IDS,
-  getVisibleWorkColumns,
-  type Contact,
-} from "@mms/shared";
+import { CONTACT_CARD_FACE_COLUMN_IDS, getVisibleWorkColumns, type Contact } from "@mms/shared";
 import { useContactConfig } from "@/lib/contexts/ContactConfigContext";
 import { buildContactsMap } from "@/lib/contacts/contactI18n";
 import { formatDirectoryPageCountLabel } from "@/lib/formatDirectoryPageCountLabel";
 import { useTranslation } from "@/hooks/useTranslation";
-import { EntityCardsGrid } from "@/components/ui/EntityCardsGrid";
+import { EntityCardsGrid } from "@/components/app/EntityCardsGrid";
 import type { ContactsColumnConfig } from "@/tenant/features/contacts/components/ContactTableRow";
 import { ContactCardItem } from "@/tenant/features/contacts/components/ContactCardItem";
 
@@ -82,12 +78,10 @@ export const ContactsListCards = React.memo(function ContactsListCards({
       const metaKeys = new Set(metaColumns.map((col) => col.key));
       return columns.filter((col) => metaKeys.has(col.id));
     }
-    return metaColumns.map(
-      (col): ContactsColumnConfig => ({
-        id: col.key,
-        label: col.label,
-      }),
-    );
+    return metaColumns.map((col): ContactsColumnConfig => ({
+      id: col.key,
+      label: col.label,
+    }));
   }, [columnRegistry, isColumnVisible, columns]);
 
   const pageCountLabel = formatDirectoryPageCountLabel(contacts.length, t, {
@@ -137,4 +131,3 @@ export const ContactsListCards = React.memo(function ContactsListCards({
 });
 
 export default ContactsListCards;
-

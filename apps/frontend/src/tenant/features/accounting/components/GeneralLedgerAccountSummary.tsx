@@ -1,7 +1,7 @@
 import React from "react";
 import type { AppTranslationKey } from "@mms/shared";
 import { Download } from "lucide-react";
-import { ACCOUNT_TYPE_META, type Account } from '@/lib/data/accountingData';
+import { ACCOUNT_TYPE_META, type Account } from "@/lib/data/accountingData";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Card } from "@/components/ui/card";
@@ -32,32 +32,55 @@ export function GeneralLedgerAccountSummary({
       <Card accentColor="primary" className="flex flex-wrap items-start gap-4 px-6 py-4.5">
         <div className="flex-1 min-w-0 ms-1">
           <div className="flex items-center gap-2 mb-1">
-            <span className="font-mono text-xs font-bold text-muted-foreground">{activeAccount.code}</span>
-            <Badge pill variant="outline" className={`px-2 font-bold ${ACCOUNT_TYPE_META[activeAccount.type]?.color}`}>
+            <span className="font-mono text-xs font-bold text-muted-foreground">
+              {activeAccount.code}
+            </span>
+            <Badge
+              pill
+              variant="outline"
+              className={`px-2 font-bold ${ACCOUNT_TYPE_META[activeAccount.type]?.color}`}
+            >
               {t(`accounting.type.${activeAccount.type}` as AppTranslationKey)}
             </Badge>
-            {activeAccount.subtype && <span className="text-xs text-muted-foreground">· {activeAccount.subtype}</span>}
+            {activeAccount.subtype && (
+              <span className="text-xs text-muted-foreground">· {activeAccount.subtype}</span>
+            )}
           </div>
           <h3 className="text-base font-bold text-foreground m-0">{activeAccount.name}</h3>
-          {activeAccount.description && <p className="text-xs text-muted-foreground mt-0.5 m-0">{activeAccount.description}</p>}
+          {activeAccount.description && (
+            <p className="text-xs text-muted-foreground mt-0.5 m-0">{activeAccount.description}</p>
+          )}
           <p className="text-xs text-muted-foreground mt-1 m-0">
-            {t("accounting.ledger.normalBalance", { direction: normalBalance === "debit" ? t("accounting.ledger.dr") : t("accounting.ledger.cr") })}
+            {t("accounting.ledger.normalBalance", {
+              direction:
+                normalBalance === "debit" ? t("accounting.ledger.dr") : t("accounting.ledger.cr"),
+            })}
           </p>
         </div>
         <div className="grid grid-cols-1 gap-4 text-start sm:grid-cols-3 sm:text-end">
           <div>
-            <p className="text-xs font-semibold text-muted-foreground uppercase m-0">{t("accounting.ledger.totalDebit")}</p>
+            <p className="text-xs font-semibold text-muted-foreground uppercase m-0">
+              {t("accounting.ledger.totalDebit")}
+            </p>
             <p className="font-mono font-bold text-info m-0">{formatCurrency(totalDebit)}</p>
           </div>
           <div>
-            <p className="text-xs font-semibold text-muted-foreground uppercase m-0">{t("accounting.ledger.totalCredit")}</p>
+            <p className="text-xs font-semibold text-muted-foreground uppercase m-0">
+              {t("accounting.ledger.totalCredit")}
+            </p>
             <p className="font-mono font-bold text-success m-0">{formatCurrency(totalCredit)}</p>
           </div>
           <div>
-            <p className="text-xs font-semibold text-muted-foreground uppercase m-0">{t("accounting.ledger.netBalance")}</p>
-            <p className={`font-mono font-bold m-0 ${balance >= 0 ? "text-foreground" : "text-destructive"}`}>
+            <p className="text-xs font-semibold text-muted-foreground uppercase m-0">
+              {t("accounting.ledger.netBalance")}
+            </p>
+            <p
+              className={`font-mono font-bold m-0 ${balance >= 0 ? "text-foreground" : "text-destructive"}`}
+            >
               {formatCurrency(Math.abs(balance))}
-              <span className="text-xs font-semibold ms-1">{balance >= 0 ? t("accounting.ledger.dr") : t("accounting.ledger.cr")}</span>
+              <span className="text-xs font-semibold ms-1">
+                {balance >= 0 ? t("accounting.ledger.dr") : t("accounting.ledger.cr")}
+              </span>
             </p>
           </div>
         </div>

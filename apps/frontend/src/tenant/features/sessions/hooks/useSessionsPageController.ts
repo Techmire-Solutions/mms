@@ -1,29 +1,38 @@
-import { useEffect } from 'react';
-import { useWorkDirectoryViewMode } from '@/hooks/useWorkDirectoryViewMode';
-import { usePersistedTabState } from '@/hooks/usePersistedTabState';
-import { useTranslation } from '@/hooks/useTranslation';
-import { useFilteredModuleTierTabs } from '@/tenant/hooks/useModuleTierTabs';
-import type { SessionSortField } from '@/tenant/features/sessions/components/sessionPageTypes';
-import type { Session } from '@/lib/data/sessionsData';
-import { useSessionsPaginated, useSessionMutations } from '@/tenant/features/sessions/hooks/useSessions';
-import { useSessionDisplayConfig } from '@/tenant/features/sessions/hooks/useSessionDisplayConfig';
-import { useSessionColumnLayout } from '@/tenant/features/sessions/hooks/useSessionColumnLayout';
-import { useSessionsDirectoryFilters } from '@/tenant/features/sessions/hooks/useSessionsDirectoryFilters';
-import { useSessionsKeyboardShortcuts } from '@/tenant/features/sessions/hooks/useSessionsKeyboardShortcuts';
-import { useSessionsDialogs } from '@/tenant/features/sessions/hooks/useSessionsDialogs';
-import { useSessionConfig } from '@/hooks/useStandardModuleConfig';
-import { useModulePermissions } from '@/tenant/hooks/usePermissions';
-import { SESSIONS_MODULE_MANIFEST, type SessionsListPageResult } from '@mms/shared';
-import { useSessionsPageCrudActions } from '@/tenant/features/sessions/hooks/useSessionsPageCrudActions';
+import { useEffect } from "react";
+import { useWorkDirectoryViewMode } from "@/hooks/useWorkDirectoryViewMode";
+import { usePersistedTabState } from "@/hooks/usePersistedTabState";
+import { useTranslation } from "@/hooks/useTranslation";
+import { useFilteredModuleTierTabs } from "@/tenant/hooks/useModuleTierTabs";
+import type { SessionSortField } from "@/tenant/features/sessions/lib/sessionPageTypes";
+import type { Session } from "@/lib/data/sessionsData";
+import {
+  useSessionsPaginated,
+  useSessionMutations,
+} from "@/tenant/features/sessions/hooks/useSessions";
+import { useSessionDisplayConfig } from "@/tenant/features/sessions/hooks/useSessionDisplayConfig";
+import { useSessionColumnLayout } from "@/tenant/features/sessions/hooks/useSessionColumnLayout";
+import { useSessionsDirectoryFilters } from "@/tenant/features/sessions/hooks/useSessionsDirectoryFilters";
+import { useSessionsKeyboardShortcuts } from "@/tenant/features/sessions/hooks/useSessionsKeyboardShortcuts";
+import { useSessionsDialogs } from "@/tenant/features/sessions/hooks/useSessionsDialogs";
+import { useSessionConfig } from "@/hooks/useStandardModuleConfig";
+import { useModulePermissions } from "@/tenant/hooks/usePermissions";
+import { SESSIONS_MODULE_MANIFEST, type SessionsListPageResult } from "@mms/shared";
+import { useSessionsPageCrudActions } from "@/tenant/features/sessions/hooks/useSessionsPageCrudActions";
 import {
   defaultSessionsExportColumns,
   useSessionsExportActions,
-} from '@/tenant/features/sessions/hooks/useSessionsExportActions';
-import { toggleFilterValue, useSessionsSelection } from '@/tenant/features/sessions/hooks/useSessionsSelection';
+} from "@/tenant/features/sessions/hooks/useSessionsExportActions";
+import { useWorkSelection } from "@/hooks/useWorkSelection";
+import { toggleFilterValue } from "@/tenant/features/sessions/hooks/sessionsPageControllerActions";
 
 export function useSessionsPageController() {
-  const { canWrite, canDelete, canExport, canReports: canViewReports, canViewSetup } =
-    useModulePermissions(SESSIONS_MODULE_MANIFEST);
+  const {
+    canWrite,
+    canDelete,
+    canExport,
+    canReports: canViewReports,
+    canViewSetup,
+  } = useModulePermissions(SESSIONS_MODULE_MANIFEST);
   const PAGE_TABS = useFilteredModuleTierTabs({
     canViewSetup,
     canViewReports,
@@ -40,32 +49,38 @@ export function useSessionsPageController() {
     bulkUpdateSessionStatus,
     logExportAudit,
   } = useSessionMutations();
-  const { statuses, types } = useSessionConfig();
+  const { types } = useSessionConfig();
   const { statusOptions, typeOptions, statusLabels, typeLabels, statusConfig, typeConfig } =
-    useSessionDisplayConfig({ statuses, types, t });
+    useSessionDisplayConfig({ types, t });
 
   const columnLayout = useSessionColumnLayout();
   const { viewMode, setViewMode } = useWorkDirectoryViewMode();
   const directory = useSessionsDirectoryFilters();
   const dialogs = useSessionsDialogs((id, reason) => crudActions.handleDelete(id, reason));
-  const [activeTab, setActiveTab] = usePersistedTabState<string>('sessions_active_tab', 'work');
+  const [activeTab, setActiveTab] = usePersistedTabState<string>("sessions_active_tab", "work");
 
-  const useServerWork = activeTab === 'work';
-  const { data: workPageData, isLoading: isWorkLoading, isFetching: isWorkFetching, isError: isErrorTsr, refetch } =
-    useSessionsPaginated({
-      page: directory.listPage,
-      limit: SESSIONS_MODULE_MANIFEST.defaultPageSize,
-      search: directory.debouncedSearch,
-      status: directory.filterStatus.length > 0 ? directory.filterStatus.join(',') : undefined,
-      type: directory.filterType.length > 0 ? directory.filterType.join(',') : undefined,
-      sortField: directory.sortField,
-      sortDir: directory.sortDir,
-      includeDeleted: directory.showDeleted,
-      enabled: useServerWork,
-    });
+  const useServerWork = activeTab === "work";
+  const {
+    data: workPageData,
+    isLoading: isWorkLoading,
+    isFetching: isWorkFetching,
+    isError: isErrorTsr,
+    refetch,
+  } = useSessionsPaginated({
+    page: directory.listPage,
+    limit: SESSIONS_MODULE_MANIFEST.defaultPageSize,
+    search: directory.debouncedSearch,
+    status: directory.filterStatus.length > 0 ? directory.filterStatus.join(",") : undefined,
+    type: directory.filterType.length > 0 ? directory.filterType.join(",") : undefined,
+    sortField: directory.sortField,
+    sortDir: directory.sortDir,
+    includeDeleted: directory.showDeleted,
+    enabled: useServerWork,
+  });
 
   const isError = isErrorTsr || (workPageData != null && workPageData.status !== 200);
-  const pageData = workPageData?.status === 200 ? (workPageData.body as SessionsListPageResult) : undefined;
+  const pageData =
+    workPageData?.status === 200 ? (workPageData.body as SessionsListPageResult) : undefined;
   const sessions = (pageData?.sessions ?? []) as Session[];
 
   const {
@@ -74,13 +89,21 @@ export function useSessionsPageController() {
     allVisibleSelected,
     someVisibleSelected,
     toggleSelectAll,
-    toggleSelectedSession,
+    toggleSelected,
     clearSelection,
-  } = useSessionsSelection(sessions);
+  } = useWorkSelection(sessions);
 
   useEffect(() => {
     setSelectedIds([]);
-  }, [directory.debouncedSearch, directory.filterStatus, directory.filterType, directory.showDeleted, directory.sortField, directory.sortDir, setSelectedIds]);
+  }, [
+    directory.debouncedSearch,
+    directory.filterStatus,
+    directory.filterType,
+    directory.showDeleted,
+    directory.sortField,
+    directory.sortDir,
+    setSelectedIds,
+  ]);
 
   useSessionsKeyboardShortcuts({
     selectedCount: selectedIds.length,
@@ -125,15 +148,18 @@ export function useSessionsPageController() {
 
   const handleSort = (nextSortField: SessionSortField) => {
     if (directory.sortField === nextSortField) {
-      directory.setSortDir((dir) => (dir === 'asc' ? 'desc' : 'asc'));
+      directory.setSortDir((dir) => (dir === "asc" ? "desc" : "asc"));
       return;
     }
     directory.setSortField(nextSortField);
-    directory.setSortDir('asc');
+    directory.setSortDir("asc");
   };
 
-  const toggleFilter = <T,>(selectedValues: T[], setSelectedValues: React.Dispatch<React.SetStateAction<T[]>>, nextValue: T) =>
-    toggleFilterValue(selectedValues, setSelectedValues, nextValue);
+  const toggleFilter = <T>(
+    selectedValues: T[],
+    setSelectedValues: React.Dispatch<React.SetStateAction<T[]>>,
+    nextValue: T,
+  ) => toggleFilterValue(selectedValues, setSelectedValues, nextValue);
 
   const canSelectSessions = canWrite || canDelete;
 
@@ -171,7 +197,7 @@ export function useSessionsPageController() {
     refetch,
     handleSort,
     toggleSelectAll,
-    toggleSelectedSession,
+    toggleSelected,
     clearSelection,
     ...crudActions,
     bulkStatusPending: bulkUpdateSessionStatus.isPending,

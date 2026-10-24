@@ -1,6 +1,6 @@
 import { DEFAULT_BRANDING_SETTINGS, mergeBrandingSettings } from "@mms/shared";
 import { getObject } from "@/lib/db";
-import type { BrandingInfo } from "./invoiceTemplateTypes.js";
+import type { BrandingInfo } from "./invoiceTemplateTypes";
 
 /**
  * Retrieves the institution's branding settings, falling back to defaults if not found.

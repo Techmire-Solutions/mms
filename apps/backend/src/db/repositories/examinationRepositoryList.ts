@@ -11,7 +11,7 @@ import {
   sql,
   type SQL,
   type AnyColumn,
-} from 'drizzle-orm';
+} from "drizzle-orm";
 import {
   dedupeTrimmedIds,
   isQueryFlagTrue,
@@ -20,11 +20,12 @@ import {
   type ExaminationsCommandMetricsSnapshot,
   type ExaminationsListQuery,
   type ExaminationsListPageResult,
-} from '@mms/shared';
-import { examResults, exams, examClasses } from '../schema.js';
-import { withTenantRead } from '../tenant-context.js';
-import { runListPage } from './listPageHelper.js';
-import { examRowToRecord } from './examinationRepository.js';
+} from "@mms/shared";
+import { examResults, exams, examClasses, subjects } from "../schema.js";
+import { withTenantRead } from "../tenant-context.js";
+import { runListPage } from "./listPageHelper.js";
+import { examRowToRecord } from "./examinationRepository.js";
+import { examSubjectSql } from "./academicCatalogNameSql.js";
 
 function buildExamsListConditions(subdomain: string, query: ExaminationsListQuery): SQL[] {
   const conditions: SQL[] = [eq(exams.workspaceSubdomain, subdomain)];
@@ -39,12 +40,7 @@ function buildExamsListConditions(subdomain: string, query: ExaminationsListQuer
   const search = query.search?.trim();
   if (search) {
     const pattern = toSqlSearchPattern(search);
-    conditions.push(
-      or(
-        ilike(exams.name, pattern),
-        ilike(exams.subject, pattern),
-      ) as SQL,
-    );
+    conditions.push(or(ilike(exams.name, pattern), ilike(examSubjectSql, pattern)) as SQL);
   }
 
   const statuses = dedupeTrimmedIds(query.status);
@@ -55,26 +51,26 @@ function buildExamsListConditions(subdomain: string, query: ExaminationsListQuer
   return conditions;
 }
 
-const EXAM_SORT_FIELDS = new Set(['name', 'subject', 'status', 'date', 'updatedAt']);
+const EXAM_SORT_FIELDS = new Set(["name", "subject", "status", "date", "updatedAt"]);
 
-function buildExamsOrderBy(sortField?: string, sortDir?: 'asc' | 'desc' | ''): SQL {
+function buildExamsOrderBy(sortField?: string, sortDir?: "asc" | "desc" | ""): SQL {
   const field = sortField?.trim();
-  let column: AnyColumn;
+  let column: AnyColumn | SQL;
   if (field && EXAM_SORT_FIELDS.has(field)) {
     switch (field) {
-      case 'updatedAt':
+      case "updatedAt":
         column = exams.updatedAt;
         break;
-      case 'name':
+      case "name":
         column = exams.name;
         break;
-      case 'subject':
-        column = exams.subject;
+      case "subject":
+        column = examSubjectSql;
         break;
-      case 'status':
+      case "status":
         column = exams.status;
         break;
-      case 'date':
+      case "date":
         column = exams.date;
         break;
       default:
@@ -83,7 +79,7 @@ function buildExamsOrderBy(sortField?: string, sortDir?: 'asc' | 'desc' | ''): S
   } else {
     column = exams.updatedAt;
   }
-  return sortDir === 'asc' ? asc(column) : desc(column);
+  return sortDir === "asc" ? asc(column) : desc(column);
 }
 
 type ExamRow = typeof exams.$inferSelect;
@@ -117,10 +113,7 @@ export async function listExamsPage(
         })
         .from(examClasses)
         .where(
-          and(
-            eq(examClasses.workspaceSubdomain, subdomain),
-            inArray(examClasses.examId, examIds),
-          ),
+          and(eq(examClasses.workspaceSubdomain, subdomain), inArray(examClasses.examId, examIds)),
         );
 
       const classMap = new Map<string, string[]>();
@@ -130,7 +123,24 @@ export async function listExamsPage(
         classMap.set(c.examId, list);
       }
 
-      examRecords = examRows.map((row) => examRowToRecord(row, classMap.get(row.id) ?? []));
+      const subjectIds = [
+        ...new Set(examRows.map((row) => row.subjectId).filter((id) => id !== null)),
+      ];
+      const subjectRows = subjectIds.length
+        ? await tx
+            .select({ id: subjects.id, name: subjects.name })
+            .from(subjects)
+            .where(
+              and(eq(subjects.workspaceSubdomain, subdomain), inArray(subjects.id, subjectIds)),
+            )
+        : [];
+      const subjectNames = new Map(subjectRows.map((row) => [row.id, row.name]));
+      examRecords = examRows.map((row) =>
+        examRowToRecord(
+          { ...row, subject: (row.subjectId && subjectNames.get(row.subjectId)) || "" },
+          classMap.get(row.id) ?? [],
+        ),
+      );
     }
 
     return {

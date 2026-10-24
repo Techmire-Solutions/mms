@@ -1,5 +1,5 @@
 import React from "react";
-import type { StatusBadgeConfigItem } from "@/components/ui/StatusBadge";
+import type { StatusBadgeConfigItem } from "@/components/app/StatusBadge";
 import type { WorkDirectoryViewMode } from "@/hooks/useWorkDirectoryViewMode";
 import { ACCOUNT_TYPES, type Account } from "@/lib/data/accountingData";
 import { useTranslation } from "@/hooks/useTranslation";

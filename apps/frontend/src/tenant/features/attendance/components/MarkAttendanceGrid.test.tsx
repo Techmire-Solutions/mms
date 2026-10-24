@@ -2,7 +2,7 @@ import React from "react";
 import { describe, expect, it, vi } from "vitest";
 import { renderToStaticMarkup } from "react-dom/server";
 import { MarkAttendanceGrid } from "./MarkAttendanceGrid";
-import type { AttendanceRow } from "./markAttendanceTypes";
+import type { AttendanceRow } from "../lib/markAttendanceTypes";
 import type { AttendanceStatus } from "@/lib/data/attendanceData";
 
 vi.mock("@/hooks/useTranslation", () => ({
@@ -12,7 +12,7 @@ vi.mock("@/hooks/useTranslation", () => ({
 }));
 
 vi.mock("./MarkAttendanceFieldControl", () => ({
-  MarkAttendanceFieldControl: ({ row, field }: { row: AttendanceRow; field: any }) => (
+  MarkAttendanceFieldControl: ({ row, field }: { row: AttendanceRow; field: { id: string } }) => (
     <div data-testid={`control-${field.id}`}>{row.name}</div>
   ),
 }));
@@ -28,7 +28,16 @@ const mockRow: AttendanceRow = {
 };
 
 const mockStatuses: AttendanceStatus[] = [
-  { id: "present", label: "Present", short: "P", color: "#10b981", bg: "bg-success", text: "text-success", border: "border-success", dot: "bg-success" },
+  {
+    id: "present",
+    label: "Present",
+    short: "P",
+    color: "#10b981",
+    bg: "bg-success",
+    text: "text-success",
+    border: "border-success",
+    dot: "bg-success",
+  },
 ];
 
 describe("MarkAttendanceGrid Component", () => {
@@ -36,7 +45,7 @@ describe("MarkAttendanceGrid Component", () => {
     const html = renderToStaticMarkup(
       <MarkAttendanceGrid
         rows={[mockRow]}
-        orderedFields={[{ id: "status", label: "Status", type: "select" } as any]}
+        orderedFields={[{ id: "status", label: "Status", type: "select" } as unknown as never]}
         statuses={mockStatuses}
         isFieldEnabled={() => true}
         onFieldChange={vi.fn()}
@@ -53,7 +62,7 @@ describe("MarkAttendanceGrid Component", () => {
     const html = renderToStaticMarkup(
       <MarkAttendanceGrid
         rows={[]}
-        orderedFields={[{ id: "status", label: "Status", type: "select" } as any]}
+        orderedFields={[{ id: "status", label: "Status", type: "select" } as unknown as never]}
         statuses={mockStatuses}
         isFieldEnabled={() => true}
         onFieldChange={vi.fn()}
@@ -67,7 +76,7 @@ describe("MarkAttendanceGrid Component", () => {
     const html = renderToStaticMarkup(
       <MarkAttendanceGrid
         rows={[mockRow]}
-        orderedFields={[{ id: "status", label: "Status", type: "select" } as any]}
+        orderedFields={[{ id: "status", label: "Status", type: "select" } as unknown as never]}
         statuses={mockStatuses}
         isFieldEnabled={() => true}
         onFieldChange={vi.fn()}
@@ -83,7 +92,7 @@ describe("MarkAttendanceGrid Component", () => {
     const html = renderToStaticMarkup(
       <MarkAttendanceGrid
         rows={[mockRow]}
-        orderedFields={[{ id: "status", label: "Status", type: "select" } as any]}
+        orderedFields={[{ id: "status", label: "Status", type: "select" } as unknown as never]}
         statuses={mockStatuses}
         isFieldEnabled={() => true}
         onFieldChange={vi.fn()}
@@ -95,4 +104,3 @@ describe("MarkAttendanceGrid Component", () => {
     expect(html).toContain("<table");
   });
 });
-

@@ -2,15 +2,15 @@ import React from "react";
 import type { UseFormReturn } from "react-hook-form";
 import type { FeeEntryInput } from "@mms/shared";
 import { FEE_ENTRY_PAYMENT_METHODS } from "@mms/shared";
-import { DatePicker } from "@/components/ui/DatePicker";
+import { DatePicker } from "@/components/app/DatePicker";
 import { FORM_INPUT } from "@/components/ui/formStyles";
-import { FormSelect } from "@/components/ui/FormSelect";
+import { FormSelect } from "@/components/app/FormSelect";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { FormControl, FormField, FormItem, FormLabel } from "@/components/ui/form";
 import { TranslatedFormMessage } from "@/lib/forms/TranslatedFormMessage";
 import { useTranslation } from "@/hooks/useTranslation";
-import { SpecializedEntryStudentPicker } from "@/tenant/features/accounting/components/SpecializedEntryStudentPicker";
+import { RegistryPersonSelect } from "@/tenant/components/selectors/RegistryPersonSelect";
 
 export function SpecializedEntryFeeFields({
   form,
@@ -26,15 +26,27 @@ export function SpecializedEntryFeeFields({
         name="studentId"
         render={({ field }) => (
           <FormItem>
-            <SpecializedEntryStudentPicker
-              studentId={field.value || ""}
-              onPick={(id, name) => {
-                field.onChange(id);
-                // `studentName` is the invoice directory's primary column — without
-                // it the generated invoice lists with a blank name.
-                form.setValue("studentName", name);
-              }}
-            />
+            <div className="sm:col-span-2 space-y-2">
+              <RegistryPersonSelect
+                kind="student"
+                id="specialized-entry-student-pick"
+                name="specializedEntryStudentPick"
+                label={t("accounting.journal.specializedEntry.fee.student")}
+                searchLabel={t("accounting.journal.specializedEntry.fee.student")}
+                searchPlaceholder={t("accounting.journal.specializedEntry.fee.studentSearch")}
+                value={field.value || ""}
+                onChange={(id, name) => {
+                  field.onChange(id);
+                  if (name) form.setValue("studentName", name);
+                }}
+                onPick={(id, name) => {
+                  field.onChange(id);
+                  // `studentName` is the invoice directory's primary column — without
+                  // it the generated invoice lists with a blank name.
+                  form.setValue("studentName", name);
+                }}
+              />
+            </div>
             <TranslatedFormMessage messageKey={form.formState.errors.studentId?.message} />
           </FormItem>
         )}

@@ -1,22 +1,21 @@
-import React from 'react';
-import { useTranslation } from '@/hooks/useTranslation';
-import { useWorkDirectoryViewMode } from '@/hooks/useWorkDirectoryViewMode';
-import { useGlobalSettings } from '@/tenant/hooks/useGlobalSettings';
-import { useWorkspaceRoles } from '@/tenant/hooks/useWorkspaceRoles';
-import { formatDate } from '@mms/shared';
-import { ModuleWorkListStateShell } from '@/components/ui/ModuleWorkListStateShell';
-import { UsersListContent } from '@/tenant/features/users/components/UsersListContent';
-import { UsersListFilters } from '@/tenant/features/users/components/UsersListFilters';
-import { UsersBulkActionBar } from '@/tenant/features/users/components/UsersBulkActionBar';
+import React from "react";
+import { useTranslation } from "@/hooks/useTranslation";
+import { useWorkDirectoryViewMode } from "@/hooks/useWorkDirectoryViewMode";
+import { useGlobalSettings } from "@/tenant/hooks/useGlobalSettings";
+import { useWorkspaceRoles } from "@/tenant/hooks/useWorkspaceRoles";
+import { formatDate } from "@mms/shared";
+import { ModuleWorkListStateShell } from "@/components/app/ModuleWorkListStateShell";
+import { UsersListContent } from "@/tenant/features/users/components/UsersListContent";
+import { UsersListFilters } from "@/tenant/features/users/components/UsersListFilters";
+import { UsersBulkActionBar } from "@/tenant/features/users/components/UsersBulkActionBar";
 import {
   getDirectoryPageSelection,
   toggleIdInSelection,
   togglePageIdsInSelection,
-} from '@/lib/directorySelection';
+} from "@/lib/directorySelection";
 
-import type { UsersListProps } from '@/tenant/features/users/components/usersListTypes';
+import type { UsersListProps } from "@/tenant/features/users/hooks/usersListTypes";
 export type { UsersListProps };
-
 
 export function UsersList({
   users,
@@ -39,7 +38,7 @@ export function UsersList({
   onBulkRestore,
   onResetPassword,
   onAddUser,
-  onInviteUser,
+  onInviteUser: _onInviteUser,
   onMessage,
   canWrite = true,
   canDelete = true,
@@ -67,11 +66,10 @@ export function UsersList({
 
   const toggleSelect = (id: string): void =>
     onSelectedIdsChange(toggleIdInSelection(selectedIds, id));
-  const toggleAll = (): void =>
-    onSelectedIdsChange(togglePageIdsInSelection(selectedIds, pageIds));
+  const toggleAll = (): void => onSelectedIdsChange(togglePageIdsInSelection(selectedIds, pageIds));
 
   const fmtDate = (ts: string): string => {
-    if (!ts) return t('users.never');
+    if (!ts) return t("users.never");
     return formatDate(ts, globalSettings.dateFormat, false);
   };
 
@@ -125,8 +123,8 @@ export function UsersList({
         isLoading={isLoading}
         isFetching={isFetching}
         onRetry={() => onRetry?.()}
-        errorTitle={t('users.loadFailed')}
-        errorHint={t('users.loadFailedHint')}
+        errorTitle={t("users.loadFailed")}
+        errorHint={t("users.loadFailedHint")}
         viewMode={viewMode}
         skeletonColumnCount={columnRegistry?.length ?? 6}
         useServerWork
@@ -134,7 +132,7 @@ export function UsersList({
         onPageChange={onPageChange}
         i18nNamespace="users"
         showPagination={users.length > 0}
-        loadingLabel={t('common.loading')}
+        loadingLabel={t("common.loading")}
       >
         <UsersListContent
           viewMode={viewMode}

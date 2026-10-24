@@ -1,5 +1,5 @@
 import React from "react";
-import { Field, FormSelectWithQuickCreate } from "@/components/ui/FormPrimitives";
+import { Field, FormSelectWithQuickCreate } from "@/components/app/FormPrimitives";
 import { useTranslation } from "@/hooks/useTranslation";
 import type { Mujtahid, ObligationType } from "@/lib/data/obligationsData";
 
@@ -34,7 +34,12 @@ export function WakalaStep1MujtahidType({
 
   return (
     <div className="space-y-4 animate-in fade-in-50 duration-200">
-      <Field id="wakala-mujtahid" label={t("obligations.form.mujtahidLabel")} required error={errors.mujtahid}>
+      <Field
+        id="wakala-mujtahid"
+        label={t("obligations.form.mujtahidLabel")}
+        required
+        error={errors.mujtahid}
+      >
         <FormSelectWithQuickCreate
           id="wakala-mujtahid"
           name="mujtahid_id"
@@ -48,7 +53,12 @@ export function WakalaStep1MujtahidType({
         />
       </Field>
 
-      <Field id="wakala-type" label={t("obligations.wakala.obTypeLabel")} required error={errors.obType}>
+      <Field
+        id="wakala-type"
+        label={t("obligations.wakala.obTypeLabel")}
+        required
+        error={errors.obType}
+      >
         <FormSelectWithQuickCreate
           id="wakala-type"
           name="obligation_type_id"

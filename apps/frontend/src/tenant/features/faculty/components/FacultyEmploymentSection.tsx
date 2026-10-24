@@ -1,15 +1,16 @@
 import type React from "react";
 import { Briefcase } from "lucide-react";
-import { DatePicker } from "@/components/ui/DatePicker";
-import { Field } from "@/components/ui/FormPrimitives";
-import { FormSelect } from "@/components/ui/FormSelect";
-import { SectionCard } from "@/components/ui/SectionCard";
+import { DatePicker } from "@/components/app/DatePicker";
+import { Field } from "@/components/app/FormPrimitives";
+import { FormSelect } from "@/components/app/FormSelect";
+import { SectionCard } from "@/components/app/SectionCard";
 import { useTranslation } from "@/hooks/useTranslation";
 import {
   resolveFacultyStatus,
   type Contact,
   type FieldDefinition,
   type FacultyMember,
+  type FacultyContractType,
 } from "@mms/shared";
 import { resolveFacultyFieldLabel } from "@/tenant/features/faculty/components/FacultyFormSectionShared";
 import { FacultyEmploymentEmployeeIdField } from "@/tenant/features/faculty/components/FacultyEmploymentEmployeeIdField";
@@ -43,7 +44,9 @@ export interface FacultyEmploymentSectionProps extends FacultySectionBaseProps {
 /**
  * Employment card: Employee Code, lifecycle status, employment start/end dates.
  */
-export function FacultyEmploymentSection(props: FacultyEmploymentSectionProps): React.JSX.Element | null {
+export function FacultyEmploymentSection(
+  props: FacultyEmploymentSectionProps,
+): React.JSX.Element | null {
   const {
     autoGenerateId,
     errors,
@@ -74,7 +77,11 @@ export function FacultyEmploymentSection(props: FacultyEmploymentSectionProps): 
 
   return (
     <div className="space-y-4 text-start">
-      <SectionCard title={t("faculty.form.sectionEmployment")} icon={Briefcase} accentColor="primary">
+      <SectionCard
+        title={t("faculty.form.sectionEmployment")}
+        icon={Briefcase}
+        accentColor="primary"
+      >
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4 items-start">
           {showEmployeeId && (
             <FacultyEmploymentEmployeeIdField
@@ -94,7 +101,12 @@ export function FacultyEmploymentSection(props: FacultyEmploymentSectionProps): 
           )}
 
           {showStatus && (
-            <Field label={lbl("status")} id="status" required={isFieldRequired("status")} error={errors.status}>
+            <Field
+              label={lbl("status")}
+              id="status"
+              required={isFieldRequired("status")}
+              error={errors.status}
+            >
               <FormSelect
                 id="status"
                 name="status"
@@ -104,6 +116,26 @@ export function FacultyEmploymentSection(props: FacultyEmploymentSectionProps): 
               />
             </Field>
           )}
+
+          <Field label={t("faculty.contract.type")} id="faculty-employment-contract-type">
+            <FormSelect
+              id="faculty-employment-contract-type"
+              name="employmentContractType"
+              value={facultyDraft.employmentContractType ?? ""}
+              onChange={(val) =>
+                onDraftChange({
+                  employmentContractType: (val || null) as FacultyContractType | null,
+                })
+              }
+              options={[
+                { value: "", label: t("common.notSpecified") },
+                { value: "salaried", label: t("faculty.contract.salaried") },
+                { value: "wazifa", label: t("faculty.contract.wazifa") },
+                { value: "hourly", label: t("faculty.contract.hourly") },
+                { value: "voluntary", label: t("faculty.contract.voluntary") },
+              ]}
+            />
+          </Field>
 
           {showStartDate && (
             <Field

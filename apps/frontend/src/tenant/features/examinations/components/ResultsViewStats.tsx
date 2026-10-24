@@ -1,7 +1,7 @@
 import React from "react";
 import { Card } from "@/components/ui/card";
 import type { TranslationFunction } from "@/lib/contexts/TranslationContext";
-import type { ResultsViewStatsData } from "@/tenant/features/examinations/components/resultsViewTypes";
+import type { ResultsViewStatsData } from "@/tenant/features/examinations/lib/resultsViewTypes";
 
 export interface ResultsViewStatsProps {
   stats: ResultsViewStatsData;
@@ -10,7 +10,11 @@ export interface ResultsViewStatsProps {
 
 export function ResultsViewStats({ stats, t }: ResultsViewStatsProps): React.JSX.Element {
   return (
-    <div className="grid grid-cols-2 sm:grid-cols-4 gap-3" role="status" aria-label={t("examinations.resultsStats")}>
+    <div
+      className="grid grid-cols-2 sm:grid-cols-4 gap-3"
+      role="status"
+      aria-label={t("examinations.resultsStats")}
+    >
       {[
         { label: t("examinations.stats.students"), value: stats.total },
         { label: t("examinations.stats.classAvg"), value: `${stats.average}%` },

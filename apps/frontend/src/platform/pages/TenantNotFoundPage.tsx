@@ -4,13 +4,8 @@ import { isValidSubdomain } from "@mms/shared";
 import { getAppDomain } from "@/lib/config/tenantConfig";
 import { useTranslation } from "@/hooks/useTranslation";
 import EntryPageHead, { formatEntryTitle } from "@/components/entry/EntryPageHead";
-import {
-  AuthCardShell,
-  AuthFormHeading,
-  AuthMutedPanel,
-  AuthPageFrame,
-} from "@/components/entry";
-import { PlatformLogoMark } from "@/platform/components/PlatformPageShell";
+import { AuthCardShell, AuthFormHeading, AuthMutedPanel, AuthPageFrame } from "@/components/entry";
+import { PlatformLogoMark } from "@shared/ui";
 
 /**
  * Platform apex "Tenant Not Found" page.

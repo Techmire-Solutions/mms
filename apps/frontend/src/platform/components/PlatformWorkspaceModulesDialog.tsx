@@ -1,14 +1,17 @@
-import React, { useEffect, useState } from 'react';
-import type { PlatformWorkspaceRow as PlatformWorkspaceRowData } from '@mms/shared';
-import { SYSTEM_MODULES } from '@mms/shared';
-import { useTranslation } from '@/hooks/useTranslation';
-import { FormModal } from '@/components/ui/FormModal';
-import { CardSkeleton } from '@/components/ui/LoadingState';
-import { PlatformModuleSelectCard } from '@/platform/components/workspace/PlatformModuleSelectCard';
-import { PlatformModulePresetsBar } from '@/platform/components/workspace/PlatformModulePresetsBar';
-import { useUpdateWorkspaceModules, useWorkspaceModules } from '@/platform/hooks/usePlatformWorkspaces';
-import { resolveModuleIcon } from '@/lib/config/moduleIcons';
-import { LayoutDashboard, AlertTriangle } from 'lucide-react';
+import React, { useEffect, useState } from "react";
+import type { PlatformWorkspaceRow as PlatformWorkspaceRowData } from "@mms/shared";
+import { SYSTEM_MODULES } from "@mms/shared";
+import { useTranslation } from "@/hooks/useTranslation";
+import { FormModal } from "@/components/app/FormModal";
+import { CardSkeleton } from "@shared/ui";
+import { PlatformModuleSelectCard } from "@/platform/components/workspace/PlatformModuleSelectCard";
+import { PlatformModulePresetsBar } from "@/platform/components/workspace/PlatformModulePresetsBar";
+import {
+  useUpdateWorkspaceModules,
+  useWorkspaceModules,
+} from "@/platform/hooks/usePlatformWorkspaces";
+import { resolveModuleIcon } from "@/lib/config/moduleIcons";
+import { LayoutDashboard, AlertTriangle } from "lucide-react";
 
 interface PlatformWorkspaceModulesDialogProps {
   workspace: PlatformWorkspaceRowData;
@@ -63,7 +66,7 @@ export function PlatformWorkspaceModulesDialog({
   const categories = (() => {
     const map = new Map<string, typeof SYSTEM_MODULES>();
     for (const mod of SYSTEM_MODULES) {
-      const cat = mod.category || 'core';
+      const cat = mod.category || "core";
       if (!map.has(cat)) map.set(cat, []);
       map.get(cat)!.push(mod);
     }
@@ -81,12 +84,12 @@ export function PlatformWorkspaceModulesDialog({
     <FormModal
       open={open}
       onClose={() => onOpenChange(false)}
-      title={t('platform.modulesTitle')}
+      title={t("platform.modulesTitle")}
       subtitle={`${workspace.madrasaName} (${workspace.subdomain})`}
       icon={LayoutDashboard}
       size="xl"
-      cancelLabel={t('common.cancel')}
-      saveLabel={t('common.save')}
+      cancelLabel={t("common.cancel")}
+      saveLabel={t("common.save")}
       onSave={handleSave}
       saving={isPending}
       saveDisabled={isPending || isLoading}
@@ -113,13 +116,13 @@ export function PlatformWorkspaceModulesDialog({
             <AlertTriangle className="w-4 h-4 text-warning shrink-0 mt-0.5" aria-hidden />
             <div className="space-y-0.5 min-w-0 flex-1">
               <p className="font-bold text-foreground">
-                {t('platform.modulesDisabledWarningTitle')}
+                {t("platform.modulesDisabledWarningTitle")}
               </p>
               <p className="text-3xs text-muted-foreground leading-relaxed">
-                {t('platform.modulesDisabledWarningBody', {
+                {t("platform.modulesDisabledWarningBody", {
                   modules: disabledActiveModules
                     .map((id) => SYSTEM_MODULES.find((m) => m.id === id)?.label || id)
-                    .join(', '),
+                    .join(", "),
                 })}
               </p>
             </div>

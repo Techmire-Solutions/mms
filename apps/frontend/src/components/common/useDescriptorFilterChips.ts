@@ -4,8 +4,8 @@
  */
 
 import { useMemo } from "react";
-import type { EntityDescriptor, FieldDefinition } from "@/types/entityRegistry";
-import type { FilterChip } from "@/components/ui/FilterChips";
+import type { EntityDescriptor, FieldDefinition } from "@/components/common/entityRegistryTypes";
+import type { FilterChip } from "@/components/app/FilterChips";
 
 /**
  * Derives a stable `FilterChip[]` array from an SSOT entity descriptor and
@@ -69,8 +69,5 @@ function chipLabel<T>(field: FieldDefinition<T>, stringValue: string): string {
 /** Fields eligible for chip generation. */
 function isFilterableField<T>(field: FieldDefinition<T>): boolean {
   if (field.filterable !== undefined) return field.filterable;
-  return (
-    (field.type === "badge" || field.type === "status") &&
-    field.badgeVariantMap !== undefined
-  );
+  return (field.type === "badge" || field.type === "status") && field.badgeVariantMap !== undefined;
 }

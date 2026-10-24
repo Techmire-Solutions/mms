@@ -4,8 +4,13 @@ import { renderToStaticMarkup } from "react-dom/server";
 import { Users } from "lucide-react";
 import { ContactsPageView } from "./ContactsPageView";
 
-vi.mock("@/components/ui/ModulePageShell", () => ({
-  ModulePageShell: ({ headerTitle, children, headerActions, metricsStrip }: {
+vi.mock("@/components/app/ModulePageShell", () => ({
+  ModulePageShell: ({
+    headerTitle,
+    children,
+    headerActions,
+    metricsStrip,
+  }: {
     headerTitle: string;
     children: React.ReactNode;
     headerActions?: React.ReactNode;
@@ -20,7 +25,7 @@ vi.mock("@/components/ui/ModulePageShell", () => ({
   ),
 }));
 
-vi.mock("@/components/ui/ResponsiveAccordionTabs", () => ({
+vi.mock("@/components/app/ResponsiveAccordionTabs", () => ({
   ResponsiveAccordionTabs: ({ children }: { children: React.ReactNode }) => (
     <div data-testid="accordion-tabs">{children}</div>
   ),
@@ -74,9 +79,7 @@ vi.mock("@/tenant/features/contacts/components/ContactsPageHeaderActions", () =>
 
 const baseProps: React.ComponentProps<typeof ContactsPageView> = {
   t: ((key: string) => key) as never,
-  visibleTopTabs: [
-    { id: "work", label: "Contacts", description: "Directory", icon: Users },
-  ],
+  visibleTopTabs: [{ id: "work", label: "Contacts", description: "Directory", icon: Users }],
   effectiveTab: "work",
   setActiveTab: vi.fn(),
   canExport: true,
@@ -88,6 +91,7 @@ const baseProps: React.ComponentProps<typeof ContactsPageView> = {
   handleOpenDuplicates: vi.fn(),
   handleExportCSV: vi.fn(),
   handleOpenImport: vi.fn(),
+  handleOpenCsvImport: vi.fn(),
   handleNew: vi.fn(),
   shownCount: 10,
   pendingCount: 0,

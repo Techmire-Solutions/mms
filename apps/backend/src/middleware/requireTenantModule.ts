@@ -1,4 +1,4 @@
-import type { FastifyInstance, FastifyReply, FastifyRequest } from 'fastify';
+import type { FastifyInstance, FastifyReply, FastifyRequest } from "fastify";
 import {
   evaluateModuleAccess,
   resolveAccessModuleId,
@@ -9,15 +9,15 @@ import {
   type ModuleAccessDeniedBody,
   type ModuleAction,
   type User,
-} from '@mms/shared';
-import { getRequestTenant } from '../lib/tenantContext.js';
-import { loadModuleAvailability } from '../lib/moduleAvailabilityService.js';
-import { resolveCurrentTenantRole } from '../lib/currentTenantRole.js';
-import { resolveModuleRouteAction } from '../lib/moduleRouteActions.js';
-import { markRequestDiagnosticStage } from '../lib/requestDiagnostics.js';
-import { logger } from '../lib/logger.js';
+} from "@mms/shared";
+import { getRequestTenant } from "../lib/tenantContext.js";
+import { loadModuleAvailability } from "../lib/moduleAvailabilityService.js";
+import { resolveCurrentTenantRole } from "../lib/currentTenantRole.js";
+import { resolveModuleRouteAction } from "../lib/moduleRouteActions.js";
+import { markRequestDiagnosticStage } from "../lib/requestDiagnostics.js";
+import { logger } from "../lib/logger.js";
 
-declare module 'fastify' {
+declare module "fastify" {
   interface FastifyContextConfig {
     /** Stamped by `registerModuleAccess`; read by `moduleAccessGuard` and the coverage test. */
     moduleAccess?: { moduleId: AccessControlledModuleId; action: ModuleAction };
@@ -29,8 +29,8 @@ declare module 'fastify' {
 const DENIAL_MESSAGES: Record<ModuleAccessDenialCode, (moduleId: string) => string> = {
   MODULE_NOT_GRANTED: (id) => `The ${id} module is not permitted by the platform.`,
   MODULE_DISABLED: (id) => `The ${id} module is disabled for this workspace.`,
-  PERMISSION_DENIED: () => 'Insufficient permissions',
-  MODULE_ACCESS_UNAVAILABLE: () => 'Failed to verify module access',
+  PERMISSION_DENIED: () => "Insufficient permissions",
+  MODULE_ACCESS_UNAVAILABLE: () => "Failed to verify module access",
 };
 
 export function sendModuleAccessDenied(
@@ -39,7 +39,7 @@ export function sendModuleAccessDenied(
   moduleId: string,
 ): FastifyReply {
   const body: ModuleAccessDeniedBody = {
-    type: 'forbidden',
+    type: "forbidden",
     code,
     moduleId,
     message: DENIAL_MESSAGES[code](moduleId),
@@ -58,13 +58,15 @@ export async function checkModuleAccess(
 ): Promise<ModuleAccessDecision> {
   const tenant = request.tenant?.id ?? getRequestTenant();
   const user = request.user as User | undefined;
-  if (!tenant || !user?.role) return { allowed: false, code: 'MODULE_ACCESS_UNAVAILABLE' };
+  if (!tenant || !user?.role) return { allowed: false, code: "MODULE_ACCESS_UNAVAILABLE" };
   if (user.workspaceSubdomain && user.workspaceSubdomain.toLowerCase() !== tenant.toLowerCase()) {
-    return { allowed: false, code: 'MODULE_ACCESS_UNAVAILABLE' };
+    return { allowed: false, code: "MODULE_ACCESS_UNAVAILABLE" };
   }
   try {
     const availability = await loadModuleAvailability(tenant);
-    const role = user.id ? await resolveCurrentTenantRole(tenant, String(user.id), user.role) : user.role;
+    const role = user.id
+      ? await resolveCurrentTenantRole(tenant, String(user.id), user.role)
+      : user.role;
     return evaluateModuleAccess({
       moduleId,
       availability,
@@ -72,8 +74,8 @@ export async function checkModuleAccess(
       can: (permission) => role !== null && roleHasPermission(role, permission),
     });
   } catch (err) {
-    logger.error({ err, moduleId, tenant }, 'Failed to load module availability; denying request');
-    return { allowed: false, code: 'MODULE_ACCESS_UNAVAILABLE' };
+    logger.error({ err, moduleId, tenant }, "Failed to load module availability; denying request");
+    return { allowed: false, code: "MODULE_ACCESS_UNAVAILABLE" };
   }
 }
 
@@ -86,7 +88,12 @@ export async function getModuleAccessDenial(
   const decision = await checkModuleAccess(request, moduleId, action);
   if (decision.allowed) return null;
   const id = resolveAccessModuleId(moduleId) ?? moduleId;
-  return { type: 'forbidden', code: decision.code, moduleId: id, message: DENIAL_MESSAGES[decision.code](id) };
+  return {
+    type: "forbidden",
+    code: decision.code,
+    moduleId: id,
+    message: DENIAL_MESSAGES[decision.code](id),
+  };
 }
 
 /**
@@ -99,7 +106,7 @@ export async function pickReadableModuleSections<T extends object>(
 ): Promise<Partial<T>> {
   const entries = Object.entries(sections) as [keyof T & string, T[keyof T & string]][];
   const decisions = await Promise.all(
-    entries.map(([moduleId]) => checkModuleAccess(request, moduleId, 'read')),
+    entries.map(([moduleId]) => checkModuleAccess(request, moduleId, "read")),
   );
   const visible: Partial<T> = {};
   entries.forEach(([key, value], i) => {
@@ -121,11 +128,14 @@ export async function enforceModuleAccess(
   return false;
 }
 
-export async function moduleAccessGuard(request: FastifyRequest, reply: FastifyReply): Promise<void> {
-  markRequestDiagnosticStage(request, 'module_access');
+export async function moduleAccessGuard(
+  request: FastifyRequest,
+  reply: FastifyReply,
+): Promise<void> {
+  markRequestDiagnosticStage(request, "module_access");
   const access = request.routeOptions.config.moduleAccess;
   if (!access) {
-    await sendModuleAccessDenied(reply, 'MODULE_ACCESS_UNAVAILABLE', 'unknown');
+    await sendModuleAccessDenied(reply, "MODULE_ACCESS_UNAVAILABLE", "unknown");
     return;
   }
   await enforceModuleAccess(request, reply, access.moduleId, access.action);
@@ -140,7 +150,7 @@ export async function moduleAccessGuard(request: FastifyRequest, reply: FastifyR
 export function registerModuleAccess(fastify: FastifyInstance, moduleId: string): void {
   const canonical = resolveAccessModuleId(moduleId);
   if (!canonical) throw new Error(`registerModuleAccess: unknown module "${moduleId}"`);
-  fastify.addHook('onRoute', (route) => {
+  fastify.addHook("onRoute", (route) => {
     const config = route.config ?? {};
     route.config = {
       ...config,
@@ -150,5 +160,5 @@ export function registerModuleAccess(fastify: FastifyInstance, moduleId: string)
       },
     };
   });
-  fastify.addHook('preHandler', moduleAccessGuard);
+  fastify.addHook("preHandler", moduleAccessGuard);
 }

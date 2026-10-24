@@ -7,11 +7,11 @@ paths:
   - "apps/frontend/src/platform/components/reports/**"
   - "apps/frontend/src/tenant/features/dashboard*/**"
   - "apps/frontend/src/platform/**/*Report*"
-  - "apps/frontend/src/components/ui/ExportToolbar.tsx"
-  - "apps/frontend/src/components/ui/ExportToolbarCompact.tsx"
-  - "apps/frontend/src/components/ui/exportToolbarUtils.ts"
-  - "apps/frontend/src/components/ui/SafeResponsiveContainer.tsx"
-  - "packages/shared/src/*Report*.ts"
+  - "apps/frontend/src/components/app/ExportToolbar.tsx"
+  - "apps/frontend/src/components/app/ExportToolbarCompact.tsx"
+  - "apps/frontend/src/components/app/exportToolbarUtils.ts"
+  - "apps/frontend/src/components/app/SafeResponsiveContainer.tsx"
+  - "packages/shared/src/**/*Report*.ts"
 ---
 
 # MMS Reports & Analytics
@@ -57,6 +57,3 @@ paths:
 - **Cryptographic Provenance:** Compliance exports (`POST /api/audit/export`) embed canonical JSON hash chains, Merkle roots, and verification signatures in output metadata.
 - **Audit Data Tracking:** Access to audit trail records (viewing, searching, exporting) emits an immutable audit event (`action_type: 'VIEW'`).
 
-## 10. Workflow & Output Speed Rules
-- **Zero Output Bloat:** Output surgical diffs or targeted snippets only. Never rewrite entire files unless creating a new file from scratch. Omit conversational filler.
-- **Verification Gates:** Verify with `pnpm typecheck` and scoped tests before marking tasks done. If standards are modified, execute `bash .agent/scripts/sync-all.sh` and verify with `node scripts/verify-rules-integrity.mjs`.

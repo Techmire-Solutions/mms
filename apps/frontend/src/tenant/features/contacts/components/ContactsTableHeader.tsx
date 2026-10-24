@@ -1,6 +1,6 @@
 import React from "react";
-import { ModuleWorkTableHeader } from "@/components/ui/ModuleWorkTableHeader";
-import type { ContactsColumnConfig } from "@/tenant/features/contacts/components/contactTableTypes";
+import { ModuleWorkTableHeader } from "@/components/app/ModuleWorkTableHeader";
+import type { ContactsColumnConfig } from "@/tenant/features/contacts/lib/contactTableTypes";
 import type { useTranslation } from "@/hooks/useTranslation";
 
 type Translate = ReturnType<typeof useTranslation>["t"];

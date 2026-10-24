@@ -1,10 +1,10 @@
-import { and, eq, or } from 'drizzle-orm';
-import type { StoredPlatformUser } from '@mms/shared';
-import { withTenant } from '../../db/tenant-context.js';
-import { tenantUsers } from '../../db/schema.js';
-import { findPlatformUserRowByRole } from '../../db/repositories/platformUserRepository.js';
-import { listWorkspaceRows } from '../../db/repositories/workspaceRepository.js';
-import { insertPlatformActivityLog } from '../../db/repositories/platformActivityLogsRepository.js';
+import { and, eq, or } from "drizzle-orm";
+import type { StoredPlatformUser } from "@mms/shared";
+import { withTenant } from "../../db/tenant-context.js";
+import { tenantUsers } from "../../db/schema.js";
+import { findPlatformUserRowByRole } from "../../db/repositories/platformUserRepository.js";
+import { listWorkspaceRows } from "../../db/repositories/workspaceRepository.js";
+import { insertPlatformActivityLog } from "../../db/repositories/platformActivityLogsRepository.js";
 
 /**
  * SECURITY NOTE: syncing the platform super-user into every tenant replicates the
@@ -21,7 +21,7 @@ import { insertPlatformActivityLog } from '../../db/repositories/platformActivit
  * account can authenticate into every workspace.
  */
 function isSuperUserTenantSyncEnabled(): boolean {
-  return process.env.PLATFORM_SYNC_SUPERUSER_TO_TENANTS !== 'false';
+  return process.env.PLATFORM_SYNC_SUPERUSER_TO_TENANTS !== "false";
 }
 
 /**
@@ -29,7 +29,7 @@ function isSuperUserTenantSyncEnabled(): boolean {
  */
 export async function findActivePlatformSuperUser(): Promise<StoredPlatformUser | null> {
   try {
-    return await findPlatformUserRowByRole('super_user');
+    return await findPlatformUserRowByRole("super_user");
   } catch {
     return null;
   }
@@ -49,9 +49,7 @@ export async function syncPlatformSuperUserToTenant(
   if (!subdomain) return false;
 
   const superUser =
-    explicitSuperUser !== undefined
-      ? explicitSuperUser
-      : await findActivePlatformSuperUser();
+    explicitSuperUser !== undefined ? explicitSuperUser : await findActivePlatformSuperUser();
 
   if (!superUser) return false;
 
@@ -70,10 +68,7 @@ export async function syncPlatformSuperUserToTenant(
       .where(
         and(
           eq(tenantUsers.workspaceSubdomain, subdomain),
-          or(
-            eq(tenantUsers.loginEmail, normalizedEmail),
-            eq(tenantUsers.id, superUserId),
-          ),
+          or(eq(tenantUsers.loginEmail, normalizedEmail), eq(tenantUsers.id, superUserId)),
         ),
       );
 
@@ -86,21 +81,16 @@ export async function syncPlatformSuperUserToTenant(
           loginEmail: normalizedEmail,
           name: superUser.name || existing.name,
           passwordHash: superUser.passwordHash || existing.passwordHash,
-          role: 'super_admin',
+          role: "super_admin",
           emailVerifiedAt: superUser.emailVerifiedAt
             ? new Date(superUser.emailVerifiedAt)
-            : existing.emailVerifiedAt ?? new Date(),
+            : (existing.emailVerifiedAt ?? new Date()),
           mustChangePassword: false,
           deletedAt: null,
           deletedBy: null,
           updatedAt: new Date(),
         })
-        .where(
-          and(
-            eq(tenantUsers.workspaceSubdomain, subdomain),
-            eq(tenantUsers.id, existing.id),
-          ),
-        );
+        .where(and(eq(tenantUsers.workspaceSubdomain, subdomain), eq(tenantUsers.id, existing.id)));
       return true;
     }
 
@@ -110,16 +100,14 @@ export async function syncPlatformSuperUserToTenant(
       loginEmail: normalizedEmail,
       name: superUser.name,
       passwordHash: superUser.passwordHash,
-      role: 'super_admin',
-      emailVerifiedAt: superUser.emailVerifiedAt
-        ? new Date(superUser.emailVerifiedAt)
-        : new Date(),
+      role: "super_admin",
+      emailVerifiedAt: superUser.emailVerifiedAt ? new Date(superUser.emailVerifiedAt) : new Date(),
       mustChangePassword: false,
       createdAt: new Date(),
       updatedAt: new Date(),
       deletedAt: null,
       deletedBy: null,
-      profileJson: { status: 'active' },
+      profileJson: { status: "active" },
     });
 
     return true;
@@ -129,10 +117,10 @@ export async function syncPlatformSuperUserToTenant(
     await insertPlatformActivityLog({
       userId: superUser.id,
       userEmail: superUser.email,
-      action: 'sync_super_user_to_tenant',
-      targetResource: 'workspace',
+      action: "sync_super_user_to_tenant",
+      targetResource: "workspace",
       targetId: subdomain,
-      metadataMessage: 'Mirrored platform super_user into tenant_users as super_admin',
+      metadataMessage: "Mirrored platform super_user into tenant_users as super_admin",
     });
   }
 
@@ -146,9 +134,7 @@ export async function syncPlatformSuperUserToTenants(
   explicitSuperUser?: StoredPlatformUser | null,
 ): Promise<number> {
   const superUser =
-    explicitSuperUser !== undefined
-      ? explicitSuperUser
-      : await findActivePlatformSuperUser();
+    explicitSuperUser !== undefined ? explicitSuperUser : await findActivePlatformSuperUser();
 
   if (!superUser) return 0;
 

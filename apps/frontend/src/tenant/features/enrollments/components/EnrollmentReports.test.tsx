@@ -24,7 +24,7 @@ vi.mock("@/lib/contexts/BrandingPaletteContext", () => ({
   }),
 }));
 
-vi.mock("@/components/ui/SafeResponsiveContainer", () => {
+vi.mock("@/components/app/SafeResponsiveContainer", () => {
   const MockContainer = ({ children }: { children: React.ReactNode }) => <div>{children}</div>;
   return {
     SafeResponsiveContainer: MockContainer,
@@ -34,7 +34,7 @@ vi.mock("@/components/ui/SafeResponsiveContainer", () => {
 
 import { EnrollmentReportsCharts } from "./EnrollmentReportsCharts";
 
-vi.mock("@/components/ui/ModuleCommandMetricsGrid", () => ({
+vi.mock("@/components/app/ModuleCommandMetricsGrid", () => ({
   ModuleCommandMetricsGrid: ({ items }: { items: { label: string }[] }) => (
     <div data-testid="metrics-grid">{items.map((i) => i.label).join(", ")}</div>
   ),
@@ -50,7 +50,7 @@ describe("EnrollmentReports Component", () => {
       <EnrollmentReports aggregates={EMPTY_ENROLLMENTS_REPORT_AGGREGATES} />,
     );
 
-    expect(html).toContain("enrollments.metrics.total");
+    expect(html).toContain("enrollments.reports.noData");
     expect(html).toContain("enrollments.reports.revenueBySession");
   });
 

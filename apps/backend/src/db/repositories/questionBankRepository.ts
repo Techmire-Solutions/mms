@@ -8,7 +8,7 @@ export {
   replaceQuestionsForWorkspace,
   bulkSoftDeleteQuestions,
   bulkRestoreQuestions,
-} from './questionBankQuestionsRepository.js';
+} from "./questionBankQuestionsRepository.js";
 
 export {
   testRowToRecord,
@@ -18,7 +18,7 @@ export {
   saveTest,
   bulkSaveTests,
   replaceTestsForWorkspace,
-} from './questionBankTestsRepository.js';
+} from "./questionBankTestsRepository.js";
 
 export {
   resultRowToRecord,
@@ -29,4 +29,4 @@ export {
   bulkSaveResults,
   replaceResultsForWorkspace,
   deleteQuestionBankByWorkspace,
-} from './questionBankResultsRepository.js';
+} from "./questionBankResultsRepository.js";

@@ -1,24 +1,21 @@
-import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { Building2, Sparkles, CheckCircle2, ArrowRight } from 'lucide-react';
-import {
-  type BrandingSettings,
-  mergeBrandingSettings,
-} from '@mms/shared';
+import React, { useState } from "react";
+import { useNavigate } from "react-router-dom";
+import { Building2, Sparkles, CheckCircle2, ArrowRight } from "lucide-react";
+import { type BrandingSettings, mergeBrandingSettings } from "@mms/shared";
 
-import { useTranslation } from '@/hooks/useTranslation';
-import { useBranding } from '@/tenant/hooks/useBranding';
-import { saveBrandingSettings } from '@/lib/db';
-import { ROUTES } from '@/lib/config/routes';
-import { notify } from '@/lib/notify';
-import { Button } from '@/components/ui/button';
-import BrandingIdentityPreview from '@/components/branding/BrandingIdentityPreview';
-import EntryPageHead, { formatEntryTitle } from '@/components/entry/EntryPageHead';
-import { useMarkInstitutionSetupComplete } from '@/tenant/hooks/useInstitutionSetupStatus';
+import { useTranslation } from "@/hooks/useTranslation";
+import { useBranding } from "@/tenant/hooks/useBranding";
+import { saveBrandingSettings } from "@/lib/db";
+import { ROUTES } from "@/lib/config/routes";
+import { notify } from "@/lib/notify";
+import { Button } from "@/components/ui/button";
+import BrandingIdentityPreview from "@/components/branding/BrandingIdentityPreview";
+import EntryPageHead, { formatEntryTitle } from "@/components/entry/EntryPageHead";
+import { useMarkInstitutionSetupComplete } from "@/tenant/hooks/useInstitutionSetupStatus";
 import {
   InstitutionSetupFormSections,
   type InstitutionSetupFieldErrors,
-} from '@/tenant/pages/setup/InstitutionSetupFormSections';
+} from "@/tenant/pages/setup/InstitutionSetupFormSections";
 
 export default function InstitutionSetup(): React.JSX.Element {
   const { t } = useTranslation();
@@ -26,9 +23,7 @@ export default function InstitutionSetup(): React.JSX.Element {
   const currentBranding = useBranding();
   const markInstitutionSetupComplete = useMarkInstitutionSetupComplete();
 
-  const [data, setData] = useState<BrandingSettings>(() =>
-    mergeBrandingSettings(currentBranding),
-  );
+  const [data, setData] = useState<BrandingSettings>(() => mergeBrandingSettings(currentBranding));
   const [errors, setErrors] = useState<InstitutionSetupFieldErrors>({});
   const [saving, setSaving] = useState(false);
 
@@ -44,7 +39,7 @@ export default function InstitutionSetup(): React.JSX.Element {
 
   const validate = (): boolean => {
     const nextErrors: InstitutionSetupFieldErrors = {};
-    const reqKey = t('institutionSetup.fieldRequired');
+    const reqKey = t("institutionSetup.fieldRequired");
 
     if (!data.madrasaName.trim()) nextErrors.madrasaName = reqKey;
     if (!data.tagline.trim()) nextErrors.tagline = reqKey;
@@ -62,8 +57,8 @@ export default function InstitutionSetup(): React.JSX.Element {
   const handleSubmit = async (event: React.FormEvent<HTMLFormElement>): Promise<void> => {
     event.preventDefault();
     if (!validate()) {
-      notify.error(t('common.formPleaseFixErrors'), {
-        description: t('institutionSetup.fieldRequired'),
+      notify.error(t("common.formPleaseFixErrors"), {
+        description: t("institutionSetup.fieldRequired"),
       });
       return;
     }
@@ -73,33 +68,25 @@ export default function InstitutionSetup(): React.JSX.Element {
       const merged = mergeBrandingSettings(data);
       const res = await saveBrandingSettings(merged);
       if (!res.ok) {
-        throw new Error('Failed to persist institution settings');
+        throw new Error("Failed to persist institution settings");
       }
       markInstitutionSetupComplete();
-      notify.success(t('institutionSetup.success'), {
-        description: t('branding.savedToastDesc'),
+      notify.success(t("institutionSetup.success"), {
+        description: t("branding.savedToastDesc"),
       });
       navigate(ROUTES.home, { replace: true });
     } catch (err: unknown) {
-      notify.error(
-        err instanceof Error ? err.message : t('branding.imageErrorUpload'),
-      );
+      notify.error(err instanceof Error ? err.message : t("branding.imageErrorUpload"));
     } finally {
       setSaving(false);
     }
   };
 
-  const pageTitle = formatEntryTitle(
-    t('institutionSetup.title'),
-    t('entry.productName'),
-  );
+  const pageTitle = formatEntryTitle(t("institutionSetup.title"), t("entry.productName"));
 
   return (
     <>
-      <EntryPageHead
-        title={pageTitle}
-        description={t('institutionSetup.subtitle')}
-      />
+      <EntryPageHead title={pageTitle} description={t("institutionSetup.subtitle")} />
 
       <main className="min-h-screen bg-muted/20 py-8 px-4 sm:px-6 lg:px-8">
         <div className="w-full max-w-none space-y-6">
@@ -112,15 +99,15 @@ export default function InstitutionSetup(): React.JSX.Element {
               <div className="space-y-1">
                 <div className="flex items-center gap-2">
                   <h1 className="text-xl font-bold tracking-tight text-foreground sm:text-2xl">
-                    {t('institutionSetup.title')}
+                    {t("institutionSetup.title")}
                   </h1>
                   <span className="inline-flex items-center gap-1 rounded-full bg-primary/15 px-2.5 py-0.5 text-xs font-semibold text-primary">
                     <Sparkles className="h-3 w-3" />
-                    {t('common.required')}
+                    {t("common.required")}
                   </span>
                 </div>
                 <p className="text-sm leading-relaxed text-muted-foreground">
-                  {t('institutionSetup.subtitle')}
+                  {t("institutionSetup.subtitle")}
                 </p>
               </div>
             </div>
@@ -130,7 +117,11 @@ export default function InstitutionSetup(): React.JSX.Element {
             <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
               {/* Form inputs (2 cols) */}
               <div className="lg:col-span-2">
-                <InstitutionSetupFormSections data={data} errors={errors} updateField={updateField} />
+                <InstitutionSetupFormSections
+                  data={data}
+                  errors={errors}
+                  updateField={updateField}
+                />
               </div>
 
               {/* Sidebar Preview (1 col) */}
@@ -138,17 +129,15 @@ export default function InstitutionSetup(): React.JSX.Element {
                 <div className="sticky top-6 space-y-4">
                   <div className="space-y-1">
                     <h2 className="text-sm font-semibold text-foreground">
-                      {t('branding.previewTitle')}
+                      {t("branding.previewTitle")}
                     </h2>
-                    <p className="text-xs text-muted-foreground">
-                      {t('branding.previewSubtitle')}
-                    </p>
+                    <p className="text-xs text-muted-foreground">{t("branding.previewSubtitle")}</p>
                   </div>
                   <BrandingIdentityPreview data={data} />
 
                   <div className="rounded-xl border border-border bg-card p-4 shadow-sm space-y-3">
                     <h3 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-                      {t('common.actions')}
+                      {t("common.actions")}
                     </h3>
                     <Button
                       type="submit"
@@ -156,11 +145,11 @@ export default function InstitutionSetup(): React.JSX.Element {
                       className="w-full min-h-11 rounded-xl text-sm font-semibold shadow-sm"
                     >
                       {saving ? (
-                        t('institutionSetup.saving')
+                        t("institutionSetup.saving")
                       ) : (
                         <span className="inline-flex items-center gap-2">
                           <CheckCircle2 className="h-4 w-4" />
-                          {t('institutionSetup.submit')}
+                          {t("institutionSetup.submit")}
                           <ArrowRight className="h-4 w-4" />
                         </span>
                       )}

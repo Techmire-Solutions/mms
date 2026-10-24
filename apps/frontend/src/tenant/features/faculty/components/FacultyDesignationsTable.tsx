@@ -1,16 +1,16 @@
-import React, { useMemo } from 'react';
-import { Award, Pencil, Trash2 } from 'lucide-react';
-import type { FacultyDesignationDefinition } from '@mms/shared';
-import { EmptyState } from '@/components/ui/EmptyState';
-import { StatusBadge, type StatusBadgeConfigItem } from '@/components/ui/StatusBadge';
-import { SEMANTIC_BADGE } from '@/lib/semanticTone';
+import React, { useMemo } from "react";
+import { Award, Pencil, RotateCcw, Trash2 } from "lucide-react";
+import type { FacultyDesignationDefinition } from "@mms/shared";
+import { EmptyState } from "@/components/app/EmptyState";
+import { StatusBadge, type StatusBadgeConfigItem } from "@/components/app/StatusBadge";
+import { SEMANTIC_BADGE } from "@/lib/ui/semanticTone";
 import {
   DataTable,
   DataTableRowActions,
   type DataTableColumn,
   type DataTableFilter,
-} from '@/components/common/data-table';
-import { useTranslation } from '@/hooks/useTranslation';
+} from "@/components/common/data-table";
+import { useTranslation } from "@/hooks/useTranslation";
 
 export interface FacultyDesignationsTableProps {
   designations: FacultyDesignationDefinition[];
@@ -20,6 +20,7 @@ export interface FacultyDesignationsTableProps {
   canWrite?: boolean;
   onEdit: (designation: FacultyDesignationDefinition) => void;
   onDelete: (designation: FacultyDesignationDefinition) => void;
+  onRestore?: (designation: FacultyDesignationDefinition) => void;
   primaryAction?: React.ReactNode;
 }
 
@@ -34,61 +35,85 @@ export function FacultyDesignationsTable({
   canWrite = true,
   onEdit,
   onDelete,
+  onRestore,
   primaryAction,
 }: FacultyDesignationsTableProps): React.JSX.Element {
   const { t } = useTranslation();
   const statusLabel = (d: FacultyDesignationDefinition) => t(`faculty.status.${d.status}`);
   const statusConfig: Record<string, StatusBadgeConfigItem> = {
-    active: { label: t('faculty.status.active'), cls: SEMANTIC_BADGE.success },
-    inactive: { label: t('faculty.status.inactive'), cls: SEMANTIC_BADGE.muted },
+    active: { label: t("faculty.status.active"), cls: SEMANTIC_BADGE.success },
+    inactive: { label: t("faculty.status.inactive"), cls: SEMANTIC_BADGE.muted },
   };
 
   const columns: DataTableColumn<FacultyDesignationDefinition>[] = [
     {
-      id: 'name',
-      label: t('faculty.designations.name'),
+      id: "name",
+      label: t("faculty.designations.name"),
       fixed: true,
       render: (d) => (
-        <span className="font-medium" style={{ paddingInlineStart: `${Math.max(0, (d.hierarchyRank ?? 1) - 1) * 0.75}rem` }}>
+        <span
+          className="font-medium"
+          style={{ paddingInlineStart: `${Math.max(0, (d.hierarchyRank ?? 1) - 1) * 0.75}rem` }}
+        >
           {d.name}
         </span>
       ),
     },
     {
-      id: 'department',
-      label: t('faculty.designations.department'),
-      searchValue: (d) => d.departmentName ?? '',
-      render: (d) => <span className="text-xs text-muted-foreground">{d.departmentName ?? <Dash />}</span>,
+      id: "department",
+      label: t("faculty.designations.department"),
+      searchValue: (d) => d.departmentName ?? "",
+      render: (d) => (
+        <span className="text-xs text-muted-foreground">{d.departmentName ?? <Dash />}</span>
+      ),
     },
     {
-      id: 'parent',
-      label: t('faculty.designations.parentDesignation'),
-      searchValue: (d) => d.parentDesignationName ?? '',
-      render: (d) => <span className="text-xs text-muted-foreground">{d.parentDesignationName ?? <Dash />}</span>,
+      id: "parent",
+      label: t("faculty.designations.parentDesignation"),
+      searchValue: (d) => d.parentDesignationName ?? "",
+      render: (d) => (
+        <span className="text-xs text-muted-foreground">{d.parentDesignationName ?? <Dash />}</span>
+      ),
     },
     {
-      id: 'status',
-      label: t('common.status'),
+      id: "status",
+      label: t("common.status"),
       width: 120,
-      searchValue: statusLabel,
-      render: (d) => <StatusBadge status={d.status} config={statusConfig} size="sm" />,
+      searchValue: (d) => (d.deletedAt ? t("faculty.detail.archivedSubtitle") : statusLabel(d)),
+      render: (d) =>
+        d.deletedAt ? (
+          <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-destructive/10 text-destructive">
+            {t("faculty.detail.archivedSubtitle")}
+          </span>
+        ) : (
+          <StatusBadge status={d.status} config={statusConfig} size="sm" />
+        ),
     },
   ];
 
   const departmentOptions = useMemo(() => {
     const seen = new Map<string, string>();
-    for (const d of designations) if (d.departmentId && !seen.has(d.departmentId)) seen.set(d.departmentId, d.departmentName ?? d.departmentId);
-    return [...seen].map(([value, label]) => ({ value, label })).sort((a, b) => a.label.localeCompare(b.label));
+    for (const d of designations)
+      if (d.departmentId && !seen.has(d.departmentId))
+        seen.set(d.departmentId, d.departmentName ?? d.departmentId);
+    return [...seen]
+      .map(([value, label]) => ({ value, label }))
+      .sort((a, b) => a.label.localeCompare(b.label));
   }, [designations]);
 
   const filters: DataTableFilter<FacultyDesignationDefinition>[] = [
-    { id: 'department', label: t('faculty.designations.department'), options: departmentOptions, getValue: (d) => d.departmentId },
     {
-      id: 'status',
-      label: t('common.status'),
+      id: "department",
+      label: t("faculty.designations.department"),
+      options: departmentOptions,
+      getValue: (d) => d.departmentId,
+    },
+    {
+      id: "status",
+      label: t("common.status"),
       options: [
-        { value: 'active', label: t('faculty.status.active') },
-        { value: 'inactive', label: t('faculty.status.inactive') },
+        { value: "active", label: t("faculty.status.active") },
+        { value: "inactive", label: t("faculty.status.inactive") },
       ],
       getValue: (d) => d.status,
     },
@@ -97,51 +122,80 @@ export function FacultyDesignationsTable({
   return (
     <DataTable
       tableId="faculty.designations"
-      label={t('faculty.tabs.designations')}
+      label={t("faculty.tabs.designations")}
       data={designations}
       columns={columns}
       filters={filters}
       isLoading={isLoading}
-      searchPlaceholder={t('faculty.designations.searchPlaceholder')}
+      searchPlaceholder={t("faculty.designations.searchPlaceholder")}
       primaryAction={primaryAction}
-      card={{ title: (d) => d.name, badge: (d) => <StatusBadge status={d.status} config={statusConfig} size="sm" /> }}
+      card={{
+        title: (d) => d.name,
+        badge: (d) =>
+          d.deletedAt ? (
+            <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-destructive/10 text-destructive">
+              {t("faculty.detail.archivedSubtitle")}
+            </span>
+          ) : (
+            <StatusBadge status={d.status} config={statusConfig} size="sm" />
+          ),
+      }}
       rowClassName={(d) =>
         d.id === editingDesignationId
-          ? 'bg-primary/10 ring-1 ring-inset ring-primary/40'
-          : d.status === 'active'
-            ? undefined
-            : 'opacity-70'
+          ? "bg-primary/10 ring-1 ring-inset ring-primary/40"
+          : d.deletedAt
+            ? "opacity-60 bg-muted/30"
+            : d.status === "active"
+              ? undefined
+              : "opacity-70"
       }
       renderRowActions={
         canWrite
-          ? (d) => (
-              <DataTableRowActions
-                actions={[
-                  {
-                    id: 'edit',
-                    label: `${t('common.edit')} ${d.name}`,
-                    icon: Pencil,
-                    onClick: () => onEdit(d),
-                    disabled: isPending,
-                  },
-                  {
-                    id: 'delete',
-                    label: `${t('common.delete')} ${d.name}`,
-                    icon: Trash2,
-                    tone: 'destructive',
-                    onClick: () => onDelete(d),
-                    disabled: isPending,
-                  },
-                ]}
-              />
-            )
+          ? (d) => {
+              if (d.deletedAt) {
+                return onRestore ? (
+                  <DataTableRowActions
+                    actions={[
+                      {
+                        id: "restore",
+                        label: `${t("common.restore")} ${d.name}`,
+                        icon: RotateCcw,
+                        onClick: () => onRestore(d),
+                        disabled: isPending,
+                      },
+                    ]}
+                  />
+                ) : undefined;
+              }
+              return (
+                <DataTableRowActions
+                  actions={[
+                    {
+                      id: "edit",
+                      label: `${t("common.edit")} ${d.name}`,
+                      icon: Pencil,
+                      onClick: () => onEdit(d),
+                      disabled: isPending,
+                    },
+                    {
+                      id: "delete",
+                      label: `${t("common.delete")} ${d.name}`,
+                      icon: Trash2,
+                      tone: "destructive",
+                      onClick: () => onDelete(d),
+                      disabled: isPending,
+                    },
+                  ]}
+                />
+              );
+            }
           : undefined
       }
       emptyState={
         <EmptyState
           icon={Award}
-          title={t('faculty.designations.emptyCatalog')}
-          description={t('faculty.designations.setupHint')}
+          title={t("faculty.designations.emptyCatalog")}
+          description={t("faculty.designations.setupHint")}
           compact
           variant="dashed"
         />

@@ -1,14 +1,14 @@
 import { Download } from "lucide-react";
 import type { AppTranslationKey } from "@mms/shared";
 import { Button } from "@/components/ui/button";
-import { FilterChips } from "@/components/ui/FilterChips";
-import { type ModuleColumnCustomizerProps } from "@/components/ui/ModuleColumnCustomizer";
+import { FilterChips } from "@/components/app/FilterChips";
+import { type ModuleColumnCustomizerProps } from "@/components/app/ModuleColumnCustomizer";
 import { WorkTaskToolbar } from "@/components/common/work";
 import type { WorkDirectoryViewMode } from "@/hooks/useWorkDirectoryViewMode";
-import { SubTabBar } from "@/components/ui/SubTabBar";
+import { SubTabBar } from "@/components/app/SubTabBar";
 import { useTranslation } from "@/hooks/useTranslation";
 import { AccountingFiltersMenuButton } from "@/tenant/features/accounting/components/AccountingFiltersMenuButton";
-import { getJournalTagLabel } from "@/tenant/features/accounting/components/journalEntriesListShared";
+import { getJournalTagLabel } from "@/tenant/features/accounting/lib/journalEntriesListShared";
 
 export const ACCOUNTING_WORK_SEARCH_INPUT_ID = "accounting-work-search";
 
@@ -46,7 +46,7 @@ export function JournalEntriesListFilters({
   statusFilter,
   tagFilter,
   showFilters,
-  canWrite,
+  canWrite: _canWrite,
   canDelete = false,
   showDeleted,
   onToggleDeleted,
@@ -56,31 +56,40 @@ export function JournalEntriesListFilters({
   onStatusFilterChange,
   onTagFilterChange,
   onShowFiltersChange,
-  onOpenNew,
+  onOpenNew: _onOpenNew,
   onExportCsv,
 }: JournalEntriesListFiltersProps) {
   const { t } = useTranslation();
   const activeFilterCount = (statusFilter !== "all" ? 1 : 0) + (tagFilter !== "all" ? 1 : 0);
   const chips = [
     ...(statusFilter !== "all"
-      ? [{
-          key: `status:${statusFilter}`,
-          label: t(`accounting.journal.status.${statusFilter}` as AppTranslationKey),
-          onRemove: () => onStatusFilterChange("all"),
-        }]
+      ? [
+          {
+            key: `status:${statusFilter}`,
+            label: t(`accounting.journal.status.${statusFilter}` as AppTranslationKey),
+            onRemove: () => onStatusFilterChange("all"),
+          },
+        ]
       : []),
     ...(tagFilter !== "all"
-      ? [{
-          key: `tag:${tagFilter}`,
-          label: getJournalTagLabel(tagFilter, t),
-          onRemove: () => onTagFilterChange("all"),
-        }]
+      ? [
+          {
+            key: `tag:${tagFilter}`,
+            label: getJournalTagLabel(tagFilter, t),
+            onRemove: () => onTagFilterChange("all"),
+          },
+        ]
       : []),
   ];
 
   return (
     <>
-      <SubTabBar tabs={modeTabs} value={mode} onChange={onModeChange} panelIdPrefix="journal-mode-advanced" />
+      <SubTabBar
+        tabs={modeTabs}
+        value={mode}
+        onChange={onModeChange}
+        panelIdPrefix="journal-mode-advanced"
+      />
       <WorkTaskToolbar
         regionLabel={t("nav.accounting")}
         search={search}
@@ -122,17 +131,24 @@ export function JournalEntriesListFilters({
           viewMode,
           onViewModeChange,
         }}
-        columnCustomizer={columnCustomizer ? {
-          registry: columnCustomizer.columnRegistry,
-          onUpdate: columnCustomizer.updateUserColumnLayout,
-          onReset: columnCustomizer.onResetLayout,
-          labels: columnCustomizer.labels,
-        } : undefined}
+        columnCustomizer={
+          columnCustomizer
+            ? {
+                registry: columnCustomizer.columnRegistry,
+                onUpdate: columnCustomizer.updateUserColumnLayout,
+                onReset: columnCustomizer.onResetLayout,
+                labels: columnCustomizer.labels,
+              }
+            : undefined
+        }
         filterChips={
-          <FilterChips chips={chips} onClearAll={() => {
-            onStatusFilterChange("all");
-            onTagFilterChange("all");
-          }} />
+          <FilterChips
+            chips={chips}
+            onClearAll={() => {
+              onStatusFilterChange("all");
+              onTagFilterChange("all");
+            }}
+          />
         }
       >
         <Button
@@ -146,14 +162,17 @@ export function JournalEntriesListFilters({
         >
           {t("accounting.journal.dashboard.dateRange")}
         </Button>
-        {!showDeleted ? <Button
-          type="button"
-          variant="outline"
-          onClick={onExportCsv}
-          className="flex min-h-11 items-center gap-1.5 rounded-xl text-sm font-semibold text-muted-foreground"
-        >
-          <Download className="w-3.5 h-3.5" aria-hidden="true" /> {t("accounting.journal.exportCurrentPage")}
-        </Button> : null}
+        {!showDeleted ? (
+          <Button
+            type="button"
+            variant="outline"
+            onClick={onExportCsv}
+            className="flex min-h-11 items-center gap-1.5 rounded-xl text-sm font-semibold text-muted-foreground"
+          >
+            <Download className="w-3.5 h-3.5" aria-hidden="true" />{" "}
+            {t("accounting.journal.exportCurrentPage")}
+          </Button>
+        ) : null}
       </WorkTaskToolbar>
     </>
   );

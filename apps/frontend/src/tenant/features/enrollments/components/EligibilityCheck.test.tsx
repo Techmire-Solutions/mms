@@ -13,9 +13,7 @@ vi.mock("@/hooks/useTranslation", () => ({
 }));
 
 vi.mock("@/tenant/hooks/collections/sessions", () => ({
-  useSessionsCollection: () => [
-    { id: "ses-1", name: "Spring 2025" },
-  ],
+  useSessionsCollection: () => [{ id: "ses-1", name: "Spring 2025" }],
 }));
 
 vi.mock("@/tenant/hooks/collections/students", () => ({
@@ -30,7 +28,7 @@ vi.mock("@/tenant/components/selectors/RegistryPersonSelect", () => ({
   ),
 }));
 
-vi.mock("@/components/ui/FormSelect", () => ({
+vi.mock("@/components/app/FormSelect", () => ({
   FormSelect: ({ placeholder }: { placeholder?: string }) => (
     <div data-testid="form-select">{placeholder}</div>
   ),

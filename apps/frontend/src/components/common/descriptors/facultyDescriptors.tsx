@@ -1,6 +1,10 @@
 import type { Faculty } from "@mms/shared";
 import { FACULTY_DIRECTORY_COLUMN_SURFACES, facultyFieldLabelKey } from "@mms/shared";
-import type { EntityDescriptor, FieldDefinition, FieldValueType } from "@/types/entityRegistry";
+import type {
+  EntityDescriptor,
+  FieldDefinition,
+  FieldValueType,
+} from "@/components/common/entityRegistryTypes";
 import { createEntityDescriptor } from "../entityDescriptorFactory";
 
 const SURFACE_FIELD_TYPE: Record<string, FieldValueType> = {
@@ -28,11 +32,11 @@ const directoryFields: FieldDefinition<Faculty>[] = FACULTY_DIRECTORY_COLUMN_SUR
     type: SURFACE_FIELD_TYPE[surface.key] ?? "text",
     sortable: surface.sortable,
     filterable:
-      surface.key === "status"
-      || surface.key === "specialization"
-      || surface.key === "department"
-      || surface.key === "designation"
-      || surface.key === "reportingFacultyName",
+      surface.key === "status" ||
+      surface.key === "specialization" ||
+      surface.key === "department" ||
+      surface.key === "designation" ||
+      surface.key === "reportingFacultyName",
     defaultVisibleInTable: surface.work,
     tableOrder: (index + 1) * 10,
     fixed: surface.fixed || undefined,

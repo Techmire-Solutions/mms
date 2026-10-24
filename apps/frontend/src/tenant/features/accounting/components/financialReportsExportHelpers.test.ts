@@ -4,7 +4,7 @@ import {
   buildFinancialReportExportRows,
   getFinancialReportExportColumns,
   type TrialBalanceRow,
-} from "./financialReportsExportHelpers";
+} from "../lib/financialReportsExportHelpers";
 
 describe("financialReportsExportHelpers", () => {
   const t = ((key: string) => key) as unknown as (key: AppTranslationKey) => string;
@@ -145,10 +145,16 @@ describe("financialReportsExportHelpers", () => {
     });
 
     expect(rows.some((r) => r.account === "Tuition Fees" && r.amount === "$5000.00")).toBe(true);
-    expect(rows.some((r) => r.account === "accounting.reports.totalRevenue" && r.amount === "$5000.00")).toBe(true);
+    expect(
+      rows.some((r) => r.account === "accounting.reports.totalRevenue" && r.amount === "$5000.00"),
+    ).toBe(true);
     expect(rows.some((r) => r.account === "Salaries" && r.amount === "$3000.00")).toBe(true);
-    expect(rows.some((r) => r.account === "accounting.reports.totalExpenses" && r.amount === "$3000.00")).toBe(true);
-    expect(rows.some((r) => r.account === "accounting.reports.netSurplus" && r.amount === "$2000.00")).toBe(true);
+    expect(
+      rows.some((r) => r.account === "accounting.reports.totalExpenses" && r.amount === "$3000.00"),
+    ).toBe(true);
+    expect(
+      rows.some((r) => r.account === "accounting.reports.netSurplus" && r.amount === "$2000.00"),
+    ).toBe(true);
   });
 
   it("builds export rows for balance sheet from the cumulative as-of rows", () => {
@@ -163,12 +169,24 @@ describe("financialReportsExportHelpers", () => {
     // … and the range-based Income Statement accounts must not leak into it.
     expect(rows.some((r) => r.account === "Tuition Fees")).toBe(false);
     expect(rows.some((r) => r.account === "Salaries")).toBe(false);
-    expect(rows.some((r) => r.account === "accounting.reports.totalAssets" && r.amount === "$50000.00")).toBe(true);
-    expect(rows.some((r) => r.account === "Accounts Payable" && r.amount === "$2000.00")).toBe(true);
-    expect(rows.some((r) => r.account === "accounting.reports.totalLiabilities" && r.amount === "$2000.00")).toBe(true);
-    expect(rows.some((r) => r.account === "Retained Earnings" && r.amount === "$6000.00")).toBe(true);
+    expect(
+      rows.some((r) => r.account === "accounting.reports.totalAssets" && r.amount === "$50000.00"),
+    ).toBe(true);
+    expect(rows.some((r) => r.account === "Accounts Payable" && r.amount === "$2000.00")).toBe(
+      true,
+    );
+    expect(
+      rows.some(
+        (r) => r.account === "accounting.reports.totalLiabilities" && r.amount === "$2000.00",
+      ),
+    ).toBe(true);
+    expect(rows.some((r) => r.account === "Retained Earnings" && r.amount === "$6000.00")).toBe(
+      true,
+    );
     expect(rows.some((r) => r.account === "Share Capital" && r.amount === "$3000.00")).toBe(true);
-    expect(rows.some((r) => r.account === "accounting.reports.totalEquity" && r.amount === "$9000.00")).toBe(true);
+    expect(
+      rows.some((r) => r.account === "accounting.reports.totalEquity" && r.amount === "$9000.00"),
+    ).toBe(true);
   });
 
   it("keeps the range rows as the income statement source", () => {
@@ -193,15 +211,50 @@ describe("financialReportsExportHelpers", () => {
       cashOutflow: 3100,
     });
 
-    expect(rows.some((r) => r.account === "accounting.reports.cashflow.netSurplusOrDeficit" && r.amount === "$2000.00")).toBe(true);
-    expect(rows.some((r) => r.account === "accounting.reports.cashflow.depreciation" && r.amount === "$100.00")).toBe(true);
-    expect(rows.some((r) => r.account === "accounting.reports.cashflow.receivables" && r.amount === "$-500.00")).toBe(true);
-    expect(rows.some((r) => r.account === "accounting.reports.cashflow.payables" && r.amount === "$300.00")).toBe(true);
+    expect(
+      rows.some(
+        (r) =>
+          r.account === "accounting.reports.cashflow.netSurplusOrDeficit" &&
+          r.amount === "$2000.00",
+      ),
+    ).toBe(true);
+    expect(
+      rows.some(
+        (r) => r.account === "accounting.reports.cashflow.depreciation" && r.amount === "$100.00",
+      ),
+    ).toBe(true);
+    expect(
+      rows.some(
+        (r) => r.account === "accounting.reports.cashflow.receivables" && r.amount === "$-500.00",
+      ),
+    ).toBe(true);
+    expect(
+      rows.some(
+        (r) => r.account === "accounting.reports.cashflow.payables" && r.amount === "$300.00",
+      ),
+    ).toBe(true);
     // Indirect subtotal and the direct-method cash movement are both exported.
-    expect(rows.some((r) => r.account === "accounting.reports.cashflow.netCashOperations" && r.amount === "$1900.00")).toBe(true);
-    expect(rows.some((r) => r.account === "accounting.reports.cashflow.netCashFlow" && r.amount === "$1900.00")).toBe(true);
-    expect(rows.some((r) => r.account === "accounting.reports.cashflow.cashInflow" && r.amount === "$5000.00")).toBe(true);
-    expect(rows.some((r) => r.account === "accounting.reports.cashflow.cashOutflow" && r.amount === "$3100.00")).toBe(true);
+    expect(
+      rows.some(
+        (r) =>
+          r.account === "accounting.reports.cashflow.netCashOperations" && r.amount === "$1900.00",
+      ),
+    ).toBe(true);
+    expect(
+      rows.some(
+        (r) => r.account === "accounting.reports.cashflow.netCashFlow" && r.amount === "$1900.00",
+      ),
+    ).toBe(true);
+    expect(
+      rows.some(
+        (r) => r.account === "accounting.reports.cashflow.cashInflow" && r.amount === "$5000.00",
+      ),
+    ).toBe(true);
+    expect(
+      rows.some(
+        (r) => r.account === "accounting.reports.cashflow.cashOutflow" && r.amount === "$3100.00",
+      ),
+    ).toBe(true);
     // Reconciled: no difference row.
     expect(rows.some((r) => r.account === "accounting.dashboard.difference")).toBe(false);
   });

@@ -2,13 +2,14 @@ import React from "react";
 import { Briefcase, Building2, MapPin, Calendar } from "lucide-react";
 import type { Contact } from "@mms/shared";
 import { useTranslation } from "@/hooks/useTranslation";
-import { DetailSectionCard } from "@/components/ui/DetailSectionCard";
+import { DetailSectionCard } from "@/components/app/DetailSectionCard";
+import { Badge } from "@/components/ui/badge";
 import { COLLECTION_CONTAINER_CLASS } from "./contactDetailStyles";
-import { CopyBtn } from "@/components/ui/CopyBtn";
+import { CopyButton } from "@/components/app/CopyButton";
 import {
   MESSAGING_ICON_BTN,
   MESSAGING_ICON_BTN_TONES,
-} from "@/components/ui/messagingActionStyles";
+} from "@/components/app/messagingActionStyles";
 import { cn } from "@/lib/utils";
 
 export interface ContactDetailExperienceSectionProps {
@@ -23,7 +24,10 @@ export function ContactDetailExperienceSection({
 
   if (experienceList.length === 0) {
     return (
-      <DetailSectionCard className={COLLECTION_CONTAINER_CLASS} title={t("contacts.detail.experience")}>
+      <DetailSectionCard
+        className={COLLECTION_CONTAINER_CLASS}
+        title={t("contacts.detail.experience")}
+      >
         <div className="p-3 text-xs text-muted-foreground italic">
           {t("contacts.detail.emptyExperience")}
         </div>
@@ -32,12 +36,12 @@ export function ContactDetailExperienceSection({
   }
 
   return (
-    <DetailSectionCard className={COLLECTION_CONTAINER_CLASS} title={t("contacts.detail.experience")}>
+    <DetailSectionCard
+      className={COLLECTION_CONTAINER_CLASS}
+      title={t("contacts.detail.experience")}
+    >
       {experienceList.map((exp, idx) => {
-        const period = [
-          exp.startDate,
-          exp.isCurrent ? t("contacts.form.present") : exp.endDate,
-        ]
+        const period = [exp.startDate, exp.isCurrent ? t("contacts.form.present") : exp.endDate]
           .filter(Boolean)
           .join(" – ");
 
@@ -64,14 +68,18 @@ export function ContactDetailExperienceSection({
                   <span className="truncate">{exp.title}</span>
                 </span>
                 {exp.employmentType ? (
-                  <span className="text-3xs font-medium px-2 py-0.5 rounded bg-primary/10 text-primary border border-primary/20">
+                  <Badge tone="primary" size="sm" className="font-medium text-3xs">
                     {exp.employmentType}
-                  </span>
+                  </Badge>
                 ) : null}
                 {exp.isCurrent ? (
-                  <span className="text-2xs font-semibold uppercase tracking-wider px-1.5 py-0.5 bg-success/10 text-success border border-success/20 rounded">
+                  <Badge
+                    tone="success"
+                    size="sm"
+                    className="text-2xs font-semibold uppercase tracking-wider"
+                  >
                     {t("contacts.form.present")}
-                  </span>
+                  </Badge>
                 ) : null}
               </div>
 
@@ -104,7 +112,7 @@ export function ContactDetailExperienceSection({
 
             {copyText ? (
               <div className="flex flex-shrink-0 items-center">
-                <CopyBtn
+                <CopyButton
                   text={copyText}
                   showToast
                   className={cn(

@@ -72,4 +72,3 @@ export type ContactConfigExtras = {
   updateConfig: (nextConfig: FieldConfig) => void;
   updateConfigAsync: (nextConfig: FieldConfig) => Promise<void>;
 };
-

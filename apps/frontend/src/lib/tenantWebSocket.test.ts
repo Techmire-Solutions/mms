@@ -1,77 +1,77 @@
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it } from "vitest";
 import {
   parseTenantDatabaseUpdate,
   parseTenantJobEvent,
   resolveTenantWebSocketUrl,
-} from '@/lib/tenantWebSocket';
+} from "@/lib/tenantWebSocket";
 
-describe('tenantWebSocket', () => {
-  it('parses database-update messages', () => {
+describe("tenantWebSocket", () => {
+  it("parses database-update messages", () => {
     expect(
       parseTenantDatabaseUpdate(
-        JSON.stringify({ event: 'database-update', type: 'collection', key: 'contacts' }),
+        JSON.stringify({ event: "database-update", type: "collection", key: "contacts" }),
       ),
     ).toEqual({
-      event: 'database-update',
-      type: 'collection',
-      key: 'contacts',
+      event: "database-update",
+      type: "collection",
+      key: "contacts",
     });
   });
 
-  it('rejects malformed payloads', () => {
-    expect(parseTenantDatabaseUpdate('not-json')).toBeNull();
-    expect(parseTenantDatabaseUpdate(JSON.stringify({ event: 'ping' }))).toBeNull();
+  it("rejects malformed payloads", () => {
+    expect(parseTenantDatabaseUpdate("not-json")).toBeNull();
+    expect(parseTenantDatabaseUpdate(JSON.stringify({ event: "ping" }))).toBeNull();
     expect(
       parseTenantDatabaseUpdate(
-        JSON.stringify({ event: 'database-update', type: 'collection', key: '' }),
+        JSON.stringify({ event: "database-update", type: "collection", key: "" }),
       ),
     ).toBeNull();
   });
 
-  it('parses job-progress and job-completed events', () => {
+  it("parses job-progress and job-completed events", () => {
     const progressEvent = JSON.stringify({
-      event: 'job-progress',
-      tenantId: 'tenant-1',
-      jobId: 'job-402',
+      event: "job-progress",
+      tenantId: "tenant-1",
+      jobId: "job-402",
       progress: { current: 50, total: 100, percent: 50 },
     });
     expect(parseTenantJobEvent(progressEvent)).toEqual({
-      event: 'job-progress',
-      tenantId: 'tenant-1',
-      jobId: 'job-402',
+      event: "job-progress",
+      tenantId: "tenant-1",
+      jobId: "job-402",
       progress: { current: 50, total: 100, percent: 50 },
     });
 
     const completedEvent = JSON.stringify({
-      event: 'job-completed',
-      tenantId: 'tenant-1',
-      jobId: 'job-402',
+      event: "job-completed",
+      tenantId: "tenant-1",
+      jobId: "job-402",
       hasDownload: true,
     });
     expect(parseTenantJobEvent(completedEvent)).toEqual({
-      event: 'job-completed',
-      tenantId: 'tenant-1',
-      jobId: 'job-402',
+      event: "job-completed",
+      tenantId: "tenant-1",
+      jobId: "job-402",
       hasDownload: true,
     });
   });
 
-  it('rejects invalid job event payloads', () => {
-    expect(parseTenantJobEvent('invalid')).toBeNull();
-    expect(parseTenantJobEvent(JSON.stringify({ event: 'unknown' }))).toBeNull();
-    expect(parseTenantJobEvent(JSON.stringify({ event: 'job-progress' }))).toBeNull(); // Missing tenantId and jobId
+  it("rejects invalid job event payloads", () => {
+    expect(parseTenantJobEvent("invalid")).toBeNull();
+    expect(parseTenantJobEvent(JSON.stringify({ event: "unknown" }))).toBeNull();
+    expect(parseTenantJobEvent(JSON.stringify({ event: "job-progress" }))).toBeNull(); // Missing tenantId and jobId
   });
 
-  it('resolves relative /api/ws to same-origin ws URL', () => {
+  it("resolves relative /api/ws to same-origin ws URL", () => {
     const url = resolveTenantWebSocketUrl();
-    expect(url.endsWith('/api/ws')).toBe(true);
-    expect(url.startsWith('ws://') || url.startsWith('wss://')).toBe(true);
+    expect(url.endsWith("/api/ws")).toBe(true);
+    expect(url.startsWith("ws://") || url.startsWith("wss://")).toBe(true);
   });
 
-  it('notifies session expired when socket closes with 4001 unauthorized code', async () => {
+  it("notifies session expired when socket closes with 4001 unauthorized code", async () => {
     let capturedReason: string | undefined;
-    const { SESSION_EXPIRED_EVENT } = await import('@/lib/apiClient');
-    const { connectTenantDatabaseSocket } = await import('@/lib/tenantWebSocket');
+    const { SESSION_EXPIRED_EVENT } = await import("@/lib/apiClient");
+    const { connectTenantDatabaseSocket } = await import("@/lib/tenantWebSocket");
 
     const listener = (event: Event) => {
       const customEvent = event as CustomEvent<{ reason?: string }>;
@@ -82,7 +82,7 @@ describe('tenantWebSocket', () => {
     const createdSockets: MockWebSocket[] = [];
     class MockWebSocket extends EventTarget {
       readyState = 1;
-      url = '';
+      url = "";
       constructor(url: string) {
         super();
         this.url = url;
@@ -99,9 +99,9 @@ describe('tenantWebSocket', () => {
     });
 
     // Simulate 4001 close event
-    createdSockets[0]?.dispatchEvent(new CloseEvent('close', { code: 4001 }));
+    createdSockets[0]?.dispatchEvent(new CloseEvent("close", { code: 4001 }));
 
-    expect(capturedReason).toBe('websocket_unauthorized');
+    expect(capturedReason).toBe("websocket_unauthorized");
 
     disconnect();
     window.removeEventListener(SESSION_EXPIRED_EVENT, listener);

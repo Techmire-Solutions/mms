@@ -2,20 +2,23 @@ import React, { useState } from "react";
 import { Card } from "@/components/ui/card";
 import { Filter, X, ChevronDown, ChevronUp } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
-import { DatePicker } from "@/components/ui/DatePicker";
+import { DatePicker } from "@/components/app/DatePicker";
+import { SectionFilterField } from "@/components/common/SectionFilterField";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Field } from "@/components/ui/FormField";
-import { FormSelect } from "@/components/ui/FormSelect";
-import { useSessionsCollection } from '@/tenant/hooks/collections/sessions';
-import { useFacultyContractList } from '@/tenant/hooks/collections/faculty';
-import { FACULTY_MODULE_MANIFEST, todayISO, type FacultyMember } from '@mms/shared';
-import { activeFacultyForAssignment, resolveClassFacultyId } from '@/lib/faculty/facultyAssignment';
-import { useTranslation } from '@/hooks/useTranslation';
+import { Field } from "@/components/app/FormField";
+import { FormSelect } from "@/components/app/FormSelect";
+import { useSessionsCollection } from "@/tenant/hooks/collections/sessions";
+import { useFacultyContractList } from "@/tenant/hooks/collections/faculty";
+import { FACULTY_MODULE_MANIFEST, todayISO, type FacultyMember } from "@mms/shared";
+import { activeFacultyForAssignment, resolveClassFacultyId } from "@/lib/faculty/facultyAssignment";
+import { useTranslation } from "@/hooks/useTranslation";
 
 export interface AttendanceFilterState {
   sessionId: string;
   classId: string;
+  /** Narrows the roster to one section of the class (empty = all sections). */
+  sectionId?: string;
   facultyId: string;
   date: string;
 }
@@ -27,52 +30,62 @@ export interface AttendanceFiltersProps {
 
 /**
  * AttendanceFilters
- * 
+ *
  * A collapsible filter component for the attendance records view.
  * Allows filtering by session, class, faculty, and date.
- * 
+ *
  * @param props - The component props.
  * @returns The rendered filters component.
  */
-export function AttendanceFilters({ filters, onChange }: AttendanceFiltersProps): React.JSX.Element {
+export function AttendanceFilters({
+  filters,
+  onChange,
+}: AttendanceFiltersProps): React.JSX.Element {
   const { t } = useTranslation();
   const [open, setOpen] = useState(true);
   const sessions = useSessionsCollection();
   const { data: activeFacultyPage } = useFacultyContractList({
     page: 1,
     limit: FACULTY_MODULE_MANIFEST.maxPageSize,
-    status: 'active',
+    status: "active",
   });
   const assignableFaculty = activeFacultyForAssignment(
-    ((activeFacultyPage?.body?.faculty ?? []) as FacultyMember[]),
+    (activeFacultyPage?.body?.faculty ?? []) as FacultyMember[],
   );
-  
+
   const allClasses = sessions.flatMap((session) =>
-    (session.classes || []).map((sessionClass) => ({ ...sessionClass, sessionId: session.id, sessionName: session.name }))
+    (session.classes || []).map((sessionClass) => ({
+      ...sessionClass,
+      sessionId: session.id,
+      sessionName: session.name,
+    })),
   );
 
-  const setFilterValue = (key: keyof AttendanceFilterState, value: string) => onChange({ ...filters, [key]: value });
+  const setFilterValue = (key: keyof AttendanceFilterState, value: string) =>
+    onChange({ ...filters, [key]: value });
 
-  const sessionClasses = allClasses.filter((sessionClass) =>
-    (!filters.sessionId || sessionClass.sessionId === filters.sessionId)
-    && (!filters.facultyId || resolveClassFacultyId(sessionClass) === filters.facultyId),
+  const sessionClasses = allClasses.filter(
+    (sessionClass) =>
+      (!filters.sessionId || sessionClass.sessionId === filters.sessionId) &&
+      (!filters.facultyId || resolveClassFacultyId(sessionClass) === filters.facultyId),
   );
 
-  const setRelationFilter = (key: 'sessionId' | 'facultyId', value: string): void => {
+  const setRelationFilter = (key: "sessionId" | "facultyId", value: string): void => {
     const nextFilters = { ...filters, [key]: value };
-    const selectedClassRemainsAvailable = allClasses.some((sessionClass) =>
-      sessionClass.id === filters.classId
-      && (!nextFilters.sessionId || sessionClass.sessionId === nextFilters.sessionId)
-      && (!nextFilters.facultyId || resolveClassFacultyId(sessionClass) === nextFilters.facultyId),
+    const selectedClassRemainsAvailable = allClasses.some(
+      (sessionClass) =>
+        sessionClass.id === filters.classId &&
+        (!nextFilters.sessionId || sessionClass.sessionId === nextFilters.sessionId) &&
+        (!nextFilters.facultyId || resolveClassFacultyId(sessionClass) === nextFilters.facultyId),
     );
     onChange({
       ...nextFilters,
-      classId: selectedClassRemainsAvailable ? filters.classId : '',
+      classId: selectedClassRemainsAvailable ? filters.classId : "",
     });
   };
 
   const today = todayISO();
-  
+
   const activeCount = [
     filters.sessionId,
     filters.classId,
@@ -80,12 +93,13 @@ export function AttendanceFilters({ filters, onChange }: AttendanceFiltersProps)
     filters.date && filters.date !== today,
   ].filter(Boolean).length;
 
-  const reset = () => onChange({
-    sessionId: "",
-    classId: "",
-    facultyId: "",
-    date: today,
-  });
+  const reset = () =>
+    onChange({
+      sessionId: "",
+      classId: "",
+      facultyId: "",
+      date: today,
+    });
 
   return (
     <Card accentColor="primary" className="p-0 overflow-hidden">
@@ -105,24 +119,35 @@ export function AttendanceFilters({ filters, onChange }: AttendanceFiltersProps)
       >
         <div className="flex min-w-0 items-center gap-2">
           <Filter className="w-4 h-4 shrink-0 text-muted-foreground" />
-          <h2 className="text-sm font-semibold text-foreground m-0 truncate">{t("attendance.filters.title")}</h2>
+          <h2 className="text-sm font-semibold text-foreground m-0 truncate">
+            {t("attendance.filters.title")}
+          </h2>
           {activeCount > 0 && (
-            <Badge pill className="px-1.5 font-bold">{activeCount}</Badge>
+            <Badge pill className="px-1.5 font-bold">
+              {activeCount}
+            </Badge>
           )}
         </div>
         <div className="flex shrink-0 items-center gap-1">
           {activeCount > 0 && (
-            <Button 
+            <Button
               type="button"
               variant="ghost"
               size="sm"
-              onClick={(event) => { event.stopPropagation(); reset(); }}
+              onClick={(event) => {
+                event.stopPropagation();
+                reset();
+              }}
               className="text-xs text-muted-foreground hover:text-destructive flex items-center gap-1 transition-colors min-h-11 px-2 hover:bg-transparent"
             >
               <X className="w-3 h-3" /> {t("attendance.filters.clear")}
             </Button>
           )}
-          {open ? <ChevronUp className="w-4 h-4 text-muted-foreground" /> : <ChevronDown className="w-4 h-4 text-muted-foreground" />}
+          {open ? (
+            <ChevronUp className="w-4 h-4 text-muted-foreground" />
+          ) : (
+            <ChevronDown className="w-4 h-4 text-muted-foreground" />
+          )}
         </div>
       </div>
 
@@ -155,21 +180,39 @@ export function AttendanceFilters({ filters, onChange }: AttendanceFiltersProps)
                   id="filter-class"
                   name="classId"
                   value={filters.classId}
-                  onChange={(value) => setFilterValue("classId", value)}
+                  onChange={(value) => onChange({ ...filters, classId: value, sectionId: "" })}
                   placeholder={t("attendance.filters.allClasses")}
-                  options={sessionClasses.map((sessionClass) => ({ value: sessionClass.id, label: sessionClass.name }))}
+                  options={sessionClasses.map((sessionClass) => ({
+                    value: sessionClass.id,
+                    label: sessionClass.name,
+                  }))}
                 />
               </Field>
 
+              <SectionFilterField
+                sections={
+                  allClasses.find((sessionClass) => sessionClass.id === filters.classId)
+                    ?.sections ?? []
+                }
+                value={filters.sectionId ?? ""}
+                onChange={(value) => setFilterValue("sectionId", value)}
+              />
+
               {/* Faculty */}
-              <Field id="filter-faculty" label={t("attendance.filters.faculty") || t("nav.faculty")}>
+              <Field
+                id="filter-faculty"
+                label={t("attendance.filters.faculty") || t("nav.faculty")}
+              >
                 <FormSelect
                   id="filter-faculty"
                   name="facultyId"
                   value={filters.facultyId}
                   onChange={(value) => setRelationFilter("facultyId", value)}
-                  placeholder={t('attendance.filters.allFaculty')}
-                  options={assignableFaculty.map((member) => ({ value: member.id, label: member.name || "Unknown" }))}
+                  placeholder={t("attendance.filters.allFaculty")}
+                  options={assignableFaculty.map((member) => ({
+                    value: member.id,
+                    label: member.name || "Unknown",
+                  }))}
                 />
               </Field>
 

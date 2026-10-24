@@ -1,13 +1,11 @@
-import React from 'react';
-import { Link } from 'react-router-dom';
-import { ChevronLeft, ChevronRight, LogOut, ShieldAlert } from 'lucide-react';
-import { useTranslation } from '@/hooks/useTranslation';
-import { UserAvatar } from '@/components/ui/UserAvatar';
-import { ActionButton } from '@/components/ui/ActionButton';
-import { SectionLabel } from '@/components/ui/SectionLabel';
-import { cn } from '@/lib/utils';
-import { ROUTES } from '@/lib/config/routes';
-import type { PlatformUserProfile } from '@mms/shared';
+import React from "react";
+import { Link } from "react-router-dom";
+import { ChevronLeft, ChevronRight, LogOut, ShieldAlert } from "lucide-react";
+import { useTranslation } from "@/hooks/useTranslation";
+import { Button, SectionLabel, UserAvatar } from "@shared/ui";
+import { cn } from "@/lib/utils";
+import { ROUTES } from "@/lib/config/routes";
+import type { PlatformUserProfile } from "@mms/shared";
 
 export interface PlatformSidebarFooterProps {
   isMobile?: boolean;
@@ -37,7 +35,7 @@ export function PlatformSidebarFooter({
           to={ROUTES.platformAccount}
           onClick={() => isMobile && onCloseMobile()}
           className="flex items-center gap-3 px-2 py-1.5 rounded-xl hover:bg-sidebar-accent/50 transition-colors group cursor-pointer"
-          aria-label={t('platform.myAccount')}
+          aria-label={t("platform.myAccount")}
         >
           <UserAvatar
             name={platformUser?.name}
@@ -48,14 +46,17 @@ export function PlatformSidebarFooter({
             <span className="text-xs font-bold text-sidebar-foreground truncate group-hover:text-sidebar-primary transition-colors">
               {platformUser?.name}
             </span>
-            <SectionLabel tracking="wider" className="flex items-center gap-1 mt-0.5 text-sidebar-muted-foreground truncate">
+            <SectionLabel
+              tracking="wider"
+              className="flex items-center gap-1 mt-0.5 text-sidebar-muted-foreground truncate"
+            >
               {isSuperUser ? (
                 <>
                   <ShieldAlert className="w-2.5 h-2.5 text-sidebar-primary shrink-0" aria-hidden />
-                  {t('platform.roleSuperUser')}
+                  {t("platform.roleSuperUser")}
                 </>
               ) : (
-                t('platform.roleAdmin')
+                t("platform.roleAdmin")
               )}
             </SectionLabel>
           </div>
@@ -63,30 +64,32 @@ export function PlatformSidebarFooter({
       )}
 
       <div className="flex items-center gap-1">
-        <ActionButton
+        <Button
           type="button"
           variant="ghost"
           icon={LogOut}
           onClick={onSignOutClick}
           className={cn(
-            'flex min-h-11 flex-1 items-center gap-2 rounded-lg px-3 py-2 text-sidebar-muted-foreground transition-colors hover:bg-destructive/10 hover:text-destructive cursor-pointer shadow-none',
-            !isMobile && collapsed && 'justify-center px-0 min-w-11',
+            "flex min-h-11 flex-1 items-center gap-2 rounded-lg px-3 py-2 text-sidebar-muted-foreground transition-colors hover:bg-destructive/10 hover:text-destructive cursor-pointer shadow-none",
+            !isMobile && collapsed && "justify-center px-0 min-w-11",
           )}
-          title={t('platform.signOut')}
-          aria-label={t('platform.signOut')}
+          title={t("platform.signOut")}
+          aria-label={t("platform.signOut")}
         >
-          {(isMobile || !collapsed) && <span className="text-xs font-medium truncate">{t('platform.signOut')}</span>}
-        </ActionButton>
+          {(isMobile || !collapsed) && (
+            <span className="text-xs font-medium truncate">{t("platform.signOut")}</span>
+          )}
+        </Button>
 
         {!isMobile && (
-          <ActionButton
+          <Button
             type="button"
             variant="ghost"
             icon={collapsed ? ChevronRight : ChevronLeft}
             onClick={onToggleCollapsed}
             className="h-11 w-11 min-w-11 shrink-0 rounded-lg p-0 text-sidebar-muted-foreground hover:bg-sidebar-accent/50 hover:text-sidebar-foreground transition-colors cursor-pointer shadow-none [&_svg]:rtl:rotate-180"
-            title={collapsed ? t('nav.expand') : t('nav.collapse')}
-            aria-label={collapsed ? t('nav.expand') : t('nav.collapse')}
+            title={collapsed ? t("nav.expand") : t("nav.collapse")}
+            aria-label={collapsed ? t("nav.expand") : t("nav.collapse")}
             aria-expanded={!collapsed}
           />
         )}

@@ -1,15 +1,17 @@
-import { and, sql } from 'drizzle-orm';
+import { and, sql } from "drizzle-orm";
 import {
   hydrateContactRelationshipFields,
   type Contact,
   type RepositoryListOptions,
-} from '@mms/shared';
-import { buildTenantSoftDeleteConditions } from '../../services/genericRelationalService.js';
-import { contacts } from '../schema.js';
-import { withTenantRead, type TenantTransaction } from '../tenant-context.js';
-import { loadContactChildMaps, loadContactSummaryChildMaps } from './contactRepositoryHydrateChildren.js';
-import { contactRowToRecord } from './contactRepositoryMappers.js';
-
+} from "@mms/shared";
+import { buildTenantSoftDeleteConditions } from "../../services/genericRelationalService.js";
+import { contacts } from "../schema.js";
+import { withTenantRead, type TenantTransaction } from "../tenant-context.js";
+import {
+  loadContactChildMaps,
+  loadContactSummaryChildMaps,
+} from "./contactRepositoryHydrateChildren.js";
+import { contactRowToRecord } from "./contactRepositoryMappers.js";
 
 type Transaction = TenantTransaction;
 type ContactRow = typeof contacts.$inferSelect;
@@ -83,7 +85,7 @@ export async function listContactsByWorkspace(
   const subdomain = tenant.trim().toLowerCase();
   const limit = Math.min(Math.max(options?.limit ?? 500, 1), 5000);
   const offset = Math.max(options?.offset ?? 0, 0);
-  const deletedFilter = options?.deleted ?? (options?.includeDeleted ? 'all' : 'active');
+  const deletedFilter = options?.deleted ?? (options?.includeDeleted ? "all" : "active");
   return withTenantRead(subdomain, async (tx) => {
     const conditions = buildTenantSoftDeleteConditions(contacts, subdomain, deletedFilter);
 
@@ -103,7 +105,7 @@ export async function countContactsByWorkspace(
   options?: ListByWorkspaceOptions,
 ): Promise<number> {
   const subdomain = tenant.trim().toLowerCase();
-  const deletedFilter = options?.deleted ?? (options?.includeDeleted ? 'all' : 'active');
+  const deletedFilter = options?.deleted ?? (options?.includeDeleted ? "all" : "active");
   return withTenantRead(subdomain, async (tx) => {
     const conditions = buildTenantSoftDeleteConditions(contacts, subdomain, deletedFilter);
 
@@ -115,8 +117,11 @@ export async function countContactsByWorkspace(
   });
 }
 
-import { contactSelectColumns } from './contactRepositoryColumns.js';
-import { findContactById, findContactsByIds, findContactsSummaryByIds } from './contactRepositoryFind.js';
+import { contactSelectColumns } from "./contactRepositoryColumns.js";
+import {
+  findContactById,
+  findContactsByIds,
+  findContactsSummaryByIds,
+} from "./contactRepositoryFind.js";
 
 export { findContactById, findContactsByIds, findContactsSummaryByIds };
-

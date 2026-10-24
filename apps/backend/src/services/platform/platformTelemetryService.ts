@@ -1,9 +1,9 @@
-import { performance } from 'node:perf_hooks';
-import { getPoolMetrics, getTenantDbMetrics, pingDatabase } from '../../db/dbConnection.js';
+import { performance } from "node:perf_hooks";
+import { getPoolMetrics, getTenantDbMetrics, pingDatabase } from "../../db/dbConnection.js";
 import {
   getPlatformMonthlyActivityTrend,
   type MonthlyPlatformActivityItem,
-} from '../../db/repositories/platformActivityLogsRepository.js';
+} from "../../db/repositories/platformActivityLogsRepository.js";
 
 export interface PlatformTelemetryResult {
   platformDb: {
@@ -17,7 +17,7 @@ export interface PlatformTelemetryResult {
     hasReplica: boolean;
   };
   tenantDb: {
-    rlsIsolation: 'enforced';
+    rlsIsolation: "enforced";
     activeTenantsCount: number;
     totalTenantTransactions: number;
     tenantCapLimit: number;
@@ -56,7 +56,7 @@ export async function getPlatformTelemetry(): Promise<PlatformTelemetryResult> {
 
   return {
     platformDb: {
-      engine: 'PostgreSQL 16 (Drizzle ORM)',
+      engine: "PostgreSQL 16 (Drizzle ORM)",
       totalCount: total,
       idleCount: idle,
       waitingCount: pool.waitingCount,
@@ -66,7 +66,7 @@ export async function getPlatformTelemetry(): Promise<PlatformTelemetryResult> {
       hasReplica: Boolean(pool.replica),
     },
     tenantDb: {
-      rlsIsolation: 'enforced',
+      rlsIsolation: "enforced",
       activeTenantsCount: tenantMetrics.activeTenantsCount,
       totalTenantTransactions: tenantMetrics.totalTenantActiveTransactions,
       tenantCapLimit: tenantMetrics.tenantCapLimit,

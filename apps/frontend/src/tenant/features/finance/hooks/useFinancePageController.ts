@@ -6,10 +6,7 @@ import { useFilteredModuleTierTabs } from "@/tenant/hooks/useModuleTierTabs";
 import { useModulePermissions } from "@/tenant/hooks/usePermissions";
 import { useTranslation } from "@/hooks/useTranslation";
 import { useDirectoryTrashState } from "@/hooks/useDirectoryTrashState";
-import {
-  FINANCE_MODULE_MANIFEST,
-  type Payment,
-} from "@mms/shared";
+import { FINANCE_MODULE_MANIFEST, type Payment } from "@mms/shared";
 import {
   useFinanceInvoicesPaginated,
   useFinancePaymentsPaginated,
@@ -46,7 +43,11 @@ export function useFinancePageController() {
   const [activeSubTab, setActiveSubTab] = useState("invoices");
   const [activePayment, setActivePayment] = useState<Payment | null>(null);
   const [showDeleted, setShowDeleted] = useDirectoryTrashState();
-  const invoiceStatusFilter = useFinanceInvoiceStatusFilter({ setActiveTab, setActiveSubTab, setShowDeleted });
+  const invoiceStatusFilter = useFinanceInvoiceStatusFilter({
+    setActiveTab,
+    setActiveSubTab,
+    setShowDeleted,
+  });
   const invoicesResult = useFinanceInvoicesPaginated({
     includeDeleted: showDeleted,
     page: 1,
@@ -111,6 +112,7 @@ export function useFinancePageController() {
 
   useEffect(() => {
     if (activeTab !== "work") setShowDeleted(false);
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- setShowDeleted is URL-backed and not guaranteed stable; depending on it could re-run this URL write every render.
   }, [activeTab]);
 
   const { handleRecordPayment, handleCreateInvoice, openCreateInvoice } = useFinanceFormActions({
@@ -123,24 +125,19 @@ export function useFinancePageController() {
     t,
   });
 
-  const { mutationError, handleBulkResult, handleBulkStatusChange } =
-    useFinanceBulkActions({
-      bulkUpdateInvoiceStatus,
-      clearInvoiceSelection,
-      clearPaymentSelection,
-      t,
-    });
-
-  const {
-    handleCollectOverdue,
-    handleRemindInvoices,
-    collectPending,
-    remindPending,
-  } = useFinanceCollectActions({
-    canWriteMessaging,
-    openComposer,
+  const { mutationError, handleBulkResult, handleBulkStatusChange } = useFinanceBulkActions({
+    bulkUpdateInvoiceStatus,
+    clearInvoiceSelection,
+    clearPaymentSelection,
     t,
   });
+
+  const { handleCollectOverdue, handleRemindInvoices, collectPending, remindPending } =
+    useFinanceCollectActions({
+      canWriteMessaging,
+      openComposer,
+      t,
+    });
 
   return {
     activePayment,

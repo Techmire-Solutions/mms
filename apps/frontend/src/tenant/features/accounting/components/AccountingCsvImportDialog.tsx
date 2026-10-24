@@ -1,11 +1,6 @@
 import React from "react";
-import {
-  accountingTransferSchema,
-  type AccountingTransferEntity,
-} from "@mms/shared";
-import { ModuleImportDialog } from "@/components/ui/ModuleImportDialog";
-import { useModuleCsvImportActions } from "@/lib/backgroundJobs/useModuleCsvImportActions";
-import { useTranslation } from "@/hooks/useTranslation";
+import { accountingTransferSchema, type AccountingTransferEntity } from "@mms/shared";
+import { StandardModuleCsvImportDialog } from "@/components/app/StandardModuleCsvImportDialog";
 
 export interface AccountingCsvImportDialogProps {
   open: boolean;
@@ -19,24 +14,14 @@ export function AccountingCsvImportDialog({
   onClose,
   canWrite,
 }: AccountingCsvImportDialogProps): React.JSX.Element | null {
-  const { t } = useTranslation();
-
-  const actions = useModuleCsvImportActions<AccountingTransferEntity>({
-    apiPath: "/api/accounting/import",
-    schema: accountingTransferSchema,
-    onSuccess: onClose,
-  });
-
-  if (!open || !canWrite) return null;
-
   return (
-    <ModuleImportDialog<AccountingTransferEntity>
+    <StandardModuleCsvImportDialog<AccountingTransferEntity>
       open={open}
       onClose={onClose}
-      title={`${t("common.import")} - ${t("nav.accounting")}`}
-      subtitle={t("faculty.io.csvHint")}
       canWrite={canWrite}
-      actions={actions}
+      apiPath="/api/accounting/import"
+      schema={accountingTransferSchema}
+      navKey="nav.accounting"
     />
   );
 }

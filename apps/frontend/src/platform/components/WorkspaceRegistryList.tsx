@@ -7,13 +7,9 @@ import { getAppDomain, tenantUrl } from "@/lib/config/tenantConfig";
 import { useTranslation } from "@/hooks/useTranslation";
 import { useReducedMotion } from "@/hooks/useReducedMotion";
 import { useWorkspaceRegistry } from "@/platform/hooks/useWorkspaceRegistry";
-import WorkspaceLogo from "@/platform/components/WorkspaceLogo";
-import { CardSkeleton } from "@/components/ui/LoadingState";
-import { ErrorState } from "@/components/ui/ErrorState";
-import { EmptyState } from "@/components/ui/EmptyState";
-import { SectionLabel } from "@/components/ui/SectionLabel";
+import { EmptyState, ErrorState, CardSkeleton, SectionLabel, WorkspaceLogo } from "@shared/ui";
 import { containerVariants, cardVariants } from "@/platform/lib/animations";
-import { CARD_STRIPE_BASE, CARD_STRIPE_INSET } from "@/lib/semanticTone";
+import { CARD_STRIPE_BASE, CARD_STRIPE_INSET } from "@/lib/ui/semanticTone";
 import { cn } from "@/lib/utils";
 
 type WorkspaceLinkDestination = typeof ROUTES.login | typeof ROUTES.forgotPassword;
@@ -56,12 +52,7 @@ export default function WorkspaceRegistryList({
   const items = workspaces ?? [];
 
   if (items.length === 0) {
-    return (
-      <EmptyState
-        title={t(emptyMessageKey)}
-        compact
-      />
-    );
+    return <EmptyState title={t(emptyMessageKey)} compact />;
   }
 
   return (
@@ -96,7 +87,7 @@ export default function WorkspaceRegistryList({
   );
 }
 
-const RegistryWorkspaceRow = (function RegistryWorkspaceRow({
+const RegistryWorkspaceRow = function RegistryWorkspaceRow({
   workspace,
   appDomain,
   destinationPath,
@@ -162,4 +153,4 @@ const RegistryWorkspaceRow = (function RegistryWorkspaceRow({
       </a>
     </motion.li>
   );
-});
+};

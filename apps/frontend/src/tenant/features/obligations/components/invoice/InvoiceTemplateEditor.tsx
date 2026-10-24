@@ -6,14 +6,13 @@
 import React, { useCallback, useMemo } from "react";
 import { useTranslation } from "@/hooks/useTranslation";
 import { useBranding } from "@/tenant/hooks/useBranding";
-import { TemplateEditor } from "@/components/ui/TemplateEditor";
+import { DocumentTemplateEditor } from "@/components/app/DocumentTemplateEditor";
 import {
   AVAILABLE_FIELDS,
   getAvailablePresets,
   getDefaultTemplate,
   INVOICE_TEMPLATE_FIELD_KEY_PREFIX,
-  loadTemplate,
-  saveTemplate,
+  invoiceTemplateDocumentStore,
   type InvoiceTemplate,
   type InvoiceReceiptPayload,
   type TemplateTranslate,
@@ -25,7 +24,6 @@ import type {
   ObligationCollection,
   ObligationType,
 } from "@mms/shared";
-import { notify } from "@/lib/notify";
 import {
   useMergedObligationContacts,
   useMergedObligationUsers,
@@ -58,15 +56,12 @@ export function InvoiceTemplateEditor({
   const branding = useBranding();
   const { handleExportTypst, handleExportZoho } = useInvoiceTemplateExports();
 
-  const translate = useCallback<TemplateTranslate>(
-    (key) => t(key as Parameters<typeof t>[0]),
-    [t],
-  );
+  const translate = useCallback<TemplateTranslate>((key) => t(key as Parameters<typeof t>[0]), [t]);
 
   const contactIds = useMemo(() => {
     if (!collection) return [];
     const ids = [collection.sender_id, collection.reference_id].filter(
-      (id): id is string => id != null && id !== ""
+      (id): id is string => id != null && id !== "",
     );
     return Array.from(new Set(ids));
   }, [collection]);
@@ -80,13 +75,9 @@ export function InvoiceTemplateEditor({
 
   const liveUsers = useMergedObligationUsers(userIds);
 
-  const initialTemplate = useMemo<InvoiceTemplate>(
-    () => loadTemplate(branding),
-    [branding]
-  );
   const defaultTemplate = useMemo<InvoiceTemplate>(
     () => getDefaultTemplate(branding, translate),
-    [branding, translate]
+    [branding, translate],
   );
 
   const availableFields = useMemo(
@@ -95,7 +86,7 @@ export function InvoiceTemplateEditor({
         ...field,
         label: t(`${INVOICE_TEMPLATE_FIELD_KEY_PREFIX}${field.field}` as Parameters<typeof t>[0]),
       })),
-    [t]
+    [t],
   );
 
   const sampleData = useInvoiceTemplateSampleData({
@@ -116,23 +107,11 @@ export function InvoiceTemplateEditor({
     }));
   }, [branding, translate, t]);
 
-  const handleSave = useCallback(
-    (tmpl: InvoiceTemplate) => {
-      try {
-        saveTemplate(tmpl);
-        notify.success(t("obligations.templateSaved"));
-      } catch (err) {
-        console.error("Failed to save invoice template:", err);
-        notify.error(t("templateEditor.saveFailed"));
-      }
-    },
-    [t]
-  );
-
   return (
-    <TemplateEditor<InvoiceReceiptPayload>
+    <DocumentTemplateEditor<InvoiceReceiptPayload>
+      store={invoiceTemplateDocumentStore}
+      savedMessage={t("obligations.templateSaved")}
       title={t("obligations.templateEditorTitle")}
-      template={initialTemplate}
       defaultTemplate={defaultTemplate}
       availableFields={availableFields}
       presets={presets}
@@ -140,7 +119,6 @@ export function InvoiceTemplateEditor({
       sampleData={sampleData}
       fullscreen={fullscreen}
       branding={branding}
-      onSave={handleSave}
       onClose={onClose}
       onExportTypst={handleExportTypst}
       onExportZoho={handleExportZoho}

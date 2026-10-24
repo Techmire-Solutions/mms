@@ -8,9 +8,7 @@ import {
   type AppTranslationKey,
   type Contact,
 } from "@mms/shared";
-import {
-  DUPLICATE_FIELD_I18N,
-} from "@/lib/contacts/contactI18nKeys";
+import { DUPLICATE_FIELD_I18N } from "@/lib/contacts/contactI18nKeys";
 
 /** Formats contact Date of Birth with inline age or detailed solar age. */
 export function formatContactDobWithAge(

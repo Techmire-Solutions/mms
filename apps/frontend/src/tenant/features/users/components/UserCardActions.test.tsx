@@ -41,7 +41,7 @@ describe("UserCardActions Component", () => {
         onDelete={vi.fn()}
         onRestore={vi.fn()}
         onResetPassword={vi.fn()}
-      />
+      />,
     );
 
     expect(html).toContain("users.actionViewShort");
@@ -63,7 +63,7 @@ describe("UserCardActions Component", () => {
         onDelete={vi.fn()}
         onRestore={vi.fn()}
         onResetPassword={vi.fn()}
-      />
+      />,
     );
 
     expect(html).toContain('aria-label="users.trash.restore"');

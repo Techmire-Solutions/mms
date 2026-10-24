@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import { useTranslation } from '@/hooks/useTranslation';
+import React, { useState } from "react";
+import { useTranslation } from "@/hooks/useTranslation";
 import {
   createQuestionSourceBook,
   QUESTION_SOURCE_FIELD_TO_KEY,
@@ -9,7 +9,7 @@ import {
   type QuestionSourceBook,
   type QuestionSourceFieldId,
   type QuestionSourceReference,
-} from '@mms/shared';
+} from "@mms/shared";
 import { QuestionSourceBooksSection } from "@/tenant/features/question-bank/components/QuestionSourceBooksSection";
 import { QuestionSourcesCitationsSection } from "@/tenant/features/question-bank/components/QuestionSourcesCitationsSection";
 
@@ -52,12 +52,12 @@ export function QuestionSourcesTab({
 
   const fieldById = (() => new Map(orderedSourceFields.map((field) => [field.id, field])))();
 
-  const citationEntries = citations.length > 0 ? citations : [{ bookId: '', citation: {} }];
+  const citationEntries = citations.length > 0 ? citations : [{ bookId: "", citation: {} }];
 
   const startNewBook = (citationIndex?: number): void => {
-    setPendingCitationIndex(typeof citationIndex === 'number' ? citationIndex : null);
+    setPendingCitationIndex(typeof citationIndex === "number" ? citationIndex : null);
     setEditingBookId(null);
-    setDraftBook(createQuestionSourceBook('', sourceBooks));
+    setDraftBook(createQuestionSourceBook("", sourceBooks));
     setShowBookForm(true);
   };
 
@@ -73,7 +73,7 @@ export function QuestionSourcesTab({
     const nextIds = has
       ? draftBook.fieldIds.filter((sourceFieldId) => sourceFieldId !== fieldId)
       : [...draftBook.fieldIds, fieldId];
-    if (!nextIds.includes('sourceBookName')) nextIds.unshift('sourceBookName');
+    if (!nextIds.includes("sourceBookName")) nextIds.unshift("sourceBookName");
     setDraftBook({ ...draftBook, fieldIds: nextIds });
   };
 
@@ -82,7 +82,7 @@ export function QuestionSourcesTab({
     const key = QUESTION_SOURCE_FIELD_TO_KEY[fieldId];
     setDraftBook({
       ...draftBook,
-      name: fieldId === 'sourceBookName' ? value || draftBook.name : draftBook.name,
+      name: fieldId === "sourceBookName" ? value || draftBook.name : draftBook.name,
       metadata: { ...draftBook.metadata, [key]: value },
     });
   };
@@ -119,7 +119,9 @@ export function QuestionSourcesTab({
   };
 
   const updCitation = (index: number, patch: Partial<QuestionBookCitation>): void => {
-    const updatedCitations = citationEntries.map((entry, entryIndex) => (entryIndex === index ? { ...entry, ...patch } : entry));
+    const updatedCitations = citationEntries.map((entry, entryIndex) =>
+      entryIndex === index ? { ...entry, ...patch } : entry,
+    );
     onCitationsChange(updatedCitations.filter((entry) => entry.bookId));
   };
 
@@ -135,7 +137,10 @@ export function QuestionSourcesTab({
   };
 
   const addCitation = (): void => {
-    onCitationsChange([...citationEntries.filter((citationEntry) => citationEntry.bookId), { bookId: '', citation: {} }]);
+    onCitationsChange([
+      ...citationEntries.filter((citationEntry) => citationEntry.bookId),
+      { bookId: "", citation: {} },
+    ]);
   };
 
   const removeCitation = (index: number): void => {
@@ -144,7 +149,7 @@ export function QuestionSourcesTab({
   };
 
   if (availableFieldIds.length === 0) {
-    return <p className="text-sm text-muted-foreground">{t('questionBank.sourcesDisabledHint')}</p>;
+    return <p className="text-sm text-muted-foreground">{t("questionBank.sourcesDisabledHint")}</p>;
   }
 
   return (

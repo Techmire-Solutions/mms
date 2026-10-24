@@ -1,5 +1,5 @@
 import React from "react";
-import { ModuleStandardTrashDialogs } from "@/components/ui/ModuleStandardTrashDialogs";
+import { ModuleTrashConfirmDialogs } from "@/components/app/ModuleTrashConfirmDialogs";
 import type { TranslationFunction } from "@/lib/contexts/TranslationContext";
 
 export interface AttendanceRecordsConfirmDialogsProps {
@@ -26,7 +26,7 @@ export function AttendanceRecordsConfirmDialogs({
   t,
 }: AttendanceRecordsConfirmDialogsProps): React.JSX.Element {
   return (
-    <ModuleStandardTrashDialogs
+    <ModuleTrashConfirmDialogs
       pendingTrashId={pendingDeleteId}
       onPendingTrashIdChange={onPendingDeleteChange}
       confirmBulkOpen={confirmBulkOpen}

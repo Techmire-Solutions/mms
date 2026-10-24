@@ -4,11 +4,10 @@ import { Copy } from "lucide-react";
 import type { ContactPreferences } from "@mms/shared";
 import { useTranslation } from "@/hooks/useTranslation";
 import { Input } from "@/components/ui/input";
-import { Checkbox } from "@/components/ui/checkbox";
-import { SectionCard } from "@/components/ui/SectionCard";
-import { Field } from "@/components/ui/FormPrimitives";
+import { SectionCard } from "@/components/app/SectionCard";
+import { Field, FormCheckboxCard } from "@/components/app/FormPrimitives";
 import { FORM_INPUT, FORM_LABEL, SETUP_SECTION_CARD_CLASS } from "@/components/ui/formStyles";
-import { ModuleSetupSaveFooter } from "@/components/ui/ModuleSetupSaveFooter";
+import { ModuleSetupSaveFooter } from "@/components/app/ModuleSetupSaveFooter";
 import { getDuplicateFieldLabel } from "@/lib/contacts/contactI18n";
 
 /** Toggleable duplicate-detection fields (subset of the canonical field-id set). */
@@ -37,8 +36,8 @@ export function ContactsPreferencesDuplicateSection({
   const { t } = useTranslation();
   const detectionFields = prefs.duplicateDetectionFields ?? ["name", "phone", "email", "cnic"];
 
-  const [namePrefixesDraft, setNamePrefixesDraft] = useState(
-    () => (prefs.namePrefixesToIgnore ?? []).join(", "),
+  const [namePrefixesDraft, setNamePrefixesDraft] = useState(() =>
+    (prefs.namePrefixesToIgnore ?? []).join(", "),
   );
 
   useEffect(() => {
@@ -61,28 +60,24 @@ export function ContactsPreferencesDuplicateSection({
       className={SETUP_SECTION_CARD_CLASS}
     >
       <div className="space-y-4">
-        <p className="text-xs text-muted-foreground">{t("contacts.setup.duplicateDetectionDesc")}</p>
+        <p className="text-xs text-muted-foreground">
+          {t("contacts.setup.duplicateDetectionDesc")}
+        </p>
         <fieldset className="space-y-2">
           <legend className={FORM_LABEL}>{t("contacts.setup.duplicateFields")}</legend>
-          <div className="flex flex-wrap gap-3">
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
             {DUPLICATE_DETECTION_FIELD_IDS.map((option) => {
               const checked = detectionFields.includes(option);
               const checkboxId = `dup-field-${option}`;
               return (
-                <div
+                <FormCheckboxCard
                   key={option}
-                  className="flex min-h-11 items-center gap-2 rounded-lg border border-border/60 px-3 py-2 text-sm hover:bg-muted/50 transition-colors"
-                >
-                  <Checkbox
-                    id={checkboxId}
-                    checked={checked}
-                    onCheckedChange={(value) => toggleDetectionField(option, value === true)}
-                    className="cursor-pointer"
-                  />
-                  <label htmlFor={checkboxId} className="cursor-pointer select-none">
-                    {getDuplicateFieldLabel(option, t)}
-                  </label>
-                </div>
+                  id={checkboxId}
+                  name={checkboxId}
+                  checked={checked}
+                  onCheckedChange={(value) => toggleDetectionField(option, value)}
+                  label={getDuplicateFieldLabel(option, t)}
+                />
               );
             })}
           </div>
@@ -145,7 +140,9 @@ export function ContactsPreferencesDuplicateSection({
                 const parsed = Number(e.target.value);
                 onUpdatePreference(
                   "duplicateDetectionThresholdMedium",
-                  Number.isFinite(parsed) ? parsed : (prefs.duplicateDetectionThresholdMedium ?? 75),
+                  Number.isFinite(parsed)
+                    ? parsed
+                    : (prefs.duplicateDetectionThresholdMedium ?? 75),
                 );
               }}
             />
@@ -153,16 +150,18 @@ export function ContactsPreferencesDuplicateSection({
         </div>
       </div>
 
-      <ModuleSetupSaveFooter
-        dirty={Boolean(isPrefsDirty)}
-        saving={Boolean(saving)}
-        saved={Boolean(saved)}
-        saveLabel={saving ? t("global.saving") : t("contacts.setup.saveAndApply")}
-        savedLabel={t("contacts.form.saved")}
-        onSave={onSave ?? (() => {})}
-        disableUnsavedGuard
-        footerClassName="mt-4 pt-3"
-      />
+      {onSave ? (
+        <ModuleSetupSaveFooter
+          dirty={Boolean(isPrefsDirty)}
+          saving={Boolean(saving)}
+          saved={Boolean(saved)}
+          saveLabel={saving ? t("global.saving") : t("contacts.setup.saveAndApply")}
+          savedLabel={t("contacts.form.saved")}
+          onSave={onSave}
+          disableUnsavedGuard
+          footerClassName="mt-4 pt-3"
+        />
+      ) : null}
     </SectionCard>
   );
 }

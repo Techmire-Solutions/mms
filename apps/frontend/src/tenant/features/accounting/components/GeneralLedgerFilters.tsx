@@ -1,8 +1,8 @@
 import React from "react";
 import type { AppTranslationKey } from "@mms/shared";
-import { ACCOUNT_TYPES, type AccountType, type Account } from '@/lib/data/accountingData';
-import { DateRangeFilterBar } from "@/components/ui/DateRangeFilterBar";
-import { FormSelect } from "@/components/ui/FormSelect";
+import { ACCOUNT_TYPES, type AccountType, type Account } from "@/lib/data/accountingData";
+import { DateRangeFilterBar } from "@/components/app/DateRangeFilterBar";
+import { FormSelect } from "@/components/app/FormSelect";
 import { useTranslation } from "@/hooks/useTranslation";
 
 interface GeneralLedgerFiltersProps {
@@ -31,7 +31,10 @@ export function GeneralLedgerFilters({
   const { t } = useTranslation();
 
   return (
-    <nav aria-label={t("accounting.ledger.filtersAria")} className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+    <nav
+      aria-label={t("accounting.ledger.filtersAria")}
+      className="grid grid-cols-2 sm:grid-cols-4 gap-3"
+    >
       <FormSelect
         id="ledger-filter-type"
         name="typeFilter"
@@ -43,7 +46,10 @@ export function GeneralLedgerFilters({
         }}
         options={[
           { value: "all", label: t("accounting.ledger.allTypes") },
-          ...ACCOUNT_TYPES.map((type) => ({ value: type, label: t(`accounting.type.${type}` as AppTranslationKey) })),
+          ...ACCOUNT_TYPES.map((type) => ({
+            value: type,
+            label: t(`accounting.type.${type}` as AppTranslationKey),
+          })),
         ]}
       />
       <FormSelect
@@ -53,7 +59,10 @@ export function GeneralLedgerFilters({
         value={selectedAccount}
         onChange={onSelectedAccountChange}
         placeholder={t("accounting.ledger.selectAccount")}
-        options={filteredAccounts.map((account) => ({ value: account.id, label: `${account.code} – ${account.name}` }))}
+        options={filteredAccounts.map((account) => ({
+          value: account.id,
+          label: `${account.code} – ${account.name}`,
+        }))}
         className="col-span-2 sm:col-span-1"
       />
       <DateRangeFilterBar

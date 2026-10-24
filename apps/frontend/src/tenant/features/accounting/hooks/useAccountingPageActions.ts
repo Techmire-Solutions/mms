@@ -1,7 +1,13 @@
 import { useCallback } from "react";
 import { useTranslation } from "@/hooks/useTranslation";
 import { notify } from "@/lib/notify";
-import { journalEntryListSchema, type Account, type AppTranslationKey, type FiscalYear, type JournalEntry } from "@mms/shared";
+import {
+  journalEntryListSchema,
+  type Account,
+  type AppTranslationKey,
+  type FiscalYear,
+  type JournalEntry,
+} from "@mms/shared";
 import { useAccountingMutations } from "@/tenant/features/accounting/hooks/useAccountingApi";
 import { NotifiedMutationError } from "@/lib/notifiedMutationError";
 import { getApiValidationMessage } from "@/lib/apiValidationMessage";
@@ -47,17 +53,23 @@ export function useAccountingPageActions({
     bulkRestoreEntries,
   } = useAccountingMutations();
 
-  const notifyActionFailure = useCallback((messageKey: AppTranslationKey, error: unknown) => {
-    if (error instanceof NotifiedMutationError) return;
-    const description = describeActionFailure(error);
-    notify.error(t(messageKey), description ? { description } : undefined);
-  }, [t]);
+  const notifyActionFailure = useCallback(
+    (messageKey: AppTranslationKey, error: unknown) => {
+      if (error instanceof NotifiedMutationError) return;
+      const description = describeActionFailure(error);
+      notify.error(t(messageKey), description ? { description } : undefined);
+    },
+    [t],
+  );
 
-  const notifySaveFailure = useCallback((error: unknown) => {
-    notifyActionFailure("accounting.settings.saveEntriesFailed", error);
-  }, [notifyActionFailure]);
+  const notifySaveFailure = useCallback(
+    (error: unknown) => {
+      notifyActionFailure("accounting.settings.saveEntriesFailed", error);
+    },
+    [notifyActionFailure],
+  );
 
-  const setAccounts = (async (updater: Account[] | ((prev: Account[]) => Account[])) => {
+  const setAccounts = async (updater: Account[] | ((prev: Account[]) => Account[])) => {
     const nextAccounts = typeof updater === "function" ? updater(accounts) : updater;
     try {
       await upsertAccounts.mutateAsync(nextAccounts);
@@ -65,15 +77,22 @@ export function useAccountingPageActions({
       notifySaveFailure(error);
       throw error;
     }
-  });
+  };
 
   /** Resolves with the server's copy so callers can show server-assigned voucher numbers. */
-  const setEntries = (async (updater: JournalEntry[] | ((prev: JournalEntry[]) => JournalEntry[])): Promise<JournalEntry[]> => {
+  const setEntries = async (
+    updater: JournalEntry[] | ((prev: JournalEntry[]) => JournalEntry[]),
+  ): Promise<JournalEntry[]> => {
     const nextJournalEntries = typeof updater === "function" ? updater(journalEntries) : updater;
     try {
       const result: unknown = await upsertEntries.mutateAsync(nextJournalEntries);
       const saved = journalEntryListSchema.safeParse(
-        result && typeof result === "object" && "body" in result && result.body && typeof result.body === "object" && "entries" in result.body
+        result &&
+          typeof result === "object" &&
+          "body" in result &&
+          result.body &&
+          typeof result.body === "object" &&
+          "entries" in result.body
           ? result.body.entries
           : undefined,
       );
@@ -82,9 +101,9 @@ export function useAccountingPageActions({
       notifySaveFailure(error);
       throw error;
     }
-  });
+  };
 
-  const setFiscalYears = (async (updater: FiscalYear[] | ((prev: FiscalYear[]) => FiscalYear[])) => {
+  const setFiscalYears = async (updater: FiscalYear[] | ((prev: FiscalYear[]) => FiscalYear[])) => {
     const nextFiscalYears = typeof updater === "function" ? updater(fiscalYears) : updater;
     try {
       await upsertFiscalYears.mutateAsync(nextFiscalYears);
@@ -92,9 +111,9 @@ export function useAccountingPageActions({
       notifySaveFailure(error);
       throw error;
     }
-  });
+  };
 
-  const handleDeleteEntry = (async (id: string) => {
+  const handleDeleteEntry = async (id: string) => {
     try {
       await deleteEntry.mutateAsync(id);
       notify.success(t("accounting.trash.deleted"));
@@ -102,9 +121,9 @@ export function useAccountingPageActions({
       notifyActionFailure("accounting.trash.actionFailed", error);
       throw error;
     }
-  });
+  };
 
-  const handleRestoreEntry = (async (id: string) => {
+  const handleRestoreEntry = async (id: string) => {
     try {
       await restoreEntry.mutateAsync(id);
       notify.success(t("accounting.trash.restored"));
@@ -112,16 +131,18 @@ export function useAccountingPageActions({
       notifyActionFailure("accounting.trash.actionFailed", error);
       throw error;
     }
-  });
+  };
 
-  const handleBulkDeleteEntries = (async (ids: string[]) => {
+  const handleBulkDeleteEntries = async (ids: string[]) => {
     try {
       const result = await bulkDeleteEntries.mutateAsync(ids);
       if (result.failed > 0) {
-        notify.warning(t("accounting.trash.bulkPartial", {
-          succeeded: result.succeeded,
-          failed: result.failed,
-        }));
+        notify.warning(
+          t("accounting.trash.bulkPartial", {
+            succeeded: result.succeeded,
+            failed: result.failed,
+          }),
+        );
       } else {
         notify.success(
           result.succeeded > 1
@@ -133,16 +154,18 @@ export function useAccountingPageActions({
       notifyActionFailure("accounting.trash.actionFailed", error);
       throw error;
     }
-  });
+  };
 
-  const handleBulkRestoreEntries = (async (ids: string[]) => {
+  const handleBulkRestoreEntries = async (ids: string[]) => {
     try {
       const result = await bulkRestoreEntries.mutateAsync(ids);
       if (result.failed > 0) {
-        notify.warning(t("accounting.trash.bulkPartial", {
-          succeeded: result.succeeded,
-          failed: result.failed,
-        }));
+        notify.warning(
+          t("accounting.trash.bulkPartial", {
+            succeeded: result.succeeded,
+            failed: result.failed,
+          }),
+        );
       } else {
         notify.success(
           result.succeeded > 1
@@ -154,7 +177,7 @@ export function useAccountingPageActions({
       notifyActionFailure("accounting.trash.actionFailed", error);
       throw error;
     }
-  });
+  };
 
   return {
     setAccounts,

@@ -1,106 +1,23 @@
-import { randomBytes } from 'node:crypto';
-import { and, eq, inArray, sql } from 'drizzle-orm';
-import { resolveTenantLoginEmail, applyTitleCaseRecursive } from '@mms/shared';
-import { withTenant } from '../tenant-context.js';
-import { tenantUsers } from '../schema.js';
+import { randomBytes } from "node:crypto";
+import { and, eq, inArray, sql } from "drizzle-orm";
+import { applyTitleCaseRecursive } from "@mms/shared";
+import { withTenant } from "../tenant-context.js";
+import { tenantUsers } from "../schema.js";
 import {
   findTenantUserRowById,
-  findTenantUserRowByIdGlobal,
   listAllTenantUsersByWorkspace,
   type TenantUserRow,
-} from './tenantUserRepositoryHydrate.js';
-import { revokeAllUserSessions, revokeUserSessionKeys } from '../../services/session.service.js';
-import { invalidateMultiTierCache } from '../../lib/cache/index.js';
+} from "./tenantUserRepositoryHydrate.js";
+import { invalidateMultiTierCache } from "../../lib/cache/index.js";
+import { tenantUserIdWhere } from "./tenantUserLifecyclePersist.js";
+import {
+  splitProfileFields,
+  omitUndefinedColumns,
+  nonEmptyString,
+} from "./tenantUserProfileHelpers.js";
 
-const TABLE_AUTH_KEYS = new Set([
-  'id',
-  'workspaceSubdomain',
-  'loginEmail',
-  'passwordHash',
-  'name',
-  'role',
-  'contactId',
-  'emailVerifiedAt',
-  'pendingLoginEmail',
-  'createdAt',
-  'email',
-  'mustChangePassword',
-  'deletedAt',
-  'deletedBy',
-]);
-
-function splitProfileFields(user: TenantUserRow): {
-  columns: typeof tenantUsers.$inferInsert;
-  profile: Record<string, unknown>;
-} {
-  const profile: Record<string, unknown> = {};
-  for (const [key, value] of Object.entries(user)) {
-    if (!TABLE_AUTH_KEYS.has(key) && value !== undefined) {
-      profile[key] = value;
-    }
-  }
-
-  const loginEmail = resolveTenantLoginEmail(user, typeof user.email === 'string' ? user.email : undefined);
-  const workspaceSubdomain =
-    typeof user.workspaceSubdomain === 'string' ? user.workspaceSubdomain.trim().toLowerCase() : '';
-
-  return {
-    columns: {
-      id: String(user.id),
-      workspaceSubdomain,
-      loginEmail,
-      passwordHash: typeof user.passwordHash === 'string' ? user.passwordHash : '',
-      name: typeof user.name === 'string' ? user.name : '',
-      role: typeof user.role === 'string' ? user.role : 'assistant_teacher',
-      contactId: user.contactId != null && user.contactId !== '' ? String(user.contactId) : null,
-      emailVerifiedAt:
-        typeof user.emailVerifiedAt === 'string' ? new Date(user.emailVerifiedAt) : null,
-      pendingLoginEmail:
-        typeof user.pendingLoginEmail === 'string' ? user.pendingLoginEmail.toLowerCase() : null,
-      createdAt:
-        typeof user.createdAt === 'string' ? new Date(user.createdAt) : new Date(),
-      mustChangePassword: user.mustChangePassword === true,
-      deletedAt:
-        typeof user.deletedAt === 'string' && user.deletedAt
-          ? new Date(user.deletedAt)
-          : user.deletedAt === null
-            ? null
-            : undefined,
-      deletedBy:
-        typeof user.deletedBy === 'string' && user.deletedBy
-          ? user.deletedBy
-          : user.deletedBy === null
-            ? null
-            : undefined,
-      profileJson: Object.keys(profile).length > 0 ? profile : null,
-    },
-    profile,
-  };
-}
-
-function omitUndefinedColumns<T extends Record<string, unknown>>(columns: T): Partial<T> {
-  const result: Partial<T> = {};
-  for (const key in columns) {
-    if (Object.prototype.hasOwnProperty.call(columns, key)) {
-      const val = columns[key];
-      if (val !== undefined) {
-        result[key] = val;
-      }
-    }
-  }
-  return result;
-}
-
-function nonEmptyString(value: unknown): string {
-  return typeof value === 'string' && value.trim() ? value : '';
-}
-
-function tenantUserIdWhere(id: string, workspaceSubdomain: string) {
-  return and(
-    eq(tenantUsers.id, id),
-    eq(tenantUsers.workspaceSubdomain, workspaceSubdomain.trim().toLowerCase()),
-  );
-}
+export * from "./tenantUserLifecyclePersist.js";
+export * from "./tenantUserProfileHelpers.js";
 
 export async function replaceTenantUsersForWorkspace(
   workspaceSubdomain: string,
@@ -120,7 +37,7 @@ export async function replaceTenantUsersForWorkspace(
   const hashById = new Map<string, string>();
   const hashByLoginEmail = new Map<string, string>();
   for (const row of existingRows) {
-    const hash = typeof row.passwordHash === 'string' ? row.passwordHash : '';
+    const hash = typeof row.passwordHash === "string" ? row.passwordHash : "";
     if (!hash) continue;
     hashById.set(String(row.id), hash);
     if (row.loginEmail) hashByLoginEmail.set(row.loginEmail.trim().toLowerCase(), hash);
@@ -134,11 +51,11 @@ export async function replaceTenantUsersForWorkspace(
       columns.passwordHash =
         hashById.get(columns.id) ??
         hashByLoginEmail.get(columns.loginEmail.trim().toLowerCase()) ??
-        '';
+        "";
     }
 
     if (columns.passwordHash) {
-      if (columns.role === 'admin' && !columns.deletedAt) adminCredentialSurvives = true;
+      if (columns.role === "admin" && !columns.deletedAt) adminCredentialSurvives = true;
       return columns;
     }
 
@@ -146,7 +63,7 @@ export async function replaceTenantUsersForWorkspace(
     // credential. Park an unverifiable hash and force a reset instead of failing the
     // whole restore. The value carries no `salt:hash` separator, so `verifyPassword`
     // rejects every candidate password until an admin resets it.
-    columns.passwordHash = `!restore-${randomBytes(32).toString('base64url')}`;
+    columns.passwordHash = `!restore-${randomBytes(32).toString("base64url")}`;
     columns.mustChangePassword = true;
     parkedAnyCredential = true;
     return columns;
@@ -154,12 +71,12 @@ export async function replaceTenantUsersForWorkspace(
 
   // Parking credentials is only safe while at least one live admin can still sign in.
   if (parkedAnyCredential && !adminCredentialSurvives) {
-    const err = new Error('backup.missingUserCredentials') as Error & {
+    const err = new Error("backup.missingUserCredentials") as Error & {
       statusCode?: number;
       type?: string;
     };
     err.statusCode = 400;
-    err.type = 'validation_error';
+    err.type = "validation_error";
     throw err;
   }
 
@@ -185,7 +102,7 @@ export async function upsertTenantUserRow(
 ): Promise<void> {
   const tenant = workspaceSubdomain.trim().toLowerCase();
   if (!tenant) {
-    throw new Error('[upsertTenantUserRow] workspaceSubdomain is required');
+    throw new Error("[upsertTenantUserRow] workspaceSubdomain is required");
   }
   const processedUser = applyTitleCaseRecursive(user) as TenantUserRow;
   const { columns } = splitProfileFields({ ...processedUser, workspaceSubdomain: tenant });
@@ -196,22 +113,22 @@ export async function upsertTenantUserRow(
     const merged = {
       ...omitUndefinedColumns(columns),
       workspaceSubdomain: tenant,
-      name: nonEmptyString(columns.name) || existing.name || '',
-      loginEmail: nonEmptyString(columns.loginEmail) || existing.loginEmail || '',
-      passwordHash: nonEmptyString(columns.passwordHash) || existing.passwordHash || '',
+      name: nonEmptyString(columns.name) || existing.name || "",
+      loginEmail: nonEmptyString(columns.loginEmail) || existing.loginEmail || "",
+      passwordHash: nonEmptyString(columns.passwordHash) || existing.passwordHash || "",
       updatedAt: new Date(),
     };
     await withTenant(tenant, async (tx) => {
       await tx.update(tenantUsers).set(merged).where(tenantUserIdWhere(columns.id, tenant));
     });
-    await invalidateMultiTierCache({ tenantId: tenant, domain: 'users', key: columns.id });
+    await invalidateMultiTierCache({ tenantId: tenant, domain: "users", key: columns.id });
     return;
   }
 
   await withTenant(tenant, async (tx) => {
     await tx.insert(tenantUsers).values(omitUndefinedColumns(columns) as typeof columns);
   });
-  await invalidateMultiTierCache({ tenantId: tenant, domain: 'users', key: columns.id });
+  await invalidateMultiTierCache({ tenantId: tenant, domain: "users", key: columns.id });
 }
 
 /**
@@ -229,7 +146,7 @@ export async function upsertTenantUsersBatch(
 ): Promise<void> {
   const tenant = workspaceSubdomain.trim().toLowerCase();
   if (!tenant) {
-    throw new Error('[upsertTenantUsersBatch] workspaceSubdomain is required');
+    throw new Error("[upsertTenantUsersBatch] workspaceSubdomain is required");
   }
   if (users.length === 0) return;
 
@@ -252,12 +169,7 @@ export async function upsertTenantUsersBatch(
         passwordHash: tenantUsers.passwordHash,
       })
       .from(tenantUsers)
-      .where(
-        and(
-          eq(tenantUsers.workspaceSubdomain, tenant),
-          inArray(tenantUsers.id, userIds),
-        ),
-      );
+      .where(and(eq(tenantUsers.workspaceSubdomain, tenant), inArray(tenantUsers.id, userIds)));
     const existingById = new Map(existingRows.map((r) => [String(r.id), r]));
 
     // Build a single consistent value set for every row (new + existing), then
@@ -271,14 +183,12 @@ export async function upsertTenantUsersBatch(
         id: columns.id,
         workspaceSubdomain: tenant,
         loginEmail: existing
-          ? nonEmptyString(columns.loginEmail) || existing.loginEmail || ''
+          ? nonEmptyString(columns.loginEmail) || existing.loginEmail || ""
           : columns.loginEmail,
         passwordHash: existing
-          ? nonEmptyString(columns.passwordHash) || existing.passwordHash || ''
+          ? nonEmptyString(columns.passwordHash) || existing.passwordHash || ""
           : columns.passwordHash,
-        name: existing
-          ? nonEmptyString(columns.name) || existing.name || ''
-          : columns.name,
+        name: existing ? nonEmptyString(columns.name) || existing.name || "" : columns.name,
         role: columns.role,
         contactId: columns.contactId ?? null,
         emailVerifiedAt: columns.emailVerifiedAt ?? null,
@@ -298,170 +208,20 @@ export async function upsertTenantUsersBatch(
       .onConflictDoUpdate({
         target: [tenantUsers.workspaceSubdomain, tenantUsers.id],
         set: {
-          loginEmail: sql.raw('excluded.login_email'),
-          passwordHash: sql.raw('excluded.password_hash'),
-          name: sql.raw('excluded.name'),
-          role: sql.raw('excluded.role'),
-          contactId: sql.raw('excluded.contact_id'),
-          emailVerifiedAt: sql.raw('excluded.email_verified_at'),
-          pendingLoginEmail: sql.raw('excluded.pending_login_email'),
-          mustChangePassword: sql.raw('excluded.must_change_password'),
-          updatedAt: sql.raw('excluded.updated_at'),
-          deletedAt: sql.raw('excluded.deleted_at'),
-          deletedBy: sql.raw('excluded.deleted_by'),
-          profileJson: sql.raw('excluded.profile_json'),
+          loginEmail: sql.raw("excluded.login_email"),
+          passwordHash: sql.raw("excluded.password_hash"),
+          name: sql.raw("excluded.name"),
+          role: sql.raw("excluded.role"),
+          contactId: sql.raw("excluded.contact_id"),
+          emailVerifiedAt: sql.raw("excluded.email_verified_at"),
+          pendingLoginEmail: sql.raw("excluded.pending_login_email"),
+          mustChangePassword: sql.raw("excluded.must_change_password"),
+          updatedAt: sql.raw("excluded.updated_at"),
+          deletedAt: sql.raw("excluded.deleted_at"),
+          deletedBy: sql.raw("excluded.deleted_by"),
+          profileJson: sql.raw("excluded.profile_json"),
         },
       });
   });
-  await invalidateMultiTierCache({ tenantId: tenant, domain: 'users' });
-}
-
-/**
- * Soft-deletes a tenant user.
- *
- * `workspaceSubdomain` is the CALLER's tenant and is mandatory: the lookup and
- * the UPDATE are both scoped to it, so a caller can never address a user that
- * belongs to another workspace. (Previously the workspace was derived from the
- * fetched row, which — combined with an RLS-bypassing id-only lookup — allowed
- * cross-tenant deletes.)
- */
-export async function softDeleteTenantUserRow(
-  workspaceSubdomain: string,
-  id: string,
-  deletedBy: string,
-): Promise<boolean> {
-  const tenant = workspaceSubdomain.trim().toLowerCase();
-  if (!tenant) return false;
-  const existing = await findTenantUserRowById(tenant, id);
-  if (!existing || existing.deletedAt) return false;
-  await withTenant(tenant, async (tx) => {
-    await tx
-      .update(tenantUsers)
-      .set({
-        deletedAt: new Date(),
-        deletedBy,
-        updatedAt: new Date(),
-      })
-      .where(tenantUserIdWhere(id, tenant));
-  });
-  await revokeAllUserSessions(id);
-  await revokeUserSessionKeys(id);
-  await invalidateMultiTierCache({ tenantId: tenant, domain: 'users', key: id });
-  return true;
-}
-
-/** Restores a soft-deleted tenant user. Scoped to the CALLER's workspace. */
-export async function restoreTenantUserRow(
-  workspaceSubdomain: string,
-  id: string,
-): Promise<boolean> {
-  const tenant = workspaceSubdomain.trim().toLowerCase();
-  if (!tenant) return false;
-  const existing = await findTenantUserRowById(tenant, id);
-  if (!existing || !existing.deletedAt) return false;
-  await withTenant(tenant, async (tx) => {
-    await tx
-      .update(tenantUsers)
-      .set({
-        deletedAt: null,
-        deletedBy: null,
-        updatedAt: new Date(),
-      })
-      .where(tenantUserIdWhere(id, tenant));
-  });
-  await invalidateMultiTierCache({ tenantId: tenant, domain: 'users', key: id });
-  return true;
-}
-
-/** Marks a tenant user's email verified. Scoped to the CALLER's workspace. */
-export async function verifyTenantUserEmailRow(
-  workspaceSubdomain: string,
-  id: string,
-): Promise<boolean> {
-  const tenant = workspaceSubdomain.trim().toLowerCase();
-  if (!tenant) return false;
-  const existing = await findTenantUserRowById(tenant, id);
-  if (!existing || existing.deletedAt) return false;
-  await withTenant(tenant, async (tx) => {
-    await tx
-      .update(tenantUsers)
-      .set({
-        emailVerifiedAt: new Date(),
-        updatedAt: new Date(),
-      })
-      .where(tenantUserIdWhere(id, tenant));
-  });
-  return true;
-}
-
-/**
- * Platform-admin variant of {@link verifyTenantUserEmailRow}: resolves the
- * target user's own workspace explicitly. Only call from platform routes.
- */
-export async function verifyTenantUserEmailRowGlobal(id: string): Promise<boolean> {
-  const existing = await findTenantUserRowByIdGlobal(id);
-  if (!existing || existing.deletedAt) return false;
-  const tenant =
-    typeof existing.workspaceSubdomain === 'string' ? existing.workspaceSubdomain.trim().toLowerCase() : '';
-  if (!tenant) return false;
-  await withTenant(tenant, async (tx) => {
-    await tx
-      .update(tenantUsers)
-      .set({
-        emailVerifiedAt: new Date(),
-        updatedAt: new Date(),
-      })
-      .where(tenantUserIdWhere(id, tenant));
-  });
-  return true;
-}
-
-/**
- * Replaces an active user's credential and requires a password change at next
- * sign-in. Scoped to the CALLER's workspace.
- */
-export async function resetTenantUserPasswordRow(
-  workspaceSubdomain: string,
-  id: string,
-  passwordHash: string,
-): Promise<boolean> {
-  const tenant = workspaceSubdomain.trim().toLowerCase();
-  if (!tenant) return false;
-  const existing = await findTenantUserRowById(tenant, id);
-  if (!existing || existing.deletedAt) return false;
-  await withTenant(tenant, async (tx) => {
-    await tx
-      .update(tenantUsers)
-      .set({
-        passwordHash,
-        mustChangePassword: true,
-        updatedAt: new Date(),
-      })
-      .where(tenantUserIdWhere(id, tenant));
-  });
-  return true;
-}
-
-/** Sets a self-chosen password from an accepted invite: verifies email, no forced re-change. */
-export async function activateInvitedTenantUserRow(
-  workspaceSubdomain: string,
-  id: string,
-  passwordHash: string,
-): Promise<boolean> {
-  const tenant = workspaceSubdomain.trim().toLowerCase();
-  if (!tenant) return false;
-  const existing = await findTenantUserRowById(tenant, id);
-  if (!existing || existing.deletedAt) return false;
-  await withTenant(tenant, async (tx) => {
-    await tx
-      .update(tenantUsers)
-      .set({
-        passwordHash,
-        mustChangePassword: false,
-        emailVerifiedAt: new Date(),
-        updatedAt: new Date(),
-      })
-      .where(tenantUserIdWhere(id, tenant));
-  });
-  return true;
+  await invalidateMultiTierCache({ tenantId: tenant, domain: "users" });
 }

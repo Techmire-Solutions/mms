@@ -1,29 +1,25 @@
 import {
   type BrandingSettings,
+  type FinanceSettings,
   type GlobalSettings,
   type PublicBranding,
   DEFAULT_BRANDING_SETTINGS,
+  DEFAULT_FINANCE_SETTINGS,
   DEFAULT_GLOBAL_SETTINGS,
   mergeBrandingSettings,
   mergeGlobalSettings,
+  registerFinanceCurrencyProvider,
   registerSettingsProvider,
-} from '@mms/shared';
-import {
-  syncToServer,
-  type ServerSyncResult,
-} from '@/lib/dbStorageCore.js';
-import {
-  getObject,
-  readObjectLocal,
-  writeObjectLocal,
-} from '@/lib/dbObjectStorage';
-import { reportClientError } from '@/lib/clientErrorReporting';
+} from "@mms/shared";
+import { syncToServer, type ServerSyncResult } from "@/lib/dbStorageCore";
+import { getObject, readObjectLocal, writeObjectLocal } from "@/lib/dbObjectStorage";
+import { reportClientError } from "@/lib/clientErrorReporting";
 
 export { getObject, readObjectLocal };
 
 /** Reads `global_settings` merged with defaults (incl. all `enabledModules` keys). */
 export function getGlobalSettings(): GlobalSettings {
-  return mergeGlobalSettings(getObject<GlobalSettings>('global_settings', DEFAULT_GLOBAL_SETTINGS));
+  return mergeGlobalSettings(getObject<GlobalSettings>("global_settings", DEFAULT_GLOBAL_SETTINGS));
 }
 
 let globalSettingsPreview: Partial<GlobalSettings> | null = null;
@@ -65,26 +61,32 @@ registerSettingsProvider(() => {
   };
 });
 
+registerFinanceCurrencyProvider(
+  () => getObject<FinanceSettings>("finance_settings", DEFAULT_FINANCE_SETTINGS).currency,
+);
+
 /** Persists merged global settings and dispatches `local-database-update`. */
 export function saveGlobalSettings(globalSettings: GlobalSettings): void {
-  saveObject('global_settings', mergeGlobalSettings(globalSettings));
+  saveObject("global_settings", mergeGlobalSettings(globalSettings));
 }
 
 /** Persists global settings locally and waits for PostgreSQL sync. */
-export async function saveGlobalSettingsAsync(globalSettings: GlobalSettings): Promise<ServerSyncResult> {
+export async function saveGlobalSettingsAsync(
+  globalSettings: GlobalSettings,
+): Promise<ServerSyncResult> {
   const merged = mergeGlobalSettings(globalSettings);
   try {
-    const processed = writeObjectLocal('global_settings', merged);
-    return await syncToServer('/api/db/objects/global_settings', processed);
+    const processed = writeObjectLocal("global_settings", merged);
+    return await syncToServer("/api/db/objects/global_settings", processed);
   } catch (error) {
-    reportClientError(error, { context: 'db.saveGlobalSettings' });
+    reportClientError(error, { context: "db.saveGlobalSettings" });
     return { ok: false };
   }
 }
 
 /** Reads `branding` merged with defaults. */
 export function getBrandingSettings(): BrandingSettings {
-  return mergeBrandingSettings(getObject<BrandingSettings>('branding', DEFAULT_BRANDING_SETTINGS));
+  return mergeBrandingSettings(getObject<BrandingSettings>("branding", DEFAULT_BRANDING_SETTINGS));
 }
 
 let brandingPreview: Partial<BrandingSettings> | null = null;
@@ -108,13 +110,15 @@ export function getEffectiveBrandingSettings(): BrandingSettings {
 }
 
 /** Persists merged branding locally and waits for PostgreSQL sync to complete. */
-export async function saveBrandingSettings(brandingSettings: BrandingSettings): Promise<ServerSyncResult> {
+export async function saveBrandingSettings(
+  brandingSettings: BrandingSettings,
+): Promise<ServerSyncResult> {
   const merged = mergeBrandingSettings(brandingSettings);
   try {
-    const processed = writeObjectLocal('branding', merged);
-    return await syncToServer('/api/db/objects/branding', processed);
+    const processed = writeObjectLocal("branding", merged);
+    return await syncToServer("/api/db/objects/branding", processed);
   } catch (error) {
-    reportClientError(error, { context: 'db.saveBrandingSettings' });
+    reportClientError(error, { context: "db.saveBrandingSettings" });
     return { ok: false };
   }
 }
@@ -122,9 +126,9 @@ export async function saveBrandingSettings(brandingSettings: BrandingSettings): 
 /** Merges public branding from the workspace API into the local branding object (login prefetch). */
 export function cachePublicBranding(partial: PublicBranding): void {
   const existing = mergeBrandingSettings(
-    readObjectLocal<BrandingSettings>('branding') ?? DEFAULT_BRANDING_SETTINGS,
+    readObjectLocal<BrandingSettings>("branding") ?? DEFAULT_BRANDING_SETTINGS,
   );
-  writeObjectLocal('branding', mergeBrandingSettings({ ...existing, ...partial }));
+  writeObjectLocal("branding", mergeBrandingSettings({ ...existing, ...partial }));
 }
 
 export function saveObject<T>(key: string, objectValue: T): void {
@@ -132,7 +136,7 @@ export function saveObject<T>(key: string, objectValue: T): void {
     const processed = writeObjectLocal(key, objectValue);
     void syncToServer(`/api/db/objects/${key}`, processed);
   } catch (error) {
-    reportClientError(error, { context: 'db.saveObject', key });
+    reportClientError(error, { context: "db.saveObject", key });
   }
 }
 
@@ -142,7 +146,7 @@ export async function saveObjectAsync<T>(key: string, objectValue: T): Promise<S
     const processed = writeObjectLocal(key, objectValue);
     return await syncToServer(`/api/db/objects/${key}`, processed);
   } catch (error) {
-    reportClientError(error, { context: 'db.saveObjectAsync', key });
+    reportClientError(error, { context: "db.saveObjectAsync", key });
     return { ok: false };
   }
 }

@@ -1,26 +1,26 @@
-import React from 'react';
-import { beforeEach, describe, expect, it, vi } from 'vitest';
-import { renderToStaticMarkup } from 'react-dom/server';
-import type { TaskRecord } from '@mms/shared';
-import { TasksWorkTab } from './TasksWorkTab';
+import React from "react";
+import { beforeEach, describe, expect, it, vi } from "vitest";
+import { renderToStaticMarkup } from "react-dom/server";
+import type { TaskRecord } from "@mms/shared";
+import { TasksWorkTab } from "./TasksWorkTab";
 
-const viewModeState = { viewMode: 'table' as 'table' | 'cards' };
+const viewModeState = { viewMode: "table" as "table" | "cards" };
 
-vi.mock('@/hooks/useTranslation', () => ({
+vi.mock("@/hooks/useTranslation", () => ({
   useTranslation: () => ({
     t: (key: string, params?: { count?: number }) =>
       params?.count !== undefined ? `${key}:${params.count}` : key,
   }),
 }));
 
-vi.mock('@/hooks/useWorkDirectoryViewMode', () => ({
+vi.mock("@/hooks/useWorkDirectoryViewMode", () => ({
   useWorkDirectoryViewMode: () => ({
     viewMode: viewModeState.viewMode,
     setViewMode: vi.fn(),
   }),
 }));
 
-vi.mock('../hooks/useTasksColumnLayout', () => ({
+vi.mock("../hooks/useTasksColumnLayout", () => ({
   useTasksColumnLayout: () => ({
     columnRegistry: [],
     isColumnVisible: () => true,
@@ -32,14 +32,8 @@ vi.mock('../hooks/useTasksColumnLayout', () => ({
   }),
 }));
 
-vi.mock('./TasksWorkDirectory', () => ({
-  TasksWorkDirectory: ({
-    viewMode,
-    tasks,
-  }: {
-    viewMode: string;
-    tasks: TaskRecord[];
-  }) => (
+vi.mock("./TasksWorkDirectory", () => ({
+  TasksWorkDirectory: ({ viewMode, tasks }: { viewMode: string; tasks: TaskRecord[] }) => (
     <div data-testid={`tasks-directory-${viewMode}`}>
       {tasks.map((task) => (
         <div key={task.id}>
@@ -53,11 +47,11 @@ vi.mock('./TasksWorkDirectory', () => ({
   ),
 }));
 
-vi.mock('./TaskDetailDrawer', () => ({
+vi.mock("./TaskDetailDrawer", () => ({
   TaskDetailDrawer: () => null,
 }));
 
-vi.mock('@/components/common/work/WorkTaskToolbar', () => ({
+vi.mock("@/components/common/work/WorkTaskToolbar", () => ({
   WorkTaskToolbar: ({
     primaryAction,
     regionLabel,
@@ -71,27 +65,27 @@ vi.mock('@/components/common/work/WorkTaskToolbar', () => ({
   }) => (
     <div>
       <span>{regionLabel}</span>
-      <span>{`viewMode:${viewModeToggle?.viewMode ?? 'none'}`}</span>
-      <span>{columnCustomizer ? 'columns:ready' : 'columns:missing'}</span>
+      <span>{`viewMode:${viewModeToggle?.viewMode ?? "none"}`}</span>
+      <span>{columnCustomizer ? "columns:ready" : "columns:missing"}</span>
       {primaryAction}
     </div>
   ),
 }));
 
 const mockTask: TaskRecord = {
-  id: 'a0000000-0000-0000-0000-000000000001',
-  workspaceSubdomain: 'test',
-  title: 'Review Midterm Exams',
-  description: 'Grading evaluation',
-  status: 'in_progress',
-  priority: 'urgent',
+  id: "a0000000-0000-0000-0000-000000000001",
+  workspaceSubdomain: "test",
+  title: "Review Midterm Exams",
+  description: "Grading evaluation",
+  status: "in_progress",
+  priority: "urgent",
   dueAt: null,
   createdById: null,
-  creatorName: 'Admin',
+  creatorName: "Admin",
   parentTaskId: null,
   assignees: [],
-  createdAt: '2026-10-01T00:00:00.000Z',
-  updatedAt: '2026-10-01T00:00:00.000Z',
+  createdAt: "2026-10-01T00:00:00.000Z",
+  updatedAt: "2026-10-01T00:00:00.000Z",
   deletedAt: null,
 };
 
@@ -110,30 +104,30 @@ const baseProps = {
   onUpdateStatus: vi.fn(),
 };
 
-describe('TasksWorkTab', () => {
+describe("TasksWorkTab", () => {
   beforeEach(() => {
-    viewModeState.viewMode = 'table';
+    viewModeState.viewMode = "table";
   });
 
-  it('renders table directory with title, priority, and column customizer', () => {
+  it("renders table directory with title, priority, and column customizer", () => {
     const html = renderToStaticMarkup(<TasksWorkTab {...baseProps} />);
-    expect(html).toContain('Review Midterm Exams');
-    expect(html).toContain('tasks.priority.urgent');
-    expect(html).toContain('tasks.status.in_progress');
-    expect(html).toContain('viewMode:table');
-    expect(html).toContain('columns:ready');
-    expect(html).toContain('tasks-directory-table');
+    expect(html).toContain("Review Midterm Exams");
+    expect(html).toContain("tasks.priority.urgent");
+    expect(html).toContain("tasks.status.in_progress");
+    expect(html).toContain("viewMode:table");
+    expect(html).toContain("columns:ready");
+    expect(html).toContain("tasks-directory-table");
   });
 
-  it('renders empty directory when task list is empty', () => {
+  it("renders empty directory when task list is empty", () => {
     const html = renderToStaticMarkup(<TasksWorkTab {...baseProps} tasks={[]} />);
-    expect(html).toContain('tasks.emptyTitle');
+    expect(html).toContain("tasks.emptyTitle");
   });
 
-  it('switches directory to cards when viewMode is cards', () => {
-    viewModeState.viewMode = 'cards';
+  it("switches directory to cards when viewMode is cards", () => {
+    viewModeState.viewMode = "cards";
     const html = renderToStaticMarkup(<TasksWorkTab {...baseProps} />);
-    expect(html).toContain('tasks-directory-cards');
-    expect(html).toContain('Review Midterm Exams');
+    expect(html).toContain("tasks-directory-cards");
+    expect(html).toContain("Review Midterm Exams");
   });
 });

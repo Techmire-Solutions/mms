@@ -1,7 +1,7 @@
 packages:
-  - 'apps/*'
-  - 'packages/*'
-  - 'e2e'
+  - "apps/*"
+  - "packages/*"
+  - "e2e"
 
 confirmModulesPurge: false
 
@@ -15,12 +15,12 @@ allowBuilds:
 catalog:
   zod: "^4.6.5"
   fastify: "^5.12.5"
-  pino: "^10.3.1"
-  drizzle-orm: "^0.45.3"
+  pino: "^10.4.0"
+  drizzle-orm: "^0.45.4"
   react: "^19.3.0"
   react-dom: "^19.3.0"
-  vite: "^8.3.1"
-  "@tanstack/react-query": "^5.104.0"
+  vite: "^8.3.4"
+  "@tanstack/react-query": "^5.104.1"
   "@ts-rest/react-query": "3.52.1"
   react-router-dom: "^7.18.4"
 
@@ -30,9 +30,29 @@ minimumReleaseAgeExclude:
   - pg-connection-string@2.14.0
   - pg-protocol@1.15.0
   - pg@8.22.0
-  - '@types/node@26.0.1'
+  - "@types/node@26.0.1"
   - react-hook-form@7.80.0
   - fastify@5.11.2
+  - "@oxc-transform-react/binding-android-arm-eabi@0.154.0"
+  - "@oxc-transform-react/binding-android-arm64@0.154.0"
+  - "@oxc-transform-react/binding-darwin-arm64@0.154.0"
+  - "@oxc-transform-react/binding-darwin-x64@0.154.0"
+  - "@oxc-transform-react/binding-freebsd-x64@0.154.0"
+  - "@oxc-transform-react/binding-linux-arm-gnueabihf@0.154.0"
+  - "@oxc-transform-react/binding-linux-arm-musleabihf@0.154.0"
+  - "@oxc-transform-react/binding-linux-arm64-gnu@0.154.0"
+  - "@oxc-transform-react/binding-linux-arm64-musl@0.154.0"
+  - "@oxc-transform-react/binding-linux-ppc64-gnu@0.154.0"
+  - "@oxc-transform-react/binding-linux-riscv64-gnu@0.154.0"
+  - "@oxc-transform-react/binding-linux-riscv64-musl@0.154.0"
+  - "@oxc-transform-react/binding-linux-s390x-gnu@0.154.0"
+  - "@oxc-transform-react/binding-linux-x64-gnu@0.154.0"
+  - "@oxc-transform-react/binding-linux-x64-musl@0.154.0"
+  - "@oxc-transform-react/binding-openharmony-arm64@0.154.0"
+  - "@oxc-transform-react/binding-win32-arm64-msvc@0.154.0"
+  - "@oxc-transform-react/binding-win32-ia32-msvc@0.154.0"
+  - "@oxc-transform-react/binding-win32-x64-msvc@0.154.0"
+  - oxc-transform-react@0.154.0
 
 peerDependencyRules:
   allowAny:
@@ -73,3 +93,6 @@ overrides:
   # Security: source-map-js GHSA-68fv-2mgg-jv7q event-loop DoS via indexed section offsets.
   # Transitive path: @vitest/coverage-v8 > magicast / vite > postcss > source-map-js.
   source-map-js: ">=1.2.2"
+  # Security: dompurify GHSA-cg2g-xh64-v4q7 and GHSA-mrv2-3pqr-j5jr.
+  # Transitive path: apps/frontend > jspdf / mermaid > dompurify.
+  dompurify: ">=3.4.17"

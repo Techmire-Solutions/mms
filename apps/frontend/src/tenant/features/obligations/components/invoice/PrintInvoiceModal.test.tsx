@@ -83,7 +83,7 @@ describe("PrintInvoiceModal", () => {
           collection={mockCollection}
           onClose={onClose}
           onOpenEditor={onOpenEditor}
-        />
+        />,
       );
     });
 
@@ -92,8 +92,8 @@ describe("PrintInvoiceModal", () => {
     expect(document.body.textContent).toContain("obligations.print.customizeTemplate");
 
     // Click customize template
-    const customizeBtn = Array.from(document.body.querySelectorAll("button")).find(
-      (btn) => btn.textContent?.includes("obligations.print.customizeTemplate")
+    const customizeBtn = Array.from(document.body.querySelectorAll("button")).find((btn) =>
+      btn.textContent?.includes("obligations.print.customizeTemplate"),
     );
     expect(customizeBtn).toBeDefined();
 
@@ -120,16 +120,11 @@ describe("PrintInvoiceModal", () => {
     const root = createRoot(container!);
 
     await act(async () => {
-      root.render(
-        <PrintInvoiceModal
-          collection={mockCollection}
-          onClose={vi.fn()}
-        />
-      );
+      root.render(<PrintInvoiceModal collection={mockCollection} onClose={vi.fn()} />);
     });
 
-    const printBtn = Array.from(document.body.querySelectorAll("button")).find(
-      (btn) => btn.textContent?.includes("reports.export.print")
+    const printBtn = Array.from(document.body.querySelectorAll("button")).find((btn) =>
+      btn.textContent?.includes("reports.export.print"),
     );
     expect(printBtn).toBeDefined();
 
@@ -148,16 +143,11 @@ describe("PrintInvoiceModal", () => {
     const root = createRoot(container!);
 
     await act(async () => {
-      root.render(
-        <PrintInvoiceModal
-          collection={mockCollection}
-          onClose={vi.fn()}
-        />
-      );
+      root.render(<PrintInvoiceModal collection={mockCollection} onClose={vi.fn()} />);
     });
 
-    const printBtn = Array.from(document.body.querySelectorAll("button")).find(
-      (btn) => btn.textContent?.includes("reports.export.print")
+    const printBtn = Array.from(document.body.querySelectorAll("button")).find((btn) =>
+      btn.textContent?.includes("reports.export.print"),
     );
     expect(printBtn).toBeDefined();
 
@@ -184,12 +174,7 @@ describe("PrintInvoiceModal", () => {
     const root = createRoot(container!);
 
     await act(async () => {
-      root.render(
-        <PrintInvoiceModal
-          collection={mockCollection}
-          onClose={vi.fn()}
-        />
-      );
+      root.render(<PrintInvoiceModal collection={mockCollection} onClose={vi.fn()} />);
     });
 
     await act(async () => {
@@ -209,12 +194,7 @@ describe("PrintInvoiceModal", () => {
     const root = createRoot(container!);
 
     await act(async () => {
-      root.render(
-        <PrintInvoiceModal
-          collection={mockCollection}
-          onClose={vi.fn()}
-        />
-      );
+      root.render(<PrintInvoiceModal collection={mockCollection} onClose={vi.fn()} />);
     });
 
     const region = document.body.querySelector('[role="region"]');

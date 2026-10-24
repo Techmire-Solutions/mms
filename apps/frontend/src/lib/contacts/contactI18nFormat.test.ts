@@ -68,7 +68,9 @@ describe("getDuplicateFieldValue", () => {
   const dash = () => t("contacts.table.emptyDash");
 
   it("returns the primary phone", () => {
-    const contact = { phones: [{ isPrimary: true, number: "3001234567", countryCode: "+92" }] } as Contact;
+    const contact = {
+      phones: [{ isPrimary: true, number: "3001234567", countryCode: "+92" }],
+    } as Contact;
     expect(getDuplicateFieldValue("phone", contact, t)).toBe("+92 3001234567");
   });
 
@@ -89,7 +91,9 @@ describe("getDuplicateFieldValue", () => {
   });
 
   it("reads unknown custom fields directly", () => {
-    expect(getDuplicateFieldValue("nickname", { nickname: "Zain" } as unknown as Contact, t)).toBe("Zain");
+    expect(getDuplicateFieldValue("nickname", { nickname: "Zain" } as unknown as Contact, t)).toBe(
+      "Zain",
+    );
   });
 });
 
@@ -108,7 +112,10 @@ describe("buildContactsMap", () => {
   });
 
   it("skips contacts without an id", () => {
-    const map = buildContactsMap([{ name: "NoId" } as Contact, { id: 7, name: "Seven" } as Contact]);
+    const map = buildContactsMap([
+      { name: "NoId" } as Contact,
+      { id: 7, name: "Seven" } as Contact,
+    ]);
     expect(map?.size).toBe(1);
     expect(map?.get("7")?.name).toBe("Seven");
   });

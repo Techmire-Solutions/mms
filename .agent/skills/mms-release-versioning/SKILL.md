@@ -4,7 +4,7 @@ description: Manages MMS release bookkeeping — version bumps, changelog entrie
 license: Proprietary
 metadata:
   owner: mms-platform
-  last-verified: 2026-10-04
+  last-verified: 2026-10-16
 ---
 
 # MMS Release & Versioning

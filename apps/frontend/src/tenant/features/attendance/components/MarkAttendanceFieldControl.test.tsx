@@ -2,7 +2,7 @@ import React from "react";
 import { describe, expect, it, vi } from "vitest";
 import { renderToStaticMarkup } from "react-dom/server";
 import { MarkAttendanceFieldControl } from "./MarkAttendanceFieldControl";
-import type { AttendanceRow } from "./markAttendanceTypes";
+import type { AttendanceRow } from "../lib/markAttendanceTypes";
 
 vi.mock("@/hooks/useTranslation", () => ({
   useTranslation: () => ({
@@ -14,8 +14,10 @@ vi.mock("./StatusToggle", () => ({
   StatusToggle: ({ value }: { value: string }) => <div data-testid="status-toggle">{value}</div>,
 }));
 
-vi.mock("@/components/ui/TimePicker", () => ({
-  TimePicker: ({ value }: { value: string }) => <input data-testid="time-picker" defaultValue={value} />,
+vi.mock("@/components/app/TimePicker", () => ({
+  TimePicker: ({ value }: { value: string }) => (
+    <input data-testid="time-picker" defaultValue={value} />
+  ),
 }));
 
 const mockRow: AttendanceRow = {
@@ -33,7 +35,7 @@ describe("MarkAttendanceFieldControl Component", () => {
     const html = renderToStaticMarkup(
       <MarkAttendanceFieldControl
         row={mockRow}
-        field={{ id: "status", label: "Status", type: "select" } as any}
+        field={{ id: "status", label: "Status", type: "select" } as unknown as never}
         idPrefix="table"
         onFieldChange={vi.fn()}
       />,
@@ -47,7 +49,7 @@ describe("MarkAttendanceFieldControl Component", () => {
     const html = renderToStaticMarkup(
       <MarkAttendanceFieldControl
         row={mockRow}
-        field={{ id: "timeIn", label: "Time In", type: "time" } as any}
+        field={{ id: "timeIn", label: "Time In", type: "time" } as unknown as never}
         idPrefix="table"
         onFieldChange={vi.fn()}
       />,
@@ -60,7 +62,7 @@ describe("MarkAttendanceFieldControl Component", () => {
     const html = renderToStaticMarkup(
       <MarkAttendanceFieldControl
         row={mockRow}
-        field={{ id: "notes", label: "Notes", type: "text" } as any}
+        field={{ id: "notes", label: "Notes", type: "text" } as unknown as never}
         idPrefix="table"
         onFieldChange={vi.fn()}
       />,

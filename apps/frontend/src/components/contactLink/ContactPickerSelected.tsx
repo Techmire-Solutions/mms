@@ -1,21 +1,16 @@
 import React from "react";
 import { X, Mail, Phone, Camera } from "lucide-react";
-import {
-  type Contact,
-  getDisplayName,
-  getPrimaryPhone,
-  getPrimaryEmail,
-} from "@mms/shared";
+import { type Contact, getDisplayName, getPrimaryPhone, getPrimaryEmail } from "@mms/shared";
 import { cn } from "@/lib/utils";
 import { formatContactGenderLabel } from "@/lib/contacts/contactI18n";
-import { getGenderBadgeTone } from "@/lib/genderUi";
+import { getGenderBadgeTone } from "@/lib/ui/genderUi";
 import { FORM_LABEL } from "@/components/ui/formStyles";
-import { RequiredMark } from "@/components/ui/FormField";
+import { RequiredMark } from "@/components/app/FormField";
 import { useTranslation } from "@/hooks/useTranslation";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { UserAvatar } from "@/components/ui/UserAvatar";
-import { GenderIcon } from "@/components/ui/GenderIcon";
+import { UserAvatar } from "@/components/app/UserAvatar";
+import { GenderIcon } from "@/components/app/GenderIcon";
 
 export interface ContactPickerSelectedProps {
   selected: Contact;

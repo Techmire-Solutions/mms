@@ -1,6 +1,6 @@
-import { dispatchPlatformVerificationEmail } from './platformEmailService.js';
-import { PlatformError } from './platformErrorService.js';
-import { isDevCredentialLoggingEnabled } from '../../lib/devLogging.js';
+import { dispatchPlatformVerificationEmail } from "./platformEmailService.js";
+import { PlatformError } from "./platformErrorService.js";
+import { isDevCredentialLoggingEnabled } from "../../lib/devLogging.js";
 
 export interface DispatchPlatformOtpOptions {
   email: string;
@@ -23,15 +23,15 @@ export async function dispatchPlatformOtp(
   try {
     return await dispatchPlatformVerificationEmail(options);
   } catch (error) {
-    if (error instanceof Error && error.message.includes('not configured')) {
+    if (error instanceof Error && error.message.includes("not configured")) {
       throw new PlatformError(
-        'smtp_required',
-        'Platform email is not configured. Set PLATFORM_RESEND_API_KEY or PLATFORM_SMTP_* and PLATFORM_EMAIL_FROM (GitHub Actions secrets are merged on deploy).',
+        "smtp_required",
+        "Platform email is not configured. Set PLATFORM_RESEND_API_KEY or PLATFORM_SMTP_* and PLATFORM_EMAIL_FROM (GitHub Actions secrets are merged on deploy).",
       );
     }
     throw new PlatformError(
-      'email_send_failed',
-      error instanceof Error ? error.message : 'Failed to send verification email',
+      "email_send_failed",
+      error instanceof Error ? error.message : "Failed to send verification email",
     );
   }
 }

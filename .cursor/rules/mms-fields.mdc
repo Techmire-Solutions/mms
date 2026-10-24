@@ -1,6 +1,6 @@
 ---
 description: System vs custom fields registry, field tabs, delete guards, and column registry synchronization
-globs: apps/frontend/src/lib/contacts/useContactConfig*.ts,apps/frontend/src/lib/contactFields*.ts,apps/frontend/src/tenant/features/**/*Fields*,apps/frontend/src/tenant/features/**/*Setup*,apps/frontend/src/platform/**/*Fields*,apps/frontend/src/platform/**/*Setup*,packages/shared/src/contactTypes.ts,packages/shared/src/contactEnabledTabs.ts,packages/shared/src/contactColumnRegistrySync.ts,packages/shared/src/contactFieldDependencies.ts,packages/shared/src/*Field*
+globs: apps/frontend/src/lib/contacts/useContactConfig*.ts,apps/frontend/src/lib/contactFields*.ts,apps/frontend/src/tenant/features/**/*Fields*,apps/frontend/src/tenant/features/**/*Setup*,apps/frontend/src/platform/**/*Fields*,apps/frontend/src/platform/**/*Setup*,packages/shared/src/**/contactTypes.ts,packages/shared/src/**/contactEnabledTabs.ts,packages/shared/src/**/contactColumnRegistrySync.ts,packages/shared/src/**/contactFieldDependencies.ts,packages/shared/src/**/*Field*
 alwaysApply: false
 ---
 
@@ -41,6 +41,3 @@ alwaysApply: false
 - **Descriptor Bridge:** Bridge runtime `FieldConfig` into `EntityDescriptor<T>` via `createEntityDescriptorFromFieldConfig` (`@/components/common/entityDescriptorFromFieldConfig`).
 - **Layout Fidelity:** Preserves dynamic field ordering, drawer grouping, and visibility. Card metadata components support merge mode (`extraColumns`) to compose descriptor tiles with custom chrome.
 
-## 8. Workflow & Output Speed Rules
-- **Zero Output Bloat:** Output surgical diffs or targeted snippets only. Never rewrite entire files unless creating a new file from scratch. Omit conversational filler.
-- **Verification Gates:** Verify with `pnpm typecheck` and `pnpm test`. If standards are modified, execute `bash .agent/scripts/sync-all.sh` and verify with `node scripts/verify-rules-integrity.mjs`.

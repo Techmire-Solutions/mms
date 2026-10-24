@@ -18,22 +18,12 @@ export interface UseFinanceSetupPanelStateReturn {
 /** Finance Setup panel state — encapsulates config, editor draft, dirty check, and save actions. */
 export function useFinanceSetupPanelState(): UseFinanceSetupPanelStateReturn {
   const config = useFinanceConfig();
-  const {
-    settings,
-    settingsDraft,
-    saved,
-    setSaved,
-    upd,
-    saveSettingsAsync,
-  } = useModuleSettingsEditor<FinanceSettings>({
-    config,
-  });
+  const { settings, settingsDraft, saved, setSaved, upd, saveSettingsAsync } =
+    useModuleSettingsEditor<FinanceSettings>({
+      config,
+    });
 
-  const {
-    saving,
-    isPrefsDirty,
-    handleSave,
-  } = useFinanceSetupSaveActions({
+  const { saving, isPrefsDirty, handleSave } = useFinanceSetupSaveActions({
     settings,
     settingsDraft,
     setSaved,

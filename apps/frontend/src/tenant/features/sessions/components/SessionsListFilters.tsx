@@ -1,10 +1,10 @@
 import type { ModuleColumnRegistryEntry } from "@mms/shared";
-import { FilterChips } from "@/components/ui/FilterChips";
-import { ModuleWorkToolbar } from "@/components/ui/ModuleWorkToolbar";
-import type { ModuleColumnCustomizerLabels } from "@/components/ui/ModuleColumnCustomizer";
+import { FilterChips } from "@/components/app/FilterChips";
+import { ModuleWorkToolbar } from "@/components/app/ModuleWorkToolbar";
+import type { ModuleColumnCustomizerLabels } from "@/components/app/ModuleColumnCustomizer";
 import type { WorkDirectoryViewMode } from "@/hooks/useWorkDirectoryViewMode";
 import { useTranslation } from "@/hooks/useTranslation";
-import type { SessionStatus, SessionType } from "@/tenant/features/sessions/components/sessionPageTypes";
+import type { SessionStatus, SessionType } from "@/tenant/features/sessions/lib/sessionPageTypes";
 import { SESSIONS_WORK_SEARCH_INPUT_ID } from "@/tenant/features/sessions/hooks/useSessionsKeyboardShortcuts";
 import { SessionsFiltersMenuButton } from "@/tenant/features/sessions/components/SessionsFiltersMenuButton";
 

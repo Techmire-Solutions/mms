@@ -1,9 +1,9 @@
-import { and, eq, inArray, isNull } from 'drizzle-orm';
-import type { EnrollmentBillingSource } from '@mms/shared';
-import { enrollments, financeInvoices } from '../schema.js';
-import { withTenantRead } from '../tenant-context.js';
+import { and, eq, inArray, isNull } from "drizzle-orm";
+import type { EnrollmentBillingSource } from "@mms/shared";
+import { enrollments, financeInvoices } from "../schema.js";
+import { withTenantRead } from "../tenant-context.js";
 
-const BILLABLE_STATUSES = ['pending', 'confirmed'] as const;
+const BILLABLE_STATUSES = ["pending", "confirmed"] as const;
 const PAGE_SIZE = 100;
 
 export interface BillableEnrollmentQuery {
@@ -20,7 +20,7 @@ function toBillingSource(row: {
   sessionName: string;
   sessionId: string;
   classId: string;
-  enrolledDate: string;
+  enrolledDate: string | null;
   baseFee: string;
   discountType: string;
   discountPct: string;
@@ -37,7 +37,7 @@ function toBillingSource(row: {
     sessionName: row.sessionName,
     sessionId: row.sessionId,
     classId: row.classId,
-    enrolledDate: row.enrolledDate,
+    enrolledDate: row.enrolledDate ?? "",
     baseFee: Number(row.baseFee ?? 0),
     discountType: row.discountType,
     discountPct: Number(row.discountPct ?? 0),
@@ -119,7 +119,30 @@ export async function listEnrollmentInvoiceMarks(
         ),
       );
     return rows
-      .filter((row): row is { enrollmentId: string; billingPeriod: string | null } => Boolean(row.enrollmentId))
+      .filter((row): row is { enrollmentId: string; billingPeriod: string | null } =>
+        Boolean(row.enrollmentId),
+      )
       .map((row) => ({ enrollmentId: row.enrollmentId, billingPeriod: row.billingPeriod }));
+  });
+}
+
+/** Live invoice ids raised for one enrollment (any period). */
+export async function findInvoiceIdsByEnrollment(
+  tenant: string,
+  enrollmentId: string,
+): Promise<string[]> {
+  const subdomain = tenant.trim().toLowerCase();
+  return withTenantRead(subdomain, async (tx) => {
+    const rows = await tx
+      .select({ id: financeInvoices.id })
+      .from(financeInvoices)
+      .where(
+        and(
+          eq(financeInvoices.workspaceSubdomain, subdomain),
+          isNull(financeInvoices.deletedAt),
+          eq(financeInvoices.enrollmentId, enrollmentId),
+        ),
+      );
+    return rows.map((row) => row.id);
   });
 }

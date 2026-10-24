@@ -1,7 +1,7 @@
 import type React from "react";
-import { ErrorBoundary } from "@/components/ui/ErrorBoundary";
-import { ErrorState } from "@/components/ui/ErrorState";
-import { ModuleTierMotion } from "@/components/ui/ModuleTierMotion";
+import { ErrorBoundary } from "@/components/app/ErrorBoundary";
+import { ErrorState } from "@/components/app/ErrorState";
+import { ModuleTierMotion } from "@/components/app/ModuleTierMotion";
 import { useTranslation } from "@/hooks/useTranslation";
 import { KPISummary, ModuleReports } from "@/tenant/components/moduleReports";
 import { useFacultyMetrics } from "@/tenant/features/faculty/hooks/useFaculty";

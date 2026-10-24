@@ -1,21 +1,21 @@
-import { useEffect, useRef } from 'react';
-import { useTranslation } from '@/hooks/useTranslation';
-import { useAccountingCurrency } from '@/hooks/useCurrency';
-import type { JournalEntriesProps } from '@/tenant/features/accounting/components/journalEntriesTypes';
+import { useEffect, useRef } from "react";
+import { useTranslation } from "@/hooks/useTranslation";
+import { useAccountingCurrency } from "@/hooks/useCurrency";
+import type { JournalEntriesProps } from "@/tenant/features/accounting/lib/journalEntriesTypes";
 import {
   buildJournalModeTabs,
   buildJournalStatusConfig,
   buildJournalSubTabs,
-} from '@/tenant/features/accounting/components/journalEntriesControllerConfig';
+} from "@/tenant/features/accounting/lib/journalEntriesControllerConfig";
 import {
   computeJournalGrandTotals,
   type JournalEntriesServerQueryProps,
-} from '@/tenant/features/accounting/components/journalEntriesControllerFilters';
-import { createJournalNlHandlers } from '@/tenant/features/accounting/components/journalEntriesControllerSelection';
-import { useJournalEntrySelection } from '@/tenant/features/accounting/hooks/useJournalEntrySelection';
-import { useJournalEntriesUiState } from './useJournalEntriesUiState';
-import { useJournalEntriesFilterBridge } from './useJournalEntriesFilterBridge';
-import { useJournalEntriesActions } from './useJournalEntriesActions';
+} from "@/tenant/features/accounting/lib/journalEntriesControllerFilters";
+import { createJournalNlHandlers } from "@/tenant/features/accounting/components/journalEntriesControllerSelection";
+import { useWorkSelection } from "@/hooks/useWorkSelection";
+import { useJournalEntriesUiState } from "../hooks/useJournalEntriesUiState";
+import { useJournalEntriesFilterBridge } from "../hooks/useJournalEntriesFilterBridge";
+import { useJournalEntriesActions } from "../hooks/useJournalEntriesActions";
 
 type JournalEntriesControllerProps = JournalEntriesProps & JournalEntriesServerQueryProps;
 
@@ -81,9 +81,9 @@ export function useJournalEntriesController({
     allVisibleSelected,
     someVisibleSelected,
     toggleSelectAll,
-    toggleSelectedEntry,
+    toggleSelected,
     clearSelection,
-  } = useJournalEntrySelection(filtered);
+  } = useWorkSelection(filtered);
 
   useEffect(() => {
     onShortcutStateChange?.({
@@ -164,7 +164,7 @@ export function useJournalEntriesController({
     showDeleted,
     handleNlSubmit,
     handleNlChange,
-    toggleSelectedEntry,
+    toggleSelected,
     toggleSelectAll,
     ...actions,
   };

@@ -28,10 +28,13 @@ vi.mock("@/tenant/features/contacts/hooks/useAppleContactsPanel", () => ({
 }));
 
 vi.mock("@/hooks/useTranslation", () => ({
-  useTranslation: () => ({ t: (key: string, params?: { count?: number }) => `${key}${params?.count !== undefined ? `:${params.count}` : ""}` }),
+  useTranslation: () => ({
+    t: (key: string, params?: { count?: number }) =>
+      `${key}${params?.count !== undefined ? `:${params.count}` : ""}`,
+  }),
 }));
 
-vi.mock("@/components/ui/DashedFileDropZone", () => ({
+vi.mock("@/components/app/DashedFileDropZone", () => ({
   DashedFileDropZone: ({ title, inputAriaLabel }: { title: string; inputAriaLabel: string }) => (
     <div data-testid="dropzone" aria-label={inputAriaLabel}>
       {title}
@@ -39,8 +42,16 @@ vi.mock("@/components/ui/DashedFileDropZone", () => ({
   ),
 }));
 
-vi.mock("@/components/ui/Modal", () => ({
-  Modal: ({ children, title, subtitle }: { children: React.ReactNode; title: string; subtitle?: string }) => (
+vi.mock("@/components/app/Modal", () => ({
+  Modal: ({
+    children,
+    title,
+    subtitle,
+  }: {
+    children: React.ReactNode;
+    title: string;
+    subtitle?: string;
+  }) => (
     <div data-testid="modal" data-title={title} data-subtitle={subtitle}>
       {children}
     </div>
@@ -83,7 +94,7 @@ describe("ContactsImportDialog", () => {
     const html = render();
 
     expect(html).toContain("contacts.sync.contactsFound");
-    expect(html).not.toContain("data-testid=\"dropzone\"");
+    expect(html).not.toContain('data-testid="dropzone"');
   });
 
   it("reports the import result and keeps the drop zone available for another file", () => {
@@ -93,7 +104,7 @@ describe("ContactsImportDialog", () => {
     const html = render();
 
     expect(html).toContain("contacts.sync.importComplete");
-    expect(html).toContain("data-testid=\"dropzone\"");
+    expect(html).toContain('data-testid="dropzone"');
   });
 
   it("marks the import CTA busy while the write loop runs", () => {
@@ -151,4 +162,3 @@ describe("ContactsImportDialog", () => {
     expect(html).toContain("contacts_export.csv");
   });
 });
-

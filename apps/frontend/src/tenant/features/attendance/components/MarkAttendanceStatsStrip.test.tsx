@@ -11,17 +11,32 @@ vi.mock("@/hooks/useTranslation", () => ({
 }));
 
 const mockStatuses: AttendanceStatus[] = [
-  { id: "present", label: "Present", short: "P", color: "#10b981", bg: "bg-success", text: "text-success", border: "border-success", dot: "bg-success" },
-  { id: "absent", label: "Absent", short: "A", color: "#ef4444", bg: "bg-destructive", text: "text-destructive", border: "border-destructive", dot: "bg-destructive" },
+  {
+    id: "present",
+    label: "Present",
+    short: "P",
+    color: "#10b981",
+    bg: "bg-success",
+    text: "text-success",
+    border: "border-success",
+    dot: "bg-success",
+  },
+  {
+    id: "absent",
+    label: "Absent",
+    short: "A",
+    color: "#ef4444",
+    bg: "bg-destructive",
+    text: "text-destructive",
+    border: "border-destructive",
+    dot: "bg-destructive",
+  },
 ];
 
 describe("MarkAttendanceStatsStrip Component", () => {
   it("renders status count cards", () => {
     const html = renderToStaticMarkup(
-      <MarkAttendanceStatsStrip
-        statuses={mockStatuses}
-        stats={{ present: 18, absent: 2 }}
-      />,
+      <MarkAttendanceStatsStrip statuses={mockStatuses} stats={{ present: 18, absent: 2 }} />,
     );
 
     expect(html).toContain("18");

@@ -1,4 +1,4 @@
-import type { MessagingRepository } from './messagingRepository.js';
+import type { MessagingRepository } from "./messagingRepository.js";
 import {
   listMessageTemplatesByWorkspace,
   findMessageTemplateById,
@@ -17,7 +17,12 @@ import {
   queryFilteredMessageLogs,
   queryMessagingMetrics,
   softDeleteActiveMessageLogs,
-} from '../../db/repositories/messagingRepository.js';
+} from "../../db/repositories/messagingRepository.js";
+import {
+  getWhatsappIntegrationRow,
+  upsertWhatsappIntegrationConfigRow,
+  upsertWhatsappIntegrationSecretsRow,
+} from "../../db/repositories/whatsappIntegrationRepository.js";
 
 /**
  * Drizzle-backed adapter for {@link MessagingRepository}. Delegates to the
@@ -41,4 +46,7 @@ export const messagingRepository: MessagingRepository = {
   queryFilteredMessageLogs,
   queryMessagingMetrics,
   softDeleteActiveMessageLogs,
+  getWhatsappIntegrationRow,
+  upsertWhatsappIntegrationConfigRow,
+  upsertWhatsappIntegrationSecretsRow,
 };

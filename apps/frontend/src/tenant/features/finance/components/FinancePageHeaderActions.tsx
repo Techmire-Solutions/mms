@@ -1,6 +1,6 @@
 import React from "react";
 import { AlarmClock, Bell, CalendarRange, Download, Plus, Upload } from "lucide-react";
-import { ActionButton } from "@/components/ui/ActionButton";
+import { Button } from "@/components/ui/button";
 import { useTranslation } from "@/hooks/useTranslation";
 
 export interface FinancePageHeaderActionsProps {
@@ -39,7 +39,7 @@ export function FinancePageHeaderActions({
   return (
     <div className="flex flex-wrap items-center gap-2">
       {canExport && onExport ? (
-        <ActionButton
+        <Button
           variant="ghost"
           icon={Download}
           onClick={onExport}
@@ -47,37 +47,28 @@ export function FinancePageHeaderActions({
           disabled={isExporting}
         >
           {t("common.export")}
-        </ActionButton>
+        </Button>
       ) : null}
-      <ActionButton variant="secondary" icon={Upload} onClick={onImport}>
+      <Button variant="outline" icon={Upload} onClick={onImport}>
         {t("common.import")}
-      </ActionButton>
-      <ActionButton
-        variant="secondary"
+      </Button>
+      <Button
+        variant="outline"
         icon={AlarmClock}
         loading={collectPending}
         onClick={onCollectOverdue}
       >
         {t("finance.collect.action")}
-      </ActionButton>
-      <ActionButton
-        variant="secondary"
-        icon={Bell}
-        loading={remindPending}
-        onClick={onRemindInvoices}
-      >
+      </Button>
+      <Button variant="outline" icon={Bell} loading={remindPending} onClick={onRemindInvoices}>
         {t("finance.collect.remindAction")}
-      </ActionButton>
-      <ActionButton
-        variant="secondary"
-        icon={CalendarRange}
-        onClick={onGenerateInvoices}
-      >
+      </Button>
+      <Button variant="outline" icon={CalendarRange} onClick={onGenerateInvoices}>
         {t("finance.generate.action")}
-      </ActionButton>
-      <ActionButton variant="primary" icon={Plus} onClick={onCreateInvoice}>
+      </Button>
+      <Button variant="primary" icon={Plus} onClick={onCreateInvoice}>
         {t("finance.newInvoice")}
-      </ActionButton>
+      </Button>
     </div>
   );
 }

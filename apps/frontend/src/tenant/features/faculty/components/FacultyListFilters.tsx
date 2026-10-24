@@ -1,10 +1,6 @@
 import { useMemo } from "react";
-import type {
-  FacultySortField,
-  FacultyQuickFilter,
-  ModuleColumnRegistryEntry,
-} from "@mms/shared";
-import type { ModuleColumnCustomizerLabels } from "@/components/ui/ModuleColumnCustomizer";
+import type { FacultySortField, FacultyQuickFilter, ModuleColumnRegistryEntry } from "@mms/shared";
+import type { ModuleColumnCustomizerLabels } from "@/components/app/ModuleColumnCustomizer";
 import type { WorkDirectoryViewMode } from "@/hooks/useWorkDirectoryViewMode";
 import { useTranslation } from "@/hooks/useTranslation";
 import { WorkTaskToolbar } from "@/components/common/work";
@@ -13,7 +9,7 @@ import { FacultyFiltersMenuButton } from "@/tenant/features/faculty/components/F
 import {
   getFacultyVisibleWorkColumns,
   toFacultyListSortField,
-} from "@/tenant/features/faculty/components/facultyListVisibleColumns";
+} from "@/tenant/features/faculty/lib/facultyListVisibleColumns";
 
 export interface FacultyListFiltersProps {
   search: string;
@@ -113,7 +109,9 @@ export function FacultyListFilters({
 
   return (
     <WorkTaskToolbar
-      shownCountLabel={shownCount != null ? t("faculty.shownCount", { count: shownCount }) : undefined}
+      shownCountLabel={
+        shownCount != null ? t("faculty.shownCount", { count: shownCount }) : undefined
+      }
       regionLabel={t("faculty.filters")}
       search={search}
       onSearchChange={onSearchChange}
@@ -152,13 +150,17 @@ export function FacultyListFilters({
           onClearFilters={onClearFilters}
         />
       }
-      trashToggle={canDelete ? {
-        canViewDeleted: canDelete,
-        viewingDeleted: showDeleted,
-        onToggle: onToggleDeleted,
-        activeLabel: t("faculty.showActive"),
-        deletedLabel: t("faculty.showDeleted"),
-      } : undefined}
+      trashToggle={
+        canDelete
+          ? {
+              canViewDeleted: canDelete,
+              viewingDeleted: showDeleted,
+              onToggle: onToggleDeleted,
+              activeLabel: t("faculty.showActive"),
+              deletedLabel: t("faculty.showDeleted"),
+            }
+          : undefined
+      }
       viewModeToggle={{
         viewMode,
         onViewModeChange,
@@ -172,5 +174,3 @@ export function FacultyListFilters({
     />
   );
 }
-
-

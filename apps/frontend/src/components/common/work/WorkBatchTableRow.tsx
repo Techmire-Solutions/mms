@@ -1,8 +1,8 @@
 import React from "react";
 import { motion } from "framer-motion";
-import { TableCell } from "@/components/ui/table";
-import { ModuleTableSelectionCell } from "@/components/ui/ModuleTableSelectionCell";
-import { workTableStickyCellBg } from "@/components/ui/tableWorkSticky";
+import { TableCell, TableRow } from "@/components/ui/table";
+import { ModuleTableSelectionCell } from "@/components/app/ModuleTableSelectionCell";
+import { workTableStickyCellBg } from "@/components/app/tableWorkSticky";
 import { cn } from "@/lib/utils";
 import type { ListRowMotionFn } from "@/hooks/useListRowMotion";
 import type { WorkBatchTableColumn } from "./WorkBatchTable";
@@ -47,9 +47,7 @@ function WorkBatchTableRowComponent<TData extends { id: string | number }>(
   } = props;
 
   const idStr = String(row.id);
-  const rowAriaLabel = selectRowAriaLabel
-    ? selectRowAriaLabel(row)
-    : `Select row ${idStr}`;
+  const rowAriaLabel = selectRowAriaLabel ? selectRowAriaLabel(row) : `Select row ${idStr}`;
 
   const hasNestedInteractive = hasSelection || Boolean(renderRowActions);
   // Clickable <tr role="button"> wrapping checkboxes/switches fails axe nested-interactive.
@@ -92,13 +90,15 @@ function WorkBatchTableRowComponent<TData extends { id: string | number }>(
       {columns.map((col) => {
         const isSticky = stickyColumnId === col.id;
         const customCellClass =
-          typeof col.cellClassName === "function"
-            ? col.cellClassName(row)
-            : col.cellClassName;
+          typeof col.cellClassName === "function" ? col.cellClassName(row) : col.cellClassName;
 
         return (
           <TableCell
             key={col.id}
+            noWrap={col.noWrap}
+            truncate={col.truncate}
+            align={col.align}
+            variant={col.variant}
             className={cn(
               "px-4 py-3 text-sm text-foreground transition-colors text-wrap break-words",
               isSticky && "sticky start-12 z-elevated border-e border-border/30",
@@ -114,6 +114,7 @@ function WorkBatchTableRowComponent<TData extends { id: string | number }>(
       {/* Actions Menu */}
       {renderRowActions && (
         <TableCell
+          noWrap
           className={cn("text-end", actionsCellClassName ?? "w-12 min-w-12 px-2 py-3")}
           onClick={(e) => e.stopPropagation()}
         >
@@ -130,9 +131,9 @@ function WorkBatchTableRowComponent<TData extends { id: string | number }>(
       {cells}
     </motion.tr>
   ) : (
-    <tr key={idStr} {...trProps}>
+    <TableRow key={idStr} {...trProps}>
       {cells}
-    </tr>
+    </TableRow>
   );
 }
 

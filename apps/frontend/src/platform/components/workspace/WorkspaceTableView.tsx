@@ -1,21 +1,31 @@
-import React from 'react';
-import { formatDate, type PlatformWorkspaceRow as PlatformWorkspaceRowData, type AppTranslationKey } from '@mms/shared';
-import { tenantUrl } from '@/lib/config/tenantConfig';
-import { useTranslation } from '@/hooks/useTranslation';
-import type { EntityDescriptor } from '@/types/entityRegistry';
-import { WorkBatchTable, type WorkBatchTableColumn } from '@/components/common/work/WorkBatchTable';
-import { toColumnResize, type DataTableColumnLayout } from '@/components/common/data-table';
-import { resolveVisibleDescriptorColumns } from '@/hooks/useDescriptorColumnLayout';
-import { deriveSelectionState, WORK_TABLE_CONTAINER_CLASS } from '@/components/common/work/workBatchTableTypes';
-import { WorkspaceIdentityCell } from '@/platform/components/workspace/WorkspaceIdentityCell';
-import { WorkspaceRowActions } from '@/platform/components/workspace/WorkspaceRowActions';
+import React from "react";
+import {
+  formatDate,
+  type PlatformWorkspaceRow as PlatformWorkspaceRowData,
+  type AppTranslationKey,
+} from "@mms/shared";
+import { tenantUrl } from "@/lib/config/tenantConfig";
+import { useTranslation } from "@/hooks/useTranslation";
+import type { EntityDescriptor } from "@/components/common/entityRegistryTypes";
+import { WorkBatchTable, type WorkBatchTableColumn } from "@/components/common/work/WorkBatchTable";
+import { toColumnResize, type DataTableColumnLayout } from "@/components/common/data-table";
+import { resolveVisibleDescriptorColumns } from "@/hooks/useDescriptorColumnLayout";
+import {
+  deriveSelectionState,
+  WORK_TABLE_CONTAINER_CLASS,
+} from "@/components/common/work/workBatchTableTypes";
+import { WorkspaceIdentityCell } from "@/platform/components/workspace/WorkspaceIdentityCell";
+import { WorkspaceRowActions } from "@/platform/components/workspace/WorkspaceRowActions";
 import {
   WorkspaceEnabledCell,
   WorkspaceEmailVerificationCell,
-} from '@/platform/components/workspace/WorkspaceTableSwitchCells';
-import type { WorkspaceSortDirection, WorkspaceSortField } from '@/platform/components/platformWorkspaceListData';
-import { cn } from '@/lib/utils';
-import type { PlatformDensity } from '@/platform/hooks/usePlatformDensity';
+} from "@/platform/components/workspace/WorkspaceTableSwitchCells";
+import type {
+  WorkspaceSortDirection,
+  WorkspaceSortField,
+} from "@/platform/components/platformWorkspaceListData";
+import { cn } from "@/lib/utils";
+import type { PlatformDensity } from "@/platform/hooks/usePlatformDensity";
 
 export interface WorkspaceTableViewProps {
   workspaces: PlatformWorkspaceRowData[];
@@ -48,7 +58,7 @@ export function WorkspaceTableView({
   descriptor,
   columnLayout,
   appDomain,
-  density = 'standard',
+  density = "standard",
   sortField,
   sortDirection,
   onToggleSort,
@@ -68,8 +78,14 @@ export function WorkspaceTableView({
 }: WorkspaceTableViewProps): React.JSX.Element {
   const { t } = useTranslation();
   const busy = togglePending || deletePending;
-  const pad = density === 'compact' ? 'px-3 py-1.5' : density === 'comfortable' ? 'px-4 py-3.5' : 'px-4 py-2.5';
-  const textSz = density === 'compact' ? 'text-2xs' : density === 'comfortable' ? 'text-sm' : 'text-xs';
+  const pad =
+    density === "compact"
+      ? "px-3 py-1.5"
+      : density === "comfortable"
+        ? "px-4 py-3.5"
+        : "px-4 py-2.5";
+  const textSz =
+    density === "compact" ? "text-2xs" : density === "comfortable" ? "text-sm" : "text-xs";
 
   const rows: WorkspaceTableRow[] = React.useMemo(
     () => workspaces.map((w) => ({ ...w, id: w.subdomain })),
@@ -77,28 +93,48 @@ export function WorkspaceTableView({
   );
 
   const columns: WorkBatchTableColumn<WorkspaceTableRow>[] = React.useMemo(() => {
-    return resolveVisibleDescriptorColumns(descriptor.getTableColumns(), columnLayout?.columnRegistry).map((col) => {
+    return resolveVisibleDescriptorColumns(
+      descriptor.getTableColumns(),
+      columnLayout?.columnRegistry,
+    ).map((col) => {
       const f = descriptor.getField(col.id);
       const labelKey = f?.labelKey as AppTranslationKey | undefined;
       const translated = labelKey ? t(labelKey) : undefined;
-      const label = translated && translated !== labelKey ? translated : col.label || f?.label || col.id;
+      const label =
+        translated && translated !== labelKey ? translated : col.label || f?.label || col.id;
 
       const headerClassName = cn(
         pad,
-        col.id === 'madrasaName' ? 'min-w-72 flex-1' : col.id === 'enabled' ? 'w-44 min-w-44' : col.id === 'requireEmailVerification' ? 'w-60 min-w-60' : col.id === 'createdAt' ? 'w-40 min-w-40' : 'w-36',
+        col.id === "madrasaName"
+          ? "min-w-72 flex-1"
+          : col.id === "enabled"
+            ? "w-44 min-w-44"
+            : col.id === "requireEmailVerification"
+              ? "w-60 min-w-60"
+              : col.id === "createdAt"
+                ? "w-40 min-w-40"
+                : "w-36",
       );
 
       const cellClassName = cn(
         pad,
-        'align-middle',
-        col.id === 'madrasaName' ? 'min-w-72' : col.id === 'enabled' ? 'w-44 min-w-44' : col.id === 'requireEmailVerification' ? 'w-60 min-w-60' : col.id === 'createdAt' ? cn('font-medium text-muted-foreground whitespace-nowrap w-40 min-w-40', textSz) : '',
+        "align-middle",
+        col.id === "madrasaName"
+          ? "min-w-72"
+          : col.id === "enabled"
+            ? "w-44 min-w-44"
+            : col.id === "requireEmailVerification"
+              ? "w-60 min-w-60"
+              : col.id === "createdAt"
+                ? cn("font-medium text-muted-foreground w-40 min-w-40", textSz)
+                : "",
       );
 
       const render = (workspace: WorkspaceTableRow) => {
-        if (col.id === 'madrasaName') {
+        if (col.id === "madrasaName") {
           return <WorkspaceIdentityCell workspace={workspace} appDomain={appDomain} />;
         }
-        if (col.id === 'enabled') {
+        if (col.id === "enabled") {
           return (
             <WorkspaceEnabledCell
               workspace={workspace}
@@ -107,7 +143,7 @@ export function WorkspaceTableView({
             />
           );
         }
-        if (col.id === 'requireEmailVerification') {
+        if (col.id === "requireEmailVerification") {
           return (
             <WorkspaceEmailVerificationCell
               workspace={workspace}
@@ -116,13 +152,33 @@ export function WorkspaceTableView({
             />
           );
         }
-        if (col.id === 'createdAt') return formatDate(workspace.createdAt);
-        return String(Reflect.get(workspace, col.id) ?? '—');
+        if (col.id === "createdAt") return formatDate(workspace.createdAt);
+        return String(Reflect.get(workspace, col.id) ?? "—");
       };
 
-      return { id: col.id, label, sortField: col.id, headerClassName, cellClassName, render };
+      const noWrap =
+        col.id === "createdAt" || col.id === "enabled" || col.id === "requireEmailVerification";
+      return {
+        id: col.id,
+        label,
+        sortField: col.id,
+        headerClassName,
+        cellClassName,
+        noWrap,
+        render,
+      };
     });
-  }, [descriptor, columnLayout, t, appDomain, busy, onToggleEnabled, onToggleEmailVerification, pad, textSz]);
+  }, [
+    descriptor,
+    columnLayout,
+    t,
+    appDomain,
+    busy,
+    onToggleEnabled,
+    onToggleEmailVerification,
+    pad,
+    textSz,
+  ]);
 
   return (
     <WorkBatchTable
@@ -134,21 +190,27 @@ export function WorkspaceTableView({
         onSort: (f) => onToggleSort(f as WorkspaceSortField),
       }}
       selection={
-        onToggleSelect && selectedSubdomains && onToggleSelectAll ? {
-          selectedIds: selectedSubdomains,
-          onSelectOne: (id) => onToggleSelect(id),
-          onSelectAll: onToggleSelectAll,
-          ...deriveSelectionState(workspaces.map((w) => ({ ...w, id: w.subdomain })), selectedSubdomains),
-          selectAllAriaLabel: t('platform.workspaces.selectAll'),
-          selectRowAriaLabel: (w) => t('platform.workspaces.selectItem', { name: w.madrasaName }),
-        } : undefined
+        onToggleSelect && selectedSubdomains && onToggleSelectAll
+          ? {
+              selectedIds: selectedSubdomains,
+              onSelectOne: (id) => onToggleSelect(id),
+              onSelectAll: onToggleSelectAll,
+              ...deriveSelectionState(
+                workspaces.map((w) => ({ ...w, id: w.subdomain })),
+                selectedSubdomains,
+              ),
+              selectAllAriaLabel: t("platform.workspaces.selectAll"),
+              selectRowAriaLabel: (w) =>
+                t("platform.workspaces.selectItem", { name: w.madrasaName }),
+            }
+          : undefined
       }
       onRowClick={onInspect ? (w) => onInspect(w) : undefined}
       stickyColumnId="madrasaName"
       columnResize={toColumnResize(columnLayout)}
-      actionsLabel={t('common.actions')}
-      actionsHeaderClassName={cn('w-56 min-w-56 text-end', pad)}
-      actionsCellClassName={cn('w-56 min-w-56 text-end align-middle', pad)}
+      actionsLabel={t("common.actions")}
+      actionsHeaderClassName={cn("w-56 min-w-56 text-end", pad)}
+      actionsCellClassName={cn("w-56 min-w-56 text-end align-middle", pad)}
       renderRowActions={(workspace) => (
         <WorkspaceRowActions
           subdomain={workspace.subdomain}
@@ -156,28 +218,32 @@ export function WorkspaceTableView({
           requireEmailVerification={workspace.requireEmailVerification}
           busy={busy}
           deletePending={deletePending && targetWorkspaceSubdomain === workspace.subdomain}
-          tenantLink={tenantUrl(workspace.subdomain, '/')}
+          tenantLink={tenantUrl(workspace.subdomain, "/")}
           variant="table"
           onToggle={(enabled) => onToggleEnabled(workspace.subdomain, enabled)}
           onToggleEmailVerification={(req) => onToggleEmailVerification(workspace.subdomain, req)}
           onOpenModules={() => onOpenModules(workspace)}
           onOpenDelete={onOpenDelete ? () => onOpenDelete(workspace) : undefined}
-          onOpenResetPassword={onOpenResetPassword ? () => onOpenResetPassword(workspace) : undefined}
+          onOpenResetPassword={
+            onOpenResetPassword ? () => onOpenResetPassword(workspace) : undefined
+          }
           onOpenCreateAdmin={onOpenCreateAdmin ? () => onOpenCreateAdmin(workspace) : undefined}
         />
       )}
       rowClassName={(workspace) =>
         cn(
-          'group hover:bg-muted/30 transition-colors scroll-mt-20',
-          onInspect && 'cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40 focus-visible:ring-inset',
-          !workspace.enabled && 'opacity-85 hover:opacity-100',
-          deletePending && targetWorkspaceSubdomain === workspace.subdomain && 'opacity-40 pointer-events-none',
+          "group hover:bg-muted/30 transition-colors scroll-mt-20",
+          onInspect &&
+            "cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40 focus-visible:ring-inset",
+          !workspace.enabled && "opacity-85 hover:opacity-100",
+          deletePending &&
+            targetWorkspaceSubdomain === workspace.subdomain &&
+            "opacity-40 pointer-events-none",
         )
       }
       containerClassName={WORK_TABLE_CONTAINER_CLASS}
-      bordered={false}
       virtualize={workspaces.length > 10}
-      estimateRowSize={density === 'compact' ? 38 : density === 'comfortable' ? 64 : 48}
+      estimateRowSize={density === "compact" ? 38 : density === "comfortable" ? 64 : 48}
     />
   );
 }

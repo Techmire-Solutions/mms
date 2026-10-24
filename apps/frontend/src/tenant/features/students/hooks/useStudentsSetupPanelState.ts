@@ -7,22 +7,12 @@ import { useStudentsSetupSaveActions } from "@/tenant/features/students/hooks/us
 /** Students Setup panel state */
 export function useStudentsSetupPanelState() {
   const config = useStudentConfig();
-  const {
-    settings,
-    settingsDraft,
-    saved,
-    setSaved,
-    upd,
-    discardDrafts,
-  } = useModuleSettingsEditor<StudentsSettings>({
-    config,
-  });
+  const { settings, settingsDraft, saved, setSaved, upd, discardDrafts } =
+    useModuleSettingsEditor<StudentsSettings>({
+      config,
+    });
 
-  const {
-    saving,
-    isPrefsDirty,
-    handleSave,
-  } = useStudentsSetupSaveActions({
+  const { saving, isPrefsDirty, handleSave } = useStudentsSetupSaveActions({
     settings,
     settingsDraft,
     setSaved,
@@ -53,4 +43,3 @@ export function useStudentsSetupPanelState() {
     discardSetupDrafts,
   };
 }
-

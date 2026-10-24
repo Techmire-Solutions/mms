@@ -39,9 +39,7 @@ export function moduleSettingsEditorFingerprint(input: {
   const required = [...(input.requiredTabs || input.defaultRequiredTabs || [])]
     .map((tabId) => tabId.toLowerCase())
     .sort();
-  const registry = input.tabRegistry
-    .map((tab) => tab.key.toLowerCase())
-    .sort();
+  const registry = input.tabRegistry.map((tab) => tab.key.toLowerCase()).sort();
 
   return JSON.stringify({
     fields: canonicalizeFieldsMap(input.fields, input.formTabs ?? []),

@@ -10,10 +10,7 @@ export function createModuleFormDraft<TRecord extends object>(options: {
   const { volatileKeys, getDefaults } = options;
   const volatile = new Set(volatileKeys);
 
-  function getInitialDraft(
-    record?: Partial<TRecord> | null,
-    ...args: unknown[]
-  ): Partial<TRecord> {
+  function getInitialDraft(record?: Partial<TRecord> | null, ...args: unknown[]): Partial<TRecord> {
     const draft: Partial<TRecord> = { ...getDefaults(record, ...args) };
 
     if (!record) return draft;

@@ -1,20 +1,13 @@
 import React from "react";
 import { Mail, Phone } from "lucide-react";
-import {
-  facultyFieldLabelKey,
-  type Contact,
-  type Faculty,
-} from "@mms/shared";
-import { ContactPhoneAction, ContactEmailAction } from "@/components/ui/ContactAction";
+import { facultyFieldLabelKey, type Contact, type Faculty } from "@mms/shared";
+import { ContactPhoneAction, ContactEmailAction } from "@/components/app/ContactAction";
 import type { TranslationFunction } from "@/lib/contexts/TranslationContext";
-import {
-  resolveAllContactPhones,
-  resolveAllContactEmails,
-} from "@/lib/contacts/contactI18n";
+import { resolveAllContactPhones, resolveAllContactEmails } from "@/lib/contacts/contactI18n";
 import { formatContactGenderLabel } from "@/lib/contacts/contactI18nFormat";
-import { getGenderIcon, getGenderIconClass } from "@/lib/genderUi";
+import { getGenderIcon, getGenderIconClass } from "@/lib/ui/genderUi";
 import type { FacultyMessagingLabels } from "@/lib/faculty/facultyMessagingLabels";
-import { FacultyDetailAttributeRow } from "@/tenant/features/faculty/components/FacultyDetailAttributeRow";
+import { DetailAttributeRow } from "@/components/app/DetailAttributeRow";
 
 export interface BuildFacultyContactRowsParams {
   faculty: Faculty;
@@ -35,7 +28,7 @@ export function buildFacultyContactRows({
   const contactRows: React.ReactNode[] = [];
 
   contactRows.push(
-    <FacultyDetailAttributeRow
+    <DetailAttributeRow
       key="gender"
       variant="inset"
       icon={getGenderIcon(faculty.gender)}
@@ -44,8 +37,6 @@ export function buildFacultyContactRows({
       value={faculty.gender ? formatContactGenderLabel(faculty.gender, t) : emptyDash}
     />,
   );
-
-
 
   const contact: Partial<Contact> = {
     phone: faculty.phone,
@@ -58,7 +49,7 @@ export function buildFacultyContactRows({
   if (allPhones.length > 0) {
     allPhones.forEach((p, idx) => {
       contactRows.push(
-        <FacultyDetailAttributeRow
+        <DetailAttributeRow
           key={`phone-${p.phone}-${idx}`}
           variant="inset"
           icon={Phone}
@@ -87,7 +78,7 @@ export function buildFacultyContactRows({
   if (allEmails.length > 0) {
     allEmails.forEach((e, idx) => {
       contactRows.push(
-        <FacultyDetailAttributeRow
+        <DetailAttributeRow
           key={`email-${e.email}-${idx}`}
           variant="inset"
           icon={Mail}
@@ -111,4 +102,3 @@ export function buildFacultyContactRows({
 
   return contactRows;
 }
-

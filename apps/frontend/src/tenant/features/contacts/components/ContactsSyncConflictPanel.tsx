@@ -1,6 +1,6 @@
 import type React from "react";
 import { useCallback, useEffect, useState } from "react";
-import { AlertTriangle } from "lucide-react";
+import { AlertTriangle, Loader2 } from "lucide-react";
 import type { ContactsSyncConflict } from "@/lib/contacts/contactsSyncOutbox";
 import {
   describeContactsOutboxEntry,
@@ -10,8 +10,9 @@ import {
 } from "@/lib/contacts/contactsSyncOutbox";
 import { useTranslation } from "@/hooks/useTranslation";
 import { useContactsSyncOutbox } from "@/tenant/features/contacts/hooks/useContactsSyncOutbox";
-import { FormModal } from "@/components/ui/FormModal";
-import { ConfirmAlertDialog } from "@/components/ui/ConfirmAlertDialog";
+import { Modal } from "@/components/app/Modal";
+import { Button } from "@/components/ui/button";
+import { ConfirmAlertDialog } from "@/components/app/ConfirmAlertDialog";
 import { notify } from "@/lib/notify";
 import { ContactsSyncConflictRow } from "@/tenant/features/contacts/components/ContactsSyncConflictRow";
 
@@ -27,7 +28,9 @@ export function ContactsSyncConflictPanel({
 }: ContactsSyncConflictPanelProps): React.JSX.Element {
   const { t } = useTranslation();
   const { flush, refreshCounts } = useContactsSyncOutbox();
-  const [conflicts, setConflicts] = useState<ContactsSyncConflict[]>(() => getContactsSyncConflicts());
+  const [conflicts, setConflicts] = useState<ContactsSyncConflict[]>(() =>
+    getContactsSyncConflicts(),
+  );
   const [retryingId, setRetryingId] = useState<string | null>(null);
   const [dismissTargetId, setDismissTargetId] = useState<string | null>(null);
 
@@ -47,13 +50,13 @@ export function ContactsSyncConflictPanel({
     return () => window.removeEventListener("contacts-sync-outbox-changed", handler);
   }, [refreshList]);
 
-  const handleDismiss = ((id: string) => {
-      dismissContactsSyncConflict(id);
-      refreshList();
-      notify.info(t("contacts.sync.conflictDismissed"));
-    });
+  const handleDismiss = (id: string) => {
+    dismissContactsSyncConflict(id);
+    refreshList();
+    notify.info(t("contacts.sync.conflictDismissed"));
+  };
 
-  const handleRetryAll = (async () => {
+  const handleRetryAll = async () => {
     setRetryingId("__all__");
     try {
       requeueAllContactsSyncConflicts();
@@ -62,25 +65,45 @@ export function ContactsSyncConflictPanel({
     } finally {
       setRetryingId(null);
     }
-  });
+  };
 
   const rows = (() =>
-      conflicts.map((entry) => {
-        const { title } = describeContactsOutboxEntry(entry);
-        return { entry, title };
-      }))();
+    conflicts.map((entry) => {
+      const { title } = describeContactsOutboxEntry(entry);
+      return { entry, title };
+    }))();
 
   return (
     <>
-      <FormModal
+      <Modal
         open={open}
         onClose={onClose}
         title={t("contacts.sync.conflictReviewTitle")}
+        icon={AlertTriangle}
         size="md"
-        cancelLabel={t("common.close")}
-        saveLabel={rows.length > 0 ? t("contacts.sync.conflictRetryAll") : t("common.close")}
-        onSave={() => (rows.length > 0 ? void handleRetryAll() : onClose())}
-        saving={retryingId != null}
+        footer={
+          <div className="flex items-center justify-end gap-2">
+            <Button
+              type="button"
+              variant="ghost"
+              onClick={onClose}
+              className="min-h-11 px-4 text-sm font-medium text-muted-foreground hover:text-foreground"
+            >
+              {t("common.close")}
+            </Button>
+            {rows.length > 0 && (
+              <Button
+                type="button"
+                onClick={() => void handleRetryAll()}
+                disabled={retryingId != null}
+                className="min-h-11 px-4 text-sm font-semibold gap-2"
+              >
+                {retryingId != null && <Loader2 className="w-4 h-4 animate-spin" />}
+                {t("contacts.sync.conflictRetryAll")}
+              </Button>
+            )}
+          </div>
+        }
       >
         <div className="space-y-4">
           <p className="text-sm text-muted-foreground">{t("contacts.sync.conflictReviewDesc")}</p>
@@ -106,7 +129,7 @@ export function ContactsSyncConflictPanel({
             </div>
           )}
         </div>
-      </FormModal>
+      </Modal>
       <ConfirmAlertDialog
         open={dismissTargetId != null}
         onOpenChange={(next) => !next && setDismissTargetId(null)}

@@ -1,14 +1,14 @@
-import { and, eq, inArray, isNull, isNotNull, sql } from 'drizzle-orm';
-import { messageTemplates, messageLogs } from '../schema.js';
-import { dedupeTrimmedIds, type Message, type RepositoryListOptions } from '@mms/shared';
-import { withTenant } from '../tenant-context.js';
-import { mapAuditToInsert } from './repositoryMappers.js';
+import { and, eq, inArray, isNull, isNotNull, sql } from "drizzle-orm";
+import { messageTemplates, messageLogs } from "../schema.js";
+import { dedupeTrimmedIds, type Message, type RepositoryListOptions } from "@mms/shared";
+import { withTenant } from "../tenant-context.js";
+import { mapAuditToInsert } from "./repositoryMappers.js";
 import {
   logRowToRecord,
   mapMessageToInsertRow,
   type LogRow,
   type LogSelectRow,
-} from './messagingLogsMapper.js';
+} from "./messagingLogsMapper.js";
 
 export { logRowToRecord, type LogRow, type LogSelectRow };
 
@@ -82,21 +82,19 @@ export async function findMessageLogById(tenant: string, id: string): Promise<Me
 export async function findMessageLogsByIds(
   tenant: string,
   ids: string[],
-  options?: { deleted?: 'active' | 'deleted' | 'all'; includeDeleted?: boolean },
+  options?: { deleted?: "active" | "deleted" | "all"; includeDeleted?: boolean },
 ): Promise<Message[]> {
   const cleanIds = dedupeTrimmedIds(ids);
   if (cleanIds.length === 0) return [];
   const subdomain = tenant.trim().toLowerCase();
   return withTenant(subdomain, async (tx) => {
-    const isDeletedOnly = options?.deleted === 'deleted';
-    const isAll = options?.deleted === 'all';
+    const isDeletedOnly = options?.deleted === "deleted" || options?.includeDeleted === true;
+    const isAll = options?.deleted === "all";
     const deletedCond = isDeletedOnly
       ? isNotNull(messageLogs.deletedAt)
       : isAll
         ? null
-        : options?.includeDeleted
-          ? isNotNull(messageLogs.deletedAt)
-          : isNull(messageLogs.deletedAt);
+        : isNull(messageLogs.deletedAt);
 
     const conditions = [
       eq(messageLogs.workspaceSubdomain, subdomain),
@@ -137,14 +135,14 @@ export function messageLogWriteValues(
   return {
     id: String(record.id),
     workspaceSubdomain: subdomain,
-    userId: record.userId ?? '',
+    userId: record.userId ?? "",
     contactId: String(record.contactId),
     channel: record.channel,
     body: record.body,
     sentAt: record.sentAt,
-    status: record.status ?? 'sent',
+    status: record.status ?? "sent",
     subject: record.subject ?? null,
-    category: record.category ?? 'general',
+    category: record.category ?? "general",
     errorMessage: record.errorMessage ?? null,
     deletedAt: audit.deletedAt,
     deletedBy: audit.deletedBy,
@@ -181,7 +179,10 @@ export async function saveMessageLog(tenant: string, record: Message): Promise<v
   });
 }
 
-export async function replaceMessageLogsForWorkspace(tenant: string, records: Message[]): Promise<void> {
+export async function replaceMessageLogsForWorkspace(
+  tenant: string,
+  records: Message[],
+): Promise<void> {
   const subdomain = tenant.trim().toLowerCase();
 
   const dedupedMap = new Map<string, Message>();
@@ -193,9 +194,9 @@ export async function replaceMessageLogsForWorkspace(tenant: string, records: Me
   await withTenant(subdomain, async (tx) => {
     await tx.delete(messageLogs).where(eq(messageLogs.workspaceSubdomain, subdomain));
     if (uniqueRecords.length > 0) {
-      await tx.insert(messageLogs).values(
-        uniqueRecords.map((record) => messageLogWriteValues(subdomain, record)),
-      );
+      await tx
+        .insert(messageLogs)
+        .values(uniqueRecords.map((record) => messageLogWriteValues(subdomain, record)));
     }
   });
 }
@@ -244,7 +245,10 @@ export async function deleteMessageLogsByWorkspace(workspaceSubdomain: string): 
 }
 
 /** Insert-only log write — never overwrite an existing dispatch audit row. */
-export async function insertMessageLogs(workspaceSubdomain: string, logs: Message[]): Promise<void> {
+export async function insertMessageLogs(
+  workspaceSubdomain: string,
+  logs: Message[],
+): Promise<void> {
   if (logs.length === 0) return;
   const subdomain = workspaceSubdomain.trim().toLowerCase();
 

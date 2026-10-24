@@ -2,8 +2,8 @@ import { act } from "react";
 import { createRoot, type Root } from "react-dom/client";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import type { JournalTemplate } from "@mms/shared";
-import { useJournalEntryForm } from "./useJournalEntryForm";
-import { applyTemplateToLines, useJournalLineAssist } from "./useJournalLineAssist";
+import { useJournalEntryForm } from "../hooks/useJournalEntryForm";
+import { applyTemplateToLines, useJournalLineAssist } from "../hooks/useJournalLineAssist";
 
 declare global {
   var IS_REACT_ACT_ENVIRONMENT: boolean | undefined;
@@ -11,19 +11,38 @@ declare global {
 globalThis.IS_REACT_ACT_ENVIRONMENT = true;
 
 vi.mock("@/hooks/useTranslation", () => ({
-  useTranslation: () => ({ language: "en", t: (key: string) => key, isLoading: false, dir: "ltr", isRtl: false }),
+  useTranslation: () => ({
+    language: "en",
+    t: (key: string) => key,
+    isLoading: false,
+    dir: "ltr",
+    isRtl: false,
+  }),
 }));
 
 vi.mock("@/lib/contexts/AuthContext", () => ({
   useAuth: () => ({ user: { name: "Tester" } }),
 }));
 
-const pettyCash: JournalTemplate = { id: "petty", name: "Petty Cash Expense", debitAccountId: "a-exp", creditAccountId: "a-petty" };
+const pettyCash: JournalTemplate = {
+  id: "petty",
+  name: "Petty Cash Expense",
+  debitAccountId: "a-exp",
+  creditAccountId: "a-petty",
+};
 
-type Harness = ReturnType<typeof useJournalEntryForm> & { assist: ReturnType<typeof useJournalLineAssist> };
+type Harness = ReturnType<typeof useJournalEntryForm> & {
+  assist: ReturnType<typeof useJournalLineAssist>;
+};
 
 function TestHarness({ onController }: { onController: (controller: Harness) => void }) {
-  const form = useJournalEntryForm({ accounts: [], entries: [], onSave: vi.fn(), initial: null, fiscalYears: [] });
+  const form = useJournalEntryForm({
+    accounts: [],
+    entries: [],
+    onSave: vi.fn(),
+    initial: null,
+    fiscalYears: [],
+  });
   const assist = useJournalLineAssist({
     form: form.form,
     setForm: form.setForm,
@@ -80,7 +99,15 @@ describe("useJournalLineAssist", () => {
 
   it("given a template tag is picked, should fill its heads, tag the entry and lock each line to its side", () => {
     // Arrange
-    act(() => root.render(<TestHarness onController={(next) => { controller = next; }} />));
+    act(() =>
+      root.render(
+        <TestHarness
+          onController={(next) => {
+            controller = next;
+          }}
+        />,
+      ),
+    );
 
     // Act
     act(() => current().assist.toggleTemplateTag("Petty Cash Expense"));
@@ -95,7 +122,15 @@ describe("useJournalLineAssist", () => {
 
   it("given the template tag is picked again, should untag the entry and release the locks", () => {
     // Arrange
-    act(() => root.render(<TestHarness onController={(next) => { controller = next; }} />));
+    act(() =>
+      root.render(
+        <TestHarness
+          onController={(next) => {
+            controller = next;
+          }}
+        />,
+      ),
+    );
     act(() => current().assist.toggleTemplateTag("Petty Cash Expense"));
 
     // Act
@@ -109,20 +144,41 @@ describe("useJournalLineAssist", () => {
 
   it("given two lines with mirroring on, should copy a debit amount to the other line's credit", () => {
     // Arrange
-    act(() => root.render(<TestHarness onController={(next) => { controller = next; }} />));
+    act(() =>
+      root.render(
+        <TestHarness
+          onController={(next) => {
+            controller = next;
+          }}
+        />,
+      ),
+    );
 
     // Act
     act(() => current().assist.updateLineAssisted(0, "debit", "1200"));
 
     // Assert
     const [first, second] = current().form.lines;
-    expect([first.debit, first.credit, second.debit, second.credit]).toEqual(["1200", "", "", "1200"]);
+    expect([first.debit, first.credit, second.debit, second.credit]).toEqual([
+      "1200",
+      "",
+      "",
+      "1200",
+    ]);
     expect(current().isBalanced).toBe(true);
   });
 
   it("given mirroring is switched off, should leave the other line untouched", () => {
     // Arrange
-    act(() => root.render(<TestHarness onController={(next) => { controller = next; }} />));
+    act(() =>
+      root.render(
+        <TestHarness
+          onController={(next) => {
+            controller = next;
+          }}
+        />,
+      ),
+    );
     act(() => current().assist.setMirrorAmounts(false));
 
     // Act

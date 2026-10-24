@@ -1,11 +1,6 @@
 import React from "react";
-import {
-  sessionsTransferSchema,
-  type SessionTransferEntity,
-} from "@mms/shared";
-import { ModuleImportDialog } from "@/components/ui/ModuleImportDialog";
-import { useModuleCsvImportActions } from "@/lib/backgroundJobs/useModuleCsvImportActions";
-import { useTranslation } from "@/hooks/useTranslation";
+import { sessionsTransferSchema, type SessionTransferEntity } from "@mms/shared";
+import { StandardModuleCsvImportDialog } from "@/components/app/StandardModuleCsvImportDialog";
 
 export interface SessionsCsvImportDialogProps {
   open: boolean;
@@ -19,24 +14,14 @@ export function SessionsCsvImportDialog({
   onClose,
   canWrite,
 }: SessionsCsvImportDialogProps): React.JSX.Element | null {
-  const { t } = useTranslation();
-
-  const actions = useModuleCsvImportActions<SessionTransferEntity>({
-    apiPath: "/api/sessions/import",
-    schema: sessionsTransferSchema,
-    onSuccess: onClose,
-  });
-
-  if (!open || !canWrite) return null;
-
   return (
-    <ModuleImportDialog<SessionTransferEntity>
+    <StandardModuleCsvImportDialog<SessionTransferEntity>
       open={open}
       onClose={onClose}
-      title={`${t("common.import")} - ${t("nav.sessions")}`}
-      subtitle={t("faculty.io.csvHint")}
       canWrite={canWrite}
-      actions={actions}
+      apiPath="/api/sessions/import"
+      schema={sessionsTransferSchema}
+      navKey="nav.sessions"
     />
   );
 }

@@ -7,12 +7,14 @@ import {
   getVisibleLeadingColumnCount,
   isJournalBalanced,
   type JournalEntriesListProps,
-} from "@/tenant/features/accounting/components/journalEntriesListShared";
+} from "@/tenant/features/accounting/lib/journalEntriesListShared";
 import { useJournalEntriesTableColumns } from "./useJournalEntriesTableColumns";
 
 type JournalEntriesListDesktopTableProps = JournalEntriesListProps;
 
-export function JournalEntriesListDesktopTable(props: JournalEntriesListDesktopTableProps): React.JSX.Element {
+export function JournalEntriesListDesktopTable(
+  props: JournalEntriesListDesktopTableProps,
+): React.JSX.Element {
   const {
     entries,
     selectedIds,
@@ -94,7 +96,6 @@ export function JournalEntriesListDesktopTable(props: JournalEntriesListDesktopT
       columns={columns}
       caption={t("accounting.journal.dashboard.tableCaption")}
       className="table-fixed"
-      bordered={false}
       selection={
         canDelete
           ? {

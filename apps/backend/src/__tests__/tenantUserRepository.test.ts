@@ -1,4 +1,4 @@
-import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { beforeEach, describe, expect, it, vi } from "vitest";
 
 const mockWhere = vi.fn().mockResolvedValue(undefined);
 const mockSet = vi.fn().mockReturnValue({ where: mockWhere });
@@ -21,11 +21,11 @@ const mockDb = {
   execute: vi.fn(),
 };
 
-vi.mock('../db/dbClient.js', () => ({
+vi.mock("../db/dbClient.js", () => ({
   getDb: () => mockDb,
 }));
 
-vi.mock('../db/dbConnection.js', () => ({
+vi.mock("../db/dbConnection.js", () => ({
   activeDb: () => mockDb,
   getRootDb: () => mockDb,
   getReadReplicaDb: () => mockDb,
@@ -41,27 +41,27 @@ import {
   replaceTenantUsersForWorkspace,
   softDeleteTenantUserRow,
   upsertTenantUserRow,
-} from '../db/repositories/tenantUserRepository.js';
+} from "../db/repositories/tenantUserRepository.js";
 
 const existingDbRow = {
-  id: 'u-1',
-  workspaceSubdomain: 'dar-ul-quran',
-  loginEmail: 'teacher@workspace.local',
-  passwordHash: 'salt:existing-hash',
-  name: 'Existing Teacher',
-  role: 'teacher',
-  contactId: 'c-1',
-  emailVerifiedAt: new Date('2026-01-01T00:00:00.000Z'),
+  id: "u-1",
+  workspaceSubdomain: "dar-ul-quran",
+  loginEmail: "teacher@workspace.local",
+  passwordHash: "salt:existing-hash",
+  name: "Existing Teacher",
+  role: "teacher",
+  contactId: "c-1",
+  emailVerifiedAt: new Date("2026-01-01T00:00:00.000Z"),
   pendingLoginEmail: null,
   mustChangePassword: false,
-  createdAt: new Date('2026-01-01T00:00:00.000Z'),
-  updatedAt: new Date('2026-01-01T00:00:00.000Z'),
+  createdAt: new Date("2026-01-01T00:00:00.000Z"),
+  updatedAt: new Date("2026-01-01T00:00:00.000Z"),
   deletedAt: null,
   deletedBy: null,
   profileJson: null,
 };
 
-describe('upsertTenantUserRow', () => {
+describe("upsertTenantUserRow", () => {
   beforeEach(() => {
     vi.clearAllMocks();
     mockSelect.mockReturnValue({ from: mockSelectFrom });
@@ -73,71 +73,71 @@ describe('upsertTenantUserRow', () => {
     mockWhere.mockResolvedValue(undefined);
   });
 
-  it('preserves name, loginEmail, and passwordHash when contact-linked payload blanks them', async () => {
-    await upsertTenantUserRow('dar-ul-quran', {
-      id: 'u-1',
-      workspaceSubdomain: 'dar-ul-quran',
-      contactId: 'c-1',
-      role: 'teacher',
+  it("preserves name, loginEmail, and passwordHash when contact-linked payload blanks them", async () => {
+    await upsertTenantUserRow("dar-ul-quran", {
+      id: "u-1",
+      workspaceSubdomain: "dar-ul-quran",
+      contactId: "c-1",
+      role: "teacher",
       // Stripped contact profile fields + missing auth credentials
-      name: '',
-      loginEmail: '',
-      passwordHash: '',
+      name: "",
+      loginEmail: "",
+      passwordHash: "",
     });
 
     expect(mockUpdate).toHaveBeenCalledTimes(1);
     expect(mockInsertValues).not.toHaveBeenCalled();
     expect(mockSet).toHaveBeenCalledWith(
       expect.objectContaining({
-        name: 'Existing Teacher',
-        loginEmail: 'teacher@workspace.local',
-        passwordHash: 'salt:existing-hash',
-        workspaceSubdomain: 'dar-ul-quran',
+        name: "Existing Teacher",
+        loginEmail: "teacher@workspace.local",
+        passwordHash: "salt:existing-hash",
+        workspaceSubdomain: "dar-ul-quran",
       }),
     );
   });
 
-  it('keeps the existing workspace subdomain (rejects reassignment)', async () => {
+  it("keeps the existing workspace subdomain (rejects reassignment)", async () => {
     // The tenant argument is authoritative: a payload claiming another
     // workspace must not move the row.
-    await upsertTenantUserRow('dar-ul-quran', {
-      id: 'u-1',
-      workspaceSubdomain: 'other-tenant',
-      loginEmail: 'teacher@workspace.local',
-      passwordHash: 'salt:existing-hash',
-      name: 'Existing Teacher',
-      role: 'teacher',
+    await upsertTenantUserRow("dar-ul-quran", {
+      id: "u-1",
+      workspaceSubdomain: "other-tenant",
+      loginEmail: "teacher@workspace.local",
+      passwordHash: "salt:existing-hash",
+      name: "Existing Teacher",
+      role: "teacher",
     });
 
     expect(mockSet).toHaveBeenCalledWith(
       expect.objectContaining({
-        workspaceSubdomain: 'dar-ul-quran',
+        workspaceSubdomain: "dar-ul-quran",
       }),
     );
     expect(mockUpdate).toHaveBeenCalled();
     expect(mockWhere).toHaveBeenCalled();
   });
 
-  it('applies non-empty name and loginEmail updates', async () => {
-    await upsertTenantUserRow('dar-ul-quran', {
-      id: 'u-1',
-      workspaceSubdomain: 'dar-ul-quran',
-      name: 'Updated Name',
-      loginEmail: 'new.login@workspace.local',
-      passwordHash: 'salt:existing-hash',
-      role: 'teacher',
+  it("applies non-empty name and loginEmail updates", async () => {
+    await upsertTenantUserRow("dar-ul-quran", {
+      id: "u-1",
+      workspaceSubdomain: "dar-ul-quran",
+      name: "Updated Name",
+      loginEmail: "new.login@workspace.local",
+      passwordHash: "salt:existing-hash",
+      role: "teacher",
     });
 
     expect(mockSet).toHaveBeenCalledWith(
       expect.objectContaining({
-        name: 'Updated Name',
-        loginEmail: 'new.login@workspace.local',
+        name: "Updated Name",
+        loginEmail: "new.login@workspace.local",
       }),
     );
   });
 });
 
-describe('replaceTenantUsersForWorkspace', () => {
+describe("replaceTenantUsersForWorkspace", () => {
   beforeEach(() => {
     vi.clearAllMocks();
     mockSelect.mockReturnValue({ from: mockSelectFrom });
@@ -147,95 +147,95 @@ describe('replaceTenantUsersForWorkspace', () => {
     mockSelectWhere.mockResolvedValue([existingDbRow]);
   });
 
-  it('carries the stored password hash forward when the backup payload omits it', async () => {
-    await replaceTenantUsersForWorkspace('dar-ul-quran', [
+  it("carries the stored password hash forward when the backup payload omits it", async () => {
+    await replaceTenantUsersForWorkspace("dar-ul-quran", [
       {
-        id: 'u-1',
-        workspaceSubdomain: 'dar-ul-quran',
-        loginEmail: 'teacher@workspace.local',
-        name: 'Existing Teacher',
-        role: 'teacher',
+        id: "u-1",
+        workspaceSubdomain: "dar-ul-quran",
+        loginEmail: "teacher@workspace.local",
+        name: "Existing Teacher",
+        role: "teacher",
       },
     ]);
 
     expect(mockDelete).toHaveBeenCalledTimes(1);
     const inserted = mockInsertValues.mock.calls[0]?.[0] as Array<{ passwordHash: string }>;
-    expect(inserted[0].passwordHash).toBe('salt:existing-hash');
+    expect(inserted[0].passwordHash).toBe("salt:existing-hash");
   });
 
-  it('matches by login email when the backup carries a different user id', async () => {
-    await replaceTenantUsersForWorkspace('dar-ul-quran', [
+  it("matches by login email when the backup carries a different user id", async () => {
+    await replaceTenantUsersForWorkspace("dar-ul-quran", [
       {
-        id: 'u-restored',
-        workspaceSubdomain: 'dar-ul-quran',
-        loginEmail: 'Teacher@Workspace.local',
-        name: 'Existing Teacher',
-        role: 'teacher',
+        id: "u-restored",
+        workspaceSubdomain: "dar-ul-quran",
+        loginEmail: "Teacher@Workspace.local",
+        name: "Existing Teacher",
+        role: "teacher",
       },
     ]);
 
     const inserted = mockInsertValues.mock.calls[0]?.[0] as Array<{ passwordHash: string }>;
-    expect(inserted[0].passwordHash).toBe('salt:existing-hash');
+    expect(inserted[0].passwordHash).toBe("salt:existing-hash");
   });
 
-  it('keeps an explicit password hash from the payload', async () => {
-    await replaceTenantUsersForWorkspace('dar-ul-quran', [
+  it("keeps an explicit password hash from the payload", async () => {
+    await replaceTenantUsersForWorkspace("dar-ul-quran", [
       {
-        id: 'u-1',
-        workspaceSubdomain: 'dar-ul-quran',
-        loginEmail: 'teacher@workspace.local',
-        passwordHash: 'salt:payload-hash',
-        name: 'Existing Teacher',
-        role: 'teacher',
+        id: "u-1",
+        workspaceSubdomain: "dar-ul-quran",
+        loginEmail: "teacher@workspace.local",
+        passwordHash: "salt:payload-hash",
+        name: "Existing Teacher",
+        role: "teacher",
       },
     ]);
 
     const inserted = mockInsertValues.mock.calls[0]?.[0] as Array<{ passwordHash: string }>;
-    expect(inserted[0].passwordHash).toBe('salt:payload-hash');
+    expect(inserted[0].passwordHash).toBe("salt:payload-hash");
   });
 
-  it('rejects restore when no live admin keeps a usable password hash', async () => {
+  it("rejects restore when no live admin keeps a usable password hash", async () => {
     mockSelectWhere.mockResolvedValue([]);
 
     await expect(
-      replaceTenantUsersForWorkspace('dar-ul-quran', [
+      replaceTenantUsersForWorkspace("dar-ul-quran", [
         {
-          id: 'u-new',
-          workspaceSubdomain: 'dar-ul-quran',
-          loginEmail: 'new@workspace.local',
-          name: 'New User',
-          role: 'teacher',
+          id: "u-new",
+          workspaceSubdomain: "dar-ul-quran",
+          loginEmail: "new@workspace.local",
+          name: "New User",
+          role: "teacher",
         },
       ]),
     ).rejects.toMatchObject({
-      message: 'backup.missingUserCredentials',
+      message: "backup.missingUserCredentials",
       statusCode: 400,
-      type: 'validation_error',
+      type: "validation_error",
     });
 
     expect(mockDelete).not.toHaveBeenCalled();
     expect(mockInsertValues).not.toHaveBeenCalled();
   });
 
-  it('parks an unusable hash for unknown users while an admin credential survives', async () => {
+  it("parks an unusable hash for unknown users while an admin credential survives", async () => {
     mockSelectWhere.mockResolvedValue([
-      { ...existingDbRow, id: 'u-admin', loginEmail: 'admin@workspace.local', role: 'admin' },
+      { ...existingDbRow, id: "u-admin", loginEmail: "admin@workspace.local", role: "admin" },
     ]);
 
-    await replaceTenantUsersForWorkspace('dar-ul-quran', [
+    await replaceTenantUsersForWorkspace("dar-ul-quran", [
       {
-        id: 'u-admin',
-        workspaceSubdomain: 'dar-ul-quran',
-        loginEmail: 'admin@workspace.local',
-        name: 'Workspace Admin',
-        role: 'admin',
+        id: "u-admin",
+        workspaceSubdomain: "dar-ul-quran",
+        loginEmail: "admin@workspace.local",
+        name: "Workspace Admin",
+        role: "admin",
       },
       {
-        id: 'u-unknown',
-        workspaceSubdomain: 'dar-ul-quran',
-        loginEmail: 'unknown@workspace.local',
-        name: 'Unknown User',
-        role: 'teacher',
+        id: "u-unknown",
+        workspaceSubdomain: "dar-ul-quran",
+        loginEmail: "unknown@workspace.local",
+        name: "Unknown User",
+        role: "teacher",
       },
     ]);
 
@@ -245,14 +245,14 @@ describe('replaceTenantUsersForWorkspace', () => {
       mustChangePassword: boolean;
     }>;
     expect(inserted[0]).toMatchObject({
-      id: 'u-admin',
-      passwordHash: 'salt:existing-hash',
+      id: "u-admin",
+      passwordHash: "salt:existing-hash",
       mustChangePassword: false,
     });
     expect(inserted[1]?.mustChangePassword).toBe(true);
     expect(inserted[1]?.passwordHash).toMatch(/^!restore-/);
     // No `salt:hash` separator, so `verifyPassword` can never accept a parked hash.
-    expect(inserted[1]?.passwordHash).not.toContain(':');
+    expect(inserted[1]?.passwordHash).not.toContain(":");
   });
 });
 
@@ -264,13 +264,13 @@ function collectSqlParts(clause: unknown): { columns: string[]; params: unknown[
   const columns: string[] = [];
   const params: unknown[] = [];
   const walk = (node: unknown, depth = 0): void => {
-    if (!node || typeof node !== 'object' || depth > 8) return;
+    if (!node || typeof node !== "object" || depth > 8) return;
     const asRecord = node as Record<string, unknown>;
-    if (typeof asRecord.name === 'string' && 'columnType' in asRecord) {
+    if (typeof asRecord.name === "string" && "columnType" in asRecord) {
       columns.push(asRecord.name);
       return;
     }
-    if ('value' in asRecord && !('queryChunks' in asRecord)) {
+    if ("value" in asRecord && !("queryChunks" in asRecord)) {
       params.push(asRecord.value);
       return;
     }
@@ -290,7 +290,7 @@ function collectSqlParts(clause: unknown): { columns: string[]; params: unknown[
  * opened without a tenant. An id-only lookup is therefore NOT implicitly
  * tenant-safe: the workspace predicate has to be in the query itself.
  */
-describe('tenantUsers workspace scoping (regression)', () => {
+describe("tenantUsers workspace scoping (regression)", () => {
   beforeEach(() => {
     vi.clearAllMocks();
     mockSelect.mockReturnValue({ from: mockSelectFrom });
@@ -301,45 +301,45 @@ describe('tenantUsers workspace scoping (regression)', () => {
     mockSelectWhere.mockResolvedValue([]);
   });
 
-  it('findTenantUserRowById scopes the query to the caller workspace', async () => {
-    await findTenantUserRowById('dar-ul-quran', 'u-1');
+  it("findTenantUserRowById scopes the query to the caller workspace", async () => {
+    await findTenantUserRowById("dar-ul-quran", "u-1");
 
     expect(mockSelectWhere).toHaveBeenCalledTimes(1);
     const { columns, params } = collectSqlParts(mockSelectWhere.mock.calls[0]?.[0]);
-    expect(columns).toContain('workspace_subdomain');
-    expect(params).toContain('dar-ul-quran');
-    expect(params).toContain('u-1');
+    expect(columns).toContain("workspace_subdomain");
+    expect(params).toContain("dar-ul-quran");
+    expect(params).toContain("u-1");
   });
 
-  it('listTenantUsersByIds scopes the query to the caller workspace', async () => {
-    await listTenantUsersByIds('dar-ul-quran', ['u-1', 'u-2']);
+  it("listTenantUsersByIds scopes the query to the caller workspace", async () => {
+    await listTenantUsersByIds("dar-ul-quran", ["u-1", "u-2"]);
 
     expect(mockSelectWhere).toHaveBeenCalledTimes(1);
     const { columns, params } = collectSqlParts(mockSelectWhere.mock.calls[0]?.[0]);
-    expect(columns).toContain('workspace_subdomain');
-    expect(params).toContain('dar-ul-quran');
+    expect(columns).toContain("workspace_subdomain");
+    expect(params).toContain("dar-ul-quran");
   });
 
-  it('refuses to read without a workspace instead of falling back to an unscoped query', async () => {
-    await expect(findTenantUserRowById('', 'u-1')).resolves.toBeNull();
-    await expect(listTenantUsersByIds('', ['u-1'])).resolves.toEqual([]);
+  it("refuses to read without a workspace instead of falling back to an unscoped query", async () => {
+    await expect(findTenantUserRowById("", "u-1")).resolves.toBeNull();
+    await expect(listTenantUsersByIds("", ["u-1"])).resolves.toEqual([]);
     expect(mockSelect).not.toHaveBeenCalled();
   });
 
-  it('softDeleteTenantUserRow refuses to write without a workspace', async () => {
-    await expect(softDeleteTenantUserRow('', 'u-1', 'u-admin')).resolves.toBe(false);
+  it("softDeleteTenantUserRow refuses to write without a workspace", async () => {
+    await expect(softDeleteTenantUserRow("", "u-1", "u-admin")).resolves.toBe(false);
     expect(mockUpdate).not.toHaveBeenCalled();
   });
 
-  it('softDeleteTenantUserRow scopes the UPDATE to the caller workspace', async () => {
+  it("softDeleteTenantUserRow scopes the UPDATE to the caller workspace", async () => {
     mockSelectWhere.mockResolvedValue([existingDbRow]);
 
-    await softDeleteTenantUserRow('dar-ul-quran', 'u-1', 'u-admin');
+    await softDeleteTenantUserRow("dar-ul-quran", "u-1", "u-admin");
 
     expect(mockSet).toHaveBeenCalledTimes(1);
     expect(mockWhere).toHaveBeenCalledTimes(1);
     const { columns, params } = collectSqlParts(mockWhere.mock.calls[0]?.[0]);
-    expect(columns).toContain('workspace_subdomain');
-    expect(params).toContain('dar-ul-quran');
+    expect(columns).toContain("workspace_subdomain");
+    expect(params).toContain("dar-ul-quran");
   });
 });

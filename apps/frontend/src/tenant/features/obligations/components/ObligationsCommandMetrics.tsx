@@ -1,10 +1,8 @@
-import React from 'react';
-import {
-  Receipt, Filter, Banknote, Wallet,
-} from 'lucide-react';
-import { useTranslation } from '@/hooks/useTranslation';
-import { useObligationsMetrics } from '@/tenant/features/obligations/hooks/useObligationsApi';
-import { ModuleCommandMetricsGrid } from '@/components/ui/ModuleCommandMetricsGrid';
+import React from "react";
+import { Receipt, Filter, Banknote, Wallet } from "lucide-react";
+import { useTranslation } from "@/hooks/useTranslation";
+import { useObligationsMetrics } from "@/tenant/features/obligations/hooks/useObligationsApi";
+import { ModuleCommandMetricsGrid } from "@/components/app/ModuleCommandMetricsGrid";
 import { useFinanceCurrency } from "@/hooks/useCurrency";
 
 interface ObligationsCommandMetricsProps {
@@ -12,7 +10,7 @@ interface ObligationsCommandMetricsProps {
   shown: number;
 }
 
-export const ObligationsCommandMetrics = (function ObligationsCommandMetrics({
+export const ObligationsCommandMetrics = function ObligationsCommandMetrics({
   total,
   shown,
 }: ObligationsCommandMetricsProps): React.JSX.Element {
@@ -30,11 +28,31 @@ export const ObligationsCommandMetrics = (function ObligationsCommandMetrics({
   }))();
 
   const items = (() => [
-    { icon: Receipt, label: t('obligations.metrics.total'), value: metrics.total, accent: 'primary' as const },
-    { icon: Filter, label: t('obligations.metrics.filtered'), value: shown, accent: 'info' as const },
-    { icon: Banknote, label: t('obligations.metrics.totalAmount'), value: formatCurrency(metrics.totalAmount), accent: 'indigo' as const },
-    { icon: Wallet, label: t('obligations.metrics.cash'), value: metrics.cash, accent: 'success' as const },
+    {
+      icon: Receipt,
+      label: t("obligations.metrics.total"),
+      value: metrics.total,
+      accent: "primary" as const,
+    },
+    {
+      icon: Filter,
+      label: t("obligations.metrics.filtered"),
+      value: shown,
+      accent: "info" as const,
+    },
+    {
+      icon: Banknote,
+      label: t("obligations.metrics.totalAmount"),
+      value: formatCurrency(metrics.totalAmount),
+      accent: "indigo" as const,
+    },
+    {
+      icon: Wallet,
+      label: t("obligations.metrics.cash"),
+      value: metrics.cash,
+      accent: "success" as const,
+    },
   ])();
 
   return <ModuleCommandMetricsGrid items={items} />;
-});
+};

@@ -29,19 +29,19 @@ export function scrollAndFocusFirstError(
     for (const id of candidateIds) {
       if (!id) continue;
       const el =
-        document.getElementById(id)
-        || document.querySelector(`[name="${id}"]`)
-        || document.querySelector(`[data-field-id="${id}"]`);
+        document.getElementById(id) ||
+        document.querySelector(`[name="${id}"]`) ||
+        document.querySelector(`[data-field-id="${id}"]`);
 
       if (el instanceof HTMLElement) {
         el.scrollIntoView({ behavior, block });
 
         // If directly focusable form control
         if (
-          el instanceof HTMLInputElement
-          || el instanceof HTMLSelectElement
-          || el instanceof HTMLTextAreaElement
-          || el instanceof HTMLButtonElement
+          el instanceof HTMLInputElement ||
+          el instanceof HTMLSelectElement ||
+          el instanceof HTMLTextAreaElement ||
+          el instanceof HTMLButtonElement
         ) {
           el.focus({ preventScroll: true });
           return true;

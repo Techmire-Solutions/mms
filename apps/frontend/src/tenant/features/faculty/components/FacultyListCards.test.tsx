@@ -74,7 +74,7 @@ describe("FacultyListCards", () => {
         onSms={vi.fn()}
         onWhatsApp={vi.fn()}
         onEmail={vi.fn()}
-      />
+      />,
     );
 
     expect(html).toContain("Ustadh Ahmad");
@@ -107,7 +107,7 @@ describe("FacultyListCards", () => {
         onEdit={vi.fn()}
         onRequestDelete={vi.fn()}
         onRestore={vi.fn()}
-      />
+      />,
     );
 
     expect(html).toContain("Ustadha Fatima");
@@ -132,7 +132,7 @@ describe("FacultyListCards", () => {
         onView={vi.fn()}
         onEdit={vi.fn()}
         onRequestDelete={vi.fn()}
-      />
+      />,
     );
 
     expect(html).toContain("Ustadh Ahmad");
@@ -159,7 +159,7 @@ describe("FacultyListCards", () => {
         onView={vi.fn()}
         onEdit={vi.fn()}
         onRequestDelete={vi.fn()}
-      />
+      />,
     );
 
     expect(html).not.toContain("common.edit");
@@ -185,7 +185,7 @@ describe("FacultyListCards", () => {
         onView={vi.fn()}
         onEdit={vi.fn()}
         onRequestDelete={vi.fn()}
-      />
+      />,
     );
 
     expect(html).not.toContain("Ustadh Ahmad");

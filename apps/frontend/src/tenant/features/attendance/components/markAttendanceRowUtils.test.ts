@@ -5,7 +5,7 @@ import {
   attendanceRecordsFromRows,
   studentRollNo,
   enrolledStudentsForClass,
-} from "./markAttendanceRowUtils";
+} from "../lib/markAttendanceRowUtils";
 import type { ClassStudent } from "@/lib/data/attendanceData";
 import type { Enrollment } from "@/lib/data/enrollmentData";
 import type { Student } from "@/lib/data/studentsData";
@@ -16,7 +16,12 @@ describe("markAttendanceRowUtils utilities", () => {
       { id: "std-1", name: "Bilal", gender: "male", rollNo: "GR-001" },
     ];
     const customFields = [
-      { id: "homework", label: "Homework", type: "boolean", defaultValue: false } as any,
+      {
+        id: "homework",
+        label: "Homework",
+        type: "boolean",
+        defaultValue: false,
+      } as unknown as never,
     ];
 
     const rows = buildDefaultRows(students, customFields);
@@ -56,14 +61,29 @@ describe("markAttendanceRowUtils utilities", () => {
 
   it("finds enrolledStudentsForClass correctly", () => {
     const enrollments: Enrollment[] = [
-      { id: "enr-1", studentId: "std-1", classId: "cls-1", status: "confirmed" } as any,
-      { id: "enr-2", studentId: "std-2", classId: "cls-1", status: "completed" } as any,
-      { id: "enr-3", studentId: "std-3", classId: "cls-1", status: "cancelled" } as any,
+      {
+        id: "enr-1",
+        studentId: "std-1",
+        classId: "cls-1",
+        status: "confirmed",
+      } as unknown as never,
+      {
+        id: "enr-2",
+        studentId: "std-2",
+        classId: "cls-1",
+        status: "completed",
+      } as unknown as never,
+      {
+        id: "enr-3",
+        studentId: "std-3",
+        classId: "cls-1",
+        status: "cancelled",
+      } as unknown as never,
     ];
     const students: Student[] = [
-      { id: "std-1", name: "Bilal", gender: "male", grNumber: "GR-01" } as any,
-      { id: "std-2", name: "Hamza", gender: "male", grNumber: "GR-02" } as any,
-      { id: "std-3", name: "Usman", gender: "male", grNumber: "GR-03" } as any,
+      { id: "std-1", name: "Bilal", gender: "male", grNumber: "GR-01" } as unknown as never,
+      { id: "std-2", name: "Hamza", gender: "male", grNumber: "GR-02" } as unknown as never,
+      { id: "std-3", name: "Usman", gender: "male", grNumber: "GR-03" } as unknown as never,
     ];
 
     const list = enrolledStudentsForClass("cls-1", enrollments, students, "Unnamed");

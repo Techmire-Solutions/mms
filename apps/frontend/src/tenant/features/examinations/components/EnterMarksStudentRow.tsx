@@ -2,11 +2,11 @@ import React from "react";
 import { motion } from "framer-motion";
 import { type Exam } from "@/lib/data/examinationData";
 import type { Student } from "@/lib/data/studentsData";
-import { getGrade } from "@/tenant/features/examinations/components/gradeUtils";
+import { getGrade } from "@/tenant/features/examinations/lib/gradeUtils";
 import { FORM_INPUT_COMPACT } from "@/components/ui/formStyles";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
-import { UserAvatar } from "@/components/ui/UserAvatar";
+import { UserAvatar } from "@/components/app/UserAvatar";
 import { useTranslation } from "@/hooks/useTranslation";
 import { cn } from "@/lib/utils";
 
@@ -29,7 +29,8 @@ export function EnterMarksStudentRow({
 }: EnterMarksStudentRowProps): React.JSX.Element {
   const { t } = useTranslation();
   const numValue = Number(markValue);
-  const isInvalid = markValue !== "" && (isNaN(numValue) || numValue < 0 || numValue > exam.totalMarks);
+  const isInvalid =
+    markValue !== "" && (isNaN(numValue) || numValue < 0 || numValue > exam.totalMarks);
   const percentage =
     exam.totalMarks > 0 && markValue !== "" && !isInvalid
       ? Math.round((numValue / exam.totalMarks) * 100)
@@ -77,7 +78,8 @@ export function EnterMarksStudentRow({
             className={cn(
               FORM_INPUT_COMPACT,
               "w-20 shrink-0 tabular-nums",
-              isInvalid && "border-destructive bg-destructive/10 text-destructive focus-visible:ring-destructive",
+              isInvalid &&
+                "border-destructive bg-destructive/10 text-destructive focus-visible:ring-destructive",
             )}
             placeholder="—"
           />

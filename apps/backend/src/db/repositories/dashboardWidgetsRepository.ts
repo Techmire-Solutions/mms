@@ -1,7 +1,7 @@
-import { and, asc, desc, eq, inArray, sql } from 'drizzle-orm';
-import { DASHBOARD_WIDGET_INDEXED_KEYS, type DashboardWidgetDto } from '@mms/shared';
-import { dashboardWidgets } from '../schema.js';
-import { withTenant } from '../tenant-context.js';
+import { and, asc, desc, eq, inArray, sql } from "drizzle-orm";
+import { DASHBOARD_WIDGET_INDEXED_KEYS, type DashboardWidgetDto } from "@mms/shared";
+import { dashboardWidgets } from "../schema.js";
+import { withTenant } from "../tenant-context.js";
 
 type DashboardWidgetRow = typeof dashboardWidgets.$inferSelect;
 
@@ -28,7 +28,9 @@ function toRow(
 } {
   const config: Record<string, unknown> = {};
   for (const [key, value] of Object.entries(widget)) {
-    if (!DASHBOARD_WIDGET_INDEXED_KEYS.includes(key as (typeof DASHBOARD_WIDGET_INDEXED_KEYS)[number])) {
+    if (
+      !DASHBOARD_WIDGET_INDEXED_KEYS.includes(key as (typeof DASHBOARD_WIDGET_INDEXED_KEYS)[number])
+    ) {
       config[key] = value;
     }
   }
@@ -62,13 +64,13 @@ function toDto(row: DashboardWidgetRow): DashboardWidgetDto {
     isPinnedToDashboard: row.isPinnedToDashboard,
     title: row.title,
     color: row.color,
-    operation: row.operation as DashboardWidgetDto['operation'],
+    operation: row.operation as DashboardWidgetDto["operation"],
     sortOrder: row.sortOrder,
   } as DashboardWidgetDto;
 
-  if (row.widgetType) dto.widgetType = row.widgetType as DashboardWidgetDto['widgetType'];
-  if (row.role) dto.role = row.role as DashboardWidgetDto['role'];
-  if (row.icon) dto.icon = row.icon as DashboardWidgetDto['icon'];
+  if (row.widgetType) dto.widgetType = row.widgetType as DashboardWidgetDto["widgetType"];
+  if (row.role) dto.role = row.role as DashboardWidgetDto["role"];
+  if (row.icon) dto.icon = row.icon as DashboardWidgetDto["icon"];
 
   return dto;
 }
@@ -154,12 +156,7 @@ export async function deleteDashboardWidgetById(
   await withTenant(subdomain, async (tx) => {
     await tx
       .delete(dashboardWidgets)
-      .where(
-        and(
-          eq(dashboardWidgets.workspaceSubdomain, subdomain),
-          eq(dashboardWidgets.id, id),
-        ),
-      );
+      .where(and(eq(dashboardWidgets.workspaceSubdomain, subdomain), eq(dashboardWidgets.id, id)));
   });
 }
 
@@ -174,7 +171,9 @@ export async function reorderDashboardWidgetsForWorkspace(
   // Deduplicate: last sortOrder wins for duplicate IDs; avoids inArray(ids) with dups.
   const deduped = Array.from(new Map(order.map((item) => [item.id, item])).values());
   const ids = deduped.map((item) => item.id);
-  const caseStatements = deduped.map((item) => sql`WHEN ${dashboardWidgets.id} = ${item.id} THEN ${item.sortOrder}`);
+  const caseStatements = deduped.map(
+    (item) => sql`WHEN ${dashboardWidgets.id} = ${item.id} THEN ${item.sortOrder}`,
+  );
   await withTenant(subdomain, async (tx) => {
     await tx
       .update(dashboardWidgets)
@@ -183,10 +182,7 @@ export async function reorderDashboardWidgetsForWorkspace(
         updatedAt: now,
       })
       .where(
-        and(
-          eq(dashboardWidgets.workspaceSubdomain, subdomain),
-          inArray(dashboardWidgets.id, ids),
-        ),
+        and(eq(dashboardWidgets.workspaceSubdomain, subdomain), inArray(dashboardWidgets.id, ids)),
       );
   });
 }
@@ -219,17 +215,13 @@ export async function findDashboardWidgetById(
       })
       .from(dashboardWidgets)
       .where(
-        and(
-          eq(dashboardWidgets.workspaceSubdomain, subdomain),
-          eq(dashboardWidgets.id, cleanId),
-        ),
+        and(eq(dashboardWidgets.workspaceSubdomain, subdomain), eq(dashboardWidgets.id, cleanId)),
       )
       .orderBy(desc(dashboardWidgets.updatedAt))
       .limit(1);
     return rows[0] ? toDto(rows[0]) : null;
   });
 }
-
 
 /** Backup/restore parity — full workspace widget rows. */
 export async function listAllDashboardWidgetsByWorkspace(
@@ -266,18 +258,16 @@ export async function replaceDashboardWidgetsForWorkspace(
 ): Promise<void> {
   const subdomain = workspaceSubdomain.trim().toLowerCase();
   await withTenant(subdomain, async (tx) => {
-    await tx
-      .delete(dashboardWidgets)
-      .where(eq(dashboardWidgets.workspaceSubdomain, subdomain));
+    await tx.delete(dashboardWidgets).where(eq(dashboardWidgets.workspaceSubdomain, subdomain));
     if (records.length === 0) return;
     const widgets = records.map((record, index) => {
       const dto = {
         id: String(record.id ?? `restore-${index}`),
-        title: String(record.title ?? ''),
-        category: String(record.category ?? ''),
-        collection: String(record.collection ?? ''),
-        operation: String(record.operation ?? 'count'),
-        color: String(record.color ?? ''),
+        title: String(record.title ?? ""),
+        category: String(record.category ?? ""),
+        collection: String(record.collection ?? ""),
+        operation: String(record.operation ?? "count"),
+        color: String(record.color ?? ""),
         isPinnedToDashboard: Boolean(record.isPinnedToDashboard),
         ...record,
       } as DashboardWidgetDto;

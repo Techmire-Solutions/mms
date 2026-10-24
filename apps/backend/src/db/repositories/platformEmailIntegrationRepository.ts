@@ -1,11 +1,11 @@
-import { eq } from 'drizzle-orm';
-import { activeDb } from '../dbConnection.js';
-import * as schema from '../schema.js';
-import { type PlatformEmailIntegrationRow } from '../schema/platform.js';
-import type { EmailIntegrationConfig, EmailIntegrationSecrets } from '@mms/shared';
-import { DEFAULT_EMAIL_INTEGRATION } from '@mms/shared';
+import { eq } from "drizzle-orm";
+import { activeDb } from "../dbConnection.js";
+import * as schema from "../schema.js";
+import { type PlatformEmailIntegrationRow } from "../schema/platform.js";
+import type { EmailIntegrationConfig, EmailIntegrationSecrets } from "@mms/shared";
+import { DEFAULT_EMAIL_INTEGRATION } from "@mms/shared";
 
-const SINGLETON_ID = 'global';
+const SINGLETON_ID = "global";
 
 export async function getPlatformEmailIntegrationRow(): Promise<PlatformEmailIntegrationRow | null> {
   const rows = await activeDb()
@@ -32,7 +32,9 @@ export async function getPlatformEmailIntegrationRow(): Promise<PlatformEmailInt
   return rows[0] ?? null;
 }
 
-export async function upsertPlatformEmailIntegrationConfigRow(config: EmailIntegrationConfig): Promise<void> {
+export async function upsertPlatformEmailIntegrationConfigRow(
+  config: EmailIntegrationConfig,
+): Promise<void> {
   await activeDb()
     .insert(schema.platformEmailIntegrations)
     .values({
@@ -71,7 +73,9 @@ export async function upsertPlatformEmailIntegrationConfigRow(config: EmailInteg
     });
 }
 
-export async function upsertPlatformEmailIntegrationSecretsRow(secrets: EmailIntegrationSecrets): Promise<void> {
+export async function upsertPlatformEmailIntegrationSecretsRow(
+  secrets: EmailIntegrationSecrets,
+): Promise<void> {
   await activeDb()
     .insert(schema.platformEmailIntegrations)
     .values({

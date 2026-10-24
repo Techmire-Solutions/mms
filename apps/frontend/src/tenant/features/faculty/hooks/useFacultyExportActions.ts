@@ -35,10 +35,7 @@ export interface UseFacultyExportActionsOptions {
   hasActiveFilters: boolean;
   selectedIds: string[];
   logExportAudit: {
-    mutateAsync: (payload: {
-      count: number;
-      scope: ExportAuditScope;
-    }) => Promise<unknown>;
+    mutateAsync: (payload: { count: number; scope: ExportAuditScope }) => Promise<unknown>;
   };
 }
 

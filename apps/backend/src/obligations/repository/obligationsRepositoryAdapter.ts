@@ -1,4 +1,4 @@
-import type { ObligationsRepository } from './obligationsRepository.js';
+import type { ObligationsRepository } from "./obligationsRepository.js";
 import {
   listObligationTypesByWorkspace,
   findObligationTypeById,
@@ -38,9 +38,13 @@ import {
   replaceObligationCollectionsForWorkspace,
   bulkSoftDeleteObligationCollections,
   bulkRestoreObligationCollections,
-} from '../../db/repositories/obligationRepository.js';
-import { aggregateObligationsCommandMetrics } from '../../db/repositories/obligationRepositoryMetrics.js';
-import { aggregateObligationsReport } from '../../db/repositories/obligationRepositoryReport.js';
+} from "../../db/repositories/obligationRepository.js";
+import { aggregateObligationsCommandMetrics } from "../../db/repositories/obligationRepositoryMetrics.js";
+import { aggregateObligationsReport } from "../../db/repositories/obligationRepositoryReport.js";
+import {
+  getObligationModulePreferences,
+  setObligationModulePreferences,
+} from "../../db/repositories/obligationModulePreferencesRepository.js";
 
 /**
  * Drizzle-backed adapter for {@link ObligationsRepository}. Delegates to the
@@ -87,4 +91,6 @@ export const obligationsRepository: ObligationsRepository = {
   bulkRestoreObligationCollections,
   aggregateObligationsCommandMetrics,
   aggregateObligationsReport,
+  getPreferences: getObligationModulePreferences,
+  setPreferences: setObligationModulePreferences,
 };

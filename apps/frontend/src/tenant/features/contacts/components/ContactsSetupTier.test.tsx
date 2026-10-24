@@ -9,7 +9,7 @@ vi.mock("@/hooks/useTranslation", () => ({
   }),
 }));
 
-vi.mock("@/components/ui/SubTabBar", () => ({
+vi.mock("@/components/app/SubTabBar", () => ({
   SubTabBar: ({ tabs }: { tabs: Array<{ key: string; label: string }> }) => (
     <div data-testid="sub-tab-bar">
       {tabs.map((tab) => (
@@ -34,11 +34,7 @@ vi.mock("@/lib/setup/useModuleSetupSubTabs", () => ({
 describe("ContactsSetupTier Component", () => {
   it("renders setup tier sub tabs and preferences container", () => {
     const html = renderToStaticMarkup(
-      <ContactsSetupTier
-        onImport={vi.fn()}
-        canWrite={true}
-        canEditSetup={true}
-      />,
+      <ContactsSetupTier onImport={vi.fn()} canWrite={true} canEditSetup={true} />,
     );
 
     expect(html).toContain("sub-tab-bar");

@@ -2,20 +2,20 @@ import React from "react";
 import { useNavigate } from "react-router-dom";
 import { GraduationCap } from "lucide-react";
 import type { Student } from "@mms/shared";
-import { Drawer } from '@/components/ui/Drawer';
-import { DrawerUpdatedStamp } from "@/components/ui/DrawerUpdatedStamp";
+import { Drawer } from "@/components/app/Drawer";
+import { DrawerUpdatedStamp } from "@/components/app/DrawerUpdatedStamp";
 import type { useMessageComposerState } from "@/hooks/useMessageComposerState";
 import { StudentArchivedBanner } from "@/tenant/features/students/components/StudentArchivedBanner";
 import { StudentDetailContactSection } from "@/tenant/features/students/components/StudentDetailContactSection";
 import { StudentDetailFieldsSection } from "@/tenant/features/students/components/StudentDetailFieldsSection";
 import { StudentDetailHeroCard } from "@/tenant/features/students/components/StudentDetailHeroCard";
-import { DetailNotesBlock } from "@/components/ui/DetailNotesBlock";
+import { DetailNotesBlock } from "@/components/app/DetailNotesBlock";
 import { StudentDetailQuickActions } from "@/tenant/features/students/components/StudentDetailQuickActions";
 import { StudentDetailRelationsSection } from "@/tenant/features/students/components/StudentDetailRelationsSection";
 import { StudentDetailSessionsSection } from "@/tenant/features/students/components/StudentDetailSessionsSection";
 import { StudentDetailSiblingsSection } from "@/tenant/features/students/components/StudentDetailSiblingsSection";
 import { StudentDetailHeaderActions } from "@/tenant/features/students/components/StudentDetailHeaderActions";
-import { useStudentDetailModel } from "@/tenant/features/students/components/useStudentDetailModel";
+import { useStudentDetailModel } from "@/tenant/features/students/hooks/useStudentDetailModel";
 
 export interface StudentDetailProps {
   student: Student;
@@ -31,7 +31,7 @@ export interface StudentDetailProps {
   onViewContact?: (contactId: string | number) => void;
 }
 
-export const StudentDetail = (function StudentDetail({
+export const StudentDetail = function StudentDetail({
   student,
   onClose,
   onEdit,
@@ -176,7 +176,7 @@ export const StudentDetail = (function StudentDetail({
       />
     </Drawer>
   );
-});
+};
 
 export const StudentDrawer = StudentDetail;
 export default StudentDetail;

@@ -1,10 +1,10 @@
-export const REMEMBER_EMAIL_KEY = 'mms_login_remember_email';
+export const REMEMBER_EMAIL_KEY = "mms_login_remember_email";
 
 export function readRememberedLoginEmail(): string {
   try {
-    return localStorage.getItem(REMEMBER_EMAIL_KEY) ?? '';
+    return localStorage.getItem(REMEMBER_EMAIL_KEY) ?? "";
   } catch {
-    return '';
+    return "";
   }
 }
 

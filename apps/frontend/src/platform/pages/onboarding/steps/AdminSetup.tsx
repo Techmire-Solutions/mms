@@ -2,11 +2,9 @@ import React from "react";
 import type { Dispatch, SetStateAction } from "react";
 import type { OnboardingData } from "@/platform/pages/onboarding/OnboardingWizard";
 import { useTranslation } from "@/hooks/useTranslation";
-import { Input } from "@/components/ui/input";
-import { Checkbox } from "@/components/ui/checkbox";
-import { Field } from "@/components/ui/FormField";
+import { Mail } from "lucide-react";
+import { Callout, Checkbox, Field, Input } from "@shared/ui";
 import { AuthEmailField } from "@/components/entry";
-import { AdminSetupPasswordFields } from "@/platform/pages/onboarding/steps/AdminSetupPasswordFields";
 
 /** The subset of onboarding data used by this step. */
 export interface AdminSetupData {
@@ -30,7 +28,7 @@ export default function AdminSetup({ data, onChange }: AdminSetupProps) {
   const { t } = useTranslation();
 
   const update = (field: keyof OnboardingData, fieldValue: unknown) => {
-    onChange((prev) => ({ ...prev, [field]: fieldValue } as OnboardingData));
+    onChange((prev) => ({ ...prev, [field]: fieldValue }) as OnboardingData);
   };
 
   return (
@@ -73,12 +71,7 @@ export default function AdminSetup({ data, onChange }: AdminSetupProps) {
         onChange={(value) => update("email", value)}
       />
 
-      <AdminSetupPasswordFields
-        password={data.password || ""}
-        confirmPassword={data.confirmPassword || ""}
-        onPasswordChange={(value) => update("password", value)}
-        onConfirmPasswordChange={(value) => update("confirmPassword", value)}
-      />
+      <Callout icon={Mail} tone="info" description={t("onboarding.admin.passwordEmailNotice")} />
 
       <div className="flex min-h-11 items-start gap-2.5 rounded-lg pt-1 select-none">
         <Checkbox

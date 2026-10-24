@@ -2,4 +2,4 @@
 export {
   buildContactsVcfExport,
   generateContactsVcfStreamChunks,
-} from '../contacts/use-cases/contactExportUseCases.js';
+} from "../contacts/use-cases/contactExportUseCases.js";

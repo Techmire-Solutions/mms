@@ -77,13 +77,19 @@ export function useContactFormDraftOptions({
     return Array.from(new Set([defaultCountry, ...names].filter(Boolean)));
   }, [countryCodes, defaultCountry]);
 
-  const updateCountryOptions = useCallback((nextCountries: string[]) => {
-    updateCountryCodes(mergeCountryNameOptions(countryCodes, nextCountries));
-  }, [countryCodes, updateCountryCodes]);
+  const updateCountryOptions = useCallback(
+    (nextCountries: string[]) => {
+      updateCountryCodes(mergeCountryNameOptions(countryCodes, nextCountries));
+    },
+    [countryCodes, updateCountryCodes],
+  );
 
-  const updateDialCodeOptions = useCallback((nextCodes: string[]) => {
-    updateCountryCodes(mergeCountryDialCodeOptions(countryCodes, nextCodes));
-  }, [countryCodes, updateCountryCodes]);
+  const updateDialCodeOptions = useCallback(
+    (nextCodes: string[]) => {
+      updateCountryCodes(mergeCountryDialCodeOptions(countryCodes, nextCodes));
+    },
+    [countryCodes, updateCountryCodes],
+  );
 
   return {
     optionDefaults,

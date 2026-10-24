@@ -1,5 +1,5 @@
-import { pino, type Logger } from 'pino';
-import { LOG_REDACTION_OPTIONS } from './logRedaction.js';
+import { pino, type Logger } from "pino";
+import { LOG_REDACTION_OPTIONS } from "./logRedaction.js";
 
 /**
  * Shared structured logger for non-Fastify contexts (worker daemon, bootstrap,
@@ -11,9 +11,9 @@ import { LOG_REDACTION_OPTIONS } from './logRedaction.js';
  * so worker and API logs are consistent.
  */
 export const logger: Logger = pino({
-  level: process.env.LOG_LEVEL || 'info',
+  level: process.env.LOG_LEVEL || "info",
   base: {
-    service: 'mms-backend',
+    service: "mms-backend",
   },
   // Secrets must never reach durable log storage — see lib/logRedaction.ts.
   redact: LOG_REDACTION_OPTIONS,

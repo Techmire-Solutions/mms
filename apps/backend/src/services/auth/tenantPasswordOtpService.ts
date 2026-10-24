@@ -1,23 +1,28 @@
-import { randomBytes } from 'node:crypto';
-import type { FastifyReply } from 'fastify';
-import type { JWT } from '@fastify/jwt';
-import { TENANT_PASSWORD_OTP_TTL_MINUTES, TENANT_OTP_MAX_ATTEMPTS, type ActivityLog } from '@mms/shared';
+import { randomBytes } from "node:crypto";
+import type { FastifyReply } from "fastify";
+import type { JWT } from "@fastify/jwt";
+import {
+  TENANT_PASSWORD_OTP_TTL_MINUTES,
+  TENANT_OTP_MAX_ATTEMPTS,
+  type ActivityLog,
+} from "@mms/shared";
 import {
   deleteAuthArtifact,
   findAuthArtifactByLookupKey,
   putAuthArtifact,
   updateAuthArtifactPayload,
-} from './authArtifactService.js';
-import { generateOtpCode, hashOtpCode, verifyOtpCode } from './authCookieService.js';
-import { hashPassword } from './passwordService.js';
-import { assertPasswordMeetsPolicy } from '../globalSettingsService.js';
-import { activateInvitedTenantUserRow } from '../../db/repositories/tenantUserRepository.js';
-import { findUserByLoginEmailAndWorkspace, getPublicUserById } from './userService.js';
-import { establishSession, type AuthResult } from './authService.js';
-import { sendTenantEmail } from '../email/emailService.js';
-import { broadcastCollection } from '../websocketService.js';
-import { usersRepository } from '../../users/repository/usersRepositoryAdapter.js';
-import { logger } from '../../lib/logger.js';
+} from "./authArtifactService.js";
+import { generateOtpCode, hashOtpCode, verifyOtpCode } from "./authCookieService.js";
+import { hashPassword } from "./passwordService.js";
+import { assertPasswordMeetsPolicy } from "../globalSettingsService.js";
+import { activateInvitedTenantUserRow } from "../../db/repositories/tenantUserRepository.js";
+import { findUserByLoginEmailAndWorkspace, getPublicUserById } from "./userService.js";
+import { establishSession, type AuthResult } from "./authService.js";
+import { broadcastCollection } from "../../lib/livePush.js";
+import { usersRepository } from "../../users/repository/usersRepositoryAdapter.js";
+import { dispatchTenantPasswordOtp, sendTenantWelcomeEmail } from "./tenantPasswordOtpDispatch.js";
+
+export { sendTenantWelcomeEmail };
 
 const OTP_TTL_MS = TENANT_PASSWORD_OTP_TTL_MINUTES * 60 * 1000;
 const RESEND_COOLDOWN_MS = 60_000;
@@ -35,19 +40,14 @@ export class TenantPasswordOtpError extends Error {
   readonly statusCode: number;
 
   constructor(
-    readonly code: 'invalid_code' | 'too_many_attempts' | 'not_found',
+    readonly code: "invalid_code" | "too_many_attempts" | "not_found",
     message: string,
   ) {
     super(message);
-    this.name = 'TenantPasswordOtpError';
-    this.statusCode = code === 'not_found' ? 404 : 400;
+    this.name = "TenantPasswordOtpError";
+    this.statusCode = code === "not_found" ? 404 : 400;
   }
 }
-
-const WELCOME_EMAIL_FAILURE_MESSAGES: Record<string, string> = {
-  notifications_disabled: 'Email notifications are turned off in Settings → General → Notifications.',
-  not_configured: 'No outgoing mail server is configured in Settings → General → Notifications.',
-};
 
 function otpLookupKey(workspaceSubdomain: string, email: string): string {
   return `tenant-otp:${workspaceSubdomain.trim().toLowerCase()}:${email.trim().toLowerCase()}`;
@@ -55,50 +55,16 @@ function otpLookupKey(workspaceSubdomain: string, email: string): string {
 
 async function recordPasswordSetActivity(tenant: string, userId: string): Promise<void> {
   const log: ActivityLog = {
-    id: `log_${randomBytes(8).toString('hex')}`,
+    id: `log_${randomBytes(8).toString("hex")}`,
     userId,
-    action: 'update',
-    module: 'users',
-    detail: 'Set password and signed in',
+    action: "update",
+    module: "users",
+    detail: "Set password and signed in",
     ts: new Date().toISOString(),
-    ip: '127.0.0.1',
+    ip: "127.0.0.1",
   };
   await usersRepository.bulkSaveActivityLogs(tenant, [log]);
-  await broadcastCollection('user_activity_logs');
-}
-
-/**
- * Sends a plain, tokenless "welcome" link for a newly-created (invite-method) user.
- * The link carries no secret — it's a shortcut into the same OTP flow every user
- * already has (`?activate=1`). Never throws — reports `sent`.
- */
-export async function sendTenantWelcomeEmail(input: {
-  workspaceSubdomain: string;
-  email: string;
-  name: string;
-  origin: string;
-}): Promise<{ sent: boolean; error?: string }> {
-  const link = `${input.origin.replace(/\/$/, '')}/forgot-password?activate=1`;
-  const result = await sendTenantEmail({
-    to: input.email,
-    subject: `You're invited to join ${input.workspaceSubdomain} on MMS`,
-    text: `Hi ${input.name},\n\nYou've been added as a user. Activate your account and set your password:\n${link}`,
-    html: `<p>Hi ${input.name},</p><p>You've been added as a user. Activate your account and set your password:</p><p><a href="${link}">${link}</a></p>`,
-  });
-
-  if (!result.sent) {
-    const error =
-      result.message
-      || (result.reason && WELCOME_EMAIL_FAILURE_MESSAGES[result.reason])
-      || 'The welcome email could not be sent.';
-    logger.warn({ email: input.email, reason: result.reason, error }, 'Tenant welcome email failed to send');
-    if (process.env.NODE_ENV !== 'production') {
-      logger.info({ email: input.email, link }, 'Tenant welcome link (dev, email not sent)');
-    }
-    return { sent: false, error };
-  }
-
-  return { sent: true };
+  await broadcastCollection("user_activity_logs");
 }
 
 /**
@@ -119,7 +85,7 @@ export async function requestTenantPasswordReset(input: {
   }
 
   const existing = await findAuthArtifactByLookupKey<TenantPasswordOtpPayload>(
-    'tenant_password_otp',
+    "tenant_password_otp",
     lookupKey,
   );
   if (existing) {
@@ -132,7 +98,7 @@ export async function requestTenantPasswordReset(input: {
 
   const code = generateOtpCode();
   await putAuthArtifact<TenantPasswordOtpPayload>(
-    'tenant_password_otp',
+    "tenant_password_otp",
     {
       userId: user.id,
       workspaceSubdomain: input.workspaceSubdomain,
@@ -145,16 +111,7 @@ export async function requestTenantPasswordReset(input: {
     { lookupKey },
   );
 
-  const dispatch = await sendTenantEmail({
-    to: email,
-    subject: 'Your MMS verification code',
-    text: `Your verification code is ${code}. It expires in ${TENANT_PASSWORD_OTP_TTL_MINUTES} minutes.\n\nIf you didn't request this, you can ignore this email.`,
-    html: `<p>Your verification code is <strong>${code}</strong>.</p><p>It expires in ${TENANT_PASSWORD_OTP_TTL_MINUTES} minutes.</p><p>If you didn't request this, you can ignore this email.</p>`,
-  });
-
-  if (!dispatch.sent && process.env.NODE_ENV !== 'production') {
-    logger.info({ email, code }, 'Tenant password OTP (dev, email not sent)');
-  }
+  await dispatchTenantPasswordOtp(email, user, code);
 
   return { accepted: true };
 }
@@ -168,22 +125,25 @@ export async function verifyTenantPasswordResetOtp(input: {
   const email = input.email.trim().toLowerCase();
   const lookupKey = otpLookupKey(input.workspaceSubdomain, email);
   const entry = await findAuthArtifactByLookupKey<TenantPasswordOtpPayload>(
-    'tenant_password_otp',
+    "tenant_password_otp",
     lookupKey,
   );
   if (!entry) {
-    throw new TenantPasswordOtpError('invalid_code', 'Invalid or expired code');
+    throw new TenantPasswordOtpError("invalid_code", "Invalid or expired code");
   }
 
-  const normalizedCode = input.code.replace(/\s/g, '');
+  const normalizedCode = input.code.replace(/\s/g, "");
   if (!verifyOtpCode(normalizedCode, entry.payload.codeHash)) {
     const attempts = entry.payload.attempts + 1;
     if (attempts >= TENANT_OTP_MAX_ATTEMPTS) {
       await deleteAuthArtifact(entry.id);
-      throw new TenantPasswordOtpError('too_many_attempts', 'Too many invalid attempts. Request a new code.');
+      throw new TenantPasswordOtpError(
+        "too_many_attempts",
+        "Too many invalid attempts. Request a new code.",
+      );
     }
     await updateAuthArtifactPayload(entry.id, { ...entry.payload, attempts });
-    throw new TenantPasswordOtpError('invalid_code', 'Invalid or expired code');
+    throw new TenantPasswordOtpError("invalid_code", "Invalid or expired code");
   }
 
   return { ok: true };
@@ -201,16 +161,16 @@ export async function resetTenantPassword(input: {
   const email = input.email.trim().toLowerCase();
   const lookupKey = otpLookupKey(input.workspaceSubdomain, email);
   const entry = await findAuthArtifactByLookupKey<TenantPasswordOtpPayload>(
-    'tenant_password_otp',
+    "tenant_password_otp",
     lookupKey,
   );
   if (!entry) {
-    throw new TenantPasswordOtpError('invalid_code', 'Invalid or expired code');
+    throw new TenantPasswordOtpError("invalid_code", "Invalid or expired code");
   }
 
-  const normalizedCode = input.code.replace(/\s/g, '');
+  const normalizedCode = input.code.replace(/\s/g, "");
   if (!verifyOtpCode(normalizedCode, entry.payload.codeHash)) {
-    throw new TenantPasswordOtpError('invalid_code', 'Invalid or expired code');
+    throw new TenantPasswordOtpError("invalid_code", "Invalid or expired code");
   }
 
   // Validate before consuming — a policy-rejected password must not burn the one-shot code.
@@ -225,16 +185,16 @@ export async function resetTenantPassword(input: {
     passwordHash,
   );
   if (!activated) {
-    throw new TenantPasswordOtpError('not_found', 'This account is no longer available');
+    throw new TenantPasswordOtpError("not_found", "This account is no longer available");
   }
 
   const user = await getPublicUserById(entry.payload.userId);
   if (!user) {
-    throw new TenantPasswordOtpError('not_found', 'This account is no longer available');
+    throw new TenantPasswordOtpError("not_found", "This account is no longer available");
   }
 
   await recordPasswordSetActivity(entry.payload.workspaceSubdomain, entry.payload.userId);
-  await broadcastCollection('users');
+  await broadcastCollection("users");
 
   return establishSession(user, input.jwtSigner, input.reply, true);
 }

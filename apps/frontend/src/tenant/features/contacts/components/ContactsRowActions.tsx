@@ -1,8 +1,8 @@
 import React from "react";
 import { type Contact, getPrimaryEmail, getPrimaryPhone, hasWhatsApp } from "@mms/shared";
 import { useTranslation } from "@/hooks/useTranslation";
-import { ModuleRowActionsMenu } from "@/components/ui/ModuleRowActionsMenu";
-import { PersonMessagingRowActionsExtras } from "@/components/ui/PersonMessagingRowActionsExtras";
+import { ModuleRowActionsMenu } from "@/components/app/ModuleRowActionsMenu";
+import { PersonMessagingRowActionsExtras } from "@/components/app/PersonMessagingRowActionsExtras";
 
 export interface ContactsRowActionsProps {
   contact: Contact;

@@ -1,10 +1,19 @@
 import { describe, expect, it } from "vitest";
 import type { Account, JournalTemplate } from "@mms/shared";
-import { buildTemplateTransactionGroups, resolveWizardTransactionGroups } from "./simpleTransactionTemplateGroups";
-import { TRANSACTION_GROUPS } from "./simpleTransactionWizardGroups";
+import {
+  buildTemplateTransactionGroups,
+  resolveWizardTransactionGroups,
+} from "../lib/simpleTransactionTemplateGroups";
+import { TRANSACTION_GROUPS } from "../lib/simpleTransactionWizardGroups";
 
 const account = (id: string, code: string, type: Account["type"], name: string): Account => ({
-  id, code, name, type, subtype: type === "Asset" ? "Cash & Bank" : "", description: "", isActive: true,
+  id,
+  code,
+  name,
+  type,
+  subtype: type === "Asset" ? "Cash & Bank" : "",
+  description: "",
+  isActive: true,
 });
 
 const accounts = [
@@ -15,8 +24,15 @@ const accounts = [
   account("payable", "21100", "Liability", "Accounts Payable"),
 ];
 
-const template = (id: string, debitAccountId: string, creditAccountId: string): JournalTemplate => ({
-  id, name: `T ${id}`, debitAccountId, creditAccountId,
+const template = (
+  id: string,
+  debitAccountId: string,
+  creditAccountId: string,
+): JournalTemplate => ({
+  id,
+  name: `T ${id}`,
+  debitAccountId,
+  creditAccountId,
 });
 
 describe("buildTemplateTransactionGroups", () => {
@@ -38,7 +54,13 @@ describe("buildTemplateTransactionGroups", () => {
       ["accounting.journal.dashboard.group.moneyOut", ["tpl:rent"]],
       ["accounting.journal.dashboard.group.transfers", ["tpl:deposit"]],
     ]);
-    expect(groups[1].items[0]).toMatchObject({ label: "T rent", tag: "T rent", debitAcc: "rent", creditAcc: "bank", color: "red" });
+    expect(groups[1].items[0]).toMatchObject({
+      label: "T rent",
+      tag: "T rent",
+      debitAcc: "rent",
+      creditAcc: "bank",
+      color: "red",
+    });
   });
 });
 

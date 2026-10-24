@@ -1,6 +1,6 @@
 import React, { useMemo } from "react";
 import { ShieldCheck } from "lucide-react";
-import { SectionCard } from "@/components/ui/SectionCard";
+import { SectionCard } from "@/components/app/SectionCard";
 import { Switch } from "@/components/ui/switch";
 import { useTranslation } from "@/hooks/useTranslation";
 import { useWorkspaceRoles } from "@/tenant/hooks/useWorkspaceRoles";
@@ -40,7 +40,9 @@ export interface FacultyUserAccountSectionProps {
   errors: Record<string, string>;
 }
 
-export function FacultyUserAccountSection(props: FacultyUserAccountSectionProps): React.JSX.Element {
+export function FacultyUserAccountSection(
+  props: FacultyUserAccountSectionProps,
+): React.JSX.Element {
   const {
     facultyDraft = {},
     linkedContact,
@@ -62,11 +64,13 @@ export function FacultyUserAccountSection(props: FacultyUserAccountSectionProps)
   const linkedUser = useMemo(() => {
     if (linkedUserProp !== undefined) return linkedUserProp;
     if (!facultyDraft.contactId && !facultyDraft.userId) return null;
-    return existingUsers?.find(
-      (u) =>
-        (facultyDraft.userId && u.id === facultyDraft.userId) ||
-        (facultyDraft.contactId && String(u.contactId) === String(facultyDraft.contactId)),
-    ) ?? null;
+    return (
+      existingUsers?.find(
+        (u) =>
+          (facultyDraft.userId && u.id === facultyDraft.userId) ||
+          (facultyDraft.contactId && String(u.contactId) === String(facultyDraft.contactId)),
+      ) ?? null
+    );
   }, [linkedUserProp, existingUsers, facultyDraft.contactId, facultyDraft.userId]);
 
   const roleOptions = useMemo(() => {
@@ -80,7 +84,7 @@ export function FacultyUserAccountSection(props: FacultyUserAccountSectionProps)
   }, [workspaceRoles, facultyDraft.designationAssignableRoles, facultyDraft.designationId, t]);
 
   const selectedRoleObj = useMemo(() => {
-    const roleId = linkedUser ? (userAccountDraft.role || linkedUser.role) : userAccountDraft.role;
+    const roleId = linkedUser ? userAccountDraft.role || linkedUser.role : userAccountDraft.role;
     return workspaceRoles.find((r) => r.id === roleId);
   }, [workspaceRoles, linkedUser, userAccountDraft.role]);
 
@@ -108,8 +112,12 @@ export function FacultyUserAccountSection(props: FacultyUserAccountSectionProps)
       <div className="space-y-4 text-start">
         <div className="flex items-center justify-between gap-4 p-3 rounded-xl border border-border bg-muted/20">
           <div className="space-y-0.5">
-            <p className="text-sm font-semibold text-foreground">{t("faculty.form.grantLoginAccess")}</p>
-            <p className="text-xs text-muted-foreground">{t("faculty.form.grantLoginAccessHint")}</p>
+            <p className="text-sm font-semibold text-foreground">
+              {t("faculty.form.grantLoginAccess")}
+            </p>
+            <p className="text-xs text-muted-foreground">
+              {t("faculty.form.grantLoginAccessHint")}
+            </p>
           </div>
           <Switch
             checked={userAccountDraft.enabled}

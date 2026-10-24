@@ -1,24 +1,17 @@
-import React from 'react';
-import { BookOpen, Check, X } from 'lucide-react';
+import React from "react";
+import { BookOpen, Check, X } from "lucide-react";
 import {
   PERMISSION_ACTIONS,
   type PermissionAction,
   type PermissionMap,
   type RbacModuleDef,
   type RbacPermissionMatrixGroup,
-} from '@mms/shared';
-import { Button } from '@/components/ui/button';
-import { ModuleTableHeaderCell } from '@/components/ui/ModuleTableHeaderCell';
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHeader,
-  TableRow,
-} from '@/components/ui/table';
-import { MutedTableHeaderRow } from '@/components/ui/reports/FinancialDebitCreditTableChrome';
-import { useTranslation } from '@/hooks/useTranslation';
-import { PermissionMatrixRow } from '@/tenant/features/users/components/PermissionMatrixRow';
+} from "@mms/shared";
+import { Button } from "@/components/ui/button";
+import { ModuleTableHeaderCell } from "@/components/app/ModuleTableHeaderCell";
+import { Table, TableBody, TableCell, TableHeader, TableRow } from "@/components/ui/table";
+import { useTranslation } from "@/hooks/useTranslation";
+import { PermissionMatrixRow } from "@/tenant/features/users/components/PermissionMatrixRow";
 
 export interface PermissionMatrixDesktopTableProps {
   groups: readonly RbacPermissionMatrixGroup[];
@@ -93,17 +86,19 @@ export function PermissionMatrixDesktopTable({
   return (
     <div>
       <Table>
-        <caption className="sr-only">{t('users.permissions.matrixCaption')}</caption>
+        <caption className="sr-only">{t("users.permissions.matrixCaption")}</caption>
         <TableHeader>
-          <MutedTableHeaderRow>
+          <TableRow className="border-b border-border bg-muted/30 hover:bg-muted/30">
             <ModuleTableHeaderCell columnKey="module" className="min-w-input-filter px-3 py-2.5">
-              <span>{t('users.permissions.colModule')}</span>
+              <span>{t("users.permissions.colModule")}</span>
             </ModuleTableHeaderCell>
             {PERMISSION_ACTIONS.map((permissionAction) => (
               <ModuleTableHeaderCell
                 key={permissionAction}
                 columnKey={permissionAction}
-                className="w-16 px-1 py-1.5 text-center"
+                variant="action"
+                noWrap
+                className="w-16 px-1 py-1.5"
               >
                 {!readOnly ? (
                   <Button
@@ -111,7 +106,7 @@ export function PermissionMatrixDesktopTable({
                     variant="ghost"
                     size="sm"
                     onClick={() => handleToggleColumn(permissionAction)}
-                    className="h-7 w-full px-1 text-2xs font-semibold hover:bg-primary/10 gap-0.5 rounded-md cursor-pointer justify-center"
+                    className="h-7 touch-target-coarse w-full px-1 text-2xs font-semibold hover:bg-primary/10 gap-0.5 rounded-md cursor-pointer justify-center"
                     title={t(`users.permission.${permissionAction}`)}
                   >
                     <span>{t(`users.permission.${permissionAction}`)}</span>
@@ -122,22 +117,29 @@ export function PermissionMatrixDesktopTable({
               </ModuleTableHeaderCell>
             ))}
             {!readOnly ? (
-              <ModuleTableHeaderCell columnKey="all" className="px-2 py-2.5 text-center">
+              <ModuleTableHeaderCell
+                columnKey="all"
+                variant="action"
+                noWrap
+                className="px-2 py-2.5"
+              >
                 <Button
                   type="button"
                   variant="ghost"
                   size="sm"
                   onClick={onToggleGlobalAll}
-                  className="h-7 px-2 text-2xs font-bold text-primary hover:bg-primary/10 gap-1 rounded-md cursor-pointer"
-                  aria-label={allModulesChecked ? t('common.deselect') : t('users.permissions.colAll')}
-                  title={t('users.permissions.colAll')}
+                  className="h-7 touch-target-coarse px-2 text-2xs font-bold text-primary hover:bg-primary/10 gap-1 rounded-md cursor-pointer"
+                  aria-label={
+                    allModulesChecked ? t("common.deselect") : t("users.permissions.colAll")
+                  }
+                  title={t("users.permissions.colAll")}
                 >
                   {allModulesChecked ? <X className="h-3 w-3" /> : <Check className="h-3 w-3" />}
-                  <span>{t('users.permissions.colAll')}</span>
+                  <span>{t("users.permissions.colAll")}</span>
                 </Button>
               </ModuleTableHeaderCell>
             ) : null}
-          </MutedTableHeaderRow>
+          </TableRow>
         </TableHeader>
         <TableBody className="divide-y divide-border">
           {groups.map((group) => {
@@ -152,7 +154,9 @@ export function PermissionMatrixDesktopTable({
                           <div className="flex h-6 w-6 items-center justify-center rounded-md bg-primary/10">
                             <BookOpen className="h-3 w-3 text-primary" aria-hidden />
                           </div>
-                          <span className="text-xs font-bold text-foreground">{t(group.labelKey)}</span>
+                          <span className="text-xs font-bold text-foreground">
+                            {t(group.labelKey)}
+                          </span>
                         </div>
                         {!readOnly && group.modules.length > 1 ? (
                           <Button
@@ -160,10 +164,16 @@ export function PermissionMatrixDesktopTable({
                             variant="ghost"
                             size="sm"
                             onClick={() => handleToggleGroup(group.modules)}
-                            className="h-6 px-2 text-2xs font-medium text-primary hover:bg-primary/10 gap-1 rounded-md"
+                            className="h-6 touch-target-coarse px-2 text-2xs font-medium text-primary hover:bg-primary/10 gap-1 rounded-md"
                           >
-                            {groupChecked ? <X className="h-3 w-3" /> : <Check className="h-3 w-3" />}
-                            <span>{groupChecked ? t('common.deselect') : t('users.permissions.colAll')}</span>
+                            {groupChecked ? (
+                              <X className="h-3 w-3" />
+                            ) : (
+                              <Check className="h-3 w-3" />
+                            )}
+                            <span>
+                              {groupChecked ? t("common.deselect") : t("users.permissions.colAll")}
+                            </span>
                           </Button>
                         ) : null}
                       </div>

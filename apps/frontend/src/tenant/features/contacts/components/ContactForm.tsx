@@ -1,7 +1,7 @@
 import type React from "react";
-import { useState, useMemo, useEffect } from "react";
+import { useState, useMemo, useEffect, useId } from "react";
 import { User } from "lucide-react";
-import { FormModal } from "@/components/ui/FormModal";
+import { FormModal } from "@/components/app/FormModal";
 import { useTranslation } from "@/hooks/useTranslation";
 import { useGlobalSettings } from "@/tenant/hooks/useGlobalSettings";
 import type { Contact } from "@mms/shared";
@@ -14,7 +14,7 @@ import {
   computeContactTabErrorCounts,
   buildContactFormVisibleTabs,
   buildContactValidationErrorSummary,
-} from "@/tenant/features/contacts/components/contactFormTabUtils";
+} from "@/tenant/features/contacts/lib/contactFormTabUtils";
 
 export interface ContactFormProps {
   open?: boolean;
@@ -46,6 +46,7 @@ export function ContactForm({
 }: ContactFormProps): React.JSX.Element {
   const { t, dir } = useTranslation();
   const { language } = useGlobalSettings();
+  const formDomId = `contact-form-${useId().replace(/:/g, "")}`;
   const { enabledTabIds } = useContactConfig();
   const [tab, setTab] = useState("basic");
 
@@ -92,7 +93,8 @@ export function ContactForm({
     : (visibleTabs[0]?.key ?? "basic");
 
   const validationErrorSummary = useMemo(
-    () => buildContactValidationErrorSummary(Boolean(draft.lookupsError), draft.validationErrors, t),
+    () =>
+      buildContactValidationErrorSummary(Boolean(draft.lookupsError), draft.validationErrors, t),
     [draft.lookupsError, draft.validationErrors, t],
   );
 
@@ -115,7 +117,7 @@ export function ContactForm({
       tabs={visibleTabs}
       activeTab={activeTab}
       onTabChange={setTab}
-      tabPanelIdPrefix="contact-form-tab"
+      tabPanelIdPrefix={`${formDomId}-tab`}
       lang={language}
       dir={dir}
       cancelLabel={t("common.cancel")}
@@ -139,10 +141,10 @@ export function ContactForm({
           t={t}
         />
       }
-      formId="contact-form"
+      formId={formDomId}
     >
       <form
-        id="contact-form"
+        id={formDomId}
         noValidate
         onSubmit={(e) => {
           e.preventDefault();

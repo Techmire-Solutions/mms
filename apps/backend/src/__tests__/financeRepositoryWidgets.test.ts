@@ -1,15 +1,15 @@
-import { beforeEach, describe, expect, it, vi } from 'vitest';
-import type { WidgetQuery } from '@mms/shared';
+import { beforeEach, describe, expect, it, vi } from "vitest";
+import type { WidgetQuery } from "@mms/shared";
 
 const mockWithTenantTransaction = vi.fn();
 
-vi.mock('../db/tenant-context.js', () => ({
+vi.mock("../db/tenant-context.js", () => ({
   withTenant: (...args: unknown[]) => mockWithTenantTransaction(...args),
   // Read paths now go through withTenantRead (read replica + read-only tx).
   withTenantRead: (...args: unknown[]) => mockWithTenantTransaction(...args),
 }));
 
-import { aggregateFinanceWidgetQueries } from '../db/repositories/financeRepositoryWidgets.js';
+import { aggregateFinanceWidgetQueries } from "../db/repositories/financeRepositoryWidgets.js";
 
 function createChainableTx(rowsQueue: unknown[][]) {
   let queueIndex = 0;
@@ -21,7 +21,7 @@ function createChainableTx(rowsQueue: unknown[][]) {
     where: () => makeNode(),
     groupBy: () => makeNode(),
     orderBy: () => {
-      callLog.push('orderBy');
+      callLog.push("orderBy");
       return makeNode();
     },
     limit: (limitValue: number) => {
@@ -37,37 +37,41 @@ function createChainableTx(rowsQueue: unknown[][]) {
   return { tx, callLog };
 }
 
-describe('financeRepositoryWidgets', () => {
+describe("financeRepositoryWidgets", () => {
   beforeEach(() => {
     vi.clearAllMocks();
   });
 
-  it('returns an empty map when no queries are provided', async () => {
+  it("returns an empty map when no queries are provided", async () => {
     const { tx } = createChainableTx([]);
     mockWithTenantTransaction.mockImplementation(
       async (_tenant: unknown, fn: (inner: typeof tx) => Promise<unknown>) => fn(tx),
     );
 
-    await expect(aggregateFinanceWidgetQueries('Demo', [])).resolves.toEqual({});
+    await expect(aggregateFinanceWidgetQueries("Demo", [])).resolves.toEqual({});
   });
 
-  it('safely handles non-numeric gt/lt filter values without throwing NaN errors', async () => {
+  it("safely handles non-numeric gt/lt filter values without throwing NaN errors", async () => {
     // totalCount row, count row, chart rows
-    const { tx } = createChainableTx([[{ count: 10 }], [{ count: 10 }], [{ name: 'paid', value: 10 }]]);
+    const { tx } = createChainableTx([
+      [{ count: 10 }],
+      [{ count: 10 }],
+      [{ name: "paid", value: 10 }],
+    ]);
     mockWithTenantTransaction.mockImplementation(
       async (_tenant: unknown, fn: (inner: typeof tx) => Promise<unknown>) => fn(tx),
     );
 
     const query: WidgetQuery = {
-      id: 'w-invalid',
-      operation: 'count',
-      filterField: 'finalAmt',
-      filterOperator: 'gt',
-      filterValue: 'invalid-not-a-number',
+      id: "w-invalid",
+      operation: "count",
+      filterField: "finalAmt",
+      filterOperator: "gt",
+      filterValue: "invalid-not-a-number",
     };
 
-    const res = await aggregateFinanceWidgetQueries('demo', [query]);
-    expect(res['w-invalid']).toBeDefined();
-    expect(res['w-invalid']?.value).toBe(10);
+    const res = await aggregateFinanceWidgetQueries("demo", [query]);
+    expect(res["w-invalid"]).toBeDefined();
+    expect(res["w-invalid"]?.value).toBe(10);
   });
 });

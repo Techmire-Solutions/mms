@@ -34,12 +34,7 @@ describe("ParentNamesSubtitle Component", () => {
   });
 
   it("renders only father when mother and guardian are absent", () => {
-    const html = renderToStaticMarkup(
-      <ParentNamesSubtitle
-        fatherName="Muhammad Ali"
-        t={mockT}
-      />,
-    );
+    const html = renderToStaticMarkup(<ParentNamesSubtitle fatherName="Muhammad Ali" t={mockT} />);
 
     expect(html).toContain("Father:");
     expect(html).toContain("Muhammad Ali");
@@ -48,12 +43,7 @@ describe("ParentNamesSubtitle Component", () => {
   });
 
   it("renders only mother when father and guardian are absent", () => {
-    const html = renderToStaticMarkup(
-      <ParentNamesSubtitle
-        motherName="Fatima Zahra"
-        t={mockT}
-      />,
-    );
+    const html = renderToStaticMarkup(<ParentNamesSubtitle motherName="Fatima Zahra" t={mockT} />);
 
     expect(html).toContain("Mother:");
     expect(html).toContain("Fatima Zahra");
@@ -62,12 +52,7 @@ describe("ParentNamesSubtitle Component", () => {
   });
 
   it("renders guardian fallback when both father and mother are absent", () => {
-    const html = renderToStaticMarkup(
-      <ParentNamesSubtitle
-        guardianName="Uncle Tariq"
-        t={mockT}
-      />,
-    );
+    const html = renderToStaticMarkup(<ParentNamesSubtitle guardianName="Uncle Tariq" t={mockT} />);
 
     expect(html).toContain("Guardian:");
     expect(html).toContain("Uncle Tariq");
@@ -77,12 +62,7 @@ describe("ParentNamesSubtitle Component", () => {
 
   it("renders null (empty) when all names are absent or whitespace", () => {
     const html = renderToStaticMarkup(
-      <ParentNamesSubtitle
-        fatherName="   "
-        motherName=""
-        guardianName="   "
-        t={mockT}
-      />,
+      <ParentNamesSubtitle fatherName="   " motherName="" guardianName="   " t={mockT} />,
     );
 
     expect(html).toBe("");

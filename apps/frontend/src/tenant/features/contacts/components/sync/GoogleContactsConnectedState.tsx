@@ -1,9 +1,9 @@
 import type React from "react";
 import { CheckCircle2, Loader2, Unlink, Users } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { FieldErrorMessage } from "@/components/ui/FormField";
+import { FieldErrorMessage } from "@/components/app/FormField";
 import { FORM_ERROR_BOX } from "@/components/ui/formStyles";
-import { WarningCallout } from "@/components/ui/WarningCallout";
+import { WarningCallout } from "@/components/app/WarningCallout";
 import type { TranslationFunction } from "@/lib/contexts/TranslationContext";
 import type { GoogleContactsSyncRunResult } from "@mms/shared";
 
@@ -38,8 +38,9 @@ export function GoogleContactsConnectedState({
             <Button
               type="button"
               variant="outline"
+              size="sm"
               onClick={onDisconnect}
-              className="flex min-h-11 items-center gap-1 rounded-lg border border-border bg-card px-2.5 text-xs text-muted-foreground shadow-none transition-colors hover:bg-destructive/10 hover:text-destructive"
+              className="min-h-11 gap-1 text-xs text-muted-foreground hover:bg-destructive/10 hover:text-destructive hover:border-destructive/30"
             >
               <Unlink className="h-3 w-3" />
               <span>{t("contacts.sync.disconnect")}</span>
@@ -48,10 +49,7 @@ export function GoogleContactsConnectedState({
         }
       />
 
-      <FieldErrorMessage
-        message={error || undefined}
-        className={FORM_ERROR_BOX}
-      />
+      <FieldErrorMessage message={error || undefined} className={FORM_ERROR_BOX} />
 
       {syncResult && (
         <WarningCallout
@@ -77,9 +75,10 @@ export function GoogleContactsConnectedState({
       {canWrite && (
         <Button
           type="button"
+          variant="default"
           onClick={onSync}
           disabled={syncing}
-          className="flex min-h-11 items-center gap-2 rounded-xl bg-primary px-5 text-sm font-semibold text-primary-foreground shadow-none transition-colors hover:bg-primary/90 disabled:opacity-60"
+          className="gap-2 min-h-11 px-5 font-semibold"
         >
           {syncing ? (
             <>

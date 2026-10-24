@@ -1,6 +1,7 @@
-import { useQuery } from '@tanstack/react-query';
-import { apiJson } from '@/lib/apiClient';
-import { usePlatformPermissions } from '@/platform/hooks/usePlatformPermissions';
+import { useQuery } from "@tanstack/react-query";
+import { apiContract } from "@/lib/api";
+import { ApiError } from "@/lib/apiClient";
+import { usePlatformPermissions } from "@/platform/hooks/usePlatformPermissions";
 
 export interface PlatformTelemetryData {
   platformDb?: {
@@ -14,7 +15,7 @@ export interface PlatformTelemetryData {
     hasReplica: boolean;
   };
   tenantDb?: {
-    rlsIsolation: 'enforced';
+    rlsIsolation: "enforced";
     activeTenantsCount: number;
     totalTenantTransactions: number;
     tenantCapLimit: number;
@@ -49,8 +50,8 @@ export interface PlatformActivityTrendResponse {
   trend: PlatformActivityTrendItem[];
 }
 
-export const PLATFORM_TELEMETRY_QUERY_KEY = ['platform', 'telemetry'] as const;
-export const PLATFORM_ACTIVITY_TREND_QUERY_KEY = ['platform', 'activity-trend'] as const;
+export const PLATFORM_TELEMETRY_QUERY_KEY = ["platform", "telemetry"] as const;
+export const PLATFORM_ACTIVITY_TREND_QUERY_KEY = ["platform", "activity-trend"] as const;
 
 export interface UsePlatformTelemetryOptions {
   refetchInterval?: number | false;
@@ -69,9 +70,19 @@ export function usePlatformTelemetry(options?: UsePlatformTelemetryOptions): {
   const query = useQuery({
     queryKey: PLATFORM_TELEMETRY_QUERY_KEY,
     queryFn: async ({ signal }) => {
-      return apiJson<PlatformTelemetryData>('/api/platform/admin/system/telemetry', {
+      const response = await apiContract.platform.getTelemetry({
         signal,
+        fetchOptions: { signal },
       });
+      if (response.status !== 200) {
+        const errorBody = response.body as { message?: string; type?: string } | undefined;
+        throw new ApiError(
+          response.status,
+          errorBody?.message ?? "Failed to load platform telemetry",
+          errorBody?.type,
+        );
+      }
+      return response.body as PlatformTelemetryData;
     },
     enabled: isPlatformAuthenticated && canSystem,
     refetchInterval: options?.refetchInterval !== undefined ? options.refetchInterval : 30_000,
@@ -99,13 +110,19 @@ export function usePlatformActivityTrend(): {
   const query = useQuery({
     queryKey: PLATFORM_ACTIVITY_TREND_QUERY_KEY,
     queryFn: async ({ signal }) => {
-      const res = await apiJson<PlatformActivityTrendResponse>(
-        '/api/platform/admin/system/activity-trend',
-        {
-          signal,
-        },
-      );
-      return res.trend;
+      const response = await apiContract.platform.getActivityTrend({
+        signal,
+        fetchOptions: { signal },
+      });
+      if (response.status !== 200) {
+        const errorBody = response.body as { message?: string; type?: string } | undefined;
+        throw new ApiError(
+          response.status,
+          errorBody?.message ?? "Failed to load platform activity trend",
+          errorBody?.type,
+        );
+      }
+      return (response.body as PlatformActivityTrendResponse).trend;
     },
     enabled: isPlatformAuthenticated && canSystem,
     staleTime: 60_000,

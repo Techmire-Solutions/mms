@@ -15,7 +15,7 @@ vi.mock("@/hooks/useTranslation", () => ({
   }),
 }));
 
-vi.mock("@/components/ui/FormPrimitives", () => ({
+vi.mock("@/components/app/FormPrimitives", () => ({
   TYPE_SELECT_WIDTH: "w-32",
   FormCardTypeSelect: ({
     label,
@@ -84,7 +84,7 @@ vi.mock("@/components/ui/FormPrimitives", () => ({
   ),
 }));
 
-vi.mock("@/components/ui/LeadingIconInput", () => ({
+vi.mock("@/components/app/LeadingIconInput", () => ({
   LeadingIconInput: ({
     value,
     placeholder,
@@ -171,12 +171,7 @@ describe("ContactBankDetailCard", () => {
 
   it("falls back to sequence label when bank name field is disabled", () => {
     const html = renderToStaticMarkup(
-      <ContactBankDetailCard
-        {...baseProps}
-        idx={1}
-        showBankName={false}
-        bankDetail={baseDetail}
-      />,
+      <ContactBankDetailCard {...baseProps} idx={1} showBankName={false} bankDetail={baseDetail} />,
     );
 
     expect(html).toContain("contacts.form.bankAccountSequence:2");

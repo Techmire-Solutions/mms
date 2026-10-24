@@ -1,9 +1,5 @@
 import type { AppTranslationKey, FieldDefinition } from "@mms/shared";
-import {
-  findFacultySeedField,
-  findFacultyTabField,
-  facultyColumnLabelKey,
-} from "@mms/shared";
+import { findFacultySeedField, findFacultyTabField, facultyColumnLabelKey } from "@mms/shared";
 import { resolveRegistryLabel } from "@/lib/contacts/contactI18n";
 
 /** Registry label with seed-label fallback when the seed field is missing from settings. */
@@ -19,4 +15,3 @@ export function resolveFacultyFieldLabel(
   if (seedField) return resolveRegistryLabel(seedField, t);
   return t(facultyColumnLabelKey(key));
 }
-

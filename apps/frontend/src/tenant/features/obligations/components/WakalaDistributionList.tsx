@@ -1,8 +1,7 @@
 import React from "react";
 import { Pencil, Trash2 } from "lucide-react";
-import { type ObligationDistribution } from '@/lib/data/obligationsData';
-import { StatusBadge, type StatusBadgeConfigItem } from "@/components/ui/StatusBadge";
-import { WORK_SURFACE } from "@/components/ui/formStyles";
+import { type ObligationDistribution } from "@/lib/data/obligationsData";
+import { StatusBadge, type StatusBadgeConfigItem } from "@/components/app/StatusBadge";
 import {
   DataTable,
   DataTableRowActions,
@@ -45,7 +44,9 @@ export function WakalaDistributionList({
     {
       id: "percentage",
       label: t("obligations.wakala.colPct"),
-      render: (d) => <span className="font-mono font-semibold text-foreground">{d.percentage}%</span>,
+      render: (d) => (
+        <span className="font-mono font-semibold text-foreground">{d.percentage}%</span>
+      ),
     },
   ];
 
@@ -53,42 +54,43 @@ export function WakalaDistributionList({
     {
       id: "type",
       label: t("obligations.wakala.colType"),
-      options: Object.entries(distributionTypeConfig).map(([value, item]) => ({ value, label: item.label })),
+      options: Object.entries(distributionTypeConfig).map(([value, item]) => ({
+        value,
+        label: item.label,
+      })),
       getValue: (d) => d.type,
     },
   ];
 
   return (
-    <div className={`${WORK_SURFACE} p-3`}>
-      <DataTable
-        tableId="obligations.wakalaDistributions"
-        defaultViewMode={viewMode}
-        label={t("obligations.wakala.distTableCaption")}
-        data={distributions}
-        columns={columns}
-        filters={filters}
-        actionsLabel={t("obligations.wakala.colActions")}
-        card={{ title: (d) => d.name }}
-        renderRowActions={(d) => (
-          <DataTableRowActions
-            actions={[
-              {
-                id: "edit",
-                label: t("obligations.wakala.distEditAria", { name: d.name }),
-                icon: Pencil,
-                onClick: () => onEdit(d),
-              },
-              {
-                id: "delete",
-                label: t("obligations.wakala.distDeleteAria", { name: d.name }),
-                icon: Trash2,
-                tone: "destructive",
-                onClick: () => onDelete(d.id),
-              },
-            ]}
-          />
-        )}
-      />
-    </div>
+    <DataTable
+      tableId="obligations.wakalaDistributions"
+      defaultViewMode={viewMode}
+      label={t("obligations.wakala.distTableCaption")}
+      data={distributions}
+      columns={columns}
+      filters={filters}
+      actionsLabel={t("obligations.wakala.colActions")}
+      card={{ title: (d) => d.name }}
+      renderRowActions={(d) => (
+        <DataTableRowActions
+          actions={[
+            {
+              id: "edit",
+              label: t("obligations.wakala.distEditAria", { name: d.name }),
+              icon: Pencil,
+              onClick: () => onEdit(d),
+            },
+            {
+              id: "delete",
+              label: t("obligations.wakala.distDeleteAria", { name: d.name }),
+              icon: Trash2,
+              tone: "destructive",
+              onClick: () => onDelete(d.id),
+            },
+          ]}
+        />
+      )}
+    />
   );
 }

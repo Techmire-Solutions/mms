@@ -1,9 +1,9 @@
-import { financeModulePreferences } from '../schema.js';
-import { createWorkspaceSingletonJsonRepo } from './moduleSetupRepoFactories.js';
+import { financeModulePreferences } from "../schema.js";
+import { createWorkspaceSingletonJsonRepo } from "./moduleSetupRepoFactories.js";
 
 const repo = createWorkspaceSingletonJsonRepo({
   table: financeModulePreferences,
-  jsonColumn: 'preferences',
+  jsonColumn: "preferences",
 });
 
 export const getFinanceModulePreferencesByWorkspace = repo.getByWorkspace;

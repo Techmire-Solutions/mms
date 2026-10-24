@@ -1,7 +1,7 @@
 import React from "react";
-import { EntityCard } from "@/components/ui/EntityCard";
-import { EntityCardsGrid } from "@/components/ui/EntityCardsGrid";
-import { EntityCardMetaTile } from "@/components/ui/EntityCardMetaTile";
+import { EntityCard } from "@/components/app/EntityCard";
+import { EntityCardsGrid } from "@/components/app/EntityCardsGrid";
+import { EntityCardMetaTile } from "@/components/app/EntityCardMetaTile";
 import type { DataTableCardContext, DataTableCardSlots, DataTableColumn } from "./dataTableTypes";
 
 /** EntityCard tile (DataTable default) — not DirectoryCard. */
@@ -32,13 +32,35 @@ export function DataTableCards<TData extends { id: string | number }>({
 
   const renderOne = (row: TData): React.ReactNode => {
     const index = indexById.get(row.id) ?? 0;
-    if (renderCard) return <React.Fragment key={String(row.id)}>{renderCard(row, index, { isColumnVisible })}</React.Fragment>;
+    if (renderCard)
+      return (
+        <React.Fragment key={String(row.id)}>
+          {renderCard(row, index, { isColumnVisible })}
+        </React.Fragment>
+      );
     return (
       <EntityCard
         key={String(row.id)}
         accentClassName={false}
         onClick={onRowClick ? () => onRowClick(row) : undefined}
-        className={onRowClick ? "cursor-pointer" : undefined}
+        tabIndex={onRowClick ? 0 : undefined}
+        role={onRowClick ? "button" : undefined}
+        onKeyDown={
+          onRowClick
+            ? (e: React.KeyboardEvent) => {
+                if (e.target !== e.currentTarget) return;
+                if (e.key === "Enter" || e.key === " ") {
+                  e.preventDefault();
+                  onRowClick(row);
+                }
+              }
+            : undefined
+        }
+        className={
+          onRowClick
+            ? "cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+            : undefined
+        }
       >
         <div className="flex items-start justify-between gap-2 min-w-0">
           <div className="min-w-0 flex-1 text-sm font-semibold text-foreground text-pretty break-words">

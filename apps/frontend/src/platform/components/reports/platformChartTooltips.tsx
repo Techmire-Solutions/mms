@@ -1,4 +1,4 @@
-import { buildChartTooltip } from '@/components/dashboard-widgets/charts/chartPrimitives';
+import { buildChartTooltip } from "@/components/dashboard-widgets/charts/chartPrimitives";
 
 export const PlatformCountTooltip = buildChartTooltip({
   valueFormatter: (value) => String(value),

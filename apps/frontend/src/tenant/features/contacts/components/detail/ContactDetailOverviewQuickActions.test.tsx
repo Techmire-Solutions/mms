@@ -4,8 +4,11 @@ import { renderToStaticMarkup } from "react-dom/server";
 import type { Contact } from "@mms/shared";
 import { ContactDetailOverviewQuickActions } from "./ContactDetailOverviewQuickActions";
 
-vi.mock("@/components/ui/EntityMessagingActions", () => ({
-  EntityMessagingActions: ({ primaryPhone, primaryEmail }: {
+vi.mock("@/components/app/EntityMessagingActions", () => ({
+  EntityMessagingActions: ({
+    primaryPhone,
+    primaryEmail,
+  }: {
     primaryPhone: string | null;
     primaryEmail: string | null;
   }) => (

@@ -1,6 +1,6 @@
 import type { MessageRecordDto } from "@mms/shared";
-import { SEMANTIC_BADGE } from "@/lib/semanticTone";
-import type { EntityDescriptor } from "@/types/entityRegistry";
+import { SEMANTIC_BADGE } from "@/lib/ui/semanticTone";
+import type { EntityDescriptor } from "@/components/common/entityRegistryTypes";
 import { createEntityDescriptor } from "../entityDescriptorFactory";
 
 export const messagingEntityDescriptor: EntityDescriptor<MessageRecordDto> =
@@ -79,7 +79,11 @@ export const messagingEntityDescriptor: EntityDescriptor<MessageRecordDto> =
           attendance: { label: "Attendance", tone: "info", className: SEMANTIC_BADGE.info },
           financial: { label: "Financial", tone: "warning", className: SEMANTIC_BADGE.warning },
           academic: { label: "Academic", tone: "primary", className: SEMANTIC_BADGE.primary },
-          emergency: { label: "Emergency", tone: "destructive", className: SEMANTIC_BADGE.destructive },
+          emergency: {
+            label: "Emergency",
+            tone: "destructive",
+            className: SEMANTIC_BADGE.destructive,
+          },
         },
       },
       {

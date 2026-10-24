@@ -1,26 +1,60 @@
-import { eq, sql } from 'drizzle-orm';
-import { type Student } from '@mms/shared';
-import { students, studentEnrolledSessions } from '../schema.js';
-import { withTenant, type AppDb } from '../tenant-context.js';
-import { mapAuditToInsert } from './repositoryMappers.js';
-import { invalidateMultiTierCache } from '../../lib/cache/index.js';
-import { syncStudentEnrolledSessionsTx } from './studentRepositoryEnrollOps.js';
-import { syncBulkStudentEnrolledSessionsTx } from './studentRepositoryBulkEnrollSync.js';
+import { eq, sql } from "drizzle-orm";
+import { type Student } from "@mms/shared";
+import { students, studentEnrolledSessionsLegacy } from "../schema.js";
+import { withTenant, type AppDb } from "../tenant-context.js";
+import { mapAuditToInsert } from "./repositoryMappers.js";
+import { invalidateMultiTierCache } from "../../lib/cache/index.js";
+import { requireDbDate } from "../../lib/dbDate.js";
 
 export type StudentInsert = typeof students.$inferInsert;
 
 const KNOWN_STUDENT_KEYS = new Set([
-  'id', 'workspaceSubdomain', 'contactId', 'fatherContactId', 'motherContactId', 'guardianContactId',
-  'fatherName', 'motherName', 'guardianName', 'grNumber', 'studentId', 'status', 'registeredDate',
-  'enrollmentDate', 'discountType', 'discountPct', 'registrationType', 'notes', 'enrolledSessions',
-  'createdAt', 'updatedAt', 'deletedAt', 'deletedBy', 'deletionReason', 'restoredAt', 'restoredBy',
-  'deletedWithCascade', 'createdBy', 'updatedBy', 'customFields',
-  'name', 'gender', 'dob', 'phone', 'email', 'city', 'cnic', 'isSyed', 'avatar',
+  "id",
+  "workspaceSubdomain",
+  "contactId",
+  "fatherContactId",
+  "motherContactId",
+  "guardianContactId",
+  "fatherName",
+  "motherName",
+  "guardianName",
+  "grNumber",
+  "studentId",
+  "status",
+  "registeredDate",
+  "enrollmentDate",
+  "discountType",
+  "discountPct",
+  "registrationType",
+  "notes",
+  "enrolledSessions",
+  "createdAt",
+  "updatedAt",
+  "deletedAt",
+  "deletedBy",
+  "deletionReason",
+  "restoredAt",
+  "restoredBy",
+  "deletedWithCascade",
+  "createdBy",
+  "updatedBy",
+  "customFields",
+  "name",
+  "gender",
+  "dob",
+  "phone",
+  "email",
+  "city",
+  "cnic",
+  "isSyed",
+  "avatar",
 ]);
 
 function extractStudentCustomFields(student: Student): Record<string, unknown> {
   const custom: Record<string, unknown> = {
-    ...(typeof student.customFields === 'object' && student.customFields !== null ? student.customFields : {}),
+    ...(typeof student.customFields === "object" && student.customFields !== null
+      ? student.customFields
+      : {}),
   };
   for (const [key, val] of Object.entries(student)) {
     if (!KNOWN_STUDENT_KEYS.has(key) && val !== undefined) {
@@ -49,9 +83,9 @@ export function studentWriteValues(subdomain: string, student: Student): Student
     guardianName: guardianContactId ? null : (student.guardianName ?? null),
     grNumber,
     studentId,
-    status: student.status ?? 'active',
-    registeredDate: student.registeredDate ?? null,
-    enrollmentDate: student.enrollmentDate ?? null,
+    status: student.status ?? "active",
+    registeredDate: requireDbDate(student.registeredDate, "Registered date"),
+    enrollmentDate: requireDbDate(student.enrollmentDate, "Enrollment date"),
     discountType: student.discountType ?? null,
     discountPct: student.discountPct != null ? String(student.discountPct) : null,
     registrationType: student.registrationType ?? null,
@@ -62,7 +96,13 @@ export function studentWriteValues(subdomain: string, student: Student): Student
 }
 
 export function studentUpdateSetValues(subdomain: string, student: Student) {
-  const { id: _id, workspaceSubdomain: _subdomain, createdAt: _createdAt, createdBy: _createdBy, ...setFields } = studentWriteValues(subdomain, student);
+  const {
+    id: _id,
+    workspaceSubdomain: _subdomain,
+    createdAt: _createdAt,
+    createdBy: _createdBy,
+    ...setFields
+  } = studentWriteValues(subdomain, student);
   return setFields;
 }
 
@@ -71,8 +111,6 @@ export async function persistStudentTx(
   subdomain: string,
   student: Student,
 ): Promise<void> {
-  const studentId = String(student.id);
-
   await tx
     .insert(students)
     .values(studentWriteValues(subdomain, student))
@@ -81,7 +119,7 @@ export async function persistStudentTx(
       set: studentUpdateSetValues(subdomain, student),
     });
 
-  await syncStudentEnrolledSessionsTx(tx, subdomain, studentId, student.enrolledSessions);
+  // `enrolledSessions` is derived from enrollments (enrollmentSessionSync) — never written from a student save.
 }
 
 export async function saveStudent(tenant: string, student: Student): Promise<void> {
@@ -89,7 +127,11 @@ export async function saveStudent(tenant: string, student: Student): Promise<voi
   await withTenant(subdomain, async (tx) => {
     await persistStudentTx(tx, subdomain, student);
   });
-  await invalidateMultiTierCache({ tenantId: subdomain, domain: 'students', key: String(student.id) });
+  await invalidateMultiTierCache({
+    tenantId: subdomain,
+    domain: "students",
+    key: String(student.id),
+  });
 }
 
 export async function bulkSaveStudents(tenant: string, items: Student[]): Promise<void> {
@@ -112,8 +154,8 @@ export async function bulkSaveStudents(tenant: string, items: Student[]): Promis
           grNumber: sql`excluded.gr_number`,
           studentId: sql`excluded.student_id`,
           status: sql`excluded.status`,
-          registeredDate: sql`excluded.registered_date`,
-          enrollmentDate: sql`excluded.enrollment_date`,
+          registeredDate: sql`excluded.registered_on`,
+          enrollmentDate: sql`excluded.enrollment_on`,
           discountType: sql`excluded.discount_type`,
           discountPct: sql`excluded.discount_pct`,
           registrationType: sql`excluded.registration_type`,
@@ -128,23 +170,23 @@ export async function bulkSaveStudents(tenant: string, items: Student[]): Promis
           updatedBy: sql`excluded.updated_by`,
         },
       });
-
-    await syncBulkStudentEnrolledSessionsTx(tx, subdomain, items);
   });
-  await invalidateMultiTierCache({ tenantId: subdomain, domain: 'students' });
+  await invalidateMultiTierCache({ tenantId: subdomain, domain: "students" });
 }
 
 export async function replaceStudentsForWorkspace(tenant: string, items: Student[]): Promise<void> {
   const subdomain = tenant.trim().toLowerCase();
   await withTenant(subdomain, async (tx) => {
     await tx.execute(sql`SET LOCAL app.allow_hard_purge = 'true'`);
-    await tx.delete(studentEnrolledSessions).where(eq(studentEnrolledSessions.workspaceSubdomain, subdomain));
+    await tx
+      .delete(studentEnrolledSessionsLegacy)
+      .where(eq(studentEnrolledSessionsLegacy.workspaceSubdomain, subdomain));
     await tx.delete(students).where(eq(students.workspaceSubdomain, subdomain));
     if (items.length === 0) return;
 
-    await tx.insert(students).values(
-      items.map((student) => studentWriteValues(subdomain, student)),
-    );
+    await tx
+      .insert(students)
+      .values(items.map((student) => studentWriteValues(subdomain, student)));
 
     const allSessions = items.flatMap((student) => {
       const sessions = Array.isArray(student.enrolledSessions) ? student.enrolledSessions : [];
@@ -158,12 +200,10 @@ export async function replaceStudentsForWorkspace(tenant: string, items: Student
     });
 
     if (allSessions.length > 0) {
-      await tx.insert(studentEnrolledSessions).values(allSessions);
+      // Membership is derived from enrollments; restored pairs are kept only as legacy rows
+      // (the view hides any pair that has enrollment history).
+      await tx.insert(studentEnrolledSessionsLegacy).values(allSessions).onConflictDoNothing();
     }
   });
-  await invalidateMultiTierCache({ tenantId: subdomain, domain: 'students' });
+  await invalidateMultiTierCache({ tenantId: subdomain, domain: "students" });
 }
-export {
-  bulkEnrollStudentsTx,
-  bulkEnrollStudents,
-} from './studentRepositoryEnrollOps.js';

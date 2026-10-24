@@ -1,6 +1,6 @@
 import { type Contact, hasWhatsApp } from "@mms/shared";
 import { useTranslation } from "@/hooks/useTranslation";
-import { EntityMessagingActions } from "@/components/ui/EntityMessagingActions";
+import { EntityMessagingActions } from "@/components/app/EntityMessagingActions";
 
 export interface ContactDetailOverviewQuickActionsProps {
   contact: Contact;
@@ -23,7 +23,8 @@ export function ContactDetailOverviewQuickActions({
   if (contact.deletedAt) return null;
 
   return (
-    <EntityMessagingActions variant="button-group"
+    <EntityMessagingActions
+      variant="button-group"
       primaryPhone={primaryPhone}
       primaryEmail={primaryEmail}
       labels={{

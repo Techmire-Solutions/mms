@@ -5,16 +5,16 @@ import {
   type FieldDefinition,
   type FinanceSettings,
   type TabDefinition,
-} from '@mms/shared';
+} from "@mms/shared";
 import {
   createModuleFieldConfigService,
   requireFieldConfigTenant,
-} from '../lib/createModuleFieldConfigService.js';
+} from "../lib/createModuleFieldConfigService.js";
 import {
   getFinanceFieldConfigByWorkspace,
   upsertFinanceFieldConfig,
-} from '../db/repositories/financeFieldConfigRepository.js';
-import { getFinanceModulePreferencesByWorkspace } from '../db/repositories/financeModulePreferencesRepository.js';
+} from "../db/repositories/financeFieldConfigRepository.js";
+import { getFinanceModulePreferencesByWorkspace } from "../db/repositories/financeModulePreferencesRepository.js";
 
 const financeFieldConfig = createModuleFieldConfigService<
   Record<string, unknown>,
@@ -23,7 +23,7 @@ const financeFieldConfig = createModuleFieldConfigService<
   Record<string, FieldDefinition[]> | undefined,
   ReturnType<typeof stripFinanceFieldConfigForPersist>
 >({
-  broadcastKey: 'finance',
+  broadcastKey: "finance",
   getByWorkspace: getFinanceFieldConfigByWorkspace,
   upsert: upsertFinanceFieldConfig,
   toDocument: async (raw, tenant) => {
@@ -31,7 +31,7 @@ const financeFieldConfig = createModuleFieldConfigService<
     return composeFinanceSettings(raw, prefs);
   },
   stripForPersist: stripFinanceFieldConfigForPersist,
-  reloadFailedMessage: 'Failed to reload finance field config after save',
+  reloadFailedMessage: "Failed to reload finance field config after save",
 });
 
 export const loadFinanceFieldConfig = financeFieldConfig.load;

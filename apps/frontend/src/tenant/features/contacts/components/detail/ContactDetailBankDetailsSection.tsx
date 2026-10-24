@@ -2,10 +2,10 @@ import React from "react";
 import { Landmark, CreditCard } from "lucide-react";
 import type { Contact } from "@mms/shared";
 import { useTranslation } from "@/hooks/useTranslation";
-import { DetailSectionCard } from "@/components/ui/DetailSectionCard";
+import { DetailSectionCard } from "@/components/app/DetailSectionCard";
 import { COLLECTION_CONTAINER_CLASS } from "./contactDetailStyles";
-import { CopyBtn } from "@/components/ui/CopyBtn";
-import { EmptyState } from "@/components/ui/EmptyState";
+import { CopyButton } from "@/components/app/CopyButton";
+import { EmptyState } from "@/components/app/EmptyState";
 
 export interface ContactDetailBankDetailsSectionProps {
   contact: Contact;
@@ -19,14 +19,20 @@ export function ContactDetailBankDetailsSection({
 
   if (bankDetails.length === 0) {
     return (
-      <DetailSectionCard className={COLLECTION_CONTAINER_CLASS} title={t("contacts.detail.bankDetails")}>
+      <DetailSectionCard
+        className={COLLECTION_CONTAINER_CLASS}
+        title={t("contacts.detail.bankDetails")}
+      >
         <EmptyState compact icon={Landmark} title={t("contacts.detail.emptyBankDetails")} />
       </DetailSectionCard>
     );
   }
 
   return (
-    <DetailSectionCard className={COLLECTION_CONTAINER_CLASS} title={t("contacts.detail.bankDetails")}>
+    <DetailSectionCard
+      className={COLLECTION_CONTAINER_CLASS}
+      title={t("contacts.detail.bankDetails")}
+    >
       {bankDetails.map((bank, idx) => {
         const copySummary = [bank.bankName, bank.accountTitle, bank.accountNumber]
           .filter(Boolean)
@@ -48,12 +54,13 @@ export function ContactDetailBankDetailsSection({
                 </div>
                 {bank.accountTitle ? (
                   <div className="text-muted-foreground font-medium">
-                    {t("contacts.fields.bankAccountTitle")}: <span className="text-foreground">{bank.accountTitle}</span>
+                    {t("contacts.fields.bankAccountTitle")}:{" "}
+                    <span className="text-foreground">{bank.accountTitle}</span>
                   </div>
                 ) : null}
               </div>
 
-              {copySummary ? <CopyBtn text={copySummary} showToast /> : null}
+              {copySummary ? <CopyButton text={copySummary} showToast /> : null}
             </div>
 
             {/* Account Number / IBAN */}

@@ -1,10 +1,6 @@
 import { useCallback } from "react";
 import { useQueryClient } from "@tanstack/react-query";
-import {
-  CONTACTS_MODULE_MANIFEST,
-  mergeContactEditSavePayload,
-  type Contact,
-} from "@mms/shared";
+import { CONTACTS_MODULE_MANIFEST, mergeContactEditSavePayload, type Contact } from "@mms/shared";
 import { useTranslation } from "@/hooks/useTranslation";
 import { notify } from "@/lib/notify";
 import { startContactsDuplicateScan } from "@/lib/backgroundJobs/startServerContactsBackgroundJobs";

@@ -1,9 +1,6 @@
 import type { ContactLike } from "@mms/shared";
-import {
-  hydrateCollectionRows,
-  normalizeCollectionRows,
-} from "@/lib/contactLink/collectionSync";
-import { scopedStorageKey } from "@/lib/dbStorageCore.js";
+import { hydrateCollectionRows, normalizeCollectionRows } from "@/lib/contactLink/collectionSync";
+import { scopedStorageKey } from "@/lib/dbStorageCore";
 
 export const LINK_MANAGED_COLLECTIONS = new Set([
   "students",
@@ -49,11 +46,11 @@ export function getLinkHydrationContext() {
   };
   const students = hydrateCollectionRows("students", rawStudents, base);
   const faculty = hydrateCollectionRows("faculty", rawFaculty, base);
-  const users = hydrateCollectionRows(
-    "users",
-    readRawCollection("users"),
-    { ...base, students, faculty },
-  );
+  const users = hydrateCollectionRows("users", readRawCollection("users"), {
+    ...base,
+    students,
+    faculty,
+  });
   return {
     contacts,
     students,

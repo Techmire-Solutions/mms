@@ -1,6 +1,6 @@
 import { USER_STATUS_REGISTRY, type SystemUser } from "@mms/shared";
-import { SEMANTIC_BADGE } from "@/lib/semanticTone";
-import type { EntityDescriptor, FieldBadgeConfig } from "@/types/entityRegistry";
+import { SEMANTIC_BADGE } from "@/lib/ui/semanticTone";
+import type { EntityDescriptor, FieldBadgeConfig } from "@/components/common/entityRegistryTypes";
 import { createEntityDescriptor } from "../entityDescriptorFactory";
 
 /** Badge configs derived from the shared USER_STATUS_REGISTRY — never re-declared per surface. */

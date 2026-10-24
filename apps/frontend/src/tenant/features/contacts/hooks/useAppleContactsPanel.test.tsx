@@ -50,7 +50,9 @@ class SyncFileReader {
   onload: ((event: { target: { result: string } }) => void) | null = null;
   readAsText(file?: Blob): void {
     if (file instanceof File && file.name.endsWith(".csv")) {
-      this.onload?.({ target: { result: "First Name,Last Name,Phone Number\nSajjad,Haider,03001234567" } });
+      this.onload?.({
+        target: { result: "First Name,Last Name,Phone Number\nSajjad,Haider,03001234567" },
+      });
     } else {
       this.onload?.({ target: { result: VCARD } });
     }
@@ -198,7 +200,11 @@ describe("useAppleContactsPanel import flow", () => {
 
   it("parses a chosen CSV into the preview list with all contact fields", async () => {
     renderHook(vi.fn().mockResolvedValue(undefined));
-    const file = new File(["First Name,Last Name,Phone Number\nSajjad,Haider,03001234567"], "contacts.csv", { type: "text/csv" });
+    const file = new File(
+      ["First Name,Last Name,Phone Number\nSajjad,Haider,03001234567"],
+      "contacts.csv",
+      { type: "text/csv" },
+    );
     const input = document.createElement("input");
     Object.defineProperty(input, "files", { value: [file], configurable: true });
     act(() => {

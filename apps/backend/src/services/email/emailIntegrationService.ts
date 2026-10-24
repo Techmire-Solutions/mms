@@ -3,14 +3,14 @@ import {
   type EmailIntegrationConfig,
   type EmailIntegrationSecrets,
   type EmailProviderId,
-} from '@mms/shared';
-import { getRequestTenant } from '../../lib/tenantContext.js';
+} from "@mms/shared";
+import { getRequestTenant } from "../../lib/tenantContext.js";
 import {
   getEmailIntegrationRow,
   upsertEmailIntegrationConfigRow,
   upsertEmailIntegrationSecretsRow,
-} from '../../db/repositories/emailIntegrationRepository.js';
-import { type EmailIntegrationRow } from '../../db/schema/messaging.js';
+} from "../../db/repositories/emailIntegrationRepository.js";
+import { type EmailIntegrationRow } from "../../db/schema/messaging.js";
 
 function rowToConfig(row: EmailIntegrationRow): EmailIntegrationConfig {
   const overrides: Partial<EmailIntegrationConfig> = {
@@ -47,7 +47,7 @@ export async function saveEmailIntegrationConfig(
   config: EmailIntegrationConfig,
 ): Promise<EmailIntegrationConfig> {
   const subdomain = getRequestTenant();
-  if (!subdomain) throw new Error('Tenant context missing');
+  if (!subdomain) throw new Error("Tenant context missing");
   const merged = mergeEmailIntegrationConfig(config);
   await upsertEmailIntegrationConfigRow(subdomain, merged);
   return merged;
@@ -64,11 +64,9 @@ export async function loadEmailIntegrationSecrets(): Promise<EmailIntegrationSec
   return secrets;
 }
 
-export async function saveEmailIntegrationSecrets(
-  secrets: EmailIntegrationSecrets,
-): Promise<void> {
+export async function saveEmailIntegrationSecrets(secrets: EmailIntegrationSecrets): Promise<void> {
   const subdomain = getRequestTenant();
-  if (!subdomain) throw new Error('Tenant context missing');
+  if (!subdomain) throw new Error("Tenant context missing");
   await upsertEmailIntegrationSecretsRow(subdomain, secrets);
 }
 

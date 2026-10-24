@@ -1,8 +1,5 @@
 /** Widget collection snapshots, aggregate readers, and value/chart compute. */
-export {
-  getWidgetCollections,
-  getFilteredRecords,
-} from "./widgetCollectionSnapshot.js";
+export { getWidgetCollections, getFilteredRecords } from "./widgetCollectionSnapshot";
 export {
   computeWidgetSingleValue,
   computeWidgetChartData,
@@ -12,4 +9,4 @@ export {
   computeFacultyCustomCardValue,
   computeSessionsCustomCardValue,
   computeEnrollmentsCustomCardValue,
-} from "./widgetValueCompute.js";
+} from "./widgetValueCompute";

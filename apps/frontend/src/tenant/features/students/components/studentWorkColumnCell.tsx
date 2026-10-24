@@ -1,10 +1,6 @@
 import type { ReactNode } from "react";
-import {
-  formatDate,
-  primaryResponsibleAdultDisplayName,
-  type Student,
-} from "@mms/shared";
-import type { StatusBadgeConfigItem } from "@/components/ui/StatusBadge";
+import { formatDate, primaryResponsibleAdultDisplayName, type Student } from "@mms/shared";
+import type { StatusBadgeConfigItem } from "@/components/app/StatusBadge";
 import type { TranslationFunction } from "@/lib/contexts/TranslationContext";
 import {
   renderStudentDobCell,
@@ -13,7 +9,7 @@ import {
 import {
   formatStudentsListContentCustomValue,
   studentCustomFieldKeyFromColumn,
-} from "@/tenant/features/students/components/studentsListCustomColumns";
+} from "@/tenant/features/students/lib/studentsListCustomColumns";
 
 /** Render a Students Work column value (non-face system or custom:`id`). */
 export function renderStudentWorkColumnValue(
@@ -37,7 +33,11 @@ export function renderStudentWorkColumnValue(
   switch (columnKey) {
     case "dob": {
       if (!student.dob) return emptyFallback;
-      return renderStudentDobCell({ studentRow: student, emptyDash: t("students.table.emptyDash"), t });
+      return renderStudentDobCell({
+        studentRow: student,
+        emptyDash: t("students.table.emptyDash"),
+        t,
+      });
     }
     case "parents": {
       const parentName = primaryResponsibleAdultDisplayName(student);

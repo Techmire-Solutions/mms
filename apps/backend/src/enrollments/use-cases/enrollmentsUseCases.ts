@@ -1,7 +1,7 @@
-import type { EnrollmentsRepository } from '../repository/enrollmentsRepository.js';
-import { enrollmentsRepository } from '../repository/enrollmentsRepositoryAdapter.js';
-import { getRequestTenant } from '../../lib/tenantContext.js';
-import { createGenericRelationalService } from '../../services/genericRelationalService.js';
+import type { EnrollmentsRepository } from "../repository/enrollmentsRepository.js";
+import { enrollmentsRepository } from "../repository/enrollmentsRepositoryAdapter.js";
+import { getRequestTenant } from "../../lib/tenantContext.js";
+import { createGenericRelationalService } from "../../services/genericRelationalService.js";
 import {
   enrollmentRecordSchema,
   type EnrollmentRecord,
@@ -15,11 +15,17 @@ import {
   type EnrollmentsReportAggregates,
   type EnrollmentsReportComparisonQuery,
   type EnrollmentsWidgetQuery,
-} from '@mms/shared';
+} from "@mms/shared";
 
 export interface EnrollmentsUseCasesDependencies {
-  findStudentById?: (tenant: string, id: string) => Promise<{ id: string; deletedAt?: unknown } | null>;
-  findSessionById?: (tenant: string, id: string) => Promise<{ id: string; deletedAt?: unknown } | null>;
+  findStudentById?: (
+    tenant: string,
+    id: string,
+  ) => Promise<{ id: string; deletedAt?: unknown } | null>;
+  findSessionById?: (
+    tenant: string,
+    id: string,
+  ) => Promise<{ id: string; deletedAt?: unknown } | null>;
 }
 
 /**
@@ -41,18 +47,18 @@ export function createEnrollmentsUseCases(
       bulkRestore: repo.bulkRestoreEnrollments,
     },
     schema: enrollmentRecordSchema,
-    websocketCollection: 'enrollments',
-    idPrefix: 'enr',
+    websocketCollection: "enrollments",
+    idPrefix: "enr",
   });
 
   const validateActiveForeignKeys = async (tenant: string, record: Partial<EnrollmentRecord>) => {
     if (record.studentId) {
       const getStudent =
         deps?.findStudentById ??
-        (await import('../../db/repositories/studentRepositoryHydrate.js')).findStudentById;
+        (await import("../../db/repositories/studentRepositoryHydrate.js")).findStudentById;
       const student = await getStudent(tenant, record.studentId);
       if (!student || student.deletedAt) {
-        const err = new Error('Referenced student is archived or does not exist');
+        const err = new Error("Referenced student is archived or does not exist");
         (err as Error & { statusCode: number }).statusCode = 400;
         throw err;
       }
@@ -61,10 +67,10 @@ export function createEnrollmentsUseCases(
     if (record.sessionId) {
       const getSession =
         deps?.findSessionById ??
-        (await import('../../db/repositories/sessionRepositoryHydrate.js')).findSessionById;
+        (await import("../../db/repositories/sessionRepositoryHydrate.js")).findSessionById;
       const session = await getSession(tenant, record.sessionId);
       if (!session || session.deletedAt) {
-        const err = new Error('Referenced session is archived or does not exist');
+        const err = new Error("Referenced session is archived or does not exist");
         (err as Error & { statusCode: number }).statusCode = 400;
         throw err;
       }
@@ -74,20 +80,22 @@ export function createEnrollmentsUseCases(
   return {
     createEnrollment: async (record: EnrollmentInsert | EnrollmentRecord) => {
       const tenant = getRequestTenant();
-      if (!tenant) throw new Error('Tenant context required');
+      if (!tenant) throw new Error("Tenant context required");
 
       // Active Foreign Key Guarding (§1.8)
       await validateActiveForeignKeys(tenant, record);
 
       const created = await crud.create(record as EnrollmentRecord);
-      const { maybeGenerateInvoiceForEnrollment } = await import(
-        '../../finance/use-cases/financeInvoiceGenerationUseCases.js'
-      );
+      const { maybeGenerateInvoiceForEnrollment } =
+        await import("../../finance/use-cases/financeInvoiceGenerationUseCases.js");
       return maybeGenerateInvoiceForEnrollment(created);
     },
-    updateEnrollmentById: async (id: string, record: EnrollmentUpdate | Partial<EnrollmentRecord>) => {
+    updateEnrollmentById: async (
+      id: string,
+      record: EnrollmentUpdate | Partial<EnrollmentRecord>,
+    ) => {
       const tenant = getRequestTenant();
-      if (!tenant) throw new Error('Tenant context required');
+      if (!tenant) throw new Error("Tenant context required");
 
       // Active Foreign Key Guarding (§1.8)
       await validateActiveForeignKeys(tenant, record);
@@ -97,21 +105,25 @@ export function createEnrollmentsUseCases(
     deleteEnrollmentById: crud.deleteById,
     restoreEnrollmentById: async (id: string, userId?: string) => {
       const tenant = getRequestTenant();
-      if (!tenant) throw new Error('Tenant context required');
+      if (!tenant) throw new Error("Tenant context required");
       const existing = await repo.findEnrollmentById(tenant, id);
       if (!existing || !existing.deletedAt) return false;
       if (existing.deletedWithCascade) {
-        const err = new Error('Cannot restore enrollment archived with its session. Restore the parent session instead.');
+        const err = new Error(
+          "Cannot restore enrollment archived with its session. Restore the parent session instead.",
+        );
         (err as Error & { statusCode: number }).statusCode = 400;
         throw err;
       }
       if (existing.sessionId) {
         const getSession =
           deps?.findSessionById ??
-          (await import('../../db/repositories/sessionRepositoryHydrate.js')).findSessionById;
+          (await import("../../db/repositories/sessionRepositoryHydrate.js")).findSessionById;
         const session = await getSession(tenant, existing.sessionId);
         if (session?.deletedAt) {
-          const err = new Error('Cannot restore enrollment because its session is archived. Restore the session instead.');
+          const err = new Error(
+            "Cannot restore enrollment because its session is archived. Restore the session instead.",
+          );
           (err as Error & { statusCode: number }).statusCode = 400;
           throw err;
         }
@@ -143,7 +155,8 @@ export function createEnrollmentsUseCases(
       if (!tenant || ids.length === 0) return [];
       const cleanIds = dedupeTrimmedIds(ids);
       if (cleanIds.length === 0) return [];
-      const includeDeleted = typeof options === 'boolean' ? options : options?.includeDeleted ?? false;
+      const includeDeleted =
+        typeof options === "boolean" ? options : (options?.includeDeleted ?? false);
       return repo.findEnrollmentsByIds(tenant, cleanIds, { includeDeleted });
     },
 
@@ -184,7 +197,7 @@ export function createEnrollmentsUseCases(
     loadEnrollmentsWidgetAggregates: async (
       queries: EnrollmentsWidgetQuery[],
       _request?: unknown,
-    ): Promise<Record<string, import('@mms/shared').EnrollmentsWidgetAggregateResult>> => {
+    ): Promise<Record<string, import("@mms/shared").EnrollmentsWidgetAggregateResult>> => {
       const tenant = getRequestTenant();
       if (!tenant) return {};
       return repo.aggregateEnrollmentsWidgetQueries(tenant, queries);

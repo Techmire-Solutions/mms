@@ -1,14 +1,18 @@
 import React, { useState } from "react";
 import { ReceiptText } from "lucide-react";
-import { FormModal } from "@/components/ui/FormModal";
+import { FormModal } from "@/components/app/FormModal";
 import { useAuth } from "@/lib/contexts/AuthContext";
 import { notify } from "@/lib/notify";
-import { PAYMENT_METHODS, type Invoice } from '@/lib/data/financeData';
-import { SectionCard } from "@/components/ui/SectionCard";
+import { PAYMENT_METHODS, type Invoice } from "@/lib/data/financeData";
+import { SectionCard } from "@/components/app/SectionCard";
 import { PaymentFormFields } from "@/tenant/features/finance/components/PaymentFormFields";
 import { useFinanceCurrency } from "@/hooks/useCurrency";
 import { useTranslation } from "@/hooks/useTranslation";
-import { type PaymentCreateInput, paymentRecordInsertSchema, type AppTranslationKey } from "@mms/shared";
+import {
+  type PaymentCreateInput,
+  paymentRecordInsertSchema,
+  type AppTranslationKey,
+} from "@mms/shared";
 import { mapZodFormErrors } from "@/lib/forms/mapZodFormErrors";
 import { NotifiedMutationError } from "@/lib/notifiedMutationError";
 import {
@@ -16,7 +20,7 @@ import {
   buildInitialPaymentDraft,
   buildPaymentCreatePayload,
   validatePaymentFormDraft,
-} from "@/tenant/features/finance/components/paymentFormHelpers";
+} from "@/tenant/features/finance/lib/paymentFormHelpers";
 
 export interface PaymentFormProps {
   open: boolean;
@@ -25,7 +29,12 @@ export interface PaymentFormProps {
   onSave: (payment: PaymentCreateInput) => void | Promise<void>;
 }
 
-export function PaymentForm({ open, invoice, onClose, onSave }: PaymentFormProps): React.JSX.Element {
+export function PaymentForm({
+  open,
+  invoice,
+  onClose,
+  onSave,
+}: PaymentFormProps): React.JSX.Element {
   const { user: authUser } = useAuth();
   const { t } = useTranslation();
   const { formatCurrency, activeCurrency } = useFinanceCurrency();
@@ -38,10 +47,10 @@ export function PaymentForm({ open, invoice, onClose, onSave }: PaymentFormProps
   );
 
   const paymentMethodOptions = (() =>
-      PAYMENT_METHODS.map((method) => ({
-        value: method,
-        label: t(PAYMENT_METHOD_LABEL_KEYS[method]),
-      })))();
+    PAYMENT_METHODS.map((method) => ({
+      value: method,
+      label: t(PAYMENT_METHOD_LABEL_KEYS[method]),
+    })))();
 
   const updateDraft = (patch: Partial<typeof paymentDraft>) => {
     setPaymentDraft((prev) => ({ ...prev, ...patch }));
@@ -76,7 +85,7 @@ export function PaymentForm({ open, invoice, onClose, onSave }: PaymentFormProps
       invoice.id,
       invoice.studentId,
       invoice.studentName,
-      authUser?.id || '',
+      authUser?.id || "",
     );
 
     const parsed = paymentRecordInsertSchema.safeParse(payload);
@@ -96,7 +105,9 @@ export function PaymentForm({ open, invoice, onClose, onSave }: PaymentFormProps
       onClose();
     } catch (err: unknown) {
       if (!(err instanceof NotifiedMutationError)) {
-        notify.error(t("finance.paymentSaveFailed"), { description: err instanceof Error ? err.message : String(err) });
+        notify.error(t("finance.paymentSaveFailed"), {
+          description: err instanceof Error ? err.message : String(err),
+        });
       }
     } finally {
       setSaving(false);
@@ -110,7 +121,9 @@ export function PaymentForm({ open, invoice, onClose, onSave }: PaymentFormProps
       </span>
       <div className="flex items-center gap-1.5">
         <span className="inline-flex items-center px-2 py-0.5 rounded-md bg-success/10 text-success font-semibold border border-success/20 text-xs">
-          {t("finance.balance", { balance: formatCurrency(balance - Number(paymentDraft.amount || 0)) })}
+          {t("finance.balance", {
+            balance: formatCurrency(balance - Number(paymentDraft.amount || 0)),
+          })}
         </span>
       </div>
     </div>
@@ -160,12 +173,20 @@ export function PaymentForm({ open, invoice, onClose, onSave }: PaymentFormProps
           <SectionCard accentColor="primary" padding="p-5">
             <div className="flex min-w-0 flex-wrap items-center justify-between gap-3">
               <div className="min-w-0">
-                <h4 className="truncate text-sm font-bold text-foreground m-0">{invoice.studentName}</h4>
-                <p className="truncate text-xs text-muted-foreground m-0 mt-0.5">{invoice.id} · {invoice.class}</p>
+                <h4 className="truncate text-sm font-bold text-foreground m-0">
+                  {invoice.studentName}
+                </h4>
+                <p className="truncate text-xs text-muted-foreground m-0 mt-0.5">
+                  {invoice.id} · {invoice.class}
+                </p>
               </div>
               <div className="shrink-0 text-end">
-                <p className="text-xs uppercase font-bold text-muted-foreground">{t("finance.balanceDue")}</p>
-                <p className="text-sm font-bold text-primary m-0 mt-0.5">{formatCurrency(balance)}</p>
+                <p className="text-xs uppercase font-bold text-muted-foreground">
+                  {t("finance.balanceDue")}
+                </p>
+                <p className="text-sm font-bold text-primary m-0 mt-0.5">
+                  {formatCurrency(balance)}
+                </p>
               </div>
             </div>
           </SectionCard>

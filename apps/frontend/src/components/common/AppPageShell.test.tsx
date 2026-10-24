@@ -1,10 +1,7 @@
 import React from "react";
 import { describe, it, expect } from "vitest";
 import { renderToStaticMarkup } from "react-dom/server";
-import {
-  AppPageShell,
-  AppPageShellSkeleton,
-} from "@/components/common";
+import { AppPageShell, AppPageShellSkeleton } from "@/components/common";
 
 describe("AppPageShell", () => {
   it("renders SEO metadata, header slot, metrics, and children", () => {
@@ -16,7 +13,7 @@ describe("AppPageShell", () => {
         metricsSlot={<div id="metrics-strip">Metrics</div>}
       >
         <main id="main-content">Platform Content</main>
-      </AppPageShell>
+      </AppPageShell>,
     );
 
     expect(html).toContain("<title>Platform Settings | MMS</title>");
@@ -28,22 +25,17 @@ describe("AppPageShell", () => {
 
   it("handles isBusy and drawerOutlet correctly", () => {
     const html = renderToStaticMarkup(
-      <AppPageShell
-        isBusy={true}
-        drawerOutlet={<aside id="drawer">Slide Over</aside>}
-      >
+      <AppPageShell isBusy={true} drawerOutlet={<aside id="drawer">Slide Over</aside>}>
         <div>Content</div>
-      </AppPageShell>
+      </AppPageShell>,
     );
 
     expect(html).toContain('aria-busy="true"');
-    expect(html).toContain("id=\"drawer\"");
+    expect(html).toContain('id="drawer"');
   });
 
   it("renders AppPageShellSkeleton with slot filtering", () => {
-    const html = renderToStaticMarkup(
-      <AppPageShellSkeleton slots={["header", "table"]} />
-    );
+    const html = renderToStaticMarkup(<AppPageShellSkeleton slots={["header", "table"]} />);
 
     expect(html).toContain('role="status"');
     expect(html).toContain('aria-live="polite"');

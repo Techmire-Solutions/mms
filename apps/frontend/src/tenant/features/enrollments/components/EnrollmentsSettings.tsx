@@ -1,30 +1,24 @@
 import React, { useEffect } from "react";
 import { ClipboardList } from "lucide-react";
-import { SectionCard } from "@/components/ui/SectionCard";
-import { ModuleSetupSaveFooter } from "@/components/ui/ModuleSetupSaveFooter";
+import { SectionCard } from "@/components/app/SectionCard";
+import { ModuleSetupSaveFooter } from "@/components/app/ModuleSetupSaveFooter";
 import { useTranslation } from "@/hooks/useTranslation";
 import { SETUP_SECTION_CARD_CLASS } from "@/components/ui/formStyles";
 import { EnrollmentsPreferencesSection } from "@/tenant/features/enrollments/components/EnrollmentsPreferencesSection";
 import { useEnrollmentsSetupPanelState } from "@/tenant/features/enrollments/hooks/useEnrollmentsSetupPanelState";
-import { ModuleSetupContent } from "@/components/ui/ModuleSetupContent";
+import { ModuleSetupContent } from "@/components/app/ModuleSetupContent";
 
 export interface EnrollmentsSettingsProps {
   /** Reports Preferences draft dirtiness to the Setup shell (leave-guard). */
   onPrefsDirtyChange?: (isDirty: boolean) => void;
 }
 
-export const EnrollmentsSettings = (function EnrollmentsSettings({
+export const EnrollmentsSettings = function EnrollmentsSettings({
   onPrefsDirtyChange,
 }: EnrollmentsSettingsProps = {}): React.JSX.Element {
   const { t } = useTranslation();
-  const {
-    settingsDraft,
-    saved,
-    saving,
-    isPrefsDirty,
-    upd,
-    handleSave,
-  } = useEnrollmentsSetupPanelState();
+  const { settingsDraft, saved, saving, isPrefsDirty, upd, handleSave } =
+    useEnrollmentsSetupPanelState();
 
   useEffect(() => {
     onPrefsDirtyChange?.(isPrefsDirty);
@@ -42,10 +36,7 @@ export const EnrollmentsSettings = (function EnrollmentsSettings({
         accentColor="primary"
         className={SETUP_SECTION_CARD_CLASS}
       >
-        <EnrollmentsPreferencesSection
-          settingsDraft={settingsDraft}
-          upd={upd}
-        />
+        <EnrollmentsPreferencesSection settingsDraft={settingsDraft} upd={upd} />
         <ModuleSetupSaveFooter
           dirty={isPrefsDirty}
           saving={saving}
@@ -69,6 +60,6 @@ export const EnrollmentsSettings = (function EnrollmentsSettings({
       />
     </ModuleSetupContent>
   );
-});
+};
 
 export default EnrollmentsSettings;

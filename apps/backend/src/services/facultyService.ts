@@ -4,7 +4,7 @@
  * Feature module under `src/faculty/`: repository interface + Drizzle adapter
  * in `src/faculty/repository/`, orchestration use cases in `src/faculty/use-cases/`.
  */
-import { facultyUseCases } from '../faculty/use-cases/facultyUseCases.js';
+import { facultyUseCases } from "../faculty/use-cases/facultyUseCases.js";
 
 export const {
   createFaculty,

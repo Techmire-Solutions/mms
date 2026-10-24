@@ -1,9 +1,9 @@
-import { and, eq, isNotNull, isNull, ne, sql, type SQL } from 'drizzle-orm';
-import { students, contacts, contactEmails } from '../schema.js';
-import { withTenantRead } from '../tenant-context.js';
-import { studentRowToRecord } from './studentRepositoryMappers.js';
-import { enableIncludeDeleted } from '../../lib/softDeleteHelpers.js';
-import { STUDENT_COLUMNS } from './studentRepositoryColumns.js';
+import { and, eq, isNotNull, isNull, ne, sql, type SQL } from "drizzle-orm";
+import { students, contacts, contactEmails } from "../schema.js";
+import { withTenantRead } from "../tenant-context.js";
+import { studentRowToRecord } from "./studentRepositoryMappers.js";
+import { enableIncludeDeleted } from "../../lib/softDeleteHelpers.js";
+import { STUDENT_COLUMNS } from "./studentRepositoryColumns.js";
 
 export async function listStudentLinkedContactIdsSql(
   tenant: string,
@@ -11,7 +11,10 @@ export async function listStudentLinkedContactIdsSql(
 ): Promise<Array<string | number>> {
   const subdomain = tenant.trim().toLowerCase();
   return withTenantRead(subdomain, async (tx) => {
-    const conditions: SQL[] = [eq(students.workspaceSubdomain, subdomain), isNull(students.deletedAt)];
+    const conditions: SQL[] = [
+      eq(students.workspaceSubdomain, subdomain),
+      isNull(students.deletedAt),
+    ];
     if (excludeStudentId?.trim()) {
       conditions.push(ne(students.id, excludeStudentId.trim()));
     }
@@ -21,9 +24,7 @@ export async function listStudentLinkedContactIdsSql(
       })
       .from(students)
       .where(and(...conditions));
-    return rows
-      .map((row) => row.contactId)
-      .filter((id): id is string => Boolean(id && id.trim()));
+    return rows.map((row) => row.contactId).filter((id): id is string => Boolean(id && id.trim()));
   });
 }
 
@@ -53,7 +54,7 @@ export async function countStudentsForNextGrNumber(
         and(
           base,
           sql`(
-            COALESCE(${students.registeredDate}, '') LIKE ${`${yearStr}%`}
+            COALESCE(${students.registeredDate}::text, '') LIKE ${`${yearStr}%`}
             OR COALESCE(${students.grNumber}, '') LIKE ${`%${yearStr}%`}
           )`,
         ),
@@ -72,7 +73,7 @@ export async function findStudentRegistrationConflictSql(
     dob?: string;
     grNumber?: string;
   },
-): Promise<'contact' | 'email' | 'nameDob' | 'grNumber' | null> {
+): Promise<"contact" | "email" | "nameDob" | "grNumber" | null> {
   const subdomain = tenant.trim().toLowerCase();
   return withTenantRead(subdomain, async (tx) => {
     const exclude = input.excludeId?.trim();
@@ -82,19 +83,14 @@ export async function findStudentRegistrationConflictSql(
     ];
     if (exclude) baseConditions.push(ne(students.id, exclude));
 
-    if (input.contactId != null && String(input.contactId).trim() !== '') {
+    if (input.contactId != null && String(input.contactId).trim() !== "") {
       const contactId = String(input.contactId).trim();
       const rows = await tx
         .select({ id: students.id })
         .from(students)
-        .where(
-          and(
-            ...baseConditions,
-            eq(students.contactId, contactId),
-          ),
-        )
+        .where(and(...baseConditions, eq(students.contactId, contactId)))
         .limit(1);
-      if (rows.length > 0) return 'contact';
+      if (rows.length > 0) return "contact";
     }
 
     const email = input.email?.trim().toLowerCase();
@@ -114,7 +110,7 @@ export async function findStudentRegistrationConflictSql(
           ),
         )
         .limit(1);
-      if (rows.length > 0) return 'email';
+      if (rows.length > 0) return "email";
     }
 
     const grNumber = input.grNumber?.trim().toLowerCase();
@@ -130,7 +126,7 @@ export async function findStudentRegistrationConflictSql(
           ),
         )
         .limit(1);
-      if (rows.length > 0) return 'grNumber';
+      if (rows.length > 0) return "grNumber";
     }
 
     const name = input.name?.trim().toLowerCase();
@@ -155,7 +151,7 @@ export async function findStudentRegistrationConflictSql(
           ),
         )
         .limit(1);
-      if (rows.length > 0) return 'nameDob';
+      if (rows.length > 0) return "nameDob";
     }
 
     return null;

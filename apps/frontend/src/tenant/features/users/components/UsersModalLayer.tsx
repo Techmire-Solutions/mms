@@ -1,15 +1,17 @@
-import React from 'react';
-import { AnimatePresence } from 'framer-motion';
-import type { MessagingTarget } from '@/hooks/useMessageComposerState';
-import type { SystemUser } from '@mms/shared';
-import { ErrorBoundary } from '@/components/ui/ErrorBoundary';
-import { AddUserModal } from '@/tenant/features/users/components/AddUserModal';
-import { EditUserModal } from '@/tenant/features/users/components/EditUserModal';
-import { InviteUserModal } from '@/tenant/features/users/components/InviteUserModal';
-import { UserDetail } from '@/tenant/features/users/components/UserDetail';
-import { ResetUserPasswordModal } from '@/tenant/features/users/components/ResetUserPasswordModal';
+import React from "react";
+import { AnimatePresence } from "framer-motion";
+import type { MessagingTarget } from "@/hooks/useMessageComposerState";
+import type { SystemUser } from "@mms/shared";
+import { ErrorBoundary } from "@/components/app/ErrorBoundary";
+import { AddUserModal } from "@/tenant/features/users/components/AddUserModal";
+import { EditUserModal } from "@/tenant/features/users/components/EditUserModal";
+import { InviteUserModal } from "@/tenant/features/users/components/InviteUserModal";
+import { UserDetail } from "@/tenant/features/users/components/UserDetail";
+import { ResetUserPasswordModal } from "@/tenant/features/users/components/ResetUserPasswordModal";
 
-const MessageComposer = React.lazy(() => import('@/tenant/components/messaging/TenantMessageComposer'));
+const MessageComposer = React.lazy(
+  () => import("@/tenant/components/messaging/TenantMessageComposer"),
+);
 
 export interface UsersModalLayerProps {
   viewing: SystemUser | null;
@@ -58,14 +60,10 @@ export function UsersModalLayer({
   onEditFromDetail,
   onCloseComposer,
 }: UsersModalLayerProps): React.JSX.Element {
-  const existingEmails = showAddUser
-    ? users.map((user) => user.email.toLowerCase())
-    : [];
+  const existingEmails = showAddUser ? users.map((user) => user.email.toLowerCase()) : [];
 
   const existingContactIds = showInvite
-    ? users
-        .map((user) => user.contactId)
-        .filter((id): id is string | number => id != null)
+    ? users.map((user) => user.contactId).filter((id): id is string | number => id != null)
     : [];
 
   return (

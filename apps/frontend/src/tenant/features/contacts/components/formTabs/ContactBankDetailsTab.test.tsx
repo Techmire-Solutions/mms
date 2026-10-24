@@ -46,7 +46,7 @@ vi.mock("./ContactSubListCards", () => ({
   resolveSubListAllowAdd: () => true,
 }));
 
-vi.mock("@/components/ui/FormPrimitives", () => ({
+vi.mock("@/components/app/FormPrimitives", () => ({
   TYPE_SELECT_WIDTH: "w-32",
   FormCardTypeSelect: ({
     label,
@@ -100,7 +100,7 @@ vi.mock("@/components/ui/FormPrimitives", () => ({
   ),
 }));
 
-vi.mock("@/components/ui/LeadingIconInput", () => ({
+vi.mock("@/components/app/LeadingIconInput", () => ({
   LeadingIconInput: ({
     value,
     placeholder,
@@ -136,10 +136,7 @@ describe("ContactBankDetailsTab Component", () => {
 
   it("renders empty state when no bank accounts exist", () => {
     const html = renderToStaticMarkup(
-      <ContactBankDetailsTab
-        {...baseProps}
-        contactDraft={{ bankDetails: [] }}
-      />,
+      <ContactBankDetailsTab {...baseProps} contactDraft={{ bankDetails: [] }} />,
     );
 
     expect(html).toContain("contacts.form.noBankDetailsYet");

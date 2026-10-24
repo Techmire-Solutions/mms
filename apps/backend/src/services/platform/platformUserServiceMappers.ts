@@ -1,9 +1,5 @@
-import type {
-  PlatformUser,
-  StoredPlatformUser,
-  PlatformUserProfile,
-} from '@mms/shared';
-import { countPlatformUserRows } from '../../db/repositories/platformUserRepository.js';
+import type { PlatformUser, StoredPlatformUser, PlatformUserProfile } from "@mms/shared";
+import { countPlatformUserRows } from "../../db/repositories/platformUserRepository.js";
 
 export async function countPlatformUsers(): Promise<number> {
   return countPlatformUserRows();

@@ -6,9 +6,9 @@
  * then validates through the module-supplied Zod schema. Rows that fail
  * are collected as `ImportRowError` entries; the function never throws.
  */
-import type { z } from 'zod';
-import { deepSanitizeStrings } from '../../schemas/sanitize.js';
-import type { ImportRowError } from '../core/importTypes.js';
+import type { z } from "zod";
+import { deepSanitizeStrings } from "../../schemas/sanitize.js";
+import type { ImportRowError } from "../core/importTypes.js";
 
 // ---------------------------------------------------------------------------
 // Result type
@@ -52,10 +52,10 @@ export function validateImportRows<T>(
     } else {
       const reasons = result.error.issues
         .map((issue) => {
-          const path = issue.path.length > 0 ? `${issue.path.join('.')}: ` : '';
+          const path = issue.path.length > 0 ? `${issue.path.join(".")}: ` : "";
           return `${path}${issue.message}`;
         })
-        .join('; ');
+        .join("; ");
       errors.push({ row: i + 1, reason: reasons });
     }
   }

@@ -1,39 +1,45 @@
-import { randomUUID } from 'node:crypto';
-import type { FastifyReply } from 'fastify';
-import type { JWT } from '@fastify/jwt';
-import type { PlatformUser, PlatformUserProfile } from '@mms/shared';
-import { verifyPassword, DUMMY_PASSWORD_HASH } from '../auth/passwordService.js';
-import { clearAuthCookies, setCsrfCookie } from '../auth/authCookieService.js';
+import { randomUUID } from "node:crypto";
+import type { FastifyReply } from "fastify";
+import type { JWT } from "@fastify/jwt";
+import type { NotificationChannel, PlatformUser, PlatformUserProfile } from "@mms/shared";
+import { resolvePlatformNotificationChannel } from "@mms/shared";
+import { verifyPassword, DUMMY_PASSWORD_HASH } from "../auth/passwordService.js";
+import { clearAuthCookies, setCsrfCookie } from "../auth/authCookieService.js";
 import {
   findPlatformUserByEmail,
   toPlatformUserProfile,
   toPublicPlatformUser,
-} from './platformUserService.js';
-import { clearPlatformAccessCookie, setPlatformAccessCookie } from './platformCookieService.js';
+} from "./platformUserService.js";
+import { clearPlatformAccessCookie, setPlatformAccessCookie } from "./platformCookieService.js";
 import {
   createPlatformTwoFactorChallenge,
   isPlatformTwoFactorRequired,
-} from './platformTwoFactorService.js';
-import { platformSessionScope, resetSessionClock } from '../sessionClockService.js';
-import { platformSessionPolicy } from '../sessionPolicyService.js';
+} from "./platformTwoFactorService.js";
+import { platformSessionScope, resetSessionClock } from "../sessionClockService.js";
+import { platformSessionPolicy } from "../sessionPolicyService.js";
+import { getPlatformSettings } from "./platformSettingsService.js";
 
-const PLATFORM_ACCESS_TTL = '8h';
+const PLATFORM_ACCESS_TTL = "8h";
 
 /** Minimal JWT claims for platform access cookies. */
 export interface PlatformAccessTokenPayload {
   id: string;
-  tokenType: 'platform_access';
+  tokenType: "platform_access";
   sessionVersion?: number;
   jti?: string;
 }
 
 export type PlatformLoginFailure =
-  | 'invalid_credentials'
-  | 'account_disabled'
-  | 'two_factor_unavailable';
+  "invalid_credentials" | "account_disabled" | "two_factor_unavailable";
 
 export type PlatformLoginResult =
-  | { ok: true; user: PlatformUserProfile; requires2FA?: boolean; challengeId?: string }
+  | {
+      ok: true;
+      user: PlatformUserProfile;
+      requires2FA?: boolean;
+      challengeId?: string;
+      channel?: NotificationChannel;
+    }
   | { ok: false; type: PlatformLoginFailure };
 
 export async function issuePlatformSession(
@@ -51,7 +57,7 @@ export async function issuePlatformSession(
   const accessToken = jwtSigner.sign(
     {
       id: user.id,
-      tokenType: 'platform_access',
+      tokenType: "platform_access",
       sessionVersion,
       jti: randomUUID(),
     } satisfies PlatformAccessTokenPayload,
@@ -78,11 +84,11 @@ export async function loginPlatformUser(
     : await verifyPassword(password, DUMMY_PASSWORD_HASH).then(() => false);
 
   if (!stored || !passwordOk) {
-    return { ok: false, type: 'invalid_credentials' };
+    return { ok: false, type: "invalid_credentials" };
   }
 
   if (stored.disabledAt) {
-    return { ok: false, type: 'account_disabled' };
+    return { ok: false, type: "account_disabled" };
   }
 
   // Optional 2FA step (opt-in via PLATFORM_REQUIRE_2FA=true). When enabled, the
@@ -91,9 +97,16 @@ export async function loginPlatformUser(
   if (isPlatformTwoFactorRequired()) {
     const challengeId = await createPlatformTwoFactorChallenge(stored);
     if (!challengeId) {
-      return { ok: false, type: 'two_factor_unavailable' };
+      return { ok: false, type: "two_factor_unavailable" };
     }
-    return { ok: true, user: toPlatformUserProfile(stored), requires2FA: true, challengeId };
+    const channel = resolvePlatformNotificationChannel(getPlatformSettings());
+    return {
+      ok: true,
+      user: toPlatformUserProfile(stored),
+      requires2FA: true,
+      challengeId,
+      channel,
+    };
   }
 
   await issuePlatformSession(toPublicPlatformUser(stored), jwtSigner, reply, stored.sessionVersion);

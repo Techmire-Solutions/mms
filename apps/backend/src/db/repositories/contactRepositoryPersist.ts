@@ -1,30 +1,24 @@
-import {
-  hydrateContactRelationshipFields,
-  type Contact,
-} from '@mms/shared';
-import { contacts } from '../schema.js';
-import { withTenant, type TenantTransaction } from '../tenant-context.js';
+import { hydrateContactRelationshipFields, type Contact } from "@mms/shared";
+import { contacts } from "../schema.js";
+import { withTenant, type TenantTransaction } from "../tenant-context.js";
 import {
   countContactsByWorkspace,
   findContactById,
   findContactsByIds,
   listContactsByWorkspace,
-} from './contactRepositoryHydrate.js';
-import { syncContactChildrenTx } from './contactRepositoryPersistChildren.js';
-import { invalidateMultiTierCache } from '../../lib/cache/index.js';
+} from "./contactRepositoryHydrate.js";
+import { syncContactChildrenTx } from "./contactRepositoryPersistChildren.js";
+import { invalidateMultiTierCache } from "../../lib/cache/index.js";
 import {
   type ContactInsert,
   contactWriteValues,
   contactUpdateSetValues,
-} from './contactRepositoryValues.js';
+} from "./contactRepositoryValues.js";
 import {
   bulkSoftDeleteContactsSql,
   bulkRestoreContactsSql,
-} from './contactRepositorySoftDelete.js';
-import {
-  bulkSaveContacts,
-  replaceContactsForWorkspace,
-} from './contactRepositoryBulkSave.js';
+} from "./contactRepositorySoftDelete.js";
+import { bulkSaveContacts, replaceContactsForWorkspace } from "./contactRepositoryBulkSave.js";
 
 export {
   type ContactInsert,
@@ -61,7 +55,11 @@ export async function saveContact(tenant: string, contact: Contact): Promise<voi
   await withTenant(subdomain, async (tx) => {
     await persistContactTx(tx, subdomain, contact);
   });
-  await invalidateMultiTierCache({ tenantId: subdomain, domain: 'contacts', key: String(contact.id) });
+  await invalidateMultiTierCache({
+    tenantId: subdomain,
+    domain: "contacts",
+    key: String(contact.id),
+  });
 }
 
 export const contactRepo = {

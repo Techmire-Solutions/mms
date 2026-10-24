@@ -29,7 +29,7 @@ export function useContactDuplicateCheck({
       deferredDraft.firstName?.trim() ||
       (deferredDraft.phones && deferredDraft.phones.some((p) => p.number?.trim())) ||
       (deferredDraft.emails && deferredDraft.emails.some((e) => e.address?.trim())) ||
-      deferredDraft.cnic?.trim()
+      deferredDraft.cnic?.trim(),
     );
     if (!hasCandidateKey) {
       setDuplicateCount(0);

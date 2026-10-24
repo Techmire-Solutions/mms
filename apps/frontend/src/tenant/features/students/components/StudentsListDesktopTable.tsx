@@ -1,19 +1,17 @@
 import { useMemo } from "react";
 import type { Student } from "@mms/shared";
-import { ModuleTableFooterCount } from "@/components/ui/ModuleTableFooterCount";
+import { ModuleTableFooterCount } from "@/components/app/ModuleTableFooterCount";
 import { WorkBatchTable, type WorkBatchTableColumn } from "@/components/common/work/WorkBatchTable";
 import { useTranslation } from "@/hooks/useTranslation";
 import { formatDirectoryPageCountLabel } from "@/lib/formatDirectoryPageCountLabel";
 import { StudentsRowActions } from "@/tenant/features/students/components/StudentsRowActions";
-import { MODULE_ROW_ACTIONS_TRIGGER_CLASS } from "@/components/ui/ModuleRowActionsMenu";
+import { MODULE_ROW_ACTIONS_TRIGGER_CLASS } from "@/components/app/ModuleRowActionsMenu";
 import { renderStudentsListDesktopTableCell } from "@/tenant/features/students/components/StudentsListDesktopTableCells";
 import type {
   StudentsListContentSortField,
   StudentsListContentTableProps,
-} from "@/tenant/features/students/components/studentsListTypes";
-import {
-  getStudentVisibleWorkColumns,
-} from "@/tenant/features/students/components/studentsListVisibleColumns";
+} from "@/tenant/features/students/lib/studentsListTypes";
+import { getStudentVisibleWorkColumns } from "@/tenant/features/students/lib/studentsListVisibleColumns";
 
 export type StudentsListDesktopTableProps = Pick<
   StudentsListContentTableProps,
@@ -77,7 +75,7 @@ export function StudentsListDesktopTable({
     singular: "students.form.student",
     plural: "students.table.students",
   });
-  
+
   const selectedSet = useMemo(() => new Set(selectedIds), [selectedIds]);
 
   const batchColumns = useMemo<WorkBatchTableColumn<Student>[]>(() => {
@@ -125,7 +123,8 @@ export function StudentsListDesktopTable({
           allSelected,
           someSelected,
           selectAllAriaLabel: allSelected ? t("common.deselect") : t("students.table.selectAll"),
-          selectRowAriaLabel: (student) => t("students.table.selectStudent", { name: student.name ?? "Student" }),
+          selectRowAriaLabel: (student) =>
+            t("students.table.selectStudent", { name: student.name ?? "Student" }),
         }}
         sort={{
           field: sortField ?? undefined,

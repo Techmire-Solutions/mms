@@ -9,9 +9,7 @@ const mockContact: Contact = {
   name: "Zayd Harith",
   firstName: "Zayd",
   lastName: "Harith",
-  phones: [
-    { number: "3001234567", countryCode: "+92", label: "mobile" },
-  ],
+  phones: [{ number: "3001234567", countryCode: "+92", label: "mobile" }],
   type: "student",
   status: "active",
   createdAt: "2024-01-01T00:00:00Z",

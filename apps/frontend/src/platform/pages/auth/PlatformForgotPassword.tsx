@@ -1,8 +1,5 @@
 import React from "react";
-import {
-  EntryPageHead,
-  formatEntryTitle,
-} from "@/components/entry";
+import { EntryPageHead, formatEntryTitle } from "@/components/entry";
 import { usePlatformForgotPasswordController } from "@/platform/pages/auth/usePlatformForgotPasswordController";
 import { PlatformForgotPasswordResetStep } from "@/platform/pages/auth/PlatformForgotPasswordResetStep";
 import { PlatformForgotPasswordSentStep } from "@/platform/pages/auth/PlatformForgotPasswordSentStep";

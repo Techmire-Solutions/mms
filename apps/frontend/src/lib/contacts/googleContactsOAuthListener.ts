@@ -24,7 +24,8 @@ export function useGoogleContactsOAuthListener(onCodeReceived?: (code: string) =
 
     const handleOAuthMessage = (event: MessageEvent): void => {
       if (event.origin !== window.location.origin) return;
-      if (event.data?.type !== GOOGLE_CONTACTS_OAUTH_MESSAGE || typeof event.data.code !== "string") return;
+      if (event.data?.type !== GOOGLE_CONTACTS_OAUTH_MESSAGE || typeof event.data.code !== "string")
+        return;
       stashGoogleContactsOAuthCode(event.data.code);
       onCodeReceived?.(event.data.code);
     };

@@ -1,10 +1,10 @@
 import type React from "react";
 import { Trophy } from "lucide-react";
-import { SectionCard } from "@/components/ui/SectionCard";
-import { ProgressBar } from "@/components/ui/ProgressBar";
-import { ExportToolbar } from "@/components/ui/ExportToolbar";
+import { SectionCard } from "@/components/app/SectionCard";
+import { ProgressBar } from "@/components/app/ProgressBar";
+import { ExportToolbar } from "@/components/app/ExportToolbar";
 import { useTranslation } from "@/hooks/useTranslation";
-import type { StudentStatItem } from "./performanceAnalyticsUtils";
+import type { StudentStatItem } from "../lib/performanceAnalyticsUtils";
 
 export interface StudentLeaderboardSectionProps {
   studentStats: StudentStatItem[];

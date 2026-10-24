@@ -1,21 +1,15 @@
-import {
-  type TenantDatabaseSnapshot,
-} from '@mms/shared';
-import {
-  getAllData as dbGetAllData,
-  runInReadSnapshotTransaction,
-} from '../db/database.js';
-import { loadRelationalSnapshotCollections } from '../db/relationalSnapshot.js';
-import { getRequestTenant } from '../lib/tenantContext.js';
-import { maskGlobalSettingsForClient } from './globalSettingsService.js';
+import { type TenantDatabaseSnapshot } from "@mms/shared";
+import { getAllData as dbGetAllData, runInReadSnapshotTransaction } from "../db/database.js";
+import { loadRelationalSnapshotCollections } from "../db/relationalSnapshot.js";
+import { getRequestTenant } from "../lib/tenantContext.js";
+import { maskGlobalSettingsForClient } from "./globalSettingsService.js";
 
 /**
  * Fetches workspace branding and global settings concurrently for a tenant.
  */
 async function fetchTenantMetadata(tenant: string) {
-  const { getWorkspaceBranding, getWorkspaceGlobalSettings } = await import(
-    '../db/repositories/workspaceRepository.js'
-  );
+  const { getWorkspaceBranding, getWorkspaceGlobalSettings } =
+    await import("../db/repositories/workspaceRepository.js");
   const [branding, globalSettings] = await Promise.all([
     getWorkspaceBranding(tenant),
     getWorkspaceGlobalSettings(tenant),
@@ -41,9 +35,7 @@ export async function fetchDatabaseSnapshot(): Promise<TenantDatabaseSnapshot> {
     objects: {
       ...(snapshot.objects ?? {}),
       ...(branding ? { branding } : {}),
-      ...(globalSettings
-        ? { global_settings: maskGlobalSettingsForClient(globalSettings) }
-        : {}),
+      ...(globalSettings ? { global_settings: maskGlobalSettingsForClient(globalSettings) } : {}),
     },
   };
 }
@@ -63,7 +55,7 @@ export async function fetchBackupSnapshot(): Promise<TenantDatabaseSnapshot> {
     const tenant = getRequestTenant();
     if (!tenant) return snapshot;
 
-    const { loadEmailIntegrationConfig } = await import('./email/emailIntegrationService.js');
+    const { loadEmailIntegrationConfig } = await import("./email/emailIntegrationService.js");
     const [relational, { branding, globalSettings }, emailIntegration] = await Promise.all([
       loadRelationalSnapshotCollections(tenant),
       fetchTenantMetadata(tenant),
@@ -81,7 +73,7 @@ export async function fetchBackupSnapshot(): Promise<TenantDatabaseSnapshot> {
       },
     };
 
-    const { exportBackupAssetsForSnapshot } = await import('./backupAssetService.js');
+    const { exportBackupAssetsForSnapshot } = await import("./backupAssetService.js");
     const assets = await exportBackupAssetsForSnapshot(snapshotPayload);
 
     return {

@@ -1,5 +1,5 @@
 import { type AccountingSettings, type Account, type FiscalYear } from "@mms/shared";
-import type { StatusBadgeConfigItem } from "@/components/ui/StatusBadge";
+import type { StatusBadgeConfigItem } from "@/components/app/StatusBadge";
 import { AccountingSettingsCurrencySection } from "./AccountingSettingsCurrencySection";
 import { AccountingSettingsFiscalYearsSection } from "./AccountingSettingsFiscalYearsSection";
 import { AccountingSettingsRulesSection } from "./AccountingSettingsRulesSection";
@@ -27,7 +27,9 @@ interface AccountingSettingsPreferencesProps {
   canEditSetup: boolean;
   onEditFiscalYear: (fiscalYear: Partial<FiscalYear>) => void;
   onRequestCloseFiscalYear?: (fiscalYearId: string) => void;
-  onAccountsChange?: (updater: Account[] | ((prev: Account[]) => Account[])) => Promise<void> | void;
+  onAccountsChange?: (
+    updater: Account[] | ((prev: Account[]) => Account[]),
+  ) => Promise<void> | void;
   isPrefsDirty?: boolean;
   saving?: boolean;
   saved?: boolean;

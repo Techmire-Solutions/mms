@@ -19,6 +19,7 @@ const PREF_KEYS = [
   "allowManualOverride",
   "offlineEnabled",
   "geoTagging",
+  "allowExtraClassOnHolidays",
   "defaultViewLayout",
 ] as const;
 
@@ -45,7 +46,7 @@ export function useAttendanceSetupSaveActions({
     );
   })();
 
-  const handleSave = (async (): Promise<void> => {
+  const handleSave = async (): Promise<void> => {
     if (!isPrefsDirty || saving) return;
     setSaving(true);
     try {
@@ -59,7 +60,7 @@ export function useAttendanceSetupSaveActions({
     } finally {
       setSaving(false);
     }
-  });
+  };
 
   return {
     saving,

@@ -1,4 +1,4 @@
-import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { beforeEach, describe, expect, it, vi } from "vitest";
 
 const mockLimit = vi.fn().mockResolvedValue([]);
 const mockWhere = vi.fn().mockReturnValue({ limit: mockLimit });
@@ -23,11 +23,11 @@ const mockDb = {
   execute: vi.fn(),
 };
 
-vi.mock('../db/dbClient.js', () => ({
+vi.mock("../db/dbClient.js", () => ({
   getDb: () => mockDb,
 }));
 
-vi.mock('../db/dbConnection.js', () => ({
+vi.mock("../db/dbConnection.js", () => ({
   activeDb: () => mockDb,
   getRootDb: () => mockDb,
   getReadReplicaDb: () => mockDb,
@@ -45,9 +45,9 @@ import {
   listWorkspaceRows,
   updateWorkspaceBrandingRow,
   updateWorkspaceEnabledRow,
-} from '../db/repositories/workspaceRepository.js';
+} from "../db/repositories/workspaceRepository.js";
 
-describe('workspaceRepository', () => {
+describe("workspaceRepository", () => {
   beforeEach(() => {
     vi.clearAllMocks();
     clearWorkspaceCacheForTests();
@@ -61,15 +61,15 @@ describe('workspaceRepository', () => {
     mockDelete.mockReturnValue({ where: mockDeleteWhere });
   });
 
-  it('lists and maps workspace rows', async () => {
-    const now = new Date('2026-01-01T00:00:00.000Z');
+  it("lists and maps workspace rows", async () => {
+    const now = new Date("2026-01-01T00:00:00.000Z");
     mockFrom.mockResolvedValue([
       {
-        id: 'ws-1',
-        subdomain: 'demo',
-        madrasaName: 'Demo Madrasa',
-        tagline: 'Learning',
-        country: 'US',
+        id: "ws-1",
+        subdomain: "demo",
+        madrasaName: "Demo Madrasa",
+        tagline: "Learning",
+        country: "US",
         enabled: true,
         createdAt: now,
       },
@@ -78,24 +78,24 @@ describe('workspaceRepository', () => {
     const result = await listWorkspaceRows();
     expect(result).toEqual([
       {
-        id: 'ws-1',
-        subdomain: 'demo',
-        madrasaName: 'Demo Madrasa',
-        tagline: 'Learning',
-        country: 'US',
+        id: "ws-1",
+        subdomain: "demo",
+        madrasaName: "Demo Madrasa",
+        tagline: "Learning",
+        country: "US",
         enabled: true,
         createdAt: now.toISOString(),
       },
     ]);
   });
 
-  it('finds workspace row by subdomain', async () => {
-    const now = new Date('2026-01-01T00:00:00.000Z');
+  it("finds workspace row by subdomain", async () => {
+    const now = new Date("2026-01-01T00:00:00.000Z");
     mockLimit.mockResolvedValue([
       {
-        id: 'ws-1',
-        subdomain: 'demo',
-        madrasaName: 'Demo Madrasa',
+        id: "ws-1",
+        subdomain: "demo",
+        madrasaName: "Demo Madrasa",
         tagline: null,
         country: null,
         enabled: true,
@@ -103,11 +103,11 @@ describe('workspaceRepository', () => {
       },
     ]);
 
-    const result = await findWorkspaceRowBySubdomain('demo');
+    const result = await findWorkspaceRowBySubdomain("demo");
     expect(result).toEqual({
-      id: 'ws-1',
-      subdomain: 'demo',
-      madrasaName: 'Demo Madrasa',
+      id: "ws-1",
+      subdomain: "demo",
+      madrasaName: "Demo Madrasa",
       tagline: undefined,
       country: undefined,
       enabled: true,
@@ -115,45 +115,45 @@ describe('workspaceRepository', () => {
     });
   });
 
-  it('inserts new workspace row', async () => {
+  it("inserts new workspace row", async () => {
     await insertWorkspaceRow({
-      id: 'ws-2',
-      subdomain: 'dar-al-ilm',
-      madrasaName: 'Dar Al Ilm',
-      tagline: 'Knowledge',
-      country: 'UK',
+      id: "ws-2",
+      subdomain: "dar-al-ilm",
+      madrasaName: "Dar Al Ilm",
+      tagline: "Knowledge",
+      country: "UK",
     });
 
     expect(mockInsertValues).toHaveBeenCalledWith({
-      id: 'ws-2',
-      subdomain: 'dar-al-ilm',
-      madrasaName: 'Dar Al Ilm',
-      tagline: 'Knowledge',
-      country: 'UK',
+      id: "ws-2",
+      subdomain: "dar-al-ilm",
+      madrasaName: "Dar Al Ilm",
+      tagline: "Knowledge",
+      country: "UK",
       enabled: true,
     });
   });
 
-  it('updates workspace enabled status', async () => {
-    await updateWorkspaceEnabledRow('demo', false);
+  it("updates workspace enabled status", async () => {
+    await updateWorkspaceEnabledRow("demo", false);
     expect(mockSet).toHaveBeenCalledWith({ enabled: false });
     expect(mockWhere).toHaveBeenCalled();
   });
 
-  it('updates workspace branding', async () => {
-    await updateWorkspaceBrandingRow('demo', {
-      madrasaName: '  New Name  ',
-      tagline: '  New Tagline  ',
+  it("updates workspace branding", async () => {
+    await updateWorkspaceBrandingRow("demo", {
+      madrasaName: "  New Name  ",
+      tagline: "  New Tagline  ",
     });
     expect(mockSet).toHaveBeenCalledWith({
-      madrasaName: 'New Name',
-      tagline: 'New Tagline',
+      madrasaName: "New Name",
+      tagline: "New Tagline",
     });
     expect(mockWhere).toHaveBeenCalled();
   });
 
-  it('deletes workspace row', async () => {
-    await deleteWorkspaceRow('demo');
+  it("deletes workspace row", async () => {
+    await deleteWorkspaceRow("demo");
     expect(mockDelete).toHaveBeenCalled();
     expect(mockDeleteWhere).toHaveBeenCalled();
   });

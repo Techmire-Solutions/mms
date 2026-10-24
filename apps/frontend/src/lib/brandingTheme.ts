@@ -1,27 +1,24 @@
+import { type BrandingSettings, type BrandingThemeMode, type GlobalSettings } from "@mms/shared";
+import { getScopedBrandingSettings, getScopedGlobalSettings } from "@/lib/settingsPreviewStore";
+import { isEntryPath } from "@/lib/config/routes";
 import {
-  type BrandingSettings,
-  type BrandingThemeMode,
-  type GlobalSettings,
-} from '@mms/shared';
-import {
-  getScopedBrandingSettings,
-  getScopedGlobalSettings,
-} from '@/lib/settingsPreviewStore';
-import { isEntryPath } from '@/lib/config/routes';
-import { isTenantHost, MMS_PLATFORM_BRANDING, MMS_PLATFORM_GLOBAL_SETTINGS } from '@/platform/lib/themeScope';
+  isTenantHost,
+  MMS_PLATFORM_BRANDING,
+  MMS_PLATFORM_GLOBAL_SETTINGS,
+} from "@/platform/lib/themeScope";
 import {
   applyBrandingFromSettings,
   applyDocumentLanguageWithFonts,
   resolveThemeMode,
-} from '@/lib/brandingThemeCore';
+} from "@/lib/brandingThemeCore";
 
-import { applyApexPlatformTheme } from '@/platform/lib/brandingEntryTheme';
-export { applyApexPlatformTheme } from '@/platform/lib/brandingEntryTheme';
-export { applyTenantEntryTheme } from '@/tenant/lib/brandingEntryTheme';
+import { applyApexPlatformTheme } from "@/lib/branding/apexPlatformTheme";
+export { applyApexPlatformTheme } from "@/lib/branding/apexPlatformTheme";
+export { applyTenantEntryTheme } from "@/lib/branding/tenantEntryTheme";
 
 function resolveTenantDocumentLanguage(storedLanguage: string, pathname: string): string {
   // Tenant auth entry stays English; authenticated app uses workspace language.
-  return isEntryPath(pathname, { isApex: false }) ? 'en' : storedLanguage;
+  return isEntryPath(pathname, { isApex: false }) ? "en" : storedLanguage;
 }
 
 /**
@@ -29,7 +26,7 @@ function resolveTenantDocumentLanguage(storedLanguage: string, pathname: string)
  * Apex host: MMS platform defaults only. Tenant host: institution branding.
  */
 export function applyBrandingTheme(
-  branding?: Partial<Pick<BrandingSettings, 'primaryColor' | 'secondaryColor' | 'cornerStyle'>>,
+  branding?: Partial<Pick<BrandingSettings, "primaryColor" | "secondaryColor" | "cornerStyle">>,
   mode?: BrandingThemeMode,
 ): void {
   if (!isTenantHost()) {
@@ -47,31 +44,30 @@ export function applyBrandingTheme(
   applyBrandingFromSettings(merged, activeMode);
 }
 
-export type AppThemeOverrides = Partial<Pick<GlobalSettings, 'theme' | 'language'>>;
+export type AppThemeOverrides = Partial<Pick<GlobalSettings, "theme" | "language">>;
 
 /**
  * Applies global theme class plus branding tokens for the active host scope.
  * Apex (platform) is always English + MMS platform branding.
  */
 export function applyAppTheme(pathname?: string, overrides?: AppThemeOverrides): void {
-  const activePath =
-    pathname ?? (typeof window !== 'undefined' ? window.location.pathname : '/');
+  const activePath = pathname ?? (typeof window !== "undefined" ? window.location.pathname : "/");
 
   if (!isTenantHost()) {
-    applyApexPlatformTheme('en');
+    applyApexPlatformTheme("en");
     return;
   }
 
   const base = getScopedGlobalSettings();
   const settings = { ...base, ...overrides };
   const root = document.documentElement;
-  const systemTheme = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
-  const activeTheme = settings.theme === 'system' ? systemTheme : settings.theme;
+  const systemTheme = window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light";
+  const activeTheme = settings.theme === "system" ? systemTheme : settings.theme;
 
-  if (activeTheme === 'dark') {
-    root.classList.add('dark');
+  if (activeTheme === "dark") {
+    root.classList.add("dark");
   } else {
-    root.classList.remove('dark');
+    root.classList.remove("dark");
   }
 
   applyDocumentLanguageWithFonts(resolveTenantDocumentLanguage(settings.language, activePath));

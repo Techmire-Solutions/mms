@@ -1,11 +1,15 @@
-import { useTranslation } from '@/hooks/useTranslation';
-import { EnrollmentReports } from '@/tenant/components/reports/moduleReportAdapters';
-import { useEnrollmentsReportAggregates } from '@/tenant/hooks/collections/enrollments';
-import { EMPTY_ENROLLMENTS_REPORT_AGGREGATES, type EnrollmentsReportAggregates } from '@mms/shared';
-import { ErrorState } from '@/components/ui/ErrorState';
-import type { ReportFilterFields } from './ReportFilters';
+import { useTranslation } from "@/hooks/useTranslation";
+import { EnrollmentReports } from "@/tenant/components/reports/moduleReportAdapters";
+import { useEnrollmentsReportAggregates } from "@/tenant/hooks/collections/enrollments";
+import { EMPTY_ENROLLMENTS_REPORT_AGGREGATES, type EnrollmentsReportAggregates } from "@mms/shared";
+import { ErrorState } from "@/components/app/ErrorState";
+import type { ReportFilterFields } from "./ReportFilters";
 
-export function EnrollmentReportsWrapper({ filters }: { filters: ReportFilterFields }): React.JSX.Element {
+export function EnrollmentReportsWrapper({
+  filters,
+}: {
+  filters: ReportFilterFields;
+}): React.JSX.Element {
   const { t } = useTranslation();
   const query = useEnrollmentsReportAggregates();
 
@@ -18,7 +22,8 @@ export function EnrollmentReportsWrapper({ filters }: { filters: ReportFilterFie
     let bySession = rawAggregates.bySession;
     if (filters.session && filters.session !== "all") {
       bySession = bySession.filter(
-        (s) => s.sessionId === filters.session || s.name.toLowerCase() === filters.session.toLowerCase(),
+        (s) =>
+          s.sessionId === filters.session || s.name.toLowerCase() === filters.session.toLowerCase(),
       );
     }
     return {
@@ -39,4 +44,3 @@ export function EnrollmentReportsWrapper({ filters }: { filters: ReportFilterFie
 
   return <EnrollmentReports aggregates={aggregates} filters={filters} />;
 }
-

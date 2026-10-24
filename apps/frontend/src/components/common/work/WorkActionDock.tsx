@@ -75,12 +75,12 @@ export function WorkActionDock({
             transition.tone === "primary"
               ? "default"
               : transition.tone === "destructive"
-              ? "destructive"
-              : transition.tone === "secondary"
-              ? "secondary"
-              : transition.tone === "outline"
-              ? "outline"
-              : "outline";
+                ? "destructive"
+                : transition.tone === "secondary"
+                  ? "secondary"
+                  : transition.tone === "outline"
+                    ? "outline"
+                    : "outline";
 
           return (
             <Button
@@ -124,10 +124,7 @@ export function WorkActionDock({
 
         {/* Export */}
         {exportAction && (
-          <BulkSelectionExportAction
-            onClick={exportAction.onExport}
-            label={exportAction.label}
-          />
+          <BulkSelectionExportAction onClick={exportAction.onExport} label={exportAction.label} />
         )}
 
         {/* Restore (Trash view) */}
@@ -140,10 +137,7 @@ export function WorkActionDock({
 
         {/* Delete */}
         {deleteAction && (
-          <BulkSelectionDeleteAction
-            onClick={deleteAction.onDelete}
-            label={deleteAction.label}
-          />
+          <BulkSelectionDeleteAction onClick={deleteAction.onDelete} label={deleteAction.label} />
         )}
 
         {/* Additional custom action slots */}

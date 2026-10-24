@@ -2,10 +2,12 @@ import React from "react";
 import {
   facultyTransferSchema,
   facultyDesignationTransferSchema,
+  facultyDepartmentTransferSchema,
   type FacultyTransferEntity,
   type FacultyDesignationCsvRow,
+  type FacultyDepartmentCsvRow,
 } from "@mms/shared";
-import { ModuleImportDialog } from "@/components/ui/ModuleImportDialog";
+import { ModuleImportDialog } from "@/components/app/ModuleImportDialog";
 import { useModuleCsvImportActions } from "@/lib/backgroundJobs/useModuleCsvImportActions";
 import { useTranslation } from "@/hooks/useTranslation";
 import type { FacultyIoEntity } from "@/tenant/features/faculty/facultyPageWorkSubTabs";
@@ -17,7 +19,7 @@ export interface FacultyCsvImportDialogProps {
   canWrite: boolean;
 }
 
-/** Standardized CSV import dialog for Faculties and Designations using SSOT schema. */
+/** Standardized CSV import dialog for Faculties, Departments, and Designations using SSOT schema. */
 export function FacultyCsvImportDialog({
   open,
   entity,
@@ -30,6 +32,13 @@ export function FacultyCsvImportDialog({
     apiPath: "/api/faculty/import",
     schema: facultyTransferSchema,
     defaultLabel: t("faculty.io.importFacultiesJob"),
+    onSuccess: onClose,
+  });
+
+  const departmentActions = useModuleCsvImportActions<FacultyDepartmentCsvRow>({
+    apiPath: "/api/faculty/departments/import",
+    schema: facultyDepartmentTransferSchema,
+    defaultLabel: t("faculty.io.importDepartmentsJob"),
     onSuccess: onClose,
   });
 
@@ -55,6 +64,19 @@ export function FacultyCsvImportDialog({
     );
   }
 
+  if (entity === "departments") {
+    return (
+      <ModuleImportDialog<FacultyDepartmentCsvRow>
+        open={open}
+        onClose={onClose}
+        title={t("faculty.io.importDepartments")}
+        subtitle={t("faculty.io.csvHint")}
+        canWrite={canWrite}
+        actions={departmentActions}
+      />
+    );
+  }
+
   return (
     <ModuleImportDialog<FacultyDesignationCsvRow>
       open={open}
@@ -66,4 +88,3 @@ export function FacultyCsvImportDialog({
     />
   );
 }
-

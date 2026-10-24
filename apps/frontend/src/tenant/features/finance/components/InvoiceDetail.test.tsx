@@ -32,7 +32,7 @@ vi.mock("@/tenant/features/finance/hooks/useFinanceCollect", () => ({
   }),
 }));
 
-vi.mock("@/components/ui/Drawer", () => ({
+vi.mock("@/components/app/Drawer", () => ({
   Drawer: ({
     title,
     headerExtra,
@@ -114,8 +114,8 @@ describe("InvoiceDetail Component", () => {
       );
     });
 
-    const recordButton = Array.from(container.querySelectorAll("button")).find(
-      (button) => button.textContent?.includes("finance.recordPayment"),
+    const recordButton = Array.from(container.querySelectorAll("button")).find((button) =>
+      button.textContent?.includes("finance.recordPayment"),
     );
     expect(recordButton).toBeDefined();
 
@@ -149,8 +149,8 @@ describe("InvoiceDetail Component", () => {
     });
 
     // Record payment button must NOT be present when archived
-    const recordButton = Array.from(container.querySelectorAll("button")).find(
-      (button) => button.textContent?.includes("finance.recordPayment"),
+    const recordButton = Array.from(container.querySelectorAll("button")).find((button) =>
+      button.textContent?.includes("finance.recordPayment"),
     );
     expect(recordButton).toBeUndefined();
 

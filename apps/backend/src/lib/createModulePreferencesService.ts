@@ -1,6 +1,5 @@
-import { requireTenant } from './tenantContext.js';
-import { broadcastCollection } from './livePush.js';
-
+import { requireTenant } from "./tenantContext.js";
+import { broadcastCollection } from "./livePush.js";
 
 /**
  * Shared module-preferences load/save: tenant → load → normalize → upsert → broadcast.
@@ -19,13 +18,11 @@ export function createModulePreferencesService<TPreferences>({
 }) {
   async function load(): Promise<TPreferences | null> {
     const raw = await getByWorkspace(requireTenant());
-    if (!raw || typeof raw !== 'object' || Array.isArray(raw)) return null;
+    if (!raw || typeof raw !== "object" || Array.isArray(raw)) return null;
     return normalize(raw);
   }
 
-  async function save(
-    preferences: TPreferences | Record<string, unknown>,
-  ): Promise<TPreferences> {
+  async function save(preferences: TPreferences | Record<string, unknown>): Promise<TPreferences> {
     const tenant = requireTenant();
     const normalized = normalize(preferences);
     await upsert(tenant, Object.assign({}, normalized));

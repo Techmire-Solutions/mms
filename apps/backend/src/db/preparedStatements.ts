@@ -1,12 +1,19 @@
-import { and, eq, sql } from 'drizzle-orm';
-import { tenantUsers, contacts, students, sessions } from './schema.js';
-import { getRootDb } from './dbConnection.js';
+import { and, eq, sql } from "drizzle-orm";
+import {
+  tenantUsers,
+  contacts,
+  students,
+  sessions,
+  type SessionReadRow,
+  type StudentSelectRow,
+} from "./schema.js";
+import { getRootDb } from "./dbConnection.js";
 import {
   preparedTenantUserColumns,
   preparedContactColumns,
   preparedStudentColumns,
   preparedSessionColumns,
-} from './preparedColumns.js';
+} from "./preparedColumns.js";
 
 export {
   preparedTenantUserColumns,
@@ -17,8 +24,8 @@ export {
 
 export type PreparedTenantUserRow = typeof tenantUsers.$inferSelect;
 export type PreparedContactRow = typeof contacts.$inferSelect;
-export type PreparedStudentRow = typeof students.$inferSelect;
-export type PreparedSessionRow = typeof sessions.$inferSelect;
+export type PreparedStudentRow = StudentSelectRow;
+export type PreparedSessionRow = SessionReadRow;
 
 export interface PreparedLookupStatement<T> {
   execute(params: { subdomain: string; id: string }): Promise<T[]>;
@@ -41,17 +48,17 @@ function tryPrepareWithClient<T>(
   whereClause: unknown,
   statementName: string,
 ): PreparedLookupStatement<T> {
-  if (!client || typeof client !== 'object' || !('select' in client)) {
-    throw new Error('Client does not support select');
+  if (!client || typeof client !== "object" || !("select" in client)) {
+    throw new Error("Client does not support select");
   }
   const selectFn = (client as { select: (cols: unknown) => SelectPrepareChain<T> }).select;
-  if (typeof selectFn !== 'function') {
-    throw new Error('Client select is not a function');
+  if (typeof selectFn !== "function") {
+    throw new Error("Client select is not a function");
   }
   const q = selectFn.call(client, columns).from(table).where(whereClause);
   const prep = q?.limit?.(1)?.prepare?.(statementName);
   if (!prep) {
-    throw new Error('Client does not support prepare');
+    throw new Error("Client does not support prepare");
   }
   return prep;
 }
@@ -90,54 +97,82 @@ function getOrCompileStatement<TRow>(
 }
 
 /** Hot read path: fetch tenant user by workspace and id with compiled PostgreSQL prepared statement. */
-export function getPreparedTenantUserById(client?: unknown): PreparedLookupStatement<PreparedTenantUserRow> {
+export function getPreparedTenantUserById(
+  client?: unknown,
+): PreparedLookupStatement<PreparedTenantUserRow> {
   return getOrCompileStatement(
     preparedTenantUserById,
-    (s) => { preparedTenantUserById = s; },
+    (s) => {
+      preparedTenantUserById = s;
+    },
     client,
     preparedTenantUserColumns,
     tenantUsers,
-    and(eq(tenantUsers.workspaceSubdomain, sql.placeholder('subdomain')), eq(tenantUsers.id, sql.placeholder('id'))),
-    'prepared_find_tenant_user_by_id',
+    and(
+      eq(tenantUsers.workspaceSubdomain, sql.placeholder("subdomain")),
+      eq(tenantUsers.id, sql.placeholder("id")),
+    ),
+    "prepared_find_tenant_user_by_id",
   );
 }
 
 /** Hot read path: fetch active contact by workspace and id with compiled prepared statement. */
-export function getPreparedContactById(client?: unknown): PreparedLookupStatement<PreparedContactRow> {
+export function getPreparedContactById(
+  client?: unknown,
+): PreparedLookupStatement<PreparedContactRow> {
   return getOrCompileStatement(
     preparedContactById,
-    (s) => { preparedContactById = s; },
+    (s) => {
+      preparedContactById = s;
+    },
     client,
     preparedContactColumns,
     contacts,
-    and(eq(contacts.workspaceSubdomain, sql.placeholder('subdomain')), eq(contacts.id, sql.placeholder('id'))),
-    'prepared_find_contact_by_id',
+    and(
+      eq(contacts.workspaceSubdomain, sql.placeholder("subdomain")),
+      eq(contacts.id, sql.placeholder("id")),
+    ),
+    "prepared_find_contact_by_id",
   );
 }
 
 /** Hot read path: fetch active student by workspace and id with compiled prepared statement. */
-export function getPreparedStudentById(client?: unknown): PreparedLookupStatement<PreparedStudentRow> {
+export function getPreparedStudentById(
+  client?: unknown,
+): PreparedLookupStatement<PreparedStudentRow> {
   return getOrCompileStatement(
     preparedStudentById,
-    (s) => { preparedStudentById = s; },
+    (s) => {
+      preparedStudentById = s;
+    },
     client,
     preparedStudentColumns,
     students,
-    and(eq(students.workspaceSubdomain, sql.placeholder('subdomain')), eq(students.id, sql.placeholder('id'))),
-    'prepared_find_student_by_id',
+    and(
+      eq(students.workspaceSubdomain, sql.placeholder("subdomain")),
+      eq(students.id, sql.placeholder("id")),
+    ),
+    "prepared_find_student_by_id",
   );
 }
 
 /** Hot read path: fetch active session by workspace and id with compiled prepared statement. */
-export function getPreparedSessionById(client?: unknown): PreparedLookupStatement<PreparedSessionRow> {
+export function getPreparedSessionById(
+  client?: unknown,
+): PreparedLookupStatement<PreparedSessionRow> {
   return getOrCompileStatement(
     preparedSessionById,
-    (s) => { preparedSessionById = s; },
+    (s) => {
+      preparedSessionById = s;
+    },
     client,
     preparedSessionColumns,
     sessions,
-    and(eq(sessions.workspaceSubdomain, sql.placeholder('subdomain')), eq(sessions.id, sql.placeholder('id'))),
-    'prepared_find_session_by_id',
+    and(
+      eq(sessions.workspaceSubdomain, sql.placeholder("subdomain")),
+      eq(sessions.id, sql.placeholder("id")),
+    ),
+    "prepared_find_session_by_id",
   );
 }
 

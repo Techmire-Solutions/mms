@@ -2,14 +2,13 @@
 description: SMS and WhatsApp campaign composition, template interpolation, delivery channels, and messaging API
 paths:
   - "apps/frontend/src/tenant/features/messaging/**"
-  - "apps/frontend/src/components/ui/MessageComposer.tsx"
-  - "apps/frontend/src/components/ui/MessagingVariableTokensBar.tsx"
-  - "apps/frontend/src/components/ui/messageComposer/**"
+  - "apps/frontend/src/components/app/MessageComposer.tsx"
+  - "apps/frontend/src/components/app/MessagingVariableTokensBar.tsx"
+  - "apps/frontend/src/components/messageComposer/**"
   - "apps/frontend/src/hooks/useMessaging.ts"
   - "apps/frontend/src/lib/backgroundJobs/startServerMessagingCsvExport.ts"
-  - "packages/shared/src/messagingModuleManifest.ts"
-  - "packages/shared/src/messagingSchemas.ts"
-  - "packages/shared/src/messagingLogSchemas.ts"
+  - "packages/shared/src/**/messagingModuleManifest.ts"
+  - "packages/shared/src/**/messagingSchemas.ts"
   - "apps/backend/src/routes/tenant/messaging.ts"
   - "apps/backend/src/routes/tenant/messaging/**"
   - "apps/backend/src/db/repositories/messagingRepository.ts"
@@ -45,6 +44,3 @@ paths:
 - **Banned Document Store:** Never include `message_logs` or `message_templates` in `ALLOWED_COLLECTIONS`. Never re-allowlist `messages_u:` or dual-write via `saveCollection`.
 - **Banned Mutations:** Bulk wipe PUT is strictly prohibited (`mms-api-interface.md` §5); use upsert only. Never echo raw SQL errors to clients.
 
-## 6. Workflow & Output Speed Rules
-- **Zero Output Bloat:** Output surgical diffs or targeted snippets only. Never rewrite entire files unless creating a new file from scratch. Omit conversational filler.
-- **Verification Gates:** Verify with `pnpm typecheck` and scoped tests before marking tasks done. If standards are modified, execute `bash .agent/scripts/sync-all.sh` and verify with `node scripts/verify-rules-integrity.mjs`.

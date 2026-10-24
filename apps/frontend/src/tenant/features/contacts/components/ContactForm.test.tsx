@@ -37,17 +37,19 @@ vi.mock("@/tenant/features/contacts/hooks/useContactFormDraft", () => ({
   }),
 }));
 
-vi.mock("@/components/ui/FormModal", () => ({
+vi.mock("@/components/app/FormModal", () => ({
   FormModal: ({
     title,
     children,
     footerStart,
+    formId,
   }: {
     title: string;
     children: React.ReactNode;
     footerStart?: React.ReactNode;
+    formId?: string;
   }) => (
-    <div data-testid="form-modal">
+    <div data-testid="form-modal" data-form-id={formId}>
       <h2>{title}</h2>
       <div>{footerStart}</div>
       <div>{children}</div>
@@ -63,22 +65,39 @@ vi.mock("./ContactFormFooterStart", () => ({
   ContactFormFooterStart: () => <div data-testid="footer-start">Footer Start</div>,
 }));
 
-vi.mock("@/components/ui/ConfirmAlertDialog", () => ({
+vi.mock("@/components/app/ConfirmAlertDialog", () => ({
   ConfirmAlertDialog: () => null,
 }));
 
 describe("ContactForm Component", () => {
   it("renders create contact form modal", () => {
     const html = renderToStaticMarkup(
-      <ContactForm
-        open={true}
-        onClose={vi.fn()}
-        onSave={vi.fn()}
-      />,
+      <ContactForm open={true} onClose={vi.fn()} onSave={vi.fn()} />,
     );
 
     expect(html).toContain("contacts.form.addTitle");
     expect(html).toContain("Tab Content");
     expect(html).toContain("Footer Start");
+  });
+
+  it("given two open contact forms, should give each its own form id when one is a nested create", () => {
+    // Arrange
+    const onClose = vi.fn();
+    const onSave = vi.fn();
+
+    // Act
+    const html = renderToStaticMarkup(
+      <>
+        <ContactForm open onClose={onClose} onSave={onSave} />
+        <ContactForm open onClose={onClose} onSave={onSave} />
+      </>,
+    );
+
+    // Assert
+    const formIds = [...html.matchAll(/data-form-id="([^"]+)"/g)].map((match) => match[1]);
+    expect(formIds).toHaveLength(2);
+    expect(formIds[0]).not.toBe(formIds[1]);
+    expect(html).toContain(`id="${formIds[0]}"`);
+    expect(html).toContain(`id="${formIds[1]}"`);
   });
 });

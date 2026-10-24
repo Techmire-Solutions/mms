@@ -8,8 +8,8 @@
  *   const s = getSerializer('csv');
  *   const output = s.serialize(grid);
  */
-import type { ExportFormat } from '../core/exportTypes.js';
-import { UnknownFormatError } from '../core/transferErrors.js';
+import type { ExportFormat } from "../core/exportTypes.js";
+import { UnknownFormatError } from "../core/transferErrors.js";
 
 // ---------------------------------------------------------------------------
 // Serialiser interface

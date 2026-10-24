@@ -3,8 +3,11 @@ import { describe, expect, it, vi } from "vitest";
 import { renderToStaticMarkup } from "react-dom/server";
 import { ContactsTableHeader } from "./ContactsTableHeader";
 
-vi.mock("@/components/ui/ModuleWorkTableHeader", () => ({
-  ModuleWorkTableHeader: ({ columns, actionsLabel }: {
+vi.mock("@/components/app/ModuleWorkTableHeader", () => ({
+  ModuleWorkTableHeader: ({
+    columns,
+    actionsLabel,
+  }: {
     columns: Array<{ id: string; label: string }>;
     actionsLabel: string;
   }) => (

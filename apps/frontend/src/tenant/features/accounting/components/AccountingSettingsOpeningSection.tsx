@@ -2,7 +2,7 @@ import React from "react";
 import type { Account, FiscalYear } from "@mms/shared";
 import { Scale } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { FormSelect } from "@/components/ui/FormSelect";
+import { FormSelect } from "@/components/app/FormSelect";
 import { Input } from "@/components/ui/input";
 import {
   Field,
@@ -10,20 +10,22 @@ import {
   FormCollectionShell,
   FormListFieldCard,
   FormSelectWithQuickCreate,
-} from "@/components/ui/FormPrimitives";
-import { SectionCard } from "@/components/ui/SectionCard";
+} from "@/components/app/FormPrimitives";
+import { SectionCard } from "@/components/app/SectionCard";
 import { FORM_INPUT, SETUP_SECTION_CARD_CLASS } from "@/components/ui/formStyles";
 import type { MoneySeparator } from "@/tenant/features/accounting/hooks/useAccountingLedgerOps";
 import { useAccountingOpeningBalancesState } from "@/tenant/features/accounting/hooks/useAccountingOpeningBalancesState";
 import { AccountModal } from "@/tenant/features/accounting/components/AccountModal";
-import { useAccountQuickCreate } from "./useAccountQuickCreate";
+import { useAccountQuickCreate } from "../hooks/useAccountQuickCreate";
 
 interface AccountingSettingsOpeningSectionProps {
   accounts: Account[];
   fiscalYears: FiscalYear[];
   /** `decimalSeparator` preference — money inputs must be parsed with it. */
   decimalSeparator: MoneySeparator;
-  onAccountsChange?: (updater: Account[] | ((prev: Account[]) => Account[])) => Promise<void> | void;
+  onAccountsChange?: (
+    updater: Account[] | ((prev: Account[]) => Account[]),
+  ) => Promise<void> | void;
 }
 
 export function AccountingSettingsOpeningSection({
@@ -68,8 +70,14 @@ export function AccountingSettingsOpeningSection({
     .map((account) => ({ value: account.id, label: `${account.code} – ${account.name}` }));
 
   return (
-    <SectionCard title={t("accounting.settings.secOpening")} icon={Scale} className={SETUP_SECTION_CARD_CLASS}>
-      <p className="m-0 mb-3 text-xs text-muted-foreground">{t("accounting.settings.opening.hint")}</p>
+    <SectionCard
+      title={t("accounting.settings.secOpening")}
+      icon={Scale}
+      className={SETUP_SECTION_CARD_CLASS}
+    >
+      <p className="m-0 mb-3 text-xs text-muted-foreground">
+        {t("accounting.settings.opening.hint")}
+      </p>
       <Field id="opening-fy" label={t("accounting.settings.fy.label")}>
         <FormSelect
           id="opening-fy"
@@ -117,7 +125,9 @@ export function AccountingSettingsOpeningSection({
           type="button"
           variant="outline"
           className="min-h-11"
-          onClick={async () => { await handlePost(); }}
+          onClick={async () => {
+            await handlePost();
+          }}
           disabled={!fiscalYearId || !rowsReady || !totals.postable || postPending}
         >
           {t("accounting.settings.opening.post")}
@@ -149,8 +159,12 @@ export function AccountingSettingsOpeningSection({
             onRemove={() => void handleRemove(row.id)}
           >
             <span className="flex flex-wrap gap-3 text-xs tabular-nums text-muted-foreground">
-              <span>{t("accounting.settings.opening.debit")} {row.debit.toFixed(2)}</span>
-              <span>{t("accounting.settings.opening.credit")} {row.credit.toFixed(2)}</span>
+              <span>
+                {t("accounting.settings.opening.debit")} {row.debit.toFixed(2)}
+              </span>
+              <span>
+                {t("accounting.settings.opening.credit")} {row.credit.toFixed(2)}
+              </span>
             </span>
           </FormListFieldCard>
         ))}

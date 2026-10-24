@@ -1,7 +1,7 @@
 import React from "react";
 import { Lock, ShieldCheck, User, type LucideIcon } from "lucide-react";
 import { useTranslation } from "@/hooks/useTranslation";
-import { WizardStepIndicator, type WizardStepItem } from "@/components/ui/WizardStepIndicator";
+import { WizardStepIndicator, type WizardStepItem } from "@shared/ui";
 
 interface AddUserModalStepDefinition {
   id: number;

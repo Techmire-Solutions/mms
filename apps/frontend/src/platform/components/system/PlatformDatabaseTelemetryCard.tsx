@@ -32,7 +32,9 @@ export function PlatformDatabaseTelemetryCard({
     if (utilRate > 85) {
       announceAssertive(`Critical alert: Database pool utilization at ${utilRate}%`);
     } else {
-      announcePolite(`Database telemetry updated: latency ${latency}ms, pool utilization ${utilRate}%`);
+      announcePolite(
+        `Database telemetry updated: latency ${latency}ms, pool utilization ${utilRate}%`,
+      );
     }
   }, [telemetry, isLoading, utilRate, latency, announcePolite, announceAssertive]);
 
@@ -79,7 +81,9 @@ export function PlatformDatabaseTelemetryCard({
         <div className="space-y-2 pt-1">
           <div className="flex items-center justify-between text-xs">
             <span className="text-muted-foreground">{t("platform.db.poolUtilization")}</span>
-            <span className="font-mono font-semibold text-foreground">{isLoading ? "…" : `${utilRate}%`}</span>
+            <span className="font-mono font-semibold text-foreground">
+              {isLoading ? "…" : `${utilRate}%`}
+            </span>
           </div>
           <div className="w-full bg-muted/60 rounded-full h-2 overflow-hidden">
             <div
@@ -128,20 +132,30 @@ export function PlatformDatabaseTelemetryCard({
 
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-2.5 pt-1">
           <div className="p-2.5 rounded-lg bg-muted/20 border border-border/40">
-            <div className="text-3xs text-muted-foreground">{t("platform.db.activeWorkspaces")}</div>
-            <div className="text-sm font-mono font-bold text-foreground">{isLoading ? "…" : activeTenantsCount}</div>
+            <div className="text-3xs text-muted-foreground">
+              {t("platform.db.activeWorkspaces")}
+            </div>
+            <div className="text-sm font-mono font-bold text-foreground">
+              {isLoading ? "…" : activeTenantsCount}
+            </div>
             <div className="text-3xs text-muted-foreground/75">Active tenant leases</div>
           </div>
 
           <div className="p-2.5 rounded-lg bg-muted/20 border border-border/40">
-            <div className="text-3xs text-muted-foreground">{t("platform.db.activeTransactions")}</div>
-            <div className="text-sm font-mono font-bold text-foreground">{isLoading ? "…" : totalTenantTx}</div>
+            <div className="text-3xs text-muted-foreground">
+              {t("platform.db.activeTransactions")}
+            </div>
+            <div className="text-sm font-mono font-bold text-foreground">
+              {isLoading ? "…" : totalTenantTx}
+            </div>
             <div className="text-3xs text-muted-foreground/75">In-flight transactions</div>
           </div>
 
           <div className="p-2.5 rounded-lg bg-muted/20 border border-border/40">
             <div className="text-3xs text-muted-foreground">{t("platform.db.tenantBudgetCap")}</div>
-            <div className="text-sm font-mono font-bold text-foreground">{isLoading ? "…" : `${capLimit} conns`}</div>
+            <div className="text-sm font-mono font-bold text-foreground">
+              {isLoading ? "…" : `${capLimit} conns`}
+            </div>
             <div className="text-3xs text-muted-foreground/75">{budgetPct}% pool ceiling</div>
           </div>
         </div>
@@ -150,9 +164,7 @@ export function PlatformDatabaseTelemetryCard({
           <div className="text-3xs font-medium text-muted-foreground mb-1.5 flex items-center justify-between">
             <span>Active Tenant Transaction Leases:</span>
             {activeTenants.some((it) => it.count >= capLimit - 1) && (
-              <span className="text-3xs font-semibold text-warning">
-                Near Cap Warning
-              </span>
+              <span className="text-3xs font-semibold text-warning">Near Cap Warning</span>
             )}
           </div>
           {activeTenants.length > 0 ? (
@@ -164,13 +176,17 @@ export function PlatformDatabaseTelemetryCard({
                     key={item.tenant}
                     className={`inline-flex items-center gap-1 px-2 py-0.5 rounded text-3xs font-mono border ${
                       isNearCap
-                        ? 'bg-warning/20 border-warning/50 text-warning-foreground animate-pulse'
-                        : 'bg-muted/50 border-border/50 text-foreground'
+                        ? "bg-warning/20 border-warning/50 text-warning-foreground animate-pulse"
+                        : "bg-muted/50 border-border/50 text-foreground"
                     }`}
                   >
                     <span className="font-semibold">{item.tenant}:</span>
-                    <span className={isNearCap ? 'text-destructive font-black' : 'text-primary font-bold'}>
-                      {item.count} tx {isNearCap ? `(near ${capLimit})` : ''}
+                    <span
+                      className={
+                        isNearCap ? "text-destructive font-black" : "text-primary font-bold"
+                      }
+                    >
+                      {item.count} tx {isNearCap ? `(near ${capLimit})` : ""}
                     </span>
                   </span>
                 );

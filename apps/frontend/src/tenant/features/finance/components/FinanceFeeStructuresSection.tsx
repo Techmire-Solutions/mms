@@ -1,15 +1,20 @@
 import React, { useState } from "react";
 import { Layers } from "lucide-react";
 import { Input } from "@/components/ui/input";
-import { SectionCard } from "@/components/ui/SectionCard";
+import { SectionCard } from "@/components/app/SectionCard";
 import {
   Field,
   FormCollectionShell,
   FormListFieldCard,
   FormSelect,
-} from "@/components/ui/FormPrimitives";
+} from "@/components/app/FormPrimitives";
 import { FORM_INPUT, SETUP_SECTION_CARD_CLASS } from "@/components/ui/formStyles";
 import { useTranslation } from "@/hooks/useTranslation";
+import {
+  SessionClassSectionSelect,
+  type SessionClassSectionValue,
+} from "@/components/common/SessionClassSectionSelect";
+import { useSessionsCollection } from "@/tenant/hooks/collections/sessions";
 import { notify } from "@/lib/notify";
 import {
   useFinanceFeeStructureMutations,
@@ -21,8 +26,12 @@ export function FinanceFeeStructuresSection(): React.JSX.Element {
   const { data: structures = [] } = useFinanceFeeStructures();
   const { save, remove } = useFinanceFeeStructureMutations();
   const [name, setName] = useState("");
-  const [session, setSession] = useState("");
-  const [className, setClassName] = useState("");
+  const sessions = useSessionsCollection();
+  const [scope, setScope] = useState<SessionClassSectionValue>({
+    sessionId: "",
+    classId: "",
+    sectionId: "",
+  });
   const [itemName, setItemName] = useState("");
   const [itemAmount, setItemAmount] = useState("");
   const [frequency, setFrequency] = useState<"monthly" | "term" | "once">("monthly");
@@ -32,8 +41,11 @@ export function FinanceFeeStructuresSection(): React.JSX.Element {
     try {
       await save.mutateAsync({
         name: name.trim(),
-        session: session.trim(),
-        className: className.trim(),
+        // The server derives session/program/class names from the class id.
+        sessionId: scope.sessionId || null,
+        classId: scope.classId || null,
+        session: sessions.find((row) => row.id === scope.sessionId)?.name ?? "",
+        className: "",
         isActive: true,
         frequency,
         items: itemName.trim()
@@ -41,8 +53,7 @@ export function FinanceFeeStructuresSection(): React.JSX.Element {
           : [],
       });
       setName("");
-      setSession("");
-      setClassName("");
+      setScope({ sessionId: "", classId: "", sectionId: "" });
       setItemName("");
       setItemAmount("");
       setFrequency("monthly");
@@ -63,14 +74,20 @@ export function FinanceFeeStructuresSection(): React.JSX.Element {
       <p className="m-0 mb-3 text-xs text-muted-foreground">{t("finance.feeStructures.hint")}</p>
       <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
         <Field id="fee-struct-name" label={t("finance.feeStructures.name")}>
-          <Input id="fee-struct-name" name="name" className={FORM_INPUT} value={name} onChange={(event) => setName(event.target.value)} />
+          <Input
+            id="fee-struct-name"
+            name="name"
+            className={FORM_INPUT}
+            value={name}
+            onChange={(event) => setName(event.target.value)}
+          />
         </Field>
-        <Field id="fee-struct-session" label={t("finance.feeStructures.session")}>
-          <Input id="fee-struct-session" name="session" className={FORM_INPUT} value={session} onChange={(event) => setSession(event.target.value)} />
-        </Field>
-        <Field id="fee-struct-class" label={t("finance.feeStructures.class")}>
-          <Input id="fee-struct-class" name="className" className={FORM_INPUT} value={className} onChange={(event) => setClassName(event.target.value)} />
-        </Field>
+        <SessionClassSectionSelect
+          sessions={sessions}
+          value={scope}
+          onChange={setScope}
+          idPrefix="fee-struct"
+        />
         <Field id="fee-struct-frequency" label={t("finance.feeStructures.frequency")}>
           <FormSelect
             id="fee-struct-frequency"
@@ -86,7 +103,13 @@ export function FinanceFeeStructuresSection(): React.JSX.Element {
         </Field>
         <Field id="fee-struct-item-name" label={t("finance.feeStructures.item")}>
           <div className="flex gap-2">
-            <Input id="fee-struct-item-name" name="itemName" className={FORM_INPUT} value={itemName} onChange={(event) => setItemName(event.target.value)} />
+            <Input
+              id="fee-struct-item-name"
+              name="itemName"
+              className={FORM_INPUT}
+              value={itemName}
+              onChange={(event) => setItemName(event.target.value)}
+            />
             <Input
               id="fee-struct-item-amount"
               name="itemAmount"
@@ -126,7 +149,9 @@ export function FinanceFeeStructuresSection(): React.JSX.Element {
                     ? t("finance.feeStructures.frequencyTerm")
                     : t("finance.feeStructures.frequencyMonthly")
               }`}
-              {structure.items.length > 0 ? ` · ${structure.items.length} ${t("finance.feeStructures.items")}` : ""}
+              {structure.items.length > 0
+                ? ` · ${structure.items.length} ${t("finance.feeStructures.items")}`
+                : ""}
             </p>
           </FormListFieldCard>
         ))}

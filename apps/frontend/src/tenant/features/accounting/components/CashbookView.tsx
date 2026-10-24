@@ -1,8 +1,8 @@
 import { useMemo, useState } from "react";
 import { TrendingUp, TrendingDown, ArrowUpDown, AlertTriangle } from "lucide-react";
-import { WarningCallout } from "@/components/ui/WarningCallout";
-import { centsToMoney, type JournalEntry, type Account } from '@/lib/data/accountingData';
-import { ModuleCommandMetricsGrid } from "@/components/ui/ModuleCommandMetricsGrid";
+import { WarningCallout } from "@/components/app/WarningCallout";
+import { centsToMoney, type JournalEntry, type Account } from "@/lib/data/accountingData";
+import { ModuleCommandMetricsGrid } from "@/components/app/ModuleCommandMetricsGrid";
 import { WorkTaskToolbar } from "@/components/common/work";
 import { buildDataTableRegistry, toColumnCustomizer } from "@/components/common/data-table";
 import { useModuleColumnLayout } from "@/hooks/useModuleColumnLayout";
@@ -15,9 +15,12 @@ import {
   resolveCashAccountIds,
   sumCashbookTotals,
   type EntryType,
-} from "@/tenant/features/accounting/components/cashbookViewShared";
+} from "@/tenant/features/accounting/lib/cashbookViewShared";
 import { CashbookViewTable } from "@/tenant/features/accounting/components/CashbookViewTable";
-import { useCashbookColumns, type CashbookVoucherAction } from "@/tenant/features/accounting/components/useCashbookColumns";
+import {
+  useCashbookColumns,
+  type CashbookVoucherAction,
+} from "@/tenant/features/accounting/components/useCashbookColumns";
 
 interface CashbookViewProps {
   entries: JournalEntry[];
@@ -31,7 +34,13 @@ interface CashbookViewProps {
   voucher?: CashbookVoucherAction;
 }
 
-export function CashbookView({ entries, accounts, configuredCashAccountId, pageScopeLabel, voucher }: CashbookViewProps) {
+export function CashbookView({
+  entries,
+  accounts,
+  configuredCashAccountId,
+  pageScopeLabel,
+  voucher,
+}: CashbookViewProps) {
   const { t } = useTranslation();
   const { formatCurrency } = useAccountingCurrency();
   const [search, setSearch] = useState("");
@@ -68,13 +77,25 @@ export function CashbookView({ entries, accounts, configuredCashAccountId, pageS
   return (
     <div className="space-y-4">
       {pageScopeLabel && (
-        <p className="m-0 text-xs text-muted-foreground" role="status">{pageScopeLabel}</p>
+        <p className="m-0 text-xs text-muted-foreground" role="status">
+          {pageScopeLabel}
+        </p>
       )}
       <section aria-label={t("accounting.cashbook.summaryAria")}>
         <ModuleCommandMetricsGrid
           items={[
-            { icon: TrendingUp, label: t("accounting.cashbook.moneyIn"), value: formatCurrency(totalIn), accent: "success" },
-            { icon: TrendingDown, label: t("accounting.cashbook.moneyOut"), value: formatCurrency(totalOut), accent: "destructive" },
+            {
+              icon: TrendingUp,
+              label: t("accounting.cashbook.moneyIn"),
+              value: formatCurrency(totalIn),
+              accent: "success",
+            },
+            {
+              icon: TrendingDown,
+              label: t("accounting.cashbook.moneyOut"),
+              value: formatCurrency(totalOut),
+              accent: "destructive",
+            },
             {
               icon: ArrowUpDown,
               label: t("accounting.cashbook.netBalance"),
@@ -93,7 +114,10 @@ export function CashbookView({ entries, accounts, configuredCashAccountId, pageS
         <WarningCallout density="compact" description={t("accounting.cashbook.noCashAccount")} />
       )}
       {countByType.unclassified > 0 && (
-        <p role="status" className="flex items-start gap-2 rounded-xl border border-border bg-muted/30 px-3 py-2 text-xs font-semibold text-muted-foreground m-0">
+        <p
+          role="status"
+          className="flex items-start gap-2 rounded-xl border border-border bg-muted/30 px-3 py-2 text-xs font-semibold text-muted-foreground m-0"
+        >
           <AlertTriangle className="w-3.5 h-3.5 mt-0.5 shrink-0" aria-hidden="true" />
           {t("accounting.cashbook.unclassifiedCount", { count: countByType.unclassified })}
         </p>
@@ -106,7 +130,10 @@ export function CashbookView({ entries, accounts, configuredCashAccountId, pageS
         searchPlaceholder={t("reports.widgets.searchRecords")}
         searchId="cashbook-search"
         hasActiveFilters={search.length > 0 || filterType !== "all"}
-        onClearFilters={() => { setSearch(""); setFilterType("all"); }}
+        onClearFilters={() => {
+          setSearch("");
+          setFilterType("all");
+        }}
         clearFiltersLabel={t("common.clearFilters")}
         statusFilter={{
           activeIds: filterType === "all" ? [] : [filterType],

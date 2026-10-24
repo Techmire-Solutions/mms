@@ -1,5 +1,11 @@
-import { sql } from 'drizzle-orm';
-import type { ContactChildMaps, SocialRow, EducationRow, ExperienceRow, SkillRow } from './contactRepositoryHydrateTypes.js';
+import { sql } from "drizzle-orm";
+import type {
+  ContactChildMaps,
+  SocialRow,
+  EducationRow,
+  ExperienceRow,
+  SkillRow,
+} from "./contactRepositoryHydrateTypes.js";
 
 export function buildSocialsAggSql(subdomain: string) {
   return sql`COALESCE((
@@ -80,9 +86,15 @@ export function buildSkillsAggSql(subdomain: string) {
   ), '[]'::json) AS skills`;
 }
 
-export function assignProfessionalChildRows(result: ContactChildMaps, contactId: string, row: Record<string, unknown>) {
+export function assignProfessionalChildRows(
+  result: ContactChildMaps,
+  contactId: string,
+  row: Record<string, unknown>,
+) {
   if (Array.isArray(row.socials)) result.socialsMap.set(contactId, row.socials as SocialRow[]);
-  if (Array.isArray(row.educations)) result.educationsMap.set(contactId, row.educations as EducationRow[]);
-  if (Array.isArray(row.experiences)) result.experiencesMap.set(contactId, row.experiences as ExperienceRow[]);
+  if (Array.isArray(row.educations))
+    result.educationsMap.set(contactId, row.educations as EducationRow[]);
+  if (Array.isArray(row.experiences))
+    result.experiencesMap.set(contactId, row.experiences as ExperienceRow[]);
   if (Array.isArray(row.skills)) result.skillsMap.set(contactId, row.skills as SkillRow[]);
 }

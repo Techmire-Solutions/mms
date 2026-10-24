@@ -7,23 +7,23 @@
  *   pnpm --filter mms-backend purge:selected-modules
  *   pnpm --filter mms-backend purge:selected-modules -- --execute
  */
-import { sql } from 'drizzle-orm';
-import { loadBackendEnv } from '../config/loadEnv.js';
-import { closeDatabase, getPool, initDb } from '../db/database.js';
-import { withTenant } from '../db/tenant-context.js';
-import { getQueryRows } from '../db/documentStoreKeys.js';
-import { assertPurgeAllowlistSafe } from './purgeSelectedModulesAllowlist.js';
+import { sql } from "drizzle-orm";
+import { loadBackendEnv } from "../config/loadEnv.js";
+import { closeDatabase, getPool, initDb } from "../db/database.js";
+import { withTenant } from "../db/tenant-context.js";
+import { getQueryRows } from "../db/documentStoreKeys.js";
+import { assertPurgeAllowlistSafe } from "./purgeSelectedModulesAllowlist.js";
 import {
   collectTenantReport,
   listWorkspaceSubdomains,
   purgeTenantSelectedModules,
   type TenantPurgeReport,
-} from './purgeSelectedModulesRunner.js';
+} from "./purgeSelectedModulesRunner.js";
 
 loadBackendEnv();
 
 function parseExecuteFlag(argv: string[]): boolean {
-  return argv.includes('--execute');
+  return argv.includes("--execute");
 }
 
 function printReport(report: TenantPurgeReport): number {
@@ -39,7 +39,7 @@ function printReport(report: TenantPurgeReport): number {
     total += report.documentStoreKeys;
   }
   if (total === 0) {
-    console.log('  (empty)');
+    console.log("  (empty)");
   }
   return total;
 }
@@ -82,7 +82,7 @@ async function run(): Promise<void> {
 
   const tenants = await listWorkspaceSubdomains(async (sqlText) => pool.query(sqlText));
   console.log(
-    `Mode: ${execute ? 'EXECUTE (hard delete)' : 'DRY-RUN (counts only)'}\n` +
+    `Mode: ${execute ? "EXECUTE (hard delete)" : "DRY-RUN (counts only)"}\n` +
       `Workspaces: ${tenants.length}`,
   );
 
@@ -109,26 +109,26 @@ async function run(): Promise<void> {
       if (remaining !== 0) {
         throw new Error(`Tenant ${tenant} still has ${remaining} allowlisted row(s) after purge`);
       }
-      console.log('  purged OK');
+      console.log("  purged OK");
     }
   }
 
   if (!execute) {
-    console.log('\nProtected module snapshot (must stay unchanged after execute):');
+    console.log("\nProtected module snapshot (must stay unchanged after execute):");
     for (const [key, count] of Object.entries(protectedBefore)) {
       console.log(`  ${key}: ${count}`);
     }
     console.log(`\nDry-run total allowlisted rows/keys: ${grandTotal}`);
-    console.log('Re-run with --execute to hard-delete.');
+    console.log("Re-run with --execute to hard-delete.");
   } else {
-    console.log('\nExecute complete. Re-run without --execute to verify zeros.');
+    console.log("\nExecute complete. Re-run without --execute to verify zeros.");
   }
 
   await closeDatabase();
 }
 
 run().catch(async (err) => {
-  console.error('purgeSelectedModules failed:', err);
+  console.error("purgeSelectedModules failed:", err);
   try {
     await closeDatabase();
   } catch {

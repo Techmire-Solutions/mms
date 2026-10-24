@@ -3,13 +3,13 @@ import type {
   FacultyListPageResult,
   FacultyListQuery,
   FacultyHierarchyNode,
-} from '@mms/shared';
-import { getRequestTenant } from '../../lib/tenantContext.js';
-import type { FacultyRepository } from '../repository/facultyRepository.js';
-import { facultyRepository } from '../repository/facultyRepositoryAdapter.js';
-import { hydrateFacultyFromContacts } from './facultyHydrateUseCases.js';
-import { ValidationError } from '../../lib/httpErrors.js';
-import { findDirectSupervisorsBatch } from '../../db/repositories/facultyRepositorySubordinates.js';
+} from "@mms/shared";
+import { getRequestTenant } from "../../lib/tenantContext.js";
+import type { FacultyRepository } from "../repository/facultyRepository.js";
+import { facultyRepository } from "../repository/facultyRepositoryAdapter.js";
+import { hydrateFacultyFromContacts } from "./facultyHydrateUseCases.js";
+import { ValidationError } from "../../lib/httpErrors.js";
+import { findDirectSupervisorsBatch } from "../../db/repositories/facultyRepositorySubordinates.js";
 
 /** Faculty count via SQL — avoids loading every row (active by default). */
 export async function countFaculty(
@@ -90,7 +90,10 @@ export async function loadFacultyByIds(
   const tenant = getRequestTenant();
   if (!tenant) return [];
   const matched = await repo.findByIds(tenant, ids);
-  return hydrateFacultyFromContacts(tenant, matched.filter((member: Faculty) => !member.deletedAt));
+  return hydrateFacultyFromContacts(
+    tenant,
+    matched.filter((member: Faculty) => !member.deletedAt),
+  );
 }
 
 export async function loadFacultyLinkedContactIds(
@@ -112,13 +115,13 @@ export async function loadHierarchyTree(
   if (pageResult.total > 1000) {
     throw new ValidationError(
       `Faculty hierarchy tree is limited to 1000 members but this workspace has ${pageResult.total}. ` +
-      `Use the paginated faculty list endpoint instead.`,
+        `Use the paginated faculty list endpoint instead.`,
     );
   }
   const sourceList = [...(pageResult.faculty ?? [])];
   let hasMore = pageResult.hasMore;
   for (let page = 2; hasMore; page += 1) {
-    if (page > 10) throw new ValidationError('Faculty hierarchy tree is limited to 1000 members');
+    if (page > 10) throw new ValidationError("Faculty hierarchy tree is limited to 1000 members");
     const next = await repo.listPage(tenant, { page, limit: 100 });
     sourceList.push(...(next.faculty ?? []));
     hasMore = next.hasMore;
@@ -126,7 +129,10 @@ export async function loadHierarchyTree(
   const hydrated = await hydrateFacultyFromContacts(tenant, sourceList);
   let supervisors: Record<string, string>;
   try {
-    supervisors = await findDirectSupervisorsBatch(tenant, hydrated.map((f) => String(f.id)));
+    supervisors = await findDirectSupervisorsBatch(
+      tenant,
+      hydrated.map((f) => String(f.id)),
+    );
   } catch {
     supervisors = {};
   }
@@ -143,14 +149,21 @@ export async function loadHierarchyTree(
       hierarchyRank: (f as { hierarchyRank?: number }).hierarchyRank ?? 10,
       status: f.status,
       avatar: f.avatar,
-      reportingFacultyId: supervisors[String(f.id)] ?? (f as { reportingFacultyId?: string | null }).reportingFacultyId ?? null,
+      reportingFacultyId:
+        supervisors[String(f.id)] ??
+        (f as { reportingFacultyId?: string | null }).reportingFacultyId ??
+        null,
       subordinates: [],
     });
   }
 
   const rootNodes: FacultyHierarchyNode[] = [];
   for (const node of nodeMap.values()) {
-    if (node.reportingFacultyId && nodeMap.has(node.reportingFacultyId) && node.reportingFacultyId !== node.id) {
+    if (
+      node.reportingFacultyId &&
+      nodeMap.has(node.reportingFacultyId) &&
+      node.reportingFacultyId !== node.id
+    ) {
       const parent = nodeMap.get(node.reportingFacultyId)!;
       parent.subordinates.push(node);
     } else {

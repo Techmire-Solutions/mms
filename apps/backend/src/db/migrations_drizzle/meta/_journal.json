@@ -1163,6 +1163,132 @@
       "when": 1791103300000,
       "tag": "0165_students_db_improvements",
       "breakpoints": true
+    },
+    {
+      "idx": 166,
+      "version": "7",
+      "when": 1791103400000,
+      "tag": "0166_academic_catalogs",
+      "breakpoints": true
+    },
+    {
+      "idx": 167,
+      "version": "7",
+      "when": 1791103500000,
+      "tag": "0167_class_sections",
+      "breakpoints": true
+    },
+    {
+      "idx": 168,
+      "version": "7",
+      "when": 1791103600000,
+      "tag": "0168_enrollment_ssot_backfill",
+      "breakpoints": true
+    },
+    {
+      "idx": 169,
+      "version": "7",
+      "when": 1791103700000,
+      "tag": "0169_session_lifecycle",
+      "breakpoints": true
+    },
+    {
+      "idx": 170,
+      "version": "7",
+      "when": 1791103800000,
+      "tag": "0170_academic_calendar",
+      "breakpoints": true
+    },
+    {
+      "idx": 171,
+      "version": "7",
+      "when": 1791103900000,
+      "tag": "0171_session_class_integrity",
+      "breakpoints": true
+    },
+    {
+      "idx": 172,
+      "version": "7",
+      "when": 1791104000000,
+      "tag": "0172_academic_date_columns",
+      "breakpoints": true
+    },
+    {
+      "idx": 173,
+      "version": "7",
+      "when": 1791104100000,
+      "tag": "0173_large_table_date_expand",
+      "breakpoints": true
+    },
+    {
+      "idx": 174,
+      "version": "7",
+      "when": 1791104200000,
+      "tag": "0174_registration",
+      "breakpoints": true
+    },
+    {
+      "idx": 175,
+      "version": "7",
+      "when": 1791104300000,
+      "tag": "0175_enrollment_placements",
+      "breakpoints": true
+    },
+    {
+      "idx": 176,
+      "version": "7",
+      "when": 1791104400000,
+      "tag": "0176_section_close",
+      "breakpoints": true
+    },
+    {
+      "idx": 177,
+      "version": "7",
+      "when": 1791104500000,
+      "tag": "0177_session_promotion",
+      "breakpoints": true
+    },
+    {
+      "idx": 178,
+      "version": "7",
+      "when": 1791104600000,
+      "tag": "0178_short_courses_workshops",
+      "breakpoints": true
+    },
+    {
+      "idx": 179,
+      "version": "7",
+      "when": 1791104700000,
+      "tag": "0179_obligation_module_preferences",
+      "breakpoints": true
+    },
+    {
+      "idx": 180,
+      "version": "7",
+      "when": 1791104800000,
+      "tag": "0180_document_templates",
+      "breakpoints": true
+    },
+    {
+      "idx": 181,
+      "version": "7",
+      "when": 1791190000000,
+      "tag": "0181_academic_contract",
+      "breakpoints": true
+    },
+    {
+      "idx": 182,
+      "version": "7",
+      "when": 1791276400000,
+      "tag": "0182_academic_contract_drop",
+      "breakpoints": true
+    },
+    {
+      "idx": 183,
+      "version": "7",
+      "when": 1791276500000,
+      "tag": "0183_whatsapp_integrations_table",
+      "breakpoints": true
     }
   ]
 }

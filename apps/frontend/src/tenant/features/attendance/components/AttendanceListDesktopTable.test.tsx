@@ -21,7 +21,16 @@ const mockRecord: AttendanceRecord = {
 };
 
 const mockStatuses: AttendanceStatus[] = [
-  { id: "present", label: "Present", short: "P", color: "#10b981", bg: "bg-success", text: "text-success", border: "border-success", dot: "bg-success" },
+  {
+    id: "present",
+    label: "Present",
+    short: "P",
+    color: "#10b981",
+    bg: "bg-success",
+    text: "text-success",
+    border: "border-success",
+    dot: "bg-success",
+  },
 ];
 
 describe("AttendanceListDesktopTable Component", () => {
@@ -42,7 +51,7 @@ describe("AttendanceListDesktopTable Component", () => {
         someVisibleSelected={false}
         onToggleSelectAll={vi.fn()}
         onToggleSelectedRecord={vi.fn()}
-        t={((k: string) => k) as any}
+        t={((k: string) => k) as unknown as never}
       />,
     );
 

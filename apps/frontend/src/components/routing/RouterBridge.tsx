@@ -1,32 +1,28 @@
-import { useEffect, useRef } from "react";
+import { useEffect } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { registerAppNavigate, unregisterAppNavigate } from "@/lib/routing/appNavigate";
-import { applyApexPlatformTheme } from "@/platform/lib/brandingEntryTheme";
+import { applyApexPlatformTheme } from "@/lib/branding/apexPlatformTheme";
 import { revertSettingsPreviews } from "@/lib/settingsPreview";
 import { useScrollToTopOnNavigate } from "@/lib/routing/useScrollToTopOnNavigate";
 import { useTenant } from "@/lib/contexts/TenantContext";
 import { shouldForcePlatformEnglish } from "@/platform/lib/themeScope";
-import { queryClientInstance } from "@/lib/queryClient";
 
 /**
  * Registers React Router navigate for imperative redirects (logout, etc.)
  * and reapplies document theme/language when the host or route scope changes.
+ *
+ * Note: we deliberately do NOT blanket-cancel in-flight queries on navigation.
+ * A global `queryClient.cancelQueries()` here aborted every unrelated request
+ * (shell/notifications/session) on each top-level route change. Module queries
+ * are keyed per module and bail out on unmount + `gcTime`, so the abort is not
+ * needed for correctness.
  */
 export default function RouterBridge(): null {
   const navigate = useNavigate();
   const location = useLocation();
-  const { isApex, workspace, workspaceLoading, workspaceMissing, workspaceLookupFailed } = useTenant();
+  const { isApex, workspace, workspaceLoading, workspaceMissing, workspaceLookupFailed } =
+    useTenant();
   useScrollToTopOnNavigate();
-
-  const previousSegmentRef = useRef<string | null>(null);
-
-  useEffect(() => {
-    const currentSegment = location.pathname.split('/').filter(Boolean)[0] ?? '';
-    if (previousSegmentRef.current !== null && previousSegmentRef.current !== currentSegment) {
-      void queryClientInstance.cancelQueries();
-    }
-    previousSegmentRef.current = currentSegment;
-  }, [location.pathname]);
 
   useEffect(() => {
     registerAppNavigate((path, options) => {

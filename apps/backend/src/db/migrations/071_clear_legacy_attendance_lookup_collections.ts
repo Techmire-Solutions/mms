@@ -8,11 +8,11 @@ import {
   isAttendanceLookupLegacyCollectionKey,
   ATTENDANCE_LOOKUP_LEGACY_COLLECTION_KEYS,
   type AttendanceLookupKind,
-} from '@mms/shared';
-import { and, eq, inArray } from 'drizzle-orm';
-import { getDb } from '../dbClient.js';
-import * as schema from '../schema.js';
-import { withGlobalTenant } from '../tenant-context.js';
+} from "@mms/shared";
+import { and, eq, inArray } from "drizzle-orm";
+import { getDb } from "../dbClient.js";
+import * as schema from "../schema.js";
+import { withGlobalTenant } from "../tenant-context.js";
 
 export async function runMigration071(): Promise<void> {
   const db = getDb();
@@ -27,11 +27,15 @@ export async function runMigration071(): Promise<void> {
     if (!isAttendanceLookupLegacyCollectionKey(parsed.logicalKey)) continue;
     const tenant = parsed.subdomain.trim().toLowerCase();
     if (!tenant) continue;
-    candidates.push({ name: r.name, tenant, kind: ATTENDANCE_LOOKUP_LEGACY_COLLECTION_KEYS[parsed.logicalKey] });
+    candidates.push({
+      name: r.name,
+      tenant,
+      kind: ATTENDANCE_LOOKUP_LEGACY_COLLECTION_KEYS[parsed.logicalKey],
+    });
   }
 
   if (candidates.length === 0) {
-    console.log('[Migration 071] No legacy attendance lookup collections found to delete.');
+    console.log("[Migration 071] No legacy attendance lookup collections found to delete.");
     return;
   }
 
@@ -47,7 +51,12 @@ export async function runMigration071(): Promise<void> {
       const [row] = await tx
         .select({ id: schema.attendanceLookups.id })
         .from(schema.attendanceLookups)
-        .where(and(eq(schema.attendanceLookups.workspaceSubdomain, tenant), eq(schema.attendanceLookups.kind, kind)))
+        .where(
+          and(
+            eq(schema.attendanceLookups.workspaceSubdomain, tenant),
+            eq(schema.attendanceLookups.kind, kind),
+          ),
+        )
         .limit(1);
       const value = Boolean(row);
       cache.set(cacheKey, value);

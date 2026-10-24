@@ -1,7 +1,7 @@
-import type { LlmConfig } from '@mms/shared';
-import { decryptSecretAtRest, encryptSecretAtRest } from '../../lib/cryptoAtRest.js';
+import type { LlmConfig } from "@mms/shared";
+import { decryptSecretAtRest, encryptSecretAtRest } from "../../lib/cryptoAtRest.js";
 
-const ENVELOPE_PREFIX = 'enc:aes256gcm:';
+const ENVELOPE_PREFIX = "enc:aes256gcm:";
 
 function isPlaintextSecret(value: string | null | undefined): boolean {
   return Boolean(value && !value.startsWith(ENVELOPE_PREFIX));
@@ -19,13 +19,11 @@ export function decryptLlmApiKey(value?: string | null): string | undefined {
 }
 
 /** Encrypt each `apiKey` in an LLM config list for DB storage. */
-export function encryptLlmConfigs(
-  configs: LlmConfig[] | null | undefined,
-): LlmConfig[] | null {
+export function encryptLlmConfigs(configs: LlmConfig[] | null | undefined): LlmConfig[] | null {
   if (!configs?.length) return null;
   return configs.map((config) => ({
     ...config,
-    apiKey: encryptSecretAtRest(config.apiKey) ?? '',
+    apiKey: encryptSecretAtRest(config.apiKey) ?? "",
   }));
 }
 
@@ -36,7 +34,7 @@ export function decryptLlmConfigs(
   if (!configs?.length) return undefined;
   return configs.map((config) => ({
     ...config,
-    apiKey: decryptSecretAtRest(config.apiKey) ?? '',
+    apiKey: decryptSecretAtRest(config.apiKey) ?? "",
   }));
 }
 

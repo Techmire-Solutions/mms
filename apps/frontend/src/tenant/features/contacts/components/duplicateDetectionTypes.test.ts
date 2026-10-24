@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import type { ContactPreferences } from "@mms/shared";
 import { DEFAULT_CONTACT_PREFERENCES } from "@mms/shared";
-import { getDuplicateThemeColors } from "@/tenant/features/contacts/components/duplicateDetectionTypes";
+import { getDuplicateThemeColors } from "@/tenant/features/contacts/lib/duplicateDetectionTypes";
 
 describe("getDuplicateThemeColors", () => {
   it("returns the default highlight color when no preferences are provided", () => {

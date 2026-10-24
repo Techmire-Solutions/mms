@@ -1,7 +1,5 @@
 import type { Faculty } from "@mms/shared";
-import type {
-  FacultyPageOverlaysProps,
-} from "@/tenant/features/faculty/hooks/facultyPageOverlaysTypes";
+import type { FacultyPageOverlaysProps } from "@/tenant/features/faculty/hooks/facultyPageOverlaysTypes";
 import type { useFacultyPageFormState } from "@/tenant/features/faculty/hooks/useFacultyPageFormState";
 import type { useFacultyPageOverlayState } from "@/tenant/features/faculty/hooks/useFacultyPageOverlayState";
 import type { useFacultyPageActions } from "@/tenant/features/faculty/hooks/useFacultyPageActions";
@@ -26,12 +24,10 @@ export function useFacultyPageOverlayProps({
   overlays: WorkOverlays;
   workActions: Pick<
     WorkActions,
-    | "handleRestore"
-    | "handleDelete"
-    | "handleBulkDelete"
-    | "handleBulkRestore"
+    "handleRestore" | "handleDelete" | "handleBulkDelete" | "handleBulkRestore"
   > & {
     handleSaveFaculty?: WorkActions["handleSaveFaculty"];
+    onReportingFacultyChange?: (supervisorId: string) => void;
   };
 
   selectedIds: string[];
@@ -54,6 +50,10 @@ export function useFacultyPageOverlayProps({
     },
     viewFaculty: currentView,
     onCloseView: () => overlays.setViewFaculty(null),
+    onFilterSubordinates: (facultyId: string) => {
+      overlays.setViewFaculty(null);
+      workActions.onReportingFacultyChange?.(facultyId);
+    },
     onEditFromDrawer: (faculty: Faculty) => {
       overlays.setViewFaculty(null);
       formState.openEdit(faculty);
@@ -107,4 +107,3 @@ export function useFacultyPageOverlayProps({
     onCloseImport: () => overlays.setImportEntity(null),
   };
 }
-

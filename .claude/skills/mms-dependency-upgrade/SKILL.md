@@ -4,7 +4,7 @@ description: Upgrades MMS workspace dependencies with pnpm catalogs, Dependabot/
 license: Proprietary
 metadata:
   owner: mms-platform
-  last-verified: 2026-10-04
+  last-verified: 2026-10-16
 ---
 
 # MMS Dependency Upgrade Workflow

@@ -1,8 +1,4 @@
-import {
-  type Contact,
-  parseContactsCsv,
-  parseVCard,
-} from "@mms/shared";
+import { type Contact, parseContactsCsv, parseVCard } from "@mms/shared";
 
 export interface ParseAppleContactsOptions {
   mobileLabel: string;

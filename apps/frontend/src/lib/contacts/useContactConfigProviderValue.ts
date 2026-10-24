@@ -107,7 +107,8 @@ export function useContactConfigProviderValue(
     return applyRelationshipOptionOrder(derived, prefs?.relationshipOptionOrder);
   }, [prefs?.relationshipPairs, prefs?.relationshipOptionOrder]);
 
-  return React.useMemo(() => ({
+  return React.useMemo(
+    () => ({
       formTabsReady: true,
       enabledTabIds: resolveContactEnabledTabIds({ formTabs, enabledTabs }, "admin"),
       requiredTabIds: new Set(requiredTabs),
@@ -168,8 +169,55 @@ export function useContactConfigProviderValue(
       getColumnWidth,
       setColumnWidth,
       systemSortOptions,
-    }), [
-      enabledTabs, requiredTabs, resolvedFields, formTabs, prefs, updateConfig, updateConfigAsync, updatePrefs, updatePrefsAsync, genders, socialPlatforms, resolvedRelationships, phoneLabels, emailLabels, addressLabels, countryCodes, countryCodesMap, educationDegrees, employmentTypes, skillCategories, skillProficiencies, bankNames, tags, lookupsLoading, lookupsError, defaultPhoneCountryCode, syncedColumnRegistry, availableColumns, visibleColumns, updateGenders, updateSocialPlatforms, updateRelationships, updatePhoneLabels, updateEmailLabels, updateAddressLabels, updateEducationDegrees, updateEmploymentTypes, updateSkillCategories, updateSkillProficiencies, updateBankNames, updateTags, updateCountryCodes, updateUserColumnLayout, isColumnVisible, getColumnWidth, setColumnWidth, systemSortOptions
-    ]);
+    }),
+    [
+      enabledTabs,
+      requiredTabs,
+      resolvedFields,
+      formTabs,
+      prefs,
+      updateConfig,
+      updateConfigAsync,
+      updatePrefs,
+      updatePrefsAsync,
+      genders,
+      socialPlatforms,
+      resolvedRelationships,
+      phoneLabels,
+      emailLabels,
+      addressLabels,
+      countryCodes,
+      countryCodesMap,
+      educationDegrees,
+      employmentTypes,
+      skillCategories,
+      skillProficiencies,
+      bankNames,
+      tags,
+      lookupsLoading,
+      lookupsError,
+      defaultPhoneCountryCode,
+      syncedColumnRegistry,
+      availableColumns,
+      visibleColumns,
+      updateGenders,
+      updateSocialPlatforms,
+      updateRelationships,
+      updatePhoneLabels,
+      updateEmailLabels,
+      updateAddressLabels,
+      updateEducationDegrees,
+      updateEmploymentTypes,
+      updateSkillCategories,
+      updateSkillProficiencies,
+      updateBankNames,
+      updateTags,
+      updateCountryCodes,
+      updateUserColumnLayout,
+      isColumnVisible,
+      getColumnWidth,
+      setColumnWidth,
+      systemSortOptions,
+    ],
+  );
 }
-

@@ -1,8 +1,6 @@
-import { WORK_SURFACE } from "@/components/ui/formStyles";
-import { cn } from "@/lib/utils";
 import { StudentsListCards } from "@/tenant/features/students/components/StudentsListCards";
 import { StudentsListDesktopTable } from "@/tenant/features/students/components/StudentsListDesktopTable";
-import type { StudentsListViewsProps } from "@/tenant/features/students/components/studentsListTypes";
+import type { StudentsListViewsProps } from "@/tenant/features/students/lib/studentsListTypes";
 
 /** Table/cards directory only — empty state mounts on StudentsList (Contacts-shaped). */
 export function StudentsListViews(props: StudentsListViewsProps): React.JSX.Element {
@@ -10,9 +8,5 @@ export function StudentsListViews(props: StudentsListViewsProps): React.JSX.Elem
     return <StudentsListCards {...props} />;
   }
 
-  return (
-    <div className={cn(WORK_SURFACE, "overflow-hidden")}>
-      <StudentsListDesktopTable {...props} />
-    </div>
-  );
+  return <StudentsListDesktopTable {...props} />;
 }

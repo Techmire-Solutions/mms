@@ -1,6 +1,6 @@
 import { Award, UserPlus } from "lucide-react";
 import { useTranslation } from "@/hooks/useTranslation";
-import { ModuleEntityIoToolbar } from "@/components/ui/ModuleEntityIoToolbar";
+import { ModuleEntityIoToolbar } from "@/components/app/ModuleEntityIoToolbar";
 import type { FacultyIoEntity } from "@/tenant/features/faculty/facultyPageWorkSubTabs";
 
 export type { FacultyIoEntity };

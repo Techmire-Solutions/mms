@@ -1,7 +1,7 @@
 import React from "react";
 import { Mail, User as UserIcon, CheckCircle2 } from "lucide-react";
 import { formatDate } from "@mms/shared";
-import { SectionCard } from "@/components/ui/SectionCard";
+import { SectionCard } from "@shared/ui";
 import { useTranslation } from "@/hooks/useTranslation";
 
 export interface PlatformUserProfileInfo {
@@ -24,7 +24,9 @@ export function PlatformProfileCard({
         <div className="flex items-center gap-3 text-sm">
           <Mail className="w-4 h-4 text-muted-foreground shrink-0" aria-hidden />
           <span className="text-muted-foreground">{t("platform.profileEmail")}</span>
-          <span className="font-semibold text-foreground ms-auto truncate max-w-filter-sm">{profile.email}</span>
+          <span className="font-semibold text-foreground ms-auto truncate max-w-filter-sm">
+            {profile.email}
+          </span>
         </div>
         {memberSince ? (
           <div className="flex items-center gap-3 text-sm">

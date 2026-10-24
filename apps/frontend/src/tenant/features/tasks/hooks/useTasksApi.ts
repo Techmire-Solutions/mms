@@ -1,4 +1,4 @@
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import {
   type TaskRecord,
   type TaskListQuery,
@@ -6,8 +6,9 @@ import {
   type TaskUpdate,
   type TaskStatus,
   type TaskSettings,
-} from '@mms/shared';
-import { apiJson } from '@/lib/apiClient';
+} from "@mms/shared";
+import { apiContract } from "@/lib/api";
+import { ApiError } from "@/lib/apiClient";
 import {
   TASKS_QUERY_KEY,
   TASKS_LIST_QUERY_KEY,
@@ -15,7 +16,7 @@ import {
   TASK_DETAIL_QUERY_KEY,
   TASKS_ELIGIBLE_ASSIGNEES_QUERY_KEY,
   TASKS_SETTINGS_QUERY_KEY,
-} from './tasksQueryKeys';
+} from "./tasksQueryKeys";
 
 export interface TasksListResponse {
   tasks: TaskRecord[];
@@ -39,29 +40,41 @@ export interface TaskMetricsResponse {
   };
 }
 
+/** Throws on any non-2xx (create returns 201, so this must accept the whole 2xx range). */
+function assertOk(response: { status: number; body: unknown }, context: string): void {
+  if (response.status >= 200 && response.status < 300) return;
+  const errorBody = response.body as { message?: string; type?: string } | undefined;
+  throw new ApiError(response.status, errorBody?.message ?? context, errorBody?.type);
+}
+
 export function invalidateTasksQueries(queryClient: ReturnType<typeof useQueryClient>) {
   return queryClient.invalidateQueries({ queryKey: TASKS_QUERY_KEY });
 }
 
 export function useTasks(query?: Partial<TaskListQuery>, options: { enabled?: boolean } = {}) {
-  const queryParams = new URLSearchParams();
-  if (query) {
-    if (query.status) queryParams.set('status', query.status);
-    if (query.priority) queryParams.set('priority', query.priority);
-    if (query.assignedToFacultyId) queryParams.set('assignedToFacultyId', query.assignedToFacultyId);
-    if (query.assignedToUserId) queryParams.set('assignedToUserId', query.assignedToUserId);
-    if (query.createdById) queryParams.set('createdById', query.createdById);
-    if (query.search) queryParams.set('search', query.search);
-    if (query.includeDeleted) queryParams.set('includeDeleted', 'true');
-    if (query.limit) queryParams.set('limit', String(query.limit));
-    if (query.offset) queryParams.set('offset', String(query.offset));
-  }
-  const queryString = queryParams.toString();
-  const url = queryString ? `/api/tasks?${queryString}` : '/api/tasks';
+  const queryParams = {
+    ...(query?.status ? { status: query.status } : {}),
+    ...(query?.priority ? { priority: query.priority } : {}),
+    ...(query?.assignedToFacultyId ? { assignedToFacultyId: query.assignedToFacultyId } : {}),
+    ...(query?.assignedToUserId ? { assignedToUserId: query.assignedToUserId } : {}),
+    ...(query?.createdById ? { createdById: query.createdById } : {}),
+    ...(query?.search ? { search: query.search } : {}),
+    ...(query?.includeDeleted ? { includeDeleted: true } : {}),
+    ...(query?.limit ? { limit: query.limit } : {}),
+    ...(query?.offset ? { offset: query.offset } : {}),
+  };
 
   return useQuery({
     queryKey: TASKS_LIST_QUERY_KEY(query as Record<string, unknown>),
-    queryFn: ({ signal }) => apiJson<TasksListResponse>(url, { signal }),
+    queryFn: async ({ signal }) => {
+      const response = await apiContract.tasks.list({
+        query: queryParams,
+        signal,
+        fetchOptions: { signal },
+      });
+      assertOk(response, "Failed to load tasks");
+      return response.body as TasksListResponse;
+    },
     enabled: options.enabled ?? true,
     staleTime: 15_000,
   });
@@ -70,7 +83,11 @@ export function useTasks(query?: Partial<TaskListQuery>, options: { enabled?: bo
 export function useTaskMetrics(options: { enabled?: boolean } = {}) {
   return useQuery({
     queryKey: TASKS_METRICS_QUERY_KEY,
-    queryFn: ({ signal }) => apiJson<TaskMetricsResponse>('/api/tasks/metrics', { signal }),
+    queryFn: async ({ signal }) => {
+      const response = await apiContract.tasks.metrics({ signal, fetchOptions: { signal } });
+      assertOk(response, "Failed to load task metrics");
+      return response.body as TaskMetricsResponse;
+    },
     enabled: options.enabled ?? true,
     staleTime: 30_000,
   });
@@ -79,7 +96,15 @@ export function useTaskMetrics(options: { enabled?: boolean } = {}) {
 export function useTask(id: string, options: { enabled?: boolean } = {}) {
   return useQuery({
     queryKey: TASK_DETAIL_QUERY_KEY(id),
-    queryFn: ({ signal }) => apiJson<TaskRecord>(`/api/tasks/${id}`, { signal }),
+    queryFn: async ({ signal }) => {
+      const response = await apiContract.tasks.get({
+        params: { id },
+        signal,
+        fetchOptions: { signal },
+      });
+      assertOk(response, "Failed to load task");
+      return response.body as TaskRecord;
+    },
     enabled: Boolean(id) && (options.enabled ?? true),
     staleTime: 15_000,
   });
@@ -88,11 +113,11 @@ export function useTask(id: string, options: { enabled?: boolean } = {}) {
 export function useCreateTask() {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: (data: TaskInsert) =>
-      apiJson<TaskRecord>('/api/tasks', {
-        method: 'POST',
-        body: JSON.stringify(data),
-      }),
+    mutationFn: async (data: TaskInsert) => {
+      const response = await apiContract.tasks.create({ body: data });
+      assertOk(response, "Failed to create task");
+      return response.body as TaskRecord;
+    },
     onSuccess: () => {
       void invalidateTasksQueries(queryClient);
     },
@@ -102,11 +127,11 @@ export function useCreateTask() {
 export function useUpdateTask() {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: ({ id, data }: { id: string; data: TaskUpdate }) =>
-      apiJson<TaskRecord>(`/api/tasks/${id}`, {
-        method: 'PATCH',
-        body: JSON.stringify(data),
-      }),
+    mutationFn: async ({ id, data }: { id: string; data: TaskUpdate }) => {
+      const response = await apiContract.tasks.update({ params: { id }, body: data });
+      assertOk(response, "Failed to update task");
+      return response.body as TaskRecord;
+    },
     onSuccess: (_data, variables) => {
       void invalidateTasksQueries(queryClient);
       void queryClient.invalidateQueries({ queryKey: TASK_DETAIL_QUERY_KEY(variables.id) });
@@ -117,11 +142,11 @@ export function useUpdateTask() {
 export function useUpdateTaskStatus() {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: ({ id, status }: { id: string; status: TaskStatus }) =>
-      apiJson<TaskRecord>(`/api/tasks/${id}/status`, {
-        method: 'PATCH',
-        body: JSON.stringify({ status }),
-      }),
+    mutationFn: async ({ id, status }: { id: string; status: TaskStatus }) => {
+      const response = await apiContract.tasks.updateStatus({ params: { id }, body: { status } });
+      assertOk(response, "Failed to update task status");
+      return response.body as TaskRecord;
+    },
     onSuccess: (_data, variables) => {
       void invalidateTasksQueries(queryClient);
       void queryClient.invalidateQueries({ queryKey: TASK_DETAIL_QUERY_KEY(variables.id) });
@@ -132,10 +157,11 @@ export function useUpdateTaskStatus() {
 export function useDeleteTask() {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: (id: string) =>
-      apiJson<{ success: boolean }>(`/api/tasks/${id}`, {
-        method: 'DELETE',
-      }),
+    mutationFn: async (id: string) => {
+      const response = await apiContract.tasks.remove({ params: { id } });
+      assertOk(response, "Failed to delete task");
+      return response.body as { success: boolean };
+    },
     onSuccess: () => {
       void invalidateTasksQueries(queryClient);
     },
@@ -145,11 +171,11 @@ export function useDeleteTask() {
 export function useRestoreTask() {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: (id: string) =>
-      apiJson<{ success: boolean; task: TaskRecord }>(`/api/tasks/${id}/restore`, {
-        method: 'POST',
-        body: JSON.stringify({}),
-      }),
+    mutationFn: async (id: string) => {
+      const response = await apiContract.tasks.restore({ params: { id } });
+      assertOk(response, "Failed to restore task");
+      return response.body as { success: boolean; task: TaskRecord };
+    },
     onSuccess: () => {
       void invalidateTasksQueries(queryClient);
     },
@@ -169,7 +195,14 @@ export interface EligibleAssigneeItem {
 export function useEligibleTaskAssignees(options: { enabled?: boolean } = {}) {
   return useQuery({
     queryKey: TASKS_ELIGIBLE_ASSIGNEES_QUERY_KEY,
-    queryFn: ({ signal }) => apiJson<EligibleAssigneeItem[]>('/api/tasks/eligible-assignees', { signal }),
+    queryFn: async ({ signal }) => {
+      const response = await apiContract.tasks.eligibleAssignees({
+        signal,
+        fetchOptions: { signal },
+      });
+      assertOk(response, "Failed to load eligible assignees");
+      return response.body as EligibleAssigneeItem[];
+    },
     enabled: options.enabled ?? true,
     staleTime: 30_000,
   });
@@ -178,7 +211,11 @@ export function useEligibleTaskAssignees(options: { enabled?: boolean } = {}) {
 export function useTaskSettings(options: { enabled?: boolean } = {}) {
   return useQuery({
     queryKey: TASKS_SETTINGS_QUERY_KEY,
-    queryFn: ({ signal }) => apiJson<TaskSettings>('/api/tasks/settings', { signal }),
+    queryFn: async ({ signal }) => {
+      const response = await apiContract.tasks.getSettings({ signal, fetchOptions: { signal } });
+      assertOk(response, "Failed to load task settings");
+      return response.body as TaskSettings;
+    },
     enabled: options.enabled ?? true,
     staleTime: 60_000,
   });
@@ -187,14 +224,13 @@ export function useTaskSettings(options: { enabled?: boolean } = {}) {
 export function useUpdateTaskSettings() {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: (settings: TaskSettings) =>
-      apiJson<TaskSettings>('/api/tasks/settings', {
-        method: 'PUT',
-        body: JSON.stringify(settings),
-      }),
+    mutationFn: async (settings: TaskSettings) => {
+      const response = await apiContract.tasks.updateSettings({ body: settings });
+      assertOk(response, "Failed to update task settings");
+      return response.body as TaskSettings;
+    },
     onSuccess: () => {
       void queryClient.invalidateQueries({ queryKey: TASKS_SETTINGS_QUERY_KEY });
     },
   });
 }
-

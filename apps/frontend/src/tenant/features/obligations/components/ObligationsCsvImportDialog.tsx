@@ -1,11 +1,6 @@
 import React from "react";
-import {
-  obligationsTransferSchema,
-  type ObligationTransferEntity,
-} from "@mms/shared";
-import { ModuleImportDialog } from "@/components/ui/ModuleImportDialog";
-import { useModuleCsvImportActions } from "@/lib/backgroundJobs/useModuleCsvImportActions";
-import { useTranslation } from "@/hooks/useTranslation";
+import { obligationsTransferSchema, type ObligationTransferEntity } from "@mms/shared";
+import { StandardModuleCsvImportDialog } from "@/components/app/StandardModuleCsvImportDialog";
 
 export interface ObligationsCsvImportDialogProps {
   open: boolean;
@@ -19,24 +14,14 @@ export function ObligationsCsvImportDialog({
   onClose,
   canWrite,
 }: ObligationsCsvImportDialogProps): React.JSX.Element | null {
-  const { t } = useTranslation();
-
-  const actions = useModuleCsvImportActions<ObligationTransferEntity>({
-    apiPath: "/api/obligations/import",
-    schema: obligationsTransferSchema,
-    onSuccess: onClose,
-  });
-
-  if (!open || !canWrite) return null;
-
   return (
-    <ModuleImportDialog<ObligationTransferEntity>
+    <StandardModuleCsvImportDialog<ObligationTransferEntity>
       open={open}
       onClose={onClose}
-      title={`${t("common.import")} - ${t("nav.obligations")}`}
-      subtitle={t("faculty.io.csvHint")}
       canWrite={canWrite}
-      actions={actions}
+      apiPath="/api/obligations/import"
+      schema={obligationsTransferSchema}
+      navKey="nav.obligations"
     />
   );
 }

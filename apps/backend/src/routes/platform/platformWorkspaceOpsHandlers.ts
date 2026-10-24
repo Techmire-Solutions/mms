@@ -1,6 +1,6 @@
-import type { platformWorkspacesContract } from '@mms/shared';
-import type { ContractRouteArgs, ContractRouteResponse } from '../../lib/contractRouterTypes.js';
-import type { PlatformAuthenticatedRequest } from '../../middleware/authenticatePlatform.js';
+import type { platformWorkspacesContract } from "@mms/shared";
+import type { ContractRouteArgs, ContractRouteResponse } from "../../lib/contractRouterTypes.js";
+import type { PlatformAuthenticatedRequest } from "../../middleware/authenticatePlatform.js";
 import {
   deleteWorkspace,
   getWorkspaceGrantedModules,
@@ -10,22 +10,22 @@ import {
   setWorkspaceEmailVerification,
   setWorkspaceEnabled,
   updateWorkspaceModules,
-} from '../../services/workspaceService.js';
-import { verifyPlatformUserPassword } from '../../services/platform/platformUserService.js';
-import { insertPlatformActivityLog } from '../../db/repositories/platformActivityLogsRepository.js';
-import { blockTenant, unblockTenant } from '../../services/session.service.js';
+} from "../../services/workspaceService.js";
+import { verifyPlatformUserPassword } from "../../services/platform/platformUserService.js";
+import { insertPlatformActivityLog } from "../../platform/use-cases/platformUseCases.js";
+import { blockTenant, unblockTenant } from "../../services/authSessionService.js";
 
 export async function handleListWorkspaces({
   query,
-}: ContractRouteArgs<typeof platformWorkspacesContract['listWorkspaces']>): Promise<
-  ContractRouteResponse<typeof platformWorkspacesContract['listWorkspaces']>
+}: ContractRouteArgs<(typeof platformWorkspacesContract)["listWorkspaces"]>): Promise<
+  ContractRouteResponse<(typeof platformWorkspacesContract)["listWorkspaces"]>
 > {
   const result = await listPlatformWorkspaces(query ?? {});
   return { status: 200 as const, body: result };
 }
 
 export async function handleGetWorkspaceMetrics(): Promise<
-  ContractRouteResponse<typeof platformWorkspacesContract['getWorkspaceMetrics']>
+  ContractRouteResponse<(typeof platformWorkspacesContract)["getWorkspaceMetrics"]>
 > {
   const metrics = await getPlatformWorkspaceMetrics();
   return { status: 200 as const, body: metrics };
@@ -35,13 +35,13 @@ export async function handlePatchWorkspace({
   params,
   body,
   request,
-}: ContractRouteArgs<typeof platformWorkspacesContract['patchWorkspace']>): Promise<
-  ContractRouteResponse<typeof platformWorkspacesContract['patchWorkspace']>
+}: ContractRouteArgs<(typeof platformWorkspacesContract)["patchWorkspace"]>): Promise<
+  ContractRouteResponse<(typeof platformWorkspacesContract)["patchWorkspace"]>
 > {
   const { platformUser } = request as PlatformAuthenticatedRequest;
   const updated = await setWorkspaceEnabled(params.subdomain, body.enabled);
   if (!updated) {
-    return { status: 404 as const, body: { type: 'not_found', message: 'Workspace not found' } };
+    return { status: 404 as const, body: { type: "not_found", message: "Workspace not found" } };
   }
 
   if (body.enabled) {
@@ -53,8 +53,8 @@ export async function handlePatchWorkspace({
   await insertPlatformActivityLog({
     userId: platformUser.id,
     userEmail: platformUser.email,
-    action: 'toggle_workspace',
-    targetResource: 'workspace',
+    action: "toggle_workspace",
+    targetResource: "workspace",
     targetId: params.subdomain,
     metadataMessage: `Set enabled=${body.enabled}`,
     ipAddress: request.ip,
@@ -66,8 +66,8 @@ export async function handlePatchWorkspace({
 
 export async function handleGetWorkspaceModules({
   params,
-}: ContractRouteArgs<typeof platformWorkspacesContract['getWorkspaceModules']>): Promise<
-  ContractRouteResponse<typeof platformWorkspacesContract['getWorkspaceModules']>
+}: ContractRouteArgs<(typeof platformWorkspacesContract)["getWorkspaceModules"]>): Promise<
+  ContractRouteResponse<(typeof platformWorkspacesContract)["getWorkspaceModules"]>
 > {
   const modules = await getWorkspaceGrantedModules(params.subdomain);
   return { status: 200 as const, body: { modules } };
@@ -77,8 +77,8 @@ export async function handleUpdateWorkspaceModules({
   params,
   body,
   request,
-}: ContractRouteArgs<typeof platformWorkspacesContract['updateWorkspaceModules']>): Promise<
-  ContractRouteResponse<typeof platformWorkspacesContract['updateWorkspaceModules']>
+}: ContractRouteArgs<(typeof platformWorkspacesContract)["updateWorkspaceModules"]>): Promise<
+  ContractRouteResponse<(typeof platformWorkspacesContract)["updateWorkspaceModules"]>
 > {
   const { platformUser } = request as PlatformAuthenticatedRequest;
   const result = await updateWorkspaceModules(params.subdomain, body.modules);
@@ -86,10 +86,10 @@ export async function handleUpdateWorkspaceModules({
   await insertPlatformActivityLog({
     userId: platformUser.id,
     userEmail: platformUser.email,
-    action: 'update_workspace_modules',
-    targetResource: 'workspace',
+    action: "update_workspace_modules",
+    targetResource: "workspace",
     targetId: params.subdomain,
-    metadataMessage: `modules=[${body.modules.join(',')}]`,
+    metadataMessage: `modules=[${body.modules.join(",")}]`,
     ipAddress: request.ip,
   });
 
@@ -100,8 +100,10 @@ export async function handlePatchWorkspaceEmailVerification({
   params,
   body,
   request,
-}: ContractRouteArgs<typeof platformWorkspacesContract['patchWorkspaceEmailVerification']>): Promise<
-  ContractRouteResponse<typeof platformWorkspacesContract['patchWorkspaceEmailVerification']>
+}: ContractRouteArgs<
+  (typeof platformWorkspacesContract)["patchWorkspaceEmailVerification"]
+>): Promise<
+  ContractRouteResponse<(typeof platformWorkspacesContract)["patchWorkspaceEmailVerification"]>
 > {
   const { platformUser } = request as PlatformAuthenticatedRequest;
   const result = await setWorkspaceEmailVerification(
@@ -109,14 +111,14 @@ export async function handlePatchWorkspaceEmailVerification({
     body.requireEmailVerification,
   );
   if (!result) {
-    return { status: 404 as const, body: { type: 'not_found', message: 'Workspace not found' } };
+    return { status: 404 as const, body: { type: "not_found", message: "Workspace not found" } };
   }
 
   await insertPlatformActivityLog({
     userId: platformUser.id,
     userEmail: platformUser.email,
-    action: 'update_workspace_email_verification',
-    targetResource: 'workspace',
+    action: "update_workspace_email_verification",
+    targetResource: "workspace",
     targetId: params.subdomain,
     metadataMessage: `requireEmailVerification=${body.requireEmailVerification}`,
     ipAddress: request.ip,
@@ -136,19 +138,22 @@ export async function handleDeleteWorkspace({
   params,
   body,
   request,
-}: ContractRouteArgs<typeof platformWorkspacesContract['deleteWorkspace']>): Promise<
-  ContractRouteResponse<typeof platformWorkspacesContract['deleteWorkspace']>
+}: ContractRouteArgs<(typeof platformWorkspacesContract)["deleteWorkspace"]>): Promise<
+  ContractRouteResponse<(typeof platformWorkspacesContract)["deleteWorkspace"]>
 > {
   const { platformUser } = request as PlatformAuthenticatedRequest;
-  if (platformUser.role !== 'super_user') {
-    return { status: 403 as const, body: { type: 'forbidden', message: 'Super-user privilege required' } };
+  if (platformUser.role !== "super_user") {
+    return {
+      status: 403 as const,
+      body: { type: "forbidden", message: "Super-user privilege required" },
+    };
   }
 
   const passwordOk = await verifyPlatformUserPassword(platformUser.id, body.password);
   if (!passwordOk) {
     return {
       status: 401 as const,
-      body: { type: 'invalid_current_password', message: 'Current password is incorrect' },
+      body: { type: "invalid_current_password", message: "Current password is incorrect" },
     };
   }
 
@@ -156,15 +161,15 @@ export async function handleDeleteWorkspace({
     return {
       status: 400 as const,
       body: {
-        type: 'validation_error',
-        message: 'Confirmation subdomain does not match the workspace being deleted',
+        type: "validation_error",
+        message: "Confirmation subdomain does not match the workspace being deleted",
       },
     };
   }
 
   const removed = await deleteWorkspace(params.subdomain);
   if (!removed) {
-    return { status: 404 as const, body: { type: 'not_found', message: 'Workspace not found' } };
+    return { status: 404 as const, body: { type: "not_found", message: "Workspace not found" } };
   }
 
   await blockTenant(params.subdomain);
@@ -172,8 +177,8 @@ export async function handleDeleteWorkspace({
   await insertPlatformActivityLog({
     userId: platformUser.id,
     userEmail: platformUser.email,
-    action: 'delete_workspace',
-    targetResource: 'workspace',
+    action: "delete_workspace",
+    targetResource: "workspace",
     targetId: params.subdomain,
     ipAddress: request.ip,
   });

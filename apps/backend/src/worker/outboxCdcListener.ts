@@ -1,10 +1,10 @@
-import type pg from 'pg';
-import { getPool } from '../db/dbConnection.js';
-import { logger } from '../lib/logger.js';
-import { processOutboxCdcBatch } from './processors/outboxCdcProcessor.js';
-import type { SearchIndexAdapter } from './adapters/searchIndexAdapter.js';
+import type pg from "pg";
+import { getPool } from "../db/dbConnection.js";
+import { logger } from "../lib/logger.js";
+import { processOutboxCdcBatch } from "./processors/outboxCdcProcessor.js";
+import type { SearchIndexAdapter } from "./adapters/searchIndexAdapter.js";
 
-export const OUTBOX_CDC_CHANNEL = 'mms_outbox_events';
+export const OUTBOX_CDC_CHANNEL = "mms_outbox_events";
 
 export interface OutboxCdcListenerOptions {
   fallbackPollIntervalMs?: number;
@@ -48,7 +48,7 @@ export async function startOutboxCdcListener(
         result = await processOutboxCdcBatch(searchAdapter);
       }
     } catch (err) {
-      logger.error({ err }, '[OutboxCdcListener] Batch process error');
+      logger.error({ err }, "[OutboxCdcListener] Batch process error");
     } finally {
       isProcessing = false;
       if (rerunRequested && !isStopped) {
@@ -74,19 +74,19 @@ export async function startOutboxCdcListener(
       const pool = getPool();
       client = await pool.connect();
 
-      client.on('notification', (msg) => {
+      client.on("notification", (msg) => {
         if (msg.channel === OUTBOX_CDC_CHANNEL) {
           scheduleDrain();
         }
       });
 
-      client.on('error', (err) => {
-        logger.warn({ err }, '[OutboxCdcListener] Listener client error, reconnecting');
+      client.on("error", (err) => {
+        logger.warn({ err }, "[OutboxCdcListener] Listener client error, reconnecting");
         cleanupClient();
         scheduleReconnect();
       });
 
-      client.on('end', () => {
+      client.on("end", () => {
         if (!isStopped) {
           cleanupClient();
           scheduleReconnect();
@@ -94,9 +94,12 @@ export async function startOutboxCdcListener(
       });
 
       await client.query(`LISTEN ${OUTBOX_CDC_CHANNEL}`);
-      logger.info({ channel: OUTBOX_CDC_CHANNEL }, '[OutboxCdcListener] Listening for outbox events');
+      logger.info(
+        { channel: OUTBOX_CDC_CHANNEL },
+        "[OutboxCdcListener] Listening for outbox events",
+      );
     } catch (err) {
-      logger.error({ err }, '[OutboxCdcListener] Failed to connect listener');
+      logger.error({ err }, "[OutboxCdcListener] Failed to connect listener");
       cleanupClient();
       scheduleReconnect();
     }

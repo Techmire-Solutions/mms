@@ -1,4 +1,4 @@
-import { ReportChartCard } from '@/components/ui/reports/ReportChartCard';
+import { ReportChartCard } from '@/components/reports/ReportChartCard';
 import type { ComponentProps } from 'react';
 
 /** Shell-only example: supply localized title, actual aggregate data and chart

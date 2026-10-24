@@ -2,6 +2,10 @@ import React, { act } from "react";
 import { createRoot, type Root } from "react-dom/client";
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 import { SessionsCsvImportDialog } from "./SessionsCsvImportDialog";
+vi.mock("@/hooks/useTranslation", async () => {
+  const { useTranslationEnMock } = await import("@/test/useTranslationEnMock");
+  return { useTranslation: useTranslationEnMock() };
+});
 
 vi.mock("@/lib/download", () => ({
   triggerFileDownload: vi.fn(),
@@ -13,12 +17,6 @@ vi.mock("@/lib/notify", () => ({
     error: vi.fn(),
     info: vi.fn(),
   },
-}));
-
-vi.mock("@/hooks/useTranslation", () => ({
-  useTranslation: () => ({
-    t: (_key: string, fallback?: string) => fallback ?? _key,
-  }),
 }));
 
 const mockStartServerImport = vi.fn().mockResolvedValue({
@@ -70,7 +68,7 @@ describe("SessionsCsvImportDialog", () => {
       root.render(<SessionsCsvImportDialog open={true} onClose={vi.fn()} canWrite={true} />);
     });
 
-    expect(document.body.textContent).toContain("common.import");
+    expect(document.body.textContent).toContain("Import");
     expect(document.body.textContent).toContain("Download CSV Template");
 
     const templateBtn = Array.from(document.body.querySelectorAll("button")).find((btn) =>
@@ -82,10 +80,7 @@ describe("SessionsCsvImportDialog", () => {
       templateBtn?.click();
     });
 
-    expect(triggerFileDownload).toHaveBeenCalledWith(
-      expect.any(Blob),
-      "sessions.csv",
-    );
+    expect(triggerFileDownload).toHaveBeenCalledWith(expect.any(Blob), "sessions.csv");
   });
 
   it("accepts a valid exported session CSV and initiates background import", async () => {

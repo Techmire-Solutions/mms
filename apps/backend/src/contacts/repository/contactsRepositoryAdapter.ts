@@ -1,4 +1,4 @@
-import { sql } from 'drizzle-orm';
+import { sql } from "drizzle-orm";
 import {
   countContactsByWorkspace,
   findContactById,
@@ -14,16 +14,16 @@ import {
   findContactDuplicateBlockedIds,
   reparentContactReferences,
   listContactsPage,
-} from '../../db/repositories/contactRepository.js';
+} from "../../db/repositories/contactRepository.js";
 import {
   aggregateContactsCommandMetrics,
   aggregateContactsReportAnalytics,
   aggregateContactsMonthlyCreatedCounts,
   aggregateContactsWidgetQueries,
-} from '../../db/repositories/contactRepositoryAggregates.js';
-import { withTenant } from '../../db/tenant-context.js';
-import { guardContactSoftDeleteForStudents } from '../../db/repositories/studentDeleteGuard.js';
-import type { ContactsRepository } from './contactsRepository.js';
+} from "../../db/repositories/contactRepositoryAggregates.js";
+import { withTenant } from "../../db/tenant-context.js";
+import { guardContactSoftDeleteForStudents } from "../../db/repositories/studentDeleteGuard.js";
+import type { ContactsRepository } from "./contactsRepository.js";
 
 /**
  * Drizzle adapter for `ContactsRepository`.
@@ -42,8 +42,7 @@ function createContactsRepository(): ContactsRepository {
     bulkSave: (tenant, contacts) => bulkSaveContacts(tenant, contacts),
     bulkSoftDelete: (tenant, ids, deletedBy, deletionReason) =>
       bulkSoftDeleteContactsSql(tenant, ids, deletedBy, deletionReason),
-    bulkRestore: (tenant, ids, userId) =>
-      bulkRestoreContactsSql(tenant, ids, userId),
+    bulkRestore: (tenant, ids, userId) => bulkRestoreContactsSql(tenant, ids, userId),
     findExistingNormalizedContactNames: (tenant, names) =>
       findExistingNormalizedContactNames(tenant, names),
     findActiveContactsMatchingUniqueValues: (tenant, values, excludeIds) =>
@@ -60,7 +59,9 @@ function createContactsRepository(): ContactsRepository {
       const sorted = [...new Set(lockKeys.map((key) => key.trim()).filter(Boolean))].sort();
       await withTenant(subdomain, async (tx) => {
         for (const key of sorted) {
-          await tx.execute(sql`SELECT pg_advisory_xact_lock(hashtext(${subdomain}), hashtext(${key}))`);
+          await tx.execute(
+            sql`SELECT pg_advisory_xact_lock(hashtext(${subdomain}), hashtext(${key}))`,
+          );
         }
       });
     },

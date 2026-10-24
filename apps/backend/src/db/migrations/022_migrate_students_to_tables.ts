@@ -4,12 +4,9 @@ import {
   WORKSPACES_COLLECTION,
   type Workspace,
   type Student,
-} from '@mms/shared';
-import {
-  getCollectionByStorageName,
-  listCollectionStorageNames,
-} from '../database.js';
-import { bulkSaveStudents } from '../repositories/studentRepository.js';
+} from "@mms/shared";
+import { getCollectionByStorageName, listCollectionStorageNames } from "../database.js";
+import { bulkSaveStudents } from "../repositories/studentRepository.js";
 
 async function discoverTenantSubdomains(): Promise<Set<string>> {
   const subdomains = new Set<string>();
@@ -33,7 +30,7 @@ export async function runMigration022(): Promise<void> {
   const subdomains = await discoverTenantSubdomains();
 
   for (const subdomain of subdomains) {
-    const studentsKey = `${tenantCollectionKey(subdomain, '')}students`;
+    const studentsKey = `${tenantCollectionKey(subdomain, "")}students`;
     const legacyStudents = await getCollectionByStorageName(studentsKey);
     if (!Array.isArray(legacyStudents) || legacyStudents.length === 0) continue;
 
@@ -46,6 +43,6 @@ export async function runMigration022(): Promise<void> {
   }
 
   if (!changed) {
-    console.log('[Migration 022] No legacy students to import.');
+    console.log("[Migration 022] No legacy students to import.");
   }
 }

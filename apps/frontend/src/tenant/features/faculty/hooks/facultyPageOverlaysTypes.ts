@@ -33,6 +33,7 @@ export type FacultyPageOverlaysProps = {
   idCardFaculty?: Faculty[];
   onCloseIdCards?: () => void;
   onPrintIdCard?: (faculty: Faculty) => void;
+  onFilterSubordinates?: (facultyId: string) => void;
   createDepartmentOpen?: boolean;
   onCloseCreateDepartment?: () => void;
   createDesignationOpen?: boolean;
@@ -55,4 +56,3 @@ export type FacultyWorkOverlayInteractions = Pick<
   | "openIdCardsModal"
   | "closeIdCardsModal"
 >;
-

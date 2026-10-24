@@ -10,7 +10,7 @@ import {
   type FeeEntryInput,
   type SalaryEntryInput,
 } from "@mms/shared";
-import { FormModal } from "@/components/ui/FormModal";
+import { FormModal } from "@/components/app/FormModal";
 import { Form } from "@/components/ui/form";
 import { firstZodFieldError } from "@/lib/forms/translateZodError";
 import { notify } from "@/lib/notify";
@@ -55,7 +55,9 @@ export function SpecializedEntryModal({
   type: SpecializedEntryType;
   accounts: Account[];
   onClose: () => void;
-  onAccountsChange?: (updater: Account[] | ((prev: Account[]) => Account[])) => Promise<void> | void;
+  onAccountsChange?: (
+    updater: Account[] | ((prev: Account[]) => Account[]),
+  ) => Promise<void> | void;
 }): React.JSX.Element {
   return type === "fee" ? (
     <FeeEntryModal onClose={onClose} />
@@ -132,7 +134,9 @@ function SalaryEntryModal({
 }: {
   accounts: Account[];
   onClose: () => void;
-  onAccountsChange?: (updater: Account[] | ((prev: Account[]) => Account[])) => Promise<void> | void;
+  onAccountsChange?: (
+    updater: Account[] | ((prev: Account[]) => Account[]),
+  ) => Promise<void> | void;
 }): React.JSX.Element {
   const { t } = useTranslation();
   const [submitting, setSubmitting] = useState(false);

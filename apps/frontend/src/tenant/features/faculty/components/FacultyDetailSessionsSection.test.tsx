@@ -38,9 +38,7 @@ describe("FacultyDetailSessionsSection Component", () => {
   });
 
   it("renders empty state when assignedClasses is empty", () => {
-    const html = renderToStaticMarkup(
-      <FacultyDetailSessionsSection assignedClasses={[]} />,
-    );
+    const html = renderToStaticMarkup(<FacultyDetailSessionsSection assignedClasses={[]} />);
 
     expect(html).toContain("faculty.detail.noAssignedClasses");
   });

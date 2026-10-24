@@ -13,10 +13,7 @@ vi.mock("@/hooks/useTranslation", () => ({
 describe("FacultyPreferencesSection Component", () => {
   it("renders employee ID sequence configuration with save footer", () => {
     const html = renderToStaticMarkup(
-      <FacultyPreferencesSection
-        settingsDraft={DEFAULT_FACULTY_SETTINGS}
-        upd={vi.fn()}
-      />,
+      <FacultyPreferencesSection settingsDraft={DEFAULT_FACULTY_SETTINGS} upd={vi.fn()} />,
     );
 
     expect(html).toContain("faculty.settings.idSectionTitle");

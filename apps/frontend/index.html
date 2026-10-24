@@ -20,7 +20,12 @@
       href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap"
     />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <meta name="description" content="Secure portal to manage students, attendance, finance, examinations, and question banks for Madrasa Management System (MMS) workspaces." />
+    <!-- Modern Web Guidance: respect-os-text-scale (opt into OS-level dynamic type and accessibility text scaling) -->
+    <meta name="text-scale" content="scale" />
+    <meta
+      name="description"
+      content="Secure portal to manage students, attendance, finance, examinations, and question banks for Madrasa Management System (MMS) workspaces."
+    />
     <meta name="robots" content="noindex, nofollow" />
     <meta name="referrer" content="strict-origin-when-cross-origin" />
     <meta name="color-scheme" content="light dark" />
@@ -35,17 +40,49 @@
   </head>
   <body>
     <noscript>
-      <div style="padding: 2rem; text-align: center; font-family: system-ui, sans-serif;">
+      <div style="padding: 2rem; text-align: center; font-family: system-ui, sans-serif">
         <h2>JavaScript Required</h2>
-        <p>Please enable JavaScript in your browser to access the Madrasa Management System portal.</p>
+        <p>
+          Please enable JavaScript in your browser to access the Madrasa Management System portal.
+        </p>
       </div>
     </noscript>
     <div id="root">
-      <div style="min-height: 100vh; display: flex; align-items: center; justify-content: center; background-color: #fbf9f4; font-family: system-ui, sans-serif;">
-        <div style="width: 32px; height: 32px; border: 3px solid rgba(202, 138, 4, 0.2); border-top-color: #ca8a04; border-radius: 50%; animation: mms-spin 0.8s linear infinite;"></div>
+      <div
+        style="
+          min-height: 100vh;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          background-color: #fbf9f4;
+          font-family: system-ui, sans-serif;
+        "
+      >
+        <div
+          class="mms-initial-spinner"
+          style="
+            width: 32px;
+            height: 32px;
+            border: 3px solid rgba(202, 138, 4, 0.2);
+            border-top-color: #ca8a04;
+            border-radius: 50%;
+            animation: mms-spin 0.8s linear infinite;
+          "
+        ></div>
         <style>
-          @keyframes mms-spin { to { transform: rotate(360deg); } }
-          .dark #root > div { background-color: #171410 !important; }
+          @keyframes mms-spin {
+            to {
+              transform: rotate(360deg);
+            }
+          }
+          @media (prefers-reduced-motion: reduce) {
+            .mms-initial-spinner {
+              animation-duration: 6s !important;
+            }
+          }
+          .dark #root > div {
+            background-color: #171410 !important;
+          }
         </style>
       </div>
     </div>

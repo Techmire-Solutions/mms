@@ -1,8 +1,8 @@
 import { BookOpen, Trash2 } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
-import { FormModal } from "@/components/ui/FormModal";
-import { SectionCard } from "@/components/ui/SectionCard";
+import { FormModal } from "@/components/app/FormModal";
+import { SectionCard } from "@/components/app/SectionCard";
 import { FORM_LABEL } from "@/components/ui/formStyles";
 import {
   QUESTION_SOURCE_FIELD_TO_KEY,
@@ -13,7 +13,10 @@ import {
 } from "@mms/shared";
 import { QuestionSourceInput } from "@/tenant/features/question-bank/components/QuestionSourceInput";
 
-type TranslateFn = (key: import("@mms/shared").AppTranslationKey, params?: Record<string, string | number>) => string;
+type TranslateFn = (
+  key: import("@mms/shared").AppTranslationKey,
+  params?: Record<string, string | number>,
+) => string;
 
 interface QuestionSourceBooksSectionProps {
   sourceBooks: QuestionSourceBook[];
@@ -71,13 +74,23 @@ export function QuestionSourceBooksSection({
       ) : (
         <ul className="space-y-2">
           {sourceBooks.map((book) => (
-            <li key={book.id} className="flex flex-col gap-2 rounded-lg border border-border bg-card px-3 py-2 sm:flex-row sm:items-center sm:justify-between">
+            <li
+              key={book.id}
+              className="flex flex-col gap-2 rounded-lg border border-border bg-card px-3 py-2 sm:flex-row sm:items-center sm:justify-between"
+            >
               <div className="min-w-0">
                 <p className="truncate text-sm font-semibold text-foreground">{book.name}</p>
-                <p className="text-xs text-muted-foreground">{t("questionBank.sourceBookFieldCount", { count: book.fieldIds.length })}</p>
+                <p className="text-xs text-muted-foreground">
+                  {t("questionBank.sourceBookFieldCount", { count: book.fieldIds.length })}
+                </p>
               </div>
               <div className="flex shrink-0 gap-1 self-end sm:self-auto">
-                <Button type="button" variant="outline" onClick={() => onStartEdit(book)} className="min-h-11 rounded-lg border border-border px-2 text-xs font-semibold hover:bg-muted">
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={() => onStartEdit(book)}
+                  className="min-h-11 rounded-lg border border-border px-2 text-xs font-semibold hover:bg-muted"
+                >
                   {t("questionBank.editSourceBook")}
                 </Button>
                 <Button
@@ -129,7 +142,7 @@ export function QuestionSourceBooksSection({
                       variant="outline"
                       onClick={() => fieldId !== "sourceBookName" && onToggleBookField(fieldId)}
                       disabled={fieldId === "sourceBookName"}
-                      className={`min-h-11 rounded-full border px-2.5 text-xs font-semibold ${selected ? "border-primary bg-primary/10 text-primary hover:bg-primary/20 hover:text-primary" : "border-border text-muted-foreground hover:bg-muted"}`}
+                      className={`min-h-11 rounded-full border px-2.5 text-xs font-semibold ${selected ? "border-primary bg-primary/10 text-primary hover:bg-primary/15 hover:text-primary" : "border-border text-muted-foreground hover:bg-muted"}`}
                     >
                       {fieldLabel(fieldId)}
                     </Button>

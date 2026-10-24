@@ -1,5 +1,6 @@
 import React, { type JSX } from "react";
 import type { VirtualItem } from "@tanstack/react-virtual";
+import { TableRow, TableCell } from "@/components/ui/table";
 import { WorkBatchTableRow } from "./WorkBatchTableRow";
 import type { WorkBatchTableColumn } from "./workBatchTableTypes";
 
@@ -41,9 +42,12 @@ export function WorkBatchTableVirtualizedRows<TData extends { id: string | numbe
   return (
     <>
       {virtualItems.length > 0 && (
-        <tr style={{ height: `${virtualItems[0].start}px` }}>
-          <td colSpan={totalColSpan} className="p-0 border-0" />
-        </tr>
+        <TableRow
+          style={{ height: `${virtualItems[0].start}px` }}
+          className="border-0 hover:bg-transparent"
+        >
+          <TableCell colSpan={totalColSpan} className="p-0 border-0" />
+        </TableRow>
       )}
       {virtualItems.map((virtualRow) => {
         const row = activeRows[virtualRow.index];
@@ -70,13 +74,14 @@ export function WorkBatchTableVirtualizedRows<TData extends { id: string | numbe
         );
       })}
       {virtualItems.length > 0 && (
-        <tr
+        <TableRow
           style={{
             height: `${totalSize - virtualItems[virtualItems.length - 1].end}px`,
           }}
+          className="border-0 hover:bg-transparent"
         >
-          <td colSpan={totalColSpan} className="p-0 border-0" />
-        </tr>
+          <TableCell colSpan={totalColSpan} className="p-0 border-0" />
+        </TableRow>
       )}
     </>
   );

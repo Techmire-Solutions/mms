@@ -10,7 +10,8 @@ import { ROUTES } from "@/lib/config/routes";
  * 2. Otherwise → redirect to `/platform/login`
  */
 export default function ApexHome(): React.JSX.Element {
-  const { isPlatformAuthenticated, platformAuthChecked, isCheckingPlatformAuth } = usePlatformAuth();
+  const { isPlatformAuthenticated, platformAuthChecked, isCheckingPlatformAuth } =
+    usePlatformAuth();
 
   if (!platformAuthChecked || isCheckingPlatformAuth) {
     return <RouteStatusFallback fullScreen />;

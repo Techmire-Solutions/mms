@@ -17,7 +17,7 @@ const mockConfig = {
   isFieldEnabled: () => true,
   fieldLabel: (_id: string, label: string) => label,
   questionLanguageLabel: (lang?: string) => lang || "en",
-} as any;
+} as unknown as never;
 
 const baseProps = {
   questions: [

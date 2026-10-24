@@ -4,7 +4,7 @@ description: Adds or changes field/tab registries, module Setup Fields UI, and f
 license: Proprietary
 metadata:
   owner: mms-platform
-  last-verified: 2026-10-04
+  last-verified: 2026-10-16
 ---
 
 # MMS Field & Tab Registry
@@ -22,7 +22,7 @@ metadata:
 - **Field Schema**: `{ key, label, labelKey?, type, enabled, order, options, permissions, defaultValue, required?, unique? }`.
 - **Tab Schema**: `{ key, label, labelKey?, icon, enabled, order, permissions, description, color, isSystem }`.
 - **Metadata Rule**: `isSystem` is informative metadata only; never branch core rendering or domain behaviour on it.
-- **Sorted fields**: Use `getSortedFields` from `packages/shared/src/moduleFieldSchema.ts` (not a hook named `useSortedFields`).
+- **Sorted fields**: Use `getSortedFields` from `packages/shared/src/settings/moduleFieldSchema.ts` (not a hook named `useSortedFields`).
 
 ## 2. Field Persistence Gate
 
@@ -36,8 +36,8 @@ Every new or modified field must complete:
 
 | Concern | Path / symbol |
 |---------|----------------|
-| Sort helper | `packages/shared/src/moduleFieldSchema.ts` (`getSortedFields`) |
-| Removal guards | `packages/shared/src/contactFieldDependencies.ts` (`getContactFieldRemovalIssues`), faculty/student siblings, `createFieldRemovalIssuesChecker` |
+| Sort helper | `packages/shared/src/settings/moduleFieldSchema.ts` (`getSortedFields`) |
+| Removal guards | `packages/shared/src/contacts/contactFieldDependencies.ts` (`getContactFieldRemovalIssues`), faculty/student siblings, `createFieldRemovalIssuesChecker` |
 | Setup routes | `apps/backend/src/lib/registerModuleSetupConfigRoutes.ts` |
 | Column layout | `useModuleColumnLayout` |
 | Descriptors | `createEntityDescriptorFromFieldConfig` |

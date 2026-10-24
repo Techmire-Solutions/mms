@@ -1,16 +1,16 @@
-import type { FastifyPluginAsync } from 'fastify';
+import type { FastifyPluginAsync } from "fastify";
 import {
   OBLIGATIONS_MODULE_MANIFEST,
   obligationsCsvExportBodySchema,
   obligationsImportBodySchema,
-} from '@mms/shared';
-import { registerModuleCsvExportRoutes } from '../../../lib/registerModuleCsvExportRoutes.js';
-import { registerModuleCsvImportRoutes } from '../../../lib/registerModuleCsvImportRoutes.js';
+} from "@mms/shared";
+import { registerModuleCsvExportRoutes } from "../../../lib/registerModuleCsvExportRoutes.js";
+import { registerModuleCsvImportRoutes } from "../../../lib/registerModuleCsvImportRoutes.js";
 import {
   canDeleteCollection,
   canReadCollection,
   canWriteCollection,
-} from '../../../services/rbacService.js';
+} from "../../../services/rbacService.js";
 
 const COLLECTION = OBLIGATIONS_MODULE_MANIFEST.collectionKey;
 
@@ -21,18 +21,18 @@ export const obligationsExportRoutes: FastifyPluginAsync = async (fastify) => {
     canDeleteTrash: (user) => canDeleteCollection(user, COLLECTION),
     bodySchema: obligationsCsvExportBodySchema,
     moduleId: OBLIGATIONS_MODULE_MANIFEST.moduleId,
-    defaultLabel: 'Exporting obligations…',
-    entityNoun: 'obligation',
-    exportAuditAction: 'obligation.export',
-    queueAuditAction: 'obligation.export.queue',
+    defaultLabel: "Exporting obligations…",
+    entityNoun: "obligation",
+    exportAuditAction: "obligation.export",
+    queueAuditAction: "obligation.export.queue",
   });
 
   registerModuleCsvImportRoutes(fastify, {
     canWrite: (user) => canWriteCollection(user, COLLECTION),
     bodySchema: obligationsImportBodySchema,
     moduleId: OBLIGATIONS_MODULE_MANIFEST.moduleId,
-    defaultLabel: 'Importing obligations…',
-    entityNoun: 'obligation',
-    queueAuditAction: 'obligation.import',
+    defaultLabel: "Importing obligations…",
+    entityNoun: "obligation",
+    queueAuditAction: "obligation.import",
   });
 };

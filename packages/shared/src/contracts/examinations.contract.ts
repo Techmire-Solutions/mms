@@ -1,19 +1,19 @@
-import { initContract } from '@ts-rest/core';
-import { z } from 'zod';
-import { baseListQuerySchema, softDeleteBodySchema } from '../apiSchemas.js';
+import { initContract } from "@ts-rest/core";
+import { z } from "zod";
+import { baseListQuerySchema, softDeleteBodySchema } from "../core/apiSchemas.js";
 import {
   examRecordSchema,
   examResultRecordSchema,
   examListSchema,
   examResultListSchema,
-} from '../examinationsModuleManifest.js';
-import { examinationsReportAggregatesSchema } from '../examinationsReportAggregates.js';
-import { reportComparisonQuerySchema } from '../reportComparisonQuery.js';
-import { widgetAggregatesBodySchema } from '../schemas/common.dto.js';
+} from "../examinations/examinationsModuleManifest.js";
+import { examinationsReportAggregatesSchema } from "../examinations/examinationsReportAggregates.js";
+import { reportComparisonQuerySchema } from "../reports/reportComparisonQuery.js";
+import { widgetAggregatesBodySchema } from "../schemas/common.dto.js";
 import {
   examinationsFieldConfigPutBodySchema,
   examinationsPreferencesPutBodySchema,
-} from '../examinationsSetupConfigTypes.js';
+} from "../examinations/examinationsSetupConfigTypes.js";
 
 const c = initContract();
 const errorResponse = z.object({ type: z.string(), message: z.string() }).passthrough();
@@ -60,123 +60,139 @@ const examinationsWidgetAggregateResultSchema = z.object({
 
 export const examinationContract = c.router({
   listExams: {
-    method: 'GET',
-    path: '/api/examinations/exams',
+    method: "GET",
+    path: "/api/examinations/exams",
     query: baseListQuerySchema,
     responses: {
-      200: z.union([
-        z.object({ exams: z.array(examRecordSchema) }),
-        examsPageResponseSchema,
-      ]),
+      200: z.union([z.object({ exams: z.array(examRecordSchema) }), examsPageResponseSchema]),
       403: ok,
       500: ok,
     },
-    summary: 'List exams',
+    summary: "List exams",
   },
   bulkDeleteExams: {
-    method: 'POST',
-    path: '/api/examinations/exams/bulk-delete',
+    method: "POST",
+    path: "/api/examinations/exams/bulk-delete",
     body: bulkIds,
     responses: { 200: examinationBulkResultResponseSchema, 403: ok, 500: ok },
-    summary: 'Bulk soft-delete exams',
+    summary: "Bulk soft-delete exams",
   },
   bulkRestoreExams: {
-    method: 'POST',
-    path: '/api/examinations/exams/bulk-restore',
+    method: "POST",
+    path: "/api/examinations/exams/bulk-restore",
     body: bulkIds,
     responses: { 200: examinationBulkResultResponseSchema, 403: ok, 500: ok },
-    summary: 'Bulk restore exams',
+    summary: "Bulk restore exams",
   },
   listResults: {
-    method: 'GET',
-    path: '/api/examinations/results',
+    method: "GET",
+    path: "/api/examinations/results",
     query: z.object({}).optional(),
     responses: { 200: z.array(examResultRecordSchema), 403: ok, 500: ok },
-    summary: 'List exam results',
+    summary: "List exam results",
   },
   bulkUpdateExams: {
-    method: 'PUT',
-    path: '/api/examinations/exams/bulk',
+    method: "PUT",
+    path: "/api/examinations/exams/bulk",
     body: examListSchema,
     responses: { 200: z.object({ exams: z.array(examRecordSchema) }), 403: ok, 500: ok },
-    summary: 'Bulk upsert exams',
+    summary: "Bulk upsert exams",
   },
   bulkUpdateResults: {
-    method: 'PUT',
-    path: '/api/examinations/results/bulk',
+    method: "PUT",
+    path: "/api/examinations/results/bulk",
     body: examResultListSchema,
     responses: { 200: z.object({ results: z.array(examResultRecordSchema) }), 403: ok, 500: ok },
-    summary: 'Bulk upsert exam results',
+    summary: "Bulk upsert exam results",
   },
   deleteExam: {
-    method: 'DELETE',
-    path: '/api/examinations/exams/:id',
+    method: "DELETE",
+    path: "/api/examinations/exams/:id",
     body: softDeleteBodySchema.optional(),
     responses: { 200: z.object({ success: z.literal(true) }), 403: ok, 500: ok },
-    summary: 'Soft delete an exam',
+    summary: "Soft delete an exam",
   },
   restoreExam: {
-    method: 'POST',
-    path: '/api/examinations/exams/:id/restore',
+    method: "POST",
+    path: "/api/examinations/exams/:id/restore",
     body: z.object({}).optional(),
     responses: { 200: z.object({ success: z.literal(true) }), 403: ok, 500: ok },
-    summary: 'Restore a soft deleted exam',
+    summary: "Restore a soft deleted exam",
   },
   widgetAggregates: {
-    method: 'POST',
-    path: '/api/examinations/widget-aggregates',
+    method: "POST",
+    path: "/api/examinations/widget-aggregates",
     body: widgetAggregatesBodySchema,
     responses: {
       200: z.record(z.string(), examinationsWidgetAggregateResultSchema),
       403: errorResponse,
       500: errorResponse,
     },
-    summary: 'Get widget aggregates',
+    summary: "Get widget aggregates",
   },
   reportAggregates: {
-    method: 'GET',
-    path: '/api/examinations/report-aggregates',
+    method: "GET",
+    path: "/api/examinations/report-aggregates",
     query: reportComparisonQuerySchema.optional(),
     responses: { 200: examinationsReportAggregatesSchema, 403: errorResponse, 500: errorResponse },
-    summary: 'Get report aggregates',
+    summary: "Get report aggregates",
   },
 
   getFieldConfig: {
-    method: 'GET',
-    path: '/api/examinations/field-config',
-    responses: { 200: z.object({ config: z.record(z.string(), z.unknown()).nullable() }), 403: errorResponse, 500: errorResponse },
-    summary: 'Get field config',
+    method: "GET",
+    path: "/api/examinations/field-config",
+    responses: {
+      200: z.object({ config: z.record(z.string(), z.unknown()).nullable() }),
+      403: errorResponse,
+      500: errorResponse,
+    },
+    summary: "Get field config",
   },
   updateFieldConfig: {
-    method: 'PUT',
-    path: '/api/examinations/field-config',
+    method: "PUT",
+    path: "/api/examinations/field-config",
     body: examinationsFieldConfigPutBodySchema,
-    responses: { 200: z.object({ success: z.literal(true), config: z.record(z.string(), z.unknown()) }), 403: errorResponse, 500: errorResponse },
-    summary: 'Update field config',
+    responses: {
+      200: z.object({ success: z.literal(true), config: z.record(z.string(), z.unknown()) }),
+      403: errorResponse,
+      500: errorResponse,
+    },
+    summary: "Update field config",
   },
   getPreferences: {
-    method: 'GET',
-    path: '/api/examinations/preferences',
-    responses: { 200: z.object({ preferences: examinationsPreferencesResponseSchema }), 403: errorResponse, 500: errorResponse },
-    summary: 'Get preferences',
+    method: "GET",
+    path: "/api/examinations/preferences",
+    responses: {
+      200: z.object({ preferences: examinationsPreferencesResponseSchema }),
+      403: errorResponse,
+      500: errorResponse,
+    },
+    summary: "Get preferences",
   },
   updatePreferences: {
-    method: 'PUT',
-    path: '/api/examinations/preferences',
+    method: "PUT",
+    path: "/api/examinations/preferences",
     body: examinationsPreferencesPutBodySchema,
-    responses: { 200: z.object({ success: z.literal(true), preferences: examinationsPreferencesResponseSchema }), 403: errorResponse, 500: errorResponse },
-    summary: 'Update preferences',
+    responses: {
+      200: z.object({
+        success: z.literal(true),
+        preferences: examinationsPreferencesResponseSchema,
+      }),
+      403: errorResponse,
+      500: errorResponse,
+    },
+    summary: "Update preferences",
   },
   getLookups: {
-    method: 'GET',
-    path: '/api/examinations/lookups',
+    method: "GET",
+    path: "/api/examinations/lookups",
     responses: { 200: z.unknown(), 403: errorResponse, 500: errorResponse },
-    summary: 'Get all lookups',
+    summary: "Get all lookups",
   },
   getLookupKind: {
-    method: 'GET',
-    path: '/api/examinations/lookups/:kind',
+    method: "GET",
+    path: "/api/examinations/lookups/:kind",
     responses: { 200: z.unknown(), 403: errorResponse, 500: errorResponse },
-    summary: 'Get a specific lookup kind',
+    summary: "Get a specific lookup kind",
   },
 });

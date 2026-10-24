@@ -3,20 +3,13 @@
  * @description Tasks Reports tier — KPI cards, Recharts series, and execution health.
  */
 
-import React from 'react';
-import {
-  CheckCircle2,
-  Clock,
-  AlertTriangle,
-  RotateCcw,
-  ListTodo,
-  TrendingUp,
-} from 'lucide-react';
-import { useTaskMetrics } from '@/tenant/features/tasks/hooks/useTasksApi';
-import { StatsSkeleton } from '@/components/ui/LoadingState';
-import { ModuleCommandMetricsGrid } from '@/components/ui/ModuleCommandMetricsGrid';
-import { useTranslation } from '@/hooks/useTranslation';
-import { TasksReportsCharts } from './TasksReportsCharts';
+import React from "react";
+import { CheckCircle2, Clock, AlertTriangle, RotateCcw, ListTodo, TrendingUp } from "lucide-react";
+import { useTaskMetrics } from "@/tenant/features/tasks/hooks/useTasksApi";
+import { StatsSkeleton } from "@shared/ui";
+import { ModuleCommandMetricsGrid } from "@/components/app/ModuleCommandMetricsGrid";
+import { useTranslation } from "@/hooks/useTranslation";
+import { TasksReportsCharts } from "./TasksReportsCharts";
 
 export function TasksReportsTab(): React.JSX.Element {
   const { t } = useTranslation();
@@ -46,17 +39,47 @@ export function TasksReportsTab(): React.JSX.Element {
     <div className="space-y-6">
       <ModuleCommandMetricsGrid
         items={[
-          { key: 'total', label: t('tasks.metrics.total'), value: m.total, icon: ListTodo, accent: 'primary' },
-          { key: 'inProgress', label: t('tasks.metrics.inProgress'), value: m.inProgress, icon: Clock, accent: 'warning' },
-          { key: 'completed', label: t('tasks.metrics.completed'), value: m.completed, icon: CheckCircle2, accent: 'success' },
-          { key: 'blocked', label: t('tasks.metrics.blocked'), value: m.blocked, icon: AlertTriangle, accent: 'destructive' },
-          { key: 'overdue', label: t('tasks.metrics.overdue'), value: m.overdue, icon: RotateCcw, accent: 'destructive' },
           {
-            key: 'completionRate',
-            label: t('tasks.metrics.completionRate'),
+            key: "total",
+            label: t("tasks.metrics.total"),
+            value: m.total,
+            icon: ListTodo,
+            accent: "primary",
+          },
+          {
+            key: "inProgress",
+            label: t("tasks.metrics.inProgress"),
+            value: m.inProgress,
+            icon: Clock,
+            accent: "warning",
+          },
+          {
+            key: "completed",
+            label: t("tasks.metrics.completed"),
+            value: m.completed,
+            icon: CheckCircle2,
+            accent: "success",
+          },
+          {
+            key: "blocked",
+            label: t("tasks.metrics.blocked"),
+            value: m.blocked,
+            icon: AlertTriangle,
+            accent: "destructive",
+          },
+          {
+            key: "overdue",
+            label: t("tasks.metrics.overdue"),
+            value: m.overdue,
+            icon: RotateCcw,
+            accent: "destructive",
+          },
+          {
+            key: "completionRate",
+            label: t("tasks.metrics.completionRate"),
             value: `${completionRate}%`,
             icon: TrendingUp,
-            accent: 'primary',
+            accent: "primary",
           },
         ]}
       />
@@ -66,33 +89,35 @@ export function TasksReportsTab(): React.JSX.Element {
       <div className="rounded-lg border border-border bg-card p-5 shadow-xs space-y-4">
         <div>
           <h3 className="font-semibold text-sm text-foreground mb-1">
-            {t('tasks.reports.executionHealth')}
+            {t("tasks.reports.executionHealth")}
           </h3>
           <p className="text-xs text-muted-foreground text-wrap-pretty">
-            {t('tasks.reports.executionHealthHint')}
+            {t("tasks.reports.executionHealthHint")}
           </p>
         </div>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
           <div className="flex items-center justify-between p-3 rounded-md bg-muted/40 border border-border/50">
-            <span className="text-xs font-medium text-foreground">{t('tasks.reports.onTime')}</span>
+            <span className="text-xs font-medium text-foreground">{t("tasks.reports.onTime")}</span>
             <span className="text-sm font-bold text-success">{onTimeRate}%</span>
           </div>
           <div className="flex items-center justify-between p-3 rounded-md bg-muted/40 border border-border/50">
-            <span className="text-xs font-medium text-foreground">{t('tasks.metrics.blocked')}</span>
+            <span className="text-xs font-medium text-foreground">
+              {t("tasks.metrics.blocked")}
+            </span>
             <span
               className={`text-sm font-bold ${
-                m.blocked > 0 ? 'text-destructive' : 'text-muted-foreground'
+                m.blocked > 0 ? "text-destructive" : "text-muted-foreground"
               }`}
             >
-              {t('tasks.reports.blockedCount', { count: m.blocked })}
+              {t("tasks.reports.blockedCount", { count: m.blocked })}
             </span>
           </div>
           <div className="flex items-center justify-between p-3 rounded-md bg-muted/40 border border-border/50">
             <span className="text-xs font-medium text-foreground">
-              {t('tasks.reports.activeWorkload')}
+              {t("tasks.reports.activeWorkload")}
             </span>
             <span className="text-sm font-bold text-primary">
-              {t('tasks.reports.inFlight', { count: m.inProgress + m.inReview })}
+              {t("tasks.reports.inFlight", { count: m.inProgress + m.inReview })}
             </span>
           </div>
         </div>

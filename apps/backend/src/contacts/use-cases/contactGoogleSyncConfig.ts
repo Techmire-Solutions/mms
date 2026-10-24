@@ -1,10 +1,10 @@
-import { requireTenant } from '../../lib/tenantContext.js';
+import { requireTenant } from "../../lib/tenantContext.js";
 import {
   deleteContactGoogleSyncCredentials,
   findContactGoogleSyncCredentials,
   upsertContactGoogleSyncCredentials,
   type ContactGoogleSyncCredentialRecord,
-} from '../../db/repositories/contactGoogleSyncRepository.js';
+} from "../../db/repositories/contactGoogleSyncRepository.js";
 
 export type ContactGoogleSyncConfig = ContactGoogleSyncCredentialRecord;
 
@@ -21,17 +21,17 @@ export class GoogleOAuthExchangeError extends Error {
 
   constructor(message: string, code?: string) {
     super(message);
-    this.name = 'GoogleOAuthExchangeError';
+    this.name = "GoogleOAuthExchangeError";
     this.code = code;
   }
 }
 
 export class GoogleSyncError extends Error {
-  readonly code: 'not_connected' | 'session_expired' | 'api_error';
+  readonly code: "not_connected" | "session_expired" | "api_error";
 
-  constructor(message: string, code: 'not_connected' | 'session_expired' | 'api_error') {
+  constructor(message: string, code: "not_connected" | "session_expired" | "api_error") {
     super(message);
-    this.name = 'GoogleSyncError';
+    this.name = "GoogleSyncError";
     this.code = code;
   }
 }
@@ -54,7 +54,9 @@ export async function clearContactGoogleSyncConfig(userId: string): Promise<void
   await deleteContactGoogleSyncCredentials(requireTenant(), userId);
 }
 
-export async function clearGoogleSyncTokens(userId: string): Promise<ContactGoogleSyncConfigClient> {
+export async function clearGoogleSyncTokens(
+  userId: string,
+): Promise<ContactGoogleSyncConfigClient> {
   const existing = await getContactGoogleSyncConfig(userId);
   const saved = await setContactGoogleSyncConfig(userId, {
     ...existing,

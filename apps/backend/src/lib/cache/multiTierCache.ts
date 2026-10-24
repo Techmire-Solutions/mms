@@ -1,6 +1,6 @@
-import { LRUCache } from 'lru-cache';
-import { redisGet, redisSet } from '../redis.js';
-import { logger } from '../logger.js';
+import { LRUCache } from "lru-cache";
+import { redisGet, redisSet } from "../redis.js";
+import { logger } from "../logger.js";
 
 export interface MultiTierCacheOptions {
   /** Time-to-live in seconds for L1 and L2 (default: 300s = 5m) */
@@ -27,15 +27,21 @@ const DEFAULT_L1_MAX_ITEMS = 5000;
 /** Hard heap-byte ceiling for L1 in-process LRU cache (50 MB) */
 export const L1_MAX_HEAP_BYTES = 50 * 1024 * 1024;
 
+/**
+ * L1 entries are any non-nullish JSON-serialisable payload. `lru-cache`'s value
+ * type parameter is constrained to `{}`, so `unknown` is not permitted here.
+ */
+export type CacheValue = NonNullable<unknown>;
+
 // Shared L1 LRU Cache with item count and heap byte ceilings
-export const l1LruCache = new LRUCache<string, any>({
+export const l1LruCache = new LRUCache<string, CacheValue>({
   max: DEFAULT_L1_MAX_ITEMS,
   maxSize: L1_MAX_HEAP_BYTES,
   sizeCalculation: (value, key) => {
     try {
       if (value === null || value === undefined) return 64;
-      if (typeof value === 'string') return value.length * 2 + key.length * 2;
-      if (typeof value === 'number' || typeof value === 'boolean') return 64;
+      if (typeof value === "string") return value.length * 2 + key.length * 2;
+      if (typeof value === "number" || typeof value === "boolean") return 64;
       if (Buffer.isBuffer(value)) return value.byteLength + key.length * 2;
       return JSON.stringify(value).length * 2 + key.length * 2;
     } catch {
@@ -43,7 +49,7 @@ export const l1LruCache = new LRUCache<string, any>({
     }
   },
   dispose: (_value, _key, reason) => {
-    if (reason === 'evict') {
+    if (reason === "evict") {
       metrics.evictions++;
     }
   },
@@ -77,7 +83,7 @@ const metrics: MultiTierCacheMetrics = {
  * Format: `tenant:<tenantId>:<domain>:<key>`
  */
 export function buildCacheKey(tenantId: string, domain: string, key: string): string {
-  if (key.startsWith('mms:') || key.startsWith('tenant:')) {
+  if (key.startsWith("mms:") || key.startsWith("tenant:")) {
     return key;
   }
   const normalizedTenant = tenantId.trim().toLowerCase();
@@ -88,7 +94,7 @@ export function buildCacheKey(tenantId: string, domain: string, key: string): st
 
 /**
  * Multi-Tier Cache Getter with Cache Stampede Protection (Promise Coalescing).
- * 
+ *
  * Flow:
  * 1. L1 LRU in-process lookup (0ms event loop latency, 0 I/O)
  * 2. L2 Redis lookup (sub-millisecond distributed cache)
@@ -120,17 +126,17 @@ export async function getOrSetMultiTier<T>(
       try {
         const parsed = JSON.parse(l2Cached) as T;
         // Populate L1 LRU cache
-        l1LruCache.set(cacheKey, parsed, { ttl: ttlSeconds * 1000 });
+        l1LruCache.set(cacheKey, parsed as CacheValue, { ttl: ttlSeconds * 1000 });
         return parsed;
       } catch (err) {
-        logger.warn({ err, cacheKey }, 'Failed to parse JSON from L2 Redis cache; refreshing');
+        logger.warn({ err, cacheKey }, "Failed to parse JSON from L2 Redis cache; refreshing");
       }
     } else {
       metrics.l2Misses++;
     }
   } catch (err) {
     metrics.l2Misses++;
-    logger.warn({ err, cacheKey }, 'L2 Redis cache read error; bypassing to database fetcher');
+    logger.warn({ err, cacheKey }, "L2 Redis cache read error; bypassing to database fetcher");
   }
 
   // 3. Cache Stampede Protection: Coalesce concurrent in-flight fetches for the same key
@@ -145,13 +151,13 @@ export async function getOrSetMultiTier<T>(
       const freshValue = await fetcher();
 
       // Populate L1 LRU cache
-      l1LruCache.set(cacheKey, freshValue, { ttl: ttlSeconds * 1000 });
+      l1LruCache.set(cacheKey, freshValue as CacheValue, { ttl: ttlSeconds * 1000 });
 
       // Populate L2 Redis cache asynchronously
       try {
         await redisSet(cacheKey, JSON.stringify(freshValue), ttlSeconds);
       } catch (err) {
-        logger.warn({ err, cacheKey }, 'Failed to populate L2 Redis cache');
+        logger.warn({ err, cacheKey }, "Failed to populate L2 Redis cache");
       }
 
       metrics.sets++;

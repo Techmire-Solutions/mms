@@ -1,112 +1,89 @@
-import { buildTenantExportFilename, CONTACTS_MODULE_MANIFEST, ENROLLMENTS_MODULE_MANIFEST, MESSAGING_MODULE_MANIFEST, SESSIONS_MODULE_MANIFEST, STUDENTS_MODULE_MANIFEST, FACULTY_MODULE_MANIFEST, USERS_MODULE_MANIFEST } from '@mms/shared';
-import type { ContactExportColumn, ContactsImportJobPayload, EnrollmentExportColumn, MessagingCsvExportQueryDto, SessionExportColumn, StudentExportColumn, FacultyExportColumn } from '@mms/shared';
-import type { ContactsExportQueryInput } from './contactsExportService.js';
-import { buildContactsCsvExport, generateContactsCsvStreamChunks } from './contactsExportService.js';
-import { buildContactsVcfExport } from './contactsVcfExportService.js';
-import type { StudentsExportQueryInput } from './studentsExportService.js';
-import { buildStudentsCsvExport, generateStudentsCsvStreamChunks } from './studentsExportService.js';
-import type { FacultyExportQueryInput } from './facultyExportService.js';
-import { buildFacultyCsvExport, generateFacultyCsvStreamChunks } from './facultyExportService.js';
-import type { SessionsExportQueryInput } from './sessionsExportService.js';
-import { buildSessionsCsvExport, generateSessionsCsvStreamChunks } from './sessionsExportService.js';
-import type { EnrollmentsExportQueryInput } from './enrollmentsExportService.js';
-import { buildEnrollmentsCsvExport, generateEnrollmentsCsvStreamChunks } from './enrollmentsExportService.js';
-import type { UsersExportQueryInput } from './usersExportService.js';
-import { buildUsersCsvExport, generateUsersCsvStreamChunks } from './usersExportService.js';
-
-/** Cap on ledger entries carried in the `finance:export-excel` job payload. */
-const MAX_EXCEL_PAYLOAD_ENTRIES = 50_000;
-import { buildMessagingCsvExport, generateMessagingCsvStreamChunks } from './messagingExportService.js';
-import { saveExportArtifact, saveStreamedExportArtifact } from './exportArtifactService.js';
-import { runContactsDuplicateScan } from './contactDuplicateScanService.js';
+import { randomUUID } from "node:crypto";
+import {
+  buildTenantExportFilename,
+  CONTACTS_MODULE_MANIFEST,
+  ENROLLMENTS_MODULE_MANIFEST,
+  MESSAGING_MODULE_MANIFEST,
+  SESSIONS_MODULE_MANIFEST,
+  STUDENTS_MODULE_MANIFEST,
+  USERS_MODULE_MANIFEST,
+} from "@mms/shared";
+import type {
+  ContactExportColumn,
+  ContactsImportJobPayload,
+  EnrollmentExportColumn,
+  MessagingCsvExportQueryDto,
+  SessionExportColumn,
+  StudentExportColumn,
+  UserExportColumn,
+} from "@mms/shared";
+import type { ContactsExportQueryInput } from "../contacts/use-cases/contactExportUseCases.js";
+import {
+  buildContactsCsvExport,
+  generateContactsCsvStreamChunks,
+} from "../contacts/use-cases/contactExportUseCases.js";
+import { buildContactsVcfExport } from "./contactsVcfExportService.js";
+import type { StudentsExportQueryInput } from "./studentsExportService.js";
+import {
+  buildStudentsCsvExport,
+  generateStudentsCsvStreamChunks,
+} from "./studentsExportService.js";
+import type { SessionsExportQueryInput } from "./sessionsExportService.js";
+import {
+  buildSessionsCsvExport,
+  generateSessionsCsvStreamChunks,
+} from "./sessionsExportService.js";
+import type { EnrollmentsExportQueryInput } from "./enrollmentsExportService.js";
+import {
+  buildEnrollmentsCsvExport,
+  generateEnrollmentsCsvStreamChunks,
+} from "./enrollmentsExportService.js";
+import type { UsersExportQueryInput } from "./usersExportService.js";
+import { buildUsersCsvExport, generateUsersCsvStreamChunks } from "./usersExportService.js";
+import {
+  buildMessagingCsvExport,
+  generateMessagingCsvStreamChunks,
+} from "./messagingExportService.js";
+import { saveExportArtifact } from "./exportArtifactService.js";
+import { runContactsDuplicateScan } from "../contacts/use-cases/contactDuplicateScanUseCases.js";
 import {
   buildContactsImportJobLabel,
   runContactsImportJob,
-} from '../contacts/use-cases/contactImportJobUseCases.js';
+} from "../contacts/use-cases/contactImportJobUseCases.js";
+import { registerBackgroundJobRunner } from "./backgroundJobWorkerService.js";
+import { registerSessionRolloverJobRunner } from "../sessions/use-cases/sessionRolloverJob.js";
+import { registerModuleCsvExportJobRunner } from "../lib/registerModuleCsvExportJobRunner.js";
+import { registerModuleCsvImportJobRunner } from "../lib/registerModuleCsvImportJobRunner.js";
+import { messagingUseCases } from "../messaging/use-cases/messagingUseCases.js";
+import { registerMessagingCampaignJobRunner } from "./messagingCampaignJobRunner.js";
+import { registerFacultyBackgroundJobRunners } from "./backgroundJobFacultyRunners.js";
 import {
-  buildFacultyImportJobLabel,
-  runFacultyMembersImportJob,
-} from '../faculty/use-cases/facultyImportJobUseCases.js';
-import {
-  buildCatalogImportJobLabel,
-  runFacultyDepartmentsImportJob,
-  runFacultyDesignationsImportJob,
-} from '../faculty/use-cases/facultyCatalogImportJobUseCases.js';
-import {
-  buildFacultyDepartmentsCsvExport,
-  buildFacultyDesignationsCsvExport,
-} from './facultyCatalogExportService.js';
-import { registerBackgroundJobRunner } from './backgroundJobWorkerService.js';
-import { registerModuleCsvExportJobRunner } from '../lib/registerModuleCsvExportJobRunner.js';
-import type { FacultyImportJobPayload } from '@mms/shared';
+  registerDocumentAndFinanceJobRunners,
+  MAX_EXCEL_PAYLOAD_ENTRIES,
+} from "./backgroundJobDocumentFinanceRunners.js";
+import type { ContactsVcfExportJobPayload } from "./backgroundJobPayloads.js";
 
-export interface ContactsExportJobPayload {
-  query?: ContactsExportQueryInput;
-  columns?: ContactExportColumn[];
-  filename?: string;
-  label?: string;
-  viewerRole: string;
-  /** Enqueue-time privilege — runner must not honor includeDeleted without this. */
-  allowDeleted?: boolean;
-}
-
-export interface ContactsVcfExportJobPayload {
-  filename?: string;
-  label?: string;
-}
-
-export interface StudentsExportJobPayload {
-  query?: StudentsExportQueryInput;
-  columns?: StudentExportColumn[];
-  filename?: string;
-  label?: string;
-  viewerRole: string;
-  allowDeleted?: boolean;
-}
-
-export interface SessionsExportJobPayload {
-  query?: SessionsExportQueryInput;
-  columns?: SessionExportColumn[];
-  filename?: string;
-  label?: string;
-  viewerRole: string;
-  allowDeleted?: boolean;
-}
-
-export interface FacultyExportJobPayload {
-  query?: FacultyExportQueryInput;
-  columns?: FacultyExportColumn[];
-  filename?: string;
-  label?: string;
-  viewerRole: string;
-  allowDeleted?: boolean;
-}
-
-export interface EnrollmentsExportJobPayload {
-  query?: EnrollmentsExportQueryInput;
-  columns?: EnrollmentExportColumn[];
-  filename?: string;
-  label?: string;
-  viewerRole: string;
-  allowDeleted?: boolean;
-}
-
-export interface MessagingExportJobPayload {
-  query?: MessagingCsvExportQueryDto;
-  filename?: string;
-  label?: string;
-}
+export { MAX_EXCEL_PAYLOAD_ENTRIES };
+export type {
+  ContactsExportJobPayload,
+  ContactsVcfExportJobPayload,
+  StudentsExportJobPayload,
+  SessionsExportJobPayload,
+  FacultyExportJobPayload,
+  EnrollmentsExportJobPayload,
+  MessagingExportJobPayload,
+} from "./backgroundJobPayloads.js";
 
 export function registerDefaultBackgroundJobRunners(): void {
   const contactsModuleId = CONTACTS_MODULE_MANIFEST.moduleId;
   const messagingModuleId = MESSAGING_MODULE_MANIFEST.moduleId;
   const studentsModuleId = STUDENTS_MODULE_MANIFEST.moduleId;
-  const facultyModuleId = FACULTY_MODULE_MANIFEST.moduleId;
   const sessionsModuleId = SESSIONS_MODULE_MANIFEST.moduleId;
+  registerSessionRolloverJobRunner();
 
   registerModuleCsvExportJobRunner({
     moduleId: contactsModuleId,
-    entityNounPlural: 'contacts',
+    entityNounPlural: "contacts",
     buildExport: (query, options) =>
       buildContactsCsvExport(query as ContactsExportQueryInput, {
         columns: options.columns as ContactExportColumn[] | undefined,
@@ -128,7 +105,7 @@ export function registerDefaultBackgroundJobRunners(): void {
     await ctx.updateProgress(0, 1);
     const targetFilename = buildTenantExportFilename(
       ctx.tenant,
-      exportPayload.filename?.trim() || 'contacts.vcf',
+      exportPayload.filename?.trim() || "contacts.vcf",
     );
     const { vcf, filename, count } = await buildContactsVcfExport({
       filename: targetFilename,
@@ -168,7 +145,7 @@ export function registerDefaultBackgroundJobRunners(): void {
 
   registerModuleCsvExportJobRunner({
     moduleId: studentsModuleId,
-    entityNounPlural: 'students',
+    entityNounPlural: "students",
     buildExport: (query, options) =>
       buildStudentsCsvExport(query as StudentsExportQueryInput, {
         columns: options.columns as StudentExportColumn[] | undefined,
@@ -187,7 +164,7 @@ export function registerDefaultBackgroundJobRunners(): void {
 
   registerModuleCsvExportJobRunner({
     moduleId: sessionsModuleId,
-    entityNounPlural: 'sessions',
+    entityNounPlural: "sessions",
     buildExport: (query, options) =>
       buildSessionsCsvExport(query as SessionsExportQueryInput, {
         columns: options.columns as SessionExportColumn[] | undefined,
@@ -204,84 +181,12 @@ export function registerDefaultBackgroundJobRunners(): void {
       }),
   });
 
-  registerModuleCsvExportJobRunner({
-    moduleId: facultyModuleId,
-    entityNounPlural: 'faculty',
-    buildExport: (query, options) =>
-      buildFacultyCsvExport(query as FacultyExportQueryInput, {
-        columns: options.columns as FacultyExportColumn[] | undefined,
-        filename: options.filename,
-        viewerRole: options.viewerRole,
-        allowDeleted: options.allowDeleted,
-      }),
-    generateStreamChunks: (query, options) =>
-      generateFacultyCsvStreamChunks(query as FacultyExportQueryInput, {
-        columns: options.columns as FacultyExportColumn[] | undefined,
-        filename: options.filename,
-        viewerRole: options.viewerRole,
-        allowDeleted: options.allowDeleted === true,
-      }),
-  });
-
-  registerBackgroundJobRunner(`${facultyModuleId}:import`, async (payload, ctx) => {
-    const result = await runFacultyMembersImportJob(payload as FacultyImportJobPayload, {
-      tenant: ctx.tenant,
-      userId: ctx.userId,
-      updateProgress: (current, total) => ctx.updateProgress(current, total),
-    });
-    await ctx.complete({
-      label: buildFacultyImportJobLabel(result),
-      progress: { current: result.imported, total: Math.max(result.total, 1) },
-    });
-  });
-
-  registerModuleCsvExportJobRunner({
-    moduleId: 'faculty-departments',
-    entityNounPlural: 'departments',
-    buildExport: (query, options, tenant) =>
-      buildFacultyDepartmentsCsvExport(query, { filename: options.filename }, tenant),
-  });
-
-  registerBackgroundJobRunner('faculty-departments:import', async (payload, ctx) => {
-    const result = await runFacultyDepartmentsImportJob(
-      payload as { rows: Parameters<typeof runFacultyDepartmentsImportJob>[0]['rows'] },
-      {
-        tenant: ctx.tenant,
-        userId: ctx.userId,
-        updateProgress: (current, total) => ctx.updateProgress(current, total),
-      },
-    );
-    await ctx.complete({
-      label: buildCatalogImportJobLabel('departments', result),
-      progress: { current: result.imported, total: Math.max(result.total, 1) },
-    });
-  });
-
-  registerModuleCsvExportJobRunner({
-    moduleId: 'faculty-designations',
-    entityNounPlural: 'designations',
-    buildExport: (query, options, tenant) =>
-      buildFacultyDesignationsCsvExport(query, { filename: options.filename }, tenant),
-  });
-
-  registerBackgroundJobRunner('faculty-designations:import', async (payload, ctx) => {
-    const result = await runFacultyDesignationsImportJob(
-      payload as { rows: Parameters<typeof runFacultyDesignationsImportJob>[0]['rows'] },
-      {
-        tenant: ctx.tenant,
-        userId: ctx.userId,
-        updateProgress: (current, total) => ctx.updateProgress(current, total),
-      },
-    );
-    await ctx.complete({
-      label: buildCatalogImportJobLabel('designations', result),
-      progress: { current: result.imported, total: Math.max(result.total, 1) },
-    });
-  });
+  // Modular faculty and catalog export/import runners
+  registerFacultyBackgroundJobRunners();
 
   registerModuleCsvExportJobRunner({
     moduleId: ENROLLMENTS_MODULE_MANIFEST.moduleId,
-    entityNounPlural: 'enrollments',
+    entityNounPlural: "enrollments",
     buildExport: (query, options) =>
       buildEnrollmentsCsvExport(query as EnrollmentsExportQueryInput, {
         columns: options.columns as EnrollmentExportColumn[] | undefined,
@@ -300,17 +205,17 @@ export function registerDefaultBackgroundJobRunners(): void {
 
   registerModuleCsvExportJobRunner({
     moduleId: USERS_MODULE_MANIFEST.moduleId,
-    entityNounPlural: 'users',
+    entityNounPlural: "users",
     buildExport: (query, options) =>
       buildUsersCsvExport(query as UsersExportQueryInput, {
-        columns: options.columns as import('@mms/shared').UserExportColumn[] | undefined,
+        columns: options.columns as UserExportColumn[] | undefined,
         filename: options.filename,
         viewerRole: options.viewerRole,
         allowDeleted: options.allowDeleted,
       }),
     generateStreamChunks: (query, options) =>
       generateUsersCsvStreamChunks(query as UsersExportQueryInput, {
-        columns: options.columns as import('@mms/shared').UserExportColumn[] | undefined,
+        columns: options.columns as UserExportColumn[] | undefined,
         filename: options.filename,
         viewerRole: options.viewerRole,
         allowDeleted: options.allowDeleted === true,
@@ -319,163 +224,73 @@ export function registerDefaultBackgroundJobRunners(): void {
 
   registerModuleCsvExportJobRunner({
     moduleId: messagingModuleId,
-    entityNounPlural: 'message logs',
+    entityNounPlural: "message logs",
     buildExport: (query, options, tenant) =>
-      buildMessagingCsvExport(
-        tenant || '',
-        query as MessagingCsvExportQueryDto,
-        {
-          filename: options.filename,
-        },
-      ),
+      buildMessagingCsvExport(tenant || "", query as MessagingCsvExportQueryDto, {
+        filename: options.filename,
+      }),
     generateStreamChunks: (query, options, tenant) =>
-      generateMessagingCsvStreamChunks(
-        tenant || '',
-        query as MessagingCsvExportQueryDto,
-        {
-          filename: options.filename,
-        },
-      ),
+      generateMessagingCsvStreamChunks(tenant || "", query as MessagingCsvExportQueryDto, {
+        filename: options.filename,
+      }),
   });
 
-  // Phase 6: Headless BiDi Document Engine & Streaming Excel exports
-  registerBackgroundJobRunner('students:render-report-card', async (payload, ctx) => {
-    const { processPdfRenderJob } = await import('../worker/processors/pdf-rendering.js');
-    await ctx.updateProgress(10, 100);
-    const data = (payload as { data: Record<string, unknown>; filename?: string }).data || {};
-    const filename = (payload as { filename?: string }).filename || 'report-card.pdf';
-    const result = await processPdfRenderJob(
-      ctx.tenant,
-      {
-        template: 'report-card',
-        data,
-        filename,
-      },
-      async (pct) => ctx.updateProgress(pct, 100)
-    );
-    await saveStreamedExportArtifact(ctx.userId, ctx.jobId, {
-      key: result.key,
-      storageType: result.storageType,
-      filename,
-      contentType: 'application/pdf',
-    });
-    await ctx.complete({
-      label: `Generated Report Card (${result.key})`,
-      progress: { current: 100, total: 100 },
-      hasDownload: true,
-    });
-  });
+  registerModuleCsvImportJobRunner<{
+    title?: string;
+    message?: string;
+    channel?: string;
+    notes?: string;
+  }>({
+    moduleId: messagingModuleId,
+    entityNounPlural: "templates",
+    importBatch: async (rows, ctx) => {
+      let imported = 0;
+      let failed = 0;
+      for (let i = 0; i < rows.length; i++) {
+        const row = rows[i];
+        const title = row.title?.trim();
+        const body = row.message?.trim();
+        if (!title || !body) {
+          failed++;
+          continue;
+        }
+        const channel = (
+          ["sms", "whatsapp", "email", "all"].includes(row.channel?.toLowerCase() || "")
+            ? row.channel?.toLowerCase()
+            : "all"
+        ) as "sms" | "whatsapp" | "email" | "all";
+        const category = (
+          ["general", "academic", "financial", "attendance", "emergency"].includes(
+            row.notes?.toLowerCase() || "",
+          )
+            ? row.notes?.toLowerCase()
+            : "general"
+        ) as "general" | "academic" | "financial" | "attendance" | "emergency";
 
-  registerBackgroundJobRunner('finance:render-receipt', async (payload, ctx) => {
-    const { processPdfRenderJob } = await import('../worker/processors/pdf-rendering.js');
-    await ctx.updateProgress(10, 100);
-    const data = (payload as { data: Record<string, unknown>; filename?: string }).data || {};
-    const filename = (payload as { filename?: string }).filename || 'fee-receipt.pdf';
-    const result = await processPdfRenderJob(
-      ctx.tenant,
-      {
-        template: 'fee-receipt',
-        data,
-        filename,
-      },
-      async (pct) => ctx.updateProgress(pct, 100)
-    );
-    await saveStreamedExportArtifact(ctx.userId, ctx.jobId, {
-      key: result.key,
-      storageType: result.storageType,
-      filename,
-      contentType: 'application/pdf',
-    });
-    await ctx.complete({
-      label: `Generated Fee Receipt (${result.key})`,
-      progress: { current: 100, total: 100 },
-      hasDownload: true,
-    });
-  });
-
-  registerBackgroundJobRunner('finance:render-ledger', async (payload, ctx) => {
-    const { processPdfRenderJob } = await import('../worker/processors/pdf-rendering.js');
-    await ctx.updateProgress(10, 100);
-    const data = (payload as { data: Record<string, unknown>; filename?: string }).data || {};
-    const filename = (payload as { filename?: string }).filename || 'financial-ledger.pdf';
-    const result = await processPdfRenderJob(
-      ctx.tenant,
-      {
-        template: 'financial-ledger',
-        data,
-        filename,
-      },
-      async (pct) => ctx.updateProgress(pct, 100)
-    );
-    await saveStreamedExportArtifact(ctx.userId, ctx.jobId, {
-      key: result.key,
-      storageType: result.storageType,
-      filename,
-      contentType: 'application/pdf',
-    });
-    await ctx.complete({
-      label: `Generated Financial Ledger (${result.key})`,
-      progress: { current: 100, total: 100 },
-      hasDownload: true,
-    });
-  });
-
-  registerBackgroundJobRunner('finance:collect', async (_payload, ctx) => {
-    const { collectOverdueInvoices } = await import('../finance/use-cases/financeCollectUseCases.js');
-    await ctx.updateProgress(0, 1);
-    const result = await collectOverdueInvoices({ applyLateFee: true });
-    await ctx.complete({
-      label: `Marked ${result.markedOverdue} overdue; applied ${result.lateFeesApplied} late fees`,
-      progress: { current: 1, total: 1 },
-    });
-  });
-
-  registerBackgroundJobRunner('finance:export-excel', async (payload, ctx) => {
-    const { streamTableToExcel } = await import('../worker/processors/excel-export.js');
-    const { filename = 'ledger-export.xlsx', entries = [] } = payload as {
-      filename?: string;
-      entries?: Record<string, unknown>[];
-    };
-
-    // Guard against unbounded payloads being carried in the job data / DB row.
-    if (entries.length > MAX_EXCEL_PAYLOAD_ENTRIES) {
-      throw new Error(
-        `Ledger export exceeds maximum of ${MAX_EXCEL_PAYLOAD_ENTRIES} entries carried in the job payload.`,
-      );
-    }
-
-    async function* generateRows() {
-      for (const entry of entries) {
-        yield entry;
+        try {
+          await messagingUseCases.saveMessageTemplate(ctx.tenant, {
+            id: `custom_${randomUUID()}`,
+            label: title,
+            body,
+            channel,
+            category,
+            updatedAt: new Date().toISOString(),
+          });
+          imported++;
+        } catch {
+          failed++;
+        }
+        if ((i + 1) % 10 === 0) {
+          await ctx.updateProgress(i + 1, rows.length);
+        }
       }
-    }
-
-    await ctx.updateProgress(10, 100);
-    const result = await streamTableToExcel({
-      tenantId: ctx.tenant,
-      filename,
-      worksheetName: 'Ledger',
-      columns: [
-        { header: 'Date', key: 'date', width: 15 },
-        { header: 'Account', key: 'account', width: 25 },
-        { header: 'Debit', key: 'debit', width: 15 },
-        { header: 'Credit', key: 'credit', width: 15 },
-        { header: 'Balance', key: 'balance', width: 15 },
-        { header: 'Description', key: 'description', width: 35 },
-      ],
-      rowGenerator: generateRows(),
-    });
-    await saveStreamedExportArtifact(ctx.userId, ctx.jobId, {
-      key: result.key,
-      storageType: result.storageType,
-      filename,
-      contentType: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
-    });
-    await ctx.complete({
-      label: `Streamed Ledger to Excel (${result.key})`,
-      progress: { current: 100, total: 100 },
-      hasDownload: true,
-    });
+      return { imported, failed, total: rows.length };
+    },
   });
-}
 
+  // Headless BiDi Document Engine & Streaming Excel exports
+  registerDocumentAndFinanceJobRunners();
+
+  // Multi-channel campaign dispatch worker
+  registerMessagingCampaignJobRunner();
+}

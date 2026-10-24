@@ -1,10 +1,10 @@
-import React, { type JSX } from 'react';
-import type { SystemUser } from '@mms/shared';
-import { useTranslation } from '@/hooks/useTranslation';
-import { UsersListAvatar } from '@/tenant/features/users/components/UsersListAvatar';
-import { UsersRowActions } from '@/tenant/features/users/components/UsersRowActions';
-import { renderUserWorkColumnValue } from '@/tenant/features/users/components/userWorkColumnCell';
-import { WorkBatchTable, type WorkBatchTableColumn } from '@/components/common/work';
+import React, { type JSX } from "react";
+import type { SystemUser } from "@mms/shared";
+import { useTranslation } from "@/hooks/useTranslation";
+import { UserAvatar } from "@/components/app/UserAvatar";
+import { UsersRowActions } from "@/tenant/features/users/components/UsersRowActions";
+import { renderUserWorkColumnValue } from "@/tenant/features/users/components/userWorkColumnCell";
+import { WorkBatchTable, type WorkBatchTableColumn } from "@/components/common/work";
 
 interface UsersListDesktopTableProps {
   users: SystemUser[];
@@ -48,20 +48,21 @@ export function UsersListDesktopTable({
   isColumnVisible,
 }: UsersListDesktopTableProps): JSX.Element {
   const { t } = useTranslation();
-  const visible = isColumnVisible ?? (() => true);
+  const visible = React.useMemo(() => isColumnVisible ?? (() => true), [isColumnVisible]);
   const columnContext = React.useMemo(() => ({ t, formatLoginDate }), [t, formatLoginDate]);
 
   const columns = React.useMemo<WorkBatchTableColumn<SystemUser>[]>(() => {
     const cols: WorkBatchTableColumn<SystemUser>[] = [
       {
-        id: 'user',
-        label: t('users.colUser'),
-        headerClassName: 'px-3 py-2.5',
-        cellClassName: 'px-3 py-2.5',
+        id: "user",
+        label: t("users.colUser"),
+        headerClassName: "px-3 py-2.5",
+        noWrap: true,
+        cellClassName: "px-3 py-2.5",
         render: (user) => (
           <div className="flex items-center gap-2.5">
-            <UsersListAvatar user={user} />
-            <p className="whitespace-nowrap text-sm font-semibold text-foreground">
+            <UserAvatar name={user.name || user.email} id={user.id} size="sm" />
+            <p className="text-sm font-semibold text-foreground">
               {user.name?.trim() || user.email || ""}
             </p>
           </div>
@@ -69,63 +70,65 @@ export function UsersListDesktopTable({
       },
     ];
 
-    if (visible('email')) {
+    if (visible("email")) {
       cols.push({
-        id: 'email',
-        label: t('users.fieldContactEmail'),
-        headerClassName: 'px-3 py-2.5',
-        cellClassName: 'px-3 py-2.5 text-xs text-muted-foreground',
-        render: (user) => renderUserWorkColumnValue(user, 'email', columnContext),
+        id: "email",
+        label: t("users.fieldContactEmail"),
+        headerClassName: "px-3 py-2.5",
+        cellClassName: "px-3 py-2.5 text-xs text-muted-foreground",
+        render: (user) => renderUserWorkColumnValue(user, "email", columnContext),
       });
     }
 
-    if (visible('role')) {
+    if (visible("role")) {
       cols.push({
-        id: 'role',
-        label: t('users.colRole'),
-        headerClassName: 'px-3 py-2.5',
-        cellClassName: 'px-3 py-2.5',
-        render: (user) => renderUserWorkColumnValue(user, 'role', columnContext),
+        id: "role",
+        label: t("users.colRole"),
+        headerClassName: "px-3 py-2.5",
+        cellClassName: "px-3 py-2.5",
+        render: (user) => renderUserWorkColumnValue(user, "role", columnContext),
       });
     }
 
-    if (visible('status')) {
+    if (visible("status")) {
       cols.push({
-        id: 'status',
-        label: t('users.colStatus'),
-        headerClassName: 'px-3 py-2.5',
-        cellClassName: 'px-3 py-2.5',
-        render: (user) => renderUserWorkColumnValue(user, 'status', columnContext),
+        id: "status",
+        label: t("users.colStatus"),
+        headerClassName: "px-3 py-2.5",
+        cellClassName: "px-3 py-2.5",
+        render: (user) => renderUserWorkColumnValue(user, "status", columnContext),
       });
     }
 
-    if (visible('lastLogin')) {
+    if (visible("lastLogin")) {
       cols.push({
-        id: 'lastLogin',
-        label: t('users.colLastLogin'),
-        headerClassName: 'px-3 py-2.5',
-        cellClassName: 'whitespace-nowrap px-3 py-2.5 text-xs text-muted-foreground',
-        render: (user) => renderUserWorkColumnValue(user, 'lastLogin', columnContext),
+        id: "lastLogin",
+        label: t("users.colLastLogin"),
+        headerClassName: "px-3 py-2.5",
+        noWrap: true,
+        cellClassName: "px-3 py-2.5 text-xs text-muted-foreground",
+        render: (user) => renderUserWorkColumnValue(user, "lastLogin", columnContext),
       });
     }
 
-    if (visible('created')) {
+    if (visible("created")) {
       cols.push({
-        id: 'created',
-        label: t('users.colCreated'),
-        headerClassName: 'px-3 py-2.5',
-        cellClassName: 'whitespace-nowrap px-3 py-2.5 font-mono text-xs text-muted-foreground',
-        render: (user) => renderUserWorkColumnValue(user, 'created', columnContext),
+        id: "created",
+        label: t("users.colCreated"),
+        headerClassName: "px-3 py-2.5",
+        noWrap: true,
+        cellClassName: "px-3 py-2.5 font-mono text-xs text-muted-foreground",
+        render: (user) => renderUserWorkColumnValue(user, "created", columnContext),
       });
     }
 
-    if (visible('twoFactor')) {
+    if (visible("twoFactor")) {
       cols.push({
-        id: 'twoFactor',
-        label: t('users.col2fa'),
-        headerClassName: 'px-3 py-2.5',
-        cellClassName: 'px-3 py-2.5',
-        render: (user) => renderUserWorkColumnValue(user, 'twoFactor', columnContext),
+        id: "twoFactor",
+        label: t("users.col2fa"),
+        headerClassName: "px-3 py-2.5",
+        cellClassName: "px-3 py-2.5",
+        render: (user) => renderUserWorkColumnValue(user, "twoFactor", columnContext),
       });
     }
 
@@ -138,7 +141,6 @@ export function UsersListDesktopTable({
       columns={columns}
       className="table-fixed"
       tableBodyClassName="divide-y divide-border"
-      bordered={false}
       selection={
         canDelete
           ? {
@@ -147,8 +149,8 @@ export function UsersListDesktopTable({
               onSelectAll: onToggleAll,
               allSelected,
               someSelected,
-              selectAllAriaLabel: t('users.selectAll'),
-              selectRowAriaLabel: (user) => t('users.selectRow', { name: user.name }),
+              selectAllAriaLabel: t("users.selectAll"),
+              selectRowAriaLabel: (user) => t("users.selectRow", { name: user.name }),
             }
           : undefined
       }
@@ -169,7 +171,7 @@ export function UsersListDesktopTable({
           onResetPassword={onResetPassword}
         />
       )}
-      actionsLabel={t('users.colActions')}
+      actionsLabel={t("users.colActions")}
     />
   );
 }

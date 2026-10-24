@@ -7,7 +7,7 @@ import {
   extractAmountFromNaturalLanguage,
   parseNaturalLanguage,
   resolveEntryDirection,
-} from "@/tenant/features/accounting/components/journalEntriesQuickActions";
+} from "@/tenant/features/accounting/lib/journalEntriesQuickActions";
 
 describe("parseNaturalLanguage", () => {
   it("maps common accounting phrases to quick actions", () => {
@@ -42,7 +42,9 @@ describe("quick action cash-flow direction", () => {
   });
 
   it("tags the other-expense action as money out, never as Capital", () => {
-    const otherExpense = QUICK_ACTIONS.find((quickAction) => quickAction.type.id === "other_expense")?.type;
+    const otherExpense = QUICK_ACTIONS.find(
+      (quickAction) => quickAction.type.id === "other_expense",
+    )?.type;
     expect(otherExpense?.tag).toBe("Expense");
     expect(MONEY_IN_ACTION_TAGS.has("Expense")).toBe(false);
     expect(MONEY_OUT_ACTION_TAGS.has("Expense")).toBe(true);
@@ -59,7 +61,9 @@ describe("quick action cash-flow direction", () => {
   it("resolves a posted expense as money out even when it carries the old Capital tag", () => {
     // Entries written before the tag fix still hold the wrong tag: the
     // transaction type must win so the row is not shown as a green inflow.
-    expect(resolveEntryDirection({ tags: ["Capital"], transaction_type: "other_expense" })).toBe("out");
+    expect(resolveEntryDirection({ tags: ["Capital"], transaction_type: "other_expense" })).toBe(
+      "out",
+    );
     expect(resolveEntryDirection({ tags: ["Expense"] })).toBe("out");
     expect(resolveEntryDirection({ tags: ["Fees"] })).toBe("in");
     expect(resolveEntryDirection({ tags: ["Donation"] })).toBe("in");

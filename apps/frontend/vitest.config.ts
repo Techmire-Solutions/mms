@@ -1,21 +1,98 @@
-import path from 'node:path';
-import { defineConfig } from 'vitest/config';
+import path from "node:path";
+import { defineConfig } from "vitest/config";
+import { DurationShardSequencer } from "./src/test/shardSequencer.ts";
 
 export default defineConfig({
   resolve: {
     alias: {
-      '@': path.resolve(import.meta.dirname, './src'),
+      "@": path.resolve(import.meta.dirname, "./src"),
+      "@shared/ui": path.resolve(import.meta.dirname, "../../packages/ui/src"),
+      react: path.resolve(import.meta.dirname, "./node_modules/react"),
+      "react-dom": path.resolve(import.meta.dirname, "./node_modules/react-dom"),
+      clsx: path.resolve(import.meta.dirname, "./node_modules/clsx"),
+      "tailwind-merge": path.resolve(import.meta.dirname, "./node_modules/tailwind-merge"),
+      "class-variance-authority": path.resolve(
+        import.meta.dirname,
+        "./node_modules/class-variance-authority",
+      ),
+      "lucide-react": path.resolve(import.meta.dirname, "./node_modules/lucide-react"),
+      "@radix-ui/react-slot": path.resolve(
+        import.meta.dirname,
+        "./node_modules/@radix-ui/react-slot",
+      ),
+      "@radix-ui/react-alert-dialog": path.resolve(
+        import.meta.dirname,
+        "./node_modules/@radix-ui/react-alert-dialog",
+      ),
+      "@radix-ui/react-checkbox": path.resolve(
+        import.meta.dirname,
+        "./node_modules/@radix-ui/react-checkbox",
+      ),
+      "@radix-ui/react-select": path.resolve(
+        import.meta.dirname,
+        "./node_modules/@radix-ui/react-select",
+      ),
+      "@radix-ui/react-switch": path.resolve(
+        import.meta.dirname,
+        "./node_modules/@radix-ui/react-switch",
+      ),
+      "@radix-ui/react-tooltip": path.resolve(
+        import.meta.dirname,
+        "./node_modules/@radix-ui/react-tooltip",
+      ),
+      "@radix-ui/react-popover": path.resolve(
+        import.meta.dirname,
+        "./node_modules/@radix-ui/react-popover",
+      ),
+      "@radix-ui/react-dropdown-menu": path.resolve(
+        import.meta.dirname,
+        "./node_modules/@radix-ui/react-dropdown-menu",
+      ),
+      "@radix-ui/react-avatar": path.resolve(
+        import.meta.dirname,
+        "./node_modules/@radix-ui/react-avatar",
+      ),
+      "@radix-ui/react-slider": path.resolve(
+        import.meta.dirname,
+        "./node_modules/@radix-ui/react-slider",
+      ),
+      "@radix-ui/react-label": path.resolve(
+        import.meta.dirname,
+        "./node_modules/@radix-ui/react-label",
+      ),
     },
   },
   test: {
-    environment: 'happy-dom',
-    setupFiles: ['./src/test/setup.ts'],
+    environment: "happy-dom",
+    setupFiles: ["./src/test/setup.ts"],
     // Node 26 ships an experimental global `localStorage` getter that shadows
     // happy-dom's storage and resolves to `undefined` without --localstorage-file.
     // Disable it so happy-dom's window.localStorage is installed.
-    execArgv: ['--no-experimental-webstorage'],
-    include: ['src/**/*.test.{ts,tsx}', 'src/**/*.spec.{ts,tsx}'],
-    pool: 'threads',
+    execArgv: ["--no-experimental-webstorage"],
+    include: [
+      "src/**/*.test.{ts,tsx}",
+      "src/**/*.spec.{ts,tsx}",
+      "../../packages/ui/src/**/*.test.{ts,tsx}",
+    ],
+    // Pre-bundle the heaviest imports into single files. Isolated test files each
+    // re-evaluate their whole module graph; @mms/shared alone is ~500 dist modules
+    // (~5–7s per test file on Windows) and drops to ~1s once bundled. `force`
+    // re-bundles once per run: Vite's cache key ignores linked workspace builds,
+    // so a cached bundle would serve a stale @mms/shared after a rebuild.
+    // recharts stays out: tests replace it with factory `vi.mock('recharts')`
+    // stubs, and the pre-bundled interop reads a `default` export they lack.
+    deps: {
+      optimizer: {
+        client: {
+          enabled: true,
+          include: ["@mms/shared", "framer-motion", "lucide-react", "react-day-picker"],
+          force: true,
+        },
+      },
+    },
+    // CI `--shard` splits by recorded per-file time (src/test/shard-timings.json).
+    sequence: { sequencer: DurationShardSequencer },
+    pool: "threads",
     maxWorkers: process.env.CI ? 4 : undefined,
     fileParallelism: true,
     clearMocks: true,
@@ -24,26 +101,21 @@ export default defineConfig({
     hookTimeout: 30_000,
     css: false,
     env: {
-      NODE_ENV: 'test',
+      NODE_ENV: "test",
     },
     coverage: {
-      provider: 'v8',
-      reporter: ['text', 'json', 'html'],
-      exclude: [
-        'src/**/*.test.{ts,tsx}',
-        'src/**/*.spec.{ts,tsx}',
-        'src/test/**',
-        'src/tenant/hooks/collections/**',
-        '**/*.d.ts',
-      ],
+      provider: "v8",
+      reporter: ["text", "json", "html"],
+      exclude: ["src/**/*.test.{ts,tsx}", "src/**/*.spec.{ts,tsx}", "src/test/**", "**/*.d.ts"],
       // Coverage gate: lock in the current baseline so regressions fail CI.
-      // Raise these as coverage improves. Measured: lines ~42.0 / stmts ~40.4 /
-      // funcs ~32.7 / branches ~39.5.
+      // Raise these as coverage improves. Measured (whole src, incl. the
+      // tenant/hooks/collections facades): statements ~55.2 / branches ~51.9 /
+      // functions ~47.2 / lines ~56.7.
       thresholds: {
-        lines: 41,
-        statements: 40,
-        functions: 32,
-        branches: 39,
+        lines: 55,
+        statements: 54,
+        functions: 45,
+        branches: 50,
       },
     },
   },

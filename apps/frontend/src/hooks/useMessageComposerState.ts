@@ -24,7 +24,11 @@ interface OpenComposerOptions {
 export interface UseMessageComposerStateResult {
   messagingTarget: MessagingTarget | null;
   setMessagingTarget: React.Dispatch<React.SetStateAction<MessagingTarget | null>>;
-  openComposer: (channel: Channel, recipients?: MessagingRecipient[], options?: OpenComposerOptions) => void;
+  openComposer: (
+    channel: Channel,
+    recipients?: MessagingRecipient[],
+    options?: OpenComposerOptions,
+  ) => void;
   closeComposer: () => void;
   canWriteMessaging: boolean;
 }
@@ -40,11 +44,7 @@ export function useMessageComposerState(): UseMessageComposerStateResult {
   const canWriteMessaging = can("messaging.write");
 
   const openComposer = useCallback(
-    (
-      channel: Channel,
-      recipients: MessagingRecipient[] = [],
-      options?: OpenComposerOptions,
-    ) => {
+    (channel: Channel, recipients: MessagingRecipient[] = [], options?: OpenComposerOptions) => {
       if (!canWriteMessaging) {
         notify.error(t("messaging.writeDenied"));
         return;
@@ -62,9 +62,7 @@ export function useMessageComposerState(): UseMessageComposerStateResult {
 
         const skipped = recipients.length - eligible.length;
         if (skipped > 0) {
-          notify.warning(
-            t("messaging.someRecipientsSkipped"),
-          );
+          notify.warning(t("messaging.someRecipientsSkipped"));
         }
 
         setMessagingTarget({
@@ -92,10 +90,10 @@ export function useMessageComposerState(): UseMessageComposerStateResult {
   }, []);
 
   return (() => ({
-      messagingTarget,
-      setMessagingTarget,
-      openComposer,
-      closeComposer,
-      canWriteMessaging,
-    }))();
+    messagingTarget,
+    setMessagingTarget,
+    openComposer,
+    closeComposer,
+    canWriteMessaging,
+  }))();
 }

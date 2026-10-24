@@ -16,12 +16,7 @@ export function buildContactSelectPatch(
     return { contactId: "" };
   }
   const patch: Partial<Student> = { contactId: String(id) };
-  if (
-    autoGenerateId
-    && isStudentCreate(student)
-    && !studentDraft.grNumber
-    && nextGrNumber
-  ) {
+  if (autoGenerateId && isStudentCreate(student) && !studentDraft.grNumber && nextGrNumber) {
     patch.grNumber = nextGrNumber;
   }
   return patch;

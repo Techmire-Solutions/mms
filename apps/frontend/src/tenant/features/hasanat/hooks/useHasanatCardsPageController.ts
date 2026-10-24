@@ -1,25 +1,35 @@
-import { useState, useEffect } from 'react';
-import { usePersistedTabState } from '@/hooks/usePersistedTabState';
-import { useModuleShortcuts } from '@/hooks/useModuleShortcuts';
-import { useTranslation } from '@/hooks/useTranslation';
-import { useDirectoryTrashState } from '@/hooks/useDirectoryTrashState';
-import { useFilteredModuleTierTabs } from '@/tenant/hooks/useModuleTierTabs';
-import { useModulePermissions } from '@/tenant/hooks/usePermissions';
-import { HASANAT_MODULE_MANIFEST, resolveModuleTierTab, toMessagingRecipient, type Distribution } from '@mms/shared';
-import { useHasanatDistributionColumnLayout } from './useHasanatDistributionColumnLayout';
-import { useHasanatRedemptionColumnLayout } from './useHasanatRedemptionColumnLayout';
-import { useHasanatDenoms, useHasanatBatches, useHasanatDistributions, useHasanatMutations } from './useHasanatApi';
-import { NotifiedMutationError } from '@/lib/notifiedMutationError';
-import { useWorkSelection } from '@/hooks/useWorkSelection';
-import { useHasanatDistributionTrashActions } from '@/tenant/features/hasanat/hooks/useHasanatDistributionTrashActions';
-import { useMessageComposerState } from '@/hooks/useMessageComposerState';
-import { notify } from '@/lib/notify';
+import { useState, useEffect } from "react";
+import { usePersistedTabState } from "@/hooks/usePersistedTabState";
+import { useModuleShortcuts } from "@/hooks/useModuleShortcuts";
+import { useTranslation } from "@/hooks/useTranslation";
+import { useDirectoryTrashState } from "@/hooks/useDirectoryTrashState";
+import { useFilteredModuleTierTabs } from "@/tenant/hooks/useModuleTierTabs";
+import { useModulePermissions } from "@/tenant/hooks/usePermissions";
+import {
+  HASANAT_MODULE_MANIFEST,
+  resolveModuleTierTab,
+  toMessagingRecipient,
+  type Distribution,
+} from "@mms/shared";
+import { useHasanatDistributionColumnLayout } from "./useHasanatDistributionColumnLayout";
+import { useHasanatRedemptionColumnLayout } from "./useHasanatRedemptionColumnLayout";
+import {
+  useHasanatDenoms,
+  useHasanatBatches,
+  useHasanatDistributions,
+  useHasanatMutations,
+} from "./useHasanatApi";
+import { NotifiedMutationError } from "@/lib/notifiedMutationError";
+import { useWorkSelection } from "@/hooks/useWorkSelection";
+import { useHasanatDistributionTrashActions } from "@/tenant/features/hasanat/hooks/useHasanatDistributionTrashActions";
+import { useMessageComposerState } from "@/hooks/useMessageComposerState";
+import { notify } from "@/lib/notify";
 import {
   getHasanatSetupTabs,
   getHasanatSubTabs,
   unwrapHasanatEnvelopes,
   formatHasanatMessageRecipients,
-} from './hasanatPageDescriptors';
+} from "./hasanatPageDescriptors";
 
 export function useHasanatCardsPageController() {
   const { t } = useTranslation();
@@ -37,9 +47,9 @@ export function useHasanatCardsPageController() {
   });
   const SETUP_TABS = getHasanatSetupTabs(t);
   const SUB_TABS = getHasanatSubTabs(t);
-  const [activeTab, setActiveTab] = usePersistedTabState<string>('hasanat_active_tab', 'work');
-  const [activeSubTab, setActiveSubTab] = useState('overview');
-  const [configSubTab, setConfigSubTab] = useState<string>('denominations');
+  const [activeTab, setActiveTab] = usePersistedTabState<string>("hasanat_active_tab", "work");
+  const [activeSubTab, setActiveSubTab] = useState("overview");
+  const [configSubTab, setConfigSubTab] = useState<string>("denominations");
   const [showDeleted, setShowDeleted] = useDirectoryTrashState();
   const [createDistributeKey, setCreateDistributeKey] = useState(0);
   const [activeDistribution, setActiveDistribution] = useState<Distribution | null>(null);
@@ -73,7 +83,8 @@ export function useHasanatCardsPageController() {
   const distributionColumnLayout = useHasanatDistributionColumnLayout();
   const redemptionColumnLayout = useHasanatRedemptionColumnLayout();
 
-  const { messagingTarget, openComposer, closeComposer, canWriteMessaging } = useMessageComposerState();
+  const { messagingTarget, openComposer, closeComposer, canWriteMessaging } =
+    useMessageComposerState();
 
   const {
     handleDeleteDistribution,
@@ -96,11 +107,15 @@ export function useHasanatCardsPageController() {
     clearDistributionSelection();
   };
 
-  const handleMessageDistributions = (channel: 'sms' | 'whatsapp' | 'email', distList: Array<{ id: string; recipientName?: string; phone?: string; email?: string }>) => {
+  const handleMessageDistributions = (
+    channel: "sms" | "whatsapp" | "email",
+    distList: Array<{ id: string; recipientName?: string; phone?: string; email?: string }>,
+  ) => {
     if (!canWriteMessaging) return;
-    const recipients = formatHasanatMessageRecipients(distList, t('hasanat.messaging.recipient')).map((r) =>
-      toMessagingRecipient(r)
-    );
+    const recipients = formatHasanatMessageRecipients(
+      distList,
+      t("hasanat.messaging.recipient"),
+    ).map((r) => toMessagingRecipient(r));
     openComposer(channel, recipients);
   };
 
@@ -108,16 +123,19 @@ export function useHasanatCardsPageController() {
     activeTab,
     PAGE_TABS.map((tab) => tab.id),
   );
-  const effectiveSubTab = SUB_TABS.find((tab) => tab.id === activeSubTab) ? activeSubTab : 'overview';
-  const effectiveConfigTab = SETUP_TABS.find((tab) => tab.id === configSubTab)?.id ?? 'denominations';
+  const effectiveSubTab = SUB_TABS.find((tab) => tab.id === activeSubTab)
+    ? activeSubTab
+    : "overview";
+  const effectiveConfigTab =
+    SETUP_TABS.find((tab) => tab.id === configSubTab)?.id ?? "denominations";
 
   useEffect(() => {
-    if (effectiveSubTab === 'distribute' || effectiveSubTab === 'redemptions') return;
+    if (effectiveSubTab === "distribute" || effectiveSubTab === "redemptions") return;
     setFilteredCount(distributions.length);
   }, [effectiveSubTab, distributions.length]);
 
   useModuleShortcuts({
-    searchInputId: 'hasanat-search-input',
+    searchInputId: "hasanat-search-input",
     selectedCount: distributionSelection.selectedIds.length,
     hasActiveFilters: false,
     clearFilters: () => {},
@@ -125,11 +143,11 @@ export function useHasanatCardsPageController() {
     canWrite,
     showDeleted,
     onCreate: () => {
-      setActiveTab('work');
-      setActiveSubTab('distribute');
+      setActiveTab("work");
+      setActiveSubTab("distribute");
       setCreateDistributeKey((key) => key + 1);
     },
-    enabled: activeTab === 'work',
+    enabled: activeTab === "work",
   });
 
   const runHasanatSave = async (save: () => Promise<unknown>): Promise<void> => {
@@ -137,7 +155,7 @@ export function useHasanatCardsPageController() {
       await save();
     } catch (error: unknown) {
       if (!(error instanceof NotifiedMutationError)) {
-        notify.error(t('hasanat.saveFailed'), {
+        notify.error(t("hasanat.saveFailed"), {
           description: error instanceof Error ? error.message : String(error),
         });
       }
@@ -148,8 +166,8 @@ export function useHasanatCardsPageController() {
   const listLoadFailed = distributionsResult.isError;
 
   const openDistribute = () => {
-    setActiveTab('work');
-    setActiveSubTab('distribute');
+    setActiveTab("work");
+    setActiveSubTab("distribute");
     setCreateDistributeKey((key) => key + 1);
   };
 
@@ -196,6 +214,8 @@ export function useHasanatCardsPageController() {
     updateDistribution,
     openDistribute,
     distributionSelection,
-    refetchDistributions: () => { void distributionsResult.refetch(); },
+    refetchDistributions: () => {
+      void distributionsResult.refetch();
+    },
   };
 }

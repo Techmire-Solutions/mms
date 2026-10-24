@@ -17,22 +17,12 @@ export interface UseEnrollmentsSetupPanelStateReturn {
 /** Enrollments Setup panel state — encapsulates config, editor draft, dirty check, and save actions. */
 export function useEnrollmentsSetupPanelState(): UseEnrollmentsSetupPanelStateReturn {
   const config = useEnrollmentConfig();
-  const {
-    settings,
-    settingsDraft,
-    saved,
-    setSaved,
-    upd,
-    saveSettingsAsync,
-  } = useModuleSettingsEditor<EnrollmentsSettings>({
-    config,
-  });
+  const { settings, settingsDraft, saved, setSaved, upd, saveSettingsAsync } =
+    useModuleSettingsEditor<EnrollmentsSettings>({
+      config,
+    });
 
-  const {
-    saving,
-    isPrefsDirty,
-    handleSave,
-  } = useEnrollmentsSetupSaveActions({
+  const { saving, isPrefsDirty, handleSave } = useEnrollmentsSetupSaveActions({
     settings,
     settingsDraft,
     setSaved,

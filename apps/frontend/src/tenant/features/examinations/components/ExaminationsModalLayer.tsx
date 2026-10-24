@@ -1,5 +1,5 @@
 import { AnimatePresence } from "framer-motion";
-import { FormModal } from "@/components/ui/FormModal";
+import { FormModal } from "@/components/app/FormModal";
 import { useTranslation } from "@/hooks/useTranslation";
 import ExaminationForm from "@/tenant/features/examinations/components/ExaminationForm";
 import { EnterMarks } from "@/tenant/features/examinations/components/EnterMarks";

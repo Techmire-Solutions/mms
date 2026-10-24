@@ -1,16 +1,16 @@
-import type React from 'react';
-import { RotateCcw, Trash2 } from 'lucide-react';
-import { formatDate } from '@mms/shared';
-import { Button } from '@/components/ui/button';
-import { useTranslation } from '@/hooks/useTranslation';
-import { useReducedMotion } from '@/hooks/useReducedMotion';
-import { ENTITY_CARD_OVERFLOW_TRIGGER_CLASS } from '@/components/ui/entityCardChrome';
-import { EntityCardMetaTile } from '@/components/ui/EntityCardMetaTile';
-import { EntityCardsGrid } from "@/components/ui/EntityCardsGrid";
-import { EntityCard } from "@/components/ui/EntityCard";
-import { DirectoryCard } from "@/components/ui/DirectoryCard";
-import { StatusBadge, type StatusBadgeConfigItem } from '@/components/ui/StatusBadge';
-import type { Payment } from '@/lib/data/financeData';
+import type React from "react";
+import { RotateCcw, Trash2 } from "lucide-react";
+import { formatDate } from "@mms/shared";
+import { Button } from "@/components/ui/button";
+import { useTranslation } from "@/hooks/useTranslation";
+import { useReducedMotion } from "@/hooks/useReducedMotion";
+import { ENTITY_CARD_OVERFLOW_TRIGGER_CLASS } from "@/components/app/entityCardChrome";
+import { EntityCardMetaTile } from "@/components/app/EntityCardMetaTile";
+import { EntityCardsGrid } from "@/components/app/EntityCardsGrid";
+import { EntityCard } from "@/components/app/EntityCard";
+import { DirectoryCard } from "@/components/app/DirectoryCard";
+import { StatusBadge, type StatusBadgeConfigItem } from "@/components/app/StatusBadge";
+import type { Payment } from "@/lib/data/financeData";
 
 export interface PaymentsListCardsProps {
   payments: Payment[];
@@ -63,11 +63,13 @@ function PaymentCard({
       size="icon"
       className={ENTITY_CARD_OVERFLOW_TRIGGER_CLASS}
       onClick={() => (showDeleted ? onRestore?.(payment.id) : onRequestDelete(payment.id))}
-      aria-label={showDeleted ? t('finance.trash.restore') : t('common.delete')}
+      aria-label={showDeleted ? t("finance.trash.restore") : t("common.delete")}
     >
-      {showDeleted
-        ? <RotateCcw className="h-4 w-4 text-muted-foreground" />
-        : <Trash2 className="h-4 w-4 text-destructive" />}
+      {showDeleted ? (
+        <RotateCcw className="h-4 w-4 text-muted-foreground" />
+      ) : (
+        <Trash2 className="h-4 w-4 text-destructive" />
+      )}
     </Button>
   ) : null;
 
@@ -82,35 +84,35 @@ function PaymentCard({
       header={{
         displayName,
         subtitle:
-          isColumnVisible("invoice") && payment.invoiceId
-            ? <p className="font-mono text-xs text-muted-foreground truncate">{payment.invoiceId}</p>
-            : undefined,
+          isColumnVisible("invoice") && payment.invoiceId ? (
+            <p className="font-mono text-xs text-muted-foreground truncate">{payment.invoiceId}</p>
+          ) : undefined,
       }}
       metadataSlot={
         <EntityCard.MetaGrid>
           {isColumnVisible("amount") && (
-            <EntityCardMetaTile label={t('finance.columns.amount')}>
+            <EntityCardMetaTile label={t("finance.columns.amount")}>
               <span className="font-bold text-success">{formatCurrency(payment.amount)}</span>
             </EntityCardMetaTile>
           )}
           {isColumnVisible("date") && (
-            <EntityCardMetaTile label={t('finance.columns.paymentDate')}>
+            <EntityCardMetaTile label={t("finance.columns.paymentDate")}>
               {formatDate(payment.date)}
             </EntityCardMetaTile>
           )}
           {isColumnVisible("method") && (
-            <EntityCardMetaTile label={t('finance.columns.method')}>
+            <EntityCardMetaTile label={t("finance.columns.method")}>
               <StatusBadge status={payment.method} config={methodConfig} size="sm" />
             </EntityCardMetaTile>
           )}
           {isColumnVisible("receivedBy") && (
-            <EntityCardMetaTile label={t('finance.columns.receivedBy')}>
-              {payment.receivedBy || '—'}
+            <EntityCardMetaTile label={t("finance.columns.receivedBy")}>
+              {payment.receivedBy || "—"}
             </EntityCardMetaTile>
           )}
           {isColumnVisible("note") && (
-            <EntityCardMetaTile label={t('finance.columns.note')}>
-              {payment.note || '—'}
+            <EntityCardMetaTile label={t("finance.columns.note")}>
+              {payment.note || "—"}
             </EntityCardMetaTile>
           )}
         </EntityCard.MetaGrid>
@@ -142,7 +144,9 @@ export function PaymentsListCards({
     <EntityCardsGrid
       items={payments}
       selectedIds={selectedIds}
-      onSelectAll={canDelete && onToggleSelectAll ? () => onToggleSelectAll(!allSelected) : undefined}
+      onSelectAll={
+        canDelete && onToggleSelectAll ? () => onToggleSelectAll(!allSelected) : undefined
+      }
       allSelected={allSelected}
       someSelected={someSelected}
       selectAllLabel={t("finance.table.selectAll")}

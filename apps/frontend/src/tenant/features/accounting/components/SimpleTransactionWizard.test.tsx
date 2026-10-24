@@ -2,10 +2,10 @@ import React, { act } from "react";
 import { createRoot, type Root } from "react-dom/client";
 import { afterEach, beforeEach, describe, expect, it, vi, type Mock } from "vitest";
 import { journalEntryRecordSchema, type JournalEntry } from "@mms/shared";
-import type { JournalEntrySave } from "./journalEntriesTypes";
+import type { JournalEntrySave } from "../lib/journalEntriesTypes";
 import { SimpleTransactionWizard } from "./SimpleTransactionWizard";
 import { StepReview } from "./SimpleTransactionStepReview";
-import { TRANSACTION_GROUPS } from "./simpleTransactionWizardTypes";
+import { TRANSACTION_GROUPS } from "../lib/simpleTransactionWizardTypes";
 import type { Account } from "@/lib/data/accountingData";
 
 declare global {
@@ -13,10 +13,17 @@ declare global {
 }
 globalThis.IS_REACT_ACT_ENVIRONMENT = true;
 
-const journalTemplatesMock = vi.hoisted(() => ({ templates: [] as import("@mms/shared").JournalTemplate[] }));
+const journalTemplatesMock = vi.hoisted(() => ({
+  templates: [] as import("@mms/shared").JournalTemplate[],
+}));
 
 vi.mock("@/tenant/features/accounting/hooks/useJournalTemplates", () => ({
-  useJournalTemplates: () => ({ templates: journalTemplatesMock.templates, canSeed: false, seeding: false, seedTemplates: vi.fn() }),
+  useJournalTemplates: () => ({
+    templates: journalTemplatesMock.templates,
+    canSeed: false,
+    seeding: false,
+    seedTemplates: vi.fn(),
+  }),
 }));
 
 vi.mock("@/tenant/features/accounting/hooks/useVoucherNumbering", () => ({
@@ -24,8 +31,11 @@ vi.mock("@/tenant/features/accounting/hooks/useVoucherNumbering", () => ({
 }));
 
 vi.mock("framer-motion", () => ({
-  motion: { div: ({ children, ...props }: any) => <div {...props}>{children}</div> },
-  AnimatePresence: ({ children }: any) => <>{children}</>,
+  motion: {
+    div: ({ children, ...props }: React.ComponentProps<"div">) => <div {...props}>{children}</div>,
+    tr: ({ children, ...props }: React.ComponentProps<"tr">) => <tr {...props}>{children}</tr>,
+  },
+  AnimatePresence: ({ children }: { children?: React.ReactNode }) => <>{children}</>,
 }));
 
 vi.mock("@/lib/contexts/AuthContext", () => ({
@@ -43,15 +53,35 @@ vi.mock("@/hooks/useCurrency", () => ({
   }),
 }));
 
-vi.mock("@/components/ui/DatePicker", () => ({
-  DatePicker: ({ id, value, onChange }: any) => (
-    <input data-testid={id || "datepicker"} value={value} onChange={(event) => onChange(event.target.value)} />
+vi.mock("@/components/app/DatePicker", () => ({
+  DatePicker: ({
+    id,
+    value,
+    onChange,
+  }: {
+    id?: string;
+    value?: string;
+    onChange: (value: string) => void;
+  }) => (
+    <input
+      data-testid={id || "datepicker"}
+      value={value}
+      onChange={(event) => onChange(event.target.value)}
+    />
   ),
 }));
 
 /** The real modal keeps the wizard mounted between openings; only its portal unmounts. */
-vi.mock("@/components/ui/FormModal", () => ({
-  FormModal: ({ open, headerExtra, children }: any) =>
+vi.mock("@/components/app/FormModal", () => ({
+  FormModal: ({
+    open,
+    headerExtra,
+    children,
+  }: {
+    open?: boolean;
+    headerExtra?: React.ReactNode;
+    children?: React.ReactNode;
+  }) =>
     open ? (
       <div data-testid="wizard-modal">
         {headerExtra}
@@ -72,17 +102,54 @@ vi.mock("@/lib/notify", () => ({
   },
 }));
 
-const group = (groupKey: string) => TRANSACTION_GROUPS.find((transactionGroup) => transactionGroup.groupKey === groupKey)!;
-const feeCollection = group("accounting.journal.dashboard.group.moneyIn").items.find((item) => item.id === "fee_collection")!;
-const adjustment = group("accounting.journal.dashboard.group.transfers").items.find((item) => item.id === "adjustment")!;
+const group = (groupKey: string) =>
+  TRANSACTION_GROUPS.find((transactionGroup) => transactionGroup.groupKey === groupKey)!;
+const feeCollection = group("accounting.journal.dashboard.group.moneyIn").items.find(
+  (item) => item.id === "fee_collection",
+)!;
+const adjustment = group("accounting.journal.dashboard.group.transfers").items.find(
+  (item) => item.id === "adjustment",
+)!;
 
 const seedAccounts: Account[] = [
-  { id: "a1000", code: "1000", name: "Cash in Hand", type: "Asset", subtype: "Current Asset", description: "", isActive: true },
-  { id: "a1010", code: "1010", name: "Bank Account – HBL", type: "Asset", subtype: "Current Asset", description: "", isActive: true },
-  { id: "a4000", code: "4000", name: "Student Fee Income", type: "Revenue", subtype: "Operating Revenue", description: "", isActive: true },
+  {
+    id: "a1000",
+    code: "1000",
+    name: "Cash in Hand",
+    type: "Asset",
+    subtype: "Current Asset",
+    description: "",
+    isActive: true,
+  },
+  {
+    id: "a1010",
+    code: "1010",
+    name: "Bank Account – HBL",
+    type: "Asset",
+    subtype: "Current Asset",
+    description: "",
+    isActive: true,
+  },
+  {
+    id: "a4000",
+    code: "4000",
+    name: "Student Fee Income",
+    type: "Revenue",
+    subtype: "Operating Revenue",
+    description: "",
+    isActive: true,
+  },
 ];
 
-const fiscalYears = [{ id: "fy-2026", label: "2026", startDate: "2026-01-01", endDate: "2026-12-31", status: "active" as const }];
+const fiscalYears = [
+  {
+    id: "fy-2026",
+    label: "2026",
+    startDate: "2026-01-01",
+    endDate: "2026-12-31",
+    status: "active" as const,
+  },
+];
 
 function setInputValue(input: HTMLInputElement, value: string) {
   const setter = Object.getOwnPropertyDescriptor(HTMLInputElement.prototype, "value")?.set;
@@ -97,7 +164,9 @@ function selectOption(select: HTMLSelectElement, value: string) {
 }
 
 function findButton(container: HTMLElement, textFragment: string): HTMLButtonElement {
-  const button = Array.from(container.querySelectorAll("button")).find((candidate) => candidate.textContent?.includes(textFragment));
+  const button = Array.from(container.querySelectorAll("button")).find((candidate) =>
+    candidate.textContent?.includes(textFragment),
+  );
   if (!button) throw new Error(`No button containing "${textFragment}"`);
   return button as HTMLButtonElement;
 }
@@ -183,7 +252,9 @@ describe("SimpleTransactionWizard", () => {
     });
     const nextButton = findButton(container, "accounting.journal.dashboard.wizard.next");
     expect(nextButton.disabled).toBe(true);
-    expect(container.textContent).toContain("accounting.journal.dashboard.wizard.errorAmountInvalid");
+    expect(container.textContent).toContain(
+      "accounting.journal.dashboard.wizard.errorAmountInvalid",
+    );
   });
 
   it("starts every opening from a clean form so the previous transaction cannot be reposted", async () => {
@@ -205,8 +276,12 @@ describe("SimpleTransactionWizard", () => {
     await renderWizard(true, feeCollection);
 
     expect(amountInput().value).toBe("");
-    expect((container.querySelector("#wizard-description") as HTMLInputElement).value).toBe("accounting.journal.dashboard.desc.feeCollection");
-    expect(container.textContent).not.toContain("accounting.journal.dashboard.wizard.postTransaction");
+    expect((container.querySelector("#wizard-description") as HTMLInputElement).value).toBe(
+      "accounting.journal.dashboard.desc.feeCollection",
+    );
+    expect(container.textContent).not.toContain(
+      "accounting.journal.dashboard.wizard.postTransaction",
+    );
     expect((container.querySelector("#wizard-acc-in") as HTMLSelectElement).value).toBe("a1000");
   });
 
@@ -231,7 +306,9 @@ describe("SimpleTransactionWizard", () => {
     });
 
     expect(onSave).not.toHaveBeenCalled();
-    expect(notify.error).toHaveBeenCalledWith("accounting.journal.dashboard.wizard.errorSameAccount");
+    expect(notify.error).toHaveBeenCalledWith(
+      "accounting.journal.dashboard.wizard.errorSameAccount",
+    );
   });
 
   it("posts an adjustment once a real counter-account is chosen", async () => {
@@ -261,8 +338,24 @@ describe("SimpleTransactionWizard", () => {
 
   it("does not offer seed cash ids that the live chart does not have", async () => {
     const generatedAccounts: Account[] = [
-      { id: "a11111111-1111-4111-8111-111111111111", code: "1000", name: "Main Cash Box", type: "Asset", subtype: "Current Asset", description: "", isActive: true },
-      { id: "a22222222-2222-4222-8222-222222222222", code: "4000", name: "Tuition Income", type: "Revenue", subtype: "Operating Revenue", description: "", isActive: true },
+      {
+        id: "a11111111-1111-4111-8111-111111111111",
+        code: "1000",
+        name: "Main Cash Box",
+        type: "Asset",
+        subtype: "Current Asset",
+        description: "",
+        isActive: true,
+      },
+      {
+        id: "a22222222-2222-4222-8222-222222222222",
+        code: "4000",
+        name: "Tuition Income",
+        type: "Revenue",
+        subtype: "Operating Revenue",
+        description: "",
+        isActive: true,
+      },
     ];
     await renderWizard(true, feeCollection, generatedAccounts);
 
@@ -295,7 +388,16 @@ describe("SimpleTransactionWizard", () => {
       root.render(
         <StepReview
           type={feeCollection}
-          form={{ date: "2026-01-15", amount: "1,234", debitAcc: "a1000", creditAcc: "a4000", description: "Fee", ref: "", receipt: "", fiscal_year: "2026" }}
+          form={{
+            date: "2026-01-15",
+            amount: "1,234",
+            debitAcc: "a1000",
+            creditAcc: "a4000",
+            description: "Fee",
+            ref: "",
+            receipt: "",
+            fiscal_year: "2026",
+          }}
           accounts={seedAccounts}
           showAdvanced
           setShowAdvanced={vi.fn()}
@@ -306,7 +408,9 @@ describe("SimpleTransactionWizard", () => {
 
     // "1,234" is the ambiguous single-separator form: it must read as an invalid
     // amount, never as a posted zero.
-    expect(container.textContent).toContain("accounting.journal.dashboard.wizard.errorAmountInvalid");
+    expect(container.textContent).toContain(
+      "accounting.journal.dashboard.wizard.errorAmountInvalid",
+    );
     expect(container.textContent).not.toContain("accounting.journal.dashboard.wizard.postMessage");
     expect(formatCurrency).not.toHaveBeenCalled();
   });
@@ -327,7 +431,16 @@ describe("SimpleTransactionWizard", () => {
       root.render(
         <StepReview
           type={adjustment}
-          form={{ date: "2026-01-15", amount: "50", debitAcc: "a1000", creditAcc: "a1000", description: "Adj", ref: "", receipt: "", fiscal_year: "2026" }}
+          form={{
+            date: "2026-01-15",
+            amount: "50",
+            debitAcc: "a1000",
+            creditAcc: "a1000",
+            description: "Adj",
+            ref: "",
+            receipt: "",
+            fiscal_year: "2026",
+          }}
           accounts={seedAccounts}
           showAdvanced={false}
           setShowAdvanced={vi.fn()}
@@ -344,7 +457,9 @@ describe("SimpleTransactionWizard", () => {
     await renderWizard(true, feeCollection);
     expect(amountInput()).not.toBeNull();
 
-    const step1Btn = container.querySelector('nav[aria-label="accounting.journal.dashboard.wizard.stepsAria"] button');
+    const step1Btn = container.querySelector(
+      'nav[aria-label="accounting.journal.dashboard.wizard.stepsAria"] button',
+    );
     expect(step1Btn).not.toBeNull();
     await act(async () => {
       (step1Btn as HTMLButtonElement).click();
@@ -449,7 +564,7 @@ describe("SimpleTransactionWizard", () => {
   it("persists selected action type in sessionStorage", async () => {
     sessionStorage.clear();
     await renderWizard(true);
-    const typeBtn = container.querySelector('button[aria-pressed]') as HTMLButtonElement;
+    const typeBtn = container.querySelector("button[aria-pressed]") as HTMLButtonElement;
     expect(typeBtn).not.toBeNull();
     await act(async () => {
       typeBtn.click();
@@ -463,7 +578,9 @@ describe("SimpleTransactionWizard", () => {
     ];
     try {
       await renderWizard(true);
-      const labels = [...container.querySelectorAll("button[aria-pressed]")].map((button) => button.textContent?.trim());
+      const labels = [...container.querySelectorAll("button[aria-pressed]")].map((button) =>
+        button.textContent?.trim(),
+      );
       expect(labels).toEqual(["Hostel Fee"]);
     } finally {
       journalTemplatesMock.templates = [];

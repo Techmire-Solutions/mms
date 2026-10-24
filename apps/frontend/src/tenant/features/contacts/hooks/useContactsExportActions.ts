@@ -57,10 +57,14 @@ export function useContactsExportActions({
   tenantName,
 }: UseContactsExportActionsOptions) {
   const contactConfig = useContactConfig();
-  const effectiveConfig: Partial<FieldConfig> = fieldConfig ?? {
-    fields: contactConfig.fields,
-    formTabs: contactConfig.formTabs,
-  };
+  const effectiveConfig: Partial<FieldConfig> = useMemo(
+    () =>
+      fieldConfig ?? {
+        fields: contactConfig.fields,
+        formTabs: contactConfig.formTabs,
+      },
+    [fieldConfig, contactConfig.fields, contactConfig.formTabs],
+  );
 
   const resolvedColumns = useMemo(
     () => defaultContactsExportColumns(t, effectiveConfig),
@@ -128,7 +132,7 @@ export function resolveContactsExportColumns(
   const mapped = columns
     .map((col) => {
       const id = (col.id || col.key || "").trim();
-      const label = (col.labelKey ? t(col.labelKey) : (col.label || id)).trim();
+      const label = (col.labelKey ? t(col.labelKey) : col.label || id).trim();
       return { id, label: label || id };
     })
     .filter((col) => col.id.length > 0 && col.id.length <= 64 && col.label.length > 0);
@@ -138,4 +142,3 @@ export function resolveContactsExportColumns(
   }
   return mapped.slice(0, 200);
 }
-

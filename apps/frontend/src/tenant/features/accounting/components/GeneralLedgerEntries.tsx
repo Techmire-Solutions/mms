@@ -1,19 +1,18 @@
 import React, { useMemo } from "react";
 import { formatDate } from "@mms/shared";
-import { EmptyState } from "@/components/ui/EmptyState";
-import { TableCell } from "@/components/ui/table";
-import {
-  FinancialDebitCreditFooter,
-  FinancialDebitCreditFooterRow,
-} from "@/components/ui/reports/FinancialDebitCreditTableChrome";
+import { EmptyState } from "@/components/app/EmptyState";
+
 import { WorkBatchTable, type WorkBatchTableColumn } from "@/components/common/work/WorkBatchTable";
-import { WORK_SURFACE } from "@/components/ui/formStyles";
+import type { WorkBatchTableFooterRow } from "@/components/common/work/workBatchTableTypes";
 import { GeneralLedgerCardsView } from "./GeneralLedgerCardsView";
-import { type Account } from '@/lib/data/accountingData';
+import { type Account } from "@/lib/data/accountingData";
 import { useTranslation } from "@/hooks/useTranslation";
 import { useAccountingCurrency } from "@/hooks/useCurrency";
-import { useWorkDirectoryViewMode, type WorkDirectoryViewMode } from "@/hooks/useWorkDirectoryViewMode";
-import type { GeneralLedgerLineWithRunning } from "./useGeneralLedger";
+import {
+  useWorkDirectoryViewMode,
+  type WorkDirectoryViewMode,
+} from "@/hooks/useWorkDirectoryViewMode";
+import type { GeneralLedgerLineWithRunning } from "../hooks/useGeneralLedger";
 
 interface GeneralLedgerEntriesProps {
   activeAccount: Account;
@@ -53,19 +52,22 @@ export function GeneralLedgerEntries({
       {
         id: "date",
         label: t("accounting.ledger.columns.date"),
-        cellClassName: "px-3 py-2.5 text-xs text-muted-foreground whitespace-nowrap",
+        noWrap: true,
+        cellClassName: "px-3 py-2.5 text-xs text-muted-foreground",
         render: (line) => formatDate(line.date),
       },
       {
         id: "ref",
         label: t("accounting.ledger.columns.ref"),
+        noWrap: true,
         cellClassName: "px-3 py-2.5 font-mono text-xs font-bold text-primary",
         render: (line) => line.ref,
       },
       {
         id: "description",
         label: t("accounting.ledger.columns.description"),
-        cellClassName: "px-3 py-2.5 text-foreground max-w-cell-md truncate",
+        truncate: true,
+        cellClassName: "px-3 py-2.5 text-foreground max-w-cell-md",
         render: (line) => line.description,
       },
       {
@@ -79,6 +81,7 @@ export function GeneralLedgerEntries({
         id: "debit",
         label: t("accounting.ledger.columns.debit"),
         headerClassName: "text-end",
+        noWrap: true,
         cellClassName: "px-3 py-2.5 text-end font-mono text-xs font-semibold text-info",
         render: (line) => (line.debit > 0 ? formatCurrency(line.debit) : "—"),
       },
@@ -86,6 +89,7 @@ export function GeneralLedgerEntries({
         id: "credit",
         label: t("accounting.ledger.columns.credit"),
         headerClassName: "text-end",
+        noWrap: true,
         cellClassName: "px-3 py-2.5 text-end font-mono text-xs font-semibold text-success",
         render: (line) => (line.credit > 0 ? formatCurrency(line.credit) : "—"),
       },
@@ -93,6 +97,7 @@ export function GeneralLedgerEntries({
         id: "balance",
         label: t("accounting.ledger.columns.balance"),
         headerClassName: "text-end",
+        noWrap: true,
         cellClassName: "px-3 py-2.5 text-end font-mono text-xs font-semibold",
         render: (line) => (
           <>
@@ -113,7 +118,11 @@ export function GeneralLedgerEntries({
     return (
       <EmptyState
         variant="dashed"
-        title={dateFrom || dateTo ? t("accounting.ledger.noPostedTransactionsPeriod") : t("accounting.ledger.noPostedTransactions")}
+        title={
+          dateFrom || dateTo
+            ? t("accounting.ledger.noPostedTransactionsPeriod")
+            : t("accounting.ledger.noPostedTransactions")
+        }
         compact
       />
     );
@@ -132,35 +141,44 @@ export function GeneralLedgerEntries({
     );
   }
 
-  const tableFooter = (
-    <FinancialDebitCreditFooter>
-      <FinancialDebitCreditFooterRow>
-        <TableCell colSpan={3} className="table-footer-label">
-          {t("accounting.ledger.closingBalance")}
-        </TableCell>
-        <TableCell className="hidden lg:table-cell" />
-        <TableCell className="px-3 py-2.5 text-end font-mono font-bold text-info">
-          {formatCurrency(totalDebit)}
-        </TableCell>
-        <TableCell className="px-3 py-2.5 text-end font-mono font-bold text-success">
-          {formatCurrency(totalCredit)}
-        </TableCell>
-        <TableCell className="px-3 py-2.5 text-end font-mono font-bold text-foreground">
-          {formatCurrency(Math.abs(balance))} {balance >= 0 ? t("accounting.ledger.dr") : t("accounting.ledger.cr")}
-        </TableCell>
-      </FinancialDebitCreditFooterRow>
-    </FinancialDebitCreditFooter>
-  );
+  const footerRow: WorkBatchTableFooterRow = {
+    className: "border-t-2 border-border bg-muted/30",
+    cells: [
+      {
+        colSpan: 3,
+        className: "table-footer-label",
+        content: t("accounting.ledger.closingBalance"),
+      },
+      {
+        className: "hidden lg:table-cell",
+        content: null,
+      },
+      {
+        className: "px-3 py-2.5 text-end font-mono font-bold text-info",
+        content: formatCurrency(totalDebit),
+      },
+      {
+        className: "px-3 py-2.5 text-end font-mono font-bold text-success",
+        content: formatCurrency(totalCredit),
+      },
+      {
+        className: "px-3 py-2.5 text-end font-mono font-bold text-foreground",
+        content: (
+          <>
+            {formatCurrency(Math.abs(balance))}{" "}
+            {balance >= 0 ? t("accounting.ledger.dr") : t("accounting.ledger.cr")}
+          </>
+        ),
+      },
+    ],
+  };
 
   return (
-    <div className={WORK_SURFACE}>
-      <WorkBatchTable
-        data={rows}
-        columns={columns}
-        caption={t("accounting.ledger.entriesCaption", { name: activeAccount.name })}
-        bordered={false}
-        tableFooter={tableFooter}
-      />
-    </div>
+    <WorkBatchTable
+      data={rows}
+      columns={columns}
+      caption={t("accounting.ledger.entriesCaption", { name: activeAccount.name })}
+      footerRow={footerRow}
+    />
   );
 }

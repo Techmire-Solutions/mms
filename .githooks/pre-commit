@@ -1,18 +1,16 @@
 #!/usr/bin/env bash
-# Git hook: Local CI verification before commit
+# Git hook: fast pre-commit checks (seconds, staged files only).
+# - Staged secrets scan.
+# - ESLint (cached) on staged files.
+# Typecheck + changed-related unit tests run in .githooks/pre-push (pnpm ci:local).
 set -euo pipefail
 
 if [[ "${SKIP_LOCAL_CI:-}" == "1" ]]; then
-  echo "⚠ SKIP_LOCAL_CI=1 — skipping local CI before commit (agents must not set this unless the user asks)."
+  echo "⚠ SKIP_LOCAL_CI=1 — skipping pre-commit checks (agents must not set this unless the user asks)."
   exit 0
 fi
 
-echo "🔍 Running pre-commit verification & local CI (pnpm ci:local)..."
-
-# 1. Check for staged secrets/credentials
+echo "🔍 Pre-commit: secrets + lint on staged files..."
 pnpm run check:secrets
-
-# 2. Run path-aware local CI (quality gates + affected unit tests)
-pnpm ci:local
-
-echo "✅ Pre-commit verification passed — proceeding with commit."
+git diff --cached --name-only --diff-filter=ACMR | bash scripts/ci/lint-changed.sh
+echo "✅ Pre-commit checks passed."

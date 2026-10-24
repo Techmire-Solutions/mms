@@ -1,42 +1,42 @@
-import { env } from '@/lib/config/env';
-import { sanitizeColumnPreferencesBody } from './apiColumnPreferencesSanitizer';
+import { env } from "@/lib/config/env";
+import { sanitizeColumnPreferencesBody } from "./apiColumnPreferencesSanitizer";
 
 export { sanitizeColumnPreferencesBody };
 
 /** Tenant auth endpoint paths — SSOT for AuthContext.tsx, twoFactor.ts, and the session interceptor. */
 export const AUTH_PATHS = {
-  me: '/api/auth/me',
-  login: '/api/auth/login',
-  logout: '/api/auth/logout',
-  refresh: '/api/auth/refresh',
-  onboard: '/api/auth/onboard',
-  handoff: '/api/auth/handoff',
-  onboardingStatus: '/api/auth/onboarding-status',
-  twoFactorVerify: '/api/auth/2fa/verify',
-  twoFactorResend: '/api/auth/2fa/resend',
-  sessionExtend: '/api/auth/session/extend',
-  forgotPassword: '/api/auth/forgot-password',
-  forgotPasswordVerify: '/api/auth/forgot-password/verify',
-  forgotPasswordReset: '/api/auth/forgot-password/reset',
-  verifyPassword: '/api/auth/verify-password',
-  uiState: '/api/auth/me/ui-state',
+  me: "/api/auth/me",
+  login: "/api/auth/login",
+  logout: "/api/auth/logout",
+  refresh: "/api/auth/refresh",
+  onboard: "/api/auth/onboard",
+  handoff: "/api/auth/handoff",
+  onboardingStatus: "/api/auth/onboarding-status",
+  twoFactorVerify: "/api/auth/2fa/verify",
+  twoFactorResend: "/api/auth/2fa/resend",
+  sessionExtend: "/api/auth/session/extend",
+  forgotPassword: "/api/auth/forgot-password",
+  forgotPasswordVerify: "/api/auth/forgot-password/verify",
+  forgotPasswordReset: "/api/auth/forgot-password/reset",
+  verifyPassword: "/api/auth/verify-password",
+  uiState: "/api/auth/me/ui-state",
 } as const;
 
 /** Platform auth endpoint paths — SSOT for PlatformAuthContext.tsx, usePlatformProfile.ts, and usePlatformSessionTimeout.tsx. */
 export const PLATFORM_AUTH_PATHS = {
-  me: '/api/platform/auth/me',
-  login: '/api/platform/auth/login',
-  logout: '/api/platform/auth/logout',
-  twoFactorVerify: '/api/platform/auth/2fa/verify',
-  twoFactorResend: '/api/platform/auth/2fa/resend',
-  sessionExtend: '/api/platform/auth/session/extend',
-  sessionPolicy: '/api/platform/auth/session/policy',
-  passwordForgot: '/api/platform/auth/password/forgot',
-  passwordReset: '/api/platform/auth/password/reset',
-  passwordResend: '/api/platform/auth/password/resend',
-  changePassword: '/api/platform/auth/change-password',
-  setupStatus: '/api/platform/auth/setup/status',
-  setupRegister: '/api/platform/auth/setup/register',
+  me: "/api/platform/auth/me",
+  login: "/api/platform/auth/login",
+  logout: "/api/platform/auth/logout",
+  twoFactorVerify: "/api/platform/auth/2fa/verify",
+  twoFactorResend: "/api/platform/auth/2fa/resend",
+  sessionExtend: "/api/platform/auth/session/extend",
+  sessionPolicy: "/api/platform/auth/session/policy",
+  passwordForgot: "/api/platform/auth/password/forgot",
+  passwordReset: "/api/platform/auth/password/reset",
+  passwordResend: "/api/platform/auth/password/resend",
+  changePassword: "/api/platform/auth/change-password",
+  setupStatus: "/api/platform/auth/setup/status",
+  setupRegister: "/api/platform/auth/setup/register",
 } as const;
 
 const REFRESH_PATH = AUTH_PATHS.refresh;
@@ -49,20 +49,22 @@ const TENANT_SESSION_EXCLUDED_PATHS: Set<string> = new Set([
   AUTH_PATHS.twoFactorVerify,
   AUTH_PATHS.twoFactorResend,
   AUTH_PATHS.onboardingStatus,
+  AUTH_PATHS.forgotPassword,
+  AUTH_PATHS.forgotPasswordVerify,
+  AUTH_PATHS.forgotPasswordReset,
 ]);
 
 export function resolveApiUrl(path: string): string {
   if (/^https?:\/\//i.test(path)) {
     return path;
   }
-  const normalized = path.startsWith('/') ? path : `/${path}`;
+  const normalized = path.startsWith("/") ? path : `/${path}`;
   return env.apiUrl ? `${env.apiUrl}${normalized}` : normalized;
 }
 
 export function isTenantSessionRequest(path: string): boolean {
   const apiOrigin =
-    env.apiUrl ||
-    (typeof window !== 'undefined' ? window.location.origin : 'http://localhost');
+    env.apiUrl || (typeof window !== "undefined" ? window.location.origin : "http://localhost");
 
   const resolved = resolveApiUrl(path);
 
@@ -71,8 +73,8 @@ export function isTenantSessionRequest(path: string): boolean {
   const url = new URL(resolved, apiOrigin);
   const expectedOrigin = new URL(apiOrigin).origin;
 
-  if (url.origin !== expectedOrigin || !url.pathname.startsWith('/api/')) return false;
-  if (url.pathname.startsWith('/api/platform/')) return false;
+  if (url.origin !== expectedOrigin || !url.pathname.startsWith("/api/")) return false;
+  if (url.pathname.startsWith("/api/platform/")) return false;
   if (url.pathname === REFRESH_PATH || url.pathname === AUTH_PATHS.logout) return false;
 
   return !TENANT_SESSION_EXCLUDED_PATHS.has(url.pathname);

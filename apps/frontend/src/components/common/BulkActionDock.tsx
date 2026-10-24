@@ -2,6 +2,8 @@ import React, { useEffect } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
+import { useTranslation } from "@/hooks/useTranslation";
+import { useReducedMotion } from "@/hooks/useReducedMotion";
 import {
   BulkSelectionClearAction,
   BulkSelectionDeleteAction,
@@ -10,7 +12,7 @@ import {
   BulkSelectionMessagingActions,
   BulkSelectionStatusAction,
   type BulkSelectionMessageChannel,
-} from "@/components/ui/BulkSelectionActions";
+} from "@/components/app/BulkSelectionActions";
 
 export type BulkActionDockPlacement = "floating" | "inline";
 export type BulkActionDockTone = "glass" | "tint" | "plain";
@@ -58,14 +60,14 @@ function DockAction({
       className={cn("min-h-11 px-3 text-xs font-semibold gap-1.5", className)}
       {...props}
     >
-      {Icon && <Icon className="w-3.5 h-3.5 shrink-0" />}
+      {Icon && <Icon className="w-3.5 h-3.5 shrink-0" aria-hidden="true" />}
       {children}
     </Button>
   );
 }
 
 function DockSeparator({ className }: { className?: string }): React.JSX.Element {
-  return <div className={cn("h-4 w-px bg-border shrink-0", className)} aria-hidden />;
+  return <div className={cn("h-4 w-px bg-border shrink-0", className)} aria-hidden="true" />;
 }
 
 export interface BulkActionDockProps {
@@ -104,9 +106,12 @@ export function BulkActionDock({
   children,
   trailing,
   className,
-  "aria-label": ariaLabel = "Bulk actions toolbar",
+  "aria-label": ariaLabel,
   enableEscapeKey = true,
 }: BulkActionDockProps): React.JSX.Element {
+  const { t } = useTranslation();
+  const reducedMotion = useReducedMotion();
+
   useEffect(() => {
     if (!enableEscapeKey || selectedCount === 0) return;
     const handleKeyDown = (event: KeyboardEvent) => {
@@ -120,8 +125,8 @@ export function BulkActionDock({
   const resolvedCountLabel =
     countLabel ??
     (totalCount !== undefined
-      ? `${selectedCount} / ${totalCount} selected`
-      : `${selectedCount} selected`);
+      ? t("common.selectedOfTotal", { selected: selectedCount, total: totalCount })
+      : t("common.selectedCount", { count: selectedCount }));
 
   const resolvedTrailing =
     trailing ??
@@ -134,15 +139,13 @@ export function BulkActionDock({
       {selectedCount > 0 && (
         <motion.div
           role="region"
-          aria-label={ariaLabel}
-          initial={{ opacity: 0, y: enterY }}
-          animate={{ opacity: 1, y: 0 }}
-          exit={{ opacity: 0, y: enterY }}
-          transition={{ duration: 0.15, ease: "easeOut" }}
+          aria-label={ariaLabel ?? t("common.bulkActionsToolbar")}
+          initial={reducedMotion ? false : { opacity: 0, y: enterY }}
+          animate={reducedMotion ? { opacity: 1 } : { opacity: 1, y: 0 }}
+          exit={reducedMotion ? { opacity: 0 } : { opacity: 0, y: enterY }}
+          transition={reducedMotion ? { duration: 0 } : { duration: 0.15, ease: "easeOut" }}
           className={cn(
-            placement === "floating"
-              ? PLACEMENT.floating
-              : cn(PLACEMENT.inline, INLINE_TONE[tone]),
+            placement === "floating" ? PLACEMENT.floating : cn(PLACEMENT.inline, INLINE_TONE[tone]),
             className,
           )}
         >
@@ -162,9 +165,9 @@ export function BulkActionDock({
                 variant="ghost"
                 size="sm"
                 onClick={onSelectAllToggle}
-                className="text-xs h-7 px-2 min-h-7 text-primary hover:text-primary"
+                className="text-xs h-7 px-2 min-h-7 touch-target-coarse text-primary hover:text-primary cursor-pointer"
               >
-                {isAllSelected ? "Deselect all" : "Select all"}
+                {isAllSelected ? t("common.deselectAll") : t("common.selectAll")}
               </Button>
             )}
             {placement === "floating" && (children || resolvedTrailing) && <DockSeparator />}

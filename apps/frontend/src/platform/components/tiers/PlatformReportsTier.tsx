@@ -1,11 +1,11 @@
-import React, { Suspense, lazy } from 'react';
-import { StatsSkeleton } from '@/components/ui/LoadingState';
+import React, { Suspense, lazy } from "react";
+import { StatsSkeleton } from "@shared/ui";
 
 const PlatformReports = lazy(() =>
-  import('@/platform/components/PlatformReports').then((m) => ({ default: m.PlatformReports })),
+  import("@/platform/components/PlatformReports").then((m) => ({ default: m.PlatformReports })),
 );
 
-export type PlatformReportsSubTab = 'analytics';
+export type PlatformReportsSubTab = "analytics";
 
 export interface PlatformReportsTierProps {
   activeSubTab?: PlatformReportsSubTab;
@@ -33,4 +33,3 @@ export function PlatformReportsTier({
     </div>
   );
 }
-

@@ -1,4 +1,4 @@
-import { attendanceUseCases } from '../attendance/use-cases/attendanceUseCases.js';
+import { attendanceUseCases } from "../attendance/use-cases/attendanceUseCases.js";
 
 /**
  * Thin re-export of the attendance use-cases facade.

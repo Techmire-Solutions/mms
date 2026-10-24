@@ -2,7 +2,7 @@ import React, { act } from "react";
 import { createRoot, type Root } from "react-dom/client";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { StepTransactionForm } from "./SimpleTransactionStepForm";
-import type { WizardFormState } from "./simpleTransactionWizardTypes";
+import type { WizardFormState } from "../lib/simpleTransactionWizardTypes";
 import type { Account, JournalEntry } from "@/lib/data/accountingData";
 
 declare global {
@@ -20,7 +20,7 @@ vi.mock("@/hooks/useTranslation", () => ({
   }),
 }));
 
-vi.mock("@/components/ui/DatePicker", () => ({
+vi.mock("@/components/app/DatePicker", () => ({
   DatePicker: ({
     id,
     value,
@@ -38,7 +38,7 @@ vi.mock("@/components/ui/DatePicker", () => ({
   ),
 }));
 
-vi.mock("@/components/ui/FormSelect", () => ({
+vi.mock("@/components/app/FormSelect", () => ({
   FormSelect: ({
     id,
     value,
@@ -47,24 +47,41 @@ vi.mock("@/components/ui/FormSelect", () => ({
     id: string;
     value: string;
     onChange: (val: string) => void;
-  }) => (
-    <input
-      id={id}
-      data-testid={id}
-      value={value}
-      onChange={(e) => onChange(e.target.value)}
-    />
-  ),
+  }) => <input id={id} data-testid={id} value={value} onChange={(e) => onChange(e.target.value)} />,
 }));
 
-import { QUICK_ACTIONS } from "./journalEntriesQuickActions";
+import { QUICK_ACTIONS } from "../lib/journalEntriesQuickActions";
 
 const mockActionType = QUICK_ACTIONS[0]!.type;
 
 const mockAccounts: Account[] = [
-  { id: "a1000", code: "1000", name: "Cash on Hand", type: "Asset", subtype: "Current Asset", description: "", isActive: true },
-  { id: "a4000", code: "4000", name: "Fee Income", type: "Revenue", subtype: "Operating Revenue", description: "", isActive: true },
-  { id: "a5000", code: "5000", name: "Staff Salaries", type: "Expense", subtype: "Operating Expense", description: "", isActive: true },
+  {
+    id: "a1000",
+    code: "1000",
+    name: "Cash on Hand",
+    type: "Asset",
+    subtype: "Current Asset",
+    description: "",
+    isActive: true,
+  },
+  {
+    id: "a4000",
+    code: "4000",
+    name: "Fee Income",
+    type: "Revenue",
+    subtype: "Operating Revenue",
+    description: "",
+    isActive: true,
+  },
+  {
+    id: "a5000",
+    code: "5000",
+    name: "Staff Salaries",
+    type: "Expense",
+    subtype: "Operating Expense",
+    description: "",
+    isActive: true,
+  },
 ];
 
 function setInputValue(input: HTMLInputElement, value: string) {
@@ -195,7 +212,9 @@ describe("StepTransactionForm", () => {
   });
 
   it("renders both paidFrom and expenseCategory selectors for moneyOut transactions", async () => {
-    const salaryActionType = QUICK_ACTIONS.find((action) => action.type.groupKey === "accounting.journal.dashboard.group.moneyOut")!.type;
+    const salaryActionType = QUICK_ACTIONS.find(
+      (action) => action.type.groupKey === "accounting.journal.dashboard.group.moneyOut",
+    )!.type;
     const formState: WizardFormState = {
       date: "2026-09-01",
       amount: "500.00",
@@ -237,8 +256,20 @@ describe("StepTransactionForm", () => {
       tags: ["Fees", "CustomTag"],
     };
     const fiscalYears = [
-      { id: "fy-2025", label: "2025", startDate: "2025-01-01", endDate: "2025-12-31", status: "closed" as const },
-      { id: "fy-2026", label: "2026", startDate: "2026-01-01", endDate: "2026-12-31", status: "active" as const },
+      {
+        id: "fy-2025",
+        label: "2025",
+        startDate: "2025-01-01",
+        endDate: "2025-12-31",
+        status: "closed" as const,
+      },
+      {
+        id: "fy-2026",
+        label: "2026",
+        startDate: "2026-01-01",
+        endDate: "2026-12-31",
+        status: "active" as const,
+      },
     ];
 
     await act(async () => {
@@ -273,7 +304,13 @@ describe("StepTransactionForm", () => {
       fiscal_year: "2026",
     };
     const singleFiscalYear = [
-      { id: "fy-2026", label: "2026", startDate: "2026-01-01", endDate: "2026-12-31", status: "active" as const },
+      {
+        id: "fy-2026",
+        label: "2026",
+        startDate: "2026-01-01",
+        endDate: "2026-12-31",
+        status: "active" as const,
+      },
     ];
 
     await act(async () => {

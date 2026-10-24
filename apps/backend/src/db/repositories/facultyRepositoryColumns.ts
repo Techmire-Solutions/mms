@@ -2,28 +2,31 @@
  * @file facultyRepositoryColumns.ts
  * @description Persist faculty profile + hydrate from employment SSOT (no dual-write mirrors).
  */
-import { and, eq, isNull } from 'drizzle-orm';
-import { faculty, tenantUsers } from '../schema.js';
-import type { AppDb } from '../tenant-context.js';
-import type { FacultyMember } from '@mms/shared';
+import { and, eq, isNull } from "drizzle-orm";
+import { faculty, tenantUsers } from "../schema.js";
+import type { AppDb } from "../tenant-context.js";
+import type { FacultyMember } from "@mms/shared";
 import {
   DEFAULT_FACULTY_PROFILE_STATUS,
   DEFAULT_FACULTY_STATUS,
   isFacultyProfileStatus,
   parseFacultyPerformanceRating,
-} from '@mms/shared';
-import { mapAuditTimestamps, mapAuditToInsert } from './repositoryMappers.js';
-import { attachPrimaryAppointmentFields } from './facultyPrimaryAppointmentHydrate.js';
+} from "@mms/shared";
+import { mapAuditTimestamps, mapAuditToInsert } from "./repositoryMappers.js";
+import { attachPrimaryAppointmentFields } from "./facultyPrimaryAppointmentHydrate.js";
 import {
   flattenFacultyEmploymentFields,
   upsertFacultyEmploymentTx,
-} from './facultyEmploymentRepository.js';
-import { attachEmployDesignationList, syncFacultyEmployDesignationsTx } from './facultyEmployDesignationSync.js';
+} from "./facultyEmploymentRepository.js";
+import {
+  attachEmployDesignationList,
+  syncFacultyEmployDesignationsTx,
+} from "./facultyEmployDesignationSync.js";
 import {
   attachEmploymentSsotFields,
   preferEmployDesignationPrimary,
-} from './facultyEmploymentSsotHydrate.js';
-import { FACULTY_PROJECTION_COLUMNS, KNOWN_FACULTY_KEYS } from './facultyRepositoryColumnDefs.js';
+} from "./facultyEmploymentSsotHydrate.js";
+import { FACULTY_PROJECTION_COLUMNS, KNOWN_FACULTY_KEYS } from "./facultyRepositoryColumnDefs.js";
 
 export type FacultyInsert = typeof faculty.$inferInsert;
 export { FACULTY_PROJECTION_COLUMNS };
@@ -49,10 +52,10 @@ export function facultyWriteValues(
     employmentId,
     userId: flat.userId ? String(flat.userId) : null,
     profileStatus,
-    specialization: typeof flat.specialization === 'string' ? flat.specialization : null,
-    qualification: typeof flat.qualification === 'string' ? flat.qualification : null,
+    specialization: typeof flat.specialization === "string" ? flat.specialization : null,
+    qualification: typeof flat.qualification === "string" ? flat.qualification : null,
     performanceRating: rating === null ? null : rating.toFixed(1),
-    notes: typeof flat.notes === 'string' ? flat.notes : null,
+    notes: typeof flat.notes === "string" ? flat.notes : null,
     customData,
     ...audit,
     createdAt: audit.createdAt ?? new Date(),
@@ -60,17 +63,19 @@ export function facultyWriteValues(
 }
 
 /** Map a faculty projection row; employment/designation fields filled by hydrate overlays. */
-export function facultyRowToRecord(row: typeof faculty.$inferSelect & {
-  contactId?: string | null;
-  employeeId?: string | null;
-  status?: string | null;
-  designationId?: string | null;
-  designationStartDate?: string | null;
-  designationEndDate?: string | null;
-  employmentStartDate?: string | null;
-  employmentEndDate?: string | null;
-  joinDate?: string | null;
-}): FacultyMember {
+export function facultyRowToRecord(
+  row: typeof faculty.$inferSelect & {
+    contactId?: string | null;
+    employeeId?: string | null;
+    status?: string | null;
+    designationId?: string | null;
+    designationStartDate?: string | null;
+    designationEndDate?: string | null;
+    employmentStartDate?: string | null;
+    employmentEndDate?: string | null;
+    joinDate?: string | null;
+  },
+): FacultyMember {
   const employmentStartDate = row.employmentStartDate ?? null;
   const status = row.status ?? DEFAULT_FACULTY_STATUS;
   const profileStatus = isFacultyProfileStatus(row.profileStatus)
@@ -79,7 +84,7 @@ export function facultyRowToRecord(row: typeof faculty.$inferSelect & {
   return {
     ...(row.customData ?? {}),
     id: row.id,
-    contactId: row.contactId ?? '',
+    contactId: row.contactId ?? "",
     employmentId: row.employmentId ?? null,
     userId: row.userId ?? null,
     status,
@@ -95,7 +100,7 @@ export function facultyRowToRecord(row: typeof faculty.$inferSelect & {
     employmentEndDate: row.employmentEndDate ?? null,
     employment: {
       id: row.employmentId ?? undefined,
-      contactId: row.contactId ?? '',
+      contactId: row.contactId ?? "",
       employeeId: row.employeeId ?? null,
       status,
       employmentStartDate,
@@ -133,8 +138,13 @@ export function facultyUpdateSetValues(
   facultyMember: FacultyMember,
   employmentId: string,
 ) {
-  const { id: _i, workspaceSubdomain: _w, createdAt: _c, createdBy: _b, ...set } =
-    facultyWriteValues(subdomain, facultyMember, employmentId);
+  const {
+    id: _i,
+    workspaceSubdomain: _w,
+    createdAt: _c,
+    createdBy: _b,
+    ...set
+  } = facultyWriteValues(subdomain, facultyMember, employmentId);
   return set;
 }
 
@@ -148,19 +158,24 @@ export async function persistFacultyTx(
   const flat = flattenFacultyEmploymentFields(facultyMember);
   const employmentId = await upsertFacultyEmploymentTx(tx, subdomain, flat);
   const employDesignationId = await syncFacultyEmployDesignationsTx(
-    tx, subdomain, employmentId, flat,
+    tx,
+    subdomain,
+    employmentId,
+    flat,
   );
   let userId = flat.userId ? String(flat.userId) : null;
-  const contactId = String(flat.contactId ?? '').trim();
+  const contactId = String(flat.contactId ?? "").trim();
   if (!userId && contactId) {
     const linked = await tx
       .select({ id: tenantUsers.id })
       .from(tenantUsers)
-      .where(and(
-        eq(tenantUsers.workspaceSubdomain, subdomain),
-        eq(tenantUsers.contactId, contactId),
-        isNull(tenantUsers.deletedAt),
-      ))
+      .where(
+        and(
+          eq(tenantUsers.workspaceSubdomain, subdomain),
+          eq(tenantUsers.contactId, contactId),
+          isNull(tenantUsers.deletedAt),
+        ),
+      )
       .limit(1);
     userId = linked[0]?.id ?? null;
   }
@@ -175,8 +190,11 @@ export async function persistFacultyTx(
     await tx.insert(faculty).values(values);
     return;
   }
-  await tx.insert(faculty).values(values).onConflictDoUpdate({
-    target: [faculty.workspaceSubdomain, faculty.id],
-    set: facultyUpdateSetValues(subdomain, withEmployment, employmentId),
-  });
+  await tx
+    .insert(faculty)
+    .values(values)
+    .onConflictDoUpdate({
+      target: [faculty.workspaceSubdomain, faculty.id],
+      set: facultyUpdateSetValues(subdomain, withEmployment, employmentId),
+    });
 }

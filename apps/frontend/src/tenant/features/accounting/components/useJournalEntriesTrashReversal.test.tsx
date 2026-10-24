@@ -1,7 +1,7 @@
 import { act } from "react";
 import { createRoot, type Root } from "react-dom/client";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import { useJournalEntriesTrashReversal } from "./useJournalEntriesTrashReversal";
+import { useJournalEntriesTrashReversal } from "../hooks/useJournalEntriesTrashReversal";
 import type { JournalEntry } from "@/lib/data/accountingData";
 import { notify } from "@/lib/notify";
 
@@ -72,9 +72,11 @@ const mockReversalOfPosted: JournalEntry = {
 
 const REQUEST = { date: "2026-09-01", reason: "Posted to the wrong account" };
 
-function TestHarness(props: Parameters<typeof useJournalEntriesTrashReversal>[0] & {
-  onController: (c: ReturnType<typeof useJournalEntriesTrashReversal>) => void;
-}) {
+function TestHarness(
+  props: Parameters<typeof useJournalEntriesTrashReversal>[0] & {
+    onController: (c: ReturnType<typeof useJournalEntriesTrashReversal>) => void;
+  },
+) {
   const controller = useJournalEntriesTrashReversal(props);
   props.onController(controller);
   return null;
@@ -84,7 +86,9 @@ describe("useJournalEntriesTrashReversal", () => {
   let container: HTMLDivElement;
   let root: Root;
   const t = ((key: string, args?: Record<string, string | number>) =>
-    args ? `${key}|${JSON.stringify(args)}` : key) as unknown as Parameters<typeof useJournalEntriesTrashReversal>[0]["t"];
+    args ? `${key}|${JSON.stringify(args)}` : key) as unknown as Parameters<
+    typeof useJournalEntriesTrashReversal
+  >[0]["t"];
 
   beforeEach(() => {
     container = document.createElement("div");
@@ -368,7 +372,13 @@ describe("useJournalEntriesTrashReversal", () => {
   it("given a Finance-owned invoice posting, should refuse to open the reverse dialog", async () => {
     // Arrange
     let controller!: ReturnType<typeof useJournalEntriesTrashReversal>;
-    const invoicePosting: JournalEntry = { ...mockEntryPosted, id: "je-inv", ref: "invoice:inv-1", source_type: "invoice", source_id: "inv-1" };
+    const invoicePosting: JournalEntry = {
+      ...mockEntryPosted,
+      id: "je-inv",
+      ref: "invoice:inv-1",
+      source_type: "invoice",
+      source_id: "inv-1",
+    };
     await act(async () => {
       root.render(
         <TestHarness
@@ -390,7 +400,9 @@ describe("useJournalEntriesTrashReversal", () => {
     });
 
     // Assert
-    expect(notify.warning).toHaveBeenCalledWith(expect.stringContaining("accounting.journal.alerts.notReversible"));
+    expect(notify.warning).toHaveBeenCalledWith(
+      expect.stringContaining("accounting.journal.alerts.notReversible"),
+    );
     expect(controller.pendingReverseEntry).toBeNull();
   });
 
@@ -399,7 +411,10 @@ describe("useJournalEntriesTrashReversal", () => {
     let controller!: ReturnType<typeof useJournalEntriesTrashReversal>;
     mockReverseMutate.mockRejectedValue({
       status: 422,
-      body: { type: "validation_error", message: "Reversal date falls in a closed accounting period" },
+      body: {
+        type: "validation_error",
+        message: "Reversal date falls in a closed accounting period",
+      },
     });
     await act(async () => {
       root.render(

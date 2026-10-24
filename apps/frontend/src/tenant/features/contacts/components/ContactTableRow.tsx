@@ -5,12 +5,10 @@ import { getDisplayName, type Contact, type ContactPreferences } from "@mms/shar
 import { type useTranslation } from "@/hooks/useTranslation";
 import { useListRowMotion } from "@/hooks/useListRowMotion";
 import { ContactsRowActions } from "@/tenant/features/contacts/components/ContactsRowActions";
-import { MODULE_ROW_ACTIONS_TRIGGER_CLASS } from "@/components/ui/ModuleRowActionsMenu";
+import { MODULE_ROW_ACTIONS_TRIGGER_CLASS } from "@/components/app/ModuleRowActionsMenu";
 import { renderContactTableCell } from "@/tenant/features/contacts/components/ContactTableCells";
-import {
-  type ContactsColumnConfig,
-} from "@/tenant/features/contacts/components/contactTableTypes";
-import { ModuleTableSelectionCell } from "@/components/ui/ModuleTableSelectionCell";
+import { type ContactsColumnConfig } from "@/tenant/features/contacts/lib/contactTableTypes";
+import { ModuleTableSelectionCell } from "@/components/app/ModuleTableSelectionCell";
 import { cn } from "@/lib/utils";
 
 export type { ContactsColumnConfig };
@@ -68,10 +66,7 @@ export const ContactTableRow = React.memo(function ContactTableRow({
   return (
     <motion.tr
       {...rowMotion()}
-      className={cn(
-        "hover:bg-muted/20 transition-colors group",
-        isSelected && "bg-primary/5",
-      )}
+      className={cn("hover:bg-muted/20 transition-colors group", isSelected && "bg-primary/5")}
     >
       <ModuleTableSelectionCell
         checked={isSelected}

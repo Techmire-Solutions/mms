@@ -1,4 +1,4 @@
-import { contacts } from '../schema.js';
+import { contacts } from "../schema.js";
 
 export const contactSelectColumns = {
   id: contacts.id,

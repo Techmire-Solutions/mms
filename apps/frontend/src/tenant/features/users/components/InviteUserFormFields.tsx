@@ -1,22 +1,13 @@
-import React from 'react';
-import type { UseFormReturn } from 'react-hook-form';
-import {
-  USER_STATUS_VALUES,
-  type InviteWorkspaceUserInput,
-  type WorkspaceRole,
-} from '@mms/shared';
-import ContactPicker from '@/components/contactLink/ContactPicker';
-import { Button } from '@/components/ui/button';
-import { Checkbox } from '@/components/ui/checkbox';
-import { FormSelect } from '@/components/ui/FormSelect';
-import {
-  FormControl,
-  FormField,
-  FormItem,
-  FormLabel,
-} from '@/components/ui/form';
-import { TranslatedFormMessage } from '@/lib/forms/TranslatedFormMessage';
-import type { TranslationFunction } from '@/lib/contexts/TranslationContext';
+import React from "react";
+import type { UseFormReturn } from "react-hook-form";
+import { USER_STATUS_VALUES, type InviteWorkspaceUserInput, type WorkspaceRole } from "@mms/shared";
+import ContactPicker from "@/components/contactLink/ContactPicker";
+import { Button } from "@/components/ui/button";
+import { Checkbox } from "@/components/ui/checkbox";
+import { FormSelect } from "@/components/app/FormSelect";
+import { FormControl, FormField, FormItem, FormLabel } from "@/components/ui/form";
+import { TranslatedFormMessage } from "@/lib/forms/TranslatedFormMessage";
+import type { TranslationFunction } from "@/lib/contexts/TranslationContext";
 
 export interface InviteUserFormFieldsProps {
   form: UseFormReturn<InviteWorkspaceUserInput>;
@@ -39,13 +30,13 @@ export function InviteUserFormFields({
         render={({ field }) => (
           <FormItem>
             <ContactPicker
-              label={t('users.fieldContact')}
+              label={t("users.fieldContact")}
               value={field.value || null}
               excludeIds={excludeIds}
-              onChange={(id) => field.onChange(id ?? '')}
-              searchPlaceholder={t('users.contactSearch')}
-              emptyTitle={t('users.contactEmptyTitle')}
-              emptyHint={t('users.contactEmptyHint')}
+              onChange={(id) => field.onChange(id ?? "")}
+              searchPlaceholder={t("users.contactSearch")}
+              emptyTitle={t("users.contactEmptyTitle")}
+              emptyHint={t("users.contactEmptyHint")}
             />
             <TranslatedFormMessage messageKey={form.formState.errors.contactId?.message} />
           </FormItem>
@@ -56,7 +47,7 @@ export function InviteUserFormFields({
         name="role"
         render={({ field }) => (
           <FormItem>
-            <FormLabel>{t('users.fieldRole')}</FormLabel>
+            <FormLabel>{t("users.fieldRole")}</FormLabel>
             <div className="mt-1.5 flex flex-wrap gap-2">
               {assignableRoles.map((workspaceRole) => (
                 <Button
@@ -64,7 +55,7 @@ export function InviteUserFormFields({
                   type="button"
                   size="sm"
                   aria-pressed={field.value === workspaceRole.id}
-                  variant={field.value === workspaceRole.id ? 'default' : 'outline'}
+                  variant={field.value === workspaceRole.id ? "default" : "outline"}
                   onClick={() => field.onChange(workspaceRole.id)}
                   className="min-h-11"
                 >
@@ -81,7 +72,7 @@ export function InviteUserFormFields({
         name="status"
         render={({ field }) => (
           <FormItem>
-            <FormLabel htmlFor="invite-status">{t('users.fieldStatus')}</FormLabel>
+            <FormLabel htmlFor="invite-status">{t("users.fieldStatus")}</FormLabel>
             <FormControl>
               <FormSelect
                 id="invite-status"
@@ -110,8 +101,11 @@ export function InviteUserFormFields({
                 onCheckedChange={(checked) => field.onChange(checked === true)}
                 className="cursor-pointer"
               />
-              <label htmlFor={field.name} className="cursor-pointer text-xs font-medium text-foreground select-none">
-                {t('users.inviteSendEmail')}
+              <label
+                htmlFor={field.name}
+                className="cursor-pointer text-xs font-medium text-foreground select-none"
+              >
+                {t("users.inviteSendEmail")}
               </label>
             </div>
           </FormItem>

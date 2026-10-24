@@ -1,16 +1,22 @@
 import React, { lazy, Suspense, useState } from "react";
 import type { SessionsReportAggregates } from "@mms/shared";
-import { useSessions, useSessionsCollection, useSessionsReportAggregates } from "@/tenant/hooks/collections/sessions";
+import {
+  useSessions,
+  useSessionsCollection,
+  useSessionsReportAggregates,
+} from "@/tenant/hooks/collections/sessions";
 import { Skeleton } from "@/components/ui/skeleton";
-import { ErrorState } from "@/components/ui/ErrorState";
+import { ErrorState } from "@/components/app/ErrorState";
 import { useTranslation } from "@/hooks/useTranslation";
-import { SessionReportTable } from "@/components/ui/reports/SessionReportTable";
-import { SessionReportDashboardWidgets } from "@/components/ui/reports/SessionReportDashboardWidgets";
-import { ReportFilterBanner } from "@/components/ui/reports/ReportFilterBanner";
+import { SessionReportTable } from "@/components/reports/SessionReportTable";
+import { SessionReportDashboardWidgets } from "@/components/reports/SessionReportDashboardWidgets";
+import { ReportFilterBanner } from "@/components/reports/ReportFilterBanner";
 import PinnedWidgets from "@/tenant/features/reports/components/PinnedWidgets";
 
 const SessionReportCharts = lazy(() =>
-  import("@/components/ui/reports/SessionReportCharts").then((mod) => ({ default: mod.SessionReportCharts })),
+  import("@/components/reports/SessionReportCharts").then((mod) => ({
+    default: mod.SessionReportCharts,
+  })),
 );
 
 import {
@@ -18,9 +24,15 @@ import {
   buildSessionCapacityData,
   buildTodaysSessions,
   buildSessionStatusConfig,
-} from "@/components/ui/reports/sessionReportUtils";
+} from "@/components/reports/sessionReportUtils";
 
-import type { CapacityChartItem, EnrollmentTrendItem, SessionCapacityItem, SessionReportProps, TodaySessionItem } from '@/components/ui/reports/sessionReportTypes';
+import type {
+  CapacityChartItem,
+  EnrollmentTrendItem,
+  SessionCapacityItem,
+  SessionReportProps,
+  TodaySessionItem,
+} from "@/components/reports/sessionReportTypes";
 
 export type {
   CapacityChartItem,
@@ -29,13 +41,13 @@ export type {
   SessionReportFilters,
   SessionReportProps,
   TodaySessionItem,
-} from "@/components/ui/reports/sessionReportTypes";
+} from "@/components/reports/sessionReportTypes";
 
 /**
  * Renders the session reports and capacity metrics, including utilization bar charts,
  * enrollment trend lines, and a filterable capacity data grid.
  */
-const SessionReport = (function SessionReport({ filters }: SessionReportProps): React.JSX.Element {
+const SessionReport = function SessionReport({ filters }: SessionReportProps): React.JSX.Element {
   const { t } = useTranslation();
   const sessionsQuery = useSessions();
   const sessions = useSessionsCollection();
@@ -65,7 +77,11 @@ const SessionReport = (function SessionReport({ filters }: SessionReportProps): 
   })() as CapacityChartItem[];
 
   const enrollmentTrends = (() => {
-    if (aggregates && Array.isArray(aggregates.enrollmentTrends) && aggregates.enrollmentTrends.length > 0) {
+    if (
+      aggregates &&
+      Array.isArray(aggregates.enrollmentTrends) &&
+      aggregates.enrollmentTrends.length > 0
+    ) {
       return aggregates.enrollmentTrends.map((trend) => ({
         month: trend.monthKey,
         students: trend.students,
@@ -98,7 +114,11 @@ const SessionReport = (function SessionReport({ filters }: SessionReportProps): 
   })() as SessionCapacityItem[];
 
   const todaysSessions = (() => {
-    if (aggregates && Array.isArray(aggregates.todaysSessions) && aggregates.todaysSessions.length > 0) {
+    if (
+      aggregates &&
+      Array.isArray(aggregates.todaysSessions) &&
+      aggregates.todaysSessions.length > 0
+    ) {
       return aggregates.todaysSessions;
     }
     return buildTodaysSessions(sessions);
@@ -170,6 +190,6 @@ const SessionReport = (function SessionReport({ filters }: SessionReportProps): 
       <PinnedWidgets category="sessions" />
     </div>
   );
-});
+};
 
 export default SessionReport;

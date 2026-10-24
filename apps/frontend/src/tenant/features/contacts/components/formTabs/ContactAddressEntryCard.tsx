@@ -6,9 +6,9 @@ import {
   Field,
   FormCardTypeSelect,
   TYPE_SELECT_WIDTH,
-} from "@/components/ui/FormPrimitives";
-import { LeadingIconInput } from "@/components/ui/LeadingIconInput";
-import { FormListFieldCard } from "@/components/ui/FormPrimitives";
+} from "@/components/app/FormPrimitives";
+import { LeadingIconInput } from "@/components/app/LeadingIconInput";
+import { FormListFieldCard } from "@/components/app/FormPrimitives";
 import { cn } from "@/lib/utils";
 import { FORM_INPUT_ERROR } from "@/components/ui/formStyles";
 import { useTranslation } from "@/hooks/useTranslation";
@@ -94,8 +94,16 @@ export function ContactAddressEntryCard({
           <CardPrimaryButton
             isPrimary={isOnlyAddressOrPrimary}
             onClick={onSetPrimary}
-            title={isOnlyAddressOrPrimary ? t("contacts.form.primaryAddress") : t("contacts.form.setPrimary")}
-            ariaLabel={isOnlyAddressOrPrimary ? t("contacts.form.primaryAddress") : t("contacts.form.setPrimary")}
+            title={
+              isOnlyAddressOrPrimary
+                ? t("contacts.form.primaryAddress")
+                : t("contacts.form.setPrimary")
+            }
+            ariaLabel={
+              isOnlyAddressOrPrimary
+                ? t("contacts.form.primaryAddress")
+                : t("contacts.form.setPrimary")
+            }
             primaryLabel={t("contacts.form.primary")}
             setPrimaryLabel={t("contacts.form.setPrimary")}
           />
@@ -112,7 +120,7 @@ export function ContactAddressEntryCard({
             error={line1Error}
             id={`cf-${formInstanceId}-address-line1-${idx}`}
           >
-        <LeadingIconInput
+            <LeadingIconInput
               icon={MapPin}
               id={`cf-${formInstanceId}-address-line1-${idx}`}
               name={`cf-${formInstanceId}-address-line1-${idx}`}

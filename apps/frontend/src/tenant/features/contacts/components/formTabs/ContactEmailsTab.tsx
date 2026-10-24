@@ -1,6 +1,6 @@
 import type React from "react";
 import { Mail } from "lucide-react";
-import { CardPrimaryButton } from "@/components/ui/FormPrimitives";
+import { CardPrimaryButton } from "@/components/app/FormPrimitives";
 import type { ContactSubListTabBaseProps } from "./types";
 import { useTranslation } from "@/hooks/useTranslation";
 import { resolveEmailLabel } from "@/lib/contacts/contactI18n";
@@ -28,7 +28,9 @@ export function ContactEmailsTab({
       valueLabel={t("contacts.fields.emailAddress")}
       options={emailLabels}
       onUpdateOptions={onUpdateEmailLabels}
-      resolveLabel={(raw, options, translate) => resolveEmailLabel(raw as string | undefined, options, translate)}
+      resolveLabel={(raw, options, translate) =>
+        resolveEmailLabel(raw as string | undefined, options, translate)
+      }
       emptyItem={(resolvedLabel) => ({ label: resolvedLabel, address: "" })}
       icon={Mail}
       emptyMessage={t("contacts.form.noEmailAddressesYet")}

@@ -1,4 +1,17 @@
-import { and, asc, desc, eq, ilike, inArray, isNotNull, isNull, or, sql, type SQL, type AnyColumn } from 'drizzle-orm';
+import {
+  and,
+  asc,
+  desc,
+  eq,
+  ilike,
+  inArray,
+  isNotNull,
+  isNull,
+  or,
+  sql,
+  type SQL,
+  type AnyColumn,
+} from "drizzle-orm";
 import {
   dedupeTrimmedIds,
   isQueryFlagTrue,
@@ -7,55 +20,63 @@ import {
   type EnrollmentsCommandMetricsSnapshot,
   type EnrollmentsListPageResult,
   type EnrollmentsListQuery,
-} from '@mms/shared';
-import { enrollments, enrollmentTimelineEvents } from '../schema.js';
-import { withTenantRead } from '../tenant-context.js';
-import { runListPage } from './listPageHelper.js';
-import { enrollmentRowToRecord } from './enrollmentRepository.js';
+} from "@mms/shared";
+import { enrollments } from "../schema.js";
+import { withTenantRead } from "../tenant-context.js";
+import { runListPage } from "./listPageHelper.js";
+import {
+  enrollmentRowToRecord,
+  loadTimelineMapTx,
+  type EnrollmentHydrateRow,
+} from "./enrollmentProjection.js";
+import { enrollmentHoldsSeatWhere } from "./enrollmentSeatSql.js";
 
 const ENROLLMENT_SORT_FIELDS = new Set([
-  'studentName',
-  'sessionName',
-  'className',
-  'status',
-  'enrolledDate',
-  'finalFee',
-  'updatedAt',
+  "studentName",
+  "sessionName",
+  "className",
+  "status",
+  "enrolledDate",
+  "finalFee",
+  "updatedAt",
 ]);
 
-function buildOrderBy(sortField: string | undefined, sortDir: 'asc' | 'desc' | '' | undefined): SQL {
-  const dir = sortDir === 'desc' ? 'desc' : 'asc';
+function buildOrderBy(
+  sortField: string | undefined,
+  sortDir: "asc" | "desc" | "" | undefined,
+): SQL {
+  const dir = sortDir === "desc" ? "desc" : "asc";
   const field = sortField?.trim();
   if (!field || !ENROLLMENT_SORT_FIELDS.has(field)) {
     return sql`${enrollments.id} asc`;
   }
   let column: AnyColumn;
   switch (field) {
-    case 'updatedAt':
+    case "updatedAt":
       column = enrollments.updatedAt;
       break;
-    case 'studentName':
+    case "studentName":
       column = enrollments.studentName;
       break;
-    case 'sessionName':
+    case "sessionName":
       column = enrollments.sessionName;
       break;
-    case 'className':
+    case "className":
       column = enrollments.className;
       break;
-    case 'status':
+    case "status":
       column = enrollments.status;
       break;
-    case 'enrolledDate':
+    case "enrolledDate":
       column = enrollments.enrolledDate;
       break;
-    case 'finalFee':
+    case "finalFee":
       column = enrollments.finalFee;
       break;
     default:
       column = enrollments.updatedAt;
   }
-  return dir === 'desc' ? desc(column) : asc(column);
+  return dir === "desc" ? desc(column) : asc(column);
 }
 
 function buildListConditions(subdomain: string, query: EnrollmentsListQuery): SQL[] {
@@ -67,18 +88,18 @@ function buildListConditions(subdomain: string, query: EnrollmentsListQuery): SQ
     conditions.push(isNull(enrollments.deletedAt));
   }
 
-  if (query.status?.trim() && query.status !== 'all') {
+  if (query.status?.trim() && query.status !== "all") {
     const statuses = dedupeTrimmedIds(query.status);
     if (statuses.length > 0) {
       conditions.push(inArray(enrollments.status, statuses));
     }
   }
 
-  if (query.sessionId?.trim() && query.sessionId !== 'all') {
+  if (query.sessionId?.trim() && query.sessionId !== "all") {
     conditions.push(eq(enrollments.sessionId, query.sessionId.trim()));
   }
 
-  if (query.classId?.trim() && query.classId !== 'all') {
+  if (query.classId?.trim() && query.classId !== "all") {
     conditions.push(eq(enrollments.classId, query.classId.trim()));
   }
 
@@ -107,6 +128,9 @@ const ENROLLMENT_LIST_COLUMNS = {
   classId: enrollments.classId,
   className: enrollments.className,
   enrolledDate: enrollments.enrolledDate,
+  startOn: enrollments.startOn,
+  endOn: enrollments.endOn,
+  endReason: enrollments.endReason,
   baseFee: enrollments.baseFee,
   discountType: enrollments.discountType,
   discountLabel: enrollments.discountLabel,
@@ -116,7 +140,7 @@ const ENROLLMENT_LIST_COLUMNS = {
   status: enrollments.status,
   invoiceId: enrollments.invoiceId,
   paymentStatus: enrollments.paymentStatus,
-  notes: sql<string | null>`NULL`.as('notes'),
+  notes: sql<string | null>`NULL`.as("notes"),
   deletedAt: enrollments.deletedAt,
   deletedBy: enrollments.deletedBy,
   deletionReason: enrollments.deletionReason,
@@ -145,7 +169,7 @@ export async function listEnrollmentsPage(
       afterId: query.afterId,
       skipCount: query.skipCount,
       defaultPageSize: 12,
-      rowMapper: (row) => row as typeof enrollments.$inferSelect,
+      rowMapper: (row) => row as EnrollmentHydrateRow,
     });
 
     if (result.items.length === 0) {
@@ -158,33 +182,14 @@ export async function listEnrollmentsPage(
       };
     }
 
-    const timelineRows = (await tx
-      .select({
-        id: enrollmentTimelineEvents.id,
-        workspaceSubdomain: enrollmentTimelineEvents.workspaceSubdomain,
-        enrollmentId: enrollmentTimelineEvents.enrollmentId,
-        event: enrollmentTimelineEvents.event,
-        by: enrollmentTimelineEvents.by,
-        ts: enrollmentTimelineEvents.ts,
-        createdAt: enrollmentTimelineEvents.createdAt,
-      })
-      .from(enrollmentTimelineEvents)
-      .where(
-        and(
-          eq(enrollmentTimelineEvents.workspaceSubdomain, subdomain),
-          inArray(enrollmentTimelineEvents.enrollmentId, result.items.map((r) => r.id)),
-        ),
-      )) ?? [];
-
-    const timelineMap = new Map<string, typeof enrollmentTimelineEvents.$inferSelect[]>();
-    for (const t of timelineRows) {
-      const arr = timelineMap.get(t.enrollmentId) ?? [];
-      arr.push(t);
-      timelineMap.set(t.enrollmentId, arr);
-    }
+    const timeline = await loadTimelineMapTx(
+      tx,
+      subdomain,
+      result.items.map((row) => row.id),
+    );
 
     return {
-      enrollments: result.items.map((row) => enrollmentRowToRecord(row, timelineMap.get(row.id) ?? [])),
+      enrollments: result.items.map((row) => enrollmentRowToRecord(row, timeline.get(row.id))),
       total: result.total,
       page: result.page,
       limit: result.limit,
@@ -220,10 +225,9 @@ export async function aggregateEnrollmentsCommandMetrics(
         pending: sql<number>`count(*) FILTER (WHERE ${enrollments.status} = 'pending')::int`,
         cancelled: sql<number>`count(*) FILTER (WHERE ${enrollments.status} = 'cancelled')::int`,
         completed: sql<number>`count(*) FILTER (WHERE ${enrollments.status} = 'completed')::int`,
-        revenue: sql<number>`coalesce(sum(${enrollments.finalFee}::float8) FILTER (WHERE ${enrollments.status} <> 'cancelled'), 0)::float8`,
+        revenue: sql<number>`coalesce(sum(${enrollments.finalFee}::float8) FILTER (WHERE ${enrollmentHoldsSeatWhere()}), 0)::float8`,
         newThisPeriod: sql<number>`count(*) FILTER (WHERE
           ${enrollments.enrolledDate} IS NOT NULL
-          AND ${enrollments.enrolledDate} ~ '^[0-9]{4}'
           AND (${enrollments.enrolledDate})::timestamptz >= (CURRENT_TIMESTAMP - (${days}::int * INTERVAL '1 day'))
         )::int`,
       })

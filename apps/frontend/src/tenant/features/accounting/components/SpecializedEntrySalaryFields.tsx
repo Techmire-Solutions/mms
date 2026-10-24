@@ -1,14 +1,14 @@
 import React, { useMemo } from "react";
 import type { UseFormReturn } from "react-hook-form";
 import type { Account, SalaryEntryInput } from "@mms/shared";
-import { DatePicker } from "@/components/ui/DatePicker";
+import { DatePicker } from "@/components/app/DatePicker";
 import { FORM_INPUT } from "@/components/ui/formStyles";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { FormControl, FormField, FormItem, FormLabel } from "@/components/ui/form";
 import { TranslatedFormMessage } from "@/lib/forms/TranslatedFormMessage";
 import { useTranslation } from "@/hooks/useTranslation";
-import { SpecializedEntryStaffPicker } from "@/tenant/features/accounting/components/SpecializedEntryStaffPicker";
+import { RegistryPersonSelect } from "@/tenant/components/selectors/RegistryPersonSelect";
 import { SpecializedEntrySalaryAccountFields } from "./SpecializedEntrySalaryAccountFields";
 
 export function SpecializedEntrySalaryFields({
@@ -18,7 +18,9 @@ export function SpecializedEntrySalaryFields({
 }: {
   form: UseFormReturn<SalaryEntryInput>;
   accounts: Account[];
-  onAccountsChange?: (updater: Account[] | ((prev: Account[]) => Account[])) => Promise<void> | void;
+  onAccountsChange?: (
+    updater: Account[] | ((prev: Account[]) => Account[]),
+  ) => Promise<void> | void;
 }): React.JSX.Element {
   const { t } = useTranslation();
 
@@ -39,7 +41,19 @@ export function SpecializedEntrySalaryFields({
         name="staffId"
         render={({ field }) => (
           <FormItem>
-            <SpecializedEntryStaffPicker staffId={field.value || ""} onPick={(id) => field.onChange(id)} />
+            <div className="sm:col-span-2 space-y-2">
+              <RegistryPersonSelect
+                kind="faculty"
+                id="specialized-entry-staff-pick"
+                name="specializedEntryStaffPick"
+                label={t("accounting.journal.specializedEntry.salary.staff")}
+                searchLabel={t("accounting.journal.specializedEntry.salary.staff")}
+                searchPlaceholder={t("accounting.journal.specializedEntry.salary.staffSearch")}
+                value={field.value || ""}
+                onChange={(id) => field.onChange(id)}
+                onPick={(id) => field.onChange(id)}
+              />
+            </div>
             <TranslatedFormMessage messageKey={form.formState.errors.staffId?.message} />
           </FormItem>
         )}

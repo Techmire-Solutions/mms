@@ -1,9 +1,9 @@
-import { userFieldConfigs } from '../schema.js';
-import { createWorkspaceSingletonJsonRepo } from './moduleSetupRepoFactories.js';
+import { userFieldConfigs } from "../schema.js";
+import { createWorkspaceSingletonJsonRepo } from "./moduleSetupRepoFactories.js";
 
 const repo = createWorkspaceSingletonJsonRepo({
   table: userFieldConfigs,
-  jsonColumn: 'config',
+  jsonColumn: "config",
 });
 
 export const getUserFieldConfigByWorkspace = repo.getByWorkspace;

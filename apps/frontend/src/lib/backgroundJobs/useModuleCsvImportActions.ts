@@ -1,4 +1,4 @@
-import { useCallback, useState } from "react";
+import { useCallback, useMemo, useState } from "react";
 import {
   parseCsvRows,
   mapCsvGridToObjects,
@@ -27,8 +27,14 @@ export function useModuleCsvImportActions<TRow = Record<string, unknown>>(
 ) {
   const { apiPath, schema, onSuccess } = options;
   const effectiveModuleId = schema?.moduleId ?? options.moduleId ?? "module";
-  const effectiveMappings = schema?.importMappings ?? options.mappings ?? [];
-  const effectiveTemplateColumns = schema?.templateColumns ?? options.templateColumns ?? [];
+  const effectiveMappings = useMemo(
+    () => schema?.importMappings ?? options.mappings ?? [],
+    [schema?.importMappings, options.mappings],
+  );
+  const effectiveTemplateColumns = useMemo(
+    () => schema?.templateColumns ?? options.templateColumns ?? [],
+    [schema?.templateColumns, options.templateColumns],
+  );
   const defaultLabel =
     options.defaultLabel ||
     (schema ? `Importing ${schema.entityNounPlural}` : `Importing ${effectiveModuleId}`);

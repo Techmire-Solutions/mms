@@ -1,4 +1,4 @@
-import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
+import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 import {
   type MinimalWebSocket,
   registerConnection,
@@ -9,7 +9,7 @@ import {
   getActiveConnectionsCount,
   MAX_WS_BUFFERED_AMOUNT,
   WS_TELEMETRY_BUFFERED_LIMIT,
-} from '../lib/livePush.js';
+} from "../lib/livePush.js";
 
 interface MockSocket extends MinimalWebSocket {
   terminateMock: ReturnType<typeof vi.fn>;
@@ -62,7 +62,7 @@ function createMockSocket(bufferedAmount = 0): MockSocket {
   return socket;
 }
 
-describe('WebSocket LivePush Backpressure & Heartbeat', () => {
+describe("WebSocket LivePush Backpressure & Heartbeat", () => {
   beforeEach(() => {
     vi.useFakeTimers();
     closeAllConnections();
@@ -73,47 +73,47 @@ describe('WebSocket LivePush Backpressure & Heartbeat', () => {
     vi.useRealTimers();
   });
 
-  it('drops telemetry when socket buffer exceeds 64KB soft limit', () => {
+  it("drops telemetry when socket buffer exceeds 64KB soft limit", () => {
     const socket = createMockSocket(WS_TELEMETRY_BUFFERED_LIMIT + 1024);
-    const unregister = registerConnection('alpha', socket, 'user-1');
+    const unregister = registerConnection("alpha", socket, "user-1");
 
-    broadcastLocalTenantUpdate('alpha', 'collection', 'students');
+    broadcastLocalTenantUpdate("alpha", "collection", "students");
 
     expect(socket.sendMock).not.toHaveBeenCalled();
     expect(socket.terminateMock).not.toHaveBeenCalled();
     unregister();
   });
 
-  it('terminates connection when socket buffer exceeds 512KB hard ceiling', () => {
+  it("terminates connection when socket buffer exceeds 512KB hard ceiling", () => {
     const socket = createMockSocket(MAX_WS_BUFFERED_AMOUNT + 1024);
-    const unregister = registerConnection('alpha', socket, 'user-1');
+    const unregister = registerConnection("alpha", socket, "user-1");
 
-    broadcastLocalTenantUpdate('alpha', 'collection', 'students');
+    broadcastLocalTenantUpdate("alpha", "collection", "students");
 
     expect(socket.sendMock).not.toHaveBeenCalled();
     expect(socket.terminateMock).toHaveBeenCalled();
     unregister();
   });
 
-  it('sends message when buffer is well below threshold', () => {
+  it("sends message when buffer is well below threshold", () => {
     const socket = createMockSocket(1024);
-    const unregister = registerConnection('alpha', socket, 'user-1');
+    const unregister = registerConnection("alpha", socket, "user-1");
 
-    broadcastLocalTenantUpdate('alpha', 'collection', 'students');
+    broadcastLocalTenantUpdate("alpha", "collection", "students");
 
     expect(socket.sendMock).toHaveBeenCalledTimes(1);
     const payload = JSON.parse(socket.sendMock.mock.calls[0][0] as string);
     expect(payload).toEqual({
-      event: 'database-update',
-      type: 'collection',
-      key: 'students',
+      event: "database-update",
+      type: "collection",
+      key: "students",
     });
     unregister();
   });
 
-  it('proactively terminates socket when pong deadline expires (10s)', () => {
+  it("proactively terminates socket when pong deadline expires (10s)", () => {
     const socket = createMockSocket(0);
-    registerConnection('alpha', socket, 'user-1');
+    registerConnection("alpha", socket, "user-1");
 
     expect(getActiveConnectionsCount()).toBe(1);
 
@@ -127,16 +127,16 @@ describe('WebSocket LivePush Backpressure & Heartbeat', () => {
     expect(getActiveConnectionsCount()).toBe(0);
   });
 
-  it('keeps socket alive when pong is received before deadline', () => {
+  it("keeps socket alive when pong is received before deadline", () => {
     const socket = createMockSocket(0);
-    registerConnection('alpha', socket, 'user-1');
+    registerConnection("alpha", socket, "user-1");
 
     // Advance to ping interval
     vi.advanceTimersToNextTimer();
     expect(socket.pingMock).toHaveBeenCalled();
 
     // Socket responds with pong
-    socket.emit('pong');
+    socket.emit("pong");
 
     // Advance time - should not terminate
     vi.advanceTimersByTime(15_000);
@@ -145,7 +145,7 @@ describe('WebSocket LivePush Backpressure & Heartbeat', () => {
   });
 });
 
-describe('WebSocket Tenant Isolation & Egress Partitioning', () => {
+describe("WebSocket Tenant Isolation & Egress Partitioning", () => {
   beforeEach(() => {
     closeAllConnections();
   });
@@ -154,19 +154,19 @@ describe('WebSocket Tenant Isolation & Egress Partitioning', () => {
     closeAllConnections();
   });
 
-  it('strictly isolates broadcasts so tenant B never receives tenant A updates', () => {
+  it("strictly isolates broadcasts so tenant B never receives tenant A updates", () => {
     const socketAlpha = createMockSocket(0);
     const socketBeta = createMockSocket(0);
 
-    const unregAlpha = registerConnection('alpha', socketAlpha, 'user-alpha');
-    const unregBeta = registerConnection('beta', socketBeta, 'user-beta');
+    const unregAlpha = registerConnection("alpha", socketAlpha, "user-alpha");
+    const unregBeta = registerConnection("beta", socketBeta, "user-beta");
 
-    broadcastLocalTenantUpdate('alpha', 'collection', 'finance_invoices');
+    broadcastLocalTenantUpdate("alpha", "collection", "finance_invoices");
 
     expect(socketAlpha.sendMock).toHaveBeenCalledTimes(1);
     expect(socketBeta.sendMock).not.toHaveBeenCalled();
 
-    broadcastLocalTenantUpdate('beta', 'collection', 'students');
+    broadcastLocalTenantUpdate("beta", "collection", "students");
 
     expect(socketAlpha.sendMock).toHaveBeenCalledTimes(1);
     expect(socketBeta.sendMock).toHaveBeenCalledTimes(1);
@@ -175,41 +175,41 @@ describe('WebSocket Tenant Isolation & Egress Partitioning', () => {
     unregBeta();
   });
 
-  it('sanitizes job event payloads on egress', () => {
+  it("sanitizes job event payloads on egress", () => {
     const socketAlpha = createMockSocket(0);
-    const unreg = registerConnection('alpha', socketAlpha, 'user-1');
+    const unreg = registerConnection("alpha", socketAlpha, "user-1");
 
     broadcastLocalJobEvent({
-      event: 'job-progress',
-      tenantId: 'alpha',
-      jobId: 'job-123',
-      moduleId: 'finance',
+      event: "job-progress",
+      tenantId: "alpha",
+      jobId: "job-123",
+      moduleId: "finance",
       progress: { current: 50, total: 100, percent: 50 },
     });
 
     expect(socketAlpha.sendMock).toHaveBeenCalledTimes(1);
     const msg = JSON.parse(socketAlpha.sendMock.mock.calls[0][0] as string);
-    expect(msg.tenantId).toBe('alpha');
-    expect(msg.jobId).toBe('job-123');
+    expect(msg.tenantId).toBe("alpha");
+    expect(msg.jobId).toBe("job-123");
     expect(msg.progress.percent).toBe(50);
 
     unreg();
   });
 
-  it('broadcasts object updates (settings, branding, fields) to tenant sockets', () => {
+  it("broadcasts object updates (settings, branding, fields) to tenant sockets", () => {
     const socketAlpha = createMockSocket(0);
-    const unreg = registerConnection('alpha', socketAlpha, 'user-1');
+    const unreg = registerConnection("alpha", socketAlpha, "user-1");
 
-    broadcastTenantUpdate('alpha', 'object', 'settings');
-    broadcastTenantUpdate('alpha', 'object', 'branding');
-    broadcastTenantUpdate('alpha', 'object', 'fields');
+    broadcastTenantUpdate("alpha", "object", "settings");
+    broadcastTenantUpdate("alpha", "object", "branding");
+    broadcastTenantUpdate("alpha", "object", "fields");
 
     expect(socketAlpha.sendMock).toHaveBeenCalledTimes(3);
     const firstMsg = JSON.parse(socketAlpha.sendMock.mock.calls[0][0] as string);
     expect(firstMsg).toEqual({
-      event: 'database-update',
-      type: 'object',
-      key: 'settings',
+      event: "database-update",
+      type: "object",
+      key: "settings",
     });
 
     unreg();

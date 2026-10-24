@@ -1,8 +1,8 @@
 import React from "react";
-import { PinnedWidgetsBuilderSection } from "@/components/ui/reports/PinnedWidgetsBuilderSection";
-import { PinnedWidgetsChrome } from "@/components/ui/reports/PinnedWidgetsChrome";
-import { PinnedWidgetsGrid } from "@/components/ui/reports/PinnedWidgetsGrid";
-import { usePinnedWidgetsController } from "@/tenant/features/reports/controllers/usePinnedWidgetsController";
+import { PinnedWidgetsBuilderSection } from "@/components/reports/PinnedWidgetsBuilderSection";
+import { PinnedWidgetsChrome } from "@/components/reports/PinnedWidgetsChrome";
+import { PinnedWidgetsGrid } from "@/components/reports/PinnedWidgetsGrid";
+import { usePinnedWidgetsController } from "@/tenant/features/reports/hooks/usePinnedWidgetsController";
 import { CustomWidgetRenderer } from "@/tenant/features/reports/components/pinnedWidgets/CustomWidgetRenderer";
 import { applyContactsWidgetWorkDrillDown } from "@/lib/contacts/contactsWidgetWorkDrillDown";
 
@@ -14,7 +14,7 @@ export {
 } from "@/lib/reports/widgetDataUtils";
 export { getOrInitializeCustomWidgets } from "@/lib/reports/widgetDefaults";
 export { DashboardWidgets } from "@/tenant/features/reports/components/pinnedWidgets/DashboardWidgets";
-export { WidgetBuilder } from "@/components/ui/reports/pinnedWidgets/WidgetBuilder";
+export { WidgetBuilder } from "@/components/reports/pinnedWidgets/WidgetBuilder";
 
 /**
  * PinnedWidgets Main Module Component. Exposes custom Widget builders.
@@ -96,4 +96,3 @@ export default function PinnedWidgets({ category }: { category: string }): React
     </div>
   );
 }
-

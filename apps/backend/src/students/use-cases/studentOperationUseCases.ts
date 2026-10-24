@@ -7,15 +7,19 @@ import {
   type StudentStatus,
   type StudentDuplicateCheckInput,
   type StudentGrNumberSettings,
-} from '@mms/shared';
-import { getRequestTenant } from '../../lib/tenantContext.js';
-import { loadStudentModulePreferences } from './studentPreferencesService.js';
-import { broadcastCollection } from '../../lib/livePush.js';
-import { invalidateMultiTierCache } from '../../lib/cache/index.js';
-import type { StudentsRepository } from '../repository/studentsRepository.js';
-import { studentsRepository } from '../repository/studentsRepositoryAdapter.js';
-import { throwGrUniqueConflict } from './studentNormalizeUseCases.js';
+} from "@mms/shared";
+import { getRequestTenant } from "../../lib/tenantContext.js";
+import { loadStudentModulePreferences } from "./studentPreferencesService.js";
+import { broadcastCollection } from "../../lib/livePush.js";
+import { invalidateMultiTierCache } from "../../lib/cache/index.js";
+import type { StudentsRepository } from "../repository/studentsRepository.js";
+import { studentsRepository } from "../repository/studentsRepositoryAdapter.js";
+import { throwGrUniqueConflict } from "./studentNormalizeUseCases.js";
 
+import {
+  bulkEnrollStudentsIntoClass,
+  type BulkEnrollInput,
+} from "../../enrollments/use-cases/enrollmentBulkEnroll.js";
 export async function computeNextGrNumberForDate(
   regDate: string,
   settings: StudentGrNumberSettings,
@@ -33,7 +37,7 @@ export async function computeNextGrNumberForDate(
   }
   const restartAnnually = settings.grNumberRestartAnnually !== false;
   const count = await repo.countNextGrNumber(tenant, { regDate, restartAnnually });
-  const template = settings.grNumberTemplate || '{seq}-{year}';
+  const template = settings.grNumberTemplate || "{seq}-{year}";
   const digits = settings.grNumberDigits || 4;
 
   let candidateSeq = count + 1;
@@ -43,7 +47,7 @@ export async function computeNextGrNumberForDate(
   let attempts = 0;
   while (attempts < 100) {
     const conflict = await repo.findRegistrationConflict(tenant, { grNumber: candidateGr });
-    if (conflict !== 'grNumber') break;
+    if (conflict !== "grNumber") break;
     candidateSeq += 1;
     candidateGr = renderGr(candidateSeq);
     attempts += 1;
@@ -74,7 +78,7 @@ export async function checkStudentRegistrationDuplicate(
   input: StudentDuplicateCheckInput,
   repo: StudentsRepository = studentsRepository,
   tenantOverride?: string,
-): Promise<{ reason: 'contact' | 'email' | 'nameDob' | 'grNumber' | null }> {
+): Promise<{ reason: "contact" | "email" | "nameDob" | "grNumber" | null }> {
   const tenant = tenantOverride || getRequestTenant();
   if (!tenant) return { reason: null };
   const reason = await repo.findRegistrationConflict(tenant, input);
@@ -91,7 +95,9 @@ export async function bulkUpdateStudentStatus(
 
   const normalizedStatus = status.trim().toLowerCase() as StudentStatus;
   if (!STUDENT_STATUS_VALUES.includes(normalizedStatus)) {
-    const error = new Error(`Invalid status "${status}". Allowed values: ${STUDENT_STATUS_VALUES.join(', ')}`) as Error & { statusCode: number };
+    const error = new Error(
+      `Invalid status "${status}". Allowed values: ${STUDENT_STATUS_VALUES.join(", ")}`,
+    ) as Error & { statusCode: number };
     error.statusCode = 400;
     throw error;
   }
@@ -101,8 +107,8 @@ export async function bulkUpdateStudentStatus(
 
   const succeeded = await repo.bulkUpdateStatusSql(tenant, uniqueIds, normalizedStatus);
   if (succeeded > 0) {
-    await invalidateMultiTierCache({ tenantId: tenant, domain: 'students' });
-    await broadcastCollection('students');
+    await invalidateMultiTierCache({ tenantId: tenant, domain: "students" });
+    await broadcastCollection("students");
   }
   return { succeeded, failed: uniqueIds.length - succeeded };
 }
@@ -119,15 +125,15 @@ export async function migrateStudentsMissingGrNumbers(
   if (!tenant) return { updated: 0, hasMore: false };
 
   const userId =
-    typeof userIdOrRepo === 'string'
+    typeof userIdOrRepo === "string"
       ? userIdOrRepo
-      : typeof repoOrUserId === 'string'
+      : typeof repoOrUserId === "string"
         ? repoOrUserId
         : undefined;
   const repo =
-    typeof userIdOrRepo === 'object' && userIdOrRepo !== null
+    typeof userIdOrRepo === "object" && userIdOrRepo !== null
       ? userIdOrRepo
-      : typeof repoOrUserId === 'object' && repoOrUserId !== null
+      : typeof repoOrUserId === "object" && repoOrUserId !== null
         ? repoOrUserId
         : studentsRepository;
 
@@ -154,33 +160,15 @@ export async function migrateStudentsMissingGrNumbers(
     updated += 1;
   }
 
-  await broadcastCollection('students');
+  await broadcastCollection("students");
   return { updated, hasMore: missing.length >= MIGRATE_GR_CHUNK };
 }
 
+/** Students-module entry point; enrollment rows are created/cancelled by the Enrollments domain. */
 export async function bulkEnrollStudents(
-  input: {
-    studentIds: string[];
-    sessionIds: string[];
-    mode?: 'add' | 'replace' | 'remove';
-  },
-  repo: StudentsRepository = studentsRepository,
+  input: BulkEnrollInput,
 ): Promise<{ succeeded: number; failed: number }> {
   const tenant = getRequestTenant();
   if (!tenant) return { succeeded: 0, failed: input.studentIds.length };
-
-  const uniqueStudentIds = [...new Set(input.studentIds.map((id) => String(id).trim()).filter(Boolean))];
-  const uniqueSessionIds = [...new Set(input.sessionIds.map((id) => String(id).trim()).filter(Boolean))];
-  if (uniqueStudentIds.length === 0 || uniqueSessionIds.length === 0) {
-    return { succeeded: 0, failed: 0 };
-  }
-
-  const result = await repo.bulkEnroll(tenant, uniqueStudentIds, uniqueSessionIds, input.mode ?? 'add');
-  if (result.succeeded > 0) {
-    await invalidateMultiTierCache({ tenantId: tenant, domain: 'students' });
-    await broadcastCollection('students');
-    await broadcastCollection('sessions');
-  }
-  return result;
+  return bulkEnrollStudentsIntoClass(tenant, input);
 }
-

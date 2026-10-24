@@ -71,9 +71,7 @@ describe("InvoicesListCards", () => {
   });
 
   it("renders empty list without crashing", () => {
-    const html = renderToStaticMarkup(
-      <InvoicesListCards {...baseProps} invoices={[]} />,
-    );
+    const html = renderToStaticMarkup(<InvoicesListCards {...baseProps} invoices={[]} />);
     expect(html).toBeDefined();
   });
 });

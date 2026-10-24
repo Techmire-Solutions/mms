@@ -26,16 +26,32 @@ vi.mock("@/lib/contexts/AuthContext", () => ({
   useAuth: () => ({ user: { id: "u-1", name: "Amina Accountant" } }),
 }));
 
-const year = (id: string, startDate: string, endDate: string, status: FiscalYear["status"]): FiscalYear => ({
-  id, label: id, startDate, endDate, status,
+const year = (
+  id: string,
+  startDate: string,
+  endDate: string,
+  status: FiscalYear["status"],
+): FiscalYear => ({
+  id,
+  label: id,
+  startDate,
+  endDate,
+  status,
 });
 const FY2025_CLOSED = year("FY2025", "2025-01-01", "2025-12-31", "closed");
 const FY2026_OPEN = year("FY2026", "2026-01-01", "2026-12-31", "active");
 const FY2026_CLOSED = year("FY2026", "2026-01-01", "2026-12-31", "closed");
 
 const entry = (date: string): JournalEntry => ({
-  id: "je-1", ref: "JV-0001", date, description: "Office supplies", status: "posted", created_by: "Amina",
-  fiscal_year: "", tags: [], attachments: [],
+  id: "je-1",
+  ref: "JV-0001",
+  date,
+  description: "Office supplies",
+  status: "posted",
+  created_by: "Amina",
+  fiscal_year: "",
+  tags: [],
+  attachments: [],
   lines: [
     { id: "l1", account_id: "office", debit: 50000, credit: 0, description: "" },
     { id: "l2", account_id: "cash", debit: 0, credit: 50000, description: "" },
@@ -49,7 +65,9 @@ function typeInto(element: HTMLTextAreaElement, value: string): void {
 }
 
 function button(name: string): HTMLButtonElement | undefined {
-  return [...document.body.querySelectorAll("button")].find((candidate) => candidate.textContent?.trim() === name);
+  return [...document.body.querySelectorAll("button")].find(
+    (candidate) => candidate.textContent?.trim() === name,
+  );
 }
 
 describe("JournalReverseDialog", () => {
@@ -74,14 +92,19 @@ describe("JournalReverseDialog", () => {
     const onConfirm = vi.fn<(request: unknown) => Promise<boolean>>().mockResolvedValue(true);
     await act(async () => {
       root.render(
-        <JournalReverseDialog entry={original} fiscalYears={fiscalYears} onOpenChange={vi.fn()} onConfirm={onConfirm} />,
+        <JournalReverseDialog
+          entry={original}
+          fiscalYears={fiscalYears}
+          onOpenChange={vi.fn()}
+          onConfirm={onConfirm}
+        />,
       );
     });
     return onConfirm;
   }
 
   async function fillReasonAndConfirm(reason: string): Promise<void> {
-    const reasonField = document.body.querySelector<HTMLTextAreaElement>('textarea[required]');
+    const reasonField = document.body.querySelector<HTMLTextAreaElement>("textarea[required]");
     expect(reasonField).toBeInstanceOf(HTMLTextAreaElement);
     await act(async () => typeInto(reasonField!, reason));
     await act(async () => button("Reverse")?.click());
@@ -96,7 +119,9 @@ describe("JournalReverseDialog", () => {
 
     // Assert
     const text = document.body.textContent ?? "";
-    const buttonLabels = [...document.body.querySelectorAll("button")].map((candidate) => candidate.textContent ?? "");
+    const buttonLabels = [...document.body.querySelectorAll("button")].map(
+      (candidate) => candidate.textContent ?? "",
+    );
     expect(buttonLabels.some((label) => label.startsWith("Use original date"))).toBe(true);
     expect(text).toContain("Are you sure you want to reverse Journal JV-0001?");
     expect(text).toContain("PKR 50000");
@@ -117,7 +142,9 @@ describe("JournalReverseDialog", () => {
     const text = document.body.textContent ?? "";
     expect(text).toContain("The original period is closed");
     expect(text).toContain("Prior Period");
-    const buttonLabels = [...document.body.querySelectorAll("button")].map((candidate) => candidate.textContent ?? "");
+    const buttonLabels = [...document.body.querySelectorAll("button")].map(
+      (candidate) => candidate.textContent ?? "",
+    );
     expect(buttonLabels.some((label) => label.startsWith("Use original date"))).toBe(false);
     expect(onConfirm).toHaveBeenCalledWith({ date: "2026-10-08", reason: "Duplicate posting" });
   });

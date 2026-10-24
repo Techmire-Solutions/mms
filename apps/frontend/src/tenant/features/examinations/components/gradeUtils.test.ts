@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { getGrade, getRankSuffix } from "./gradeUtils";
+import { getGrade, getRankSuffix } from "../lib/gradeUtils";
 
 describe("gradeUtils", () => {
   it("computes grade information from percentage", () => {

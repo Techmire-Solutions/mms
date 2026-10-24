@@ -32,7 +32,7 @@ Fiscal-year and monthly posting-period controls are separate. A posting-period t
 | Cash-flow statement | Actual cash-equivalent movements classified as operating, investing, financing; separate noncash disclosures and relevant FX reconciliation. |
 | Budget / fund report | Actuals on the stated basis with budget version, restrictions, transfers, and allocation policy; do not mix cash collections with accrual revenue. |
 
-MMS exposes `trialBalance`, `incomeStatementTrialBalance`, and `balanceSheetTrialBalance` in `packages/shared/src/accountingReportAggregates.ts`. Follow each consumer through financial panels, dashboards, command metrics, charts, exports, and drilldowns. Independent metrics queries may still use different filters; do not infer their correctness from the report endpoint.
+MMS exposes `trialBalance`, `incomeStatementTrialBalance`, and `balanceSheetTrialBalance` in `packages/shared/src/finance/accountingReportAggregates.ts`. Follow each consumer through financial panels, dashboards, command metrics, charts, exports, and drilldowns. Independent metrics queries may still use different filters; do not infer their correctness from the report endpoint.
 
 For IAS 7-style reporting when applicable, transfers between cash-equivalent accounts are not external inflow/outflow. Do not count opening or closing journals as operating cash. Direct and indirect **operating** cash flow should reconcile after all applicable adjustments; neither should be equated to total cash movement when investing/financing activity exists. Account-code/name guesses are legacy heuristics, not authoritative classification. Cash-flow and income-statement classifications are distinct mappings.
 

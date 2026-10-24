@@ -1,15 +1,15 @@
 import React from "react";
 import { Coins, DollarSign, FileText } from "lucide-react";
 import { Input } from "@/components/ui/input";
-import { DatePicker } from "@/components/ui/DatePicker";
-import { Field } from "@/components/ui/FormPrimitives";
+import { DatePicker } from "@/components/app/DatePicker";
+import { Field } from "@/components/app/FormPrimitives";
 import { UserActorSelect } from "@/tenant/components/selectors/UserActorSelect";
 import { FORM_INPUT, FORM_INPUT_ERROR } from "@/components/ui/formStyles";
-import { FormSelect } from "@/components/ui/FormSelect";
-import { SectionCard } from "@/components/ui/SectionCard";
+import { FormSelect } from "@/components/app/FormSelect";
+import { SectionCard } from "@/components/app/SectionCard";
 import { cn } from "@/lib/utils";
 import type { TranslationFunction } from "@/lib/contexts/TranslationContext";
-import type { buildInitialPaymentDraft } from "@/tenant/features/finance/components/paymentFormHelpers";
+import type { buildInitialPaymentDraft } from "@/tenant/features/finance/lib/paymentFormHelpers";
 
 export interface PaymentFormFieldsProps {
   paymentDraft: ReturnType<typeof buildInitialPaymentDraft>;
@@ -63,13 +63,20 @@ export function PaymentFormFields({
             </div>
             {Number(paymentDraft.amount) < balance && Number(paymentDraft.amount) > 0 && (
               <p className="m-0 mt-1 text-xs text-warning">
-                {t("finance.partialPayment", { balance: formatCurrency(balance - Number(paymentDraft.amount)) })}
+                {t("finance.partialPayment", {
+                  balance: formatCurrency(balance - Number(paymentDraft.amount)),
+                })}
               </p>
             )}
           </Field>
         </div>
 
-        <Field id="payment-method-select" label={t("finance.columns.method")} required error={errors.method}>
+        <Field
+          id="payment-method-select"
+          label={t("finance.columns.method")}
+          required
+          error={errors.method}
+        >
           <FormSelect
             id="payment-method-select"
             name="method"
@@ -79,7 +86,12 @@ export function PaymentFormFields({
           />
         </Field>
 
-        <Field id="payment-date-input" label={t("finance.columns.paymentDate")} required error={errors.date}>
+        <Field
+          id="payment-date-input"
+          label={t("finance.columns.paymentDate")}
+          required
+          error={errors.date}
+        >
           <DatePicker
             id="payment-date-input"
             name="date"

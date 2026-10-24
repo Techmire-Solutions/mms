@@ -11,9 +11,9 @@ import {
   Clock,
 } from "lucide-react";
 import { formatMoney, formatDate } from "@mms/shared";
-import { DetailSectionCard } from "@/components/ui/DetailSectionCard";
-import { DetailAttributeRow } from "@/components/ui/DetailAttributeRow";
-import { StatusBadge, type StatusBadgeConfigItem } from "@/components/ui/StatusBadge";
+import { DetailSectionCard } from "@/components/app/DetailSectionCard";
+import { DetailAttributeRow } from "@/components/app/DetailAttributeRow";
+import { StatusBadge, type StatusBadgeConfigItem } from "@/components/app/StatusBadge";
 import { useTranslation } from "@/hooks/useTranslation";
 import type {
   ObligationCollection,
@@ -48,7 +48,10 @@ export function ObligationCollectionAttributesCard({
   const { t } = useTranslation();
 
   return (
-    <DetailSectionCard title={t("obligations.detail.title")} className="divide-y divide-border/50 p-0">
+    <DetailSectionCard
+      title={t("obligations.detail.title")}
+      className="divide-y divide-border/50 p-0"
+    >
       <DetailAttributeRow
         variant="inset"
         icon={User}
@@ -99,7 +102,9 @@ export function ObligationCollectionAttributesCard({
         variant="inset"
         icon={CreditCard}
         label={t("obligations.columns.paymentMode")}
-        value={<StatusBadge status={collection.payment_mode} config={paymentModeConfig} size="sm" />}
+        value={
+          <StatusBadge status={collection.payment_mode} config={paymentModeConfig} size="sm" />
+        }
       />
       <DetailAttributeRow
         variant="inset"

@@ -1,11 +1,11 @@
-import { useState, useEffect, useCallback } from 'react';
-import type { FacultyMember } from '@mms/shared';
-import type { Class } from '@/lib/data/sessionsData';
-import { EMPTY_CLASS } from './classDetailDraftDefaults';
-import { useClassDetailAcademicDraft } from './useClassDetailAcademicDraft';
-import { useClassDetailFinancialDraft } from './useClassDetailFinancialDraft';
+import { useState, useEffect, useCallback } from "react";
+import type { FacultyMember } from "@mms/shared";
+import type { Class } from "@/lib/data/sessionsData";
+import { EMPTY_CLASS } from "./classDetailDraftDefaults";
+import { useClassDetailAcademicDraft } from "./useClassDetailAcademicDraft";
+import { useClassDetailFinancialDraft } from "./useClassDetailFinancialDraft";
 
-export { EMPTY_CLASS } from './classDetailDraftDefaults';
+export { EMPTY_CLASS } from "./classDetailDraftDefaults";
 
 export interface UseClassDetailDraftOptions {
   open: boolean;
@@ -13,14 +13,20 @@ export interface UseClassDetailDraftOptions {
   allFaculty: FacultyMember[];
 }
 
-export function useClassDetailDraft({ open, sessionClass, allFaculty }: UseClassDetailDraftOptions) {
+export function useClassDetailDraft({
+  open,
+  sessionClass,
+  allFaculty,
+}: UseClassDetailDraftOptions) {
   const [classDraft, setClassDraft] = useState<Class>(() =>
     sessionClass ? { ...sessionClass } : { ...EMPTY_CLASS, id: crypto.randomUUID() },
   );
 
   useEffect(() => {
     if (open) {
-      setClassDraft(sessionClass ? { ...sessionClass } : { ...EMPTY_CLASS, id: crypto.randomUUID() });
+      setClassDraft(
+        sessionClass ? { ...sessionClass } : { ...EMPTY_CLASS, id: crypto.randomUUID() },
+      );
     }
   }, [open, sessionClass]);
 

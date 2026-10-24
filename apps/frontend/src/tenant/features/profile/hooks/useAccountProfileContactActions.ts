@@ -1,20 +1,20 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState } from "react";
 import {
   getPrimaryEmail,
   getPrimaryPhone,
   ownContactPatchBodySchema,
   type EmailAddress,
   type PhoneNumber,
-} from '@mms/shared';
-import { useTranslation } from '@/hooks/useTranslation';
-import { useTenantProfile } from '@/tenant/hooks/useTenantProfile';
+} from "@mms/shared";
+import { useTranslation } from "@/hooks/useTranslation";
+import { useTenantProfile } from "@/tenant/hooks/useTenantProfile";
 
-import { getApiValidationMessage } from '@/lib/apiValidationMessage';
-import { notify } from '@/lib/notify';
-import { useAuth } from '@/lib/contexts/AuthContext';
-import { useQueryClient } from '@tanstack/react-query';
-import { TENANT_PROFILE_KEY } from '@/tenant/hooks/useTenantProfile';
-import { tsrClient } from '@/lib/api';
+import { getApiValidationMessage } from "@/lib/apiValidationMessage";
+import { notify } from "@/lib/notify";
+import { useAuth } from "@/lib/contexts/AuthContext";
+import { useQueryClient } from "@tanstack/react-query";
+import { TENANT_PROFILE_KEY } from "@/tenant/hooks/useTenantProfile";
+import { tsrClient } from "@/lib/api";
 
 /** Replaces the primary phone entry, preserving any secondary numbers. */
 function upsertPrimaryPhone(existing: readonly PhoneNumber[], number: string): PhoneNumber[] {
@@ -25,11 +25,11 @@ function upsertPrimaryPhone(existing: readonly PhoneNumber[], number: string): P
       ...existing[idx],
       number,
       isPrimary: true,
-      label: existing[idx].label || 'Primary',
+      label: existing[idx].label || "Primary",
     };
     return next;
   }
-  return [{ label: 'Primary', number, isPrimary: true }, ...existing];
+  return [{ label: "Primary", number, isPrimary: true }, ...existing];
 }
 
 /** Replaces the primary email entry, preserving secondaries; resets verification on change. */
@@ -42,12 +42,12 @@ function upsertPrimaryEmail(existing: readonly EmailAddress[], address: string):
       ...existing[idx],
       address,
       isPrimary: true,
-      label: existing[idx].label || 'Primary',
+      label: existing[idx].label || "Primary",
       isVerified: changed ? undefined : existing[idx].isVerified,
     };
     return next;
   }
-  return [{ label: 'Primary', address, isPrimary: true }, ...existing];
+  return [{ label: "Primary", address, isPrimary: true }, ...existing];
 }
 
 export function useAccountProfileContactActions() {
@@ -55,20 +55,27 @@ export function useAccountProfileContactActions() {
   const { checkUserAuth } = useAuth();
   const queryClient = useQueryClient();
   const { data: profile, refetch } = useTenantProfile();
-  
-  // @ts-expect-error - TS union discrimination limit with ts-rest
+
   const updateContactMutation = tsrClient.profile.updateContact.useMutation();
 
-  const [name, setName] = useState('');
-  const [phone, setPhone] = useState('');
-  const [contactEmail, setContactEmail] = useState('');
+  const [name, setName] = useState("");
+  const [phone, setPhone] = useState("");
+  const [contactEmail, setContactEmail] = useState("");
   const [savingContact, setSavingContact] = useState(false);
 
   useEffect(() => {
     if (!profile) return;
-    setName(profile.contact?.name ?? profile.name ?? '');
-    setPhone(profile.contact ? (getPrimaryPhone(profile.contact) || '') : String(Reflect.get(profile, 'phone') ?? ''));
-    setContactEmail(profile.contact ? (getPrimaryEmail(profile.contact) || '') : String(Reflect.get(profile, 'email') ?? ''));
+    setName(profile.contact?.name ?? profile.name ?? "");
+    setPhone(
+      profile.contact
+        ? getPrimaryPhone(profile.contact) || ""
+        : String(Reflect.get(profile, "phone") ?? ""),
+    );
+    setContactEmail(
+      profile.contact
+        ? getPrimaryEmail(profile.contact) || ""
+        : String(Reflect.get(profile, "email") ?? ""),
+    );
   }, [profile]);
 
   /** Persists the own-contact patch (shared by Save and avatar crop). Empty arrays clear. */
@@ -91,25 +98,25 @@ export function useAccountProfileContactActions() {
         avatar,
       });
       if (!checked.success) {
-        notify.error(t('common.formPleaseFixErrors'));
+        notify.error(t("common.formPleaseFixErrors"));
         return;
       }
-      
+
       const { status } = await updateContactMutation.mutateAsync({
-        body: checked.data
+        body: checked.data,
       });
       if (status !== 200) {
-        throw new Error(t('errors.boundary.description'));
+        throw new Error(t("errors.boundary.description"));
       }
-      
+
       await queryClient.invalidateQueries({ queryKey: TENANT_PROFILE_KEY });
       await refetch();
       await checkUserAuth();
-      notify.success(t('account.contactSaved'));
+      notify.success(t("account.contactSaved"));
     } catch (error: unknown) {
       const validationMessage = getApiValidationMessage(error);
-      const message = validationMessage || t('errors.boundary.description');
-      notify.error(validationMessage ? t('account.contactUniqueConflict') : message, {
+      const message = validationMessage || t("errors.boundary.description");
+      notify.error(validationMessage ? t("account.contactUniqueConflict") : message, {
         description: validationMessage || undefined,
       });
     } finally {

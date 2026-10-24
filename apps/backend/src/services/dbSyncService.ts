@@ -4,16 +4,11 @@ import {
   getObject as dbGetObject,
   saveObject as dbSaveObject,
   resetTenantData as dbResetTenantData,
-} from '../db/database.js';
+} from "../db/database.js";
 
-export {
-  fetchDatabaseSnapshot,
-  fetchBackupSnapshot,
-} from './dbSyncSnapshotService.js';
+export { fetchDatabaseSnapshot, fetchBackupSnapshot } from "./dbSyncSnapshotService.js";
 
-export {
-  synchronizeData,
-} from './dbSyncRestoreService.js';
+export { synchronizeData } from "./dbSyncRestoreService.js";
 
 /**
  * Resets the current tenant to minimal defaults (scoped; does not drop global tables).

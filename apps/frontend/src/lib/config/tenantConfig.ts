@@ -41,6 +41,12 @@ export function isCurrentHostApex(): boolean {
   return isApexHost(window.location.hostname.toLowerCase(), getAppDomain());
 }
 
+/** True when the hostname is a tenant workspace (`{subdomain}.localhost` or `{subdomain}.{platform-domain}`). */
+export function isTenantHost(): boolean {
+  if (typeof window === "undefined") return false;
+  return !isCurrentHostApex();
+}
+
 /** Resolves the active tenant subdomain from the current browser hostname. */
 export function getCurrentSubdomain(): string | null {
   if (typeof window === "undefined") {
@@ -48,4 +54,3 @@ export function getCurrentSubdomain(): string | null {
   }
   return parseTenantFromHost(window.location.hostname, getAppDomain());
 }
-

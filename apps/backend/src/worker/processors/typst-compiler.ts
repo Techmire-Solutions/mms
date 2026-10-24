@@ -1,19 +1,19 @@
-import { execFile } from 'node:child_process';
-import { promisify } from 'node:util';
-import { readFile, writeFile, unlink, mkdtemp, rm } from 'node:fs/promises';
-import { join } from 'node:path';
-import { tmpdir } from 'node:os';
-import { existsSync } from 'node:fs';
-import { fileURLToPath } from 'node:url';
-import { logger } from '../../lib/logger.js';
+import { execFile } from "node:child_process";
+import { promisify } from "node:util";
+import { readFile, writeFile, unlink, mkdtemp, rm } from "node:fs/promises";
+import { join } from "node:path";
+import { tmpdir } from "node:os";
+import { existsSync } from "node:fs";
+import { fileURLToPath } from "node:url";
+import { logger } from "../../lib/logger.js";
 
 const execFileAsync = promisify(execFile);
-const __dirname = fileURLToPath(new URL('.', import.meta.url));
-const TEMPLATES_DIR = join(__dirname, '../templates');
+const __dirname = fileURLToPath(new URL(".", import.meta.url));
+const TEMPLATES_DIR = join(__dirname, "../templates");
 
 export const MAX_CONCURRENT_TYPST_PROCESSES = Math.max(
   1,
-  Number.parseInt(process.env.TYPST_MAX_CONCURRENCY || '2', 10),
+  Number.parseInt(process.env.TYPST_MAX_CONCURRENCY || "2", 10),
 );
 
 let activeTypstProcesses = 0;
@@ -47,14 +47,14 @@ async function acquireTypstSlot(): Promise<() => void> {
   });
 }
 
-export type TypstTemplateType = 'report-card' | 'fee-receipt' | 'financial-ledger';
+export type TypstTemplateType = "report-card" | "fee-receipt" | "financial-ledger";
 
 export interface TypstRenderOptions {
   template: TypstTemplateType;
   data: Record<string, unknown>;
   fontDir?: string;
-  lang?: 'ar' | 'ur' | 'fa' | 'en';
-  direction?: 'rtl' | 'ltr';
+  lang?: "ar" | "ur" | "fa" | "en";
+  direction?: "rtl" | "ltr";
 }
 
 export interface TypstCompiledFile {
@@ -73,9 +73,9 @@ export function getTemplatePath(template: TypstTemplateType): string {
 export function findTypstBinary(): string | null {
   const possiblePaths = [
     process.env.TYPST_BIN,
-    '/usr/local/bin/typst',
-    '/usr/bin/typst',
-    'typst',
+    "/usr/local/bin/typst",
+    "/usr/bin/typst",
+    "typst",
   ].filter((p): p is string => Boolean(p));
 
   for (const binary of possiblePaths) {
@@ -92,18 +92,21 @@ export function findTypstBinary(): string | null {
  * Generates a standard conforming PDF document buffer with embedded BiDi text and vector elements.
  */
 export function generateConformingPdf(options: TypstRenderOptions): Buffer {
-  const { template, data, lang = 'ar' } = options;
-  const isRtl = options.direction === 'rtl' || ['ar', 'ur', 'fa'].includes(lang);
-  const title = (data.institution as string) || 'Madrasa Management System';
+  const { template, data, lang = "ar" } = options;
+  const isRtl = options.direction === "rtl" || ["ar", "ur", "fa"].includes(lang);
+  const title = (data.institution as string) || "Madrasa Management System";
   const subtitle =
-    template === 'report-card'
-      ? 'Report Card | بطاقة الدرجات'
-      : template === 'fee-receipt'
-      ? 'Fee Receipt | سند قبض'
-      : 'Financial Ledger | كشف الحساب';
+    template === "report-card"
+      ? "Report Card | بطاقة الدرجات"
+      : template === "fee-receipt"
+        ? "Fee Receipt | سند قبض"
+        : "Financial Ledger | كشف الحساب";
 
   const docId = `${Date.now()}-${Math.random().toString(36).substring(2, 9)}`;
-  const creationDate = new Date().toISOString().replace(/[-:TZ]/g, '').slice(0, 14);
+  const creationDate = new Date()
+    .toISOString()
+    .replace(/[-:TZ]/g, "")
+    .slice(0, 14);
 
   const lines = [
     `%PDF-1.4`,
@@ -129,15 +132,15 @@ export function generateConformingPdf(options: TypstRenderOptions): Buffer {
     `(${escapePdfString(subtitle)}) Tj`,
     `0 -20 Td`,
     `/F1 10 Tf`,
-    `(${escapePdfString(`Direction: ${isRtl ? 'RTL' : 'LTR'} | Lang: ${lang} | Generated: ${new Date().toISOString()}`)}) Tj`,
+    `(${escapePdfString(`Direction: ${isRtl ? "RTL" : "LTR"} | Lang: ${lang} | Generated: ${new Date().toISOString()}`)}) Tj`,
     `0 -20 Td`,
     `(${escapePdfString(`Data Summary: ${JSON.stringify(data).slice(0, 80)}...`)}) Tj`,
     `ET`,
-  ].join('\n');
+  ].join("\n");
 
   lines.push(
     `4 0 obj`,
-    `<< /Length ${Buffer.byteLength(streamContent, 'utf-8')} >>`,
+    `<< /Length ${Buffer.byteLength(streamContent, "utf-8")} >>`,
     `stream`,
     streamContent,
     `endstream`,
@@ -157,14 +160,14 @@ export function generateConformingPdf(options: TypstRenderOptions): Buffer {
     `<< /Size 6 /Root 1 0 R /Info << /Title (${escapePdfString(title)}) /CreationDate (D:${creationDate}) /ID [<${docId}> <${docId}>] >> >>`,
     `startxref`,
     `525`,
-    `%%EOF`
+    `%%EOF`,
   );
 
-  return Buffer.from(lines.join('\n'), 'utf-8');
+  return Buffer.from(lines.join("\n"), "utf-8");
 }
 
 function escapePdfString(str: string): string {
-  return str.replace(/\\/g, '\\\\').replace(/\(/g, '\\(').replace(/\)/g, '\\)');
+  return str.replace(/\\/g, "\\\\").replace(/\(/g, "\\(").replace(/\)/g, "\\)");
 }
 
 /**
@@ -176,8 +179,11 @@ function escapePdfString(str: string): string {
 export async function compileTypstToFile(options: TypstRenderOptions): Promise<TypstCompiledFile> {
   const templatePath = getTemplatePath(options.template);
   const binary = findTypstBinary();
-  const tempDir = await mkdtemp(join(tmpdir(), 'mms-typst-'));
-  const outputPath = join(tempDir, `output-${Date.now()}-${Math.random().toString(36).slice(2, 7)}.pdf`);
+  const tempDir = await mkdtemp(join(tmpdir(), "mms-typst-"));
+  const outputPath = join(
+    tempDir,
+    `output-${Date.now()}-${Math.random().toString(36).slice(2, 7)}.pdf`,
+  );
 
   const cleanup = async () => {
     try {
@@ -196,27 +202,21 @@ export async function compileTypstToFile(options: TypstRenderOptions): Promise<T
     const inputJson = JSON.stringify(options.data || {});
     const releaseSlot = await acquireTypstSlot();
     try {
-      const args = [
-        'compile',
-        templatePath,
-        outputPath,
-        '--input',
-        `data=${inputJson}`,
-      ];
+      const args = ["compile", templatePath, outputPath, "--input", `data=${inputJson}`];
 
       if (options.fontDir) {
-        args.push('--font-path', options.fontDir);
+        args.push("--font-path", options.fontDir);
       }
 
       await execFileAsync(binary, args, {
         timeout: 15000,
         maxBuffer: 1024 * 1024,
-        killSignal: 'SIGKILL',
+        killSignal: "SIGKILL",
       });
 
       return { filePath: outputPath, cleanup };
     } catch (error) {
-      logger.warn({ err: error }, 'CLI compile failed, falling back to conforming engine');
+      logger.warn({ err: error }, "CLI compile failed, falling back to conforming engine");
     } finally {
       releaseSlot();
     }

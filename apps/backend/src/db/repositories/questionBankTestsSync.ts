@@ -1,13 +1,8 @@
-import { and, eq, inArray } from 'drizzle-orm';
-import { type QuestionBankTest } from '@mms/shared';
-import {
-  type tests,
-  testQuestions,
-  testSections,
-  testSectionQuestions,
-} from '../schema.js';
-import { type TenantTransaction } from '../tenant-context.js';
-import { mapAuditTimestamps } from './repositoryMappers.js';
+import { and, eq, inArray } from "drizzle-orm";
+import { type QuestionBankTest } from "@mms/shared";
+import { type tests, testQuestions, testSections, testSectionQuestions } from "../schema.js";
+import { type TenantTransaction } from "../tenant-context.js";
+import { mapAuditTimestamps } from "./repositoryMappers.js";
 
 type TestRow = typeof tests.$inferSelect;
 type Transaction = TenantTransaction;
@@ -23,15 +18,18 @@ export function testRowToRecord(
     name: row.name,
     categoryId: row.categoryId,
     questionIds,
-    difficulty: row.difficulty as QuestionBankTest['difficulty'],
+    difficulty: row.difficulty as QuestionBankTest["difficulty"],
     duration: row.duration,
-    createdAt: audit.createdAt ?? (row.createdAt instanceof Date ? row.createdAt.toISOString() : String(row.createdAt)),
+    createdAt:
+      audit.createdAt ??
+      (row.createdAt instanceof Date ? row.createdAt.toISOString() : String(row.createdAt)),
     deletedAt: audit.deletedAt ?? null,
     deletedBy: audit.deletedBy ?? null,
     deletionReason: audit.deletionReason ?? null,
   };
 
   if (row.examClass) test.examClass = row.examClass;
+  if (row.classId) test.classId = row.classId;
   if (row.totalMarks != null) test.totalMarks = row.totalMarks;
   if (row.instructions) test.instructions = row.instructions;
   if (sections.length > 0) test.sections = sections;
@@ -66,7 +64,9 @@ export async function syncTestChildren(
     .where(and(eq(testSections.workspaceSubdomain, subdomain), eq(testSections.testId, record.id)));
   await tx
     .delete(testQuestions)
-    .where(and(eq(testQuestions.workspaceSubdomain, subdomain), eq(testQuestions.testId, record.id)));
+    .where(
+      and(eq(testQuestions.workspaceSubdomain, subdomain), eq(testQuestions.testId, record.id)),
+    );
 
   if (record.questionIds && record.questionIds.length > 0) {
     await tx.insert(testQuestions).values(
@@ -86,7 +86,7 @@ export async function syncTestChildren(
         workspaceSubdomain: subdomain,
         testId: record.id,
         title: sec.title,
-        instructions: sec.instructions ?? '',
+        instructions: sec.instructions ?? "",
         sortOrder: i,
       })),
     );

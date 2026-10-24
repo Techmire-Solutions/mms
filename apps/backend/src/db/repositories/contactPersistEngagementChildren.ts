@@ -1,12 +1,12 @@
-import { and, eq } from 'drizzle-orm';
-import type { Contact } from '@mms/shared';
+import { and, eq } from "drizzle-orm";
+import type { Contact } from "@mms/shared";
 import {
   contactRelationships,
   contactActivities,
   contactAttachments,
   contactBankDetails,
-} from '../schema.js';
-import { type TenantTransaction } from '../tenant-context.js';
+} from "../schema.js";
+import { type TenantTransaction } from "../tenant-context.js";
 
 type Transaction = TenantTransaction;
 
@@ -18,7 +18,12 @@ export async function syncContactEngagementChildrenTx(
 ): Promise<void> {
   await tx
     .delete(contactRelationships)
-    .where(and(eq(contactRelationships.workspaceSubdomain, subdomain), eq(contactRelationships.contactId, contactId)));
+    .where(
+      and(
+        eq(contactRelationships.workspaceSubdomain, subdomain),
+        eq(contactRelationships.contactId, contactId),
+      ),
+    );
   const relationships = contact.relationshipContacts ?? [];
   if (relationships.length > 0) {
     await tx.insert(contactRelationships).values(
@@ -40,7 +45,12 @@ export async function syncContactEngagementChildrenTx(
 
   await tx
     .delete(contactActivities)
-    .where(and(eq(contactActivities.workspaceSubdomain, subdomain), eq(contactActivities.contactId, contactId)));
+    .where(
+      and(
+        eq(contactActivities.workspaceSubdomain, subdomain),
+        eq(contactActivities.contactId, contactId),
+      ),
+    );
   if (contact.activities && contact.activities.length > 0) {
     await tx.insert(contactActivities).values(
       contact.activities.map((act, idx) => ({
@@ -58,7 +68,12 @@ export async function syncContactEngagementChildrenTx(
 
   await tx
     .delete(contactAttachments)
-    .where(and(eq(contactAttachments.workspaceSubdomain, subdomain), eq(contactAttachments.contactId, contactId)));
+    .where(
+      and(
+        eq(contactAttachments.workspaceSubdomain, subdomain),
+        eq(contactAttachments.contactId, contactId),
+      ),
+    );
   if (contact.attachments && contact.attachments.length > 0) {
     await tx.insert(contactAttachments).values(
       contact.attachments.map((att, idx) => ({
@@ -77,7 +92,12 @@ export async function syncContactEngagementChildrenTx(
 
   await tx
     .delete(contactBankDetails)
-    .where(and(eq(contactBankDetails.workspaceSubdomain, subdomain), eq(contactBankDetails.contactId, contactId)));
+    .where(
+      and(
+        eq(contactBankDetails.workspaceSubdomain, subdomain),
+        eq(contactBankDetails.contactId, contactId),
+      ),
+    );
   if (contact.bankDetails && contact.bankDetails.length > 0) {
     await tx.insert(contactBankDetails).values(
       contact.bankDetails.map((b, idx) => ({

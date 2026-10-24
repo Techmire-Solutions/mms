@@ -1,30 +1,24 @@
 import React, { useEffect } from "react";
 import { FileText } from "lucide-react";
-import { SectionCard } from "@/components/ui/SectionCard";
-import { ModuleSetupSaveFooter } from "@/components/ui/ModuleSetupSaveFooter";
+import { SectionCard } from "@/components/app/SectionCard";
+import { ModuleSetupSaveFooter } from "@/components/app/ModuleSetupSaveFooter";
 import { useTranslation } from "@/hooks/useTranslation";
 import { SETUP_SECTION_CARD_CLASS } from "@/components/ui/formStyles";
 import { ExaminationsPreferencesSection } from "@/tenant/features/examinations/components/ExaminationsPreferencesSection";
 import { useExaminationsSetupPanelState } from "@/tenant/features/examinations/hooks/useExaminationsSetupPanelState";
-import { ModuleSetupContent } from "@/components/ui/ModuleSetupContent";
+import { ModuleSetupContent } from "@/components/app/ModuleSetupContent";
 
 export interface ExaminationsSettingsProps {
   /** Reports Preferences draft dirtiness to the Setup shell (leave-guard). */
   onPrefsDirtyChange?: (isDirty: boolean) => void;
 }
 
-export const ExaminationsSettings = (function ExaminationsSettings({
+export const ExaminationsSettings = function ExaminationsSettings({
   onPrefsDirtyChange,
 }: ExaminationsSettingsProps = {}): React.JSX.Element {
   const { t } = useTranslation();
-  const {
-    settingsDraft,
-    saved,
-    saving,
-    isPrefsDirty,
-    upd,
-    handleSave,
-  } = useExaminationsSetupPanelState();
+  const { settingsDraft, saved, saving, isPrefsDirty, upd, handleSave } =
+    useExaminationsSetupPanelState();
 
   useEffect(() => {
     onPrefsDirtyChange?.(isPrefsDirty);
@@ -42,10 +36,7 @@ export const ExaminationsSettings = (function ExaminationsSettings({
         title={t("examinations.settings.titlePreferences")}
         className={SETUP_SECTION_CARD_CLASS}
       >
-        <ExaminationsPreferencesSection
-          settingsDraft={settingsDraft}
-          upd={upd}
-        />
+        <ExaminationsPreferencesSection settingsDraft={settingsDraft} upd={upd} />
         <ModuleSetupSaveFooter
           dirty={isPrefsDirty}
           saving={saving}
@@ -69,6 +60,6 @@ export const ExaminationsSettings = (function ExaminationsSettings({
       />
     </ModuleSetupContent>
   );
-});
+};
 
 export default ExaminationsSettings;

@@ -1,20 +1,17 @@
-import { useContext } from 'react';
+import { useContext } from "react";
 import {
   QueryClient,
   QueryClientContext,
   queryOptions,
   useMutation,
   useQuery,
-} from '@tanstack/react-query';
-import {
-  facultyDesignationSchema,
-  type FacultyDesignationWrite,
-} from '@mms/shared';
-import { apiContract } from '@/lib/api';
-import { useTranslation } from '@/hooks/useTranslation';
-import { FACULTY_QUERY_KEY } from './facultyQueryKeys';
+} from "@tanstack/react-query";
+import { facultyDesignationSchema, type FacultyDesignationWrite } from "@mms/shared";
+import { apiContract } from "@/lib/api";
+import { useTranslation } from "@/hooks/useTranslation";
+import { FACULTY_QUERY_KEY } from "./facultyQueryKeys";
 
-export const FACULTY_DESIGNATIONS_QUERY_KEY = [...FACULTY_QUERY_KEY, 'designations'] as const;
+export const FACULTY_DESIGNATIONS_QUERY_KEY = [...FACULTY_QUERY_KEY, "designations"] as const;
 
 const fallbackQueryClient = new QueryClient();
 
@@ -48,8 +45,8 @@ export function useFacultyDesignations(options: { includeDeleted?: boolean } = {
   return useQuery(
     facultyDesignationsQueryOptions({
       includeDeleted: options.includeDeleted,
-      loadFailed: t('faculty.errors.loadDesignations'),
-      invalidResponse: t('faculty.errors.invalidDesignationsResponse'),
+      loadFailed: t("faculty.errors.loadDesignations"),
+      invalidResponse: t("faculty.errors.invalidDesignationsResponse"),
     }),
   );
 }
@@ -66,7 +63,7 @@ export function useSaveFacultyDesignation(customClient?: QueryClient) {
           params: { id: input.id },
           body: input,
         });
-        if (response.status !== 200) throw new Error(t('faculty.errors.saveDesignation'));
+        if (response.status !== 200) throw new Error(t("faculty.errors.saveDesignation"));
         return facultyDesignationSchema.parse(
           (response.body as { designation?: unknown }).designation,
         );
@@ -91,14 +88,13 @@ export function useDeleteFacultyDesignation(customClient?: QueryClient) {
         });
         if (response.status !== 200) {
           const message =
-            typeof response.body === 'object' && response.body && 'message' in response.body
+            typeof response.body === "object" && response.body && "message" in response.body
               ? String(response.body.message)
-              : t('faculty.errors.deleteDesignation');
+              : t("faculty.errors.deleteDesignation");
           throw new Error(message);
         }
       },
-      onSuccess: () =>
-        client.invalidateQueries({ queryKey: FACULTY_DESIGNATIONS_QUERY_KEY }),
+      onSuccess: () => client.invalidateQueries({ queryKey: FACULTY_DESIGNATIONS_QUERY_KEY }),
     },
     client,
   );
@@ -118,17 +114,16 @@ export function useRestoreFacultyDesignation(customClient?: QueryClient) {
         });
         if (response.status !== 200) {
           const message =
-            typeof response.body === 'object' && response.body && 'message' in response.body
+            typeof response.body === "object" && response.body && "message" in response.body
               ? String(response.body.message)
-              : t('faculty.errors.restoreDesignation');
+              : t("faculty.errors.restoreDesignation");
           throw new Error(message);
         }
         return facultyDesignationSchema.parse(
           (response.body as { designation?: unknown }).designation,
         );
       },
-      onSuccess: () =>
-        client.invalidateQueries({ queryKey: FACULTY_DESIGNATIONS_QUERY_KEY }),
+      onSuccess: () => client.invalidateQueries({ queryKey: FACULTY_DESIGNATIONS_QUERY_KEY }),
     },
     client,
   );

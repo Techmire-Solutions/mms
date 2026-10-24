@@ -21,7 +21,10 @@ describe("computeContactsSelectionTargets", () => {
 
   it("filters current-page selected rows by channel eligibility", () => {
     const withPhone = contact({ id: "1", phone: "+923001234567" });
-    const withEmail = contact({ id: "2", emails: [{ address: "test@example.com", label: "primary" }] });
+    const withEmail = contact({
+      id: "2",
+      emails: [{ address: "test@example.com", label: "primary" }],
+    });
     const neither = contact({ id: "3" });
     const result = computeContactsSelectionTargets({
       selectedIds: ["1", "2", "3", "missing"],

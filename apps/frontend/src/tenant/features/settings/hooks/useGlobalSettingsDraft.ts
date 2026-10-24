@@ -1,18 +1,14 @@
-import { useEffect, useState } from 'react';
-import { useQueryClient } from '@tanstack/react-query';
-import { MODULE_ACCESS_QUERY_KEY } from '@/lib/query/moduleAccessQuery';
-import {
-  applyDocumentLanguage,
-  mergeGlobalSettings,
-  normalizeEnabledModules,
-  type GlobalSettings,
-} from '@mms/shared';
-import { getGlobalSettings, saveGlobalSettingsAsync } from '@/lib/db';
-import { clearGlobalSettingsPreview, previewGlobalSettings } from '@/lib/settingsPreview';
-import { serverSyncErrorKey } from '@/lib/serverSyncErrors';
-import { notify } from '@/lib/notify';
-import { useTranslation } from '@/hooks/useTranslation';
-import { useSavedFlash } from '@/tenant/hooks/useSavedFlash';
+import { useEffect, useState } from "react";
+import { useQueryClient } from "@tanstack/react-query";
+import { MODULE_ACCESS_QUERY_KEY } from "@/lib/query/moduleAccessQuery";
+import { mergeGlobalSettings, normalizeEnabledModules, type GlobalSettings } from "@mms/shared";
+import { applyDocumentLanguage } from "@/lib/documentLanguage";
+import { getGlobalSettings, saveGlobalSettingsAsync } from "@/lib/db";
+import { clearGlobalSettingsPreview, previewGlobalSettings } from "@/lib/settingsPreview";
+import { serverSyncErrorKey } from "@/lib/serverSyncErrors";
+import { notify } from "@/lib/notify";
+import { useTranslation } from "@/hooks/useTranslation";
+import { useSavedFlash } from "@/tenant/hooks/useSavedFlash";
 import {
   isEnabledModulesDraftDirty,
   isGlobalPreferencesDirty,
@@ -20,7 +16,7 @@ import {
   previewGlobalSettingsDraft,
   retainGlobalDraftAfterModulesSave,
   retainModulesDraftAfterGlobalSave,
-} from '@/lib/settingsGlobalDraft';
+} from "@/lib/settingsGlobalDraft";
 
 export interface UseGlobalSettingsDraftSaveToast {
   saveSuccessMessage: string;
@@ -67,8 +63,8 @@ export function useGlobalSettingsDraft(): UseGlobalSettingsDraftResult {
       setData(persistedGlobalSettings);
       clearSaved();
     };
-    window.addEventListener('local-database-update', sync);
-    return () => window.removeEventListener('local-database-update', sync);
+    window.addEventListener("local-database-update", sync);
+    return () => window.removeEventListener("local-database-update", sync);
   }, [clearSaved, isDirty]);
 
   useEffect(() => {
@@ -76,75 +72,75 @@ export function useGlobalSettingsDraft(): UseGlobalSettingsDraftResult {
     applyDocumentLanguage(data.language);
   }, [data]);
 
-  const applyPersisted = ((globalSettings: GlobalSettings): void => {
+  const applyPersisted = (globalSettings: GlobalSettings): void => {
     const merged = mergeGlobalSettings(globalSettings);
     setBaseline(merged);
     setData(merged);
     clearGlobalSettingsPreview();
     clearSaved();
-  });
+  };
 
-  const upd = (<K extends keyof GlobalSettings>(field: K, value: GlobalSettings[K]): void => {
+  const upd = <K extends keyof GlobalSettings>(field: K, value: GlobalSettings[K]): void => {
     setData((current) => ({ ...current, [field]: value }));
     clearSaved();
-  });
+  };
 
-  const handleSaveGlobal = (async (toast?: UseGlobalSettingsDraftSaveToast): Promise<boolean> => {
-      setSaving(true);
-      try {
-        const persisted = mergeGlobalSettingsDraft(data);
-        const result = await saveGlobalSettingsAsync(persisted);
-        if (!result.ok) {
-          notify.error(t('settings.serverSaveFailed'), {
-            description: t(serverSyncErrorKey(result.status)),
-          });
-          return false;
-        }
-        const nextData = retainModulesDraftAfterGlobalSave(persisted, data);
-        setBaseline(persisted);
-        setData(nextData);
-        clearGlobalSettingsPreview();
-        applyDocumentLanguage(persisted.language);
-        flashSaved();
-        notify.success(toast?.saveSuccessMessage ?? t('global.savedToast'), {
-          description: toast?.saveSuccessDescription ?? t('global.savedToastDesc'),
+  const handleSaveGlobal = async (toast?: UseGlobalSettingsDraftSaveToast): Promise<boolean> => {
+    setSaving(true);
+    try {
+      const persisted = mergeGlobalSettingsDraft(data);
+      const result = await saveGlobalSettingsAsync(persisted);
+      if (!result.ok) {
+        notify.error(t("settings.serverSaveFailed"), {
+          description: t(serverSyncErrorKey(result.status)),
         });
-        return true;
-      } finally {
-        setSaving(false);
+        return false;
       }
-    });
+      const nextData = retainModulesDraftAfterGlobalSave(persisted, data);
+      setBaseline(persisted);
+      setData(nextData);
+      clearGlobalSettingsPreview();
+      applyDocumentLanguage(persisted.language);
+      flashSaved();
+      notify.success(toast?.saveSuccessMessage ?? t("global.savedToast"), {
+        description: toast?.saveSuccessDescription ?? t("global.savedToastDesc"),
+      });
+      return true;
+    } finally {
+      setSaving(false);
+    }
+  };
 
-  const handleSaveModules = (async (toast?: UseGlobalSettingsDraftSaveToast): Promise<boolean> => {
-      setSaving(true);
-      try {
-        const persisted = mergeGlobalSettings({
-          ...getGlobalSettings(),
-          enabledModules: normalizeEnabledModules(data.enabledModules),
+  const handleSaveModules = async (toast?: UseGlobalSettingsDraftSaveToast): Promise<boolean> => {
+    setSaving(true);
+    try {
+      const persisted = mergeGlobalSettings({
+        ...getGlobalSettings(),
+        enabledModules: normalizeEnabledModules(data.enabledModules),
+      });
+      const result = await saveGlobalSettingsAsync(persisted);
+      if (!result.ok) {
+        notify.error(t("settings.serverSaveFailed"), {
+          description: t(serverSyncErrorKey(result.status)),
         });
-        const result = await saveGlobalSettingsAsync(persisted);
-        if (!result.ok) {
-          notify.error(t('settings.serverSaveFailed'), {
-            description: t(serverSyncErrorKey(result.status)),
-          });
-          return false;
-        }
-        const nextData = retainGlobalDraftAfterModulesSave(persisted, data);
-        setBaseline(persisted);
-        setData(nextData);
-        clearGlobalSettingsPreview();
-        void queryClient.invalidateQueries({ queryKey: MODULE_ACCESS_QUERY_KEY });
-        flashSaved();
-        notify.success(toast?.saveSuccessMessage ?? t('module.system.saved'), {
-          description: toast?.saveSuccessDescription ?? t('module.system.savedDesc'),
-        });
-        return true;
-      } finally {
-        setSaving(false);
+        return false;
       }
-    });
+      const nextData = retainGlobalDraftAfterModulesSave(persisted, data);
+      setBaseline(persisted);
+      setData(nextData);
+      clearGlobalSettingsPreview();
+      void queryClient.invalidateQueries({ queryKey: MODULE_ACCESS_QUERY_KEY });
+      flashSaved();
+      notify.success(toast?.saveSuccessMessage ?? t("module.system.saved"), {
+        description: toast?.saveSuccessDescription ?? t("module.system.savedDesc"),
+      });
+      return true;
+    } finally {
+      setSaving(false);
+    }
+  };
 
-  const handleDiscardGlobal = ((): void => {
+  const handleDiscardGlobal = (): void => {
     setData((current) => ({
       ...current,
       language: baseline.language,
@@ -157,15 +153,15 @@ export function useGlobalSettingsDraft(): UseGlobalSettingsDraftResult {
       passwordPolicy: baseline.passwordPolicy,
     }));
     clearSaved();
-  });
+  };
 
-  const handleDiscardModules = ((): void => {
+  const handleDiscardModules = (): void => {
     setData((current) => ({
       ...current,
       enabledModules: baseline.enabledModules,
     }));
     clearSaved();
-  });
+  };
 
   return {
     data,

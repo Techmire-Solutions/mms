@@ -1,4 +1,4 @@
-import type { FacultyMember } from '@mms/shared';
+import type { FacultyMember } from "@mms/shared";
 import {
   type ClassDetailTabId,
   ClassDetailGeneralTab,
@@ -7,39 +7,39 @@ import {
   ClassDetailBudgetTab,
   ClassDetailScholarshipTab,
   type useClassDetailDraft,
-} from './class-detail';
+} from "./class-detail";
 
 type DraftHookResult = ReturnType<typeof useClassDetailDraft>;
 
 export interface ClassDetailTabBodyProps {
   activeTab: ClassDetailTabId;
-  classDraft: DraftHookResult['classDraft'];
-  updateDraft: DraftHookResult['updateDraft'];
+  classDraft: DraftHookResult["classDraft"];
+  updateDraft: DraftHookResult["updateDraft"];
   errors: Record<string, string>;
   allFaculty: FacultyMember[];
   currencySymbol: string;
-  addFeeRow: DraftHookResult['addFeeRow'];
-  removeFeeRow: DraftHookResult['removeFeeRow'];
-  updateFeeRow: DraftHookResult['updateFeeRow'];
-  addDiscountRow: DraftHookResult['addDiscountRow'];
-  removeDiscountRow: DraftHookResult['removeDiscountRow'];
-  updateDiscountRow: DraftHookResult['updateDiscountRow'];
-  addScheduleRow: DraftHookResult['addScheduleRow'];
-  removeScheduleRow: DraftHookResult['removeScheduleRow'];
-  updateScheduleRow: DraftHookResult['updateScheduleRow'];
-  activeTimetable: DraftHookResult['activeTimetable'];
-  addPeriodRow: DraftHookResult['addPeriodRow'];
-  removePeriodRow: DraftHookResult['removePeriodRow'];
-  updatePeriodRow: DraftHookResult['updatePeriodRow'];
-  addBudgetRow: DraftHookResult['addBudgetRow'];
-  removeBudgetRow: DraftHookResult['removeBudgetRow'];
-  updateBudgetRow: DraftHookResult['updateBudgetRow'];
-  addRefreshmentRow: DraftHookResult['addRefreshmentRow'];
-  removeRefreshmentRow: DraftHookResult['removeRefreshmentRow'];
-  updateRefreshmentRow: DraftHookResult['updateRefreshmentRow'];
-  activeScholarship: DraftHookResult['activeScholarship'];
-  updateScholarship: DraftHookResult['updateScholarship'];
-  updateEligibility: DraftHookResult['updateEligibility'];
+  addFeeRow: DraftHookResult["addFeeRow"];
+  removeFeeRow: DraftHookResult["removeFeeRow"];
+  updateFeeRow: DraftHookResult["updateFeeRow"];
+  addDiscountRow: DraftHookResult["addDiscountRow"];
+  removeDiscountRow: DraftHookResult["removeDiscountRow"];
+  updateDiscountRow: DraftHookResult["updateDiscountRow"];
+  addScheduleRow: DraftHookResult["addScheduleRow"];
+  removeScheduleRow: DraftHookResult["removeScheduleRow"];
+  updateScheduleRow: DraftHookResult["updateScheduleRow"];
+  activeTimetable: DraftHookResult["activeTimetable"];
+  addPeriodRow: DraftHookResult["addPeriodRow"];
+  removePeriodRow: DraftHookResult["removePeriodRow"];
+  updatePeriodRow: DraftHookResult["updatePeriodRow"];
+  addBudgetRow: DraftHookResult["addBudgetRow"];
+  removeBudgetRow: DraftHookResult["removeBudgetRow"];
+  updateBudgetRow: DraftHookResult["updateBudgetRow"];
+  addRefreshmentRow: DraftHookResult["addRefreshmentRow"];
+  removeRefreshmentRow: DraftHookResult["removeRefreshmentRow"];
+  updateRefreshmentRow: DraftHookResult["updateRefreshmentRow"];
+  activeScholarship: DraftHookResult["activeScholarship"];
+  updateScholarship: DraftHookResult["updateScholarship"];
+  updateEligibility: DraftHookResult["updateEligibility"];
 }
 
 export function ClassDetailTabBody({
@@ -74,7 +74,7 @@ export function ClassDetailTabBody({
 }: ClassDetailTabBodyProps): React.JSX.Element {
   return (
     <div className="space-y-4">
-      {activeTab === 'general' && (
+      {activeTab === "general" && (
         <ClassDetailGeneralTab
           classDraft={classDraft}
           updateDraft={updateDraft}
@@ -83,7 +83,7 @@ export function ClassDetailTabBody({
         />
       )}
 
-      {activeTab === 'fees' && (
+      {activeTab === "fees" && (
         <ClassDetailFeesTab
           fees={classDraft.fees || []}
           discounts={classDraft.discounts || []}
@@ -97,7 +97,7 @@ export function ClassDetailTabBody({
         />
       )}
 
-      {activeTab === 'schedule' && (
+      {activeTab === "schedule" && (
         <ClassDetailScheduleTab
           schedules={classDraft.schedules || []}
           periods={activeTimetable.periods || []}
@@ -111,7 +111,7 @@ export function ClassDetailTabBody({
         />
       )}
 
-      {activeTab === 'budget' && (
+      {activeTab === "budget" && (
         <ClassDetailBudgetTab
           budgets={classDraft.budgets || []}
           refreshments={classDraft.refreshments || []}
@@ -125,7 +125,7 @@ export function ClassDetailTabBody({
         />
       )}
 
-      {activeTab === 'scholarship' && (
+      {activeTab === "scholarship" && (
         <ClassDetailScholarshipTab
           scholarship={activeScholarship}
           onUpdateScholarship={updateScholarship}

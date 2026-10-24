@@ -1,10 +1,15 @@
 import React, { useId } from "react";
 import { SearchX } from "lucide-react";
-import { WorkBatchTable, WorkTaskToolbar, type WorkBatchTableColumn } from "@/components/common/work";
+import {
+  WorkBatchTable,
+  WorkTaskToolbar,
+  type WorkBatchTableColumn,
+} from "@/components/common/work";
 import { Button } from "@/components/ui/button";
-import { EmptyState } from "@/components/ui/EmptyState";
+import { EmptyState } from "@/components/app/EmptyState";
 import { useTranslation } from "@/hooks/useTranslation";
 import { cn } from "@/lib/utils";
+import { WORK_SURFACE } from "@/components/ui/formStyles";
 import { toColumnCustomizer, toColumnResize } from "./columnLayoutAdapters";
 import { DataTableCards } from "./DataTableCards";
 import { DataTableFiltersMenu } from "./DataTableFiltersMenu";
@@ -29,6 +34,11 @@ export function DataTable<TData extends { id: string | number }>({
   card,
   primaryAction,
   toolbarExtras,
+  statusFilter,
+  dateRange,
+  trashToggle,
+  filterChips,
+  isSearching,
   emptyState,
   defaultViewMode,
   columnLayout,
@@ -38,7 +48,14 @@ export function DataTable<TData extends { id: string | number }>({
 }: DataTableProps<TData>): React.JSX.Element {
   const { t } = useTranslation();
   const searchId = useId();
-  const state = useDataTableState({ tableId, data, columns, filters, defaultViewMode, columnLayout });
+  const state = useDataTableState({
+    tableId,
+    data,
+    columns,
+    filters,
+    defaultViewMode,
+    columnLayout,
+  });
   const { layout } = state;
 
   const tableColumns: WorkBatchTableColumn<TData>[] = state.visibleColumns.map((column) => ({
@@ -48,6 +65,10 @@ export function DataTable<TData extends { id: string | number }>({
     headerClassName: column.headerClassName,
     cellClassName: column.cellClassName,
     render: column.render,
+    noWrap: column.noWrap,
+    truncate: column.truncate,
+    align: column.align,
+    variant: column.variant,
   }));
 
   const sourceEmpty = !isLoading && data.length === 0;
@@ -58,7 +79,12 @@ export function DataTable<TData extends { id: string | number }>({
       compact
       variant="dashed"
       action={
-        <Button type="button" variant="link" onClick={state.clearFilters} className="min-h-11">
+        <Button
+          type="button"
+          variant="link"
+          onClick={state.clearFilters}
+          className="min-h-11 cursor-pointer"
+        >
           {t("common.clearFilters")}
         </Button>
       }
@@ -66,7 +92,10 @@ export function DataTable<TData extends { id: string | number }>({
   );
 
   return (
-    <div className={cn("space-y-3", className)} aria-busy={isLoading || undefined}>
+    <div
+      className={cn(WORK_SURFACE, "p-4 space-y-4", className)}
+      aria-busy={isLoading || undefined}
+    >
       <WorkTaskToolbar
         regionLabel={label}
         shownCountLabel={t("common.dataTable.shownCount", { count: state.rows.length })}
@@ -77,6 +106,11 @@ export function DataTable<TData extends { id: string | number }>({
         hasActiveFilters={state.hasActiveFilters}
         onClearFilters={state.clearFilters}
         clearFiltersLabel={t("common.clearFilters")}
+        isSearching={isSearching}
+        statusFilter={statusFilter}
+        dateRange={dateRange}
+        trashToggle={trashToggle}
+        filterChips={filterChips}
         filterButton={
           filters?.length ? (
             <DataTableFiltersMenu
@@ -111,7 +145,14 @@ export function DataTable<TData extends { id: string | number }>({
         />
       ) : (
         <WorkBatchTable
-          sort={tableProps.sort ?? { field: state.sortField, dir: state.sortDir, onSort: state.handleSort }}
+          bordered={false}
+          sort={
+            tableProps.sort ?? {
+              field: state.sortField,
+              dir: state.sortDir,
+              onSort: state.handleSort,
+            }
+          }
           {...tableProps}
           data={[...state.rows]}
           columns={tableColumns}

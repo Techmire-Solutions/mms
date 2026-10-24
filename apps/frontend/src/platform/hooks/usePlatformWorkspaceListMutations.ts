@@ -1,16 +1,16 @@
-import { useMutation, useQueryClient } from '@tanstack/react-query';
-import type { PlatformWorkspaceRow } from '@mms/shared';
-import { apiContract } from '@/lib/api';
-import { ApiError, isApiError } from '@/lib/apiClient';
-import { WORKSPACE_REGISTRY_QUERY_KEY } from '@/platform/hooks/useWorkspaceRegistry';
-import { useTranslation } from '@/hooks/useTranslation';
-import { notify } from '@/lib/notify';
-import { getPlatformErrorMessage } from '@/platform/lib/platformAuthErrors';
-import { updateWorkspacesCache } from './platformWorkspacesCache';
+import { useMutation, useQueryClient } from "@tanstack/react-query";
+import type { PlatformWorkspaceRow } from "@mms/shared";
+import { apiContract } from "@/lib/api";
+import { ApiError, isApiError } from "@/lib/apiClient";
+import { WORKSPACE_REGISTRY_QUERY_KEY } from "@/platform/hooks/useWorkspaceRegistry";
+import { useTranslation } from "@/hooks/useTranslation";
+import { notify } from "@/lib/notify";
+import { getPlatformErrorMessage } from "@/platform/lib/platformAuthErrors";
+import { updateWorkspacesCache } from "./platformWorkspacesCache";
 import {
   PLATFORM_WORKSPACES_QUERY_KEY,
   PLATFORM_WORKSPACE_METRICS_QUERY_KEY,
-} from '@/platform/lib/platformQueryKeys';
+} from "@/platform/lib/platformQueryKeys";
 
 function invalidateWorkspaceQueries(queryClient: ReturnType<typeof useQueryClient>): void {
   void queryClient.invalidateQueries({ queryKey: PLATFORM_WORKSPACES_QUERY_KEY });
@@ -37,7 +37,7 @@ export function useSetWorkspaceEnabled() {
         const errorBody = res.body as { message?: string; type?: string } | undefined;
         throw new ApiError(
           res.status,
-          errorBody?.message || t('platform.workspaceToggleFailed'),
+          errorBody?.message || t("platform.workspaceToggleFailed"),
           errorBody?.type,
         );
       }
@@ -45,7 +45,9 @@ export function useSetWorkspaceEnabled() {
     },
     onMutate: async ({ subdomain, enabled }) => {
       await queryClient.cancelQueries({ queryKey: PLATFORM_WORKSPACES_QUERY_KEY });
-      const previousEntries = queryClient.getQueriesData({ queryKey: PLATFORM_WORKSPACES_QUERY_KEY });
+      const previousEntries = queryClient.getQueriesData({
+        queryKey: PLATFORM_WORKSPACES_QUERY_KEY,
+      });
       queryClient.setQueriesData({ queryKey: PLATFORM_WORKSPACES_QUERY_KEY }, (old) =>
         updateWorkspacesCache(old, subdomain, { enabled }),
       );
@@ -53,7 +55,9 @@ export function useSetWorkspaceEnabled() {
     },
     onSuccess: (_res, variables) => {
       notify.success(
-        variables.enabled ? t('platform.workspaceEnabledToast') : t('platform.workspaceDisabledToast'),
+        variables.enabled
+          ? t("platform.workspaceEnabledToast")
+          : t("platform.workspaceDisabledToast"),
         { description: variables.subdomain },
       );
     },
@@ -63,7 +67,7 @@ export function useSetWorkspaceEnabled() {
           queryClient.setQueryData(key as readonly unknown[], data);
         }
       }
-      notify.error(getPlatformErrorMessage(error, t, undefined, 'platform.workspaceToggleFailed'));
+      notify.error(getPlatformErrorMessage(error, t, undefined, "platform.workspaceToggleFailed"));
     },
     onSettled: () => {
       invalidateWorkspaceQueries(queryClient);
@@ -89,7 +93,7 @@ export function useDeleteWorkspace() {
         const errorBody = res.body as { message?: string; type?: string } | undefined;
         throw new ApiError(
           res.status,
-          errorBody?.message || t('platform.loadFailed'),
+          errorBody?.message || t("platform.loadFailed"),
           errorBody?.type,
         );
       }
@@ -97,13 +101,13 @@ export function useDeleteWorkspace() {
     },
     onSuccess: (_res, variables) => {
       invalidateWorkspaceQueries(queryClient);
-      notify.success(t('platform.workspaceDeletedToast'), { description: variables.subdomain });
+      notify.success(t("platform.workspaceDeletedToast"), { description: variables.subdomain });
     },
     onError: (error) => {
-      if (isApiError(error) && error.type === 'invalid_current_password') {
+      if (isApiError(error) && error.type === "invalid_current_password") {
         return;
       }
-      notify.error(getPlatformErrorMessage(error, t, undefined, 'platform.loadFailed'));
+      notify.error(getPlatformErrorMessage(error, t, undefined, "platform.loadFailed"));
     },
   });
 }
@@ -127,7 +131,7 @@ export function useSetWorkspaceEmailVerification() {
         const errorBody = res.body as { message?: string; type?: string } | undefined;
         throw new ApiError(
           res.status,
-          errorBody?.message || t('platform.emailVerificationToggleFailed'),
+          errorBody?.message || t("platform.emailVerificationToggleFailed"),
           errorBody?.type,
         );
       }
@@ -135,7 +139,9 @@ export function useSetWorkspaceEmailVerification() {
     },
     onMutate: async ({ subdomain, requireEmailVerification }) => {
       await queryClient.cancelQueries({ queryKey: PLATFORM_WORKSPACES_QUERY_KEY });
-      const previousEntries = queryClient.getQueriesData({ queryKey: PLATFORM_WORKSPACES_QUERY_KEY });
+      const previousEntries = queryClient.getQueriesData({
+        queryKey: PLATFORM_WORKSPACES_QUERY_KEY,
+      });
       queryClient.setQueriesData({ queryKey: PLATFORM_WORKSPACES_QUERY_KEY }, (old) =>
         updateWorkspacesCache(old, subdomain, { requireEmailVerification }),
       );
@@ -144,8 +150,8 @@ export function useSetWorkspaceEmailVerification() {
     onSuccess: (_res, variables) => {
       notify.success(
         variables.requireEmailVerification
-          ? t('platform.emailVerificationRequiredToast')
-          : t('platform.emailVerificationOptionalToast'),
+          ? t("platform.emailVerificationRequiredToast")
+          : t("platform.emailVerificationOptionalToast"),
         { description: variables.subdomain },
       );
     },
@@ -155,7 +161,9 @@ export function useSetWorkspaceEmailVerification() {
           queryClient.setQueryData(key as readonly unknown[], data);
         }
       }
-      notify.error(getPlatformErrorMessage(error, t, undefined, 'platform.emailVerificationToggleFailed'));
+      notify.error(
+        getPlatformErrorMessage(error, t, undefined, "platform.emailVerificationToggleFailed"),
+      );
     },
     onSettled: () => {
       invalidateWorkspaceQueries(queryClient);

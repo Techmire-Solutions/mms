@@ -9,7 +9,9 @@ vi.mock("@/tenant/features/contacts/components/ContactsPreferencesGeneralSection
 }));
 
 vi.mock("@/tenant/features/contacts/components/ContactsPreferencesDuplicateSection", () => ({
-  ContactsPreferencesDuplicateSection: () => <div data-testid="duplicate-section">Duplicate Section</div>,
+  ContactsPreferencesDuplicateSection: () => (
+    <div data-testid="duplicate-section">Duplicate Section</div>
+  ),
 }));
 
 vi.mock("@/hooks/useTranslation", () => ({

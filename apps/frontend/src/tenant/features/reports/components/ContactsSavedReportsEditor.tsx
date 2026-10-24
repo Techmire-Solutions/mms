@@ -1,15 +1,15 @@
 import React from "react";
 import type { ContactsSavedReportShareScope, WorkspaceUser } from "@mms/shared";
 import { Checkbox } from "@/components/ui/checkbox";
-import { FormModal } from "@/components/ui/FormModal";
+import { FormModal } from "@/components/app/FormModal";
 import { FORM_INPUT } from "@/components/ui/formStyles";
-import { FormSelect } from "@/components/ui/FormSelect";
+import { FormSelect } from "@/components/app/FormSelect";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Field } from "@/components/ui/FormPrimitives";
+import { Field } from "@/components/app/FormPrimitives";
 import { useTranslation } from "@/hooks/useTranslation";
 import { useUsersPaginated } from "@/tenant/hooks/collections/users";
-import { SearchBar } from "@/components/ui/SearchBar";
+import { SearchBar } from "@/components/app/SearchBar";
 
 interface ContactsSavedReportUserPickerProps {
   value: string[];
@@ -39,7 +39,9 @@ function ContactsSavedReportUserPicker({
 
   return (
     <div className="space-y-1.5">
-      <Label htmlFor="saved-report-user-search">{t("contacts.savedReports.usersPickerLabel")}</Label>
+      <Label htmlFor="saved-report-user-search">
+        {t("contacts.savedReports.usersPickerLabel")}
+      </Label>
       <SearchBar
         id="saved-report-user-search"
         name="savedReportUserSearch"
@@ -54,9 +56,18 @@ function ContactsSavedReportUserPicker({
           options.map((user) => {
             const checkboxId = `saved-report-user-${user.id}`;
             return (
-              <div key={user.id} className="flex items-center gap-2 px-3 py-2 text-sm hover:bg-muted/50">
-                <Checkbox id={checkboxId} checked={valueSet.has(String(user.id))} onCheckedChange={() => toggle(String(user.id))} />
-                <label htmlFor={checkboxId} className="truncate cursor-pointer flex-1">{user.name || user.email}</label>
+              <div
+                key={user.id}
+                className="flex items-center gap-2 px-3 py-2 text-sm hover:bg-muted/50"
+              >
+                <Checkbox
+                  id={checkboxId}
+                  checked={valueSet.has(String(user.id))}
+                  onCheckedChange={() => toggle(String(user.id))}
+                />
+                <label htmlFor={checkboxId} className="truncate cursor-pointer flex-1">
+                  {user.name || user.email}
+                </label>
               </div>
             );
           })
@@ -166,7 +177,10 @@ export function ContactsSavedReportsEditor({
           />
         </Field>
         {shareScope === "users" && (
-          <ContactsSavedReportUserPicker value={sharedWithUserIds} onChange={onSharedWithUserIdsChange} />
+          <ContactsSavedReportUserPicker
+            value={sharedWithUserIds}
+            onChange={onSharedWithUserIdsChange}
+          />
         )}
       </form>
     </FormModal>

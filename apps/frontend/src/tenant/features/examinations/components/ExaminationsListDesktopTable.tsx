@@ -1,7 +1,7 @@
 import React from "react";
 import { formatDate } from "@mms/shared";
-import { MODULE_ROW_ACTIONS_TRIGGER_CLASS } from "@/components/ui/ModuleRowActionsMenu";
-import { StatusBadge } from "@/components/ui/StatusBadge";
+import { MODULE_ROW_ACTIONS_TRIGGER_CLASS } from "@/components/app/ModuleRowActionsMenu";
+import { StatusBadge } from "@/components/app/StatusBadge";
 import { useTranslation } from "@/hooks/useTranslation";
 import { ExaminationsRowActions } from "@/tenant/features/examinations/components/ExaminationsRowActions";
 import { WorkBatchTable, type WorkBatchTableColumn } from "@/components/common/work";
@@ -9,11 +9,13 @@ import type { Exam } from "@/lib/data/examinationData";
 import {
   getExamMeta,
   type ExaminationsListContentProps,
-} from "@/tenant/features/examinations/components/examinationsListContentShared";
+} from "@/tenant/features/examinations/lib/examinationsListContentShared";
 
 export type ExaminationsListDesktopTableProps = ExaminationsListContentProps;
 
-export function ExaminationsListDesktopTable(props: ExaminationsListDesktopTableProps): React.JSX.Element {
+export function ExaminationsListDesktopTable(
+  props: ExaminationsListDesktopTableProps,
+): React.JSX.Element {
   const {
     exams,
     selectedIds,
@@ -44,8 +46,8 @@ export function ExaminationsListDesktopTable(props: ExaminationsListDesktopTable
       cols.push({
         id: "name",
         label: t("examinations.columns.exam.name"),
-        headerClassName: "whitespace-nowrap",
-        cellClassName: "px-4 py-3 text-sm font-semibold text-foreground whitespace-nowrap",
+        noWrap: true,
+        cellClassName: "font-semibold text-foreground",
         render: (exam) => exam.name,
       });
     }
@@ -54,8 +56,7 @@ export function ExaminationsListDesktopTable(props: ExaminationsListDesktopTable
       cols.push({
         id: "subject",
         label: t("examinations.columns.exam.subject"),
-        headerClassName: "whitespace-nowrap",
-        cellClassName: "px-4 py-3 text-sm text-muted-foreground",
+        cellClassName: "text-muted-foreground",
         render: (exam) => exam.subject,
       });
     }
@@ -64,8 +65,8 @@ export function ExaminationsListDesktopTable(props: ExaminationsListDesktopTable
       cols.push({
         id: "date",
         label: t("examinations.columns.exam.date"),
-        headerClassName: "whitespace-nowrap",
-        cellClassName: "px-4 py-3 text-sm text-muted-foreground whitespace-nowrap",
+        noWrap: true,
+        cellClassName: "text-muted-foreground",
         render: (exam) => formatDate(exam.date, true),
       });
     }
@@ -74,8 +75,8 @@ export function ExaminationsListDesktopTable(props: ExaminationsListDesktopTable
       cols.push({
         id: "duration",
         label: t("examinations.columns.exam.duration"),
-        headerClassName: "whitespace-nowrap",
-        cellClassName: "px-4 py-3 text-sm text-muted-foreground whitespace-nowrap",
+        noWrap: true,
+        cellClassName: "text-muted-foreground",
         render: (exam) => t("examinations.durationMinutes", { minutes: exam.duration }),
       });
     }
@@ -84,7 +85,7 @@ export function ExaminationsListDesktopTable(props: ExaminationsListDesktopTable
       cols.push({
         id: "status",
         label: t("examinations.columns.exam.status"),
-        headerClassName: "whitespace-nowrap",
+        noWrap: true,
         render: (exam) => <StatusBadge status={exam.status} config={statusConfig} size="sm" />,
       });
     }
@@ -93,8 +94,8 @@ export function ExaminationsListDesktopTable(props: ExaminationsListDesktopTable
       cols.push({
         id: "totalMarks",
         label: t("examinations.columns.exam.totalMarks"),
-        headerClassName: "whitespace-nowrap",
-        cellClassName: "px-4 py-3 text-sm font-bold text-foreground",
+        noWrap: true,
+        cellClassName: "font-bold text-foreground",
         render: (exam) => exam.totalMarks,
       });
     }
@@ -103,8 +104,8 @@ export function ExaminationsListDesktopTable(props: ExaminationsListDesktopTable
       cols.push({
         id: "passingMarks",
         label: t("examinations.columns.exam.passingMarks"),
-        headerClassName: "whitespace-nowrap",
-        cellClassName: "px-4 py-3 text-sm text-foreground",
+        noWrap: true,
+        cellClassName: "text-foreground",
         render: (exam) => exam.passingMarks,
       });
     }
@@ -113,8 +114,8 @@ export function ExaminationsListDesktopTable(props: ExaminationsListDesktopTable
       cols.push({
         id: "classes",
         label: t("examinations.columns.exam.classes"),
-        headerClassName: "whitespace-nowrap",
-        cellClassName: "px-4 py-3 text-xs text-muted-foreground max-w-cell-sm truncate",
+        truncate: true,
+        cellClassName: "text-xs text-muted-foreground max-w-cell-sm",
         render: (exam) => {
           const { assignedClasses } = getExamMeta(exam, classes, enrollments);
           return assignedClasses.map((sessionClass) => sessionClass.name).join(", ") || "—";
@@ -126,8 +127,8 @@ export function ExaminationsListDesktopTable(props: ExaminationsListDesktopTable
       cols.push({
         id: "description",
         label: t("examinations.columns.exam.description"),
-        headerClassName: "whitespace-nowrap",
-        cellClassName: "px-4 py-3 text-xs text-muted-foreground max-w-cell-sm truncate",
+        truncate: true,
+        cellClassName: "text-xs text-muted-foreground max-w-cell-sm",
         render: (exam) => exam.description?.trim() || "—",
       });
     }
@@ -142,7 +143,6 @@ export function ExaminationsListDesktopTable(props: ExaminationsListDesktopTable
       caption={t("examinations.exams")}
       className="table-fixed"
       tableBodyClassName="divide-y divide-border/50"
-      bordered={false}
       onRowClick={props.onRowClick ? (exam) => props.onRowClick?.(exam.id) : undefined}
       selection={
         canDelete
@@ -153,8 +153,7 @@ export function ExaminationsListDesktopTable(props: ExaminationsListDesktopTable
               allSelected: allVisibleSelected,
               someSelected: someVisibleSelected,
               selectAllAriaLabel: t("examinations.trash.selectAll"),
-              selectRowAriaLabel: (exam) =>
-                t("examinations.trash.selectExam", { name: exam.name }),
+              selectRowAriaLabel: (exam) => t("examinations.trash.selectExam", { name: exam.name }),
             }
           : undefined
       }

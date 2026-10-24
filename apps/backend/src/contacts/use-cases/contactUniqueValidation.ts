@@ -4,22 +4,22 @@ import {
   listUniqueContactFieldRefs,
   type Contact,
   type ValidationError,
-} from '@mms/shared';
-import { ConflictError } from '../../lib/httpErrors.js';
-import { loadContactFieldConfig } from './contactConfigService.js';
-import { loadContactRuntimeDefaults } from './contactLoadUseCases.js';
-import type { ContactsRepository } from '../repository/contactsRepository.js';
-import { contactsRepository } from '../repository/contactsRepositoryAdapter.js';
+} from "@mms/shared";
+import { ConflictError } from "../../lib/httpErrors.js";
+import { loadContactFieldConfig } from "./contactConfigService.js";
+import { loadContactRuntimeDefaults } from "./contactLoadUseCases.js";
+import type { ContactsRepository } from "../repository/contactsRepository.js";
+import { contactsRepository } from "../repository/contactsRepositoryAdapter.js";
 
 /** Thrown when a contact reuses a Setup-unique field value. */
 export class ContactUniqueFieldError extends ConflictError {
-  readonly code = 'unique_conflict' as const;
+  readonly code = "unique_conflict" as const;
   readonly errors: ValidationError[];
 
   constructor(errors: ValidationError[]) {
-    const message = errors.map((error) => error.message).join('; ') || 'Unique field conflict';
+    const message = errors.map((error) => error.message).join("; ") || "Unique field conflict";
     super(message);
-    this.name = 'ContactUniqueFieldError';
+    this.name = "ContactUniqueFieldError";
     this.errors = errors;
   }
 }
@@ -62,15 +62,15 @@ async function acquireContactUniqueValueLocks(
 export async function assertContactUniqueFields(
   tenant: string,
   contact: Contact,
-  languageOrOptions: string | AssertContactUniqueFieldsOptions = 'en',
+  languageOrOptions: string | AssertContactUniqueFieldsOptions = "en",
   excludeContactIdsArg: Array<string | number> = [],
   repo: ContactsRepository = contactsRepository,
 ): Promise<void> {
   const options: AssertContactUniqueFieldsOptions =
-    typeof languageOrOptions === 'string'
+    typeof languageOrOptions === "string"
       ? { language: languageOrOptions, excludeContactIds: excludeContactIdsArg }
       : languageOrOptions;
-  const language = options.language ?? 'en';
+  const language = options.language ?? "en";
   const excludeContactIds = options.excludeContactIds ?? excludeContactIdsArg;
   const additionalPeers = options.additionalPeers ?? [];
   const acquireLocks = options.acquireLocks !== false;
@@ -107,23 +107,20 @@ export async function assertContactUniqueFields(
   }
 
   const phoneDigits = candidateValues
-    .filter((value) => value.tabId === 'phones' && value.fieldKey === 'number')
+    .filter((value) => value.tabId === "phones" && value.fieldKey === "number")
     .map((value) => value.normalized);
   const emails = candidateValues
-    .filter((value) => value.tabId === 'emails' && value.fieldKey === 'address')
+    .filter((value) => value.tabId === "emails" && value.fieldKey === "address")
     .map((value) => value.normalized);
   const scalars = candidateValues
     .filter(
       (value) =>
-        !(value.tabId === 'phones' && value.fieldKey === 'number') &&
-        !(value.tabId === 'emails' && value.fieldKey === 'address'),
+        !(value.tabId === "phones" && value.fieldKey === "number") &&
+        !(value.tabId === "emails" && value.fieldKey === "address"),
     )
     .map((value) => ({ fieldKey: value.fieldKey, normalized: value.normalized }));
 
-  const excludeIds = [
-    ...excludeContactIds,
-    ...(contact.id != null ? [contact.id] : []),
-  ];
+  const excludeIds = [...excludeContactIds, ...(contact.id != null ? [contact.id] : [])];
   const peers = await repo.findActiveContactsMatchingUniqueValues(
     tenant,
     { phoneDigits, emails, scalars },

@@ -1,7 +1,7 @@
-import type { JSX } from 'react';
-import { ModuleRowActionsMenu } from '@/components/ui/ModuleRowActionsMenu';
-import { useTranslation } from '@/hooks/useTranslation';
-import type { QuestionBankQuestion as Question } from '@mms/shared';
+import type { JSX } from "react";
+import { ModuleRowActionsMenu } from "@/components/app/ModuleRowActionsMenu";
+import { useTranslation } from "@/hooks/useTranslation";
+import type { QuestionBankQuestion as Question } from "@mms/shared";
 
 export interface QuestionsRowActionsProps {
   question: Question;
@@ -36,10 +36,10 @@ export function QuestionsRowActions({
 
   return (
     <ModuleRowActionsMenu
-      triggerLabel={t('questionBank.table.actions')}
-      editLabel={t('questionBank.editQuestion')}
-      deleteLabel={t('common.delete')}
-      restoreLabel={t('questionBank.trash.restore')}
+      triggerLabel={t("questionBank.table.actions")}
+      editLabel={t("questionBank.editQuestion")}
+      deleteLabel={t("common.delete")}
+      restoreLabel={t("questionBank.trash.restore")}
       archived={showDeleted}
       canWrite={canWrite}
       canDelete={canDelete && canTrashRows}

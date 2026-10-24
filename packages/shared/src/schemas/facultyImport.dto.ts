@@ -1,9 +1,10 @@
-import { z } from 'zod';
-import { FACULTY_CATALOG_STATUS_VALUES, FACULTY_STATUS_VALUES } from '../facultyTypes.js';
-import { deepSanitizeStrings } from './sanitize.js';
+import { z } from "zod";
+import { FACULTY_CATALOG_STATUS_VALUES, FACULTY_STATUS_VALUES } from "../faculty/facultyTypes.js";
+import { deepSanitizeStrings } from "./sanitize.js";
+import { isoDateSchema } from "../core/isoDateSchema.js";
 
 export const FACULTY_IMPORT_MAX_BATCH = 500;
-const calendarDate = z.string().trim().regex(/^\d{4}-\d{2}-\d{2}$/);
+const calendarDate = z.string().trim().pipe(isoDateSchema);
 
 const importIdempotencyKeySchema = z
   .string()
@@ -32,21 +33,24 @@ const facultyImportRowSchema = z
   })
   .passthrough();
 
-export const facultyImportBodySchema = z.preprocess((raw) => {
-  if (!raw || typeof raw !== 'object' || Array.isArray(raw)) return raw;
-  return deepSanitizeStrings(raw);
-}, z
-  .object({
-    rows: z.array(facultyImportRowSchema).min(1).max(FACULTY_IMPORT_MAX_BATCH),
-    label: z.string().min(1).max(200).optional(),
-    idempotencyKey: importIdempotencyKeySchema,
-  })
-  .strict());
+export const facultyImportBodySchema = z.preprocess(
+  (raw) => {
+    if (!raw || typeof raw !== "object" || Array.isArray(raw)) return raw;
+    return deepSanitizeStrings(raw);
+  },
+  z
+    .object({
+      rows: z.array(facultyImportRowSchema).min(1).max(FACULTY_IMPORT_MAX_BATCH),
+      label: z.string().min(1).max(200).optional(),
+      idempotencyKey: importIdempotencyKeySchema,
+    })
+    .strict(),
+);
 
 export type FacultyImportBody = z.infer<typeof facultyImportBodySchema>;
 
 export interface FacultyImportJobPayload {
-  rows: FacultyImportBody['rows'];
+  rows: FacultyImportBody["rows"];
   label?: string;
   viewerRole: string;
   language?: string;
@@ -60,16 +64,19 @@ const departmentImportRowSchema = z
   })
   .strict();
 
-export const facultyDepartmentImportBodySchema = z.preprocess((raw) => {
-  if (!raw || typeof raw !== 'object' || Array.isArray(raw)) return raw;
-  return deepSanitizeStrings(raw);
-}, z
-  .object({
-    rows: z.array(departmentImportRowSchema).min(1).max(FACULTY_IMPORT_MAX_BATCH),
-    label: z.string().min(1).max(200).optional(),
-    idempotencyKey: importIdempotencyKeySchema,
-  })
-  .strict());
+export const facultyDepartmentImportBodySchema = z.preprocess(
+  (raw) => {
+    if (!raw || typeof raw !== "object" || Array.isArray(raw)) return raw;
+    return deepSanitizeStrings(raw);
+  },
+  z
+    .object({
+      rows: z.array(departmentImportRowSchema).min(1).max(FACULTY_IMPORT_MAX_BATCH),
+      label: z.string().min(1).max(200).optional(),
+      idempotencyKey: importIdempotencyKeySchema,
+    })
+    .strict(),
+);
 
 export type FacultyDepartmentImportBody = z.infer<typeof facultyDepartmentImportBodySchema>;
 
@@ -82,15 +89,18 @@ const designationImportRowSchema = z
   })
   .strict();
 
-export const facultyDesignationImportBodySchema = z.preprocess((raw) => {
-  if (!raw || typeof raw !== 'object' || Array.isArray(raw)) return raw;
-  return deepSanitizeStrings(raw);
-}, z
-  .object({
-    rows: z.array(designationImportRowSchema).min(1).max(FACULTY_IMPORT_MAX_BATCH),
-    label: z.string().min(1).max(200).optional(),
-    idempotencyKey: importIdempotencyKeySchema,
-  })
-  .strict());
+export const facultyDesignationImportBodySchema = z.preprocess(
+  (raw) => {
+    if (!raw || typeof raw !== "object" || Array.isArray(raw)) return raw;
+    return deepSanitizeStrings(raw);
+  },
+  z
+    .object({
+      rows: z.array(designationImportRowSchema).min(1).max(FACULTY_IMPORT_MAX_BATCH),
+      label: z.string().min(1).max(200).optional(),
+      idempotencyKey: importIdempotencyKeySchema,
+    })
+    .strict(),
+);
 
 export type FacultyDesignationImportBody = z.infer<typeof facultyDesignationImportBodySchema>;

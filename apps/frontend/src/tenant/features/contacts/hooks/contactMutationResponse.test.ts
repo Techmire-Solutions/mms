@@ -5,9 +5,7 @@ describe("unwrapContactMutationBody", () => {
   it("unwraps the body from a ts-rest mutation response", () => {
     const body = { success: true, contact: { id: "contact-1", firstName: "Ali" } };
 
-    expect(
-      unwrapContactMutationBody({ status: 201, body, headers: new Headers() }),
-    ).toBe(body);
+    expect(unwrapContactMutationBody({ status: 201, body, headers: new Headers() })).toBe(body);
   });
 
   it("accepts an already-unwrapped response body", () => {

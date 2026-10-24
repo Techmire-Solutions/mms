@@ -5,6 +5,8 @@ import { AttendanceSettingsPreferencesSection } from "./AttendanceSettingsPrefer
 import type { AttendanceSettings } from "@mms/shared";
 
 const mockSettings: AttendanceSettings = {
+  workingDays: ["monday", "tuesday"],
+  allowExtraClassOnHolidays: false,
   lateThresholdMins: 15,
   autoAbsentAfterMins: 30,
   lockAfterSubmit: true,
@@ -20,12 +22,10 @@ const mockSettings: AttendanceSettings = {
 describe("AttendanceSettingsPreferencesSection Component", () => {
   it("renders timing rules, qr, alerts, and advanced settings cards", () => {
     const html = renderToStaticMarkup(
-      <AttendanceSettingsPreferencesSection
-        settingsDraft={mockSettings}
-        upd={vi.fn()}
-      />,
+      <AttendanceSettingsPreferencesSection settingsDraft={mockSettings} upd={vi.fn()} />,
     );
 
+    expect(html).toContain("attendance.settings.teachingDays");
     expect(html).toContain("attendance.settings.timingRules");
     expect(html).toContain("attendance.settings.qrAttendance");
     expect(html).toContain("attendance.settings.alerts");

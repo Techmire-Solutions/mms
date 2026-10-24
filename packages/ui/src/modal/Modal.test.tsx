@@ -1,0 +1,174 @@
+import React, { act } from "react";
+import { createRoot, type Root } from "react-dom/client";
+import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
+import { Modal } from "./Modal";
+import { ConfirmDialog } from "./AlertDialog";
+
+declare global {
+  var IS_REACT_ACT_ENVIRONMENT: boolean | undefined;
+}
+globalThis.IS_REACT_ACT_ENVIRONMENT = true;
+
+describe("Modal & ConfirmDialog components", () => {
+  let container: HTMLDivElement;
+  let root: Root;
+
+  beforeEach(() => {
+    container = document.createElement("div");
+    document.body.appendChild(container);
+    root = createRoot(container);
+  });
+
+  afterEach(async () => {
+    await act(async () => {
+      root.unmount();
+    });
+    container.remove();
+  });
+
+  it("renders modal when open is true", async () => {
+    const handleClose = vi.fn();
+    await act(async () => {
+      root.render(
+        <Modal
+          open={true}
+          onClose={handleClose}
+          title="Create Workspace"
+          subtitle="Fill in details"
+        >
+          <div>Modal Body Content</div>
+        </Modal>,
+      );
+    });
+
+    expect(container.textContent).toContain("Create Workspace");
+    expect(container.textContent).toContain("Fill in details");
+    expect(container.textContent).toContain("Modal Body Content");
+  });
+
+  it("does not render when open is false", async () => {
+    await act(async () => {
+      root.render(
+        <Modal open={false} onClose={vi.fn()} title="Hidden Modal">
+          <div>Hidden Content</div>
+        </Modal>,
+      );
+    });
+
+    expect(container.textContent).not.toContain("Hidden Modal");
+  });
+
+  it("renders backdrop with data-overlay-backdrop and handles light-dismiss click", async () => {
+    const handleClose = vi.fn();
+    await act(async () => {
+      root.render(
+        <Modal open={true} onClose={handleClose} dismissible={true} title="Light Dismiss Modal">
+          <div>Content</div>
+        </Modal>,
+      );
+    });
+
+    const dialog = container.querySelector('[role="dialog"]');
+    expect(dialog?.getAttribute("closedby")).toBe("any");
+
+    const backdrop = container.querySelector("[data-overlay-backdrop='true']") as HTMLDivElement;
+    expect(backdrop).toBeTruthy();
+    expect(backdrop.className).toContain("overscroll-contain");
+
+    backdrop.click();
+    expect(handleClose).toHaveBeenCalledTimes(1);
+  });
+
+  it("calls onClose when close button is clicked", async () => {
+    const handleClose = vi.fn();
+    await act(async () => {
+      root.render(
+        <Modal open={true} onClose={handleClose} title="Test Modal">
+          <div>Content</div>
+        </Modal>,
+      );
+    });
+
+    const closeBtn = container.querySelector("button[aria-label='Close']") as HTMLButtonElement;
+    expect(closeBtn).toBeTruthy();
+    closeBtn.click();
+    expect(handleClose).toHaveBeenCalledTimes(1);
+  });
+
+  it("renders ConfirmDialog and handles confirm action", async () => {
+    const handleConfirm = vi.fn();
+    const handleOpenChange = vi.fn();
+
+    await act(async () => {
+      root.render(
+        <ConfirmDialog
+          open={true}
+          onOpenChange={handleOpenChange}
+          title="Delete Item"
+          description="Are you sure you want to delete this record?"
+          variant="destructive"
+          onConfirm={handleConfirm}
+        />,
+      );
+    });
+
+    // Radix AlertDialog renders into portal attached to document.body
+    expect(document.body.textContent).toContain("Delete Item");
+    expect(document.body.textContent).toContain("Are you sure you want to delete this record?");
+
+    const buttons = Array.from(document.body.querySelectorAll("button"));
+    const deleteBtn = buttons.find((b) => b.textContent?.includes("Delete"));
+    expect(deleteBtn).toBeTruthy();
+    deleteBtn?.click();
+    expect(handleConfirm).toHaveBeenCalledTimes(1);
+    expect(handleOpenChange).toHaveBeenCalledWith(false);
+  });
+
+  it("locks body scroll when open and restores on unmount", async () => {
+    expect(document.body.style.overflow).toBe("");
+    await act(async () => {
+      root.render(
+        <Modal open={true} onClose={vi.fn()} title="Scroll Lock Test">
+          <div>Content</div>
+        </Modal>,
+      );
+    });
+    expect(document.body.style.overflow).toBe("hidden");
+
+    await act(async () => {
+      root.render(
+        <Modal open={false} onClose={vi.fn()} title="Scroll Lock Test">
+          <div>Content</div>
+        </Modal>,
+      );
+    });
+    expect(document.body.style.overflow).toBe("");
+  });
+
+  it("restores focus to previously active element on unmount", async () => {
+    const triggerBtn = document.createElement("button");
+    triggerBtn.textContent = "Open";
+    document.body.appendChild(triggerBtn);
+    triggerBtn.focus();
+    expect(document.activeElement).toBe(triggerBtn);
+
+    await act(async () => {
+      root.render(
+        <Modal open={true} onClose={vi.fn()} title="Focus Restore Test">
+          <button type="button">Inside</button>
+        </Modal>,
+      );
+    });
+
+    await act(async () => {
+      root.render(
+        <Modal open={false} onClose={vi.fn()} title="Focus Restore Test">
+          <button type="button">Inside</button>
+        </Modal>,
+      );
+    });
+
+    expect(document.activeElement).toBe(triggerBtn);
+    triggerBtn.remove();
+  });
+});

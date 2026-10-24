@@ -1,4 +1,4 @@
-import type { SessionsRepository } from './sessionsRepository.js';
+import type { SessionsRepository } from "./sessionsRepository.js";
 import {
   listSessionsByWorkspace,
   findSessionById,
@@ -8,15 +8,15 @@ import {
   restoreSessionWithCascade,
   bulkSoftDeleteSessionsWithCascade,
   bulkRestoreSessionsWithCascade,
-} from '../../db/repositories/sessionRepository.js';
+} from "../../db/repositories/sessionRepository.js";
 import {
   listSessionsPage,
   countSessionsActive,
   aggregateSessionsCommandMetrics,
   bulkUpdateSessionsStatusSql,
-} from '../../db/repositories/sessionRepositoryList.js';
-import { aggregateSessionsWidgetQueries } from '../../db/repositories/sessionRepositoryWidgets.js';
-import { loadSessionsReportAggregatesSql } from '../../db/repositories/sessionRepositoryReport.js';
+} from "../../db/repositories/sessionRepositoryList.js";
+import { aggregateSessionsWidgetQueries } from "../../db/repositories/sessionRepositoryWidgets.js";
+import { loadSessionsReportAggregatesSql } from "../../db/repositories/sessionRepositoryReport.js";
 
 /**
  * Drizzle-backed adapter for {@link SessionsRepository}. Delegates to the

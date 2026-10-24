@@ -1,11 +1,11 @@
-import { loadBackendEnv } from '../config/loadEnv.js';
-import { initDb } from '../db/dbInit.js';
-import { closeDatabase } from '../db/dbConnection.js';
+import { loadBackendEnv } from "../config/loadEnv.js";
+import { initDb } from "../db/dbInit.js";
+import { closeDatabase } from "../db/dbConnection.js";
 import {
   auditPartitionName,
   countAuditDefaultPartitionRows,
   ensureAuditTrailPartitions,
-} from '../services/auditPartitionService.js';
+} from "../services/auditPartitionService.js";
 
 loadBackendEnv();
 
@@ -24,14 +24,14 @@ async function main(): Promise<void> {
     const now = new Date();
     const nextMonth = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth() + 1, 1));
     const y = nextMonth.getUTCFullYear();
-    const m = String(nextMonth.getUTCMonth() + 1).padStart(2, '0');
+    const m = String(nextMonth.getUTCMonth() + 1).padStart(2, "0");
     targetArg = `${y}-${m}`;
   }
 
   const match = /^(\d{4})-(\d{2})$/.exec(targetArg);
   if (!match) {
-    console.error('Usage: tsx src/scripts/create-audit-partition.ts <YYYY-MM>');
-    console.error('Example: tsx src/scripts/create-audit-partition.ts 2026-11');
+    console.error("Usage: tsx src/scripts/create-audit-partition.ts <YYYY-MM>");
+    console.error("Example: tsx src/scripts/create-audit-partition.ts 2026-11");
     process.exit(1);
   }
 
@@ -39,7 +39,7 @@ async function main(): Promise<void> {
   const month = parseInt(match[2], 10);
 
   if (month < 1 || month > 12) {
-    console.error('Invalid month. Must be between 01 and 12.');
+    console.error("Invalid month. Must be between 01 and 12.");
     process.exit(1);
   }
 
@@ -55,9 +55,11 @@ async function main(): Promise<void> {
   );
   const { created, existing } = await ensureAuditTrailPartitions();
 
-  console.log(`✅ Partitions created: ${created.length > 0 ? created.join(', ') : '(none — already present)'}`);
+  console.log(
+    `✅ Partitions created: ${created.length > 0 ? created.join(", ") : "(none — already present)"}`,
+  );
   if (existing.length > 0) {
-    console.log(`   Already present: ${existing.join(', ')}`);
+    console.log(`   Already present: ${existing.join(", ")}`);
   }
 
   const defaultRows = await countAuditDefaultPartitionRows();
@@ -75,7 +77,7 @@ async function main(): Promise<void> {
 }
 
 main().catch(async (err) => {
-  console.error('Fatal error during partition creation:', err);
+  console.error("Fatal error during partition creation:", err);
   await closeDatabase().catch(() => {});
   process.exit(1);
 });

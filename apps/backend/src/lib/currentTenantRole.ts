@@ -1,7 +1,7 @@
-import { getTenantRoleMatrix } from '../services/rbacService.js';
+import { getTenantRoleMatrix } from "../services/rbacService.js";
 
 function isTestRuntime(): boolean {
-  return process.env.NODE_ENV === 'test' || Boolean(process.env.VITEST);
+  return process.env.NODE_ENV === "test" || Boolean(process.env.VITEST);
 }
 
 /**

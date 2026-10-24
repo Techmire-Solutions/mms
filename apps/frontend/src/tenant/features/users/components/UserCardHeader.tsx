@@ -1,6 +1,6 @@
 import type { SystemUser } from "@mms/shared";
 import { useTranslation } from "@/hooks/useTranslation";
-import { EntityCard } from "@/components/ui/EntityCard";
+import { EntityCard } from "@/components/app/EntityCard";
 
 export interface UserCardHeaderProps {
   user: SystemUser;

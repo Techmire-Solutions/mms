@@ -1,10 +1,11 @@
 import React, { useState } from "react";
 import { Plus } from "lucide-react";
-import type { ContactsSavedReport, ContactsSavedReportShareScope, ContactsWorkDrillDown } from "@mms/shared";
-import {
-  formatDate,
-  validateContactsSavedReportDrillDown,
+import type {
+  ContactsSavedReport,
+  ContactsSavedReportShareScope,
+  ContactsWorkDrillDown,
 } from "@mms/shared";
+import { formatDate, validateContactsSavedReportDrillDown } from "@mms/shared";
 import { Button } from "@/components/ui/button";
 import { useTranslation } from "@/hooks/useTranslation";
 import { usePermissions } from "@/tenant/hooks/usePermissions";
@@ -15,7 +16,7 @@ import { useContactsSavedReportsSource } from "@/tenant/hooks/collections/contac
 import { applyContactsWorkDrillDown } from "@/lib/contacts/contactsWorkDrillDown";
 import { notify } from "@/lib/notify";
 import { ContactsSavedReportsEditor } from "@/tenant/features/reports/components/ContactsSavedReportsEditor";
-import { ContactsSavedReportsList } from "@/components/ui/reports/ContactsSavedReportsList";
+import { ContactsSavedReportsList } from "@/components/reports/ContactsSavedReportsList";
 
 interface ContactsSavedReportsProps {
   suggestedDrillDown?: ContactsWorkDrillDown;
@@ -33,15 +34,8 @@ export default function ContactsSavedReports({
   const { role } = usePermissions();
   const isAdmin = useIsAdminViewer();
   const { genders } = useContactConfig();
-  const {
-    reports,
-    isLoading,
-    isError,
-    retry,
-    createReport,
-    deleteReport,
-    runReport,
-  } = useContactsSavedReportsSource();
+  const { reports, isLoading, isError, retry, createReport, deleteReport, runReport } =
+    useContactsSavedReportsSource();
 
   const [saveOpen, setSaveOpen] = useState(false);
   const [name, setName] = useState("");
@@ -58,15 +52,15 @@ export default function ContactsSavedReports({
     return scopes;
   })();
 
-  const openSaveDialog = (() => {
+  const openSaveDialog = () => {
     setName("");
     setSearch(suggestedDrillDown.search ?? "");
     setShareScope("private");
     setSharedWithUserIds([]);
     setSaveOpen(true);
-  });
+  };
 
-  const handleSave = (async () => {
+  const handleSave = async () => {
     const trimmedName = name.trim();
     if (!trimmedName) return;
     if (shareScope === "users" && sharedWithUserIds.length === 0) {
@@ -92,45 +86,47 @@ export default function ContactsSavedReports({
     } finally {
       setSaving(false);
     }
-  });
+  };
 
-  const handleRun = (async (report: ContactsSavedReport) => {
-      const issues = validateContactsSavedReportDrillDown(report.drillDown, {
-        genders: genders,
+  const handleRun = async (report: ContactsSavedReport) => {
+    const issues = validateContactsSavedReportDrillDown(report.drillDown, {
+      genders: genders,
+    });
+    if (issues.length > 0) {
+      notify.error(t("contacts.savedReports.staleWarningTitle"), {
+        description: t("contacts.savedReports.staleWarningDesc", {
+          field: issues[0]?.value ?? "",
+        }),
       });
-      if (issues.length > 0) {
-        notify.error(t("contacts.savedReports.staleWarningTitle"), {
-          description: t("contacts.savedReports.staleWarningDesc", {
-            field: issues[0]?.value ?? "",
-          }),
-        });
-      }
-      try {
-        await runReport(report.id);
-        applyContactsWorkDrillDown(report.drillDown);
-        notify.info(t("contacts.savedReports.runSuccess"), { description: report.name });
-      } catch {
-        notify.error(t("settings.serverSaveFailed"));
-      }
-    });
+    }
+    try {
+      await runReport(report.id);
+      applyContactsWorkDrillDown(report.drillDown);
+      notify.info(t("contacts.savedReports.runSuccess"), { description: report.name });
+    } catch {
+      notify.error(t("settings.serverSaveFailed"));
+    }
+  };
 
-  const handleDelete = (async (id: string) => {
-      try {
-        await deleteReport(id);
-        notify.info(t("contacts.savedReports.deleteSuccess"));
-      } catch {
-        notify.error(t("settings.serverSaveFailed"));
-      }
-    });
+  const handleDelete = async (id: string) => {
+    try {
+      await deleteReport(id);
+      notify.info(t("contacts.savedReports.deleteSuccess"));
+    } catch {
+      notify.error(t("settings.serverSaveFailed"));
+    }
+  };
 
   const formatLastRun = (() => (iso?: string) => {
-      if (!iso) return t("contacts.savedReports.neverRun");
-      return formatDate(iso);
-    })();
+    if (!iso) return t("contacts.savedReports.neverRun");
+    return formatDate(iso);
+  })();
 
   const shareLabel = (scope: ContactsSavedReportShareScope | undefined): string => {
     const key = scope ?? "private";
-    return t(`contacts.savedReports.shareScope.${key}` as "contacts.savedReports.shareScope.private");
+    return t(
+      `contacts.savedReports.shareScope.${key}` as "contacts.savedReports.shareScope.private",
+    );
   };
 
   const canSave = Boolean(user);
@@ -139,8 +135,12 @@ export default function ContactsSavedReports({
     <div className="space-y-4 border-t border-border/50 pt-6 mt-6">
       <div className="flex items-center justify-between gap-3 flex-wrap">
         <div className="text-start">
-          <h3 className="text-sm font-semibold text-foreground">{t("contacts.savedReports.title")}</h3>
-          <p className="text-xs text-muted-foreground mt-0.5">{t("contacts.savedReports.subtitle")}</p>
+          <h3 className="text-sm font-semibold text-foreground">
+            {t("contacts.savedReports.title")}
+          </h3>
+          <p className="text-xs text-muted-foreground mt-0.5">
+            {t("contacts.savedReports.subtitle")}
+          </p>
         </div>
         {canSave && (
           <Button

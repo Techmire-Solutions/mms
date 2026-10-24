@@ -1,5 +1,5 @@
-import type { ContactsWorkDrillDown } from '@mms/shared';
-import { applyContactsWorkDrillDown } from '@/lib/contacts/contactsWorkDrillDown';
+import type { ContactsWorkDrillDown } from "@mms/shared";
+import { applyContactsWorkDrillDown } from "@/lib/contacts/contactsWorkDrillDown";
 
 /** Minimal widget shape needed to map Reports/dashboard clicks → Work filters. */
 interface ContactsWidgetDrillDownSource {
@@ -15,22 +15,22 @@ interface ContactsWidgetDrillDownSource {
 export function contactsWidgetToWorkDrillDown(
   widget: ContactsWidgetDrillDownSource,
 ): ContactsWorkDrillDown | null {
-  if (widget.collection !== 'contacts') return null;
+  if (widget.collection !== "contacts") return null;
 
   const field = widget.filterField?.trim();
   const value = widget.filterValue?.trim();
 
-  if (field === 'gender' && value) {
+  if (field === "gender" && value) {
     return { gender: value };
   }
-  if (field === 'whatsappStatus' && value) {
-    return { quickFilter: 'whatsapp' };
+  if (field === "whatsappStatus" && value) {
+    return { quickFilter: "whatsapp" };
   }
   if (
-    (field === 'phone' || field === 'email' || field === 'phones' || field === 'emails') &&
+    (field === "phone" || field === "email" || field === "phones" || field === "emails") &&
     value
   ) {
-    return { quickFilter: 'missingInfo' };
+    return { quickFilter: "missingInfo" };
   }
 
   return {};
@@ -41,6 +41,6 @@ export function applyContactsWidgetWorkDrillDown(widget: ContactsWidgetDrillDown
   const drillDown = contactsWidgetToWorkDrillDown(widget);
   if (drillDown === null) return false;
   applyContactsWorkDrillDown(drillDown);
-  window.location.assign('/contacts');
+  window.location.assign("/contacts");
   return true;
 }

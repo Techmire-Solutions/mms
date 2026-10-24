@@ -16,14 +16,14 @@ export {
   financeCommandMetricsQueryOptions,
   useFinanceMetrics,
 } from "@/tenant/features/finance/hooks/useFinanceMetrics";
-export { invalidateFinanceQueries } from '@/tenant/features/finance/hooks/invalidateFinanceQueries';
+export { invalidateFinanceQueries } from "@/tenant/features/finance/hooks/invalidateFinanceQueries";
 export {
   useComposedFinanceSettings,
   useFinancePreferencesMutation,
   useFinancePreferencesQuery,
   FINANCE_PREFERENCES_QUERY_KEY,
-} from '@/tenant/features/finance/hooks/useFinanceSetupConfig';
-// Phase 7: contract-driven tsrClient hooks & query factories
+} from "@/tenant/features/finance/hooks/useFinanceSetupConfig";
+// Contract-driven tsrClient hooks & query factories
 export {
   financeInvoicesListQueryOptions,
   financePaymentsListQueryOptions,
@@ -37,5 +37,5 @@ export {
   useFinanceContractUpdatePayment,
   useFinanceContractBulkDeleteInvoices,
   useFinanceContractBulkStatusInvoices,
-} from '@/tenant/features/finance/hooks/useFinanceTsrHooks';
-export { applyFinanceWorkDrillDown } from '@/tenant/features/finance/hooks/financeWorkDrillDown';
+} from "@/tenant/features/finance/hooks/useFinanceQueries";
+export { applyFinanceWorkDrillDown } from "@/tenant/features/finance/hooks/financeWorkDrillDown";

@@ -1,5 +1,5 @@
 import { useTranslation } from "@/hooks/useTranslation";
-import { ModuleRowActionsMenu } from "@/components/ui/ModuleRowActionsMenu";
+import { ModuleRowActionsMenu } from "@/components/app/ModuleRowActionsMenu";
 import type { Session } from "@/lib/data/sessionsData";
 
 interface SessionListRowActionsProps {

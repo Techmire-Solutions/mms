@@ -11,7 +11,9 @@ vi.mock("@/tenant/features/contacts/components/contactTablePrimaryCells", () => 
 }));
 
 vi.mock("@/tenant/features/contacts/components/ContactMetadataCell", () => ({
-  ContactMetadataCell: ({ colId }: { colId: string }) => <div data-testid="meta-cell">Meta: {colId}</div>,
+  ContactMetadataCell: ({ colId }: { colId: string }) => (
+    <div data-testid="meta-cell">Meta: {colId}</div>
+  ),
 }));
 
 const mockContact: Contact = {

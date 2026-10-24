@@ -5,8 +5,8 @@ import {
   type FinanceSettings,
   type SequenceNumberingConfig,
 } from "@mms/shared";
-import { SequenceNumberingCard } from "@/components/ui/sequence-numbering";
-import { ModuleSetupSaveFooter } from "@/components/ui/ModuleSetupSaveFooter";
+import { SequenceNumberingCard } from "@/components/sequence-numbering";
+import { ModuleSetupSaveFooter } from "@/components/app/ModuleSetupSaveFooter";
 
 export interface FinanceInvoiceNumberingSectionProps {
   settingsDraft: FinanceSettings;
@@ -27,10 +27,7 @@ export function FinanceInvoiceNumberingSection({
 }: FinanceInvoiceNumberingSectionProps): React.JSX.Element {
   const { t } = useTranslation();
 
-  const config = useMemo(
-    () => financeSettingsToSequenceConfig(settingsDraft),
-    [settingsDraft]
-  );
+  const config = useMemo(() => financeSettingsToSequenceConfig(settingsDraft), [settingsDraft]);
 
   const handleChange = useCallback(
     (next: SequenceNumberingConfig) => {
@@ -42,7 +39,7 @@ export function FinanceInvoiceNumberingSection({
       upd("invoiceStartingSequence", next.startingSequence);
       upd("invoiceRolloverPolicy", next.rolloverPolicy);
     },
-    [upd]
+    [upd],
   );
 
   return (

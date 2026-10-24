@@ -1,18 +1,22 @@
-import { and, inArray } from 'drizzle-orm';
-import { dedupeTrimmedIds, type QuestionBankQuestion, type RepositoryListOptions } from '@mms/shared';
-import { buildTenantSoftDeleteConditions } from '../../services/genericRelationalService.js';
-import { questions } from '../schema.js';
-import { withTenantRead } from '../tenant-context.js';
-import { hydrateQuestionRecords } from './questionBankQuestionsSync.js';
+import { and, inArray } from "drizzle-orm";
+import {
+  dedupeTrimmedIds,
+  type QuestionBankQuestion,
+  type RepositoryListOptions,
+} from "@mms/shared";
+import { buildTenantSoftDeleteConditions } from "../../services/genericRelationalService.js";
+import { questions } from "../schema.js";
+import { withTenantRead } from "../tenant-context.js";
+import { hydrateQuestionRecords } from "./questionBankQuestionsSync.js";
 
-export { questionRowToRecord } from './questionBankQuestionsSync.js';
+export { questionRowToRecord } from "./questionBankQuestionsSync.js";
 export {
   saveQuestion,
   bulkSaveQuestions,
   replaceQuestionsForWorkspace,
   bulkSoftDeleteQuestions,
   bulkRestoreQuestions,
-} from './questionBankQuestionsPersist.js';
+} from "./questionBankQuestionsPersist.js";
 
 export type ListQuestionsOptions = RepositoryListOptions;
 
@@ -23,7 +27,7 @@ export async function listQuestionsByWorkspace(
   const subdomain = tenant.trim().toLowerCase();
   const limit = Math.min(Math.max(options?.limit ?? 500, 1), 5000);
   const offset = Math.max(options?.offset ?? 0, 0);
-  const deletedFilter = options?.deleted ?? (options?.includeDeleted ? 'all' : 'active');
+  const deletedFilter = options?.deleted ?? (options?.includeDeleted ? "all" : "active");
   return withTenantRead(subdomain, async (tx) => {
     const conditions = buildTenantSoftDeleteConditions(questions, subdomain, deletedFilter);
     const rows = await tx
@@ -56,13 +60,13 @@ export async function listQuestionsByWorkspace(
 export async function findQuestionsByIds(
   tenant: string,
   ids: string[],
-  options?: { deleted?: 'active' | 'deleted' | 'all'; includeDeleted?: boolean },
+  options?: { deleted?: "active" | "deleted" | "all"; includeDeleted?: boolean },
 ): Promise<QuestionBankQuestion[]> {
   const cleanIds = dedupeTrimmedIds(ids);
   if (cleanIds.length === 0) return [];
   const subdomain = tenant.trim().toLowerCase();
   return withTenantRead(subdomain, async (tx) => {
-    const deletedFilter = options?.deleted ?? (options?.includeDeleted ? 'all' : 'active');
+    const deletedFilter = options?.deleted ?? (options?.includeDeleted ? "all" : "active");
     const conditions = [
       ...buildTenantSoftDeleteConditions(questions, subdomain, deletedFilter),
       inArray(questions.id, cleanIds),
@@ -99,8 +103,6 @@ export async function findQuestionById(
 ): Promise<QuestionBankQuestion | null> {
   const cleanId = id?.trim();
   if (!cleanId) return null;
-  const questionsList = await findQuestionsByIds(tenant, [cleanId], { deleted: 'all' });
+  const questionsList = await findQuestionsByIds(tenant, [cleanId], { deleted: "all" });
   return questionsList[0] ?? null;
 }
-
-

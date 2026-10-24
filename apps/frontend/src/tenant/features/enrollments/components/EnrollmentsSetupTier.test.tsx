@@ -9,13 +9,13 @@ vi.mock("@/hooks/useTranslation", () => ({
   }),
 }));
 
-vi.mock("@/components/ui/ModuleTierMotion", () => ({
+vi.mock("@/components/app/ModuleTierMotion", () => ({
   ModuleTierMotion: ({ children }: { children: React.ReactNode }) => (
     <div data-testid="module-tier-motion">{children}</div>
   ),
 }));
 
-vi.mock("@/components/ui/SetupReadOnlyMessage", () => ({
+vi.mock("@/components/app/SetupReadOnlyMessage", () => ({
   SetupReadOnlyMessage: ({ title }: { title: string }) => (
     <div data-testid="setup-read-only-message">{title}</div>
   ),
@@ -31,7 +31,9 @@ vi.mock("@/tenant/hooks/usePermissions", () => ({
 
 vi.mock("@/tenant/features/enrollments/components/EnrollmentsSettings", () => ({
   default: () => <div data-testid="enrollments-settings">Enrollments Settings Panel</div>,
-  EnrollmentsSettings: () => <div data-testid="enrollments-settings">Enrollments Settings Panel</div>,
+  EnrollmentsSettings: () => (
+    <div data-testid="enrollments-settings">Enrollments Settings Panel</div>
+  ),
 }));
 
 describe("EnrollmentsSetupTier Component", () => {

@@ -1,10 +1,11 @@
 import type React from "react";
-import { ErrorBoundary } from "@/components/ui/ErrorBoundary";
-import { ErrorState } from "@/components/ui/ErrorState";
-import { SubTabBar } from "@/components/ui/SubTabBar";
+import { ErrorBoundary } from "@/components/app/ErrorBoundary";
+import { ErrorState } from "@/components/app/ErrorState";
+import { SubTabBar } from "@/components/app/SubTabBar";
 import { useTranslation } from "@/hooks/useTranslation";
 import { EnrollmentsBulkActionBar } from "@/tenant/features/enrollments/components/EnrollmentsBulkActionBar";
 import { EligibilityCheck } from "@/tenant/features/enrollments/components/EligibilityCheck";
+import { AdmissionsPanel } from "@/tenant/features/enrollments/components/admissions/AdmissionsPanel";
 import { EnrollmentsList } from "@/tenant/features/enrollments/components/EnrollmentsList";
 import type { Enrollment } from "@/lib/data/enrollmentData";
 
@@ -172,6 +173,12 @@ export function EnrollmentsWorkTier({
       {activeSubTab === "eligibility" && (
         <ErrorBoundary>
           <EligibilityCheck />
+        </ErrorBoundary>
+      )}
+
+      {activeSubTab === "admissions" && (
+        <ErrorBoundary>
+          <AdmissionsPanel canWrite={canWrite} />
         </ErrorBoundary>
       )}
     </>

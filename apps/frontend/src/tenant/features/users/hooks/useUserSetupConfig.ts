@@ -3,18 +3,18 @@ import {
   normalizeUserModulePreferences,
   normalizeUsersSettings,
   type UserModulePreferences,
-  type UsersSettings
-} from '@mms/shared';
-import { createModuleSetupConfigHooks } from '@/lib/query/createModuleSetupConfigHooks';
+  type UsersSettings,
+} from "@mms/shared";
+import { createModuleSetupConfigHooks } from "@/lib/query/createModuleSetupConfigHooks";
 import {
   fetchUserPreferences,
   saveUserPreferencesAsync,
   setUserPreferencesMemory,
-} from '@/tenant/features/users/hooks/userSetupConfigApi';
+} from "@/tenant/features/users/hooks/userSetupConfigApi";
 
 export const USERS_PREFERENCES_QUERY_KEY = [
   USERS_MODULE_MANIFEST.collectionKey,
-  'preferences',
+  "preferences",
 ] as const;
 
 const setupConfigHooks = createModuleSetupConfigHooks<UserModulePreferences>({
@@ -28,7 +28,7 @@ const setupConfigHooks = createModuleSetupConfigHooks<UserModulePreferences>({
 export const useUserPreferencesQuery = setupConfigHooks.usePreferencesQuery;
 export const useUserPreferencesMutation = setupConfigHooks.usePreferencesMutation;
 
-import { useMemo } from 'react';
+import { useMemo } from "react";
 
 /** Composed UsersSettings from preferences queries. */
 export function useComposedUsersSettings(): UsersSettings {

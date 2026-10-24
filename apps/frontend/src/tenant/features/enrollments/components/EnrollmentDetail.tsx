@@ -1,15 +1,19 @@
 import React from "react";
 import { User } from "lucide-react";
-import { Drawer } from '@/components/ui/Drawer';
-import { type Enrollment } from '@/lib/data/enrollmentData';
+import { Drawer } from "@/components/app/Drawer";
+import { type Enrollment } from "@/lib/data/enrollmentData";
 import { useStudentsByIds } from "@/tenant/hooks/collections/students";
-import { StatusBadge, type StatusBadgeConfigItem } from '@/components/ui/StatusBadge';
-import { SEMANTIC_BADGE } from "@/lib/semanticTone";
+import { StatusBadge } from "@/components/app/StatusBadge";
+import {
+  enrollmentPaymentBadgeConfig,
+  enrollmentStatusBadgeConfig,
+} from "@/lib/ui/enrollmentStatusBadge";
 import { useFinanceCurrency } from "@/hooks/useCurrency";
 import { useTranslation } from "@/hooks/useTranslation";
 import { EnrollmentArchivedBanner } from "@/tenant/features/enrollments/components/EnrollmentArchivedBanner";
-import { DetailDrawerRestoreOrEditAction } from "@/components/ui/DetailDrawerArchiveChrome";
+import { DetailDrawerRestoreOrEditAction } from "@/components/app/DetailDrawerArchiveChrome";
 import { EnrollmentDetailSections } from "@/tenant/features/enrollments/components/EnrollmentDetailSections";
+import { EnrollmentOperationsPanel } from "@/tenant/features/enrollments/components/EnrollmentOperationsPanel";
 
 export interface EnrollmentDetailProps {
   enrollment: Enrollment | null | undefined;
@@ -21,7 +25,7 @@ export interface EnrollmentDetailProps {
   onRestore?: (id: string) => void;
 }
 
-export const EnrollmentDetail = (function EnrollmentDetail({
+export const EnrollmentDetail = function EnrollmentDetail({
   enrollment,
   onClose,
   onStatusChange,
@@ -31,22 +35,15 @@ export const EnrollmentDetail = (function EnrollmentDetail({
   onRestore,
 }: EnrollmentDetailProps): React.JSX.Element | null {
   const { t } = useTranslation();
-  const { data: resolvedStudents = [] } = useStudentsByIds(enrollment ? [enrollment.studentId] : []);
+  const { data: resolvedStudents = [] } = useStudentsByIds(
+    enrollment ? [enrollment.studentId] : [],
+  );
   const { formatCurrency } = useFinanceCurrency();
   const student = resolvedStudents[0];
 
-  const statusConfig = (() => ({
-    pending: { label: t("enrollments.status.pending"), cls: SEMANTIC_BADGE.warning },
-    confirmed: { label: t("enrollments.status.confirmed"), cls: SEMANTIC_BADGE.success },
-    cancelled: { label: t("enrollments.status.cancelled"), cls: SEMANTIC_BADGE.destructive },
-    completed: { label: t("enrollments.status.completed"), cls: SEMANTIC_BADGE.info },
-  }))() as Record<string, StatusBadgeConfigItem>;
+  const statusConfig = enrollmentStatusBadgeConfig(t);
 
-  const paymentConfig = (() => ({
-    paid: { label: t("enrollments.payment.paid"), cls: SEMANTIC_BADGE.success },
-    pending: { label: t("enrollments.payment.pending"), cls: SEMANTIC_BADGE.warning },
-    none: { label: t("enrollments.payment.none"), cls: SEMANTIC_BADGE.muted },
-  }))() as Record<string, StatusBadgeConfigItem>;
+  const paymentConfig = enrollmentPaymentBadgeConfig(t);
 
   if (!enrollment) return null;
 
@@ -54,9 +51,7 @@ export const EnrollmentDetail = (function EnrollmentDetail({
 
   const headerExtraNode = (
     <div className="flex flex-col gap-2 mt-1">
-      {enrollment.deletedAt && (
-        <EnrollmentArchivedBanner enrollment={enrollment} />
-      )}
+      {enrollment.deletedAt && <EnrollmentArchivedBanner enrollment={enrollment} />}
       <div className="flex items-center gap-2">
         <StatusBadge status={enrollment.status} config={statusConfig} />
         {enrollment.paymentStatus && (
@@ -100,6 +95,11 @@ export const EnrollmentDetail = (function EnrollmentDetail({
         onStatusChange={onStatusChange}
         onPaymentStatusChange={onPaymentStatusChange}
       />
+      <EnrollmentOperationsPanel
+        enrollment={enrollment}
+        canWrite={canWrite}
+        isArchived={isArchived}
+      />
     </Drawer>
   );
-});
+};

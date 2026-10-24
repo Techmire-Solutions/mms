@@ -9,28 +9,30 @@ import {
   resolveFacultyDesignationRoleAssignment,
   type FacultyEmployDesignationWriteRow,
   type FacultyMember,
-} from '@mms/shared';
-import { findFacultyByContactId } from '../../db/repositories/facultyRepository.js';
-import { listFacultyDesignations } from '../../db/repositories/facultyDesignationRepository.js';
-import { getTenantUsersSettings } from '../../services/users/usersSettingsService.js';
+} from "@mms/shared";
+import { findFacultyByContactId } from "../../db/repositories/facultyRepository.js";
+import { listFacultyDesignations } from "../../db/repositories/facultyDesignationRepository.js";
+import { getTenantUsersSettings } from "../../services/users/usersSettingsService.js";
 
 function tenureRowsFromFaculty(faculty: FacultyMember): FacultyEmployDesignationWriteRow[] {
   if (Array.isArray(faculty.employDesignations) && faculty.employDesignations.length > 0) {
     return faculty.employDesignations;
   }
-  const designationId = faculty.designationId != null ? String(faculty.designationId).trim() : '';
+  const designationId = faculty.designationId != null ? String(faculty.designationId).trim() : "";
   if (!designationId) return [];
-  return [{
-    designationId,
-    designationStartDate: faculty.designationStartDate ?? null,
-    designationEndDate: faculty.designationEndDate ?? null,
-    employDesignationStatus: isFacultyProfileStatus(faculty.employDesignationStatus)
-      ? faculty.employDesignationStatus
-      : isFacultyProfileStatus(faculty.profileStatus)
-        ? faculty.profileStatus
-        : 'active',
-    employDesignationId: faculty.employDesignationId ?? null,
-  }];
+  return [
+    {
+      designationId,
+      designationStartDate: faculty.designationStartDate ?? null,
+      designationEndDate: faculty.designationEndDate ?? null,
+      employDesignationStatus: isFacultyProfileStatus(faculty.employDesignationStatus)
+        ? faculty.employDesignationStatus
+        : isFacultyProfileStatus(faculty.profileStatus)
+          ? faculty.profileStatus
+          : "active",
+      employDesignationId: faculty.employDesignationId ?? null,
+    },
+  ];
 }
 
 /** True when faculty contact has ≥1 active open tenure with an assignable role. */

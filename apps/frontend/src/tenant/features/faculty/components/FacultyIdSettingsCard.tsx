@@ -6,8 +6,8 @@ import {
   type FacultySettings,
   type SequenceNumberingConfig,
 } from "@mms/shared";
-import { SequenceNumberingCard } from "@/components/ui/sequence-numbering";
-import { ModuleSetupSaveFooter } from "@/components/ui/ModuleSetupSaveFooter";
+import { SequenceNumberingCard } from "@/components/sequence-numbering";
+import { ModuleSetupSaveFooter } from "@/components/app/ModuleSetupSaveFooter";
 
 export interface FacultyIdSettingsCardProps {
   settingsDraft: FacultySettings;
@@ -28,10 +28,7 @@ export function FacultyIdSettingsCard({
 }: FacultyIdSettingsCardProps): React.JSX.Element {
   const { t } = useTranslation();
 
-  const config = useMemo(
-    () => facultySettingsToSequenceConfig(settingsDraft),
-    [settingsDraft]
-  );
+  const config = useMemo(() => facultySettingsToSequenceConfig(settingsDraft), [settingsDraft]);
 
   const handleChange = useCallback(
     (next: SequenceNumberingConfig) => {
@@ -46,7 +43,7 @@ export function FacultyIdSettingsCard({
       upd("idRestartAnnually", next.rolloverPolicy !== "never");
       upd("idTemplate", buildSequenceFormulaTemplate(next));
     },
-    [upd]
+    [upd],
   );
 
   return (

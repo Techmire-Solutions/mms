@@ -62,18 +62,15 @@ describe("print stylesheet", () => {
    * These are the classes that made printed documents vanish. Each is a legitimate
    * content style; hiding it by element-agnostic class is always wrong.
    */
-  it.each([
-    ".shadow-sm",
-    ".shadow-xl",
-    ".shadow-lg",
-    "[role=\"group\"]",
-    ".border-b.border-border",
-  ])("does not blanket-hide %s", (selector) => {
-    expect(
-      selectors,
-      `${selector} is hidden for print. These are content classes — hiding them deletes printable content (this is the blank ID-card bug). Opt out with .print-hidden / print:hidden / [data-print-hide] instead.`,
-    ).not.toContain(selector);
-  });
+  it.each([".shadow-sm", ".shadow-xl", ".shadow-lg", '[role="group"]', ".border-b.border-border"])(
+    "does not blanket-hide %s",
+    (selector) => {
+      expect(
+        selectors,
+        `${selector} is hidden for print. These are content classes — hiding them deletes printable content (this is the blank ID-card bug). Opt out with .print-hidden / print:hidden / [data-print-hide] instead.`,
+      ).not.toContain(selector);
+    },
+  );
 
   it("hides app chrome", () => {
     for (const selector of ["aside", "header", "nav", ".print-hidden"]) {

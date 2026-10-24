@@ -24,6 +24,10 @@ jobs:
       frontend: ${{ steps.filter.outputs.frontend }}
       backend_unit: ${{ steps.filter.outputs.backend_unit }}
       e2e: ${{ steps.filter.outputs.e2e }}
+      # `full` on every non-PR run (pushes to main feed deploy) and on PRs that
+      # touch shared code, dependencies, test/build config or CI; otherwise
+      # `changed`: unit tests run only for files related to the PR's diff.
+      test_scope: ${{ steps.scope.outputs.test_scope }}
     steps:
       - name: Checkout Code
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
@@ -65,6 +69,31 @@ jobs:
               - 'package.json'
               - 'pnpm-lock.yaml'
               - '.github/**'
+            full_tests:
+              - 'packages/shared/**'
+              - '**/package.json'
+              - 'pnpm-lock.yaml'
+              - 'pnpm-workspace.yaml'
+              - '.nvmrc'
+              - 'turbo.json'
+              - '**/tsconfig*.json'
+              - '**/vitest*.config.*'
+              - 'apps/frontend/src/test/**'
+              - '.github/**'
+
+      - name: Decide test scope
+        id: scope
+        env:
+          EVENT_NAME: ${{ github.event_name }}
+          FULL_TESTS: ${{ steps.filter.outputs.full_tests }}
+        run: |
+          if [ "${EVENT_NAME}" = "pull_request" ] && [ "${FULL_TESTS}" != "true" ]; then
+            scope=changed
+          else
+            scope=full
+          fi
+          echo "test_scope=${scope}" >> "$GITHUB_OUTPUT"
+          echo "Unit test scope: ${scope}"
 
   # Blocks PRs that introduce a dependency with a high/critical advisory
   # (mms-dependencies §4). Diff-based, so it complements the full pnpm audit.
@@ -105,32 +134,49 @@ jobs:
       - name: zizmor
         uses: zizmorcore/zizmor-action@cc914d7f3750a2d13d75c7f184a1060aa0e9d482 # v0.6.4
         with:
-          version: '1.30.1'
+          version: "1.30.1"
           advanced-security: false
           min-severity: medium
 
-  lint-and-typecheck:
-    name: Lint & Typecheck
+  # Lint & Typecheck used to be one serial ~4 min job (setup, typecheck, lint,
+  # build, gitleaks, ratchets) and the slowest path through CI. It is split
+  # into three parallel jobs; ci-gate requires all of them.
+  typecheck-lint:
+    name: Typecheck, Lint & Ratchets
     runs-on: ubuntu-24.04
     timeout-minutes: 10
-    # id-token/attestations are only exercised on push to main, where the
-    # release tarball is built once, attested, and promoted by deploy.yml.
-    permissions:
-      contents: read
-      id-token: write
-      attestations: write
     steps:
       - name: Checkout Code
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           persist-credentials: false
-          fetch-depth: 0
+          # Depth 2 gives the forward-only migration check a diff base (HEAD^1).
+          fetch-depth: 2
 
       - name: Setup Environment
         uses: ./.github/actions/setup-mms
+        with:
+          turbo-cache-scope: typecheck-lint
 
       - name: Run Typecheck
         run: pnpm typecheck
+
+      # Lints every package that has a lint script (frontend, backend,
+      # @mms/shared, e2e) via turbo — shared/e2e were previously unlinted.
+      - name: Lint (all packages)
+        run: pnpm lint
+
+      # Non-blocking visibility for warning-level rules that the errors-only
+      # `lint` (`--quiet`) hides — currently react-hooks/exhaustive-deps.
+      # Report only; make it blocking once the remaining warnings are triaged.
+      - name: Lint warnings report (frontend, non-blocking)
+        continue-on-error: true
+        run: pnpm --filter mms-frontend lint:warn
+
+      # Formatting is owned by Prettier (.prettierrc.json); ESLint defers all
+      # stylistic rules to it via eslint-config-prettier (see each eslint.config.js).
+      - name: Formatting (Prettier)
+        run: pnpm format:check
 
       # Fails on high/critical advisories. One moderate finding is a reviewed,
       # documented exception (ts-deepmerge via @ts-rest/open-api) — see the
@@ -151,22 +197,97 @@ jobs:
       - name: Migration index lock safety
         run: pnpm run check:migration-indexes
 
-      # Scans the FULL git history: a credential that was committed and later
-      # deleted is still recoverable from the repository and must be treated as
-      # compromised. Image is pinned by digest (not `latest`) so the scanner
-      # cannot change under us between runs. `--redact` keeps any finding out of
-      # the CI log. Reviewed false positives live in .gitleaks.toml.
-      - name: Secret scan (gitleaks)
-        run: |
-          docker run --rm -v "$PWD:/repo" \
-            zricethezav/gitleaks@sha256:c00b6bd0aeb3071cbcb79009cb16a60dd9e0a7c60e2be9ab65d25e6bc8abbb7f \
-            detect --source=/repo --config=/repo/.gitleaks.toml \
-            --no-banner --redact --exit-code 1
+      # Ratchet (ADR-011): route handlers must reach storage only through their
+      # module's use-cases/repository seam. Catches static AND dynamic
+      # `db/repositories` / `drizzle-orm` imports in apps/backend/src/routes/**.
+      # Baseline is 0 — every offender has been migrated.
+      - name: Backend route→storage boundary
+        run: pnpm run check:backend-boundaries
 
-      # Lints every package that has a lint script (frontend, backend,
-      # @mms/shared, e2e) via turbo — shared/e2e were previously unlinted.
-      - name: Lint (all packages)
-        run: pnpm lint
+      # Ratchet: the rest of the ports-and-adapters chain (use-case/services
+      # storage imports, services/ re-export shims, tenant route aggregation).
+      - name: Backend structural ratchets
+        run: pnpm run check:backend-structure
+
+      # Ratchet: docs/ index completeness, ADR numbering, and doc-tree clutter.
+      - name: Documentation ratchets
+        run: pnpm run check:docs
+
+      # Ratchet: applied migrations are immutable (forward-only DDL). Rewriting one makes
+      # fresh and existing installs diverge, and the change never reaches the latter.
+      # `--base HEAD^1` is explicit so an unresolvable ref fails loudly instead of
+      # producing an empty diff and passing vacuously (hence fetch-depth: 2 above).
+      - name: Migrations are forward-only
+        run: pnpm run check:migrations-forward-only -- --base HEAD^1
+
+      # Ratchet: declared-but-unenforced norms (no `any` in source, no raw hex
+      # colours outside @theme, file-size bands). Baselines live in the script.
+      - name: Code-norm ratchets
+        run: pnpm run check:code-norms
+
+      # Ratchet: frontend structural norms (primitives vs composites in
+      # components/ui, canonical feature shape, logic out of features/*/components,
+      # UI helpers out of lib/ root, barrel allowlist). Baselines live in the script.
+      - name: Frontend structure ratchets
+        run: pnpm run check:frontend-structure
+
+      # Ratchet: Work Directory convergence (selection SSOT, unified bulk chrome,
+      # zero dual-render, zero shortcut stubs).
+      - name: Work Directory convergence
+        run: pnpm run check:work-directory
+
+      # Ratchet: Shared UI component governance (zero duplicate components across consoles,
+      # @shared/ui SSOT, pure facades, zero orphaned imports).
+      - name: Shared UI architecture & governance
+        run: pnpm run check:shared-ui
+
+      # @mms/shared must stay an environment-agnostic leaf (no DOM/React/Fastify/
+      # DB/Redis/Node builtins) so both the browser bundle and the Node backend
+      # can safely import it. Comments/strings and test files are ignored.
+      - name: "@mms/shared purity & boundaries"
+        run: pnpm run check:shared-purity
+
+      # Ratchet: @mms/shared stays de-flattened (domain folders, only index.ts at
+      # src/ root) and consumers use the exported subpaths only.
+      - name: "@mms/shared structure"
+        run: pnpm run check:shared-structure
+
+      # Guards the retired Teacher / FDA surface and asserts the canonical
+      # Faculty schema + temporal-designation constraint are present.
+      - name: Faculty domain legacy-surface check
+        run: pnpm run check:faculty-domain
+
+      # i18n key parity across en/ar/ur/fa. The script existed but ran in no
+      # workflow, so translation drift was never actually gated.
+      - name: i18n key parity
+        run: pnpm run check:i18n
+
+      - name: Verify Agent & Rule Mirrors Sync
+        run: |
+          bash .agent/scripts/sync-all.sh
+          git diff --exit-code -- .agent .cursor .claude AGENTS.md || (echo "Agent rule/skill mirrors out of sync! Run 'bash .agent/scripts/sync-all.sh'" && exit 1)
+          node scripts/verify-rules-integrity.mjs
+
+  build:
+    name: Build & Release Artifact
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    # id-token/attestations are only exercised on push to main, where the
+    # release tarball is built once, attested, and promoted by deploy.yml.
+    permissions:
+      contents: read
+      id-token: write
+      attestations: write
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - name: Setup Environment
+        uses: ./.github/actions/setup-mms
+        with:
+          turbo-cache-scope: build
 
       # Production build of all packages (validates Vite rollup build & backend compilation).
       # On push to main this is the release build, so it bakes the production domain.
@@ -178,27 +299,6 @@ jobs:
       # Frontend bundle budget gate: catches chunk bloat and un-lazy-loaded dependencies
       - name: Frontend bundle budget
         run: pnpm run check:bundle
-
-      # Ratchet: declared-but-unenforced norms (no `any` in source, no raw hex
-      # colours outside @theme, file-size bands). Baselines live in the script.
-      - name: Code-norm ratchets
-        run: pnpm run check:code-norms
-
-      # Ratchet: Work Directory convergence (selection SSOT, unified bulk chrome,
-      # zero dual-render, zero shortcut stubs).
-      - name: Work Directory convergence
-        run: pnpm run check:work-directory
-
-      # i18n key parity across en/ar/ur/fa. The script existed but ran in no
-      # workflow, so translation drift was never actually gated.
-      - name: i18n key parity
-        run: pnpm run check:i18n
-
-      - name: Verify Agent & Rule Mirrors Sync
-        run: |
-          bash .agent/scripts/sync-all.sh
-          git diff --exit-code -- .agent .cursor .claude || (echo "Agent rule/skill mirrors out of sync! Run 'bash .agent/scripts/sync-all.sh'" && exit 1)
-          node scripts/verify-rules-integrity.mjs
 
       # Build once, promote the same bytes: deploy.yml downloads this artifact
       # from the triggering CI run and verifies the provenance attestation.
@@ -214,42 +314,102 @@ jobs:
 
       - name: Upload release artifact
         if: github.event_name == 'push' && github.ref == 'refs/heads/main'
-        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         with:
           name: mms-dist
           path: |
             mms-dist.tar.gz
             mms-dist.tar.gz.sha256
-          retention-days: 14
+          # The repo maximum: a verified rollback (deploy.yml manual dispatch)
+          # can only promote a commit whose artifact still exists.
+          retention-days: 90
           if-no-files-found: error
 
-  test-frontend:
-    name: Frontend Tests (Shard ${{ matrix.shardIndex }}/${{ matrix.shardTotal }})
-    needs: [changes]
-    if: ${{ needs.changes.outputs.frontend == 'true' || github.event_name != 'pull_request' }}
+  secret-scan:
+    name: Secret Scan
     runs-on: ubuntu-24.04
     timeout-minutes: 10
-    strategy:
-      fail-fast: false
-      matrix:
-        shardIndex: [1, 2]
-        shardTotal: [2]
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+          fetch-depth: 0
+
+      # Scans the FULL git history: a credential that was committed and later
+      # deleted is still recoverable from the repository and must be treated as
+      # compromised. Image is pinned by digest (not `latest`) so the scanner
+      # cannot change under us between runs. `--redact` keeps any finding out of
+      # the CI log. Reviewed false positives live in .gitleaks.toml.
+      - name: Secret scan (gitleaks)
+        run: |
+          docker run --rm -v "$PWD:/repo" \
+            zricethezav/gitleaks@sha256:c00b6bd0aeb3071cbcb79009cb16a60dd9e0a7c60e2be9ab65d25e6bc8abbb7f \
+            detect --source=/repo --config=/repo/.gitleaks.toml \
+            --no-banner --redact --exit-code 1
+
+  # Filename guard for sensitive files. `check-staged-secrets.mjs` inspects the
+  # git index, which is empty in CI, so it runs with `--tracked` (whole tree).
+  # Content secrets are covered by the full-history gitleaks job above; this
+  # catches things like a committed `.env` or private key by NAME, at any depth.
+  sensitive-file-guard:
+    name: Sensitive File Guard
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
     steps:
       - name: Checkout Code
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           persist-credentials: false
 
+      - name: Block committed sensitive filenames
+        run: node scripts/check-staged-secrets.mjs --tracked
+
+  test-frontend:
+    # No matrix values in the name: a skipped matrix job is never expanded, so
+    # GitHub would show the raw template. Running jobs get "(index, total)" appended.
+    name: Frontend Tests
+    needs: [changes]
+    if: ${{ needs.changes.outputs.frontend == 'true' || github.event_name != 'pull_request' }}
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    # Changed-scope PRs run one unsharded job; full scope uses four shards.
+    # Vitest splits files by a hash of their path, not by duration, so three
+    # shards ran 103-146s; more, smaller shards narrow that spread.
+    strategy:
+      fail-fast: false
+      matrix:
+        shardIndex: ${{ fromJSON(needs.changes.outputs.test_scope == 'full' && '[1, 2, 3, 4]' || '[1]') }}
+        shardTotal: ${{ fromJSON(needs.changes.outputs.test_scope == 'full' && '[4]' || '[1]') }}
+    steps:
+      # Changed scope diffs against HEAD^1: a PR checkout is the merge commit,
+      # whose first parent is the base branch, so depth 2 is enough.
+      - name: Checkout Code
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+          fetch-depth: ${{ needs.changes.outputs.test_scope == 'changed' && 2 || 1 }}
+
       - name: Setup Environment
         uses: ./.github/actions/setup-mms
         with:
-          build-shared: 'true'
+          build-shared: "true"
 
+      - name: Run Frontend Tests (changed files only, no coverage)
+        if: needs.changes.outputs.test_scope == 'changed'
+        run: pnpm --filter mms-frontend exec vitest run --changed HEAD^1 --passWithNoTests --reporter=default --reporter=github-actions
+
+      # The matrix is built from a job output, so it reaches the shell through
+      # env rather than inline template expansion (zizmor template-injection).
       - name: Run Frontend Test Shard & Generate Blob Report
+        if: needs.changes.outputs.test_scope == 'full'
+        env:
+          SHARD_INDEX: ${{ matrix.shardIndex }}
+          SHARD_TOTAL: ${{ matrix.shardTotal }}
         run: |
           mkdir -p apps/frontend/.vitest-reports
           pnpm --filter mms-frontend exec vitest run \
-            --shard=${{ matrix.shardIndex }}/${{ matrix.shardTotal }} \
+            --shard="${SHARD_INDEX}/${SHARD_TOTAL}" \
             --coverage \
             --coverage.thresholds.lines=0 \
             --coverage.thresholds.statements=0 \
@@ -258,11 +418,11 @@ jobs:
             --reporter=default \
             --reporter=github-actions \
             --reporter=blob \
-            --outputFile=.vitest-reports/blob-${{ matrix.shardIndex }}.json
+            --outputFile=".vitest-reports/blob-${SHARD_INDEX}.json"
 
       - name: Upload Shard Report Artifact
-        if: always()
-        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        if: always() && needs.changes.outputs.test_scope == 'full'
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         with:
           name: vitest-blob-report-${{ matrix.shardIndex }}
           path: apps/frontend/.vitest-reports/blob-${{ matrix.shardIndex }}.json
@@ -271,7 +431,9 @@ jobs:
   test-frontend-coverage:
     name: Frontend Coverage Gate
     needs: [changes, test-frontend]
-    if: ${{ (needs.changes.outputs.frontend == 'true' || github.event_name != 'pull_request') && !cancelled() && needs['test-frontend'].result == 'success' }}
+    # Coverage thresholds are global, so they only mean something on a full run;
+    # changed-scope PRs skip this gate and main enforces it on every push.
+    if: ${{ (needs.changes.outputs.frontend == 'true' || github.event_name != 'pull_request') && needs.changes.outputs.test_scope == 'full' && !cancelled() && needs['test-frontend'].result == 'success' }}
     runs-on: ubuntu-24.04
     timeout-minutes: 10
     steps:
@@ -280,13 +442,12 @@ jobs:
         with:
           persist-credentials: false
 
+      # Merging blob reports runs no tests, so @mms/shared need not be built.
       - name: Setup Environment
         uses: ./.github/actions/setup-mms
-        with:
-          build-shared: 'true'
 
       - name: Download All Shard Report Artifacts
-        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
+        uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
         with:
           pattern: vitest-blob-report-*
           merge-multiple: true
@@ -303,16 +464,81 @@ jobs:
           fi
 
   test-backend-unit:
-    name: Backend Unit Tests (Shard ${{ matrix.shardIndex }}/${{ matrix.shardTotal }})
+    # No matrix values in the name: a skipped matrix job is never expanded, so
+    # GitHub would show the raw template. Running jobs get "(index, total)" appended.
+    name: Backend Unit Tests
     needs: [changes]
     if: ${{ needs.changes.outputs.backend_unit == 'true' || github.event_name != 'pull_request' }}
     runs-on: ubuntu-24.04
     timeout-minutes: 10
+    # Changed-scope PRs run one unsharded job; full scope keeps two shards.
     strategy:
       fail-fast: false
       matrix:
-        shardIndex: [1, 2]
-        shardTotal: [2]
+        shardIndex: ${{ fromJSON(needs.changes.outputs.test_scope == 'full' && '[1, 2]' || '[1]') }}
+        shardTotal: ${{ fromJSON(needs.changes.outputs.test_scope == 'full' && '[2]' || '[1]') }}
+    steps:
+      # Changed scope diffs against HEAD^1: a PR checkout is the merge commit,
+      # whose first parent is the base branch, so depth 2 is enough.
+      - name: Checkout Code
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+          fetch-depth: ${{ needs.changes.outputs.test_scope == 'changed' && 2 || 1 }}
+
+      - name: Setup Environment
+        uses: ./.github/actions/setup-mms
+        with:
+          build-shared: "true"
+
+      # Any packages/shared change forces full scope, so changed scope skips it.
+      - name: Run Shared Package Tests & Coverage
+        if: matrix.shardIndex == 1 && needs.changes.outputs.test_scope == 'full'
+        run: pnpm --filter @mms/shared test:coverage
+
+      - name: Run Backend Unit Tests (changed files only)
+        if: needs.changes.outputs.test_scope == 'changed'
+        run: pnpm --filter mms-backend exec vitest run --changed HEAD^1 --passWithNoTests
+
+      # Shards collect coverage (thresholds zeroed — a shard only sees a slice of
+      # the suite, so a per-shard percentage is meaningless) and emit a blob
+      # report; `test-backend-coverage` merges them and enforces the real
+      # thresholds from apps/backend/vitest.config.ts globally.
+      - name: Run Backend Unit Tests Shard & Generate Blob Report
+        if: needs.changes.outputs.test_scope == 'full'
+        env:
+          SHARD_INDEX: ${{ matrix.shardIndex }}
+          SHARD_TOTAL: ${{ matrix.shardTotal }}
+        run: |
+          mkdir -p apps/backend/.vitest-reports
+          pnpm --filter mms-backend exec vitest run \
+            --shard="${SHARD_INDEX}/${SHARD_TOTAL}" \
+            --coverage \
+            --coverage.thresholds.lines=0 \
+            --coverage.thresholds.statements=0 \
+            --coverage.thresholds.functions=0 \
+            --coverage.thresholds.branches=0 \
+            --reporter=default \
+            --reporter=github-actions \
+            --reporter=blob \
+            --outputFile=".vitest-reports/blob-${SHARD_INDEX}.json"
+
+      - name: Upload Shard Report Artifact
+        if: always() && needs.changes.outputs.test_scope == 'full'
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: backend-vitest-blob-report-${{ matrix.shardIndex }}
+          path: apps/backend/.vitest-reports/blob-${{ matrix.shardIndex }}.json
+          retention-days: 1
+
+  test-backend-coverage:
+    name: Backend Coverage Gate
+    needs: [changes, test-backend-unit]
+    # Coverage thresholds are global, so they only mean something on a full run;
+    # changed-scope PRs skip this gate and main enforces it on every push.
+    if: ${{ (needs.changes.outputs.backend_unit == 'true' || github.event_name != 'pull_request') && needs.changes.outputs.test_scope == 'full' && !cancelled() && needs['test-backend-unit'].result == 'success' }}
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
     steps:
       - name: Checkout Code
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
@@ -322,14 +548,27 @@ jobs:
       - name: Setup Environment
         uses: ./.github/actions/setup-mms
         with:
-          build-shared: 'true'
+          build-shared: "true"
 
-      - name: Run Shared Package Tests & Coverage
-        if: matrix.shardIndex == 1
-        run: pnpm --filter @mms/shared test:coverage
+      - name: Download All Shard Report Artifacts
+        uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
+        with:
+          pattern: backend-vitest-blob-report-*
+          merge-multiple: true
+          path: apps/backend/.vitest-reports
 
-      - name: Run Backend Unit Tests Shard
-        run: pnpm --filter mms-backend exec vitest run --shard=${{ matrix.shardIndex }}/${{ matrix.shardTotal }}
+      # Merging blob reports runs no tests, but it does evaluate the merged
+      # coverage, so the thresholds in apps/backend/vitest.config.ts are enforced
+      # here against the whole suite (shards zeroed them deliberately).
+      - name: Merge Shard Reports & Enforce Coverage Gate
+        run: |
+          mkdir -p apps/backend/.vitest-reports
+          if [ -d "apps/backend/.vitest-reports" ] && [ "$(ls -A apps/backend/.vitest-reports)" ]; then
+            pnpm --filter mms-backend exec vitest run --merge-reports=.vitest-reports --coverage
+          else
+            echo "::error::No vitest blob reports found in apps/backend/.vitest-reports to merge!"
+            exit 1
+          fi
 
   test-backend-db:
     name: Backend DB Integration Tests
@@ -356,10 +595,10 @@ jobs:
           --tmpfs /var/lib/postgresql/data:rw,noexec,nosuid,size=1024m
 
     env:
-      JWT_SECRET: 'e2e-test-jwt-secret-key-at-least-32-chars-long'
-      DATABASE_URL: 'postgres://postgres:postgres@localhost:5432/mms'
-      NODE_ENV: 'test'
-      LOG_LEVEL: 'silent'
+      JWT_SECRET: "e2e-test-jwt-secret-key-at-least-32-chars-long"
+      DATABASE_URL: "postgres://postgres:postgres@localhost:5432/mms"
+      NODE_ENV: "test"
+      LOG_LEVEL: "silent"
 
     steps:
       - name: Checkout Code
@@ -370,7 +609,7 @@ jobs:
       - name: Setup Environment
         uses: ./.github/actions/setup-mms
         with:
-          build-shared: 'true'
+          build-shared: "true"
 
       - name: Run DB Migrations
         run: pnpm --filter mms-backend run db:migrate
@@ -385,11 +624,15 @@ jobs:
       (needs.changes.outputs.e2e == 'true' || github.event_name != 'pull_request')
     runs-on: ubuntu-24.04
     timeout-minutes: 30
+    # Two Playwright projects, two shards each (playwright.config.ts). A shard
+    # is a contiguous slice of tests by count, so the long axe sweeps (`a11y`)
+    # get their own runners instead of all landing on shard 1.
     strategy:
       fail-fast: false
       matrix:
-        shardIndex: [1, 2, 3, 4]
-        shardTotal: [4]
+        project: [chromium, a11y]
+        shardIndex: [1, 2]
+        shardTotal: [2]
     services:
       postgres:
         image: postgres:16-alpine
@@ -407,10 +650,10 @@ jobs:
           --tmpfs /var/lib/postgresql/data:rw,noexec,nosuid,size=1024m
 
     env:
-      JWT_SECRET: 'e2e-test-jwt-secret-key-at-least-32-chars-long'
-      DATABASE_URL: 'postgres://postgres:postgres@localhost:5432/mms'
-      NODE_ENV: 'test'
-      LOG_LEVEL: 'warn'
+      JWT_SECRET: "e2e-test-jwt-secret-key-at-least-32-chars-long"
+      DATABASE_URL: "postgres://postgres:postgres@localhost:5432/mms"
+      NODE_ENV: "test"
+      LOG_LEVEL: "warn"
 
     steps:
       - name: Checkout Code
@@ -421,7 +664,7 @@ jobs:
       - name: Setup Environment
         uses: ./.github/actions/setup-mms
         with:
-          build-shared: 'true'
+          build-shared: "true"
 
       - name: Run DB Migrations
         run: pnpm --filter mms-backend run db:migrate
@@ -438,13 +681,20 @@ jobs:
         run: pnpm --filter e2e-tests exec playwright install chromium
 
       - name: Run E2E Tests with Sharding
-        run: pnpm test:e2e --shard=${{ matrix.shardIndex }}/${{ matrix.shardTotal }}
+        env:
+          PROJECT: ${{ matrix.project }}
+          SHARD_INDEX: ${{ matrix.shardIndex }}
+          SHARD_TOTAL: ${{ matrix.shardTotal }}
+          # Unique per leg: the default `report-<shard>.zip` collides across
+          # projects when merge-reports downloads every blob into one folder.
+          PLAYWRIGHT_BLOB_OUTPUT_NAME: report-${{ matrix.project }}-${{ matrix.shardIndex }}.zip
+        run: pnpm test:e2e --project="${PROJECT}" --shard="${SHARD_INDEX}/${SHARD_TOTAL}"
 
       - name: Upload Blob Report
         if: always()
-        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         with:
-          name: blob-report-${{ matrix.shardIndex }}
+          name: blob-report-${{ matrix.project }}-${{ matrix.shardIndex }}
           path: e2e/blob-report
           retention-days: 1
 
@@ -463,7 +713,7 @@ jobs:
         uses: ./.github/actions/setup-mms
 
       - name: Download Blob Reports
-        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
+        uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
         with:
           path: all-blob-reports
           pattern: blob-report-*
@@ -478,7 +728,7 @@ jobs:
           fi
 
       - name: Upload HTML Report Artifact
-        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         with:
           name: playwright-html-report
           path: e2e/playwright-report
@@ -487,25 +737,56 @@ jobs:
   ci-gate:
     name: CI Gate (All Checks Passed)
     if: always()
-    needs: [changes, dependency-review, workflow-lint, lint-and-typecheck, test-frontend, test-frontend-coverage, test-backend-unit, test-backend-db, e2e, merge-reports]
+    needs:
+      [
+        changes,
+        dependency-review,
+        workflow-lint,
+        typecheck-lint,
+        build,
+        secret-scan,
+        sensitive-file-guard,
+        test-frontend,
+        test-frontend-coverage,
+        test-backend-unit,
+        test-backend-coverage,
+        test-backend-db,
+        e2e,
+        merge-reports,
+      ]
     runs-on: ubuntu-24.04
     timeout-minutes: 5
     steps:
       - name: Evaluate CI Gate & Publish Summary
+        env:
+          EVENT_NAME: ${{ github.event_name }}
+          TEST_SCOPE: ${{ needs.changes.outputs.test_scope }}
         run: |
           echo "==================== CI Gate Summary ===================="
+          echo "Unit test scope:        ${TEST_SCOPE}"
           echo "Dependency Review:     ${{ needs.dependency-review.result }}"
           echo "Workflow Lint:         ${{ needs.workflow-lint.result }}"
-          echo "Lint & Typecheck:       ${{ needs.lint-and-typecheck.result }}"
+          echo "Typecheck & Lint:       ${{ needs.typecheck-lint.result }}"
+          echo "Build & Release:        ${{ needs.build.result }}"
+          echo "Secret Scan:            ${{ needs.secret-scan.result }}"
+          echo "Sensitive File Guard:   ${{ needs.sensitive-file-guard.result }}"
           echo "Frontend Tests:         ${{ needs.test-frontend.result }}"
           echo "Frontend Coverage:      ${{ needs.test-frontend-coverage.result }}"
           echo "Backend Unit Tests:     ${{ needs.test-backend-unit.result }}"
+          echo "Backend Coverage:       ${{ needs.test-backend-coverage.result }}"
           echo "Backend DB Tests:       ${{ needs.test-backend-db.result }}"
           echo "E2E Tests:              ${{ needs.e2e.result }}"
           echo "E2E Merge Reports:      ${{ needs.merge-reports.result }}"
           echo "========================================================="
 
           failed=0
+
+          # Only full-scope runs may pass outside PRs: a green push run on main is
+          # what deploy.yml promotes, so it must mean the full suites ran.
+          if [ "${EVENT_NAME}" != "pull_request" ] && [ "${TEST_SCOPE}" != "full" ]; then
+            echo "::error::non-PR run used test scope '${TEST_SCOPE}' — main must run full tests"
+            failed=1
+          fi
 
           if [ "${{ needs.dependency-review.result }}" != "success" ] && [ "${{ needs.dependency-review.result }}" != "skipped" ]; then
             echo "::error::dependency-review failed or was cancelled (result: ${{ needs.dependency-review.result }})"
@@ -517,8 +798,23 @@ jobs:
             failed=1
           fi
 
-          if [ "${{ needs.lint-and-typecheck.result }}" != "success" ]; then
-            echo "::error::lint-and-typecheck failed or was cancelled (result: ${{ needs.lint-and-typecheck.result }})"
+          if [ "${{ needs.typecheck-lint.result }}" != "success" ]; then
+            echo "::error::typecheck-lint failed or was cancelled (result: ${{ needs.typecheck-lint.result }})"
+            failed=1
+          fi
+
+          if [ "${{ needs.build.result }}" != "success" ]; then
+            echo "::error::build failed or was cancelled (result: ${{ needs.build.result }})"
+            failed=1
+          fi
+
+          if [ "${{ needs.secret-scan.result }}" != "success" ]; then
+            echo "::error::secret-scan failed or was cancelled (result: ${{ needs.secret-scan.result }})"
+            failed=1
+          fi
+
+          if [ "${{ needs.sensitive-file-guard.result }}" != "success" ]; then
+            echo "::error::sensitive-file-guard failed or was cancelled (result: ${{ needs.sensitive-file-guard.result }})"
             failed=1
           fi
 
@@ -534,6 +830,11 @@ jobs:
 
           if [ "${{ needs.test-backend-unit.result }}" != "success" ] && [ "${{ needs.test-backend-unit.result }}" != "skipped" ]; then
             echo "::error::test-backend-unit failed or was cancelled (result: ${{ needs.test-backend-unit.result }})"
+            failed=1
+          fi
+
+          if [ "${{ needs.test-backend-coverage.result }}" != "success" ] && [ "${{ needs.test-backend-coverage.result }}" != "skipped" ]; then
+            echo "::error::test-backend-coverage failed or was cancelled (result: ${{ needs.test-backend-coverage.result }})"
             failed=1
           fi
 
@@ -561,14 +862,20 @@ jobs:
           cat << EOF >> "$GITHUB_STEP_SUMMARY"
           ### ${STATUS_HEADER}
 
+          Unit test scope: \`${TEST_SCOPE}\`
+
           | Quality Check | Status | Execution Mode |
           |---|---|---|
           | **Dependency Review** | \`${{ needs.dependency-review.result }}\` | High/Critical Advisory Check (PRs) |
           | **Workflow Lint** | \`${{ needs.workflow-lint.result }}\` | actionlint + zizmor |
-          | **Lint & Typecheck** | \`${{ needs.lint-and-typecheck.result }}\` | Turbo Cache Concurrent |
+          | **Typecheck, Lint & Ratchets** | \`${{ needs.typecheck-lint.result }}\` | Turbo Cache (parallel job) |
+          | **Build & Release Artifact** | \`${{ needs.build.result }}\` | Build + Bundle Budget (parallel job) |
+          | **Secret Scan** | \`${{ needs.secret-scan.result }}\` | gitleaks, full history (parallel job) |
+          | **Sensitive File Guard** | \`${{ needs.sensitive-file-guard.result }}\` | Whole-tree sensitive-filename blocklist |
           | **Frontend Tests** | \`${{ needs.test-frontend.result }}\` | 2-Way Sharded Parallel Matrix |
           | **Frontend Coverage** | \`${{ needs.test-frontend-coverage.result }}\` | Merged Blob Reports & Coverage Enforcement |
-          | **Backend Unit Tests** | \`${{ needs.test-backend-unit.result }}\` | In-Memory Fast Unit + Coverage Gate |
+          | **Backend Unit Tests** | \`${{ needs.test-backend-unit.result }}\` | 2-Way Sharded In-Memory Unit |
+          | **Backend Coverage** | \`${{ needs.test-backend-coverage.result }}\` | Merged Blob Reports & Coverage Enforcement |
           | **Backend DB Tests** | \`${{ needs.test-backend-db.result }}\` | Docker Postgres 16 (Healthchecked, tmpfs) |
           | **E2E Tests** | \`${{ needs.e2e.result }}\` | 4-Way Sharded Playwright Matrix |
           | **E2E Report Merge** | \`${{ needs.merge-reports.result }}\` | Merged HTML Playwright Report |

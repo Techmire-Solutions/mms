@@ -1,11 +1,11 @@
-import { existsSync } from 'node:fs';
-import { join } from 'node:path';
-import fastifyStatic from '@fastify/static';
-import type { FastifyInstance } from 'fastify';
-import type { ServerConfig } from '../config/serverConfig.js';
-import { resolveBackendRoot } from '../config/loadEnv.js';
+import { existsSync } from "node:fs";
+import { join } from "node:path";
+import fastifyStatic from "@fastify/static";
+import type { FastifyInstance } from "fastify";
+import type { ServerConfig } from "../config/serverConfig.js";
+import { resolveBackendRoot } from "../config/loadEnv.js";
 
-import { setStaticAssetHeaders } from './staticAssets.js';
+import { setStaticAssetHeaders } from "./staticAssets.js";
 
 /** Production: serve built SPA static assets on the API port (Apache → :5002). Returns true when SPA is active. */
 export async function registerFrontendSpa(
@@ -16,16 +16,16 @@ export async function registerFrontendSpa(
     return false;
   }
 
-  const distRoot = join(resolveBackendRoot(), '..', 'frontend', 'dist');
-  const indexHtml = join(distRoot, 'index.html');
+  const distRoot = join(resolveBackendRoot(), "..", "frontend", "dist");
+  const indexHtml = join(distRoot, "index.html");
   if (!existsSync(indexHtml)) {
-    app.log.warn({ distRoot }, 'Frontend dist missing — skipping SPA static hosting');
+    app.log.warn({ distRoot }, "Frontend dist missing — skipping SPA static hosting");
     return false;
   }
 
   await app.register(fastifyStatic, {
     root: distRoot,
-    prefix: '/',
+    prefix: "/",
     wildcard: true,
     decorateReply: true,
     preCompressed: false,
@@ -34,6 +34,6 @@ export async function registerFrontendSpa(
     },
   });
 
-  app.log.info({ distRoot }, 'Serving frontend SPA from backend');
+  app.log.info({ distRoot }, "Serving frontend SPA from backend");
   return true;
 }

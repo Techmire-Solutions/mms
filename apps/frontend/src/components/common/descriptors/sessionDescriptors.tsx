@@ -1,5 +1,5 @@
 import type { Session } from "@mms/shared";
-import type { EntityDescriptor } from "@/types/entityRegistry";
+import type { EntityDescriptor } from "@/components/common/entityRegistryTypes";
 import { createEntityDescriptor } from "../entityDescriptorFactory";
 
 export const sessionsEntityDescriptor: EntityDescriptor<Session> = createEntityDescriptor<Session>({

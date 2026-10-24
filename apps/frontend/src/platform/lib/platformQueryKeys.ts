@@ -2,19 +2,19 @@
  * Single Source of Truth (SSOT) TanStack Query keys for the Platform Apex domain.
  */
 export const PLATFORM_QUERY_KEYS = {
-  workspaces: ['platform', 'workspaces'] as const,
+  workspaces: ["platform", "workspaces"] as const,
   workspaceList: (params: Record<string, string | number | undefined>) =>
-    ['platform', 'workspaces', 'list', params] as const,
-  workspaceMetrics: ['platform', 'workspaces', 'metrics'] as const,
-  workspaceModules: (subdomain: string) => ['platform', 'workspace-modules', subdomain] as const,
-  workspaceRegistry: ['workspace', 'registry'] as const,
-  admins: ['platform', 'admins'] as const,
-  activityLogs: ['platform', 'activity-logs'] as const,
-  settings: ['platform', 'settings'] as const,
-  health: ['platform', 'health'] as const,
-  profile: ['platform', 'profile'] as const,
-  setupStatus: ['platform', 'setup', 'status'] as const,
-  erd: ['platform', 'schema', 'erd'] as const,
+    ["platform", "workspaces", "list", params] as const,
+  workspaceMetrics: ["platform", "workspaces", "metrics"] as const,
+  workspaceModules: (subdomain: string) => ["platform", "workspace-modules", subdomain] as const,
+  workspaceRegistry: ["platform", "workspace-registry"] as const,
+  admins: ["platform", "admins"] as const,
+  activityLogs: ["platform", "activity-logs"] as const,
+  settings: ["platform", "settings"] as const,
+  health: ["platform", "health"] as const,
+  profile: ["platform", "profile"] as const,
+  setupStatus: ["platform", "setup", "status"] as const,
+  erd: ["platform", "schema", "erd"] as const,
 } as const;
 
 export const PLATFORM_WORKSPACES_QUERY_KEY = PLATFORM_QUERY_KEYS.workspaces;

@@ -1,9 +1,14 @@
-import React from 'react';
-import type { Account, JournalEntry, AccountingSettings, FiscalYear } from '@/lib/data/accountingData';
-import { ModuleCommandMetricsGrid } from '@/components/ui/ModuleCommandMetricsGrid';
-import { useAccountingDashboardView } from './useAccountingDashboardView';
-import { AccountingDashboardCharts } from './AccountingDashboardCharts';
-import { AccountingDashboardSnapshots } from './AccountingDashboardSnapshots';
+import React from "react";
+import type {
+  Account,
+  JournalEntry,
+  AccountingSettings,
+  FiscalYear,
+} from "@/lib/data/accountingData";
+import { ModuleCommandMetricsGrid } from "@/components/app/ModuleCommandMetricsGrid";
+import { useAccountingDashboardView } from "../hooks/useAccountingDashboardView";
+import { AccountingDashboardCharts } from "./AccountingDashboardCharts";
+import { AccountingDashboardSnapshots } from "./AccountingDashboardSnapshots";
 
 export interface AccountingDashboardProps {
   accounts: Account[];
@@ -14,7 +19,7 @@ export interface AccountingDashboardProps {
 
 /**
  * Accounting Dashboard — P&L StatCards prefer server `/metrics`; charts use journal collections.
- * Decoupled into presentational modules and custom view hook per ADR-001 & ADR-002 (<200 LOC).
+ * Decoupled into presentational modules and custom view hook per ADR-001 & ADR-002 (≤300 LOC).
  */
 export function AccountingDashboard({
   accounts,
@@ -38,7 +43,7 @@ export function AccountingDashboard({
   } = useAccountingDashboardView(accounts, entries);
 
   return (
-    <section aria-label={t('accounting.dashboard.aria')} className="space-y-5">
+    <section aria-label={t("accounting.dashboard.aria")} className="space-y-5">
       <ModuleCommandMetricsGrid items={metricItems} />
 
       <AccountingDashboardCharts

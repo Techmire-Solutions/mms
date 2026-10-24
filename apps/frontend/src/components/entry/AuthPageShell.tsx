@@ -4,12 +4,7 @@ import { useReducedMotion } from "@/hooks/useReducedMotion";
 import { useTranslation } from "@/hooks/useTranslation";
 
 export function AuthPageBackdrop(): React.JSX.Element {
-  return (
-    <div
-      className="pointer-events-none absolute inset-0 bg-background"
-      aria-hidden
-    />
-  );
+  return <div className="pointer-events-none absolute inset-0 bg-background" aria-hidden />;
 }
 
 export function AuthCardShell({
@@ -22,7 +17,7 @@ export function AuthCardShell({
   children: React.ReactNode;
   footer?: React.ReactNode;
   className?: string;
-  }): React.JSX.Element {
+}): React.JSX.Element {
   const reducedMotion = useReducedMotion();
 
   return (
@@ -39,9 +34,7 @@ export function AuthCardShell({
         </div>
         <div className="px-6 py-6 sm:px-8 sm:py-7">{children}</div>
         {footer ? (
-          <div className="border-t border-border/40 px-6 py-4 text-center sm:px-8">
-            {footer}
-          </div>
+          <div className="border-t border-border/40 px-6 py-4 text-center sm:px-8">{footer}</div>
         ) : null}
       </div>
     </div>

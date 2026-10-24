@@ -1,5 +1,5 @@
-import { useState, useCallback, useMemo } from 'react';
-import type { PlatformWorkspaceRow as PlatformWorkspaceRowData } from '@mms/shared';
+import { useState, useCallback, useMemo } from "react";
+import type { PlatformWorkspaceRow as PlatformWorkspaceRowData } from "@mms/shared";
 
 export interface UsePlatformWorkspaceSelectionResult {
   selectedSubdomains: ReadonlySet<string>;
@@ -42,7 +42,8 @@ export function usePlatformWorkspaceSelection(
   const toggleSelectAll = useCallback((visibleWorkspaces: PlatformWorkspaceRowData[]) => {
     setSelectedSubdomains((prev) => {
       const visibleSet = new Set(visibleWorkspaces.map((w) => w.subdomain));
-      const allVisibleSelected = visibleWorkspaces.length > 0 && visibleWorkspaces.every((w) => prev.has(w.subdomain));
+      const allVisibleSelected =
+        visibleWorkspaces.length > 0 && visibleWorkspaces.every((w) => prev.has(w.subdomain));
       const next = new Set(prev);
       if (allVisibleSelected) {
         for (const sub of visibleSet) {
@@ -63,8 +64,7 @@ export function usePlatformWorkspaceSelection(
 
   const isAllSelected = useMemo(
     () =>
-      allWorkspaces.length > 0 &&
-      allWorkspaces.every((w) => selectedSubdomains.has(w.subdomain)),
+      allWorkspaces.length > 0 && allWorkspaces.every((w) => selectedSubdomains.has(w.subdomain)),
     [allWorkspaces, selectedSubdomains],
   );
 

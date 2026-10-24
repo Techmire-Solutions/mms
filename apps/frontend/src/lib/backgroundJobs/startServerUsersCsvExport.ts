@@ -1,5 +1,5 @@
-import type { BackgroundJobRecord, UserExportColumn, UsersListQuery } from '@mms/shared';
-import { startServerModuleCsvExport } from '@/lib/backgroundJobs/startServerModuleCsvExport';
+import type { BackgroundJobRecord, UserExportColumn, UsersListQuery } from "@mms/shared";
+import { startServerModuleCsvExport } from "@/lib/backgroundJobs/startServerModuleCsvExport";
 
 export async function startServerUsersCsvExport(options: {
   query: UsersListQuery;
@@ -9,7 +9,7 @@ export async function startServerUsersCsvExport(options: {
   ids?: Array<string | number>;
 }): Promise<BackgroundJobRecord> {
   return startServerModuleCsvExport({
-    path: '/api/users/export/csv',
+    path: "/api/users/export/csv",
     body: {
       query: options.query,
       columns: options.columns,

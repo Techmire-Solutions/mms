@@ -16,6 +16,8 @@ export function filterSidebarNavItems(
         : item,
     )
     .filter((item) =>
-      item.subItems ? item.subItems.length > 0 : item.path !== undefined && canShowRoute(item.path, evaluate),
+      item.subItems
+        ? item.subItems.length > 0
+        : item.path !== undefined && canShowRoute(item.path, evaluate),
     );
 }

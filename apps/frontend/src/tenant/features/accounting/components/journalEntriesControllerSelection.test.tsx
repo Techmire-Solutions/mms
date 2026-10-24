@@ -13,13 +13,30 @@ declare global {
 globalThis.IS_REACT_ACT_ENVIRONMENT = true;
 
 vi.mock("@/tenant/features/accounting/components/JournalEntryRowActions", () => ({
-  JournalEntryRowActions: (props: any) => (
+  JournalEntryRowActions: (props: {
+    entry: JournalEntry;
+    onView: (entry: JournalEntry) => void;
+    onEdit: (entry: JournalEntry) => void;
+    onPost: (entry: JournalEntry) => void;
+    onReverse: (entry: JournalEntry) => void;
+    onTrashAction: (id: string) => void;
+  }) => (
     <div data-testid="row-actions">
-      <button data-testid="view-btn" onClick={() => props.onView(props.entry)}>View</button>
-      <button data-testid="edit-btn" onClick={() => props.onEdit(props.entry)}>Edit</button>
-      <button data-testid="post-btn" onClick={() => props.onPost(props.entry)}>Post</button>
-      <button data-testid="reverse-btn" onClick={() => props.onReverse(props.entry)}>Reverse</button>
-      <button data-testid="trash-btn" onClick={() => props.onTrashAction(props.entry.id)}>Trash</button>
+      <button data-testid="view-btn" onClick={() => props.onView(props.entry)}>
+        View
+      </button>
+      <button data-testid="edit-btn" onClick={() => props.onEdit(props.entry)}>
+        Edit
+      </button>
+      <button data-testid="post-btn" onClick={() => props.onPost(props.entry)}>
+        Post
+      </button>
+      <button data-testid="reverse-btn" onClick={() => props.onReverse(props.entry)}>
+        Reverse
+      </button>
+      <button data-testid="trash-btn" onClick={() => props.onTrashAction(props.entry.id)}>
+        Trash
+      </button>
     </div>
   ),
 }));
@@ -44,7 +61,12 @@ describe("journalEntriesControllerSelection", () => {
       const setNlSuggestion = vi.fn();
       const setSimpleModal = vi.fn();
 
-      const { handleNlChange } = createJournalNlHandlers("", setNlInput, setNlSuggestion, setSimpleModal);
+      const { handleNlChange } = createJournalNlHandlers(
+        "",
+        setNlInput,
+        setNlSuggestion,
+        setSimpleModal,
+      );
       handleNlChange("fee");
       expect(setNlInput).toHaveBeenCalledWith("fee");
       expect(setNlSuggestion).toHaveBeenCalledWith(null);
@@ -148,7 +170,9 @@ describe("journalEntriesControllerSelection", () => {
       const viewBtn = container.querySelector('[data-testid="view-btn"]') as HTMLButtonElement;
       const editBtn = container.querySelector('[data-testid="edit-btn"]') as HTMLButtonElement;
       const postBtn = container.querySelector('[data-testid="post-btn"]') as HTMLButtonElement;
-      const reverseBtn = container.querySelector('[data-testid="reverse-btn"]') as HTMLButtonElement;
+      const reverseBtn = container.querySelector(
+        '[data-testid="reverse-btn"]',
+      ) as HTMLButtonElement;
       const trashBtn = container.querySelector('[data-testid="trash-btn"]') as HTMLButtonElement;
 
       expect(viewBtn).not.toBeNull();

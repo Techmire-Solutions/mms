@@ -1,10 +1,10 @@
-import { useCallback, useEffect, type Dispatch, type SetStateAction } from 'react';
-import { isFacultyQuickFilter, type FacultyQuickFilter } from '@mms/shared';
+import { useCallback, useEffect, type Dispatch, type SetStateAction } from "react";
+import { isFacultyQuickFilter, type FacultyQuickFilter } from "@mms/shared";
 import {
   FACULTY_WORK_DRILLDOWN_EVENT,
   consumeFacultyWorkDrillDown,
   type FacultyWorkDrillDown,
-} from '@/tenant/features/faculty/hooks/facultyWorkDrillDown';
+} from "@/tenant/features/faculty/hooks/facultyWorkDrillDown";
 
 /** Applies Work drill-down events onto directory filter setters. */
 export function useFacultyDirectoryDrillDown({
@@ -24,7 +24,7 @@ export function useFacultyDirectoryDrillDown({
 }) {
   const applyDrillDown = useCallback(
     (filter: FacultyWorkDrillDown) => {
-      setQuickFilter('all');
+      setQuickFilter("all");
       setFilterStatus([]);
       if (filter.quickFilter && isFacultyQuickFilter(filter.quickFilter)) {
         setQuickFilter(filter.quickFilter);
@@ -32,7 +32,7 @@ export function useFacultyDirectoryDrillDown({
       if (filter.department) setFilterDepartment(filter.department);
       if (filter.designation) setFilterDesignation(filter.designation);
       if (filter.reportingFacultyId) setFilterReportingFacultyId(filter.reportingFacultyId);
-      setActiveTab('faculties');
+      setActiveTab("faculties");
     },
     [
       setActiveTab,

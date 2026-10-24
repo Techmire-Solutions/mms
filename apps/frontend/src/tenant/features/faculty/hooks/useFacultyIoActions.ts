@@ -1,6 +1,9 @@
 import { useTranslation } from "@/hooks/useTranslation";
 import { notify } from "@/lib/notify";
-import { startServerFacultyDesignationCsvExport } from "@/lib/backgroundJobs/startServerFacultyCatalogCsvExport";
+import {
+  startServerFacultyDepartmentCsvExport,
+  startServerFacultyDesignationCsvExport,
+} from "@/lib/backgroundJobs/startServerFacultyCatalogCsvExport";
 import type { FacultyIoEntity } from "@/tenant/features/faculty/facultyPageWorkSubTabs";
 
 /** Export/import actions for Faculty entity tab toolbars. */
@@ -19,6 +22,22 @@ export function useFacultyIoActions({
     if (!canExport) return;
     if (entity === "faculties") {
       void handleFacultyExport();
+      return;
+    }
+    if (entity === "departments") {
+      void (async () => {
+        try {
+          await startServerFacultyDepartmentCsvExport({
+            filename: t("faculty.io.departmentsExportFilename"),
+            label: t("faculty.io.exportDepartmentsJob"),
+          });
+          notify.success(t("faculty.io.exportQueued"));
+        } catch (err) {
+          notify.error(t("faculty.exportFailed"), {
+            description: err instanceof Error ? err.message : String(err),
+          });
+        }
+      })();
       return;
     }
     void (async () => {

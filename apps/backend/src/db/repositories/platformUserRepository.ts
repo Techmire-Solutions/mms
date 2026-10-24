@@ -1,26 +1,25 @@
-import { eq } from 'drizzle-orm';
+import { eq } from "drizzle-orm";
 import {
   type StoredPlatformUser,
   type PlatformAdminPermissions,
   applyTitleCaseRecursive,
   normalizePlatformAdminPermissions,
   FULL_PLATFORM_ADMIN_PERMISSIONS,
-} from '@mms/shared';
-import { activeDb } from '../dbConnection.js';
-import { platformUsers, platformUserPermissions } from '../schema.js';
-import {
-  PERMISSION_KEYS,
-  findPlatformUserRowById,
-} from './platformUserQueries.js';
+} from "@mms/shared";
+import { activeDb } from "../dbConnection.js";
+import { platformUsers, platformUserPermissions } from "../schema.js";
+import { PERMISSION_KEYS, findPlatformUserRowById } from "./platformUserQueries.js";
 
-export * from './platformUserQueries.js';
+export * from "./platformUserQueries.js";
 
 async function writePermissions(
   userId: string,
   permissions: PlatformAdminPermissions,
   client: ReturnType<typeof activeDb> = activeDb(),
 ): Promise<void> {
-  await client.delete(platformUserPermissions).where(eq(platformUserPermissions.platformUserId, userId));
+  await client
+    .delete(platformUserPermissions)
+    .where(eq(platformUserPermissions.platformUserId, userId));
 
   const rows = PERMISSION_KEYS.map((key) => ({
     platformUserId: userId,
@@ -35,7 +34,7 @@ async function writePermissions(
 export async function insertPlatformUser(user: StoredPlatformUser): Promise<void> {
   const processedUser = applyTitleCaseRecursive(user) as StoredPlatformUser;
   const permissions =
-    processedUser.role === 'super_user'
+    processedUser.role === "super_user"
       ? FULL_PLATFORM_ADMIN_PERMISSIONS
       : normalizePlatformAdminPermissions(processedUser.permissions);
 
@@ -48,7 +47,9 @@ export async function insertPlatformUser(user: StoredPlatformUser): Promise<void
       passwordHash: processedUser.passwordHash,
       role: processedUser.role,
       sessionVersion: processedUser.sessionVersion ?? 0,
-      emailVerifiedAt: processedUser.emailVerifiedAt ? new Date(processedUser.emailVerifiedAt) : null,
+      emailVerifiedAt: processedUser.emailVerifiedAt
+        ? new Date(processedUser.emailVerifiedAt)
+        : null,
       disabledAt: processedUser.disabledAt ? new Date(processedUser.disabledAt) : null,
       createdAt: new Date(processedUser.createdAt),
     });
@@ -62,15 +63,15 @@ export async function updatePlatformUserRow(
   patch: Partial<
     Pick<
       StoredPlatformUser,
-      | 'email'
-      | 'name'
-      | 'phone'
-      | 'passwordHash'
-      | 'emailVerifiedAt'
-      | 'role'
-      | 'permissions'
-      | 'sessionVersion'
-      | 'disabledAt'
+      | "email"
+      | "name"
+      | "phone"
+      | "passwordHash"
+      | "emailVerifiedAt"
+      | "role"
+      | "permissions"
+      | "sessionVersion"
+      | "disabledAt"
     >
   >,
 ): Promise<StoredPlatformUser | null> {
@@ -91,7 +92,7 @@ export async function updatePlatformUserRow(
       processedPatch.disabledAt !== undefined ? processedPatch.disabledAt : existing.disabledAt,
   };
 
-  if (next.role === 'super_user') {
+  if (next.role === "super_user") {
     next.permissions = FULL_PLATFORM_ADMIN_PERMISSIONS;
   }
 

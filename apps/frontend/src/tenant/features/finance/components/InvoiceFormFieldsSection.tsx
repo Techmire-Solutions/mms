@@ -1,15 +1,15 @@
 import React from "react";
 import { ReceiptText, User, Hash } from "lucide-react";
 import { FORM_INPUT, FORM_INPUT_ERROR } from "@/components/ui/formStyles";
-import { FormSelect } from "@/components/ui/FormSelect";
-import { Field } from "@/components/ui/FormPrimitives";
+import { FormSelect } from "@/components/app/FormSelect";
+import { Field } from "@/components/app/FormPrimitives";
 import { Input } from "@/components/ui/input";
-import { SectionCard } from "@/components/ui/SectionCard";
+import { SectionCard } from "@/components/app/SectionCard";
 import { cn } from "@/lib/utils";
 import type { TranslationFunction } from "@/lib/contexts/TranslationContext";
 import type { FeeStructure } from "@mms/shared";
-import type { InvoiceDraft } from "@/tenant/features/finance/components/invoiceFormDraft";
-import { InvoiceFormStudentPicker } from "@/tenant/features/finance/components/InvoiceFormStudentPicker";
+import type { InvoiceDraft } from "@/tenant/features/finance/lib/invoiceFormDraft";
+import { RegistryPersonSelect } from "@/tenant/components/selectors/RegistryPersonSelect";
 import { InvoiceFormMetadataFields } from "@/tenant/features/finance/components/InvoiceFormMetadataFields";
 
 export interface InvoiceFormFieldsSectionProps {
@@ -21,7 +21,7 @@ export interface InvoiceFormFieldsSectionProps {
   errors?: Record<string, string>;
 }
 
-export const InvoiceFormFieldsSection = (function InvoiceFormFieldsSection({
+export const InvoiceFormFieldsSection = function InvoiceFormFieldsSection({
   t,
   draft,
   onFieldChange,
@@ -58,14 +58,25 @@ export const InvoiceFormFieldsSection = (function InvoiceFormFieldsSection({
             </div>
           )}
 
-          <InvoiceFormStudentPicker
-            t={t}
-            studentId={draft.studentId}
-            onPick={(id, name) => {
-              onFieldChange("studentId", id);
-              if (name) onFieldChange("studentName", name);
-            }}
-          />
+          <div className="space-y-1.5">
+            <RegistryPersonSelect
+              kind="student"
+              id="invoice-student-id-select"
+              name="studentId"
+              label={t("finance.form.studentId")}
+              searchLabel={t("finance.form.studentId")}
+              searchPlaceholder={t("registryPerson.searchPlaceholder")}
+              value={draft.studentId}
+              onPick={(id, name) => {
+                onFieldChange("studentId", id);
+                if (name) onFieldChange("studentName", name);
+              }}
+              onChange={(id, name) => {
+                onFieldChange("studentId", id);
+                if (name) onFieldChange("studentName", name);
+              }}
+            />
+          </div>
 
           <Field
             id="invoice-student-name"
@@ -115,4 +126,4 @@ export const InvoiceFormFieldsSection = (function InvoiceFormFieldsSection({
       </SectionCard>
     </div>
   );
-});
+};

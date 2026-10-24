@@ -3,14 +3,14 @@ import { useState } from "react";
 import { AlertTriangle, GitMerge, Loader2 } from "lucide-react";
 import { mergeContacts, getDisplayName, type Contact } from "@mms/shared";
 import { Button } from "@/components/ui/button";
-import { Modal } from "@/components/ui/Modal";
-import { WarningCallout } from "@/components/ui/WarningCallout";
+import { Modal } from "@/components/app/Modal";
+import { WarningCallout } from "@/components/app/WarningCallout";
 import { useContactConfig } from "@/lib/contexts/ContactConfigContext";
 import { useTranslation } from "@/hooks/useTranslation";
 import {
   getDuplicateThemeColors,
   type DuplicatePair,
-} from "@/tenant/features/contacts/components/duplicateDetectionTypes";
+} from "@/tenant/features/contacts/lib/duplicateDetectionTypes";
 import { DuplicateMergeFieldsList } from "@/tenant/features/contacts/components/DuplicateMergeFieldsList";
 
 export interface MergePreviewProps {
@@ -113,7 +113,11 @@ export function MergePreview({
             disabled={confirming}
             className="flex items-center gap-2 px-5 min-h-11 font-semibold"
           >
-            {confirming ? <Loader2 className="w-4 h-4 animate-spin" /> : <GitMerge className="w-4 h-4" />}
+            {confirming ? (
+              <Loader2 className="w-4 h-4 animate-spin" />
+            ) : (
+              <GitMerge className="w-4 h-4" />
+            )}
             <span>{confirming ? t("common.loading") : t("contacts.duplicates.confirmMerge")}</span>
           </Button>
         </>

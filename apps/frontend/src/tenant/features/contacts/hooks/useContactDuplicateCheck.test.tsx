@@ -149,11 +149,7 @@ describe("useContactDuplicateCheck", () => {
 
     await act(async () => {
       root.render(
-        <TestHarness
-          open={true}
-          contactDraft={{ name: "Fatima Noor" }}
-          onValue={() => {}}
-        />,
+        <TestHarness open={true} contactDraft={{ name: "Fatima Noor" }} onValue={() => {}} />,
       );
     });
 

@@ -1,5 +1,5 @@
 import React from "react";
-import { ModuleStandardTrashDialogs } from "@/components/ui/ModuleStandardTrashDialogs";
+import { ModuleTrashConfirmDialogs } from "@/components/app/ModuleTrashConfirmDialogs";
 
 export interface HasanatTrashDialogsProps {
   pendingTrashId: string | null;
@@ -23,7 +23,7 @@ export function HasanatTrashDialogs({
   onConfirmBulkTrash,
 }: HasanatTrashDialogsProps): React.JSX.Element {
   return (
-    <ModuleStandardTrashDialogs
+    <ModuleTrashConfirmDialogs
       pendingTrashId={pendingTrashId}
       onPendingTrashIdChange={onPendingTrashIdChange}
       confirmBulkOpen={confirmBulkOpen}

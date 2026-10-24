@@ -1,12 +1,18 @@
-import React from 'react';
-import { Filter } from 'lucide-react';
+import React from "react";
+import { Filter } from "lucide-react";
 import {
   ModuleFilterCheckboxGroup,
   ModuleFilterDropdown,
-} from '@/components/ui/ModuleFiltersMenuButton';
-import { useTranslation } from '@/hooks/useTranslation';
+} from "@/components/app/ModuleFiltersMenuButton";
+import { useTranslation } from "@/hooks/useTranslation";
 
-export const EXAM_STATUSES = ['upcoming', 'ongoing', 'completed', 'scheduled', 'cancelled'] as const;
+export const EXAM_STATUSES = [
+  "upcoming",
+  "ongoing",
+  "completed",
+  "scheduled",
+  "cancelled",
+] as const;
 
 export interface ExaminationsFiltersMenuButtonProps {
   filterStatus: string[];
@@ -28,14 +34,14 @@ export function ExaminationsFiltersMenuButton({
 
   return (
     <ModuleFilterDropdown
-      label={t('examinations.filters')}
+      label={t("examinations.filters")}
       activeCount={activeFilterCount}
       icon={Filter}
-      clearLabel={t('examinations.clearFilters')}
+      clearLabel={t("examinations.clearFilters")}
       onClear={onClearFilters}
     >
       <ModuleFilterCheckboxGroup
-        label={t('examinations.filter.status')}
+        label={t("examinations.filter.status")}
         options={EXAM_STATUSES.map((status) => ({
           value: status,
           label: statusLabels[status],

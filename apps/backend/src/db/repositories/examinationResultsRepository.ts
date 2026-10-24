@@ -1,9 +1,12 @@
-import { and, eq, inArray, sql } from 'drizzle-orm';
-import { dedupeTrimmedIds, type ExamResult } from '@mms/shared';
-import { examResults, examClasses, exams } from '../schema.js';
-import { withTenant, withTenantRead } from '../tenant-context.js';
+import { and, eq, inArray, sql } from "drizzle-orm";
+import { dedupeTrimmedIds, type ExamResult } from "@mms/shared";
+import { examResults, examClasses, exams } from "../schema.js";
+import { withTenant, withTenantRead } from "../tenant-context.js";
 
-type ResultRow = Pick<typeof examResults.$inferSelect, 'id' | 'examId' | 'studentId' | 'marksObtained'>;
+type ResultRow = Pick<
+  typeof examResults.$inferSelect,
+  "id" | "examId" | "studentId" | "marksObtained"
+>;
 
 function resultRowToRecord(row: ResultRow): ExamResult {
   return {
@@ -50,12 +53,7 @@ export async function findExamResultById(tenant: string, id: string): Promise<Ex
         marksObtained: examResults.marksObtained,
       })
       .from(examResults)
-      .where(
-        and(
-          eq(examResults.workspaceSubdomain, subdomain),
-          eq(examResults.id, trimmedId),
-        ),
-      );
+      .where(and(eq(examResults.workspaceSubdomain, subdomain), eq(examResults.id, trimmedId)));
     const row = rows[0];
     return row ? resultRowToRecord(row) : null;
   });
@@ -74,12 +72,7 @@ export async function findExamResultsByIds(tenant: string, ids: string[]): Promi
         marksObtained: examResults.marksObtained,
       })
       .from(examResults)
-      .where(
-        and(
-          eq(examResults.workspaceSubdomain, subdomain),
-          inArray(examResults.id, cleanIds),
-        ),
-      );
+      .where(and(eq(examResults.workspaceSubdomain, subdomain), inArray(examResults.id, cleanIds)));
     return rows.map(resultRowToRecord);
   });
 }
@@ -95,6 +88,7 @@ export async function saveExamResult(tenant: string, record: ExamResult): Promis
         examId: record.examId,
         studentId: record.studentId,
         marksObtained: record.marksObtained ?? 0,
+        markedBy: record.markedBy ?? null,
         updatedAt: new Date(),
       })
       .onConflictDoUpdate({
@@ -103,6 +97,7 @@ export async function saveExamResult(tenant: string, record: ExamResult): Promis
           examId: record.examId,
           studentId: record.studentId,
           marksObtained: record.marksObtained ?? 0,
+          markedBy: record.markedBy ?? null,
           updatedAt: new Date(),
         },
       });
@@ -114,7 +109,7 @@ export async function bulkSaveExamResults(tenant: string, records: ExamResult[])
   const subdomain = tenant.trim().toLowerCase();
   const uniqueMap = new Map<string, ExamResult>();
   for (const r of records) {
-    const cleanId = typeof r.id === 'string' ? r.id.trim() : String(r.id);
+    const cleanId = typeof r.id === "string" ? r.id.trim() : String(r.id);
     if (cleanId) uniqueMap.set(cleanId, { ...r, id: cleanId });
   }
   const uniqueRecords = Array.from(uniqueMap.values());
@@ -130,6 +125,7 @@ export async function bulkSaveExamResults(tenant: string, records: ExamResult[])
           examId: r.examId,
           studentId: r.studentId,
           marksObtained: r.marksObtained ?? 0,
+          markedBy: r.markedBy ?? null,
           updatedAt: new Date(),
         })),
       )
@@ -139,17 +135,21 @@ export async function bulkSaveExamResults(tenant: string, records: ExamResult[])
           examId: sql`excluded.exam_id`,
           studentId: sql`excluded.student_id`,
           marksObtained: sql`excluded.marks_obtained`,
+          markedBy: sql`excluded.marked_by`,
           updatedAt: new Date(),
         },
       });
   });
 }
 
-export async function replaceExamResultsForWorkspace(tenant: string, records: ExamResult[]): Promise<void> {
+export async function replaceExamResultsForWorkspace(
+  tenant: string,
+  records: ExamResult[],
+): Promise<void> {
   const subdomain = tenant.trim().toLowerCase();
   const uniqueMap = new Map<string, ExamResult>();
   for (const r of records) {
-    const cleanId = typeof r.id === 'string' ? r.id.trim() : String(r.id);
+    const cleanId = typeof r.id === "string" ? r.id.trim() : String(r.id);
     if (cleanId) uniqueMap.set(cleanId, { ...r, id: cleanId });
   }
   const uniqueRecords = Array.from(uniqueMap.values());
@@ -164,6 +164,7 @@ export async function replaceExamResultsForWorkspace(tenant: string, records: Ex
           examId: r.examId,
           studentId: r.studentId,
           marksObtained: r.marksObtained ?? 0,
+          markedBy: r.markedBy ?? null,
           updatedAt: new Date(),
         })),
       );

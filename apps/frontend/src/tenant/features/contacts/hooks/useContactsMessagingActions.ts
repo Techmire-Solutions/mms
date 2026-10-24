@@ -10,12 +10,8 @@ import { useMessageComposerState } from "@/hooks/useMessageComposerState";
 
 /** Contacts messaging openers backed by the shared MessageComposer state. */
 export function useContactsMessagingActions() {
-  const {
-    messagingTarget,
-    openComposer,
-    closeComposer,
-    canWriteMessaging,
-  } = useMessageComposerState();
+  const { messagingTarget, openComposer, closeComposer, canWriteMessaging } =
+    useMessageComposerState();
 
   const toComposerRecipients = useCallback(
     (contacts: Contact[]) =>

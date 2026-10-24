@@ -2,23 +2,18 @@ import React, { lazy, Suspense } from "react";
 import { useTranslation } from "@/hooks/useTranslation";
 import { useBrandPalette } from "@/lib/contexts/BrandingPaletteContext";
 import { useContactsReportAnalytics } from "@/tenant/hooks/collections/contacts";
-import { ErrorState } from "@/components/ui/ErrorState";
-import { ReportChartCard } from "@/components/ui/reports/ReportChartCard";
-import { ReportDataGridContainer } from "@/components/ui/reports/ReportDataGridContainer";
+import { ErrorState } from "@/components/app/ErrorState";
+import { ReportChartCard } from "@/components/reports/ReportChartCard";
+import { ReportDataGridContainer } from "@/components/reports/ReportDataGridContainer";
 import PinnedWidgets from "@/tenant/features/reports/components/PinnedWidgets";
 import { Skeleton } from "@/components/ui/skeleton";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
-import type { ExportColumn } from '@/components/ui/ExportToolbar';
+import { WorkBatchTable } from "@/components/common/work/WorkBatchTable";
+import type { ExportColumn } from "@/components/app/ExportToolbar";
 
 const ContactReportCharts = lazy(() =>
-  import("@/components/ui/reports/ContactReportCharts").then((mod) => ({ default: mod.ContactReportCharts })),
+  import("@/components/reports/ContactReportCharts").then((mod) => ({
+    default: mod.ContactReportCharts,
+  })),
 );
 
 interface ContactReportProps {
@@ -26,7 +21,7 @@ interface ContactReportProps {
 }
 
 /** Contacts CRM Report dashboard — analytics metrics, distribution charts, and pinned widgets. */
-const ContactReport = (function ContactReport(_props: ContactReportProps = {}): React.JSX.Element {
+const ContactReport = function ContactReport(_props: ContactReportProps = {}): React.JSX.Element {
   const { t } = useTranslation();
   const palette = useBrandPalette();
   const analyticsQuery = useContactsReportAnalytics();
@@ -39,9 +34,21 @@ const ContactReport = (function ContactReport(_props: ContactReportProps = {}): 
     const unverified = Math.max(0, data.total - data.whatsappCount);
     const missing = data.missingInfoCount;
     return [
-      { name: t("reports.contacts.kpi.whatsappVerified"), value: verified, color: palette.charts[0] || palette.primary },
-      { name: t("reports.contacts.kpi.activeContacts"), value: unverified, color: palette.charts[1] || palette.secondary },
-      { name: t("reports.contacts.kpi.missingContactInfo"), value: missing, color: palette.charts[2] || palette.primary },
+      {
+        name: t("reports.contacts.kpi.whatsappVerified"),
+        value: verified,
+        color: palette.charts[0] || palette.primary,
+      },
+      {
+        name: t("reports.contacts.kpi.activeContacts"),
+        value: unverified,
+        color: palette.charts[1] || palette.secondary,
+      },
+      {
+        name: t("reports.contacts.kpi.missingContactInfo"),
+        value: missing,
+        color: palette.charts[2] || palette.primary,
+      },
     ].filter((item) => item.value > 0);
   })();
 
@@ -119,24 +126,33 @@ const ContactReport = (function ContactReport(_props: ContactReportProps = {}): 
             hideExport={summaryRows.length === 0}
           >
             <div className="hidden md:block">
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead className="px-4 py-2.5 font-bold">{t("common.label")}</TableHead>
-                    <TableHead className="px-4 py-2.5 font-bold text-center">{t("common.details")}</TableHead>
-                    <TableHead className="px-4 py-2.5 font-bold text-end">{t("reports.kpi.growthRate")}</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {summaryRows.map((row) => (
-                    <TableRow key={row.metric}>
-                      <TableCell className="px-4 py-2.5 font-medium">{row.metric}</TableCell>
-                      <TableCell className="px-4 py-2.5 text-center font-mono">{row.value}</TableCell>
-                      <TableCell className="px-4 py-2.5 text-end font-mono text-primary font-bold">{row.rate}</TableCell>
-                    </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
+              <WorkBatchTable
+                data={summaryRows.map((row) => ({ ...row, id: row.metric }))}
+                columns={[
+                  {
+                    id: "metric",
+                    label: t("common.label"),
+                    render: (row) => <span className="font-medium">{row.metric}</span>,
+                  },
+                  {
+                    id: "value",
+                    label: t("common.details"),
+                    align: "center",
+                    cellClassName: "font-mono",
+                    noWrap: true,
+                    render: (row) => row.value,
+                  },
+                  {
+                    id: "rate",
+                    label: t("reports.kpi.growthRate"),
+                    align: "right",
+                    cellClassName: "text-primary font-bold",
+                    noWrap: true,
+                    render: (row) => row.rate,
+                  },
+                ]}
+                bordered={false}
+              />
             </div>
             <div className="divide-y divide-border/50 md:hidden" role="list">
               {summaryRows.map((row) => (
@@ -160,6 +176,6 @@ const ContactReport = (function ContactReport(_props: ContactReportProps = {}): 
       <PinnedWidgets category="contacts" />
     </div>
   );
-});
+};
 
 export default ContactReport;

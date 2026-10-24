@@ -39,9 +39,7 @@ export function mergeCountryNameOptions(
   current: CountryCodeEntry[],
   nextCountries: string[],
 ): CountryCodeEntry[] {
-  const unique = Array.from(
-    new Set(nextCountries.map((name) => name.trim()).filter(Boolean)),
-  );
+  const unique = Array.from(new Set(nextCountries.map((name) => name.trim()).filter(Boolean)));
   const currentByCountry = new Map(current.map((entry) => [entry.country, entry]));
   return unique.map((country) => {
     const existing = currentByCountry.get(country);

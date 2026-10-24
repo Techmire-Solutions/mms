@@ -1,23 +1,17 @@
-import { EmptyState } from "@/components/ui/EmptyState";
-import { ExportToolbar } from "@/components/ui/ExportToolbar";
-import { ModuleTableHeaderCell } from "@/components/ui/ModuleTableHeaderCell";
-import { MoneyTableCell } from "@/components/ui/MoneyTableCell";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableFooter,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
-import { WORK_SURFACE } from "@/components/ui/formStyles";
+import { EmptyState } from "@/components/app/EmptyState";
+import { ExportToolbar } from "@/components/app/ExportToolbar";
 import { Badge } from "@/components/ui/badge";
-import { MutedTableHeaderRow } from "@/components/ui/reports/FinancialDebitCreditTableChrome";
+import { WorkBatchTable } from "@/components/common/work/WorkBatchTable";
+import type { WorkBatchTableFooterRow } from "@/components/common/work/workBatchTableTypes";
 import { useTranslation } from "@/hooks/useTranslation";
-import { useWorkDirectoryViewMode, type WorkDirectoryViewMode } from "@/hooks/useWorkDirectoryViewMode";
+import { useMemo } from "react";
+import {
+  useWorkDirectoryViewMode,
+  type WorkDirectoryViewMode,
+} from "@/hooks/useWorkDirectoryViewMode";
 import type { ObligationDistribution } from "@/lib/data/obligationsData";
 import { AlertCircle, Layers } from "lucide-react";
-import { SectionHeader } from "@/components/ui/SectionHeader";
+import { SectionHeader } from "@shared/ui";
 import { ObligationsWakalaSummaryCardsView } from "./ObligationsWakalaSummaryCardsView";
 
 /** ReportMoneyCard tile (report) — not DirectoryCard. */
@@ -52,6 +46,104 @@ export function ObligationsWakalaSummarySection({
   const { viewMode: hookViewMode } = useWorkDirectoryViewMode();
   const viewMode = propViewMode ?? hookViewMode;
 
+  const columns = useMemo(
+    () => [
+      {
+        id: "repWakala",
+        label: t("obligations.summary.wakala.colRepWakala"),
+        render: (row: WakalaSummaryEntry) => (
+          <div className="flex flex-col gap-0.5">
+            <p className="font-semibold text-foreground text-sm m-0">{row.repName}</p>
+            {!row.hasWakala && (
+              <span
+                className="inline-flex items-center gap-1 text-xs text-warning font-bold"
+                aria-label={t("obligations.summary.wakala.noConfigAria")}
+              >
+                <AlertCircle className="w-3 h-3" aria-hidden="true" />{" "}
+                {t("obligations.summary.wakala.noConfig")}
+              </span>
+            )}
+          </div>
+        ),
+      },
+      {
+        id: "mujtahid",
+        label: t("obligations.summary.wakala.colMujtahid"),
+        render: (row: WakalaSummaryEntry) => (
+          <span className="text-xs text-muted-foreground">{row.mujtahidName}</span>
+        ),
+      },
+      {
+        id: "obligation",
+        label: t("obligations.summary.wakala.colObligation"),
+        render: (row: WakalaSummaryEntry) => (
+          <Badge as="span" pill tone="primary" className="px-2 font-bold">
+            {row.obligationType}
+          </Badge>
+        ),
+      },
+      {
+        id: "collections",
+        label: t("obligations.summary.wakala.colCollections"),
+        align: "right" as const,
+        render: (row: WakalaSummaryEntry) => (
+          <span className="text-sm font-semibold text-foreground">{row.count}</span>
+        ),
+      },
+      {
+        id: "totalAmount",
+        label: t("obligations.summary.wakala.colTotalAmountShort"),
+        align: "right" as const,
+        render: (row: WakalaSummaryEntry) => (
+          <span className="text-sm font-bold text-success whitespace-nowrap" dir="ltr">
+            {formatCurrency(row.total)}
+          </span>
+        ),
+      },
+      {
+        id: "distributions",
+        label: t("obligations.summary.wakala.colDistributions"),
+        render: (row: WakalaSummaryEntry) =>
+          row.distributions.length > 0 ? (
+            <div className="flex flex-wrap gap-1">
+              {row.distributions.map((distribution) => (
+                <span
+                  key={distribution.id}
+                  className={`text-xs font-bold px-1.5 py-0.5 rounded border whitespace-nowrap ${distribution.type === "Liability" ? "bg-destructive/10 border-destructive/30 text-destructive" : "bg-success/10 border-success/30 text-success"}`}
+                >
+                  {distribution.name} {distribution.percentage}%
+                </span>
+              ))}
+            </div>
+          ) : (
+            <span className="text-xs text-muted-foreground">—</span>
+          ),
+      },
+    ],
+    [t, formatCurrency],
+  );
+
+  const footerRows: WorkBatchTableFooterRow[] = useMemo(() => {
+    if (wakalaSummary.length === 0) return [];
+    return [
+      {
+        cells: [
+          {
+            colSpan: 4,
+            className: "table-footer-label",
+            content: t("obligations.summary.wakala.configCount", { count: wakalaSummary.length }),
+          },
+          {
+            align: "end",
+            className: "font-bold text-success text-sm whitespace-nowrap",
+            content: <span dir="ltr">{formatCurrency(totalAmount)}</span>,
+          },
+          { content: "" },
+        ],
+      },
+    ];
+  }, [wakalaSummary.length, totalAmount, formatCurrency, t]);
+
   return (
     <section aria-label={t("obligations.summary.wakala.aria")}>
       <SectionHeader
@@ -70,81 +162,45 @@ export function ObligationsWakalaSummarySection({
               { header: t("obligations.summary.wakala.colMujtahid"), key: "mujtahidName" },
               { header: t("obligations.summary.wakala.colObligationType"), key: "obligationType" },
               { header: t("obligations.summary.wakala.colCollections"), key: "count" },
-              { header: t("obligations.summary.wakala.colTotalAmount", { currency: activeCurrencyCode }), key: "totalFmt" },
+              {
+                header: t("obligations.summary.wakala.colTotalAmount", {
+                  currency: activeCurrencyCode,
+                }),
+                key: "totalFmt",
+              },
               { header: t("obligations.summary.wakala.colDistributions"), key: "distFmt" },
             ]}
             rows={wakalaSummary.map((wakalaSummaryItem) => ({
               ...wakalaSummaryItem,
               totalFmt: formatCurrency(wakalaSummaryItem.total),
-              distFmt: wakalaSummaryItem.distributions.map((distribution) => `${distribution.name} ${distribution.percentage}%`).join("; ") || "—",
+              distFmt:
+                wakalaSummaryItem.distributions
+                  .map((distribution) => `${distribution.name} ${distribution.percentage}%`)
+                  .join("; ") || "—",
             }))}
           />
         }
       />
       {wakalaSummary.length === 0 ? (
-        <EmptyState variant="dashed" title={t("obligations.summary.emptyFiltered")} compact role="alert" />
+        <EmptyState
+          variant="dashed"
+          title={t("obligations.summary.emptyFiltered")}
+          compact
+          role="alert"
+        />
+      ) : viewMode === "cards" ? (
+        <ObligationsWakalaSummaryCardsView
+          wakalaSummary={wakalaSummary}
+          totalAmount={totalAmount}
+          formatCurrency={formatCurrency}
+        />
       ) : (
-        <div className={WORK_SURFACE}>
-          {viewMode === "cards" ? (
-            <ObligationsWakalaSummaryCardsView
-              wakalaSummary={wakalaSummary}
-              totalAmount={totalAmount}
-              formatCurrency={formatCurrency}
-            />
-          ) : (
-            <Table>
-              <caption className="sr-only">{t("obligations.summary.wakala.title")}</caption>
-              <TableHeader>
-                <MutedTableHeaderRow>
-                  <ModuleTableHeaderCell columnKey="repWakala" className="px-3 py-2.5">{t("obligations.summary.wakala.colRepWakala")}</ModuleTableHeaderCell>
-                  <ModuleTableHeaderCell columnKey="mujtahid" className="px-3 py-2.5">{t("obligations.summary.wakala.colMujtahid")}</ModuleTableHeaderCell>
-                  <ModuleTableHeaderCell columnKey="obligation" className="px-3 py-2.5">{t("obligations.summary.wakala.colObligation")}</ModuleTableHeaderCell>
-                  <ModuleTableHeaderCell columnKey="collections" className="px-3 py-2.5 text-end">{t("obligations.summary.wakala.colCollections")}</ModuleTableHeaderCell>
-                  <ModuleTableHeaderCell columnKey="totalAmount" className="px-3 py-2.5 text-end">{t("obligations.summary.wakala.colTotalAmountShort")}</ModuleTableHeaderCell>
-                  <ModuleTableHeaderCell columnKey="distributions" className="px-3 py-2.5">{t("obligations.summary.wakala.colDistributions")}</ModuleTableHeaderCell>
-                </MutedTableHeaderRow>
-              </TableHeader>
-              <TableBody className="divide-y divide-border/50">
-                {wakalaSummary.map((wakalaSummaryItem) => (
-                  <TableRow key={wakalaSummaryItem.key} className="hover:bg-muted/20 transition-colors">
-                    <TableCell className="px-3 py-2.5">
-                      <p className="font-semibold text-foreground text-sm m-0">{wakalaSummaryItem.repName}</p>
-                      {!wakalaSummaryItem.hasWakala && (
-                        <span className="inline-flex items-center gap-1 text-xs text-warning font-bold mt-0.5" aria-label={t("obligations.summary.wakala.noConfigAria")}>
-                          <AlertCircle className="w-3 h-3" aria-hidden="true" /> {t("obligations.summary.wakala.noConfig")}
-                        </span>
-                      )}
-                    </TableCell>
-                    <TableCell className="px-3 py-2.5 text-xs text-muted-foreground">{wakalaSummaryItem.mujtahidName}</TableCell>
-                    <TableCell className="px-3 py-2.5">
-                      <Badge as="span" pill tone="primary" className="px-2 font-bold">{wakalaSummaryItem.obligationType}</Badge>
-                    </TableCell>
-                    <TableCell className="px-3 py-2.5 text-end text-sm font-semibold text-foreground">{wakalaSummaryItem.count}</TableCell>
-                    <MoneyTableCell value={formatCurrency(wakalaSummaryItem.total)} variant="credit" />
-                    <TableCell className="px-3 py-2.5">
-                      {wakalaSummaryItem.distributions.length > 0 ? (
-                        <div className="flex flex-wrap gap-1">
-                          {wakalaSummaryItem.distributions.map((distribution) => (
-                            <span key={distribution.id} className={`text-xs font-bold px-1.5 py-0.5 rounded border whitespace-nowrap ${distribution.type === "Liability" ? "bg-destructive/10 border-destructive/30 text-destructive" : "bg-success/10 border-success/30 text-success"}`}>
-                              {distribution.name} {distribution.percentage}%
-                            </span>
-                          ))}
-                        </div>
-                      ) : <span className="text-xs text-muted-foreground">—</span>}
-                    </TableCell>
-                  </TableRow>
-                ))}
-              </TableBody>
-              <TableFooter>
-                <TableRow>
-                  <TableCell colSpan={4} className="table-footer-label">{t("obligations.summary.wakala.configCount", { count: wakalaSummary.length })}</TableCell>
-                  <MoneyTableCell value={formatCurrency(totalAmount)} variant="credit" isFooter />
-                  <TableCell />
-                </TableRow>
-              </TableFooter>
-            </Table>
-          )}
-        </div>
+        <WorkBatchTable
+          columns={columns}
+          data={wakalaSummary.map((r) => ({ ...r, id: r.key }))}
+          footerRow={footerRows[0]}
+          caption={t("obligations.summary.wakala.title")}
+        />
       )}
     </section>
   );

@@ -1,10 +1,10 @@
 import { motion } from "framer-motion";
 import { MessageCircle, Send } from "lucide-react";
-import { SEMANTIC_BADGE } from "@/lib/semanticTone";
+import { SEMANTIC_BADGE } from "@/lib/ui/semanticTone";
 import { Button } from "@/components/ui/button";
 import type { TranslationFunction } from "@/lib/contexts/TranslationContext";
 import { type useMessageComposerState } from "@/hooks/useMessageComposerState";
-import { StatusBadge } from "@/components/ui/StatusBadge";
+import { StatusBadge } from "@/components/app/StatusBadge";
 import { TableRow } from "@/components/ui/table";
 
 export const MotionTableRow = motion.create(TableRow);

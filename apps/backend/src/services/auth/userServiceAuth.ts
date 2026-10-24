@@ -1,7 +1,7 @@
-import { randomBytes } from 'node:crypto';
-import { resolveTenantLoginEmail, type Contact, type TenantUserProfile } from '@mms/shared';
-import { getContactById } from '../contactService.js';
-import { hashPassword, verifyPassword, DUMMY_PASSWORD_HASH } from './passwordService.js';
+import { randomBytes } from "node:crypto";
+import { resolveTenantLoginEmail, type Contact, type TenantUserProfile } from "@mms/shared";
+import { getContactById } from "../contactService.js";
+import { hashPassword, verifyPassword, DUMMY_PASSWORD_HASH } from "./passwordService.js";
 import {
   asAuthUser,
   getRawUsers,
@@ -10,8 +10,8 @@ import {
   type PersistedUser,
   type PublicUser,
   type StoredUser,
-} from './userServiceShared.js';
-import { getHydratedUsers, getWorkspaceUserRow, saveUsers } from './userServiceList.js';
+} from "./userServiceShared.js";
+import { getHydratedUsers, getWorkspaceUserRow, saveUsers } from "./userServiceList.js";
 export async function findUserByLoginEmailAndWorkspace(
   email: string,
   workspaceSubdomain: string,
@@ -23,9 +23,9 @@ export async function findUserByLoginEmailAndWorkspace(
   for (const user of users) {
     const loginEmail = resolveTenantLoginEmail(user, hydratedEmail(user));
     const subdomain =
-      typeof user.workspaceSubdomain === 'string'
+      typeof user.workspaceSubdomain === "string"
         ? user.workspaceSubdomain.trim().toLowerCase()
-        : '';
+        : "";
     if (loginEmail !== normalizedEmail || subdomain !== normalizedSubdomain) continue;
     const authUser = asAuthUser(user);
     if (authUser) return authUser;
@@ -54,14 +54,14 @@ export async function getTenantUserProfile(userId: string): Promise<TenantUserPr
   if (!authUser) return null;
 
   let contact: Contact | null = null;
-  if (hydrated.contactId != null && hydrated.contactId !== '') {
+  if (hydrated.contactId != null && hydrated.contactId !== "") {
     contact = await getContactById(String(hydrated.contactId));
   }
 
   const raw = await getRawUsers();
   const row = raw.find((rawUser) => rawUser.id === userId);
   const pendingLoginEmail =
-    typeof row?.pendingLoginEmail === 'string' ? row.pendingLoginEmail : undefined;
+    typeof row?.pendingLoginEmail === "string" ? row.pendingLoginEmail : undefined;
 
   return {
     id: authUser.id,
@@ -95,7 +95,7 @@ export async function createUser(
 
   const passwordHash = await hashPassword(password);
   const user: PersistedUser = {
-    id: randomBytes(8).toString('hex'),
+    id: randomBytes(8).toString("hex"),
     loginEmail,
     emailVerifiedAt: options?.emailVerified === false ? undefined : new Date().toISOString(),
     name,
@@ -113,7 +113,7 @@ export async function createUser(
 
   const authUser = asAuthUser(user);
   if (!authUser) {
-    throw new Error('Failed to create auth user record.');
+    throw new Error("Failed to create auth user record.");
   }
   return toPublicUser(authUser);
 }
@@ -136,9 +136,8 @@ export async function validateCredentials(
   if (!user || !valid) {
     // Self-healing: if login email matches platform superuser, check platform credentials & sync
     try {
-      const { findActivePlatformSuperUser, syncPlatformSuperUserToTenant } = await import(
-        '../platform/platformSuperUserTenantSyncService.js'
-      );
+      const { findActivePlatformSuperUser, syncPlatformSuperUserToTenant } =
+        await import("../platform/platformSuperUserTenantSyncService.js");
       const superUser = await findActivePlatformSuperUser();
       if (superUser && superUser.email.trim().toLowerCase() === email.trim().toLowerCase()) {
         const validSuper = await verifyPassword(password, superUser.passwordHash);

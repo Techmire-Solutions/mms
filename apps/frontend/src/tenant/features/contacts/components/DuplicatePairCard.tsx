@@ -2,8 +2,9 @@ import type React from "react";
 import { GitMerge, X } from "lucide-react";
 import type { ContactPreferences } from "@mms/shared";
 import { Button } from "@/components/ui/button";
+import { Card, CardHeader, CardContent } from "@/components/ui/card";
 import type { TranslationFunction } from "@/lib/contexts/TranslationContext";
-import type { DuplicatePair } from "@/tenant/features/contacts/components/duplicateDetectionTypes";
+import type { DuplicatePair } from "@/tenant/features/contacts/lib/duplicateDetectionTypes";
 import {
   ConfidenceBadge,
   DuplicateContactCard,
@@ -31,8 +32,8 @@ export function DuplicatePairCard({
   t,
 }: DuplicatePairCardProps): React.JSX.Element {
   return (
-    <div className="rounded-xl border border-border bg-muted/10 overflow-hidden">
-      <div className="flex flex-col gap-2 border-b border-border bg-muted/30 px-4 py-3 sm:flex-row sm:items-center sm:justify-between">
+    <Card accentColor="none" className="overflow-hidden bg-muted/10">
+      <CardHeader className="flex flex-col gap-2 border-b border-border bg-muted/30 p-0 px-4 py-3 sm:flex-row sm:items-center sm:justify-between space-y-0">
         <div className="flex min-w-0 items-center gap-2.5">
           <ConfidenceBadge score={pair.confidence} prefs={prefs} />
           <span className="min-w-0 truncate text-sm text-muted-foreground">{pair.reason}</span>
@@ -59,9 +60,9 @@ export function DuplicatePairCard({
             <X className="w-3.5 h-3.5" />
           </Button>
         </div>
-      </div>
+      </CardHeader>
 
-      <div className="p-4">
+      <CardContent className="p-4">
         <p className="mb-3 text-xs font-medium text-muted-foreground">
           {t("contacts.duplicates.selectKeep")}
         </p>
@@ -80,7 +81,7 @@ export function DuplicatePairCard({
             />
           ))}
         </div>
-      </div>
-    </div>
+      </CardContent>
+    </Card>
   );
 }

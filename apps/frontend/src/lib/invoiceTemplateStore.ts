@@ -5,10 +5,10 @@ import {
   saveTemplate,
   resetTemplate,
   INVOICE_TEMPLATE_CHANGED_EVENT,
-} from "./invoiceTemplatePersistence.js";
-import { getDefaultTemplate } from "./invoiceTemplateDefaults.js";
-import { getAvailablePresets } from "./invoiceTemplatePresets.js";
-import type { InvoiceTemplate } from "./invoiceTemplateTypes.js";
+} from "./invoiceTemplatePersistence";
+import { getDefaultTemplate } from "./invoiceTemplateDefaults";
+import { getAvailablePresets } from "./invoiceTemplatePresets";
+import type { InvoiceTemplate } from "./invoiceTemplateTypes";
 
 /** Invoice print template types, defaults, and field resolution. */
 export type {
@@ -26,16 +26,16 @@ export type {
   FieldLookupInfo,
   InvoiceReceiptPayload,
   StandardInvoiceField,
-} from "./invoiceTemplateTypes.js";
+} from "./invoiceTemplateTypes";
 export {
   PAGE_SIZES,
   getPageDimensions,
   INVOICE_TEMPLATE_FIELD_KEY_PREFIX,
   INVOICE_TEMPLATE_STATIC_KEY_PREFIX,
   type TemplateTranslate,
-} from "./invoiceTemplateTypes.js";
-export { getDefaultTemplate } from "./invoiceTemplateDefaults.js";
-export { getInvoiceTemplateBranding } from "./invoiceTemplateBranding.js";
+} from "./invoiceTemplateTypes";
+export { getDefaultTemplate } from "./invoiceTemplateDefaults";
+export { getInvoiceTemplateBranding } from "./invoiceTemplateBranding";
 export {
   loadTemplate,
   saveTemplate,
@@ -45,13 +45,11 @@ export {
   indexLookups,
   type IndexedFieldLookups,
   INVOICE_TEMPLATE_CHANGED_EVENT,
+  invoiceTemplateDocumentStore,
   type InvoiceTemplateFieldKey,
-} from "./invoiceTemplatePersistence.js";
-export {
-  getAvailablePresets,
-  type InvoiceTemplatePreset,
-} from "./invoiceTemplatePresets.js";
-export { generateQrSvgUri, generateQrMatrix } from "./qrCodeGenerator.js";
+} from "./invoiceTemplatePersistence";
+export { getAvailablePresets, type InvoiceTemplatePreset } from "./invoiceTemplatePresets";
+export { generateQrSvgUri, generateQrMatrix } from "./qrCodeGenerator";
 
 export interface UseInvoiceTemplateReturn {
   template: InvoiceTemplate;
@@ -139,7 +137,7 @@ export function useInvoiceTemplate(): UseInvoiceTemplateReturn {
   const template = useSyncExternalStore(
     subscribeTemplate,
     getTemplateSnapshot,
-    getDefaultTemplateSnapshot
+    getDefaultTemplateSnapshot,
   );
 
   const handleSave = useCallback((tmpl: InvoiceTemplate) => {
@@ -153,15 +151,18 @@ export function useInvoiceTemplate(): UseInvoiceTemplateReturn {
     return restored;
   }, []);
 
-  const handleApplyPreset = useCallback((presetKey: string): InvoiceTemplate | null => {
-    const presets = getAvailablePresets();
-    const found = presets.find((p) => p.key === presetKey);
-    if (found) {
-      handleSave(found.template);
-      return found.template;
-    }
-    return null;
-  }, [handleSave]);
+  const handleApplyPreset = useCallback(
+    (presetKey: string): InvoiceTemplate | null => {
+      const presets = getAvailablePresets();
+      const found = presets.find((p) => p.key === presetKey);
+      if (found) {
+        handleSave(found.template);
+        return found.template;
+      }
+      return null;
+    },
+    [handleSave],
+  );
 
   return {
     template,
@@ -170,5 +171,3 @@ export function useInvoiceTemplate(): UseInvoiceTemplateReturn {
     applyPreset: handleApplyPreset,
   };
 }
-
-

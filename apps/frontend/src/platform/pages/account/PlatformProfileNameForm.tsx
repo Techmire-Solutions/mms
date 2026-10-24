@@ -1,9 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { User } from "lucide-react";
-import { SectionCard } from "@/components/ui/SectionCard";
-import { FormSubmitActions } from "@/components/ui/FormSubmitActions";
-import { Input } from "@/components/ui/input";
-import { Field } from "@/components/ui/FormField";
+import { Field, FormSubmitActions, Input, SectionCard } from "@shared/ui";
 import { useTranslation } from "@/hooks/useTranslation";
 import { usePlatformAuth } from "@/platform/lib/PlatformAuthContext";
 import { useUpdatePlatformProfileName } from "@/platform/hooks/usePlatformProfile";
@@ -54,11 +51,7 @@ export function PlatformProfileNameForm({
   const unchanged = name === platformUser?.name && phone === (platformUser?.phone ?? "");
 
   return (
-    <SectionCard
-      title={t("platform.profileName")}
-      icon={User}
-      accentColor="info"
-    >
+    <SectionCard title={t("platform.profileName")} icon={User} accentColor="info">
       <form onSubmit={(event) => void handleSaveName(event)} className="space-y-4 text-start">
         <Field
           label={t("platform.profileName")}

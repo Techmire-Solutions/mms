@@ -122,9 +122,8 @@ describe("useContactsCrudWriteActions.importContacts", () => {
   });
 
   it("chunks larger imports into capped jobs", async () => {
-    startServerContactsImport.mockImplementation(
-      async (options: { contacts: Contact[] }) =>
-        completedJob(options.contacts.length, options.contacts.length),
+    startServerContactsImport.mockImplementation(async (options: { contacts: Contact[] }) =>
+      completedJob(options.contacts.length, options.contacts.length),
     );
     renderHook();
 
@@ -180,10 +179,7 @@ describe("useContactsCrudWriteActions.importContacts", () => {
 
   it("reports overall progress across batches", async () => {
     startServerContactsImport.mockImplementation(
-      async (options: {
-        contacts: Contact[];
-        onProgress?: (job: BackgroundJobRecord) => void;
-      }) => {
+      async (options: { contacts: Contact[]; onProgress?: (job: BackgroundJobRecord) => void }) => {
         options.onProgress?.(completedJob(2, options.contacts.length));
         options.onProgress?.(completedJob(options.contacts.length, options.contacts.length));
         return completedJob(options.contacts.length, options.contacts.length);
@@ -214,7 +210,12 @@ describe("useContactsCrudWriteActions.importContacts", () => {
       await actions.importContacts(contacts(600));
     });
 
-    expect(notifyBulkResult).toHaveBeenCalledWith(480, 120, "contacts.importSuccessOne", "contacts.importSuccess");
+    expect(notifyBulkResult).toHaveBeenCalledWith(
+      480,
+      120,
+      "contacts.importSuccessOne",
+      "contacts.importSuccess",
+    );
     expect(invalidateContacts).toHaveBeenCalledTimes(1);
   });
 });

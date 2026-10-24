@@ -227,6 +227,12 @@ cast at `:99`; nothing fails if a declared operation stays unimplemented.
    Vitest 4 removed — running it prints `DEPRECATED test.poolOptions was removed in Vitest 4`. The DB suite still runs,
    but `singleThread`/`isolate: false` are silently ignored.
 
+   > **Update (fixed in #148):** the `poolOptions` block was removed and replaced with a top-level
+   > `isolate: false` in `apps/backend/vitest.db.config.ts`, so the deprecation no longer prints and
+   > isolation is actually applied (the DB suite also runs noticeably faster). The `pg`
+   > `client.query() when the client is already executing a query` deprecation noted in (d) 3 remains
+   > — it is test-only and concerns the future pg@9 upgrade.
+
 ---
 
 ## (d) Commands run and observed results

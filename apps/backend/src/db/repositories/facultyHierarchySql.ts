@@ -1,9 +1,9 @@
-import { sql } from 'drizzle-orm';
-import { facultyAssignmentSchema } from '@mms/shared';
+import { sql } from "drizzle-orm";
+import { facultyAssignmentSchema } from "@mms/shared";
 
 export function validateHierarchyDepth(maxDepth: number): void {
   if (!Number.isInteger(maxDepth) || maxDepth < 1 || maxDepth > 20) {
-    throw new Error('Hierarchy depth must be an integer between 1 and 20');
+    throw new Error("Hierarchy depth must be an integer between 1 and 20");
   }
 }
 
@@ -14,7 +14,7 @@ export function validateHierarchyDepth(maxDepth: number): void {
 export function assignmentHierarchySql(
   tenant: string,
   _assignmentId: string,
-  _direction: 'up' | 'down',
+  _direction: "up" | "down",
   maxDepth: number,
   options: { facultyId?: string; onDate?: string } = {},
 ) {

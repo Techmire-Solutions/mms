@@ -1,14 +1,18 @@
 import { BookOpen } from "lucide-react";
 import { type QuestionType } from "@mms/shared";
-import { SectionCard } from "@/components/ui/SectionCard";
-import { Field } from "@/components/ui/FormPrimitives";
-import { FormSelect } from "@/components/ui/FormSelect";
+import { SectionCard } from "@/components/app/SectionCard";
+import { Field } from "@/components/app/FormPrimitives";
+import { FormSelect } from "@/components/app/FormSelect";
 import { Textarea } from "@/components/ui/textarea";
 import { FORM_SELECT } from "@/components/ui/formStyles";
 import { useTranslation } from "@/hooks/useTranslation";
 import { QuestionFormAnswerFields } from "./QuestionFormAnswerFields";
 
-import type { QuestionFormDraft, QuestionFormErrors, UpdateQuestionDraft } from "./questionFormTypes";
+import type {
+  QuestionFormDraft,
+  QuestionFormErrors,
+  UpdateQuestionDraft,
+} from "../lib/questionFormTypes";
 
 interface QuestionFormContentSectionProps {
   questionDraft: QuestionFormDraft;
@@ -55,7 +59,12 @@ export function QuestionFormContentSection({
                 value={questionDraft.type}
                 onChange={(val) => {
                   const nextType = val as QuestionType;
-                  const options = nextType === "mcq" ? ["", "", "", ""] : nextType === "true_false" ? [trueLabel, falseLabel] : [];
+                  const options =
+                    nextType === "mcq"
+                      ? ["", "", "", ""]
+                      : nextType === "true_false"
+                        ? [trueLabel, falseLabel]
+                        : [];
                   updateDraft({ type: nextType, options, answer: "" });
                 }}
                 options={[
@@ -71,7 +80,11 @@ export function QuestionFormContentSection({
             </Field>
           </div>
 
-          <QuestionFormAnswerFields questionDraft={questionDraft} errors={errors} updateDraft={updateDraft} />
+          <QuestionFormAnswerFields
+            questionDraft={questionDraft}
+            errors={errors}
+            updateDraft={updateDraft}
+          />
         </div>
       </SectionCard>
     </div>

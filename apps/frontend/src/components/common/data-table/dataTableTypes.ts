@@ -1,7 +1,8 @@
 import type React from "react";
-import type { WorkBatchTableProps } from "@/components/common/work";
+import type { WorkBatchTableProps, WorkTaskToolbarProps } from "@/components/common/work";
 import type { WorkDirectoryViewMode } from "@/hooks/useWorkDirectoryViewMode";
 import type { useModuleColumnLayout } from "@/hooks/useModuleColumnLayout";
+import type { TableCellAlign, TableCellVariant } from "@/components/ui/table";
 
 /** Column layout owned by a page controller (`useModuleColumnLayout`). */
 export type DataTableColumnLayout = ReturnType<typeof useModuleColumnLayout>;
@@ -12,12 +13,7 @@ export interface DataTableCardContext {
 
 /** Primitive value(s) a column contributes to the toolbar search index. */
 export type DataTableSearchValue =
-  | string
-  | number
-  | boolean
-  | null
-  | undefined
-  | ReadonlyArray<string | number | null | undefined>;
+  string | number | boolean | null | undefined | ReadonlyArray<string | number | null | undefined>;
 
 export interface DataTableColumn<TData> {
   id: string;
@@ -36,6 +32,14 @@ export interface DataTableColumn<TData> {
   cellClassName?: string | ((row: TData) => string | undefined);
   /** Omit from the generated card body (e.g. the title column). */
   hideInCard?: boolean;
+  /** Prevents text wrapping; ideal for fixed-width columns (IDs, dates, badges, actions). */
+  noWrap?: boolean;
+  /** Truncates overflowing text with an ellipsis. */
+  truncate?: boolean;
+  /** Standardized text alignment: right for numbers/currency, left for text, center for badges/actions. */
+  align?: TableCellAlign;
+  /** Column data variant automatically configuring alignment and formatting. */
+  variant?: TableCellVariant;
 }
 
 export interface DataTableFilterOption {
@@ -62,11 +66,18 @@ export interface DataTableCardSlots<TData> {
 
 type PassThroughTableProps<TData extends { id: string | number }> = Pick<
   WorkBatchTableProps<TData>,
-  "selection" | "sort" | "onRowClick" | "rowClassName" | "stickyColumnId" | "actionsLabel" | "caption"
+  | "selection"
+  | "sort"
+  | "onRowClick"
+  | "rowClassName"
+  | "stickyColumnId"
+  | "actionsLabel"
+  | "caption"
 >;
 
-export interface DataTableProps<TData extends { id: string | number }>
-  extends PassThroughTableProps<TData> {
+export interface DataTableProps<
+  TData extends { id: string | number },
+> extends PassThroughTableProps<TData> {
   /** Stable id; persists column visibility/order/width per user (`<tableId>.table.columns`). */
   tableId: string;
   data: readonly TData[];
@@ -84,6 +95,16 @@ export interface DataTableProps<TData extends { id: string | number }>
   primaryAction?: React.ReactNode;
   /** Extra toolbar controls rendered before the filter menu. */
   toolbarExtras?: React.ReactNode;
+  /** Work-tier status-pill filter (optional). */
+  statusFilter?: WorkTaskToolbarProps["statusFilter"];
+  /** Work-tier date-range controls (optional). */
+  dateRange?: WorkTaskToolbarProps["dateRange"];
+  /** Work-tier active/trash toggle (optional). */
+  trashToggle?: WorkTaskToolbarProps["trashToggle"];
+  /** Extra filter chips rendered in the toolbar (optional). */
+  filterChips?: WorkTaskToolbarProps["filterChips"];
+  /** Whether a background search is in flight (toolbar spinner). */
+  isSearching?: boolean;
   /** Shown when the source data is empty (not when search/filters exclude everything). */
   emptyState?: React.ReactNode;
   /** Initial view; defaults to table at md+ and cards below. */

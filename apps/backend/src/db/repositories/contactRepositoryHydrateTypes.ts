@@ -11,8 +11,8 @@ import type {
   contactActivities,
   contactAttachments,
   contactBankDetails,
-} from '../schema.js';
-import { type TenantTransaction } from '../tenant-context.js';
+} from "../schema.js";
+import { type TenantTransaction } from "../tenant-context.js";
 
 export type Transaction = TenantTransaction;
 export type PhoneRow = typeof contactPhones.$inferSelect;

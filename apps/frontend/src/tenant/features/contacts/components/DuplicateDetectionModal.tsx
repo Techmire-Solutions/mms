@@ -1,15 +1,15 @@
 import { AlertTriangle, Check } from "lucide-react";
 import type { ContactPreferences } from "@mms/shared";
 import { Button } from "@/components/ui/button";
-import { EmptyState } from "@/components/ui/EmptyState";
-import { Modal } from "@/components/ui/Modal";
-import { ErrorState } from "@/components/ui/ErrorState";
-import { WarningCallout } from "@/components/ui/WarningCallout";
+import { EmptyState } from "@/components/app/EmptyState";
+import { Modal } from "@/components/app/Modal";
+import { ErrorState } from "@/components/app/ErrorState";
+import { WarningCallout } from "@/components/app/WarningCallout";
 import { useTranslation } from "@/hooks/useTranslation";
-import { ModulePanelSuspenseFallback } from "@/components/ui/ModulePanelSuspenseFallback";
+import { ModulePanelSuspenseFallback } from "@/components/app/ModulePanelSuspenseFallback";
 import { DuplicatePairCard } from "@/tenant/features/contacts/components/DuplicatePairCard";
 import { DuplicateDetectionToolbar } from "@/tenant/features/contacts/components/DuplicateDetectionToolbar";
-import type { DuplicatePair } from "@/tenant/features/contacts/components/duplicateDetectionTypes";
+import type { DuplicatePair } from "@/tenant/features/contacts/lib/duplicateDetectionTypes";
 import type { DuplicateTierFilter } from "@/tenant/features/contacts/hooks/useDuplicateDetectionState";
 
 export interface DuplicateDetectionModalProps {
@@ -130,7 +130,9 @@ export function DuplicateDetectionModal({
           />
         ) : (
           <>
-            <p className="text-xs text-muted-foreground">{t("contacts.duplicates.dismissSessionHint")}</p>
+            <p className="text-xs text-muted-foreground">
+              {t("contacts.duplicates.dismissSessionHint")}
+            </p>
             {activePairs.map((pair) => (
               <DuplicatePairCard
                 key={pair.id}

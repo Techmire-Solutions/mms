@@ -1,5 +1,5 @@
 import { useTranslation } from "@/hooks/useTranslation";
-import { EntityMessagingActions } from "@/components/ui/EntityMessagingActions";
+import { EntityMessagingActions } from "@/components/app/EntityMessagingActions";
 import { toMessagingRecipient, type Student } from "@mms/shared";
 
 type MessageChannel = "whatsapp" | "sms" | "email";
@@ -9,7 +9,10 @@ export interface StudentDetailQuickActionsProps {
   primaryPhone?: string | null;
   primaryEmail?: string | null;
   hasWhatsAppContact?: boolean;
-  openComposer: (channel: MessageChannel, recipients: ReturnType<typeof toMessagingRecipient>[]) => void;
+  openComposer: (
+    channel: MessageChannel,
+    recipients: ReturnType<typeof toMessagingRecipient>[],
+  ) => void;
 }
 
 export function StudentDetailQuickActions({
@@ -33,13 +36,12 @@ export function StudentDetailQuickActions({
         email: t("students.list.actionEmail"),
       }}
       callAriaLabel={
-        primaryPhone
-          ? t("students.detail.callPhone", { phone: primaryPhone })
-          : undefined
+        primaryPhone ? t("students.detail.callPhone", { phone: primaryPhone }) : undefined
       }
       onWhatsApp={
         primaryPhone && hasWhatsAppContact
-          ? () => openComposer("whatsapp", [toMessagingRecipient({ ...student, phone: primaryPhone })])
+          ? () =>
+              openComposer("whatsapp", [toMessagingRecipient({ ...student, phone: primaryPhone })])
           : undefined
       }
       onSms={

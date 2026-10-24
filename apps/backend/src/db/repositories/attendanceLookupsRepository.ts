@@ -1,14 +1,14 @@
-import type { AttendanceLookupKind } from '@mms/shared';
-import { attendanceLookups } from '../schema.js';
+import type { AttendanceLookupKind } from "@mms/shared";
+import { attendanceLookups } from "../schema.js";
 import {
   createModuleLookupsRepo,
   type ModuleLookupRowInput,
   type ModuleLookupDbRow,
-} from './moduleSetupRepoFactories.js';
+} from "./moduleSetupRepoFactories.js";
 
 export type { ModuleLookupDbRow as LookupDbRow };
 
-export interface AttendanceLookupRowInput extends Omit<ModuleLookupRowInput, 'kind'> {
+export interface AttendanceLookupRowInput extends Omit<ModuleLookupRowInput, "kind"> {
   kind: AttendanceLookupKind;
 }
 

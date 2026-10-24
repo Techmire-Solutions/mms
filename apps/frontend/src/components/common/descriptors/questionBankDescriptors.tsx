@@ -1,6 +1,6 @@
 import type { QuestionBankQuestion } from "@mms/shared";
-import type { EntityDescriptor } from "@/types/entityRegistry";
-import { SEMANTIC_BADGE } from "@/lib/semanticTone";
+import type { EntityDescriptor } from "@/components/common/entityRegistryTypes";
+import { SEMANTIC_BADGE } from "@/lib/ui/semanticTone";
 import { createEntityDescriptor } from "../entityDescriptorFactory";
 
 export const questionBankEntityDescriptor: EntityDescriptor<QuestionBankQuestion> =
@@ -37,8 +37,16 @@ export const questionBankEntityDescriptor: EntityDescriptor<QuestionBankQuestion
         drawerOrder: 20,
         badgeVariantMap: {
           mcq: { label: "MCQ", tone: "info", className: SEMANTIC_BADGE.info },
-          short_answer: { label: "Short Answer", tone: "primary", className: SEMANTIC_BADGE.primary },
-          true_false: { label: "True/False", tone: "secondary", className: SEMANTIC_BADGE.secondary },
+          short_answer: {
+            label: "Short Answer",
+            tone: "primary",
+            className: SEMANTIC_BADGE.primary,
+          },
+          true_false: {
+            label: "True/False",
+            tone: "secondary",
+            className: SEMANTIC_BADGE.secondary,
+          },
           essay: { label: "Essay", tone: "muted", className: SEMANTIC_BADGE.muted },
         },
       },

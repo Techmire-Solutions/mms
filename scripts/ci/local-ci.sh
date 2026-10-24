@@ -2,7 +2,9 @@
 # Path-aware local CI (mirrors high-signal jobs from .github/workflows/ci.yml).
 # Usage: bash scripts/ci/local-ci.sh [--full] [--with-db] [--with-e2e]
 # Bash 3.2 compatible (macOS /bin/bash).
-# Enforced by .githooks/pre-commit. Pre-push does not re-run this (blocks main only).
+# Default run is affected-only: turbo typecheck --affected, ESLint on changed files,
+# vitest --changed <merge-base>. Tooling/config changes fall back to full runs.
+# Enforced by .githooks/pre-push; pre-commit only checks secrets + lints staged files.
 # Escape: SKIP_LOCAL_CI=1
 set -euo pipefail
 
@@ -19,8 +21,8 @@ for arg in "$@"; do
     --with-e2e) WITH_E2E=1 ;;
     -h|--help)
       echo "Usage: bash scripts/ci/local-ci.sh [--full] [--with-db] [--with-e2e]"
-      echo "  default   pre-pr gates + path-aware FE/BE/shared unit tests"
-      echo "  --full    + i18n/build/bundle; shared test:coverage when backend_unit"
+      echo "  default   pre-pr gates (affected typecheck, changed-file lint) + changed-related unit tests"
+      echo "  --full    full typecheck/lint/test suites + i18n/build/bundle; shared test:coverage"
       echo "  --with-db DB integration when backend_db paths changed"
       echo "  --with-e2e Playwright when e2e paths changed"
       exit 0
@@ -86,6 +88,28 @@ CHANGED_COUNT=0
 [[ -n "$CHANGED_TEXT" ]] && CHANGED_COUNT="$(printf '%s\n' "$CHANGED_TEXT" | grep -c . || true)"
 echo "Diff base: $BASE ($CHANGED_COUNT paths)"
 
+# Tooling/config changes invalidate per-file selection: run everything in full.
+TOOLING=('package.json' '*/package.json' 'pnpm-lock.yaml' 'pnpm-workspace.yaml' 'turbo.json'
+  'tsconfig*.json' '*/tsconfig*.json' '*eslint.config.*' 'scripts/eslint-ts-compat.cjs')
+SCOPE=affected
+if [[ "$FULL" -eq 1 ]] || printf '%s
+' "$CHANGED_TEXT" | paths_match "${TOOLING[@]}"; then
+  SCOPE=full
+fi
+echo "Scope: $SCOPE"
+export MMS_CI_SCOPE="$SCOPE" MMS_CI_BASE="$BASE" MMS_CI_CHANGED="$CHANGED_TEXT"
+
+# Usage: run_vitest <pnpm filter> <full-run trigger globs...>
+run_vitest() {
+  local filter="$1"; shift
+  if [[ "$SCOPE" == "full" ]] || printf '%s
+' "$CHANGED_TEXT" | paths_match "$@"; then
+    pnpm --filter "$filter" exec vitest run
+  else
+    pnpm --filter "$filter" exec vitest run --changed "$BASE" --passWithNoTests
+  fi
+}
+
 echo ""
 echo "Phase A: quality gates (pre-pr-review.sh)"
 bash .agent/skills/mms-code-review/scripts/pre-pr-review.sh
@@ -102,7 +126,7 @@ echo "Phase B: buckets frontend=$NEED_FE backend_unit=$NEED_BE_UNIT backend_db=$
 echo ""
 echo "Phase C: affected unit tests"
 if [[ "$NEED_FE" -eq 1 ]]; then
-  pnpm --filter mms-frontend exec vitest run
+  run_vitest mms-frontend 'packages/shared/*' 'apps/frontend/vite*.config.ts' 'apps/frontend/src/test/*'
   note_ran "frontend-vitest"
 else
   note_skip "frontend-vitest"
@@ -113,10 +137,10 @@ if [[ "$NEED_BE_UNIT" -eq 1 ]]; then
     pnpm --filter @mms/shared test:coverage
     note_ran "shared-test-coverage"
   else
-    pnpm --filter @mms/shared test
+    run_vitest @mms/shared 'packages/shared/vitest.config.ts'
     note_ran "shared-test"
   fi
-  pnpm --filter mms-backend exec vitest run
+  run_vitest mms-backend 'packages/shared/*' 'apps/backend/vitest.config.ts'
   note_ran "backend-vitest"
 else
   note_skip "shared+backend-unit"

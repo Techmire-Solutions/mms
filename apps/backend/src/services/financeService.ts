@@ -1,4 +1,4 @@
-import { financeUseCases } from '../finance/use-cases/financeUseCases.js';
+import { financeUseCases } from "../finance/use-cases/financeUseCases.js";
 
 /**
  * Thin re-export of the finance use-cases facade.

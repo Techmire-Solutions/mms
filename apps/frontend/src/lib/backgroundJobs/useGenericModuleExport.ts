@@ -41,10 +41,7 @@ export function useGenericModuleExport({
     optionalTenant?.subdomain ??
     null;
 
-  const resolvedFilename = buildTenantExportFilename(
-    effectiveTenantName,
-    filename
-  );
+  const resolvedFilename = buildTenantExportFilename(effectiveTenantName, filename);
 
   const handleExport = useCallback(async (): Promise<void> => {
     if (!canExport || isExporting) return;
@@ -73,7 +70,7 @@ export function useGenericModuleExport({
               scope: "all",
             }),
           }),
-          "module.export_audit"
+          "module.export_audit",
         );
       }
 
@@ -85,17 +82,7 @@ export function useGenericModuleExport({
     } finally {
       setIsExporting(false);
     }
-  }, [
-    canExport,
-    isExporting,
-    path,
-    resolvedFilename,
-    label,
-    t,
-    columns,
-    query,
-    auditPath,
-  ]);
+  }, [canExport, isExporting, path, resolvedFilename, label, t, columns, query, auditPath]);
 
   return {
     handleExport,

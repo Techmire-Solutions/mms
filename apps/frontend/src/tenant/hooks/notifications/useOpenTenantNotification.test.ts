@@ -16,7 +16,9 @@ describe("openNotificationTarget", () => {
 
     // Assert
     expect(navigate).toHaveBeenCalledWith(ROUTES.finance);
-    expect(readDrillDown("mms_finance_work_drilldown")).toEqual({ invoiceStatuses: ["pending", "overdue"] });
+    expect(readDrillDown("mms_finance_work_drilldown")).toEqual({
+      invoiceStatuses: ["pending", "overdue"],
+    });
   });
 
   it("given a low-attendance target, should preset the day and open Attendance when opened", () => {

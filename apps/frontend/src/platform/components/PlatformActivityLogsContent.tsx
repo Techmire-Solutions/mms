@@ -1,26 +1,23 @@
-import React from 'react';
+import React from "react";
+import { Activity, ShieldAlert, Download, RefreshCw } from "lucide-react";
+import { useTranslation } from "@/hooks/useTranslation";
+import { usePlatformActivityLogs } from "@/platform/hooks/usePlatformActivityLogs";
 import {
-  Activity,
-  ShieldAlert,
-  Download,
-  RefreshCw,
-} from 'lucide-react';
-import { useTranslation } from '@/hooks/useTranslation';
-import { usePlatformActivityLogs } from '@/platform/hooks/usePlatformActivityLogs';
-import { WidgetCard } from '@/components/ui/WidgetCard';
-import { WidgetCardHeader } from '@/components/ui/WidgetCardHeader';
-import { CardSkeleton } from '@/components/ui/LoadingState';
-import { ErrorState } from '@/components/ui/ErrorState';
-import { EmptyState } from '@/components/ui/EmptyState';
-import { ActionButton } from '@/components/ui/ActionButton';
-import { ModuleWorkToolbar } from '@/components/ui/ModuleWorkToolbar';
-import { SubTabBar } from '@/components/ui/SubTabBar';
-import { exportActivityLogsCsv } from './activity-logs/exportActivityLogsCsv';
-import { useActivityLogsFilter, type LogTimeframe } from './activity-logs/useActivityLogsFilter';
-import type { LogCategory } from './activity-logs/activityLogMeta';
-import { PlatformActivityLogsTimeline } from './activity-logs/PlatformActivityLogsTimeline';
-import { ActivityLogInspectModal } from './activity-logs/ActivityLogInspectModal';
-import type { PlatformActivityLogItem } from '@/platform/hooks/usePlatformActivityLogs';
+  Button,
+  EmptyState,
+  ErrorState,
+  CardSkeleton,
+  WidgetCard,
+  WidgetCardHeader,
+} from "@shared/ui";
+import { ModuleWorkToolbar } from "@/components/app/ModuleWorkToolbar";
+import { SubTabBar } from "@/components/app/SubTabBar";
+import { exportActivityLogsCsv } from "./activity-logs/exportActivityLogsCsv";
+import { useActivityLogsFilter, type LogTimeframe } from "./activity-logs/useActivityLogsFilter";
+import type { LogCategory } from "./activity-logs/activityLogMeta";
+import { PlatformActivityLogsTimeline } from "./activity-logs/PlatformActivityLogsTimeline";
+import { ActivityLogInspectModal } from "./activity-logs/ActivityLogInspectModal";
+import type { PlatformActivityLogItem } from "@/platform/hooks/usePlatformActivityLogs";
 
 export function PlatformActivityLogsContent(): React.JSX.Element {
   const { t } = useTranslation();
@@ -44,8 +41,8 @@ export function PlatformActivityLogsContent(): React.JSX.Element {
   if (isError) {
     return (
       <ErrorState
-        title={t('platform.loadFailed')}
-        description={t('platform.loadFailedHint')}
+        title={t("platform.loadFailed")}
+        description={t("platform.loadFailedHint")}
         onRetry={() => void refetch()}
       />
     );
@@ -54,48 +51,49 @@ export function PlatformActivityLogsContent(): React.JSX.Element {
   return (
     <div className="space-y-6 w-full text-start">
       <ModuleWorkToolbar
-        regionLabel={t('platform.activityLogsTitle')}
+        regionLabel={t("platform.activityLogsTitle")}
         search={filterQuery}
         onSearchChange={setFilterQuery}
-        searchPlaceholder={t('platform.filterLogsPlaceholder')}
+        searchPlaceholder={t("platform.filterLogsPlaceholder")}
         searchId="platform-logs-search"
         isSearching={isFetching}
         hasActiveFilters={isFiltered}
         onClearFilters={handleClearFilters}
-        clearFiltersLabel={t('common.clearFilters')}
+        clearFiltersLabel={t("common.clearFilters")}
         primaryAction={
           <div className="flex items-center gap-2">
-            <ActionButton
-              variant="secondary"
+            <Button
+              variant="outline"
               size="sm"
               icon={RefreshCw}
               loading={isFetching}
               onClick={() => void refetch()}
               className="min-w-11"
-              title={t('common.refresh')}
-              aria-label={t('common.refresh')}
+              title={t("common.refresh")}
+              aria-label={t("common.refresh")}
             />
 
-            <ActionButton
-              variant="secondary"
+            <Button
+              variant="outline"
+              size="sm"
               icon={Download}
               onClick={() => exportActivityLogsCsv(items)}
               disabled={items.length === 0}
-              title={t('platform.exportCsv')}
+              title={t("platform.exportCsv")}
             >
-              {t('platform.exportCsv')}
-            </ActionButton>
+              {t("platform.exportCsv")}
+            </Button>
           </div>
         }
       >
         <div className="flex flex-wrap items-center gap-2">
           <SubTabBar
             tabs={[
-              { key: 'all', label: t('platform.logs.categoryAll') },
-              { key: 'auth', label: t('platform.logs.categoryAuth') },
-              { key: 'workspace', label: t('platform.logs.categoryWorkspace') },
-              { key: 'system', label: t('platform.logs.categorySystem') },
-              { key: 'admin', label: t('platform.logs.categoryAdmin') },
+              { key: "all", label: t("platform.logs.categoryAll") },
+              { key: "auth", label: t("platform.logs.categoryAuth") },
+              { key: "workspace", label: t("platform.logs.categoryWorkspace") },
+              { key: "system", label: t("platform.logs.categorySystem") },
+              { key: "admin", label: t("platform.logs.categoryAdmin") },
             ]}
             value={category}
             onChange={(k) => setCategory(k as LogCategory)}
@@ -103,10 +101,10 @@ export function PlatformActivityLogsContent(): React.JSX.Element {
 
           <SubTabBar
             tabs={[
-              { key: 'all', label: t('platform.logs.timeAll') },
-              { key: 'today', label: t('platform.logs.timeToday') },
-              { key: '7d', label: t('platform.logs.timeWeek') },
-              { key: '30d', label: t('platform.logs.timeMonth') },
+              { key: "all", label: t("platform.logs.timeAll") },
+              { key: "today", label: t("platform.logs.timeToday") },
+              { key: "7d", label: t("platform.logs.timeWeek") },
+              { key: "30d", label: t("platform.logs.timeMonth") },
             ]}
             value={timeframe}
             onChange={(k) => setTimeframe(k as LogTimeframe)}
@@ -117,22 +115,19 @@ export function PlatformActivityLogsContent(): React.JSX.Element {
       <WidgetCard className="p-6 space-y-6">
         <WidgetCardHeader
           icon={<Activity className="w-5 h-5 text-primary" />}
-          title={t('platform.activityLogsTitle')}
-          subtitle={t('platform.activityLogsSubtitle')}
+          title={t("platform.activityLogsTitle")}
+          subtitle={t("platform.activityLogsSubtitle")}
         />
 
         {items.length === 0 ? (
           <EmptyState
             icon={ShieldAlert}
-            title={isFiltered ? t('platform.noMatchingLogs') : t('platform.noActivityLogsYet')}
+            title={isFiltered ? t("platform.noMatchingLogs") : t("platform.noActivityLogsYet")}
             action={
               isFiltered ? (
-                <ActionButton
-                  variant="secondary"
-                  onClick={handleClearFilters}
-                >
-                  {t('common.clearFilters')}
-                </ActionButton>
+                <Button variant="outline" onClick={handleClearFilters}>
+                  {t("common.clearFilters")}
+                </Button>
               ) : undefined
             }
             compact

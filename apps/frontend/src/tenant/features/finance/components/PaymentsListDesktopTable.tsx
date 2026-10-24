@@ -1,12 +1,12 @@
-import React from 'react';
-import { RotateCcw, Trash2 } from 'lucide-react';
-import { formatDate } from '@mms/shared';
-import { Button } from '@/components/ui/button';
-import { EmptyState } from '@/components/ui/EmptyState';
-import { StatusBadge, type StatusBadgeConfigItem } from '@/components/ui/StatusBadge';
-import { useTranslation } from '@/hooks/useTranslation';
-import { WorkBatchTable, type WorkBatchTableColumn } from '@/components/common/work';
-import type { Payment } from '@/lib/data/financeData';
+import React from "react";
+import { RotateCcw, Trash2 } from "lucide-react";
+import { formatDate } from "@mms/shared";
+import { Button } from "@/components/ui/button";
+import { EmptyState } from "@/components/app/EmptyState";
+import { StatusBadge, type StatusBadgeConfigItem } from "@/components/app/StatusBadge";
+import { useTranslation } from "@/hooks/useTranslation";
+import { WorkBatchTable, type WorkBatchTableColumn } from "@/components/common/work";
+import type { Payment } from "@/lib/data/financeData";
 
 export interface PaymentsListDesktopTableProps {
   payments: Payment[];
@@ -53,7 +53,8 @@ export function PaymentsListDesktopTable({
       cols.push({
         id: "date",
         label: t("finance.columns.paymentDate"),
-        cellClassName: "px-3 py-2.5 text-sm text-muted-foreground whitespace-nowrap",
+        noWrap: true,
+        cellClassName: "text-muted-foreground",
         render: (payment: Payment) => formatDate(payment.date),
       });
     }
@@ -62,7 +63,8 @@ export function PaymentsListDesktopTable({
       cols.push({
         id: "student",
         label: t("finance.columns.student"),
-        cellClassName: "px-3 py-2.5 text-sm font-semibold text-foreground whitespace-nowrap",
+        noWrap: true,
+        cellClassName: "font-semibold text-foreground",
         render: (payment: Payment) => payment.studentName,
       });
     }
@@ -71,7 +73,8 @@ export function PaymentsListDesktopTable({
       cols.push({
         id: "invoice",
         label: t("finance.columns.invoice"),
-        cellClassName: "px-3 py-2.5 font-mono text-xs text-muted-foreground",
+        noWrap: true,
+        cellClassName: "font-mono text-xs text-muted-foreground",
         render: (payment: Payment) => payment.invoiceId,
       });
     }
@@ -80,7 +83,8 @@ export function PaymentsListDesktopTable({
       cols.push({
         id: "amount",
         label: t("finance.columns.amount"),
-        cellClassName: "px-3 py-2.5 text-sm font-bold text-success whitespace-nowrap",
+        noWrap: true,
+        cellClassName: "font-bold text-success",
         render: (payment: Payment) => formatCurrency(payment.amount),
       });
     }
@@ -89,8 +93,10 @@ export function PaymentsListDesktopTable({
       cols.push({
         id: "method",
         label: t("finance.columns.method"),
-        cellClassName: "px-3 py-2.5",
-        render: (payment: Payment) => <StatusBadge status={payment.method} config={methodConfig} size="sm" />,
+        noWrap: true,
+        render: (payment: Payment) => (
+          <StatusBadge status={payment.method} config={methodConfig} size="sm" />
+        ),
       });
     }
 
@@ -98,7 +104,7 @@ export function PaymentsListDesktopTable({
       cols.push({
         id: "receivedBy",
         label: t("finance.columns.receivedBy"),
-        cellClassName: "px-3 py-2.5 text-sm text-muted-foreground",
+        cellClassName: "text-muted-foreground",
         render: (payment: Payment) => payment.receivedBy || "—",
       });
     }
@@ -107,7 +113,8 @@ export function PaymentsListDesktopTable({
       cols.push({
         id: "note",
         label: t("finance.columns.note"),
-        cellClassName: "max-w-cell-sm truncate px-3 py-2.5 text-sm text-muted-foreground",
+        truncate: true,
+        cellClassName: "max-w-cell-sm text-muted-foreground",
         render: (payment: Payment) => payment.note || "—",
       });
     }
@@ -132,7 +139,6 @@ export function PaymentsListDesktopTable({
       data={payments}
       columns={columns}
       caption={t("finance.paymentLog")}
-      bordered={false}
       selection={
         canDelete
           ? {

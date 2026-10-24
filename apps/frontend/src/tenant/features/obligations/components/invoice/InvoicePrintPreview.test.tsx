@@ -97,7 +97,7 @@ describe("InvoicePrintPreview Component", () => {
         template={sampleTemplate}
         collection={sampleCollection}
         showBoundary={false}
-      />
+      />,
     );
     expect(html).toContain("Official Madrasa Receipt");
   });
@@ -111,7 +111,7 @@ describe("InvoicePrintPreview Component", () => {
           contacts: [{ id: "c_donor_1", name: "Syed Ali Raza" }],
         }}
         showBoundary={false}
-      />
+      />,
     );
     expect(html).toContain("OBL-09999");
   });
@@ -122,7 +122,7 @@ describe("InvoicePrintPreview Component", () => {
         template={sampleTemplate}
         collection={sampleCollection}
         showBoundary={false}
-      />
+      />,
     );
     // The alt text is translated rather than hardcoded English; the identity `t` of
     // these tests returns the key.
@@ -152,7 +152,11 @@ describe("InvoicePrintPreview Component", () => {
     };
 
     const html = renderToStaticMarkup(
-      <InvoicePrintPreview template={tableTemplate} collection={sampleCollection} showBoundary={false} />
+      <InvoicePrintPreview
+        template={tableTemplate}
+        collection={sampleCollection}
+        showBoundary={false}
+      />,
     );
 
     // Regression guard: the print renderer had no `table` branch at all, so a table
@@ -174,14 +178,20 @@ describe("InvoicePrintPreview Component", () => {
           y: 10,
           w: 300,
           h: 120,
-          columns: [{ id: "c1", header: "Description", field: "description", width: 200, align: "left" }],
+          columns: [
+            { id: "c1", header: "Description", field: "description", width: 200, align: "left" },
+          ],
           tableConfig: { showHeader: true, rowHeight: 22 },
         },
       ],
     };
 
     const html = renderToStaticMarkup(
-      <InvoicePrintPreview template={tableTemplate} collection={sampleCollection} showBoundary={false} />
+      <InvoicePrintPreview
+        template={tableTemplate}
+        collection={sampleCollection}
+        showBoundary={false}
+      />,
     );
 
     // The editor shows fee-module placeholder rows so a designer can see the layout;
@@ -192,13 +202,11 @@ describe("InvoicePrintPreview Component", () => {
   it("resolves direction from the app locale instead of hardcoding ltr", () => {
     const arabicTemplate: InvoiceTemplate = {
       pageSize: "A6",
-      elements: [
-        { id: "el_ar", type: "static", label: "إيصال رسمي", x: 10, y: 10, w: 200, h: 20 },
-      ],
+      elements: [{ id: "el_ar", type: "static", label: "إيصال رسمي", x: 10, y: 10, w: 200, h: 20 }],
     };
 
     const html = renderToStaticMarkup(
-      <InvoicePrintPreview template={arabicTemplate} collection={null} showBoundary={false} />
+      <InvoicePrintPreview template={arabicTemplate} collection={null} showBoundary={false} />,
     );
 
     // Arabic script auto-detects RTL in the shared renderer, so the printed receipt
@@ -213,7 +221,7 @@ describe("InvoicePrintPreview Component", () => {
         template={sampleTemplate}
         collection={sampleCollection}
         showBoundary={false}
-      />
+      />,
     );
     expect(html).toContain("overflow:visible");
   });

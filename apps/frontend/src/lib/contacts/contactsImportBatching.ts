@@ -1,4 +1,4 @@
-import { CONTACTS_IMPORT_MAX_BATCH } from '@mms/shared';
+import { CONTACTS_IMPORT_MAX_BATCH } from "@mms/shared";
 
 /**
  * Splits a parsed contact list into import batches.

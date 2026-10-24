@@ -3,11 +3,11 @@ import { Eye, EyeOff, Pencil } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { DirectoryCard } from "@/components/ui/DirectoryCard";
-import { EntityCard } from "@/components/ui/EntityCard";
-import { EntityCardMetaTile } from "@/components/ui/EntityCardMetaTile";
+import { DirectoryCard } from "@/components/app/DirectoryCard";
+import { EntityCard } from "@/components/app/EntityCard";
+import { EntityCardMetaTile } from "@/components/app/EntityCardMetaTile";
 import { cn } from "@/lib/utils";
-import { StatusBadge, type StatusBadgeConfigItem } from "@/components/ui/StatusBadge";
+import { StatusBadge, type StatusBadgeConfigItem } from "@/components/app/StatusBadge";
 
 import { useTranslation } from "@/hooks/useTranslation";
 import { ACCOUNT_TYPE_META, type Account } from "@/lib/data/accountingData";
@@ -19,7 +19,12 @@ export interface AccountRowActionsProps {
   onReactivate: (id: string) => void;
 }
 
-export function AccountRowActions({ account, onEdit, onDelete, onReactivate }: AccountRowActionsProps): React.JSX.Element {
+export function AccountRowActions({
+  account,
+  onEdit,
+  onDelete,
+  onReactivate,
+}: AccountRowActionsProps): React.JSX.Element {
   const { t } = useTranslation();
 
   return (
@@ -92,7 +97,9 @@ export function AccountMobileCard({
         <div className="flex min-w-0 items-start justify-between gap-3">
           <div className="min-w-0 flex-1">
             {isColumnVisible("code") && (
-              <p className="m-0 font-mono text-xs font-bold text-muted-foreground">{account.code}</p>
+              <p className="m-0 font-mono text-xs font-bold text-muted-foreground">
+                {account.code}
+              </p>
             )}
             {isColumnVisible("name") && (
               <h4 className="m-0 mt-0.5 text-sm font-semibold text-foreground">
@@ -107,7 +114,9 @@ export function AccountMobileCard({
           </div>
           {isColumnVisible("normalBalance") && (
             <StatusBadge
-              status={ACCOUNT_TYPE_META[account.type]?.normalBalance === "debit" ? "debit" : "credit"}
+              status={
+                ACCOUNT_TYPE_META[account.type]?.normalBalance === "debit" ? "debit" : "credit"
+              }
               config={balanceConfig}
               size="sm"
             />

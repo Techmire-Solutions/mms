@@ -1,0 +1,63 @@
+import type { Student, StudentsListPageResult, StudentsQuickFilter } from "@mms/shared";
+import type { WorkDirectoryViewMode } from "@/hooks/useWorkDirectoryViewMode";
+import type { useStudentColumnLayout } from "@/tenant/features/students/hooks/useStudentColumnLayout";
+import type { StudentsListContentSortField } from "@/tenant/features/students/lib/studentsListTypes";
+import type { StudentsSelectionTargets } from "@/tenant/features/students/hooks/studentsSelectionTargets";
+import type { StudentsWorkOverlayInteractions } from "@/tenant/features/students/hooks/studentsPageOverlaysTypes";
+
+export interface StudentsWorkTierProps {
+  studentSearch: string;
+  studentFilterStatus: string[];
+  studentFilterGender: string;
+  quickFilter: StudentsQuickFilter;
+  onQuickFilterChange: (preset: string) => void;
+  studentStatusOptions: readonly string[];
+  genderFilters: string[];
+  viewingDeleted: boolean;
+  canWrite: boolean;
+  canDelete: boolean;
+  canExport: boolean;
+  isStatusEnabled?: boolean;
+  isGenderEnabled?: boolean;
+  bulkActions: readonly string[];
+  hasActiveFilters: boolean;
+  activeFilterCount: number;
+  workStudents: Student[];
+  workPageData: StudentsListPageResult | undefined;
+  isWorkPageLoading: boolean;
+  isWorkPageError: boolean;
+  isWorkPageFetching: boolean;
+  useServerWork: boolean;
+  viewMode: WorkDirectoryViewMode;
+  onViewModeChange: (mode: WorkDirectoryViewMode) => void;
+  columnLayout: ReturnType<typeof useStudentColumnLayout>;
+  onSearchChange: (value: string) => void;
+  onToggleStatus: (status: string) => void;
+  onGenderChange: (value: string) => void;
+  onToggleDeleted: () => void;
+  onClearFilters: () => void;
+  selectedIds: string[];
+  selectedTargets: StudentsSelectionTargets;
+  allSelected: boolean;
+  someSelected: boolean;
+  onSelectOne: (id: string) => void;
+  onSelectAll: (pageIds: string[]) => void;
+  onClearSelection: () => void;
+  onRetry: () => void;
+  onPageChange: (page: number) => void;
+  onEdit: (student: Student) => void;
+  onRestore: (studentId: string) => void | Promise<void>;
+  onBulkStatusChange: (studentIds: string[], status: string) => void | Promise<void>;
+  onBulkEnroll?: (
+    payload: import("@mms/shared").StudentsBulkEnrollPlacement,
+  ) => void | Promise<void>;
+  bulkEnrollPending?: boolean;
+  onBulkPrintIdCards?: () => void;
+  onBulkExport: () => void | Promise<void>;
+  /** Disables the bulk status action while the status mutation is pending. */
+  bulkStatusPending?: boolean;
+  sortField: StudentsListContentSortField | null;
+  sortDir: "asc" | "desc";
+  onServerSort: (field: StudentsListContentSortField) => void;
+  workOverlays: StudentsWorkOverlayInteractions;
+}

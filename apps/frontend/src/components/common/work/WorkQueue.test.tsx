@@ -3,21 +3,21 @@ import { describe, it, expect, vi } from "vitest";
 import { renderToStaticMarkup } from "react-dom/server";
 import { WorkQueue, type WorkQueuePriority } from "./WorkQueue";
 import { TranslationContext, type TranslationFunction } from "@/lib/contexts/TranslationContext";
+import { translateAppParams } from "@mms/shared";
 
 const mockContext = {
   language: "en",
-  t: ((key: string) => key) as TranslationFunction,
+  t: ((
+    key: Parameters<typeof translateAppParams>[0],
+    ...args: [Record<string, string | number>?]
+  ) => translateAppParams(key, "en", ...args)) as TranslationFunction,
   isLoading: false,
   dir: "ltr" as const,
   isRtl: false,
 };
 
 function TestWrapper({ children }: { children: React.ReactNode }) {
-  return (
-    <TranslationContext.Provider value={mockContext}>
-      {children}
-    </TranslationContext.Provider>
-  );
+  return <TranslationContext.Provider value={mockContext}>{children}</TranslationContext.Provider>;
 }
 
 describe("WorkQueue", () => {
@@ -30,8 +30,20 @@ describe("WorkQueue", () => {
   }
 
   const sampleTasks: SampleTask[] = [
-    { id: "task-1", title: "Review Grade Submissions", description: "Grade submissions for Quran Class A", priority: "urgent", status: "Pending" },
-    { id: "task-2", title: "Approve Leave Request", description: "Teacher leave request from Ustadh Bilal", priority: "normal", status: "In Review" },
+    {
+      id: "task-1",
+      title: "Review Grade Submissions",
+      description: "Grade submissions for Quran Class A",
+      priority: "urgent",
+      status: "Pending",
+    },
+    {
+      id: "task-2",
+      title: "Approve Leave Request",
+      description: "Teacher leave request from Ustadh Bilal",
+      priority: "normal",
+      status: "In Review",
+    },
   ];
 
   it("renders queue title, items, priority badges, and status badges", () => {

@@ -1,9 +1,9 @@
-import React from 'react';
-import { Trash2 } from 'lucide-react';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { useTranslation } from '@/hooks/useTranslation';
-import type { SessionClassRefreshment } from '@/lib/data/sessionsData';
+import React from "react";
+import { Trash2 } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { useTranslation } from "@/hooks/useTranslation";
+import type { SessionClassRefreshment } from "@/lib/data/sessionsData";
 
 interface ClassDetailRefreshmentItemProps {
   refreshment: SessionClassRefreshment;
@@ -29,14 +29,14 @@ export function ClassDetailRefreshmentItem({
         type="date"
         value={r.date.slice(0, 10)}
         onChange={(e) => onUpdate(r.id, { date: e.target.value })}
-        aria-label={t('sessions.tabarruk.form.date')}
+        aria-label={t("sessions.tabarruk.form.date")}
         className="w-32 text-xs"
       />
       <Input
         id={`refreshment-item-${r.id}`}
         name={`refreshment-item-${r.id}`}
-        placeholder={t('sessions.classes.detail.refreshments.itemPlaceholder')}
-        aria-label={t('sessions.classes.detail.refreshments.itemPlaceholder')}
+        placeholder={t("sessions.classes.detail.refreshments.itemPlaceholder")}
+        aria-label={t("sessions.classes.detail.refreshments.itemPlaceholder")}
         value={r.item}
         onChange={(e) => onUpdate(r.id, { item: e.target.value })}
         className="flex-1 text-xs"
@@ -46,12 +46,12 @@ export function ClassDetailRefreshmentItem({
         name={`refreshment-qty-${r.id}`}
         type="text"
         inputMode="numeric"
-        placeholder={t('sessions.classes.detail.refreshments.qty')}
-        aria-label={t('sessions.classes.detail.refreshments.qty')}
-        value={r.quantity === 0 ? '' : String(r.quantity)}
+        placeholder={t("sessions.classes.detail.refreshments.qty")}
+        aria-label={t("sessions.classes.detail.refreshments.qty")}
+        value={r.quantity === 0 ? "" : String(r.quantity)}
         onChange={(e) => {
           const val = e.target.value;
-          if (val === '' || /^\d+$/.test(val)) {
+          if (val === "" || /^\d+$/.test(val)) {
             onUpdate(r.id, { quantity: parseInt(val, 10) || 0 });
           }
         }}
@@ -63,12 +63,12 @@ export function ClassDetailRefreshmentItem({
           name={`refreshment-price-${r.id}`}
           type="text"
           inputMode="decimal"
-          placeholder={t('sessions.classes.detail.refreshments.price')}
-          aria-label={t('sessions.classes.detail.refreshments.price')}
-          value={r.pricePerUnit === 0 ? '' : String(r.pricePerUnit)}
+          placeholder={t("sessions.classes.detail.refreshments.price")}
+          aria-label={t("sessions.classes.detail.refreshments.price")}
+          value={r.pricePerUnit === 0 ? "" : String(r.pricePerUnit)}
           onChange={(e) => {
             const val = e.target.value;
-            if (val === '' || /^\d*(\.\d{0,2})?$/.test(val)) {
+            if (val === "" || /^\d*(\.\d{0,2})?$/.test(val)) {
               onUpdate(r.id, { pricePerUnit: parseFloat(val) || 0 });
             }
           }}
@@ -81,12 +81,12 @@ export function ClassDetailRefreshmentItem({
           name={`refreshment-paid-${r.id}`}
           type="text"
           inputMode="decimal"
-          placeholder={t('sessions.classes.detail.refreshments.paid')}
-          aria-label={t('sessions.classes.detail.refreshments.paid')}
-          value={r.paidAmount === 0 ? '' : String(r.paidAmount)}
+          placeholder={t("sessions.classes.detail.refreshments.paid")}
+          aria-label={t("sessions.classes.detail.refreshments.paid")}
+          value={r.paidAmount === 0 ? "" : String(r.paidAmount)}
           onChange={(e) => {
             const val = e.target.value;
-            if (val === '' || /^\d*(\.\d{0,2})?$/.test(val)) {
+            if (val === "" || /^\d*(\.\d{0,2})?$/.test(val)) {
               onUpdate(r.id, { paidAmount: parseFloat(val) || 0 });
             }
           }}
@@ -97,8 +97,8 @@ export function ClassDetailRefreshmentItem({
         <Button
           size="icon"
           variant="ghost"
-          aria-label={t('sessions.classes.detail.removeItem')}
-          className="h-8 w-8 text-muted-foreground hover:text-destructive"
+          aria-label={t("sessions.classes.detail.removeItem")}
+          className="h-8 w-8 touch-target-coarse text-muted-foreground hover:text-destructive"
           onClick={() => onRemove(r.id)}
         >
           <Trash2 className="h-3.5 w-3.5" />

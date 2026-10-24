@@ -1,0 +1,36 @@
+import type { ElementType } from "react";
+import {
+  Activity,
+  AlertCircle,
+  BarChart2,
+  CalendarCheck,
+  DollarSign,
+  GraduationCap,
+  MessageCircle,
+  Receipt,
+  ShieldCheck,
+  Star,
+  Target,
+  TrendingUp,
+  UserCheck,
+  Users,
+  Zap,
+} from "lucide-react";
+
+export const KPI_ICONS: Record<string, ElementType> = {
+  Users,
+  UserCheck,
+  DollarSign,
+  TrendingUp,
+  Star,
+  AlertCircle,
+  GraduationCap,
+  BarChart2,
+  Target,
+  Zap,
+  Activity,
+  CalendarCheck,
+  Receipt,
+  ShieldCheck,
+  MessageCircle,
+};

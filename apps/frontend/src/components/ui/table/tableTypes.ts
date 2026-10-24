@@ -1,0 +1,15 @@
+export type {
+  TableCellAlign,
+  TableCellVariant,
+  TableSortDirection,
+  TableContextValue,
+  TableProps,
+  TableHeaderProps,
+  TableBodyProps,
+  TableFooterProps,
+  TableRowProps,
+  TableHeadProps,
+  TableHeadCellProps,
+  TableCellProps,
+  TableCaptionProps,
+} from "@shared/ui";

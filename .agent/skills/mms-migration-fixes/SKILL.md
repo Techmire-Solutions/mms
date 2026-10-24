@@ -4,7 +4,7 @@ description: Addresses the open priorities P1â€“P7 in mms-migration-status.md â€
 license: Proprietary
 metadata:
   owner: mms-platform
-  last-verified: 2026-10-04
+  last-verified: 2026-10-16
 allowed-tools: Read Grep Glob Bash(pnpm typecheck) Bash(pnpm test)
 ---
 
@@ -91,4 +91,4 @@ bash .agent/scripts/sync-all.sh
 
 ## Related skills
 
-Debt register rule (`mms-migration-status.md`), `mms-schema-migrate`, `mms-release-versioning`, `mms-soft-delete`.
+`mms-schema-migrate`, `mms-release-versioning`, `mms-soft-delete`, `mms-code-review`.

@@ -32,13 +32,11 @@ export function useStudentsSetupSaveActions({
     );
   })();
 
-  const handleSave = (async (): Promise<void> => {
+  const handleSave = async (): Promise<void> => {
     if (!isPrefsDirty || saving) return;
     setSaving(true);
     try {
-      await preferencesMutation.mutateAsync(
-        normalizeStudentModulePreferences(settingsDraft),
-      );
+      await preferencesMutation.mutateAsync(normalizeStudentModulePreferences(settingsDraft));
       safeAudit(
         logSetupAudit.mutateAsync({
           area: "preferences",
@@ -53,7 +51,7 @@ export function useStudentsSetupSaveActions({
     } finally {
       setSaving(false);
     }
-  });
+  };
 
   return {
     saving,

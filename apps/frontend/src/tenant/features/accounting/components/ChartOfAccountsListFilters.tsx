@@ -1,14 +1,14 @@
 import React from "react";
-import { Download } from "lucide-react";
+import { Download, Plus } from "lucide-react";
 import { type AppTranslationKey } from "@mms/shared";
 import {
   ModuleFilterDivider,
   ModuleFilterDropdown,
   ModuleFilterRadioGroup,
-} from "@/components/ui/ModuleFiltersMenuButton";
+} from "@/components/app/ModuleFiltersMenuButton";
 import { DropdownMenuCheckboxItem } from "@/components/ui/dropdown-menu";
-import { type ModuleColumnCustomizerProps } from "@/components/ui/ModuleColumnCustomizer";
-import { ModuleWorkToolbar } from "@/components/ui/ModuleWorkToolbar";
+import { type ModuleColumnCustomizerProps } from "@/components/app/ModuleColumnCustomizer";
+import { ModuleWorkToolbar } from "@/components/app/ModuleWorkToolbar";
 import { Button } from "@/components/ui/button";
 import { useTranslation } from "@/hooks/useTranslation";
 import { ACCOUNT_TYPES, type AccountType } from "@/lib/data/accountingData";
@@ -71,7 +71,9 @@ export function ChartOfAccountsListFilters({
           <ModuleFilterRadioGroup
             label={t("accounting.coa.filterTypeAria")}
             value={typeFilter}
-            onValueChange={(accountTypeValue) => setTypeFilter(accountTypeValue as AccountType | "all")}
+            onValueChange={(accountTypeValue) =>
+              setTypeFilter(accountTypeValue as AccountType | "all")
+            }
             options={[
               { value: "all", label: t("accounting.ledger.allTypes") },
               ...ACCOUNT_TYPES.map((type) => ({
@@ -81,19 +83,33 @@ export function ChartOfAccountsListFilters({
             ]}
           />
           <ModuleFilterDivider />
-          <DropdownMenuCheckboxItem checked={showInactive} onCheckedChange={(checked) => setShowInactive(checked === true)}>
+          <DropdownMenuCheckboxItem
+            checked={showInactive}
+            onCheckedChange={(checked) => setShowInactive(checked === true)}
+          >
             {t("accounting.coa.showInactive")}
           </DropdownMenuCheckboxItem>
         </ModuleFilterDropdown>
       }
       viewModeToggle={{ viewMode, onViewModeChange }}
-      primaryAction={undefined}
-      columnCustomizer={columnCustomizer ? {
-        registry: columnCustomizer.columnRegistry,
-        onUpdate: columnCustomizer.updateUserColumnLayout,
-        onReset: columnCustomizer.onResetLayout,
-        labels: columnCustomizer.labels,
-      } : undefined}
+      primaryAction={
+        canWrite ? (
+          <Button type="button" onClick={onAddAccount} className="min-h-11 gap-1.5">
+            <Plus className="h-4 w-4" aria-hidden />
+            {t("accounting.coa.addAccount")}
+          </Button>
+        ) : undefined
+      }
+      columnCustomizer={
+        columnCustomizer
+          ? {
+              registry: columnCustomizer.columnRegistry,
+              onUpdate: columnCustomizer.updateUserColumnLayout,
+              onReset: columnCustomizer.onResetLayout,
+              labels: columnCustomizer.labels,
+            }
+          : undefined
+      }
     >
       <Button
         type="button"
@@ -101,7 +117,8 @@ export function ChartOfAccountsListFilters({
         onClick={onExportCsv}
         className="flex min-h-11 items-center gap-1.5 rounded-xl text-sm font-semibold text-muted-foreground"
       >
-        <Download className="w-3.5 h-3.5" aria-hidden="true" /> {t("accounting.journal.dashboard.export")}
+        <Download className="w-3.5 h-3.5" aria-hidden="true" />{" "}
+        {t("accounting.journal.dashboard.export")}
       </Button>
     </ModuleWorkToolbar>
   );

@@ -10,8 +10,8 @@ vi.mock("@/hooks/useTranslation", () => ({
   }),
 }));
 
-vi.mock("@/components/ui/Drawer", () => ({
-  Drawer: ({ children, title }: any) => (
+vi.mock("@/components/app/Drawer", () => ({
+  Drawer: ({ children, title }: { children?: React.ReactNode; title?: React.ReactNode }) => (
     <div data-testid="detail-drawer">
       <h2>{title}</h2>
       {children}
@@ -19,7 +19,7 @@ vi.mock("@/components/ui/Drawer", () => ({
   ),
 }));
 
-vi.mock("@/components/ui/DetailDrawerArchiveChrome", () => ({
+vi.mock("@/components/app/DetailDrawerArchiveChrome", () => ({
   DetailDrawerArchivedBanner: () => <div data-testid="archived-banner" />,
   DetailDrawerRestoreOrEditAction: () => <div data-testid="drawer-actions" />,
 }));
@@ -41,12 +41,7 @@ const mockExam: Exam = {
 
 describe("ExaminationDetail Component", () => {
   it("renders exam details including title and description", () => {
-    const html = renderToStaticMarkup(
-      <ExaminationDetail
-        exam={mockExam}
-        onClose={vi.fn()}
-      />,
-    );
+    const html = renderToStaticMarkup(<ExaminationDetail exam={mockExam} onClose={vi.fn()} />);
 
     expect(html).toContain("Final Examination");
     expect(html).toContain("Comprehensive exam on Tajweed rules.");

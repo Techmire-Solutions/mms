@@ -1,16 +1,16 @@
 import React from "react";
 import { formatDate } from "@mms/shared";
-import { StatusBadge } from "@/components/ui/StatusBadge";
+import { StatusBadge } from "@/components/app/StatusBadge";
 import { Badge } from "@/components/ui/badge";
-import { DirectoryCard } from "@/components/ui/DirectoryCard";
-import { EntityCard } from "@/components/ui/EntityCard";
-import { EntityCardMetaTile } from "@/components/ui/EntityCardMetaTile";
+import { DirectoryCard } from "@/components/app/DirectoryCard";
+import { EntityCard } from "@/components/app/EntityCard";
+import { EntityCardMetaTile } from "@/components/app/EntityCardMetaTile";
 import { useTranslation } from "@/hooks/useTranslation";
 import {
   getJournalEntryLineTotals,
   getJournalTagLabel,
   type JournalEntriesListProps,
-} from "@/tenant/features/accounting/components/journalEntriesListShared";
+} from "@/tenant/features/accounting/lib/journalEntriesListShared";
 
 export type JournalEntriesListCardsProps = Omit<
   JournalEntriesListProps,
@@ -60,9 +60,7 @@ export function JournalEntryCard({
         displayName: entry.description,
         subtitle: (
           <div className="min-w-0">
-            <p className="mt-0.5 truncate font-mono text-xs font-bold text-primary">
-              {entry.ref}
-            </p>
+            <p className="mt-0.5 truncate font-mono text-xs font-bold text-primary">{entry.ref}</p>
             {entry.reversed_ref ? (
               <p className="text-xs text-warning font-semibold">
                 {t("accounting.journal.dashboard.reversalOf", { ref: entry.reversed_ref })}
@@ -102,12 +100,16 @@ export function JournalEntryCard({
           )}
           {isColumnVisible("debit") && (
             <EntityCardMetaTile label={t("accounting.columns.journal.debit")}>
-              <span className="font-mono text-xs font-semibold text-info">{formatAmount(totalDebit)}</span>
+              <span className="font-mono text-xs font-semibold text-info">
+                {formatAmount(totalDebit)}
+              </span>
             </EntityCardMetaTile>
           )}
           {isColumnVisible("credit") && (
             <EntityCardMetaTile label={t("accounting.columns.journal.credit")}>
-              <span className="font-mono text-xs font-semibold text-success">{formatAmount(totalCredit)}</span>
+              <span className="font-mono text-xs font-semibold text-success">
+                {formatAmount(totalCredit)}
+              </span>
             </EntityCardMetaTile>
           )}
         </EntityCard.MetaGrid>

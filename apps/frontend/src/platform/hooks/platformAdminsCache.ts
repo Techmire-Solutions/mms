@@ -1,11 +1,11 @@
-import type { PlatformUserProfile } from '@mms/shared';
+import type { PlatformUserProfile } from "@mms/shared";
 
 export function updateAdminsCache(
   old: unknown,
   adminId: string,
   patch: Partial<PlatformUserProfile>,
 ): unknown {
-  if (!old || typeof old !== 'object') return old;
+  if (!old || typeof old !== "object") return old;
   const asTsr = old as { body?: { users?: PlatformUserProfile[] }; users?: PlatformUserProfile[] };
   if (asTsr.body && Array.isArray(asTsr.body.users)) {
     return {

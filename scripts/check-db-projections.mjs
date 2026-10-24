@@ -23,19 +23,26 @@
  * burned down deliberately.
  *
  * Usage:
- *   node scripts/check-db-projections.mjs [--json]
+ *   node scripts/check-db-projections.mjs [--json] [--changed]
+ *
+ * `--changed` scans only the changed backend sources (vs the merge-base). With a
+ * zero baseline that is equivalent to the full scan for catching regressions.
  */
 
-import fs from 'node:fs';
-import path from 'node:path';
-import process from 'node:process';
-import { fileURLToPath } from 'node:url';
+import fs from "node:fs";
+import path from "node:path";
+import process from "node:process";
+import { fileURLToPath } from "node:url";
+import { changedFiles } from "./lib/changed-files.mjs";
 
-const rootDir = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
-const srcDir = path.join(rootDir, 'apps', 'backend', 'src');
+const rootDir = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
+const srcDir = path.join(rootDir, "apps", "backend", "src");
 
 /** Measured 2026-09-19. Zero wildcard projections across apps/backend. */
 const BASELINE = 0;
+
+const isBackendSource = (rel) =>
+  rel.endsWith(".ts") && !/\.(test|spec)\.ts$/.test(rel) && !rel.includes("/__tests__/");
 
 /** Recursively collects non-test TypeScript sources. */
 function collectSourceFiles(dir) {
@@ -43,11 +50,11 @@ function collectSourceFiles(dir) {
   for (const entry of fs.readdirSync(dir, { withFileTypes: true })) {
     const full = path.join(dir, entry.name);
     if (entry.isDirectory()) {
-      if (entry.name === '__tests__' || entry.name === 'node_modules') continue;
+      if (entry.name === "__tests__" || entry.name === "node_modules") continue;
       found.push(...collectSourceFiles(full));
       continue;
     }
-    if (!entry.name.endsWith('.ts')) continue;
+    if (!entry.name.endsWith(".ts")) continue;
     if (/\.(test|spec)\.ts$/.test(entry.name)) continue;
     found.push(full);
   }
@@ -61,12 +68,12 @@ function collectSourceFiles(dir) {
  */
 function findWildcardProjections(source) {
   const hits = [];
-  const lines = source.split('\n');
+  const lines = source.split("\n");
   for (let i = 0; i < lines.length; i += 1) {
     if (!/\.select\(\s*\)\s*$/.test(lines[i])) continue;
     // The projection may be followed by `.from(` on a later line.
     let j = i + 1;
-    while (j < lines.length && lines[j].trim() === '') j += 1;
+    while (j < lines.length && lines[j].trim() === "") j += 1;
     if (j < lines.length && /^\s*\.from\(/.test(lines[j])) {
       hits.push({ line: i + 1, code: lines[i].trim() });
     }
@@ -79,9 +86,16 @@ if (!fs.existsSync(srcDir)) {
   process.exit(1);
 }
 
+const sources = process.argv.includes("--changed")
+  ? changedFiles()
+      .filter((rel) => rel.startsWith("apps/backend/src/") && isBackendSource(rel))
+      .map((rel) => path.join(rootDir, rel))
+      .filter((file) => fs.existsSync(file))
+  : collectSourceFiles(srcDir);
+
 const offenders = [];
-for (const file of collectSourceFiles(srcDir)) {
-  const hits = findWildcardProjections(fs.readFileSync(file, 'utf8'));
+for (const file of sources) {
+  const hits = findWildcardProjections(fs.readFileSync(file, "utf8"));
   for (const hit of hits) {
     offenders.push({
       file: path.relative(rootDir, file),
@@ -95,12 +109,12 @@ for (const offender of offenders) {
   grouped.set(offender.file, (grouped.get(offender.file) ?? 0) + 1);
 }
 
-if (process.argv.includes('--json')) {
+if (process.argv.includes("--json")) {
   console.log(JSON.stringify({ total: offenders.length, baseline: BASELINE, offenders }, null, 2));
   process.exit(0);
 }
 
-console.log('Wildcard DB projections (bare .select())');
+console.log("Wildcard DB projections (bare .select())");
 console.log(`  count: ${offenders.length} (baseline ${BASELINE})`);
 for (const [file, count] of [...grouped.entries()].sort((a, b) => b[1] - a[1])) {
   console.log(`    ${String(count).padStart(3)}  ${file}`);
@@ -110,11 +124,11 @@ if (offenders.length > BASELINE) {
   const added = offenders.slice(-(offenders.length - BASELINE));
   console.error(
     `\n✗ ${offenders.length - BASELINE} new wildcard projection(s) introduced:\n` +
-      added.map((o) => `  - ${o.file}:${o.line}`).join('\n') +
-      '\n\nProject the columns you actually read, e.g.:\n' +
-      '  tx.select({ id: t.id, name: t.name }).from(t)\n\n' +
-      'A bare .select() fetches every column, so a future wide column silently\n' +
-      'inflates the query. See mms-performance (wildcard DB query ban).',
+      added.map((o) => `  - ${o.file}:${o.line}`).join("\n") +
+      "\n\nProject the columns you actually read, e.g.:\n" +
+      "  tx.select({ id: t.id, name: t.name }).from(t)\n\n" +
+      "A bare .select() fetches every column, so a future wide column silently\n" +
+      "inflates the query. See mms-performance (wildcard DB query ban).",
   );
   process.exit(1);
 }
@@ -122,8 +136,8 @@ if (offenders.length > BASELINE) {
 if (offenders.length < BASELINE) {
   console.log(
     `\n✓ ${BASELINE - offenders.length} fewer than baseline — lower BASELINE in ` +
-      'scripts/check-db-projections.mjs to lock in the improvement.',
+      "scripts/check-db-projections.mjs to lock in the improvement.",
   );
 } else {
-  console.log('\n✓ No new wildcard DB projections.');
+  console.log("\n✓ No new wildcard DB projections.");
 }

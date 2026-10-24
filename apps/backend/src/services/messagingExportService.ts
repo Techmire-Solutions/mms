@@ -4,12 +4,12 @@ import {
   MESSAGING_CSV_EXPORT_MAX_BYTES,
   MESSAGING_CSV_EXPORT_MAX_ROWS,
   type MessagingCsvExportQueryDto,
-} from '@mms/shared';
-import { loadFilteredMessageLogs, resolveMessagingRecipients } from './messagingService.js';
+} from "@mms/shared";
+import { loadFilteredMessageLogs, resolveMessagingRecipients } from "./messagingService.js";
 
 const RESOLVE_CHUNK_SIZE = 100;
 
-const CSV_HEADERS = ['Recipient', 'Channel', 'Category', 'Message', 'Date Sent'] as const;
+const CSV_HEADERS = ["Recipient", "Channel", "Category", "Message", "Date Sent"] as const;
 
 export interface MessagingCsvExportOptions {
   filename?: string;
@@ -26,19 +26,19 @@ export interface MessagingCsvExportResult {
 export class MessagingCsvExportLimitError extends Error {
   constructor(message: string) {
     super(message);
-    this.name = 'MessagingCsvExportLimitError';
+    this.name = "MessagingCsvExportLimitError";
   }
 }
 
 function normalizeFilename(filename?: string): string {
-  const trimmed = filename?.trim() || 'message_history.csv';
-  return trimmed.toLowerCase().endsWith('.csv') ? trimmed : `${trimmed}.csv`;
+  const trimmed = filename?.trim() || "message_history.csv";
+  return trimmed.toLowerCase().endsWith(".csv") ? trimmed : `${trimmed}.csv`;
 }
 
 function normalizeFilters(query: MessagingCsvExportQueryDto = {}): MessagingCsvExportQueryDto {
-  const channel = query.channel && query.channel !== 'all' ? query.channel : undefined;
-  const category = query.category && query.category !== 'all' ? query.category : undefined;
-  const status = query.status && query.status !== 'all' ? query.status : undefined;
+  const channel = query.channel && query.channel !== "all" ? query.channel : undefined;
+  const category = query.category && query.category !== "all" ? query.category : undefined;
+  const status = query.status && query.status !== "all" ? query.status : undefined;
   const search = query.search?.trim() || undefined;
   const startDate = query.startDate?.trim() || undefined;
   const endDate = query.endDate?.trim() || undefined;
@@ -59,7 +59,7 @@ export async function* generateMessagingCsvStreamChunks(
   const CHUNK_SIZE = 250;
 
   // Yield header
-  yield CSV_HEADERS.map((header) => escapeCsvCell(header)).join(',') + '\n';
+  yield CSV_HEADERS.map((header) => escapeCsvCell(header)).join(",") + "\n";
 
   let page = 1;
   let count = 0;
@@ -102,18 +102,12 @@ export async function* generateMessagingCsvStreamChunks(
         const contactKey = String(log.contactId);
         const name = nameById.get(contactKey) || `Contact #${contactKey}`;
         lines.push(
-          [
-            name,
-            log.channel,
-            log.category || 'general',
-            log.body,
-            formatDateTime(log.sentAt),
-          ]
+          [name, log.channel, log.category || "general", log.body, formatDateTime(log.sentAt)]
             .map((cell) => escapeCsvCell(cell))
-            .join(','),
+            .join(","),
         );
       }
-      yield lines.join('\n') + '\n';
+      yield lines.join("\n") + "\n";
       count += logs.length;
       if (count > MESSAGING_CSV_EXPORT_MAX_ROWS) {
         throw new MessagingCsvExportLimitError(
@@ -145,7 +139,7 @@ export async function buildMessagingCsvExport(
 
   while (!step.done) {
     const chunk = step.value;
-    totalBytes += Buffer.byteLength(chunk, 'utf8');
+    totalBytes += Buffer.byteLength(chunk, "utf8");
     if (totalBytes > MESSAGING_CSV_EXPORT_MAX_BYTES) {
       throw new MessagingCsvExportLimitError(
         `Export exceeds maximum of ${MESSAGING_CSV_EXPORT_MAX_BYTES} bytes (${totalBytes} generated)`,
@@ -157,7 +151,7 @@ export async function buildMessagingCsvExport(
 
   const meta = step.value;
   // Trim trailing newline to match previous format
-  const csv = chunks.join('').replace(/\n$/, '');
+  const csv = chunks.join("").replace(/\n$/, "");
 
   return {
     csv,

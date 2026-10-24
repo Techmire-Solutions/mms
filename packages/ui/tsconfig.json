@@ -1,0 +1,28 @@
+{
+  "extends": "../../tsconfig.base.json",
+  "compilerOptions": {
+    "paths": {
+      "react": ["../../apps/frontend/node_modules/@types/react"],
+      "react/*": ["../../apps/frontend/node_modules/@types/react/*"],
+      "react/jsx-runtime": ["../../apps/frontend/node_modules/@types/react/jsx-runtime"],
+      "react-dom": ["../../apps/frontend/node_modules/@types/react-dom"],
+      "clsx": ["../../apps/frontend/node_modules/clsx"],
+      "tailwind-merge": ["../../apps/frontend/node_modules/tailwind-merge"],
+      "class-variance-authority": ["../../apps/frontend/node_modules/class-variance-authority"],
+      "lucide-react": ["../../apps/frontend/node_modules/lucide-react"],
+      "@radix-ui/*": ["../../apps/frontend/node_modules/@radix-ui/*"]
+    },
+    "jsx": "react-jsx",
+    "module": "esnext",
+    "moduleResolution": "bundler",
+    "lib": ["esnext", "dom"],
+    "target": "esnext",
+    "noEmit": true,
+    "noImplicitAny": true,
+    "strictNullChecks": true,
+    "allowSyntheticDefaultImports": true,
+    "resolveJsonModule": true
+  },
+  "include": ["src/**/*.ts", "src/**/*.tsx"],
+  "exclude": ["node_modules", "dist"]
+}

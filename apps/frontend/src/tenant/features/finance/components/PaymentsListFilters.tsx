@@ -1,10 +1,13 @@
 import { CreditCard } from "lucide-react";
 
 import { Card } from "@/components/ui/card";
-import { CardTitleBar } from "@/components/ui/CardTitleBar";
-import { ModuleColumnCustomizer, type ModuleColumnCustomizerProps } from "@/components/ui/ModuleColumnCustomizer";
-import { ModuleUniversalBulkActionBar } from "@/components/ui/ModuleUniversalBulkActionBar";
-import { StatusBadge, type StatusBadgeConfigItem } from "@/components/ui/StatusBadge";
+import { CardTitleBar } from "@/components/app/CardTitleBar";
+import {
+  ModuleColumnCustomizer,
+  type ModuleColumnCustomizerProps,
+} from "@/components/app/ModuleColumnCustomizer";
+import { ModuleUniversalBulkActionBar } from "@/components/app/ModuleUniversalBulkActionBar";
+import { StatusBadge, type StatusBadgeConfigItem } from "@/components/app/StatusBadge";
 import { useTranslation } from "@/hooks/useTranslation";
 
 export interface PaymentMethodSummaryProps {
@@ -21,11 +24,16 @@ export function PaymentMethodSummary({
   const { t } = useTranslation();
 
   return (
-    <div className="grid grid-cols-2 gap-3 sm:grid-cols-4" aria-label={t("finance.paymentsByMethod")}>
+    <div
+      className="grid grid-cols-2 gap-3 sm:grid-cols-4"
+      aria-label={t("finance.paymentsByMethod")}
+    >
       {Object.entries(paymentsByMethod).map(([method, summary]) => (
         <Card key={method} className="p-3">
           <StatusBadge status={method} config={methodConfig} size="sm" />
-          <p className="m-0 mt-2 text-base font-bold text-foreground">{formatCurrency(summary.amount)}</p>
+          <p className="m-0 mt-2 text-base font-bold text-foreground">
+            {formatCurrency(summary.amount)}
+          </p>
           <p className="m-0 text-xs text-muted-foreground">
             {t("finance.paymentCount", { count: summary.count })}
           </p>

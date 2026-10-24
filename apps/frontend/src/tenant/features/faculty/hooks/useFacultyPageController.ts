@@ -1,22 +1,22 @@
-import { useEffect } from 'react';
-import { useTranslation } from '@/hooks/useTranslation';
-import { usePersistedTabState } from '@/hooks/usePersistedTabState';
-import { useWorkDirectoryViewMode } from '@/hooks/useWorkDirectoryViewMode';
-import { useModulePermissions } from '@/tenant/hooks/usePermissions';
-import { FACULTY_MODULE_MANIFEST } from '@mms/shared';
-import { useFacultyMutations, useFacultyMetrics } from '@/tenant/features/faculty/hooks/useFaculty';
-import { useFacultyDirectoryFilters } from '@/tenant/features/faculty/hooks/useFacultyDirectoryFilters';
-import { useEmployeeIdMigration } from '@/tenant/features/faculty/hooks/useEmployeeIdMigration';
-import { useFacultyKeyboardShortcuts } from '@/tenant/features/faculty/hooks/useFacultyKeyboardShortcuts';
-import { useFacultyPageActions } from '@/tenant/features/faculty/hooks/useFacultyPageActions';
-import { useFacultyPageFormState } from '@/tenant/features/faculty/hooks/useFacultyPageFormState';
-import { useFacultyPageOverlayState } from '@/tenant/features/faculty/hooks/useFacultyPageOverlayState';
-import { useFacultyPageOverlayProps } from '@/tenant/features/faculty/hooks/useFacultyPageOverlayProps';
-import { useFacultyColumnLayout } from '@/tenant/features/faculty/hooks/useFacultyColumnLayout';
-import { useFacultyLookupOptions } from '@/tenant/features/faculty/hooks/useFacultyStatusConfig';
-import { useFacultyConfig } from '@/hooks/useStandardModuleConfig';
-import { useFacultyWorkTierState } from '@/tenant/features/faculty/hooks/useFacultyWorkTierState';
-import { useFacultyWorkPanelProps } from '@/tenant/features/faculty/hooks/useFacultyWorkPanelProps';
+import { useEffect } from "react";
+import { useTranslation } from "@/hooks/useTranslation";
+import { usePersistedTabState } from "@/hooks/usePersistedTabState";
+import { useWorkDirectoryViewMode } from "@/hooks/useWorkDirectoryViewMode";
+import { useModulePermissions } from "@/tenant/hooks/usePermissions";
+import { FACULTY_MODULE_MANIFEST } from "@mms/shared";
+import { useFacultyMutations, useFacultyMetrics } from "@/tenant/features/faculty/hooks/useFaculty";
+import { useFacultyDirectoryFilters } from "@/tenant/features/faculty/hooks/useFacultyDirectoryFilters";
+import { useEmployeeIdMigration } from "@/tenant/features/faculty/hooks/useEmployeeIdMigration";
+import { useFacultyKeyboardShortcuts } from "@/tenant/features/faculty/hooks/useFacultyKeyboardShortcuts";
+import { useFacultyPageActions } from "@/tenant/features/faculty/hooks/useFacultyPageActions";
+import { useFacultyPageFormState } from "@/tenant/features/faculty/hooks/useFacultyPageFormState";
+import { useFacultyPageOverlayState } from "@/tenant/features/faculty/hooks/useFacultyPageOverlayState";
+import { useFacultyPageOverlayProps } from "@/tenant/features/faculty/hooks/useFacultyPageOverlayProps";
+import { useFacultyColumnLayout } from "@/tenant/features/faculty/hooks/useFacultyColumnLayout";
+import { useFacultyLookupOptions } from "@/tenant/features/faculty/hooks/useFacultyStatusConfig";
+import { useFacultyConfig } from "@/hooks/useStandardModuleConfig";
+import { useFacultyWorkTierState } from "@/tenant/features/faculty/hooks/useFacultyWorkTierState";
+import { useFacultyWorkPanelProps } from "@/tenant/features/faculty/hooks/useFacultyWorkPanelProps";
 import {
   FACULTY_PAGE_TAB_DEFAULT,
   FACULTY_PAGE_TAB_HINT_KEYS,
@@ -25,9 +25,9 @@ import {
   FACULTY_PAGE_TAB_KEYS,
   migrateFacultyPageTab,
   resolveFacultyPageTab,
-} from '@/tenant/features/faculty/facultyPageWorkSubTabs';
-import { useFacultyIoActions } from '@/tenant/features/faculty/hooks/useFacultyIoActions';
-import { useFacultyDirectoryFilterCatalog } from '@/tenant/features/faculty/hooks/useFacultyDirectoryFilterCatalog';
+} from "@/tenant/features/faculty/facultyPageWorkSubTabs";
+import { useFacultyIoActions } from "@/tenant/features/faculty/hooks/useFacultyIoActions";
+import { useFacultyDirectoryFilterCatalog } from "@/tenant/features/faculty/hooks/useFacultyDirectoryFilterCatalog";
 
 export function useFacultyPageController() {
   const { t } = useTranslation();
@@ -41,8 +41,8 @@ export function useFacultyPageController() {
   } = useModulePermissions(FACULTY_MODULE_MANIFEST);
 
   const visibleTabs = FACULTY_PAGE_TAB_IDS.filter((id) => {
-    if (id === 'reports') return canViewReports;
-    if (id === 'setup') return canViewSetup;
+    if (id === "reports") return canViewReports;
+    if (id === "setup") return canViewSetup;
     return true;
   }).map((id) => ({
     id,
@@ -58,20 +58,16 @@ export function useFacultyPageController() {
   const columnLayout = useFacultyColumnLayout(config.settings);
 
   const [rawActiveTab, setActiveTab] = usePersistedTabState<string>(
-    'faculty_active_tab',
+    "faculty_active_tab",
     FACULTY_PAGE_TAB_DEFAULT,
   );
   const [legacyWorkSubTab] = usePersistedTabState<string>(
-    'faculty_work_subtab',
+    "faculty_work_subtab",
     FACULTY_PAGE_TAB_DEFAULT,
   );
 
   useEffect(() => {
-    if (
-      rawActiveTab === 'work'
-      || rawActiveTab === 'operations'
-      || rawActiveTab === 'departments'
-    ) {
+    if (rawActiveTab === "work" || rawActiveTab === "operations") {
       setActiveTab(migrateFacultyPageTab(rawActiveTab, legacyWorkSubTab));
     }
   }, [rawActiveTab, legacyWorkSubTab, setActiveTab]);
@@ -81,15 +77,16 @@ export function useFacultyPageController() {
     visibleTabs.map((tab) => tab.id),
     legacyWorkSubTab,
   );
-  const showDirectoryActions = effectiveTab === 'faculties';
+  const showDirectoryActions = effectiveTab === "faculties";
 
   useEmployeeIdMigration(effectiveTab, canEditSetup);
 
   const filters = useFacultyDirectoryFilters({ setActiveTab });
-  const filterCatalog = useFacultyDirectoryFilterCatalog(effectiveTab === 'faculties');
+  const filterCatalog = useFacultyDirectoryFilterCatalog(effectiveTab === "faculties");
 
   useEffect(() => {
     filters.setListPage(1);
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- filters.setListPage is a stable setter; depending on the whole `filters` object would run this page reset on every render.
   }, [viewMode, filters.setListPage]);
 
   const formState = useFacultyPageFormState();
@@ -160,6 +157,7 @@ export function useFacultyPageController() {
       handleDelete: pageActions.handleDelete,
       handleBulkDelete: pageActions.handleBulkDelete,
       handleBulkRestore: pageActions.handleBulkRestore,
+      onReportingFacultyChange: filters.setFilterReportingFacultyId,
     },
     selectedIds: filters.selectedIds,
     clearSelection: filters.clearSelection,

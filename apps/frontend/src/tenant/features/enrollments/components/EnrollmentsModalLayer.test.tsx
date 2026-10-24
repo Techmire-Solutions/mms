@@ -3,8 +3,16 @@ import { describe, expect, it, vi } from "vitest";
 import { renderToStaticMarkup } from "react-dom/server";
 import { EnrollmentsModalLayer } from "./EnrollmentsModalLayer";
 
-vi.mock("@/components/ui/FormModal", () => ({
-  FormModal: ({ open, title, children }: { open: boolean; title: string; children: React.ReactNode }) =>
+vi.mock("@/components/app/FormModal", () => ({
+  FormModal: ({
+    open,
+    title,
+    children,
+  }: {
+    open: boolean;
+    title: string;
+    children: React.ReactNode;
+  }) =>
     open ? (
       <div data-testid="form-modal">
         <h2>{title}</h2>

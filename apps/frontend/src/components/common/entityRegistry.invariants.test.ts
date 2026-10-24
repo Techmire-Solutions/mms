@@ -1,6 +1,6 @@
 import { describe, it, expect } from "vitest";
 import { ENTITY_REGISTRY } from "@/components/common/entityRegistry";
-import { SEMANTIC_BADGE } from "@/lib/semanticTone";
+import { SEMANTIC_BADGE } from "@/lib/ui/semanticTone";
 
 const ALLOWED_BADGE_CLASSES = new Set<string>(Object.values(SEMANTIC_BADGE));
 
@@ -27,7 +27,6 @@ describe("entity registry invariants", () => {
     expect(Object.keys(ENTITY_REGISTRY).sort()).toEqual(expectedEntities.sort());
   });
 
-
   it("registers every entity under its own entityType", () => {
     for (const [registryKey, descriptor] of Object.entries(ENTITY_REGISTRY)) {
       expect(descriptor.entityType).toBe(registryKey);
@@ -39,7 +38,9 @@ describe("entity registry invariants", () => {
       const keys = descriptor.fields.map((field) => field.key);
       expect(new Set(keys).size, `${descriptor.entityType} duplicate field keys`).toBe(keys.length);
       const orders = descriptor.getTableColumns().map((column) => column.order);
-      expect(new Set(orders).size, `${descriptor.entityType} duplicate table orders`).toBe(orders.length);
+      expect(new Set(orders).size, `${descriptor.entityType} duplicate table orders`).toBe(
+        orders.length,
+      );
     }
   });
 
@@ -56,9 +57,18 @@ describe("entity registry invariants", () => {
   it("every field has a non-empty key, label, and type", () => {
     for (const descriptor of Object.values(ENTITY_REGISTRY)) {
       for (const field of descriptor.fields) {
-        expect(field.key.trim().length, `${descriptor.entityType} field key is empty`).toBeGreaterThan(0);
-        expect(field.label.trim().length, `${descriptor.entityType}.${field.key} label is empty`).toBeGreaterThan(0);
-        expect(field.type.trim().length, `${descriptor.entityType}.${field.key} type is empty`).toBeGreaterThan(0);
+        expect(
+          field.key.trim().length,
+          `${descriptor.entityType} field key is empty`,
+        ).toBeGreaterThan(0);
+        expect(
+          field.label.trim().length,
+          `${descriptor.entityType}.${field.key} label is empty`,
+        ).toBeGreaterThan(0);
+        expect(
+          field.type.trim().length,
+          `${descriptor.entityType}.${field.key} type is empty`,
+        ).toBeGreaterThan(0);
       }
     }
   });
@@ -81,9 +91,18 @@ describe("entity registry invariants", () => {
   it("all drawer sections have non-empty ids, titles, and fields", () => {
     for (const descriptor of Object.values(ENTITY_REGISTRY)) {
       for (const section of descriptor.getDrawerSections()) {
-        expect(section.id.trim().length, `${descriptor.entityType} section id is empty`).toBeGreaterThan(0);
-        expect(section.title.trim().length, `${descriptor.entityType} section title is empty`).toBeGreaterThan(0);
-        expect(section.fields.length, `${descriptor.entityType} section ${section.id} is empty`).toBeGreaterThan(0);
+        expect(
+          section.id.trim().length,
+          `${descriptor.entityType} section id is empty`,
+        ).toBeGreaterThan(0);
+        expect(
+          section.title.trim().length,
+          `${descriptor.entityType} section title is empty`,
+        ).toBeGreaterThan(0);
+        expect(
+          section.fields.length,
+          `${descriptor.entityType} section ${section.id} is empty`,
+        ).toBeGreaterThan(0);
       }
     }
   });

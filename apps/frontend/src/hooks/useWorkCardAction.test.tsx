@@ -28,11 +28,9 @@ function renderHook(options: HookOptions) {
     root.render(<HookHost />);
   });
 
-  function update(nextOptions: HookOptions) {
+  function update(_nextOptions: HookOptions) {
     act(() => {
-      root.render(
-        <HookHost key={Math.random()} />,
-      );
+      root.render(<HookHost key={Math.random()} />);
     });
   }
 
@@ -86,7 +84,9 @@ describe("useWorkCardAction", () => {
 
   it("onSelect calls onToggleSelected with false when already selected", () => {
     const onToggleSelected = vi.fn();
-    const { result, unmount } = renderHook(makeOptions({ selectedIds: ["ent-1"], onToggleSelected }));
+    const { result, unmount } = renderHook(
+      makeOptions({ selectedIds: ["ent-1"], onToggleSelected }),
+    );
     act(() => {
       result.onSelect();
     });
@@ -326,4 +326,3 @@ describe("useWorkCardAction", () => {
     unmount();
   });
 });
-

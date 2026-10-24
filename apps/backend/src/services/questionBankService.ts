@@ -1,4 +1,4 @@
-import { questionBankUseCases } from '../questionBank/use-cases/questionBankUseCases.js';
+import { questionBankUseCases } from "../questionBank/use-cases/questionBankUseCases.js";
 
 /**
  * Thin re-export of the question bank use-cases facade.
@@ -32,6 +32,8 @@ export const deleteQuestionById = questionBankUseCases.deleteQuestionById;
 export const restoreQuestionById = questionBankUseCases.restoreQuestionById;
 export const bulkSoftDeleteQuestions = questionBankUseCases.bulkSoftDeleteQuestions;
 export const bulkRestoreQuestions = questionBankUseCases.bulkRestoreQuestions;
-export const loadQuestionBankWidgetAggregates = questionBankUseCases.loadQuestionBankWidgetAggregates;
-export const loadQuestionBankReportAggregates = questionBankUseCases.loadQuestionBankReportAggregates;
+export const loadQuestionBankWidgetAggregates =
+  questionBankUseCases.loadQuestionBankWidgetAggregates;
+export const loadQuestionBankReportAggregates =
+  questionBankUseCases.loadQuestionBankReportAggregates;
 export const loadQuestionBankCommandMetrics = questionBankUseCases.loadQuestionBankCommandMetrics;

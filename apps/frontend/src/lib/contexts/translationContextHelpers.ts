@@ -1,9 +1,6 @@
-import {
-  registerLanguagePack,
-  APP_TRANSLATIONS_EN,
-} from '@mms/shared';
-import { isEntryPath } from '@/lib/config/routes';
-import { shouldForcePlatformEnglish } from '@/platform/lib/themeScope';
+import { registerLanguagePack, APP_TRANSLATIONS_EN } from "@mms/shared";
+import { isEntryPath } from "@/lib/config/routes";
+import { shouldForcePlatformEnglish } from "@/platform/lib/themeScope";
 
 /**
  * Keys already reported as missing, so a key rendered in a loop warns once
@@ -45,29 +42,29 @@ export function resolveUiLanguage(options: ResolveUiLanguageOptions): string {
     })
   ) {
     // Platform apex + platform status screens: English/LTR only (mms-settings-i18n §5).
-    return 'en';
+    return "en";
   }
   // Tenant auth entry (login / 2FA / forgot) stays English before workspace language applies.
   if (isEntryPath(options.pathname, { isApex: false })) {
-    return 'en';
+    return "en";
   }
   return options.settingsLanguage;
 }
 
 export async function fetchLanguagePack(language: string): Promise<void> {
-  if (language === 'ar') {
-    const translationModule = await import('@mms/shared/translations/ar');
-    registerLanguagePack('ar', translationModule.APP_TRANSLATIONS_AR);
-  } else if (language === 'ur') {
-    const translationModule = await import('@mms/shared/translations/ur');
-    registerLanguagePack('ur', translationModule.APP_TRANSLATIONS_UR);
-  } else if (language === 'fa') {
+  if (language === "ar") {
+    const translationModule = await import("@mms/shared/translations/ar");
+    registerLanguagePack("ar", translationModule.APP_TRANSLATIONS_AR);
+  } else if (language === "ur") {
+    const translationModule = await import("@mms/shared/translations/ur");
+    registerLanguagePack("ur", translationModule.APP_TRANSLATIONS_UR);
+  } else if (language === "fa") {
     const [arModule, faModule] = await Promise.all([
-      import('@mms/shared/translations/ar'),
-      import('@mms/shared/translations/fa'),
+      import("@mms/shared/translations/ar"),
+      import("@mms/shared/translations/fa"),
     ]);
-    registerLanguagePack('ar', arModule.APP_TRANSLATIONS_AR);
-    registerLanguagePack('fa', {
+    registerLanguagePack("ar", arModule.APP_TRANSLATIONS_AR);
+    registerLanguagePack("fa", {
       ...arModule.APP_TRANSLATIONS_AR,
       ...faModule.APP_TRANSLATIONS_FA,
     });

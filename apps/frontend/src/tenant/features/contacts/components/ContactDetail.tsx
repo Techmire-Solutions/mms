@@ -1,10 +1,10 @@
 import React from "react";
-import { Drawer } from '@/components/ui/Drawer';
+import { Drawer } from "@/components/app/Drawer";
 import { getDisplayName, type Contact } from "@mms/shared";
 import { useTranslation } from "@/hooks/useTranslation";
 import { useContactDetailAttachments } from "@/tenant/features/contacts/hooks/useContactDetailAttachments";
 import { useContactDetailViewModel } from "@/tenant/features/contacts/hooks/useContactDetailViewModel";
-import { ConfirmAlertDialog } from "@/components/ui/ConfirmAlertDialog";
+import { ConfirmAlertDialog } from "@/components/app/ConfirmAlertDialog";
 import { ContactDetailDrawerContent } from "./detail/ContactDetailDrawerContent";
 import {
   ContactDetailDrawerArchivedBanner,
@@ -170,5 +170,3 @@ export function ContactDetail({
 
 export const ContactDrawer = ContactDetail;
 export default ContactDetail;
-
-

@@ -1,12 +1,12 @@
 import React, { useMemo } from "react";
 import { User } from "lucide-react";
-import { EditableSelect, Field } from "@/components/ui/FormPrimitives";
-import { LeadingIconInput } from "@/components/ui/LeadingIconInput";
+import { EditableSelect, Field } from "@/components/app/FormPrimitives";
+import { LeadingIconInput } from "@/components/app/LeadingIconInput";
 import { useTranslation } from "@/hooks/useTranslation";
 import { formatContactGenderLabel } from "@/lib/contacts/contactI18n";
 import type { Contact } from "@mms/shared";
 import { ContactBasicMetaFields } from "@/tenant/features/contacts/components/formTabs/ContactBasicMetaFields";
-import { GenderIcon } from "@/components/ui/GenderIcon";
+import { GenderIcon } from "@/components/app/GenderIcon";
 
 export interface ContactBasicIdentityFieldsProps {
   contactDraft: Partial<Contact>;

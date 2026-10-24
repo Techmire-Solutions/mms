@@ -1,10 +1,10 @@
 import React from "react";
 import { GraduationCap } from "lucide-react";
-import { FormModal } from "@/components/ui/FormModal";
-import { ConfirmAlertDialog } from "@/components/ui/ConfirmAlertDialog";
-import { WarningCallout } from "@/components/ui/WarningCallout";
-import { StatusBadge } from "@/components/ui/StatusBadge";
-import { FormFooterEntityChip } from "@/components/ui/FormFooterChip";
+import { FormModal } from "@/components/app/FormModal";
+import { ConfirmAlertDialog } from "@/components/app/ConfirmAlertDialog";
+import { WarningCallout } from "@/components/app/WarningCallout";
+import { StatusBadge } from "@/components/app/StatusBadge";
+import { FormFooterEntityChip } from "@/components/app/FormFooterChip";
 import { Badge } from "@/components/ui/badge";
 import { StudentFormTabContent } from "@/tenant/features/students/components/StudentFormTabContent";
 import { useStudentFormState } from "@/tenant/features/students/hooks/useStudentFormState";
@@ -17,7 +17,7 @@ export interface StudentFormProps {
   priority?: boolean;
 }
 
-export const StudentForm = (function StudentForm({
+export const StudentForm = function StudentForm({
   student,
   onClose,
   onSave,
@@ -30,12 +30,21 @@ export const StudentForm = (function StudentForm({
       <FormFooterEntityChip>{form.linkedContact.name}</FormFooterEntityChip>
       <div className="flex items-center gap-1.5">
         {form.isFieldEnabled("grNumber") && form.studentDraft.grNumber ? (
-          <Badge as="span" size="sm" tone="primary" className="px-1.5 py-0.5 rounded font-bold uppercase tracking-wider">
+          <Badge
+            as="span"
+            size="sm"
+            tone="primary"
+            className="px-1.5 py-0.5 rounded font-bold uppercase tracking-wider"
+          >
             {form.t("students.grPrefix")}: {form.studentDraft.grNumber}
           </Badge>
         ) : null}
         {form.isFieldEnabled("status") ? (
-          <StatusBadge status={form.studentDraft.status || "active"} size="sm" config={form.statusBadgeConfig} />
+          <StatusBadge
+            status={form.studentDraft.status || "active"}
+            size="sm"
+            config={form.statusBadgeConfig}
+          />
         ) : null}
       </div>
     </div>
@@ -60,7 +69,13 @@ export const StudentForm = (function StudentForm({
         lang={form.language}
         dir={form.dir}
         cancelLabel={form.t("common.cancel")}
-        saveLabel={form.saving ? form.t("students.form.saving") : student ? form.t("students.form.saveUpdate") : form.t("students.form.saveRegister")}
+        saveLabel={
+          form.saving
+            ? form.t("students.form.saving")
+            : student
+              ? form.t("students.form.saveUpdate")
+              : form.t("students.form.saveRegister")
+        }
         onSave={form.handleSave}
         isDirty={form.isDirty}
         saving={form.saving}
@@ -69,8 +84,8 @@ export const StudentForm = (function StudentForm({
         discardConfirmLabel={form.t("students.form.discardChanges")}
         discardCancelLabel={form.t("students.form.keepEditing")}
         saveDisabled={
-          (form.isFieldEnabled("contactId") && !form.studentDraft.contactId)
-          || (Boolean(student?.id) && !form.isDirty)
+          (form.isFieldEnabled("contactId") && !form.studentDraft.contactId) ||
+          (Boolean(student?.id) && !form.isDirty)
         }
         error={form.validationErrorSummary ?? (form.errorSummary || undefined)}
         footerStart={footerStart}
@@ -81,7 +96,10 @@ export const StudentForm = (function StudentForm({
           noValidate
           onSubmit={(e) => {
             e.preventDefault();
-            if (!((form.isFieldEnabled("contactId") && !form.studentDraft.contactId) || (Boolean(student?.id) && !form.isDirty))) {
+            if (!(
+              (form.isFieldEnabled("contactId") && !form.studentDraft.contactId) ||
+              (Boolean(student?.id) && !form.isDirty)
+            )) {
               void form.handleSave();
             }
           }}
@@ -117,15 +135,19 @@ export const StudentForm = (function StudentForm({
         open={form.duplicateConfirmOpen}
         onOpenChange={form.handleDuplicateDialogOpenChange}
         title={student ? form.t("students.form.editTitle") : form.t("students.form.addTitle")}
-        description={form.typedDuplicateReason
-          ? form.t("students.form.duplicateSaveWarning", { message: form.t(form.duplicateErrorKeys[form.typedDuplicateReason]) })
-          : ""}
+        description={
+          form.typedDuplicateReason
+            ? form.t("students.form.duplicateSaveWarning", {
+                message: form.t(form.duplicateErrorKeys[form.typedDuplicateReason]),
+              })
+            : ""
+        }
         confirmLabel={form.t("students.form.saveAnyway")}
         cancelLabel={form.t("students.form.reviewDuplicate")}
         onConfirm={form.confirmDuplicateSave}
       />
     </>
   );
-});
+};
 export { StudentForm as StudentFormModal };
 export default StudentForm;

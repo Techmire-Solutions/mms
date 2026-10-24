@@ -1,7 +1,7 @@
 import { mergeBrandingSettings } from "@mms/shared";
-import { getInvoiceTemplateBranding } from "./invoiceTemplateBranding.js";
-import { buildDefaultInvoiceTemplateElements } from "./invoiceTemplateElements.js";
-import type { BrandingInfo, InvoiceTemplate, TemplateTranslate } from "./invoiceTemplateTypes.js";
+import { getInvoiceTemplateBranding } from "./invoiceTemplateBranding";
+import { buildDefaultInvoiceTemplateElements } from "./invoiceTemplateElements";
+import type { BrandingInfo, InvoiceTemplate, TemplateTranslate } from "./invoiceTemplateTypes";
 
 /**
  * Generates the default invoice template schema for A6 size canvas.

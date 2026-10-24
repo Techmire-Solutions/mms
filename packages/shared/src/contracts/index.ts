@@ -1,34 +1,59 @@
-import { initContract } from '@ts-rest/core';
+import { initContract } from "@ts-rest/core";
 import {
   studentContract,
   studentCrudContract,
   studentOperationsContract,
   studentCrudRoutes,
   studentOperationRoutes,
-} from './students.contract.js';
-import { financeContract } from './finance.contract.js';
-import { attendanceContract } from './attendance.contract.js';
-import { contactsContract } from './contacts.contract.js';
-import { facultyContract } from './faculty.contract.js';
-import { userContract } from './users.contract.js';
-import { messagingContract } from './messaging.contract.js';
-import { sessionContract } from './sessions.contract.js';
-import { questionBankContract } from './questionBank.contract.js';
-import { accountingContract } from './accounting.contract.js';
-import { hasanatContract } from './hasanat.contract.js';
-import { obligationContract } from './obligations.contract.js';
-import { examinationContract } from './examinations.contract.js';
-import { enrollmentContract } from './enrollments.contract.js';
-import { dashboardContract } from './dashboard.contract.js';
-import { savedReportsContract } from './savedReports.contract.js';
-import { workspaceContract } from './workspace.contract.js';
-import { authContract } from './auth.contract.js';
-import { profileContract } from './profile.contract.js';
-import { publicContract } from './public.contract.js';
-import { aiContract } from './ai.contract.js';
-import { healthContract } from './health.contract.js';
-import { moduleAccessContract } from './moduleAccess.contract.js';
-import { platformContract, platformWorkspacesContract, platformSettingsContract, platformAdminsContract } from './platform.contract.js';
+} from "./students.contract.js";
+import { financeContract } from "./finance.contract.js";
+import { attendanceContract } from "./attendance.contract.js";
+import { contactsContract } from "./contacts.contract.js";
+import { facultyContract } from "./faculty.contract.js";
+import { userContract } from "./users.contract.js";
+import { messagingContract } from "./messaging.contract.js";
+import { sessionContract } from "./sessions.contract.js";
+import {
+  academicCatalogContract,
+  examinationSubjectsContract,
+} from "./academicCatalog.contract.js";
+import { academicCalendarContract } from "./academicCalendar.contract.js";
+import {
+  admissionsContract,
+  publicRegistrationContract,
+  registrationLinksContract,
+} from "./registration.contract.js";
+import { sessionSectionsContract } from "./sessionSections.contract.js";
+import { enrollmentOperationsContract } from "./enrollmentOperations.contract.js";
+import { sessionLifecycleOpsContract } from "./sessionLifecycleOps.contract.js";
+import { sessionRolloverContract } from "./sessionRollover.contract.js";
+import { sessionCompletionContract } from "./sessionCompletion.contract.js";
+import { questionBankContract } from "./questionBank.contract.js";
+import { accountingContract } from "./accounting.contract.js";
+import { hasanatContract } from "./hasanat.contract.js";
+import { obligationContract } from "./obligations.contract.js";
+import { examinationContract } from "./examinations.contract.js";
+import { enrollmentContract } from "./enrollments.contract.js";
+import { dashboardContract } from "./dashboard.contract.js";
+import { savedReportsContract } from "./savedReports.contract.js";
+import { workspaceContract } from "./workspace.contract.js";
+import { authContract } from "./auth.contract.js";
+import { profileContract } from "./profile.contract.js";
+import { publicContract } from "./public.contract.js";
+import { aiContract } from "./ai.contract.js";
+import { healthContract } from "./health.contract.js";
+import { moduleAccessContract } from "./moduleAccess.contract.js";
+import { auditContract } from "./audit.contract.js";
+import { tasksContract } from "./tasks.contract.js";
+import { accountingLedgerContract } from "./accountingLedger.contract.js";
+import { financeOpsContract } from "./financeOps.contract.js";
+import {
+  platformContract,
+  platformWorkspacesContract,
+  platformSettingsContract,
+  platformAdminsContract,
+} from "./platform.contract.js";
+import { documentTemplatesContract } from "./documentTemplates.contract.js";
 
 const c = initContract();
 
@@ -41,6 +66,17 @@ export const rootContract = c.router({
   users: userContract,
   messaging: messagingContract,
   sessions: sessionContract,
+  academicCatalogs: academicCatalogContract,
+  examinationSubjects: examinationSubjectsContract,
+  academicCalendar: academicCalendarContract,
+  registrationLinks: registrationLinksContract,
+  admissions: admissionsContract,
+  enrollmentOperations: enrollmentOperationsContract,
+  sessionLifecycleOps: sessionLifecycleOpsContract,
+  sessionRollover: sessionRolloverContract,
+  sessionCompletion: sessionCompletionContract,
+  publicRegistration: publicRegistrationContract,
+  sessionSections: sessionSectionsContract,
   questionBank: questionBankContract,
   accounting: accountingContract,
   hasanat: hasanatContract,
@@ -56,7 +92,12 @@ export const rootContract = c.router({
   ai: aiContract,
   health: healthContract,
   moduleAccess: moduleAccessContract,
+  audit: auditContract,
+  tasks: tasksContract,
+  accountingLedger: accountingLedgerContract,
+  financeOps: financeOpsContract,
   platform: platformContract,
+  templates: documentTemplatesContract,
 });
 
 export type RootContract = typeof rootContract;
@@ -80,6 +121,17 @@ export {
   userContract,
   messagingContract,
   sessionContract,
+  academicCatalogContract,
+  examinationSubjectsContract,
+  academicCalendarContract,
+  registrationLinksContract,
+  admissionsContract,
+  enrollmentOperationsContract,
+  sessionLifecycleOpsContract,
+  sessionRolloverContract,
+  sessionCompletionContract,
+  publicRegistrationContract,
+  sessionSectionsContract,
   questionBankContract,
   accountingContract,
   hasanatContract,
@@ -95,10 +147,15 @@ export {
   aiContract,
   healthContract,
   moduleAccessContract,
+  auditContract,
+  tasksContract,
+  accountingLedgerContract,
+  financeOpsContract,
   platformContract,
   platformWorkspacesContract,
   platformSettingsContract,
   platformAdminsContract,
+  documentTemplatesContract,
 };
 export type DomainContracts = {
   students: typeof studentContract;
@@ -109,6 +166,17 @@ export type DomainContracts = {
   users: typeof userContract;
   messaging: typeof messagingContract;
   sessions: typeof sessionContract;
+  academicCatalogs: typeof academicCatalogContract;
+  examinationSubjects: typeof examinationSubjectsContract;
+  academicCalendar: typeof academicCalendarContract;
+  registrationLinks: typeof registrationLinksContract;
+  admissions: typeof admissionsContract;
+  enrollmentOperations: typeof enrollmentOperationsContract;
+  sessionLifecycleOps: typeof sessionLifecycleOpsContract;
+  sessionRollover: typeof sessionRolloverContract;
+  sessionCompletion: typeof sessionCompletionContract;
+  publicRegistration: typeof publicRegistrationContract;
+  sessionSections: typeof sessionSectionsContract;
   questionBank: typeof questionBankContract;
   accounting: typeof accountingContract;
   hasanat: typeof hasanatContract;
@@ -124,5 +192,10 @@ export type DomainContracts = {
   ai: typeof aiContract;
   health: typeof healthContract;
   moduleAccess: typeof moduleAccessContract;
+  audit: typeof auditContract;
+  tasks: typeof tasksContract;
+  accountingLedger: typeof accountingLedgerContract;
+  financeOps: typeof financeOpsContract;
   platform: typeof platformContract;
+  templates: typeof documentTemplatesContract;
 };

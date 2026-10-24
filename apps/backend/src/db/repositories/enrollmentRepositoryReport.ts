@@ -1,4 +1,4 @@
-import { sql } from 'drizzle-orm';
+import { sql } from "drizzle-orm";
 import {
   dedupeTrimmedIds,
   enrollmentsReportComparisonQueryActive,
@@ -11,9 +11,10 @@ import {
   type EnrollmentsReportComparisonSession,
   type EnrollmentsReportFees,
   type EnrollmentsReportStatusCounts,
-} from '@mms/shared';
-import { getQueryRows } from '../documentStoreKeys.js';
-import { withTenantRead } from '../tenant-context.js';
+} from "@mms/shared";
+import { getQueryRows } from "../documentStoreKeys.js";
+import { withTenantRead } from "../tenant-context.js";
+import { enrollmentHoldsSeatSql } from "./enrollmentSeatSql.js";
 
 /**
  * SQL report aggregates for EnrollmentChart + EnrollmentReports
@@ -41,19 +42,18 @@ export async function loadEnrollmentsReportAggregatesSql(
         ) AS d
       ),
       active AS (
-        SELECT e.enrolled_date AS enrolled_date
+        SELECT e.enrolled_on AS enrolled_on
         FROM enrollments e
         WHERE e.workspace_subdomain = ${subdomain}
           AND e.deleted_at IS NULL
-          AND e.enrolled_date IS NOT NULL
-          AND e.enrolled_date ~ '^[0-9]{4}'
+          AND e.enrolled_on IS NOT NULL
       )
       SELECT
         m."monthKey",
         (
           SELECT count(*)::int
           FROM active a
-          WHERE left(a.enrolled_date, 10) <= m.month_end
+          WHERE a.enrolled_on::text <= m.month_end
         ) AS students
       FROM months m
       ORDER BY m."monthKey" ASC
@@ -63,7 +63,7 @@ export async function loadEnrollmentsReportAggregatesSql(
     const cumulativeTrends: Array<{ monthKey: string; students: number }> = [];
     for (let i = 0; i < trendRows.length; i++) {
       const row = trendRows[i];
-      if (typeof row?.monthKey === 'string' && /^\d{4}-\d{2}$/.test(row.monthKey)) {
+      if (typeof row?.monthKey === "string" && /^\d{4}-\d{2}$/.test(row.monthKey)) {
         cumulativeTrends.push({
           monthKey: row.monthKey,
           students: Number(row.students ?? 0),
@@ -91,11 +91,11 @@ export async function loadEnrollmentsReportAggregatesSql(
     for (const row of getQueryRows<Record<string, unknown>>(statusResult)) {
       const count = Number(row.count ?? 0);
       statusCounts.total += count;
-      const status = String(row.status ?? '');
-      if (status === 'pending') statusCounts.pending += count;
-      else if (status === 'confirmed') statusCounts.confirmed += count;
-      else if (status === 'cancelled') statusCounts.cancelled += count;
-      else if (status === 'completed') statusCounts.completed += count;
+      const status = String(row.status ?? "");
+      if (status === "pending") statusCounts.pending += count;
+      else if (status === "confirmed") statusCounts.confirmed += count;
+      else if (status === "cancelled") statusCounts.cancelled += count;
+      else if (status === "completed") statusCounts.completed += count;
     }
 
     const feesResult = await tx.execute(sql`
@@ -103,7 +103,7 @@ export async function loadEnrollmentsReportAggregatesSql(
         COALESCE(
           sum(
             CASE
-              WHEN lower(trim(e.status)) <> 'cancelled'
+              WHEN ${enrollmentHoldsSeatSql("e")}
               THEN e.final_fee::numeric
               ELSE 0
             END
@@ -139,7 +139,7 @@ export async function loadEnrollmentsReportAggregatesSql(
         COALESCE(
           sum(
             CASE
-              WHEN lower(trim(e.status)) <> 'cancelled'
+              WHEN ${enrollmentHoldsSeatSql("e")}
               THEN e.final_fee::numeric
               ELSE 0
             END
@@ -156,8 +156,8 @@ export async function loadEnrollmentsReportAggregatesSql(
     const bySession: EnrollmentsReportBySessionItem[] = getQueryRows<Record<string, unknown>>(
       sessionResult,
     ).map((row) => ({
-      sessionId: String(row.sessionId ?? ''),
-      name: String(row.name ?? ''),
+      sessionId: String(row.sessionId ?? ""),
+      name: String(row.name ?? ""),
       count: Number(row.count ?? 0),
       revenue: Number(row.revenue ?? 0),
     }));
@@ -193,7 +193,7 @@ export async function loadEnrollmentsReportAggregatesSql(
               sessionIds.map((id) => sql`${id}`),
               sql`, `,
             )})
-            AND lower(trim(e.status)) <> 'cancelled'
+            AND ${enrollmentHoldsSeatSql("e")}
           GROUP BY 1
         `);
 
@@ -203,12 +203,12 @@ export async function loadEnrollmentsReportAggregatesSql(
             const studentIds = dedupeTrimmedIds(
               Array.isArray(rawIds)
                 ? rawIds
-                : typeof rawIds === 'string'
-                  ? rawIds.replace(/[{}]/g, '')
+                : typeof rawIds === "string"
+                  ? rawIds.replace(/[{}]/g, "")
                   : [],
             );
             return {
-              sessionId: String(row.sessionId ?? ''),
+              sessionId: String(row.sessionId ?? ""),
               enrollmentCount: Number(row.enrollmentCount ?? 0),
               studentIds,
             } satisfies EnrollmentsReportComparisonSession;
@@ -225,15 +225,14 @@ export async function loadEnrollmentsReportAggregatesSql(
         if (!from || !to) return [];
         const monthResult = await tx.execute(sql`
           SELECT
-            to_char(left(e.enrolled_date, 10)::date, 'YYYY-MM') AS "monthKey",
+            to_char(e.enrolled_on, 'YYYY-MM') AS "monthKey",
             count(*)::int AS count
           FROM enrollments e
           WHERE e.workspace_subdomain = ${subdomain}
             AND e.deleted_at IS NULL
-            AND e.enrolled_date IS NOT NULL
-            AND e.enrolled_date ~ '^[0-9]{4}-[0-9]{2}-[0-9]{2}'
-            AND left(e.enrolled_date, 10) >= ${from}
-            AND left(e.enrolled_date, 10) <= ${to}
+            AND e.enrolled_on IS NOT NULL
+            AND e.enrolled_on::text >= ${from}
+            AND e.enrolled_on::text <= ${to}
           GROUP BY 1
           ORDER BY 1 ASC
         `);
@@ -241,7 +240,7 @@ export async function loadEnrollmentsReportAggregatesSql(
         const monthly: EnrollmentsReportComparisonMonth[] = [];
         for (let i = 0; i < rows.length; i++) {
           const row = rows[i];
-          if (typeof row?.monthKey === 'string' && /^\d{4}-\d{2}$/.test(row.monthKey)) {
+          if (typeof row?.monthKey === "string" && /^\d{4}-\d{2}$/.test(row.monthKey)) {
             monthly.push({
               monthKey: row.monthKey,
               count: Number(row.count ?? 0),
@@ -251,8 +250,14 @@ export async function loadEnrollmentsReportAggregatesSql(
         return monthly;
       };
 
-      comparison.monthly.a = await loadMonthlyRange(comparisonQuery.rangeAFrom, comparisonQuery.rangeATo);
-      comparison.monthly.b = await loadMonthlyRange(comparisonQuery.rangeBFrom, comparisonQuery.rangeBTo);
+      comparison.monthly.a = await loadMonthlyRange(
+        comparisonQuery.rangeAFrom,
+        comparisonQuery.rangeATo,
+      );
+      comparison.monthly.b = await loadMonthlyRange(
+        comparisonQuery.rangeBFrom,
+        comparisonQuery.rangeBTo,
+      );
       aggregates.comparison = comparison;
     }
 

@@ -1,0 +1,195 @@
+import {
+  BookOpen,
+  Building2,
+  DollarSign,
+  Heart,
+  Home,
+  Package,
+  Plus,
+  RefreshCw,
+  TrendingDown,
+  UserCheck,
+  Zap,
+} from "lucide-react";
+import type { TransactionGroup, TransactionGroupColor } from "./simpleTransactionWizardTypes";
+
+export const TRANSACTION_GROUP_COLORS: Record<TransactionGroupColor, Record<string, string>> = {
+  emerald: {
+    card: "border-success/30 bg-success/10 hover:bg-success/10",
+    header: "bg-success/15 text-success border-success/30",
+    badge: "bg-success/15 text-success",
+    item: "border-success/30 hover:border-success hover:bg-success/10",
+    selected: "border-success bg-success/10 ring-2 ring-success/30",
+    icon: "text-success bg-success/15",
+  },
+  red: {
+    card: "border-destructive/30 bg-destructive/10 hover:bg-destructive/10",
+    header: "bg-destructive/15 text-destructive border-destructive/30",
+    badge: "bg-destructive/15 text-destructive",
+    item: "border-destructive/30 hover:border-destructive hover:bg-destructive/10",
+    selected: "border-destructive bg-destructive/10 ring-2 ring-destructive/20",
+    icon: "text-destructive bg-destructive/15",
+  },
+  blue: {
+    card: "border-info/30 bg-info/10 hover:bg-info/10",
+    header: "bg-info/15 text-info border-info/30",
+    badge: "bg-info/15 text-info",
+    item: "border-info/30 hover:border-info hover:bg-info/10",
+    selected: "border-info bg-info/10 ring-2 ring-info/30",
+    icon: "text-info bg-info/15",
+  },
+};
+
+export function getTransactionGroupColorClasses(color: string | null | undefined) {
+  if (color === "emerald" || color === "red" || color === "blue") {
+    return TRANSACTION_GROUP_COLORS[color];
+  }
+  return TRANSACTION_GROUP_COLORS.blue;
+}
+
+export const TRANSACTION_GROUPS: TransactionGroup[] = [
+  {
+    groupKey: "accounting.journal.dashboard.group.moneyIn",
+    color: "emerald",
+    icon: DollarSign,
+    items: [
+      {
+        id: "fee_collection",
+        labelKey: "accounting.journal.dashboard.label.feeCollection",
+        icon: BookOpen,
+        debitAcc: "a1000",
+        creditAcc: "a4000",
+        tag: "Fees",
+        descriptionKey: "accounting.journal.dashboard.desc.feeCollection",
+        groupKey: "accounting.journal.dashboard.group.moneyIn",
+        color: "emerald",
+      },
+      {
+        id: "donation",
+        labelKey: "accounting.journal.dashboard.label.donationReceived",
+        icon: Heart,
+        debitAcc: "a1000",
+        creditAcc: "a4100",
+        tag: "Donation",
+        descriptionKey: "accounting.journal.dashboard.desc.donationReceived",
+        groupKey: "accounting.journal.dashboard.group.moneyIn",
+        color: "emerald",
+      },
+      {
+        id: "rent_income",
+        labelKey: "accounting.journal.dashboard.label.rentIncome",
+        icon: Home,
+        debitAcc: "a1000",
+        creditAcc: "a4300",
+        tag: "Income",
+        descriptionKey: "accounting.journal.dashboard.desc.rentIncome",
+        groupKey: "accounting.journal.dashboard.group.moneyIn",
+        color: "emerald",
+      },
+      {
+        id: "other_income",
+        labelKey: "accounting.journal.dashboard.label.otherIncome",
+        icon: Plus,
+        debitAcc: "a1000",
+        creditAcc: "a4400",
+        tag: "Income",
+        descriptionKey: "accounting.journal.dashboard.desc.otherIncome",
+        groupKey: "accounting.journal.dashboard.group.moneyIn",
+        color: "emerald",
+      },
+    ],
+  },
+  {
+    groupKey: "accounting.journal.dashboard.group.moneyOut",
+    color: "red",
+    icon: TrendingDown,
+    items: [
+      {
+        id: "salary",
+        labelKey: "accounting.journal.dashboard.label.salaryPayment",
+        icon: UserCheck,
+        debitAcc: "a5000",
+        creditAcc: "a1010",
+        tag: "Payroll",
+        descriptionKey: "accounting.journal.dashboard.desc.salaryPayment",
+        groupKey: "accounting.journal.dashboard.group.moneyOut",
+        color: "red",
+      },
+      {
+        id: "utilities",
+        labelKey: "accounting.journal.dashboard.label.utilities",
+        icon: Zap,
+        debitAcc: "a5200",
+        creditAcc: "a1000",
+        tag: "Utilities",
+        descriptionKey: "accounting.journal.dashboard.desc.utilities",
+        groupKey: "accounting.journal.dashboard.group.moneyOut",
+        color: "red",
+      },
+      {
+        id: "supplies",
+        labelKey: "accounting.journal.dashboard.label.supplies",
+        icon: Package,
+        debitAcc: "a5300",
+        creditAcc: "a1000",
+        tag: "Expense",
+        descriptionKey: "accounting.journal.dashboard.desc.supplies",
+        groupKey: "accounting.journal.dashboard.group.moneyOut",
+        color: "red",
+      },
+      {
+        id: "rent_payment",
+        labelKey: "accounting.journal.dashboard.label.rentPayment",
+        icon: Building2,
+        debitAcc: "a5100",
+        creditAcc: "a1010",
+        tag: "Rent",
+        descriptionKey: "accounting.journal.dashboard.desc.rentPayment",
+        groupKey: "accounting.journal.dashboard.group.moneyOut",
+        color: "red",
+      },
+      {
+        id: "other_expense",
+        labelKey: "accounting.journal.dashboard.label.otherExpense",
+        icon: TrendingDown,
+        debitAcc: "a5700",
+        creditAcc: "a1000",
+        tag: "Expense",
+        descriptionKey: "accounting.journal.dashboard.desc.otherExpense",
+        groupKey: "accounting.journal.dashboard.group.moneyOut",
+        color: "red",
+      },
+    ],
+  },
+  {
+    groupKey: "accounting.journal.dashboard.group.transfers",
+    color: "blue",
+    icon: RefreshCw,
+    items: [
+      {
+        id: "transfer",
+        labelKey: "accounting.journal.dashboard.label.transfer",
+        icon: RefreshCw,
+        debitAcc: "a1020",
+        creditAcc: "a1010",
+        tag: "Adjustment",
+        descriptionKey: "accounting.journal.dashboard.desc.transfer",
+        groupKey: "accounting.journal.dashboard.group.transfers",
+        color: "blue",
+      },
+      // No preset counter-account: an adjustment must be posted against a
+      // second account the user picks, never against the same account twice.
+      {
+        id: "adjustment",
+        labelKey: "accounting.journal.dashboard.label.adjustment",
+        icon: Plus,
+        debitAcc: "a1000",
+        creditAcc: "",
+        tag: "Adjustment",
+        descriptionKey: "accounting.journal.dashboard.desc.adjustment",
+        groupKey: "accounting.journal.dashboard.group.transfers",
+        color: "blue",
+      },
+    ],
+  },
+];

@@ -1,6 +1,6 @@
 import type { PlatformWorkspaceRow, PlatformUserProfile } from "@mms/shared";
-import { SEMANTIC_BADGE } from "@/lib/semanticTone";
-import type { EntityDescriptor } from "@/types/entityRegistry";
+import { SEMANTIC_BADGE } from "@/lib/ui/semanticTone";
+import type { EntityDescriptor } from "@/components/common/entityRegistryTypes";
 import { createEntityDescriptor } from "../entityDescriptorFactory";
 
 export const platformWorkspacesEntityDescriptor: EntityDescriptor<PlatformWorkspaceRow> =
@@ -142,7 +142,11 @@ export const platformUsersEntityDescriptor: EntityDescriptor<PlatformUserProfile
         drawerOrder: 40,
         badgeVariantMap: {
           active: { label: "Active", tone: "success", className: SEMANTIC_BADGE.success },
-          disabled: { label: "Disabled", tone: "destructive", className: SEMANTIC_BADGE.destructive },
+          disabled: {
+            label: "Disabled",
+            tone: "destructive",
+            className: SEMANTIC_BADGE.destructive,
+          },
         },
         accessor: (u) => (u.disabledAt ? "disabled" : "active"),
       },
@@ -162,4 +166,3 @@ export const platformUsersEntityDescriptor: EntityDescriptor<PlatformUserProfile
   });
 
 export { platformSettingsEntityDescriptor } from "./platformSettingsDescriptor";
-

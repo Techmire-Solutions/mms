@@ -11,9 +11,12 @@ export function useContactsPageOverlayState() {
   const [showDuplicates, setShowDuplicates] = useState(false);
   const [openingDuplicates, setOpeningDuplicates] = useState(false);
   const [importOpen, setImportOpen] = useState(false);
+  const [csvImportOpen, setCsvImportOpen] = useState(false);
   const [bulkDeleteOpen, setBulkDeleteOpen] = useState(false);
   const [bulkRestoreOpen, setBulkRestoreOpen] = useState(false);
-  const [deleteTarget, setDeleteTarget] = useState<{ id: string | number; name?: string } | null>(null);
+  const [deleteTarget, setDeleteTarget] = useState<{ id: string | number; name?: string } | null>(
+    null,
+  );
   const [conflictPanelOpen, setConflictPanelOpen] = useState(false);
 
   return {
@@ -29,6 +32,8 @@ export function useContactsPageOverlayState() {
     setOpeningDuplicates,
     importOpen,
     setImportOpen,
+    csvImportOpen,
+    setCsvImportOpen,
     bulkDeleteOpen,
     setBulkDeleteOpen,
     bulkRestoreOpen,

@@ -2,7 +2,7 @@
  * @file facultyRepositoryListQuerySql.ts
  * @description Faculty Work list WHERE/ORDER expressions (employment SSOT via fe_emp).
  */
-import { eq, isNotNull, isNull, sql, type SQL } from 'drizzle-orm';
+import { eq, isNotNull, isNull, sql, type SQL } from "drizzle-orm";
 import {
   dedupeTrimmedIds,
   isQueryFlagTrue,
@@ -11,15 +11,15 @@ import {
   facultyQuickFilterStatusValue,
   toSqlSearchPattern,
   type FacultyListQuery,
-} from '@mms/shared';
-import { faculty } from '../schema.js';
+} from "@mms/shared";
+import { faculty } from "../schema.js";
 import {
   joinedContactGenderExpr,
   joinedContactNameExpr,
   joinedPrimaryDepartmentNameExpr,
   joinedPrimaryDesignationNameExpr,
   joinedReportsToFacultyExpr,
-} from './facultyPrimaryAppointmentSql.js';
+} from "./facultyPrimaryAppointmentSql.js";
 
 /** Employment lifecycle status when `fe_emp` is joined (list + metrics). */
 export function facultyStatusExpr(): SQL {
@@ -56,75 +56,78 @@ function buildSearchSql(search: string): SQL | null {
 }
 
 /** ORDER BY — requires LATERAL primary-appointment FROM (pa_dept / pa_desig / fc). */
-export function buildOrderBy(sortField: string | undefined, sortDir: 'asc' | 'desc' | undefined): SQL {
-  const dir = sortDir === 'desc' ? 'desc' : 'asc';
+export function buildOrderBy(
+  sortField: string | undefined,
+  sortDir: "asc" | "desc" | undefined,
+): SQL {
+  const dir = sortDir === "desc" ? "desc" : "asc";
   const field = sortField?.trim();
   if (!field || !FACULTY_SORT_FIELD_SET.has(field)) {
     return sql`${faculty.id} asc`;
   }
-  if (field === 'updatedAt') {
-    return dir === 'desc'
+  if (field === "updatedAt") {
+    return dir === "desc"
       ? sql`${faculty.updatedAt} desc nulls last`
       : sql`${faculty.updatedAt} asc nulls last`;
   }
-  if (field === 'name') {
+  if (field === "name") {
     const nameSort = sql`lower(trim(${joinedContactNameExpr()}))`;
-    return dir === 'desc' ? sql`${nameSort} desc nulls last` : sql`${nameSort} asc nulls last`;
+    return dir === "desc" ? sql`${nameSort} desc nulls last` : sql`${nameSort} asc nulls last`;
   }
-  if (field === 'status') {
+  if (field === "status") {
     const statusSort = facultyListStatusExpr();
-    return dir === 'desc' ? sql`${statusSort} desc nulls last` : sql`${statusSort} asc nulls last`;
+    return dir === "desc" ? sql`${statusSort} desc nulls last` : sql`${statusSort} asc nulls last`;
   }
-  if (field === 'employeeId') {
+  if (field === "employeeId") {
     const empSort = employeeIdExpr();
-    return dir === 'desc' ? sql`${empSort} desc nulls last` : sql`${empSort} asc nulls last`;
+    return dir === "desc" ? sql`${empSort} desc nulls last` : sql`${empSort} asc nulls last`;
   }
-  if (field === 'designation') {
+  if (field === "designation") {
     const designationSort = joinedPrimaryDesignationNameExpr();
-    return dir === 'desc'
+    return dir === "desc"
       ? sql`lower(${designationSort}) desc nulls last`
       : sql`lower(${designationSort}) asc nulls last`;
   }
-  if (field === 'department') {
+  if (field === "department") {
     const departmentSort = joinedPrimaryDepartmentNameExpr();
-    return dir === 'desc'
+    return dir === "desc"
       ? sql`lower(${departmentSort}) desc nulls last`
       : sql`lower(${departmentSort}) asc nulls last`;
   }
-  if (field === 'specialization') {
+  if (field === "specialization") {
     const specSort = specializationExpr();
-    return dir === 'desc' ? sql`${specSort} desc nulls last` : sql`${specSort} asc nulls last`;
+    return dir === "desc" ? sql`${specSort} desc nulls last` : sql`${specSort} asc nulls last`;
   }
-  if (field === 'qualification') {
-    return dir === 'desc'
+  if (field === "qualification") {
+    return dir === "desc"
       ? sql`lower(COALESCE(${faculty.qualification}, '')) desc nulls last`
       : sql`lower(COALESCE(${faculty.qualification}, '')) asc nulls last`;
   }
-  if (field === 'joinDate' || field === 'employmentStartDate') {
+  if (field === "joinDate" || field === "employmentStartDate") {
     const startExpr = sql`fe_emp.employment_start_date`;
-    return dir === 'desc' ? sql`${startExpr} desc nulls last` : sql`${startExpr} asc nulls last`;
+    return dir === "desc" ? sql`${startExpr} desc nulls last` : sql`${startExpr} asc nulls last`;
   }
-  if (field === 'employmentEndDate') {
-    return dir === 'desc'
+  if (field === "employmentEndDate") {
+    return dir === "desc"
       ? sql`fe_emp.employment_end_date desc nulls last`
       : sql`fe_emp.employment_end_date asc nulls last`;
   }
-  if (field === 'designationStartDate') {
-    return dir === 'desc'
+  if (field === "designationStartDate") {
+    return dir === "desc"
       ? sql`fe_desig.start_date desc nulls last`
       : sql`fe_desig.start_date asc nulls last`;
   }
-  if (field === 'designationEndDate') {
-    return dir === 'desc'
+  if (field === "designationEndDate") {
+    return dir === "desc"
       ? sql`fe_desig.end_date desc nulls last`
       : sql`fe_desig.end_date asc nulls last`;
   }
-  if (field === 'employDesignationStatus' || field === 'profileStatus') {
+  if (field === "employDesignationStatus" || field === "profileStatus") {
     const tenureSort = sql`lower(trim(COALESCE(fe_desig.status, ${faculty.profileStatus}, '')))`;
-    return dir === 'desc' ? sql`${tenureSort} desc nulls last` : sql`${tenureSort} asc nulls last`;
+    return dir === "desc" ? sql`${tenureSort} desc nulls last` : sql`${tenureSort} asc nulls last`;
   }
-  if (field === 'performanceRating') {
-    return dir === 'desc'
+  if (field === "performanceRating") {
+    return dir === "desc"
       ? sql`${faculty.performanceRating} desc nulls last`
       : sql`${faculty.performanceRating} asc nulls last`;
   }
@@ -132,7 +135,10 @@ export function buildOrderBy(sortField: string | undefined, sortDir: 'asc' | 'de
 }
 
 /** WHERE conditions — requires facultyWithPrimaryAppointmentFromSql in FROM. */
-export function buildListConditions(subdomain: string, query: FacultyListQuery & { includeDeleted?: boolean }): SQL[] {
+export function buildListConditions(
+  subdomain: string,
+  query: FacultyListQuery & { includeDeleted?: boolean },
+): SQL[] {
   const conditions: SQL[] = [eq(faculty.workspaceSubdomain, subdomain)];
 
   if (isQueryFlagTrue(query.includeDeleted)) {
@@ -144,10 +150,12 @@ export function buildListConditions(subdomain: string, query: FacultyListQuery &
   const rawStatuses = dedupeTrimmedIds(query.status);
   if (rawStatuses.length > 0) {
     const statuses = rawStatuses.map((status) => status.toLowerCase());
-    conditions.push(sql`${facultyListStatusExpr()} IN (${sql.join(
-      statuses.map((status) => sql`${status}`),
-      sql`, `,
-    )})`);
+    conditions.push(
+      sql`${facultyListStatusExpr()} IN (${sql.join(
+        statuses.map((status) => sql`${status}`),
+        sql`, `,
+      )})`,
+    );
   }
 
   if (query.specialization?.trim()) {
@@ -161,7 +169,9 @@ export function buildListConditions(subdomain: string, query: FacultyListQuery &
 
   if ((query as { designation?: string }).designation?.trim()) {
     const desig = (query as { designation?: string }).designation!.trim();
-    conditions.push(sql`lower(trim(${joinedPrimaryDesignationNameExpr()})) = lower(trim(${desig}))`);
+    conditions.push(
+      sql`lower(trim(${joinedPrimaryDesignationNameExpr()})) = lower(trim(${desig}))`,
+    );
   }
 
   if ((query as { reportingFacultyId?: string }).reportingFacultyId?.trim()) {
@@ -175,8 +185,8 @@ export function buildListConditions(subdomain: string, query: FacultyListQuery &
   }
 
   const quickFilter = query.quickFilter;
-  if (quickFilter && quickFilter !== 'all') {
-    if (quickFilter === 'missingEmployeeId') {
+  if (quickFilter && quickFilter !== "all") {
+    if (quickFilter === "missingEmployeeId") {
       conditions.push(sql`NULLIF(trim(COALESCE(fe_emp.employee_id, '')), '') IS NULL`);
     } else {
       const statusValue = facultyQuickFilterStatusValue(quickFilter);

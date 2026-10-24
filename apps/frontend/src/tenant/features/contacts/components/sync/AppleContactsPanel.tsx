@@ -1,8 +1,8 @@
 import React from "react";
 import { Smartphone } from "lucide-react";
 import { type Contact } from "@mms/shared";
-import { DashedFileDropZone } from "@/components/ui/DashedFileDropZone";
-import { SectionCard } from "@/components/ui/SectionCard";
+import { DashedFileDropZone } from "@/components/app/DashedFileDropZone";
+import { SectionCard } from "@/components/app/SectionCard";
 import { useTranslation } from "@/hooks/useTranslation";
 import { useAppleContactsPanel } from "@/tenant/features/contacts/hooks/useAppleContactsPanel";
 import {
@@ -38,11 +38,7 @@ export function AppleContactsPanel({
         <AppleContactsExportGuide t={t} />
 
         {canWrite && (
-          <AppleContactsFileInput
-            fileRef={apple.fileRef}
-            onChange={apple.handleFile}
-            t={t}
-          />
+          <AppleContactsFileInput fileRef={apple.fileRef} onChange={apple.handleFile} t={t} />
         )}
 
         {canWrite && apple.previewList.length === 0 && !apple.result && (
@@ -61,7 +57,10 @@ export function AppleContactsPanel({
         )}
 
         {apple.fileError && (
-          <p role="alert" className="text-xs text-destructive bg-destructive/10 border border-destructive/20 rounded-lg p-2.5">
+          <p
+            role="alert"
+            className="text-xs text-destructive bg-destructive/10 border border-destructive/20 rounded-lg p-2.5"
+          >
             {apple.fileError}
           </p>
         )}

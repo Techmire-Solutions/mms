@@ -1,20 +1,14 @@
 import React, { lazy, Suspense } from "react";
-import type { ExportColumn } from '@/components/ui/ExportToolbar';
+import type { ExportColumn } from "@/components/app/ExportToolbar";
 import { ReportDataGridContainer } from "@/tenant/components/moduleReports";
 import { useFinanceCurrency } from "@/hooks/useCurrency";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
+import { WorkBatchTable } from "@/components/common/work/WorkBatchTable";
+import { EmptyState } from "@/components/app/EmptyState";
 import { useTranslation } from "@/hooks/useTranslation";
 import { useWorkDirectoryViewMode } from "@/hooks/useWorkDirectoryViewMode";
 import type { EnrollmentsReportAggregates } from "@mms/shared";
 import { EMPTY_ENROLLMENTS_REPORT_AGGREGATES } from "@mms/shared";
-import { ReportFilterBanner } from "@/components/ui/reports/ReportFilterBanner";
+import { ReportFilterBanner } from "@/components/reports/ReportFilterBanner";
 import { Skeleton } from "@/components/ui/skeleton";
 
 const EnrollmentReportsCharts = lazy(() =>
@@ -50,11 +44,12 @@ export function EnrollmentReports({
     { key: "revenue", header: t("enrollments.columns.finalFee") },
   ])() as ExportColumn[];
 
-  const exportRows = (() => bySession.map((sessionStats) => ({
-    session: sessionStats.name,
-    count: sessionStats.count,
-    revenue: formatCurrency(sessionStats.revenue),
-  })))();
+  const exportRows = (() =>
+    bySession.map((sessionStats) => ({
+      session: sessionStats.name,
+      count: sessionStats.count,
+      revenue: formatCurrency(sessionStats.revenue),
+    })))();
 
   return (
     <section className="space-y-6" aria-label={t("enrollments.reports.aria")}>
@@ -87,36 +82,38 @@ export function EnrollmentReports({
         moduleId="enrollments"
       >
         {viewMode === "table" ? (
-          <Table className="table-fixed">
-            <TableHeader>
-              <TableRow className="border-b border-border/60 hover:bg-muted/30">
-                <TableHead className="px-4 py-2.5 font-bold text-foreground">{t("enrollments.columns.session")}</TableHead>
-                <TableHead className="px-4 py-2.5 font-bold text-foreground text-center">{t("enrollments.metrics.total")}</TableHead>
-                <TableHead className="px-4 py-2.5 font-bold text-foreground text-end">{t("enrollments.columns.finalFee")}</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody className="divide-y divide-border/50">
-              {bySession.length === 0 ? (
-                <TableRow>
-                  <TableCell colSpan={3} className="text-center py-6 text-muted-foreground">
-                    {t("enrollments.reports.noData")}
-                  </TableCell>
-                </TableRow>
-              ) : (
-                bySession.map((sessionStats) => (
-                  <TableRow key={`${sessionStats.sessionId}:${sessionStats.name}`} className="transition-colors hover:bg-muted/20">
-                    <TableCell className="px-4 py-3 font-semibold text-foreground">{sessionStats.name}</TableCell>
-                    <TableCell className="px-4 py-3 text-center text-muted-foreground font-mono">
-                      {sessionStats.count}
-                    </TableCell>
-                    <TableCell className="px-4 py-3 text-end font-bold text-primary font-mono">
-                      {formatCurrency(sessionStats.revenue)}
-                    </TableCell>
-                  </TableRow>
-                ))
-              )}
-            </TableBody>
-          </Table>
+          <WorkBatchTable
+            data={bySession.map((s) => ({ ...s, id: `${s.sessionId}:${s.name}` }))}
+            columns={[
+              {
+                id: "session",
+                label: t("enrollments.columns.session"),
+                headerClassName: "font-bold text-foreground",
+                cellClassName: "font-semibold text-foreground",
+                render: (row) => row.name,
+              },
+              {
+                id: "count",
+                label: t("enrollments.metrics.total"),
+                headerClassName: "font-bold text-foreground",
+                cellClassName: "text-muted-foreground",
+                align: "center",
+                noWrap: true,
+                render: (row) => row.count,
+              },
+              {
+                id: "revenue",
+                label: t("enrollments.columns.finalFee"),
+                headerClassName: "font-bold text-foreground",
+                cellClassName: "font-bold text-primary",
+                align: "right",
+                noWrap: true,
+                render: (row) => formatCurrency(row.revenue),
+              },
+            ]}
+            emptyState={<EmptyState title={t("enrollments.reports.noData")} compact />}
+            bordered={false}
+          />
         ) : (
           <div className="divide-y divide-border/50" role="list">
             {bySession.length === 0 ? (
@@ -131,12 +128,16 @@ export function EnrollmentReports({
                   role="listitem"
                 >
                   <div className="min-w-0">
-                    <p className="truncate text-sm font-semibold text-foreground">{sessionStats.name}</p>
+                    <p className="truncate text-sm font-semibold text-foreground">
+                      {sessionStats.name}
+                    </p>
                     <p className="text-xs text-muted-foreground">
                       {t("enrollments.reports.enrollmentCount", { count: sessionStats.count })}
                     </p>
                   </div>
-                  <p className="shrink-0 text-sm font-bold text-primary">{formatCurrency(sessionStats.revenue)}</p>
+                  <p className="shrink-0 text-sm font-bold text-primary">
+                    {formatCurrency(sessionStats.revenue)}
+                  </p>
                 </div>
               ))
             )}

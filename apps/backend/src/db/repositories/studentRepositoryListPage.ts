@@ -1,12 +1,12 @@
-import { and, eq, sql } from 'drizzle-orm';
-import type { StudentsListPageResult, StudentsListQuery } from '@mms/shared';
-import { isQueryFlagTrue } from '@mms/shared';
-import { students, contacts } from '../schema.js';
-import { withTenantRead } from '../tenant-context.js';
-import { enableIncludeDeleted } from '../../lib/softDeleteHelpers.js';
-import { hydrateStudentsList } from './studentRepository.js';
-import { buildListConditions, buildOrderBy } from './studentRepositoryListQuery.js';
-import { STUDENT_COLUMNS_LIST } from './studentRepositoryColumns.js';
+import { and, eq, sql } from "drizzle-orm";
+import type { StudentsListPageResult, StudentsListQuery } from "@mms/shared";
+import { isQueryFlagTrue } from "@mms/shared";
+import { students, contacts } from "../schema.js";
+import { withTenantRead } from "../tenant-context.js";
+import { enableIncludeDeleted } from "../../lib/softDeleteHelpers.js";
+import { hydrateStudentsList } from "./studentRepository.js";
+import { buildListConditions, buildOrderBy } from "./studentRepositoryListQuery.js";
+import { STUDENT_COLUMNS_LIST } from "./studentRepositoryColumns.js";
 
 /**
  * SQL-filtered students Work list page (typed deleted_at + relational filters).
@@ -28,7 +28,9 @@ export async function listStudentsPage(
     const needsContactsJoin = Boolean(
       query.gender?.trim() ||
       query.search?.trim() ||
-      (!isCursorPaging && query.sortField && ['name', 'gender', 'dob'].includes(query.sortField.trim())),
+      (!isCursorPaging &&
+        query.sortField &&
+        ["name", "gender", "dob"].includes(query.sortField.trim())),
     );
     const conditions = buildListConditions(subdomain, query, needsContactsJoin);
     const baseWhereClause = and(...conditions);

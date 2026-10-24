@@ -1,7 +1,7 @@
-import type { FastifyReply, FastifyRequest } from 'fastify';
-import { getRequestTenant } from '../lib/tenantContext.js';
-import { authenticateTenant } from './authenticate.js';
-import { authenticatePlatform } from './authenticatePlatform.js';
+import type { FastifyReply, FastifyRequest } from "fastify";
+import { getRequestTenant } from "../lib/tenantContext.js";
+import { authenticateTenant } from "./authenticate.js";
+import { authenticatePlatform } from "./authenticatePlatform.js";
 
 /**
  * Tenant sessions on subdomains; platform sessions on apex (onboarding branding).

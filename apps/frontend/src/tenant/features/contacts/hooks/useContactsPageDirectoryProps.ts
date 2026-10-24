@@ -7,7 +7,7 @@ import type { useContactsDirectory } from "@/tenant/features/contacts/hooks/useC
 import type { useContactsMessagingActions } from "@/tenant/features/contacts/hooks/useContactsMessagingActions";
 import type { useContactsPageActions } from "@/tenant/features/contacts/hooks/useContactsPageActions";
 import type { useContactsPageOverlayState } from "@/tenant/features/contacts/hooks/useContactsPageOverlayState";
-import type { ContactsColumnConfig } from "@/tenant/features/contacts/components/contactTableTypes";
+import type { ContactsColumnConfig } from "@/tenant/features/contacts/lib/contactTableTypes";
 
 type Directory = ReturnType<typeof useContactsDirectory>;
 type Overlay = ReturnType<typeof useContactsPageOverlayState>;

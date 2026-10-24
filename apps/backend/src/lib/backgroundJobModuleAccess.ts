@@ -4,15 +4,16 @@ import {
   roleHasPermission,
   type ModuleAccessDenialCode,
   type ModuleAction,
-} from '@mms/shared';
-import { loadModuleAvailability } from './moduleAvailabilityService.js';
-import { resolveCurrentTenantRole } from './currentTenantRole.js';
+} from "@mms/shared";
+import { loadModuleAvailability } from "./moduleAvailabilityService.js";
+import { resolveCurrentTenantRole } from "./currentTenantRole.js";
 
 /** Action a queued job performs, keyed by its runner `kind`. */
 export function backgroundJobModuleAction(kind: string): ModuleAction {
-  if (kind.startsWith('export')) return 'export';
-  if (kind === 'import' || kind === 'collect') return 'write';
-  return 'read';
+  if (kind.startsWith("export")) return "export";
+  if (kind === "import" || kind === "collect" || kind === "promote" || kind === "dispatch")
+    return "write";
+  return "read";
 }
 
 /**
@@ -32,10 +33,10 @@ export async function getBackgroundJobModuleDenial(
     availability = await loadModuleAvailability(tenant);
     role = await resolveCurrentTenantRole(tenant, userId);
   } catch {
-    return 'MODULE_ACCESS_UNAVAILABLE';
+    return "MODULE_ACCESS_UNAVAILABLE";
   }
   // Mocked suites have no role matrix: they still get the grant/enablement gate.
-  if (role === null && (process.env.NODE_ENV === 'test' || process.env.VITEST)) {
+  if (role === null && (process.env.NODE_ENV === "test" || process.env.VITEST)) {
     return getModuleAvailabilityDenial(availability, moduleId);
   }
   const decision = evaluateModuleAccess({

@@ -1,7 +1,7 @@
-import { eq, sql } from 'drizzle-orm';
-import { normalizeAccountingModulePreferences } from '@mms/shared';
-import { accountingModulePreferences, accountingPostingRules } from '../schema.js';
-import type { TenantTransaction } from '../tenant-context.js';
+import { eq, sql } from "drizzle-orm";
+import { normalizeAccountingModulePreferences } from "@mms/shared";
+import { accountingModulePreferences, accountingPostingRules } from "../schema.js";
+import type { TenantTransaction } from "../tenant-context.js";
 
 /**
  * Sets the posting-rules cash account only when it is unset. `COALESCE` keeps any
@@ -45,7 +45,10 @@ export async function fillRetainedEarningsIfEmpty(
     .where(eq(accountingModulePreferences.workspaceSubdomain, subdomain))
     .limit(1);
   const stored = rows[0]?.preferences;
-  const current = typeof stored?.retainedEarningsAccount === 'string' ? stored.retainedEarningsAccount.trim() : '';
+  const current =
+    typeof stored?.retainedEarningsAccount === "string"
+      ? stored.retainedEarningsAccount.trim()
+      : "";
   if (current && existingAccountIds.has(current)) return false;
 
   const now = new Date();
@@ -60,7 +63,10 @@ export async function fillRetainedEarningsIfEmpty(
   } else {
     await tx.insert(accountingModulePreferences).values({
       workspaceSubdomain: subdomain,
-      preferences: { ...normalizeAccountingModulePreferences(null), retainedEarningsAccount: retainedEarningsAccountId },
+      preferences: {
+        ...normalizeAccountingModulePreferences(null),
+        retainedEarningsAccount: retainedEarningsAccountId,
+      },
       updatedAt: now,
     });
   }

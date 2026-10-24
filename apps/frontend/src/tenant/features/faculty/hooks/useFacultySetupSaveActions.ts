@@ -36,9 +36,7 @@ export function useFacultySetupSaveActions({
     if (!isPrefsDirty || saving) return;
     setSaving(true);
     try {
-      await preferencesMutation.mutateAsync(
-        normalizeFacultyModulePreferences(settingsDraft),
-      );
+      await preferencesMutation.mutateAsync(normalizeFacultyModulePreferences(settingsDraft));
       safeAudit(
         logSetupAudit.mutateAsync({
           area: "preferences",
@@ -61,6 +59,3 @@ export function useFacultySetupSaveActions({
     handleSave,
   };
 }
-
-
-

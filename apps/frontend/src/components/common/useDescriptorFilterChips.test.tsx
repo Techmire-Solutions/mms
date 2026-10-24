@@ -2,7 +2,7 @@ import React, { act } from "react";
 import { createRoot } from "react-dom/client";
 import { describe, it, expect, vi } from "vitest";
 import { useDescriptorFilterChips } from "./useDescriptorFilterChips";
-import type { EntityDescriptor, FieldDefinition } from "@/types/entityRegistry";
+import type { EntityDescriptor, FieldDefinition } from "@/components/common/entityRegistryTypes";
 import { ENTITY_REGISTRY } from "@/components/common/entityRegistry";
 
 const MOCK_FIELDS: FieldDefinition<Record<string, unknown>>[] = [
@@ -50,9 +50,7 @@ function makeMockDescriptor(): EntityDescriptor<Record<string, unknown>> {
   };
 }
 
-function renderHookInDom<R>(
-  hookFn: () => R,
-): { getResult: () => R; cleanup: () => void } {
+function renderHookInDom<R>(hookFn: () => R): { getResult: () => R; cleanup: () => void } {
   let result!: R;
   const container = document.createElement("div");
   document.body.appendChild(container);
@@ -99,11 +97,7 @@ describe("useDescriptorFilterChips", () => {
 
   it("does NOT generate a chip for text-type fields", () => {
     const { getResult, cleanup } = renderHookInDom(() =>
-      useDescriptorFilterChips(
-        makeMockDescriptor(),
-        { name: "Alice", status: "active" },
-        vi.fn(),
-      ),
+      useDescriptorFilterChips(makeMockDescriptor(), { name: "Alice", status: "active" }, vi.fn()),
     );
     const chips = getResult();
     expect(chips).toHaveLength(1);
@@ -113,11 +107,7 @@ describe("useDescriptorFilterChips", () => {
 
   it("uses badgeVariantMap label in chip label text", () => {
     const { getResult, cleanup } = renderHookInDom(() =>
-      useDescriptorFilterChips(
-        makeMockDescriptor(),
-        { status: "active" },
-        vi.fn(),
-      ),
+      useDescriptorFilterChips(makeMockDescriptor(), { status: "active" }, vi.fn()),
     );
     expect(getResult()[0]?.label).toBe("Status: Active");
     cleanup();
@@ -138,11 +128,7 @@ describe("useDescriptorFilterChips", () => {
   it("calls onRemove with the field key when chip.onRemove is invoked", () => {
     const onRemove = vi.fn();
     const { getResult, cleanup } = renderHookInDom(() =>
-      useDescriptorFilterChips(
-        makeMockDescriptor(),
-        { status: "archived" },
-        onRemove,
-      ),
+      useDescriptorFilterChips(makeMockDescriptor(), { status: "archived" }, onRemove),
     );
     const chips = getResult();
     expect(chips).toHaveLength(1);
@@ -155,11 +141,7 @@ describe("useDescriptorFilterChips", () => {
   it("emits one chip per array filter value and passes the value to onRemove", () => {
     const onRemove = vi.fn();
     const { getResult, cleanup } = renderHookInDom(() =>
-      useDescriptorFilterChips(
-        makeMockDescriptor(),
-        { status: ["active", "archived"] },
-        onRemove,
-      ),
+      useDescriptorFilterChips(makeMockDescriptor(), { status: ["active", "archived"] }, onRemove),
     );
     const chips = getResult();
     expect(chips).toHaveLength(2);
@@ -203,17 +185,16 @@ describe("useDescriptorFilterChips", () => {
           f.badgeVariantMap &&
           Object.keys(f.badgeVariantMap).length > 0,
       );
-      expect(badgeField, "questionBank descriptor must have at least one badge/status field").toBeDefined();
+      expect(
+        badgeField,
+        "questionBank descriptor must have at least one badge/status field",
+      ).toBeDefined();
 
       const firstVariant = Object.keys(badgeField!.badgeVariantMap!)[0]!;
       const activeFilters: Record<string, string> = { [badgeField!.key]: firstVariant };
 
       const { getResult, cleanup } = renderHookInDom(() =>
-        useDescriptorFilterChips(
-          descriptor,
-          activeFilters,
-          vi.fn(),
-        ),
+        useDescriptorFilterChips(descriptor, activeFilters, vi.fn()),
       );
 
       const chips = getResult();
@@ -227,11 +208,7 @@ describe("useDescriptorFilterChips", () => {
       expect(descriptor).toBeDefined();
 
       const { getResult, cleanup } = renderHookInDom(() =>
-        useDescriptorFilterChips(
-          descriptor,
-          {},
-          vi.fn(),
-        ),
+        useDescriptorFilterChips(descriptor, {}, vi.fn()),
       );
       expect(getResult()).toHaveLength(0);
       cleanup();

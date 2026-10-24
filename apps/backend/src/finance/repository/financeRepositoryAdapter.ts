@@ -1,4 +1,4 @@
-import type { FinanceRepository } from './financeRepository.js';
+import type { FinanceRepository } from "./financeRepository.js";
 import {
   listInvoicesByWorkspace,
   findInvoiceById,
@@ -12,15 +12,16 @@ import {
   savePayment,
   bulkSoftDeletePayments,
   bulkRestorePayments,
-} from '../../db/repositories/financeRepository.js';
+} from "../../db/repositories/financeRepository.js";
 import {
   listInvoicesPage,
   listPaymentsPage,
   aggregateFinanceCommandMetrics,
   bulkUpdateInvoicesStatusSql,
-} from '../../db/repositories/financeRepositoryList.js';
-import { loadFinanceReportAggregatesSql } from '../../db/repositories/financeRepositoryReport.js';
-import { aggregateFinanceWidgetQueries } from '../../db/repositories/financeRepositoryWidgets.js';
+} from "../../db/repositories/financeRepositoryList.js";
+import { loadFinanceReportAggregatesSql } from "../../db/repositories/financeRepositoryReport.js";
+import { aggregateFinanceWidgetQueries } from "../../db/repositories/financeRepositoryWidgets.js";
+import { findInvoiceIdsByEnrollment } from "../../db/repositories/financeInvoiceGenerationRepository.js";
 
 /**
  * Drizzle-backed adapter for {@link FinanceRepository}. Delegates to the
@@ -31,6 +32,7 @@ export const financeRepository: FinanceRepository = {
   findInvoiceById,
   findInvoicesByIds,
   saveInvoice,
+  findInvoiceIdsByEnrollment,
   listInvoicesPage,
   bulkUpdateInvoicesStatus: bulkUpdateInvoicesStatusSql,
   bulkSoftDeleteInvoices,
@@ -46,4 +48,3 @@ export const financeRepository: FinanceRepository = {
   aggregateFinanceWidgetQueries,
   loadFinanceReportAggregates: loadFinanceReportAggregatesSql,
 };
-

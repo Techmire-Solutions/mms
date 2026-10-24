@@ -1,9 +1,10 @@
-import { sql } from 'drizzle-orm';
-import type { SessionsReportAggregates } from '@mms/shared';
-import { getQueryRows } from '../documentStoreKeys.js';
-import { withTenantRead } from '../tenant-context.js';
+import { sql } from "drizzle-orm";
+import type { SessionsReportAggregates } from "@mms/shared";
+import { getQueryRows } from "../documentStoreKeys.js";
+import { withTenantRead } from "../tenant-context.js";
+import { enrollmentHoldsSeatSql } from "./enrollmentSeatSql.js";
 
-const WEEKDAY_KEYS = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'] as const;
+const WEEKDAY_KEYS = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"] as const;
 
 /**
  * SQL aggregates for Sessions Reports: capacity-by-class, enrollment trends, today's class rows.
@@ -12,7 +13,7 @@ export async function loadSessionsReportAggregatesSql(
   tenant: string,
 ): Promise<SessionsReportAggregates> {
   const subdomain = tenant.trim().toLowerCase();
-  const todayKey = WEEKDAY_KEYS[new Date().getDay()] ?? 'Mon';
+  const todayKey = WEEKDAY_KEYS[new Date().getDay()] ?? "Mon";
 
   return withTenantRead(subdomain, async (tx) => {
     const capacityResult = await tx.execute(sql`
@@ -21,11 +22,11 @@ export async function loadSessionsReportAggregatesSql(
         c.id AS "classId",
         s.name AS session,
         c.name AS class,
-        c.enrolled AS enrolled,
+        ce.enrolled AS enrolled,
         c.capacity AS capacity,
         CASE
           WHEN c.capacity > 0
-            THEN ROUND((c.enrolled::numeric / c.capacity::numeric) * 100)::int
+            THEN ROUND((ce.enrolled::numeric / c.capacity::numeric) * 100)::int
           ELSE 0
         END AS rate,
         s.status AS status
@@ -33,6 +34,7 @@ export async function loadSessionsReportAggregatesSql(
       INNER JOIN session_classes c
         ON c.workspace_subdomain = s.workspace_subdomain
         AND c.session_id = s.id
+      CROSS JOIN LATERAL (SELECT count(*)::int AS enrolled FROM enrollments e WHERE e.workspace_subdomain = c.workspace_subdomain AND e.session_id = c.session_id AND e.class_id = c.id AND e.deleted_at IS NULL AND ${enrollmentHoldsSeatSql("e")}) ce
       WHERE s.workspace_subdomain = ${subdomain}
         AND s.deleted_at IS NULL
       ORDER BY s.name ASC, c.name ASC
@@ -44,7 +46,7 @@ export async function loadSessionsReportAggregatesSql(
           to_char(
             date_trunc(
               'month',
-              (NULLIF(trim(e.enrolled_date), ''))::timestamp
+              e.enrolled_on::timestamp
             ),
             'YYYY-MM'
           ) AS "monthKey",
@@ -57,8 +59,7 @@ export async function loadSessionsReportAggregatesSql(
           AND s.deleted_at IS NULL
         WHERE e.workspace_subdomain = ${subdomain}
           AND e.deleted_at IS NULL
-          AND NULLIF(trim(e.enrolled_date), '') IS NOT NULL
-          AND NULLIF(trim(e.enrolled_date), '') ~ '^[0-9]{4}'
+          AND e.enrolled_on IS NOT NULL
         GROUP BY 1, 2
       ),
       totals AS (
@@ -95,7 +96,7 @@ export async function loadSessionsReportAggregatesSql(
           ELSE ''
         END AS time,
         COALESCE(c.room, '') AS room,
-        c.enrolled AS students,
+        (SELECT count(*)::int FROM enrollments e WHERE e.workspace_subdomain = c.workspace_subdomain AND e.session_id = c.session_id AND e.class_id = c.id AND e.deleted_at IS NULL AND ${enrollmentHoldsSeatSql("e")}) AS students,
         CASE WHEN tt.id IS NOT NULL THEN 'live' ELSE 'upcoming' END AS status
       FROM sessions s
       INNER JOIN session_classes c
@@ -112,19 +113,19 @@ export async function loadSessionsReportAggregatesSql(
       ) AS tt ON true
       WHERE s.workspace_subdomain = ${subdomain}
         AND s.deleted_at IS NULL
-        AND lower(trim(s.status)) = 'active'
+        AND s.status = 'in_progress'
       ORDER BY name ASC
     `);
 
     const capacity = getQueryRows<Record<string, unknown>>(capacityResult).map((row) => ({
-      sessionId: String(row.sessionId ?? ''),
-      classId: String(row.classId ?? ''),
-      session: String(row.session ?? ''),
-      class: String(row.class ?? ''),
+      sessionId: String(row.sessionId ?? ""),
+      classId: String(row.classId ?? ""),
+      session: String(row.session ?? ""),
+      class: String(row.class ?? ""),
       enrolled: Number(row.enrolled ?? 0),
       capacity: Number(row.capacity ?? 0),
       rate: Number(row.rate ?? 0),
-      status: String(row.status ?? ''),
+      status: String(row.status ?? ""),
     }));
 
     const trendRows = getQueryRows<Record<string, unknown>>(trendResult);
@@ -135,23 +136,24 @@ export async function loadSessionsReportAggregatesSql(
     }> = [];
     for (let i = 0; i < trendRows.length; i++) {
       const row = trendRows[i];
-      if (typeof row?.monthKey === 'string' && /^\d{4}-\d{2}$/.test(row.monthKey)) {
+      if (typeof row?.monthKey === "string" && /^\d{4}-\d{2}$/.test(row.monthKey)) {
         enrollmentTrends.push({
           monthKey: row.monthKey,
           students: Number(row.students ?? 0),
-          sessionName: row.sessionName == null || row.sessionName === '' ? null : String(row.sessionName),
+          sessionName:
+            row.sessionName == null || row.sessionName === "" ? null : String(row.sessionName),
         });
       }
     }
 
     const todaysSessions = getQueryRows<Record<string, unknown>>(todayResult).map((row) => ({
-      id: String(row.id ?? ''),
-      name: String(row.name ?? ''),
-      teacher: String(row.teacher ?? ''),
-      time: String(row.time ?? ''),
-      room: String(row.room ?? ''),
+      id: String(row.id ?? ""),
+      name: String(row.name ?? ""),
+      teacher: String(row.teacher ?? ""),
+      time: String(row.time ?? ""),
+      room: String(row.room ?? ""),
       students: Number(row.students ?? 0),
-      status: row.status === 'live' ? ('live' as const) : ('upcoming' as const),
+      status: row.status === "live" ? ("live" as const) : ("upcoming" as const),
     }));
 
     return { capacity, enrollmentTrends, todaysSessions };

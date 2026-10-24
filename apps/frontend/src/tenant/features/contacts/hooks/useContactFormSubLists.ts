@@ -9,15 +9,8 @@ import type {
   UpdateSubListItem,
 } from "@/tenant/features/contacts/components/formTabs/types";
 
-function withHealedPrimary(
-  fieldKey: ContactSubListKey,
-  list: unknown[],
-): unknown[] {
-  if (
-    fieldKey !== "phones" &&
-    fieldKey !== "emails" &&
-    fieldKey !== "addresses"
-  ) {
+function withHealedPrimary(fieldKey: ContactSubListKey, list: unknown[]): unknown[] {
+  if (fieldKey !== "phones" && fieldKey !== "emails" && fieldKey !== "addresses") {
     return list;
   }
   return ensureSinglePrimaryFlag(list as Array<{ isPrimary?: boolean }>);
@@ -26,7 +19,8 @@ function withHealedPrimary(
 export function useContactFormSubLists(
   setContactDraft: Dispatch<SetStateAction<Partial<Contact>>>,
 ) {
-  const addSubListItem: AddSubListItem = useCallback((fieldKey, newItem) => {
+  const addSubListItem: AddSubListItem = useCallback(
+    (fieldKey, newItem) => {
       setContactDraft((prev) => {
         const rawList = (prev as Record<string, unknown>)[fieldKey];
         const currentList = Array.isArray(rawList) ? rawList : [];
@@ -35,19 +29,25 @@ export function useContactFormSubLists(
           [fieldKey]: withHealedPrimary(fieldKey, [...currentList, newItem]),
         };
       });
-    }, [setContactDraft]);
+    },
+    [setContactDraft],
+  );
 
   /** Seed one row when the list is empty (idempotent under Strict Mode). */
-  const ensureSubListItem: EnsureSubListItem = useCallback((fieldKey, newItem) => {
+  const ensureSubListItem: EnsureSubListItem = useCallback(
+    (fieldKey, newItem) => {
       setContactDraft((prev) => {
         const rawList = (prev as Record<string, unknown>)[fieldKey];
         const currentList = Array.isArray(rawList) ? rawList : [];
         if (currentList.length > 0) return prev;
         return { ...prev, [fieldKey]: withHealedPrimary(fieldKey, [newItem]) };
       });
-    }, [setContactDraft]);
+    },
+    [setContactDraft],
+  );
 
-  const updateSubListItem: UpdateSubListItem = useCallback((fieldKey, idx, patch) => {
+  const updateSubListItem: UpdateSubListItem = useCallback(
+    (fieldKey, idx, patch) => {
       setContactDraft((prev) => {
         const rawList = (prev as Record<string, unknown>)[fieldKey];
         const currentList = Array.isArray(rawList) ? (rawList as Record<string, unknown>[]) : [];
@@ -70,9 +70,12 @@ export function useContactFormSubLists(
         });
         return { ...prev, [fieldKey]: withHealedPrimary(fieldKey, nextList) };
       });
-    }, [setContactDraft]);
+    },
+    [setContactDraft],
+  );
 
-  const removeSubListItem: RemoveSubListItem = useCallback((fieldKey: ContactSubListKey, idx: number) => {
+  const removeSubListItem: RemoveSubListItem = useCallback(
+    (fieldKey: ContactSubListKey, idx: number) => {
       setContactDraft((prev) => {
         const rawList = (prev as Record<string, unknown>)[fieldKey];
         const currentList = Array.isArray(rawList) ? rawList : [];
@@ -84,9 +87,12 @@ export function useContactFormSubLists(
           ),
         };
       });
-    }, [setContactDraft]);
+    },
+    [setContactDraft],
+  );
 
-  const setPrimarySubListItem: SetPrimarySubListItem = useCallback((fieldKey: ContactSubListKey, idx: number) => {
+  const setPrimarySubListItem: SetPrimarySubListItem = useCallback(
+    (fieldKey: ContactSubListKey, idx: number) => {
       setContactDraft((prev) => {
         const rawList = (prev as Record<string, unknown>)[fieldKey];
         const currentList = Array.isArray(rawList) ? (rawList as Record<string, unknown>[]) : [];
@@ -96,7 +102,15 @@ export function useContactFormSubLists(
         }));
         return { ...prev, [fieldKey]: nextList };
       });
-    }, [setContactDraft]);
+    },
+    [setContactDraft],
+  );
 
-  return { addSubListItem, ensureSubListItem, updateSubListItem, removeSubListItem, setPrimarySubListItem };
+  return {
+    addSubListItem,
+    ensureSubListItem,
+    updateSubListItem,
+    removeSubListItem,
+    setPrimarySubListItem,
+  };
 }

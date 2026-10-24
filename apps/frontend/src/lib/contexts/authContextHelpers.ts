@@ -1,12 +1,12 @@
-import type { AuthError } from '@/lib/authErrors';
-import type { IndustryType, TenantLoginResponse, User, Workspace } from '@mms/shared';
-import { getCurrentSubdomain, isCurrentHostApex } from '@/lib/config/tenantConfig';
-import { reportClientError } from '@/lib/clientErrorReporting';
+import type { AuthError } from "@/lib/authErrors";
+import type { IndustryType, TenantLoginResponse, User, Workspace } from "@mms/shared";
+import { getCurrentSubdomain, isCurrentHostApex } from "@/lib/config/tenantConfig";
+import { reportClientError } from "@/lib/clientErrorReporting";
 
 export class AuthFailureError extends Error {
   constructor(readonly authError: AuthError) {
     super(authError.message);
-    this.name = 'AuthFailureError';
+    this.name = "AuthFailureError";
   }
 }
 
@@ -15,7 +15,7 @@ export function clearUserScopedCachesOnLogout(userId: string, prefix: string): v
     localStorage.removeItem(`${prefix}messages`);
     localStorage.removeItem(`${prefix}whatsappTemplates_u:${userId}`);
   } catch (cacheClearError) {
-    reportClientError(cacheClearError, { context: 'auth.clearUserScopedCaches' });
+    reportClientError(cacheClearError, { context: "auth.clearUserScopedCaches" });
   }
 }
 
@@ -29,7 +29,7 @@ export interface OnboardPayload {
   tagline: string;
   adminName: string;
   email: string;
-  password: string;
+  password?: string;
   /** Platform operator password step-up. */
   currentPassword: string;
   subdomain: string;
@@ -77,19 +77,20 @@ export interface AuthContextType {
 
 export type LoginApiResponse = TenantLoginResponse;
 
-export const AUTH_USER_STORAGE_KEY = 'mms_user';
+export const AUTH_USER_STORAGE_KEY = "mms_user";
 
 export function buildConnectionAuthError(error: unknown): AuthError {
-  const message = error instanceof Error ? error.message : 'Failed to connect to authentication server';
-  return { type: 'connection_error', message };
+  const message =
+    error instanceof Error ? error.message : "Failed to connect to authentication server";
+  return { type: "connection_error", message };
 }
 
 export function getPersistedAuthUser(): User | null {
   try {
-    const raw = typeof window !== 'undefined' ? localStorage.getItem(AUTH_USER_STORAGE_KEY) : null;
+    const raw = typeof window !== "undefined" ? localStorage.getItem(AUTH_USER_STORAGE_KEY) : null;
     if (!raw) return null;
     const user = JSON.parse(raw) as User;
-    if (!user || typeof user !== 'object' || typeof user.id !== 'string' || !user.id) {
+    if (!user || typeof user !== "object" || typeof user.id !== "string" || !user.id) {
       return null;
     }
 
@@ -98,7 +99,11 @@ export function getPersistedAuthUser(): User | null {
     }
 
     const currentSubdomain = getCurrentSubdomain();
-    if (currentSubdomain && user.workspaceSubdomain && user.workspaceSubdomain.toLowerCase() !== currentSubdomain.toLowerCase()) {
+    if (
+      currentSubdomain &&
+      user.workspaceSubdomain &&
+      user.workspaceSubdomain.toLowerCase() !== currentSubdomain.toLowerCase()
+    ) {
       clearPersistedAuthUser();
       return null;
     }

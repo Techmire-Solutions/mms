@@ -7,7 +7,7 @@ export {
   TASKS_LIST_QUERY_KEY,
   TASKS_METRICS_QUERY_KEY,
   TASK_DETAIL_QUERY_KEY,
-} from '@/tenant/features/tasks/hooks/tasksQueryKeys';
+} from "@/tenant/features/tasks/hooks/tasksQueryKeys";
 
 export {
   useTasks,
@@ -25,4 +25,4 @@ export {
   type TasksListResponse,
   type TaskMetricsResponse,
   type EligibleAssigneeItem,
-} from '@/tenant/features/tasks/hooks/useTasksApi';
+} from "@/tenant/features/tasks/hooks/useTasksApi";

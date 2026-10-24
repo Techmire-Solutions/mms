@@ -13,7 +13,7 @@ import type { ContactsDuplicatePairsPageResult } from "@mms/shared";
 import { DUPLICATE_REASON_I18N } from "@/lib/contacts/contactI18n";
 import { notify } from "@/lib/notify";
 import { reportClientError } from "@/lib/clientErrorReporting";
-import type { DuplicatePair } from "@/tenant/features/contacts/components/duplicateDetectionTypes";
+import type { DuplicatePair } from "@/tenant/features/contacts/lib/duplicateDetectionTypes";
 
 function mapPairToViewModel(
   pair: {
@@ -38,7 +38,11 @@ export type DuplicateTierFilter = "all" | "high" | "medium" | "low";
 export function useDuplicateDetectionState({
   onMerge,
 }: {
-  onMerge: (keepId: string | number, deleteId: string | number, mergedData: Contact) => Promise<void>;
+  onMerge: (
+    keepId: string | number,
+    deleteId: string | number,
+    mergedData: Contact,
+  ) => Promise<void>;
 }) {
   const { prefs } = useContactConfig();
   const { t } = useTranslation();
@@ -82,11 +86,14 @@ export function useDuplicateDetectionState({
     return [];
   })() as DuplicatePair[];
 
-  const handleLoadMoreDuplicates = (() => {
+  const handleLoadMoreDuplicates = () => {
     if (serverPairs?.hasMore) setDupPage((currentPage) => currentPage + 1);
-  });
+  };
 
-  const unhandledPairs = (() => detectedPairs.filter((pair) => !dismissedPairIds.has(pair.id) && !mergedPairIds.has(pair.id)))() as DuplicatePair[];
+  const unhandledPairs = (() =>
+    detectedPairs.filter(
+      (pair) => !dismissedPairIds.has(pair.id) && !mergedPairIds.has(pair.id),
+    ))() as DuplicatePair[];
 
   const tierCounts = (() => {
     let high = 0;
@@ -111,13 +118,17 @@ export function useDuplicateDetectionState({
       if (!query) return true;
 
       return pair.contacts.some((contact) => {
-        const name = `${contact.name || ""} ${contact.firstName || ""} ${contact.lastName || ""}`.toLowerCase();
+        const name =
+          `${contact.name || ""} ${contact.firstName || ""} ${contact.lastName || ""}`.toLowerCase();
         if (name.includes(query)) return true;
         const cnic = (contact.cnic || "").toLowerCase();
         if (cnic.includes(query)) return true;
         const phones = (contact.phones || []).map((p) => p.number).join(" ");
         if (phones.includes(query)) return true;
-        const emails = (contact.emails || []).map((e) => e.address).join(" ").toLowerCase();
+        const emails = (contact.emails || [])
+          .map((e) => e.address)
+          .join(" ")
+          .toLowerCase();
         if (emails.includes(query)) return true;
         return false;
       });

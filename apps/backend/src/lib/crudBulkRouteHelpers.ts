@@ -1,5 +1,4 @@
-import type { ZodType } from 'zod';
-import type { FastifyReply, FastifyRequest } from 'fastify';
+import type { FastifyReply, FastifyRequest } from "fastify";
 import {
   isQueryFlagTrue,
   type User,
@@ -18,16 +17,30 @@ import {
   USERS_MODULE_MANIFEST,
   MESSAGING_MODULE_MANIFEST,
   LIST_PAGE_MAX_LIMIT,
-} from '@mms/shared';
-import { canDeleteCollection, canReadCollection } from './rbacCanHelpers.js';
-import { sendForbidden, sendDatabaseError } from './httpErrors.js';
-import { parseRequest, replyValidationError } from './zodRequest.js';
-import { includeDeletedQuerySchema } from '@mms/shared';
-import { sql } from 'drizzle-orm';
-import { withTenant } from '../db/tenant-context.js';
-import { getRequestTenant } from './tenantContext.js';
+} from "@mms/shared";
+import { canDeleteCollection, canReadCollection } from "./rbacCanHelpers.js";
+import { sendForbidden, sendDatabaseError } from "./httpErrors.js";
+import { parseRequest, replyValidationError } from "./zodRequest.js";
+import { includeDeletedQuerySchema } from "@mms/shared";
+import { sql } from "drizzle-orm";
+import { withTenant } from "../db/tenant-context.js";
+import { getRequestTenant } from "./tenantContext.js";
+import type { BulkListLoadContext } from "./crudBulkRouteTypes.js";
 
-const MANIFESTS_BY_COLLECTION: Record<string, { softDelete?: { captureDeletionReason?: boolean } }> = {
+// Option shapes live in their own module (ADR-001 line bands); re-exported so the
+// public surface of this file is unchanged for consumers.
+export type {
+  BulkListLoadContext,
+  BulkRoutesOptions,
+  SoftDeleteRouteErrorMapper,
+  SoftDeletableBulkRoutesOptions,
+  SoftDeletableBulkTrashRoutesOptions,
+} from "./crudBulkRouteTypes.js";
+
+const MANIFESTS_BY_COLLECTION: Record<
+  string,
+  { softDelete?: { captureDeletionReason?: boolean } }
+> = {
   contacts: CONTACTS_MODULE_MANIFEST,
   students: STUDENTS_MODULE_MANIFEST,
   faculty: FACULTY_MODULE_MANIFEST,
@@ -78,124 +91,12 @@ export function shouldCaptureDeletionReason(
   return true;
 }
 
-export interface BulkRoutesOptions<T> {
-  path: string;
-  collection: string;
-  schema: ZodType<T>;
-  loadFn?: () => Promise<unknown>;
-  loadPageFn?: (query: Record<string, unknown>) => Promise<unknown>;
-  /** When provided, the GET branch validates the full query (page/limit/search/sort/filters) and forwards it to `loadPageFn`. */
-  listQuerySchema?: ZodType;
-  /** Fallback page size when the client omits `limit` (schema path). */
-  defaultPageSize?: number;
-  saveFn: (data: T) => Promise<unknown>;
-  responseKey: string;
-  errorMessagePrefix: string;
-  /** When true, omits registering the GET endpoint (e.g. handled by @ts-rest contract router). */
-  customGetRoute?: boolean;
-}
-
-export type SoftDeleteRouteErrorMapper = (
-  error: unknown,
-) => { statusCode: number; body: Record<string, unknown> } | null;
-
-export interface SoftDeletableBulkRoutesOptions<T> {
-  path: string;
-  collection: string;
-  schema: ZodType<T>;
-  loadFn: (options?: { includeDeleted?: boolean }) => Promise<unknown>;
-  loadPageFn?: (query: Record<string, unknown>) => Promise<unknown>;
-  /** When provided, the GET branch validates the full query (page/limit/search/sort/filters) and forwards it to `loadPageFn`. */
-  listQuerySchema?: ZodType;
-  /** Fallback page size when the client omits `limit` (schema path). */
-  defaultPageSize?: number;
-  saveFn: (data: T) => Promise<unknown>;
-  deleteFn: (id: string, userId: string, reason?: string) => Promise<boolean | null | unknown>;
-  restoreFn: (id: string, userId: string) => Promise<boolean | null | unknown>;
-  bulkDeleteFn: (
-    ids: string[],
-    userId: string,
-    reason?: string,
-  ) => Promise<{ succeeded: number; failed: number }>;
-  /** Second `userId` arg for modules that audit the restore actor. */
-  bulkRestoreFn: (ids: string[], userId: string) => Promise<{ succeeded: number; failed: number }>;
-  responseKey: string;
-  errorMessagePrefix: string;
-  nameSingular: string;
-  /** Defaults to {@link bulkIdsBodySchema}; use string-only schemas when needed. */
-  bulkBodySchema?: ZodType<{ ids: Array<string | number>; deletionReason?: string }>;
-  /** Map domain delete failures (e.g. posted entries, self-delete) to stable HTTP responses. */
-  mapDeleteError?: SoftDeleteRouteErrorMapper;
-  /** Map domain restore failures (e.g. conflicting active records) to stable HTTP responses. */
-  mapRestoreError?: SoftDeleteRouteErrorMapper;
-  /** Whether this module captures deletion reason. Defaults to true. When false, deletionReason is stripped. */
-  captureDeletionReason?: boolean;
-  canDelete?: (user: User) => boolean;
-  onAfterDelete?: (user: User, id: string, reason?: string) => Promise<void>;
-  onAfterRestore?: (user: User, id: string) => Promise<void>;
-  onAfterBulkDelete?: (
-    user: User,
-    result: { succeeded: number; failed: number },
-    deletionReason?: string,
-  ) => Promise<void>;
-  onAfterBulkRestore?: (
-    user: User,
-    result: { succeeded: number; failed: number },
-  ) => Promise<void>;
-}
-
-export type SoftDeletableBulkTrashRoutesOptions = {
-  /** Route prefix; use `/` for module root (contacts/students plugins). */
-  path?: string;
-  collection: string;
-  errorMessagePrefix: string;
-  bulkBodySchema?: ZodType<{ ids: Array<string | number>; deletionReason?: string }>;
-  bulkDeleteFn: (
-    ids: string[],
-    userId: string,
-    reason?: string,
-  ) => Promise<{ succeeded: number; failed: number }>;
-  /** Second `userId` arg for modules that audit restore actor (Contacts). */
-  bulkRestoreFn: (
-    ids: string[],
-    userId: string,
-  ) => Promise<{ succeeded: number; failed: number }>;
-  canDelete?: (user: User) => boolean;
-  /** Whether this module captures deletion reason. Defaults to true. When false, deletionReason is stripped. */
-  captureDeletionReason?: boolean;
-  /** Map domain delete failures (e.g. active dependencies, restrict guards) to stable HTTP responses. */
-  mapDeleteError?: SoftDeleteRouteErrorMapper;
-  /** Map domain restore failures (e.g. conflicting active records) to stable HTTP responses. */
-  mapRestoreError?: SoftDeleteRouteErrorMapper;
-  onAfterBulkDelete?: (
-    user: User,
-    result: { succeeded: number; failed: number },
-    deletionReason?: string,
-  ) => Promise<void>;
-  onAfterBulkRestore?: (
-    user: User,
-    result: { succeeded: number; failed: number },
-  ) => Promise<void>;
-};
-
-export type BulkListLoadContext = {
-  loadFn?: () => Promise<unknown>;
-  loadPageFn?: (query: Record<string, unknown>) => Promise<unknown>;
-  listQuerySchema?: ZodType;
-  defaultPageSize?: number;
-  responseKey: string;
-  errorMessagePrefix: string;
-  /** When true, parse `includeDeleted` and gate trash reads on delete permission. */
-  supportsIncludeDeleted?: boolean;
-  canDelete?: (user: User) => boolean;
-};
-
 /**
  * Parses a positive integer query param, falling back on NaN/0/negative and
  * clamping to `max` so a caller cannot request an unbounded page size.
  */
 function parseClampedInt(value: string | undefined, fallback: number, max: number): number {
-  const parsed = Number.parseInt(value ?? '', 10);
+  const parsed = Number.parseInt(value ?? "", 10);
   if (!Number.isFinite(parsed) || parsed < 1) return fallback;
   return Math.min(parsed, max);
 }
@@ -248,14 +149,17 @@ export async function handleBulkListGet(
     }
 
     if (includeDeleted && !canDelete(user)) {
-      return sendForbidden(reply, `Viewing deleted ${errorMessagePrefix} requires delete permissions`);
+      return sendForbidden(
+        reply,
+        `Viewing deleted ${errorMessagePrefix} requires delete permissions`,
+      );
     }
 
     const runInScope = async <R>(fn: () => Promise<R>): Promise<R> => {
       if (!includeDeleted) return fn();
       const tenant = getRequestTenant() ?? user.workspaceSubdomain;
       return withTenant(tenant, async (tx) => {
-        if (tx && typeof tx.execute === 'function') {
+        if (tx && typeof tx.execute === "function") {
           await tx.execute(sql`SET LOCAL app.include_deleted = 'true'`);
         }
         return fn();
@@ -266,7 +170,10 @@ export async function handleBulkListGet(
       const data = await runInScope(() =>
         loadPageFn({
           ...pageQuery,
-          limit: Math.min(Number(pageQuery.limit ?? defaultPageSize ?? 50) || 50, LIST_PAGE_MAX_LIMIT),
+          limit: Math.min(
+            Number(pageQuery.limit ?? defaultPageSize ?? 50) || 50,
+            LIST_PAGE_MAX_LIMIT,
+          ),
           ...(supportsIncludeDeleted ? { includeDeleted } : {}),
         }),
       );
@@ -287,7 +194,7 @@ export async function handleBulkListGet(
             limit,
             search: queryParams.search,
             sortField: queryParams.sortField,
-            sortDir: queryParams.sortDir as 'asc' | 'desc',
+            sortDir: queryParams.sortDir as "asc" | "desc",
             ...(supportsIncludeDeleted ? { includeDeleted } : {}),
           }),
         );

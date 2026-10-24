@@ -27,7 +27,7 @@ vi.mock("@/tenant/features/examinations/hooks/useExamSelection", () => ({
   }),
 }));
 
-vi.mock("@/tenant/features/examinations/hooks/useExaminationsTsrHooks", () => ({
+vi.mock("@/tenant/features/examinations/hooks/useExaminationsQueries", () => ({
   useExaminationsContractList: () => ({
     data: {
       status: 200,
@@ -62,22 +62,17 @@ vi.mock("./ExaminationsListContent", () => ({
   ExaminationsListContent: () => <div data-testid="list-content">List Content</div>,
 }));
 
-vi.mock("@/components/ui/ListPagination", () => ({
+vi.mock("@/components/app/ListPagination", () => ({
   ListPagination: () => <div data-testid="list-pagination">List Pagination</div>,
 }));
 
-vi.mock("@/components/ui/ConfirmAlertDialog", () => ({
+vi.mock("@/components/app/ConfirmAlertDialog", () => ({
   ConfirmAlertDialog: () => null,
 }));
 
 describe("ExaminationsList Component", () => {
   it("renders filters, content, and pagination", () => {
-    const html = renderToStaticMarkup(
-      <ExaminationsList
-        onNew={vi.fn()}
-        onEdit={vi.fn()}
-      />,
-    );
+    const html = renderToStaticMarkup(<ExaminationsList onNew={vi.fn()} onEdit={vi.fn()} />);
 
     expect(html).toContain("List Filters");
     expect(html).toContain("List Content");

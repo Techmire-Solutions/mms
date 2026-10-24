@@ -5,17 +5,17 @@ import {
   parseSessionTimeoutMinutes,
   validatePasswordPolicy,
   type GlobalSettings,
-} from '@mms/shared';
-import { getRequestTenant } from '../lib/tenantContext.js';
+} from "@mms/shared";
+import { getRequestTenant } from "../lib/tenantContext.js";
 import {
   getWorkspaceGlobalSettings,
   upsertWorkspaceGlobalSettings as upsertWorkspaceGlobalSettingsRepo,
-} from '../db/repositories/workspaceRepository.js';
-import { saveObject } from '../db/database.js';
-import { redisDel, redisKeys } from '../lib/redis.js';
-import { getOrSetMultiTier, invalidateMultiTierCache } from '../lib/cache/index.js';
+} from "../db/repositories/workspaceRepository.js";
+import { saveObject } from "../db/database.js";
+import { redisDel, redisKeys } from "../lib/redis.js";
+import { getOrSetMultiTier, invalidateMultiTierCache } from "../lib/cache/index.js";
 
-const MASK_PREFIX = '****';
+const MASK_PREFIX = "****";
 const GLOBAL_SETTINGS_CACHE_TTL_SECONDS = 300;
 const globalSettingsCacheKey = (t: string) => redisKeys.globalSettings(t);
 
@@ -24,7 +24,7 @@ export async function invalidateGlobalSettingsCache(tenant: string): Promise<voi
   if (!cleanTenant) return;
   const key = globalSettingsCacheKey(cleanTenant);
   await redisDel(key);
-  await invalidateMultiTierCache({ tenantId: cleanTenant, domain: 'global_settings', key });
+  await invalidateMultiTierCache({ tenantId: cleanTenant, domain: "global_settings", key });
 }
 
 /**
@@ -32,14 +32,14 @@ export async function invalidateGlobalSettingsCache(tenant: string): Promise<voi
  * Empty/undefined values stay empty so the UI can distinguish "not set".
  */
 export function maskSecret(value: string | undefined): string {
-  if (!value) return '';
+  if (!value) return "";
   if (value.length <= 4) return MASK_PREFIX;
   return `${MASK_PREFIX}${value.slice(-4)}`;
 }
 
 /** True when a value is a masked secret (i.e. produced by maskSecret). */
 export function isMaskedSecret(value: string | undefined): boolean {
-  return typeof value === 'string' && value.startsWith(MASK_PREFIX);
+  return typeof value === "string" && value.startsWith(MASK_PREFIX);
 }
 
 /**
@@ -98,7 +98,7 @@ export async function loadGlobalSettings(subdomain?: string): Promise<GlobalSett
   const key = globalSettingsCacheKey(cleanTenant);
   return getOrSetMultiTier(
     cleanTenant,
-    'global_settings',
+    "global_settings",
     key,
     async () => {
       try {
@@ -119,7 +119,7 @@ export async function saveGlobalSettings(
 ): Promise<void> {
   const tenant = subdomain ?? getRequestTenant();
   if (!tenant) {
-    throw new Error('Tenant context required to save global settings');
+    throw new Error("Tenant context required to save global settings");
   }
   // Round-trip guard: the client only ever holds masked LLM secrets. If an
   // incoming value is masked (or empty), preserve the currently-stored full
@@ -129,18 +129,18 @@ export async function saveGlobalSettings(
   const currentConfigs = current?.llmConfigs ?? [];
   const currentConfigById = new Map(currentConfigs.map((config) => [config.id, config]));
   if (isMaskedSecret(settings.llmApiKey) || !settings.llmApiKey) {
-    settings = { ...settings, llmApiKey: current?.llmApiKey ?? '' };
+    settings = { ...settings, llmApiKey: current?.llmApiKey ?? "" };
   }
   const llmConfigs = (settings.llmConfigs ?? []).map((config) => {
     if (isMaskedSecret(config.apiKey) || !config.apiKey) {
       const existing = currentConfigById.get(config.id);
-      return { ...config, apiKey: existing?.apiKey ?? '' };
+      return { ...config, apiKey: existing?.apiKey ?? "" };
     }
     return config;
   });
   settings = { ...settings, llmConfigs };
   await upsertWorkspaceGlobalSettingsRepo(tenant, settings);
-  await saveObject('global_settings', settings);
+  await saveObject("global_settings", settings);
   await invalidateGlobalSettingsCache(tenant);
 }
 

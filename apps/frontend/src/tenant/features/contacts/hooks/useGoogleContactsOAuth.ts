@@ -62,7 +62,17 @@ export function useGoogleContactsOAuth({
         setExchanging(false);
       }
     },
-    [canWrite, exchangeOAuth, isConfigured, setAuthCode, setConfig, setError, setExchanging, setShowAuthCode, t],
+    [
+      canWrite,
+      exchangeOAuth,
+      isConfigured,
+      setAuthCode,
+      setConfig,
+      setError,
+      setExchanging,
+      setShowAuthCode,
+      t,
+    ],
   );
 
   const handleConnect = (): void => {
@@ -85,7 +95,8 @@ export function useGoogleContactsOAuth({
   useEffect(() => {
     const onMessage = (event: MessageEvent): void => {
       if (event.origin !== window.location.origin) return;
-      if (event.data?.type !== GOOGLE_CONTACTS_OAUTH_MESSAGE || typeof event.data.code !== "string") return;
+      if (event.data?.type !== GOOGLE_CONTACTS_OAUTH_MESSAGE || typeof event.data.code !== "string")
+        return;
       setAuthCode(event.data.code);
       setShowAuthCode(true);
       void exchangeOAuthCode(event.data.code);

@@ -1,6 +1,6 @@
 import type { Exam } from "@mms/shared";
-import { SEMANTIC_BADGE } from "@/lib/semanticTone";
-import type { EntityDescriptor } from "@/types/entityRegistry";
+import { SEMANTIC_BADGE } from "@/lib/ui/semanticTone";
+import type { EntityDescriptor } from "@/components/common/entityRegistryTypes";
 import { createEntityDescriptor } from "../entityDescriptorFactory";
 
 export const examinationsEntityDescriptor: EntityDescriptor<Exam> = createEntityDescriptor<Exam>({
@@ -51,7 +51,11 @@ export const examinationsEntityDescriptor: EntityDescriptor<Exam> = createEntity
         scheduled: { label: "Scheduled", tone: "warning", className: SEMANTIC_BADGE.warning },
         ongoing: { label: "Ongoing", tone: "primary", className: SEMANTIC_BADGE.primary },
         completed: { label: "Completed", tone: "success", className: SEMANTIC_BADGE.success },
-        cancelled: { label: "Cancelled", tone: "destructive", className: SEMANTIC_BADGE.destructive },
+        cancelled: {
+          label: "Cancelled",
+          tone: "destructive",
+          className: SEMANTIC_BADGE.destructive,
+        },
       },
     },
     {

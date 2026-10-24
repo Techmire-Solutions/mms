@@ -11,8 +11,10 @@ export interface ContactsColumnConfig {
 }
 
 /** Complete Contact Configuration Context shape consumed by tenant views and forms. */
-export interface ContactConfigContextType
-  extends Omit<ContactConfigExtras, "lookupsReady" | "reloadCollections"> {
+export interface ContactConfigContextType extends Omit<
+  ContactConfigExtras,
+  "lookupsReady" | "reloadCollections"
+> {
   defaultPhoneCountryCode: string;
 }
 
@@ -20,5 +22,3 @@ export interface ContactConfigContextType
 export const ContactConfigContext = createContext<ContactConfigContextType>(
   getDefaultContactConfigContextValue(),
 );
-
-

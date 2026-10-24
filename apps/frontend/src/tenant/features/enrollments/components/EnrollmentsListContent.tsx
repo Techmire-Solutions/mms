@@ -1,12 +1,10 @@
 import React from "react";
-import { EmptyState } from "@/components/ui/EmptyState";
-import { ListPagination } from "@/components/ui/ListPagination";
-import { WORK_SURFACE } from "@/components/ui/formStyles";
-import { cn } from "@/lib/utils";
+import { EmptyState } from "@/components/app/EmptyState";
+import { ListPagination } from "@/components/app/ListPagination";
 import { useTranslation } from "@/hooks/useTranslation";
 import { EnrollmentsListCards } from "@/tenant/features/enrollments/components/EnrollmentsListCards";
 import { EnrollmentsListDesktopTable } from "@/tenant/features/enrollments/components/EnrollmentsListDesktopTable";
-import type { EnrollmentListContentProps } from "@/tenant/features/enrollments/components/enrollmentListContentShared";
+import type { EnrollmentListContentProps } from "@/tenant/features/enrollments/lib/enrollmentListContentShared";
 import { Search } from "lucide-react";
 
 export function EnrollmentsListContent(props: EnrollmentListContentProps): React.JSX.Element {
@@ -20,15 +18,15 @@ export function EnrollmentsListContent(props: EnrollmentListContentProps): React
           variant="dashed"
           icon={Search}
           title={showDeleted ? t("enrollments.empty.trashTitle") : t("enrollments.empty.title")}
-          description={showDeleted ? t("enrollments.empty.trashSubtitle") : t("enrollments.empty.description")}
+          description={
+            showDeleted ? t("enrollments.empty.trashSubtitle") : t("enrollments.empty.description")
+          }
           compact
         />
       ) : props.viewMode === "cards" ? (
         <EnrollmentsListCards {...props} />
       ) : (
-        <div className={cn(WORK_SURFACE, "overflow-hidden")}>
-          <EnrollmentsListDesktopTable {...props} />
-        </div>
+        <EnrollmentsListDesktopTable {...props} />
       )}
 
       <ListPagination

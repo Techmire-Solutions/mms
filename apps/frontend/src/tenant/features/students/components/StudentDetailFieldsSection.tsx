@@ -8,12 +8,12 @@ import {
   formatDate,
   formatDateTime,
 } from "@mms/shared";
-import { DetailAttributeRow } from "@/components/ui/DetailAttributeRow";
-import { DetailSectionCard } from "@/components/ui/DetailSectionCard";
+import { DetailAttributeRow } from "@/components/app/DetailAttributeRow";
+import { DetailSectionCard } from "@/components/app/DetailSectionCard";
 import { useTranslation } from "@/hooks/useTranslation";
 import { formatContactGenderLabel, resolveRegistryLabel } from "@/lib/contacts/contactI18n";
-import { getGenderIcon, getGenderIconClass } from "@/lib/genderUi";
-import { formatStudentsListContentCustomValue } from "@/tenant/features/students/components/studentsListCustomColumns";
+import { getGenderIcon, getGenderIconClass } from "@/lib/ui/genderUi";
+import { formatStudentsListContentCustomValue } from "@/tenant/features/students/lib/studentsListCustomColumns";
 
 export interface SortedField {
   key: string;
@@ -43,8 +43,8 @@ export function StudentDetailFieldsSection({
 
   const renderField = (field: SortedField): React.ReactNode => {
     if (
-      STUDENT_DETAIL_HERO_FIELD_KEYS.has(field.key)
-      || OBSOLETE_STUDENT_GUARDIAN_FIELD_KEYS.has(field.key)
+      STUDENT_DETAIL_HERO_FIELD_KEYS.has(field.key) ||
+      OBSOLETE_STUDENT_GUARDIAN_FIELD_KEYS.has(field.key)
     ) {
       return null;
     }

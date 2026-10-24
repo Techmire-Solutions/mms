@@ -1,16 +1,30 @@
 import { formatDate } from "@mms/shared";
-import { EmptyState } from "@/components/ui/EmptyState";
-import { TableCell, TableFooter, TableRow } from "@/components/ui/table";
-import { StatGrid, StatRow } from "@/components/ui/StatGrid";
-import { ReportMoneyCard } from "@/components/ui/reports/ReportMoneyCard";
-import { ReportMoneyCardsGrid } from "@/components/ui/reports/ReportMoneyCardsGrid";
-import { ReportMoneySummaryTile } from "@/components/ui/reports/ReportMoneySummaryTile";
+import { EmptyState } from "@/components/app/EmptyState";
+import { StatGrid, StatRow } from "@/components/app/StatGrid";
+import { ReportMoneyCard } from "@/components/reports/ReportMoneyCard";
+import { ReportMoneyCardsGrid } from "@/components/reports/ReportMoneyCardsGrid";
+import { ReportMoneySummaryTile } from "@/components/reports/ReportMoneySummaryTile";
+import { WORK_SURFACE } from "@/components/ui/formStyles";
 import { WorkBatchTable } from "@/components/common/work/WorkBatchTable";
-import { resolveVisibleColumns, toColumnResize, type DataTableColumnLayout } from "@/components/common/data-table";
+import {
+  resolveVisibleColumns,
+  toColumnResize,
+  type DataTableColumnLayout,
+} from "@/components/common/data-table";
 import { useTranslation } from "@/hooks/useTranslation";
-import { useWorkDirectoryViewMode, type WorkDirectoryViewMode } from "@/hooks/useWorkDirectoryViewMode";
-import { buildCashbookFooterCells, type CashbookRow } from "@/tenant/features/accounting/components/cashbookViewShared";
-import { useCashbookColumns, type CashbookVoucherAction } from "@/tenant/features/accounting/components/useCashbookColumns";
+import {
+  useWorkDirectoryViewMode,
+  type WorkDirectoryViewMode,
+} from "@/hooks/useWorkDirectoryViewMode";
+import {
+  buildCashbookFooterCells,
+  type CashbookRow,
+} from "@/tenant/features/accounting/lib/cashbookViewShared";
+import type { WorkBatchTableFooterRow } from "@/components/common/work/workBatchTableTypes";
+import {
+  useCashbookColumns,
+  type CashbookVoucherAction,
+} from "@/tenant/features/accounting/components/useCashbookColumns";
 import { PaymentVoucherPrintButton } from "@/tenant/features/accounting/components/PaymentVoucherPrintButton";
 
 /** ReportMoneyCard tile (report) — not DirectoryCard. */
@@ -40,85 +54,110 @@ export function CashbookViewTable({
   const { columns, flowBadge, flowIcon } = useCashbookColumns(formatCurrency, voucher);
 
   if (rows.length === 0) {
-    return (
-      <EmptyState variant="dashed" title={t("accounting.cashbook.noTransactions")} compact />
-    );
+    return <EmptyState variant="dashed" title={t("accounting.cashbook.noTransactions")} compact />;
   }
 
   if (viewMode === "cards") {
     return (
-      <ReportMoneyCardsGrid surface>
-        {rows.map((row) => (
-          <ReportMoneyCard
-            key={row.id}
-            title={
-              <>
-                <p className="text-xs text-muted-foreground m-0">{formatDate(row.date)}</p>
-                <h4 className="font-medium text-sm text-foreground m-0 mt-0.5">{row.description}</h4>
-                <p className="text-xs text-muted-foreground font-mono m-0">{row.ref}</p>
-              </>
-            }
-            end={
-              <div className="inline-flex items-center gap-1.5">
-                {flowIcon(row.flowType)}
-                {flowBadge(row)}
-                {voucher?.canPrint(row) && (
-                  <PaymentVoucherPrintButton entry={row} onPrint={voucher.onPrint} />
-                )}
-              </div>
-            }
+      <div className={WORK_SURFACE}>
+        <ReportMoneyCardsGrid
+          className="p-3"
+          items={rows}
+          renderItem={(row) => (
+            <ReportMoneyCard
+              key={row.id}
+              title={
+                <>
+                  <p className="text-xs text-muted-foreground m-0">{formatDate(row.date)}</p>
+                  <h4 className="font-medium text-sm text-foreground m-0 mt-0.5">
+                    {row.description}
+                  </h4>
+                  <p className="text-xs text-muted-foreground font-mono m-0">{row.ref}</p>
+                </>
+              }
+              end={
+                <div className="inline-flex items-center gap-1.5">
+                  {flowIcon(row.flowType)}
+                  {flowBadge(row)}
+                  {voucher?.canPrint(row) && (
+                    <PaymentVoucherPrintButton entry={row} onPrint={voucher.onPrint} />
+                  )}
+                </div>
+              }
+            >
+              <StatGrid>
+                <StatRow
+                  label={t("accounting.cashbook.moneyIn")}
+                  value={
+                    row.flowType === "in" ? (
+                      formatCurrency(row.flowAmount)
+                    ) : (
+                      <span className="text-muted-foreground font-normal">—</span>
+                    )
+                  }
+                  dtClassName="text-success"
+                  ddClassName="font-mono font-bold text-success"
+                />
+                <StatRow
+                  label={t("accounting.cashbook.moneyOut")}
+                  value={
+                    row.flowType === "out" ? (
+                      formatCurrency(row.flowAmount)
+                    ) : (
+                      <span className="text-muted-foreground font-normal">—</span>
+                    )
+                  }
+                  dtClassName="text-destructive"
+                  ddClassName="font-mono font-bold text-destructive"
+                />
+              </StatGrid>
+            </ReportMoneyCard>
+          )}
+        />
+        <div className="px-3 pb-3">
+          <ReportMoneySummaryTile
+            label={t("accounting.cashbook.transactionCount", { count: rows.length })}
           >
             <StatGrid>
               <StatRow
                 label={t("accounting.cashbook.moneyIn")}
-                value={row.flowType === "in" ? formatCurrency(row.flowAmount) : <span className="text-muted-foreground font-normal">—</span>}
+                value={formatCurrency(totalIn)}
                 dtClassName="text-success"
-                ddClassName="font-mono font-bold text-success"
+                ddClassName="font-mono font-bold text-success text-xs"
               />
               <StatRow
                 label={t("accounting.cashbook.moneyOut")}
-                value={row.flowType === "out" ? formatCurrency(row.flowAmount) : <span className="text-muted-foreground font-normal">—</span>}
+                value={formatCurrency(totalOut)}
                 dtClassName="text-destructive"
-                ddClassName="font-mono font-bold text-destructive"
+                ddClassName="font-mono font-bold text-destructive text-xs"
               />
             </StatGrid>
-          </ReportMoneyCard>
-        ))}
-        <ReportMoneySummaryTile label={t("accounting.cashbook.transactionCount", { count: rows.length })}>
-          <StatGrid>
-            <StatRow
-              label={t("accounting.cashbook.moneyIn")}
-              value={formatCurrency(totalIn)}
-              dtClassName="text-success"
-              ddClassName="font-mono font-bold text-success text-xs"
-            />
-            <StatRow
-              label={t("accounting.cashbook.moneyOut")}
-              value={formatCurrency(totalOut)}
-              dtClassName="text-destructive"
-              ddClassName="font-mono font-bold text-destructive text-xs"
-            />
-          </StatGrid>
-        </ReportMoneySummaryTile>
-      </ReportMoneyCardsGrid>
+          </ReportMoneySummaryTile>
+        </div>
+      </div>
     );
   }
 
-  const visibleColumns = columnLayout ? resolveVisibleColumns(columns, columnLayout.columnRegistry) : columns;
-  const footerCells = buildCashbookFooterCells(visibleColumns.map((column) => column.id)).map((cell, index) =>
-    cell.kind === "label" || cell.kind === "blank" ? (
-      <TableCell key={index} colSpan={cell.span} className="table-footer-label">
-        {cell.kind === "label" ? t("accounting.cashbook.transactionCount", { count: rows.length }) : null}
-      </TableCell>
-    ) : (
-      <TableCell
-        key={index}
-        className={`table-amount-cell text-xs ${cell.kind === "moneyIn" ? "text-success" : "text-destructive"}`}
-      >
-        {formatCurrency(cell.kind === "moneyIn" ? totalIn : totalOut)}
-      </TableCell>
+  const visibleColumns = columnLayout
+    ? resolveVisibleColumns(columns, columnLayout.columnRegistry)
+    : columns;
+  const footerRow: WorkBatchTableFooterRow = {
+    cells: buildCashbookFooterCells(visibleColumns.map((column) => column.id)).map(
+      (cell, _index) => ({
+        colSpan: cell.span,
+        className:
+          cell.kind === "label" || cell.kind === "blank"
+            ? "table-footer-label"
+            : `table-amount-cell text-xs ${cell.kind === "moneyIn" ? "text-success" : "text-destructive"}`,
+        content:
+          cell.kind === "label"
+            ? t("accounting.cashbook.transactionCount", { count: rows.length })
+            : cell.kind === "blank"
+              ? null
+              : formatCurrency(cell.kind === "moneyIn" ? totalIn : totalOut),
+      }),
     ),
-  );
+  };
 
   return (
     <WorkBatchTable
@@ -126,11 +165,7 @@ export function CashbookViewTable({
       columns={visibleColumns}
       caption={t("accounting.cashbook.tableCaption")}
       columnResize={toColumnResize(columnLayout)}
-      tableFooter={
-        <TableFooter>
-          <TableRow>{footerCells}</TableRow>
-        </TableFooter>
-      }
+      footerRow={footerRow}
     />
   );
 }

@@ -39,13 +39,15 @@ describe("FacultyFormSections Components", () => {
     const html = renderToStaticMarkup(
       <FacultyContactSection
         facultyDraft={{ contactId: "cnt-1" }}
-        linkedContact={{
-          id: "cnt-1",
-          name: "Ustadh Ali",
-          phones: [{ number: "+923001234567" }],
-          emails: [{ address: "ali@madrasa.org" }],
-          education: [{ degree: "M.A. Islamic Studies", fieldOfStudy: "Hadith" }],
-        } as any}
+        linkedContact={
+          {
+            id: "cnt-1",
+            name: "Ustadh Ali",
+            phones: [{ number: "+923001234567" }],
+            emails: [{ address: "ali@madrasa.org" }],
+            education: [{ degree: "M.A. Islamic Studies", fieldOfStudy: "Hadith" }],
+          } as unknown as never
+        }
         linkedFacultyContactIds={[]}
         errors={{}}
         fields={{}}
@@ -152,15 +154,17 @@ describe("FacultyFormSections Components", () => {
           department: "Islamic Jurisprudence",
           departmentId: "dept-1",
         }}
-        designationOptions={[{
-          id: "senior-faculty",
-          departmentId: "dept-1",
-          departmentName: "Islamic Jurisprudence",
-          name: "Senior Faculty",
-          status: "active",
-          hierarchyRank: 3,
-          assignableRoles: ["faculty_member"],
-        }]}
+        designationOptions={[
+          {
+            id: "senior-faculty",
+            departmentId: "dept-1",
+            departmentName: "Islamic Jurisprudence",
+            name: "Senior Faculty",
+            status: "active",
+            hierarchyRank: 3,
+            assignableRoles: ["faculty_member"],
+          },
+        ]}
         isFieldEnabled={() => true}
         isFieldRequired={() => false}
         onDraftChange={vi.fn()}

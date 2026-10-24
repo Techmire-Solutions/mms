@@ -2,13 +2,14 @@ import React from "react";
 import { GraduationCap, School, Calendar, Award } from "lucide-react";
 import type { Contact } from "@mms/shared";
 import { useTranslation } from "@/hooks/useTranslation";
-import { DetailSectionCard } from "@/components/ui/DetailSectionCard";
+import { DetailSectionCard } from "@/components/app/DetailSectionCard";
+import { Badge } from "@/components/ui/badge";
 import { COLLECTION_CONTAINER_CLASS } from "./contactDetailStyles";
-import { CopyBtn } from "@/components/ui/CopyBtn";
+import { CopyButton } from "@/components/app/CopyButton";
 import {
   MESSAGING_ICON_BTN,
   MESSAGING_ICON_BTN_TONES,
-} from "@/components/ui/messagingActionStyles";
+} from "@/components/app/messagingActionStyles";
 import { cn } from "@/lib/utils";
 
 export interface ContactDetailEducationSectionProps {
@@ -23,7 +24,10 @@ export function ContactDetailEducationSection({
 
   if (educationList.length === 0) {
     return (
-      <DetailSectionCard className={COLLECTION_CONTAINER_CLASS} title={t("contacts.detail.education")}>
+      <DetailSectionCard
+        className={COLLECTION_CONTAINER_CLASS}
+        title={t("contacts.detail.education")}
+      >
         <div className="p-3 text-xs text-muted-foreground italic">
           {t("contacts.detail.emptyEducation")}
         </div>
@@ -32,10 +36,15 @@ export function ContactDetailEducationSection({
   }
 
   return (
-    <DetailSectionCard className={COLLECTION_CONTAINER_CLASS} title={t("contacts.detail.education")}>
+    <DetailSectionCard
+      className={COLLECTION_CONTAINER_CLASS}
+      title={t("contacts.detail.education")}
+    >
       {educationList.map((edu, idx) => {
         const fullDetails = [
-          edu.fieldOfStudy ? `${t("contacts.fields.educationFieldOfStudy")}: ${edu.fieldOfStudy}` : null,
+          edu.fieldOfStudy
+            ? `${t("contacts.fields.educationFieldOfStudy")}: ${edu.fieldOfStudy}`
+            : null,
           edu.year ? `${t("contacts.fields.educationYear")}: ${edu.year}` : null,
           edu.grade ? `${t("contacts.fields.educationGrade")}: ${edu.grade}` : null,
         ]
@@ -52,9 +61,9 @@ export function ContactDetailEducationSection({
             <div className="min-w-0 flex-1 space-y-1">
               <div className="flex flex-wrap items-center gap-1.5">
                 {edu.degree ? (
-                  <span className="text-xs font-bold px-2 py-0.5 rounded bg-primary/10 text-primary border border-primary/20">
+                  <Badge tone="primary" size="sm" className="font-bold">
                     {edu.degree}
-                  </span>
+                  </Badge>
                 ) : null}
                 {edu.year ? (
                   <span className="text-xs text-muted-foreground inline-flex items-center gap-1">
@@ -85,7 +94,7 @@ export function ContactDetailEducationSection({
 
             {copyText ? (
               <div className="flex flex-shrink-0 items-center">
-                <CopyBtn
+                <CopyButton
                   text={copyText}
                   showToast
                   className={cn(

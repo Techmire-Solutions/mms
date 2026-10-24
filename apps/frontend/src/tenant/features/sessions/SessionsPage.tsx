@@ -1,70 +1,64 @@
-import React, { Suspense, lazy, useState } from 'react';
-import { AnimatePresence } from 'framer-motion';
-import { Plus, Calendar, Download, Upload } from 'lucide-react';
-import { ModulePageShell } from '@/components/ui/ModulePageShell';
-import { ResponsiveAccordionTabs } from '@/components/ui/ResponsiveAccordionTabs';
-import { ActionButton } from '@/components/ui/ActionButton';
-import RouteStatusFallback from '@/components/routing/RouteStatusFallback';
-import { SessionsDialogLayer } from '@/tenant/features/sessions/components/SessionsDialogLayer';
-import { SessionsWorkTier } from '@/tenant/features/sessions/components/SessionsWorkTier';
-import { SessionsCommandMetrics } from '@/tenant/features/sessions/components/SessionsCommandMetrics';
-import { useSessionsPageController } from '@/tenant/features/sessions/hooks/useSessionsPageController';
+import React, { lazy, useState } from "react";
+import { Plus, Calendar, Download, Upload } from "lucide-react";
+import { ModuleTierPage } from "@/components/app/ModuleTierPage";
+import { Button } from "@/components/ui/button";
+import { SessionsDialogLayer } from "@/tenant/features/sessions/components/SessionsDialogLayer";
+import { SessionsWorkTier } from "@/tenant/features/sessions/components/SessionsWorkTier";
+import { SessionsCommandMetrics } from "@/tenant/features/sessions/components/SessionsCommandMetrics";
+import { useSessionsPageController } from "@/tenant/features/sessions/hooks/useSessionsPageController";
+import { useAcademicTerms } from "@/hooks/useAcademicTerms";
 
 const SessionsReportsTier = lazy(() =>
-  import('@/tenant/features/sessions/components/SessionsReportsTier').then((m) => ({
-    default: m.SessionsReportsTier,
-  }))
+  import("@/tenant/components/moduleReports").then((m) => ({ default: m.ModuleReportsTier })),
 );
 const SessionsSetupTier = lazy(() =>
-  import('@/tenant/features/sessions/components/SessionsSetupTier').then((m) => ({
+  import("@/tenant/features/sessions/components/SessionsSetupTier").then((m) => ({
     default: m.SessionsSetupTier,
-  }))
+  })),
 );
 
-export default function Sessions() {
+export default function Sessions(): React.JSX.Element {
   const c = useSessionsPageController();
+  const terms = useAcademicTerms();
   const [importOpen, setImportOpen] = useState(false);
 
   return (
-    <ModulePageShell
-      seoTitle={`MMS - ${c.t('nav.sessions')}`}
-      seoDescription={c.t('page.sessions.subtitle')}
-      headerIcon={Calendar}
-      headerTitle={c.t('nav.sessions')}
-      headerSubtitle={c.t('page.sessions.subtitle')}
+    <ModuleTierPage
+      spec={{
+        seoTitle: `MMS - ${terms.session.plural}`,
+        subtitleKey: "page.sessions.subtitle",
+        headerTitle: terms.session.plural,
+        headerIcon: Calendar,
+        panelIdPrefix: "sessions-tab",
+      }}
+      tabs={c.PAGE_TABS}
+      activeTab={c.activeTab}
+      onTabChange={c.setActiveTab}
       headerActions={
         <>
           {c.canExport && !c.showDeleted ? (
-            <ActionButton variant="ghost" icon={Download} onClick={() => void c.handleExportCSV()}>
-              {c.t('common.export')}
-            </ActionButton>
+            <Button variant="ghost" icon={Download} onClick={() => void c.handleExportCSV()}>
+              {c.t("common.export")}
+            </Button>
           ) : null}
           {c.canWrite && !c.showDeleted ? (
-            <ActionButton variant="secondary" icon={Upload} onClick={() => setImportOpen(true)}>
-              {c.t('common.import')}
-            </ActionButton>
+            <Button variant="outline" icon={Upload} onClick={() => setImportOpen(true)}>
+              {c.t("common.import")}
+            </Button>
           ) : null}
           {c.canWrite && !c.showDeleted ? (
-            <ActionButton variant="primary" icon={Plus} onClick={c.openCreateForm}>
-              {c.t('sessions.action.new')}
-            </ActionButton>
+            <Button variant="primary" icon={Plus} onClick={c.openCreateForm}>
+              {c.t("sessions.action.new")}
+            </Button>
           ) : null}
         </>
       }
-      metricsStrip={
-        <SessionsCommandMetrics total={c.shownCount} shown={c.sessions.length} />
-      }
-    >
-      <ResponsiveAccordionTabs
-        tabs={c.PAGE_TABS}
-        activeTab={c.activeTab}
-        onTabChange={c.setActiveTab}
-        panelIdPrefix="sessions-tab"
-      >
-        <AnimatePresence mode="wait">
-          {c.activeTab === 'work' ? (
-            <div className="space-y-5">
-              <SessionsWorkTier
+      metrics={<SessionsCommandMetrics total={c.shownCount} shown={c.sessions.length} />}
+      tiers={[
+        {
+          id: "work",
+          content: (
+            <SessionsWorkTier
               search={c.search}
               filterStatus={c.filterStatus}
               filterType={c.filterType}
@@ -93,8 +87,12 @@ export default function Sessions() {
               statusConfig={c.statusConfig}
               typeConfig={c.typeConfig}
               onSearchChange={c.setSearch}
-              onStatusFilterToggle={(statusOption) => c.toggleFilter(c.filterStatus, c.setFilterStatus, statusOption)}
-              onTypeFilterToggle={(typeOption) => c.toggleFilter(c.filterType, c.setFilterType, typeOption)}
+              onStatusFilterToggle={(statusOption) =>
+                c.toggleFilter(c.filterStatus, c.setFilterStatus, statusOption)
+              }
+              onTypeFilterToggle={(typeOption) =>
+                c.toggleFilter(c.filterType, c.setFilterType, typeOption)
+              }
               onClearFilters={c.clearFilters}
               onToggleDeleted={() => c.setShowDeleted((previous) => !previous)}
               onRetry={() => void c.refetch()}
@@ -102,7 +100,7 @@ export default function Sessions() {
               onOpenDetail={c.setDetailSession}
               onSort={c.handleSort}
               onToggleSelectAll={c.toggleSelectAll}
-              onToggleSelectedSession={c.toggleSelectedSession}
+              onToggleSelectedSession={c.toggleSelected}
               onRequestDelete={c.setPendingDeleteId}
               onRestore={c.handleRestore}
               onRequestBulkDelete={() => c.setConfirmBulkDeleteOpen(true)}
@@ -114,44 +112,38 @@ export default function Sessions() {
               canExport={c.canExport}
               onBulkExport={() => void c.handleBulkExport()}
             />
-            </div>
-          ) : c.activeTab === 'reports' ? (
-            <Suspense fallback={<RouteStatusFallback />}>
-              <SessionsReportsTier />
-            </Suspense>
-          ) : c.activeTab === 'setup' ? (
-            <Suspense fallback={<RouteStatusFallback />}>
-              <SessionsSetupTier />
-            </Suspense>
-          ) : null}
-        </AnimatePresence>
-      </ResponsiveAccordionTabs>
-
-      <SessionsDialogLayer
-        showForm={c.showForm}
-        editSession={c.editSession}
-        detailSession={c.detailSession}
-        canDelete={c.canDelete}
-        pendingDeleteId={c.pendingDeleteId}
-        confirmBulkDeleteOpen={c.confirmBulkDeleteOpen}
-        confirmBulkRestoreOpen={c.confirmBulkRestoreOpen}
-        selectedCount={c.selectedIds.length}
-        importOpen={importOpen}
-        onCloseImport={() => setImportOpen(false)}
-        canWrite={c.canWrite}
-        onCloseForm={c.closeForm}
-        onSave={c.handleSave}
-        onCloseDetail={() => c.setDetailSession(null)}
-        onUpdate={c.handleUpdate}
-        onEdit={c.openEditForm}
-        onRestore={c.handleRestore}
-        onPendingDeleteChange={c.setPendingDeleteId}
-        onConfirmDelete={c.confirmDelete}
-        onBulkDeleteOpenChange={c.setConfirmBulkDeleteOpen}
-        onConfirmBulkDelete={c.handleBulkDelete}
-        onBulkRestoreOpenChange={c.setConfirmBulkRestoreOpen}
-        onConfirmBulkRestore={c.handleBulkRestore}
-      />
-    </ModulePageShell>
+          ),
+        },
+        { id: "reports", content: <SessionsReportsTier category="sessions" />, lazy: true },
+        { id: "setup", content: <SessionsSetupTier />, lazy: true },
+      ]}
+      overlays={
+        <SessionsDialogLayer
+          showForm={c.showForm}
+          editSession={c.editSession}
+          detailSession={c.detailSession}
+          canDelete={c.canDelete}
+          pendingDeleteId={c.pendingDeleteId}
+          confirmBulkDeleteOpen={c.confirmBulkDeleteOpen}
+          confirmBulkRestoreOpen={c.confirmBulkRestoreOpen}
+          selectedCount={c.selectedIds.length}
+          importOpen={importOpen}
+          onCloseImport={() => setImportOpen(false)}
+          canWrite={c.canWrite}
+          onCloseForm={c.closeForm}
+          onSave={c.handleSave}
+          onCloseDetail={() => c.setDetailSession(null)}
+          onUpdate={c.handleUpdate}
+          onEdit={c.openEditForm}
+          onRestore={c.handleRestore}
+          onPendingDeleteChange={c.setPendingDeleteId}
+          onConfirmDelete={c.confirmDelete}
+          onBulkDeleteOpenChange={c.setConfirmBulkDeleteOpen}
+          onConfirmBulkDelete={c.handleBulkDelete}
+          onBulkRestoreOpenChange={c.setConfirmBulkRestoreOpen}
+          onConfirmBulkRestore={c.handleBulkRestore}
+        />
+      }
+    />
   );
 }

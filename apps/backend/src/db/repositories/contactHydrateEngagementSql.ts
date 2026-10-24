@@ -1,5 +1,11 @@
-import { sql } from 'drizzle-orm';
-import type { ContactChildMaps, RelationshipRow, ActivityRow, AttachmentRow, BankDetailRow } from './contactRepositoryHydrateTypes.js';
+import { sql } from "drizzle-orm";
+import type {
+  ContactChildMaps,
+  RelationshipRow,
+  ActivityRow,
+  AttachmentRow,
+  BankDetailRow,
+} from "./contactRepositoryHydrateTypes.js";
 
 export function buildRelationshipsAggSql(subdomain: string) {
   return sql`COALESCE((
@@ -76,9 +82,17 @@ export function buildBankDetailsAggSql(subdomain: string) {
   ), '[]'::json) AS "bankDetails"`;
 }
 
-export function assignEngagementChildRows(result: ContactChildMaps, contactId: string, row: Record<string, unknown>) {
-  if (Array.isArray(row.relationships)) result.relationshipsMap.set(contactId, row.relationships as RelationshipRow[]);
-  if (Array.isArray(row.activities)) result.activitiesMap.set(contactId, row.activities as ActivityRow[]);
-  if (Array.isArray(row.attachments)) result.attachmentsMap.set(contactId, row.attachments as AttachmentRow[]);
-  if (Array.isArray(row.bankDetails)) result.bankDetailsMap.set(contactId, row.bankDetails as BankDetailRow[]);
+export function assignEngagementChildRows(
+  result: ContactChildMaps,
+  contactId: string,
+  row: Record<string, unknown>,
+) {
+  if (Array.isArray(row.relationships))
+    result.relationshipsMap.set(contactId, row.relationships as RelationshipRow[]);
+  if (Array.isArray(row.activities))
+    result.activitiesMap.set(contactId, row.activities as ActivityRow[]);
+  if (Array.isArray(row.attachments))
+    result.attachmentsMap.set(contactId, row.attachments as AttachmentRow[]);
+  if (Array.isArray(row.bankDetails))
+    result.bankDetailsMap.set(contactId, row.bankDetails as BankDetailRow[]);
 }

@@ -6,13 +6,13 @@ import {
   type FieldDefinition,
   type AccountingSettings,
   type TabDefinition,
-} from '@mms/shared';
-import { createModuleFieldConfigService } from '../lib/createModuleFieldConfigService.js';
+} from "@mms/shared";
+import { createModuleFieldConfigService } from "../lib/createModuleFieldConfigService.js";
 import {
   getAccountingFieldConfig,
   setAccountingFieldConfig,
-} from '../db/repositories/accountingFieldConfigRepository.js';
-import { getAccountingModulePreferences } from '../db/repositories/accountingModulePreferencesRepository.js';
+} from "../db/repositories/accountingFieldConfigRepository.js";
+import { getAccountingModulePreferences } from "../db/repositories/accountingModulePreferencesRepository.js";
 
 const accountingFieldConfig = createModuleFieldConfigService<
   Record<string, unknown>,
@@ -21,7 +21,7 @@ const accountingFieldConfig = createModuleFieldConfigService<
   Record<string, FieldDefinition[]> | undefined,
   ReturnType<typeof stripAccountingFieldConfigForPersist>
 >({
-  broadcastKey: 'accounting',
+  broadcastKey: "accounting",
   getByWorkspace: getAccountingFieldConfig,
   upsert: setAccountingFieldConfig,
   toDocument: async (raw, tenant) => {
@@ -32,7 +32,7 @@ const accountingFieldConfig = createModuleFieldConfigService<
     );
   },
   stripForPersist: stripAccountingFieldConfigForPersist,
-  reloadFailedMessage: 'Failed to reload accounting field config after save',
+  reloadFailedMessage: "Failed to reload accounting field config after save",
 });
 
 export const getAccountingFieldConfigService = accountingFieldConfig.load;

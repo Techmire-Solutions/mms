@@ -6,7 +6,7 @@ import {
   checkFacultyFormDuplicate,
   DUPLICATE_ERROR_KEYS,
   FACULTY_DUPLICATE_ERROR_KEYS,
-} from "./facultyFormValidation";
+} from "../lib/facultyFormValidation";
 import * as formAutoScroll from "@/lib/forms/formAutoScroll";
 import * as useFacultyModule from "@/tenant/features/faculty/hooks/useFaculty";
 import { DEFAULT_FACULTY_SETTINGS } from "@mms/shared";
@@ -32,7 +32,12 @@ describe("facultyFormValidation", () => {
     it("calls scrollAndFocusFirstError with proper candidate IDs and aliases", () => {
       focusFacultyValidationField("inst-1", "user.role");
       expect(formAutoScroll.scrollAndFocusFirstError).toHaveBeenCalledWith(
-        expect.arrayContaining(["tf-inst-1-user.role", "user.role", "faculty-user-role", "linked-user-role"]),
+        expect.arrayContaining([
+          "tf-inst-1-user.role",
+          "user.role",
+          "faculty-user-role",
+          "linked-user-role",
+        ]),
         { behavior: "smooth", block: "center" },
       );
     });
@@ -56,7 +61,9 @@ describe("facultyFormValidation", () => {
 
   describe("checkFacultyFormDuplicate", () => {
     it("delegates to checkFacultyRegistrationDuplicate with trimmed employeeId and string IDs", async () => {
-      vi.mocked(useFacultyModule.checkFacultyRegistrationDuplicate).mockResolvedValueOnce("employeeId");
+      vi.mocked(useFacultyModule.checkFacultyRegistrationDuplicate).mockResolvedValueOnce(
+        "employeeId",
+      );
 
       const result = await checkFacultyFormDuplicate({
         facultyId: "tch-1",

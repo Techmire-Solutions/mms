@@ -1,9 +1,9 @@
-import type { EmailIntegrationConfig } from '@mms/shared';
-import { apiJson } from '@/lib/apiClient';
+import type { EmailIntegrationConfig } from "@mms/shared";
+import { apiJson } from "@/lib/apiClient";
 
 export async function fetchEmailIntegration(): Promise<EmailIntegrationConfig | null> {
   try {
-    return await apiJson<EmailIntegrationConfig>('/api/email/integration');
+    return await apiJson<EmailIntegrationConfig>("/api/email/integration");
   } catch {
     return null;
   }
@@ -35,25 +35,31 @@ function toEmailIntegrationWriteBody(payload: SaveEmailIntegrationInput) {
 export async function saveEmailIntegration(
   payload: SaveEmailIntegrationInput,
 ): Promise<EmailIntegrationConfig> {
-  return apiJson<EmailIntegrationConfig>('/api/email/integration', {
-    method: 'PUT',
+  return apiJson<EmailIntegrationConfig>("/api/email/integration", {
+    method: "PUT",
     body: JSON.stringify(toEmailIntegrationWriteBody(payload)),
   });
 }
 
 export async function testEmailIntegration(): Promise<EmailIntegrationConfig> {
-  const integrationResponse = await apiJson<{ config: EmailIntegrationConfig }>('/api/email/integration/test', {
-    method: 'POST',
-  });
+  const integrationResponse = await apiJson<{ config: EmailIntegrationConfig }>(
+    "/api/email/integration/test",
+    {
+      method: "POST",
+    },
+  );
   return integrationResponse.config;
 }
 
 export async function sendVerificationCodeEmail(code: string): Promise<boolean> {
   try {
-    const verificationResponse = await apiJson<{ delivered?: boolean }>('/api/email/verification-code', {
-      method: 'POST',
-      body: JSON.stringify({ code }),
-    });
+    const verificationResponse = await apiJson<{ delivered?: boolean }>(
+      "/api/email/verification-code",
+      {
+        method: "POST",
+        body: JSON.stringify({ code }),
+      },
+    );
     return verificationResponse.delivered === true;
   } catch {
     return false;

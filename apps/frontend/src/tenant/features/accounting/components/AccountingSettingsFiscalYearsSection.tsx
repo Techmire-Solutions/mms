@@ -2,15 +2,15 @@ import React from "react";
 import { type AccountingSettings, type FiscalYear } from "@mms/shared";
 import { Calendar, Plus } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { FormSelect } from "@/components/ui/FormSelect";
-import { SectionHeader } from "@/components/ui/SectionHeader";
+import { FormSelect } from "@/components/app/FormSelect";
+import { SectionHeader } from "@shared/ui";
 import { SETUP_SECTION_CARD_CLASS } from "@/components/ui/formStyles";
-import type { StatusBadgeConfigItem } from "@/components/ui/StatusBadge";
+import type { StatusBadgeConfigItem } from "@/components/app/StatusBadge";
 import { useTranslation } from "@/hooks/useTranslation";
-import { Field } from "@/components/ui/FormPrimitives";
-import { SectionCard } from "@/components/ui/SectionCard";
-import { ModuleSetupSaveFooter } from "@/components/ui/ModuleSetupSaveFooter";
-import { localizedFiscalMonths } from "./accountingSettingsPreferencesShared";
+import { Field } from "@/components/app/FormPrimitives";
+import { SectionCard } from "@/components/app/SectionCard";
+import { ModuleSetupSaveFooter } from "@/components/app/ModuleSetupSaveFooter";
+import { localizedFiscalMonths } from "../lib/accountingSettingsPreferencesShared";
 import { AccountingFiscalYearsTable } from "./AccountingFiscalYearsTable";
 
 export interface AccountingSettingsFiscalYearsSectionProps {
@@ -84,10 +84,13 @@ export function AccountingSettingsFiscalYearsSection({
                 type="button"
                 variant="link"
                 size="sm"
-                onClick={() => onEditFiscalYear({ label: "", startDate: "", endDate: "", status: "upcoming" })}
+                onClick={() =>
+                  onEditFiscalYear({ label: "", startDate: "", endDate: "", status: "upcoming" })
+                }
                 className="flex shrink-0 items-center gap-1 min-h-11 text-xs font-semibold text-primary hover:text-primary/80 transition-colors self-start sm:self-auto"
               >
-                <Plus className="w-3.5 h-3.5" aria-hidden="true" /> {t("accounting.settings.fy.newTitle")}
+                <Plus className="w-3.5 h-3.5" aria-hidden="true" />{" "}
+                {t("accounting.settings.fy.newTitle")}
               </Button>
             )
           }

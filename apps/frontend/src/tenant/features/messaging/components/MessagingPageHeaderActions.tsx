@@ -1,6 +1,6 @@
 import { Download, Send, Upload } from "lucide-react";
-import type { AppTranslationKey } from '@mms/shared';
-import { ActionButton } from "@/components/ui/ActionButton";
+import type { AppTranslationKey } from "@mms/shared";
+import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -8,7 +8,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { useTranslation } from "@/hooks/useTranslation";
-import { SEMANTIC_TEXT } from "@/lib/semanticTone";
+import { SEMANTIC_TEXT } from "@/lib/ui/semanticTone";
 import { MESSAGING_CHANNEL_CONFIG } from "../config";
 
 interface MessagingPageHeaderActionsProps {
@@ -37,7 +37,7 @@ export function MessagingPageHeaderActions({
   return (
     <div className="flex items-center gap-2">
       {canExport && onExport ? (
-        <ActionButton
+        <Button
           variant="ghost"
           icon={Download}
           onClick={onExport}
@@ -45,23 +45,23 @@ export function MessagingPageHeaderActions({
           disabled={isExporting}
         >
           {t("common.export")}
-        </ActionButton>
+        </Button>
       ) : null}
       {onImport ? (
-        <ActionButton variant="secondary" icon={Upload} onClick={onImport}>
+        <Button variant="outline" icon={Upload} onClick={onImport}>
           {t("common.import")}
-        </ActionButton>
+        </Button>
       ) : null}
       <DropdownMenu>
         <DropdownMenuTrigger asChild>
-          <ActionButton
+          <Button
             variant="primary"
             icon={Send}
             disabled={startingCampaign}
             loading={startingCampaign}
           >
             {t("messaging.newCampaign")}
-          </ActionButton>
+          </Button>
         </DropdownMenuTrigger>
         <DropdownMenuContent align="end" className="w-52">
           {Object.values(MESSAGING_CHANNEL_CONFIG).map((config) => (

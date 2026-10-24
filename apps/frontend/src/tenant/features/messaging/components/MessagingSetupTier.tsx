@@ -1,23 +1,21 @@
 import React from "react";
-import {
-  MESSAGING_MODULE_MANIFEST,
-  mergeMessageTemplates,
-} from "@mms/shared";
+import { MESSAGING_MODULE_MANIFEST, mergeMessageTemplates } from "@mms/shared";
 import { Plus } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { ErrorBoundary } from "@/components/ui/ErrorBoundary";
-import { ErrorState } from "@/components/ui/ErrorState";
-import { ModuleTierMotion } from "@/components/ui/ModuleTierMotion";
-import { SetupReadOnlyMessage } from "@/components/ui/SetupReadOnlyMessage";
-import { SubTabBar } from "@/components/ui/SubTabBar";
+import { ErrorBoundary } from "@/components/app/ErrorBoundary";
+import { ErrorState } from "@/components/app/ErrorState";
+import { ModuleTierMotion } from "@/components/app/ModuleTierMotion";
+import { SetupReadOnlyMessage } from "@/components/app/SetupReadOnlyMessage";
+import { SubTabBar } from "@/components/app/SubTabBar";
 import { useTranslation } from "@/hooks/useTranslation";
-import { ConfirmAlertDialog } from "@/components/ui/ConfirmAlertDialog";
+import { ConfirmAlertDialog } from "@/components/app/ConfirmAlertDialog";
 import { useModuleSetupSubTabs } from "@/lib/setup/useModuleSetupSubTabs";
 import { useMessageTemplates } from "../hooks/useMessaging";
 import { useMessagingPageOptions } from "../hooks/useMessagingPageOptions";
 import { useMessagingTemplateEditor } from "../hooks/useMessagingTemplateEditor";
 import { MessagingSetupTemplateForm } from "./MessagingSetupTemplateForm";
 import { MessagingTemplateList } from "./MessagingTemplateList";
+import { MessagingSetupPreferences } from "./MessagingSetupPreferences";
 
 export interface MessagingSetupTierProps {
   canWrite: boolean;
@@ -25,7 +23,7 @@ export interface MessagingSetupTierProps {
   onDeleteRequest: (templateId: string) => void;
 }
 
-export const MessagingSetupTier = (function MessagingSetupTier({
+export const MessagingSetupTier = function MessagingSetupTier({
   canWrite,
   canEditSetup,
   onDeleteRequest,
@@ -65,7 +63,12 @@ export const MessagingSetupTier = (function MessagingSetupTier({
     onDiscard: resetForm,
   });
 
-  const setupTabs = (() => MESSAGING_MODULE_MANIFEST.setupSubTabs.map((key) => ({ key, label: t("messaging.tabs.templates") })))();
+  const setupTabs = (() =>
+    MESSAGING_MODULE_MANIFEST.setupSubTabs.map((key) => ({
+      key,
+      label:
+        key === "preferences" ? t("messaging.tabs.preferences") : t("messaging.tabs.templates"),
+    })))();
   const templates = (() => mergeMessageTemplates(templatesQuery.templates))();
 
   if (templatesQuery.isError) {
@@ -73,7 +76,9 @@ export const MessagingSetupTier = (function MessagingSetupTier({
       <ErrorState
         title={t("messaging.loadFailed")}
         description={t("messaging.loadFailedHint")}
-        onRetry={() => { void templatesQuery.refetch(); }}
+        onRetry={() => {
+          void templatesQuery.refetch();
+        }}
       />
     );
   }
@@ -87,7 +92,11 @@ export const MessagingSetupTier = (function MessagingSetupTier({
           ) : (
             <>
               {setupTabs.length > 1 && (
-                <SubTabBar tabs={setupTabs} value={subTabs.sub} onChange={subTabs.handleSubTabChange} />
+                <SubTabBar
+                  tabs={setupTabs}
+                  value={subTabs.sub}
+                  onChange={subTabs.handleSubTabChange}
+                />
               )}
               {subTabs.sub === "templates" && (
                 <div className="space-y-3">
@@ -132,6 +141,9 @@ export const MessagingSetupTier = (function MessagingSetupTier({
                   />
                 </div>
               )}
+              {subTabs.sub === "preferences" && (
+                <MessagingSetupPreferences canWrite={canEditSetup && canWrite} />
+              )}
 
               <ConfirmAlertDialog
                 open={subTabs.discardConfirmOpen}
@@ -151,6 +163,6 @@ export const MessagingSetupTier = (function MessagingSetupTier({
       </ErrorBoundary>
     </ModuleTierMotion>
   );
-});
+};
 
 export default MessagingSetupTier;

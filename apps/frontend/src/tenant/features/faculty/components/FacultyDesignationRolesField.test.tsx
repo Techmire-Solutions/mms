@@ -46,22 +46,14 @@ describe("FacultyDesignationRolesField", () => {
 
   it("hides create control when canCreateRole is false", () => {
     const html = renderToStaticMarkup(
-      <FacultyDesignationRolesField
-        selectedRoleId=""
-        canCreateRole={false}
-        onChange={vi.fn()}
-      />,
+      <FacultyDesignationRolesField selectedRoleId="" canCreateRole={false} onChange={vi.fn()} />,
     );
     expect(html).not.toContain("faculty.designations.addRole");
   });
 
   it("shows select-designation hint when disabled", () => {
     const html = renderToStaticMarkup(
-      <FacultyDesignationRolesField
-        selectedRoleId=""
-        disabled
-        onChange={vi.fn()}
-      />,
+      <FacultyDesignationRolesField selectedRoleId="" disabled onChange={vi.fn()} />,
     );
     expect(html).toContain("faculty.designations.selectDesignationFirst");
   });

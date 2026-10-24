@@ -1,14 +1,12 @@
 import type React from "react";
 import type { Contact, FacultyMember } from "@mms/shared";
 import { resolveFacultyStatus } from "@mms/shared";
-import { StatusBadge, type StatusBadgeConfigItem } from "@/components/ui/StatusBadge";
-import { WarningCallout } from "@/components/ui/WarningCallout";
-import {
-  FormFooterEntityChip,
-} from "@/components/ui/FormFooterChip";
+import { StatusBadge, type StatusBadgeConfigItem } from "@/components/app/StatusBadge";
+import { WarningCallout } from "@/components/app/WarningCallout";
+import { FormFooterEntityChip } from "@/components/app/FormFooterChip";
 import { Badge } from "@/components/ui/badge";
 import type { TranslationFunction } from "@/lib/contexts/TranslationContext";
-import { extractEmployeeId } from "@/tenant/features/faculty/components/facultyFormDraft";
+import { extractEmployeeId } from "@/tenant/features/faculty/lib/facultyFormDraft";
 
 export interface FacultyFormFooterProps {
   linkedContact?: Contact | null;

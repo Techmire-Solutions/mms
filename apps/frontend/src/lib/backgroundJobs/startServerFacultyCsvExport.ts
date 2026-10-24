@@ -1,5 +1,5 @@
-import type { BackgroundJobRecord, FacultyExportColumn, FacultyListQuery } from '@mms/shared';
-import { startServerModuleCsvExport } from '@/lib/backgroundJobs/startServerModuleCsvExport';
+import type { BackgroundJobRecord, FacultyExportColumn, FacultyListQuery } from "@mms/shared";
+import { startServerModuleCsvExport } from "@/lib/backgroundJobs/startServerModuleCsvExport";
 
 export async function startServerFacultyCsvExport(options: {
   query: FacultyListQuery;
@@ -9,7 +9,7 @@ export async function startServerFacultyCsvExport(options: {
   ids?: Array<string | number>;
 }): Promise<BackgroundJobRecord> {
   return startServerModuleCsvExport({
-    path: '/api/faculty/export/csv',
+    path: "/api/faculty/export/csv",
     body: {
       query: options.query,
       columns: options.columns,
@@ -19,4 +19,3 @@ export async function startServerFacultyCsvExport(options: {
     },
   });
 }
-

@@ -8,7 +8,7 @@ import type {
   ObligationsCommandMetricsSnapshot,
   ObligationsReportAggregates,
   ObligationsReportQuery,
-} from '@mms/shared';
+} from "@mms/shared";
 
 /**
  * Sole storage gateway for the obligations module (types, mujtahids, reps,
@@ -54,26 +54,43 @@ export interface ObligationsRepository {
 
   // Distributions
   listObligationDistributionsByWorkspace(tenant: string): Promise<ObligationDistribution[]>;
-  findObligationDistributionById(tenant: string, id: string): Promise<ObligationDistribution | null>;
-  findObligationDistributionsByIds(tenant: string, ids: string[]): Promise<ObligationDistribution[]>;
+  findObligationDistributionById(
+    tenant: string,
+    id: string,
+  ): Promise<ObligationDistribution | null>;
+  findObligationDistributionsByIds(
+    tenant: string,
+    ids: string[],
+  ): Promise<ObligationDistribution[]>;
   saveObligationDistribution(tenant: string, record: ObligationDistribution): Promise<void>;
   bulkSaveObligationDistributions(tenant: string, records: ObligationDistribution[]): Promise<void>;
-  replaceObligationDistributionsForWorkspace(tenant: string, records: ObligationDistribution[]): Promise<void>;
+  replaceObligationDistributionsForWorkspace(
+    tenant: string,
+    records: ObligationDistribution[],
+  ): Promise<void>;
 
   // Collections
   listObligationCollectionsByWorkspace(
     tenant: string,
-    options?: { limit?: number; offset?: number; deleted?: 'active' | 'deleted' | 'all'; includeDeleted?: boolean },
+    options?: {
+      limit?: number;
+      offset?: number;
+      deleted?: "active" | "deleted" | "all";
+      includeDeleted?: boolean;
+    },
   ): Promise<ObligationCollection[]>;
   findObligationCollectionById(tenant: string, id: string): Promise<ObligationCollection | null>;
   findObligationCollectionsByIds(
     tenant: string,
     ids: string[],
-    options?: { deleted?: 'active' | 'deleted' | 'all'; includeDeleted?: boolean },
+    options?: { deleted?: "active" | "deleted" | "all"; includeDeleted?: boolean },
   ): Promise<ObligationCollection[]>;
   saveObligationCollection(tenant: string, record: ObligationCollection): Promise<void>;
   bulkSaveObligationCollections(tenant: string, records: ObligationCollection[]): Promise<void>;
-  replaceObligationCollectionsForWorkspace(tenant: string, records: ObligationCollection[]): Promise<void>;
+  replaceObligationCollectionsForWorkspace(
+    tenant: string,
+    records: ObligationCollection[],
+  ): Promise<void>;
   bulkSoftDeleteObligationCollections?(
     tenant: string,
     ids: string[],
@@ -95,4 +112,8 @@ export interface ObligationsRepository {
     tenant: string,
     query?: ObligationsReportQuery,
   ): Promise<ObligationsReportAggregates>;
+
+  // Preferences
+  getPreferences?(tenant: string): Promise<Record<string, unknown> | null>;
+  setPreferences?(tenant: string, preferences: Record<string, unknown>): Promise<void>;
 }

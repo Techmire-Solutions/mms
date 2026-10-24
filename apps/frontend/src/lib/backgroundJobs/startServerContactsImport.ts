@@ -1,5 +1,5 @@
-import type { BackgroundJobRecord, Contact } from '@mms/shared';
-import { startServerBackgroundJob } from '@/lib/backgroundJobs/startServerBackgroundJob';
+import type { BackgroundJobRecord, Contact } from "@mms/shared";
+import { startServerBackgroundJob } from "@/lib/backgroundJobs/startServerBackgroundJob";
 
 /**
  * Queue one contacts import batch and poll until the worker finishes.
@@ -18,7 +18,7 @@ export async function startServerContactsImport(options: {
   onProgress?: (job: BackgroundJobRecord) => void;
 }): Promise<BackgroundJobRecord> {
   return startServerBackgroundJob({
-    path: '/api/contacts/import',
+    path: "/api/contacts/import",
     body: {
       contacts: options.contacts,
       label: options.label,

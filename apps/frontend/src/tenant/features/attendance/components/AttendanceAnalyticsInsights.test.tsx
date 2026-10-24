@@ -7,7 +7,7 @@ describe("AttendanceAnalyticsInsights Component", () => {
   it("renders low attendance callout and top performers", () => {
     const html = renderToStaticMarkup(
       <AttendanceAnalyticsInsights
-        t={((k: string) => k) as any}
+        t={((k: string) => k) as unknown as never}
         lowAttendance={[{ id: "student-1", name: "Zayd", rate: 60 }]}
         lowAttendanceCount={1}
         topStudents={[{ id: "student-2", name: "Ali", rate: 99 }]}

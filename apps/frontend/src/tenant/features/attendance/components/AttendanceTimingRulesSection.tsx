@@ -4,11 +4,11 @@ import { Input } from "@/components/ui/input";
 import { cn } from "@/lib/utils";
 import type { AttendanceSettings } from "@mms/shared";
 import type { TranslationFunction } from "@/lib/contexts/TranslationContext";
-import { SectionCard } from "@/components/ui/SectionCard";
-import { ToggleRow } from "@/components/ui/ToggleRow";
-import { Field } from "@/components/ui/FormPrimitives";
+import { SectionCard } from "@/components/app/SectionCard";
+import { ToggleRow } from "@shared/ui";
+import { Field } from "@/components/app/FormPrimitives";
 import { FORM_INPUT, SETUP_SECTION_CARD_CLASS } from "@/components/ui/formStyles";
-import { ModuleSetupSaveFooter } from "@/components/ui/ModuleSetupSaveFooter";
+import { ModuleSetupSaveFooter } from "@/components/app/ModuleSetupSaveFooter";
 
 export interface AttendanceTimingRulesSectionProps {
   settingsDraft: AttendanceSettings;
@@ -55,7 +55,9 @@ export function AttendanceTimingRulesSection({
                 onChange={(event) => upd("lateThresholdMins", Number(event.target.value))}
                 className={cn(FORM_INPUT, "w-24 text-center")}
               />
-              <span className="text-xs text-muted-foreground">{t("attendance.settings.minutesShort")}</span>
+              <span className="text-xs text-muted-foreground">
+                {t("attendance.settings.minutesShort")}
+              </span>
             </div>
           </Field>
 
@@ -76,7 +78,9 @@ export function AttendanceTimingRulesSection({
                 onChange={(event) => upd("autoAbsentAfterMins", Number(event.target.value))}
                 className={cn(FORM_INPUT, "w-24 text-center")}
               />
-              <span className="text-xs text-muted-foreground">{t("attendance.settings.minutesShort")}</span>
+              <span className="text-xs text-muted-foreground">
+                {t("attendance.settings.minutesShort")}
+              </span>
             </div>
           </Field>
         </div>

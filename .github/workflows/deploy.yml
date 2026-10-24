@@ -11,19 +11,19 @@ on: # zizmor: ignore[dangerous-triggers]
   workflow_dispatch:
     inputs:
       target_sha:
-        description: 'Commit SHA / Git Ref to deploy (blank for current branch tip)'
+        description: "Commit SHA / Git Ref to deploy (blank for current branch tip)"
         required: false
-        default: ''
+        default: ""
       force_pnpm_install:
-        description: 'Force clean pnpm install on production server'
+        description: "Force clean pnpm install on production server"
         type: boolean
         default: false
       force_apache:
-        description: 'Force Apache vhost re-installation'
+        description: "Force Apache vhost re-installation"
         type: boolean
         default: false
       allow_unverified:
-        description: 'Incident escape hatch — deploy a SHA that is not on main or has no green CI run'
+        description: "Incident escape hatch — deploy a SHA that is not on main or has no green CI run"
         type: boolean
         default: false
 
@@ -48,7 +48,7 @@ jobs:
     timeout-minutes: 45
     environment: production
     env:
-      PUPPETEER_SKIP_DOWNLOAD: 'true'
+      PUPPETEER_SKIP_DOWNLOAD: "true"
       DEPLOY_SHA: ${{ (github.event_name == 'workflow_dispatch' && inputs.target_sha != '') && inputs.target_sha || (github.event.workflow_run.head_sha || github.sha) }}
       MMS_FORCE_PNPM_INSTALL: ${{ inputs.force_pnpm_install == true && '1' || '0' }}
       MMS_FORCE_APACHE: ${{ inputs.force_apache == true && '1' || '0' }}
@@ -85,7 +85,10 @@ jobs:
 
       # Manual dispatch must not become a CI bypass: the target has to be on
       # main and have a green CI push run, unless the incident hatch is set.
+      # Push runs always use full test scope (ci-gate enforces it), so a green
+      # push run means the full suites passed for exactly this commit.
       - name: Verify manual target passed CI
+        id: verified
         if: github.event_name == 'workflow_dispatch' && !inputs.allow_unverified
         env:
           GH_TOKEN: ${{ github.token }}
@@ -98,12 +101,14 @@ jobs:
             echo "::error::${sha} is not on main (compare status: ${status})"
             exit 1
           fi
-          green="$(gh api "repos/${REPO}/actions/workflows/ci.yml/runs?head_sha=${sha}&event=push&status=success" -q .total_count)"
-          if [ "${green}" = "0" ]; then
+          run_id="$(gh api "repos/${REPO}/actions/workflows/ci.yml/runs?head_sha=${sha}&event=push&status=success" -q '.workflow_runs[0].id // empty')"
+          if [ -z "${run_id}" ]; then
             echo "::error::No successful CI push run for ${sha}"
             exit 1
           fi
-          echo "Verified ${sha}: on main with green CI"
+          echo "run_id=${run_id}" >> "$GITHUB_OUTPUT"
+          echo "sha=${sha}" >> "$GITHUB_OUTPUT"
+          echo "Verified ${sha}: on main with green CI run ${run_id}"
 
       - name: Checkout Code
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
@@ -111,36 +116,40 @@ jobs:
           ref: ${{ env.DEPLOY_SHA }}
           persist-credentials: false
 
-      # Build once, promote the same bytes: the automatic path deploys the
-      # tarball CI built and attested for this commit instead of rebuilding.
+      # Build once, promote the same bytes: both the automatic path and a
+      # verified manual dispatch deploy the tarball CI built and attested for
+      # this exact commit (artifacts are kept 90 days; older targets need the
+      # allow_unverified incident hatch, which rebuilds).
       - name: Download CI release artifact
-        if: github.event_name == 'workflow_run'
-        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
+        if: github.event_name == 'workflow_run' || !inputs.allow_unverified
+        uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
         with:
           name: mms-dist
-          run-id: ${{ github.event.workflow_run.id }}
+          run-id: ${{ github.event.workflow_run.id || steps.verified.outputs.run_id }}
           github-token: ${{ github.token }}
 
+      # A manual target may be a ref name; pin provenance to the resolved commit.
       - name: Verify build provenance
-        if: github.event_name == 'workflow_run'
+        if: github.event_name == 'workflow_run' || !inputs.allow_unverified
         env:
           GH_TOKEN: ${{ github.token }}
           REPO: ${{ github.repository }}
+          SOURCE_SHA: ${{ steps.verified.outputs.sha || env.DEPLOY_SHA }}
         run: |
           gh attestation verify mms-dist.tar.gz --repo "${REPO}" \
             --signer-workflow "${REPO}/.github/workflows/ci.yml" \
-            --source-digest "${DEPLOY_SHA}"
+            --source-digest "${SOURCE_SHA}"
 
-      # Manual dispatch has no CI artifact to promote, so it builds here.
+      # Only the incident hatch rebuilds; every other deploy promotes CI's artifact.
       - name: Setup Environment
-        if: github.event_name == 'workflow_dispatch'
+        if: github.event_name == 'workflow_dispatch' && inputs.allow_unverified
         uses: ./.github/actions/setup-mms
         with:
-          install: 'true'
-          build-shared: 'true'
+          install: "true"
+          build-shared: "true"
 
       - name: Production build & bundle check
-        if: github.event_name == 'workflow_dispatch'
+        if: github.event_name == 'workflow_dispatch' && inputs.allow_unverified
         env:
           VITE_APP_DOMAIN: ${{ secrets.MMS_APP_DOMAIN }}
         run: |
@@ -184,7 +193,7 @@ jobs:
           PLATFORM_ADMIN_EMAIL: ${{ secrets.PLATFORM_ADMIN_EMAIL }}
           PLATFORM_ADMIN_PASSWORD: ${{ secrets.PLATFORM_ADMIN_PASSWORD }}
           PLATFORM_ADMIN_NAME: ${{ secrets.PLATFORM_ADMIN_NAME }}
-          MMS_DEPLOY_SKIP_PUBLIC_VERIFY: '1'
+          MMS_DEPLOY_SKIP_PUBLIC_VERIFY: "1"
           MMS_REQUIRE_WILDCARD_TLS: ${{ secrets.MMS_REQUIRE_WILDCARD_TLS }}
         run: |
           bash scripts/ci/ssh-exec.sh scripts/ci/remote/deploy.sh \
@@ -262,7 +271,7 @@ jobs:
         if: always()
         env:
           RESULT: ${{ job.status == 'success' && '✅ Deployed & Healthy' || '❌ Failed / Rolled Back' }}
-          SOURCE: ${{ github.event_name == 'workflow_run' && 'CI artifact (attested)' || 'Rebuilt (manual dispatch)' }}
+          SOURCE: ${{ (github.event_name == 'workflow_dispatch' && inputs.allow_unverified) && 'Rebuilt (allow_unverified incident hatch)' || 'CI artifact (attested)' }}
         run: |
           cat << EOF >> "$GITHUB_STEP_SUMMARY"
           ### 🚀 Hetzner Production Deployment

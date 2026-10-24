@@ -5,7 +5,7 @@
 export class NotifiedMutationError extends Error {
   constructor(message?: string) {
     super(message);
-    this.name = 'NotifiedMutationError';
+    this.name = "NotifiedMutationError";
   }
 }
 

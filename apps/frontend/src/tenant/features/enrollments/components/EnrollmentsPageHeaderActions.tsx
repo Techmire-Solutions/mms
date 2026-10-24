@@ -1,6 +1,6 @@
 import React from "react";
 import { Download, Plus, Upload } from "lucide-react";
-import { ActionButton } from "@/components/ui/ActionButton";
+import { Button } from "@/components/ui/button";
 
 import { type useTranslation } from "@/hooks/useTranslation";
 
@@ -26,19 +26,19 @@ export function EnrollmentsPageHeaderActions({
   return (
     <div className="flex items-center gap-2">
       {canExport && !showDeleted ? (
-        <ActionButton variant="ghost" icon={Download} onClick={onExport}>
+        <Button variant="ghost" icon={Download} onClick={onExport}>
           {t("common.export")}
-        </ActionButton>
+        </Button>
       ) : null}
       {canWriteEnrollments && !showDeleted && onImport && (
-        <ActionButton variant="secondary" icon={Upload} onClick={onImport}>
+        <Button variant="outline" icon={Upload} onClick={onImport}>
           {t("common.import")}
-        </ActionButton>
+        </Button>
       )}
       {canWriteEnrollments && !showDeleted && (
-        <ActionButton variant="primary" icon={Plus} onClick={onNew}>
+        <Button variant="primary" icon={Plus} onClick={onNew}>
           {t("enrollments.new")}
-        </ActionButton>
+        </Button>
       )}
     </div>
   );

@@ -1,5 +1,5 @@
-import { getPool } from '../db/dbConnection.js';
-import { logger } from './logger.js';
+import { getPool } from "../db/dbConnection.js";
+import { logger } from "./logger.js";
 
 /**
  * Process-wide Postgres advisory locks used for single-leader scheduling.
@@ -7,6 +7,7 @@ import { logger } from './logger.js';
  */
 export const LEADER_LOCK_AUDIT_VERIFICATION = 918_273_641;
 export const LEADER_LOCK_RETENTION_PURGE = 918_273_642;
+export const LEADER_LOCK_SESSION_LIFECYCLE = 918_273_643;
 
 export interface LeaderLease {
   /** True while this process still holds the session-level advisory lock. */
@@ -26,13 +27,13 @@ export async function tryAcquireLeaderLease(lockKey: number): Promise<LeaderLeas
   try {
     client = await getPool().connect();
   } catch (error) {
-    logger.warn({ err: error, lockKey }, '[LeaderElection] could not check out a connection');
+    logger.warn({ err: error, lockKey }, "[LeaderElection] could not check out a connection");
     return null;
   }
 
   try {
     const result = await client.query<{ locked: boolean }>(
-      'SELECT pg_try_advisory_lock($1) AS locked',
+      "SELECT pg_try_advisory_lock($1) AS locked",
       [lockKey],
     );
     if (!result.rows[0]?.locked) {
@@ -51,7 +52,7 @@ export async function tryAcquireLeaderLease(lockKey: number): Promise<LeaderLeas
       if (!held) return;
       held = false;
       try {
-        await client.query('SELECT pg_advisory_unlock($1)', [lockKey]);
+        await client.query("SELECT pg_advisory_unlock($1)", [lockKey]);
       } catch {
         // Connection may already be gone; the session lock dies with it.
       }

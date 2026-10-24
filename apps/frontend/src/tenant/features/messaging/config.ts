@@ -1,7 +1,7 @@
-import { Mail, MessageCircle, MessageSquare, type LucideIcon } from 'lucide-react';
-import type { CardAccentColor } from '@/lib/semanticTone';
+import { Mail, MessageCircle, MessageSquare, type LucideIcon } from "lucide-react";
+import type { CardAccentColor } from "@/lib/ui/semanticTone";
 
-export type MessagingChannel = 'whatsapp' | 'sms' | 'email';
+export type MessagingChannel = "whatsapp" | "sms" | "email";
 
 export interface MessagingChannelConfig {
   id: MessagingChannel;
@@ -13,24 +13,24 @@ export interface MessagingChannelConfig {
 
 export const MESSAGING_CHANNEL_CONFIG: Record<MessagingChannel, MessagingChannelConfig> = {
   whatsapp: {
-    id: 'whatsapp',
+    id: "whatsapp",
     icon: MessageCircle,
-    themeAccent: 'success',
-    labelStatsKey: 'messaging.stats.whatsapp',
-    labelSendKey: 'messaging.sendWhatsapp',
+    themeAccent: "success",
+    labelStatsKey: "messaging.stats.whatsapp",
+    labelSendKey: "messaging.sendWhatsapp",
   },
   sms: {
-    id: 'sms',
+    id: "sms",
     icon: MessageSquare,
-    themeAccent: 'info',
-    labelStatsKey: 'messaging.stats.sms',
-    labelSendKey: 'messaging.sendSms',
+    themeAccent: "info",
+    labelStatsKey: "messaging.stats.sms",
+    labelSendKey: "messaging.sendSms",
   },
   email: {
-    id: 'email',
+    id: "email",
     icon: Mail,
-    themeAccent: 'warning',
-    labelStatsKey: 'messaging.stats.email',
-    labelSendKey: 'messaging.sendEmail',
+    themeAccent: "warning",
+    labelStatsKey: "messaging.stats.email",
+    labelSendKey: "messaging.sendEmail",
   },
 };

@@ -3,7 +3,7 @@ import { Link } from "react-router-dom";
 import { Lock, PackageX, PowerOff, RefreshCw, ShieldAlert, type LucideIcon } from "lucide-react";
 import type { AppTranslationKey, ModuleAccessDenialCode } from "@mms/shared";
 import { Button } from "@/components/ui/button";
-import { FeedbackStateLayout } from "@/components/ui/FeedbackStateLayout";
+import { FeedbackStateLayout } from "@/components/app/FeedbackStateLayout";
 import { ROUTES } from "@/lib/config/routes";
 import { useTranslation } from "@/hooks/useTranslation";
 
@@ -14,10 +14,26 @@ interface DenialCopy {
 }
 
 const DENIAL_COPY: Record<ModuleAccessDenialCode, DenialCopy> = {
-  MODULE_NOT_GRANTED: { icon: PackageX, titleKey: "errors.route.moduleUnavailableTitle", descriptionKey: "errors.route.moduleUnavailable" },
-  MODULE_DISABLED: { icon: PowerOff, titleKey: "errors.route.moduleDisabledTitle", descriptionKey: "errors.route.moduleDisabled" },
-  PERMISSION_DENIED: { icon: Lock, titleKey: "errors.route.forbiddenTitle", descriptionKey: "errors.route.forbidden" },
-  MODULE_ACCESS_UNAVAILABLE: { icon: ShieldAlert, titleKey: "errors.route.accessCheckFailedTitle", descriptionKey: "errors.route.accessCheckFailed" },
+  MODULE_NOT_GRANTED: {
+    icon: PackageX,
+    titleKey: "errors.route.moduleUnavailableTitle",
+    descriptionKey: "errors.route.moduleUnavailable",
+  },
+  MODULE_DISABLED: {
+    icon: PowerOff,
+    titleKey: "errors.route.moduleDisabledTitle",
+    descriptionKey: "errors.route.moduleDisabled",
+  },
+  PERMISSION_DENIED: {
+    icon: Lock,
+    titleKey: "errors.route.forbiddenTitle",
+    descriptionKey: "errors.route.forbidden",
+  },
+  MODULE_ACCESS_UNAVAILABLE: {
+    icon: ShieldAlert,
+    titleKey: "errors.route.accessCheckFailedTitle",
+    descriptionKey: "errors.route.accessCheckFailed",
+  },
 };
 
 export interface ModuleAccessDeniedStateProps {

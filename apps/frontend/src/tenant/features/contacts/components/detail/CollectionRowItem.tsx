@@ -1,11 +1,12 @@
 import type React from "react";
 import type { LucideIcon } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { CopyBtn } from "@/components/ui/CopyBtn";
+import { Badge } from "@/components/ui/badge";
+import { CopyButton } from "@/components/app/CopyButton";
 import {
   MESSAGING_ICON_BTN,
   MESSAGING_ICON_BTN_TONES,
-} from "@/components/ui/messagingActionStyles";
+} from "@/components/app/messagingActionStyles";
 import { cn } from "@/lib/utils";
 
 export interface CollectionRowAction {
@@ -75,16 +76,18 @@ export function CollectionRowItem({
     <div className="p-3 border-b border-border/50 last:border-b-0 flex items-center justify-between gap-3">
       <div className="min-w-0">
         <div className="flex items-center gap-2 mb-1">
-          <span className="text-xs font-bold px-2 py-0.5 rounded bg-primary/10 text-primary border border-primary/20 uppercase">
+          <Badge tone="primary" size="sm" className="font-bold uppercase tracking-wide">
             {label}
-          </span>
+          </Badge>
         </div>
-        <span className="font-semibold text-xs text-foreground block leading-relaxed truncate">{value}</span>
+        <span className="font-semibold text-xs text-foreground block leading-relaxed truncate">
+          {value}
+        </span>
       </div>
       {value && (
         <div className="flex max-w-3/5 flex-shrink-0 flex-wrap items-center justify-end gap-1">
           {copyable && (
-            <CopyBtn
+            <CopyButton
               text={value}
               showToast
               className={cn(

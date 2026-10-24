@@ -1,4 +1,4 @@
-import { keepPreviousData, useQuery } from '@tanstack/react-query';
+import { keepPreviousData, useQuery } from "@tanstack/react-query";
 import type {
   Contact,
   MessagingRoleFilter,
@@ -6,12 +6,13 @@ import type {
   ContactsListPageResult,
   MessagingRecipientsMatchResponseDto,
   StandardMessagingRecipient,
-} from '@mms/shared';
-import { CONTACTS_MODULE_MANIFEST } from '@mms/shared';
-import { apiJson } from '@/lib/apiClient';
-import { useAuth } from '@/lib/contexts/AuthContext';
+} from "@mms/shared";
+import { CONTACTS_MODULE_MANIFEST } from "@mms/shared";
+import { apiContract } from "@/lib/api";
+import { ApiError } from "@/lib/apiClient";
+import { useAuth } from "@/lib/contexts/AuthContext";
 
-export const MESSAGING_RECIPIENTS_QUERY_KEY = ['messaging', 'recipients'] as const;
+export const MESSAGING_RECIPIENTS_QUERY_KEY = ["messaging", "recipients"] as const;
 
 export interface UseMessagingWorkRecipientsParams {
   roleFilter: MessagingRoleFilter;
@@ -19,6 +20,9 @@ export interface UseMessagingWorkRecipientsParams {
   search: string;
   page: number;
   pageSize?: number;
+  hasPhone?: boolean;
+  hasEmail?: boolean;
+  kind?: "phone" | "email";
   enabled?: boolean;
 }
 
@@ -41,21 +45,32 @@ export async function loadMatchingRecipients(params: {
   roleFilter?: MessagingRoleFilter;
   genderFilter?: MessagingGenderFilter;
   search?: string;
-  kind: 'phone' | 'email';
+  kind: "phone" | "email";
   signal?: AbortSignal;
 }): Promise<{ recipients: StandardMessagingRecipient[]; truncated: boolean }> {
-  const search = (params.search || '').trim();
-  const searchParams = new URLSearchParams();
-  searchParams.set('kind', params.kind);
-  if (params.roleFilter && params.roleFilter !== 'all') searchParams.set('role', params.roleFilter);
-  if (params.genderFilter && params.genderFilter !== 'all') searchParams.set('gender', params.genderFilter);
-  if (search) searchParams.set('search', search);
+  const search = (params.search || "").trim();
+  const response = await apiContract.messaging.matchRecipients({
+    query: {
+      kind: params.kind,
+      ...(params.roleFilter && params.roleFilter !== "all" ? { role: params.roleFilter } : {}),
+      ...(params.genderFilter && params.genderFilter !== "all"
+        ? { gender: params.genderFilter }
+        : {}),
+      ...(search ? { search } : {}),
+    },
+    signal: params.signal,
+    fetchOptions: { signal: params.signal },
+  });
+  if (response.status !== 200) {
+    const errorBody = response.body as { message?: string; type?: string } | undefined;
+    throw new ApiError(
+      response.status,
+      errorBody?.message ?? "Failed to load matching recipients",
+      errorBody?.type,
+    );
+  }
 
-  const data = await apiJson<MessagingRecipientsMatchResponseDto>(
-    `/api/messaging/recipients/match?${searchParams.toString()}`,
-    { signal: params.signal },
-  );
-
+  const data = response.body as MessagingRecipientsMatchResponseDto;
   return {
     recipients: data.recipients ?? [],
     truncated: Boolean(data.truncated),
@@ -75,21 +90,43 @@ export function useMessagingWorkRecipients(
   const gender = params.genderFilter;
   const search = params.search.trim();
   const page = params.page;
+  const hasPhone = params.kind === "phone" ? true : params.hasPhone;
+  const hasEmail = params.kind === "email" ? true : params.hasEmail;
 
   const query = useQuery({
-    queryKey: [...MESSAGING_RECIPIENTS_QUERY_KEY, role, gender, search, page, pageSize] as const,
+    queryKey: [
+      ...MESSAGING_RECIPIENTS_QUERY_KEY,
+      role,
+      gender,
+      search,
+      hasPhone,
+      hasEmail,
+      page,
+      pageSize,
+    ] as const,
     queryFn: async ({ signal }) => {
-      const searchParams = new URLSearchParams();
-      searchParams.set('page', String(page));
-      searchParams.set('pageSize', String(pageSize));
-      if (role !== 'all') searchParams.set('role', role);
-      if (gender !== 'all') searchParams.set('gender', gender);
-      if (search) searchParams.set('search', search);
-
-      return apiJson<ContactsListPageResult>(
-        `/api/messaging/recipients?${searchParams.toString()}`,
-        { signal },
-      );
+      const response = await apiContract.messaging.listRecipients({
+        query: {
+          page,
+          pageSize,
+          ...(role !== "all" ? { role } : {}),
+          ...(gender !== "all" ? { gender } : {}),
+          ...(search ? { search } : {}),
+          ...(hasPhone ? { hasPhone: "true" } : {}),
+          ...(hasEmail ? { hasEmail: "true" } : {}),
+        },
+        signal,
+        fetchOptions: { signal },
+      });
+      if (response.status !== 200) {
+        const errorBody = response.body as { message?: string; type?: string } | undefined;
+        throw new ApiError(
+          response.status,
+          errorBody?.message ?? "Failed to load messaging recipients",
+          errorBody?.type,
+        );
+      }
+      return response.body as ContactsListPageResult;
     },
     enabled,
     staleTime: 15_000,
@@ -99,16 +136,16 @@ export function useMessagingWorkRecipients(
   const data = query.data;
 
   return (() => ({
-      contacts: data?.contacts ?? [],
-      page: data?.page ?? page,
-      total: data?.total ?? 0,
-      limit: data?.limit ?? pageSize,
-      hasMore: Boolean(data?.hasMore),
-      isError: query.isError,
-      isPending: query.isPending,
-      isFetching: query.isFetching,
-      refetch: () => {
-        void query.refetch();
-      },
-    }))();
+    contacts: data?.contacts ?? [],
+    page: data?.page ?? page,
+    total: data?.total ?? 0,
+    limit: data?.limit ?? pageSize,
+    hasMore: Boolean(data?.hasMore),
+    isError: query.isError,
+    isPending: query.isPending,
+    isFetching: query.isFetching,
+    refetch: () => {
+      void query.refetch();
+    },
+  }))();
 }

@@ -20,10 +20,10 @@ description: PostgreSQL database, Drizzle schema, migrations, transactions, and 
 ## 2. Database & ORM Architecture (PostgreSQL + Drizzle)
 1. **Connection Pools:** Persistent pool (`PG_POOL_MAX=20`). Partitioned pools: workers (`max: 10`), API (`max: 20–30`). Node 24 `using`/`await using` for cleanup.
 2. **Transaction RLS:** Execute tenant queries inside `withTenant` executing `SET LOCAL app.current_tenant = :tenant_id` within explicit transaction blocks.
-3. **Tenant Boundary API (`tenant-context.ts`):** `withTenant` (read-write RLS), `withTenantRead` (replica; ban for read-your-writes), `withGlobalTenant` (migrations/workers/seeding).
+3. **Tenant Boundary API (`tenantContext.ts`):** `withTenant` (read-write RLS), `withTenantRead` (replica; ban for read-your-writes), `withGlobalTenant` (migrations/workers/seeding).
 4. **Query Performance:** Zero N+1 loops (batch via relational `with:` or `inArray` <= 500). Zero wildcard projections (`SELECT *` ban; specify columns). Prepared statements on hot point lookups.
 5. **SQL Safety:** Parameterized `sql` tagged templates only; ban `sql.raw` and string concatenation.
-6. **Clean Architecture:** Route → Use Case (DI) → Repository Interface → Drizzle Adapter. Controllers never import raw DB pools.
+6. **Clean Architecture:** Route → Use Case (DI) → Repository Interface → Drizzle Adapter. Route files must never import `db/repositories` or `drizzle-orm` directly.
 7. **Backup & Wipe-Restore:** `GET /backup` takes encrypted AES-GCM snapshot. `POST /sync` executes atomic wipe-restore under `withSyncTimeout`. Validate backup envelope before wipe.
 
 ## 3. Client Persistence (`db.ts` [DEPRECATED])
@@ -79,6 +79,3 @@ description: PostgreSQL database, Drizzle schema, migrations, transactions, and 
 6. **Filter Alignment:** Range filters must match storage representation (date vs instant).
 7. **Calendar Policy:** Stored data is Gregorian; Hijri/lunar display is a derived presentation layer.
 
-## 9. Workflow & Output Speed Rules
-- **Zero Output Bloat:** Output surgical diffs or targeted snippets only. Never rewrite entire files unless creating a new file from scratch. Omit conversational filler.
-- **Verification Gates:** Verify with `pnpm typecheck` and scoped tests before marking tasks done. If standards are modified, execute `bash .agent/scripts/sync-all.sh` and verify with `node scripts/verify-rules-integrity.mjs`.

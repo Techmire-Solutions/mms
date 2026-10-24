@@ -4,10 +4,11 @@ import type {
   AttendanceListPageResult,
   AttendanceCommandMetricsSnapshot,
   AttendanceReportAggregates,
+  AttendanceMarkedDatesQuery,
   AttendanceReportAggregatesQuery,
   WidgetQuery,
   WidgetAggregateResult,
-} from '@mms/shared';
+} from "@mms/shared";
 
 /**
  * Sole storage gateway for the attendance module.
@@ -38,6 +39,7 @@ export interface AttendanceRepository {
     tenant: string,
     query?: AttendanceReportAggregatesQuery,
   ): Promise<AttendanceReportAggregates>;
+  listMarkedAttendanceDates(tenant: string, query: AttendanceMarkedDatesQuery): Promise<string[]>;
   bulkSoftDeleteAttendanceRecords?(
     tenant: string,
     ids: string[],

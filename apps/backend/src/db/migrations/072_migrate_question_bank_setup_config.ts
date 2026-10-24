@@ -1,18 +1,18 @@
-import { eq } from 'drizzle-orm';
-import { getDb } from '../dbClient.js';
-import * as schema from '../schema.js';
-import { withGlobalTenant } from '../tenant-context.js';
+import { eq } from "drizzle-orm";
+import { getDb } from "../dbClient.js";
+import * as schema from "../schema.js";
+import { withGlobalTenant } from "../tenant-context.js";
 import {
   normalizeQuestionBankFieldConfigOnly,
   normalizeQuestionBankModulePreferences,
   stripQuestionBankFieldConfigForPersist,
   parseTenantScopedStorageKey,
-} from '@mms/shared';
+} from "@mms/shared";
 
-const SETTINGS_KEY = 'question_bank_settings';
+const SETTINGS_KEY = "question_bank_settings";
 
 export async function runMigration072(): Promise<void> {
-  console.log('Migrating Question Bank setup config to relational tables...');
+  console.log("Migrating Question Bank setup config to relational tables...");
   const db = getDb();
 
   const rows = await db.select().from(schema.objects);
@@ -25,7 +25,7 @@ export async function runMigration072(): Promise<void> {
     if (!tenant) continue;
 
     if (parsed.logicalKey === SETTINGS_KEY) {
-      if (row.data && typeof row.data === 'object' && !Array.isArray(row.data)) {
+      if (row.data && typeof row.data === "object" && !Array.isArray(row.data)) {
         settingsByTenant.set(tenant, row.data as Record<string, unknown>);
       }
     }
@@ -42,7 +42,9 @@ export async function runMigration072(): Promise<void> {
         .limit(1);
 
       if (!workspace) {
-        console.warn(`[Migration 072] Skipping orphaned Question Bank settings for missing workspace: ${tenant}`);
+        console.warn(
+          `[Migration 072] Skipping orphaned Question Bank settings for missing workspace: ${tenant}`,
+        );
         continue;
       }
 

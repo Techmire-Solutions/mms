@@ -1,8 +1,8 @@
 import type { ReactElement } from "react";
 import { Calendar } from "lucide-react";
 import { SESSIONS_MODULE_MANIFEST } from "@mms/shared";
-import { ModuleUniversalBulkActionBar } from "@/components/ui/ModuleUniversalBulkActionBar";
-import type { StatusBadgeConfigItem } from "@/components/ui/StatusBadge";
+import { ModuleUniversalBulkActionBar } from "@/components/app/ModuleUniversalBulkActionBar";
+import type { StatusBadgeConfigItem } from "@/components/app/StatusBadge";
 import { useTranslation } from "@/hooks/useTranslation";
 
 export interface SessionsBulkActionBarProps {

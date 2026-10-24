@@ -1,13 +1,10 @@
 import React from "react";
-import { PageHeader, type PageHeaderProps } from "@/components/ui/PageHeader";
+import { PageHeader, type PageHeaderProps } from "@/components/app/PageHeader";
 import {
   ResponsiveAccordionTabs,
   type AccordionTabItem,
-} from "@/components/ui/ResponsiveAccordionTabs";
-import {
-  AppPageShell,
-  type AppPageShellProps,
-} from "@/components/common/AppPageShell";
+} from "@/components/app/ResponsiveAccordionTabs";
+import { AppPageShell, type AppPageShellProps } from "@/components/common/AppPageShell";
 import {
   AppPageShellSkeleton,
   type AppPageShellSkeletonProps,

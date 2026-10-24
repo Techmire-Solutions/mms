@@ -1,15 +1,15 @@
-import React from 'react';
-import { describe, it, expect, vi } from 'vitest';
-import { renderToStaticMarkup } from 'react-dom/server';
-import { PlatformReportsModuleAdoption } from './PlatformReportsModuleAdoption';
+import React from "react";
+import { describe, it, expect, vi } from "vitest";
+import { renderToStaticMarkup } from "react-dom/server";
+import { PlatformReportsModuleAdoption } from "./PlatformReportsModuleAdoption";
 
-vi.mock('@/hooks/useTranslation', () => ({
+vi.mock("@/hooks/useTranslation", () => ({
   useTranslation: () => ({
     t: (k: string) => k,
   }),
 }));
 
-vi.mock('@/components/ui/reports/ReportChartCard', () => ({
+vi.mock("@/components/reports/ReportChartCard", () => ({
   ReportChartCard: ({
     title,
     subtitle,
@@ -27,16 +27,16 @@ vi.mock('@/components/ui/reports/ReportChartCard', () => ({
   ),
 }));
 
-describe('PlatformReportsModuleAdoption', () => {
-  it('renders module category groups and module cards', () => {
+describe("PlatformReportsModuleAdoption", () => {
+  it("renders module category groups and module cards", () => {
     const html = renderToStaticMarkup(<PlatformReportsModuleAdoption />);
 
-    expect(html).toContain('platform.reports.moduleAdoption');
-    expect(html).toContain('platform.reports.moduleAdoptionSub');
-    expect(html).toContain('core');
-    expect(html).toContain('academic');
-    expect(html).toContain('finance');
-    expect(html).toContain('Students');
-    expect(html).toContain('Accounting');
+    expect(html).toContain("platform.reports.moduleAdoption");
+    expect(html).toContain("platform.reports.moduleAdoptionSub");
+    expect(html).toContain("core");
+    expect(html).toContain("academic");
+    expect(html).toContain("finance");
+    expect(html).toContain("Students");
+    expect(html).toContain("Accounting");
   });
 });

@@ -1,18 +1,18 @@
 import React, { useRef } from "react";
 import { Printer, FileCode2 } from "lucide-react";
-import { getRankSuffix } from "@/tenant/features/examinations/components/gradeUtils";
+import { getRankSuffix } from "@/tenant/features/examinations/lib/gradeUtils";
 import { type StudentResultItem } from "@/tenant/features/examinations/components/StudentResultCard";
-import { type Exam } from '@/lib/data/examinationData';
+import { type Exam } from "@/lib/data/examinationData";
 import { formatDate } from "@mms/shared";
 import { useBrandPalette } from "@/lib/contexts/BrandingPaletteContext";
-import { PRINT_NEUTRAL } from "@/lib/printBrandingTokens";
+import { PRINT_NEUTRAL } from "@/lib/ui/printBrandingTokens";
 import { Button } from "@/components/ui/button";
-import { Modal } from "@/components/ui/Modal";
+import { Modal } from "@/components/app/Modal";
 import { useTranslation } from "@/hooks/useTranslation";
 import {
   printHtmlDocument,
   exportTypstReportCard,
-} from "@/tenant/features/examinations/components/certificatePrintWindow";
+} from "@/tenant/features/examinations/lib/certificatePrintWindow";
 
 export interface CertificatePreviewProps {
   result: StudentResultItem;
@@ -23,7 +23,11 @@ export interface CertificatePreviewProps {
 /**
  * Preview modal displaying student certificates with print features.
  */
-export function CertificatePreview({ result, exam, onClose }: CertificatePreviewProps): React.JSX.Element {
+export function CertificatePreview({
+  result,
+  exam,
+  onClose,
+}: CertificatePreviewProps): React.JSX.Element {
   const certRef = useRef<HTMLDivElement | null>(null);
   const { primary, secondary } = useBrandPalette();
   const { t } = useTranslation();
@@ -66,104 +70,210 @@ export function CertificatePreview({ result, exam, onClose }: CertificatePreview
             onClick={handlePrint}
             className="flex items-center gap-1.5 px-3.5 py-2 rounded-lg bg-primary text-primary-foreground text-sm font-semibold hover:bg-primary/90 cursor-pointer"
           >
-            <Printer className="w-3.5 h-3.5" aria-hidden="true" /> {t("examinations.certificatePreview.printDownload")}
+            <Printer className="w-3.5 h-3.5" aria-hidden="true" />{" "}
+            {t("examinations.certificatePreview.printDownload")}
           </Button>
         </div>
       }
     >
       <div ref={certRef}>
-        <div style={{
-          width: "100%",
-          background: PRINT_NEUTRAL.paper,
-          border: `16px solid ${primary}`,
-          outline: `4px solid ${secondary}`,
-          outlineOffset: "-20px",
-          padding: "40px 48px",
-          textAlign: "center",
-          fontFamily: "'Inter', sans-serif",
-          position: "relative",
-          minHeight: "420px",
-        }}>
+        <div
+          style={{
+            width: "100%",
+            background: PRINT_NEUTRAL.paper,
+            border: `16px solid ${primary}`,
+            outline: `4px solid ${secondary}`,
+            outlineOffset: "-20px",
+            padding: "40px 48px",
+            textAlign: "center",
+            fontFamily: "'Inter', sans-serif",
+            position: "relative",
+            minHeight: "420px",
+          }}
+        >
           {/* Corner ornaments */}
-          {(["top-left", "top-right", "bottom-left", "bottom-right"] as const).map((cornerPosition) => {
-            const cornerStyles: React.CSSProperties = {
-              position: "absolute",
-              [cornerPosition.includes("top") ? "insetBlockStart" : "insetBlockEnd"]: "8px",
-              [cornerPosition.includes("left") ? "insetInlineStart" : "insetInlineEnd"]: "8px",
-              width: "32px",
-              height: "32px",
-              borderBlockStart: cornerPosition.includes("top") ? `4px solid ${secondary}` : "none",
-              borderBlockEnd: cornerPosition.includes("bottom") ? `4px solid ${secondary}` : "none",
-              borderInlineStart: cornerPosition.includes("left") ? `4px solid ${secondary}` : "none",
-              borderInlineEnd: cornerPosition.includes("right") ? `4px solid ${secondary}` : "none",
-            };
-            return <div key={cornerPosition} style={cornerStyles} />;
-          })}
+          {(["top-left", "top-right", "bottom-left", "bottom-right"] as const).map(
+            (cornerPosition) => {
+              const cornerStyles: React.CSSProperties = {
+                position: "absolute",
+                [cornerPosition.includes("top") ? "insetBlockStart" : "insetBlockEnd"]: "8px",
+                [cornerPosition.includes("left") ? "insetInlineStart" : "insetInlineEnd"]: "8px",
+                width: "32px",
+                height: "32px",
+                borderBlockStart: cornerPosition.includes("top")
+                  ? `4px solid ${secondary}`
+                  : "none",
+                borderBlockEnd: cornerPosition.includes("bottom")
+                  ? `4px solid ${secondary}`
+                  : "none",
+                borderInlineStart: cornerPosition.includes("left")
+                  ? `4px solid ${secondary}`
+                  : "none",
+                borderInlineEnd: cornerPosition.includes("right")
+                  ? `4px solid ${secondary}`
+                  : "none",
+              };
+              return <div key={cornerPosition} style={cornerStyles} />;
+            },
+          )}
 
           {/* Arabic bismillah */}
-          <p style={{ fontFamily: "'Amiri', serif", fontSize: "20px", color: primary, marginBottom: "4px" }}>
+          <p
+            style={{
+              fontFamily: "'Amiri', serif",
+              fontSize: "20px",
+              color: primary,
+              marginBottom: "4px",
+            }}
+          >
             بِسْمِ اللهِ الرَّحْمٰنِ الرَّحِيْمِ
           </p>
 
-          <div style={{ width: "60px", height: "2px", background: `linear-gradient(to right, ${secondary}, ${primary}, ${secondary})`, margin: "12px auto" }} />
+          <div
+            style={{
+              width: "60px",
+              height: "2px",
+              background: `linear-gradient(to right, ${secondary}, ${primary}, ${secondary})`,
+              margin: "12px auto",
+            }}
+          />
 
           {/* Institution */}
-          <p style={{ fontSize: "11px", fontWeight: "700", letterSpacing: "4px", color: PRINT_NEUTRAL.caption, textTransform: "uppercase", marginBottom: "16px" }}>
+          <p
+            style={{
+              fontSize: "11px",
+              fontWeight: "700",
+              letterSpacing: "4px",
+              color: PRINT_NEUTRAL.caption,
+              textTransform: "uppercase",
+              marginBottom: "16px",
+            }}
+          >
             {t("examinations.certificatePreview.institutionName")}
           </p>
 
           {/* Title */}
-          <h1 style={{ fontSize: "32px", fontWeight: "700", color: primary, fontFamily: "'Amiri', serif", marginBottom: "4px" }}>
+          <h1
+            style={{
+              fontSize: "32px",
+              fontWeight: "700",
+              color: primary,
+              fontFamily: "'Amiri', serif",
+              marginBottom: "4px",
+            }}
+          >
             {t("examinations.certificatePreview.certificateTitle")}
           </h1>
-          <p style={{ fontSize: "12px", color: PRINT_NEUTRAL.subcaption, marginBottom: "24px" }}>{t("examinations.certificatePreview.certifyText")}</p>
+          <p style={{ fontSize: "12px", color: PRINT_NEUTRAL.subcaption, marginBottom: "24px" }}>
+            {t("examinations.certificatePreview.certifyText")}
+          </p>
 
           {/* Student name */}
-          <h2 style={{ fontSize: "28px", fontWeight: "700", color: PRINT_NEUTRAL.text, borderBottom: `2px solid ${secondary}`, display: "inline-block", padding: "0 24px 6px", marginBottom: "20px" }}>
+          <h2
+            style={{
+              fontSize: "28px",
+              fontWeight: "700",
+              color: PRINT_NEUTRAL.text,
+              borderBottom: `2px solid ${secondary}`,
+              display: "inline-block",
+              padding: "0 24px 6px",
+              marginBottom: "20px",
+            }}
+          >
             {result.student?.name}
           </h2>
 
           {/* Body text */}
-          <p style={{ fontSize: "13px", color: PRINT_NEUTRAL.body, lineHeight: "1.8", maxWidth: "480px", margin: "0 auto 20px" }}>
+          <p
+            style={{
+              fontSize: "13px",
+              color: PRINT_NEUTRAL.body,
+              lineHeight: "1.8",
+              maxWidth: "480px",
+              margin: "0 auto 20px",
+            }}
+          >
             {t("examinations.certificatePreview.bodyPrefix")}{" "}
             <strong style={{ color: primary }}>{exam.subject}</strong> — <em>{exam.name}</em>,{" "}
             {t("examinations.certificatePreview.bodyScore")}{" "}
-            <strong style={{ color: primary }}>{result.marksObtained} {t("examinations.certificatePreview.outOf")} {exam.totalMarks}</strong>{" "}
+            <strong style={{ color: primary }}>
+              {result.marksObtained} {t("examinations.certificatePreview.outOf")} {exam.totalMarks}
+            </strong>{" "}
             ({result.pct}%) {t("examinations.certificatePreview.bodyRank")}{" "}
-            <strong style={{ color: secondary }}>{rankLabel} {t("examinations.certificatePreview.position")}</strong>{" "}
+            <strong style={{ color: secondary }}>
+              {rankLabel} {t("examinations.certificatePreview.position")}
+            </strong>{" "}
             {t("examinations.certificatePreview.bodySuffix")}
           </p>
 
           {/* Grade badge */}
-          <div style={{
-            display: "inline-flex",
-            alignItems: "center",
-            gap: "12px",
-            background: result.grade.bg,
-            border: `2px solid ${result.grade.border}`,
-            borderRadius: "12px",
-            padding: "8px 24px",
-            marginBottom: "24px",
-          }}>
-            <span style={{ fontSize: "24px", fontWeight: "700", color: result.grade.color }}>{result.grade.label}</span>
-            <span style={{ fontSize: "12px", color: PRINT_NEUTRAL.caption }}>{t("examinations.certificatePreview.gradeLabel")}</span>
+          <div
+            style={{
+              display: "inline-flex",
+              alignItems: "center",
+              gap: "12px",
+              background: result.grade.bg,
+              border: `2px solid ${result.grade.border}`,
+              borderRadius: "12px",
+              padding: "8px 24px",
+              marginBottom: "24px",
+            }}
+          >
+            <span style={{ fontSize: "24px", fontWeight: "700", color: result.grade.color }}>
+              {result.grade.label}
+            </span>
+            <span style={{ fontSize: "12px", color: PRINT_NEUTRAL.caption }}>
+              {t("examinations.certificatePreview.gradeLabel")}
+            </span>
             <div style={{ width: "1px", height: "24px", background: result.grade.border }} />
-            <span style={{ fontSize: "16px", fontWeight: "700", color: result.grade.color }}>{result.pct}%</span>
+            <span style={{ fontSize: "16px", fontWeight: "700", color: result.grade.color }}>
+              {result.pct}%
+            </span>
           </div>
 
           {/* Date & signatures row */}
-          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-end", marginTop: "24px", borderTop: `1px solid ${PRINT_NEUTRAL.border}`, paddingTop: "16px" }}>
+          <div
+            style={{
+              display: "flex",
+              justifyContent: "space-between",
+              alignItems: "flex-end",
+              marginTop: "24px",
+              borderTop: `1px solid ${PRINT_NEUTRAL.border}`,
+              paddingTop: "16px",
+            }}
+          >
             <div style={{ textAlign: "start" }}>
-              <div style={{ width: "120px", borderBottom: `1px solid ${PRINT_NEUTRAL.subcaption}`, marginBottom: "4px" }} />
-              <p style={{ fontSize: "10px", color: PRINT_NEUTRAL.caption }}>{t("examinations.certificatePreview.classTeacher")}</p>
+              <div
+                style={{
+                  width: "120px",
+                  borderBottom: `1px solid ${PRINT_NEUTRAL.subcaption}`,
+                  marginBottom: "4px",
+                }}
+              />
+              <p style={{ fontSize: "10px", color: PRINT_NEUTRAL.caption }}>
+                {t("examinations.certificatePreview.classTeacher")}
+              </p>
             </div>
             <div style={{ textAlign: "center" }}>
-              <p style={{ fontSize: "10px", color: PRINT_NEUTRAL.subcaption }}>{t("examinations.certificatePreview.examDate")}</p>
-              <p style={{ fontSize: "12px", fontWeight: "600", color: PRINT_NEUTRAL.emphasis }}>{date}</p>
+              <p style={{ fontSize: "10px", color: PRINT_NEUTRAL.subcaption }}>
+                {t("examinations.certificatePreview.examDate")}
+              </p>
+              <p style={{ fontSize: "12px", fontWeight: "600", color: PRINT_NEUTRAL.emphasis }}>
+                {date}
+              </p>
             </div>
             <div style={{ textAlign: "end" }}>
-              <div style={{ width: "120px", borderBottom: `1px solid ${PRINT_NEUTRAL.subcaption}`, marginBottom: "4px", marginInlineStart: "auto" }} />
-              <p style={{ fontSize: "10px", color: PRINT_NEUTRAL.caption }}>{t("examinations.certificatePreview.principalDirector")}</p>
+              <div
+                style={{
+                  width: "120px",
+                  borderBottom: `1px solid ${PRINT_NEUTRAL.subcaption}`,
+                  marginBottom: "4px",
+                  marginInlineStart: "auto",
+                }}
+              />
+              <p style={{ fontSize: "10px", color: PRINT_NEUTRAL.caption }}>
+                {t("examinations.certificatePreview.principalDirector")}
+              </p>
             </div>
           </div>
         </div>

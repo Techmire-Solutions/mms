@@ -43,10 +43,7 @@ export function validateContactDraftErrors({
     }
   }
 
-  if (
-    typeof cleanedDraft.avatar === "string" &&
-    cleanedDraft.avatar.startsWith("data:")
-  ) {
+  if (typeof cleanedDraft.avatar === "string" && cleanedDraft.avatar.startsWith("data:")) {
     formErrors.push({
       fieldId: "avatar",
       tabId: "basic",
@@ -71,12 +68,7 @@ export function validateContactDraftErrors({
 
   // Check unique fields (phone number, email address, CNIC, etc.) within the candidate draft
   if (fields) {
-    const uniqueErrors = findContactUniqueFieldConflicts(
-      cleanedDraft,
-      [],
-      fields,
-      language,
-    );
+    const uniqueErrors = findContactUniqueFieldConflicts(cleanedDraft, [], fields, language);
     if (uniqueErrors.length > 0) {
       formErrors.push(...uniqueErrors);
     }

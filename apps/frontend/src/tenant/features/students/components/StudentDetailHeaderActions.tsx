@@ -2,7 +2,7 @@ import React from "react";
 import { IdCard } from "lucide-react";
 import type { Student } from "@mms/shared";
 import { Button } from "@/components/ui/button";
-import { DetailDrawerRestoreOrEditAction } from "@/components/ui/DetailDrawerArchiveChrome";
+import { DetailDrawerRestoreOrEditAction } from "@/components/app/DetailDrawerArchiveChrome";
 
 export interface StudentDetailHeaderActionsProps {
   student: Student;

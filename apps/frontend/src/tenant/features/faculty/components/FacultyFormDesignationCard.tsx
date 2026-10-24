@@ -1,7 +1,7 @@
 import type React from "react";
-import { DatePicker } from "@/components/ui/DatePicker";
-import { Field } from "@/components/ui/FormPrimitives";
-import { FormSelect } from "@/components/ui/FormSelect";
+import { DatePicker } from "@/components/app/DatePicker";
+import { Field } from "@/components/app/FormPrimitives";
+import { FormSelect } from "@/components/app/FormSelect";
 import {
   FACULTY_PROFILE_STATUS_VALUES,
   resolveFacultyProfileStatus,
@@ -62,7 +62,10 @@ export function FacultyFormDesignationCard({
           id={`${prefix}-designationId`}
           designationId={row.designationId}
           designationName={designationOptions.find((d) => d.id === row.designationId)?.name}
-          error={errors[`${prefix}.designationId`] || (rowIndex === 0 ? errors.designation || errors.designationId : undefined)}
+          error={
+            errors[`${prefix}.designationId`] ||
+            (rowIndex === 0 ? errors.designation || errors.designationId : undefined)
+          }
           required={isFieldRequired("designation") || isFieldRequired("designationId")}
           designationOptions={[...designationOptions]}
           departmentEntities={[...departmentEntities]}
@@ -74,14 +77,17 @@ export function FacultyFormDesignationCard({
           }}
         />
       ) : null}
-      {(showStart || showEnd || showStatus) ? (
+      {showStart || showEnd || showStatus ? (
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4 items-start">
           {showStart ? (
             <Field
               label={resolveFacultyFieldLabel(fields, "designation", "designationStartDate", t)}
               id={`${prefix}-start`}
               required={isFieldRequired("designationStartDate")}
-              error={errors[`${prefix}.designationStartDate`] || (rowIndex === 0 ? errors.designationStartDate : undefined)}
+              error={
+                errors[`${prefix}.designationStartDate`] ||
+                (rowIndex === 0 ? errors.designationStartDate : undefined)
+              }
             >
               <DatePicker
                 id={`${prefix}-start`}
@@ -97,14 +103,19 @@ export function FacultyFormDesignationCard({
               label={resolveFacultyFieldLabel(fields, "designation", "designationEndDate", t)}
               id={`${prefix}-end`}
               required={isFieldRequired("designationEndDate")}
-              error={errors[`${prefix}.designationEndDate`] || (rowIndex === 0 ? errors.designationEndDate : undefined)}
+              error={
+                errors[`${prefix}.designationEndDate`] ||
+                (rowIndex === 0 ? errors.designationEndDate : undefined)
+              }
             >
               <DatePicker
                 id={`${prefix}-end`}
                 name={`${prefix}-end`}
                 value={row.designationEndDate ?? undefined}
                 min={row.designationStartDate ?? undefined}
-                onChange={(dateStr) => onRowChange(row.clientId, { designationEndDate: dateStr || null })}
+                onChange={(dateStr) =>
+                  onRowChange(row.clientId, { designationEndDate: dateStr || null })
+                }
               />
             </Field>
           ) : null}
@@ -112,16 +123,23 @@ export function FacultyFormDesignationCard({
             <Field
               label={resolveFacultyFieldLabel(fields, "designation", "employDesignationStatus", t)}
               id={`${prefix}-status`}
-              required={isFieldRequired("employDesignationStatus") || isFieldRequired("profileStatus")}
-              error={errors[`${prefix}.employDesignationStatus`] || (rowIndex === 0 ? errors.employDesignationStatus : undefined)}
+              required={
+                isFieldRequired("employDesignationStatus") || isFieldRequired("profileStatus")
+              }
+              error={
+                errors[`${prefix}.employDesignationStatus`] ||
+                (rowIndex === 0 ? errors.employDesignationStatus : undefined)
+              }
             >
               <FormSelect
                 id={`${prefix}-status`}
                 name={`${prefix}-status`}
                 value={statusValue}
-                onChange={(val) => onRowChange(row.clientId, {
-                  employDesignationStatus: resolveFacultyProfileStatus(val),
-                })}
+                onChange={(val) =>
+                  onRowChange(row.clientId, {
+                    employDesignationStatus: resolveFacultyProfileStatus(val),
+                  })
+                }
                 options={statusOptions}
               />
             </Field>

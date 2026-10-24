@@ -15,12 +15,10 @@ vi.mock("@/lib/notify", () => ({
   },
 }));
 
-vi.mock("@/hooks/useTranslation", () => ({
-  useTranslation: () => ({
-    t: (_key: string, fallback?: string | Record<string, unknown>) =>
-      typeof fallback === "string" ? fallback : _key,
-  }),
-}));
+vi.mock("@/hooks/useTranslation", async () => {
+  const { useTranslationEnMock } = await import("@/test/useTranslationEnMock");
+  return { useTranslation: useTranslationEnMock() };
+});
 
 const mockStartServerImport = vi.fn().mockResolvedValue({
   id: "job-contacts-1",
@@ -71,7 +69,7 @@ describe("ContactsCsvImportDialog", () => {
       root.render(<ContactsCsvImportDialog open={true} onClose={vi.fn()} canWrite={true} />);
     });
 
-    expect(document.body.textContent).toContain("common.import");
+    expect(document.body.textContent).toContain("Import");
     expect(document.body.textContent).toContain("Download CSV Template");
 
     const templateBtn = Array.from(document.body.querySelectorAll("button")).find((btn) =>
@@ -83,10 +81,7 @@ describe("ContactsCsvImportDialog", () => {
       templateBtn?.click();
     });
 
-    expect(triggerFileDownload).toHaveBeenCalledWith(
-      expect.any(Blob),
-      "contacts.csv",
-    );
+    expect(triggerFileDownload).toHaveBeenCalledWith(expect.any(Blob), "contacts.csv");
   });
 
   it("accepts a valid exported contact CSV and initiates background import", async () => {

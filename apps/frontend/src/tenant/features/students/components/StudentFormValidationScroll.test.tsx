@@ -30,9 +30,8 @@ describe("StudentForm Validation Auto-Scroll & Contact SSOT", () => {
 
   it("triggers scrollAndFocusFirstError with smooth center options when validation fails", async () => {
     const scrollSpy = vi.spyOn(formAutoScroll, "scrollAndFocusFirstError");
-    const { validateStudentDraft } = await import(
-      "@/tenant/features/students/hooks/studentFormValidation"
-    );
+    const { validateStudentDraft } =
+      await import("@/tenant/features/students/hooks/studentFormValidation");
     vi.mocked(validateStudentDraft).mockReturnValue([
       { fieldId: "grNumber", tabId: "registration", message: "GR number required" },
     ]);
@@ -51,14 +50,15 @@ describe("StudentForm Validation Auto-Scroll & Contact SSOT", () => {
           requireGuardian: false,
           requireGender: false,
           requireDob: false,
-        } as any,
+        } as unknown as never,
         fields: {},
         enabledTabs: new Set(["basic", "registration"]),
         requiredTabs: new Set(["basic"]),
         language: "en",
       },
       formInstanceId: "inst-student-99",
-      t: ((k: string) => k) as unknown as import("@/lib/contexts/TranslationContext").TranslationFunction,
+      t: ((k: string) =>
+        k) as unknown as import("@/lib/contexts/TranslationContext").TranslationFunction,
       onSave,
       onClose: vi.fn(),
       setValidationErrors,
@@ -80,9 +80,8 @@ describe("StudentForm Validation Auto-Scroll & Contact SSOT", () => {
   });
 
   it("persists contact selection (SSOT) through successful submission", async () => {
-    const { validateStudentDraft } = await import(
-      "@/tenant/features/students/hooks/studentFormValidation"
-    );
+    const { validateStudentDraft } =
+      await import("@/tenant/features/students/hooks/studentFormValidation");
     vi.mocked(validateStudentDraft).mockReturnValue(null);
 
     const onSave = vi.fn();
@@ -101,14 +100,15 @@ describe("StudentForm Validation Auto-Scroll & Contact SSOT", () => {
       } as Contact,
       linkedGenderRaw: "male",
       validationContext: {
-        settings: {} as any,
+        settings: {} as unknown as never,
         fields: {},
         enabledTabs: new Set(["basic", "registration"]),
         requiredTabs: new Set(["basic"]),
         language: "en",
       },
       formInstanceId: "inst-student-101",
-      t: ((k: string) => k) as unknown as import("@/lib/contexts/TranslationContext").TranslationFunction,
+      t: ((k: string) =>
+        k) as unknown as import("@/lib/contexts/TranslationContext").TranslationFunction,
       onSave,
       onClose,
       setValidationErrors: vi.fn(),

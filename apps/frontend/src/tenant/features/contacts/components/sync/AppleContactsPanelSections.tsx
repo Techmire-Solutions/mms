@@ -1,10 +1,7 @@
 import type React from "react";
-import {
-  CheckCircle2,
-  Download,
-} from "lucide-react";
+import { CheckCircle2, Download } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { WarningCallout } from "@/components/ui/WarningCallout";
+import { WarningCallout } from "@/components/app/WarningCallout";
 import type { TranslationFunction } from "@/lib/contexts/TranslationContext";
 import type { ChangeEvent, RefObject } from "react";
 
@@ -46,7 +43,9 @@ export function AppleContactsImportResult({
       description={
         <>
           {t("contacts.sync.importedCount", { count: result.imported })}
-          {result.skipped > 0 ? ` · ${t("contacts.sync.skippedCount", { count: result.skipped })}` : ""}
+          {result.skipped > 0
+            ? ` · ${t("contacts.sync.skippedCount", { count: result.skipped })}`
+            : ""}
         </>
       }
     />
@@ -68,14 +67,16 @@ export function AppleContactsExportBar({
 }: AppleContactsExportBarProps): React.JSX.Element {
   return (
     <div className="border-t border-border pt-3 flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
-      <span className="min-w-0 text-xs text-muted-foreground">{t("contacts.sync.exportAppleHint")}</span>
+      <span className="min-w-0 text-xs text-muted-foreground">
+        {t("contacts.sync.exportAppleHint")}
+      </span>
       <Button
         type="button"
         variant="outline"
         onClick={onExport}
         disabled={contactCount === 0 || Boolean(exporting)}
         aria-busy={exporting}
-        className="flex w-full sm:w-auto shrink-0 items-center gap-1.5 px-3.5 min-h-11 rounded-lg border border-border text-xs font-semibold text-foreground hover:bg-muted disabled:opacity-50 transition-colors bg-card shadow-none"
+        className="flex w-full sm:w-auto shrink-0 items-center gap-1.5 px-3.5 min-h-11 rounded-xl text-xs font-semibold shadow-none"
       >
         <Download className="w-3.5 h-3.5" />
         <span>{t("contacts.sync.exportVcf", { count: contactCount })}</span>

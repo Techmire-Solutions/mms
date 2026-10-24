@@ -1,7 +1,7 @@
-import { FacultyReportView } from '@/components/ui/reports/FacultyReportView';
-import PinnedWidgets from '@/tenant/features/reports/components/PinnedWidgets';
-import { useFacultyReportController } from '../controllers/useFacultyReportController';
-import type { FacultyReportProps } from '@/components/ui/reports/facultyReportTypes';
+import { FacultyReportView } from "@/components/reports/FacultyReportView";
+import PinnedWidgets from "@/tenant/features/reports/components/PinnedWidgets";
+import { useFacultyReportController } from "../hooks/useFacultyReportController";
+import type { FacultyReportProps } from "@/components/reports/facultyReportTypes";
 
 export default function FacultyReport({ filters }: FacultyReportProps): React.JSX.Element {
   const report = useFacultyReportController({ filters });

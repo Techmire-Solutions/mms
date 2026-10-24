@@ -3,29 +3,29 @@ export {
   hasPlatformUsers,
   toPlatformUserProfile,
   toPublicPlatformUser,
-} from './platformUserServiceMappers.js';
+} from "./platformUserServiceMappers.js";
 export {
   getPlatformUserProfile,
   findPlatformUserByEmail,
   getStoredPlatformUserById,
   updatePlatformUserName,
   updatePlatformUserProfile,
-} from './platformUserServiceRead.js';
+} from "./platformUserServiceRead.js";
 export {
   verifyPlatformUserPassword,
   updatePlatformUserPassword,
   changePlatformUserPassword,
-} from './platformUserServicePassword.js';
+} from "./platformUserServicePassword.js";
 export {
   createVerifiedPlatformUser,
   setPlatformAdminPermissions,
   setPlatformAdminDisabled,
   deletePlatformAdmin,
   verifyPlatformUserEmail,
-} from './platformUserServiceAdmin.js';
-export { ensurePlatformSuperUserFromEnv } from './platformUserServiceBootstrap.js';
+} from "./platformUserServiceAdmin.js";
+export { ensurePlatformSuperUserFromEnv } from "./platformUserServiceBootstrap.js";
 export {
   findActivePlatformSuperUser,
   syncPlatformSuperUserToTenant,
   syncPlatformSuperUserToTenants,
-} from './platformSuperUserTenantSyncService.js';
+} from "./platformSuperUserTenantSyncService.js";

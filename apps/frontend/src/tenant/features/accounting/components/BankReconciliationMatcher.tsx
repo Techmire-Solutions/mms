@@ -11,7 +11,9 @@ export interface BankReconciliationMatcherProps {
   t: TranslationFunction;
 }
 
-export function BankReconciliationMatcher({ t }: BankReconciliationMatcherProps): React.JSX.Element {
+export function BankReconciliationMatcher({
+  t,
+}: BankReconciliationMatcherProps): React.JSX.Element {
   const match = useMatchBankReconciliation();
   const [journalEntryId, setJournalEntryId] = useState("");
   const [journalLineId, setJournalLineId] = useState("");

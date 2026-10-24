@@ -3,7 +3,7 @@ import { createRoot, type Root } from "react-dom/client";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { JournalQuickActionsPanel } from "./JournalQuickActionsPanel";
 import type { JournalEntry } from "@/lib/data/accountingData";
-import { QUICK_ACTIONS } from "./journalEntriesQuickActions";
+import { QUICK_ACTIONS } from "../lib/journalEntriesQuickActions";
 
 declare global {
   var IS_REACT_ACT_ENVIRONMENT: boolean | undefined;
@@ -24,7 +24,7 @@ vi.mock("@/hooks/useCurrency", () => ({
   }),
 }));
 
-vi.mock("@/components/ui/StatusBadge", () => ({
+vi.mock("@/components/app/StatusBadge", () => ({
   StatusBadge: ({ status }: { status: string }) => <span data-testid="status-badge">{status}</span>,
 }));
 

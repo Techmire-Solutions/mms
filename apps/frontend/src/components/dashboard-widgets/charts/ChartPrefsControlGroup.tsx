@@ -67,7 +67,10 @@ export function ChartPrefsControlGroup({
       </Select>
 
       <Select value={colorValue} onValueChange={onColorChange}>
-        <SelectTrigger className={FORM_SELECT_MINI} aria-label={t("reports.visualizer.colorPalette")}>
+        <SelectTrigger
+          className={FORM_SELECT_MINI}
+          aria-label={t("reports.visualizer.colorPalette")}
+        >
           <SelectValue placeholder={t("reports.visualizer.colorPalette")} />
         </SelectTrigger>
         <SelectContent>

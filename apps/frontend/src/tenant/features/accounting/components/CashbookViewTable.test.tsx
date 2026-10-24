@@ -2,7 +2,7 @@ import React from "react";
 import { describe, expect, it, vi } from "vitest";
 import { renderToStaticMarkup } from "react-dom/server";
 import { CashbookViewTable } from "./CashbookViewTable";
-import type { CashbookRow } from "./cashbookViewShared";
+import type { CashbookRow } from "../lib/cashbookViewShared";
 
 vi.mock("@/hooks/useTranslation", () => ({
   useTranslation: () => ({
@@ -58,12 +58,7 @@ const mockRows: CashbookRow[] = [
 describe("CashbookViewTable", () => {
   it("renders empty state when rows array is empty", () => {
     const markup = renderToStaticMarkup(
-      <CashbookViewTable
-        rows={[]}
-        totalIn={0}
-        totalOut={0}
-        formatCurrency={(val) => `$${val}`}
-      />,
+      <CashbookViewTable rows={[]} totalIn={0} totalOut={0} formatCurrency={(val) => `$${val}`} />,
     );
     expect(markup).toContain("accounting.cashbook.noTransactions");
   });

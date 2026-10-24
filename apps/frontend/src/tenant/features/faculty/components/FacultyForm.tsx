@@ -1,15 +1,15 @@
 import React from "react";
 import { School } from "lucide-react";
-import { FormModal } from "@/components/ui/FormModal";
-import { ConfirmAlertDialog } from "@/components/ui/ConfirmAlertDialog";
+import { FormModal } from "@/components/app/FormModal";
+import { ConfirmAlertDialog } from "@/components/app/ConfirmAlertDialog";
 import type { FacultyMember } from "@mms/shared";
 import { FacultyFormTabContent } from "@/tenant/features/faculty/components/FacultyFormTabContent";
-import { useFacultyFormController } from "@/tenant/features/faculty/components/useFacultyFormController";
+import { useFacultyFormController } from "@/tenant/features/faculty/hooks/useFacultyFormController";
 import { FacultyFormFooter } from "@/tenant/features/faculty/components/FacultyFormFooter";
 import {
   useFacultyFormTabs,
   type FacultyFormTabKey,
-} from "@/tenant/features/faculty/components/facultyFormTabs";
+} from "@/tenant/features/faculty/lib/facultyFormTabs";
 
 export type { FacultyFormTabKey };
 
@@ -20,7 +20,7 @@ export interface FacultyFormProps {
   priority?: boolean;
 }
 
-export const FacultyForm = (function FacultyForm(props: FacultyFormProps): React.JSX.Element {
+export const FacultyForm = function FacultyForm(props: FacultyFormProps): React.JSX.Element {
   const { faculty, onClose, onSave, priority = false } = props;
   const {
     t,
@@ -40,6 +40,9 @@ export const FacultyForm = (function FacultyForm(props: FacultyFormProps): React
     departmentEntities,
     linkedContact,
     linkedFacultyContactIds,
+    linkedUser,
+    userAccountDraft,
+    setUserAccountDraft,
     idPrefix,
     nextEmployeeId,
     handleRegenerateEmployeeId,
@@ -87,7 +90,13 @@ export const FacultyForm = (function FacultyForm(props: FacultyFormProps): React
         onTabChange={setActiveTab}
         saveOnTabChange={false}
         cancelLabel={t("common.cancel")}
-        saveLabel={saving ? t("faculty.form.saving") : faculty ? t("faculty.form.saveUpdate") : t("faculty.form.saveCreate")}
+        saveLabel={
+          saving
+            ? t("faculty.form.saving")
+            : faculty
+              ? t("faculty.form.saveUpdate")
+              : t("faculty.form.saveCreate")
+        }
         onSave={onSaveWithTabFocus}
         isDirty={isDirty}
         saving={saving}
@@ -97,8 +106,7 @@ export const FacultyForm = (function FacultyForm(props: FacultyFormProps): React
         discardCancelLabel={t("faculty.form.keepEditing")}
         error={validationErrorSummary}
         saveDisabled={
-          (requireContactLink && !facultyDraft.contactId)
-          || (Boolean(faculty?.id) && !isDirty)
+          (requireContactLink && !facultyDraft.contactId) || (Boolean(faculty?.id) && !isDirty)
         }
         footerStart={
           <FacultyFormFooter
@@ -116,7 +124,10 @@ export const FacultyForm = (function FacultyForm(props: FacultyFormProps): React
           noValidate
           onSubmit={(e) => {
             e.preventDefault();
-            if (!((requireContactLink && !facultyDraft.contactId) || (Boolean(faculty?.id) && !isDirty))) {
+            if (!(
+              (requireContactLink && !facultyDraft.contactId) ||
+              (Boolean(faculty?.id) && !isDirty)
+            )) {
               void onSaveWithTabFocus();
             }
           }}
@@ -143,6 +154,9 @@ export const FacultyForm = (function FacultyForm(props: FacultyFormProps): React
             getFieldError={getFieldError}
             onDraftChange={updateDraft}
             linkedContact={linkedContact}
+            linkedUser={linkedUser}
+            userAccountDraft={userAccountDraft}
+            onUserAccountDraftChange={setUserAccountDraft}
           />
         </form>
       </FormModal>
@@ -150,18 +164,20 @@ export const FacultyForm = (function FacultyForm(props: FacultyFormProps): React
         open={duplicateConfirmOpen}
         onOpenChange={handleDuplicateDialogOpenChange}
         title={faculty ? t("faculty.form.editTitle") : t("faculty.form.addTitle")}
-        description={typedDuplicateReason
-          ? t("faculty.form.duplicateSaveWarning", { message: t(duplicateErrorKeys[typedDuplicateReason]) })
-          : ""}
+        description={
+          typedDuplicateReason
+            ? t("faculty.form.duplicateSaveWarning", {
+                message: t(duplicateErrorKeys[typedDuplicateReason]),
+              })
+            : ""
+        }
         confirmLabel={t("faculty.form.saveAnyway")}
         cancelLabel={t("faculty.form.reviewDuplicate")}
         onConfirm={confirmDuplicateSave}
       />
     </>
   );
-});
-
-export {
-  FacultyForm as FacultyFormModal,
 };
+
+export { FacultyForm as FacultyFormModal };
 export default FacultyForm;

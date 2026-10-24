@@ -1,17 +1,15 @@
-import React from 'react';
-import {
-  HelpCircle, Filter, Sparkles, BarChart3,
-} from 'lucide-react';
-import { useTranslation } from '@/hooks/useTranslation';
-import { useQuestionBankMetrics } from '@/tenant/features/question-bank/hooks/useQuestionBankApi';
-import { ModuleCommandMetricsGrid } from '@/components/ui/ModuleCommandMetricsGrid';
+import React from "react";
+import { HelpCircle, Filter, Sparkles, BarChart3 } from "lucide-react";
+import { useTranslation } from "@/hooks/useTranslation";
+import { useQuestionBankMetrics } from "@/tenant/features/question-bank/hooks/useQuestionBankApi";
+import { ModuleCommandMetricsGrid } from "@/components/app/ModuleCommandMetricsGrid";
 
 interface QuestionBankCommandMetricsProps {
   shown: number;
   total: number;
 }
 
-export const QuestionBankCommandMetrics = (function QuestionBankCommandMetrics({
+export const QuestionBankCommandMetrics = function QuestionBankCommandMetrics({
   shown,
   total,
 }: QuestionBankCommandMetricsProps): React.JSX.Element {
@@ -29,11 +27,31 @@ export const QuestionBankCommandMetrics = (function QuestionBankCommandMetrics({
   }))();
 
   const items = (() => [
-    { icon: HelpCircle, label: t('questionBank.metrics.total'), value: metrics.total, accent: 'primary' as const },
-    { icon: Filter, label: t('questionBank.metrics.filtered'), value: shown, accent: 'info' as const },
-    { icon: Sparkles, label: t('questionBank.metrics.easy'), value: metrics.easy, accent: 'success' as const },
-    { icon: BarChart3, label: t('questionBank.metrics.medium'), value: metrics.medium, accent: 'warning' as const },
+    {
+      icon: HelpCircle,
+      label: t("questionBank.metrics.total"),
+      value: metrics.total,
+      accent: "primary" as const,
+    },
+    {
+      icon: Filter,
+      label: t("questionBank.metrics.filtered"),
+      value: shown,
+      accent: "info" as const,
+    },
+    {
+      icon: Sparkles,
+      label: t("questionBank.metrics.easy"),
+      value: metrics.easy,
+      accent: "success" as const,
+    },
+    {
+      icon: BarChart3,
+      label: t("questionBank.metrics.medium"),
+      value: metrics.medium,
+      accent: "warning" as const,
+    },
   ])();
 
   return <ModuleCommandMetricsGrid items={items} />;
-});
+};

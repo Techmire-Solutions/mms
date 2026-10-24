@@ -1,35 +1,37 @@
-import React, { useState } from 'react';
-import { Code2 } from 'lucide-react';
-import { formatDate } from '@mms/shared';
-import { useTranslation } from '@/hooks/useTranslation';
-import { Modal } from '@/components/ui/Modal';
-import { CopyBtn } from '@/components/ui/CopyBtn';
-import { SubTabBar } from '@/components/ui/SubTabBar';
-import type { PlatformActivityLogItem } from '@/platform/hooks/usePlatformActivityLogs';
+import React, { useState } from "react";
+import { Code2 } from "lucide-react";
+import { formatDate } from "@mms/shared";
+import { useTranslation } from "@/hooks/useTranslation";
+import { Modal, CopyButton } from "@shared/ui";
+import { SubTabBar } from "@/components/app/SubTabBar";
+import type { PlatformActivityLogItem } from "@/platform/hooks/usePlatformActivityLogs";
 
 interface ActivityLogInspectModalProps {
   log: PlatformActivityLogItem | null;
   onClose: () => void;
 }
 
-export function ActivityLogInspectModal({ log, onClose }: ActivityLogInspectModalProps): React.JSX.Element | null {
+export function ActivityLogInspectModal({
+  log,
+  onClose,
+}: ActivityLogInspectModalProps): React.JSX.Element | null {
   const { t } = useTranslation();
-  const [activeTab, setActiveTab] = useState<'full' | 'payload'>('full');
+  const [activeTab, setActiveTab] = useState<"full" | "payload">("full");
 
   if (!log) return null;
 
   const hasMetadata = Boolean(log.metadataMessage && log.metadataMessage.trim().length > 0);
-  const metadataJson = hasMetadata ? log.metadataMessage : t('platform.logs.metadataEmpty');
+  const metadataJson = hasMetadata ? log.metadataMessage : t("platform.logs.metadataEmpty");
   const fullJson = JSON.stringify(log, null, 2);
 
-  const displayedContent = activeTab === 'payload' ? metadataJson : fullJson;
-  const copyText = (activeTab === 'payload' && hasMetadata ? log.metadataMessage : fullJson) ?? '';
+  const displayedContent = activeTab === "payload" ? metadataJson : fullJson;
+  const copyText = (activeTab === "payload" && hasMetadata ? log.metadataMessage : fullJson) ?? "";
 
   return (
     <Modal
       open={Boolean(log)}
       onClose={onClose}
-      title={t('platform.logs.inspectJson')}
+      title={t("platform.logs.inspectJson")}
       subtitle={`${log.action} — ${formatDate(log.createdAt)}`}
       icon={Code2}
       size="lg"
@@ -38,16 +40,18 @@ export function ActivityLogInspectModal({ log, onClose }: ActivityLogInspectModa
         <div className="flex items-center justify-between gap-2 flex-wrap">
           <SubTabBar
             tabs={[
-              { key: 'full', label: t('platform.logs.viewFullEvent') },
-              { key: 'payload', label: t('platform.logs.viewPayload') },
+              { key: "full", label: t("platform.logs.viewFullEvent") },
+              { key: "payload", label: t("platform.logs.viewPayload") },
             ]}
             value={activeTab}
-            onChange={(k) => setActiveTab(k as 'full' | 'payload')}
+            onChange={(k) => setActiveTab(k as "full" | "payload")}
           />
-          <CopyBtn
+          <CopyButton
             text={copyText}
-            label={activeTab === 'payload' ? t('platform.logs.copyPayload') : t('platform.logs.copyJson')}
-            labelCopied={t('platform.logs.copied')}
+            label={
+              activeTab === "payload" ? t("platform.logs.copyPayload") : t("platform.logs.copyJson")
+            }
+            labelCopied={t("platform.logs.copied")}
             variant="outline"
           />
         </div>
@@ -58,7 +62,7 @@ export function ActivityLogInspectModal({ log, onClose }: ActivityLogInspectModa
 
         <div className="flex items-center justify-between pt-2 text-2xs text-muted-foreground font-mono">
           <span>ID: {log.id}</span>
-          <span>{log.ipAddress || '—'}</span>
+          <span>{log.ipAddress || "—"}</span>
         </div>
       </div>
     </Modal>

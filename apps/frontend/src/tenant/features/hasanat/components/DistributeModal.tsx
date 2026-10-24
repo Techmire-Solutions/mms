@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { Star } from "lucide-react";
 
-import { FormModal } from "@/components/ui/FormModal";
+import { FormModal } from "@/components/app/FormModal";
 import { useHasanatConfig } from "@/hooks/useStandardModuleConfig";
 import { useTranslation } from "@/hooks/useTranslation";
 import { useAuth } from "@/lib/contexts/AuthContext";
@@ -49,7 +49,10 @@ export function DistributeModal({
   });
 
   const updateField = (field: string, value: unknown) => {
-    setData((previousData: Partial<Distribution>) => ({ ...previousData, [field]: value } as Partial<Distribution>));
+    setData(
+      (previousData: Partial<Distribution>) =>
+        ({ ...previousData, [field]: value }) as Partial<Distribution>,
+    );
     if (errors[field]) {
       setErrors((previousErrors) => {
         const next = { ...previousErrors };
@@ -72,9 +75,16 @@ export function DistributeModal({
     }
   }, [open, denoms, authUser?.id]);
 
-  const selectedDenomination = denoms.find((denomination) => denomination.id === data.denominationId);
-  const availableBatches = batches.filter((batch) => batch.denominationId === data.denominationId && batch.remaining > 0);
-  const totalAvailable = availableBatches.reduce((sum: number, batch: StockBatch) => sum + batch.remaining, 0);
+  const selectedDenomination = denoms.find(
+    (denomination) => denomination.id === data.denominationId,
+  );
+  const availableBatches = batches.filter(
+    (batch) => batch.denominationId === data.denominationId && batch.remaining > 0,
+  );
+  const totalAvailable = availableBatches.reduce(
+    (sum: number, batch: StockBatch) => sum + batch.remaining,
+    0,
+  );
 
   const { orderedFields, isFieldEnabled, isFieldRequired } = useHasanatConfig();
 
@@ -83,9 +93,8 @@ export function DistributeModal({
     if (!data.denominationId) {
       newErrors.denominationId = t("common.required");
     }
-    const recipientId = data.recipientType === "faculty"
-      ? data.recipientFacultyId
-      : data.recipientStudentId;
+    const recipientId =
+      data.recipientType === "faculty" ? data.recipientFacultyId : data.recipientStudentId;
     if (!recipientId) {
       newErrors.recipientName = t("common.required");
     }
@@ -119,7 +128,9 @@ export function DistributeModal({
 
     setSubmitError(null);
     const denomination = denoms.find((candidate) => candidate.id === data.denominationId);
-    const batch = batches.find((candidate) => candidate.denominationId === data.denominationId && candidate.remaining > 0);
+    const batch = batches.find(
+      (candidate) => candidate.denominationId === data.denominationId && candidate.remaining > 0,
+    );
     const payload: Distribution = {
       ...data,
       id: generateClientEntityId("dist"),

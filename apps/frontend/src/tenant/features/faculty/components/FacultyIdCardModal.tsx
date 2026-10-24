@@ -1,9 +1,9 @@
 import { useRef, type JSX } from "react";
 import { Printer, IdCard } from "lucide-react";
 import { formatDate, facultyFieldLabelKey, type Faculty } from "@mms/shared";
-import { Modal } from "@/components/ui/Modal";
+import { Modal } from "@/components/app/Modal";
 import { Button } from "@/components/ui/button";
-import { UserAvatar } from "@/components/ui/UserAvatar";
+import { UserAvatar } from "@/components/app/UserAvatar";
 import { Badge } from "@/components/ui/badge";
 import { useTranslation } from "@/hooks/useTranslation";
 
@@ -42,7 +42,11 @@ export function FacultyIdCardModal({
     <Modal
       open={open}
       onClose={onClose}
-      title={isBatch ? t("faculty.idCard.batchPrint", { count: items.length }) : t("faculty.idCard.title")}
+      title={
+        isBatch
+          ? t("faculty.idCard.batchPrint", { count: items.length })
+          : t("faculty.idCard.title")
+      }
       icon={IdCard}
       size="lg"
       footer={
@@ -74,7 +78,8 @@ export function FacultyIdCardModal({
           className="id-card-print-container grid grid-cols-1 sm:grid-cols-2 gap-4 max-h-dialog-scroll overflow-y-auto p-2 print:grid-cols-2 print:gap-3 print:max-h-none print:overflow-visible print:p-0"
         >
           {items.map(({ faculty, assignedClasses, qualification, emergencyPhone }) => {
-            const displayPhone = emergencyPhone || (faculty.phone ? String(faculty.phone) : undefined);
+            const displayPhone =
+              emergencyPhone || (faculty.phone ? String(faculty.phone) : undefined);
 
             return (
               <div
@@ -92,7 +97,12 @@ export function FacultyIdCardModal({
                     </p>
                   </div>
                   {faculty.employeeId ? (
-                    <Badge as="span" size="sm" tone="primary" className="px-1.5 py-0.5 rounded font-bold uppercase tracking-wider">
+                    <Badge
+                      as="span"
+                      size="sm"
+                      tone="primary"
+                      className="px-1.5 py-0.5 rounded font-bold uppercase tracking-wider"
+                    >
                       {t("faculty.employeeIdPrefix")}: {faculty.employeeId}
                     </Badge>
                   ) : null}
@@ -107,30 +117,45 @@ export function FacultyIdCardModal({
                       className="w-16 h-16 rounded-xl border-2 border-primary/30 shadow-inner font-bold text-sm"
                     />
                     {faculty.specialization && (
-                      <span className="mt-1.5 text-4xs font-bold px-1.5 py-0.5 rounded bg-primary/10 text-primary border border-primary/20 max-w-20 truncate text-center">
+                      <span
+                        title={faculty.specialization}
+                        className="mt-1.5 text-4xs font-bold px-1.5 py-0.5 rounded bg-primary/10 text-primary border border-primary/20 max-w-20 truncate text-center"
+                      >
                         {faculty.specialization}
                       </span>
                     )}
                     {faculty.department && (
-                      <span className="mt-1 text-4xs font-medium px-1.5 py-0.5 rounded bg-muted/60 text-muted-foreground border border-border/40 max-w-20 truncate text-center">
+                      <span
+                        title={faculty.department}
+                        className="mt-1 text-4xs font-medium px-1.5 py-0.5 rounded bg-muted/60 text-muted-foreground border border-border/40 max-w-20 truncate text-center"
+                      >
                         {faculty.department}
                       </span>
                     )}
                   </div>
 
                   <div className="min-w-0 flex-1 space-y-1">
-                    <h3 className="text-sm font-bold text-foreground truncate leading-tight">
+                    <h3
+                      title={faculty.name}
+                      className="text-sm font-bold text-foreground truncate leading-tight"
+                    >
                       {faculty.name}
                     </h3>
 
                     {assignedClasses.length > 0 && (
-                      <p className="text-3xs font-medium text-primary truncate">
+                      <p
+                        title={assignedClasses.join(", ")}
+                        className="text-3xs font-medium text-primary truncate"
+                      >
                         {assignedClasses.join(", ")}
                       </p>
                     )}
 
                     {(qualification || faculty.qualification) && (
-                      <div className="text-3xs text-muted-foreground truncate">
+                      <div
+                        title={qualification || faculty.qualification}
+                        className="text-3xs text-muted-foreground truncate"
+                      >
                         <span className="font-semibold text-foreground/80">
                           {t(facultyFieldLabelKey("qualification"))}:{" "}
                         </span>
@@ -139,7 +164,7 @@ export function FacultyIdCardModal({
                     )}
 
                     {displayPhone && (
-                      <div className="text-3xs text-muted-foreground truncate">
+                      <div title={displayPhone} className="text-3xs text-muted-foreground truncate">
                         <span className="font-semibold text-foreground/80">
                           {t(facultyFieldLabelKey("phone"))}:{" "}
                         </span>
@@ -161,10 +186,14 @@ export function FacultyIdCardModal({
                 {/* Footer */}
                 <div className="flex items-center justify-between border-t border-border/40 pt-2 mt-3 text-4xs text-muted-foreground">
                   <div className="flex items-center gap-1 font-mono tracking-widest text-4xs uppercase">
-                    <span>{t("faculty.idCard.idLabel")}: {String(faculty.id).slice(0, 10)}</span>
+                    <span>
+                      {t("faculty.idCard.idLabel")}: {String(faculty.id).slice(0, 10)}
+                    </span>
                   </div>
                   <div>
-                    <span>{t("faculty.idCard.issueDate")}: {formatDate(new Date())}</span>
+                    <span>
+                      {t("faculty.idCard.issueDate")}: {formatDate(new Date())}
+                    </span>
                   </div>
                 </div>
               </div>

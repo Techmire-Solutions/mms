@@ -1,18 +1,18 @@
-import { and, eq, inArray, isNull, sql, type SQL } from 'drizzle-orm';
-import { contacts, contactAddresses } from '../schema.js';
-import { withTenantRead } from '../tenant-context.js';
+import { and, eq, inArray, isNull, sql, type SQL } from "drizzle-orm";
+import { contacts, contactAddresses } from "../schema.js";
+import { withTenantRead } from "../tenant-context.js";
 
 export function scalarFieldSql(fieldKey: string): SQL {
   switch (fieldKey) {
-    case 'firstName':
+    case "firstName":
       return sql`lower(trim(COALESCE(${contacts.firstName}, '')))`;
-    case 'lastName':
+    case "lastName":
       return sql`lower(trim(COALESCE(${contacts.lastName}, '')))`;
-    case 'cnic':
+    case "cnic":
       return sql`regexp_replace(COALESCE(${contacts.cnic}, ''), '[^0-9]', '', 'g')`;
-    case 'dob':
+    case "dob":
       return sql`lower(trim(COALESCE(${contacts.dob}::text, '')))`;
-    case 'city':
+    case "city":
       return sql`lower(trim(COALESCE((
         SELECT a.city FROM ${contactAddresses} a
         WHERE a.workspace_subdomain = ${contacts.workspaceSubdomain}
@@ -20,7 +20,7 @@ export function scalarFieldSql(fieldKey: string): SQL {
         ORDER BY CASE WHEN a.is_primary THEN 0 ELSE 1 END, a.sort_order ASC
         LIMIT 1
       ), '')))`;
-    case 'state':
+    case "state":
       return sql`lower(trim(COALESCE((
         SELECT a.state FROM ${contactAddresses} a
         WHERE a.workspace_subdomain = ${contacts.workspaceSubdomain}
@@ -28,7 +28,7 @@ export function scalarFieldSql(fieldKey: string): SQL {
         ORDER BY CASE WHEN a.is_primary THEN 0 ELSE 1 END, a.sort_order ASC
         LIMIT 1
       ), '')))`;
-    case 'country':
+    case "country":
       return sql`lower(trim(COALESCE((
         SELECT a.country FROM ${contactAddresses} a
         WHERE a.workspace_subdomain = ${contacts.workspaceSubdomain}

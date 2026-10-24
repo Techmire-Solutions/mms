@@ -2,18 +2,20 @@ import React, { Suspense, lazy } from "react";
 import { AnimatePresence } from "framer-motion";
 import type { Session } from "@/lib/data/sessionsData";
 import { SessionsListConfirmDialogs } from "@/tenant/features/sessions/components/SessionsListConfirmDialogs";
+import { useSessionDetail } from "@/tenant/features/sessions/hooks/useSessions";
 
 const SessionDetail = lazy(() =>
   import("@/tenant/features/sessions/components/SessionDetail").then((m) => ({
     default: m.SessionDetail,
-  }))
+  })),
 );
 const SessionForm = lazy(() =>
   import("@/tenant/features/sessions/components/SessionForm").then((m) => ({
     default: m.SessionForm,
-  }))
+  })),
 );
 import { SessionsCsvImportDialog } from "@/tenant/features/sessions/components/SessionsCsvImportDialog";
+import { SessionLockOverrideDialog } from "@/tenant/features/sessions/components/SessionLockOverrideDialog";
 
 interface SessionsDialogLayerProps {
   showForm: boolean;
@@ -66,23 +68,27 @@ export function SessionsDialogLayer({
   onBulkRestoreOpenChange,
   onConfirmBulkRestore,
 }: SessionsDialogLayerProps): React.JSX.Element {
+  // List rows are summary-shaped; detail and edit must only render once the full session is loaded.
+  const fullDetailSession = useSessionDetail(detailSession);
+  const fullEditSession = useSessionDetail(editSession);
+  const formReady = !editSession || fullEditSession !== null;
   return (
     <>
       <AnimatePresence>
-        {showForm && (
+        {showForm && formReady && (
           <Suspense fallback={null}>
             <SessionForm
               open={showForm}
-              session={editSession}
+              session={fullEditSession}
               onClose={onCloseForm}
               onSave={onSave}
             />
           </Suspense>
         )}
-        {detailSession ? (
+        {fullDetailSession ? (
           <Suspense fallback={null}>
             <SessionDetail
-              session={detailSession}
+              session={fullDetailSession}
               onClose={onCloseDetail}
               onUpdate={onUpdate}
               onEdit={onEdit}
@@ -92,6 +98,8 @@ export function SessionsDialogLayer({
           </Suspense>
         ) : null}
       </AnimatePresence>
+
+      <SessionLockOverrideDialog />
 
       <SessionsListConfirmDialogs
         selectedCount={selectedCount}
@@ -107,11 +115,7 @@ export function SessionsDialogLayer({
       />
 
       {importOpen && onCloseImport ? (
-        <SessionsCsvImportDialog
-          open={importOpen}
-          onClose={onCloseImport}
-          canWrite={canWrite}
-        />
+        <SessionsCsvImportDialog open={importOpen} onClose={onCloseImport} canWrite={canWrite} />
       ) : null}
     </>
   );

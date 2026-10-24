@@ -1,0 +1,151 @@
+import React, { useRef } from "react";
+import { cn } from "../utils";
+import { FORM_OTP_DIGIT } from "../theme/formStyles";
+
+export interface OtpInputProps {
+  value: string[];
+  onChange: (updatedValue: string[]) => void;
+  ariaLabel: string;
+  digitLabel?: (current: number, total: number) => string;
+  disabled?: boolean;
+  hasError?: boolean;
+  length?: number;
+  idPrefix?: string;
+  isRtl?: boolean;
+  /** Whether the first OTP input digit should be automatically focused. Defaults to false. */
+  autoFocus?: boolean;
+}
+
+/**
+ * Universal OTP Input component used for 2FA, platform registration, and password reset.
+ */
+export function OtpInput({
+  value,
+  onChange,
+  ariaLabel,
+  digitLabel,
+  disabled = false,
+  hasError = false,
+  length = 6,
+  idPrefix = "otp",
+  isRtl = false,
+  autoFocus = false,
+}: OtpInputProps): React.JSX.Element {
+  const inputs = useRef<(HTMLInputElement | null)[]>([]);
+
+  const focusIndex = (index: number): void => {
+    inputs.current[index]?.focus();
+  };
+
+  const handleChange = (index: number, rawValue: string): void => {
+    // Modern Web Guidance: sms-otp-form
+    // Support multi-character autofill when mobile browsers deliver full OTP code into input
+    const cleaned = rawValue.replace(/\D/g, "");
+    if (!cleaned) {
+      const updatedValue = [...value];
+      updatedValue[index] = "";
+      onChange(updatedValue);
+      return;
+    }
+
+    if (cleaned.length > 1) {
+      const updatedCode = [...value];
+      for (let i = 0; i < length; i++) {
+        const offset = i - index;
+        if (offset >= 0 && offset < cleaned.length) {
+          updatedCode[i] = cleaned[offset] ?? "";
+        }
+      }
+      onChange(updatedCode);
+      const nextFocus = Math.min(index + cleaned.length - 1, length - 1);
+      focusIndex(nextFocus);
+      return;
+    }
+
+    const updatedValue = [...value];
+    updatedValue[index] = cleaned;
+    onChange(updatedValue);
+    if (index < length - 1) {
+      focusIndex(index + 1);
+    }
+  };
+
+  const handleKeyDown = (index: number, event: React.KeyboardEvent<HTMLInputElement>): void => {
+    if (event.key === "Backspace" && !value[index] && index > 0) {
+      focusIndex(index - 1);
+      return;
+    }
+
+    const goPrevious = isRtl ? event.key === "ArrowRight" : event.key === "ArrowLeft";
+    const goNext = isRtl ? event.key === "ArrowLeft" : event.key === "ArrowRight";
+
+    if (goPrevious && index > 0) {
+      event.preventDefault();
+      focusIndex(index - 1);
+    }
+    if (goNext && index < length - 1) {
+      event.preventDefault();
+      focusIndex(index + 1);
+    }
+  };
+
+  const handlePaste = (event: React.ClipboardEvent<HTMLInputElement>): void => {
+    event.preventDefault();
+    const pasted = event.clipboardData.getData("text").replace(/\D/g, "").slice(0, length);
+    const updatedCode = [...value];
+    for (let i = 0; i < length; i++) {
+      if (i < pasted.length) {
+        updatedCode[i] = pasted[i];
+      }
+    }
+    onChange(updatedCode);
+    focusIndex(Math.min(pasted.length, length - 1));
+  };
+
+  return (
+    <div className="flex justify-center gap-2 sm:gap-2.5" role="group" aria-label={ariaLabel}>
+      {Array.from({ length }).map((_, index) => {
+        const digit = value[index] || "";
+        const defaultDigitLabel = `Digit ${index + 1} of ${length}`;
+        const label = digitLabel ? digitLabel(index + 1, length) : defaultDigitLabel;
+
+        return (
+          <input
+            key={index}
+            id={`${idPrefix}-${index}`}
+            name={index === 0 ? "one-time-code" : `${idPrefix}-${index}`}
+            autoComplete={index === 0 ? "one-time-code" : "off"}
+            ref={(element) => {
+              inputs.current[index] = element;
+            }}
+            type="text"
+            inputMode="numeric"
+            pattern="[0-9]*"
+            maxLength={length}
+            value={digit}
+            disabled={disabled}
+            onChange={(event) => handleChange(index, event.target.value)}
+            onKeyDown={(event) => handleKeyDown(index, event)}
+            onPaste={handlePaste}
+            className={cn(
+              FORM_OTP_DIGIT,
+              digit ? "border-primary/60 bg-primary/5" : "border-border",
+              hasError && "border-destructive/60 bg-destructive/5",
+            )}
+            aria-label={label}
+            aria-invalid={hasError || undefined}
+            autoFocus={autoFocus && index === 0}
+          />
+        );
+      })}
+    </div>
+  );
+}
+
+export function createEmptyOtp(length = 6): string[] {
+  return Array(length).fill("");
+}
+
+export function isOtpComplete(value: string[], length = 6): boolean {
+  return value.join("").length === length;
+}

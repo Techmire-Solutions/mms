@@ -3,7 +3,7 @@ import { describe, expect, it, vi } from "vitest";
 import { renderToStaticMarkup } from "react-dom/server";
 import { AttendanceRecordsConfirmDialogs } from "./AttendanceRecordsConfirmDialogs";
 
-vi.mock("@/components/ui/ConfirmAlertDialog", () => ({
+vi.mock("@/components/app/ConfirmAlertDialog", () => ({
   ConfirmAlertDialog: ({ open, title }: { open: boolean; title: string }) =>
     open ? <div data-testid="dialog">{title}</div> : null,
 }));
@@ -20,7 +20,7 @@ describe("AttendanceRecordsConfirmDialogs Component", () => {
         showDeleted={false}
         selectedIdsCount={0}
         onConfirmBulkTrash={vi.fn()}
-        t={((k: string) => k) as any}
+        t={((k: string) => k) as unknown as never}
       />,
     );
 
@@ -38,7 +38,7 @@ describe("AttendanceRecordsConfirmDialogs Component", () => {
         showDeleted={true}
         selectedIdsCount={3}
         onConfirmBulkTrash={vi.fn()}
-        t={((k: string) => k) as any}
+        t={((k: string) => k) as unknown as never}
       />,
     );
 

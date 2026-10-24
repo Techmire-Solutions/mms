@@ -1,20 +1,24 @@
-import type { FacultyRepository } from '../repository/facultyRepository.js';
+import type { FacultyRepository } from "../repository/facultyRepository.js";
 
 export class HierarchyValidationError extends Error {
   readonly statusCode = 400;
-  readonly type = 'validation_error';
-  constructor(message = 'Supervisor must hold a higher seniority rank (lower hierarchy rank) than the subordinate') {
+  readonly type = "validation_error";
+  constructor(
+    message = "Supervisor must hold a higher seniority rank (lower hierarchy rank) than the subordinate",
+  ) {
     super(message);
-    this.name = 'HierarchyValidationError';
+    this.name = "HierarchyValidationError";
   }
 }
 
 export class HierarchyCycleError extends Error {
   readonly statusCode = 400;
-  readonly type = 'validation_error';
-  constructor(message = 'Circular reporting hierarchy detected. A faculty member cannot report to their subordinate or themselves.') {
+  readonly type = "validation_error";
+  constructor(
+    message = "Circular reporting hierarchy detected. A faculty member cannot report to their subordinate or themselves.",
+  ) {
     super(message);
-    this.name = 'HierarchyCycleError';
+    this.name = "HierarchyCycleError";
   }
 }
 
@@ -29,12 +33,14 @@ export async function validateReportingHierarchy(
   const supervisorId = reportingFacultyId.trim();
 
   if (facultyId && supervisorId === String(facultyId).trim()) {
-    throw new HierarchyCycleError('A faculty member cannot report to themselves');
+    throw new HierarchyCycleError("A faculty member cannot report to themselves");
   }
 
   const supervisor = await repo.findById(tenant, supervisorId);
   if (!supervisor || (supervisor as { deletedAt?: string | null }).deletedAt) {
-    throw new HierarchyValidationError('Specified reporting supervisor does not exist or has been deleted');
+    throw new HierarchyValidationError(
+      "Specified reporting supervisor does not exist or has been deleted",
+    );
   }
 
   const supervisorRank = (supervisor as { hierarchyRank?: number }).hierarchyRank ?? 10;
@@ -48,7 +54,9 @@ export async function validateReportingHierarchy(
   if (facultyId) {
     const ancestors = await repo.findAncestorChain(tenant, supervisorId);
     if (ancestors.includes(facultyId)) {
-      throw new HierarchyCycleError('Circular reporting hierarchy detected in the supervisory chain');
+      throw new HierarchyCycleError(
+        "Circular reporting hierarchy detected in the supervisory chain",
+      );
     }
   }
 }

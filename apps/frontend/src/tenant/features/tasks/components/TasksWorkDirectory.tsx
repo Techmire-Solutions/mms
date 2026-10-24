@@ -3,11 +3,11 @@
  * @description Table/cards switch for Tasks Work directory.
  */
 
-import React from 'react';
-import type { TaskRecord, TaskStatus } from '@mms/shared';
-import type { WorkDirectoryViewMode } from '@/hooks/useWorkDirectoryViewMode';
-import { TasksListDesktopTable } from './TasksListDesktopTable';
-import { TasksListCards } from './TasksListCards';
+import React from "react";
+import type { TaskRecord, TaskStatus } from "@mms/shared";
+import type { WorkDirectoryViewMode } from "@/hooks/useWorkDirectoryViewMode";
+import { TasksListDesktopTable } from "./TasksListDesktopTable";
+import { TasksListCards } from "./TasksListCards";
 
 export interface TasksWorkDirectoryProps {
   viewMode: WorkDirectoryViewMode;
@@ -50,7 +50,7 @@ export function TasksWorkDirectory({
   onUpdateStatus,
   emptyAction,
 }: TasksWorkDirectoryProps): React.JSX.Element {
-  if (viewMode === 'cards') {
+  if (viewMode === "cards") {
     return (
       <TasksListCards
         tasks={tasks}

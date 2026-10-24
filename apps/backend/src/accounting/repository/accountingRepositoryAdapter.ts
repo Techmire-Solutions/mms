@@ -1,6 +1,6 @@
-import type { AccountingRepository } from './accountingRepository.js';
-import { lockJournalEntries } from '../../db/repositories/accountingEntryLocks.js';
-import { allocateVoucherNumbers } from '../../db/repositories/accountingVoucherRepository.js';
+import type { AccountingRepository } from "./accountingRepository.js";
+import { lockJournalEntries } from "../../db/repositories/accountingEntryLocks.js";
+import { allocateVoucherNumbers } from "../../db/repositories/accountingVoucherRepository.js";
 import {
   listAccountsByWorkspace,
   findAccountById,
@@ -26,14 +26,14 @@ import {
   bulkRestoreAccounts,
   bulkSoftDeleteEntries,
   bulkRestoreEntries,
-} from '../../db/repositories/accountingRepository.js';
+} from "../../db/repositories/accountingRepository.js";
 import {
   listAccountsPage,
   listFiscalYearsPage,
-} from '../../db/repositories/accountingRepositoryListPages.js';
-import { listEntriesPage } from '../../db/repositories/accountingRepositoryListEntries.js';
-import { aggregateAccountingCommandMetrics } from '../../db/repositories/accountingRepositoryMetrics.js';
-import { aggregateAccountingReport } from '../../db/repositories/accountingRepositoryReport.js';
+} from "../../db/repositories/accountingRepositoryListPages.js";
+import { listEntriesPage } from "../../db/repositories/accountingRepositoryListEntries.js";
+import { aggregateAccountingCommandMetrics } from "../../db/repositories/accountingRepositoryMetrics.js";
+import { aggregateAccountingReport } from "../../db/repositories/accountingRepositoryReport.js";
 
 /**
  * Drizzle-backed adapter for {@link AccountingRepository}. Delegates to the

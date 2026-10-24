@@ -1,23 +1,33 @@
-import type { SessionsRepository } from '../repository/sessionsRepository.js';
-import { sessionsRepository } from '../repository/sessionsRepositoryAdapter.js';
-import { getRequestTenant } from '../../lib/tenantContext.js';
-import { broadcastCollection } from '../../lib/livePush.js';
-import { createGenericRelationalService } from '../../services/genericRelationalService.js';
-import { NotFoundError } from '../../lib/httpErrors.js';
+import type { SessionsRepository } from "../repository/sessionsRepository.js";
+import { sessionsRepository } from "../repository/sessionsRepositoryAdapter.js";
+import { getRequestTenant } from "../../lib/tenantContext.js";
+import { broadcastCollection } from "../../lib/livePush.js";
+import { createGenericRelationalService } from "../../services/genericRelationalService.js";
+import { NotFoundError } from "../../lib/httpErrors.js";
+import { recordModernAuditEvent } from "../../services/auditTrailService.js";
+import {
+  assertSessionEditable,
+  workspaceToday,
+  type SessionLockContext,
+  assertSessionDateRange,
+} from "./sessionLockGuard.js";
+import { onSessionsCancelled } from "./sessionLifecycleOpsUseCases.js";
 import {
   sessionRecordSchema,
   type SessionRecord,
   type SessionCreateBody,
   type SessionUpdateBody,
-} from '@mms/shared';
+} from "@mms/shared";
 import {
+  canTransitionSession,
   dedupeTrimmedIds,
+  normalizeSessionStatus,
   normalizeStoredSession,
   type SessionsListQuery,
   type Session,
   type SessionsWidgetQuery,
   type SessionsReportAggregates,
-} from '@mms/shared';
+} from "@mms/shared";
 
 export interface SessionsUseCasesDependencies {
   findFacultyByIds?: (
@@ -42,8 +52,8 @@ export function createSessionsUseCases(
       save: repo.saveSession,
     },
     schema: sessionRecordSchema,
-    websocketCollection: 'sessions',
-    idPrefix: 'sess',
+    websocketCollection: "sessions",
+    idPrefix: "sess",
     normalizeFn: normalizeStoredSession as (record: SessionRecord) => SessionRecord,
   });
 
@@ -57,14 +67,14 @@ export function createSessionsUseCases(
     if (facultyIds.length > 0) {
       const getFaculty =
         deps?.findFacultyByIds ??
-        (await import('../../db/repositories/facultyRepository.js')).findFacultyByIds;
+        (await import("../../db/repositories/facultyRepository.js")).findFacultyByIds;
       const facultyList = await getFaculty(tenant, facultyIds);
       const activeFacultyIds = new Set(
         facultyList.filter((f) => !f.deletedAt).map((f) => String(f.id)),
       );
       for (const facultyId of facultyIds) {
         if (!activeFacultyIds.has(facultyId)) {
-          const err = new Error('Referenced faculty is archived or does not exist');
+          const err = new Error("Referenced faculty is archived or does not exist");
           (err as Error & { statusCode: number }).statusCode = 400;
           throw err;
         }
@@ -77,18 +87,51 @@ export function createSessionsUseCases(
     loadSessionById: crud.loadById,
     createSession: async (record: SessionCreateBody | SessionRecord): Promise<SessionRecord> => {
       const tenant = getRequestTenant();
-      if (!tenant) throw new Error('Tenant context required');
+      if (!tenant) throw new Error("Tenant context required");
       await validateActiveFacultyForeignKeys(tenant, record);
-      return crud.create(record as SessionRecord);
+      assertSessionDateRange(record);
+      return crud.create({
+        ...record,
+        status: normalizeSessionStatus(record.status),
+      } as SessionRecord);
     },
     updateSessionById: async (
       id: string,
-      record: SessionUpdateBody | Partial<SessionRecord>,
+      body: SessionUpdateBody | Partial<SessionRecord>,
+      lock: SessionLockContext = { canOverrideLock: false },
     ): Promise<SessionRecord | null> => {
       const tenant = getRequestTenant();
-      if (!tenant) throw new Error('Tenant context required');
-      await validateActiveFacultyForeignKeys(tenant, record);
-      return crud.updateById(id, record as SessionRecord);
+      if (!tenant) throw new Error("Tenant context required");
+      const { lockOverrideReason, ...record } = body as SessionUpdateBody;
+      const next = {
+        ...record,
+        ...(record.status !== undefined ? { status: normalizeSessionStatus(record.status) } : {}),
+      };
+      await validateActiveFacultyForeignKeys(tenant, next);
+      const before = await repo.findSessionById(tenant, id);
+      if (!before) return null;
+      const overridden = assertSessionEditable(before, { ...before, ...next } as Session, {
+        ...lock,
+        today: lock.today ?? (await workspaceToday(tenant)),
+        lockOverrideReason: lockOverrideReason ?? lock.lockOverrideReason,
+      });
+      assertSessionDateRange({ ...before, ...next });
+      const updated = await crud.updateById(id, next as SessionRecord);
+      if (next.status === "cancelled" && before.status !== "cancelled")
+        await onSessionsCancelled(tenant, [id]);
+      if (overridden.length > 0) {
+        await recordModernAuditEvent({
+          workspaceSubdomain: tenant,
+          tableName: "sessions",
+          recordId: id,
+          actionType: "UPDATE",
+          newState: {
+            lockOverride: overridden,
+            reason: lockOverrideReason ?? lock.lockOverrideReason,
+          },
+        });
+      }
+      return updated;
     },
     deleteSessionById: async (
       id: string,
@@ -101,12 +144,12 @@ export function createSessionsUseCases(
       if (!ok) {
         const existing = await repo.findSessionById(tenant, id);
         if (existing?.deletedAt) {
-          throw new NotFoundError('Session is already archived');
+          throw new NotFoundError("Session is already archived");
         }
-        throw new NotFoundError('Session not found');
+        throw new NotFoundError("Session not found");
       }
-      await broadcastCollection('sessions');
-      await broadcastCollection('enrollments');
+      await broadcastCollection("sessions");
+      await broadcastCollection("enrollments");
       return true;
     },
     restoreSessionById: async (id: string, userId?: string): Promise<boolean> => {
@@ -116,12 +159,12 @@ export function createSessionsUseCases(
       if (!ok) {
         const existing = await repo.findSessionById(tenant, id);
         if (existing && !existing.deletedAt) {
-          throw new NotFoundError('Session is already active');
+          throw new NotFoundError("Session is already active");
         }
-        throw new NotFoundError('Session not found');
+        throw new NotFoundError("Session not found");
       }
-      await broadcastCollection('sessions');
-      await broadcastCollection('enrollments');
+      await broadcastCollection("sessions");
+      await broadcastCollection("enrollments");
       return true;
     },
     bulkSoftDeleteSessions: async (
@@ -139,8 +182,8 @@ export function createSessionsUseCases(
         deletionReason,
       );
       if (res.succeeded > 0) {
-        await broadcastCollection('sessions');
-        await broadcastCollection('enrollments');
+        await broadcastCollection("sessions");
+        await broadcastCollection("enrollments");
       }
       return res;
     },
@@ -153,8 +196,8 @@ export function createSessionsUseCases(
       if (!tenant || uniqueIds.length === 0) return { succeeded: 0, failed: uniqueIds.length };
       const res = await repo.bulkRestoreSessionsWithCascade(tenant, uniqueIds, userId);
       if (res.succeeded > 0) {
-        await broadcastCollection('sessions');
-        await broadcastCollection('enrollments');
+        await broadcastCollection("sessions");
+        await broadcastCollection("enrollments");
       }
       return res;
     },
@@ -165,9 +208,25 @@ export function createSessionsUseCases(
     ): Promise<{ succeeded: number; failed: number }> => {
       const tenant = getRequestTenant();
       if (!tenant) return { succeeded: 0, failed: ids.length };
-      const result = await repo.bulkUpdateSessionsStatus(tenant, ids, status);
+      const target = normalizeSessionStatus(status);
+      // Only allowed lifecycle transitions are applied; the rest count as failed.
+      const current = await Promise.all(
+        dedupeTrimmedIds(ids).map((sessionId) => repo.findSessionById(tenant, sessionId)),
+      );
+      const allowed = current
+        .filter(
+          (row): row is Session =>
+            Boolean(row) && canTransitionSession(String(row?.status), target),
+        )
+        .map((row) => String(row.id));
+      const result =
+        allowed.length > 0
+          ? await repo.bulkUpdateSessionsStatus(tenant, allowed, target)
+          : { succeeded: 0, failed: 0 };
+      result.failed += ids.length - allowed.length;
+      if (target === "cancelled" && result.succeeded) await onSessionsCancelled(tenant, allowed);
       if (result.succeeded > 0) {
-        await broadcastCollection('sessions');
+        await broadcastCollection("sessions");
       }
       return result;
     },
@@ -221,7 +280,7 @@ export function createSessionsUseCases(
     loadSessionsWidgetAggregates: async (
       queries: SessionsWidgetQuery[],
       _request?: unknown,
-    ): Promise<Record<string, import('@mms/shared').SessionsWidgetAggregateResult>> => {
+    ): Promise<Record<string, import("@mms/shared").SessionsWidgetAggregateResult>> => {
       const tenant = getRequestTenant();
       if (!tenant) return {};
       return repo.aggregateSessionsWidgetQueries(tenant, queries);

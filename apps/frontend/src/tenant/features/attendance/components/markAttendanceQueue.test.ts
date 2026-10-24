@@ -1,11 +1,6 @@
 import { describe, expect, it, beforeEach } from "vitest";
-import {
-  loadQueue,
-  saveQueue,
-  addAuditEntry,
-  getAuditLog,
-} from "./markAttendanceQueue";
-import type { OfflinePayload } from "./markAttendanceTypes";
+import { loadQueue, saveQueue, addAuditEntry, getAuditLog } from "../lib/markAttendanceQueue";
+import type { OfflinePayload } from "../lib/markAttendanceTypes";
 
 describe("markAttendanceQueue utilities", () => {
   beforeEach(() => {

@@ -36,7 +36,15 @@ vi.mock("@/platform/hooks/usePlatformProfile", () => ({
 }));
 
 vi.mock("react-router-dom", () => ({
-  Link: ({ children, to, className }: { children: React.ReactNode; to: string; className?: string }) => (
+  Link: ({
+    children,
+    to,
+    className,
+  }: {
+    children: React.ReactNode;
+    to: string;
+    className?: string;
+  }) => (
     <a href={to} className={className}>
       {children}
     </a>
@@ -82,7 +90,9 @@ describe("PlatformProfileForms", () => {
       root.render(<PlatformProfilePasswordForm />);
     });
 
-    const currentInput = container.querySelector<HTMLInputElement>("input#platform-current-password");
+    const currentInput = container.querySelector<HTMLInputElement>(
+      "input#platform-current-password",
+    );
     expect(currentInput).not.toBeNull();
     expect(currentInput?.name).toBe("currentPassword");
 
@@ -90,7 +100,9 @@ describe("PlatformProfileForms", () => {
     expect(newInput).not.toBeNull();
     expect(newInput?.name).toBe("newPassword");
 
-    const confirmInput = container.querySelector<HTMLInputElement>("input#platform-confirm-new-password");
+    const confirmInput = container.querySelector<HTMLInputElement>(
+      "input#platform-confirm-new-password",
+    );
     expect(confirmInput).not.toBeNull();
     expect(confirmInput?.name).toBe("confirmPassword");
   });

@@ -6,26 +6,26 @@ import {
   type ContactsSavedReportViewer,
   type ContactsWorkDrillDown,
   type GenericSavedReport,
-} from '@mms/shared';
-import { requireTenant } from '../../lib/tenantContext.js';
+} from "@mms/shared";
+import { requireTenant } from "../../lib/tenantContext.js";
 import {
   createPersistedSavedReport,
   deleteSavedReportById,
   findSavedReportById,
   listSavedReportsByCategory,
   touchSavedReportRunById,
-} from '../../db/repositories/savedReportsRepository.js';
+} from "../../db/repositories/savedReportsRepository.js";
 
 function asStringArray(value: unknown): string[] | undefined {
   if (!Array.isArray(value)) return undefined;
-  const items = value.filter((entry): entry is string => typeof entry === 'string');
+  const items = value.filter((entry): entry is string => typeof entry === "string");
   return items.length > 0 ? items : undefined;
 }
 
 function toContactsSavedReport(row: GenericSavedReport): ContactsSavedReport {
   const filters = row.filters ?? {};
   const drillDown =
-    filters.drillDown && typeof filters.drillDown === 'object' && !Array.isArray(filters.drillDown)
+    filters.drillDown && typeof filters.drillDown === "object" && !Array.isArray(filters.drillDown)
       ? (filters.drillDown as ContactsWorkDrillDown)
       : {};
   const shareScope = filters.shareScope;
@@ -38,30 +38,37 @@ function toContactsSavedReport(row: GenericSavedReport): ContactsSavedReport {
     createdAt: row.createdAt,
     lastRunAt: row.lastRun,
     shareScope:
-      shareScope === 'private' || shareScope === 'roles' || shareScope === 'users' || shareScope === 'global'
+      shareScope === "private" ||
+      shareScope === "roles" ||
+      shareScope === "users" ||
+      shareScope === "global"
         ? shareScope
-        : 'private',
+        : "private",
     sharedWithRoles: asStringArray(filters.sharedWithRoles),
     sharedWithUserIds: asStringArray(filters.sharedWithUserIds),
   };
 }
 
-function toFilters(report: Pick<
-  ContactsSavedReport,
-  'drillDown' | 'shareScope' | 'sharedWithRoles' | 'sharedWithUserIds'
->): Record<string, unknown> {
+function toFilters(
+  report: Pick<
+    ContactsSavedReport,
+    "drillDown" | "shareScope" | "sharedWithRoles" | "sharedWithUserIds"
+  >,
+): Record<string, unknown> {
   return {
     drillDown: report.drillDown ?? {},
-    shareScope: report.shareScope ?? 'private',
+    shareScope: report.shareScope ?? "private",
     sharedWithRoles: report.sharedWithRoles ?? [],
     sharedWithUserIds: report.sharedWithUserIds ?? [],
   };
 }
 
-export async function listContactsSavedReports(viewer?: ContactsSavedReportViewer): Promise<ContactsSavedReport[]> {
-  const all = (await listSavedReportsByCategory(requireTenant(), CONTACTS_SAVED_REPORT_CATEGORY)).map(
-    toContactsSavedReport,
-  );
+export async function listContactsSavedReports(
+  viewer?: ContactsSavedReportViewer,
+): Promise<ContactsSavedReport[]> {
+  const all = (
+    await listSavedReportsByCategory(requireTenant(), CONTACTS_SAVED_REPORT_CATEGORY)
+  ).map(toContactsSavedReport);
   if (!viewer) return all;
   return all.filter((report) => canViewContactsSavedReport(report, viewer));
 }
@@ -69,7 +76,13 @@ export async function listContactsSavedReports(viewer?: ContactsSavedReportViewe
 export async function createContactsSavedReport(
   input: Pick<
     ContactsSavedReport,
-    'name' | 'drillDown' | 'createdBy' | 'createdByName' | 'shareScope' | 'sharedWithRoles' | 'sharedWithUserIds'
+    | "name"
+    | "drillDown"
+    | "createdBy"
+    | "createdByName"
+    | "shareScope"
+    | "sharedWithRoles"
+    | "sharedWithUserIds"
   >,
 ): Promise<ContactsSavedReport> {
   const created = await createPersistedSavedReport(requireTenant(), {
@@ -78,12 +91,15 @@ export async function createContactsSavedReport(
     category: CONTACTS_SAVED_REPORT_CATEGORY,
     filters: toFilters(input),
     createdBy: input.createdBy,
-    createdByName: input.createdByName ?? '',
+    createdByName: input.createdByName ?? "",
   });
   return toContactsSavedReport(created);
 }
 
-export async function deleteContactsSavedReport(id: string, viewer?: ContactsSavedReportViewer): Promise<boolean> {
+export async function deleteContactsSavedReport(
+  id: string,
+  viewer?: ContactsSavedReportViewer,
+): Promise<boolean> {
   const tenant = requireTenant();
   const existing = await findSavedReportById(tenant, id, CONTACTS_SAVED_REPORT_CATEGORY);
   if (!existing) return false;

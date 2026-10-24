@@ -1,5 +1,5 @@
 import type { PlatformWorkspaceRow } from "@mms/shared";
-import type { EntityDescriptor } from "@/types/entityRegistry";
+import type { EntityDescriptor } from "@/components/common/entityRegistryTypes";
 import { platformWorkspacesEntityDescriptor } from "@/components/common/entityRegistry";
 import { useStaticEntityDescriptor } from "@/components/common/useStaticEntityDescriptor";
 import { useTranslation } from "@/hooks/useTranslation";
@@ -13,13 +13,10 @@ import { useTranslation } from "@/hooks/useTranslation";
  */
 export function usePlatformWorkspaceDescriptor(): EntityDescriptor<PlatformWorkspaceRow> {
   const { t } = useTranslation();
-  return useStaticEntityDescriptor(
-    platformWorkspacesEntityDescriptor,
-    (key, fallback) => {
-      const res = t(key as Parameters<typeof t>[0]);
-      return res && res !== key ? res : fallback;
-    },
-  );
+  return useStaticEntityDescriptor(platformWorkspacesEntityDescriptor, (key, fallback) => {
+    const res = t(key as Parameters<typeof t>[0]);
+    return res && res !== key ? res : fallback;
+  });
 }
 
 export const usePlatformWorkspacesEntityDescriptor = usePlatformWorkspaceDescriptor;

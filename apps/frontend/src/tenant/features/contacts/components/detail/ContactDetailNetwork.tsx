@@ -57,8 +57,12 @@ export function ContactDetailNetwork({
 
   return (
     <div className="space-y-6">
-      <div className={`p-4 rounded-2xl border flex items-center gap-3 ${DETAIL_STYLES.networkHeader}`}>
-        <div className={`w-10 h-10 rounded-full flex items-center justify-center shadow-xs ${DETAIL_STYLES.networkIcon}`}>
+      <div
+        className={`p-4 rounded-2xl border flex items-center gap-3 ${DETAIL_STYLES.networkHeader}`}
+      >
+        <div
+          className={`w-10 h-10 rounded-full flex items-center justify-center shadow-xs ${DETAIL_STYLES.networkIcon}`}
+        >
           <UsersIcon className="w-5 h-5" aria-hidden />
         </div>
         <div>
@@ -66,7 +70,9 @@ export function ContactDetailNetwork({
             {links.length} {t("contacts.detail.relationships")}
           </h4>
           {links.length > 0 ? (
-            <p className={`text-xs font-medium mt-1 uppercase tracking-tight ${DETAIL_STYLES.networkSubtitle}`}>
+            <p
+              className={`text-xs font-medium mt-1 uppercase tracking-tight ${DETAIL_STYLES.networkSubtitle}`}
+            >
               {t("contacts.detail.activeSocialGraph")}
             </p>
           ) : null}
@@ -116,7 +122,9 @@ export function ContactDetailNetwork({
                   key={relationship.contactId || relationship.name || `link-${relationshipIndex}`}
                   displayName={displayName}
                   relationshipLabel={relationshipLabel}
-                  avatarId={target?.id ?? (relationship.contactId || relationship.name || relationshipIndex)}
+                  avatarId={
+                    target?.id ?? (relationship.contactId || relationship.name || relationshipIndex)
+                  }
                   avatar={target?.avatar}
                   target={target}
                   targetPhone={targetPhone}

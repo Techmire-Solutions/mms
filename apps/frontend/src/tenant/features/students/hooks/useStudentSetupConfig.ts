@@ -3,18 +3,18 @@ import {
   normalizeStudentModulePreferences,
   normalizeStudentsSettings,
   type StudentModulePreferences,
-  type StudentsSettings
-} from '@mms/shared';
-import { createModuleSetupConfigHooks } from '@/lib/query/createModuleSetupConfigHooks';
+  type StudentsSettings,
+} from "@mms/shared";
+import { createModuleSetupConfigHooks } from "@/lib/query/createModuleSetupConfigHooks";
 import {
   fetchStudentPreferences,
   saveStudentPreferencesAsync,
   setStudentPreferencesMemory,
-} from '@/tenant/features/students/hooks/studentSetupConfigApi';
+} from "@/tenant/features/students/hooks/studentSetupConfigApi";
 
 export const STUDENTS_PREFERENCES_QUERY_KEY = [
   STUDENTS_MODULE_MANIFEST.collectionKey,
-  'preferences',
+  "preferences",
 ] as const;
 
 const setupConfigHooks = createModuleSetupConfigHooks<StudentModulePreferences>({
@@ -28,7 +28,7 @@ const setupConfigHooks = createModuleSetupConfigHooks<StudentModulePreferences>(
 export const useStudentPreferencesQuery = setupConfigHooks.usePreferencesQuery;
 export const useStudentPreferencesMutation = setupConfigHooks.usePreferencesMutation;
 
-import { useMemo } from 'react';
+import { useMemo } from "react";
 
 /** Composed StudentsSettings from preferences queries. */
 export function useComposedStudentsSettings(): StudentsSettings {

@@ -3,16 +3,15 @@ import { useTranslation } from "@/hooks/useTranslation";
 import { useGlobalSettings } from "@/tenant/hooks/useGlobalSettings";
 import { useContactMutations } from "@/tenant/hooks/collections/contacts";
 import { useStudentConfig } from "@/hooks/useStandardModuleConfig";
-import { getInitialStudentDraft, studentDraftSnapshot } from "@/tenant/features/students/components/studentFormDraft";
+import {
+  getInitialStudentDraft,
+  studentDraftSnapshot,
+} from "@/tenant/features/students/lib/studentFormDraft";
 import { useStudentFormLinkedData } from "@/tenant/features/students/hooks/useStudentFormLinkedData";
 import { useStudentFormActionHandlers } from "@/tenant/features/students/hooks/useStudentFormActionHandlers";
 import { useStudentFormStatusOptions } from "@/tenant/features/students/hooks/useStudentFormStatusOptions";
 import { isStudentCreate } from "@/tenant/features/students/hooks/studentFormHandlers";
-import {
-  type FieldDefinition,
-  type Student,
-  DEFAULT_STUDENT_ENABLED_TABS,
-} from "@mms/shared";
+import { type FieldDefinition, type Student, DEFAULT_STUDENT_ENABLED_TABS } from "@mms/shared";
 
 interface UseStudentFormStateOptions {
   student?: Partial<Student> | null;
@@ -24,24 +23,33 @@ export function useStudentFormState({ student, onClose, onSave }: UseStudentForm
   const { t, dir } = useTranslation();
   const { language } = useGlobalSettings();
   const { updateContact } = useContactMutations();
-  const { settings, statuses: configStatuses, isFieldEnabled, isFieldRequired } = useStudentConfig();
+  const {
+    settings,
+    statuses: configStatuses,
+    isFieldEnabled,
+    isFieldRequired,
+  } = useStudentConfig();
 
   const formInstanceId = String(student?.id ?? "new");
   const settingsFields = settings.fields;
   const fields = useMemo(
     () => (settingsFields || {}) as Record<string, FieldDefinition[]>,
-    [settingsFields]
+    [settingsFields],
   );
 
   const [saving, setSaving] = useState(false);
-  const [validationErrors, setValidationErrors] = useState<import("@mms/shared").ValidationError[]>([]);
+  const [validationErrors, setValidationErrors] = useState<import("@mms/shared").ValidationError[]>(
+    [],
+  );
   const [studentDraft, setStudentDraft] = useState<Partial<Student>>(() =>
     getInitialStudentDraft({ student, fields }),
   );
   const [baselineSnapshot, setBaselineSnapshot] = useState(() =>
     studentDraftSnapshot(getInitialStudentDraft({ student, fields })),
   );
-  const [typedDuplicateReason, setTypedDuplicateReason] = useState<import("@mms/shared").StudentDuplicateReason | null>(null);
+  const [typedDuplicateReason, setTypedDuplicateReason] = useState<
+    import("@mms/shared").StudentDuplicateReason | null
+  >(null);
   const [duplicateConfirmOpen, setDuplicateConfirmOpen] = useState(false);
   const [pendingSaveData, setPendingSaveData] = useState<Partial<Student> | null>(null);
   const grManuallyEdited = useRef(false);
@@ -62,11 +70,11 @@ export function useStudentFormState({ student, onClose, onSave }: UseStudentForm
       fieldsChanged = currentFieldsStr !== prevFieldsStr.current;
       prevFieldsRef.current = fields;
     }
-    
+
     if (!studentChanged && !fieldsChanged) {
       return;
     }
-    
+
     prevStudentId.current = student?.id;
     prevFieldsStr.current = currentFieldsStr;
 
@@ -93,7 +101,9 @@ export function useStudentFormState({ student, onClose, onSave }: UseStudentForm
   const enabledTabs = new Set(settings.enabledTabs || DEFAULT_STUDENT_ENABLED_TABS);
 
   const getFieldError = (fieldId: string) => {
-    const fieldError = validationErrors.find((validationError) => validationError.fieldId === fieldId);
+    const fieldError = validationErrors.find(
+      (validationError) => validationError.fieldId === fieldId,
+    );
     return fieldError ? fieldError.message : undefined;
   };
 

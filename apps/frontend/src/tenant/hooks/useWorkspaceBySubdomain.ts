@@ -1,6 +1,6 @@
-import { useQuery } from '@tanstack/react-query';
-import { apiFetch, resolveApiUrl } from '@/lib/apiClient';
-import type { PublicBranding } from '@mms/shared';
+import { useQuery } from "@tanstack/react-query";
+import { apiContract } from "@/lib/api";
+import type { PublicBranding } from "@mms/shared";
 
 export interface PublicWorkspace {
   subdomain: string;
@@ -15,19 +15,19 @@ export interface WorkspaceLookupResult {
   branding: PublicBranding | null;
 }
 
-export const WORKSPACE_BY_SUBDOMAIN_KEY = ['workspace', 'by-subdomain'] as const;
+export const WORKSPACE_BY_SUBDOMAIN_KEY = ["workspace", "by-subdomain"] as const;
 
 /** True when the workspace-by-subdomain API confirms the tenant does not exist. */
 export function isWorkspaceNotFoundError(error: unknown): boolean {
-  return typeof error === 'object' && error !== null && 'status' in error && error.status === 404;
+  return typeof error === "object" && error !== null && "status" in error && error.status === 404;
 }
 
-const WORKSPACE_CACHE_PREFIX = 'mms_ws_lookup_';
+const WORKSPACE_CACHE_PREFIX = "mms_ws_lookup_";
 
 export function getCachedWorkspaceLookup(
   subdomain: string | null,
 ): { status: 200; body: WorkspaceLookupResult } | undefined {
-  if (!subdomain || typeof window === 'undefined') return undefined;
+  if (!subdomain || typeof window === "undefined") return undefined;
   try {
     const raw = localStorage.getItem(`${WORKSPACE_CACHE_PREFIX}${subdomain.toLowerCase()}`);
     if (!raw) return undefined;
@@ -42,9 +42,12 @@ export function getCachedWorkspaceLookup(
 }
 
 export function cacheWorkspaceLookup(subdomain: string, data: WorkspaceLookupResult): void {
-  if (!subdomain || typeof window === 'undefined') return;
+  if (!subdomain || typeof window === "undefined") return;
   try {
-    localStorage.setItem(`${WORKSPACE_CACHE_PREFIX}${subdomain.toLowerCase()}`, JSON.stringify(data));
+    localStorage.setItem(
+      `${WORKSPACE_CACHE_PREFIX}${subdomain.toLowerCase()}`,
+      JSON.stringify(data),
+    );
   } catch {
     // Ignore storage quota errors
   }
@@ -54,19 +57,21 @@ export async function fetchWorkspaceBySubdomain(
   subdomain: string,
   signal?: AbortSignal,
 ): Promise<{ status: number; body: WorkspaceLookupResult | null }> {
-  const url = resolveApiUrl(`/api/workspace/by-subdomain/${encodeURIComponent(subdomain)}`);
-  const res = await apiFetch(url, { signal });
-  if (res.status === 404) {
+  const response = await apiContract.workspace.bySubdomain({
+    params: { subdomain },
+    signal,
+    fetchOptions: { signal },
+  });
+  if (response.status === 404) {
     return { status: 404, body: null };
   }
-  if (!res.ok) {
-    const error = Object.assign(new Error(`Workspace lookup failed: ${res.status}`), {
-      status: res.status,
+  if (response.status !== 200) {
+    const error = Object.assign(new Error(`Workspace lookup failed: ${response.status}`), {
+      status: response.status,
     });
     throw error;
   }
-  const data = (await res.json()) as WorkspaceLookupResult;
-  return { status: 200, body: data };
+  return { status: 200, body: response.body as WorkspaceLookupResult };
 }
 
 export function useWorkspaceBySubdomain(subdomain: string | null, enabled: boolean) {

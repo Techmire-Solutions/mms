@@ -4,11 +4,11 @@ import {
   FormCollectionShell,
   FormListFieldCard,
   TYPE_SELECT_WIDTH,
-} from "@/components/ui/FormPrimitives";
+} from "@/components/app/FormPrimitives";
 import { Input } from "@/components/ui/input";
-import { FormSelect } from "@/components/ui/FormSelect";
-import { StatusBadge } from "@/components/ui/StatusBadge";
-import { SEMANTIC_BADGE } from "@/lib/semanticTone";
+import { FormSelect } from "@/components/app/FormSelect";
+import { StatusBadge } from "@/components/app/StatusBadge";
+import { SEMANTIC_BADGE } from "@/lib/ui/semanticTone";
 import { useTranslation } from "@/hooks/useTranslation";
 import { cn } from "@/lib/utils";
 import type { Mujtahid, MujtahidRep, ObligationType } from "@/lib/data/obligationsData";
@@ -40,7 +40,9 @@ export function WakalaStep3Distribution({
   return (
     <div className="space-y-4 animate-in fade-in-50 duration-200">
       <div className="rounded-lg border border-border bg-muted/20 p-3 text-xs space-y-1">
-        <div className="font-semibold text-muted-foreground">{t("obligations.wakala.configSummary")}</div>
+        <div className="font-semibold text-muted-foreground">
+          {t("obligations.wakala.configSummary")}
+        </div>
         <div className="flex flex-wrap gap-2 text-foreground font-medium">
           <span>{selectedObType?.name}</span>
           <span>•</span>
@@ -50,13 +52,15 @@ export function WakalaStep3Distribution({
       </div>
 
       <FormCollectionShell
-        title={(
+        title={
           <div className="flex w-full items-center justify-between gap-2">
             <h3 className="m-0 text-xs font-bold uppercase tracking-wider text-muted-foreground">
               {t("obligations.wakala.initialSplit")}
             </h3>
             <StatusBadge
-              status={totalPercentage === 100 ? "complete" : totalPercentage > 100 ? "over" : "under"}
+              status={
+                totalPercentage === 100 ? "complete" : totalPercentage > 100 ? "over" : "under"
+              }
               size="sm"
               config={{
                 complete: {
@@ -74,7 +78,7 @@ export function WakalaStep3Distribution({
               }}
             />
           </div>
-        )}
+        }
         addLabel={t("obligations.wakala.addDistribution")}
         onAdd={onAddRow}
         isEmpty={initialDistributions.length === 0}
@@ -87,7 +91,7 @@ export function WakalaStep3Distribution({
             id={`wakala-dist-${row.id}`}
             index={index}
             label={undefined}
-            typeSelect={(
+            typeSelect={
               <FormCardTypeSelect label={t("obligations.wakala.distType")}>
                 <FormSelect
                   id={`wakala-dist-type-${row.id}`}
@@ -102,7 +106,7 @@ export function WakalaStep3Distribution({
                   className={cn(TYPE_SELECT_WIDTH, "text-xs min-h-11")}
                 />
               </FormCardTypeSelect>
-            )}
+            }
             removeLabel={t("common.delete")}
             canRemove
             onRemove={() => onRemoveRow(row.id)}
@@ -124,13 +128,19 @@ export function WakalaStep3Distribution({
                 inputMode="decimal"
                 placeholder="%"
                 aria-label={t("obligations.wakala.distPct")}
-                value={row.percentage === undefined || row.percentage === null ? "" : String(row.percentage)}
+                value={
+                  row.percentage === undefined || row.percentage === null
+                    ? ""
+                    : String(row.percentage)
+                }
                 onChange={(e) => {
                   const val = e.target.value;
                   if (val === "" || /^\d*(\.\d{0,2})?$/.test(val)) {
                     const num = parseFloat(val) || 0;
                     if (num <= 100) {
-                      onUpdateRow(row.id, { percentage: val === "" ? ("" as unknown as number) : num });
+                      onUpdateRow(row.id, {
+                        percentage: val === "" ? ("" as unknown as number) : num,
+                      });
                     }
                   }
                 }}

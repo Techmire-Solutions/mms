@@ -5,16 +5,16 @@ import {
   type FieldDefinition,
   type EnrollmentsSettings,
   type TabDefinition,
-} from '@mms/shared';
+} from "@mms/shared";
 import {
   createModuleFieldConfigService,
   requireFieldConfigTenant,
-} from '../lib/createModuleFieldConfigService.js';
+} from "../lib/createModuleFieldConfigService.js";
 import {
   getEnrollmentFieldConfigByWorkspace,
   upsertEnrollmentFieldConfig,
-} from '../db/repositories/enrollmentFieldConfigRepository.js';
-import { getEnrollmentModulePreferencesByWorkspace } from '../db/repositories/enrollmentModulePreferencesRepository.js';
+} from "../db/repositories/enrollmentFieldConfigRepository.js";
+import { getEnrollmentModulePreferencesByWorkspace } from "../db/repositories/enrollmentModulePreferencesRepository.js";
 
 const enrollmentFieldConfig = createModuleFieldConfigService<
   Record<string, unknown>,
@@ -23,7 +23,7 @@ const enrollmentFieldConfig = createModuleFieldConfigService<
   Record<string, FieldDefinition[]> | undefined,
   ReturnType<typeof stripEnrollmentFieldConfigForPersist>
 >({
-  broadcastKey: 'enrollments',
+  broadcastKey: "enrollments",
   getByWorkspace: getEnrollmentFieldConfigByWorkspace,
   upsert: upsertEnrollmentFieldConfig,
   toDocument: async (raw, tenant) => {
@@ -31,7 +31,7 @@ const enrollmentFieldConfig = createModuleFieldConfigService<
     return composeEnrollmentsSettings(raw, prefs);
   },
   stripForPersist: stripEnrollmentFieldConfigForPersist,
-  reloadFailedMessage: 'Failed to reload enrollment field config after save',
+  reloadFailedMessage: "Failed to reload enrollment field config after save",
 });
 
 export const loadEnrollmentFieldConfig = enrollmentFieldConfig.load;

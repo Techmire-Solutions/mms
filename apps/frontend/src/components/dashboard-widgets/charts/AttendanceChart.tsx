@@ -1,15 +1,12 @@
-import { WidgetCard } from "@/components/ui/WidgetCard";
-import { WidgetChartHeader } from "@/components/ui/WidgetChartHeader";
+import { WidgetCard } from "@/components/app/WidgetCard";
+import { WidgetChartHeader } from "@/components/app/WidgetChartHeader";
 import { useNavigate } from "react-router-dom";
 import { ROUTES } from "@/lib/config/routes";
 import { useBrandedDashboardChartColors } from "@/components/dashboard-widgets/useBrandedDashboardChartColors";
 import { useBrandPalette } from "@/lib/contexts/BrandingPaletteContext";
-import {
-  Tooltip,
-  ComposedChart, Area, Line, Bar, Cell, XAxis, YAxis,
-} from "recharts";
-import { SafeResponsiveContainer } from "@/components/ui/SafeResponsiveContainer";
-import { ChartGrid, chartAxisTick } from "@/components/ui/ChartGrid";
+import { Tooltip, ComposedChart, Area, Line, Bar, Cell, XAxis, YAxis } from "recharts";
+import { SafeResponsiveContainer } from "@/components/app/SafeResponsiveContainer";
+import { ChartGrid, chartAxisTick } from "@/components/app/ChartGrid";
 import { useTranslation } from "@/hooks/useTranslation";
 import { useAttendanceRecordsCollection } from "@/tenant/hooks/collections/attendance";
 import { useDashboardConfig } from "@/hooks/useDashboardConfig";
@@ -48,19 +45,25 @@ export function AttendanceChart({ isEditMode = false }: { isEditMode?: boolean }
     updatePref,
   } = useDashboardConfig();
 
-  const attendanceData: AttendancePoint[] = (() => buildWeeklyAttendancePoints(attendanceRecords))();
-  
+  const attendanceData: AttendancePoint[] = (() =>
+    buildWeeklyAttendancePoints(attendanceRecords))();
+
   const avg = (() => {
-    return attendanceData.length ? Math.round(attendanceData.reduce((sum, attendancePoint) => sum + attendancePoint.rate, 0) / attendanceData.length) : 0;
+    return attendanceData.length
+      ? Math.round(
+          attendanceData.reduce((sum, attendancePoint) => sum + attendancePoint.rate, 0) /
+            attendanceData.length,
+        )
+      : 0;
   })();
 
   const isSemantic = colorTheme === "semantic";
   const themeColor = ATTENDANCE_COLORS[colorTheme] || ATTENDANCE_COLORS.brand;
-  const semanticBarFill = ((rate: number): string => {
-      if (rate >= 90) return palette.primary;
-      if (rate >= 80) return palette.secondary;
-      return palette.charts[0];
-    });
+  const semanticBarFill = (rate: number): string => {
+    if (rate >= 90) return palette.primary;
+    if (rate >= 80) return palette.secondary;
+    return palette.charts[0];
+  };
 
   return (
     <WidgetCard ariaLabelledby="attendance-chart-heading" accentColor="primary" className="p-5">
@@ -86,12 +89,14 @@ export function AttendanceChart({ isEditMode = false }: { isEditMode?: boolean }
             )}
             <div className="text-end select-none">
               <p className="text-lg font-black text-foreground m-0 tabular-nums">{avg}%</p>
-              <p className="text-xs text-muted-foreground mt-0.5 m-0 font-medium">{t("dashboard.charts.attendance.weeklyAvg")}</p>
+              <p className="text-xs text-muted-foreground mt-0.5 m-0 font-medium">
+                {t("dashboard.charts.attendance.weeklyAvg")}
+              </p>
             </div>
           </>
         }
       />
-      
+
       <SafeResponsiveContainer height={170}>
         <ComposedChart
           data={attendanceData}
@@ -108,9 +113,14 @@ export function AttendanceChart({ isEditMode = false }: { isEditMode?: boolean }
           </defs>
           <ChartGrid vertical={false} />
           <XAxis dataKey="day" tick={chartAxisTick(11, true)} {...CHART_AXIS_LINE_PROPS} />
-          <YAxis domain={[60, 100]} tick={chartAxisTick(11, true)} {...CHART_AXIS_LINE_PROPS} tickFormatter={(v) => `${v}%`} />
+          <YAxis
+            domain={[60, 100]}
+            tick={chartAxisTick(11, true)}
+            {...CHART_AXIS_LINE_PROPS}
+            tickFormatter={(v) => `${v}%`}
+          />
           <Tooltip content={<AttTooltip />} cursor={{ fill: "hsl(var(--muted))", opacity: 0.5 }} />
-          
+
           {chartType === "area" && (
             <Area
               type="monotone"
@@ -121,7 +131,7 @@ export function AttendanceChart({ isEditMode = false }: { isEditMode?: boolean }
               activeDot={{ r: 5, fill: themeColor, strokeWidth: 2, stroke: "hsl(var(--card))" }}
             />
           )}
-          
+
           {chartType === "line" && (
             <Line
               type="monotone"
@@ -149,4 +159,3 @@ export function AttendanceChart({ isEditMode = false }: { isEditMode?: boolean }
     </WidgetCard>
   );
 }
-

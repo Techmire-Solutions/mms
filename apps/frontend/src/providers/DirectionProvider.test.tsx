@@ -1,16 +1,15 @@
-import React, { act } from 'react';
-import { createRoot } from 'react-dom/client';
-import { describe, expect, it, beforeEach } from 'vitest';
-import { TranslationContext, type TranslationFunction } from '@/lib/contexts/TranslationContext';
-import { vi } from 'vitest';
-import { DirectionProvider, useDirection } from './DirectionProvider';
+import React, { act } from "react";
+import { createRoot } from "react-dom/client";
+import { describe, expect, it, beforeEach } from "vitest";
+import { TranslationContext, type TranslationFunction } from "@/lib/contexts/TranslationContext";
+import { vi } from "vitest";
+import { DirectionProvider, useDirection } from "./DirectionProvider";
 
-vi.mock('@/lib/localeFonts', () => ({
+vi.mock("@/lib/localeFonts", () => ({
   ensureLocaleFontsLoaded: vi.fn(),
 }));
 
 declare global {
-   
   var IS_REACT_ACT_ENVIRONMENT: boolean | undefined;
 }
 globalThis.IS_REACT_ACT_ENVIRONMENT = true;
@@ -24,16 +23,16 @@ function Consumer(): React.JSX.Element {
   return <div data-testid="consumer">{directionState.dir}</div>;
 }
 
-describe('DirectionProvider', () => {
+describe("DirectionProvider", () => {
   beforeEach(() => {
     directionState = null;
-    document.documentElement.removeAttribute('dir');
-    document.documentElement.removeAttribute('lang');
-    document.documentElement.className = '';
+    document.documentElement.removeAttribute("dir");
+    document.documentElement.removeAttribute("lang");
+    document.documentElement.className = "";
   });
 
-  it('sets LTR attributes and clean class names for English', async () => {
-    const container = document.createElement('div');
+  it("sets LTR attributes and clean class names for English", async () => {
+    const container = document.createElement("div");
     document.body.appendChild(container);
     const root = createRoot(container);
 
@@ -41,10 +40,10 @@ describe('DirectionProvider', () => {
       root.render(
         <TranslationContext.Provider
           value={{
-            language: 'en',
+            language: "en",
             t: mockT,
             isLoading: false,
-            dir: 'ltr',
+            dir: "ltr",
             isRtl: false,
           }}
         >
@@ -56,13 +55,13 @@ describe('DirectionProvider', () => {
     });
 
     expect(directionState).toEqual({
-      dir: 'ltr',
+      dir: "ltr",
       isRtl: false,
-      language: 'en',
+      language: "en",
     });
-    expect(document.documentElement.getAttribute('dir')).toBe('ltr');
-    expect(document.documentElement.getAttribute('lang')).toBe('en');
-    expect(document.documentElement.classList.contains('font-arabic')).toBe(false);
+    expect(document.documentElement.getAttribute("dir")).toBe("ltr");
+    expect(document.documentElement.getAttribute("lang")).toBe("en");
+    expect(document.documentElement.classList.contains("font-arabic")).toBe(false);
 
     await act(async () => {
       root.unmount();
@@ -70,8 +69,8 @@ describe('DirectionProvider', () => {
     container.remove();
   });
 
-  it('sets RTL attributes and font-arabic for Arabic', async () => {
-    const container = document.createElement('div');
+  it("sets RTL attributes and font-arabic for Arabic", async () => {
+    const container = document.createElement("div");
     document.body.appendChild(container);
     const root = createRoot(container);
 
@@ -79,10 +78,10 @@ describe('DirectionProvider', () => {
       root.render(
         <TranslationContext.Provider
           value={{
-            language: 'ar',
+            language: "ar",
             t: mockT,
             isLoading: false,
-            dir: 'rtl',
+            dir: "rtl",
             isRtl: true,
           }}
         >
@@ -94,13 +93,13 @@ describe('DirectionProvider', () => {
     });
 
     expect(directionState).toEqual({
-      dir: 'rtl',
+      dir: "rtl",
       isRtl: true,
-      language: 'ar',
+      language: "ar",
     });
-    expect(document.documentElement.getAttribute('dir')).toBe('rtl');
-    expect(document.documentElement.getAttribute('lang')).toBe('ar');
-    expect(document.documentElement.classList.contains('font-arabic')).toBe(true);
+    expect(document.documentElement.getAttribute("dir")).toBe("rtl");
+    expect(document.documentElement.getAttribute("lang")).toBe("ar");
+    expect(document.documentElement.classList.contains("font-arabic")).toBe(true);
 
     await act(async () => {
       root.unmount();
@@ -108,8 +107,8 @@ describe('DirectionProvider', () => {
     container.remove();
   });
 
-  it('sets RTL attributes and font-urdu for Urdu', async () => {
-    const container = document.createElement('div');
+  it("sets RTL attributes and font-urdu for Urdu", async () => {
+    const container = document.createElement("div");
     document.body.appendChild(container);
     const root = createRoot(container);
 
@@ -117,10 +116,10 @@ describe('DirectionProvider', () => {
       root.render(
         <TranslationContext.Provider
           value={{
-            language: 'ur',
+            language: "ur",
             t: mockT,
             isLoading: false,
-            dir: 'rtl',
+            dir: "rtl",
             isRtl: true,
           }}
         >
@@ -132,13 +131,13 @@ describe('DirectionProvider', () => {
     });
 
     expect(directionState).toEqual({
-      dir: 'rtl',
+      dir: "rtl",
       isRtl: true,
-      language: 'ur',
+      language: "ur",
     });
-    expect(document.documentElement.getAttribute('dir')).toBe('rtl');
-    expect(document.documentElement.getAttribute('lang')).toBe('ur');
-    expect(document.documentElement.classList.contains('font-urdu')).toBe(true);
+    expect(document.documentElement.getAttribute("dir")).toBe("rtl");
+    expect(document.documentElement.getAttribute("lang")).toBe("ur");
+    expect(document.documentElement.classList.contains("font-urdu")).toBe(true);
 
     await act(async () => {
       root.unmount();
@@ -146,8 +145,8 @@ describe('DirectionProvider', () => {
     container.remove();
   });
 
-  it('sets RTL attributes and font-persian for Persian', async () => {
-    const container = document.createElement('div');
+  it("sets RTL attributes and font-persian for Persian", async () => {
+    const container = document.createElement("div");
     document.body.appendChild(container);
     const root = createRoot(container);
 
@@ -155,10 +154,10 @@ describe('DirectionProvider', () => {
       root.render(
         <TranslationContext.Provider
           value={{
-            language: 'fa',
+            language: "fa",
             t: mockT,
             isLoading: false,
-            dir: 'rtl',
+            dir: "rtl",
             isRtl: true,
           }}
         >
@@ -170,13 +169,13 @@ describe('DirectionProvider', () => {
     });
 
     expect(directionState).toEqual({
-      dir: 'rtl',
+      dir: "rtl",
       isRtl: true,
-      language: 'fa',
+      language: "fa",
     });
-    expect(document.documentElement.getAttribute('dir')).toBe('rtl');
-    expect(document.documentElement.getAttribute('lang')).toBe('fa');
-    expect(document.documentElement.classList.contains('font-persian')).toBe(true);
+    expect(document.documentElement.getAttribute("dir")).toBe("rtl");
+    expect(document.documentElement.getAttribute("lang")).toBe("fa");
+    expect(document.documentElement.classList.contains("font-persian")).toBe(true);
 
     await act(async () => {
       root.unmount();

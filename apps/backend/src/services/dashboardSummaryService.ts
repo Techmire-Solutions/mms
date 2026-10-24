@@ -8,19 +8,19 @@ import type {
   HasanatCommandMetricsSnapshot,
   QuestionBankCommandMetricsSnapshot,
   AccountingCommandMetricsSnapshot,
-} from '@mms/shared';
-import { getRequestTenant } from '../lib/tenantContext.js';
-import { withTenant } from '../db/tenant-context.js';
-import { redisGet, redisSet, redisKeys } from '../lib/redis.js';
-import { studentUseCases } from '../students/use-cases/studentUseCases.js';
-import { facultyUseCases } from '../faculty/use-cases/facultyUseCases.js';
-import { contactUseCases } from '../contacts/use-cases/contactUseCases.js';
-import { loadSessionsCommandMetrics } from './sessionService.js';
-import { aggregateAttendanceCommandMetrics } from '../db/repositories/attendanceRepositoryList.js';
-import { loadFinanceCommandMetrics } from './financeService.js';
-import { loadHasanatCommandMetrics } from './hasanatService.js';
-import { loadAccountingCommandMetrics } from './accountingService.js';
-import { loadQuestionBankCommandMetrics } from './questionBankMetricsService.js';
+} from "@mms/shared";
+import { getRequestTenant } from "../lib/tenantContext.js";
+import { withTenant } from "../db/tenant-context.js";
+import { redisGet, redisSet, redisKeys } from "../lib/redis.js";
+import { studentUseCases } from "../students/use-cases/studentUseCases.js";
+import { facultyUseCases } from "../faculty/use-cases/facultyUseCases.js";
+import { contactUseCases } from "../contacts/use-cases/contactUseCases.js";
+import { loadSessionsCommandMetrics } from "./sessionService.js";
+import { aggregateAttendanceCommandMetrics } from "../db/repositories/attendanceRepositoryList.js";
+import { loadFinanceCommandMetrics } from "./financeService.js";
+import { loadHasanatCommandMetrics } from "./hasanatService.js";
+import { loadAccountingCommandMetrics } from "./accountingService.js";
+import { loadQuestionBankCommandMetrics } from "./questionBankMetricsService.js";
 
 export interface DashboardSummaryResponse {
   students?: StudentsCommandMetricsSnapshot;
@@ -70,7 +70,9 @@ export async function loadDashboardSummary(
       const facultyData = await facultyUseCases.loadFacultyCommandMetrics();
       const contacts = await contactUseCases.loadContactsCommandMetrics();
       const sessions = await loadSessionsCommandMetrics();
-      const attendance = await aggregateAttendanceCommandMetrics(cleanTenant, { selectedDate: date });
+      const attendance = await aggregateAttendanceCommandMetrics(cleanTenant, {
+        selectedDate: date,
+      });
       const finance = await loadFinanceCommandMetrics();
       const hasanat = await loadHasanatCommandMetrics();
       const questionBank = await loadQuestionBankCommandMetrics();

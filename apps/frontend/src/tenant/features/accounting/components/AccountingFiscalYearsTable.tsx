@@ -1,8 +1,8 @@
 import React from "react";
 import { Calendar, Lock, Pencil } from "lucide-react";
 import { type FiscalYear, formatDate } from "@mms/shared";
-import { EmptyState } from "@/components/ui/EmptyState";
-import { StatusBadge, type StatusBadgeConfigItem } from "@/components/ui/StatusBadge";
+import { EmptyState } from "@/components/app/EmptyState";
+import { StatusBadge, type StatusBadgeConfigItem } from "@/components/app/StatusBadge";
 import {
   DataTable,
   DataTableRowActions,
@@ -94,13 +94,25 @@ export function AccountingFiscalYearsTable({
                     hidden: !onRequestCloseFiscalYear || fy.status === "closed",
                     onClick: () => onRequestCloseFiscalYear?.(fy.id),
                   },
-                  { id: "edit", label: `${t("common.edit")} ${fy.label}`, icon: Pencil, onClick: () => onEditFiscalYear(fy) },
+                  {
+                    id: "edit",
+                    label: `${t("common.edit")} ${fy.label}`,
+                    icon: Pencil,
+                    onClick: () => onEditFiscalYear(fy),
+                  },
                 ]}
               />
             )
           : undefined
       }
-      emptyState={<EmptyState icon={Calendar} title={t("accounting.settings.noFiscalYears")} compact variant="dashed" />}
+      emptyState={
+        <EmptyState
+          icon={Calendar}
+          title={t("accounting.settings.noFiscalYears")}
+          compact
+          variant="dashed"
+        />
+      }
     />
   );
 }

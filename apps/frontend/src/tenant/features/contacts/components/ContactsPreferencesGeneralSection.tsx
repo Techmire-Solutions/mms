@@ -2,11 +2,11 @@ import type React from "react";
 import { Users } from "lucide-react";
 import type { ContactPreferences } from "@mms/shared";
 import { useTranslation } from "@/hooks/useTranslation";
-import { SectionCard } from "@/components/ui/SectionCard";
-import { ToggleRow } from "@/components/ui/ToggleRow";
+import { SectionCard } from "@/components/app/SectionCard";
+import { ToggleRow } from "@shared/ui";
 import { SETUP_SECTION_CARD_CLASS } from "@/components/ui/formStyles";
 
-import { ModuleSetupSaveFooter } from "@/components/ui/ModuleSetupSaveFooter";
+import { ModuleSetupSaveFooter } from "@/components/app/ModuleSetupSaveFooter";
 
 export interface ContactsPreferencesGeneralSectionProps {
   prefs: ContactPreferences;
@@ -58,16 +58,18 @@ export function ContactsPreferencesGeneralSection({
         />
       </div>
 
-      <ModuleSetupSaveFooter
-        dirty={Boolean(isPrefsDirty)}
-        saving={Boolean(saving)}
-        saved={Boolean(saved)}
-        saveLabel={saving ? t("global.saving") : t("contacts.setup.saveAndApply")}
-        savedLabel={t("contacts.form.saved")}
-        onSave={onSave ?? (() => {})}
-        disableUnsavedGuard
-        footerClassName="mt-4 pt-3"
-      />
+      {onSave ? (
+        <ModuleSetupSaveFooter
+          dirty={Boolean(isPrefsDirty)}
+          saving={Boolean(saving)}
+          saved={Boolean(saved)}
+          saveLabel={saving ? t("global.saving") : t("contacts.setup.saveAndApply")}
+          savedLabel={t("contacts.form.saved")}
+          onSave={onSave}
+          disableUnsavedGuard
+          footerClassName="mt-4 pt-3"
+        />
+      ) : null}
     </SectionCard>
   );
 }

@@ -1,9 +1,9 @@
-import { randomUUID } from 'node:crypto';
-import { createWriteStream } from 'node:fs';
-import { unlink, writeFile } from 'node:fs/promises';
-import { join } from 'node:path';
-import { Transform } from 'node:stream';
-import { pipeline } from 'node:stream/promises';
+import { randomUUID } from "node:crypto";
+import { createWriteStream } from "node:fs";
+import { unlink, writeFile } from "node:fs/promises";
+import { join } from "node:path";
+import { Transform } from "node:stream";
+import { pipeline } from "node:stream/promises";
 import {
   IMAGE_UPLOAD_MAX_BYTES,
   assertAllowedImageMime,
@@ -11,22 +11,22 @@ import {
   ensureUploadCategoryDir,
   imageExtensionForMime,
   type ImageUploadPurpose,
-} from '../config/uploadConfig.js';
+} from "../config/uploadConfig.js";
 
 /**
  * Sniffs the actual image container from magic bytes so a client cannot store
  * arbitrary content (e.g. HTML/JS) under an image extension by lying about the
  * mimetype. Returns 'avif' | 'webp' | null.
  */
-export function sniffImageFormat(buffer: Buffer): 'avif' | 'webp' | null {
+export function sniffImageFormat(buffer: Buffer): "avif" | "webp" | null {
   if (buffer.length < 12) return null;
-  const ascii = (start: number, end: number) => buffer.toString('latin1', start, end);
+  const ascii = (start: number, end: number) => buffer.toString("latin1", start, end);
   // WebP: "RIFF" .... "WEBP"
-  if (ascii(0, 4) === 'RIFF' && ascii(8, 12) === 'WEBP') return 'webp';
+  if (ascii(0, 4) === "RIFF" && ascii(8, 12) === "WEBP") return "webp";
   // AVIF: ISO-BMFF "ftyp" box with major brand avif/avis
-  if (ascii(4, 8) === 'ftyp') {
+  if (ascii(4, 8) === "ftyp") {
     const brand = ascii(8, 12);
-    if (brand === 'avif' || brand === 'avis') return 'avif';
+    if (brand === "avif" || brand === "avis") return "avif";
   }
   return null;
 }
@@ -48,7 +48,7 @@ export async function saveUploadedImage(
   const ext = imageExtensionForMime(mimeType);
   const filename = `${randomUUID()}${ext}`;
   const filepath = join(dir, filename);
-  const expected = mimeType === 'image/avif' ? 'avif' : 'webp';
+  const expected = mimeType === "image/avif" ? "avif" : "webp";
 
   const publicUrl = cleanTenant
     ? `/uploads/tenants/${cleanTenant}/${category}/${filename}`
@@ -56,24 +56,24 @@ export async function saveUploadedImage(
 
   if (Buffer.isBuffer(source)) {
     if (source.length === 0) {
-      throw Object.assign(new Error('Image file is empty'), {
+      throw Object.assign(new Error("Image file is empty"), {
         statusCode: 400,
-        type: 'validation_error',
+        type: "validation_error",
       });
     }
 
     if (source.length > IMAGE_UPLOAD_MAX_BYTES) {
-      throw Object.assign(new Error('Image file is too large'), {
+      throw Object.assign(new Error("Image file is too large"), {
         statusCode: 400,
-        type: 'validation_error',
+        type: "validation_error",
       });
     }
 
     const sniffed = sniffImageFormat(source);
     if (sniffed !== expected) {
-      throw Object.assign(new Error('Image content does not match the declared format'), {
+      throw Object.assign(new Error("Image content does not match the declared format"), {
         statusCode: 400,
-        type: 'validation_error',
+        type: "validation_error",
       });
     }
 
@@ -91,9 +91,9 @@ export async function saveUploadedImage(
       bytesWritten += chunk.length;
       if (bytesWritten > IMAGE_UPLOAD_MAX_BYTES) {
         callback(
-          Object.assign(new Error('Image file is too large'), {
+          Object.assign(new Error("Image file is too large"), {
             statusCode: 400,
-            type: 'validation_error',
+            type: "validation_error",
           }),
         );
         return;
@@ -105,9 +105,9 @@ export async function saveUploadedImage(
           const sniffed = sniffImageFormat(headerBuffer);
           if (sniffed !== expected) {
             callback(
-              Object.assign(new Error('Image content does not match the declared format'), {
+              Object.assign(new Error("Image content does not match the declared format"), {
                 statusCode: 400,
-                type: 'validation_error',
+                type: "validation_error",
               }),
             );
             return;
@@ -120,9 +120,9 @@ export async function saveUploadedImage(
     flush(callback) {
       if (bytesWritten === 0) {
         callback(
-          Object.assign(new Error('Image file is empty'), {
+          Object.assign(new Error("Image file is empty"), {
             statusCode: 400,
-            type: 'validation_error',
+            type: "validation_error",
           }),
         );
         return;
@@ -131,9 +131,9 @@ export async function saveUploadedImage(
         const sniffed = sniffImageFormat(headerBuffer);
         if (sniffed !== expected) {
           callback(
-            Object.assign(new Error('Image content does not match the declared format'), {
+            Object.assign(new Error("Image content does not match the declared format"), {
               statusCode: 400,
-              type: 'validation_error',
+              type: "validation_error",
             }),
           );
           return;

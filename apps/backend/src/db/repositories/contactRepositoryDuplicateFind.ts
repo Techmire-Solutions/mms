@@ -1,18 +1,14 @@
-import { and, notInArray, sql, type SQL } from 'drizzle-orm';
-import { buildNamePrefixRegex, dedupeTrimmedIds } from '@mms/shared';
-import {
-  contacts,
-  contactPhones,
-  contactEmails,
-} from '../schema.js';
-import { withTenantRead } from '../tenant-context.js';
-import { activeWorkspaceWhere } from './contactRepositoryAggregateHelpers.js';
+import { and, notInArray, sql, type SQL } from "drizzle-orm";
+import { buildNamePrefixRegex, dedupeTrimmedIds } from "@mms/shared";
+import { contacts, contactPhones, contactEmails } from "../schema.js";
+import { withTenantRead } from "../tenant-context.js";
+import { activeWorkspaceWhere } from "./contactRepositoryAggregateHelpers.js";
 import {
   cnicComparisonKeySql,
   emailKeySql,
   nameKeySql,
   phoneComparisonKeySql,
-} from './contactRepositoryDuplicateSql.js';
+} from "./contactRepositoryDuplicateSql.js";
 
 export interface ContactDuplicateCandidateKeys {
   phones: string[];
@@ -44,8 +40,8 @@ export async function findContactDuplicateCandidateIds(
       emails.push(lower);
     }
   }
-  const name = keys.name?.trim() ?? '';
-  const cnic = (keys.cnic ?? '').replace(/\D/g, '');
+  const name = keys.name?.trim() ?? "";
+  const cnic = (keys.cnic ?? "").replace(/\D/g, "");
   if (phones.length === 0 && emails.length === 0 && !name && !cnic) return [];
 
   const subdomain = tenant.trim().toLowerCase();
@@ -60,7 +56,10 @@ export async function findContactDuplicateCandidateIds(
       WHERE p.workspace_subdomain = ${contacts.workspaceSubdomain}
         AND p.contact_id = ${contacts.id}
         AND ${phoneComparisonKeySql(sql`p.number`)}
-          IN (${sql.join(phones.map((p) => sql`${p}`), sql`, `)})
+          IN (${sql.join(
+            phones.map((p) => sql`${p}`),
+            sql`, `,
+          )})
     )`);
   }
 
@@ -71,7 +70,10 @@ export async function findContactDuplicateCandidateIds(
       WHERE e.workspace_subdomain = ${contacts.workspaceSubdomain}
         AND e.contact_id = ${contacts.id}
         AND ${emailKeySql(sql`e.address`)}
-          IN (${sql.join(emails.map((e) => sql`${e}`), sql`, `)})
+          IN (${sql.join(
+            emails.map((e) => sql`${e}`),
+            sql`, `,
+          )})
     )`);
   }
 

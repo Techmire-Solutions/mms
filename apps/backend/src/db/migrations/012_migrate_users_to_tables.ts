@@ -6,18 +6,21 @@ import {
   type StoredPlatformUser,
   type Workspace,
   type PlatformRole,
-} from '@mms/shared';
+} from "@mms/shared";
 import {
   getCollectionByStorageName,
   getObjectByStorageKey,
   listCollectionStorageNames,
-} from '../database.js';
-import { countPlatformUserRows, insertPlatformUser } from '../repositories/platformUserRepository.js';
+} from "../database.js";
+import {
+  countPlatformUserRows,
+  insertPlatformUser,
+} from "../repositories/platformUserRepository.js";
 import {
   countTenantUsersByWorkspace,
   replaceTenantUsersForWorkspace,
   type TenantUserRow,
-} from '../repositories/tenantUserRepository.js';
+} from "../repositories/tenantUserRepository.js";
 
 type LegacyUserRow = Record<string, unknown>;
 
@@ -39,7 +42,7 @@ async function discoverTenantSubdomains(): Promise<Set<string>> {
 }
 
 function isAuthCapableUser(row: LegacyUserRow): boolean {
-  return typeof row.passwordHash === 'string' && row.passwordHash.length > 0;
+  return typeof row.passwordHash === "string" && row.passwordHash.length > 0;
 }
 
 /**
@@ -57,9 +60,9 @@ export async function runMigration012(): Promise<void> {
         await insertPlatformUser({
           id: user.id,
           email: user.email.toLowerCase(),
-          name: user.name ?? 'Platform Admin',
+          name: user.name ?? "Platform Admin",
           passwordHash: user.passwordHash,
-          role: (user.role ?? 'super_user') as PlatformRole,
+          role: (user.role ?? "super_user") as PlatformRole,
           permissions: user.permissions ?? { workspaces: true, onboard: true },
           sessionVersion: user.sessionVersion ?? 0,
           createdAt: user.createdAt ?? new Date().toISOString(),
@@ -67,7 +70,7 @@ export async function runMigration012(): Promise<void> {
         });
       }
       changed = true;
-      console.log('[Migration 012] Imported platform users into platform_users table.');
+      console.log("[Migration 012] Imported platform users into platform_users table.");
     }
   }
 
@@ -75,7 +78,7 @@ export async function runMigration012(): Promise<void> {
   for (const subdomain of subdomains) {
     if ((await countTenantUsersByWorkspace(subdomain)) > 0) continue;
 
-    const usersKey = `${tenantCollectionKey(subdomain, '')}users`;
+    const usersKey = `${tenantCollectionKey(subdomain, "")}users`;
     const users = await getCollectionByStorageName(usersKey);
     if (!Array.isArray(users) || users.length === 0) continue;
 
@@ -95,6 +98,6 @@ export async function runMigration012(): Promise<void> {
   }
 
   if (!changed) {
-    console.log('[Migration 012] User tables already populated — no legacy import needed.');
+    console.log("[Migration 012] User tables already populated — no legacy import needed.");
   }
 }

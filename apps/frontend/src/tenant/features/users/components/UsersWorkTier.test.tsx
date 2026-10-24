@@ -1,13 +1,19 @@
-import { describe, expect, it, vi } from 'vitest';
-import React, { act } from 'react';
-import { createRoot } from 'react-dom/client';
-import { UsersWorkTier, type UsersWorkTierProps } from './UsersWorkTier';
-import { normalizeWorkspaceUser } from '@mms/shared';
+import { describe, expect, it, vi } from "vitest";
+import React, { act } from "react";
+import { createRoot } from "react-dom/client";
+import { UsersWorkTier, type UsersWorkTierProps } from "./UsersWorkTier";
+import { normalizeWorkspaceUser } from "@mms/shared";
 
-(globalThis as any).IS_REACT_ACT_ENVIRONMENT = true;
+(globalThis as { IS_REACT_ACT_ENVIRONMENT?: boolean }).IS_REACT_ACT_ENVIRONMENT = true;
 
-vi.mock('@/tenant/features/users/components/UsersList', () => ({
-  UsersList: ({ users, onPageChange }: any) => (
+vi.mock("@/tenant/features/users/components/UsersList", () => ({
+  UsersList: ({
+    users,
+    onPageChange,
+  }: {
+    users: unknown[];
+    onPageChange: (page: number) => void;
+  }) => (
     <div data-testid="users-list">
       <span>Users Count: {users.length}</span>
       <button onClick={() => onPageChange(2)}>Next Page</button>
@@ -15,20 +21,16 @@ vi.mock('@/tenant/features/users/components/UsersList', () => ({
   ),
 }));
 
-vi.mock('@/tenant/features/users/components/ActivityLogs', () => ({
-  ActivityLogs: ({ logs }: any) => (
+vi.mock("@/tenant/features/users/components/ActivityLogs", () => ({
+  ActivityLogs: ({ logs }: { logs: unknown[] }) => (
     <div data-testid="activity-logs">
       <span>Logs Count: {logs.length}</span>
     </div>
   ),
 }));
 
-vi.mock('@/components/ui/LoadingState', () => ({
-  CardSkeleton: () => <div data-testid="card-skeleton" />,
-}));
-
-vi.mock('@/components/ui/ErrorState', () => ({
-  ErrorState: ({ title, onRetry }: any) => (
+vi.mock("@/components/app/ErrorState", () => ({
+  ErrorState: ({ title, onRetry }: { title?: React.ReactNode; onRetry?: () => void }) => (
     <div data-testid="error-state">
       <span>{title}</span>
       <button onClick={onRetry}>Retry</button>
@@ -36,21 +38,21 @@ vi.mock('@/components/ui/ErrorState', () => ({
   ),
 }));
 
-describe('UsersWorkTier', () => {
+describe("UsersWorkTier", () => {
   const baseProps: UsersWorkTierProps = {
     tabs: [
-      { id: 'users', label: 'Users' },
-      { id: 'activity', label: 'Activity' },
+      { id: "users", label: "Users" },
+      { id: "activity", label: "Activity" },
     ],
-    activeSubTab: 'users',
+    activeSubTab: "users",
     users: [
-      normalizeWorkspaceUser({ id: 'u1', name: 'User 1', email: 'u1@test.com', role: 'admin' }),
+      normalizeWorkspaceUser({ id: "u1", name: "User 1", email: "u1@test.com", role: "admin" }),
     ],
     listPage: 1,
     onPageChange: vi.fn(),
-    search: '',
-    roleFilter: 'all',
-    statusFilter: 'all',
+    search: "",
+    roleFilter: "all",
+    statusFilter: "all",
     selectedIds: [],
     onSelectedIdsChange: vi.fn(),
     onSearchChange: vi.fn(),
@@ -70,7 +72,7 @@ describe('UsersWorkTier', () => {
     isUserColumnVisible: vi.fn(() => true),
     userColumnRegistry: [],
     updateUserColumnLayout: vi.fn(),
-    userColumnCustomizerLabels: {} as any,
+    userColumnCustomizerLabels: {} as unknown as never,
     onSubTabChange: vi.fn(),
     onRetryUsers: vi.fn(),
     onRetryLogs: vi.fn(),
@@ -88,7 +90,7 @@ describe('UsersWorkTier', () => {
   };
 
   it('renders UsersList when activeSubTab is "users"', () => {
-    const container = document.createElement('div');
+    const container = document.createElement("div");
     const root = createRoot(container);
     act(() => {
       root.render(<UsersWorkTier {...baseProps} activeSubTab="users" />);
@@ -103,14 +105,14 @@ describe('UsersWorkTier', () => {
   });
 
   it('renders ActivityLogs when activeSubTab is "activity"', () => {
-    const container = document.createElement('div');
+    const container = document.createElement("div");
     const root = createRoot(container);
     act(() => {
       root.render(
         <UsersWorkTier
           {...baseProps}
           activeSubTab="activity"
-          logs={[{ id: 'log-1', action: 'create', timestamp: '2026-09-01' } as any]}
+          logs={[{ id: "log-1", action: "create", timestamp: "2026-09-01" } as unknown as never]}
         />,
       );
     });
@@ -124,16 +126,10 @@ describe('UsersWorkTier', () => {
   });
 
   it('renders CardSkeleton when activeSubTab is "activity" and isLogsLoading is true', () => {
-    const container = document.createElement('div');
+    const container = document.createElement("div");
     const root = createRoot(container);
     act(() => {
-      root.render(
-        <UsersWorkTier
-          {...baseProps}
-          activeSubTab="activity"
-          isLogsLoading={true}
-        />,
-      );
+      root.render(<UsersWorkTier {...baseProps} activeSubTab="activity" isLogsLoading={true} />);
     });
 
     expect(container.querySelector('[data-testid="card-skeleton"]')).not.toBeNull();
@@ -146,7 +142,7 @@ describe('UsersWorkTier', () => {
 
   it('renders ErrorState when activeSubTab is "activity" and logsLoadFailed is true', () => {
     const onRetryLogs = vi.fn();
-    const container = document.createElement('div');
+    const container = document.createElement("div");
     const root = createRoot(container);
     act(() => {
       root.render(
@@ -162,7 +158,7 @@ describe('UsersWorkTier', () => {
     expect(container.querySelector('[data-testid="error-state"]')).not.toBeNull();
     const retryBtn = container.querySelector('[data-testid="error-state"] button');
     act(() => {
-      retryBtn?.dispatchEvent(new MouseEvent('click', { bubbles: true }));
+      retryBtn?.dispatchEvent(new MouseEvent("click", { bubbles: true }));
     });
     expect(onRetryLogs).toHaveBeenCalledTimes(1);
 

@@ -25,11 +25,7 @@ vi.mock("@/tenant/features/attendance/hooks/useAttendance", () => ({
 describe("AttendanceCommandMetrics Component", () => {
   it("renders metric cards with server data", () => {
     const html = renderToStaticMarkup(
-      <AttendanceCommandMetrics
-        total={50}
-        shown={45}
-        selectedDate="2025-01-01"
-      />,
+      <AttendanceCommandMetrics total={50} shown={45} selectedDate="2025-01-01" />,
     );
 
     expect(html).toContain("attendance.metrics.total");

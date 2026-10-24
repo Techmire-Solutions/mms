@@ -4,6 +4,13 @@ import { renderToStaticMarkup } from "react-dom/server";
 import { EnterMarks } from "./EnterMarks";
 import type { Exam, ExamResult } from "@/lib/data/examinationData";
 
+vi.mock("@/hooks/useAcademicTerms", () => ({
+  useAcademicTerms: () => ({
+    session: { singular: "Session", plural: "Sessions" },
+    class: { singular: "Class", plural: "Classes" },
+    section: { singular: "Section", plural: "Sections" },
+  }),
+}));
 vi.mock("@/hooks/useTranslation", () => ({
   useTranslation: () => ({
     t: (key: string) => key,
@@ -47,8 +54,8 @@ vi.mock("@/tenant/hooks/collections/students", () => ({
   }),
 }));
 
-vi.mock("@/components/ui/UserAvatar", () => ({
-  UserAvatar: ({ name }: any) => <div data-testid="avatar">{name}</div>,
+vi.mock("@/components/app/UserAvatar", () => ({
+  UserAvatar: ({ name }: { name?: React.ReactNode }) => <div data-testid="avatar">{name}</div>,
 }));
 
 const mockExam: Exam = {
@@ -78,11 +85,7 @@ const mockResults: ExamResult[] = [
 describe("EnterMarks Component", () => {
   it("renders exam radio selection and students marks inputs", () => {
     const html = renderToStaticMarkup(
-      <EnterMarks
-        exams={[mockExam]}
-        results={mockResults}
-        onSaveResults={vi.fn()}
-      />,
+      <EnterMarks exams={[mockExam]} results={mockResults} onSaveResults={vi.fn()} />,
     );
 
     expect(html).toContain("Tajweed Test");

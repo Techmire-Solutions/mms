@@ -1,5 +1,8 @@
 import type { ComponentProps } from "react";
-import type { FacultyWorkTier, FacultyWorkTierProps as WorkTierProps } from "@/tenant/features/faculty/components/FacultyWorkTier";
+import type {
+  FacultyWorkTier,
+  FacultyWorkTierProps as WorkTierProps,
+} from "@/tenant/features/faculty/components/FacultyWorkTier";
 
 type FacultyWorkTierComponentProps = ComponentProps<typeof FacultyWorkTier>;
 
@@ -148,4 +151,3 @@ export function buildFacultyWorkTierProps(
     workOverlays: source.workOverlays,
   };
 }
-

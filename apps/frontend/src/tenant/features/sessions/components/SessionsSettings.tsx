@@ -1,39 +1,30 @@
 import React, { useEffect } from "react";
 import { Calendar } from "lucide-react";
-import { SectionCard } from "@/components/ui/SectionCard";
-import { ModuleSetupSaveFooter } from "@/components/ui/ModuleSetupSaveFooter";
+import { SectionCard } from "@/components/app/SectionCard";
+import { ModuleSetupSaveFooter } from "@/components/app/ModuleSetupSaveFooter";
 import { useTranslation } from "@/hooks/useTranslation";
 import { SETUP_SECTION_CARD_CLASS } from "@/components/ui/formStyles";
 import { SessionsSettingsPreferences } from "@/tenant/features/sessions/components/SessionsSettingsPreferences";
 import { useSessionsSetupPanelState } from "@/tenant/features/sessions/hooks/useSessionsSetupPanelState";
-import { ModuleSetupContent } from "@/components/ui/ModuleSetupContent";
+import { ModuleSetupContent } from "@/components/app/ModuleSetupContent";
 
 export interface SessionsSettingsProps {
   /** Reports Preferences draft dirtiness to the Setup shell (leave-guard). */
   onPrefsDirtyChange?: (isDirty: boolean) => void;
 }
 
-export const SessionsSettings = (function SessionsSettings({
+export const SessionsSettings = function SessionsSettings({
   onPrefsDirtyChange,
 }: SessionsSettingsProps = {}): React.JSX.Element {
   const { t } = useTranslation();
-  const {
-    settingsDraft,
-    typeOptions,
-    upd,
-    saved,
-    saving,
-    isPrefsDirty,
-    handleSave,
-  } = useSessionsSetupPanelState();
+  const { settingsDraft, typeOptions, upd, saved, saving, isPrefsDirty, handleSave } =
+    useSessionsSetupPanelState();
 
   useEffect(() => {
     onPrefsDirtyChange?.(isPrefsDirty);
   }, [isPrefsDirty, onPrefsDirtyChange]);
 
-  const unsavedWarning = isPrefsDirty
-    ? t("sessions.setup.unsavedPreferencesWarning")
-    : undefined;
+  const unsavedWarning = isPrefsDirty ? t("sessions.setup.unsavedPreferencesWarning") : undefined;
 
   return (
     <ModuleSetupContent>
@@ -71,6 +62,6 @@ export const SessionsSettings = (function SessionsSettings({
       />
     </ModuleSetupContent>
   );
-});
+};
 
 export default SessionsSettings;

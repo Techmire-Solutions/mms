@@ -1,29 +1,22 @@
-import React, { useCallback, useEffect, useState, type JSX } from 'react';
+import React, { useCallback, useEffect, useState, type JSX } from "react";
 import {
   formatDateTime,
   type Message,
   type StandardMessagingRecipient as MessagingRecipient,
-} from '@mms/shared';
-import { ChannelBadge } from '@/components/ui/ChannelBadge';
-import { Drawer } from '@/components/ui/Drawer';
-import { StatusBadge, type StatusBadgeConfigItem } from '@/components/ui/StatusBadge';
-import { Button } from '@/components/ui/button';
-import { useTranslation } from '@/hooks/useTranslation';
-import { notify } from '@/lib/notify';
-import { SEMANTIC_TEXT, SEMANTIC_BG } from '@/lib/semanticTone';
-import {
-  AlertCircle,
-  ArrowUpRight,
-  Check,
-  Copy,
-  MessageSquare,
-  RotateCcw,
-} from 'lucide-react';
-import { Link } from 'react-router-dom';
-import { PersonDetailHeroCard } from '@/components/ui/PersonDetailHeroCard';
-import { EntityMessagingActions } from '@/components/ui/EntityMessagingActions';
-import { MessagingDetailBodyCard } from './MessagingDetailBodyCard';
-import { MessagingDetailMetadataCard } from './MessagingDetailMetadataCard';
+} from "@mms/shared";
+import { ChannelBadge } from "@/components/app/ChannelBadge";
+import { Drawer } from "@/components/app/Drawer";
+import { StatusBadge, type StatusBadgeConfigItem } from "@/components/app/StatusBadge";
+import { Button } from "@/components/ui/button";
+import { useTranslation } from "@/hooks/useTranslation";
+import { notify } from "@/lib/notify";
+import { SEMANTIC_TEXT, SEMANTIC_BG } from "@/lib/ui/semanticTone";
+import { AlertCircle, ArrowUpRight, Check, Copy, MessageSquare, RotateCcw } from "lucide-react";
+import { Link } from "react-router-dom";
+import { PersonDetailHeroCard } from "@/components/app/PersonDetailHeroCard";
+import { EntityMessagingActions } from "@/components/app/EntityMessagingActions";
+import { MessagingDetailBodyCard } from "./MessagingDetailBodyCard";
+import { MessagingDetailMetadataCard } from "./MessagingDetailMetadataCard";
 
 export interface MessagingDetailProps {
   log: Message | null;
@@ -34,7 +27,7 @@ export interface MessagingDetailProps {
   onResend: (log: Message) => void;
 }
 
-export const MessagingDetail = (function MessagingDetail({
+export const MessagingDetail = function MessagingDetail({
   log,
   recipient,
   logStatusConfig,
@@ -55,30 +48,30 @@ export const MessagingDetail = (function MessagingDetail({
   useEffect(() => {
     if (!log || !canWrite) return;
     const handleKeyDown = (e: KeyboardEvent): void => {
-      if ((e.metaKey || e.ctrlKey) && e.key === 'Enter') {
+      if ((e.metaKey || e.ctrlKey) && e.key === "Enter") {
         e.preventDefault();
         handleResend();
       }
     };
-    window.addEventListener('keydown', handleKeyDown);
-    return () => window.removeEventListener('keydown', handleKeyDown);
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
   }, [log, canWrite, handleResend]);
 
   if (!log) return null;
 
-  const recipientName = recipient?.name || t('messaging.contactFallback', { id: log.contactId });
-  const isFailed = log.status === 'failed';
-  const isSkipped = log.status === 'skipped';
-  const cleanPhone = recipient?.phone ? recipient.phone.replace(/[^0-9]/g, '') : '';
+  const recipientName = recipient?.name || t("messaging.contactFallback", { id: log.contactId });
+  const isFailed = log.status === "failed";
+  const isSkipped = log.status === "skipped";
+  const cleanPhone = recipient?.phone ? recipient.phone.replace(/[^0-9]/g, "") : "";
 
   const copyIdToClipboard = async (text: string): Promise<void> => {
     try {
       await navigator.clipboard.writeText(text);
       setCopiedId(true);
       setTimeout(() => setCopiedId(false), 2000);
-      notify.success(t('contacts.table.copied'));
+      notify.success(t("contacts.table.copied"));
     } catch {
-      notify.error(t('messaging.loadFailedHint'));
+      notify.error(t("messaging.loadFailedHint"));
     }
   };
 
@@ -97,16 +90,20 @@ export const MessagingDetail = (function MessagingDetail({
             <Button
               variant="ghost"
               size="icon"
-              className="h-6 w-6 text-muted-foreground hover:text-foreground"
+              className="h-6 w-6 touch-target-coarse text-muted-foreground hover:text-foreground cursor-pointer"
               onClick={() => void copyIdToClipboard(String(log.id))}
-              aria-label={t('contacts.table.copied')}
+              aria-label={t("contacts.table.copied")}
             >
-              {copiedId ? <Check className={`h-3 w-3 ${SEMANTIC_TEXT.success}`} /> : <Copy className="h-3 w-3" />}
+              {copiedId ? (
+                <Check className={`h-3 w-3 ${SEMANTIC_TEXT.success}`} aria-hidden="true" />
+              ) : (
+                <Copy className="h-3 w-3" aria-hidden="true" />
+              )}
             </Button>
           </div>
           <div className="flex items-center gap-2">
-            <Button variant="outline" size="sm" onClick={onClose}>
-              {t('common.close')}
+            <Button variant="outline" size="sm" onClick={onClose} className="cursor-pointer">
+              {t("common.close")}
             </Button>
             {canWrite && (
               <Button
@@ -114,10 +111,10 @@ export const MessagingDetail = (function MessagingDetail({
                 size="sm"
                 onClick={handleResend}
                 className="gap-1.5"
-                title={`${t('messaging.resend')} (⌘+Enter)`}
+                title={`${t("messaging.resend")} (⌘+Enter)`}
               >
                 <RotateCcw className="h-3.5 w-3.5" />
-                {t('messaging.resend')}
+                {t("messaging.resend")}
               </Button>
             )}
           </div>
@@ -127,57 +124,76 @@ export const MessagingDetail = (function MessagingDetail({
       <div className="space-y-6">
         {/* Diagnostics & Failure Reason Notice */}
         {(isFailed || isSkipped) && (
-          <div className={`p-3 rounded-lg border border-destructive/30 ${SEMANTIC_BG.destructive} ${SEMANTIC_TEXT.destructive} space-y-1`}>
+          <div
+            className={`p-3 rounded-lg border border-destructive/30 ${SEMANTIC_BG.destructive} ${SEMANTIC_TEXT.destructive} space-y-1`}
+          >
             <div className="flex items-center gap-1.5 font-semibold">
               <AlertCircle className="h-4 w-4" />
-              <span>{isFailed ? t('messaging.status.failed') : t('messaging.status.skipped')}</span>
+              <span>{isFailed ? t("messaging.status.failed") : t("messaging.status.skipped")}</span>
             </div>
             <p className={`text-xs ${SEMANTIC_TEXT.destructive} opacity-90`}>
               {isFailed
-                ? t('messaging.loadFailedHint')
-                : t('messaging.skippedNotice', { count: 1, type: t('messaging.phoneNumber') })}
+                ? t("messaging.loadFailedHint")
+                : t("messaging.skippedNotice", { count: 1, type: t("messaging.phoneNumber") })}
             </p>
           </div>
         )}
 
         <div className="space-y-4">
           <PersonDetailHeroCard
-            id={log.contactId || ''}
+            id={log.contactId || ""}
             displayName={recipientName}
             avatar={null}
             accentColor="primary"
           >
             <ChannelBadge channel={log.channel} />
-            <StatusBadge status={log.status || 'sent'} size="sm" config={logStatusConfig} />
+            <StatusBadge status={log.status || "sent"} size="sm" config={logStatusConfig} />
           </PersonDetailHeroCard>
 
           <div className="flex items-center justify-between px-1">
             <span className="text-muted-foreground font-mono text-xs">
-              {recipient?.phone || recipient?.email || t('messaging.contactFallback', { id: log.contactId })}
+              {recipient?.phone ||
+                recipient?.email ||
+                t("messaging.contactFallback", { id: log.contactId })}
             </span>
             {log.contactId && (
               <Link
                 to={`/contacts?contactId=${log.contactId}`}
                 className={`inline-flex items-center gap-1 ${SEMANTIC_TEXT.primary} hover:underline font-semibold shrink-0 text-xs w-max`}
               >
-                <span>{t('contacts.table.viewProfile')}</span>
+                <span>{t("contacts.table.viewProfile")}</span>
                 <ArrowUpRight className="h-3 w-3" />
               </Link>
             )}
           </div>
 
-          <EntityMessagingActions variant="button-group"
+          <EntityMessagingActions
+            variant="button-group"
             primaryPhone={cleanPhone}
             primaryEmail={recipient?.email}
             labels={{
-              call: t('contacts.detail.call'),
-              whatsapp: t('contacts.whatsapp'),
-              sms: t('contacts.sms'),
-              email: t('contacts.detail.emailAction'),
+              call: t("contacts.detail.call"),
+              whatsapp: t("contacts.whatsapp"),
+              sms: t("contacts.sms"),
+              email: t("contacts.detail.emailAction"),
             }}
-            onWhatsApp={cleanPhone ? () => window.open(`https://wa.me/${cleanPhone}`, '_blank') : undefined}
-            onSms={cleanPhone ? () => { window.location.href = `sms:${cleanPhone}`; } : undefined}
-            onEmail={recipient?.email ? () => { window.location.href = `mailto:${recipient?.email}?subject=${encodeURIComponent(log.subject || '')}`; } : undefined}
+            onWhatsApp={
+              cleanPhone ? () => window.open(`https://wa.me/${cleanPhone}`, "_blank") : undefined
+            }
+            onSms={
+              cleanPhone
+                ? () => {
+                    window.location.href = `sms:${cleanPhone}`;
+                  }
+                : undefined
+            }
+            onEmail={
+              recipient?.email
+                ? () => {
+                    window.location.href = `mailto:${recipient?.email}?subject=${encodeURIComponent(log.subject || "")}`;
+                  }
+                : undefined
+            }
           />
         </div>
 
@@ -186,4 +202,4 @@ export const MessagingDetail = (function MessagingDetail({
       </div>
     </Drawer>
   );
-});
+};

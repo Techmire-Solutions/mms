@@ -1,8 +1,8 @@
 import { calcAge, formatDate, type Student } from "@mms/shared";
 import { Badge } from "@/components/ui/badge";
-import { StatusBadge } from "@/components/ui/StatusBadge";
+import { StatusBadge } from "@/components/app/StatusBadge";
 import type { TranslationFunction } from "@/lib/contexts/TranslationContext";
-import type { StudentsListContentTableProps } from "@/tenant/features/students/components/studentsListTypes";
+import type { StudentsListContentTableProps } from "@/tenant/features/students/lib/studentsListTypes";
 
 /** DOB cell — age + formatted date. */
 export function renderStudentDobCell({
@@ -41,7 +41,9 @@ export function renderStudentSessionsCell({
         </span>
       ) : (
         sessionNames.map((sessionName, idx) => (
-          <Badge as="span" size="sm"
+          <Badge
+            as="span"
+            size="sm"
             key={`${sessionName}-${idx}`}
             tone="primary"
             className="px-1.5 py-0.5 rounded-full font-medium"

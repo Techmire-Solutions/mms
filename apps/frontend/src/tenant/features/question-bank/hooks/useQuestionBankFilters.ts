@@ -1,7 +1,7 @@
-import { useEffect, useState } from 'react';
-import { QUESTION_BANK_MODULE_MANIFEST, type QuestionBankQuestion as Question } from '@mms/shared';
-import { useDebounce } from '@/hooks/useDebounce';
-import { useQuestionBankContractList } from '@/tenant/features/question-bank/hooks/useQuestionBankTsrHooks';
+import { useEffect, useState } from "react";
+import { QUESTION_BANK_MODULE_MANIFEST, type QuestionBankQuestion as Question } from "@mms/shared";
+import { useDebounce } from "@/hooks/useDebounce";
+import { useQuestionBankContractList } from "@/tenant/features/question-bank/hooks/useQuestionBankQueries";
 
 const QUESTION_SEARCH_DEBOUNCE_MS = 300;
 
@@ -20,7 +20,7 @@ export function useQuestionBankFilters({
   showDeleted = false,
   onFilteredCountChange,
 }: UseQuestionBankFiltersOptions) {
-  const [search, setSearch] = useState('');
+  const [search, setSearch] = useState("");
   const [filterCats, setFilterCats] = useState<string[]>([]);
   const [filterDiff, setFilterDiff] = useState<string[]>([]);
   const [listPage, setListPage] = useState(1);
@@ -36,8 +36,8 @@ export function useQuestionBankFilters({
     page: listPage,
     limit: QUESTION_BANK_MODULE_MANIFEST.defaultPageSize,
     search: debouncedSearch,
-    categoryId: filterCats.length ? filterCats.join(',') : undefined,
-    difficulty: filterDiff.length ? filterDiff.join(',') : undefined,
+    categoryId: filterCats.length ? filterCats.join(",") : undefined,
+    difficulty: filterDiff.length ? filterDiff.join(",") : undefined,
     includeDeleted: showDeleted,
   });
 

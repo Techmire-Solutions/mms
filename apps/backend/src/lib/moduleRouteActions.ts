@@ -1,4 +1,4 @@
-import type { ModuleAction } from '@mms/shared';
+import type { ModuleAction } from "@mms/shared";
 
 interface ModuleRouteActionRule {
   readonly methods: readonly string[];
@@ -10,7 +10,7 @@ interface ModuleRouteActionRule {
   readonly exceptModules?: readonly string[];
 }
 
-const ALL_METHODS = ['GET', 'HEAD', 'POST', 'PUT', 'PATCH', 'DELETE'] as const;
+const ALL_METHODS = ["GET", "HEAD", "POST", "PUT", "PATCH", "DELETE"] as const;
 
 /**
  * Single registry of module routes whose required action differs from the HTTP
@@ -23,26 +23,59 @@ export const MODULE_ROUTE_ACTION_RULES: readonly ModuleRouteActionRule[] = [
   // Handler-owned permissions (grant + enablement still enforced here):
   // personal dashboard prefs/widgets (setupWrite|customize; summary filtered per module),
   // the staff activity log (analytics.view), and self-service edits of the caller's own contact.
-  { methods: ALL_METHODS, pattern: /^\/api\/dashboard\//, action: 'availability', onlyModules: ['dashboard'] },
-  { methods: ALL_METHODS, pattern: /\/users\/activity(\/|$)/, action: 'availability', onlyModules: ['users'] },
-  { methods: ['PUT', 'PATCH'], pattern: /^\/api\/contacts\/:id$/, action: 'availability', onlyModules: ['contacts'] },
   {
-    methods: ['PUT'],
-    pattern: /\/(field-config|preferences|config\/fields|config\/preferences|lookups\/:kind)$/,
-    action: 'setupWrite',
-    exceptModules: ['dashboard'],
+    methods: ALL_METHODS,
+    pattern: /^\/api\/dashboard\//,
+    action: "availability",
+    onlyModules: ["dashboard"],
   },
-  { methods: ['POST'], pattern: /\/setup-audit$/, action: 'setupWrite' },
-  { methods: ['POST'], pattern: /\/(export|export\/csv|export\/vcf|export-audit)$/, action: 'export' },
-  { methods: ['POST', 'DELETE'], pattern: /\/saved-reports(\/:id(\/run)?)?$/, action: 'read' },
   {
-    methods: ['POST'],
+    methods: ALL_METHODS,
+    pattern: /\/users\/activity(\/|$)/,
+    action: "availability",
+    onlyModules: ["users"],
+  },
+  {
+    methods: ["PUT", "PATCH"],
+    pattern: /^\/api\/contacts\/:id$/,
+    action: "availability",
+    onlyModules: ["contacts"],
+  },
+  {
+    methods: ["PUT"],
+    pattern: /\/(field-config|preferences|config\/fields|config\/preferences|lookups\/:kind)$/,
+    action: "setupWrite",
+    exceptModules: ["dashboard"],
+  },
+  { methods: ["POST"], pattern: /\/setup-audit$/, action: "setupWrite" },
+  {
+    methods: ["POST"],
+    pattern: /\/(export|export\/csv|export\/vcf|export-audit)$/,
+    action: "export",
+  },
+  // Academic catalogs (session categories / programs / subjects) are Sessions setup data.
+  {
+    methods: ["PUT", "DELETE", "POST"],
+    pattern: /^\/api\/sessions\/catalogs\/:catalog\/:id(\/restore)?$/,
+    action: "setupWrite",
+    onlyModules: ["sessions"],
+  },
+  // Academic calendar (holidays / make-up days) is Attendance setup data.
+  {
+    methods: ["PUT", "DELETE", "POST"],
+    pattern: /^\/api\/attendance\/calendar\/:id(\/restore)?$/,
+    action: "setupWrite",
+    onlyModules: ["attendance"],
+  },
+  { methods: ["POST", "DELETE"], pattern: /\/saved-reports(\/:id(\/run)?)?$/, action: "read" },
+  {
+    methods: ["POST"],
     pattern: /\/(widget-aggregates|resolve|duplicate-check|identity-match|duplicates\/scan)$/,
-    action: 'read',
+    action: "read",
   },
 ];
 
-const READ_METHODS = new Set(['GET', 'HEAD', 'OPTIONS']);
+const READ_METHODS = new Set(["GET", "HEAD", "OPTIONS"]);
 
 /** Required action for a module route; the most demanding method wins for multi-method routes. */
 export function resolveModuleRouteAction(
@@ -54,7 +87,7 @@ export function resolveModuleRouteAction(
   if (declared) return declared;
   const list = (Array.isArray(methods) ? methods : [methods]).map((m) => String(m).toUpperCase());
   const mutating = list.find((m) => !READ_METHODS.has(m));
-  const method = mutating ?? list[0] ?? 'GET';
+  const method = mutating ?? list[0] ?? "GET";
   const rule = MODULE_ROUTE_ACTION_RULES.find(
     (r) =>
       r.methods.includes(method) &&
@@ -63,5 +96,5 @@ export function resolveModuleRouteAction(
       !(r.exceptModules ?? []).includes(moduleId),
   );
   if (rule) return rule.action;
-  return mutating ? 'write' : 'read';
+  return mutating ? "write" : "read";
 }

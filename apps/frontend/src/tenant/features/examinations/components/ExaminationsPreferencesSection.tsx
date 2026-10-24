@@ -1,9 +1,9 @@
 import React from "react";
 import { FORM_INPUT } from "@/components/ui/formStyles";
 import { Input } from "@/components/ui/input";
-import { FormSelect } from "@/components/ui/FormSelect";
-import { ToggleRow } from "@/components/ui/ToggleRow";
-import { Field } from "@/components/ui/FormPrimitives";
+import { FormSelect } from "@/components/app/FormSelect";
+import { ToggleRow } from "@shared/ui";
+import { Field } from "@/components/app/FormPrimitives";
 import { useTranslation } from "@/hooks/useTranslation";
 import type { ExaminationsSettings } from "@mms/shared";
 

@@ -10,8 +10,8 @@
  *   - buildSessionsExportRows
  *   - buildUsersExportRows
  */
-import type { ExportColumn, ExportCellExtractor } from '../core/exportTypes.js';
-import { filterNonMetadataColumns } from '../core/systemMetadata.js';
+import type { ExportColumn, ExportCellExtractor } from "../core/exportTypes.js";
+import { filterNonMetadataColumns } from "../core/systemMetadata.js";
 
 // ---------------------------------------------------------------------------
 // Primary export
@@ -40,7 +40,7 @@ export function buildExportGrid<TRow>(
   const dataRows = rows.map((row) =>
     safeColumns.map((col) => {
       const val = extractCell(row, col.id);
-      return val === null || val === undefined ? '' : val;
+      return val === null || val === undefined ? "" : val;
     }),
   );
   return [header, ...dataRows];
@@ -71,9 +71,8 @@ export function* yieldExportGridChunks<TRow>(
     yield chunk.map((row) =>
       safeColumns.map((col) => {
         const val = extractCell(row, col.id);
-        return val === null || val === undefined ? '' : val;
+        return val === null || val === undefined ? "" : val;
       }),
     );
   }
 }
-

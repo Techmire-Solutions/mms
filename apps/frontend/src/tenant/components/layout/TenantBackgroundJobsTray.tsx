@@ -1,7 +1,7 @@
 import React from "react";
 import { useBackgroundJobs } from "@/tenant/hooks/useBackgroundJobs";
 import { downloadBackgroundJobArtifact } from "@/lib/backgroundJobs/backgroundJobApi";
-import { BackgroundJobsTray } from "@/components/ui/BackgroundJobsTray";
+import { BackgroundJobsTray } from "@/components/app/BackgroundJobsTray";
 
 export interface TenantBackgroundJobsTrayProps {
   compact?: boolean;
@@ -9,9 +9,9 @@ export interface TenantBackgroundJobsTrayProps {
 }
 
 /**
-  * Tenant adapter connecting useBackgroundJobs and downloadBackgroundJobArtifact
-  * to the domain-neutral BackgroundJobsTray presentation component.
-  */
+ * Tenant adapter connecting useBackgroundJobs and downloadBackgroundJobArtifact
+ * to the domain-neutral BackgroundJobsTray presentation component.
+ */
 export function TenantBackgroundJobsTray({
   compact = false,
   className,

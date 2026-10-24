@@ -1,88 +1,21 @@
-import { randomUUID } from 'node:crypto';
-import { dedupeTrimmedIds, type SoftDeleteFields, type SoftDeleteListFilter } from '@mms/shared';
-import { eq, isNull, isNotNull, type Column, type SQL } from 'drizzle-orm';
-import { getRequestTenant } from '../lib/tenantContext.js';
-import { ConflictError, NotFoundError } from '../lib/httpErrors.js';
-import type { ZodType } from 'zod';
+import { randomUUID } from "node:crypto";
+import { dedupeTrimmedIds, type SoftDeleteFields, type SoftDeleteListFilter } from "@mms/shared";
+export {
+  type TenantSoftDeleteTable,
+  type ListByWorkspaceOptions,
+  type GenericServiceRepo,
+  buildTenantSoftDeleteConditions,
+  filterInMemorySoftDeleted,
+} from "../db/genericRelationalConditions.js";
+import { type GenericServiceRepo } from "../db/genericRelationalConditions.js";
+import { getRequestTenant } from "../lib/tenantContext.js";
+import { ConflictError, NotFoundError } from "../lib/httpErrors.js";
+import type { ZodType } from "zod";
 
 export type { SoftDeleteListFilter };
 
-export interface ListByWorkspaceOptions {
-  deleted?: SoftDeleteListFilter;
-  includeDeleted?: boolean;
-}
-
-export interface TenantSoftDeleteTable {
-  workspaceSubdomain: Column;
-  deletedAt: Column;
-}
-
-/**
- * Builds mandatory tenant and soft-delete SQL conditions with dynamic AST construction.
- * Enforces mandatory tenant predicate `eq(table.workspaceSubdomain, tenant)`.
- * Matches Category B partial index for 'active', Category C for 'deleted'.
- */
-export function buildTenantSoftDeleteConditions<TTable extends TenantSoftDeleteTable>(
-  table: TTable,
-  tenant: string,
-  filter: SoftDeleteListFilter = 'active',
-): SQL[] {
-  const subdomain = tenant.trim().toLowerCase();
-  const conditions: SQL[] = [eq(table.workspaceSubdomain, subdomain)];
-  if (filter === 'deleted') {
-    conditions.push(isNotNull(table.deletedAt));
-  } else if (filter === 'active') {
-    conditions.push(isNull(table.deletedAt));
-  }
-  // 'all' includes both active and deleted rows while keeping tenant isolation strictly intact.
-  return conditions;
-}
-
-/**
- * @deprecated In-memory soft-delete filtering is banned for relational SQL modules per mms-data-layer.md §6.
- * Use `buildTenantSoftDeleteConditions` or database-level queries matching partial indexes.
- */
-export function filterInMemorySoftDeleted<T extends { deletedAt?: string | Date | null }>(
-  records: T[],
-  filter: SoftDeleteListFilter = 'active',
-): T[] {
-  if (filter === 'deleted') {
-    return records.filter((r) => Boolean(r.deletedAt));
-  }
-  if (filter === 'active') {
-    return records.filter((r) => !r.deletedAt);
-  }
-  return records;
-}
-
 export interface GenericServiceOptions<T> {
-  repo: {
-    listByWorkspace: (subdomain: string, options?: ListByWorkspaceOptions) => Promise<T[]>;
-    findById: (subdomain: string, id: string, options?: { includeDeleted?: boolean }) => Promise<T | null>;
-    save: (subdomain: string, record: T) => Promise<void>;
-    deleteById?: (
-      subdomain: string,
-      id: string,
-      deletedBy: string,
-      deletionReason?: string,
-    ) => Promise<boolean>;
-    restoreById?: (
-      subdomain: string,
-      id: string,
-      userId?: string,
-    ) => Promise<boolean>;
-    bulkDelete?: (
-      subdomain: string,
-      ids: string[],
-      deletedBy: string,
-      deletionReason?: string,
-    ) => Promise<{ succeeded: number; failed: number }>;
-    bulkRestore?: (
-      subdomain: string,
-      ids: string[],
-      userId?: string,
-    ) => Promise<{ succeeded: number; failed: number }>;
-  };
+  repo: GenericServiceRepo<T>;
   schema?: ZodType<T>;
   websocketCollection: string;
   idPrefix: string;
@@ -104,7 +37,7 @@ export function createGenericRelationalService<
     if (!tenant) return [];
     // includeDeleted matches Contacts: trash = deleted-only (not active+deleted).
     return repo.listByWorkspace(tenant, {
-      deleted: opts?.includeDeleted ? 'deleted' : 'active',
+      deleted: opts?.includeDeleted ? "deleted" : "active",
     });
   }
 
@@ -119,19 +52,19 @@ export function createGenericRelationalService<
 
   async function create(record: T): Promise<T> {
     const tenant = getRequestTenant();
-    if (!tenant) throw new Error('Tenant context required');
+    if (!tenant) throw new Error("Tenant context required");
     const resolvedId =
-      typeof record.id === 'string' && record.id.trim() !== ''
+      typeof record.id === "string" && record.id.trim() !== ""
         ? record.id.trim()
-        : typeof record.id === 'number' && Number.isFinite(record.id)
+        : typeof record.id === "number" && Number.isFinite(record.id)
           ? String(record.id)
           : `${idPrefix}-${randomUUID()}`;
     const prepared = { ...record, id: resolvedId } as T;
     const parsed = schema ? (schema.parse(prepared) as T) : prepared;
     const normalized = normalizeFn ? normalizeFn(parsed) : parsed;
     await repo.save(tenant, normalized);
-    const { broadcastTenantUpdate } = await import('./websocketService.js');
-    broadcastTenantUpdate(tenant, 'collection', websocketCollection);
+    const { broadcastTenantUpdate } = await import("../lib/livePush.js");
+    broadcastTenantUpdate(tenant, "collection", websocketCollection);
     return normalized;
   }
 
@@ -148,8 +81,8 @@ export function createGenericRelationalService<
     const parsed = schema ? (schema.parse(withId) as T) : withId;
     const normalized = normalizeFn ? normalizeFn(parsed) : parsed;
     await repo.save(tenant, normalized);
-    const { broadcastTenantUpdate } = await import('./websocketService.js');
-    broadcastTenantUpdate(tenant, 'collection', websocketCollection);
+    const { broadcastTenantUpdate } = await import("../lib/livePush.js");
+    broadcastTenantUpdate(tenant, "collection", websocketCollection);
     return normalized;
   }
 
@@ -164,8 +97,8 @@ export function createGenericRelationalService<
     if (repo.deleteById) {
       const ok = await repo.deleteById(tenant, id, deletedBy, deletionReason);
       if (ok) {
-        const { broadcastTenantUpdate } = await import('./websocketService.js');
-        broadcastTenantUpdate(tenant, 'collection', websocketCollection);
+        const { broadcastTenantUpdate } = await import("../lib/livePush.js");
+        broadcastTenantUpdate(tenant, "collection", websocketCollection);
         return true;
       }
       const existing = await repo.findById(tenant, id, { includeDeleted: true });
@@ -178,8 +111,8 @@ export function createGenericRelationalService<
     if (repo.bulkDelete) {
       const res = await repo.bulkDelete(tenant, [id], deletedBy, deletionReason);
       if (res.succeeded === 1) {
-        const { broadcastTenantUpdate } = await import('./websocketService.js');
-        broadcastTenantUpdate(tenant, 'collection', websocketCollection);
+        const { broadcastTenantUpdate } = await import("../lib/livePush.js");
+        broadcastTenantUpdate(tenant, "collection", websocketCollection);
         return true;
       }
       const existing = await repo.findById(tenant, id, { includeDeleted: true });
@@ -203,8 +136,8 @@ export function createGenericRelationalService<
       deletionReason: deletionReason || undefined,
     } as T;
     await repo.save(tenant, updated);
-    const { broadcastTenantUpdate } = await import('./websocketService.js');
-    broadcastTenantUpdate(tenant, 'collection', websocketCollection);
+    const { broadcastTenantUpdate } = await import("../lib/livePush.js");
+    broadcastTenantUpdate(tenant, "collection", websocketCollection);
     return true;
   }
 
@@ -215,8 +148,8 @@ export function createGenericRelationalService<
     if (repo.restoreById) {
       const ok = await repo.restoreById(tenant, id, userId);
       if (ok) {
-        const { broadcastTenantUpdate } = await import('./websocketService.js');
-        broadcastTenantUpdate(tenant, 'collection', websocketCollection);
+        const { broadcastTenantUpdate } = await import("../lib/livePush.js");
+        broadcastTenantUpdate(tenant, "collection", websocketCollection);
         return true;
       }
       const existing = await repo.findById(tenant, id, { includeDeleted: true });
@@ -229,8 +162,8 @@ export function createGenericRelationalService<
     if (repo.bulkRestore) {
       const res = await repo.bulkRestore(tenant, [id], userId);
       if (res.succeeded === 1) {
-        const { broadcastTenantUpdate } = await import('./websocketService.js');
-        broadcastTenantUpdate(tenant, 'collection', websocketCollection);
+        const { broadcastTenantUpdate } = await import("../lib/livePush.js");
+        broadcastTenantUpdate(tenant, "collection", websocketCollection);
         return true;
       }
       const existing = await repo.findById(tenant, id, { includeDeleted: true });
@@ -259,10 +192,10 @@ export function createGenericRelationalService<
       await repo.save(tenant, restored);
     } catch (err: unknown) {
       if (
-        typeof err === 'object' &&
+        typeof err === "object" &&
         err !== null &&
-        'code' in err &&
-        (err as { code: unknown }).code === '23505'
+        "code" in err &&
+        (err as { code: unknown }).code === "23505"
       ) {
         throw new ConflictError(
           `Cannot restore ${idPrefix}: active record with this unique identifier already exists`,
@@ -270,8 +203,8 @@ export function createGenericRelationalService<
       }
       throw err;
     }
-    const { broadcastTenantUpdate } = await import('./websocketService.js');
-    broadcastTenantUpdate(tenant, 'collection', websocketCollection);
+    const { broadcastTenantUpdate } = await import("../lib/livePush.js");
+    broadcastTenantUpdate(tenant, "collection", websocketCollection);
     return true;
   }
 
@@ -286,8 +219,8 @@ export function createGenericRelationalService<
     if (repo.bulkDelete && tenant) {
       const result = await repo.bulkDelete(tenant, uniqueIds, deletedBy, deletionReason);
       if (result.succeeded > 0) {
-        const { broadcastTenantUpdate } = await import('./websocketService.js');
-        broadcastTenantUpdate(tenant, 'collection', websocketCollection);
+        const { broadcastTenantUpdate } = await import("../lib/livePush.js");
+        broadcastTenantUpdate(tenant, "collection", websocketCollection);
       }
       return result;
     }
@@ -315,8 +248,8 @@ export function createGenericRelationalService<
     if (repo.bulkRestore && tenant) {
       const result = await repo.bulkRestore(tenant, uniqueIds, userId);
       if (result.succeeded > 0) {
-        const { broadcastTenantUpdate } = await import('./websocketService.js');
-        broadcastTenantUpdate(tenant, 'collection', websocketCollection);
+        const { broadcastTenantUpdate } = await import("../lib/livePush.js");
+        broadcastTenantUpdate(tenant, "collection", websocketCollection);
       }
       return result;
     }

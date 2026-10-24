@@ -1,24 +1,22 @@
-import React, { Suspense } from 'react';
-import { UserCog, Download, Mail, Plus, Upload } from 'lucide-react';
-import { ModulePageShell } from '@/components/ui/ModulePageShell';
-import { ResponsiveAccordionTabs } from '@/components/ui/ResponsiveAccordionTabs';
-import { ActionButton } from '@/components/ui/ActionButton';
-import { UsersModalLayer } from '@/tenant/features/users/components/UsersModalLayer';
-import { UsersCsvImportDialog } from '@/tenant/features/users/components/UsersCsvImportDialog';
-import { UsersWorkTier } from '@/tenant/features/users/components/UsersWorkTier';
-import { UsersCommandMetrics } from '@/tenant/features/users/components/UsersCommandMetrics';
-import { ErrorBoundary } from '@/components/ui/ErrorBoundary';
-import { CardSkeleton } from '@/components/ui/LoadingState';
-import { useUsersPageController } from '@/tenant/features/users/hooks/useUsersPageController';
+import React, { Suspense } from "react";
+import { UserCog, Download, Mail, Plus, Upload } from "lucide-react";
+import { ModulePageShell } from "@/components/app/ModulePageShell";
+import { ResponsiveAccordionTabs } from "@/components/app/ResponsiveAccordionTabs";
+import { Button } from "@/components/ui/button";
+import { UsersModalLayer } from "@/tenant/features/users/components/UsersModalLayer";
+import { UsersCsvImportDialog } from "@/tenant/features/users/components/UsersCsvImportDialog";
+import { UsersWorkTier } from "@/tenant/features/users/components/UsersWorkTier";
+import { UsersCommandMetrics } from "@/tenant/features/users/components/UsersCommandMetrics";
+import { ErrorBoundary } from "@/components/app/ErrorBoundary";
+import { CardSkeleton } from "@shared/ui";
+import { useUsersPageController } from "@/tenant/features/users/hooks/useUsersPageController";
 
 const UsersReportsTier = React.lazy(() =>
-  import('@/tenant/features/users/components/UsersReportsTier').then((m) => ({
-    default: m.UsersReportsTier,
-  })),
+  import("@/tenant/components/moduleReports").then((m) => ({ default: m.ModuleReportsTier })),
 );
 
 const UsersSetupTier = React.lazy(() =>
-  import('@/tenant/features/users/components/UsersSetupTier').then((m) => ({
+  import("@/tenant/features/users/components/UsersSetupTier").then((m) => ({
     default: m.UsersSetupTier,
   })),
 );
@@ -33,54 +31,42 @@ export default function UsersPage(): React.JSX.Element {
 
   return (
     <ModulePageShell
-      seoTitle={`MMS - ${controller.t('page.users.title')}`}
-      seoDescription={controller.t('page.users.subtitle')}
+      seoTitle={`MMS - ${controller.t("page.users.title")}`}
+      seoDescription={controller.t("page.users.subtitle")}
       headerIcon={UserCog}
-      headerTitle={controller.t('page.users.title')}
-      headerSubtitle={controller.t('page.users.subtitle')}
+      headerTitle={controller.t("page.users.title")}
+      headerSubtitle={controller.t("page.users.subtitle")}
       headerActions={
-        controller.effectiveTab === 'work' && controller.effectiveSubTab === 'users' ? (
+        controller.effectiveTab === "work" && controller.effectiveSubTab === "users" ? (
           <div className="flex items-center gap-2">
             {controller.canExport ? (
-              <ActionButton
+              <Button
                 variant="ghost"
                 icon={Download}
-                onClick={() => { void controller.handleExportCSV(); }}
+                onClick={() => {
+                  void controller.handleExportCSV();
+                }}
               >
-                {controller.t('users.exportCsv')}
-              </ActionButton>
+                {controller.t("users.exportCsv")}
+              </Button>
             ) : null}
             {controller.canWrite && !controller.showDeleted ? (
               <>
-                <ActionButton
-                  variant="secondary"
-                  icon={Upload}
-                  onClick={() => setImportOpen(true)}
-                >
-                  {controller.t('common.import')}
-                </ActionButton>
-                <ActionButton
-                  variant="secondary"
-                  icon={Mail}
-                  onClick={controller.onInviteUser}
-                >
-                  {controller.t('users.invite')}
-                </ActionButton>
-                <ActionButton
-                  variant="primary"
-                  icon={Plus}
-                  onClick={controller.onAddUser}
-                >
-                  {controller.t('users.add')}
-                </ActionButton>
+                <Button variant="outline" icon={Upload} onClick={() => setImportOpen(true)}>
+                  {controller.t("common.import")}
+                </Button>
+                <Button variant="outline" icon={Mail} onClick={controller.onInviteUser}>
+                  {controller.t("users.invite")}
+                </Button>
+                <Button variant="primary" icon={Plus} onClick={controller.onAddUser}>
+                  {controller.t("users.add")}
+                </Button>
               </>
             ) : null}
           </div>
         ) : undefined
       }
-      metricsStrip={
-        <UsersCommandMetrics shown={controller.shownCount} />
-      }
+      metricsStrip={<UsersCommandMetrics shown={controller.shownCount} />}
     >
       <ResponsiveAccordionTabs
         tabs={controller.visibleTopTabs}
@@ -90,12 +76,12 @@ export default function UsersPage(): React.JSX.Element {
         panelIdPrefix="users-tab"
       >
         <ErrorBoundary>
-          {controller.effectiveTab === 'reports' && (
+          {controller.effectiveTab === "reports" && (
             <Suspense fallback={<CardSkeleton count={2} />}>
-              <UsersReportsTier />
+              <UsersReportsTier category="users" />
             </Suspense>
           )}
-          {controller.effectiveTab === 'setup' && (
+          {controller.effectiveTab === "setup" && (
             <Suspense fallback={<CardSkeleton count={2} />}>
               <UsersSetupTier
                 tabs={controller.USERS_CONFIG_TABS}
@@ -105,7 +91,7 @@ export default function UsersPage(): React.JSX.Element {
               />
             </Suspense>
           )}
-          {controller.effectiveTab === 'work' && (
+          {controller.effectiveTab === "work" && (
             <div className="space-y-5">
               <UsersWorkTier {...controller.workTierProps} />
             </div>

@@ -1,9 +1,9 @@
 import React from "react";
 import { Printer, ReceiptText } from "lucide-react";
 import { FINANCE_MODULE_MANIFEST } from "@mms/shared";
-import type { StatusBadgeConfigItem } from "@/components/ui/StatusBadge";
-import { ModuleUniversalBulkActionBar } from "@/components/ui/ModuleUniversalBulkActionBar";
-import { bulkActionDockActionClassName } from "@/components/ui/bulkActionDockStyles";
+import type { StatusBadgeConfigItem } from "@/components/app/StatusBadge";
+import { ModuleUniversalBulkActionBar } from "@/components/app/ModuleUniversalBulkActionBar";
+import { bulkActionDockActionClassName } from "@/components/app/bulkActionDockStyles";
 import { Button } from "@/components/ui/button";
 import { useTranslation } from "@/hooks/useTranslation";
 

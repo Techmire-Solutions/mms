@@ -3,6 +3,13 @@ import { describe, expect, it, vi } from "vitest";
 import { renderToStaticMarkup } from "react-dom/server";
 import Sessions from "./SessionsPage";
 
+vi.mock("@/hooks/useAcademicTerms", () => ({
+  useAcademicTerms: () => ({
+    session: { singular: "Session", plural: "Sessions" },
+    class: { singular: "Class", plural: "Classes" },
+    section: { singular: "Section", plural: "Sections" },
+  }),
+}));
 vi.mock("@/tenant/features/sessions/hooks/useSessionsPageController", () => ({
   useSessionsPageController: () => ({
     t: (key: string) => key,
@@ -58,7 +65,7 @@ vi.mock("@/tenant/features/sessions/hooks/useSessionsPageController", () => ({
     setDetailSession: vi.fn(),
     handleSort: vi.fn(),
     toggleSelectAll: vi.fn(),
-    toggleSelectedSession: vi.fn(),
+    toggleSelected: vi.fn(),
     setPendingDeleteId: vi.fn(),
     handleRestore: vi.fn(),
     handleBulkDelete: vi.fn(),
@@ -94,7 +101,7 @@ vi.mock("@/tenant/features/sessions/hooks/useSessionsPageController", () => ({
   }),
 }));
 
-vi.mock("@/components/ui/ModulePageShell", () => ({
+vi.mock("@/components/app/ModulePageShell", () => ({
   ModulePageShell: ({
     headerTitle,
     headerActions,
@@ -115,7 +122,7 @@ vi.mock("@/components/ui/ModulePageShell", () => ({
   ),
 }));
 
-vi.mock("@/components/ui/ResponsiveAccordionTabs", () => ({
+vi.mock("@/components/app/ResponsiveAccordionTabs", () => ({
   ResponsiveAccordionTabs: ({ children }: { children: React.ReactNode }) => (
     <div data-testid="accordion-tabs">{children}</div>
   ),
@@ -136,7 +143,7 @@ vi.mock("./components/SessionsDialogLayer", () => ({
 describe("SessionsPage Component", () => {
   it("renders page shell, metrics, and work tier using controller hook", () => {
     const html = renderToStaticMarkup(<Sessions />);
-    expect(html).toContain("nav.sessions");
+    expect(html).toContain("Sessions"); // header uses the tenant Session term (useAcademicTerms)
     expect(html).toContain("Command Metrics");
     expect(html).toContain("Work Tier");
     expect(html).toContain("Dialog Layer");

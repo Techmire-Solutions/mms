@@ -1,12 +1,12 @@
 import React from "react";
 import { useWorkDirectoryViewMode } from "@/hooks/useWorkDirectoryViewMode";
-import { ModuleStandardTrashDialogs } from "@/components/ui/ModuleStandardTrashDialogs";
+import { ModuleTrashConfirmDialogs } from "@/components/app/ModuleTrashConfirmDialogs";
 import { ObligationCollectionsListContent } from "@/tenant/features/obligations/components/ObligationCollectionsListContent";
 import { ObligationCollectionsListFilters } from "@/tenant/features/obligations/components/ObligationCollectionsListFilters";
 import { ObligationsBulkActionBar } from "@/tenant/features/obligations/components/ObligationsBulkActionBar";
-import { useObligationCollectionsListModel } from "./useObligationCollectionsListModel";
+import { useObligationCollectionsListModel } from "../hooks/useObligationCollectionsListModel";
 import { ObligationInvoiceModals } from "./ObligationInvoiceModals";
-import type { ObligationCollectionListProps } from "./obligationCollectionsListTypes";
+import type { ObligationCollectionListProps } from "../lib/obligationCollectionsListTypes";
 
 export type { ObligationCollectionListProps };
 
@@ -132,7 +132,12 @@ export function ObligationCollectionsList({
         onAddNew={onAddNew}
         onView={onView}
         onPrint={setPrintCollection}
-        onToggleSelectAll={(checked) => onToggleSelectAll?.(checked, filtered.map((col) => col.id))}
+        onToggleSelectAll={(checked) =>
+          onToggleSelectAll?.(
+            checked,
+            filtered.map((col) => col.id),
+          )
+        }
         onToggleSelectedCollection={(id, checked) => onToggleSelectedCollection?.(id, checked)}
         onTrashAction={(id) => {
           if (showDeleted) void onRestore?.(id);
@@ -163,7 +168,7 @@ export function ObligationCollectionsList({
         }}
       />
 
-      <ModuleStandardTrashDialogs
+      <ModuleTrashConfirmDialogs
         pendingTrashId={pendingTrashId}
         onPendingTrashIdChange={setPendingTrashId}
         confirmBulkOpen={confirmBulkOpen}

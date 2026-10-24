@@ -1,30 +1,23 @@
-import { AlertCircle, BookOpen, CheckCircle2 } from 'lucide-react';
+import { AlertCircle, BookOpen, CheckCircle2 } from "lucide-react";
+import { type Account } from "@/lib/data/accountingData";
+import { Checkbox } from "@/components/ui/checkbox";
+import { FieldErrorMessage } from "@/components/app/FormField";
+import { FormCollectionShell } from "@/components/app/FormPrimitives";
+import { ModuleTableHeaderCell } from "@/components/app/ModuleTableHeaderCell";
+import { Table, TableBody, TableHeader } from "@/components/ui/table";
+import { MutedTableHeaderRow } from "@/components/reports/FinancialDebitCreditTableChrome";
+import { WorkBatchTableFooter } from "@/components/common/work/WorkBatchTableFooter";
+import { useTranslation } from "@/hooks/useTranslation";
+import { cn } from "@/lib/utils";
+import { balanceToneClass } from "@/lib/ui/semanticTone";
+import type { DraftLine } from "../lib/journalEntryFormTypes";
+import { JournalEntryLineRow } from "./JournalEntryLineRow";
+import { JournalEntryLinesEditorMobile } from "./JournalEntryLinesEditorMobile";
+import type { JournalAmountSide } from "../hooks/useJournalLineAssist";
 import {
-  type Account,
-} from '@/lib/data/accountingData';
-import { Checkbox } from '@/components/ui/checkbox';
-import { FieldErrorMessage } from '@/components/ui/FormField';
-import { FormCollectionShell } from '@/components/ui/FormPrimitives';
-import { ModuleTableHeaderCell } from '@/components/ui/ModuleTableHeaderCell';
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHeader,
-} from '@/components/ui/table';
-import {
-  FinancialDebitCreditFooter,
-  FinancialDebitCreditFooterRow,
-  FinancialDebitCreditHeaderRow,
-} from '@/components/ui/reports/FinancialDebitCreditTableChrome';
-import { useTranslation } from '@/hooks/useTranslation';
-import { cn } from '@/lib/utils';
-import { balanceToneClass } from '@/lib/semanticTone';
-import type { DraftLine } from './journalEntryFormTypes';
-import { JournalEntryLineRow } from './JournalEntryLineRow';
-import { JournalEntryLinesEditorMobile } from './JournalEntryLinesEditorMobile';
-import type { JournalAmountSide } from './useJournalLineAssist';
-import { useWorkDirectoryViewMode, type WorkDirectoryViewMode } from '@/hooks/useWorkDirectoryViewMode';
+  useWorkDirectoryViewMode,
+  type WorkDirectoryViewMode,
+} from "@/hooks/useWorkDirectoryViewMode";
 
 interface JournalEntryLinesEditorProps {
   accounts: readonly Account[];
@@ -102,13 +95,38 @@ export function JournalEntryLinesEditor({
             <Table>
               <caption className="sr-only">{t("accounting.journal.form.linesCaption")}</caption>
               <TableHeader>
-                <FinancialDebitCreditHeaderRow>
-                  <ModuleTableHeaderCell columnKey="account" className="px-3 py-2">{t("accounting.journal.detail.account")}</ModuleTableHeaderCell>
-                  <ModuleTableHeaderCell columnKey="lineNote" className="px-3 py-2 hidden md:table-cell">{t("accounting.ledger.columns.lineNote")}</ModuleTableHeaderCell>
-                  <ModuleTableHeaderCell columnKey="debit" className="px-3 py-2 text-end w-28">{t("accounting.ledger.columns.debit")}</ModuleTableHeaderCell>
-                  <ModuleTableHeaderCell columnKey="credit" className="px-3 py-2 text-end w-28">{t("accounting.ledger.columns.credit")}</ModuleTableHeaderCell>
-                  <ModuleTableHeaderCell columnKey="actions" className="px-3 py-2 w-8"><span className="sr-only">{t("common.actions")}</span></ModuleTableHeaderCell>
-                </FinancialDebitCreditHeaderRow>
+                <MutedTableHeaderRow>
+                  <ModuleTableHeaderCell columnKey="account" className="px-3 py-2">
+                    {t("accounting.journal.detail.account")}
+                  </ModuleTableHeaderCell>
+                  <ModuleTableHeaderCell
+                    columnKey="lineNote"
+                    className="px-3 py-2 hidden md:table-cell"
+                  >
+                    {t("accounting.ledger.columns.lineNote")}
+                  </ModuleTableHeaderCell>
+                  <ModuleTableHeaderCell
+                    columnKey="debit"
+                    variant="currency"
+                    className="px-3 py-2 w-28"
+                  >
+                    {t("accounting.ledger.columns.debit")}
+                  </ModuleTableHeaderCell>
+                  <ModuleTableHeaderCell
+                    columnKey="credit"
+                    variant="currency"
+                    className="px-3 py-2 w-28"
+                  >
+                    {t("accounting.ledger.columns.credit")}
+                  </ModuleTableHeaderCell>
+                  <ModuleTableHeaderCell
+                    columnKey="actions"
+                    variant="action"
+                    className="px-3 py-2 w-8"
+                  >
+                    <span className="sr-only">{t("common.actions")}</span>
+                  </ModuleTableHeaderCell>
+                </MutedTableHeaderRow>
               </TableHeader>
               <TableBody className="divide-y divide-border">
                 {lines.map((line, lineIndex) => (
@@ -131,15 +149,34 @@ export function JournalEntryLinesEditor({
                   />
                 ))}
               </TableBody>
-              <FinancialDebitCreditFooter>
-                <FinancialDebitCreditFooterRow>
-                  <TableCell className="px-3 py-2 text-xs font-bold text-muted-foreground uppercase">{t("accounting.journal.form.totals")}</TableCell>
-                  <TableCell className="hidden md:table-cell" />
-                  <TableCell className="px-3 py-2 text-end font-mono font-bold text-info">{formatCurrency(totalDebit)}</TableCell>
-                  <TableCell className="px-3 py-2 text-end font-mono font-bold text-success">{formatCurrency(totalCredit)}</TableCell>
-                  <TableCell />
-                </FinancialDebitCreditFooterRow>
-              </FinancialDebitCreditFooter>
+              <WorkBatchTableFooter
+                footerRow={{
+                  className: "border-t-2 border-border bg-muted/30",
+                  cells: [
+                    {
+                      className: "px-3 py-2 text-xs font-bold text-muted-foreground uppercase",
+                      content: t("accounting.journal.form.totals"),
+                    },
+                    {
+                      className: "hidden md:table-cell",
+                      content: null,
+                    },
+                    {
+                      className: "table-amount-cell px-3 py-2 text-info font-bold",
+                      content: formatCurrency(totalDebit),
+                      align: "end",
+                    },
+                    {
+                      className: "table-amount-cell px-3 py-2 text-success font-bold",
+                      content: formatCurrency(totalCredit),
+                      align: "end",
+                    },
+                    {
+                      content: null,
+                    },
+                  ],
+                }}
+              />
             </Table>
           )}
         </div>
@@ -158,9 +195,23 @@ export function JournalEntryLinesEditor({
         </div>
       )}
 
-      <div className={cn("flex items-center gap-2 px-3 py-2.5 rounded-xl text-xs font-bold border transition-all duration-300 shadow-sm", balanceToneClass(isBalanced))} role="status">
-        {isBalanced ? <CheckCircle2 className="w-4 h-4" aria-hidden="true" /> : <AlertCircle className="w-4 h-4" aria-hidden="true" />}
-        {isBalanced ? t("accounting.journal.form.balanced") : t("accounting.journal.form.unbalanced", { diff: formatCurrency(Math.abs(totalDebit - totalCredit)) })}
+      <div
+        className={cn(
+          "flex items-center gap-2 px-3 py-2.5 rounded-xl text-xs font-bold border transition-all duration-300 shadow-sm",
+          balanceToneClass(isBalanced),
+        )}
+        role="status"
+      >
+        {isBalanced ? (
+          <CheckCircle2 className="w-4 h-4" aria-hidden="true" />
+        ) : (
+          <AlertCircle className="w-4 h-4" aria-hidden="true" />
+        )}
+        {isBalanced
+          ? t("accounting.journal.form.balanced")
+          : t("accounting.journal.form.unbalanced", {
+              diff: formatCurrency(Math.abs(totalDebit - totalCredit)),
+            })}
       </div>
       <FieldErrorMessage message={errors.lines} />
       <FieldErrorMessage message={errors.balance} />

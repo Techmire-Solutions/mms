@@ -5,7 +5,7 @@ description: Performance rules, query optimization, render hygiene, caching, str
 
 # MMS Performance & Resource Efficiency Rules
 
-**Workflow skills:** code review & bottlenecks → `mms-code-review` · query factories & caching → `mms-query-factories` · backend services → `mms-backend-api` · Drizzle indexes & DDL → `mms-schema-migrate` · soft-delete performance & purge → `mms-soft-delete` · frontend shell & rendering → `mms-frontend`.
+**Workflow skills:** code review & bottlenecks → `mms-code-review` · modern web performance → `modern-web-guidance` · query factories & caching → `mms-query-factories` · backend services → `mms-backend-api` · Drizzle indexes & DDL → `mms-schema-migrate` · soft-delete performance & purge → `mms-soft-delete` · frontend shell & rendering → `mms-frontend`.
 
 ## 1. Database & I/O Optimization
 - **Zero Queries in Loops (N+1 Elimination):** NEVER query inside loops (`for`, `map`, `Promise.all`). Batch with Drizzle relational `with: { ... }`, `inArray(table.column, ids)` (bounded to <= 500 IDs via `bulkIdsBodySchema`), or SQL `JOIN`s.
@@ -30,12 +30,14 @@ description: Performance rules, query optimization, render hygiene, caching, str
 - **Service Worker Runtime Caching:** `NetworkOnly` for `/api/*`, `/uploads/*`, `/health`; `CacheFirst` for versioned `/assets/*` (30 days); `StaleWhileRevalidate` for `index.html`.
 
 ## 4. Client Bundle & Asset Optimization
+- **Modern Web Performance:** Follow `modern-web-guidance` guides for CWV, LCP, INP (`optimize-image-priority`, `defer-rendering-heavy-content`, `optimize-script-priority`, `break-up-long-tasks`, `faster-spa-view-transitions`). Critical above-the-fold assets must use `fetchpriority="high"`; offscreen content utilizes `content-visibility: auto` with `contain-intrinsic-size` to minimize render tree cost.
 - **Pre-compression:** Vite builds generate `.br` (quality 11) and `.gz` (level 9) for outputs > 1 KB (`vite-plugin-compression2`). Fastify serves directly via `preCompressed: true`.
 - **Modular Imports:** Ban `lodash`, `moment`, and full `date-fns`. Use modern JS (`toSorted`, `Object.groupBy`), `@mms/shared` (`formatDate`, `formatMoney`), and named icon imports.
 - **Route & Code Splitting:** React `lazy` + `Suspense` on feature routes. Dynamically import heavy libraries (Recharts, `jspdf`, `xlsx`) only within action handlers (`mms-reports.md`).
 - **Zero CLS:** WebP/AVIF images with explicit dimensions or aspect-ratio containers (`aspect-video`, `aspect-square`). Native `loading="lazy"` on non-hero images.
 
 ## 5. Client Rendering & Interaction Performance
+- **Long Tasks & Interaction:** Break up long tasks via `scheduler.yield()` or microtask scheduling (`break-up-long-tasks`), and detect initial visibility (`detect-initial-visibility-state`) to prevent unneeded background rendering.
 - **Subtree Isolation:** Colocate transient input/toggle state to leaf components; never store keystroke state in page controllers. Debounce server search requests.
 - **Targeted Memoization:** Use `useMemo` for expensive sorting/filtering and `useCallback` for callbacks passed to memoized children. Avoid blanket premature memoization.
 - **Mandatory Virtualization (> 30 Items):** ALWAYS virtualize lists, tables, card grids, and high-cardinality select menus (> 50 items) via `@tanstack/react-virtual` (`useVirtualizer`) with 5–8 item overscan.
@@ -43,7 +45,6 @@ description: Performance rules, query optimization, render hygiene, caching, str
 - **TanStack Query State:** Deduplicate network requests using tuple keys (`queryOptions` factories). Ban `useEffect` fetch loops.
 
 ## 6. Safety, Verification & Documentation Standards
-- **Zero Output Bloat:** Output surgical diffs only. Never rewrite entire files unless creating a new file from scratch. Omit conversational filler.
 - **Contract Compatibility:** Performance refactors must preserve API response schemas and DTO contracts.
 - **Verification Gates:** Verify with `pnpm typecheck`, `pnpm test`, and relevant CI ratchets (`pnpm run check:db-projections`, `pnpm run check:migration-indexes`, `pnpm run check:bundle`).
 - **Quantify Impact:** Document baseline bottleneck and quantified resource saved (CPU, RAM, DB queries, bundle size) in reviews.

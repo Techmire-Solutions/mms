@@ -2,9 +2,9 @@ import type React from "react";
 import { AlertCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Field, FieldErrorMessage } from "@/components/ui/FormField";
+import { Field, FieldErrorMessage } from "@/components/app/FormField";
 import { FORM_ERROR_BOX } from "@/components/ui/formStyles";
-import { WarningCallout } from "@/components/ui/WarningCallout";
+import { WarningCallout } from "@/components/app/WarningCallout";
 import type { TranslationFunction } from "@/lib/contexts/TranslationContext";
 
 export interface GoogleContactsSetupHintProps {
@@ -67,23 +67,24 @@ export function GoogleContactsSetupForm({
           placeholder={t("contacts.sync.clientSecretPlaceholder")}
         />
       </Field>
-      <FieldErrorMessage
-        message={error || undefined}
-        className={FORM_ERROR_BOX}
-      />
+      <FieldErrorMessage message={error || undefined} className={FORM_ERROR_BOX} />
       <div className="flex gap-2">
         <Button
           type="button"
+          variant="default"
+          size="sm"
           onClick={onSave}
-          className="px-4 min-h-11 rounded-lg bg-primary text-primary-foreground text-xs font-bold hover:bg-primary/90 transition-colors shadow-none"
+          disabled={!clientId.trim() || !clientSecret.trim()}
+          className="px-4 font-bold shadow-none"
         >
           {t("contacts.sync.saveCredentials")}
         </Button>
         <Button
           type="button"
           variant="outline"
+          size="sm"
           onClick={onCancel}
-          className="px-4 min-h-11 rounded-lg border border-border text-xs font-medium text-muted-foreground hover:text-foreground transition-colors bg-card shadow-none"
+          className="px-4 font-medium shadow-none"
         >
           {t("common.cancel")}
         </Button>

@@ -15,41 +15,36 @@ export {
   useFacultyMetrics,
   useFacultyWidgetAggregates,
   type FacultyRecord,
-} from '@/tenant/features/faculty/hooks/useFaculty';
+} from "@/tenant/features/faculty/hooks/useFaculty";
 
-export {
-  useFacultyLookupsQuery,
-} from '@/tenant/features/faculty/hooks/useFacultyLookups';
+export { useFacultyLookupsQuery } from "@/tenant/features/faculty/hooks/useFacultyLookups";
 
 export {
   FACULTY_PREFERENCES_QUERY_KEY,
   useFacultyPreferencesMutation,
   useComposedFacultySettings,
-} from '@/tenant/features/faculty/hooks/useFacultySetupConfig';
+} from "@/tenant/features/faculty/hooks/useFacultySetupConfig";
 
-export {
-  setFacultyPreferencesMemory,
-} from '@/tenant/features/faculty/hooks/facultySetupConfigApi';
+export { setFacultyPreferencesMemory } from "@/tenant/features/faculty/hooks/facultySetupConfigApi";
 
-export {
-  applyFacultyWorkDrillDown,
-} from '@/tenant/features/faculty/hooks/facultyWorkDrillDown';
+export { applyFacultyWorkDrillDown } from "@/tenant/features/faculty/hooks/facultyWorkDrillDown";
 
-export {
-  invalidateFacultyQueries,
-} from '@/tenant/features/faculty/hooks/invalidateFacultyQueries';
+export { invalidateFacultyQueries } from "@/tenant/features/faculty/hooks/invalidateFacultyQueries";
 
 export {
   facultyListQueryOptions,
   useFacultyContractList,
   useFacultyContractGet,
+  useFacultyContractNextEmployeeId,
+} from "@/tenant/features/faculty/hooks/useFacultyTsrQueries";
+
+export {
   useFacultyContractCreate,
   useFacultyContractUpdate,
   useFacultyContractDelete,
   useFacultyContractBulkStatus,
   useFacultyContractDuplicateCheck,
-  useFacultyContractNextEmployeeId,
-} from '@/tenant/features/faculty/hooks/useFacultyTsrHooks';
+} from "@/tenant/features/faculty/hooks/useFacultyTsrMutations";
 
 export {
   FACULTY_DEPARTMENTS_QUERY_KEY,
@@ -58,10 +53,10 @@ export {
   useSaveFacultyDepartment,
   useDeleteFacultyDepartment,
   departmentEntitiesToNames,
-} from '@/tenant/features/faculty/hooks/useFacultyDepartments';
+} from "@/tenant/features/faculty/hooks/useFacultyDepartments";
 
 export {
   FACULTY_DESIGNATIONS_QUERY_KEY,
   facultyDesignationsQueryOptions,
   useFacultyDesignations,
-} from '@/tenant/features/faculty/hooks/useFacultyDesignations';
+} from "@/tenant/features/faculty/hooks/useFacultyDesignations";

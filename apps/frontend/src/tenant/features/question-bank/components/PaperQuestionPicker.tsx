@@ -1,17 +1,18 @@
-import React from "react";
+import React, { useRef } from "react";
+import { useVirtualizer } from "@tanstack/react-virtual";
 import { useTranslation } from "@/hooks/useTranslation";
 import { FORM_INPUT, WORK_SURFACE } from "@/components/ui/formStyles";
 import { Button } from "@/components/ui/button";
-import { EmptyState } from "@/components/ui/EmptyState";
+import { EmptyState } from "@/components/app/EmptyState";
 import { Input } from "@/components/ui/input";
-import { FormSelect, type FormSelectOption } from "@/components/ui/FormSelect";
-import {
-  getQuestionCategoryIds,
-  type QuestionBankQuestion as Question,
-} from "@mms/shared";
-import type { DifficultyFilter, PaperSection } from "@/tenant/features/question-bank/components/paperBuilderUtils";
-import { StatusBadge, type StatusBadgeConfigItem } from '@/components/ui/StatusBadge';
-import { SEMANTIC_BADGE } from "@/lib/semanticTone";
+import { FormSelect, type FormSelectOption } from "@/components/app/FormSelect";
+import { getQuestionCategoryIds, type QuestionBankQuestion as Question } from "@mms/shared";
+import type {
+  DifficultyFilter,
+  PaperSection,
+} from "@/tenant/features/question-bank/lib/paperBuilderUtils";
+import { StatusBadge, type StatusBadgeConfigItem } from "@/components/app/StatusBadge";
+import { SEMANTIC_BADGE } from "@/lib/ui/semanticTone";
 import { CategoryColorChip } from "@/tenant/features/question-bank/components/CategoryColorChip";
 
 interface QuestionCategoryBadge {
@@ -53,18 +54,64 @@ export function PaperQuestionPicker({
   onSearchChange,
 }: PaperQuestionPickerProps): React.ReactElement {
   const { t } = useTranslation();
+  const listRef = useRef<HTMLDivElement | null>(null);
   const difficultyConfig = (() => ({
     easy: { label: difficultyLabel("easy"), cls: SEMANTIC_BADGE.success },
     medium: { label: difficultyLabel("medium"), cls: SEMANTIC_BADGE.warning },
     hard: { label: difficultyLabel("hard"), cls: SEMANTIC_BADGE.destructive },
   }))() as Record<string, StatusBadgeConfigItem>;
 
+  const isVirtualized = questions.length > 30;
+  const rowVirtualizer = useVirtualizer({
+    count: questions.length,
+    getScrollElement: () => listRef.current,
+    estimateSize: () => 110,
+    overscan: 6,
+    enabled: isVirtualized,
+  });
+
+  const renderQuestion = (question: Question): React.ReactNode => {
+    const selected = selectedQuestionIds.has(question.id);
+    return (
+      <div className="rounded-lg border border-border bg-muted/20 p-3">
+        <div className="flex flex-col gap-2 sm:flex-row sm:items-start">
+          <p className="m-0 flex-1 text-xs font-semibold leading-snug text-foreground">
+            {question.text}
+          </p>
+          <Button
+            type="button"
+            onClick={() => onAddQuestion(question.id)}
+            disabled={!activeSection || selected}
+            size="sm"
+            className="min-h-11 w-full px-3 text-xs sm:w-auto"
+          >
+            {selected ? t("questionBank.questionAdded") : t("questionBank.addToPaper")}
+          </Button>
+        </div>
+        <div className="mt-2 flex flex-wrap items-center gap-1.5">
+          {getQuestionCategoryIds(question).map((categoryId) => {
+            const category = categoryById.get(categoryId);
+            if (!category) return null;
+            return (
+              <CategoryColorChip key={categoryId} name={category.name} color={category.color} />
+            );
+          })}
+          <StatusBadge status={question.difficulty} config={difficultyConfig} size="sm" />
+        </div>
+      </div>
+    );
+  };
+
   return (
     <section className={`${WORK_SURFACE} p-3 sm:p-4`}>
       <div className="mb-3">
-        <h3 className="m-0 text-sm font-bold text-foreground">{t("questionBank.addQuestionsFromBank")}</h3>
+        <h3 className="m-0 text-sm font-bold text-foreground">
+          {t("questionBank.addQuestionsFromBank")}
+        </h3>
         <p className="m-0 text-xs text-muted-foreground">
-          {activeSection ? t("questionBank.addingToSection", { title: activeSection.title }) : t("questionBank.noActiveSection")}
+          {activeSection
+            ? t("questionBank.addingToSection", { title: activeSection.title })
+            : t("questionBank.noActiveSection")}
         </p>
       </div>
 
@@ -96,7 +143,10 @@ export function PaperQuestionPicker({
         />
       </div>
 
-      <div className="max-h-preview-sm space-y-2 overflow-y-auto pe-1 sm:max-h-preview-md lg:max-h-preview-xl">
+      <div
+        ref={listRef}
+        className="max-h-preview-sm overflow-y-auto pe-1 sm:max-h-preview-md lg:max-h-preview-xl"
+      >
         {questions.length === 0 ? (
           <EmptyState
             title={t("questionBank.noQuestionsAvailable")}
@@ -105,36 +155,42 @@ export function PaperQuestionPicker({
             icon={null}
             className="rounded-lg"
           />
+        ) : isVirtualized ? (
+          <div
+            style={{
+              height: `${rowVirtualizer.getTotalSize()}px`,
+              width: "100%",
+              position: "relative",
+            }}
+          >
+            {rowVirtualizer.getVirtualItems().map((virtualRow) => {
+              const question = questions[virtualRow.index];
+              if (!question) return null;
+              return (
+                <div
+                  key={virtualRow.key}
+                  data-index={virtualRow.index}
+                  ref={rowVirtualizer.measureElement}
+                  style={{
+                    position: "absolute",
+                    top: 0,
+                    left: 0,
+                    width: "100%",
+                    transform: `translateY(${virtualRow.start}px)`,
+                  }}
+                  className="pb-2"
+                >
+                  {renderQuestion(question)}
+                </div>
+              );
+            })}
+          </div>
         ) : (
-          questions.map((question) => {
-            const selected = selectedQuestionIds.has(question.id);
-            return (
-              <div key={question.id} className="rounded-lg border border-border bg-muted/20 p-3">
-                <div className="flex flex-col gap-2 sm:flex-row sm:items-start">
-                  <p className="m-0 flex-1 text-xs font-semibold leading-snug text-foreground">{question.text}</p>
-                  <Button
-                    type="button"
-                    onClick={() => onAddQuestion(question.id)}
-                    disabled={!activeSection || selected}
-                    size="sm"
-                    className="min-h-11 w-full px-3 text-xs sm:w-auto"
-                  >
-                    {selected ? t("questionBank.questionAdded") : t("questionBank.addToPaper")}
-                  </Button>
-                </div>
-                <div className="mt-2 flex flex-wrap items-center gap-1.5">
-                  {getQuestionCategoryIds(question).map((categoryId) => {
-                    const category = categoryById.get(categoryId);
-                    if (!category) return null;
-                    return (
-                      <CategoryColorChip key={categoryId} name={category.name} color={category.color} />
-                    );
-                  })}
-                  <StatusBadge status={question.difficulty} config={difficultyConfig} size="sm" />
-                </div>
-              </div>
-            );
-          })
+          <div className="space-y-2">
+            {questions.map((question) => (
+              <div key={question.id}>{renderQuestion(question)}</div>
+            ))}
+          </div>
         )}
       </div>
     </section>

@@ -67,10 +67,7 @@ describe("ExaminationsListCards", () => {
 
   it("hides column when isColumnVisible returns false", () => {
     const html = renderToStaticMarkup(
-      <ExaminationsListCards
-        {...baseProps}
-        isColumnVisible={(k) => k !== "duration"}
-      />,
+      <ExaminationsListCards {...baseProps} isColumnVisible={(k) => k !== "duration"} />,
     );
     expect(html).not.toContain("examinations.columns.exam.duration");
   });
@@ -86,16 +83,12 @@ describe("ExaminationsListCards", () => {
   });
 
   it("does not render checkbox when canDelete=false", () => {
-    const html = renderToStaticMarkup(
-      <ExaminationsListCards {...baseProps} canDelete={false} />,
-    );
+    const html = renderToStaticMarkup(<ExaminationsListCards {...baseProps} canDelete={false} />);
     expect(html).not.toContain('type="checkbox"');
   });
 
   it("does not render onView/edit button when showDeleted=true", () => {
-    const html = renderToStaticMarkup(
-      <ExaminationsListCards {...baseProps} showDeleted={true} />,
-    );
+    const html = renderToStaticMarkup(<ExaminationsListCards {...baseProps} showDeleted={true} />);
     // Header button only present when canViewEdit=true (canWrite && !showDeleted)
     // The header does not render an onView button when showDeleted
     expect(html).toContain("Midterm Exam");
@@ -114,25 +107,20 @@ describe("ExaminationsListCards", () => {
       enrollments: [
         { classId: "cls-1", studentId: "s1" },
         { classId: "cls-1", studentId: "s2" },
-      ] as unknown as typeof baseProps["enrollments"],
+      ] as unknown as (typeof baseProps)["enrollments"],
     };
     const html = renderToStaticMarkup(<ExaminationsListCards {...propsWithEnrollments} />);
     expect(html).toContain("examinations.studentCount");
   });
 
   it("renders empty list without crashing", () => {
-    const html = renderToStaticMarkup(
-      <ExaminationsListCards {...baseProps} exams={[]} />,
-    );
+    const html = renderToStaticMarkup(<ExaminationsListCards {...baseProps} exams={[]} />);
     expect(html).toBeDefined();
   });
 
   it("renders card with accessible article role and tabindex for keyboard navigation", () => {
-    const html = renderToStaticMarkup(
-      <ExaminationsListCards {...baseProps} />,
-    );
+    const html = renderToStaticMarkup(<ExaminationsListCards {...baseProps} />);
     expect(html).toContain('role="article"');
     expect(html).toContain('tabindex="0"');
   });
 });
-

@@ -55,8 +55,6 @@ export type {
   Session,
 };
 
-export const SESSION_TYPES = ["Hifz", "Qaidah", "Tajweed", "Islamic Studies", "Arabic", "Other"] as const;
-
 export function validateSessions(sessionInput: unknown): Session[] {
   if (!Array.isArray(sessionInput)) return [];
   const valid: Session[] = [];

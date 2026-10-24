@@ -1,8 +1,8 @@
-import { EmptyState } from "@/components/ui/EmptyState";
-import { ErrorState } from "@/components/ui/ErrorState";
-import { DetailSectionCard } from "@/components/ui/DetailSectionCard";
+import { EmptyState } from "@/components/app/EmptyState";
+import { ErrorState } from "@/components/app/ErrorState";
+import { DetailSectionCard } from "@/components/app/DetailSectionCard";
 import { Badge } from "@/components/ui/badge";
-import { SectionLabel } from "@/components/ui/SectionLabel";
+import { SectionLabel } from "@/components/app/SectionLabel";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useTranslation } from "@/hooks/useTranslation";
 import { BookOpen } from "lucide-react";
@@ -61,25 +61,25 @@ export function StudentDetailSessionsSection({
   }
 
   return (
-    <DetailSectionCard
-      title={title}
-      accentColor="purple"
-      className="divide-y divide-border/50 p-0"
-    >
+    <DetailSectionCard title={title} accentColor="purple" className="divide-y divide-border/50 p-0">
       {sessions.map((session) => {
         const typeKey = sessionTypeI18nKey(session.type);
         const typeLabel = typeKey ? t(typeKey) : t("sessions.types.other");
         return (
-          <div
-            key={session.id}
-            className="p-3.5 space-y-2"
-          >
+          <div key={session.id} className="p-3.5 space-y-2">
             <div className="flex items-center justify-between ms-1">
-              <Badge as="span" size="sm" tone="primary" className="px-1.5 py-0.5 rounded-full font-bold uppercase">
+              <Badge
+                as="span"
+                size="sm"
+                tone="primary"
+                className="px-1.5 py-0.5 rounded-full font-bold uppercase"
+              >
                 {typeLabel}
               </Badge>
               <span className="text-xs font-bold text-muted-foreground">
-                {t("students.detail.sessionFee", { amount: formatMoney(session.baseFee ?? 0, session.currency) })}
+                {t("students.detail.sessionFee", {
+                  amount: formatMoney(session.baseFee ?? 0, session.currency),
+                })}
               </span>
             </div>
             <h5 className="text-xs font-bold text-foreground ms-1">{session.name}</h5>
@@ -90,13 +90,22 @@ export function StudentDetailSessionsSection({
                 </SectionLabel>
                 {session.classes.map((sessionClass) => (
                   <div key={sessionClass.id} className="flex justify-between gap-1.5">
-                    <span className="font-medium text-foreground">{t("students.detail.classByTeacher", { name: sessionClass.name ?? "", teacher: sessionClass.facultyName ?? "" })}</span>
-                    <span>{t("students.detail.classRoom", { room: sessionClass.room || emptyDash })}</span>
+                    <span className="font-medium text-foreground">
+                      {t("students.detail.classByTeacher", {
+                        name: sessionClass.name ?? "",
+                        teacher: sessionClass.facultyName ?? "",
+                      })}
+                    </span>
+                    <span>
+                      {t("students.detail.classRoom", { room: sessionClass.room || emptyDash })}
+                    </span>
                   </div>
                 ))}
               </div>
             ) : (
-              <p className="text-xs text-muted-foreground italic ms-1">{t("students.detail.noClassesConfigured")}</p>
+              <p className="text-xs text-muted-foreground italic ms-1">
+                {t("students.detail.noClassesConfigured")}
+              </p>
             )}
           </div>
         );

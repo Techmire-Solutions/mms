@@ -1,8 +1,9 @@
 import { Button } from "@/components/ui/button";
-import { Field } from "@/components/ui/FormField";
+import { Field } from "@/components/app/FormField";
 import { Input } from "@/components/ui/input";
+import { isImeSafeEnter } from "@/lib/utils";
 import { useTranslation } from "@/hooks/useTranslation";
-import { parseMoneyInput } from "./simpleTransactionMoney";
+import { parseMoneyInput } from "../lib/simpleTransactionMoney";
 
 interface SimpleTransactionAmountInputProps {
   prefix: string;
@@ -42,7 +43,6 @@ export function SimpleTransactionAmountInput({
       ? t("accounting.journal.dashboard.wizard.errorAmountInvalid")
       : undefined;
 
-
   return (
     <div>
       <Field
@@ -69,14 +69,18 @@ export function SimpleTransactionAmountInput({
             onBlur={onBlur}
             onChange={(event) => onChange(event.target.value)}
             onKeyDown={(event) => {
-              if (event.key === "Enter") {
+              if (event.key === "Enter" && isImeSafeEnter(event)) {
                 event.preventDefault();
                 onProceed?.();
               }
             }}
             style={{
               paddingInlineStart:
-                currencySymbol.length > 2 ? "3.5rem" : currencySymbol.length > 1 ? "2.75rem" : "2rem",
+                currencySymbol.length > 2
+                  ? "3.5rem"
+                  : currencySymbol.length > 1
+                    ? "2.75rem"
+                    : "2rem",
             }}
             className={`${currencyPaddingClass} text-lg font-bold`}
           />

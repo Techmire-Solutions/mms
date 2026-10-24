@@ -4,16 +4,17 @@ import type { Contact, StandardMessagingRecipient } from "@mms/shared";
 import {
   ModuleDrawerLoadingSkeleton,
   ModuleOverlayLoadingFallback,
-} from "@/components/ui/ModuleOverlayLoadingChrome";
-import {
-  ContactsPageConfirmDialogs,
-} from "@/tenant/features/contacts/components/ContactsPageConfirmDialogs";
+} from "@/components/app/ModuleOverlayLoadingChrome";
+import { ContactsPageConfirmDialogs } from "@/tenant/features/contacts/components/ContactsPageConfirmDialogs";
+import { ContactsCsvImportDialog } from "@/tenant/features/contacts/components/ContactsCsvImportDialog";
 import { ContactsImportDialog } from "@/tenant/features/contacts/components/ContactsImportDialog";
 import { useContactConfig } from "@/lib/contexts/ContactConfigContext";
 import React from "react";
 
 const ContactForm = lazy(() => import("@/tenant/features/contacts/components/ContactForm"));
-const DuplicateDetection = lazy(() => import("@/tenant/features/contacts/components/DuplicateDetection"));
+const DuplicateDetection = lazy(
+  () => import("@/tenant/features/contacts/components/DuplicateDetection"),
+);
 const MessageComposer = lazy(() => import("@/tenant/components/messaging/TenantMessageComposer"));
 const ContactDetail = lazy(() => import("@/tenant/features/contacts/components/ContactDetail"));
 
@@ -29,11 +30,20 @@ export interface ContactsPageOverlaysProps {
   onSave: (contact: Contact) => void | Promise<void>;
   showDuplicates: boolean;
   onCloseDuplicates: () => void;
-  onMerge: (keepId: string | number, deleteId: string | number, mergedData: Contact) => Promise<void>;
+  onMerge: (
+    keepId: string | number,
+    deleteId: string | number,
+    mergedData: Contact,
+  ) => Promise<void>;
   importOpen: boolean;
   onCloseImport: () => void;
   onImportContacts: (contacts: Contact[]) => void | Promise<void>;
-  messagingTarget: { channel: "whatsapp" | "sms" | "email"; recipients: StandardMessagingRecipient[] } | null;
+  csvImportOpen?: boolean;
+  onCloseCsvImport?: () => void;
+  messagingTarget: {
+    channel: "whatsapp" | "sms" | "email";
+    recipients: StandardMessagingRecipient[];
+  } | null;
   onCloseComposer: () => void;
   viewContact: Contact | null;
   onCloseView: () => void;
@@ -73,6 +83,8 @@ export function ContactsPageOverlays({
   importOpen,
   onCloseImport,
   onImportContacts,
+  csvImportOpen,
+  onCloseCsvImport,
   messagingTarget,
   onCloseComposer,
   viewContact,
@@ -118,11 +130,7 @@ export function ContactsPageOverlays({
             />
           ) : null}
           {showDuplicates && (
-            <DuplicateDetection
-              onClose={onCloseDuplicates}
-              onMerge={onMerge}
-              canWrite={canWrite}
-            />
+            <DuplicateDetection onClose={onCloseDuplicates} onMerge={onMerge} canWrite={canWrite} />
           )}
           {messagingTarget && (
             <MessageComposer
@@ -140,6 +148,14 @@ export function ContactsPageOverlays({
         onImport={onImportContacts}
         canWrite={canWrite}
       />
+
+      {csvImportOpen !== undefined && onCloseCsvImport ? (
+        <ContactsCsvImportDialog
+          open={csvImportOpen}
+          onClose={onCloseCsvImport}
+          canWrite={canWrite}
+        />
+      ) : null}
 
       <Suspense fallback={<ModuleDrawerLoadingSkeleton />}>
         <AnimatePresence>

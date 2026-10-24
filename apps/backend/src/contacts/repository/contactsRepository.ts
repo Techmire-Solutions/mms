@@ -8,13 +8,13 @@ import type {
   ContactsWidgetAggregateResult,
   ContactsWidgetQuery,
   FieldConfig,
-} from '@mms/shared';
+} from "@mms/shared";
 import type {
   ContactDuplicateCandidateKeys,
   ContactUniqueLookupValues,
-} from '../../db/repositories/contactRepository.js';
+} from "../../db/repositories/contactRepository.js";
 
-import type { SoftDeleteListFilter } from '../../services/genericRelationalService.js';
+import type { SoftDeleteListFilter } from "../../services/genericRelationalService.js";
 
 /** Duplicate-scan key shape — re-exported from the module interface so use cases never import the db layer. */
 export type { ContactDuplicateCandidateKeys, ContactUniqueLookupValues };

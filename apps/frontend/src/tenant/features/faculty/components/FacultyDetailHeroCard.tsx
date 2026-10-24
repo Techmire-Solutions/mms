@@ -1,8 +1,8 @@
 import React from "react";
-import { StatusBadge, type StatusBadgeConfigItem } from "@/components/ui/StatusBadge";
-import { PersonDetailHeroCard } from "@/components/ui/PersonDetailHeroCard";
+import { StatusBadge, type StatusBadgeConfigItem } from "@/components/app/StatusBadge";
+import { PersonDetailHeroCard } from "@/components/app/PersonDetailHeroCard";
 import { Badge } from "@/components/ui/badge";
-import { getGenderCardAccent } from "@/lib/genderUi";
+import { getGenderCardAccent } from "@/lib/ui/genderUi";
 import { useTranslation } from "@/hooks/useTranslation";
 import { resolveFacultyStatus, type Faculty } from "@mms/shared";
 
@@ -34,8 +34,40 @@ export function FacultyDetailHeroCard({
       {showStatus ? (
         <StatusBadge status={resolveFacultyStatus(faculty.status)} config={statusConfig} />
       ) : null}
+      {faculty.leaveDetails?.isOnLeave ? (
+        <Badge
+          as="span"
+          size="sm"
+          tone="warning"
+          className="px-1.5 py-0.5 rounded font-medium text-xs border border-warning/30"
+          title={
+            faculty.leaveDetails.substituteFacultyName
+              ? t("faculty.leave.substituteBadge", {
+                  name: faculty.leaveDetails.substituteFacultyName,
+                })
+              : undefined
+          }
+        >
+          {t("faculty.leave.onLeave")}
+        </Badge>
+      ) : null}
+      {faculty.employmentContractType ? (
+        <Badge
+          as="span"
+          size="sm"
+          tone="secondary"
+          className="px-1.5 py-0.5 rounded font-medium text-xs"
+        >
+          {t(`faculty.contract.${faculty.employmentContractType}` as "faculty.contract.salaried")}
+        </Badge>
+      ) : null}
       {faculty.employeeId ? (
-        <Badge as="span" size="sm" tone="primary" className="px-1.5 py-0.5 rounded font-bold uppercase tracking-wider">
+        <Badge
+          as="span"
+          size="sm"
+          tone="primary"
+          className="px-1.5 py-0.5 rounded font-bold uppercase tracking-wider"
+        >
           {t("faculty.employeeIdPrefix")}: {faculty.employeeId}
         </Badge>
       ) : null}

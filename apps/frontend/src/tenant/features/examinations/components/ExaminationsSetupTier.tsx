@@ -1,10 +1,10 @@
 import React, { lazy, Suspense } from "react";
 import { EXAMINATIONS_MODULE_MANIFEST } from "@mms/shared";
-import { ErrorBoundary } from "@/components/ui/ErrorBoundary";
-import { ModuleTierMotion } from "@/components/ui/ModuleTierMotion";
-import { SetupReadOnlyMessage } from "@/components/ui/SetupReadOnlyMessage";
-import { SubTabBar } from "@/components/ui/SubTabBar";
-import { ModulePanelSuspenseFallback } from "@/components/ui/ModulePanelSuspenseFallback";
+import { ErrorBoundary } from "@/components/app/ErrorBoundary";
+import { ModuleTierMotion } from "@/components/app/ModuleTierMotion";
+import { SetupReadOnlyMessage } from "@/components/app/SetupReadOnlyMessage";
+import { SubTabBar } from "@/components/app/SubTabBar";
+import { ModulePanelSuspenseFallback } from "@/components/app/ModulePanelSuspenseFallback";
 import { useTranslation } from "@/hooks/useTranslation";
 import { useModulePermissions } from "@/tenant/hooks/usePermissions";
 import { useModuleSetupSubTabs } from "@/lib/setup/useModuleSetupSubTabs";
@@ -22,7 +22,7 @@ export interface ExaminationsSetupTierProps {
   onPrefsDirtyChange?: (isDirty: boolean) => void;
 }
 
-export const ExaminationsSetupTier = (function ExaminationsSetupTier({
+export const ExaminationsSetupTier = function ExaminationsSetupTier({
   onPrefsDirtyChange,
 }: ExaminationsSetupTierProps = {}): React.JSX.Element {
   const { t } = useTranslation();
@@ -44,11 +44,7 @@ export const ExaminationsSetupTier = (function ExaminationsSetupTier({
     <ModuleTierMotion tier="setup">
       <ErrorBoundary>
         <div className="space-y-4">
-          <SubTabBar
-            tabs={tabs}
-            value={subTabs.sub}
-            onChange={subTabs.handleSubTabChange}
-          />
+          <SubTabBar tabs={tabs} value={subTabs.sub} onChange={subTabs.handleSubTabChange} />
 
           {!canEditSetup ? (
             <SetupReadOnlyMessage title={t("examinations.setup.readOnly")} />
@@ -57,15 +53,13 @@ export const ExaminationsSetupTier = (function ExaminationsSetupTier({
               {subTabs.sub === "preferences" && (
                 <ExaminationsSettings onPrefsDirtyChange={onPrefsDirtyChange} />
               )}
-              {subTabs.sub === "templates" && (
-                <ExaminationTemplateEditor />
-              )}
+              {subTabs.sub === "templates" && <ExaminationTemplateEditor />}
             </Suspense>
           )}
         </div>
       </ErrorBoundary>
     </ModuleTierMotion>
   );
-});
+};
 
 export default ExaminationsSetupTier;

@@ -2,9 +2,7 @@ import React from "react";
 import { describe, expect, it, vi } from "vitest";
 import { renderToStaticMarkup } from "react-dom/server";
 import type { Faculty } from "@mms/shared";
-import {
-  FacultyDetailHeroCard,
-} from "./FacultyDetailHeroCard";
+import { FacultyDetailHeroCard } from "./FacultyDetailHeroCard";
 
 vi.mock("@/hooks/useTranslation", () => ({
   useTranslation: () => ({
@@ -58,4 +56,3 @@ describe("FacultyDetailHeroCard Component", () => {
     expect(html).not.toContain("Active");
   });
 });
-

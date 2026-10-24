@@ -32,6 +32,6 @@ describe("FacultyCommandMetrics Component", () => {
     expect(html).toContain("12");
     expect(html).toContain("faculty.metrics.active");
     expect(html).toContain("20");
+    expect(html).toContain("faculty.leave.onLeave");
   });
 });
-

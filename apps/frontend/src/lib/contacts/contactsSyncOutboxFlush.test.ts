@@ -6,10 +6,7 @@ import {
   OUTBOX_KEY,
   writeJson,
 } from "@/lib/contacts/contactsSyncOutboxStorage";
-import {
-  enqueueContactsOutbox,
-  flushContactsOutbox,
-} from "@/lib/contacts/contactsSyncOutboxFlush";
+import { enqueueContactsOutbox, flushContactsOutbox } from "@/lib/contacts/contactsSyncOutboxFlush";
 
 function contactFixture(id: number | string): Contact {
   return { id: String(id), name: `Contact ${id}` } as Contact;
@@ -45,9 +42,26 @@ describe("flushContactsOutbox", () => {
 
   it("invokes the matching handler per entry kind and reports synced counts", async () => {
     writeJson(OUTBOX_KEY, [
-      { id: "e1", kind: "upsert", contact: contactFixture(1), createdAt: "2026-01-01T00:00:00.000Z" },
-      { id: "e2", kind: "update", contactId: "2", contact: contactFixture(2), createdAt: "2026-01-01T00:00:00.000Z" },
-      { id: "e3", kind: "delete", contactId: "3", deletionReason: "Duplicate", createdAt: "2026-01-01T00:00:00.000Z" },
+      {
+        id: "e1",
+        kind: "upsert",
+        contact: contactFixture(1),
+        createdAt: "2026-01-01T00:00:00.000Z",
+      },
+      {
+        id: "e2",
+        kind: "update",
+        contactId: "2",
+        contact: contactFixture(2),
+        createdAt: "2026-01-01T00:00:00.000Z",
+      },
+      {
+        id: "e3",
+        kind: "delete",
+        contactId: "3",
+        deletionReason: "Duplicate",
+        createdAt: "2026-01-01T00:00:00.000Z",
+      },
     ]);
     const handlers = {
       upsert: vi.fn().mockResolvedValue(undefined),
@@ -65,7 +79,12 @@ describe("flushContactsOutbox", () => {
 
   it("removes successfully replayed entries from the store", async () => {
     writeJson(OUTBOX_KEY, [
-      { id: "e1", kind: "upsert", contact: contactFixture(1), createdAt: "2026-01-01T00:00:00.000Z" },
+      {
+        id: "e1",
+        kind: "upsert",
+        contact: contactFixture(1),
+        createdAt: "2026-01-01T00:00:00.000Z",
+      },
     ]);
     const handlers = {
       upsert: vi.fn().mockResolvedValue(undefined),
@@ -80,8 +99,19 @@ describe("flushContactsOutbox", () => {
 
   it("records a conflict and increments failed/conflicts when a handler rejects", async () => {
     writeJson(OUTBOX_KEY, [
-      { id: "e1", kind: "upsert", contact: contactFixture(1), createdAt: "2026-01-01T00:00:00.000Z" },
-      { id: "e2", kind: "update", contactId: "2", contact: contactFixture(2), createdAt: "2026-01-01T00:00:00.000Z" },
+      {
+        id: "e1",
+        kind: "upsert",
+        contact: contactFixture(1),
+        createdAt: "2026-01-01T00:00:00.000Z",
+      },
+      {
+        id: "e2",
+        kind: "update",
+        contactId: "2",
+        contact: contactFixture(2),
+        createdAt: "2026-01-01T00:00:00.000Z",
+      },
     ]);
     const handlers = {
       upsert: vi.fn().mockRejectedValue(new Error("offline")),
@@ -100,7 +130,12 @@ describe("flushContactsOutbox", () => {
 
   it("skips entries already removed from the queue before flush", async () => {
     writeJson(OUTBOX_KEY, [
-      { id: "e1", kind: "upsert", contact: contactFixture(1), createdAt: "2026-01-01T00:00:00.000Z" },
+      {
+        id: "e1",
+        kind: "upsert",
+        contact: contactFixture(1),
+        createdAt: "2026-01-01T00:00:00.000Z",
+      },
       { id: "e2", kind: "delete", contactId: "2", createdAt: "2026-01-01T00:00:00.000Z" },
     ]);
     // Simulate another tab removing e1 before this flush starts.

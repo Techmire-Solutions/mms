@@ -1,8 +1,8 @@
-import { sql } from 'drizzle-orm';
-import type { NodePgDatabase } from 'drizzle-orm/node-postgres';
-import type * as schema from './schema.js';
-import { loadServerConfig } from '../config/serverConfig.js';
-import { getRequestUserId } from '../lib/tenantContext.js';
+import { sql } from "drizzle-orm";
+import type { NodePgDatabase } from "drizzle-orm/node-postgres";
+import type * as schema from "./schema.js";
+import { loadServerConfig } from "../config/serverConfig.js";
+import { getRequestUserId } from "../lib/tenantContext.js";
 
 type AppDb = NodePgDatabase<typeof schema>;
 
@@ -20,7 +20,7 @@ export async function applyTenantTransactionGuards(
   workspaceSubdomain: string | null | undefined,
   options?: { statementTimeoutMs?: number },
 ): Promise<void> {
-  const userId = getRequestUserId() ?? '';
+  const userId = getRequestUserId() ?? "";
 
   if (workspaceSubdomain && workspaceSubdomain.trim()) {
     const tenant = workspaceSubdomain.trim().toLowerCase();
@@ -34,7 +34,7 @@ export async function applyTenantTransactionGuards(
         set_config('app.rls_bypass', 'off', true),
         set_config('statement_timeout', ${String(statementTimeout)}, true),
         set_config('idle_in_transaction_session_timeout', ${String(config.pgIdleInTxTimeoutMs)}, true),
-        set_config('app.current_user_id', ${userId}, true)`
+        set_config('app.current_user_id', ${userId}, true)`,
     );
   } else {
     const config = loadServerConfig();
@@ -46,7 +46,7 @@ export async function applyTenantTransactionGuards(
         set_config('app.current_tenant_id', '', true),
         set_config('statement_timeout', ${String(statementTimeout)}, true),
         set_config('idle_in_transaction_session_timeout', ${String(config.pgIdleInTxTimeoutMs)}, true),
-        set_config('app.current_user_id', ${userId}, true)`
+        set_config('app.current_user_id', ${userId}, true)`,
     );
   }
 }

@@ -1,17 +1,9 @@
-import React from 'react';
-import { useTranslation } from '@/hooks/useTranslation';
-import type { ExportColumn } from '@/components/ui/ExportToolbar';
-import { ReportDataGridContainer } from '@/components/ui/reports/ReportDataGridContainer';
-import { MutedTableHeaderRow } from '@/components/ui/reports/FinancialDebitCreditTableChrome';
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from '@/components/ui/table';
-import type { QuestionBankSummaryRow } from '@/tenant/features/reports/controllers/useQuestionBankReportData';
+import React from "react";
+import { useTranslation } from "@/hooks/useTranslation";
+import type { ExportColumn } from "@/components/app/ExportToolbar";
+import { ReportDataGridContainer } from "@/components/reports/ReportDataGridContainer";
+import { WorkBatchTable } from "@/components/common/work/WorkBatchTable";
+import type { QuestionBankSummaryRow } from "@/tenant/features/reports/hooks/useQuestionBankReportData";
 
 export interface QuestionBankSummaryDataGridProps {
   summaryRows: QuestionBankSummaryRow[];
@@ -26,48 +18,51 @@ export function QuestionBankSummaryDataGrid({
 
   return (
     <ReportDataGridContainer
-      title={t('questionBank.analytics.categoryBreakdown')}
+      title={t("questionBank.analytics.categoryBreakdown")}
       columns={exportColumns}
       rows={summaryRows.map((row) => ({ ...row }))}
       moduleId="questionBank"
       hideExport={summaryRows.length === 0}
     >
       <div className="hidden md:block">
-        <Table>
-          <TableHeader>
-            <MutedTableHeaderRow>
-              <TableHead className="px-4 py-2.5 font-bold">{t('common.type')}</TableHead>
-              <TableHead className="px-4 py-2.5 font-bold">{t('common.label')}</TableHead>
-              <TableHead className="px-4 py-2.5 font-bold text-center">
-                {t('questionBank.questions')}
-              </TableHead>
-              <TableHead className="px-4 py-2.5 font-bold text-center">
-                {t('questionBank.report.generatedTests')}
-              </TableHead>
-            </MutedTableHeaderRow>
-          </TableHeader>
-          <TableBody className="divide-y divide-border/50">
-            {summaryRows.map((row) => (
-              <TableRow
-                key={`${row.type}-${row.name}`}
-                className="hover:bg-muted/20 transition-colors"
-              >
-                <TableCell className="px-4 py-2.5 text-xs text-muted-foreground uppercase font-bold">
-                  {row.type}
-                </TableCell>
-                <TableCell className="px-4 py-2.5 font-medium text-foreground">
-                  {row.name}
-                </TableCell>
-                <TableCell className="px-4 py-2.5 text-center font-mono font-semibold text-primary">
-                  {row.questions}
-                </TableCell>
-                <TableCell className="px-4 py-2.5 text-center font-mono text-muted-foreground">
-                  {row.tests}
-                </TableCell>
-              </TableRow>
-            ))}
-          </TableBody>
-        </Table>
+        <WorkBatchTable
+          data={summaryRows.map((row) => ({ ...row, id: `${row.type}-${row.name}` }))}
+          columns={[
+            {
+              id: "type",
+              label: t("common.type"),
+              headerClassName: "font-bold",
+              cellClassName: "text-xs text-muted-foreground uppercase font-bold",
+              render: (row) => row.type,
+            },
+            {
+              id: "name",
+              label: t("common.label"),
+              headerClassName: "font-bold",
+              cellClassName: "font-medium text-foreground",
+              render: (row) => row.name,
+            },
+            {
+              id: "questions",
+              label: t("questionBank.questions"),
+              headerClassName: "font-bold",
+              cellClassName: "font-semibold text-primary",
+              align: "center",
+              noWrap: true,
+              render: (row) => row.questions,
+            },
+            {
+              id: "tests",
+              label: t("questionBank.report.generatedTests"),
+              headerClassName: "font-bold",
+              cellClassName: "text-muted-foreground",
+              align: "center",
+              noWrap: true,
+              render: (row) => row.tests,
+            },
+          ]}
+          bordered={false}
+        />
       </div>
       <div className="divide-y divide-border/50 md:hidden" role="list">
         {summaryRows.map((row) => (
@@ -83,7 +78,7 @@ export function QuestionBankSummaryDataGrid({
             <div className="text-end">
               <span className="font-mono font-bold text-primary">{row.questions}</span>
               <span className="text-xs text-muted-foreground ms-1">
-                {t('questionBank.questions').toLowerCase()}
+                {t("questionBank.questions").toLowerCase()}
               </span>
             </div>
           </div>

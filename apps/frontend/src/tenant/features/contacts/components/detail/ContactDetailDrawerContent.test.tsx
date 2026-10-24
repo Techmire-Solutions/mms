@@ -17,7 +17,9 @@ vi.mock("@/tenant/features/contacts/components/detail/ContactDetailFiles", () =>
 }));
 
 vi.mock("@/tenant/features/contacts/components/detail/ContactDetailCustomCollections", () => ({
-  ContactDetailCustomCollections: () => <div data-testid="custom-collections">Custom Collections</div>,
+  ContactDetailCustomCollections: () => (
+    <div data-testid="custom-collections">Custom Collections</div>
+  ),
 }));
 
 vi.mock("@/lib/contexts/ContactConfigContext", () => ({

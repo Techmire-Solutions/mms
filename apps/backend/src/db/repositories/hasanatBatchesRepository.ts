@@ -1,7 +1,7 @@
-import { and, eq, inArray, sql } from 'drizzle-orm';
-import { dedupeTrimmedIds, type StockBatch } from '@mms/shared';
-import { hasanatBatches } from '../schema.js';
-import { withTenant, withTenantRead } from '../tenant-context.js';
+import { and, eq, inArray, sql } from "drizzle-orm";
+import { dedupeTrimmedIds, type StockBatch } from "@mms/shared";
+import { hasanatBatches } from "../schema.js";
+import { withTenant, withTenantRead } from "../tenant-context.js";
 
 type BatchRow = typeof hasanatBatches.$inferSelect;
 
@@ -22,7 +22,10 @@ export function batchRowToRecord(row: BatchRow): StockBatch {
   return batch;
 }
 
-export async function listBatchesByWorkspace(tenant: string, options?: { limit?: number; offset?: number }): Promise<StockBatch[]> {
+export async function listBatchesByWorkspace(
+  tenant: string,
+  options?: { limit?: number; offset?: number },
+): Promise<StockBatch[]> {
   const subdomain = tenant.trim().toLowerCase();
   const limit = Math.min(Math.max(options?.limit ?? 500, 1), 5000);
   const offset = Math.max(options?.offset ?? 0, 0);
@@ -72,10 +75,7 @@ export async function findBatchById(tenant: string, id: string): Promise<StockBa
       })
       .from(hasanatBatches)
       .where(
-        and(
-          eq(hasanatBatches.workspaceSubdomain, subdomain),
-          eq(hasanatBatches.id, trimmedId),
-        ),
+        and(eq(hasanatBatches.workspaceSubdomain, subdomain), eq(hasanatBatches.id, trimmedId)),
       )
       .limit(1);
     const row = rows[0];
@@ -105,10 +105,7 @@ export async function findBatchesByIds(tenant: string, ids: string[]): Promise<S
       })
       .from(hasanatBatches)
       .where(
-        and(
-          eq(hasanatBatches.workspaceSubdomain, subdomain),
-          inArray(hasanatBatches.id, cleanIds),
-        ),
+        and(eq(hasanatBatches.workspaceSubdomain, subdomain), inArray(hasanatBatches.id, cleanIds)),
       );
     return rows.map(batchRowToRecord);
   });
@@ -123,26 +120,26 @@ export async function saveBatch(tenant: string, record: StockBatch): Promise<voi
         id: record.id,
         workspaceSubdomain: subdomain,
         denominationId: record.denominationId,
-        denominationName: record.denominationName ?? '',
+        denominationName: record.denominationName ?? "",
         quantity: record.quantity,
         remaining: record.remaining ?? record.quantity,
         addedDate: record.addedDate,
         addedByUserId: record.addedByUserId ?? null,
         addedBy: record.addedBy ?? null,
-        note: record.note ?? '',
+        note: record.note ?? "",
         updatedAt: new Date(),
       })
       .onConflictDoUpdate({
         target: [hasanatBatches.workspaceSubdomain, hasanatBatches.id],
         set: {
           denominationId: record.denominationId,
-          denominationName: record.denominationName ?? '',
+          denominationName: record.denominationName ?? "",
           quantity: record.quantity,
           remaining: record.remaining ?? record.quantity,
           addedDate: record.addedDate,
           addedByUserId: record.addedByUserId ?? null,
           addedBy: record.addedBy ?? null,
-          note: record.note ?? '',
+          note: record.note ?? "",
           updatedAt: new Date(),
         },
       });
@@ -154,7 +151,7 @@ export async function bulkSaveBatches(tenant: string, records: StockBatch[]): Pr
   const subdomain = tenant.trim().toLowerCase();
   const uniqueMap = new Map<string, StockBatch>();
   for (const r of records) {
-    const cleanId = typeof r.id === 'string' ? r.id.trim() : String(r.id);
+    const cleanId = typeof r.id === "string" ? r.id.trim() : String(r.id);
     if (cleanId) uniqueMap.set(cleanId, { ...r, id: cleanId });
   }
   const uniqueRecords = Array.from(uniqueMap.values());
@@ -168,13 +165,13 @@ export async function bulkSaveBatches(tenant: string, records: StockBatch[]): Pr
           id: r.id,
           workspaceSubdomain: subdomain,
           denominationId: r.denominationId,
-          denominationName: r.denominationName ?? '',
+          denominationName: r.denominationName ?? "",
           quantity: r.quantity,
           remaining: r.remaining ?? r.quantity,
           addedDate: r.addedDate,
           addedByUserId: r.addedByUserId ?? null,
           addedBy: r.addedBy ?? null,
-          note: r.note ?? '',
+          note: r.note ?? "",
           updatedAt: new Date(),
         })),
       )
@@ -195,11 +192,14 @@ export async function bulkSaveBatches(tenant: string, records: StockBatch[]): Pr
   });
 }
 
-export async function replaceBatchesForWorkspace(tenant: string, records: StockBatch[]): Promise<void> {
+export async function replaceBatchesForWorkspace(
+  tenant: string,
+  records: StockBatch[],
+): Promise<void> {
   const subdomain = tenant.trim().toLowerCase();
   const uniqueMap = new Map<string, StockBatch>();
   for (const r of records) {
-    const cleanId = typeof r.id === 'string' ? r.id.trim() : String(r.id);
+    const cleanId = typeof r.id === "string" ? r.id.trim() : String(r.id);
     if (cleanId) uniqueMap.set(cleanId, { ...r, id: cleanId });
   }
   const uniqueRecords = Array.from(uniqueMap.values());
@@ -212,13 +212,13 @@ export async function replaceBatchesForWorkspace(tenant: string, records: StockB
           id: r.id,
           workspaceSubdomain: subdomain,
           denominationId: r.denominationId,
-          denominationName: r.denominationName ?? '',
+          denominationName: r.denominationName ?? "",
           quantity: r.quantity,
           remaining: r.remaining ?? r.quantity,
           addedDate: r.addedDate,
           addedByUserId: r.addedByUserId ?? null,
           addedBy: r.addedBy ?? null,
-          note: r.note ?? '',
+          note: r.note ?? "",
           updatedAt: new Date(),
         })),
       );

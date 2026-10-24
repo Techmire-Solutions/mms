@@ -1,4 +1,5 @@
 import {
+  normalizeSessionStatus,
   type Session,
   type SessionFaculty,
   type Class,
@@ -11,9 +12,8 @@ import {
   type SessionClassRefreshment,
   type SessionClassScholarship,
   type ScholarshipEligibility,
-} from '@mms/shared';
+} from "@mms/shared";
 import {
-  type sessions,
   type sessionFaculty,
   type sessionClasses,
   type sessionClassFees,
@@ -25,10 +25,11 @@ import {
   type sessionClassRefreshments,
   type scholarshipEligibilities,
   type sessionClassScholarships,
-} from '../schema.js';
-import { mapAuditTimestamps, nullsToUndefined } from './repositoryMappers.js';
+  type SessionReadRow,
+} from "../schema.js";
+import { mapAuditTimestamps, nullsToUndefined } from "./repositoryMappers.js";
 
-type SessionRow = typeof sessions.$inferSelect;
+type SessionRow = SessionReadRow;
 type SessionFacultyRow = typeof sessionFaculty.$inferSelect;
 type ClassRow = typeof sessionClasses.$inferSelect;
 type FeeRow = typeof sessionClassFees.$inferSelect;
@@ -36,7 +37,7 @@ type ScheduleRow = typeof sessionClassSchedules.$inferSelect;
 type BudgetRow = typeof sessionClassBudgets.$inferSelect;
 type DiscountRow = typeof sessionClassDiscounts.$inferSelect;
 type TimetableRow = typeof sessionClassTimetables.$inferSelect;
-type PeriodRow = typeof sessionClassTimetablePeriods.$inferSelect;
+type PeriodRow = typeof sessionClassTimetablePeriods.$inferSelect & { subject: string };
 type RefreshmentRow = typeof sessionClassRefreshments.$inferSelect;
 type ScholarshipRow = typeof sessionClassScholarships.$inferSelect;
 type EligibilityRow = typeof scholarshipEligibilities.$inferSelect;
@@ -66,7 +67,7 @@ export function sessionRowToRecord(
       familyMembers: el.familyMembers ?? 1,
       onJobMembers: el.onJobMembers ?? 0,
       schoolGoingSiblings: el.schoolGoingSiblings ?? 0,
-      residence: el.residence || 'rental',
+      residence: el.residence || "rental",
       notes: el.notes || undefined,
     });
   }
@@ -80,8 +81,9 @@ export function sessionRowToRecord(
       startTime: p.startTime,
       endTime: p.endTime,
       subject: p.subject,
-      facultyId: p.facultyId || '',
-      facultyName: p.facultyName || '',
+      subjectId: p.subjectId || "",
+      facultyId: p.facultyId || "",
+      facultyName: p.facultyName || "",
     });
     periodsByTimetable.set(p.timetableId, arr);
   }
@@ -92,7 +94,7 @@ export function sessionRowToRecord(
     arr.push({
       id: t.id,
       classId: t.sessionClassId,
-      date: t.date,
+      date: t.date ?? "",
       periods: periodsByTimetable.get(t.id) || [],
     });
     timetablesByClass.set(t.sessionClassId, arr);
@@ -117,8 +119,8 @@ export function sessionRowToRecord(
       id: s.id,
       classId: s.sessionClassId,
       scheduleType: s.scheduleType,
-      startDate: s.startDate,
-      endDate: s.endDate,
+      startDate: s.startDate ?? "",
+      endDate: s.endDate ?? "",
     });
     schedulesByClass.set(s.sessionClassId, arr);
   }
@@ -129,7 +131,7 @@ export function sessionRowToRecord(
     arr.push({
       id: b.id,
       classId: b.sessionClassId,
-      budgetType: (b.budgetType === 'income' ? 'income' : 'expense') as 'income' | 'expense',
+      budgetType: (b.budgetType === "income" ? "income" : "expense") as "income" | "expense",
       detail: b.detail,
       amount: Number(b.amount) || 0,
     });
@@ -144,10 +146,10 @@ export function sessionRowToRecord(
       classId: d.sessionClassId,
       discountType: d.discountType,
       percentage: Number(d.percentage) || 0,
-      startDate: d.startDate || '',
-      endDate: d.endDate || '',
+      startDate: d.startDate || "",
+      endDate: d.endDate || "",
       eligibilityCriteria: d.eligibilityCriteria as Record<string, unknown>,
-      status: (d.status || 'active') as 'active' | 'expired' | 'inactive',
+      status: (d.status || "active") as "active" | "expired" | "inactive",
     });
     discountsByClass.set(d.sessionClassId, arr);
   }
@@ -158,7 +160,7 @@ export function sessionRowToRecord(
     arr.push({
       id: r.id,
       classId: r.sessionClassId,
-      date: r.date,
+      date: r.date ?? "",
       item: r.item,
       quantity: r.quantity,
       pricePerUnit: Number(r.pricePerUnit) || 0,
@@ -174,9 +176,11 @@ export function sessionRowToRecord(
       id: sc.id,
       classId: sc.sessionClassId,
       scholarshipEligibilityId: sc.scholarshipEligibilityId || undefined,
-      eligibility: sc.scholarshipEligibilityId ? eligibilityMap.get(sc.scholarshipEligibilityId) : undefined,
+      eligibility: sc.scholarshipEligibilityId
+        ? eligibilityMap.get(sc.scholarshipEligibilityId)
+        : undefined,
       percentage: Number(sc.percentage) || 0,
-      expiryDate: sc.expiryDate || '',
+      expiryDate: sc.expiryDate || "",
     });
     scholarshipsByClass.set(sc.sessionClassId, arr);
   }
@@ -185,9 +189,9 @@ export function sessionRowToRecord(
     id: f.id,
     sessionId: f.sessionId,
     facultyId: f.facultyId,
-    facultyName: f.facultyName || '',
-    role: f.role || 'coordinator',
-    status: (f.status === 'inactive' ? 'inactive' : 'active') as 'active' | 'inactive',
+    facultyName: f.facultyName || "",
+    role: f.role || "coordinator",
+    status: (f.status === "inactive" ? "inactive" : "active") as "active" | "inactive",
     createdAt: f.createdAt
       ? f.createdAt instanceof Date
         ? f.createdAt.toISOString()
@@ -201,17 +205,19 @@ export function sessionRowToRecord(
       id: raw.id,
       sessionId: raw.sessionId,
       name: raw.name,
-      gender: (raw.gender === 'male' || raw.gender === 'female' ? raw.gender : 'mixed') as 'male' | 'female' | 'mixed',
-      ageCalculationDate: raw.ageCalculationDate || '',
+      gender: (raw.gender === "male" || raw.gender === "female" ? raw.gender : "mixed") as
+        "male" | "female" | "mixed",
+      ageCalculationDate: raw.ageCalculationDate || "",
       minAge: raw.ageMin ?? 4,
       maxAge: raw.ageMax ?? 25,
       maxStudents: raw.capacity ?? 30,
       enrolled: raw.enrolled ?? 0,
-      enrollmentDeadline: raw.enrollmentDeadline || '',
-      status: (raw.status === 'inactive' ? 'inactive' : 'active') as 'active' | 'inactive',
-      facultyId: raw.facultyId || '',
-      facultyName: raw.facultyName || '',
-      room: raw.room || '',
+      enrollmentDeadline: raw.enrollmentDeadline || "",
+      status: (raw.status === "inactive" ? "inactive" : "active") as "active" | "inactive",
+      facultyId: raw.facultyId || "",
+      facultyName: raw.facultyName || "",
+      room: raw.room || "",
+      programId: raw.programId || "",
       fees: feesByClass.get(raw.id) || [],
       schedules: schedulesByClass.get(raw.id) || [],
       budgets: budgetsByClass.get(raw.id) || [],
@@ -226,13 +232,17 @@ export function sessionRowToRecord(
   return {
     id: rowNorm.id,
     name: rowNorm.name,
-    status: (rowNorm.status === 'inactive' ? 'inactive' : 'active') as 'active' | 'inactive',
-    type: rowNorm.type || 'academic',
-    startDate: rowNorm.startDate || '',
-    endDate: rowNorm.endDate || '',
+    status: normalizeSessionStatus(rowNorm.status),
+    type: rowNorm.type || "academic",
+    categoryId: rowNorm.categoryId || "",
+    programId: rowNorm.programId || "",
+    startDate: rowNorm.startDate || "",
+    endDate: rowNorm.endDate || "",
     baseFee: Number(rowNorm.baseFee) || 0,
-    currency: rowNorm.currency || 'PKR',
+    currency: rowNorm.currency || "PKR",
     description: rowNorm.description || undefined,
+    minAttendancePct: row.minAttendancePct ?? null,
+    requiresExamPass: row.requiresExamPass ?? false,
     faculty: mappedFaculty,
     classes: mappedClasses,
     ...mapAuditTimestamps(row),

@@ -5,7 +5,7 @@
 
 import { CheckSquare } from "lucide-react";
 import { TASKS_MODULE_MANIFEST } from "@mms/shared";
-import { ModuleUniversalBulkActionBar } from "@/components/ui/ModuleUniversalBulkActionBar";
+import { ModuleUniversalBulkActionBar } from "@/components/app/ModuleUniversalBulkActionBar";
 
 export interface TasksBulkActionBarProps {
   selectedCount: number;

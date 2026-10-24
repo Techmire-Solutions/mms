@@ -23,4 +23,3 @@ export function applyFacultyWorkDrillDown(filter: FacultyWorkDrillDown): void {
 export function consumeFacultyWorkDrillDown(): FacultyWorkDrillDown | null {
   return consume();
 }
-

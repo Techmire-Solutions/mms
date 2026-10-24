@@ -1,7 +1,7 @@
 import type { ReactNode } from "react";
 import { getQuestionCategoryIds, QUESTION_SOURCE_FIELD_IDS } from "@mms/shared";
 import { CategoryColorChip } from "@/tenant/features/question-bank/components/CategoryColorChip";
-import { StatusBadge, type StatusBadgeConfigItem } from "@/components/ui/StatusBadge";
+import { StatusBadge, type StatusBadgeConfigItem } from "@/components/app/StatusBadge";
 import { Badge } from "@/components/ui/badge";
 import type { useQuestionBankConfig } from "@/tenant/features/question-bank/hooks/useQuestionBankConfig";
 import type { QuestionBankQuestion as Question } from "@mms/shared";
@@ -33,7 +33,12 @@ export function renderQuestionMetaChip(
       const category = getCategory(categoryId);
       if (!category) return null;
       return (
-        <CategoryColorChip key={categoryId} name={category.name} color={category.color} icon={category.icon} />
+        <CategoryColorChip
+          key={categoryId}
+          name={category.name}
+          color={category.color}
+          icon={category.icon}
+        />
       );
     });
   }
@@ -50,7 +55,14 @@ export function renderQuestionMetaChip(
     );
   }
   if (fieldId === "difficulty") {
-    return <StatusBadge key="difficulty" status={question.difficulty} config={difficultyConfig} size="sm" />;
+    return (
+      <StatusBadge
+        key="difficulty"
+        status={question.difficulty}
+        config={difficultyConfig}
+        size="sm"
+      />
+    );
   }
   if (fieldId === "type") {
     return <StatusBadge key="type" status={question.type} config={typeConfig} size="sm" />;

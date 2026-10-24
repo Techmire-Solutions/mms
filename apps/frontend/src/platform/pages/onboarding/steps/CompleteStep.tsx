@@ -7,9 +7,7 @@ import React from "react";
 import type { Dispatch, SetStateAction } from "react";
 import { ClipboardCheck } from "lucide-react";
 import { SYSTEM_MODULES } from "@mms/shared";
-import { SectionCard } from "@/components/ui/SectionCard";
-import { Field } from "@/components/ui/FormField";
-import { Input } from "@/components/ui/input";
+import { Field, Input, SectionCard } from "@shared/ui";
 import { useTranslation } from "@/hooks/useTranslation";
 import type { OnboardingData } from "@/platform/pages/onboarding/onboardingWizardTypes";
 
@@ -63,9 +61,7 @@ export default function CompleteStep({ data, onChange }: CompleteStepProps): Rea
           autoComplete="current-password"
           placeholder={t("platform.confirmPlatformPasswordHint")}
           value={data.currentPassword}
-          onChange={(e) =>
-            onChange((prev) => ({ ...prev, currentPassword: e.target.value }))
-          }
+          onChange={(e) => onChange((prev) => ({ ...prev, currentPassword: e.target.value }))}
           className="h-11 text-sm"
         />
       </Field>

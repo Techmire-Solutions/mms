@@ -21,10 +21,7 @@ const mockContact: Contact = {
 describe("ContactDetailAddressesSection Component", () => {
   it("renders address rows correctly", () => {
     const html = renderToStaticMarkup(
-      <ContactDetailAddressesSection
-        contact={mockContact}
-        addressLabels={["home", "work"]}
-      />,
+      <ContactDetailAddressesSection contact={mockContact} addressLabels={["home", "work"]} />,
     );
 
     expect(html).toContain("123 Street, Karachi, Sindh, Pakistan");

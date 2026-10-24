@@ -4,7 +4,7 @@ description: Builds or modifies the MMS React frontend — apiClient, routing, p
 license: Proprietary
 metadata:
   owner: mms-platform
-  last-verified: 2026-10-04
+  last-verified: 2026-10-16
 ---
 
 # MMS Frontend Workflow
@@ -57,4 +57,4 @@ pnpm test:e2e tests/responsive-shell.spec.ts
 
 ## Related skills
 
-`mms-query-factories`, `mms-module-page`, `mms-ui-ux-design`, `mms-testing-e2e`, `mms-data-sync`.
+`mms-shared-ui`, `mms-query-factories`, `mms-module-page`, `mms-ui-ux-design`, `mms-testing-e2e`, `mms-data-sync`.

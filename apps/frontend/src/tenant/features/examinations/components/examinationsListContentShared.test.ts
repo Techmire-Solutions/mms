@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { getExamMeta } from "./examinationsListContentShared";
+import { getExamMeta } from "../lib/examinationsListContentShared";
 import type { Exam } from "@/lib/data/examinationData";
 import type { Enrollment } from "@/lib/data/enrollmentData";
 
@@ -30,28 +30,24 @@ const mockEnrollments: Enrollment[] = [
     studentId: "std-1",
     classId: "cls-1",
     status: "confirmed",
-  } as any,
+  } as unknown as never,
   {
     id: "enr-2",
     studentId: "std-2",
     classId: "cls-2",
     status: "confirmed",
-  } as any,
+  } as unknown as never,
   {
     id: "enr-3",
     studentId: "std-3",
     classId: "cls-1",
     status: "cancelled",
-  } as any,
+  } as unknown as never,
 ];
 
 describe("examinationsListContentShared Utilities", () => {
   it("computes assigned classes and active student count correctly", () => {
-    const { assignedClasses, studentCount } = getExamMeta(
-      mockExam,
-      mockClasses,
-      mockEnrollments,
-    );
+    const { assignedClasses, studentCount } = getExamMeta(mockExam, mockClasses, mockEnrollments);
 
     expect(assignedClasses).toHaveLength(2);
     expect(assignedClasses.map((c) => c.id)).toEqual(["cls-1", "cls-2"]);

@@ -8,7 +8,7 @@
  * the composition-root instance (`contactUseCases`) — the single production
  * entry to the use-case layer.
  */
-import { contactUseCases } from '../contacts/use-cases/contactUseCases.js';
+import { contactUseCases } from "../contacts/use-cases/contactUseCases.js";
 
 export const {
   loadContactsPage,
@@ -29,7 +29,5 @@ export {
   ContactUniqueFieldError,
   ContactPermissionError,
   prepareContactRecord,
-} from '../contacts/use-cases/contactValidationUseCases.js';
-export type {
-  ContactRuntimeDefaults,
-} from '../contacts/use-cases/contactUseCases.js';
+} from "../contacts/use-cases/contactValidationUseCases.js";
+export type { ContactRuntimeDefaults } from "../contacts/use-cases/contactUseCases.js";

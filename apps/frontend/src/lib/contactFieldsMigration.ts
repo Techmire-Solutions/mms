@@ -48,7 +48,9 @@ export function migrateContactFieldConfig(config: unknown): FieldConfig {
   };
   const defaults = getContactFieldSystemDefaults();
 
-  const normalizeTabs = <T extends { id?: string; key?: string }>(tabs: T[] | undefined): T[] | undefined => {
+  const normalizeTabs = <T extends { id?: string; key?: string }>(
+    tabs: T[] | undefined,
+  ): T[] | undefined => {
     if (!Array.isArray(tabs)) return undefined;
     return tabs.map((tab) => {
       if (tab && typeof tab === "object" && !tab.key && tab.id) {
@@ -59,12 +61,16 @@ export function migrateContactFieldConfig(config: unknown): FieldConfig {
   };
 
   const normalizedPageTabs = refreshModuleTierTabLabels(
-    refreshModuleTierTabKeys(normalizeTabs(workingConfig.pageTabs) ?? defaults.pageTabs ?? DEFAULT_PAGE_TABS),
+    refreshModuleTierTabKeys(
+      normalizeTabs(workingConfig.pageTabs) ?? defaults.pageTabs ?? DEFAULT_PAGE_TABS,
+    ),
   );
   workingConfig.pageTabs = normalizedPageTabs;
 
-  const normalizedFormTabs = (normalizeTabs(workingConfig.formTabs) ?? defaults.formTabs) || DEFAULT_FORM_TABS;
-  const isCorruptedEnabledTabs = !workingConfig.enabledTabs || workingConfig.enabledTabs.length <= 1;
+  const normalizedFormTabs =
+    (normalizeTabs(workingConfig.formTabs) ?? defaults.formTabs) || DEFAULT_FORM_TABS;
+  const isCorruptedEnabledTabs =
+    !workingConfig.enabledTabs || workingConfig.enabledTabs.length <= 1;
 
   const repairedFormTabs = normalizedFormTabs.map((tab) => {
     if (isCorruptedEnabledTabs && tab && typeof tab === "object") {
@@ -77,7 +83,8 @@ export function migrateContactFieldConfig(config: unknown): FieldConfig {
   });
 
   workingConfig.formTabs = repairedFormTabs;
-  const normalizedDetailTabs = normalizeTabs(workingConfig.detailTabs) ?? defaults.detailTabs ?? DEFAULT_DETAIL_TABS;
+  const normalizedDetailTabs =
+    normalizeTabs(workingConfig.detailTabs) ?? defaults.detailTabs ?? DEFAULT_DETAIL_TABS;
   workingConfig.detailTabs = normalizedDetailTabs
     .filter((tab) => tab.key !== "network")
     .map((tab, index) => {
@@ -97,7 +104,8 @@ export function migrateContactFieldConfig(config: unknown): FieldConfig {
     }
   }
   workingConfig.detailTabs.sort((a, b) => a.order - b.order);
-  workingConfig.settingsSubTabs = normalizeTabs(workingConfig.settingsSubTabs) ?? defaults.settingsSubTabs;
+  workingConfig.settingsSubTabs =
+    normalizeTabs(workingConfig.settingsSubTabs) ?? defaults.settingsSubTabs;
   const rawCols = workingConfig.columnRegistry ?? defaults.columnRegistry ?? [];
   const existingColKeys = new Set(rawCols.map((c) => c.key));
   const missingCols = (defaults.columnRegistry ?? []).filter((c) => !existingColKeys.has(c.key));
@@ -122,7 +130,9 @@ export function migrateContactFieldConfig(config: unknown): FieldConfig {
       .filter((t) => t && typeof t === "object" && t.enabled !== false)
       .map((t) => t.key)
       .filter(Boolean);
-    workingConfig.enabledTabs = Array.from(new Set([...(workingConfig.enabledTabs || []), ...activeFormTabKeys]));
+    workingConfig.enabledTabs = Array.from(
+      new Set([...(workingConfig.enabledTabs || []), ...activeFormTabKeys]),
+    );
   }
 
   delete (workingConfig as Record<string, unknown>).uiStrings;

@@ -4,7 +4,7 @@
 
 ## Test plan
 
-- [ ] `pnpm ci:local` (hooks also run this on commit)
+- [ ] `pnpm ci:local` (the pre-push hook also runs this)
 - [ ] `pnpm ci:local:full` and/or `--with-db` / `--with-e2e` if those buckets changed
 - [ ] Manual checks for UI/API paths touched by this PR
 

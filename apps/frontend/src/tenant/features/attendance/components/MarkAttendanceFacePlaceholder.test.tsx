@@ -11,9 +11,7 @@ vi.mock("@/hooks/useTranslation", () => ({
 
 describe("MarkAttendanceFacePlaceholder Component", () => {
   it("renders facial recognition placeholder with dismiss button", () => {
-    const html = renderToStaticMarkup(
-      <MarkAttendanceFacePlaceholder onClose={vi.fn()} />,
-    );
+    const html = renderToStaticMarkup(<MarkAttendanceFacePlaceholder onClose={vi.fn()} />);
 
     expect(html).toContain("attendance.mark.facialRecognition");
     expect(html).toContain("attendance.mark.comingSoon");

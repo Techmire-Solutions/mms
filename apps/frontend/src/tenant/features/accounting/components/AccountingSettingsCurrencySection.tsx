@@ -1,13 +1,13 @@
 import type React from "react";
 import { type AccountingSettings } from "@mms/shared";
 import { DollarSign } from "lucide-react";
-import { FormSelect } from "@/components/ui/FormSelect";
+import { FormSelect } from "@/components/app/FormSelect";
 import { useTranslation } from "@/hooks/useTranslation";
-import { SectionCard } from "@/components/ui/SectionCard";
-import { ModuleSetupSaveFooter } from "@/components/ui/ModuleSetupSaveFooter";
-import { Field } from "@/components/ui/FormPrimitives";
+import { SectionCard } from "@/components/app/SectionCard";
+import { ModuleSetupSaveFooter } from "@/components/app/ModuleSetupSaveFooter";
+import { Field } from "@/components/app/FormPrimitives";
 import { SETUP_SECTION_CARD_CLASS } from "@/components/ui/formStyles";
-import { DATE_FORMATS } from "./accountingSettingsPreferencesShared";
+import { DATE_FORMATS } from "../lib/accountingSettingsPreferencesShared";
 
 type CurrencyOption = {
   code: string;
@@ -57,7 +57,9 @@ export function AccountingSettingsCurrencySection({
             name="currency"
             value={settingsDraft.currency}
             onChange={(currencyValue) => {
-              const selectedCurrency = currencies.find((currencyOption) => currencyOption.code === currencyValue);
+              const selectedCurrency = currencies.find(
+                (currencyOption) => currencyOption.code === currencyValue,
+              );
               upd("currency", currencyValue);
               if (selectedCurrency) upd("currencySymbol", selectedCurrency.symbol);
             }}
@@ -68,7 +70,10 @@ export function AccountingSettingsCurrencySection({
           />
           {activeCurrency && (
             <p className="text-xs text-muted-foreground mt-1 m-0">
-              {t("accounting.settings.fields.symbol")}: <span className="font-bold">{activeCurrency.symbol}</span> · {t("accounting.settings.fields.code")}: <span className="font-mono font-bold">{activeCurrency.code}</span>
+              {t("accounting.settings.fields.symbol")}:{" "}
+              <span className="font-bold">{activeCurrency.symbol}</span> ·{" "}
+              {t("accounting.settings.fields.code")}:{" "}
+              <span className="font-mono font-bold">{activeCurrency.code}</span>
             </p>
           )}
         </Field>
@@ -83,12 +88,17 @@ export function AccountingSettingsCurrencySection({
           />
         </Field>
 
-        <Field id="accounting-decimal-separator" label={t("accounting.settings.fields.numberFormat")}>
+        <Field
+          id="accounting-decimal-separator"
+          label={t("accounting.settings.fields.numberFormat")}
+        >
           <FormSelect
             id="accounting-decimal-separator"
             name="decimalSeparator"
             value={settingsDraft.decimalSeparator}
-            onChange={(separatorValue) => upd("decimalSeparator", separatorValue as AccountingSettings["decimalSeparator"])}
+            onChange={(separatorValue) =>
+              upd("decimalSeparator", separatorValue as AccountingSettings["decimalSeparator"])
+            }
             options={decimalSeparators}
           />
         </Field>

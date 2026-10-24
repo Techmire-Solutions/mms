@@ -1,29 +1,31 @@
-import React, { lazy, Suspense } from 'react';
-import { MessageSquareOff } from 'lucide-react';
-import { ErrorBoundary } from '@/components/ui/ErrorBoundary';
-import { ErrorState } from '@/components/ui/ErrorState';
-import { Skeleton } from '@/components/ui/skeleton';
-import { useTranslation } from '@/hooks/useTranslation';
-import { useModulePermissions } from '@/tenant/hooks/usePermissions';
-import { MESSAGING_MODULE_MANIFEST } from '@mms/shared';
-import { WORK_SURFACE } from '@/components/ui/formStyles';
-import { MessagingReportHeaderBar } from '@/components/ui/reports/MessagingReportHeaderBar';
-import { MessagingReportSummaryTable } from '@/components/ui/reports/MessagingReportSummaryTable';
-import { MessagingReportChannelStats } from '@/tenant/features/reports/components/MessagingReportChannelStats';
-import { useMessagingReportData } from '@/tenant/features/reports/controllers/useMessagingReportData';
-import PinnedWidgets from '@/tenant/features/reports/components/PinnedWidgets';
+import React, { lazy, Suspense } from "react";
+import { MessageSquareOff } from "lucide-react";
+import { ErrorBoundary } from "@/components/app/ErrorBoundary";
+import { ErrorState } from "@/components/app/ErrorState";
+import { Skeleton } from "@/components/ui/skeleton";
+import { useTranslation } from "@/hooks/useTranslation";
+import { useModulePermissions } from "@/tenant/hooks/usePermissions";
+import { MESSAGING_MODULE_MANIFEST } from "@mms/shared";
+import { WORK_SURFACE } from "@/components/ui/formStyles";
+import { MessagingReportHeaderBar } from "@/components/reports/MessagingReportHeaderBar";
+import { MessagingReportSummaryTable } from "@/components/reports/MessagingReportSummaryTable";
+import { MessagingReportChannelStats } from "@/tenant/features/reports/components/MessagingReportChannelStats";
+import { useMessagingReportData } from "@/tenant/features/reports/hooks/useMessagingReportData";
+import PinnedWidgets from "@/tenant/features/reports/components/PinnedWidgets";
 
 const MessagingReportsVolumeChart = lazy(() =>
-  import('@/tenant/components/reports/MessagingReportsVolumeChart').then((m) => ({
+  import("@/tenant/components/reports/MessagingReportsVolumeChart").then((m) => ({
     default: m.MessagingReportsVolumeChart,
-  }))
+  })),
 );
 
 export interface MessagingReportProps {
   canWrite?: boolean;
 }
 
-export default function MessagingReport({ canWrite: canWriteProp }: MessagingReportProps = {}): React.JSX.Element {
+export default function MessagingReport({
+  canWrite: canWriteProp,
+}: MessagingReportProps = {}): React.JSX.Element {
   const { canWrite: canWritePermission } = useModulePermissions(MESSAGING_MODULE_MANIFEST);
   const canWrite = canWriteProp ?? canWritePermission;
   const { t } = useTranslation();
@@ -49,8 +51,8 @@ export default function MessagingReport({ canWrite: canWriteProp }: MessagingRep
   if (metricsQuery.isError) {
     return (
       <ErrorState
-        title={t('messaging.loadFailed')}
-        description={t('messaging.loadFailedHint')}
+        title={t("messaging.loadFailed")}
+        description={t("messaging.loadFailedHint")}
         onRetry={() => void metricsQuery.refetch()}
       />
     );
@@ -79,13 +81,22 @@ export default function MessagingReport({ canWrite: canWriteProp }: MessagingRep
               aria-busy="true"
             />
           ) : total === 0 ? (
-            <div className={`${WORK_SURFACE} p-8 flex flex-col items-center justify-center text-center h-full min-h-64 rounded-xl space-y-2`}>
+            <div
+              className={`${WORK_SURFACE} p-8 flex flex-col items-center justify-center text-center h-full min-h-64 rounded-xl space-y-2`}
+            >
               <MessageSquareOff className="h-8 w-8 text-muted-foreground" />
-              <p className="text-sm font-semibold text-foreground">{t('messaging.noLogs')}</p>
-              <p className="text-xs text-muted-foreground">{t('messaging.selectRecipientsDesc')}</p>
+              <p className="text-sm font-semibold text-foreground">{t("messaging.noLogs")}</p>
+              <p className="text-xs text-muted-foreground">{t("messaging.selectRecipientsDesc")}</p>
             </div>
           ) : (
-            <Suspense fallback={<Skeleton className="h-chart-lg w-full rounded-xl border border-border" aria-hidden />}>
+            <Suspense
+              fallback={
+                <Skeleton
+                  className="h-chart-lg w-full rounded-xl border border-border"
+                  aria-hidden
+                />
+              }
+            >
               <MessagingReportsVolumeChart chartData={chartData} />
             </Suspense>
           )}
@@ -102,11 +113,11 @@ export default function MessagingReport({ canWrite: canWriteProp }: MessagingRep
       {total > 0 && (
         <div className="mt-4">
           <MessagingReportSummaryTable
-            title={t('messaging.channel')}
+            title={t("messaging.channel")}
             columns={channelExportColumns}
             rows={channelSummaryRows}
-            detailsHeader={t('common.details')}
-            growthRateHeader={t('reports.kpi.growthRate')}
+            detailsHeader={t("common.details")}
+            growthRateHeader={t("reports.kpi.growthRate")}
           />
         </div>
       )}
@@ -117,4 +128,3 @@ export default function MessagingReport({ canWrite: canWriteProp }: MessagingRep
     </ErrorBoundary>
   );
 }
-

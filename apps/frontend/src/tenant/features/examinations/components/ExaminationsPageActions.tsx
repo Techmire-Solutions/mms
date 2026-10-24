@@ -1,5 +1,5 @@
 import { Download, PenTool, Plus, Upload } from "lucide-react";
-import { ActionButton } from "@/components/ui/ActionButton";
+import { Button } from "@/components/ui/button";
 import { useTranslation } from "@/hooks/useTranslation";
 
 export interface ExaminationsPageActionsProps {
@@ -30,7 +30,7 @@ export function ExaminationsPageActions({
   return (
     <div className="flex items-center gap-2">
       {canExport && onExport ? (
-        <ActionButton
+        <Button
           variant="ghost"
           icon={Download}
           onClick={onExport}
@@ -38,19 +38,19 @@ export function ExaminationsPageActions({
           disabled={isExporting}
         >
           {t("common.export")}
-        </ActionButton>
+        </Button>
       ) : null}
       {onImport ? (
-        <ActionButton variant="secondary" icon={Upload} onClick={onImport}>
+        <Button variant="outline" icon={Upload} onClick={onImport}>
           {t("common.import")}
-        </ActionButton>
+        </Button>
       ) : null}
-      <ActionButton variant="ghost" icon={PenTool} onClick={onEnterMarks}>
+      <Button variant="ghost" icon={PenTool} onClick={onEnterMarks}>
         {t("examinations.marks")}
-      </ActionButton>
-      <ActionButton variant="primary" icon={Plus} onClick={onCreateExam}>
+      </Button>
+      <Button variant="primary" icon={Plus} onClick={onCreateExam}>
         {t("examinations.newExam")}
-      </ActionButton>
+      </Button>
     </div>
   );
 }

@@ -1,8 +1,9 @@
 import React, { useState } from "react";
+import type { NotificationChannel } from "@mms/shared";
 import PlatformAuthLayout from "@/platform/components/PlatformAuthLayout";
 import EntryPageHead, { formatEntryTitle } from "@/components/entry/EntryPageHead";
 import { useSignInCredentialsForm } from "@/components/entry/useSignInCredentialsForm";
-import { createEmptyOtp, isOtpComplete } from "@/components/ui/OtpInput";
+import { createEmptyOtp, isOtpComplete } from "@shared/ui";
 import { useResendCountdown } from "@/hooks/useResendCountdown";
 import { usePlatformAuth, type PlatformLoginOutcome } from "@/platform/lib/PlatformAuthContext";
 import { getPlatformErrorMessage } from "@/platform/lib/platformAuthErrors";
@@ -17,15 +18,12 @@ type SignInStep = "credentials" | "twoFactor";
 export default function PlatformSignIn(): React.JSX.Element {
   const { t } = useTranslation();
   const reducedMotion = useReducedMotion();
-  const {
-    platformLogin,
-    platformVerify2FA,
-    platformResend2FA,
-    isPlatformLoginSubmitting,
-  } = usePlatformAuth();
+  const { platformLogin, platformVerify2FA, platformResend2FA, isPlatformLoginSubmitting } =
+    usePlatformAuth();
 
   const [step, setStep] = useState<SignInStep>("credentials");
   const [challengeId, setChallengeId] = useState("");
+  const [challengeChannel, setChallengeChannel] = useState<NotificationChannel | undefined>();
   const [code, setCode] = useState(createEmptyOtp);
   const [codeError, setCodeError] = useState<string | undefined>();
   const [resendCycle, setResendCycle] = useState(0);
@@ -60,6 +58,7 @@ export default function PlatformSignIn(): React.JSX.Element {
       const outcome: PlatformLoginOutcome = await platformLogin(email.trim(), password);
       if (outcome.requires2FA) {
         setChallengeId(outcome.challengeId);
+        setChallengeChannel(outcome.channel);
         setCode(createEmptyOtp());
         setCodeError(undefined);
         setError(null);
@@ -101,15 +100,24 @@ export default function PlatformSignIn(): React.JSX.Element {
   const backToCredentials = (): void => {
     setStep("credentials");
     setChallengeId("");
+    setChallengeChannel(undefined);
     setCode(createEmptyOtp());
     setCodeError(undefined);
     setError(null);
   };
 
-  const subtitle =
-    step === "twoFactor"
-      ? t("platform.twoFactorSubtitle")
-      : t("platform.signInSubtitle");
+  const subtitle = (() => {
+    if (step !== "twoFactor") return t("platform.signInSubtitle");
+    switch (challengeChannel) {
+      case "sms":
+        return t("auth.twoFactorSubtitleSms");
+      case "both":
+        return t("auth.twoFactorSubtitleBoth");
+      case "email":
+      default:
+        return t("platform.twoFactorSubtitle");
+    }
+  })();
 
   return (
     <>

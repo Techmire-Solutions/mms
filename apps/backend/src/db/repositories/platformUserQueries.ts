@@ -1,4 +1,4 @@
-import { asc, count, eq, inArray } from 'drizzle-orm';
+import { asc, count, eq, inArray } from "drizzle-orm";
 import {
   type StoredPlatformUser,
   type PlatformRole,
@@ -7,15 +7,18 @@ import {
   PLATFORM_ADMIN_PERMISSION_KEYS,
   normalizePlatformAdminPermissions,
   FULL_PLATFORM_ADMIN_PERMISSIONS,
-} from '@mms/shared';
-import { activeDb } from '../dbConnection.js';
-import { platformUsers, platformUserPermissions } from '../schema.js';
+} from "@mms/shared";
+import { activeDb } from "../dbConnection.js";
+import { platformUsers, platformUserPermissions } from "../schema.js";
 
 export const PERMISSION_KEYS: PlatformAdminPermissionKey[] = [...PLATFORM_ADMIN_PERMISSION_KEYS];
 
 export async function loadPermissions(userId: string): Promise<PlatformAdminPermissions> {
   const rows = await activeDb()
-    .select({ permissionKey: platformUserPermissions.permissionKey, isGranted: platformUserPermissions.isGranted })
+    .select({
+      permissionKey: platformUserPermissions.permissionKey,
+      isGranted: platformUserPermissions.isGranted,
+    })
     .from(platformUserPermissions)
     .where(eq(platformUserPermissions.platformUserId, userId));
 
@@ -58,8 +61,7 @@ export function rowToStored(
   permissions: PlatformAdminPermissions,
 ): StoredPlatformUser {
   const role = row.role as PlatformRole;
-  const effectivePerms =
-    role === 'super_user' ? FULL_PLATFORM_ADMIN_PERMISSIONS : permissions;
+  const effectivePerms = role === "super_user" ? FULL_PLATFORM_ADMIN_PERMISSIONS : permissions;
 
   return {
     id: row.id,
@@ -104,13 +106,15 @@ export async function listPlatformUsers(): Promise<StoredPlatformUser[]> {
 
   return rows.map((row) =>
     rowToStored(
-      { ...row, passwordHash: '' },
+      { ...row, passwordHash: "" },
       permsMap.get(row.id) ?? normalizePlatformAdminPermissions({}),
     ),
   );
 }
 
-export async function findPlatformUserRowByEmail(email: string): Promise<StoredPlatformUser | null> {
+export async function findPlatformUserRowByEmail(
+  email: string,
+): Promise<StoredPlatformUser | null> {
   const normalized = email.trim().toLowerCase();
   const rows = await activeDb()
     .select({
@@ -159,7 +163,9 @@ export async function findPlatformUserRowById(id: string): Promise<StoredPlatfor
   return rowToStored(row, perms);
 }
 
-export async function findPlatformUserRowByRole(role: PlatformRole): Promise<StoredPlatformUser | null> {
+export async function findPlatformUserRowByRole(
+  role: PlatformRole,
+): Promise<StoredPlatformUser | null> {
   const rows = await activeDb()
     .select({
       id: platformUsers.id,

@@ -42,7 +42,7 @@ describe("FinancePageHeaderActions", () => {
           onCreateInvoice={vi.fn()}
           onImport={onImport}
           onExport={onExport}
-        />
+        />,
       );
     });
 

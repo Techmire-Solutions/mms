@@ -1,12 +1,16 @@
 import React from "react";
 import { Tag } from "lucide-react";
 import { MESSAGING_MODULE_MANIFEST, type MessageTemplate } from "@mms/shared";
-import { EmptyState } from "@/components/ui/EmptyState";
-import { StatusBadge, type StatusBadgeConfigItem } from "@/components/ui/StatusBadge";
-import { ChannelBadge } from "@/components/ui/ChannelBadge";
-import { WORK_SURFACE } from "@/components/ui/formStyles";
-import { DirectoryCard } from "@/components/ui/DirectoryCard";
-import { DataTable, type DataTableColumn, type DataTableFilter } from "@/components/common/data-table";
+import { EmptyState } from "@/components/app/EmptyState";
+import { StatusBadge, type StatusBadgeConfigItem } from "@/components/app/StatusBadge";
+import { ChannelBadge } from "@/components/app/ChannelBadge";
+import { DirectoryCard } from "@/components/app/DirectoryCard";
+import { SectionHeader } from "@shared/ui";
+import {
+  DataTable,
+  type DataTableColumn,
+  type DataTableFilter,
+} from "@/components/common/data-table";
 import { useTranslation } from "@/hooks/useTranslation";
 import { MessagingTemplateActionButtons } from "./MessagingTemplateActionButtons";
 
@@ -22,7 +26,7 @@ export interface MessagingTemplateListProps {
   onDeleteRequest: (id: string) => void;
 }
 
-export const MessagingTemplateList = (function MessagingTemplateList({
+export const MessagingTemplateList = function MessagingTemplateList({
   templates,
   canWrite,
   categoryOptions,
@@ -66,31 +70,40 @@ export const MessagingTemplateList = (function MessagingTemplateList({
     {
       id: "category",
       label: t("messaging.category"),
-      searchValue: (template) => categoryBadgeConfig[categoryOf(template)]?.label ?? categoryOf(template),
-      render: (template) => <StatusBadge status={categoryOf(template)} config={categoryBadgeConfig} size="sm" />,
+      searchValue: (template) =>
+        categoryBadgeConfig[categoryOf(template)]?.label ?? categoryOf(template),
+      render: (template) => (
+        <StatusBadge status={categoryOf(template)} config={categoryBadgeConfig} size="sm" />
+      ),
     },
     {
       id: "body",
       label: t("messaging.templateCopy"),
       render: (template) => (
-        <span className="block truncate text-muted-foreground" title={template.body}>{template.body}</span>
+        <span className="block truncate text-muted-foreground" title={template.body}>
+          {template.body}
+        </span>
       ),
     },
   ];
 
   const filters: DataTableFilter<MessageTemplate>[] = [
-    { id: "category", label: t("messaging.category"), options: categoryOptions, getValue: categoryOf },
+    {
+      id: "category",
+      label: t("messaging.category"),
+      options: categoryOptions,
+      getValue: categoryOf,
+    },
   ];
 
   return (
-    <div className={`${WORK_SURFACE} space-y-4 p-4 md:col-span-2`}>
-      <div className="space-y-1">
-        <h4 className="flex items-center gap-1.5 text-sm font-bold text-foreground">
-          <Tag className="h-4 w-4 text-muted-foreground" aria-hidden />
-          {t("messaging.configuredPresets")}
-        </h4>
-        <p className="text-xs text-muted-foreground">{t("messaging.configuredPresetsDesc")}</p>
-      </div>
+    <div className="md:col-span-2">
+      <SectionHeader
+        align="start"
+        icon={<Tag className="w-3.5 h-3.5 text-primary" aria-hidden="true" />}
+        title={t("messaging.configuredPresets")}
+        subtitle={t("messaging.configuredPresetsDesc")}
+      />
 
       <DataTable
         tableId={`${MESSAGING_MODULE_MANIFEST.moduleId}_templates`}
@@ -109,7 +122,12 @@ export const MessagingTemplateList = (function MessagingTemplateList({
             headerSlot={
               <div className="flex min-w-0 items-start justify-between gap-3">
                 <div className="min-w-0">
-                  <h4 className="truncate text-sm font-semibold text-foreground">{templateLabel(template)}</h4>
+                  <h4
+                    title={templateLabel(template)}
+                    className="truncate text-sm font-semibold text-foreground"
+                  >
+                    {templateLabel(template)}
+                  </h4>
                   {template.channel && template.channel !== "all" && (
                     <div className="mt-1">
                       <ChannelBadge channel={template.channel} className="text-xs" />
@@ -122,7 +140,9 @@ export const MessagingTemplateList = (function MessagingTemplateList({
             actions={renderActions(template)}
           >
             <div className="rounded-lg bg-muted/40 p-2.5">
-              <p className="text-xs font-semibold text-muted-foreground">{t("messaging.templateCopy")}</p>
+              <p className="text-xs font-semibold text-muted-foreground">
+                {t("messaging.templateCopy")}
+              </p>
               <p className="text-xs text-foreground mt-0.5 whitespace-pre-wrap">{template.body}</p>
             </div>
           </DirectoryCard>
@@ -131,6 +151,6 @@ export const MessagingTemplateList = (function MessagingTemplateList({
       />
     </div>
   );
-});
+};
 
 export default MessagingTemplateList;

@@ -1,8 +1,8 @@
 import { type Account } from "@mms/shared";
 import { BookOpen } from "lucide-react";
-import { FormSelect } from "@/components/ui/FormSelect";
-import { Field } from "@/components/ui/FormPrimitives";
-import { SectionCard } from "@/components/ui/SectionCard";
+import { FormSelect } from "@/components/app/FormSelect";
+import { Field } from "@/components/app/FormPrimitives";
+import { SectionCard } from "@/components/app/SectionCard";
 import { Button } from "@/components/ui/button";
 import { SETUP_SECTION_CARD_CLASS } from "@/components/ui/formStyles";
 import { useTranslation } from "@/hooks/useTranslation";
@@ -71,10 +71,20 @@ export function AccountingSettingsPostingSection({
   };
 
   return (
-    <SectionCard title={t("accounting.settings.secPosting")} icon={BookOpen} className={SETUP_SECTION_CARD_CLASS}>
-      <p className="m-0 mb-3 text-xs text-muted-foreground">{t("accounting.settings.posting.hint")}</p>
+    <SectionCard
+      title={t("accounting.settings.secPosting")}
+      icon={BookOpen}
+      className={SETUP_SECTION_CARD_CLASS}
+    >
+      <p className="m-0 mb-3 text-xs text-muted-foreground">
+        {t("accounting.settings.posting.hint")}
+      </p>
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-        <Field id="accounting-ar-account" label={t("accounting.settings.fields.arAccount")} hint={t("accounting.settings.fields.arAccountHint")}>
+        <Field
+          id="accounting-ar-account"
+          label={t("accounting.settings.fields.arAccount")}
+          hint={t("accounting.settings.fields.arAccountHint")}
+        >
           <FormSelect
             id="accounting-ar-account"
             name="arAccountId"
@@ -84,7 +94,11 @@ export function AccountingSettingsPostingSection({
             options={accountOptions(accounts, "Asset")}
           />
         </Field>
-        <Field id="accounting-cash-account" label={t("accounting.settings.fields.cashAccount")} hint={t("accounting.settings.fields.cashAccountHint")}>
+        <Field
+          id="accounting-cash-account"
+          label={t("accounting.settings.fields.cashAccount")}
+          hint={t("accounting.settings.fields.cashAccountHint")}
+        >
           <FormSelect
             id="accounting-cash-account"
             name="cashAccountId"
@@ -94,7 +108,11 @@ export function AccountingSettingsPostingSection({
             options={accountOptions(accounts, "Asset")}
           />
         </Field>
-        <Field id="accounting-income-account" label={t("accounting.settings.fields.incomeAccount")} hint={t("accounting.settings.fields.incomeAccountHint")}>
+        <Field
+          id="accounting-income-account"
+          label={t("accounting.settings.fields.incomeAccount")}
+          hint={t("accounting.settings.fields.incomeAccountHint")}
+        >
           <FormSelect
             id="accounting-income-account"
             name="incomeAccountId"
@@ -104,7 +122,11 @@ export function AccountingSettingsPostingSection({
             options={accountOptions(accounts, "Revenue")}
           />
         </Field>
-        <Field id="accounting-discount-account" label={t("accounting.settings.fields.discountAccount")} hint={t("accounting.settings.fields.discountAccountHint")}>
+        <Field
+          id="accounting-discount-account"
+          label={t("accounting.settings.fields.discountAccount")}
+          hint={t("accounting.settings.fields.discountAccountHint")}
+        >
           <FormSelect
             id="accounting-discount-account"
             name="discountAccountId"
@@ -115,7 +137,14 @@ export function AccountingSettingsPostingSection({
           />
         </Field>
       </div>
-      <Button type="button" className="mt-4 min-h-11" onClick={async () => { await handleSave(); }} disabled={save.isPending}>
+      <Button
+        type="button"
+        className="mt-4 min-h-11"
+        onClick={async () => {
+          await handleSave();
+        }}
+        disabled={save.isPending}
+      >
         {t("common.save")}
       </Button>
     </SectionCard>

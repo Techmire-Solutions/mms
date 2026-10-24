@@ -1,10 +1,8 @@
 import React, { useState } from "react";
 import { Link } from "react-router-dom";
 import { Key } from "lucide-react";
-import { SectionCard } from "@/components/ui/SectionCard";
-import { FormSubmitActions } from "@/components/ui/FormSubmitActions";
-import PasswordInput from "@/components/ui/PasswordInput";
-import { FieldErrorMessage } from "@/components/ui/FormField";
+import { FieldErrorMessage, FormSubmitActions, PasswordInput, SectionCard } from "@shared/ui";
+import { PasswordStrengthMeter } from "@/components/app/PasswordStrengthMeter";
 import { useTranslation } from "@/hooks/useTranslation";
 import { useUpdatePlatformPassword } from "@/platform/hooks/usePlatformProfile";
 import { getPlatformErrorMessage } from "@/platform/lib/platformAuthErrors";
@@ -12,7 +10,6 @@ import {
   getPlatformPasswordError,
   getPlatformPasswordMatchError,
 } from "@/platform/lib/platformValidation";
-import { PasswordStrengthMeter } from "@/components/ui/PasswordStrengthMeter";
 import { notify } from "@/lib/notify";
 import { ROUTES } from "@/lib/config/routes";
 
@@ -52,13 +49,11 @@ export function PlatformProfilePasswordForm(): React.JSX.Element {
   };
 
   return (
-    <SectionCard
-      title={t("platform.profileChangePassword")}
-      icon={Key}
-      accentColor="success"
-    >
+    <SectionCard title={t("platform.profileChangePassword")} icon={Key} accentColor="success">
       <form onSubmit={(event) => void handleChangePassword(event)} className="space-y-4 text-start">
-        {passwordError ? <FieldErrorMessage id="platform-password-error" message={passwordError} /> : null}
+        {passwordError ? (
+          <FieldErrorMessage id="platform-password-error" message={passwordError} />
+        ) : null}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div className="md:col-span-2">
             <PasswordInput
@@ -110,7 +105,10 @@ export function PlatformProfilePasswordForm(): React.JSX.Element {
             pending={updatePassword.isPending}
             disabled={!currentPassword || !newPassword || !confirmPassword}
           />
-          <Link to={ROUTES.platformForgotPassword} className="inline-flex min-h-11 items-center text-xs text-primary font-bold hover:underline">
+          <Link
+            to={ROUTES.platformForgotPassword}
+            className="inline-flex min-h-11 items-center text-xs text-primary font-bold hover:underline"
+          >
             {t("platform.profileForgotLink")}
           </Link>
         </div>

@@ -4,14 +4,17 @@ import {
   type FieldConfig,
   type FieldDefinition,
   type RelationshipPair,
-} from '@mms/shared';
-import { loadContactFieldConfig, saveContactFieldConfig } from '../contacts/use-cases/contactConfigService.js';
-import { loadContactLookupKind, replaceContactLookupKind } from '../contacts/use-cases/contactLookupsService.js';
+} from "@mms/shared";
+import {
+  loadContactFieldConfig,
+  saveContactFieldConfig,
+} from "../contacts/use-cases/contactConfigService.js";
+import {
+  loadContactLookupKind,
+  replaceContactLookupKind,
+} from "../contacts/use-cases/contactLookupsService.js";
 
-function relationshipLabelListsMatch(
-  left: readonly string[],
-  right: readonly string[],
-): boolean {
+function relationshipLabelListsMatch(left: readonly string[], right: readonly string[]): boolean {
   if (left.length !== right.length) return false;
   const rightKeys = new Set(right.map((label) => label.trim().toLowerCase()));
   if (rightKeys.size !== left.length) return false;
@@ -24,19 +27,16 @@ function relationshipLabelSequencesMatch(
 ): boolean {
   if (left.length !== right.length) return false;
   return left.every(
-    (label, index) => label.trim().toLowerCase() === (right[index] ?? '').trim().toLowerCase(),
+    (label, index) => label.trim().toLowerCase() === (right[index] ?? "").trim().toLowerCase(),
   );
 }
 
-function syncRelationshipOptionsInFieldConfig(
-  config: FieldConfig,
-  options: string[],
-): FieldConfig {
+function syncRelationshipOptionsInFieldConfig(config: FieldConfig, options: string[]): FieldConfig {
   const tabFields = config.fields?.relationship;
   if (!Array.isArray(tabFields)) return config;
   let changed = false;
   const nextFields: FieldDefinition[] = tabFields.map((field) => {
-    if (field.key !== 'relationship') return field;
+    if (field.key !== "relationship") return field;
     const current = Array.isArray(field.options) ? field.options : [];
     if (relationshipLabelListsMatch(current, options)) return field;
     changed = true;
@@ -61,12 +61,12 @@ export async function syncRelationshipMirrorsFromPairs(
     deriveRelationshipOptionsFromPairs(pairs ?? []),
     optionOrder,
   );
-  const currentLookups = await loadContactLookupKind('relationships');
+  const currentLookups = await loadContactLookupKind("relationships");
   const lookupLabels = Array.isArray(currentLookups)
-    ? currentLookups.filter((entry): entry is string => typeof entry === 'string')
+    ? currentLookups.filter((entry): entry is string => typeof entry === "string")
     : [];
   if (!relationshipLabelSequencesMatch(lookupLabels, labels)) {
-    await replaceContactLookupKind('relationships', labels);
+    await replaceContactLookupKind("relationships", labels);
   }
 
   const fieldConfig = await loadContactFieldConfig();

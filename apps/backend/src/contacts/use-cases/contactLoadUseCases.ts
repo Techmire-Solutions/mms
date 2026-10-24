@@ -3,12 +3,11 @@ import {
   type ContactsDuplicatePairsPageResult,
   type ContactsListQuery,
   type ContactsListPageResult,
-} from '@mms/shared';
-import { getRequestTenant } from '../../lib/tenantContext.js';
-import { loadDuplicatePairsPage } from './contactDuplicateScanUseCases.js';
-import type { ContactsRepository } from '../repository/contactsRepository.js';
-import { contactsRepository } from '../repository/contactsRepositoryAdapter.js';
-
+} from "@mms/shared";
+import { getRequestTenant } from "../../lib/tenantContext.js";
+import { loadDuplicatePairsPage } from "./contactDuplicateScanUseCases.js";
+import type { ContactsRepository } from "../repository/contactsRepository.js";
+import { contactsRepository } from "../repository/contactsRepositoryAdapter.js";
 
 /** Active (or deleted-only) contact count via SQL — avoids loading every row. */
 export async function countContacts(
@@ -17,7 +16,7 @@ export async function countContacts(
 ): Promise<number> {
   const tenant = getRequestTenant();
   if (!tenant) return 0;
-  const deleted = options?.includeDeleted ? 'deleted' : 'active';
+  const deleted = options?.includeDeleted ? "deleted" : "active";
   return repo.countByWorkspace(tenant, { deleted });
 }
 
@@ -27,7 +26,13 @@ export async function loadContactsPage(
 ): Promise<ContactsListPageResult> {
   const tenant = getRequestTenant();
   if (!tenant) {
-    return { contacts: [], total: 0, page: query.page ?? 1, limit: query.limit ?? 50, hasMore: false };
+    return {
+      contacts: [],
+      total: 0,
+      page: query.page ?? 1,
+      limit: query.limit ?? 50,
+      hasMore: false,
+    };
   }
   return repo.listPage(tenant, query);
 }
@@ -60,11 +65,12 @@ export async function loadContactsSummaryByIdsForTenant(
   repo: ContactsRepository = contactsRepository,
 ): Promise<Contact[]> {
   if (ids.length === 0) return [];
-  const fetchFn = repo.findSummaryByIds ? repo.findSummaryByIds.bind(repo) : repo.findByIds.bind(repo);
+  const fetchFn = repo.findSummaryByIds
+    ? repo.findSummaryByIds.bind(repo)
+    : repo.findByIds.bind(repo);
   const matched = await fetchFn(tenant, ids);
   return matched.filter((contact) => !contact.deletedAt);
 }
-
 
 export async function loadContactsPageForTenant(
   tenant: string,
@@ -131,11 +137,10 @@ export {
   type ContactRuntimeDefaults,
   resolveDefaultPhoneCountryCode,
   loadContactRuntimeDefaults,
-} from './contactRuntimeDefaults.js';
+} from "./contactRuntimeDefaults.js";
 
 export {
   loadContactsCommandMetrics,
   loadContactsReportAnalytics,
   loadContactsWidgetAggregates,
-} from './contactAnalyticsUseCases.js';
-
+} from "./contactAnalyticsUseCases.js";

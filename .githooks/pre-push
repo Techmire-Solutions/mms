@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # Git hook: guard pushes before they reach GitHub.
 # - Blocks direct pushes to `main` (use a PR instead).
-# - Does NOT re-run pnpm ci:local — pre-commit already ran it.
+# - Runs pnpm ci:local (affected typecheck, changed-file lint, changed-related tests).
 #   Run `pnpm ci:local:full` manually before opening a PR.
 set -euo pipefail
 
@@ -20,6 +20,9 @@ while IFS=' ' read -r _local_ref _local_sha remote_ref _remote_sha; do
   fi
 done
 
-echo "✅ Pre-push branch check passed — pushing."
+echo "🔍 Pre-push: running local CI (pnpm ci:local)..."
+pnpm ci:local < /dev/null
+
+echo "✅ Pre-push checks passed — pushing."
 echo "   Reminder: run \`pnpm ci:local:full\` (and --with-db / --with-e2e if needed) before opening a PR."
 echo "   Prefer squash-merge with a Conventional Commits PR title."

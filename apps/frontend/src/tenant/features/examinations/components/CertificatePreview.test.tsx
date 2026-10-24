@@ -21,8 +21,16 @@ vi.mock("@/lib/contexts/BrandingPaletteContext", () => ({
   }),
 }));
 
-vi.mock("@/components/ui/Modal", () => ({
-  Modal: ({ children, title, headerActions }: any) => (
+vi.mock("@/components/app/Modal", () => ({
+  Modal: ({
+    children,
+    title,
+    headerActions,
+  }: {
+    children?: React.ReactNode;
+    title?: React.ReactNode;
+    headerActions?: React.ReactNode;
+  }) => (
     <div data-testid="modal">
       <h2>{title}</h2>
       {headerActions}
@@ -70,11 +78,7 @@ const mockResult: StudentResultItem = {
 describe("CertificatePreview Component", () => {
   it("renders certificate layout with student details", () => {
     const html = renderToStaticMarkup(
-      <CertificatePreview
-        result={mockResult}
-        exam={mockExam}
-        onClose={vi.fn()}
-      />,
+      <CertificatePreview result={mockResult} exam={mockExam} onClose={vi.fn()} />,
     );
 
     expect(html).toContain("Zaid Khan");

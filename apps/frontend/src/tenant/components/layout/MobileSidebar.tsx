@@ -7,7 +7,7 @@ import { useAuth } from "@/lib/contexts/AuthContext";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { useTranslation } from "@/hooks/useTranslation";
-import { LOGO_IMAGE } from "@/lib/semanticTone";
+import { LOGO_IMAGE } from "@/lib/ui/semanticTone";
 import { ROUTES } from "@/lib/config/routes";
 import { useOverlayBehavior } from "@/hooks/useOverlayBehavior";
 import { MobileSidebarNavItems } from "@/tenant/components/layout/MobileSidebarNavItems";
@@ -22,7 +22,10 @@ export interface MobileSidebarProps {
   onClose: () => void;
 }
 
-export default function MobileSidebar({ open, onClose }: MobileSidebarProps): React.JSX.Element | null {
+export default function MobileSidebar({
+  open,
+  onClose,
+}: MobileSidebarProps): React.JSX.Element | null {
   const branding = useBranding();
   const { user, logout } = useAuth();
   const { t } = useTranslation();
@@ -90,6 +93,9 @@ export default function MobileSidebar({ open, onClose }: MobileSidebarProps): Re
                 className={`h-8 w-8 shrink-0 rounded-lg ${LOGO_IMAGE} border-sidebar-border`}
                 width={32}
                 height={32}
+                loading="eager"
+                decoding="async"
+                fetchPriority="high"
                 onError={() => setLogoError(true)}
               />
             ) : (
@@ -108,10 +114,10 @@ export default function MobileSidebar({ open, onClose }: MobileSidebarProps): Re
             variant="ghost"
             size="icon"
             onClick={onClose}
-            className="min-h-11 min-w-11 h-11 w-11 p-0 text-sidebar-muted-foreground hover:text-sidebar-foreground hover:bg-sidebar-accent/50 shrink-0"
+            className="min-h-11 min-w-11 h-11 w-11 p-0 text-sidebar-muted-foreground hover:text-sidebar-foreground hover:bg-sidebar-accent/50 shrink-0 cursor-pointer"
           >
             <span className="sr-only">{t("nav.closeSidebar")}</span>
-            <X className="w-5 h-5" />
+            <X className="w-5 h-5" aria-hidden="true" />
           </Button>
         </div>
 
@@ -132,7 +138,9 @@ export default function MobileSidebar({ open, onClose }: MobileSidebarProps): Re
               </AvatarFallback>
             </Avatar>
             <div className="min-w-0">
-              <p className="truncate text-sm font-semibold text-sidebar-foreground">{user?.name ?? "User"}</p>
+              <p className="truncate text-sm font-semibold text-sidebar-foreground">
+                {user?.name ?? "User"}
+              </p>
               <p className="truncate text-xs text-sidebar-muted-foreground">{user?.email ?? ""}</p>
             </div>
           </div>
@@ -140,13 +148,13 @@ export default function MobileSidebar({ open, onClose }: MobileSidebarProps): Re
             type="button"
             variant="outline"
             size="sm"
-            className="w-full border-sidebar-border bg-sidebar-accent/30 text-sidebar-foreground hover:bg-sidebar-accent/50"
+            className="w-full min-h-11 border-sidebar-border bg-sidebar-accent/30 text-sidebar-foreground hover:bg-sidebar-accent/50 gap-2 cursor-pointer"
             onClick={() => {
               onClose();
               logout(true);
             }}
           >
-            <LogOut className="h-4 w-4" />
+            <LogOut className="h-4 w-4 shrink-0" aria-hidden="true" />
             {t("auth.signOut")}
           </Button>
         </div>

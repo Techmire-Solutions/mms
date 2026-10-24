@@ -13,11 +13,7 @@ const mockContext = {
 };
 
 function TestWrapper({ children }: { children: React.ReactNode }) {
-  return (
-    <TranslationContext.Provider value={mockContext}>
-      {children}
-    </TranslationContext.Provider>
-  );
+  return <TranslationContext.Provider value={mockContext}>{children}</TranslationContext.Provider>;
 }
 
 describe("WorkBatchTable", () => {
@@ -151,5 +147,37 @@ describe("WorkBatchTable", () => {
     expect(html).toContain("100%");
     expect(html).toContain("text-end");
   });
-});
 
+  it("renders a custom tableFooter OUTSIDE the <table> element (valid DOM nesting)", () => {
+    const html = renderToStaticMarkup(
+      <TestWrapper>
+        <WorkBatchTable
+          data={sampleData}
+          columns={columns}
+          tableFooter={<div id="fleet-footer-bar">footer bar</div>}
+        />
+      </TestWrapper>,
+    );
+
+    // Regression: a non-<tr> child inside <table> is invalid HTML and triggers React's
+    // "In HTML, <div> cannot be a child of <table>" warning.
+    const tableMarkup = /<table[\s\S]*?<\/table>/.exec(html)?.[0] ?? "";
+    expect(tableMarkup).not.toContain("fleet-footer-bar");
+    expect(html).toContain("fleet-footer-bar");
+  });
+
+  it("keeps the structured footerRow INSIDE the <table> element", () => {
+    const html = renderToStaticMarkup(
+      <TestWrapper>
+        <WorkBatchTable
+          data={sampleData}
+          columns={columns}
+          footerRow={{ cells: [{ content: "TOTAL-IN-TABLE" }] }}
+        />
+      </TestWrapper>,
+    );
+
+    const tableMarkup = /<table[\s\S]*?<\/table>/.exec(html)?.[0] ?? "";
+    expect(tableMarkup).toContain("TOTAL-IN-TABLE");
+  });
+});

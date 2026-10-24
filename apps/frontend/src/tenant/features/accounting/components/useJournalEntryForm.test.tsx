@@ -2,7 +2,7 @@ import { act } from "react";
 import { createRoot, type Root } from "react-dom/client";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import type { JournalEntry } from "@/lib/data/accountingData";
-import { useJournalEntryForm } from "./useJournalEntryForm";
+import { useJournalEntryForm } from "../hooks/useJournalEntryForm";
 
 declare global {
   var IS_REACT_ACT_ENVIRONMENT: boolean | undefined;
@@ -25,8 +25,24 @@ vi.mock("@/lib/contexts/AuthContext", () => ({
 }));
 
 const accounts = [
-  { id: "a-cash", code: "1000", name: "Cash", type: "Asset" as const, subtype: "Current Asset", description: "", isActive: true },
-  { id: "a-income", code: "4000", name: "Income", type: "Revenue" as const, subtype: "Operating Revenue", description: "", isActive: true },
+  {
+    id: "a-cash",
+    code: "1000",
+    name: "Cash",
+    type: "Asset" as const,
+    subtype: "Current Asset",
+    description: "",
+    isActive: true,
+  },
+  {
+    id: "a-income",
+    code: "4000",
+    name: "Income",
+    type: "Revenue" as const,
+    subtype: "Operating Revenue",
+    description: "",
+    isActive: true,
+  },
 ];
 
 type FormController = ReturnType<typeof useJournalEntryForm>;
@@ -84,7 +100,14 @@ describe("useJournalEntryForm validation", () => {
   it("saves an unbalanced entry as a draft", async () => {
     const onSave = vi.fn();
     await act(async () => {
-      root.render(<TestHarness onSave={onSave} onController={(c) => { controller = c; }} />);
+      root.render(
+        <TestHarness
+          onSave={onSave}
+          onController={(c) => {
+            controller = c;
+          }}
+        />,
+      );
     });
     await fillEntry("100", "60");
 
@@ -105,7 +128,14 @@ describe("useJournalEntryForm validation", () => {
   it("refuses to post an unbalanced entry", async () => {
     const onSave = vi.fn();
     await act(async () => {
-      root.render(<TestHarness onSave={onSave} onController={(c) => { controller = c; }} />);
+      root.render(
+        <TestHarness
+          onSave={onSave}
+          onController={(c) => {
+            controller = c;
+          }}
+        />,
+      );
     });
     await fillEntry("100", "60");
 
@@ -120,7 +150,14 @@ describe("useJournalEntryForm validation", () => {
   it("still requires two accounts before saving a draft", async () => {
     const onSave = vi.fn();
     await act(async () => {
-      root.render(<TestHarness onSave={onSave} onController={(c) => { controller = c; }} />);
+      root.render(
+        <TestHarness
+          onSave={onSave}
+          onController={(c) => {
+            controller = c;
+          }}
+        />,
+      );
     });
     await act(async () => {
       controller!.setForm((current) => ({
@@ -144,7 +181,14 @@ describe("useJournalEntryForm validation", () => {
   it("posts a balanced entry", async () => {
     const onSave = vi.fn();
     await act(async () => {
-      root.render(<TestHarness onSave={onSave} onController={(c) => { controller = c; }} />);
+      root.render(
+        <TestHarness
+          onSave={onSave}
+          onController={(c) => {
+            controller = c;
+          }}
+        />,
+      );
     });
     await fillEntry("0.1", "0.1");
 
@@ -158,7 +202,14 @@ describe("useJournalEntryForm validation", () => {
 
   it("reports totals as exact money", async () => {
     await act(async () => {
-      root.render(<TestHarness onSave={vi.fn()} onController={(c) => { controller = c; }} />);
+      root.render(
+        <TestHarness
+          onSave={vi.fn()}
+          onController={(c) => {
+            controller = c;
+          }}
+        />,
+      );
     });
     await act(async () => {
       controller!.setForm((current) => ({
@@ -166,7 +217,7 @@ describe("useJournalEntryForm validation", () => {
         lines: [
           { ...current.lines[0]!, account_id: "a-cash", debit: "0.1", credit: "" },
           { ...current.lines[1]!, account_id: "a-income", debit: "0.2", credit: "" },
-          { ...(current.lines[1]!), id: "l-3", account_id: "a-income", debit: "", credit: "0.3" },
+          { ...current.lines[1]!, id: "l-3", account_id: "a-income", debit: "", credit: "0.3" },
         ],
       }));
     });
@@ -178,7 +229,14 @@ describe("useJournalEntryForm validation", () => {
   it("preserves custom reference number and custom tags", async () => {
     const onSave = vi.fn();
     await act(async () => {
-      root.render(<TestHarness onSave={onSave} onController={(c) => { controller = c; }} />);
+      root.render(
+        <TestHarness
+          onSave={onSave}
+          onController={(c) => {
+            controller = c;
+          }}
+        />,
+      );
     });
     await fillEntry("50", "50");
 
@@ -203,7 +261,14 @@ describe("useJournalEntryForm validation", () => {
   it("handles comma-separated amounts in journal entry lines without NaN", async () => {
     const onSave = vi.fn();
     await act(async () => {
-      root.render(<TestHarness onSave={onSave} onController={(c) => { controller = c; }} />);
+      root.render(
+        <TestHarness
+          onSave={onSave}
+          onController={(c) => {
+            controller = c;
+          }}
+        />,
+      );
     });
     await fillEntry("1,500", "1,500");
 

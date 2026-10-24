@@ -30,10 +30,7 @@ const mockStatusConfig = {
 describe("StudentDetailHeroCard Component", () => {
   it("renders student name, GR badge, and status badge via StudentDetailHeroCard", () => {
     const html = renderToStaticMarkup(
-      <StudentDetailHeroCard
-        student={mockStudent}
-        statusBadgeConfig={mockStatusConfig}
-      />,
+      <StudentDetailHeroCard student={mockStudent} statusBadgeConfig={mockStatusConfig} />,
     );
 
     expect(html).toContain("Ali Raza");
@@ -48,10 +45,7 @@ describe("StudentDetailHeroCard Component", () => {
     };
 
     const html = renderToStaticMarkup(
-      <StudentDetailHeroCard
-        student={studentWithoutGr}
-        statusBadgeConfig={mockStatusConfig}
-      />,
+      <StudentDetailHeroCard student={studentWithoutGr} statusBadgeConfig={mockStatusConfig} />,
     );
 
     expect(html).toContain("Ali Raza");

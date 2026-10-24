@@ -37,7 +37,11 @@ export function TenantForgotPasswordEmailStep({
             clearError();
           }}
         />
-        <AuthSubmitButton busy={loading} busyLabel={t("auth.sendingResetLink")} label={t("auth.sendCode")} />
+        <AuthSubmitButton
+          busy={loading}
+          busyLabel={t("auth.sendingResetLink")}
+          label={t("auth.sendCode")}
+        />
         <AuthBackLink to={ROUTES.login} label={t("auth.backToSignIn")} />
       </fieldset>
     </AuthStepForm>

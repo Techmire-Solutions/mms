@@ -10,16 +10,16 @@ import {
   type FacultyExportColumn,
   type FacultyListQuery,
   type FacultySettings,
-} from '@mms/shared';
+} from "@mms/shared";
 import {
   createModuleExportService,
   type ModuleExportQueryInput,
   type ModuleExportOptions,
   type ModuleExportResult,
-} from '../lib/createModuleExportService.js';
-import { normalizeIncludeDeletedFlag } from '../lib/csvExportStreamFactory.js';
-import { loadFacultyFieldConfig } from './facultyConfigService.js';
-import { loadFacultyByIds, loadFacultyPage } from './facultyService.js';
+} from "../lib/createModuleExportService.js";
+import { normalizeIncludeDeletedFlag } from "../lib/csvExportStreamFactory.js";
+import { loadFacultyFieldConfig } from "../faculty/use-cases/facultyConfigService.js";
+import { loadFacultyByIds, loadFacultyPage } from "./facultyService.js";
 
 export type FacultyExportQueryInput = ModuleExportQueryInput<FacultyListQuery>;
 export type FacultyExportOptions = ModuleExportOptions<FacultyExportColumn>;
@@ -80,14 +80,13 @@ const facultyCsv = createModuleExportService<
         const chunkExportRows = buildFacultyExportRows(chunk, columns, context?.settings);
         const dataRows = chunkExportRows.slice(1);
         if (dataRows.length > 0) {
-          yield '\n' + buildCsvContent(dataRows);
+          yield "\n" + buildCsvContent(dataRows);
         }
       }
     }
     return gen();
   },
-  extractCell: (faculty, columnId) =>
-    createFacultyCellExtractor()(faculty as never, columnId),
+  extractCell: (faculty, columnId) => createFacultyCellExtractor()(faculty as never, columnId),
 });
 
 export const generateFacultyCsvStreamChunks = facultyCsv.generateStreamChunks;

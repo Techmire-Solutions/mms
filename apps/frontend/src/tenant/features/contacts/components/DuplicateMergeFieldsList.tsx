@@ -4,11 +4,8 @@ import type { Contact } from "@mms/shared";
 import type { TranslationFunction } from "@/lib/contexts/TranslationContext";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import {
-  getDuplicateFieldLabel,
-  getDuplicateFieldValue,
-} from "@/lib/contacts/contactI18n";
-import type { getDuplicateThemeColors } from "@/tenant/features/contacts/components/duplicateDetectionTypes";
+import { getDuplicateFieldLabel, getDuplicateFieldValue } from "@/lib/contacts/contactI18n";
+import type { getDuplicateThemeColors } from "@/tenant/features/contacts/lib/duplicateDetectionTypes";
 
 export interface DuplicateMergeFieldsListProps {
   fields: string[];
@@ -65,7 +62,11 @@ export function DuplicateMergeFieldsList({
                 {mergedValue || emptyDash}
               </span>
               {fromOther && (
-                <Badge pill variant="outline" className={`px-1.5 font-medium ${colors.highlightBg}`}>
+                <Badge
+                  pill
+                  variant="outline"
+                  className={`px-1.5 font-medium ${colors.highlightBg}`}
+                >
                   {t("contacts.duplicates.fromDuplicate")}
                 </Badge>
               )}
@@ -79,34 +80,28 @@ export function DuplicateMergeFieldsList({
                 <Button
                   type="button"
                   variant={selectedIndex === 0 ? "default" : "secondary"}
+                  size="sm"
                   aria-pressed={selectedIndex === 0}
-                  onClick={() =>
-                    setFieldOverrides((prev) => ({ ...prev, [field]: 0 }))
-                  }
-                  className={`min-h-11 rounded-lg px-3 py-2 text-xs gap-1.5 shadow-none ${
-                    selectedIndex === 0
-                      ? "bg-primary text-primary-foreground font-semibold shadow-xs"
-                      : "bg-muted/60 text-muted-foreground hover:bg-muted hover:text-foreground"
-                  }`}
+                  onClick={() => setFieldOverrides((prev) => ({ ...prev, [field]: 0 }))}
+                  className="min-h-11 rounded-lg px-3 py-2 text-xs gap-1.5 shadow-none"
                 >
                   {selectedIndex === 0 && <Check className="w-3.5 h-3.5" />}
-                  <span>{t("contacts.duplicates.fieldFromA")}: {keepValue}</span>
+                  <span>
+                    {t("contacts.duplicates.fieldFromA")}: {keepValue}
+                  </span>
                 </Button>
                 <Button
                   type="button"
                   variant={selectedIndex === 1 ? "default" : "secondary"}
+                  size="sm"
                   aria-pressed={selectedIndex === 1}
-                  onClick={() =>
-                    setFieldOverrides((prev) => ({ ...prev, [field]: 1 }))
-                  }
-                  className={`min-h-11 rounded-lg px-3 py-2 text-xs gap-1.5 shadow-none ${
-                    selectedIndex === 1
-                      ? "bg-primary text-primary-foreground font-semibold shadow-xs"
-                      : "bg-muted/60 text-muted-foreground hover:bg-muted hover:text-foreground"
-                  }`}
+                  onClick={() => setFieldOverrides((prev) => ({ ...prev, [field]: 1 }))}
+                  className="min-h-11 rounded-lg px-3 py-2 text-xs gap-1.5 shadow-none"
                 >
                   {selectedIndex === 1 && <Check className="w-3.5 h-3.5" />}
-                  <span>{t("contacts.duplicates.fieldFromB")}: {otherValue}</span>
+                  <span>
+                    {t("contacts.duplicates.fieldFromB")}: {otherValue}
+                  </span>
                 </Button>
               </div>
             )}

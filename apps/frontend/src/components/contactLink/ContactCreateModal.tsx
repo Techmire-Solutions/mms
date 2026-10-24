@@ -63,21 +63,30 @@ export default function ContactCreateModal({
     onClose();
   }, [open, canWrite, onClose, t]);
 
-  const handleSave = useCallback(async (contactPayload: Contact): Promise<void> => {
-    if (!canWrite) {
-      throw new Error(t("contacts.form.writeDenied"));
-    }
-    const payload = { ...contactPayload, id: contactPayload.id ?? crypto.randomUUID() };
-    const response = await upsertContact.mutateAsync(payload);
-    onCreated(response.contact);
-  }, [canWrite, onCreated, t, upsertContact]);
+  const handleSave = useCallback(
+    async (contactPayload: Contact): Promise<void> => {
+      if (!canWrite) {
+        throw new Error(t("contacts.form.writeDenied"));
+      }
+      const payload = { ...contactPayload, id: contactPayload.id ?? crypto.randomUUID() };
+      const response = await upsertContact.mutateAsync(payload);
+      onCreated(response.contact);
+    },
+    [canWrite, onCreated, t, upsertContact],
+  );
 
   if (!open || !canWrite) return null;
 
   const branding = getScopedBrandingSettings();
 
   return (
-    <Suspense fallback={<span role="status" className="sr-only">{t("common.loading")}</span>}>
+    <Suspense
+      fallback={
+        <span role="status" className="sr-only">
+          {t("common.loading")}
+        </span>
+      }
+    >
       <ContactForm
         key={`create-${initialName}-${createDefaults?.gender ?? ""}`}
         open

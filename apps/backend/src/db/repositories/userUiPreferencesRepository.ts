@@ -1,6 +1,6 @@
-import { eq } from 'drizzle-orm';
-import { userUiPreferences, tenantUsers } from '../schema.js';
-import { withTenant } from '../tenant-context.js';
+import { eq } from "drizzle-orm";
+import { userUiPreferences, tenantUsers } from "../schema.js";
+import { withTenant } from "../tenant-context.js";
 
 export interface UserUiPreferenceRecord {
   userId: string;
@@ -36,9 +36,7 @@ export async function replaceUserUiPreferencesForWorkspace(
 ): Promise<void> {
   const subdomain = tenant.trim().toLowerCase();
   await withTenant(subdomain, async (tx) => {
-    await tx
-      .delete(userUiPreferences)
-      .where(eq(userUiPreferences.workspaceSubdomain, subdomain));
+    await tx.delete(userUiPreferences).where(eq(userUiPreferences.workspaceSubdomain, subdomain));
 
     if (!Array.isArray(records) || records.length === 0) return;
 
@@ -53,7 +51,12 @@ export async function replaceUserUiPreferencesForWorkspace(
     const validRecords: (typeof userUiPreferences.$inferInsert)[] = [];
     for (let i = 0; i < records.length; i++) {
       const record = records[i];
-      if (record && typeof record === 'object' && record.userId && validUserIds.has(record.userId)) {
+      if (
+        record &&
+        typeof record === "object" &&
+        record.userId &&
+        validUserIds.has(record.userId)
+      ) {
         validRecords.push({
           workspaceSubdomain: subdomain,
           userId: record.userId,

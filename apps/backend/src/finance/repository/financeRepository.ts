@@ -9,7 +9,7 @@ import type {
   FinanceReportComparisonQuery,
   WidgetQuery,
   WidgetAggregateResult,
-} from '@mms/shared';
+} from "@mms/shared";
 
 /**
  * Sole storage gateway for the finance module (invoices + payments).
@@ -23,7 +23,12 @@ export interface FinanceRepository {
   // Invoices
   listInvoicesByWorkspace(
     tenant: string,
-    options?: { deleted?: 'active' | 'deleted' | 'all'; includeDeleted?: boolean; limit?: number; offset?: number },
+    options?: {
+      deleted?: "active" | "deleted" | "all";
+      includeDeleted?: boolean;
+      limit?: number;
+      offset?: number;
+    },
   ): Promise<Invoice[]>;
   findInvoiceById(tenant: string, id: string): Promise<Invoice | null>;
   findInvoicesByIds(
@@ -32,6 +37,8 @@ export interface FinanceRepository {
     options?: { includeDeleted?: boolean },
   ): Promise<Invoice[]>;
   saveInvoice(tenant: string, record: Invoice): Promise<void>;
+  /** Live invoice ids raised for one enrollment (any billing period). */
+  findInvoiceIdsByEnrollment(tenant: string, enrollmentId: string): Promise<string[]>;
   listInvoicesPage(tenant: string, query: FinanceListQuery): Promise<FinanceInvoicesListPageResult>;
   bulkUpdateInvoicesStatus(
     tenant: string,
@@ -53,7 +60,12 @@ export interface FinanceRepository {
   // Payments
   listPaymentsByWorkspace(
     tenant: string,
-    options?: { deleted?: 'active' | 'deleted' | 'all'; includeDeleted?: boolean; limit?: number; offset?: number },
+    options?: {
+      deleted?: "active" | "deleted" | "all";
+      includeDeleted?: boolean;
+      limit?: number;
+      offset?: number;
+    },
   ): Promise<Payment[]>;
   findPaymentById(tenant: string, id: string): Promise<Payment | null>;
   findPaymentsByIds(
@@ -74,7 +86,6 @@ export interface FinanceRepository {
     ids: string[],
     userId?: string,
   ): Promise<{ succeeded: number; failed: number }>;
-
 
   // Aggregates
   aggregateFinanceCommandMetrics(tenant: string): Promise<FinanceCommandMetricsSnapshot>;

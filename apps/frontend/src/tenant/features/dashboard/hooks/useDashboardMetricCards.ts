@@ -1,14 +1,14 @@
-import type { CustomWidget } from '@/lib/reports/pinnedWidgetTypes';
-import type { DashboardRole } from '@/lib/dashboardRole';
+import type { CustomWidget } from "@/lib/reports/pinnedWidgetTypes";
+import type { DashboardRole } from "@/lib/dashboardRole";
 import {
   isDashboardWidgetModuleEnabled,
   filterDashboardCardWidgets,
-} from '@/lib/dashboardCollections';
-import type { StatItem } from '@/lib/dashboardWidgets';
-import type { TranslationFunction } from '@/lib/contexts/TranslationContext';
-import type { useDashboardData } from '@/tenant/features/dashboard/hooks/useDashboardData';
-import { computeDashboardMetricTrends } from '@/tenant/features/dashboard/hooks/dashboardMetricTrends';
-import { buildDashboardMetricCard } from '@/tenant/features/dashboard/hooks/buildDashboardMetricCard';
+} from "@/lib/dashboardCollections";
+import type { StatItem } from "@/lib/dashboardWidgets";
+import type { TranslationFunction } from "@/lib/contexts/TranslationContext";
+import type { useDashboardData } from "@/tenant/features/dashboard/hooks/useDashboardData";
+import { computeDashboardMetricTrends } from "@/tenant/features/dashboard/hooks/dashboardMetricTrends";
+import { buildDashboardMetricCard } from "@/tenant/features/dashboard/hooks/buildDashboardMetricCard";
 
 type DashboardData = ReturnType<typeof useDashboardData>;
 
@@ -38,6 +38,8 @@ export function useDashboardMetricCards({
       isDashboardWidgetModuleEnabled(widget, enabledModules),
     );
 
-    return enabledDashboardCardWidgets.map((widget) => buildDashboardMetricCard({ widget, data, trends, t }));
+    return enabledDashboardCardWidgets.map((widget) =>
+      buildDashboardMetricCard({ widget, data, trends, t }),
+    );
   })();
 }

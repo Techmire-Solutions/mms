@@ -1,8 +1,13 @@
 import { describe, expect, it } from "vitest";
 import type { FacultyDesignationDefinition } from "@mms/shared";
-import { buildDesignationDraftPatch, selectableDesignationOptions } from "./facultyFormDesignationDraft";
+import {
+  buildDesignationDraftPatch,
+  selectableDesignationOptions,
+} from "../lib/facultyFormDesignationDraft";
 
-const designation = (overrides: Partial<FacultyDesignationDefinition>): FacultyDesignationDefinition => ({
+const designation = (
+  overrides: Partial<FacultyDesignationDefinition>,
+): FacultyDesignationDefinition => ({
   id: "des-1",
   departmentId: "dept-1",
   name: "Lecturer",
@@ -16,7 +21,10 @@ describe("buildDesignationDraftPatch", () => {
   it("given a designation with a hydrated department name, should project designation, department, parent and roles", () => {
     // Arrange
     const def = designation({
-      id: "hod", name: "Head of Department", departmentName: "Hadith", parentDesignationId: "dean",
+      id: "hod",
+      name: "Head of Department",
+      departmentName: "Hadith",
+      parentDesignationId: "dean",
       assignableRoles: ["teacher", "department_manager"],
     });
 
@@ -48,7 +56,12 @@ describe("buildDesignationDraftPatch", () => {
 
     // Assert
     expect(patch).toEqual({
-      designationId: "", designation: "", designationAssignableRoles: [], parentDesignationId: null, departmentId: "", department: "",
+      designationId: "",
+      designation: "",
+      designationAssignableRoles: [],
+      parentDesignationId: null,
+      departmentId: "",
+      department: "",
     });
   });
 });

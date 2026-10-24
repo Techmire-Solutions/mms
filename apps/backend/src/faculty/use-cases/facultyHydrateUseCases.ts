@@ -3,18 +3,24 @@ import {
   hydrateFacultyFromContact,
   type Contact,
   type Faculty,
-} from '@mms/shared';
-import { loadContactsByIdsForTenant } from '../../services/contactService.js';
-import { listFacultyDesignations } from '../../db/repositories/facultyDesignationRepository.js';
+} from "@mms/shared";
+import { loadContactsByIdsForTenant } from "../../services/contactService.js";
+import { listFacultyDesignations } from "../../db/repositories/facultyDesignationRepository.js";
 
-async function loadSupervisorNames(tenant: string, supervisorIds: Set<string>): Promise<Map<string, string>> {
+async function loadSupervisorNames(
+  tenant: string,
+  supervisorIds: Set<string>,
+): Promise<Map<string, string>> {
   if (supervisorIds.size === 0) return new Map();
   try {
-    const { findFacultyByIds } = await import('../../db/repositories/facultyRepository.js');
+    const { findFacultyByIds } = await import("../../db/repositories/facultyRepository.js");
     const supervisors = await findFacultyByIds(tenant, [...supervisorIds]);
     const supContactIds = supervisors.map((s) => s.contactId).filter(Boolean);
     if (supContactIds.length === 0) return new Map();
-    const supContacts = (await loadContactsByIdsForTenant(tenant, supContactIds as string[])) as Contact[];
+    const supContacts = (await loadContactsByIdsForTenant(
+      tenant,
+      supContactIds as string[],
+    )) as Contact[];
     const supContactMap = createContactLookupMap(supContacts as never);
     return new Map(
       supervisors
@@ -27,7 +33,10 @@ async function loadSupervisorNames(tenant: string, supervisorIds: Set<string>): 
   }
 }
 
-async function loadAssignableRolesByDesignation(tenant: string, needed: boolean): Promise<Map<string, string[]>> {
+async function loadAssignableRolesByDesignation(
+  tenant: string,
+  needed: boolean,
+): Promise<Map<string, string[]>> {
   if (!needed) return new Map();
   try {
     const definitions = await listFacultyDesignations(tenant, { limit: null });
@@ -54,8 +63,8 @@ export async function hydrateFacultyFromContacts(
   const supervisorIds = new Set<string>();
   let hasDesignation = false;
   for (const row of rows) {
-    if (row.contactId != null && row.contactId !== '') ids.add(String(row.contactId));
-    if (row.reportingFacultyId != null && String(row.reportingFacultyId).trim() !== '') {
+    if (row.contactId != null && row.contactId !== "") ids.add(String(row.contactId));
+    if (row.reportingFacultyId != null && String(row.reportingFacultyId).trim() !== "") {
       supervisorIds.add(String(row.reportingFacultyId).trim());
     }
     if (row.designationId) hasDesignation = true;

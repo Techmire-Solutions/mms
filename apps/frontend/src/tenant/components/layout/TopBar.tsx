@@ -14,7 +14,10 @@ export interface TopBarProps {
 /**
  * Global application top-bar header containing search and session controls.
  */
-export default function TopBar({ sidebarCollapsed, onOpenCommandPalette }: TopBarProps): React.JSX.Element {
+export default function TopBar({
+  sidebarCollapsed,
+  onOpenCommandPalette,
+}: TopBarProps): React.JSX.Element {
   const { t } = useTranslation();
 
   const shortcutText = (() => {

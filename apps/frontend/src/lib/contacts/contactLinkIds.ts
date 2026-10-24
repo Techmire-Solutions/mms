@@ -1,4 +1,4 @@
-import type { Contact } from '@mms/shared';
+import type { Contact } from "@mms/shared";
 
 /** Collect linked contact ids from relationshipContacts and legacy relationships. */
 export function collectLinkedContactIds(contacts: readonly Contact[]): string[] {

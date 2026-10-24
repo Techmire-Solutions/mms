@@ -1,9 +1,13 @@
 import { type TooltipContentProps, type TooltipPayloadEntry } from "recharts";
-import { ChartTooltip, ChartTooltipRow } from "@/components/ui/ChartTooltip";
+import { ChartTooltip, ChartTooltipRow } from "@/components/app/ChartTooltip";
 import { useTranslation } from "@/hooks/useTranslation";
 import { useFinanceCurrency } from "@/hooks/useCurrency";
 
-export function RevenueChartTooltip({ active = false, payload = [], label = "" }: Partial<TooltipContentProps>) {
+export function RevenueChartTooltip({
+  active = false,
+  payload = [],
+  label = "",
+}: Partial<TooltipContentProps>) {
   const { t } = useTranslation();
   const { formatCurrency } = useFinanceCurrency();
   return (

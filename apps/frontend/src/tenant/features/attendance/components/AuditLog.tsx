@@ -1,26 +1,30 @@
 import React, { useState, useEffect, useCallback } from "react";
 import { formatDateTime, todayISO } from "@mms/shared";
-import { EmptyState } from "@/components/ui/EmptyState";
+import { EmptyState } from "@/components/app/EmptyState";
 import { ClipboardList, RefreshCw } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { DatePicker } from "@/components/ui/DatePicker";
+import { DatePicker } from "@/components/app/DatePicker";
 import { getAuditLog } from "@/tenant/features/attendance/components/MarkAttendance";
 import { useSessionsCollection } from "@/tenant/hooks/collections/sessions";
 import { type WorkDirectoryViewMode } from "@/hooks/useWorkDirectoryViewMode";
 import { type AttendanceFilterState } from "@/tenant/features/attendance/components/AttendanceFilters";
 import { useTranslation } from "@/hooks/useTranslation";
-import { FormSelect } from "@/components/ui/FormSelect";
+import { FormSelect } from "@/components/app/FormSelect";
 import { reportClientError } from "@/lib/clientErrorReporting";
-import { SectionHeader } from "@/components/ui/SectionHeader";
-import { StatusBadge } from "@/components/ui/StatusBadge";
-import { DataTable, type DataTableColumn, type DataTableFilter } from "@/components/common/data-table";
+import { SectionHeader } from "@shared/ui";
+import { StatusBadge } from "@/components/app/StatusBadge";
+import {
+  DataTable,
+  type DataTableColumn,
+  type DataTableFilter,
+} from "@/components/common/data-table";
 import { useStudentsByIds } from "@/tenant/hooks/collections/students";
 import { uniqueRegistryIds } from "@/lib/registryResolve";
 import {
   type AuditEntry,
   describeAuditEntry,
   buildAuditActionConfig,
-} from "@/tenant/features/attendance/components/auditLogFormatters";
+} from "@/tenant/features/attendance/lib/auditLogFormatters";
 
 export type { AuditEntry };
 
@@ -36,7 +40,7 @@ interface AuditLogRow {
 
 /**
  * AuditLog
- * 
+ *
  * Displays a log of actions taken regarding attendance (e.g., editing, bulk marking).
  * Allows filtering by class and date.
  */
@@ -62,9 +66,13 @@ export function AuditLog({ filters, viewMode }: AuditLogProps): React.JSX.Elemen
     if (!id) return "";
     return studentMap.get(String(id)) ?? "";
   };
-  
+
   const allClasses = sessions.flatMap((session) =>
-    (session.classes || []).map((sessionClass) => ({ ...sessionClass, sessionId: session.id, sessionName: session.name }))
+    (session.classes || []).map((sessionClass) => ({
+      ...sessionClass,
+      sessionId: session.id,
+      sessionName: session.name,
+    })),
   );
 
   const [classId, setClassId] = useState(filters.classId || "");
@@ -80,26 +88,35 @@ export function AuditLog({ filters, viewMode }: AuditLogProps): React.JSX.Elemen
     }
   }, [classId, date]);
 
-  useEffect(() => { reload(); }, [reload]);
-  
+  useEffect(() => {
+    reload();
+  }, [reload]);
+
   useEffect(() => {
     if (filters.classId) setClassId(filters.classId);
     if (filters.date) setDate(filters.date);
   }, [filters.classId, filters.date]);
 
   const rows: AuditLogRow[] = log.map((entry, index) => ({ id: index, entry }));
-  const actionLabel = (row: AuditLogRow) => actionConfig[row.entry.action]?.label ?? row.entry.action;
+  const actionLabel = (row: AuditLogRow) =>
+    actionConfig[row.entry.action]?.label ?? row.entry.action;
   const columns: DataTableColumn<AuditLogRow>[] = [
     {
       id: "time",
       label: t("attendance.audit.colTime"),
       width: 180,
+      noWrap: true,
       searchValue: (row) => formatDateTime(row.entry.ts),
-      render: (row) => <span className="text-xs font-mono text-muted-foreground whitespace-nowrap">{formatDateTime(row.entry.ts)}</span>,
+      render: (row) => (
+        <span className="text-xs font-mono text-muted-foreground">
+          {formatDateTime(row.entry.ts)}
+        </span>
+      ),
     },
     {
       id: "action",
       label: t("attendance.audit.colAction"),
+      noWrap: true,
       searchValue: actionLabel,
       hideInCard: true,
       render: (row) => <StatusBadge status={row.entry.action} config={actionConfig} size="sm" />,
@@ -110,13 +127,22 @@ export function AuditLog({ filters, viewMode }: AuditLogProps): React.JSX.Elemen
       fixed: true,
       hideInCard: true,
       searchValue: (row) => describeAuditEntry(row.entry, studentNameFor, t),
-      render: (row) => <span className="text-xs text-foreground">{describeAuditEntry(row.entry, studentNameFor, t)}</span>,
+      render: (row) => (
+        <span className="text-xs text-foreground">
+          {describeAuditEntry(row.entry, studentNameFor, t)}
+        </span>
+      ),
     },
     {
       id: "by",
       label: t("attendance.audit.colBy"),
+      noWrap: true,
       searchValue: (row) => row.entry.by,
-      render: (row) => <span className="text-xs font-semibold text-muted-foreground capitalize">{row.entry.by || "—"}</span>,
+      render: (row) => (
+        <span className="text-xs font-semibold text-muted-foreground capitalize">
+          {row.entry.by || "—"}
+        </span>
+      ),
     },
   ];
   const tableFilters: DataTableFilter<AuditLogRow>[] = [
@@ -134,7 +160,11 @@ export function AuditLog({ filters, viewMode }: AuditLogProps): React.JSX.Elemen
         layout="row"
         icon={<ClipboardList className="w-4 h-4 text-primary" aria-hidden="true" />}
         title={t("attendance.audit.title")}
-        badge={<span className="text-xs text-muted-foreground">{t("attendance.audit.entriesCount", { count: log.length })}</span>}
+        badge={
+          <span className="text-xs text-muted-foreground">
+            {t("attendance.audit.entriesCount", { count: log.length })}
+          </span>
+        }
         actions={
           <Button
             type="button"
@@ -156,16 +186,24 @@ export function AuditLog({ filters, viewMode }: AuditLogProps): React.JSX.Elemen
         data={rows}
         columns={columns}
         filters={tableFilters}
-        card={{ title: (row) => describeAuditEntry(row.entry, studentNameFor, t), badge: (row) => <StatusBadge status={row.entry.action} config={actionConfig} size="sm" /> }}
+        card={{
+          title: (row) => describeAuditEntry(row.entry, studentNameFor, t),
+          badge: (row) => <StatusBadge status={row.entry.action} config={actionConfig} size="sm" />,
+        }}
         toolbarExtras={
           <>
-            <label htmlFor="audit-class-select" className="sr-only">{t("attendance.audit.filterClass")}</label>
+            <label htmlFor="audit-class-select" className="sr-only">
+              {t("attendance.audit.filterClass")}
+            </label>
             <FormSelect
               id="audit-class-select"
               value={classId}
               onChange={setClassId}
               placeholder={t("attendance.audit.allClasses")}
-              options={allClasses.map((sessionClass) => ({ value: sessionClass.id, label: sessionClass.name }))}
+              options={allClasses.map((sessionClass) => ({
+                value: sessionClass.id,
+                label: sessionClass.name,
+              }))}
               className="text-sm min-w-audit-action"
             />
             <DatePicker

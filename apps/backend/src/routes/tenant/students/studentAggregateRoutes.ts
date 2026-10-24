@@ -1,48 +1,48 @@
-import type { FastifyPluginAsync } from 'fastify';
-import type { User } from '@mms/shared';
-import { studentUseCases } from '../../../students/use-cases/studentUseCases.js';
+import type { FastifyPluginAsync } from "fastify";
+import type { User } from "@mms/shared";
+import { studentUseCases } from "../../../students/use-cases/studentUseCases.js";
 import {
   registerMetricsRoute,
   registerCountRoute,
   registerResolveRoute,
   registerWidgetAggregatesRoute,
   registerLinkedContactIdsRoute,
-} from '../../../lib/crudRouter.js';
-import { sanitizeStudentsForUser } from './studentRouteHelpers.js';
+} from "../../../lib/crudRouter.js";
+import { sanitizeStudentsForUser } from "./studentRouteHelpers.js";
 
 /** Count, metrics, resolve, and widget aggregates routes. */
 export const studentAggregateRoutes: FastifyPluginAsync = async (sub) => {
   registerCountRoute(sub, {
-    collection: 'students',
+    collection: "students",
     loadCountFn: () => studentUseCases.countStudents(),
-    errorMessagePrefix: 'students',
+    errorMessagePrefix: "students",
   });
 
   registerMetricsRoute(sub, {
-    collection: 'students',
+    collection: "students",
     loadMetricsFn: () => studentUseCases.loadStudentsCommandMetrics(),
-    errorMessagePrefix: 'student',
+    errorMessagePrefix: "student",
   });
 
   registerWidgetAggregatesRoute(sub, {
-    collection: 'students',
+    collection: "students",
     loadAggregatesFn: (queries) => studentUseCases.loadStudentsWidgetAggregates(queries),
-    errorMessagePrefix: 'student',
+    errorMessagePrefix: "student",
   });
 
   registerResolveRoute(sub, {
-    collection: 'students',
+    collection: "students",
     loadByIdsFn: async (ids, request) => {
       const students = await studentUseCases.loadStudentsByIds(ids);
       return sanitizeStudentsForUser(students, request.user as User);
     },
-    responseKey: 'students',
-    errorMessagePrefix: 'students',
+    responseKey: "students",
+    errorMessagePrefix: "students",
   });
 
   registerLinkedContactIdsRoute(sub, {
-    collection: 'students',
+    collection: "students",
     loadLinkedContactIdsFn: (excludeId) => studentUseCases.loadStudentLinkedContactIds(excludeId),
-    errorMessagePrefix: 'students',
+    errorMessagePrefix: "students",
   });
 };

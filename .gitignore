@@ -64,10 +64,16 @@ coverage/
 **/coverage/
 .nyc_output/
 .vitest/
+# Vitest shard blob reports (written by the CI coverage gate: `--reporter=blob
+# --outputFile=.vitest-reports/blob-<n>.json`, merged by test-backend-coverage).
+.vitest-reports/
+**/.vitest-reports/
 test-results/
 playwright-report/
 blob-report/
 playwright/.cache/
+# Generated UI-audit report (apps/frontend/scripts/ui-audit.js)
+apps/frontend/scripts/ui-audit-report.json
 
 # 7. Local Uploads & Media Storage
 /apps/backend/uploads/
@@ -77,6 +83,7 @@ playwright/.cache/
 # 8. Tool, Agent & Model Overrides
 .claude/settings.local.json
 .claude/worktrees/
+.commandcode/
 .wwebjs_auth/
 .wwebjs_cache/
 whatsapp-session/

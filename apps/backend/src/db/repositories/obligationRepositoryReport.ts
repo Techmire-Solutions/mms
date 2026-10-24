@@ -1,11 +1,7 @@
-import { and, eq, isNull, sql } from 'drizzle-orm';
-import type { ObligationsReportAggregates } from '@mms/shared';
-import {
-  obligationCollections,
-  obligationTypes,
-  mujtahidReps,
-} from '../schema.js';
-import { withTenantRead } from '../tenant-context.js';
+import { and, eq, isNull, sql } from "drizzle-orm";
+import type { ObligationsReportAggregates } from "@mms/shared";
+import { obligationCollections, obligationTypes, mujtahidReps } from "../schema.js";
+import { withTenantRead } from "../tenant-context.js";
 
 export type ObligationsReportQuery = {
   dateFrom?: string;
@@ -122,8 +118,8 @@ export async function aggregateObligationsReport(
       totalAmount: Number(totalsRow?.totalAmount ?? 0),
       uniqueReps: Number(totalsRow?.uniqueReps ?? 0),
       typeBreakdown: typeBreakdownRows.map((r) => ({
-        typeId: r.typeId ?? '',
-        typeName: r.typeName ?? r.typeId ?? '',
+        typeId: r.typeId ?? "",
+        typeName: r.typeName ?? r.typeId ?? "",
         count: Number(r.count),
         amount: Number(r.amount),
       })),
@@ -132,8 +128,8 @@ export async function aggregateObligationsReport(
       // distributions carry wakala breakdown and are already available client-side.
       wakalaSummary: [],
       repSummary: repSummaryRows.map((r) => ({
-        repId: r.repId ?? '',
-        repName: r.repName ?? r.repId ?? '',
+        repId: r.repId ?? "",
+        repName: r.repName ?? r.repId ?? "",
         count: Number(r.count),
         amount: Number(r.amount),
       })),

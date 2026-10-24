@@ -9,11 +9,18 @@ describe("GoogleContactsConnectedState Component", () => {
       <GoogleContactsConnectedState
         canWrite={true}
         error=""
-        syncResult={{ total: 10, imported: 5, updated: 3, skipped: 2, skippedUnique: 0, skippedName: 0 }}
+        syncResult={{
+          total: 10,
+          imported: 5,
+          updated: 3,
+          skipped: 2,
+          skippedUnique: 0,
+          skippedName: 0,
+        }}
         syncing={false}
         onDisconnect={vi.fn()}
         onSync={vi.fn()}
-        t={((k: string) => k) as any}
+        t={((k: string) => k) as unknown as never}
       />,
     );
 

@@ -1,8 +1,8 @@
 import { FileText } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { ErrorBoundary } from "@/components/ui/ErrorBoundary";
-import { ErrorState } from "@/components/ui/ErrorState";
-import { SubTabBar } from "@/components/ui/SubTabBar";
+import { ErrorBoundary } from "@/components/app/ErrorBoundary";
+import { ErrorState } from "@/components/app/ErrorState";
+import { SubTabBar } from "@/components/app/SubTabBar";
 import { WORK_SURFACE } from "@/components/ui/formStyles";
 import { useTranslation } from "@/hooks/useTranslation";
 import { QuestionBank as QuestionsPanel } from "@/tenant/features/question-bank/components/QuestionBank";
@@ -133,8 +133,12 @@ export function QuestionBankWorkTier({
         <section className={`${WORK_SURFACE} p-4 sm:p-5`}>
           <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
             <div className="min-w-0">
-              <h2 className="m-0 text-sm font-bold text-foreground">{t("questionBank.generatorTitle")}</h2>
-              <p className="m-0 text-xs text-muted-foreground">{t("questionBank.manualPaperGeneratorSubtitle")}</p>
+              <h2 className="m-0 text-sm font-bold text-foreground">
+                {t("questionBank.generatorTitle")}
+              </h2>
+              <p className="m-0 text-xs text-muted-foreground">
+                {t("questionBank.manualPaperGeneratorSubtitle")}
+              </p>
             </div>
             <Button type="button" onClick={onCreatePaper} className="w-full sm:w-auto">
               <FileText className="h-3.5 w-3.5" aria-hidden="true" />

@@ -10,7 +10,7 @@ Project rules for the Madrasa Management System. Antigravity loads `.md` files f
 |------|---------|
 | `mms-core.md` | Stack, boundaries, ownership matrix, edit discipline |
 
-## Scoped Rules (20)
+## Scoped Rules (21)
 
 ### Agent Cognition & Review (On-Demand)
 
@@ -24,7 +24,7 @@ Project rules for the Madrasa Management System. Antigravity loads `.md` files f
 | Rule | Focus / Topic |
 |------|---------------|
 | `mms-dry.md` | DRY — single source of truth, extraction thresholds, `@mms/shared` exports |
-| `mms-structure-naming.md` | Monorepo layout, colocation, **file-size cap (200 lines hard)**, Title Case on save, naming |
+| `mms-structure-naming.md` | Monorepo layout, colocation, **file-size cap (300 lines hard)**, Title Case on save, naming |
 | `mms-dependencies.md` | Latest stable Node, pnpm, and workspace dependency upgrades |
 | `mms-ops-infrastructure.md` | Local dev setup, environment variables, Docker backend ports, health endpoints, Linux compatibility, and CI orchestration |
 | `mms-performance.md` | Performance & resource efficiency (DB, streaming, Redis caching, bundle, virtualization) |
@@ -42,6 +42,7 @@ Project rules for the Madrasa Management System. Antigravity loads `.md` files f
 
 | Rule | Focus / Topic |
 |------|---------------|
+| `mms-shared-ui.md` | @shared/ui SSOT, zero cross-console duplicates, pre-deletion gates, orphaned import detection |
 | `mms-ui-ux-design.md` | UI primitives, design tokens, tabs, notifications, a11y (RTL / WCAG), and **§4 responsiveness** (FormModal chrome → `mms-form-architecture.md`) |
 | `mms-module-architecture.md` | Universal module manifest schemas, **§0 surface triad** (directory / DetailSheet / FormModal), three-tier tab layout, Work/Reports/Setup scopes, soft-delete, **gold-standard parity (§7)**, background jobs |
 | `mms-form-architecture.md` | Static FormModal forms, **control decision table**, collection chrome (`FormCollectionShell` / `FormListFieldCard` / `FormCardTypeSelect`), write Zod `.strict()`, React 19 defaults, decimal-as-string, local multipart uploads |
@@ -69,8 +70,9 @@ in the enforcement registry below are how the norm is actually held.
 | Stack, boundaries, layering, ownership | `mms-core.md` | `mms-dev-setup` |
 | Post-edit verification | `mms-completion-review.md` | `mms-code-review` |
 | Dependencies, engines, catalogs | `mms-dependencies.md` | `mms-dependency-upgrade` · `mms-vuln-response` |
-| File structure, naming, size bands | `mms-structure-naming.md` | `mms-frontend` · `mms-shared-package` |
-| DRY, extraction, `@mms/shared` boundaries | `mms-dry.md` | `mms-shared-package` |
+| File structure, naming, size bands | `mms-structure-naming.md` | `mms-frontend` · `mms-shared-package` · `mms-shared-ui` |
+| DRY, extraction, `@mms/shared` boundaries | `mms-dry.md` | `mms-shared-package` · `mms-shared-ui` |
+| Shared UI components & cross-console governance | `mms-shared-ui.md` (norm SSOT) · `mms-dry.md` §1,§4 · `mms-ui-ux-design.md` §1 | `mms-shared-ui` |
 | Auth, sessions, CSRF, RBAC, tenant isolation | `mms-auth-security.md` | `mms-backend-security` |
 | REST contracts, errors, pagination, bulk PUT | `mms-api-interface.md` | `mms-backend-api` · `mms-frontend` |
 | PostgreSQL, Drizzle, RLS, migrations, Query policy | `mms-data-layer.md` | `mms-schema-migrate` · `mms-query-factories` · `mms-db-performance` |
@@ -94,6 +96,15 @@ in the enforcement registry below are how the norm is actually held.
 | Ops, ports, health, CI, deploy | `mms-ops-infrastructure.md` | `mms-ops-deploy` · `mms-incident-response` · `mms-linux-compatibility` |
 | Open migration debt | `mms-migration-status.md` | `mms-migration-fixes` · `mms-release-versioning` |
 | Finance / accounting / ledger | `mms-data-layer.md` · `mms-api-interface.md` | `mms-finance-accounting` |
+| Platform Apex console & administration | `mms-core.md` · `mms-auth-security.md` | `mms-platform-console` |
+| Faculty hierarchy & staff appointments | `mms-data-layer.md` §1 · `mms-structure-naming.md` | `mms-faculty-domain` |
+| Academic operations & student lifecycle | `mms-module-architecture.md` | `mms-student-lifecycle` |
+| Realtime WebSocket events & cache invalidation | `mms-api-interface.md` · `mms-performance.md` §2 | `mms-realtime-events` |
+| Custom CI ratchets & boundary diagnostics | `mms-completion-review.md` · `mms-agent-universal.md` | `mms-ci-ratchets` |
+| Database seed fixtures & tenant resets | `mms-ops-infrastructure.md` · `mms-testing-observability.md` | `mms-seed-fixtures` |
+| In-app notifications & alerts | `mms-ui-ux-design.md` §1 · `mms-api-interface.md` | `mms-notifications` · `mms-realtime-events` |
+| Bulk CSV data import & onboarding | `mms-api-interface.md` §5 · `mms-data-layer.md` | `mms-data-import` · `mms-background-jobs` |
+| Tenant user management & staff RBAC | `mms-auth-security.md` §2 · `mms-module-architecture.md` | `mms-user-management` · `mms-backend-security` |
 | Agent standards corpus (rules/skills/mirrors) | `mms-agent-universal.md` · `mms-core.md` | `mms-agent-standards` |
 
 ## Enforcement registry (norm → how it is actually held)
@@ -106,27 +117,33 @@ Update this table in the same change that adds or removes a check.
 | Cross-feature import boundary | `mms-boundary/no-cross-feature-imports` (ESLint, error) | lint |
 | Physical directional CSS classes | `mms-bidi/no-physical-directional-classes` (ESLint, error) | lint |
 | Surface/token misuse | `no-restricted-syntax` selectors (ESLint, warn — advisory until promoted) | lint |
-| `any` in frontend source | `pnpm run check:code-norms` ratchet | ratchet |
+| `any` in app/shared source | `@typescript-eslint/no-explicit-any` (ESLint, error — test files exempt) + `pnpm run check:code-norms` ratchet | lint + ratchet |
 | Raw hex colours / file-size bands | `pnpm run check:code-norms` ratchet | ratchet |
 | Wildcard DB projections | `pnpm run check:db-projections` (CI) | ratchet |
 | Write-blocking index in a migration | `pnpm run check:migration-indexes` (CI) | ratchet |
+| Applied migrations are immutable (forward-only DDL — new files allowed, edits/deletes fail) | `pnpm run check:migrations-forward-only` (CI `typecheck-lint` `--base HEAD^1` + pre-PR gate) | ratchet |
+| Backend route→use-case→repository boundary (no direct `db/repositories` / `drizzle-orm` import from `routes/**`, static **or** dynamic) | `pnpm run check:backend-boundaries` (CI `typecheck-lint` + pre-PR gate) | ratchet |
+| Canonical date/month schemas have a single definition (`isoDateSchema` / `monthKeySchema` / `billingPeriodSchema`; no re-declared canonical schema) | SSOT idiom guard inside `.agent/skills/mms-shared-package/scripts/check-shared-exports.sh`, via `pnpm run check:shared-purity` | ratchet |
 | Bundle budget | `pnpm run check:bundle` (CI, build-dist job) | ratchet |
-| i18n completeness across en/ar/ur/fa | `pnpm run check:i18n` reports missing/English-equal values; currently does not fail on counts | advisory report |
+| i18n completeness across en/ar/ur/fa | `pnpm run check:i18n` (CI + pre-PR gate) — exits non-zero on any key missing or falling back to English | ratchet |
 | Dependency advisories | `pnpm audit --audit-level=high` + dependency-review (CI) | CI |
 | Secrets in history | gitleaks (CI, full history) | CI |
+| Sensitive filenames never committed, at any path depth (`.env`, private keys, service-account JSON) | `sensitive-file-guard` CI job (`node scripts/check-staged-secrets.mjs --tracked`) | CI |
 | Workflow security (SHA pinning, no credential persistence, no template injection, gated triggers) | `workflow-lint` job: actionlint + zizmor `min-severity: medium` (CI) | CI |
 | Deployed bytes match CI's build of the commit | `actions/attest-build-provenance` in CI + `gh attestation verify` in `deploy.yml` | CI |
-| Rule/skill/mirror integrity | `node scripts/verify-rules-integrity.mjs` + sync drift diff (CI) | CI |
-| Local CI before commit (gates + path-aware unit tests) | `pnpm ci:local` / `.githooks/pre-commit` (`scripts/ci/local-ci.sh`); pre-push blocks `main` only | hook + script |
+| Rule/skill/command/agent/mirror integrity (incl. `.agent/workflows` ↔ `.cursor/commands` ↔ `.claude/commands` ↔ `.claude/agents` parity) | `node scripts/verify-rules-integrity.mjs` + sync drift diff (CI) | CI |
+| Local CI before commit (gates + path-aware unit tests) | `.githooks/pre-commit` (secrets + staged-file ESLint); `.githooks/pre-push` (blocks `main`, runs affected-only `pnpm ci:local` / `scripts/ci/local-ci.sh`) | hook + script |
 | `drizzle-kit push` / destructive rm / .env reads | `.cursor/hooks/guard-shell.sh` (Claude + Cursor hooks) | hook |
 | Tenant RLS enablement per table | `mms-schema-migrate/scripts/check-migrations.sh` | skill script |
 | Faculty hierarchy, temporal primary integrity, and tenant isolation | `facultyAssignmentValidation.test.ts`, `facultyAppointmentsDb.integration.test.ts` | test |
-| `@mms/shared` runtime purity | `mms-shared-package/scripts/check-shared-exports.sh` | skill script |
-| a11y serious/critical violations | `e2e/tests/a11y-shell.spec.ts` (CI e2e job) | test |
+| Faculty domain legacy surface (retired Teacher/FDA) + required schema | `pnpm run check:faculty-domain` (CI, `typecheck-lint`) | CI |
+| `@mms/shared` runtime purity | `pnpm run check:shared-purity` (CI, `typecheck-lint`) | CI |
+| a11y serious/critical violations | `e2e/tests/a11y/a11y-shell.spec.ts` (CI e2e job) | test |
 | Platform UI ownership (native controls, duplicate exports/JSX, semantic palette classes) | `apps/frontend/src/platform/platformUiArchitecture.test.ts` | test |
-| Coverage floors (FE 41/39, BE 45/27) | vitest thresholds in each workspace | test |
+| Coverage floors (FE 55/50, BE 45/27 lines/branches) | vitest thresholds in each workspace | test |
 | Work directory convergence (selection SSOT, two-layer bulk chrome, no dead adapters) | `pnpm run check:work-directory` | ratchet |
 | Data tables use `DataTable` / `WorkBatchTable` (no hand-rolled `<Table>` outside the report/ledger allowlist) | `pnpm run check:work-directory` | ratchet |
+| Shared UI component governance (zero duplicate components across consoles, `@shared/ui` SSOT, zero orphaned imports) | `mms-shared-ui.md` (norm) + `pnpm run check:shared-ui` (CI + pre-PR gate) | rule + ratchet |
 | Reuse-first / consumer-compatible shared changes (`mms-dry` §1) | none — **advisory** (review discipline) | advisory |
 | Every module-owned API route gated (`registerModuleAccess`), every route classified | `apps/backend/src/__tests__/moduleAccessCoverage.test.ts` | test |
 | Every tenant app-shell route classified in `TENANT_APP_ROUTE_ACCESS` | `apps/frontend/src/lib/config/routeAccess.test.ts` | test |
@@ -141,10 +158,10 @@ All rules in this directory apply **equally** to tenant workspace code and platf
 |------|--------------------|
 | Primitive components (`Button`, `FormModal`, `Table`, etc.) | ✅ Yes — no parallel platform forks |
 | Design tokens (`@theme`, semantic colors, logical CSS) | ✅ Yes |
-| WCAG AA a11y, RTL, touch targets | ✅ Yes |
+| WCAG AA a11y, logical CSS (Platform apex LTR-locked per `mms-settings-i18n.md` §5), touch targets | ✅ Yes |
 | TanStack Query v5 factories, `AbortSignal` | ✅ Yes |
 | Zod `.strict()` DTOs via `@mms/shared` | ✅ Yes |
-| File size cap (200 lines hard), naming | ✅ Yes |
+| File size cap (300 lines hard), naming | ✅ Yes |
 | `ErrorState` with hint description on list failures | ✅ Yes |
 | `notify.*` for all toasts | ✅ Yes |
 | Fastify layering (routes → services → repository) | ✅ Yes |
@@ -173,9 +190,19 @@ Every rule starts with a **Workflow skills:** line; the full topic→rule→skil
 | Dep upgrades / catalogs | `mms-dependency-upgrade` |
 | axe / focus-return | `mms-a11y-smoke` |
 | UI design system / styles / palettes / UX guidelines | `ui-ux-pro-max` |
+| **Shared UI audit** — duplicate components, orphaned imports, `@shared/ui` SSOT, pre-deletion cleanup | **`mms-shared-ui`** (run `/shared-ui-audit` workflow) |
 | Soft-delete / trash lifecycle / hard-purge | `mms-soft-delete` |
 | Migration debt | `mms-migration-fixes` |
 | PR / self-review | `mms-code-review` |
+| Platform Apex console / administration | `mms-platform-console` |
+| Faculty appointments / temporal exclusions | `mms-faculty-domain` |
+| Student admissions / attendance / exams | `mms-student-lifecycle` |
+| WebSocket `/api/ws` / realtime invalidation | `mms-realtime-events` |
+| CI ratchets & boundary check diagnostics | `mms-ci-ratchets` |
+| Database seed fixtures & demo resets | `mms-seed-fixtures` |
+| In-app notifications & unread alerts | `mms-notifications` |
+| Bulk CSV data import & onboarding | `mms-data-import` |
+| Tenant users & staff role provisioning | `mms-user-management` |
 
 ## Agent Mirrors
 
@@ -206,7 +233,9 @@ bash .agent/scripts/sync-all.sh
 - [ ] Dashboard/report KPI cards use `/metrics` where available — `mms-reports.md`
 - [ ] Setup Fields / form: tab enablement SSOT + enabled fields render in form **and** drawer — `mms-fields.md` / `mms-form-architecture.md`
 - [ ] Shared logic in `@mms/shared` if cross-app or 2+ modules
-- [ ] Touched app files stay under hard 200 lines; splits keep public import barrels — `mms-structure-naming.md`
+- [ ] **Shared UI governance**: zero duplicate primitive files in `platform/` or `tenant/`; run `pnpm run check:shared-ui` to confirm no orphaned imports, cross-console leaks, or facade violations — `mms-dry.md` §1 · `mms-ui-ux-design.md` §1 · skill `mms-shared-ui`
+- [ ] **Legacy UI cleanup**: if deleting component files, run `pnpm typecheck && pnpm --filter mms-frontend lint && pnpm --filter mms-frontend build` **before** deletion, and the same suite + `pnpm run check:shared-ui` **after** — `mms-dry.md` §4
+- [ ] Touched app files stay under the hard 300 lines; splits keep public import barrels — `mms-structure-naming.md`
 - [ ] No commit unless user requested
 - [ ] Update **all mirrors** when changing standards: `bash .agent/scripts/sync-all.sh`
 - [ ] Auth/write routes: `mms-auth-security.md` (do not OR entity write with `canEditSetup`)
@@ -235,4 +264,4 @@ bash .agent/scripts/sync-all.sh
 
 ## Verify in Cursor
 
-**Settings → Rules** — 1 always-apply rule (`mms-core`) + 20 scoped rules when matching paths are open (**21 total**).
+**Settings → Rules** — 1 always-apply rule (`mms-core`) + 21 scoped rules when matching paths are open (**22 total**).

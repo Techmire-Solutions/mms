@@ -15,14 +15,14 @@ import {
   type NamedEntity,
   type SessionLike,
   type Workspace,
-} from '@mms/shared';
+} from "@mms/shared";
 import {
   getCollectionByStorageName,
   listCollectionStorageNames,
   saveCollection,
-} from '../database.js';
+} from "../database.js";
 /** Historical document-store collection key (pre-faculty rename). */
-const LEGACY_COLLECTION_KEY = 'teachers';
+const LEGACY_COLLECTION_KEY = "teachers";
 
 type Row = Record<string, unknown>;
 
@@ -56,9 +56,9 @@ function linkHasanatRecipient(
   facultyMembers: NamedEntity[],
 ): HasanatDistributionLike {
   if (row.recipientStudentId || row.recipientFacultyId) return row;
-  const name = String(row.recipientName ?? '').trim();
+  const name = String(row.recipientName ?? "").trim();
   if (!name) return row;
-  if (row.recipientType === 'faculty') {
+  if (row.recipientType === "faculty") {
     const faculty = facultyMembers.find((entry) => entry.name === name);
     if (faculty) return { ...row, recipientFacultyId: String(faculty.id) };
   } else {
@@ -68,9 +68,10 @@ function linkHasanatRecipient(
   return row;
 }
 
-function normalizeTenantCollections(
-  collections: Record<string, Row[]>,
-): { next: Record<string, Row[]>; changed: boolean } {
+function normalizeTenantCollections(collections: Record<string, Row[]>): {
+  next: Record<string, Row[]>;
+  changed: boolean;
+} {
   const students = asNamed(collections.students ?? []);
   const facultyMembers = asNamed(collections.faculty ?? collections[LEGACY_COLLECTION_KEY] ?? []);
   let changed = false;
@@ -78,39 +79,41 @@ function normalizeTenantCollections(
   const apply = (key: string, rows: Row[]): Row[] => {
     let next: Row[];
     switch (key) {
-      case 'students':
+      case "students":
         next = rows.map((row) => normalizeStoredStudent(row));
         break;
-      case 'faculty':
+      case "faculty":
       case LEGACY_COLLECTION_KEY:
         next = rows.map((row) => normalizeStoredFaculty(row));
         break;
-      case 'enrollments':
-      case 'attendance_records':
-      case 'finance_invoices':
+      case "enrollments":
+      case "attendance_records":
+      case "finance_invoices":
         next = normalizeStudentLinkedRows(rows);
         break;
-      case 'finance_payments':
-        next = normalizeStudentLinkedRows(rows, 'studentId', 'studentName');
+      case "finance_payments":
+        next = normalizeStudentLinkedRows(rows, "studentId", "studentName");
         break;
-      case 'sessions':
+      case "sessions":
         next = normalizeSessionsCollection(rows as SessionLike[]) as Row[];
         break;
-      case 'users':
+      case "users":
         next = rows.map((row) => stripWorkspaceUserProfileFields(row));
         break;
-      case 'user_activity_logs':
+      case "user_activity_logs":
         next = rows.map((row) => normalizeActivityLog(row));
         break;
-      case 'hasanat_distributions':
+      case "hasanat_distributions":
         next = rows
-          .map((row) => linkHasanatRecipient(row as HasanatDistributionLike, students, facultyMembers))
+          .map((row) =>
+            linkHasanatRecipient(row as HasanatDistributionLike, students, facultyMembers),
+          )
           .map((row) => normalizeHasanatDistribution(row as HasanatDistributionLike));
         break;
-      case 'hasanat_redemptions':
+      case "hasanat_redemptions":
         next = rows.map((row) => normalizeHasanatRedemption(row));
         break;
-      case 'assessment_results':
+      case "assessment_results":
         next = rows.map((row) => normalizeAssessmentResult(row));
         break;
       default:
@@ -128,9 +131,7 @@ function normalizeTenantCollections(
   return { next: nextCollections, changed };
 }
 
-async function loadTenantCollections(
-  prefix: string,
-): Promise<Record<string, Row[]>> {
+async function loadTenantCollections(prefix: string): Promise<Record<string, Row[]>> {
   const names = await listCollectionStorageNames();
   const collections: Record<string, Row[]> = {};
   for (const storageName of names) {
@@ -138,7 +139,7 @@ async function loadTenantCollections(
     if (prefix) {
       if (!storageName.startsWith(prefix)) continue;
       logical = storageName.slice(prefix.length);
-    } else if (!storageName.startsWith('t:')) {
+    } else if (!storageName.startsWith("t:")) {
       logical = storageName;
     }
     if (!logical) continue;
@@ -166,14 +167,14 @@ export async function runMigration006(): Promise<void> {
   };
 
   if (subdomains.size === 0) {
-    await migrateStorage('');
+    await migrateStorage("");
   } else {
     for (const subdomain of subdomains) {
-      await migrateStorage(tenantCollectionKey(subdomain, ''));
+      await migrateStorage(tenantCollectionKey(subdomain, ""));
     }
   }
 
   if (changed) {
-    console.log('[Migration 006] Applied contact-first normalization across module collections.');
+    console.log("[Migration 006] Applied contact-first normalization across module collections.");
   }
 }

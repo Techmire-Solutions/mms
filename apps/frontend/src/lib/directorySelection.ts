@@ -23,10 +23,7 @@ export function getDirectoryPageSelection(
   };
 }
 
-export function toggleIdInSelection<T extends string | number>(
-  selected: readonly T[],
-  id: T,
-): T[] {
+export function toggleIdInSelection<T extends string | number>(selected: readonly T[], id: T): T[] {
   const index = selected.indexOf(id);
   if (index >= 0) {
     const next = [...selected];

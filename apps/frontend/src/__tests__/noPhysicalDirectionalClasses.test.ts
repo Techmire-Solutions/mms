@@ -3,9 +3,8 @@ import { describe, expect, it } from "vitest";
 import { Linter } from "eslint";
 import { createRequire } from "node:module";
 
-
 const require = createRequire(import.meta.url);
- 
+
 const directionalRule = require("../../eslint-rules/no-physical-directional-classes.cjs");
 
 /**
@@ -78,7 +77,9 @@ describe("no-physical-directional-classes", () => {
 
   it("allows the logical equivalents", () => {
     expect(
-      lint(`export const A = () => <div className={cn("ps-2", "pe-3", "ms-1", "me-1", "text-start", "text-end", "border-s-2", "rounded-e-lg", "start-0", "end-0")} />;`),
+      lint(
+        `export const A = () => <div className={cn("ps-2", "pe-3", "ms-1", "me-1", "text-start", "text-end", "border-s-2", "rounded-e-lg", "start-0", "end-0")} />;`,
+      ),
     ).toEqual([]);
   });
 

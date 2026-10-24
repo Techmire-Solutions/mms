@@ -1,8 +1,11 @@
-import { PassThrough } from 'node:stream';
-import { buildTenantExportFilename } from '@mms/shared';
-import { saveExportArtifact, saveStreamedExportArtifact } from '../services/exportArtifactService.js';
-import { registerBackgroundJobRunner } from '../services/backgroundJobWorkerService.js';
-import { uploadStreamToStorage, resolveTenantExportKey } from '../config/storage.js';
+import { PassThrough } from "node:stream";
+import { buildTenantExportFilename } from "@mms/shared";
+import {
+  saveExportArtifact,
+  saveStreamedExportArtifact,
+} from "../services/exportArtifactService.js";
+import { registerBackgroundJobRunner } from "../services/backgroundJobWorkerService.js";
+import { uploadStreamToStorage, resolveTenantExportKey } from "../config/storage.js";
 
 export type ModuleCsvExportJobPayload = {
   query?: unknown;
@@ -51,13 +54,18 @@ async function streamCsvToStorage(
   options: RegisterModuleCsvExportJobRunnerOptions,
 ): Promise<{ filename: string; count: number }> {
   const passThrough = new PassThrough();
-  const rawFallback = exportPayload.filename?.trim() || 'export.csv';
+  const rawFallback = exportPayload.filename?.trim() || "export.csv";
   const fallbackFilename = buildTenantExportFilename(ctx.tenant, rawFallback);
-  const filename = fallbackFilename.toLowerCase().endsWith('.csv')
+  const filename = fallbackFilename.toLowerCase().endsWith(".csv")
     ? fallbackFilename
     : `${fallbackFilename}.csv`;
   const key = resolveTenantExportKey(ctx.tenant, filename);
-  const uploadPromise = uploadStreamToStorage(ctx.tenant, key, passThrough, 'text/csv; charset=utf-8');
+  const uploadPromise = uploadStreamToStorage(
+    ctx.tenant,
+    key,
+    passThrough,
+    "text/csv; charset=utf-8",
+  );
 
   const generator = options.generateStreamChunks!(
     (exportPayload.query ?? {}) as Record<string, unknown>,
@@ -75,7 +83,7 @@ async function streamCsvToStorage(
     while (!step.done) {
       if (!passThrough.write(step.value)) {
         // Apply backpressure so the in-memory buffer stays bounded to a few chunks.
-        await new Promise<void>((resolve) => passThrough.once('drain', () => resolve()));
+        await new Promise<void>((resolve) => passThrough.once("drain", () => resolve()));
       }
       step = await generator.next();
     }
@@ -87,7 +95,7 @@ async function streamCsvToStorage(
       key: result.key,
       storageType: result.storageType,
       filename: meta?.filename || filename,
-      contentType: 'text/csv; charset=utf-8',
+      contentType: "text/csv; charset=utf-8",
     });
 
     return { filename: meta?.filename || filename, count: meta?.count ?? 0 };
@@ -114,7 +122,7 @@ export function registerModuleCsvExportJobRunner(
       const result = await streamCsvToStorage(ctx, exportPayload, options);
       count = result.count;
     } else {
-      const rawFallback = exportPayload.filename?.trim() || 'export.csv';
+      const rawFallback = exportPayload.filename?.trim() || "export.csv";
       const targetFilename = buildTenantExportFilename(ctx.tenant, rawFallback);
       const result = await options.buildExport(
         (exportPayload.query ?? {}) as Record<string, unknown>,

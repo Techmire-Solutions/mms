@@ -11,7 +11,7 @@ on:
       foreign_domains:
         description: Space-separated foreign hostnames to verify isolation against
         required: false
-        default: 'aabtaab.com darulquran.pk'
+        default: "aabtaab.com darulquran.pk"
         type: string
 
 permissions:

@@ -1,10 +1,10 @@
 import { XCircle } from "lucide-react";
 import { DropdownMenuItem } from "@/components/ui/dropdown-menu";
-import { ModuleRowActionsMenu } from "@/components/ui/ModuleRowActionsMenu";
-import { PersonMessagingRowActionsExtras } from "@/components/ui/PersonMessagingRowActionsExtras";
+import { ModuleRowActionsMenu } from "@/components/app/ModuleRowActionsMenu";
+import { PersonMessagingRowActionsExtras } from "@/components/app/PersonMessagingRowActionsExtras";
 import { useTranslation } from "@/hooks/useTranslation";
 import type { Enrollment } from "@/lib/data/enrollmentData";
-import type { Student, toMessagingRecipient } from "@mms/shared";
+import { enrollmentHoldsSeat, type Student, type toMessagingRecipient } from "@mms/shared";
 
 export type MessageChannel = "whatsapp" | "sms" | "email";
 
@@ -21,7 +21,10 @@ export interface EnrollmentRowActionsProps {
   onCancel: (id: string) => void;
   onDelete?: (id: string) => void;
   onRestore?: (id: string) => void;
-  openComposer: (channel: MessageChannel, recipients: ReturnType<typeof toMessagingRecipient>[]) => void;
+  openComposer: (
+    channel: MessageChannel,
+    recipients: ReturnType<typeof toMessagingRecipient>[],
+  ) => void;
 }
 
 /**
@@ -49,7 +52,14 @@ export function EnrollmentRowActions({
   const email = student?.email ?? null;
 
   const openChannel = (channel: MessageChannel) => {
-    openComposer(channel, [{ id: enrollment.id, name: studentDisplayName, phone: phone ?? "", email: email ?? undefined }]);
+    openComposer(channel, [
+      {
+        id: enrollment.id,
+        name: studentDisplayName,
+        phone: phone ?? "",
+        email: email ?? undefined,
+      },
+    ]);
   };
 
   return (
@@ -69,7 +79,10 @@ export function EnrollmentRowActions({
       triggerClassName={triggerClassName}
       extras={
         <>
-          {!showDeleted && canWrite && enrollment.status !== "cancelled" && enrollment.status !== "completed" ? (
+          {!showDeleted &&
+          canWrite &&
+          enrollmentHoldsSeat(enrollment.status) &&
+          enrollment.status !== "completed" ? (
             <DropdownMenuItem onClick={() => onCancel(enrollment.id)}>
               <XCircle className="w-3.5 h-3.5 me-2" /> {t("enrollments.actions.cancelShort")}
             </DropdownMenuItem>

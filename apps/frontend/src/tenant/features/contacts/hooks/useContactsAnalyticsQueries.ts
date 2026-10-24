@@ -4,16 +4,16 @@ import {
   type ContactsWidgetQuery,
   type ContactsWidgetAggregateResult,
   contactsWidgetQueryFromWidget,
-} from '@mms/shared';
-import { serverMetricsQueryOptions, useServerMetrics } from '@/hooks/useServerMetrics';
-import { useAuth } from '@/lib/contexts/AuthContext';
-import { apiContract, tsrClient } from '@/lib/api';
-import { useQuery } from '@tanstack/react-query';
+} from "@mms/shared";
+import { serverMetricsQueryOptions, useServerMetrics } from "@/hooks/useServerMetrics";
+import { useAuth } from "@/lib/contexts/AuthContext";
+import { apiContract, tsrClient } from "@/lib/api";
+import { useQuery } from "@tanstack/react-query";
 import {
   CONTACTS_DUPLICATES_QUERY_KEY,
   CONTACTS_REPORT_ANALYTICS_QUERY_KEY,
   CONTACTS_WIDGET_AGGREGATES_QUERY_KEY,
-} from '@/tenant/features/contacts/hooks/contactsQueryKeys';
+} from "@/tenant/features/contacts/hooks/contactsQueryKeys";
 
 export function contactsCommandMetricsQueryOptions() {
   return serverMetricsQueryOptions<ContactsCommandMetricsSnapshot>({
@@ -40,11 +40,10 @@ export function useContactsReportAnalytics(params: ContactsReportAnalyticsParams
   const { isAuthenticated } = useAuth();
   const enabled = params.enabled ?? true;
   const compareYears = params.compareYears?.filter(Boolean) ?? [];
-  const language = params.language ?? 'en';
-  
-  // @ts-expect-error - TS union discrimination limit with ts-rest
+  const language = params.language ?? "en";
+
   return tsrClient.contacts.reportAnalytics.useQuery({
-    queryKey: [...CONTACTS_REPORT_ANALYTICS_QUERY_KEY, compareYears.join(','), language] as const,
+    queryKey: [...CONTACTS_REPORT_ANALYTICS_QUERY_KEY, compareYears.join(","), language] as const,
     queryData: { query: { years: compareYears, lang: language } },
     enabled: isAuthenticated && enabled,
     staleTime: 30_000,
@@ -54,13 +53,13 @@ export function useContactsReportAnalytics(params: ContactsReportAnalyticsParams
 interface ContactsWidgetAggregateWidgetInput {
   id: string;
   collection: string;
-  operation: ContactsWidgetQuery['operation'];
+  operation: ContactsWidgetQuery["operation"];
   targetField?: string;
   filterField?: string;
-  filterOperator?: ContactsWidgetQuery['filterOperator'];
+  filterOperator?: ContactsWidgetQuery["filterOperator"];
   filterValue?: string;
   xAxisField?: string;
-  filters?: ContactsWidgetQuery['filters'];
+  filters?: ContactsWidgetQuery["filters"];
   chartLimit?: number;
 }
 
@@ -72,9 +71,9 @@ export function useContactsWidgetAggregates(
   const enabled = options?.enabled ?? true;
 
   const queries = (() =>
-      widgets
-        .filter((widget) => widget.collection === 'contacts')
-        .map((widget) => contactsWidgetQueryFromWidget(widget)))();
+    widgets
+      .filter((widget) => widget.collection === "contacts")
+      .map((widget) => contactsWidgetQueryFromWidget(widget)))();
 
   const querySignature = (() => {
     return JSON.stringify(
@@ -94,13 +93,14 @@ export function useContactsWidgetAggregates(
     queryKey: [...CONTACTS_WIDGET_AGGREGATES_QUERY_KEY, querySignature] as const,
     queryFn: async (): Promise<Record<string, ContactsWidgetAggregateResult>> => {
       const res = await apiContract.contacts.widgetAggregates({ body: { widgets: queries } });
-      const body = res.body as { results?: Record<string, ContactsWidgetAggregateResult> } | undefined;
+      const body = res.body as
+        { results?: Record<string, ContactsWidgetAggregateResult> } | undefined;
       return body?.results ?? {};
     },
     enabled: isAuthenticated && enabled && queries.length > 0,
     staleTime: 30_000,
   });
-  
+
   return { ...query, data: query.data ?? {} };
 }
 
@@ -115,8 +115,7 @@ export function useContactsDuplicatePairs(params: ContactsDuplicatesParams = {})
   const enabled = params.enabled ?? true;
   const page = params.page ?? 1;
   const limit = params.limit ?? 100;
-  
-  // @ts-expect-error - TS union discrimination limit with ts-rest
+
   return tsrClient.contacts.getDuplicates.useQuery({
     queryKey: [...CONTACTS_DUPLICATES_QUERY_KEY, page, limit] as const,
     queryData: { query: { page, limit } },

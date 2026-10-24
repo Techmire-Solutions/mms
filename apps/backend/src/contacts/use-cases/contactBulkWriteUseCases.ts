@@ -1,20 +1,13 @@
-import {
-  getContactTags,
-  mergeContacts as mergeContactRecords,
-  type Contact,
-} from '@mms/shared';
-import { invalidateDuplicateScanCache } from './contactDuplicateScanUseCases.js';
-import { getRequestTenant } from '../../lib/tenantContext.js';
-import { applyContactRelationshipInference } from './contactInferenceUseCases.js';
-import { runInTransaction } from '../../db/database.js';
-import {
-  assertContactUniqueFields,
-  prepareContactRecord,
-} from './contactValidationUseCases.js';
-import { broadcastCollection } from '../../lib/livePush.js';
-import { invalidateMultiTierCache } from '../../lib/cache/index.js';
-import type { ContactsRepository } from '../repository/contactsRepository.js';
-import { contactsRepository } from '../repository/contactsRepositoryAdapter.js';
+import { getContactTags, mergeContacts as mergeContactRecords, type Contact } from "@mms/shared";
+import { invalidateDuplicateScanCache } from "./contactDuplicateScanUseCases.js";
+import { getRequestTenant } from "../../lib/tenantContext.js";
+import { applyContactRelationshipInference } from "./contactInferenceUseCases.js";
+import { runInTransaction } from "../../db/database.js";
+import { assertContactUniqueFields, prepareContactRecord } from "./contactValidationUseCases.js";
+import { broadcastCollection } from "../../lib/livePush.js";
+import { invalidateMultiTierCache } from "../../lib/cache/index.js";
+import type { ContactsRepository } from "../repository/contactsRepository.js";
+import { contactsRepository } from "../repository/contactsRepositoryAdapter.js";
 
 export async function mergeContactsById(
   keepId: string,
@@ -25,20 +18,20 @@ export async function mergeContactsById(
 ): Promise<Contact> {
   const saved = await runInTransaction(async () => {
     const tenant = getRequestTenant();
-    if (!tenant) throw new Error('Tenant context required');
+    if (!tenant) throw new Error("Tenant context required");
     if (String(keepId) === String(deleteId)) {
-      throw new Error('Cannot merge a contact into itself');
+      throw new Error("Cannot merge a contact into itself");
     }
     const keep = await repo.findById(tenant, keepId);
     const other = await repo.findById(tenant, deleteId);
-    if (!keep || keep.deletedAt) throw new Error('Keep contact not found');
-    if (!other || other.deletedAt) throw new Error('Delete contact not found');
+    if (!keep || keep.deletedAt) throw new Error("Keep contact not found");
+    if (!other || other.deletedAt) throw new Error("Delete contact not found");
 
     const mergedSource = mergedInput
       ? { ...mergedInput, id: keepId }
       : mergeContactRecords(keep, other);
     const prepared = await prepareContactRecord(mergedSource, keepId);
-    await assertContactUniqueFields(tenant, prepared, 'en', [deleteId], repo);
+    await assertContactUniqueFields(tenant, prepared, "en", [deleteId], repo);
     const next: Contact = {
       ...keep,
       ...prepared,
@@ -68,9 +61,9 @@ export async function mergeContactsById(
   });
   const tenant = getRequestTenant();
   if (tenant) {
-    await invalidateMultiTierCache({ tenantId: tenant, domain: 'contacts' });
+    await invalidateMultiTierCache({ tenantId: tenant, domain: "contacts" });
   }
-  await broadcastCollection('contacts');
+  await broadcastCollection("contacts");
   return saved;
 }
 
@@ -82,7 +75,7 @@ export async function bulkSaveContacts(
   const tenant = getRequestTenant();
   if (!tenant || contacts.length === 0) return;
   await repo.bulkSave(tenant, contacts);
-  await invalidateMultiTierCache({ tenantId: tenant, domain: 'contacts' });
+  await invalidateMultiTierCache({ tenantId: tenant, domain: "contacts" });
 }
 
 export async function bulkTagContacts(
@@ -92,10 +85,12 @@ export async function bulkTagContacts(
 ): Promise<{ updatedCount: number }> {
   const result = await runInTransaction(async () => {
     const tenant = getRequestTenant();
-    if (!tenant) throw new Error('Tenant context required');
+    if (!tenant) throw new Error("Tenant context required");
     const contactsToUpdate = await repo.findByIds(tenant, ids);
     const toAdd = options.addTags?.map((t) => t.trim()).filter(Boolean) ?? [];
-    const toRemove = new Set(options.removeTags?.map((t) => t.trim().toLowerCase()).filter(Boolean) ?? []);
+    const toRemove = new Set(
+      options.removeTags?.map((t) => t.trim().toLowerCase()).filter(Boolean) ?? [],
+    );
 
     const toSave: Contact[] = [];
     for (const c of contactsToUpdate) {
@@ -121,7 +116,7 @@ export async function bulkTagContacts(
       if (!changed) continue;
 
       const nextTags = [...tagSet];
-      const tagStr = nextTags.length > 0 ? nextTags.join(', ') : undefined;
+      const tagStr = nextTags.length > 0 ? nextTags.join(", ") : undefined;
       const next: Contact = {
         ...c,
         tags: nextTags,
@@ -138,9 +133,9 @@ export async function bulkTagContacts(
   if (result.updatedCount > 0) {
     const tenant = getRequestTenant();
     if (tenant) {
-      await invalidateMultiTierCache({ tenantId: tenant, domain: 'contacts' });
+      await invalidateMultiTierCache({ tenantId: tenant, domain: "contacts" });
     }
-    await broadcastCollection('contacts');
+    await broadcastCollection("contacts");
   }
   return result;
 }

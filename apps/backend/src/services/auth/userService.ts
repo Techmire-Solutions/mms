@@ -1,21 +1,21 @@
-export type { PublicUser, PersistedUser } from './userServiceShared.js';
+export type { PublicUser, PersistedUser, StoredUser } from "./userServiceShared.js";
 export {
   getHydratedUsers,
   saveUsers,
   getWorkspaceUserRow,
   getLinkedContactId,
-} from './userServiceList.js';
+} from "./userServiceList.js";
 export {
   getPublicUserById,
   getTenantUserProfile,
   createUser,
   validateCredentials,
   findUserByLoginEmailAndWorkspace,
-} from './userServiceAuth.js';
+} from "./userServiceAuth.js";
 export {
   verifyUserPassword,
   changeTenantUserPassword,
   setTenantLoginEmail,
   setPendingLoginEmail,
   updateOwnLinkedContact,
-} from './userServiceAccount.js';
+} from "./userServiceAccount.js";

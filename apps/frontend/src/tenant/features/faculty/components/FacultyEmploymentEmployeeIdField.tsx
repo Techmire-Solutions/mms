@@ -1,12 +1,12 @@
 import type React from "react";
 import { Hash, RotateCw } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Field } from "@/components/ui/FormPrimitives";
+import { Field } from "@/components/app/FormPrimitives";
 import { FORM_INPUT_ERROR } from "@/components/ui/formStyles";
-import { LeadingIconInput } from "@/components/ui/LeadingIconInput";
+import { LeadingIconInput } from "@/components/app/LeadingIconInput";
 import { cn } from "@/lib/utils";
 import type { TranslationFunction } from "@/lib/contexts/TranslationContext";
-import { extractEmployeeId } from "@/tenant/features/faculty/components/facultyFormDraft";
+import { extractEmployeeId } from "@/tenant/features/faculty/lib/facultyFormDraft";
 
 export interface FacultyEmploymentEmployeeIdFieldProps {
   label: string;
@@ -48,7 +48,11 @@ export function FacultyEmploymentEmployeeIdField({
       hint={
         isExistingFaculty
           ? undefined
-          : t(autoGenerateId ? "faculty.form.employeeIdSetupHint" : "faculty.form.employeeIdManualHint")
+          : t(
+              autoGenerateId
+                ? "faculty.form.employeeIdSetupHint"
+                : "faculty.form.employeeIdManualHint",
+            )
       }
     >
       <div className="flex items-center gap-2">
@@ -75,7 +79,12 @@ export function FacultyEmploymentEmployeeIdField({
             title={t("faculty.form.regenerateId")}
             aria-label={t("faculty.form.regenerateId")}
           >
-            <RotateCw className={cn("h-4 w-4 text-muted-foreground", isFetchingNextEmployeeId && "animate-spin text-primary")} />
+            <RotateCw
+              className={cn(
+                "h-4 w-4 text-muted-foreground",
+                isFetchingNextEmployeeId && "animate-spin text-primary",
+              )}
+            />
           </Button>
         )}
       </div>

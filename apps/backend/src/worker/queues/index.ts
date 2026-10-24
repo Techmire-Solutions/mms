@@ -1,5 +1,5 @@
-import { Queue } from 'bullmq';
-import type { BackgroundJobRecord } from '@mms/shared';
+import { Queue } from "bullmq";
+import type { BackgroundJobRecord } from "@mms/shared";
 import {
   QUEUE_PDF_RENDERING,
   QUEUE_BULK_EXPORT,
@@ -8,11 +8,11 @@ import {
   DEFAULT_JOB_OPTIONS,
   TENANT_PRIORITY_BANDS,
   getBullMQConnectionOptions,
-} from './queueConfig.js';
-import { markJobPermanentlyFailed } from '../../services/backgroundJobWorkerService.js';
-import { stripUndefinedFields } from '../../lib/payloadTrimmer.js';
-import { logger } from '../../lib/logger.js';
-import { redisGet, redisIncr, redisDecr } from '../../lib/redis.js';
+} from "./queueConfig.js";
+import { markJobPermanentlyFailed } from "../../services/backgroundJobWorkerService.js";
+import { stripUndefinedFields } from "../../lib/payloadTrimmer.js";
+import { logger } from "../../lib/logger.js";
+import { redisGet, redisIncr, redisDecr } from "../../lib/redis.js";
 
 export const MAX_JOB_PAYLOAD_BYTES = 1024 * 1024; // 1 MB payload ceiling
 
@@ -40,8 +40,8 @@ export function getQueue(queueName: string): Queue<EnqueuedJobData> {
         priority: QUEUE_SETTINGS[queueName]?.priority ?? 2,
       },
     });
-    queue.on('error', (err) => {
-      logger.warn({ queue: queueName, err }, 'BullMQ queue connection error');
+    queue.on("error", (err) => {
+      logger.warn({ queue: queueName, err }, "BullMQ queue connection error");
     });
     queues.set(queueName, queue);
   }
@@ -52,11 +52,20 @@ export function resolveQueueNameForJob(moduleId: string, kind: string): string {
   const normalizedKind = kind.toLowerCase();
   const normalizedModule = moduleId.toLowerCase();
 
-  if (normalizedKind.includes('pdf') || normalizedKind.includes('receipt') || normalizedKind.includes('report-card')) {
+  if (
+    normalizedKind.includes("pdf") ||
+    normalizedKind.includes("receipt") ||
+    normalizedKind.includes("report-card")
+  ) {
     return QUEUE_PDF_RENDERING;
   }
 
-  if (normalizedModule === 'messaging' || normalizedKind.includes('broadcast') || normalizedKind.includes('sms') || normalizedKind.includes('whatsapp')) {
+  if (
+    normalizedModule === "messaging" ||
+    normalizedKind.includes("broadcast") ||
+    normalizedKind.includes("sms") ||
+    normalizedKind.includes("whatsapp")
+  ) {
     return QUEUE_MESSAGING_BROADCAST;
   }
 
@@ -119,11 +128,11 @@ export async function dispatchJobToQueue(
   const sanitizedPayload = stripUndefinedFields(payload);
   if (sanitizedPayload !== undefined && sanitizedPayload !== null) {
     try {
-      const payloadSize = Buffer.byteLength(JSON.stringify(sanitizedPayload), 'utf8');
+      const payloadSize = Buffer.byteLength(JSON.stringify(sanitizedPayload), "utf8");
       if (payloadSize > MAX_JOB_PAYLOAD_BYTES) {
         logger.warn(
           { jobId: job.id, queue: queueName, payloadSize, max: MAX_JOB_PAYLOAD_BYTES },
-          'Job payload exceeds 1MB limit; consider offloading to external storage artifact',
+          "Job payload exceeds 1MB limit; consider offloading to external storage artifact",
         );
       }
     } catch {
@@ -154,13 +163,16 @@ export async function dispatchJobToQueue(
     });
     // Guard against unhandled rejections if timeoutPromise wins the race
     addPromise.catch(() => {});
-    
+
     // Fail fast if Redis is unreachable to prevent API request hanging
     let timeoutId: NodeJS.Timeout;
     const timeoutPromise = new Promise<never>((_, reject) => {
-      timeoutId = setTimeout(() => reject(new Error('BullMQ queue.add timeout (Redis unreachable)')), 6000);
+      timeoutId = setTimeout(
+        () => reject(new Error("BullMQ queue.add timeout (Redis unreachable)")),
+        6000,
+      );
     });
-    
+
     try {
       await Promise.race([addPromise, timeoutPromise]);
       await incrementTenantInflightJobs(tenantId);
@@ -170,7 +182,7 @@ export async function dispatchJobToQueue(
     }
   } catch (error) {
     const errorMsg = error instanceof Error ? error.message : String(error);
-    logger.warn({ jobId: job.id, queue: queueName, err: errorMsg }, 'Failed to enqueue job');
+    logger.warn({ jobId: job.id, queue: queueName, err: errorMsg }, "Failed to enqueue job");
     return false;
   }
 }
@@ -184,19 +196,25 @@ export async function handleDeadLetterJob(
   failedReason: string,
 ): Promise<void> {
   logger.error(
-    { jobId: jobData.jobId, moduleId: jobData.moduleId, kind: jobData.kind, queue: queueName, reason: failedReason },
-    'Job permanently failed in queue',
+    {
+      jobId: jobData.jobId,
+      moduleId: jobData.moduleId,
+      kind: jobData.kind,
+      queue: queueName,
+      reason: failedReason,
+    },
+    "Job permanently failed in queue",
   );
-  
+
   await markJobPermanentlyFailed(
     jobData.tenantId,
     jobData.userId,
     jobData.jobId,
     jobData.moduleId,
     jobData.kind,
-    `Job failed permanently in queue: ${failedReason}`
-  ).catch(err => {
-    logger.error({ jobId: jobData.jobId, err }, 'Failed to record dead-letter job in DB');
+    `Job failed permanently in queue: ${failedReason}`,
+  ).catch((err) => {
+    logger.error({ jobId: jobData.jobId, err }, "Failed to record dead-letter job in DB");
   });
 }
 
@@ -207,12 +225,12 @@ export async function closeAllQueues(): Promise<void> {
   for (const [name, queue] of queues.entries()) {
     try {
       await queue.close();
-      logger.info({ queue: name }, 'Queue closed');
+      logger.info({ queue: name }, "Queue closed");
     } catch (err) {
-      logger.error({ queue: name, err }, 'Error closing queue');
+      logger.error({ queue: name, err }, "Error closing queue");
     }
   }
   queues.clear();
 }
 
-export * from './queueConfig.js';
+export * from "./queueConfig.js";

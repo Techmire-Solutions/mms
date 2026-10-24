@@ -1,9 +1,9 @@
 import React from "react";
 import { Plus, Trash2, TrendingUp, TrendingDown } from "lucide-react";
 import { formatMoney } from "@mms/shared";
-import { SectionHeader } from "@/components/ui/SectionHeader";
+import { SectionHeader } from "@shared/ui";
 import { Button } from "@/components/ui/button";
-import { EmptyState } from "@/components/ui/EmptyState";
+import { EmptyState } from "@/components/app/EmptyState";
 import type { BudgetItemWithClass } from "./budgetTabShared";
 
 interface BudgetSectionProps {
@@ -49,7 +49,8 @@ export function BudgetSection({
         iconClassName={bgToneClass}
         title={title}
         actions={
-          isWritable && canAdd && (
+          isWritable &&
+          canAdd && (
             <Button
               onClick={onAdd}
               className={`flex min-h-11 w-full items-center justify-center gap-1 rounded-lg border px-3 py-1.5 text-xs font-semibold transition-colors sm:w-auto ${btnClasses}`}
@@ -70,7 +71,9 @@ export function BudgetSection({
             >
               <div className="min-w-0 flex-1">
                 <p className="m-0 text-sm font-medium text-foreground">{item.detail}</p>
-                <p className="m-0 truncate text-xs text-muted-foreground">Class: {item.className}</p>
+                <p className="m-0 truncate text-xs text-muted-foreground">
+                  Class: {item.className}
+                </p>
               </div>
               <div className="flex items-center justify-between gap-3 sm:contents">
                 <p className={`m-0 shrink-0 text-sm font-bold ${toneClass}`}>

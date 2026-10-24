@@ -4,7 +4,7 @@ description: Implements or reviews MMS module command centres and Work tabs — 
 license: Proprietary
 metadata:
   owner: mms-platform
-  last-verified: 2026-10-04
+  last-verified: 2026-10-16
 ---
 
 # MMS Module Work Workflow
@@ -40,7 +40,7 @@ metadata:
 | Data Transfer / Import | `ModuleImportDialog`, `useModuleCsvImportActions`, `ModuleTransferSchema` (`@mms/shared`) |
 | Data Transfer / Export | `useModuleServerCsvExportActions`, `buildExportGrid`, `runGridCsvExportJob` |
 | Bulk | `ModuleUniversalBulkActionBar`, `ModuleWorkBulkActionBar`, `BulkSelectionDeleteAction`, `BulkSelectionRestoreAction` |
-| Archive chrome | `@/components/ui/DetailDrawerArchiveChrome` (`EntityArchivedBanner`, `DetailDrawerArchivedBanner`) |
+| Archive chrome | `@/components/app/DetailDrawerArchiveChrome` (`EntityArchivedBanner`, `DetailDrawerArchivedBanner`) |
 
 ## 3. Soft-Delete Trash & Bulk Operations
 
@@ -48,6 +48,8 @@ metadata:
 - Hide Create/Add and Export in trash mode; guard `Cmd/Ctrl+N`.
 - Archived drawers: archive banner + Restore; hide Edit/communication CTAs (full lifecycle → `mms-soft-delete`).
 - Two-layer bulk chrome: `ModuleUniversalBulkActionBar` over `ModuleWorkBulkActionBar`. Never fork adapters or duplicate selection hooks.
+
+For the full list of 6 invariant ratchets enforced by CI, see [references/work-directory-ratchets.md](references/work-directory-ratchets.md).
 
 ## 4. Verification
 

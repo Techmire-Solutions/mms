@@ -1,21 +1,21 @@
-import { PLATFORM_OTP_MAX_ATTEMPTS, resolvePlatformNotificationChannel, type StoredPlatformUser } from '@mms/shared';
+import {
+  PLATFORM_OTP_MAX_ATTEMPTS,
+  resolvePlatformNotificationChannel,
+  type StoredPlatformUser,
+} from "@mms/shared";
 import {
   createArtifactId,
   deleteAuthArtifact,
   getAuthArtifact,
   putAuthArtifact,
   takeAuthArtifact,
-} from '../auth/authArtifactService.js';
-import {
-  generateOtpCode,
-  hashOtpCode,
-  verifyOtpCode,
-} from '../auth/authCookieService.js';
-import { getStoredPlatformUserById } from './platformUserService.js';
-import { dispatchPlatformOtp, type PlatformOtpDispatchResult } from './platformOtpService.js';
-import { getPlatformSettings } from './platformSettingsService.js';
-import { sendPlatformSms } from './platformSmsService.js';
-import { logger } from '../../lib/logger.js';
+} from "../auth/authArtifactService.js";
+import { generateOtpCode, hashOtpCode, verifyOtpCode } from "../auth/authCookieService.js";
+import { getStoredPlatformUserById } from "./platformUserService.js";
+import { dispatchPlatformOtp, type PlatformOtpDispatchResult } from "./platformOtpService.js";
+import { getPlatformSettings } from "./platformSettingsService.js";
+import { sendPlatformSms } from "./platformSmsService.js";
+import { logger } from "../../lib/logger.js";
 
 const CHALLENGE_TTL_MS = 10 * 60 * 1000;
 
@@ -27,7 +27,7 @@ export interface PlatformTwoFactorChallengePayload {
 
 /** True when platform login requires an OTP step (opt-in via env). */
 export function isPlatformTwoFactorRequired(): boolean {
-  return process.env.PLATFORM_REQUIRE_2FA === 'true';
+  return process.env.PLATFORM_REQUIRE_2FA === "true";
 }
 
 /**
@@ -41,24 +41,42 @@ async function dispatchPlatformTwoFactorCode(
   logLabel: string,
 ): Promise<PlatformOtpDispatchResult> {
   const channel = resolvePlatformNotificationChannel(getPlatformSettings());
+  let smsResult: { sent: boolean } = { sent: false };
+  let emailResult: PlatformOtpDispatchResult = { sent: false };
 
-  if (channel === 'sms' && user.phone) {
-    const result = await sendPlatformSms({
+  if ((channel === "both" || channel === "sms") && user.phone) {
+    smsResult = await sendPlatformSms({
       to: user.phone,
       body: `Your MMS platform verification code is ${code}. It expires in ${ttlMinutes} minutes.`,
     });
-    if (result.sent) return { sent: true };
-    logger.warn({ channel, reason: result.reason, label: logLabel }, 'platform 2FA SMS dispatch failed, falling back to email');
+    if (!smsResult.sent) {
+      logger.warn(
+        { channel, reason: (smsResult as { reason?: string }).reason, label: logLabel },
+        "platform 2FA SMS dispatch failed",
+      );
+    }
   }
 
-  return dispatchPlatformOtp({
-    email: user.email,
-    code,
-    subject: 'Your MMS platform verification code',
-    bodyLines: ['Use this verification code to finish signing in to the MMS platform:'],
-    ttlMinutes,
-    logLabel,
-  });
+  if (
+    channel === "both" ||
+    channel === "email" ||
+    (channel === "sms" && !smsResult.sent) ||
+    channel === "none"
+  ) {
+    emailResult = await dispatchPlatformOtp({
+      email: user.email,
+      code,
+      subject: "Your MMS platform verification code",
+      bodyLines: ["Use this verification code to finish signing in to the MMS platform:"],
+      ttlMinutes,
+      logLabel,
+    });
+  }
+
+  return {
+    sent: smsResult.sent || emailResult.sent,
+    devCode: emailResult.devCode,
+  };
 }
 
 /**
@@ -72,7 +90,7 @@ export async function createPlatformTwoFactorChallenge(
   const challengeId = createArtifactId();
 
   await putAuthArtifact<PlatformTwoFactorChallengePayload>(
-    'platform_two_factor_challenge',
+    "platform_two_factor_challenge",
     {
       userId: user.id,
       codeHash: hashOtpCode(code),
@@ -82,10 +100,15 @@ export async function createPlatformTwoFactorChallenge(
     challengeId,
   );
 
-  const dispatch = await dispatchPlatformTwoFactorCode(user, code, CHALLENGE_TTL_MS / 60_000, 'Platform 2FA code');
+  const dispatch = await dispatchPlatformTwoFactorCode(
+    user,
+    code,
+    CHALLENGE_TTL_MS / 60_000,
+    "Platform 2FA code",
+  );
 
-  if (!dispatch.sent && process.env.NODE_ENV === 'production') {
-    await takeAuthArtifact(challengeId, 'platform_two_factor_challenge');
+  if (!dispatch.sent && process.env.NODE_ENV === "production") {
+    await takeAuthArtifact(challengeId, "platform_two_factor_challenge");
     return null;
   }
 
@@ -102,7 +125,7 @@ export async function resendPlatformTwoFactorChallenge(
 ): Promise<{ ok: boolean; devCode?: string }> {
   const entry = await getAuthArtifact<PlatformTwoFactorChallengePayload>(
     challengeId,
-    'platform_two_factor_challenge',
+    "platform_two_factor_challenge",
   );
   if (!entry) return { ok: false };
 
@@ -116,11 +139,16 @@ export async function resendPlatformTwoFactorChallenge(
     attempts: 0,
   };
   await deleteAuthArtifact(challengeId);
-  await putAuthArtifact('platform_two_factor_challenge', updated, CHALLENGE_TTL_MS, challengeId);
+  await putAuthArtifact("platform_two_factor_challenge", updated, CHALLENGE_TTL_MS, challengeId);
 
-  const dispatch = await dispatchPlatformTwoFactorCode(user, code, CHALLENGE_TTL_MS / 60_000, 'Platform 2FA code');
+  const dispatch = await dispatchPlatformTwoFactorCode(
+    user,
+    code,
+    CHALLENGE_TTL_MS / 60_000,
+    "Platform 2FA code",
+  );
 
-  if (!dispatch.sent && process.env.NODE_ENV === 'production') {
+  if (!dispatch.sent && process.env.NODE_ENV === "production") {
     await deleteAuthArtifact(challengeId);
     return { ok: false };
   }
@@ -138,18 +166,18 @@ export async function verifyPlatformTwoFactorChallenge(
 ): Promise<StoredPlatformUser | null> {
   const entry = await takeAuthArtifact<PlatformTwoFactorChallengePayload>(
     challengeId,
-    'platform_two_factor_challenge',
+    "platform_two_factor_challenge",
   );
   if (!entry) return null;
 
-  const normalizedCode = code.replace(/\s/g, '');
+  const normalizedCode = code.replace(/\s/g, "");
   if (!verifyOtpCode(normalizedCode, entry.payload.codeHash)) {
     const attempts = (entry.payload.attempts ?? 0) + 1;
     if (attempts >= PLATFORM_OTP_MAX_ATTEMPTS) {
       return null;
     }
     await putAuthArtifact<PlatformTwoFactorChallengePayload>(
-      'platform_two_factor_challenge',
+      "platform_two_factor_challenge",
       { ...entry.payload, attempts },
       CHALLENGE_TTL_MS,
       challengeId,

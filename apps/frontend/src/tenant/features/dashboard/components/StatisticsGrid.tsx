@@ -3,13 +3,13 @@ import { motion } from "framer-motion";
 import { Trash2, Plus, Pencil } from "lucide-react";
 import { useTranslation } from "@/hooks/useTranslation";
 import { Button } from "@/components/ui/button";
-import { StatCardBody } from "@/components/ui/StatCardBody";
+import { StatCardBody } from "@/components/app/StatCardBody";
 import { useReducedMotion } from "@/hooks/useReducedMotion";
-import { resolveCardVisuals } from "@/lib/dashboardWidgetColors";
-import { WidgetCard } from "@/components/ui/WidgetCard";
+import { resolveCardVisuals } from "@/lib/ui/dashboardWidgetColors";
+import { WidgetCard } from "@/components/app/WidgetCard";
 import type { StatItem } from "@/lib/dashboardWidgets";
 
-import { EmptyState } from "@/components/ui/EmptyState";
+import { EmptyState } from "@/components/app/EmptyState";
 import { LayoutGrid } from "lucide-react";
 
 const MotionWidgetCard = motion.create(WidgetCard);
@@ -43,7 +43,10 @@ export function StatisticsGrid({
 
   if (isLoading) {
     return (
-      <section aria-label={t("dashboard.statsSectionLabel")} className="grid grid-cols-2 sm:grid-cols-3 xl:grid-cols-4 gap-3 md:gap-4 font-sans">
+      <section
+        aria-label={t("dashboard.statsSectionLabel")}
+        className="grid grid-cols-2 sm:grid-cols-3 xl:grid-cols-4 gap-3 md:gap-4 font-sans"
+      >
         {Array.from({ length: 4 }).map((_, idx) => (
           <div
             key={`stat-skeleton-${idx}`}
@@ -84,8 +87,10 @@ export function StatisticsGrid({
   }
 
   return (
-    <section aria-label={t("dashboard.statsSectionLabel")} className="grid grid-cols-2 sm:grid-cols-3 xl:grid-cols-4 gap-3 md:gap-4 font-sans">
-
+    <section
+      aria-label={t("dashboard.statsSectionLabel")}
+      className="grid grid-cols-2 sm:grid-cols-3 xl:grid-cols-4 gap-3 md:gap-4 font-sans"
+    >
       {statItems.map((statItem, statIndex) => {
         const { IconComponent: Icon, colorTheme, accent } = resolveCardVisuals(statItem);
         const hasPositiveTrend = statItem.trend >= 0;
@@ -116,7 +121,9 @@ export function StatisticsGrid({
               trendAriaLabel={
                 statItem.trend !== 0 && !isEditMode
                   ? t("dashboard.trendAria", {
-                      direction: hasPositiveTrend ? t("dashboard.trendUp") : t("dashboard.trendDown"),
+                      direction: hasPositiveTrend
+                        ? t("dashboard.trendUp")
+                        : t("dashboard.trendDown"),
                       value: Math.abs(statItem.trend),
                     })
                   : undefined

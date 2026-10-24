@@ -1,9 +1,9 @@
-import { hasanatFieldConfigs } from '../schema.js';
-import { createWorkspaceSingletonJsonRepo } from './moduleSetupRepoFactories.js';
+import { hasanatFieldConfigs } from "../schema.js";
+import { createWorkspaceSingletonJsonRepo } from "./moduleSetupRepoFactories.js";
 
 const repo = createWorkspaceSingletonJsonRepo({
   table: hasanatFieldConfigs,
-  jsonColumn: 'config',
+  jsonColumn: "config",
 }); // hasanatFieldConfigs);
 
 export const getHasanatFieldConfig = repo.getByWorkspace;

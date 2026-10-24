@@ -52,4 +52,3 @@ export type StudentsWorkOverlayInteractions = Pick<
   | "setViewStudent"
   | "openIdCards"
 >;
-

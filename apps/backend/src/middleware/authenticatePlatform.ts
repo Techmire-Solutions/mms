@@ -1,20 +1,21 @@
-import type { FastifyReply, FastifyRequest } from 'fastify';
-import type { PlatformAdminPermissionKey, PlatformUser } from '@mms/shared';
-import { platformUserCan } from '@mms/shared';
+import type { FastifyReply, FastifyRequest } from "fastify";
+import type { PlatformAdminPermissionKey, PlatformUser } from "@mms/shared";
+import { platformUserCan } from "@mms/shared";
+import { platformSessionScope } from "../services/sessionClockService.js";
 import {
-  platformSessionScope,
-} from '../services/sessionClockService.js';
-import { enforcePlatformSessionClock, SESSION_EXPIRY_RESPONSE } from '../services/sessionGuardService.js';
-import { platformSessionPolicy } from '../services/sessionPolicyService.js';
-import { getRequestTenant } from '../lib/tenantContext.js';
-import { attachPlatformTokenFromCookie } from '../services/platform/platformCookieService.js';
-import type { PlatformAccessTokenPayload } from '../services/platform/platformAuthService.js';
+  enforcePlatformSessionClock,
+  SESSION_EXPIRY_RESPONSE,
+} from "../services/sessionGuardService.js";
+import { platformSessionPolicy } from "../services/sessionPolicyService.js";
+import { getRequestTenant } from "../lib/tenantContext.js";
+import { attachPlatformTokenFromCookie } from "../services/platform/platformCookieService.js";
+import type { PlatformAccessTokenPayload } from "../services/platform/platformAuthService.js";
 import {
   getStoredPlatformUserById,
   toPublicPlatformUser,
-} from '../services/platform/platformUserService.js';
-import { sendForbidden, sendUnauthorized } from '../lib/httpErrors.js';
-import { isTokenRevoked } from '../services/session.service.js';
+} from "../services/platform/platformUserService.js";
+import { sendForbidden, sendUnauthorized } from "../lib/httpErrors.js";
+import { isTokenRevoked } from "../services/authSessionService.js";
 
 export interface PlatformAuthenticatedRequest extends FastifyRequest {
   platformUser: PlatformUser;
@@ -25,15 +26,10 @@ export interface PlatformOptionalAuthRequest extends FastifyRequest {
 }
 
 type PlatformAuthFailureReason =
-  | 'auth_required'
-  | 'invalid_session'
-  | 'user_missing'
-  | 'account_disabled'
-  | 'session_revoked';
+  "auth_required" | "invalid_session" | "user_missing" | "account_disabled" | "session_revoked";
 
 type PlatformAuthResolveResult =
-  | { ok: true; user: PlatformUser }
-  | { ok: false; reason: PlatformAuthFailureReason };
+  { ok: true; user: PlatformUser } | { ok: false; reason: PlatformAuthFailureReason };
 
 /**
  * Hook to enforce that the request is only allowed on the main domain (no tenant subdomain context).
@@ -43,7 +39,7 @@ export async function requireMainDomain(
   reply: FastifyReply,
 ): Promise<void> {
   if (getRequestTenant()) {
-    await sendForbidden(reply, 'Platform actions are only available on the main domain');
+    await sendForbidden(reply, "Platform actions are only available on the main domain");
     return;
   }
 }
@@ -61,29 +57,29 @@ export async function resolvePlatformUser(
   try {
     await request.jwtVerify();
   } catch {
-    return { ok: false, reason: 'auth_required' };
+    return { ok: false, reason: "auth_required" };
   }
 
   const payload = request.user as PlatformAccessTokenPayload;
-  if (payload.tokenType !== 'platform_access') {
-    return { ok: false, reason: 'invalid_session' };
+  if (payload.tokenType !== "platform_access") {
+    return { ok: false, reason: "invalid_session" };
   }
 
   if (payload.jti && (await isTokenRevoked(payload.jti))) {
-    return { ok: false, reason: 'session_revoked' };
+    return { ok: false, reason: "session_revoked" };
   }
 
   const stored = await getStoredPlatformUserById(payload.id);
   if (!stored) {
-    return { ok: false, reason: 'user_missing' };
+    return { ok: false, reason: "user_missing" };
   }
 
   if (stored.disabledAt) {
-    return { ok: false, reason: 'account_disabled' };
+    return { ok: false, reason: "account_disabled" };
   }
 
   if ((payload.sessionVersion ?? 0) !== stored.sessionVersion) {
-    return { ok: false, reason: 'session_revoked' };
+    return { ok: false, reason: "session_revoked" };
   }
 
   return { ok: true, user: toPublicPlatformUser(stored) };
@@ -94,21 +90,21 @@ async function sendPlatformAuthFailure(
   reason: PlatformAuthFailureReason,
 ): Promise<void> {
   switch (reason) {
-    case 'account_disabled':
-      await sendUnauthorized(reply, 'Platform account has been disabled', 'account_disabled');
+    case "account_disabled":
+      await sendUnauthorized(reply, "Platform account has been disabled", "account_disabled");
       return;
-    case 'session_revoked':
-      await sendUnauthorized(reply, 'Platform session has been revoked', 'session_revoked');
+    case "session_revoked":
+      await sendUnauthorized(reply, "Platform session has been revoked", "session_revoked");
       return;
-    case 'user_missing':
-      await sendUnauthorized(reply, 'User no longer exists');
+    case "user_missing":
+      await sendUnauthorized(reply, "User no longer exists");
       return;
-    case 'invalid_session':
-      await sendUnauthorized(reply, 'Invalid platform session');
+    case "invalid_session":
+      await sendUnauthorized(reply, "Invalid platform session");
       return;
-    case 'auth_required':
+    case "auth_required":
     default:
-      await sendUnauthorized(reply, 'Platform authentication is required');
+      await sendUnauthorized(reply, "Platform authentication is required");
   }
 }
 
@@ -138,7 +134,7 @@ export async function authenticatePlatform(
     policy: sessionPolicy,
     jti,
   });
-  if (idleOutcome !== 'ok') {
+  if (idleOutcome !== "ok") {
     const expiry = SESSION_EXPIRY_RESPONSE[idleOutcome];
     return sendUnauthorized(reply, expiry.message, expiry.type);
   }
@@ -191,8 +187,8 @@ export function requirePlatformSuperUser() {
   ): Promise<void> {
     if (reply.sent) return;
     const req = request as PlatformAuthenticatedRequest;
-    if (req.platformUser.role !== 'super_user') {
-      await sendForbidden(reply, 'Super-user privilege required');
+    if (req.platformUser.role !== "super_user") {
+      await sendForbidden(reply, "Super-user privilege required");
     }
   };
 }

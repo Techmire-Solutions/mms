@@ -43,14 +43,12 @@ export function getDefaultContactConfigContextValue(): ContactConfigContextType 
     width: entry.width,
   }));
 
-  const visibleColumns = DEFAULT_COLUMN_REGISTRY
-    .filter((entry) => entry.enabled)
-    .map((entry) => ({
-      id: entry.key,
-      label: entry.label,
-      sortField: entry.sortField,
-      width: entry.width,
-    }));
+  const visibleColumns = DEFAULT_COLUMN_REGISTRY.filter((entry) => entry.enabled).map((entry) => ({
+    id: entry.key,
+    label: entry.label,
+    sortField: entry.sortField,
+    width: entry.width,
+  }));
 
   cachedDefault = {
     formTabsReady: true,
@@ -94,11 +92,7 @@ export function getDefaultContactConfigContextValue(): ContactConfigContextType 
     tags: seeded.tags,
     lookupsLoading: false,
     lookupsError: null,
-    defaultPhoneCountryCode: getFallbackCountryCode(
-      prefs,
-      countryCodesMap,
-      seeded.countryCodes,
-    ),
+    defaultPhoneCountryCode: getFallbackCountryCode(prefs, countryCodesMap, seeded.countryCodes),
     columnRegistry: DEFAULT_COLUMN_REGISTRY,
     availableColumns,
     visibleColumns,
@@ -118,8 +112,7 @@ export function getDefaultContactConfigContextValue(): ContactConfigContextType 
     updateUserColumnLayout: () => {},
     isColumnVisible: (key: string) =>
       DEFAULT_COLUMN_REGISTRY.find((c) => c.key === key)?.enabled ?? false,
-    getColumnWidth: (key: string) =>
-      DEFAULT_COLUMN_REGISTRY.find((c) => c.key === key)?.width,
+    getColumnWidth: (key: string) => DEFAULT_COLUMN_REGISTRY.find((c) => c.key === key)?.width,
     setColumnWidth: () => {},
     systemSortOptions: [],
   };

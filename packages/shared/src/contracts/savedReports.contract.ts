@@ -1,10 +1,10 @@
-import { initContract } from '@ts-rest/core';
-import { z } from 'zod';
+import { initContract } from "@ts-rest/core";
+import { z } from "zod";
 import {
   genericSavedReportCreateSchema,
   genericSavedReportListQuerySchema,
   genericSavedReportIdParamsSchema,
-} from '../savedReportsSchemas.js';
+} from "../reports/savedReportsSchemas.js";
 
 const c = initContract();
 
@@ -23,8 +23,8 @@ const errorSchema = z.object({ type: z.string(), message: z.string() });
 
 export const savedReportsContract = c.router({
   list: {
-    method: 'GET',
-    path: '/api/saved-reports',
+    method: "GET",
+    path: "/api/saved-reports",
     query: genericSavedReportListQuerySchema,
     responses: {
       200: z.object({ reports: z.array(savedReportResponseSchema) }),
@@ -32,11 +32,11 @@ export const savedReportsContract = c.router({
       403: errorSchema,
       500: errorSchema,
     },
-    summary: 'List saved reports for a category',
+    summary: "List saved reports for a category",
   },
   create: {
-    method: 'POST',
-    path: '/api/saved-reports',
+    method: "POST",
+    path: "/api/saved-reports",
     body: genericSavedReportCreateSchema,
     responses: {
       201: z.object({ report: savedReportResponseSchema }),
@@ -44,11 +44,11 @@ export const savedReportsContract = c.router({
       403: errorSchema,
       500: errorSchema,
     },
-    summary: 'Create a saved report preset',
+    summary: "Create a saved report preset",
   },
   delete: {
-    method: 'DELETE',
-    path: '/api/saved-reports/:id',
+    method: "DELETE",
+    path: "/api/saved-reports/:id",
     pathParams: genericSavedReportIdParamsSchema,
     query: genericSavedReportListQuerySchema,
     body: z.void().optional(),
@@ -59,11 +59,11 @@ export const savedReportsContract = c.router({
       404: errorSchema,
       500: errorSchema,
     },
-    summary: 'Delete a saved report preset',
+    summary: "Delete a saved report preset",
   },
   run: {
-    method: 'POST',
-    path: '/api/saved-reports/:id/run',
+    method: "POST",
+    path: "/api/saved-reports/:id/run",
     pathParams: genericSavedReportIdParamsSchema,
     query: genericSavedReportListQuerySchema,
     body: z.void().optional(),
@@ -74,6 +74,6 @@ export const savedReportsContract = c.router({
       404: errorSchema,
       500: errorSchema,
     },
-    summary: 'Run a saved report and return results',
+    summary: "Run a saved report and return results",
   },
 });

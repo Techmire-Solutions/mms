@@ -55,7 +55,7 @@ describe("StudentCardTemplateEditor", () => {
 
     const buttons = container.querySelectorAll("button");
     const backButton = Array.from(buttons).find((b) =>
-      b.textContent?.includes("students.cardTemplate.side.back")
+      b.textContent?.includes("students.cardTemplate.side.back"),
     );
     expect(backButton).toBeDefined();
 
@@ -66,7 +66,7 @@ describe("StudentCardTemplateEditor", () => {
     expect(container.textContent).toContain("students.cardTemplate.side.back");
 
     const frontButton = Array.from(container.querySelectorAll("button")).find((b) =>
-      b.textContent?.includes("students.cardTemplate.side.front")
+      b.textContent?.includes("students.cardTemplate.side.front"),
     );
     expect(frontButton).toBeDefined();
 

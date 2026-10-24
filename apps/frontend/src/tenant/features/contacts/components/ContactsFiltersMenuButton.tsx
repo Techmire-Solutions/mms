@@ -6,12 +6,12 @@ import {
 } from "@mms/shared";
 import type { TranslationFunction } from "@/lib/contexts/TranslationContext";
 import { formatContactGenderLabel } from "@/lib/contacts/contactI18n";
-import { GenderIcon } from "@/components/ui/GenderIcon";
+import { GenderIcon } from "@/components/app/GenderIcon";
 import {
   ModuleFilterDivider,
   ModuleFilterDropdown,
   ModuleFilterRadioGroup,
-} from "@/components/ui/ModuleFiltersMenuButton";
+} from "@/components/app/ModuleFiltersMenuButton";
 
 export interface ContactsFiltersMenuButtonProps {
   activeFilterCount: number;
@@ -69,10 +69,7 @@ export const ContactsFiltersMenuButton = React.memo(function ContactsFiltersMenu
   );
 
   return (
-    <ModuleFilterDropdown
-      label={t("contacts.filters")}
-      activeCount={activeFilterCount}
-    >
+    <ModuleFilterDropdown label={t("contacts.filters")} activeCount={activeFilterCount}>
       <ModuleFilterRadioGroup
         label={t("contacts.filters")}
         value={quickFilter}

@@ -3,8 +3,8 @@ import type { WorkDirectoryViewMode } from "@/hooks/useWorkDirectoryViewMode";
 import { UserPlus } from "lucide-react";
 import type { SystemUser } from "@mms/shared";
 import { Button } from "@/components/ui/button";
-import { Card } from "@/components/ui/card";
-import { EmptyState } from "@/components/ui/EmptyState";
+
+import { EmptyState } from "@/components/app/EmptyState";
 import { useTranslation } from "@/hooks/useTranslation";
 import { UsersListDesktopTable } from "@/tenant/features/users/components/UsersListDesktopTable";
 import { UsersListCards } from "@/tenant/features/users/components/UsersListCards";
@@ -108,13 +108,11 @@ export function UsersListContent({
   }
 
   return (
-    <Card accentColor="primary" className="overflow-hidden p-0">
-      <UsersListDesktopTable
-        {...listProps}
-        getColumnWidth={getColumnWidth}
-        onColumnResize={onColumnResize}
-        isColumnVisible={isColumnVisible}
-      />
-    </Card>
+    <UsersListDesktopTable
+      {...listProps}
+      getColumnWidth={getColumnWidth}
+      onColumnResize={onColumnResize}
+      isColumnVisible={isColumnVisible}
+    />
   );
 }

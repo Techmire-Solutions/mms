@@ -1,7 +1,7 @@
-import { and, getTableColumns, sql, type SQL } from 'drizzle-orm';
-import type { AnyPgTable, SelectedFields } from 'drizzle-orm/pg-core';
-import type { NodePgDatabase } from 'drizzle-orm/node-postgres';
-import type * as schema from '../schema.js';
+import { and, getTableColumns, sql, type SQL } from "drizzle-orm";
+import type { AnyPgTable, SelectedFields } from "drizzle-orm/pg-core";
+import type { NodePgDatabase } from "drizzle-orm/node-postgres";
+import type * as schema from "../schema.js";
 
 type AppDb = NodePgDatabase<typeof schema>;
 
@@ -44,11 +44,13 @@ export async function runListPage<Row, Record>(
   table: AnyPgTable,
   options: RunListPageOptions<Row, Record>,
 ): Promise<ListPageResult<Record>> {
-  const rawPage = typeof options.page === 'number' && Number.isFinite(options.page) ? options.page : 1;
+  const rawPage =
+    typeof options.page === "number" && Number.isFinite(options.page) ? options.page : 1;
   const page = Math.max(1, Math.floor(rawPage));
-  const rawLimit = typeof options.limit === 'number' && Number.isFinite(options.limit)
-    ? options.limit
-    : (options.defaultPageSize ?? 50);
+  const rawLimit =
+    typeof options.limit === "number" && Number.isFinite(options.limit)
+      ? options.limit
+      : (options.defaultPageSize ?? 50);
   const limit = Math.min(Math.max(1, Math.floor(rawLimit)), 100);
   const isCursorPaging = Boolean(options.afterId?.trim());
   const offset = isCursorPaging ? 0 : (page - 1) * limit;
@@ -72,9 +74,7 @@ export async function runListPage<Row, Record>(
   }
 
   // When keyset paging on `id > afterId`, ordering must be `id ASC` to preserve index scan consistency
-  const effectiveOrderBy = isCursorPaging
-    ? sql`${getTableColumns(table).id} asc`
-    : options.orderBy;
+  const effectiveOrderBy = isCursorPaging ? sql`${getTableColumns(table).id} asc` : options.orderBy;
 
   // Never fall back to a bare `tx.select()` (SELECT *) wildcard. Project an
   // explicit column object — a caller-supplied projection when provided,
@@ -90,7 +90,8 @@ export async function runListPage<Row, Record>(
     .offset(offset);
 
   const items = (rows as Row[]).map(options.rowMapper);
-  const hasMore = isCursorPaging || options.skipCount ? items.length === limit : page * limit < total;
+  const hasMore =
+    isCursorPaging || options.skipCount ? items.length === limit : page * limit < total;
   const lastItem = items[items.length - 1] as { id?: unknown } | undefined;
   const nextCursor = isCursorPaging && hasMore && lastItem?.id ? String(lastItem.id) : undefined;
 

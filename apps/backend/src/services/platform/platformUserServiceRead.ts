@@ -1,12 +1,12 @@
-import type { PlatformUserProfile } from '@mms/shared';
+import type { PlatformUserProfile } from "@mms/shared";
 import {
   findPlatformUserRowByEmail,
   findPlatformUserRowById,
   updatePlatformUserRow,
-} from '../../db/repositories/platformUserRepository.js';
-import type { StoredPlatformUser } from '@mms/shared';
-import { PlatformError } from './platformErrorService.js';
-import { toPlatformUserProfile } from './platformUserServiceMappers.js';
+} from "../../db/repositories/platformUserRepository.js";
+import type { StoredPlatformUser } from "@mms/shared";
+import { PlatformError } from "./platformErrorService.js";
+import { toPlatformUserProfile } from "./platformUserServiceMappers.js";
 
 export async function getPlatformUserProfile(userId: string): Promise<PlatformUserProfile | null> {
   const stored = await getStoredPlatformUserById(userId);
@@ -36,7 +36,7 @@ export async function updatePlatformUserNameAndPhone(
   const rowPatch: { name?: string; phone?: string } = {};
   if (patch.name !== undefined) {
     const trimmedName = patch.name.trim();
-    if (!trimmedName) throw new PlatformError('invalid_name', 'Name cannot be empty');
+    if (!trimmedName) throw new PlatformError("invalid_name", "Name cannot be empty");
     rowPatch.name = trimmedName;
   }
   if (patch.phone !== undefined) {
@@ -44,9 +44,10 @@ export async function updatePlatformUserNameAndPhone(
   }
 
   const updated = await updatePlatformUserRow(userId, rowPatch);
-  if (!updated) throw new PlatformError('user_not_found', 'Platform user not found');
-  if (updated.role === 'super_user') {
-    const { syncPlatformSuperUserToTenants } = await import('./platformSuperUserTenantSyncService.js');
+  if (!updated) throw new PlatformError("user_not_found", "Platform user not found");
+  if (updated.role === "super_user") {
+    const { syncPlatformSuperUserToTenants } =
+      await import("./platformSuperUserTenantSyncService.js");
     await syncPlatformSuperUserToTenants(updated);
   }
   return updated;

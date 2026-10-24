@@ -15,7 +15,11 @@ export interface DataTableRowAction {
 }
 
 /** Inline icon actions for a table row or card footer (44×44 touch targets). */
-export function DataTableRowActions({ actions }: { actions: readonly DataTableRowAction[] }): React.JSX.Element {
+export function DataTableRowActions({
+  actions,
+}: {
+  actions: readonly DataTableRowAction[];
+}): React.JSX.Element {
   return (
     <div className="flex items-center justify-end gap-1">
       {actions
@@ -31,11 +35,13 @@ export function DataTableRowActions({ actions }: { actions: readonly DataTableRo
             aria-label={label}
             title={label}
             className={cn(
-              "min-h-11 min-w-11 p-0",
-              tone === "destructive" ? "hover:bg-destructive/10 hover:text-destructive" : "hover:text-primary",
+              "min-h-11 min-w-11 p-0 cursor-pointer",
+              tone === "destructive"
+                ? "hover:bg-destructive/10 hover:text-destructive"
+                : "hover:text-primary",
             )}
           >
-            <Icon className="size-4" aria-hidden />
+            <Icon className="size-4" aria-hidden="true" />
           </Button>
         ))}
     </div>

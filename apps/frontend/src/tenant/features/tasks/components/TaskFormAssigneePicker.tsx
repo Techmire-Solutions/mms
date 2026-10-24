@@ -1,8 +1,9 @@
-import React from 'react';
-import { X, UserCheck } from 'lucide-react';
-import { useTranslation } from '@/hooks/useTranslation';
-import { FormSelect } from '@/components/ui/FormSelect';
-import type { EligibleAssigneeItem } from '@/tenant/features/tasks/hooks/useTasksApi';
+import React from "react";
+import { UserCheck } from "lucide-react";
+import { useTranslation } from "@/hooks/useTranslation";
+import { FormSelect } from "@/components/app/FormSelect";
+import { Badge } from "@/components/ui/badge";
+import type { EligibleAssigneeItem } from "@/tenant/features/tasks/hooks/useTasksApi";
 
 export interface SelectedAssignee {
   facultyId: string;
@@ -28,7 +29,7 @@ export function TaskFormAssigneePicker({
   return (
     <div>
       <label htmlFor={pickerId} className="block text-sm font-medium text-foreground mb-1">
-        {t('tasks.assignees')}
+        {t("tasks.assignees")}
       </label>
       <FormSelect
         id={pickerId}
@@ -36,32 +37,30 @@ export function TaskFormAssigneePicker({
         onChange={(facultyId) => {
           if (facultyId) onAddAssignee(facultyId);
         }}
-        placeholder={t('tasks.noAssignees')}
+        placeholder={t("tasks.noAssignees")}
         options={eligibleList
           .filter((item) => !selectedAssignees.some((a) => a.facultyId === item.facultyId))
           .map((f) => ({
             value: f.facultyId,
-            label: `${f.name}${f.isSelf ? ' • Self' : ''}`,
+            label: `${f.name}${f.isSelf ? " • Self" : ""}`,
           }))}
       />
 
       {selectedAssignees.length > 0 ? (
         <div className="flex flex-wrap gap-1.5 mt-2">
           {selectedAssignees.map((assignee) => (
-            <span
+            <Badge
               key={assignee.facultyId}
-              className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium bg-primary/10 text-primary border border-primary/20"
+              as="span"
+              tone="primary"
+              pill
+              size="sm"
+              onRemove={() => onRemoveAssignee(assignee.facultyId)}
+              removeAriaLabel={`Remove ${assignee.name}`}
             >
-              <UserCheck className="h-3 w-3" />
+              <UserCheck className="h-3 w-3 shrink-0" aria-hidden="true" />
               <span>{assignee.name}</span>
-              <button
-                type="button"
-                onClick={() => onRemoveAssignee(assignee.facultyId)}
-                className="hover:text-destructive transition-colors ms-0.5"
-              >
-                <X className="h-3 w-3" />
-              </button>
-            </span>
+            </Badge>
           ))}
         </div>
       ) : null}

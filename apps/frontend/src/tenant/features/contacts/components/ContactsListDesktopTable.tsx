@@ -8,7 +8,7 @@ import { type ContactsColumnConfig } from "@/tenant/features/contacts/components
 import { WorkBatchTable, type WorkBatchTableColumn } from "@/components/common/work/WorkBatchTable";
 import { renderContactTableCell } from "@/tenant/features/contacts/components/ContactTableCells";
 import { ContactsRowActions } from "@/tenant/features/contacts/components/ContactsRowActions";
-import { MODULE_ROW_ACTIONS_TRIGGER_CLASS } from "@/components/ui/ModuleRowActionsMenu";
+import { MODULE_ROW_ACTIONS_TRIGGER_CLASS } from "@/components/app/ModuleRowActionsMenu";
 
 export interface ContactsListDesktopTableProps {
   contacts: Contact[];
@@ -57,7 +57,8 @@ export const ContactsListDesktopTable = React.memo(function ContactsListDesktopT
   allSelected = false,
   someSelected = false,
 }: ContactsListDesktopTableProps): React.JSX.Element {
-  const { prefs, countryCodesMap, countryCodes, getColumnWidth, setColumnWidth } = useContactConfig();
+  const { prefs, countryCodesMap, countryCodes, getColumnWidth, setColumnWidth } =
+    useContactConfig();
   const { t } = useTranslation();
 
   const contactsMap = useMemo(() => buildContactsMap(allContacts), [allContacts]);
@@ -65,8 +66,6 @@ export const ContactsListDesktopTable = React.memo(function ContactsListDesktopT
     singular: "contacts.form.contact",
     plural: "contacts.table.contacts",
   });
-
-
 
   const finalColumns = useMemo<WorkBatchTableColumn<Contact>[]>(() => {
     return columns.map((col) => ({
@@ -94,7 +93,20 @@ export const ContactsListDesktopTable = React.memo(function ContactsListDesktopT
         });
       },
     }));
-  }, [columns, getColumnWidth, prefs, countryCodesMap, countryCodes, contactsMap, allContacts, showArchived, t, onView, onWhatsApp, selected]);
+  }, [
+    columns,
+    getColumnWidth,
+    prefs,
+    countryCodesMap,
+    countryCodes,
+    contactsMap,
+    allContacts,
+    showArchived,
+    t,
+    onView,
+    onWhatsApp,
+    selected,
+  ]);
 
   return (
     <WorkBatchTable

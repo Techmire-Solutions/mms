@@ -33,32 +33,32 @@ vi.mock("@/tenant/features/attendance/hooks/useAttendance", () => ({
 }));
 
 attendanceMocks.useAttendancePaginated.mockReturnValue({
-    data: {
-      records: [
-        {
-          id: "rec-1",
-          studentId: "std-1",
-          studentName: "Bilal Ahmad",
-          sessionId: "ses-1",
-          classId: "cls-1",
-          date: "2025-01-01",
-          status: "present",
-          timeIn: "08:00",
-          timeOut: "12:00",
-          notes: "",
-          createdAt: "2025-01-01T08:00:00Z",
-          updatedAt: "2025-01-01T08:00:00Z",
-        },
-      ],
-      total: 1,
-      page: 1,
-      limit: 25,
-      hasMore: false,
-    },
-    isFetching: false,
-    isError: false,
-    refetch: vi.fn(),
-  });
+  data: {
+    records: [
+      {
+        id: "rec-1",
+        studentId: "std-1",
+        studentName: "Bilal Ahmad",
+        sessionId: "ses-1",
+        classId: "cls-1",
+        date: "2025-01-01",
+        status: "present",
+        timeIn: "08:00",
+        timeOut: "12:00",
+        notes: "",
+        createdAt: "2025-01-01T08:00:00Z",
+        updatedAt: "2025-01-01T08:00:00Z",
+      },
+    ],
+    total: 1,
+    page: 1,
+    limit: 25,
+    hasMore: false,
+  },
+  isFetching: false,
+  isError: false,
+  refetch: vi.fn(),
+});
 
 vi.mock("./AttendanceListFilters", () => ({
   AttendanceListFilters: () => <div data-testid="filters">Filters</div>,
@@ -88,10 +88,12 @@ describe("AttendanceRecords Component", () => {
     expect(html).toContain("Filters");
     expect(html).toContain("Desktop Table");
     expect(html).toContain("Confirm Dialogs");
-    expect(attendanceMocks.useAttendancePaginated).toHaveBeenCalledWith(expect.objectContaining({
-      sessionId: "ses-1",
-      classId: "cls-1",
-      facultyId: "fac-1",
-    }));
+    expect(attendanceMocks.useAttendancePaginated).toHaveBeenCalledWith(
+      expect.objectContaining({
+        sessionId: "ses-1",
+        classId: "cls-1",
+        facultyId: "fac-1",
+      }),
+    );
   });
 });

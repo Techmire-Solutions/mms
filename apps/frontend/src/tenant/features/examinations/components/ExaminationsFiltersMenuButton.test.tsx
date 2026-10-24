@@ -9,16 +9,26 @@ vi.mock("@/hooks/useTranslation", () => ({
   }),
 }));
 
-vi.mock("@/components/ui/ModuleFiltersMenuButton", () => ({
-  ModuleFilterDropdown: ({ children, label }: any) => (
+vi.mock("@/components/app/ModuleFiltersMenuButton", () => ({
+  ModuleFilterDropdown: ({
+    children,
+    label,
+  }: {
+    children?: React.ReactNode;
+    label?: React.ReactNode;
+  }) => (
     <div data-testid="filter-dropdown">
       <span>{label}</span>
       {children}
     </div>
   ),
-  ModuleFilterCheckboxGroup: ({ options }: any) => (
+  ModuleFilterCheckboxGroup: ({
+    options,
+  }: {
+    options: Array<{ value: string; label: React.ReactNode }>;
+  }) => (
     <div data-testid="checkbox-group">
-      {options.map((opt: any) => (
+      {options.map((opt: { value: string; label: React.ReactNode }) => (
         <span key={opt.value}>{opt.label}</span>
       ))}
     </div>

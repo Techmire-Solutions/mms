@@ -1,11 +1,6 @@
 import React from "react";
-import {
-  hasanatTransferSchema,
-  type HasanatTransferEntity,
-} from "@mms/shared";
-import { ModuleImportDialog } from "@/components/ui/ModuleImportDialog";
-import { useModuleCsvImportActions } from "@/lib/backgroundJobs/useModuleCsvImportActions";
-import { useTranslation } from "@/hooks/useTranslation";
+import { hasanatTransferSchema, type HasanatTransferEntity } from "@mms/shared";
+import { StandardModuleCsvImportDialog } from "@/components/app/StandardModuleCsvImportDialog";
 
 export interface HasanatCsvImportDialogProps {
   open: boolean;
@@ -19,24 +14,14 @@ export function HasanatCsvImportDialog({
   onClose,
   canWrite,
 }: HasanatCsvImportDialogProps): React.JSX.Element | null {
-  const { t } = useTranslation();
-
-  const actions = useModuleCsvImportActions<HasanatTransferEntity>({
-    apiPath: "/api/hasanat/import",
-    schema: hasanatTransferSchema,
-    onSuccess: onClose,
-  });
-
-  if (!open || !canWrite) return null;
-
   return (
-    <ModuleImportDialog<HasanatTransferEntity>
+    <StandardModuleCsvImportDialog<HasanatTransferEntity>
       open={open}
       onClose={onClose}
-      title={`${t("common.import")} - ${t("nav.hasanatCards")}`}
-      subtitle={t("faculty.io.csvHint")}
       canWrite={canWrite}
-      actions={actions}
+      apiPath="/api/hasanat/import"
+      schema={hasanatTransferSchema}
+      navKey="nav.hasanatCards"
     />
   );
 }

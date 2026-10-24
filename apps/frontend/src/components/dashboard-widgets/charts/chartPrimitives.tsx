@@ -1,5 +1,5 @@
 import type { TooltipContentProps } from "recharts";
-import { ChartTooltip } from "@/components/ui/ChartTooltip";
+import { ChartTooltip } from "@/components/app/ChartTooltip";
 import { useTranslation } from "@/hooks/useTranslation";
 import type { TranslationFunction } from "@/lib/contexts/TranslationContext";
 
@@ -50,10 +50,15 @@ export function buildChartTooltip({
   titleFromName,
   labelClassName,
 }: BuildChartTooltipOptions) {
-  function BuiltChartTooltip({ active = false, payload = [], label }: Partial<TooltipContentProps>) {
+  function BuiltChartTooltip({
+    active = false,
+    payload = [],
+    label,
+  }: Partial<TooltipContentProps>) {
     const { t } = useTranslation();
     const first = payload?.[0];
-    const value = first != null ? valueFormatter(Number(first.value), { t, name: first?.name }) : undefined;
+    const value =
+      first != null ? valueFormatter(Number(first.value), { t, name: first?.name }) : undefined;
     return (
       <ChartTooltip
         active={active}

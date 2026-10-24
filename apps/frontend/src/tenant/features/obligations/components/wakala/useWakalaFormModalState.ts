@@ -1,18 +1,20 @@
 import { useState } from "react";
 import { generateClientEntityId } from "@mms/shared";
 import { useTranslation } from "@/hooks/useTranslation";
-import type {
-  Mujtahid,
-  MujtahidRep,
-  ObligationType,
-} from "@/lib/data/obligationsData";
-import type {
-  InitialDistRow,
-  WakalaFormModalProps,
-} from "./wakalaFormModalTypes";
+import type { Mujtahid, MujtahidRep, ObligationType } from "@/lib/data/obligationsData";
+import type { InitialDistRow, WakalaFormModalProps } from "./wakalaFormModalTypes";
 
 export function useWakalaFormModalState(props: WakalaFormModalProps) {
-  const { initial, reps, mujtahids, obligationTypes, onSave, onChangeMujtahids, onChangeReps, onChangeTypes } = props;
+  const {
+    initial,
+    reps,
+    mujtahids,
+    obligationTypes,
+    onSave,
+    onChangeMujtahids,
+    onChangeReps,
+    onChangeTypes,
+  } = props;
   const { t } = useTranslation();
 
   const existingRep = reps.find((r) => r.id === initial.mujtahid_representative_id);
@@ -35,11 +37,14 @@ export function useWakalaFormModalState(props: WakalaFormModalProps) {
   const selectedObType = obligationTypes.find((o) => o.id === selectedObTypeId);
   const availableReps = reps.filter((r) => r.mujtahid_id === selectedMujtahidId);
 
-  const totalPercentage = initialDistributions.reduce((sum, d) => sum + (Number(d.percentage) || 0), 0);
+  const totalPercentage = initialDistributions.reduce(
+    (sum, d) => sum + (Number(d.percentage) || 0),
+    0,
+  );
 
   const validateStep1 = (): boolean => {
     const nextErrors: Record<string, string> = {};
-    if (!selectedMujtahidId) nextErrors.mujtahid = "Please select or create a Mujtahid";
+    if (!selectedMujtahidId) nextErrors.mujtahid = t("obligations.wakala.mujtahidRequired");
     if (!selectedObTypeId) nextErrors.obType = t("obligations.wakala.typeRequired");
     setErrors(nextErrors);
     return Object.keys(nextErrors).length === 0;
@@ -66,7 +71,11 @@ export function useWakalaFormModalState(props: WakalaFormModalProps) {
     setSaving(true);
     try {
       await onSave(
-        { ...initial, mujtahid_representative_id: selectedRepId, obligation_type_id: selectedObTypeId },
+        {
+          ...initial,
+          mujtahid_representative_id: selectedRepId,
+          obligation_type_id: selectedObTypeId,
+        },
         initialDistributions.length > 0 ? initialDistributions : undefined,
       );
     } catch (err: unknown) {
@@ -95,7 +104,10 @@ export function useWakalaFormModalState(props: WakalaFormModalProps) {
   const handleSaveRep = async (newRep: Partial<MujtahidRep>) => {
     if (onChangeReps && selectedMujtahidId) {
       const id = generateClientEntityId("mr");
-      await onChangeReps([...reps, { ...newRep, id, mujtahid_id: selectedMujtahidId } as MujtahidRep]);
+      await onChangeReps([
+        ...reps,
+        { ...newRep, id, mujtahid_id: selectedMujtahidId } as MujtahidRep,
+      ]);
       setSelectedRepId(id);
     }
     setIsAddRepOpen(false);
@@ -175,4 +187,3 @@ export function useWakalaFormModalState(props: WakalaFormModalProps) {
     handleSaveObType,
   };
 }
-

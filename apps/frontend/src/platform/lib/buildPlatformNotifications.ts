@@ -1,10 +1,10 @@
-import type { PlatformWorkspaceRow } from '@mms/shared';
-import type { TranslationFunction } from '@/lib/contexts/TranslationContext';
-import { ROUTES } from '@/lib/config/routes';
+import type { PlatformWorkspaceRow } from "@mms/shared";
+import type { TranslationFunction } from "@/lib/contexts/TranslationContext";
+import { ROUTES } from "@/lib/config/routes";
 
 export interface PlatformNotificationItem {
   id: string;
-  type: 'workspace' | 'security' | 'system';
+  type: "workspace" | "security" | "system";
   title: string;
   desc: string;
   time: string;
@@ -30,11 +30,11 @@ export function buildPlatformNotifications(
 
   if (disabledCount > 0) {
     notifications.push({
-      id: 'disabled-workspaces',
-      type: 'workspace',
-      title: t('platform.notificationDisabledTitle'),
-      desc: t('platform.notificationDisabledDesc', { disabled: disabledCount, total }),
-      time: t('platform.notificationTimeNow'),
+      id: "disabled-workspaces",
+      type: "workspace",
+      title: t("platform.notificationDisabledTitle"),
+      desc: t("platform.notificationDisabledDesc", { disabled: disabledCount, total }),
+      time: t("platform.notificationTimeNow"),
       urgent: true,
       href: ROUTES.platformWorkspaces,
     });
@@ -42,11 +42,11 @@ export function buildPlatformNotifications(
 
   if (activeCount > 0) {
     notifications.push({
-      id: 'active-workspaces-status',
-      type: 'workspace',
-      title: t('platform.notificationActiveTitle'),
-      desc: t('platform.notificationActiveDesc', { active: activeCount }),
-      time: t('platform.notificationTimeToday'),
+      id: "active-workspaces-status",
+      type: "workspace",
+      title: t("platform.notificationActiveTitle"),
+      desc: t("platform.notificationActiveDesc", { active: activeCount }),
+      time: t("platform.notificationTimeToday"),
       urgent: false,
       href: ROUTES.platformWorkspaces,
     });
@@ -54,22 +54,22 @@ export function buildPlatformNotifications(
 
   if (isSuperUser) {
     notifications.push({
-      id: 'super-user-privilege',
-      type: 'security',
-      title: t('platform.notificationSuperUserTitle'),
-      desc: t('platform.notificationSuperUserDesc'),
-      time: t('platform.notificationTimeActive'),
+      id: "super-user-privilege",
+      type: "security",
+      title: t("platform.notificationSuperUserTitle"),
+      desc: t("platform.notificationSuperUserDesc"),
+      time: t("platform.notificationTimeActive"),
       urgent: false,
       href: ROUTES.platformUsers,
     });
   }
 
   notifications.push({
-    id: 'system-health',
-    type: 'system',
-    title: t('platform.notificationSystemHealthTitle'),
-    desc: t('platform.notificationSystemHealthDesc'),
-    time: t('platform.notificationTimeToday'),
+    id: "system-health",
+    type: "system",
+    title: t("platform.notificationSystemHealthTitle"),
+    desc: t("platform.notificationSystemHealthDesc"),
+    time: t("platform.notificationTimeToday"),
     urgent: false,
     href: ROUTES.platformSystem,
   });

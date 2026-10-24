@@ -1,8 +1,8 @@
 import { useMemo, useState } from "react";
-import { Plus, X } from "lucide-react";
+import { Plus } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Field } from "@/components/ui/FormField";
+import { Field } from "@/components/app/FormField";
 import { Input } from "@/components/ui/input";
 import { useTranslation } from "@/hooks/useTranslation";
 import { JOURNAL_TAGS } from "@/lib/data/accountingData";
@@ -60,33 +60,30 @@ export function SimpleTransactionTagSelector({
                 {typeTag}
               </Button>
             )}
-            {JOURNAL_TAGS.filter((tag) => tag !== typeTag).slice(0, 5).map((tag) => (
-              <Button
-                key={tag}
-                type="button"
-                variant={tags.includes(tag) ? "default" : "outline"}
-                onClick={() => toggleTag(tag)}
-                aria-pressed={tags.includes(tag)}
-                className="min-h-11 px-3 py-1 rounded-full text-xs font-semibold"
-              >
-                {tag}
-              </Button>
-            ))}
+            {JOURNAL_TAGS.filter((tag) => tag !== typeTag)
+              .slice(0, 5)
+              .map((tag) => (
+                <Button
+                  key={tag}
+                  type="button"
+                  variant={tags.includes(tag) ? "default" : "outline"}
+                  onClick={() => toggleTag(tag)}
+                  aria-pressed={tags.includes(tag)}
+                  className="min-h-11 px-3 py-1 rounded-full text-xs font-semibold"
+                >
+                  {tag}
+                </Button>
+              ))}
             {customTags.map((tag) => (
               <Badge
                 key={tag}
-                variant="secondary"
-                className="inline-flex items-center gap-1.5 min-h-11 px-3 py-1 rounded-full text-xs font-semibold bg-primary/10 text-primary border border-primary/25"
+                tone="primary"
+                pill
+                onRemove={() => toggleTag(tag)}
+                removeAriaLabel={`${t("common.delete")} ${tag}`}
+                className="min-h-11 px-3 py-1 text-xs font-semibold"
               >
-                <span>{tag}</span>
-                <button
-                  type="button"
-                  onClick={() => toggleTag(tag)}
-                  aria-label={`${t("common.delete")} ${tag}`}
-                  className="hover:text-destructive transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-ring rounded-sm p-1 inline-flex items-center justify-center -me-1"
-                >
-                  <X className="w-3.5 h-3.5" aria-hidden="true" />
-                </button>
+                {tag}
               </Badge>
             ))}
           </div>

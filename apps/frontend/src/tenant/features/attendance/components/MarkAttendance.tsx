@@ -1,22 +1,37 @@
 import { AnimatePresence } from "framer-motion";
 import { Users } from "lucide-react";
-import { EmptyState } from "@/components/ui/EmptyState";
-import { SearchBar } from "@/components/ui/SearchBar";
+import { EmptyState } from "@/components/app/EmptyState";
+import { SearchBar } from "@/components/app/SearchBar";
 import { MarkAttendanceActions } from "@/tenant/features/attendance/components/MarkAttendanceActions";
 import { MarkAttendanceClassBar } from "@/tenant/features/attendance/components/MarkAttendanceClassBar";
 import { MarkAttendanceFacePlaceholder } from "@/tenant/features/attendance/components/MarkAttendanceFacePlaceholder";
 import { MarkAttendanceGrid } from "@/tenant/features/attendance/components/MarkAttendanceGrid";
+import { MarkAttendanceHolidayBanner } from "@/tenant/features/attendance/components/MarkAttendanceHolidayBanner";
+import { useInstructionalDayStatus } from "@/tenant/features/attendance/hooks/useInstructionalDayStatus";
 import { MarkAttendanceOfflineBanner } from "@/tenant/features/attendance/components/MarkAttendanceOfflineBanner";
 import { MarkAttendanceStatsStrip } from "@/tenant/features/attendance/components/MarkAttendanceStatsStrip";
-import { getAuditLog } from "@/tenant/features/attendance/components/markAttendanceQueue";
-import type { MarkAttendanceProps } from "@/tenant/features/attendance/components/markAttendanceTypes";
-import { useMarkAttendanceController } from "@/tenant/features/attendance/components/useMarkAttendanceController";
+import { getAuditLog } from "@/tenant/features/attendance/lib/markAttendanceQueue";
+import type { MarkAttendanceProps } from "@/tenant/features/attendance/lib/markAttendanceTypes";
+import { useMarkAttendanceController } from "@/tenant/features/attendance/hooks/useMarkAttendanceController";
 
-export type { AuditEntry, AttendanceRow, GeoData, OfflinePayload } from "@/tenant/features/attendance/components/markAttendanceTypes";
+export type {
+  AuditEntry,
+  AttendanceRow,
+  GeoData,
+  OfflinePayload,
+} from "@/tenant/features/attendance/lib/markAttendanceTypes";
 export { getAuditLog };
 
 export function MarkAttendance(props: MarkAttendanceProps): React.JSX.Element {
   const controller = useMarkAttendanceController(props);
+  const dayStatus = useInstructionalDayStatus({
+    date: controller.filters.date,
+    sessionId: controller.sessionInfo?.id,
+    classId: controller.filters.classId,
+    sectionId: controller.filters.sectionId,
+    sessionWorkingDays: controller.sessionInfo?.workingDays,
+  });
+  const dayAllowsMarking = dayStatus.instructional || dayStatus.allowExtraClass;
 
   if (!controller.filters.classId) {
     return (
@@ -30,12 +45,24 @@ export function MarkAttendance(props: MarkAttendanceProps): React.JSX.Element {
 
   return (
     <section className="space-y-4">
-      <MarkAttendanceOfflineBanner offline={controller.isOffline} queue={controller.offlineQueue} onSync={() => void controller.handleSync()} />
-      {controller.syncedMsg && <div className="px-4 py-2 rounded-xl bg-success/10 border border-success/30 text-success text-sm font-semibold">✓ {controller.t("attendance.mark.syncSuccess")}</div>}
+      <MarkAttendanceOfflineBanner
+        offline={controller.isOffline}
+        queue={controller.offlineQueue}
+        onSync={() => void controller.handleSync()}
+      />
+      {controller.syncedMsg && (
+        <div className="px-4 py-2 rounded-xl bg-success/10 border border-success/30 text-success text-sm font-semibold">
+          ✓ {controller.t("attendance.mark.syncSuccess")}
+        </div>
+      )}
 
       <AnimatePresence>
-        {controller.showFaceAI && <MarkAttendanceFacePlaceholder onClose={() => controller.setShowFaceAI(false)} />}
+        {controller.showFaceAI && (
+          <MarkAttendanceFacePlaceholder onClose={() => controller.setShowFaceAI(false)} />
+        )}
       </AnimatePresence>
+
+      <MarkAttendanceHolidayBanner status={dayStatus} />
 
       <MarkAttendanceClassBar
         classInfo={controller.classInfo}
@@ -74,7 +101,7 @@ export function MarkAttendance(props: MarkAttendanceProps): React.JSX.Element {
         visibleRows={controller.filteredRows.length}
         isOffline={controller.isOffline}
         submitted={controller.submitted}
-        canWriteAttendance={controller.canWriteAttendance}
+        canWriteAttendance={controller.canWriteAttendance && dayAllowsMarking}
         onSaveDraft={() => void controller.handleSaveDraft()}
         onSubmit={() => void controller.handleSubmit()}
       />

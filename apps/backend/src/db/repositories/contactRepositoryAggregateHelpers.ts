@@ -1,8 +1,5 @@
-import { and, eq, isNull, sql, type SQL } from 'drizzle-orm';
-import {
-  isContactLockedEnabledTab,
-  type FieldConfig,
-} from '@mms/shared';
+import { and, eq, isNull, sql, type SQL } from "drizzle-orm";
+import { isContactLockedEnabledTab, type FieldConfig } from "@mms/shared";
 import {
   contacts,
   contactPhones,
@@ -10,11 +7,17 @@ import {
   contactAddresses,
   contactSocials,
   contactRelationships,
-} from '../schema.js';
-import { contactFieldNonEmptySql } from './contactRepositorySql.js';
+} from "../schema.js";
+import { contactFieldNonEmptySql } from "./contactRepositorySql.js";
 
-const COMPLETENESS_SKIP_TYPES = new Set(['boolean', 'ai_summary']);
-const CONTACT_LIST_TAB_KEYS_SET = new Set(['phones', 'emails', 'addresses', 'socials', 'relationship']);
+const COMPLETENESS_SKIP_TYPES = new Set(["boolean", "ai_summary"]);
+const CONTACT_LIST_TAB_KEYS_SET = new Set([
+  "phones",
+  "emails",
+  "addresses",
+  "socials",
+  "relationship",
+]);
 
 export function activeWorkspaceWhere(subdomain: string): SQL {
   return and(eq(contacts.workspaceSubdomain, subdomain), isNull(contacts.deletedAt))!;
@@ -26,15 +29,15 @@ export function createdAtRawSql(): SQL {
 
 function listTabHasRecordsSql(tabKey: string): SQL {
   switch (tabKey) {
-    case 'phones':
+    case "phones":
       return sql`EXISTS (SELECT 1 FROM ${contactPhones} p WHERE p.workspace_subdomain = ${contacts.workspaceSubdomain} AND p.contact_id = ${contacts.id})`;
-    case 'emails':
+    case "emails":
       return sql`EXISTS (SELECT 1 FROM ${contactEmails} e WHERE e.workspace_subdomain = ${contacts.workspaceSubdomain} AND e.contact_id = ${contacts.id})`;
-    case 'addresses':
+    case "addresses":
       return sql`EXISTS (SELECT 1 FROM ${contactAddresses} a WHERE a.workspace_subdomain = ${contacts.workspaceSubdomain} AND a.contact_id = ${contacts.id})`;
-    case 'socials':
+    case "socials":
       return sql`EXISTS (SELECT 1 FROM ${contactSocials} s WHERE s.workspace_subdomain = ${contacts.workspaceSubdomain} AND s.contact_id = ${contacts.id})`;
-    case 'relationship':
+    case "relationship":
       return sql`EXISTS (SELECT 1 FROM ${contactRelationships} r WHERE r.workspace_subdomain = ${contacts.workspaceSubdomain} AND r.contact_id = ${contacts.id})`;
     default:
       return sql`true`;

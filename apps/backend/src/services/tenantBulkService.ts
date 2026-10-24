@@ -1,6 +1,6 @@
-import type { ZodType } from 'zod';
-import { getRequestTenant } from '../lib/tenantContext.js';
-import { broadcastCollection } from './websocketService.js';
+import type { ZodType } from "zod";
+import { getRequestTenant } from "../lib/tenantContext.js";
+import { broadcastCollection } from "../lib/livePush.js";
 
 interface TenantBulkRepo<T> {
   listByWorkspace: (subdomain: string) => Promise<T[]>;
@@ -35,7 +35,7 @@ export async function upsertWithBroadcast<T>(
   options?: BulkOperationOptions,
 ): Promise<T[]> {
   const tenant = getRequestTenant();
-  if (!tenant) throw new Error('Tenant context required');
+  if (!tenant) throw new Error("Tenant context required");
   const parsed = schema && !options?.skipValidation ? schema.parse(records) : records;
   await bulkSave(tenant, parsed);
   await broadcastCollection(collection);
@@ -61,7 +61,7 @@ export function defineTenantBulkCollectionService<T>(
 
   async function replace(records: T[], options?: BulkOperationOptions): Promise<T[]> {
     const tenant = getRequestTenant();
-    if (!tenant) throw new Error('Tenant context required');
+    if (!tenant) throw new Error("Tenant context required");
     const parsed = schema && !options?.skipValidation ? schema.parse(records) : records;
     await repo.replaceForWorkspace(tenant, parsed);
     await broadcastCollection(broadcastKey);

@@ -27,7 +27,7 @@ const mockSession = {
       facultyName: "Ustadh Khalid",
     },
   ],
-} as any;
+} as unknown as NonNullable<React.ComponentProps<typeof Step4ClassAssignment>["session"]>;
 
 describe("Step4ClassAssignment Component", () => {
   it("renders classes list and capacity bar", () => {
@@ -38,6 +38,8 @@ describe("Step4ClassAssignment Component", () => {
         suggestedClass={mockSession.classes[0]}
         value={null}
         onChange={vi.fn()}
+        placement={{ sectionId: "", rollNo: "" }}
+        onPlacementChange={vi.fn()}
       />,
     );
 

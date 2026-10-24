@@ -34,12 +34,7 @@ vi.mock("./EnrollmentWizardFooter", () => ({
 
 describe("EnrollmentWizard Component", () => {
   it("renders wizard step indicator, initial step, and footer", () => {
-    const html = renderToStaticMarkup(
-      <EnrollmentWizard
-        onComplete={vi.fn()}
-        onCancel={vi.fn()}
-      />,
-    );
+    const html = renderToStaticMarkup(<EnrollmentWizard onComplete={vi.fn()} onCancel={vi.fn()} />);
 
     expect(html).toContain("Step Indicator");
     expect(html).toContain("Step 1 Select Student");

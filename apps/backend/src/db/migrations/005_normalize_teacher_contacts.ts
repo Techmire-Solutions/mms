@@ -4,15 +4,15 @@ import {
   tenantCollectionKey,
   WORKSPACES_COLLECTION,
   type Workspace,
-} from '@mms/shared';
+} from "@mms/shared";
 import {
   getCollectionByStorageName,
   listCollectionStorageNames,
   saveCollection,
-} from '../database.js';
+} from "../database.js";
 const LEGACY_SEEDED_FACULTY_ID = /^tch([1-9]|[12]\d|30)$/;
 /** Historical document-store collection key (pre-faculty rename). */
-const LEGACY_COLLECTION_KEY = 'teachers';
+const LEGACY_COLLECTION_KEY = "teachers";
 
 interface LegacyFacultyRow {
   id: string | number;
@@ -33,7 +33,7 @@ function resolveContactId(
   faculty: LegacyFacultyRow,
   contacts: ContactRow[],
 ): string | number | null {
-  if (faculty.contactId != null && faculty.contactId !== '') {
+  if (faculty.contactId != null && faculty.contactId !== "") {
     return faculty.contactId;
   }
   const seededId = String(faculty.id).match(LEGACY_SEEDED_FACULTY_ID);
@@ -103,24 +103,24 @@ export async function runMigration005(): Promise<void> {
     changed = true;
   };
 
-  const targetCollectionKeys = ['faculty', LEGACY_COLLECTION_KEY];
+  const targetCollectionKeys = ["faculty", LEGACY_COLLECTION_KEY];
 
   if (subdomains.size === 0) {
     for (const key of targetCollectionKeys) {
-      await normalizeStorage(key, 'contacts');
+      await normalizeStorage(key, "contacts");
     }
   } else {
     for (const subdomain of subdomains) {
       for (const key of targetCollectionKeys) {
         await normalizeStorage(
           tenantCollectionKey(subdomain, key),
-          tenantCollectionKey(subdomain, 'contacts'),
+          tenantCollectionKey(subdomain, "contacts"),
         );
       }
     }
   }
 
   if (changed) {
-    console.log('[Migration 005] Linked faculty to contacts and removed duplicate profile fields.');
+    console.log("[Migration 005] Linked faculty to contacts and removed duplicate profile fields.");
   }
 }

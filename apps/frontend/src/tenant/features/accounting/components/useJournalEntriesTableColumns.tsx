@@ -1,6 +1,6 @@
 import { useMemo } from "react";
 import { formatDate } from "@mms/shared";
-import { StatusBadge } from "@/components/ui/StatusBadge";
+import { StatusBadge } from "@/components/app/StatusBadge";
 import { Badge } from "@/components/ui/badge";
 import { type WorkBatchTableColumn } from "@/components/common/work";
 import type { JournalEntry } from "@/lib/data/accountingData";
@@ -9,7 +9,7 @@ import {
   getJournalEntryLineTotals,
   getJournalTagLabel,
   type JournalEntriesListProps,
-} from "./journalEntriesListShared";
+} from "../lib/journalEntriesListShared";
 
 interface UseJournalEntriesTableColumnsParams {
   isColumnVisible: JournalEntriesListProps["isColumnVisible"];
@@ -30,6 +30,7 @@ export function useJournalEntriesTableColumns({
       cols.push({
         id: "ref",
         label: t("accounting.columns.journal.ref"),
+        noWrap: true,
         render: (entry) => (
           <>
             <span className="font-mono text-xs font-bold text-primary">{entry.ref}</span>
@@ -52,7 +53,8 @@ export function useJournalEntriesTableColumns({
       cols.push({
         id: "date",
         label: t("accounting.columns.journal.date"),
-        cellClassName: "text-xs text-muted-foreground whitespace-nowrap",
+        noWrap: true,
+        cellClassName: "text-xs text-muted-foreground",
         render: (entry) => formatDate(entry.date),
       });
     }
@@ -61,7 +63,8 @@ export function useJournalEntriesTableColumns({
       cols.push({
         id: "description",
         label: t("accounting.columns.journal.description"),
-        cellClassName: "max-w-cell-trunc truncate",
+        truncate: true,
+        cellClassName: "max-w-cell-trunc",
         render: (entry) => entry.description,
       });
     }
@@ -92,6 +95,7 @@ export function useJournalEntriesTableColumns({
         id: "debit",
         label: t("accounting.columns.journal.debit"),
         headerClassName: "text-end",
+        noWrap: true,
         cellClassName: "text-end font-mono text-xs font-semibold text-info",
         render: (entry) => {
           const { totalDebit } = getJournalEntryLineTotals(entry);
@@ -105,6 +109,7 @@ export function useJournalEntriesTableColumns({
         id: "credit",
         label: t("accounting.columns.journal.credit"),
         headerClassName: "text-end",
+        noWrap: true,
         cellClassName: "text-end font-mono text-xs font-semibold text-success",
         render: (entry) => {
           const { totalCredit } = getJournalEntryLineTotals(entry);
@@ -117,6 +122,7 @@ export function useJournalEntriesTableColumns({
       cols.push({
         id: "status",
         label: t("accounting.columns.journal.status"),
+        noWrap: true,
         render: (entry) => (
           <StatusBadge status={entry.status} config={journalStatusConfig} size="sm" />
         ),

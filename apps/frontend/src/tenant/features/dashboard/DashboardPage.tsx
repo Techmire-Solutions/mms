@@ -1,20 +1,19 @@
-import React from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
-import { Settings, Printer } from 'lucide-react';
-import { StatisticsGrid } from '@/tenant/features/dashboard/components/StatisticsGrid';
-import { DashboardRolePanel } from '@/tenant/features/dashboard/components/DashboardRolePanel';
-import { DashboardCustomizePanel } from '@/tenant/features/dashboard/components/DashboardCustomizePanel';
-import { WelcomeBanner } from '@/tenant/features/dashboard/components/WelcomeBanner';
-import { SetupIncompleteCallout } from '@/tenant/features/dashboard/components/SetupIncompleteCallout';
-import { DashboardWidgets } from '@/lib/reports/pinnedWidgets';
-import { ErrorBoundary } from '@/components/ui/ErrorBoundary';
-import { ModulePageShell } from '@/components/ui/ModulePageShell';
-import { Button } from '@/components/ui/button';
-import { useDashboardPageController } from '@/tenant/features/dashboard/hooks/useDashboardPageController';
-import { useBranding } from '@/tenant/hooks/useBranding';
+import React from "react";
+import { motion, AnimatePresence } from "framer-motion";
+import { Settings, Printer } from "lucide-react";
+import { StatisticsGrid } from "@/tenant/features/dashboard/components/StatisticsGrid";
+import { DashboardRolePanel } from "@/tenant/features/dashboard/components/DashboardRolePanel";
+import { DashboardCustomizePanel } from "@/tenant/features/dashboard/components/DashboardCustomizePanel";
+import { WelcomeBanner } from "@/tenant/features/dashboard/components/WelcomeBanner";
+import { SetupIncompleteCallout } from "@/tenant/features/dashboard/components/SetupIncompleteCallout";
+import { DashboardWidgets } from "@/lib/reports/pinnedWidgets";
+import { ErrorBoundary } from "@/components/app/ErrorBoundary";
+import { ModulePageShell } from "@/components/app/ModulePageShell";
+import { Button } from "@/components/ui/button";
+import { useDashboardPageController } from "@/tenant/features/dashboard/hooks/useDashboardPageController";
+import { useBranding } from "@/tenant/hooks/useBranding";
 
 export function DashboardPage() {
-
   const {
     t,
     can,
@@ -56,12 +55,12 @@ export function DashboardPage() {
   } = useDashboardPageController();
 
   const branding = useBranding();
-  const isAdmin = can('settings.branding.write');
+  const isAdmin = can("settings.branding.write");
 
   return (
     <ModulePageShell
-      seoTitle={`MMS - ${t('dashboard.title')}`}
-      seoDescription={t('dashboard.metaDescription')}
+      seoTitle={`MMS - ${t("dashboard.title")}`}
+      seoDescription={t("dashboard.metaDescription")}
     >
       <WelcomeBanner
         dashboardRole={dashboardRole}
@@ -77,10 +76,10 @@ export function DashboardPage() {
           variant="capsOutline"
           size="caps"
           className="flex items-center justify-center px-4 py-2 transition-all duration-300 cursor-pointer"
-          title={t('dashboard.printSnapshot')}
+          title={t("dashboard.printSnapshot")}
         >
           <Printer className="w-4 h-4" />
-          {t('dashboard.printSnapshot')}
+          {t("dashboard.printSnapshot")}
         </Button>
 
         {canCustomize && (
@@ -93,7 +92,7 @@ export function DashboardPage() {
             }`}
           >
             <Settings className="w-4 h-4" />
-            {isEditMode ? t('dashboard.exitCustomization') : t('dashboard.customizeCards')}
+            {isEditMode ? t("dashboard.exitCustomization") : t("dashboard.customizeCards")}
           </Button>
         )}
       </div>
@@ -102,7 +101,7 @@ export function DashboardPage() {
         {canCustomize && isEditMode && (
           <motion.div
             initial={{ opacity: 0, height: 0, y: -20 }}
-            animate={{ opacity: 1, height: 'auto', y: 0 }}
+            animate={{ opacity: 1, height: "auto", y: 0 }}
             exit={{ opacity: 0, height: 0, y: -20 }}
             className="overflow-hidden mb-2"
           >
@@ -149,12 +148,11 @@ export function DashboardPage() {
               onDeleteCustomCard={handleDeleteWidget}
               onEditCustomCard={handleEditCustomCard}
               isEditMode={isEditMode}
-              onAddCardClick={isEditMode ? () => openWidgetBuilder('card', null) : undefined}
+              onAddCardClick={isEditMode ? () => openWidgetBuilder("card", null) : undefined}
               isLoading={isLoading}
               onResetCards={handleResetCards}
             />
           </ErrorBoundary>
-
         </motion.div>
       </AnimatePresence>
 
@@ -167,7 +165,6 @@ export function DashboardPage() {
           onDeleteWidget={handleDeleteWidget}
         />
       </ErrorBoundary>
-
 
       <AnimatePresence mode="wait">
         <motion.div
@@ -187,4 +184,3 @@ export function DashboardPage() {
 }
 
 export default DashboardPage;
-

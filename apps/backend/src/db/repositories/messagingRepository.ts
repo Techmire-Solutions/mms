@@ -8,7 +8,7 @@ export {
   bulkSaveMessageTemplates,
   replaceMessageTemplatesForWorkspace,
   deleteMessageTemplateById,
-} from './messagingTemplatesRepository.js';
+} from "./messagingTemplatesRepository.js";
 export {
   logRowToRecord,
   listMessageLogsByWorkspace,
@@ -19,14 +19,14 @@ export {
   bulkSaveMessageLogs,
   deleteMessageLogsByWorkspace,
   insertMessageLogs,
-} from './messagingLogsRepository.js';
+} from "./messagingLogsRepository.js";
 export type {
   MessageLogsFilterQuery,
   MessageLogsPageResult,
   MessagingMetricsFilterQuery,
-} from './messagingLogsQueryRepository.js';
+} from "./messagingLogsQueryRepository.js";
 export {
   queryFilteredMessageLogs,
   queryMessagingMetrics,
   softDeleteActiveMessageLogs,
-} from './messagingLogsQueryRepository.js';
+} from "./messagingLogsQueryRepository.js";

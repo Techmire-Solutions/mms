@@ -1,6 +1,6 @@
 import React, { useEffect } from "react";
 import { useTranslation } from "@/hooks/useTranslation";
-import { ModuleWorkListStateShell } from "@/components/ui/ModuleWorkListStateShell";
+import { ModuleWorkListStateShell } from "@/components/app/ModuleWorkListStateShell";
 import { useExamSelection } from "@/tenant/features/examinations/hooks/useExamSelection";
 import { useSessionsCollection } from "@/tenant/hooks/collections/sessions";
 import { useEnrollmentsCollection } from "@/tenant/hooks/collections/enrollments";
@@ -11,11 +11,11 @@ import { ExaminationsTrashDialogs } from "@/tenant/features/examinations/compone
 import {
   resolveExaminationStatusConfig,
   resolveExaminationStatusLabels,
-} from "@/tenant/features/examinations/components/examinationStatusConfig";
+} from "@/tenant/features/examinations/lib/examinationStatusConfig";
 import { useWorkDirectoryViewMode } from "@/hooks/useWorkDirectoryViewMode";
 import { useExaminationsTrashState } from "@/tenant/features/examinations/hooks/useExaminationsTrashState";
 import { useExaminationsDirectoryQuery } from "@/tenant/features/examinations/hooks/useExaminationsDirectoryQuery";
-import type { ExaminationsListProps } from "./examinationsListTypes";
+import type { ExaminationsListProps } from "../lib/examinationsListTypes";
 
 export type { ExaminationsListProps };
 
@@ -86,10 +86,16 @@ export default function ExaminationsList(props: ExaminationsListProps): React.JS
   const statusConfig = resolveExaminationStatusConfig(statusLabels);
   const canBulkTrash = canDelete && Boolean(showDeleted ? onBulkRestore : onBulkDelete);
   const isInitialLoading = query.examsPageQuery.isPending && !query.examsPageQuery.data;
-  const isError = query.examsPageQuery.isError || (query.examsPageQuery.data != null && query.examsPageQuery.data.status !== 200);
+  const isError =
+    query.examsPageQuery.isError ||
+    (query.examsPageQuery.data != null && query.examsPageQuery.data.status !== 200);
 
   return (
-    <section className="space-y-4" aria-label={t("examinations.exams")} aria-busy={query.examsPageQuery.isFetching}>
+    <section
+      className="space-y-4"
+      aria-label={t("examinations.exams")}
+      aria-busy={query.examsPageQuery.isFetching}
+    >
       <ExaminationsListFilters
         viewMode={viewMode}
         onViewModeChange={setViewMode}
@@ -122,7 +128,9 @@ export default function ExaminationsList(props: ExaminationsListProps): React.JS
         isError={isError}
         isLoading={isInitialLoading}
         isFetching={query.examsPageQuery.isFetching}
-        onRetry={() => { void query.examsPageQuery.refetch(); }}
+        onRetry={() => {
+          void query.examsPageQuery.refetch();
+        }}
         errorTitle={t("examinations.loadFailed")}
         errorHint={t("examinations.loadFailedHint")}
         viewMode={viewMode}

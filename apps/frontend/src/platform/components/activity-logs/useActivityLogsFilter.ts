@@ -1,52 +1,64 @@
-import { useMemo, useDeferredValue } from 'react';
-import { useSearchParams } from 'react-router-dom';
-import { getActionCategory, type LogCategory } from './activityLogMeta';
-import type { PlatformActivityLogItem } from '@/platform/hooks/usePlatformActivityLogs';
+import { useMemo, useDeferredValue } from "react";
+import { useSearchParams } from "react-router-dom";
+import { getActionCategory, type LogCategory } from "./activityLogMeta";
+import type { PlatformActivityLogItem } from "@/platform/hooks/usePlatformActivityLogs";
 
-export type LogTimeframe = 'all' | 'today' | '7d' | '30d';
+export type LogTimeframe = "all" | "today" | "7d" | "30d";
 
 export function useActivityLogsFilter(logs: PlatformActivityLogItem[] | undefined) {
   const [searchParams, setSearchParams] = useSearchParams();
-  const filterQuery = searchParams.get('q') ?? '';
-  const category = (searchParams.get('cat') as LogCategory) ?? 'all';
-  const timeframe = (searchParams.get('time') as LogTimeframe) ?? 'all';
+  const filterQuery = searchParams.get("q") ?? "";
+  const category = (searchParams.get("cat") as LogCategory) ?? "all";
+  const timeframe = (searchParams.get("time") as LogTimeframe) ?? "all";
 
   const deferredQuery = useDeferredValue(filterQuery);
 
   const setFilterQuery = (q: string) => {
-    setSearchParams((p) => {
-      if (q) p.set('q', q);
-      else p.delete('q');
-      return p;
-    }, { replace: true });
+    setSearchParams(
+      (p) => {
+        if (q) p.set("q", q);
+        else p.delete("q");
+        return p;
+      },
+      { replace: true },
+    );
   };
 
   const setCategory = (cat: LogCategory) => {
-    setSearchParams((p) => {
-      if (cat === 'all') p.delete('cat');
-      else p.set('cat', cat);
-      return p;
-    }, { replace: true });
+    setSearchParams(
+      (p) => {
+        if (cat === "all") p.delete("cat");
+        else p.set("cat", cat);
+        return p;
+      },
+      { replace: true },
+    );
   };
 
   const setTimeframe = (time: LogTimeframe) => {
-    setSearchParams((p) => {
-      if (time === 'all') p.delete('time');
-      else p.set('time', time);
-      return p;
-    }, { replace: true });
+    setSearchParams(
+      (p) => {
+        if (time === "all") p.delete("time");
+        else p.set("time", time);
+        return p;
+      },
+      { replace: true },
+    );
   };
 
   const handleClearFilters = () => {
-    setSearchParams((p) => {
-      p.delete('q');
-      p.delete('cat');
-      p.delete('time');
-      return p;
-    }, { replace: true });
+    setSearchParams(
+      (p) => {
+        p.delete("q");
+        p.delete("cat");
+        p.delete("time");
+        return p;
+      },
+      { replace: true },
+    );
   };
 
-  const isFiltered = Boolean(filterQuery || category !== 'all' || timeframe !== 'all');
+  const isFiltered = Boolean(filterQuery || category !== "all" || timeframe !== "all");
 
   const items = useMemo(() => {
     const raw = logs ?? [];
@@ -65,16 +77,16 @@ export function useActivityLogsFilter(logs: PlatformActivityLogItem[] | undefine
         if (!matchesText) return false;
       }
 
-      if (category !== 'all' && getActionCategory(l.action) !== category) return false;
+      if (category !== "all" && getActionCategory(l.action) !== category) return false;
 
-      if (timeframe !== 'all') {
+      if (timeframe !== "all") {
         const created = new Date(l.createdAt).getTime();
         if (!Number.isFinite(created)) return true;
-        if (timeframe === 'today') {
+        if (timeframe === "today") {
           if (created < new Date().setHours(0, 0, 0, 0)) return false;
-        } else if (timeframe === '7d') {
+        } else if (timeframe === "7d") {
           if (created < now - 7 * 24 * 60 * 60 * 1000) return false;
-        } else if (timeframe === '30d') {
+        } else if (timeframe === "30d") {
           if (created < now - 30 * 24 * 60 * 60 * 1000) return false;
         }
       }

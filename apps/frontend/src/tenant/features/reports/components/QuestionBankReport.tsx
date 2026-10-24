@@ -1,21 +1,23 @@
-import React, { lazy, Suspense, useState } from 'react';
-import { BarChart2, CheckCircle, TrendingUp } from 'lucide-react';
+import React, { lazy, Suspense, useState } from "react";
+import { BarChart2, CheckCircle, TrendingUp } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
-import { ErrorState } from "@/components/ui/ErrorState";
-import { SubTabBar, type SubTab } from "@/components/ui/SubTabBar";
-import { AutoGrading } from '@/tenant/components/reports/moduleReportAdapters';
-import { PerformanceAnalytics } from '@/tenant/components/reports/moduleReportAdapters';
+import { ErrorState } from "@/components/app/ErrorState";
+import { SubTabBar, type SubTab } from "@/components/app/SubTabBar";
+import { AutoGrading } from "@/tenant/components/reports/moduleReportAdapters";
+import { PerformanceAnalytics } from "@/tenant/components/reports/moduleReportAdapters";
 import { useTranslation } from "@/hooks/useTranslation";
-import { ReportFilterBanner } from "@/components/ui/reports/ReportFilterBanner";
+import { ReportFilterBanner } from "@/components/reports/ReportFilterBanner";
 import PinnedWidgets from "@/tenant/features/reports/components/PinnedWidgets";
 import {
   useQuestionBankReportData,
   type QuestionBankReportFilters,
-} from "@/tenant/features/reports/controllers/useQuestionBankReportData";
+} from "@/tenant/features/reports/hooks/useQuestionBankReportData";
 import { QuestionBankSummaryDataGrid } from "@/tenant/features/reports/components/QuestionBankSummaryDataGrid";
 
 const QuestionBankReportCharts = lazy(() =>
-  import("@/components/ui/reports/QuestionBankReportCharts").then((mod) => ({ default: mod.QuestionBankReportCharts })),
+  import("@/components/reports/QuestionBankReportCharts").then((mod) => ({
+    default: mod.QuestionBankReportCharts,
+  })),
 );
 
 export type { QuestionBankReportFilters };
@@ -27,7 +29,7 @@ export interface QuestionBankReportProps {
   onEditVisual?: (config: unknown) => void;
 }
 
-const QuestionBankReport = (function QuestionBankReport({
+const QuestionBankReport = function QuestionBankReport({
   filters,
 }: QuestionBankReportProps = {}): React.JSX.Element {
   const { t } = useTranslation();
@@ -107,10 +109,7 @@ const QuestionBankReport = (function QuestionBankReport({
           </Suspense>
 
           {summaryRows.length > 0 && (
-            <QuestionBankSummaryDataGrid
-              summaryRows={summaryRows}
-              exportColumns={exportColumns}
-            />
+            <QuestionBankSummaryDataGrid summaryRows={summaryRows} exportColumns={exportColumns} />
           )}
 
           <PinnedWidgets category="questionBank" />
@@ -131,6 +130,6 @@ const QuestionBankReport = (function QuestionBankReport({
       )}
     </div>
   );
-});
+};
 
 export default QuestionBankReport;

@@ -11,6 +11,8 @@ import { useAccountingConfig } from "@/hooks/useStandardModuleConfig";
 import { useAccountingCurrency } from "@/hooks/useCurrency";
 import {
   ACCOUNTING_MODULE_MANIFEST,
+  resolveDefaultFiscalYear,
+  todayISO,
   type Account,
   type JournalEntry,
   type FiscalYear,
@@ -21,9 +23,7 @@ import {
   useAllAccountingEntries,
 } from "./useAccountingApi";
 import { useAccountingEntriesPage } from "./accountingListFetch";
-import {
-  useJournalEntriesListQueryState,
-} from "@/tenant/features/accounting/components/journalEntriesControllerFilters";
+import { useJournalEntriesListQueryState } from "@/tenant/features/accounting/lib/journalEntriesControllerFilters";
 import { useAccountingPageActions } from "@/tenant/features/accounting/hooks/useAccountingPageActions";
 import {
   ACCOUNTING_SUB_TAB_ICONS,
@@ -60,20 +60,29 @@ export function useAccountingPageController() {
   const entriesResult = useAccountingEntriesPage(journalList.query);
   const fiscalYearsResult = useAccountingFiscalYearsPaginated({ page: 1, limit: 100 });
 
-  const aggregateSubTab = activeTab === "work" && (activeSubTab === "overview" || activeSubTab === "ledger" || activeSubTab === "trial");
+  const aggregateSubTab =
+    activeTab === "work" &&
+    (activeSubTab === "overview" || activeSubTab === "ledger" || activeSubTab === "trial");
   const aggregateEntriesResult = useAllAccountingEntries(
     { includeDeleted: false },
     { enabled: aggregateSubTab },
   );
-  const accountsEnvelope = accountsResult.data as { body?: { accounts?: Account[] }; accounts?: Account[] } | null;
-  const fiscalYearsEnvelope = fiscalYearsResult.data as { body?: { fiscalYears?: FiscalYear[] }; fiscalYears?: FiscalYear[] } | null;
+  const accountsEnvelope = accountsResult.data as {
+    body?: { accounts?: Account[] };
+    accounts?: Account[];
+  } | null;
+  const fiscalYearsEnvelope = fiscalYearsResult.data as {
+    body?: { fiscalYears?: FiscalYear[] };
+    fiscalYears?: FiscalYear[];
+  } | null;
   const accounts: Account[] = Array.isArray(accountsResult.data)
     ? accountsResult.data
     : (accountsEnvelope?.body?.accounts ?? accountsEnvelope?.accounts ?? []);
   const journalEntries: JournalEntry[] = entriesResult.data?.entries ?? [];
   const journalTotal = entriesResult.data?.total ?? 0;
   const aggregateEntries: JournalEntry[] = aggregateEntriesResult.data ?? [];
-  const fiscalYears: FiscalYear[] = fiscalYearsEnvelope?.body?.fiscalYears ?? fiscalYearsEnvelope?.fiscalYears ?? [];
+  const fiscalYears: FiscalYear[] =
+    fiscalYearsEnvelope?.body?.fiscalYears ?? fiscalYearsEnvelope?.fiscalYears ?? [];
   const { settings } = useAccountingConfig();
   const { activeCurrency } = useAccountingCurrency();
   const [filteredCount, setFilteredCount] = useState(0);
@@ -116,11 +125,11 @@ export function useAccountingPageController() {
     journalList,
   });
 
-  const activeFiscalYear = fiscalYears.find((fiscalYear) => fiscalYear.status === "active");
+  const activeFiscalYear = resolveDefaultFiscalYear(fiscalYears, todayISO()) ?? undefined;
   const listLoadFailed =
-    accountsResult.isError
-    || entriesResult.isError
-    || (aggregateSubTab && aggregateEntriesResult.isError);
+    accountsResult.isError ||
+    entriesResult.isError ||
+    (aggregateSubTab && aggregateEntriesResult.isError);
 
   return {
     t,

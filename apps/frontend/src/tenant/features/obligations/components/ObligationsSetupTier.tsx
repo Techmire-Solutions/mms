@@ -6,47 +6,30 @@ import type {
   MujtahidRep,
   WakalaType,
 } from "@mms/shared";
-import { SubTabBar } from "@/components/ui/SubTabBar";
-import { ErrorBoundary } from "@/components/ui/ErrorBoundary";
-import { ModuleTierMotion } from "@/components/ui/ModuleTierMotion";
+import { SubTabBar } from "@/components/app/SubTabBar";
+import { ErrorBoundary } from "@/components/app/ErrorBoundary";
+import { ModuleTierMotion } from "@/components/app/ModuleTierMotion";
 import { useTranslation } from "@/hooks/useTranslation";
-import { SetupReadOnlyMessage } from "@/components/ui/SetupReadOnlyMessage";
-import { ModulePanelSuspenseFallback } from "@/components/ui/ModulePanelSuspenseFallback";
+import { SetupReadOnlyMessage } from "@/components/app/SetupReadOnlyMessage";
+import { ModulePanelSuspenseFallback } from "@/components/app/ModulePanelSuspenseFallback";
 import { useModuleSetupSubTabs } from "@/lib/setup/useModuleSetupSubTabs";
 
-const ObligationTypeManager = lazy(
-  () =>
-    import(
-      "@/tenant/features/obligations/components/ObligationTypeManager"
-    ).then((m) => ({ default: m.ObligationTypeManager })),
+const WakalaTypeManager = lazy(() =>
+  import("@/tenant/features/obligations/components/WakalaTypeManager").then((m) => ({
+    default: m.WakalaTypeManager,
+  })),
 );
 
-const MujtahidManager = lazy(
-  () =>
-    import("@/tenant/features/obligations/components/MujtahidManager").then(
-      (m) => ({ default: m.MujtahidManager }),
-    ),
+const InvoiceTemplateEditor = lazy(() =>
+  import("@/tenant/features/obligations/components/invoice/InvoiceTemplateEditor").then((m) => ({
+    default: m.InvoiceTemplateEditor,
+  })),
 );
 
-const WakalaTypeManager = lazy(
-  () =>
-    import(
-      "@/tenant/features/obligations/components/WakalaTypeManager"
-    ).then((m) => ({ default: m.WakalaTypeManager })),
-);
-
-const InvoiceTemplateEditor = lazy(
-  () =>
-    import(
-      "@/tenant/features/obligations/components/invoice/InvoiceTemplateEditor"
-    ).then((m) => ({ default: m.InvoiceTemplateEditor })),
-);
-
-const ObligationsReceiptNumberingSection = lazy(
-  () =>
-    import(
-      "@/tenant/features/obligations/components/ObligationsReceiptNumberingSection"
-    ).then((m) => ({ default: m.ObligationsReceiptNumberingSection })),
+const ObligationsReceiptNumberingSection = lazy(() =>
+  import("@/tenant/features/obligations/components/ObligationsReceiptNumberingSection").then(
+    (m) => ({ default: m.ObligationsReceiptNumberingSection }),
+  ),
 );
 
 export interface SetupTab {
@@ -90,7 +73,7 @@ export function ObligationsSetupTier({
   const { t } = useTranslation();
 
   const subTabs = useModuleSetupSubTabs({
-    initialKey: activeTab || "types",
+    initialKey: activeTab || "wakala",
     isDirty: () => false,
     onDiscard: () => {},
     onChange: onTabChange,
@@ -98,7 +81,7 @@ export function ObligationsSetupTier({
 
   const subTabBarItems = useMemo(
     () => tabs.map((tab) => ({ key: tab.id, label: tab.label })),
-    [tabs]
+    [tabs],
   );
 
   return (
@@ -115,22 +98,6 @@ export function ObligationsSetupTier({
             <SetupReadOnlyMessage title={t("obligations.setup.readOnly")} />
           ) : (
             <Suspense fallback={<ModulePanelSuspenseFallback />}>
-              {subTabs.sub === "types" && (
-                <ObligationTypeManager
-                  types={obligationTypes}
-                  onChange={onChangeTypes}
-                />
-              )}
-
-              {subTabs.sub === "mujtahids" && (
-                <MujtahidManager
-                  mujtahids={mujtahids}
-                  reps={reps}
-                  onChangeMujtahids={onChangeMujtahids}
-                  onChangeReps={onChangeReps}
-                />
-              )}
-
               {subTabs.sub === "wakala" && (
                 <WakalaTypeManager
                   wakalaTypes={wakalaTypes}
@@ -146,17 +113,15 @@ export function ObligationsSetupTier({
                 />
               )}
 
-              {subTabs.sub === "numbering" && (
-                <ObligationsReceiptNumberingSection />
-              )}
+              {subTabs.sub === "numbering" && <ObligationsReceiptNumberingSection />}
 
               {subTabs.sub === "invoice_template" && (
-                <InvoiceTemplateEditor 
-                  fullscreen={false} 
+                <InvoiceTemplateEditor
+                  fullscreen={false}
                   obligationTypes={obligationTypes}
                   reps={reps}
                   mujtahids={mujtahids}
-                  onClose={() => subTabs.handleSubTabChange("types")} 
+                  onClose={() => subTabs.handleSubTabChange("wakala")}
                 />
               )}
             </Suspense>

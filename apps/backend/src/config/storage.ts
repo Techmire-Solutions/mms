@@ -1,23 +1,29 @@
-import { S3Client, PutObjectCommand, GetObjectCommand, DeleteObjectCommand } from '@aws-sdk/client-s3';
-import { Upload } from '@aws-sdk/lib-storage';
-import { type Readable, type PassThrough } from 'node:stream';
-import { mkdir, writeFile, unlink } from 'node:fs/promises';
-import { join, dirname } from 'node:path';
-import { createReadStream, createWriteStream } from 'node:fs';
-import { pipeline } from 'node:stream/promises';
-import { resolveUploadsRoot } from './uploadConfig.js';
+import {
+  S3Client,
+  PutObjectCommand,
+  GetObjectCommand,
+  DeleteObjectCommand,
+} from "@aws-sdk/client-s3";
+import { Upload } from "@aws-sdk/lib-storage";
+import { type Readable, type PassThrough } from "node:stream";
+import { mkdir, writeFile, unlink } from "node:fs/promises";
+import { join, dirname } from "node:path";
+import { createReadStream, createWriteStream } from "node:fs";
+import { pipeline } from "node:stream/promises";
+import { resolveUploadsRoot } from "./uploadConfig.js";
 
 export interface StorageUploadResult {
   key: string;
-  storageType: 's3' | 'local';
+  storageType: "s3" | "local";
   url: string;
 }
 
-const s3Bucket = process.env.S3_BUCKET_NAME || process.env.AWS_S3_BUCKET || '';
-const s3Region = process.env.AWS_REGION || process.env.AWS_DEFAULT_REGION || 'us-east-1';
+const s3Bucket = process.env.S3_BUCKET_NAME || process.env.AWS_S3_BUCKET || "";
+const s3Region = process.env.AWS_REGION || process.env.AWS_DEFAULT_REGION || "us-east-1";
 
 export const isS3Configured = Boolean(
-  s3Bucket && (process.env.AWS_ACCESS_KEY_ID || process.env.AWS_PROFILE || process.env.AWS_ROLE_ARN)
+  s3Bucket &&
+  (process.env.AWS_ACCESS_KEY_ID || process.env.AWS_PROFILE || process.env.AWS_ROLE_ARN),
 );
 
 export const s3Client = new S3Client({
@@ -34,7 +40,7 @@ export const s3Client = new S3Client({
 });
 
 export function resolveTenantExportKey(tenantId: string, filename: string): string {
-  const sanitized = filename.replace(/[^a-zA-Z0-9._-]/g, '_');
+  const sanitized = filename.replace(/[^a-zA-Z0-9._-]/g, "_");
   return `tenants/${tenantId}/exports/${Date.now()}-${sanitized}`;
 }
 
@@ -46,7 +52,7 @@ export async function uploadStreamToStorage(
   _tenantId: string,
   key: string,
   stream: Readable | PassThrough,
-  contentType = 'application/octet-stream'
+  contentType = "application/octet-stream",
 ): Promise<StorageUploadResult> {
   if (isS3Configured) {
     const upload = new Upload({
@@ -62,7 +68,7 @@ export async function uploadStreamToStorage(
     await upload.done();
     return {
       key,
-      storageType: 's3',
+      storageType: "s3",
       url: `/api/downloads/${key}`,
     };
   }
@@ -75,7 +81,7 @@ export async function uploadStreamToStorage(
 
   return {
     key,
-    storageType: 'local',
+    storageType: "local",
     url: `/uploads/${key}`,
   };
 }
@@ -84,7 +90,7 @@ export async function uploadBufferToStorage(
   _tenantId: string,
   key: string,
   buffer: Buffer,
-  contentType = 'application/octet-stream'
+  contentType = "application/octet-stream",
 ): Promise<StorageUploadResult> {
   if (isS3Configured) {
     await s3Client.send(
@@ -93,12 +99,12 @@ export async function uploadBufferToStorage(
         Key: key,
         Body: buffer,
         ContentType: contentType,
-      })
+      }),
     );
 
     return {
       key,
-      storageType: 's3',
+      storageType: "s3",
       url: `/api/downloads/${key}`,
     };
   }
@@ -109,7 +115,7 @@ export async function uploadBufferToStorage(
 
   return {
     key,
-    storageType: 'local',
+    storageType: "local",
     url: `/uploads/${key}`,
   };
 }
@@ -121,9 +127,9 @@ export async function uploadBufferToStorage(
  */
 export async function readStreamFromStorage(
   key: string,
-  storageType: 's3' | 'local',
+  storageType: "s3" | "local",
 ): Promise<Readable> {
-  if (storageType === 's3' && isS3Configured) {
+  if (storageType === "s3" && isS3Configured) {
     const data = await s3Client.send(new GetObjectCommand({ Bucket: s3Bucket, Key: key }));
     const body = data.Body as Readable | undefined;
     if (!body) {
@@ -138,11 +144,8 @@ export async function readStreamFromStorage(
  * Deletes a streamed storage object (S3 object or local file). Local deletes are
  * idempotent (missing files are ignored); S3 deletes are best-effort.
  */
-export async function deleteStorageObject(
-  key: string,
-  storageType: 's3' | 'local',
-): Promise<void> {
-  if (storageType === 's3' && isS3Configured) {
+export async function deleteStorageObject(key: string, storageType: "s3" | "local"): Promise<void> {
+  if (storageType === "s3" && isS3Configured) {
     await s3Client.send(new DeleteObjectCommand({ Bucket: s3Bucket, Key: key }));
     return;
   }
@@ -150,6 +153,6 @@ export async function deleteStorageObject(
   try {
     await unlink(localPath);
   } catch (error) {
-    if ((error as NodeJS.ErrnoException).code !== 'ENOENT') throw error;
+    if ((error as NodeJS.ErrnoException).code !== "ENOENT") throw error;
   }
 }

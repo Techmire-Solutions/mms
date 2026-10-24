@@ -1,6 +1,6 @@
 ---
 description: Testing strategy (unit, API inject, Playwright E2E), coverage gates, isolation, and error reporting
-globs: packages/shared/**/*.test.ts,apps/backend/src/**/*.test.ts,apps/frontend/src/**/*.test.ts,apps/frontend/src/**/*.test.tsx,apps/backend/vitest*.config.ts,apps/frontend/vitest*.config.ts,packages/shared/vitest*.config.ts,e2e/**,apps/frontend/src/components/ui/ErrorBoundary.tsx,apps/frontend/src/lib/clientErrorReporting.ts
+globs: packages/shared/**/*.test.ts,apps/backend/src/**/*.test.ts,apps/frontend/src/**/*.test.ts,apps/frontend/src/**/*.test.tsx,apps/backend/vitest*.config.ts,apps/frontend/vitest*.config.ts,packages/shared/vitest*.config.ts,e2e/**,apps/frontend/src/components/app/ErrorBoundary.tsx,apps/frontend/src/lib/clientErrorReporting.ts
 alwaysApply: false
 ---
 
@@ -83,7 +83,7 @@ All new additions, updates, and refactored modules must satisfy the following me
 
 ## 10. Soft-Delete Verification Testing
 - **404 Invariants:** Assert `GET /:id` returns 404 for archived entities; 200 on `?includeDeleted=true` only when caller has `canDeleteCollection`.
-- **Conflict Trapping:** Verify restoring an entity with a conflicting recyclable unique key traps PostgreSQL error `23505` and returns `409 Conflict`.
+- **Conflict Trapping:** Verify pre-validated domain uniqueness conflicts return `400` (`validation_error`) via `mapRestoreError`; verify concurrent race conditions trap DB error `23505` and return `409 Conflict`.
 - **Session Revocation:** Confirm soft-deleting an account immediately invalidates active sessions in Redis and prevents subsequent authentication.
 - **Relational Guards:** Verify relational queries (`db.query.*`) explicitly filter child relations (`deletedAt IS NULL`).
 
@@ -91,6 +91,3 @@ All new additions, updates, and refactored modules must satisfy the following me
 - **Correlation Tracing:** Surface `x-request-id` (or Sentry event ID) in user-facing error UI to allow direct trace lookup.
 - **Safe Retries:** Query retries idempotent GETs; mutations never auto-retry. On 429, honor `Retry-After`. Failed dynamic chunk imports must provide a reload affordance.
 
-## 12. Workflow & Output Speed Rules
-- **Zero Output Bloat:** Output surgical diffs or targeted snippets only. Never rewrite entire files unless creating a new file from scratch. Omit conversational filler.
-- **Verification Gates:** Verify with `pnpm typecheck` and scoped tests before marking tasks done. If standards are modified, execute `bash .agent/scripts/sync-all.sh` and verify with `node scripts/verify-rules-integrity.mjs`.

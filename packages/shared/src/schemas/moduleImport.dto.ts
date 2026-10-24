@@ -1,5 +1,5 @@
-import { z } from 'zod';
-import { csvImportBodySchema } from './csvImport.dto.js';
+import { z } from "zod";
+import { csvImportBodySchema } from "./csvImport.dto.js";
 
 export const studentImportRowSchema = z
   .object({
@@ -132,5 +132,4 @@ export const financeImportRowSchema = z
 export const financeImportBodySchema = csvImportBodySchema(financeImportRowSchema);
 export type FinanceImportBody = z.infer<typeof financeImportBodySchema>;
 
-export * from './opsModuleImport.dto.js';
-
+export * from "./opsModuleImport.dto.js";

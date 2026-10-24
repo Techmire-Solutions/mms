@@ -12,16 +12,16 @@ export function useTranslation(): {
   language: string;
   t: TranslationFunction;
   isLoading: boolean;
-  dir: 'ltr' | 'rtl';
+  dir: "ltr" | "rtl";
   isRtl: boolean;
 } {
   const context = useContext(TranslationContext);
   if (!context) {
     return {
-      language: 'en',
+      language: "en",
       t: ((key: string, _params?: Record<string, string | number>) => key) as TranslationFunction,
       isLoading: false,
-      dir: 'ltr',
+      dir: "ltr",
       isRtl: false,
     };
   }
@@ -33,4 +33,3 @@ export function useTranslation(): {
     isRtl: context.isRtl,
   };
 }
-

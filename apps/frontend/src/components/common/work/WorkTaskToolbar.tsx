@@ -1,14 +1,11 @@
 import React, { type JSX } from "react";
-import { ModuleWorkToolbar } from "@/components/ui/ModuleWorkToolbar";
+import { ModuleWorkToolbar } from "@/components/app/ModuleWorkToolbar";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Calendar } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useTranslation } from "@/hooks/useTranslation";
-import type {
-  WorkTaskStatusOption,
-  WorkTaskToolbarProps,
-} from "./workTaskToolbarTypes";
+import type { WorkTaskStatusOption, WorkTaskToolbarProps } from "./workTaskToolbarTypes";
 
 export type { WorkTaskStatusOption, WorkTaskToolbarProps };
 
@@ -78,7 +75,7 @@ export function WorkTaskToolbar({
                   variant={statusFilter.activeIds.length === 0 ? "secondary" : "ghost"}
                   size="sm"
                   onClick={statusFilter.onResetAll}
-                  className="h-8 px-2.5 text-xs font-medium"
+                  className="h-8 touch-target-coarse px-2.5 text-xs font-medium"
                 >
                   {statusFilter.allLabel}
                 </Button>
@@ -93,7 +90,7 @@ export function WorkTaskToolbar({
                     size="sm"
                     onClick={() => statusFilter.onToggle(option.id)}
                     className={cn(
-                      "h-8 gap-1.5 px-2.5 text-xs font-medium transition-colors",
+                      "h-8 touch-target-coarse gap-1.5 px-2.5 text-xs font-medium transition-colors",
                       isActive && "bg-accent font-semibold text-accent-foreground",
                     )}
                   >

@@ -3,11 +3,16 @@ description: Client-server REST interface contracts, apiClient fetch wrappers, F
 paths:
   - "apps/frontend/src/lib/apiClient*"
   - "apps/backend/src/routes/**/*.ts"
+  - "apps/backend/src/services/**/*.ts"
   - "apps/backend/src/contacts/**/*.ts"
+  - "apps/backend/src/students/**/*.ts"
+  - "apps/backend/src/faculty/**/*.ts"
+  - "apps/backend/src/finance/**/*.ts"
+  - "apps/backend/src/accounting/**/*.ts"
   - "apps/backend/src/lib/**/*.ts"
   - "apps/backend/src/middleware/**/*.ts"
   - "apps/backend/src/app.ts"
-  - "packages/shared/src/apiSchemas.ts"
+  - "packages/shared/src/**/apiSchemas.ts"
 ---
 
 # MMS API & Communications Interface
@@ -15,13 +20,13 @@ paths:
 **Workflow skills:** FE shell/`apiClient` → `mms-frontend` · Fastify routes/`inject()` → `mms-backend-api` · CSRF/cookies → `mms-backend-security`.
 
 ## 1. Client-Server Communication Flow
-- **Sanctioned Clients:** All frontend API calls must use `apiClient` (`apiFetch` / `apiJson`) or `@ts-rest/react-query` contracts (`initTsrReactQuery`). Ban `axios`, `node-fetch`, and raw `ws`.
+- **Sanctioned Clients:** All frontend API calls must use `apiClient` (`apiFetch` / `apiJson`) or `@ts-rest/react-query` contracts (`initTsrReactQuery`). Ban `axios`, `node-fetch`, and ad-hoc client socket connections (use `@/lib/ws` / `connectTenantDatabaseSocket` and `@fastify/websocket`).
 - **Credentials & Cancellation:** Always include `credentials: 'include'`. Pass TanStack Query `signal` to `apiFetch`; composite signals via `AbortSignal.any([signal, AbortSignal.timeout(ms)])`. Fastify handlers propagate `request.raw.signal` to abort downstream DB operations on client disconnect.
 - **Contract Boundary (SSOT):** Define DTOs in `packages/shared/src/contracts/*` using Zod (`parseRequest` / `@ts-rest`). Never enable parallel Fastify JSON-Schema validation.
 - **Distributed Tracing:** Frontend generates W3C `traceparent` (v00); Fastify extracts into `tenantStorage` (`AsyncLocalStorage`) and echoes `traceparent` + `x-request-id` headers.
 
 ## 2. Fastify Router & Layering
-- **Layer Hierarchy:** Route router (`routes/**`) → Use Case (`{module}/use-cases/**`, pure DI) → Repository Interface (`{module}/repository/**`) → Drizzle Adapter. Controllers must never import DB pools directly.
+- **Layer Hierarchy:** Route router (`routes/**`) → Use Case (`{module}/use-cases/**`, pure DI) → Repository Interface (`{module}/repository/**`) → Drizzle Adapter. Route files must never import `db/repositories` or `drizzle-orm` directly (`check:backend-boundaries`).
 - **Streaming & Request Budgets:** Enforce `bodyLimit` and `requestTimeout`. Never buffer large uploads or datasets (`Buffer.concat` banned); stream uploads via `@fastify/multipart` and exports via `node:stream` (`mms-performance.md`).
 - **Outbound HTTP:** External backend fetches must enforce `AbortSignal.timeout(ms)`.
 
@@ -54,6 +59,3 @@ paths:
 - **Additive by Default:** No `/v2` URL prefixes. Contract changes must be additive and land in the same commit across `@mms/shared`, Fastify, and React.
 - **Deprecation:** Mark deprecated fields in `@mms/shared` before removal in a subsequent release. Never repurpose existing field names.
 
-## 9. Workflow & Output Speed Rules
-- **Zero Output Bloat:** Output surgical diffs or targeted snippets only. Never rewrite entire files unless creating a new file from scratch. Omit conversational filler.
-- **Verification Gates:** Verify with `pnpm typecheck` and scoped tests before marking tasks done. If standards are modified, execute `bash .agent/scripts/sync-all.sh` and verify with `node scripts/verify-rules-integrity.mjs`.

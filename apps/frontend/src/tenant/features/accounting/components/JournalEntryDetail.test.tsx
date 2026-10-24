@@ -24,7 +24,7 @@ vi.mock("@/hooks/useCurrency", () => ({
   }),
 }));
 
-vi.mock("@/components/ui/Drawer", () => ({
+vi.mock("@/components/app/Drawer", () => ({
   Drawer: ({
     title,
     headerExtra,
@@ -46,8 +46,24 @@ vi.mock("@/components/ui/Drawer", () => ({
 }));
 
 const mockAccounts: Account[] = [
-  { id: "a-cash", code: "1010", name: "Cash", type: "Asset", subtype: "Current Asset", description: "", isActive: true },
-  { id: "a-rev", code: "4010", name: "Revenue", type: "Revenue", subtype: "Operating Revenue", description: "", isActive: true },
+  {
+    id: "a-cash",
+    code: "1010",
+    name: "Cash",
+    type: "Asset",
+    subtype: "Current Asset",
+    description: "",
+    isActive: true,
+  },
+  {
+    id: "a-rev",
+    code: "4010",
+    name: "Revenue",
+    type: "Revenue",
+    subtype: "Operating Revenue",
+    description: "",
+    isActive: true,
+  },
 ];
 
 const mockDraftEntry: JournalEntry = {
@@ -110,7 +126,7 @@ describe("JournalEntryDetail UI/UX", () => {
           onClose={onClose}
           onEdit={onEdit}
           onReverse={onReverse}
-        />
+        />,
       );
     });
 
@@ -139,7 +155,7 @@ describe("JournalEntryDetail UI/UX", () => {
           onClose={onClose}
           onEdit={onEdit}
           onReverse={onReverse}
-        />
+        />,
       );
     });
 
@@ -169,7 +185,7 @@ describe("JournalEntryDetail UI/UX", () => {
           onReverse={onReverse}
           onRestore={onRestore}
           canRestore={true}
-        />
+        />,
       );
     });
 
@@ -182,7 +198,7 @@ describe("JournalEntryDetail UI/UX", () => {
 
     // Restore button is present
     const restoreBtn = Array.from(container.querySelectorAll("button")).find((btn) =>
-      btn.textContent?.includes("Restore")
+      btn.textContent?.includes("Restore"),
     );
     expect(restoreBtn).toBeDefined();
 

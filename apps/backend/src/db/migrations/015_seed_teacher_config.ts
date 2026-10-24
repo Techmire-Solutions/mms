@@ -3,18 +3,15 @@ import {
   tenantCollectionKey,
   WORKSPACES_COLLECTION,
   type Workspace,
-} from '@mms/shared';
-import { getMinimalCollectionsForSeed } from '../minimalSeeds.js';
+} from "@mms/shared";
+import { getMinimalCollectionsForSeed } from "../minimalSeeds.js";
 import {
   getCollectionByStorageName,
   listCollectionStorageNames,
   saveCollection,
-} from '../database.js';
+} from "../database.js";
 
-const TEACHER_CONFIG_COLLECTIONS = [
-  'teacherStatuses',
-  'teacherSpecializations',
-] as const;
+const TEACHER_CONFIG_COLLECTIONS = ["teacherStatuses", "teacherSpecializations"] as const;
 
 async function discoverTenantSubdomains(): Promise<Set<string>> {
   const subdomains = new Set<string>();
@@ -61,11 +58,11 @@ export async function runMigration015(): Promise<void> {
 
   let changed = false;
   if (subdomains.size === 0) {
-    changed = await seedTeacherConfigForPrefix('', collections);
+    changed = await seedTeacherConfigForPrefix("", collections);
   } else {
     for (const subdomain of subdomains) {
       const didChange = await seedTeacherConfigForPrefix(
-        tenantCollectionKey(subdomain, ''),
+        tenantCollectionKey(subdomain, ""),
         collections,
       );
       changed = changed || didChange;
@@ -73,6 +70,6 @@ export async function runMigration015(): Promise<void> {
   }
 
   if (changed) {
-    console.log('[Migration 015] Seeded database-owned teacher configuration defaults.');
+    console.log("[Migration 015] Seeded database-owned teacher configuration defaults.");
   }
 }

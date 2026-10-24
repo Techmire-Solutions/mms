@@ -9,7 +9,7 @@ import { useTranslation } from "@/hooks/useTranslation";
 import type { TranslationFunction } from "@/lib/contexts/TranslationContext";
 import { ACTIVITY_TYPE_I18N } from "@/lib/contacts/contactI18n";
 import { Button } from "@/components/ui/button";
-import { EmptyState } from "@/components/ui/EmptyState";
+import { EmptyState } from "@/components/app/EmptyState";
 import { Input } from "@/components/ui/input";
 import { DETAIL_SECTION_TITLE, WORK_SURFACE_INNER } from "@/components/ui/formStyles";
 import { cn } from "@/lib/utils";
@@ -47,7 +47,9 @@ function ActivityItem({
       <div className="absolute -start-3 top-1.5 w-6 h-6 -translate-x-1/2 rtl:translate-x-1/2 rounded-full bg-card border-2 border-border flex items-center justify-center z-elevated group-hover:border-primary transition-colors">
         <Icon className="w-2.5 h-2.5 text-muted-foreground group-hover:text-primary" />
       </div>
-      <div className={`${WORK_SURFACE_INNER} p-4 hover:border-primary/20 group-hover:border-primary/20`}>
+      <div
+        className={`${WORK_SURFACE_INNER} p-4 hover:border-primary/20 group-hover:border-primary/20`}
+      >
         <div className="flex items-center justify-between mb-2">
           <span className={DETAIL_SECTION_TITLE}>
             {ACTIVITY_TYPE_I18N[act.type] ? t(ACTIVITY_TYPE_I18N[act.type]) : act.type}
@@ -55,7 +57,9 @@ function ActivityItem({
           <span className="text-xs font-bold text-muted-foreground">{formatDate(act.date)}</span>
         </div>
         <p className="text-xs text-foreground font-medium leading-relaxed">{act.content}</p>
-        {act.by && <span className="block mt-2 text-xs font-bold text-primary italic">— {act.by}</span>}
+        {act.by && (
+          <span className="block mt-2 text-xs font-bold text-primary italic">— {act.by}</span>
+        )}
       </div>
     </motion.div>
   );
@@ -119,9 +123,11 @@ export function ContactDetailTimeline({
               type="submit"
               disabled={submitting || !noteText.trim()}
               aria-label={t("contacts.detail.logEventOrNoteSubmit")}
-              className={`w-12 h-12 rounded-2xl bg-primary text-primary-foreground flex items-center justify-center shadow-none ${
-                reducedMotion ? "" : "hover:scale-105 active:scale-95 transition-all"
-              }`}
+              size="icon"
+              className={cn(
+                "min-h-11 min-w-11 rounded-xl shrink-0 shadow-none",
+                !reducedMotion && "hover:scale-105 active:scale-95 transition-all",
+              )}
             >
               <Send className="w-4 h-4" />
             </Button>
@@ -129,7 +135,7 @@ export function ContactDetailTimeline({
         </div>
       )}
 
-      {(!activities || activities.length === 0) ? (
+      {!activities || activities.length === 0 ? (
         <div className="relative ps-3">
           <EmptyState
             title={t("contacts.detail.quietTimeline")}
@@ -138,12 +144,15 @@ export function ContactDetailTimeline({
           />
         </div>
       ) : isVirtualized ? (
-        <div
-          ref={scrollRef}
-          className={cn("max-h-120 overflow-y-auto relative ps-3 space-y-6")}
-        >
+        <div ref={scrollRef} className={cn("max-h-120 overflow-y-auto relative ps-3 space-y-6")}>
           <div className="absolute start-3 top-0 bottom-0 w-0.5 -translate-x-1/2 rtl:translate-x-1/2 bg-border/50" />
-          <div style={{ height: `${rowVirtualizer.getTotalSize()}px`, position: "relative", width: "100%" }}>
+          <div
+            style={{
+              height: `${rowVirtualizer.getTotalSize()}px`,
+              position: "relative",
+              width: "100%",
+            }}
+          >
             {rowVirtualizer.getVirtualItems().map((virtualRow) => {
               const act = activities[virtualRow.index];
               return (
@@ -152,7 +161,7 @@ export function ContactDetailTimeline({
                   style={{
                     position: "absolute",
                     top: 0,
-                    left: 0,
+                    insetInlineStart: 0,
                     width: "100%",
                     transform: `translateY(${virtualRow.start}px)`,
                   }}
@@ -172,13 +181,7 @@ export function ContactDetailTimeline({
         <div className="space-y-6 relative ps-3">
           <div className="absolute start-3 top-0 bottom-0 w-0.5 -translate-x-1/2 rtl:translate-x-1/2 bg-border/50" />
           {activities.map((act, idx) => (
-            <ActivityItem
-              key={act.id}
-              act={act}
-              idx={idx}
-              reducedMotion={reducedMotion}
-              t={t}
-            />
+            <ActivityItem key={act.id} act={act} idx={idx} reducedMotion={reducedMotion} t={t} />
           ))}
         </div>
       )}

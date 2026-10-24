@@ -1,6 +1,6 @@
 import type { SystemUser } from "@mms/shared";
-import { DirectoryCard } from "@/components/ui/DirectoryCard";
-import { EntityCardsGrid } from "@/components/ui/EntityCardsGrid";
+import { DirectoryCard } from "@/components/app/DirectoryCard";
+import { EntityCardsGrid } from "@/components/app/EntityCardsGrid";
 import { useReducedMotion } from "@/hooks/useReducedMotion";
 import { useTranslation } from "@/hooks/useTranslation";
 import { formatDirectoryPageCountLabel } from "@/lib/formatDirectoryPageCountLabel";
@@ -72,7 +72,11 @@ function UserCard({
       onView={onView}
       onEdit={onEdit}
       reducedMotion={reducedMotion}
-      accentClassName={user.role === 'admin' ? 'bg-primary/80 group-hover:bg-primary' : 'bg-primary/50 group-hover:bg-primary'}
+      accentClassName={
+        user.role === "admin"
+          ? "bg-primary/80 group-hover:bg-primary"
+          : "bg-primary/50 group-hover:bg-primary"
+      }
       header={{
         displayName,
         subtitle:
@@ -170,4 +174,3 @@ export function UsersListCards({
     />
   );
 }
-

@@ -2,11 +2,11 @@
  * @file facultyEmploymentEntityAudit.ts
  * @description Shared modern audit + outbox for employment / employ-designation rows.
  */
-import { recordModernAuditEvent } from '../../services/auditTrailService.js';
-import { emitOutboxEvent } from '../../services/outboxEventService.js';
-import type { AppDb } from '../tenant-context.js';
+import { recordModernAuditEvent } from "../../services/auditTrailService.js";
+import { emitOutboxEvent } from "../../services/outboxEventService.js";
+import type { AppDb } from "../tenant-context.js";
 
-type EmploymentEntityTable = 'faculty_employments' | 'faculty_employ_designations';
+type EmploymentEntityTable = "faculty_employments" | "faculty_employ_designations";
 
 export async function auditEmploymentEntityUpdate(
   tx: AppDb,
@@ -20,7 +20,7 @@ export async function auditEmploymentEntityUpdate(
     workspaceSubdomain: subdomain,
     tableName,
     recordId,
-    actionType: 'UPDATE',
+    actionType: "UPDATE",
     realUserId: realUserId ?? undefined,
     newState,
   });
@@ -40,11 +40,11 @@ export async function auditEmploymentEntitySoftDeletes(
       workspaceSubdomain: subdomain,
       tableName,
       recordId: id,
-      actionType: 'DELETE',
+      actionType: "DELETE",
       realUserId: deletedBy,
       newState: { reason: deletionReason ?? null },
     });
-    await emitOutboxEvent(tx, 'entity.soft_deleted', {
+    await emitOutboxEvent(tx, "entity.soft_deleted", {
       entityType: tableName,
       entityId: id,
       tenantId: subdomain,
@@ -69,15 +69,15 @@ export async function auditEmploymentEntityRestores(
       workspaceSubdomain: subdomain,
       tableName,
       recordId: id,
-      actionType: 'RESTORE',
+      actionType: "RESTORE",
       realUserId: restoredBy,
     });
-    await emitOutboxEvent(tx, 'entity.restored', {
+    await emitOutboxEvent(tx, "entity.restored", {
       entityType: tableName,
       entityId: id,
       tenantId: subdomain,
       restoredAt: restoredAt.toISOString(),
-      restoredBy: restoredBy ?? '',
+      restoredBy: restoredBy ?? "",
       version: restoredAt.getTime(),
     });
   }

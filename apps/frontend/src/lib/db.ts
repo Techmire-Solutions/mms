@@ -5,22 +5,16 @@
 export {
   getWorkspaceLocalStoragePrefix,
   getSyncStatus,
-  clearAllClientStorage,
   type SyncStatus,
   type ServerSyncResult,
-} from "@/lib/dbStorageCore.js";
-export {
-  syncDatabase,
-  importDatabase,
-  exportEncryptedTenantBackup,
-} from "@/lib/dbBackupSync.js";
+} from "@/lib/dbStorageCore";
+export { importDatabase, exportEncryptedTenantBackup } from "@/lib/dbBackupSync";
 export {
   hasCollectionInCache,
   saveCollectionCacheOnly,
   getCollection,
   saveCollection,
-  saveCollectionAsync,
-} from "@/lib/dbCollections.js";
+} from "@/lib/dbCollections";
 export {
   getObject,
   getGlobalSettings,
@@ -37,10 +31,7 @@ export {
   readObjectLocal,
   cachePublicBranding,
   saveObject,
-  saveObjectAsync,
-} from "@/lib/dbObjects.js";
-
-export { formatDate } from "@mms/shared";
+} from "@/lib/dbObjects";
 
 // Side-effect: wire shared date formatters to effective global settings (incl. preview).
-import "@/lib/dbObjects.js";
+import "@/lib/dbObjects";

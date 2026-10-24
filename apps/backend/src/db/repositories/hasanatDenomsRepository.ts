@@ -1,7 +1,7 @@
-import { and, eq, inArray, sql } from 'drizzle-orm';
-import { dedupeTrimmedIds, type Denomination } from '@mms/shared';
-import { hasanatDenoms } from '../schema.js';
-import { withTenant, withTenantRead } from '../tenant-context.js';
+import { and, eq, inArray, sql } from "drizzle-orm";
+import { dedupeTrimmedIds, type Denomination } from "@mms/shared";
+import { hasanatDenoms } from "../schema.js";
+import { withTenant, withTenantRead } from "../tenant-context.js";
 
 type DenomRow = typeof hasanatDenoms.$inferSelect;
 export function denomRowToRecord(row: DenomRow): Denomination {
@@ -57,12 +57,7 @@ export async function findDenomById(tenant: string, id: string): Promise<Denomin
         createdAt: hasanatDenoms.createdAt,
       })
       .from(hasanatDenoms)
-      .where(
-        and(
-          eq(hasanatDenoms.workspaceSubdomain, subdomain),
-          eq(hasanatDenoms.id, trimmedId),
-        ),
-      )
+      .where(and(eq(hasanatDenoms.workspaceSubdomain, subdomain), eq(hasanatDenoms.id, trimmedId)))
       .limit(1);
     const row = rows[0];
     return row ? denomRowToRecord(row) : null;
@@ -89,10 +84,7 @@ export async function findDenomsByIds(tenant: string, ids: string[]): Promise<De
       })
       .from(hasanatDenoms)
       .where(
-        and(
-          eq(hasanatDenoms.workspaceSubdomain, subdomain),
-          inArray(hasanatDenoms.id, cleanIds),
-        ),
+        and(eq(hasanatDenoms.workspaceSubdomain, subdomain), inArray(hasanatDenoms.id, cleanIds)),
       );
     return rows.map(denomRowToRecord);
   });
@@ -108,9 +100,9 @@ export async function saveDenom(tenant: string, record: Denomination): Promise<v
         workspaceSubdomain: subdomain,
         name: record.name,
         points: record.points,
-        color: record.color ?? 'emerald',
-        description: record.description ?? '',
-        icon: record.icon ?? 'Star',
+        color: record.color ?? "emerald",
+        description: record.description ?? "",
+        icon: record.icon ?? "Star",
         active: record.active ?? true,
         updatedAt: new Date(),
       })
@@ -119,9 +111,9 @@ export async function saveDenom(tenant: string, record: Denomination): Promise<v
         set: {
           name: record.name,
           points: record.points,
-          color: record.color ?? 'emerald',
-          description: record.description ?? '',
-          icon: record.icon ?? 'Star',
+          color: record.color ?? "emerald",
+          description: record.description ?? "",
+          icon: record.icon ?? "Star",
           active: record.active ?? true,
           updatedAt: new Date(),
         },
@@ -134,7 +126,7 @@ export async function bulkSaveDenoms(tenant: string, records: Denomination[]): P
   const subdomain = tenant.trim().toLowerCase();
   const uniqueMap = new Map<string, Denomination>();
   for (const r of records) {
-    const cleanId = typeof r.id === 'string' ? r.id.trim() : String(r.id);
+    const cleanId = typeof r.id === "string" ? r.id.trim() : String(r.id);
     if (cleanId) uniqueMap.set(cleanId, { ...r, id: cleanId });
   }
   const uniqueRecords = Array.from(uniqueMap.values());
@@ -149,9 +141,9 @@ export async function bulkSaveDenoms(tenant: string, records: Denomination[]): P
           workspaceSubdomain: subdomain,
           name: r.name,
           points: r.points,
-          color: r.color ?? 'emerald',
-          description: r.description ?? '',
-          icon: r.icon ?? 'Star',
+          color: r.color ?? "emerald",
+          description: r.description ?? "",
+          icon: r.icon ?? "Star",
           active: r.active ?? true,
           updatedAt: new Date(),
         })),
@@ -171,11 +163,14 @@ export async function bulkSaveDenoms(tenant: string, records: Denomination[]): P
   });
 }
 
-export async function replaceDenomsForWorkspace(tenant: string, records: Denomination[]): Promise<void> {
+export async function replaceDenomsForWorkspace(
+  tenant: string,
+  records: Denomination[],
+): Promise<void> {
   const subdomain = tenant.trim().toLowerCase();
   const uniqueMap = new Map<string, Denomination>();
   for (const r of records) {
-    const cleanId = typeof r.id === 'string' ? r.id.trim() : String(r.id);
+    const cleanId = typeof r.id === "string" ? r.id.trim() : String(r.id);
     if (cleanId) uniqueMap.set(cleanId, { ...r, id: cleanId });
   }
   const uniqueRecords = Array.from(uniqueMap.values());
@@ -189,9 +184,9 @@ export async function replaceDenomsForWorkspace(tenant: string, records: Denomin
           workspaceSubdomain: subdomain,
           name: r.name,
           points: r.points,
-          color: r.color ?? 'emerald',
-          description: r.description ?? '',
-          icon: r.icon ?? 'Star',
+          color: r.color ?? "emerald",
+          description: r.description ?? "",
+          icon: r.icon ?? "Star",
           active: r.active ?? true,
           updatedAt: new Date(),
         })),

@@ -1,10 +1,10 @@
-import { and, eq, isNull, sql } from 'drizzle-orm';
+import { and, eq, isNull, sql } from "drizzle-orm";
 import {
   MODULE_METRICS_DEFAULT_PERIOD_DAYS,
   type ObligationsCommandMetricsSnapshot,
-} from '@mms/shared';
-import { obligationCollections, obligationTypes } from '../schema.js';
-import { withTenantRead } from '../tenant-context.js';
+} from "@mms/shared";
+import { obligationCollections, obligationTypes } from "../schema.js";
+import { withTenantRead } from "../tenant-context.js";
 
 /** SQL aggregates for Obligations command-centre metrics (active rows only). */
 export async function aggregateObligationsCommandMetrics(

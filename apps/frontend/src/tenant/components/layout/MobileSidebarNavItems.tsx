@@ -29,7 +29,9 @@ export function MobileSidebarNavItems({
       {items.map((item) => {
         if (item.subItems) {
           const isMenuOpen = !!openMenus[item.labelKey];
-          const hasActiveSub = item.subItems.some((sub) => isNavPathActive(location.pathname, sub.path));
+          const hasActiveSub = item.subItems.some((sub) =>
+            isNavPathActive(location.pathname, sub.path),
+          );
           const Icon = item.icon;
           const subMenuId = `mobile-subnav-${item.labelKey.replace(/[^a-zA-Z0-9]/g, "-")}`;
 
@@ -48,15 +50,18 @@ export function MobileSidebarNavItems({
                 }`}
               >
                 <div className="flex items-center gap-3">
-                  <Icon className={`h-4.5 w-4.5 flex-shrink-0 ${hasActiveSub ? "text-sidebar-primary" : ""}`} />
+                  <Icon
+                    className={`h-4.5 w-4.5 flex-shrink-0 ${hasActiveSub ? "text-sidebar-primary" : ""}`}
+                  />
                   <span className="text-sm font-medium">{t(item.labelKey)}</span>
                 </div>
                 <ChevronRight
-                  className={`w-3.5 h-3.5 transition-transform duration-200 rtl:rotate-180 ${
+                  className={`w-3.5 h-3.5 transition-transform duration-200 ${
                     isMenuOpen
-                      ? "rotate-90 rtl:-rotate-90 text-sidebar-foreground"
-                      : "text-sidebar-muted-foreground group-hover:text-sidebar-foreground group-active:text-sidebar-foreground"
+                      ? "rotate-90 text-sidebar-foreground"
+                      : "rtl:rotate-180 text-sidebar-muted-foreground group-hover:text-sidebar-foreground group-active:text-sidebar-foreground"
                   }`}
+                  aria-hidden="true"
                 />
               </Button>
 
@@ -95,10 +100,10 @@ export function MobileSidebarNavItems({
                               transition={{ type: "spring", stiffness: 300, damping: 30 }}
                             />
                           )}
-                          <SubIcon className={`w-4 h-4 flex-shrink-0 ${isSubActive ? "text-sidebar-primary" : ""}`} />
-                          <span className="text-sm font-medium">
-                            {t(sub.labelKey)}
-                          </span>
+                          <SubIcon
+                            className={`w-4 h-4 flex-shrink-0 ${isSubActive ? "text-sidebar-primary" : ""}`}
+                          />
+                          <span className="text-sm font-medium">{t(sub.labelKey)}</span>
                         </Link>
                       );
                     })}
@@ -132,7 +137,9 @@ export function MobileSidebarNavItems({
                 transition={{ type: "spring", stiffness: 300, damping: 30 }}
               />
             )}
-            <Icon className={`h-4.5 w-4.5 flex-shrink-0 ${isActive ? "text-sidebar-primary" : ""}`} />
+            <Icon
+              className={`h-4.5 w-4.5 flex-shrink-0 ${isActive ? "text-sidebar-primary" : ""}`}
+            />
             <span className="text-sm font-medium">{t(item.labelKey)}</span>
           </Link>
         );

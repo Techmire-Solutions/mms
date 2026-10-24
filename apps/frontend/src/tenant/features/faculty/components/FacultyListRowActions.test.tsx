@@ -42,4 +42,3 @@ describe("FacultyListRowActions Component", () => {
     expect(html).toContain("faculty.table.actions");
   });
 });
-

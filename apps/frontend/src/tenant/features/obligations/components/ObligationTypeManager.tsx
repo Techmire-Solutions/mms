@@ -2,20 +2,20 @@ import React, { useState } from "react";
 import { Plus } from "lucide-react";
 import { generateClientEntityId, type ObligationType } from "@mms/shared";
 import { useTranslation } from "@/hooks/useTranslation";
-import { SEMANTIC_BADGE } from "@/lib/semanticTone";
+import { SEMANTIC_BADGE } from "@/lib/ui/semanticTone";
 import { Button } from "@/components/ui/button";
-import { ConfirmAlertDialog } from "@/components/ui/ConfirmAlertDialog";
-import { SectionHeader } from "@/components/ui/SectionHeader";
+import { ConfirmAlertDialog } from "@/components/app/ConfirmAlertDialog";
+import { SectionHeader } from "@shared/ui";
 import { ObligationTypeFormModal } from "@/tenant/features/obligations/components/ObligationTypeFormModal";
 import { ObligationTypeManagerList } from "@/tenant/features/obligations/components/ObligationTypeManagerList";
 import {
   DESIGNATED_LABEL_KEYS,
   OBLIGATION_TYPE_EMPTY,
   type ObligationTypeModalState,
-} from "@/tenant/features/obligations/components/obligationTypeManagerShared";
-import type { StatusBadgeConfigItem } from '@/components/ui/StatusBadge';
+} from "@/tenant/features/obligations/lib/obligationTypeManagerShared";
+import type { StatusBadgeConfigItem } from "@/components/app/StatusBadge";
 
-export type { DesignatedFor } from "@/tenant/features/obligations/components/obligationTypeManagerShared";
+export type { DesignatedFor } from "@/tenant/features/obligations/lib/obligationTypeManagerShared";
 
 export interface ObligationTypeManagerProps {
   types: ObligationType[];
@@ -46,9 +46,23 @@ export function ObligationTypeManager({ types, onChange }: ObligationTypeManager
   const handleSave = async (form: Partial<ObligationType>) => {
     if (modal?.mode === "add") {
       const id = generateClientEntityId("ot");
-      await onChange([...types, { ...form, id, created_at: new Date().toISOString(), updated_at: new Date().toISOString() } as ObligationType]);
+      await onChange([
+        ...types,
+        {
+          ...form,
+          id,
+          created_at: new Date().toISOString(),
+          updated_at: new Date().toISOString(),
+        } as ObligationType,
+      ]);
     } else if (modal?.mode === "edit") {
-      await onChange(types.map((obligationType) => obligationType.id === form.id ? { ...obligationType, ...form, updated_at: new Date().toISOString() } : obligationType));
+      await onChange(
+        types.map((obligationType) =>
+          obligationType.id === form.id
+            ? { ...obligationType, ...form, updated_at: new Date().toISOString() }
+            : obligationType,
+        ),
+      );
     }
     setModal(null);
   };
@@ -63,7 +77,11 @@ export function ObligationTypeManager({ types, onChange }: ObligationTypeManager
     <div className="space-y-4">
       <SectionHeader
         noMargin
-        title={<span className="m-0 min-w-0 text-sm text-muted-foreground">{t("obligations.types.count", { count: types.length })}</span>}
+        title={
+          <span className="m-0 min-w-0 text-sm text-muted-foreground">
+            {t("obligations.types.count", { count: types.length })}
+          </span>
+        }
         actions={
           <Button
             type="button"
@@ -86,9 +104,15 @@ export function ObligationTypeManager({ types, onChange }: ObligationTypeManager
 
       {modal ? (
         <ObligationTypeFormModal
-          title={modal.mode === "add" ? t("obligations.types.addTitle") : t("obligations.types.editTitle")}
+          title={
+            modal.mode === "add"
+              ? t("obligations.types.addTitle")
+              : t("obligations.types.editTitle")
+          }
           initial={modal.data}
-          onSave={(form) => { void handleSave(form); }}
+          onSave={(form) => {
+            void handleSave(form);
+          }}
           onClose={() => setModal(null)}
         />
       ) : null}

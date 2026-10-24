@@ -32,57 +32,64 @@ export function useContactsCrudDeleteActions({
     restoreContact: restoreMutation,
   } = useContactMutations();
 
-  const removeContact = (async (id: string | number, name?: string, deletionReason?: string): Promise<void> => {
-      try {
-        await deleteContact.mutateAsync({
-          id: String(id),
-          ...(deletionReason ? { deletionReason } : {}),
+  const removeContact = async (
+    id: string | number,
+    name?: string,
+    deletionReason?: string,
+  ): Promise<void> => {
+    try {
+      await deleteContact.mutateAsync({
+        id: String(id),
+        ...(deletionReason ? { deletionReason } : {}),
+      });
+      if (notifyArchivedWithUndo) {
+        notifyArchivedWithUndo(() => restoreContactAction(String(id)), name);
+      } else {
+        notify.info(t("contacts.deletedTitle"), {
+          description: name
+            ? t("contacts.deletedDescription", { name })
+            : t("contacts.deletedDescriptionDefault"),
         });
-        if (notifyArchivedWithUndo) {
-          notifyArchivedWithUndo(() => restoreContactAction(String(id)), name);
-        } else {
-          notify.info(t("contacts.deletedTitle"), {
-            description: name
-              ? t("contacts.deletedDescription", { name })
-              : t("contacts.deletedDescriptionDefault"),
-          });
-        }
-      } catch (err) {
-        handleError(err, "contacts.remove_contact");
       }
-    });
+    } catch (err) {
+      handleError(err, "contacts.remove_contact");
+    }
+  };
 
-  const bulkDeleteContactsAction = (async (ids: (string | number)[], deletionReason?: string): Promise<void> => {
-      if (ids.length === 0) return;
-      try {
-        const result = await bulkDeleteMutation.mutateAsync({
-          ids: ids.map(String),
-          ...(deletionReason ? { deletionReason } : {}),
-        });
-        notifyBulkResult(
-          result.succeeded,
-          result.failed,
-          "contacts.deletedTitle",
-          "contacts.bulkDeleteSuccess",
-        );
-      } catch (err) {
-        handleError(err, "contacts.bulk_delete");
-      }
-    });
+  const bulkDeleteContactsAction = async (
+    ids: (string | number)[],
+    deletionReason?: string,
+  ): Promise<void> => {
+    if (ids.length === 0) return;
+    try {
+      const result = await bulkDeleteMutation.mutateAsync({
+        ids: ids.map(String),
+        ...(deletionReason ? { deletionReason } : {}),
+      });
+      notifyBulkResult(
+        result.succeeded,
+        result.failed,
+        "contacts.deletedTitle",
+        "contacts.bulkDeleteSuccess",
+      );
+    } catch (err) {
+      handleError(err, "contacts.bulk_delete");
+    }
+  };
 
-  const restoreContactAction = (async (id: string): Promise<void> => {
-      await restoreMutation.mutateAsync(id);
-    });
+  const restoreContactAction = async (id: string): Promise<void> => {
+    await restoreMutation.mutateAsync(id);
+  };
 
-  const bulkRestoreContactsAction = (async (
-      ids: (string | number)[],
-    ): Promise<{
-      succeeded: number;
-      failed: number;
-      conflicts?: Array<{ id: string; errors: Array<{ message: string }> }>;
-    }> => {
-      return bulkRestoreMutation.mutateAsync(ids.map(String));
-    });
+  const bulkRestoreContactsAction = async (
+    ids: (string | number)[],
+  ): Promise<{
+    succeeded: number;
+    failed: number;
+    conflicts?: Array<{ id: string; errors: Array<{ message: string }> }>;
+  }> => {
+    return bulkRestoreMutation.mutateAsync(ids.map(String));
+  };
 
   return {
     removeContact,

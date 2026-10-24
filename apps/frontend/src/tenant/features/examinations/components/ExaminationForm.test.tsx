@@ -4,7 +4,7 @@ import { renderToStaticMarkup } from "react-dom/server";
 import ExaminationForm from "./ExaminationForm";
 import type { Exam } from "@/lib/data/examinationData";
 
-vi.mock("@/tenant/features/examinations/components/useExaminationForm", () => ({
+vi.mock("@/tenant/features/examinations/hooks/useExaminationForm", () => ({
   useExaminationForm: () => ({
     t: (key: string) => key,
     saving: false,
@@ -27,8 +27,8 @@ vi.mock("@/tenant/features/examinations/components/useExaminationForm", () => ({
   }),
 }));
 
-vi.mock("@/components/ui/FormModal", () => ({
-  FormModal: ({ children, title }: any) => (
+vi.mock("@/components/app/FormModal", () => ({
+  FormModal: ({ children, title }: { children?: React.ReactNode; title?: React.ReactNode }) => (
     <div data-testid="form-modal">
       <h2>{title}</h2>
       {children}
@@ -58,12 +58,7 @@ const mockExam: Exam = {
 describe("ExaminationForm Component", () => {
   it("renders form modal with edit title when exam is provided", () => {
     const html = renderToStaticMarkup(
-      <ExaminationForm
-        open={true}
-        exam={mockExam}
-        onClose={vi.fn()}
-        onSave={vi.fn()}
-      />,
+      <ExaminationForm open={true} exam={mockExam} onClose={vi.fn()} onSave={vi.fn()} />,
     );
 
     expect(html).toContain("examinations.form.title.edit");
@@ -72,12 +67,7 @@ describe("ExaminationForm Component", () => {
 
   it("renders form modal with create title when exam is null", () => {
     const html = renderToStaticMarkup(
-      <ExaminationForm
-        open={true}
-        exam={null}
-        onClose={vi.fn()}
-        onSave={vi.fn()}
-      />,
+      <ExaminationForm open={true} exam={null} onClose={vi.fn()} onSave={vi.fn()} />,
     );
 
     expect(html).toContain("examinations.form.title.create");

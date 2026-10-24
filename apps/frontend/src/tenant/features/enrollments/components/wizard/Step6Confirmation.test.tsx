@@ -21,14 +21,14 @@ const mockStudent = {
   dob: "2015-01-01",
   gender: "male",
   fatherName: "Ahmad Tariq",
-} as any;
+} as unknown as never;
 
 const mockSession = {
   id: "ses-1",
   name: "Spring 2025",
   type: "Hifz",
   baseFee: 300,
-} as any;
+} as unknown as never;
 
 const mockClass = {
   id: "cls-1",
@@ -36,7 +36,7 @@ const mockClass = {
   facultyName: "Ustadh Khalid",
   ageMin: 7,
   ageMax: 12,
-} as any;
+} as unknown as never;
 
 const mockFeeResult = {
   id: "standard",
@@ -44,7 +44,7 @@ const mockFeeResult = {
   pct: 0,
   discountAmt: 0,
   finalFee: 300,
-} as any;
+} as unknown as never;
 
 describe("Step6Confirmation Component", () => {
   it("renders review confirmation sections and notes textarea", () => {

@@ -1,11 +1,6 @@
 import React from "react";
-import {
-  examinationsTransferSchema,
-  type ExaminationTransferEntity,
-} from "@mms/shared";
-import { ModuleImportDialog } from "@/components/ui/ModuleImportDialog";
-import { useModuleCsvImportActions } from "@/lib/backgroundJobs/useModuleCsvImportActions";
-import { useTranslation } from "@/hooks/useTranslation";
+import { examinationsTransferSchema, type ExaminationTransferEntity } from "@mms/shared";
+import { StandardModuleCsvImportDialog } from "@/components/app/StandardModuleCsvImportDialog";
 
 export interface ExaminationsCsvImportDialogProps {
   open: boolean;
@@ -19,24 +14,14 @@ export function ExaminationsCsvImportDialog({
   onClose,
   canWrite,
 }: ExaminationsCsvImportDialogProps): React.JSX.Element | null {
-  const { t } = useTranslation();
-
-  const actions = useModuleCsvImportActions<ExaminationTransferEntity>({
-    apiPath: "/api/examinations/import",
-    schema: examinationsTransferSchema,
-    onSuccess: onClose,
-  });
-
-  if (!open || !canWrite) return null;
-
   return (
-    <ModuleImportDialog<ExaminationTransferEntity>
+    <StandardModuleCsvImportDialog<ExaminationTransferEntity>
       open={open}
       onClose={onClose}
-      title={`${t("common.import")} - ${t("nav.examinations")}`}
-      subtitle={t("faculty.io.csvHint")}
       canWrite={canWrite}
-      actions={actions}
+      apiPath="/api/examinations/import"
+      schema={examinationsTransferSchema}
+      navKey="nav.examinations"
     />
   );
 }

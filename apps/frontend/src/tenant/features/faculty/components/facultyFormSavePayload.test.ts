@@ -5,8 +5,8 @@ import {
   buildFacultySavePayload,
   validateUserDraftRequirements,
   isEmployeeIdConflictError,
-} from "./facultyFormSavePayload";
-import type { FacultySaveFlowInput } from "./facultyFormSaveFlow";
+} from "../lib/facultyFormSavePayload";
+import type { FacultySaveFlowInput } from "../lib/facultyFormSaveFlow";
 
 vi.mock("@/lib/notify", () => ({
   notify: {
@@ -86,13 +86,14 @@ describe("facultyFormSavePayload", () => {
   });
 
   describe("validateUserDraftRequirements", () => {
-    const mockT: TranslationFunction = ((key: string, ..._rest: unknown[]) => key) as unknown as TranslationFunction;
+    const mockT: TranslationFunction = ((key: string, ..._rest: unknown[]) =>
+      key) as unknown as TranslationFunction;
 
     const baseInput: FacultySaveFlowInput = {
       facultyDraft: {},
       formInstanceId: "form-1",
       autoGenerateId: false,
-      settings: {} as any,
+      settings: {} as unknown as never,
       enabledTabs: new Set(),
       fields: {},
       language: "en",
@@ -131,7 +132,10 @@ describe("facultyFormSavePayload", () => {
         ...baseInput,
         setErrors,
         userAccountDraft: { enabled: true, setupMethod: "password", role: "" },
-        linkedContact: { id: "cnt-1", emails: [{ address: "test@example.com" }] } as any,
+        linkedContact: {
+          id: "cnt-1",
+          emails: [{ address: "test@example.com" }],
+        } as unknown as never,
       });
 
       expect(result).toBe(false);
@@ -145,8 +149,16 @@ describe("facultyFormSavePayload", () => {
       const result = validateUserDraftRequirements({
         ...baseInput,
         setErrors,
-        userAccountDraft: { enabled: true, setupMethod: "password", role: "staff", password: "short" },
-        linkedContact: { id: "cnt-1", emails: [{ address: "test@example.com" }] } as any,
+        userAccountDraft: {
+          enabled: true,
+          setupMethod: "password",
+          role: "staff",
+          password: "short",
+        },
+        linkedContact: {
+          id: "cnt-1",
+          emails: [{ address: "test@example.com" }],
+        } as unknown as never,
       });
 
       expect(result).toBe(false);
@@ -158,8 +170,16 @@ describe("facultyFormSavePayload", () => {
     it("passes when valid email, role, and password are provided", () => {
       const result = validateUserDraftRequirements({
         ...baseInput,
-        userAccountDraft: { enabled: true, setupMethod: "password", role: "staff", password: "securepassword123" },
-        linkedContact: { id: "cnt-1", emails: [{ address: "test@example.com" }] } as any,
+        userAccountDraft: {
+          enabled: true,
+          setupMethod: "password",
+          role: "staff",
+          password: "securepassword123",
+        },
+        linkedContact: {
+          id: "cnt-1",
+          emails: [{ address: "test@example.com" }],
+        } as unknown as never,
       });
 
       expect(result).toBe(true);

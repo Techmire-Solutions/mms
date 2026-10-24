@@ -5,16 +5,16 @@ import {
   type FieldDefinition,
   type StudentsSettings,
   type TabDefinition,
-} from '@mms/shared';
+} from "@mms/shared";
 import {
   createModuleFieldConfigService,
   requireFieldConfigTenant,
-} from '../../lib/createModuleFieldConfigService.js';
+} from "../../lib/createModuleFieldConfigService.js";
 import {
   getStudentFieldConfigByWorkspace,
   upsertStudentFieldConfig,
-} from '../../db/repositories/studentFieldConfigRepository.js';
-import { getStudentModulePreferencesByWorkspace } from '../../db/repositories/studentModulePreferencesRepository.js';
+} from "../../db/repositories/studentFieldConfigRepository.js";
+import { getStudentModulePreferencesByWorkspace } from "../../db/repositories/studentModulePreferencesRepository.js";
 
 const studentFieldConfig = createModuleFieldConfigService<
   Record<string, unknown>,
@@ -23,7 +23,7 @@ const studentFieldConfig = createModuleFieldConfigService<
   Record<string, FieldDefinition[]> | undefined,
   ReturnType<typeof stripStudentFieldConfigForPersist>
 >({
-  broadcastKey: 'students',
+  broadcastKey: "students",
   getByWorkspace: getStudentFieldConfigByWorkspace,
   upsert: upsertStudentFieldConfig,
   toDocument: async (raw, tenant) => {
@@ -31,7 +31,7 @@ const studentFieldConfig = createModuleFieldConfigService<
     return composeStudentsSettings(raw, prefs);
   },
   stripForPersist: stripStudentFieldConfigForPersist,
-  reloadFailedMessage: 'Failed to reload student field config after save',
+  reloadFailedMessage: "Failed to reload student field config after save",
 });
 
 /** Load typed field-config row. */
@@ -50,4 +50,3 @@ export async function loadStudentsSettingsCombined(): Promise<StudentsSettings> 
   const prefs = await getStudentModulePreferencesByWorkspace(tenant);
   return composeStudentsSettings(field, prefs);
 }
-

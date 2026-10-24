@@ -9,14 +9,16 @@ vi.mock("@/hooks/useTranslation", () => ({
   }),
 }));
 
-vi.mock("@/components/ui/ModuleTierMotion", () => ({
+vi.mock("@/components/app/ModuleTierMotion", () => ({
   ModuleTierMotion: ({ children }: { children: React.ReactNode }) => (
     <div data-testid="module-tier-motion">{children}</div>
   ),
 }));
 
-vi.mock("@/components/ui/SetupReadOnlyMessage", () => ({
-  SetupReadOnlyMessage: ({ title }: { title: string }) => <div data-testid="read-only">{title}</div>,
+vi.mock("@/components/app/SetupReadOnlyMessage", () => ({
+  SetupReadOnlyMessage: ({ title }: { title: string }) => (
+    <div data-testid="read-only">{title}</div>
+  ),
 }));
 
 let mockCanEditSetup = true;

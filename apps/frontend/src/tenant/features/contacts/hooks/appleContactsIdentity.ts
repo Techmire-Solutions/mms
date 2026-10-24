@@ -26,7 +26,11 @@ export function buildAppleImportIdentityCandidates(
       const comparison = getPhoneNumbers({ phones: [phone] } as Contact);
       phones.push(...comparison);
     }
-    emails.push(...getEmails(contact).map((email) => email.toLowerCase().trim()).filter(Boolean));
+    emails.push(
+      ...getEmails(contact)
+        .map((email) => email.toLowerCase().trim())
+        .filter(Boolean),
+    );
 
     const hasPhone = getPhoneNumbers(contact).length > 0;
     const hasEmail = getEmails(contact).length > 0;

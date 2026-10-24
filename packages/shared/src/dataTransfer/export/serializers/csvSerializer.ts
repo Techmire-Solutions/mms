@@ -7,13 +7,13 @@
  *   import '@mms/shared/dataTransfer/export/serializers/csvSerializer';
  * or import the barrel `@mms/shared/dataTransfer`.
  */
-import { buildCsvContent } from '../../../csvUtils.js';
-import { registerSerializer, type ExportSerializer } from '../exportSerializerRegistry.js';
+import { buildCsvContent } from "../../../core/csvUtils.js";
+import { registerSerializer, type ExportSerializer } from "../exportSerializerRegistry.js";
 
 export const csvSerializer: ExportSerializer = {
-  format: 'csv',
-  contentType: 'text/csv; charset=utf-8',
-  fileExtension: '.csv',
+  format: "csv",
+  contentType: "text/csv; charset=utf-8",
+  fileExtension: ".csv",
   serialize(grid: unknown[][]): string {
     return buildCsvContent(grid);
   },

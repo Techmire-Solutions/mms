@@ -75,11 +75,7 @@ describe("ContactCreateModal", () => {
 
   it("renders empty string when open is false", () => {
     const html = renderToStaticMarkup(
-      <ContactCreateModal
-        open={false}
-        onClose={vi.fn()}
-        onCreated={vi.fn()}
-      />
+      <ContactCreateModal open={false} onClose={vi.fn()} onCreated={vi.fn()} />,
     );
     expect(html).toBe("");
   });
@@ -88,11 +84,7 @@ describe("ContactCreateModal", () => {
     mockCanWrite = false;
     const onClose = vi.fn();
     const html = renderToStaticMarkup(
-      <ContactCreateModal
-        open={true}
-        onClose={onClose}
-        onCreated={vi.fn()}
-      />
+      <ContactCreateModal open={true} onClose={onClose} onCreated={vi.fn()} />,
     );
     expect(html).toBe("");
   });
@@ -105,7 +97,7 @@ describe("ContactCreateModal", () => {
         onCreated={vi.fn()}
         initialName="Hasan Raza"
         createDefaults={{ gender: "male", lockGender: true }}
-      />
+      />,
     );
 
     // In static markup with lazy/suspense or direct render, it outputs the loading fallback

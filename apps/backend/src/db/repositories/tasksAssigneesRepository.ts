@@ -3,12 +3,10 @@
  * @description Persistence and query operations for task assignees.
  */
 
-import { and, eq, inArray, isNull } from 'drizzle-orm';
-import type { TaskAssigneeRecord } from '@mms/shared';
-import {
-  contacts, faculty, facultyEmployments, taskAssignees, tenantUsers,
-} from '../schema.js';
-import type { TenantTransaction } from '../tenant-context.js';
+import { and, eq, inArray, isNull } from "drizzle-orm";
+import type { TaskAssigneeRecord } from "@mms/shared";
+import { contacts, faculty, facultyEmployments, taskAssignees, tenantUsers } from "../schema.js";
+import type { TenantTransaction } from "../tenant-context.js";
 
 export async function fetchAssigneesByTaskIds(
   tx: TenantTransaction,
@@ -30,17 +28,38 @@ export async function fetchAssigneesByTaskIds(
       userEmail: tenantUsers.loginEmail,
     })
     .from(taskAssignees)
-    .leftJoin(faculty, and(eq(taskAssignees.facultyId, faculty.id),
-      eq(faculty.workspaceSubdomain, subdomain), isNull(faculty.deletedAt)))
-    .leftJoin(facultyEmployments, and(
-      eq(faculty.workspaceSubdomain, facultyEmployments.workspaceSubdomain),
-      eq(faculty.employmentId, facultyEmployments.id),
-      isNull(facultyEmployments.deletedAt),
-    ))
-    .leftJoin(contacts, and(eq(facultyEmployments.contactId, contacts.id),
-      eq(contacts.workspaceSubdomain, subdomain), isNull(contacts.deletedAt)))
-    .leftJoin(tenantUsers, and(eq(taskAssignees.userId, tenantUsers.id),
-      eq(tenantUsers.workspaceSubdomain, subdomain), isNull(tenantUsers.deletedAt)))
+    .leftJoin(
+      faculty,
+      and(
+        eq(taskAssignees.facultyId, faculty.id),
+        eq(faculty.workspaceSubdomain, subdomain),
+        isNull(faculty.deletedAt),
+      ),
+    )
+    .leftJoin(
+      facultyEmployments,
+      and(
+        eq(faculty.workspaceSubdomain, facultyEmployments.workspaceSubdomain),
+        eq(faculty.employmentId, facultyEmployments.id),
+        isNull(facultyEmployments.deletedAt),
+      ),
+    )
+    .leftJoin(
+      contacts,
+      and(
+        eq(facultyEmployments.contactId, contacts.id),
+        eq(contacts.workspaceSubdomain, subdomain),
+        isNull(contacts.deletedAt),
+      ),
+    )
+    .leftJoin(
+      tenantUsers,
+      and(
+        eq(taskAssignees.userId, tenantUsers.id),
+        eq(tenantUsers.workspaceSubdomain, subdomain),
+        isNull(tenantUsers.deletedAt),
+      ),
+    )
     .where(
       and(
         eq(taskAssignees.workspaceSubdomain, subdomain),
@@ -58,7 +77,7 @@ export async function fetchAssigneesByTaskIds(
       facultyId: a.facultyId,
       facultyAssignmentId: a.facultyAssignmentId,
       userId: a.userId,
-      facultyName: [a.contactFirstName, a.contactLastName].filter(Boolean).join(' ') || undefined,
+      facultyName: [a.contactFirstName, a.contactLastName].filter(Boolean).join(" ") || undefined,
       userEmail: a.userEmail ?? undefined,
       assignedAt: a.assignedAt ? a.assignedAt.toISOString() : undefined,
     });
@@ -91,9 +110,15 @@ export async function syncTaskAssignees(
     );
 
   if (!assignees.length) return;
-  await tx.insert(taskAssignees).values(assignees.map((a) => ({
-    id: crypto.randomUUID(), workspaceSubdomain: subdomain, taskId,
-    facultyId: a.facultyId, facultyAssignmentId: a.facultyAssignmentId ?? null,
-    userId: a.userId, assignedByUserId: actorUserId ?? 'system',
-  })));
+  await tx.insert(taskAssignees).values(
+    assignees.map((a) => ({
+      id: crypto.randomUUID(),
+      workspaceSubdomain: subdomain,
+      taskId,
+      facultyId: a.facultyId,
+      facultyAssignmentId: a.facultyAssignmentId ?? null,
+      userId: a.userId,
+      assignedByUserId: actorUserId ?? "system",
+    })),
+  );
 }

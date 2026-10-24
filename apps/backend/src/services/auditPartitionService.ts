@@ -1,6 +1,6 @@
-import { sql } from 'drizzle-orm';
-import { activeDb } from '../db/dbConnection.js';
-import { logger } from '../lib/logger.js';
+import { sql } from "drizzle-orm";
+import { activeDb } from "../db/dbConnection.js";
+import { logger } from "../lib/logger.js";
 
 /**
  * Rolling provisioner for the `audit_trail_events` monthly range partitions.
@@ -34,14 +34,14 @@ export interface EnsureAuditPartitionsResult {
 
 /** `audit_trail_events_y2026m11` for 2026-11. */
 export function auditPartitionName(year: number, month1to12: number): string {
-  return `audit_trail_events_y${year}m${String(month1to12).padStart(2, '0')}`;
+  return `audit_trail_events_y${year}m${String(month1to12).padStart(2, "0")}`;
 }
 
 /** UTC month bounds as `YYYY-MM-DD HH:MM:SS+00` literals, matching 0102. */
 function monthBounds(year: number, month1to12: number): { from: string; to: string } {
   const start = new Date(Date.UTC(year, month1to12 - 1, 1));
   const end = new Date(Date.UTC(year, month1to12, 1));
-  const fmt = (d: Date): string => d.toISOString().replace('T', ' ').replace('.000Z', '+00');
+  const fmt = (d: Date): string => d.toISOString().replace("T", " ").replace(".000Z", "+00");
   return { from: fmt(start), to: fmt(end) };
 }
 
@@ -93,10 +93,7 @@ export async function ensureAuditTrailPartitions(options?: {
   }
 
   if (created.length > 0) {
-    logger.info(
-      { created, monthsAhead },
-      'Provisioned audit_trail_events monthly partitions',
-    );
+    logger.info({ created, monthsAhead }, "Provisioned audit_trail_events monthly partitions");
   }
 
   return { created, existing };
