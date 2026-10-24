@@ -21,6 +21,15 @@ const DMY_RE = "^[0-9]{1,2}[/.-][0-9]{1,2}[/.-][0-9]{4}$";
 const MIN_YEAR = 1900;
 const MAX_YEAR = 2100;
 const PREFIX_LIMIT = 50_000;
+/**
+ * Set by the production ops-audit workflow, whose logs are public: samples keep their shape
+ * (digits → 9, letters → a) but never the stored value. Impossible or out-of-range calendar
+ * days stay readable: a bare date is not tenant data.
+ */
+const REDACT_SAMPLES = process.env.AUDIT_REDACT_SAMPLES === "1";
+
+const redact = (value: string): string =>
+  REDACT_SAMPLES ? value.replace(/\p{N}/gu, "9").replace(/\p{L}/gu, "a").slice(0, 40) : value;
 
 type ShapeRow = {
   total: number;
@@ -105,7 +114,7 @@ async function auditColumn(
     max: row?.max ?? null,
     impossible,
     outOfRange,
-    samples: [...(row?.samples ?? []), ...badDays],
+    samples: [...(row?.samples ?? []).map(redact), ...badDays],
   };
 }
 
