@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useState, type JSX } from "react";
+import React, { useCallback, useEffect, type JSX } from "react";
 import {
   formatDateTime,
   type Message,
@@ -9,12 +9,14 @@ import { Drawer } from "@/components/app/Drawer";
 import { StatusBadge, type StatusBadgeConfigItem } from "@/components/app/StatusBadge";
 import { Button } from "@/components/ui/button";
 import { useTranslation } from "@/hooks/useTranslation";
-import { notify } from "@/lib/notify";
 import { SEMANTIC_TEXT, SEMANTIC_BG } from "@/lib/ui/semanticTone";
-import { AlertCircle, ArrowUpRight, Check, Copy, MessageSquare, RotateCcw } from "lucide-react";
+import { AlertCircle, ArrowUpRight, MessageSquare, RotateCcw } from "lucide-react";
 import { Link } from "react-router-dom";
 import { PersonDetailHeroCard } from "@/components/app/PersonDetailHeroCard";
-import { EntityMessagingActions } from "@/components/app/EntityMessagingActions";
+import { EntityMessagingQuickActions } from "@/components/app/EntityMessagingActions";
+import { DetailDrawerArchivedBanner } from "@/components/app/DetailDrawerArchiveChrome";
+import { DrawerUpdatedStamp } from "@/components/app/DrawerUpdatedStamp";
+import { CopyBtn } from "@/components/app/CopyButton";
 import { MessagingDetailBodyCard } from "./MessagingDetailBodyCard";
 import { MessagingDetailMetadataCard } from "./MessagingDetailMetadataCard";
 
@@ -36,7 +38,6 @@ export const MessagingDetail = function MessagingDetail({
   onResend,
 }: MessagingDetailProps): JSX.Element | null {
   const { t } = useTranslation();
-  const [copiedId, setCopiedId] = useState(false);
 
   const handleResend = useCallback((): void => {
     if (!log || !canWrite) return;
@@ -64,17 +65,6 @@ export const MessagingDetail = function MessagingDetail({
   const isSkipped = log.status === "skipped";
   const cleanPhone = recipient?.phone ? recipient.phone.replace(/[^0-9]/g, "") : "";
 
-  const copyIdToClipboard = async (text: string): Promise<void> => {
-    try {
-      await navigator.clipboard.writeText(text);
-      setCopiedId(true);
-      setTimeout(() => setCopiedId(false), 2000);
-      notify.success(t("contacts.table.copied"));
-    } catch {
-      notify.error(t("messaging.loadFailedHint"));
-    }
-  };
-
   return (
     <Drawer
       open={Boolean(log)}
@@ -83,26 +73,31 @@ export const MessagingDetail = function MessagingDetail({
       subtitle={formatDateTime(log.sentAt)}
       icon={MessageSquare}
       size="md"
+      archiveBanner={
+        log.deletedAt ? <DetailDrawerArchivedBanner deletedAt={log.deletedAt} /> : undefined
+      }
       footer={
-        <div className="flex w-full items-center justify-between gap-2">
-          <div className="flex items-center gap-1.5 text-3xs text-muted-foreground font-mono">
-            <span>#{String(log.id).slice(0, 10)}</span>
-            <Button
-              variant="ghost"
-              size="icon"
-              className="h-6 w-6 touch-target-coarse text-muted-foreground hover:text-foreground cursor-pointer"
-              onClick={() => void copyIdToClipboard(String(log.id))}
-              aria-label={t("contacts.table.copied")}
-            >
-              {copiedId ? (
-                <Check className={`h-3 w-3 ${SEMANTIC_TEXT.success}`} aria-hidden="true" />
-              ) : (
-                <Copy className="h-3 w-3" aria-hidden="true" />
-              )}
-            </Button>
+        <div className="flex w-full flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3">
+          <div className="flex items-center gap-3">
+            <div className="flex items-center gap-1.5 text-3xs text-muted-foreground font-mono">
+              <span>#{String(log.id).slice(0, 10)}</span>
+              <CopyBtn
+                text={String(log.id)}
+                showToast
+                className="h-6 w-6 min-h-6 min-w-6 rounded-md shadow-none cursor-pointer"
+                title={t("contacts.table.copy")}
+                titleCopied={t("contacts.table.copied")}
+              />
+            </div>
+            <DrawerUpdatedStamp createdAt={log.sentAt} label={t("messaging.dateSent")} />
           </div>
-          <div className="flex items-center gap-2">
-            <Button variant="outline" size="sm" onClick={onClose} className="cursor-pointer">
+          <div className="flex items-center gap-2 justify-end">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={onClose}
+              className="cursor-pointer min-h-11 px-3"
+            >
               {t("common.close")}
             </Button>
             {canWrite && (
@@ -110,7 +105,7 @@ export const MessagingDetail = function MessagingDetail({
                 variant="default"
                 size="sm"
                 onClick={handleResend}
-                className="gap-1.5"
+                className="gap-1.5 min-h-11 px-3"
                 title={`${t("messaging.resend")} (⌘+Enter)`}
               >
                 <RotateCcw className="h-3.5 w-3.5" />
@@ -136,6 +131,20 @@ export const MessagingDetail = function MessagingDetail({
                 ? t("messaging.loadFailedHint")
                 : t("messaging.skippedNotice", { count: 1, type: t("messaging.phoneNumber") })}
             </p>
+            {canWrite && isFailed && (
+              <div className="pt-1.5">
+                <Button
+                  type="button"
+                  size="sm"
+                  variant="destructive"
+                  onClick={handleResend}
+                  className="gap-1.5 min-h-11 px-3 text-xs font-semibold"
+                >
+                  <RotateCcw className="h-3.5 w-3.5" />
+                  {t("messaging.resend")}
+                </Button>
+              </div>
+            )}
           </div>
         )}
 
@@ -167,9 +176,8 @@ export const MessagingDetail = function MessagingDetail({
             )}
           </div>
 
-          <EntityMessagingActions
-            variant="button-group"
-            primaryPhone={cleanPhone}
+          <EntityMessagingQuickActions
+            primaryPhone={cleanPhone || recipient?.phone}
             primaryEmail={recipient?.email}
             labels={{
               call: t("contacts.detail.call"),
@@ -177,23 +185,6 @@ export const MessagingDetail = function MessagingDetail({
               sms: t("contacts.sms"),
               email: t("contacts.detail.emailAction"),
             }}
-            onWhatsApp={
-              cleanPhone ? () => window.open(`https://wa.me/${cleanPhone}`, "_blank") : undefined
-            }
-            onSms={
-              cleanPhone
-                ? () => {
-                    window.location.href = `sms:${cleanPhone}`;
-                  }
-                : undefined
-            }
-            onEmail={
-              recipient?.email
-                ? () => {
-                    window.location.href = `mailto:${recipient?.email}?subject=${encodeURIComponent(log.subject || "")}`;
-                  }
-                : undefined
-            }
           />
         </div>
 

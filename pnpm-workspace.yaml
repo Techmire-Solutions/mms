@@ -13,7 +13,7 @@ allowBuilds:
   puppeteer: true
 
 catalog:
-  zod: "^4.6.5"
+  zod: "^4.6.7"
   fastify: "^5.12.5"
   pino: "^10.4.0"
   drizzle-orm: "^0.45.4"
@@ -96,3 +96,6 @@ overrides:
   # Security: dompurify GHSA-cg2g-xh64-v4q7 and GHSA-mrv2-3pqr-j5jr.
   # Transitive path: apps/frontend > jspdf / mermaid > dompurify.
   dompurify: ">=3.4.17"
+  # Security: happy-dom GHSA-834v-8h66-3h79 unsanitized import alias leads to host code execution.
+  # Transitive path: @vitest/coverage-v8 > vitest > happy-dom.
+  happy-dom: ">=21.0.4"

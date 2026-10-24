@@ -31,6 +31,7 @@
     "audit:enrollment-ssot": "tsx src/scripts/audit-enrollment-ssot.ts",
     "audit:class-references": "tsx src/scripts/audit-class-references.ts",
     "audit:date-columns": "tsx src/scripts/audit-date-columns.ts",
+    "audit:finance-date-columns": "tsx src/scripts/audit-finance-date-columns.ts",
     "audit:academic-contract": "tsx src/scripts/audit-academic-contract.ts",
     "backfill:attendance-sections": "tsx src/scripts/backfill-attendance-sections.ts",
     "backfill:date-columns": "tsx src/scripts/backfill-date-columns.ts",

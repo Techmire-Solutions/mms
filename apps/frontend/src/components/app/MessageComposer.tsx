@@ -1,3 +1,4 @@
+import { useEffect } from "react";
 import { FormModal } from "@/components/app/FormModal";
 import { WarningCallout } from "@/components/app/WarningCallout";
 import { useTranslation } from "@/hooks/useTranslation";
@@ -53,6 +54,19 @@ export function MessageComposer(props: MessageComposerProps): React.JSX.Element 
   };
 
   const cancelLabel = canGoPrevious ? t("common.previous") : t("common.cancel");
+  const { saveDisabled, handleSave } = model;
+
+  // Keyboard shortcut: Cmd/Ctrl + Enter to trigger save/send when valid
+  useEffect(() => {
+    const handleKeyDown = (event: KeyboardEvent): void => {
+      if (!(event.metaKey || event.ctrlKey) || event.key !== "Enter") return;
+      if (event.isComposing) return;
+      event.preventDefault();
+      if (!saveDisabled) handleSave();
+    };
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [saveDisabled, handleSave]);
 
   return (
     <FormModal
@@ -79,12 +93,6 @@ export function MessageComposer(props: MessageComposerProps): React.JSX.Element 
         id={COMPOSER_FORM_ID}
         className="space-y-4"
         onSubmit={(event) => {
-          event.preventDefault();
-          if (!model.saveDisabled) model.handleSave();
-        }}
-        onKeyDown={(event) => {
-          if (!(event.metaKey || event.ctrlKey) || event.key !== "Enter") return;
-          if (event.nativeEvent.isComposing) return;
           event.preventDefault();
           if (!model.saveDisabled) model.handleSave();
         }}
