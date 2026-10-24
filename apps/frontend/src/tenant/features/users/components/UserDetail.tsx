@@ -1,4 +1,4 @@
-import React, { lazy, Suspense, useState } from "react";
+import React, { useState } from "react";
 import { Shield } from "lucide-react";
 import {
   filterRbacModulesForSettings,
@@ -19,8 +19,7 @@ import { notify } from "@/lib/notify";
 import { usePermissions } from "@/tenant/hooks/usePermissions";
 import { useUsersContractVerifyEmail } from "@/tenant/hooks/collections/users";
 import { UserDetailSections } from "@/tenant/features/users/components/UserDetailSections";
-
-const MessageComposer = lazy(() => import("@/tenant/components/messaging/TenantMessageComposer"));
+import { TenantMessageComposerLauncher } from "@/tenant/components/messaging/TenantMessageComposerLauncher";
 
 export interface UserDetailProps {
   user: SystemUser;
@@ -124,15 +123,10 @@ export function UserDetail({
         />
       </Drawer>
 
-      {messagingTarget && (
-        <Suspense fallback={null}>
-          <MessageComposer
-            channel={messagingTarget.channel}
-            recipients={messagingTarget.recipients}
-            onClose={() => setMessagingTarget(null)}
-          />
-        </Suspense>
-      )}
+      <TenantMessageComposerLauncher
+        messagingTarget={messagingTarget}
+        onClose={() => setMessagingTarget(null)}
+      />
     </>
   );
 }

@@ -36,6 +36,13 @@ describe("MessagingTemplateActionButtons", () => {
   };
 
   beforeEach(() => {
+    Object.defineProperty(navigator, "clipboard", {
+      value: {
+        writeText: vi.fn().mockResolvedValue(undefined),
+      },
+      configurable: true,
+      writable: true,
+    });
     container = document.createElement("div");
     document.body.appendChild(container);
     root = createRoot(container);
@@ -70,6 +77,7 @@ describe("MessagingTemplateActionButtons", () => {
 
     await act(async () => {
       (copyBtn as HTMLButtonElement)?.click();
+      await new Promise((resolve) => setTimeout(resolve, 10));
     });
 
     expect(onCopy).toHaveBeenCalledWith("Welcome to MMS!");

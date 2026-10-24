@@ -11,7 +11,7 @@ import type { StudentsPageOverlaysProps } from "@/tenant/features/students/hooks
 import React from "react";
 
 const StudentForm = lazy(() => import("@/tenant/features/students/components/StudentForm"));
-const MessageComposer = lazy(() => import("@/tenant/components/messaging/TenantMessageComposer"));
+import { TenantMessageComposerLauncher } from "@/tenant/components/messaging/TenantMessageComposerLauncher";
 const StudentDetail = lazy(() =>
   import("@/tenant/features/students/components/StudentDetail").then((m) => ({
     default: m.default,
@@ -83,13 +83,10 @@ export const StudentsPageOverlays = function StudentsPageOverlays({
             {showStudentForm ? (
               <StudentForm student={editStudent} onClose={onCloseForm} onSave={onSave} />
             ) : null}
-            {messagingTarget ? (
-              <MessageComposer
-                channel={messagingTarget.channel}
-                recipients={messagingTarget.recipients}
-                onClose={onCloseComposer}
-              />
-            ) : null}
+            <TenantMessageComposerLauncher
+              messagingTarget={messagingTarget}
+              onClose={onCloseComposer}
+            />
           </AnimatePresence>
         </Suspense>
       </ErrorBoundary>

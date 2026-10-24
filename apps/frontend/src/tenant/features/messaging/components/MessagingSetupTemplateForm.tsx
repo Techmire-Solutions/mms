@@ -1,4 +1,4 @@
-import type React from "react";
+import React, { useCallback, useEffect } from "react";
 import { Edit3, Plus } from "lucide-react";
 import type { MessageCategory } from "@mms/shared";
 import { FormSelect } from "@/components/app/FormSelect";
@@ -57,10 +57,23 @@ export function MessagingSetupTemplateForm({
 }: MessagingSetupTemplateFormProps): React.JSX.Element {
   const { t } = useTranslation();
 
-  const trySave = (): void => {
+  const trySave = useCallback((): void => {
     if (saveDisabled) return;
     void onSave();
-  };
+  }, [saveDisabled, onSave]);
+
+  // Keyboard shortcut: Cmd/Ctrl + Enter to trigger save
+  useEffect(() => {
+    if (!open) return;
+    const handleKeyDown = (event: KeyboardEvent): void => {
+      if (!(event.metaKey || event.ctrlKey) || event.key !== "Enter") return;
+      if (event.isComposing) return;
+      event.preventDefault();
+      trySave();
+    };
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [open, trySave]);
 
   return (
     <FormModal
@@ -84,12 +97,6 @@ export function MessagingSetupTemplateForm({
       <form
         id={TEMPLATE_FORM_ID}
         onSubmit={(event) => {
-          event.preventDefault();
-          trySave();
-        }}
-        onKeyDown={(event) => {
-          if (!(event.metaKey || event.ctrlKey) || event.key !== "Enter") return;
-          if (event.nativeEvent.isComposing) return;
           event.preventDefault();
           trySave();
         }}
