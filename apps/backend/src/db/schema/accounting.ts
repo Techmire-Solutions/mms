@@ -1,4 +1,5 @@
 import {
+  date,
   pgTable,
   text,
   timestamp,
@@ -57,8 +58,8 @@ export const accountingFiscalYears = pgTable(
       .notNull()
       .references(() => workspaces.subdomain, { onDelete: "cascade" }),
     label: varchar("label", { length: 120 }).notNull(),
-    startDate: varchar("start_date", { length: 10 }).notNull(),
-    endDate: varchar("end_date", { length: 10 }).notNull(),
+    startDate: date("start_date", { mode: "string" }).notNull(),
+    endDate: date("end_date", { mode: "string" }).notNull(),
     status: varchar("status", { length: 20 }).notNull().default("upcoming"),
     closedAt: timestamp("closed_at", { withTimezone: true, mode: "date" }),
     closedBy: text("closed_by"),
@@ -94,8 +95,8 @@ export const accountingPostingPeriods = pgTable(
       .references(() => workspaces.subdomain, { onDelete: "cascade" }),
     fiscalYearId: text("fiscal_year_id").notNull(),
     label: varchar("label", { length: 120 }).notNull(),
-    startDate: varchar("start_date", { length: 10 }).notNull(),
-    endDate: varchar("end_date", { length: 10 }).notNull(),
+    startDate: date("start_date", { mode: "string" }).notNull(),
+    endDate: date("end_date", { mode: "string" }).notNull(),
     status: varchar("status", { length: 20 }).notNull().default("open"),
     createdAt: timestamp("created_at", { withTimezone: true, mode: "date" }).notNull().defaultNow(),
     updatedAt: timestamp("updated_at", { withTimezone: true, mode: "date" }).notNull().defaultNow(),
@@ -126,7 +127,7 @@ export const accountingEntries = pgTable(
     workspaceSubdomain: text("workspace_subdomain")
       .notNull()
       .references(() => workspaces.subdomain, { onDelete: "cascade" }),
-    date: varchar("date", { length: 10 }).notNull(),
+    date: date("date", { mode: "string" }).notNull(),
     ref: varchar("ref", { length: 100 }).notNull().default(""),
     description: text("description").notNull().default(""),
     status: varchar("status", { length: 20 }).notNull().default("posted"),

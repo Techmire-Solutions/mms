@@ -2,6 +2,7 @@ import { and, eq } from "drizzle-orm";
 import type { Contact } from "@mms/shared";
 import { contactSocials, contactEducations, contactExperiences, contactSkills } from "../schema.js";
 import { type TenantTransaction } from "../tenant-context.js";
+import { requireDbDate } from "../../lib/dbDate.js";
 
 type Transaction = TenantTransaction;
 
@@ -75,8 +76,8 @@ export async function syncContactProfessionalChildrenTx(
         organization: exp.organization,
         employmentType: exp.employmentType ?? null,
         location: exp.location ?? null,
-        startDate: exp.startDate ?? null,
-        endDate: exp.endDate ?? null,
+        startDate: requireDbDate(exp.startDate, "startDate"),
+        endDate: requireDbDate(exp.endDate, "endDate"),
         isCurrent: exp.isCurrent ?? false,
         description: exp.description ?? null,
         sortOrder: exp.sortOrder ?? idx,
@@ -153,8 +154,8 @@ export async function bulkInsertContactProfessionalChildrenTx(
       organization: exp.organization,
       employmentType: exp.employmentType ?? null,
       location: exp.location ?? null,
-      startDate: exp.startDate ?? null,
-      endDate: exp.endDate ?? null,
+      startDate: requireDbDate(exp.startDate, "startDate"),
+      endDate: requireDbDate(exp.endDate, "endDate"),
       isCurrent: exp.isCurrent ?? false,
       description: exp.description ?? null,
       sortOrder: exp.sortOrder ?? idx,
