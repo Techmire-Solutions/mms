@@ -73,7 +73,9 @@ export const MessagingDetail = function MessagingDetail({
       subtitle={formatDateTime(log.sentAt)}
       icon={MessageSquare}
       size="md"
-      archiveBanner={log.deletedAt ? <DetailDrawerArchivedBanner deletedAt={log.deletedAt} /> : undefined}
+      archiveBanner={
+        log.deletedAt ? <DetailDrawerArchivedBanner deletedAt={log.deletedAt} /> : undefined
+      }
       footer={
         <div className="flex w-full flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3">
           <div className="flex items-center gap-3">
@@ -90,7 +92,12 @@ export const MessagingDetail = function MessagingDetail({
             <DrawerUpdatedStamp createdAt={log.sentAt} label={t("messaging.dateSent")} />
           </div>
           <div className="flex items-center gap-2 justify-end">
-            <Button variant="outline" size="sm" onClick={onClose} className="cursor-pointer min-h-11 px-3">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={onClose}
+              className="cursor-pointer min-h-11 px-3"
+            >
               {t("common.close")}
             </Button>
             {canWrite && (

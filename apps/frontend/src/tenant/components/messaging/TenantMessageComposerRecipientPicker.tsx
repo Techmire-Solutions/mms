@@ -45,15 +45,14 @@ export function TenantMessageComposerRecipientPicker({
     return () => clearTimeout(id);
   }, [query]);
 
-  const { contacts, total, isPending, isFetching, isError, refetch } =
-    useMessagingWorkRecipients({
-      roleFilter: "all",
-      genderFilter: "all",
-      search: debouncedQuery,
-      kind,
-      page,
-      pageSize: 50,
-    });
+  const { contacts, total, isPending, isFetching, isError, refetch } = useMessagingWorkRecipients({
+    roleFilter: "all",
+    genderFilter: "all",
+    search: debouncedQuery,
+    kind,
+    page,
+    pageSize: 50,
+  });
 
   const toRecipient = useCallback((contact: Contact): StandardMessagingRecipient => {
     return toMessagingRecipient(contact, {

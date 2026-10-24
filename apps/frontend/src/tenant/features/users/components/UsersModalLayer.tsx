@@ -113,10 +113,7 @@ export function UsersModalLayer({
         ) : null}
       </AnimatePresence>
 
-      <TenantMessageComposerLauncher
-        messagingTarget={messagingTarget}
-        onClose={onCloseComposer}
-      />
+      <TenantMessageComposerLauncher messagingTarget={messagingTarget} onClose={onCloseComposer} />
     </>
   );
 }

@@ -95,7 +95,9 @@ export function MessageComposerLivePreview({
                     className="min-h-11 min-w-11"
                     disabled={previewIndex >= eligibleRecipients.length - 1}
                     onClick={() =>
-                      onPreviewIndexChange(Math.min(eligibleRecipients.length - 1, previewIndex + 1))
+                      onPreviewIndexChange(
+                        Math.min(eligibleRecipients.length - 1, previewIndex + 1),
+                      )
                     }
                     aria-label={t("common.next")}
                   >

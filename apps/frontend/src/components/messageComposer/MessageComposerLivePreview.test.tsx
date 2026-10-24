@@ -19,7 +19,13 @@ vi.mock("@/hooks/useReducedMotion", () => ({
 describe("MessageComposerLivePreview", () => {
   const recipients = [
     { id: "1", name: "Zaid Ali", phone: "+1234567890", email: "zaid@example.com", isValid: true },
-    { id: "2", name: "Fatima Khan", phone: "+1987654321", email: "fatima@example.com", isValid: true },
+    {
+      id: "2",
+      name: "Fatima Khan",
+      phone: "+1987654321",
+      email: "fatima@example.com",
+      isValid: true,
+    },
   ];
 
   it("returns null when message is empty", () => {

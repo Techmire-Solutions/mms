@@ -4,13 +4,7 @@ import { renderToStaticMarkup } from "react-dom/server";
 import { TenantMessageComposerLauncher } from "./TenantMessageComposerLauncher";
 
 vi.mock("@/tenant/components/messaging/TenantMessageComposer", () => ({
-  default: ({
-    channel,
-    recipients,
-  }: {
-    channel: string;
-    recipients: { name: string }[];
-  }) => (
+  default: ({ channel, recipients }: { channel: string; recipients: { name: string }[] }) => (
     <div data-testid="mock-tenant-composer">
       <span>Channel: {channel}</span>
       <span>Recipients: {recipients.map((r) => r.name).join(", ")}</span>

@@ -41,7 +41,9 @@ export function MessagingDetailMetadataCard({
         variant="inset"
         icon={AlertCircle}
         label={t("messaging.category")}
-        value={<span className="font-medium text-foreground">{t(categoryKey as AppTranslationKey)}</span>}
+        value={
+          <span className="font-medium text-foreground">{t(categoryKey as AppTranslationKey)}</span>
+        }
       />
       <DetailAttributeRow
         variant="inset"
@@ -53,7 +55,9 @@ export function MessagingDetailMetadataCard({
         variant="inset"
         icon={Copy}
         label={t("messaging.dateSent")}
-        value={<span className="font-mono text-muted-foreground">{formatDateTime(log.sentAt)}</span>}
+        value={
+          <span className="font-mono text-muted-foreground">{formatDateTime(log.sentAt)}</span>
+        }
       />
     </DetailSectionCard>
   );

@@ -53,9 +53,7 @@ export function useMessagingTableColumns({
                 >
                   {getInitials(name)}
                 </span>
-                <span className="truncate hover:text-primary transition-colors">
-                  {name}
-                </span>
+                <span className="truncate hover:text-primary transition-colors">{name}</span>
               </div>
               {onFilterContact && (
                 <Button

@@ -214,4 +214,3 @@ export function EntityMessagingQuickActions(
 ): React.JSX.Element | null {
   return <EntityMessagingActions variant="button-group" {...props} />;
 }
-

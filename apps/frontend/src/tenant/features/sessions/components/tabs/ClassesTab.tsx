@@ -168,10 +168,7 @@ export function ClassesTab({ session, onUpdate, canWrite }: ClassesTabProps) {
       </SessionStructureLockContext.Provider>
 
       {canWrite && (
-        <TenantMessageComposerLauncher
-          messagingTarget={messagingTarget}
-          onClose={closeComposer}
-        />
+        <TenantMessageComposerLauncher messagingTarget={messagingTarget} onClose={closeComposer} />
       )}
       <ConfirmAlertDialog
         open={deleteTarget !== null}
