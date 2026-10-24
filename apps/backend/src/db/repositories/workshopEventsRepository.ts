@@ -25,8 +25,14 @@ import {
 import { workshopEvents, workshopParticipants } from "../schema.js";
 import { withTenant, withTenantRead, type TenantTransaction } from "../tenant-context.js";
 import { runListPage } from "./listPageHelper.js";
+import {
+  feeValue,
+  pctValue,
+  workshopRowToRecord,
+  type WorkshopEventRow,
+} from "./workshopEventMapping.js";
 
-type WorkshopEventRow = typeof workshopEvents.$inferSelect;
+export { workshopRowToRecord };
 
 export interface WorkshopsPage {
   workshops: WorkshopEvent[];
@@ -34,31 +40,6 @@ export interface WorkshopsPage {
   page: number;
   limit: number;
   hasMore: boolean;
-}
-
-const iso = (value: Date | null): string | null => (value ? value.toISOString() : null);
-
-export function workshopRowToRecord(row: WorkshopEventRow, participantCount = 0): WorkshopEvent {
-  return {
-    id: row.id,
-    title: row.title,
-    description: row.description ?? "",
-    startDate: row.startDate,
-    endDate: row.endDate,
-    registrationDeadline: row.registrationDeadline,
-    capacity: row.capacity,
-    fee: row.fee === null ? null : Number(row.fee),
-    programId: row.programId,
-    subjectId: row.subjectId,
-    participantCount,
-    deletedAt: iso(row.deletedAt),
-    deletedBy: row.deletedBy,
-    deletionReason: row.deletionReason,
-    restoredAt: iso(row.restoredAt),
-    restoredBy: row.restoredBy,
-    createdAt: row.createdAt.toISOString(),
-    updatedAt: row.updatedAt.toISOString(),
-  };
 }
 
 /** Active participant counts for the given workshops, in one grouped query. */
@@ -166,9 +147,6 @@ export async function findWorkshopById(tenant: string, id: string): Promise<Work
   });
 }
 
-const feeValue = (fee: number | null | undefined): string | null | undefined =>
-  fee === undefined ? undefined : fee === null ? null : fee.toFixed(2);
-
 export async function insertWorkshop(
   tenant: string,
   id: string,
@@ -190,6 +168,8 @@ export async function insertWorkshop(
         fee: feeValue(input.fee) ?? null,
         programId: input.programId ?? null,
         subjectId: input.subjectId ?? null,
+        minAttendancePct: pctValue(input.minAttendancePct) ?? null,
+        minScorePct: pctValue(input.minScorePct) ?? null,
       })
       .returning();
     return workshopRowToRecord(row!, 0);
@@ -215,6 +195,8 @@ export async function updateWorkshop(
         fee: feeValue(patch.fee),
         programId: patch.programId,
         subjectId: patch.subjectId,
+        minAttendancePct: pctValue(patch.minAttendancePct),
+        minScorePct: pctValue(patch.minScorePct),
         updatedAt: new Date(),
       })
       .where(

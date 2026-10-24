@@ -9,7 +9,6 @@ import {
 import { ModulePageShell } from "@/components/app/ModulePageShell";
 import { ModuleTierMotion } from "@/components/app/ModuleTierMotion";
 import { ResponsiveAccordionTabs } from "@/components/app/ResponsiveAccordionTabs";
-import { EmptyState } from "@/components/app/EmptyState";
 import { Button } from "@/components/ui/button";
 import { useDirectoryTrashState } from "@/hooks/useDirectoryTrashState";
 import { useWorkSelection } from "@/hooks/useWorkSelection";
@@ -28,6 +27,8 @@ import {
 import { WORKSHOPS_SEARCH_INPUT_ID, WorkshopsWorkTab } from "./components/WorkshopsWorkTab";
 import { WorkshopsReportsTab } from "./components/WorkshopsReportsTab";
 import { WorkshopFormModal } from "./components/WorkshopFormModal";
+import { WorkshopsSetupTab } from "./components/WorkshopsSetupTab";
+import { useWorkshopPreferences } from "./hooks/useWorkshopsCompletionApi";
 
 type Tier = (typeof WORKSHOPS_MODULE_MANIFEST.tiers)[number];
 
@@ -41,8 +42,10 @@ export default function WorkshopsPage(): React.JSX.Element {
   const [viewingDeleted, setViewingDeleted] = useDirectoryTrashState();
   const { selectedIds, toggleSelected, toggleSelectAll, clearSelection } =
     useWorkSelection<string>();
-  const { canRead, canWrite, canDelete, canViewSetup } =
+  const { canRead, canWrite, canDelete, canViewSetup, canEditSetup } =
     useModulePermissions(WORKSHOPS_MODULE_MANIFEST);
+  // Setup defaults prefill a new workshop's completion criteria.
+  const { data: preferences } = useWorkshopPreferences({ enabled: canWrite });
 
   const list = useWorkshops({ includeDeleted: viewingDeleted, search });
   const { data: metrics } = useWorkshopMetrics({ enabled: !viewingDeleted });
@@ -166,10 +169,7 @@ export default function WorkshopsPage(): React.JSX.Element {
             ) : null}
             {activeTab === "reports" && canRead ? <WorkshopsReportsTab /> : null}
             {activeTab === "setup" && canViewSetup ? (
-              <EmptyState
-                title={t("workshops.setupEmptyTitle")}
-                description={t("workshops.setupEmptyDescription")}
-              />
+              <WorkshopsSetupTab canEditSetup={canEditSetup} />
             ) : null}
           </ModuleTierMotion>
         </AnimatePresence>
@@ -180,6 +180,7 @@ export default function WorkshopsPage(): React.JSX.Element {
         open={formOpen}
         onClose={() => setFormOpen(false)}
         initialData={editing}
+        defaults={preferences ?? null}
         onSave={handleSave}
       />
     </ModulePageShell>

@@ -10,8 +10,16 @@ import type {
   WorkshopScore,
   WorkshopScoresBody,
   WorkshopsCommandMetricsSnapshot,
+  WorkshopCompletionStatus,
+  WorkshopPreferences,
 } from "@mms/shared";
 import type { WorkshopsPage } from "../../db/repositories/workshopEventsRepository.js";
+import type {
+  WorkshopCompletionInputs,
+  WorkshopReportFacts,
+} from "../../db/repositories/workshopCompletionRepository.js";
+
+export type { WorkshopCompletionInputs, WorkshopReportFacts };
 
 /**
  * Sole storage gateway for the workshops module (events, participants, per-day check-in,
@@ -59,4 +67,25 @@ export interface WorkshopsRepository {
     today: string,
   ): Promise<WorkshopsCommandMetricsSnapshot>;
   findWorkspaceTimezone(tenant: string): Promise<string | null>;
+  loadCompletionInputs(
+    tenant: string,
+    workshopId: string,
+    today: string,
+  ): Promise<WorkshopCompletionInputs>;
+  saveCompletionOutcomes(
+    tenant: string,
+    workshopId: string,
+    outcomes: Array<{ participantId: string; status: WorkshopCompletionStatus }>,
+  ): Promise<void>;
+  markCertificatesIssued(
+    tenant: string,
+    workshopId: string,
+    participantIds: string[],
+  ): Promise<string[]>;
+  loadReportFacts(tenant: string, today: string): Promise<WorkshopReportFacts[]>;
+  loadWorkshopPreferences(tenant: string): Promise<WorkshopPreferences>;
+  saveWorkshopPreferences(
+    tenant: string,
+    preferences: WorkshopPreferences,
+  ): Promise<WorkshopPreferences>;
 }

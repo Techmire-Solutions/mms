@@ -11,7 +11,9 @@ import { WORKSHOP_TITLE_DEFAULT_WIDTH } from "../hooks/useWorkshopsColumnLayout"
 type Translate = (key: AppTranslationKey, params?: Record<string, string | number>) => string;
 
 /** "1 Mar – 2 Mar", a single day, or "—" when the workshop has no dates yet. */
-export function formatWorkshopDates(workshop: WorkshopEvent): string {
+export function formatWorkshopDates(
+  workshop: Pick<WorkshopEvent, "startDate" | "endDate">,
+): string {
   if (!workshop.startDate) return "—";
   const start = formatDate(workshop.startDate);
   if (!workshop.endDate || workshop.endDate === workshop.startDate) return start;

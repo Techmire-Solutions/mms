@@ -19,6 +19,7 @@ import { formatWorkshopDates, formatWorkshopFill } from "./workshopsWorkColumns"
 import { WorkshopParticipantsSection } from "./WorkshopParticipantsSection";
 import { WorkshopCheckInSection } from "./WorkshopCheckInSection";
 import { WorkshopScoresSection } from "./WorkshopScoresSection";
+import { WorkshopCompletionSection } from "./WorkshopCompletionSection";
 
 export interface WorkshopDetailDrawerProps {
   workshop: WorkshopEvent | null;
@@ -113,6 +114,7 @@ export function WorkshopDetailDrawer({
             />
             <WorkshopCheckInSection detail={detailQuery.data} canWrite={canWrite} />
             <WorkshopScoresSection detail={detailQuery.data} canWrite={canWrite} />
+            <WorkshopCompletionSection workshop={detailQuery.data.workshop} canWrite={canWrite} />
           </>
         ) : (
           <p className="text-sm text-muted-foreground" aria-live="polite">

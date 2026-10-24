@@ -59,6 +59,22 @@ vi.mock("../workshops/use-cases/workshopsUseCases.js", () => ({
   },
 }));
 
+const mockSavePreferences = vi.fn();
+const mockIssueCertificates = vi.fn();
+
+vi.mock("../workshops/use-cases/workshopsCompletionUseCases.js", () => ({
+  workshopsCompletionUseCases: {
+    getCompletion: vi.fn().mockResolvedValue([]),
+    evaluateCompletion: vi.fn().mockResolvedValue([]),
+    issueCertificates: (...args: unknown[]) => mockIssueCertificates(...args),
+    getReport: vi.fn().mockResolvedValue([]),
+    getPreferences: vi
+      .fn()
+      .mockResolvedValue({ defaultMinAttendancePct: null, defaultMinScorePct: null }),
+    savePreferences: (...args: unknown[]) => mockSavePreferences(...args),
+  },
+}));
+
 type App = Awaited<ReturnType<typeof buildApp>>;
 const headers = (token: string) => ({ host: "demo.localhost", authorization: `Bearer ${token}` });
 const workshop = { title: "Calligraphy", startDate: "2099-03-01", endDate: "2099-03-02" };
@@ -155,5 +171,68 @@ describe("workshops REST access and validation", () => {
     });
     expect(res.statusCode).toBe(409);
     expect(res.json()).toMatchObject({ type: "conflict" });
+  });
+});
+
+describe("workshops completion and Setup access", () => {
+  let app: App;
+
+  beforeEach(async () => {
+    process.env.JWT_SECRET = "test-secret";
+    mockSavePreferences
+      .mockReset()
+      .mockResolvedValue({ defaultMinAttendancePct: 80, defaultMinScorePct: null });
+    mockIssueCertificates.mockReset().mockResolvedValue({ issued: [], rows: [] });
+    app = await buildApp();
+  });
+
+  afterEach(async () => {
+    await app.close();
+    vi.restoreAllMocks();
+  });
+
+  const preferences = { defaultMinAttendancePct: 80, defaultMinScorePct: null };
+
+  it("given a teacher, should forbid changing Setup defaults", async () => {
+    const res = await app.inject({
+      method: "PUT",
+      url: "/api/workshops/setup/preferences",
+      headers: headers(teacherToken(app)),
+      payload: preferences,
+    });
+    expect(res.statusCode).toBe(403);
+    expect(mockSavePreferences).not.toHaveBeenCalled();
+  });
+
+  it("given an admin, should save Setup defaults", async () => {
+    const res = await app.inject({
+      method: "PUT",
+      url: "/api/workshops/setup/preferences",
+      headers: headers(adminToken(app)),
+      payload: preferences,
+    });
+    expect(res.statusCode).toBe(200);
+    expect(mockSavePreferences).toHaveBeenCalledWith(preferences);
+  });
+
+  it("given an out-of-range default, should reject it with 400", async () => {
+    const res = await app.inject({
+      method: "PUT",
+      url: "/api/workshops/setup/preferences",
+      headers: headers(adminToken(app)),
+      payload: { defaultMinAttendancePct: 120, defaultMinScorePct: null },
+    });
+    expect(res.statusCode).toBe(400);
+  });
+
+  it("given an assistant teacher (read only), should forbid issuing certificates", async () => {
+    const res = await app.inject({
+      method: "POST",
+      url: "/api/workshops/w1/certificates",
+      headers: headers(assistantTeacherToken(app)),
+      payload: { participantIds: [] },
+    });
+    expect(res.statusCode).toBe(403);
+    expect(mockIssueCertificates).not.toHaveBeenCalled();
   });
 });

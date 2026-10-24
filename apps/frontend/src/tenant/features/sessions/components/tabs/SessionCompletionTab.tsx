@@ -24,7 +24,7 @@ import {
   useSessionCompletion,
   useSessionCompletionActions,
 } from "@/tenant/features/sessions/hooks/useSessionCompletion";
-import { completionCertificateHtml } from "@/tenant/features/sessions/lib/completionCertificateHtml";
+import { completionCertificateHtml } from "@/lib/ui/completionCertificateHtml";
 
 type CompletionTableRow = SessionCompletionRow & { id: string };
 
@@ -70,7 +70,7 @@ export function SessionCompletionTab({
         completionCertificateHtml({
           heading: t("sessions.completion.certificate.heading"),
           statement: t("sessions.completion.certificate.statement"),
-          studentName: row.studentName,
+          recipientName: row.studentName,
           courseName: session.name,
           period,
           issuedLabel: t("sessions.completion.certificate.issuedOn"),

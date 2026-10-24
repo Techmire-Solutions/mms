@@ -32,6 +32,8 @@ export const workshopEventRecordSchema = z
     fee: z.number().nullable(),
     programId: z.string().nullable(),
     subjectId: z.string().nullable(),
+    minAttendancePct: z.number().nullable().default(null),
+    minScorePct: z.number().nullable().default(null),
     participantCount: z.number().int().default(0),
     ...softDeleteFields,
     createdAt: z.string().optional(),
@@ -49,6 +51,8 @@ const workshopEventWriteFields = {
   fee: moneyAmountSchema.nullable().optional(),
   programId: z.string().min(1).nullable().optional(),
   subjectId: z.string().min(1).nullable().optional(),
+  minAttendancePct: z.number().min(0).max(100).nullable().optional(),
+  minScorePct: z.number().min(0).max(100).nullable().optional(),
 };
 
 type WorkshopDateFields = {
@@ -95,6 +99,8 @@ export const workshopParticipantRecordSchema = z
     contactName: z.string().default(""),
     contactPhone: z.string().default(""),
     status: z.enum(WORKSHOP_PARTICIPANT_STATUSES),
+    completedAt: z.string().nullable().default(null),
+    certificateIssuedAt: z.string().nullable().default(null),
     createdAt: z.string().optional(),
   })
   .strict();
