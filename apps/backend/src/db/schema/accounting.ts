@@ -15,6 +15,7 @@ import {
 import { desc, sql } from "drizzle-orm";
 import { workspaces } from "./platform.js";
 import { softDeleteColumns } from "./softDeleteSchema.js";
+import { fxAccountColumns, fxLineColumns } from "./accountingFxColumns.js";
 
 export const accountingAccounts = pgTable(
   "accounting_accounts",
@@ -29,6 +30,7 @@ export const accountingAccounts = pgTable(
     subtype: varchar("subtype", { length: 100 }).notNull().default(""),
     description: text("description").notNull().default(""),
     isActive: boolean("is_active").notNull().default(true),
+    ...fxAccountColumns,
     ...softDeleteColumns,
     createdAt: timestamp("created_at", { withTimezone: true, mode: "date" }).notNull().defaultNow(),
     updatedAt: timestamp("updated_at", { withTimezone: true, mode: "date" }).notNull().defaultNow(),
@@ -188,6 +190,7 @@ export const accountingJournalLines = pgTable(
     accountId: text("account_id").notNull(),
     debit: numeric("debit", { precision: 14, scale: 2 }).notNull().default("0"),
     credit: numeric("credit", { precision: 14, scale: 2 }).notNull().default("0"),
+    ...fxLineColumns,
     description: text("description").notNull().default(""),
     createdAt: timestamp("created_at", { withTimezone: true, mode: "date" }).notNull().defaultNow(),
   },
@@ -273,8 +276,6 @@ export const accountingModulePreferences = pgTable(
   (table) => [primaryKey({ columns: [table.workspaceSubdomain] })],
 );
 
-/** Per-user Accounting accounts Work column layout (was document-store `accounting_account_user_column_preferences`). */
-/** Per-user Accounting journal Work column layout (was document-store `accounting_journal_user_column_preferences`). */
 /* ========================================================================= */
 /*                         ROW INFER TYPES                                   */
 /* ========================================================================= */

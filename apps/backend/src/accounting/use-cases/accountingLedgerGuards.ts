@@ -90,7 +90,10 @@ export async function assertJournalAccountsWritable(
   }
 }
 
-function normalizeLines(lines: JournalEntry["lines"]): string {
+const carriesFx = (lines: JournalEntry["lines"]): boolean =>
+  (lines ?? []).every((line) => !!line.txn_currency);
+
+function normalizeLines(lines: JournalEntry["lines"], withFx: boolean): string {
   return (lines ?? [])
     .map((line) =>
       [
@@ -98,10 +101,20 @@ function normalizeLines(lines: JournalEntry["lines"]): string {
         moneyToCents(line.debit),
         moneyToCents(line.credit),
         line.description ?? "",
+        ...(withFx ? [line.txn_currency, line.txn_debit, line.txn_credit, line.exchange_rate] : []),
       ].join("|"),
     )
     .sort()
     .join(";");
+}
+
+/**
+ * IAS 21 amounts take part in the comparison only when both sides carry them, so
+ * a stored row written before the backfill never reads as "changed".
+ */
+function linesDiffer(incoming: JournalEntry["lines"], stored: JournalEntry["lines"]): boolean {
+  const withFx = carriesFx(incoming) && carriesFx(stored);
+  return normalizeLines(incoming, withFx) !== normalizeLines(stored, withFx);
 }
 
 function normalizeList(values: readonly string[] | undefined): string {
@@ -121,7 +134,7 @@ export function journalEntryContentChanged(incoming: JournalEntry, stored: Journ
     (incoming.transaction_type ?? "") !== (stored.transaction_type ?? "") ||
     (incoming.reversed_ref ?? "") !== (stored.reversed_ref ?? "") ||
     Boolean(incoming.simple_mode) !== Boolean(stored.simple_mode) ||
-    normalizeLines(incoming.lines) !== normalizeLines(stored.lines) ||
+    linesDiffer(incoming.lines, stored.lines) ||
     normalizeList(incoming.tags) !== normalizeList(stored.tags) ||
     normalizeList(incoming.attachments) !== normalizeList(stored.attachments)
   );

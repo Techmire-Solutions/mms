@@ -1,5 +1,5 @@
 import { eq, sql } from "drizzle-orm";
-import type { Account } from "@mms/shared";
+import { inferIsMonetaryAccount, type Account } from "@mms/shared";
 import { accountingAccounts } from "../schema.js";
 import { withTenant } from "../tenant-context.js";
 import { evictAccountingModulePreferencesCache } from "./accountingModulePreferencesRepository.js";
@@ -62,6 +62,7 @@ export async function seedAccountsIfEmpty(
         subtype: record.subtype ?? "",
         description: record.description ?? "",
         isActive: record.isActive ?? true,
+        isMonetary: inferIsMonetaryAccount(record),
         createdAt: now,
         updatedAt: now,
       })),

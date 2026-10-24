@@ -14,6 +14,7 @@ import {
 } from "../schema.js";
 import { withTenant, withTenantRead } from "../tenant-context.js";
 import { requireDbDateValue } from "../../lib/dbDate.js";
+import { ensureCurrencySettingsInTx } from "./accountingCurrencySettingsRepository.js";
 
 export async function getPostingRules(tenant: string): Promise<PostingRules> {
   const subdomain = tenant.trim().toLowerCase();
@@ -114,15 +115,27 @@ export async function replaceOpeningBalances(
         ),
       );
     if (balances.length === 0) return;
+    const { functionalCurrency } = await ensureCurrencySettingsInTx(tx, subdomain);
     await tx.insert(accountingOpeningBalances).values(
-      balances.map((row) => ({
-        id: row.id,
-        workspaceSubdomain: subdomain,
-        fiscalYearId,
-        accountId: row.accountId,
-        debit: String(row.debit ?? 0),
-        credit: String(row.credit ?? 0),
-      })),
+      balances.map((row) => {
+        const debit = String(row.debit ?? 0);
+        const credit = String(row.credit ?? 0);
+        return {
+          id: row.id,
+          workspaceSubdomain: subdomain,
+          fiscalYearId,
+          accountId: row.accountId,
+          debit,
+          credit,
+          txnCurrency: functionalCurrency,
+          txnDebit: debit,
+          txnCredit: credit,
+          exchangeRate: "1",
+          rateType: "HISTORICAL",
+          funcDebit: debit,
+          funcCredit: credit,
+        };
+      }),
     );
   });
 }

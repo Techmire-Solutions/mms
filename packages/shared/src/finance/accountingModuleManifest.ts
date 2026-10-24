@@ -2,6 +2,12 @@ import type { Permission } from "../auth/permissions.js";
 import { z } from "zod";
 import { JOURNAL_SOURCE_TYPES, moneyAmountSchema } from "./accountingLedgerInvariants.js";
 import { isoDateSchema } from "../core/isoDateSchema.js";
+import {
+  currencyCodeSchema,
+  exchangeRateTypeSchema,
+  exchangeRateValueSchema,
+  nonNegativeMoneyDecimalAmountSchema,
+} from "../money/moneySchemas.js";
 
 export const accountRecordSchema = z
   .object({
@@ -12,6 +18,11 @@ export const accountRecordSchema = z
     subtype: z.string().default(""),
     description: z.string().default(""),
     isActive: z.boolean().default(true),
+    /** IAS 21 monetary item (retranslated at closing rate); omitted = keep stored value. */
+    isMonetary: z.boolean().optional(),
+    /** Locks the account to one currency (e.g. a USD bank account); null = any. */
+    accountCurrency: currencyCodeSchema.nullable().optional(),
+    allowRevaluation: z.boolean().optional(),
     deletedAt: z.string().nullable().optional(),
     deletedBy: z.string().nullable().optional(),
     deletionReason: z.string().nullable().optional(),
@@ -34,6 +45,11 @@ export const accountRecordInsertSchema = z
     subtype: z.string().optional().default(""),
     description: z.string().optional().default(""),
     isActive: z.boolean().optional().default(true),
+    /** IAS 21 monetary item (retranslated at closing rate); omitted = keep stored value. */
+    isMonetary: z.boolean().optional(),
+    /** Locks the account to one currency (e.g. a USD bank account); null = any. */
+    accountCurrency: currencyCodeSchema.nullable().optional(),
+    allowRevaluation: z.boolean().optional(),
     createdBy: z.string().nullable().optional(),
     updatedBy: z.string().nullable().optional(),
   })
@@ -53,6 +69,14 @@ export const journalLineRecordSchema = z
     debit: moneyAmountSchema.default(0),
     credit: moneyAmountSchema.default(0),
     description: z.string().default(""),
+    /** IAS 21 transaction (document) currency; omitted = functional currency. */
+    txn_currency: currencyCodeSchema.optional(),
+    txn_debit: nonNegativeMoneyDecimalAmountSchema.optional(),
+    txn_credit: nonNegativeMoneyDecimalAmountSchema.optional(),
+    /** Functional units per one transaction unit; `debit`/`credit` are derived from it. */
+    exchange_rate: exchangeRateValueSchema.optional(),
+    rate_type: exchangeRateTypeSchema.optional(),
+    rate_date: isoDateSchema.optional(),
   })
   .strict();
 

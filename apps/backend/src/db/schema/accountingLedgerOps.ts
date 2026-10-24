@@ -16,6 +16,7 @@ import {
   accountingEntries,
   accountingJournalLines,
 } from "./accounting.js";
+import { fxLineColumns } from "./accountingFxColumns.js";
 
 export const accountingPostingRules = pgTable(
   "accounting_posting_rules",
@@ -27,6 +28,10 @@ export const accountingPostingRules = pgTable(
     cashAccountId: text("cash_account_id"),
     incomeAccountId: text("income_account_id"),
     discountAccountId: text("discount_account_id"),
+    fxRealizedAccountId: text("fx_realized_account_id"),
+    fxUnrealizedAccountId: text("fx_unrealized_account_id"),
+    fxRoundingAccountId: text("fx_rounding_account_id"),
+    ctaAccountId: text("cta_account_id"),
     updatedAt: timestamp("updated_at", { withTimezone: true, mode: "date" }).notNull().defaultNow(),
   },
   (table) => [
@@ -47,6 +52,26 @@ export const accountingPostingRules = pgTable(
       columns: [table.workspaceSubdomain, table.discountAccountId],
       foreignColumns: [accountingAccounts.workspaceSubdomain, accountingAccounts.id],
     }),
+    foreignKey({
+      name: "accounting_posting_rules_fx_realized_fk",
+      columns: [table.workspaceSubdomain, table.fxRealizedAccountId],
+      foreignColumns: [accountingAccounts.workspaceSubdomain, accountingAccounts.id],
+    }),
+    foreignKey({
+      name: "accounting_posting_rules_fx_unrealized_fk",
+      columns: [table.workspaceSubdomain, table.fxUnrealizedAccountId],
+      foreignColumns: [accountingAccounts.workspaceSubdomain, accountingAccounts.id],
+    }),
+    foreignKey({
+      name: "accounting_posting_rules_fx_rounding_fk",
+      columns: [table.workspaceSubdomain, table.fxRoundingAccountId],
+      foreignColumns: [accountingAccounts.workspaceSubdomain, accountingAccounts.id],
+    }),
+    foreignKey({
+      name: "accounting_posting_rules_cta_fk",
+      columns: [table.workspaceSubdomain, table.ctaAccountId],
+      foreignColumns: [accountingAccounts.workspaceSubdomain, accountingAccounts.id],
+    }),
   ],
 );
 
@@ -61,6 +86,7 @@ export const accountingOpeningBalances = pgTable(
     accountId: text("account_id").notNull(),
     debit: numeric("debit", { precision: 14, scale: 2 }).notNull().default("0"),
     credit: numeric("credit", { precision: 14, scale: 2 }).notNull().default("0"),
+    ...fxLineColumns,
     createdAt: timestamp("created_at", { withTimezone: true, mode: "date" }).notNull().defaultNow(),
   },
   (table) => [
