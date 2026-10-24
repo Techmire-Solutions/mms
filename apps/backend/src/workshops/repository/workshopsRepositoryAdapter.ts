@@ -17,6 +17,14 @@ import {
   saveAttendanceDay,
   saveScores,
 } from "../../db/repositories/workshopActivityRepository.js";
+import {
+  loadCompletionInputs,
+  loadReportFacts,
+  loadWorkshopPreferences,
+  markCertificatesIssued,
+  saveCompletionOutcomes,
+  saveWorkshopPreferences,
+} from "../../db/repositories/workshopCompletionRepository.js";
 import { findWorkspaceTimezone } from "../../db/repositories/workspaceSettingsRepository.js";
 
 /** Drizzle-backed {@link WorkshopsRepository}. */
@@ -34,4 +42,10 @@ export const workshopsRepository: WorkshopsRepository = {
   saveScores,
   aggregateWorkshopsMetrics,
   findWorkspaceTimezone,
+  loadCompletionInputs,
+  saveCompletionOutcomes,
+  markCertificatesIssued,
+  loadReportFacts,
+  loadWorkshopPreferences,
+  saveWorkshopPreferences,
 };

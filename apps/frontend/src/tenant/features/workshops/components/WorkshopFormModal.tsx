@@ -1,5 +1,5 @@
 import React from "react";
-import type { WorkshopEvent, WorkshopEventCreate } from "@mms/shared";
+import type { WorkshopEvent, WorkshopEventCreate, WorkshopPreferences } from "@mms/shared";
 import { FormModal } from "@/components/app/FormModal";
 import { Field } from "@/components/app/FormPrimitives";
 import { DatePicker } from "@/components/app/DatePicker";
@@ -11,6 +11,8 @@ export interface WorkshopFormModalProps {
   open: boolean;
   onClose: () => void;
   initialData: WorkshopEvent | null;
+  /** Setup defaults for the completion criteria of a new workshop. */
+  defaults?: WorkshopPreferences | null;
   onSave: (input: WorkshopEventCreate) => Promise<void>;
 }
 
@@ -18,10 +20,12 @@ export function WorkshopFormModal({
   open,
   onClose,
   initialData,
+  defaults = null,
   onSave,
 }: WorkshopFormModalProps): React.JSX.Element {
   const { t, values, setField, error, saving, isDirty, handleSubmit } = useWorkshopFormController({
     initialData,
+    defaults,
     onSave,
     onClose,
   });
@@ -112,6 +116,37 @@ export function WorkshopFormModal({
             />
           </Field>
         </div>
+        <fieldset className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+          <legend className="mb-2 text-sm font-medium text-foreground">
+            {t("workshops.completionCriteria")}
+          </legend>
+          <Field id="workshop-min-attendance" label={t("workshops.minAttendancePct")}>
+            <Input
+              id="workshop-min-attendance"
+              name="minAttendancePct"
+              type="number"
+              inputMode="decimal"
+              min={0}
+              max={100}
+              value={values.minAttendancePct}
+              onChange={(e) => setField("minAttendancePct", e.target.value)}
+              placeholder={t("workshops.criterionNotUsed")}
+            />
+          </Field>
+          <Field id="workshop-min-score" label={t("workshops.minScorePct")}>
+            <Input
+              id="workshop-min-score"
+              name="minScorePct"
+              type="number"
+              inputMode="decimal"
+              min={0}
+              max={100}
+              value={values.minScorePct}
+              onChange={(e) => setField("minScorePct", e.target.value)}
+              placeholder={t("workshops.criterionNotUsed")}
+            />
+          </Field>
+        </fieldset>
       </div>
     </FormModal>
   );

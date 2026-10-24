@@ -1,68 +1,18 @@
 import type { FastifyPluginAsync } from "fastify";
 import { initServer, type RouterImplementation } from "@ts-rest/fastify";
-import {
-  isQueryFlagTrue,
-  workshopsContract,
-  WORKSHOPS_MODULE_MANIFEST,
-  type User,
-} from "@mms/shared";
-import { handleContractError } from "../../../lib/contractError.js";
+import { isQueryFlagTrue, workshopsContract, WORKSHOPS_MODULE_MANIFEST } from "@mms/shared";
 import { standardRequestValidationErrorHandler } from "../../../lib/contractRegistration.js";
 import type { ContractRouteArgs } from "../../../lib/contractRouterTypes.js";
-import { HttpDomainError } from "../../../lib/httpErrors.js";
-import { runWithTenant } from "../../../lib/tenantContext.js";
-import {
-  canDeleteCollection,
-  canReadCollection,
-  canWriteCollection,
-} from "../../../services/rbacService.js";
+import { guarded } from "./workshopsRouteGuard.js";
 import { workshopsUseCases } from "../../../workshops/use-cases/workshopsUseCases.js";
 
 type Contract = typeof workshopsContract;
-type AnyRequest = ContractRouteArgs<Contract["listWorkshops"]>["request"];
-type Access = "read" | "write" | "delete";
 
 const EVENTS = WORKSHOPS_MODULE_MANIFEST.collectionKey;
 const PARTICIPANTS = WORKSHOPS_MODULE_MANIFEST.participantCollectionKey;
 const ATTENDANCE = WORKSHOPS_MODULE_MANIFEST.attendanceCollectionKey;
 const SCORES = WORKSHOPS_MODULE_MANIFEST.scoreCollectionKey;
-
-const forbidden = {
-  status: 403 as const,
-  body: { type: "forbidden", message: "Insufficient permissions" },
-};
 const s = initServer();
-
-function allowed(user: User, collection: string, access: Access): boolean {
-  if (access === "read") return canReadCollection(user, collection);
-  if (access === "write") return canWriteCollection(user, collection);
-  return canDeleteCollection(user, collection);
-}
-
-/**
- * Permission check → tenant-bound use-case call → domain errors (400/404/409) keep their
- * status, anything else is logged and becomes a 500 with `failure`.
- */
-async function guarded<T>(
-  request: AnyRequest,
-  rule: { collection: string; access: Access },
-  failure: string,
-  work: (user: User) => Promise<T>,
-): Promise<T | typeof forbidden | { status: number; body: { type: string; message: string } }> {
-  const user = request.user as User;
-  if (!allowed(user, rule.collection, rule.access)) return forbidden;
-  try {
-    return await runWithTenant(String(request.tenant?.id ?? ""), () => work(user));
-  } catch (error) {
-    if (error instanceof HttpDomainError) {
-      return { status: error.statusCode, body: { type: error.type, message: error.message } };
-    }
-    return handleContractError(request, error, {
-      status: 500,
-      body: { type: "server_error", message: failure },
-    });
-  }
-}
 
 /** `/api/workshops` — events, registration, per-day check-in and scores. */
 export const workshopsContractRouter: FastifyPluginAsync = async (fastify) => {

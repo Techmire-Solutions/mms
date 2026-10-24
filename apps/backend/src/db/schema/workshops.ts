@@ -40,6 +40,8 @@ export const workshopEvents = pgTable(
     fee: numeric("fee", { precision: 12, scale: 2 }),
     programId: text("program_id"),
     subjectId: text("subject_id"),
+    minAttendancePct: numeric("min_attendance_pct", { precision: 5, scale: 2 }),
+    minScorePct: numeric("min_score_pct", { precision: 5, scale: 2 }),
     ...softDeleteColumns,
     createdAt: timestamp("created_at", { withTimezone: true, mode: "date" }).defaultNow().notNull(),
     updatedAt: timestamp("updated_at", { withTimezone: true, mode: "date" }).defaultNow().notNull(),
@@ -83,6 +85,8 @@ export const workshopParticipants = pgTable(
     workshopId: text("workshop_id").notNull(),
     contactId: text("contact_id").notNull(),
     status: varchar("status", { length: 20 }).default("registered").notNull(), // 'registered' | 'attended' | 'completed'
+    completedAt: timestamp("completed_at", { withTimezone: true, mode: "date" }),
+    certificateIssuedAt: timestamp("certificate_issued_at", { withTimezone: true, mode: "date" }),
     ...softDeleteColumns,
     createdAt: timestamp("created_at", { withTimezone: true, mode: "date" }).defaultNow().notNull(),
     updatedAt: timestamp("updated_at", { withTimezone: true, mode: "date" }).defaultNow().notNull(),
@@ -200,6 +204,16 @@ export const workshopScores = pgTable(
     ),
   ],
 );
+
+/** Per-workspace Setup defaults applied to new workshops (migration 0186). */
+export const workshopModulePreferences = pgTable("workshop_module_preferences", {
+  workspaceSubdomain: text("workspace_subdomain")
+    .primaryKey()
+    .references(() => workspaces.subdomain, { onDelete: "cascade" }),
+  defaultMinAttendancePct: numeric("default_min_attendance_pct", { precision: 5, scale: 2 }),
+  defaultMinScorePct: numeric("default_min_score_pct", { precision: 5, scale: 2 }),
+  updatedAt: timestamp("updated_at", { withTimezone: true, mode: "date" }).defaultNow().notNull(),
+});
 
 export const competitionEvents = pgTable(
   "competition_events",

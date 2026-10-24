@@ -26,6 +26,8 @@ export async function listActiveParticipants(
       contactName: sql<string>`coalesce(${contacts.name}, '')`,
       contactPhone: primaryPhone,
       status: workshopParticipants.status,
+      completedAt: workshopParticipants.completedAt,
+      certificateIssuedAt: workshopParticipants.certificateIssuedAt,
       createdAt: workshopParticipants.createdAt,
     })
     .from(workshopParticipants)
@@ -47,6 +49,8 @@ export async function listActiveParticipants(
   return rows.map((row) => ({
     ...row,
     status: row.status as WorkshopParticipantStatus,
+    completedAt: row.completedAt ? row.completedAt.toISOString() : null,
+    certificateIssuedAt: row.certificateIssuedAt ? row.certificateIssuedAt.toISOString() : null,
     createdAt: row.createdAt.toISOString(),
   }));
 }

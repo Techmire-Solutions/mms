@@ -26,6 +26,8 @@ const participant = (id: string, name: string) => ({
   contactName: name,
   contactPhone: "",
   status: "registered" as const,
+  completedAt: null,
+  certificateIssuedAt: null,
 });
 
 const detail = (fields: Partial<WorkshopDetail["workshop"]> = {}): WorkshopDetail => ({
@@ -40,6 +42,8 @@ const detail = (fields: Partial<WorkshopDetail["workshop"]> = {}): WorkshopDetai
     fee: null,
     programId: null,
     subjectId: null,
+    minAttendancePct: null,
+    minScorePct: null,
     participantCount: 2,
     ...fields,
   },

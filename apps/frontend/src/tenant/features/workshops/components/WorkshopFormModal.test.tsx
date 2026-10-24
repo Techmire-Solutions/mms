@@ -24,6 +24,8 @@ const workshop = (fields: Partial<WorkshopEvent> = {}): WorkshopEvent => ({
   fee: 1500,
   programId: null,
   subjectId: null,
+  minAttendancePct: null,
+  minScorePct: null,
   participantCount: 0,
   ...fields,
 });

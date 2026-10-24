@@ -24,7 +24,7 @@ import {
 } from "./workshopsQueryKeys";
 
 /** Parses a 2xx body with `schema`; anything else becomes an {@link ApiError}. */
-function read<T>(
+export function read<T>(
   response: { status: number; body: unknown },
   schema: z.ZodType<T>,
   context: string,
@@ -86,7 +86,9 @@ export function useWorkshopMetrics(options: { enabled?: boolean } = {}) {
 }
 
 /** Every workshop mutation refreshes the module's lists, detail and metrics before it settles. */
-function useWorkshopsMutation<TVars, TResult>(mutationFn: (vars: TVars) => Promise<TResult>) {
+export function useWorkshopsMutation<TVars, TResult>(
+  mutationFn: (vars: TVars) => Promise<TResult>,
+) {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn,

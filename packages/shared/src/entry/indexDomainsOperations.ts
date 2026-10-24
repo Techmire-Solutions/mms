@@ -55,6 +55,7 @@ export * from "../hasanat/hasanatSetupConfigTypes.js";
 export * from "../workshops/workshopsModuleManifest.js";
 export * from "../workshops/workshopsRecords.js";
 export * from "../workshops/workshopDays.js";
+export * from "../workshops/workshopCompletion.js";
 export * from "../examinations/questionBankAnswerUtils.js";
 export * from "../examinations/questionBankCategoryUtils.js";
 export * from "../examinations/questionBankCore.js";
