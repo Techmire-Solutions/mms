@@ -1,6 +1,7 @@
 import React, { lazy, useState } from "react";
 import { Plus, Calendar, Download, Upload } from "lucide-react";
 import { ModuleTierPage } from "@/components/app/ModuleTierPage";
+import { PageHelpCallout } from "@/components/app/PageHelpCallout";
 import { Button } from "@/components/ui/button";
 import { SessionsDialogLayer } from "@/tenant/features/sessions/components/SessionsDialogLayer";
 import { SessionsWorkTier } from "@/tenant/features/sessions/components/SessionsWorkTier";
@@ -52,6 +53,19 @@ export default function Sessions(): React.JSX.Element {
             </Button>
           ) : null}
         </>
+      }
+      banner={
+        <PageHelpCallout
+          id="sessions"
+          title={c.t("page.sessions.help.title")}
+          description={c.t("page.sessions.help.description")}
+          steps={[
+            c.t("page.sessions.help.step1"),
+            c.t("page.sessions.help.step2"),
+            c.t("page.sessions.help.step3"),
+            c.t("page.sessions.help.step4"),
+          ]}
+        />
       }
       metrics={<SessionsCommandMetrics total={c.shownCount} shown={c.sessions.length} />}
       tiers={[
