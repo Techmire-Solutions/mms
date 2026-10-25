@@ -42,7 +42,6 @@ describe("UserCardHeader", () => {
     expect(html).toContain("Admin User");
     expect(html).toContain("admin@madrasa.com");
     expect(html).toContain('aria-label="users.selectRow:Admin User"');
-    expect(html).toContain('aria-label="users.actionView:Admin User"');
   });
 
   it("renders email when email column is explicitly visible", () => {

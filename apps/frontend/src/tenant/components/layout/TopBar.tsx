@@ -39,7 +39,6 @@ export default function TopBar({
           type="button"
           variant="outline"
           onClick={onOpenCommandPalette}
-          aria-label={t("nav.globalSearchPlaceholder")}
           aria-keyshortcuts="Control+K Meta+K"
           className="relative flex w-full items-center justify-start rounded-xl border-border/50 bg-muted/50 ps-10 pe-14 min-h-11 h-11 text-sm font-normal text-muted-foreground text-start hover:bg-muted hover:text-foreground cursor-pointer shadow-none"
         >

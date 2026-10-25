@@ -47,7 +47,6 @@ describe("ContactCardHeader", () => {
     expect(html).toContain("contacts.table.yesSyed");
     expect(html).toContain("Female");
     expect(html).toContain('aria-label="contacts.table.selectContact:Sayyida Fatima"');
-    expect(html).toContain('aria-label="contacts.table.viewProfile - Sayyida Fatima"');
   });
 
   it("renders display name and identity metadata when columns are explicitly visible", () => {

@@ -37,8 +37,12 @@ describe("DirectoryCardHeader Component", () => {
       />,
     );
 
+    // WCAG 2.5.3 label-in-name: accessible name comes from visible content
+    // (no aria-label override) so it always contains the visible label.
     expect(html).toContain("<button");
-    expect(html).toContain('aria-label="View profile of Fatima Zahra"');
+    expect(html).not.toContain('aria-label="View profile of Fatima Zahra"');
+    expect(html).toContain("FZ");
+    expect(html).toContain("Fatima Zahra");
   });
 
   it("omits checkbox when showSelect is false", () => {

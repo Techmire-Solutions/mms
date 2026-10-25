@@ -64,9 +64,11 @@ export const ModuleColumnCustomizer = function ModuleColumnCustomizer({
           variant="outline"
           disabled={disabled}
           className={cn(WORK_TOOLBAR_TRIGGER, WORK_TOOLBAR_TRIGGER_IDLE, className)}
-          aria-label={resolvedLabels.trigger}
         >
           <Columns3 className="w-3.5 h-3.5" aria-hidden="true" />
+          {/* WCAG 2.5.3 label-in-name: accessible name must contain the full
+              visible label, so it is derived from content (label + count badge)
+              and never overridden with aria-label. */}
           <span>{resolvedLabels.trigger}</span>
           {hiddenCount > 0 && (
             <span className="ms-0.5 px-1.5 py-0.2 rounded-full text-2xs font-semibold bg-primary/10 text-primary border border-primary/20">

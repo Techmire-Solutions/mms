@@ -41,7 +41,7 @@
   "devDependencies": {
     "eslint-config-prettier": "^10.1.8",
     "prettier": "^3.9.10",
-    "turbo": "^2.11.7",
+    "turbo": "^2.11.9",
     "typescript": "~7.0.2",
     "typescript-v6": "npm:typescript@~6.0.3"
   }
