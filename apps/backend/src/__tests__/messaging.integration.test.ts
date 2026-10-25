@@ -398,11 +398,11 @@ describe("messaging REST routes", () => {
     });
     expect(res.statusCode).toBe(200);
     expect(res.json()).toEqual({ restored: 3 });
-    expect(mockRestoreMessageLogs).toHaveBeenCalledWith(
-      "demo",
-      "u-admin",
-      ["log-1", "log-2", "log-3"],
-    );
+    expect(mockRestoreMessageLogs).toHaveBeenCalledWith("demo", "u-admin", [
+      "log-1",
+      "log-2",
+      "log-3",
+    ]);
     expect(mockRecordAudit).toHaveBeenCalledWith(
       expect.objectContaining({
         action: "messaging.logs.restore",

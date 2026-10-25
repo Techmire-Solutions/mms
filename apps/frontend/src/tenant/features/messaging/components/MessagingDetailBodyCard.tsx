@@ -50,9 +50,7 @@ export function MessagingDetailBodyCard({ log }: MessagingDetailBodyCardProps): 
             className={`h-7 touch-target-coarse px-2.5 text-xs gap-1.5 ${SEMANTIC_TEXT.primary} hover:bg-primary/10`}
           />
         </div>
-        <div
-          className="whitespace-pre-wrap rounded bg-background/80 p-3 font-sans text-xs text-foreground border border-border/40 leading-relaxed max-h-60 overflow-y-auto selection:bg-primary/20 selection:text-foreground"
-        >
+        <div className="whitespace-pre-wrap rounded bg-background/80 p-3 font-sans text-xs text-foreground border border-border/40 leading-relaxed max-h-60 overflow-y-auto selection:bg-primary/20 selection:text-foreground">
           {log.body}
         </div>
       </div>

@@ -250,18 +250,19 @@ describe("Messaging Campaign Dispatch Routes", () => {
     });
 
     it("returns 409 when the idempotency key is reused with a different body", async () => {
-      const { findAuthArtifactByLookupKey } = await import(
-        "../services/auth/authArtifactService.js"
-      );
-      vi.mocked(findAuthArtifactByLookupKey).mockReset().mockResolvedValue({
-        id: "art-email-mismatch",
-        kind: "messaging_idempotency",
-        payload: {
-          response: { sentCount: 1, failedCount: 0, total: 1 },
-          bodyDigest: "b".repeat(64),
-        },
-        expiresAt: new Date(Date.now() + 60_000),
-      });
+      const { findAuthArtifactByLookupKey } =
+        await import("../services/auth/authArtifactService.js");
+      vi.mocked(findAuthArtifactByLookupKey)
+        .mockReset()
+        .mockResolvedValue({
+          id: "art-email-mismatch",
+          kind: "messaging_idempotency",
+          payload: {
+            response: { sentCount: 1, failedCount: 0, total: 1 },
+            bodyDigest: "b".repeat(64),
+          },
+          expiresAt: new Date(Date.now() + 60_000),
+        });
 
       const { app, headers } = await authHeaders();
       const res = await app.inject({
@@ -286,20 +287,22 @@ describe("Messaging Campaign Dispatch Routes", () => {
     });
 
     it("passes the client idempotency key and body digest into the queued job payload", async () => {
-      mockEnqueueBackgroundJob.mockReset().mockImplementation(
-        async (
-          _tenant: unknown,
-          _userId: unknown,
-          job: { id: string; label: string },
-          jobPayload: Record<string, unknown>,
-        ) => ({
-          ...job,
-          moduleId: "messaging" as const,
-          status: "running" as const,
-          createdAt: new Date().toISOString(),
-          jobPayload,
-        }),
-      );
+      mockEnqueueBackgroundJob
+        .mockReset()
+        .mockImplementation(
+          async (
+            _tenant: unknown,
+            _userId: unknown,
+            job: { id: string; label: string },
+            jobPayload: Record<string, unknown>,
+          ) => ({
+            ...job,
+            moduleId: "messaging" as const,
+            status: "running" as const,
+            createdAt: new Date().toISOString(),
+            jobPayload,
+          }),
+        );
       const { app, headers } = await authHeaders();
       const res = await app.inject({
         method: "POST",

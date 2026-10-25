@@ -10,12 +10,7 @@ export interface ContactsOfflineBannerProps {
 
 export function ContactsOfflineBanner({ t }: ContactsOfflineBannerProps): React.JSX.Element {
   return (
-    <Alert
-      icon={WifiOff}
-      role="status"
-      density="banner"
-      description={t("contacts.sync.offline")}
-    />
+    <Alert icon={WifiOff} role="status" density="banner" description={t("contacts.sync.offline")} />
   );
 }
 

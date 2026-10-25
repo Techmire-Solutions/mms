@@ -6,7 +6,11 @@ import {
   type messagingContract,
 } from "@mms/shared";
 import type { ContractRouteArgs, ContractRouteResponse } from "../../../lib/contractRouterTypes.js";
-import { canClearMessagingLogs, canReadMessaging, canRestoreMessagingLogs } from "../../../services/rbacService.js";
+import {
+  canClearMessagingLogs,
+  canReadMessaging,
+  canRestoreMessagingLogs,
+} from "../../../services/rbacService.js";
 import { withTenant } from "../../../db/tenant-context.js";
 import { getRequestTenant } from "../../../lib/tenantContext.js";
 import { messagingUseCases } from "../../../messaging/use-cases/messagingUseCases.js";

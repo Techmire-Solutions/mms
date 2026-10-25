@@ -71,10 +71,10 @@ export function MessagingListCardItem({
       reducedMotion={reducedMotion}
       accentClassName={getMessagingChannelAccentBarClass(isSelected, log.channel)}
       className={cn(
-          "transition-all group",
-          isFailed && `border-destructive/30 ${SEMANTIC_TEXT.destructive}`,
-          isKeyboardFocused && `ring-2 ring-primary/60 ${MESSAGING_KB_FOCUS_CLASS}`,
-        )}
+        "transition-all group",
+        isFailed && `border-destructive/30 ${SEMANTIC_TEXT.destructive}`,
+        isKeyboardFocused && `ring-2 ring-primary/60 ${MESSAGING_KB_FOCUS_CLASS}`,
+      )}
       header={{
         displayName: name,
         subtitle: (

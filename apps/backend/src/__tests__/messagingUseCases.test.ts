@@ -89,19 +89,11 @@ describe("messaging use-cases (DI with fake repository)", () => {
 
     // blank ids → deduped to [] (repo treats an empty list as restore-all)
     await useCases.restoreMessageLogs("demo", "u-1", ["  ", ""]);
-    expect(repo.restoreArchivedMessageLog).toHaveBeenNthCalledWith(
-      2,
-      "demo",
-      "u-1",
-      [],
-    );
+    expect(repo.restoreArchivedMessageLog).toHaveBeenNthCalledWith(2, "demo", "u-1", []);
 
     // explicit ids → deduped + trimmed passthrough
     await useCases.restoreMessageLogs("demo", "u-2", ["a", " a ", "b"]);
-    expect(repo.restoreArchivedMessageLog).toHaveBeenNthCalledWith(3, "demo", "u-2", [
-      "a",
-      "b",
-    ]);
+    expect(repo.restoreArchivedMessageLog).toHaveBeenNthCalledWith(3, "demo", "u-2", ["a", "b"]);
   });
 
   it("restoreMessageLogs returns the repository restored count per call", async () => {

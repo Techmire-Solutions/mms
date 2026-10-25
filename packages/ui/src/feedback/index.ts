@@ -1,12 +1,7 @@
 export { Skeleton } from "./Skeleton";
 export { EmptyState, type EmptyStateProps } from "./EmptyState";
 export { LoadingState, type LoadingStateProps } from "./LoadingState";
-export {
-  Alert,
-  type AlertProps,
-  type AlertDensity,
-  type AlertTone,
-} from "./Alert";
+export { Alert, type AlertProps, type AlertDensity, type AlertTone } from "./Alert";
 export { ErrorState, type ErrorStateProps } from "./ErrorState";
 export {
   CardSkeleton,

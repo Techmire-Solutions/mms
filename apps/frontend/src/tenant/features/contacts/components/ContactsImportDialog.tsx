@@ -67,12 +67,7 @@ function ContactsImportDialogBody({
         {apple.result && <AppleContactsImportResult result={apple.result} t={t} />}
 
         {apple.fileError && (
-          <Alert
-            tone="destructive"
-            role="alert"
-            density="compact"
-            description={apple.fileError}
-          />
+          <Alert tone="destructive" role="alert" density="compact" description={apple.fileError} />
         )}
 
         {showDropZone && (

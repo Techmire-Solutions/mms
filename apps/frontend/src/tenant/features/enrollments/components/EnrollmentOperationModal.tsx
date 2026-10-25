@@ -154,9 +154,7 @@ export function EnrollmentOperationModal(props: EnrollmentOperationModalProps): 
       onSave={() => void submit()}
     >
       <div className="space-y-4 py-1 text-start">
-        {config.callout ? (
-          <Alert density="compact" description={t(config.callout)} />
-        ) : null}
+        {config.callout ? <Alert density="compact" description={t(config.callout)} /> : null}
         {config.picker ? (
           <div className="grid gap-4 sm:grid-cols-3">
             <SessionClassSectionSelect

@@ -115,11 +115,12 @@ export async function withMessagingIdempotency<
 }): Promise<{ status: 200 | 409; body: Record<string, unknown> }> {
   const { tenantId, userId, clientKey, bodyDigest, flow } = options;
   const lookupKey = messagingIdempotencyLookupKey(tenantId, userId, clientKey);
-  const scopeKey = `${authArtifactWorkspaceScopeKey(tenantId)}:${authArtifactUserScopeKey(
-    userId,
-  )}`;
+  const scopeKey = `${authArtifactWorkspaceScopeKey(tenantId)}:${authArtifactUserScopeKey(userId)}`;
 
-  const pollForCompletion = async (): Promise<{ status: 200 | 409; body: Record<string, unknown> }> => {
+  const pollForCompletion = async (): Promise<{
+    status: 200 | 409;
+    body: Record<string, unknown>;
+  }> => {
     for (let attempt = 0; attempt < IDEMPOTENCY_PENDING_POLL_ATTEMPTS; attempt += 1) {
       const existing = await findAuthArtifactByLookupKey<P>("messaging_idempotency", lookupKey);
       if (existing) {

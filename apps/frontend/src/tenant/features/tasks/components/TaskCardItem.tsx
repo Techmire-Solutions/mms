@@ -117,7 +117,9 @@ export function TaskCardItem({
             </DirectoryCardMetaTile>
           ) : null}
           {isColumnVisible("assignees") ? (
-            <DirectoryCardMetaTile label={t("tasks.assignees")}>{assigneeLabel}</DirectoryCardMetaTile>
+            <DirectoryCardMetaTile label={t("tasks.assignees")}>
+              {assigneeLabel}
+            </DirectoryCardMetaTile>
           ) : null}
           {isColumnVisible("dueAt") ? (
             <DirectoryCardMetaTile label={t("tasks.dueAt")}>

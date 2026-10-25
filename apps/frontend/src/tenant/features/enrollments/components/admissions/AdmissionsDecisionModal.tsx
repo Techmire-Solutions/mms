@@ -77,9 +77,7 @@ export function AdmissionsDecisionModal({
     >
       <div className="space-y-3 py-1 text-start">
         {decision === "approve" && ineligible > 0 ? (
-          <Alert
-            title={t("enrollments.admissions.ineligibleWarning", { count: ineligible })}
-          />
+          <Alert title={t("enrollments.admissions.ineligibleWarning", { count: ineligible })} />
         ) : null}
         {decision === "approve" && matchedStudentId ? (
           <ToggleRow

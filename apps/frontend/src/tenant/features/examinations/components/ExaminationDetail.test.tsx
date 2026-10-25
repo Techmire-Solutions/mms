@@ -11,7 +11,13 @@ vi.mock("@/hooks/useTranslation", () => ({
 }));
 
 vi.mock("@/components/app/DetailDrawerShell", () => ({
-  DetailDrawerShell: ({ children, title }: { children?: React.ReactNode; title?: React.ReactNode }) => (
+  DetailDrawerShell: ({
+    children,
+    title,
+  }: {
+    children?: React.ReactNode;
+    title?: React.ReactNode;
+  }) => (
     <div data-testid="detail-drawer">
       <h2>{title}</h2>
       {children}

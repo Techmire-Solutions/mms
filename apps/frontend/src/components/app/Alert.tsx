@@ -1,6 +1,1 @@
-export {
-  Alert,
-  type AlertProps,
-  type AlertDensity,
-  type AlertTone,
-} from "@shared/ui";
+export { Alert, type AlertProps, type AlertDensity, type AlertTone } from "@shared/ui";

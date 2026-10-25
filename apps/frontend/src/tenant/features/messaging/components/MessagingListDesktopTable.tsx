@@ -73,7 +73,8 @@ export function MessagingListDesktopTable({
       stickyColumnId="recipient"
       onRowClick={onViewLog}
       rowClassName={(log) => {
-        if (log.id === focusedLogId) return `ring-2 ring-primary/60 ring-inset ${MESSAGING_KB_FOCUS_CLASS}`;
+        if (log.id === focusedLogId)
+          return `ring-2 ring-primary/60 ring-inset ${MESSAGING_KB_FOCUS_CLASS}`;
         return log.status === "failed"
           ? `${SEMANTIC_BG.destructive} hover:bg-destructive/10 border-s-2 border-s-destructive`
           : undefined;

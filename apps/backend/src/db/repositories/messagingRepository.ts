@@ -25,10 +25,7 @@ export type {
   MessageLogsPageResult,
   MessagingMetricsFilterQuery,
 } from "./messagingLogsQueryRepository.js";
-export {
-  queryFilteredMessageLogs,
-  queryMessagingMetrics,
-} from "./messagingLogsQueryRepository.js";
+export { queryFilteredMessageLogs, queryMessagingMetrics } from "./messagingLogsQueryRepository.js";
 export {
   softDeleteActiveMessageLogs,
   restoreArchivedMessageLog,

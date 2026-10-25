@@ -59,7 +59,9 @@ vi.mock("@/tenant/features/contacts/hooks/useContactDetailAttachments", () => ({
 }));
 
 vi.mock("@/tenant/features/contacts/components/detail/ContactDetailDrawerContent", () => ({
-  ContactDetailDrawerContent: () => <div data-testid="drawer-content">DetailDrawerShell Content</div>,
+  ContactDetailDrawerContent: () => (
+    <div data-testid="drawer-content">DetailDrawerShell Content</div>
+  ),
 }));
 
 vi.mock("@/hooks/useTranslation", () => ({

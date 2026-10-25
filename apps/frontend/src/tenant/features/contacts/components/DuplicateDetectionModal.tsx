@@ -98,11 +98,7 @@ export function DuplicateDetectionModal({
         )}
 
         {!canWrite && activePairs.length > 0 && (
-          <Alert
-            tone="warning"
-            density="compact"
-            description={t("contacts.duplicatesReadOnly")}
-          />
+          <Alert tone="warning" density="compact" description={t("contacts.duplicatesReadOnly")} />
         )}
 
         <DuplicateDetectionToolbar

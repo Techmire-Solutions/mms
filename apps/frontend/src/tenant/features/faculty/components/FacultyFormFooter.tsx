@@ -41,11 +41,7 @@ export function FacultyFormFooter({
 
   if (requireContactLink && !facultyDraft.contactId) {
     return (
-      <Alert
-        tone="destructive"
-        density="compact"
-        description={t("faculty.form.contactRequired")}
-      />
+      <Alert tone="destructive" density="compact" description={t("faculty.form.contactRequired")} />
     );
   }
 
