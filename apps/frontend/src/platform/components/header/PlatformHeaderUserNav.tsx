@@ -52,7 +52,6 @@ export function PlatformHeaderUserNav({
           type="button"
           variant="outline"
           onClick={onOpenSearch}
-          aria-label={t("platform.openSearchAria")}
           aria-keyshortcuts="Control+K Meta+K"
           aria-pressed={searchOpen}
           className={cn(

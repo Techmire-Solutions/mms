@@ -23,7 +23,14 @@ export interface EntityCardHeaderProps {
   className?: string;
 }
 
-/** Shared Work directory card header: checkbox | avatar + title + subtitle. */
+/**
+ * Shared Work directory card header: checkbox | avatar + title + subtitle.
+ *
+ * The view button deliberately has no aria-label: its accessible name is
+ * derived from the visible avatar/label content, satisfying WCAG 2.5.3
+ * label-in-name (`viewAriaLabel` remains consumed by callers for the older
+ * labelled API and is intentionally not applied).
+ */
 export const DirectoryCardHeader = function DirectoryCardHeader({
   id,
   displayName,
@@ -33,7 +40,6 @@ export const DirectoryCardHeader = function DirectoryCardHeader({
   onSelect,
   selectAriaLabel,
   onView,
-  viewAriaLabel,
   subtitle,
   showSelect = true,
   reducedMotion = false,
@@ -71,13 +77,12 @@ export const DirectoryCardHeader = function DirectoryCardHeader({
           <Checkbox checked={isSelected} onCheckedChange={onSelect} aria-label={selectAriaLabel} />
         </div>
       ) : null}
-      {onView && viewAriaLabel ? (
+      {onView ? (
         <Button
           type="button"
           variant="ghost"
           className="h-auto p-0 hover:bg-transparent flex flex-1 items-start gap-2.5 min-w-0 text-start cursor-pointer hover:text-foreground shadow-none justify-start"
           onClick={onView}
-          aria-label={viewAriaLabel}
         >
           {face}
         </Button>

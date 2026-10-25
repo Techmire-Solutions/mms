@@ -59,7 +59,6 @@ export function UserNavDropdown({
         <Button
           type="button"
           variant="ghost"
-          aria-label={displayName}
           className={cn(
             "group flex items-center rounded-xl transition-colors hover:bg-muted font-normal text-start min-h-11 cursor-pointer",
             compact ? "h-11 w-11 min-w-11 p-0 justify-center" : "gap-2.5 px-2.5 py-1",
@@ -92,7 +91,15 @@ export function UserNavDropdown({
                 aria-hidden="true"
               />
             </>
-          ) : null}
+          ) : (
+            /* Compact (initials-only): speak the full name via content-based
+               accessible name — an aria-label would trip WCAG 2.5.3
+               label-in-name (name must contain the visible initials). */
+            <span className="sr-only">
+              {displayName}
+              {email ? ` ${email}` : ""}
+            </span>
+          )}
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent
