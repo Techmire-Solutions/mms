@@ -182,6 +182,34 @@ export function useRestoreTask() {
   });
 }
 
+export function useBulkDeleteTasks() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async (ids: string[]) => {
+      const response = await apiContract.tasks.bulkDelete({ body: { ids } });
+      assertOk(response, "Failed to bulk delete tasks");
+      return response.body as { deletedIds: string[] };
+    },
+    onSuccess: () => {
+      void invalidateTasksQueries(queryClient);
+    },
+  });
+}
+
+export function useBulkRestoreTasks() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async (ids: string[]) => {
+      const response = await apiContract.tasks.bulkRestore({ body: { ids } });
+      assertOk(response, "Failed to bulk restore tasks");
+      return response.body as { restoredIds: string[] };
+    },
+    onSuccess: () => {
+      void invalidateTasksQueries(queryClient);
+    },
+  });
+}
+
 export interface EligibleAssigneeItem {
   facultyId: string;
   name: string;

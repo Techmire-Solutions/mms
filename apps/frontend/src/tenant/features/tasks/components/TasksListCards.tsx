@@ -18,6 +18,7 @@ export interface TasksListCardsProps {
   selectedIds: string[];
   viewingDeleted: boolean;
   canWrite: boolean;
+  canComplete?: boolean;
   canDelete: boolean;
   isLoading: boolean;
   isColumnVisible: (key: string) => boolean;
@@ -36,6 +37,7 @@ export function TasksListCards({
   selectedIds,
   viewingDeleted,
   canWrite,
+  canComplete,
   canDelete,
   isLoading,
   isColumnVisible,
@@ -92,6 +94,7 @@ export function TasksListCards({
               selectedIds={selectedIds}
               viewingDeleted={viewingDeleted}
               canWrite={canWrite}
+              canComplete={canComplete ?? canWrite}
               canDelete={canDelete}
               isColumnVisible={isColumnVisible}
               onToggleSelected={onToggleSelected}

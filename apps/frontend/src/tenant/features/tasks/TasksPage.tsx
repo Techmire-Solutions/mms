@@ -16,7 +16,7 @@ import { useDirectoryTrashState } from "@/hooks/useDirectoryTrashState";
 import { useWorkSelection } from "@/hooks/useWorkSelection";
 import { useTranslation } from "@/hooks/useTranslation";
 import { notify } from "@/lib/notify";
-import { useModulePermissions } from "@/tenant/hooks/usePermissions";
+import { useModulePermissions, usePermissions } from "@/tenant/hooks/usePermissions";
 import {
   useTasks,
   useTaskMetrics,
@@ -43,8 +43,10 @@ export default function TasksPage(): React.JSX.Element {
   const { selectedIds, toggleSelected, toggleSelectAll, clearSelection } =
     useWorkSelection<string>();
 
+  const { can } = usePermissions();
   const { canRead, canWrite, canDelete, canEditSetup, canViewSetup } =
     useModulePermissions(TASKS_MODULE_MANIFEST);
+  const canComplete = canWrite || can("tasks.complete");
 
   const { handleExport, isExporting } = useGenericModuleExport({
     path: "/api/tasks/export/csv",
@@ -166,6 +168,7 @@ export default function TasksPage(): React.JSX.Element {
                 tasks={tasks}
                 isLoading={tasksLoading}
                 canWrite={canWrite && !viewingDeleted}
+                canComplete={canComplete && !viewingDeleted}
                 canDelete={canDelete}
                 viewingDeleted={viewingDeleted}
                 selectedIds={selectedIds}

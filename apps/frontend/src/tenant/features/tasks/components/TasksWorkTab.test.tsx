@@ -6,6 +6,28 @@ import { TasksWorkTab } from "./TasksWorkTab";
 
 const viewModeState = { viewMode: "table" as "table" | "cards" };
 
+const mockBulkDelete = vi.fn();
+const mockBulkRestore = vi.fn();
+
+vi.mock("@/tenant/hooks/collections/tasks", () => ({
+  useBulkDeleteTasks: () => ({
+    mutate: mockBulkDelete,
+    isPending: false,
+  }),
+  useBulkRestoreTasks: () => ({
+    mutate: mockBulkRestore,
+    isPending: false,
+  }),
+}));
+
+vi.mock("@/lib/notify", () => ({
+  notify: {
+    archivedWithUndo: vi.fn(),
+    success: vi.fn(),
+    error: vi.fn(),
+  },
+}));
+
 vi.mock("@/hooks/useTranslation", () => ({
   useTranslation: () => ({
     t: (key: string, params?: { count?: number }) =>
@@ -129,5 +151,10 @@ describe("TasksWorkTab", () => {
     const html = renderToStaticMarkup(<TasksWorkTab {...baseProps} />);
     expect(html).toContain("tasks-directory-cards");
     expect(html).toContain("Review Midterm Exams");
+  });
+
+  it("renders bulk action bar when items are selected", () => {
+    const html = renderToStaticMarkup(<TasksWorkTab {...baseProps} selectedIds={[mockTask.id]} />);
+    expect(html).toContain("tasks.selectedCount:1");
   });
 });
