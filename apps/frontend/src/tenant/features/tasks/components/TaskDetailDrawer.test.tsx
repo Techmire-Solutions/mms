@@ -23,7 +23,15 @@ const mockActiveTask: TaskRecord = {
   parentTaskId: null,
   createdById: "u-admin",
   creatorName: "Principal",
-  assignees: [{ id: "a-1", taskId: "task-active-1", facultyId: "f-1", userId: "u-1", facultyName: "Dr. Zaid" }],
+  assignees: [
+    {
+      id: "a-1",
+      taskId: "task-active-1",
+      facultyId: "f-1",
+      userId: "u-1",
+      facultyName: "Dr. Zaid",
+    },
+  ],
   createdAt: "2026-08-01T00:00:00.000Z",
   updatedAt: "2026-08-01T00:00:00.000Z",
   deletedAt: null,
@@ -55,12 +63,7 @@ describe("TaskDetailDrawer", () => {
   it("renders null when task is null", () => {
     act(() => {
       root.render(
-        <TaskDetailDrawer
-          task={null}
-          canWrite={true}
-          canDelete={true}
-          onClose={vi.fn()}
-        />,
+        <TaskDetailDrawer task={null} canWrite={true} canDelete={true} onClose={vi.fn()} />,
       );
     });
 

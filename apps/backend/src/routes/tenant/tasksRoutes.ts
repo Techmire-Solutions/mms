@@ -116,9 +116,11 @@ export default async function tasksRoutes(
     }
     const parsed = taskInsertSchema.safeParse(request.body);
     if (!parsed.success) {
-      return reply
-        .status(400)
-        .send({ type: "validation_error", message: "Invalid payload", errors: parsed.error.issues });
+      return reply.status(400).send({
+        type: "validation_error",
+        message: "Invalid payload",
+        errors: parsed.error.issues,
+      });
     }
 
     if (parsed.data.assignees.length && !(await canPerformTaskAction(request, "tasks.assign"))) {
@@ -149,9 +151,11 @@ export default async function tasksRoutes(
     }
     const parsed = taskUpdateSchema.safeParse(request.body);
     if (!parsed.success) {
-      return reply
-        .status(400)
-        .send({ type: "validation_error", message: "Invalid payload", errors: parsed.error.issues });
+      return reply.status(400).send({
+        type: "validation_error",
+        message: "Invalid payload",
+        errors: parsed.error.issues,
+      });
     }
 
     if (
@@ -189,9 +193,11 @@ export default async function tasksRoutes(
     }
     const parsed = taskStatusUpdateSchema.safeParse(request.body);
     if (!parsed.success) {
-      return reply
-        .status(400)
-        .send({ type: "validation_error", message: "Invalid payload", errors: parsed.error.issues });
+      return reply.status(400).send({
+        type: "validation_error",
+        message: "Invalid payload",
+        errors: parsed.error.issues,
+      });
     }
     const tenant = String(request.tenant?.id);
     const previous = await findTaskById(tenant, request.params.id);

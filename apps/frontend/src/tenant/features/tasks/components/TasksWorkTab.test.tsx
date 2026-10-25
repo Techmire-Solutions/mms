@@ -154,9 +154,7 @@ describe("TasksWorkTab", () => {
   });
 
   it("renders bulk action bar when items are selected", () => {
-    const html = renderToStaticMarkup(
-      <TasksWorkTab {...baseProps} selectedIds={[mockTask.id]} />,
-    );
+    const html = renderToStaticMarkup(<TasksWorkTab {...baseProps} selectedIds={[mockTask.id]} />);
     expect(html).toContain("tasks.selectedCount:1");
   });
 });
