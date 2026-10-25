@@ -1,6 +1,11 @@
 import type React from "react";
 import { ArrowLeftRight } from "lucide-react";
-import { EXCHANGE_RATE_TYPES, formatDate, type ExchangeRateRecord } from "@mms/shared";
+import {
+  ESTIMATED_RATE_SOURCE,
+  EXCHANGE_RATE_TYPES,
+  formatDate,
+  type ExchangeRateRecord,
+} from "@mms/shared";
 import { DatePicker } from "@/components/app/DatePicker";
 import { EmptyState } from "@/components/app/EmptyState";
 import { ErrorState } from "@/components/app/ErrorState";
@@ -47,6 +52,11 @@ export function AccountingSettingsExchangeRatesSection({
       render: (row) => (
         <span className="font-mono">
           1 {row.fromCurrency} = {row.rate} {row.toCurrency}
+          {row.source === ESTIMATED_RATE_SOURCE && (
+            <span className="ms-2 rounded-sm bg-warning/10 px-1.5 py-0.5 font-sans text-3xs font-semibold text-warning">
+              {t("accounting.settings.fx.rates.estimate")}
+            </span>
+          )}
         </span>
       ),
     },

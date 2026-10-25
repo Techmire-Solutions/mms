@@ -1,6 +1,7 @@
 import { initContract } from "@ts-rest/core";
 import { z } from "zod";
 import { fxRevaluationRequestSchema } from "../finance/accountingFxRevaluation.js";
+import { currencyExchangeabilityPutSchema } from "../finance/accountingFxExchangeability.js";
 import {
   accountingCurrencySettingsPutSchema,
   exchangeRateListQuerySchema,
@@ -51,6 +52,19 @@ export const accountingFxContract = c.router({
     query: exchangeRateLookupQuerySchema,
     responses: { 200: ok, 400: errorResponse, 403: errorResponse, 404: errorResponse },
     summary: "Rate in force on a date (latest on or before it)",
+  },
+  listExchangeability: {
+    method: "GET",
+    path: "/api/accounting/currency-exchangeability",
+    responses: { 200: ok, 403: errorResponse },
+    summary: "Currencies assessed as not exchangeable (IAS 21)",
+  },
+  putExchangeability: {
+    method: "PUT",
+    path: "/api/accounting/currency-exchangeability",
+    body: currencyExchangeabilityPutSchema,
+    responses: { 200: ok, 400: errorResponse, 403: errorResponse },
+    summary: "Replace the non-exchangeable currency assessments",
   },
   listFxRevaluations: {
     method: "GET",

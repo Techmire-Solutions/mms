@@ -11,6 +11,7 @@ import { SETUP_SECTION_CARD_CLASS } from "@/components/ui/formStyles";
 import { useTranslation } from "@/hooks/useTranslation";
 import { useAccountingFxSettingsDraft } from "@/tenant/features/accounting/hooks/useAccountingFxSettingsDraft";
 import { AccountingSettingsExchangeRatesSection } from "./AccountingSettingsExchangeRatesSection";
+import { AccountingSettingsExchangeabilitySection } from "./AccountingSettingsExchangeabilitySection";
 
 interface AccountingSettingsFxSectionProps {
   canEditSetup: boolean;
@@ -124,6 +125,11 @@ export function AccountingSettingsFxSection({
           )}
         </>
       )}
+
+      <AccountingSettingsExchangeabilitySection
+        enabledCurrencies={fx.draft.enabledCurrencies}
+        canEditSetup={canEditSetup}
+      />
 
       <AccountingSettingsExchangeRatesSection
         functionalCurrency={fx.draft.functionalCurrency}

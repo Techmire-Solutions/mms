@@ -9,6 +9,10 @@ import {
   lookupExchangeRate,
   upsertExchangeRates,
 } from "../../db/repositories/accountingExchangeRatesRepository.js";
+import {
+  listCurrencyExchangeability,
+  saveCurrencyExchangeability,
+} from "../../db/repositories/accountingCurrencyExchangeabilityRepository.js";
 
 /** Drizzle-backed implementation of {@link AccountingFxRepository}. */
 export const accountingFxRepository: AccountingFxRepository = {
@@ -18,4 +22,6 @@ export const accountingFxRepository: AccountingFxRepository = {
   upsertExchangeRates,
   lookupExchangeRate,
   findFxRoundingAccountId,
+  listExchangeability: listCurrencyExchangeability,
+  saveExchangeability: saveCurrencyExchangeability,
 };

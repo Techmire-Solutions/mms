@@ -1,6 +1,7 @@
 import { randomUUID } from "node:crypto";
 import { and, desc, eq, gte, inArray, lte, sql } from "drizzle-orm";
 import {
+  ESTIMATED_RATE_SOURCE,
   crossExchangeRate,
   invertExchangeRate,
   type ExchangeRateListQuery,
@@ -13,6 +14,13 @@ import {
 import { accountingExchangeRates, fxReferenceRates } from "../schema.js";
 import { withTenant, withTenantRead, type TenantTransaction } from "../tenant-context.js";
 import { canonicalStoredRate } from "./repositoryFxMappers.js";
+import { nonExchangeableSinceInTx } from "./accountingCurrencyExchangeabilityRepository.js";
+
+/** True when `currency` is assessed as not exchangeable on `date` (IAS 21, 2025 amendment). */
+const isNonExchangeableOn = (since: ReadonlyMap<string, string>, currency: string, date: string) => {
+  const assessedOn = since.get(currency);
+  return assessedOn !== undefined && date >= assessedOn;
+};
 
 /** Feed rates are daily spot fixings, so they can only answer these rate types. */
 const FEED_RATE_TYPES: readonly ExchangeRateType[] = ["SPOT", "CLOSING"];
@@ -71,6 +79,7 @@ export async function upsertExchangeRates(
 ): Promise<ExchangeRateRecord[]> {
   const subdomain = tenant.trim().toLowerCase();
   return withTenant(subdomain, async (tx) => {
+    const since = await nonExchangeableSinceInTx(tx, subdomain);
     const rows = await tx
       .insert(accountingExchangeRates)
       .values(
@@ -82,7 +91,12 @@ export async function upsertExchangeRates(
           rateDate: item.rateDate,
           rateType: item.rateType,
           rate: item.rate,
-          source: "manual",
+          // Rates for a non-exchangeable currency are estimates (IAS 21.19A).
+          source:
+            isNonExchangeableOn(since, item.fromCurrency, item.rateDate) ||
+            isNonExchangeableOn(since, item.toCurrency, item.rateDate)
+              ? ESTIMATED_RATE_SOURCE
+              : "manual",
           overrideReason: item.overrideReason ?? "",
           createdBy: userId,
         })),
@@ -116,7 +130,11 @@ async function latestTenantRate(
   query: ExchangeRateLookupQuery,
 ) {
   const [row] = await tx
-    .select({ rate: accountingExchangeRates.rate, rateDate: accountingExchangeRates.rateDate })
+    .select({
+      rate: accountingExchangeRates.rate,
+      rateDate: accountingExchangeRates.rateDate,
+      source: accountingExchangeRates.source,
+    })
     .from(accountingExchangeRates)
     .where(
       and(
@@ -129,7 +147,9 @@ async function latestTenantRate(
     )
     .orderBy(desc(accountingExchangeRates.rateDate))
     .limit(1);
-  return row ? { rate: canonicalStoredRate(row.rate), rateDate: row.rateDate } : null;
+  return row
+    ? { rate: canonicalStoredRate(row.rate), rateDate: row.rateDate, estimated: row.source === ESTIMATED_RATE_SOURCE }
+    : null;
 }
 
 async function feedRate(tx: TenantTransaction, query: ExchangeRateLookupQuery) {
@@ -182,17 +202,31 @@ export async function lookupExchangeRate(
   }
   return withTenantRead(subdomain, async (tx) => {
     const direct = await latestTenantRate(tx, subdomain, fromCurrency, toCurrency, query);
-    if (direct) return { fromCurrency, toCurrency, rateType, source: "manual", ...direct };
+    if (direct) {
+      return {
+        fromCurrency,
+        toCurrency,
+        rateType,
+        source: direct.estimated ? ESTIMATED_RATE_SOURCE : "manual",
+        rate: direct.rate,
+        rateDate: direct.rateDate,
+      };
+    }
     const inverse = await latestTenantRate(tx, subdomain, toCurrency, fromCurrency, query);
     if (inverse) {
       return {
         fromCurrency,
         toCurrency,
         rateType,
-        source: "manual:inverse",
+        source: inverse.estimated ? `${ESTIMATED_RATE_SOURCE}:inverse` : "manual:inverse",
         rate: invertExchangeRate(inverse.rate),
         rateDate: inverse.rateDate,
       };
+    }
+    // A non-exchangeable currency has no observable market rate: never fall back to the feed.
+    const since = await nonExchangeableSinceInTx(tx, subdomain);
+    if (isNonExchangeableOn(since, fromCurrency, query.date) || isNonExchangeableOn(since, toCurrency, query.date)) {
+      return null;
     }
     const feed = await feedRate(tx, query);
     return feed ? { fromCurrency, toCurrency, rateType, ...feed } : null;

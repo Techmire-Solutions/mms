@@ -2,6 +2,7 @@ import type { FastifyPluginAsync } from "fastify";
 import {
   ACCOUNTING_MODULE_MANIFEST,
   accountingCurrencySettingsPutSchema,
+  currencyExchangeabilityPutSchema,
   exchangeRateListQuerySchema,
   exchangeRateLookupQuerySchema,
   exchangeRatePutBodySchema,
@@ -13,7 +14,9 @@ import { parseRequest, replyValidationError } from "../../../lib/zodRequest.js";
 import { withTenant } from "../../../db/tenant-context.js";
 import {
   getCurrencySettings,
+  listExchangeability,
   listExchangeRates,
+  updateExchangeability,
   lookupExchangeRate,
   updateCurrencySettings,
   upsertExchangeRates,
@@ -60,6 +63,42 @@ export const accountingExchangeRateRoutes: FastifyPluginAsync = async (fastify) 
       return (
         sendIfHttpDomainError(reply, error) ??
         sendDatabaseError(reply, "Failed to save currency settings", error)
+      );
+    }
+  });
+
+  fastify.get("/currency-exchangeability", async (request, reply) => {
+    const user = request.user as User;
+    if (!canReadCollection(user, COLLECTION)) return sendForbidden(reply);
+    const tenant = String(request.tenant?.id);
+    try {
+      const currencies = await withTenant(tenant, () => listExchangeability(deps, tenant), {
+        readOnly: true,
+      });
+      return reply.send({ currencies });
+    } catch (error) {
+      return (
+        sendIfHttpDomainError(reply, error) ??
+        sendDatabaseError(reply, "Failed to load exchangeability assessments", error)
+      );
+    }
+  });
+
+  fastify.put("/currency-exchangeability", { config: SETUP_WRITE }, async (request, reply) => {
+    const user = request.user as User;
+    if (!canWriteCollection(user, COLLECTION)) return sendForbidden(reply);
+    const parsed = parseRequest(currencyExchangeabilityPutSchema, request.body);
+    if (!parsed.ok) return replyValidationError(reply, parsed.message);
+    const tenant = String(request.tenant?.id);
+    try {
+      const currencies = await withTenant(tenant, () =>
+        updateExchangeability(deps, { tenant, userId: String(user.id) }, parsed.data),
+      );
+      return reply.send({ currencies });
+    } catch (error) {
+      return (
+        sendIfHttpDomainError(reply, error) ??
+        sendDatabaseError(reply, "Failed to save exchangeability assessments", error)
       );
     }
   });

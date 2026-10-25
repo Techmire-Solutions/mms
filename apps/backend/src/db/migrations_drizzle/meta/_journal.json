@@ -1352,6 +1352,13 @@
       "when": 1792920500000,
       "tag": "0192_platform_consolidation_groups",
       "breakpoints": true
+    },
+    {
+      "idx": 193,
+      "version": "7",
+      "when": 1792920600000,
+      "tag": "0193_accounting_currency_exchangeability",
+      "breakpoints": true
     }
   ]
 }

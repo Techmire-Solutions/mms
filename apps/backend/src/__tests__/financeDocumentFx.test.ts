@@ -19,6 +19,8 @@ function makeFx(rate: string | null = "285"): AccountingFxRepository {
         : null,
     ),
     findFxRoundingAccountId: vi.fn(),
+    listExchangeability: vi.fn().mockResolvedValue([]),
+    saveExchangeability: vi.fn(),
   };
 }
 

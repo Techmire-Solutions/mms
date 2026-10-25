@@ -10,6 +10,7 @@ export * from "../finance/accountingDefaultChart.js";
 export * from "../finance/accountingFxAccounts.js";
 export * from "../finance/accountingFxLines.js";
 export * from "../finance/accountingFxSettings.js";
+export * from "../finance/accountingFxExchangeability.js";
 export * from "../finance/accountingFxRevaluation.js";
 export * from "../finance/consolidationTranslation.js";
 export * from "../finance/consolidationGroups.js";

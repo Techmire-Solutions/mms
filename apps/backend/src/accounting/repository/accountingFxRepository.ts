@@ -1,5 +1,7 @@
 import type {
   AccountingCurrencySettings,
+  CurrencyExchangeability,
+  CurrencyExchangeabilityPut,
   AccountingCurrencySettingsPut,
   ExchangeRateListQuery,
   ExchangeRateLookupQuery,
@@ -28,4 +30,11 @@ export interface AccountingFxRepository {
     query: ExchangeRateLookupQuery,
   ): Promise<ExchangeRateLookupResult | null>;
   findFxRoundingAccountId(tenant: string): Promise<string | null>;
+  /** IAS 21 (2025): currencies assessed as not exchangeable. */
+  listExchangeability(tenant: string): Promise<CurrencyExchangeability[]>;
+  saveExchangeability(
+    tenant: string,
+    input: CurrencyExchangeabilityPut,
+    userId: string | null,
+  ): Promise<CurrencyExchangeability[]>;
 }

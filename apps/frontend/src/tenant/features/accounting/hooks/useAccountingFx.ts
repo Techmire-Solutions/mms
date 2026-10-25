@@ -2,6 +2,8 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import type {
   AccountingCurrencySettings,
   AccountingCurrencySettingsPut,
+  CurrencyExchangeability,
+  CurrencyExchangeabilityPut,
   ExchangeRateListQuery,
   ExchangeRateLookupResult,
   ExchangeRatePutItem,
@@ -111,5 +113,38 @@ export function useExchangeRateLookup(input: ExchangeRateLookupInput | null) {
       return (response.body as { rate: ExchangeRateLookupResult }).rate;
     },
     enabled: input !== null && input.fromCurrency !== input.toCurrency,
+  });
+}
+
+const EXCHANGEABILITY_KEY = [...FX_KEY, "exchangeability"] as const;
+
+/** Currencies assessed as not exchangeable (IAS 21, 2025 amendment). */
+export function useCurrencyExchangeability(enabled = true) {
+  return useQuery({
+    queryKey: EXCHANGEABILITY_KEY,
+    queryFn: async ({ signal }) => {
+      const response = await apiContract.accountingFx.listExchangeability({
+        signal,
+        fetchOptions: { signal },
+      });
+      assertOk(response, "Failed to load exchangeability assessments");
+      return (response.body as { currencies: CurrencyExchangeability[] }).currencies;
+    },
+    enabled,
+  });
+}
+
+export function useSaveCurrencyExchangeability() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async (body: CurrencyExchangeabilityPut) => {
+      const response = await apiContract.accountingFx.putExchangeability({ body });
+      assertOk(response, "Failed to save exchangeability assessments");
+      return (response.body as { currencies: CurrencyExchangeability[] }).currencies;
+    },
+    onSuccess: (currencies) => {
+      queryClient.setQueryData(EXCHANGEABILITY_KEY, currencies);
+      void queryClient.invalidateQueries({ queryKey: LOOKUP_KEY });
+    },
   });
 }

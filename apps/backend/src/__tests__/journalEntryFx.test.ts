@@ -24,6 +24,8 @@ function makeFx(overrides: Partial<AccountingFxRepository> = {}): AccountingFxRe
       source: "manual",
     }),
     findFxRoundingAccountId: vi.fn().mockResolvedValue("fx-round"),
+    listExchangeability: vi.fn().mockResolvedValue([]),
+    saveExchangeability: vi.fn(),
     ...overrides,
   };
 }
