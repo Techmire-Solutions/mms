@@ -15,6 +15,10 @@ export const JOURNAL_SOURCE_TYPES = [
   "fx_reval_reversal",
   "ias29_restate",
   "ias29_reversal",
+  "hedge_val",
+  "hedge_val_rev",
+  "hedge_settle",
+  "hedge_reclass",
 ] as const;
 
 export type JournalSourceType = (typeof JOURNAL_SOURCE_TYPES)[number];

@@ -4,6 +4,7 @@ import { AccountingSettingsCurrencySection } from "./AccountingSettingsCurrencyS
 import { AccountingSettingsFxSection } from "./AccountingSettingsFxSection";
 import { AccountingSettingsFxRevaluationSection } from "./AccountingSettingsFxRevaluationSection";
 import { AccountingSettingsHyperinflationSection } from "./AccountingSettingsHyperinflationSection";
+import { AccountingSettingsHedgesSection } from "./AccountingSettingsHedgesSection";
 import { AccountingSettingsFiscalYearsSection } from "./AccountingSettingsFiscalYearsSection";
 import { AccountingSettingsRulesSection } from "./AccountingSettingsRulesSection";
 import { AccountingSettingsTemplatesSection } from "./AccountingSettingsTemplatesSection";
@@ -76,6 +77,8 @@ export function AccountingSettingsPreferences({
       <AccountingSettingsFxRevaluationSection canEditSetup={canEditSetup} />
 
       <AccountingSettingsHyperinflationSection accounts={accounts} canEditSetup={canEditSetup} />
+
+      <AccountingSettingsHedgesSection accounts={accounts} canEditSetup={canEditSetup} />
 
       <AccountingSettingsFiscalYearsSection
         fiscalYears={fiscalYears}

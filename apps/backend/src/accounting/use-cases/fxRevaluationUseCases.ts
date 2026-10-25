@@ -54,6 +54,21 @@ export function nextCalendarDay(date: string): string {
  * SPOT rate of that day (IAS 21 defines closing as the spot rate at the end of
  * the period). Currencies with neither are reported, never assumed to be 1.
  */
+/** CLOSING rate on or before `date`, else that day's SPOT rate; null when neither exists. */
+export async function lookupClosingRate(
+  fx: Pick<AccountingFxRepository, "lookupExchangeRate">,
+  tenant: string,
+  currency: string,
+  functional: string,
+  date: string,
+): Promise<string | null> {
+  for (const rateType of ["CLOSING", "SPOT"] as const) {
+    const found = await fx.lookupExchangeRate(tenant, { fromCurrency: currency, toCurrency: functional, date, rateType });
+    if (found) return found.rate;
+  }
+  return null;
+}
+
 async function closingRates(
   deps: FxRevaluationDeps,
   tenant: string,
@@ -63,18 +78,8 @@ async function closingRates(
 ): Promise<Map<string, string>> {
   const rates = new Map<string, string>();
   for (const currency of currencies) {
-    for (const rateType of ["CLOSING", "SPOT"] as const) {
-      const found = await deps.fx.lookupExchangeRate(tenant, {
-        fromCurrency: currency,
-        toCurrency: functional,
-        date,
-        rateType,
-      });
-      if (found) {
-        rates.set(currency, found.rate);
-        break;
-      }
-    }
+    const rate = await lookupClosingRate(deps.fx, tenant, currency, functional, date);
+    if (rate) rates.set(currency, rate);
   }
   return rates;
 }

@@ -33,6 +33,10 @@ export const NON_REVERSIBLE_JOURNAL_SOURCES = [
   "fx_reval_reversal",
   "ias29_restate",
   "ias29_reversal",
+  "hedge_val",
+  "hedge_val_rev",
+  "hedge_settle",
+  "hedge_reclass",
 ] as const;
 
 /** True when a journal of this source type may be reversed through the Reverse Entry action. */

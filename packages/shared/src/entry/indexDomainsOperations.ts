@@ -14,6 +14,8 @@ export * from "../finance/accountingFxExchangeability.js";
 export * from "../finance/accountingFxRevaluation.js";
 export * from "../finance/accountingHyperinflation.js";
 export * from "../finance/accountingHyperinflationSchemas.js";
+export * from "../finance/accountingHedgeSchemas.js";
+export * from "../finance/accountingHedges.js";
 export * from "../finance/consolidationTranslation.js";
 export * from "../finance/consolidationGroups.js";
 export * from "../finance/accountingJournalReversal.js";

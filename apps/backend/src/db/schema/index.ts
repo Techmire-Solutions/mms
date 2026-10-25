@@ -38,3 +38,4 @@ export * from "./softDeleteSchema.js";
 export * from "./outboxEvents.js";
 export * from "./tasksTables.js";
 export * from "./accountingHyperinflation.js";
+export * from "./accountingHedges.js";

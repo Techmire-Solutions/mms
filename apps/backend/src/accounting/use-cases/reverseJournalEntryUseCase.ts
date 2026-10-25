@@ -66,6 +66,10 @@ const SOURCE_REFUSALS: Record<(typeof NON_REVERSIBLE_JOURNAL_SOURCES)[number], s
   fx_reval_reversal: "This entry is the automatic reversal of an FX revaluation",
   ias29_restate: "IAS 29 restatements reverse automatically on the next day",
   ias29_reversal: "This entry is the automatic reversal of an IAS 29 restatement",
+  hedge_val: "Hedge valuations reverse automatically on the next day",
+  hedge_val_rev: "This entry is the automatic reversal of a hedge valuation",
+  hedge_settle: "Hedge settlements are recorded from the hedge relationship",
+  hedge_reclass: "Hedge reserve reclassifications are recorded from the hedge relationship",
 };
 
 function isNonReversibleSource(
