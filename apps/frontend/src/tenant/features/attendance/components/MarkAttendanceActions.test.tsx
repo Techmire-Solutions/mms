@@ -7,7 +7,8 @@ vi.mock("@/hooks/useTranslation", () => ({
   useTranslation: () => ({
     t: (key: string, params?: Record<string, string | number>) => {
       if (key === "attendance.mark.summary") return `${params?.shown} of ${params?.total} students`;
-      if (key === "attendance.mark.markedProgress") return `${params?.marked}/${params?.total} marked`;
+      if (key === "attendance.mark.markedProgress")
+        return `${params?.marked}/${params?.total} marked`;
       return key;
     },
   }),

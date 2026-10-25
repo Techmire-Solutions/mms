@@ -31,9 +31,7 @@ export function useMarkAttendanceKeyboardShortcuts({
       const target = e.target as HTMLElement | null;
       const isInput =
         target &&
-        (target.tagName === "INPUT" ||
-          target.tagName === "TEXTAREA" ||
-          target.isContentEditable);
+        (target.tagName === "INPUT" || target.tagName === "TEXTAREA" || target.isContentEditable);
 
       if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === "s") {
         e.preventDefault();

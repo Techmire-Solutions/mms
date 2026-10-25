@@ -2,7 +2,10 @@ import { useMemo } from "react";
 import { ErrorBoundary } from "@/components/app/ErrorBoundary";
 import { FilterChips } from "@/components/app/FilterChips";
 import { ModuleTierMotion } from "@/components/app/ModuleTierMotion";
-import { CompactSegmentedControl, type CompactSegmentedOption } from "@/components/app/CompactSegmentedControl";
+import {
+  CompactSegmentedControl,
+  type CompactSegmentedOption,
+} from "@/components/app/CompactSegmentedControl";
 import { STUDENTS_QUICK_FILTER_OPTIONS, type StudentsQuickFilter } from "@mms/shared";
 import { useTranslation } from "@/hooks/useTranslation";
 import { useStudentsWorkFilterChips } from "@/tenant/features/students/hooks/useStudentsWorkFilterChips";

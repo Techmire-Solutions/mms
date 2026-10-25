@@ -41,9 +41,7 @@ describe("SessionCapacityPill Component", () => {
   });
 
   it("renders muted dot class when capacity is 0", () => {
-    const html = renderToStaticMarkup(
-      <SessionCapacityPill totalEnrolled={5} totalCapacity={0} />,
-    );
+    const html = renderToStaticMarkup(<SessionCapacityPill totalEnrolled={5} totalCapacity={0} />);
     expect(html).toContain("5");
     expect(html).toContain("bg-muted-foreground/60");
   });

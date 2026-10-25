@@ -64,8 +64,7 @@ export function useStudentFormLinkedData({
   const excludeIds = (() =>
     buildStudentContactExcludeIds(linkedStudentContactIds, linkedContact))();
 
-  const isGrAutoAssigned =
-    autoGenerateId && isStudentCreate(student) && !isGrManuallyEdited;
+  const isGrAutoAssigned = autoGenerateId && isStudentCreate(student) && !isGrManuallyEdited;
 
   return {
     linkedContact,
