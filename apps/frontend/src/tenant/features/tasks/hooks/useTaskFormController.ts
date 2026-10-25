@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo } from "react";
+import { useState, useMemo, useCallback } from "react";
 import { type TaskRecord, type TaskInsert, type TaskPriority, type TaskStatus } from "@mms/shared";
 import { useTranslation } from "@/hooks/useTranslation";
 import { useEligibleTaskAssignees, useTasks } from "@/tenant/hooks/collections/tasks";
@@ -53,27 +53,30 @@ export function useTaskFormController({
   const { data: eligibleList = [] } = useEligibleTaskAssignees({ enabled: open });
   const { data: parentCandidates } = useTasks({ limit: 100 }, { enabled: open });
 
-  useEffect(() => {
-    if (initialData) {
-      setTitle(initialData.title);
-      setDescription(initialData.description ?? "");
-      setPriority(initialData.priority);
-      setStatus(initialData.status);
-      setStartDate(toDateOnly(initialData.startDate));
+  const [prevInitialData, setPrevInitialData] = useState(initialData);
+  const [prevOpen, setPrevOpen] = useState(open);
+
+  const resetForm = useCallback((data: TaskRecord | null | undefined) => {
+    if (data) {
+      setTitle(data.title);
+      setDescription(data.description ?? "");
+      setPriority(data.priority);
+      setStatus(data.status);
+      setStartDate(toDateOnly(data.startDate));
       setDueAt(
-        initialData.dueAt
-          ? initialData.dueAt instanceof Date
-            ? initialData.dueAt.toISOString()
-            : String(initialData.dueAt)
+        data.dueAt
+          ? data.dueAt instanceof Date
+            ? data.dueAt.toISOString()
+            : String(data.dueAt)
           : null,
       );
-      setParentTaskId(initialData.parentTaskId ?? null);
-      const current =
-        initialData.assignees?.map((a) => ({
+      setParentTaskId(data.parentTaskId ?? null);
+      setSelectedAssignees(
+        data.assignees?.map((a) => ({
           facultyId: a.facultyId,
           name: a.facultyName || t("tasks.assigneeFallback"),
-        })) ?? [];
-      setSelectedAssignees(current);
+        })) ?? [],
+      );
     } else {
       setTitle("");
       setDescription("");
@@ -85,7 +88,13 @@ export function useTaskFormController({
       setSelectedAssignees([]);
     }
     setError(null);
-  }, [initialData, open, t]);
+  }, [t]);
+
+  if (prevInitialData !== initialData || prevOpen !== open) {
+    setPrevInitialData(initialData);
+    setPrevOpen(open);
+    resetForm(initialData);
+  }
 
   const handleAddAssignee = (facultyId: string) => {
     if (!facultyId) return;
@@ -153,11 +162,13 @@ export function useTaskFormController({
       );
     }
 
-    const initialDueAt = initialData.dueAt
-      ? initialData.dueAt instanceof Date
-        ? initialData.dueAt.toISOString()
-        : String(initialData.dueAt)
-      : null;
+    const normalizeDueTimestamp = (val: string | Date | null | undefined): number | null => {
+      if (!val) return null;
+      const ms = new Date(val).getTime();
+      return Number.isNaN(ms) ? null : ms;
+    };
+    const initialDueMs = normalizeDueTimestamp(initialData.dueAt);
+    const currentDueMs = normalizeDueTimestamp(dueAt);
     const initialAssigneeIds = (initialData.assignees ?? [])
       .map((a) => a.facultyId)
       .sort()
@@ -173,7 +184,7 @@ export function useTaskFormController({
       priority !== initialData.priority ||
       status !== initialData.status ||
       (startDate || null) !== toDateOnly(initialData.startDate) ||
-      (dueAt || null) !== (initialDueAt || null) ||
+      initialDueMs !== currentDueMs ||
       (parentTaskId || null) !== (initialData.parentTaskId || null) ||
       initialAssigneeIds !== currentAssigneeIds
     );

@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import { Save } from "lucide-react";
 import {
   type TaskSettings,
@@ -36,18 +36,16 @@ export function TasksSetupTab({
   const { t } = useTranslation();
   const { data: serverSettings, isLoading } = useTaskSettings();
   const updateSettingsMutation = useUpdateTaskSettings();
-  const [settings, setSettings] = useState<TaskSettings>(initialSettings);
+  const [draft, setDraft] = useState<TaskSettings | null>(null);
   const baseline = serverSettings ?? initialSettings;
-  const dirty = !settingsEqual(settings, baseline);
-
-  useEffect(() => {
-    if (serverSettings) setSettings(serverSettings);
-  }, [serverSettings]);
+  const settings = draft ?? baseline;
+  const dirty = draft !== null && !settingsEqual(draft, baseline);
 
   const handleSave = async () => {
     if (!dirty) return;
     try {
       await updateSettingsMutation.mutateAsync(settings);
+      setDraft(null);
       notify.success(t("tasks.setup.saved"));
     } catch (err) {
       notify.error(err instanceof Error ? err.message : t("tasks.setup.saveFailed"));
@@ -66,7 +64,7 @@ export function TasksSetupTab({
             <FormSelect
               id="tasks-delegation-scope"
               value={settings.delegationScope}
-              onChange={(v) => setSettings({ ...settings, delegationScope: v as DelegationScope })}
+              onChange={(v) => setDraft({ ...settings, delegationScope: v as DelegationScope })}
               disabled={!canEditSetup || isLoading}
               options={DELEGATION_SCOPES.map((scope) => ({
                 value: scope,
@@ -86,9 +84,7 @@ export function TasksSetupTab({
             label={t("tasks.setup.allowSelfAssignment")}
             description={t("tasks.setup.allowSelfAssignmentDesc")}
             checked={settings.allowSelfAssignment}
-            onCheckedChange={(checked) =>
-              setSettings({ ...settings, allowSelfAssignment: checked })
-            }
+            onCheckedChange={(checked) => setDraft({ ...settings, allowSelfAssignment: checked })}
             disabled={!canEditSetup || isLoading}
           />
 
@@ -98,7 +94,7 @@ export function TasksSetupTab({
             label={t("tasks.setup.notifyOnAssignment")}
             description={t("tasks.setup.notifyOnAssignmentDesc")}
             checked={settings.notifyOnAssignment}
-            onCheckedChange={(checked) => setSettings({ ...settings, notifyOnAssignment: checked })}
+            onCheckedChange={(checked) => setDraft({ ...settings, notifyOnAssignment: checked })}
             disabled={!canEditSetup || isLoading}
           />
 
@@ -108,9 +104,7 @@ export function TasksSetupTab({
             label={t("tasks.setup.notifyOnStatusChange")}
             description={t("tasks.setup.notifyOnStatusChangeDesc")}
             checked={settings.notifyOnStatusChange}
-            onCheckedChange={(checked) =>
-              setSettings({ ...settings, notifyOnStatusChange: checked })
-            }
+            onCheckedChange={(checked) => setDraft({ ...settings, notifyOnStatusChange: checked })}
             disabled={!canEditSetup || isLoading}
           />
         </div>

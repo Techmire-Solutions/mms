@@ -29,7 +29,7 @@ export function ChannelBadge({
       as="span"
       size="sm"
       className={cn(
-        "font-black uppercase border-transparent",
+        "font-black uppercase",
         getChannelBadgeStyle(channel),
         className,
       )}

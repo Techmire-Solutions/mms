@@ -60,4 +60,39 @@ describe("DuplicateDetectionModal Component", () => {
     expect(html).toContain("contacts.duplicates.filterAll");
     expect(html).toContain("contacts.duplicates.allResolved");
   });
+
+  it("renders batch merge action when highConfidenceCount > 0 and canWrite is true", () => {
+    const html = renderToStaticMarkup(
+      <DuplicateDetectionModal
+        prefs={DEFAULT_CONTACT_PREFERENCES}
+        pairsLoading={false}
+        pairsFetching={false}
+        pairsError={false}
+        hasMore={false}
+        activePairs={[]}
+        totalPairs={2}
+        tierCounts={{ all: 2, high: 2, medium: 0, low: 0 }}
+        searchQuery=""
+        setSearchQuery={vi.fn()}
+        tierFilter="all"
+        setTierFilter={vi.fn()}
+        keepIndex={{}}
+        totalMerged={0}
+        canWrite={true}
+        highConfidenceCount={2}
+        batchMerging={false}
+        batchConfirmOpen={false}
+        setBatchConfirmOpen={vi.fn()}
+        onBatchMergeConfirm={vi.fn()}
+        onClose={vi.fn()}
+        onMergePair={vi.fn()}
+        onDismiss={vi.fn()}
+        onSelectKeep={vi.fn()}
+        onLoadMore={vi.fn()}
+        onRetry={vi.fn()}
+      />,
+    );
+
+    expect(html).toContain("contacts.duplicates.batchMergeHigh");
+  });
 });

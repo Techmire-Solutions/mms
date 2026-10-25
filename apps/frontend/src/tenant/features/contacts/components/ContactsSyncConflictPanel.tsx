@@ -31,6 +31,13 @@ export function ContactsSyncConflictPanel({
   const [conflicts, setConflicts] = useState<ContactsSyncConflict[]>(() =>
     getContactsSyncConflicts(),
   );
+  const [prevOpen, setPrevOpen] = useState(open);
+  if (prevOpen !== open) {
+    setPrevOpen(open);
+    if (open) {
+      setConflicts(getContactsSyncConflicts());
+    }
+  }
   const [retryingId, setRetryingId] = useState<string | null>(null);
   const [dismissTargetId, setDismissTargetId] = useState<string | null>(null);
 
@@ -38,11 +45,6 @@ export function ContactsSyncConflictPanel({
     setConflicts(getContactsSyncConflicts());
     refreshCounts();
   }, [refreshCounts]);
-
-  useEffect(() => {
-    if (!open) return;
-    refreshList();
-  }, [open, refreshList]);
 
   useEffect(() => {
     const handler = () => refreshList();

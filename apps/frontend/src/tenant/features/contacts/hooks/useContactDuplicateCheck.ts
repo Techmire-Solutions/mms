@@ -19,20 +19,19 @@ export function useContactDuplicateCheck({
   // actual network request.
   const deferredDraft = useDeferredValue(contactDraft);
 
+  const hasCandidateKey = Boolean(
+    open &&
+      !contactId &&
+      (deferredDraft.name?.trim() ||
+        deferredDraft.firstName?.trim() ||
+        (deferredDraft.phones && deferredDraft.phones.some((p) => p.number?.trim())) ||
+        (deferredDraft.emails && deferredDraft.emails.some((e) => e.address?.trim())) ||
+        deferredDraft.cnic?.trim()),
+  );
+  const effectiveCount = hasCandidateKey ? duplicateCount : 0;
+
   useEffect(() => {
-    if (!open || contactId) {
-      setDuplicateCount(0);
-      return;
-    }
-    const hasCandidateKey = Boolean(
-      deferredDraft.name?.trim() ||
-      deferredDraft.firstName?.trim() ||
-      (deferredDraft.phones && deferredDraft.phones.some((p) => p.number?.trim())) ||
-      (deferredDraft.emails && deferredDraft.emails.some((e) => e.address?.trim())) ||
-      deferredDraft.cnic?.trim(),
-    );
     if (!hasCandidateKey) {
-      setDuplicateCount(0);
       return;
     }
 
@@ -66,7 +65,7 @@ export function useContactDuplicateCheck({
       clearTimeout(timer);
       abortController.abort();
     };
-  }, [open, contactId, deferredDraft]);
+  }, [hasCandidateKey, deferredDraft]);
 
-  return duplicateCount;
+  return effectiveCount;
 }

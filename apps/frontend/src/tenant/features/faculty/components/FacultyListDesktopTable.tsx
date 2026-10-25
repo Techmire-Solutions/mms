@@ -17,6 +17,7 @@ import {
 } from "@/tenant/features/faculty/lib/facultyListVisibleColumns";
 import { facultyRowIdentity } from "@/tenant/features/faculty/lib/facultyFieldDisplay";
 import { renderFacultyWorkColumnValue } from "@/tenant/features/faculty/components/facultyWorkColumnCell";
+import { FacultyWorkloadPill } from "@/tenant/features/faculty/components/FacultyWorkloadPill";
 
 export type FacultyListDesktopTableProps = FacultyListContentProps;
 
@@ -95,11 +96,14 @@ export function FacultyListDesktopTable(props: FacultyListDesktopTableProps): Re
                 >
                   <span className="block truncate">{displayName}</span>
                 </Button>
-                {member.employeeId ? (
-                  <p className="text-xs text-muted-foreground truncate" title={member.employeeId}>
-                    {member.employeeId}
-                  </p>
-                ) : null}
+                <div className="flex items-center gap-1.5 flex-wrap">
+                  {member.employeeId ? (
+                    <p className="text-xs text-muted-foreground truncate" title={member.employeeId}>
+                      {member.employeeId}
+                    </p>
+                  ) : null}
+                  <FacultyWorkloadPill faculty={member} />
+                </div>
                 {showDeleted && member.deletionReason ? (
                   <p
                     className="text-xs text-muted-foreground mt-0.5 line-clamp-2"

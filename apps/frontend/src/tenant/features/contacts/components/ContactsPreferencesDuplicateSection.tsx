@@ -1,5 +1,5 @@
 import type React from "react";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { Copy } from "lucide-react";
 import type { ContactPreferences } from "@mms/shared";
 import { useTranslation } from "@/hooks/useTranslation";
@@ -36,14 +36,19 @@ export function ContactsPreferencesDuplicateSection({
   const { t } = useTranslation();
   const detectionFields = prefs.duplicateDetectionFields ?? ["name", "phone", "email", "cnic"];
 
-  const [namePrefixesDraft, setNamePrefixesDraft] = useState(() =>
-    (prefs.namePrefixesToIgnore ?? []).join(", "),
-  );
+  const [namePrefixesDraft, setNamePrefixesDraft] = useState<string | null>(null);
+  const [prevIsPrefsDirty, setPrevIsPrefsDirty] = useState(isPrefsDirty);
+  if (prevIsPrefsDirty !== isPrefsDirty) {
+    setPrevIsPrefsDirty(isPrefsDirty);
+    if (!isPrefsDirty) {
+      setNamePrefixesDraft(null);
+    }
+  }
 
-  useEffect(() => {
-    if (isPrefsDirty) return;
-    setNamePrefixesDraft((prefs.namePrefixesToIgnore ?? []).join(", "));
-  }, [prefs.namePrefixesToIgnore, isPrefsDirty]);
+  const currentPrefixesDraft =
+    isPrefsDirty && namePrefixesDraft !== null
+      ? namePrefixesDraft
+      : (prefs.namePrefixesToIgnore ?? []).join(", ");
 
   const toggleDetectionField = (fieldId: string, enabled: boolean) => {
     const next = enabled
@@ -92,7 +97,7 @@ export function ContactsPreferencesDuplicateSection({
             id="namePrefixesToIgnore"
             name="namePrefixesToIgnore"
             className={FORM_INPUT}
-            value={namePrefixesDraft}
+            value={currentPrefixesDraft}
             onChange={(e) => {
               const raw = e.target.value;
               setNamePrefixesDraft(raw);
