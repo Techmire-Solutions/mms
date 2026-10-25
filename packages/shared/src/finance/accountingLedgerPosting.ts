@@ -46,6 +46,8 @@ export interface LedgerPostingAccounts {
   cashAccountId?: string | null;
   incomeAccountId?: string | null;
   discountAccountId?: string | null;
+  fxRealizedAccountId?: string | null;
+  fxRoundingAccountId?: string | null;
 }
 
 export interface InvoicePostingInput {

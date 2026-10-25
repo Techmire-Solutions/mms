@@ -98,3 +98,22 @@ export function crossExchangeRate(baseToFrom: string, baseToTo: string): string 
     ),
   );
 }
+
+/**
+ * Display helper for forms: `amount` (a two-decimal number in `fromCurrency`)
+ * converted at `rate`, or null when the rate is not usable yet. Same-currency
+ * amounts pass through.
+ */
+export function previewConvertedAmount(
+  amount: number,
+  fromCurrency: string,
+  toCurrency: string,
+  rate: string,
+): number | null {
+  if (fromCurrency === toCurrency) return amount;
+  if (!isValidExchangeRate(rate)) return null;
+  const minor = currencyMinorUnits(fromCurrency);
+  const money = { minor: BigInt(Math.round(amount * 10 ** minor)), currency: fromCurrency };
+  const converted = convertMoney(money, rate, toCurrency);
+  return Number(converted.minor) / 10 ** currencyMinorUnits(toCurrency);
+}

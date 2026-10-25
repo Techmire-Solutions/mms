@@ -3,6 +3,7 @@ import { dedupeTrimmedIds, type Payment, type RepositoryListOptions } from "@mms
 import { financePayments } from "../schema.js";
 import { withTenant, withTenantRead } from "../tenant-context.js";
 import { buildTenantSoftDeleteConditions } from "../../services/genericRelationalService.js";
+import { canonicalStoredRate } from "./repositoryFxMappers.js";
 import { mapAuditTimestamps } from "./repositoryMappers.js";
 import { requireDbDateValue } from "../../lib/dbDate.js";
 
@@ -25,6 +26,10 @@ export function paymentRowToRecord(row: PaymentRow): Payment {
   if (row.studentName) payment.studentName = row.studentName;
   if (row.receivedByUserId) payment.receivedByUserId = row.receivedByUserId;
   if (row.receivedBy) payment.receivedBy = row.receivedBy;
+  if (row.currency) payment.currency = row.currency;
+  if (row.exchangeRate) payment.exchangeRate = canonicalStoredRate(row.exchangeRate);
+  if (row.realizedFx != null) payment.realizedFx = Number(row.realizedFx);
+  if (row.invoiceAmount != null) payment.invoiceAmount = Number(row.invoiceAmount);
 
   return payment;
 }
@@ -54,6 +59,10 @@ export async function listPaymentsByWorkspace(
         receivedByUserId: financePayments.receivedByUserId,
         receivedBy: financePayments.receivedBy,
         note: financePayments.note,
+        currency: financePayments.currency,
+        exchangeRate: financePayments.exchangeRate,
+        realizedFx: financePayments.realizedFx,
+        invoiceAmount: financePayments.invoiceAmount,
         deletedAt: financePayments.deletedAt,
         deletedBy: financePayments.deletedBy,
         deletionReason: financePayments.deletionReason,
@@ -89,6 +98,10 @@ export async function findPaymentById(tenant: string, id: string): Promise<Payme
         receivedByUserId: financePayments.receivedByUserId,
         receivedBy: financePayments.receivedBy,
         note: financePayments.note,
+        currency: financePayments.currency,
+        exchangeRate: financePayments.exchangeRate,
+        realizedFx: financePayments.realizedFx,
+        invoiceAmount: financePayments.invoiceAmount,
         deletedAt: financePayments.deletedAt,
         deletedBy: financePayments.deletedBy,
         deletionReason: financePayments.deletionReason,
@@ -137,6 +150,10 @@ export async function findPaymentsByIds(
         receivedByUserId: financePayments.receivedByUserId,
         receivedBy: financePayments.receivedBy,
         note: financePayments.note,
+        currency: financePayments.currency,
+        exchangeRate: financePayments.exchangeRate,
+        realizedFx: financePayments.realizedFx,
+        invoiceAmount: financePayments.invoiceAmount,
         deletedAt: financePayments.deletedAt,
         deletedBy: financePayments.deletedBy,
         deletionReason: financePayments.deletionReason,
@@ -169,6 +186,10 @@ export async function savePayment(tenant: string, record: Payment): Promise<void
         receivedByUserId: record.receivedByUserId ?? null,
         receivedBy: record.receivedBy ?? null,
         note: record.note ?? "",
+        currency: record.currency ?? null,
+        exchangeRate: record.exchangeRate ?? null,
+        realizedFx: record.realizedFx != null ? String(record.realizedFx) : null,
+        invoiceAmount: record.invoiceAmount != null ? String(record.invoiceAmount) : null,
         deletedAt: record.deletedAt ? new Date(record.deletedAt) : null,
         deletedBy: record.deletedBy ?? null,
         deletionReason: record.deletionReason ?? null,

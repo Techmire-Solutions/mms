@@ -25,6 +25,10 @@ export async function getPostingRules(tenant: string): Promise<PostingRules> {
         cashAccountId: accountingPostingRules.cashAccountId,
         incomeAccountId: accountingPostingRules.incomeAccountId,
         discountAccountId: accountingPostingRules.discountAccountId,
+        fxRealizedAccountId: accountingPostingRules.fxRealizedAccountId,
+        fxUnrealizedAccountId: accountingPostingRules.fxUnrealizedAccountId,
+        fxRoundingAccountId: accountingPostingRules.fxRoundingAccountId,
+        ctaAccountId: accountingPostingRules.ctaAccountId,
         updatedAt: accountingPostingRules.updatedAt,
       })
       .from(accountingPostingRules)
@@ -37,6 +41,10 @@ export async function getPostingRules(tenant: string): Promise<PostingRules> {
       cashAccountId: row.cashAccountId,
       incomeAccountId: row.incomeAccountId,
       discountAccountId: row.discountAccountId,
+      fxRealizedAccountId: row.fxRealizedAccountId,
+      fxUnrealizedAccountId: row.fxUnrealizedAccountId,
+      fxRoundingAccountId: row.fxRoundingAccountId,
+      ctaAccountId: row.ctaAccountId,
       updatedAt: row.updatedAt.toISOString(),
     };
   });
@@ -44,6 +52,13 @@ export async function getPostingRules(tenant: string): Promise<PostingRules> {
 
 export async function savePostingRules(tenant: string, rules: PostingRules): Promise<void> {
   const subdomain = tenant.trim().toLowerCase();
+  // IAS 21 accounts are written only when sent, so a client that predates them
+  // never clears accounts configured elsewhere.
+  const fxAccounts = Object.fromEntries(
+    (["fxRealizedAccountId", "fxUnrealizedAccountId", "fxRoundingAccountId", "ctaAccountId"] as const)
+      .filter((field) => rules[field] !== undefined)
+      .map((field) => [field, rules[field] ?? null]),
+  );
   await withTenant(subdomain, async (tx) => {
     await tx
       .insert(accountingPostingRules)
@@ -53,6 +68,7 @@ export async function savePostingRules(tenant: string, rules: PostingRules): Pro
         cashAccountId: rules.cashAccountId ?? null,
         incomeAccountId: rules.incomeAccountId ?? null,
         discountAccountId: rules.discountAccountId ?? null,
+        ...fxAccounts,
         updatedAt: new Date(),
       })
       .onConflictDoUpdate({
@@ -62,6 +78,7 @@ export async function savePostingRules(tenant: string, rules: PostingRules): Pro
           cashAccountId: rules.cashAccountId ?? null,
           incomeAccountId: rules.incomeAccountId ?? null,
           discountAccountId: rules.discountAccountId ?? null,
+          ...fxAccounts,
           updatedAt: new Date(),
         },
       });

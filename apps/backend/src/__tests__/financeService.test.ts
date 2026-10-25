@@ -39,6 +39,10 @@ vi.mock("../db/repositories/financeBillingRepository.js", () => ({
   replacePaymentAllocations: vi.fn().mockResolvedValue(undefined),
 }));
 
+vi.mock("../finance/use-cases/financeDocumentFx.js", () => ({
+  resolveDocumentFx: vi.fn().mockResolvedValue({}),
+  resolvePaymentFx: vi.fn().mockResolvedValue({}),
+}));
 vi.mock("../accounting/ledgerPosting/ledgerPostingService.js", () => ({
   tryPostInvoiceJournal: vi.fn().mockResolvedValue(undefined),
   tryPostPaymentJournal: vi.fn().mockResolvedValue(undefined),

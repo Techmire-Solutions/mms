@@ -18,6 +18,14 @@ const mockFiscalYearsRepo = vi.hoisted(() => ({
 vi.mock("../db/repositories/accountingRepository.js", () => mockAccountingRepo);
 vi.mock("../db/repositories/accountingLedgerOpsRepository.js", () => mockLedgerOpsRepo);
 vi.mock("../db/repositories/accountingFiscalYearsRepository.js", () => mockFiscalYearsRepo);
+vi.mock("../db/repositories/accountingCurrencySettingsRepository.js", () => ({
+  getCurrencySettings: vi.fn().mockResolvedValue({
+    functionalCurrency: "PKR",
+    presentationCurrency: "PKR",
+    locked: true,
+    enabledCurrencies: [],
+  }),
+}));
 
 import {
   tryPostInvoiceJournal,
@@ -474,5 +482,70 @@ describe("ledgerPostingService", () => {
       tryPostInvoiceReversalJournal("tenant-1", { id: "inv-1", invoiceNumber: "INV-1" } as any),
     ).rejects.toThrow(/matching debit and credit/);
     expect(mockAccountingRepo.saveEntry).not.toHaveBeenCalled();
+  });
+
+  describe("IAS 21 foreign-currency documents", () => {
+    beforeEach(() => {
+      mockLedgerOpsRepo.getPostingRules.mockResolvedValue({
+        arAccountId: "acc-ar",
+        cashAccountId: "acc-cash",
+        incomeAccountId: "acc-income",
+        fxRealizedAccountId: "acc-fx",
+      });
+    });
+
+    it("given a USD invoice booked at 280, should post USD transaction amounts with PKR functional amounts", async () => {
+      // Arrange
+      const invoice = {
+        id: "inv-usd",
+        invoiceNumber: "INV-USD",
+        dueDate: "2026-06-01",
+        finalAmt: 1000,
+        discountAmt: 0,
+        status: "pending",
+        currency: "USD",
+        exchangeRate: "280",
+      } as any;
+
+      // Act
+      await tryPostInvoiceJournal("tenant-1", invoice);
+
+      // Assert
+      const entry = lastSavedEntry();
+      expectBalancedPostedEntry(entry);
+      expect(entry.lines).toEqual([
+        expect.objectContaining({ account_id: "acc-ar", debit: 280000, txn_currency: "USD", txn_debit: "1000.00" }),
+        expect.objectContaining({ account_id: "acc-income", credit: 280000, txn_credit: "1000.00" }),
+      ]);
+    });
+
+    it("given 285,000 PKR paid on that invoice at 285, should release AR at 280 and book the gain", async () => {
+      // Arrange
+      const payment = {
+        id: "pmt-x",
+        date: "2026-06-05",
+        amount: 285000,
+        currency: "PKR",
+        exchangeRate: "285",
+        invoiceAmount: 1000,
+        note: "",
+      } as any;
+
+      // Act
+      await tryPostPaymentJournal("tenant-1", payment, {
+        id: "inv-usd",
+        currency: "USD",
+        exchangeRate: "280",
+      });
+
+      // Assert
+      const entry = lastSavedEntry();
+      expectBalancedPostedEntry(entry);
+      expect(entry.lines).toEqual([
+        expect.objectContaining({ account_id: "acc-cash", debit: 285000 }),
+        expect.objectContaining({ account_id: "acc-ar", credit: 280000, txn_currency: "USD" }),
+        expect.objectContaining({ account_id: "acc-fx", credit: 5000 }),
+      ]);
+    });
   });
 });

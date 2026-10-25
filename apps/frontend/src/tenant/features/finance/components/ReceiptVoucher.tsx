@@ -9,6 +9,7 @@ import {
   getOutstandingAmountForInvoice,
 } from "@mms/shared";
 import { cn } from "@/lib/utils";
+import { formatDocumentAmount } from "@/tenant/features/finance/lib/documentAmount";
 
 export interface ReceiptVoucherProps {
   invoice: Invoice;
@@ -126,7 +127,7 @@ export function ReceiptVoucher({ invoice, madrasaName }: ReceiptVoucherProps): R
           )}
           <ReceiptRow
             label={t("finance.form.finalAmount")}
-            value={formatCurrency(invoice.finalAmt)}
+            value={formatDocumentAmount(invoice, invoice.finalAmt, formatCurrency)}
             highlight
           />
           {collected > 0 && (

@@ -12,6 +12,7 @@ import {
 } from "@mms/shared";
 import { accountingExchangeRates, fxReferenceRates } from "../schema.js";
 import { withTenant, withTenantRead, type TenantTransaction } from "../tenant-context.js";
+import { canonicalStoredRate } from "./repositoryFxMappers.js";
 
 /** Feed rates are daily spot fixings, so they can only answer these rate types. */
 const FEED_RATE_TYPES: readonly ExchangeRateType[] = ["SPOT", "CLOSING"];
@@ -31,15 +32,11 @@ const rateColumns = {
 
 type RateRow = Omit<typeof accountingExchangeRates.$inferSelect, "workspaceSubdomain">;
 
-/** `numeric` comes back padded ("280.0000000000"); trim to the canonical rate string. */
-const canonicalRate = (rate: string): string =>
-  rate.includes(".") ? rate.replace(/0+$/, "").replace(/\.$/, "") : rate;
-
 function rateRowToRecord(row: RateRow): ExchangeRateRecord {
   return {
     ...row,
     rateType: row.rateType as ExchangeRateType,
-    rate: canonicalRate(row.rate),
+    rate: canonicalStoredRate(row.rate),
     createdAt: row.createdAt.toISOString(),
   };
 }
@@ -132,7 +129,7 @@ async function latestTenantRate(
     )
     .orderBy(desc(accountingExchangeRates.rateDate))
     .limit(1);
-  return row ? { rate: canonicalRate(row.rate), rateDate: row.rateDate } : null;
+  return row ? { rate: canonicalStoredRate(row.rate), rateDate: row.rateDate } : null;
 }
 
 async function feedRate(tx: TenantTransaction, query: ExchangeRateLookupQuery) {
@@ -161,7 +158,7 @@ async function feedRate(tx: TenantTransaction, query: ExchangeRateLookupQuery) {
     const toQuote = quoteOf(to);
     if (!fromQuote || !toQuote) continue;
     return {
-      rate: crossExchangeRate(canonicalRate(fromQuote.rate), canonicalRate(toQuote.rate)),
+      rate: crossExchangeRate(canonicalStoredRate(fromQuote.rate), canonicalStoredRate(toQuote.rate)),
       rateDate: fromQuote.rateDate < toQuote.rateDate ? fromQuote.rateDate : toQuote.rateDate,
       source: `feed:${provider}`,
     };

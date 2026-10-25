@@ -30,6 +30,8 @@ export * from "../attendance/attendanceModuleSettings.js";
 export * from "../attendance/attendanceReportAggregates.js";
 export * from "../attendance/attendanceSetupConfigTypes.js";
 export * from "../finance/financeBilling.js";
+export * from "../finance/financeDocumentFx.js";
+export * from "../finance/financeFxPosting.js";
 export * from "../finance/financeInvoiceGeneration.js";
 export * from "../finance/financeCollect.js";
 export * from "../finance/financeListQuery.js";

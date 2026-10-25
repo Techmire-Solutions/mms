@@ -11,6 +11,7 @@ import { EntityCard } from "@/components/app/EntityCard";
 import { DirectoryEntityCard } from "@/components/app/DirectoryEntityCard";
 import { StatusBadge, type StatusBadgeConfigItem } from "@/components/app/StatusBadge";
 import type { Payment } from "@/lib/data/financeData";
+import { formatDocumentAmount } from "@/tenant/features/finance/lib/documentAmount";
 
 export interface PaymentsListCardsProps {
   payments: Payment[];
@@ -92,7 +93,7 @@ function PaymentCard({
         <EntityCard.MetaGrid>
           {isColumnVisible("amount") && (
             <DirectoryCardMetaTile label={t("finance.columns.amount")}>
-              <span className="font-bold text-success">{formatCurrency(payment.amount)}</span>
+              <span className="font-bold text-success">{formatDocumentAmount(payment, payment.amount, formatCurrency)}</span>
             </DirectoryCardMetaTile>
           )}
           {isColumnVisible("date") && (

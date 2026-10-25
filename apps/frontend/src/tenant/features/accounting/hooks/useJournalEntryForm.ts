@@ -176,7 +176,7 @@ export function useJournalEntryForm({
       return;
     }
     if (fx.isForeign && !isValidExchangeRate(fx.rate)) {
-      setErrors({ exchangeRate: t("accounting.journal.form.rateMissing") });
+      setErrors({ exchangeRate: t("fx.field.rateMissing") });
       return;
     }
     const trimmedRef = form.ref?.trim();

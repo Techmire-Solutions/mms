@@ -12,6 +12,7 @@ import {
   useSaveAccountingPostingRules,
 } from "@/tenant/features/accounting/hooks/useAccountingLedgerOps";
 import React, { useState, useEffect } from "react";
+import { AccountingSettingsFxPostingFields } from "./AccountingSettingsFxPostingFields";
 
 /**
  * Mirrors the server's `POSTING_RULE_ACCOUNT_TYPES`: `arAccountId`/`cashAccountId`
@@ -42,6 +43,10 @@ export function AccountingSettingsPostingSection({
     cashAccountId: "",
     incomeAccountId: "",
     discountAccountId: "",
+    fxRealizedAccountId: "",
+    fxUnrealizedAccountId: "",
+    fxRoundingAccountId: "",
+    ctaAccountId: "",
   });
 
   useEffect(() => {
@@ -51,6 +56,10 @@ export function AccountingSettingsPostingSection({
       cashAccountId: loaded.cashAccountId ?? "",
       incomeAccountId: loaded.incomeAccountId ?? "",
       discountAccountId: loaded.discountAccountId ?? "",
+      fxRealizedAccountId: loaded.fxRealizedAccountId ?? "",
+      fxUnrealizedAccountId: loaded.fxUnrealizedAccountId ?? "",
+      fxRoundingAccountId: loaded.fxRoundingAccountId ?? "",
+      ctaAccountId: loaded.ctaAccountId ?? "",
     });
   }, [loaded]);
 
@@ -61,6 +70,10 @@ export function AccountingSettingsPostingSection({
         cashAccountId: draft.cashAccountId || null,
         incomeAccountId: draft.incomeAccountId || null,
         discountAccountId: draft.discountAccountId || null,
+        fxRealizedAccountId: draft.fxRealizedAccountId || null,
+        fxUnrealizedAccountId: draft.fxUnrealizedAccountId || null,
+        fxRoundingAccountId: draft.fxRoundingAccountId || null,
+        ctaAccountId: draft.ctaAccountId || null,
       });
       notify.success(t("accounting.settings.posting.saved"));
     } catch (error) {
@@ -137,6 +150,12 @@ export function AccountingSettingsPostingSection({
           />
         </Field>
       </div>
+      <AccountingSettingsFxPostingFields
+        accounts={accounts}
+        draft={draft}
+        onChange={(field, value) => setDraft((current) => ({ ...current, [field]: value }))}
+        accountOptions={accountOptions}
+      />
       <Button
         type="button"
         className="mt-4 min-h-11"

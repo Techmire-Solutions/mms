@@ -2,6 +2,7 @@
 import { z } from "zod";
 import { paymentAllocationInsertSchema, paymentAllocationRecordSchema } from "./financeBilling.js";
 import { isoDateSchema } from "../core/isoDateSchema.js";
+import { documentFxFields } from "./financeDocumentFx.js";
 
 export const paymentRecordSchema = z
   .object({
@@ -15,6 +16,12 @@ export const paymentRecordSchema = z
     receivedByUserId: z.string().nullable().optional(),
     receivedBy: z.string().nullable().optional(),
     note: z.string().default(""),
+    /** Same as the invoice's currency; `exchangeRate` is the settlement (payment-date) rate. */
+    ...documentFxFields,
+    /** Server-computed realized FX gain (+) / loss (−) in the functional currency. */
+    realizedFx: z.number().optional(),
+    /** Server-computed amount applied to the invoice, in the invoice currency. */
+    invoiceAmount: z.number().positive().optional(),
     allocations: z.array(paymentAllocationRecordSchema).optional(),
     deletedAt: z.string().nullable().optional(),
     deletedBy: z.string().nullable().optional(),
@@ -39,6 +46,7 @@ export const paymentRecordInsertSchema = z
     receivedByUserId: z.string().nullable().optional(),
     receivedBy: z.string().nullable().optional(),
     note: z.string().optional().default(""),
+    ...documentFxFields,
     allocations: z.array(paymentAllocationInsertSchema).optional(),
   })
   .strict();

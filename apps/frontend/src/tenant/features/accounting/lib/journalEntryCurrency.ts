@@ -1,9 +1,9 @@
 import {
   convertMoney,
   currencyMinorUnits,
-  isValidExchangeRate,
   moneyToDecimalString,
   parseMoney,
+  previewConvertedAmount,
   type JournalLine,
 } from "@mms/shared";
 import type { DraftLine } from "./journalEntryFormTypes";
@@ -92,7 +92,5 @@ export function functionalPreview(
   functionalCurrency: string,
   rate: string,
 ): number | null {
-  if (currency === functionalCurrency) return total;
-  if (!isValidExchangeRate(rate)) return null;
-  return toFunctional(toTxnString(total, currency), currency, rate, functionalCurrency);
+  return previewConvertedAmount(total, currency, functionalCurrency, rate);
 }

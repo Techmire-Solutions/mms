@@ -4,6 +4,7 @@ import { financeInvoiceLines, financeInvoices } from "../schema.js";
 import { withTenantRead } from "../tenant-context.js";
 import { buildTenantSoftDeleteConditions } from "../../services/genericRelationalService.js";
 import { invoiceLineRowToRecord } from "./financeBillingRepository.js";
+import { canonicalStoredRate } from "./repositoryFxMappers.js";
 import { mapAuditTimestamps } from "./repositoryMappers.js";
 
 // Re-export persistence functions for backward compatibility
@@ -47,6 +48,8 @@ export function invoiceRowToRecord(row: InvoiceRow): Invoice {
   if (row.creditedAmt != null) invoice.creditedAmt = Number(row.creditedAmt);
   if (row.lastRemindedAt) invoice.lastRemindedAt = row.lastRemindedAt.toISOString();
   if (row.reminderCount != null) invoice.reminderCount = row.reminderCount;
+  if (row.currency) invoice.currency = row.currency;
+  if (row.exchangeRate) invoice.exchangeRate = canonicalStoredRate(row.exchangeRate);
 
   return invoice;
 }
@@ -90,6 +93,8 @@ export async function listInvoicesByWorkspace(
         creditedAmt: financeInvoices.creditedAmt,
         lastRemindedAt: financeInvoices.lastRemindedAt,
         reminderCount: financeInvoices.reminderCount,
+        currency: financeInvoices.currency,
+        exchangeRate: financeInvoices.exchangeRate,
         deletedAt: financeInvoices.deletedAt,
         deletedBy: financeInvoices.deletedBy,
         deletionReason: financeInvoices.deletionReason,
@@ -139,6 +144,8 @@ export async function findInvoiceById(tenant: string, id: string): Promise<Invoi
         creditedAmt: financeInvoices.creditedAmt,
         lastRemindedAt: financeInvoices.lastRemindedAt,
         reminderCount: financeInvoices.reminderCount,
+        currency: financeInvoices.currency,
+        exchangeRate: financeInvoices.exchangeRate,
         deletedAt: financeInvoices.deletedAt,
         deletedBy: financeInvoices.deletedBy,
         deletionReason: financeInvoices.deletionReason,
@@ -222,6 +229,8 @@ export async function findInvoicesByIds(
         creditedAmt: financeInvoices.creditedAmt,
         lastRemindedAt: financeInvoices.lastRemindedAt,
         reminderCount: financeInvoices.reminderCount,
+        currency: financeInvoices.currency,
+        exchangeRate: financeInvoices.exchangeRate,
         deletedAt: financeInvoices.deletedAt,
         deletedBy: financeInvoices.deletedBy,
         deletionReason: financeInvoices.deletionReason,
