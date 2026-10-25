@@ -107,6 +107,8 @@ export const taskListQuerySchema = z
     assignedToUserId: z.string().min(1).optional(),
     createdById: z.string().min(1).optional(),
     search: z.string().optional(),
+    dueFrom: z.string().max(32).optional(),
+    dueTo: z.string().max(32).optional(),
     includeDeleted: z
       .union([z.boolean(), z.literal("true"), z.literal("false")])
       .optional()

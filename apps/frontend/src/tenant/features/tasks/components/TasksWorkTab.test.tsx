@@ -8,6 +8,7 @@ const viewModeState = { viewMode: "table" as "table" | "cards" };
 
 const mockBulkDelete = vi.fn();
 const mockBulkRestore = vi.fn();
+const mockBulkUpdateStatus = vi.fn();
 
 vi.mock("@/tenant/hooks/collections/tasks", () => ({
   useBulkDeleteTasks: () => ({
@@ -16,6 +17,10 @@ vi.mock("@/tenant/hooks/collections/tasks", () => ({
   }),
   useBulkRestoreTasks: () => ({
     mutate: mockBulkRestore,
+    isPending: false,
+  }),
+  useBulkUpdateTaskStatus: () => ({
+    mutate: mockBulkUpdateStatus,
     isPending: false,
   }),
 }));

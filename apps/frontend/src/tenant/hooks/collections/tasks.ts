@@ -20,6 +20,7 @@ export {
   useRestoreTask,
   useBulkDeleteTasks,
   useBulkRestoreTasks,
+  useBulkUpdateTaskStatus,
   useEligibleTaskAssignees,
   useTaskSettings,
   useUpdateTaskSettings,

@@ -1,8 +1,15 @@
 import React, { useState, useEffect } from "react";
-import { Bell, Save, UserCheck } from "lucide-react";
-import { type TaskSettings, DEFAULT_TASK_SETTINGS } from "@mms/shared";
+import { Save } from "lucide-react";
+import {
+  type TaskSettings,
+  type DelegationScope,
+  DELEGATION_SCOPES,
+  DEFAULT_TASK_SETTINGS,
+} from "@mms/shared";
 import { Button } from "@/components/ui/button";
-import { Checkbox } from "@/components/ui/checkbox";
+import { FormCheckboxCard } from "@/components/app/FormCheckboxCard";
+import { FormSelect } from "@/components/app/FormSelect";
+import { Field } from "@/components/app/FormPrimitives";
 import { useTranslation } from "@/hooks/useTranslation";
 import { useTaskSettings, useUpdateTaskSettings } from "@/tenant/hooks/collections/tasks";
 import { notify } from "@/lib/notify";
@@ -49,82 +56,63 @@ export function TasksSetupTab({
 
   return (
     <ModuleSetupContent>
-      <div className="rounded-lg border border-border bg-card p-5 shadow-xs space-y-5">
-        <div>
-          <h3 className="font-semibold text-base text-foreground mb-1 text-wrap-balance">
-            {t("tasks.setup.allowSelfAssignment")}
-          </h3>
-          <p className="text-xs text-muted-foreground text-wrap-pretty">
-            {t("tasks.setup.allowSelfAssignmentDesc")}
-          </p>
+      <div className="rounded-lg border border-border bg-card p-5 shadow-xs space-y-6">
+        <div className="space-y-2">
+          <Field
+            id="tasks-delegation-scope"
+            label={t("tasks.setup.delegationScope")}
+            hint={t("tasks.setup.delegationScopeDesc")}
+          >
+            <FormSelect
+              id="tasks-delegation-scope"
+              value={settings.delegationScope}
+              onChange={(v) => setSettings({ ...settings, delegationScope: v as DelegationScope })}
+              disabled={!canEditSetup || isLoading}
+              options={DELEGATION_SCOPES.map((scope) => ({
+                value: scope,
+                label:
+                  scope === "descendants"
+                    ? t("tasks.setup.descendants")
+                    : t("tasks.setup.directReports"),
+              }))}
+            />
+          </Field>
         </div>
 
-        <div className="space-y-4">
-          <div className="flex items-center justify-between gap-3">
-            <div className="flex items-center gap-2">
-              <UserCheck className="h-4 w-4 text-muted-foreground" aria-hidden />
-              <div>
-                <div className="text-sm font-medium text-foreground">
-                  {t("tasks.setup.allowSelfAssignment")}
-                </div>
-                <div className="text-xs text-muted-foreground">
-                  {t("tasks.setup.allowSelfAssignmentDesc")}
-                </div>
-              </div>
-            </div>
-            <Checkbox
-              checked={settings.allowSelfAssignment}
-              onCheckedChange={(checked) =>
-                setSettings({ ...settings, allowSelfAssignment: checked === true })
-              }
-              disabled={!canEditSetup || isLoading}
-              aria-label={t("tasks.setup.allowSelfAssignment")}
-            />
-          </div>
+        <div className="space-y-3 pt-2 border-t border-border/50">
+          <FormCheckboxCard
+            id="tasks-allow-self-assignment"
+            name="allowSelfAssignment"
+            label={t("tasks.setup.allowSelfAssignment")}
+            description={t("tasks.setup.allowSelfAssignmentDesc")}
+            checked={settings.allowSelfAssignment}
+            onCheckedChange={(checked) =>
+              setSettings({ ...settings, allowSelfAssignment: checked })
+            }
+            disabled={!canEditSetup || isLoading}
+          />
 
-          <div className="flex items-center justify-between gap-3">
-            <div className="flex items-center gap-2">
-              <Bell className="h-4 w-4 text-muted-foreground" aria-hidden />
-              <div>
-                <div className="text-sm font-medium text-foreground">
-                  {t("tasks.setup.notifyOnAssignment")}
-                </div>
-                <div className="text-xs text-muted-foreground">
-                  {t("tasks.setup.notifyOnAssignmentDesc")}
-                </div>
-              </div>
-            </div>
-            <Checkbox
-              checked={settings.notifyOnAssignment}
-              onCheckedChange={(checked) =>
-                setSettings({ ...settings, notifyOnAssignment: checked === true })
-              }
-              disabled={!canEditSetup || isLoading}
-              aria-label={t("tasks.setup.notifyOnAssignment")}
-            />
-          </div>
+          <FormCheckboxCard
+            id="tasks-notify-assignment"
+            name="notifyOnAssignment"
+            label={t("tasks.setup.notifyOnAssignment")}
+            description={t("tasks.setup.notifyOnAssignmentDesc")}
+            checked={settings.notifyOnAssignment}
+            onCheckedChange={(checked) => setSettings({ ...settings, notifyOnAssignment: checked })}
+            disabled={!canEditSetup || isLoading}
+          />
 
-          <div className="flex items-center justify-between gap-3">
-            <div className="flex items-center gap-2">
-              <Bell className="h-4 w-4 text-muted-foreground" aria-hidden />
-              <div>
-                <div className="text-sm font-medium text-foreground">
-                  {t("tasks.setup.notifyOnStatusChange")}
-                </div>
-                <div className="text-xs text-muted-foreground">
-                  {t("tasks.setup.notifyOnStatusChangeDesc")}
-                </div>
-              </div>
-            </div>
-            <Checkbox
-              checked={settings.notifyOnStatusChange}
-              onCheckedChange={(checked) =>
-                setSettings({ ...settings, notifyOnStatusChange: checked === true })
-              }
-              disabled={!canEditSetup || isLoading}
-              aria-label={t("tasks.setup.notifyOnStatusChange")}
-            />
-          </div>
+          <FormCheckboxCard
+            id="tasks-notify-status-change"
+            name="notifyOnStatusChange"
+            label={t("tasks.setup.notifyOnStatusChange")}
+            description={t("tasks.setup.notifyOnStatusChangeDesc")}
+            checked={settings.notifyOnStatusChange}
+            onCheckedChange={(checked) =>
+              setSettings({ ...settings, notifyOnStatusChange: checked })
+            }
+            disabled={!canEditSetup || isLoading}
+          />
         </div>
 
         {canEditSetup ? (

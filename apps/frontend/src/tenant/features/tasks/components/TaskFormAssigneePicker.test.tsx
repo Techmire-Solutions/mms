@@ -2,10 +2,16 @@ import React, { act } from "react";
 import { createRoot, type Root } from "react-dom/client";
 import { describe, expect, it, vi, beforeEach, afterEach } from "vitest";
 import { TaskFormAssigneePicker } from "./TaskFormAssigneePicker";
-import type { EligibleAssigneeItem } from "@/tenant/features/tasks/hooks/useTasksApi";
+import type { EligibleAssigneeItem } from "../hooks/useTasksApi";
 
 vi.mock("@/hooks/useTranslation", () => ({
-  useTranslation: () => ({ t: (k: string) => k }),
+  useTranslation: () => ({
+    t: (k: string, p?: { name?: string }) => {
+      if (k === "tasks.assigneeSelf") return "Self";
+      if (k === "tasks.removeAssignee" && p?.name) return `Remove ${p.name}`;
+      return k;
+    },
+  }),
 }));
 
 describe("TaskFormAssigneePicker", () => {

@@ -59,6 +59,8 @@ export function useTasks(query?: Partial<TaskListQuery>, options: { enabled?: bo
     ...(query?.assignedToUserId ? { assignedToUserId: query.assignedToUserId } : {}),
     ...(query?.createdById ? { createdById: query.createdById } : {}),
     ...(query?.search ? { search: query.search } : {}),
+    ...(query?.dueFrom ? { dueFrom: query.dueFrom } : {}),
+    ...(query?.dueTo ? { dueTo: query.dueTo } : {}),
     ...(query?.includeDeleted ? { includeDeleted: true } : {}),
     ...(query?.limit ? { limit: query.limit } : {}),
     ...(query?.offset ? { offset: query.offset } : {}),
@@ -203,6 +205,28 @@ export function useBulkRestoreTasks() {
       const response = await apiContract.tasks.bulkRestore({ body: { ids } });
       assertOk(response, "Failed to bulk restore tasks");
       return response.body as { restoredIds: string[] };
+    },
+    onSuccess: () => {
+      void invalidateTasksQueries(queryClient);
+    },
+  });
+}
+
+export function useBulkUpdateTaskStatus() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async ({ ids, status }: { ids: string[]; status: TaskStatus }) => {
+      const results = await Promise.all(
+        ids.map(async (id) => {
+          const response = await apiContract.tasks.updateStatus({
+            params: { id },
+            body: { status },
+          });
+          assertOk(response, "Failed to update task status");
+          return response.body as TaskRecord;
+        }),
+      );
+      return results;
     },
     onSuccess: () => {
       void invalidateTasksQueries(queryClient);

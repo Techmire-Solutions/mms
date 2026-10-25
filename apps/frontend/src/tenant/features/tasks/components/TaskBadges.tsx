@@ -30,7 +30,7 @@ function useTaskPriorityConfig(): Record<string, StatusBadgeConfigItem> {
   };
 }
 
-function useTaskStatusConfig(): Record<string, StatusBadgeConfigItem> {
+export function useTaskStatusConfig(): Record<string, StatusBadgeConfigItem> {
   const { t } = useTranslation();
   return {
     todo: { label: t("tasks.status.todo" as AppTranslationKey), cls: STATUS_CLS.todo },
