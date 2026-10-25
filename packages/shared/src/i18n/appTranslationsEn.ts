@@ -1006,6 +1006,8 @@ export const APP_TRANSLATIONS_EN = {
   "attendance.mark.submitAttendance": "Submit Attendance",
   "attendance.mark.submitted": "Submitted",
   "attendance.mark.summary": "{total} students · {shown} shown",
+  "attendance.mark.markedProgress": "{marked} of {total} marked",
+  "attendance.mark.keyboardHints": "Alt+P: Present · Alt+A: Absent · Alt+L: Late · ⌘S: Save",
   "attendance.mark.syncNow": "Sync Now",
   "attendance.mark.syncSuccess": "Offline records synced successfully.",
   "attendance.mark.tagLocation": "Tag Location",

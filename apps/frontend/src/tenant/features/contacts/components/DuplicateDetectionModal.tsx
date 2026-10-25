@@ -110,7 +110,11 @@ export function DuplicateDetectionModal({
           )}
 
           {!canWrite && activePairs.length > 0 && (
-            <Alert tone="warning" density="compact" description={t("contacts.duplicatesReadOnly")} />
+            <Alert
+              tone="warning"
+              density="compact"
+              description={t("contacts.duplicatesReadOnly")}
+            />
           )}
 
           <DuplicateDetectionToolbar
@@ -123,9 +127,7 @@ export function DuplicateDetectionModal({
             canWrite={canWrite}
             highConfidenceCount={highConfidenceCount}
             batchMerging={batchMerging}
-            onBatchMergeClick={
-              setBatchConfirmOpen ? () => setBatchConfirmOpen(true) : undefined
-            }
+            onBatchMergeClick={setBatchConfirmOpen ? () => setBatchConfirmOpen(true) : undefined}
           />
 
           {pairsError ? (

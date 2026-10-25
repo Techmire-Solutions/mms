@@ -71,7 +71,7 @@ export function useContactDetailViewModel({
   }
 
   const currentTabValid = detailTabs.some((tab) => tab.key === activeTab);
-  const effectiveActiveTab = currentTabValid ? activeTab : (detailTabs[0]?.key || "");
+  const effectiveActiveTab = currentTabValid ? activeTab : detailTabs[0]?.key || "";
 
   const combinedActivities = useMemo(() => {
     const noteActs = contactState.activities || [];

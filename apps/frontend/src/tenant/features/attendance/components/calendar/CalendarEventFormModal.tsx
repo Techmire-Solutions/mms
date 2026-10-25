@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useState } from "react";
 import { CalendarPlus } from "lucide-react";
 import {
   ACADEMIC_CALENDAR_EVENT_KINDS,
@@ -51,24 +51,30 @@ export function CalendarEventFormModal({
   const [scope, setScope] = useState<CalendarEventScopeValue>(EMPTY_SCOPE);
   const [notes, setNotes] = useState("");
 
-  useEffect(() => {
-    if (!open) return;
-    setTitle(entry?.title ?? "");
-    setKind(entry?.kind ?? "holiday");
-    setStartOn(entry?.startOn ?? initialDate);
-    setEndOn(entry?.endOn ?? initialDate);
-    setScope(
-      entry
-        ? {
-            scope: entry.scope,
-            sessionId: entry.sessionId ?? "",
-            classId: entry.classId ?? "",
-            sectionId: entry.sectionId ?? "",
-          }
-        : EMPTY_SCOPE,
-    );
-    setNotes(entry?.notes ?? "");
-  }, [open, entry, initialDate]);
+  const [prevOpen, setPrevOpen] = useState(open);
+  const [prevEntry, setPrevEntry] = useState(entry);
+
+  if (prevOpen !== open || prevEntry !== entry) {
+    setPrevOpen(open);
+    setPrevEntry(entry);
+    if (open) {
+      setTitle(entry?.title ?? "");
+      setKind(entry?.kind ?? "holiday");
+      setStartOn(entry?.startOn ?? initialDate);
+      setEndOn(entry?.endOn ?? initialDate);
+      setScope(
+        entry
+          ? {
+              scope: entry.scope,
+              sessionId: entry.sessionId ?? "",
+              classId: entry.classId ?? "",
+              sectionId: entry.sectionId ?? "",
+            }
+          : EMPTY_SCOPE,
+      );
+      setNotes(entry?.notes ?? "");
+    }
+  }
 
   const rangeInvalid = Boolean(startOn && endOn && endOn < startOn);
   const scopeIncomplete =
@@ -127,7 +133,6 @@ export function CalendarEventFormModal({
               className={FORM_INPUT}
               maxLength={150}
               disabled={isPending}
-              autoFocus
             />
           </Field>
           <Field label={t("attendance.calendar.kind")} id="calendar-event-kind" required>

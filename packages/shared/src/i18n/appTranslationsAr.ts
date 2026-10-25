@@ -1004,6 +1004,8 @@ export const APP_TRANSLATIONS_AR: Record<AppTranslationKey, string> = {
   "attendance.mark.submitAttendance": "إرسال الحضور",
   "attendance.mark.submitted": "تم الإرسال",
   "attendance.mark.summary": "{total} طلاب · {shown} معروضين",
+  "attendance.mark.markedProgress": "تم تسجيل {marked} من {total}",
+  "attendance.mark.keyboardHints": "Alt+P: حاضر · Alt+A: غائب · Alt+L: متأخر · ⌘S: حفظ",
   "attendance.mark.syncNow": "المزامنة الآن",
   "attendance.mark.syncSuccess": "تم مزامنة السجلات غير المتصلة بالإنترنت بنجاح.",
   "attendance.mark.tagLocation": "تحديد الموقع",

@@ -4,22 +4,14 @@
  */
 
 import React, { useState } from "react";
-import {
-  TASK_STATUSES,
-  TASK_PRIORITIES,
-  type TaskRecord,
-  type TaskStatus,
-} from "@mms/shared";
+import { TASK_STATUSES, TASK_PRIORITIES, type TaskRecord, type TaskStatus } from "@mms/shared";
 import {
   ModuleFilterDropdown,
   ModuleFilterCheckboxGroup,
 } from "@/components/app/ModuleFiltersMenuButton";
 import { FilterChips } from "@/components/app/FilterChips";
 import { CompactSegmentedControl } from "@/components/app/CompactSegmentedControl";
-import {
-  useTasksWorkTabFilters,
-  type TaskQuickFilter,
-} from "../hooks/useTasksWorkTabFilters";
+import { useTasksWorkTabFilters, type TaskQuickFilter } from "../hooks/useTasksWorkTabFilters";
 import { WorkTaskToolbar } from "@/components/common/work/WorkTaskToolbar";
 import { useWorkDirectoryViewMode } from "@/hooks/useWorkDirectoryViewMode";
 import { useTranslation } from "@/hooks/useTranslation";

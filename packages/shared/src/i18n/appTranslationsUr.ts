@@ -1014,6 +1014,8 @@ export const APP_TRANSLATIONS_UR: Record<AppTranslationKey, string> = {
   "attendance.mark.submitAttendance": "حاضری جمع کریں",
   "attendance.mark.submitted": "جمع کرایا گیا",
   "attendance.mark.summary": "{total} طلبہ · {shown} ظاہر",
+  "attendance.mark.markedProgress": "{total} میں سے {marked} نشان زد",
+  "attendance.mark.keyboardHints": "Alt+P: حاضر · Alt+A: غیر حاضر · Alt+L: تاخیر · ⌘S: محفوظ کریں",
   "attendance.mark.syncNow": "ابھی سنک کریں",
   "attendance.mark.syncSuccess": "آف لائن ریکارڈز کامیابی کے ساتھ سنک ہوگئے۔",
   "attendance.mark.tagLocation": "مقام ٹیگ کریں",

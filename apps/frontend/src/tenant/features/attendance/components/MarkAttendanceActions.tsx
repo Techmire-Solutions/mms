@@ -5,6 +5,7 @@ import { useTranslation } from "@/hooks/useTranslation";
 export interface MarkAttendanceActionsProps {
   totalRows: number;
   visibleRows: number;
+  markedCount?: number;
   isOffline: boolean;
   submitted: boolean;
   canWriteAttendance: boolean;
@@ -15,6 +16,7 @@ export interface MarkAttendanceActionsProps {
 export function MarkAttendanceActions({
   totalRows,
   visibleRows,
+  markedCount,
   isOffline,
   submitted,
   canWriteAttendance,
@@ -25,9 +27,19 @@ export function MarkAttendanceActions({
 
   return (
     <footer className="flex items-center justify-between gap-3 flex-wrap">
-      <p className="text-xs text-muted-foreground">
-        {t("attendance.mark.summary", { total: totalRows, shown: visibleRows })}
-      </p>
+      <div className="flex items-center gap-2 flex-wrap">
+        <p className="text-xs text-muted-foreground">
+          {t("attendance.mark.summary", { total: totalRows, shown: visibleRows })}
+        </p>
+        {markedCount != null && (
+          <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-semibold bg-muted text-muted-foreground border border-border">
+            {t("attendance.mark.markedProgress", { marked: markedCount, total: totalRows })}
+          </span>
+        )}
+        <span className="text-3xs text-muted-foreground/75 hidden lg:inline">
+          {t("attendance.mark.keyboardHints")}
+        </span>
+      </div>
       <div className="flex gap-2">
         <Button
           onClick={onSaveDraft}

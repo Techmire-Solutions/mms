@@ -1,6 +1,10 @@
+import { useMemo } from "react";
 import { ErrorBoundary } from "@/components/app/ErrorBoundary";
 import { FilterChips } from "@/components/app/FilterChips";
 import { ModuleTierMotion } from "@/components/app/ModuleTierMotion";
+import { CompactSegmentedControl, type CompactSegmentedOption } from "@/components/app/CompactSegmentedControl";
+import { STUDENTS_QUICK_FILTER_OPTIONS, type StudentsQuickFilter } from "@mms/shared";
+import { useTranslation } from "@/hooks/useTranslation";
 import { useStudentsWorkFilterChips } from "@/tenant/features/students/hooks/useStudentsWorkFilterChips";
 import { StudentsBulkActionBar } from "@/tenant/features/students/components/StudentsBulkActionBar";
 import { StudentsList } from "@/tenant/features/students/components/StudentsList";
@@ -60,12 +64,22 @@ export function StudentsWorkTier({
   onServerSort,
   workOverlays,
 }: StudentsWorkTierProps): React.JSX.Element {
+  const { t } = useTranslation();
   const studentFilterChips = useStudentsWorkFilterChips({
     studentFilterStatus,
     studentFilterGender,
     onToggleStatus,
     onGenderChange,
   });
+
+  const quickFilterSegmentOptions = useMemo<CompactSegmentedOption<StudentsQuickFilter>[]>(
+    () =>
+      STUDENTS_QUICK_FILTER_OPTIONS.map((opt) => ({
+        value: opt.id,
+        label: t(opt.labelKey),
+      })),
+    [t],
+  );
 
   return (
     <ErrorBoundary>
@@ -74,6 +88,14 @@ export function StudentsWorkTier({
         className="space-y-5"
         aria-busy={useServerWork && isWorkPageFetching ? true : undefined}
       >
+        <div className="overflow-x-auto pb-0.5">
+          <CompactSegmentedControl<StudentsQuickFilter>
+            value={quickFilter}
+            onChange={(val) => onQuickFilterChange(val)}
+            options={quickFilterSegmentOptions}
+          />
+        </div>
+
         <StudentsListFilters
           studentSearch={studentSearch}
           studentFilterStatus={studentFilterStatus}

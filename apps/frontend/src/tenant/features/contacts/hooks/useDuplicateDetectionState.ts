@@ -163,9 +163,7 @@ export function useDuplicateDetectionState({
         setMergedPairIds((prev) => new Set(prev).add(pair.id));
         successCount++;
       }
-      notify.success(
-        t("contacts.duplicates.batchMergeSuccess", { count: successCount }),
-      );
+      notify.success(t("contacts.duplicates.batchMergeSuccess", { count: successCount }));
       setBatchConfirmOpen(false);
     } catch (err) {
       notify.error(t("contacts.saveFailed"));

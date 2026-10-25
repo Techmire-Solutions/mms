@@ -4,6 +4,7 @@ import { StatusBadge, type StatusBadgeConfigItem } from "@/components/app/Status
 import type { TranslationFunction } from "@/lib/contexts/TranslationContext";
 import type { Enrollment } from "@/lib/data/enrollmentData";
 import type { Student } from "@mms/shared";
+import { EnrollmentStatusPill } from "@/tenant/features/enrollments/components/EnrollmentStatusPill";
 import {
   findEnrollmentStudent,
   getEnrollmentStudentDisplayName,
@@ -61,7 +62,12 @@ export function renderEnrollmentWorkColumnValue(
         </>
       );
     case "status":
-      return <StatusBadge status={enrollment.status} config={statusConfig} size="sm" />;
+      return (
+        <EnrollmentStatusPill
+          status={enrollment.status}
+          label={statusConfig[enrollment.status]?.label}
+        />
+      );
     case "payment":
       return enrollment.paymentStatus ? (
         <StatusBadge status={enrollment.paymentStatus} config={paymentConfig} size="sm" />

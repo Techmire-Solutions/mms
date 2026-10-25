@@ -56,39 +56,42 @@ export function useTaskFormController({
   const [prevInitialData, setPrevInitialData] = useState(initialData);
   const [prevOpen, setPrevOpen] = useState(open);
 
-  const resetForm = useCallback((data: TaskRecord | null | undefined) => {
-    if (data) {
-      setTitle(data.title);
-      setDescription(data.description ?? "");
-      setPriority(data.priority);
-      setStatus(data.status);
-      setStartDate(toDateOnly(data.startDate));
-      setDueAt(
-        data.dueAt
-          ? data.dueAt instanceof Date
-            ? data.dueAt.toISOString()
-            : String(data.dueAt)
-          : null,
-      );
-      setParentTaskId(data.parentTaskId ?? null);
-      setSelectedAssignees(
-        data.assignees?.map((a) => ({
-          facultyId: a.facultyId,
-          name: a.facultyName || t("tasks.assigneeFallback"),
-        })) ?? [],
-      );
-    } else {
-      setTitle("");
-      setDescription("");
-      setPriority("medium");
-      setStatus("todo");
-      setStartDate(null);
-      setDueAt(null);
-      setParentTaskId(null);
-      setSelectedAssignees([]);
-    }
-    setError(null);
-  }, [t]);
+  const resetForm = useCallback(
+    (data: TaskRecord | null | undefined) => {
+      if (data) {
+        setTitle(data.title);
+        setDescription(data.description ?? "");
+        setPriority(data.priority);
+        setStatus(data.status);
+        setStartDate(toDateOnly(data.startDate));
+        setDueAt(
+          data.dueAt
+            ? data.dueAt instanceof Date
+              ? data.dueAt.toISOString()
+              : String(data.dueAt)
+            : null,
+        );
+        setParentTaskId(data.parentTaskId ?? null);
+        setSelectedAssignees(
+          data.assignees?.map((a) => ({
+            facultyId: a.facultyId,
+            name: a.facultyName || t("tasks.assigneeFallback"),
+          })) ?? [],
+        );
+      } else {
+        setTitle("");
+        setDescription("");
+        setPriority("medium");
+        setStatus("todo");
+        setStartDate(null);
+        setDueAt(null);
+        setParentTaskId(null);
+        setSelectedAssignees([]);
+      }
+      setError(null);
+    },
+    [t],
+  );
 
   if (prevInitialData !== initialData || prevOpen !== open) {
     setPrevInitialData(initialData);

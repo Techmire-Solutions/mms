@@ -42,24 +42,15 @@ export function StudentDetailSiblingsSection({
       >
         {siblings.map((sibling) => {
           const isInteractive = Boolean(onViewSibling);
-          const handleKeyDown = isInteractive
-            ? (e: React.KeyboardEvent) => {
-                if (e.key === "Enter" || e.key === " ") {
-                  e.preventDefault();
-                  onViewSibling?.(sibling.id);
-                }
-              }
-            : undefined;
+          const Component = isInteractive ? "button" : "div";
 
           return (
-            <div
+            <Component
               key={sibling.id}
-              role={isInteractive ? "button" : undefined}
-              tabIndex={isInteractive ? 0 : undefined}
+              type={isInteractive ? "button" : undefined}
               onClick={isInteractive ? () => onViewSibling?.(sibling.id) : undefined}
-              onKeyDown={handleKeyDown}
               className={cn(
-                "p-3 transition-colors",
+                "p-3 transition-colors w-full text-start block",
                 isInteractive &&
                   "hover:bg-muted/60 cursor-pointer focus:outline-none focus-visible:bg-muted/60",
               )}
@@ -112,7 +103,7 @@ export function StudentDetailSiblingsSection({
                   />
                 )}
               </div>
-            </div>
+            </Component>
           );
         })}
       </DetailSectionCard>

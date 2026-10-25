@@ -14,7 +14,10 @@ export interface FacultyWorkloadPillProps {
  * Renders semantic dot colors: success (active/moderate), warning (heavy load / on leave),
  * info (available / 0 classes), and muted (inactive).
  */
-export function FacultyWorkloadPill({ faculty, className }: FacultyWorkloadPillProps): React.JSX.Element {
+export function FacultyWorkloadPill({
+  faculty,
+  className,
+}: FacultyWorkloadPillProps): React.JSX.Element {
   const { t } = useTranslation();
 
   const classCount = Array.isArray(faculty.assignedClasses)

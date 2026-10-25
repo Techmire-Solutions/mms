@@ -1019,6 +1019,8 @@ export const APP_TRANSLATIONS_FA: Partial<Record<AppTranslationKey, string>> = {
   "attendance.mark.submitAttendance": "ثبت حضور و غیاب",
   "attendance.mark.submitted": "ارسال شده",
   "attendance.mark.summary": "{total} دانش‌آموز · {shown} نمایش داده شده",
+  "attendance.mark.markedProgress": "{marked} از {total} ثبت شده",
+  "attendance.mark.keyboardHints": "Alt+P: حاضر · Alt+A: غایب · Alt+L: تأخیر · ⌘S: ذخیره",
   "attendance.mark.syncNow": "اکنون همگام‌سازی کنید",
   "attendance.mark.syncSuccess": "سوابق آفلاین با موفقیت همگام‌سازی شدند.",
   "attendance.mark.tagLocation": "برچسب‌گذاری موقعیت مکانی",

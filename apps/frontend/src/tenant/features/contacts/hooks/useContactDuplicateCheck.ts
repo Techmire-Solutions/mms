@@ -21,12 +21,12 @@ export function useContactDuplicateCheck({
 
   const hasCandidateKey = Boolean(
     open &&
-      !contactId &&
-      (deferredDraft.name?.trim() ||
-        deferredDraft.firstName?.trim() ||
-        (deferredDraft.phones && deferredDraft.phones.some((p) => p.number?.trim())) ||
-        (deferredDraft.emails && deferredDraft.emails.some((e) => e.address?.trim())) ||
-        deferredDraft.cnic?.trim()),
+    !contactId &&
+    (deferredDraft.name?.trim() ||
+      deferredDraft.firstName?.trim() ||
+      (deferredDraft.phones && deferredDraft.phones.some((p) => p.number?.trim())) ||
+      (deferredDraft.emails && deferredDraft.emails.some((e) => e.address?.trim())) ||
+      deferredDraft.cnic?.trim()),
   );
   const effectiveCount = hasCandidateKey ? duplicateCount : 0;
 

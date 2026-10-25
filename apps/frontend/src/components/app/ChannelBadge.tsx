@@ -28,11 +28,7 @@ export function ChannelBadge({
     <Badge
       as="span"
       size="sm"
-      className={cn(
-        "font-black uppercase",
-        getChannelBadgeStyle(channel),
-        className,
-      )}
+      className={cn("font-black uppercase", getChannelBadgeStyle(channel), className)}
     >
       {showIcon && <Icon className="w-3 h-3 flex-shrink-0" aria-hidden />}
       {t(labelKey)}
