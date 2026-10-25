@@ -64,6 +64,8 @@ const SOURCE_REFUSALS: Record<(typeof NON_REVERSIBLE_JOURNAL_SOURCES)[number], s
   closing: "Year-end closing entries cannot be reversed",
   fx_reval: "FX revaluations reverse automatically on the next day",
   fx_reval_reversal: "This entry is the automatic reversal of an FX revaluation",
+  ias29_restate: "IAS 29 restatements reverse automatically on the next day",
+  ias29_reversal: "This entry is the automatic reversal of an IAS 29 restatement",
 };
 
 function isNonReversibleSource(

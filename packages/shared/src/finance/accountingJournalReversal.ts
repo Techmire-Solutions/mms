@@ -31,6 +31,8 @@ export const NON_REVERSIBLE_JOURNAL_SOURCES = [
   // Revaluations reverse themselves on the next day; a manual reversal would double it.
   "fx_reval",
   "fx_reval_reversal",
+  "ias29_restate",
+  "ias29_reversal",
 ] as const;
 
 /** True when a journal of this source type may be reversed through the Reverse Entry action. */

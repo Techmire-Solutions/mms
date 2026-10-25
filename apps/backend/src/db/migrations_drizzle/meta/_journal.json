@@ -1359,6 +1359,13 @@
       "when": 1792920600000,
       "tag": "0193_accounting_currency_exchangeability",
       "breakpoints": true
+    },
+    {
+      "idx": 194,
+      "version": "7",
+      "when": 1792920700000,
+      "tag": "0194_accounting_ias29_hyperinflation",
+      "breakpoints": true
     }
   ]
 }

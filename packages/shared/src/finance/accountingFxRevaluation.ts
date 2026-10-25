@@ -82,9 +82,9 @@ export function computeFxRevaluation(
   const lines: FxRevaluationLine[] = [];
   for (const balance of balances) {
     const closingRate = closingRates.get(balance.currency) as string;
-    const open = parseMoney(normalize(balance.openTxn, balance.currency), balance.currency);
+    const open = parseMoney(normalizeStoredAmount(balance.openTxn, balance.currency), balance.currency);
     const carrying = parseMoney(
-      normalize(balance.carryingFunc, functionalCurrency),
+      normalizeStoredAmount(balance.carryingFunc, functionalCurrency),
       functionalCurrency,
     );
     const revalued = convertMoney(open, closingRate, functionalCurrency);
@@ -106,7 +106,7 @@ export function computeFxRevaluation(
 }
 
 /** Round a stored `numeric(19,4)` string to the currency's own scale. */
-function normalize(value: string, currency: string): string {
+export function normalizeStoredAmount(value: string, currency: string): string {
   const scale = currencyMinorUnits(currency);
   const [whole, fraction = ""] = value.split(".");
   const kept = fraction.slice(0, scale).padEnd(scale, "0");

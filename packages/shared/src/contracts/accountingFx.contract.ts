@@ -1,6 +1,11 @@
 import { initContract } from "@ts-rest/core";
 import { z } from "zod";
 import { fxRevaluationRequestSchema } from "../finance/accountingFxRevaluation.js";
+import { priceIndexPutSchema } from "../finance/accountingHyperinflation.js";
+import {
+  hyperinflationSettingsSchema,
+  ias29RequestSchema,
+} from "../finance/accountingHyperinflationSchemas.js";
 import { currencyExchangeabilityPutSchema } from "../finance/accountingFxExchangeability.js";
 import {
   accountingCurrencySettingsPutSchema,
@@ -85,5 +90,51 @@ export const accountingFxContract = c.router({
     body: fxRevaluationRequestSchema,
     responses: { 201: ok, 400: errorResponse, 403: errorResponse, 422: errorResponse },
     summary: "Post the revaluation with an automatic next-day reversal",
+  },
+  getHyperinflationSettings: {
+    method: "GET",
+    path: "/api/accounting/hyperinflation-settings",
+    responses: { 200: ok, 403: errorResponse },
+    summary: "IAS 29 hyperinflation settings",
+  },
+  putHyperinflationSettings: {
+    method: "PUT",
+    path: "/api/accounting/hyperinflation-settings",
+    body: hyperinflationSettingsSchema,
+    responses: { 200: ok, 400: errorResponse, 403: errorResponse },
+    summary: "Turn IAS 29 restatement on or off and set its accounts",
+  },
+  listPriceIndices: {
+    method: "GET",
+    path: "/api/accounting/price-indices",
+    responses: { 200: ok, 403: errorResponse },
+    summary: "General price index points, oldest first",
+  },
+  putPriceIndices: {
+    method: "PUT",
+    path: "/api/accounting/price-indices",
+    body: priceIndexPutSchema,
+    responses: { 200: ok, 400: errorResponse, 403: errorResponse },
+    summary: "Upsert general price index points",
+  },
+  listIas29Restatements: {
+    method: "GET",
+    path: "/api/accounting/ias29-restatements",
+    responses: { 200: ok, 403: errorResponse },
+    summary: "Posted IAS 29 restatements, newest first",
+  },
+  previewIas29Restatement: {
+    method: "POST",
+    path: "/api/accounting/ias29-restatements/preview",
+    body: ias29RequestSchema,
+    responses: { 200: ok, 400: errorResponse, 403: errorResponse, 422: errorResponse },
+    summary: "Compute the IAS 29 restatement without posting",
+  },
+  postIas29Restatement: {
+    method: "POST",
+    path: "/api/accounting/ias29-restatements",
+    body: ias29RequestSchema,
+    responses: { 201: ok, 400: errorResponse, 403: errorResponse, 422: errorResponse },
+    summary: "Post the IAS 29 restatement with an automatic next-day reversal",
   },
 });

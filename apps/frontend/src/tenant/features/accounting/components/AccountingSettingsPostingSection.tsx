@@ -1,6 +1,7 @@
 import { type Account } from "@mms/shared";
 import { BookOpen } from "lucide-react";
 import { FormSelect } from "@/components/app/FormSelect";
+import { accountOptions } from "@/tenant/features/accounting/lib/accountOptions";
 import { Field } from "@/components/app/FormPrimitives";
 import { SectionCard } from "@/components/app/SectionCard";
 import { Button } from "@/components/ui/button";
@@ -20,14 +21,6 @@ import { AccountingSettingsFxPostingFields } from "./AccountingSettingsFxPosting
  * Revenue (contra-revenue) — offering only Expense hid every contra-revenue
  * account the server would have accepted.
  */
-function accountOptions(accounts: Account[], types?: Account["type"] | Account["type"][]) {
-  const allowed = types === undefined ? null : Array.isArray(types) ? types : [types];
-  return accounts
-    .filter((account) => account.isActive !== false && (!allowed || allowed.includes(account.type)))
-    .sort((left, right) => left.code.localeCompare(right.code))
-    .map((account) => ({ value: account.id, label: `${account.code} – ${account.name}` }));
-}
-
 interface AccountingSettingsPostingSectionProps {
   accounts: Account[];
 }
