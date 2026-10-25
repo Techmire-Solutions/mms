@@ -128,7 +128,7 @@ export async function listMonthlyMovements(tenant: string, date: string): Promis
       month: string;
       net_func: string;
     }>(sql`
-      SELECT l.account_id, a.code, a.name, a.type, a.is_monetary, substr(e.date, 1, 7) AS month,
+      SELECT l.account_id, a.code, a.name, a.type, a.is_monetary, left(e.date::text, 7) AS month,
         (SUM(COALESCE(l.func_debit, l.debit)) - SUM(COALESCE(l.func_credit, l.credit)))::text AS net_func
       FROM accounting_journal_lines l
       JOIN accounting_entries e
@@ -138,7 +138,7 @@ export async function listMonthlyMovements(tenant: string, date: string): Promis
       WHERE l.workspace_subdomain = ${subdomain}
         AND e.status = 'posted' AND e.deleted_at IS NULL AND e.date <= ${date}
         AND COALESCE(e.source_type, '') NOT IN ('ias29_restate', 'ias29_reversal')
-      GROUP BY l.account_id, a.code, a.name, a.type, a.is_monetary, substr(e.date, 1, 7)
+      GROUP BY l.account_id, a.code, a.name, a.type, a.is_monetary, left(e.date::text, 7)
       HAVING SUM(COALESCE(l.func_debit, l.debit)) - SUM(COALESCE(l.func_credit, l.credit)) <> 0
       ORDER BY a.code, month`);
     return rows.map((row) => ({

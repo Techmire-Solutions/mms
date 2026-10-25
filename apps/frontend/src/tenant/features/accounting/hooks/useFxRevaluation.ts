@@ -1,5 +1,5 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import type { FxRevaluationRun } from "@mms/shared";
+import type { FxReport, FxRevaluationRun } from "@mms/shared";
 import { apiContract } from "@/lib/api";
 import { ApiError } from "@/lib/apiClient";
 import { invalidateAccountingQueries } from "@/tenant/features/accounting/hooks/invalidateAccountingQueries";
@@ -55,5 +55,22 @@ export function usePostFxRevaluation() {
       void queryClient.invalidateQueries({ queryKey: RUNS_KEY });
       invalidateAccountingQueries(queryClient);
     },
+  });
+}
+
+/** IAS 21 FX report for a period: exposure at `asOf` closing rates, realized FX, posted revaluations. */
+export function useFxReport(from: string, asOf: string, enabled = true) {
+  return useQuery({
+    queryKey: ["accounting", "fx", "report", from, asOf] as const,
+    queryFn: async ({ signal }) => {
+      const response = await apiContract.accountingFx.getFxReport({
+        query: { from, asOf },
+        signal,
+        fetchOptions: { signal },
+      });
+      assertOk(response, "Failed to load the FX report");
+      return (response.body as { report: FxReport }).report;
+    },
+    enabled: enabled && Boolean(from && asOf) && from <= asOf,
   });
 }

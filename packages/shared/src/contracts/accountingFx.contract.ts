@@ -1,6 +1,7 @@
 import { initContract } from "@ts-rest/core";
 import { z } from "zod";
 import { fxRevaluationRequestSchema } from "../finance/accountingFxRevaluation.js";
+import { fxReportQuerySchema } from "../finance/accountingFxReport.js";
 import { priceIndexPutSchema } from "../finance/accountingHyperinflation.js";
 import {
   hyperinflationSettingsSchema,
@@ -76,6 +77,13 @@ export const accountingFxContract = c.router({
     path: "/api/accounting/fx-revaluations",
     responses: { 200: ok, 403: errorResponse },
     summary: "Posted period-end FX revaluations, newest first",
+  },
+  getFxReport: {
+    method: "GET",
+    path: "/api/accounting/fx-report",
+    query: fxReportQuerySchema,
+    responses: { 200: ok, 400: errorResponse, 403: errorResponse },
+    summary: "FX exposure at closing rates, realized FX and posted revaluations",
   },
   previewFxRevaluation: {
     method: "POST",

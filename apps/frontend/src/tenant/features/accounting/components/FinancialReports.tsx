@@ -10,6 +10,7 @@ import {
   IncomeStatementPanel,
 } from "./FinancialStatementPanels";
 import { PinnedWidgets } from "@/tenant/components/reports";
+import { FxReportPanel } from "./FxReportPanel";
 import { useFinancialReportsModel } from "../hooks/useFinancialReportsModel";
 
 /**
@@ -43,6 +44,7 @@ export function FinancialReports(): React.JSX.Element {
     { key: "income" as const, label: t("accounting.reports.views.income") },
     { key: "balance" as const, label: t("accounting.reports.views.balance") },
     { key: "cashflow" as const, label: t("accounting.reports.views.cashflow") },
+    { key: "fx" as const, label: t("accounting.reports.views.fx") },
   ];
 
   if (isError) {
@@ -89,6 +91,9 @@ export function FinancialReports(): React.JSX.Element {
           panelIdPrefix="financial-report"
         />
 
+        {view === "fx" ? (
+          <FxReportPanel dateFrom={dateFrom} dateTo={dateTo} />
+        ) : (
         <ReportDataGridContainer
           title={t("accounting.reports.export.label", { view })}
           filename={`${view}_report`}
@@ -130,6 +135,7 @@ export function FinancialReports(): React.JSX.Element {
             />
           )}
         </ReportDataGridContainer>
+        )}
       </div>
 
       <PinnedWidgets category="accounting" />

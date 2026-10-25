@@ -1,6 +1,7 @@
 import {
   computeRealizedFx,
   documentCurrency,
+  generatedInvoiceCurrency,
   moneyToDecimalString,
   settlementInvoiceAmount,
   type Invoice,
@@ -105,4 +106,32 @@ export async function resolvePaymentFx(
     invoiceAmount,
     realizedFx: Number(moneyToDecimalString(realized)),
   };
+}
+
+/**
+ * Stamp generated invoice drafts billed in an enabled foreign session currency
+ * with that currency and the SPOT rate on their due date (the date manual
+ * invoices book at). One lookup per currency × date; a missing rate is a 422.
+ */
+export async function applyGeneratedInvoiceFx<T extends { enrollmentId: string; dueDate: string }>(
+  tenant: string,
+  drafts: readonly T[],
+  sessionCurrencyByEnrollment: ReadonlyMap<string, string | undefined>,
+  fx: AccountingFxRepository = accountingFxRepository,
+): Promise<(T & ResolvedDocumentFx)[]> {
+  const settings = await fx.getCurrencySettings(tenant);
+  const resolved = new Map<string, ResolvedDocumentFx>();
+  const result: (T & ResolvedDocumentFx)[] = [];
+  for (const draft of drafts) {
+    const currency = generatedInvoiceCurrency(sessionCurrencyByEnrollment.get(draft.enrollmentId), settings);
+    if (!currency) {
+      result.push(draft);
+      continue;
+    }
+    const key = `${currency}|${draft.dueDate}`;
+    const documentFx = resolved.get(key) ?? (await resolveDocumentFx(tenant, { currency }, draft.dueDate, fx));
+    resolved.set(key, documentFx);
+    result.push({ ...draft, ...documentFx });
+  }
+  return result;
 }

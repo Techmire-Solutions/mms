@@ -12,7 +12,7 @@ import {
   type TrialBalanceRow,
 } from "../lib/financialReportsExportHelpers";
 
-export type FinancialReportViewType = "income" | "balance" | "cashflow";
+export type FinancialReportViewType = "income" | "balance" | "cashflow" | "fx";
 
 export function useFinancialReportsModel() {
   const { t } = useTranslation();
@@ -96,7 +96,10 @@ export function useFinancialReportsModel() {
   const payablesChange = metrics.cashFlowAdjustments.payables;
 
   const exportColumns = getFinancialReportExportColumns(t);
-  const exportRows = buildFinancialReportExportRows({
+  const exportRows =
+    view === "fx"
+      ? []
+      : buildFinancialReportExportRows({
     view,
     tb: metrics.tb,
     balanceSheetTb: metrics.balanceSheetTb,

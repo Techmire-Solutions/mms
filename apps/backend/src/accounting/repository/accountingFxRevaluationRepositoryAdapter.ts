@@ -7,6 +7,7 @@ import {
   listFxRevaluationRuns,
   saveFxRevaluationRun,
 } from "../../db/repositories/accountingFxRevaluationRepository.js";
+import { listRealizedFxByCurrency } from "../../db/repositories/accountingFxReportRepository.js";
 
 /** Drizzle-backed storage for IAS 21 period-end revaluation (ports & adapters seam). */
 export const accountingFxRevaluationRepository = {
@@ -17,4 +18,5 @@ export const accountingFxRevaluationRepository = {
   saveFxRevaluationRun,
   getPostingRules,
   listFiscalYearsByWorkspace,
+  listRealizedFxByCurrency,
 };

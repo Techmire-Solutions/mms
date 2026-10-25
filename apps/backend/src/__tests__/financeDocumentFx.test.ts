@@ -1,6 +1,6 @@
 import { describe, expect, it, vi } from "vitest";
 import type { AccountingFxRepository } from "../accounting/repository/accountingFxRepository.js";
-import { resolveDocumentFx, resolvePaymentFx } from "../finance/use-cases/financeDocumentFx.js";
+import { applyGeneratedInvoiceFx, resolveDocumentFx, resolvePaymentFx } from "../finance/use-cases/financeDocumentFx.js";
 
 function makeFx(rate: string | null = "285"): AccountingFxRepository {
   return {
@@ -102,6 +102,47 @@ describe("resolvePaymentFx", () => {
       usdInvoice,
       { amount: 10, date: "2026-10-15", currency: "EUR" },
       makeFx(),
+    );
+
+    // Assert
+    await expect(result).rejects.toMatchObject({ statusCode: 422 });
+  });
+});
+
+describe("applyGeneratedInvoiceFx", () => {
+  it("given drafts from a USD and a PKR session, should stamp only the USD one, looking its rate up once", async () => {
+    // Arrange
+    const fx = makeFx("281");
+    const drafts = [
+      { enrollmentId: "e1", dueDate: "2026-11-10" },
+      { enrollmentId: "e2", dueDate: "2026-11-10" },
+      { enrollmentId: "e3", dueDate: "2026-11-10" },
+    ];
+    const sessions = new Map([
+      ["e1", "USD"],
+      ["e2", "PKR"],
+      ["e3", "USD"],
+    ]);
+
+    // Act
+    const result = await applyGeneratedInvoiceFx("demo", drafts, sessions, fx);
+
+    // Assert
+    expect(result).toEqual([
+      { enrollmentId: "e1", dueDate: "2026-11-10", currency: "USD", exchangeRate: "281" },
+      { enrollmentId: "e2", dueDate: "2026-11-10" },
+      { enrollmentId: "e3", dueDate: "2026-11-10", currency: "USD", exchangeRate: "281" },
+    ]);
+    expect(fx.lookupExchangeRate).toHaveBeenCalledTimes(1);
+  });
+
+  it("given a USD session but no rate on file, should refuse to generate rather than bill at 1", async () => {
+    // Arrange / Act
+    const result = applyGeneratedInvoiceFx(
+      "demo",
+      [{ enrollmentId: "e1", dueDate: "2026-11-10" }],
+      new Map([["e1", "USD"]]),
+      makeFx(null),
     );
 
     // Assert

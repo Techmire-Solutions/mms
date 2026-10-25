@@ -1,6 +1,6 @@
 import { and, eq, inArray, isNull } from "drizzle-orm";
 import type { EnrollmentBillingSource } from "@mms/shared";
-import { enrollments, financeInvoices } from "../schema.js";
+import { enrollments, financeInvoices, sessions } from "../schema.js";
 import { withTenantRead } from "../tenant-context.js";
 
 const BILLABLE_STATUSES = ["pending", "confirmed"] as const;
@@ -28,6 +28,7 @@ function toBillingSource(row: {
   finalFee: string;
   invoiceId: string | null;
   status: string;
+  sessionCurrency: string | null;
 }): EnrollmentBillingSource {
   return {
     id: row.id,
@@ -45,6 +46,7 @@ function toBillingSource(row: {
     finalFee: Number(row.finalFee ?? 0),
     invoiceId: row.invoiceId,
     status: row.status,
+    ...(row.sessionCurrency ? { sessionCurrency: row.sessionCurrency.trim().toUpperCase() } : {}),
   };
 }
 
@@ -64,6 +66,7 @@ const ENROLLMENT_BILLING_COLUMNS = {
   finalFee: enrollments.finalFee,
   invoiceId: enrollments.invoiceId,
   status: enrollments.status,
+  sessionCurrency: sessions.currency,
 } as const;
 
 /** Active billable enrollments for one generate request (hard cap 100). */
@@ -86,6 +89,10 @@ export async function listBillableEnrollments(
     const rows = await tx
       .select(ENROLLMENT_BILLING_COLUMNS)
       .from(enrollments)
+      .leftJoin(
+        sessions,
+        and(eq(sessions.workspaceSubdomain, enrollments.workspaceSubdomain), eq(sessions.id, enrollments.sessionId)),
+      )
       .where(and(...conditions))
       .limit(PAGE_SIZE);
     return rows.map(toBillingSource);

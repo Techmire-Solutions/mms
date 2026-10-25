@@ -8,6 +8,7 @@ import {
   resolveYearId,
 } from "../ledgerPosting/ledgerPostingHelpers.js";
 import type { FxRevaluationDeps } from "./fxRevaluationUseCases.js";
+import type { FxReportDeps } from "./fxReportUseCases.js";
 
 /** Production wiring: callers run inside one tenant transaction, so entries, run and audit commit together. */
 export const fxRevaluationDeps: FxRevaluationDeps = {
@@ -23,4 +24,11 @@ export const fxRevaluationDeps: FxRevaluationDeps = {
     return entryForSource(sourceType, sourceId, date, description, lines, resolveYearId(years, date));
   },
   recordAudit: (input) => recordModernAuditEvent(activeDb(), input),
+};
+
+export const fxReportDeps: FxReportDeps = {
+  fx: fxRevaluationDeps.fx,
+  listBalances: fxRevaluationDeps.listBalances,
+  listRuns: fxRevaluationDeps.listRuns,
+  listRealized: store.listRealizedFxByCurrency,
 };

@@ -19,7 +19,8 @@ import { upsertExchangeRates } from "../../db/repositories/accountingExchangeRat
 import { savePostingRules } from "../../db/repositories/accountingLedgerOpsRepository.js";
 import { withTenant } from "../../db/tenant-context.js";
 import { postFxRevaluation, previewFxRevaluation } from "../../accounting/use-cases/fxRevaluationUseCases.js";
-import { fxRevaluationDeps } from "../../accounting/use-cases/fxRevaluationDeps.js";
+import { fxReportDeps, fxRevaluationDeps } from "../../accounting/use-cases/fxRevaluationDeps.js";
+import { buildFxReport } from "../../accounting/use-cases/fxReportUseCases.js";
 import { requireDatabaseConnection } from "./dbTestSupport.js";
 
 const TENANT = "fx-ias21-reval";
@@ -137,5 +138,26 @@ describe("IAS 21 period-end revaluation", () => {
 
     // Assert: after the reversal the USD AR is back at 280,000, so at 283 the gain is 3,000 again.
     expect(nextMonth.lines[0]).toMatchObject({ carryingFunc: "280000.00", unrealized: "3000.00" });
+  });
+
+  it("given the posted revaluation, should report USD exposure at the closing rate and the run in the period", async () => {
+    // Arrange / Act
+    const report = await withTenant(TENANT, () =>
+      buildFxReport(fxReportDeps, TENANT, { from: "2026-11-01", asOf: "2026-11-30" }),
+    );
+
+    // Assert: on 30 Nov the revaluation is in, so the USD AR is carried at 283 with nothing left unrealized.
+    expect(report.exposure).toEqual([
+      {
+        currency: "USD",
+        openTxn: "1000.00",
+        carryingFunc: "283000.00",
+        closingRate: "283",
+        revaluedFunc: "283000.00",
+        unrealized: "0.00",
+      },
+    ]);
+    expect(report.revaluations).toEqual([{ revaluationDate: "2026-11-30", totalUnrealized: "3000.00" }]);
+    expect(report).toMatchObject({ realized: [], totalRealized: "0.00", functionalCurrency: "PKR" });
   });
 });

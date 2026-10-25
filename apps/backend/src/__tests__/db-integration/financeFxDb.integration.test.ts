@@ -6,6 +6,7 @@ import { financeInvoices, financePayments, workspaces } from "../../db/schema.js
 import { saveInvoice } from "../../db/repositories/financeInvoicesPersist.js";
 import { findInvoiceById } from "../../db/repositories/financeInvoicesRepository.js";
 import { findPaymentById, savePayment } from "../../db/repositories/financePaymentsRepository.js";
+import { listRealizedFxByCurrency } from "../../db/repositories/accountingFxReportRepository.js";
 import { requireDatabaseConnection } from "./dbTestSupport.js";
 
 const TENANT = "fx-ias21-finance";
@@ -92,5 +93,15 @@ describe("IAS 21 finance documents", () => {
       invoiceAmount: 400,
       realizedFx: 2000,
     });
+  });
+
+  it("given a PKR payment settling a USD invoice, should report its realized FX under USD within the period only", async () => {
+    // Arrange / Act
+    const october = await listRealizedFxByCurrency(TENANT, "2026-10-01", "2026-10-31");
+    const november = await listRealizedFxByCurrency(TENANT, "2026-11-01", "2026-11-30");
+
+    // Assert
+    expect(october).toEqual([{ currency: "USD", realized: "2000", payments: 1 }]);
+    expect(november).toEqual([]);
   });
 });

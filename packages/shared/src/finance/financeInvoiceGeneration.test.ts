@@ -6,6 +6,7 @@ import {
   isBillingPeriod,
   isEnrollmentBillable,
   shouldSkipGeneratedInvoice,
+  generatedInvoiceCurrency,
 } from "./financeInvoiceGeneration.js";
 
 const enrollment = {
@@ -87,5 +88,21 @@ describe("financeInvoiceGeneration", () => {
         enrollmentHasAnyInvoice: true,
       }),
     ).toBe(true);
+  });
+});
+
+describe("generatedInvoiceCurrency", () => {
+  const settings = { functionalCurrency: "PKR", enabledCurrencies: ["USD"] };
+
+  it("given an enabled foreign session currency, should bill in it", () => {
+    // Arrange / Act / Assert
+    expect(generatedInvoiceCurrency("USD", settings)).toBe("USD");
+  });
+
+  it("given the functional currency, a disabled currency or none, should bill in the functional currency", () => {
+    // Arrange / Act / Assert
+    expect(generatedInvoiceCurrency("PKR", settings)).toBeUndefined();
+    expect(generatedInvoiceCurrency("EUR", settings)).toBeUndefined();
+    expect(generatedInvoiceCurrency(undefined, settings)).toBeUndefined();
   });
 });
