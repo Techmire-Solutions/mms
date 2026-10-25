@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { type TaskRecord, type TaskInsert, type TaskPriority, type TaskStatus } from "@mms/shared";
 import { useTranslation } from "@/hooks/useTranslation";
 import { useEligibleTaskAssignees, useTasks } from "@/tenant/hooks/collections/tasks";
@@ -24,14 +24,30 @@ export function useTaskFormController({
   onSave,
 }: UseTaskFormControllerProps) {
   const { t } = useTranslation();
-  const [title, setTitle] = useState("");
-  const [description, setDescription] = useState("");
-  const [priority, setPriority] = useState<TaskPriority>("medium");
-  const [status, setStatus] = useState<TaskStatus>("todo");
-  const [startDate, setStartDate] = useState<string | null>(null);
-  const [dueAt, setDueAt] = useState<string | null>(null);
-  const [parentTaskId, setParentTaskId] = useState<string | null>(null);
-  const [selectedAssignees, setSelectedAssignees] = useState<SelectedAssignee[]>([]);
+  const [title, setTitle] = useState(() => initialData?.title ?? "");
+  const [description, setDescription] = useState(() => initialData?.description ?? "");
+  const [priority, setPriority] = useState<TaskPriority>(() => initialData?.priority ?? "medium");
+  const [status, setStatus] = useState<TaskStatus>(() => initialData?.status ?? "todo");
+  const [startDate, setStartDate] = useState<string | null>(() =>
+    toDateOnly(initialData?.startDate),
+  );
+  const [dueAt, setDueAt] = useState<string | null>(() =>
+    initialData?.dueAt
+      ? initialData.dueAt instanceof Date
+        ? initialData.dueAt.toISOString()
+        : String(initialData.dueAt)
+      : null,
+  );
+  const [parentTaskId, setParentTaskId] = useState<string | null>(
+    () => initialData?.parentTaskId ?? null,
+  );
+  const [selectedAssignees, setSelectedAssignees] = useState<SelectedAssignee[]>(
+    () =>
+      initialData?.assignees?.map((a) => ({
+        facultyId: a.facultyId,
+        name: a.facultyName || t("tasks.assigneeFallback"),
+      })) ?? [],
+  );
   const [error, setError] = useState<string | null>(null);
 
   const { data: eligibleList = [] } = useEligibleTaskAssignees({ enabled: open });
@@ -123,6 +139,56 @@ export function useTaskFormController({
     .filter((task) => task.id !== initialData?.id)
     .map((task) => ({ value: task.id, label: task.title }));
 
+  const isDirty = useMemo(() => {
+    if (!initialData) {
+      return Boolean(
+        title.trim() ||
+        description.trim() ||
+        startDate ||
+        dueAt ||
+        parentTaskId ||
+        selectedAssignees.length > 0 ||
+        priority !== "medium" ||
+        status !== "todo",
+      );
+    }
+
+    const initialDueAt = initialData.dueAt
+      ? initialData.dueAt instanceof Date
+        ? initialData.dueAt.toISOString()
+        : String(initialData.dueAt)
+      : null;
+    const initialAssigneeIds = (initialData.assignees ?? [])
+      .map((a) => a.facultyId)
+      .sort()
+      .join(",");
+    const currentAssigneeIds = selectedAssignees
+      .map((a) => a.facultyId)
+      .sort()
+      .join(",");
+
+    return (
+      title.trim() !== (initialData.title ?? "").trim() ||
+      description.trim() !== (initialData.description ?? "").trim() ||
+      priority !== initialData.priority ||
+      status !== initialData.status ||
+      (startDate || null) !== toDateOnly(initialData.startDate) ||
+      (dueAt || null) !== (initialDueAt || null) ||
+      (parentTaskId || null) !== (initialData.parentTaskId || null) ||
+      initialAssigneeIds !== currentAssigneeIds
+    );
+  }, [
+    initialData,
+    title,
+    description,
+    priority,
+    status,
+    startDate,
+    dueAt,
+    parentTaskId,
+    selectedAssignees,
+  ]);
+
   return {
     t,
     title,
@@ -143,6 +209,7 @@ export function useTaskFormController({
     selectedAssignees,
     eligibleList,
     error,
+    isDirty,
     handleAddAssignee,
     handleRemoveAssignee,
     handleSubmit,

@@ -5,10 +5,10 @@
 
 import React from "react";
 import { Pencil, Trash2, RotateCcw } from "lucide-react";
-import type { TaskRecord, TaskStatus } from "@mms/shared";
+import { formatDate, type TaskRecord, type TaskStatus } from "@mms/shared";
 import { DataTableRowActions } from "@/components/common/data-table";
 import { DirectoryCardMetaTile } from "@/components/app/DirectoryCardMetaTile";
-import { EntityCard } from "@/components/app/EntityCard";
+import { DirectoryCardMetaGrid } from "@/components/app/DirectoryCardMetaGrid";
 import { DirectoryEntityCard } from "@/components/app/DirectoryEntityCard";
 import { useTranslation } from "@/hooks/useTranslation";
 import { TaskPriorityBadge, TaskStatusBadge } from "./TaskBadges";
@@ -100,7 +100,7 @@ export function TaskCardItem({
       viewLabel={t("tasks.actionViewShort")}
       viewAriaLabel={t("tasks.viewTask", { name: task.title })}
       metadataSlot={
-        <EntityCard.MetaGrid>
+        <DirectoryCardMetaGrid>
           {isColumnVisible("status") ? (
             <DirectoryCardMetaTile label={t("tasks.status")}>
               <TaskStatusBadge
@@ -125,10 +125,10 @@ export function TaskCardItem({
           ) : null}
           {isColumnVisible("dueAt") ? (
             <DirectoryCardMetaTile label={t("tasks.dueAt")}>
-              {task.dueAt ? new Date(task.dueAt).toLocaleDateString() : t("tasks.noDueDate")}
+              {task.dueAt ? formatDate(task.dueAt) : t("tasks.noDueDate")}
             </DirectoryCardMetaTile>
           ) : null}
-        </EntityCard.MetaGrid>
+        </DirectoryCardMetaGrid>
       }
       overflowActions={actions.length > 0 ? <DataTableRowActions actions={actions} /> : null}
     />

@@ -9,7 +9,11 @@ import { WorkTaskToolbar } from "@/components/common/work/WorkTaskToolbar";
 import { useWorkDirectoryViewMode } from "@/hooks/useWorkDirectoryViewMode";
 import { useTranslation } from "@/hooks/useTranslation";
 import { notify } from "@/lib/notify";
-import { useBulkDeleteTasks, useBulkRestoreTasks } from "@/tenant/hooks/collections/tasks";
+import {
+  useBulkDeleteTasks,
+  useBulkRestoreTasks,
+  useBulkUpdateTaskStatus,
+} from "@/tenant/hooks/collections/tasks";
 import { useTasksColumnLayout } from "../hooks/useTasksColumnLayout";
 import { TaskDetailDrawer } from "./TaskDetailDrawer";
 import { TasksBulkActionBar } from "./TasksBulkActionBar";
@@ -55,6 +59,8 @@ export function TasksWorkTab({
   const { t } = useTranslation();
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState<string[]>([]);
+  const [dueFrom, setDueFrom] = useState<string | undefined>(undefined);
+  const [dueTo, setDueTo] = useState<string | undefined>(undefined);
   const [viewingTask, setViewingTask] = useState<TaskRecord | null>(null);
   const { viewMode, setViewMode } = useWorkDirectoryViewMode();
   const {
@@ -69,6 +75,7 @@ export function TasksWorkTab({
 
   const bulkDeleteMutation = useBulkDeleteTasks();
   const bulkRestoreMutation = useBulkRestoreTasks();
+  const bulkUpdateStatusMutation = useBulkUpdateTaskStatus();
 
   const handleBulkDelete = () => {
     if (!selectedIds.length) return;
@@ -100,17 +107,42 @@ export function TasksWorkTab({
     });
   };
 
+  const handleBulkStatusChange = (status: string) => {
+    if (!selectedIds.length) return;
+    const targets = [...selectedIds];
+    bulkUpdateStatusMutation.mutate(
+      { ids: targets, status: status as TaskStatus },
+      {
+        onSuccess: () => {
+          onClearSelection();
+          notify.success(t("tasks.bulkStatusSuccess", { count: targets.length }));
+        },
+        onError: (err) => {
+          notify.error(err instanceof Error ? err.message : t("tasks.bulkStatusFailed"));
+        },
+      },
+    );
+  };
+
   const filteredTasks = useMemo(() => {
     const q = search.trim().toLowerCase();
     return tasks.filter((task) => {
       if (statusFilter.length > 0 && !statusFilter.includes(task.status)) return false;
+      if (dueFrom || dueTo) {
+        if (!task.dueAt) return false;
+        const taskDueDate = (
+          task.dueAt instanceof Date ? task.dueAt.toISOString() : String(task.dueAt)
+        ).slice(0, 10);
+        if (dueFrom && taskDueDate < dueFrom) return false;
+        if (dueTo && taskDueDate > dueTo) return false;
+      }
       if (!q) return true;
       const haystack = `${task.title} ${task.description ?? ""} ${
         task.assignees?.map((a) => a.facultyName).join(" ") ?? ""
       }`.toLowerCase();
       return haystack.includes(q);
     });
-  }, [tasks, search, statusFilter]);
+  }, [tasks, search, statusFilter, dueFrom, dueTo]);
 
   const primaryAction = undefined;
 
@@ -134,6 +166,16 @@ export function TasksWorkTab({
             ),
           allLabel: t("common.all"),
           onResetAll: () => setStatusFilter([]),
+        }}
+        dateRange={{
+          startDate: dueFrom,
+          endDate: dueTo,
+          onDateRangeChange: ({ start, end }) => {
+            setDueFrom(start);
+            setDueTo(end);
+          },
+          startPlaceholder: t("tasks.dateFrom"),
+          endPlaceholder: t("tasks.dateTo"),
         }}
         trashToggle={
           onToggleTrash && canDelete
@@ -159,10 +201,13 @@ export function TasksWorkTab({
       <TasksBulkActionBar
         selectedCount={selectedIds.length}
         viewingDeleted={viewingDeleted}
+        canWrite={canWrite && !viewingDeleted}
         canDelete={canDelete}
         onClearSelection={onClearSelection}
         onRequestBulkDelete={handleBulkDelete}
         onRequestBulkRestore={handleBulkRestore}
+        onBulkStatusChange={handleBulkStatusChange}
+        statusPending={bulkUpdateStatusMutation.isPending}
       />
 
       <TasksWorkDirectory
@@ -174,6 +219,7 @@ export function TasksWorkTab({
         canComplete={canComplete ?? canWrite}
         canDelete={canDelete}
         isLoading={isLoading}
+        columnRegistry={columnRegistry}
         isColumnVisible={isColumnVisible}
         getColumnWidth={getColumnWidth}
         onColumnResize={setColumnWidth}

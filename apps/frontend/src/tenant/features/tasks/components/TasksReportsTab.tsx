@@ -5,7 +5,7 @@
 
 import React from "react";
 import { CheckCircle2, Clock, AlertTriangle, RotateCcw, ListTodo, TrendingUp } from "lucide-react";
-import { useTaskMetrics } from "@/tenant/features/tasks/hooks/useTasksApi";
+import { useTaskMetrics } from "../hooks/useTasksApi";
 import { StatsSkeleton } from "@shared/ui";
 import { ModuleCommandMetricsGrid } from "@/components/app/ModuleCommandMetricsGrid";
 import { useTranslation } from "@/hooks/useTranslation";
