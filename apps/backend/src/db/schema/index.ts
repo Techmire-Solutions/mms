@@ -21,6 +21,7 @@ export * from "./accountingLedgerOps.js";
 export * from "./accountingVoucherNumbering.js";
 export * from "./accountingFx.js";
 export * from "./accountingFxRevaluation.js";
+export * from "./platformConsolidation.js";
 export * from "./examinations.js";
 export * from "./obligations.js";
 export * from "./hasanat.js";

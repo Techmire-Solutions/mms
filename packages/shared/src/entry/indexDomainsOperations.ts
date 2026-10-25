@@ -11,6 +11,8 @@ export * from "../finance/accountingFxAccounts.js";
 export * from "../finance/accountingFxLines.js";
 export * from "../finance/accountingFxSettings.js";
 export * from "../finance/accountingFxRevaluation.js";
+export * from "../finance/consolidationTranslation.js";
+export * from "../finance/consolidationGroups.js";
 export * from "../finance/accountingJournalReversal.js";
 export * from "../finance/accountingJournalTemplates.js";
 export * from "../finance/accountingLedgerInvariants.js";

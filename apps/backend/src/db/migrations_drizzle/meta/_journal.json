@@ -1345,6 +1345,13 @@
       "when": 1792920400000,
       "tag": "0191_accounting_fx_revaluation",
       "breakpoints": true
+    },
+    {
+      "idx": 192,
+      "version": "7",
+      "when": 1792920500000,
+      "tag": "0192_platform_consolidation_groups",
+      "breakpoints": true
     }
   ]
 }
