@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { type ContactPreferences } from "@mms/shared";
 import type { CountryCodeEntry } from "@/lib/contacts/countryCodeOptions";
 import { useContactConfig } from "@/lib/contexts/ContactConfigContext";
@@ -25,15 +25,21 @@ export function useContactsSetupPanelState() {
 
   const isPreferencesDirty = isPrefsDraftDirty || isCountryCodesDirty;
 
-  useEffect(() => {
-    if (isPreferencesDirty) return;
-    setPrefs(contextPrefs);
-  }, [contextPrefs, isPreferencesDirty]);
+  const [prevContextPrefs, setPrevContextPrefs] = useState(contextPrefs);
+  if (prevContextPrefs !== contextPrefs) {
+    setPrevContextPrefs(contextPrefs);
+    if (!isPreferencesDirty) {
+      setPrefs(contextPrefs);
+    }
+  }
 
-  useEffect(() => {
-    if (isPreferencesDirty) return;
-    setCountryCodesDraft(countryCodes);
-  }, [countryCodes, isPreferencesDirty]);
+  const [prevCountryCodes, setPrevCountryCodes] = useState(countryCodes);
+  if (prevCountryCodes !== countryCodes) {
+    setPrevCountryCodes(countryCodes);
+    if (!isPreferencesDirty) {
+      setCountryCodesDraft(countryCodes);
+    }
+  }
 
   const updatePreference = <K extends keyof ContactPreferences>(
     key: K,

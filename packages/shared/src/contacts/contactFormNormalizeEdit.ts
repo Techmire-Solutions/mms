@@ -202,10 +202,32 @@ export function normalizeContactForEdit(
     socials = [{ platform: defaults.socialPlatform || "Facebook", url: "" }];
   }
 
-  const education = normalizeEducationList(merged.education, defaults);
-  const experience = normalizeExperienceList(merged.experience, defaults);
+  const rawEducation =
+    Array.isArray(merged.education) && merged.education.length > 0
+      ? merged.education
+      : (merged as Record<string, unknown>).educations;
+  const rawExperience =
+    Array.isArray(merged.experience) && merged.experience.length > 0
+      ? merged.experience
+      : (merged as Record<string, unknown>).experiences;
+  const rawBankDetails =
+    Array.isArray(merged.bankDetails) && merged.bankDetails.length > 0
+      ? merged.bankDetails
+      : (merged as Record<string, unknown>).bankAccounts;
+
+  const education = normalizeEducationList(
+    rawEducation as Parameters<typeof normalizeEducationList>[0],
+    defaults,
+  );
+  const experience = normalizeExperienceList(
+    rawExperience as Parameters<typeof normalizeExperienceList>[0],
+    defaults,
+  );
   const skills = normalizeSkillsList(merged.skills, defaults);
-  const bankDetails = normalizeBankDetailsList(merged.bankDetails, defaults);
+  const bankDetails = normalizeBankDetailsList(
+    rawBankDetails as Parameters<typeof normalizeBankDetailsList>[0],
+    defaults,
+  );
   const relationshipContacts = normalizeRelationshipContactsList(
     merged.relationshipContacts,
     defaults,

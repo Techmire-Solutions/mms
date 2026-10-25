@@ -3,8 +3,15 @@
  * @description Tasks Work tier — toolbar, selection, directory, detail drawer.
  */
 
-import React, { useMemo, useState } from "react";
-import { TASK_STATUSES, type TaskRecord, type TaskStatus } from "@mms/shared";
+import React, { useState } from "react";
+import { TASK_STATUSES, TASK_PRIORITIES, type TaskRecord, type TaskStatus } from "@mms/shared";
+import {
+  ModuleFilterDropdown,
+  ModuleFilterCheckboxGroup,
+} from "@/components/app/ModuleFiltersMenuButton";
+import { FilterChips } from "@/components/app/FilterChips";
+import { CompactSegmentedControl } from "@/components/app/CompactSegmentedControl";
+import { useTasksWorkTabFilters, type TaskQuickFilter } from "../hooks/useTasksWorkTabFilters";
 import { WorkTaskToolbar } from "@/components/common/work/WorkTaskToolbar";
 import { useWorkDirectoryViewMode } from "@/hooks/useWorkDirectoryViewMode";
 import { useTranslation } from "@/hooks/useTranslation";
@@ -57,10 +64,24 @@ export function TasksWorkTab({
   onUpdateStatus,
 }: TasksWorkTabProps): React.JSX.Element {
   const { t } = useTranslation();
-  const [search, setSearch] = useState("");
-  const [statusFilter, setStatusFilter] = useState<string[]>([]);
-  const [dueFrom, setDueFrom] = useState<string | undefined>(undefined);
-  const [dueTo, setDueTo] = useState<string | undefined>(undefined);
+  const {
+    quickFilter,
+    setQuickFilter,
+    quickFilterOptions,
+    search,
+    setSearch,
+    statusFilter,
+    setStatusFilter,
+    priorityFilter,
+    setPriorityFilter,
+    dueFrom,
+    setDueFrom,
+    dueTo,
+    setDueTo,
+    filteredTasks,
+    activeChips,
+    handleClearFilters,
+  } = useTasksWorkTabFilters(tasks);
   const [viewingTask, setViewingTask] = useState<TaskRecord | null>(null);
   const { viewMode, setViewMode } = useWorkDirectoryViewMode();
   const {
@@ -124,30 +145,18 @@ export function TasksWorkTab({
     );
   };
 
-  const filteredTasks = useMemo(() => {
-    const q = search.trim().toLowerCase();
-    return tasks.filter((task) => {
-      if (statusFilter.length > 0 && !statusFilter.includes(task.status)) return false;
-      if (dueFrom || dueTo) {
-        if (!task.dueAt) return false;
-        const taskDueDate = (
-          task.dueAt instanceof Date ? task.dueAt.toISOString() : String(task.dueAt)
-        ).slice(0, 10);
-        if (dueFrom && taskDueDate < dueFrom) return false;
-        if (dueTo && taskDueDate > dueTo) return false;
-      }
-      if (!q) return true;
-      const haystack = `${task.title} ${task.description ?? ""} ${
-        task.assignees?.map((a) => a.facultyName).join(" ") ?? ""
-      }`.toLowerCase();
-      return haystack.includes(q);
-    });
-  }, [tasks, search, statusFilter, dueFrom, dueTo]);
-
   const primaryAction = undefined;
 
   return (
     <div className="space-y-3">
+      <div className="overflow-x-auto pb-0.5">
+        <CompactSegmentedControl<TaskQuickFilter>
+          value={quickFilter}
+          onChange={setQuickFilter}
+          options={quickFilterOptions}
+        />
+      </div>
+
       <WorkTaskToolbar
         regionLabel={t("nav.tasks")}
         shownCountLabel={t("tasks.shownCount", { count: filteredTasks.length })}
@@ -177,6 +186,34 @@ export function TasksWorkTab({
           startPlaceholder: t("tasks.dateFrom"),
           endPlaceholder: t("tasks.dateTo"),
         }}
+        filterButton={
+          <ModuleFilterDropdown
+            label={t("common.filters")}
+            activeCount={priorityFilter.length}
+            clearLabel={t("common.clearFilters")}
+            onClear={() => setPriorityFilter([])}
+          >
+            <ModuleFilterCheckboxGroup
+              label={t("tasks.priority")}
+              options={TASK_PRIORITIES.map((priority) => ({
+                value: priority,
+                label: t(`tasks.priority.${priority}` as Parameters<typeof t>[0]),
+              }))}
+              selected={priorityFilter}
+              onToggle={(value) =>
+                setPriorityFilter((current) =>
+                  current.includes(value)
+                    ? current.filter((p) => p !== value)
+                    : [...current, value],
+                )
+              }
+            />
+          </ModuleFilterDropdown>
+        }
+        hasActiveFilters={activeChips.length > 0}
+        onClearFilters={handleClearFilters}
+        clearFiltersLabel={t("common.clearFilters")}
+        filterChips={<FilterChips chips={activeChips} onClearAll={handleClearFilters} />}
         trashToggle={
           onToggleTrash && canDelete
             ? {

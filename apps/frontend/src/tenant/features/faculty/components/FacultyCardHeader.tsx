@@ -6,6 +6,7 @@ import {
 } from "@/components/app/PersonIdentityMeta";
 import { useTranslation } from "@/hooks/useTranslation";
 import { EntityCard } from "@/components/app/EntityCard";
+import { FacultyWorkloadPill } from "@/tenant/features/faculty/components/FacultyWorkloadPill";
 
 export interface FacultyCardHeaderProps {
   faculty: Faculty;
@@ -37,8 +38,7 @@ export function FacultyCardHeader({
   const showGender = (!isColumnVisible || isColumnVisible("gender")) && Boolean(faculty.gender);
   const effectiveGender = showGender ? faculty.gender : undefined;
 
-  const hasSubtitle = showEmployeeId || showGender || Boolean(faculty.designation);
-  const subtitle = hasSubtitle ? (
+  const subtitle = (
     <DirectoryCardSubtitleStack>
       <div className="flex items-center gap-1.5 flex-wrap">
         {showEmployeeId && faculty.employeeId ? (
@@ -60,12 +60,13 @@ export function FacultyCardHeader({
             {faculty.designation}
           </span>
         ) : null}
+        <FacultyWorkloadPill faculty={faculty} className="mt-1" />
       </div>
       {showGender && faculty.gender ? (
         <PersonIdentityMeta gender={faculty.gender} className="font-semibold truncate" />
       ) : null}
     </DirectoryCardSubtitleStack>
-  ) : undefined;
+  );
 
   return (
     <EntityCard.Header

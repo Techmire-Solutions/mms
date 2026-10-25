@@ -105,6 +105,27 @@ export function MessageComposerFormBody({
               label: `${template.labelKey ? t(template.labelKey as Parameters<typeof t>[0]) : template.label} [${t(getMessageCategoryLabelKey(template.category || "general"))}]`,
             }))}
           />
+          {(() => {
+            const selectedTemplate = channelTemplates.find((t) => t.id === templateId);
+            if (!selectedTemplate?.body) return null;
+            return (
+              <div className="mt-2 rounded-xl border border-primary/20 bg-primary/5 p-2.5 text-xs space-y-1">
+                <div className="flex items-center justify-between text-2xs font-semibold text-primary">
+                  <span>
+                    {selectedTemplate.labelKey
+                      ? t(selectedTemplate.labelKey as Parameters<typeof t>[0])
+                      : selectedTemplate.label}
+                  </span>
+                  <span className="font-mono text-muted-foreground uppercase">
+                    {t(getMessageCategoryLabelKey(selectedTemplate.category || "general"))}
+                  </span>
+                </div>
+                <p className="font-mono text-2xs text-muted-foreground line-clamp-2 italic">
+                  "{selectedTemplate.body}"
+                </p>
+              </div>
+            );
+          })()}
         </Field>
       )}
 

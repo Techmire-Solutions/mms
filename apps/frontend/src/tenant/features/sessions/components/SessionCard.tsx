@@ -11,6 +11,7 @@ import {
   getSessionCapacityMeta,
   renderSessionWorkColumnValue,
 } from "@/tenant/features/sessions/components/sessionWorkColumnCell";
+import { SessionCapacityPill } from "@/tenant/features/sessions/components/SessionCapacityPill";
 
 export interface SessionCardProps {
   session: Session;
@@ -67,9 +68,14 @@ export function SessionCard({
       reducedMotion={reducedMotion}
       header={{
         displayName: session.name,
-        subtitle: session.description ? (
-          <p className="text-xs text-muted-foreground mt-0.5 line-clamp-1">{session.description}</p>
-        ) : undefined,
+        subtitle: (
+          <div className="flex flex-col gap-1 mt-0.5">
+            {session.description && (
+              <p className="text-xs text-muted-foreground line-clamp-1">{session.description}</p>
+            )}
+            <SessionCapacityPill session={session} />
+          </div>
+        ),
       }}
       viewLabel={t("sessions.actionViewShort")}
       viewAriaLabel={`${t("sessions.table.viewProfile")} - ${session.name}`}

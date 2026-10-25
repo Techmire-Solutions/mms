@@ -15,19 +15,29 @@ export function useContactsDirectoryFilters({
   setActiveTab: (tab: string) => void;
   initialViewingDeleted?: boolean;
 }) {
+  const [initialDrillDown] = useState(() => consumeContactsWorkDrillDown());
   const [viewingDeleted, setViewingDeleted] = useDirectoryTrashState();
   const [listPage, setListPage] = useState(1);
-  const [search, setSearch] = useState("");
+  const [search, setSearch] = useState(() => initialDrillDown?.search || "");
   const debouncedSearch = useDebounce(search, 250);
-  const [filterGender, setFilterGender] = useState("");
-  const [quickFilter, setQuickFilter] = useState<ContactsQuickFilter>("all");
+  const [filterGender, setFilterGender] = useState(() => initialDrillDown?.gender || "");
+  const [quickFilter, setQuickFilter] = useState<ContactsQuickFilter>(() =>
+    initialDrillDown?.quickFilter && isContactsQuickFilter(initialDrillDown.quickFilter)
+      ? initialDrillDown.quickFilter
+      : "all",
+  );
   const [sortField, setSortField] = useState("name");
   const [sortDir, setSortDir] = useState<"asc" | "desc">("asc");
   const [selected, setSelected] = useState<(string | number)[]>([]);
 
-  useEffect(() => {
-    setListPage((prev) => (prev === 1 ? prev : 1));
-  }, [debouncedSearch, filterGender, quickFilter, sortField, sortDir, viewingDeleted]);
+  const currentFilterKey = `${debouncedSearch}|${filterGender}|${quickFilter}|${sortField}|${sortDir}|${viewingDeleted}`;
+  const [prevFilterKey, setPrevFilterKey] = useState(currentFilterKey);
+  if (prevFilterKey !== currentFilterKey) {
+    setPrevFilterKey(currentFilterKey);
+    if (listPage !== 1) {
+      setListPage(1);
+    }
+  }
 
   const applyDrillDown = useCallback(
     (filter: ContactsWorkDrillDown) => {
@@ -42,8 +52,9 @@ export function useContactsDirectoryFilters({
   );
 
   useEffect(() => {
-    const pending = consumeContactsWorkDrillDown();
-    if (pending) applyDrillDown(pending);
+    if (initialDrillDown) {
+      setActiveTab("work");
+    }
 
     const handler = (event: Event) => {
       const detail = (event as CustomEvent<ContactsWorkDrillDown>).detail;
@@ -51,7 +62,7 @@ export function useContactsDirectoryFilters({
     };
     window.addEventListener(CONTACTS_WORK_DRILLDOWN_EVENT, handler);
     return () => window.removeEventListener(CONTACTS_WORK_DRILLDOWN_EVENT, handler);
-  }, [applyDrillDown]);
+  }, [applyDrillDown, initialDrillDown, setActiveTab]);
 
   const hasActiveFilters = !!(filterGender || search || quickFilter !== "all");
   const activeFilterCount =

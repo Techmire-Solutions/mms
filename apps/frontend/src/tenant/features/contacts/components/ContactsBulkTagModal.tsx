@@ -72,7 +72,6 @@ export function ContactsBulkTagModal({
             value={tagInput}
             onChange={(e) => setTagInput(e.target.value)}
             placeholder={t("contacts.bulkTags.placeholder")}
-            autoFocus
             disabled={isPending}
             className={FORM_INPUT}
           />

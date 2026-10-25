@@ -16,11 +16,13 @@ export function useMessagingWorkTierKeyboardNav({
   handleOpenDetail,
 }: UseMessagingWorkTierKeyboardNavParams): { focusedIndex: number } {
   const [focusedIndex, setFocusedIndex] = useState<number>(-1);
-
-  // Reset when the data set changes (pagination, filters) so stale indexes never operate on rows out of view.
-  useEffect(() => {
-    setFocusedIndex(-1);
-  }, [logs]);
+  const [prevLogs, setPrevLogs] = useState(logs);
+  if (prevLogs !== logs) {
+    setPrevLogs(logs);
+    if (focusedIndex !== -1) {
+      setFocusedIndex(-1);
+    }
+  }
 
   // Keep the focused row visible without jarring scroll jumps.
   useEffect(() => {

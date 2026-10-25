@@ -1,4 +1,4 @@
-import { useEffect } from "react";
+import { useEffect, useRef } from "react";
 import { useWorkDirectoryViewMode } from "@/hooks/useWorkDirectoryViewMode";
 import { usePersistedTabState } from "@/hooks/usePersistedTabState";
 import { useTranslation } from "@/hooks/useTranslation";
@@ -56,7 +56,8 @@ export function useSessionsPageController() {
   const columnLayout = useSessionColumnLayout();
   const { viewMode, setViewMode } = useWorkDirectoryViewMode();
   const directory = useSessionsDirectoryFilters();
-  const dialogs = useSessionsDialogs((id, reason) => crudActions.handleDelete(id, reason));
+  const handleDeleteRef = useRef<(id: string, reason?: string) => void>(() => {});
+  const dialogs = useSessionsDialogs((id, reason) => handleDeleteRef.current(id, reason));
   const [activeTab, setActiveTab] = usePersistedTabState<string>("sessions_active_tab", "work");
 
   const useServerWork = activeTab === "work";
@@ -131,6 +132,10 @@ export function useSessionsPageController() {
     bulkUpdateSessionStatus,
     selectedIds,
     setSelectedIds,
+  });
+
+  useEffect(() => {
+    handleDeleteRef.current = crudActions.handleDelete;
   });
 
   const { handleExportCSV, handleBulkExport } = useSessionsExportActions({
