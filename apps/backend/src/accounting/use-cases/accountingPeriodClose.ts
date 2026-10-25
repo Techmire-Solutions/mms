@@ -8,12 +8,31 @@ import { aggregateAccountingReport } from "../../db/repositories/accountingRepos
 import { getAccountingPreferencesService } from "../../services/accountingPreferencesService.js";
 import { prepareJournalEntryForPersist } from "./accountingLedgerGuards.js";
 import { findAccountById } from "../../db/repositories/accountingAccountsRepository.js";
+import { getCurrencySettings } from "../../db/repositories/accountingCurrencySettingsRepository.js";
+import {
+  hasFxRevaluationBetween,
+  listForeignMonetaryBalances,
+} from "../../db/repositories/accountingFxRevaluationRepository.js";
 
 function ledgerError(
   message: string,
   statusCode = 422,
 ): Error & { statusCode: number; type: string } {
   return Object.assign(new Error(message), { statusCode, type: "validation_error" });
+}
+
+/**
+ * IAS 21.23: foreign monetary balances must be retranslated at the closing rate
+ * before the books close, or the year's P&L omits the unrealized FX difference.
+ */
+async function assertYearEndRevalued(tenant: string, endDate: string): Promise<void> {
+  const { functionalCurrency } = await getCurrencySettings(tenant);
+  const balances = await listForeignMonetaryBalances(tenant, endDate, functionalCurrency);
+  if (balances.length === 0) return;
+  if (await hasFxRevaluationBetween(tenant, endDate, endDate)) return;
+  throw ledgerError(
+    `Post the period-end FX revaluation for ${endDate} before closing: foreign-currency balances are open`,
+  );
 }
 
 export async function closeFiscalYearForTenant(
@@ -38,6 +57,8 @@ export async function closeFiscalYearForTenant(
   if (!account || account.deletedAt || !account.isActive || account.type !== "Equity") {
     throw ledgerError("Retained earnings must reference an active Equity account");
   }
+
+  await assertYearEndRevalued(tenant, year.endDate);
 
   const report = await aggregateAccountingReport(tenant, {
     dateFrom: year.startDate,

@@ -24,7 +24,14 @@ export type JournalReversalRequest = z.infer<typeof journalReversalRequestSchema
  * Finance reverse the same figure a second time; a year-end closing entry is
  * irreversible by design.
  */
-export const NON_REVERSIBLE_JOURNAL_SOURCES = ["invoice", "payment", "closing"] as const;
+export const NON_REVERSIBLE_JOURNAL_SOURCES = [
+  "invoice",
+  "payment",
+  "closing",
+  // Revaluations reverse themselves on the next day; a manual reversal would double it.
+  "fx_reval",
+  "fx_reval_reversal",
+] as const;
 
 /** True when a journal of this source type may be reversed through the Reverse Entry action. */
 export function isManuallyReversibleJournalSource(sourceType: string | null | undefined): boolean {

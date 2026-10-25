@@ -1338,6 +1338,13 @@
       "when": 1792920300000,
       "tag": "0190_finance_document_currency",
       "breakpoints": true
+    },
+    {
+      "idx": 191,
+      "version": "7",
+      "when": 1792920400000,
+      "tag": "0191_accounting_fx_revaluation",
+      "breakpoints": true
     }
   ]
 }

@@ -10,6 +10,9 @@ export const JOURNAL_SOURCE_TYPES = [
   "closing",
   "reversal",
   "opening",
+  /** IAS 21 period-end revaluation and its automatic next-day reversal. */
+  "fx_reval",
+  "fx_reval_reversal",
 ] as const;
 
 export type JournalSourceType = (typeof JOURNAL_SOURCE_TYPES)[number];

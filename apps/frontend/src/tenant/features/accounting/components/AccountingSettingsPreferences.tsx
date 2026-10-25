@@ -2,6 +2,7 @@ import { type AccountingSettings, type Account, type FiscalYear } from "@mms/sha
 import type { StatusBadgeConfigItem } from "@/components/app/StatusBadge";
 import { AccountingSettingsCurrencySection } from "./AccountingSettingsCurrencySection";
 import { AccountingSettingsFxSection } from "./AccountingSettingsFxSection";
+import { AccountingSettingsFxRevaluationSection } from "./AccountingSettingsFxRevaluationSection";
 import { AccountingSettingsFiscalYearsSection } from "./AccountingSettingsFiscalYearsSection";
 import { AccountingSettingsRulesSection } from "./AccountingSettingsRulesSection";
 import { AccountingSettingsTemplatesSection } from "./AccountingSettingsTemplatesSection";
@@ -70,6 +71,8 @@ export function AccountingSettingsPreferences({
       />
 
       <AccountingSettingsFxSection canEditSetup={canEditSetup} />
+
+      <AccountingSettingsFxRevaluationSection canEditSetup={canEditSetup} />
 
       <AccountingSettingsFiscalYearsSection
         fiscalYears={fiscalYears}

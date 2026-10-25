@@ -1,5 +1,6 @@
 import { initContract } from "@ts-rest/core";
 import { z } from "zod";
+import { fxRevaluationRequestSchema } from "../finance/accountingFxRevaluation.js";
 import {
   accountingCurrencySettingsPutSchema,
   exchangeRateListQuerySchema,
@@ -50,5 +51,25 @@ export const accountingFxContract = c.router({
     query: exchangeRateLookupQuerySchema,
     responses: { 200: ok, 400: errorResponse, 403: errorResponse, 404: errorResponse },
     summary: "Rate in force on a date (latest on or before it)",
+  },
+  listFxRevaluations: {
+    method: "GET",
+    path: "/api/accounting/fx-revaluations",
+    responses: { 200: ok, 403: errorResponse },
+    summary: "Posted period-end FX revaluations, newest first",
+  },
+  previewFxRevaluation: {
+    method: "POST",
+    path: "/api/accounting/fx-revaluations/preview",
+    body: fxRevaluationRequestSchema,
+    responses: { 200: ok, 400: errorResponse, 403: errorResponse, 422: errorResponse },
+    summary: "Compute unrealized FX at the closing rate without posting",
+  },
+  postFxRevaluation: {
+    method: "POST",
+    path: "/api/accounting/fx-revaluations",
+    body: fxRevaluationRequestSchema,
+    responses: { 201: ok, 400: errorResponse, 403: errorResponse, 422: errorResponse },
+    summary: "Post the revaluation with an automatic next-day reversal",
   },
 });

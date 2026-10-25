@@ -62,6 +62,8 @@ const SOURCE_REFUSALS: Record<(typeof NON_REVERSIBLE_JOURNAL_SOURCES)[number], s
   invoice: "Invoice postings are reversed from Finance (cancel the invoice or issue a credit note)",
   payment: "Payment postings are reversed from Finance (archive the payment)",
   closing: "Year-end closing entries cannot be reversed",
+  fx_reval: "FX revaluations reverse automatically on the next day",
+  fx_reval_reversal: "This entry is the automatic reversal of an FX revaluation",
 };
 
 function isNonReversibleSource(

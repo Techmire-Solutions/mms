@@ -25,6 +25,20 @@ vi.mock("../db/repositories/accountingFiscalYearsRepository.js", () => mockFisca
 vi.mock("../db/repositories/accountingRepositoryReport.js", () => mockReportRepo);
 vi.mock("../services/accountingPreferencesService.js", () => mockPrefs);
 
+const mockFxReval = vi.hoisted(() => ({
+  listForeignMonetaryBalances: vi.fn().mockResolvedValue([]),
+  hasFxRevaluationBetween: vi.fn().mockResolvedValue(false),
+}));
+vi.mock("../db/repositories/accountingFxRevaluationRepository.js", () => mockFxReval);
+vi.mock("../db/repositories/accountingCurrencySettingsRepository.js", () => ({
+  getCurrencySettings: vi.fn().mockResolvedValue({
+    functionalCurrency: "PKR",
+    presentationCurrency: "PKR",
+    locked: true,
+    enabledCurrencies: ["USD"],
+  }),
+}));
+
 import { closeFiscalYearForTenant } from "../accounting/use-cases/accountingPeriodClose.js";
 
 describe("accountingPeriodClose", () => {
@@ -126,5 +140,24 @@ describe("accountingPeriodClose", () => {
     expect(mockAccounts.findAccountById).toHaveBeenCalledWith("t-1", "acc-invalid");
     expect(mockAccountingRepo.saveEntry).not.toHaveBeenCalled();
     expect(mockFiscalYearsRepo.saveFiscalYear).not.toHaveBeenCalled();
+  });
+
+  it("given open foreign monetary balances and no year-end revaluation, should refuse to close", async () => {
+    // Arrange
+    mockFiscalYearsRepo.listFiscalYearsByWorkspace.mockResolvedValue([
+      { id: "fy-1", label: "2025-2026", status: "open", startDate: "2025-01-01", endDate: "2025-12-31" },
+    ]);
+    mockPrefs.getAccountingPreferencesService.mockResolvedValue({ retainedEarningsAccount: "acc-re" });
+    mockFxReval.listForeignMonetaryBalances.mockResolvedValueOnce([
+      { accountId: "ar", accountCode: "1100", accountName: "AR", currency: "USD", openTxn: "1000", carryingFunc: "280000" },
+    ]);
+
+    // Act
+    const result = closeFiscalYearForTenant("t-1", "fy-1", "admin");
+
+    // Assert
+    await expect(result).rejects.toMatchObject({ statusCode: 422 });
+    await expect(result).rejects.toThrow(/FX revaluation for 2025-12-31/);
+    expect(mockFxReval.hasFxRevaluationBetween).toHaveBeenCalledWith("t-1", "2025-12-31", "2025-12-31");
   });
 });
