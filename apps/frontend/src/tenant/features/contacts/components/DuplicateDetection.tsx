@@ -42,6 +42,11 @@ export function DuplicateDetection({
     merging,
     confirming,
     totalMerged,
+    highConfidenceCount,
+    batchMerging,
+    batchConfirmOpen,
+    setBatchConfirmOpen,
+    handleBatchMergeHighConfidence,
     setMerging,
     handleLoadMoreDuplicates,
     handleMergeConfirm,
@@ -66,6 +71,11 @@ export function DuplicateDetection({
         setTierFilter={setTierFilter}
         keepIndex={keepIndex}
         totalMerged={totalMerged}
+        highConfidenceCount={highConfidenceCount}
+        batchMerging={batchMerging}
+        batchConfirmOpen={batchConfirmOpen}
+        setBatchConfirmOpen={setBatchConfirmOpen}
+        onBatchMergeConfirm={handleBatchMergeHighConfidence}
         canWrite={canWrite}
         onClose={onClose}
         onMergePair={setMerging}

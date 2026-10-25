@@ -198,4 +198,28 @@ describe("Tasks assign route gates (inject)", () => {
       await app.close();
     }
   });
+
+  it("parses dueFrom and dueTo query parameters on GET /api/tasks", async () => {
+    canPerformTaskAction.mockResolvedValue(true);
+    listTasks.mockResolvedValue({ tasks: [], total: 0 });
+
+    const app = await buildTasksApp();
+    try {
+      const response = await app.inject({
+        method: "GET",
+        url: "/api/tasks?dueFrom=2026-10-01&dueTo=2026-10-31",
+        headers: { host: "demo.localhost" },
+      });
+      expect(response.statusCode).toBe(200);
+      expect(listTasks).toHaveBeenCalledWith(
+        "demo",
+        expect.objectContaining({
+          dueFrom: "2026-10-01",
+          dueTo: "2026-10-31",
+        }),
+      );
+    } finally {
+      await app.close();
+    }
+  });
 });

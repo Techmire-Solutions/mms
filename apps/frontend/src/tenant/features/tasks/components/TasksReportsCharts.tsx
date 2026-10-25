@@ -11,7 +11,7 @@ import { EmptyState } from "@/components/app/EmptyState";
 import { ReportChartCard } from "@/tenant/components/moduleReports";
 import { useBrandPalette } from "@/lib/contexts/BrandingPaletteContext";
 import { useTranslation } from "@/hooks/useTranslation";
-import type { TaskMetricsResponse } from "@/tenant/features/tasks/hooks/useTasksApi";
+import type { TaskMetricsResponse } from "../hooks/useTasksApi";
 import {
   buildTasksOverdueChartData,
   buildTasksPriorityChartData,

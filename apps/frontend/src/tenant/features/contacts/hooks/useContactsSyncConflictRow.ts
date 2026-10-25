@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useMemo, useState } from "react";
 import type { Contact } from "@mms/shared";
 import {
   defaultSyncFieldPicks,
@@ -46,14 +46,19 @@ export function useContactsSyncConflictRow({
     return diffContactForSync(local, serverContact);
   })();
 
-  useEffect(() => {
-    if (expanded && !serverLoading && diffs.length > 0 && Object.keys(fieldPicks).length === 0) {
-      setFieldPicks(defaultSyncFieldPicks(diffs));
+  const effectiveFieldPicks = useMemo(() => {
+    if (Object.keys(fieldPicks).length > 0) return fieldPicks;
+    if (expanded && !serverLoading && diffs.length > 0) {
+      return defaultSyncFieldPicks(diffs);
     }
+    return fieldPicks;
   }, [expanded, serverLoading, diffs, fieldPicks]);
 
   const togglePick = (field: string, pick: SyncFieldPick) => {
-    setFieldPicks((prev) => ({ ...prev, [field]: pick }));
+    setFieldPicks((prev) => {
+      const base = Object.keys(prev).length > 0 ? prev : defaultSyncFieldPicks(diffs);
+      return { ...base, [field]: pick };
+    });
   };
 
   const handleKeepMine = async () => {
@@ -77,7 +82,7 @@ export function useContactsSyncConflictRow({
     if (!local) return;
     setApplying(true);
     try {
-      const merged = mergeContactForSync(local, serverContact, fieldPicks);
+      const merged = mergeContactForSync(local, serverContact, effectiveFieldPicks);
       if (entry.kind === "upsert") {
         await upsertContact.mutateAsync(merged);
       } else if (entry.kind === "update") {
@@ -99,7 +104,7 @@ export function useContactsSyncConflictRow({
     expanded,
     setExpanded,
     applying,
-    fieldPicks,
+    fieldPicks: effectiveFieldPicks,
     local,
     serverContact,
     serverLoading,

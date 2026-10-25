@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useMemo, useState } from "react";
 import { LayoutDashboard } from "lucide-react";
 import { type Contact, getPrimaryPhone, getPrimaryEmail } from "@mms/shared";
 import { useContactConfig } from "@/lib/contexts/ContactConfigContext";
@@ -33,8 +33,23 @@ export function useContactDetailViewModel({
   const viewerRole = role ?? "";
   const { t } = useTranslation();
   const [contactState, setContactState] = useState<Contact>(initialContact);
+  const [prevInitialContact, setPrevInitialContact] = useState(initialContact);
+  if (prevInitialContact !== initialContact) {
+    setPrevInitialContact(initialContact);
+    setContactState(initialContact);
+  }
+
   const activeContactId = contactState?.id != null ? String(contactState.id) : undefined;
   const { data: fullContact } = useContactById(activeContactId);
+
+  const [prevFullContact, setPrevFullContact] = useState(fullContact);
+  if (prevFullContact !== fullContact) {
+    setPrevFullContact(fullContact);
+    if (fullContact && String(fullContact.id) === String(contactState.id)) {
+      setContactState(fullContact);
+    }
+  }
+
   const isArchived = Boolean(contactState.deletedAt ?? initialContact.deletedAt);
   const canPersistContact = canWrite && Boolean(onUpdateContact) && !isArchived;
 
@@ -49,26 +64,14 @@ export function useContactDetailViewModel({
   }, [t]);
 
   const [activeTab, setActiveTab] = useState<string>(() => detailTabs[0]?.key || "");
+  const [prevContactId, setPrevContactId] = useState(initialContact.id);
+  if (prevContactId !== initialContact.id) {
+    setPrevContactId(initialContact.id);
+    setActiveTab(detailTabs[0]?.key || "");
+  }
 
-  useEffect(() => {
-    setContactState(initialContact);
-  }, [initialContact]);
-
-  useEffect(() => {
-    if (fullContact && String(fullContact.id) === String(contactState.id)) {
-      setContactState(fullContact);
-    }
-  }, [fullContact, contactState.id]);
-
-  useEffect(() => {
-    setActiveTab((currentTab) => {
-      const tabExists = detailTabs.some((tab) => tab.key === currentTab);
-      if (!currentTab || !tabExists) {
-        return detailTabs[0]?.key || "";
-      }
-      return currentTab;
-    });
-  }, [initialContact.id, detailTabs]);
+  const currentTabValid = detailTabs.some((tab) => tab.key === activeTab);
+  const effectiveActiveTab = currentTabValid ? activeTab : detailTabs[0]?.key || "";
 
   const combinedActivities = useMemo(() => {
     const noteActs = contactState.activities || [];
@@ -102,7 +105,7 @@ export function useContactDetailViewModel({
     setContactState,
     canPersistContact,
     detailTabs,
-    activeTab,
+    activeTab: effectiveActiveTab,
     setActiveTab,
     grouped,
     formatFieldValue,

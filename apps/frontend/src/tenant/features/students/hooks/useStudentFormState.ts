@@ -52,7 +52,7 @@ export function useStudentFormState({ student, onClose, onSave }: UseStudentForm
   >(null);
   const [duplicateConfirmOpen, setDuplicateConfirmOpen] = useState(false);
   const [pendingSaveData, setPendingSaveData] = useState<Partial<Student> | null>(null);
-  const grManuallyEdited = useRef(false);
+  const [isGrManuallyEdited, setIsGrManuallyEdited] = useState(false);
 
   const { statusBadgeConfig, statusSelectOptions, handleUpdateStatuses } =
     useStudentFormStatusOptions(t, configStatuses, studentDraft.status);
@@ -83,7 +83,7 @@ export function useStudentFormState({ student, onClose, onSave }: UseStudentForm
       setStudentDraft(nextDraft);
       setBaselineSnapshot(studentDraftSnapshot(nextDraft));
       setValidationErrors([]);
-      grManuallyEdited.current = false;
+      setIsGrManuallyEdited(false);
     } else if (fieldsChanged) {
       setStudentDraft((prev) => {
         const nextDraft = getInitialStudentDraft({ student, fields });
@@ -121,23 +121,28 @@ export function useStudentFormState({ student, onClose, onSave }: UseStudentForm
     student,
     studentDraft,
     settings,
-    grManuallyEdited,
+    isGrManuallyEdited,
+    setIsGrManuallyEdited,
     updateDraft,
     t,
   });
 
   // Autofill next GR for create without marking the form dirty.
-  useEffect(() => {
-    if (!isStudentCreate(student) || !autoGenerateId || !nextGrNumber) return;
-    if (grManuallyEdited.current) return;
-
-    setStudentDraft((prev) => {
-      if (prev.grNumber === nextGrNumber) return prev;
-      const nextDraft = { ...prev, grNumber: nextGrNumber };
+  const [prevAutoGr, setPrevAutoGr] = useState<string | undefined>(undefined);
+  if (
+    isStudentCreate(student) &&
+    autoGenerateId &&
+    nextGrNumber &&
+    !isGrManuallyEdited &&
+    prevAutoGr !== nextGrNumber
+  ) {
+    setPrevAutoGr(nextGrNumber);
+    if (!studentDraft.grNumber || studentDraft.grNumber === prevAutoGr) {
+      const nextDraft = { ...studentDraft, grNumber: nextGrNumber };
+      setStudentDraft(nextDraft);
       setBaselineSnapshot(studentDraftSnapshot(nextDraft));
-      return nextDraft;
-    });
-  }, [nextGrNumber, student, autoGenerateId]);
+    }
+  }
 
   const actions = useStudentFormActionHandlers({
     student,

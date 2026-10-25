@@ -103,6 +103,7 @@ export function ContactBasicAvatarSection({
           />
         </Suspense>
       )}
+      {/* eslint-disable-next-line jsx-a11y/no-static-element-interactions -- drop target only; accessible file input provided below */}
       <div
         className="relative flex-shrink-0 group"
         onDragOver={(e) => {

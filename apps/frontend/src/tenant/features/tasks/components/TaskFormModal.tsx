@@ -53,6 +53,7 @@ export function TaskFormModal({
     selectedAssignees,
     eligibleList,
     error,
+    isDirty,
     handleAddAssignee,
     handleRemoveAssignee,
     handleSubmit,
@@ -65,7 +66,7 @@ export function TaskFormModal({
       title={initialData ? t("tasks.edit") : t("tasks.create")}
       error={error ?? undefined}
       saving={saving}
-      isDirty={Boolean(title.trim())}
+      isDirty={isDirty}
       onSave={handleSubmit}
     >
       <div className="space-y-4 py-2">
@@ -76,7 +77,6 @@ export function TaskFormModal({
             value={title}
             onChange={(e) => setTitle(e.target.value)}
             placeholder={t("tasks.titlePlaceholder")}
-            autoFocus
           />
         </Field>
 

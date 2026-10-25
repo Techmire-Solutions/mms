@@ -1,3 +1,4 @@
+import { useMemo } from "react";
 import { AnimatePresence } from "framer-motion";
 import { Users } from "lucide-react";
 import { EmptyState } from "@/components/app/EmptyState";
@@ -8,6 +9,7 @@ import { MarkAttendanceFacePlaceholder } from "@/tenant/features/attendance/comp
 import { MarkAttendanceGrid } from "@/tenant/features/attendance/components/MarkAttendanceGrid";
 import { MarkAttendanceHolidayBanner } from "@/tenant/features/attendance/components/MarkAttendanceHolidayBanner";
 import { useInstructionalDayStatus } from "@/tenant/features/attendance/hooks/useInstructionalDayStatus";
+import { useMarkAttendanceKeyboardShortcuts } from "@/tenant/features/attendance/hooks/useMarkAttendanceKeyboardShortcuts";
 import { MarkAttendanceOfflineBanner } from "@/tenant/features/attendance/components/MarkAttendanceOfflineBanner";
 import { MarkAttendanceStatsStrip } from "@/tenant/features/attendance/components/MarkAttendanceStatsStrip";
 import { getAuditLog } from "@/tenant/features/attendance/lib/markAttendanceQueue";
@@ -32,6 +34,18 @@ export function MarkAttendance(props: MarkAttendanceProps): React.JSX.Element {
     sessionWorkingDays: controller.sessionInfo?.workingDays,
   });
   const dayAllowsMarking = dayStatus.instructional || dayStatus.allowExtraClass;
+  const markedCount = useMemo(
+    () => controller.rows.filter((r) => Boolean(r.status)).length,
+    [controller.rows],
+  );
+
+  useMarkAttendanceKeyboardShortcuts({
+    enabled: true,
+    canWrite: controller.canWriteAttendance && dayAllowsMarking,
+    onMarkAll: controller.markAll,
+    onSaveDraft: () => void controller.handleSaveDraft(),
+    onSubmit: () => void controller.handleSubmit(),
+  });
 
   if (!controller.filters.classId) {
     return (
@@ -99,6 +113,7 @@ export function MarkAttendance(props: MarkAttendanceProps): React.JSX.Element {
       <MarkAttendanceActions
         totalRows={controller.rows.length}
         visibleRows={controller.filteredRows.length}
+        markedCount={markedCount}
         isOffline={controller.isOffline}
         submitted={controller.submitted}
         canWriteAttendance={controller.canWriteAttendance && dayAllowsMarking}

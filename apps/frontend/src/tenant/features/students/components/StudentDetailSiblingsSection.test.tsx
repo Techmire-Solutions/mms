@@ -62,8 +62,7 @@ describe("StudentDetailSiblingsSection Component", () => {
     expect(html).toContain("GR-204");
     expect(html).toContain("Tahfeez Morning, Tajweed Advanced");
     expect(html).toContain("Fatima Ali");
-    expect(html).toContain('role="button"');
-    expect(html).toContain('tabindex="0"');
+    expect(html).toContain('<button type="button"');
     expect(html).toContain("lucide-chevron-right");
   });
 
@@ -76,7 +75,7 @@ describe("StudentDetailSiblingsSection Component", () => {
     );
 
     expect(html).toContain("Hussein Ali");
-    expect(html).not.toContain('role="button"');
+    expect(html).not.toContain("<button");
     expect(html).not.toContain("lucide-chevron-right");
   });
 });

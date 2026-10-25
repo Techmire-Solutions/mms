@@ -24,6 +24,7 @@ vi.mock("@/tenant/hooks/collections/tasks", () => ({
 describe("TasksSetupTab", () => {
   it("renders task settings configuration controls", () => {
     const html = renderToStaticMarkup(<TasksSetupTab />);
+    expect(html).toContain("tasks.setup.delegationScope");
     expect(html).toContain("tasks.setup.allowSelfAssignment");
     expect(html).toContain("tasks.setup.notifyOnAssignment");
     expect(html).toContain("tasks.setup.notifyOnStatusChange");

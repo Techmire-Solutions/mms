@@ -6,6 +6,7 @@
 import React, { useMemo } from "react";
 import type { TaskRecord, TaskStatus } from "@mms/shared";
 import { EmptyState } from "@/components/app/EmptyState";
+import { LoadingState } from "@/components/app/LoadingState";
 import { ModuleDirectoryCards } from "@/components/app/ModuleDirectoryCards";
 import { useReducedMotion } from "@/hooks/useReducedMotion";
 import { useTranslation } from "@/hooks/useTranslation";
@@ -74,7 +75,7 @@ export function TasksListCards({
   return (
     <div aria-busy={isLoading || undefined}>
       {isLoading && tasks.length === 0 ? (
-        <p className="text-sm text-muted-foreground px-1 py-6">{t("common.loading")}</p>
+        <LoadingState title={t("common.loading")} />
       ) : (
         <ModuleDirectoryCards
           items={tasks}

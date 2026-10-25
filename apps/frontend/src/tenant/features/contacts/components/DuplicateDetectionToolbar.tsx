@@ -1,8 +1,9 @@
 import React from "react";
-import { Search } from "lucide-react";
+import { GitMerge, Search } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { LeadingIconInput } from "@/components/app/LeadingIconInput";
+import { useTranslation } from "@/hooks/useTranslation";
 import type { DuplicateTierFilter } from "@/tenant/features/contacts/hooks/useDuplicateDetectionState";
 
 export interface DuplicateDetectionToolbarProps {
@@ -12,6 +13,10 @@ export interface DuplicateDetectionToolbarProps {
   onTierFilterChange: (tier: DuplicateTierFilter) => void;
   filterTabs: Array<{ id: DuplicateTierFilter; label: string; count: number }>;
   searchPlaceholder: string;
+  canWrite?: boolean;
+  highConfidenceCount?: number;
+  batchMerging?: boolean;
+  onBatchMergeClick?: () => void;
 }
 
 export function DuplicateDetectionToolbar({
@@ -21,7 +26,13 @@ export function DuplicateDetectionToolbar({
   onTierFilterChange,
   filterTabs,
   searchPlaceholder,
+  canWrite = false,
+  highConfidenceCount = 0,
+  batchMerging = false,
+  onBatchMergeClick,
 }: DuplicateDetectionToolbarProps): React.JSX.Element {
+  const { t } = useTranslation();
+
   return (
     <div className="space-y-2.5 pb-1">
       <LeadingIconInput
@@ -33,7 +44,7 @@ export function DuplicateDetectionToolbar({
         aria-label={searchPlaceholder}
       />
 
-      <div className="flex flex-wrap gap-2 border-b border-border/60 pb-2.5">
+      <div className="flex flex-wrap items-center gap-2 border-b border-border/60 pb-2.5">
         {filterTabs.map((tab) => {
           const active = tierFilter === tab.id;
           return (
@@ -64,6 +75,23 @@ export function DuplicateDetectionToolbar({
             </Button>
           );
         })}
+
+        {canWrite && highConfidenceCount > 0 && onBatchMergeClick && (
+          <Button
+            type="button"
+            variant="default"
+            disabled={batchMerging}
+            onClick={onBatchMergeClick}
+            className="min-h-11 rounded-xl px-3.5 py-2 text-xs font-semibold gap-1.5 ms-auto bg-primary text-primary-foreground shadow-xs hover:bg-primary/90"
+          >
+            <GitMerge className="w-3.5 h-3.5" aria-hidden="true" />
+            <span>
+              {batchMerging
+                ? t("contacts.duplicates.batchMerging", { count: highConfidenceCount })
+                : t("contacts.duplicates.batchMergeHigh", { count: highConfidenceCount })}
+            </span>
+          </Button>
+        )}
       </div>
     </div>
   );

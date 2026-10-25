@@ -57,4 +57,21 @@ describe("TasksBulkActionBar", () => {
     expect(html).toContain("tasks.trash.restore");
     expect(html).toContain("common.deselect");
   });
+
+  it("renders status change action when onBulkStatusChange is provided in active view", () => {
+    const html = renderToStaticMarkup(
+      <TasksBulkActionBar
+        selectedCount={2}
+        viewingDeleted={false}
+        canDelete={true}
+        onClearSelection={vi.fn()}
+        onRequestBulkDelete={vi.fn()}
+        onRequestBulkRestore={vi.fn()}
+        onBulkStatusChange={vi.fn()}
+      />,
+    );
+
+    expect(html).toContain("tasks.selectedCount:2");
+    expect(html).toContain("tasks.bulkStatus");
+  });
 });

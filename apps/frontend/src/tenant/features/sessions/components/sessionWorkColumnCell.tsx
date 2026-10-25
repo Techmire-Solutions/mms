@@ -4,6 +4,7 @@ import { StatusBadge, type StatusBadgeConfigItem } from "@/components/app/Status
 import type { TranslationFunction } from "@/lib/contexts/TranslationContext";
 import type { Session } from "@/lib/data/sessionsData";
 import { getSessionEnrollmentTotals } from "@/tenant/features/sessions/lib/sessionsWorkListViewsShared";
+import { SessionCapacityPill } from "@/tenant/features/sessions/components/SessionCapacityPill";
 
 /** Enrollment totals + capacity meta for the Session card progress bar. */
 export function getSessionCapacityMeta(session: Session) {
@@ -25,8 +26,7 @@ export function renderSessionWorkColumnValue(
     emptyFallback?: ReactNode;
   },
 ): ReactNode {
-  const { t, statusConfig, typeConfig, emptyFallback } = options;
-  const { totalEnrolled, totalCapacity } = getSessionEnrollmentTotals(session);
+  const { statusConfig, typeConfig, emptyFallback } = options;
 
   switch (columnKey) {
     case "type":
@@ -42,7 +42,7 @@ export function renderSessionWorkColumnValue(
     case "currency":
       return session.currency || emptyFallback;
     case "enrolled":
-      return `${totalEnrolled}/${totalCapacity || t("common.notSpecified")}`;
+      return <SessionCapacityPill session={session} />;
     case "status":
       return <StatusBadge status={session.status} config={statusConfig} size="sm" />;
     case "description":

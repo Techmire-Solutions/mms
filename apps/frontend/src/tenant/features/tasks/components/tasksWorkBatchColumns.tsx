@@ -4,7 +4,7 @@
  */
 
 import { User as UserIcon } from "lucide-react";
-import { type TaskRecord, type TaskStatus, type AppTranslationKey } from "@mms/shared";
+import { formatDate, type TaskRecord, type TaskStatus, type AppTranslationKey } from "@mms/shared";
 import type { WorkBatchTableColumn } from "@/components/common/work/WorkBatchTable";
 import { TableCellLink } from "@shared/ui";
 import { TaskPriorityBadge, TaskStatusBadge } from "./TaskBadges";
@@ -106,7 +106,7 @@ export function buildTasksWorkBatchColumns(
               isOverdue ? "text-destructive font-medium text-xs" : "text-muted-foreground text-xs"
             }
           >
-            {new Date(task.dueAt).toLocaleDateString()}
+            {formatDate(task.dueAt)}
           </span>
         );
       },

@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import {
   useContactGoogleSyncConfig,
   useContactGoogleSyncMutations,
@@ -42,15 +42,17 @@ export function useGoogleContactsSync({ canWrite = false }: { canWrite?: boolean
   const [authCode, setAuthCode] = useState("");
   const [exchanging, setExchanging] = useState(false);
 
-  useEffect(() => {
+  const [prevServerConfig, setPrevServerConfig] = useState(serverConfig);
+  if (prevServerConfig !== serverConfig) {
+    setPrevServerConfig(serverConfig);
     if (serverConfig) {
-      setConfig({ clientId: serverConfig.clientId });
+      setConfig((current) => ({ ...current, clientId: serverConfig.clientId }));
+      setForm((current) => ({
+        ...current,
+        clientId: serverConfig.clientId || current.clientId,
+      }));
     }
-  }, [serverConfig]);
-
-  useEffect(() => {
-    setForm({ clientId: config.clientId || "", clientSecret: config.clientSecret || "" });
-  }, [config.clientId, config.clientSecret]);
+  }
 
   const isConfigured = !!(
     config.clientId &&
