@@ -199,10 +199,15 @@ export function buildMemberTrialBalance(
   functionalCurrency: string,
 ): MemberTrialBalanceRow[] {
   const rows = [
-    ...balanceSheetRows.filter((row) => row.type === "Asset" || row.type === "Liability" || row.type === "Equity"),
+    ...balanceSheetRows.filter(
+      (row) => row.type === "Asset" || row.type === "Liability" || row.type === "Equity",
+    ),
     ...periodResultRows.filter((row) => row.type === "Revenue" || row.type === "Expense"),
   ].filter((row) => row.balance !== 0);
-  const residual = rows.reduce((sum, row) => sum + toMoney(row.balance, functionalCurrency).minor, 0n);
+  const residual = rows.reduce(
+    (sum, row) => sum + toMoney(row.balance, functionalCurrency).minor,
+    0n,
+  );
   if (residual === 0n) return rows;
   return [
     ...rows,

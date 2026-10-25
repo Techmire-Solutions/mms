@@ -78,7 +78,12 @@ export async function saveConsolidationGroup(
   await withGlobalTenant(async (tx) => {
     await tx
       .insert(consolidationGroups)
-      .values({ id, name: input.name, presentationCurrency: input.presentationCurrency, updatedBy: userId })
+      .values({
+        id,
+        name: input.name,
+        presentationCurrency: input.presentationCurrency,
+        updatedBy: userId,
+      })
       .onConflictDoUpdate({
         target: consolidationGroups.id,
         set: {

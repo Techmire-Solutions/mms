@@ -28,9 +28,15 @@ async function cleanup(): Promise<void> {
     await tx.delete(sessionClasses).where(eq(sessionClasses.workspaceSubdomain, TENANT));
     await tx.delete(sessions).where(eq(sessions.workspaceSubdomain, TENANT));
     await tx.delete(students).where(eq(students.workspaceSubdomain, TENANT));
-    await tx.delete(accountingExchangeRates).where(eq(accountingExchangeRates.workspaceSubdomain, TENANT));
-    await tx.delete(accountingEnabledCurrencies).where(eq(accountingEnabledCurrencies.workspaceSubdomain, TENANT));
-    await tx.delete(accountingCurrencySettings).where(eq(accountingCurrencySettings.workspaceSubdomain, TENANT));
+    await tx
+      .delete(accountingExchangeRates)
+      .where(eq(accountingExchangeRates.workspaceSubdomain, TENANT));
+    await tx
+      .delete(accountingEnabledCurrencies)
+      .where(eq(accountingEnabledCurrencies.workspaceSubdomain, TENANT));
+    await tx
+      .delete(accountingCurrencySettings)
+      .where(eq(accountingCurrencySettings.workspaceSubdomain, TENANT));
     await tx.delete(workspaces).where(eq(workspaces.subdomain, TENANT));
     await commit();
   } catch (error) {
@@ -43,10 +49,18 @@ beforeAll(async () => {
   await requireDatabaseConnection();
   await cleanup();
   const { tx, commit } = await beginLongLivedTenantTransaction(null);
-  await tx.insert(workspaces).values({ id: `ws-${TENANT}`, subdomain: TENANT, madrasaName: TENANT, enabled: true });
-  await tx.insert(accountingCurrencySettings).values({ workspaceSubdomain: TENANT, functionalCurrency: "PKR", presentationCurrency: "PKR" });
-  await tx.insert(accountingEnabledCurrencies).values({ workspaceSubdomain: TENANT, currency: "USD" });
-  await tx.insert(students).values({ id: "stu-1", workspaceSubdomain: TENANT, grNumber: "gr-fx-1", status: "active" });
+  await tx
+    .insert(workspaces)
+    .values({ id: `ws-${TENANT}`, subdomain: TENANT, madrasaName: TENANT, enabled: true });
+  await tx
+    .insert(accountingCurrencySettings)
+    .values({ workspaceSubdomain: TENANT, functionalCurrency: "PKR", presentationCurrency: "PKR" });
+  await tx
+    .insert(accountingEnabledCurrencies)
+    .values({ workspaceSubdomain: TENANT, currency: "USD" });
+  await tx
+    .insert(students)
+    .values({ id: "stu-1", workspaceSubdomain: TENANT, grNumber: "gr-fx-1", status: "active" });
   await tx.insert(sessions).values([
     { id: "ses-usd", workspaceSubdomain: TENANT, name: "Online (USD)", currency: "USD" },
     { id: "ses-pkr", workspaceSubdomain: TENANT, name: "Campus", currency: "PKR" },
@@ -56,13 +70,47 @@ beforeAll(async () => {
     { id: "cls-pkr", workspaceSubdomain: TENANT, sessionId: "ses-pkr", name: "Hifz" },
   ]);
   await tx.insert(enrollments).values([
-    { id: "enr-usd", workspaceSubdomain: TENANT, studentId: "stu-1", studentName: "Student", sessionId: "ses-usd", sessionName: "Online (USD)", classId: "cls-usd", className: "Hifz online", enrolledDate: "2026-11-01", baseFee: "50", finalFee: "50", status: "confirmed" },
-    { id: "enr-pkr", workspaceSubdomain: TENANT, studentId: "stu-1", studentName: "Student", sessionId: "ses-pkr", sessionName: "Campus", classId: "cls-pkr", className: "Hifz", enrolledDate: "2026-11-01", baseFee: "5000", finalFee: "5000", status: "confirmed" },
+    {
+      id: "enr-usd",
+      workspaceSubdomain: TENANT,
+      studentId: "stu-1",
+      studentName: "Student",
+      sessionId: "ses-usd",
+      sessionName: "Online (USD)",
+      classId: "cls-usd",
+      className: "Hifz online",
+      enrolledDate: "2026-11-01",
+      baseFee: "50",
+      finalFee: "50",
+      status: "confirmed",
+    },
+    {
+      id: "enr-pkr",
+      workspaceSubdomain: TENANT,
+      studentId: "stu-1",
+      studentName: "Student",
+      sessionId: "ses-pkr",
+      sessionName: "Campus",
+      classId: "cls-pkr",
+      className: "Hifz",
+      enrolledDate: "2026-11-01",
+      baseFee: "5000",
+      finalFee: "5000",
+      status: "confirmed",
+    },
   ]);
   await commit();
   await upsertExchangeRates(
     TENANT,
-    [{ fromCurrency: "USD", toCurrency: "PKR", rateDate: "2026-11-01", rateType: "SPOT", rate: "281" }],
+    [
+      {
+        fromCurrency: "USD",
+        toCurrency: "PKR",
+        rateDate: "2026-11-01",
+        rateType: "SPOT",
+        rate: "281",
+      },
+    ],
     null,
   );
 });
@@ -80,11 +128,17 @@ describe("generated invoices in the session currency", () => {
 
     // Act
     const stamped = await withTenant(TENANT, () =>
-      applyGeneratedInvoiceFx(TENANT, drafts, new Map(sources.map((source) => [source.id, source.sessionCurrency]))),
+      applyGeneratedInvoiceFx(
+        TENANT,
+        drafts,
+        new Map(sources.map((source) => [source.id, source.sessionCurrency])),
+      ),
     );
 
     // Assert
-    expect(Object.fromEntries(sources.map((source) => [source.id, source.sessionCurrency]))).toEqual({
+    expect(
+      Object.fromEntries(sources.map((source) => [source.id, source.sessionCurrency])),
+    ).toEqual({
       "enr-usd": "USD",
       "enr-pkr": "PKR",
     });
@@ -93,6 +147,8 @@ describe("generated invoices in the session currency", () => {
       exchangeRate: "281",
       finalAmt: 50,
     });
-    expect(stamped.find((draft) => draft.enrollmentId === "enr-pkr")).not.toHaveProperty("currency");
+    expect(stamped.find((draft) => draft.enrollmentId === "enr-pkr")).not.toHaveProperty(
+      "currency",
+    );
   });
 });

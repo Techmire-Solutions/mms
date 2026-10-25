@@ -57,14 +57,18 @@ export default function PlatformConsolidationPage(): React.JSX.Element {
     >
       <div className="space-y-4">
         {groups.isError ? (
-          <ErrorState description={t("platform.consolidation.loadFailed")} onRetry={() => void groups.refetch()} />
+          <ErrorState
+            description={t("platform.consolidation.loadFailed")}
+            onRetry={() => void groups.refetch()}
+          />
         ) : list.length === 0 && !groups.isPending ? (
           <EmptyState
             title={t("platform.consolidation.emptyTitle")}
             description={t("platform.consolidation.emptyDescription")}
             action={
               <Button type="button" className="min-h-11" onClick={() => setEditing("new")}>
-                <Plus className="h-4 w-4" aria-hidden="true" /> {t("platform.consolidation.newGroup")}
+                <Plus className="h-4 w-4" aria-hidden="true" />{" "}
+                {t("platform.consolidation.newGroup")}
               </Button>
             }
           />
@@ -80,25 +84,50 @@ export default function PlatformConsolidationPage(): React.JSX.Element {
                     setSelectedId(value);
                     setPeriod(null);
                   }}
-                  options={list.map((group) => ({ value: group.id, label: `${group.name} (${group.presentationCurrency})` }))}
+                  options={list.map((group) => ({
+                    value: group.id,
+                    label: `${group.name} (${group.presentationCurrency})`,
+                  }))}
                 />
               </Field>
               <Field id="cons-from" label={t("platform.consolidation.dateFrom")}>
-                <DatePicker id="cons-from" name="dateFrom" value={dateFrom} onChange={setDateFrom} />
+                <DatePicker
+                  id="cons-from"
+                  name="dateFrom"
+                  value={dateFrom}
+                  onChange={setDateFrom}
+                />
               </Field>
               <Field id="cons-to" label={t("platform.consolidation.dateTo")}>
                 <DatePicker id="cons-to" name="dateTo" value={dateTo} onChange={setDateTo} />
               </Field>
-              <Button type="button" className="min-h-11" disabled={!selected} onClick={() => setPeriod({ dateFrom, dateTo })}>
+              <Button
+                type="button"
+                className="min-h-11"
+                disabled={!selected}
+                onClick={() => setPeriod({ dateFrom, dateTo })}
+              >
                 {t("platform.consolidation.run")}
               </Button>
-              <Button type="button" variant="outline" className="min-h-11" onClick={() => setEditing("new")}>
-                <Plus className="h-4 w-4" aria-hidden="true" /> {t("platform.consolidation.newGroup")}
+              <Button
+                type="button"
+                variant="outline"
+                className="min-h-11"
+                onClick={() => setEditing("new")}
+              >
+                <Plus className="h-4 w-4" aria-hidden="true" />{" "}
+                {t("platform.consolidation.newGroup")}
               </Button>
               {selected && (
                 <>
-                  <Button type="button" variant="outline" className="min-h-11" onClick={() => setEditing(selected)}>
-                    <Pencil className="h-4 w-4" aria-hidden="true" /> {t("platform.consolidation.editGroup")}
+                  <Button
+                    type="button"
+                    variant="outline"
+                    className="min-h-11"
+                    onClick={() => setEditing(selected)}
+                  >
+                    <Pencil className="h-4 w-4" aria-hidden="true" />{" "}
+                    {t("platform.consolidation.editGroup")}
                   </Button>
                   <Button
                     type="button"
@@ -118,7 +147,11 @@ export default function PlatformConsolidationPage(): React.JSX.Element {
 
         {report.isError && (
           <ErrorState
-            description={report.error instanceof Error ? report.error.message : t("platform.consolidation.reportFailed")}
+            description={
+              report.error instanceof Error
+                ? report.error.message
+                : t("platform.consolidation.reportFailed")
+            }
             onRetry={() => void report.refetch()}
           />
         )}
@@ -126,7 +159,10 @@ export default function PlatformConsolidationPage(): React.JSX.Element {
       </div>
 
       {editing && (
-        <ConsolidationGroupForm initial={editing === "new" ? null : editing} onClose={() => setEditing(null)} />
+        <ConsolidationGroupForm
+          initial={editing === "new" ? null : editing}
+          onClose={() => setEditing(null)}
+        />
       )}
     </ModulePageShell>
   );

@@ -44,10 +44,7 @@ export function AccountingSettingsFxSection({
       ) : (
         <>
           {fx.locked && (
-            <Alert
-              tone="info"
-              description={t("accounting.settings.fx.functionalLockedHint")}
-            />
+            <Alert tone="info" description={t("accounting.settings.fx.functionalLockedHint")} />
           )}
           <div className="mt-3 grid grid-cols-1 gap-4 sm:grid-cols-2">
             <Field

@@ -17,7 +17,11 @@ import { canonicalStoredRate } from "./repositoryFxMappers.js";
 import { nonExchangeableSinceInTx } from "./accountingCurrencyExchangeabilityRepository.js";
 
 /** True when `currency` is assessed as not exchangeable on `date` (IAS 21, 2025 amendment). */
-const isNonExchangeableOn = (since: ReadonlyMap<string, string>, currency: string, date: string) => {
+const isNonExchangeableOn = (
+  since: ReadonlyMap<string, string>,
+  currency: string,
+  date: string,
+) => {
   const assessedOn = since.get(currency);
   return assessedOn !== undefined && date >= assessedOn;
 };
@@ -56,7 +60,8 @@ export async function listExchangeRates(
   const subdomain = tenant.trim().toLowerCase();
   return withTenantRead(subdomain, async (tx) => {
     const conditions = [eq(accountingExchangeRates.workspaceSubdomain, subdomain)];
-    if (query.fromCurrency) conditions.push(eq(accountingExchangeRates.fromCurrency, query.fromCurrency));
+    if (query.fromCurrency)
+      conditions.push(eq(accountingExchangeRates.fromCurrency, query.fromCurrency));
     if (query.toCurrency) conditions.push(eq(accountingExchangeRates.toCurrency, query.toCurrency));
     if (query.rateType) conditions.push(eq(accountingExchangeRates.rateType, query.rateType));
     if (query.dateFrom) conditions.push(gte(accountingExchangeRates.rateDate, query.dateFrom));
@@ -148,7 +153,11 @@ async function latestTenantRate(
     .orderBy(desc(accountingExchangeRates.rateDate))
     .limit(1);
   return row
-    ? { rate: canonicalStoredRate(row.rate), rateDate: row.rateDate, estimated: row.source === ESTIMATED_RATE_SOURCE }
+    ? {
+        rate: canonicalStoredRate(row.rate),
+        rateDate: row.rateDate,
+        estimated: row.source === ESTIMATED_RATE_SOURCE,
+      }
     : null;
 }
 
@@ -164,8 +173,17 @@ async function feedRate(tx: TenantTransaction, query: ExchangeRateLookupQuery) {
       rateDate: fxReferenceRates.rateDate,
     })
     .from(fxReferenceRates)
-    .where(and(inArray(fxReferenceRates.quoteCurrency, [from, to]), lte(fxReferenceRates.rateDate, query.date)))
-    .orderBy(fxReferenceRates.provider, fxReferenceRates.quoteCurrency, desc(fxReferenceRates.rateDate));
+    .where(
+      and(
+        inArray(fxReferenceRates.quoteCurrency, [from, to]),
+        lte(fxReferenceRates.rateDate, query.date),
+      ),
+    )
+    .orderBy(
+      fxReferenceRates.provider,
+      fxReferenceRates.quoteCurrency,
+      desc(fxReferenceRates.rateDate),
+    );
 
   for (const provider of new Set(rows.map((row) => row.provider))) {
     const quotes = rows.filter((row) => row.provider === provider);
@@ -178,7 +196,10 @@ async function feedRate(tx: TenantTransaction, query: ExchangeRateLookupQuery) {
     const toQuote = quoteOf(to);
     if (!fromQuote || !toQuote) continue;
     return {
-      rate: crossExchangeRate(canonicalStoredRate(fromQuote.rate), canonicalStoredRate(toQuote.rate)),
+      rate: crossExchangeRate(
+        canonicalStoredRate(fromQuote.rate),
+        canonicalStoredRate(toQuote.rate),
+      ),
       rateDate: fromQuote.rateDate < toQuote.rateDate ? fromQuote.rateDate : toQuote.rateDate,
       source: `feed:${provider}`,
     };
@@ -198,7 +219,14 @@ export async function lookupExchangeRate(
   const subdomain = tenant.trim().toLowerCase();
   const { fromCurrency, toCurrency, rateType } = query;
   if (fromCurrency === toCurrency) {
-    return { fromCurrency, toCurrency, rate: "1", rateDate: query.date, rateType, source: "identity" };
+    return {
+      fromCurrency,
+      toCurrency,
+      rate: "1",
+      rateDate: query.date,
+      rateType,
+      source: "identity",
+    };
   }
   return withTenantRead(subdomain, async (tx) => {
     const direct = await latestTenantRate(tx, subdomain, fromCurrency, toCurrency, query);
@@ -225,7 +253,10 @@ export async function lookupExchangeRate(
     }
     // A non-exchangeable currency has no observable market rate: never fall back to the feed.
     const since = await nonExchangeableSinceInTx(tx, subdomain);
-    if (isNonExchangeableOn(since, fromCurrency, query.date) || isNonExchangeableOn(since, toCurrency, query.date)) {
+    if (
+      isNonExchangeableOn(since, fromCurrency, query.date) ||
+      isNonExchangeableOn(since, toCurrency, query.date)
+    ) {
       return null;
     }
     const feed = await feedRate(tx, query);

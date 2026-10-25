@@ -19,7 +19,11 @@ describe("parseEcbDailyXml", () => {
     const snapshot = parseEcbDailyXml(ECB_XML);
 
     // Assert
-    expect(snapshot).toMatchObject({ provider: "ecb", baseCurrency: "EUR", rateDate: "2026-10-23" });
+    expect(snapshot).toMatchObject({
+      provider: "ecb",
+      baseCurrency: "EUR",
+      rateDate: "2026-10-23",
+    });
     expect([...snapshot.rates]).toEqual([
       ["USD", "1.0812"],
       ["JPY", "163.21"],

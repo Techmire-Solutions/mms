@@ -64,7 +64,10 @@ export const accountingIas29Runs = pgTable(
   },
   (table) => [
     primaryKey({ columns: [table.workspaceSubdomain, table.id] }),
-    uniqueIndex("accounting_ias29_runs_date_uidx").on(table.workspaceSubdomain, table.restatementDate),
+    uniqueIndex("accounting_ias29_runs_date_uidx").on(
+      table.workspaceSubdomain,
+      table.restatementDate,
+    ),
   ],
 );
 

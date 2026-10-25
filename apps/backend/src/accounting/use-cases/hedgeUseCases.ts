@@ -42,7 +42,10 @@ function unprocessable(message: string): Error {
 }
 
 function notFound(): Error {
-  return Object.assign(new Error("Hedge relationship not found"), { statusCode: 404, type: "not_found" });
+  return Object.assign(new Error("Hedge relationship not found"), {
+    statusCode: 404,
+    type: "not_found",
+  });
 }
 
 async function load(deps: HedgeDeps, tenant: string, id: string): Promise<HedgeRelationship> {
@@ -51,7 +54,13 @@ async function load(deps: HedgeDeps, tenant: string, id: string): Promise<HedgeR
   return hedge;
 }
 
-async function audit(deps: HedgeDeps, actor: Actor, recordId: string, actionType: "CREATE" | "UPDATE", newState: unknown) {
+async function audit(
+  deps: HedgeDeps,
+  actor: Actor,
+  recordId: string,
+  actionType: "CREATE" | "UPDATE",
+  newState: unknown,
+) {
   await deps.recordAudit({
     workspaceSubdomain: actor.tenant,
     tableName: "accounting_hedge_relationships",
@@ -69,7 +78,8 @@ export async function createHedgeRelationship(
   hedge: HedgeRelationshipCreate,
 ): Promise<HedgeRelationship> {
   const { functionalCurrency } = await deps.fx.getCurrencySettings(actor.tenant);
-  if (hedge.currency === functionalCurrency) throw unprocessable("A hedged currency must differ from the functional currency");
+  if (hedge.currency === functionalCurrency)
+    throw unprocessable("A hedged currency must differ from the functional currency");
   for (const accountId of [hedge.instrumentAccountId, hedge.reserveAccountId, hedge.pnlAccountId]) {
     if (accountId && !(await deps.store.accountExists(actor.tenant, accountId))) {
       throw unprocessable(`Account ${accountId} does not exist`);
@@ -95,7 +105,8 @@ export async function previewHedgeValuation(
   }
   const { functionalCurrency } = await deps.fx.getCurrencySettings(tenant);
   const rate = await lookupClosingRate(deps.fx, tenant, hedge.currency, functionalCurrency, date);
-  if (!rate) throw unprocessable(`No CLOSING or SPOT rate for ${hedge.currency} on or before ${date}`);
+  if (!rate)
+    throw unprocessable(`No CLOSING or SPOT rate for ${hedge.currency} on or before ${date}`);
   return {
     valuationDate: date,
     kind: "valuation",
@@ -113,15 +124,30 @@ export async function postHedgeValuation(
   date: string,
 ): Promise<HedgeRelationship> {
   const existing = await load(deps, actor.tenant, id);
-  if (existing.valuations.some((record) => record.kind === "valuation" && record.valuationDate === date)) {
+  if (
+    existing.valuations.some(
+      (record) => record.kind === "valuation" && record.valuationDate === date,
+    )
+  ) {
     return existing;
   }
   const preview = await previewHedgeValuation(deps, actor.tenant, id, date);
   const recordId = `hv-${randomUUID()}`;
   const record = { ...preview };
   if (Number(preview.instrumentValue) !== 0) {
-    const lines = buildHedgeValuationLines(preview, existing, `Hedge valuation ${existing.name} ${date}`);
-    const entry = await deps.buildEntry(actor.tenant, "hedge_val", recordId, date, `Hedge valuation ${existing.name}`, lines);
+    const lines = buildHedgeValuationLines(
+      preview,
+      existing,
+      `Hedge valuation ${existing.name} ${date}`,
+    );
+    const entry = await deps.buildEntry(
+      actor.tenant,
+      "hedge_val",
+      recordId,
+      date,
+      `Hedge valuation ${existing.name}`,
+      lines,
+    );
     const reversal = await deps.buildEntry(
       actor.tenant,
       "hedge_val_rev",
@@ -200,10 +226,16 @@ export async function reclassifyHedgeReserve(
 ): Promise<HedgeRelationship> {
   const hedge = await load(deps, actor.tenant, id);
   const settlement = hedge.valuations.find((record) => record.kind === "settlement");
-  if (hedge.status !== "settled" || hedge.hedgeType !== "cash_flow" || !settlement || !hedge.reserveAccountId) {
+  if (
+    hedge.status !== "settled" ||
+    hedge.hedgeType !== "cash_flow" ||
+    !settlement ||
+    !hedge.reserveAccountId
+  ) {
     throw unprocessable("Only a settled cash flow hedge has a reserve to reclassify");
   }
-  if (request.date < settlement.valuationDate) throw unprocessable("Reclassify on or after the settlement date");
+  if (request.date < settlement.valuationDate)
+    throw unprocessable("Reclassify on or after the settlement date");
   if (!(await deps.store.accountExists(actor.tenant, request.targetAccountId))) {
     throw unprocessable("The target account does not exist");
   }

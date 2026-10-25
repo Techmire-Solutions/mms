@@ -44,7 +44,10 @@ export function usePriceIndices() {
   return useQuery({
     queryKey: INDICES_KEY,
     queryFn: async ({ signal }) => {
-      const response = await apiContract.accountingFx.listPriceIndices({ signal, fetchOptions: { signal } });
+      const response = await apiContract.accountingFx.listPriceIndices({
+        signal,
+        fetchOptions: { signal },
+      });
       assertOk(response, "Failed to load price indices");
       return (response.body as { points: PriceIndexPoint[] }).points;
     },
@@ -81,7 +84,9 @@ export function useIas29Runs() {
 export function usePreviewIas29() {
   return useMutation({
     mutationFn: async (restatementDate: string) => {
-      const response = await apiContract.accountingFx.previewIas29Restatement({ body: { restatementDate } });
+      const response = await apiContract.accountingFx.previewIas29Restatement({
+        body: { restatementDate },
+      });
       assertOk(response, "Failed to preview IAS 29 restatement");
       return (response.body as { run: Ias29Run }).run;
     },
@@ -93,7 +98,9 @@ export function usePostIas29() {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: async (restatementDate: string) => {
-      const response = await apiContract.accountingFx.postIas29Restatement({ body: { restatementDate } });
+      const response = await apiContract.accountingFx.postIas29Restatement({
+        body: { restatementDate },
+      });
       assertOk(response, "Failed to post IAS 29 restatement");
       return (response.body as { run: Ias29Run }).run;
     },

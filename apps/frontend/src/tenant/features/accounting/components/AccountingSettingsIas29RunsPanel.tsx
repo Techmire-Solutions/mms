@@ -23,7 +23,9 @@ export function AccountingSettingsIas29RunsPanel({
   const { t } = useTranslation();
   const money = (value: string) => formatMoney(Number(value));
   const signed = (value: string) => (
-    <span className={`font-mono font-semibold ${value.startsWith("-") ? "text-destructive" : "text-success"}`}>
+    <span
+      className={`font-mono font-semibold ${value.startsWith("-") ? "text-destructive" : "text-success"}`}
+    >
       {money(value)}
     </span>
   );
@@ -46,21 +48,45 @@ export function AccountingSettingsIas29RunsPanel({
       label: t("accounting.settings.ias29.restated"),
       render: (row) => <span className="font-mono">{money(row.restated)}</span>,
     },
-    { id: "adjustment", label: t("accounting.settings.ias29.adjustment"), render: (row) => signed(row.adjustment) },
+    {
+      id: "adjustment",
+      label: t("accounting.settings.ias29.adjustment"),
+      render: (row) => signed(row.adjustment),
+    },
   ];
 
   const runColumns: DataTableColumn<Ias29Run>[] = [
-    { id: "date", label: t("accounting.settings.ias29.date"), fixed: true, render: (run) => formatDate(run.restatementDate) },
-    { id: "index", label: t("accounting.settings.ias29.closingIndex"), render: (run) => run.closingIndex },
-    { id: "result", label: t("accounting.settings.ias29.monetaryResult"), render: (run) => signed(run.netMonetaryResult) },
+    {
+      id: "date",
+      label: t("accounting.settings.ias29.date"),
+      fixed: true,
+      render: (run) => formatDate(run.restatementDate),
+    },
+    {
+      id: "index",
+      label: t("accounting.settings.ias29.closingIndex"),
+      render: (run) => run.closingIndex,
+    },
+    {
+      id: "result",
+      label: t("accounting.settings.ias29.monetaryResult"),
+      render: (run) => signed(run.netMonetaryResult),
+    },
   ];
 
   return (
     <div className="mt-6 space-y-3 border-t border-border pt-4">
-      <h3 className="m-0 text-sm font-semibold text-balance">{t("accounting.settings.ias29.runTitle")}</h3>
+      <h3 className="m-0 text-sm font-semibold text-balance">
+        {t("accounting.settings.ias29.runTitle")}
+      </h3>
       <div className="flex flex-wrap items-end gap-3">
         <Field id="ias29-date" label={t("accounting.settings.ias29.date")}>
-          <DatePicker id="ias29-date" name="restatementDate" value={panel.restatementDate} onChange={panel.setRestatementDate} />
+          <DatePicker
+            id="ias29-date"
+            name="restatementDate"
+            value={panel.restatementDate}
+            onChange={panel.setRestatementDate}
+          />
         </Field>
         <Button
           type="button"
@@ -78,7 +104,9 @@ export function AccountingSettingsIas29RunsPanel({
             onClick={() => void panel.handlePost()}
             disabled={panel.posting || panel.alreadyPosted}
           >
-            {panel.alreadyPosted ? t("accounting.settings.fxReval.alreadyPosted") : t("accounting.settings.ias29.post")}
+            {panel.alreadyPosted
+              ? t("accounting.settings.fxReval.alreadyPosted")
+              : t("accounting.settings.ias29.post")}
           </Button>
         )}
       </div>
@@ -86,7 +114,9 @@ export function AccountingSettingsIas29RunsPanel({
       {panel.previewRun && (
         <div className="space-y-2" role="status" aria-live="polite">
           <p className="m-0 text-sm font-semibold">
-            {t("accounting.settings.ias29.previewTotal", { amount: money(panel.previewRun.netMonetaryResult) })}
+            {t("accounting.settings.ias29.previewTotal", {
+              amount: money(panel.previewRun.netMonetaryResult),
+            })}
           </p>
           <DataTable
             tableId="accounting.ias29Preview"

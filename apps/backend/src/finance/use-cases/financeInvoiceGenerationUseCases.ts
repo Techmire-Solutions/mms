@@ -120,7 +120,10 @@ export async function generateInvoices(
   );
   const draftsWithFamily = await applyGeneratedInvoiceFx(
     tenant,
-    drafts.map((draft) => ({ ...draft, familyContactId: familyByStudent.get(draft.studentId) ?? null })),
+    drafts.map((draft) => ({
+      ...draft,
+      familyContactId: familyByStudent.get(draft.studentId) ?? null,
+    })),
     new Map(enrollments.map((enrollment) => [enrollment.id, enrollment.sessionCurrency])),
   );
   const created = await persistGeneratedInvoices(tenant, draftsWithFamily, prefix);

@@ -54,7 +54,10 @@ export async function saveHyperinflationSettings(
     tx
       .insert(accountingHyperinflationSettings)
       .values({ workspaceSubdomain: subdomain, ...values })
-      .onConflictDoUpdate({ target: accountingHyperinflationSettings.workspaceSubdomain, set: values }),
+      .onConflictDoUpdate({
+        target: accountingHyperinflationSettings.workspaceSubdomain,
+        set: values,
+      }),
   );
 }
 
@@ -65,7 +68,12 @@ export async function accountExists(tenant: string, accountId: string): Promise<
     const rows = await tx
       .select({ id: accountingAccounts.id })
       .from(accountingAccounts)
-      .where(and(eq(accountingAccounts.workspaceSubdomain, subdomain), eq(accountingAccounts.id, accountId)))
+      .where(
+        and(
+          eq(accountingAccounts.workspaceSubdomain, subdomain),
+          eq(accountingAccounts.id, accountId),
+        ),
+      )
       .limit(1);
     return rows.length > 0;
   });
@@ -97,7 +105,9 @@ export async function upsertPriceIndices(
   await withTenant(subdomain, (tx) =>
     tx
       .insert(accountingPriceIndices)
-      .values(points.map((point) => ({ workspaceSubdomain: subdomain, ...point, updatedBy: userId })))
+      .values(
+        points.map((point) => ({ workspaceSubdomain: subdomain, ...point, updatedBy: userId })),
+      )
       .onConflictDoUpdate({
         target: [accountingPriceIndices.workspaceSubdomain, accountingPriceIndices.indexDate],
         set: {
@@ -116,7 +126,10 @@ export async function upsertPriceIndices(
  * next day, and restating them again at a different month's index would leave
  * a residue.
  */
-export async function listMonthlyMovements(tenant: string, date: string): Promise<MonthlyMovement[]> {
+export async function listMonthlyMovements(
+  tenant: string,
+  date: string,
+): Promise<MonthlyMovement[]> {
   const subdomain = tenantKey(tenant);
   return withTenantRead(subdomain, async (tx) => {
     const { rows } = await tx.execute<{
@@ -230,13 +243,19 @@ export async function findIas29RunId(tenant: string, date: string): Promise<stri
       .select({ id: accountingIas29Runs.id })
       .from(accountingIas29Runs)
       .where(
-        and(eq(accountingIas29Runs.workspaceSubdomain, subdomain), eq(accountingIas29Runs.restatementDate, date)),
+        and(
+          eq(accountingIas29Runs.workspaceSubdomain, subdomain),
+          eq(accountingIas29Runs.restatementDate, date),
+        ),
       );
     return row?.id ?? null;
   });
 }
 
-export async function saveIas29Run(tenant: string, run: Omit<Ias29Run, "status" | "createdAt">): Promise<void> {
+export async function saveIas29Run(
+  tenant: string,
+  run: Omit<Ias29Run, "status" | "createdAt">,
+): Promise<void> {
   const subdomain = tenantKey(tenant);
   await withTenant(subdomain, async (tx) => {
     await tx.insert(accountingIas29Runs).values({

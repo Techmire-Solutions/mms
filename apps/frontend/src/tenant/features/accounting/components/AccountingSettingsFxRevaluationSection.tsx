@@ -1,6 +1,11 @@
 import type React from "react";
 import { Scale } from "lucide-react";
-import { formatDate, formatMoney, type FxRevaluationLine, type FxRevaluationRun } from "@mms/shared";
+import {
+  formatDate,
+  formatMoney,
+  type FxRevaluationLine,
+  type FxRevaluationRun,
+} from "@mms/shared";
 import { DatePicker } from "@/components/app/DatePicker";
 import { EmptyState } from "@/components/app/EmptyState";
 import { ErrorState } from "@/components/app/ErrorState";
@@ -26,7 +31,8 @@ export function AccountingSettingsFxRevaluationSection({
   const panel = useFxRevaluationPanel();
   const money = (value: string, currency: string) =>
     formatMoney(Number(value), currency, { useSymbol: true });
-  const functional = panel.previewRun?.functionalCurrency ?? panel.runs[0]?.functionalCurrency ?? "";
+  const functional =
+    panel.previewRun?.functionalCurrency ?? panel.runs[0]?.functionalCurrency ?? "";
 
   const lineColumns: DataTableColumn<LineRow>[] = [
     {
@@ -55,7 +61,9 @@ export function AccountingSettingsFxRevaluationSection({
       id: "unrealized",
       label: t("accounting.settings.fxReval.unrealized"),
       render: (row) => (
-        <span className={`font-mono font-semibold ${row.unrealized.startsWith("-") ? "text-destructive" : "text-success"}`}>
+        <span
+          className={`font-mono font-semibold ${row.unrealized.startsWith("-") ? "text-destructive" : "text-success"}`}
+        >
           {money(row.unrealized, functional)}
         </span>
       ),
@@ -77,12 +85,18 @@ export function AccountingSettingsFxRevaluationSection({
     {
       id: "total",
       label: t("accounting.settings.fxReval.unrealized"),
-      render: (run) => <span className="font-mono">{money(run.totalUnrealized, run.functionalCurrency)}</span>,
+      render: (run) => (
+        <span className="font-mono">{money(run.totalUnrealized, run.functionalCurrency)}</span>
+      ),
     },
   ];
 
   return (
-    <SectionCard title={t("accounting.settings.secFxReval")} icon={Scale} className={SETUP_SECTION_CARD_CLASS}>
+    <SectionCard
+      title={t("accounting.settings.secFxReval")}
+      icon={Scale}
+      className={SETUP_SECTION_CARD_CLASS}
+    >
       <p className="m-0 mb-3 text-xs text-muted-foreground text-pretty">
         {t("accounting.settings.fxReval.hint")}
       </p>
@@ -128,7 +142,10 @@ export function AccountingSettingsFxRevaluationSection({
           <DataTable
             tableId="accounting.fxRevaluationPreview"
             label={t("accounting.settings.fxReval.previewTitle")}
-            data={panel.previewRun.lines.map((line, index) => ({ ...line, id: `${line.accountId}-${line.currency}-${index}` }))}
+            data={panel.previewRun.lines.map((line, index) => ({
+              ...line,
+              id: `${line.accountId}-${line.currency}-${index}`,
+            }))}
             columns={lineColumns}
             card={{ title: (row) => `${row.accountName} · ${row.currency}` }}
             emptyState={<EmptyState title={t("accounting.settings.fxReval.nothingToRevalue")} />}

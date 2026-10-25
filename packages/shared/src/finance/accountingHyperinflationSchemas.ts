@@ -58,4 +58,3 @@ export type Ias29Run = z.infer<typeof ias29RunSchema>;
 
 /** Body of `POST /api/accounting/ias29-restatements[/preview]`. */
 export const ias29RequestSchema = z.object({ restatementDate: isoDateSchema }).strict();
-

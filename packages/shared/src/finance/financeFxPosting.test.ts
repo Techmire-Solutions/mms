@@ -52,7 +52,9 @@ describe("stampDocumentFxLines", () => {
     });
 
     // Assert
-    expect(stamped.map((l) => [l.account_id, l.debit, l.credit, l.txn_debit, l.txn_credit])).toEqual([
+    expect(
+      stamped.map((l) => [l.account_id, l.debit, l.credit, l.txn_debit, l.txn_credit]),
+    ).toEqual([
       ["ar", 280000, 0, "1000.00", "0.00"],
       ["inc", 0, 280000, "0.00", "1000.00"],
     ]);
@@ -60,10 +62,22 @@ describe("stampDocumentFxLines", () => {
 
   it("given a functional-currency invoice, should leave the lines untouched", () => {
     // Arrange
-    const lines = buildInvoicePostingLines({ invoiceId: "i1", description: "", date: "2026-10-01", finalAmt: 50, accounts }) ?? [];
+    const lines =
+      buildInvoicePostingLines({
+        invoiceId: "i1",
+        description: "",
+        date: "2026-10-01",
+        finalAmt: 50,
+        accounts,
+      }) ?? [];
 
     // Act
-    const stamped = stampDocumentFxLines(lines, { currency: "PKR", functionalCurrency: "PKR", rate: "1", entryDate: "2026-10-01" });
+    const stamped = stampDocumentFxLines(lines, {
+      currency: "PKR",
+      functionalCurrency: "PKR",
+      rate: "1",
+      entryDate: "2026-10-01",
+    });
 
     // Assert
     expect(stamped).toEqual(lines);
@@ -145,8 +159,11 @@ describe("cross-currency settlement", () => {
 
     // Act
     const lines =
-      buildFxPaymentPostingLines({ ...payment(285000, "285"), paymentCurrency: "PKR", invoiceAmount }) ??
-      [];
+      buildFxPaymentPostingLines({
+        ...payment(285000, "285"),
+        paymentCurrency: "PKR",
+        invoiceAmount,
+      }) ?? [];
 
     // Assert
     expect(invoiceAmount).toBe(1000);

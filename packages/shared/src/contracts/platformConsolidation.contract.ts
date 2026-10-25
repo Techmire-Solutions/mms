@@ -40,7 +40,13 @@ export const platformConsolidationContract = c.router({
     path: "/api/platform/consolidation/groups/:id/report",
     pathParams: idParams,
     query: consolidationReportQuerySchema,
-    responses: { 200: ok, 400: errorResponse, 403: errorResponse, 404: errorResponse, 422: errorResponse },
+    responses: {
+      200: ok,
+      400: errorResponse,
+      403: errorResponse,
+      404: errorResponse,
+      422: errorResponse,
+    },
     summary: "Translated member trial balances and the consolidated trial balance",
   },
 });

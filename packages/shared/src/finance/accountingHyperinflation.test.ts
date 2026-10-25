@@ -22,14 +22,30 @@ const movement = (overrides: Partial<MonthlyMovement>): MonthlyMovement => ({
   ...overrides,
 });
 
-const index = (indexDate: string, value: string): PriceIndexPoint => ({ indexDate, value, source: "" });
+const index = (indexDate: string, value: string): PriceIndexPoint => ({
+  indexDate,
+  value,
+  source: "",
+});
 
 const points = [index("2026-01-31", "100"), index("2026-06-30", "120"), index("2026-12-31", "150")];
 
 const opening = [
   movement({ netFunc: "600.0000" }),
-  movement({ accountId: "cash", accountCode: "1000", accountName: "Cash", isMonetary: true, netFunc: "400.0000" }),
-  movement({ accountId: "equity", accountCode: "3000", accountName: "Capital", type: "Equity", netFunc: "-1000.0000" }),
+  movement({
+    accountId: "cash",
+    accountCode: "1000",
+    accountName: "Cash",
+    isMonetary: true,
+    netFunc: "400.0000",
+  }),
+  movement({
+    accountId: "equity",
+    accountCode: "3000",
+    accountName: "Capital",
+    type: "Equity",
+    netFunc: "-1000.0000",
+  }),
 ];
 
 describe("computeIas29Restatement", () => {
@@ -41,14 +57,31 @@ describe("computeIas29Restatement", () => {
     expect(result.closingIndex).toBe("150");
     expect(result.netMonetaryResult).toBe("-200.00");
     expect(result.lines).toEqual([
-      { accountId: "land", accountCode: "1500", accountName: "Land", carrying: "600.00", restated: "900.00", adjustment: "300.00" },
-      { accountId: "equity", accountCode: "3000", accountName: "Capital", carrying: "-1000.00", restated: "-1500.00", adjustment: "-500.00" },
+      {
+        accountId: "land",
+        accountCode: "1500",
+        accountName: "Land",
+        carrying: "600.00",
+        restated: "900.00",
+        adjustment: "300.00",
+      },
+      {
+        accountId: "equity",
+        accountCode: "3000",
+        accountName: "Capital",
+        carrying: "-1000.00",
+        restated: "-1500.00",
+        adjustment: "-500.00",
+      },
     ]);
   });
 
   it("given movements in different months, should restate each from its own month's index", () => {
     // Arrange
-    const movements = [movement({ netFunc: "100" }), movement({ month: "2026-07", netFunc: "120" })];
+    const movements = [
+      movement({ netFunc: "100" }),
+      movement({ month: "2026-07", netFunc: "120" }),
+    ];
 
     // Act
     const [line] = computeIas29Restatement(movements, points, "2026-12-31", "PKR").lines;
@@ -106,7 +139,13 @@ describe("buildIas29JournalLines", () => {
     // Arrange
     const borrowed = [
       movement({ netFunc: "1000" }),
-      movement({ accountId: "loan", accountCode: "2100", type: "Liability", isMonetary: true, netFunc: "-400" }),
+      movement({
+        accountId: "loan",
+        accountCode: "2100",
+        type: "Liability",
+        isMonetary: true,
+        netFunc: "-400",
+      }),
       movement({ accountId: "equity", accountCode: "3000", type: "Equity", netFunc: "-600" }),
     ];
     const result = computeIas29Restatement(borrowed, points, "2026-12-31", "PKR");
@@ -136,8 +175,14 @@ describe("price index helpers", () => {
 
   it("given a zero or malformed index, should reject it", () => {
     // Arrange / Act / Assert
-    expect(priceIndexPointSchema.safeParse({ indexDate: "2026-01-31", value: "0" }).success).toBe(false);
-    expect(priceIndexPointSchema.safeParse({ indexDate: "2026-01-31", value: "1.2345678" }).success).toBe(false);
-    expect(priceIndexPointSchema.safeParse({ indexDate: "2026-01-31", value: "104.25" }).success).toBe(true);
+    expect(priceIndexPointSchema.safeParse({ indexDate: "2026-01-31", value: "0" }).success).toBe(
+      false,
+    );
+    expect(
+      priceIndexPointSchema.safeParse({ indexDate: "2026-01-31", value: "1.2345678" }).success,
+    ).toBe(false);
+    expect(
+      priceIndexPointSchema.safeParse({ indexDate: "2026-01-31", value: "104.25" }).success,
+    ).toBe(true);
   });
 });

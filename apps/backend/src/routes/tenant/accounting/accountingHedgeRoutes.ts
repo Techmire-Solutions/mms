@@ -36,10 +36,19 @@ type Handler<T> = (input: {
 }) => Promise<unknown>;
 
 /** Gate, parse, run in one tenant transaction, and map domain errors — shared by every hedge endpoint. */
-function handle<T>(access: Access, schema: ZodType<T>, failure: string, status: 200 | 201, run: Handler<T>) {
+function handle<T>(
+  access: Access,
+  schema: ZodType<T>,
+  failure: string,
+  status: 200 | 201,
+  run: Handler<T>,
+) {
   return async (request: FastifyRequest, reply: FastifyReply): Promise<FastifyReply> => {
     const user = request.user as User;
-    const allowed = access === "write" ? canWriteCollection(user, COLLECTION) : canReadCollection(user, COLLECTION);
+    const allowed =
+      access === "write"
+        ? canWriteCollection(user, COLLECTION)
+        : canReadCollection(user, COLLECTION);
     if (!allowed) return sendForbidden(reply);
     const parsed = parseRequest(schema, request.body);
     if (!parsed.ok) return replyValidationError(reply, parsed.message);

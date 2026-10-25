@@ -44,7 +44,9 @@ export function parseEcbDailyXml(xml: string): FxRateSnapshot {
   const date = /<Cube\s+time=['"](\d{4}-\d{2}-\d{2})['"]/.exec(xml)?.[1];
   if (!date) throw new Error("ECB feed has no fixing date");
   const pairs = [...xml.matchAll(/<Cube\s+currency=['"]([A-Z]{3})['"]\s+rate=['"]([\d.]+)['"]/g)];
-  const rates = keepValid(pairs.map(([, code, rate]) => [code, isValidExchangeRate(rate) ? rate : null]));
+  const rates = keepValid(
+    pairs.map(([, code, rate]) => [code, isValidExchangeRate(rate) ? rate : null]),
+  );
   return { provider: "ecb", baseCurrency: "EUR", rateDate: date, rates };
 }
 
@@ -55,7 +57,12 @@ export function parseErApiJson(body: unknown): FxRateSnapshot {
   const base = record.base_code;
   const updated = record.time_last_update_unix;
   const rates = record.rates;
-  if (typeof base !== "string" || typeof updated !== "number" || typeof rates !== "object" || !rates) {
+  if (
+    typeof base !== "string" ||
+    typeof updated !== "number" ||
+    typeof rates !== "object" ||
+    !rates
+  ) {
     throw new Error("ER-API feed is missing base_code, time_last_update_unix or rates");
   }
   return {

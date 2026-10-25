@@ -70,8 +70,14 @@ describe("consolidateTrialBalances", () => {
   it("given an 80% subsidiary, should eliminate intercompany balances, keep CTA in OCI and balance", () => {
     // Arrange
     const members = [
-      { translated: translateTrialBalance("parent", parent, rates, "PKR", "PKR"), ownershipPercent: 100 },
-      { translated: translateTrialBalance("sub", subsidiary, rates, "USD", "PKR"), ownershipPercent: 80 },
+      {
+        translated: translateTrialBalance("parent", parent, rates, "PKR", "PKR"),
+        ownershipPercent: 100,
+      },
+      {
+        translated: translateTrialBalance("sub", subsidiary, rates, "USD", "PKR"),
+        ownershipPercent: 80,
+      },
     ];
 
     // Act
@@ -79,8 +85,14 @@ describe("consolidateTrialBalances", () => {
 
     // Assert
     expect(consolidated.rows.find((row) => row.code === "1000")?.balance).toBe(80800);
-    expect(consolidated.rows.find((row) => row.code === "1500")).toMatchObject({ combined: 2800, balance: 0 });
-    expect(consolidated.rows.find((row) => row.code === "2500")).toMatchObject({ combined: -2800, balance: 0 });
+    expect(consolidated.rows.find((row) => row.code === "1500")).toMatchObject({
+      combined: 2800,
+      balance: 0,
+    });
+    expect(consolidated.rows.find((row) => row.code === "2500")).toMatchObject({
+      combined: -2800,
+      balance: 0,
+    });
     expect(consolidated.cta).toBe(840);
     expect(consolidated.nonControllingInterest).toBe(5600);
     expect(consolidated.totals.debit).toBe(consolidated.totals.credit);
@@ -89,11 +101,21 @@ describe("consolidateTrialBalances", () => {
   it("given intercompany balances translated at different rates, should move the residual into CTA", () => {
     // Arrange: the parent booked the receivable at 290, the subsidiary's payable translates at 280.
     const parentAt290 = parent.map((row) =>
-      row.code === "1500" ? { ...row, balance: 2900 } : row.code === "3000" ? { ...row, balance: -52900 } : row,
+      row.code === "1500"
+        ? { ...row, balance: 2900 }
+        : row.code === "3000"
+          ? { ...row, balance: -52900 }
+          : row,
     );
     const members = [
-      { translated: translateTrialBalance("parent", parentAt290, rates, "PKR", "PKR"), ownershipPercent: 100 },
-      { translated: translateTrialBalance("sub", subsidiary, rates, "USD", "PKR"), ownershipPercent: 100 },
+      {
+        translated: translateTrialBalance("parent", parentAt290, rates, "PKR", "PKR"),
+        ownershipPercent: 100,
+      },
+      {
+        translated: translateTrialBalance("sub", subsidiary, rates, "USD", "PKR"),
+        ownershipPercent: 100,
+      },
     ];
 
     // Act
@@ -121,7 +143,11 @@ describe("buildMemberTrialBalance", () => {
     const rows = buildMemberTrialBalance(balanceSheet, periodResults, "USD");
 
     // Assert
-    expect(rows.at(-1)).toMatchObject({ code: PRIOR_UNCLOSED_RESULTS_CODE, type: "Equity", balance: -30 });
+    expect(rows.at(-1)).toMatchObject({
+      code: PRIOR_UNCLOSED_RESULTS_CODE,
+      type: "Equity",
+      balance: -30,
+    });
     expect(rows.reduce((sum, row) => sum + row.balance, 0)).toBe(0);
   });
 });

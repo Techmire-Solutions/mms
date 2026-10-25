@@ -82,7 +82,10 @@ export function computeFxRevaluation(
   const lines: FxRevaluationLine[] = [];
   for (const balance of balances) {
     const closingRate = closingRates.get(balance.currency) as string;
-    const open = parseMoney(normalizeStoredAmount(balance.openTxn, balance.currency), balance.currency);
+    const open = parseMoney(
+      normalizeStoredAmount(balance.openTxn, balance.currency),
+      balance.currency,
+    );
     const carrying = parseMoney(
       normalizeStoredAmount(balance.carryingFunc, functionalCurrency),
       functionalCurrency,

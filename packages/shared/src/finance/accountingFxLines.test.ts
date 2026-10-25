@@ -98,7 +98,12 @@ describe("buildReversalLines", () => {
       resolveJournalFxLines([usd("ar", "ar", "debit", "1000", "280")], ctx),
     );
 
-    expect(reversed).toMatchObject({ debit: 0, credit: 280000, txn_debit: "0.00", txn_credit: "1000.00" });
+    expect(reversed).toMatchObject({
+      debit: 0,
+      credit: 280000,
+      txn_debit: "0.00",
+      txn_credit: "1000.00",
+    });
   });
 });
 

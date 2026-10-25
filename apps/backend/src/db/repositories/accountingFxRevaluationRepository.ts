@@ -70,7 +70,10 @@ const runColumns = {
 };
 
 /** Posted runs, newest first, with their lines (bounded to `limit` runs). */
-export async function listFxRevaluationRuns(tenant: string, limit = 24): Promise<FxRevaluationRun[]> {
+export async function listFxRevaluationRuns(
+  tenant: string,
+  limit = 24,
+): Promise<FxRevaluationRun[]> {
   const subdomain = tenant.trim().toLowerCase();
   return withTenantRead(subdomain, async (tx) => {
     const runs = await tx
@@ -97,7 +100,10 @@ export async function listFxRevaluationRuns(tenant: string, limit = 24): Promise
       .leftJoin(
         accountingAccounts,
         and(
-          eq(accountingAccounts.workspaceSubdomain, accountingFxRevaluationLines.workspaceSubdomain),
+          eq(
+            accountingAccounts.workspaceSubdomain,
+            accountingFxRevaluationLines.workspaceSubdomain,
+          ),
           eq(accountingAccounts.id, accountingFxRevaluationLines.accountId),
         ),
       )

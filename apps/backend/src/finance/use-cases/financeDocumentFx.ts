@@ -72,7 +72,8 @@ export async function resolvePaymentFx(
       `A ${invoiceCurrency} invoice can be paid in ${invoiceCurrency} or ${functionalCurrency}`,
     );
   }
-  const foreignCurrency = paymentCurrency !== functionalCurrency ? paymentCurrency : invoiceCurrency;
+  const foreignCurrency =
+    paymentCurrency !== functionalCurrency ? paymentCurrency : invoiceCurrency;
   if (foreignCurrency === functionalCurrency) return {};
   if (invoiceCurrency !== functionalCurrency && !invoice.exchangeRate) {
     throw validationError("The invoice has no booked exchange rate");
@@ -123,13 +124,17 @@ export async function applyGeneratedInvoiceFx<T extends { enrollmentId: string; 
   const resolved = new Map<string, ResolvedDocumentFx>();
   const result: (T & ResolvedDocumentFx)[] = [];
   for (const draft of drafts) {
-    const currency = generatedInvoiceCurrency(sessionCurrencyByEnrollment.get(draft.enrollmentId), settings);
+    const currency = generatedInvoiceCurrency(
+      sessionCurrencyByEnrollment.get(draft.enrollmentId),
+      settings,
+    );
     if (!currency) {
       result.push(draft);
       continue;
     }
     const key = `${currency}|${draft.dueDate}`;
-    const documentFx = resolved.get(key) ?? (await resolveDocumentFx(tenant, { currency }, draft.dueDate, fx));
+    const documentFx =
+      resolved.get(key) ?? (await resolveDocumentFx(tenant, { currency }, draft.dueDate, fx));
     resolved.set(key, documentFx);
     result.push({ ...draft, ...documentFx });
   }

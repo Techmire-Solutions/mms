@@ -34,7 +34,12 @@ const hedge = (status: HedgeRelationship["status"]): HedgeRelationship => ({
 });
 
 vi.mock("@/tenant/features/accounting/hooks/useHedges", () => ({
-  useHedges: () => ({ data: [hedge("active"), hedge("settled")], isPending: false, isError: false, refetch: vi.fn() }),
+  useHedges: () => ({
+    data: [hedge("active"), hedge("settled")],
+    isPending: false,
+    isError: false,
+    refetch: vi.fn(),
+  }),
   useCreateHedge: () => ({ mutateAsync: vi.fn(), isPending: false }),
   usePostHedgeValuation: () => ({ mutateAsync: vi.fn(), isPending: false }),
   useSettleHedge: () => ({ mutateAsync: vi.fn(), isPending: false }),
@@ -44,7 +49,9 @@ vi.mock("@/tenant/features/accounting/hooks/useHedges", () => ({
 describe("AccountingSettingsHedgesSection", () => {
   it("given an active and a settled cash flow hedge, should offer value/settle and reclassify respectively", () => {
     // Arrange / Act
-    const html = renderToStaticMarkup(<AccountingSettingsHedgesSection accounts={[]} canEditSetup />);
+    const html = renderToStaticMarkup(
+      <AccountingSettingsHedgesSection accounts={[]} canEditSetup />,
+    );
 
     // Assert
     expect(html).toContain("Hedge active");
@@ -55,7 +62,9 @@ describe("AccountingSettingsHedgesSection", () => {
 
   it("given a view-only user, should hide every hedge action", () => {
     // Arrange / Act
-    const html = renderToStaticMarkup(<AccountingSettingsHedgesSection accounts={[]} canEditSetup={false} />);
+    const html = renderToStaticMarkup(
+      <AccountingSettingsHedgesSection accounts={[]} canEditSetup={false} />,
+    );
 
     // Assert
     expect(html).not.toContain("accounting.settings.hedges.designate");

@@ -1,6 +1,11 @@
 import type React from "react";
 import { ShieldCheck } from "lucide-react";
-import { hedgeRelationshipCreateSchema, type Account, type AppTranslationKey, type HedgeRelationshipCreate } from "@mms/shared";
+import {
+  hedgeRelationshipCreateSchema,
+  type Account,
+  type AppTranslationKey,
+  type HedgeRelationshipCreate,
+} from "@mms/shared";
 import { DatePicker } from "@/components/app/DatePicker";
 import { FormModal } from "@/components/app/FormModal";
 import { Field } from "@/components/app/FormPrimitives";
@@ -26,13 +31,18 @@ interface HedgeDesignationModalProps {
 
 type TextField = "name" | "notional" | "contractRate" | "designationRate" | "hedgedItem";
 
-const TEXT_FIELDS: readonly { field: TextField; labelKey: AppTranslationKey; decimal?: boolean }[] = [
-  { field: "name", labelKey: "accounting.settings.hedges.name" },
-  { field: "hedgedItem", labelKey: "accounting.settings.hedges.hedgedItem" },
-  { field: "notional", labelKey: "accounting.settings.hedges.notional", decimal: true },
-  { field: "contractRate", labelKey: "accounting.settings.hedges.contractRate", decimal: true },
-  { field: "designationRate", labelKey: "accounting.settings.hedges.designationRate", decimal: true },
-];
+const TEXT_FIELDS: readonly { field: TextField; labelKey: AppTranslationKey; decimal?: boolean }[] =
+  [
+    { field: "name", labelKey: "accounting.settings.hedges.name" },
+    { field: "hedgedItem", labelKey: "accounting.settings.hedges.hedgedItem" },
+    { field: "notional", labelKey: "accounting.settings.hedges.notional", decimal: true },
+    { field: "contractRate", labelKey: "accounting.settings.hedges.contractRate", decimal: true },
+    {
+      field: "designationRate",
+      labelKey: "accounting.settings.hedges.designationRate",
+      decimal: true,
+    },
+  ];
 
 /** IFRS 9.6.4.1 designation: instrument terms, hedged item, objective and accounts. */
 export function HedgeDesignationModal({
@@ -43,12 +53,15 @@ export function HedgeDesignationModal({
   onSave,
 }: HedgeDesignationModalProps): React.JSX.Element {
   const { t } = useTranslation();
-  const form = useZodDraftForm<HedgeDesignationDraft, HedgeRelationshipCreate>(emptyHedgeDesignationDraft(), {
-    schema: hedgeRelationshipCreateSchema,
-    toRecord: hedgeDesignationToRecord,
-    resolveMessage: (message) => t(message as AppTranslationKey),
-    saveFailedMessage: "accounting.settings.hedges.createFailed",
-  });
+  const form = useZodDraftForm<HedgeDesignationDraft, HedgeRelationshipCreate>(
+    emptyHedgeDesignationDraft(),
+    {
+      schema: hedgeRelationshipCreateSchema,
+      toRecord: hedgeDesignationToRecord,
+      resolveMessage: (message) => t(message as AppTranslationKey),
+      saveFailedMessage: "accounting.settings.hedges.createFailed",
+    },
+  );
   const { draft, errors, updateDraft } = form;
   const handleSave = async () => {
     if (await form.save(onSave)) onClose();
@@ -83,7 +96,9 @@ export function HedgeDesignationModal({
               id="hedge-type"
               name="hedgeType"
               value={draft.hedgeType}
-              onChange={(value) => updateDraft({ hedgeType: value === "fair_value" ? "fair_value" : "cash_flow" })}
+              onChange={(value) =>
+                updateDraft({ hedgeType: value === "fair_value" ? "fair_value" : "cash_flow" })
+              }
               options={[
                 { value: "cash_flow", label: t("accounting.settings.hedges.cashFlow") },
                 { value: "fair_value", label: t("accounting.settings.hedges.fairValue") },
@@ -102,7 +117,12 @@ export function HedgeDesignationModal({
               ]}
             />
           </Field>
-          <Field id="hedge-currency" label={t("accounting.settings.hedges.currency")} required error={errors.currency}>
+          <Field
+            id="hedge-currency"
+            label={t("accounting.settings.hedges.currency")}
+            required
+            error={errors.currency}
+          >
             <FormSelect
               id="hedge-currency"
               name="currency"
@@ -112,7 +132,13 @@ export function HedgeDesignationModal({
             />
           </Field>
           {TEXT_FIELDS.map(({ field, labelKey, decimal }) => (
-            <Field key={field} id={`hedge-${field}`} label={t(labelKey)} required error={errors[field]}>
+            <Field
+              key={field}
+              id={`hedge-${field}`}
+              label={t(labelKey)}
+              required
+              error={errors[field]}
+            >
               <Input
                 id={`hedge-${field}`}
                 name={field}
@@ -122,7 +148,11 @@ export function HedgeDesignationModal({
               />
             </Field>
           ))}
-          <Field id="hedge-designation-date" label={t("accounting.settings.hedges.designationDate")} required>
+          <Field
+            id="hedge-designation-date"
+            label={t("accounting.settings.hedges.designationDate")}
+            required
+          >
             <DatePicker
               id="hedge-designation-date"
               name="designationDate"
@@ -144,7 +174,12 @@ export function HedgeDesignationModal({
               onChange={(value) => updateDraft({ maturityDate: value })}
             />
           </Field>
-          <Field id="hedge-instrument-account" label={t("accounting.settings.hedges.instrumentAccount")} required error={errors.instrumentAccountId}>
+          <Field
+            id="hedge-instrument-account"
+            label={t("accounting.settings.hedges.instrumentAccount")}
+            required
+            error={errors.instrumentAccountId}
+          >
             <FormSelect
               id="hedge-instrument-account"
               name="instrumentAccountId"
@@ -154,7 +189,12 @@ export function HedgeDesignationModal({
             />
           </Field>
           {draft.hedgeType === "cash_flow" && (
-            <Field id="hedge-reserve-account" label={t("accounting.settings.hedges.reserveAccount")} required error={errors.reserveAccountId}>
+            <Field
+              id="hedge-reserve-account"
+              label={t("accounting.settings.hedges.reserveAccount")}
+              required
+              error={errors.reserveAccountId}
+            >
               <FormSelect
                 id="hedge-reserve-account"
                 name="reserveAccountId"
@@ -164,7 +204,12 @@ export function HedgeDesignationModal({
               />
             </Field>
           )}
-          <Field id="hedge-pnl-account" label={t("accounting.settings.hedges.pnlAccount")} required error={errors.pnlAccountId}>
+          <Field
+            id="hedge-pnl-account"
+            label={t("accounting.settings.hedges.pnlAccount")}
+            required
+            error={errors.pnlAccountId}
+          >
             <FormSelect
               id="hedge-pnl-account"
               name="pnlAccountId"

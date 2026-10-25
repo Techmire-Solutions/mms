@@ -21,7 +21,14 @@ export const fxRevaluationDeps: FxRevaluationDeps = {
   postEntry: (tenant, entry) => persistGeneratedEntry(tenant, entry),
   buildEntry: async (tenant, sourceType, sourceId, date, description, lines) => {
     const years = await store.listFiscalYearsByWorkspace(tenant);
-    return entryForSource(sourceType, sourceId, date, description, lines, resolveYearId(years, date));
+    return entryForSource(
+      sourceType,
+      sourceId,
+      date,
+      description,
+      lines,
+      resolveYearId(years, date),
+    );
   },
   recordAudit: (input) => recordModernAuditEvent(activeDb(), input),
 };

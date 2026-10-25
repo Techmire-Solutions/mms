@@ -1,11 +1,17 @@
 import { describe, expect, it } from "vitest";
-import { applyMemberPatch, buildGroupPayload, createGroupDraft } from "./useConsolidationGroupDraft";
+import {
+  applyMemberPatch,
+  buildGroupPayload,
+  createGroupDraft,
+} from "./useConsolidationGroupDraft";
 
 describe("consolidation group draft", () => {
   it("given a named group with one parent, should build a valid payload", () => {
     // Arrange
     const draft = createGroupDraft(null);
-    const members = applyMemberPatch(draft.members, draft.members[0].key, { memberSubdomain: "parent" });
+    const members = applyMemberPatch(draft.members, draft.members[0].key, {
+      memberSubdomain: "parent",
+    });
 
     // Act
     const parsed = buildGroupPayload({ ...draft, name: "Group", members });

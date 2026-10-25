@@ -22,7 +22,9 @@ import {
 function sendError(reply: FastifyReply, error: unknown, fallback: string) {
   const typed = error as { statusCode?: number; type?: string; message?: string };
   if (typed.statusCode && typed.type) {
-    return reply.status(typed.statusCode).send({ type: typed.type, message: typed.message ?? fallback });
+    return reply
+      .status(typed.statusCode)
+      .send({ type: typed.type, message: typed.message ?? fallback });
   }
   return sendIfHttpDomainError(reply, error) ?? sendDatabaseError(reply, fallback, error);
 }
@@ -49,7 +51,12 @@ export default async function platformConsolidationRoutes(fastify: FastifyInstan
     if (!body.ok) return replyValidationError(reply, body.message);
     const user = (request as PlatformAuthenticatedRequest).platformUser;
     try {
-      const group = await saveGroup(repo, { id: user.id, email: user.email }, params.data.id, body.data);
+      const group = await saveGroup(
+        repo,
+        { id: user.id, email: user.email },
+        params.data.id,
+        body.data,
+      );
       return reply.send({ group });
     } catch (error) {
       return sendError(reply, error, "Failed to save consolidation group");
@@ -74,7 +81,9 @@ export default async function platformConsolidationRoutes(fastify: FastifyInstan
     const query = parseRequest(consolidationReportQuerySchema, request.query ?? {});
     if (!query.ok) return replyValidationError(reply, query.message);
     try {
-      return reply.send({ report: await buildConsolidationReport(repo, params.data.id, query.data) });
+      return reply.send({
+        report: await buildConsolidationReport(repo, params.data.id, query.data),
+      });
     } catch (error) {
       return sendError(reply, error, "Failed to build consolidation report");
     }

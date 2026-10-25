@@ -46,7 +46,8 @@ export const consolidationGroupPutSchema = consolidationGroupSchema
     path: ["members"],
   })
   .refine(
-    (group) => new Set(group.members.map((member) => member.memberSubdomain)).size === group.members.length,
+    (group) =>
+      new Set(group.members.map((member) => member.memberSubdomain)).size === group.members.length,
     { message: "consolidation.validation.duplicateMember", path: ["members"] },
   );
 

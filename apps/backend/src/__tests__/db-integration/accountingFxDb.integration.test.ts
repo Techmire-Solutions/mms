@@ -31,10 +31,14 @@ async function cleanup(): Promise<void> {
   try {
     await tx.execute(sql`SET LOCAL app.allow_hard_purge = 'true'`);
     for (const tenant of [TENANT, OTHER]) {
-      await tx.delete(accountingJournalLines).where(eq(accountingJournalLines.workspaceSubdomain, tenant));
+      await tx
+        .delete(accountingJournalLines)
+        .where(eq(accountingJournalLines.workspaceSubdomain, tenant));
       await tx.delete(accountingEntries).where(eq(accountingEntries.workspaceSubdomain, tenant));
       await tx.delete(accountingAccounts).where(eq(accountingAccounts.workspaceSubdomain, tenant));
-      await tx.delete(accountingExchangeRates).where(eq(accountingExchangeRates.workspaceSubdomain, tenant));
+      await tx
+        .delete(accountingExchangeRates)
+        .where(eq(accountingExchangeRates.workspaceSubdomain, tenant));
       await tx
         .delete(accountingEnabledCurrencies)
         .where(eq(accountingEnabledCurrencies.workspaceSubdomain, tenant));
@@ -56,7 +60,9 @@ beforeAll(async () => {
   await cleanup();
   const { tx, commit } = await beginLongLivedTenantTransaction(null);
   for (const tenant of [TENANT, OTHER]) {
-    await tx.insert(workspaces).values({ id: `ws-${tenant}`, subdomain: tenant, madrasaName: tenant, enabled: true });
+    await tx
+      .insert(workspaces)
+      .values({ id: `ws-${tenant}`, subdomain: tenant, madrasaName: tenant, enabled: true });
   }
   await tx.insert(accountingAccounts).values([
     { id: "ar", workspaceSubdomain: TENANT, code: "1100", name: "Fee Receivable", type: "Asset" },
@@ -88,8 +94,32 @@ describe("IAS 21 ledger persistence", () => {
   it("given a USD entry, should store transaction and functional amounts and hydrate them back", async () => {
     // Arrange
     const entry = baseEntry("je-usd", [
-      { id: "l1", account_id: "ar", debit: 280000, credit: 0, description: "", txn_currency: "USD", txn_debit: "1000.00", txn_credit: "0.00", exchange_rate: "280", rate_type: "SPOT", rate_date: "2026-10-01" },
-      { id: "l2", account_id: "inc", debit: 0, credit: 280000, description: "", txn_currency: "USD", txn_debit: "0.00", txn_credit: "1000.00", exchange_rate: "280", rate_type: "SPOT", rate_date: "2026-10-01" },
+      {
+        id: "l1",
+        account_id: "ar",
+        debit: 280000,
+        credit: 0,
+        description: "",
+        txn_currency: "USD",
+        txn_debit: "1000.00",
+        txn_credit: "0.00",
+        exchange_rate: "280",
+        rate_type: "SPOT",
+        rate_date: "2026-10-01",
+      },
+      {
+        id: "l2",
+        account_id: "inc",
+        debit: 0,
+        credit: 280000,
+        description: "",
+        txn_currency: "USD",
+        txn_debit: "0.00",
+        txn_credit: "1000.00",
+        exchange_rate: "280",
+        rate_type: "SPOT",
+        rate_date: "2026-10-01",
+      },
     ]);
 
     // Act
@@ -146,13 +176,35 @@ describe("IAS 21 ledger persistence", () => {
 describe("exchange rate lookup", () => {
   it("given tenant and feed rates, should prefer the tenant rate, invert it, then triangulate the feed", async () => {
     // Arrange
-    await upsertExchangeRates(TENANT, [
-      { fromCurrency: "USD", toCurrency: "PKR", rateDate: "2026-09-30", rateType: "SPOT", rate: "281" },
-    ], null);
+    await upsertExchangeRates(
+      TENANT,
+      [
+        {
+          fromCurrency: "USD",
+          toCurrency: "PKR",
+          rateDate: "2026-09-30",
+          rateType: "SPOT",
+          rate: "281",
+        },
+      ],
+      null,
+    );
     const { tx, commit } = await beginLongLivedTenantTransaction(null);
     await tx.insert(fxReferenceRates).values([
-      { provider: FEED, baseCurrency: "EUR", quoteCurrency: "USD", rateDate: "2026-09-29", rate: "1.08" },
-      { provider: FEED, baseCurrency: "EUR", quoteCurrency: "GBP", rateDate: "2026-09-29", rate: "0.84" },
+      {
+        provider: FEED,
+        baseCurrency: "EUR",
+        quoteCurrency: "USD",
+        rateDate: "2026-09-29",
+        rate: "1.08",
+      },
+      {
+        provider: FEED,
+        baseCurrency: "EUR",
+        quoteCurrency: "GBP",
+        rateDate: "2026-09-29",
+        rate: "0.84",
+      },
     ]);
     await commit();
     const lookup = (fromCurrency: string, toCurrency: string, date = "2026-10-01") =>

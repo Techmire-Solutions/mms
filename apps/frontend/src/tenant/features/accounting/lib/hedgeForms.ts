@@ -1,7 +1,9 @@
 import { todayISO, type HedgeRelationshipCreate } from "@mms/shared";
 
 /** Editable designation form state; an empty reserve account means none. */
-export type HedgeDesignationDraft = Omit<HedgeRelationshipCreate, "reserveAccountId"> & { reserveAccountId: string };
+export type HedgeDesignationDraft = Omit<HedgeRelationshipCreate, "reserveAccountId"> & {
+  reserveAccountId: string;
+};
 
 export function emptyHedgeDesignationDraft(): HedgeDesignationDraft {
   return {
@@ -28,7 +30,8 @@ export function hedgeDesignationToRecord(draft: HedgeDesignationDraft): HedgeRel
     notional: draft.notional.trim(),
     contractRate: draft.contractRate.trim(),
     designationRate: draft.designationRate.trim(),
-    reserveAccountId: draft.hedgeType === "cash_flow" && draft.reserveAccountId ? draft.reserveAccountId : null,
+    reserveAccountId:
+      draft.hedgeType === "cash_flow" && draft.reserveAccountId ? draft.reserveAccountId : null,
   };
 }
 

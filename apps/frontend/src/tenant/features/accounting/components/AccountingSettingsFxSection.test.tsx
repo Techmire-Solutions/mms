@@ -39,7 +39,14 @@ vi.mock("@/tenant/features/accounting/hooks/useAccountingFx", () => ({
   }),
   useSaveAccountingExchangeRates: () => ({ mutateAsync: vi.fn(), isPending: false }),
   useCurrencyExchangeability: () => ({
-    data: [{ currency: "USD", assessedOn: "2026-05-01", estimationMethod: "Parallel market rate", reason: "" }],
+    data: [
+      {
+        currency: "USD",
+        assessedOn: "2026-05-01",
+        estimationMethod: "Parallel market rate",
+        reason: "",
+      },
+    ],
     isError: false,
     refetch: vi.fn(),
   }),

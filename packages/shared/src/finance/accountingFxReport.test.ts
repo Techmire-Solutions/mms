@@ -1,5 +1,9 @@
 import { describe, expect, it } from "vitest";
-import { fxReportQuerySchema, sumStoredAmounts, summarizeFxExposure } from "./accountingFxReport.js";
+import {
+  fxReportQuerySchema,
+  sumStoredAmounts,
+  summarizeFxExposure,
+} from "./accountingFxReport.js";
 import type { ForeignMonetaryBalance } from "./accountingFxRevaluation.js";
 
 const balance = (overrides: Partial<ForeignMonetaryBalance>): ForeignMonetaryBalance => ({
@@ -36,10 +40,20 @@ describe("summarizeFxExposure", () => {
 
   it("given a currency without a closing rate, should report the balance but not value it", () => {
     // Arrange / Act
-    const [eur] = summarizeFxExposure([balance({ currency: "EUR", openTxn: "50", carryingFunc: "15000" })], new Map(), "PKR");
+    const [eur] = summarizeFxExposure(
+      [balance({ currency: "EUR", openTxn: "50", carryingFunc: "15000" })],
+      new Map(),
+      "PKR",
+    );
 
     // Assert
-    expect(eur).toMatchObject({ currency: "EUR", openTxn: "50.00", closingRate: null, revaluedFunc: null, unrealized: null });
+    expect(eur).toMatchObject({
+      currency: "EUR",
+      openTxn: "50.00",
+      closingRate: null,
+      revaluedFunc: null,
+      unrealized: null,
+    });
   });
 
   it("given several currencies, should order them by code", () => {
@@ -63,7 +77,11 @@ describe("fx report helpers", () => {
 
   it("given a start after the as-of date, should reject the query", () => {
     // Arrange / Act / Assert
-    expect(fxReportQuerySchema.safeParse({ from: "2026-12-01", asOf: "2026-11-30" }).success).toBe(false);
-    expect(fxReportQuerySchema.safeParse({ from: "2026-01-01", asOf: "2026-11-30" }).success).toBe(true);
+    expect(fxReportQuerySchema.safeParse({ from: "2026-12-01", asOf: "2026-11-30" }).success).toBe(
+      false,
+    );
+    expect(fxReportQuerySchema.safeParse({ from: "2026-01-01", asOf: "2026-11-30" }).success).toBe(
+      true,
+    );
   });
 });

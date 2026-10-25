@@ -54,7 +54,10 @@ export async function updateHyperinflationSettings(
   actor: Actor,
   settings: HyperinflationSettings,
 ): Promise<HyperinflationSettings> {
-  if (settings.netMonetaryAccountId && !(await deps.store.accountExists(actor.tenant, settings.netMonetaryAccountId))) {
+  if (
+    settings.netMonetaryAccountId &&
+    !(await deps.store.accountExists(actor.tenant, settings.netMonetaryAccountId))
+  ) {
     throw unprocessable("The net monetary position account does not exist");
   }
   const previous = await deps.store.getHyperinflationSettings(actor.tenant);
@@ -89,11 +92,18 @@ export async function savePriceIndices(
 }
 
 /** Restatement figures as of `date` without posting anything. */
-export async function previewIas29Restatement(deps: Ias29Deps, tenant: string, date: string): Promise<Ias29Run> {
+export async function previewIas29Restatement(
+  deps: Ias29Deps,
+  tenant: string,
+  date: string,
+): Promise<Ias29Run> {
   const settings = await deps.store.getHyperinflationSettings(tenant);
-  if (!settings.enabled) throw unprocessable("IAS 29 restatement is not enabled for this workspace");
+  if (!settings.enabled)
+    throw unprocessable("IAS 29 restatement is not enabled for this workspace");
   if (settings.appliesFrom && date < settings.appliesFrom) {
-    throw unprocessable(`The functional currency is hyperinflationary only from ${settings.appliesFrom}`);
+    throw unprocessable(
+      `The functional currency is hyperinflationary only from ${settings.appliesFrom}`,
+    );
   }
   const { functionalCurrency } = await deps.store.getCurrencySettings(tenant);
   const [movements, points] = await Promise.all([
@@ -102,7 +112,13 @@ export async function previewIas29Restatement(deps: Ias29Deps, tenant: string, d
   ]);
   try {
     const restatement = computeIas29Restatement(movements, points, date, functionalCurrency);
-    return { id: "preview", status: "preview", entryId: null, reversalEntryId: null, ...restatement };
+    return {
+      id: "preview",
+      status: "preview",
+      entryId: null,
+      reversalEntryId: null,
+      ...restatement,
+    };
   } catch (error) {
     if (error instanceof MissingPriceIndexError) {
       throw unprocessable(`${error.message}; add those price index points first`);
@@ -118,10 +134,16 @@ export async function previewIas29Restatement(deps: Ias29Deps, tenant: string, d
  * restates again from historical amounts. One run per date; repeating the call
  * returns the existing run.
  */
-export async function postIas29Restatement(deps: Ias29Deps, actor: Actor, date: string): Promise<Ias29Run> {
+export async function postIas29Restatement(
+  deps: Ias29Deps,
+  actor: Actor,
+  date: string,
+): Promise<Ias29Run> {
   const { tenant } = actor;
   if (await deps.store.findIas29RunId(tenant, date)) {
-    const existing = (await deps.store.listIas29Runs(tenant)).find((run) => run.restatementDate === date);
+    const existing = (await deps.store.listIas29Runs(tenant)).find(
+      (run) => run.restatementDate === date,
+    );
     if (existing) return existing;
   }
   const preview = await previewIas29Restatement(deps, tenant, date);
@@ -133,8 +155,19 @@ export async function postIas29Restatement(deps: Ias29Deps, actor: Actor, date: 
       throw unprocessable("Set the net monetary position gain/loss account first");
     }
     const { functionalCurrency } = await deps.store.getCurrencySettings(tenant);
-    const lines = buildIas29JournalLines(preview, settings.netMonetaryAccountId, functionalCurrency);
-    const entry = await deps.buildEntry(tenant, "ias29_restate", date, date, `IAS 29 restatement ${date}`, lines);
+    const lines = buildIas29JournalLines(
+      preview,
+      settings.netMonetaryAccountId,
+      functionalCurrency,
+    );
+    const entry = await deps.buildEntry(
+      tenant,
+      "ias29_restate",
+      date,
+      date,
+      `IAS 29 restatement ${date}`,
+      lines,
+    );
     const reversal = await deps.buildEntry(
       tenant,
       "ias29_reversal",
@@ -146,7 +179,13 @@ export async function postIas29Restatement(deps: Ias29Deps, actor: Actor, date: 
     entryId = (await deps.postEntry(tenant, entry))?.id ?? entry.id;
     reversalEntryId = (await deps.postEntry(tenant, reversal))?.id ?? reversal.id;
   }
-  const run = { ...preview, id: `ias29-${randomUUID()}`, entryId, reversalEntryId, createdBy: actor.userId };
+  const run = {
+    ...preview,
+    id: `ias29-${randomUUID()}`,
+    entryId,
+    reversalEntryId,
+    createdBy: actor.userId,
+  };
   const { status: _status, ...stored } = run;
   await deps.store.saveIas29Run(tenant, stored);
   await deps.recordAudit({

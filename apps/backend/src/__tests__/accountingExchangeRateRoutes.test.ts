@@ -88,13 +88,19 @@ const RATE = {
 describe("PUT /api/accounting/exchange-rates", () => {
   beforeEach(() => {
     process.env.JWT_SECRET = "test-secret";
-    mockUpsert.mockReset().mockResolvedValue([{ id: "r1", ...RATE, source: "manual", overrideReason: "" }]);
+    mockUpsert
+      .mockReset()
+      .mockResolvedValue([{ id: "r1", ...RATE, source: "manual", overrideReason: "" }]);
   });
 
   it("given a role without accounting write permission, should return 403 without saving", async () => {
     // Arrange / Act
-    const guardian = await call("guardian", "PUT", "/api/accounting/exchange-rates", { rates: [RATE] });
-    const auditor = await call("auditor", "PUT", "/api/accounting/exchange-rates", { rates: [RATE] });
+    const guardian = await call("guardian", "PUT", "/api/accounting/exchange-rates", {
+      rates: [RATE],
+    });
+    const auditor = await call("auditor", "PUT", "/api/accounting/exchange-rates", {
+      rates: [RATE],
+    });
 
     // Assert
     expect(guardian.statusCode).toBe(403);
@@ -112,7 +118,9 @@ describe("PUT /api/accounting/exchange-rates", () => {
 
     // Act
     const responses = await Promise.all(
-      bad.map((rate) => call("accountant", "PUT", "/api/accounting/exchange-rates", { rates: [rate] })),
+      bad.map((rate) =>
+        call("accountant", "PUT", "/api/accounting/exchange-rates", { rates: [rate] }),
+      ),
     );
 
     // Assert
@@ -122,7 +130,9 @@ describe("PUT /api/accounting/exchange-rates", () => {
 
   it("given a valid rate, should save it as the session user", async () => {
     // Arrange / Act
-    const res = await call("accountant", "PUT", "/api/accounting/exchange-rates", { rates: [RATE] });
+    const res = await call("accountant", "PUT", "/api/accounting/exchange-rates", {
+      rates: [RATE],
+    });
 
     // Assert
     expect(res.statusCode).toBe(200);
@@ -143,7 +153,9 @@ describe("GET /api/accounting/exchange-rates/lookup", () => {
 
   it("given no rate on or before the date, should return 404 instead of assuming 1", async () => {
     // Arrange
-    mockLookup.mockRejectedValue(new NotFoundError("No SPOT rate for USD→PKR on or before 2026-10-01"));
+    mockLookup.mockRejectedValue(
+      new NotFoundError("No SPOT rate for USD→PKR on or before 2026-10-01"),
+    );
 
     // Act
     const res = await call(
@@ -218,6 +230,9 @@ describe("PUT /api/accounting/currency-settings", () => {
 
     // Assert
     expect(res.statusCode).toBe(200);
-    expect(res.json().settings).toMatchObject({ functionalCurrency: "PKR", enabledCurrencies: ["USD"] });
+    expect(res.json().settings).toMatchObject({
+      functionalCurrency: "PKR",
+      enabledCurrencies: ["USD"],
+    });
   });
 });

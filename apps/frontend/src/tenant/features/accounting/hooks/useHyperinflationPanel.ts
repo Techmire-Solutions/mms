@@ -37,8 +37,10 @@ export function useHyperinflationPanel() {
   const [restatementDate, setRestatementDate] = useState(todayISO());
   const [previewRun, setPreviewRun] = useState<Ias29Run | null>(null);
 
-  const update = <K extends keyof HyperinflationSettings>(field: K, value: HyperinflationSettings[K]) =>
-    setDraft({ ...current, [field]: value });
+  const update = <K extends keyof HyperinflationSettings>(
+    field: K,
+    value: HyperinflationSettings[K],
+  ) => setDraft({ ...current, [field]: value });
 
   const handleSaveSettings = async (): Promise<void> => {
     try {
@@ -53,11 +55,15 @@ export function useHyperinflationPanel() {
 
   const handleAddIndex = async (): Promise<void> => {
     try {
-      await saveIndices.mutateAsync([{ indexDate, value: indexValue.trim(), source: current.indexName }]);
+      await saveIndices.mutateAsync([
+        { indexDate, value: indexValue.trim(), source: current.indexName },
+      ]);
       setIndexValue("");
       notify.success(t("accounting.settings.ias29.indexSaved"));
     } catch (error) {
-      notify.error(t("accounting.settings.ias29.indexSaveFailed"), { description: errorText(error) });
+      notify.error(t("accounting.settings.ias29.indexSaveFailed"), {
+        description: errorText(error),
+      });
     }
   };
 

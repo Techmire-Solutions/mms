@@ -52,7 +52,12 @@ type Role = "admin" | "accountant" | "auditor" | "guardian";
 
 async function call(role: Role, url: string, payload: Record<string, unknown>) {
   const app = await buildApp();
-  const tokens = { admin: adminToken, accountant: accountantToken, auditor: auditorToken, guardian: guardianToken };
+  const tokens = {
+    admin: adminToken,
+    accountant: accountantToken,
+    auditor: auditorToken,
+    guardian: guardianToken,
+  };
   const res = await app.inject({
     method: "POST",
     url,
@@ -99,7 +104,10 @@ describe("hedge routes", () => {
 
   it("given a cash flow hedge without a reserve account, should reject it without saving", async () => {
     // Arrange / Act
-    const res = await call("accountant", "/api/accounting/hedges", { ...HEDGE, reserveAccountId: null });
+    const res = await call("accountant", "/api/accounting/hedges", {
+      ...HEDGE,
+      reserveAccountId: null,
+    });
 
     // Assert
     expect(res.statusCode).toBe(400);
@@ -117,7 +125,11 @@ describe("hedge routes", () => {
 
     // Assert
     expect([created.statusCode, settled.statusCode]).toEqual([201, 201]);
-    expect(mockCreate).toHaveBeenCalledWith(expect.anything(), expect.objectContaining({ tenant: "demo" }), HEDGE);
+    expect(mockCreate).toHaveBeenCalledWith(
+      expect.anything(),
+      expect.objectContaining({ tenant: "demo" }),
+      HEDGE,
+    );
     expect(mockSettle).toHaveBeenCalledWith(
       expect.anything(),
       expect.objectContaining({ tenant: "demo" }),

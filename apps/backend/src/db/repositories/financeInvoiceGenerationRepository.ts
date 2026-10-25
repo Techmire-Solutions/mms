@@ -91,7 +91,10 @@ export async function listBillableEnrollments(
       .from(enrollments)
       .leftJoin(
         sessions,
-        and(eq(sessions.workspaceSubdomain, enrollments.workspaceSubdomain), eq(sessions.id, enrollments.sessionId)),
+        and(
+          eq(sessions.workspaceSubdomain, enrollments.workspaceSubdomain),
+          eq(sessions.id, enrollments.sessionId),
+        ),
       )
       .where(and(...conditions))
       .limit(PAGE_SIZE);

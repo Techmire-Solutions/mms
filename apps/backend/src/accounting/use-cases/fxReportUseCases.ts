@@ -1,4 +1,9 @@
-import { summarizeFxExposure, sumStoredAmounts, type FxReport, type FxReportQuery } from "@mms/shared";
+import {
+  summarizeFxExposure,
+  sumStoredAmounts,
+  type FxReport,
+  type FxReportQuery,
+} from "@mms/shared";
 import type { FxRevaluationDeps } from "./fxRevaluationUseCases.js";
 import { lookupClosingRate } from "./fxRevaluationUseCases.js";
 
@@ -7,7 +12,11 @@ export interface FxReportDeps extends Pick<FxRevaluationDeps, "fx" | "listBalanc
 }
 
 /** Exposure at `asOf` closing rates, realized FX in the period, and posted revaluations. */
-export async function buildFxReport(deps: FxReportDeps, tenant: string, query: FxReportQuery): Promise<FxReport> {
+export async function buildFxReport(
+  deps: FxReportDeps,
+  tenant: string,
+  query: FxReportQuery,
+): Promise<FxReport> {
   const { functionalCurrency } = await deps.fx.getCurrencySettings(tenant);
   const [balances, realized, runs] = await Promise.all([
     deps.listBalances(tenant, query.asOf, functionalCurrency),
@@ -24,7 +33,10 @@ export async function buildFxReport(deps: FxReportDeps, tenant: string, query: F
     asOf: query.asOf,
     functionalCurrency,
     exposure: summarizeFxExposure(balances, rates, functionalCurrency),
-    realized: realized.map((row) => ({ ...row, realized: sumStoredAmounts([row.realized], functionalCurrency) })),
+    realized: realized.map((row) => ({
+      ...row,
+      realized: sumStoredAmounts([row.realized], functionalCurrency),
+    })),
     totalRealized: sumStoredAmounts(
       realized.map((row) => row.realized),
       functionalCurrency,

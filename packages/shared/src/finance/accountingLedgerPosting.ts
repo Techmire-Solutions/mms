@@ -8,7 +8,9 @@ export function buildReversalLines(lines: readonly JournalLine[]): JournalLine[]
     id: `rev-${row.id || index}`,
     debit: row.credit,
     credit: row.debit,
-    ...(row.txn_currency !== undefined ? { txn_debit: row.txn_credit, txn_credit: row.txn_debit } : {}),
+    ...(row.txn_currency !== undefined
+      ? { txn_debit: row.txn_credit, txn_credit: row.txn_debit }
+      : {}),
     description: row.description ? `Reversal: ${row.description}` : "Reversal",
   }));
 }

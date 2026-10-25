@@ -9,7 +9,11 @@ import {
   type User,
 } from "@mms/shared";
 import { canReadCollection, canWriteCollection } from "../../../services/rbacService.js";
-import { sendForbidden, sendIfHttpDomainError, sendDatabaseError } from "../../../lib/httpErrors.js";
+import {
+  sendForbidden,
+  sendIfHttpDomainError,
+  sendDatabaseError,
+} from "../../../lib/httpErrors.js";
 import { parseRequest, replyValidationError } from "../../../lib/zodRequest.js";
 import { withTenant } from "../../../db/tenant-context.js";
 import {

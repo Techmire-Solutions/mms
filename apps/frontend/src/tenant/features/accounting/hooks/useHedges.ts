@@ -12,13 +12,17 @@ function assertOk(response: { status: number; body: unknown }, context: string):
   throw new ApiError(response.status, errorBody?.message ?? context, errorBody?.type);
 }
 
-const hedgeOf = (response: { body: unknown }) => (response.body as { hedge: HedgeRelationship }).hedge;
+const hedgeOf = (response: { body: unknown }) =>
+  (response.body as { hedge: HedgeRelationship }).hedge;
 
 export function useHedges() {
   return useQuery({
     queryKey: HEDGES_KEY,
     queryFn: async ({ signal }) => {
-      const response = await apiContract.accountingHedges.listHedges({ signal, fetchOptions: { signal } });
+      const response = await apiContract.accountingHedges.listHedges({
+        signal,
+        fetchOptions: { signal },
+      });
       assertOk(response, "Failed to load hedges");
       return (response.body as { hedges: HedgeRelationship[] }).hedges;
     },
@@ -58,7 +62,15 @@ export function usePostHedgeValuation() {
 
 export function useSettleHedge() {
   return useHedgeMutation(
-    async ({ id, ...body }: { id: string; settlementDate: string; settlementRate: string; cashAccountId: string }) => {
+    async ({
+      id,
+      ...body
+    }: {
+      id: string;
+      settlementDate: string;
+      settlementRate: string;
+      cashAccountId: string;
+    }) => {
       const response = await apiContract.accountingHedges.settleHedge({ params: { id }, body });
       assertOk(response, "Failed to settle the hedge");
       return hedgeOf(response);
@@ -67,9 +79,11 @@ export function useSettleHedge() {
 }
 
 export function useReclassifyHedge() {
-  return useHedgeMutation(async ({ id, ...body }: { id: string; date: string; targetAccountId: string }) => {
-    const response = await apiContract.accountingHedges.reclassifyHedge({ params: { id }, body });
-    assertOk(response, "Failed to reclassify the hedge reserve");
-    return hedgeOf(response);
-  });
+  return useHedgeMutation(
+    async ({ id, ...body }: { id: string; date: string; targetAccountId: string }) => {
+      const response = await apiContract.accountingHedges.reclassifyHedge({ params: { id }, body });
+      assertOk(response, "Failed to reclassify the hedge reserve");
+      return hedgeOf(response);
+    },
+  );
 }

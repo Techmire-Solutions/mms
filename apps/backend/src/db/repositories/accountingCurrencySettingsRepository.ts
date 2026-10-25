@@ -39,7 +39,10 @@ async function hasPostedEntries(tx: TenantTransaction, subdomain: string): Promi
     .select({ id: accountingEntries.id })
     .from(accountingEntries)
     .where(
-      and(eq(accountingEntries.workspaceSubdomain, subdomain), eq(accountingEntries.status, "posted")),
+      and(
+        eq(accountingEntries.workspaceSubdomain, subdomain),
+        eq(accountingEntries.status, "posted"),
+      ),
     )
     .limit(1);
   return rows.length > 0;

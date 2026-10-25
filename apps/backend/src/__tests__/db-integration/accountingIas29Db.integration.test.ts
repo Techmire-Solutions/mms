@@ -32,14 +32,20 @@ async function cleanup(): Promise<void> {
   try {
     await tx.execute(sql`SET LOCAL app.allow_hard_purge = 'true'`);
     await tx.delete(accountingIas29Runs).where(eq(accountingIas29Runs.workspaceSubdomain, TENANT));
-    await tx.delete(accountingPriceIndices).where(eq(accountingPriceIndices.workspaceSubdomain, TENANT));
+    await tx
+      .delete(accountingPriceIndices)
+      .where(eq(accountingPriceIndices.workspaceSubdomain, TENANT));
     await tx
       .delete(accountingHyperinflationSettings)
       .where(eq(accountingHyperinflationSettings.workspaceSubdomain, TENANT));
-    await tx.delete(accountingJournalLines).where(eq(accountingJournalLines.workspaceSubdomain, TENANT));
+    await tx
+      .delete(accountingJournalLines)
+      .where(eq(accountingJournalLines.workspaceSubdomain, TENANT));
     await tx.delete(accountingEntries).where(eq(accountingEntries.workspaceSubdomain, TENANT));
     await tx.delete(accountingAccounts).where(eq(accountingAccounts.workspaceSubdomain, TENANT));
-    await tx.delete(accountingCurrencySettings).where(eq(accountingCurrencySettings.workspaceSubdomain, TENANT));
+    await tx
+      .delete(accountingCurrencySettings)
+      .where(eq(accountingCurrencySettings.workspaceSubdomain, TENANT));
     await tx.delete(workspaces).where(eq(workspaces.subdomain, TENANT));
     await commit();
   } catch (error) {
@@ -73,12 +79,34 @@ beforeAll(async () => {
   await requireDatabaseConnection();
   await cleanup();
   const { tx, commit } = await beginLongLivedTenantTransaction(null);
-  await tx.insert(workspaces).values({ id: `ws-${TENANT}`, subdomain: TENANT, madrasaName: TENANT, enabled: true });
+  await tx
+    .insert(workspaces)
+    .values({ id: `ws-${TENANT}`, subdomain: TENANT, madrasaName: TENANT, enabled: true });
   await tx.insert(accountingAccounts).values([
-    { id: "cash", workspaceSubdomain: TENANT, code: "1000", name: "Cash", type: "Asset", isMonetary: true },
-    { id: "land", workspaceSubdomain: TENANT, code: "1500", name: "Land", type: "Asset", isMonetary: false },
+    {
+      id: "cash",
+      workspaceSubdomain: TENANT,
+      code: "1000",
+      name: "Cash",
+      type: "Asset",
+      isMonetary: true,
+    },
+    {
+      id: "land",
+      workspaceSubdomain: TENANT,
+      code: "1500",
+      name: "Land",
+      type: "Asset",
+      isMonetary: false,
+    },
     { id: "capital", workspaceSubdomain: TENANT, code: "3000", name: "Capital", type: "Equity" },
-    { id: "nmp", workspaceSubdomain: TENANT, code: "7950", name: "Monetary gain/loss", type: "Expense" },
+    {
+      id: "nmp",
+      workspaceSubdomain: TENANT,
+      code: "7950",
+      name: "Monetary gain/loss",
+      type: "Expense",
+    },
   ]);
   await tx
     .insert(accountingCurrencySettings)
@@ -135,7 +163,9 @@ describe("IAS 29 hyperinflation restatement", () => {
     );
 
     // Act
-    const run = await withTenant(TENANT, () => previewIas29Restatement(ias29Deps, TENANT, "2026-12-31"));
+    const run = await withTenant(TENANT, () =>
+      previewIas29Restatement(ias29Deps, TENANT, "2026-12-31"),
+    );
 
     // Assert
     expect(run.netMonetaryResult).toBe("-200.00");
@@ -147,21 +177,30 @@ describe("IAS 29 hyperinflation restatement", () => {
 
   it("given a posted restatement, should book the loss, reverse it the next day and stay idempotent", async () => {
     // Arrange / Act
-    const first = await withTenant(TENANT, () => postIas29Restatement(ias29Deps, actor, "2026-12-31"));
-    const second = await withTenant(TENANT, () => postIas29Restatement(ias29Deps, actor, "2026-12-31"));
+    const first = await withTenant(TENANT, () =>
+      postIas29Restatement(ias29Deps, actor, "2026-12-31"),
+    );
+    const second = await withTenant(TENANT, () =>
+      postIas29Restatement(ias29Deps, actor, "2026-12-31"),
+    );
     const posted = await findEntryById(TENANT, first.entryId as string);
     const reversal = await findEntryById(TENANT, first.reversalEntryId as string);
 
     // Assert
     expect(second.id).toBe(first.id);
     expect(second.lines).toHaveLength(2);
-    expect(posted?.lines.find((entry) => entry.account_id === "nmp")).toMatchObject({ debit: 200, credit: 0 });
+    expect(posted?.lines.find((entry) => entry.account_id === "nmp")).toMatchObject({
+      debit: 200,
+      credit: 0,
+    });
     expect(reversal).toMatchObject({ date: "2027-01-01", source_type: "ias29_reversal" });
   });
 
   it("given an earlier restatement and its reversal, should restate the next period from historical amounts", async () => {
     // Arrange / Act
-    const run = await withTenant(TENANT, () => previewIas29Restatement(ias29Deps, TENANT, "2027-01-31"));
+    const run = await withTenant(TENANT, () =>
+      previewIas29Restatement(ias29Deps, TENANT, "2027-01-31"),
+    );
 
     // Assert
     expect(run.netMonetaryResult).toBe("-260.00");

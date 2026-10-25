@@ -8,7 +8,10 @@ import { currencyMinorUnits } from "../money/iso4217.js";
 import { moneyToDecimalString, parseMoney, subtractMoney, type Money } from "../money/money.js";
 import { resolveJournalFxLines } from "./accountingFxLines.js";
 import type { JournalLine } from "./accountingModuleManifest.js";
-import { hasPaymentPostingAccounts, type LedgerPostingAccounts } from "./accountingLedgerPosting.js";
+import {
+  hasPaymentPostingAccounts,
+  type LedgerPostingAccounts,
+} from "./accountingLedgerPosting.js";
 
 export interface DocumentFxContext {
   /** Document (transaction) currency. */
@@ -134,7 +137,9 @@ export interface FxPaymentPostingInput extends PaymentSettlement {
 /** Raised when a payment produces realized FX but no gain/loss account is configured. */
 export class MissingFxAccountError extends Error {
   constructor() {
-    super("Configure a realized FX gain/loss account in posting rules before settling at a new rate");
+    super(
+      "Configure a realized FX gain/loss account in posting rules before settling at a new rate",
+    );
     this.name = "MissingFxAccountError";
   }
 }

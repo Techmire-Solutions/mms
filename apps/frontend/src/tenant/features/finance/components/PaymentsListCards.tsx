@@ -93,7 +93,9 @@ function PaymentCard({
         <EntityCard.MetaGrid>
           {isColumnVisible("amount") && (
             <DirectoryCardMetaTile label={t("finance.columns.amount")}>
-              <span className="font-bold text-success">{formatDocumentAmount(payment, payment.amount, formatCurrency)}</span>
+              <span className="font-bold text-success">
+                {formatDocumentAmount(payment, payment.amount, formatCurrency)}
+              </span>
             </DirectoryCardMetaTile>
           )}
           {isColumnVisible("date") && (

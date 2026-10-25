@@ -44,7 +44,10 @@ async function classifyAccounts(tx: TenantTransaction, tenant: string): Promise<
   await tx.execute(sql`
     UPDATE accounting_accounts SET is_monetary = true
     WHERE workspace_subdomain = ${tenant}
-      AND id IN (${sql.join(monetaryIds.map((id) => sql`${id}`), sql`, `)})`);
+      AND id IN (${sql.join(
+        monetaryIds.map((id) => sql`${id}`),
+        sql`, `,
+      )})`);
 }
 
 async function backfillLines(tx: TenantTransaction, tenant: string, currency: string) {

@@ -1,7 +1,11 @@
 /** IFRS 9 hedge relationship, valuation and settlement DTOs for `/api/accounting/hedges*`. */
 import { z } from "zod";
 import { isoDateSchema } from "../core/isoDateSchema.js";
-import { currencyCodeSchema, exchangeRateValueSchema, moneyDecimalAmountSchema } from "../money/moneySchemas.js";
+import {
+  currencyCodeSchema,
+  exchangeRateValueSchema,
+  moneyDecimalAmountSchema,
+} from "../money/moneySchemas.js";
 
 export const HEDGE_TYPES = ["cash_flow", "fair_value"] as const;
 export const HEDGE_DIRECTIONS = ["buy", "sell"] as const;
@@ -20,14 +24,21 @@ export const hedgeRelationshipCreateSchema = z
     /** Bought (buy) or sold (sell) foreign currency forward. */
     direction: z.enum(HEDGE_DIRECTIONS),
     currency: currencyCodeSchema,
-    notional: moneyDecimalAmountSchema.refine((value) => Number(value) > 0, "accounting.validation.hedgeNotional"),
+    notional: moneyDecimalAmountSchema.refine(
+      (value) => Number(value) > 0,
+      "accounting.validation.hedgeNotional",
+    ),
     contractRate: exchangeRateValueSchema,
     /** Market forward rate for the maturity on the designation date (prices the hypothetical derivative). */
     designationRate: exchangeRateValueSchema,
     designationDate: isoDateSchema,
     maturityDate: isoDateSchema,
     hedgedItem: z.string().trim().min(3).max(500),
-    riskManagementObjective: z.string().trim().min(10, "accounting.validation.hedgeObjective").max(2000),
+    riskManagementObjective: z
+      .string()
+      .trim()
+      .min(10, "accounting.validation.hedgeObjective")
+      .max(2000),
     instrumentAccountId: accountId,
     reserveAccountId: accountId.nullable(),
     pnlAccountId: accountId,
@@ -70,7 +81,11 @@ export const hedgeValuationRequestSchema = z.object({ valuationDate: isoDateSche
 
 /** Body of `POST /api/accounting/hedges/:id/settle`. */
 export const hedgeSettlementRequestSchema = z
-  .object({ settlementDate: isoDateSchema, settlementRate: exchangeRateValueSchema, cashAccountId: accountId })
+  .object({
+    settlementDate: isoDateSchema,
+    settlementRate: exchangeRateValueSchema,
+    cashAccountId: accountId,
+  })
   .strict();
 
 /** Body of `POST /api/accounting/hedges/:id/reclassify`. */

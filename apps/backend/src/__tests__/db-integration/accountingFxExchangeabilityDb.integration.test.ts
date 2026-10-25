@@ -21,7 +21,9 @@ async function cleanup(): Promise<void> {
   const { tx, commit, rollback } = await beginLongLivedTenantTransaction(null);
   try {
     await tx.execute(sql`SET LOCAL app.allow_hard_purge = 'true'`);
-    await tx.delete(accountingExchangeRates).where(eq(accountingExchangeRates.workspaceSubdomain, TENANT));
+    await tx
+      .delete(accountingExchangeRates)
+      .where(eq(accountingExchangeRates.workspaceSubdomain, TENANT));
     await tx
       .delete(accountingCurrencyExchangeability)
       .where(eq(accountingCurrencyExchangeability.workspaceSubdomain, TENANT));
@@ -38,10 +40,24 @@ beforeAll(async () => {
   await requireDatabaseConnection();
   await cleanup();
   const { tx, commit } = await beginLongLivedTenantTransaction(null);
-  await tx.insert(workspaces).values({ id: `ws-${TENANT}`, subdomain: TENANT, madrasaName: TENANT, enabled: true });
+  await tx
+    .insert(workspaces)
+    .values({ id: `ws-${TENANT}`, subdomain: TENANT, madrasaName: TENANT, enabled: true });
   await tx.insert(fxReferenceRates).values([
-    { provider: FEED, baseCurrency: "PKR", quoteCurrency: "ARS", rateDate: "2026-01-10", rate: "3.5" },
-    { provider: FEED, baseCurrency: "PKR", quoteCurrency: "ARS", rateDate: "2026-06-10", rate: "4.2" },
+    {
+      provider: FEED,
+      baseCurrency: "PKR",
+      quoteCurrency: "ARS",
+      rateDate: "2026-01-10",
+      rate: "3.5",
+    },
+    {
+      provider: FEED,
+      baseCurrency: "PKR",
+      quoteCurrency: "ARS",
+      rateDate: "2026-06-10",
+      rate: "4.2",
+    },
   ]);
   await commit();
   await saveCurrencyExchangeability(
@@ -89,7 +105,16 @@ describe("IAS 21 lack of exchangeability", () => {
     // Arrange
     const [saved] = await upsertExchangeRates(
       TENANT,
-      [{ fromCurrency: "ARS", toCurrency: "PKR", rateDate: "2026-06-30", rateType: "SPOT", rate: "0.21", overrideReason: "Parallel rate 0.20 + 5% spread" }],
+      [
+        {
+          fromCurrency: "ARS",
+          toCurrency: "PKR",
+          rateDate: "2026-06-30",
+          rateType: "SPOT",
+          rate: "0.21",
+          overrideReason: "Parallel rate 0.20 + 5% spread",
+        },
+      ],
       null,
     );
 

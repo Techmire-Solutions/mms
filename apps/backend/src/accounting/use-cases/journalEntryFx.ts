@@ -47,7 +47,8 @@ export async function resolveEntriesFx(
         date,
         rateType: line.rate_type ?? "SPOT",
       });
-      if (!found) throw ledgerError(new MissingExchangeRateError(currency, functional, date).message);
+      if (!found)
+        throw ledgerError(new MissingExchangeRateError(currency, functional, date).message);
       rates.set(key, found.rate);
     }
   }
@@ -65,7 +66,9 @@ export async function resolveEntriesFx(
       isForeign(line) && !line.exchange_rate
         ? {
             ...line,
-            exchange_rate: rates.get(rateKey(line.txn_currency as string, line.rate_date ?? entry.date)),
+            exchange_rate: rates.get(
+              rateKey(line.txn_currency as string, line.rate_date ?? entry.date),
+            ),
           }
         : line,
     );

@@ -4,7 +4,8 @@ import { Field } from "@/components/app/FormPrimitives";
 import { FormSelect } from "@/components/app/FormSelect";
 import { useTranslation } from "@/hooks/useTranslation";
 
-type FxPostingField = "fxRealizedAccountId" | "fxUnrealizedAccountId" | "fxRoundingAccountId" | "ctaAccountId";
+type FxPostingField =
+  "fxRealizedAccountId" | "fxUnrealizedAccountId" | "fxRoundingAccountId" | "ctaAccountId";
 
 const FX_POSTING_FIELDS: readonly {
   field: FxPostingField;

@@ -66,11 +66,16 @@ export async function buildConsolidationReport(
 ): Promise<ConsolidationReport> {
   const group = (await repo.listConsolidationGroups()).find((row) => row.id === groupId);
   if (!group) throw httpError("Consolidation group not found", 404, "not_found");
-  if (group.members.length === 0) throw httpError("The group has no members", 422, "validation_error");
+  if (group.members.length === 0)
+    throw httpError("The group has no members", 422, "validation_error");
 
   const translated = [];
   for (const member of group.members) {
-    const ledger = await repo.loadMemberLedger(member.memberSubdomain, query.dateFrom, query.dateTo);
+    const ledger = await repo.loadMemberLedger(
+      member.memberSubdomain,
+      query.dateFrom,
+      query.dateTo,
+    );
     const rows = buildMemberTrialBalance(
       ledger.balanceSheetRows,
       ledger.periodResultRows,

@@ -20,7 +20,11 @@ export interface MemberLedger {
  * One member's books, read inside that member's own RLS-scoped transaction —
  * consolidation never issues a cross-tenant query, it visits each workspace in turn.
  */
-async function loadMemberLedger(member: string, dateFrom: string, dateTo: string): Promise<MemberLedger> {
+async function loadMemberLedger(
+  member: string,
+  dateFrom: string,
+  dateTo: string,
+): Promise<MemberLedger> {
   const subdomain = member.trim().toLowerCase();
   return withTenant(subdomain, async (tx) => {
     const { functionalCurrency } = await ensureCurrencySettingsInTx(tx, subdomain);
@@ -28,7 +32,13 @@ async function loadMemberLedger(member: string, dateFrom: string, dateTo: string
     const report = await aggregateAccountingReport(subdomain, { dateFrom, dateTo, postingRules });
     // Report balances are positive on each account's normal side; translation
     // works on debit-positive balances, so derive them from the raw totals.
-    const toRow = (row: { code: string; name: string; type: string; totalDebit: number; totalCredit: number }) => ({
+    const toRow = (row: {
+      code: string;
+      name: string;
+      type: string;
+      totalDebit: number;
+      totalCredit: number;
+    }) => ({
       code: row.code,
       name: row.name,
       type: row.type,

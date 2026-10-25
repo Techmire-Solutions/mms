@@ -13,7 +13,10 @@ import { normalizeStoredAmount, type ForeignMonetaryBalance } from "./accounting
 export const fxReportQuerySchema = z
   .object({ from: isoDateSchema, asOf: isoDateSchema })
   .strict()
-  .refine((query) => query.from <= query.asOf, { message: "accounting.validation.fxReportRange", path: ["from"] });
+  .refine((query) => query.from <= query.asOf, {
+    message: "accounting.validation.fxReportRange",
+    path: ["from"],
+  });
 
 export type FxReportQuery = z.infer<typeof fxReportQuerySchema>;
 
@@ -67,10 +70,24 @@ export function summarizeFxExposure(
   return [...byCurrency.entries()]
     .sort(([left], [right]) => left.localeCompare(right))
     .map(([currency, rows]) => {
-      const openTxn = sumStoredAmounts(rows.map((row) => row.openTxn), currency);
-      const carryingFunc = sumStoredAmounts(rows.map((row) => row.carryingFunc), functionalCurrency);
+      const openTxn = sumStoredAmounts(
+        rows.map((row) => row.openTxn),
+        currency,
+      );
+      const carryingFunc = sumStoredAmounts(
+        rows.map((row) => row.carryingFunc),
+        functionalCurrency,
+      );
       const closingRate = closingRates.get(currency) ?? null;
-      if (!closingRate) return { currency, openTxn, carryingFunc, closingRate, revaluedFunc: null, unrealized: null };
+      if (!closingRate)
+        return {
+          currency,
+          openTxn,
+          carryingFunc,
+          closingRate,
+          revaluedFunc: null,
+          unrealized: null,
+        };
       const revalued = convertMoney(parseMoney(openTxn, currency), closingRate, functionalCurrency);
       const unrealized = revalued.minor - parseMoney(carryingFunc, functionalCurrency).minor;
       return {

@@ -43,5 +43,8 @@ export async function stampLinesForDocument(
   accounts: PostingRules,
   lines: readonly JournalLine[],
 ): Promise<JournalLine[]> {
-  return stampDocumentFxLines(lines, await documentFxContext(tenant, document, entryDate, accounts));
+  return stampDocumentFxLines(
+    lines,
+    await documentFxContext(tenant, document, entryDate, accounts),
+  );
 }

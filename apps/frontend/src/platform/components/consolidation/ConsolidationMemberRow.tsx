@@ -66,7 +66,10 @@ export function ConsolidationMemberRow({
             className="text-end font-mono"
           />
         </Field>
-        <label htmlFor={`${id}-parent`} className="flex min-h-11 items-center gap-2 text-sm sm:col-span-2">
+        <label
+          htmlFor={`${id}-parent`}
+          className="flex min-h-11 items-center gap-2 text-sm sm:col-span-2"
+        >
           <Checkbox
             id={`${id}-parent`}
             checked={member.isParent}
@@ -75,7 +78,12 @@ export function ConsolidationMemberRow({
           {t("platform.consolidation.isParent")}
         </label>
         {RATE_FIELDS.map(({ field, labelKey }) => (
-          <Field key={field} id={`${id}-${field}`} label={t(labelKey)} hint={t("platform.consolidation.rateHint")}>
+          <Field
+            key={field}
+            id={`${id}-${field}`}
+            label={t(labelKey)}
+            hint={t("platform.consolidation.rateHint")}
+          >
             <Input
               id={`${id}-${field}`}
               name={`members.${index}.${field}`}

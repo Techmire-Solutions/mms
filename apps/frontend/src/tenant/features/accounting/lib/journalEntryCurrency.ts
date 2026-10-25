@@ -21,7 +21,9 @@ export function entryRateFromLines(
   lines: readonly Pick<JournalLine, "txn_currency" | "exchange_rate">[],
   functionalCurrency: string,
 ): string {
-  const foreign = lines.find((line) => line.txn_currency && line.txn_currency !== functionalCurrency);
+  const foreign = lines.find(
+    (line) => line.txn_currency && line.txn_currency !== functionalCurrency,
+  );
   return foreign?.exchange_rate ?? "";
 }
 
@@ -32,7 +34,10 @@ const blankZero = (value: string | undefined): string =>
  * Draft lines for the form: a foreign entry is edited in its transaction
  * currency, so the amount boxes show `txn_*` instead of the functional figures.
  */
-export function draftLinesFromEntry(lines: readonly JournalLine[], functionalCurrency: string): DraftLine[] {
+export function draftLinesFromEntry(
+  lines: readonly JournalLine[],
+  functionalCurrency: string,
+): DraftLine[] {
   return lines.map((line) =>
     line.txn_currency && line.txn_currency !== functionalCurrency
       ? { ...line, debit: blankZero(line.txn_debit), credit: blankZero(line.txn_credit) }

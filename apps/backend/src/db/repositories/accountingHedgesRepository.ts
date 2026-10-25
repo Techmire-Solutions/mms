@@ -64,7 +64,10 @@ async function hydrate(
         ),
       ),
     )
-    .orderBy(asc(accountingHedgeValuations.valuationDate), asc(accountingHedgeValuations.createdAt));
+    .orderBy(
+      asc(accountingHedgeValuations.valuationDate),
+      asc(accountingHedgeValuations.createdAt),
+    );
   return rows.map((row) => ({
     id: row.id,
     name: row.name,
@@ -86,19 +89,17 @@ async function hydrate(
     createdAt: row.createdAt.toISOString(),
     valuations: valuations
       .filter((valuation) => valuation.relationshipId === row.id)
-      .map(
-        (valuation): HedgeValuationRecord => ({
-          valuationDate: valuation.valuationDate,
-          kind: valuation.kind as HedgeValuationRecord["kind"],
-          rate: trimNumeric(valuation.rate),
-          instrumentValue: trimNumeric(valuation.instrumentValue),
-          hedgedChange: trimNumeric(valuation.hedgedChange),
-          effective: trimNumeric(valuation.effective),
-          ineffective: trimNumeric(valuation.ineffective),
-          entryId: valuation.entryId,
-          reversalEntryId: valuation.reversalEntryId,
-        }),
-      ),
+      .map((valuation): HedgeValuationRecord => ({
+        valuationDate: valuation.valuationDate,
+        kind: valuation.kind as HedgeValuationRecord["kind"],
+        rate: trimNumeric(valuation.rate),
+        instrumentValue: trimNumeric(valuation.instrumentValue),
+        hedgedChange: trimNumeric(valuation.hedgedChange),
+        effective: trimNumeric(valuation.effective),
+        ineffective: trimNumeric(valuation.ineffective),
+        entryId: valuation.entryId,
+        reversalEntryId: valuation.reversalEntryId,
+      })),
   }));
 }
 
@@ -108,7 +109,10 @@ function selectRelationships(tx: TenantTransaction, subdomain: string, id?: stri
     .from(accountingHedgeRelationships)
     .where(
       id
-        ? and(eq(accountingHedgeRelationships.workspaceSubdomain, subdomain), eq(accountingHedgeRelationships.id, id))
+        ? and(
+            eq(accountingHedgeRelationships.workspaceSubdomain, subdomain),
+            eq(accountingHedgeRelationships.id, id),
+          )
         : eq(accountingHedgeRelationships.workspaceSubdomain, subdomain),
     )
     .orderBy(desc(accountingHedgeRelationships.designationDate))
@@ -118,14 +122,23 @@ function selectRelationships(tx: TenantTransaction, subdomain: string, id?: stri
 /** Hedge relationships with their valuation history, newest designation first (bounded to 200). */
 export async function listHedgeRelationships(tenant: string): Promise<HedgeRelationship[]> {
   const subdomain = tenantKey(tenant);
-  return withTenantRead(subdomain, async (tx) => hydrate(tx, subdomain, await selectRelationships(tx, subdomain)));
+  return withTenantRead(subdomain, async (tx) =>
+    hydrate(tx, subdomain, await selectRelationships(tx, subdomain)),
+  );
 }
 
 /** Read-your-writes lookup inside the caller's transaction. */
-export async function findHedgeRelationship(tenant: string, id: string): Promise<HedgeRelationship | null> {
+export async function findHedgeRelationship(
+  tenant: string,
+  id: string,
+): Promise<HedgeRelationship | null> {
   const subdomain = tenantKey(tenant);
   return withTenant(subdomain, async (tx) => {
-    const [relationship] = await hydrate(tx, subdomain, await selectRelationships(tx, subdomain, id));
+    const [relationship] = await hydrate(
+      tx,
+      subdomain,
+      await selectRelationships(tx, subdomain, id),
+    );
     return relationship ?? null;
   });
 }
@@ -138,7 +151,9 @@ export async function insertHedgeRelationship(
 ): Promise<void> {
   const subdomain = tenantKey(tenant);
   await withTenant(subdomain, (tx) =>
-    tx.insert(accountingHedgeRelationships).values({ id, workspaceSubdomain: subdomain, ...hedge, createdBy: userId }),
+    tx
+      .insert(accountingHedgeRelationships)
+      .values({ id, workspaceSubdomain: subdomain, ...hedge, createdBy: userId }),
   );
 }
 
@@ -167,7 +182,16 @@ export async function updateHedgeStatus(
   await withTenant(subdomain, (tx) =>
     tx
       .update(accountingHedgeRelationships)
-      .set({ status, updatedAt: new Date(), ...(settledReserve === undefined ? {} : { settledReserve }) })
-      .where(and(eq(accountingHedgeRelationships.workspaceSubdomain, subdomain), eq(accountingHedgeRelationships.id, id))),
+      .set({
+        status,
+        updatedAt: new Date(),
+        ...(settledReserve === undefined ? {} : { settledReserve }),
+      })
+      .where(
+        and(
+          eq(accountingHedgeRelationships.workspaceSubdomain, subdomain),
+          eq(accountingHedgeRelationships.id, id),
+        ),
+      ),
   );
 }

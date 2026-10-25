@@ -145,11 +145,26 @@ describe("accountingPeriodClose", () => {
   it("given open foreign monetary balances and no year-end revaluation, should refuse to close", async () => {
     // Arrange
     mockFiscalYearsRepo.listFiscalYearsByWorkspace.mockResolvedValue([
-      { id: "fy-1", label: "2025-2026", status: "open", startDate: "2025-01-01", endDate: "2025-12-31" },
+      {
+        id: "fy-1",
+        label: "2025-2026",
+        status: "open",
+        startDate: "2025-01-01",
+        endDate: "2025-12-31",
+      },
     ]);
-    mockPrefs.getAccountingPreferencesService.mockResolvedValue({ retainedEarningsAccount: "acc-re" });
+    mockPrefs.getAccountingPreferencesService.mockResolvedValue({
+      retainedEarningsAccount: "acc-re",
+    });
     mockFxReval.listForeignMonetaryBalances.mockResolvedValueOnce([
-      { accountId: "ar", accountCode: "1100", accountName: "AR", currency: "USD", openTxn: "1000", carryingFunc: "280000" },
+      {
+        accountId: "ar",
+        accountCode: "1100",
+        accountName: "AR",
+        currency: "USD",
+        openTxn: "1000",
+        carryingFunc: "280000",
+      },
     ]);
 
     // Act
@@ -158,6 +173,10 @@ describe("accountingPeriodClose", () => {
     // Assert
     await expect(result).rejects.toMatchObject({ statusCode: 422 });
     await expect(result).rejects.toThrow(/FX revaluation for 2025-12-31/);
-    expect(mockFxReval.hasFxRevaluationBetween).toHaveBeenCalledWith("t-1", "2025-12-31", "2025-12-31");
+    expect(mockFxReval.hasFxRevaluationBetween).toHaveBeenCalledWith(
+      "t-1",
+      "2025-12-31",
+      "2025-12-31",
+    );
   });
 });

@@ -44,7 +44,10 @@ export const accountingHedgeRelationships = pgTable(
   (table) => [
     primaryKey({ columns: [table.workspaceSubdomain, table.id] }),
     index("accounting_hedge_relationships_status_idx").on(table.workspaceSubdomain, table.status),
-    check("accounting_hedge_relationships_type", sql`${table.hedgeType} IN ('cash_flow', 'fair_value')`),
+    check(
+      "accounting_hedge_relationships_type",
+      sql`${table.hedgeType} IN ('cash_flow', 'fair_value')`,
+    ),
     check("accounting_hedge_relationships_direction", sql`${table.direction} IN ('buy', 'sell')`),
     check(
       "accounting_hedge_relationships_status",
@@ -79,7 +82,10 @@ export const accountingHedgeValuations = pgTable(
     primaryKey({ columns: [table.workspaceSubdomain, table.id] }),
     foreignKey({
       columns: [table.workspaceSubdomain, table.relationshipId],
-      foreignColumns: [accountingHedgeRelationships.workspaceSubdomain, accountingHedgeRelationships.id],
+      foreignColumns: [
+        accountingHedgeRelationships.workspaceSubdomain,
+        accountingHedgeRelationships.id,
+      ],
     }).onDelete("cascade"),
     uniqueIndex("accounting_hedge_valuations_date_uidx").on(
       table.workspaceSubdomain,

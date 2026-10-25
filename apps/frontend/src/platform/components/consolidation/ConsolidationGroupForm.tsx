@@ -26,7 +26,10 @@ const CURRENCY_OPTIONS = ISO_4217_CURRENCIES.map((currency) => ({
 }));
 
 /** Create or edit a consolidation group (members, ownership, rates, intercompany accounts). */
-export function ConsolidationGroupForm({ initial, onClose }: ConsolidationGroupFormProps): React.JSX.Element {
+export function ConsolidationGroupForm({
+  initial,
+  onClose,
+}: ConsolidationGroupFormProps): React.JSX.Element {
   const { t } = useTranslation();
   const form = useConsolidationGroupDraft(initial);
   const save = useSaveConsolidationGroup();
@@ -34,7 +37,9 @@ export function ConsolidationGroupForm({ initial, onClose }: ConsolidationGroupF
   const [error, setError] = useState<string | undefined>();
   const workspaceOptions = workspaces.map((workspace) => ({
     value: workspace.subdomain,
-    label: workspace.madrasaName ? `${workspace.madrasaName} (${workspace.subdomain})` : workspace.subdomain,
+    label: workspace.madrasaName
+      ? `${workspace.madrasaName} (${workspace.subdomain})`
+      : workspace.subdomain,
   }));
 
   const handleSave = async (): Promise<void> => {
@@ -106,8 +111,12 @@ export function ConsolidationGroupForm({ initial, onClose }: ConsolidationGroupF
                 name="intercompanyAccountCodes"
                 options={form.draft.intercompanyAccountCodes}
                 values={form.draft.intercompanyAccountCodes}
-                onChange={(values) => form.setDraft((d) => ({ ...d, intercompanyAccountCodes: values }))}
-                onUpdateOptions={(values) => form.setDraft((d) => ({ ...d, intercompanyAccountCodes: values }))}
+                onChange={(values) =>
+                  form.setDraft((d) => ({ ...d, intercompanyAccountCodes: values }))
+                }
+                onUpdateOptions={(values) =>
+                  form.setDraft((d) => ({ ...d, intercompanyAccountCodes: values }))
+                }
                 addPlaceholder={t("platform.consolidation.addAccountCode")}
               />
             </Field>

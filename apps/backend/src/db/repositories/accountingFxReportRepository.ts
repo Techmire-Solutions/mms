@@ -8,7 +8,11 @@ import { canonicalStoredRate as trimNumeric } from "./repositoryFxMappers.js";
  * invoice currency (a functional-currency payment settling a foreign invoice
  * realizes FX on the invoice's currency).
  */
-export async function listRealizedFxByCurrency(tenant: string, from: string, to: string): Promise<FxRealizedRow[]> {
+export async function listRealizedFxByCurrency(
+  tenant: string,
+  from: string,
+  to: string,
+): Promise<FxRealizedRow[]> {
   const subdomain = tenant.trim().toLowerCase();
   return withTenantRead(subdomain, async (tx) => {
     const { rows } = await tx.execute<{ currency: string; realized: string; payments: string }>(sql`

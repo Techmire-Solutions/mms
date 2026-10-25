@@ -21,15 +21,27 @@ const ar = (openTxn: string, carryingFunc: string): ForeignMonetaryBalance => ({
 describe("computeFxRevaluation", () => {
   it("given 1,000 USD AR carried at 280 and a closing rate of 283, should report a 3,000 PKR gain", () => {
     // Arrange / Act
-    const [line] = computeFxRevaluation([ar("1000.0000", "280000.0000")], new Map([["USD", "283"]]), "PKR");
+    const [line] = computeFxRevaluation(
+      [ar("1000.0000", "280000.0000")],
+      new Map([["USD", "283"]]),
+      "PKR",
+    );
 
     // Assert
-    expect(line).toMatchObject({ openTxn: "1000.00", revaluedFunc: "283000.00", unrealized: "3000.00" });
+    expect(line).toMatchObject({
+      openTxn: "1000.00",
+      revaluedFunc: "283000.00",
+      unrealized: "3000.00",
+    });
   });
 
   it("given 600 USD left after a partial payment, should revalue only the remaining balance", () => {
     // Arrange / Act
-    const [line] = computeFxRevaluation([ar("600.0000", "168000.0000")], new Map([["USD", "283"]]), "PKR");
+    const [line] = computeFxRevaluation(
+      [ar("600.0000", "168000.0000")],
+      new Map([["USD", "283"]]),
+      "PKR",
+    );
 
     // Assert
     expect(line.unrealized).toBe("1800.00");
@@ -48,7 +60,9 @@ describe("computeFxRevaluation", () => {
 
   it("given no movement, should produce no lines", () => {
     // Arrange / Act / Assert
-    expect(computeFxRevaluation([ar("1000", "280000")], new Map([["USD", "280"]]), "PKR")).toEqual([]);
+    expect(computeFxRevaluation([ar("1000", "280000")], new Map([["USD", "280"]]), "PKR")).toEqual(
+      [],
+    );
   });
 
   it("given a currency without a closing rate, should refuse rather than revalue at 1", () => {

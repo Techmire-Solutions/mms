@@ -7,7 +7,11 @@ import {
   type User,
 } from "@mms/shared";
 import { canReadCollection, canWriteCollection } from "../../../services/rbacService.js";
-import { sendForbidden, sendIfHttpDomainError, sendDatabaseError } from "../../../lib/httpErrors.js";
+import {
+  sendForbidden,
+  sendIfHttpDomainError,
+  sendDatabaseError,
+} from "../../../lib/httpErrors.js";
 import { parseRequest, replyValidationError } from "../../../lib/zodRequest.js";
 import { withTenant } from "../../../db/tenant-context.js";
 import {
@@ -42,7 +46,8 @@ export const accountingIas29Routes: FastifyPluginAsync = async (fastify) => {
     return respond(
       reply,
       "Failed to load hyperinflation settings",
-      () => withTenant(tenant, () => deps.store.getHyperinflationSettings(tenant), { readOnly: true }),
+      () =>
+        withTenant(tenant, () => deps.store.getHyperinflationSettings(tenant), { readOnly: true }),
       (settings) => reply.send({ settings }),
     );
   });
@@ -85,7 +90,9 @@ export const accountingIas29Routes: FastifyPluginAsync = async (fastify) => {
       reply,
       "Failed to save price indices",
       () =>
-        withTenant(tenant, () => savePriceIndices(deps, { tenant, userId: String(user.id) }, parsed.data.points)),
+        withTenant(tenant, () =>
+          savePriceIndices(deps, { tenant, userId: String(user.id) }, parsed.data.points),
+        ),
       (points) => reply.send({ points }),
     );
   });
@@ -101,18 +108,25 @@ export const accountingIas29Routes: FastifyPluginAsync = async (fastify) => {
     );
   });
 
-  fastify.post("/ias29-restatements/preview", { config: { moduleAction: "read" } }, async (request, reply) => {
-    if (!canReadCollection(request.user as User, COLLECTION)) return sendForbidden(reply);
-    const parsed = parseRequest(ias29RequestSchema, request.body);
-    if (!parsed.ok) return replyValidationError(reply, parsed.message);
-    const tenant = String(request.tenant?.id);
-    return respond(
-      reply,
-      "Failed to preview IAS 29 restatement",
-      () => withTenant(tenant, () => previewIas29Restatement(deps, tenant, parsed.data.restatementDate)),
-      (run) => reply.send({ run }),
-    );
-  });
+  fastify.post(
+    "/ias29-restatements/preview",
+    { config: { moduleAction: "read" } },
+    async (request, reply) => {
+      if (!canReadCollection(request.user as User, COLLECTION)) return sendForbidden(reply);
+      const parsed = parseRequest(ias29RequestSchema, request.body);
+      if (!parsed.ok) return replyValidationError(reply, parsed.message);
+      const tenant = String(request.tenant?.id);
+      return respond(
+        reply,
+        "Failed to preview IAS 29 restatement",
+        () =>
+          withTenant(tenant, () =>
+            previewIas29Restatement(deps, tenant, parsed.data.restatementDate),
+          ),
+        (run) => reply.send({ run }),
+      );
+    },
+  );
 
   fastify.post("/ias29-restatements", async (request, reply) => {
     const user = request.user as User;
@@ -125,7 +139,11 @@ export const accountingIas29Routes: FastifyPluginAsync = async (fastify) => {
       "Failed to post IAS 29 restatement",
       () =>
         withTenant(tenant, () =>
-          postIas29Restatement(deps, { tenant, userId: String(user.id) }, parsed.data.restatementDate),
+          postIas29Restatement(
+            deps,
+            { tenant, userId: String(user.id) },
+            parsed.data.restatementDate,
+          ),
         ),
       (run) => reply.status(201).send({ run }),
     );

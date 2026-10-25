@@ -61,7 +61,10 @@ export function AccountingSettingsExchangeabilitySection({
                 canRemove={canEditSetup}
               >
                 <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
-                  <Field id={`${id}-currency`} label={t("accounting.settings.fx.exchangeability.currency")}>
+                  <Field
+                    id={`${id}-currency`}
+                    label={t("accounting.settings.fx.exchangeability.currency")}
+                  >
                     <FormSelect
                       id={`${id}-currency`}
                       name={`currencies.${index}.currency`}
@@ -71,7 +74,10 @@ export function AccountingSettingsExchangeabilitySection({
                       disabled={!canEditSetup}
                     />
                   </Field>
-                  <Field id={`${id}-assessed`} label={t("accounting.settings.fx.exchangeability.assessedOn")}>
+                  <Field
+                    id={`${id}-assessed`}
+                    label={t("accounting.settings.fx.exchangeability.assessedOn")}
+                  >
                     <DatePicker
                       id={`${id}-assessed`}
                       name={`currencies.${index}.assessedOn`}
@@ -90,18 +96,25 @@ export function AccountingSettingsExchangeabilitySection({
                         id={`${id}-method`}
                         name={`currencies.${index}.estimationMethod`}
                         value={row.estimationMethod}
-                        onChange={(event) => draft.updateRow(row.key, { estimationMethod: event.target.value })}
+                        onChange={(event) =>
+                          draft.updateRow(row.key, { estimationMethod: event.target.value })
+                        }
                         disabled={!canEditSetup}
                       />
                     </Field>
                   </div>
                   <div className="sm:col-span-2">
-                    <Field id={`${id}-reason`} label={t("accounting.settings.fx.exchangeability.reason")}>
+                    <Field
+                      id={`${id}-reason`}
+                      label={t("accounting.settings.fx.exchangeability.reason")}
+                    >
                       <Textarea
                         id={`${id}-reason`}
                         name={`currencies.${index}.reason`}
                         value={row.reason}
-                        onChange={(event) => draft.updateRow(row.key, { reason: event.target.value })}
+                        onChange={(event) =>
+                          draft.updateRow(row.key, { reason: event.target.value })
+                        }
                         disabled={!canEditSetup}
                       />
                     </Field>
@@ -114,7 +127,12 @@ export function AccountingSettingsExchangeabilitySection({
       )}
       <FieldErrorMessage message={draft.error ?? undefined} className="m-0" />
       {canEditSetup && (
-        <Button type="button" className="min-h-11" onClick={() => void draft.handleSave()} disabled={draft.saving}>
+        <Button
+          type="button"
+          className="min-h-11"
+          onClick={() => void draft.handleSave()}
+          disabled={draft.saving}
+        >
           {t("accounting.settings.fx.exchangeability.save")}
         </Button>
       )}

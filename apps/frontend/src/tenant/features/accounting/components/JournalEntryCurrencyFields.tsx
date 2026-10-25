@@ -28,7 +28,8 @@ export function JournalEntryCurrencyFields({
       error={error}
       preview={{
         label: t("fx.field.functionalEquivalent"),
-        value: preview === null ? "—" : formatMoney(preview, fx.functionalCurrency, { useSymbol: true }),
+        value:
+          preview === null ? "—" : formatMoney(preview, fx.functionalCurrency, { useSymbol: true }),
       }}
     />
   );

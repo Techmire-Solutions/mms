@@ -10,5 +10,7 @@ export function formatDocumentAmount(
   formatFunctional: (amount: number) => string,
 ): string {
   const value = amount ?? 0;
-  return record.currency ? formatMoney(value, record.currency, { useSymbol: true }) : formatFunctional(value);
+  return record.currency
+    ? formatMoney(value, record.currency, { useSymbol: true })
+    : formatFunctional(value);
 }

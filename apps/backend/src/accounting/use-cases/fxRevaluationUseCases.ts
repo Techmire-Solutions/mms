@@ -16,7 +16,11 @@ import type { AccountingFxRepository } from "../repository/accountingFxRepositor
 
 export interface FxRevaluationDeps {
   fx: AccountingFxRepository;
-  listBalances: (tenant: string, date: string, functional: string) => Promise<ForeignMonetaryBalance[]>;
+  listBalances: (
+    tenant: string,
+    date: string,
+    functional: string,
+  ) => Promise<ForeignMonetaryBalance[]>;
   listRuns: (tenant: string) => Promise<FxRevaluationRun[]>;
   findRunId: (tenant: string, date: string) => Promise<string | null>;
   saveRun: (
@@ -63,7 +67,12 @@ export async function lookupClosingRate(
   date: string,
 ): Promise<string | null> {
   for (const rateType of ["CLOSING", "SPOT"] as const) {
-    const found = await fx.lookupExchangeRate(tenant, { fromCurrency: currency, toCurrency: functional, date, rateType });
+    const found = await fx.lookupExchangeRate(tenant, {
+      fromCurrency: currency,
+      toCurrency: functional,
+      date,
+      rateType,
+    });
     if (found) return found.rate;
   }
   return null;
@@ -99,7 +108,9 @@ export async function previewFxRevaluation(
     lines = computeFxRevaluation(balances, rates, functionalCurrency);
   } catch (error) {
     if (error instanceof MissingClosingRatesError) {
-      throw validationError(`${error.message} on or before ${date}; add a CLOSING or SPOT rate first`);
+      throw validationError(
+        `${error.message} on or before ${date}; add a CLOSING or SPOT rate first`,
+      );
     }
     throw error;
   }
@@ -145,7 +156,14 @@ export async function postFxRevaluation(
       preview.functionalCurrency,
       date,
     );
-    const entry = await deps.buildEntry(tenant, "fx_reval", date, date, `FX revaluation ${date}`, lines);
+    const entry = await deps.buildEntry(
+      tenant,
+      "fx_reval",
+      date,
+      date,
+      `FX revaluation ${date}`,
+      lines,
+    );
     const reversalDate = nextCalendarDay(date);
     const reversal = await deps.buildEntry(
       tenant,

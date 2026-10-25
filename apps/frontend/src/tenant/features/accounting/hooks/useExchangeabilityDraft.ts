@@ -45,11 +45,22 @@ export function useExchangeabilityDraft() {
     const parsed = currencyExchangeabilityPutSchema.safeParse({
       currencies: rows
         .filter((row) => row.currency)
-        .map(({ currency, assessedOn, estimationMethod, reason }) => ({ currency, assessedOn, estimationMethod, reason })),
+        .map(({ currency, assessedOn, estimationMethod, reason }) => ({
+          currency,
+          assessedOn,
+          estimationMethod,
+          reason,
+        })),
     });
     if (!parsed.success) {
       const message = parsed.error.issues[0]?.message ?? "";
-      setError(t((message.startsWith("accounting.") ? message : "common.formPleaseFixErrors") as AppTranslationKey));
+      setError(
+        t(
+          (message.startsWith("accounting.")
+            ? message
+            : "common.formPleaseFixErrors") as AppTranslationKey,
+        ),
+      );
       return;
     }
     setError(null);

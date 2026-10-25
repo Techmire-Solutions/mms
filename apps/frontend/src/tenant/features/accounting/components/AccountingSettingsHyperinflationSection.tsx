@@ -34,18 +34,34 @@ export function AccountingSettingsHyperinflationSection({
   const { settings } = panel;
 
   const indexColumns: DataTableColumn<IndexRow>[] = [
-    { id: "date", label: t("accounting.settings.ias29.indexDate"), fixed: true, render: (row) => formatDate(row.indexDate) },
+    {
+      id: "date",
+      label: t("accounting.settings.ias29.indexDate"),
+      fixed: true,
+      render: (row) => formatDate(row.indexDate),
+    },
     {
       id: "value",
       label: t("accounting.settings.ias29.indexValue"),
       render: (row) => <span className="font-mono">{row.value}</span>,
     },
-    { id: "source", label: t("accounting.settings.ias29.indexSource"), hideInCard: true, render: (row) => row.source },
+    {
+      id: "source",
+      label: t("accounting.settings.ias29.indexSource"),
+      hideInCard: true,
+      render: (row) => row.source,
+    },
   ];
 
   return (
-    <SectionCard title={t("accounting.settings.secIas29")} icon={TrendingUp} className={SETUP_SECTION_CARD_CLASS}>
-      <p className="m-0 mb-3 text-xs text-muted-foreground text-pretty">{t("accounting.settings.ias29.hint")}</p>
+    <SectionCard
+      title={t("accounting.settings.secIas29")}
+      icon={TrendingUp}
+      className={SETUP_SECTION_CARD_CLASS}
+    >
+      <p className="m-0 mb-3 text-xs text-muted-foreground text-pretty">
+        {t("accounting.settings.ias29.hint")}
+      </p>
       {panel.settingsError ? (
         <ErrorState
           compact
@@ -111,11 +127,18 @@ export function AccountingSettingsHyperinflationSection({
       )}
 
       <div className="mt-6 space-y-3 border-t border-border pt-4">
-        <h3 className="m-0 text-sm font-semibold text-balance">{t("accounting.settings.ias29.indexTitle")}</h3>
+        <h3 className="m-0 text-sm font-semibold text-balance">
+          {t("accounting.settings.ias29.indexTitle")}
+        </h3>
         {canEditSetup && (
           <div className="flex flex-wrap items-end gap-3">
             <Field id="ias29-index-date" label={t("accounting.settings.ias29.indexDate")}>
-              <DatePicker id="ias29-index-date" name="indexDate" value={panel.indexDate} onChange={panel.setIndexDate} />
+              <DatePicker
+                id="ias29-index-date"
+                name="indexDate"
+                value={panel.indexDate}
+                onChange={panel.setIndexDate}
+              />
             </Field>
             <Field id="ias29-index-value" label={t("accounting.settings.ias29.indexValue")}>
               <Input

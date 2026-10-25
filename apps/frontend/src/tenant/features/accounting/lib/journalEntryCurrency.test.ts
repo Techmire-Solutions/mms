@@ -52,7 +52,15 @@ describe("applyEntryCurrency", () => {
 describe("draftLinesFromEntry", () => {
   it("given a stored USD entry, should edit it in USD rather than in functional figures", () => {
     // Arrange
-    const stored = [line({ debit: 280000, txn_currency: "USD", txn_debit: "1000.00", txn_credit: "0.00", exchange_rate: "280" })];
+    const stored = [
+      line({
+        debit: 280000,
+        txn_currency: "USD",
+        txn_debit: "1000.00",
+        txn_credit: "0.00",
+        exchange_rate: "280",
+      }),
+    ];
 
     // Act
     const [draft] = draftLinesFromEntry(stored, "PKR");

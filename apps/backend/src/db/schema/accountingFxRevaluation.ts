@@ -57,7 +57,10 @@ export const accountingFxRevaluationLines = pgTable(
     primaryKey({ columns: [table.workspaceSubdomain, table.runId, table.id] }),
     foreignKey({
       columns: [table.workspaceSubdomain, table.runId],
-      foreignColumns: [accountingFxRevaluationRuns.workspaceSubdomain, accountingFxRevaluationRuns.id],
+      foreignColumns: [
+        accountingFxRevaluationRuns.workspaceSubdomain,
+        accountingFxRevaluationRuns.id,
+      ],
     }).onDelete("cascade"),
     index("accounting_fx_revaluation_lines_run_idx").on(table.workspaceSubdomain, table.runId),
   ],

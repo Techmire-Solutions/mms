@@ -1,6 +1,10 @@
 import { describe, expect, it, vi } from "vitest";
 import type { AccountingFxRepository } from "../accounting/repository/accountingFxRepository.js";
-import { applyGeneratedInvoiceFx, resolveDocumentFx, resolvePaymentFx } from "../finance/use-cases/financeDocumentFx.js";
+import {
+  applyGeneratedInvoiceFx,
+  resolveDocumentFx,
+  resolvePaymentFx,
+} from "../finance/use-cases/financeDocumentFx.js";
 
 function makeFx(rate: string | null = "285"): AccountingFxRepository {
   return {
@@ -15,7 +19,14 @@ function makeFx(rate: string | null = "285"): AccountingFxRepository {
     upsertExchangeRates: vi.fn(),
     lookupExchangeRate: vi.fn().mockResolvedValue(
       rate
-        ? { fromCurrency: "USD", toCurrency: "PKR", rate, rateDate: "2026-10-14", rateType: "SPOT", source: "manual" }
+        ? {
+            fromCurrency: "USD",
+            toCurrency: "PKR",
+            rate,
+            rateDate: "2026-10-14",
+            rateType: "SPOT",
+            source: "manual",
+          }
         : null,
     ),
     findFxRoundingAccountId: vi.fn(),
@@ -37,7 +48,12 @@ describe("resolveDocumentFx", () => {
 
   it("given a USD document without a rate, should book the latest SPOT rate", async () => {
     // Arrange / Act
-    const result = await resolveDocumentFx("demo", { currency: "USD" }, "2026-10-01", makeFx("280"));
+    const result = await resolveDocumentFx(
+      "demo",
+      { currency: "USD" },
+      "2026-10-01",
+      makeFx("280"),
+    );
 
     // Assert
     expect(result).toEqual({ currency: "USD", exchangeRate: "280" });
@@ -71,7 +87,12 @@ describe("resolvePaymentFx", () => {
     );
 
     // Assert
-    expect(result).toEqual({ currency: "USD", exchangeRate: "285", invoiceAmount: 1000, realizedFx: 5000 });
+    expect(result).toEqual({
+      currency: "USD",
+      exchangeRate: "285",
+      invoiceAmount: 1000,
+      realizedFx: 5000,
+    });
   });
 
   it("given 285,000 PKR paid against the USD invoice, should apply 1,000 USD with the same gain", async () => {
@@ -84,12 +105,22 @@ describe("resolvePaymentFx", () => {
     );
 
     // Assert
-    expect(result).toEqual({ currency: "PKR", exchangeRate: "285", invoiceAmount: 1000, realizedFx: 5000 });
+    expect(result).toEqual({
+      currency: "PKR",
+      exchangeRate: "285",
+      invoiceAmount: 1000,
+      realizedFx: 5000,
+    });
   });
 
   it("given a functional invoice paid in functional currency, should store no FX fields", async () => {
     // Arrange / Act
-    const result = await resolvePaymentFx("demo", {}, { amount: 500, date: "2026-10-15" }, makeFx());
+    const result = await resolvePaymentFx(
+      "demo",
+      {},
+      { amount: 500, date: "2026-10-15" },
+      makeFx(),
+    );
 
     // Assert
     expect(result).toEqual({});

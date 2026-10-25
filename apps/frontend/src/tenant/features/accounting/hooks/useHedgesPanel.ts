@@ -23,7 +23,9 @@ export function useHedgesPanel() {
   const reclassify = useReclassifyHedge();
   const [designating, setDesignating] = useState(false);
   const [valuationDate, setValuationDate] = useState(todayISO());
-  const [pending, setPending] = useState<{ action: HedgeAction; hedge: HedgeRelationship } | null>(null);
+  const [pending, setPending] = useState<{ action: HedgeAction; hedge: HedgeRelationship } | null>(
+    null,
+  );
 
   const handleCreate = async (hedge: HedgeRelationshipCreate): Promise<void> => {
     await create.mutateAsync(hedge);
@@ -34,7 +36,9 @@ export function useHedgesPanel() {
     try {
       const updated = await value.mutateAsync({ id: hedge.id, valuationDate });
       const latest = updated.valuations.findLast((record) => record.kind === "valuation");
-      notify.success(t("accounting.settings.hedges.valued", { amount: latest?.instrumentValue ?? "0" }));
+      notify.success(
+        t("accounting.settings.hedges.valued", { amount: latest?.instrumentValue ?? "0" }),
+      );
     } catch (error) {
       notify.error(t("accounting.settings.hedges.valueFailed"), { description: errorText(error) });
     }
@@ -51,7 +55,11 @@ export function useHedgesPanel() {
           cashAccountId: input.accountId,
         });
       } else {
-        await reclassify.mutateAsync({ id: pending.hedge.id, date: input.date, targetAccountId: input.accountId });
+        await reclassify.mutateAsync({
+          id: pending.hedge.id,
+          date: input.date,
+          targetAccountId: input.accountId,
+        });
       }
       setPending(null);
       notify.success(t("accounting.settings.hedges.actionDone"));

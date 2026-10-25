@@ -55,7 +55,14 @@ export async function savePostingRules(tenant: string, rules: PostingRules): Pro
   // IAS 21 accounts are written only when sent, so a client that predates them
   // never clears accounts configured elsewhere.
   const fxAccounts = Object.fromEntries(
-    (["fxRealizedAccountId", "fxUnrealizedAccountId", "fxRoundingAccountId", "ctaAccountId"] as const)
+    (
+      [
+        "fxRealizedAccountId",
+        "fxUnrealizedAccountId",
+        "fxRoundingAccountId",
+        "ctaAccountId",
+      ] as const
+    )
       .filter((field) => rules[field] !== undefined)
       .map((field) => [field, rules[field] ?? null]),
   );

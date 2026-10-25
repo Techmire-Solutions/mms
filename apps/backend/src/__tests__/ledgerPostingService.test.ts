@@ -514,8 +514,17 @@ describe("ledgerPostingService", () => {
       const entry = lastSavedEntry();
       expectBalancedPostedEntry(entry);
       expect(entry.lines).toEqual([
-        expect.objectContaining({ account_id: "acc-ar", debit: 280000, txn_currency: "USD", txn_debit: "1000.00" }),
-        expect.objectContaining({ account_id: "acc-income", credit: 280000, txn_credit: "1000.00" }),
+        expect.objectContaining({
+          account_id: "acc-ar",
+          debit: 280000,
+          txn_currency: "USD",
+          txn_debit: "1000.00",
+        }),
+        expect.objectContaining({
+          account_id: "acc-income",
+          credit: 280000,
+          txn_credit: "1000.00",
+        }),
       ]);
     });
 

@@ -50,9 +50,19 @@ vi.mock("../accounting/use-cases/ias29UseCases.js", () => ({
 
 type Role = "admin" | "accountant" | "auditor" | "guardian";
 
-async function call(role: Role, method: "PUT" | "POST", url: string, payload: Record<string, unknown>) {
+async function call(
+  role: Role,
+  method: "PUT" | "POST",
+  url: string,
+  payload: Record<string, unknown>,
+) {
   const app = await buildApp();
-  const tokens = { admin: adminToken, accountant: accountantToken, auditor: auditorToken, guardian: guardianToken };
+  const tokens = {
+    admin: adminToken,
+    accountant: accountantToken,
+    auditor: auditorToken,
+    guardian: guardianToken,
+  };
   const res = await app.inject({
     method,
     url,
@@ -73,8 +83,12 @@ describe("IAS 29 routes", () => {
 
   it("given a role without accounting write permission, should refuse to post a restatement", async () => {
     // Arrange / Act
-    const guardian = await call("guardian", "POST", "/api/accounting/ias29-restatements", { restatementDate: "2026-12-31" });
-    const auditor = await call("auditor", "POST", "/api/accounting/ias29-restatements", { restatementDate: "2026-12-31" });
+    const guardian = await call("guardian", "POST", "/api/accounting/ias29-restatements", {
+      restatementDate: "2026-12-31",
+    });
+    const auditor = await call("auditor", "POST", "/api/accounting/ias29-restatements", {
+      restatementDate: "2026-12-31",
+    });
 
     // Assert
     expect([guardian.statusCode, auditor.statusCode]).toEqual([403, 403]);
@@ -83,7 +97,9 @@ describe("IAS 29 routes", () => {
 
   it("given an accountant and a valid date, should post as the session user", async () => {
     // Arrange / Act
-    const res = await call("accountant", "POST", "/api/accounting/ias29-restatements", { restatementDate: "2026-12-31" });
+    const res = await call("accountant", "POST", "/api/accounting/ias29-restatements", {
+      restatementDate: "2026-12-31",
+    });
 
     // Assert
     expect(res.statusCode).toBe(201);
@@ -96,11 +112,16 @@ describe("IAS 29 routes", () => {
 
   it("given a zero or float index level, should reject without saving", async () => {
     // Arrange
-    const bad = [{ indexDate: "2026-12-31", value: "0" }, { indexDate: "2026-12-31", value: 150 }];
+    const bad = [
+      { indexDate: "2026-12-31", value: "0" },
+      { indexDate: "2026-12-31", value: 150 },
+    ];
 
     // Act
     const responses = await Promise.all(
-      bad.map((point) => call("admin", "PUT", "/api/accounting/price-indices", { points: [point] })),
+      bad.map((point) =>
+        call("admin", "PUT", "/api/accounting/price-indices", { points: [point] }),
+      ),
     );
 
     // Assert

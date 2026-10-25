@@ -23,7 +23,9 @@ export async function nonExchangeableSinceInTx(
   return new Map(rows.map((row) => [row.currency, row.assessedOn]));
 }
 
-export async function listCurrencyExchangeability(tenant: string): Promise<CurrencyExchangeability[]> {
+export async function listCurrencyExchangeability(
+  tenant: string,
+): Promise<CurrencyExchangeability[]> {
   const subdomain = tenant.trim().toLowerCase();
   return withTenantRead(subdomain, async (tx) => {
     const rows = await tx

@@ -12,7 +12,10 @@ import {
 } from "../../db/schema.js";
 import { bulkSaveEntries } from "../../db/repositories/accountingEntriesPersist.js";
 import { platformConsolidationRepository as repo } from "../../platform/repository/platformConsolidationRepositoryAdapter.js";
-import { buildConsolidationReport, saveGroup } from "../../platform/use-cases/consolidationUseCases.js";
+import {
+  buildConsolidationReport,
+  saveGroup,
+} from "../../platform/use-cases/consolidationUseCases.js";
 import { requireDatabaseConnection } from "./dbTestSupport.js";
 
 const PARENT = "fx-ias21-parent";
@@ -24,7 +27,12 @@ async function cleanup(): Promise<void> {
   try {
     await tx.execute(sql`SET LOCAL app.allow_hard_purge = 'true'`);
     await tx.delete(consolidationGroups).where(eq(consolidationGroups.id, GROUP));
-    for (const table of [accountingJournalLines, accountingEntries, accountingAccounts, accountingCurrencySettings]) {
+    for (const table of [
+      accountingJournalLines,
+      accountingEntries,
+      accountingAccounts,
+      accountingCurrencySettings,
+    ]) {
       await tx.delete(table).where(inArray(table.workspaceSubdomain, [PARENT, SUB]));
     }
     await tx.delete(workspaces).where(inArray(workspaces.subdomain, [PARENT, SUB]));
@@ -44,13 +52,42 @@ const line = (id: string, account: string, debit: number, credit: number): Journ
 });
 
 const entry = (id: string, date: string, lines: JournalLine[]): JournalEntry =>
-  ({ id, date, ref: id, description: "", status: "posted", created_by: "t", tags: [], attachments: [], fiscal_year: "", lines }) as JournalEntry;
+  ({
+    id,
+    date,
+    ref: id,
+    description: "",
+    status: "posted",
+    created_by: "t",
+    tags: [],
+    attachments: [],
+    fiscal_year: "",
+    lines,
+  }) as JournalEntry;
 
 const chart = (tenant: string) => [
   { id: "cash", workspaceSubdomain: tenant, code: "1000", name: "Cash", type: "Asset" },
-  { id: "due-from", workspaceSubdomain: tenant, code: "1500", name: "Due from subsidiary", type: "Asset" },
-  { id: "due-to", workspaceSubdomain: tenant, code: "2500", name: "Due to parent", type: "Liability" },
-  { id: "capital", workspaceSubdomain: tenant, code: "3000", name: "Share capital", type: "Equity" },
+  {
+    id: "due-from",
+    workspaceSubdomain: tenant,
+    code: "1500",
+    name: "Due from subsidiary",
+    type: "Asset",
+  },
+  {
+    id: "due-to",
+    workspaceSubdomain: tenant,
+    code: "2500",
+    name: "Due to parent",
+    type: "Liability",
+  },
+  {
+    id: "capital",
+    workspaceSubdomain: tenant,
+    code: "3000",
+    name: "Share capital",
+    type: "Equity",
+  },
   { id: "income", workspaceSubdomain: tenant, code: "4000", name: "Fee income", type: "Revenue" },
   { id: "salaries", workspaceSubdomain: tenant, code: "5000", name: "Salaries", type: "Expense" },
 ];
@@ -60,7 +97,9 @@ beforeAll(async () => {
   await cleanup();
   const { tx, commit } = await beginLongLivedTenantTransaction(null);
   for (const tenant of [PARENT, SUB]) {
-    await tx.insert(workspaces).values({ id: `ws-${tenant}`, subdomain: tenant, madrasaName: tenant, enabled: true });
+    await tx
+      .insert(workspaces)
+      .values({ id: `ws-${tenant}`, subdomain: tenant, madrasaName: tenant, enabled: true });
     await tx.insert(accountingAccounts).values(chart(tenant));
   }
   await tx.insert(accountingCurrencySettings).values([
@@ -70,11 +109,19 @@ beforeAll(async () => {
   await commit();
   // Parent (PKR): capital 52,800 → cash 50,000 + 2,800 lent to the subsidiary.
   await bulkSaveEntries(PARENT, [
-    entry("p1", "2026-01-01", [line("a", "cash", 50000, 0), line("b", "due-from", 2800, 0), line("c", "capital", 0, 52800)]),
+    entry("p1", "2026-01-01", [
+      line("a", "cash", 50000, 0),
+      line("b", "due-from", 2800, 0),
+      line("c", "capital", 0, 52800),
+    ]),
   ]);
   // Subsidiary (USD): capital 80, borrowed 10 from the parent, earned 50, paid 30 salaries.
   await bulkSaveEntries(SUB, [
-    entry("s1", "2026-01-01", [line("a", "cash", 90, 0), line("b", "capital", 0, 80), line("c", "due-to", 0, 10)]),
+    entry("s1", "2026-01-01", [
+      line("a", "cash", 90, 0),
+      line("b", "capital", 0, 80),
+      line("c", "due-to", 0, 10),
+    ]),
     entry("s2", "2026-06-01", [line("a", "cash", 50, 0), line("b", "income", 0, 50)]),
     entry("s3", "2026-06-15", [line("a", "salaries", 30, 0), line("b", "cash", 0, 30)]),
   ]);
@@ -94,17 +141,30 @@ describe("platform consolidation", () => {
       intercompanyAccountCodes: ["1500", "2500"],
       members: [
         { memberSubdomain: PARENT, ownershipPercent: 100, isParent: true },
-        { memberSubdomain: SUB, ownershipPercent: 80, isParent: false, closingRate: "280", averageRate: "278", historicalRate: "270" },
+        {
+          memberSubdomain: SUB,
+          ownershipPercent: 80,
+          isParent: false,
+          closingRate: "280",
+          averageRate: "278",
+          historicalRate: "270",
+        },
       ],
     });
 
     // Act
-    const report = await buildConsolidationReport(repo, GROUP, { dateFrom: "2026-01-01", dateTo: "2026-12-31" });
+    const report = await buildConsolidationReport(repo, GROUP, {
+      dateFrom: "2026-01-01",
+      dateTo: "2026-12-31",
+    });
 
     // Assert
     const sub = report.members.find((member) => member.memberSubdomain === SUB);
     expect(sub?.functionalCurrency).toBe("USD");
-    expect(sub?.rows.find((row) => row.code === "1000")).toMatchObject({ functionalBalance: 110, balance: 30800 });
+    expect(sub?.rows.find((row) => row.code === "1000")).toMatchObject({
+      functionalBalance: 110,
+      balance: 30800,
+    });
     const row = (code: string) => report.consolidated.rows.find((r) => r.code === code);
     expect(row("1000")?.balance).toBe(80800);
     expect(row("1500")?.balance).toBe(0);
@@ -127,7 +187,10 @@ describe("platform consolidation", () => {
     });
 
     // Act
-    const result = buildConsolidationReport(repo, GROUP, { dateFrom: "2026-01-01", dateTo: "2026-12-31" });
+    const result = buildConsolidationReport(repo, GROUP, {
+      dateFrom: "2026-01-01",
+      dateTo: "2026-12-31",
+    });
 
     // Assert
     await expect(result).rejects.toMatchObject({ statusCode: 422 });

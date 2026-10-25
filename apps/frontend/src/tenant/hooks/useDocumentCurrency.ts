@@ -45,7 +45,10 @@ export function useDocumentCurrency({
 
   const effectiveCurrency = currency || functionalCurrency;
   const currencyOptions = useMemo(() => {
-    const codes = [functionalCurrency, ...(allowedCurrencies ?? settings.data?.enabledCurrencies ?? [])];
+    const codes = [
+      functionalCurrency,
+      ...(allowedCurrencies ?? settings.data?.enabledCurrencies ?? []),
+    ];
     return [...new Set(codes.filter(Boolean))].map((code) => ({ value: code, label: code }));
   }, [allowedCurrencies, functionalCurrency, settings.data?.enabledCurrencies]);
 

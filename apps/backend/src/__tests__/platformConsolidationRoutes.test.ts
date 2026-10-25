@@ -16,14 +16,26 @@ const { admins } = vi.hoisted(() => {
         id: "p-cons-ok",
         email: "cons-ok@platform.com",
         name: "Consolidation Admin",
-        permissions: { workspaces: true, onboard: false, settings: false, admins: false, system: false },
+        permissions: {
+          workspaces: true,
+          onboard: false,
+          settings: false,
+          admins: false,
+          system: false,
+        },
       },
       withoutWorkspaces: {
         ...base,
         id: "p-cons-no",
         email: "cons-no@platform.com",
         name: "Settings Admin",
-        permissions: { workspaces: false, onboard: false, settings: true, admins: false, system: false },
+        permissions: {
+          workspaces: false,
+          onboard: false,
+          settings: true,
+          admins: false,
+          system: false,
+        },
       },
     },
   };
@@ -38,10 +50,14 @@ vi.mock("../db/database.js", () => ({
 vi.mock("../db/repositories/platformUserRepository.js", () => ({
   findPlatformUserRowById: vi
     .fn()
-    .mockImplementation(async (id: string) => Object.values(admins).find((a) => a.id === id) ?? null),
+    .mockImplementation(
+      async (id: string) => Object.values(admins).find((a) => a.id === id) ?? null,
+    ),
   findPlatformUserRowByEmail: vi
     .fn()
-    .mockImplementation(async (email: string) => Object.values(admins).find((a) => a.email === email) ?? null),
+    .mockImplementation(
+      async (email: string) => Object.values(admins).find((a) => a.email === email) ?? null,
+    ),
   listPlatformUsers: vi.fn().mockResolvedValue(Object.values(admins)),
 }));
 
@@ -61,7 +77,14 @@ const GROUP = {
   intercompanyAccountCodes: ["1500"],
   members: [
     { memberSubdomain: "parent", ownershipPercent: 100, isParent: true },
-    { memberSubdomain: "sub", ownershipPercent: 80, isParent: false, closingRate: "280", averageRate: "278", historicalRate: "270" },
+    {
+      memberSubdomain: "sub",
+      ownershipPercent: 80,
+      isParent: false,
+      closingRate: "280",
+      averageRate: "278",
+      historicalRate: "270",
+    },
   ],
 };
 
@@ -90,7 +113,9 @@ describe("/api/platform/consolidation", () => {
 
   beforeEach(() => {
     mockSave.mockReset().mockResolvedValue({ id: "g1", ...GROUP });
-    mockReport.mockReset().mockResolvedValue({ group: { id: "g1" }, members: [], consolidated: {} });
+    mockReport
+      .mockReset()
+      .mockResolvedValue({ group: { id: "g1" }, members: [], consolidated: {} });
   });
 
   it("given no platform session, should return 401", async () => {

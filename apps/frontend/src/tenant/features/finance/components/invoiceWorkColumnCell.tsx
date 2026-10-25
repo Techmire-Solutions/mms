@@ -36,7 +36,11 @@ export function renderInvoiceWorkColumnValue(
         </div>
       );
     case "baseFee":
-      return <span className="text-sm text-foreground">{formatDocumentAmount(invoice, invoice.baseFee, formatCurrency)}</span>;
+      return (
+        <span className="text-sm text-foreground">
+          {formatDocumentAmount(invoice, invoice.baseFee, formatCurrency)}
+        </span>
+      );
     case "discount":
       return invoice.discountAmt > 0 ? (
         <div>
@@ -56,7 +60,9 @@ export function renderInvoiceWorkColumnValue(
           </span>
           {invoice.paidAmt !== undefined && invoice.status === "partial" && (
             <p className="m-0 text-xs text-info">
-              {t("finance.paidAmount", { amount: formatDocumentAmount(invoice, invoice.paidAmt, formatCurrency) })}
+              {t("finance.paidAmount", {
+                amount: formatDocumentAmount(invoice, invoice.paidAmt, formatCurrency),
+              })}
             </p>
           )}
         </>

@@ -170,7 +170,9 @@ describe("journalEntryContentChanged (IAS 21)", () => {
 
   it("given a stored row written before the IAS 21 backfill, should compare functional amounts only", () => {
     // Arrange
-    const stored = posted([{ id: "l1", account_id: "ar", debit: 280000, credit: 0, description: "" }]);
+    const stored = posted([
+      { id: "l1", account_id: "ar", debit: 280000, credit: 0, description: "" },
+    ]);
 
     // Act
     const changed = journalEntryContentChanged(posted([usd("280")]), stored);

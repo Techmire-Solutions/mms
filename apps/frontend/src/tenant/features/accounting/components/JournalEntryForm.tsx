@@ -122,7 +122,12 @@ export function JournalEntryForm({
             fiscalYears={fiscalYears}
           />
 
-          <JournalEntryCurrencyFields t={t} fx={fx} total={totalDebit} error={errors.exchangeRate} />
+          <JournalEntryCurrencyFields
+            t={t}
+            fx={fx}
+            total={totalDebit}
+            error={errors.exchangeRate}
+          />
 
           <JournalEntryFormTagsSection
             t={t}

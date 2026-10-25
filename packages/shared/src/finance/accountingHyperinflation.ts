@@ -125,7 +125,10 @@ export function computeIas29Restatement(
     }
   >();
   for (const movement of relevant) {
-    const amount = parseMoney(normalizeStoredAmount(movement.netFunc, functionalCurrency), functionalCurrency).minor;
+    const amount = parseMoney(
+      normalizeStoredAmount(movement.netFunc, functionalCurrency),
+      functionalCurrency,
+    ).minor;
     const index = scaled(indexOnOrBefore(points, monthEnd(movement.month)) as string);
     const restated = divideRounded(amount * closing, index);
     const entry = byAccount.get(movement.accountId) ?? {

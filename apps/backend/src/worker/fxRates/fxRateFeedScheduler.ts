@@ -40,7 +40,10 @@ export function scheduleFxRateFeed(isWorkerRunning: () => boolean): void {
   const providers = resolveFxRateProviders(loadServerConfig().fxRateFeedProviders ?? []);
   if (providers.length === 0 || !isWorkerRunning()) return;
   const delayMs = getMsUntilNextUtcHour(FEED_UTC_HOUR);
-  logger.info({ delayMs, providers: providers.map((p) => p.id) }, "[FxRateFeed] Scheduled next run");
+  logger.info(
+    { delayMs, providers: providers.map((p) => p.id) },
+    "[FxRateFeed] Scheduled next run",
+  );
 
   feedTimer = setTimeout(() => {
     void (async () => {

@@ -72,7 +72,9 @@ async function assertRealizedFxPostable(tenant: string, realizedFx: number | und
   const rules = await getPostingRules(tenant);
   if (rules.cashAccountId && rules.arAccountId && !rules.fxRealizedAccountId) {
     throw Object.assign(
-      new Error("Set a realized FX gain/loss account in Accounting → Setup before settling at a new rate"),
+      new Error(
+        "Set a realized FX gain/loss account in Accounting → Setup before settling at a new rate",
+      ),
       { statusCode: 422, type: "validation_error" },
     );
   }

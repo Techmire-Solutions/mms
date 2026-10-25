@@ -29,7 +29,9 @@ beforeAll(async () => {
   await requireDatabaseConnection();
   await cleanup();
   const { tx, commit } = await beginLongLivedTenantTransaction(null);
-  await tx.insert(workspaces).values({ id: `ws-${TENANT}`, subdomain: TENANT, madrasaName: TENANT, enabled: true });
+  await tx
+    .insert(workspaces)
+    .values({ id: `ws-${TENANT}`, subdomain: TENANT, madrasaName: TENANT, enabled: true });
   await commit();
 });
 
@@ -60,11 +62,22 @@ describe("IAS 21 finance documents", () => {
     await saveInvoice(TENANT, usdInvoice);
 
     // Act
-    await saveInvoice(TENANT, { ...usdInvoice, currency: undefined, exchangeRate: undefined, paidAmt: 400, status: "partial" });
+    await saveInvoice(TENANT, {
+      ...usdInvoice,
+      currency: undefined,
+      exchangeRate: undefined,
+      paidAmt: 400,
+      status: "partial",
+    });
     const stored = await findInvoiceById(TENANT, "inv-usd");
 
     // Assert
-    expect(stored).toMatchObject({ currency: "USD", exchangeRate: "280", paidAmt: 400, status: "partial" });
+    expect(stored).toMatchObject({
+      currency: "USD",
+      exchangeRate: "280",
+      paidAmt: 400,
+      status: "partial",
+    });
   });
 
   it("given a cross-currency payment, should round-trip settlement rate, applied amount and realized FX", async () => {

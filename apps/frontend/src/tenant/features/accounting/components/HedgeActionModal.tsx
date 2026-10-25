@@ -30,7 +30,11 @@ export function HedgeActionModal({
   onSave,
 }: HedgeActionModalProps): React.JSX.Element {
   const { t } = useTranslation();
-  const [input, setInput] = useState<HedgeActionInput>({ date: todayISO(), rate: "", accountId: "" });
+  const [input, setInput] = useState<HedgeActionInput>({
+    date: todayISO(),
+    rate: "",
+    accountId: "",
+  });
   const settle = action === "settle";
   const complete = input.date && input.accountId && (!settle || input.rate.trim());
   const submit = () => {
@@ -41,11 +45,15 @@ export function HedgeActionModal({
     <FormModal
       open
       onClose={onClose}
-      title={t(settle ? "accounting.settings.hedges.settle" : "accounting.settings.hedges.reclassify")}
+      title={t(
+        settle ? "accounting.settings.hedges.settle" : "accounting.settings.hedges.reclassify",
+      )}
       subtitle={hedge.name}
       icon={HandCoins}
       cancelLabel={t("common.cancel")}
-      saveLabel={t(settle ? "accounting.settings.hedges.settle" : "accounting.settings.hedges.reclassify")}
+      saveLabel={t(
+        settle ? "accounting.settings.hedges.settle" : "accounting.settings.hedges.reclassify",
+      )}
       onSave={submit}
       saving={saving}
       formId="hedge-action-form"
@@ -60,7 +68,11 @@ export function HedgeActionModal({
         className="space-y-3"
       >
         <p className="m-0 text-xs text-muted-foreground text-pretty">
-          {t(settle ? "accounting.settings.hedges.settleHint" : "accounting.settings.hedges.reclassifyHint")}
+          {t(
+            settle
+              ? "accounting.settings.hedges.settleHint"
+              : "accounting.settings.hedges.reclassifyHint",
+          )}
         </p>
         <Field id="hedge-action-date" label={t("accounting.settings.hedges.actionDate")} required>
           <DatePicker
@@ -71,19 +83,29 @@ export function HedgeActionModal({
           />
         </Field>
         {settle && (
-          <Field id="hedge-action-rate" label={t("accounting.settings.hedges.settlementRate")} required>
+          <Field
+            id="hedge-action-rate"
+            label={t("accounting.settings.hedges.settlementRate")}
+            required
+          >
             <Input
               id="hedge-action-rate"
               name="settlementRate"
               inputMode="decimal"
               value={input.rate}
-              onChange={(event) => setInput((current) => ({ ...current, rate: event.target.value }))}
+              onChange={(event) =>
+                setInput((current) => ({ ...current, rate: event.target.value }))
+              }
             />
           </Field>
         )}
         <Field
           id="hedge-action-account"
-          label={t(settle ? "accounting.settings.hedges.cashAccount" : "accounting.settings.hedges.targetAccount")}
+          label={t(
+            settle
+              ? "accounting.settings.hedges.cashAccount"
+              : "accounting.settings.hedges.targetAccount",
+          )}
           required
         >
           <FormSelect
@@ -91,7 +113,11 @@ export function HedgeActionModal({
             name="accountId"
             value={input.accountId}
             onChange={(accountId) => setInput((current) => ({ ...current, accountId }))}
-            options={settle ? accountOptions(accounts, "Asset") : accountOptions(accounts, ["Asset", "Expense", "Revenue"])}
+            options={
+              settle
+                ? accountOptions(accounts, "Asset")
+                : accountOptions(accounts, ["Asset", "Expense", "Revenue"])
+            }
           />
         </Field>
       </form>
