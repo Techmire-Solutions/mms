@@ -8,7 +8,7 @@ import { Input } from "@/components/ui/input";
 import { Field } from "@/components/app/FormField";
 import { PasswordInput } from "@/components/app/PasswordInput";
 import { FormSubmitActions } from "@/components/app/FormSubmitActions";
-import { WarningCallout } from "@/components/app/WarningCallout";
+import { Alert } from "@/components/app/Alert";
 import { useTranslation } from "@/hooks/useTranslation";
 import { CARD_STRIPE_INSET } from "@/lib/ui/semanticTone";
 import { cn } from "@/lib/utils";
@@ -152,7 +152,7 @@ export function AccountProfileLoginEmailCard({
                   className="space-y-4 pt-2"
                 >
                   {devCode ? (
-                    <WarningCallout
+                    <Alert
                       tone="info"
                       density="compact"
                       description={t("account.devCodeHint", { code: devCode })}

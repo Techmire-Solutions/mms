@@ -33,8 +33,8 @@ vi.mock("@/tenant/features/students/hooks/useStudentDetailModel", () => ({
   }),
 }));
 
-vi.mock("@/components/app/Drawer", () => ({
-  Drawer: ({
+vi.mock("@/components/app/DetailDrawerShell", () => ({
+  DetailDrawerShell: ({
     title,
     subtitle,
     children,

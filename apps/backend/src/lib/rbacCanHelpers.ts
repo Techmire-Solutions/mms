@@ -17,4 +17,5 @@ export {
   canReadMessaging,
   canWriteMessaging,
   canClearMessagingLogs,
+  canRestoreMessagingLogs,
 } from "./rbacCanModuleHelpers.js";

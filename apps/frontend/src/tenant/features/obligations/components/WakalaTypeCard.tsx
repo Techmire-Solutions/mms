@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { EmptyState } from "@/components/app/EmptyState";
 import { StatusBadge, type StatusBadgeConfigItem } from "@/components/app/StatusBadge";
-import { WarningCallout } from "@/components/app/WarningCallout";
+import { Alert } from "@/components/app/Alert";
 import { CARD_STRIPE_INSET, SEMANTIC_BADGE } from "@/lib/ui/semanticTone";
 import { cn } from "@/lib/utils";
 import { WakalaDistributionList } from "@/tenant/features/obligations/components/WakalaDistributionList";
@@ -107,7 +107,7 @@ export function WakalaTypeCard({
 
       <div className="bg-muted/20">
         {!isComplete && total > 0 && (
-          <WarningCallout
+          <Alert
             density="compact"
             role="alert"
             className="rounded-none border-x-0 border-t-0"

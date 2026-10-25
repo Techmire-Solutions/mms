@@ -3,7 +3,7 @@ import { ClipboardList, XCircle } from "lucide-react";
 import { ENROLLMENTS_MODULE_MANIFEST } from "@mms/shared";
 import { bulkActionDockActionClassName } from "@/components/app/bulkActionDockStyles";
 import { Button } from "@/components/ui/button";
-import { ModuleUniversalBulkActionBar } from "@/components/app/ModuleUniversalBulkActionBar";
+import { BulkSelectionBar } from "@/components/app/BulkSelectionBar";
 import { useTranslation } from "@/hooks/useTranslation";
 
 export interface EnrollmentsBulkActionBarProps {
@@ -20,7 +20,7 @@ export interface EnrollmentsBulkActionBarProps {
   bulkActions?: readonly string[];
 }
 
-/** Enrollments Work bulk bar — delegates to shared ModuleUniversalBulkActionBar. */
+/** Enrollments Work bulk bar — delegates to shared BulkSelectionBar. */
 export function EnrollmentsBulkActionBar({
   selectedCount,
   showDeleted,
@@ -37,7 +37,7 @@ export function EnrollmentsBulkActionBar({
   const { t } = useTranslation();
 
   return (
-    <ModuleUniversalBulkActionBar
+    <BulkSelectionBar
       selectedCount={selectedCount}
       viewingDeleted={showDeleted}
       canDelete={canDelete}

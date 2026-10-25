@@ -1,7 +1,7 @@
 import { describe, it, expect, vi } from "vitest";
 import React from "react";
 import { renderToStaticMarkup } from "react-dom/server";
-import { EntityCardsGrid } from "@/components/app/EntityCardsGrid";
+import { ModuleDirectoryCards } from "@/components/app/ModuleDirectoryCards";
 
 vi.mock("@/hooks/useTranslation", async () => {
   const { useTranslationEnMock } = await import("@/test/useTranslationEnMock");
@@ -12,13 +12,13 @@ vi.mock("@/hooks/useReducedMotion", () => ({
   useReducedMotion: () => false,
 }));
 
-describe("EntityCardsGrid Component", () => {
+describe("ModuleDirectoryCards Component", () => {
   it("renders children in a responsive grid container", () => {
     const html = renderToStaticMarkup(
-      <EntityCardsGrid className="custom-test-grid">
+      <ModuleDirectoryCards className="custom-test-grid">
         <div data-testid="card-1">Card 1</div>
         <div data-testid="card-2">Card 2</div>
-      </EntityCardsGrid>,
+      </ModuleDirectoryCards>,
     );
 
     expect(html).toContain("grid");
@@ -32,14 +32,14 @@ describe("EntityCardsGrid Component", () => {
   it("handles high-volume mock children cleanly without layout degradation", () => {
     const cards = Array.from({ length: 100 }, (_, i) => <div key={`card-${i}`}>Record #{i}</div>);
 
-    const html = renderToStaticMarkup(<EntityCardsGrid>{cards}</EntityCardsGrid>);
+    const html = renderToStaticMarkup(<ModuleDirectoryCards>{cards}</ModuleDirectoryCards>);
 
     expect(html).toContain("Record #0");
     expect(html).toContain("Record #99");
   });
 });
 
-describe("EntityCardsGrid — virtualization behaviour", () => {
+describe("ModuleDirectoryCards — virtualization behaviour", () => {
   /**
    * SSR test: when items.length > 30 (virtualized path), the component emits
    * the virtual-scroll container structure (position:relative totalSize div)
@@ -68,7 +68,7 @@ describe("EntityCardsGrid — virtualization behaviour", () => {
     }));
 
     const html = renderToStaticMarkup(
-      <EntityCardsGrid
+      <ModuleDirectoryCards
         items={items}
         renderItem={(item) => (
           <div key={item.id} data-card={item.id}>
@@ -101,7 +101,7 @@ describe("EntityCardsGrid — virtualization behaviour", () => {
     }));
 
     const html = renderToStaticMarkup(
-      <EntityCardsGrid
+      <ModuleDirectoryCards
         items={items}
         renderItem={(item) => (
           <div key={item.id} data-card={item.id}>
@@ -126,7 +126,7 @@ describe("EntityCardsGrid — virtualization behaviour", () => {
     }));
 
     const html = renderToStaticMarkup(
-      <EntityCardsGrid
+      <ModuleDirectoryCards
         items={items}
         renderItem={(item) => <div key={item.id}>{item.label}</div>}
         selectedIds={[]}
@@ -139,12 +139,12 @@ describe("EntityCardsGrid — virtualization behaviour", () => {
   });
 });
 
-describe("EntityCardsGrid Component", () => {
+describe("ModuleDirectoryCards Component", () => {
   it("renders non-virtualized cards grid when items count <= 50", () => {
     const items = Array.from({ length: 10 }, (_, i) => ({ id: `card-${i}`, name: `Item ${i}` }));
 
     const html = renderToStaticMarkup(
-      <EntityCardsGrid
+      <ModuleDirectoryCards
         items={items}
         selectedIds={[]}
         renderItem={(item) => (
@@ -164,7 +164,7 @@ describe("EntityCardsGrid Component", () => {
     const items = Array.from({ length: 120 }, (_, i) => ({ id: `card-${i}`, name: `Item ${i}` }));
 
     const html = renderToStaticMarkup(
-      <EntityCardsGrid
+      <ModuleDirectoryCards
         items={items}
         selectedIds={[]}
         renderItem={(item) => (
@@ -186,7 +186,7 @@ describe("EntityCardsGrid Component", () => {
     ];
 
     const html = renderToStaticMarkup(
-      <EntityCardsGrid
+      <ModuleDirectoryCards
         items={items}
         selectedIds={["1"]}
         onSelectAll={onSelectAll}

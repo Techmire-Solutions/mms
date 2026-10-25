@@ -52,6 +52,7 @@ export const ALL_PERMISSIONS = [
   "messaging.read",
   "messaging.write",
   "messaging.clearLogs",
+  "messaging.restoreLogs",
   "tasks.read",
   "tasks.write",
   "tasks.delete",

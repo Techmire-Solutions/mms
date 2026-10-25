@@ -5,7 +5,7 @@ import {
   type Student,
   type StudentsBulkEnrollPlacement,
 } from "@mms/shared";
-import { ModuleUniversalBulkActionBar } from "@/components/app/ModuleUniversalBulkActionBar";
+import { BulkSelectionBar } from "@/components/app/BulkSelectionBar";
 import { Button } from "@/components/ui/button";
 import { type StatusBadgeConfigItem } from "@/components/app/StatusBadge";
 import { useTranslation } from "@/hooks/useTranslation";
@@ -38,7 +38,7 @@ export interface StudentsBulkActionBarProps {
   statusPending?: boolean;
 }
 
-/** Students Work bulk bar — delegates core actions to ModuleUniversalBulkActionBar. */
+/** Students Work bulk bar — delegates core actions to BulkSelectionBar. */
 export function StudentsBulkActionBar({
   selectedCount,
   viewingDeleted,
@@ -68,7 +68,7 @@ export function StudentsBulkActionBar({
 
   return (
     <>
-      <ModuleUniversalBulkActionBar<Student>
+      <BulkSelectionBar<Student>
         selectedCount={selectedCount}
         viewingDeleted={viewingDeleted}
         canWrite={canWrite}

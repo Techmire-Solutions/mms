@@ -1,7 +1,7 @@
 import React, { type ReactNode } from "react";
 import { cn } from "../utils";
 
-export interface FeedbackStateLayoutProps {
+export interface LoadingStateProps {
   icon?: ReactNode;
   title: string;
   description?: string;
@@ -12,7 +12,7 @@ export interface FeedbackStateLayoutProps {
   role?: "status" | "presentation" | "alert";
 }
 
-export function FeedbackStateLayout({
+export function LoadingState({
   icon,
   title,
   description,
@@ -21,7 +21,7 @@ export function FeedbackStateLayout({
   dashed = false,
   className,
   role = "status",
-}: FeedbackStateLayoutProps): React.JSX.Element {
+}: LoadingStateProps): React.JSX.Element {
   return (
     <div
       role={role}

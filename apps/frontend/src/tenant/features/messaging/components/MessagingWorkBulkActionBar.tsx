@@ -8,7 +8,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { ModuleUniversalBulkActionBar } from "@/components/app/ModuleUniversalBulkActionBar";
+import { BulkSelectionBar } from "@/components/app/BulkSelectionBar";
 import { useTranslation } from "@/hooks/useTranslation";
 import { SEMANTIC_TEXT } from "@/lib/ui/semanticTone";
 import { MESSAGING_CHANNEL_CONFIG } from "../config";
@@ -35,7 +35,7 @@ export const MessagingWorkBulkActionBar = function MessagingWorkBulkActionBar({
   const { t } = useTranslation();
 
   return (
-    <ModuleUniversalBulkActionBar
+    <BulkSelectionBar
       selectedCount={selectedCount}
       viewingDeleted={false}
       canWrite={canWrite}
@@ -101,6 +101,3 @@ export const MessagingWorkBulkActionBar = function MessagingWorkBulkActionBar({
     />
   );
 };
-
-export const MessagingBulkActionBar = MessagingWorkBulkActionBar;
-export type MessagingBulkActionBarProps = MessagingWorkBulkActionBarProps;

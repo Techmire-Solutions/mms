@@ -1,6 +1,6 @@
 import React from "react";
 import { CalendarOff } from "lucide-react";
-import { WarningCallout } from "@/components/app/WarningCallout";
+import { Alert } from "@/components/app/Alert";
 import { useTranslation } from "@/hooks/useTranslation";
 import type { InstructionalDayStatus } from "@/tenant/features/attendance/hooks/useInstructionalDayStatus";
 
@@ -16,7 +16,7 @@ export function MarkAttendanceHolidayBanner({
   if (status.instructional || status.isLoading) return null;
   const reason = status.event?.title ?? t("attendance.calendar.weeklyOffDay");
   return (
-    <WarningCallout
+    <Alert
       icon={CalendarOff}
       tone={status.allowExtraClass ? "info" : "warning"}
       role="status"

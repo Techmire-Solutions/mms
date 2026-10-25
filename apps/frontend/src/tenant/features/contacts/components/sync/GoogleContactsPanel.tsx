@@ -3,7 +3,7 @@ import { Globe, Info, Key, ChevronDown, ChevronUp } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { SectionCard } from "@/components/app/SectionCard";
 import { StatusBadge } from "@/components/app/StatusBadge";
-import { WarningCallout } from "@/components/app/WarningCallout";
+import { Alert } from "@/components/app/Alert";
 import { SEMANTIC_BADGE } from "@/lib/ui/semanticTone";
 import { useTranslation } from "@/hooks/useTranslation";
 import { useGoogleContactsSync } from "@/tenant/features/contacts/hooks/useGoogleContactsSync";
@@ -61,7 +61,7 @@ export function GoogleContactsPanel({
     <SectionCard title={title} icon={Globe} actions={actions}>
       <div className="space-y-4 text-start">
         {!canWrite && (
-          <WarningCallout
+          <Alert
             icon={Info}
             tone="info"
             density="compact"

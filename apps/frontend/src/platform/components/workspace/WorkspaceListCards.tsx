@@ -5,9 +5,9 @@ import { formatDate, type PlatformWorkspaceRow as PlatformWorkspaceRowData } fro
 import { tenantUrl } from "@/lib/config/tenantConfig";
 import { useTranslation } from "@/hooks/useTranslation";
 import { useReducedMotion } from "@/hooks/useReducedMotion";
-import { EntityCardsGrid } from "@/components/app/EntityCardsGrid";
-import { DirectoryCard } from "@/components/app/DirectoryCard";
-import { EntityCardMetadata } from "@/components/app/EntityCardMetadata";
+import { ModuleDirectoryCards } from "@/components/app/ModuleDirectoryCards";
+import { DirectoryEntityCard } from "@/components/app/DirectoryEntityCard";
+import { DirectoryCardMetadata } from "@/components/app/DirectoryCardMetadata";
 import { WorkspaceIdentityCell } from "@/platform/components/workspace/WorkspaceIdentityCell";
 import { WorkspaceStatusBadge } from "@/platform/components/workspace/WorkspaceStatusBadge";
 import { WorkspaceRowActions } from "@/platform/components/workspace/WorkspaceRowActions";
@@ -48,11 +48,11 @@ export function WorkspaceListCards({
   const reducedMotion = useReducedMotion();
 
   return (
-    <EntityCardsGrid>
+    <ModuleDirectoryCards>
       {workspaces.map((workspace) => {
         const isTargetDelete = deletePending && targetWorkspaceSubdomain === workspace.subdomain;
         return (
-          <DirectoryCard
+          <DirectoryEntityCard
             key={workspace.subdomain}
             entity={{ id: workspace.subdomain, ...workspace }}
             reducedMotion={reducedMotion}
@@ -90,7 +90,7 @@ export function WorkspaceListCards({
             }
             metadataSlot={
               descriptor ? (
-                <EntityCardMetadata
+                <DirectoryCardMetadata
                   descriptor={descriptor}
                   entity={workspace}
                   visibleColumnIds={["createdAt"]}
@@ -135,6 +135,6 @@ export function WorkspaceListCards({
           />
         );
       })}
-    </EntityCardsGrid>
+    </ModuleDirectoryCards>
   );
 }

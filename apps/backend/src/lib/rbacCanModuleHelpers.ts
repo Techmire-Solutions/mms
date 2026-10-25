@@ -47,3 +47,10 @@ export function canClearMessagingLogs(user: User): boolean {
   }
   return roleHasPermission(user.role, MESSAGING_MODULE_MANIFEST.permissions.clearLogs);
 }
+
+export function canRestoreMessagingLogs(user: User): boolean {
+  if (!user || !user.role) {
+    return false;
+  }
+  return roleHasPermission(user.role, MESSAGING_MODULE_MANIFEST.permissions.restoreLogs);
+}

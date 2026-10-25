@@ -38,8 +38,8 @@ vi.mock("@/tenant/features/faculty/hooks/useFacultyMutations", () => ({
   }),
 }));
 
-vi.mock("@/components/app/Drawer", () => ({
-  Drawer: ({
+vi.mock("@/components/app/DetailDrawerShell", () => ({
+  DetailDrawerShell: ({
     title,
     subtitle,
     children,

@@ -1,6 +1,6 @@
 import React from "react";
 import type { Contact, ContactPreferences } from "@mms/shared";
-import { EntityCardInfoPills } from "@/components/app/EntityCardInfoPills";
+import { DirectoryCardInfoPills } from "@/components/app/DirectoryCardInfoPills";
 import { resolveAllContactPhones, resolveAllContactEmails } from "@/lib/contacts/contactI18n";
 
 export {
@@ -25,7 +25,7 @@ export interface ContactCardInfoPillsProps {
   onEmail?: (contacts: Contact[]) => void;
 }
 
-/** Contacts face phone/email pills — shared EntityCardInfoPills chrome with inline contact actions (multi-channel). */
+/** Contacts face phone/email pills — shared DirectoryCardInfoPills chrome with inline contact actions (multi-channel). */
 export function ContactCardInfoPills({
   contact,
   prefs,
@@ -59,7 +59,7 @@ export function ContactCardInfoPills({
   })();
 
   return (
-    <EntityCardInfoPills
+    <DirectoryCardInfoPills
       phones={allPhones}
       emails={allEmails}
       displayName={displayName}

@@ -4,7 +4,7 @@ import { Link } from "react-router-dom";
 import { useTranslation } from "@/hooks/useTranslation";
 import { usePlatformInspector } from "@/platform/lib/PlatformInspectorContext";
 import { usePlatformBreadcrumb } from "@/platform/lib/PlatformBreadcrumbContext";
-import { Drawer } from "@/components/app/Drawer";
+import { DetailDrawerShell } from "@/components/app/DetailDrawerShell";
 import { Button } from "@shared/ui";
 import { WorkspaceStatusBadge } from "@/platform/components/workspace/WorkspaceStatusBadge";
 import { ROUTES } from "@/lib/config/routes";
@@ -32,7 +32,7 @@ export function PlatformInspectorDrawer(): React.JSX.Element | null {
   const openHref = tenantUrl(target.subdomain, "/");
 
   return (
-    <Drawer
+    <DetailDrawerShell
       open
       onClose={closeInspector}
       side="end"
@@ -84,6 +84,6 @@ export function PlatformInspectorDrawer(): React.JSX.Element | null {
           </div>
         ) : null}
       </dl>
-    </Drawer>
+    </DetailDrawerShell>
   );
 }

@@ -8,7 +8,7 @@ import { EmptyState } from "@/components/app/EmptyState";
 import { ReportDataGridContainer } from "@/tenant/components/moduleReports";
 import { ActivityActionBadge } from "@/tenant/features/users/components/UserBadges";
 import { WorkBatchTable, type WorkBatchTableColumn } from "@/components/common/work/WorkBatchTable";
-import { EntityCardsGrid } from "@/components/app/EntityCardsGrid";
+import { ModuleDirectoryCards } from "@/components/app/ModuleDirectoryCards";
 import { EntityCard } from "@/components/app/EntityCard";
 import { StatGrid, StatRow } from "@/components/app/StatGrid";
 import type { WorkDirectoryViewMode } from "@/hooks/useWorkDirectoryViewMode";
@@ -18,7 +18,7 @@ import {
   type DataTableColumnLayout,
 } from "@/components/common/data-table";
 
-/** EntityCard tile (report) — not DirectoryCard. */
+/** EntityCard tile (report) — not DirectoryEntityCard. */
 export interface ActivityLogsListProps {
   paginated: ActivityLog[];
   filteredCount: number;
@@ -134,7 +134,7 @@ export function ActivityLogsList({
       paginationVariant="range"
     >
       {viewMode === "cards" ? (
-        <EntityCardsGrid className="p-3">
+        <ModuleDirectoryCards className="p-3">
           {paginated.map((log) => (
             <EntityCard key={log.id} className="space-y-3 p-4">
               <div className="flex min-w-0 items-start justify-between gap-3">
@@ -158,7 +158,7 @@ export function ActivityLogsList({
               </StatGrid>
             </EntityCard>
           ))}
-        </EntityCardsGrid>
+        </ModuleDirectoryCards>
       ) : (
         <WorkBatchTable<ActivityLog>
           data={paginated}

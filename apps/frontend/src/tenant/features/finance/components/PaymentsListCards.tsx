@@ -5,10 +5,10 @@ import { Button } from "@/components/ui/button";
 import { useTranslation } from "@/hooks/useTranslation";
 import { useReducedMotion } from "@/hooks/useReducedMotion";
 import { ENTITY_CARD_OVERFLOW_TRIGGER_CLASS } from "@/components/app/entityCardChrome";
-import { EntityCardMetaTile } from "@/components/app/EntityCardMetaTile";
-import { EntityCardsGrid } from "@/components/app/EntityCardsGrid";
+import { DirectoryCardMetaTile } from "@/components/app/DirectoryCardMetaTile";
+import { ModuleDirectoryCards } from "@/components/app/ModuleDirectoryCards";
 import { EntityCard } from "@/components/app/EntityCard";
-import { DirectoryCard } from "@/components/app/DirectoryCard";
+import { DirectoryEntityCard } from "@/components/app/DirectoryEntityCard";
 import { StatusBadge, type StatusBadgeConfigItem } from "@/components/app/StatusBadge";
 import type { Payment } from "@/lib/data/financeData";
 
@@ -27,7 +27,7 @@ export interface PaymentsListCardsProps {
   allSelected?: boolean;
 }
 
-/** Work directory card — DirectoryCard SSOT (do not hand-compose EntityCard). */
+/** Work directory card — DirectoryEntityCard SSOT (do not hand-compose EntityCard). */
 function PaymentCard({
   payment,
   isColumnVisible,
@@ -74,7 +74,7 @@ function PaymentCard({
   ) : null;
 
   return (
-    <DirectoryCard
+    <DirectoryEntityCard
       entity={payment}
       selectedIds={selectedIds}
       canSelect={canDelete}
@@ -91,29 +91,29 @@ function PaymentCard({
       metadataSlot={
         <EntityCard.MetaGrid>
           {isColumnVisible("amount") && (
-            <EntityCardMetaTile label={t("finance.columns.amount")}>
+            <DirectoryCardMetaTile label={t("finance.columns.amount")}>
               <span className="font-bold text-success">{formatCurrency(payment.amount)}</span>
-            </EntityCardMetaTile>
+            </DirectoryCardMetaTile>
           )}
           {isColumnVisible("date") && (
-            <EntityCardMetaTile label={t("finance.columns.paymentDate")}>
+            <DirectoryCardMetaTile label={t("finance.columns.paymentDate")}>
               {formatDate(payment.date)}
-            </EntityCardMetaTile>
+            </DirectoryCardMetaTile>
           )}
           {isColumnVisible("method") && (
-            <EntityCardMetaTile label={t("finance.columns.method")}>
+            <DirectoryCardMetaTile label={t("finance.columns.method")}>
               <StatusBadge status={payment.method} config={methodConfig} size="sm" />
-            </EntityCardMetaTile>
+            </DirectoryCardMetaTile>
           )}
           {isColumnVisible("receivedBy") && (
-            <EntityCardMetaTile label={t("finance.columns.receivedBy")}>
+            <DirectoryCardMetaTile label={t("finance.columns.receivedBy")}>
               {payment.receivedBy || "—"}
-            </EntityCardMetaTile>
+            </DirectoryCardMetaTile>
           )}
           {isColumnVisible("note") && (
-            <EntityCardMetaTile label={t("finance.columns.note")}>
+            <DirectoryCardMetaTile label={t("finance.columns.note")}>
               {payment.note || "—"}
-            </EntityCardMetaTile>
+            </DirectoryCardMetaTile>
           )}
         </EntityCard.MetaGrid>
       }
@@ -141,7 +141,7 @@ export function PaymentsListCards({
   const someSelected = selectedIds.length > 0 && selectedIds.length < payments.length;
 
   return (
-    <EntityCardsGrid
+    <ModuleDirectoryCards
       items={payments}
       selectedIds={selectedIds}
       onSelectAll={

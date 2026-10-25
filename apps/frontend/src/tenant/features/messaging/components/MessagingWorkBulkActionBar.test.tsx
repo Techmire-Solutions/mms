@@ -17,7 +17,7 @@ vi.mock("@/hooks/useTranslation", () => ({
 }));
 
 describe("MessagingWorkBulkActionBar", () => {
-  it("given write permissions, should render selected count, export, resend, and clear logs via ModuleUniversalBulkActionBar", () => {
+  it("given write permissions, should render selected count, export, resend, and clear logs via BulkSelectionBar", () => {
     // Arrange / Act
     const html = renderToStaticMarkup(
       <MessagingWorkBulkActionBar

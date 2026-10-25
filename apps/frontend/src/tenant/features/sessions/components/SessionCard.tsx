@@ -1,5 +1,5 @@
 import type { ModuleColumnRegistryEntry } from "@mms/shared";
-import { DirectoryCard } from "@/components/app/DirectoryCard";
+import { DirectoryEntityCard } from "@/components/app/DirectoryEntityCard";
 import { ENTITY_CARD_OVERFLOW_TRIGGER_CLASS } from "@/components/app/entityCardChrome";
 import type { StatusBadgeConfigItem } from "@/components/app/StatusBadge";
 import { ProgressBar } from "@/components/app/ProgressBar";
@@ -30,7 +30,7 @@ export interface SessionCardProps {
   reducedMotion?: boolean;
 }
 
-/** Work directory card — DirectoryCard SSOT (do not hand-compose EntityCard). */
+/** Work directory card — DirectoryEntityCard SSOT (do not hand-compose EntityCard). */
 export function SessionCard({
   session,
   isSelected,
@@ -58,7 +58,7 @@ export function SessionCard({
   const columnOptions = { t, statusConfig, typeConfig };
 
   return (
-    <DirectoryCard
+    <DirectoryEntityCard
       entity={session}
       selectedIds={effectiveSelectedIds}
       canSelect={canSelectSessions}
@@ -120,6 +120,6 @@ export function SessionCard({
           </p>
         </div>
       ) : null}
-    </DirectoryCard>
+    </DirectoryEntityCard>
   );
 }

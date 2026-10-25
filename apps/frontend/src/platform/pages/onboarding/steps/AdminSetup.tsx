@@ -3,7 +3,7 @@ import type { Dispatch, SetStateAction } from "react";
 import type { OnboardingData } from "@/platform/pages/onboarding/OnboardingWizard";
 import { useTranslation } from "@/hooks/useTranslation";
 import { Mail } from "lucide-react";
-import { Callout, Checkbox, Field, Input } from "@shared/ui";
+import { Alert, Checkbox, Field, Input } from "@shared/ui";
 import { AuthEmailField } from "@/components/entry";
 
 /** The subset of onboarding data used by this step. */
@@ -71,7 +71,7 @@ export default function AdminSetup({ data, onChange }: AdminSetupProps) {
         onChange={(value) => update("email", value)}
       />
 
-      <Callout icon={Mail} tone="info" description={t("onboarding.admin.passwordEmailNotice")} />
+      <Alert icon={Mail} tone="info" description={t("onboarding.admin.passwordEmailNotice")} />
 
       <div className="flex min-h-11 items-start gap-2.5 rounded-lg pt-1 select-none">
         <Checkbox

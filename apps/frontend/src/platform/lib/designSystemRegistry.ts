@@ -41,7 +41,7 @@ export const DESIGN_SYSTEM_SECTIONS: readonly DesignSystemSectionMeta[] = [
   {
     id: "feedback",
     labelKey: "platform.designSystemFeedback",
-    primitives: ["EmptyState", "ErrorState", "StatusBadge", "Badge", "WarningCallout"],
+    primitives: ["EmptyState", "ErrorState", "StatusBadge", "Badge", "Alert"],
   },
   {
     id: "overlays",

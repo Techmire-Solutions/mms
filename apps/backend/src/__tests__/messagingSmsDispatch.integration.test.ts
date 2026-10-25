@@ -56,6 +56,25 @@ describe("POST /api/messaging/dispatch/sms", () => {
     vi.restoreAllMocks();
   });
 
+  const smsPayload = (message = "Hello {name}") => ({
+    recipients: [
+      { id: "c-1", phone: "+1234567890", name: "Student A" },
+      { id: "c-2", phone: "+1234567891", name: "Student B" },
+    ],
+    message,
+  });
+
+  const authHeaders = async () => {
+    const app = await buildApp();
+    return {
+      app,
+      headers: {
+        host: "demo.localhost",
+        authorization: `Bearer ${signTenantToken(app, { role: "admin", name: "admin" })}`,
+      },
+    };
+  };
+
   it("requires authentication", async () => {
     const app = await buildApp();
     const res = await app.inject({
@@ -135,5 +154,112 @@ describe("POST /api/messaging/dispatch/sms", () => {
     expect(logs[0].contactId).toBe("c-1");
     expect(logs[0].category).toBe("attendance");
     expect(logs[0].status).toBe("sent");
+  });
+
+  it("replays the first response without re-sending when the same idempotency key is reused", async () => {
+    const {
+      findAuthArtifactByLookupKey,
+      tryClaimAuthArtifactByLookupKey,
+      updateAuthArtifactPayload,
+    } = await import("../services/auth/authArtifactService.js");
+    vi.mocked(findAuthArtifactByLookupKey).mockReset().mockResolvedValue(null);
+    vi.mocked(tryClaimAuthArtifactByLookupKey)
+      .mockReset()
+      .mockResolvedValue({ claimed: true, id: "art-1" });
+    vi.mocked(updateAuthArtifactPayload).mockReset().mockResolvedValue(undefined);
+
+    const { app, headers } = await authHeaders();
+    const payload = { ...smsPayload(), idempotencyKey: "sms-dispatch-001" };
+
+    const first = await app.inject({
+      method: "POST",
+      url: "/api/messaging/dispatch/sms",
+      headers,
+      payload,
+    });
+    expect(first.statusCode).toBe(200);
+    expect(first.json()).toEqual({ sentCount: 2, failedCount: 0, total: 2 });
+    expect(mockSendTenantSms).toHaveBeenCalledTimes(2);
+    expect(tryClaimAuthArtifactByLookupKey).toHaveBeenCalledTimes(1);
+    const finalizedPayload = vi.mocked(updateAuthArtifactPayload).mock.calls[0]?.[1] as {
+      response: { sentCount: number; failedCount: number; total: number };
+      bodyDigest: string;
+    };
+    expect(finalizedPayload.response).toEqual({ sentCount: 2, failedCount: 0, total: 2 });
+    expect(finalizedPayload.bodyDigest).toMatch(/^[a-f0-9]{64}$/);
+
+    const replayPayload = {
+      response: finalizedPayload.response,
+      bodyDigest: finalizedPayload.bodyDigest,
+    };
+    vi.mocked(findAuthArtifactByLookupKey).mockResolvedValue({
+      id: "art-1",
+      kind: "messaging_idempotency",
+      payload: replayPayload,
+      expiresAt: new Date(Date.now() + 60_000),
+    });
+
+    const second = await app.inject({
+      method: "POST",
+      url: "/api/messaging/dispatch/sms",
+      headers,
+      payload,
+    });
+    expect(second.statusCode).toBe(200);
+    expect(second.json()).toEqual({ sentCount: 2, failedCount: 0, total: 2 });
+    expect(mockSendTenantSms).toHaveBeenCalledTimes(2);
+    expect(mockRecordMessageLogs).toHaveBeenCalledTimes(1);
+    expect(tryClaimAuthArtifactByLookupKey).toHaveBeenCalledTimes(1);
+    await app.close();
+  });
+
+  it("returns 409 when the idempotency key is reused with a different body", async () => {
+    const { findAuthArtifactByLookupKey } = await import("../services/auth/authArtifactService.js");
+    vi.mocked(findAuthArtifactByLookupKey)
+      .mockReset()
+      .mockResolvedValue({
+        id: "art-mismatch",
+        kind: "messaging_idempotency",
+        payload: {
+          response: { sentCount: 1, failedCount: 0, total: 1 },
+          bodyDigest: "a".repeat(64),
+        },
+        expiresAt: new Date(Date.now() + 60_000),
+      });
+
+    const { app, headers } = await authHeaders();
+    const res = await app.inject({
+      method: "POST",
+      url: "/api/messaging/dispatch/sms",
+      headers,
+      payload: { ...smsPayload("Different message"), idempotencyKey: "sms-dispatch-002" },
+    });
+    expect(res.statusCode).toBe(409);
+    expect(res.json()).toEqual({
+      type: "conflict",
+      message: "Idempotency key reused with a different request body",
+    });
+    expect(mockSendTenantSms).not.toHaveBeenCalled();
+    expect(mockRecordMessageLogs).not.toHaveBeenCalled();
+    await app.close();
+  });
+
+  it("dispatches without touching the idempotency store when no key is supplied", async () => {
+    const { tryClaimAuthArtifactByLookupKey } =
+      await import("../services/auth/authArtifactService.js");
+    vi.mocked(tryClaimAuthArtifactByLookupKey).mockReset();
+
+    const { app, headers } = await authHeaders();
+    const res = await app.inject({
+      method: "POST",
+      url: "/api/messaging/dispatch/sms",
+      headers,
+      payload: smsPayload(),
+    });
+    expect(res.statusCode).toBe(200);
+    expect(res.json()).toEqual({ sentCount: 2, failedCount: 0, total: 2 });
+    expect(mockSendTenantSms).toHaveBeenCalledTimes(2);
+    expect(tryClaimAuthArtifactByLookupKey).not.toHaveBeenCalled();
+    await app.close();
   });
 });

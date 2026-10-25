@@ -14,7 +14,7 @@ import { AlertCircle, Layers } from "lucide-react";
 import { SectionHeader } from "@shared/ui";
 import { ObligationsWakalaSummaryCardsView } from "./ObligationsWakalaSummaryCardsView";
 
-/** ReportMoneyCard tile (report) — not DirectoryCard. */
+/** ReportMoneyCard tile (report) — not DirectoryEntityCard. */
 export interface WakalaSummaryEntry {
   key: string;
   label: string;

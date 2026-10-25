@@ -1,6 +1,6 @@
 import React from "react";
 import type { PlatformUserProfile } from "@mms/shared";
-import { Drawer } from "@/components/app/Drawer";
+import { DetailDrawerShell } from "@/components/app/DetailDrawerShell";
 import { EntityDescriptorSections } from "@/components/app/EntityDescriptorSections";
 import { PlatformEditAdminAccessDialog } from "@/platform/components/PlatformEditAdminAccessDialog";
 import { PlatformAdminDangerDialog } from "@/platform/components/PlatformAdminDangerDialog";
@@ -51,7 +51,7 @@ export function PlatformAdminsDialogs({
         />
       ) : null}
 
-      <Drawer
+      <DetailDrawerShell
         open={Boolean(inspectAdmin)}
         onClose={onCloseInspect}
         title={inspectAdmin?.name ?? "Admin"}
@@ -63,7 +63,7 @@ export function PlatformAdminsDialogs({
             descriptor={descriptor}
           />
         ) : null}
-      </Drawer>
+      </DetailDrawerShell>
     </>
   );
 }

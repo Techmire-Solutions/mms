@@ -39,10 +39,10 @@ export interface DrawerProps {
 }
 
 /**
- * Universal Drawer primitive supporting responsive mobile bottom-sheet adaptation,
+ * Universal DetailDrawerShell primitive supporting responsive mobile bottom-sheet adaptation,
  * directional slide-in positioning, and composed archive chrome.
  */
-export function Drawer({
+export function DetailDrawerShell({
   open = true,
   onClose,
   title,
@@ -180,6 +180,6 @@ export function Drawer({
   );
 }
 
-Drawer.Header = DetailDrawerHeader;
-Drawer.ArchiveBanner = DetailDrawerArchivedBanner;
-Drawer.RestoreOrEditAction = DetailDrawerRestoreOrEditAction;
+DetailDrawerShell.Header = DetailDrawerHeader;
+DetailDrawerShell.ArchiveBanner = DetailDrawerArchivedBanner;
+DetailDrawerShell.RestoreOrEditAction = DetailDrawerRestoreOrEditAction;

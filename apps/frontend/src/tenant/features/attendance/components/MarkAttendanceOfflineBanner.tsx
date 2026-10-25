@@ -2,7 +2,7 @@ import { AnimatePresence, motion } from "framer-motion";
 import { UploadCloud, Wifi, WifiOff } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { WarningCallout } from "@/components/app/WarningCallout";
+import { Alert } from "@/components/app/Alert";
 import { useTranslation } from "@/hooks/useTranslation";
 import type { OfflinePayload } from "@/tenant/features/attendance/lib/markAttendanceTypes";
 
@@ -26,7 +26,7 @@ export function MarkAttendanceOfflineBanner({
           animate={{ height: "auto", opacity: 1 }}
           exit={{ height: 0, opacity: 0 }}
         >
-          <WarningCallout
+          <Alert
             icon={WifiOff}
             density="banner"
             role="status"

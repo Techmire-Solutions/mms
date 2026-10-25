@@ -8,7 +8,7 @@ export interface EntityCardMetaGridProps {
 }
 
 /** Shared metadata tile grid wrapper for Work directory entity cards. */
-export const EntityCardMetaGrid = function EntityCardMetaGrid({
+export const DirectoryCardMetaGrid = function DirectoryCardMetaGrid({
   children,
   className,
 }: EntityCardMetaGridProps): React.JSX.Element {

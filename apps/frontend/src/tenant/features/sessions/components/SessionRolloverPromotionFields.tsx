@@ -6,7 +6,7 @@ import {
   type Session,
 } from "@mms/shared";
 import { Field, FormSelect } from "@/components/app/FormPrimitives";
-import { WarningCallout } from "@/components/app/WarningCallout";
+import { Alert } from "@/components/app/Alert";
 import { Button } from "@/components/ui/button";
 import { useTranslation } from "@/hooks/useTranslation";
 import type { SessionRolloverForm } from "@/tenant/features/sessions/hooks/useSessionRolloverForm";
@@ -85,7 +85,7 @@ export function SessionRolloverPromotionFields({
             {t("sessions.rollover.students", { count: form.preview.length })}
           </legend>
           {flagged > 0 ? (
-            <WarningCallout
+            <Alert
               density="compact"
               description={t("sessions.rollover.problems", { count: flagged })}
             />

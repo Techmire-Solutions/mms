@@ -106,6 +106,7 @@ export interface ModulePermissionsManifest {
     setupWrite?: Permission;
     overrideLock?: Permission;
     clearLogs?: Permission;
+    restoreLogs?: Permission;
   };
 }
 
@@ -119,6 +120,7 @@ export interface UseModulePermissionsResult {
   canEditSetup: boolean;
   canOverrideLock: boolean;
   canClearLogs: boolean;
+  canRestoreLogs: boolean;
 }
 
 /** Resolves all standard tier & action permissions for a module manifest (Rule 11 / DRY). */
@@ -140,5 +142,6 @@ export function useModulePermissions(
     canEditSetup: p.setupWrite ? can(p.setupWrite) : false,
     canOverrideLock: p.overrideLock ? can(p.overrideLock) : false,
     canClearLogs: p.clearLogs ? can(p.clearLogs) : false,
+    canRestoreLogs: p.restoreLogs ? can(p.restoreLogs) : false,
   };
 }

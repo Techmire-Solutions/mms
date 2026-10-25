@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { ProgressBar } from "@/components/app/ProgressBar";
 import { EmptyState } from "@/components/app/EmptyState";
-import { WarningCallout } from "@/components/app/WarningCallout";
+import { Alert } from "@/components/app/Alert";
 import { useTranslation } from "@/hooks/useTranslation";
 import { Step4SectionPlacement, type SectionPlacement } from "./Step4SectionPlacement";
 
@@ -80,7 +80,7 @@ export function Step4ClassAssignment({
       )}
 
       {!suggestedClass && (
-        <WarningCallout
+        <Alert
           role="status"
           density="banner"
           className="items-start"
@@ -90,7 +90,7 @@ export function Step4ClassAssignment({
 
       {/* Override warning */}
       {override && (
-        <WarningCallout
+        <Alert
           role="alert"
           density="banner"
           className="items-start font-semibold"

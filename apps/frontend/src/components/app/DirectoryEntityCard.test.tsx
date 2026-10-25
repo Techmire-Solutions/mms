@@ -1,7 +1,7 @@
 import React from "react";
 import { describe, expect, it, vi } from "vitest";
 import { renderToStaticMarkup } from "react-dom/server";
-import { DirectoryCard } from "./DirectoryCard";
+import { DirectoryEntityCard } from "./DirectoryEntityCard";
 
 vi.mock("@/hooks/useTranslation", () => ({
   useTranslation: () => ({
@@ -26,10 +26,10 @@ const mockEntity: TestEntity = {
   email: "zayd@madrasa.com",
 };
 
-describe("DirectoryCard", () => {
+describe("DirectoryEntityCard", () => {
   it("renders header with display name, subtitle, and default view button", () => {
     const html = renderToStaticMarkup(
-      <DirectoryCard
+      <DirectoryEntityCard
         entity={mockEntity}
         header={{
           displayName: mockEntity.name,
@@ -46,7 +46,7 @@ describe("DirectoryCard", () => {
 
   it("renders selection checkbox when canSelect is true", () => {
     const html = renderToStaticMarkup(
-      <DirectoryCard
+      <DirectoryEntityCard
         entity={mockEntity}
         selectedIds={["item-1"]}
         canSelect={true}
@@ -62,7 +62,7 @@ describe("DirectoryCard", () => {
 
   it("renders info pills when phone and email are provided", () => {
     const html = renderToStaticMarkup(
-      <DirectoryCard
+      <DirectoryEntityCard
         entity={mockEntity}
         header={{
           displayName: mockEntity.name,
@@ -78,9 +78,9 @@ describe("DirectoryCard", () => {
     expect(html).toContain("zayd@madrasa.com");
   });
 
-  it("renders metadata columns using EntityCardMetadata", () => {
+  it("renders metadata columns using DirectoryCardMetadata", () => {
     const html = renderToStaticMarkup(
-      <DirectoryCard
+      <DirectoryEntityCard
         entity={mockEntity}
         header={{
           displayName: mockEntity.name,
@@ -98,7 +98,7 @@ describe("DirectoryCard", () => {
 
   it("renders banner and overflow actions in footer", () => {
     const html = renderToStaticMarkup(
-      <DirectoryCard
+      <DirectoryEntityCard
         entity={mockEntity}
         header={{
           displayName: mockEntity.name,
@@ -114,7 +114,7 @@ describe("DirectoryCard", () => {
 
   it("renders start-edge colored line and inset by default", () => {
     const html = renderToStaticMarkup(
-      <DirectoryCard entity={mockEntity} header={{ displayName: mockEntity.name }} />,
+      <DirectoryEntityCard entity={mockEntity} header={{ displayName: mockEntity.name }} />,
     );
 
     expect(html).toContain("w-1.5");
@@ -124,7 +124,7 @@ describe("DirectoryCard", () => {
 
   it("renders custom accent stripe class when provided", () => {
     const html = renderToStaticMarkup(
-      <DirectoryCard
+      <DirectoryEntityCard
         entity={mockEntity}
         header={{ displayName: mockEntity.name }}
         accentClassName="bg-success/70"
@@ -137,7 +137,7 @@ describe("DirectoryCard", () => {
 
   it("omits accent stripe when accentClassName is false", () => {
     const html = renderToStaticMarkup(
-      <DirectoryCard
+      <DirectoryEntityCard
         entity={mockEntity}
         header={{ displayName: mockEntity.name }}
         accentClassName={false}

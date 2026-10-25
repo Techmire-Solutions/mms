@@ -1,7 +1,7 @@
 import type React from "react";
 import { CheckCircle2, Download } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { WarningCallout } from "@/components/app/WarningCallout";
+import { Alert } from "@/components/app/Alert";
 import type { TranslationFunction } from "@/lib/contexts/TranslationContext";
 import type { ChangeEvent, RefObject } from "react";
 
@@ -35,7 +35,7 @@ export function AppleContactsImportResult({
   t,
 }: AppleContactsImportResultProps): React.JSX.Element {
   return (
-    <WarningCallout
+    <Alert
       icon={CheckCircle2}
       tone="success"
       density="compact"

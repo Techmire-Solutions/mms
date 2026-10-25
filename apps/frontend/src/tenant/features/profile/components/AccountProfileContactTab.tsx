@@ -11,7 +11,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { CardTitleBar } from "@/components/app/CardTitleBar";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { WarningCallout } from "@/components/app/WarningCallout";
+import { Alert } from "@/components/app/Alert";
 import { useTranslation } from "@/hooks/useTranslation";
 import { CARD_STRIPE_INSET } from "@/lib/ui/semanticTone";
 import { cn } from "@/lib/utils";
@@ -57,7 +57,7 @@ export function AccountProfileContactTab({
       />
       <CardContent className={cn("pt-5 space-y-4", CARD_STRIPE_INSET)}>
         {!profile.contact ? (
-          <WarningCallout
+          <Alert
             icon={ShieldCheck}
             title={t("account.unlinkedTitle")}
             description={t("account.noContact")}

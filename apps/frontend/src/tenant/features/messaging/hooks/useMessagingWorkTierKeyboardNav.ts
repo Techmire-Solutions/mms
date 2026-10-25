@@ -1,6 +1,9 @@
 import { useEffect, useState } from "react";
 import type { Message } from "@mms/shared";
 
+/** Class used to locate the keyboard-focused row/card for scroll-into-view. */
+export const MESSAGING_KB_FOCUS_CLASS = "messaging-kb-focus-row" as const;
+
 interface UseMessagingWorkTierKeyboardNavParams {
   logs: Message[];
   toggleLog: (log: Message, shiftKey?: boolean) => void;
@@ -11,8 +14,21 @@ export function useMessagingWorkTierKeyboardNav({
   logs,
   toggleLog,
   handleOpenDetail,
-}: UseMessagingWorkTierKeyboardNavParams): void {
+}: UseMessagingWorkTierKeyboardNavParams): { focusedIndex: number } {
   const [focusedIndex, setFocusedIndex] = useState<number>(-1);
+
+  // Reset when the data set changes (pagination, filters) so stale indexes never operate on rows out of view.
+  useEffect(() => {
+    setFocusedIndex(-1);
+  }, [logs]);
+
+  // Keep the focused row visible without jarring scroll jumps.
+  useEffect(() => {
+    if (focusedIndex < 0) return;
+    document
+      .querySelector(`.${MESSAGING_KB_FOCUS_CLASS}`)
+      ?.scrollIntoView({ block: "nearest", behavior: "smooth" });
+  }, [focusedIndex]);
 
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent): void => {
@@ -26,6 +42,8 @@ export function useMessagingWorkTierKeyboardNav({
       ) {
         return;
       }
+      // Ignore navigation while a dialog/modal (composer, confirms) owns the keyboard.
+      if (document.querySelector("[role='dialog'],[data-modal-open='true']")) return;
 
       if (logs.length === 0) return;
 
@@ -49,4 +67,6 @@ export function useMessagingWorkTierKeyboardNav({
     window.addEventListener("keydown", handleKeyDown);
     return () => window.removeEventListener("keydown", handleKeyDown);
   }, [logs, focusedIndex, toggleLog, handleOpenDetail]);
+
+  return { focusedIndex };
 }

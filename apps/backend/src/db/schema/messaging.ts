@@ -52,6 +52,9 @@ export const messageLogs = pgTable(
     deletedAt: timestamp("deleted_at", { withTimezone: true, mode: "date" }),
     deletedBy: text("deleted_by"),
     deletionReason: varchar("deletion_reason", { length: 500 }),
+    /** Attribution for the soft-archive undo (GET/POST /logs/restore §2.1). */
+    restoredAt: timestamp("restored_at", { withTimezone: true, mode: "date" }),
+    restoredBy: text("restored_by"),
     /** Generated column: TTL expiry = deleted_at + 365 days (retentionDays = 365 per §13.4). */
     purgeAfter: timestamp("purge_after", { withTimezone: true, mode: "date" }).generatedAlwaysAs(
       sql`deleted_at + INTERVAL '365 days'`,

@@ -2,7 +2,7 @@ import type React from "react";
 import type { Contact, FacultyMember } from "@mms/shared";
 import { resolveFacultyStatus } from "@mms/shared";
 import { StatusBadge, type StatusBadgeConfigItem } from "@/components/app/StatusBadge";
-import { WarningCallout } from "@/components/app/WarningCallout";
+import { Alert } from "@/components/app/Alert";
 import { FormFooterEntityChip } from "@/components/app/FormFooterChip";
 import { Badge } from "@/components/ui/badge";
 import type { TranslationFunction } from "@/lib/contexts/TranslationContext";
@@ -41,11 +41,7 @@ export function FacultyFormFooter({
 
   if (requireContactLink && !facultyDraft.contactId) {
     return (
-      <WarningCallout
-        tone="destructive"
-        density="compact"
-        description={t("faculty.form.contactRequired")}
-      />
+      <Alert tone="destructive" density="compact" description={t("faculty.form.contactRequired")} />
     );
   }
 

@@ -23,6 +23,7 @@ describe("messagingModuleManifest", () => {
     expect(MESSAGING_MODULE_MANIFEST.permissions.read).toBe("messaging.read");
     expect(MESSAGING_MODULE_MANIFEST.permissions.write).toBe("messaging.write");
     expect(MESSAGING_MODULE_MANIFEST.permissions.clearLogs).toBe("messaging.clearLogs");
+    expect(MESSAGING_MODULE_MANIFEST.permissions.restoreLogs).toBe("messaging.restoreLogs");
     expect(MESSAGING_MODULE_MANIFEST.recipientsColumnPreferencesObjectKey).toBe(
       "messaging_recipients_user_column_preferences",
     );

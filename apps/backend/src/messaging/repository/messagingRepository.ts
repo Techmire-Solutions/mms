@@ -51,6 +51,8 @@ export interface MessagingRepository {
     filters?: { startDate?: string; endDate?: string },
   ): Promise<MessagingMetricsDto>;
   softDeleteActiveMessageLogs(tenant: string): Promise<void>;
+  /** Restores archived logs (`ids: null` = restore all); returns the restored count. */
+  restoreArchivedMessageLog(tenant: string, userId: string, ids: string[] | null): Promise<number>;
 
   // WhatsApp Integrations
   getWhatsappIntegrationRow(tenant: string): Promise<WhatsappIntegrationRow | null>;

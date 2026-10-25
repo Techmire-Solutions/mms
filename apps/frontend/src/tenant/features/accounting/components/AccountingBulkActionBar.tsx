@@ -1,7 +1,7 @@
 import type { ReactElement } from "react";
 import { BookOpenText } from "lucide-react";
 import { ACCOUNTING_MODULE_MANIFEST } from "@mms/shared";
-import { ModuleUniversalBulkActionBar } from "@/components/app/ModuleUniversalBulkActionBar";
+import { BulkSelectionBar } from "@/components/app/BulkSelectionBar";
 
 export interface AccountingBulkActionBarProps {
   selectedCount: number;
@@ -13,7 +13,7 @@ export interface AccountingBulkActionBarProps {
   bulkActions?: readonly string[];
 }
 
-/** Accounting Journal Work bulk bar — thin adapter delegating to shared ModuleUniversalBulkActionBar. */
+/** Accounting Journal Work bulk bar — thin adapter delegating to shared BulkSelectionBar. */
 export function AccountingBulkActionBar({
   selectedCount,
   showDeleted,
@@ -24,7 +24,7 @@ export function AccountingBulkActionBar({
   bulkActions = ACCOUNTING_MODULE_MANIFEST.work.bulkActions,
 }: AccountingBulkActionBarProps): ReactElement {
   return (
-    <ModuleUniversalBulkActionBar
+    <BulkSelectionBar
       selectedCount={selectedCount}
       viewingDeleted={showDeleted}
       canDelete={canDelete}

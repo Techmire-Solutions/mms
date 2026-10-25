@@ -2,7 +2,7 @@ import React from "react";
 import { GraduationCap } from "lucide-react";
 import { FormModal } from "@/components/app/FormModal";
 import { ConfirmAlertDialog } from "@/components/app/ConfirmAlertDialog";
-import { WarningCallout } from "@/components/app/WarningCallout";
+import { Alert } from "@/components/app/Alert";
 import { StatusBadge } from "@/components/app/StatusBadge";
 import { FormFooterEntityChip } from "@/components/app/FormFooterChip";
 import { Badge } from "@/components/ui/badge";
@@ -49,7 +49,7 @@ export const StudentForm = function StudentForm({
       </div>
     </div>
   ) : form.isFieldEnabled("contactId") ? (
-    <WarningCallout
+    <Alert
       tone="destructive"
       density="compact"
       description={form.t("students.form.contactRequired")}

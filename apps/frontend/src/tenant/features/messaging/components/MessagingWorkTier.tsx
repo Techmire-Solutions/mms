@@ -8,12 +8,15 @@ export type MessagingSelectedLogsMap = Record<string, Message>;
 interface MessagingWorkTierProps {
   canWrite: boolean;
   canClearLogs: boolean;
+  canRestoreLogs?: boolean;
+  onRestoreLog?: (log: Message) => Promise<void>;
   onClearLogsRequest: () => void;
   onResend: Parameters<typeof useMessagingWorkTierController>[0]["onResend"];
   onBulkResend?: Parameters<typeof useMessagingWorkTierController>[0]["onBulkResend"];
   channel?: Parameters<typeof useMessagingWorkTierController>[0]["channel"];
   onChannelChange?: Parameters<typeof useMessagingWorkTierController>[0]["onChannelChange"];
   onStartCampaign?: (channel: "whatsapp" | "sms" | "email") => void;
+  onExportLogsRegister?: (handler: (() => Promise<void>) | null) => void;
 }
 
 export function MessagingWorkTier(props: MessagingWorkTierProps): React.JSX.Element {
@@ -24,6 +27,8 @@ export function MessagingWorkTier(props: MessagingWorkTierProps): React.JSX.Elem
       {...controller}
       canWrite={props.canWrite}
       canClearLogs={props.canClearLogs}
+      canRestoreLogs={props.canRestoreLogs}
+      onRestoreLog={props.onRestoreLog}
       onClearLogsRequest={props.onClearLogsRequest}
       onStartCampaign={props.onStartCampaign}
     />

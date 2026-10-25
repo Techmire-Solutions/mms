@@ -7,6 +7,7 @@ import { WorkBatchTable } from "@/components/common/work";
 import { useTranslation } from "@/hooks/useTranslation";
 import { formatDirectoryPageCountLabel } from "@/lib/formatDirectoryPageCountLabel";
 import { SEMANTIC_TEXT, SEMANTIC_BG } from "@/lib/ui/semanticTone";
+import { MESSAGING_KB_FOCUS_CLASS } from "../hooks/useMessagingWorkTierKeyboardNav";
 import type { MessagingSelectedLogsMap } from "./MessagingWorkTier";
 import { useMessagingTableColumns } from "./useMessagingTableColumns";
 
@@ -21,6 +22,8 @@ export interface MessagingListDesktopTableProps {
   getColumnWidth: (key: string) => number | undefined;
   isColumnVisible: (key: string) => boolean;
   setColumnWidth: (key: string, width: number) => void;
+  /** id of the log targeted by j/k keyboard navigation (for visible focus styling). */
+  focusedLogId?: string | null;
   onToggleLog: (log: Message, shiftKey?: boolean) => void;
   onToggleAllVisible: (checked: boolean) => void;
   onResendLog: (log: Message) => void;
@@ -43,6 +46,7 @@ export function MessagingListDesktopTable({
   onResendLog,
   onViewLog,
   onFilterContact,
+  focusedLogId,
   setColumnWidth,
 }: MessagingListDesktopTableProps): React.JSX.Element {
   const { t } = useTranslation();
@@ -68,11 +72,13 @@ export function MessagingListDesktopTable({
       className="table-fixed text-xs"
       stickyColumnId="recipient"
       onRowClick={onViewLog}
-      rowClassName={(log) =>
-        log.status === "failed"
+      rowClassName={(log) => {
+        if (log.id === focusedLogId)
+          return `ring-2 ring-primary/60 ring-inset ${MESSAGING_KB_FOCUS_CLASS}`;
+        return log.status === "failed"
           ? `${SEMANTIC_BG.destructive} hover:bg-destructive/10 border-s-2 border-s-destructive`
-          : undefined
-      }
+          : undefined;
+      }}
       selection={{
         selectedIds: Object.keys(selectedIds),
         onSelectOne: (id: string) => {

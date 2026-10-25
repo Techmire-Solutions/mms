@@ -1,9 +1,9 @@
 import type { JSX } from "react";
 import { ENTITY_CARD_OVERFLOW_TRIGGER_CLASS } from "@/components/app/entityCardChrome";
-import { EntityCardMetaTile } from "@/components/app/EntityCardMetaTile";
-import { EntityCardsGrid } from "@/components/app/EntityCardsGrid";
+import { DirectoryCardMetaTile } from "@/components/app/DirectoryCardMetaTile";
+import { ModuleDirectoryCards } from "@/components/app/ModuleDirectoryCards";
 import { EntityCard } from "@/components/app/EntityCard";
-import { DirectoryCard } from "@/components/app/DirectoryCard";
+import { DirectoryEntityCard } from "@/components/app/DirectoryEntityCard";
 import { StatusBadge } from "@/components/app/StatusBadge";
 import { useReducedMotion } from "@/hooks/useReducedMotion";
 import { useTranslation } from "@/hooks/useTranslation";
@@ -20,7 +20,7 @@ type DistributionsListCardsProps = Omit<
   "getColumnWidth" | "onColumnResize"
 >;
 
-/** Work directory card — DirectoryCard SSOT (do not hand-compose EntityCard). */
+/** Work directory card — DirectoryEntityCard SSOT (do not hand-compose EntityCard). */
 function DistributionCard({
   distribution,
   props,
@@ -54,7 +54,7 @@ function DistributionCard({
   const displayName = distribution.recipientName || distribution.id;
 
   return (
-    <DirectoryCard
+    <DirectoryEntityCard
       entity={distribution}
       selectedIds={selectedIds}
       canSelect={canDelete}
@@ -77,34 +77,34 @@ function DistributionCard({
       metadataSlot={
         <EntityCard.MetaGrid>
           {isColumnVisible("recipientClass") && (
-            <EntityCardMetaTile label={t("hasanat.columns.distribution.recipientClass")}>
+            <DirectoryCardMetaTile label={t("hasanat.columns.distribution.recipientClass")}>
               {distribution.recipientClass || "—"}
-            </EntityCardMetaTile>
+            </DirectoryCardMetaTile>
           )}
           {isColumnVisible("quantity") && (
-            <EntityCardMetaTile label={t("hasanat.columns.distribution.quantity")}>
+            <DirectoryCardMetaTile label={t("hasanat.columns.distribution.quantity")}>
               <span className="font-bold">{distribution.quantity}</span>
-            </EntityCardMetaTile>
+            </DirectoryCardMetaTile>
           )}
           {isColumnVisible("reason") && (
-            <EntityCardMetaTile label={t("hasanat.columns.distribution.reason")}>
+            <DirectoryCardMetaTile label={t("hasanat.columns.distribution.reason")}>
               <span className="break-words">{distribution.reason || "—"}</span>
-            </EntityCardMetaTile>
+            </DirectoryCardMetaTile>
           )}
           {isColumnVisible("issuedDate") && (
-            <EntityCardMetaTile label={t("hasanat.columns.distribution.issuedDate")}>
+            <DirectoryCardMetaTile label={t("hasanat.columns.distribution.issuedDate")}>
               {distribution.issuedDate}
-            </EntityCardMetaTile>
+            </DirectoryCardMetaTile>
           )}
           {isColumnVisible("issuedBy") && (
-            <EntityCardMetaTile label={t("hasanat.columns.distribution.issuedBy")}>
+            <DirectoryCardMetaTile label={t("hasanat.columns.distribution.issuedBy")}>
               <span className="break-words">{distribution.issuedBy || "—"}</span>
-            </EntityCardMetaTile>
+            </DirectoryCardMetaTile>
           )}
           {isColumnVisible("status") && (
-            <EntityCardMetaTile label={t("hasanat.columns.distribution.status")}>
+            <DirectoryCardMetaTile label={t("hasanat.columns.distribution.status")}>
               <StatusBadge status={distribution.status} config={statusConfig} size="sm" />
-            </EntityCardMetaTile>
+            </DirectoryCardMetaTile>
           )}
         </EntityCard.MetaGrid>
       }
@@ -152,7 +152,7 @@ export function DistributionsListCards(props: DistributionsListCardsProps): JSX.
   }
 
   return (
-    <EntityCardsGrid
+    <ModuleDirectoryCards
       items={distributions}
       selectedIds={selectedIds}
       onSelectAll={canDelete ? () => onToggleSelectAll(!allVisibleSelected) : undefined}

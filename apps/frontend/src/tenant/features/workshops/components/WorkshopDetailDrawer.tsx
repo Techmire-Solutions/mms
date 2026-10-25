@@ -5,7 +5,7 @@
 
 import React from "react";
 import { formatDate, type WorkshopEvent } from "@mms/shared";
-import { Drawer } from "@/components/app/Drawer";
+import { DetailDrawerShell } from "@/components/app/DetailDrawerShell";
 import {
   DetailDrawerArchivedBanner,
   DetailDrawerRestoreOrEditAction,
@@ -56,7 +56,7 @@ export function WorkshopDetailDrawer({
   ];
 
   return (
-    <Drawer
+    <DetailDrawerShell
       open
       onClose={onClose}
       size="lg"
@@ -122,6 +122,6 @@ export function WorkshopDetailDrawer({
           </p>
         )}
       </div>
-    </Drawer>
+    </DetailDrawerShell>
   );
 }

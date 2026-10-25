@@ -1,6 +1,6 @@
 import { Briefcase, ChevronDown, IdCard, Users } from "lucide-react";
 import { FACULTY_MODULE_MANIFEST, type Faculty } from "@mms/shared";
-import { ModuleUniversalBulkActionBar } from "@/components/app/ModuleUniversalBulkActionBar";
+import { BulkSelectionBar } from "@/components/app/BulkSelectionBar";
 import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
@@ -38,7 +38,7 @@ export interface FacultyBulkActionBarProps {
   specializationPending?: boolean;
 }
 
-/** Faculty Work bulk bar — delegates core actions to ModuleUniversalBulkActionBar. */
+/** Faculty Work bulk bar — delegates core actions to BulkSelectionBar. */
 export function FacultyBulkActionBar({
   selectedIds,
   selectionTargets,
@@ -66,7 +66,7 @@ export function FacultyBulkActionBar({
   const { t } = useTranslation();
 
   return (
-    <ModuleUniversalBulkActionBar<Faculty>
+    <BulkSelectionBar<Faculty>
       selectedCount={selectedIds.length}
       viewingDeleted={showDeleted}
       canWrite={canWrite}

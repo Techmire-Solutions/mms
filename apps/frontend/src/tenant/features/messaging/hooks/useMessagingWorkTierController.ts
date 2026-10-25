@@ -1,4 +1,4 @@
-import { useCallback, useMemo } from "react";
+import { useCallback, useEffect, useMemo } from "react";
 import { useSearchParams } from "react-router-dom";
 import {
   MESSAGE_LOGS_DEFAULT_PAGE_SIZE,
@@ -30,6 +30,8 @@ export interface MessagingWorkTierControllerProps {
   ) => void;
   channel?: "all" | "sms" | "whatsapp" | "email";
   onChannelChange?: (channel: "all" | "sms" | "whatsapp" | "email") => void;
+  /** Lets the page header use the single filtered export path owned by the work tier. */
+  onExportLogsRegister?: (handler: (() => Promise<void>) | null) => void;
 }
 
 export function useMessagingWorkTierController({
@@ -38,6 +40,7 @@ export function useMessagingWorkTierController({
   onBulkResend,
   channel: controlledChannel,
   onChannelChange: controlledOnChannelChange,
+  onExportLogsRegister,
 }: MessagingWorkTierControllerProps) {
   const { t } = useTranslation();
   const [searchParams, setSearchParams] = useSearchParams();
@@ -103,7 +106,7 @@ export function useMessagingWorkTierController({
     plural: "messaging.item.recipients",
   });
 
-  useMessagingWorkTierKeyboardNav({
+  const { focusedIndex } = useMessagingWorkTierKeyboardNav({
     logs: logsQuery.logs,
     toggleLog,
     handleOpenDetail,
@@ -128,6 +131,11 @@ export function useMessagingWorkTierController({
     handleBulkResendLogs(selectedList, targetChannel);
   };
 
+  useEffect(() => {
+    onExportLogsRegister?.(handleExportLogs);
+    return () => onExportLogsRegister?.(null);
+  }, [onExportLogsRegister, handleExportLogs]);
+
   const failedLogs = logsQuery.logs.filter((l: Message) => l.status === "failed");
 
   const handleFilterContact = (contactName: string): void => {
@@ -136,6 +144,8 @@ export function useMessagingWorkTierController({
   };
 
   const descriptor = useMessagingEntityDescriptor();
+  // Keyboard-focus identity for visible j/k focus rendering (class + scroll target).
+  const focusedLogId = focusedIndex >= 0 ? (logsQuery.logs[focusedIndex]?.id ?? null) : null;
   const activeFilters = useMemo(
     () => ({
       search: filters.debouncedSearch.trim() || undefined,
@@ -213,6 +223,7 @@ export function useMessagingWorkTierController({
     handleBulkResend,
     handleBulkResendLogs,
     handleExportLogs,
+    focusedLogId,
     failedLogs,
     hasBulkResend: Boolean(onBulkResend),
     activeDetailLog,

@@ -3,7 +3,7 @@ import { Clock, Pause, Play, Radio, XCircle, Zap } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { ProgressBar } from "@/components/app/ProgressBar";
 import { CompactSegmentedControl } from "@/components/app/CompactSegmentedControl";
-import { WarningCallout } from "@/components/app/WarningCallout";
+import { Alert } from "@/components/app/Alert";
 import { useTranslation } from "@/hooks/useTranslation";
 import type { DispatchSpeed } from "./useMessageComposerDispatch";
 
@@ -50,7 +50,7 @@ export function MessageComposerDispatchControls({
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -6 }}
           >
-            <WarningCallout
+            <Alert
               density="compact"
               className="rounded-lg sm:items-center"
               description={t("messaging.skippedNotice", {

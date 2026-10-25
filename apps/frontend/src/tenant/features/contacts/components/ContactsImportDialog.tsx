@@ -3,7 +3,7 @@ import { Upload } from "lucide-react";
 import type { Contact } from "@mms/shared";
 import { DashedFileDropZone } from "@/components/app/DashedFileDropZone";
 import { Modal } from "@/components/app/Modal";
-import { WarningCallout } from "@/components/app/WarningCallout";
+import { Alert } from "@/components/app/Alert";
 import { useTranslation } from "@/hooks/useTranslation";
 import { useAppleContactsPanel } from "@/tenant/features/contacts/hooks/useAppleContactsPanel";
 import {
@@ -67,12 +67,7 @@ function ContactsImportDialogBody({
         {apple.result && <AppleContactsImportResult result={apple.result} t={t} />}
 
         {apple.fileError && (
-          <WarningCallout
-            tone="destructive"
-            role="alert"
-            density="compact"
-            description={apple.fileError}
-          />
+          <Alert tone="destructive" role="alert" density="compact" description={apple.fileError} />
         )}
 
         {showDropZone && (

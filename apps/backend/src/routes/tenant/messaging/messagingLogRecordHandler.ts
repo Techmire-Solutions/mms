@@ -3,27 +3,16 @@ import type { Message, MessageLogCreateDto, User } from "@mms/shared";
 import { randomUUID } from "node:crypto";
 import { getRequestTenant } from "../../../lib/tenantContext.js";
 import { canWriteMessaging } from "../../../services/rbacService.js";
-import {
-  authArtifactUserScopeKey,
-  authArtifactWorkspaceScopeKey,
-  deleteAuthArtifact,
-  findAuthArtifactByLookupKey,
-  tryClaimAuthArtifactByLookupKey,
-  updateAuthArtifactPayload,
-} from "../../../services/auth/authArtifactService.js";
 import { messagingUseCases } from "../../../messaging/use-cases/messagingUseCases.js";
 import {
   collectUnknownPersonalizationTokens,
   formatUnknownTokensMessage,
 } from "./messagingPersonalizationGuard.js";
 import {
-  MESSAGING_IDEMPOTENCY_TTL_MS,
-  type MessagingIdempotencyPayload,
-  idempotencyBodyMatches,
+  type MessagingRecordLogsPayload,
   messagingDispatchBodyDigest,
-  messagingIdempotencyLookupKey,
   resolveIdempotencyKey,
-  waitForCompletedIdempotency,
+  withMessagingIdempotency,
 } from "./messagingLogIdempotency.js";
 
 function normalizeDispatchLogs(user: User, logs: MessageLogCreateDto[]): Message[] {
@@ -52,6 +41,16 @@ export function findUnknownLogTokensError(logs: MessageLogCreateDto[]): string |
   return null;
 }
 
+/** Records one log batch against the use-case (shared by all idempotency paths). */
+async function runRecordMessageLogs(
+  user: User,
+  tenantSubdomain: string,
+  logs: MessageLogCreateDto[],
+): Promise<Message[]> {
+  const normalized = normalizeDispatchLogs(user, logs);
+  return messagingUseCases.recordMessageLogs(tenantSubdomain, normalized);
+}
+
 /** Processes message logs recording with idempotency handling. */
 export async function processRecordMessageLogs(
   user: User,
@@ -68,91 +67,27 @@ export async function processRecordMessageLogs(
   }
 
   const idempotencyKey = resolveIdempotencyKey(data.idempotencyKey, idempotencyHeader);
-  const bodyDigest = messagingDispatchBodyDigest(data.logs);
-  const lookupKey = idempotencyKey
-    ? messagingIdempotencyLookupKey(tenantSubdomain, user.id, idempotencyKey)
-    : undefined;
-  const scopeKey = `${authArtifactWorkspaceScopeKey(tenantSubdomain)}:${authArtifactUserScopeKey(user.id)}`;
 
   try {
-    if (lookupKey) {
-      const existing = await findAuthArtifactByLookupKey<MessagingIdempotencyPayload>(
-        "messaging_idempotency",
-        lookupKey,
-      );
-      if (existing) {
-        if (!idempotencyBodyMatches(existing.payload, bodyDigest)) {
-          return {
-            status: 409,
-            body: {
-              type: "conflict",
-              message: "Idempotency key reused with a different request body",
-            },
-          };
-        }
-        const recorded = existing.payload.recorded === null ? undefined : existing.payload.recorded;
-        if (recorded !== undefined) {
-          return { status: 200, body: { recorded } };
-        }
-        const waited = await waitForCompletedIdempotency(lookupKey, bodyDigest);
-        if (waited && "mismatch" in waited) {
-          return {
-            status: 409,
-            body: {
-              type: "conflict",
-              message: "Idempotency key reused with a different request body",
-            },
-          };
-        }
-        if (waited && "recorded" in waited) {
-          return { status: 200, body: { recorded: waited.recorded } };
-        }
-        return {
-          status: 409,
-          body: { type: "conflict", message: "Idempotent request still in progress" },
-        };
-      }
-
-      const claim = await tryClaimAuthArtifactByLookupKey<MessagingIdempotencyPayload>(
-        "messaging_idempotency",
-        { recorded: null, bodyDigest },
-        MESSAGING_IDEMPOTENCY_TTL_MS,
-        { lookupKey, scopeKey },
-      );
-      if (!claim.claimed) {
-        const waited = await waitForCompletedIdempotency(lookupKey, bodyDigest);
-        if (waited && "mismatch" in waited) {
-          return {
-            status: 409,
-            body: {
-              type: "conflict",
-              message: "Idempotency key reused with a different request body",
-            },
-          };
-        }
-        if (waited && "recorded" in waited) {
-          return { status: 200, body: { recorded: waited.recorded } };
-        }
-        return {
-          status: 409,
-          body: { type: "conflict", message: "Idempotent request still in progress" },
-        };
-      }
-
-      try {
-        const normalized = normalizeDispatchLogs(user, data.logs);
-        const recorded = await messagingUseCases.recordMessageLogs(tenantSubdomain, normalized);
-        const payload: MessagingIdempotencyPayload = { recorded: recorded.length, bodyDigest };
-        await updateAuthArtifactPayload(claim.id, payload);
-        return { status: 200, body: { recorded: recorded.length } };
-      } catch (err) {
-        await deleteAuthArtifact(claim.id).catch(() => undefined);
-        throw err;
-      }
+    if (idempotencyKey) {
+      const bodyDigest = messagingDispatchBodyDigest(data.logs);
+      const result = await withMessagingIdempotency<MessagingRecordLogsPayload, Message[]>({
+        tenantId: tenantSubdomain,
+        userId: String(user.id),
+        clientKey: idempotencyKey,
+        bodyDigest,
+        flow: {
+          claim: { recorded: null, bodyDigest },
+          complete: (recorded) => ({ recorded: recorded.length, bodyDigest }),
+          completedBody: (payload) =>
+            payload.recorded === null ? null : { recorded: payload.recorded },
+          run: () => runRecordMessageLogs(user, tenantSubdomain, data.logs),
+        },
+      });
+      return result;
     }
 
-    const normalized = normalizeDispatchLogs(user, data.logs);
-    const recorded = await messagingUseCases.recordMessageLogs(tenantSubdomain, normalized);
+    const recorded = await runRecordMessageLogs(user, tenantSubdomain, data.logs);
     return { status: 200, body: { recorded: recorded.length } };
   } catch {
     return {

@@ -5,7 +5,7 @@
 
 import React from "react";
 import { formatDate, formatDateTime, type TaskRecord } from "@mms/shared";
-import { Drawer } from "@/components/app/Drawer";
+import { DetailDrawerShell } from "@/components/app/DetailDrawerShell";
 import {
   DetailDrawerArchivedBanner,
   DetailDrawerRestoreOrEditAction,
@@ -37,7 +37,7 @@ export function TaskDetailDrawer({
   const isArchived = Boolean(task.deletedAt);
 
   return (
-    <Drawer
+    <DetailDrawerShell
       open
       onClose={onClose}
       title={task.title}
@@ -97,6 +97,6 @@ export function TaskDetailDrawer({
           </div>
         </dl>
       </div>
-    </Drawer>
+    </DetailDrawerShell>
   );
 }

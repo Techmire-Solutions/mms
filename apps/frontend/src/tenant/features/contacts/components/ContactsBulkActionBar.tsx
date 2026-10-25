@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { Users, Tag } from "lucide-react";
 import { CONTACTS_MODULE_MANIFEST, type Contact } from "@mms/shared";
-import { ModuleUniversalBulkActionBar } from "@/components/app/ModuleUniversalBulkActionBar";
+import { BulkSelectionBar } from "@/components/app/BulkSelectionBar";
 import { Button } from "@/components/ui/button";
 import { useTranslation } from "@/hooks/useTranslation";
 import { ContactsBulkTagModal } from "@/tenant/features/contacts/components/ContactsBulkTagModal";
@@ -32,7 +32,7 @@ export interface ContactsBulkActionBarProps {
   isTagPending?: boolean;
 }
 
-/** Contacts Work bulk bar — delegates core actions to ModuleUniversalBulkActionBar. */
+/** Contacts Work bulk bar — delegates core actions to BulkSelectionBar. */
 export const ContactsBulkActionBar = React.memo(function ContactsBulkActionBar({
   selectedCount,
   viewingDeleted,
@@ -58,7 +58,7 @@ export const ContactsBulkActionBar = React.memo(function ContactsBulkActionBar({
 
   return (
     <>
-      <ModuleUniversalBulkActionBar<Contact>
+      <BulkSelectionBar<Contact>
         selectedCount={selectedCount}
         viewingDeleted={viewingDeleted}
         canWrite={canWrite}

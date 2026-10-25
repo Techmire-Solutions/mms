@@ -13,7 +13,7 @@ import { Field, FormSelect } from "@/components/app/FormPrimitives";
 import { FormModal } from "@/components/app/FormModal";
 import { FormCheckboxCard } from "@/components/app/FormCheckboxCard";
 import { DatePicker } from "@/components/app/DatePicker";
-import { WarningCallout } from "@/components/app/WarningCallout";
+import { Alert } from "@/components/app/Alert";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { FORM_INPUT } from "@/components/ui/formStyles";
@@ -136,7 +136,7 @@ export function SectionOperationModal(props: SectionOperationModalProps): React.
       onSave={() => void submit()}
     >
       <div className="space-y-4 py-1 text-start">
-        <WarningCallout
+        <Alert
           density="compact"
           description={
             kind === "close" && occupied
