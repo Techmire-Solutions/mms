@@ -15,6 +15,7 @@ export interface TasksWorkDirectoryProps {
   selectedIds: string[];
   viewingDeleted: boolean;
   canWrite: boolean;
+  canComplete?: boolean;
   canDelete: boolean;
   isLoading: boolean;
   isColumnVisible: (key: string) => boolean;
@@ -36,6 +37,7 @@ export function TasksWorkDirectory({
   selectedIds,
   viewingDeleted,
   canWrite,
+  canComplete,
   canDelete,
   isLoading,
   isColumnVisible,
@@ -50,6 +52,8 @@ export function TasksWorkDirectory({
   onUpdateStatus,
   emptyAction,
 }: TasksWorkDirectoryProps): React.JSX.Element {
+  const resolvedCanComplete = canComplete ?? canWrite;
+
   if (viewMode === "cards") {
     return (
       <TasksListCards
@@ -57,6 +61,7 @@ export function TasksWorkDirectory({
         selectedIds={selectedIds}
         viewingDeleted={viewingDeleted}
         canWrite={canWrite}
+        canComplete={resolvedCanComplete}
         canDelete={canDelete}
         isLoading={isLoading}
         isColumnVisible={isColumnVisible}
@@ -78,6 +83,7 @@ export function TasksWorkDirectory({
       selectedIds={selectedIds}
       viewingDeleted={viewingDeleted}
       canWrite={canWrite}
+      canComplete={resolvedCanComplete}
       canDelete={canDelete}
       isLoading={isLoading}
       isColumnVisible={isColumnVisible}

@@ -8,6 +8,8 @@ import { TASK_STATUSES, type TaskRecord, type TaskStatus } from "@mms/shared";
 import { WorkTaskToolbar } from "@/components/common/work/WorkTaskToolbar";
 import { useWorkDirectoryViewMode } from "@/hooks/useWorkDirectoryViewMode";
 import { useTranslation } from "@/hooks/useTranslation";
+import { notify } from "@/lib/notify";
+import { useBulkDeleteTasks, useBulkRestoreTasks } from "@/tenant/hooks/collections/tasks";
 import { useTasksColumnLayout } from "../hooks/useTasksColumnLayout";
 import { TaskDetailDrawer } from "./TaskDetailDrawer";
 import { TasksBulkActionBar } from "./TasksBulkActionBar";
@@ -17,6 +19,7 @@ export interface TasksWorkTabProps {
   tasks: TaskRecord[];
   isLoading: boolean;
   canWrite: boolean;
+  canComplete?: boolean;
   canDelete: boolean;
   viewingDeleted?: boolean;
   selectedIds: string[];
@@ -35,6 +38,7 @@ export function TasksWorkTab({
   tasks,
   isLoading,
   canWrite,
+  canComplete,
   canDelete,
   viewingDeleted = false,
   selectedIds,
@@ -62,6 +66,39 @@ export function TasksWorkTab({
     resetColumnLayout,
     customizerLabels,
   } = useTasksColumnLayout();
+
+  const bulkDeleteMutation = useBulkDeleteTasks();
+  const bulkRestoreMutation = useBulkRestoreTasks();
+
+  const handleBulkDelete = () => {
+    if (!selectedIds.length) return;
+    const targets = [...selectedIds];
+    bulkDeleteMutation.mutate(targets, {
+      onSuccess: ({ deletedIds }) => {
+        onClearSelection();
+        notify.archivedWithUndo(t("common.recordArchived"), () => {
+          void bulkRestoreMutation.mutateAsync(deletedIds);
+        });
+      },
+      onError: (err) => {
+        notify.error(err instanceof Error ? err.message : t("tasks.deleteFailed"));
+      },
+    });
+  };
+
+  const handleBulkRestore = () => {
+    if (!selectedIds.length) return;
+    const targets = [...selectedIds];
+    bulkRestoreMutation.mutate(targets, {
+      onSuccess: () => {
+        onClearSelection();
+        notify.success(t("tasks.restored"));
+      },
+      onError: (err) => {
+        notify.error(err instanceof Error ? err.message : t("tasks.restoreFailed"));
+      },
+    });
+  };
 
   const filteredTasks = useMemo(() => {
     const q = search.trim().toLowerCase();
@@ -124,15 +161,8 @@ export function TasksWorkTab({
         viewingDeleted={viewingDeleted}
         canDelete={canDelete}
         onClearSelection={onClearSelection}
-        onRequestBulkDelete={() => {
-          for (const id of selectedIds) onDelete(id);
-          onClearSelection();
-        }}
-        onRequestBulkRestore={() => {
-          if (!onRestore) return;
-          for (const id of selectedIds) onRestore(id);
-          onClearSelection();
-        }}
+        onRequestBulkDelete={handleBulkDelete}
+        onRequestBulkRestore={handleBulkRestore}
       />
 
       <TasksWorkDirectory
@@ -141,6 +171,7 @@ export function TasksWorkTab({
         selectedIds={selectedIds}
         viewingDeleted={viewingDeleted}
         canWrite={canWrite}
+        canComplete={canComplete ?? canWrite}
         canDelete={canDelete}
         isLoading={isLoading}
         isColumnVisible={isColumnVisible}

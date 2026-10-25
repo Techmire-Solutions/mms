@@ -19,6 +19,7 @@ export interface TaskCardItemProps {
   selectedIds: string[];
   viewingDeleted: boolean;
   canWrite: boolean;
+  canComplete?: boolean;
   canDelete: boolean;
   isColumnVisible: (key: string) => boolean;
   onToggleSelected: (id: string, checked: boolean) => void;
@@ -36,6 +37,7 @@ export function TaskCardItem({
   selectedIds,
   viewingDeleted,
   canWrite,
+  canComplete,
   canDelete,
   isColumnVisible,
   onToggleSelected,
@@ -104,7 +106,7 @@ export function TaskCardItem({
               <TaskStatusBadge
                 status={task.status}
                 onClick={
-                  canWrite && !viewingDeleted
+                  (canComplete ?? canWrite) && !viewingDeleted
                     ? () => onUpdateStatus(task.id, TASK_NEXT_STATUS[task.status] || "todo")
                     : undefined
                 }

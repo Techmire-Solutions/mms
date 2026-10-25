@@ -55,6 +55,7 @@ test.describe.serial("Tenant Operations & Module Flows E2E", { tag: "@local-only
       "/messaging",
       "/users",
       "/accounting",
+      "/tasks",
     ] as const) {
       await assertModuleTierSmoke(page, modulePath, credentials.tenantOrigin);
     }

@@ -20,6 +20,7 @@ export interface TasksListDesktopTableProps {
   selectedIds: string[];
   viewingDeleted: boolean;
   canWrite: boolean;
+  canComplete?: boolean;
   canDelete: boolean;
   isLoading: boolean;
   isColumnVisible?: (key: string) => boolean;
@@ -40,6 +41,7 @@ export function TasksListDesktopTable({
   selectedIds,
   viewingDeleted,
   canWrite,
+  canComplete,
   canDelete,
   isLoading,
   isColumnVisible,
@@ -66,12 +68,18 @@ export function TasksListDesktopTable({
 
   const columns = useMemo(
     () =>
-      buildTasksWorkBatchColumns(t, canWrite && !viewingDeleted, handleCycleStatus, onView, {
-        isColumnVisible,
-        getColumnWidth,
-      }),
+      buildTasksWorkBatchColumns(
+        t,
+        (canComplete ?? canWrite) && !viewingDeleted,
+        handleCycleStatus,
+        onView,
+        {
+          isColumnVisible,
+          getColumnWidth,
+        },
+      ),
     // eslint-disable-next-line react-hooks/exhaustive-deps -- handleCycleStatus is derived from the already-listed `viewingDeleted`; adding it (or its unstable onUpdateStatus dep) would rebuild the columns on every render.
-    [t, canWrite, viewingDeleted, onView, isColumnVisible, getColumnWidth],
+    [t, canComplete, canWrite, viewingDeleted, onView, isColumnVisible, getColumnWidth],
   );
 
   const pageCountLabel = formatDirectoryPageCountLabel(tasks.length, t, {

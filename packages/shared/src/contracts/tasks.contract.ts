@@ -1,5 +1,6 @@
 import { initContract } from "@ts-rest/core";
 import { z } from "zod";
+import { bulkStringIdsBodySchema } from "../schemas/api.dto.js";
 import {
   taskInsertSchema,
   taskListQuerySchema,
@@ -98,5 +99,19 @@ export const tasksContract = c.router({
     body: z.unknown().optional(),
     responses: { 200: ok, 403: errorResponse, 404: errorResponse },
     summary: "Restore a soft-deleted task",
+  },
+  bulkDelete: {
+    method: "POST",
+    path: "/api/tasks/bulk-delete",
+    body: bulkStringIdsBodySchema,
+    responses: { 200: ok, 400: errorResponse, 403: errorResponse },
+    summary: "Soft-delete multiple tasks",
+  },
+  bulkRestore: {
+    method: "POST",
+    path: "/api/tasks/bulk-restore",
+    body: bulkStringIdsBodySchema,
+    responses: { 200: ok, 400: errorResponse, 403: errorResponse },
+    summary: "Restore multiple soft-deleted tasks",
   },
 });

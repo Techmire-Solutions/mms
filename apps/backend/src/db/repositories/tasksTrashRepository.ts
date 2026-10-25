@@ -102,12 +102,64 @@ export async function bulkRestoreTasks(
   ids: string[],
   actorUserId: string,
 ): Promise<{ restoredIds: string[] }> {
-  const restoredIds: string[] = [];
-  for (const id of ids.slice(0, 500)) {
-    const restored = await restoreTask(tenant, id, actorUserId);
-    if (restored) restoredIds.push(id);
-  }
-  return { restoredIds };
+  return withTenant(tenant, async (tx) => {
+    await lockFacultyHierarchy(tx, tenant);
+    const restoredIds: string[] = [];
+    const now = new Date();
+    for (const id of ids.slice(0, 500)) {
+      const [current] = await tx
+        .select({ parentTaskId: tasks.parentTaskId })
+        .from(tasks)
+        .where(
+          and(eq(tasks.workspaceSubdomain, tenant), eq(tasks.id, id), isNotNull(tasks.deletedAt)),
+        );
+      if (!current) continue;
+      if (current.parentTaskId) {
+        const [parent] = await tx
+          .select({ id: tasks.id })
+          .from(tasks)
+          .where(
+            and(
+              eq(tasks.workspaceSubdomain, tenant),
+              eq(tasks.id, current.parentTaskId),
+              isNull(tasks.deletedAt),
+            ),
+          )
+          .limit(1);
+        if (!parent) continue;
+      }
+      await tx
+        .update(tasks)
+        .set({
+          deletedAt: null,
+          deletedBy: null,
+          deletionReason: null,
+          restoredAt: now,
+          restoredBy: actorUserId,
+          updatedAt: now,
+        })
+        .where(
+          and(eq(tasks.workspaceSubdomain, tenant), eq(tasks.id, id), isNotNull(tasks.deletedAt)),
+        );
+      await recordModernAuditEvent(tx, {
+        workspaceSubdomain: tenant,
+        tableName: "tasks",
+        recordId: id,
+        actionType: "RESTORE",
+        realUserId: actorUserId,
+      });
+      await emitOutboxEvent(tx, "entity.restored", {
+        entityType: "tasks",
+        entityId: id,
+        tenantId: tenant,
+        restoredAt: now.toISOString(),
+        restoredBy: actorUserId,
+        version: now.getTime(),
+      });
+      restoredIds.push(id);
+    }
+    return { restoredIds };
+  });
 }
 
 /** Soft-delete multiple tasks; skips rows with active subtasks. */

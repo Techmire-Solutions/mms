@@ -38,11 +38,12 @@ export function TaskFormAssigneePicker({
           if (facultyId) onAddAssignee(facultyId);
         }}
         placeholder={t("tasks.noAssignees")}
+        searchable
         options={eligibleList
           .filter((item) => !selectedAssignees.some((a) => a.facultyId === item.facultyId))
           .map((f) => ({
             value: f.facultyId,
-            label: `${f.name}${f.isSelf ? " • Self" : ""}`,
+            label: `${f.name}${f.departmentName ? ` (${f.departmentName})` : ""}${f.isSelf ? " • Self" : ""}`,
           }))}
       />
 

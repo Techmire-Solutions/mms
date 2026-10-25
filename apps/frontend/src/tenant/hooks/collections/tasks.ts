@@ -18,6 +18,8 @@ export {
   useUpdateTaskStatus,
   useDeleteTask,
   useRestoreTask,
+  useBulkDeleteTasks,
+  useBulkRestoreTasks,
   useEligibleTaskAssignees,
   useTaskSettings,
   useUpdateTaskSettings,

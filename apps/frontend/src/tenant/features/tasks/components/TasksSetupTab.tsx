@@ -1,9 +1,8 @@
 import React, { useState, useEffect } from "react";
 import { Bell, Save, UserCheck } from "lucide-react";
-import { type TaskSettings, DEFAULT_TASK_SETTINGS, type DelegationScope } from "@mms/shared";
+import { type TaskSettings, DEFAULT_TASK_SETTINGS } from "@mms/shared";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
-import { RadioGroup, RadioGroupItem } from "@/components/app/RadioGroup";
 import { useTranslation } from "@/hooks/useTranslation";
 import { useTaskSettings, useUpdateTaskSettings } from "@/tenant/hooks/collections/tasks";
 import { notify } from "@/lib/notify";
@@ -53,49 +52,14 @@ export function TasksSetupTab({
       <div className="rounded-lg border border-border bg-card p-5 shadow-xs space-y-5">
         <div>
           <h3 className="font-semibold text-base text-foreground mb-1 text-wrap-balance">
-            {t("tasks.setup.delegationScope")}
+            {t("tasks.setup.allowSelfAssignment")}
           </h3>
           <p className="text-xs text-muted-foreground text-wrap-pretty">
-            {t("tasks.setup.delegationScopeDesc")}
+            {t("tasks.setup.allowSelfAssignmentDesc")}
           </p>
         </div>
 
-        <RadioGroup
-          value={settings.delegationScope}
-          onValueChange={(val) =>
-            setSettings({ ...settings, delegationScope: val as DelegationScope })
-          }
-          disabled={!canEditSetup || isLoading}
-          className="space-y-3"
-        >
-          {(["descendants", "direct_reports"] as const).map((scope) => (
-            <label
-              key={scope}
-              htmlFor={`scope-${scope}`}
-              className="flex items-start gap-3 p-3 rounded-md border border-border bg-background cursor-pointer hover:bg-muted/30 transition-colors"
-            >
-              <RadioGroupItem id={`scope-${scope}`} value={scope} className="mt-0.5" />
-              <div>
-                <div className="text-sm font-medium text-foreground">
-                  {t(
-                    scope === "descendants"
-                      ? "tasks.setup.descendants"
-                      : "tasks.setup.directReports",
-                  )}
-                </div>
-                <div className="text-xs text-muted-foreground">
-                  {t(
-                    scope === "descendants"
-                      ? "tasks.setup.descendantsDesc"
-                      : "tasks.setup.directReportsDesc",
-                  )}
-                </div>
-              </div>
-            </label>
-          ))}
-        </RadioGroup>
-
-        <div className="border-t border-border pt-4 space-y-4">
+        <div className="space-y-4">
           <div className="flex items-center justify-between gap-3">
             <div className="flex items-center gap-2">
               <UserCheck className="h-4 w-4 text-muted-foreground" aria-hidden />
@@ -164,7 +128,7 @@ export function TasksSetupTab({
         </div>
 
         {canEditSetup ? (
-          <div className="pt-2 flex items-center justify-end gap-2">
+          <div className="pt-2 flex items-center justify-end gap-2 border-t border-border">
             <Button
               type="button"
               className="min-h-11 gap-1.5"
