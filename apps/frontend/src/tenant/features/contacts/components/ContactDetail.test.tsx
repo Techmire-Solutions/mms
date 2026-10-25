@@ -4,8 +4,8 @@ import { renderToStaticMarkup } from "react-dom/server";
 import type { Contact } from "@mms/shared";
 import { ContactDetail } from "./ContactDetail";
 
-vi.mock("@/components/app/Drawer", () => ({
-  Drawer: ({
+vi.mock("@/components/app/DetailDrawerShell", () => ({
+  DetailDrawerShell: ({
     title,
     children,
     headerActions,
@@ -59,7 +59,7 @@ vi.mock("@/tenant/features/contacts/hooks/useContactDetailAttachments", () => ({
 }));
 
 vi.mock("@/tenant/features/contacts/components/detail/ContactDetailDrawerContent", () => ({
-  ContactDetailDrawerContent: () => <div data-testid="drawer-content">Drawer Content</div>,
+  ContactDetailDrawerContent: () => <div data-testid="drawer-content">DetailDrawerShell Content</div>,
 }));
 
 vi.mock("@/hooks/useTranslation", () => ({
@@ -86,6 +86,6 @@ describe("ContactDetail Component", () => {
     );
 
     expect(html).toContain("Zayd Harith");
-    expect(html).toContain("Drawer Content");
+    expect(html).toContain("DetailDrawerShell Content");
   });
 });

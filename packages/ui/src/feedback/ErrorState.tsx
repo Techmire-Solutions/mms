@@ -1,6 +1,6 @@
 import React from "react";
 import { AlertTriangle, RefreshCw, WifiOff } from "lucide-react";
-import { FeedbackStateLayout } from "./FeedbackStateLayout";
+import { LoadingState } from "./LoadingState";
 import { Button } from "../button/Button";
 import { cn } from "../utils";
 
@@ -57,7 +57,7 @@ export function ErrorState({
   const Icon = stateConfig.icon;
 
   return (
-    <FeedbackStateLayout
+    <LoadingState
       role="alert"
       title={title || stateConfig.title}
       description={description}

@@ -94,7 +94,7 @@ export function useMessagingTableColumns({
               )}
               {smsSegments && (
                 <span className="text-2xs font-mono text-muted-foreground bg-muted/60 px-1 py-0.5 rounded-md">
-                  {smsSegments.totalSegments} {smsSegments.totalSegments === 1 ? "seg" : "segs"}
+                  {t("messaging.smsSegmentBadge", { count: smsSegments.totalSegments })}
                 </span>
               )}
               <StatusBadge status={log.status || "sent"} size="sm" config={logStatusConfig} />

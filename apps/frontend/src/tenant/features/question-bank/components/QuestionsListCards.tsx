@@ -1,6 +1,6 @@
 import type { JSX } from "react";
 import type { QuestionBankQuestion as Question } from "@mms/shared";
-import { EntityCardsGrid } from "@/components/app/EntityCardsGrid";
+import { ModuleDirectoryCards } from "@/components/app/ModuleDirectoryCards";
 import type { StatusBadgeConfigItem } from "@/components/app/StatusBadge";
 import { useReducedMotion } from "@/hooks/useReducedMotion";
 import { useTranslation } from "@/hooks/useTranslation";
@@ -62,7 +62,7 @@ export function QuestionsListCards({
   });
 
   return (
-    <EntityCardsGrid
+    <ModuleDirectoryCards
       items={questions}
       selectedIds={selectedIds}
       onSelectAll={canDelete ? () => onToggleSelectAll(!allVisibleSelected) : undefined}

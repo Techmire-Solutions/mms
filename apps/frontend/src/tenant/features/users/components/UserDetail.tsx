@@ -9,7 +9,7 @@ import {
 import { useTranslation } from "@/hooks/useTranslation";
 import { useGlobalSettings } from "@/tenant/hooks/useGlobalSettings";
 import { useWorkspaceRoles } from "@/tenant/hooks/useWorkspaceRoles";
-import { Drawer } from "@/components/app/Drawer";
+import { DetailDrawerShell } from "@/components/app/DetailDrawerShell";
 import {
   DetailDrawerArchivedBanner,
   DetailDrawerRestoreOrEditAction,
@@ -81,7 +81,7 @@ export function UserDetail({
 
   return (
     <>
-      <Drawer
+      <DetailDrawerShell
         onClose={onClose}
         title={user.name}
         subtitle={isArchived ? t("users.detail.archivedSubtitle") : user.email}
@@ -121,7 +121,7 @@ export function UserDetail({
           onVerifyEmail={() => void handleVerifyEmail()}
           verifyEmailPending={verifyEmailMutation.isPending}
         />
-      </Drawer>
+      </DetailDrawerShell>
 
       <TenantMessageComposerLauncher
         messagingTarget={messagingTarget}

@@ -1,7 +1,7 @@
 import { SectionCard } from "@/components/app/SectionCard";
 import { ProgressBar } from "@/components/app/ProgressBar";
 import { ReportChartCard } from "@/tenant/components/moduleReports";
-import { WarningCallout } from "@/components/app/WarningCallout";
+import { Alert } from "@/components/app/Alert";
 import { motion } from "framer-motion";
 import {
   BarChart,
@@ -52,7 +52,7 @@ export function PerformanceAnalyticsPanels({
     <div className="space-y-6">
       {weakAreas.length > 0 && (
         <motion.div initial={{ opacity: 0, y: -6 }} animate={{ opacity: 1, y: 0 }}>
-          <WarningCallout
+          <Alert
             title={t("questionBank.analytics.weakAreas")}
             className="items-start p-4"
             role="alert"
@@ -76,7 +76,7 @@ export function PerformanceAnalyticsPanels({
                 </div>
               ))}
             </div>
-          </WarningCallout>
+          </Alert>
         </motion.div>
       )}
 

@@ -1,6 +1,6 @@
 import { useEffect } from "react";
 import { FormModal } from "@/components/app/FormModal";
-import { WarningCallout } from "@/components/app/WarningCallout";
+import { Alert } from "@/components/app/Alert";
 import { useTranslation } from "@/hooks/useTranslation";
 import type {
   MessageTemplate,
@@ -101,7 +101,7 @@ export function MessageComposer(props: MessageComposerProps): React.JSX.Element 
           <>
             <p className="text-xs leading-relaxed text-muted-foreground">{model.note}</p>
             {dispatch.pendingAudit ? (
-              <WarningCallout density="compact" description={t("messaging.pendingAuditHint")} />
+              <Alert density="compact" description={t("messaging.pendingAuditHint")} />
             ) : null}
             <MessageComposerDispatchControls
               skippedCount={dispatch.skippedRecipients.length}

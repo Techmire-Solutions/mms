@@ -3,7 +3,7 @@ import { Link } from "react-router-dom";
 import { Lock, PackageX, PowerOff, RefreshCw, ShieldAlert, type LucideIcon } from "lucide-react";
 import type { AppTranslationKey, ModuleAccessDenialCode } from "@mms/shared";
 import { Button } from "@/components/ui/button";
-import { FeedbackStateLayout } from "@/components/app/FeedbackStateLayout";
+import { LoadingState } from "@/components/app/LoadingState";
 import { ROUTES } from "@/lib/config/routes";
 import { useTranslation } from "@/hooks/useTranslation";
 
@@ -66,7 +66,7 @@ export function ModuleAccessDeniedState({
   ) : undefined;
 
   return (
-    <FeedbackStateLayout
+    <LoadingState
       role={onRetry ? "alert" : "status"}
       title={t(titleKey)}
       description={t(descriptionKey)}

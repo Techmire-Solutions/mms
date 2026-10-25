@@ -1,6 +1,6 @@
 import React from "react";
 import type { ModuleColumnRegistryEntry, Student } from "@mms/shared";
-import { DirectoryCard } from "@/components/app/DirectoryCard";
+import { DirectoryEntityCard } from "@/components/app/DirectoryEntityCard";
 import { ENTITY_CARD_OVERFLOW_TRIGGER_CLASS } from "@/components/app/entityCardChrome";
 import type { StatusBadgeConfigItem } from "@/components/app/StatusBadge";
 import { useTranslation } from "@/hooks/useTranslation";
@@ -32,7 +32,7 @@ export interface EnrollmentCardProps {
   openComposer: EnrollmentListContentProps["openComposer"];
 }
 
-/** Work directory card — DirectoryCard SSOT (do not hand-compose EntityCard). */
+/** Work directory card — DirectoryEntityCard SSOT (do not hand-compose EntityCard). */
 export function EnrollmentCard({
   enrollment,
   student,
@@ -59,7 +59,7 @@ export function EnrollmentCard({
   const name = studentDisplayName || enrollment.studentName;
 
   return (
-    <DirectoryCard
+    <DirectoryEntityCard
       entity={enrollment}
       selectedIds={selectedIds}
       canSelect={canSelectEnrollments}

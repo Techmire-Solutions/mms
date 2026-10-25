@@ -9,7 +9,7 @@ import type {
   ObligationDistribution,
 } from "@/lib/data/obligationsData";
 import { formatDate } from "@mms/shared";
-import { Drawer } from "@/components/app/Drawer";
+import { DetailDrawerShell } from "@/components/app/DetailDrawerShell";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import {
@@ -79,7 +79,7 @@ export const ObligationCollectionDetail = function ObligationCollectionDetail({
   });
 
   return (
-    <Drawer
+    <DetailDrawerShell
       open
       onClose={onClose}
       title={t("obligations.detail.title")}
@@ -174,6 +174,6 @@ export const ObligationCollectionDetail = function ObligationCollectionDetail({
           }
         }}
       />
-    </Drawer>
+    </DetailDrawerShell>
   );
 };

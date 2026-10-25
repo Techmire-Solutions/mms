@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Field, FieldErrorMessage } from "@/components/app/FormField";
 import { FORM_ERROR_BOX } from "@/components/ui/formStyles";
-import { WarningCallout } from "@/components/app/WarningCallout";
+import { Alert } from "@/components/app/Alert";
 import type { TranslationFunction } from "@/lib/contexts/TranslationContext";
 
 export interface GoogleContactsSetupHintProps {
@@ -13,7 +13,7 @@ export interface GoogleContactsSetupHintProps {
 
 export function GoogleContactsSetupHint({ t }: GoogleContactsSetupHintProps): React.JSX.Element {
   return (
-    <WarningCallout
+    <Alert
       icon={AlertCircle}
       density="compact"
       role="status"

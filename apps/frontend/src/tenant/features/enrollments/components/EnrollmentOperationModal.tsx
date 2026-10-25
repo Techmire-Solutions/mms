@@ -13,7 +13,7 @@ import {
 import { Field } from "@/components/app/FormPrimitives";
 import { FormModal } from "@/components/app/FormModal";
 import { DatePicker } from "@/components/app/DatePicker";
-import { WarningCallout } from "@/components/app/WarningCallout";
+import { Alert } from "@/components/app/Alert";
 import { Textarea } from "@/components/ui/textarea";
 import { FORM_INPUT } from "@/components/ui/formStyles";
 import {
@@ -155,7 +155,7 @@ export function EnrollmentOperationModal(props: EnrollmentOperationModalProps): 
     >
       <div className="space-y-4 py-1 text-start">
         {config.callout ? (
-          <WarningCallout density="compact" description={t(config.callout)} />
+          <Alert density="compact" description={t(config.callout)} />
         ) : null}
         {config.picker ? (
           <div className="grid gap-4 sm:grid-cols-3">

@@ -1,6 +1,6 @@
 import { Loader2, Save } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { WarningCallout } from "@/components/app/WarningCallout";
+import { Alert } from "@/components/app/Alert";
 import { cn } from "@/lib/utils";
 import { useUnsavedChangesGuard } from "@/hooks/useUnsavedChangesGuard";
 
@@ -48,7 +48,7 @@ export function ModuleSetupSaveFooter({
   return (
     <>
       {dirty && unsavedWarning ? (
-        <WarningCallout role="alert" density="banner" description={unsavedWarning} />
+        <Alert role="alert" density="banner" description={unsavedWarning} />
       ) : null}
 
       <footer

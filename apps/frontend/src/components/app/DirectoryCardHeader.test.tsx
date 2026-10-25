@@ -1,12 +1,12 @@
 import React from "react";
 import { describe, expect, it, vi } from "vitest";
 import { renderToStaticMarkup } from "react-dom/server";
-import { EntityCardHeader } from "./EntityCardHeader";
+import { DirectoryCardHeader } from "./DirectoryCardHeader";
 
-describe("EntityCardHeader Component", () => {
+describe("DirectoryCardHeader Component", () => {
   it("renders display name, avatar initials, and subtitle", () => {
     const html = renderToStaticMarkup(
-      <EntityCardHeader
+      <DirectoryCardHeader
         id="dir-1"
         displayName="Muhammad Ali"
         gender="male"
@@ -25,7 +25,7 @@ describe("EntityCardHeader Component", () => {
 
   it("renders clickable button when onView and viewAriaLabel are supplied", () => {
     const html = renderToStaticMarkup(
-      <EntityCardHeader
+      <DirectoryCardHeader
         id="dir-2"
         displayName="Fatima Zahra"
         gender="female"
@@ -43,7 +43,7 @@ describe("EntityCardHeader Component", () => {
 
   it("omits checkbox when showSelect is false", () => {
     const html = renderToStaticMarkup(
-      <EntityCardHeader
+      <DirectoryCardHeader
         id="dir-3"
         displayName="Ali Raza"
         isSelected={false}
@@ -58,7 +58,7 @@ describe("EntityCardHeader Component", () => {
 
   it("omits hover scale motion class when reducedMotion is true", () => {
     const html = renderToStaticMarkup(
-      <EntityCardHeader
+      <DirectoryCardHeader
         id="dir-4"
         displayName="Zainab"
         isSelected={false}

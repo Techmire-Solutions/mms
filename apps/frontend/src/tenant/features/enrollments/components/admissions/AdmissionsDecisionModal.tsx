@@ -5,7 +5,7 @@ import { Field } from "@/components/app/FormPrimitives";
 import { FormModal } from "@/components/app/FormModal";
 import { Textarea } from "@/components/ui/textarea";
 import { ToggleRow } from "@shared/ui";
-import { WarningCallout } from "@/components/app/WarningCallout";
+import { Alert } from "@/components/app/Alert";
 import { useTranslation } from "@/hooks/useTranslation";
 
 export type AdmissionsDecision = RegistrationReview["decision"];
@@ -77,7 +77,7 @@ export function AdmissionsDecisionModal({
     >
       <div className="space-y-3 py-1 text-start">
         {decision === "approve" && ineligible > 0 ? (
-          <WarningCallout
+          <Alert
             title={t("enrollments.admissions.ineligibleWarning", { count: ineligible })}
           />
         ) : null}

@@ -5,7 +5,7 @@
 import React, { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { GraduationCap, Wallet, UserCheck, Link2, History, Award } from "lucide-react";
-import { Drawer } from "@/components/app/Drawer";
+import { DetailDrawerShell } from "@/components/app/DetailDrawerShell";
 import {
   DetailDrawerRestoreOrEditAction,
   DrawerSyncStatusFooter,
@@ -118,7 +118,7 @@ export const SessionDetail = function SessionDetail({
   );
 
   return (
-    <Drawer
+    <DetailDrawerShell
       onClose={onClose}
       title={session.name}
       subtitle={
@@ -198,7 +198,7 @@ export const SessionDetail = function SessionDetail({
           </AnimatePresence>
         )}
       </div>
-    </Drawer>
+    </DetailDrawerShell>
   );
 };
 

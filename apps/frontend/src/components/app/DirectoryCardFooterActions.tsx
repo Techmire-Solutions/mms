@@ -1,10 +1,10 @@
 import React, { type ReactNode } from "react";
-import { EntityCardViewButton } from "@/components/app/EntityCardViewButton";
+import { DirectoryCardViewButton } from "@/components/app/DirectoryCardViewButton";
 import { useTranslation } from "@/hooks/useTranslation";
 import { EntityCard } from "@/components/app/EntityCard";
 
 export interface EntityCardFooterActionsProps {
-  /** Optional view callback; when present, renders standard EntityCardViewButton. */
+  /** Optional view callback; when present, renders standard DirectoryCardViewButton. */
   onView?: () => void;
   /** Optional label for view button; defaults to t("contacts.actionViewShort"). */
   viewLabel?: string;
@@ -24,7 +24,7 @@ export interface EntityCardFooterActionsProps {
  * Standardized Work-directory card footer actions.
  * Enforces uniform View button + overflow menu trigger layout with WCAG 44px touch targets.
  */
-export const EntityCardFooterActions = React.memo(function EntityCardFooterActions({
+export const DirectoryCardFooterActions = React.memo(function DirectoryCardFooterActions({
   onView,
   viewLabel,
   viewAriaLabel,
@@ -42,7 +42,7 @@ export const EntityCardFooterActions = React.memo(function EntityCardFooterActio
       trailing={
         <>
           {onView ? (
-            <EntityCardViewButton
+            <DirectoryCardViewButton
               label={label}
               ariaLabel={viewAriaLabel ?? label}
               onClick={onView}

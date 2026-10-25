@@ -3,7 +3,7 @@ import { motion } from "framer-motion";
 import { useVirtualizer } from "@tanstack/react-virtual";
 import { useReducedMotion } from "@/hooks/useReducedMotion";
 import { useTranslation } from "@/hooks/useTranslation";
-import { EntityCardsSelectAllBar } from "@/components/app/EntityCardsSelectAllBar";
+import { DirectoryCardsSelectAllBar } from "@/components/app/DirectoryCardsSelectAllBar";
 import { cn } from "@/lib/utils";
 
 const containerVariants = {
@@ -45,7 +45,7 @@ export interface EntityCardsGridProps<T = unknown> {
  * Universal Directory Cards Grid primitive supporting responsive column counts,
  * optional large-dataset virtualization, and select-all bar integration.
  */
-export function EntityCardsGrid<T = unknown>({
+export function ModuleDirectoryCards<T = unknown>({
   children,
   className,
   cols = 2,
@@ -101,7 +101,7 @@ export function EntityCardsGrid<T = unknown>({
   return (
     <>
       {onSelectAll && items.length > 0 ? (
-        <EntityCardsSelectAllBar
+        <DirectoryCardsSelectAllBar
           checkboxId={`${checkboxIdPrefix}-select-all`}
           allSelected={allSelected}
           someSelected={someSelected}

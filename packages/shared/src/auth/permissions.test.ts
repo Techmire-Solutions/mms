@@ -46,8 +46,10 @@ describe("roleHasPermission", () => {
 
   it("grants dedicated messaging permissions by role", () => {
     expect(roleHasPermission("admin", "messaging.clearLogs")).toBe(true);
+    expect(roleHasPermission("admin", "messaging.restoreLogs")).toBe(true);
     expect(roleHasPermission("teacher", "messaging.write")).toBe(true);
     expect(roleHasPermission("teacher", "messaging.clearLogs")).toBe(false);
+    expect(roleHasPermission("teacher", "messaging.restoreLogs")).toBe(false);
     expect(roleHasPermission("accountant", "messaging.read")).toBe(true);
     expect(roleHasPermission("accountant", "messaging.write")).toBe(false);
   });
@@ -245,7 +247,12 @@ describe("getModulePermissions", () => {
     expect(financePerms).toEqual(["finance.read", "finance.write", "finance.delete"]);
 
     const messagingPerms = getModulePermissions("messaging");
-    expect(messagingPerms).toEqual(["messaging.read", "messaging.write", "messaging.clearLogs"]);
+    expect(messagingPerms).toEqual([
+      "messaging.read",
+      "messaging.write",
+      "messaging.clearLogs",
+      "messaging.restoreLogs",
+    ]);
   });
 
   it("returns empty array for unknown module", () => {

@@ -1,6 +1,6 @@
 import type { JSX } from "react";
 import type { QuestionBankQuestion as Question } from "@mms/shared";
-import { DirectoryCard } from "@/components/app/DirectoryCard";
+import { DirectoryEntityCard } from "@/components/app/DirectoryEntityCard";
 import { ENTITY_CARD_OVERFLOW_TRIGGER_CLASS } from "@/components/app/entityCardChrome";
 import type { StatusBadgeConfigItem } from "@/components/app/StatusBadge";
 import { useTranslation } from "@/hooks/useTranslation";
@@ -35,7 +35,7 @@ export interface QuestionCardProps {
   reducedMotion: boolean;
 }
 
-/** Work directory card — DirectoryCard SSOT (do not hand-compose EntityCard). */
+/** Work directory card — DirectoryEntityCard SSOT (do not hand-compose EntityCard). */
 export function QuestionCard({
   question,
   config,
@@ -66,7 +66,7 @@ export function QuestionCard({
   );
 
   return (
-    <DirectoryCard
+    <DirectoryEntityCard
       entity={question}
       selectedIds={selectedIds}
       canSelect={canDelete}
@@ -107,6 +107,6 @@ export function QuestionCard({
         visibleCustomFields={visibleCustomFields}
         t={t}
       />
-    </DirectoryCard>
+    </DirectoryEntityCard>
   );
 }

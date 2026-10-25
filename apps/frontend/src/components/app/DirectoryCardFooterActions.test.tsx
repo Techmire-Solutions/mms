@@ -1,7 +1,7 @@
 import React from "react";
 import { describe, expect, it, vi } from "vitest";
 import { renderToStaticMarkup } from "react-dom/server";
-import { EntityCardFooterActions } from "./EntityCardFooterActions";
+import { DirectoryCardFooterActions } from "./DirectoryCardFooterActions";
 
 vi.mock("@/hooks/useTranslation", () => ({
   useTranslation: () => ({
@@ -9,10 +9,10 @@ vi.mock("@/hooks/useTranslation", () => ({
   }),
 }));
 
-describe("EntityCardFooterActions", () => {
+describe("DirectoryCardFooterActions", () => {
   it("renders view button and trailing actions", () => {
     const html = renderToStaticMarkup(
-      <EntityCardFooterActions
+      <DirectoryCardFooterActions
         onView={vi.fn()}
         viewLabel="View Profile"
         viewAriaLabel="View Profile - Student"
@@ -27,7 +27,7 @@ describe("EntityCardFooterActions", () => {
 
   it("renders leading slot when provided", () => {
     const html = renderToStaticMarkup(
-      <EntityCardFooterActions leading={<span data-testid="leading-pill">SMS Sent</span>} />,
+      <DirectoryCardFooterActions leading={<span data-testid="leading-pill">SMS Sent</span>} />,
     );
 
     expect(html).toContain("leading-pill");
@@ -36,7 +36,7 @@ describe("EntityCardFooterActions", () => {
 
   it("renders intermediate actions slot between view button and overflowActions", () => {
     const html = renderToStaticMarkup(
-      <EntityCardFooterActions
+      <DirectoryCardFooterActions
         onView={vi.fn()}
         viewLabel="View"
         actions={<button type="button">Print</button>}

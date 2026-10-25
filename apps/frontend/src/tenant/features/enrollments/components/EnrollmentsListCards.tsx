@@ -1,6 +1,6 @@
 import React, { useMemo } from "react";
 import type { Student } from "@mms/shared";
-import { EntityCardsGrid } from "@/components/app/EntityCardsGrid";
+import { ModuleDirectoryCards } from "@/components/app/ModuleDirectoryCards";
 import { useReducedMotion } from "@/hooks/useReducedMotion";
 import { useTranslation } from "@/hooks/useTranslation";
 import { formatDirectoryPageCountLabel } from "@/lib/formatDirectoryPageCountLabel";
@@ -70,7 +70,7 @@ export function EnrollmentsListCards(props: EnrollmentListCardsProps): React.JSX
   );
 
   return (
-    <EntityCardsGrid
+    <ModuleDirectoryCards
       items={enrollments}
       selectedIds={selectedIds}
       onSelectAll={canSelectEnrollments ? () => onToggleSelectAll(!allVisibleSelected) : undefined}

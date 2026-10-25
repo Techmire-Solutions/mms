@@ -7,7 +7,7 @@ import React, { useState } from "react";
 import { Presentation } from "lucide-react";
 import { WORKSHOPS_MODULE_MANIFEST, type WorkshopEvent } from "@mms/shared";
 import { WorkTaskToolbar } from "@/components/common/work/WorkTaskToolbar";
-import { ModuleUniversalBulkActionBar } from "@/components/app/ModuleUniversalBulkActionBar";
+import { BulkSelectionBar } from "@/components/app/BulkSelectionBar";
 import { ErrorState } from "@/components/app/ErrorState";
 import { useWorkDirectoryViewMode } from "@/hooks/useWorkDirectoryViewMode";
 import { useTranslation } from "@/hooks/useTranslation";
@@ -99,7 +99,7 @@ export function WorkshopsWorkTab({
         }}
       />
 
-      <ModuleUniversalBulkActionBar
+      <BulkSelectionBar
         selectedCount={selectedIds.length}
         viewingDeleted={viewingDeleted}
         canDelete={canDelete}

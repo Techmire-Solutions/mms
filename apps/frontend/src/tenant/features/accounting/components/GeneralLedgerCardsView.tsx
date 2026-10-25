@@ -8,7 +8,7 @@ import { WORK_SURFACE } from "@/components/ui/formStyles";
 import type { TranslationFunction } from "@/lib/contexts/TranslationContext";
 import type { GeneralLedgerLineWithRunning } from "../hooks/useGeneralLedger";
 
-/** ReportMoneyCard tile (report) — not DirectoryCard. */
+/** ReportMoneyCard tile (report) — not DirectoryEntityCard. */
 export interface GeneralLedgerCardsViewProps {
   linesWithRunning: GeneralLedgerLineWithRunning[];
   totalDebit: number;

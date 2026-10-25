@@ -5,7 +5,7 @@
 
 import { CheckSquare } from "lucide-react";
 import { TASKS_MODULE_MANIFEST } from "@mms/shared";
-import { ModuleUniversalBulkActionBar } from "@/components/app/ModuleUniversalBulkActionBar";
+import { BulkSelectionBar } from "@/components/app/BulkSelectionBar";
 
 export interface TasksBulkActionBarProps {
   selectedCount: number;
@@ -17,7 +17,7 @@ export interface TasksBulkActionBarProps {
   bulkActions?: readonly string[];
 }
 
-/** Tasks Work bulk bar — thin adapter delegating to shared ModuleUniversalBulkActionBar. */
+/** Tasks Work bulk bar — thin adapter delegating to shared BulkSelectionBar. */
 export function TasksBulkActionBar({
   selectedCount,
   viewingDeleted,
@@ -28,7 +28,7 @@ export function TasksBulkActionBar({
   bulkActions = TASKS_MODULE_MANIFEST.work.bulkActions,
 }: TasksBulkActionBarProps): React.JSX.Element | null {
   return (
-    <ModuleUniversalBulkActionBar
+    <BulkSelectionBar
       selectedCount={selectedCount}
       viewingDeleted={viewingDeleted}
       canDelete={canDelete}

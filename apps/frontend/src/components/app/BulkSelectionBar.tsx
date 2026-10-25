@@ -8,7 +8,7 @@ import type { StatusBadgeConfigItem } from "@/components/app/StatusBadge";
 import { useTranslation } from "@/hooks/useTranslation";
 import { APP_TRANSLATIONS_EN, type AppTranslationKey } from "@mms/shared";
 
-export interface ModuleUniversalBulkActionBarProps<T = unknown> {
+export interface BulkSelectionBarProps<T = unknown> {
   selectedCount: number;
   viewingDeleted: boolean;
   canWrite?: boolean;
@@ -59,7 +59,7 @@ export interface ModuleUniversalBulkActionBarProps<T = unknown> {
  * Unifies messaging channel dispatch, status badge selection, export,
  * and bulk soft-delete/restore triggers across all MMS modules.
  */
-export function ModuleUniversalBulkActionBar<T>({
+export function BulkSelectionBar<T>({
   selectedCount,
   viewingDeleted,
   canWrite = true,
@@ -85,7 +85,7 @@ export function ModuleUniversalBulkActionBar<T>({
   onSms,
   onEmail,
   extraActions,
-}: ModuleUniversalBulkActionBarProps<T>): React.JSX.Element | null {
+}: BulkSelectionBarProps<T>): React.JSX.Element | null {
   const { t } = useTranslation();
 
   if (selectedCount === 0) return null;

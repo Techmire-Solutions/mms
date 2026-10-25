@@ -5,7 +5,7 @@ import { DetailAttributeRow } from "@/components/app/DetailAttributeRow";
 import { CopyBtn } from "@/components/app/CopyButton";
 import { Mail } from "lucide-react";
 import { useTranslation } from "@/hooks/useTranslation";
-import { SEMANTIC_BG, SEMANTIC_TEXT } from "@/lib/ui/semanticTone";
+import { SEMANTIC_TEXT } from "@/lib/ui/semanticTone";
 
 export interface MessagingDetailBodyCardProps {
   log: Message;
@@ -39,7 +39,7 @@ export function MessagingDetailBodyCard({ log }: MessagingDetailBodyCardProps): 
                   segments: smsStats.totalSegments,
                   remaining: smsStats.remainingInSegment,
                 })
-              : `${log.body.length} chars`}
+              : t("messaging.charCount", { count: log.body.length })}
           </span>
           <CopyBtn
             text={log.body}
@@ -51,7 +51,7 @@ export function MessagingDetailBodyCard({ log }: MessagingDetailBodyCardProps): 
           />
         </div>
         <div
-          className={`whitespace-pre-wrap rounded bg-background/80 p-3 font-sans text-xs text-foreground border border-border/40 leading-relaxed max-h-60 overflow-y-auto selection:${SEMANTIC_BG.primary}`}
+          className="whitespace-pre-wrap rounded bg-background/80 p-3 font-sans text-xs text-foreground border border-border/40 leading-relaxed max-h-60 overflow-y-auto selection:bg-primary/20 selection:text-foreground"
         >
           {log.body}
         </div>

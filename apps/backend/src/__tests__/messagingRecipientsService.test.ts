@@ -19,6 +19,8 @@ vi.mock("../db/repositories/messagingRepository.js", () => ({
   queryFilteredMessageLogs: vi.fn(),
   queryMessagingMetrics: vi.fn(),
   softDeleteActiveMessageLogs: vi.fn(),
+  restoreArchivedMessageLog: vi.fn(),
+  deleteMessageLogsByWorkspace: vi.fn(),
 }));
 
 const mockLoadContactsByIdsForTenant = vi.fn();

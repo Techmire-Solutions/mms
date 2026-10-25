@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Field, FieldErrorMessage } from "@/components/app/FormField";
 import { FORM_ERROR_BOX } from "@/components/ui/formStyles";
-import { WarningCallout } from "@/components/app/WarningCallout";
+import { Alert } from "@/components/app/Alert";
 import type { TranslationFunction } from "@/lib/contexts/TranslationContext";
 
 export interface GoogleContactsConnectStepProps {
@@ -43,7 +43,7 @@ export function GoogleContactsConnectStep({
       </Button>
 
       {showAuthCode && (
-        <WarningCallout tone="info" density="compact" icon={Link2}>
+        <Alert tone="info" density="compact" icon={Link2}>
           <div className="space-y-2">
             <Field id="authCode" label={t("contacts.sync.pasteAuthCode")}>
               <Input
@@ -69,7 +69,7 @@ export function GoogleContactsConnectStep({
               <span>{t("contacts.sync.confirmAuth")}</span>
             </Button>
           </div>
-        </WarningCallout>
+        </Alert>
       )}
 
       <FieldErrorMessage message={!showAuthCode ? error : undefined} className={FORM_ERROR_BOX} />

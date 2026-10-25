@@ -4758,6 +4758,8 @@ export const APP_TRANSLATIONS_AR: Record<AppTranslationKey, string> = {
   "messaging.clearLogsConfirm": "أرشفة السجلات",
   "messaging.clearLogsDesc":
     "إخفاء جميع سجلات الرسائل من التقارير؟ سيتم أرشفة السجلات وإزالتها من عرض السجل.",
+  "messaging.restoreLog": "استعادة",
+  "messaging.restoredToast": "تم استعادة سجل الرسالة.",
   "messaging.clearSelection": "إلغاء التحديد",
   "messaging.columns.fixed": "ثابت",
   "messaging.columns.hidden": "مخفي",
@@ -4900,6 +4902,7 @@ export const APP_TRANSLATIONS_AR: Record<AppTranslationKey, string> = {
   "messaging.smsNoEligibleContacts": "لا تملك جهات الاتصال المحددة رقم هاتف.",
   "messaging.smsSegmentBadge": "رسالة نصية • {count} أجزاء",
   "messaging.smsSegmentStats": "{segments} أجزاء ({remaining} متبقي)",
+  "messaging.charCount": "{count} حرف",
   "messaging.someRecipientsSkipped": "تم تخطي بعض المستلمين.",
   "messaging.speed.express": "سريع (0.3 ثانية)",
   "messaging.speed.normal": "عادي (0.6 ثانية)",

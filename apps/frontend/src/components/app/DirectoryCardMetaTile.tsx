@@ -9,7 +9,7 @@ export interface EntityCardMetaTileProps {
 }
 
 /** Shared metadata tile for Work directory entity cards. */
-export const EntityCardMetaTile = function EntityCardMetaTile({
+export const DirectoryCardMetaTile = function DirectoryCardMetaTile({
   label,
   children,
   className,

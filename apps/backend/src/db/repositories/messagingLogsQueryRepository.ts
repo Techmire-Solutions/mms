@@ -258,18 +258,3 @@ export async function queryMessagingMetrics(
     };
   });
 }
-
-/** Soft-archives active message logs for a workspace in one tenant-scoped update. */
-export async function softDeleteActiveMessageLogs(workspaceSubdomain: string): Promise<void> {
-  const subdomain = workspaceSubdomain?.trim().toLowerCase();
-  if (!subdomain) return;
-  await withTenant(subdomain, async (tx) => {
-    await tx
-      .update(messageLogs)
-      .set({
-        deletedAt: new Date(),
-        updatedAt: new Date(),
-      })
-      .where(and(eq(messageLogs.workspaceSubdomain, subdomain), isNull(messageLogs.deletedAt)));
-  });
-}

@@ -1,7 +1,7 @@
 import React from "react";
 import { Archive } from "lucide-react";
 import { formatDate } from "@mms/shared";
-import { WarningCallout } from "@/components/app/WarningCallout";
+import { Alert } from "@/components/app/Alert";
 import { formatEntityStamp } from "@/lib/formatEntityStamp";
 import { useTranslation } from "@/hooks/useTranslation";
 import {
@@ -74,7 +74,7 @@ export function DetailDrawerArchivedBanner({
   if (!title && !resolvedDescription) return null;
 
   return (
-    <WarningCallout
+    <Alert
       icon={Archive}
       density="compact"
       role="status"

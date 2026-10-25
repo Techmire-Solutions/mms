@@ -4824,6 +4824,8 @@ export const APP_TRANSLATIONS_UR: Record<AppTranslationKey, string> = {
   "messaging.clearLogsConfirm": "لاگز آرکائیو کریں",
   "messaging.clearLogsDesc":
     "رپورٹس سے تمام پیغام لاگز چھپائیں؟ لاگز نرم آرکائیو ہو جائیں گے اور تاریخ کے منظر سے ہٹ جائیں گے۔",
+  "messaging.restoreLog": "بحال کریں",
+  "messaging.restoredToast": "پیغام لاگ بحال ہو گیا۔",
   "messaging.clearSelection": "انتخاب ختم کریں",
   "messaging.columns.fixed": "مقرر",
   "messaging.columns.hidden": "پوشیدہ",
@@ -4968,6 +4970,7 @@ export const APP_TRANSLATIONS_UR: Record<AppTranslationKey, string> = {
   "messaging.smsNoEligibleContacts": "منتخب رابطوں کے پاس فون نمبر نہیں ہے۔",
   "messaging.smsSegmentBadge": "ایس ایم ایس • {count} حصے",
   "messaging.smsSegmentStats": "{segments} حصے ({remaining} باقی)",
+  "messaging.charCount": "{count} حروف",
   "messaging.someRecipientsSkipped": "کچھ وصول کنندگان کو چھوڑ دیا گیا.",
   "messaging.speed.express": "تیز (0.3 سیکنڈ)",
   "messaging.speed.normal": "عام (0.6 سیکنڈ)",

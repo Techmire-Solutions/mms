@@ -19,7 +19,7 @@ export interface EntityCardsSelectAllBarProps {
 }
 
 /** Shared Work cards select-all strip (Contacts / Students SSOT). */
-export const EntityCardsSelectAllBar = React.memo(function EntityCardsSelectAllBar({
+export const DirectoryCardsSelectAllBar = React.memo(function DirectoryCardsSelectAllBar({
   checkboxId,
   allSelected,
   someSelected,

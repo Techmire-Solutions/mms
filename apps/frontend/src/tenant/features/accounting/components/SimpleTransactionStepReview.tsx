@@ -1,7 +1,7 @@
 import { quickActionLabel } from "../lib/quickActionLabels";
 import { useMemo, type Dispatch, type ReactNode, type SetStateAction } from "react";
 import { CheckCircle2, ChevronDown, ChevronUp, Pencil } from "lucide-react";
-import { WarningCallout } from "@/components/app/WarningCallout";
+import { Alert } from "@/components/app/Alert";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { SimpleTransactionPostingCards } from "./SimpleTransactionPostingCards";
@@ -180,25 +180,25 @@ export function StepReview({
 
       {/* R1: Status banner prominently outside the data table */}
       {amount === null ? (
-        <WarningCallout
+        <Alert
           tone="destructive"
           role="alert"
           title={t("accounting.journal.dashboard.wizard.errorAmountInvalid")}
         />
       ) : !debitAccount || !creditAccount ? (
-        <WarningCallout
+        <Alert
           tone="destructive"
           role="alert"
           title={t("accounting.journal.dashboard.wizard.errorSource")}
         />
       ) : debitAccount.id === creditAccount.id ? (
-        <WarningCallout
+        <Alert
           tone="destructive"
           role="alert"
           title={t("accounting.journal.dashboard.wizard.errorSameAccount")}
         />
       ) : (
-        <WarningCallout
+        <Alert
           tone="success"
           icon={CheckCircle2}
           title={t("accounting.journal.dashboard.wizard.postMessage")}

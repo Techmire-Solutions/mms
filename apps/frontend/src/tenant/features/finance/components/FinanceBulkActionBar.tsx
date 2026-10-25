@@ -2,7 +2,7 @@ import React from "react";
 import { Printer, ReceiptText } from "lucide-react";
 import { FINANCE_MODULE_MANIFEST } from "@mms/shared";
 import type { StatusBadgeConfigItem } from "@/components/app/StatusBadge";
-import { ModuleUniversalBulkActionBar } from "@/components/app/ModuleUniversalBulkActionBar";
+import { BulkSelectionBar } from "@/components/app/BulkSelectionBar";
 import { bulkActionDockActionClassName } from "@/components/app/bulkActionDockStyles";
 import { Button } from "@/components/ui/button";
 import { useTranslation } from "@/hooks/useTranslation";
@@ -21,7 +21,7 @@ export interface FinanceBulkActionBarProps {
   bulkActions?: readonly string[];
 }
 
-/** Finance invoices Work bulk bar — delegates to shared ModuleUniversalBulkActionBar. */
+/** Finance invoices Work bulk bar — delegates to shared BulkSelectionBar. */
 export function FinanceBulkActionBar({
   selectedCount,
   showDeleted,
@@ -38,7 +38,7 @@ export function FinanceBulkActionBar({
   const { t } = useTranslation();
 
   return (
-    <ModuleUniversalBulkActionBar
+    <BulkSelectionBar
       selectedCount={selectedCount}
       viewingDeleted={showDeleted}
       canDelete={canDelete}

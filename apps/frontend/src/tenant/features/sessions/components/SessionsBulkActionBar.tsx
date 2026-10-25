@@ -1,7 +1,7 @@
 import type { ReactElement } from "react";
 import { Calendar } from "lucide-react";
 import { SESSIONS_MODULE_MANIFEST } from "@mms/shared";
-import { ModuleUniversalBulkActionBar } from "@/components/app/ModuleUniversalBulkActionBar";
+import { BulkSelectionBar } from "@/components/app/BulkSelectionBar";
 import type { StatusBadgeConfigItem } from "@/components/app/StatusBadge";
 import { useTranslation } from "@/hooks/useTranslation";
 
@@ -21,7 +21,7 @@ export interface SessionsBulkActionBarProps {
   bulkActions?: readonly string[];
 }
 
-/** Sessions Work bulk bar — delegates to shared ModuleUniversalBulkActionBar. */
+/** Sessions Work bulk bar — delegates to shared BulkSelectionBar. */
 export function SessionsBulkActionBar({
   selectedCount,
   showDeleted,
@@ -40,7 +40,7 @@ export function SessionsBulkActionBar({
   const { t } = useTranslation();
 
   return (
-    <ModuleUniversalBulkActionBar
+    <BulkSelectionBar
       selectedCount={selectedCount}
       viewingDeleted={showDeleted}
       canWrite={canWrite}

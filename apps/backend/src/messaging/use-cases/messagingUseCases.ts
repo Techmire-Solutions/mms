@@ -162,6 +162,25 @@ export function createMessagingUseCases(repo: MessagingRepository = messagingRep
       await broadcastCollection("message_logs");
     },
 
+    /**
+     * Restores soft-archived message logs with actor attribution (`ids: null`
+     * restores every archived log in the workspace). Returns the restored count.
+     */
+    restoreMessageLogs: async (
+      workspaceSubdomain: string,
+      userId: string,
+      ids?: string[],
+    ): Promise<number> => {
+      const cleanIds = ids ? dedupeTrimmedIds(ids) : null;
+      const restored = await repo.restoreArchivedMessageLog(
+        workspaceSubdomain,
+        String(userId),
+        cleanIds,
+      );
+      if (restored > 0) await broadcastCollection("message_logs");
+      return restored;
+    },
+
     computeMessagingMetrics: async (
       workspaceSubdomain?: string,
       filters?: { startDate?: string; endDate?: string },

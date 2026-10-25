@@ -10,7 +10,7 @@ import { WorkBatchTable } from "@/components/common/work/WorkBatchTable";
 import { DataTableRowActions } from "@/components/common/data-table";
 import { ModuleTableFooterCount } from "@/components/app/ModuleTableFooterCount";
 import { EmptyState } from "@/components/app/EmptyState";
-import { EntityCardsGrid } from "@/components/app/EntityCardsGrid";
+import { ModuleDirectoryCards } from "@/components/app/ModuleDirectoryCards";
 import { useCurrency } from "@/hooks/useCurrency";
 import { useTranslation } from "@/hooks/useTranslation";
 import type { WorkDirectoryViewMode } from "@/hooks/useWorkDirectoryViewMode";
@@ -119,7 +119,7 @@ export function WorkshopsDirectory({
     if (!isLoading && workshops.length === 0) return empty;
     return (
       <div aria-busy={isLoading || undefined}>
-        <EntityCardsGrid
+        <ModuleDirectoryCards
           items={workshops}
           selectedIds={selectedIds}
           onSelectAll={canDelete ? () => onToggleSelectAll(!allSelected, pageIds) : undefined}

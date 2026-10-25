@@ -28,5 +28,8 @@ export type {
 export {
   queryFilteredMessageLogs,
   queryMessagingMetrics,
-  softDeleteActiveMessageLogs,
 } from "./messagingLogsQueryRepository.js";
+export {
+  softDeleteActiveMessageLogs,
+  restoreArchivedMessageLog,
+} from "./messagingLogsMutationRepository.js";

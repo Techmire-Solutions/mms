@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { useQueryClient } from "@tanstack/react-query";
 import { useSearchParams } from "react-router-dom";
 import {
@@ -21,14 +21,14 @@ import {
   useMessageTemplates,
   useMessagingMetrics,
   useMessagingMutations,
-} from "./hooks/useMessaging";
+} from "@/hooks/useMessaging";
 import { MessagingPageView } from "./components/MessagingPageView";
 
 export default function MessagingPage(): React.JSX.Element {
   const { t } = useTranslation();
   const queryClient = useQueryClient();
   const [searchParams, setSearchParams] = useSearchParams();
-  const { canRead, canWrite, canViewSetup, canEditSetup, canClearLogs } =
+  const { canRead, canWrite, canViewSetup, canEditSetup, canClearLogs, canRestoreLogs } =
     useModulePermissions(MESSAGING_MODULE_MANIFEST);
   const tabParam = searchParams.get("tab") as "work" | "reports" | "setup" | null;
   const [activeTab, setActiveTab] = usePersistedTabState<"work" | "reports" | "setup">(
@@ -38,11 +38,14 @@ export default function MessagingPage(): React.JSX.Element {
   const [channelFilter, setChannelFilter] = useState<"all" | "sms" | "whatsapp" | "email">("all");
   const [deleteTemplateId, setDeleteTemplateId] = useState<string | null>(null);
   const [confirmClearLogsOpen, setConfirmClearLogsOpen] = useState(false);
+  const [isExporting, setIsExporting] = useState(false);
+  const startingCampaignRef = useRef(false);
   const [startingCampaign, setStartingCampaign] = useState(false);
+  const exportLogsRef = useRef<(() => Promise<void>) | null>(null);
   const { messagingTarget, openComposer, closeComposer } = useMessageComposerState();
   const templatesQuery = useMessageTemplates({ enabled: canRead });
   const metricsQuery = useMessagingMetrics({ enabled: canRead });
-  const { deleteTemplate, clearLogs } = useMessagingMutations();
+  const { deleteTemplate, clearLogs, restoreLogs } = useMessagingMutations();
   const visibleTabs = useFilteredModuleTierTabs({
     canViewSetup: canViewSetup || canEditSetup,
     workLabelKey: "nav.messaging",
@@ -78,16 +81,37 @@ export default function MessagingPage(): React.JSX.Element {
 
   const startCampaign = useCallback(
     (channel: "whatsapp" | "sms" | "email" = "whatsapp"): void => {
-      if (startingCampaign) return;
+      if (startingCampaignRef.current) return;
+      startingCampaignRef.current = true;
       setStartingCampaign(true);
-      try {
-        triggerCompose(channel, []);
-      } finally {
+      triggerCompose(channel, []);
+      // Reset on the next macrotask so queued duplicate activations (double
+      // click, held shortcut) are deduped, while a deliberate channel switch
+      // after the brief guard window still works.
+      window.setTimeout(() => {
+        startingCampaignRef.current = false;
         setStartingCampaign(false);
-      }
+      }, 300);
     },
-    [startingCampaign, triggerCompose],
+    [triggerCompose],
   );
+
+  const registerExportLogs = useCallback((handler: (() => Promise<void>) | null): void => {
+    exportLogsRef.current = handler;
+  }, []);
+
+  // Header export stays a single path: it reuses the work tier's filtered
+  // server export (active search/status/category/date filters), not a parallel
+  // unfiltered copy. The work tier hook internally dedupes concurrent runs.
+  const handleExport = async (): Promise<void> => {
+    if (!canWrite || isExporting || !exportLogsRef.current) return;
+    setIsExporting(true);
+    try {
+      await exportLogsRef.current();
+    } finally {
+      setIsExporting(false);
+    }
+  };
 
   // URL Deep-Linking for auto-opening campaign launcher (?compose=whatsapp|sms|email)
   const composeParam = searchParams.get("compose");
@@ -159,6 +183,18 @@ export default function MessagingPage(): React.JSX.Element {
     }
   };
 
+  const handleRestoreLog = useCallback(
+    async (log: Message): Promise<void> => {
+      try {
+        await restoreLogs.mutateAsync([String(log.id)]);
+        notify.success(t("messaging.restoredToast"));
+      } catch {
+        // Mutation hook reports the failure.
+      }
+    },
+    [restoreLogs, t],
+  );
+
   const handleDispatchSent = (): void => {
     void metricsQuery.refetch();
     invalidateMessagingQueries(queryClient);
@@ -175,6 +211,8 @@ export default function MessagingPage(): React.JSX.Element {
       canViewSetup={canViewSetup}
       canEditSetup={canEditSetup}
       canClearLogs={canClearLogs}
+      canRestoreLogs={canRestoreLogs}
+      onRestoreLog={handleRestoreLog}
       activeTab={activeTab}
       visibleTabs={visibleTabs}
       channelFilter={channelFilter}
@@ -185,6 +223,9 @@ export default function MessagingPage(): React.JSX.Element {
       metricsQueryIsError={metricsQuery.isError}
       deleteTemplateId={deleteTemplateId}
       confirmClearLogsOpen={confirmClearLogsOpen}
+      registerExportLogs={registerExportLogs}
+      isExporting={isExporting}
+      onExport={() => void handleExport()}
       handleTabChange={handleTabChange}
       setChannelFilter={setChannelFilter}
       setDeleteTemplateId={setDeleteTemplateId}

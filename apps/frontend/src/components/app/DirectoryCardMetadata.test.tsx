@@ -1,7 +1,7 @@
 import React from "react";
 import { describe, it, expect, vi } from "vitest";
 import { renderToStaticMarkup } from "react-dom/server";
-import { EntityCardMetadata, resolveFieldLabel } from "@/components/app/EntityCardMetadata";
+import { DirectoryCardMetadata, resolveFieldLabel } from "@/components/app/DirectoryCardMetadata";
 import { createEntityDescriptor } from "@/components/common/entityRegistry";
 
 vi.mock("@/hooks/useTranslation", () => ({
@@ -19,7 +19,7 @@ const descriptor = createEntityDescriptor<{ id: string; city: string }>({
   ],
 });
 
-describe("EntityCardMetadata descriptor labels", () => {
+describe("DirectoryCardMetadata descriptor labels", () => {
   it("resolveFieldLabel prefers labelKey via t, falls back to label", () => {
     expect(resolveFieldLabel({ label: "L", labelKey: "k.demo" }, (k: string) => `t:${k}`)).toBe(
       "t:k.demo",
@@ -29,17 +29,17 @@ describe("EntityCardMetadata descriptor labels", () => {
 
   it("renders descriptor tiles with translated labelKey labels", () => {
     const html = renderToStaticMarkup(
-      <EntityCardMetadata descriptor={descriptor} entity={{ id: "1", city: "Lahore" }} />,
+      <DirectoryCardMetadata descriptor={descriptor} entity={{ id: "1", city: "Lahore" }} />,
     );
     expect(html).toContain("t:demo.city");
     expect(html).toContain("Lahore");
   });
 });
 
-describe("EntityCardMetadata merge mode", () => {
+describe("DirectoryCardMetadata merge mode", () => {
   it("renders descriptor tiles and legacy columns, deduped by key", () => {
     const html = renderToStaticMarkup(
-      <EntityCardMetadata
+      <DirectoryCardMetadata
         descriptor={descriptor}
         entity={{ id: "1", city: "Lahore" }}
         extraColumns={{

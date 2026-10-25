@@ -37,6 +37,7 @@ vi.mock("../services/workspaceService.js", async (importOriginal) => {
 const mockLoadMessageTemplates = vi.fn();
 const mockLoadFilteredMessageLogs = vi.fn();
 const mockClearAllMessageLogs = vi.fn();
+const mockRestoreMessageLogs = vi.fn();
 const mockComputeMessagingMetrics = vi.fn();
 const mockSaveMessageTemplate = vi.fn();
 const mockRemoveMessageTemplate = vi.fn();
@@ -62,6 +63,7 @@ vi.mock("../messaging/use-cases/messagingUseCases.js", () => ({
     loadFilteredMessageLogs: (...args: unknown[]) => mockLoadFilteredMessageLogs(...args),
     recordMessageLogs: (...args: unknown[]) => mockRecordMessageLogs(...args),
     clearAllMessageLogs: (...args: unknown[]) => mockClearAllMessageLogs(...args),
+    restoreMessageLogs: (...args: unknown[]) => mockRestoreMessageLogs(...args),
     computeMessagingMetrics: (...args: unknown[]) => mockComputeMessagingMetrics(...args),
     loadMessagingRecipients: (...args: unknown[]) => mockLoadMessagingRecipients(...args),
     matchMessagingRecipients: (...args: unknown[]) => mockMatchMessagingRecipients(...args),
@@ -139,6 +141,7 @@ describe("messaging REST routes", () => {
       hasMore: false,
     });
     mockClearAllMessageLogs.mockReset().mockResolvedValue(undefined);
+    mockRestoreMessageLogs.mockReset().mockResolvedValue(0);
     mockSaveMessageTemplate
       .mockReset()
       .mockImplementation(async (_tenant: string, template: unknown) => template);
@@ -362,6 +365,102 @@ describe("messaging REST routes", () => {
         entityId: "message_logs",
       }),
     );
+    await app.close();
+  });
+
+  it("POST /api/messaging/logs/restore denies teacher without messaging.restoreLogs", async () => {
+    const app = await buildApp();
+    const res = await app.inject({
+      method: "POST",
+      url: "/api/messaging/logs/restore",
+      headers: {
+        host: "demo.localhost",
+        authorization: `Bearer ${signTenantToken(app, { role: "teacher", name: "teacher" })}`,
+      },
+      payload: { ids: ["log-1"] },
+    });
+    expect(res.statusCode).toBe(403);
+    expect(mockRestoreMessageLogs).not.toHaveBeenCalled();
+    await app.close();
+  });
+
+  it("POST /api/messaging/logs/restore restores archived logs for admin with messaging.restoreLogs", async () => {
+    mockRestoreMessageLogs.mockResolvedValueOnce(3);
+    const app = await buildApp();
+    const res = await app.inject({
+      method: "POST",
+      url: "/api/messaging/logs/restore",
+      headers: {
+        host: "demo.localhost",
+        authorization: `Bearer ${signTenantToken(app, { role: "admin", name: "admin" })}`,
+      },
+      payload: { ids: ["log-1", "log-2", "log-3"] },
+    });
+    expect(res.statusCode).toBe(200);
+    expect(res.json()).toEqual({ restored: 3 });
+    expect(mockRestoreMessageLogs).toHaveBeenCalledWith(
+      "demo",
+      "u-admin",
+      ["log-1", "log-2", "log-3"],
+    );
+    expect(mockRecordAudit).toHaveBeenCalledWith(
+      expect.objectContaining({
+        action: "messaging.logs.restore",
+        entityId: "message_logs",
+      }),
+    );
+    await app.close();
+  });
+
+  it("POST /api/messaging/logs/restore restores ALL archived logs when body is absent", async () => {
+    mockRestoreMessageLogs.mockResolvedValueOnce(5);
+    const app = await buildApp();
+    const res = await app.inject({
+      method: "POST",
+      url: "/api/messaging/logs/restore",
+      headers: {
+        host: "demo.localhost",
+        authorization: `Bearer ${signTenantToken(app, { role: "admin", name: "admin" })}`,
+      },
+    });
+    expect(res.statusCode).toBe(200);
+    expect(res.json()).toEqual({ restored: 5 });
+    expect(mockRestoreMessageLogs).toHaveBeenCalledWith("demo", "u-admin", undefined);
+    await app.close();
+  });
+
+  it("POST /api/messaging/logs/restore forwards empty ids verbatim (use-case maps them to restore-all)", async () => {
+    mockRestoreMessageLogs.mockResolvedValueOnce(2);
+    const app = await buildApp();
+    const res = await app.inject({
+      method: "POST",
+      url: "/api/messaging/logs/restore",
+      headers: {
+        host: "demo.localhost",
+        authorization: `Bearer ${signTenantToken(app, { role: "admin", name: "admin" })}`,
+      },
+      payload: { ids: ["  ", ""] },
+    });
+    expect(res.statusCode).toBe(200);
+    expect(res.json()).toEqual({ restored: 2 });
+    expect(mockRestoreMessageLogs).toHaveBeenCalledWith("demo", "u-admin", ["  ", ""]);
+    await app.close();
+  });
+
+  it("POST /api/messaging/logs/restore skips audit when nothing was archived", async () => {
+    const app = await buildApp();
+    const res = await app.inject({
+      method: "POST",
+      url: "/api/messaging/logs/restore",
+      headers: {
+        host: "demo.localhost",
+        authorization: `Bearer ${signTenantToken(app, { role: "admin", name: "admin" })}`,
+      },
+      payload: { ids: ["log-1"] },
+    });
+    expect(res.statusCode).toBe(200);
+    expect(res.json()).toEqual({ restored: 0 });
+    expect(mockRecordAudit).not.toHaveBeenCalled();
     await app.close();
   });
 

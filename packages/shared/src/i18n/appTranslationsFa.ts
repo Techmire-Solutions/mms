@@ -4846,6 +4846,8 @@ export const APP_TRANSLATIONS_FA: Partial<Record<AppTranslationKey, string>> = {
   "messaging.clearLogsConfirm": "بایگانی گزارش‌ها",
   "messaging.clearLogsDesc":
     "همه گزارش‌های پیام از گزارش‌ها پنهان شوند؟ گزارش‌ها بایگانی نرم می‌شوند و از نمای تاریخچه حذف می‌گردند.",
+  "messaging.restoreLog": "بازیابی",
+  "messaging.restoredToast": "گزارش پیام بازیابی شد.",
   "messaging.clearSelection": "پاک کردن انتخاب",
   "messaging.columns.fixed": "ثابت",
   "messaging.columns.hidden": "پنهان",
@@ -4988,6 +4990,7 @@ export const APP_TRANSLATIONS_FA: Partial<Record<AppTranslationKey, string>> = {
   "messaging.smsNoEligibleContacts": "مخاطبان انتخاب‌شده شماره تلفن ندارند.",
   "messaging.smsSegmentBadge": "پیامک • {count} بخش",
   "messaging.smsSegmentStats": "{segments} بخش ({remaining} باقی)",
+  "messaging.charCount": "{count} کاراکتر",
   "messaging.someRecipientsSkipped": "برخی از گیرندگان نادیده گرفته شدند.",
   "messaging.speed.express": "سریع (0.3 ثانیه)",
   "messaging.speed.normal": "معمولی (0.6 ثانیه)",

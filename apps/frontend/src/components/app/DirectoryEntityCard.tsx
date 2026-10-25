@@ -4,11 +4,11 @@ import { useTranslation } from "@/hooks/useTranslation";
 import { useWorkCardAction, type UseWorkCardActionReturn } from "@/hooks/useWorkCardAction";
 import { EntityCard } from "@/components/app/EntityCard";
 import {
-  EntityCardInfoPills,
+  DirectoryCardInfoPills,
   type EntityCardInfoPillsProps,
-} from "@/components/app/EntityCardInfoPills";
-import { EntityCardMetadata } from "@/components/app/EntityCardMetadata";
-import { EntityCardFooterActions } from "@/components/app/EntityCardFooterActions";
+} from "@/components/app/DirectoryCardInfoPills";
+import { DirectoryCardMetadata } from "@/components/app/DirectoryCardMetadata";
+import { DirectoryCardFooterActions } from "@/components/app/DirectoryCardFooterActions";
 import type { EntityDescriptor } from "@/components/common/entityRegistryTypes";
 
 export interface DirectoryCardHeaderConfig {
@@ -54,12 +54,12 @@ export interface DirectoryCardProps<
 
   /** Optional archive or status banner. */
   banner?: ReactNode;
-  /** Custom metadata slot when EntityCardMetadata cannot be used. */
+  /** Custom metadata slot when DirectoryCardMetadata cannot be used. */
   metadataSlot?: ReactNode;
   /** Custom additional body content. */
   children?: ReactNode;
 
-  /** Fully custom footer replacement. When omitted, standard EntityCardFooterActions is rendered. */
+  /** Fully custom footer replacement. When omitted, standard DirectoryCardFooterActions is rendered. */
   footer?: ReactNode;
   /** Label for primary view button (defaults to localized "View"). */
   viewLabel?: string;
@@ -79,10 +79,10 @@ export interface DirectoryCardProps<
  * Unified Work-directory entity card component.
  *
  * Combines useWorkCardAction, EntityCard, EntityCard.Header,
- * EntityCardMetadata, and EntityCardFooterActions into a declarative,
+ * DirectoryCardMetadata, and DirectoryCardFooterActions into a declarative,
  * accessible, and token-consistent primitive.
  */
-export function DirectoryCard<
+export function DirectoryEntityCard<
   TEntity extends { id: string | number },
   TColumn extends { label: string } = { label: string },
 >({
@@ -161,11 +161,11 @@ export function DirectoryCard<
           />
         ) : null)}
 
-      {infoPills ? <EntityCardInfoPills displayName={displayName} {...infoPills} /> : null}
+      {infoPills ? <DirectoryCardInfoPills displayName={displayName} {...infoPills} /> : null}
 
       {metadataSlot ??
         (descriptor || columns ? (
-          <EntityCardMetadata
+          <DirectoryCardMetadata
             descriptor={descriptor}
             entity={entity}
             isColumnVisible={isColumnVisible}
@@ -180,7 +180,7 @@ export function DirectoryCard<
       {children}
 
       {footer ?? (
-        <EntityCardFooterActions
+        <DirectoryCardFooterActions
           onView={onView ? action.onView : undefined}
           viewLabel={viewLabel}
           viewAriaLabel={effectiveViewAriaLabel}

@@ -4,7 +4,7 @@ import { MESSAGING_MODULE_MANIFEST, type MessageTemplate } from "@mms/shared";
 import { EmptyState } from "@/components/app/EmptyState";
 import { StatusBadge, type StatusBadgeConfigItem } from "@/components/app/StatusBadge";
 import { ChannelBadge } from "@/components/app/ChannelBadge";
-import { DirectoryCard } from "@/components/app/DirectoryCard";
+import { DirectoryEntityCard } from "@/components/app/DirectoryEntityCard";
 import { SectionHeader } from "@shared/ui";
 import {
   DataTable,
@@ -114,8 +114,8 @@ export const MessagingTemplateList = function MessagingTemplateList({
         filters={filters}
         renderRowActions={renderActions}
         renderCard={(template) => (
-          /* Setup/catalog entity card — DirectoryCard SSOT (do not hand-compose EntityCard). */
-          <DirectoryCard
+          /* Setup/catalog entity card — DirectoryEntityCard SSOT (do not hand-compose EntityCard). */
+          <DirectoryEntityCard
             entity={template}
             canSelect={false}
             className="space-y-3 p-4"
@@ -145,7 +145,7 @@ export const MessagingTemplateList = function MessagingTemplateList({
               </p>
               <p className="text-xs text-foreground mt-0.5 whitespace-pre-wrap">{template.body}</p>
             </div>
-          </DirectoryCard>
+          </DirectoryEntityCard>
         )}
         emptyState={<EmptyState title={t("messaging.noTemplates")} compact variant="dashed" />}
       />

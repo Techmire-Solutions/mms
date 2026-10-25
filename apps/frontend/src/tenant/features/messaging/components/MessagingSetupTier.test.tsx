@@ -15,7 +15,7 @@ vi.mock("@/lib/contexts/AuthContext", () => ({
   }),
 }));
 
-vi.mock("../hooks/useMessaging", () => ({
+vi.mock("@/hooks/useMessaging", () => ({
   useMessageTemplates: () => ({
     templates: [],
     isError: false,

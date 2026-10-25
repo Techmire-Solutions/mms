@@ -2,7 +2,7 @@ import type React from "react";
 import { WifiOff, CloudUpload, AlertTriangle } from "lucide-react";
 import type { TranslationFunction } from "@/lib/contexts/TranslationContext";
 import { Button } from "@/components/ui/button";
-import { WarningCallout } from "@/components/app/WarningCallout";
+import { Alert } from "@/components/app/Alert";
 
 export interface ContactsOfflineBannerProps {
   t: TranslationFunction;
@@ -10,7 +10,7 @@ export interface ContactsOfflineBannerProps {
 
 export function ContactsOfflineBanner({ t }: ContactsOfflineBannerProps): React.JSX.Element {
   return (
-    <WarningCallout
+    <Alert
       icon={WifiOff}
       role="status"
       density="banner"
@@ -33,7 +33,7 @@ export function ContactsPendingBanner({
   t,
 }: ContactsPendingBannerProps): React.JSX.Element {
   return (
-    <WarningCallout
+    <Alert
       icon={CloudUpload}
       tone="info"
       role="status"
@@ -73,7 +73,7 @@ export function ContactsConflictBanner({
   t,
 }: ContactsConflictBannerProps): React.JSX.Element {
   return (
-    <WarningCallout
+    <Alert
       icon={AlertTriangle}
       role="alert"
       density="banner"

@@ -1,7 +1,7 @@
 import type { ReactElement } from "react";
 import { Receipt } from "lucide-react";
 import { OBLIGATIONS_MODULE_MANIFEST } from "@mms/shared";
-import { ModuleUniversalBulkActionBar } from "@/components/app/ModuleUniversalBulkActionBar";
+import { BulkSelectionBar } from "@/components/app/BulkSelectionBar";
 
 export interface ObligationsBulkActionBarProps {
   selectedCount: number;
@@ -13,7 +13,7 @@ export interface ObligationsBulkActionBarProps {
   bulkActions?: readonly string[];
 }
 
-/** Obligations Work bulk bar — thin adapter delegating to shared ModuleUniversalBulkActionBar. */
+/** Obligations Work bulk bar — thin adapter delegating to shared BulkSelectionBar. */
 export function ObligationsBulkActionBar({
   selectedCount,
   showDeleted,
@@ -24,7 +24,7 @@ export function ObligationsBulkActionBar({
   bulkActions = OBLIGATIONS_MODULE_MANIFEST.work.bulkActions,
 }: ObligationsBulkActionBarProps): ReactElement {
   return (
-    <ModuleUniversalBulkActionBar
+    <BulkSelectionBar
       selectedCount={selectedCount}
       viewingDeleted={showDeleted}
       canDelete={canDelete}

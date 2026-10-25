@@ -2,7 +2,7 @@ import React from "react";
 import { useNavigate } from "react-router-dom";
 import { GraduationCap } from "lucide-react";
 import type { Student } from "@mms/shared";
-import { Drawer } from "@/components/app/Drawer";
+import { DetailDrawerShell } from "@/components/app/DetailDrawerShell";
 import { DrawerUpdatedStamp } from "@/components/app/DrawerUpdatedStamp";
 import type { useMessageComposerState } from "@/hooks/useMessageComposerState";
 import { StudentArchivedBanner } from "@/tenant/features/students/components/StudentArchivedBanner";
@@ -100,7 +100,7 @@ export const StudentDetail = function StudentDetail({
   );
 
   return (
-    <Drawer
+    <DetailDrawerShell
       onClose={onClose}
       title={t("students.detail.title")}
       subtitle={
@@ -174,7 +174,7 @@ export const StudentDetail = function StudentDetail({
         loading={sessionsLoading}
         error={sessionsError}
       />
-    </Drawer>
+    </DetailDrawerShell>
   );
 };
 

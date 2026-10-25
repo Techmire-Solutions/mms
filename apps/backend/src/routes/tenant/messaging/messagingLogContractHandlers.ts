@@ -6,11 +6,12 @@ import {
   type messagingContract,
 } from "@mms/shared";
 import type { ContractRouteArgs, ContractRouteResponse } from "../../../lib/contractRouterTypes.js";
-import { canClearMessagingLogs, canReadMessaging } from "../../../services/rbacService.js";
+import { canClearMessagingLogs, canReadMessaging, canRestoreMessagingLogs } from "../../../services/rbacService.js";
 import { withTenant } from "../../../db/tenant-context.js";
 import { getRequestTenant } from "../../../lib/tenantContext.js";
 import { messagingUseCases } from "../../../messaging/use-cases/messagingUseCases.js";
 import { recordModernAuditEvent } from "../../../services/auditTrailService.js";
+import { emitOutboxEvent } from "../../../services/outboxEventService.js";
 import { logger } from "../../../lib/logger.js";
 import { processRecordMessageLogs } from "./messagingLogRecordHandler.js";
 
@@ -201,6 +202,82 @@ export async function messagingClearLogsHandler({
     return {
       status: 500 as const,
       body: { type: "database_error", message: "Failed to clear message logs" },
+    };
+  }
+}
+
+/** Handles POST /api/messaging/logs/restore — un-soft-archives archived logs. */
+export async function messagingRestoreLogsHandler({
+  body,
+  request,
+}: ContractRouteArgs<(typeof messagingContract)["restoreLogs"]>): Promise<
+  ContractRouteResponse<(typeof messagingContract)["restoreLogs"]>
+> {
+  const user = request.user as User;
+  if (!canRestoreMessagingLogs(user)) {
+    return {
+      status: 403 as const,
+      body: { type: "forbidden", message: "Insufficient permissions" },
+    };
+  }
+  let tenantSubdomain: string;
+  try {
+    tenantSubdomain = getTenantInfo(request).subdomain;
+  } catch {
+    return {
+      status: 400 as const,
+      body: { type: "validation_error", message: "Tenant context required" },
+    };
+  }
+
+  const requestedIds = Array.isArray(body?.ids)
+    ? body.ids.map((id: unknown) => String(id))
+    : undefined;
+
+  try {
+    const restoredCount = await messagingUseCases.restoreMessageLogs(
+      tenantSubdomain,
+      String(user.id),
+      requestedIds,
+    );
+
+    if (restoredCount > 0) {
+      void emitOutboxEvent("entity.restored", {
+        entityType: "message_logs",
+        entityId: "message_logs",
+        tenantId: tenantSubdomain,
+        restoredAt: new Date().toISOString(),
+        restoredBy: String(user.id),
+        version: Date.now(),
+      }).catch((err: unknown) =>
+        logger.error(
+          { err: err instanceof Error ? err.message : String(err) },
+          "outbox event emit failed",
+        ),
+      );
+      void recordModernAuditEvent({
+        workspaceSubdomain: tenantSubdomain,
+        tableName: "message_logs",
+        recordId: "message_logs",
+        actionType: "RESTORE",
+        realUserId: String(user.id),
+        newState: {
+          summary: `Restored archived message logs (${restoredCount} restored)`,
+          action: "messaging.logs.restore",
+        },
+      }).catch((err: unknown) =>
+        logger.error(
+          { err: err instanceof Error ? err.message : String(err) },
+          "audit event append failed",
+        ),
+      );
+    }
+
+    return { status: 200 as const, body: { restored: restoredCount } };
+  } catch {
+    return {
+      status: 500 as const,
+      body: { type: "database_error", message: "Failed to restore message logs" },
     };
   }
 }

@@ -16,7 +16,7 @@ import {
   Badge,
   EmptyState,
   ErrorState,
-  WarningCallout,
+  Alert,
   StatusBadge,
   CompactSegmentedControl,
 } from "@shared/ui";
@@ -121,7 +121,7 @@ export function DesignSystemFeedbackDemo(): React.JSX.Element {
         <StatusBadge status="active" />
         <StatusBadge status="pending" />
       </div>
-      <WarningCallout
+      <Alert
         title={t("platform.designSystemFeedback")}
         description={t("platform.designSystemSubtitle")}
       />

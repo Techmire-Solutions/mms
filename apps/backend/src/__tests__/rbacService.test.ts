@@ -18,6 +18,7 @@ import {
   canWriteContacts,
   canWriteObject,
   canClearMessagingLogs,
+  canRestoreMessagingLogs,
   isAllowedCollectionName,
   isAllowedObjectKey,
 } from "../services/rbacService.js";
@@ -220,5 +221,11 @@ describe("rbacService", () => {
     expect(canClearMessagingLogs(admin)).toBe(true);
     expect(canClearMessagingLogs(teacher)).toBe(false);
     expect(canClearMessagingLogs(accountant)).toBe(false);
+  });
+
+  it("restricts messaging restore logs to messaging.restoreLogs", () => {
+    expect(canRestoreMessagingLogs(admin)).toBe(true);
+    expect(canRestoreMessagingLogs(teacher)).toBe(false);
+    expect(canRestoreMessagingLogs(accountant)).toBe(false);
   });
 });

@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { EmptyState } from "@/components/app/EmptyState";
 import { Modal } from "@/components/app/Modal";
 import { ErrorState } from "@/components/app/ErrorState";
-import { WarningCallout } from "@/components/app/WarningCallout";
+import { Alert } from "@/components/app/Alert";
 import { useTranslation } from "@/hooks/useTranslation";
 import { ModulePanelSuspenseFallback } from "@/components/app/ModulePanelSuspenseFallback";
 import { DuplicatePairCard } from "@/tenant/features/contacts/components/DuplicatePairCard";
@@ -89,7 +89,7 @@ export function DuplicateDetectionModal({
     >
       <div className="space-y-4">
         {totalMerged > 0 && (
-          <WarningCallout
+          <Alert
             tone="success"
             density="compact"
             icon={Check}
@@ -98,7 +98,7 @@ export function DuplicateDetectionModal({
         )}
 
         {!canWrite && activePairs.length > 0 && (
-          <WarningCallout
+          <Alert
             tone="warning"
             density="compact"
             description={t("contacts.duplicatesReadOnly")}
