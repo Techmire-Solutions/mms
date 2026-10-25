@@ -1,5 +1,5 @@
 import type React from "react";
-import { DirectoryCard } from "@/components/app/DirectoryCard";
+import { DirectoryEntityCard } from "@/components/app/DirectoryEntityCard";
 import { getGenderAccentBarClass } from "@/lib/ui/directoryCardAccent";
 import { useTranslation } from "@/hooks/useTranslation";
 import { resolveFacultyPrimaryChannels } from "@/lib/faculty/facultyPrimaryChannels";
@@ -68,7 +68,7 @@ export function FacultyCardItem(props: FacultyCardItemProps): React.JSX.Element 
   const faceVisible = resolveFacultyCardFaceVisibility(columnRegistry, isColumnVisible);
 
   return (
-    <DirectoryCard
+    <DirectoryEntityCard
       entity={faculty}
       selectedIds={selectedIds}
       canSelect={canDelete}

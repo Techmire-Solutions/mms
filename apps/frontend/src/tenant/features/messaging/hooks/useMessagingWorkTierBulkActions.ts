@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useCallback, useState } from "react";
 import type { Message, StandardMessagingRecipient as MessagingRecipient } from "@mms/shared";
 import type { TranslationFunction } from "@/lib/contexts/TranslationContext";
 import { notify } from "@/lib/notify";
@@ -63,7 +63,7 @@ export function useMessagingWorkTierBulkActions({
     }
   };
 
-  const handleExportLogs = async (): Promise<void> => {
+  const handleExportLogs = useCallback(async (): Promise<void> => {
     if (!canWrite || exporting) return;
     setExporting(true);
     try {
@@ -81,7 +81,7 @@ export function useMessagingWorkTierBulkActions({
     } finally {
       setExporting(false);
     }
-  };
+  }, [canWrite, exporting, channel, category, debouncedSearch, status, queryStartDate, endDate, t]);
 
   return {
     handleBulkResendLogs,

@@ -6,7 +6,7 @@ import { SectionCard } from "@/components/app/SectionCard";
 import { ModuleSetupSaveFooter } from "@/components/app/ModuleSetupSaveFooter";
 import { ToggleRow } from "@shared/ui";
 import { Field } from "@/components/app/FormPrimitives";
-import { WarningCallout } from "@/components/app/WarningCallout";
+import { Alert } from "@/components/app/Alert";
 import { SETUP_SECTION_CARD_CLASS } from "@/components/ui/formStyles";
 
 export interface AccountingSettingsRulesSectionProps {
@@ -53,7 +53,7 @@ export function AccountingSettingsRulesSection({
               onChange={(checked) => upd("allowEditPosted", checked)}
             />
             {settingsDraft.allowEditPosted && (
-              <WarningCallout title={t("accounting.settings.fields.allowEditPostedWarning")} />
+              <Alert title={t("accounting.settings.fields.allowEditPostedWarning")} />
             )}
           </div>
 

@@ -1,14 +1,14 @@
 import React from "react";
 import { describe, expect, it, vi } from "vitest";
-import { Drawer } from "./Drawer";
+import { DetailDrawerShell } from "./DetailDrawerShell";
 
-describe("Drawer Component", () => {
-  it("instantiates Drawer element structure with open prop", () => {
+describe("DetailDrawerShell Component", () => {
+  it("instantiates DetailDrawerShell element structure with open prop", () => {
     function DrawerWrapper({ open }: { open: boolean }) {
       return (
-        <Drawer open={open} onClose={() => {}} title="Test Drawer">
-          <div>Drawer Content</div>
-        </Drawer>
+        <DetailDrawerShell open={open} onClose={() => {}} title="Test DetailDrawerShell">
+          <div>DetailDrawerShell Content</div>
+        </DetailDrawerShell>
       );
     }
 
@@ -19,30 +19,30 @@ describe("Drawer Component", () => {
     expect(closedElement.type).toBe(DrawerWrapper);
   });
 
-  it("exposes compound components Drawer.Header, Drawer.ArchiveBanner, Drawer.RestoreOrEditAction", () => {
-    expect(Drawer.Header).toBeDefined();
-    expect(Drawer.ArchiveBanner).toBeDefined();
-    expect(Drawer.RestoreOrEditAction).toBeDefined();
+  it("exposes compound components DetailDrawerShell.Header, DetailDrawerShell.ArchiveBanner, DetailDrawerShell.RestoreOrEditAction", () => {
+    expect(DetailDrawerShell.Header).toBeDefined();
+    expect(DetailDrawerShell.ArchiveBanner).toBeDefined();
+    expect(DetailDrawerShell.RestoreOrEditAction).toBeDefined();
   });
 
   it("accepts side and size variants", () => {
     const handleClose = vi.fn();
     const element = (
-      <Drawer
+      <DetailDrawerShell
         open={true}
         onClose={handleClose}
-        title="Side Drawer"
+        title="Side DetailDrawerShell"
         side="start"
         size="lg"
         archiveBanner={<div>Archived Record</div>}
       >
-        <p>Drawer Body</p>
-      </Drawer>
+        <p>DetailDrawerShell Body</p>
+      </DetailDrawerShell>
     );
 
     expect(element.props.side).toBe("start");
     expect(element.props.size).toBe("lg");
-    expect(element.props.title).toBe("Side Drawer");
+    expect(element.props.title).toBe("Side DetailDrawerShell");
   });
 
   it("renders scroll-state-container with top and bottom affordance indicators", async () => {
@@ -54,10 +54,10 @@ describe("Drawer Component", () => {
 
     await act(async () => {
       root.render(
-        <Drawer open={true} onClose={() => {}} title="Scrollable Drawer">
+        <DetailDrawerShell open={true} onClose={() => {}} title="Scrollable DetailDrawerShell">
           <div>Item 1</div>
           <div>Item 2</div>
-        </Drawer>,
+        </DetailDrawerShell>,
       );
     });
 

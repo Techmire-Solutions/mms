@@ -12,9 +12,9 @@ import type { FacultyMember } from "@mms/shared";
 import { Button } from "@/components/ui/button";
 import { ProgressBar } from "@/components/app/ProgressBar";
 import { StatusBadge, type StatusBadgeConfigItem } from "@/components/app/StatusBadge";
-import { DirectoryCard } from "@/components/app/DirectoryCard";
+import { DirectoryEntityCard } from "@/components/app/DirectoryEntityCard";
 import { EntityCard } from "@/components/app/EntityCard";
-import { EntityCardMetaTile } from "@/components/app/EntityCardMetaTile";
+import { DirectoryCardMetaTile } from "@/components/app/DirectoryCardMetaTile";
 import { useTranslation } from "@/hooks/useTranslation";
 import type { Class } from "@/lib/data/sessionsData";
 import { genderStatusBadgeConfig } from "@/lib/ui/genderStatusBadge";
@@ -33,7 +33,7 @@ interface ClassCardProps {
   canWrite: boolean;
 }
 
-/** Work directory card — DirectoryCard SSOT (do not hand-compose EntityCard). */
+/** Work directory card — DirectoryEntityCard SSOT (do not hand-compose EntityCard). */
 export function ClassCard({
   sessionClass,
   faculty,
@@ -67,7 +67,7 @@ export function ClassCard({
   const feeCount = sessionClass.fees?.length ?? 0;
 
   return (
-    <DirectoryCard
+    <DirectoryEntityCard
       entity={sessionClass}
       canSelect={false}
       onView={canWrite ? onEdit : undefined}
@@ -85,14 +85,14 @@ export function ClassCard({
       viewAriaLabel={t("sessions.classes.editNamed", { name: sessionClass.name })}
       metadataSlot={
         <EntityCard.MetaGrid className="mb-3 mt-4">
-          <EntityCardMetaTile label={t("sessions.classes.ageRange")}>
+          <DirectoryCardMetaTile label={t("sessions.classes.ageRange")}>
             <span className="font-semibold text-foreground">
               {t("sessions.classes.ageYears", { min: minAge, max: maxAge })}
             </span>
-          </EntityCardMetaTile>
-          <EntityCardMetaTile label={t("sessions.classes.form.gender")}>
+          </DirectoryCardMetaTile>
+          <DirectoryCardMetaTile label={t("sessions.classes.form.gender")}>
             <StatusBadge status={sessionClass.gender || "mixed"} config={genderConfig} size="sm" />
-          </EntityCardMetaTile>
+          </DirectoryCardMetaTile>
         </EntityCard.MetaGrid>
       }
       actions={
@@ -187,6 +187,6 @@ export function ClassCard({
           aria-hidden="true"
         />
       </div>
-    </DirectoryCard>
+    </DirectoryEntityCard>
   );
 }

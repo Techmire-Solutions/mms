@@ -7,7 +7,7 @@ import { ReportMoneySummaryTile } from "@/components/reports/ReportMoneySummaryT
 import { useTranslation } from "@/hooks/useTranslation";
 import type { RepSummaryEntry } from "./ObligationsRepDuesSection";
 
-/** ReportMoneyCard tile (report) — not DirectoryCard. */
+/** ReportMoneyCard tile (report) — not DirectoryEntityCard. */
 export interface ObligationsRepDuesCardsViewProps {
   repSummary: RepSummaryEntry[];
   totalAmount: number;

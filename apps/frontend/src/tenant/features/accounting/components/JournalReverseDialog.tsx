@@ -11,7 +11,7 @@ import { DatePicker } from "@/components/app/DatePicker";
 import { Field } from "@/components/app/FormField";
 import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
-import { WarningCallout } from "@/components/app/WarningCallout";
+import { Alert } from "@/components/app/Alert";
 import { DetailAttributeRow } from "@/components/app/DetailAttributeRow";
 import type { JournalEntry } from "@/lib/data/accountingData";
 import { useTranslation } from "@/hooks/useTranslation";
@@ -112,7 +112,7 @@ export function JournalReverseDialog({
             {t("accounting.journal.reverse.reversalSection")}
           </h3>
           {!state.originalDateAllowed && state.originalPeriod === "closed" ? (
-            <WarningCallout
+            <Alert
               density="compact"
               description={t("accounting.journal.reverse.closedPeriodNotice", {
                 date: formatDate(entry.date),
@@ -120,7 +120,7 @@ export function JournalReverseDialog({
             />
           ) : null}
           {!state.originalDateAllowed && !state.todayAllowed ? (
-            <WarningCallout
+            <Alert
               density="compact"
               tone="destructive"
               description={t("accounting.journal.reverse.noOpenDateNotice")}
@@ -175,7 +175,7 @@ export function JournalReverseDialog({
             </div>
           ) : null}
           {state.priorPeriod ? (
-            <WarningCallout
+            <Alert
               density="compact"
               description={t("accounting.journal.reverse.priorPeriodWarning")}
             />

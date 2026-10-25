@@ -4,9 +4,9 @@ import { FORM_CARD } from "@/components/ui/formStyles";
 import { CARD_STRIPE_BASE, CARD_STRIPE_INSET } from "@/lib/ui/semanticTone";
 import { useReducedMotion } from "@/hooks/useReducedMotion";
 import { cn } from "@/lib/utils";
-import { EntityCardHeader, type EntityCardHeaderProps } from "./EntityCardHeader";
-import { EntityCardMetaGrid, type EntityCardMetaGridProps } from "./EntityCardMetaGrid";
-import { EntityCardFooter, type EntityCardFooterProps } from "./EntityCardFooter";
+import { DirectoryCardHeader, type EntityCardHeaderProps } from "./DirectoryCardHeader";
+import { DirectoryCardMetaGrid, type EntityCardMetaGridProps } from "./DirectoryCardMetaGrid";
+import { DirectoryCardFooter, type EntityCardFooterProps } from "./DirectoryCardFooter";
 
 export const entityCardVariants = {
   hidden: { opacity: 0, y: 8 },
@@ -80,9 +80,9 @@ const EntityCardBase = memo(function EntityCardBase({
 });
 
 export const EntityCard = Object.assign(EntityCardBase, {
-  Header: EntityCardHeader,
-  MetaGrid: EntityCardMetaGrid,
-  Footer: EntityCardFooter,
+  Header: DirectoryCardHeader,
+  MetaGrid: DirectoryCardMetaGrid,
+  Footer: DirectoryCardFooter,
 });
 
 export type { EntityCardHeaderProps, EntityCardMetaGridProps, EntityCardFooterProps };

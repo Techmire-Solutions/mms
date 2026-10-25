@@ -14,7 +14,7 @@ import { FormSelect } from "@/components/app/FormSelect";
 import { Input } from "@/components/ui/input";
 import { ModuleSetupSaveFooter } from "@/components/app/ModuleSetupSaveFooter";
 import { SectionCard } from "@/components/app/SectionCard";
-import { WarningCallout } from "@/components/app/WarningCallout";
+import { Alert } from "@/components/app/Alert";
 import { SETUP_SECTION_CARD_CLASS } from "@/components/ui/formStyles";
 import { useTranslation } from "@/hooks/useTranslation";
 
@@ -142,7 +142,7 @@ export function AccountingSettingsTemplatesSection({
         ))}
       </FormCollectionShell>
       {hasInvalidNames(templates) && (
-        <WarningCallout density="compact" description={t("accounting.templates.duplicateName")} />
+        <Alert density="compact" description={t("accounting.templates.duplicateName")} />
       )}
       <ModuleSetupSaveFooter
         dirty={Boolean(isPrefsDirty) && !hasInvalidNames(templates)}

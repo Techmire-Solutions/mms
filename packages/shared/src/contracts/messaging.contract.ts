@@ -30,6 +30,17 @@ const messagingSuccessResponseSchema = z.object({ success: z.literal(true) });
 /** POST /api/messaging/logs — number of log rows recorded. */
 const messagingRecordedResponseSchema = z.object({ recorded: z.number() });
 
+/** POST /api/messaging/logs/restore — number of archived log rows restored. */
+export const messagingLogsRestoredResponseSchema = z.object({ restored: z.number() });
+
+/**
+ * POST /api/messaging/logs/restore body — `ids` absent or empty restores ALL
+ * archived logs in the workspace; a non-empty list restores only those ids.
+ */
+export const messagingRestoreLogsBodySchema = z.object({
+  ids: z.array(z.string()).optional(),
+});
+
 export const messagingContract = c.router({
   listLogs: {
     method: "GET",
@@ -105,6 +116,13 @@ export const messagingContract = c.router({
     body: ok,
     responses: { 200: messagingSuccessResponseSchema, 400: ok, 403: ok, 500: ok },
     summary: "Clear message logs",
+  },
+  restoreLogs: {
+    method: "POST",
+    path: "/api/messaging/logs/restore",
+    body: messagingRestoreLogsBodySchema.optional(),
+    responses: { 200: messagingLogsRestoredResponseSchema, 400: ok, 403: ok, 500: ok },
+    summary: "Restore archived message logs",
   },
   resolveContacts: {
     method: "POST",

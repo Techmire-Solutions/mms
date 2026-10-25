@@ -4,7 +4,7 @@ import { AlertTriangle, GitMerge, Loader2 } from "lucide-react";
 import { mergeContacts, getDisplayName, type Contact } from "@mms/shared";
 import { Button } from "@/components/ui/button";
 import { Modal } from "@/components/app/Modal";
-import { WarningCallout } from "@/components/app/WarningCallout";
+import { Alert } from "@/components/app/Alert";
 import { useContactConfig } from "@/lib/contexts/ContactConfigContext";
 import { useTranslation } from "@/hooks/useTranslation";
 import {
@@ -124,7 +124,7 @@ export function MergePreview({
       }
     >
       <div className="space-y-4">
-        <WarningCallout
+        <Alert
           tone="warning"
           density="compact"
           icon={AlertTriangle}

@@ -1,5 +1,5 @@
 import React, { type ReactNode } from "react";
-import { EntityCardsGrid } from "@/components/app/EntityCardsGrid";
+import { ModuleDirectoryCards } from "@/components/app/ModuleDirectoryCards";
 import { WORK_SURFACE } from "@/components/ui/formStyles";
 import { cn } from "@/lib/utils";
 
@@ -8,7 +8,7 @@ import { cn } from "@/lib/utils";
  * Set `surface` when the parent does not already provide `WORK_SURFACE`.
  *
  * Prefer the parameterized `items` + `renderItem` API so large datasets
- * virtualize through `EntityCardsGrid` (lists > 30 items). The `children` form
+ * virtualize through `ModuleDirectoryCards` (lists > 30 items). The `children` form
  * is kept for small, fixed sets and never virtualizes.
  */
 export interface ReportMoneyCardsGridProps<T = unknown> {
@@ -28,9 +28,9 @@ export function ReportMoneyCardsGrid<T = unknown>({
   surface = false,
 }: ReportMoneyCardsGridProps<T>): React.JSX.Element {
   const grid = (
-    <EntityCardsGrid className={cn("p-3", className)} items={items} renderItem={renderItem}>
+    <ModuleDirectoryCards className={cn("p-3", className)} items={items} renderItem={renderItem}>
       {children}
-    </EntityCardsGrid>
+    </ModuleDirectoryCards>
   );
   if (surface) {
     return <div className={WORK_SURFACE}>{grid}</div>;

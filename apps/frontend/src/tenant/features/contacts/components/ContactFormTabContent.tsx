@@ -1,6 +1,6 @@
 import React from "react";
 import { AlertTriangle, Loader2 } from "lucide-react";
-import { WarningCallout } from "@/components/app/WarningCallout";
+import { Alert } from "@/components/app/Alert";
 import { useTranslation } from "@/hooks/useTranslation";
 import { ContactBasicTab } from "@/tenant/features/contacts/components/formTabs/ContactBasicTab";
 import { ContactFormNestedTabsDispatcher } from "@/tenant/features/contacts/components/ContactFormNestedTabsDispatcher";
@@ -108,7 +108,7 @@ export function ContactFormTabContent({
     <div className="space-y-3">
       {draft.duplicateCount > 0 && (
         <div role="status" aria-live="polite">
-          <WarningCallout
+          <Alert
             tone="warning"
             density="compact"
             icon={AlertTriangle}

@@ -4,7 +4,7 @@ import { Lock } from "lucide-react";
 import { FormModal } from "@/components/app/FormModal";
 import { FormSelect } from "@/components/app/FormSelect";
 import { Field } from "@/components/app/FormPrimitives";
-import { WarningCallout } from "@/components/app/WarningCallout";
+import { Alert } from "@/components/app/Alert";
 import { useCloseFiscalYear } from "@/tenant/features/accounting/hooks/useAccountingLedgerOps";
 import { accountingErrorMessage } from "@/tenant/features/accounting/hooks/useAccountingSetupSaveActions";
 import { notify } from "@/lib/notify";
@@ -106,7 +106,7 @@ export function CloseFiscalYearModal({
         }}
         className="space-y-4"
       >
-        <WarningCallout
+        <Alert
           role="alert"
           tone="destructive"
           description={t("accounting.settings.fy.closeIrreversible")}

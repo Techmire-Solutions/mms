@@ -1,11 +1,11 @@
-import React, { useCallback, useEffect, type JSX } from "react";
+import React, { useCallback, useEffect, useState, type JSX } from "react";
 import {
   formatDateTime,
   type Message,
   type StandardMessagingRecipient as MessagingRecipient,
 } from "@mms/shared";
 import { ChannelBadge } from "@/components/app/ChannelBadge";
-import { Drawer } from "@/components/app/Drawer";
+import { DetailDrawerShell } from "@/components/app/DetailDrawerShell";
 import { StatusBadge, type StatusBadgeConfigItem } from "@/components/app/StatusBadge";
 import { Button } from "@/components/ui/button";
 import { useTranslation } from "@/hooks/useTranslation";
@@ -25,6 +25,8 @@ export interface MessagingDetailProps {
   recipient?: MessagingRecipient | null;
   logStatusConfig: Record<string, StatusBadgeConfigItem>;
   canWrite: boolean;
+  canRestoreLogs?: boolean;
+  onRestoreLog?: (log: Message) => Promise<void>;
   onClose: () => void;
   onResend: (log: Message) => void;
 }
@@ -34,10 +36,24 @@ export const MessagingDetail = function MessagingDetail({
   recipient,
   logStatusConfig,
   canWrite,
+  canRestoreLogs,
+  onRestoreLog,
   onClose,
   onResend,
 }: MessagingDetailProps): JSX.Element | null {
   const { t } = useTranslation();
+  const [restoring, setRestoring] = useState(false);
+
+  const handleRestore = useCallback(async (): Promise<void> => {
+    if (!log || restoring || !onRestoreLog) return;
+    setRestoring(true);
+    try {
+      await onRestoreLog(log);
+      onClose();
+    } finally {
+      setRestoring(false);
+    }
+  }, [log, restoring, onRestoreLog, onClose]);
 
   const handleResend = useCallback((): void => {
     if (!log || !canWrite) return;
@@ -66,7 +82,7 @@ export const MessagingDetail = function MessagingDetail({
   const cleanPhone = recipient?.phone ? recipient.phone.replace(/[^0-9]/g, "") : "";
 
   return (
-    <Drawer
+    <DetailDrawerShell
       open={Boolean(log)}
       onClose={onClose}
       title={recipientName}
@@ -98,17 +114,31 @@ export const MessagingDetail = function MessagingDetail({
             >
               {t("common.close")}
             </Button>
-            {canWrite && (
+            {log.deletedAt && canRestoreLogs && onRestoreLog ? (
               <Button
                 variant="default"
                 size="sm"
-                onClick={handleResend}
+                onClick={() => void handleRestore()}
+                disabled={restoring}
+                loading={restoring}
                 className="gap-1.5 min-h-11 px-3"
-                title={`${t("messaging.resend")} (⌘+Enter)`}
               >
                 <RotateCcw className="h-3.5 w-3.5" />
-                {t("messaging.resend")}
+                {t("messaging.restoreLog")}
               </Button>
+            ) : (
+              canWrite && (
+                <Button
+                  variant="default"
+                  size="sm"
+                  onClick={handleResend}
+                  className="gap-1.5 min-h-11 px-3"
+                  title={`${t("messaging.resend")} (⌘+Enter)`}
+                >
+                  <RotateCcw className="h-3.5 w-3.5" />
+                  {t("messaging.resend")}
+                </Button>
+              )
             )}
           </div>
         </div>
@@ -189,6 +219,6 @@ export const MessagingDetail = function MessagingDetail({
         <MessagingDetailBodyCard log={log} />
         <MessagingDetailMetadataCard log={log} />
       </div>
-    </Drawer>
+    </DetailDrawerShell>
   );
 };

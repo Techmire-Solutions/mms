@@ -1,6 +1,6 @@
 import type { Contact } from "@mms/shared";
 import { ENTITY_CARD_OVERFLOW_TRIGGER_CLASS } from "@/components/app/entityCardChrome";
-import { EntityCardFooterActions } from "@/components/app/EntityCardFooterActions";
+import { DirectoryCardFooterActions } from "@/components/app/DirectoryCardFooterActions";
 import { ContactsRowActions } from "@/tenant/features/contacts/components/ContactsRowActions";
 import { useTranslation } from "@/hooks/useTranslation";
 
@@ -37,7 +37,7 @@ export function ContactCardActions({
   const { t } = useTranslation();
 
   return (
-    <EntityCardFooterActions
+    <DirectoryCardFooterActions
       onView={onView ? () => onView(contact) : undefined}
       viewLabel={t("contacts.actionViewShort")}
       viewAriaLabel={`${t("contacts.table.viewProfile")} - ${displayName}`}

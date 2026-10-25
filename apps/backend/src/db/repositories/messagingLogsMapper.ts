@@ -3,8 +3,11 @@ import type { messageLogs } from "../schema.js";
 import { mapAuditTimestamps } from "./repositoryMappers.js";
 
 export type LogRow = typeof messageLogs.$inferSelect;
-/** Row shape accepted by logRowToRecord — purgeAfter is DB-only generated column, not surfaced to app layer. */
-export type LogSelectRow = Omit<LogRow, "purgeAfter">;
+/**
+ * Row shape accepted by logRowToRecord — DB-only columns (purgeAfter generated
+ * column, restored* attribution) are not surfaced to the app layer.
+ */
+export type LogSelectRow = Omit<LogRow, "purgeAfter" | "restoredAt" | "restoredBy">;
 export type MessageLogInsertValue = typeof messageLogs.$inferInsert;
 
 export function logRowToRecord(row: LogSelectRow): Message {

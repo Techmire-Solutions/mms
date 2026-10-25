@@ -8,7 +8,7 @@ import { useTranslation } from "@/hooks/useTranslation";
 import { AlertCircle } from "lucide-react";
 import type { WakalaSummaryEntry } from "./ObligationsWakalaSummarySection";
 
-/** ReportMoneyCard tile (report) — not DirectoryCard. */
+/** ReportMoneyCard tile (report) — not DirectoryEntityCard. */
 export interface ObligationsWakalaSummaryCardsViewProps {
   wakalaSummary: WakalaSummaryEntry[];
   totalAmount: number;

@@ -24,7 +24,7 @@ export interface EntityCardHeaderProps {
 }
 
 /** Shared Work directory card header: checkbox | avatar + title + subtitle. */
-export const EntityCardHeader = function EntityCardHeader({
+export const DirectoryCardHeader = function DirectoryCardHeader({
   id,
   displayName,
   avatar,

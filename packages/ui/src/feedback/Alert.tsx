@@ -4,10 +4,10 @@ import { AlertCircle, AlertTriangle, CheckCircle2, Info } from "lucide-react";
 import type { ReactNode } from "react";
 import { cn } from "../utils";
 
-export type CalloutDensity = "compact" | "banner";
-export type CalloutTone = "warning" | "info" | "destructive" | "success";
+export type AlertDensity = "compact" | "banner";
+export type AlertTone = "warning" | "info" | "destructive" | "success";
 
-const DEFAULT_TONE_ICONS: Record<CalloutTone, LucideIcon> = {
+const DEFAULT_TONE_ICONS: Record<AlertTone, LucideIcon> = {
   warning: AlertTriangle,
   info: Info,
   destructive: AlertCircle,
@@ -15,7 +15,7 @@ const DEFAULT_TONE_ICONS: Record<CalloutTone, LucideIcon> = {
 };
 
 const TONE_CLASSES: Record<
-  CalloutTone,
+  AlertTone,
   { shell: string; icon: string; descriptionWithTitle: string; bannerText: string }
 > = {
   warning: {
@@ -44,20 +44,20 @@ const TONE_CLASSES: Record<
   },
 };
 
-export interface CalloutProps {
+export interface AlertProps {
   icon?: LucideIcon;
   title?: ReactNode;
   description?: ReactNode;
   children?: ReactNode;
   action?: ReactNode;
   role?: "status" | "alert";
-  density?: CalloutDensity;
+  density?: AlertDensity;
   /** Visual tone — defaults to warning (amber). */
-  tone?: CalloutTone;
+  tone?: AlertTone;
   className?: string;
 }
 
-export function Callout({
+export function Alert({
   icon,
   title,
   description,
@@ -67,7 +67,7 @@ export function Callout({
   density = "banner",
   tone = "warning",
   className,
-}: CalloutProps): React.JSX.Element {
+}: AlertProps): React.JSX.Element {
   const isCompact = density === "compact";
   const tones = TONE_CLASSES[tone];
   const Icon = icon ?? DEFAULT_TONE_ICONS[tone];
@@ -104,8 +104,3 @@ export function Callout({
     </div>
   );
 }
-
-export const WarningCallout = Callout;
-export type WarningCalloutProps = CalloutProps;
-export type WarningCalloutDensity = CalloutDensity;
-export type WarningCalloutTone = CalloutTone;

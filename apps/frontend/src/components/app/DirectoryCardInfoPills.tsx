@@ -35,7 +35,7 @@ export interface EntityCardInfoPillsProps {
 }
 
 /** Phone/email face pills stack for Work directory entity cards with inline contact actions (supports multiple channels). */
-export const EntityCardInfoPills = function EntityCardInfoPills({
+export const DirectoryCardInfoPills = function DirectoryCardInfoPills({
   phones: phonesProp,
   emails: emailsProp,
   phone,

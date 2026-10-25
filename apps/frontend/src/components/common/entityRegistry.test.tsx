@@ -20,8 +20,8 @@ import {
   messagingEntityDescriptor,
   getEntityDescriptor,
 } from "@/components/common/entityRegistry";
-import { EntityCardMetadata } from "@/components/app/EntityCardMetadata";
-import { Drawer } from "@/components/app/Drawer";
+import { DirectoryCardMetadata } from "@/components/app/DirectoryCardMetadata";
+import { DetailDrawerShell } from "@/components/app/DetailDrawerShell";
 import { EntityDescriptorSections } from "@/components/app/EntityDescriptorSections";
 import { FilterChips } from "@/components/app/FilterChips";
 import { useDescriptorFilterChips } from "@/components/common/useDescriptorFilterChips";
@@ -112,7 +112,7 @@ describe("SSOT Entity UI Registry Architecture", () => {
       expect(cardFields).toHaveLength(3);
       expect(cardFields.map((f) => f.key)).toEqual(["name", "amount", "status"]);
 
-      // Drawer sections
+      // DetailDrawerShell sections
       const sections = descriptor.getDrawerSections();
       expect(sections).toHaveLength(2); // info, financial (meta is hideInDrawer)
       expect(sections[0].id).toBe("info");
@@ -519,7 +519,7 @@ describe("SSOT Entity UI Registry Architecture", () => {
     });
   });
 
-  describe("EntityCardMetadata with EntityDescriptor", () => {
+  describe("DirectoryCardMetadata with EntityDescriptor", () => {
     it("renders card metadata tiles automatically from descriptor", () => {
       const student = {
         id: "s1",
@@ -530,7 +530,7 @@ describe("SSOT Entity UI Registry Architecture", () => {
       };
 
       const markup = renderToStaticMarkup(
-        <EntityCardMetadata
+        <DirectoryCardMetadata
           descriptor={studentsEntityDescriptor}
           entity={student as unknown as never}
         />,
@@ -552,7 +552,7 @@ describe("SSOT Entity UI Registry Architecture", () => {
       };
 
       const markup = renderToStaticMarkup(
-        <EntityCardMetadata
+        <DirectoryCardMetadata
           descriptor={studentsEntityDescriptor}
           entity={student as unknown as never}
           visibleColumnIds={["grNumber"]}
@@ -573,7 +573,7 @@ describe("SSOT Entity UI Registry Architecture", () => {
       };
 
       const markup = renderToStaticMarkup(
-        <EntityCardMetadata entityType="contacts" entity={contact as unknown as never} />,
+        <DirectoryCardMetadata entityType="contacts" entity={contact as unknown as never} />,
       );
 
       expect(markup).toContain("Full Name");
@@ -599,12 +599,12 @@ describe("SSOT Entity UI Registry Architecture", () => {
 
       await act(async () => {
         root.render(
-          <Drawer open={true} onClose={() => {}} title="Contact Details">
+          <DetailDrawerShell open={true} onClose={() => {}} title="Contact Details">
             <EntityDescriptorSections
               descriptor={contactsEntityDescriptor}
               entity={contact as unknown as never}
             />
-          </Drawer>,
+          </DetailDrawerShell>,
         );
       });
 
@@ -892,7 +892,7 @@ describe("SSOT Entity UI Registry Architecture", () => {
     });
   });
 
-  describe("EntityCardMetadata — descriptor-driven tile rendering", () => {
+  describe("DirectoryCardMetadata — descriptor-driven tile rendering", () => {
     it("renders metadata tiles from entity + entityType without explicit columns prop", () => {
       const contact = {
         id: "c1",
@@ -906,7 +906,7 @@ describe("SSOT Entity UI Registry Architecture", () => {
       };
 
       const markup = renderToStaticMarkup(
-        <EntityCardMetadata entityType="contacts" entity={contact} />,
+        <DirectoryCardMetadata entityType="contacts" entity={contact} />,
       );
 
       // Should render tiles for visible card fields (not cardSlot="hidden")
@@ -917,7 +917,7 @@ describe("SSOT Entity UI Registry Architecture", () => {
 
     it("renders nothing when entity is undefined", () => {
       const markup = renderToStaticMarkup(
-        <EntityCardMetadata entityType="contacts" entity={undefined} />,
+        <DirectoryCardMetadata entityType="contacts" entity={undefined} />,
       );
       // Should not throw — empty or minimal output
       expect(markup).toBeDefined();

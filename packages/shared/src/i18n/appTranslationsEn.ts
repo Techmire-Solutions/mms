@@ -4872,6 +4872,8 @@ export const APP_TRANSLATIONS_EN = {
   "messaging.clearLogsConfirm": "Archive Logs",
   "messaging.clearLogsDesc":
     "Hide all message logs from Reports? Logs are soft-archived and removed from the history view.",
+  "messaging.restoreLog": "Restore",
+  "messaging.restoredToast": "Message log restored.",
   "messaging.clearSelection": "Clear Selection",
   "messaging.columns.fixed": "Fixed",
   "messaging.columns.hidden": "Hidden",
@@ -5017,6 +5019,7 @@ export const APP_TRANSLATIONS_EN = {
   "messaging.smsNoEligibleContacts": "No selected contacts have a phone number.",
   "messaging.smsSegmentBadge": "SMS • {count} seg",
   "messaging.smsSegmentStats": "{segments} seg ({remaining} left)",
+  "messaging.charCount": "{count} chars",
   "messaging.someRecipientsSkipped": "Some recipients were skipped.",
   "messaging.speed.express": "Express (0.3s)",
   "messaging.speed.normal": "Normal (0.6s)",

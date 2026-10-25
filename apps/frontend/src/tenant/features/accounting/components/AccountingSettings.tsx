@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import type { Account, FiscalYear } from "@mms/shared";
 import { useTranslation } from "@/hooks/useTranslation";
-import { WarningCallout } from "@/components/app/WarningCallout";
+import { Alert } from "@/components/app/Alert";
 import { ModuleSetupSaveFooter } from "@/components/app/ModuleSetupSaveFooter";
 import { AccountingFiscalYearModal } from "./AccountingFiscalYearModal";
 import { AccountingSettingsPreferences } from "./AccountingSettingsPreferences";
@@ -68,7 +68,7 @@ export const AccountingSettings = function AccountingSettings({
   return (
     <ModuleSetupContent>
       {!isPrefsReady && (
-        <WarningCallout
+        <Alert
           role="alert"
           tone={isPrefsLoadFailed ? "destructive" : "info"}
           description={

@@ -7,7 +7,7 @@ import {
   type WorkspaceRole,
   type ModuleCustomField,
 } from "@mms/shared";
-import { WarningCallout } from "@/components/app/WarningCallout";
+import { Alert } from "@/components/app/Alert";
 import { Button } from "@/components/ui/button";
 import { FormSelect } from "@/components/app/FormSelect";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -45,7 +45,7 @@ export function EditUserModalFields({
   return (
     <form id={formId} noValidate className="space-y-4" onSubmit={onSubmit}>
       {!canManageThisUser && (
-        <WarningCallout
+        <Alert
           tone="destructive"
           density="compact"
           role="alert"

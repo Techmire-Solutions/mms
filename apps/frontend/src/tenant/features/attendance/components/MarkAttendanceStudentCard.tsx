@@ -1,6 +1,6 @@
 import React from "react";
 import type { HTMLMotionProps } from "framer-motion";
-import { EntityCardMetaTile } from "@/components/app/EntityCardMetaTile";
+import { DirectoryCardMetaTile } from "@/components/app/DirectoryCardMetaTile";
 import { EntityCard } from "@/components/app/EntityCard";
 import { useWorkCardAction } from "@/hooks/useWorkCardAction";
 import type { getAttendanceStatusInfo } from "@/lib/data/attendanceData";
@@ -9,7 +9,7 @@ import { cn } from "@/lib/utils";
 import type { ModuleFieldDef } from "@mms/shared";
 import type { AttendanceRow } from "../lib/markAttendanceTypes";
 
-/** EntityCard tile (workshop) — not DirectoryCard. */
+/** EntityCard tile (workshop) — not DirectoryEntityCard. */
 export interface MarkAttendanceStudentCardProps {
   row: AttendanceRow;
   statusInfo: ReturnType<typeof getAttendanceStatusInfo>;
@@ -44,7 +44,7 @@ export function MarkAttendanceStudentCard({
       />
       <EntityCard.MetaGrid className="grid-cols-1 sm:grid-cols-2 gap-2 pt-2 border-t border-border/40 ms-0">
         {enabledFields.map((field) => (
-          <EntityCardMetaTile
+          <DirectoryCardMetaTile
             key={field.id}
             label={`${field.label}${field.required ? " *" : ""}`}
             className={field.id === "notes" ? "sm:col-span-2" : ""}
@@ -57,7 +57,7 @@ export function MarkAttendanceStudentCard({
                 onFieldChange={onFieldChange}
               />
             </div>
-          </EntityCardMetaTile>
+          </DirectoryCardMetaTile>
         ))}
       </EntityCard.MetaGrid>
     </EntityCard>

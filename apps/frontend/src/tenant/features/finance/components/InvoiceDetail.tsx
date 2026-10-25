@@ -2,7 +2,7 @@ import React from "react";
 import { ReceiptText, User, Calendar, CreditCard, Printer } from "lucide-react";
 import { type Invoice } from "@/lib/data/financeData";
 import { Button } from "@/components/ui/button";
-import { Drawer } from "@/components/app/Drawer";
+import { DetailDrawerShell } from "@/components/app/DetailDrawerShell";
 import { StatusBadge, type StatusBadgeConfigItem } from "@/components/app/StatusBadge";
 import { cn } from "@/lib/utils";
 import { SEMANTIC_BADGE } from "@/lib/ui/semanticTone";
@@ -158,7 +158,7 @@ export const InvoiceDetail = function InvoiceDetail({
   ))();
 
   return (
-    <Drawer
+    <DetailDrawerShell
       open
       onClose={onClose}
       title={t("finance.detail.title", { id: invoice.id })}
@@ -249,6 +249,6 @@ export const InvoiceDetail = function InvoiceDetail({
           </div>
         )}
       </div>
-    </Drawer>
+    </DetailDrawerShell>
   );
 };

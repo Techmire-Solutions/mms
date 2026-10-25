@@ -2,7 +2,7 @@ import React from "react";
 import { describe, expect, it, vi } from "vitest";
 import { renderToStaticMarkup } from "react-dom/server";
 import { GraduationCap } from "lucide-react";
-import { ModuleUniversalBulkActionBar } from "./ModuleUniversalBulkActionBar";
+import { BulkSelectionBar } from "./BulkSelectionBar";
 
 vi.mock("@/hooks/useTranslation", () => ({
   useTranslation: () => ({
@@ -14,10 +14,10 @@ vi.mock("@/hooks/useTranslation", () => ({
   }),
 }));
 
-describe("ModuleUniversalBulkActionBar", () => {
+describe("BulkSelectionBar", () => {
   it("renders nothing when selectedCount is 0", () => {
     const html = renderToStaticMarkup(
-      <ModuleUniversalBulkActionBar
+      <BulkSelectionBar
         selectedCount={0}
         viewingDeleted={false}
         canDelete={true}
@@ -33,7 +33,7 @@ describe("ModuleUniversalBulkActionBar", () => {
 
   it("renders count label, delete button, and messaging channels in active mode", () => {
     const html = renderToStaticMarkup(
-      <ModuleUniversalBulkActionBar
+      <BulkSelectionBar
         selectedCount={4}
         viewingDeleted={false}
         canDelete={true}
@@ -62,7 +62,7 @@ describe("ModuleUniversalBulkActionBar", () => {
 
   it("renders restore button in viewingDeleted mode", () => {
     const html = renderToStaticMarkup(
-      <ModuleUniversalBulkActionBar
+      <BulkSelectionBar
         selectedCount={2}
         viewingDeleted={true}
         canDelete={true}
@@ -79,7 +79,7 @@ describe("ModuleUniversalBulkActionBar", () => {
 
   it("falls back to trash-scoped i18n keys when primary keys are missing", () => {
     const html = renderToStaticMarkup(
-      <ModuleUniversalBulkActionBar
+      <BulkSelectionBar
         selectedCount={5}
         viewingDeleted={false}
         canDelete={true}
@@ -95,7 +95,7 @@ describe("ModuleUniversalBulkActionBar", () => {
 
   it("renders exportAction pass-through with its explicit label", () => {
     const html = renderToStaticMarkup(
-      <ModuleUniversalBulkActionBar
+      <BulkSelectionBar
         selectedCount={3}
         viewingDeleted={false}
         canDelete={true}

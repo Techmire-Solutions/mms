@@ -4,7 +4,7 @@ import { type CheckResult, runFullEligibility } from "@/lib/data/enrollmentData"
 import { type Student } from "@/lib/data/studentsData";
 import { type Session, type Class } from "@/lib/data/sessionsData";
 import { useTranslation } from "@/hooks/useTranslation";
-import { WarningCallout } from "@/components/app/WarningCallout";
+import { Alert } from "@/components/app/Alert";
 
 const ICONS: Record<string, React.ReactElement> = {
   pass: <CheckCircle2 className="w-4 h-4 text-success flex-shrink-0" aria-hidden="true" />,
@@ -79,7 +79,7 @@ export function Step3Eligibility({
           </div>
         )}
         {warnCount > 0 && (
-          <WarningCallout
+          <Alert
             density="compact"
             className="rounded-xl py-1.5"
             description={t("enrollments.wizard.step3Warnings", { count: warnCount })}

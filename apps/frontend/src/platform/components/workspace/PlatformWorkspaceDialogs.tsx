@@ -7,7 +7,7 @@ import {
   useResetWorkspaceAdminPassword,
   useCreateWorkspaceAdmin,
 } from "@/platform/hooks/usePlatformWorkspaces";
-import { Drawer } from "@/components/app/Drawer";
+import { DetailDrawerShell } from "@/components/app/DetailDrawerShell";
 import { EntityDescriptorSections } from "@/components/app/EntityDescriptorSections";
 import type { EntityDescriptor } from "@/components/common/entityRegistryTypes";
 import type { PlatformWorkspaceRow as PlatformWorkspaceRowData } from "@mms/shared";
@@ -112,7 +112,7 @@ export function PlatformWorkspaceDialogs({
         />
       ) : null}
 
-      <Drawer
+      <DetailDrawerShell
         open={Boolean(inspect)}
         onClose={modalState.handleCloseInspect}
         title={inspect?.madrasaName ?? "Workspace"}
@@ -124,7 +124,7 @@ export function PlatformWorkspaceDialogs({
             descriptor={descriptor}
           />
         ) : null}
-      </Drawer>
+      </DetailDrawerShell>
     </>
   );
 }

@@ -2,7 +2,7 @@ import type React from "react";
 import { ShieldCheck } from "lucide-react";
 import { ModuleTierMotion } from "@/components/app/ModuleTierMotion";
 import { SubTabBar } from "@/components/app/SubTabBar";
-import { WarningCallout } from "@/components/app/WarningCallout";
+import { Alert } from "@/components/app/Alert";
 import { AttendanceFilters } from "@/tenant/features/attendance/components/AttendanceFilters";
 import { AttendanceRecords } from "@/tenant/features/attendance/components/AttendanceRecords";
 import { AuditLog } from "@/tenant/features/attendance/components/AuditLog";
@@ -78,7 +78,7 @@ export function AttendanceWorkTier({
   return (
     <ModuleTierMotion tier="work" className="space-y-5">
       {showRoleBanner && (
-        <WarningCallout
+        <Alert
           tone="info"
           density="compact"
           icon={ShieldCheck}

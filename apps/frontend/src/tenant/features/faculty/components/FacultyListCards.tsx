@@ -1,5 +1,5 @@
 import React, { useMemo } from "react";
-import { EntityCardsGrid } from "@/components/app/EntityCardsGrid";
+import { ModuleDirectoryCards } from "@/components/app/ModuleDirectoryCards";
 import { formatDirectoryPageCountLabel } from "@/lib/formatDirectoryPageCountLabel";
 import { useReducedMotion } from "@/hooks/useReducedMotion";
 import { useTranslation } from "@/hooks/useTranslation";
@@ -56,7 +56,7 @@ export function FacultyListCards(props: FacultyListCardsProps): React.JSX.Elemen
   });
 
   return (
-    <EntityCardsGrid
+    <ModuleDirectoryCards
       items={items}
       selectedIds={selectedIds}
       onSelectAll={onSelectAll}

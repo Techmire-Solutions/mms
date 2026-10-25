@@ -2,9 +2,9 @@ import React from "react";
 import { formatDate } from "@mms/shared";
 import { StatusBadge } from "@/components/app/StatusBadge";
 import { Badge } from "@/components/ui/badge";
-import { DirectoryCard } from "@/components/app/DirectoryCard";
+import { DirectoryEntityCard } from "@/components/app/DirectoryEntityCard";
 import { EntityCard } from "@/components/app/EntityCard";
-import { EntityCardMetaTile } from "@/components/app/EntityCardMetaTile";
+import { DirectoryCardMetaTile } from "@/components/app/DirectoryCardMetaTile";
 import { useTranslation } from "@/hooks/useTranslation";
 import {
   getJournalEntryLineTotals,
@@ -23,7 +23,7 @@ export interface JournalEntryCardProps {
   reducedMotion: boolean;
 }
 
-/** Work directory card — DirectoryCard SSOT (do not hand-compose EntityCard). */
+/** Work directory card — DirectoryEntityCard SSOT (do not hand-compose EntityCard). */
 export function JournalEntryCard({
   entry,
   props,
@@ -44,7 +44,7 @@ export function JournalEntryCard({
   const { totalDebit, totalCredit } = getJournalEntryLineTotals(entry);
 
   return (
-    <DirectoryCard
+    <DirectoryEntityCard
       entity={entry}
       selectedIds={selectedIds}
       canSelect={canDelete}
@@ -78,12 +78,12 @@ export function JournalEntryCard({
       metadataSlot={
         <EntityCard.MetaGrid>
           {isColumnVisible("date") && (
-            <EntityCardMetaTile label={t("accounting.columns.journal.date")}>
+            <DirectoryCardMetaTile label={t("accounting.columns.journal.date")}>
               <span className="font-mono">{formatDate(entry.date)}</span>
-            </EntityCardMetaTile>
+            </DirectoryCardMetaTile>
           )}
           {isColumnVisible("tags") && (entry.tags || []).length > 0 && (
-            <EntityCardMetaTile label={t("accounting.columns.journal.tags")}>
+            <DirectoryCardMetaTile label={t("accounting.columns.journal.tags")}>
               <span className="flex flex-wrap gap-1">
                 {(entry.tags || []).map((tag) => (
                   <Badge key={tag} pill tone="primary" className="px-1.5 font-bold">
@@ -91,26 +91,26 @@ export function JournalEntryCard({
                   </Badge>
                 ))}
               </span>
-            </EntityCardMetaTile>
+            </DirectoryCardMetaTile>
           )}
           {isColumnVisible("status") && (
-            <EntityCardMetaTile label={t("accounting.columns.journal.status")}>
+            <DirectoryCardMetaTile label={t("accounting.columns.journal.status")}>
               <StatusBadge status={entry.status} config={journalStatusConfig} size="sm" />
-            </EntityCardMetaTile>
+            </DirectoryCardMetaTile>
           )}
           {isColumnVisible("debit") && (
-            <EntityCardMetaTile label={t("accounting.columns.journal.debit")}>
+            <DirectoryCardMetaTile label={t("accounting.columns.journal.debit")}>
               <span className="font-mono text-xs font-semibold text-info">
                 {formatAmount(totalDebit)}
               </span>
-            </EntityCardMetaTile>
+            </DirectoryCardMetaTile>
           )}
           {isColumnVisible("credit") && (
-            <EntityCardMetaTile label={t("accounting.columns.journal.credit")}>
+            <DirectoryCardMetaTile label={t("accounting.columns.journal.credit")}>
               <span className="font-mono text-xs font-semibold text-success">
                 {formatAmount(totalCredit)}
               </span>
-            </EntityCardMetaTile>
+            </DirectoryCardMetaTile>
           )}
         </EntityCard.MetaGrid>
       }

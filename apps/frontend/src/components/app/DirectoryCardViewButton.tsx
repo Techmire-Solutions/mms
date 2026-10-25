@@ -15,7 +15,7 @@ export interface EntityCardViewButtonProps {
 }
 
 /** Shared outline View control for Work directory entity card footers. */
-export const EntityCardViewButton = function EntityCardViewButton({
+export const DirectoryCardViewButton = function DirectoryCardViewButton({
   label,
   ariaLabel,
   onClick,

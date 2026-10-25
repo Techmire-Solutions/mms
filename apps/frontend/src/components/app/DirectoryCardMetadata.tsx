@@ -1,6 +1,6 @@
 import React from "react";
 import type { ReactNode } from "react";
-import { EntityCardMetaTile } from "@/components/app/EntityCardMetaTile";
+import { DirectoryCardMetaTile } from "@/components/app/DirectoryCardMetaTile";
 import type { EntityDescriptor } from "@/components/common/entityRegistryTypes";
 import { getEntityDescriptor } from "@/components/common/entityRegistry";
 import { useTranslation } from "@/hooks/useTranslation";
@@ -53,9 +53,9 @@ export interface EntityCardMetadataProps<
  * Shared Work-directory card metadata grid.
  *
  * Supports both declarative {@link EntityDescriptor} rendering and legacy column lists.
- * Maps attributes to {@link EntityCardMetaTile}s inside a {@link EntityCard.MetaGrid}.
+ * Maps attributes to {@link DirectoryCardMetaTile}s inside a {@link EntityCard.MetaGrid}.
  */
-export const EntityCardMetadata = React.memo(function EntityCardMetadata<
+export const DirectoryCardMetadata = React.memo(function DirectoryCardMetadata<
   TColumn extends { label: string } = { label: string },
   TEntity = unknown,
 >({
@@ -89,9 +89,9 @@ export const EntityCardMetadata = React.memo(function EntityCardMetadata<
       const value = effectiveDescriptor.renderFieldValue(field.key, entity);
       if (value !== null && value !== undefined) {
         tiles.push(
-          <EntityCardMetaTile key={field.key} label={resolveFieldLabel(field, t)}>
+          <DirectoryCardMetaTile key={field.key} label={resolveFieldLabel(field, t)}>
             {value}
-          </EntityCardMetaTile>,
+          </DirectoryCardMetaTile>,
         );
       }
     }
@@ -106,9 +106,9 @@ export const EntityCardMetadata = React.memo(function EntityCardMetadata<
         if (value === null || value === undefined) continue;
         renderedKeys.add(colKey);
         tiles.push(
-          <EntityCardMetaTile key={colKey} label={extraColumns.labelFor(col)}>
+          <DirectoryCardMetaTile key={colKey} label={extraColumns.labelFor(col)}>
             {value}
-          </EntityCardMetaTile>,
+          </DirectoryCardMetaTile>,
         );
       }
     }
@@ -126,9 +126,9 @@ export const EntityCardMetadata = React.memo(function EntityCardMetadata<
     const value = renderValue(col);
     if (value === null || value === undefined) return null;
     return (
-      <EntityCardMetaTile key={keyFor(col)} label={labelFor(col)}>
+      <DirectoryCardMetaTile key={keyFor(col)} label={labelFor(col)}>
         {value}
-      </EntityCardMetaTile>
+      </DirectoryCardMetaTile>
     );
   });
 

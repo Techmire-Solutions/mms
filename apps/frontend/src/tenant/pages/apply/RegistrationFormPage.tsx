@@ -8,7 +8,7 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { EmptyState } from "@/components/app/EmptyState";
 import { ErrorState } from "@/components/app/ErrorState";
-import { WarningCallout } from "@/components/app/WarningCallout";
+import { Alert } from "@/components/app/Alert";
 import RouteStatusFallback from "@/components/routing/RouteStatusFallback";
 import { useTranslation } from "@/hooks/useTranslation";
 import { ROUTES } from "@/lib/config/routes";
@@ -91,7 +91,7 @@ export default function RegistrationFormPage(): React.JSX.Element {
                   disabled={form.isPending}
                 />
                 {form.eligibility && !form.eligibility.eligible ? (
-                  <WarningCallout
+                  <Alert
                     role="alert"
                     title={t("apply.notEligible")}
                     description={form.eligibility.reasons
@@ -99,10 +99,10 @@ export default function RegistrationFormPage(): React.JSX.Element {
                       .join(" ")}
                   />
                 ) : form.eligibility?.eligible && form.seatsLeft === 0 ? (
-                  <WarningCallout tone="info" title={t("apply.waitlistNotice")} />
+                  <Alert tone="info" title={t("apply.waitlistNotice")} />
                 ) : null}
                 {form.outcome.kind === "error" ? (
-                  <WarningCallout
+                  <Alert
                     tone="destructive"
                     role="alert"
                     title={t("apply.submitFailed")}

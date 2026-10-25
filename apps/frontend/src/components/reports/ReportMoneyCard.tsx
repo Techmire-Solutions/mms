@@ -5,7 +5,7 @@ import { cn } from "@/lib/utils";
 
 /**
  * Report/statement money tile — EntityCard shell for financial report cards.
- * Do not use DirectoryCard here (selection/footer chrome is wrong for reports).
+ * Do not use DirectoryEntityCard here (selection/footer chrome is wrong for reports).
  * Non-money report tiles (activity logs, workshop) should use EntityCard directly.
  */
 export interface ReportMoneyCardProps {

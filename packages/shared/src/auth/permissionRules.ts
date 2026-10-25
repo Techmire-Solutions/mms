@@ -77,6 +77,7 @@ export const PERMISSION_RULES: Readonly<Record<Permission, PermissionRule>> = Ob
   "messaging.read": { module: "messaging", requiredActions: ["read"] },
   "messaging.write": { module: "messaging", requiredActions: ["create", "update"] },
   "messaging.clearLogs": { module: "messaging", requiredActions: ["delete"] },
+  "messaging.restoreLogs": { module: "messaging", requiredActions: ["delete"] },
 
   // Tasks
   "tasks.read": { module: "tasks", requiredActions: ["read"] },

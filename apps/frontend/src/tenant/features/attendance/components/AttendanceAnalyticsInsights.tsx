@@ -2,7 +2,7 @@ import { Card } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
 import { CARD_STRIPE_INSET } from "@/lib/ui/semanticTone";
 import { ProgressBar } from "@/components/app/ProgressBar";
-import { WarningCallout } from "@/components/app/WarningCallout";
+import { Alert } from "@/components/app/Alert";
 import { motion } from "framer-motion";
 import type { StudentRateEntry } from "@/tenant/features/attendance/hooks/useAttendanceAnalyticsModel";
 import type { TranslationFunction } from "@/lib/contexts/TranslationContext";
@@ -28,7 +28,7 @@ export function AttendanceAnalyticsInsights({
           animate={{ opacity: 1, scale: 1 }}
           transition={{ duration: 0.3, delay: 0.4 }}
         >
-          <WarningCallout
+          <Alert
             title={t("attendance.analytics.lowAlertTitle", { count: lowAttendanceCount })}
             className="items-start p-4"
             role="alert"
@@ -44,7 +44,7 @@ export function AttendanceAnalyticsInsights({
                 </div>
               ))}
             </div>
-          </WarningCallout>
+          </Alert>
         </motion.div>
       )}
 

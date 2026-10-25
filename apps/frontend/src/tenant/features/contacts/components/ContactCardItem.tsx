@@ -11,7 +11,7 @@ import {
   resolveContactPhoneDisplay,
 } from "@/lib/contacts/contactI18n";
 import { getGenderAccentBarClass } from "@/lib/ui/directoryCardAccent";
-import { DirectoryCard } from "@/components/app/DirectoryCard";
+import { DirectoryEntityCard } from "@/components/app/DirectoryEntityCard";
 import { ContactCardActions } from "@/tenant/features/contacts/components/ContactCardActions";
 import { ContactCardHeader } from "@/tenant/features/contacts/components/ContactCardHeader";
 import {
@@ -47,7 +47,7 @@ export interface ContactCardItemProps {
 }
 
 /**
- * Contacts Work directory card — DirectoryCard SSOT (do not hand-compose EntityCard).
+ * Contacts Work directory card — DirectoryEntityCard SSOT (do not hand-compose EntityCard).
  */
 export const ContactCardItem = React.memo(function ContactCardItem({
   contact,
@@ -89,7 +89,7 @@ export const ContactCardItem = React.memo(function ContactCardItem({
   const emails = resolveAllContactEmails(contact);
 
   return (
-    <DirectoryCard
+    <DirectoryEntityCard
       entity={contact}
       selectedIds={isSelected ? [contact.id] : []}
       canSelect

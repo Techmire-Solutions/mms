@@ -30,8 +30,8 @@ vi.mock("@/tenant/features/enrollments/components/EnrollmentOperationsPanel", ()
   EnrollmentOperationsPanel: () => null,
 }));
 
-vi.mock("@/components/app/Drawer", () => ({
-  Drawer: ({
+vi.mock("@/components/app/DetailDrawerShell", () => ({
+  DetailDrawerShell: ({
     title,
     subtitle,
     headerExtra,

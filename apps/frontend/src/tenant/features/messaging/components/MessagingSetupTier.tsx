@@ -10,7 +10,7 @@ import { SubTabBar } from "@/components/app/SubTabBar";
 import { useTranslation } from "@/hooks/useTranslation";
 import { ConfirmAlertDialog } from "@/components/app/ConfirmAlertDialog";
 import { useModuleSetupSubTabs } from "@/lib/setup/useModuleSetupSubTabs";
-import { useMessageTemplates } from "../hooks/useMessaging";
+import { useMessageTemplates } from "@/hooks/useMessaging";
 import { useMessagingPageOptions } from "../hooks/useMessagingPageOptions";
 import { useMessagingTemplateEditor } from "../hooks/useMessagingTemplateEditor";
 import { MessagingSetupTemplateForm } from "./MessagingSetupTemplateForm";

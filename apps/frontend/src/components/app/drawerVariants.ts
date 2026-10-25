@@ -1,4 +1,4 @@
-import type { DrawerSide, DrawerSize } from "./Drawer";
+import type { DrawerSide, DrawerSize } from "./DetailDrawerShell";
 
 export const DRAWER_SIZE_MAP: Record<DrawerSize, string> = {
   sm: "sm:max-w-sm",

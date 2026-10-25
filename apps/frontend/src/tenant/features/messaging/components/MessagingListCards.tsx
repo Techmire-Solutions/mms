@@ -1,6 +1,6 @@
 import React from "react";
 import type { Message } from "@mms/shared";
-import { EntityCardsGrid } from "@/components/app/EntityCardsGrid";
+import { ModuleDirectoryCards } from "@/components/app/ModuleDirectoryCards";
 import { type StatusBadgeConfigItem } from "@/components/app/StatusBadge";
 import { useReducedMotion } from "@/hooks/useReducedMotion";
 import { useTranslation } from "@/hooks/useTranslation";
@@ -19,6 +19,8 @@ export interface MessagingListCardsProps {
   logStatusConfig: Record<string, StatusBadgeConfigItem>;
   getRecipientName: (contactId: string | number) => string;
   isColumnVisible: (key: string) => boolean;
+  /** id of the log targeted by j/k keyboard navigation (for visible focus styling). */
+  focusedLogId?: string | null;
   onToggleLog: (log: Message, shiftKey?: boolean) => void;
   onToggleAllVisible: (checked: boolean) => void;
   onResendLog: (log: Message) => void;
@@ -38,6 +40,7 @@ export const MessagingListCards = function MessagingListCards({
   logStatusConfig,
   getRecipientName,
   isColumnVisible,
+  focusedLogId,
   onToggleLog,
   onToggleAllVisible,
   onResendLog,
@@ -51,7 +54,7 @@ export const MessagingListCards = function MessagingListCards({
 
   return (
     <div className="space-y-3">
-      <EntityCardsGrid
+      <ModuleDirectoryCards
         items={logs}
         selectedIds={selectedIdsArray}
         onSelectAll={() => onToggleAllVisible(!allVisibleSelected)}
@@ -72,6 +75,7 @@ export const MessagingListCards = function MessagingListCards({
             reducedMotion={reducedMotion}
             logStatusConfig={logStatusConfig}
             isColumnVisible={isColumnVisible}
+            isKeyboardFocused={log.id === focusedLogId}
             onToggleLog={onToggleLog}
             onResendLog={onResendLog}
             onViewLog={onViewLog}

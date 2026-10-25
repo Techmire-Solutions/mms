@@ -3,10 +3,10 @@ import { formatDate } from "@mms/shared";
 import { useReducedMotion } from "@/hooks/useReducedMotion";
 import { useTranslation } from "@/hooks/useTranslation";
 import { ENTITY_CARD_OVERFLOW_TRIGGER_CLASS } from "@/components/app/entityCardChrome";
-import { EntityCardMetaTile } from "@/components/app/EntityCardMetaTile";
-import { EntityCardsGrid } from "@/components/app/EntityCardsGrid";
+import { DirectoryCardMetaTile } from "@/components/app/DirectoryCardMetaTile";
+import { ModuleDirectoryCards } from "@/components/app/ModuleDirectoryCards";
 import { EntityCard } from "@/components/app/EntityCard";
-import { DirectoryCard } from "@/components/app/DirectoryCard";
+import { DirectoryEntityCard } from "@/components/app/DirectoryEntityCard";
 import { StatusBadge } from "@/components/app/StatusBadge";
 import { formatDirectoryPageCountLabel } from "@/lib/formatDirectoryPageCountLabel";
 import { ExaminationsRowActions } from "@/tenant/features/examinations/components/ExaminationsRowActions";
@@ -20,7 +20,7 @@ export type ExaminationsListCardsProps = Omit<
   "getColumnWidth" | "onColumnResize"
 >;
 
-/** Work directory card — DirectoryCard SSOT (do not hand-compose EntityCard). */
+/** Work directory card — DirectoryEntityCard SSOT (do not hand-compose EntityCard). */
 function ExaminationCard({
   exam,
   props,
@@ -54,7 +54,7 @@ function ExaminationCard({
   const { assignedClasses, studentCount } = getExamMeta(exam, classes, enrollments);
 
   return (
-    <DirectoryCard
+    <DirectoryEntityCard
       entity={exam}
       selectedIds={selectedIds}
       canSelect={canDelete}
@@ -72,32 +72,32 @@ function ExaminationCard({
       metadataSlot={
         <EntityCard.MetaGrid>
           {isColumnVisible("date") && (
-            <EntityCardMetaTile label={t("examinations.columns.exam.date")}>
+            <DirectoryCardMetaTile label={t("examinations.columns.exam.date")}>
               {formatDate(exam.date, true)}
-            </EntityCardMetaTile>
+            </DirectoryCardMetaTile>
           )}
           {isColumnVisible("duration") && (
-            <EntityCardMetaTile label={t("examinations.columns.exam.duration")}>
+            <DirectoryCardMetaTile label={t("examinations.columns.exam.duration")}>
               {t("examinations.durationMinutes", { minutes: exam.duration })}
-            </EntityCardMetaTile>
+            </DirectoryCardMetaTile>
           )}
           {isColumnVisible("totalMarks") && (
-            <EntityCardMetaTile label={t("examinations.columns.exam.totalMarks")}>
+            <DirectoryCardMetaTile label={t("examinations.columns.exam.totalMarks")}>
               <span className="font-semibold">{exam.totalMarks}</span>
-            </EntityCardMetaTile>
+            </DirectoryCardMetaTile>
           )}
           {isColumnVisible("passingMarks") && (
-            <EntityCardMetaTile label={t("examinations.columns.exam.passingMarks")}>
+            <DirectoryCardMetaTile label={t("examinations.columns.exam.passingMarks")}>
               {exam.passingMarks}
-            </EntityCardMetaTile>
+            </DirectoryCardMetaTile>
           )}
           {isColumnVisible("status") && (
-            <EntityCardMetaTile label={t("examinations.columns.exam.status")}>
+            <DirectoryCardMetaTile label={t("examinations.columns.exam.status")}>
               <StatusBadge status={exam.status} config={statusConfig} size="sm" />
-            </EntityCardMetaTile>
+            </DirectoryCardMetaTile>
           )}
           {isColumnVisible("classes") && (
-            <EntityCardMetaTile label={t("examinations.columns.exam.classes")}>
+            <DirectoryCardMetaTile label={t("examinations.columns.exam.classes")}>
               <span className="break-words">
                 {assignedClasses.length > 0 ? assignedClasses.map((c) => c.name).join(", ") : "—"}
               </span>
@@ -106,12 +106,12 @@ function ExaminationCard({
                   {t("examinations.studentCount", { count: studentCount })}
                 </span>
               )}
-            </EntityCardMetaTile>
+            </DirectoryCardMetaTile>
           )}
           {isColumnVisible("description") && exam.description?.trim() && (
-            <EntityCardMetaTile label={t("examinations.columns.exam.description")}>
+            <DirectoryCardMetaTile label={t("examinations.columns.exam.description")}>
               <span className="line-clamp-2 break-words">{exam.description}</span>
-            </EntityCardMetaTile>
+            </DirectoryCardMetaTile>
           )}
         </EntityCard.MetaGrid>
       }
@@ -148,7 +148,7 @@ export function ExaminationsListCards(props: ExaminationsListCardsProps): React.
   });
 
   return (
-    <EntityCardsGrid
+    <ModuleDirectoryCards
       items={exams}
       selectedIds={selectedIds}
       onSelectAll={canDelete ? () => onToggleSelectAll(!allVisibleSelected) : undefined}

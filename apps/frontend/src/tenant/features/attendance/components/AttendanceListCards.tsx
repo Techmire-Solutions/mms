@@ -1,7 +1,7 @@
 import type React from "react";
 import { useReducedMotion } from "@/hooks/useReducedMotion";
 import { EmptyState } from "@/components/app/EmptyState";
-import { EntityCardsGrid } from "@/components/app/EntityCardsGrid";
+import { ModuleDirectoryCards } from "@/components/app/ModuleDirectoryCards";
 import { formatDirectoryPageCountLabel } from "@/lib/formatDirectoryPageCountLabel";
 import type { TranslationFunction } from "@/lib/contexts/TranslationContext";
 import type { AttendanceRecord, AttendanceStatus } from "@/lib/data/attendanceData";
@@ -65,7 +65,7 @@ export function AttendanceListCards({
 
   return (
     <div className="space-y-4">
-      <EntityCardsGrid
+      <ModuleDirectoryCards
         items={paginatedRecords}
         selectedIds={selectedIds}
         onSelectAll={canDelete ? () => onToggleSelectAll(!allVisibleSelected) : undefined}

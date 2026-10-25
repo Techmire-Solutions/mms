@@ -2,7 +2,7 @@ import React, { type JSX } from "react";
 import type { LucideIcon } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
-export interface QuickActionButtonProps {
+export interface ActionButtonProps {
   label: string;
   icon: LucideIcon;
   onClick?: () => void;
@@ -12,7 +12,7 @@ export interface QuickActionButtonProps {
   ariaLabel?: string;
 }
 
-export const QuickActionButton = function QuickActionButton({
+export const ActionButton = function ActionButton({
   label,
   icon: Icon,
   onClick,
@@ -20,7 +20,7 @@ export const QuickActionButton = function QuickActionButton({
   disabled = false,
   className = "",
   ariaLabel,
-}: QuickActionButtonProps): JSX.Element {
+}: ActionButtonProps): JSX.Element {
   const baseClasses = `flex flex-col items-center justify-center gap-1.5 p-3 rounded-xl border transition-all ${className}`;
   if (href && !disabled) {
     return (

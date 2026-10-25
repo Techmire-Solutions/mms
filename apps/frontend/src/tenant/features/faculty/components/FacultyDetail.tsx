@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { IdCard, School, UserCheck } from "lucide-react";
 import { hydrateFacultyFromContact, type FacultyMember } from "@mms/shared";
-import { Drawer } from "@/components/app/Drawer";
+import { DetailDrawerShell } from "@/components/app/DetailDrawerShell";
 import { DetailDrawerRestoreOrEditAction } from "@/components/app/DetailDrawerArchiveChrome";
 import { DrawerUpdatedStamp } from "@/components/app/DrawerUpdatedStamp";
 import { Button } from "@/components/ui/button";
@@ -135,7 +135,7 @@ export function FacultyDetail({
     : t("faculty.detail.employeeSubtitle", { id: faculty.employeeId || t("common.notSpecified") });
 
   return (
-    <Drawer
+    <DetailDrawerShell
       onClose={onClose}
       title={t("faculty.detail.title")}
       subtitle={resolvedSubtitle}
@@ -237,7 +237,7 @@ export function FacultyDetail({
           onSave={handleSaveLeave}
         />
       )}
-    </Drawer>
+    </DetailDrawerShell>
   );
 }
 

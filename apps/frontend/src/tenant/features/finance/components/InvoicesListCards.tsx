@@ -1,6 +1,6 @@
 import type React from "react";
-import { DirectoryCard } from "@/components/app/DirectoryCard";
-import { EntityCardsGrid } from "@/components/app/EntityCardsGrid";
+import { DirectoryEntityCard } from "@/components/app/DirectoryEntityCard";
+import { ModuleDirectoryCards } from "@/components/app/ModuleDirectoryCards";
 import { ENTITY_CARD_OVERFLOW_TRIGGER_CLASS } from "@/components/app/entityCardChrome";
 import { useReducedMotion } from "@/hooks/useReducedMotion";
 import { useTranslation } from "@/hooks/useTranslation";
@@ -22,7 +22,7 @@ const getInvoiceAccentClass = (status: string): string => {
   return "bg-primary/50 group-hover:bg-primary";
 };
 
-/** Work directory card — DirectoryCard SSOT (do not hand-compose EntityCard). */
+/** Work directory card — DirectoryEntityCard SSOT (do not hand-compose EntityCard). */
 function InvoiceCard({
   invoice,
   props,
@@ -57,7 +57,7 @@ function InvoiceCard({
   });
 
   return (
-    <DirectoryCard
+    <DirectoryEntityCard
       entity={invoice}
       selectedIds={selectedIds}
       canSelect={canSelectInvoices}
@@ -120,7 +120,7 @@ export function InvoicesListCards(props: InvoicesListCardsProps): React.JSX.Elem
   });
 
   return (
-    <EntityCardsGrid
+    <ModuleDirectoryCards
       items={invoices}
       selectedIds={selectedIds}
       onSelectAll={canSelectInvoices ? () => onToggleSelectAll(!allVisibleSelected) : undefined}

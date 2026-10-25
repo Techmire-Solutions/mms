@@ -7,6 +7,7 @@ import {
   messagingGetMetricsHandler,
   messagingRecordLogsHandler,
   messagingClearLogsHandler,
+  messagingRestoreLogsHandler,
 } from "./messagingLogContractHandlers.js";
 import {
   messagingListTemplatesHandler,
@@ -35,6 +36,7 @@ export const messagingContractRouter: FastifyPluginAsync = async (fastify) => {
     deleteTemplate: messagingDeleteTemplateHandler,
     recordLogs: messagingRecordLogsHandler,
     clearLogs: messagingClearLogsHandler,
+    restoreLogs: messagingRestoreLogsHandler,
     resolveContacts: messagingResolveContactsHandler,
     matchRecipients: messagingMatchRecipientsHandler,
     getPreferences: messagingGetPreferencesHandler,
