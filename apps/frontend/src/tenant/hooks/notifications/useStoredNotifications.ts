@@ -47,7 +47,9 @@ export function useStoredNotifications() {
   const markAll = useMutation({ mutationFn: markAllStoredNotificationsRead, onSettled });
 
   return {
-    items: (data?.notifications ?? []).map((record) => toStoredNotificationItem(record, t, language)),
+    items: (data?.notifications ?? []).map((record) =>
+      toStoredNotificationItem(record, t, language),
+    ),
     markRead: (storedId: string) => markOne.mutate(storedId),
     markAllRead: () => {
       if ((data?.unreadCount ?? 0) > 0) markAll.mutate();

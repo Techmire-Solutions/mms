@@ -188,11 +188,7 @@ const NON_MODULE_ROUTES: ReadonlyArray<{
   {
     prefix: "/api/notifications",
     reason: "app-shell inbox; every row is filtered by the caller's own permissions",
-    paths: [
-      "/api/notifications",
-      "/api/notifications/:id/read",
-      "/api/notifications/read-all",
-    ],
+    paths: ["/api/notifications", "/api/notifications/:id/read", "/api/notifications/read-all"],
   },
   {
     prefix: "/api/db/",
