@@ -1,6 +1,7 @@
 import type { RegistrationApplicationStatus } from "@mms/shared";
 import { logger } from "../../lib/logger.js";
 import { sendTenantSms } from "../../services/sms/smsService.js";
+import { sendTenantWhatsApp } from "../../services/whatsapp/whatsappService.js";
 
 /** The three outcomes a public submission can land on; the rest are staff-side transitions. */
 type AcknowledgeableStatus = Extract<
@@ -23,14 +24,32 @@ function isAcknowledgeable(status: RegistrationApplicationStatus): status is Ack
   return status === "submitted" || status === "waitlisted" || status === "approved";
 }
 
+type ChannelResult = { sent: boolean; reason?: string };
+
+/** Logs a real delivery failure; a channel the workspace switched off is not an error. */
+function report(
+  channel: "sms" | "whatsapp",
+  reference: string,
+  result: PromiseSettledResult<ChannelResult>,
+) {
+  if (result.status === "rejected") {
+    logger.warn({ err: result.reason, reference, channel }, "registration acknowledgement failed");
+  } else if (!result.value.sent && result.value.reason !== "notifications_disabled") {
+    logger.warn(
+      { reference, channel, reason: result.value.reason },
+      "registration acknowledgement not delivered",
+    );
+  }
+}
+
 /**
- * Texts the applicant their reference number after a public submission.
+ * Sends the applicant their reference number after a public submission, by SMS and by WhatsApp.
  *
- * Delivery rides on the tenant's own SMS provider and `sendTenantSms` already returns
- * `notifications_disabled` when the workspace has not enabled SMS notifications, so a workspace
- * that never configured SMS sends nothing and pays nothing. Never throws and never blocks: the
- * application is already stored by the time this runs, and a failed text must not fail the
- * submission.
+ * Each channel rides on the tenant's own provider and is gated by its own workspace setting
+ * (`sendTenantSms` / `sendTenantWhatsApp` return `notifications_disabled` when it is off), so a
+ * workspace sends only on the channels it enabled and pays for nothing else. The two are sent
+ * independently: one failing never stops the other. Never throws and never blocks — the
+ * application is already stored, and a failed message must not fail the submission.
  */
 export async function sendRegistrationAcknowledgement(input: {
   phone: string;
@@ -39,18 +58,14 @@ export async function sendRegistrationAcknowledgement(input: {
   workspaceName: string;
 }): Promise<void> {
   if (!input.phone.trim() || !isAcknowledgeable(input.status)) return;
-  try {
-    const result = await sendTenantSms({
-      to: input.phone,
-      body: body(input.status, input.reference, input.workspaceName),
-    });
-    if (!result.sent && result.reason !== "notifications_disabled") {
-      logger.warn(
-        { reference: input.reference, reason: result.reason },
-        "registration acknowledgement SMS failed",
-      );
-    }
-  } catch (error) {
-    logger.warn({ err: error, reference: input.reference }, "registration acknowledgement failed");
-  }
+  const message = {
+    to: input.phone,
+    body: body(input.status, input.reference, input.workspaceName),
+  };
+  const [sms, whatsapp] = await Promise.allSettled([
+    sendTenantSms(message),
+    sendTenantWhatsApp(message),
+  ]);
+  report("sms", input.reference, sms);
+  report("whatsapp", input.reference, whatsapp);
 }

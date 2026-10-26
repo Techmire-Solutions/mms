@@ -1,5 +1,5 @@
 import type React from "react";
-import { AlertTriangle, Calendar, User, DollarSign } from "lucide-react";
+import { AlertTriangle, Calendar, ClipboardList, User, DollarSign } from "lucide-react";
 import type { DashboardNotificationType } from "@/lib/buildDashboardNotifications";
 
 export interface DashboardNotificationIconMeta {
@@ -17,4 +17,5 @@ export const DASHBOARD_NOTIFICATION_ICONS: Record<
   event: { icon: Calendar, bg: "bg-info/10", text: "text-info" },
   student: { icon: User, bg: "bg-success/10", text: "text-success" },
   attendance: { icon: AlertTriangle, bg: "bg-warning/10", text: "text-warning" },
+  admission: { icon: ClipboardList, bg: "bg-primary/10", text: "text-primary" },
 };

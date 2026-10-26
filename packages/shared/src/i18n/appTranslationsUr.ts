@@ -5538,6 +5538,8 @@ export const APP_TRANSLATIONS_UR: Record<AppTranslationKey, string> = {
   "notifications.urgentCount": "{count} فوری اطلاعات",
   "notifications.urgentLabel": "فوری",
   "notifications.viewAll": "تمام اطلاعات دیکھیں",
+  "notifications.waitlistSeatOfferedDesc": "{applicant} {class} کے لیے اگلے نمبر پر ہیں۔ داخلوں میں درخواست کا جائزہ لیں۔",
+  "notifications.waitlistSeatOfferedTitle": "انتظار کی فہرست میں نشست خالی ہے",
   "obligations.actions.print": "رسید {receipt} پرنٹ کریں",
   "obligations.actions.printShort": "رسید پرنٹ",
   "obligations.actions.view": "وصولی {receipt} دیکھیں",

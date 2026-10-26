@@ -5468,6 +5468,8 @@ export const APP_TRANSLATIONS_AR: Record<AppTranslationKey, string> = {
   "notifications.urgentCount": "{count} إشعار عاجل",
   "notifications.urgentLabel": "عاجل",
   "notifications.viewAll": "عرض كل الإشعارات",
+  "notifications.waitlistSeatOfferedDesc": "{applicant} هو التالي في الدور لـ {class}. راجع الطلب في القبول.",
+  "notifications.waitlistSeatOfferedTitle": "مقعد متاح من قائمة الانتظار",
   "obligations.actions.print": "طباعة إيصال {receipt}",
   "obligations.actions.printShort": "طباعة الإيصال",
   "obligations.actions.view": "عرض التحصيل {receipt}",

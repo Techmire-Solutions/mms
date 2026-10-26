@@ -42,6 +42,7 @@ import savedReportsRoutes from "./tenant/savedReports.js";
 import dashboardRoutes from "./tenant/dashboard.js";
 import openapiRoutes from "./common/openapi.js";
 import auditRoutes from "./tenant/audit/auditRoutes.js";
+import notificationsRoutes from "./tenant/notifications/notificationsRoutes.js";
 import moduleAccessRoutes from "./tenant/moduleAccess.js";
 import tasksRoutes from "./tenant/tasksRoutes.js";
 import { documentTemplatesRoutes } from "./tenant/templates/documentTemplatesContractRouter.js";
@@ -91,6 +92,7 @@ export async function registerRoutes(app: FastifyInstance): Promise<void> {
   await app.register(dashboardRoutes);
   await app.register(moduleAccessRoutes);
   await app.register(auditRoutes);
+  await app.register(notificationsRoutes);
   await app.register(backgroundJobRoutes, { prefix: "/api/background-jobs" });
   await app.register(aiRoutes, { prefix: "/api/ai" });
   await app.register(websocketRoutes);

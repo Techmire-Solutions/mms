@@ -5567,6 +5567,8 @@ export const APP_TRANSLATIONS_FA: Partial<Record<AppTranslationKey, string>> = {
   "notifications.urgentCount": "{count} اعلان فوری و مهم",
   "notifications.urgentLabel": "مهم و فوری",
   "notifications.viewAll": "مشاهده همه اعلان‌ها",
+  "notifications.waitlistSeatOfferedDesc": "{applicant} نفر بعدی برای {class} است. درخواست را در پذیرش بررسی کنید.",
+  "notifications.waitlistSeatOfferedTitle": "یک صندلی از فهرست انتظار آزاد شد",
   "obligations.actions.print": "چاپ رسید {receipt}",
   "obligations.actions.printShort": "چاپ رسید",
   "obligations.actions.view": "مشاهده رسید {receipt}",
