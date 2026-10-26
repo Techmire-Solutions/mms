@@ -74,7 +74,7 @@ export function HedgeDesignationModal({
       title={t("accounting.settings.hedges.designate")}
       icon={ShieldCheck}
       tall
-      error={Object.values(errors)}
+      error={[...new Set(Object.values(errors))]}
       cancelLabel={t("common.cancel")}
       saveLabel={t("accounting.settings.hedges.designate")}
       onSave={() => void handleSave()}
@@ -128,6 +128,7 @@ export function HedgeDesignationModal({
               name="currency"
               value={draft.currency}
               onChange={(value) => updateDraft({ currency: value })}
+              placeholder={t("common.selectPlaceholder")}
               options={currencies.map((code) => ({ value: code, label: code }))}
             />
           </Field>
@@ -185,6 +186,7 @@ export function HedgeDesignationModal({
               name="instrumentAccountId"
               value={draft.instrumentAccountId}
               onChange={(value) => updateDraft({ instrumentAccountId: value })}
+              placeholder={t("accounting.journal.form.selectAccount")}
               options={accountOptions(accounts, ["Asset", "Liability"])}
             />
           </Field>
@@ -200,6 +202,7 @@ export function HedgeDesignationModal({
                 name="reserveAccountId"
                 value={draft.reserveAccountId}
                 onChange={(value) => updateDraft({ reserveAccountId: value })}
+                placeholder={t("accounting.journal.form.selectAccount")}
                 options={accountOptions(accounts, "Equity")}
               />
             </Field>
@@ -215,6 +218,7 @@ export function HedgeDesignationModal({
               name="pnlAccountId"
               value={draft.pnlAccountId}
               onChange={(value) => updateDraft({ pnlAccountId: value })}
+              placeholder={t("accounting.journal.form.selectAccount")}
               options={accountOptions(accounts, ["Revenue", "Expense"])}
             />
           </Field>

@@ -113,6 +113,7 @@ export function HedgeActionModal({
             name="accountId"
             value={input.accountId}
             onChange={(accountId) => setInput((current) => ({ ...current, accountId }))}
+            placeholder={t("accounting.journal.form.selectAccount")}
             options={
               settle
                 ? accountOptions(accounts, "Asset")
