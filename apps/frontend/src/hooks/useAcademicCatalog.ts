@@ -1,5 +1,10 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import type { AcademicCatalogItem, AcademicCatalogKind, AcademicCatalogWrite } from "@mms/shared";
+import {
+  uuidv7,
+  type AcademicCatalogItem,
+  type AcademicCatalogKind,
+  type AcademicCatalogWrite,
+} from "@mms/shared";
 import { useAuth } from "@/lib/contexts/AuthContext";
 import { isApiError } from "@/lib/apiError";
 import { notify } from "@/lib/notify";
@@ -58,7 +63,7 @@ export function useAcademicCatalogActions(kind: AcademicCatalogKind) {
     body: AcademicCatalogWrite,
   ): Promise<AcademicCatalogItem | null> => {
     try {
-      const saved = await saveMutation.mutateAsync({ id: id ?? crypto.randomUUID(), body });
+      const saved = await saveMutation.mutateAsync({ id: id ?? uuidv7(), body });
       notify.success(t("academicCatalog.saved", { item }));
       return saved;
     } catch (error) {

@@ -4,6 +4,13 @@ import path from "node:path";
 import { getContrastRatio, MAX_RESTING_TINT_BY_MODE } from "@mms/shared";
 
 /**
+ * The tint-contract case reads every source file synchronously. It takes well under a second on
+ * its own, but under full-suite load the shared disk can push it toward the 15s default, so it
+ * gets an explicit budget instead of flaking. Every other case here is pure arithmetic.
+ */
+const SOURCE_SCAN_TIMEOUT_MS = 60_000;
+
+/**
  * Executable form of the WCAG AA contrast contract documented in `src/index.css`.
  *
  * The default light palette previously failed AA across the board: every semantic
@@ -185,58 +192,62 @@ describe("design tokens — tint strength contract", () => {
    * `/20`** and 3.80 at `/25`. WCAG 1.4.3 applies to hovered text too, so `hover:bg-<token>/20`
    * behind `text-<token>` is a real drop below AA — not an exemption.
    */
-  it("no tint stronger than the bound carries the same token as text, in any state", () => {
-    const maxAlpha = Math.round(MAX_RESTING_TINT_BY_MODE.light * 100);
-    /**
-     * Scoped to the fill tokens whose parent surface is `--card` / `--background` — the
-     * surfaces this bound is solved against. Excluded, with reasons:
-     *   - `*-foreground`: label tokens used as subtle overlays inside the DARK command
-     *     palette, where the composited surface is dark and the light-surface maths
-     *     behind this bound does not apply;
-     *   - `sidebar-*`: they live on the dark sidebar, which has its own fitted pair
-     *     (`--sidebar-foreground` / `--sidebar-muted-foreground`).
-     */
-    const isCovered = (token: string) =>
-      !token.endsWith("-foreground") && !token.startsWith("sidebar-");
+  it(
+    "no tint stronger than the bound carries the same token as text, in any state",
+    () => {
+      const maxAlpha = Math.round(MAX_RESTING_TINT_BY_MODE.light * 100);
+      /**
+       * Scoped to the fill tokens whose parent surface is `--card` / `--background` — the
+       * surfaces this bound is solved against. Excluded, with reasons:
+       *   - `*-foreground`: label tokens used as subtle overlays inside the DARK command
+       *     palette, where the composited surface is dark and the light-surface maths
+       *     behind this bound does not apply;
+       *   - `sidebar-*`: they live on the dark sidebar, which has its own fitted pair
+       *     (`--sidebar-foreground` / `--sidebar-muted-foreground`).
+       */
+      const isCovered = (token: string) =>
+        !token.endsWith("-foreground") && !token.startsWith("sidebar-");
 
-    /** Every candidate class in the literal — all interaction states are in scope. */
-    const candidateClasses = (literal: string) => literal.slice(1, -1).split(/\s+/);
+      /** Every candidate class in the literal — all interaction states are in scope. */
+      const candidateClasses = (literal: string) => literal.slice(1, -1).split(/\s+/);
 
-    const offenders: string[] = [];
+      const offenders: string[] = [];
 
-    const walk = (dir: string): string[] =>
-      readdirSync(dir, { withFileTypes: true }).flatMap((entry) => {
-        const full = path.join(dir, entry.name);
-        if (entry.isDirectory()) return entry.name === "__tests__" ? [] : walk(full);
-        if (!/\.tsx?$/.test(entry.name) || /\.test\.tsx?$/.test(entry.name)) return [];
-        return [full];
-      });
+      const walk = (dir: string): string[] =>
+        readdirSync(dir, { withFileTypes: true }).flatMap((entry) => {
+          const full = path.join(dir, entry.name);
+          if (entry.isDirectory()) return entry.name === "__tests__" ? [] : walk(full);
+          if (!/\.tsx?$/.test(entry.name) || /\.test\.tsx?$/.test(entry.name)) return [];
+          return [full];
+        });
 
-    for (const file of walk(path.resolve(import.meta.dirname, ".."))) {
-      const relative = path.relative(path.resolve(import.meta.dirname, "../.."), file);
-      for (const literal of readFileSync(file, "utf-8").matchAll(/"[^"\n]*"/g)) {
-        const classes = candidateClasses(literal[0]);
-        const textTokens = classes
-          .map((className) => /(?:\w+:)*text-([a-z-]+)$/.exec(className)?.[1])
-          .filter((token) => token !== undefined);
+      for (const file of walk(path.resolve(import.meta.dirname, ".."))) {
+        const relative = path.relative(path.resolve(import.meta.dirname, "../.."), file);
+        for (const literal of readFileSync(file, "utf-8").matchAll(/"[^"\n]*"/g)) {
+          const classes = candidateClasses(literal[0]);
+          const textTokens = classes
+            .map((className) => /(?:\w+:)*text-([a-z-]+)$/.exec(className)?.[1])
+            .filter((token) => token !== undefined);
 
-        for (const className of classes) {
-          const tint = /(?:\w+:)*bg-([a-z-]+)\/(\d+)$/.exec(className);
-          if (!tint) continue;
-          const [, token, alphaText] = tint;
-          if (!isCovered(token) || Number(alphaText) <= maxAlpha) continue;
-          if (textTokens.includes(token)) {
-            offenders.push(`${relative} → ${className} with text-${token}`);
+          for (const className of classes) {
+            const tint = /(?:\w+:)*bg-([a-z-]+)\/(\d+)$/.exec(className);
+            if (!tint) continue;
+            const [, token, alphaText] = tint;
+            if (!isCovered(token) || Number(alphaText) <= maxAlpha) continue;
+            if (textTokens.includes(token)) {
+              offenders.push(`${relative} → ${className} with text-${token}`);
+            }
           }
         }
       }
-    }
 
-    expect(
-      offenders,
-      `Resting tints stronger than /${maxAlpha} behind the same token's text:\n${offenders.join("\n")}`,
-    ).toEqual([]);
-  });
+      expect(
+        offenders,
+        `Resting tints stronger than /${maxAlpha} behind the same token's text:\n${offenders.join("\n")}`,
+      ).toEqual([]);
+    },
+    SOURCE_SCAN_TIMEOUT_MS,
+  );
 });
 
 describe("design tokens — typography legibility floor", () => {

@@ -120,6 +120,7 @@ export * from "../dashboard/widgetAggregateTypes.js";
 export * from "../core/moduleManifest.js";
 export * from "../documents/documentTemplateTypes.js";
 export * from "../core/isoDateSchema.js";
+export * from "../core/uuidv7.js";
 export * from "../core/monthKeySchema.js";
 export * from "../core/billingPeriodSchema.js";
 export * from "../core/sequenceNumberingTypes.js";

@@ -1,5 +1,4 @@
-import { randomUUID } from "node:crypto";
-import { ACADEMIC_CATALOG_KINDS, DEFAULT_ACADEMIC_CATALOG_SEEDS } from "@mms/shared";
+import { ACADEMIC_CATALOG_KINDS, DEFAULT_ACADEMIC_CATALOG_SEEDS, uuidv7 } from "@mms/shared";
 import { withTenant } from "../tenant-context.js";
 import { ACADEMIC_CATALOG_TABLES } from "./academicCatalogRepository.js";
 
@@ -10,7 +9,7 @@ export async function seedAcademicCatalogDefaults(tenant: string): Promise<void>
     for (const kind of ACADEMIC_CATALOG_KINDS) {
       const { table } = ACADEMIC_CATALOG_TABLES[kind];
       const rows = DEFAULT_ACADEMIC_CATALOG_SEEDS[kind].map((seed, sortOrder) => ({
-        id: randomUUID(),
+        id: uuidv7(),
         workspaceSubdomain: subdomain,
         code: seed.code,
         name: seed.name,
