@@ -29,16 +29,16 @@ const STATUS_KEYS: Record<HedgeStatus, AppTranslationKey> = {
   discontinued: "accounting.settings.hedges.statusDiscontinued",
 };
 
-interface AccountingSettingsHedgesSectionProps {
+export interface AccountingHedgesSectionProps {
   accounts: Account[];
-  canEditSetup: boolean;
+  canEdit: boolean;
 }
 
 /** IFRS 9 FX forward hedges: designate, value at closing rates, settle and reclassify the reserve. */
-export function AccountingSettingsHedgesSection({
+export function AccountingHedgesSection({
   accounts,
-  canEditSetup,
-}: AccountingSettingsHedgesSectionProps): React.JSX.Element {
+  canEdit,
+}: AccountingHedgesSectionProps): React.JSX.Element {
   const { t } = useTranslation();
   const panel = useHedgesPanel();
   const currencies = useAccountingCurrencySettings().data?.enabledCurrencies ?? [];
@@ -101,7 +101,7 @@ export function AccountingSettingsHedgesSection({
       id: "actions",
       label: t("accounting.settings.hedges.actions"),
       render: (hedge) =>
-        canEditSetup ? (
+        canEdit ? (
           <div className="flex flex-wrap gap-2">
             {hedge.status === "active" && (
               <>
@@ -160,7 +160,7 @@ export function AccountingSettingsHedgesSection({
             onChange={panel.setValuationDate}
           />
         </Field>
-        {canEditSetup && (
+        {canEdit && (
           <Button
             type="button"
             className="min-h-11"

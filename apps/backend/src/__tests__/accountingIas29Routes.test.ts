@@ -142,4 +142,32 @@ describe("IAS 29 routes", () => {
     expect(res.statusCode).toBe(400);
     expect(mockSaveSettings).not.toHaveBeenCalled();
   });
+
+  it("given an accountant, should allow saving index points (200) but forbid hyperinflation settings (403)", async () => {
+    // Arrange
+    mockSaveIndices.mockResolvedValueOnce([
+      { indexDate: "2026-12-31", value: "150", source: "CPI" },
+    ]);
+
+    // Act
+    const putIndices = await call("accountant", "PUT", "/api/accounting/price-indices", {
+      points: [{ indexDate: "2026-12-31", value: "150" }],
+    });
+    const putSettings = await call("accountant", "PUT", "/api/accounting/hyperinflation-settings", {
+      enabled: true,
+      netMonetaryAccountId: "nmp",
+      appliesFrom: "2026-01-01",
+      indexName: "CPI",
+    });
+
+    // Assert
+    expect(putIndices.statusCode).toBe(200);
+    expect(mockSaveIndices).toHaveBeenCalledWith(
+      expect.anything(),
+      expect.objectContaining({ tenant: "demo" }),
+      [expect.objectContaining({ indexDate: "2026-12-31", value: "150" })],
+    );
+    expect(putSettings.statusCode).toBe(403);
+    expect(mockSaveSettings).not.toHaveBeenCalled();
+  });
 });

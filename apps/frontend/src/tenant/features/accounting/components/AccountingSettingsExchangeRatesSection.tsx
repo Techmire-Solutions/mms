@@ -11,21 +11,25 @@ import { EmptyState } from "@/components/app/EmptyState";
 import { ErrorState } from "@/components/app/ErrorState";
 import { Field, FieldErrorMessage } from "@/components/app/FormPrimitives";
 import { FormSelect } from "@/components/app/FormSelect";
+import { SectionCard } from "@/components/app/SectionCard";
 import { DataTable, type DataTableColumn } from "@/components/common/data-table";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { SETUP_SECTION_CARD_CLASS } from "@/components/ui/formStyles";
 import { useTranslation } from "@/hooks/useTranslation";
 import { useExchangeRateDraft } from "@/tenant/features/accounting/hooks/useExchangeRateDraft";
 
-interface AccountingSettingsExchangeRatesSectionProps {
+export interface AccountingSettingsExchangeRatesSectionProps {
   functionalCurrency: string;
   enabledCurrencies: string[];
+  canEdit?: boolean;
 }
 
 /** Manual exchange rates: add or override a rate, and the rate history table. */
 export function AccountingSettingsExchangeRatesSection({
   functionalCurrency,
   enabledCurrencies,
+  canEdit = true,
 }: AccountingSettingsExchangeRatesSectionProps): React.JSX.Element {
   const { t } = useTranslation();
   const rates = useExchangeRateDraft(functionalCurrency, enabledCurrencies);
@@ -74,12 +78,12 @@ export function AccountingSettingsExchangeRatesSection({
   ];
 
   return (
-    <div className="mt-6 space-y-3 border-t border-border pt-4">
-      <h3 className="m-0 flex items-center gap-2 text-sm font-semibold text-balance">
-        <ArrowLeftRight className="h-4 w-4 text-muted-foreground" aria-hidden="true" />
-        {t("accounting.settings.fx.rates.title")}
-      </h3>
-      <p className="m-0 text-xs text-muted-foreground text-pretty">
+    <SectionCard
+      title={t("accounting.settings.fx.rates.title")}
+      icon={ArrowLeftRight}
+      className={SETUP_SECTION_CARD_CLASS}
+    >
+      <p className="m-0 mb-3 text-xs text-muted-foreground text-pretty">
         {t("accounting.settings.fx.rates.hint", { currency: functionalCurrency })}
       </p>
 
@@ -151,16 +155,18 @@ export function AccountingSettingsExchangeRatesSection({
         </Field>
       </div>
       <FieldErrorMessage message={rates.error ?? undefined} className="m-0" />
-      <Button
-        type="button"
-        className="min-h-11"
-        onClick={() => void rates.handleSave()}
-        disabled={rates.saving || enabledCurrencies.length === 0}
-      >
-        {rates.overriding
-          ? t("accounting.settings.fx.rates.override")
-          : t("accounting.settings.fx.rates.add")}
-      </Button>
+      {canEdit && (
+        <Button
+          type="button"
+          className="min-h-11"
+          onClick={() => void rates.handleSave()}
+          disabled={rates.saving || enabledCurrencies.length === 0}
+        >
+          {rates.overriding
+            ? t("accounting.settings.fx.rates.override")
+            : t("accounting.settings.fx.rates.add")}
+        </Button>
+      )}
 
       {rates.isError ? (
         <ErrorState
@@ -184,6 +190,6 @@ export function AccountingSettingsExchangeRatesSection({
           }
         />
       )}
-    </div>
+    </SectionCard>
   );
 }

@@ -19,14 +19,14 @@ import { useFxRevaluationPanel } from "@/tenant/features/accounting/hooks/useFxR
 
 type LineRow = FxRevaluationLine & { id: string };
 
-interface AccountingSettingsFxRevaluationSectionProps {
-  canEditSetup: boolean;
+export interface AccountingFxRevaluationSectionProps {
+  canEdit: boolean;
 }
 
 /** IAS 21.23 period-end revaluation: preview at closing rates, post with auto-reversal, history. */
-export function AccountingSettingsFxRevaluationSection({
-  canEditSetup,
-}: AccountingSettingsFxRevaluationSectionProps): React.JSX.Element {
+export function AccountingFxRevaluationSection({
+  canEdit,
+}: AccountingFxRevaluationSectionProps): React.JSX.Element {
   const { t } = useTranslation();
   const panel = useFxRevaluationPanel();
   const money = (value: string, currency: string) =>
@@ -118,7 +118,7 @@ export function AccountingSettingsFxRevaluationSection({
         >
           {t("accounting.settings.fxReval.preview")}
         </Button>
-        {canEditSetup && panel.previewRun && (
+        {canEdit && panel.previewRun && (
           <Button
             type="button"
             className="min-h-11"

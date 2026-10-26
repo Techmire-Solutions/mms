@@ -63,12 +63,13 @@ describe("AccountingSettingsFxSection", () => {
     expect(html).toMatch(/id="accounting-functional-currency"[^>]*disabled/);
   });
 
-  it("given stored rates, should list them as 1 source = rate target", () => {
+  it("given exchangeability settings, should render exchangeability section and not exchange rates table", () => {
     // Arrange / Act
     const html = renderToStaticMarkup(<AccountingSettingsFxSection canEditSetup />);
 
     // Assert
-    expect(html).toContain("1 USD = 280.5 PKR");
+    expect(html).toContain("accounting.settings.fx.exchangeability.title");
+    expect(html).not.toContain("1 USD = 280.5 PKR");
   });
 
   it("given a view-only user, should hide the settings save footer", () => {

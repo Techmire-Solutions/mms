@@ -10,16 +10,16 @@ import type { HyperinflationPanel } from "@/tenant/features/accounting/hooks/use
 
 type LineRow = Ias29Run["lines"][number] & { id: string };
 
-interface AccountingSettingsIas29RunsPanelProps {
+export interface AccountingIas29RunsPanelProps {
   panel: HyperinflationPanel;
-  canEditSetup: boolean;
+  canEdit: boolean;
 }
 
 /** IAS 29 restatement: preview, post with next-day reversal, and history. */
-export function AccountingSettingsIas29RunsPanel({
+export function AccountingIas29RunsPanel({
   panel,
-  canEditSetup,
-}: AccountingSettingsIas29RunsPanelProps): React.JSX.Element {
+  canEdit,
+}: AccountingIas29RunsPanelProps): React.JSX.Element {
   const { t } = useTranslation();
   const money = (value: string) => formatMoney(Number(value), undefined, { useSymbol: true });
   const signed = (value: string) => (
@@ -97,7 +97,7 @@ export function AccountingSettingsIas29RunsPanel({
         >
           {t("accounting.settings.fxReval.preview")}
         </Button>
-        {canEditSetup && panel.previewRun && (
+        {canEdit && panel.previewRun && (
           <Button
             type="button"
             className="min-h-11"

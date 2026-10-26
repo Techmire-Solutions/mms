@@ -21,16 +21,18 @@ import {
 import { accountingErrorMessage } from "@/tenant/features/accounting/hooks/useAccountingSetupSaveActions";
 import { BankReconciliationMatcher } from "./BankReconciliationMatcher";
 
-export interface AccountingSettingsBankRecSectionProps {
+export interface AccountingBankRecSectionProps {
   accounts: Account[];
   /** `decimalSeparator` preference — money inputs must be parsed with it. */
   decimalSeparator: MoneySeparator;
+  canEdit?: boolean;
 }
 
-export function AccountingSettingsBankRecSection({
+export function AccountingBankRecSection({
   accounts,
   decimalSeparator,
-}: AccountingSettingsBankRecSectionProps): React.JSX.Element {
+  canEdit = true,
+}: AccountingBankRecSectionProps): React.JSX.Element {
   const { t } = useTranslation();
   const { data: statements = [] } = useBankStatements();
   const save = useSaveBankStatement();
@@ -194,21 +196,23 @@ export function AccountingSettingsBankRecSection({
         />
       </div>
       <FieldErrorMessage message={amountErrors.lineAmount} className="mt-2" />
-      <Button
-        type="button"
-        className="mt-3 min-h-11"
-        onClick={async () => {
-          await handleSave();
-        }}
-        disabled={!accountId || save.isPending}
-      >
-        {t("accounting.settings.bankRec.add")}
-      </Button>
+      {canEdit && (
+        <Button
+          type="button"
+          className="mt-3 min-h-11"
+          onClick={async () => {
+            await handleSave();
+          }}
+          disabled={!accountId || save.isPending}
+        >
+          {t("accounting.settings.bankRec.add")}
+        </Button>
+      )}
       <p className="m-0 mt-3 text-xs text-muted-foreground">
         {t("accounting.settings.bankRec.count", { count: String(statements.length) })}
       </p>
 
-      <BankReconciliationMatcher t={t} />
+      <BankReconciliationMatcher t={t} canEdit={canEdit} />
     </SectionCard>
   );
 }

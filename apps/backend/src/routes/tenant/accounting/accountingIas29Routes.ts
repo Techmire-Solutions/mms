@@ -80,7 +80,7 @@ export const accountingIas29Routes: FastifyPluginAsync = async (fastify) => {
     );
   });
 
-  fastify.put("/price-indices", { config: SETUP_WRITE }, async (request, reply) => {
+  fastify.put("/price-indices", async (request, reply) => {
     const user = request.user as User;
     if (!canWriteCollection(user, COLLECTION)) return sendForbidden(reply);
     const parsed = parseRequest(priceIndexPutSchema, request.body);

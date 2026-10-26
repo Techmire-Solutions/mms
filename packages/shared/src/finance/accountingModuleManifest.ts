@@ -227,7 +227,15 @@ export const ACCOUNTING_MODULE_MANIFEST = {
     reports: "accounting.read",
   } satisfies Record<string, Permission>,
   work: {
-    directoryViews: ["overview", "journal", "ledger", "trial", "coa"] as const,
+    directoryViews: [
+      "overview",
+      "journal",
+      "ledger",
+      "trial",
+      "coa",
+      "banking",
+      "periodEnd",
+    ] as const,
     bulkActions: ["delete"] as const,
   },
   defaultPageSize: 15,

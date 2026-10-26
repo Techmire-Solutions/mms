@@ -9,10 +9,12 @@ import type { TranslationFunction } from "@/lib/contexts/TranslationContext";
 
 export interface BankReconciliationMatcherProps {
   t: TranslationFunction;
+  canEdit?: boolean;
 }
 
 export function BankReconciliationMatcher({
   t,
+  canEdit = true,
 }: BankReconciliationMatcherProps): React.JSX.Element {
   const match = useMatchBankReconciliation();
   const [journalEntryId, setJournalEntryId] = useState("");
@@ -59,17 +61,19 @@ export function BankReconciliationMatcher({
           aria-label={t("accounting.settings.bankRec.journalLine")}
         />
       </div>
-      <Button
-        type="button"
-        variant="outline"
-        className="mt-3 min-h-11"
-        onClick={async () => {
-          await handleMatch();
-        }}
-        disabled={match.isPending}
-      >
-        {t("accounting.settings.bankRec.match")}
-      </Button>
+      {canEdit && (
+        <Button
+          type="button"
+          variant="outline"
+          className="mt-3 min-h-11"
+          onClick={async () => {
+            await handleMatch();
+          }}
+          disabled={match.isPending}
+        >
+          {t("accounting.settings.bankRec.match")}
+        </Button>
+      )}
     </>
   );
 }

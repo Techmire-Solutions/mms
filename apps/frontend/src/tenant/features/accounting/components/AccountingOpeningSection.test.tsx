@@ -44,7 +44,7 @@ vi.mock("@/tenant/features/accounting/hooks/useAccountingLedgerOps", async (impo
   };
 });
 
-import { AccountingSettingsOpeningSection } from "./AccountingSettingsOpeningSection";
+import { AccountingOpeningSection } from "./AccountingOpeningSection";
 
 globalThis.IS_REACT_ACT_ENVIRONMENT = true;
 
@@ -70,7 +70,7 @@ const fiscalYears: FiscalYear[] = [
   },
 ] as unknown as FiscalYear[];
 
-describe("AccountingSettingsOpeningSection", () => {
+describe("AccountingOpeningSection", () => {
   let container: HTMLDivElement;
   let root: Root;
 
@@ -94,13 +94,14 @@ describe("AccountingSettingsOpeningSection", () => {
     container.remove();
   });
 
-  function render(): void {
+  function render(props?: { canEdit?: boolean }): void {
     act(() => {
       root.render(
-        <AccountingSettingsOpeningSection
+        <AccountingOpeningSection
           accounts={accounts}
           fiscalYears={fiscalYears}
           decimalSeparator="period"
+          canEdit={props?.canEdit}
         />,
       );
     });
@@ -239,5 +240,20 @@ describe("AccountingSettingsOpeningSection", () => {
     );
     expect(options).toEqual(["fy-open"]);
     expect(options).not.toContain("fy-closed");
+  });
+
+  it("given a view-only user, should hide post and add actions", () => {
+    render({ canEdit: false });
+
+    expect(
+      [...container.querySelectorAll("button")].some(
+        (b) => b.textContent === "accounting.settings.opening.post",
+      ),
+    ).toBe(false);
+    expect(
+      [...container.querySelectorAll("button")].some(
+        (b) => b.textContent === "accounting.settings.opening.add",
+      ),
+    ).toBe(false);
   });
 });
