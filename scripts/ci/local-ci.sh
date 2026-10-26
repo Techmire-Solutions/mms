@@ -115,6 +115,26 @@ echo "Phase A: quality gates (pre-pr-review.sh)"
 bash .agent/skills/mms-code-review/scripts/pre-pr-review.sh
 note_ran "gates"
 
+# Mirrors CI `pnpm format:check`. --end-of-line auto: Windows autocrlf checkouts are
+# CRLF on disk but committed as LF, so the configured "lf" would flag every file.
+echo ""
+echo "Phase A2: formatting (Prettier)"
+if [[ "$SCOPE" == "full" ]]; then
+  pnpm exec prettier --check --end-of-line auto .
+  note_ran "prettier"
+else
+  FORMAT_FILES=()
+  while IFS= read -r f; do
+    [[ -n "$f" && -f "$f" ]] && FORMAT_FILES+=("$f")
+  done <<< "$CHANGED_TEXT"
+  if [[ "${#FORMAT_FILES[@]}" -gt 0 ]]; then
+    pnpm exec prettier --check --end-of-line auto --ignore-unknown "${FORMAT_FILES[@]}"
+    note_ran "prettier"
+  else
+    note_skip "prettier(no-changes)"
+  fi
+fi
+
 NEED_FE=0; NEED_BE_UNIT=0; NEED_BE_DB=0; NEED_E2E=0
 bucket frontend && NEED_FE=1
 bucket backend_unit && NEED_BE_UNIT=1
