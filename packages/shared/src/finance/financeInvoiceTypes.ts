@@ -2,6 +2,7 @@
 import { z } from "zod";
 import { invoiceLineInsertSchema, invoiceLineRecordSchema } from "./financeBilling.js";
 import { isoDateSchema } from "../core/isoDateSchema.js";
+import { documentFxFields } from "./financeDocumentFx.js";
 
 export const INVOICE_STATUSES = ["paid", "pending", "overdue", "partial", "cancelled"] as const;
 export type InvoiceStatus = (typeof INVOICE_STATUSES)[number];
@@ -32,6 +33,7 @@ export const invoiceRecordSchema = z
     creditedAmt: z.number().nonnegative().optional(),
     lastRemindedAt: z.string().nullable().optional(),
     reminderCount: z.number().int().nonnegative().optional(),
+    ...documentFxFields,
     lines: z.array(invoiceLineRecordSchema).optional(),
     deletedAt: z.string().nullable().optional(),
     deletedBy: z.string().nullable().optional(),
@@ -70,6 +72,7 @@ export const invoiceRecordInsertSchema = z
     creditedAmt: z.number().nonnegative().optional(),
     lastRemindedAt: z.string().nullable().optional(),
     reminderCount: z.number().int().nonnegative().optional(),
+    ...documentFxFields,
     lines: z.array(invoiceLineInsertSchema).optional(),
   })
   .strict();

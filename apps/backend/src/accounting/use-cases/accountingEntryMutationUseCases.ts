@@ -24,6 +24,7 @@ import {
   journalEntryContentChanged,
 } from "./accountingLedgerGuards.js";
 import type { createGenericRelationalService } from "../../services/genericRelationalService.js";
+import { resolveEntriesFx } from "./journalEntryFx.js";
 
 type CrudService<T extends { id?: string | number }> = ReturnType<
   typeof createGenericRelationalService<T>
@@ -66,9 +67,10 @@ export async function upsertEntriesHelper(
     const sanitized = entriesWithRef.map((entry) =>
       withServerOwnedSourceKeys(entry, storedById.get(entry.id)),
     );
-    assertEntriesMutable(sanitized, storedById);
-    await assertEntriesWritable(tenant, sanitized, storedById, fiscalYears, repo.findAccountsByIds);
-    const prepared = sanitized.map((entry) => prepareJournalEntryForPersist(entry, fiscalYears));
+    const withFx = await resolveEntriesFx(repo, tenant, sanitized);
+    assertEntriesMutable(withFx, storedById);
+    await assertEntriesWritable(tenant, withFx, storedById, fiscalYears, repo.findAccountsByIds);
+    const prepared = withFx.map((entry) => prepareJournalEntryForPersist(entry, fiscalYears));
     try {
       return await upsertWithBroadcast(
         journalEntryListSchema,
@@ -115,7 +117,8 @@ export async function createJournalEntryHelper(
     );
 
     const sanitized = withServerOwnedSourceKeys({ ...record, id, ref }, existing ?? undefined);
-    const prepared = prepareJournalEntryForPersist(sanitized, fiscalYears);
+    const [withFx] = await resolveEntriesFx(repo, tenant, [sanitized]);
+    const prepared = prepareJournalEntryForPersist(withFx, fiscalYears);
     if (existing) {
       if (existing.deletedAt || journalEntryContentChanged(prepared, existing)) {
         throw new ConflictError("A different journal entry already exists with this ID");
@@ -161,11 +164,12 @@ export async function updateJournalEntryByIdHelper(
       existing ?? undefined,
     );
     const storedById = new Map(existing ? [[existing.id, existing]] : []);
-    assertEntriesMutable([sanitized], storedById);
-    assertJournalEntryPeriodOpen(sanitized, fiscalYears);
-    await assertJournalAccountsWritable(tenant, [sanitized], repo.findAccountsByIds);
+    const [withFx] = await resolveEntriesFx(repo, tenant, [sanitized]);
+    assertEntriesMutable([withFx], storedById);
+    assertJournalEntryPeriodOpen(withFx, fiscalYears);
+    await assertJournalAccountsWritable(tenant, [withFx], repo.findAccountsByIds);
     try {
-      return await entryCrud.updateById(id, prepareJournalEntryForPersist(sanitized, fiscalYears));
+      return await entryCrud.updateById(id, prepareJournalEntryForPersist(withFx, fiscalYears));
     } catch (error) {
       if (isUniqueViolation(error)) {
         mapJournalEntryUniqueError(error);

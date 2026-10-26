@@ -46,6 +46,10 @@ export const financeInvoices = pgTable(
     creditedAmt: numeric("credited_amt", { precision: 12, scale: 2 }).notNull().default("0"),
     lastRemindedAt: timestamp("last_reminded_at", { withTimezone: true, mode: "date" }),
     reminderCount: integer("reminder_count").notNull().default(0),
+    /** IAS 21 document currency; NULL = functional currency at rate 1. */
+    currency: varchar("currency", { length: 3 }),
+    /** Booked rate: functional units per one document unit. */
+    exchangeRate: numeric("exchange_rate", { precision: 20, scale: 10 }),
     ...softDeleteColumns,
     createdAt: timestamp("created_at", { withTimezone: true, mode: "date" }).notNull().defaultNow(),
     updatedAt: timestamp("updated_at", { withTimezone: true, mode: "date" }).notNull().defaultNow(),
@@ -101,6 +105,13 @@ export const financePayments = pgTable(
     receivedByUserId: text("received_by_user_id"),
     receivedBy: varchar("received_by", { length: 120 }),
     note: text("note").notNull().default(""),
+    currency: varchar("currency", { length: 3 }),
+    /** Settlement rate on the payment date. */
+    exchangeRate: numeric("exchange_rate", { precision: 20, scale: 10 }),
+    /** Realized FX gain (+) / loss (−) in the functional currency. */
+    realizedFx: numeric("realized_fx", { precision: 19, scale: 4 }),
+    /** Amount applied to the invoice in its currency (differs from `amount` cross-currency). */
+    invoiceAmount: numeric("invoice_amount", { precision: 19, scale: 4 }),
     ...softDeleteColumns,
     createdAt: timestamp("created_at", { withTimezone: true, mode: "date" }).notNull().defaultNow(),
     updatedAt: timestamp("updated_at", { withTimezone: true, mode: "date" }).notNull().defaultNow(),

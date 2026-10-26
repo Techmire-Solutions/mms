@@ -48,6 +48,9 @@ import { moduleAccessContract } from "./moduleAccess.contract.js";
 import { auditContract } from "./audit.contract.js";
 import { tasksContract } from "./tasks.contract.js";
 import { accountingLedgerContract } from "./accountingLedger.contract.js";
+import { accountingFxContract } from "./accountingFx.contract.js";
+import { accountingHedgesContract } from "./accountingHedges.contract.js";
+import { platformConsolidationContract } from "./platformConsolidation.contract.js";
 import { financeOpsContract } from "./financeOps.contract.js";
 import {
   platformContract,
@@ -99,6 +102,9 @@ export const rootContract = c.router({
   audit: auditContract,
   tasks: tasksContract,
   accountingLedger: accountingLedgerContract,
+  accountingFx: accountingFxContract,
+  accountingHedges: accountingHedgesContract,
+  platformConsolidation: platformConsolidationContract,
   financeOps: financeOpsContract,
   platform: platformContract,
   templates: documentTemplatesContract,
@@ -156,6 +162,9 @@ export {
   auditContract,
   tasksContract,
   accountingLedgerContract,
+  accountingFxContract,
+  accountingHedgesContract,
+  platformConsolidationContract,
   financeOpsContract,
   platformContract,
   platformWorkspacesContract,
@@ -203,6 +212,9 @@ export type DomainContracts = {
   audit: typeof auditContract;
   tasks: typeof tasksContract;
   accountingLedger: typeof accountingLedgerContract;
+  accountingFx: typeof accountingFxContract;
+  accountingHedges: typeof accountingHedgesContract;
+  platformConsolidation: typeof platformConsolidationContract;
   financeOps: typeof financeOpsContract;
   platform: typeof platformContract;
   templates: typeof documentTemplatesContract;

@@ -32,6 +32,10 @@ export function invoiceWriteValues(subdomain: string, record: Invoice): FinanceI
     creditedAmt: String(record.creditedAmt ?? 0),
     lastRemindedAt: record.lastRemindedAt ? new Date(record.lastRemindedAt) : null,
     reminderCount: record.reminderCount ?? 0,
+    // Insert-only: upsert conflict sets omit these, so a document's currency and
+    // booked rate never change after creation (IAS 21 historical rate).
+    currency: record.currency ?? null,
+    exchangeRate: record.exchangeRate ?? null,
     ...mapAuditToInsert(record),
   } satisfies FinanceInvoiceInsert;
 }

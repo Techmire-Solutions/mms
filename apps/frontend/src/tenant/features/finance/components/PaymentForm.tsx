@@ -9,10 +9,15 @@ import { PaymentFormFields } from "@/tenant/features/finance/components/PaymentF
 import { useFinanceCurrency } from "@/hooks/useCurrency";
 import { useTranslation } from "@/hooks/useTranslation";
 import {
+  formatMoney,
+  isValidExchangeRate,
   type PaymentCreateInput,
   paymentRecordInsertSchema,
   type AppTranslationKey,
 } from "@mms/shared";
+import { DocumentCurrencyFields } from "@/components/app/DocumentCurrencyFields";
+import { useDocumentCurrency } from "@/tenant/hooks/useDocumentCurrency";
+import { invoiceAmountInPaymentCurrency } from "@/tenant/features/finance/lib/paymentCurrency";
 import { mapZodFormErrors } from "@/lib/forms/mapZodFormErrors";
 import { NotifiedMutationError } from "@/lib/notifiedMutationError";
 import {
@@ -37,14 +42,36 @@ export function PaymentForm({
 }: PaymentFormProps): React.JSX.Element {
   const { user: authUser } = useAuth();
   const { t } = useTranslation();
-  const { formatCurrency, activeCurrency } = useFinanceCurrency();
-  const balance = invoice ? invoice.finalAmt - (invoice.paidAmt || 0) : 0;
+  const { formatCurrency: formatFunctional, activeCurrency } = useFinanceCurrency();
+  const invoiceBalance = invoice ? invoice.finalAmt - (invoice.paidAmt || 0) : 0;
 
   const [saving, setSaving] = useState(false);
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [paymentDraft, setPaymentDraft] = useState(() =>
-    buildInitialPaymentDraft(balance, authUser?.id || ""),
+    buildInitialPaymentDraft(invoiceBalance, authUser?.id || ""),
   );
+
+  // IAS 21: pay in the invoice currency or the functional currency (cross-currency settlement).
+  const fx = useDocumentCurrency({
+    date: paymentDraft.date,
+    initialCurrency: invoice?.currency ?? null,
+    counterCurrency: invoice?.currency ?? null,
+    allowedCurrencies: invoice?.currency ? [invoice.currency] : [],
+  });
+  const invoiceCurrency = invoice?.currency || fx.functionalCurrency;
+  const formatIn = (currency: string) => (amount: number) =>
+    currency && currency !== fx.functionalCurrency
+      ? formatMoney(amount, currency, { useSymbol: true })
+      : formatFunctional(amount);
+  const formatCurrency = formatIn(fx.currency);
+  const balance =
+    invoiceAmountInPaymentCurrency(
+      invoiceBalance,
+      invoiceCurrency,
+      fx.currency || invoiceCurrency,
+      fx.functionalCurrency,
+      fx.rate,
+    ) ?? invoiceBalance;
 
   const paymentMethodOptions = (() =>
     PAYMENT_METHODS.map((method) => ({
@@ -71,6 +98,9 @@ export function PaymentForm({
   const handleSave = async () => {
     setErrors({});
     const newErrors = validatePaymentFormDraft(paymentDraft, balance, t);
+    if (fx.needsRate && !isValidExchangeRate(fx.rate)) {
+      newErrors.exchangeRate = t("fx.field.rateMissing");
+    }
 
     if (Object.keys(newErrors).length > 0) {
       setErrors(newErrors);
@@ -80,13 +110,16 @@ export function PaymentForm({
 
     if (!invoice) return;
 
-    const payload = buildPaymentCreatePayload(
-      paymentDraft,
-      invoice.id,
-      invoice.studentId,
-      invoice.studentName,
-      authUser?.id || "",
-    );
+    const payload = {
+      ...buildPaymentCreatePayload(
+        paymentDraft,
+        invoice.id,
+        invoice.studentId,
+        invoice.studentName,
+        authUser?.id || "",
+      ),
+      ...(fx.needsRate ? { currency: fx.currency, exchangeRate: fx.rate.trim() } : {}),
+    };
 
     const parsed = paymentRecordInsertSchema.safeParse(payload);
     if (!parsed.success) {
@@ -185,19 +218,34 @@ export function PaymentForm({
                   {t("finance.balanceDue")}
                 </p>
                 <p className="text-sm font-bold text-primary m-0 mt-0.5">
-                  {formatCurrency(balance)}
+                  {formatIn(invoiceCurrency)(invoiceBalance)}
                 </p>
               </div>
             </div>
           </SectionCard>
         )}
 
+        <DocumentCurrencyFields
+          t={t}
+          idPrefix="payment"
+          fx={fx}
+          error={errors.exchangeRate}
+          preview={
+            fx.currency !== invoiceCurrency
+              ? {
+                  label: t("fx.field.balanceInPaymentCurrency"),
+                  value: formatCurrency(balance),
+                }
+              : undefined
+          }
+        />
+
         <PaymentFormFields
           paymentDraft={paymentDraft}
           updateDraft={updateDraft}
           errors={errors}
           balance={balance}
-          activeCurrencyCode={activeCurrency.code}
+          activeCurrencyCode={fx.currency || activeCurrency.code}
           formatCurrency={formatCurrency}
           paymentMethodOptions={paymentMethodOptions}
           t={t}

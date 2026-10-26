@@ -12,7 +12,7 @@ import {
   type TrialBalanceRow,
 } from "../lib/financialReportsExportHelpers";
 
-export type FinancialReportViewType = "income" | "balance" | "cashflow";
+export type FinancialReportViewType = "income" | "balance" | "cashflow" | "fx";
 
 export function useFinancialReportsModel() {
   const { t } = useTranslation();
@@ -96,26 +96,29 @@ export function useFinancialReportsModel() {
   const payablesChange = metrics.cashFlowAdjustments.payables;
 
   const exportColumns = getFinancialReportExportColumns(t);
-  const exportRows = buildFinancialReportExportRows({
-    view,
-    tb: metrics.tb,
-    balanceSheetTb: metrics.balanceSheetTb,
-    revenue: metrics.revenue,
-    expenses: metrics.expenses,
-    netSurplus: metrics.netSurplus,
-    assets: metrics.assets,
-    liabilities: metrics.liabilities,
-    equity: metrics.equity,
-    depreciationAdjustment,
-    receivablesChange,
-    payablesChange,
-    netCashFlowIndirect: metrics.netCashFlowIndirect,
-    netCashFlow: metrics.netCashFlow,
-    cashInflow: metrics.cashInflow,
-    cashOutflow: metrics.cashOutflow,
-    formatCurrency,
-    t,
-  });
+  const exportRows =
+    view === "fx"
+      ? []
+      : buildFinancialReportExportRows({
+          view,
+          tb: metrics.tb,
+          balanceSheetTb: metrics.balanceSheetTb,
+          revenue: metrics.revenue,
+          expenses: metrics.expenses,
+          netSurplus: metrics.netSurplus,
+          assets: metrics.assets,
+          liabilities: metrics.liabilities,
+          equity: metrics.equity,
+          depreciationAdjustment,
+          receivablesChange,
+          payablesChange,
+          netCashFlowIndirect: metrics.netCashFlowIndirect,
+          netCashFlow: metrics.netCashFlow,
+          cashInflow: metrics.cashInflow,
+          cashOutflow: metrics.cashOutflow,
+          formatCurrency,
+          t,
+        });
 
   return {
     t,

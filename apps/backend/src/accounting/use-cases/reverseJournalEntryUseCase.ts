@@ -62,6 +62,14 @@ const SOURCE_REFUSALS: Record<(typeof NON_REVERSIBLE_JOURNAL_SOURCES)[number], s
   invoice: "Invoice postings are reversed from Finance (cancel the invoice or issue a credit note)",
   payment: "Payment postings are reversed from Finance (archive the payment)",
   closing: "Year-end closing entries cannot be reversed",
+  fx_reval: "FX revaluations reverse automatically on the next day",
+  fx_reval_reversal: "This entry is the automatic reversal of an FX revaluation",
+  ias29_restate: "IAS 29 restatements reverse automatically on the next day",
+  ias29_reversal: "This entry is the automatic reversal of an IAS 29 restatement",
+  hedge_val: "Hedge valuations reverse automatically on the next day",
+  hedge_val_rev: "This entry is the automatic reversal of a hedge valuation",
+  hedge_settle: "Hedge settlements are recorded from the hedge relationship",
+  hedge_reclass: "Hedge reserve reclassifications are recorded from the hedge relationship",
 };
 
 function isNonReversibleSource(

@@ -3,6 +3,7 @@ import { formatDate } from "@mms/shared";
 import { StatusBadge, type StatusBadgeConfigItem } from "@/components/app/StatusBadge";
 import type { TranslationFunction } from "@/lib/contexts/TranslationContext";
 import type { Invoice } from "@/lib/data/financeData";
+import { formatDocumentAmount } from "@/tenant/features/finance/lib/documentAmount";
 
 /** Render a Finance invoice Work column value (non-face columns). */
 export function renderInvoiceWorkColumnValue(
@@ -35,12 +36,16 @@ export function renderInvoiceWorkColumnValue(
         </div>
       );
     case "baseFee":
-      return <span className="text-sm text-foreground">{formatCurrency(invoice.baseFee)}</span>;
+      return (
+        <span className="text-sm text-foreground">
+          {formatDocumentAmount(invoice, invoice.baseFee, formatCurrency)}
+        </span>
+      );
     case "discount":
       return invoice.discountAmt > 0 ? (
         <div>
           <span className="text-sm font-medium text-warning">
-            -{formatCurrency(invoice.discountAmt)}
+            -{formatDocumentAmount(invoice, invoice.discountAmt, formatCurrency)}
           </span>
           <p className="m-0 text-xs text-muted-foreground">{invoice.discountType}</p>
         </div>
@@ -51,11 +56,13 @@ export function renderInvoiceWorkColumnValue(
       return (
         <>
           <span className="text-sm font-bold text-foreground">
-            {formatCurrency(invoice.finalAmt)}
+            {formatDocumentAmount(invoice, invoice.finalAmt, formatCurrency)}
           </span>
           {invoice.paidAmt !== undefined && invoice.status === "partial" && (
             <p className="m-0 text-xs text-info">
-              {t("finance.paidAmount", { amount: formatCurrency(invoice.paidAmt) })}
+              {t("finance.paidAmount", {
+                amount: formatDocumentAmount(invoice, invoice.paidAmt, formatCurrency),
+              })}
             </p>
           )}
         </>

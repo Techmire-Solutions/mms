@@ -1317,6 +1317,62 @@
       "when": 1792920000000,
       "tag": "0187_message_logs_restore_attribution",
       "breakpoints": true
+    },
+    {
+      "idx": 188,
+      "version": "7",
+      "when": 1792920100000,
+      "tag": "0188_accounting_fx_reference_tables",
+      "breakpoints": true
+    },
+    {
+      "idx": 189,
+      "version": "7",
+      "when": 1792920200000,
+      "tag": "0189_accounting_fx_ledger_columns",
+      "breakpoints": true
+    },
+    {
+      "idx": 190,
+      "version": "7",
+      "when": 1792920300000,
+      "tag": "0190_finance_document_currency",
+      "breakpoints": true
+    },
+    {
+      "idx": 191,
+      "version": "7",
+      "when": 1792920400000,
+      "tag": "0191_accounting_fx_revaluation",
+      "breakpoints": true
+    },
+    {
+      "idx": 192,
+      "version": "7",
+      "when": 1792920500000,
+      "tag": "0192_platform_consolidation_groups",
+      "breakpoints": true
+    },
+    {
+      "idx": 193,
+      "version": "7",
+      "when": 1792920600000,
+      "tag": "0193_accounting_currency_exchangeability",
+      "breakpoints": true
+    },
+    {
+      "idx": 194,
+      "version": "7",
+      "when": 1792920700000,
+      "tag": "0194_accounting_ias29_hyperinflation",
+      "breakpoints": true
+    },
+    {
+      "idx": 195,
+      "version": "7",
+      "when": 1792920800000,
+      "tag": "0195_accounting_hedge_accounting",
+      "breakpoints": true
     }
   ]
 }

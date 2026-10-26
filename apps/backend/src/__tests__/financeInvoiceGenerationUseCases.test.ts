@@ -50,6 +50,10 @@ vi.mock("../finance/use-cases/financeUseCases.js", () => mockFinanceUseCases);
 vi.mock("../db/repositories/studentRepository.js", () => mockStudentRepo);
 vi.mock("../lib/livePush.js", () => mockWs);
 vi.mock("../db/repositories/enrollmentRepository.js", () => mockEnrollmentRepo);
+// Functional-currency workspace: generated drafts pass through unchanged (FX stamping is covered in financeDocumentFx.test.ts).
+vi.mock("../finance/use-cases/financeDocumentFx.js", () => ({
+  applyGeneratedInvoiceFx: async (_tenant: string, drafts: readonly unknown[]) => drafts,
+}));
 
 import {
   generateInvoices,

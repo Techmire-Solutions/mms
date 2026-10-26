@@ -1,4 +1,5 @@
 import type { AccountingRepository } from "./accountingRepository.js";
+import { accountingFxRepository } from "./accountingFxRepositoryAdapter.js";
 import { lockJournalEntries } from "../../db/repositories/accountingEntryLocks.js";
 import { allocateVoucherNumbers } from "../../db/repositories/accountingVoucherRepository.js";
 import {
@@ -71,4 +72,5 @@ export const accountingRepository: AccountingRepository = {
   bulkRestoreAccounts,
   bulkSoftDeleteEntries,
   bulkRestoreEntries,
+  fx: accountingFxRepository,
 };

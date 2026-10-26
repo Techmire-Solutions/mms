@@ -1,6 +1,10 @@
 import { type AccountingSettings, type Account, type FiscalYear } from "@mms/shared";
 import type { StatusBadgeConfigItem } from "@/components/app/StatusBadge";
 import { AccountingSettingsCurrencySection } from "./AccountingSettingsCurrencySection";
+import { AccountingSettingsFxSection } from "./AccountingSettingsFxSection";
+import { AccountingSettingsFxRevaluationSection } from "./AccountingSettingsFxRevaluationSection";
+import { AccountingSettingsHyperinflationSection } from "./AccountingSettingsHyperinflationSection";
+import { AccountingSettingsHedgesSection } from "./AccountingSettingsHedgesSection";
 import { AccountingSettingsFiscalYearsSection } from "./AccountingSettingsFiscalYearsSection";
 import { AccountingSettingsRulesSection } from "./AccountingSettingsRulesSection";
 import { AccountingSettingsTemplatesSection } from "./AccountingSettingsTemplatesSection";
@@ -67,6 +71,14 @@ export function AccountingSettingsPreferences({
         saved={saved}
         onSave={onSave}
       />
+
+      <AccountingSettingsFxSection canEditSetup={canEditSetup} />
+
+      <AccountingSettingsFxRevaluationSection canEditSetup={canEditSetup} />
+
+      <AccountingSettingsHyperinflationSection accounts={accounts} canEditSetup={canEditSetup} />
+
+      <AccountingSettingsHedgesSection accounts={accounts} canEditSetup={canEditSetup} />
 
       <AccountingSettingsFiscalYearsSection
         fiscalYears={fiscalYears}

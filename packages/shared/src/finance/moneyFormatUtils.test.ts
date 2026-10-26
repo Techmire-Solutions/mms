@@ -44,4 +44,11 @@ describe("formatMoney and formatNumber", () => {
     expect(formatNumber(1250)).toBe("1,250");
     expect(formatNumber(null)).toBe("0");
   });
+
+  it("defaults the maximum decimals to the currency's ISO minor units", () => {
+    expect(formatMoney(1250.567, "USD")).toBe("USD 1,250.57");
+    expect(formatMoney(1250.567, "JPY")).toBe("JPY 1,251");
+    expect(formatMoney(1.2345, "KWD")).toBe("KWD 1.235");
+    expect(formatMoney(1, "JPY", { minimumFractionDigits: 2 })).toBe("JPY 1.00");
+  });
 });

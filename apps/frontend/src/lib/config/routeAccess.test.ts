@@ -33,6 +33,7 @@ const OUTSIDE_APP_SHELL = new Set<string>([
   ROUTES.platformDashboard,
   ROUTES.platformWorkspaces,
   ROUTES.platformReports,
+  ROUTES.platformConsolidation,
   ROUTES.platformActivityLogs,
   ROUTES.platformSystem,
   ROUTES.platformErd,

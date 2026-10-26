@@ -23,6 +23,8 @@ import {
   tryPostPaymentJournal,
 } from "../../accounting/ledgerPosting/ledgerPostingService.js";
 import { findEntryIdBySource } from "../../db/repositories/accountingRepository.js";
+import { getPostingRules } from "../../db/repositories/accountingLedgerOpsRepository.js";
+import { resolveDocumentFx, resolvePaymentFx } from "./financeDocumentFx.js";
 import { loadFinanceModulePreferences } from "../../services/financePreferencesService.js";
 
 const LEDGER_SENSITIVE_INVOICE_AMOUNTS = [
@@ -61,6 +63,23 @@ async function assertInvoiceAmountsEditable(
   );
 }
 
+/**
+ * Realized FX needs a gain/loss account whenever payments post to the ledger;
+ * check before saving so a payment is never stored with a journal that cannot post.
+ */
+async function assertRealizedFxPostable(tenant: string, realizedFx: number | undefined) {
+  if (!realizedFx) return;
+  const rules = await getPostingRules(tenant);
+  if (rules.cashAccountId && rules.arAccountId && !rules.fxRealizedAccountId) {
+    throw Object.assign(
+      new Error(
+        "Set a realized FX gain/loss account in Accounting → Setup before settling at a new rate",
+      ),
+      { statusCode: 422, type: "validation_error" },
+    );
+  }
+}
+
 export interface FinanceMutationOperationsDeps {
   repo: FinanceRepository;
   invoiceCrud: ReturnType<typeof createGenericRelationalService<Invoice>>;
@@ -95,8 +114,11 @@ export function createFinanceMutationOperations({
         (err as Error & { statusCode: number }).statusCode = 400;
         throw err;
       }
+      const fx = await resolveDocumentFx(tenant, record, record.dueDate);
       const created = await invoiceCrud.create({
         ...record,
+        currency: fx.currency,
+        exchangeRate: fx.exchangeRate,
         studentId: students[0]?.id ?? record.studentId,
         familyContactId: record.familyContactId ?? resolveFamilyContactId(students[0]),
         invoiceNumber:
@@ -168,6 +190,7 @@ export function createFinanceMutationOperations({
       const resolvedId = String(record.id ?? `pay-${Date.now()}`);
       const normalizedPayment = paymentRecordSchema.parse({ ...record, id: resolvedId }) as Payment;
 
+      let settledInvoice: Invoice | null = null;
       const savedPayment = await runInTransaction(async () => {
         const existingPayment = await repo.findPaymentById(tenant, resolvedId);
         if (existingPayment) return existingPayment;
@@ -179,16 +202,23 @@ export function createFinanceMutationOperations({
           throw err;
         }
 
+        const paymentFx = await resolvePaymentFx(tenant, invoice, normalizedPayment);
+        Object.assign(normalizedPayment, paymentFx);
+        await assertRealizedFxPostable(tenant, normalizedPayment.realizedFx);
+        settledInvoice = invoice;
+
+        // Cross-currency payments settle the invoice in its own currency.
+        const applied = normalizedPayment.invoiceAmount ?? normalizedPayment.amount;
         const paidAmount = invoice.paidAmt ?? 0;
         const remainingBalance = getOutstandingAmountForInvoice(invoice);
-        if (normalizedPayment.amount > remainingBalance) {
+        if (applied > remainingBalance) {
           throw new Error("Payment amount exceeds the remaining invoice balance");
         }
 
-        const newPaid = paidAmount + normalizedPayment.amount;
+        const newPaid = paidAmount + applied;
         await repo.saveInvoice(tenant, {
           ...invoice,
-          status: remainingBalance - normalizedPayment.amount <= 0 ? "paid" : "partial",
+          status: remainingBalance - applied <= 0 ? "paid" : "partial",
           paidAmt: newPaid,
           paidDate: normalizedPayment.date,
           method: normalizedPayment.method,
@@ -210,11 +240,11 @@ export function createFinanceMutationOperations({
               {
                 id: `alloc-${savedPayment.id}`,
                 invoiceId: savedPayment.invoiceId,
-                amount: savedPayment.amount,
+                amount: savedPayment.invoiceAmount ?? savedPayment.amount,
               },
             ],
       );
-      await tryPostPaymentJournal(tenant, savedPayment);
+      await tryPostPaymentJournal(tenant, savedPayment, settledInvoice ?? undefined);
 
       const { broadcastTenantUpdate } = await import("../../lib/livePush.js");
       broadcastTenantUpdate(tenant, "collection", "finance_invoices");

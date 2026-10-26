@@ -153,4 +153,9 @@ export const dataMigrationsBatch2: DataMigrationEntry[] = [
     load: async () =>
       (await import("./migrations/090_encrypt_workspace_llm_secrets.js")).runMigration090,
   },
+  {
+    id: "091",
+    load: async () =>
+      (await import("./migrations/091_backfill_functional_currency.js")).runMigration091,
+  },
 ];

@@ -32,6 +32,7 @@ import {
   clearSessionLifecycleScheduler,
   scheduleSessionLifecycle,
 } from "./sessionLifecycleScheduler.js";
+import { clearFxRateFeedScheduler, scheduleFxRateFeed } from "./fxRates/fxRateFeedScheduler.js";
 import { startOutboxCdcListener, type OutboxCdcHandle } from "./outboxCdcListener.js";
 import { cleanupOrphanedJobs } from "./workerOrphanCleanup.js";
 
@@ -154,6 +155,8 @@ export async function startWorkerDaemon(): Promise<void> {
   scheduleNextDailyPurge(() => isRunning, activeDb(), 2);
   // Hourly: open sessions auto-start on their start date (workspace timezone).
   scheduleSessionLifecycle(() => isRunning);
+  // Daily IAS 21 reference rates (no-op unless FX_RATE_FEED_PROVIDERS is set)
+  scheduleFxRateFeed(() => isRunning);
 
   const shutdown = async (signal: string) => {
     if (!isRunning) return;
@@ -176,6 +179,7 @@ export async function startWorkerDaemon(): Promise<void> {
       }
       clearRetentionPurgeScheduler();
       clearSessionLifecycleScheduler();
+      clearFxRateFeedScheduler();
       for (const worker of activeWorkers) {
         try {
           await worker.close();

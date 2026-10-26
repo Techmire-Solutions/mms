@@ -10,6 +10,7 @@ import {
   IncomeStatementPanel,
 } from "./FinancialStatementPanels";
 import { PinnedWidgets } from "@/tenant/components/reports";
+import { FxReportPanel } from "./FxReportPanel";
 import { useFinancialReportsModel } from "../hooks/useFinancialReportsModel";
 
 /**
@@ -43,6 +44,7 @@ export function FinancialReports(): React.JSX.Element {
     { key: "income" as const, label: t("accounting.reports.views.income") },
     { key: "balance" as const, label: t("accounting.reports.views.balance") },
     { key: "cashflow" as const, label: t("accounting.reports.views.cashflow") },
+    { key: "fx" as const, label: t("accounting.reports.views.fx") },
   ];
 
   if (isError) {
@@ -89,47 +91,51 @@ export function FinancialReports(): React.JSX.Element {
           panelIdPrefix="financial-report"
         />
 
-        <ReportDataGridContainer
-          title={t("accounting.reports.export.label", { view })}
-          filename={`${view}_report`}
-          moduleId="accounting"
-          columns={exportColumns}
-          rows={exportRows}
-        >
-          {view === "income" && (
-            <IncomeStatementPanel
-              revenueRows={getRowsByAccountType("Revenue")}
-              expenseRows={getRowsByAccountType("Expense")}
-              revenue={metrics.revenue}
-              expenses={metrics.expenses}
-              netSurplus={metrics.netSurplus}
-            />
-          )}
+        {view === "fx" ? (
+          <FxReportPanel dateFrom={dateFrom} dateTo={dateTo} />
+        ) : (
+          <ReportDataGridContainer
+            title={t("accounting.reports.export.label", { view })}
+            filename={`${view}_report`}
+            moduleId="accounting"
+            columns={exportColumns}
+            rows={exportRows}
+          >
+            {view === "income" && (
+              <IncomeStatementPanel
+                revenueRows={getRowsByAccountType("Revenue")}
+                expenseRows={getRowsByAccountType("Expense")}
+                revenue={metrics.revenue}
+                expenses={metrics.expenses}
+                netSurplus={metrics.netSurplus}
+              />
+            )}
 
-          {view === "balance" && (
-            <BalanceSheetPanel
-              assetRows={getBalanceSheetRowsByAccountType("Asset")}
-              liabilityRows={getBalanceSheetRowsByAccountType("Liability")}
-              equityRows={getBalanceSheetRowsByAccountType("Equity")}
-              assets={metrics.assets}
-              liabilities={metrics.liabilities}
-              equity={metrics.equity}
-            />
-          )}
+            {view === "balance" && (
+              <BalanceSheetPanel
+                assetRows={getBalanceSheetRowsByAccountType("Asset")}
+                liabilityRows={getBalanceSheetRowsByAccountType("Liability")}
+                equityRows={getBalanceSheetRowsByAccountType("Equity")}
+                assets={metrics.assets}
+                liabilities={metrics.liabilities}
+                equity={metrics.equity}
+              />
+            )}
 
-          {view === "cashflow" && (
-            <CashFlowStatementPanel
-              netSurplus={metrics.netSurplus}
-              depreciationAdjustment={metrics.cashFlowAdjustments.depreciation}
-              receivablesChange={metrics.cashFlowAdjustments.receivables}
-              payablesChange={metrics.cashFlowAdjustments.payables}
-              netCashFlowIndirect={metrics.netCashFlowIndirect}
-              netCashFlow={metrics.netCashFlow}
-              cashInflow={metrics.cashInflow}
-              cashOutflow={metrics.cashOutflow}
-            />
-          )}
-        </ReportDataGridContainer>
+            {view === "cashflow" && (
+              <CashFlowStatementPanel
+                netSurplus={metrics.netSurplus}
+                depreciationAdjustment={metrics.cashFlowAdjustments.depreciation}
+                receivablesChange={metrics.cashFlowAdjustments.receivables}
+                payablesChange={metrics.cashFlowAdjustments.payables}
+                netCashFlowIndirect={metrics.netCashFlowIndirect}
+                netCashFlow={metrics.netCashFlow}
+                cashInflow={metrics.cashInflow}
+                cashOutflow={metrics.cashOutflow}
+              />
+            )}
+          </ReportDataGridContainer>
+        )}
       </div>
 
       <PinnedWidgets category="accounting" />

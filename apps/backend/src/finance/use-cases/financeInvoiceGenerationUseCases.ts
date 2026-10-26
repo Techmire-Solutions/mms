@@ -28,6 +28,7 @@ import {
   listEnrollmentInvoiceMarks,
 } from "../../db/repositories/financeInvoiceGenerationRepository.js";
 import { financeUseCases } from "./financeUseCases.js";
+import { applyGeneratedInvoiceFx } from "./financeDocumentFx.js";
 import { logger } from "../../lib/logger.js";
 
 function resolveFrequency(
@@ -117,10 +118,14 @@ export async function generateInvoices(
   const familyByStudent = new Map(
     students.map((student) => [student.id, resolveFamilyContactId(student)]),
   );
-  const draftsWithFamily = drafts.map((draft) => ({
-    ...draft,
-    familyContactId: familyByStudent.get(draft.studentId) ?? null,
-  }));
+  const draftsWithFamily = await applyGeneratedInvoiceFx(
+    tenant,
+    drafts.map((draft) => ({
+      ...draft,
+      familyContactId: familyByStudent.get(draft.studentId) ?? null,
+    })),
+    new Map(enrollments.map((enrollment) => [enrollment.id, enrollment.sessionCurrency])),
+  );
   const created = await persistGeneratedInvoices(tenant, draftsWithFamily, prefix);
   await linkEnrollmentInvoiceIds(
     tenant,

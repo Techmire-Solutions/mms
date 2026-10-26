@@ -41,6 +41,7 @@ export const ROUTES = {
   platformDashboard: "/platform/dashboard",
   platformWorkspaces: "/platform/workspaces",
   platformReports: "/platform/reports",
+  platformConsolidation: "/platform/consolidation",
   platformActivityLogs: "/platform/activity-logs",
   platformSystem: "/platform/system",
   platformErd: "/platform/erd",

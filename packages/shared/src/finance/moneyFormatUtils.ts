@@ -1,6 +1,7 @@
 /**
  * Currency list and locale-aware money/number formatting.
  */
+import { findIsoCurrency } from "../money/iso4217.js";
 
 type FinanceCurrencyProvider = () => string | null | undefined;
 
@@ -65,7 +66,10 @@ export function formatMoney(
   const resolvedCurrency = currency || getStoredFinanceCurrency();
 
   const minDigits = options?.minimumFractionDigits ?? 0;
-  const maxDigits = options?.maximumFractionDigits ?? 2;
+  const maxDigits = Math.max(
+    minDigits,
+    options?.maximumFractionDigits ?? findIsoCurrency(resolvedCurrency)?.minorUnits ?? 2,
+  );
 
   const formattedNum = numeric.toLocaleString(undefined, {
     minimumFractionDigits: minDigits,

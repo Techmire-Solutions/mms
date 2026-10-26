@@ -10,6 +10,22 @@ declare global {
 }
 globalThis.IS_REACT_ACT_ENVIRONMENT = true;
 
+vi.mock("@/tenant/features/accounting/hooks/useJournalEntryCurrency", () => ({
+  useJournalEntryCurrency: () => ({
+    functionalCurrency: "PKR",
+    currency: "PKR",
+    setCurrency: vi.fn(),
+    isForeign: false,
+    rate: "",
+    rateOverride: "",
+    setRateOverride: vi.fn(),
+    lookedUpRate: null,
+    rateMissing: false,
+    currencyOptions: [{ value: "PKR", label: "PKR" }],
+    showCurrencyPicker: false,
+  }),
+}));
+
 vi.mock("@/hooks/useTranslation", () => ({
   useTranslation: () => ({
     language: "en",

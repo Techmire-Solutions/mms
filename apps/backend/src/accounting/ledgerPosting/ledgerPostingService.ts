@@ -3,6 +3,8 @@ import {
   buildLateFeePostingLines,
   buildOpeningEntryLines,
   buildPaymentPostingLines,
+  buildFxPaymentPostingLines,
+  documentCurrency,
   type Invoice,
   type JournalEntry,
   type OpeningBalance,
@@ -17,6 +19,8 @@ import {
   postingDate,
   resolveYearId,
 } from "./ledgerPostingHelpers.js";
+import { stampLinesForDocument } from "./documentFxPosting.js";
+import { getCurrencySettings } from "../../db/repositories/accountingCurrencySettingsRepository.js";
 
 // Re-export reversal & lifecycle posting functions for backward compatibility
 export {
@@ -43,6 +47,7 @@ export async function tryPostInvoiceJournal(tenant: string, invoice: Invoice): P
     accounts,
   });
   if (!lines) return;
+  const stamped = await stampLinesForDocument(tenant, invoice, date, accounts, lines);
   const years = await listFiscalYearsByWorkspace(tenant);
   await persistGeneratedEntry(
     tenant,
@@ -51,24 +56,50 @@ export async function tryPostInvoiceJournal(tenant: string, invoice: Invoice): P
       invoice.id,
       date,
       `Invoice ${invoice.invoiceNumber ?? invoice.id}`,
-      lines,
+      stamped,
       resolveYearId(years, date),
     ),
     years,
   );
 }
 
-/** Posts Dr Cash / Cr AR when posting accounts are configured. Skips otherwise. */
-export async function tryPostPaymentJournal(tenant: string, payment: Payment): Promise<void> {
+/**
+ * Posts Dr Cash / Cr AR when posting accounts are configured. Skips otherwise.
+ * A foreign-currency payment books cash at its settlement rate, releases AR at
+ * the invoice's booked rate and posts the difference as realized FX.
+ */
+export async function tryPostPaymentJournal(
+  tenant: string,
+  payment: Payment,
+  invoice?: Pick<Invoice, "id" | "currency" | "exchangeRate">,
+): Promise<void> {
   const accounts = await getPostingRules(tenant);
   const date = postingDate(payment.date);
-  const lines = buildPaymentPostingLines({
-    paymentId: payment.id,
-    description: payment.note || payment.id,
-    date,
-    amount: payment.amount,
-    accounts,
-  });
+  const { functionalCurrency } = await getCurrencySettings(tenant);
+  const paymentCurrency = documentCurrency(payment, functionalCurrency);
+  const invoiceCurrency = invoice ? documentCurrency(invoice, functionalCurrency) : paymentCurrency;
+  const lines =
+    paymentCurrency === functionalCurrency && invoiceCurrency === functionalCurrency
+      ? buildPaymentPostingLines({
+          paymentId: payment.id,
+          description: payment.note || payment.id,
+          date,
+          amount: payment.amount,
+          accounts,
+        })
+      : buildFxPaymentPostingLines({
+          paymentId: payment.id,
+          description: payment.note || payment.id,
+          date,
+          amount: payment.amount,
+          paymentCurrency,
+          invoiceAmount: payment.invoiceAmount ?? payment.amount,
+          invoiceCurrency,
+          functionalCurrency,
+          bookedRate: invoice?.exchangeRate ?? payment.exchangeRate ?? "1",
+          settlementRate: payment.exchangeRate ?? "1",
+          accounts,
+        });
   if (!lines) return;
   const years = await listFiscalYearsByWorkspace(tenant);
   await persistGeneratedEntry(
@@ -152,13 +183,15 @@ export async function tryPostLateFeeJournals(
   const date = postingDate(undefined);
   const yearId = resolveYearId(years, date);
   for (const fee of fees) {
-    const lines = buildLateFeePostingLines({
+    const built = buildLateFeePostingLines({
       invoiceId: fee.invoice.id,
       amount: fee.amount,
       description: `Late fee ${fee.invoice.invoiceNumber ?? fee.invoice.id}`,
       accounts,
     });
-    if (!lines) continue;
+    if (!built) continue;
+    // Late fees accrue on the receivable in the invoice's currency at its booked rate.
+    const lines = await stampLinesForDocument(tenant, fee.invoice, date, accounts, built);
     await persistGeneratedEntry(
       tenant,
       entryForSource(

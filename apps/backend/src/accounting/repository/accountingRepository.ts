@@ -11,6 +11,7 @@ import type {
   AccountingReportQuery,
   LedgerPostingAccounts,
 } from "@mms/shared";
+import type { AccountingFxRepository } from "./accountingFxRepository.js";
 
 /**
  * Sole storage gateway for the accounting module (accounts, journal entries,
@@ -128,6 +129,9 @@ export interface AccountingRepository {
     tenant: string,
     query?: AccountingReportRequest,
   ): Promise<AccountingReportAggregates>;
+
+  /** IAS 21 currency settings and rates; absent in fakes that only book in one currency. */
+  fx?: AccountingFxRepository;
 }
 
 /**

@@ -7,6 +7,7 @@ import { StatusBadge, type StatusBadgeConfigItem } from "@/components/app/Status
 import { useTranslation } from "@/hooks/useTranslation";
 import { WorkBatchTable, type WorkBatchTableColumn } from "@/components/common/work";
 import type { Payment } from "@/lib/data/financeData";
+import { formatDocumentAmount } from "@/tenant/features/finance/lib/documentAmount";
 
 export interface PaymentsListDesktopTableProps {
   payments: Payment[];
@@ -85,7 +86,7 @@ export function PaymentsListDesktopTable({
         label: t("finance.columns.amount"),
         noWrap: true,
         cellClassName: "font-bold text-success",
-        render: (payment: Payment) => formatCurrency(payment.amount),
+        render: (payment: Payment) => formatDocumentAmount(payment, payment.amount, formatCurrency),
       });
     }
 
