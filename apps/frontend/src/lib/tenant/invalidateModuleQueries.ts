@@ -6,6 +6,7 @@ import { invalidateSessionsQueries } from "@/tenant/hooks/collections/sessions";
 import { invalidateAcademicCatalogQueries } from "@/lib/query/academicCatalogQueries";
 import { invalidateAcademicCalendarQueries } from "@/lib/query/academicCalendarQueries";
 import { invalidateRegistrationQueries } from "@/lib/query/registrationQueries";
+import { invalidateStoredNotificationsQueries } from "@/lib/query/notificationQueries";
 import { invalidateStudentsQueries } from "@/tenant/hooks/collections/students";
 import { invalidateFacultyQueries } from "@/tenant/hooks/collections/faculty";
 import { invalidateUsersQueries } from "@/tenant/hooks/collections/users";
@@ -32,6 +33,7 @@ export function invalidateModuleQueries(queryClient: QueryClient, key: string): 
   // Invalidate composite dashboard summary metrics when domain collections change
   if (
     key !== "dashboard" &&
+    key !== "notifications" &&
     key !== "user_activity_logs" &&
     key !== "message_logs" &&
     key !== "message_templates"
@@ -122,5 +124,7 @@ export function invalidateModuleQueries(queryClient: QueryClient, key: string): 
       return invalidateMessagingQueries(queryClient);
     case "document_templates":
       return invalidateDocumentTemplatesQueries(queryClient);
+    case "notifications":
+      return invalidateStoredNotificationsQueries(queryClient);
   }
 }

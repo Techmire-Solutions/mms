@@ -44,4 +44,16 @@ describe("openNotificationTarget", () => {
     expect(navigate).toHaveBeenCalledWith(ROUTES.students);
     expect(readDrillDown("mms_students_work_drilldown")).toEqual({ status: "inactive" });
   });
+
+  it("given a waitlist seat notification, should open the Admissions sub-tab of Enrollments", () => {
+    // Arrange
+    const navigate = vi.fn();
+
+    // Act
+    openNotificationTarget({ kind: "admissions" }, navigate);
+
+    // Assert
+    expect(navigate).toHaveBeenCalledWith(ROUTES.enrollments);
+    expect(readDrillDown("mms_enrollments_work_drilldown")).toEqual({ subTab: "admissions" });
+  });
 });

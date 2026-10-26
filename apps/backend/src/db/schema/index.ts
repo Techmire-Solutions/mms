@@ -33,6 +33,7 @@ export * from "./relations.js";
 export * from "./inventory.js";
 export * from "./charity.js";
 export * from "./workshops.js";
+export * from "./tenantNotifications.js";
 export * from "./auditTrail.js";
 export * from "./softDeleteSchema.js";
 export * from "./outboxEvents.js";

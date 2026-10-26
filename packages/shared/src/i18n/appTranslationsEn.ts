@@ -5599,6 +5599,8 @@ export const APP_TRANSLATIONS_EN = {
   "notifications.urgentCount": "{count} urgent notifications",
   "notifications.urgentLabel": "Urgent",
   "notifications.viewAll": "View All Notifications",
+  "notifications.waitlistSeatOfferedDesc": "{applicant} is next in line for {class}. Review the application in Admissions.",
+  "notifications.waitlistSeatOfferedTitle": "A waitlist seat is free",
   "obligations.actions.print": "Print receipt for {receipt}",
   "obligations.actions.printShort": "Print receipt",
   "obligations.actions.view": "View collection {receipt}",

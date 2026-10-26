@@ -12,6 +12,12 @@ import {
 } from "@/tenant/features/enrollments/hooks/useEnrollmentsApi";
 import { useEnrollmentsDirectoryFilters } from "@/tenant/features/enrollments/hooks/useEnrollmentsDirectoryFilters";
 import { ENROLLMENTS_MODULE_MANIFEST } from "@mms/shared";
+import { useWorkDrillDownListener } from "@/lib/query/useWorkDrillDownListener";
+import {
+  ENROLLMENTS_WORK_DRILLDOWN_EVENT,
+  consumeEnrollmentsWorkDrillDown,
+  type EnrollmentsWorkDrillDown,
+} from "./enrollmentsWorkDrillDown";
 import { useEnrollmentsPageActions } from "@/tenant/features/enrollments/hooks/useEnrollmentsPageActions";
 import {
   defaultEnrollmentsExportColumns,
@@ -43,6 +49,15 @@ export function useEnrollmentsPageState() {
   });
   const [tab, setTab] = usePersistedTabState<string>("enrollments_active_tab", "work");
   const [activeSubTab, setActiveSubTab] = useState("directory");
+  // Notifications (e.g. a freed waitlist seat) open a specific Work sub-tab.
+  useWorkDrillDownListener<EnrollmentsWorkDrillDown>(
+    ENROLLMENTS_WORK_DRILLDOWN_EVENT,
+    consumeEnrollmentsWorkDrillDown,
+    (drillDown) => {
+      setTab("work");
+      setActiveSubTab(drillDown.subTab);
+    },
+  );
   const directoryFilters = useEnrollmentsDirectoryFilters();
   const {
     listPage,

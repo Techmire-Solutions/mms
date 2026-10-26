@@ -186,6 +186,11 @@ const NON_MODULE_ROUTES: ReadonlyArray<{
     paths: ["/api/module-access"],
   },
   {
+    prefix: "/api/notifications",
+    reason: "app-shell inbox; every row is filtered by the caller's own permissions",
+    paths: ["/api/notifications", "/api/notifications/:id/read", "/api/notifications/read-all"],
+  },
+  {
     prefix: "/api/db/",
     reason: "settings objects incl. module management (settings.global.write)",
     paths: [
