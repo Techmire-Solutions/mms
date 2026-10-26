@@ -42,7 +42,8 @@ export function AccountingSettingsHedgesSection({
   const { t } = useTranslation();
   const panel = useHedgesPanel();
   const currencies = useAccountingCurrencySettings().data?.enabledCurrencies ?? [];
-  const latest = (hedge: HedgeRelationship) => hedge.valuations.at(-1);
+  const latest = (hedge: HedgeRelationship) =>
+    hedge.valuations.findLast((record) => record.kind !== "reclassification");
 
   const columns: DataTableColumn<HedgeRelationship>[] = [
     {
@@ -87,7 +88,7 @@ export function AccountingSettingsHedgesSection({
       label: t("accounting.settings.hedges.fairValueColumn"),
       render: (hedge) => (
         <span className="font-mono">
-          {formatMoney(Number(latest(hedge)?.instrumentValue ?? 0))}
+          {formatMoney(Number(latest(hedge)?.instrumentValue ?? 0), undefined, { useSymbol: true })}
         </span>
       ),
     },

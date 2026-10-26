@@ -873,6 +873,8 @@ export const APP_TRANSLATIONS_EN = {
   "accounting.reports.fx.revaluationDate": "Revaluation date",
   "accounting.reports.fx.noRevaluations": "No revaluations posted in this period",
   "accounting.validation.fxReportRange": "The start date must be on or before the end date.",
+  "accounting.settings.ias29.history": "Posted restatements",
+  "accounting.validation.accountRequired": "Choose an account.",
   "accounting.settings.secPosting": "Invoice & payment posting",
   "accounting.settings.posting.hint":
     "Map billing events to ledger accounts. Auto-post is skipped until AR, cash, and income are set.",

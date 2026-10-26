@@ -874,6 +874,8 @@ export const APP_TRANSLATIONS_AR: Record<AppTranslationKey, string> = {
   "accounting.reports.fx.revaluationDate": "تاريخ إعادة التقييم",
   "accounting.reports.fx.noRevaluations": "لم تُرحَّل إعادات تقييم في هذه الفترة",
   "accounting.validation.fxReportRange": "يجب أن يكون تاريخ البداية في تاريخ النهاية أو قبله.",
+  "accounting.settings.ias29.history": "إعادات العرض المرحّلة",
+  "accounting.validation.accountRequired": "اختر حسابًا.",
   "accounting.settings.secPosting": "ترحيل الفواتير والمدفوعات",
   "accounting.settings.posting.hint":
     "اربط أحداث الفوترة بحسابات دفتر الأستاذ. يُتخطى الترحيل التلقائي حتى تُحدد الذمم والنقد والإيراد.",

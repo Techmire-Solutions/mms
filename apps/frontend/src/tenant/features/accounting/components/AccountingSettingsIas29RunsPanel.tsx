@@ -21,7 +21,7 @@ export function AccountingSettingsIas29RunsPanel({
   canEditSetup,
 }: AccountingSettingsIas29RunsPanelProps): React.JSX.Element {
   const { t } = useTranslation();
-  const money = (value: string) => formatMoney(Number(value));
+  const money = (value: string) => formatMoney(Number(value), undefined, { useSymbol: true });
   const signed = (value: string) => (
     <span
       className={`font-mono font-semibold ${value.startsWith("-") ? "text-destructive" : "text-success"}`}
@@ -51,7 +51,7 @@ export function AccountingSettingsIas29RunsPanel({
     {
       id: "adjustment",
       label: t("accounting.settings.ias29.adjustment"),
-      render: (row) => signed(row.adjustment),
+      render: (row) => <span className="font-mono">{money(row.adjustment)}</span>,
     },
   ];
 
@@ -131,7 +131,7 @@ export function AccountingSettingsIas29RunsPanel({
 
       <DataTable
         tableId="accounting.ias29Runs"
-        label={t("accounting.settings.fxReval.history")}
+        label={t("accounting.settings.ias29.history")}
         data={panel.runs}
         columns={runColumns}
         isLoading={panel.runsLoading}

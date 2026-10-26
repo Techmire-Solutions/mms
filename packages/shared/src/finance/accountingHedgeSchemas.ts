@@ -14,7 +14,7 @@ export const HEDGE_STATUSES = ["active", "settled", "reclassified", "discontinue
 export type HedgeType = (typeof HEDGE_TYPES)[number];
 export type HedgeStatus = (typeof HEDGE_STATUSES)[number];
 
-const accountId = z.string().trim().min(1);
+const accountId = z.string().trim().min(1, "accounting.validation.accountRequired");
 
 /** Body of `POST /api/accounting/hedges` — designation and documentation (IFRS 9.6.4.1(b)). */
 export const hedgeRelationshipCreateSchema = z

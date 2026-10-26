@@ -879,6 +879,8 @@ export const APP_TRANSLATIONS_UR: Record<AppTranslationKey, string> = {
   "accounting.reports.fx.revaluationDate": "ازسرِنو تشخیص کی تاریخ",
   "accounting.reports.fx.noRevaluations": "اس مدت میں کوئی ازسرِنو تشخیص پوسٹ نہیں ہوئی",
   "accounting.validation.fxReportRange": "آغاز کی تاریخ اختتام کی تاریخ یا اس سے پہلے ہونی چاہیے۔",
+  "accounting.settings.ias29.history": "پوسٹ شدہ دوبارہ بیانات",
+  "accounting.validation.accountRequired": "کھاتہ منتخب کریں۔",
   "accounting.settings.secPosting": "انوائس اور ادائیگی پوسٹنگ",
   "accounting.settings.posting.hint":
     "بلنگ ایونٹس کو لیجر اکاؤنٹس سے جوڑیں۔ AR، نقد اور آمدنی سیٹ ہونے تک آٹو پوسٹ نہیں ہوگی۔",

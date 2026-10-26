@@ -886,6 +886,8 @@ export const APP_TRANSLATIONS_FA: Partial<Record<AppTranslationKey, string>> = {
   "accounting.reports.fx.revaluationDate": "تاریخ تجدید ارزیابی",
   "accounting.reports.fx.noRevaluations": "در این دوره تجدید ارزیابی‌ای ثبت نشده",
   "accounting.validation.fxReportRange": "تاریخ شروع باید در تاریخ پایان یا پیش از آن باشد.",
+  "accounting.settings.ias29.history": "تجدید ارائه‌های ثبت‌شده",
+  "accounting.validation.accountRequired": "یک حساب انتخاب کنید.",
   "accounting.settings.secPosting": "ثبت فاکتور و پرداخت",
   "accounting.settings.posting.hint":
     "رویدادهای صورتحساب را به حساب‌های دفتر کل وصل کنید. تا تعیین حساب‌های دریافتنی، نقد و درآمد، ثبت خودکار انجام نمی‌شود.",
