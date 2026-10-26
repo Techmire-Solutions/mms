@@ -1,7 +1,7 @@
 import React from "react";
 import { describe, expect, it, vi } from "vitest";
 import { renderToStaticMarkup } from "react-dom/server";
-import { AccountingSettingsFxRevaluationSection } from "./AccountingSettingsFxRevaluationSection";
+import { AccountingFxRevaluationSection } from "./AccountingFxRevaluationSection";
 
 vi.mock("@/hooks/useTranslation", () => ({
   useTranslation: () => ({ t: (key: string) => key }),
@@ -49,10 +49,10 @@ vi.mock("@/tenant/features/accounting/hooks/useFxRevaluationPanel", () => ({
   }),
 }));
 
-describe("AccountingSettingsFxRevaluationSection", () => {
+describe("AccountingFxRevaluationSection", () => {
   it("given a preview, should list the monetary balance with its closing rate and offer to post", () => {
     // Arrange / Act
-    const html = renderToStaticMarkup(<AccountingSettingsFxRevaluationSection canEditSetup />);
+    const html = renderToStaticMarkup(<AccountingFxRevaluationSection canEdit />);
 
     // Assert
     expect(html).toContain("1100 – Fee Receivable");
@@ -65,10 +65,20 @@ describe("AccountingSettingsFxRevaluationSection", () => {
     panelState.alreadyPosted = true;
 
     // Act
-    const html = renderToStaticMarkup(<AccountingSettingsFxRevaluationSection canEditSetup />);
+    const html = renderToStaticMarkup(<AccountingFxRevaluationSection canEdit />);
 
     // Assert
     expect(html).toContain("accounting.settings.fxReval.alreadyPosted");
+  });
+
+  it("given a view-only user, should hide the post action", () => {
+    // Arrange
     panelState.alreadyPosted = false;
+
+    // Act
+    const html = renderToStaticMarkup(<AccountingFxRevaluationSection canEdit={false} />);
+
+    // Assert
+    expect(html).not.toContain("accounting.settings.fxReval.post");
   });
 });

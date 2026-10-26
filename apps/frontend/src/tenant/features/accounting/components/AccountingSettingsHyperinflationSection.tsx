@@ -1,13 +1,11 @@
 import type React from "react";
 import { TrendingUp } from "lucide-react";
-import { formatDate, type Account, type PriceIndexPoint } from "@mms/shared";
+import { type Account } from "@mms/shared";
 import { DatePicker } from "@/components/app/DatePicker";
-import { EmptyState } from "@/components/app/EmptyState";
 import { ErrorState } from "@/components/app/ErrorState";
 import { Field } from "@/components/app/FormPrimitives";
 import { FormSelect } from "@/components/app/FormSelect";
 import { SectionCard } from "@/components/app/SectionCard";
-import { DataTable, type DataTableColumn } from "@/components/common/data-table";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Switch } from "@/components/ui/switch";
@@ -15,16 +13,13 @@ import { SETUP_SECTION_CARD_CLASS } from "@/components/ui/formStyles";
 import { useTranslation } from "@/hooks/useTranslation";
 import { useHyperinflationPanel } from "@/tenant/features/accounting/hooks/useHyperinflationPanel";
 import { accountOptions } from "@/tenant/features/accounting/lib/accountOptions";
-import { AccountingSettingsIas29RunsPanel } from "./AccountingSettingsIas29RunsPanel";
 
-type IndexRow = PriceIndexPoint & { id: string };
-
-interface AccountingSettingsHyperinflationSectionProps {
+export interface AccountingSettingsHyperinflationSectionProps {
   accounts: Account[];
   canEditSetup: boolean;
 }
 
-/** IAS 29: hyperinflationary functional currency — settings, general price index and restatement runs. */
+/** IAS 29: hyperinflationary functional currency — settings configuration. */
 export function AccountingSettingsHyperinflationSection({
   accounts,
   canEditSetup,
@@ -32,26 +27,6 @@ export function AccountingSettingsHyperinflationSection({
   const { t } = useTranslation();
   const panel = useHyperinflationPanel();
   const { settings } = panel;
-
-  const indexColumns: DataTableColumn<IndexRow>[] = [
-    {
-      id: "date",
-      label: t("accounting.settings.ias29.indexDate"),
-      fixed: true,
-      render: (row) => formatDate(row.indexDate),
-    },
-    {
-      id: "value",
-      label: t("accounting.settings.ias29.indexValue"),
-      render: (row) => <span className="font-mono">{row.value}</span>,
-    },
-    {
-      id: "source",
-      label: t("accounting.settings.ias29.indexSource"),
-      hideInCard: true,
-      render: (row) => row.source,
-    },
-  ];
 
   return (
     <SectionCard
@@ -125,53 +100,6 @@ export function AccountingSettingsHyperinflationSection({
           </Button>
         </div>
       )}
-
-      <div className="mt-6 space-y-3 border-t border-border pt-4">
-        <h3 className="m-0 text-sm font-semibold text-balance">
-          {t("accounting.settings.ias29.indexTitle")}
-        </h3>
-        {canEditSetup && (
-          <div className="flex flex-wrap items-end gap-3">
-            <Field id="ias29-index-date" label={t("accounting.settings.ias29.indexDate")}>
-              <DatePicker
-                id="ias29-index-date"
-                name="indexDate"
-                value={panel.indexDate}
-                onChange={panel.setIndexDate}
-              />
-            </Field>
-            <Field id="ias29-index-value" label={t("accounting.settings.ias29.indexValue")}>
-              <Input
-                id="ias29-index-value"
-                name="indexValue"
-                inputMode="decimal"
-                value={panel.indexValue}
-                onChange={(event) => panel.setIndexValue(event.target.value)}
-              />
-            </Field>
-            <Button
-              type="button"
-              variant="outline"
-              className="min-h-11"
-              onClick={() => void panel.handleAddIndex()}
-              disabled={!panel.indexValue.trim() || panel.savingIndex}
-            >
-              {t("accounting.settings.ias29.addIndex")}
-            </Button>
-          </div>
-        )}
-        <DataTable
-          tableId="accounting.priceIndices"
-          label={t("accounting.settings.ias29.indexTitle")}
-          data={panel.indices.toReversed().map((point) => ({ ...point, id: point.indexDate }))}
-          columns={indexColumns}
-          isLoading={panel.indicesLoading}
-          card={{ title: (row) => formatDate(row.indexDate) }}
-          emptyState={<EmptyState title={t("accounting.settings.ias29.noIndices")} />}
-        />
-      </div>
-
-      <AccountingSettingsIas29RunsPanel panel={panel} canEditSetup={canEditSetup} />
     </SectionCard>
   );
 }

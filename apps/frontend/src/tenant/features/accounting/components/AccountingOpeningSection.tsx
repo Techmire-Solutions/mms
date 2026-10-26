@@ -18,22 +18,24 @@ import { useAccountingOpeningBalancesState } from "@/tenant/features/accounting/
 import { AccountModal } from "@/tenant/features/accounting/components/AccountModal";
 import { useAccountQuickCreate } from "../hooks/useAccountQuickCreate";
 
-interface AccountingSettingsOpeningSectionProps {
+export interface AccountingOpeningSectionProps {
   accounts: Account[];
   fiscalYears: FiscalYear[];
   /** `decimalSeparator` preference — money inputs must be parsed with it. */
   decimalSeparator: MoneySeparator;
+  canEdit?: boolean;
   onAccountsChange?: (
     updater: Account[] | ((prev: Account[]) => Account[]),
   ) => Promise<void> | void;
 }
 
-export function AccountingSettingsOpeningSection({
+export function AccountingOpeningSection({
   accounts,
   fiscalYears,
   decimalSeparator,
+  canEdit = true,
   onAccountsChange,
-}: AccountingSettingsOpeningSectionProps): React.JSX.Element {
+}: AccountingOpeningSectionProps): React.JSX.Element {
   const {
     t,
     openYears,
@@ -96,7 +98,7 @@ export function AccountingSettingsOpeningSection({
           placeholder={t("accounting.settings.opening.account")}
           aria-label={t("accounting.settings.opening.account")}
           options={accountOptions}
-          canAdd={accountQuickCreate.canAdd}
+          canAdd={canEdit && accountQuickCreate.canAdd}
           onOpenAdd={() => accountQuickCreate.openCreate({ kind: "field", field: "debitAcc" })}
           addAriaLabel={t("accounting.coa.addAccount")}
         />
@@ -120,19 +122,21 @@ export function AccountingSettingsOpeningSection({
         />
       </div>
       <FieldErrorMessage message={formError ?? undefined} className="mt-2" />
-      <div className="mt-3 flex flex-wrap gap-2">
-        <Button
-          type="button"
-          variant="outline"
-          className="min-h-11"
-          onClick={async () => {
-            await handlePost();
-          }}
-          disabled={!fiscalYearId || !rowsReady || !totals.postable || postPending}
-        >
-          {t("accounting.settings.opening.post")}
-        </Button>
-      </div>
+      {canEdit && (
+        <div className="mt-3 flex flex-wrap gap-2">
+          <Button
+            type="button"
+            variant="outline"
+            className="min-h-11"
+            onClick={async () => {
+              await handlePost();
+            }}
+            disabled={!fiscalYearId || !rowsReady || !totals.postable || postPending}
+          >
+            {t("accounting.settings.opening.post")}
+          </Button>
+        </div>
+      )}
 
       {isError && (
         <p role="alert" className="m-0 mt-3 text-xs text-destructive">
@@ -143,9 +147,10 @@ export function AccountingSettingsOpeningSection({
       <FormCollectionShell
         className="mt-3"
         isEmpty={balances.length === 0}
+        allowAdd={canEdit}
         addLabel={t("accounting.settings.opening.add")}
         onAdd={() => void handleAdd()}
-        addDisabled={!fiscalYearId || !accountId || !rowsReady || savePending}
+        addDisabled={!canEdit || !fiscalYearId || !accountId || !rowsReady || savePending}
         listKey="opening-balances"
       >
         {balances.map((row, index) => (
@@ -155,7 +160,7 @@ export function AccountingSettingsOpeningSection({
             index={index}
             label={accountLabel(row.accountId)}
             removeLabel={`${t("accounting.settings.opening.remove")} ${accountLabel(row.accountId)}`}
-            canRemove={rowsReady && !savePending}
+            canRemove={canEdit && rowsReady && !savePending}
             onRemove={() => void handleRemove(row.id)}
           >
             <span className="flex flex-wrap gap-3 text-xs tabular-nums text-muted-foreground">
