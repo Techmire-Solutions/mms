@@ -61,13 +61,12 @@ else
 fi
 
 if [ -f "${TARBALL}.sha256" ]; then
-  (
-    cd "$(dirname "$TARBALL")" || exit 1
-    sha256sum -c "$(basename "$TARBALL").sha256"
-  ) || {
-    echo "FATAL: release checksum mismatch"
+  EXPECTED_HASH="$(awk '{print $1}' "${TARBALL}.sha256")"
+  ACTUAL_HASH="$(sha256sum "$TARBALL" | awk '{print $1}')"
+  if [ "$EXPECTED_HASH" != "$ACTUAL_HASH" ]; then
+    echo "FATAL: release checksum mismatch (expected ${EXPECTED_HASH}, got ${ACTUAL_HASH})"
     exit 1
-  }
+  fi
 fi
 
 echo "Extracting ${TARBALL} → ${ROOT_DIR}"
