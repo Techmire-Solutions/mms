@@ -73,7 +73,7 @@ const ENTRY_TAGS: [string, string][] = [
 ];
 
 async function purge(): Promise<void> {
-  const tx = await beginLongLivedTenantTransaction(null);
+  const tx = await beginLongLivedTenantTransaction(null, { allowGlobal: true });
   try {
     await tx.tx.execute(sql`SET LOCAL app.allow_hard_purge = 'true'`);
     await tx.tx
@@ -107,7 +107,7 @@ beforeAll(async () => {
 
   await purge().catch(() => undefined);
 
-  const seedTx = await beginLongLivedTenantTransaction(null);
+  const seedTx = await beginLongLivedTenantTransaction(null, { allowGlobal: true });
   try {
     await seedTx.tx.insert(workspaces).values({
       id: "ws-list-filters-accounting",

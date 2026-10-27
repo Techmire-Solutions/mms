@@ -46,7 +46,7 @@ let dbAvailable = false;
 const trashedAt = new Date("2026-02-01T00:00:00.000Z");
 
 async function purgeWorkspace(): Promise<void> {
-  const tx = await beginLongLivedTenantTransaction(null);
+  const tx = await beginLongLivedTenantTransaction(null, { allowGlobal: true });
   try {
     await tx.tx.execute(sql`SET LOCAL app.allow_hard_purge = 'true'`);
     await tx.tx
@@ -79,7 +79,7 @@ beforeAll(async () => {
 
   await purgeWorkspace();
 
-  const seedTx = await beginLongLivedTenantTransaction(null);
+  const seedTx = await beginLongLivedTenantTransaction(null, { allowGlobal: true });
   try {
     await seedTx.tx.insert(workspaces).values({
       id: "ws-softdelete-parity-accounting",
@@ -201,7 +201,7 @@ describe("bulkSaveEntries soft-delete ownership", () => {
 
     await bulkSaveEntries(TEST_SUBDOMAIN, batch);
 
-    const verifyTx = await beginLongLivedTenantTransaction(null);
+    const verifyTx = await beginLongLivedTenantTransaction(null, { allowGlobal: true });
     try {
       const entries = await verifyTx.tx
         .select()

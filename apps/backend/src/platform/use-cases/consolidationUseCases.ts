@@ -8,6 +8,7 @@ import {
   type ConsolidationReportQuery,
 } from "@mms/shared";
 import type { PlatformConsolidationRepository } from "../repository/platformConsolidationRepositoryAdapter.js";
+import { platformConsolidationRepository } from "../repository/platformConsolidationRepositoryAdapter.js";
 
 function httpError(message: string, statusCode: number, type: string): Error {
   return Object.assign(new Error(message), { statusCode, type });
@@ -117,3 +118,18 @@ export async function buildConsolidationReport(
     ),
   };
 }
+
+/**
+ * Adapter-free surface for the platform routes (check:backend-boundaries: routes
+ * must not import a repository adapter). The lower-level functions keep taking a
+ * repository so tests can inject a fake.
+ */
+export const consolidationUseCases = {
+  listGroups: () => listGroups(platformConsolidationRepository),
+  saveGroup: (actor: { id: string; email: string }, id: string, input: ConsolidationGroupPut) =>
+    saveGroup(platformConsolidationRepository, actor, id, input),
+  deleteGroup: (actor: { id: string; email: string }, id: string) =>
+    deleteGroup(platformConsolidationRepository, actor, id),
+  buildConsolidationReport: (groupId: string, query: ConsolidationReportQuery) =>
+    buildConsolidationReport(platformConsolidationRepository, groupId, query),
+};

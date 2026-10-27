@@ -82,6 +82,23 @@ export async function loadFacultyById(
   return hydrated ?? null;
 }
 
+/**
+ * Cheap "is this faculty profile soft-deleted?" probe for the session guard.
+ *
+ * Deliberately skips contact hydration: `/auth/me` only needs the tombstone flag,
+ * and a hydrated load returns `null` when the linked contact cannot be read — which
+ * would silently keep a deleted teacher's session alive.
+ */
+export async function isFacultyProfileDeleted(
+  id: string,
+  repo: FacultyRepository = facultyRepository,
+): Promise<boolean> {
+  const tenant = getRequestTenant();
+  if (!tenant) return false;
+  const found = await repo.findById(tenant, id);
+  return Boolean(found?.deletedAt);
+}
+
 export async function loadFacultyByIds(
   ids: string[],
   repo: FacultyRepository = facultyRepository,

@@ -32,7 +32,7 @@ The initial sandboxed browser run could not start its backend/browser. The appro
 
 ## Follow-up
 
-The subsequent [platform-wide ownership review](platform-ui-ownership-review.md) consolidates platform navigation, actions, permissions, selection cards, and metrics, and replaces the permission matrix with the virtualized shared table.
+The subsequent [platform-wide ownership review](archive/platform-ui-ownership-review.md) consolidates platform navigation, actions, permissions, selection cards, and metrics, and replaces the permission matrix with the virtualized shared table.
 
 ## Remaining review scope at the end of the initial pass
 

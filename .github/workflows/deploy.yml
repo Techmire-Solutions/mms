@@ -262,9 +262,20 @@ jobs:
         run: |
           echo "::error::Deployment or health verification failed — triggering automated rollback..."
           if [ -f ~/.ssh/deploy_key ]; then
-            ssh -i ~/.ssh/deploy_key -o StrictHostKeyChecking=yes -o BatchMode=yes -o ConnectTimeout=10 \
+            # A failed rollback must NOT be reported as a clean job end: the site
+            # is then running unreviewed code with no automatic recovery, which
+            # needs a human immediately. The `exit 1` keeps that visible in the
+            # run status instead of only in a log line.
+            if ! ssh -i ~/.ssh/deploy_key -o StrictHostKeyChecking=yes -o BatchMode=yes -o ConnectTimeout=10 \
               "${SERVER_USER}@${SERVER_IP}" \
-              'cd /var/www/mmsv2 && bash scripts/deploy-rollback.sh' || echo "::error::Automated rollback failed"
+              'cd /var/www/mmsv2 && bash scripts/deploy-rollback.sh'; then
+              echo "::error::Automated rollback FAILED — production is running the failed release. Intervene manually: docs/reference has the runbook."
+              exit 1
+            fi
+            echo "::notice::Automated rollback completed — production is back on the previous release."
+          else
+            echo "::error::No deploy key available — cannot roll back automatically."
+            exit 1
           fi
 
       - name: Publish Deployment Summary

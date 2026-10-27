@@ -44,6 +44,11 @@ jobs:
               - 'apps/backend/drizzle.config.ts'
               - 'apps/backend/src/**/repository/**'
               - 'apps/backend/src/**/ledgerPosting/**'
+              - 'apps/backend/src/**/use-cases/**'
+              # 66 files under services/ import drizzle-orm or db/repositories
+              # directly (grandfathered by check-backend-structure). Their SQL
+              # changes must run the real-Postgres suite.
+              - 'apps/backend/src/services/**'
               - 'apps/backend/src/accounting/**'
               - 'apps/backend/vitest.db.config.ts'
               - 'packages/shared/**'
@@ -197,6 +202,11 @@ jobs:
       - name: Migration index lock safety
         run: pnpm run check:migration-indexes
 
+      # lock_timeout on new DDL, timestamptz-only new columns, and the Drizzle
+      # snapshot chain (the gap may not grow while regeneration is pending).
+      - name: Migration hygiene
+        run: pnpm run check:migration-hygiene -- --base HEAD^1
+
       # Ratchet (ADR-011): route handlers must reach storage only through their
       # module's use-cases/repository seam. Catches static AND dynamic
       # `db/repositories` / `drizzle-orm` imports in apps/backend/src/routes/**.
@@ -224,6 +234,14 @@ jobs:
       # colours outside @theme, file-size bands). Baselines live in the script.
       - name: Code-norm ratchets
         run: pnpm run check:code-norms
+
+      # Baselines must equal the measured count. `--ratchet` fails when a baseline
+      # is HIGHER than reality (i.e. someone padded it up), which the normal mode
+      # cannot see — it only fails when the count exceeds the baseline.
+      - name: Ratchet baselines are not padded
+        run: |
+          node scripts/check-frontend-structure.mjs --ratchet
+          node scripts/check-code-norms.mjs --ratchet
 
       # Ratchet: frontend structural norms (primitives vs composites in
       # components/ui, canonical feature shape, logic out of features/*/components,
@@ -261,6 +279,11 @@ jobs:
       # workflow, so translation drift was never actually gated.
       - name: i18n key parity
         run: pnpm run check:i18n
+
+      # Parity proves the four packs agree; this proves the keys are reachable
+      # from the UI at all (a dead key is translated four times forever).
+      - name: i18n unused-key ratchet
+        run: pnpm run check:i18n-unused
 
       - name: Verify Agent & Rule Mirrors Sync
         run: |
@@ -395,9 +418,35 @@ jobs:
         with:
           build-shared: "true"
 
-      - name: Run Frontend Tests (changed files only, no coverage)
+      # Changed-scope PRs skip the sharded coverage gate entirely, so a PR could
+      # add untested source and merge green. Collect coverage for the files the
+      # PR touched and enforce it with check-changed-coverage.mjs.
+      - name: Run Frontend Tests (changed files only, with coverage)
         if: needs.changes.outputs.test_scope == 'changed'
-        run: pnpm --filter mms-frontend exec vitest run --changed HEAD^1 --passWithNoTests --reporter=default --reporter=github-actions
+        run: |
+          pnpm --filter mms-frontend exec vitest run \
+            --changed HEAD^1 \
+            --passWithNoTests \
+            --coverage \
+            --coverage.reporter=json \
+            --coverage.reportsDirectory=coverage-changed \
+            --coverage.thresholds.lines=0 \
+            --coverage.thresholds.statements=0 \
+            --coverage.thresholds.functions=0 \
+            --coverage.thresholds.branches=0 \
+            --reporter=default \
+            --reporter=github-actions
+
+      - name: Changed-file coverage (frontend)
+        if: needs.changes.outputs.test_scope == 'changed'
+        env:
+          BASE_SHA: ${{ github.event.pull_request.base.sha }}
+        run: |
+          node scripts/ci/check-changed-coverage.mjs \
+            --coverage apps/frontend/coverage-changed \
+            --root apps/frontend/src \
+            --base "${BASE_SHA}" \
+            --min 60
 
       # The matrix is built from a job output, so it reaches the shell through
       # env rather than inline template expansion (zizmor template-injection).
@@ -496,9 +545,30 @@ jobs:
         if: matrix.shardIndex == 1 && needs.changes.outputs.test_scope == 'full'
         run: pnpm --filter @mms/shared test:coverage
 
-      - name: Run Backend Unit Tests (changed files only)
+      - name: Run Backend Unit Tests (changed files only, with coverage)
         if: needs.changes.outputs.test_scope == 'changed'
-        run: pnpm --filter mms-backend exec vitest run --changed HEAD^1 --passWithNoTests
+        run: |
+          pnpm --filter mms-backend exec vitest run \
+            --changed HEAD^1 \
+            --passWithNoTests \
+            --coverage \
+            --coverage.reporter=json \
+            --coverage.reportsDirectory=coverage-changed \
+            --coverage.thresholds.lines=0 \
+            --coverage.thresholds.statements=0 \
+            --coverage.thresholds.functions=0 \
+            --coverage.thresholds.branches=0
+
+      - name: Changed-file coverage (backend)
+        if: needs.changes.outputs.test_scope == 'changed'
+        env:
+          BASE_SHA: ${{ github.event.pull_request.base.sha }}
+        run: |
+          node scripts/ci/check-changed-coverage.mjs \
+            --coverage apps/backend/coverage-changed \
+            --root apps/backend/src \
+            --base "${BASE_SHA}" \
+            --min 55
 
       # Shards collect coverage (thresholds zeroed — a shard only sees a slice of
       # the suite, so a per-shard percentage is meaningless) and emit a blob

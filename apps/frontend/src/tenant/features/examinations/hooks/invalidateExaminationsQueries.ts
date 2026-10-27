@@ -1,13 +1,15 @@
-import type { QueryClient } from "@tanstack/react-query";
+import { createModuleQueryInvalidator } from "@/lib/query/createModuleQueryInvalidator";
 import {
   EXAMINATIONS_EXAMS_QUERY_KEY,
   EXAMINATIONS_METRICS_QUERY_KEY,
   EXAMINATIONS_RESULTS_QUERY_KEY,
 } from "@/tenant/features/examinations/hooks/examinationsQueryKeys";
+import { EXAMINATIONS_PREFERENCES_QUERY_KEY } from "@/tenant/features/examinations/hooks/useExaminationSetupConfig";
 
-/** Invalidate Examinations exams/results/metrics Query keys (mutations + live push). */
-export function invalidateExaminationsQueries(queryClient: QueryClient): void {
-  void queryClient.invalidateQueries({ queryKey: EXAMINATIONS_EXAMS_QUERY_KEY });
-  void queryClient.invalidateQueries({ queryKey: EXAMINATIONS_RESULTS_QUERY_KEY });
-  void queryClient.invalidateQueries({ queryKey: EXAMINATIONS_METRICS_QUERY_KEY });
-}
+/** Invalidate Examinations exams/results/metrics/setup Query keys (mutations + live push). */
+export const invalidateExaminationsQueries = createModuleQueryInvalidator({
+  list: EXAMINATIONS_EXAMS_QUERY_KEY,
+  lists: [EXAMINATIONS_RESULTS_QUERY_KEY],
+  metrics: EXAMINATIONS_METRICS_QUERY_KEY,
+  preferences: EXAMINATIONS_PREFERENCES_QUERY_KEY,
+});

@@ -30,6 +30,12 @@ regexes = [
   '''postgres://postgres:postgres@''',
   # Documented placeholder for the Resend API key in .env.example.
   '''re_123456789''',
+  # Exact fixture literals from tests. Listed by VALUE, not by path: the two
+  # `__tests__` trees used to be excluded wholesale, which stopped every rule —
+  # AWS keys, private keys, JWTs — from scanning ~500 files. These literals are
+  # obviously fake and appear only in test fixtures.
+  '''test-secret-key-1234567890''',
+  '''OperatorPass123''',
 ]
 
 # Reviewed paths:
@@ -39,7 +45,9 @@ regexes = [
 #  - the extracted template-data modules (`lib/*TemplateData.ts`) carry the same
 #    reviewed `key:` preset identifiers as the `*TemplateEditor.tsx` components
 #    they were split from.
-#  - test files use obviously-fake values throughout.
+#  - test fixtures assign obviously-fake values; each is allowlisted below by its
+#    EXACT literal, so no directory is excluded from scanning (a path-wide
+#    exclusion would stop every rule from ever reading those files).
 #  - .env.example contains commented placeholders only.
 #  - scratch/naming_report.txt was removed from the tree but remains in history;
 #    it listed exported symbol NAMES, one of which resembles an Asana client
@@ -50,8 +58,6 @@ paths = [
   '''apps/frontend/src/lib/twoFactor\.ts''',
   '''apps/frontend/src/tenant/features/(hasanat|examinations)/components/.*TemplateEditor\.tsx''',
   '''apps/frontend/src/tenant/features/(hasanat|examinations)/lib/.*TemplateData\.ts''',
-  '''apps/backend/src/__tests__/.*\.ts''',
-  '''packages/shared/src/__tests__/.*\.ts''',
   '''apps/backend/\.env\.example''',
   '''scratch/naming_report\.txt''',
 ]

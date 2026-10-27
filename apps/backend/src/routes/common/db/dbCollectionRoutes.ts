@@ -9,7 +9,7 @@ import { WORKSPACES_COLLECTION } from "@mms/shared";
 import type { User } from "@mms/shared";
 import { recordModernAuditEvent } from "../../../services/auditTrailService.js";
 import { getRequestTenant } from "../../../lib/tenantContext.js";
-import { logger } from "../../../lib/logger.js";
+import { withTenant } from "../../../db/tenant-context.js";
 
 /** Collection names that always generate an audit event on write. */
 const AUDITED_COLLECTIONS = new Set(["users", "contacts"]);
@@ -72,22 +72,30 @@ export const dbCollectionRoutes: FastifyPluginAsync = async (fastify) => {
       if (!bodyParsed.ok) return replyValidationError(reply, bodyParsed.message);
       const collectionRowsToSave = normalizeCollectionSaveBody(bodyParsed.data);
 
-      await persistCollection(name, collectionRowsToSave);
-      if (AUDITED_COLLECTIONS.has(name)) {
-        void recordModernAuditEvent({
-          workspaceSubdomain: getRequestTenant() ?? "unknown",
-          tableName: name,
-          recordId: name,
-          actionType: "UPDATE",
-          realUserId: String(user.id),
-          newState: { summary: `Wrote ${collectionRowsToSave.length} row(s)` },
-        }).catch((err: unknown) =>
-          logger.error(
-            { err: err instanceof Error ? err.message : String(err) },
-            "audit event append failed",
-          ),
-        );
-      }
+      const tenant = getRequestTenant();
+      const write = async (tx?: unknown) => {
+        await persistCollection(name, collectionRowsToSave);
+        if (AUDITED_COLLECTIONS.has(name)) {
+          // Awaited inside the caller's transaction: a swallowed failure used to
+          // leave no row in the audit chain and only a log line behind.
+          const input = {
+            workspaceSubdomain: tenant ?? "unknown",
+            tableName: name,
+            recordId: name,
+            actionType: "UPDATE" as const,
+            realUserId: String(user.id),
+            newState: { summary: `Wrote ${collectionRowsToSave.length} row(s)` },
+          };
+          if (tx) await recordModernAuditEvent(tx as never, input);
+          else await recordModernAuditEvent(input);
+        }
+      };
+
+      // Platform/apex writes have no tenant scope; tenant writes share one
+      // transaction with their audit append.
+      if (tenant) await withTenant(tenant, async (tx) => write(tx));
+      else await write();
+
       return reply.send({ success: true });
     } catch (error: unknown) {
       return sendDatabaseError(reply, `Failed to save collection "${name}"`, error);

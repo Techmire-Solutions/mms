@@ -14,10 +14,13 @@ export async function registerPlugins(app: FastifyInstance, config: ServerConfig
   registerTelemetryPlugin(app);
   registerMetricsPlugin(app);
   registerErrorHandlers(app, config.isProd);
+  // Bind the tenant (from the verified host) BEFORE the security plugins: the
+  // rate limiter's key generator reads it, and keying on a client-supplied
+  // header/subdomain let a caller mint a fresh bucket per request.
+  registerRequestHooks(app);
   await registerSecurityPlugins(app, config);
   registerCsrfOriginGuard(app, config);
   await registerHttpPlugins(app, config);
   registerProductionHostGuard(app, config);
   await registerStaticAssets(app);
-  registerRequestHooks(app);
 }

@@ -21,7 +21,9 @@ import { requireDatabaseConnection } from "./dbTestSupport.js";
 const TENANT = "fx-generated-invoice";
 
 async function cleanup(): Promise<void> {
-  const { tx, commit, rollback } = await beginLongLivedTenantTransaction(null);
+  const { tx, commit, rollback } = await beginLongLivedTenantTransaction(null, {
+    allowGlobal: true,
+  });
   try {
     await tx.execute(sql`SET LOCAL app.allow_hard_purge = 'true'`);
     await tx.delete(enrollments).where(eq(enrollments.workspaceSubdomain, TENANT));
@@ -48,7 +50,7 @@ async function cleanup(): Promise<void> {
 beforeAll(async () => {
   await requireDatabaseConnection();
   await cleanup();
-  const { tx, commit } = await beginLongLivedTenantTransaction(null);
+  const { tx, commit } = await beginLongLivedTenantTransaction(null, { allowGlobal: true });
   await tx
     .insert(workspaces)
     .values({ id: `ws-${TENANT}`, subdomain: TENANT, madrasaName: TENANT, enabled: true });

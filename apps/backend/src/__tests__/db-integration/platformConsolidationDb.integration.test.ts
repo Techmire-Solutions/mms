@@ -23,7 +23,9 @@ const SUB = "fx-ias21-sub";
 const GROUP = "grp-ias21-test";
 
 async function cleanup(): Promise<void> {
-  const { tx, commit, rollback } = await beginLongLivedTenantTransaction(null);
+  const { tx, commit, rollback } = await beginLongLivedTenantTransaction(null, {
+    allowGlobal: true,
+  });
   try {
     await tx.execute(sql`SET LOCAL app.allow_hard_purge = 'true'`);
     await tx.delete(consolidationGroups).where(eq(consolidationGroups.id, GROUP));
@@ -95,7 +97,7 @@ const chart = (tenant: string) => [
 beforeAll(async () => {
   await requireDatabaseConnection();
   await cleanup();
-  const { tx, commit } = await beginLongLivedTenantTransaction(null);
+  const { tx, commit } = await beginLongLivedTenantTransaction(null, { allowGlobal: true });
   for (const tenant of [PARENT, SUB]) {
     await tx
       .insert(workspaces)

@@ -15,6 +15,7 @@ vi.mock("../db/dbConnection.js", () => ({
   getPool: () => ({ connect: async () => ({ query: clientQuery, release: releaseMock }) }),
   getRootDb: () => ({ select: () => ({ from: async () => [{ count: 1 }] }) }),
   runInTransaction: async (cb: () => Promise<unknown>) => cb(),
+  runInGlobalTransaction: async (cb: () => Promise<unknown>) => cb(),
 }));
 vi.mock("../db/migrations/facultyContactIndex.js", () => ({
   ensureFacultyContactIndex: vi.fn().mockResolvedValue(undefined),

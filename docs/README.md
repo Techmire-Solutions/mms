@@ -32,7 +32,6 @@ Project-wide entry points live at the repo root:
 - [accounting-test-coverage-audit.md](./accounting-test-coverage-audit.md)
 - [db-performance-audit.md](./db-performance-audit.md)
 - [date-format-audit.md](./date-format-audit.md)
-- [platform-ui-ownership-review.md](./platform-ui-ownership-review.md)
 - [ui-ux-dry-ssot-review-2026-09-30.md](./ui-ux-dry-ssot-review-2026-09-30.md)
 - [ui-ux-review.md](./ui-ux-review.md) · [ui-ux-review-resolution.md](./ui-ux-review-resolution.md)
 - [messaging-ui-ux-audit-2026-10-24.md](./messaging-ui-ux-audit-2026-10-24.md) — Messaging module UI/UX audit + SSOT consolidation findings.
@@ -53,4 +52,5 @@ Project-wide entry points live at the repo root:
 
 ## Archive
 
-- [archive/](./archive/) — historical/superseded documents (kept for reference).
+- [archive/](./archive/) — historical/superseded documents (kept for reference),
+  including the point-in-time [platform UI ownership review](./archive/platform-ui-ownership-review.md).

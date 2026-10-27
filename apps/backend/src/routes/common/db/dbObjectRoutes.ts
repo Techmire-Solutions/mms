@@ -10,6 +10,7 @@ import {
 } from "@mms/shared";
 import type { User } from "@mms/shared";
 import { getRequestTenant } from "../../../lib/tenantContext.js";
+import { withTenant } from "../../../db/tenant-context.js";
 import {
   getWorkspaceBranding,
   syncWorkspaceFromBranding,
@@ -24,7 +25,6 @@ import {
 } from "../../../services/globalSettingsService.js";
 import { sanitizeBrandingWrite } from "../../../services/workspacePresentationService.js";
 import { recordModernAuditEvent } from "../../../services/auditTrailService.js";
-import { logger } from "../../../lib/logger.js";
 import { resourceKeyParamsSchema } from "@mms/shared";
 import { parseRequest, replyValidationError } from "../../../lib/zodRequest.js";
 import { sendDatabaseError, sendForbidden } from "../../../lib/httpErrors.js";
@@ -131,28 +131,34 @@ export const dbObjectRoutes: FastifyPluginAsync = async (fastify) => {
         );
       }
 
-      await persistObject(key, objectValueToSave);
+      // The document write and its audit event share ONE tenant transaction.
+      // Previously the audit append was fire-and-forget (`.catch()` after the
+      // write had already committed), which on a FORCE RLS table meant a failed
+      // append left no row in the chain and only a log line behind.
+      if (tenant) {
+        await withTenant(tenant, async (tx) => {
+          await persistObject(key, objectValueToSave);
 
-      if (AUDITED_OBJECTS.has(key)) {
-        void recordModernAuditEvent({
-          workspaceSubdomain: tenant ?? "unknown",
-          tableName: key,
-          recordId: key,
-          actionType: "UPDATE",
-          realUserId: String(user.id),
-        }).catch((err: unknown) =>
-          logger.error(
-            { err: err instanceof Error ? err.message : String(err) },
-            "audit event append failed",
-          ),
-        );
-      }
+          if (AUDITED_OBJECTS.has(key)) {
+            await recordModernAuditEvent(tx, {
+              workspaceSubdomain: tenant,
+              tableName: key,
+              recordId: key,
+              actionType: "UPDATE",
+              realUserId: String(user.id),
+            });
+          }
 
-      if (key === "branding" && tenant) {
-        await syncWorkspaceFromBranding(tenant, objectValueToSave as BrandingSettings);
-        await upsertWorkspaceBranding(tenant, objectValueToSave as BrandingSettings);
-      } else if (key === "global_settings" && tenant) {
-        await saveGlobalSettings(objectValueToSave as GlobalSettings, tenant);
+          if (key === "branding") {
+            await syncWorkspaceFromBranding(tenant, objectValueToSave as BrandingSettings);
+            await upsertWorkspaceBranding(tenant, objectValueToSave as BrandingSettings);
+          } else if (key === "global_settings") {
+            await saveGlobalSettings(objectValueToSave as GlobalSettings, tenant);
+          }
+        });
+      } else {
+        // Platform/apex writes (onboarding branding) have no tenant scope.
+        await persistObject(key, objectValueToSave);
       }
 
       return reply.send({ success: true });

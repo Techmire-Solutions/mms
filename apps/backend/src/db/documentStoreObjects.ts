@@ -2,6 +2,7 @@ import { applyTitleCaseRecursive } from "@mms/shared";
 import { eq } from "drizzle-orm";
 import { getRequestTenant } from "../lib/tenantContext.js";
 import { withTenant } from "./tenant-context.js";
+import { inGlobalDocumentStoreScope } from "./documentStoreScope.js";
 import * as schema from "./schema.js";
 import { resolveObjectStorageKey } from "./documentStoreKeys.js";
 import { deleteObjectByStorageKey } from "./documentStoreAdmin.js";
@@ -23,7 +24,7 @@ export async function getObject(key: string): Promise<unknown | null> {
         if (!row) return null;
         return row.data;
       },
-      { allowGlobal: !tenant },
+      { allowGlobal: !tenant && inGlobalDocumentStoreScope() },
     );
   } catch (error) {
     logger.error({ key, err: error }, "Error getting object");
@@ -48,7 +49,7 @@ export async function saveObject(key: string, data: unknown): Promise<void> {
             set: { data: processedData },
           });
       },
-      { allowGlobal: !tenant },
+      { allowGlobal: !tenant && inGlobalDocumentStoreScope() },
     );
 
     if (tenant) {

@@ -17,12 +17,14 @@ const mocks = vi.hoisted(() => ({
   getObject: vi.fn(),
   purgeTenantDataBySubdomain: vi.fn(),
   runInTransaction: vi.fn(),
+  runInGlobalTransaction: vi.fn(),
 }));
 
 vi.mock("../db/database.js", () => ({
   getObject: mocks.getObject,
   purgeTenantDataBySubdomain: mocks.purgeTenantDataBySubdomain,
   runInTransaction: mocks.runInTransaction,
+  runInGlobalTransaction: mocks.runInGlobalTransaction,
 }));
 
 vi.mock("../db/dbClient.js", () => ({
@@ -45,7 +47,10 @@ describe("workspaceService", () => {
   beforeEach(() => {
     mocks.getObject.mockReset().mockResolvedValue(null);
     mocks.purgeTenantDataBySubdomain.mockReset().mockResolvedValue(undefined);
-    mocks.runInTransaction
+    // Workspace registry operations are platform-level, so the service now
+    // calls the explicit global variant.
+    mocks.runInTransaction.mockReset();
+    mocks.runInGlobalTransaction
       .mockReset()
       .mockImplementation(async (cb: () => Promise<unknown>) => cb());
     vi.mocked(mockDb.select).mockClear();
@@ -68,7 +73,7 @@ describe("workspaceService", () => {
     const removed = await deleteWorkspace(" Demo ");
 
     expect(removed).toMatchObject({ subdomain: "demo" });
-    expect(mocks.runInTransaction).toHaveBeenCalledTimes(1);
+    expect(mocks.runInGlobalTransaction).toHaveBeenCalledTimes(1);
     expect(mocks.purgeTenantDataBySubdomain).toHaveBeenCalledWith("demo");
     expect(mockDb.delete).toHaveBeenCalled();
   });

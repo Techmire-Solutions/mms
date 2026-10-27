@@ -1,4 +1,5 @@
-import type { QueryClient } from "@tanstack/react-query";
+import { createModuleQueryInvalidator } from "@/lib/query/createModuleQueryInvalidator";
+import { SESSIONS_LOOKUPS_QUERY_KEY } from "@/tenant/features/sessions/hooks/useSessionLookups";
 import { SESSIONS_PREFERENCES_QUERY_KEY } from "@/tenant/features/sessions/hooks/useSessionSetupConfig";
 import {
   SESSIONS_METRICS_QUERY_KEY,
@@ -7,11 +8,12 @@ import {
   SESSIONS_WIDGET_AGGREGATES_QUERY_KEY,
 } from "@/tenant/features/sessions/hooks/useSessions";
 
-/** Invalidate Sessions list/metrics/widget-aggregates/report-aggregates/setup Query keys. */
-export function invalidateSessionsQueries(queryClient: QueryClient): void {
-  void queryClient.invalidateQueries({ queryKey: SESSIONS_QUERY_KEY });
-  void queryClient.invalidateQueries({ queryKey: SESSIONS_METRICS_QUERY_KEY });
-  void queryClient.invalidateQueries({ queryKey: SESSIONS_WIDGET_AGGREGATES_QUERY_KEY });
-  void queryClient.invalidateQueries({ queryKey: SESSIONS_REPORT_AGGREGATES_QUERY_KEY });
-  void queryClient.invalidateQueries({ queryKey: SESSIONS_PREFERENCES_QUERY_KEY });
-}
+/** Invalidate Sessions list/metrics/widget-aggregates/report-aggregates/setup/lookups Query keys. */
+export const invalidateSessionsQueries = createModuleQueryInvalidator({
+  list: SESSIONS_QUERY_KEY,
+  lists: [SESSIONS_REPORT_AGGREGATES_QUERY_KEY],
+  metrics: SESSIONS_METRICS_QUERY_KEY,
+  widgetAggregates: SESSIONS_WIDGET_AGGREGATES_QUERY_KEY,
+  preferences: SESSIONS_PREFERENCES_QUERY_KEY,
+  lookups: SESSIONS_LOOKUPS_QUERY_KEY,
+});

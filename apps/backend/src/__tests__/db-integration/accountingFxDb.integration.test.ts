@@ -27,7 +27,9 @@ const OTHER = "fx-ias21-b";
 const FEED = "test-feed-ias21";
 
 async function cleanup(): Promise<void> {
-  const { tx, commit, rollback } = await beginLongLivedTenantTransaction(null);
+  const { tx, commit, rollback } = await beginLongLivedTenantTransaction(null, {
+    allowGlobal: true,
+  });
   try {
     await tx.execute(sql`SET LOCAL app.allow_hard_purge = 'true'`);
     for (const tenant of [TENANT, OTHER]) {
@@ -58,7 +60,7 @@ async function cleanup(): Promise<void> {
 beforeAll(async () => {
   await requireDatabaseConnection();
   await cleanup();
-  const { tx, commit } = await beginLongLivedTenantTransaction(null);
+  const { tx, commit } = await beginLongLivedTenantTransaction(null, { allowGlobal: true });
   for (const tenant of [TENANT, OTHER]) {
     await tx
       .insert(workspaces)
@@ -157,7 +159,7 @@ describe("IAS 21 ledger persistence", () => {
 
   it("given pre-IAS 21 rows, should backfill them without changing the trial balance and be idempotent", async () => {
     // Arrange
-    const { tx, commit } = await beginLongLivedTenantTransaction(null);
+    const { tx, commit } = await beginLongLivedTenantTransaction(null, { allowGlobal: true });
     await tx.execute(sql`UPDATE accounting_journal_lines SET txn_currency = NULL, txn_debit = NULL,
       txn_credit = NULL, exchange_rate = NULL, func_debit = NULL, func_credit = NULL
       WHERE workspace_subdomain = ${TENANT} AND entry_id = 'je-pkr'`);
@@ -189,7 +191,7 @@ describe("exchange rate lookup", () => {
       ],
       null,
     );
-    const { tx, commit } = await beginLongLivedTenantTransaction(null);
+    const { tx, commit } = await beginLongLivedTenantTransaction(null, { allowGlobal: true });
     await tx.insert(fxReferenceRates).values([
       {
         provider: FEED,

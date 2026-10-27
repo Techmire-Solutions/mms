@@ -11,13 +11,9 @@ import {
 } from "../../middleware/authenticatePlatform.js";
 import { sendDatabaseError, sendIfHttpDomainError } from "../../lib/httpErrors.js";
 import { parseRequest, replyValidationError } from "../../lib/zodRequest.js";
-import { platformConsolidationRepository as repo } from "../../platform/repository/platformConsolidationRepositoryAdapter.js";
-import {
-  buildConsolidationReport,
-  deleteGroup,
-  listGroups,
-  saveGroup,
-} from "../../platform/use-cases/consolidationUseCases.js";
+// Only the use-case surface: routes must never import a repository adapter
+// (check:backend-boundaries, ADR-011).
+import { consolidationUseCases } from "../../platform/use-cases/consolidationUseCases.js";
 
 function sendError(reply: FastifyReply, error: unknown, fallback: string) {
   const typed = error as { statusCode?: number; type?: string; message?: string };
@@ -38,7 +34,7 @@ export default async function platformConsolidationRoutes(fastify: FastifyInstan
 
   fastify.get("/api/platform/consolidation/groups", guard, async (_request, reply) => {
     try {
-      return reply.send({ groups: await listGroups(repo) });
+      return reply.send({ groups: await consolidationUseCases.listGroups() });
     } catch (error) {
       return sendError(reply, error, "Failed to load consolidation groups");
     }
@@ -51,8 +47,7 @@ export default async function platformConsolidationRoutes(fastify: FastifyInstan
     if (!body.ok) return replyValidationError(reply, body.message);
     const user = (request as PlatformAuthenticatedRequest).platformUser;
     try {
-      const group = await saveGroup(
-        repo,
+      const group = await consolidationUseCases.saveGroup(
         { id: user.id, email: user.email },
         params.data.id,
         body.data,
@@ -68,7 +63,7 @@ export default async function platformConsolidationRoutes(fastify: FastifyInstan
     if (!params.ok) return replyValidationError(reply, params.message);
     const user = (request as PlatformAuthenticatedRequest).platformUser;
     try {
-      await deleteGroup(repo, { id: user.id, email: user.email }, params.data.id);
+      await consolidationUseCases.deleteGroup({ id: user.id, email: user.email }, params.data.id);
       return reply.send({ ok: true });
     } catch (error) {
       return sendError(reply, error, "Failed to delete consolidation group");
@@ -82,7 +77,7 @@ export default async function platformConsolidationRoutes(fastify: FastifyInstan
     if (!query.ok) return replyValidationError(reply, query.message);
     try {
       return reply.send({
-        report: await buildConsolidationReport(repo, params.data.id, query.data),
+        report: await consolidationUseCases.buildConsolidationReport(params.data.id, query.data),
       });
     } catch (error) {
       return sendError(reply, error, "Failed to build consolidation report");

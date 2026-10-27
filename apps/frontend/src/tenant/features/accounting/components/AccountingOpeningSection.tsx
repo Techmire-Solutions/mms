@@ -1,5 +1,5 @@
 import React from "react";
-import type { Account, FiscalYear } from "@mms/shared";
+import { formatMoney, type Account, type FiscalYear } from "@mms/shared";
 import { Scale } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { FormSelect } from "@/components/app/FormSelect";
@@ -165,10 +165,12 @@ export function AccountingOpeningSection({
           >
             <span className="flex flex-wrap gap-3 text-xs tabular-nums text-muted-foreground">
               <span>
-                {t("accounting.settings.opening.debit")} {row.debit.toFixed(2)}
+                {t("accounting.settings.opening.debit")}{" "}
+                {formatMoney(String(row.debit), undefined, { excludeCurrency: true })}
               </span>
               <span>
-                {t("accounting.settings.opening.credit")} {row.credit.toFixed(2)}
+                {t("accounting.settings.opening.credit")}{" "}
+                {formatMoney(String(row.credit), undefined, { excludeCurrency: true })}
               </span>
             </span>
           </FormListFieldCard>
@@ -181,8 +183,15 @@ export function AccountingOpeningSection({
       {rowsReady && (
         <p className="m-0 mt-1 text-xs text-muted-foreground">
           {t("accounting.settings.opening.totals", {
-            debit: (totals.debitCents / 100).toFixed(2),
-            credit: (totals.creditCents / 100).toFixed(2),
+            // Cents are integer minor units — format the exact decimal string
+            // instead of dividing to a float and rendering raw Latin digits in
+            // an RTL financial surface.
+            debit: formatMoney(formatCentsAsDecimal(totals.debitCents), undefined, {
+              excludeCurrency: true,
+            }),
+            credit: formatMoney(formatCentsAsDecimal(totals.creditCents), undefined, {
+              excludeCurrency: true,
+            }),
           })}
         </p>
       )}
@@ -205,4 +214,13 @@ export function AccountingOpeningSection({
       ) : null}
     </SectionCard>
   );
+}
+
+/** Integer cents → exact decimal string ("-1234" → "-12.34"). */
+function formatCentsAsDecimal(cents: number): string {
+  const sign = cents < 0 ? "-" : "";
+  const absolute = Math.abs(Math.trunc(cents));
+  const whole = Math.floor(absolute / 100);
+  const fraction = String(absolute % 100).padStart(2, "0");
+  return `${sign}${whole}.${fraction}`;
 }

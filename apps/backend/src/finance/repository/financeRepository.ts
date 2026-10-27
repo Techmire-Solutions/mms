@@ -30,7 +30,11 @@ export interface FinanceRepository {
       offset?: number;
     },
   ): Promise<Invoice[]>;
-  findInvoiceById(tenant: string, id: string): Promise<Invoice | null>;
+  findInvoiceById(
+    tenant: string,
+    id: string,
+    options?: { forUpdate?: boolean; includeDeleted?: boolean },
+  ): Promise<Invoice | null>;
   findInvoicesByIds(
     tenant: string,
     ids: string[],

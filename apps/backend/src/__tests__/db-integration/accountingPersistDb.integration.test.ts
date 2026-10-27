@@ -43,7 +43,7 @@ beforeAll(async () => {
   dbAvailable = await pingDatabase();
   if (!dbAvailable) return;
 
-  const preCleanupTx = await beginLongLivedTenantTransaction(null);
+  const preCleanupTx = await beginLongLivedTenantTransaction(null, { allowGlobal: true });
   try {
     await preCleanupTx.tx.execute(sql`SET LOCAL app.allow_hard_purge = 'true'`);
     await preCleanupTx.tx
@@ -67,7 +67,7 @@ beforeAll(async () => {
     await preCleanupTx.rollback().catch(() => undefined);
   }
 
-  const seedTx = await beginLongLivedTenantTransaction(null);
+  const seedTx = await beginLongLivedTenantTransaction(null, { allowGlobal: true });
   try {
     await seedTx.tx.insert(workspaces).values({
       id: "ws-perf-parity-accounting",
@@ -144,7 +144,7 @@ beforeAll(async () => {
 
 afterAll(async () => {
   if (dbAvailable) {
-    const cleanupTx = await beginLongLivedTenantTransaction(null);
+    const cleanupTx = await beginLongLivedTenantTransaction(null, { allowGlobal: true });
     try {
       await cleanupTx.tx.execute(sql`SET LOCAL app.allow_hard_purge = 'true'`);
       await cleanupTx.tx
@@ -209,7 +209,7 @@ describe("bulkSaveEntries batched upsert parity", () => {
 
     await bulkSaveEntries(TEST_SUBDOMAIN, batch);
 
-    const verifyTx = await beginLongLivedTenantTransaction(null);
+    const verifyTx = await beginLongLivedTenantTransaction(null, { allowGlobal: true });
     try {
       const entries = await verifyTx.tx
         .select()

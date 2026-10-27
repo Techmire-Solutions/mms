@@ -12,21 +12,31 @@ const mockDbState = vi.hoisted(() => ({
   workspaceExists: true,
 }));
 
-vi.mock("../db/database.js", () => ({
-  getDb: () => ({
-    select: () => ({
-      from: () => ({
-        where: async () => mockDbState.existingUsers,
-      }),
-    }),
-    insert: () => ({
-      values: async (vals: Record<string, unknown>) => {
-        mockDbState.insertedUsers.push(vals);
-        return [vals];
-      },
+const mockTenantDb = {
+  select: () => ({
+    from: () => ({
+      where: async () => mockDbState.existingUsers,
     }),
   }),
-}));
+  insert: () => ({
+    values: async (vals: Record<string, unknown>) => {
+      mockDbState.insertedUsers.push(vals);
+      return [vals];
+    },
+  }),
+};
+
+vi.mock("../db/database.js", () => ({ getDb: () => mockTenantDb }));
+
+// These are platform-admin operations; production wraps them in an explicit
+// global tenant transaction (see workspaceAdminUserRepository.ts).
+vi.mock("../db/tenant-context.js", async (importOriginal) => {
+  const actual = await importOriginal<typeof import("../db/tenant-context.js")>();
+  return {
+    ...actual,
+    withGlobalTenant: (cb: (db: typeof mockTenantDb) => Promise<unknown>) => cb(mockTenantDb),
+  };
+});
 
 vi.mock("../db/repositories/workspaceRepository.js", () => ({
   getWorkspaceWithBranding: async (subdomain: string) => {

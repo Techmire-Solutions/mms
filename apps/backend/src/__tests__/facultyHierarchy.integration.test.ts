@@ -15,6 +15,7 @@ vi.mock("../db/database.js", () => ({
   initDb: vi.fn().mockResolvedValue(undefined),
   pingDatabase: vi.fn().mockResolvedValue(true),
   runInTransaction: (cb: () => unknown) => cb(),
+  runInGlobalTransaction: (cb: () => unknown) => cb(),
 }));
 
 vi.mock("../lib/tenantContext.js", async (importOriginal) => {

@@ -4,6 +4,7 @@ import { apiContract } from "@/lib/api";
 import { reportClientError } from "@/lib/clientErrorReporting";
 import { SUMMARY_STALE_TIME } from "@/lib/queryClient";
 import type { WidgetQuery, WidgetAggregateResult } from "@mms/shared";
+import { dynamicWidgetAggregatesQueryKey } from "@/lib/query/dynamicWidgetAggregatesQueryKey";
 
 export interface DynamicWidgetInput {
   id: string;
@@ -72,24 +73,9 @@ export function useModuleWidgetAggregates(
     return groups;
   })();
 
-  const querySignature = (() => {
-    return JSON.stringify(
-      widgets
-        .map((w) => ({
-          id: w.id,
-          col: w.collection,
-          op: w.operation,
-          tf: w.targetField,
-          ff: w.filterField,
-          fo: w.filterOperator,
-          fv: w.filterValue,
-        }))
-        .sort((a, b) => a.id.localeCompare(b.id)),
-    );
-  })();
-
   const query = useQuery({
-    queryKey: ["dynamic_widget_aggregates", querySignature] as const,
+    // Signature includes xAxisField/chartLimit — see the key module.
+    queryKey: dynamicWidgetAggregatesQueryKey(widgets),
     queryFn: async ({ signal }) => {
       const results: Record<string, WidgetAggregateResult> = {};
 

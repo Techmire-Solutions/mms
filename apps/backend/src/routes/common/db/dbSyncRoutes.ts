@@ -79,6 +79,7 @@ export const dbSyncRoutes: FastifyPluginAsync = async (fastify) => {
       return sendForbidden(reply, "Only administrators can download a database snapshot");
     }
     const tenant = getRequestTenant();
+    if (!tenant) return sendForbidden(reply, "This endpoint requires a tenant subdomain");
     const releaseSlot = snapshotAdmission.acquire(reply);
     if (!releaseSlot) return;
     let txn: LongLivedTenantTransaction | null = null;
@@ -103,6 +104,7 @@ export const dbSyncRoutes: FastifyPluginAsync = async (fastify) => {
       return sendForbidden(reply, "Only administrators can download a workspace backup");
     }
     const tenant = getRequestTenant();
+    if (!tenant) return sendForbidden(reply, "This endpoint requires a tenant subdomain");
     const releaseSlot = snapshotAdmission.acquire(reply);
     if (!releaseSlot) return;
     let txn: LongLivedTenantTransaction | null = null;

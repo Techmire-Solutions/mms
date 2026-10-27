@@ -64,11 +64,19 @@ vi.mock("../db/repositories/platformUserRepository.js", () => ({
 const mockSave = vi.fn();
 const mockReport = vi.fn();
 
+// The route now goes through the adapter-free `consolidationUseCases` surface
+// (check:backend-boundaries: routes must not import repository adapters).
 vi.mock("../platform/use-cases/consolidationUseCases.js", () => ({
   listGroups: vi.fn().mockResolvedValue([]),
   saveGroup: (...args: unknown[]) => mockSave(...args),
   deleteGroup: vi.fn(),
   buildConsolidationReport: (...args: unknown[]) => mockReport(...args),
+  consolidationUseCases: {
+    listGroups: vi.fn().mockResolvedValue([]),
+    saveGroup: (...args: unknown[]) => mockSave(...args),
+    deleteGroup: vi.fn(),
+    buildConsolidationReport: (...args: unknown[]) => mockReport(...args),
+  },
 }));
 
 const GROUP = {
@@ -179,7 +187,7 @@ describe("/api/platform/consolidation", () => {
     // Assert
     expect(saved.statusCode).toBe(200);
     expect(report.statusCode).toBe(200);
-    expect(mockReport).toHaveBeenCalledWith(expect.anything(), "g1", {
+    expect(mockReport).toHaveBeenCalledWith("g1", {
       dateFrom: "2026-01-01",
       dateTo: "2026-12-31",
     });

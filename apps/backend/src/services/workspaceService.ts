@@ -7,7 +7,7 @@ import {
   isValidSubdomain,
   isWorkspaceEnabled,
 } from "@mms/shared";
-import { purgeTenantDataBySubdomain, runInTransaction } from "../db/database.js";
+import { purgeTenantDataBySubdomain, runInGlobalTransaction } from "../db/database.js";
 import { getRequestTenant } from "../lib/tenantContext.js";
 import { redisGet, redisSet, redisDel, redisKeys } from "../lib/redis.js";
 import {
@@ -64,7 +64,7 @@ export async function invalidateWorkspaceCache(subdomain: string): Promise<void>
 /** Permanently removes a workspace registry entry and all tenant-scoped data. */
 export async function deleteWorkspace(subdomain: string): Promise<Workspace | null> {
   const normalized = normalizeSubdomainInput(subdomain);
-  return runInTransaction(async () => {
+  return runInGlobalTransaction(async () => {
     const ws = await getWorkspaceBySubdomain(normalized);
     if (!ws) return null;
     await purgeTenantDataBySubdomain(normalized);
@@ -78,7 +78,7 @@ export async function setWorkspaceEnabled(
   enabled: boolean,
 ): Promise<Workspace | null> {
   const normalized = normalizeSubdomainInput(subdomain);
-  const result = await runInTransaction(async () => {
+  const result = await runInGlobalTransaction(async () => {
     const ws = await getWorkspaceBySubdomain(normalized);
     if (!ws) return null;
     await updateWorkspaceEnabledRow(normalized, enabled);
@@ -189,7 +189,7 @@ export async function createWorkspace(workspaceInput: {
     );
   }
 
-  return runInTransaction(async () => {
+  return runInGlobalTransaction(async () => {
     const existing = await getWorkspaceBySubdomain(subdomain);
     if (existing) {
       throw Object.assign(new Error("This workspace subdomain is already taken."), {

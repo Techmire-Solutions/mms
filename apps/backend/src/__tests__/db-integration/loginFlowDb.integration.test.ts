@@ -23,7 +23,7 @@ beforeAll(async () => {
   app = await buildApp();
 
   // Cleanup prior test state
-  const cleanTx = await beginLongLivedTenantTransaction(null);
+  const cleanTx = await beginLongLivedTenantTransaction(null, { allowGlobal: true });
   try {
     await cleanTx.tx.execute(sql`SET LOCAL app.allow_hard_purge = 'true'`);
     await cleanTx.tx.delete(tenantUsers).where(eq(tenantUsers.workspaceSubdomain, TEST_SUBDOMAIN));
@@ -36,7 +36,7 @@ beforeAll(async () => {
   }
 
   // Seed workspace
-  const seedTx = await beginLongLivedTenantTransaction(null);
+  const seedTx = await beginLongLivedTenantTransaction(null, { allowGlobal: true });
   try {
     await seedTx.tx.insert(workspaces).values({
       id: `ws-${TEST_SUBDOMAIN}`,
@@ -101,7 +101,7 @@ afterAll(async () => {
   if (app) {
     await app.close();
   }
-  const cleanTx = await beginLongLivedTenantTransaction(null);
+  const cleanTx = await beginLongLivedTenantTransaction(null, { allowGlobal: true });
   try {
     await cleanTx.tx.execute(sql`SET LOCAL app.allow_hard_purge = 'true'`);
     await cleanTx.tx.delete(tenantUsers).where(eq(tenantUsers.workspaceSubdomain, TEST_SUBDOMAIN));

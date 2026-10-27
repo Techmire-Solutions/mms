@@ -30,6 +30,7 @@ vi.mock("../db/database.js", () => ({
   pingDatabase: vi.fn().mockResolvedValue(true),
   closeDatabase: vi.fn().mockResolvedValue(undefined),
   runInTransaction: vi.fn().mockImplementation((cb) => cb()),
+  runInGlobalTransaction: vi.fn().mockImplementation((cb) => cb()),
 }));
 
 vi.mock("../db/tenant-context.js", () => ({

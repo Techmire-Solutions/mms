@@ -59,6 +59,7 @@ vi.mock("../db/repositories/contactRepository.js", () => ({
 
 vi.mock("../db/database.js", () => ({
   runInTransaction: (cb: () => unknown) => cb(),
+  runInGlobalTransaction: (cb: () => unknown) => cb(),
 }));
 
 vi.mock("../contacts/use-cases/contactDuplicateScanUseCases.js", () => ({

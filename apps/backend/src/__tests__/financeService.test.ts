@@ -13,6 +13,7 @@ vi.mock("../lib/tenantContext.js", () => ({
 
 vi.mock("../db/database.js", () => ({
   runInTransaction: (callback: () => Promise<unknown>) => mockRunInTransaction(callback),
+  runInGlobalTransaction: (callback: () => Promise<unknown>) => mockRunInTransaction(callback),
 }));
 
 vi.mock("../db/repositories/financeRepository.js", () => ({

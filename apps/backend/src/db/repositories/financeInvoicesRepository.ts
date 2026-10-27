@@ -1,7 +1,7 @@
 import { and, eq, inArray, isNull } from "drizzle-orm";
 import { dedupeTrimmedIds, type Invoice, type RepositoryListOptions } from "@mms/shared";
 import { financeInvoiceLines, financeInvoices } from "../schema.js";
-import { withTenantRead } from "../tenant-context.js";
+import { withTenant, withTenantRead } from "../tenant-context.js";
 import { buildTenantSoftDeleteConditions } from "../../services/genericRelationalService.js";
 import { invoiceLineRowToRecord } from "./financeBillingRepository.js";
 import { canonicalStoredRate } from "./repositoryFxMappers.js";
@@ -112,12 +112,25 @@ export async function listInvoicesByWorkspace(
   });
 }
 
-export async function findInvoiceById(tenant: string, id: string): Promise<Invoice | null> {
+/**
+ * Reads one invoice.
+ *
+ * `forUpdate` takes a row lock (`SELECT … FOR UPDATE`) on the primary so a
+ * read-modify-write settlement cannot interleave with a concurrent payment on
+ * the same invoice. It also implies a read-write transaction: the read replica
+ * cannot serve a locking read.
+ */
+export async function findInvoiceById(
+  tenant: string,
+  id: string,
+  options?: { forUpdate?: boolean; includeDeleted?: boolean },
+): Promise<Invoice | null> {
   const trimmedId = id?.trim();
   if (!trimmedId) return null;
   const subdomain = tenant.trim().toLowerCase();
-  return withTenantRead(subdomain, async (tx) => {
-    const rows = await tx
+  const withReader = options?.forUpdate ? withTenant : withTenantRead;
+  return withReader(subdomain, async (tx) => {
+    const query = tx
       .select({
         id: financeInvoices.id,
         workspaceSubdomain: financeInvoices.workspaceSubdomain,
@@ -160,6 +173,8 @@ export async function findInvoiceById(tenant: string, id: string): Promise<Invoi
         and(eq(financeInvoices.workspaceSubdomain, subdomain), eq(financeInvoices.id, trimmedId)),
       )
       .limit(1);
+
+    const rows = options?.forUpdate ? await query.for("update") : await query;
     const row = rows[0];
     if (!row) return null;
 

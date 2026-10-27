@@ -4,6 +4,7 @@ import { getRequestTenant } from "../lib/tenantContext.js";
 import { getDb } from "./dbClient.js";
 import * as schema from "./schema.js";
 import { applyTenantTransactionGuards } from "./tenantTransactionGuards.js";
+import { resolveTenantScope, type TenantScopeOptions } from "./tenantScopeGuard.js";
 import { logger } from "../lib/logger.js";
 import {
   checkTenantConnectionBudget,
@@ -13,6 +14,10 @@ import {
 import { getActivePoolRole, getActiveMaxPoolSize, getPool, getRootDb } from "./dbConnection.js";
 
 export type DbClient = NodePgDatabase<typeof schema>;
+
+export interface TransactionOptions extends TenantScopeOptions {
+  statementTimeoutMs?: number;
+}
 
 const txStorage = new AsyncLocalStorage<DbClient>();
 
@@ -29,12 +34,32 @@ export function hasActiveTransaction(): boolean {
  * Uses AsyncLocalStorage to propagate the tx client to all nested helper calls
  * so they participate in the same transaction rather than the root connection.
  * Nested calls are no-ops (they reuse the active tx).
+ *
+ * Fails closed: when no tenant is bound, this throws unless the caller opted in
+ * with `{ allowGlobal: true }` (or the greppable `runInGlobalTransaction`).
+ * Without that guard a queue/cron path that lost its AsyncLocalStorage context
+ * would silently run with `app.rls_bypass = 'on'`, i.e. across every tenant.
  */
 export async function runInTransaction<T>(
   cb: () => Promise<T>,
-  options?: { statementTimeoutMs?: number },
+  options?: TransactionOptions,
 ): Promise<T> {
   return await runTransaction(cb, false, options);
+}
+
+/**
+ * `runInTransaction` for intentional platform/global work — migrations,
+ * seeding, whole-database restore, platform-admin operations.
+ *
+ * Never call this from a tenant-scoped request path: when no tenant is bound the
+ * transaction runs with RLS bypassed. When a tenant *is* bound, this behaves
+ * exactly like `runInTransaction` (the tenant still scopes the transaction).
+ */
+export async function runInGlobalTransaction<T>(
+  cb: () => Promise<T>,
+  options?: Omit<TransactionOptions, "allowGlobal">,
+): Promise<T> {
+  return await runTransaction(cb, false, { ...options, allowGlobal: true });
 }
 
 /**
@@ -84,16 +109,28 @@ export interface LongLivedTenantTransaction {
   rollback(): Promise<void>;
 }
 
+/**
+ * Opens a long-lived tenant transaction. The tenant is known to be present — no
+ * global opt-in is needed.
+ */
+export function beginLongLivedTenantTransaction(
+  tenantId: string,
+  options?: { statementTimeoutMs?: number },
+): Promise<LongLivedTenantTransaction>;
+/**
+ * Opens a long-lived transaction whose tenant MAY be absent (whole-database
+ * snapshot/restore). The caller must pass an explicit `allowGlobal`, so running
+ * with RLS bypassed is always a visible decision at the call site.
+ */
+export function beginLongLivedTenantTransaction(
+  tenantId: string | null | undefined,
+  options: { statementTimeoutMs?: number; allowGlobal: boolean },
+): Promise<LongLivedTenantTransaction>;
 export async function beginLongLivedTenantTransaction(
   tenantId: string | null | undefined,
-  options?: { statementTimeoutMs?: number },
+  options: TransactionOptions = {},
 ): Promise<LongLivedTenantTransaction> {
-  const resolvedTenantId = tenantId || "";
-  if (resolvedTenantId === "undefined" || resolvedTenantId === "null") {
-    throw new Error(
-      `beginLongLivedTenantTransaction received the literal string "${resolvedTenantId}" as tenant id`,
-    );
-  }
+  const resolvedTenantId = resolveTenantScope(tenantId, options, "beginLongLivedTenantTransaction");
 
   if (resolvedTenantId) {
     checkTenantConnectionBudget(resolvedTenantId, getActivePoolRole(), getActiveMaxPoolSize());
@@ -144,12 +181,22 @@ export async function beginLongLivedTenantTransaction(
 /**
  * Read-only variant of `runInTransaction` using REPEATABLE READ, so every statement
  * observes one consistent snapshot (backup exports must not tear across tables).
+ *
+ * Fails closed on a missing tenant, exactly like `runInTransaction`.
  */
 export async function runInReadSnapshotTransaction<T>(
   cb: () => Promise<T>,
-  options?: { statementTimeoutMs?: number },
+  options?: TransactionOptions,
 ): Promise<T> {
   return await runTransaction(cb, true, options);
+}
+
+/** `runInReadSnapshotTransaction` for intentional whole-database exports. */
+export async function runInGlobalReadSnapshotTransaction<T>(
+  cb: () => Promise<T>,
+  options?: Omit<TransactionOptions, "allowGlobal">,
+): Promise<T> {
+  return await runTransaction(cb, true, { ...options, allowGlobal: true });
 }
 
 const SLOW_QUERY_THRESHOLD_MS = 200;
@@ -157,12 +204,15 @@ const SLOW_QUERY_THRESHOLD_MS = 200;
 async function runTransaction<T>(
   cb: () => Promise<T>,
   readSnapshot: boolean,
-  options?: { statementTimeoutMs?: number },
+  options?: TransactionOptions,
 ): Promise<T> {
   const existing = txStorage.getStore();
   if (existing) return cb();
 
-  const tenant = getRequestTenant();
+  // Fail closed BEFORE opening a transaction: resolving the tenant is what
+  // decides whether `applyTenantTransactionGuards` will bypass RLS for every
+  // policy in the database.
+  const tenant = resolveTenantScope(getRequestTenant(), options, "runInTransaction");
   const startTime = Date.now();
 
   if (tenant) {
