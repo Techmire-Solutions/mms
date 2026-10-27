@@ -16,8 +16,11 @@ import {
   getPool,
   getRootDb,
   initializeDatabaseConnection,
-  runInTransaction,
+  runInGlobalTransaction,
 } from "./dbConnection.js";
+import { runWithGlobalDocumentStore } from "./documentStoreScope.js";
+import { runWithGlobalTenantScope } from "./tenantScopeGuard.js";
+import { assertRlsRuntimeRole } from "./rlsRoleGuard.js";
 import { saveCollection, saveObject } from "./documentStore.js";
 import { getMinimalCollectionsForSeed, getMinimalObjects } from "./minimalSeeds.js";
 import * as schema from "./schema.js";
@@ -87,6 +90,9 @@ export function initDb(options?: { force?: boolean }): Promise<void> {
     let bootLockClient: PoolClient | null = null;
     try {
       initializeDatabaseConnection();
+      // Fail closed when the runtime role makes every FORCE ROW LEVEL SECURITY
+      // policy inert (superuser / BYPASSRLS). See db/rlsRoleGuard.ts.
+      await assertRlsRuntimeRole(getRootDb());
       bootLockClient = await getPool().connect();
       await bootLockClient.query("select pg_advisory_lock($1::integer)", [BOOT_INIT_LOCK_KEY]);
 
@@ -165,7 +171,16 @@ async function runDataMigrations(): Promise<void> {
     if (!appliedSet.has(migration.id)) {
       logger.info({ migration: migration.id }, "Running pending data migration");
       const run = await migration.load();
-      await run();
+      // Data migrations run with no request context and rewrite the document
+      // store for every workspace. They are already applied on deployed
+      // databases (forward-only: they cannot be edited to pass `allowGlobal`), so
+      // boot wraps them in the explicit ambient scopes instead of leaving the
+      // tenant guard silently fail-open for everyone.
+      await runWithGlobalDocumentStore(() =>
+        runWithGlobalTenantScope(async () => {
+          await run();
+        }),
+      );
       await getRootDb()
         .insert(schema.dataMigrations)
         .values({ id: migration.id })
@@ -177,14 +192,18 @@ async function runDataMigrations(): Promise<void> {
 
 export async function seedDatabase(): Promise<void> {
   try {
-    await runInTransaction(async () => {
-      for (const [name, collectionItems] of Object.entries(await getMinimalCollectionsForSeed())) {
-        await saveCollection(name, collectionItems as unknown[]);
-      }
-      for (const [key, objectValue] of Object.entries(getMinimalObjects())) {
-        await saveObject(key, objectValue);
-      }
-    });
+    await runWithGlobalDocumentStore(() =>
+      runInGlobalTransaction(async () => {
+        for (const [name, collectionItems] of Object.entries(
+          await getMinimalCollectionsForSeed(),
+        )) {
+          await saveCollection(name, collectionItems as unknown[]);
+        }
+        for (const [key, objectValue] of Object.entries(getMinimalObjects())) {
+          await saveObject(key, objectValue);
+        }
+      }),
+    );
     logger.info("Database seeding completed successfully.");
   } catch (error) {
     logger.error({ err: error }, "Failed to seed the database");

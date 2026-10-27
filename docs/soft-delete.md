@@ -815,7 +815,7 @@ The URL builder serializes `includeDeleted: true` → `?includeDeleted=true` and
 
 ### 7.2 `ModuleTrashToggle` — Shared UI Primitive
 
-[`apps/frontend/src/components/ui/ModuleTrashToggle.tsx`](../apps/frontend/src/components/ui/ModuleTrashToggle.tsx)
+[`apps/frontend/src/components/ui/ModuleTrashToggle.tsx`](../apps/frontend/src/components/app/ModuleTrashToggle.tsx)
 
 ```tsx
 <ModuleTrashToggle
@@ -839,7 +839,7 @@ Renders with `aria-pressed={showDeleted}` for screen-reader support. Mount insid
 
 ### 7.3 Bulk Actions — `BulkSelectionDeleteAction` / `BulkSelectionRestoreAction`
 
-[`apps/frontend/src/components/ui/BulkSelectionActions.tsx`](../apps/frontend/src/components/ui/BulkSelectionActions.tsx)
+[`apps/frontend/src/components/ui/BulkSelectionActions.tsx`](../apps/frontend/src/components/app/BulkSelectionActions.tsx)
 
 When `viewingDeleted = true` → show `BulkSelectionRestoreAction`, hide `BulkSelectionDeleteAction`.  
 When `viewingDeleted = false` → show `BulkSelectionDeleteAction`, hide `BulkSelectionRestoreAction`.

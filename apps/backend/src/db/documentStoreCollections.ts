@@ -2,6 +2,7 @@ import { applyTitleCaseRecursive, parseTenantScopedStorageKey } from "@mms/share
 import { eq, sql } from "drizzle-orm";
 import { getRequestTenant } from "../lib/tenantContext.js";
 import { withTenant } from "./tenant-context.js";
+import { inGlobalDocumentStoreScope } from "./documentStoreScope.js";
 import { RELATIONAL_REPLACE_MAPPING } from "./relationalReplaceMapping.js";
 import * as schema from "./schema.js";
 import { getQueryRows, resolveCollectionStorageName } from "./documentStoreKeys.js";
@@ -23,7 +24,7 @@ export async function getCollection(name: string): Promise<unknown[] | null> {
         if (!row) return null;
         return row.data;
       },
-      { allowGlobal: !tenant },
+      { allowGlobal: !tenant && inGlobalDocumentStoreScope() },
     );
   } catch (error) {
     logger.error({ name, err: error }, "Error getting collection");
@@ -51,7 +52,7 @@ export async function getCollectionForUpdate(name: string): Promise<unknown[] | 
         const row = getQueryRows<{ data: unknown[] }>(result)[0];
         return row?.data ?? null;
       },
-      { allowGlobal: !tenant },
+      { allowGlobal: !tenant && inGlobalDocumentStoreScope() },
     );
   } catch (error) {
     logger.error({ name, err: error }, "Error locking collection");
@@ -107,7 +108,7 @@ export async function saveCollection(
           }
         }
       },
-      { allowGlobal: !tenant },
+      { allowGlobal: !tenant && inGlobalDocumentStoreScope() },
     );
 
     if (tenant) {
@@ -133,7 +134,7 @@ export async function deleteCollection(name: string): Promise<void> {
     async (tx) => {
       await tx.delete(schema.collections).where(eq(schema.collections.name, storageName));
     },
-    { allowGlobal: !tenant },
+    { allowGlobal: !tenant && inGlobalDocumentStoreScope() },
   );
 
   if (tenant) {

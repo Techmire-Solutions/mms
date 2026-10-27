@@ -9,6 +9,7 @@ import type { DbClient } from "./dbConnection.js";
 
 import { tracer } from "../config/telemetry.js";
 import { applyTenantTransactionGuards } from "./tenantTransactionGuards.js";
+import { resolveTenantScope } from "./tenantScopeGuard.js";
 import { logger } from "../lib/logger.js";
 
 export type TenantTransaction = Parameters<Parameters<DbClient["transaction"]>[0]>[0];
@@ -59,26 +60,10 @@ export async function withTenant<T>(
   callback: (tx: TenantTransaction) => Promise<T>,
   options: WithTenantOptions = {},
 ): Promise<T> {
-  const resolvedTenantId = tenantId || "";
-
-  // Defensive guard: a tenant id of the literal strings "undefined"/"null"
-  // indicates a caller binding an unset request property instead of a real
-  // workspace subdomain. Fail loudly rather than running RLS against a
-  // non-existent tenant.
-  if (resolvedTenantId === "undefined" || resolvedTenantId === "null") {
-    throw new Error(
-      `withTenant received the literal string "${resolvedTenantId}" as tenant id — a caller is binding an unset request property. Check that authentication middleware decorates request.tenant.`,
-    );
-  }
-
   // Fail closed: an empty tenant would disable row-level security for this
-  // transaction, so it must be requested explicitly.
-  if (!resolvedTenantId && options.allowGlobal !== true) {
-    throw new Error(
-      "[withTenant] empty tenant id — refusing to run with RLS bypassed. " +
-        "Pass a real workspace subdomain, or { allowGlobal: true } for intentional platform/global work.",
-    );
-  }
+  // transaction, so it must be requested explicitly. Shared with
+  // `runInTransaction` / `beginLongLivedTenantTransaction` (tenantScopeGuard.ts).
+  const resolvedTenantId = resolveTenantScope(tenantId, options, "withTenant");
 
   if (typeof hasActiveTransaction === "function" && hasActiveTransaction()) {
     const active = activeDb();

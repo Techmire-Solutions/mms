@@ -26,9 +26,17 @@ const PRODUCTION_IGNORED_SPECS = [
   "**/responsive-authenticated.spec.ts",
 ] as const;
 
+/**
+ * The nightly workflow (`e2e-nightly.yml`) runs the WHOLE suite against a fresh
+ * database, including the mutation/seed-heavy specs that PR CI skips. Without
+ * this the deepest flows (onboarding, academic flow, critical lifecycles,
+ * import/export) ran only on a developer laptop.
+ */
+const isFullSuite = process.env.E2E_FULL_SUITE === "1";
+
 const ignoredSpecs = [
   ...(isProduction ? PRODUCTION_IGNORED_SPECS : []),
-  ...(process.env.CI ? LOCAL_ONLY_SPECS : []),
+  ...(process.env.CI && !isFullSuite ? LOCAL_ONLY_SPECS : []),
 ];
 
 /**
@@ -45,8 +53,8 @@ export default defineConfig({
   testDir: "./tests",
   /* Ignore heavy mutation/seed flows on production targets or CI local-only specs */
   testIgnore: ignoredSpecs,
-  /* Skip heavy local-only tests on CI */
-  grepInvert: process.env.CI ? /@local-only/ : undefined,
+  /* Skip heavy local-only tests on PR CI (the nightly sets E2E_FULL_SUITE=1) */
+  grepInvert: process.env.CI && !isFullSuite ? /@local-only/ : undefined,
   /* Maximum time one test can run for. */
   timeout: 45 * 1000,
   expect: {

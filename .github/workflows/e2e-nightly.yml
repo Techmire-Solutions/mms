@@ -1,0 +1,149 @@
+name: E2E Nightly (full suite)
+
+# PR CI skips the mutation/seed-heavy Playwright specs (`LOCAL_ONLY_SPECS` +
+# `@local-only`) because they share mutable state and are slow. That left the
+# deepest flows — platform onboarding, academic flow, critical lifecycles,
+# contacts import/export — running only on a developer machine. This workflow
+# runs the WHOLE suite nightly against a fresh database, plus on demand.
+#
+# It is deliberately NOT part of `ci-gate`: a nightly regression must not block a
+# PR, but it must be visible (the job summary lists every failure) and it must
+# fail the workflow so the scheduled run shows red.
+
+on:
+  schedule:
+    # 02:15 UTC daily — off-peak for both PK and EU maintainers.
+    - cron: "15 2 * * *"
+  workflow_dispatch:
+
+concurrency:
+  group: e2e-nightly
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+
+jobs:
+  e2e-full:
+    name: Full Playwright suite (chromium + a11y)
+    runs-on: ubuntu-24.04
+    timeout-minutes: 60
+    strategy:
+      fail-fast: false
+      matrix:
+        shardIndex: [1, 2]
+        shardTotal: [2]
+    services:
+      postgres:
+        image: postgres:16-alpine
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: mms
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 5
+          --tmpfs /var/lib/postgresql/data:rw,noexec,nosuid,size=1024m
+
+    env:
+      JWT_SECRET: "e2e-test-jwt-secret-key-at-least-32-chars-long"
+      DATABASE_URL: "postgres://postgres:postgres@localhost:5432/mms"
+      NODE_ENV: "test"
+      LOG_LEVEL: "warn"
+      # The whole point: do not exclude LOCAL_ONLY_SPECS / @local-only specs.
+      E2E_FULL_SUITE: "1"
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - name: Setup Environment
+        uses: ./.github/actions/setup-mms
+        with:
+          build-shared: "true"
+
+      - name: Run DB Migrations
+        run: pnpm --filter mms-backend run db:migrate
+
+      - name: Cache Playwright Binaries
+        uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+        id: playwright-cache
+        with:
+          path: ~/.cache/ms-playwright
+          key: playwright-${{ runner.os }}-${{ hashFiles('pnpm-lock.yaml') }}
+
+      - name: Install Playwright Chromium Browser
+        if: steps.playwright-cache.outputs.cache-hit != 'true'
+        run: pnpm --filter e2e-tests exec playwright install chromium
+
+      - name: Run the full E2E suite
+        env:
+          SHARD_INDEX: ${{ matrix.shardIndex }}
+          SHARD_TOTAL: ${{ matrix.shardTotal }}
+          PLAYWRIGHT_BLOB_OUTPUT_NAME: nightly-${{ matrix.shardIndex }}.zip
+        run: pnpm test:e2e --project=chromium --shard="${SHARD_INDEX}/${SHARD_TOTAL}"
+
+      - name: Upload Blob Report
+        if: always()
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: nightly-blob-report-${{ matrix.shardIndex }}
+          path: e2e/blob-report
+          retention-days: 7
+
+      - name: Summarise failures
+        if: failure()
+        run: |
+          {
+            echo "## Nightly E2E shard ${{ matrix.shardIndex }} failed"
+            echo ""
+            echo "These specs never run on PR CI. Reproduce locally with:"
+            echo ""
+            echo '```bash'
+            echo "E2E_FULL_SUITE=1 pnpm test:e2e --project=chromium"
+            echo '```'
+            echo ""
+            echo "Download the blob report artifact for the trace and screenshots."
+          } >> "$GITHUB_STEP_SUMMARY"
+
+  report:
+    name: Merge nightly reports
+    needs: [e2e-full]
+    if: always() && needs.e2e-full.result != 'skipped'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - name: Setup Environment
+        uses: ./.github/actions/setup-mms
+        with:
+          build-shared: "false"
+
+      - name: Download Blob Reports
+        uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
+        with:
+          pattern: nightly-blob-report-*
+          merge-multiple: true
+          path: all-blob-reports
+
+      - name: Build HTML Report
+        if: ${{ hashFiles('all-blob-reports/**') != '' }}
+        run: pnpm --filter e2e-tests run merge-reports ../all-blob-reports --reporter html
+
+      - name: Upload HTML Report
+        if: always()
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: nightly-playwright-html-report
+          path: e2e/playwright-report
+          retention-days: 14

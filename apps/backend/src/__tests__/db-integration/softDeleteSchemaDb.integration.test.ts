@@ -60,7 +60,7 @@ beforeAll(async () => {
   // Apply DDL migrations (including 0108 triggers, partial indexes, and RLS)
   await applyDrizzleMigrations();
 
-  const seedTx = await beginLongLivedTenantTransaction(null);
+  const seedTx = await beginLongLivedTenantTransaction(null, { allowGlobal: true });
   try {
     // Ensure test non-superuser role exists for PostgreSQL RLS testing
     await seedTx.tx.execute(sql`
@@ -92,7 +92,7 @@ beforeAll(async () => {
 
 afterAll(async () => {
   if (dbAvailable) {
-    const cleanupTx = await beginLongLivedTenantTransaction(null);
+    const cleanupTx = await beginLongLivedTenantTransaction(null, { allowGlobal: true });
     try {
       await cleanupTx.tx.execute(sql`SET LOCAL app.allow_hard_purge = 'true'`);
       await cleanupTx.tx.delete(students).where(eq(students.workspaceSubdomain, TEST_SUBDOMAIN));
@@ -116,7 +116,7 @@ describe("MMS Soft-Delete Database Schema Foundations", () => {
       return;
     }
 
-    const setupTx = await beginLongLivedTenantTransaction(null);
+    const setupTx = await beginLongLivedTenantTransaction(null, { allowGlobal: true });
     try {
       await setupTx.tx.insert(contacts).values({
         id: "con-trigger-block-test",
@@ -130,7 +130,7 @@ describe("MMS Soft-Delete Database Schema Foundations", () => {
       throw error;
     }
 
-    const deleteTx = await beginLongLivedTenantTransaction(null);
+    const deleteTx = await beginLongLivedTenantTransaction(null, { allowGlobal: true });
     try {
       let rejected = false;
       try {
@@ -160,7 +160,7 @@ describe("MMS Soft-Delete Database Schema Foundations", () => {
       return;
     }
 
-    const setupTx = await beginLongLivedTenantTransaction(null);
+    const setupTx = await beginLongLivedTenantTransaction(null, { allowGlobal: true });
     try {
       await setupTx.tx.insert(students).values({
         id: "stu-trigger-block-test",
@@ -174,7 +174,7 @@ describe("MMS Soft-Delete Database Schema Foundations", () => {
       throw error;
     }
 
-    const deleteTx = await beginLongLivedTenantTransaction(null);
+    const deleteTx = await beginLongLivedTenantTransaction(null, { allowGlobal: true });
     try {
       let rejected = false;
       try {
@@ -205,7 +205,7 @@ describe("MMS Soft-Delete Database Schema Foundations", () => {
       return;
     }
 
-    const purgeTx = await beginLongLivedTenantTransaction(null);
+    const purgeTx = await beginLongLivedTenantTransaction(null, { allowGlobal: true });
     try {
       await purgeTx.tx.execute(sql`SET LOCAL app.allow_hard_purge = 'true'`);
       await purgeTx.tx
@@ -222,7 +222,7 @@ describe("MMS Soft-Delete Database Schema Foundations", () => {
       throw error;
     }
 
-    const verifyTx = await beginLongLivedTenantTransaction(null);
+    const verifyTx = await beginLongLivedTenantTransaction(null, { allowGlobal: true });
     try {
       const remaining = await verifyTx.tx
         .select({ id: students.id })
@@ -250,7 +250,7 @@ describe("MMS Soft-Delete Database Schema Foundations", () => {
     const RECYCLE_GR = "GR-RECYCLE-999";
 
     // 1. Insert Student A with RECYCLE_GR
-    const insTx = await beginLongLivedTenantTransaction(null);
+    const insTx = await beginLongLivedTenantTransaction(null, { allowGlobal: true });
     try {
       await insTx.tx.insert(students).values({
         id: "stu-recycle-a",
@@ -265,7 +265,7 @@ describe("MMS Soft-Delete Database Schema Foundations", () => {
     }
 
     // 2. Soft-delete Student A
-    const softDelTx = await beginLongLivedTenantTransaction(null);
+    const softDelTx = await beginLongLivedTenantTransaction(null, { allowGlobal: true });
     try {
       await softDelTx.tx
         .update(students)
@@ -284,7 +284,7 @@ describe("MMS Soft-Delete Database Schema Foundations", () => {
     }
 
     // 3. Insert Student B with same RECYCLE_GR (must succeed under partial unique index)
-    const insBtx = await beginLongLivedTenantTransaction(null);
+    const insBtx = await beginLongLivedTenantTransaction(null, { allowGlobal: true });
     try {
       await insBtx.tx.insert(students).values({
         id: "stu-recycle-b",
@@ -299,7 +299,7 @@ describe("MMS Soft-Delete Database Schema Foundations", () => {
     }
 
     // 4. Attempting to insert Student C with same RECYCLE_GR while B is active must throw 23505
-    const insCtx = await beginLongLivedTenantTransaction(null);
+    const insCtx = await beginLongLivedTenantTransaction(null, { allowGlobal: true });
     try {
       let threwConflict = false;
       try {
@@ -329,7 +329,7 @@ describe("MMS Soft-Delete Database Schema Foundations", () => {
     const RECYCLE_EMAIL = "recycle-tester@example.com";
 
     // 1. Insert User A with RECYCLE_EMAIL
-    const insTx = await beginLongLivedTenantTransaction(null);
+    const insTx = await beginLongLivedTenantTransaction(null, { allowGlobal: true });
     try {
       await insTx.tx.insert(tenantUsers).values({
         id: "usr-recycle-a",
@@ -345,7 +345,7 @@ describe("MMS Soft-Delete Database Schema Foundations", () => {
     }
 
     // 2. Soft-delete User A
-    const softDelTx = await beginLongLivedTenantTransaction(null);
+    const softDelTx = await beginLongLivedTenantTransaction(null, { allowGlobal: true });
     try {
       await softDelTx.tx
         .update(tenantUsers)
@@ -367,7 +367,7 @@ describe("MMS Soft-Delete Database Schema Foundations", () => {
     }
 
     // 3. Insert User B with same RECYCLE_EMAIL (must succeed under partial unique index)
-    const insBtx = await beginLongLivedTenantTransaction(null);
+    const insBtx = await beginLongLivedTenantTransaction(null, { allowGlobal: true });
     try {
       await insBtx.tx.insert(tenantUsers).values({
         id: "usr-recycle-b",
@@ -383,7 +383,7 @@ describe("MMS Soft-Delete Database Schema Foundations", () => {
     }
 
     // 4. Attempting to insert User C with same RECYCLE_EMAIL while B is active must throw 23505
-    const insCtx = await beginLongLivedTenantTransaction(null);
+    const insCtx = await beginLongLivedTenantTransaction(null, { allowGlobal: true });
     try {
       let threwConflict = false;
       try {

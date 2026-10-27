@@ -7,8 +7,17 @@ import { useAuth } from "@/lib/contexts/AuthContext";
 import type { AttendanceRecord } from "@/lib/data/attendanceData";
 import { invalidateAttendanceQueries } from "@/tenant/features/attendance/hooks/invalidateAttendanceQueries";
 
-export const ATTENDANCE_QUERY_KEY = ["attendance", "list"] as const;
-export const ATTENDANCE_METRICS_QUERY_KEY = ["attendance", "metrics"] as const;
+import {
+  ATTENDANCE_METRICS_QUERY_KEY,
+  ATTENDANCE_QUERY_KEY,
+  ATTENDANCE_REPORT_AGGREGATES_QUERY_KEY,
+} from "./attendanceQueryKeys.js";
+
+export {
+  ATTENDANCE_METRICS_QUERY_KEY,
+  ATTENDANCE_QUERY_KEY,
+  ATTENDANCE_REPORT_AGGREGATES_QUERY_KEY,
+};
 
 export function attendanceCommandMetricsQueryOptions(selectedDate: string) {
   return serverMetricsQueryOptions<AttendanceCommandMetricsSnapshot>({
@@ -143,10 +152,7 @@ export function useAttendanceMutations() {
   };
 }
 
-export {
-  ATTENDANCE_REPORT_AGGREGATES_QUERY_KEY,
-  useAttendanceReportAggregates,
-} from "./useAttendanceReportAggregates";
+export { useAttendanceReportAggregates } from "./useAttendanceReportAggregates";
 
 // --- Contract-driven list queryOptions & mutation hooks ----------------------
 

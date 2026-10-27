@@ -29,6 +29,7 @@ export function createFacultyUseCases(repo: FacultyRepository = facultyRepositor
   const loadFacultyById = (id: string, includeDeleted?: boolean) =>
     load.loadFacultyById(id, includeDeleted, repo);
   const loadFacultyByIds = (ids: string[]) => load.loadFacultyByIds(ids, repo);
+  const isFacultyProfileDeleted = (id: string) => load.isFacultyProfileDeleted(id, repo);
   const loadFacultyLinkedContactIds = (excludeFacultyId?: string) =>
     load.loadFacultyLinkedContactIds(excludeFacultyId, repo);
   const loadFacultyCommandMetrics = () => load.loadFacultyCommandMetrics(repo);
@@ -79,6 +80,7 @@ export function createFacultyUseCases(repo: FacultyRepository = facultyRepositor
     loadFacultyPage,
     loadFacultyById,
     loadFacultyByIds,
+    isFacultyProfileDeleted,
     loadFacultyLinkedContactIds,
     loadFacultyCommandMetrics,
     loadFacultyWidgetAggregates,

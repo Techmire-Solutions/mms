@@ -247,3 +247,54 @@ transactions.`) and re-attaches triggers for **19** tables against 0104's **14**
     recent frontend work — most likely shared-DB state / rot (these specs are `@local-only`, not CI-gated;
     the repo notes they need an isolated disposable database). Needs a clean-DB reproduction before it is
     treated as a product bug.
+
+## 2026-10-28 project review — fixed vs. still open
+
+A full read-only review of the repository (architecture, tenancy, money, frontend
+data layer, CI/ratchets, docs) landed these fixes. Each is enforced by a test or a
+ratchet, so the fix cannot silently regress.
+
+**Fixed**
+
+| Finding | Fix | Enforcement |
+| --- | --- | --- |
+| RLS could be inert: no role assertion, `getDb()` paths outside any transaction | `db/rlsRoleGuard.ts` inspects `current_user` at boot (strict in production, `MMS_DB_ROLE_ENFORCEMENT` to opt out); the three platform-admin queries now run inside `withGlobalTenant` | `__tests__/tenantScopeGuards.test.ts` |
+| `runInTransaction` / `beginLongLivedTenantTransaction` failed **open** on a missing tenant | Both share `resolveTenantScope` with `withTenant`; explicit `runInGlobalTransaction` / `runInGlobalReadSnapshotTransaction` escape hatches | `tenantScopeGuards.test.ts`, `tenantContextGuards.test.ts` |
+| Document store fell back to unprefixed keys when the tenant was lost | `runWithGlobalDocumentStore` scope; boot seeding + data migrations are the only global callers | boundary tests |
+| Invoice `paid_amt` lost update (read-modify-write + blind upsert) | `findInvoiceById(..., { forUpdate: true })` takes a row lock during settlement | finance use-case tests |
+| Audit events appended with `void … .catch()` after commit | Writes + audit share one tenant transaction (`dbObjectRoutes`, `dbCollectionRoutes`, `userActivityLogUseCases`) | `settingsFieldRbac.integration.test.ts`, `facultyRoleUnionAssert.test.ts` |
+| Rate-limit bucket keyed on client `x-tenant-id` | Key is the trusted ALS tenant + IP (never a header); tenant binding now runs before the security plugins | `rateLimitConfig.test.ts` |
+| `/uploads/*` public, proxy-cacheable | Auth hook + tenant-path match; only `branding`/`avatars` stay public; `private, no-store` for tenant files | `uploadsAuth.test.ts` |
+| Any `/auth/me` failure wiped the QueryClient **and** the offline IDB cache | Only 401/403 clears; other errors fall back to the persisted identity | `useAuthSessionSync` |
+| Widget aggregates keyed without `xAxisField`/`chartLimit`, never invalidated | `dynamicWidgetAggregatesQueryKey` (all request fields) + invalidation from the live-push dispatcher | key module |
+| IndexedDB connection leak (one per save) | Single shared connection with `versionchange`/`close` handling | `idbCachePersister.ts` |
+| Money formatting ignored the UI locale and parsed via `parseFloat` | `registerFinanceLocaleProvider`; decimal strings go through the BigInt money layer; `.toFixed(2)` removed from opening balances | shared money tests |
+| 21 bespoke query invalidators (18 modules missing setup/lookups invalidation) | All but `messaging` now use `createModuleQueryInvalidator` with `lists`/`preferences`/`lookups` | `queryFactories.test.ts` |
+| gitleaks skipped the whole `__tests__` trees | Exclusions replaced by exact fixture literals; every rule scans those files again | `gitleaks detect` (verified: a planted token in a test file still fails) |
+| APRs could merge untested source (coverage gate skipped) | `scripts/ci/check-changed-coverage.mjs` gates the files a PR touches | CI `Changed-file coverage` |
+| DB tests skipped `services/**` + `use-cases/**` | Added to the `backend_db` path filter | CI |
+| Baselines could be padded upward; E2E deep flows ran only locally | `--ratchet` wired into CI; nightly full-suite workflow with `E2E_FULL_SUITE=1` | `ci.yml`, `e2e-nightly.yml` |
+| Docs: stale architectures, 59 `file:///Users/…` links, dead links | Rewritten; new broken-relative-link ratchet | `scripts/check-docs.mjs` |
+| CSP allowed `ws:`/`wss:` to any host | Same-origin only; extra origins must be listed in `MMS_WS_ORIGINS` | `plugins/security.ts` |
+| Failed deploy rollback reported success | Rollback failure now fails the job | `deploy.yml` |
+
+**Still open (deliberate, measured, and now ratcheted)**
+
+1. **Timezone-naive timestamps.** 311 bare `timestamp` columns vs 72 `timestamptz`,
+   while Drizzle declares `withTimezone: true`. Converting them is a table-rewrite
+   project on the two largest tables and must be planned per-table. `check:migration-hygiene`
+   stops new naive columns.
+2. **Historical migrations without `lock_timeout`** (143 of 197). Applied migrations are
+   immutable (forward-only), so they cannot be edited; `check:migration-hygiene` requires
+   `SET LOCAL lock_timeout` on every new migration that runs locking DDL.
+3. **Drizzle snapshot chain stops at `0133` (63 migrations newer).** Regeneration needs a
+   dedicated pass (`drizzle-kit generate` would re-emit applied DDL otherwise); the gap may
+   not grow while it is pending.
+4. **`packages/ui` has no `package.json`** — it is a `@shared/ui` alias resolved by
+   tsconfig/vite. Works, but it is invisible to the turbo task graph.
+5. **`useGlobalSettings` still hydrates from localStorage.** The 2FA gate it feeds is
+   backend-authoritative (`authenticate.ts` rejects `twoFactorVerified === false`), so this
+   is a cache-first UX choice rather than an authorization hole; migrating it to TanStack
+   Query remains worthwhile.
+6. **The 5 unreferenced-key i18n baseline is 518** (5.5% of 9,414). Pruning them is a
+   product/QA decision; `check:i18n-unused` blocks growth in the meantime.

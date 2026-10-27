@@ -16,12 +16,22 @@ export interface IdbPersisterOptions {
   key?: string;
 }
 
+/**
+ * One shared connection for the lifetime of the page.
+ *
+ * Every save/restore used to call `indexedDB.open` and never close the handle,
+ * while `queryPersistenceLifecycle` subscribes saving to *every* cache event
+ * (1s debounce). That leaked one connection per write for the whole session.
+ */
+let connectionPromise: Promise<IDBDatabase | null> | null = null;
+
 function openDatabase(): Promise<IDBDatabase | null> {
   if (typeof window === "undefined" || typeof indexedDB === "undefined") {
     return Promise.resolve(null);
   }
+  if (connectionPromise) return connectionPromise;
 
-  return new Promise((resolve) => {
+  connectionPromise = new Promise((resolve) => {
     try {
       const request = indexedDB.open(DB_NAME, DB_VERSION);
 
@@ -33,16 +43,37 @@ function openDatabase(): Promise<IDBDatabase | null> {
       };
 
       request.onsuccess = () => {
-        resolve(request.result);
+        const db = request.result;
+        // A version change in another tab invalidates this handle; drop the cache
+        // so the next operation reopens instead of throwing NotFoundError.
+        db.onversionchange = () => {
+          db.close();
+          connectionPromise = null;
+        };
+        db.onclose = () => {
+          connectionPromise = null;
+        };
+        resolve(db);
       };
 
       request.onerror = () => {
+        connectionPromise = null;
         resolve(null);
       };
     } catch {
+      connectionPromise = null;
       resolve(null);
     }
   });
+
+  return connectionPromise;
+}
+
+/** Test/teardown helper — closes the shared connection and forgets it. */
+export function closeIdbConnection(): void {
+  const pending = connectionPromise;
+  connectionPromise = null;
+  void pending?.then((db) => db?.close()).catch(() => undefined);
 }
 
 /**

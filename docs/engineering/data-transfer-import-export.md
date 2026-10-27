@@ -45,10 +45,10 @@ Internal system metadata must never be exposed to users in CSV exports, nor acce
 ```
 
 **Enforcement Points:**
-- [`createModuleTransferSchema`](file:///Users/syedaalin/Documents/mms/packages/shared/src/dataTransfer/core/moduleTransferSchema.ts): Automatically strips any fields whose key or label matches metadata keys.
-- [`buildExportGrid`](file:///Users/syedaalin/Documents/mms/packages/shared/src/dataTransfer/export/buildExportGrid.ts#L33-L47) & [`yieldExportGridChunks`](file:///Users/syedaalin/Documents/mms/packages/shared/src/dataTransfer/export/buildExportGrid.ts#L61-L77): Filter columns through `filterNonMetadataColumns()` at the root grid generation layer.
-- [`runGridCsvExportJob`](file:///Users/syedaalin/Documents/mms/apps/frontend/src/lib/backgroundJobs/runGridCsvExportJob.ts) & [`useModuleServerCsvExportActions`](file:///Users/syedaalin/Documents/mms/apps/frontend/src/lib/backgroundJobs/useModuleServerCsvExportActions.ts): Sanitize columns before triggering downloads or server export jobs.
-- [`registerModuleCsvExportRoutes`](file:///Users/syedaalin/Documents/mms/apps/backend/src/lib/registerModuleCsvExportRoutes.ts): Sanitizes incoming export columns on Fastify endpoints.
+- [`createModuleTransferSchema`](../../packages/shared/src/dataTransfer/core/moduleTransferSchema.ts): Automatically strips any fields whose key or label matches metadata keys.
+- [`buildExportGrid`](../../packages/shared/src/dataTransfer/export/buildExportGrid.ts#L33-L47) & [`yieldExportGridChunks`](../../packages/shared/src/dataTransfer/export/buildExportGrid.ts#L61-L77): Filter columns through `filterNonMetadataColumns()` at the root grid generation layer.
+- [`runGridCsvExportJob`](../../apps/frontend/src/lib/backgroundJobs/runGridCsvExportJob.ts) & [`useModuleServerCsvExportActions`](../../apps/frontend/src/lib/backgroundJobs/useModuleServerCsvExportActions.ts): Sanitize columns before triggering downloads or server export jobs.
+- [`registerModuleCsvExportRoutes`](../../apps/backend/src/lib/registerModuleCsvExportRoutes.ts): Sanitizes incoming export columns on Fastify endpoints.
 
 ### 2.2 Bidirectional 1:1 Header Symmetry
 - Every column generated in a CSV export has its label mapped as the **primary expected header** in the import schema (`header: field.label`).
@@ -101,12 +101,12 @@ Each module declares a `TransferFieldDefinition<TEntity>` array defining:
 
 The **Faculty** module demonstrates full integration of this architecture for both primary entities and sub-catalogs.
 
-### 4.1 Schema Definitions ([`facultyTransferSchema.ts`](file:///Users/syedaalin/Documents/mms/packages/shared/src/dataTransfer/schemas/facultyTransferSchema.ts))
+### 4.1 Schema Definitions ([`facultyTransferSchema.ts`](../../packages/shared/src/dataTransfer/schemas/facultyTransferSchema.ts))
 - **`facultyTransferSchema`**: Full field whitelist for faculty members (name, employee ID, department, designation, specialization, phone, email, notes).
 - **`facultyDesignationTransferSchema`**: Consolidated SSOT schema for department designations.
 
-### 4.2 Frontend Import Dialog ([`FacultyCsvImportDialog.tsx`](file:///Users/syedaalin/Documents/mms/apps/frontend/src/tenant/features/faculty/components/FacultyCsvImportDialog.tsx))
-Consumes the generic [`ModuleImportDialog`](file:///Users/syedaalin/Documents/mms/apps/frontend/src/components/ui/ModuleImportDialog.tsx) and the hook `useModuleCsvImportActions`:
+### 4.2 Frontend Import Dialog ([`FacultyCsvImportDialog.tsx`](../../apps/frontend/src/tenant/features/faculty/components/FacultyCsvImportDialog.tsx))
+Consumes the generic [`ModuleImportDialog`](../../apps/frontend/src/components/app/ModuleImportDialog.tsx) and the hook `useModuleCsvImportActions`:
 
 ```tsx
 export function FacultyCsvImportDialog({
@@ -159,7 +159,7 @@ export function FacultyCsvImportDialog({
 
 ## 5. Monorepo Coverage Catalog
 
-All 15 form-containing modules have implemented, registered transfer schemas in [`packages/shared/src/dataTransfer/schemas/`](file:///Users/syedaalin/Documents/mms/packages/shared/src/dataTransfer/schemas/):
+All 15 form-containing modules have implemented, registered transfer schemas in [`packages/shared/src/dataTransfer/schemas/`](../../packages/shared/src/dataTransfer/schemas):
 
 | Module | Title | Priority | SSOT Schema | Status |
 |:---|:---|:---:|:---|:---:|

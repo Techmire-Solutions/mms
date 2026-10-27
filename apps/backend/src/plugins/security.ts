@@ -27,6 +27,23 @@ const nonceStore = new WeakMap<FastifyRequest, string>();
  *  - Google Fonts allowed via `style-src`/`font-src`.
  *  - `frame-ancestors 'none'` and `object-src 'none'` block framing and plugins.
  */
+/**
+ * WebSocket origins the SPA may open.
+ *
+ * `connect-src` used to allow the bare schemes `ws:` and `wss:`, which permits a
+ * WebSocket to ANY host — a ready-made exfiltration channel for injected script.
+ * The client connects to `window.location.host` (same origin) unless
+ * `VITE_API_URL` points at a separate API host, which deployments must declare
+ * explicitly in `MMS_WS_ORIGINS`.
+ */
+function resolveWebSocketOrigins(): string[] {
+  const configured = (process.env.MMS_WS_ORIGINS ?? "")
+    .split(",")
+    .map((origin) => origin.trim())
+    .filter(Boolean);
+  return configured;
+}
+
 function buildCspDirectives(isProd?: boolean, nonce?: string) {
   const scriptSources = ["'self'"];
   if (nonce) {
@@ -47,8 +64,7 @@ function buildCspDirectives(isProd?: boolean, nonce?: string) {
     "manifest-src": ["'self'"],
     "connect-src": [
       "'self'",
-      "ws:",
-      "wss:",
+      ...resolveWebSocketOrigins(),
       "https://fonts.googleapis.com",
       "https://fonts.gstatic.com",
     ],

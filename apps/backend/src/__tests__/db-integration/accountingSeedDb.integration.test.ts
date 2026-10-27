@@ -22,7 +22,7 @@ const WORKSPACES = ["coa-seed-fresh", "coa-seed-prefs", "coa-seed-race"];
 type RootTx = Awaited<ReturnType<typeof beginLongLivedTenantTransaction>>["tx"];
 
 async function asRoot(fn: (tx: RootTx) => Promise<void>): Promise<void> {
-  const handle = await beginLongLivedTenantTransaction(null);
+  const handle = await beginLongLivedTenantTransaction(null, { allowGlobal: true });
   try {
     await handle.tx.execute(sql`SET LOCAL app.allow_hard_purge = 'true'`);
     await fn(handle.tx);
@@ -62,7 +62,7 @@ const defaultsFor = (records: Account[]) => ({
 });
 
 async function readState(subdomain: string) {
-  const handle = await beginLongLivedTenantTransaction(null);
+  const handle = await beginLongLivedTenantTransaction(null, { allowGlobal: true });
   try {
     const accounts = await handle.tx.$count(
       accountingAccounts,

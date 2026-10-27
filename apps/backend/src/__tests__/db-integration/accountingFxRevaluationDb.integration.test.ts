@@ -29,7 +29,9 @@ import { requireDatabaseConnection } from "./dbTestSupport.js";
 const TENANT = "fx-ias21-reval";
 
 async function cleanup(): Promise<void> {
-  const { tx, commit, rollback } = await beginLongLivedTenantTransaction(null);
+  const { tx, commit, rollback } = await beginLongLivedTenantTransaction(null, {
+    allowGlobal: true,
+  });
   try {
     await tx.execute(sql`SET LOCAL app.allow_hard_purge = 'true'`);
     await tx
@@ -99,7 +101,7 @@ const entry = (id: string, lines: JournalLine[]): JournalEntry =>
 beforeAll(async () => {
   await requireDatabaseConnection();
   await cleanup();
-  const { tx, commit } = await beginLongLivedTenantTransaction(null);
+  const { tx, commit } = await beginLongLivedTenantTransaction(null, { allowGlobal: true });
   await tx
     .insert(workspaces)
     .values({ id: `ws-${TENANT}`, subdomain: TENANT, madrasaName: TENANT, enabled: true });

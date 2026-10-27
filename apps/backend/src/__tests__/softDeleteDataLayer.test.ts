@@ -48,6 +48,7 @@ vi.mock("../attendance/use-cases/attendanceSectionStamp.js", () => ({
 
 vi.mock("../db/database.js", () => ({
   runInTransaction: vi.fn((cb: () => unknown) => cb()),
+  runInGlobalTransaction: vi.fn((cb: () => unknown) => cb()),
   activeDb: () => ({
     execute: async () => undefined,
     update: () => ({ set: () => ({ where: async () => undefined }) }),

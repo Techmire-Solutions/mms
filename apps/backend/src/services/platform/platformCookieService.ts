@@ -5,7 +5,13 @@ export const PLATFORM_ACCESS_COOKIE = "mms_platform_access";
 
 export function attachPlatformTokenFromCookie(request: FastifyRequest): void {
   const cookies = request.cookies as Record<string, string | undefined> | undefined;
-  const token = cookies?.[PLATFORM_ACCESS_COOKIE];
+  let token = cookies?.[PLATFORM_ACCESS_COOKIE];
+  if (!token && request.headers.cookie) {
+    const match = request.headers.cookie.match(
+      new RegExp(`(?:^|;\\s*)${PLATFORM_ACCESS_COOKIE}=([^;]*)`),
+    );
+    if (match?.[1]) token = decodeURIComponent(match[1]);
+  }
   if (token && !request.headers.authorization) {
     request.headers.authorization = `Bearer ${token}`;
   }

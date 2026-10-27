@@ -32,7 +32,10 @@ vi.mock("../db/database.js", () => ({
   getAllData: () => dbGetAllData(),
   resetTenantData: vi.fn(),
   runInTransaction: (fn: () => Promise<void>) => runInTransaction(fn),
+  runInGlobalTransaction: (fn: () => Promise<void>) => runInTransaction(fn),
   runInReadSnapshotTransaction: (fn: () => Promise<unknown>) => runInReadSnapshotTransaction(fn),
+  runInGlobalReadSnapshotTransaction: (fn: () => Promise<unknown>) =>
+    runInReadSnapshotTransaction(fn),
   deleteObject: (key: string) => dbDeleteObject(key),
   listTenantObjectLogicalKeys: () => dbListTenantObjectLogicalKeys(),
   listTenantCollectionLogicalKeys: () => dbListTenantCollectionLogicalKeys(),

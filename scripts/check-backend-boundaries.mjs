@@ -61,7 +61,12 @@ function findDirectStorageImports(source) {
       lines[i].match(/\bimport\s*\(\s*["']([^"']+)["']\s*\)/);
     if (!m) continue;
     const specifier = m[1];
-    const isRepoImport = specifier.includes("db/repositories/");
+    // Module adapters (`<module>/repository/<x>Adapter.js`) are the SAME seam as
+    // `db/repositories/*`: a route that imports one has reached into storage.
+    // Matching only "db/repositories/" reported a false zero while
+    // `routes/common/auth/authSessionRoutes.ts` imported
+    // `users/repository/usersRepositoryAdapter.js`.
+    const isRepoImport = specifier.includes("db/repositories/") || /\/repository\//.test(specifier);
     const isQueryBuilder = specifier === "drizzle-orm" || specifier.startsWith("drizzle-orm/");
     if (isRepoImport || isQueryBuilder) {
       hits.push({ line: i + 1, specifier });

@@ -40,6 +40,21 @@ vi.mock("../services/auth/userServiceShared.js", () => ({
   getRawUsers: (...args: unknown[]) => mockGetRawUsers(...args),
 }));
 
+// The activity-log bridge now awaits its audit append inside the same tenant
+// transaction (users/use-cases/userActivityLogUseCases.ts); this suite asserts
+// role unioning, not the audit chain.
+vi.mock("../services/auditTrailService.js", async (importOriginal) => {
+  const actual = await importOriginal<typeof import("../services/auditTrailService.js")>();
+  return {
+    ...actual,
+    recordModernAuditEvent: vi.fn().mockResolvedValue({
+      hashPrevious: "",
+      hashCurrent: "",
+      canonicalPayload: "",
+    }),
+  };
+});
+
 vi.mock("../lib/livePush.js", () => ({
   broadcastCollection: vi.fn(),
   broadcastTenantUpdate: vi.fn(),

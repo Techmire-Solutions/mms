@@ -195,7 +195,13 @@ export function createFinanceMutationOperations({
         const existingPayment = await repo.findPaymentById(tenant, resolvedId);
         if (existingPayment) return existingPayment;
 
-        const invoice = await repo.findInvoiceById(tenant, normalizedPayment.invoiceId);
+        // Lock the invoice row: the balance check below is a read-modify-write on
+        // `paidAmt`, and without FOR UPDATE two concurrent payments both pass the
+        // check and the second overwrites the first (cash collected twice, the
+        // invoice showing once).
+        const invoice = await repo.findInvoiceById(tenant, normalizedPayment.invoiceId, {
+          forUpdate: true,
+        });
         if (!invoice || invoice.deletedAt) {
           const err = new Error("Referenced invoice is archived or does not exist");
           (err as Error & { statusCode: number }).statusCode = 400;

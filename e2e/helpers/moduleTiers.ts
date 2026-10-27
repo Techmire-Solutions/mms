@@ -101,8 +101,8 @@ export async function loginTenant(
     return;
   }
 
-  const retryBtn = page.getByRole("button", { name: /Try again/i });
-  if (await retryBtn.isVisible({ timeout: 1000 }).catch(() => false)) {
+  const retryBtn = page.getByRole("button", { name: /Try again|Retry/i });
+  if (await retryBtn.isVisible({ timeout: 2000 }).catch(() => false)) {
     await retryBtn.click().catch(() => {});
   }
 

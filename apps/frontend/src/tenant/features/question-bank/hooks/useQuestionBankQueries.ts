@@ -8,7 +8,7 @@ import {
   QUESTION_BANK_QUESTIONS_QUERY_KEY,
   QUESTION_BANK_TESTS_QUERY_KEY,
   QUESTION_BANK_RESULTS_QUERY_KEY,
-} from "@/tenant/features/question-bank/hooks/useQuestionBankApi";
+} from "./questionBankQueryKeys.js";
 import { invalidateQuestionBankQueries } from "@/tenant/features/question-bank/hooks/invalidateQuestionBankQueries";
 
 export function questionBankQuestionsListQueryOptions(

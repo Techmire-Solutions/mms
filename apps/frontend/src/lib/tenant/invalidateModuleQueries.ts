@@ -19,6 +19,7 @@ import { invalidateQuestionBankQueries } from "@/tenant/hooks/collections/questi
 import { invalidateAccountingQueries } from "@/tenant/hooks/collections/accounting";
 import { invalidateObligationsQueries } from "@/tenant/hooks/collections/obligations";
 import { invalidateDocumentTemplatesQueries } from "@/lib/templates/useDocumentTemplates";
+import { DYNAMIC_WIDGET_AGGREGATES_QUERY_KEY } from "@/lib/query/dynamicWidgetAggregatesQueryKey";
 import {
   DASHBOARD_SUMMARY_QUERY_KEY_ROOT,
   invalidateDashboardQueries,
@@ -39,6 +40,9 @@ export function invalidateModuleQueries(queryClient: QueryClient, key: string): 
     key !== "message_templates"
   ) {
     void queryClient.invalidateQueries({ queryKey: DASHBOARD_SUMMARY_QUERY_KEY_ROOT });
+    // Reports widgets are server-side aggregates over these same collections;
+    // nothing invalidated them before, so edited charts showed stale numbers.
+    void queryClient.invalidateQueries({ queryKey: DYNAMIC_WIDGET_AGGREGATES_QUERY_KEY });
   }
 
   switch (key) {

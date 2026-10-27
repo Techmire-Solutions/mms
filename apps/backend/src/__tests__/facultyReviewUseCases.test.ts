@@ -11,6 +11,7 @@ import { ConflictError } from "../lib/httpErrors.js";
 vi.mock("../lib/tenantContext.js", () => ({ getRequestTenant: () => "demo" }));
 vi.mock("../db/database.js", () => ({
   runInTransaction: (work: () => Promise<unknown>) => work(),
+  runInGlobalTransaction: (work: () => Promise<unknown>) => work(),
 }));
 vi.mock("../lib/livePush.js", () => ({ broadcastCollection: vi.fn() }));
 vi.mock("../faculty/use-cases/facultyWriteGuards.js", () => ({

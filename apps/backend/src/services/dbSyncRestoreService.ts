@@ -11,6 +11,7 @@ import {
   deleteObject as dbDeleteObject,
   listTenantObjectLogicalKeys as dbListTenantObjectLogicalKeys,
   listTenantCollectionLogicalKeys as dbListTenantCollectionLogicalKeys,
+  runInGlobalTransaction,
   runInTransaction,
 } from "../db/database.js";
 import { activeDb } from "../db/dbConnection.js";
@@ -111,7 +112,12 @@ export async function synchronizeData(
 
   const restoredCollectionKeys = new Set<string>();
 
-  await runInTransaction(async () => {
+  // Tenant-scoped restore when a workspace is bound (the normal case); an
+  // explicit whole-database restore only when none is — never an implicit
+  // RLS bypass (runInTransaction now fails closed on a missing tenant).
+  const runRestore = getRequestTenant() ? runInTransaction : runInGlobalTransaction;
+
+  await runRestore(async () => {
     const tenant = getRequestTenant();
     if (tenant && !(await acquireTenantRestoreLock(tenant))) {
       throw new RestoreInProgressError();

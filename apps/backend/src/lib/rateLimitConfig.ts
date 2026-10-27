@@ -1,5 +1,5 @@
 import type { FastifyRequest } from "fastify";
-import { getRequestTenant, resolveSubdomainFromRequest } from "./tenantContext.js";
+import { getRequestTenant } from "./tenantContext.js";
 
 interface RateLimitErrorContext {
   statusCode: number;
@@ -17,24 +17,24 @@ function buildRateLimitError(message: string, context: RateLimitErrorContext) {
 }
 
 /**
- * Derives a composite identity key (tenant_id:client_ip) for multi-tenant rate limiting.
- * Ensures that traffic or brute-force attempts on one tenant cannot starve or throttle another.
+ * Derives the rate-limit bucket key.
+ *
+ * The tenant comes ONLY from the request's AsyncLocalStorage context, which is
+ * bound from the verified host by `registerRequestHooks` (registered before the
+ * security plugins for exactly this reason). When no tenant is bound the bucket
+ * is the client IP alone.
+ *
+ * This used to read `X-Tenant-Id` (and fall back to the `Host` subdomain). Both
+ * are client-controlled — a caller could mint a fresh bucket per request just by
+ * changing the header, so the only throttle on ~500 non-auth routes was
+ * unbounded by rotation. A trusted tenant still isolates tenants from each other
+ * (one tenant cannot starve another behind a shared NAT), but it can no longer be
+ * fabricated.
  */
 export function generateCompositeRateLimitKey(request: FastifyRequest): string {
-  const tenantHeader = request.headers["x-tenant-id"];
-  const tenantFromHeader =
-    typeof tenantHeader === "string" && tenantHeader.trim().length > 0
-      ? tenantHeader.trim().toLowerCase()
-      : null;
-  const tenantContext = getRequestTenant();
-  const subdomain = resolveSubdomainFromRequest(
-    request.headers.host,
-    request.headers["x-forwarded-host"],
-  );
-  const tenantId =
-    tenantContext || tenantFromHeader || subdomain?.trim().toLowerCase() || "platform";
   const clientIp = request.ip || request.socket?.remoteAddress || "127.0.0.1";
-  return `${tenantId}:${clientIp}`;
+  const tenant = getRequestTenant()?.trim().toLowerCase();
+  return tenant ? `${tenant}:${clientIp}` : clientIp;
 }
 
 /**

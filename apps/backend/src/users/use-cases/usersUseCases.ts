@@ -248,6 +248,13 @@ export function createUsersUseCases(repo: UsersRepository = usersRepository) {
       return { succeeded, failed };
     },
 
+    /**
+     * Raw tenant-user row for the owning workspace — used by the session guard on
+     * `/auth/me` to revoke a session whose user was soft-deleted. Routes must not
+     * reach the adapter directly (check:backend-boundaries).
+     */
+    loadTenantUserRowById: (tenant: string, id: string) => repo.findTenantUserRowById(tenant, id),
+
     // --- Activity Logs ---
     loadLogs: logService.loadLogs,
     loadLogById: logService.loadLogById,
