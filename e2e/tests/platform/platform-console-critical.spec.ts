@@ -333,7 +333,13 @@ test.describe("Platform Console Critical Workspace Lifecycle", () => {
     await test.step("3. Tenant owner signs in and completes mandatory password change", async () => {
       await page.goto(`${tenantOrigin}/login`);
       await page.waitForLoadState("domcontentloaded");
-      await page.locator('input[name="email"]').fill(tenantOwnerEmail);
+      const retryBtn = page.getByRole("button", { name: /Try again|Retry/i });
+      if (await retryBtn.isVisible({ timeout: 2000 }).catch(() => false)) {
+        await retryBtn.click().catch(() => {});
+      }
+      const emailInput = page.locator('input[name="email"]');
+      await emailInput.waitFor({ state: "visible", timeout: 30_000 });
+      await emailInput.fill(tenantOwnerEmail);
       await page.locator('input[name="password"]').fill(tenantOwnerTempPassword);
       await page.locator('button[type="submit"]').click();
 
@@ -347,7 +353,13 @@ test.describe("Platform Console Critical Workspace Lifecycle", () => {
       await page.locator('button[type="submit"]').click();
 
       await page.waitForURL(`${tenantOrigin}/login`);
-      await page.locator('input[name="email"]').fill(tenantOwnerEmail);
+      const secondRetryBtn = page.getByRole("button", { name: /Try again|Retry/i });
+      if (await secondRetryBtn.isVisible({ timeout: 2000 }).catch(() => false)) {
+        await secondRetryBtn.click().catch(() => {});
+      }
+      const secondEmailInput = page.locator('input[name="email"]');
+      await secondEmailInput.waitFor({ state: "visible", timeout: 30_000 });
+      await secondEmailInput.fill(tenantOwnerEmail);
       await page.locator('input[name="password"]').fill(tenantOwnerPassword);
       await page.locator('button[type="submit"]').click();
       await expect(

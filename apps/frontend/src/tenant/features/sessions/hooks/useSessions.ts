@@ -14,16 +14,19 @@ export function sessionsCommandMetricsQueryOptions() {
   });
 }
 
-export const SESSIONS_QUERY_KEY = ["sessions", "list"] as const;
-export const SESSIONS_METRICS_QUERY_KEY = ["sessions", "metrics"] as const;
-export const SESSIONS_WIDGET_AGGREGATES_QUERY_KEY = [
-  SESSIONS_MODULE_MANIFEST.collectionKey,
-  "widget-aggregates",
-] as const;
-export const SESSIONS_REPORT_AGGREGATES_QUERY_KEY = [
-  SESSIONS_MODULE_MANIFEST.collectionKey,
-  "report-aggregates",
-] as const;
+import {
+  SESSIONS_METRICS_QUERY_KEY,
+  SESSIONS_QUERY_KEY,
+  SESSIONS_REPORT_AGGREGATES_QUERY_KEY,
+  SESSIONS_WIDGET_AGGREGATES_QUERY_KEY,
+} from "./sessionsQueryKeys.js";
+
+export {
+  SESSIONS_METRICS_QUERY_KEY,
+  SESSIONS_QUERY_KEY,
+  SESSIONS_REPORT_AGGREGATES_QUERY_KEY,
+  SESSIONS_WIDGET_AGGREGATES_QUERY_KEY,
+};
 
 export interface SessionsPaginatedParams {
   page: number;

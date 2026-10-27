@@ -1,12 +1,11 @@
 import type { AttendanceReportAggregates, AttendanceReportComparisonQuery } from "@mms/shared";
-import { ATTENDANCE_MODULE_MANIFEST, normalizeAttendanceReportComparisonQuery } from "@mms/shared";
+import { normalizeAttendanceReportComparisonQuery } from "@mms/shared";
 import { tsrClient } from "@/lib/api";
 import { useAuth } from "@/lib/contexts/AuthContext";
 
-export const ATTENDANCE_REPORT_AGGREGATES_QUERY_KEY = [
-  ATTENDANCE_MODULE_MANIFEST.collectionKey,
-  "report-aggregates",
-] as const;
+import { ATTENDANCE_REPORT_AGGREGATES_QUERY_KEY } from "./attendanceQueryKeys.js";
+
+export { ATTENDANCE_REPORT_AGGREGATES_QUERY_KEY };
 
 export function useAttendanceReportAggregates(options?: {
   enabled?: boolean;

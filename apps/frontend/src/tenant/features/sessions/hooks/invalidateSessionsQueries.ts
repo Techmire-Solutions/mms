@@ -6,7 +6,7 @@ import {
   SESSIONS_QUERY_KEY,
   SESSIONS_REPORT_AGGREGATES_QUERY_KEY,
   SESSIONS_WIDGET_AGGREGATES_QUERY_KEY,
-} from "@/tenant/features/sessions/hooks/useSessions";
+} from "./sessionsQueryKeys.js";
 
 /** Invalidate Sessions list/metrics/widget-aggregates/report-aggregates/setup/lookups Query keys. */
 export const invalidateSessionsQueries = createModuleQueryInvalidator({
