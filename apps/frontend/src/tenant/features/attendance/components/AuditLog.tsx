@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from "react";
+import React, { useState, useMemo, useEffect } from "react";
 import { formatDateTime, todayISO } from "@mms/shared";
 import { EmptyState } from "@/components/app/EmptyState";
 import { ClipboardList, RefreshCw } from "lucide-react";
@@ -50,17 +50,13 @@ export function AuditLog({ filters, viewMode }: AuditLogProps): React.JSX.Elemen
   const [classId, setClassId] = useState(filters.classId || "");
   const [date, setDate] = useState(filters.date || todayISO());
 
-  const [prevFilterClassId, setPrevFilterClassId] = useState(filters.classId);
-  const [prevFilterDate, setPrevFilterDate] = useState(filters.date);
-
-  if (prevFilterClassId !== filters.classId) {
-    setPrevFilterClassId(filters.classId);
+  useEffect(() => {
     if (filters.classId) setClassId(filters.classId);
-  }
-  if (prevFilterDate !== filters.date) {
-    setPrevFilterDate(filters.date);
+  }, [filters.classId]);
+
+  useEffect(() => {
     if (filters.date) setDate(filters.date);
-  }
+  }, [filters.date]);
 
   const [reloadKey, setReloadKey] = useState(0);
   const reload = () => setReloadKey((prev) => prev + 1);

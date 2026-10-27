@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { useDebounce } from "@/hooks/useDebounce";
 import { useDirectoryTrashState } from "@/hooks/useDirectoryTrashState";
 import { isContactsQuickFilter, type ContactsQuickFilter } from "@mms/shared";
@@ -31,13 +31,13 @@ export function useContactsDirectoryFilters({
   const [selected, setSelected] = useState<(string | number)[]>([]);
 
   const currentFilterKey = `${debouncedSearch}|${filterGender}|${quickFilter}|${sortField}|${sortDir}|${viewingDeleted}`;
-  const [prevFilterKey, setPrevFilterKey] = useState(currentFilterKey);
-  if (prevFilterKey !== currentFilterKey) {
-    setPrevFilterKey(currentFilterKey);
-    if (listPage !== 1) {
-      setListPage(1);
+  const prevFilterKeyRef = useRef(currentFilterKey);
+  useEffect(() => {
+    if (prevFilterKeyRef.current !== currentFilterKey) {
+      prevFilterKeyRef.current = currentFilterKey;
+      setListPage((prev) => (prev !== 1 ? 1 : prev));
     }
-  }
+  }, [currentFilterKey]);
 
   const applyDrillDown = useCallback(
     (filter: ContactsWorkDrillDown) => {

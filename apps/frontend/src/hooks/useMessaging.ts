@@ -38,6 +38,9 @@ export interface RecordDispatchesInput {
   idempotencyKey?: string;
 }
 
+const EMPTY_TEMPLATES: MessageTemplate[] = [];
+const EMPTY_LOGS: Message[] = [];
+
 export function useMessageTemplates(options?: { enabled?: boolean }) {
   const { isAuthenticated } = useAuth();
   const query = tsrClient.messaging.listTemplates.useQuery({
@@ -49,8 +52,9 @@ export function useMessageTemplates(options?: { enabled?: boolean }) {
 
   const templates =
     query.data?.status === 200
-      ? ((query.data.body as { templates?: MessageTemplate[] } | null)?.templates ?? [])
-      : [];
+      ? ((query.data.body as { templates?: MessageTemplate[] } | null)?.templates ??
+        EMPTY_TEMPLATES)
+      : EMPTY_TEMPLATES;
 
   return { ...query, templates };
 }
@@ -110,7 +114,7 @@ export function useMessageLogs(options?: {
 
   return {
     ...query,
-    logs: res.logs ?? [],
+    logs: res.logs ?? EMPTY_LOGS,
     total: res.total ?? res.logs?.length ?? 0,
     page: res.page ?? page,
     pageSize: res.pageSize ?? pageSize,

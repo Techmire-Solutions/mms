@@ -1,5 +1,5 @@
 import type React from "react";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Copy } from "lucide-react";
 import type { ContactPreferences } from "@mms/shared";
 import { useTranslation } from "@/hooks/useTranslation";
@@ -37,13 +37,12 @@ export function ContactsPreferencesDuplicateSection({
   const detectionFields = prefs.duplicateDetectionFields ?? ["name", "phone", "email", "cnic"];
 
   const [namePrefixesDraft, setNamePrefixesDraft] = useState<string | null>(null);
-  const [prevIsPrefsDirty, setPrevIsPrefsDirty] = useState(isPrefsDirty);
-  if (prevIsPrefsDirty !== isPrefsDirty) {
-    setPrevIsPrefsDirty(isPrefsDirty);
+
+  useEffect(() => {
     if (!isPrefsDirty) {
       setNamePrefixesDraft(null);
     }
-  }
+  }, [isPrefsDirty]);
 
   const currentPrefixesDraft =
     isPrefsDirty && namePrefixesDraft !== null

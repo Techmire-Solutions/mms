@@ -128,21 +128,27 @@ export function useStudentFormState({ student, onClose, onSave }: UseStudentForm
   });
 
   // Autofill next GR for create without marking the form dirty.
-  const [prevAutoGr, setPrevAutoGr] = useState<string | undefined>(undefined);
-  if (
-    isStudentCreate(student) &&
-    autoGenerateId &&
-    nextGrNumber &&
-    !isGrManuallyEdited &&
-    prevAutoGr !== nextGrNumber
-  ) {
-    setPrevAutoGr(nextGrNumber);
-    if (!studentDraft.grNumber || studentDraft.grNumber === prevAutoGr) {
-      const nextDraft = { ...studentDraft, grNumber: nextGrNumber };
-      setStudentDraft(nextDraft);
-      setBaselineSnapshot(studentDraftSnapshot(nextDraft));
+  const prevAutoGrRef = useRef<string | undefined>(undefined);
+  useEffect(() => {
+    if (
+      isStudentCreate(student) &&
+      autoGenerateId &&
+      nextGrNumber &&
+      !isGrManuallyEdited &&
+      prevAutoGrRef.current !== nextGrNumber
+    ) {
+      const prevAutoGr = prevAutoGrRef.current;
+      prevAutoGrRef.current = nextGrNumber;
+      setStudentDraft((currentDraft) => {
+        if (!currentDraft.grNumber || currentDraft.grNumber === prevAutoGr) {
+          const nextDraft = { ...currentDraft, grNumber: nextGrNumber };
+          setBaselineSnapshot(studentDraftSnapshot(nextDraft));
+          return nextDraft;
+        }
+        return currentDraft;
+      });
     }
-  }
+  }, [student, autoGenerateId, nextGrNumber, isGrManuallyEdited]);
 
   const actions = useStudentFormActionHandlers({
     student,

@@ -93,7 +93,6 @@ export function useFacultyFormTabs(input: {
 }) {
   const { isFieldEnabled, errors, t, formInstanceId } = input;
   const [activeTabState, setActiveTabState] = useState<FacultyFormTabKey>("contact");
-  const [prevErrors, setPrevErrors] = useState(errors);
 
   const tabErrors = useMemo(() => {
     const counts: Record<string, number> = {};
@@ -138,8 +137,7 @@ export function useFacultyFormTabs(input: {
     ? activeTabState
     : ((visibleTabs[0]?.key as FacultyFormTabKey) ?? "contact");
 
-  if (prevErrors !== errors) {
-    setPrevErrors(errors);
+  useEffect(() => {
     const errorKeys = Object.keys(errors).filter((key) => Boolean(errors[key]));
     if (errorKeys.length > 0) {
       const firstInvalidTab = visibleTabs.find((vt) =>
@@ -149,7 +147,7 @@ export function useFacultyFormTabs(input: {
         setActiveTabState(firstInvalidTab.key as FacultyFormTabKey);
       }
     }
-  }
+  }, [errors, visibleTabs, tabErrors, activeTab]);
 
   useEffect(() => {
     const errorKeys = Object.keys(errors).filter((key) => Boolean(errors[key]));

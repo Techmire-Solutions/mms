@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useMemo, useState, useEffect } from "react";
 import { LayoutDashboard } from "lucide-react";
 import { type Contact, getPrimaryPhone, getPrimaryEmail } from "@mms/shared";
 import { useContactConfig } from "@/lib/contexts/ContactConfigContext";
@@ -33,22 +33,19 @@ export function useContactDetailViewModel({
   const viewerRole = role ?? "";
   const { t } = useTranslation();
   const [contactState, setContactState] = useState<Contact>(initialContact);
-  const [prevInitialContact, setPrevInitialContact] = useState(initialContact);
-  if (prevInitialContact !== initialContact) {
-    setPrevInitialContact(initialContact);
+
+  useEffect(() => {
     setContactState(initialContact);
-  }
+  }, [initialContact]);
 
   const activeContactId = contactState?.id != null ? String(contactState.id) : undefined;
   const { data: fullContact } = useContactById(activeContactId);
 
-  const [prevFullContact, setPrevFullContact] = useState(fullContact);
-  if (prevFullContact !== fullContact) {
-    setPrevFullContact(fullContact);
+  useEffect(() => {
     if (fullContact && String(fullContact.id) === String(contactState.id)) {
       setContactState(fullContact);
     }
-  }
+  }, [fullContact, contactState.id]);
 
   const isArchived = Boolean(contactState.deletedAt ?? initialContact.deletedAt);
   const canPersistContact = canWrite && Boolean(onUpdateContact) && !isArchived;

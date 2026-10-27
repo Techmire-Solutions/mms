@@ -31,13 +31,12 @@ export function ContactsSyncConflictPanel({
   const [conflicts, setConflicts] = useState<ContactsSyncConflict[]>(() =>
     getContactsSyncConflicts(),
   );
-  const [prevOpen, setPrevOpen] = useState(open);
-  if (prevOpen !== open) {
-    setPrevOpen(open);
+
+  useEffect(() => {
     if (open) {
       setConflicts(getContactsSyncConflicts());
     }
-  }
+  }, [open]);
   const [retryingId, setRetryingId] = useState<string | null>(null);
   const [dismissTargetId, setDismissTargetId] = useState<string | null>(null);
 

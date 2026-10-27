@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { AlertCircle } from "lucide-react";
 import {
   DEFAULT_MESSAGING_PREFERENCES,
@@ -33,16 +33,15 @@ export function MessagingSetupPreferences({
   const mutation = useMessagingPreferencesMutation();
   const gateways = useMessagingGatewaysStatus();
 
-  const [prevData, setPrevData] = useState<MessagingPreferences | undefined>(undefined);
   const [draft, setDraft] = useState<MessagingPreferences>(DEFAULT_MESSAGING_PREFERENCES);
   const [dirty, setDirty] = useState(false);
   const [saved, setSaved] = useState(false);
 
-  if (query.data && query.data !== prevData) {
-    setPrevData(query.data);
-    setDraft(query.data);
-    setDirty(false);
-  }
+  useEffect(() => {
+    if (query.data && !dirty) {
+      setDraft(query.data as MessagingPreferences);
+    }
+  }, [query.data, dirty]);
 
   const update = <K extends keyof MessagingPreferences>(key: K, value: MessagingPreferences[K]) => {
     setDraft((prev) => ({ ...prev, [key]: value }));

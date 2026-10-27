@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import {
   applyTitleCaseToContact,
   getDuplicateConfidenceBadgeStyle,
@@ -71,11 +71,7 @@ export function useDuplicateDetectionState({
   const [batchMerging, setBatchMerging] = useState(false);
   const [batchConfirmOpen, setBatchConfirmOpen] = useState(false);
 
-  const [prevServerPairs, setPrevServerPairs] = useState(serverPairs);
-  const [prevDupPage, setPrevDupPage] = useState(dupPage);
-  if (prevServerPairs !== serverPairs || prevDupPage !== dupPage) {
-    setPrevServerPairs(serverPairs);
-    setPrevDupPage(dupPage);
+  useEffect(() => {
     if (serverPairs?.pairs) {
       const mappedPairs = serverPairs.pairs.map((pair) => mapPairToViewModel(pair, t));
       setLoadedPairs((prev) => {
@@ -85,7 +81,7 @@ export function useDuplicateDetectionState({
         return [...byId.values()];
       });
     }
-  }
+  }, [serverPairs, dupPage, t]);
 
   const detectedPairs = (() => {
     if (pairsError) return [];
