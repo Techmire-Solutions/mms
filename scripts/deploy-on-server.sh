@@ -78,7 +78,8 @@ if [ -f "$TARBALL" ]; then
   RELEASE_NAME="${DEPLOY_SHA:-$(date -u +%Y%m%dT%H%M%SZ)}"
   cp -f "$TARBALL" "${RELEASES_DIR}/${RELEASE_NAME}.tar.gz" 2>/dev/null || true
   if [ -f "${TARBALL}.sha256" ]; then
-    cp -f "${TARBALL}.sha256" "${RELEASES_DIR}/${RELEASE_NAME}.tar.gz.sha256" 2>/dev/null || true
+    EXPECTED_HASH="$(awk '{print $1}' "${TARBALL}.sha256")"
+    printf '%s  %s\n' "$EXPECTED_HASH" "${RELEASE_NAME}.tar.gz" > "${RELEASES_DIR}/${RELEASE_NAME}.tar.gz.sha256" 2>/dev/null || true
   fi
   # Prune older releases (keep newest N by mtime).
   if [ -d "$RELEASES_DIR" ]; then
@@ -144,6 +145,7 @@ fi
 
 export PORT="$(read_env_var PORT "$MMS_PROD_BACKEND_PORT" "$ENV_FILE")"
 export NODE_ENV=production
+export MMS_DB_ROLE_ENFORCEMENT="$(read_env_var MMS_DB_ROLE_ENFORCEMENT "warn" "$ENV_FILE")"
 assert_production_backend_port "$PORT" "Deploy PORT" || exit 1
 
 mkdir -p "$ROOT_DIR/.logs"

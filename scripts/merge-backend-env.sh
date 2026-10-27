@@ -28,6 +28,7 @@ DEPLOY_KEYS=(
   PLATFORM_ADMIN_NAME
   MMS_APP_DOMAIN
   TRUST_PROXY
+  MMS_DB_ROLE_ENFORCEMENT
 )
 
 write_env_var() {
@@ -56,6 +57,13 @@ write_env_var() {
 for key in "${DEPLOY_KEYS[@]}"; do
   write_env_var "$key" "${!key-}"
 done
+
+# If MMS_DB_ROLE_ENFORCEMENT is not yet in ENV_FILE, default to "warn" so
+# existing single-user postgres instances do not crash on boot before a
+# dedicated non-superuser role (mms_app) is provisioned.
+if ! grep -q '^MMS_DB_ROLE_ENFORCEMENT=' "$ENV_FILE" 2>/dev/null; then
+  write_env_var "MMS_DB_ROLE_ENFORCEMENT" "${MMS_DB_ROLE_ENFORCEMENT:-warn}"
+fi
 
 # MMS_API_URL was a legacy separate API host — Apache serves the platform at MMS_APP_DOMAIN only.
 if grep -q '^MMS_API_URL=' "$ENV_FILE" 2>/dev/null; then
