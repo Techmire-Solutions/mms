@@ -20,7 +20,13 @@ function extractBearerToken(request: FastifyRequest): string | null {
     return header.slice(7).trim() || null;
   }
   const cookies = request.cookies as Record<string, string | undefined> | undefined;
-  return cookies?.[ACCESS_COOKIE] ?? null;
+  if (cookies?.[ACCESS_COOKIE]) return cookies[ACCESS_COOKIE];
+  const rawCookie = request.headers.cookie;
+  if (rawCookie) {
+    const match = rawCookie.match(new RegExp(`(?:^|;\\s*)${ACCESS_COOKIE}=([^;]*)`));
+    if (match?.[1]) return decodeURIComponent(match[1]);
+  }
+  return null;
 }
 
 export function attachAccessTokenFromCookie(request: FastifyRequest): void {
