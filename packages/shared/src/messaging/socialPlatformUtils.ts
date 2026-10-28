@@ -15,13 +15,25 @@ const SOCIAL_BASE_URLS: Record<string, string> = {
   telegram: "https://t.me/",
 };
 
+/** Schemes safe to use as a link target. */
+const SAFE_LINK_SCHEME = /^(https?|mailto|tel):/i;
+/** Any explicit URL scheme at the start of the value (e.g. `javascript:`, `data:`). */
+const EXPLICIT_SCHEME = /^[a-z][a-z0-9+.-]*:/i;
+
 /**
  * Formats a raw handle or username into a canonical profile URL for standard social platforms.
  * Leaves full URLs (starting with http://, https://, etc.) untouched.
+ * Rejects executable schemes (`javascript:`, `data:`, `vbscript:`) — callers use the result
+ * directly as an `href`/`window.open` target, where such a value would run stored script.
  */
 export function formatSocialPlatformUrl(platform: string, input: string): string {
   const trimmed = input.trim();
   if (!trimmed) return "";
+
+  // A scheme outside the safe list must never become a navigable target.
+  if (EXPLICIT_SCHEME.test(trimmed) && !SAFE_LINK_SCHEME.test(trimmed)) {
+    return "";
+  }
 
   if (
     trimmed.startsWith("http://") ||
