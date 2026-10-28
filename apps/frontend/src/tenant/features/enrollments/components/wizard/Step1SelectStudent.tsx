@@ -99,6 +99,7 @@ export function Step1SelectStudent({
           return (
             <Button
               key={student.id}
+              type="button"
               role="radio"
               aria-checked={selected}
               onClick={() => onChange(student)}
