@@ -11,7 +11,7 @@ import { PRINT_COLORS } from "@/lib/ui/printTemplateStyles";
 import type { TranslationFunction } from "@/lib/contexts/TranslationContext";
 import { interpolateTemplateTokens } from "./templateEditorUtils";
 import { TemplateElementContent } from "./templateElementContent";
-import { resolveElementGeometry } from "./templateDataResolution";
+import { resolveElementGeometry, resolveElementText } from "./templateDataResolution";
 import { TemplateElementResizeHandles } from "./TemplateElementResizeHandles";
 import type { ResizeHandle } from "./useTemplateEditorInteractions";
 
@@ -85,9 +85,18 @@ export const TemplateElementRenderer = React.memo(function TemplateElementRender
     }
   };
 
+  const textContent =
+    el.type === "field" || el.type === "static"
+      ? resolveElementText(el, data, isPreviewMode ? "preview" : "edit", interpolateTemplateTokens)
+      : "";
+
   const elementAriaLabel = el.label
-    ? `${el.label} (${el.type})`
-    : `${t("templateEditor.element")} ${el.type}`;
+    ? textContent && textContent !== el.label
+      ? `${el.label} ${textContent} (${el.type})`
+      : `${el.label} (${el.type})`
+    : textContent
+      ? `${textContent} (${el.type})`
+      : `${t("templateEditor.element")} ${el.type}`;
 
   return (
     <div
