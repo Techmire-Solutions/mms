@@ -12,6 +12,21 @@ export async function aggregateObligationsCommandMetrics(
   periodDays: number = MODULE_METRICS_DEFAULT_PERIOD_DAYS,
 ): Promise<ObligationsCommandMetricsSnapshot> {
   const subdomain = tenant.trim().toLowerCase();
+  if (!subdomain) {
+    return {
+      total: 0,
+      totalAmount: 0,
+      cash: 0,
+      online: 0,
+      newThisPeriod: 0,
+      obligationTypes: 0,
+    };
+  }
+
+  const safePeriodDays =
+    Number.isFinite(periodDays) && periodDays > 0 ? periodDays : MODULE_METRICS_DEFAULT_PERIOD_DAYS;
+  const periodStart = new Date(Date.now() - safePeriodDays * 86_400_000).toISOString().slice(0, 10);
+
   return withTenantRead(subdomain, async (tx) => {
     const activeCollections = and(
       eq(obligationCollections.workspaceSubdomain, subdomain),
@@ -25,10 +40,7 @@ export async function aggregateObligationsCommandMetrics(
         cash: sql<number>`count(*) FILTER (WHERE ${obligationCollections.paymentMode} = 'Cash')::int`,
         online: sql<number>`count(*) FILTER (WHERE ${obligationCollections.paymentMode} = 'Online')::int`,
         newThisPeriod: sql<number>`count(*) FILTER (WHERE
-          ${obligationCollections.receivedDate} IS NOT NULL
-          AND ${obligationCollections.receivedDate} ~ '^[0-9]{4}-[0-9]{2}-[0-9]{2}'
-          AND (${obligationCollections.receivedDate})::timestamptz
-            >= (NOW() - (${periodDays} * INTERVAL '1 day'))
+          ${obligationCollections.receivedDate} >= ${periodStart}
         )::int`,
       })
       .from(obligationCollections)
