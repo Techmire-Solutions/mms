@@ -1145,7 +1145,9 @@ export async function createAccountsAndJournalEntry(page: Page): Promise<void> {
 export async function createUserFromContact(page: Page): Promise<void> {
   await test.step("Create User from John Doe contact with Teacher role", async () => {
     await ensureWorkTierActive(page);
-    await page.getByRole("button", { name: "User" }).first().click();
+    const addUserBtn = page.getByRole("button", { name: "User", exact: true }).first();
+    await expect(addUserBtn).toBeVisible({ timeout: 15_000 });
+    await addUserBtn.click();
     const userDialog = page.getByRole("dialog", { name: /Add New User/i });
     await expect(userDialog).toBeVisible({ timeout: 15_000 });
 
@@ -1186,10 +1188,6 @@ export async function createUserFromContact(page: Page): Promise<void> {
       throw new Error(
         `User create failed: HTTP ${userResponse.status()} ${await userResponse.text()}`,
       );
-    }
-    const closeBtn = userDialog.getByRole("button", { name: /Close/i }).first();
-    if (await closeBtn.isVisible({ timeout: 2000 }).catch(() => false)) {
-      await closeBtn.click({ force: true });
     }
     await expect(userDialog).toBeHidden({ timeout: 20_000 });
     await expect(
