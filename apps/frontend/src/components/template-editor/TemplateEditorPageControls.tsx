@@ -45,7 +45,10 @@ export function TemplateEditorPageControls({
         size="sm"
         className="min-h-11 px-2 text-xs font-medium rounded hover:bg-background/80 transition-all flex items-center gap-1"
         title={
-          orientation === "landscape" ? t("templateEditor.portrait") : t("templateEditor.landscape")
+          orientation === "landscape" ? t("templateEditor.landscape") : t("templateEditor.portrait")
+        }
+        aria-label={
+          orientation === "landscape" ? t("templateEditor.landscape") : t("templateEditor.portrait")
         }
       >
         {orientation === "landscape" ? (
