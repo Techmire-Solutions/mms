@@ -1013,28 +1013,28 @@ export async function createMessagingTemplateAndCampaign(page: Page): Promise<vo
       .isVisible({ timeout: 5_000 })
       .catch(() => false);
     if (templateSelectVisible) {
-      const targetOption = templateSelect.locator("option", { hasText: /E2e Fee Reminder/i });
-      const hasOption = await targetOption.isVisible({ timeout: 5_000 }).catch(() => false);
-      if (hasOption) {
-        const feeTemplateValue = await targetOption.getAttribute("value");
-        if (feeTemplateValue) await templateSelect.selectOption(feeTemplateValue);
-      }
+      await selectOptionByMatchingText(templateSelect, /E2e Fee Reminder/i).catch(async () => {
+        await templateSelect.selectOption({ label: "E2E Fee Reminder" }).catch(() => undefined);
+      });
     }
     await expect(smsDialog.locator("#messageBody")).not.toHaveValue("", { timeout: 10_000 });
 
-    const logCreate = page.waitForResponse(
+    const dispatchResponsePromise = page.waitForResponse(
       (response) =>
-        response.url().includes("/api/messaging/logs") && response.request().method() === "POST",
+        (response.url().includes("/api/messaging/dispatch/sms") ||
+          response.url().includes("/api/messaging/logs")) &&
+        response.request().method() === "POST",
       { timeout: 30_000 },
     );
-    await smsDialog
-      .getByRole("button", { name: "Open Messages" })
-      .last()
-      .click({ timeout: 10_000 });
-    const logResponse = await logCreate;
-    if (!logResponse.ok()) {
+    const submitBtn = smsDialog
+      .getByRole("button", { name: /Open Messages|Send/i })
+      .or(smsDialog.locator('button[type="submit"]'))
+      .last();
+    await submitBtn.click({ timeout: 10_000 });
+    const dispatchResponse = await dispatchResponsePromise;
+    if (!dispatchResponse.ok()) {
       throw new Error(
-        `Messaging dispatch failed: HTTP ${logResponse.status()} ${await logResponse.text()}`,
+        `Messaging dispatch failed: HTTP ${dispatchResponse.status()} ${await dispatchResponse.text()}`,
       );
     }
     await expect(smsDialog).toBeHidden({ timeout: 20_000 });
