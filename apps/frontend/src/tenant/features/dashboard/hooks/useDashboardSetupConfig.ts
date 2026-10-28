@@ -1,3 +1,4 @@
+import { useMemo } from "react";
 import { keepPreviousData, useQuery, useQueryClient } from "@tanstack/react-query";
 import type { QueryClient } from "@tanstack/react-query";
 import { useAuth } from "@/lib/contexts/AuthContext";
@@ -54,9 +55,14 @@ export function useDashboardPreferencesQuery() {
     staleTime: 60_000,
   });
 
-  const preferences = query.data?.body?.preferences
-    ? normalizeDashboardPreferences(query.data.body.preferences)
-    : DEFAULT_DASHBOARD_PREFERENCES;
+  const rawPreferences = query.data?.body?.preferences;
+  const preferences = useMemo(
+    () =>
+      rawPreferences
+        ? normalizeDashboardPreferences(rawPreferences)
+        : DEFAULT_DASHBOARD_PREFERENCES,
+    [rawPreferences],
+  );
 
   return { ...query, data: preferences };
 }
@@ -83,9 +89,11 @@ export function useDashboardWidgetsQuery() {
     staleTime: 60_000,
   });
 
-  const widgets = query.data?.body?.widgets
-    ? (query.data.body.widgets as CustomWidget[])
-    : DEFAULT_WIDGETS_PLACEHOLDER;
+  const rawWidgets = query.data?.body?.widgets;
+  const widgets = useMemo(
+    () => (rawWidgets ? (rawWidgets as CustomWidget[]) : DEFAULT_WIDGETS_PLACEHOLDER),
+    [rawWidgets],
+  );
 
   return { ...query, data: widgets };
 }
