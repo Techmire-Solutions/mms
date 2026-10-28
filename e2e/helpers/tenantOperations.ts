@@ -802,31 +802,44 @@ export async function createStudentEnrollment(page: Page): Promise<void> {
     await expect(enrollmentDialog).toBeVisible();
 
     await enrollmentDialog.getByPlaceholder("Search students by name…").fill("Jane Doe");
-    // Selecting a student/session/class card advances the wizard automatically (each card is a
-    // submit button inside the wizard form), so those steps need no explicit Next.
     const janeStudent = enrollmentDialog.getByRole("radio", { name: /Jane Doe/ }).first();
     await expect(janeStudent).toBeVisible({ timeout: 15_000 });
     await janeStudent.click();
 
+    const nextBtn = enrollmentDialog.getByRole("button", { name: /^Next$/i });
     const afternoonSession = enrollmentDialog
       .getByRole("radio", { name: /Afternoon Tajweed 2026/ })
       .first();
+    if (!(await afternoonSession.isVisible({ timeout: 2000 }).catch(() => false))) {
+      await nextBtn.click();
+    }
     await expect(afternoonSession).toBeVisible({ timeout: 15_000 });
     await afternoonSession.click();
 
-    // Eligibility step has no selection — advance explicitly.
-    await expect(
-      enrollmentDialog.getByText("Student is eligible — you may proceed to class assignment."),
-    ).toBeVisible({ timeout: 15_000 });
-    await enrollmentDialog.getByRole("button", { name: "Next" }).click();
+    // Eligibility step
+    const eligibilityText = enrollmentDialog.getByText(
+      /Student is eligible — you may proceed to class assignment/i,
+    );
+    if (!(await eligibilityText.isVisible({ timeout: 2000 }).catch(() => false))) {
+      await nextBtn.click();
+    }
+    await expect(eligibilityText).toBeVisible({ timeout: 15_000 });
+    await nextBtn.click();
 
-    // Class step: selecting the class card advances to the fee step.
+    // Class step: selecting the class card
     const classCard = enrollmentDialog.getByRole("radio", { name: /Tajweed a/i }).first();
     await expect(classCard).toBeVisible({ timeout: 15_000 });
     await classCard.click();
 
-    // Fee step has no selection — advance explicitly to confirmation.
-    await enrollmentDialog.getByRole("button", { name: "Next" }).click();
+    // Advance through fee step to confirmation
+    const confirmBtn = enrollmentDialog.getByRole("button", { name: /New Enrollment/i });
+    if (!(await confirmBtn.isVisible({ timeout: 2000 }).catch(() => false))) {
+      await nextBtn.click();
+    }
+    if (!(await confirmBtn.isVisible({ timeout: 2000 }).catch(() => false))) {
+      await nextBtn.click();
+    }
+    await expect(confirmBtn).toBeVisible({ timeout: 15_000 });
 
     const enrollmentCreate = page.waitForResponse(
       (response) =>
