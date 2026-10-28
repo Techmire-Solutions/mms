@@ -298,3 +298,17 @@ ratchet, so the fix cannot silently regress.
    Query remains worthwhile.
 6. **The 5 unreferenced-key i18n baseline is 518** (5.5% of 9,414). Pruning them is a
    product/QA decision; `check:i18n-unused` blocks growth in the meantime.
+
+## 2026-10-29 project review
+
+Full report: [project-review-2026-10-29.md](./project-review-2026-10-29.md). Two stored-XSS
+vectors were fixed with regression tests:
+
+- Print-window titles are now escaped in `printHtmlDocument` and `buildPrintWindowHtml` (certificate
+  names, journal-entry refs, receipt numbers reached a same-origin `<title>` unescaped).
+- `formatSocialPlatformUrl` rejects executable URL schemes (`javascript:`, `data:`, `vbscript:`)
+  instead of passing them to an `href`/`window.open` target.
+
+Everything recorded above still stands. The next maintenance item is the dependency audit
+(7 moderate / 5 low, no high or critical).
+

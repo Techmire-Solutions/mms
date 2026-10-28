@@ -35,6 +35,7 @@ Project-wide entry points live at the repo root:
 - [ui-ux-dry-ssot-review-2026-09-30.md](./ui-ux-dry-ssot-review-2026-09-30.md)
 - [ui-ux-review.md](./ui-ux-review.md) · [ui-ux-review-resolution.md](./ui-ux-review-resolution.md)
 - [messaging-ui-ux-audit-2026-10-24.md](./messaging-ui-ux-audit-2026-10-24.md) — Messaging module UI/UX audit + SSOT consolidation findings.
+- [project-review-2026-10-29.md](./project-review-2026-10-29.md) — whole-repo review: gates, test/build evidence, two fixed XSS vectors, open debt.
 - [migration-milestones.md](./migration-milestones.md) — closed-milestone register.
 
 ## Engineering notes
