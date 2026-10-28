@@ -48,17 +48,21 @@ export function createModuleSetupConfigHooks<
   setPreferencesMemory,
   preferencesPlaceholder,
 }: CreateModuleSetupConfigHooksOptions<TPreferences, TPreferencesInput>) {
+  // Pre-resolve once at creation so placeholder identity is completely stable
+  // across every component render pass and does not trigger render-phase loops.
+  const staticPlaceholder = resolveValue(preferencesPlaceholder);
+
   function usePreferencesQuery() {
     const auth = useSafeAuth();
     const queryClient = useSafeQueryClient();
-    return useQuery(
+    return useQuery<TPreferences, Error, TPreferences>(
       {
         queryKey: preferencesQueryKey,
         queryFn: ({ signal }) => fetchPreferences(signal),
         enabled: Boolean(auth?.isAuthenticated),
         // TanStack Query NonFunctionGuard cannot be proven for generic TPreferences.
         // @ts-expect-error generic placeholderData vs NonFunctionGuard<TPreferences>
-        placeholderData: resolveValue(preferencesPlaceholder),
+        placeholderData: (previousData) => previousData ?? staticPlaceholder,
         staleTime: SETUP_STALE_TIME,
         gcTime: 10 * 60_000,
       },
