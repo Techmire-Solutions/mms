@@ -1,4 +1,4 @@
-import { useState, useMemo, useCallback, useEffect } from "react";
+import { useState, useMemo, useCallback } from "react";
 import { type TaskRecord, type TaskInsert, type TaskPriority, type TaskStatus } from "@mms/shared";
 import { useTranslation } from "@/hooks/useTranslation";
 import { useEligibleTaskAssignees, useTasks } from "@/tenant/hooks/collections/tasks";
@@ -53,6 +53,9 @@ export function useTaskFormController({
   const { data: eligibleList = [] } = useEligibleTaskAssignees({ enabled: open });
   const { data: parentCandidates } = useTasks({ limit: 100 }, { enabled: open });
 
+  const [prevInitialData, setPrevInitialData] = useState(initialData);
+  const [prevOpen, setPrevOpen] = useState(open);
+
   const resetForm = useCallback(
     (data: TaskRecord | null | undefined) => {
       if (data) {
@@ -90,11 +93,11 @@ export function useTaskFormController({
     [t],
   );
 
-  useEffect(() => {
-    if (open) {
-      resetForm(initialData);
-    }
-  }, [open, initialData, resetForm]);
+  if (prevInitialData !== initialData || prevOpen !== open) {
+    setPrevInitialData(initialData);
+    setPrevOpen(open);
+    resetForm(initialData);
+  }
 
   const handleAddAssignee = (facultyId: string) => {
     if (!facultyId) return;

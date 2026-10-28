@@ -1,5 +1,5 @@
 import type React from "react";
-import { useState, useMemo, useId, useEffect } from "react";
+import { useState, useMemo, useId } from "react";
 import { User } from "lucide-react";
 import { FormModal } from "@/components/app/FormModal";
 import { useTranslation } from "@/hooks/useTranslation";
@@ -49,12 +49,13 @@ export function ContactForm({
   const formDomId = `contact-form-${useId().replace(/:/g, "")}`;
   const { enabledTabIds } = useContactConfig();
   const [tab, setTab] = useState("basic");
-
-  useEffect(() => {
+  const [prevOpen, setPrevOpen] = useState(open);
+  if (open !== prevOpen) {
+    setPrevOpen(open);
     if (open) {
       setTab("basic");
     }
-  }, [open]);
+  }
 
   const branding = getScopedBrandingSettings();
   const effectiveCountry = defaultCountry || branding.country || "";

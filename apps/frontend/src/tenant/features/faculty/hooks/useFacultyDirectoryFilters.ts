@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { isFacultyQuickFilter, type FacultyQuickFilter } from "@mms/shared";
 import { useDebounce } from "@/hooks/useDebounce";
 import { useDirectoryTrashState } from "@/hooks/useDirectoryTrashState";
@@ -30,13 +30,11 @@ export function useFacultyDirectoryFilters({
     useWorkSelection<string>();
 
   const filterKey = `${debouncedSearch}|${filterStatus.join(",")}|${filterSpecialization}|${filterGender}|${filterDepartment}|${filterDesignation}|${filterReportingFacultyId}|${quickFilter}|${showDeleted}|${sortField}|${sortDir}`;
-  const prevFilterKeyRef = useRef(filterKey);
-  useEffect(() => {
-    if (prevFilterKeyRef.current !== filterKey) {
-      prevFilterKeyRef.current = filterKey;
-      setListPage((prev) => (prev !== 1 ? 1 : prev));
-    }
-  }, [filterKey]);
+  const [prevFilterKey, setPrevFilterKey] = useState(filterKey);
+  if (prevFilterKey !== filterKey) {
+    setPrevFilterKey(filterKey);
+    setListPage(1);
+  }
 
   useEffect(() => {
     clearSelection();

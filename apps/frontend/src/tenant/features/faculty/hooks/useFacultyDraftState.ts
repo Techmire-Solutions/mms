@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useState } from "react";
 import { useContactById } from "@/tenant/hooks/collections/contacts";
 import {
   useFacultyLinkedContactIds,
@@ -42,12 +42,17 @@ export function useFacultyDraftState({
   const [userAccountDraft, setUserAccountDraft] = useState<FacultyUserAccountDraft>(
     DEFAULT_USER_ACCOUNT_DRAFT,
   );
-  useEffect(() => {
+  const [prevFaculty, setPrevFaculty] = useState(faculty);
+  const [prevDefaultSpec, setPrevDefaultSpec] = useState(defaultSpecialization);
+
+  if (prevFaculty !== faculty || prevDefaultSpec !== defaultSpecialization) {
+    setPrevFaculty(faculty);
+    setPrevDefaultSpec(defaultSpecialization);
     const nextDraft = getInitialFacultyDraft({ faculty, defaultSpecialization });
     setFacultyDraft(nextDraft);
     setBaselineSnapshot(facultyDraftSnapshot(nextDraft));
     setUserAccountDraft(DEFAULT_USER_ACCOUNT_DRAFT);
-  }, [faculty, defaultSpecialization]);
+  }
 
   const updateDraft = useCallback((patch: Partial<FacultyMember>) => {
     setFacultyDraft((prev) => ({ ...prev, ...patch }));

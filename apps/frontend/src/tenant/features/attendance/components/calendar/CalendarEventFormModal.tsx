@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import { CalendarPlus } from "lucide-react";
 import {
   ACADEMIC_CALENDAR_EVENT_KINDS,
@@ -51,7 +51,12 @@ export function CalendarEventFormModal({
   const [scope, setScope] = useState<CalendarEventScopeValue>(EMPTY_SCOPE);
   const [notes, setNotes] = useState("");
 
-  useEffect(() => {
+  const [prevOpen, setPrevOpen] = useState(open);
+  const [prevEntry, setPrevEntry] = useState(entry);
+
+  if (prevOpen !== open || prevEntry !== entry) {
+    setPrevOpen(open);
+    setPrevEntry(entry);
     if (open) {
       setTitle(entry?.title ?? "");
       setKind(entry?.kind ?? "holiday");
@@ -69,7 +74,7 @@ export function CalendarEventFormModal({
       );
       setNotes(entry?.notes ?? "");
     }
-  }, [open, entry, initialDate]);
+  }
 
   const rangeInvalid = Boolean(startOn && endOn && endOn < startOn);
   const scopeIncomplete =

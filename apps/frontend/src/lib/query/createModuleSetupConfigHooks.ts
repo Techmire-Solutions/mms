@@ -55,7 +55,7 @@ export function createModuleSetupConfigHooks<
   function usePreferencesQuery() {
     const auth = useSafeAuth();
     const queryClient = useSafeQueryClient();
-    return useQuery(
+    return useQuery<TPreferences, Error, TPreferences>(
       {
         queryKey: preferencesQueryKey,
         queryFn: ({ signal }) => fetchPreferences(signal),

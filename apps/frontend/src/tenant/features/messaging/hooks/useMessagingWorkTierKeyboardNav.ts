@@ -16,11 +16,13 @@ export function useMessagingWorkTierKeyboardNav({
   handleOpenDetail,
 }: UseMessagingWorkTierKeyboardNavParams): { focusedIndex: number } {
   const [focusedIndex, setFocusedIndex] = useState<number>(-1);
-
-  // Reset keyboard focus safely when log dataset changes
-  useEffect(() => {
-    setFocusedIndex(-1);
-  }, [logs]);
+  const [prevLogs, setPrevLogs] = useState(logs);
+  if (prevLogs !== logs) {
+    setPrevLogs(logs);
+    if (focusedIndex !== -1) {
+      setFocusedIndex(-1);
+    }
+  }
 
   // Keep the focused row visible without jarring scroll jumps.
   useEffect(() => {

@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { useDebounce } from "@/hooks/useDebounce";
 import { useDirectoryTrashState } from "@/hooks/useDirectoryTrashState";
 import { toggleIdInSelection, togglePageIdsInSelection } from "@/lib/directorySelection";
@@ -31,17 +31,19 @@ export function useStudentsDirectoryFilters({
   const [selectedIds, setSelectedIds] = useState<string[]>([]);
 
   const filterKey = `${debouncedSearch}|${studentFilterStatus.join(",")}|${studentFilterGender}|${quickFilter}|${viewingDeleted}|${sortField}|${sortDir}`;
-  const prevFilterKeyRef = useRef(filterKey);
-  useEffect(() => {
-    if (prevFilterKeyRef.current !== filterKey) {
-      prevFilterKeyRef.current = filterKey;
-      setListPage((prev) => (prev !== 1 ? 1 : prev));
+  const [prevFilterKey, setPrevFilterKey] = useState(filterKey);
+  if (prevFilterKey !== filterKey) {
+    setPrevFilterKey(filterKey);
+    if (listPage !== 1) {
+      setListPage(1);
     }
-  }, [filterKey]);
+  }
 
-  useEffect(() => {
+  const [prevViewingDeleted, setPrevViewingDeleted] = useState(viewingDeleted);
+  if (prevViewingDeleted !== viewingDeleted) {
+    setPrevViewingDeleted(viewingDeleted);
     setSelectedIds([]);
-  }, [viewingDeleted]);
+  }
 
   const applyDrillDown = useCallback(
     (filter: StudentsWorkDrillDown) => {
