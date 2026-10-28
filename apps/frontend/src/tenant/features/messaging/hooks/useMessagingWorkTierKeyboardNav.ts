@@ -16,13 +16,10 @@ export function useMessagingWorkTierKeyboardNav({
   handleOpenDetail,
 }: UseMessagingWorkTierKeyboardNavParams): { focusedIndex: number } {
   const [focusedIndex, setFocusedIndex] = useState<number>(-1);
-  const [prevLogs, setPrevLogs] = useState(logs);
-  if (prevLogs !== logs) {
-    setPrevLogs(logs);
-    if (focusedIndex !== -1) {
-      setFocusedIndex(-1);
-    }
-  }
+
+  useEffect(() => {
+    setFocusedIndex(-1);
+  }, [logs]);
 
   // Keep the focused row visible without jarring scroll jumps.
   useEffect(() => {

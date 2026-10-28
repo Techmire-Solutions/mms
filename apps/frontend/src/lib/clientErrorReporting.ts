@@ -65,7 +65,11 @@ export function reportClientError(error: unknown, context?: Record<string, unkno
       // Reporting must never mask the original failure.
     });
 
-  console.error("[MMS]", error instanceof Error ? error.message : String(error));
+  if (context && Object.keys(context).length > 0) {
+    console.error("[MMS]", error instanceof Error ? error.message : String(error), context);
+  } else {
+    console.error("[MMS]", error instanceof Error ? error.message : String(error));
+  }
 }
 
 /**
