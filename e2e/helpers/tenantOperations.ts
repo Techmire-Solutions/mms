@@ -708,6 +708,13 @@ export async function createSessionAndClass(page: Page): Promise<void> {
     await endDate.fill("2026-12-31");
     await endDate.blur();
 
+    const statusSelect = sessionDialog.locator("#session-status, select[name='status']").first();
+    if (await statusSelect.isVisible({ timeout: 2000 }).catch(() => false)) {
+      await statusSelect.selectOption("open").catch(async () => {
+        await selectOptionByMatchingText(statusSelect, /Open/i);
+      });
+    }
+
     const sessionCreate = page.waitForResponse(
       (response) =>
         response.url().includes("/api/sessions") &&
