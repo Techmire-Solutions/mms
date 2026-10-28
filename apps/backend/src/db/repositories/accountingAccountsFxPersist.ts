@@ -42,7 +42,9 @@ export async function applyExplicitAccountFxFlags(
   const explicit = records.filter(hasFxFields);
   if (explicit.length === 0) return;
   const rows = explicit.map(
-    (r) => sql`(${r.id}, ${r.isMonetary ?? null}::boolean, ${r.accountCurrency !== undefined},
+    (
+      r,
+    ) => sql`(${r.id}::text, ${r.isMonetary ?? null}::boolean, ${r.accountCurrency !== undefined}::boolean,
       ${r.accountCurrency ?? null}::varchar, ${r.allowRevaluation ?? null}::boolean)`,
   );
   await tx.execute(sql`

@@ -954,7 +954,12 @@ export async function createMessagingTemplateAndCampaign(page: Page): Promise<vo
         `Messaging template create failed: HTTP ${templateResponse.status()} ${await templateResponse.text()}`,
       );
     }
-    await expect(page.getByText("E2e Fee Reminder").locator("visible=true").first()).toBeVisible({
+    await expect(
+      page
+        .getByText(/E2e Fee Reminder/i)
+        .locator("visible=true")
+        .first(),
+    ).toBeVisible({
       timeout: 20_000,
     });
 
@@ -962,7 +967,7 @@ export async function createMessagingTemplateAndCampaign(page: Page): Promise<vo
     await ensureWorkTierActive(page);
 
     // Click "New Campaign" dropdown trigger
-    const newCampaignBtn = page.getByRole("button", { name: /New Campaign/i });
+    const newCampaignBtn = page.getByRole("button", { name: /New Campaign/i }).first();
     await expect(newCampaignBtn).toBeVisible({ timeout: 10_000 });
     await newCampaignBtn.click();
 
@@ -1126,7 +1131,10 @@ export async function createAccountsAndJournalEntry(page: Page): Promise<void> {
     }
     await expect(entryDialog).toBeHidden({ timeout: 20_000 });
     await expect(
-      page.getByText("E2e Fee Collection Journal").locator("visible=true").first(),
+      page
+        .getByText(/E2e Fee Collection Journal/i)
+        .locator("visible=true")
+        .first(),
     ).toBeVisible({ timeout: 20_000 });
   });
 }
