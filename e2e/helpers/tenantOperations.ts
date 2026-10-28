@@ -807,39 +807,53 @@ export async function createStudentEnrollment(page: Page): Promise<void> {
     await expect(janeStudent).toHaveAttribute("aria-checked", "true", { timeout: 10_000 });
 
     const nextBtn = enrollmentDialog.getByRole("button", { name: /^Next$/i });
-    await expect(nextBtn).toBeEnabled({ timeout: 10_000 });
-    await nextBtn.click();
 
+    // Step 1: Session selection
     const afternoonSession = enrollmentDialog
       .getByRole("radio", { name: /Afternoon Tajweed 2026/ })
       .first();
+    if (!(await afternoonSession.isVisible().catch(() => false))) {
+      await expect(nextBtn).toBeEnabled({ timeout: 10_000 });
+      await nextBtn.click();
+    }
     await expect(afternoonSession).toBeVisible({ timeout: 15_000 });
     await afternoonSession.click();
     await expect(afternoonSession).toHaveAttribute("aria-checked", "true", { timeout: 10_000 });
-    await expect(nextBtn).toBeEnabled({ timeout: 10_000 });
-    await nextBtn.click();
 
-    // Eligibility step
+    // Step 2: Eligibility Check
     const eligibilityText = enrollmentDialog.getByText(
       /Student is eligible — you may proceed to class assignment/i,
     );
+    if (!(await eligibilityText.isVisible().catch(() => false))) {
+      await expect(nextBtn).toBeEnabled({ timeout: 10_000 });
+      await nextBtn.click();
+    }
     await expect(eligibilityText).toBeVisible({ timeout: 15_000 });
-    await expect(nextBtn).toBeEnabled({ timeout: 10_000 });
-    await nextBtn.click();
 
-    // Class step: selecting the class card
+    // Step 3: Class Assignment
     const classCard = enrollmentDialog.getByRole("radio", { name: /Tajweed a/i }).first();
+    if (!(await classCard.isVisible().catch(() => false))) {
+      await expect(nextBtn).toBeEnabled({ timeout: 10_000 });
+      await nextBtn.click();
+    }
     await expect(classCard).toBeVisible({ timeout: 15_000 });
     await classCard.click();
     await expect(classCard).toHaveAttribute("aria-checked", "true", { timeout: 10_000 });
-    await expect(nextBtn).toBeEnabled({ timeout: 10_000 });
-    await nextBtn.click();
 
-    // Fee step: advance to confirmation
-    await expect(nextBtn).toBeEnabled({ timeout: 10_000 });
-    await nextBtn.click();
+    // Step 4: Fee Calculation
+    const feeHeading = enrollmentDialog.getByText(/Fee Breakdown|Fee Calculation/i).first();
+    if (!(await feeHeading.isVisible().catch(() => false))) {
+      await expect(nextBtn).toBeEnabled({ timeout: 10_000 });
+      await nextBtn.click();
+    }
+    await expect(feeHeading).toBeVisible({ timeout: 15_000 });
 
+    // Step 5: Confirmation
     const confirmBtn = enrollmentDialog.getByRole("button", { name: /New Enrollment/i });
+    if (!(await confirmBtn.isVisible().catch(() => false))) {
+      await expect(nextBtn).toBeEnabled({ timeout: 10_000 });
+      await nextBtn.click();
+    }
     await expect(confirmBtn).toBeVisible({ timeout: 15_000 });
     await expect(confirmBtn).toBeEnabled({ timeout: 15_000 });
 
@@ -850,7 +864,7 @@ export async function createStudentEnrollment(page: Page): Promise<void> {
         !response.url().includes("/bulk"),
       { timeout: 30_000 },
     );
-    await enrollmentDialog.getByRole("button", { name: "New Enrollment" }).click();
+    await confirmBtn.click();
     const enrollmentResponse = await enrollmentCreate;
     if (!enrollmentResponse.ok()) {
       throw new Error(

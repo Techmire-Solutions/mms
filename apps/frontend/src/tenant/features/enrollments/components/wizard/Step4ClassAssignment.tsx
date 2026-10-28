@@ -125,6 +125,7 @@ export function Step4ClassAssignment({
           return (
             <Button
               key={sessionClass.id}
+              type="button"
               role="radio"
               aria-checked={selected}
               disabled={full}
