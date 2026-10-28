@@ -3,9 +3,9 @@ import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { expect, type Page } from "@playwright/test";
 import { loginTenant } from "./moduleTiers.js";
-import { ensureE2ePlatformAdmin } from "./platformAdminSeeder.js";
+import { ensureE2ePlatformAdmin, setTenantAdminPassword } from "./platformAdminSeeder.js";
 
-export { ensureE2ePlatformAdmin } from "./platformAdminSeeder.js";
+export { ensureE2ePlatformAdmin, setTenantAdminPassword } from "./platformAdminSeeder.js";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const backendDir = path.resolve(__dirname, "../../apps/backend");
@@ -186,6 +186,8 @@ export async function bootstrapAuthenticatedTenant(
 
   await page.waitForURL((url) => !url.pathname.includes("/onboarding"), { timeout: 45_000 });
   await expect(platformLanding.first()).toBeVisible({ timeout: 30_000 });
+
+  setTenantAdminPassword(subdomain, adminEmail, adminPassword);
 
   await page.goto(`${tenantOrigin}/login`);
   await page.waitForLoadState("domcontentloaded");
