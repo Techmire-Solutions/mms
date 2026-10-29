@@ -50,6 +50,7 @@ export async function listRedemptionsByWorkspace(
       })
       .from(hasanatRedemptions)
       .where(eq(hasanatRedemptions.workspaceSubdomain, subdomain))
+      .orderBy(hasanatRedemptions.id)
       .limit(limit)
       .offset(offset);
     return rows.map(redemptionRowToRecord);

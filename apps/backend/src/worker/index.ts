@@ -11,6 +11,7 @@ import {
   QUEUE_MESSAGING_BROADCAST,
   QUEUE_SETTINGS,
   getBullMQConnectionOptions,
+  getQueuePrefix,
   closeAllQueues,
   handleDeadLetterJob,
   decrementTenantInflightJobs,
@@ -20,6 +21,7 @@ import {
   SANDBOXED_PDF_PROCESSOR_PATH,
   SANDBOXED_EXPORT_PROCESSOR_PATH,
   WORKER_FORK_OPTIONS,
+  JOB_EXECUTION_TIMEOUT_MS,
 } from "./queues/queueConfig.js";
 import { processBackgroundJob } from "./processors/jobProcessor.js";
 import { registerDefaultBackgroundJobRunners } from "../services/backgroundJobRunnerService.js";
@@ -47,6 +49,7 @@ let cdcListenerHandle: OutboxCdcHandle | null = null;
 
 export function createWorkerForQueue(queueName: string): Worker<EnqueuedJobData> {
   const connection = getBullMQConnectionOptions();
+  const prefix = getQueuePrefix();
   const concurrency = QUEUE_SETTINGS[queueName]?.concurrency ?? 2;
 
   let worker: Worker<EnqueuedJobData>;
@@ -54,6 +57,7 @@ export function createWorkerForQueue(queueName: string): Worker<EnqueuedJobData>
   if (queueName === QUEUE_PDF_RENDERING) {
     worker = new Worker<EnqueuedJobData>(queueName, SANDBOXED_PDF_PROCESSOR_PATH, {
       connection,
+      prefix,
       concurrency,
       useWorkerThreads: false,
       workerForkOptions: WORKER_FORK_OPTIONS,
@@ -62,6 +66,7 @@ export function createWorkerForQueue(queueName: string): Worker<EnqueuedJobData>
   } else if (queueName === QUEUE_BULK_EXPORT) {
     worker = new Worker<EnqueuedJobData>(queueName, SANDBOXED_EXPORT_PROCESSOR_PATH, {
       connection,
+      prefix,
       concurrency,
       useWorkerThreads: false,
       workerForkOptions: WORKER_FORK_OPTIONS,
@@ -84,6 +89,7 @@ export function createWorkerForQueue(queueName: string): Worker<EnqueuedJobData>
       },
       {
         connection,
+        prefix,
         concurrency,
         lockDuration: 60000,
       },
@@ -99,7 +105,11 @@ export function createWorkerForQueue(queueName: string): Worker<EnqueuedJobData>
 
   worker.on("failed", (job, err) => {
     logger.error({ jobId: job?.id, queue: queueName, err: err.message }, "Job failed");
-    if (job?.data?.tenantId) {
+    // Fair-share counts one slot per dispatched job. Decrement only when the
+    // job will not be retried, otherwise a retrying tenant looks idle and is
+    // promoted into the highest-priority band.
+    const finalAttempt = (job?.attemptsMade ?? 0) >= (job?.opts.attempts ?? 1);
+    if (job?.data?.tenantId && finalAttempt) {
       void decrementTenantInflightJobs(job.data.tenantId).catch(() => {});
     }
     if (job && job.attemptsMade >= (job.opts.attempts || 3)) {
@@ -166,10 +176,13 @@ export async function startWorkerDaemon(): Promise<void> {
     process.removeAllListeners("SIGTERM");
     process.removeAllListeners("SIGINT");
 
+    // Give the longest-running job its full timeout plus a drain margin before
+    // forcing exit; the old fixed 10s budget killed legitimate work.
+    const shutdownBudgetMs = JOB_EXECUTION_TIMEOUT_MS + 10_000;
     const forceExitTimer = setTimeout(() => {
       logger.fatal("Graceful shutdown timed out; forcing exit");
       process.exit(1);
-    }, 10_000);
+    }, shutdownBudgetMs);
     forceExitTimer.unref?.();
 
     try {
@@ -180,6 +193,14 @@ export async function startWorkerDaemon(): Promise<void> {
       clearRetentionPurgeScheduler();
       clearSessionLifecycleScheduler();
       clearFxRateFeedScheduler();
+      // Stop accepting new jobs before draining the active ones.
+      for (const worker of activeWorkers) {
+        try {
+          await worker.pause();
+        } catch (err) {
+          logger.error({ err }, "Error pausing worker");
+        }
+      }
       for (const worker of activeWorkers) {
         try {
           await worker.close();

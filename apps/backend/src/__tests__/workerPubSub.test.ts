@@ -63,7 +63,7 @@ describe("Worker Redis Pub/Sub & WebSocket Hub Integration (Phase 5)", () => {
     expect(completedPayload.event).toBe("job-completed");
     expect(completedPayload.hasDownload).toBe(true);
 
-    cleanup();
+    cleanup?.();
   });
 
   it("filters job events by user ID and tenant isolation", () => {
@@ -99,8 +99,8 @@ describe("Worker Redis Pub/Sub & WebSocket Hub Integration (Phase 5)", () => {
     expect(user1Messages.length).toBe(1);
     expect(user2Messages.length).toBe(0);
 
-    cleanup1();
-    cleanup2();
+    cleanup1?.();
+    cleanup2?.();
   });
 
   it("configures Redis Pub/Sub adapter and processes incoming subscription messages", async () => {
@@ -147,7 +147,7 @@ describe("Worker Redis Pub/Sub & WebSocket Hub Integration (Phase 5)", () => {
     expect(socketMessages.length).toBe(1);
     expect(JSON.parse(socketMessages[0]).jobId).toBe("job-888");
 
-    cleanup();
+    cleanup?.();
   });
 
   it("delivers job and database updates to active SSE connections with chunked frames", () => {
@@ -187,6 +187,6 @@ describe("Worker Redis Pub/Sub & WebSocket Hub Integration (Phase 5)", () => {
       true,
     );
 
-    cleanup();
+    cleanup?.();
   });
 });

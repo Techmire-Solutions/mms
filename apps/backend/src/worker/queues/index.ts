@@ -8,6 +8,7 @@ import {
   DEFAULT_JOB_OPTIONS,
   TENANT_PRIORITY_BANDS,
   getBullMQConnectionOptions,
+  getQueuePrefix,
 } from "./queueConfig.js";
 import { markJobPermanentlyFailed } from "../../services/backgroundJobWorkerService.js";
 import { stripUndefinedFields } from "../../lib/payloadTrimmer.js";
@@ -15,6 +16,41 @@ import { logger } from "../../lib/logger.js";
 import { redisGet, redisIncr, redisDecr } from "../../lib/redis.js";
 
 export const MAX_JOB_PAYLOAD_BYTES = 1024 * 1024; // 1 MB payload ceiling
+export const QUEUE_ADD_TIMEOUT_MS = 6000;
+export const QUEUE_ADD_RECONCILE_TIMEOUT_MS = 2000;
+const QUEUE_ADD_RECONCILE_POLL_MS = 100;
+
+/** Distinguishes our own add deadline from a real Redis error. */
+export class QueueAddTimeoutError extends Error {
+  constructor() {
+    super("BullMQ queue.add timeout (Redis unreachable)");
+    this.name = "QueueAddTimeoutError";
+  }
+}
+
+/**
+ * After an `add` deadline, confirm whether Redis eventually accepted the job.
+ * `queue.add` is not cancellable, so a timeout is not proof of failure.
+ */
+export async function reconcileTimedOutQueueAdd(
+  queue: Pick<Queue<EnqueuedJobData>, "getJob">,
+  jobId: string,
+  timeoutMs = QUEUE_ADD_RECONCILE_TIMEOUT_MS,
+): Promise<boolean> {
+  const deadline = Date.now() + timeoutMs;
+  for (;;) {
+    try {
+      if (await queue.getJob(jobId)) return true;
+    } catch {
+      // Redis may still be reconnecting; keep polling until the deadline.
+    }
+    const remaining = deadline - Date.now();
+    if (remaining <= 0) return false;
+    await new Promise((resolve) =>
+      setTimeout(resolve, Math.min(QUEUE_ADD_RECONCILE_POLL_MS, remaining)),
+    );
+  }
+}
 
 export interface EnqueuedJobData {
   jobId: string;
@@ -35,6 +71,7 @@ export function getQueue(queueName: string): Queue<EnqueuedJobData> {
     const connection = getBullMQConnectionOptions();
     queue = new Queue<EnqueuedJobData>(queueName, {
       connection,
+      prefix: getQueuePrefix(),
       defaultJobOptions: {
         ...DEFAULT_JOB_OPTIONS,
         priority: QUEUE_SETTINGS[queueName]?.priority ?? 2,
@@ -167,10 +204,7 @@ export async function dispatchJobToQueue(
     // Fail fast if Redis is unreachable to prevent API request hanging
     let timeoutId: NodeJS.Timeout;
     const timeoutPromise = new Promise<never>((_, reject) => {
-      timeoutId = setTimeout(
-        () => reject(new Error("BullMQ queue.add timeout (Redis unreachable)")),
-        6000,
-      );
+      timeoutId = setTimeout(() => reject(new QueueAddTimeoutError()), QUEUE_ADD_TIMEOUT_MS);
     });
 
     try {
@@ -182,6 +216,18 @@ export async function dispatchJobToQueue(
     }
   } catch (error) {
     const errorMsg = error instanceof Error ? error.message : String(error);
+    if (error instanceof QueueAddTimeoutError) {
+      const landed = await reconcileTimedOutQueueAdd(queue, job.id);
+      if (landed) {
+        // The add did land after the deadline: keep the inflight counter in sync.
+        await incrementTenantInflightJobs(tenantId);
+        logger.warn(
+          { jobId: job.id, queue: queueName },
+          "Job add exceeded deadline but was reconciled as enqueued",
+        );
+        return true;
+      }
+    }
     logger.warn({ jobId: job.id, queue: queueName, err: errorMsg }, "Failed to enqueue job");
     return false;
   }

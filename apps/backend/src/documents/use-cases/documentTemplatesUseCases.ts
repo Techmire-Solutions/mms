@@ -2,7 +2,6 @@ import { documentTemplateSchema, type DocumentTemplate, type User } from "@mms/s
 import { documentsRepositoryAdapter } from "../repository/documentsRepositoryAdapter.js";
 import { broadcastCollection, broadcastTenantUpdate } from "../../lib/livePush.js";
 import { recordModernAuditEvent } from "../../services/auditTrailService.js";
-import { logger } from "../../lib/logger.js";
 
 export async function getDocumentTemplateUseCase(
   tenant: string,
@@ -32,18 +31,13 @@ export async function saveDocumentTemplateUseCase(
   broadcastTenantUpdate(tenant, "object", key);
 
   // Modern RFC 8785 canonical audit log entry
-  void recordModernAuditEvent({
+  await recordModernAuditEvent({
     workspaceSubdomain: tenant,
     tableName: "document_templates",
     recordId: key,
     actionType: "UPDATE",
     realUserId: String(user.id),
-  }).catch((err: unknown) =>
-    logger.error(
-      { err: err instanceof Error ? err.message : String(err), key },
-      "document template audit event failed",
-    ),
-  );
+  });
 
   return saved;
 }
@@ -59,18 +53,13 @@ export async function deleteDocumentTemplateUseCase(
     await broadcastCollection("document_templates");
     broadcastTenantUpdate(tenant, "object", key);
 
-    void recordModernAuditEvent({
+    await recordModernAuditEvent({
       workspaceSubdomain: tenant,
       tableName: "document_templates",
       recordId: key,
       actionType: "DELETE",
       realUserId: String(user.id),
-    }).catch((err: unknown) =>
-      logger.error(
-        { err: err instanceof Error ? err.message : String(err), key },
-        "document template delete audit event failed",
-      ),
-    );
+    });
   }
 
   return deleted;

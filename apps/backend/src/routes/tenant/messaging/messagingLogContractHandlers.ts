@@ -185,7 +185,7 @@ export async function messagingClearLogsHandler({
 
   try {
     await messagingUseCases.clearAllMessageLogs(tenantSubdomain);
-    void recordModernAuditEvent({
+    await recordModernAuditEvent({
       workspaceSubdomain: tenantSubdomain,
       tableName: "message_logs",
       recordId: "message_logs",
@@ -195,12 +195,7 @@ export async function messagingClearLogsHandler({
         summary: "Soft-archived all message logs from Reports",
         action: "messaging.logs.clear",
       },
-    }).catch((err: unknown) =>
-      logger.error(
-        { err: err instanceof Error ? err.message : String(err) },
-        "audit event append failed",
-      ),
-    );
+    });
     return { status: 200 as const, body: { success: true as const } };
   } catch {
     return {
@@ -259,7 +254,7 @@ export async function messagingRestoreLogsHandler({
           "outbox event emit failed",
         ),
       );
-      void recordModernAuditEvent({
+      await recordModernAuditEvent({
         workspaceSubdomain: tenantSubdomain,
         tableName: "message_logs",
         recordId: "message_logs",
@@ -269,12 +264,7 @@ export async function messagingRestoreLogsHandler({
           summary: `Restored archived message logs (${restoredCount} restored)`,
           action: "messaging.logs.restore",
         },
-      }).catch((err: unknown) =>
-        logger.error(
-          { err: err instanceof Error ? err.message : String(err) },
-          "audit event append failed",
-        ),
-      );
+      });
     }
 
     return { status: 200 as const, body: { restored: restoredCount } };

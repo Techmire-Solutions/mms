@@ -16,6 +16,7 @@ describe("health routes", () => {
 
   afterEach(() => {
     vi.mocked(pingDatabase).mockResolvedValue(true);
+    delete process.env.METRICS_TOKEN;
   });
 
   it("GET /health returns OK and pool metrics", async () => {
@@ -23,6 +24,55 @@ describe("health routes", () => {
     const res = await app.inject({ method: "GET", url: "/health" });
     expect(res.statusCode).toBe(200);
     expect(res.json()).toMatchObject({
+      status: "OK",
+      pool: { totalCount: 5, idleCount: 4, waitingCount: 0 },
+    });
+    await app.close();
+  });
+
+  it("GET /health hides pool/cache topology from non-loopback callers", async () => {
+    const app = await buildApp();
+    const res = await app.inject({
+      method: "GET",
+      url: "/health",
+      remoteAddress: "203.0.113.9",
+    });
+    expect(res.statusCode).toBe(200);
+    const body = res.json();
+    expect(body.status).toBe("OK");
+    expect(typeof body.timestamp).toBe("string");
+    expect(body).not.toHaveProperty("pool");
+    expect(body).not.toHaveProperty("redis");
+    expect(body).not.toHaveProperty("cache");
+    await app.close();
+  });
+
+  it("GET /health keeps detail for a valid METRICS_TOKEN bearer only", async () => {
+    process.env.METRICS_TOKEN = "metrics-secret";
+    const app = await buildApp();
+
+    const unauthenticated = await app.inject({
+      method: "GET",
+      url: "/health",
+      remoteAddress: "203.0.113.9",
+    });
+    expect(unauthenticated.json()).not.toHaveProperty("pool");
+
+    const wrongToken = await app.inject({
+      method: "GET",
+      url: "/health",
+      remoteAddress: "203.0.113.9",
+      headers: { authorization: "Bearer wrong-token" },
+    });
+    expect(wrongToken.json()).not.toHaveProperty("pool");
+
+    const authorized = await app.inject({
+      method: "GET",
+      url: "/health",
+      remoteAddress: "203.0.113.9",
+      headers: { authorization: "Bearer metrics-secret" },
+    });
+    expect(authorized.json()).toMatchObject({
       status: "OK",
       pool: { totalCount: 5, idleCount: 4, waitingCount: 0 },
     });

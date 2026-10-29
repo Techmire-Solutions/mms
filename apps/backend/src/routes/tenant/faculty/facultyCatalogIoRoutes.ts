@@ -22,7 +22,7 @@ import {
   getUserBackgroundJob,
   QueueUnavailableError,
 } from "../../../services/backgroundJobWorkerService.js";
-import { randomUUID } from "node:crypto";
+import { buildBackgroundJobId } from "../../../lib/backgroundJobIds.js";
 
 const setupWrite = FACULTY_MODULE_MANIFEST.permissions.setupWrite;
 
@@ -41,7 +41,7 @@ async function enqueueImportJob(options: {
   const tenant = getRequestTenant();
   if (!tenant) throw new Error("Tenant context required");
   const userId = String(options.user.id);
-  const jobId = options.idempotencyKey?.trim() || randomUUID();
+  const jobId = buildBackgroundJobId(tenant, userId, options.idempotencyKey);
   const existing = await getUserBackgroundJob(userId, jobId);
   if (existing) return existing;
   return enqueueBackgroundJob(

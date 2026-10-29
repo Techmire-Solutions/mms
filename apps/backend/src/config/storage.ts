@@ -3,10 +3,12 @@ import {
   PutObjectCommand,
   GetObjectCommand,
   DeleteObjectCommand,
+  DeleteObjectsCommand,
+  ListObjectsV2Command,
 } from "@aws-sdk/client-s3";
 import { Upload } from "@aws-sdk/lib-storage";
 import { type Readable, type PassThrough } from "node:stream";
-import { mkdir, writeFile, unlink } from "node:fs/promises";
+import { mkdir, writeFile, unlink, rm } from "node:fs/promises";
 import { join, dirname } from "node:path";
 import { createReadStream, createWriteStream } from "node:fs";
 import { pipeline } from "node:stream/promises";
@@ -48,12 +50,21 @@ export function resolveLocalArtifactPath(s3Key: string): string {
   return join(resolveUploadsRoot(), s3Key);
 }
 
+function storageAbortError(): Error {
+  const error = new Error("Storage upload aborted");
+  error.name = "AbortError";
+  return error;
+}
+
 export async function uploadStreamToStorage(
   _tenantId: string,
   key: string,
   stream: Readable | PassThrough,
   contentType = "application/octet-stream",
+  options: { signal?: AbortSignal } = {},
 ): Promise<StorageUploadResult> {
+  if (options.signal?.aborted) throw storageAbortError();
+
   if (isS3Configured) {
     const upload = new Upload({
       client: s3Client,
@@ -64,8 +75,20 @@ export async function uploadStreamToStorage(
         ContentType: contentType,
       },
     });
+    const abortUpload = () => {
+      void upload.abort().catch(() => undefined);
+    };
+    options.signal?.addEventListener("abort", abortUpload, { once: true });
 
-    await upload.done();
+    try {
+      await upload.done();
+    } catch (error) {
+      if (options.signal?.aborted) throw storageAbortError();
+      throw error;
+    } finally {
+      options.signal?.removeEventListener("abort", abortUpload);
+    }
+    if (options.signal?.aborted) throw storageAbortError();
     return {
       key,
       storageType: "s3",
@@ -77,7 +100,19 @@ export async function uploadStreamToStorage(
   const localPath = resolveLocalArtifactPath(key);
   await mkdir(dirname(localPath), { recursive: true });
   const writeStream = createWriteStream(localPath);
-  await pipeline(stream, writeStream);
+  const abortLocal = () => {
+    writeStream.destroy(storageAbortError());
+    stream.destroy(storageAbortError());
+  };
+  options.signal?.addEventListener("abort", abortLocal, { once: true });
+  try {
+    await pipeline(stream, writeStream);
+  } catch (error) {
+    if (options.signal?.aborted) throw storageAbortError();
+    throw error;
+  } finally {
+    options.signal?.removeEventListener("abort", abortLocal);
+  }
 
   return {
     key,
@@ -138,6 +173,37 @@ export async function readStreamFromStorage(
     return body;
   }
   return createReadStream(resolveLocalArtifactPath(key));
+}
+
+/** Deletes every object under a storage prefix (S3 or local directory). */
+export async function deleteStoragePrefix(prefix: string): Promise<void> {
+  if (isS3Configured) {
+    let continuationToken: string | undefined;
+    do {
+      const listed = await s3Client.send(
+        new ListObjectsV2Command({
+          Bucket: s3Bucket,
+          Prefix: prefix,
+          ContinuationToken: continuationToken,
+        }),
+      );
+      const objects = (listed.Contents ?? [])
+        .map((object) => object.Key)
+        .filter((key): key is string => Boolean(key))
+        .map((Key) => ({ Key }));
+      if (objects.length > 0) {
+        await s3Client.send(
+          new DeleteObjectsCommand({
+            Bucket: s3Bucket,
+            Delete: { Objects: objects, Quiet: true },
+          }),
+        );
+      }
+      continuationToken = listed.IsTruncated ? listed.NextContinuationToken : undefined;
+    } while (continuationToken);
+    return;
+  }
+  await rm(resolveLocalArtifactPath(prefix), { recursive: true, force: true });
 }
 
 /**

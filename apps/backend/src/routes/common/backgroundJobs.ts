@@ -11,7 +11,11 @@ import {
   listUserBackgroundJobs,
   upsertUserBackgroundJob,
 } from "../../services/backgroundJobService.js";
-import { deleteExportArtifact, getExportArtifact } from "../../services/exportArtifactService.js";
+import {
+  deleteExportArtifact,
+  deleteExportArtifacts,
+  getExportArtifact,
+} from "../../services/exportArtifactService.js";
 import { getUserBackgroundJob } from "../../services/backgroundJobWorkerService.js";
 import { readStreamFromStorage } from "../../config/storage.js";
 import { enforceModuleAccess } from "../../middleware/requireTenantModule.js";
@@ -116,11 +120,11 @@ export default async function backgroundJobRoutes(
     const params = parseRequest(resourceIdParamsSchema, request.params);
     if (!params.ok) return replyValidationError(reply, params.message);
     try {
-      const removed = await dismissUserBackgroundJob(String(user.id), params.data.id);
-      if (!removed) {
+      const ownerId = await dismissUserBackgroundJob(String(user.id), params.data.id);
+      if (!ownerId) {
         return sendNotFound(reply, "Job not found");
       }
-      await deleteExportArtifact(String(user.id), params.data.id);
+      await deleteExportArtifact(ownerId, params.data.id);
       return reply.send({ success: true });
     } catch {
       return sendDatabaseError(reply, "Failed to dismiss background job");
@@ -130,8 +134,9 @@ export default async function backgroundJobRoutes(
   fastify.post("/clear-finished", async (request, reply) => {
     const user = request.user as User;
     try {
-      const removed = await clearFinishedUserBackgroundJobs(String(user.id));
-      return reply.send({ success: true, removed });
+      const removedIds = await clearFinishedUserBackgroundJobs(String(user.id));
+      await deleteExportArtifacts(String(user.id), removedIds);
+      return reply.send({ success: true, removed: removedIds.length });
     } catch {
       return sendDatabaseError(reply, "Failed to clear background jobs");
     }

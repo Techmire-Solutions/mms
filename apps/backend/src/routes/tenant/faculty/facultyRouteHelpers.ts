@@ -14,7 +14,7 @@ import { canReadCollection, canWriteCollection } from "../../../services/rbacSer
 import type { ContractRouteArgs, ContractRouteResponse } from "../../../lib/contractRouterTypes.js";
 
 /** Thin Faculty audit helper — same shape as Contacts `auditContact`. */
-export const auditFaculty = createCollectionAuditHelper("faculty");
+export const auditFaculty = createCollectionAuditHelper("faculty", { subjectScoped: true });
 
 /** Strips faculty properties the viewer role cannot read (field-config + viewer role). */
 export async function sanitizeFacultyForUser(

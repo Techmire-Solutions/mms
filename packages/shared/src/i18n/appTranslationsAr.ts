@@ -8875,6 +8875,7 @@ export const APP_TRANSLATIONS_AR: Record<AppTranslationKey, string> = {
   "users.permissions.systemBadge": "نظام",
   "users.permissions.unsaved": "تغييرات غير محفوظة",
   "users.rbac.tasksAssignAnywhere": "المهام — إسناد في أي مكان",
+  "users.rbac.audit": "سجل التدقيق والأمان",
   "users.errors.cannotAssignSuperAdminRole": "فقط المشرف العام يمكنه تعيين دور المشرف العام.",
   "users.errors.cannotDeleteSuperAdmin": "لا يمكن حذف مستخدم المشرف العام.",
   "users.errors.cannotModifySuperAdmin": "لا يمكن تعديل أو إعادة تعيين مستخدم المشرف العام.",

@@ -91,9 +91,13 @@ export function scheduleNextDailyPurge(
       } finally {
         await lease.release();
       }
-    })().finally(() => {
-      scheduleNextDailyPurge(isWorkerRunning, dbClient, targetUtcHour);
-    });
+    })()
+      .catch((err: unknown) => {
+        logger.error({ err }, "[RetentionPurge] Failed to acquire leader lease");
+      })
+      .finally(() => {
+        scheduleNextDailyPurge(isWorkerRunning, dbClient, targetUtcHour);
+      });
   }, delayMs);
   purgeSchedulerTimer.unref?.();
 }

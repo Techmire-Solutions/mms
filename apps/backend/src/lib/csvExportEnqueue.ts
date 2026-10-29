@@ -1,4 +1,5 @@
 import type { BackgroundJobRecord } from "@mms/shared";
+import { buildBackgroundJobId } from "./backgroundJobIds.js";
 import {
   enqueueBackgroundJob,
   getUserBackgroundJob,
@@ -37,7 +38,7 @@ export type EnqueueCsvExportJobInput = {
 export async function enqueueCsvExportJob(
   input: EnqueueCsvExportJobInput,
 ): Promise<BackgroundJobRecord> {
-  const jobId = input.idempotencyKey?.trim() || crypto.randomUUID();
+  const jobId = buildBackgroundJobId(input.tenant, input.userId, input.idempotencyKey);
   const existing = await getUserBackgroundJob(input.userId, jobId);
   if (existing) {
     return existing;

@@ -1,4 +1,3 @@
-import { activeDb } from "../../db/dbConnection.js";
 import { accountingHedgesRepository as store } from "../repository/accountingHedgesRepositoryAdapter.js";
 import { accountingFxRepository } from "../repository/accountingFxRepositoryAdapter.js";
 import { recordModernAuditEvent } from "../../services/auditTrailService.js";
@@ -25,5 +24,5 @@ export const hedgeDeps: HedgeDeps = {
       resolveYearId(years, date),
     );
   },
-  recordAudit: (input) => recordModernAuditEvent(activeDb(), input),
+  recordAudit: (input) => recordModernAuditEvent(input),
 };

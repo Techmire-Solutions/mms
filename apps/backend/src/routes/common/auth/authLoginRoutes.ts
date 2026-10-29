@@ -160,7 +160,21 @@ export const authLoginRoutes: FastifyPluginAsync = async (fastify) => {
       const parsed = parseRequest(challengeCodeBodySchema, request.body ?? {});
       if (!parsed.ok) return replyValidationError(reply, parsed.message);
       const { challengeId, code } = parsed.data;
-      const result = await completeTwoFactorLogin(challengeId, code, fastify.jwt, reply);
+      const expectedTenant = getRequestTenant();
+      if (!expectedTenant) {
+        const error: TenantAuthError = {
+          type: "invalid_credentials",
+          message: "Sign in on your madrasa subdomain to verify this code.",
+        };
+        return reply.status(400).send(error);
+      }
+      const result = await completeTwoFactorLogin(
+        challengeId,
+        code,
+        fastify.jwt,
+        reply,
+        expectedTenant,
+      );
       if (!result) {
         const error: TenantAuthError = {
           type: "invalid_credentials",
@@ -176,7 +190,15 @@ export const authLoginRoutes: FastifyPluginAsync = async (fastify) => {
       const parsed = parseRequest(challengeIdBodySchema, request.body ?? {});
       if (!parsed.ok) return replyValidationError(reply, parsed.message);
       const { challengeId } = parsed.data;
-      const ok = await resendTwoFactorChallenge(challengeId);
+      const expectedTenant = getRequestTenant();
+      if (!expectedTenant) {
+        const error: TenantAuthError = {
+          type: "invalid_credentials",
+          message: "Sign in on your madrasa subdomain to resend this code.",
+        };
+        return reply.status(400).send(error);
+      }
+      const ok = await resendTwoFactorChallenge(challengeId, expectedTenant);
       if (!ok) {
         return sendNotFound(reply, "Challenge not found or expired");
       }

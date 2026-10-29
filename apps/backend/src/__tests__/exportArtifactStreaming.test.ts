@@ -13,13 +13,19 @@ import {
 } from "../services/exportArtifactService.js";
 import { USER_EXPORT_ARTIFACTS_OBJECT_KEY } from "@mms/shared";
 
-// In-memory doc-store object map (mirrors dbSyncService.fetchObject/persistObject).
-const mockStore = new Map<string, unknown>();
-vi.mock("../services/dbSyncService.js", () => ({
-  fetchObject: async (key: string) => mockStore.get(key) ?? null,
-  persistObject: async (key: string, value: unknown) => {
+// In-memory doc-store object map (mirrors the locked tenant object read/write).
+const { mockStore } = vi.hoisted(() => ({ mockStore: new Map<string, unknown>() }));
+vi.mock("../db/documentStoreObjects.js", () => ({
+  getObject: async (key: string) => mockStore.get(key) ?? null,
+  saveObject: async (key: string, value: unknown) => {
     mockStore.set(key, value);
   },
+}));
+vi.mock("../db/tenant-context.js", () => ({
+  withTenant: async (_tenant: string, callback: (tx: unknown) => Promise<unknown>) => callback({}),
+}));
+vi.mock("../lib/tenantContext.js", () => ({
+  getRequestTenant: () => "tenant-1",
 }));
 
 async function collectStream(stream: NodeJS.ReadableStream): Promise<string> {

@@ -1,6 +1,5 @@
 import { ACCOUNTING_MODULE_MANIFEST } from "@mms/shared";
 import { withTenant } from "../../db/tenant-context.js";
-import { activeDb } from "../../db/dbConnection.js";
 import { lockJournalEntries } from "../../db/repositories/accountingEntryLocks.js";
 import { findActiveReversalOf } from "../../db/repositories/accountingEntryReversalRepository.js";
 import {
@@ -22,7 +21,7 @@ export const reverseJournalEntryDeps: ReverseJournalEntryDeps = {
   listFiscalYears: (tenant) => listFiscalYearsByWorkspace(tenant),
   findAccountsByIds: (tenant, ids) => findAccountsByIds(tenant, ids),
   saveEntry,
-  recordAudit: (input) => recordModernAuditEvent(activeDb(), input),
+  recordAudit: (input) => recordModernAuditEvent(input),
   broadcast: (tenant) =>
     broadcastTenantUpdate(tenant, "collection", ACCOUNTING_MODULE_MANIFEST.collectionKey),
   now: () => new Date(),

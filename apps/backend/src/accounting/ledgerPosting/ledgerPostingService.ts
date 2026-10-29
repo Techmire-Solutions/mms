@@ -15,6 +15,7 @@ import { getPostingRules } from "../../db/repositories/accountingLedgerOpsReposi
 import { listFiscalYearsByWorkspace } from "../../db/repositories/accountingFiscalYearsRepository.js";
 import {
   entryForSource,
+  persistGeneratedEntries,
   persistGeneratedEntry,
   postingDate,
   resolveYearId,
@@ -61,6 +62,49 @@ export async function tryPostInvoiceJournal(tenant: string, invoice: Invoice): P
     ),
     years,
   );
+}
+
+/**
+ * Posts Dr AR / Cr Income for a generated batch. Posting rules and fiscal years
+ * are loaded once, every entry is built up front, existing `(source_type,
+ * source_id)` postings are skipped, and the rest are written in one
+ * `bulkSaveEntries` so the whole batch shares the caller's transaction.
+ */
+export async function tryPostInvoiceJournals(
+  tenant: string,
+  invoices: readonly Invoice[],
+): Promise<void> {
+  const billable = invoices.filter(
+    (invoice) => invoice.status !== "cancelled" && !invoice.deletedAt,
+  );
+  if (billable.length === 0) return;
+  const accounts = await getPostingRules(tenant);
+  const years = await listFiscalYearsByWorkspace(tenant);
+  const entries: JournalEntry[] = [];
+  for (const invoice of billable) {
+    const date = postingDate(invoice.dueDate);
+    const lines = buildInvoicePostingLines({
+      invoiceId: invoice.id,
+      description: invoice.invoiceNumber ?? invoice.id,
+      date,
+      finalAmt: invoice.finalAmt,
+      discountAmt: invoice.discountAmt,
+      accounts,
+    });
+    if (!lines) continue;
+    const stamped = await stampLinesForDocument(tenant, invoice, date, accounts, lines);
+    entries.push(
+      entryForSource(
+        "invoice",
+        invoice.id,
+        date,
+        `Invoice ${invoice.invoiceNumber ?? invoice.id}`,
+        stamped,
+        resolveYearId(years, date),
+      ),
+    );
+  }
+  await persistGeneratedEntries(tenant, entries, years);
 }
 
 /**

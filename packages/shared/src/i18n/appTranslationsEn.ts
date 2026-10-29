@@ -9084,6 +9084,7 @@ export const APP_TRANSLATIONS_EN = {
   "users.permissions.systemBadge": "System",
   "users.permissions.unsaved": "Unsaved Changes",
   "users.rbac.tasksAssignAnywhere": "Tasks — assign anywhere",
+  "users.rbac.audit": "Audit & security log",
   "users.errors.cannotAssignSuperAdminRole":
     "Only Super Administrators can assign the Super Admin role.",
   "users.errors.cannotDeleteSuperAdmin": "Cannot delete a Super Admin user.",

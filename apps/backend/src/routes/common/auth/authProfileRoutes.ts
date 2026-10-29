@@ -12,6 +12,8 @@ import { AUTH_RATE_LIMIT } from "../../../lib/rateLimitConfig.js";
 import { createStrictRateLimitGuard } from "../../../lib/rateLimitGuard.js";
 import { clearAuthCookies } from "../../../services/auth/authCookieService.js";
 import { authenticateTenant } from "../../../middleware/authenticate.js";
+import { revokeAllUserSessions } from "../../../services/authSessionService.js";
+import { deleteRefreshTokensForUser } from "../../../services/auth/authArtifactService.js";
 import {
   getTenantUserProfile,
   updateOwnLinkedContact,
@@ -86,6 +88,11 @@ export const authProfileRoutes: FastifyPluginAsync = async (fastify) => {
           parsed.data.currentPassword,
           parsed.data.newPassword,
         );
+        // A self-service change is the action a user takes when they suspect
+        // compromise: every other access token, refresh token, and server-side
+        // session clock entry must die with it (mirrors the admin reset path).
+        await revokeAllUserSessions(String(user.id));
+        await deleteRefreshTokensForUser(String(user.id));
         clearAuthCookies(reply);
         return reply.send({ success: true, requiresSignIn: true });
       } catch (error: unknown) {

@@ -19,6 +19,7 @@ import {
   ledgerError,
   prepareJournalEntryForPersist,
 } from "./accountingLedgerGuards.js";
+import { lockFiscalYearForPosting } from "../ledgerPosting/fiscalYearPostingLock.js";
 
 export interface ReverseJournalEntryDeps {
   transaction: <T>(tenant: string, work: () => Promise<T>) => Promise<T>;
@@ -155,7 +156,12 @@ export async function reverseJournalEntry(
       buildReversalEntry(original, request, actor, priorPeriod),
       years,
     );
-    assertJournalEntryPeriodOpen(entry, years);
+    // Serialise with the fiscal-year close and re-check against the years read
+    // under the lock, so a reversal cannot land between the close's aggregate
+    // and its status write.
+    await lockFiscalYearForPosting(tenant, [entry.fiscal_year_id]);
+    const lockedYears = await deps.listFiscalYears(tenant);
+    assertJournalEntryPeriodOpen(entry, lockedYears);
     await assertJournalAccountsWritable(tenant, [entry], deps.findAccountsByIds);
 
     try {

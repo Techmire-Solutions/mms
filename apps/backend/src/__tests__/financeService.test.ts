@@ -6,6 +6,10 @@ const mockFindPaymentById = vi.fn();
 const mockSaveInvoice = vi.fn();
 const mockSavePayment = vi.fn();
 const mockRunInTransaction = vi.fn();
+const mockRecordModernAuditEvent = vi.hoisted(() => vi.fn().mockResolvedValue(undefined));
+vi.mock("../services/auditTrailService.js", () => ({
+  recordModernAuditEvent: mockRecordModernAuditEvent,
+}));
 
 vi.mock("../lib/tenantContext.js", () => ({
   getRequestTenant: () => "demo",
@@ -109,6 +113,33 @@ describe("financeService createPayment", () => {
     );
     expect(mockSaveInvoice).not.toHaveBeenCalled();
     expect(mockSavePayment).not.toHaveBeenCalled();
+  });
+
+  it("rolls the payment back when the ledger posting fails", async () => {
+    const { tryPostPaymentJournal } =
+      await import("../accounting/ledgerPosting/ledgerPostingService.js");
+    vi.mocked(tryPostPaymentJournal).mockRejectedValueOnce(new Error("period is closed"));
+
+    const events: string[] = [];
+    mockRunInTransaction.mockImplementation(async (callback: () => Promise<unknown>) => {
+      try {
+        const result = await callback();
+        events.push("commit");
+        return result;
+      } catch (error) {
+        events.push("rollback");
+        throw error;
+      }
+    });
+
+    await expect(createPayment(payment)).rejects.toThrow("period is closed");
+
+    // Both writes happened inside the transaction that rolled back, so neither
+    // the reduced invoice balance nor the payment row survives.
+    expect(mockSaveInvoice).toHaveBeenCalled();
+    expect(mockSavePayment).toHaveBeenCalled();
+    expect(events).toEqual(["rollback"]);
+    expect(mockRecordModernAuditEvent).not.toHaveBeenCalled();
   });
 
   it("returns an existing payment without double-counting it", async () => {

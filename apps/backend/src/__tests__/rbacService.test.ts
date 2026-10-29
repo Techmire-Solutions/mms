@@ -70,12 +70,12 @@ describe("rbacService", () => {
     expect(canWriteCollection(accountant, "backups")).toBe(false);
     expect(canWriteCollection(viewer, "backups")).toBe(false);
 
-    // User Activity Logs (Requires analytics.view permission, viewer denied)
+    // User Activity Logs (read = audit.view, write = audit.manage; teachers/viewers denied)
     expect(canReadCollection(admin, "user_activity_logs")).toBe(true);
-    expect(canReadCollection(teacher, "user_activity_logs")).toBe(true);
+    expect(canReadCollection(teacher, "user_activity_logs")).toBe(false);
     expect(canReadCollection(viewer, "user_activity_logs")).toBe(false);
     expect(canWriteCollection(admin, "user_activity_logs")).toBe(true);
-    expect(canWriteCollection(teacher, "user_activity_logs")).toBe(true);
+    expect(canWriteCollection(teacher, "user_activity_logs")).toBe(false);
     expect(canWriteCollection(viewer, "user_activity_logs")).toBe(false);
   });
 

@@ -34,6 +34,7 @@ export async function listExamResultsByWorkspace(
       })
       .from(examResults)
       .where(eq(examResults.workspaceSubdomain, subdomain))
+      .orderBy(examResults.id)
       .limit(limit)
       .offset(offset);
     return rows.map(resultRowToRecord);

@@ -30,6 +30,8 @@ import {
 import { financeUseCases } from "./financeUseCases.js";
 import { applyGeneratedInvoiceFx } from "./financeDocumentFx.js";
 import { logger } from "../../lib/logger.js";
+import { withTenant } from "../../db/tenant-context.js";
+import { tryPostInvoiceJournals } from "../../accounting/ledgerPosting/ledgerPostingService.js";
 
 function resolveFrequency(
   enrollment: EnrollmentBillingSource,
@@ -58,15 +60,21 @@ async function persistGeneratedInvoices(
   if (drafts.length === 1) {
     return [await financeUseCases.createInvoice({ ...drafts[0], invoiceNumber: undefined })];
   }
-  const year = Number(drafts[0]?.billingPeriod.slice(0, 4)) || new Date().getFullYear();
-  const numbers = await allocateInvoiceNumberBatch(tenant, year, drafts.length, prefix);
-  const invoices: Invoice[] = drafts.map((draft, index) => ({
-    ...draft,
-    id: `inv-${randomUUID()}`,
-    invoiceNumber: numbers[index],
-  }));
-  await bulkSaveInvoices(tenant, invoices);
-  return invoices;
+  // One transaction for the whole batch: the invoices and their ledger postings
+  // land together, so a posting failure rolls the batch back instead of leaving
+  // a term of unposted receivables behind.
+  return withTenant(tenant, async () => {
+    const year = Number(drafts[0]?.billingPeriod.slice(0, 4)) || new Date().getFullYear();
+    const numbers = await allocateInvoiceNumberBatch(tenant, year, drafts.length, prefix);
+    const invoices: Invoice[] = drafts.map((draft, index) => ({
+      ...draft,
+      id: `inv-${randomUUID()}`,
+      invoiceNumber: numbers[index],
+    }));
+    await bulkSaveInvoices(tenant, invoices);
+    await tryPostInvoiceJournals(tenant, invoices);
+    return invoices;
+  });
 }
 
 export async function generateInvoices(

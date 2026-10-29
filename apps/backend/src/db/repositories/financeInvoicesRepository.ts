@@ -106,6 +106,7 @@ export async function listInvoicesByWorkspace(
       })
       .from(financeInvoices)
       .where(and(...conditions))
+      .orderBy(financeInvoices.id)
       .limit(limit)
       .offset(offset);
     return rows.map(invoiceRowToRecord);

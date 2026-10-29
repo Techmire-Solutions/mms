@@ -21,9 +21,15 @@ describe("security rate limiter", () => {
     expect(isRateLimitExempt("/favicon.svg")).toBe(true);
     expect(isRateLimitExempt("/favicon.ico")).toBe(true);
     expect(isRateLimitExempt("/site.webmanifest")).toBe(true);
-    expect(isRateLimitExempt("/login")).toBe(true);
+    expect(isRateLimitExempt("/")).toBe(true);
     expect(isRateLimitExempt("/uploads/avatars/user.jpg")).toBe(true);
+    // `/ws` lives outside /api but is a real backend endpoint: it must be
+    // throttled like every other non-static route.
+    expect(isRateLimitExempt("/ws")).toBe(false);
+    // SPA document routes are not static assets any more.
+    expect(isRateLimitExempt("/login")).toBe(false);
     expect(isRateLimitExempt("/api/contacts")).toBe(false);
+    expect(isRateLimitExempt("/api/uploads/attachment")).toBe(false);
     expect(isRateLimitExempt("/api/auth/login")).toBe(false);
     expect(isRateLimitExempt("/API/contacts")).toBe(false);
     expect(isRateLimitExempt("//api/contacts")).toBe(false);
@@ -79,7 +85,7 @@ describe("security rate limiter", () => {
     expect(ready.statusCode).toBe(200);
   });
 
-  it("exempts static assets, manifests, icons, and non-API SPA paths from rate limiting", async () => {
+  it("exempts static assets and manifests but throttles SPA document routes and /ws", async () => {
     const app = fastify({ logger: false });
     apps.push(app);
     await registerSecurityPlugins(app);
@@ -90,6 +96,7 @@ describe("security rate limiter", () => {
     app.get("/site.webmanifest", async () => ({ name: "MMS" }));
     app.get("/favicon.svg", async () => "<svg></svg>");
     app.get("/login", async () => "<html></html>");
+    app.get("/ws", async () => ({ ok: true }));
 
     const assetJs = await app.inject({ method: "GET", url: "/assets/index-BTufUDnn.js" });
     expect(assetJs.statusCode).toBe(200);
@@ -109,7 +116,11 @@ describe("security rate limiter", () => {
 
     const loginDoc = await app.inject({ method: "GET", url: "/login" });
     expect(loginDoc.statusCode).toBe(200);
-    expect(loginDoc.headers["x-ratelimit-limit"]).toBeUndefined();
+    expect(typeof loginDoc.headers["x-ratelimit-limit"]).toBe("string");
+
+    const wsUpgrade = await app.inject({ method: "GET", url: "/ws" });
+    expect(wsUpgrade.statusCode).toBe(200);
+    expect(typeof wsUpgrade.headers["x-ratelimit-limit"]).toBe("string");
   });
 
   it("applies the global limit to API routes that do not opt into a stricter one", async () => {

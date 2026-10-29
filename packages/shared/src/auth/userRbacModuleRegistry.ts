@@ -27,6 +27,7 @@ export const RBAC_MODULE_IDS = [
   "obligations",
   "users",
   "settings",
+  "audit",
 ] as const;
 
 export type RbacModuleId = (typeof RBAC_MODULE_IDS)[number];
@@ -51,6 +52,7 @@ export const RBAC_MODULE_REGISTRY: readonly RbacModuleDef[] = [
   { id: "obligations", labelKey: "nav.obligations" },
   { id: "users", labelKey: "nav.users" },
   { id: "settings", labelKey: "nav.settings" },
+  { id: "audit", labelKey: "users.rbac.audit" },
 ] as const;
 
 /** Fast O(1) module definition lookup map. */

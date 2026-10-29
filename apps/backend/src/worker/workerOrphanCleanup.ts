@@ -52,7 +52,7 @@ export async function cleanupOrphanedJobs(): Promise<void> {
         .where(
           and(
             eq(backgroundJobs.status, "pending"),
-            lt(backgroundJobs.createdAt, stalePendingCutoff),
+            lt(backgroundJobs.updatedAt, stalePendingCutoff),
           ),
         )
         .returning({ id: backgroundJobs.id });

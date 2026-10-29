@@ -49,6 +49,8 @@ function createFakeRepo(): MessagingRepository {
     }),
     softDeleteActiveMessageLogs: vi.fn().mockResolvedValue(undefined),
     restoreArchivedMessageLog: vi.fn().mockResolvedValue(0),
+    claimMessageLogForDelivery: vi.fn().mockResolvedValue(true),
+    updateMessageLogDeliveryStatus: vi.fn().mockResolvedValue(undefined),
     getWhatsappIntegrationRow: vi.fn().mockResolvedValue(null),
     upsertWhatsappIntegrationConfigRow: vi.fn().mockResolvedValue(undefined),
     upsertWhatsappIntegrationSecretsRow: vi.fn().mockResolvedValue(undefined),

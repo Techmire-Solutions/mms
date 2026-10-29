@@ -1,4 +1,5 @@
 import crypto from "node:crypto";
+import { buildBackgroundJobId } from "../../../lib/backgroundJobIds.js";
 import type { FastifyPluginAsync } from "fastify";
 import type { BackgroundJobRecord, User } from "@mms/shared";
 import {
@@ -13,7 +14,6 @@ import { getRequestTenant } from "../../../lib/tenantContext.js";
 import { sendForbidden } from "../../../lib/httpErrors.js";
 import { parseRequest, replyValidationError } from "../../../lib/zodRequest.js";
 import { recordModernAuditEvent } from "../../../services/auditTrailService.js";
-import { logger } from "../../../lib/logger.js";
 import {
   enqueueBackgroundJob,
   getUserBackgroundJob,
@@ -56,7 +56,7 @@ export const messagingExportRoutes: FastifyPluginAsync = async (fastify) => {
           .send({ type: "validation_error", message: "Tenant context required" });
       }
       const userId = String(user.id);
-      const jobId = parsed.data.idempotencyKey?.trim() || crypto.randomUUID();
+      const jobId = buildBackgroundJobId(tenant, userId, parsed.data.idempotencyKey);
       const bodyDigest = messagingExportBodyDigest({
         query: parsed.data.query,
         filename: parsed.data.filename,
@@ -94,7 +94,7 @@ export const messagingExportRoutes: FastifyPluginAsync = async (fastify) => {
         bodyDigest,
       });
 
-      void recordModernAuditEvent({
+      await recordModernAuditEvent({
         workspaceSubdomain: tenant,
         tableName: "messaging",
         recordId: jobId,
@@ -104,12 +104,7 @@ export const messagingExportRoutes: FastifyPluginAsync = async (fastify) => {
           summary: `Queued messaging export "${label}"`,
           action: "messaging.export.queue",
         },
-      }).catch((err: unknown) =>
-        logger.error(
-          { err: err instanceof Error ? err.message : String(err) },
-          "audit event append failed",
-        ),
-      );
+      });
 
       return reply.status(202).send({ job });
     });

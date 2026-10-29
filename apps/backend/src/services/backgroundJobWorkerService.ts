@@ -170,6 +170,10 @@ export async function executeJob(
     return;
   }
 
+  // Persist the transition out of `pending` before the runner starts. Retries
+  // of a previous attempt also re-enter here after a stalled-job recovery.
+  await patchJob(tenant, userId, jobId, { status: "running" });
+
   // Heartbeat: refresh updated_at while the runner is in flight so the startup
   // orphan-cleanup on other replicas can tell a live long-running job from one
   // whose worker actually died.

@@ -22,6 +22,7 @@ export const AUDIT_VERIFICATION_STATUSES = [
   "BROKEN_CHAIN",
   "SEQUENCE_GAP",
   "TAMPERED",
+  "CHECKPOINT_NOT_IN_CHAIN",
 ] as const;
 export const auditVerificationStatusSchema = z.enum(AUDIT_VERIFICATION_STATUSES);
 export type AuditVerificationStatus = z.infer<typeof auditVerificationStatusSchema>;
@@ -57,7 +58,7 @@ export const modernAuditEventSchema = z
     newState: z.string().nullable().optional(),
     hashPrevious: z.string(),
     hashCurrent: z.string(),
-    verificationStatus: auditVerificationStatusSchema.default("VERIFIED"),
+    verificationStatus: auditVerificationStatusSchema.default("PENDING"),
     transactionTimestamp: z.string(),
   })
   .strict();
@@ -73,7 +74,7 @@ export const modernAuditEventInsertSchema = modernAuditEventSchema
   })
   .extend({
     id: z.union([z.string(), z.number()]).optional(),
-    verificationStatus: auditVerificationStatusSchema.default("VERIFIED").optional(),
+    verificationStatus: auditVerificationStatusSchema.default("PENDING").optional(),
   })
   .strict();
 

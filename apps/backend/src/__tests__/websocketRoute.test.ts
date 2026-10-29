@@ -29,12 +29,14 @@ vi.mock("../services/workspaceService.js", () => ({
 const mockRegisteredConnections: Array<{ subdomain: string; userId: string }> = [];
 vi.mock("../lib/livePush.js", () => ({
   registerConnection: vi
-    .fn()
-    .mockImplementation((subdomain: string, _socket: unknown, userId: string) => {
+    .fn<(subdomain: string, socket: unknown, userId: string) => (() => void) | null>()
+    .mockImplementation((subdomain, _socket, userId) => {
       mockRegisteredConnections.push({ subdomain, userId });
       return () => {};
     }),
 }));
+
+import { registerConnection } from "../lib/livePush.js";
 
 async function buildWsTestApp() {
   const app = fastify();
@@ -231,6 +233,18 @@ describe("WebSocket Route (/api/ws)", () => {
     expect(res.opened).toBe(true);
     await waitForConnections(1);
     expect(mockRegisteredConnections).toContainEqual({ subdomain: "demo", userId: "u-1" });
+  });
+
+  it("closes with 1013 when the connection cap refuses registration", async () => {
+    vi.mocked(registerConnection).mockReturnValueOnce(null);
+    const token = signToken();
+    const res = await connectAndWaitForClose(url, {
+      host: "demo.localhost",
+      origin: "http://demo.localhost:5173",
+      cookie: `${ACCESS_COOKIE}=${token}`,
+    });
+    expect(res.code).toBe(1013);
+    expect(mockRegisteredConnections).toHaveLength(0);
   });
 
   it("supports Bearer authorization header as fallback when cookie is absent", async () => {

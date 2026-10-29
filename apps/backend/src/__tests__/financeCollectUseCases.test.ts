@@ -29,12 +29,18 @@ const mockContacts = vi.hoisted(() => ({
 const mockFinanceUseCases = vi.hoisted(() => ({
   financeUseCases: {
     getInvoiceById: vi.fn(),
+    getInvoiceByIdForUpdate: vi.fn(),
     updateInvoiceById: vi.fn(),
   },
 }));
 
 const mockWs = vi.hoisted(() => ({
   broadcastTenantUpdate: vi.fn(),
+}));
+
+const mockRecordModernAuditEvent = vi.hoisted(() => vi.fn().mockResolvedValue(undefined));
+vi.mock("../services/auditTrailService.js", () => ({
+  recordModernAuditEvent: mockRecordModernAuditEvent,
 }));
 
 vi.mock("../db/repositories/financeCollectRepository.js", () => mockRepo);
@@ -155,7 +161,7 @@ describe("financeCollectUseCases", () => {
 
   describe("cancelInvoice", () => {
     it("throws 404 when invoice not found", async () => {
-      mockFinanceUseCases.financeUseCases.getInvoiceById.mockResolvedValue(null);
+      mockFinanceUseCases.financeUseCases.getInvoiceByIdForUpdate.mockResolvedValue(null);
 
       await expect(runWithTenant("tenant-1", () => cancelInvoice("inv-missing"))).rejects.toThrow(
         /Invoice not found/,
@@ -163,7 +169,7 @@ describe("financeCollectUseCases", () => {
     });
 
     it("throws 422 when invoice is already paid", async () => {
-      mockFinanceUseCases.financeUseCases.getInvoiceById.mockResolvedValue({
+      mockFinanceUseCases.financeUseCases.getInvoiceByIdForUpdate.mockResolvedValue({
         id: "inv-paid",
         status: "paid",
         paidAmt: 100,
@@ -178,7 +184,7 @@ describe("financeCollectUseCases", () => {
     it("cancels unpaid invoice, posts reversal journal, and broadcasts update", async () => {
       const invoice = { id: "inv-1", status: "unpaid", paidAmt: 0, finalAmt: 100 };
       const cancelled = { ...invoice, status: "cancelled" };
-      mockFinanceUseCases.financeUseCases.getInvoiceById.mockResolvedValue(invoice);
+      mockFinanceUseCases.financeUseCases.getInvoiceByIdForUpdate.mockResolvedValue(invoice);
       mockFinanceUseCases.financeUseCases.updateInvoiceById.mockResolvedValue(cancelled);
       mockLedgerPosting.tryPostInvoiceReversalJournal.mockResolvedValue(undefined);
       mockLedgerPosting.tryPostLateFeeReversalJournal.mockResolvedValue(undefined);
@@ -206,7 +212,7 @@ describe("financeCollectUseCases", () => {
     it("refuses to cancel a partially credited invoice and says what to do instead", async () => {
       // Cancelling reverses only the invoice entry, so the credit note's
       // Dr Income / Cr AR would survive and leave a credit AR balance.
-      mockFinanceUseCases.financeUseCases.getInvoiceById.mockResolvedValue({
+      mockFinanceUseCases.financeUseCases.getInvoiceByIdForUpdate.mockResolvedValue({
         id: "inv-credited",
         status: "pending",
         paidAmt: 0,
@@ -223,7 +229,7 @@ describe("financeCollectUseCases", () => {
 
   describe("createCreditNote", () => {
     it("rejects credit note exceeding open balance", async () => {
-      mockFinanceUseCases.financeUseCases.getInvoiceById.mockResolvedValue({
+      mockFinanceUseCases.financeUseCases.getInvoiceByIdForUpdate.mockResolvedValue({
         id: "inv-1",
         status: "partial",
         finalAmt: 100,
@@ -244,7 +250,7 @@ describe("financeCollectUseCases", () => {
         paidAmt: 0,
         creditedAmt: 0,
       };
-      mockFinanceUseCases.financeUseCases.getInvoiceById.mockResolvedValue(invoice);
+      mockFinanceUseCases.financeUseCases.getInvoiceByIdForUpdate.mockResolvedValue(invoice);
       mockRepo.saveCreditNote.mockResolvedValue(undefined);
       mockFinanceUseCases.financeUseCases.updateInvoiceById.mockResolvedValue({
         ...invoice,

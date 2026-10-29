@@ -9,7 +9,7 @@ import {
   getUserBackgroundJob,
   QueueUnavailableError,
 } from "../../../services/backgroundJobWorkerService.js";
-import { randomUUID } from "node:crypto";
+import { buildBackgroundJobId } from "../../../lib/backgroundJobIds.js";
 
 /** Queued faculty member CSV import (client-parsed rows). */
 export const facultyImportRoutes: FastifyPluginAsync = async (fastify) => {
@@ -25,7 +25,7 @@ export const facultyImportRoutes: FastifyPluginAsync = async (fastify) => {
 
     const label = parsed.data.label?.trim() || "Importing faculty…";
     const userId = String(user.id);
-    const jobId = parsed.data.idempotencyKey?.trim() || randomUUID();
+    const jobId = buildBackgroundJobId(tenant, userId, parsed.data.idempotencyKey);
     const existing = await getUserBackgroundJob(userId, jobId);
     if (existing) return reply.status(202).send({ job: existing });
 

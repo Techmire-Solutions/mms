@@ -2,10 +2,7 @@ import type { FastifyPluginAsync } from "fastify";
 import { auditAnomaliesQuerySchema, roleHasPermission, type User } from "@mms/shared";
 import { getRequestTenant } from "../../../lib/tenantContext.js";
 import { sendForbidden } from "../../../lib/httpErrors.js";
-import {
-  verifyTenantAuditChain,
-  computeAndPublishMerkleCheckpoint,
-} from "../../../services/auditVerificationService.js";
+import { verifyTenantAuditChain } from "../../../services/auditVerificationService.js";
 import { detectAuditAnomalies } from "../../../services/auditAnomalyService.js";
 import { parseRequest, replyValidationError } from "../../../lib/zodRequest.js";
 import { listMerkleRoots } from "../../../audit/use-cases/auditQueryUseCases.js";
@@ -16,7 +13,7 @@ export const auditIntegrityRoutes: FastifyPluginAsync = async (fastify) => {
    */
   fastify.post("/api/audit/verify", async (request, reply) => {
     const user = request.user as User | undefined;
-    if (!roleHasPermission(user?.role ?? "", "analytics.view")) {
+    if (!roleHasPermission(user?.role ?? "", "audit.view")) {
       return sendForbidden(reply);
     }
     const tenant = getRequestTenant();
@@ -29,23 +26,20 @@ export const auditIntegrityRoutes: FastifyPluginAsync = async (fastify) => {
   });
 
   /**
-   * GET /api/audit/merkle-roots - Retrieve published transparency checkpoints.
+   * GET /api/audit/merkle-roots - Published transparency checkpoints, reduced to
+   * this workspace's own head (never another tenant's hashes).
    */
-  fastify.get("/api/audit/merkle-roots", async (_request, reply) => {
-    const roots = await listMerkleRoots(20);
-    return reply.send({ items: roots });
-  });
-
-  /**
-   * POST /api/audit/merkle-roots - Trigger Merkle tree rollup across shard heads.
-   */
-  fastify.post("/api/audit/merkle-roots", async (request, reply) => {
+  fastify.get("/api/audit/merkle-roots", async (request, reply) => {
     const user = request.user as User | undefined;
-    if (!roleHasPermission(user?.role ?? "", "analytics.view")) {
+    if (!roleHasPermission(user?.role ?? "", "audit.view")) {
       return sendForbidden(reply);
     }
-    const rollup = await computeAndPublishMerkleCheckpoint();
-    return reply.send(rollup);
+    const tenant = getRequestTenant();
+    if (!tenant) {
+      return reply.status(403).send({ type: "forbidden", message: "Tenant required" });
+    }
+    const roots = await listMerkleRoots(tenant, 20);
+    return reply.send({ items: roots });
   });
 
   /**
@@ -53,7 +47,7 @@ export const auditIntegrityRoutes: FastifyPluginAsync = async (fastify) => {
    */
   fastify.get("/api/audit/anomalies", async (request, reply) => {
     const user = request.user as User | undefined;
-    if (!roleHasPermission(user?.role ?? "", "analytics.view")) {
+    if (!roleHasPermission(user?.role ?? "", "audit.view")) {
       return sendForbidden(reply);
     }
     const tenant = getRequestTenant();

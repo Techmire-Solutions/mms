@@ -20,6 +20,8 @@ vi.mock("../db/repositories/messagingRepository.js", () => ({
   queryMessagingMetrics: vi.fn(),
   softDeleteActiveMessageLogs: vi.fn(),
   restoreArchivedMessageLog: vi.fn(),
+  claimMessageLogForDelivery: vi.fn(),
+  updateMessageLogDeliveryStatus: vi.fn(),
   deleteMessageLogsByWorkspace: vi.fn(),
 }));
 

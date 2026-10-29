@@ -6,6 +6,7 @@ import {
 } from "../services/exportArtifactService.js";
 import { registerBackgroundJobRunner } from "../services/backgroundJobWorkerService.js";
 import { uploadStreamToStorage, resolveTenantExportKey } from "../config/storage.js";
+import { throwIfBackgroundJobAborted } from "./backgroundJobAbort.js";
 
 export type ModuleCsvExportJobPayload = {
   query?: unknown;
@@ -49,10 +50,11 @@ export type RegisterModuleCsvExportJobRunnerOptions = {
 
 /** Streams a CSV generator to storage and records the keyed artifact. */
 async function streamCsvToStorage(
-  ctx: { tenant: string; userId: string; jobId: string },
+  ctx: { tenant: string; userId: string; jobId: string; signal?: AbortSignal },
   exportPayload: ModuleCsvExportJobPayload,
   options: RegisterModuleCsvExportJobRunnerOptions,
 ): Promise<{ filename: string; count: number }> {
+  throwIfBackgroundJobAborted(ctx.signal);
   const passThrough = new PassThrough();
   const rawFallback = exportPayload.filename?.trim() || "export.csv";
   const fallbackFilename = buildTenantExportFilename(ctx.tenant, rawFallback);
@@ -65,6 +67,7 @@ async function streamCsvToStorage(
     key,
     passThrough,
     "text/csv; charset=utf-8",
+    { signal: ctx.signal },
   );
 
   const generator = options.generateStreamChunks!(
@@ -81,12 +84,14 @@ async function streamCsvToStorage(
   try {
     let step = await generator.next();
     while (!step.done) {
+      throwIfBackgroundJobAborted(ctx.signal);
       if (!passThrough.write(step.value)) {
         // Apply backpressure so the in-memory buffer stays bounded to a few chunks.
         await new Promise<void>((resolve) => passThrough.once("drain", () => resolve()));
       }
       step = await generator.next();
     }
+    throwIfBackgroundJobAborted(ctx.signal);
     const meta = step.value; // { count, filename }
     passThrough.end();
     const result = await uploadPromise;
@@ -115,7 +120,9 @@ export function registerModuleCsvExportJobRunner(
 ): void {
   registerBackgroundJobRunner(`${options.moduleId}:export`, async (payload, ctx) => {
     const exportPayload = payload as ModuleCsvExportJobPayload;
+    throwIfBackgroundJobAborted(ctx.signal);
     await ctx.updateProgress(0, 1);
+    throwIfBackgroundJobAborted(ctx.signal);
 
     let count: number;
     if (options.generateStreamChunks) {
@@ -134,10 +141,12 @@ export function registerModuleCsvExportJobRunner(
         },
         ctx.tenant,
       );
+      throwIfBackgroundJobAborted(ctx.signal);
       count = result.count;
       await saveExportArtifact(ctx.userId, ctx.jobId, result.csv, result.filename);
     }
 
+    throwIfBackgroundJobAborted(ctx.signal);
     await ctx.complete({
       label: exportPayload.label ?? `Exported ${count} ${options.entityNounPlural}`,
       progress: { current: count, total: count },

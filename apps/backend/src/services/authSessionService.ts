@@ -60,6 +60,21 @@ export async function revokeAllUserSessions(
 }
 
 /**
+ * Evaluates whether a token issued at `issuedAtMs` falls at or before `revokedAtMs`.
+ * Handles both millisecond-precise tokens (`iat_ms`) and standard second-aligned JWTs (`iat * 1000`).
+ */
+export function isTimestampRevoked(issuedAtMs: number, revokedAtMs: number): boolean {
+  if (issuedAtMs <= 0 || revokedAtMs <= 0) return false;
+  const isSecondAligned = issuedAtMs % 1000 === 0;
+  if (isSecondAligned) {
+    const revokedSec = Math.floor(revokedAtMs / 1000);
+    const issuedSec = Math.floor(issuedAtMs / 1000);
+    return issuedSec < revokedSec;
+  }
+  return issuedAtMs <= revokedAtMs;
+}
+
+/**
  * Checks if a token issued at `issuedAtMs` has been invalidated by a whole-user session revocation.
  */
 export async function isUserSessionRevoked(userId?: string, issuedAtMs?: number): Promise<boolean> {
@@ -68,7 +83,7 @@ export async function isUserSessionRevoked(userId?: string, issuedAtMs?: number)
   const revokedAtStr = await redisGet(key);
   if (!revokedAtStr) return false;
   const revokedAt = Number.parseInt(revokedAtStr, 10);
-  return !Number.isNaN(revokedAt) && issuedAtMs <= revokedAt;
+  return !Number.isNaN(revokedAt) && isTimestampRevoked(issuedAtMs, revokedAt);
 }
 
 /**
@@ -141,9 +156,10 @@ export async function checkSessionRevocationBatch(params: {
   const userRevokedAtStr = userKey ? (results[i] as string | null) : null;
 
   let userSessionRevoked = false;
-  if (userRevokedAtStr) {
+  if (userRevokedAtStr && params.issuedAtMs) {
     const revokedAt = Number.parseInt(userRevokedAtStr, 10);
-    userSessionRevoked = !Number.isNaN(revokedAt) && (params.issuedAtMs ?? 0) <= revokedAt;
+    userSessionRevoked =
+      !Number.isNaN(revokedAt) && isTimestampRevoked(params.issuedAtMs, revokedAt);
   }
 
   return { tenantBlocked, tokenRevoked, userSessionRevoked };
@@ -184,9 +200,10 @@ export async function checkTenantAuthPipelineBatch(params: {
   const workspaceCached = workspaceKey ? (results[i] as string | null) : null;
 
   let userSessionRevoked = false;
-  if (userRevokedAtStr) {
+  if (userRevokedAtStr && params.issuedAtMs) {
     const revokedAt = Number.parseInt(userRevokedAtStr, 10);
-    userSessionRevoked = !Number.isNaN(revokedAt) && (params.issuedAtMs ?? 0) <= revokedAt;
+    userSessionRevoked =
+      !Number.isNaN(revokedAt) && isTimestampRevoked(params.issuedAtMs, revokedAt);
   }
 
   return {

@@ -1,4 +1,3 @@
-import { activeDb } from "../../db/dbConnection.js";
 import { accountingFxRevaluationRepository as store } from "../repository/accountingFxRevaluationRepositoryAdapter.js";
 import { recordModernAuditEvent } from "../../services/auditTrailService.js";
 import { accountingFxRepository } from "../repository/accountingFxRepositoryAdapter.js";
@@ -30,7 +29,7 @@ export const fxRevaluationDeps: FxRevaluationDeps = {
       resolveYearId(years, date),
     );
   },
-  recordAudit: (input) => recordModernAuditEvent(activeDb(), input),
+  recordAudit: (input) => recordModernAuditEvent(input),
 };
 
 export const fxReportDeps: FxReportDeps = {

@@ -1,15 +1,16 @@
 import { and, desc, eq, sql } from "drizzle-orm";
 import type { ListAuditEventsQuery } from "@mms/shared";
-import { activeDb } from "../../db/dbConnection.js";
+import { withGlobalTenant, withTenantRead } from "../../db/tenant-context.js";
 import {
   auditMerkleRoots,
   auditTrailEvents,
   auditVerificationRuns,
 } from "../../db/schema/auditTrail.js";
+import { decryptSubjectAuditState, isEncryptedSubjectState } from "../../lib/subjectKeyService.js";
 
 /**
- * Drizzle-backed read queries for the tenant audit trail. The only file in the audit
- * domain that touches `drizzle-orm` / `activeDb()` / `db/schema`.
+ * Drizzle-backed read queries for the tenant audit trail. Every read runs inside
+ * a tenant transaction so `FORCE ROW LEVEL SECURITY` can see the shard.
  */
 
 /** Paginated audit-event listing with an explicit projection (no heavy raw state on listings). */
@@ -25,9 +26,44 @@ export async function listAuditEvents(tenant: string, query: ListAuditEventsQuer
     conditions.push(eq(auditTrailEvents.actionType, query.actionType));
   }
 
-  const db = activeDb();
-  const [items, countResult] = await Promise.all([
-    db
+  return withTenantRead(tenant, async (db) => {
+    const [items, countResult] = await Promise.all([
+      db
+        .select({
+          id: auditTrailEvents.id,
+          workspaceSubdomain: auditTrailEvents.workspaceSubdomain,
+          tableName: auditTrailEvents.tableName,
+          recordId: auditTrailEvents.recordId,
+          actionType: auditTrailEvents.actionType,
+          realUserId: auditTrailEvents.realUserId,
+          impersonatedUserId: auditTrailEvents.impersonatedUserId,
+          ipAddress: auditTrailEvents.ipAddress,
+          clientApp: auditTrailEvents.clientApp,
+          correlationId: auditTrailEvents.correlationId,
+          hashPrevious: auditTrailEvents.hashPrevious,
+          hashCurrent: auditTrailEvents.hashCurrent,
+          verificationStatus: auditTrailEvents.verificationStatus,
+          transactionTimestamp: auditTrailEvents.transactionTimestamp,
+        })
+        .from(auditTrailEvents)
+        .where(and(...conditions))
+        .orderBy(desc(auditTrailEvents.transactionTimestamp), desc(auditTrailEvents.id))
+        .limit(query.limit)
+        .offset(query.offset),
+      db
+        .select({ count: sql<number>`cast(count(*) as int)` })
+        .from(auditTrailEvents)
+        .where(and(...conditions)),
+    ]);
+
+    return { items, total: countResult[0]?.count ?? 0 };
+  });
+}
+
+/** Full-projection export of the most recent audit events for the shard. */
+export async function listAuditEventsForExport(tenant: string, limit = 1000) {
+  const rows = await withTenantRead(tenant, async (db) => {
+    return db
       .select({
         id: auditTrailEvents.id,
         workspaceSubdomain: auditTrailEvents.workspaceSubdomain,
@@ -38,86 +74,114 @@ export async function listAuditEvents(tenant: string, query: ListAuditEventsQuer
         impersonatedUserId: auditTrailEvents.impersonatedUserId,
         ipAddress: auditTrailEvents.ipAddress,
         clientApp: auditTrailEvents.clientApp,
+        sessionId: auditTrailEvents.sessionId,
         correlationId: auditTrailEvents.correlationId,
+        apiEndpoint: auditTrailEvents.apiEndpoint,
+        httpMethod: auditTrailEvents.httpMethod,
+        oldState: auditTrailEvents.oldState,
+        newState: auditTrailEvents.newState,
         hashPrevious: auditTrailEvents.hashPrevious,
         hashCurrent: auditTrailEvents.hashCurrent,
         verificationStatus: auditTrailEvents.verificationStatus,
         transactionTimestamp: auditTrailEvents.transactionTimestamp,
       })
       .from(auditTrailEvents)
-      .where(and(...conditions))
-      .orderBy(desc(auditTrailEvents.transactionTimestamp), desc(auditTrailEvents.id))
-      .limit(query.limit)
-      .offset(query.offset),
-    db
-      .select({ count: sql<number>`cast(count(*) as int)` })
-      .from(auditTrailEvents)
-      .where(and(...conditions)),
-  ]);
+      .where(eq(auditTrailEvents.workspaceSubdomain, tenant))
+      .orderBy(desc(auditTrailEvents.transactionTimestamp))
+      .limit(limit);
+  });
 
-  return { items, total: countResult[0]?.count ?? 0 };
-}
-
-/** Full-projection export of the most recent audit events for the shard. */
-export async function listAuditEventsForExport(tenant: string, limit = 1000) {
-  return activeDb()
-    .select({
-      id: auditTrailEvents.id,
-      workspaceSubdomain: auditTrailEvents.workspaceSubdomain,
-      tableName: auditTrailEvents.tableName,
-      recordId: auditTrailEvents.recordId,
-      actionType: auditTrailEvents.actionType,
-      realUserId: auditTrailEvents.realUserId,
-      impersonatedUserId: auditTrailEvents.impersonatedUserId,
-      ipAddress: auditTrailEvents.ipAddress,
-      clientApp: auditTrailEvents.clientApp,
-      sessionId: auditTrailEvents.sessionId,
-      correlationId: auditTrailEvents.correlationId,
-      apiEndpoint: auditTrailEvents.apiEndpoint,
-      httpMethod: auditTrailEvents.httpMethod,
-      oldState: auditTrailEvents.oldState,
-      newState: auditTrailEvents.newState,
-      hashPrevious: auditTrailEvents.hashPrevious,
-      hashCurrent: auditTrailEvents.hashCurrent,
-      verificationStatus: auditTrailEvents.verificationStatus,
-      transactionTimestamp: auditTrailEvents.transactionTimestamp,
-    })
-    .from(auditTrailEvents)
-    .where(eq(auditTrailEvents.workspaceSubdomain, tenant))
-    .orderBy(desc(auditTrailEvents.transactionTimestamp))
-    .limit(limit);
+  return Promise.all(
+    rows.map(async (row) => ({
+      ...row,
+      oldState: isEncryptedSubjectState(row.oldState)
+        ? await decryptSubjectAuditState(tenant, row.oldState)
+        : row.oldState,
+      newState: isEncryptedSubjectState(row.newState)
+        ? await decryptSubjectAuditState(tenant, row.newState)
+        : row.newState,
+    })),
+  );
 }
 
 /** Most recent verification run for the shard, or null when none has been recorded. */
 export async function getLatestVerificationRun(tenant: string) {
-  const rows = await activeDb()
-    .select({
-      id: auditVerificationRuns.id,
-      status: auditVerificationRuns.status,
-      verifiedAt: auditVerificationRuns.verifiedAt,
-      recordsChecked: auditVerificationRuns.recordsChecked,
-      discrepancies: auditVerificationRuns.discrepancies,
-    })
-    .from(auditVerificationRuns)
-    .where(eq(auditVerificationRuns.workspaceSubdomain, tenant))
-    .orderBy(desc(auditVerificationRuns.verifiedAt))
-    .limit(1);
+  return withTenantRead(tenant, async (db) => {
+    const rows = await db
+      .select({
+        id: auditVerificationRuns.id,
+        status: auditVerificationRuns.status,
+        verifiedAt: auditVerificationRuns.verifiedAt,
+        recordsChecked: auditVerificationRuns.recordsChecked,
+        discrepancies: auditVerificationRuns.discrepancies,
+        fromId: auditVerificationRuns.fromId,
+        fromTimestamp: auditVerificationRuns.fromTimestamp,
+        fromHash: auditVerificationRuns.fromHash,
+        toId: auditVerificationRuns.toId,
+        toTimestamp: auditVerificationRuns.toTimestamp,
+        toHash: auditVerificationRuns.toHash,
+        anchored: auditVerificationRuns.anchored,
+      })
+      .from(auditVerificationRuns)
+      .where(eq(auditVerificationRuns.workspaceSubdomain, tenant))
+      .orderBy(desc(auditVerificationRuns.verifiedAt))
+      .limit(1);
 
-  return rows[0] ?? null;
+    return rows[0] ?? null;
+  });
 }
 
-/** Most recently published Merkle transparency checkpoints. */
-export async function listMerkleRoots(limit = 20) {
-  return activeDb()
-    .select({
-      id: auditMerkleRoots.id,
-      rootHash: auditMerkleRoots.rootHash,
-      periodStart: auditMerkleRoots.periodStart,
-      periodEnd: auditMerkleRoots.periodEnd,
-      shardCount: auditMerkleRoots.shardCount,
-      publishedAt: auditMerkleRoots.publishedAt,
-    })
-    .from(auditMerkleRoots)
-    .orderBy(desc(auditMerkleRoots.publishedAt))
-    .limit(limit);
+export interface TenantMerkleHead {
+  id: string;
+  rootHash: string;
+  headHash: string | null;
+  periodStart: Date;
+  periodEnd: Date;
+  shardCount: number;
+  publishedAt: Date;
+}
+
+/**
+ * Transparency checkpoints visible to one tenant: the aggregate root plus only
+ * that tenant's own head from the published `heads` map.
+ */
+export async function listMerkleRoots(tenant: string, limit = 20): Promise<TenantMerkleHead[]> {
+  const rows = await withTenantRead(tenant, async (db) => {
+    return db
+      .select({
+        id: auditMerkleRoots.id,
+        rootHash: auditMerkleRoots.rootHash,
+        heads: auditMerkleRoots.heads,
+        periodStart: auditMerkleRoots.periodStart,
+        periodEnd: auditMerkleRoots.periodEnd,
+        shardCount: auditMerkleRoots.shardCount,
+        publishedAt: auditMerkleRoots.publishedAt,
+      })
+      .from(auditMerkleRoots)
+      .orderBy(desc(auditMerkleRoots.publishedAt))
+      .limit(limit);
+  });
+
+  return rows.map(({ heads, ...row }) => ({
+    ...row,
+    headHash: heads?.[tenant] ?? null,
+  }));
+}
+
+/** Platform-only checkpoint listing (no tenant filtering; callers must be platform auth). */
+export async function listGlobalMerkleRoots(limit = 20) {
+  return withGlobalTenant(async (db) => {
+    return db
+      .select({
+        id: auditMerkleRoots.id,
+        rootHash: auditMerkleRoots.rootHash,
+        periodStart: auditMerkleRoots.periodStart,
+        periodEnd: auditMerkleRoots.periodEnd,
+        shardCount: auditMerkleRoots.shardCount,
+        publishedAt: auditMerkleRoots.publishedAt,
+      })
+      .from(auditMerkleRoots)
+      .orderBy(desc(auditMerkleRoots.publishedAt))
+      .limit(limit);
+  });
 }

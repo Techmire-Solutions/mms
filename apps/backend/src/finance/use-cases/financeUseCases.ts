@@ -108,6 +108,18 @@ export function createFinanceUseCases(repo: FinanceRepository = financeRepositor
       return invoice;
     },
 
+    /**
+     * Locking read for settlement read-modify-write flows (credit note, cancel).
+     * Must be called inside the caller's write transaction.
+     */
+    getInvoiceByIdForUpdate: async (id: string): Promise<Invoice | null> => {
+      const tenant = getRequestTenant();
+      if (!tenant) return null;
+      const cleanId = id?.trim();
+      if (!cleanId) return null;
+      return repo.findInvoiceById(tenant, cleanId, { forUpdate: true });
+    },
+
     getInvoicesByIds: async (ids: string[], includeDeleted = false): Promise<Invoice[]> => {
       const tenant = getRequestTenant();
       if (!tenant) return [];
