@@ -247,6 +247,7 @@ export function HasanatDashboard({
             fillClassName="bg-gradient-to-r from-primary to-success"
             trackClassName="h-3 bg-border"
             transition={{ duration: 0.8, ease: "easeOut" }}
+            aria-label={t("hasanat.dashboard.overallStockUsage")}
           />
           <div className="flex justify-between mt-1.5">
             <span className="text-xs text-muted-foreground">

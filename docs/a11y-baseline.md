@@ -6,8 +6,14 @@ check but had no tooling installed to run it.
 
 ## What the gate does
 
-- Sweeps the app shell, one Work surface (Contacts) and one Setup surface
-  (Settings) at **375px** and **1440px**, plus an **RTL** pass at 1440px.
+- Sweeps **all 20 tenant routes** (`TENANT_PATHS` in `src/lib/routing/moduleRegistry.ts`):
+  the shell/dashboard, every module Work surface, the account pages (profile,
+  notifications) and Settings — at **375px** and **1440px**, plus an **RTL** pass and
+  a separate populated-data pass (`a11y-populated.spec.ts`).
+- Audits dialog **and** drawer overlays on representative desktop Work routes
+  (contacts, students, finance, accounting, examinations, messaging, users) via
+  `e2e/helpers/a11yOverlay.ts`; empty-tenant sweeps are split into route groups so
+  Playwright's two CI shards stay balanced.
 - Runs axe-core with the **WCAG 2.1 A + AA** tag set as the automated floor, extended
   with the **`wcag22aa` tag** (`e2e/helpers/a11y.ts` — currently axe's `target-size`
   rule, SC 2.5.8). The design target is **WCAG 2.2 AA** (`mms-ui-ux-design.mdc` §3);
@@ -46,6 +52,21 @@ baselined findings are printed on every run (and attached as test annotations) s
 they stay visible instead of quietly forgotten.
 
 **Do not add a baseline entry to unblock a change.** Fix the change.
+
+## 2026-10-29 coverage extension — two findings, both fixed
+
+Extending the sweep from 6 to all 20 tenant routes surfaced two serious violations
+the old route sample could not see. Both were fixed at the source; no baseline
+entry was added.
+
+- `aria-progressbar-name` on **Hasanat Cards**: the overall stock-usage `ProgressBar`
+  rendered `role="progressbar"` with no accessible name (the shared `ProgressBar`
+  only names itself when the caller passes one). Added the localized
+  `hasanat.dashboard.overallStockUsage` label.
+- `label-content-name-mismatch` on **Profile**: the avatar-change button used
+  `aria-label="Change photo"` while its visible content is the avatar/initials.
+  The override is gone; an `sr-only` "Change photo" label now extends the computed
+  name so it contains the visible text (WCAG 2.5.3).
 
 ## Finding 1 — `color-contrast` (serious)
 

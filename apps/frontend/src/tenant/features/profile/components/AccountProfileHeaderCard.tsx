@@ -48,7 +48,6 @@ export function AccountProfileHeaderCard({
               onClick={() => profile.contact && fileInputRef.current?.click()}
               disabled={!profile.contact}
               className={`w-24 h-24 rounded-full bg-gradient-to-br ${avatarGradient} flex items-center justify-center text-white font-extrabold text-2xl shadow-md border-4 border-card relative overflow-hidden p-0 hover:bg-transparent ${profile.contact ? "cursor-pointer group" : ""}`}
-              aria-label={t("account.changePhoto")}
             >
               {profile.contact?.avatar ? (
                 <img
@@ -73,6 +72,7 @@ export function AccountProfileHeaderCard({
                   <Camera className="w-6 h-6 text-white transform scale-90 group-hover:scale-100 transition-transform duration-300" />
                 </div>
               )}
+              <span className="sr-only">{t("account.changePhoto")}</span>
             </Button>
           </div>
 
