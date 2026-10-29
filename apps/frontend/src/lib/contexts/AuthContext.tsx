@@ -7,6 +7,7 @@ import { apiFetch } from "@/lib/apiClient";
 import { AUTH_PATHS } from "@/lib/apiClientHelpers";
 import { getWorkspaceLocalStoragePrefix } from "@/lib/dbStorageCore";
 import { queryClientInstance } from "@/lib/queryClient";
+import { useUiStateStore } from "@/lib/useUiStateStore";
 import type { AuthError } from "@/lib/authErrors";
 import {
   clearPersistedAuthUser,
@@ -95,6 +96,10 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
 
     queryClientInstance.clear();
+    // Preferences live in a module-level store; clearing only Query/localStorage
+    // left the previous user's tabs, column layout and read markers visible to
+    // the next user of this tab (login/logout are client-side navigations).
+    useUiStateStore.getState().reset();
     setIsLoadingAuth(false);
     clearPersistedAuthUser();
     setUser(null);

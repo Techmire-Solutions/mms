@@ -19,12 +19,14 @@
  *     --base "$GITHUB_BASE_SHA" \
  *     --root apps/frontend/src
  *
- * Exits 0 when there is nothing to check (no changed source files, or no
- * coverage data for them — e.g. a docs-only diff).
+ * Exits 0 only when there are no changed source files (e.g. a docs-only diff).
+ * Changed source with missing coverage data now FAILS — the previous skip made
+ * the gate opt-out for modified files.
  */
 import { execFileSync } from "node:child_process";
 import fs from "node:fs";
 import path from "node:path";
+import { evaluateChangedCoverage } from "./changed-coverage-core.mjs";
 
 function parseArgs(argv) {
   const args = {
@@ -132,22 +134,22 @@ function isSource(file) {
 }
 
 const coveragePath = path.resolve(args.coverage, "coverage-final.json");
-if (!fs.existsSync(coveragePath)) {
-  console.log(
-    `Changed coverage: no ${path.relative(process.cwd(), coveragePath)} — skipping (nothing collected).`,
-  );
-  process.exit(0);
-}
-
-/** Istanbul coverage-final.json → per-file { covered, total }. */
-const coverage = JSON.parse(fs.readFileSync(coveragePath, "utf8"));
 const perFile = new Map();
-for (const [absolutePath, data] of Object.entries(coverage)) {
-  const lineHits = Object.values(data.s ?? {}).filter((hitCount) => Number(hitCount) > 0).length;
-  const total = Object.keys(data.s ?? {}).length;
-  if (total === 0) continue;
-  const relative = path.relative(process.cwd(), absolutePath).replace(/\\/g, "/");
-  perFile.set(relative, { covered: lineHits, total });
+
+if (fs.existsSync(coveragePath)) {
+  /** Istanbul coverage-final.json → per-file { covered, total }. */
+  const coverage = JSON.parse(fs.readFileSync(coveragePath, "utf8"));
+  for (const [absolutePath, data] of Object.entries(coverage)) {
+    const lineHits = Object.values(data.s ?? {}).filter((hitCount) => Number(hitCount) > 0).length;
+    const total = Object.keys(data.s ?? {}).length;
+    if (total === 0) continue;
+    const relative = path.relative(process.cwd(), absolutePath).replace(/\\/g, "/");
+    perFile.set(relative, { covered: lineHits, total });
+  }
+} else {
+  console.log(
+    `Changed coverage: no ${path.relative(process.cwd(), coveragePath)} — changed source will fail.`,
+  );
 }
 
 const added = addedFiles();
@@ -160,58 +162,32 @@ if (changed.length === 0) {
 const minFileLines = Number.parseInt(args.minFileLines, 10) || 20;
 const threshold = Number.parseFloat(args.min) || 0;
 
-const failures = [];
-let coveredTotal = 0;
-let statementsTotal = 0;
-const rows = [];
-
-for (const file of changed) {
-  const entry = perFile.get(file);
-  if (!entry) {
-    // A changed file absent from the report was not imported by any executed
-    // test. That is exactly the "shipped with no test" case — but only when the
-    // file is substantive (a 5-line re-export shim is not worth failing over).
-    const lineCount = (() => {
-      try {
-        return fs.readFileSync(file, "utf8").split("\n").length;
-      } catch {
-        return 0;
-      }
-    })();
-    if (added.has(file) && lineCount >= minFileLines) {
-      failures.push(
-        `${file}: new file not imported by any executed test (${lineCount} lines, 0% covered)`,
-      );
+const result = evaluateChangedCoverage({
+  changed,
+  added,
+  perFile,
+  min: threshold,
+  minFileLines,
+  lineCountOf: (file) => {
+    try {
+      return fs.readFileSync(file, "utf8").split("\n").length;
+    } catch {
+      return 0;
     }
-    rows.push([file, "no data", `${lineCount} lines`]);
-    continue;
-  }
-  coveredTotal += entry.covered;
-  statementsTotal += entry.total;
-  const percent = (entry.covered / entry.total) * 100;
-  rows.push([file, `${percent.toFixed(0)}%`, `${entry.covered}/${entry.total}`]);
-  if (entry.covered === 0 && entry.total >= minFileLines) {
-    failures.push(`${file}: 0% line coverage across ${entry.total} statements`);
-  }
-}
-
-const aggregate = statementsTotal > 0 ? (coveredTotal / statementsTotal) * 100 : 100;
+  },
+});
 
 console.log("Changed-file coverage:");
-for (const [file, percent, detail] of rows) {
+for (const [file, percent, detail] of result.rows) {
   console.log(`  ${percent.padStart(7)}  ${detail.padStart(9)}  ${file}`);
 }
 console.log(
-  `Aggregate: ${aggregate.toFixed(1)}% of ${statementsTotal} statements in changed files (min ${threshold}%)`,
+  `Aggregate: ${result.aggregate.toFixed(1)}% of ${result.statementsTotal} statements in changed files (min ${threshold}%)`,
 );
 
-if (aggregate < threshold) {
-  failures.push(`aggregate changed-file coverage ${aggregate.toFixed(1)}% < ${threshold}%`);
-}
-
-if (failures.length > 0) {
+if (result.failures.length > 0) {
   console.error("\n✗ Changed-file coverage gate failed:");
-  for (const failure of failures) console.error(`  - ${failure}`);
+  for (const failure of result.failures) console.error(`  - ${failure}`);
   console.error(
     "\nAdd or extend the tests that exercise these files, or reduce the change surface.",
   );

@@ -77,6 +77,7 @@ export function usePaymentVoucherPrint(accounts: readonly Account[]) {
         notify.error(t("accounting.journal.voucher.popupBlocked"));
         return;
       }
+      printWindow.opener = null;
       const model = buildPaymentVoucherModel(entry, accounts);
       const payee = await resolvePayee(model.salary);
       const branding = getScopedBrandingSettings();

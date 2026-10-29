@@ -36,6 +36,8 @@
     "check:secrets": "node scripts/check-staged-secrets.mjs",
     "check:docs": "node scripts/check-docs.mjs",
     "check:tdd-pairing": "node scripts/check-tdd-pairing.mjs",
+    "check:ratchet-baselines": "node scripts/ci/check-ratchet-baselines.mjs",
+    "test:scripts": "node --test scripts/ci/*.test.mjs scripts/lib/db-projections-core.test.mjs",
     "sync:skills-index": "node scripts/sync-skill-index.mjs",
     "ci:local": "bash scripts/ci/local-ci.sh",
     "ci:local:full": "bash scripts/ci/local-ci.sh --full",

@@ -27,7 +27,8 @@ mms/
 │   ├── backend/          # Fastify 5 API server + BullMQ worker
 │   └── frontend/         # React 19 SPA
 ├── packages/
-│   └── shared/           # @mms/shared — SSOT types, Zod schemas, pure utils
+│   ├── shared/           # @mms/shared — SSOT types, Zod schemas, pure utils
+│   └── ui/               # @shared/ui — shared UI primitives (SSOT for both consoles)
 ├── e2e/                  # Playwright end-to-end tests
 ├── scripts/              # i18n checker, ESLint TS compat shim, sync scripts
 ├── docker-compose.yml    # Postgres 16 + Redis 7 + backend + worker
@@ -64,7 +65,7 @@ mms/
 
 | Directory                   | Purpose                                                      |
 | --------------------------- | ------------------------------------------------------------ |
-| `tenant/features/`          | 20 feature modules (students, faculty, sessions, finance, …) |
+| `tenant/features/`          | 21 feature modules (students, faculty, sessions, finance, …) |
 | `tenant/hooks/collections/` | TanStack Query facades per resource                          |
 | `platform/`                 | Platform apex (super-admin, tenant management)               |
 | `components/ui/`            | Shared design-system primitives                              |

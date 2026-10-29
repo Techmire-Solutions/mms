@@ -10,6 +10,8 @@ interface UiStateStore {
   isInitialized: boolean;
   initialize: (initialState: UserUiState) => void;
   updateState: (key: string, value: unknown) => void;
+  /** Drops the current user's preferences so the next session refetches them. */
+  reset: () => void;
 }
 
 /**
@@ -72,6 +74,15 @@ export const useUiStateStore = create<UiStateStore>((set) => {
           void syncKey(key, value);
         }, SYNC_DEBOUNCE_MS),
       );
+    },
+
+    reset: () => {
+      // A sign-out must not leave one user's preferences visible to the next
+      // user of the same tab (column layouts, tabs, notification read markers).
+      for (const timer of pendingTimers.values()) clearTimeout(timer);
+      pendingTimers.clear();
+      confirmedState = {};
+      set({ state: {}, isInitialized: false });
     },
   };
 });

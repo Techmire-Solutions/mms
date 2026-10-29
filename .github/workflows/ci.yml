@@ -5,6 +5,9 @@ on:
     branches: [main]
   pull_request:
     branches: [main]
+    # `ready_for_review` starts a fresh run when a draft is marked ready; without
+    # it the green gate from the draft run (where DB/E2E skip) would stand.
+    types: [opened, synchronize, reopened, ready_for_review]
   workflow_dispatch:
 
 permissions:
@@ -50,7 +53,10 @@ jobs:
               # changes must run the real-Postgres suite.
               - 'apps/backend/src/services/**'
               - 'apps/backend/src/accounting/**'
+              - 'apps/backend/src/__tests__/db-integration/**'
+              - 'apps/backend/src/__tests__/rls/**'
               - 'apps/backend/vitest.db.config.ts'
+              - 'apps/backend/vitest.rls.config.ts'
               - 'packages/shared/**'
               - 'package.json'
               - 'pnpm-lock.yaml'
@@ -181,6 +187,16 @@ jobs:
         continue-on-error: true
         run: pnpm --filter mms-frontend lint:warn
 
+      # The CI gate policy and ratchet/coverage evaluators are shell-adjacent,
+      # so they get pure unit tests rather than being verified only by watching
+      # a real PR.
+      - name: CI and ratchet script tests
+        run: |
+          node --test scripts/ci/ci-gate-policy.test.mjs
+          node --test scripts/ci/changed-coverage-core.test.mjs
+          node --test scripts/ci/check-ratchet-baselines.test.mjs
+          node --test scripts/lib/db-projections-core.test.mjs
+
       # Formatting is owned by Prettier (.prettierrc.json); ESLint defers all
       # stylistic rules to it via eslint-config-prettier (see each eslint.config.js).
       - name: Formatting (Prettier)
@@ -245,6 +261,13 @@ jobs:
         run: |
           node scripts/check-frontend-structure.mjs --ratchet
           node scripts/check-code-norms.mjs --ratchet
+
+      # Catches the other padding shape: raising a BASELINE constant to exactly
+      # the new violation count (which `--ratchet` cannot distinguish).
+      - name: Ratchet baseline constants did not increase
+        env:
+          BASE_SHA: ${{ github.event.pull_request.base.sha || github.event.before || 'HEAD^1' }}
+        run: node scripts/ci/check-ratchet-baselines.mjs --base "${BASE_SHA}"
 
       # Ratchet: frontend structural norms (primitives vs composites in
       # components/ui, canonical feature shape, logic out of features/*/components,
@@ -691,6 +714,68 @@ jobs:
       - name: Run Backend DB Integration Tests
         run: pnpm --filter mms-backend run test:db
 
+  # Proves tenant isolation under the role production is supposed to use: a
+  # NOSUPERUSER NOBYPASSRLS owner, with FORCE RLS active. The normal DB job runs
+  # as `postgres`, where every policy is inert, so it cannot catch this class.
+  test-backend-rls:
+    name: Backend RLS Enforcement (non-bypass role)
+    needs: [changes]
+    if: >
+      !github.event.pull_request.draft &&
+      (needs.changes.outputs.backend_db == 'true' || github.event_name != 'pull_request')
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    services:
+      postgres:
+        image: postgres:16-alpine
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: mms
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 5
+          --tmpfs /var/lib/postgresql/data:rw,noexec,nosuid,size=1024m
+          --shm-size=256mb
+
+    env:
+      JWT_SECRET: "e2e-test-jwt-secret-key-at-least-32-chars-long"
+      NODE_ENV: "test"
+      LOG_LEVEL: "silent"
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - name: Setup Environment
+        uses: ./.github/actions/setup-mms
+        with:
+          build-shared: "true"
+
+      - name: Provision non-bypass RLS role
+        env:
+          ADMIN_DATABASE_URL: postgres://postgres:postgres@localhost:5432/mms
+          MMS_DB_PASSWORD: mms_app_test
+        run: pnpm --filter mms-backend exec tsx src/scripts/provisionRlsRole.ts
+
+      - name: Run DB Migrations as mms_app (strict)
+        env:
+          DATABASE_URL: postgres://mms_app:mms_app_test@localhost:5432/mms
+          MMS_DB_ROLE_ENFORCEMENT: strict
+        run: pnpm --filter mms-backend run db:migrate
+
+      - name: Run RLS enforcement suite
+        env:
+          DATABASE_URL: postgres://mms_app:mms_app_test@localhost:5432/mms
+          MMS_DB_ROLE_ENFORCEMENT: strict
+        run: pnpm --filter mms-backend run test:rls
+
   e2e:
     needs: [changes]
     if: >
@@ -826,16 +911,31 @@ jobs:
         test-backend-unit,
         test-backend-coverage,
         test-backend-db,
+        test-backend-rls,
         e2e,
         merge-reports,
       ]
     runs-on: ubuntu-24.04
     timeout-minutes: 5
     steps:
+      - name: Checkout gate policy
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+          sparse-checkout: scripts/ci
+
       - name: Evaluate CI Gate & Publish Summary
         env:
           EVENT_NAME: ${{ github.event_name }}
           TEST_SCOPE: ${{ needs.changes.outputs.test_scope }}
+          IS_DRAFT: ${{ github.event.pull_request.draft || false }}
+          CHANGES_RESULT: ${{ needs.changes.result }}
+          DB_MATCHED: ${{ needs.changes.outputs.backend_db }}
+          DB_RESULT: ${{ needs.test-backend-db.result }}
+          RLS_MATCHED: ${{ needs.changes.outputs.backend_db }}
+          RLS_RESULT: ${{ needs.test-backend-rls.result }}
+          E2E_MATCHED: ${{ needs.changes.outputs.e2e }}
+          E2E_RESULT: ${{ needs.e2e.result }}
         run: |
           echo "==================== CI Gate Summary ===================="
           echo "Unit test scope:        ${TEST_SCOPE}"
@@ -850,11 +950,18 @@ jobs:
           echo "Backend Unit Tests:     ${{ needs.test-backend-unit.result }}"
           echo "Backend Coverage:       ${{ needs.test-backend-coverage.result }}"
           echo "Backend DB Tests:       ${{ needs.test-backend-db.result }}"
+          echo "Backend RLS Tests:      ${{ needs.test-backend-rls.result }}"
           echo "E2E Tests:              ${{ needs.e2e.result }}"
           echo "E2E Merge Reports:      ${{ needs.merge-reports.result }}"
           echo "========================================================="
 
           failed=0
+
+          # Skips are only legitimate for unmatched paths or draft PRs; a failed
+          # `changes` job must not turn every suite into a silent skip.
+          if ! node scripts/ci/ci-gate-policy.mjs; then
+            failed=1
+          fi
 
           # Only full-scope runs may pass outside PRs: a green push run on main is
           # what deploy.yml promotes, so it must mean the full suites ran.
@@ -915,6 +1022,11 @@ jobs:
 
           if [ "${{ needs.test-backend-db.result }}" != "success" ] && [ "${{ needs.test-backend-db.result }}" != "skipped" ]; then
             echo "::error::test-backend-db failed or was cancelled (result: ${{ needs.test-backend-db.result }})"
+            failed=1
+          fi
+
+          if [ "${{ needs.test-backend-rls.result }}" != "success" ] && [ "${{ needs.test-backend-rls.result }}" != "skipped" ]; then
+            echo "::error::test-backend-rls failed or was cancelled (result: ${{ needs.test-backend-rls.result }})"
             failed=1
           fi
 

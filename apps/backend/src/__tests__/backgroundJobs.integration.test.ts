@@ -135,9 +135,32 @@ describe("background jobs REST routes", () => {
     });
     expect(res.statusCode).toBe(200);
     expect(res.headers["content-type"]).toContain("text/csv");
-    expect(res.headers["content-disposition"]).toBe('attachment; filename="contacts.csv"');
+    expect(res.headers["content-disposition"]).toBe(
+      `attachment; filename="contacts.csv"; filename*=UTF-8''contacts.csv`,
+    );
     expect(res.body).toBe("id,name\n1,Ali");
     expect(mockGetExportArtifact).toHaveBeenCalledWith("u-teacher", "job-1");
+    await app.close();
+  });
+
+  it("GET /api/background-jobs/:id/download serves a localized filename without a 500", async () => {
+    mockGetUserBackgroundJob.mockResolvedValueOnce({ ...sampleJob, moduleId: "students" });
+    mockGetExportArtifact.mockResolvedValueOnce({
+      filename: "سجل_الرسائل.csv",
+      content: "id,name\n1,Ali",
+    });
+    const app = await buildApp();
+    const res = await app.inject({
+      method: "GET",
+      url: "/api/background-jobs/job-1/download",
+      headers: {
+        host: "demo.localhost",
+        authorization: `Bearer ${teacherToken(app)}`,
+      },
+    });
+    expect(res.statusCode).toBe(200);
+    expect(res.headers["content-disposition"]).toContain("filename*=UTF-8''");
+    expect(res.headers["content-disposition"]).toContain(encodeURIComponent("سجل_الرسائل.csv"));
     await app.close();
   });
 

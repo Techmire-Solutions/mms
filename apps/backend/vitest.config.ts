@@ -19,12 +19,11 @@ export default defineConfig({
       MMS_LOG_DEV_CREDENTIALS: "true",
     },
     include: ["src/__tests__/**/*.{test,spec}.ts"],
-    // Real-Postgres integration tests live in db-integration/ and are opt-in
-    // (run explicitly with `vitest run src/__tests__/db-integration/...` when a
-    // database is available). They are excluded from the default suite so the
-    // mocked unit suite stays green without a database and their global pool
-    // lifecycle cannot interfere with other tests.
-    exclude: ["src/__tests__/db-integration/**"],
+    // Real-Postgres integration tests live in db-integration/ and rls/ and are
+    // opt-in (run via test:db / test:rls when a database is available). They are
+    // excluded from the default suite so the mocked unit suite stays green
+    // without a database and their global pool lifecycle cannot interfere.
+    exclude: ["src/__tests__/db-integration/**", "src/__tests__/rls/**"],
     // Pre-bundle @mms/shared (~500 dist modules) so isolated test files evaluate
     // one file instead of re-walking the whole graph. `force` re-bundles once per
     // run: Vite's cache key ignores linked workspace builds, so a cached bundle

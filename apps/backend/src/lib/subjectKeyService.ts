@@ -17,13 +17,14 @@ export class SubjectKeyShreddedError extends Error {
 }
 
 /**
- * Retrieves an existing subject encryption key or generates a new one, scoped to
- * the workspace. Legacy rows without a workspace are deliberately unreachable.
+ * Retrieves an existing subject key without ever creating one. Decryption paths
+ * must use this: a read must not insert a fresh key for ciphertext it cannot
+ * open (that would both mutate on GET and destroy the shredding guarantee).
  */
-export async function getOrCreateSubjectKey(
+export async function getExistingSubjectKey(
   workspaceSubdomain: string,
   subjectId: string,
-): Promise<Buffer> {
+): Promise<Buffer | null> {
   const tenant = workspaceSubdomain.trim().toLowerCase();
   const normalizedSubject = subjectId.trim();
   if (!tenant) throw new Error("[subject-key] workspaceSubdomain is required");
@@ -44,21 +45,37 @@ export async function getOrCreateSubjectKey(
     )
     .limit(1);
 
-  if (rows.length > 0) {
-    const row = rows[0];
-    if (row.status === "SHREDDED") throw new SubjectKeyShreddedError(normalizedSubject);
-    const decryptedHex = decryptSecretAtRest(row.encryptedKey);
-    if (!decryptedHex) {
-      throw new Error(`Failed to decrypt subject envelope key for "${normalizedSubject}".`);
-    }
-    return Buffer.from(decryptedHex, "hex");
+  if (rows.length === 0) return null;
+
+  const row = rows[0];
+  if (row.status === "SHREDDED") throw new SubjectKeyShreddedError(normalizedSubject);
+  const decryptedHex = decryptSecretAtRest(row.encryptedKey);
+  if (!decryptedHex) {
+    throw new Error(`Failed to decrypt subject envelope key for "${normalizedSubject}".`);
   }
+  return Buffer.from(decryptedHex, "hex");
+}
+
+/**
+ * Retrieves an existing subject encryption key or generates a new one, scoped to
+ * the workspace. Only encryption paths may call this; see
+ * {@link getExistingSubjectKey} for reads.
+ */
+export async function getOrCreateSubjectKey(
+  workspaceSubdomain: string,
+  subjectId: string,
+): Promise<Buffer> {
+  const existing = await getExistingSubjectKey(workspaceSubdomain, subjectId);
+  if (existing) return existing;
+
+  const tenant = workspaceSubdomain.trim().toLowerCase();
+  const normalizedSubject = subjectId.trim();
 
   const rawKey = crypto.randomBytes(32);
   const encryptedEnvelope = encryptSecretAtRest(rawKey.toString("hex"))!;
   const keyId = `csk_${Date.now()}_${crypto.randomBytes(4).toString("hex")}`;
 
-  await db.insert(cryptoShreddingKeys).values({
+  await activeDb().insert(cryptoShreddingKeys).values({
     id: keyId,
     workspaceSubdomain: tenant,
     subjectId: normalizedSubject,
@@ -111,7 +128,14 @@ export async function decryptSubjectData(
   if (!ciphertext.startsWith(SUBJECT_ENC_PREFIX)) return ciphertext;
 
   try {
-    const key = await getOrCreateSubjectKey(workspaceSubdomain, subjectId);
+    const key = await getExistingSubjectKey(workspaceSubdomain, subjectId);
+    if (!key) {
+      logger.warn(
+        { subjectId },
+        "[subject-key] encrypted state has no key; treating it as shredded",
+      );
+      return "[DATA_SHREDDED]";
+    }
     const parts = ciphertext.slice(SUBJECT_ENC_PREFIX.length).split(":");
     if (parts.length < 4) return undefined;
     const dataHex = parts.pop()!;

@@ -16,6 +16,7 @@ Project-wide entry points live at the repo root:
 - [a11y-baseline.md](./a11y-baseline.md) — executable axe/WCAG gate baseline.
 - [frontend-performance-baseline.md](./frontend-performance-baseline.md) — render-hygiene + React Compiler baseline.
 - [dependencies-notes.md](./dependencies-notes.md) — dependency/tooling operational notes.
+- [rls-operations.md](./rls-operations.md) — RLS role model, provisioning, deploy preflight, rollback.
 
 ## Decisions
 

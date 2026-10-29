@@ -6,21 +6,10 @@
  * `db.select().from(table)` — in favour of explicit typed column projections.
  * The completion-review table repeats the ban.
  *
- * Why a ratchet rather than a fix-everything pass
- * ----------------------------------------------
- * There are 17 pre-existing sites (all in `sessionRepositoryHydrate.ts`).
- * They are NOT a measured performance problem today: the affected tables are
- * 5–17 columns wide and the mappers read most of those columns to build full domain
- * records, so a projection would save little.
- *
- * The real hazard the ban guards is FUTURE bloat — adding one wide `jsonb` to
- * `session_classes` would silently inflate every session-list query, with
- * nothing to catch it. Converting the existing sites properly also means
- * narrowing 11 mapper input types from `$inferSelect` to `Pick<…>` across a hot
- * hydration path, which is a large speculative refactor rather than a fix.
- *
- * So: no NEW wildcard projections, and the existing count reported so it can be
- * burned down deliberately.
+ * Application code has a zero baseline: no bare `.select()` is accepted. The
+ * legacy one-time data migrations under `src/db/migrations/**` are excluded —
+ * they deliberately scan whole collections/tables during a transform and are not
+ * request-path queries.
  *
  * Usage:
  *   node scripts/check-db-projections.mjs [--json] [--changed]
@@ -34,6 +23,7 @@ import path from "node:path";
 import process from "node:process";
 import { fileURLToPath } from "node:url";
 import { changedFiles } from "./lib/changed-files.mjs";
+import { findWildcardProjections } from "./lib/db-projections-core.mjs";
 
 const rootDir = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
 const srcDir = path.join(rootDir, "apps", "backend", "src");
@@ -42,7 +32,10 @@ const srcDir = path.join(rootDir, "apps", "backend", "src");
 const BASELINE = 0;
 
 const isBackendSource = (rel) =>
-  rel.endsWith(".ts") && !/\.(test|spec)\.ts$/.test(rel) && !rel.includes("/__tests__/");
+  rel.endsWith(".ts") &&
+  !/\.(test|spec)\.ts$/.test(rel) &&
+  !rel.includes("/__tests__/") &&
+  !rel.startsWith("apps/backend/src/db/migrations/");
 
 /** Recursively collects non-test TypeScript sources. */
 function collectSourceFiles(dir) {
@@ -51,6 +44,7 @@ function collectSourceFiles(dir) {
     const full = path.join(dir, entry.name);
     if (entry.isDirectory()) {
       if (entry.name === "__tests__" || entry.name === "node_modules") continue;
+      if (path.join(dir, entry.name) === path.join(srcDir, "db", "migrations")) continue;
       found.push(...collectSourceFiles(full));
       continue;
     }
@@ -59,26 +53,6 @@ function collectSourceFiles(dir) {
     found.push(full);
   }
   return found;
-}
-
-/**
- * Finds `.select()` with NO projection argument whose receiver chain continues
- * straight into `.from(`. An empty argument list is what makes it a wildcard;
- * `.select({ id: t.id })` is the compliant form and is not matched.
- */
-function findWildcardProjections(source) {
-  const hits = [];
-  const lines = source.split("\n");
-  for (let i = 0; i < lines.length; i += 1) {
-    if (!/\.select\(\s*\)\s*$/.test(lines[i])) continue;
-    // The projection may be followed by `.from(` on a later line.
-    let j = i + 1;
-    while (j < lines.length && lines[j].trim() === "") j += 1;
-    if (j < lines.length && /^\s*\.from\(/.test(lines[j])) {
-      hits.push({ line: i + 1, code: lines[i].trim() });
-    }
-  }
-  return hits;
 }
 
 if (!fs.existsSync(srcDir)) {
