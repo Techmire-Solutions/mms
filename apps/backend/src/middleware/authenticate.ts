@@ -27,6 +27,7 @@ export interface AuthenticatedRequest extends FastifyRequest {
     tokenType?: string;
     jti?: string;
     iat?: number;
+    iat_ms?: number;
     exp?: number;
   };
   /** Tenant bound after successful authentication (workspace subdomain). */
@@ -60,6 +61,7 @@ export async function authenticateTenant(
     tokenType?: string;
     jti?: string;
     iat?: number;
+    iat_ms?: number;
   };
   markRequestDiagnosticStage(request, "authentication_tenant_context");
   let tenant = getRequestTenant();
@@ -87,7 +89,7 @@ export async function authenticateTenant(
       jti: user.jti,
       userId: user.id ? String(user.id) : undefined,
       role: user.role,
-      issuedAtMs: user.iat ? user.iat * 1000 : undefined,
+      issuedAtMs: user.iat_ms ?? (user.iat ? user.iat * 1000 : undefined),
     });
   if (tenantBlocked) {
     await reply.status(403).send({

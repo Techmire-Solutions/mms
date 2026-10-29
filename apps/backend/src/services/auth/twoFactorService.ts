@@ -199,7 +199,7 @@ export async function rotateRefreshToken(
 
   const jti = randomBytes(16).toString("hex");
   const accessToken = jwtSigner.sign(
-    { ...user, twoFactorVerified: true, tokenType: "access", jti },
+    { ...user, twoFactorVerified: true, tokenType: "access", jti, iat_ms: Date.now() },
     { expiresIn: accessExpiresIn },
   );
 

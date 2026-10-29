@@ -12,6 +12,7 @@ type TenantTokenOptions = {
   workspaceSubdomain?: string;
   twoFactorVerified?: boolean;
   jti?: string;
+  iat_ms?: number;
 };
 
 export function signTenantToken(app: FastifyInstance, options: TenantTokenOptions = {}): string {
@@ -25,6 +26,7 @@ export function signTenantToken(app: FastifyInstance, options: TenantTokenOption
     twoFactorVerified: options.twoFactorVerified ?? true,
     tokenType: "access",
     jti: options.jti ?? randomUUID(),
+    iat_ms: options.iat_ms ?? Date.now(),
   });
 }
 

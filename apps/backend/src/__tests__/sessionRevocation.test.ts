@@ -112,4 +112,28 @@ describe("Enterprise Session Lifecycle & Token Revocation", () => {
 
     expect(res.statusCode).toBe(401);
   });
+
+  it("allows access with a new token issued after user session revocation", async () => {
+    const userId = `u-reauth-${randomUUID()}`;
+    await revokeAllUserSessions(userId);
+    await new Promise((r) => setTimeout(r, 5));
+
+    // Issue a brand-new token after revocation
+    const token = signTenantToken(app, {
+      id: userId,
+      workspaceSubdomain: "demo",
+      jti: `jti-${randomUUID()}`,
+    });
+
+    const res = await app.inject({
+      method: "GET",
+      url: "/api/auth/me",
+      headers: {
+        host: "demo.localhost",
+        authorization: `Bearer ${token}`,
+      },
+    });
+
+    expect(res.statusCode).toBe(200);
+  });
 });
