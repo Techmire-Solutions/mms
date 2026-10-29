@@ -1,19 +1,11 @@
-import { useContext } from "react";
-import {
-  QueryClient,
-  QueryClientContext,
-  queryOptions,
-  useMutation,
-  useQuery,
-} from "@tanstack/react-query";
+import { type QueryClient, queryOptions, useMutation, useQuery } from "@tanstack/react-query";
 import { facultyDesignationSchema, type FacultyDesignationWrite } from "@mms/shared";
 import { apiContract } from "@/lib/api";
 import { useTranslation } from "@/hooks/useTranslation";
+import { useQueryClientOrFallback } from "@/lib/query/optionalQueryContext";
 import { FACULTY_QUERY_KEY } from "./facultyQueryKeys";
 
 export const FACULTY_DESIGNATIONS_QUERY_KEY = [...FACULTY_QUERY_KEY, "designations"] as const;
-
-const fallbackQueryClient = new QueryClient();
 
 export function facultyDesignationsQueryOptions(input: {
   includeDeleted?: boolean;
@@ -54,8 +46,8 @@ export function useFacultyDesignations(options: { includeDeleted?: boolean } = {
 /** Saves a designation definition and refreshes every designation projection. */
 export function useSaveFacultyDesignation(customClient?: QueryClient) {
   const { t } = useTranslation();
-  const contextClient = useContext(QueryClientContext);
-  const client = customClient ?? contextClient ?? fallbackQueryClient;
+  const contextClient = useQueryClientOrFallback();
+  const client = customClient ?? contextClient;
   return useMutation(
     {
       mutationFn: async (input: FacultyDesignationWrite) => {
@@ -77,8 +69,8 @@ export function useSaveFacultyDesignation(customClient?: QueryClient) {
 /** Soft-deletes a designation definition. Rejects (409) when active appointments reference it. */
 export function useDeleteFacultyDesignation(customClient?: QueryClient) {
   const { t } = useTranslation();
-  const contextClient = useContext(QueryClientContext);
-  const client = customClient ?? contextClient ?? fallbackQueryClient;
+  const contextClient = useQueryClientOrFallback();
+  const client = customClient ?? contextClient;
   return useMutation(
     {
       mutationFn: async (id: string) => {
@@ -103,8 +95,8 @@ export function useDeleteFacultyDesignation(customClient?: QueryClient) {
 /** Restores a soft-deleted designation definition. */
 export function useRestoreFacultyDesignation(customClient?: QueryClient) {
   const { t } = useTranslation();
-  const contextClient = useContext(QueryClientContext);
-  const client = customClient ?? contextClient ?? fallbackQueryClient;
+  const contextClient = useQueryClientOrFallback();
+  const client = customClient ?? contextClient;
   return useMutation(
     {
       mutationFn: async (id: string) => {

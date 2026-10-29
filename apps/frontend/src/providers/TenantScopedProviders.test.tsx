@@ -15,6 +15,8 @@ vi.mock("@/hooks/useTenantDatabaseUpdates", () => ({
 
 vi.mock("@/lib/contexts/AuthContext", () => ({
   useAuth: vi.fn(),
+  // Mirrors the real module: the optional accessor never throws.
+  useOptionalAuth: vi.fn(() => null),
 }));
 
 vi.mock("@/tenant/hooks/useBranding", () => ({

@@ -229,6 +229,11 @@ transactions.`) and re-attaches triggers for **19** tables against 0104's **14**
       over `lib/invoicePresets/*` (palette / types / classic / thermal / formalA5{Header,Amount}Elements /
       modern / available), every module <300 LOC; output proven byte-identical by hash before/after and
       the code-norms `filesOverHardLimit` baseline is now 4 (only the four translation dictionaries).
+    - **2026-10-30 frontend review — see [frontend-review-2026-10-30.md](./frontend-review-2026-10-30.md).**
+      That pass fixed the PWA precache blow-up (647 → 38 entries), added stale-chunk recovery, moved
+      `lang`/`dir` before first paint, removed dead assets, and de-silenced the query/auth provider
+      fallbacks. Coverage depth (reports/platform), the 4 × ~10k-line translation packs, and the
+      `invalidateQueries` convergence remain open there.
 
 11. **Circular import in the dashboard collections barrel (fixed).** `tenant/hooks/collections/dashboard`
     re-exports `useDashboardData`, which imported `useDashboardSummaryQuery` **back** through that same

@@ -6,6 +6,13 @@ import "@/index.css";
 import { isApexHost } from "@mms/shared/tenantUtils";
 import { getAppDomain } from "@/lib/config/tenantConfig";
 import { ErrorBoundary } from "@/components/app/ErrorBoundary";
+import { installChunkLoadRecovery } from "@/lib/chunkLoadRecovery";
+
+// Hashed chunk names change on every deploy while the PWA service worker keeps
+// the tab on the current revision. A lazy route whose chunk vanished after a
+// release would otherwise throw straight into the root boundary; reload once
+// (throttled) instead. Registered before render so no dynamic import can race it.
+installChunkLoadRecovery();
 
 // Error reporting is non-interactive: initialize it without blocking first
 // paint. The Sentry SDK (~170KB) now lives behind the lazy

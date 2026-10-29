@@ -1,11 +1,4 @@
-import { useContext } from "react";
-import {
-  QueryClient,
-  QueryClientContext,
-  queryOptions,
-  useMutation,
-  useQuery,
-} from "@tanstack/react-query";
+import { type QueryClient, queryOptions, useMutation, useQuery } from "@tanstack/react-query";
 import {
   facultyDepartmentSchema,
   type FacultyDepartmentEntity,
@@ -13,11 +6,10 @@ import {
 } from "@mms/shared";
 import { apiContract } from "@/lib/api";
 import { useTranslation } from "@/hooks/useTranslation";
+import { useQueryClientOrFallback } from "@/lib/query/optionalQueryContext";
 import { FACULTY_QUERY_KEY } from "./facultyQueryKeys";
 
 export const FACULTY_DEPARTMENTS_QUERY_KEY = [...FACULTY_QUERY_KEY, "departments"] as const;
-
-const fallbackQueryClient = new QueryClient();
 
 export function facultyDepartmentsQueryOptions(input: {
   includeDeleted?: boolean;
@@ -62,8 +54,8 @@ export function useFacultyDepartments(options: { includeDeleted?: boolean } = {}
 /** Saves a department (create or update) and invalidates the departments list. */
 export function useSaveFacultyDepartment(customClient?: QueryClient) {
   const { t } = useTranslation();
-  const contextClient = useContext(QueryClientContext);
-  const client = customClient ?? contextClient ?? fallbackQueryClient;
+  const contextClient = useQueryClientOrFallback();
+  const client = customClient ?? contextClient;
   return useMutation(
     {
       mutationFn: async (input: FacultyDepartmentWrite & { id: string }) => {
@@ -91,8 +83,8 @@ export function useSaveFacultyDepartment(customClient?: QueryClient) {
 /** Soft-deletes a department. Rejects (409) when active appointments reference it. */
 export function useDeleteFacultyDepartment(customClient?: QueryClient) {
   const { t } = useTranslation();
-  const contextClient = useContext(QueryClientContext);
-  const client = customClient ?? contextClient ?? fallbackQueryClient;
+  const contextClient = useQueryClientOrFallback();
+  const client = customClient ?? contextClient;
   return useMutation(
     {
       mutationFn: async (id: string) => {
@@ -117,8 +109,8 @@ export function useDeleteFacultyDepartment(customClient?: QueryClient) {
 /** Restores a soft-deleted department. */
 export function useRestoreFacultyDepartment(customClient?: QueryClient) {
   const { t } = useTranslation();
-  const contextClient = useContext(QueryClientContext);
-  const client = customClient ?? contextClient ?? fallbackQueryClient;
+  const contextClient = useQueryClientOrFallback();
+  const client = customClient ?? contextClient;
   return useMutation(
     {
       mutationFn: async (id: string) => {

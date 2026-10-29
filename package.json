@@ -20,6 +20,7 @@
     "check:i18n-unused": "node scripts/i18n/check-unused-keys.mjs",
     "verify:rules": "node scripts/verify-rules-integrity.mjs",
     "check:bundle": "node scripts/check-bundle-budget.mjs",
+    "check:pwa": "node scripts/check-pwa-precache.mjs",
     "check:migration-indexes": "node scripts/check-migration-indexes.mjs",
     "check:migration-hygiene": "node scripts/check-migration-hygiene.mjs",
     "check:db-projections": "node scripts/check-db-projections.mjs",

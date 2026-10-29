@@ -345,6 +345,10 @@ jobs:
       - name: Frontend bundle budget
         run: pnpm run check:bundle
 
+      # Service-worker precache budget: keeps optional vendors/locale packs lazy
+      - name: PWA precache budget
+        run: pnpm run check:pwa
+
       # Build once, promote the same bytes: deploy.yml downloads this artifact
       # from the triggering CI run and verifies the provenance attestation.
       - name: Package release tarball

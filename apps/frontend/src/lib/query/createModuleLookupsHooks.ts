@@ -1,26 +1,6 @@
-import { useContext } from "react";
-import { QueryClient, QueryClientContext, useMutation, useQuery } from "@tanstack/react-query";
-import { useAuth } from "@/lib/contexts/AuthContext";
+import { useMutation, useQuery } from "@tanstack/react-query";
 import { STATIC_LOOKUP_STALE_TIME } from "@/lib/queryClient";
-
-const fallbackQueryClient = new QueryClient({
-  defaultOptions: {
-    queries: { retry: false },
-  },
-});
-
-function useSafeQueryClient(): QueryClient {
-  const client = useContext(QueryClientContext);
-  return client ?? fallbackQueryClient;
-}
-
-function useSafeAuth() {
-  try {
-    return useAuth();
-  } catch {
-    return null;
-  }
-}
+import { useAuthOrNull, useQueryClientOrFallback } from "@/lib/query/optionalQueryContext";
 
 export interface CreateModuleLookupsHooksOptions<
   TMap extends object,
@@ -49,8 +29,8 @@ export function createModuleLookupsHooks<
   const staticDefaults = defaults();
 
   function useLookupsQuery() {
-    const auth = useSafeAuth();
-    const queryClient = useSafeQueryClient();
+    const auth = useAuthOrNull();
+    const queryClient = useQueryClientOrFallback();
     return useQuery<TMap, Error, TMap>(
       {
         queryKey,
@@ -67,7 +47,7 @@ export function createModuleLookupsHooks<
   }
 
   function useLookupMutation() {
-    const queryClient = useSafeQueryClient();
+    const queryClient = useQueryClientOrFallback();
     return useMutation(
       {
         mutationFn: ({ kind, items }: { kind: TKind; items: TItems }) => putLookupKind(kind, items),

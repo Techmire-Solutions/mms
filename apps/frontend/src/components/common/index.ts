@@ -2,7 +2,6 @@ export * from "./AppPageShell";
 export * from "./AppPageShellSkeleton";
 export * from "./ModuleScaffold";
 export * from "./BulkActionDock";
-export * from "./DetailSheet";
 export * from "./entityRegistry";
 export * from "./AppShell";
 export * from "./work";

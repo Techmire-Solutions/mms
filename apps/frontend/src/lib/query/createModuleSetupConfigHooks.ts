@@ -1,26 +1,6 @@
-import { useContext } from "react";
-import { QueryClient, QueryClientContext, useMutation, useQuery } from "@tanstack/react-query";
-import { useAuth } from "@/lib/contexts/AuthContext";
+import { useMutation, useQuery } from "@tanstack/react-query";
 import { SETUP_STALE_TIME } from "@/lib/queryClient";
-
-const fallbackQueryClient = new QueryClient({
-  defaultOptions: {
-    queries: { retry: false },
-  },
-});
-
-function useSafeQueryClient(): QueryClient {
-  const client = useContext(QueryClientContext);
-  return client ?? fallbackQueryClient;
-}
-
-function useSafeAuth() {
-  try {
-    return useAuth();
-  } catch {
-    return null;
-  }
-}
+import { useAuthOrNull, useQueryClientOrFallback } from "@/lib/query/optionalQueryContext";
 
 function resolveValue<T>(value: T | (() => T)): T {
   return typeof value === "function" ? (value as () => T)() : value;
@@ -53,8 +33,8 @@ export function createModuleSetupConfigHooks<
   const staticPlaceholder = resolveValue(preferencesPlaceholder);
 
   function usePreferencesQuery() {
-    const auth = useSafeAuth();
-    const queryClient = useSafeQueryClient();
+    const auth = useAuthOrNull();
+    const queryClient = useQueryClientOrFallback();
     return useQuery<TPreferences, Error, TPreferences>(
       {
         queryKey: preferencesQueryKey,
@@ -71,7 +51,7 @@ export function createModuleSetupConfigHooks<
   }
 
   function usePreferencesMutation() {
-    const queryClient = useSafeQueryClient();
+    const queryClient = useQueryClientOrFallback();
     return useMutation(
       {
         mutationFn: (preferences: TPreferencesInput) => savePreferences(preferences),

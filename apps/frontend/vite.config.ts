@@ -1,4 +1,5 @@
 import path from "node:path";
+import fs from "node:fs";
 import { fileURLToPath } from "node:url";
 import { constants } from "node:zlib";
 import react from "@vitejs/plugin-react";
@@ -7,8 +8,19 @@ import { visualizer } from "rollup-plugin-visualizer";
 import { compression } from "vite-plugin-compression2";
 import { VitePWA } from "vite-plugin-pwa";
 import { manualVendorChunk, rolldownChunkGroups } from "./src/lib/vendorChunks";
+import { createEntryClosureTransform } from "./src/lib/pwa/entryClosurePrecache";
 
 const rootDir = path.dirname(fileURLToPath(import.meta.url));
+
+/**
+ * Reads the Vite build manifest for the Workbox precache transform.
+ * Called during service-worker generation (after `dist/.vite/manifest.json` is written).
+ */
+function readBuildManifest() {
+  const manifestPath = path.resolve(rootDir, "dist/.vite/manifest.json");
+  if (!fs.existsSync(manifestPath)) return null;
+  return JSON.parse(fs.readFileSync(manifestPath, "utf8"));
+}
 
 // Backend origin the dev proxy forwards `/api`, `/health`, `/uploads` to.
 // Override with MMS_BACKEND_PROXY when the backend runs on a non-default port.
@@ -170,8 +182,25 @@ export default defineConfig({
       injectRegister: "auto",
       manifest: false,
       workbox: {
-        globPatterns: ["**/*.{js,css,html,ico,png,svg,woff2}"],
-        globIgnores: ["**/stats.html", "**/*.map"],
+        // Precache the shell only (plus the app-shell entry closure added by the
+        // transform below). The previous `**/*.js` glob precached every emitted
+        // chunk — 647 entries / ~16 MB, including mermaid's elk (1.4 MB), xlsx,
+        // jspdf, all four locale packs, and an unused 1.2 MB logo — which
+        // defeated route-level lazy loading for every first visit.
+        globPatterns: [
+          "index.html",
+          "site.webmanifest",
+          "favicon.*",
+          "icon-*.png",
+          "apple-touch-icon.png",
+        ],
+        globIgnores: ["**/stats.html", "**/*.map", "**/*.gz", "**/*.br"],
+        // Belt and braces: nothing above the budget can sneak back into precache.
+        maximumFileSizeToCacheInBytes: 1.5 * 1024 * 1024,
+        // Adds the static import closure of `index.html` (~2 MB raw) so a cold
+        // offline start still boots; route chunks stay lazy and are captured by
+        // the `/assets/` CacheFirst runtime rule once a user visits them.
+        manifestTransforms: [createEntryClosureTransform({ readManifest: readBuildManifest })],
         cleanupOutdatedCaches: true,
         navigateFallback: "/index.html",
         navigateFallbackDenylist: [/^\/api\//, /^\/uploads\//, /^\/health/],
