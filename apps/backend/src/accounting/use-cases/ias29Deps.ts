@@ -1,4 +1,3 @@
-import { activeDb } from "../../db/dbConnection.js";
 import { accountingHyperinflationRepository as store } from "../repository/accountingHyperinflationRepositoryAdapter.js";
 import { recordModernAuditEvent } from "../../services/auditTrailService.js";
 import {
@@ -23,5 +22,5 @@ export const ias29Deps: Ias29Deps = {
       resolveYearId(years, date),
     );
   },
-  recordAudit: (input) => recordModernAuditEvent(activeDb(), input),
+  recordAudit: (input) => recordModernAuditEvent(input),
 };

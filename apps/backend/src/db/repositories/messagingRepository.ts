@@ -29,4 +29,9 @@ export { queryFilteredMessageLogs, queryMessagingMetrics } from "./messagingLogs
 export {
   softDeleteActiveMessageLogs,
   restoreArchivedMessageLog,
+  buildMessageLogClaimId,
+  claimMessageLogForDelivery,
+  updateMessageLogDeliveryStatus,
+  STALE_MESSAGE_LOG_CLAIM_MS,
 } from "./messagingLogsMutationRepository.js";
+export type { MessageLogClaim } from "./messagingLogsMutationRepository.js";

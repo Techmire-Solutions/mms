@@ -3,6 +3,11 @@ import { createAccountingUseCases } from "../accounting/use-cases/accountingUseC
 import type { AccountingRepository } from "../accounting/repository/accountingRepository.js";
 import { runWithTenant } from "../lib/tenantContext.js";
 
+const mockRecordModernAuditEvent = vi.hoisted(() => vi.fn().mockResolvedValue(undefined));
+vi.mock("../services/auditTrailService.js", () => ({
+  recordModernAuditEvent: mockRecordModernAuditEvent,
+}));
+
 function createFakeRepo(): AccountingRepository {
   return {
     lockJournalEntries: vi.fn().mockResolvedValue(undefined),

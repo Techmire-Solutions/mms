@@ -1,5 +1,4 @@
-import { randomUUID } from "node:crypto";
-import type { Message, MessageCategory } from "@mms/shared";
+import type { MessageCategory } from "@mms/shared";
 import { personalizeMessage } from "@mms/shared";
 import {
   registerBackgroundJobRunner,
@@ -9,6 +8,9 @@ import { sendTenantSms } from "./sms/smsService.js";
 import { sendTenantWhatsApp } from "./whatsapp/whatsappService.js";
 import { sendTenantEmail } from "./email/emailService.js";
 import { messagingUseCases } from "../messaging/use-cases/messagingUseCases.js";
+import { buildMessageLogClaimId } from "../lib/messageLogClaimId.js";
+import { throwIfBackgroundJobAborted } from "../lib/backgroundJobAbort.js";
+import { broadcastCollection } from "../lib/livePush.js";
 import { runWithTenant } from "../lib/tenantContext.js";
 import { logger } from "../lib/logger.js";
 
@@ -39,7 +41,8 @@ export function registerMessagingCampaignJobRunner(): void {
       const sentAt = new Date().toISOString();
       let sentCount = 0;
       let failedCount = 0;
-      const logs: Message[] = [];
+      let skippedCount = 0;
+      let claimedCount = 0;
 
       await runWithTenant(ctx.tenant, async () => {
         for (let i = 0; i < recipients.length; i++) {
@@ -51,25 +54,44 @@ export function registerMessagingCampaignJobRunner(): void {
           const recipient = recipients[i];
           const personalizedBody = personalizeMessage(message, recipient);
           const personalizedSubject = subject ? personalizeMessage(subject, recipient) : undefined;
+          const claimId = buildMessageLogClaimId(ctx.jobId, recipient.id, channel);
 
+          // Claim before sending: a BullMQ retry re-runs the same runner from
+          // recipient 0, and rows already claimed by the previous attempt must
+          // not be sent again.
+          const claimed = await messagingUseCases.claimMessageLogForDelivery(ctx.tenant, {
+            id: claimId,
+            userId: ctx.userId,
+            contactId: recipient.id,
+            channel,
+            body: personalizedBody,
+            sentAt,
+            subject: personalizedSubject,
+            category: category ?? "general",
+          });
+          if (!claimed) {
+            skippedCount++;
+            continue;
+          }
+          claimedCount++;
+
+          let sent = false;
+          let failureMessage: string | undefined;
           try {
-            let sent = false;
-            let errorMessage: string | undefined;
-
             if (channel === "sms") {
               const res = await sendTenantSms({
                 to: recipient.phone ?? "",
                 body: personalizedBody,
               });
               sent = res.sent;
-              errorMessage = res.message || res.reason;
+              failureMessage = res.message || res.reason;
             } else if (channel === "whatsapp") {
               const res = await sendTenantWhatsApp({
                 to: recipient.phone ?? "",
                 body: personalizedBody,
               });
               sent = res.sent;
-              errorMessage = res.message || res.reason;
+              failureMessage = res.message || res.reason;
             } else if (channel === "email") {
               const res = await sendTenantEmail({
                 to: recipient.email ?? "",
@@ -77,51 +99,29 @@ export function registerMessagingCampaignJobRunner(): void {
                 text: personalizedBody,
               });
               sent = res.sent;
-              errorMessage = res.message || res.reason;
-            }
-
-            if (sent) {
-              sentCount++;
-              logs.push({
-                id: randomUUID(),
-                userId: ctx.userId,
-                contactId: recipient.id,
-                channel,
-                body: personalizedBody,
-                subject: personalizedSubject,
-                sentAt,
-                status: "sent",
-                category: category || "general",
-              });
-            } else {
-              failedCount++;
-              logs.push({
-                id: randomUUID(),
-                userId: ctx.userId,
-                contactId: recipient.id,
-                channel,
-                body: personalizedBody,
-                subject: personalizedSubject,
-                sentAt,
-                status: "failed",
-                category: category || "general",
-                errorMessage: errorMessage || "Gateway rejected dispatch",
-              });
+              failureMessage = res.message || res.reason;
             }
           } catch (err) {
+            failureMessage = err instanceof Error ? err.message : "Dispatch error";
+          }
+
+          if (sent) {
+            sentCount++;
+          } else {
             failedCount++;
-            logs.push({
-              id: randomUUID(),
-              userId: ctx.userId,
-              contactId: recipient.id,
-              channel,
-              body: personalizedBody,
-              subject: personalizedSubject,
-              sentAt,
-              status: "failed",
-              category: category || "general",
-              errorMessage: err instanceof Error ? err.message : "Dispatch error",
-            });
+          }
+          try {
+            await messagingUseCases.updateMessageLogDeliveryStatus(
+              ctx.tenant,
+              claimId,
+              sent ? "sent" : "failed",
+              sent ? null : failureMessage || "Gateway rejected dispatch",
+            );
+          } catch (updateErr) {
+            logger.error(
+              { err: updateErr, jobId: ctx.jobId, claimId },
+              "Failed to persist messaging delivery outcome",
+            );
           }
 
           if ((i + 1) % 5 === 0 || i + 1 === recipients.length) {
@@ -132,16 +132,17 @@ export function registerMessagingCampaignJobRunner(): void {
           await new Promise((resolve) => setTimeout(resolve, 50));
         }
 
-        if (logs.length > 0) {
-          try {
-            await messagingUseCases.recordMessageLogs(ctx.tenant, logs);
-          } catch (err) {
-            logger.error({ err }, "Failed to record message logs for background campaign");
-          }
+        // Do not report success for an aborted run: the sandbox timeout path is
+        // about to reject and BullMQ will retry this job.
+        throwIfBackgroundJobAborted(ctx.signal);
+
+        if (claimedCount > 0) {
+          await broadcastCollection("message_logs");
         }
 
+        const skippedLabel = skippedCount > 0 ? `, ${skippedCount} skipped` : "";
         await ctx.complete({
-          label: `Campaign finished: ${sentCount} sent, ${failedCount} failed (${recipients.length} total)`,
+          label: `Campaign finished: ${sentCount} sent, ${failedCount} failed (${recipients.length} total${skippedLabel})`,
         });
       });
     },

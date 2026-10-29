@@ -181,6 +181,21 @@ export function createMessagingUseCases(repo: MessagingRepository = messagingRep
       return restored;
     },
 
+    /** Claims one campaign recipient; false means a prior attempt already owns it. */
+    claimMessageLogForDelivery: async (
+      workspaceSubdomain: string,
+      claim: Parameters<MessagingRepository["claimMessageLogForDelivery"]>[1],
+    ): Promise<boolean> => repo.claimMessageLogForDelivery(workspaceSubdomain, claim),
+
+    updateMessageLogDeliveryStatus: async (
+      workspaceSubdomain: string,
+      id: string,
+      status: "sent" | "failed",
+      errorMessage?: string | null,
+    ): Promise<void> => {
+      await repo.updateMessageLogDeliveryStatus(workspaceSubdomain, id, status, errorMessage);
+    },
+
     computeMessagingMetrics: async (
       workspaceSubdomain?: string,
       filters?: { startDate?: string; endDate?: string },

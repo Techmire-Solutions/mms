@@ -90,6 +90,10 @@ export const PERMISSION_RULES: Readonly<Record<Permission, PermissionRule>> = Ob
   // Users & Administration
   "users.read": { module: "users", requiredActions: ["read"] },
   "users.manage": { module: "users", requiredActions: ["create", "update", "delete"] },
+  // Audit governance is its own permission-only module: a dashboard read must
+  // never authorize reading or erasing the security log.
+  "audit.view": { module: "audit", requiredActions: ["read"] },
+  "audit.manage": { module: "audit", requiredActions: ["create", "update", "delete"] },
 
   // System & Settings
   "analytics.view": {

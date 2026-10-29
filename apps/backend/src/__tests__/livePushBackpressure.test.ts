@@ -81,7 +81,7 @@ describe("WebSocket LivePush Backpressure & Heartbeat", () => {
 
     expect(socket.sendMock).not.toHaveBeenCalled();
     expect(socket.terminateMock).not.toHaveBeenCalled();
-    unregister();
+    unregister?.();
   });
 
   it("terminates connection when socket buffer exceeds 512KB hard ceiling", () => {
@@ -92,7 +92,7 @@ describe("WebSocket LivePush Backpressure & Heartbeat", () => {
 
     expect(socket.sendMock).not.toHaveBeenCalled();
     expect(socket.terminateMock).toHaveBeenCalled();
-    unregister();
+    unregister?.();
   });
 
   it("sends message when buffer is well below threshold", () => {
@@ -108,7 +108,7 @@ describe("WebSocket LivePush Backpressure & Heartbeat", () => {
       type: "collection",
       key: "students",
     });
-    unregister();
+    unregister?.();
   });
 
   it("proactively terminates socket when pong deadline expires (10s)", () => {
@@ -171,8 +171,8 @@ describe("WebSocket Tenant Isolation & Egress Partitioning", () => {
     expect(socketAlpha.sendMock).toHaveBeenCalledTimes(1);
     expect(socketBeta.sendMock).toHaveBeenCalledTimes(1);
 
-    unregAlpha();
-    unregBeta();
+    unregAlpha?.();
+    unregBeta?.();
   });
 
   it("sanitizes job event payloads on egress", () => {
@@ -193,7 +193,7 @@ describe("WebSocket Tenant Isolation & Egress Partitioning", () => {
     expect(msg.jobId).toBe("job-123");
     expect(msg.progress.percent).toBe(50);
 
-    unreg();
+    unreg?.();
   });
 
   it("broadcasts object updates (settings, branding, fields) to tenant sockets", () => {
@@ -212,6 +212,6 @@ describe("WebSocket Tenant Isolation & Egress Partitioning", () => {
       key: "settings",
     });
 
-    unreg();
+    unreg?.();
   });
 });

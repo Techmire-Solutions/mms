@@ -25,6 +25,7 @@ export const QUEUE_SETTINGS: Record<string, QueueConcurrencyAndPriority> = {
 };
 
 export { getBullMQConnectionOptions } from "../../lib/redis.js";
+export { getQueuePrefix } from "../../lib/redisBullMQ.js";
 
 export const WORKER_HEAP_LIMIT_BYTES =
   (Number(process.env.WORKER_HEAP_LIMIT_MB) || 512) * 1024 * 1024;

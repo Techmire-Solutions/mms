@@ -12,10 +12,10 @@ export type HeaderTarget = {
 /**
  * Upload categories rendered before a session exists: the apex/login chrome and
  * the workspace logo shown on the sign-in page (`tenants/<t>/branding/...`).
- * Everything else under `/uploads/` — exports, attachments, general images —
- * is session-gated.
+ * Avatars are personal staff/student photos and stay session-gated; everything
+ * else under `/uploads/` — exports, attachments, general images — is too.
  */
-const PUBLIC_UPLOAD_CATEGORIES = new Set(["branding", "avatars"]);
+const PUBLIC_UPLOAD_CATEGORIES = new Set(["branding"]);
 
 /** `/uploads/tenants/<tenant>/…` — everything below this is tenant data. */
 const TENANT_UPLOAD_PREFIX = "tenants/";
@@ -35,6 +35,13 @@ export function setStaticAssetHeaders(reply: HeaderTarget, filePath: string): vo
   if (cleanPath.includes("/attachments/")) {
     reply.header("Content-Type", "application/octet-stream");
     reply.header("Content-Disposition", "attachment");
+    // Attachments are pupil/finance documents even at the root level (no
+    // `tenants/<t>/` segment). This branch returns before the tenant rule, so
+    // the private cache contract must be applied HERE explicitly — otherwise
+    // @fastify/static/send leaves `Cache-Control: public, max-age=0` and a
+    // shared proxy may store the file.
+    reply.header("Cache-Control", "private, no-store");
+    reply.header("Vary", "Authorization, Accept-Encoding");
     return;
   }
 
@@ -104,8 +111,8 @@ export function uploadPathFromUrl(url: string): string | null {
 }
 
 /**
- * Branding/avatars are rendered before sign-in and stay public, whichever
- * directory layout they use (`branding/x.png` or `tenants/<t>/branding/x.png`).
+ * Branding is rendered before sign-in and stays public, whichever directory
+ * layout it uses (`branding/x.png` or `tenants/<t>/branding/x.png`).
  */
 export function isPublicUploadPath(pathBelowUploads: string): boolean {
   const segments = pathBelowUploads.split("/").filter(Boolean);
@@ -127,7 +134,7 @@ export function tenantSegmentOf(pathBelowUploads: string): string | null {
  *
  * Uploads used to be served by a bare `@fastify/static` registration: no auth,
  * `Cache-Control: public`, and exempt from rate limiting — so any leaked export
- * URL was downloadable by anyone, and proxy-cached. Now only branding/avatars are
+ * URL was downloadable by anyone, and proxy-cached. Now only branding is
  * public; everything else needs a valid session, and tenant-scoped paths must
  * match the caller's tenant.
  */
@@ -160,6 +167,9 @@ export async function registerStaticAssets(app: FastifyInstance): Promise<void> 
       prefix: "/uploads/",
       decorateReply: false,
       preCompressed: true,
+      // Never serve dotfiles (.env, editor leftovers): a stray dotfile in the
+      // uploads root must not become downloadable.
+      dotfiles: "deny",
       setHeaders(res, path) {
         setStaticAssetHeaders(res, path);
       },

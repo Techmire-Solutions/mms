@@ -9023,6 +9023,7 @@ export const APP_TRANSLATIONS_FA: Partial<Record<AppTranslationKey, string>> = {
   "users.permissions.systemBadge": "سیستمی",
   "users.permissions.unsaved": "تغییرات ذخیره نشده",
   "users.rbac.tasksAssignAnywhere": "وظایف — واگذاری در هر جا",
+  "users.rbac.audit": "گزارش حسابرسی و امنیت",
   "users.errors.cannotAssignSuperAdminRole": "فقط مدیر کل می‌تواند نقش مدیر کل را اختصاص دهد.",
   "users.errors.cannotDeleteSuperAdmin": "امکان حذف کاربر مدیر کل وجود ندارد.",
   "users.errors.cannotModifySuperAdmin": "امکان ویرایش یا تغییر نقش کاربر مدیر کل وجود ندارد.",

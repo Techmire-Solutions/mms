@@ -25,3 +25,8 @@ export const {
   getLatestVerificationRun,
   listMerkleRoots,
 } = auditQueryUseCases;
+
+/** Platform-only checkpoint listing (cross-tenant); not exposed on tenant routes. */
+export async function listGlobalMerkleRoots(limit = 20) {
+  return auditQueryAdapter.listGlobalMerkleRoots(limit);
+}

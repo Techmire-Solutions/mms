@@ -18,6 +18,8 @@ import {
   queryMessagingMetrics,
   softDeleteActiveMessageLogs,
   restoreArchivedMessageLog,
+  claimMessageLogForDelivery,
+  updateMessageLogDeliveryStatus,
 } from "../../db/repositories/messagingRepository.js";
 import {
   getWhatsappIntegrationRow,
@@ -48,6 +50,8 @@ export const messagingRepository: MessagingRepository = {
   queryMessagingMetrics,
   softDeleteActiveMessageLogs,
   restoreArchivedMessageLog,
+  claimMessageLogForDelivery,
+  updateMessageLogDeliveryStatus,
   getWhatsappIntegrationRow,
   upsertWhatsappIntegrationConfigRow,
   upsertWhatsappIntegrationSecretsRow,

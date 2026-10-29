@@ -64,8 +64,12 @@ export async function applyDrizzleMigrations(): Promise<{ migrationsFolder: stri
   };
 
   await migrateClient.query(`SELECT set_config('app.rls_bypass', 'on', false)`);
+  // Bound every migration's lock wait centrally: applied migrations are
+  // forward-only and some predate the lock_timeout preamble.
+  await migrateClient.query(`SET lock_timeout = '2s'`);
   const migrateDb = drizzle(migrateClient, { schema });
   await migrate(migrateDb, { migrationsFolder });
+  await migrateClient.query(`SET lock_timeout = 0`);
   await ensureFacultyContactIndex(migrateClient);
 
   return { migrationsFolder };

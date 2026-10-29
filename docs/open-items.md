@@ -318,3 +318,19 @@ values, the axe sweep now audits all 20 tenant routes (two violations found and 
 `set-state-in-effect` backlog was burned down with the rule promoted to `error`. Remaining open
 items are the localStorage migration (blocked on endpoints) and the data-layer debt above.
 
+
+## 2026-10-29 backend review
+
+Full report: [backend-review-2026-10-29.md](./backend-review-2026-10-29.md). All findings were
+implemented on `fix/backend-review-hardening`; the review document tracks each one. Deliberate
+follow-ups:
+
+- **Trgm indexes are an operator step.** Drizzle migrations run in one transaction, so the new
+  contact/student expression indexes are in `apps/backend/scripts/sql/0197_search_indexes_concurrent.sql`
+  and are applied with `create-index-concurrently.ts --file` after the migration.
+- **Snapshot ordering is partial.** Sixteen high-volume loaders got `ORDER BY id`; the rest rely on
+  the REPEATABLE READ snapshot plus the duplicate-id abort in `streamingSnapshotProducer`.
+- **XLSX/JSON exports are capped at 50k rows**, not streamed yet (CSV is streamed).
+- **Legacy crypto/erasure rows without a workspace** are hidden by RLS; an operator cleanup is
+  still outstanding.
+- **Historical audit state is plaintext**; only new events carrying a `subjectId` are encrypted.

@@ -17,6 +17,10 @@ export type DbClient = NodePgDatabase<typeof schema>;
 
 export interface TransactionOptions extends TenantScopeOptions {
   statementTimeoutMs?: number;
+  /** Overrides `idle_in_transaction_session_timeout`; long snapshot streams pass a larger budget. */
+  idleTimeoutMs?: number;
+  /** Long-lived snapshot streams use `repeatable read`; default is the connection default. */
+  isolation?: "read committed" | "repeatable read";
 }
 
 const txStorage = new AsyncLocalStorage<DbClient>();
@@ -115,7 +119,7 @@ export interface LongLivedTenantTransaction {
  */
 export function beginLongLivedTenantTransaction(
   tenantId: string,
-  options?: { statementTimeoutMs?: number },
+  options?: TransactionOptions,
 ): Promise<LongLivedTenantTransaction>;
 /**
  * Opens a long-lived transaction whose tenant MAY be absent (whole-database
@@ -124,7 +128,7 @@ export function beginLongLivedTenantTransaction(
  */
 export function beginLongLivedTenantTransaction(
   tenantId: string | null | undefined,
-  options: { statementTimeoutMs?: number; allowGlobal: boolean },
+  options: TransactionOptions & { allowGlobal: boolean },
 ): Promise<LongLivedTenantTransaction>;
 export async function beginLongLivedTenantTransaction(
   tenantId: string | null | undefined,
@@ -142,7 +146,9 @@ export async function beginLongLivedTenantTransaction(
 
   let began = false;
   try {
-    await client.query("BEGIN");
+    await client.query(
+      options.isolation === "repeatable read" ? "BEGIN ISOLATION LEVEL REPEATABLE READ" : "BEGIN",
+    );
     began = true;
     // RLS guards + statement/idle timeouts are transaction-scoped (SET LOCAL), so
     // applying them right after BEGIN scopes them to the whole open transaction.

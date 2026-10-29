@@ -10,6 +10,10 @@ import { runWithTenant } from "../lib/tenantContext.js";
  */
 const mockAccountingRepo = vi.hoisted(() => ({ findEntryIdBySource: vi.fn() }));
 const mockInvoiceLookup = vi.hoisted(() => ({ findInvoiceById: vi.fn() }));
+const mockRecordModernAuditEvent = vi.hoisted(() => vi.fn().mockResolvedValue(undefined));
+vi.mock("../services/auditTrailService.js", () => ({
+  recordModernAuditEvent: mockRecordModernAuditEvent,
+}));
 
 vi.mock("../db/repositories/accountingRepository.js", () => mockAccountingRepo);
 vi.mock("../finance/repository/financeRepositoryAdapter.js", async (importOriginal) => {

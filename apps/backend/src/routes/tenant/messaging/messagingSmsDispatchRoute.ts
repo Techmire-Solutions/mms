@@ -2,6 +2,7 @@ import type { FastifyPluginAsync } from "fastify";
 import type { Message, User } from "@mms/shared";
 import { messagingSmsDispatchSchema, personalizeMessage } from "@mms/shared";
 import { randomUUID } from "node:crypto";
+import { buildBackgroundJobId } from "../../../lib/backgroundJobIds.js";
 import { getRequestTenant } from "../../../lib/tenantContext.js";
 import { sendDatabaseError, sendForbidden } from "../../../lib/httpErrors.js";
 import { MESSAGING_LOG_RATE_LIMIT } from "../../../lib/rateLimitConfig.js";
@@ -62,7 +63,7 @@ export const messagingSmsDispatchRoute: FastifyPluginAsync = async (fastify) => 
       // Queued path dedupe mirrors messagingExportRoutes: the client key (if
       // any) becomes the job id and a digest of the dispatch body is stored in
       // the payload so retries replay or 409 instead of double-dispatching.
-      const jobId = idempotencyKey || randomUUID();
+      const jobId = buildBackgroundJobId(tenantSubdomain, userId, idempotencyKey);
       const existing = await getUserBackgroundJob(userId, jobId);
       if (existing) {
         const payload = await getUserBackgroundJobPayload(userId, jobId);

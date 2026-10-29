@@ -6,6 +6,7 @@ import type {
   WhatsappIntegrationSecrets,
 } from "@mms/shared";
 import type {
+  MessageLogClaim,
   MessageLogsFilterQuery,
   MessageLogsPageResult,
 } from "../../db/repositories/messagingRepository.js";
@@ -53,6 +54,15 @@ export interface MessagingRepository {
   softDeleteActiveMessageLogs(tenant: string): Promise<void>;
   /** Restores archived logs (`ids: null` = restore all); returns the restored count. */
   restoreArchivedMessageLog(tenant: string, userId: string, ids: string[] | null): Promise<number>;
+  /** Atomically claims one campaign recipient before the gateway send. */
+  claimMessageLogForDelivery(tenant: string, claim: MessageLogClaim): Promise<boolean>;
+  /** Persists a campaign delivery outcome per recipient. */
+  updateMessageLogDeliveryStatus(
+    tenant: string,
+    id: string,
+    status: "sent" | "failed",
+    errorMessage?: string | null,
+  ): Promise<void>;
 
   // WhatsApp Integrations
   getWhatsappIntegrationRow(tenant: string): Promise<WhatsappIntegrationRow | null>;

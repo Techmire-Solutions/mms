@@ -39,14 +39,14 @@ describe("upload path parsing", () => {
 });
 
 describe("public vs session-gated uploads", () => {
-  it("keeps pre-auth chrome public in both layouts", () => {
+  it("keeps pre-auth branding public in both layouts", () => {
     expect(isPublicUploadPath("branding/platform-logo.webp")).toBe(true);
-    expect(isPublicUploadPath("avatars/user-1.webp")).toBe(true);
     expect(isPublicUploadPath("tenants/demo/branding/logo.webp")).toBe(true);
-    expect(isPublicUploadPath("tenants/demo/avatars/u.webp")).toBe(true);
   });
 
-  it("gates tenant data and general images", () => {
+  it("requires a session for avatars and every other upload", () => {
+    expect(isPublicUploadPath("avatars/user-1.webp")).toBe(false);
+    expect(isPublicUploadPath("tenants/demo/avatars/u.webp")).toBe(false);
     expect(isPublicUploadPath("tenants/demo/exports/students.csv")).toBe(false);
     expect(isPublicUploadPath("tenants/demo/images/scan.webp")).toBe(false);
     expect(isPublicUploadPath("tenants/demo/attachments/report.pdf")).toBe(false);
@@ -78,6 +78,20 @@ describe("cache headers", () => {
     const { headers, reply } = headerSink();
     setStaticAssetHeaders(reply, "/srv/uploads/tenants/demo/exports/students.csv");
     expect(headers["Cache-Control"]).toBe("private, no-store");
+  });
+
+  it("sets the private cache contract on tenant and root-level attachments", () => {
+    for (const path of [
+      "/srv/uploads/tenants/demo/attachments/report.pdf",
+      "/srv/uploads/attachments/legacy.pdf",
+    ]) {
+      const { headers, reply } = headerSink();
+      setStaticAssetHeaders(reply, path);
+      expect(headers["Cache-Control"]).toBe("private, no-store");
+      expect(headers["Vary"]).toContain("Authorization");
+      expect(headers["Content-Type"]).toBe("application/octet-stream");
+      expect(headers["Content-Disposition"]).toBe("attachment");
+    }
   });
 
   it("still allows public caching for branding", () => {

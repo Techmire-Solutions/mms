@@ -71,8 +71,17 @@ export const authSessionRoutes: FastifyPluginAsync = async (fastify) => {
         const decoded = fastify.jwt.decode(accessToken) as {
           jti?: string;
           id?: string | number;
+          exp?: number;
         } | null;
-        if (decoded?.jti) await revokeToken(decoded.jti);
+        if (decoded?.jti) {
+          // Keep the marker at least as long as the token can still be
+          // presented. The old fixed 15-minute TTL expired long before a
+          // default 60-minute access token (up to 24 h), so a stolen token
+          // became valid again after sign-out.
+          const nowSeconds = Math.floor(Date.now() / 1000);
+          const remainingSeconds = typeof decoded.exp === "number" ? decoded.exp - nowSeconds : 0;
+          await revokeToken(decoded.jti, Math.max(60, remainingSeconds));
+        }
         if (!userId && decoded?.id !== undefined) userId = String(decoded.id);
       } catch {
         // Best effort — an unverifiable token cannot be revoked by jti.

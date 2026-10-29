@@ -445,7 +445,7 @@ describe("users REST routes", () => {
       url: "/api/users/activity",
       headers: {
         host: "demo.localhost",
-        authorization: `Bearer ${teacherToken(app)}`, // activity log is read-accessible to staff
+        authorization: `Bearer ${adminToken(app)}`,
       },
     });
     expect(res.statusCode).toBe(200);
@@ -461,14 +461,21 @@ describe("users REST routes", () => {
       url: "/api/users/activity/bulk",
       headers: {
         host: "demo.localhost",
-        authorization: `Bearer ${teacherToken(app)}`,
+        authorization: `Bearer ${adminToken(app)}`,
         "content-type": "application/json",
       },
       body: JSON.stringify([sampleLog]),
     });
     expect(res.statusCode).toBe(200);
     expect(res.json()).toEqual({ logs: [sampleLog] });
-    expect(mockUpsertLogs).toHaveBeenCalledWith([sampleLog]);
+    expect(mockUpsertLogs).toHaveBeenCalledWith([
+      expect.objectContaining({
+        id: sampleLog.id,
+        userId: "u-admin",
+        userName: "Admin",
+        ip: "127.0.0.1",
+      }),
+    ]);
     await app.close();
   });
 

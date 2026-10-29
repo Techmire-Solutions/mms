@@ -48,6 +48,7 @@ export async function listBatchesByWorkspace(
       })
       .from(hasanatBatches)
       .where(eq(hasanatBatches.workspaceSubdomain, subdomain))
+      .orderBy(hasanatBatches.id)
       .limit(limit)
       .offset(offset);
     return rows.map(batchRowToRecord);

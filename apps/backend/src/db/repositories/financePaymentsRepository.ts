@@ -74,6 +74,7 @@ export async function listPaymentsByWorkspace(
       })
       .from(financePayments)
       .where(and(...conditions))
+      .orderBy(financePayments.id)
       .limit(limit)
       .offset(offset);
     return rows.map(paymentRowToRecord);

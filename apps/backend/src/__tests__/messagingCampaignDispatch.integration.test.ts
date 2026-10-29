@@ -319,11 +319,11 @@ describe("Messaging Campaign Dispatch Routes", () => {
 
       expect(res.statusCode).toBe(202);
       const body = JSON.parse(res.body);
-      expect(body.job.id).toBe("email-dispatch-que-01");
+      expect(body.job.id).toBe("demo:u-admin:email-dispatch-que-01");
       const [tenant, userId, job, jobPayload] = mockEnqueueBackgroundJob.mock.calls[0];
       expect(tenant).toBe("demo");
       expect(userId).toBe("u-admin");
-      expect(job.id).toBe("email-dispatch-que-01");
+      expect(job.id).toBe("demo:u-admin:email-dispatch-que-01");
       expect(jobPayload).toEqual(
         expect.objectContaining({
           channel: "email",

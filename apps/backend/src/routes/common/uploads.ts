@@ -11,13 +11,61 @@ import { authenticateUploader } from "../../middleware/authenticateUploader.js";
 import { getRequestTenant } from "../../lib/tenantContext.js";
 import { saveUploadedImage } from "../../services/imageAssetService.js";
 import { replyValidationError } from "../../lib/zodRequest.js";
+import { sendForbidden } from "../../lib/httpErrors.js";
+
+interface UploadLogContext {
+  id: string;
+  log: { error: (obj: Record<string, unknown>, message: string) => void };
+}
+
+/**
+ * Normalises an upload-handler failure.
+ *
+ * 4xx domain errors (size, mime, validation) keep their actionable message.
+ * 5xx errors (ENOSPC, EACCES, filesystem paths) are logged server-side and
+ * replaced with the same generic message + request id used by the global error
+ * handler — this was the one place that echoed raw infrastructure detail.
+ */
+export function buildUploadErrorResponse(
+  request: UploadLogContext,
+  error: unknown,
+  fallbackMessage: string,
+): { statusCode: number; body: Record<string, unknown> } {
+  const err = error as Error & { statusCode?: number; type?: string };
+  const statusCode = err.statusCode ?? 500;
+
+  if (statusCode >= 500) {
+    request.log.error({ err, requestId: request.id }, "upload handler failed");
+    return {
+      statusCode,
+      body: {
+        type: "server_error",
+        message: `Internal server error. Reference: ${request.id}`,
+        requestId: request.id,
+      },
+    };
+  }
+
+  return {
+    statusCode,
+    body: {
+      type: err.type ?? (statusCode === 400 ? "validation_error" : "server_error"),
+      message: err.message || fallbackMessage,
+    },
+  };
+}
 
 export default async function uploadRoutes(
   fastify: FastifyInstance,
   _options: FastifyPluginOptions,
 ): Promise<void> {
   await fastify.register(multipart, {
-    limits: { fileSize: 10 * 1024 * 1024 }, // 10 MB
+    limits: {
+      fileSize: 10 * 1024 * 1024, // 10 MB
+      files: 1,
+      parts: 4,
+      fieldSize: 1 * 1024 * 1024,
+    },
   });
 
   fastify.post<{ Querystring: { purpose?: string } }>(
@@ -35,12 +83,12 @@ export default async function uploadRoutes(
         const url = await saveUploadedImage(file.file, file.mimetype, purpose, tenant);
         return reply.send({ url, purpose });
       } catch (error: unknown) {
-        const err = error as Error & { statusCode?: number; type?: string };
-        const statusCode = err.statusCode ?? 500;
-        return reply.status(statusCode).send({
-          type: err.type ?? (statusCode === 400 ? "validation_error" : "server_error"),
-          message: err.message || "Failed to upload image",
-        });
+        const { statusCode, body } = buildUploadErrorResponse(
+          request,
+          error,
+          "Failed to upload image",
+        );
+        return reply.status(statusCode).send(body);
       }
     },
   );
@@ -48,15 +96,22 @@ export default async function uploadRoutes(
   fastify.post("/attachment", { preHandler: authenticateUploader }, async (request, reply) => {
     let filepath: string | undefined;
     try {
+      // Attachments are always tenant data. A root-level `/uploads/attachments/`
+      // file has no tenant segment and would be readable by every authenticated
+      // workspace, so creation without a bound tenant is rejected outright.
+      const tenant = getRequestTenant()?.trim().toLowerCase();
+      if (!tenant) {
+        return sendForbidden(reply, "Tenant context is required for attachments");
+      }
+
       const file = await request.file();
       if (!file) {
         return replyValidationError(reply, "File is required");
       }
 
-      const tenant = getRequestTenant()?.trim().toLowerCase();
       const MAX_ATTACHMENT_SIZE = 10 * 1024 * 1024; // 10 MB
       const root = resolveUploadsRoot();
-      const dir = tenant ? join(root, "tenants", tenant, "attachments") : join(root, "attachments");
+      const dir = join(root, "tenants", tenant, "attachments");
       await mkdir(dir, { recursive: true });
 
       // Sanitize filename to prevent directory traversal
@@ -97,9 +152,7 @@ export default async function uploadRoutes(
         return replyValidationError(reply, "File size exceeds limit of 10 MB");
       }
 
-      const url = tenant
-        ? `/uploads/tenants/${tenant}/attachments/${filename}`
-        : `/uploads/attachments/${filename}`;
+      const url = `/uploads/tenants/${tenant}/attachments/${filename}`;
       return reply.send({
         url,
         name: file.filename,
@@ -110,12 +163,12 @@ export default async function uploadRoutes(
       if (filepath) {
         await unlink(filepath).catch(() => {});
       }
-      const err = error as Error & { statusCode?: number; type?: string };
-      const statusCode = err.statusCode ?? 500;
-      return reply.status(statusCode).send({
-        type: err.type ?? (statusCode === 400 ? "validation_error" : "server_error"),
-        message: err.message || "Failed to upload attachment",
-      });
+      const { statusCode, body } = buildUploadErrorResponse(
+        request,
+        error,
+        "Failed to upload attachment",
+      );
+      return reply.status(statusCode).send(body);
     }
   });
 }

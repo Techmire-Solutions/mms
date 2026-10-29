@@ -8979,6 +8979,7 @@ export const APP_TRANSLATIONS_UR: Record<AppTranslationKey, string> = {
   "users.permissions.systemBadge": "سسٹم",
   "users.permissions.unsaved": "غیر محفوظ تبدیلیاں",
   "users.rbac.tasksAssignAnywhere": "ٹاسکس — کہیں بھی تفویض",
+  "users.rbac.audit": "آڈٹ اور سیکیورٹی لاگ",
   "users.errors.cannotAssignSuperAdminRole":
     "صرف سپر ایڈمن ہی سپر ایڈمن کا کردار تفویض کر سکتا ہے۔",
   "users.errors.cannotDeleteSuperAdmin": "سپر ایڈمن صارف کو حذف نہیں کیا جا سکتا۔",

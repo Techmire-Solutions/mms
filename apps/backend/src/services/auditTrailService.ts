@@ -8,30 +8,19 @@ import {
   type AuditActionType,
 } from "@mms/shared";
 import { activeDb } from "../db/dbConnection.js";
+import { hasActiveTransaction } from "../db/dbTransactions.js";
+import { withTenant, withTenantRead } from "../db/tenant-context.js";
 import { auditTrailEvents } from "../db/schema/auditTrail.js";
 import { getCurrentSpanContext, formatTraceParent } from "../config/telemetry.js";
-import { getRequestUserId, getRequestAuditContext } from "../lib/tenantContext.js";
+import {
+  getRequestTenant,
+  getRequestUserId,
+  getRequestAuditContext,
+} from "../lib/tenantContext.js";
+import { logger } from "../lib/logger.js";
+import { sanitizeAuditState } from "../lib/auditState.js";
 
-/**
- * Maps an action string to a canonical `AuditActionType`.
- */
-export function mapActionStringToAuditType(action: string): AuditActionType {
-  const lower = action.toLowerCase();
-  if (lower.includes("create") || lower.includes("add") || lower.includes("insert"))
-    return "CREATE";
-  if (
-    lower.includes("delete") ||
-    lower.includes("remove") ||
-    lower.includes("purge") ||
-    lower.includes("archive")
-  )
-    return "DELETE";
-  if (lower.includes("login") || lower.includes("auth")) return "LOGIN";
-  if (lower.includes("restore")) return "RESTORE";
-  if (lower.includes("view") || lower.includes("read") || lower.includes("export")) return "VIEW";
-  if (lower.includes("redact")) return "REDACT";
-  return "UPDATE";
-}
+export { mapActionStringToAuditType, sanitizeAuditState } from "../lib/auditState.js";
 
 export interface RecordModernAuditInput {
   workspaceSubdomain: string;
@@ -50,48 +39,52 @@ export interface RecordModernAuditInput {
   newState?: unknown;
   minimizeDelta?: boolean;
   transactionTimestamp?: Date;
-}
-
-/** Fields to automatically strip at capture time to minimize PII and avoid secret leakage. */
-const REDACTED_KEYS = new Set([
-  "password",
-  "passwordHash",
-  "password_hash",
-  "salt",
-  "secret",
-  "token",
-  "refreshToken",
-  "refresh_token",
-  "jwt",
-  "apiKey",
-  "api_key",
-]);
-
-/**
- * Minimizes state payloads at capture time: strips credentials and unneeded heavy secrets.
- */
-export function sanitizeAuditState(state: unknown): unknown {
-  if (state === null || typeof state !== "object") {
-    return state;
-  }
-  if (Array.isArray(state)) {
-    return state.map(sanitizeAuditState);
-  }
-
-  const sanitized: Record<string, unknown> = {};
-  for (const [key, value] of Object.entries(state as Record<string, unknown>)) {
-    if (REDACTED_KEYS.has(key)) {
-      sanitized[key] = "[REDACTED_SECRET]";
-    } else if (typeof value === "object" && value !== null) {
-      sanitized[key] = sanitizeAuditState(value);
-    } else {
-      sanitized[key] = value;
-    }
-  }
-  return sanitized;
+  /**
+   * Person/record whose subject key encrypts `oldState`/`newState` at capture.
+   * When set, destroying that key (right-to-erasure) makes the stored state
+   * unreadable while the hash chain stays intact.
+   */
+  subjectId?: string;
 }
 
 export type DbOrTransaction = ReturnType<typeof activeDb>;
+
+export interface AuditShardHead {
+  hash: string;
+  timestamp: Date | null;
+}
+
+/**
+ * Retrieves the latest head hash/timestamp for a tenant workspace shard.
+ * Returns GENESIS with a null timestamp if no events exist in this shard.
+ */
+export async function getShardHead(
+  workspaceSubdomain: string,
+  executor?: DbOrTransaction,
+): Promise<AuditShardHead> {
+  const subdomain = workspaceSubdomain.trim().toLowerCase();
+  if (!executor && !hasActiveTransaction()) {
+    return withTenantRead(subdomain, (tx) =>
+      getShardHead(subdomain, tx as unknown as DbOrTransaction),
+    );
+  }
+  const db = executor ?? activeDb();
+  const latestRows = await db
+    .select({
+      hashCurrent: auditTrailEvents.hashCurrent,
+      transactionTimestamp: auditTrailEvents.transactionTimestamp,
+    })
+    .from(auditTrailEvents)
+    .where(eq(auditTrailEvents.workspaceSubdomain, subdomain))
+    .orderBy(desc(auditTrailEvents.transactionTimestamp), desc(auditTrailEvents.id))
+    .limit(1);
+
+  const head = latestRows[0];
+  return {
+    hash: head?.hashCurrent ?? GENESIS_AUDIT_HASH,
+    timestamp: head?.transactionTimestamp ?? null,
+  };
+}
 
 /**
  * Retrieves the latest head hash for a tenant workspace shard.
@@ -101,65 +94,43 @@ export async function getLatestShardHash(
   workspaceSubdomain: string,
   executor: DbOrTransaction = activeDb(),
 ): Promise<string> {
-  const subdomain = workspaceSubdomain.trim().toLowerCase();
-  const latestRows = await executor
-    .select({
-      hashCurrent: auditTrailEvents.hashCurrent,
-    })
-    .from(auditTrailEvents)
-    .where(eq(auditTrailEvents.workspaceSubdomain, subdomain))
-    .orderBy(desc(auditTrailEvents.transactionTimestamp), desc(auditTrailEvents.id))
-    .limit(1);
-
-  return latestRows[0]?.hashCurrent ?? GENESIS_AUDIT_HASH;
+  return (await getShardHead(workspaceSubdomain, executor)).hash;
 }
 
-/**
- * Records a modern 5-dimension audit event atomically inside an existing database transaction (Outbox),
- * or directly against the active database pool when outside a transaction.
- * Enforces RFC 8785 canonical JSON, sharded cryptographic hash chaining, and capture-time minimization.
- */
-export async function recordModernAuditEvent(
-  input: RecordModernAuditInput,
-): Promise<{ id?: number; hashPrevious: string; hashCurrent: string; canonicalPayload: string }>;
-export async function recordModernAuditEvent(
-  tx: DbOrTransaction,
-  input: RecordModernAuditInput,
-): Promise<{ id?: number; hashPrevious: string; hashCurrent: string; canonicalPayload: string }>;
-export async function recordModernAuditEvent(
-  first: DbOrTransaction | RecordModernAuditInput,
-  second?: RecordModernAuditInput,
-): Promise<{
+interface AppendResult {
   id?: number;
   hashPrevious: string;
   hashCurrent: string;
   canonicalPayload: string;
-}> {
-  let tx: DbOrTransaction;
-  let input: RecordModernAuditInput;
+}
 
-  if (second !== undefined) {
-    tx = first as DbOrTransaction;
-    input = second;
-  } else {
-    tx = activeDb();
-    input = first as RecordModernAuditInput;
-  }
-
+/**
+ * Appends an event inside the caller's transaction. The caller is responsible for
+ * transaction scope; this is the only place the hash chain ordering is decided.
+ */
+async function appendAuditEvent(
+  tx: DbOrTransaction,
+  input: RecordModernAuditInput,
+): Promise<AppendResult> {
   const subdomain = input.workspaceSubdomain.trim().toLowerCase();
-  const timestamp = input.transactionTimestamp ?? new Date();
-  const timestampIso = timestamp.toISOString();
+  if (!subdomain) throw new Error("[audit] workspaceSubdomain is required");
 
-  // 0. Serialize appends per shard. Without this, two concurrent transactions
-  // both read the same head hash and insert with the same `hash_previous`,
-  // forking the chain and making verification report BROKEN_CHAIN. The lock is
-  // transaction-scoped and released on commit/rollback.
+  // 0. Serialize appends per shard. The lock is transaction-scoped and released
+  // on commit/rollback, so the head read + insert are one critical section.
   if (typeof tx.execute === "function") {
     await tx.execute(sql`SELECT pg_advisory_xact_lock(hashtext(${`audit:${subdomain}`}))`);
   }
 
-  // 1. Sharded Hash Resolution: Fetch latest hash in this tenant shard
-  const hashPrevious = await getLatestShardHash(subdomain, tx);
+  // 1. Sharded head resolution. The ordering key is chosen *after* the lock, and
+  // clamped above the previous head so a clock step cannot invert the chain.
+  const head = await getShardHead(subdomain, tx);
+  const requested = input.transactionTimestamp ?? new Date();
+  const timestamp =
+    head.timestamp && requested.getTime() <= head.timestamp.getTime()
+      ? new Date(head.timestamp.getTime() + 1)
+      : requested;
+  const timestampIso = timestamp.toISOString();
+  const hashPrevious = head.hash;
 
   // 2. State Sanitization & RFC 8785 Canonicalization (with capture-time minimization)
   let rawOld = input.oldState;
@@ -173,8 +144,24 @@ export async function recordModernAuditEvent(
   const sanitizedOld = rawOld !== undefined ? sanitizeAuditState(rawOld) : null;
   const sanitizedNew = rawNew !== undefined ? sanitizeAuditState(rawNew) : null;
 
-  const oldStateCanonical = sanitizedOld !== null ? canonicalizeJson(sanitizedOld) : null;
-  const newStateCanonical = sanitizedNew !== null ? canonicalizeJson(sanitizedNew) : null;
+  let oldStateCanonical = sanitizedOld !== null ? canonicalizeJson(sanitizedOld) : null;
+  let newStateCanonical = sanitizedNew !== null ? canonicalizeJson(sanitizedNew) : null;
+
+  // 2b. Subject-state encryption keeps erasure meaningful for new events. The
+  // codec lives in its own module to avoid an audit <-> crypto service cycle.
+  if (input.subjectId) {
+    const { encryptSubjectAuditState } = await import("../lib/subjectKeyService.js");
+    oldStateCanonical = await encryptSubjectAuditState(
+      subdomain,
+      input.subjectId,
+      oldStateCanonical,
+    );
+    newStateCanonical = await encryptSubjectAuditState(
+      subdomain,
+      input.subjectId,
+      newStateCanonical,
+    );
+  }
 
   // 3. Correlation ID & User ID Resolution with AsyncLocalStorage fallback
   const reqContext = getRequestAuditContext();
@@ -214,7 +201,6 @@ export async function recordModernAuditEvent(
   const canonicalPayload = canonicalizeJson(payloadForHashing);
 
   // 5. Cryptographic Hash Construction
-  // hash_current = SHA-256(hash_previous + canonical_json(payload) + transaction_timestamp)
   const hashInput = formatAuditEventHashInput(hashPrevious, canonicalPayload, timestampIso);
   const hashCurrent = crypto.hash("sha256", hashInput, "hex");
 
@@ -238,7 +224,8 @@ export async function recordModernAuditEvent(
       newState: newStateCanonical,
       hashPrevious,
       hashCurrent,
-      verificationStatus: "VERIFIED",
+      // The row cannot assert its own verification: a verifier run records that.
+      verificationStatus: "PENDING",
       transactionTimestamp: timestamp,
     })
     .returning({ id: auditTrailEvents.id });
@@ -249,4 +236,62 @@ export async function recordModernAuditEvent(
     hashCurrent,
     canonicalPayload,
   };
+}
+
+/**
+ * Records a modern 5-dimension audit event.
+ *
+ * Always transactional: when the caller already owns a transaction the event
+ * joins it (Outbox rule); otherwise a tenant transaction is opened for the
+ * append. This is what makes `FORCE ROW LEVEL SECURITY` accept the insert and
+ * what lets a business mutation roll the audit row back with it.
+ */
+export async function recordModernAuditEvent(input: RecordModernAuditInput): Promise<AppendResult>;
+export async function recordModernAuditEvent(
+  tx: DbOrTransaction,
+  input: RecordModernAuditInput,
+): Promise<AppendResult>;
+export async function recordModernAuditEvent(
+  first: DbOrTransaction | RecordModernAuditInput,
+  second?: RecordModernAuditInput,
+): Promise<AppendResult> {
+  const input = (second ?? first) as RecordModernAuditInput;
+  const subdomain = input.workspaceSubdomain.trim().toLowerCase();
+  const requestTenant = getRequestTenant()?.trim().toLowerCase();
+
+  // Never let a bug write into another workspace's chain.
+  if (requestTenant && requestTenant !== subdomain) {
+    throw new Error(
+      `[audit] refusing to append to "${subdomain}" from a "${requestTenant}" request`,
+    );
+  }
+
+  if (second !== undefined) {
+    // The caller owns the executor; it must already be inside a transaction.
+    return appendAuditEvent(first as DbOrTransaction, input);
+  }
+
+  if (hasActiveTransaction()) {
+    return appendAuditEvent(activeDb(), input);
+  }
+
+  return withTenant(subdomain, (tenantTx) =>
+    appendAuditEvent(tenantTx as unknown as DbOrTransaction, input),
+  );
+}
+
+/**
+ * Best-effort append for read-side events (VIEW/EXPORT) where failing the read
+ * would hide the data the audit row describes. Mutations must use the throwing
+ * `recordModernAuditEvent`.
+ */
+export async function recordAuditEventSafely(input: RecordModernAuditInput): Promise<void> {
+  try {
+    await recordModernAuditEvent(input);
+  } catch (error) {
+    logger.error(
+      { err: error instanceof Error ? error.message : String(error), table: input.tableName },
+      "audit event append failed",
+    );
+  }
 }

@@ -1,67 +1,23 @@
-import type { FinanceRepository } from "../repository/financeRepository.js";
-import { financeRepository } from "../repository/financeRepositoryAdapter.js";
 import {
   dedupeTrimmedIds,
   getOutstandingAmountForInvoice,
-  invoiceTotalsFromLines,
   paymentRecordSchema,
-  resolveFamilyContactId,
   type Invoice,
-  type InvoiceCreateInput,
-  type InvoiceUpdate,
   type Payment,
   type PaymentCreateInput,
 } from "@mms/shared";
-import type { createGenericRelationalService } from "../../services/genericRelationalService.js";
 import { runInTransaction } from "../../db/database.js";
-import {
-  allocateNextInvoiceNumber,
-  replacePaymentAllocations,
-} from "../../db/repositories/financeBillingRepository.js";
-import {
-  tryPostInvoiceJournal,
-  tryPostPaymentJournal,
-} from "../../accounting/ledgerPosting/ledgerPostingService.js";
-import { findEntryIdBySource } from "../../db/repositories/accountingRepository.js";
+import { replacePaymentAllocations } from "../../db/repositories/financeBillingRepository.js";
+import { tryPostPaymentJournal } from "../../accounting/ledgerPosting/ledgerPostingService.js";
 import { getPostingRules } from "../../db/repositories/accountingLedgerOpsRepository.js";
-import { resolveDocumentFx, resolvePaymentFx } from "./financeDocumentFx.js";
-import { loadFinanceModulePreferences } from "../../services/financePreferencesService.js";
-
-const LEDGER_SENSITIVE_INVOICE_AMOUNTS = [
-  "finalAmt",
-  "discountAmt",
-  "lateFeeAmt",
-  "paidAmt",
-] as const satisfies readonly (keyof Invoice)[];
+import { resolvePaymentFx } from "./financeDocumentFx.js";
+import { recordPaymentAudit } from "./financeAuditEvents.js";
+import {
+  createFinanceInvoiceMutationOperations,
+  type FinanceInvoiceMutationDeps,
+} from "../financeInvoiceMutationOperations.js";
 
 const LEDGER_AFFECTING_INVOICE_STATUSES = new Set(["cancelled", "paid"]);
-
-async function assertInvoiceAmountsEditable(
-  tenant: string,
-  invoiceId: string,
-  incoming: Partial<Invoice>,
-): Promise<void> {
-  const touched = LEDGER_SENSITIVE_INVOICE_AMOUNTS.filter((field) => incoming[field] !== undefined);
-  if (touched.length === 0) return;
-
-  const existing = await financeRepository.findInvoiceById(tenant, invoiceId);
-  if (!existing) return;
-
-  const changed = touched.filter(
-    (field) => Number(incoming[field] ?? 0) !== Number(existing[field] ?? 0),
-  );
-  if (changed.length === 0) return;
-
-  const ledgerEntryId = await findEntryIdBySource(tenant, "invoice", invoiceId);
-  if (!ledgerEntryId) return;
-
-  throw Object.assign(
-    new Error(
-      `This invoice is posted to the ledger — reverse it with a credit note or adjusting entry instead of editing ${changed.join(", ")}`,
-    ),
-    { statusCode: 422, type: "validation_error" },
-  );
-}
 
 /**
  * Realized FX needs a gain/loss account whenever payments post to the ledger;
@@ -80,11 +36,7 @@ async function assertRealizedFxPostable(tenant: string, realizedFx: number | und
   }
 }
 
-export interface FinanceMutationOperationsDeps {
-  repo: FinanceRepository;
-  invoiceCrud: ReturnType<typeof createGenericRelationalService<Invoice>>;
-  requireTenant: () => string;
-}
+export type FinanceMutationOperationsDeps = FinanceInvoiceMutationDeps;
 
 export function createFinanceMutationOperations({
   repo,
@@ -92,73 +44,7 @@ export function createFinanceMutationOperations({
   requireTenant,
 }: FinanceMutationOperationsDeps) {
   return {
-    createInvoice: async (record: InvoiceCreateInput): Promise<Invoice> => {
-      const tenant = requireTenant();
-      const year = Number((record.dueDate ?? "").slice(0, 4)) || new Date().getFullYear();
-      let prefix = "INV";
-      try {
-        const prefs = await loadFinanceModulePreferences();
-        prefix = prefs?.invoicePrefix?.trim() || "INV";
-      } catch {
-        // Keep default prefix when preferences are unavailable.
-      }
-      const lines = (record.lines ?? []).map((line, index) => ({
-        ...line,
-        id: line.id ?? `il-${index + 1}`,
-      }));
-      const totals = lines.length > 0 ? invoiceTotalsFromLines(lines) : null;
-      const { findStudentsByIds } = await import("../../db/repositories/studentRepository.js");
-      const students = record.studentId ? await findStudentsByIds(tenant, [record.studentId]) : [];
-      if (record.studentId && (!students[0] || students[0].deletedAt)) {
-        const err = new Error("Referenced student is archived or does not exist");
-        (err as Error & { statusCode: number }).statusCode = 400;
-        throw err;
-      }
-      const fx = await resolveDocumentFx(tenant, record, record.dueDate);
-      const created = await invoiceCrud.create({
-        ...record,
-        currency: fx.currency,
-        exchangeRate: fx.exchangeRate,
-        studentId: students[0]?.id ?? record.studentId,
-        familyContactId: record.familyContactId ?? resolveFamilyContactId(students[0]),
-        invoiceNumber:
-          record.invoiceNumber || (await allocateNextInvoiceNumber(tenant, year, prefix)),
-        ...(totals
-          ? { baseFee: totals.baseFee, discountAmt: totals.discountAmt, finalAmt: totals.finalAmt }
-          : {}),
-        ...(lines.length > 0 ? { lines } : {}),
-      } as Invoice);
-      await tryPostInvoiceJournal(tenant, created);
-      return created;
-    },
-
-    updateInvoiceById: async (id: string, record: InvoiceUpdate): Promise<Invoice | null> => {
-      const tenant = requireTenant();
-      let resolvedStudentId = record.studentId;
-      if (record.studentId) {
-        const { findStudentsByIds } = await import("../../db/repositories/studentRepository.js");
-        const students = await findStudentsByIds(tenant, [record.studentId]);
-        if (!students[0] || students[0].deletedAt) {
-          const err = new Error("Referenced student is archived or does not exist");
-          (err as Error & { statusCode: number }).statusCode = 400;
-          throw err;
-        }
-        resolvedStudentId = students[0].id;
-      }
-      const { lines: rawLines, ...rest } = record;
-      const lines = rawLines
-        ? (rawLines.map((line, index) => ({
-            ...line,
-            id: line.id ?? `il-${index + 1}`,
-          })) as Invoice["lines"])
-        : undefined;
-      await assertInvoiceAmountsEditable(tenant, id, rest);
-      return invoiceCrud.updateById(id, {
-        ...rest,
-        ...(resolvedStudentId ? { studentId: resolvedStudentId } : {}),
-        ...(lines ? { lines } : {}),
-      });
-    },
+    ...createFinanceInvoiceMutationOperations({ repo, invoiceCrud, requireTenant }),
 
     bulkUpdateInvoicesStatus: async (
       ids: string[],
@@ -190,10 +76,37 @@ export function createFinanceMutationOperations({
       const resolvedId = String(record.id ?? `pay-${Date.now()}`);
       const normalizedPayment = paymentRecordSchema.parse({ ...record, id: resolvedId }) as Payment;
 
-      let settledInvoice: Invoice | null = null;
+      // Allocations and the ledger posting live in the same transaction as the
+      // payment and balance update: a posting failure must roll the whole
+      // payment back rather than leaving cash booked without a journal.
+      const settlePayment = async (payment: Payment, invoice?: Invoice) => {
+        const allocations = (record.allocations ?? []).map((allocation, index) => ({
+          ...allocation,
+          id: allocation.id ?? `alloc-${index + 1}`,
+        }));
+        await replacePaymentAllocations(
+          tenant,
+          payment.id,
+          allocations.length > 0
+            ? allocations
+            : [
+                {
+                  id: `alloc-${payment.id}`,
+                  invoiceId: payment.invoiceId,
+                  amount: payment.invoiceAmount ?? payment.amount,
+                },
+              ],
+        );
+        await tryPostPaymentJournal(tenant, payment, invoice);
+      };
+
       const savedPayment = await runInTransaction(async () => {
         const existingPayment = await repo.findPaymentById(tenant, resolvedId);
-        if (existingPayment) return existingPayment;
+        if (existingPayment) {
+          // Replay: re-affirm allocations and posting idempotently, keep the row.
+          await settlePayment(existingPayment);
+          return existingPayment;
+        }
 
         // Lock the invoice row: the balance check below is a read-modify-write on
         // `paidAmt`, and without FOR UPDATE two concurrent payments both pass the
@@ -211,7 +124,6 @@ export function createFinanceMutationOperations({
         const paymentFx = await resolvePaymentFx(tenant, invoice, normalizedPayment);
         Object.assign(normalizedPayment, paymentFx);
         await assertRealizedFxPostable(tenant, normalizedPayment.realizedFx);
-        settledInvoice = invoice;
 
         // Cross-currency payments settle the invoice in its own currency.
         const applied = normalizedPayment.invoiceAmount ?? normalizedPayment.amount;
@@ -230,27 +142,10 @@ export function createFinanceMutationOperations({
           method: normalizedPayment.method,
         });
         await repo.savePayment(tenant, normalizedPayment);
+        await settlePayment(normalizedPayment, invoice);
+        await recordPaymentAudit(tenant, normalizedPayment);
         return normalizedPayment;
       });
-
-      const allocations = (record.allocations ?? []).map((allocation, index) => ({
-        ...allocation,
-        id: allocation.id ?? `alloc-${index + 1}`,
-      }));
-      await replacePaymentAllocations(
-        tenant,
-        savedPayment.id,
-        allocations.length > 0
-          ? allocations
-          : [
-              {
-                id: `alloc-${savedPayment.id}`,
-                invoiceId: savedPayment.invoiceId,
-                amount: savedPayment.invoiceAmount ?? savedPayment.amount,
-              },
-            ],
-      );
-      await tryPostPaymentJournal(tenant, savedPayment, settledInvoice ?? undefined);
 
       const { broadcastTenantUpdate } = await import("../../lib/livePush.js");
       broadcastTenantUpdate(tenant, "collection", "finance_invoices");

@@ -1,5 +1,7 @@
 import { USER_EXPORT_ARTIFACTS_OBJECT_KEY } from "@mms/shared";
-import { fetchObject, persistObject } from "./dbSyncService.js";
+import { getObject, saveObject } from "../db/documentStoreObjects.js";
+import { withTenant } from "../db/tenant-context.js";
+import { getRequestTenant } from "../lib/tenantContext.js";
 import { deleteStorageObject } from "../config/storage.js";
 
 const STORAGE_KEY = USER_EXPORT_ARTIFACTS_OBJECT_KEY;
@@ -28,45 +30,80 @@ export interface ExportArtifactResult {
 }
 
 type UserArtifactMap = Record<string, Record<string, ExportArtifact>>;
+type BlobRef = { key: string; storageType: "s3" | "local" };
+type ArtifactMutation<T> = { result: T; blobs?: BlobRef[] };
 
-async function loadUserArtifactMap(): Promise<UserArtifactMap> {
-  const raw = await fetchObject(STORAGE_KEY);
+function parseArtifactMap(raw: unknown): UserArtifactMap {
   if (raw && typeof raw === "object" && !Array.isArray(raw)) {
     return raw as UserArtifactMap;
   }
   return {};
 }
 
-async function saveUserArtifactMap(artifactsByUser: UserArtifactMap): Promise<void> {
-  await persistObject(STORAGE_KEY, artifactsByUser);
+function artifactBlob(artifact: ExportArtifact | undefined): BlobRef | null {
+  if (!artifact?.key || !artifact.storageType) return null;
+  return { key: artifact.key, storageType: artifact.storageType };
 }
 
-async function pruneAllExpired(allArtifacts: UserArtifactMap): Promise<UserArtifactMap> {
+/**
+ * Drops expired artifacts and enforces the per-user artifact cap without
+ * performing I/O, so it can run while the registry row is locked.
+ */
+function pruneExpired(allArtifacts: UserArtifactMap): {
+  cleaned: UserArtifactMap;
+  droppedBlobs: BlobRef[];
+} {
   const now = Date.now();
   const cleaned: UserArtifactMap = {};
-  const droppedBlobs: Array<{ key: string; storageType: "s3" | "local" }> = [];
+  const droppedBlobs: BlobRef[] = [];
   for (const [user, artifacts] of Object.entries(allArtifacts)) {
     const entries = Object.entries(artifacts);
     const activeEntries = entries
-      .filter(([_, artifact]) => new Date(artifact.expiresAt).getTime() > now)
+      .filter(([, artifact]) => new Date(artifact.expiresAt).getTime() > now)
       .sort((a, b) => new Date(b[1].expiresAt).getTime() - new Date(a[1].expiresAt).getTime())
       .slice(0, MAX_USER_ARTIFACTS);
     const activeKeys = new Set(activeEntries.map(([key]) => key));
     for (const [key, artifact] of entries) {
-      if (!activeKeys.has(key) && artifact.key && artifact.storageType) {
-        droppedBlobs.push({ key: artifact.key, storageType: artifact.storageType });
+      if (!activeKeys.has(key)) {
+        const blob = artifactBlob(artifact);
+        if (blob) droppedBlobs.push(blob);
       }
     }
     if (activeEntries.length > 0) {
       cleaned[user] = Object.fromEntries(activeEntries);
     }
   }
-  // Best-effort: remove blobs for expired/evicted streamed artifacts so storage
-  // does not accumulate orphaned files.
-  await Promise.allSettled(
-    droppedBlobs.map((blob) => deleteStorageObject(blob.key, blob.storageType)),
-  );
-  return cleaned;
+  return { cleaned, droppedBlobs };
+}
+
+async function deleteBlobsBestEffort(blobs: BlobRef[]): Promise<void> {
+  if (blobs.length === 0) return;
+  await Promise.allSettled(blobs.map((blob) => deleteStorageObject(blob.key, blob.storageType)));
+}
+
+/**
+ * Serializes a load/prune/mutate/save cycle behind a row lock so concurrent
+ * workers cannot lose each other's artifact entries.
+ */
+async function mutateArtifactMap<T>(
+  mutate: (artifacts: UserArtifactMap) => ArtifactMutation<T>,
+): Promise<T> {
+  const tenant = getRequestTenant();
+  if (!tenant) {
+    throw new Error("Tenant context is required to persist export artifacts");
+  }
+
+  const committed = await withTenant(tenant, async () => {
+    const raw = await getObject(STORAGE_KEY, { forUpdate: true });
+    const { cleaned, droppedBlobs } = pruneExpired(parseArtifactMap(raw));
+    const mutation = mutate(cleaned);
+    await saveObject(STORAGE_KEY, cleaned);
+    return { result: mutation.result, blobs: [...droppedBlobs, ...(mutation.blobs ?? [])] };
+  });
+
+  // Blob deletion happens after commit so slow storage I/O never holds the row lock.
+  await deleteBlobsBestEffort(committed.blobs);
+  return committed.result;
 }
 
 export async function saveExportArtifact(
@@ -80,24 +117,27 @@ export async function saveExportArtifact(
       `Export artifact exceeds maximum of ${MAX_ARTIFACT_BYTES} bytes and cannot be stored.`,
     );
   }
-  const artifactsByUser = await pruneAllExpired(await loadUserArtifactMap());
-  const userArtifacts = artifactsByUser[userId] ?? {};
-  userArtifacts[jobId] = {
-    content,
-    filename,
-    expiresAt: new Date(Date.now() + ARTIFACT_TTL_MS).toISOString(),
-  };
-  artifactsByUser[userId] = userArtifacts;
-  await saveUserArtifactMap(artifactsByUser);
+  await mutateArtifactMap((artifactsByUser) => {
+    const userArtifacts = artifactsByUser[userId] ?? {};
+    const replaced = artifactBlob(userArtifacts[jobId]);
+    userArtifacts[jobId] = {
+      content,
+      filename,
+      expiresAt: new Date(Date.now() + ARTIFACT_TTL_MS).toISOString(),
+    };
+    artifactsByUser[userId] = userArtifacts;
+    return { result: undefined, blobs: replaced ? [replaced] : [] };
+  });
 }
 
 export async function getExportArtifact(
   userId: string,
   jobId: string,
 ): Promise<ExportArtifactResult | null> {
-  const artifactsByUser = await pruneAllExpired(await loadUserArtifactMap());
-  const userArtifacts = artifactsByUser[userId] ?? {};
-  const artifact = userArtifacts[jobId];
+  const raw = await getObject(STORAGE_KEY);
+  const { cleaned, droppedBlobs } = pruneExpired(parseArtifactMap(raw));
+  await deleteBlobsBestEffort(droppedBlobs);
+  const artifact = cleaned[userId]?.[jobId];
   if (!artifact) return null;
   return {
     filename: artifact.filename,
@@ -123,29 +163,54 @@ export async function saveStreamedExportArtifact(
     contentType?: string;
   },
 ): Promise<void> {
-  const artifactsByUser = await pruneAllExpired(await loadUserArtifactMap());
-  const userArtifacts = artifactsByUser[userId] ?? {};
-  userArtifacts[jobId] = {
-    filename: info.filename,
-    expiresAt: new Date(Date.now() + ARTIFACT_TTL_MS).toISOString(),
-    key: info.key,
-    storageType: info.storageType,
-    ...(info.contentType ? { contentType: info.contentType } : {}),
-  };
-  artifactsByUser[userId] = userArtifacts;
-  await saveUserArtifactMap(artifactsByUser);
+  await mutateArtifactMap((artifactsByUser) => {
+    const userArtifacts = artifactsByUser[userId] ?? {};
+    const replaced = artifactBlob(userArtifacts[jobId]);
+    userArtifacts[jobId] = {
+      filename: info.filename,
+      expiresAt: new Date(Date.now() + ARTIFACT_TTL_MS).toISOString(),
+      key: info.key,
+      storageType: info.storageType,
+      ...(info.contentType ? { contentType: info.contentType } : {}),
+    };
+    artifactsByUser[userId] = userArtifacts;
+    return {
+      result: undefined,
+      blobs: replaced && replaced.key !== info.key ? [replaced] : [],
+    };
+  });
 }
 
 export async function deleteExportArtifact(userId: string, jobId: string): Promise<void> {
-  const artifactsByUser = await loadUserArtifactMap();
-  const userArtifacts = artifactsByUser[userId];
-  const artifact = userArtifacts?.[jobId];
-  if (!artifact) return;
-  // Best-effort: remove the streamed blob when a keyed artifact is dismissed.
-  if (artifact.key && artifact.storageType) {
-    await deleteStorageObject(artifact.key, artifact.storageType).catch(() => undefined);
-  }
-  delete userArtifacts[jobId];
-  artifactsByUser[userId] = userArtifacts;
-  await saveUserArtifactMap(artifactsByUser);
+  await mutateArtifactMap((artifactsByUser) => {
+    const userArtifacts = artifactsByUser[userId];
+    const artifact = userArtifacts?.[jobId];
+    if (!userArtifacts || !artifact) return { result: undefined };
+    const blob = artifactBlob(artifact);
+    delete userArtifacts[jobId];
+    if (Object.keys(userArtifacts).length === 0) delete artifactsByUser[userId];
+    return { result: undefined, blobs: blob ? [blob] : [] };
+  });
+}
+
+/** Deletes artifacts for many removed jobs in one locked registry update. */
+export async function deleteExportArtifacts(userId: string, jobIds: string[]): Promise<number> {
+  const uniqueIds = [...new Set(jobIds.map((id) => id.trim()).filter(Boolean))];
+  if (uniqueIds.length === 0) return 0;
+  return mutateArtifactMap((artifactsByUser) => {
+    const userArtifacts = artifactsByUser[userId];
+    if (!userArtifacts) return { result: 0 };
+    const blobs: BlobRef[] = [];
+    let removed = 0;
+    for (const jobId of uniqueIds) {
+      const artifact = userArtifacts[jobId];
+      if (!artifact) continue;
+      const blob = artifactBlob(artifact);
+      if (blob) blobs.push(blob);
+      delete userArtifacts[jobId];
+      removed++;
+    }
+    if (removed > 0 && Object.keys(userArtifacts).length === 0) delete artifactsByUser[userId];
+    return { result: removed, blobs };
+  });
 }

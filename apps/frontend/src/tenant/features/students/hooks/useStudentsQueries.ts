@@ -66,12 +66,9 @@ export function studentsInfiniteQueryOptions(query: StudentsContractQueryParams 
   return infiniteQueryOptions({
     queryKey: [...STUDENTS_QUERY_KEY, "contract-infinite-list", query] as const,
     queryFn: async ({ pageParam, signal }) => {
-      const effectiveQuery = {
-        ...query,
-        ...(pageParam ? { afterId: pageParam } : {}),
-      };
+      const effectiveQuery = { ...query, page: pageParam };
       const response = await apiContract.students.list({
-        query: effectiveQuery as Record<string, string>,
+        query: effectiveQuery as unknown as Record<string, string>,
         signal,
         fetchOptions: { signal },
       });
@@ -80,8 +77,8 @@ export function studentsInfiniteQueryOptions(query: StudentsContractQueryParams 
       }
       return response.body as StudentsListPageResult;
     },
-    initialPageParam: undefined as string | undefined,
-    getNextPageParam: (lastPage) => lastPage.nextCursor ?? undefined,
+    initialPageParam: 1,
+    getNextPageParam: (lastPage) => (lastPage.hasMore ? lastPage.page + 1 : undefined),
     staleTime: 15_000,
   });
 }

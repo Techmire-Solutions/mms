@@ -20,6 +20,7 @@ export async function listTestsByWorkspace(
       .select(testSelectFields)
       .from(tests)
       .where(and(eq(tests.workspaceSubdomain, subdomain), isNull(tests.deletedAt)))
+      .orderBy(tests.id)
       .limit(limit)
       .offset(offset);
     if (rows.length === 0) return [];

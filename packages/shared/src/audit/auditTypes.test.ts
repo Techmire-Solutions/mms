@@ -31,6 +31,7 @@ describe("auditTypes", () => {
       "BROKEN_CHAIN",
       "SEQUENCE_GAP",
       "TAMPERED",
+      "CHECKPOINT_NOT_IN_CHAIN",
     ]);
   });
 
@@ -82,7 +83,7 @@ describe("auditTypes", () => {
     };
 
     const parsed = modernAuditEventInsertSchema.parse(insertPayload);
-    expect(parsed.verificationStatus).toBe("VERIFIED");
+    expect(parsed.verificationStatus).toBe("PENDING");
     expect(parsed.tableName).toBe("students");
   });
 

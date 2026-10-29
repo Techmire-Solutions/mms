@@ -151,9 +151,10 @@ export async function completeTwoFactorLogin(
   code: string,
   jwtSigner: JWT,
   reply: FastifyReply,
+  expectedTenant: string,
 ): Promise<AuthResult | null> {
   const { verifyTwoFactorChallenge } = await import("./twoFactorService.js");
-  const user = await verifyTwoFactorChallenge(challengeId, code);
+  const user = await verifyTwoFactorChallenge(challengeId, code, expectedTenant);
   if (!user) return null;
   await assertWorkspaceActive(user.workspaceSubdomain);
   return establishSession(user, jwtSigner, reply, true);

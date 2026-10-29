@@ -68,7 +68,7 @@ export function registerBulkRoutes<T>(
     const parsed = parseRequest(schema, request.body);
     if (!parsed.ok) return replyValidationError(reply, parsed.message);
     try {
-      const data = beforeSave ? await beforeSave(user, parsed.data) : parsed.data;
+      const data = beforeSave ? await beforeSave(user, parsed.data, request) : parsed.data;
       const updated = await saveFn(data);
       return reply.send({ [responseKey]: updated });
     } catch (error: unknown) {

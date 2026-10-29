@@ -91,21 +91,36 @@ function injectNonce(html: string, nonce: string): string {
 }
 
 /**
+ * Static asset / app-shell paths only. A non-API path that is not one of these
+ * (notably `/ws`) still goes through the global limiter: previously every
+ * non-`/api` URL was exempt, so the root WebSocket upgrade had no throttle.
+ */
+const STATIC_ASSET_PATH_PATTERNS = [
+  /^\/$/,
+  /^\/index\.html$/,
+  /^\/assets\//,
+  /^\/uploads\//,
+  /^\/favicon\.(?:ico|svg|png)$/,
+  /^\/platform-logo\.[a-z0-9]+$/,
+  /^\/icon-[a-z0-9_-]+\.png$/,
+  /^\/apple-touch-icon[^/]*\.png$/,
+  /^\/site\.webmanifest$/,
+  /^\/manifest\.json$/,
+  /^\/sw\.js$/,
+  /^\/robots\.txt$/,
+];
+
+/**
  * Determines if a request URL should bypass the global API rate limiter.
- * Probe endpoints (/health, /ready, /metrics) and non-API paths (SPA document
- * routes, built static assets under /assets/, site manifests, icons, and static uploads)
- * are exempt so that client asset loading never fails with HTTP 429.
+ * Only the operational probes (/health, /ready, /metrics) and static asset /
+ * app-shell paths are exempt. `/ws` and SPA document routes are throttled.
  */
 export function isRateLimitExempt(rawUrl: string): boolean {
   const path = (rawUrl.split("?")[0] ?? "").toLowerCase().replace(/\/+/g, "/");
   if (path === "/health" || path === "/ready" || path === "/metrics") {
     return true;
   }
-  // All backend REST APIs are mounted under /api — non-API requests are client SPA & static assets
-  if (!path.startsWith("/api")) {
-    return true;
-  }
-  return false;
+  return STATIC_ASSET_PATH_PATTERNS.some((pattern) => pattern.test(path));
 }
 
 export async function registerSecurityPlugins(

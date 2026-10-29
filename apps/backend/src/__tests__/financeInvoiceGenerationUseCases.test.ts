@@ -41,6 +41,12 @@ const mockEnrollmentRepo = vi.hoisted(() => ({
   findEnrollmentById: vi.fn(),
 }));
 
+const mockLedgerPosting = vi.hoisted(() => ({
+  tryPostInvoiceJournals: vi.fn().mockResolvedValue(undefined),
+}));
+
+vi.mock("../accounting/ledgerPosting/ledgerPostingService.js", () => mockLedgerPosting);
+
 vi.mock("../db/repositories/financeBillingRepository.js", () => mockBillingRepo);
 vi.mock("../db/repositories/financeInvoicesRepository.js", () => mockInvoicesRepo);
 vi.mock("../db/repositories/enrollmentRepositoryPersist.js", () => mockEnrollmentPersistRepo);
@@ -140,6 +146,13 @@ describe("financeInvoiceGenerationUseCases", () => {
         expect.arrayContaining([
           expect.objectContaining({ invoiceNumber: "INV-2026-0001", familyContactId: "c-1" }),
           expect.objectContaining({ invoiceNumber: "INV-2026-0002", familyContactId: "c-2" }),
+        ]),
+      );
+      expect(mockLedgerPosting.tryPostInvoiceJournals).toHaveBeenCalledWith(
+        "tenant-1",
+        expect.arrayContaining([
+          expect.objectContaining({ invoiceNumber: "INV-2026-0001" }),
+          expect.objectContaining({ invoiceNumber: "INV-2026-0002" }),
         ]),
       );
       expect(mockEnrollmentPersistRepo.linkEnrollmentInvoiceIds).toHaveBeenCalledWith("tenant-1", [

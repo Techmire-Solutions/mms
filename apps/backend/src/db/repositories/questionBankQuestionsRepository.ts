@@ -51,6 +51,7 @@ export async function listQuestionsByWorkspace(
       })
       .from(questions)
       .where(and(...conditions))
+      .orderBy(questions.id)
       .limit(limit)
       .offset(offset);
     return hydrateQuestionRecords(tx, subdomain, rows);

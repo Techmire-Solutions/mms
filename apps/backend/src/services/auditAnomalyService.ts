@@ -1,6 +1,6 @@
 import { and, desc, eq, gte } from "drizzle-orm";
 import type { AuditAnomalyReport, AuditAnomalyItem } from "@mms/shared";
-import { activeDb } from "../db/dbConnection.js";
+import { withTenantRead } from "../db/tenant-context.js";
 import { auditTrailEvents } from "../db/schema/auditTrail.js";
 import type { DbOrTransaction } from "./auditTrailService.js";
 
@@ -21,9 +21,20 @@ export async function detectAuditAnomalies(
   executor?: DbOrTransaction,
 ): Promise<AuditAnomalyReport> {
   const subdomain = workspaceSubdomain.trim().toLowerCase();
+  return executor
+    ? runAnomalyDetection(subdomain, options, executor)
+    : withTenantRead(subdomain, (db) =>
+        runAnomalyDetection(subdomain, options, db as unknown as DbOrTransaction),
+      );
+}
+
+async function runAnomalyDetection(
+  subdomain: string,
+  options: DetectAnomaliesOptions | undefined,
+  db: DbOrTransaction,
+): Promise<AuditAnomalyReport> {
   const windowHours = options?.windowHours ?? 24;
   const since = new Date(Date.now() - windowHours * 60 * 60 * 1000);
-  const db = executor ?? activeDb();
   // Hard cap: prevents unbounded memory buffering on large tenant shards (mms-performance §1).
   const fetchLimit = options?.limit ?? 10_000;
 

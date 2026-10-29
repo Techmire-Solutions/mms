@@ -62,6 +62,7 @@ export async function listResultsByWorkspace(
           isNull(assessmentResults.deletedAt),
         ),
       )
+      .orderBy(assessmentResults.id)
       .limit(limit)
       .offset(offset);
     if (rows.length === 0) return [];

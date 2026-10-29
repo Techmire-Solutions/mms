@@ -10,7 +10,6 @@ import {
   recordModernAuditEvent,
   mapActionStringToAuditType,
 } from "../services/auditTrailService.js";
-import { logger } from "./logger.js";
 import { QueueUnavailableError } from "../services/backgroundJobWorkerService.js";
 
 export type RegisterModuleCsvExportRoutesOptions = {
@@ -85,7 +84,7 @@ export function registerModuleCsvExportRoutes(
       throw err;
     }
 
-    void recordModernAuditEvent({
+    await recordModernAuditEvent({
       workspaceSubdomain: getRequestTenant() ?? "unknown",
       tableName: options.moduleId,
       recordId: job.id,
@@ -95,12 +94,7 @@ export function registerModuleCsvExportRoutes(
         summary: `Queued ${options.entityNoun} export "${label}"`,
         action: options.queueAuditAction,
       },
-    }).catch((err: unknown) =>
-      logger.error(
-        { err: err instanceof Error ? err.message : String(err) },
-        "audit event append failed",
-      ),
-    );
+    });
     return reply.status(202).send({ job });
   });
 
@@ -116,7 +110,7 @@ export function registerModuleCsvExportRoutes(
       scope?: "all" | "filtered" | "selection";
     };
     const scope = data.scope ?? "filtered";
-    void recordModernAuditEvent({
+    await recordModernAuditEvent({
       workspaceSubdomain: getRequestTenant() ?? "unknown",
       tableName: options.moduleId,
       recordId: options.moduleId,
@@ -126,12 +120,7 @@ export function registerModuleCsvExportRoutes(
         summary: `Exported ${data.count} ${options.entityNoun}(s) (${scope})`,
         action: options.exportAuditAction,
       },
-    }).catch((err: unknown) =>
-      logger.error(
-        { err: err instanceof Error ? err.message : String(err) },
-        "audit event append failed",
-      ),
-    );
+    });
     return reply.send({ success: true });
   });
 }

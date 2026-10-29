@@ -121,6 +121,7 @@ const NON_MODULE_ROUTES: ReadonlyArray<{
       "/api/platform/admin/system/telemetry",
       "/api/platform/admin/system/migrate-and-restart",
       "/api/platform/ai/query",
+      "/api/platform/audit/merkle-roots",
       "/api/platform/auth/me",
       "/api/platform/consolidation/groups",
       "/api/platform/consolidation/groups/:id",

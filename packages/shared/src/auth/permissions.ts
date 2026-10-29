@@ -61,6 +61,8 @@ export const ALL_PERMISSIONS = [
   "tasks.complete",
   "users.read",
   "users.manage",
+  "audit.view",
+  "audit.manage",
   "analytics.view",
   "configuration.view",
   "settings.global.write",

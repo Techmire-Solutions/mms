@@ -23,7 +23,10 @@ export interface CollectionAuditExtraOptions {
  * Sessions/Contacts/Enrollments) each reduce to `createCollectionAuditHelper('faculty')`.
  * Supports transactional outbox logging when `options.tx` is passed.
  */
-export function createCollectionAuditHelper(defaultEntityId: string) {
+export function createCollectionAuditHelper(
+  defaultEntityId: string,
+  helperOptions?: { subjectScoped?: boolean },
+) {
   return async function auditCollectionAction(
     user: User,
     action: string,
@@ -54,6 +57,9 @@ export function createCollectionAuditHelper(defaultEntityId: string) {
       ipAddress: options?.ipAddress,
       apiEndpoint: options?.apiEndpoint,
       httpMethod: options?.httpMethod,
+      // Person records get capture-time subject encryption so a key shred makes
+      // the historical state unrecoverable without rewriting the hash chain.
+      ...(helperOptions?.subjectScoped ? { subjectId: entityId } : {}),
     };
 
     const auditPromise = options?.tx

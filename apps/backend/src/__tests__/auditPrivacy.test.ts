@@ -132,16 +132,19 @@ describe("Modern Audit Trail - Privacy, Retention & Erasure (Section 4)", () => 
     expect(AUDIT_RETENTION_FLOORS.GDPR).toBe(1095); // 3 years
 
     const asOf = new Date("2026-09-09T00:00:00.000Z");
-    const evaluation = await evaluateAuditRetentionPolicy("HIPAA", asOf);
+    const evaluation = await evaluateAuditRetentionPolicy("HIPAA", "test-tenant", asOf);
     expect(evaluation.regime).toBe("HIPAA");
     expect(evaluation.retentionFloorDays).toBe(2190);
     expect(evaluation.cutoffDate.getTime()).toBeLessThan(asOf.getTime());
 
-    const dryRunResult = await purgeExpiredCryptoShreddingKeys({
-      regime: "HIPAA",
-      asOfDate: asOf,
-      dryRun: true,
-    });
+    const dryRunResult = await purgeExpiredCryptoShreddingKeys(
+      {
+        regime: "HIPAA",
+        asOfDate: asOf,
+        dryRun: true,
+      },
+      "test-tenant",
+    );
     expect(dryRunResult.dryRun).toBe(true);
     expect(dryRunResult.regime).toBe("HIPAA");
   });

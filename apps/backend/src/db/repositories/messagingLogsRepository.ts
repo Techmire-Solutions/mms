@@ -41,6 +41,7 @@ export async function listMessageLogsByWorkspace(
       })
       .from(messageLogs)
       .where(and(eq(messageLogs.workspaceSubdomain, subdomain), isNull(messageLogs.deletedAt)))
+      .orderBy(messageLogs.id)
       .limit(limit)
       .offset(offset);
     return rows.map((r) => logRowToRecord(r as LogRow));

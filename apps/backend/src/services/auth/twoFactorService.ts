@@ -68,12 +68,25 @@ export async function createTwoFactorChallenge(user: User): Promise<string> {
   return challengeId;
 }
 
-export async function resendTwoFactorChallenge(challengeId: string): Promise<boolean> {
+function challengeMatchesTenant(
+  payload: TwoFactorChallengePayload,
+  expectedTenant: string,
+): boolean {
+  return payload.workspaceSubdomain.trim().toLowerCase() === expectedTenant.trim().toLowerCase();
+}
+
+export async function resendTwoFactorChallenge(
+  challengeId: string,
+  expectedTenant: string,
+): Promise<boolean> {
   const entry = await getAuthArtifact<TwoFactorChallengePayload>(
     challengeId,
     "two_factor_challenge",
   );
   if (!entry) return false;
+  // A challenge minted in workspace A must never be re-sent from workspace B's
+  // host; without this binding the flow is a cross-workspace login CSRF vector.
+  if (!challengeMatchesTenant(entry.payload, expectedTenant)) return false;
 
   const code = generateOtpCode();
   entry.payload.codeHash = hashOtpCode(code);
@@ -89,12 +102,14 @@ export async function resendTwoFactorChallenge(challengeId: string): Promise<boo
 export async function verifyTwoFactorChallenge(
   challengeId: string,
   code: string,
+  expectedTenant: string,
 ): Promise<User | null> {
   const entry = await takeAuthArtifact<TwoFactorChallengePayload>(
     challengeId,
     "two_factor_challenge",
   );
   if (!entry) return null;
+  if (!challengeMatchesTenant(entry.payload, expectedTenant)) return null;
   if (!verifyOtpCode(code.replace(/\s/g, ""), entry.payload.codeHash)) return null;
 
   const user = await runWithTenant(entry.payload.workspaceSubdomain, () =>
