@@ -191,11 +191,7 @@ jobs:
       # so they get pure unit tests rather than being verified only by watching
       # a real PR.
       - name: CI and ratchet script tests
-        run: |
-          node --test scripts/ci/ci-gate-policy.test.mjs
-          node --test scripts/ci/changed-coverage-core.test.mjs
-          node --test scripts/ci/check-ratchet-baselines.test.mjs
-          node --test scripts/lib/db-projections-core.test.mjs
+        run: pnpm run test:scripts
 
       # Formatting is owned by Prettier (.prettierrc.json); ESLint defers all
       # stylistic rules to it via eslint-config-prettier (see each eslint.config.js).

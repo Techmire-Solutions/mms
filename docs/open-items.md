@@ -364,9 +364,9 @@ follow-ups:
 
 **Still open (operator/next):**
 
-- **Enable strict RLS on the Hetzner host.** Phase 2a ships the preflight and provisioning
-  script; phase 2b flips the deploy default to `strict` after
-  `docs/rls-operations.md` is run and verified on the server. Until then the deploy keeps
-  `warn` (reported loudly).
+- **Enable strict RLS on the Hetzner host.** The deploy now defaults to `strict` and
+  rejects `warn`/`off` without an explicit per-deploy override, so the next production
+  deploy aborts at the preflight until the operator runs `docs/rls-operations.md` §2 and
+  confirms `db:check-rls`. This is fail-closed: the running release keeps serving.
 - **Historical snapshot regeneration** (0134–0196) and the 311 timezone-naive columns.
 - **Legacy Gitleaks history** is clean under the new config; keep it that way.

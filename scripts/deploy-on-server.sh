@@ -145,13 +145,13 @@ fi
 
 export PORT="$(read_env_var PORT "$MMS_PROD_BACKEND_PORT" "$ENV_FILE")"
 export NODE_ENV=production
-export MMS_DB_ROLE_ENFORCEMENT="$(read_env_var MMS_DB_ROLE_ENFORCEMENT "warn" "$ENV_FILE")"
+export MMS_DB_ROLE_ENFORCEMENT="$(read_env_var MMS_DB_ROLE_ENFORCEMENT "strict" "$ENV_FILE")"
 assert_production_backend_port "$PORT" "Deploy PORT" || exit 1
 
 # RLS preflight: a role that bypasses row-level security makes every tenant
-# policy inert. Strict mode must abort here — before migrations or the PM2
-# reload — so the previous release keeps serving. Warn/off are reported during
-# the phase-2a rollout; phase 2b makes them abort unless explicitly overridden.
+# policy inert. The check and the mode policy both run before migrations and the
+# PM2 reload, so the previous release keeps serving when either fails. `warn`
+# and `off` are accepted only with their explicit overrides.
 export DATABASE_URL="$(read_env_var DATABASE_URL "" "$ENV_FILE")"
 if [ -z "$DATABASE_URL" ]; then
   echo "FATAL: DATABASE_URL is missing from ${ENV_FILE} — cannot verify RLS."
@@ -174,11 +174,18 @@ elif [ -f "$ROOT_DIR/apps/backend/src/scripts/checkRlsRole.ts" ]; then
     exit 1
   fi
 else
-  echo "WARNING: checkRlsRole script not found — skipping the RLS preflight."
+  echo "ERROR: checkRlsRole script not found — cannot verify RLS. Refusing to deploy."
+  echo "       The running release has NOT been replaced; restore the backend build and redeploy."
+  exit 1
 fi
-if [ "$MMS_DB_ROLE_ENFORCEMENT" != "strict" ] && [ "${MMS_ALLOW_RLS_WARN:-0}" != "1" ]; then
-  echo "WARNING: MMS_DB_ROLE_ENFORCEMENT=${MMS_DB_ROLE_ENFORCEMENT} — RLS is not enforced."
-  echo "         Provision mms_app, set strict, and remove the override before the next release."
+if ! node "$ROOT_DIR/scripts/ci/rls-deploy-policy.mjs" \
+  --mode "${MMS_DB_ROLE_ENFORCEMENT:-}" \
+  --allow-warn "${MMS_ALLOW_RLS_WARN:-0}" \
+  --allow-off "${MMS_ALLOW_RLS_OFF:-0}"; then
+  echo "ERROR: RLS enforcement policy rejected mode=${MMS_DB_ROLE_ENFORCEMENT}."
+  echo "       Provision mms_app and set strict (docs/rls-operations.md), or set the"
+  echo "       documented override, then redeploy. The running release has NOT been replaced."
+  exit 1
 fi
 
 mkdir -p "$ROOT_DIR/.logs"
