@@ -31,6 +31,7 @@
     "audit:partitions": "tsx src/scripts/create-audit-partition.ts",
     "index:concurrent": "tsx src/scripts/create-index-concurrently.ts",
     "audit:dates": "tsx src/scripts/audit-date-formats.ts",
+    "audit:timestamps": "tsx src/scripts/audit-timestamp-columns.ts",
     "audit:enrollment-ssot": "tsx src/scripts/audit-enrollment-ssot.ts",
     "audit:class-references": "tsx src/scripts/audit-class-references.ts",
     "audit:date-columns": "tsx src/scripts/audit-date-columns.ts",

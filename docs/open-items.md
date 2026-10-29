@@ -280,9 +280,13 @@ ratchet, so the fix cannot silently regress.
 
 **Still open (deliberate, measured, and now ratcheted)**
 
-1. **Timezone-naive timestamps.** 311 bare `timestamp` columns vs 72 `timestamptz`,
-   while Drizzle declares `withTimezone: true`. Converting them is a table-rewrite
-   project on the two largest tables and must be planned per-table. `check:migration-hygiene`
+1. **Timezone-naive timestamps.** The migration-history ratchet sees **311** bare
+   `timestamp` declarations; the live inventory on a freshly migrated DB is **144
+   columns across 86 tables** (127 tenant, 17 global) — historical/dropped
+   declarations explain the difference. Drizzle declares `withTimezone: true`.
+   Converting them is a table-rewrite project and must be planned per-table; run
+   `pnpm --filter mms-backend audit:timestamps` and follow
+   [timestamp-migration.md](./timestamp-migration.md). `check:migration-hygiene`
    stops new naive columns.
 2. **Historical migrations without `lock_timeout`** (143 of 198). Applied migrations are
    immutable (forward-only), so they cannot be edited; `check:migration-hygiene` requires
@@ -291,8 +295,11 @@ ratchet, so the fix cannot silently regress.
    Regeneration needs a dedicated pass (`drizzle-kit generate` would re-emit applied DDL
    otherwise). The ratchet baseline is now 0, so no new journal entry can ship without a
    snapshot while the historical gap is pending.
-4. **`packages/ui` has no `package.json`** — it is a `@shared/ui` alias resolved by
-   tsconfig/vite. Works, but it is invisible to the turbo task graph.
+4. ~~`packages/ui` has no `package.json`~~ **RESOLVED** — it is now the private
+   `@mms/ui` workspace package with a source-only `typecheck` task
+   (`tsconfig.build.json` excludes tests). Runtime imports still use the
+   `@shared/ui` alias; tests stay in the frontend Vitest run, and structural
+   rules are covered by `check:code-norms`/`check:shared-ui`.
 5. **`useGlobalSettings` still hydrates from localStorage.** The 2FA gate it feeds is
    backend-authoritative (`authenticate.ts` rejects `twoFactorVerified === false`), so this
    is a cache-first UX choice rather than an authorization hole; migrating it to TanStack

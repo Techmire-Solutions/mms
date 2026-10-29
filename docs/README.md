@@ -44,6 +44,7 @@ Project-wide entry points live at the repo root:
 ## Engineering notes
 
 - [engineering/](./engineering/) — frontend refactor plan/backlog + reuse audit, data-transfer.
+- [timestamp-migration.md](./timestamp-migration.md) — naive timestamp inventory + per-table migration playbook.
 
 ## Plans
 
