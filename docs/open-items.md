@@ -370,3 +370,23 @@ follow-ups:
   confirms `db:check-rls`. This is fail-closed: the running release keeps serving.
 - **Historical snapshot regeneration** (0134–0196) and the 311 timezone-naive columns.
 - **Legacy Gitleaks history** is clean under the new config; keep it that way.
+
+## 2026-10-30 review residuals
+
+**Fixed:**
+
+- `/institution-setup` now sits behind a `RequirePermission` guard for
+  `settings.branding.write`: guests go to login, other roles go Home, and only a
+  role that can actually persist the profile sees the wizard.
+- `packages/ui` is included in the code-norm ratchets; its only raw hex values
+  (the WCAG contrast fallbacks in `ThemeScope`) are now CSS keyword colors.
+- `minimumReleaseAge: 1440` activates the dependency cooldown that the existing
+  `minimumReleaseAgeExclude` list was written for.
+- The backend route→storage boundary detector also flags `db/dbClient` imports
+  and direct `getDb()`/`getRootDb()` calls; `db/dbConnection` remains sanctioned
+  for the long-lived snapshot transaction primitives.
+
+**Still open:**
+
+- Historical Drizzle snapshot regeneration and timezone-naive timestamp conversion.
+- i18n dead-key pruning (product/QA decision).

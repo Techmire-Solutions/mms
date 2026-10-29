@@ -36,7 +36,7 @@ function getContrastColor(hexColor?: string): string | undefined {
   const toLinear = (c: number) => (c <= 0.03928 ? c / 12.92 : Math.pow((c + 0.055) / 1.055, 2.4));
   const l = 0.2126 * toLinear(r) + 0.7152 * toLinear(g) + 0.0722 * toLinear(b);
   // WCAG relative luminance midpoint where contrast against black exceeds contrast against white is sqrt(1.05 * 0.05) - 0.05 ≈ 0.179
-  return l > 0.179 ? "#000000" : "#ffffff";
+  return l > 0.179 ? "black" : "white";
 }
 
 /**
@@ -58,7 +58,7 @@ export function ThemeScope({
     if (theme?.primary) {
       custom["--primary"] = theme.primary;
       custom["--color-primary"] = theme.primary;
-      const fg = theme.primaryForeground ?? getContrastColor(theme.primary) ?? "#ffffff";
+      const fg = theme.primaryForeground ?? getContrastColor(theme.primary) ?? "white";
       custom["--primary-foreground"] = fg;
       custom["--color-primary-foreground"] = fg;
     }
@@ -66,7 +66,7 @@ export function ThemeScope({
     if (theme?.secondary) {
       custom["--secondary"] = theme.secondary;
       custom["--color-secondary"] = theme.secondary;
-      const fg = theme.secondaryForeground ?? getContrastColor(theme.secondary) ?? "#ffffff";
+      const fg = theme.secondaryForeground ?? getContrastColor(theme.secondary) ?? "white";
       custom["--secondary-foreground"] = fg;
       custom["--color-secondary-foreground"] = fg;
     }

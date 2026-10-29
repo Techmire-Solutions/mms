@@ -24,6 +24,11 @@ catalog:
   "@ts-rest/react-query": "3.52.1"
   react-router-dom: "^7.18.4"
 
+# Supply-chain cooldown: package versions must be at least one day old before
+# pnpm resolves them. `minimumReleaseAgeExclude` records the reviewed exceptions
+# (fresh versions we intentionally need now); it is inert without this setting.
+minimumReleaseAge: 1440
+
 minimumReleaseAgeExclude:
   - nodemailer@9.0.1
   - lucide-react@1.22.0
