@@ -38,8 +38,10 @@ Run on 2026-10-29 against the local workspace; exact commands in the appendix.
 | Prior-review regression tests | `tenantScopeGuards` 17/17 · `uploadsAuth` 10/10 pass |
 | Build | `pnpm build` — 3/3 packages |
 | Bundle budget | 14.65 MB raw / 4.17 MB gzip (budgets 15 MB / 4.5 MB) · largest chunk 1.40 MB `elk` (budget 2.5 MB) |
-| Dependency audit | 0 high / 0 critical · 7 moderate / 5 low (details §3.3) |
-| Frontend static lint (`--no-cache`) | 0 errors · 256 warnings (188 `react-hooks`, 68 `jsx-a11y`) |
+| Dependency audit | 0 high / 0 critical · 1 moderate + 1 low, both reviewed exceptions (details §3.3) |
+| Coverage gates | backend 46 / 43.5 / 41 / 33 (measured 46.8 / 44.46 / 42.1 / 33.91) · frontend 56 / 55 / 46 / 51 (56.63 / 55.31 / 46.54 / 51.49) · shared 79 / 75 / 72 / 57 (80.25 / 76.86 / 73.23 / 58.63) |
+| A11y Playwright project | 16/16 pass — all 20 tenant routes at 375/1440, RTL, populated data, overlay audits |
+| Frontend static lint (`--no-cache`) | 0 errors · 150 warnings (82 `react-hooks` — none `set-state-in-effect`, 68 `jsx-a11y`) |
 
 **Note on test execution.** The suites were run package-by-package. An earlier attempt to run
 the backend suite while another vitest process was already running against `apps/backend` failed
@@ -99,52 +101,65 @@ preserved. Tests added in
 [`socialPlatformUtils.test.ts`](../packages/shared/src/messaging/socialPlatformUtils.test.ts)
 (4 new cases; 11/11 pass).
 
-### 3.3 OPEN — Dependency advisories: 7 moderate / 5 low (Medium)
+### 3.3 FIXED — Dependency advisories: 12 findings → 2 (one reviewed, one unpatchable)
 
-`pnpm audit` reports **no high or critical** issues. All are patch-level fixes:
+`pnpm audit` reported 7 moderate / 5 low and **no high or critical** issues. All
+patchable findings were resolved in the follow-up dependency pass:
 
-| Package | Severity | Installed → patched | Path |
-| --- | --- | --- | --- |
-| `nodemailer` | moderate ×3 | 10.1.2 → ≥10.1.4 | direct (email delivery) |
-| `fast-uri` | moderate ×2, low ×2 | 4.2.0 → ≥4.2.3 | `fastify` → `ajv` / `fast-json-stringify` |
-| `ip-address` | moderate | 10.7.3 → ≥10.7.4 | `@fastify/rate-limit` |
-| `ts-deepmerge` | moderate | → ≥8.0.0 | dev: `@ts-rest/open-api` |
-| `serialize-javascript` | low ×2 | → ≥7.1.2 | dev: `vite-plugin-pwa` → `workbox-build` |
-| `deepmerge` | low | → ≥4.3.2 | dev: `vite-plugin-pwa` → `workbox-build` |
+| Package | Before → after | How |
+| --- | --- | --- |
+| `nodemailer` | 10.1.2 → 10.2.1 | direct dependency bump |
+| `fast-uri` | 4.2.0 → 4.2.3 | `overrides` `^4.2.3` |
+| `ip-address` | 10.7.3 → 10.7.5 | `overrides` `>=10.7.4` |
+| `serialize-javascript` | 7.1.1 → 7.1.4 | `overrides` `>=7.1.2` (build tooling) |
+| `deepmerge` | 4.3.1 | **no patched release exists** — the advisory names `>=4.3.2`, which was never published (4.3.1 is the latest 4.x). Dev-only workbox path; recorded as a reviewed exception. |
 
-No high/critical advisories and CI runs `dependency-review` on every PR plus `pnpm audit
---audit-level high` in `typecheck-lint`, so this is maintenance, not an incident. `nodemailer` is
-the only runtime one; bump it (and the two transitive ranges) in a dedicated dependency PR, then
-re-run the backend suite and the email tests.
+`ts-deepmerge@6` remains the other reviewed exception: the advisory is not
+reachable here and the `>=8` override breaks `/api/openapi.json` (both documented
+in `pnpm-workspace.yaml`). Current audit: **1 moderate + 1 low, 0 high/critical**.
+The backend suite (2,098 tests) passes on the new graph.
 
-### 3.4 OPEN — Coverage floors are modest relative to the surface (Medium, ratcheted)
+### 3.4 FIXED — Coverage floors raised to the measured floor (ratcheted)
 
-Thresholds are global and enforced (`apps/backend/vitest.config.ts:57`, `apps/frontend/vitest.config.ts:114`,
-`packages/shared/vitest.config.ts:24`): backend 45 lines / 43.2 statements / 37.5 functions / 27
-branches; frontend 55 / 54 / 45 / 50; shared ≈72 / 68. This is honest but low for a finance/tenancy
-system: roughly half of backend lines are unexecuted by unit tests. Mitigations already in place
-are strong — changed-file coverage gating per PR, a real-Postgres suite for DB-touching paths, and
-an accounting test-coverage audit. The recommendation is to ratchet lines +2/quarter starting with
-money and authorization modules rather than a big-bang target.
+Thresholds are global and enforced (`apps/backend/vitest.config.ts:57`,
+`apps/frontend/vitest.config.ts:114`, `packages/shared/vitest.config.ts:24`). Measured on
+2026-10-29 and now the floors (each ~1 point below the measurement):
 
-### 3.5 OPEN — Accessibility coverage beyond the axe sweep (Low/Medium)
+| Package | Thresholds (lines / stmts / funcs / branches) | Measured |
+| --- | --- | --- |
+| backend | 46 / 43.5 / 41 / 33 | 46.8 / 44.46 / 42.1 / 33.91 |
+| frontend | 56 / 55 / 46 / 51 | 56.63 / 55.31 / 46.54 / 51.49 |
+| shared | 79 / 75 / 72 / 57 | 80.25 / 76.86 / 73.23 / 58.63 |
 
-The executable axe gate (`e2e/tests/a11y/a11y-shell.spec.ts`) covers the shell, Contacts and
-Settings at 375/1440 px plus RTL, and fails on any serious/critical violation (baseline is empty).
-That is good, but it samples three surfaces out of ~20 modules. Static lint reports 68 `jsx-a11y`
-warnings — triaged in ADR-017 as mostly correct interaction patterns — with 0 errors, and the
-semantics-only rules (roles, labels, `aria-role`) are already gated at `error`. Consider extending
-the axe sweep to one dense Work surface and one modal-heavy surface per release; no baseline entry
-should be added to unblock a change (see [`a11y-baseline.md`](./a11y-baseline.md)).
+The money/fx suite gained edge cases (`divideRounded` ties and negatives, malformed and
+over-precision amounts, zero/three/four-decimal currencies, allocation errors, rate validation,
+same-currency preview). Backend coverage was reproduced with the CI procedure (four shards +
+merged report); a single-process coverage run segfaults on this machine's Node 26, while CI runs
+Node 24. Floors only rise from here — never lower one to unblock a change.
 
-### 3.6 OPEN — React Compiler readiness backlog (Low)
+### 3.5 FIXED — A11y sweep now covers all 20 tenant routes
 
-A fresh `--no-cache` lint reports 256 warnings, of which 188 are `react-hooks` compiler-readiness
-rules — `set-state-in-effect` (106), `refs` (45), `incompatible-library` (13), `immutability` (11),
-plus smaller buckets. The compiler is opt-in (`MMS_REACT_COMPILER=1`) and currently costs +12.8%
-raw bundle (documented in [`frontend-performance-baseline.md`](./frontend-performance-baseline.md)),
-so leaving it off is the right call. Before flipping it, triage `set-state-in-effect` first: it is
-the largest bucket and the one most likely to hide behaviour changes.
+Correction to the original finding: the gate already audited **6** routes (dashboard, contacts,
+students, finance, accounting, settings), not three. It now audits **all 20** `TENANT_PATHS` at
+375/1440 px, split into four route groups so the two CI shards stay balanced, plus the existing
+RTL pass, populated-data specs and dialog/drawer overlay audits on seven desktop Work routes.
+The extension found and fixed two serious violations (Hasanat progress-bar accessible name;
+Profile avatar-change label/visible-text mismatch) — see
+[`a11y-baseline.md`](./a11y-baseline.md). The baseline remains empty; the 68 static `jsx-a11y`
+warnings stay triaged in ADR-017.
+
+### 3.6 FIXED — `set-state-in-effect` burned down; rule promoted to `error`
+
+All 106 flagged sites in 97 files were removed without changing behaviour: state is
+derived during render, lazily initialised, or reset with React's documented
+render-phase adjustment, and one-shot actions moved into the event that causes them.
+A single documented disable remains (`useIdleTimer`, whose deadline lives in refs and
+is re-synced synchronously). `react-hooks/set-state-in-effect` is now `error`, so the
+backlog cannot regrow; the other compiler rules stay advisory (82 findings: `refs` 45,
+`incompatible-library` 13, `immutability` 11, plus small buckets). The compiler remains
+opt-in (`MMS_REACT_COMPILER=1`, +12.8% raw bundle). The refactor also surfaced and fixed
+a pre-existing render loop in `useRolesPermissionsController` (its effect depended on
+the per-render `useWorkspaceRoles()` array). Total frontend lint warnings: 256 → 150.
 
 ### 3.7 OPEN — Legacy localStorage client store (Low/Medium, documented)
 
@@ -201,34 +216,36 @@ What the review found strong, with the evidence that makes it strong:
   `any`, hex colours, backend route→storage boundaries, docs links, mirror sync, sensitive-file
   guard, gitleaks, and a nightly full E2E workflow for the `@local-only` flows.
 
-## 5. Recommendations (in order)
+## 5. Recommendations — status
 
-1. **Land §3.1 + §3.2** (already implemented here) and keep the tests — both are one-line
-   defences at a rendering boundary where tenant data meets HTML.
-2. **Patch dependencies** (§3.3) in a dependency-only PR: `nodemailer ≥10.1.4`, plus overrides for
-   `fast-uri ≥4.2.3` and `ip-address ≥10.7.4`; run backend + frontend suites.
-3. **Ratchet coverage** on money/authorization modules first (§3.4); raise thresholds only after
-   the tests exist, never by lowering the denominator.
-4. **Extend the axe sweep** to one Work + one modal surface per release (§3.5); keep the baseline
-   empty.
-5. **Triage `set-state-in-effect`** (106 sites) before considering the React Compiler default
-   (§3.6).
-6. **Close the localStorage migration** for settings/reports when the missing endpoints land
-   (§3.7); the ESLint baseline stays empty so new raw transport is blocked meanwhile.
-7. **Keep the data-layer debt ratcheted** (§3.8) — do not let naive timestamps or snapshot drift
-   grow while the planned passes are pending.
+1. **§3.1 + §3.2 XSS fixes — DONE** (commits `f39505870`, `9e9f24b1b`/`5e7a00f96`), with regression tests.
+2. **Dependency patch — DONE** (§3.3): `nodemailer 10.2.1`, `fast-uri 4.2.3`,
+   `ip-address 10.7.5`, `serialize-javascript 7.1.4`; audit now 1 moderate + 1 low,
+   both reviewed exceptions. Backend suite re-run green.
+3. **Coverage ratchet — DONE** (§3.4): floors raised to ~1 point below measured in
+   all three packages; money/fx edge cases added.
+4. **A11y sweep extension — DONE** (§3.5): all 20 tenant routes at 375/1440 + RTL +
+   populated + 7 overlay surfaces; two violations found and fixed.
+5. **`set-state-in-effect` triage — DONE** (§3.6): 106 → 0, rule promoted to `error`,
+   one documented disable; total warnings 256 → 150.
+6. **LocalStorage migration — deferred, blocked** (§3.7): requires new
+   settings/branding/report-config/backups REST endpoints and a product decision. The
+   raw-transport ratchet keeps new call sites out meanwhile.
+7. **Data-layer debt — no action needed** (§3.8): already ratcheted.
 
 ## 6. What this review could not verify
 
-- **Database integration suite** (`pnpm --filter mms-backend test:db`) and **E2E/Playwright**
-  including the axe gate — both need a running Postgres/Redis and the app stack; not run here.
+- **Database integration suite** (`pnpm --filter mms-backend test:db`) — needs a disposable
+  Postgres; not run here.
+- **Full chromium E2E suite** — the `a11y` Playwright project was run locally (16 tests, four
+  route groups, RTL, populated + overlays); the mutation-heavy `chromium` specs were not.
 - **Full-history secret scan** (`gitleaks detect`) — only the staged-file gate ran.
 - **Production deploy** (`deploy.yml`, Apache/PM2 on Hetzner) and live performance/CWV.
-- **Runtime behaviour of the print popups in a real browser** — the XSS fixes are covered by
-  string-level unit tests; a browser-level regression test would need Playwright.
+- **Runtime behaviour of the print popups in a real browser** — covered by string-level unit
+  tests; a Playwright print test was not added.
 
-No claim above is based on a check that was not run; the coverage figures in §3.4 are the
-configured thresholds (the full coverage run was not re-executed in this pass).
+Coverage figures in §3.4 are measured (backend via the CI 4-shard + merge procedure), not just
+configured thresholds. Every claim above is backed by a command that was actually run.
 
 ---
 

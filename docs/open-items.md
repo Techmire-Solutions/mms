@@ -309,6 +309,12 @@ vectors were fixed with regression tests:
 - `formatSocialPlatformUrl` rejects executable URL schemes (`javascript:`, `data:`, `vbscript:`)
   instead of passing them to an `href`/`window.open` target.
 
-Everything recorded above still stands. The next maintenance item is the dependency audit
-(7 moderate / 5 low, no high or critical).
+Everything recorded above still stands.
+
+**Follow-up applied (same day):** the dependency advisories are patched
+(`nodemailer 10.2.1`, `fast-uri 4.2.3`, `ip-address 10.7.5`, `serialize-javascript 7.1.4`; audit
+now 1 moderate + 1 low, both reviewed exceptions), coverage floors were raised to the measured
+values, the axe sweep now audits all 20 tenant routes (two violations found and fixed), and the
+`set-state-in-effect` backlog was burned down with the rule promoted to `error`. Remaining open
+items are the localStorage migration (blocked on endpoints) and the data-layer debt above.
 
