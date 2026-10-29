@@ -28,9 +28,12 @@ export function useQuestionBankFilters({
   const debouncedSearch = useDebounce(search, QUESTION_SEARCH_DEBOUNCE_MS);
 
   // Server-side filter/page reset whenever a filter dimension changes.
-  useEffect(() => {
+  const filterKey = `${debouncedSearch}|${filterCats.join(",")}|${filterDiff.join(",")}|${String(showDeleted)}`;
+  const [previousFilterKey, setPreviousFilterKey] = useState(filterKey);
+  if (previousFilterKey !== filterKey) {
+    setPreviousFilterKey(filterKey);
     setListPage(1);
-  }, [debouncedSearch, filterCats, filterDiff, showDeleted]);
+  }
 
   const pageQuery = useQuestionBankContractList({
     page: listPage,

@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback, Suspense } from "react";
+import React, { useState, useCallback, Suspense } from "react";
 import { Outlet } from "react-router-dom";
 import { ModuleScaffoldSkeleton } from "@/components/common/ModuleScaffold";
 import { AppShell } from "@/components/common/AppShell";
@@ -52,10 +52,13 @@ export default function AppLayout(): React.JSX.Element {
   useGlobalShortcut("k", toggleCommandPalette);
 
   const [logoError, setLogoError] = useState<boolean>(false);
+  const [previousLogoUrl, setPreviousLogoUrl] = useState(branding.logoUrl);
 
-  useEffect(() => {
+  // Reset the broken-image flag during render when the branding logo changes.
+  if (previousLogoUrl !== branding.logoUrl) {
+    setPreviousLogoUrl(branding.logoUrl);
     setLogoError(false);
-  }, [branding.logoUrl]);
+  }
 
   return (
     <AppShell

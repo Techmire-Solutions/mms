@@ -43,6 +43,21 @@ describe("formatSocialPlatformUrl", () => {
       "https://example.org/profile",
     );
   });
+
+  it("rejects executable schemes so they can never become a link target", () => {
+    expect(formatSocialPlatformUrl("Website", "javascript:alert(1)")).toBe("");
+    expect(formatSocialPlatformUrl("Other", 'javascript:alert("xss")')).toBe("");
+    expect(formatSocialPlatformUrl("Website", "data:text/html,<script>alert(1)</script>")).toBe("");
+    expect(formatSocialPlatformUrl("Website", "vbscript:msgbox(1)")).toBe("");
+  });
+
+  it("keeps mailto:, tel: and case-insensitive http(s) URLs", () => {
+    expect(formatSocialPlatformUrl("Website", "mailto:office@example.org")).toBe(
+      "mailto:office@example.org",
+    );
+    expect(formatSocialPlatformUrl("Website", "tel:+923001234567")).toBe("tel:+923001234567");
+    expect(formatSocialPlatformUrl("Website", "HTTPS://example.org")).toBe("HTTPS://example.org");
+  });
 });
 
 describe("isChronologicalDateRangeValid", () => {

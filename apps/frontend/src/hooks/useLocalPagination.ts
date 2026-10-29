@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 
 export interface UseLocalPaginationOptions<T> {
   items: T[];
@@ -21,9 +21,13 @@ export function useLocalPagination<T>({
     setCurrentPage(1);
   };
 
-  useEffect(() => {
+  // Reset to the first page when the data set changes. React's documented
+  // "adjust state during render" pattern — no effect, so no extra commit.
+  const [previousItems, setPreviousItems] = useState(items);
+  if (previousItems !== items) {
+    setPreviousItems(items);
     setCurrentPage(1);
-  }, [items]);
+  }
 
   const filteredItems = (() => {
     if (!searchQuery.trim()) return items;

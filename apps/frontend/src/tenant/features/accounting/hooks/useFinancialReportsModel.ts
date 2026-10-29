@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useState } from "react";
 import { resolveDefaultFiscalYear, todayISO, type FiscalYear } from "@mms/shared";
 import { useAccountingCurrency } from "@/hooks/useCurrency";
 import { useTranslation } from "@/hooks/useTranslation";
@@ -24,16 +24,24 @@ export function useFinancialReportsModel() {
 
   const [view, setView] = useState<FinancialReportViewType>("income");
   const activeFiscalYear = resolveDefaultFiscalYear(fiscalYears, todayISO()) ?? undefined;
-  const [dateFrom, setDateFrom] = useState("");
-  const [dateTo, setDateTo] = useState("");
+  const [dateFrom, setDateFrom] = useState(activeFiscalYear?.startDate ?? "");
+  const [dateTo, setDateTo] = useState(activeFiscalYear?.endDate ?? "");
   const [hasUserSetRange, setHasUserSetRange] = useState(false);
 
-  useEffect(() => {
-    if (hasUserSetRange || !activeFiscalYear) return;
-    const { startDate, endDate } = activeFiscalYear;
-    setDateFrom((prev) => (prev === startDate ? prev : startDate));
-    setDateTo((prev) => (prev === endDate ? prev : endDate));
-  }, [activeFiscalYear, hasUserSetRange]);
+  // The fiscal-year list resolves after first paint, so adopt its range as the
+  // default once it lands; an explicit user range always wins. Adopted during
+  // render instead of in an effect.
+  const activeRangeKey = activeFiscalYear
+    ? `${activeFiscalYear.startDate}:${activeFiscalYear.endDate}`
+    : "";
+  const [prevActiveRangeKey, setPrevActiveRangeKey] = useState(activeRangeKey);
+  if (prevActiveRangeKey !== activeRangeKey) {
+    setPrevActiveRangeKey(activeRangeKey);
+    if (activeFiscalYear && !hasUserSetRange) {
+      setDateFrom(activeFiscalYear.startDate);
+      setDateTo(activeFiscalYear.endDate);
+    }
+  }
 
   const handleDateFromChange = useCallback((value: string) => {
     setHasUserSetRange(true);

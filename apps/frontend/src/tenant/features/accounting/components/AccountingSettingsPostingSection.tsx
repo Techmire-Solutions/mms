@@ -1,4 +1,4 @@
-import { type Account } from "@mms/shared";
+import { type Account, type PostingRules } from "@mms/shared";
 import { BookOpen } from "lucide-react";
 import { FormSelect } from "@/components/app/FormSelect";
 import { accountOptions } from "@/tenant/features/accounting/lib/accountOptions";
@@ -12,7 +12,7 @@ import {
   useAccountingPostingRules,
   useSaveAccountingPostingRules,
 } from "@/tenant/features/accounting/hooks/useAccountingLedgerOps";
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import { AccountingSettingsFxPostingFields } from "./AccountingSettingsFxPostingFields";
 
 /**
@@ -25,36 +25,44 @@ interface AccountingSettingsPostingSectionProps {
   accounts: Account[];
 }
 
+interface PostingDraft {
+  arAccountId: string;
+  cashAccountId: string;
+  incomeAccountId: string;
+  discountAccountId: string;
+  fxRealizedAccountId: string;
+  fxUnrealizedAccountId: string;
+  fxRoundingAccountId: string;
+  ctaAccountId: string;
+}
+
+const postingDraftFrom = (rules: PostingRules | undefined): PostingDraft => ({
+  arAccountId: rules?.arAccountId ?? "",
+  cashAccountId: rules?.cashAccountId ?? "",
+  incomeAccountId: rules?.incomeAccountId ?? "",
+  discountAccountId: rules?.discountAccountId ?? "",
+  fxRealizedAccountId: rules?.fxRealizedAccountId ?? "",
+  fxUnrealizedAccountId: rules?.fxUnrealizedAccountId ?? "",
+  fxRoundingAccountId: rules?.fxRoundingAccountId ?? "",
+  ctaAccountId: rules?.ctaAccountId ?? "",
+});
+
 export function AccountingSettingsPostingSection({
   accounts,
 }: AccountingSettingsPostingSectionProps): React.JSX.Element {
   const { t } = useTranslation();
   const { data: loaded } = useAccountingPostingRules();
   const save = useSaveAccountingPostingRules();
-  const [draft, setDraft] = useState({
-    arAccountId: "",
-    cashAccountId: "",
-    incomeAccountId: "",
-    discountAccountId: "",
-    fxRealizedAccountId: "",
-    fxUnrealizedAccountId: "",
-    fxRoundingAccountId: "",
-    ctaAccountId: "",
-  });
+  const [draft, setDraft] = useState<PostingDraft>(() => postingDraftFrom(loaded));
 
-  useEffect(() => {
-    if (!loaded) return;
-    setDraft({
-      arAccountId: loaded.arAccountId ?? "",
-      cashAccountId: loaded.cashAccountId ?? "",
-      incomeAccountId: loaded.incomeAccountId ?? "",
-      discountAccountId: loaded.discountAccountId ?? "",
-      fxRealizedAccountId: loaded.fxRealizedAccountId ?? "",
-      fxUnrealizedAccountId: loaded.fxUnrealizedAccountId ?? "",
-      fxRoundingAccountId: loaded.fxRoundingAccountId ?? "",
-      ctaAccountId: loaded.ctaAccountId ?? "",
-    });
-  }, [loaded]);
+  // Adopt the server rules whenever new ones arrive, during render rather than
+  // in an effect that would render the stale draft once more.
+  const loadedKey = loaded ? JSON.stringify(postingDraftFrom(loaded)) : "";
+  const [prevLoadedKey, setPrevLoadedKey] = useState(loadedKey);
+  if (prevLoadedKey !== loadedKey) {
+    setPrevLoadedKey(loadedKey);
+    if (loaded) setDraft(postingDraftFrom(loaded));
+  }
 
   const handleSave = async (): Promise<void> => {
     try {

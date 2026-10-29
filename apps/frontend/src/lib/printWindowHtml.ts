@@ -1,3 +1,5 @@
+import { escapeHtml } from "@/lib/escapeHtml";
+
 export interface PrintHtmlOptions {
   windowTitle: string;
   language: string;
@@ -28,7 +30,7 @@ export function buildPrintWindowHtml({
 <html lang="${language || "en"}" dir="${direction}">
 <head>
   <meta charset="utf-8" />
-  <title>${windowTitle}</title>
+  <title>${escapeHtml(windowTitle)}</title>
   <style>
     * { margin: 0; padding: 0; box-sizing: border-box; }
     body { background: white; direction: ${direction}; font-family: ${PRINT_FONT_STACK}; }

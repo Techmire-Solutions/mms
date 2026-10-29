@@ -21,10 +21,13 @@ export function useExaminationsDirectoryQuery({
 
   const debouncedSearch = useDebounce(search, EXAM_SEARCH_DEBOUNCE_MS);
 
-  // Server-side filter/page reset whenever a filter dimension changes.
-  useEffect(() => {
+  // Server-side page reset whenever a filter dimension changes (render-phase reset, no effect).
+  const filterKey = `${debouncedSearch}|${filterStatus.join(",")}|${showDeleted}`;
+  const [prevFilterKey, setPrevFilterKey] = useState(filterKey);
+  if (prevFilterKey !== filterKey) {
+    setPrevFilterKey(filterKey);
     setListPage(1);
-  }, [debouncedSearch, filterStatus, showDeleted]);
+  }
 
   const examsPageQuery = useExaminationsContractList({
     page: listPage,

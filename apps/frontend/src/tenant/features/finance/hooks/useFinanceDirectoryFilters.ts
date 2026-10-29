@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { useDebounce } from "@/hooks/useDebounce";
 import { useDirectoryTrashState } from "@/hooks/useDirectoryTrashState";
 
@@ -11,13 +11,20 @@ export function useFinanceDirectoryFilters() {
   const debouncedInvoiceSearch = useDebounce(invoiceSearch, 250);
   const [invoiceFilterStatus, setInvoiceFilterStatus] = useState<string[]>([]);
 
-  useEffect(() => {
+  // Page 1 whenever a server-side filter dimension changes (render-phase reset, no effect).
+  const invoiceFilterKey = `${debouncedInvoiceSearch}|${invoiceFilterStatus.join(",")}|${showDeleted}`;
+  const [prevInvoiceFilterKey, setPrevInvoiceFilterKey] = useState(invoiceFilterKey);
+  if (prevInvoiceFilterKey !== invoiceFilterKey) {
+    setPrevInvoiceFilterKey(invoiceFilterKey);
     setInvoiceListPage(1);
-  }, [debouncedInvoiceSearch, invoiceFilterStatus, showDeleted]);
+  }
 
-  useEffect(() => {
+  // Trash mode also resets the payments pager (separate list, no invoice filters).
+  const [prevShowDeleted, setPrevShowDeleted] = useState(showDeleted);
+  if (prevShowDeleted !== showDeleted) {
+    setPrevShowDeleted(showDeleted);
     setPaymentListPage(1);
-  }, [showDeleted]);
+  }
 
   const clearInvoiceStatuses = () => {
     setInvoiceFilterStatus([]);

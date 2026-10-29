@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useState } from "react";
 import { AlertTriangle, CheckCircle2, ShieldCheck } from "lucide-react";
 import { formatDateTime, type WorkspaceBackupSummary } from "@mms/shared";
 import { useTranslation } from "@/hooks/useTranslation";
@@ -48,12 +48,15 @@ const BackupRestoreConfirmModal = function BackupRestoreConfirmModal({
   const [typed, setTyped] = useState("");
   const [password, setPassword] = useState("");
 
-  useEffect(() => {
+  // Adjust state during render: closing the modal clears the typed confirmation and password.
+  const [prevOpen, setPrevOpen] = useState(open);
+  if (prevOpen !== open) {
+    setPrevOpen(open);
     if (!open) {
       setTyped("");
       setPassword("");
     }
-  }, [open]);
+  }
 
   const phraseOk = typed.trim().toLowerCase() === confirmPhrase.trim().toLowerCase();
   const workspaceMatches = compareBackupSubdomains(summary?.subdomain, targetSubdomain) === "match";

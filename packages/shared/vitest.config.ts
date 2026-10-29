@@ -19,13 +19,14 @@ export default defineConfig({
       reporter: ["text", "json", "html"],
       exclude: ["src/**/*.{test,spec}.ts", "dist/**", "**/*.d.ts"],
       // Coverage gate: lock in the current baseline so regressions fail CI.
-      // Raise these as coverage improves. Measured: lines ~72.1 / stmts ~67.8 /
-      // funcs ~60.4 / branches ~51.2.
+      // Raise these as coverage improves — never lower one to unblock a change.
+      // Measured 2026-10-29 (after the money/fx edge-case pass):
+      // stmts 76.86 / branches 58.63 / funcs 73.23 / lines 80.25.
       thresholds: {
-        lines: 68,
-        statements: 65,
-        functions: 58,
-        branches: 48,
+        lines: 79,
+        statements: 75,
+        functions: 72,
+        branches: 57,
       },
     },
   },

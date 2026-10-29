@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { useDebounce } from "@/hooks/useDebounce";
 import { useDirectoryTrashState } from "@/hooks/useDirectoryTrashState";
 
@@ -12,10 +12,14 @@ export function useUsersDirectoryFilters() {
   const [statusFilter, setStatusFilter] = useState("all");
   const [selectedIds, setSelectedIds] = useState<string[]>([]);
 
-  useEffect(() => {
+  // Adjust state during render: a filter change returns to page one and clears the selection.
+  const filterResetInputs = [debouncedSearch, roleFilter, statusFilter, showDeleted];
+  const [prevFilterResetInputs, setPrevFilterResetInputs] = useState(filterResetInputs);
+  if (prevFilterResetInputs.some((value, index) => value !== filterResetInputs[index])) {
+    setPrevFilterResetInputs(filterResetInputs);
     setListPage(1);
     setSelectedIds([]);
-  }, [debouncedSearch, roleFilter, statusFilter, showDeleted]);
+  }
 
   const clearFilters = () => {
     setSearch("");

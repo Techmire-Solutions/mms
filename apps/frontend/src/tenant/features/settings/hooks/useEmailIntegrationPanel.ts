@@ -21,8 +21,8 @@ export function useEmailIntegrationPanel() {
   const [form, setForm] = useState<EmailIntegrationConfig>(DEFAULT_EMAIL_INTEGRATION);
   const [smtpPassword, setSmtpPassword] = useState("");
 
+  // `loading` already starts true, so the mount fetch only has to clear it when it settles.
   const load = useCallback(async (): Promise<void> => {
-    setLoading(true);
     try {
       const config = await fetchEmailIntegration();
       if (config) setForm(config);

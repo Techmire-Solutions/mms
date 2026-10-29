@@ -60,7 +60,7 @@
     "fastify-type-provider-zod": "^7.0.0",
     "ioredis": "^6.0.0",
     "lru-cache": "^11.5.3",
-    "nodemailer": "^10.1.2",
+    "nodemailer": "^10.2.1",
     "pg": "^8.23.1",
     "pino": "catalog:",
     "zod": "catalog:"

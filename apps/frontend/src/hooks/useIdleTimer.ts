@@ -75,6 +75,7 @@ export function useIdleTimer({
     };
 
     IDLE_EVENTS.forEach((ev) => window.addEventListener(ev, handleEvent, { passive: true }));
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- reset() re-syncs the rendered clock with the ref-held deadline so a timeout/enabled change applies immediately; the deadline is owned by event/timer subscriptions and reading it during render would be a ref read.
     reset();
 
     return () => {

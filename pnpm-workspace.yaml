@@ -86,10 +86,25 @@ overrides:
   # Security: lodash-es >=4.0.0 <=4.17.23 carries a code injection vuln in _.template().
   # Transitive path: mermaid → chevrotain → lodash-es. Pin to >=4.17.24 (patch-safe).
   lodash-es: ">=4.17.24"
-  fast-uri: "^4.1.3"
+  # Security: fast-uri <4.2.3 — host-confusion / scheme-spoofing advisories.
+  # Transitive path: fastify → ajv / fast-json-stringify → fast-uri.
+  fast-uri: "^4.2.3"
+  # Security: ip-address <10.7.4 — quadratic-complexity advisory.
+  # Transitive path: @fastify/rate-limit → ip-address.
+  ip-address: ">=10.7.4"
+  # Security: build-tooling only (not shipped runtime code).
+  # Transitive paths: vite-plugin-pwa → workbox-build → @rollup/plugin-terser → serialize-javascript.
+  serialize-javascript: ">=7.1.2"
+  # REVIEWED EXCEPTION — deepmerge@4.3.1 (via vite-plugin-pwa > workbox-build >
+  # @rollup/plugin-node-resolve) carries a low-severity advisory whose
+  # `patched_versions` is `>=4.3.2`, but 4.3.2 was never published (4.3.1 is the
+  # latest 4.x). Build-time only, no runtime path from request data. Revisit if a
+  # patched release appears.
   # Security: Seroval GHSA-p6vx-979v-rg4c and GHSA-jp82-f5mq-hwhp.
   # Transitive path: @tanstack/react-query-devtools > @kobalte/core > solid-js > seroval.
-  seroval: ">=1.6.3"
+  # GHSA typed-array code injection requires >=1.6.11 (also covers the earlier
+  # prototype-pollution advisories).
+  seroval: ">=1.6.11"
   # Security: source-map-js GHSA-68fv-2mgg-jv7q event-loop DoS via indexed section offsets.
   # Transitive path: @vitest/coverage-v8 > magicast / vite > postcss > source-map-js.
   source-map-js: ">=1.2.2"

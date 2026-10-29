@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import {
   PERMISSION_ACTIONS,
   type PermissionAction,
@@ -10,17 +10,14 @@ export function useRolesPermissionDraft(displayRole: WorkspaceRole | null) {
   const [permDraft, setPermDraft] = useState<PermissionMap | null>(null);
   const [permDraftRoleId, setPermDraftRoleId] = useState<string | null>(null);
 
-  useEffect(() => {
-    if (!displayRole) {
-      setPermDraft(null);
-      setPermDraftRoleId(null);
-      return;
-    }
-    if (displayRole.id !== permDraftRoleId) {
-      setPermDraft(structuredClone(displayRole.permissions));
-      setPermDraftRoleId(displayRole.id);
-    }
-  }, [displayRole, permDraftRoleId]);
+  // Adjust state during render: the draft mirrors the displayed role until the user edits it.
+  if (!displayRole) {
+    if (permDraft !== null) setPermDraft(null);
+    if (permDraftRoleId !== null) setPermDraftRoleId(null);
+  } else if (displayRole.id !== permDraftRoleId) {
+    setPermDraft(structuredClone(displayRole.permissions));
+    setPermDraftRoleId(displayRole.id);
+  }
 
   const permDirty = (() => {
     if (!displayRole || !permDraft) return false;

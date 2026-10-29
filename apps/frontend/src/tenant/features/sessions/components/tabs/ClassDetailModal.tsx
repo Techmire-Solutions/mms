@@ -1,5 +1,5 @@
 /** Orchestrator FormModal for configuring Class General Rules, Fees, Schedules, Budgets, Scholarships. */
-import React, { useState, useEffect, useMemo } from "react";
+import React, { useState, useMemo } from "react";
 import { GraduationCap } from "lucide-react";
 import { FormModal } from "@/components/app/FormModal";
 import { useTranslation } from "@/hooks/useTranslation";
@@ -106,12 +106,17 @@ export function ClassDetailModal({
     [t, terms],
   );
 
-  useEffect(() => {
+  // Every (re)open starts on the General tab with no errors (render-phase reset, no effect).
+  const [prevOpen, setPrevOpen] = useState(open);
+  const [prevSessionClass, setPrevSessionClass] = useState(sessionClass);
+  if (prevOpen !== open || prevSessionClass !== sessionClass) {
+    setPrevOpen(open);
+    setPrevSessionClass(sessionClass);
     if (open) {
       setActiveTab("general");
       setErrors({});
     }
-  }, [open, sessionClass]);
+  }
 
   const handleSave = async () => {
     const newErrors: Record<string, string> = {};

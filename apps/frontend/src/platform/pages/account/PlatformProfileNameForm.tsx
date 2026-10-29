@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useState } from "react";
 import { User } from "lucide-react";
 import { Field, FormSubmitActions, Input, SectionCard } from "@shared/ui";
 import { useTranslation } from "@/hooks/useTranslation";
@@ -22,13 +22,13 @@ export function PlatformProfileNameForm({
   const [phone, setPhone] = useState(initialPhone ?? "");
   const [nameError, setNameError] = useState<string | null>(null);
 
-  useEffect(() => {
+  // Re-seed the fields during render when the profile props change.
+  const [prevInitial, setPrevInitial] = useState({ initialName, initialPhone });
+  if (prevInitial.initialName !== initialName || prevInitial.initialPhone !== initialPhone) {
+    setPrevInitial({ initialName, initialPhone });
     setName(initialName);
-  }, [initialName]);
-
-  useEffect(() => {
     setPhone(initialPhone ?? "");
-  }, [initialPhone]);
+  }
 
   const handleSaveName = async (event: React.FormEvent): Promise<void> => {
     event.preventDefault();

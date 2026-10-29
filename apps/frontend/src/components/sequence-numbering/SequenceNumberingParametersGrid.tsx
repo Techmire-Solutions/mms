@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useState } from "react";
 import { FORM_INPUT } from "@/components/ui/formStyles";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -70,10 +70,14 @@ export function SequenceNumberingParametersGrid({
   const [digitsText, setDigitsText] = useState(String(sequenceDigits));
   const [digitsError, setDigitsError] = useState<string | undefined>();
 
-  useEffect(() => {
+  // Follow externally applied digit changes so the draft never drifts from the
+  // committed value. Adjusted during render per React's documented prop-change pattern.
+  const [previousSequenceDigits, setPreviousSequenceDigits] = useState(sequenceDigits);
+  if (previousSequenceDigits !== sequenceDigits) {
+    setPreviousSequenceDigits(sequenceDigits);
     setDigitsText(String(sequenceDigits));
     setDigitsError(undefined);
-  }, [sequenceDigits]);
+  }
 
   const yearOptions = [
     {

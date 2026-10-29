@@ -16,17 +16,69 @@ const temporaryPassword = "Madrasa@1234";
 const permanentPassword = "Madrasa@5678";
 const platformPassword = "Pa$$w0rd123";
 
+interface AuditRoute {
+  path: string;
+  label: string;
+  /** Desktop overlay (dialog + drawer) audit — representative Work routes only. */
+  overlay?: boolean;
+}
+
 /**
- * Shell + representative Work/Setup surfaces under accessibility smoke audit.
+ * Every tenant app surface from `TENANT_PATHS` (`src/lib/routing/moduleRegistry.ts`).
+ * A fresh E2E tenant is granted every system module, so all module routes render.
  */
-const AUDIT_ROUTES = [
-  { path: "/", ready: "#main-content", label: "dashboard (shell)" },
-  { path: "/contacts", ready: "#main-content", label: "contacts (Work)" },
-  { path: "/students", ready: "#main-content", label: "students (Work, dense table)" },
-  { path: "/finance", ready: "#main-content", label: "finance (Work, money)" },
-  { path: "/accounting", ready: "#main-content", label: "accounting (Work, ledger)" },
-  { path: "/settings", ready: "#main-content", label: "settings (Setup)" },
+const AUDIT_ROUTE_GROUPS: ReadonlyArray<{
+  key: string;
+  label: string;
+  routes: readonly AuditRoute[];
+}> = [
+  {
+    key: "core",
+    label: "shell & core work",
+    routes: [
+      { path: "/", label: "dashboard (shell)" },
+      { path: "/contacts", label: "contacts (Work)", overlay: true },
+      { path: "/students", label: "students (Work, dense table)", overlay: true },
+      { path: "/settings", label: "settings (Setup)" },
+    ],
+  },
+  {
+    key: "academic",
+    label: "academic work",
+    routes: [
+      { path: "/faculty", label: "faculty (Work)" },
+      { path: "/enrollments", label: "enrollments (Work)" },
+      { path: "/sessions", label: "sessions (Work)" },
+      { path: "/attendance", label: "attendance (Work)" },
+      { path: "/examinations", label: "examinations (Work)", overlay: true },
+      { path: "/question-bank", label: "question bank (Work)" },
+    ],
+  },
+  {
+    key: "operations",
+    label: "money & records",
+    routes: [
+      { path: "/finance", label: "finance (Work, money)", overlay: true },
+      { path: "/hasanat-cards", label: "hasanat cards (Work)" },
+      { path: "/accounting", label: "accounting (Work, ledger)", overlay: true },
+      { path: "/obligations", label: "obligations (Work)" },
+      { path: "/tasks", label: "tasks (Work)" },
+    ],
+  },
+  {
+    key: "admin",
+    label: "comms & admin",
+    routes: [
+      { path: "/messaging", label: "messaging (Work)", overlay: true },
+      { path: "/workshops", label: "workshops (Work)" },
+      { path: "/users", label: "users (Work)", overlay: true },
+      { path: "/profile", label: "profile (account)" },
+      { path: "/notifications", label: "notifications (account)" },
+    ],
+  },
 ];
+
+const MAIN_CONTENT = "#main-content";
 
 const AUDIT_VIEWPORTS = RESPONSIVE_VIEWPORTS.filter(
   (viewport) => viewport.width === 375 || viewport.width === 1440,
@@ -93,20 +145,25 @@ async function auditCommandPalette(page: Page, context: string): Promise<void> {
   });
 }
 
-/** LTR sweep: shell + Work surfaces + Setup surface; overlays on desktop Work routes. */
-async function ltrSweep(page: Page, tenantOrigin: string, viewport: AuditViewport): Promise<void> {
+/** LTR sweep for one route group; overlays run on the flagged desktop Work routes. */
+async function ltrSweep(
+  page: Page,
+  tenantOrigin: string,
+  viewport: AuditViewport,
+  routes: readonly AuditRoute[],
+): Promise<void> {
   await test.step(`LTR Sweep @ ${viewport.width}px (${viewport.name})`, async () => {
     await page.setViewportSize({ width: viewport.width, height: viewport.height });
 
-    for (const route of AUDIT_ROUTES) {
+    for (const route of routes) {
       await test.step(`Audit ${route.label} @ ${viewport.width}px`, async () => {
         const context = `${route.label} @ ${viewport.width}px (ltr)`;
-        await gotoAndSettle(page, tenantOrigin, route.path, route.ready);
+        await gotoAndSettle(page, tenantOrigin, route.path, MAIN_CONTENT);
         await assertNoSeriousA11yViolations(page, { context });
 
         if (route.path === "/") await auditCommandPalette(page, `${viewport.width}px (ltr)`);
 
-        if (viewport.width === 1440 && route.path !== "/" && route.path !== "/settings") {
+        if (viewport.width === 1440 && route.overlay) {
           await auditOverlay(page, context, "dialog");
           await auditOverlay(page, context, "drawer");
         }
@@ -115,37 +172,34 @@ async function ltrSweep(page: Page, tenantOrigin: string, viewport: AuditViewpor
   });
 }
 
-// One sweep per test, each with its own tenant, so the CI `a11y` project can
-// shard them onto separate runners instead of one ~110s test pinning a shard.
+// One test per route group and viewport, each with its own tenant, so the CI
+// `a11y` project's two shards can balance the work instead of one long test
+// pinning a runner. 4 groups × 2 viewports = all 20 tenant routes.
 test.describe("accessibility smoke @smoke", () => {
-  test("app shell and module surfaces pass axe at 1440 (LTR)", async ({ page }) => {
-    test.setTimeout(300_000);
-    const tenantOrigin = await bootstrapTenant(page, "d");
-    for (const viewport of AUDIT_VIEWPORTS.filter((v) => v.width === 1440)) {
-      await ltrSweep(page, tenantOrigin, viewport);
+  for (const group of AUDIT_ROUTE_GROUPS) {
+    for (const viewport of AUDIT_VIEWPORTS) {
+      test(`${group.label} pass axe at ${viewport.width}px (LTR)`, async ({ page }) => {
+        test.setTimeout(300_000);
+        const tenantOrigin = await bootstrapTenant(page, `${group.key}${viewport.width}`);
+        await ltrSweep(page, tenantOrigin, viewport, group.routes);
+      });
     }
-  });
+  }
 
-  test("app shell and module surfaces pass axe at 375 (LTR) and 1440 (RTL)", async ({ page }) => {
+  test("app shell and dense Work surfaces pass axe at 1440 (RTL)", async ({ page }) => {
     test.setTimeout(300_000);
     const tenantOrigin = await bootstrapTenant(page, "m");
-    for (const viewport of AUDIT_VIEWPORTS.filter((v) => v.width === 375)) {
-      await ltrSweep(page, tenantOrigin, viewport);
-    }
+    await page.setViewportSize({ width: 1440, height: 900 });
+    await gotoAndSettle(page, tenantOrigin, "/", MAIN_CONTENT);
+    await forceRtl(page, "ar");
+    await expect(page.locator("html")).toHaveAttribute("dir", "rtl");
+    await assertNoSeriousA11yViolations(page, { context: "dashboard @ 1440px (rtl)" });
+    await auditCommandPalette(page, "1440px (rtl)");
 
-    await test.step("RTL Sweep @ 1440px", async () => {
-      await page.setViewportSize({ width: 1440, height: 900 });
-      await gotoAndSettle(page, tenantOrigin, "/", "#main-content");
-      await forceRtl(page, "ar");
-      await expect(page.locator("html")).toHaveAttribute("dir", "rtl");
-      await assertNoSeriousA11yViolations(page, { context: "dashboard @ 1440px (rtl)" });
-      await auditCommandPalette(page, "1440px (rtl)");
-
-      // RTL overlay verification on dense work directory
-      await gotoAndSettle(page, tenantOrigin, "/students", "#main-content");
-      await forceRtl(page, "ar");
-      await auditOverlay(page, "students @ 1440px (rtl)", "dialog");
-      await auditOverlay(page, "students @ 1440px (rtl)", "drawer");
-    });
+    // RTL overlay verification on the dense work directory
+    await gotoAndSettle(page, tenantOrigin, "/students", MAIN_CONTENT);
+    await forceRtl(page, "ar");
+    await auditOverlay(page, "students @ 1440px (rtl)", "dialog");
+    await auditOverlay(page, "students @ 1440px (rtl)", "drawer");
   });
 });

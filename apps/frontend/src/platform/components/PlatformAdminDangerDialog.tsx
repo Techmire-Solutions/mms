@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useState } from "react";
 import type { PlatformUserProfile } from "@mms/shared";
 import { useTranslation } from "@/hooks/useTranslation";
 import { TypedConfirmDialog } from "@shared/ui";
@@ -28,15 +28,17 @@ export function PlatformAdminDangerDialog({
   const deleteAdmin = useDeletePlatformAdmin();
   const [password, setPassword] = useState("");
   const [error, setError] = useState<string | null>(null);
-
-  const pending = setDisabled.isPending || deleteAdmin.isPending;
-
-  useEffect(() => {
+  // Reset the step-up form during render whenever the dialog target changes.
+  const [prevTarget, setPrevTarget] = useState({ open, mode, adminId: admin.id });
+  if (prevTarget.open !== open || prevTarget.mode !== mode || prevTarget.adminId !== admin.id) {
+    setPrevTarget({ open, mode, adminId: admin.id });
     if (open) {
       setPassword("");
       setError(null);
     }
-  }, [open, mode, admin.id]);
+  }
+
+  const pending = setDisabled.isPending || deleteAdmin.isPending;
 
   const titleKey =
     mode === "delete"

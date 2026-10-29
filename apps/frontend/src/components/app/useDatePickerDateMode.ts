@@ -54,10 +54,28 @@ export function useDatePickerDateMode({
     resolveInitialDisplayMonth(dateValue, min, max),
   );
 
-  React.useEffect(() => {
-    if (!open || isYearMode) return;
-    setDisplayMonth(resolveInitialDisplayMonth(dateValue, min, max));
-  }, [open, dateValue, min, max, isYearMode]);
+  // Snap the calendar back to the relevant month whenever the picker re-opens or the
+  // value/bounds change. Adjusted during render (React's documented prop-change
+  // pattern) so the calendar never paints the previous entry's month.
+  const [monthAnchor, setMonthAnchor] = React.useState(() => ({
+    open,
+    dateValue,
+    min,
+    max,
+    isYearMode,
+  }));
+  if (
+    monthAnchor.open !== open ||
+    monthAnchor.dateValue !== dateValue ||
+    monthAnchor.min !== min ||
+    monthAnchor.max !== max ||
+    monthAnchor.isYearMode !== isYearMode
+  ) {
+    setMonthAnchor({ open, dateValue, min, max, isYearMode });
+    if (open && !isYearMode) {
+      setDisplayMonth(resolveInitialDisplayMonth(dateValue, min, max));
+    }
+  }
 
   const minIsoStr = typeof min === "string" ? min : undefined;
   const maxIsoStr = typeof max === "string" ? max : undefined;

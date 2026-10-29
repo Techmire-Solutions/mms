@@ -87,7 +87,7 @@ export function useObligationsPageController() {
 
   const [showForm, setShowForm] = useState(false);
   const [viewCollection, setViewCollection] = useState<ObligationCollection | null>(null);
-  const [filteredCount, setFilteredCount] = useState(0);
+  const [reportedFilteredCount, setFilteredCount] = useState<number | null>(null);
   const columnLayout = useObligationColumnLayout();
 
   const { messagingTarget, openComposer, closeComposer, canWriteMessaging } =
@@ -115,9 +115,9 @@ export function useObligationsPageController() {
     canWriteMessaging,
   });
 
-  useEffect(() => {
-    setFilteredCount(collections.length);
-  }, [collections.length]);
+  // The collections list reports its own filtered count; until it does, fall back to the
+  // full loaded collection.
+  const filteredCount = reportedFilteredCount ?? collections.length;
 
   useModuleShortcuts({
     searchInputId: "obligations-search-input",

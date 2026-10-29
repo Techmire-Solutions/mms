@@ -4,6 +4,8 @@ import {
   crossExchangeRate,
   InvalidExchangeRateError,
   invertExchangeRate,
+  isValidExchangeRate,
+  previewConvertedAmount,
 } from "./fxConvert.js";
 import { moneyToDecimalString, parseMoney, subtractMoney } from "./money.js";
 import { currencyCodeSchema, exchangeRateValueSchema, moneyValueSchema } from "./moneySchemas.js";
@@ -54,6 +56,38 @@ describe("rate algebra", () => {
   it("triangulates through a base currency", () => {
     // EUR base: 1 EUR = 1.08 USD, 1 EUR = 302.4 PKR → 1 USD = 280 PKR.
     expect(crossExchangeRate("1.08", "302.4")).toBe("280");
+    expect(crossExchangeRate("1", "2")).toBe("2");
+  });
+
+  it("validates rate syntax and the stored 10-decimal scale", () => {
+    expect(isValidExchangeRate("1")).toBe(true);
+    expect(isValidExchangeRate("0.0000000001")).toBe(true);
+    expect(isValidExchangeRate("280.1234567891")).toBe(true);
+    expect(isValidExchangeRate("0.00000000001")).toBe(false);
+    expect(isValidExchangeRate("280.12345678912")).toBe(false);
+    for (const bad of ["", "abc", "0", "-1", "1e3", "1.", ".5", "1,5", " 1 2 "]) {
+      expect(isValidExchangeRate(bad)).toBe(false);
+      expect(() => convertMoney(parseMoney("1", "USD"), bad, "PKR")).toThrow(
+        InvalidExchangeRateError,
+      );
+    }
+  });
+
+  it("trims trailing zeros from derived rates", () => {
+    expect(invertExchangeRate("2")).toBe("0.5");
+    expect(invertExchangeRate("1")).toBe("1");
+  });
+});
+
+describe("previewConvertedAmount", () => {
+  it("converts at the rate and passes same-currency amounts through", () => {
+    expect(previewConvertedAmount(100, "USD", "PKR", "280")).toBe(28000);
+    expect(previewConvertedAmount(12.34, "USD", "USD", "not-a-rate")).toBe(12.34);
+  });
+
+  it("returns null while the rate is unusable", () => {
+    expect(previewConvertedAmount(1, "USD", "PKR", "abc")).toBeNull();
+    expect(previewConvertedAmount(1, "USD", "PKR", "0")).toBeNull();
   });
 });
 

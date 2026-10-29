@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useState } from "react";
 import { Shield } from "lucide-react";
 import type { PlatformAdminPermissions, PlatformUserProfile } from "@mms/shared";
 import { normalizePlatformAdminPermissions } from "@mms/shared";
@@ -27,14 +27,16 @@ export function PlatformEditAdminAccessDialog({
   );
   const [password, setPassword] = useState("");
   const [error, setError] = useState<string | null>(null);
-
-  useEffect(() => {
+  // Reset the editor during render whenever the dialog opens or its target changes.
+  const [prevTarget, setPrevTarget] = useState({ open, admin });
+  if (prevTarget.open !== open || prevTarget.admin !== admin) {
+    setPrevTarget({ open, admin });
     if (open) {
       setPermissions(normalizePlatformAdminPermissions(admin.permissions));
       setPassword("");
       setError(null);
     }
-  }, [open, admin]);
+  }
 
   const handleSave = async (): Promise<void> => {
     setError(null);

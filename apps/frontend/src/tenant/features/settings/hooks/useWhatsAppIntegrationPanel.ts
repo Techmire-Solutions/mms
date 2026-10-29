@@ -22,8 +22,8 @@ export function useWhatsAppIntegrationPanel() {
   const [accountSecret, setAccountSecret] = useState("");
   const [testPhone, setTestPhone] = useState("");
 
+  // `loading` already starts true, so the mount fetch only has to clear it when it settles.
   const load = useCallback(async (): Promise<void> => {
-    setLoading(true);
     try {
       const config = await fetchWhatsappIntegration();
       if (config) setForm(config);

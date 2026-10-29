@@ -22,8 +22,8 @@ export function useSmsIntegrationPanel() {
   const [accountSecret, setAccountSecret] = useState("");
   const [testPhone, setTestPhone] = useState("");
 
+  // `loading` already starts true, so the mount fetch only has to clear it when it settles.
   const load = useCallback(async (): Promise<void> => {
-    setLoading(true);
     try {
       const config = await fetchSmsIntegration();
       if (config) setForm(config);

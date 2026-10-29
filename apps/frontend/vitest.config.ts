@@ -108,14 +108,14 @@ export default defineConfig({
       reporter: ["text", "json", "html"],
       exclude: ["src/**/*.test.{ts,tsx}", "src/**/*.spec.{ts,tsx}", "src/test/**", "**/*.d.ts"],
       // Coverage gate: lock in the current baseline so regressions fail CI.
-      // Raise these as coverage improves. Measured (whole src, incl. the
-      // tenant/hooks/collections facades): statements ~55.2 / branches ~51.9 /
-      // functions ~47.2 / lines ~56.7.
+      // Raise these as coverage improves — never lower one to unblock a change.
+      // Measured 2026-10-29 (whole src, incl. tenant/hooks/collections facades):
+      // statements 55.34 / branches 51.57 / functions 46.53 / lines 56.66.
       thresholds: {
-        lines: 55,
-        statements: 54,
-        functions: 45,
-        branches: 50,
+        lines: 56,
+        statements: 55,
+        functions: 46,
+        branches: 51,
       },
     },
   },

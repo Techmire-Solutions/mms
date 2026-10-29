@@ -298,3 +298,23 @@ ratchet, so the fix cannot silently regress.
    Query remains worthwhile.
 6. **The 5 unreferenced-key i18n baseline is 518** (5.5% of 9,414). Pruning them is a
    product/QA decision; `check:i18n-unused` blocks growth in the meantime.
+
+## 2026-10-29 project review
+
+Full report: [project-review-2026-10-29.md](./project-review-2026-10-29.md). Two stored-XSS
+vectors were fixed with regression tests:
+
+- Print-window titles are now escaped in `printHtmlDocument` and `buildPrintWindowHtml` (certificate
+  names, journal-entry refs, receipt numbers reached a same-origin `<title>` unescaped).
+- `formatSocialPlatformUrl` rejects executable URL schemes (`javascript:`, `data:`, `vbscript:`)
+  instead of passing them to an `href`/`window.open` target.
+
+Everything recorded above still stands.
+
+**Follow-up applied (same day):** the dependency advisories are patched
+(`nodemailer 10.2.1`, `fast-uri 4.2.3`, `ip-address 10.7.5`, `serialize-javascript 7.1.4`; audit
+now 1 moderate + 1 low, both reviewed exceptions), coverage floors were raised to the measured
+values, the axe sweep now audits all 20 tenant routes (two violations found and fixed), and the
+`set-state-in-effect` backlog was burned down with the rule promoted to `error`. Remaining open
+items are the localStorage migration (blocked on endpoints) and the data-layer debt above.
+

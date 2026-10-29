@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import {
   getPrimaryEmail,
   getPrimaryPhone,
@@ -7,7 +7,7 @@ import {
   type PhoneNumber,
 } from "@mms/shared";
 import { useTranslation } from "@/hooks/useTranslation";
-import { useTenantProfile } from "@/tenant/hooks/useTenantProfile";
+import { useTenantProfile, type TenantProfileData } from "@/tenant/hooks/useTenantProfile";
 
 import { getApiValidationMessage } from "@/lib/apiValidationMessage";
 import { notify } from "@/lib/notify";
@@ -50,6 +50,24 @@ function upsertPrimaryEmail(existing: readonly EmailAddress[], address: string):
   return [{ label: "Primary", address, isPrimary: true }, ...existing];
 }
 
+/** Editable contact-field values derived from the profile payload. */
+function contactFieldSeed(profile: TenantProfileData | undefined): {
+  name: string;
+  phone: string;
+  contactEmail: string;
+} {
+  if (!profile) return { name: "", phone: "", contactEmail: "" };
+  return {
+    name: profile.contact?.name ?? profile.name ?? "",
+    phone: profile.contact
+      ? getPrimaryPhone(profile.contact) || ""
+      : String(Reflect.get(profile, "phone") ?? ""),
+    contactEmail: profile.contact
+      ? getPrimaryEmail(profile.contact) || ""
+      : String(Reflect.get(profile, "email") ?? ""),
+  };
+}
+
 export function useAccountProfileContactActions() {
   const { t } = useTranslation();
   const { checkUserAuth } = useAuth();
@@ -58,25 +76,23 @@ export function useAccountProfileContactActions() {
 
   const updateContactMutation = tsrClient.profile.updateContact.useMutation();
 
-  const [name, setName] = useState("");
-  const [phone, setPhone] = useState("");
-  const [contactEmail, setContactEmail] = useState("");
+  const seededFields = contactFieldSeed(profile);
+  const [name, setName] = useState(seededFields.name);
+  const [phone, setPhone] = useState(seededFields.phone);
+  const [contactEmail, setContactEmail] = useState(seededFields.contactEmail);
   const [savingContact, setSavingContact] = useState(false);
+  const [previousProfile, setPreviousProfile] = useState(profile);
 
-  useEffect(() => {
-    if (!profile) return;
-    setName(profile.contact?.name ?? profile.name ?? "");
-    setPhone(
-      profile.contact
-        ? getPrimaryPhone(profile.contact) || ""
-        : String(Reflect.get(profile, "phone") ?? ""),
-    );
-    setContactEmail(
-      profile.contact
-        ? getPrimaryEmail(profile.contact) || ""
-        : String(Reflect.get(profile, "email") ?? ""),
-    );
-  }, [profile]);
+  // Re-seed the editable contact fields during render whenever the profile payload changes.
+  if (previousProfile !== profile) {
+    setPreviousProfile(profile);
+    if (profile) {
+      const nextFields = contactFieldSeed(profile);
+      setName(nextFields.name);
+      setPhone(nextFields.phone);
+      setContactEmail(nextFields.contactEmail);
+    }
+  }
 
   /** Persists the own-contact patch (shared by Save and avatar crop). Empty arrays clear. */
   const persistOwnContact = async (avatar: string | undefined): Promise<void> => {

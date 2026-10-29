@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import {
   currencyExchangeabilityPutSchema,
   generateClientEntityId,
@@ -34,12 +34,27 @@ export function useExchangeabilityDraft() {
   const { t } = useTranslation();
   const query = useCurrencyExchangeability();
   const save = useSaveCurrencyExchangeability();
-  const [rows, setRows] = useState<ExchangeabilityRowDraft[]>([]);
+  const [rows, setRows] = useState<ExchangeabilityRowDraft[]>(() =>
+    query.data ? query.data.map(toRow) : [],
+  );
   const [error, setError] = useState<string | null>(null);
 
-  useEffect(() => {
+  // Adopt freshly loaded rows during render rather than in an effect.
+  const loadedRowsKey = query.data
+    ? JSON.stringify(
+        query.data.map(({ currency, assessedOn, estimationMethod, reason }) => [
+          currency,
+          assessedOn,
+          estimationMethod,
+          reason,
+        ]),
+      )
+    : "";
+  const [prevRowsKey, setPrevRowsKey] = useState(loadedRowsKey);
+  if (prevRowsKey !== loadedRowsKey) {
+    setPrevRowsKey(loadedRowsKey);
     if (query.data) setRows(query.data.map(toRow));
-  }, [query.data]);
+  }
 
   const handleSave = async (): Promise<void> => {
     const parsed = currencyExchangeabilityPutSchema.safeParse({

@@ -20,20 +20,24 @@ export function PlatformSystemMaintenance(): React.JSX.Element {
   const { t } = useTranslation();
   const reducedMotion = useReducedMotion();
   const { data: telemetry, isLoading: telemetryLoading } = usePlatformTelemetry();
-  const [probing, setProbing] = useState(false);
+  // The mount effect always starts a probe, so the first render is already "probing".
+  const [probing, setProbing] = useState(true);
   const [latencyMs, setLatencyMs] = useState<number | null>(null);
   const [latencyHistory, setLatencyHistory] = useState<number[]>([]);
   const [redisStatus, setRedisStatus] = useState<string>("connected");
   const [lastChecked, setLastChecked] = useState<string | null>(null);
 
   const runHealthProbe = useCallback(async () => {
-    setProbing(true);
     const start = performance.now();
     try {
-      const res = await apiFetch("/ready", { cache: "no-store" });
+      // Fold transport/parse failures into a null body so the probe never throws and
+      // every state update happens after the first await (it is started from an effect).
+      const res = await apiFetch("/ready", { cache: "no-store" }).catch(() => null);
       const elapsed = Math.round(performance.now() - start);
-      if (res.ok) {
-        const body = (await res.json()) as { redis?: string; database?: string };
+      const body = res?.ok
+        ? ((await res.json().catch(() => null)) as { redis?: string; database?: string } | null)
+        : null;
+      if (body !== null) {
         setRedisStatus(body.redis ?? "connected");
         setLatencyMs(elapsed);
         setLatencyHistory((prev) => [...prev.slice(-7), elapsed]);
@@ -41,9 +45,6 @@ export function PlatformSystemMaintenance(): React.JSX.Element {
         setLatencyMs(null);
         setRedisStatus("disconnected");
       }
-    } catch {
-      setLatencyMs(null);
-      setRedisStatus("disconnected");
     } finally {
       setProbing(false);
       setLastChecked(formatDateTime(new Date().toISOString()));
@@ -159,7 +160,10 @@ export function PlatformSystemMaintenance(): React.JSX.Element {
             <Button
               variant="outline"
               icon={RefreshCw}
-              onClick={() => void runHealthProbe()}
+              onClick={() => {
+                setProbing(true);
+                void runHealthProbe();
+              }}
               loading={probing}
               title={t("platform.maintenance.runDiagnostics")}
               aria-label={t("platform.maintenance.runDiagnostics")}

@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useState } from "react";
 import { ReceiptText } from "lucide-react";
 import { FormModal } from "@/components/app/FormModal";
 import { useFinanceCurrency } from "@/hooks/useCurrency";
@@ -57,13 +57,18 @@ export const InvoiceForm = function InvoiceForm({
     ? (amount: number) => formatMoney(amount, fx.currency, { useSymbol: true })
     : formatCurrency;
 
-  useEffect(() => {
+  // Fresh draft when the dialog (re)opens or the due-date policy changes (render-phase reset).
+  const [prevOpen, setPrevOpen] = useState(open);
+  const [prevDueDays, setPrevDueDays] = useState(settings.dueDays);
+  if (prevOpen !== open || prevDueDays !== settings.dueDays) {
+    setPrevOpen(open);
+    setPrevDueDays(settings.dueDays);
     if (open) {
       setDraft(createInitialDraft(settings.dueDays));
       setErrors({});
       setSubmitError(undefined);
     }
-  }, [open, settings.dueDays]);
+  }
 
   const { baseFee, discountValue, discountAmt, finalAmt } = computeInvoiceAmounts(
     draft.baseFee,

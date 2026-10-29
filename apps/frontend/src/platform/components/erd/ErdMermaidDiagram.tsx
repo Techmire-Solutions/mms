@@ -37,6 +37,24 @@ export function ErdMermaidDiagram({ domain }: ErdMermaidDiagramProps): React.JSX
   const [isFullscreen, setIsFullscreen] = useState(false);
   const [copied, setCopied] = useState(false);
 
+  // A new diagram source or retry invalidates the rendered SVG — reset during render.
+  const [prevRender, setPrevRender] = useState({
+    source,
+    domainId: domain.id,
+    tableCount: domain.tables.length,
+    retryTick,
+  });
+  if (
+    prevRender.source !== source ||
+    prevRender.domainId !== domain.id ||
+    prevRender.tableCount !== domain.tables.length ||
+    prevRender.retryTick !== retryTick
+  ) {
+    setPrevRender({ source, domainId: domain.id, tableCount: domain.tables.length, retryTick });
+    setStatus("pending");
+    setSvg("");
+  }
+
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       if (e.key === "Escape" && isFullscreen) {
@@ -61,8 +79,6 @@ export function ErdMermaidDiagram({ domain }: ErdMermaidDiagramProps): React.JSX
 
   useEffect(() => {
     const controller = new AbortController();
-    setStatus("pending");
-    setSvg("");
 
     void import("mermaid")
       .then(async ({ default: mermaid }) => {

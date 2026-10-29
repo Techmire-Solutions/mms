@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useState } from "react";
 import { ClipboardCheck } from "lucide-react";
 import type { RegistrationApplication, RegistrationReview } from "@mms/shared";
 import { Field } from "@/components/app/FormPrimitives";
@@ -36,11 +36,15 @@ export function AdmissionsDecisionModal({
   const ineligible = applications.filter((app) => app.eligibilityReasons.length > 0).length;
   const reasonRequired = decision === "reject";
 
-  useEffect(() => {
-    if (!open) return;
-    setReason("");
-    setUseMatch(true);
-  }, [open]);
+  // Clear the previous decision's reason/match choice on each (re)open (render-phase reset).
+  const [prevOpen, setPrevOpen] = useState(open);
+  if (prevOpen !== open) {
+    setPrevOpen(open);
+    if (open) {
+      setReason("");
+      setUseMatch(true);
+    }
+  }
 
   return (
     <FormModal

@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useMemo, useState } from "react";
 import { generateClientEntityId, type Account, type FiscalYear, moneyToCents } from "@mms/shared";
 import { useTranslation } from "@/hooks/useTranslation";
 import { notify } from "@/lib/notify";
@@ -42,12 +42,23 @@ export function useAccountingOpeningBalancesState({
   const save = useSaveOpeningBalances();
   const post = usePostOpeningBalances();
 
-  useEffect(() => {
-    if (!openYears.some((year) => year.id === fiscalYearId)) {
-      setFiscalYearId(openYears[0]?.id ?? "");
+  // Keep the selected year valid when the open-year list changes — corrected
+  // during render instead of in an effect.
+  const openYearsKey = openYears.map((year) => year.id).join("|");
+  const [fiscalYearGuard, setFiscalYearGuard] = useState({ openYearsKey, fiscalYearId });
+  if (
+    fiscalYearGuard.openYearsKey !== openYearsKey ||
+    fiscalYearGuard.fiscalYearId !== fiscalYearId
+  ) {
+    const nextFiscalYearId = openYears.some((year) => year.id === fiscalYearId)
+      ? fiscalYearId
+      : (openYears[0]?.id ?? "");
+    setFiscalYearGuard({ openYearsKey, fiscalYearId: nextFiscalYearId });
+    if (nextFiscalYearId !== fiscalYearId) {
+      setFiscalYearId(nextFiscalYearId);
       setFormError(null);
     }
-  }, [fiscalYearId, openYears]);
+  }
 
   const balances = useMemo(() => openingQuery.data ?? [], [openingQuery.data]);
   const rowsReady = openingQuery.isSuccess && !openingQuery.isPlaceholderData;

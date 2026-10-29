@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 
 /**
  * Setup SubTabBar state with dirty-gated discard confirm.
@@ -24,12 +24,17 @@ export function useModuleSetupSubTabs({
   const [sub, setSub] = useState(initialKey);
   const [pendingSubTab, setPendingSubTab] = useState<string | null>(null);
 
-  useEffect(() => {
+  // Adopt a new external initial key, unless the user has unsaved edits on the
+  // current tab. Adjusted during render (React's documented prop-change pattern)
+  // so it reacts only to `initialKey` — depending on `sub`/`isDirty` would snap the
+  // user's chosen tab back on every switch.
+  const [previousInitialKey, setPreviousInitialKey] = useState(initialKey);
+  if (previousInitialKey !== initialKey) {
+    setPreviousInitialKey(initialKey);
     if (initialKey && initialKey !== sub && !isDirty(sub)) {
       setSub(initialKey);
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps -- this effect only reacts to external initialKey changes; depending on `sub`/`isDirty` would re-run on every tab switch and snap the user's chosen tab back.
-  }, [initialKey]);
+  }
 
   const discardConfirmOpen = pendingSubTab != null;
   const discardConfirmIsFields = sub === "fields" && isDirty("fields");

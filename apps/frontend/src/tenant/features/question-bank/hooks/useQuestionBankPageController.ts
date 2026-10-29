@@ -59,7 +59,7 @@ export function useQuestionBankPageController() {
     "questions",
   );
   const modalState = useQuestionBankModalState();
-  const [filteredCount, setFilteredCount] = useState(0);
+  const [reportedFilteredCount, setFilteredCount] = useState(0);
   const columnLayout = useQuestionBankColumnLayout();
   const questionSelection = useWorkSelection<string>();
 
@@ -146,10 +146,9 @@ export function useQuestionBankPageController() {
     : "questions";
   const listLoadFailed = questionsResult.isError;
 
-  useEffect(() => {
-    if (effectiveTab === "work" && effectiveSubTab === "questions") return;
-    setFilteredCount(questions.length);
-  }, [effectiveTab, effectiveSubTab, questions.length]);
+  // The questions list reports its own filtered count; every other tab shows the full collection.
+  const isQuestionListTab = effectiveTab === "work" && effectiveSubTab === "questions";
+  const filteredCount = isQuestionListTab ? reportedFilteredCount : questions.length;
 
   useModuleShortcuts({
     searchInputId: "question-bank-search-input",
