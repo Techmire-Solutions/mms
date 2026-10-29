@@ -7,6 +7,7 @@ import { apexUrl } from "@/lib/config/tenantConfig";
 import ProtectedRoute from "@/tenant/components/guards/ProtectedRoute";
 import GuestRoute from "@/tenant/components/guards/GuestRoute";
 import ModuleAccessRoute from "@/tenant/components/guards/ModuleAccessRoute";
+import RequirePermission from "@/tenant/components/guards/RequirePermission";
 import WorkspaceDisabledScreen from "@/tenant/components/WorkspaceDisabledScreen";
 import RouteStatusFallback from "@/components/routing/RouteStatusFallback";
 import { AuthPageFrame } from "@/components/entry";
@@ -158,9 +159,11 @@ function TenantRoutesInner(): React.JSX.Element {
           <Route
             path={ROUTES.institutionSetup}
             element={
-              <React.Suspense fallback={<RouteStatusFallback fullScreen />}>
-                <InstitutionSetup />
-              </React.Suspense>
+              <RequirePermission permission="settings.branding.write">
+                <React.Suspense fallback={<RouteStatusFallback fullScreen />}>
+                  <InstitutionSetup />
+                </React.Suspense>
+              </RequirePermission>
             }
           />
           <Route
