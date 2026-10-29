@@ -13,11 +13,14 @@ This workflow guides the end-to-end implementation of a new or extended MMS feat
 - [ ] **Define the Manifest**: In `packages/shared`, define `{module}ModuleManifest`. Explicitly declare the `tiers` (Work, Reports, Setup), `setupSubTabs`, `softDelete` behavior, and required permissions.
 - [ ] **Define DTOs**: Create `.strict()` Zod schemas in `@mms/shared` for validation. Never fork schemas between frontend and backend.
 
-## Phase 2: Backend REST & Data Layer
+## Phase 2: Backend REST & Data Layer (Strict TDD)
 
 - [ ] **Database Schema (`mms-schema-migrate`)**: Ensure Drizzle tables are strictly 3NF normalized. Write forward-only migrations with `FORCE RLS` on new tenant tables.
-- [ ] **Implement REST plugin**: Create the Fastify backend plugin for the module. Enforce `authenticateTenant` or `authenticatePlatform`.
-- [ ] **Transaction RLS**: Wrap tenant writes in `db.transaction()` setting `app.current_tenant` to strictly isolate data. 
+- [ ] **Strict TDD Red Phase (`mms-tdd.md` §1)**: Write automated Fastify `inject()` and service tests defining expected behavior, status codes, and error contracts before implementing logic.
+- [ ] **Failure Verification**: Run `pnpm --filter mms-backend test <path>` and record the exact failing assertion/stack in the PR body (`mms-tdd.md` §1).
+- [ ] **Minimal Green Phase**: Implement the Fastify plugin and repository adapter to turn tests green. Enforce `authenticateTenant` or `authenticatePlatform`.
+- [ ] **Transaction RLS**: Wrap tenant writes in `db.transaction()` setting `app.current_tenant` to strictly isolate data.
+- [ ] **Multi-Tenant RLS Integration (`mms-testing-observability.md` §12)**: Add integration assertions proving Tenant A cannot read, mutate, or soft-delete Tenant B records.
 - [ ] **Follow API contracts**: Ensure mutations use upsert via bulk PUT (never wipe/replace data destructively). Implement soft-delete and restore if the manifest supports archives.
 
 ## Phase 3: Frontend Route & State
@@ -49,7 +52,7 @@ This workflow guides the end-to-end implementation of a new or extended MMS feat
   cd apps/backend && pnpm lint
   ```
 - [ ] **Run tests**: Execute `pnpm test` and verify backend `inject()` checks for allow/deny cases.
-- [ ] **Run completion review**: Ensure all steps in `mms-completion-review.md` are checked off.
+- [ ] **Run completion review & Adversarial Loophole Audit**: Ensure all steps in `mms-completion-review.md` are checked off and deliver the mandatory 3-part Adversarial Loophole Audit report (`mms-completion-review.md` §4).
 - [ ] **Sync Standards**: If any standards, rules, or agent files were modified, run `bash .agent/scripts/sync-all.sh`.
 
 ---

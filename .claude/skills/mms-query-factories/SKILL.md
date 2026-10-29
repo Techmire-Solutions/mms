@@ -4,12 +4,12 @@ description: Implements TanStack Query v5 queryOptions/mutationOptions factories
 license: Proprietary
 metadata:
   owner: mms-platform
-  last-verified: 2026-10-16
+  last-verified: 2026-10-29
 ---
 
 # MMS Query Factories Workflow
 
-**Rule (norms SSOT):** `mms-hooks.md` · `mms-data-layer.md` §3 · `mms-api-interface.md` · `mms-performance.md` §5.
+**Rule (norms SSOT):** `mms-hooks.md` · `mms-tdd.md` (hook specs) · `mms-data-layer.md` §3 · `mms-api-interface.md` · `mms-performance.md` §5.
 **Workflows:** `/feature-module` · **Manifest:** `.agent/skills-manifest.json`
 
 ## When to use

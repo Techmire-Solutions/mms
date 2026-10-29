@@ -9,9 +9,9 @@ description: PostgreSQL database, Drizzle schema, migrations, transactions, and 
 
 ## 1. Normalization, Multi-Tenancy & Drizzle Schema Standards
 1. **Normalization:** Strict 3NF/BCNF. Dedicated typed columns only; zero semi-structured storage (`json`/`array`) for domain fields. Zero EAV tables.
-2. **Tenant Isolation:** Mandatory `tenantId: uuid("tenant_id")` or `workspaceSubdomain`. Composite uniqueness must include tenant scope (`UNIQUE(tenant_id, ...)`). New tenant tables require `FORCE ROW LEVEL SECURITY`.
-3. **Data Typing:** Sequential **UUIDv7** (`crypto.randomUUIDv7()`) for primary keys; `timestamptz` defaulting to `now()`; `varchar({ length: N })` for bounded fields; PostgreSQL `pgEnum` for state machines.
-4. **Indexing Invariants:** Every FK requires an explicit B-Tree index. Compound indexes match query pattern left-to-right (`tenant_id, status, created_at DESC`).
+2. **Tenant Isolation:** One tenant key per table — `workspaceSubdomain` on existing tables, or `tenantId: uuid("tenant_id")` on new ones (never both). Composite uniqueness must include the tenant column (`UNIQUE(tenant_id, ...)` / `UNIQUE(workspace_subdomain, ...)`). New tenant tables require `FORCE ROW LEVEL SECURITY`.
+3. **Data Typing:** Sequential **UUIDv7** via `uuidv7()` from `@mms/shared` (`packages/shared/src/core/uuidv7.ts`; PostgreSQL 16 has no built-in) for primary keys; `timestamptz` defaulting to `now()`; `varchar({ length: N })` for bounded fields; PostgreSQL `pgEnum` for state machines.
+4. **Indexing Invariants:** Every FK requires an explicit B-Tree index. Compound indexes match query pattern left-to-right, prefixed by the table's tenant column (`workspace_subdomain, status, created_at DESC`).
 5. **Drizzle Guidelines:** Every `pgTable` exports `$inferSelect`, `$inferInsert`, and bidirectional `relations(...)`.
 6. **Shared Zod Contracts:** Strict Zod schemas (`.strict()`) in `packages/shared/src/schemas/*` matching Drizzle tables 1:1.
 7. **Deliverable Trinity:** Entity changes require (1) Drizzle table + relations, (2) Shared Zod DTOs, (3) Forward-only SQL migration.
@@ -58,7 +58,7 @@ description: PostgreSQL database, Drizzle schema, migrations, transactions, and 
 7. **Relational Child Filtering:** Drizzle `with: { ... }` must explicitly declare `where: (c, { isNull }) => isNull(c.deletedAt)`.
 8. **Referential Integrity & Cascades:** Restrict soft-delete if active dependent children exist (`409 Conflict`). Cascade marks children `deletedWithCascade = true` under `FOR UPDATE`.
 9. **Single-Statement Bulk Updates:** `bulkDeleteFn` and `bulkRestoreFn` execute a single batched SQL `UPDATE ... WHERE id IN (...) AND deleted_at IS NULL`. N+1 loops are banned.
-10. **Uniqueness on Restore & Viewer Sanitization:** Pre-validate active uniqueness conflicts in domain use cases and translate to HTTP 400 (`type: 'validation_error'`) with structured field errors via `mapRestoreError`; trap concurrent race-condition DB error `23505` (`unique_violation`) and map to `409 Conflict`. Sanitize restored entity payload for the caller via `buildRestoreResponse` (`sanitizeOneForUser`).
+10. **Uniqueness on Restore & Viewer Sanitization:** Pre-validate active uniqueness conflicts in domain use cases and translate to HTTP 400 (`type: 'validation_error'` — the documented exception to the 422 default in `mms-api-interface.md` §4) with structured field errors via `mapRestoreError`; trap concurrent race-condition DB error `23505` (`unique_violation`) and map to `409 Conflict`. Sanitize restored entity payload for the caller via `buildRestoreResponse` (`sanitizeOneForUser`).
 11. **Lock-Free Chunked Purge:** Purge worker deletes in chunks of 500 rows using `LIMIT 500 FOR UPDATE SKIP LOCKED` with 50ms pauses and `SET LOCAL app.allow_hard_purge = 'true'`.
 
 ## 7. Migration Safety & Zero-Downtime DDL

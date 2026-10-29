@@ -34,6 +34,7 @@ description: Universal module architecture, page tabs (operational + required Re
 - **Detail Drawer:** `DetailDrawerShell` renders entity fields in tab/field registry order with enabled custom fields. In trash mode: display `WarningCallout` archive banner + Restore; hide Edit and communication CTAs. Touch targets enforce `min-h-11 min-w-11`.
 - **Selection SSOT:** Selection state is owned by the page controller via shared `useWorkSelection`; list-local selection state is banned. Directory rows, select-all controls, bulk bars, and shortcuts bind to controller selection.
 - **Two-Layer Bulk Chrome:** Presentational `ModuleWorkBulkActionBar` dock with manifest/i18n adapter `ModuleUniversalBulkActionBar`. Mount floating or inline. Escape key clears selection. Never place bulk actions inline with toolbar filters.
+- **Work UX invariants:** List failures render `ErrorState` with retry and the `loadFailedHint` description (never a bare title); empty directories use `EmptyState` with a required `title`; `Cmd/Ctrl+N` opens the create flow when `canWrite`; desktop tables use `WorkBatchTable`; cards use `DirectoryCard` + `useWorkCardAction` (DirectoryCard SSOT); `isColumnVisible` gates every column/card field.
 
 ## 4. Setup & Module Preferences
 - **Dirty-Gated Persistence:** Draft preferences in local editor state; persist only on explicit Save when dirty. Do not mount Save button enabled by default.
@@ -47,19 +48,19 @@ description: Universal module architecture, page tabs (operational + required Re
 
 ## 6. Security Boundaries & Soft-Delete Standards
 - **RLS & RBAC:** Enforce transaction-scoped RLS (`SET LOCAL app.current_tenant`) and `can('module.action')`. Omit unauthorized actions from DOM.
-- **Manifest Soft-Delete Contract:** Declare `softDelete` configuration (`workExcludesDeleted`, `reportsIncludeDeleted`, `captureDeletionReason`, `retentionDays`).
+- **Manifest Soft-Delete Contract:** Declare `softDelete` configuration (`workExcludesDeleted`, `reportsIncludeDeleted`, `exportsIncludeDeleted`, `captureDeletionReason`, `retentionDays`).
 - **Work Trash UX:** Archived records return 404 on active lookups. Synchronize trash mode via URL param `?view=trash` (`ModuleTrashToggle` in toolbar). Preserve active search and faceted filters. In trash: hide Create/Add, bulk delete, and communication CTAs; display Restore.
 - **Optimistic Recovery:** Single-record deletions trigger optimistic cache hide + 5–10s Undo toast calling `POST /:id/restore`. Trap PostgreSQL 23505 unique constraint conflicts upon restore. Emit outbox CDC events (`entity.soft_deleted`, `entity.restored`).
 
 ## 7. Gold-standard parity (REST tenant modules and platform pages)
-Align modules with **Contacts, Students, and Faculty** person-directory standard:
-- **Bulk PUT:** Upsert only per `mms-api-interface.md` §5; never wipe missing rows.
-- **Soft-Delete Lifecycle:** Full lifecycle per §6, `mms-data-layer.md` §6, and `mms-api-interface.md` §7 (`DELETE` + `POST /:id/restore`, URL `?view=trash`, `ModuleTrashToggle`, drawer archive banner, 23505 conflict trap, 5–10s optimistic Undo toast, outbox CDC).
-- **Mutations:** Await `mutateAsync` on form `onSave`; close modals only after mutation resolution (`mms-form-architecture.md`).
-- **Setup Tier:** Manifest `setupSubTabs` (`preferences` default); `canEditSetup` gates writes; read-only fallback when view-only; Preferences Save dirty-gated (§4).
-- **Work UX & DirectoryCard SSOT:** `ErrorState` with retry + `loadFailedHint`; `EmptyState` (`title` required); `Cmd/Ctrl+N` shortcut; Filters menu SSOT; controller-owned selection (`useWorkSelection`); two-layer bulk-bar chrome; header + `ModuleEntityIoToolbar` dual IO on operational tabs (§2); `isColumnVisible` gates; single resolved `viewMode` (`table` | `cards`); desktop tables use `WorkBatchTable`; cards use `DirectoryCard` + `useWorkCardAction` (DirectoryCard SSOT); identical server pagination; row virtualization over 30 items; `useModuleColumnLayout` width/visibility persistence.
-- **Manifest Constants:** Import `setupSubTabs`, `softDelete`, `work.bulkActions`, and permissions from manifest. Person directories mandate `directoryViews: ['table','cards']` (§1).
-- **i18n & RBAC:** All user-facing copy via `t()`; `useModulePermissions(manifest)` gates CTAs. Intersect persisted tier/sub-tab selections with active permissions before rendering.
+Align modules with **Contacts, Students, and Faculty**. Each area is owned by the cited section — verify the module against it instead of re-deriving the norm here:
+- **Bulk PUT:** `mms-api-interface.md` §5.
+- **Soft-delete lifecycle:** §6 · `mms-data-layer.md` §6 · `mms-api-interface.md` §7.
+- **Mutations & modal close:** `mms-form-architecture.md` §2.
+- **Setup tier:** §4.
+- **Work UX (directory, drawer, IO row, view mode, selection, virtualization, column layout):** §2, §3, §8.
+- **Manifest constants & permissions:** §1, §6.
+- **i18n & RBAC:** `mms-settings-i18n.md` §4 · `mms-auth-security.md` §3.
 
 ## 8. Work Directory Governance
 - **Work Directory Standards:** Enforce controller-owned selection (`useWorkSelection`), unified bulk bar (`ModuleUniversalBulkActionBar`), and single resolved `viewMode`. CI enforces zero regressions via `pnpm run check:work-directory`.

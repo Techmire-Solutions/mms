@@ -1,10 +1,10 @@
 ---
 name: mms-agent-standards
-description: Authors and verifies the MMS agent-standards corpus itself — rules, skills, workflows, commands, hooks, and the mirrors across Cursor, Antigravity, and Claude Code. Use when adding or editing a rule or skill, when a skill is not firing, or when the standards verifier fails. Do NOT use for reviewing application code (use mms-code-review) or for local environment problems (use mms-dev-setup).
+description: Authors and verifies the MMS agent-standards corpus itself — rules, skills, workflows, commands, hooks, and the mirrors across Cursor, Antigravity, Claude Code, and DeepSeek Harness. Use when adding or editing a rule or skill, when a skill is not firing, or when the standards verifier fails. Do NOT use for reviewing application code (use mms-code-review) or for local environment problems (use mms-dev-setup).
 license: Proprietary
 metadata:
   owner: mms-platform
-  last-verified: 2026-10-16
+  last-verified: 2026-10-29
 allowed-tools: Read Grep Glob Write Edit Bash(node scripts/verify-rules-integrity.mjs) Bash(bash .agent/scripts/sync-all.sh)
 ---
 
@@ -26,15 +26,16 @@ allowed-tools: Read Grep Glob Write Edit Bash(node scripts/verify-rules-integrit
 | Workflows | `.agent/workflows/*.md` | `.claude/docs/workflows/` |
 | Commands | `.cursor/commands/`, `.claude/commands/` | — (thin wrappers over the workflow) |
 | Shared guide | `AGENTS.md` | `CLAUDE.md` imports it |
+| DeepSeek Harness | `.cursor/rules/*.mdc` + `.agent/skills/` | `.dsh/rules/`, `.dsh/skills/`, generated `.dsh/AGENTS.md` |
 
 Editing a mirror is always a bug: `sync-all.sh` overwrites it and CI fails the drift check.
 
 ## Authoring a rule
 
 1. **Find the owner first.** Run the matrix in `.cursor/rules/README.md`. If a topic already has an owner, extend that rule instead of creating a second home — duplicate essays are the corpus's main decay mode.
-2. **Frontmatter is the only tool-specific part:** Cursor `globs` + `alwaysApply`, Antigravity `trigger: always_on | model_decision`, Claude `paths:` (or none when always-on). Bodies must stay byte-identical; the sync script rewrites rule-name references (`.mdc` → `.md`) but never `.cursor/...` paths.
+2. **Frontmatter is the only tool-specific part:** Cursor `globs` + `alwaysApply`, Antigravity `trigger: always_on | model_decision`, Claude `paths:` (or none when always-on). Bodies are identical modulo the sync script's rule-reference rewrite (`.mdc` → `.md`); it never rewrites `.cursor/...` paths.
 3. **Scope the globs.** They must match real files — any glob matching zero files fails the verifier. Never write `apps/**` style catch-alls: a rule that matches everything is an always-on rule with extra steps.
-4. **Budget the always-on set.** Only `mms-core` is `alwaysApply` / always-on; `mms-agent-universal` and `mms-completion-review` are requestable. A new always-on rule needs a strong justification, and a scoped rule's content should shrink the always-on set rather than grow it.
+4. **Budget the always-on set.** Two rules are `alwaysApply` / always-on: `mms-core` (invariants, boundaries, edit discipline) and `mms-completion-review` (mandatory self-review + adversarial audit). `mms-agent-universal` is requestable in Cursor/Antigravity; in Claude Code any rule without `paths:` loads every session, so its no-paths set is these two **plus** `mms-agent-universal` (the verifier enforces that parity). A new always-on rule needs a strong justification, and a scoped rule's content should shrink the always-on set rather than grow it.
 5. **Every norm is machine-enforced or labelled advisory.** Land the lint rule, ratchet script, CI step, hook, or test in the same change, or say explicitly why it can only be reviewed by eye.
 
 ## Authoring a skill
@@ -45,36 +46,37 @@ Editing a mirror is always a bug: `sync-all.sh` overwrites it and CI fails the d
    1. `**Rule(s) (norms SSOT):**` pointer
    2. `## When to use` (short bullets — fail if missing)
    3. Procedure / implementation map (real repo paths)
-   4. `## Verification`
+   4. A verification section — any of `## Verification`, `## Verification Checklist`, `## Checklist`, `## Done`, or `## ...Validat…` (required; enforced by the verifier)
    5. `## Related skills` (required — fail if missing)
    6. Named links for every local `references/`, `examples/`, and `scripts/` file
 4. **Code samples must compile.** Every `@/...` import is resolved case-sensitively by the verifier (`Skeleton` vs `skeleton` breaks the Linux deploy). `examples/` and `references/` are validated too: paths, filenames, and alias imports.
-5. **Assets must be reachable.** Every file under `scripts/`, `references/`, and `examples/` (skip `__pycache__`, `*.pyc`, dotfiles) must be named in `SKILL.md`. Scripts must be executable, exit non-zero on real problems, and must not swallow failures with `|| true`.
+5. **Assets must be reachable.** Every file under `scripts/`, `references/`, and `examples/` (skip `__pycache__`, `*.pyc`, dotfiles) must be named in `SKILL.md`. Scripts must be executable, exit non-zero on real problems, and must not swallow failures with `|| true`. Exception: a deliberately **advisory** reporter (e.g. `scripts/check-tdd-pairing.mjs`) may exit 0, must label its output advisory, and must be registered as advisory in the rules README enforcement table.
 
 ## Indexes that must stay in sync
 
-Adding or renaming a skill touches four indexes; keep them honest with one command:
+Adding or renaming a skill touches five outputs — the manifest, the skills README table, the `AGENTS.md` count, and the `.cursor/`, `.claude/`, and `.dsh/` skill mirrors. Keep them honest with two commands:
 
 ```bash
-node scripts/sync-skill-index.mjs   # writes .agent/skills-manifest.json, the skills README table, AGENTS.md count
+node scripts/sync-skill-index.mjs   # .agent/skills-manifest.json, skills README table, AGENTS.md count
+bash .agent/scripts/sync-all.sh     # .agent/.cursor/.claude/.dsh mirrors
 ```
 
-The verifier fails if the manifest, the README index count, or the AGENTS.md skill count disagree with disk — so run this before `verify-rules-integrity.mjs`.
+The verifier fails if the manifest, the README index count, or the AGENTS.md skill count disagree with disk, or if any canonical rule/skill body differs from a mirror — so run this before `verify-rules-integrity.mjs`.
 
 ## Verification loop
 
 ```bash
 node scripts/verify-rules-integrity.mjs        # the gate CI runs
-bash .agent/scripts/sync-all.sh                # regenerate mirrors
+bash .agent/scripts/sync-all.sh                # regenerate mirrors (.cursor, .agent, .claude, .dsh)
 bash .agent/scripts/sync-all.sh --dry-run      # preview (prune is destructive)
 git diff --exit-code -- .agent .cursor .claude # exactly what CI checks
 ```
 
-The verifier covers: skill inventory vs manifest, AGENTS.md count, the `@AGENTS.md` import in CLAUDE.md, always-on parity, skill frontmatter limits, description **"Use when"** + **"Do NOT use"** boundaries, body `## When to use` + `## Related skills` (fail), rule citations (`§N` must resolve, including numbered list items like `§6.9`), backticked and bare filenames, example imports, `scripts/`/`references/`/`examples/` reachability and script execute bits, and Cursor globs matching real files.
+The verifier covers: skill inventory vs manifest, AGENTS.md count, the `@AGENTS.md` import in CLAUDE.md, always-on parity, skill frontmatter limits, description **"Use when"** + **"Do NOT use"** boundaries, body `## When to use` + `## Related skills` (fail), rule citations (`§N` must resolve, including numbered list items like `§6.9`), backticked and bare filenames, example imports, `scripts/`/`references/`/`examples/` reachability and script execute bits, Cursor globs matching real files, cited `pnpm <script>` names and three-part version ranges resolving to a manifest, rule-inventory claims (`Always-on rules (N)`, `rules: X always-on + Y scoped`, `Scoped (N rules, M total)`, `all N descriptions`, and the generated `.dsh/AGENTS.md` line) matching frontmatter and disk, canonical skills citing rules as `.md` with a verification section, and byte parity of the DeepSeek Harness mirror (`.dsh/rules`, `.dsh/skills`, no flat `.md` at the skills root, kebab names matching folders).
 
 ## Checking whether a skill actually fires
 
-A skill nobody invokes is invisible cost: all 39 descriptions load on every turn. Probes worth using: `/skill-doctor` for per-skill context cost and invocation counts, and the `InstructionsLoaded` hook to log which rule files loaded. If a skill never fires on the prompts it is meant for, the fix is the **description**, not the body.
+A skill nobody invokes is invisible cost: all 49 descriptions load on every turn. Probes worth using: `/skill-doctor` for per-skill context cost and invocation counts, and the `InstructionsLoaded` hook to log which rule files loaded. If a skill never fires on the prompts it is meant for, the fix is the **description**, not the body.
 
 ## Related skills
 

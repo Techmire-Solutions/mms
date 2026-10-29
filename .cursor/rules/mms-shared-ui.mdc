@@ -10,7 +10,7 @@ alwaysApply: false
 - Duplicate ban + extraction → `mms-dry.mdc` §1 (Cross-Console Component Duplication Banned) · §4 (Pre-Deletion Checks)
 - Primitive SSOT enforcement → `mms-ui-ux-design.mdc` §1 (Central Primitives Enforcement)
 - Monorepo topology → `mms-structure-naming.mdc` §1 (Frontend Colocation)
-- Post-edit verification → `mms-completion-review.mdc` §1.3 (Shared UI & Pre-Deletion Verification)
+- Post-edit verification → `mms-completion-review.mdc` §1 ("Shared UI & Pre-Deletion Verification" bullet)
 
 **Workflow skill:** `mms-shared-ui` — invoke for authoring, auditing, migration, and cleanup.
 **Audit workflow:** `/shared-ui-audit` — run to prove zero violations before merge.

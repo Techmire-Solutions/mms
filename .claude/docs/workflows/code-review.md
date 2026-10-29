@@ -9,7 +9,7 @@ This workflow guides the systematic review of codebase changes (e.g., Pull Reque
 ## Phase 1: Context & Rule Loading
 
 - [ ] **Load review skill**: Invoke the `mms-code-review` skill to prepare for the review process.
-- [ ] **Load always-on rules**: Review the core guidelines by reading `rules/mms-agent-universal.md`, `rules/mms-core.md`, `rules/mms-migration-status.md`, and `rules/mms-completion-review.md`.
+- [ ] **Load the core rules**: Review the core guidelines by reading `rules/mms-core.md`, `rules/mms-completion-review.md`, `rules/mms-agent-universal.md`, and `rules/mms-migration-status.md`.
 - [ ] **Load scoped rules**: Identify the domain of the changes and load relevant scoped rules (e.g., `rules/mms-dry.md`, `rules/mms-dependencies.md`, `rules/mms-auth-security.md`, `rules/mms-data-layer.md`, `rules/mms-ui-ux-design.md`).
 
 ## Phase 2: Automated Checks
@@ -63,12 +63,16 @@ Audit the diff against the core MMS invariants:
   - Money is handled as decimal strings (no IEEE 754 floats).
   - Phone numbers use E.164 via `parsePhoneNumber`.
 - [ ] **Node.js 24 Runtime & Modern Practices (`mms-dependencies.md`, `mms-structure-naming.md`, `mms-ops-infrastructure.md`)**:
-  - Core module imports use mandatory `node:` protocol prefix (`node:fs/promises`, `node:crypto`, `node:path`, `node:async_hooks`, `node:test`).
+  - Core module imports use mandatory `node:` protocol prefix (`node:fs/promises`, `node:crypto`, `node:path`, `node:async_hooks`).
   - No banned dependencies introduced (`dotenv`, `axios`, `node-fetch`, `ws` for client communication, `glob`, `fast-glob`, `path-to-regexp`).
   - Native built-ins used: `--env-file`/`process.loadEnvFile()`, global `fetch()`, `FormData`, `WebSocket`, `crypto.hash()`, `URLPattern`, and WHATWG `new URL()` (never `url.parse()`).
   - Scoped resource disposal leverages `using` / `await using` (Explicit Resource Management).
-  - Context & trace propagation uses `AsyncLocalStorage` (`AsyncContextFrame`); logs emit structured JSON to stdout (Pino).
-  - Test suites use `node:test` + `node:assert/strict` (auto-awaiting subtests); CLI/scripts leverage `--experimental-strip-types`.
+  - Context & trace propagation uses `AsyncLocalStorage`; logs emit structured JSON to stdout (Pino).
+  - Test suites use Vitest (`vitest run`); CLI/scripts leverage `--experimental-strip-types`.
+- [ ] **Strict TDD & Adversarial Loophole Audit (`mms-tdd.md` §1–§2, `mms-testing-observability.md` §12, `mms-completion-review.md` §4)**:
+  - Strict TDD verified: automated Vitest spec written first, with the Red-phase command + failure recorded in the PR body (Red before Green).
+  - Multi-tenant integration & RLS isolation: live DB tests verify cross-tenant isolation (Tenant A cannot access/mutate/delete Tenant B records) and atomic transaction rollbacks.
+  - Deliverable verified: PR or completion output contains the 3-part Adversarial Loophole Audit markdown deliverable (Identified Vulnerabilities, Mitigations & Safeguards, Resilience Justification).
 - [ ] **Debt Regressions**: Check against `rules/mms-migration-status.md` to ensure "Recently Resolved" items (like raw `role ===` checks) are not reintroduced.
 
 ## Phase 4: Report Generation

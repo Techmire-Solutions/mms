@@ -15,6 +15,10 @@
  *   9. Cursor `globs:` frontmatter validity (existing base dir, non-empty match)
  *  10. freshness metadata (warn-only)
  *  11. workflow ↔ slash-command ↔ agent mirror parity (.agent/workflows, .cursor/commands, .claude/commands, .claude/agents)
+ *  12. cited `pnpm <script>` names exist in a workspace package.json
+ *  13. cited three-part versions resolve to a manifest range (engines/packageManager/catalog/deps)
+ *  14. rule/skill inventory claims in canonical docs match frontmatter + disk
+ *  15. Claude always-on mirror parity (no-`paths:` set = Cursor always-on ∪ unscoped)
  *
  * Errors fail the run; warnings never do. Exit code 1 on any error.
  */
@@ -277,6 +281,40 @@ if (missingFromAgents.length) {
   pass("AGENTS.md always-on section lists every always-on rule");
 }
 
+// Claude Code loads every rule that has no `paths:` frontmatter, so its
+// always-on set is larger than Cursor's when a rule is deliberately unscoped
+// (no `globs`). The mirror must match exactly: cursor always-on ∪ cursor-unscoped.
+const claudeRulesDir = path.join(ROOT, ".claude/rules");
+if (isDir(claudeRulesDir)) {
+  const cursorUnscoped = ruleFiles
+    .filter((file) => !/^globs:/m.test(frontmatterOf(path.join(cursorRulesDir, file)).front))
+    .map((file) => file.replace(/\.mdc$/, ".md"));
+  const expectedClaudeAlways = new Set([
+    ...frontmatterAlwaysOn.map((rule) => rule.replace(/^rules\//, "")),
+    ...cursorUnscoped,
+  ]);
+  const actualClaudeAlways = new Set();
+  for (const file of ruleFiles) {
+    const mirror = path.join(claudeRulesDir, file.replace(/\.mdc$/, ".md"));
+    if (!isFile(mirror)) {
+      fail(`Missing Claude mirror for ${file}`);
+      continue;
+    }
+    if (!/^paths:/m.test(frontmatterOf(mirror).front)) {
+      actualClaudeAlways.add(path.basename(mirror));
+    }
+  }
+  const missing = [...expectedClaudeAlways].filter((name) => !actualClaudeAlways.has(name));
+  const extra = [...actualClaudeAlways].filter((name) => !expectedClaudeAlways.has(name));
+  if (missing.length || extra.length) {
+    fail(
+      `Claude always-on set disagrees with Cursor (missing: ${missing.join(", ") || "none"}; extra: ${extra.join(", ") || "none"})`,
+    );
+  } else {
+    pass(`Claude always-on mirrors Cursor (${actualClaudeAlways.size} rules)`);
+  }
+}
+
 // ─────────────────────────────────────────────────────────────────────────────
 // 3. Headings + citation resolution
 // ─────────────────────────────────────────────────────────────────────────────
@@ -512,6 +550,11 @@ for (const skill of diskSkills) {
   if (!/^##+\s*When to use\b/m.test(body)) {
     fail(`Skill ${skill}: missing '## When to use' body section`);
   }
+  if (!/^##+\s*.*(verif|validat|check|done)/im.test(body)) {
+    fail(
+      `Skill ${skill}: missing a verification section (## Verification / ## Verification Checklist / ## Checklist / ## Done)`,
+    );
+  }
 
   // Freshness metadata (warn-only so it never blocks a fix-forward commit).
   const verified = front.match(/^\s*last-verified:\s*(\S+)/m);
@@ -553,6 +596,14 @@ for (const skill of diskSkills) {
 
     checkCitations(content, file, ownerLabel);
     checkRuleReferences(content, ownerLabel);
+
+    // Canonical skills cite rules as `.md`; `.mdc` is Cursor-only and the sync
+    // rewrites it in that mirror. A canonical `.mdc` reference is a stale path.
+    for (const m of content.matchAll(/(?<!\.cursor\/rules\/)\b(mms-[a-z0-9-]+)\.mdc\b/g)) {
+      fail(
+        `In ${ownerLabel}: canonical skill references '${m[1]}.mdc' — use '${m[1]}.md' (Cursor mirrors rewrite it)`,
+      );
+    }
 
     // Backticked paths: repo-anchored roots, plus e2e/ (previously excluded —
     // that blind spot let a deleted Playwright spec keep passing).
@@ -641,10 +692,125 @@ for (const skill of diskSkills) {
 // 6. Rule-side path checks + rule↔skill reference integrity
 // ─────────────────────────────────────────────────────────────────────────────
 
+// Repo truth for citation checks: every script name and every three-part
+// version that appears in a manifest (package.json deps/engines, catalog).
+// Rules must not cite scripts or versions that do not exist — that drift is
+// exactly how `pnpm test:db` (root) and nine stale dependency ranges shipped.
+const manifestScriptNames = new Set();
+const manifestVersionTokens = new Set();
+const addVersionTokens = (value) => {
+  if (typeof value !== "string") return;
+  for (const m of value.matchAll(/\d+\.\d+\.\d+/g)) manifestVersionTokens.add(m[0]);
+};
+(function collectManifestTruth() {
+  const pkgPaths = [path.join(ROOT, "package.json")];
+  for (const dir of ["apps", "packages"]) {
+    const abs = path.join(ROOT, dir);
+    if (!isDir(abs)) continue;
+    for (const entry of fs.readdirSync(abs, { withFileTypes: true })) {
+      const candidate = path.join(abs, entry.name, "package.json");
+      if (entry.isDirectory() && isFile(candidate)) pkgPaths.push(candidate);
+    }
+  }
+  for (const pkgPath of pkgPaths) {
+    let pkg;
+    try {
+      pkg = JSON.parse(fs.readFileSync(pkgPath, "utf8"));
+    } catch {
+      continue;
+    }
+    for (const name of Object.keys(pkg.scripts ?? {})) manifestScriptNames.add(name);
+    for (const field of [
+      "dependencies",
+      "devDependencies",
+      "optionalDependencies",
+      "peerDependencies",
+    ]) {
+      for (const value of Object.values(pkg[field] ?? {})) addVersionTokens(value);
+    }
+    for (const value of Object.values(pkg.engines ?? {})) addVersionTokens(value);
+    addVersionTokens(pkg.packageManager ?? "");
+  }
+  const workspaceYaml = path.join(ROOT, "pnpm-workspace.yaml");
+  if (isFile(workspaceYaml)) {
+    for (const line of fs.readFileSync(workspaceYaml, "utf8").split("\n")) {
+      if (/^\s{2,}[A-Za-z@"'][^\s:]*:\s*"?[\^~>=<]*\d+\.\d+\.\d+/.test(line)) {
+        addVersionTokens(line);
+      }
+    }
+  }
+})();
+
+const PNPM_BUILTINS = new Set([
+  "add",
+  "approve-builds",
+  "audit",
+  "bin",
+  "config",
+  "create",
+  "dedupe",
+  "dlx",
+  "doctor",
+  "env",
+  "exec",
+  "fetch",
+  "import",
+  "init",
+  "install",
+  "licenses",
+  "link",
+  "list",
+  "ls",
+  "outdated",
+  "pack",
+  "patch",
+  "prune",
+  "publish",
+  "rebuild",
+  "remove",
+  "root",
+  "setup",
+  "store",
+  "unlink",
+  "update",
+  "why",
+]);
+
+/** Every `pnpm <script>` / version range a rule cites must exist in the repo. */
+function checkRepoCitations(raw, file) {
+  for (const m of raw.matchAll(/`pnpm ([^`]+)`/g)) {
+    const command = m[1].trim();
+    if (/[<$]/.test(command)) continue;
+    const tokens = command.split(/\s+/);
+    const filterIdx = tokens.indexOf("--filter");
+    const args = filterIdx >= 0 ? tokens.slice(filterIdx + 2) : tokens;
+    const name = args[0] === "run" ? args[1] : args[0];
+    if (!name || name.startsWith("-") || PNPM_BUILTINS.has(name)) continue;
+    if (!manifestScriptNames.has(name)) {
+      fail(`In ${file}: cites unknown pnpm script '${name}' (not in any package.json)`);
+    }
+  }
+
+  for (const m of raw.matchAll(/`([^`]+)`/g)) {
+    // IPv4 literals (SSRF block lists) look like versions; strip them first.
+    const span = m[1].replace(/\b(?:\d{1,3}\.){3}\d{1,3}\b/g, "");
+    for (const v of span.matchAll(/\b\d+\.\d+\.\d+\b/g)) {
+      if (!manifestVersionTokens.has(v[0])) {
+        fail(
+          `In ${file}: cites version '${v[0]}' which matches no manifest range (engines/packageManager/catalog/deps)`,
+        );
+      }
+    }
+  }
+}
+
 for (const file of ruleFiles) {
   const raw = fs.readFileSync(path.join(cursorRulesDir, file), "utf8");
   checkCitations(raw, file, file);
   checkRuleReferences(raw, file);
+  if (!/^\*\*Workflow skills?:\*\*/m.test(raw)) {
+    fail(`In ${file}: missing the '**Workflow skills:**' line (README claims every rule has one)`);
+  }
 
   const pathMatches = raw.matchAll(
     /`((?:apps|packages|scripts|docs|e2e|\.agent|\.cursor|\.claude|\.github)\/[^`\s]+)`/g,
@@ -667,6 +833,8 @@ for (const file of ruleFiles) {
       fail(`In ${file}: referenced filename does not exist anywhere in the repo: ${m[1]}`);
     }
   }
+
+  checkRepoCitations(raw, file);
 
   // Any skill or rule named in a rule should exist. Unknown mms-* tokens are
   // warnings only: some are legitimate code/package identifiers, but a stale
@@ -707,6 +875,337 @@ if (isFile(ruleReadme)) {
     );
   }
 }
+
+// ─────────────────────────────────────────────────────────────────────────────
+// 7b. Rule/skill inventory claims in canonical docs must match frontmatter
+// ─────────────────────────────────────────────────────────────────────────────
+
+// Counts written into prose (skills, AGENTS.md, CLAUDE.md) drift from the
+// frontmatter/disk the moment a rule is added or the always-on set changes.
+// The 2026-10-29 change shipped three stale claims this way; fail on them.
+const scopedRuleCount = ruleFiles.length - frontmatterAlwaysOn.length;
+const inventoryClaimFiles = [];
+(function walkSkillMarkdown(dir) {
+  for (const entry of fs.readdirSync(dir, { withFileTypes: true })) {
+    const full = path.join(dir, entry.name);
+    if (entry.isDirectory()) walkSkillMarkdown(full);
+    else if (entry.name.endsWith(".md")) inventoryClaimFiles.push(full);
+  }
+})(skillsDir);
+inventoryClaimFiles.push(agentsMdPath, claudeMdPath);
+const dshAgentsMd = path.join(ROOT, ".dsh/AGENTS.md");
+if (isFile(dshAgentsMd)) inventoryClaimFiles.push(dshAgentsMd);
+
+const INVENTORY_CLAIMS = [
+  {
+    label: "always-on rule count",
+    re: /## Always-on rules \((\d+)\)/g,
+    expected: () => [frontmatterAlwaysOn.length],
+  },
+  {
+    label: "rule split",
+    re: /rules: (\d+) always-on \+ (\d+) scoped/g,
+    expected: () => [frontmatterAlwaysOn.length, scopedRuleCount],
+  },
+  {
+    label: "scoped rule count",
+    re: /Scoped \((\d+) rules, (\d+) total\)/g,
+    expected: () => [scopedRuleCount, ruleFiles.length],
+  },
+  {
+    label: "rule inventory",
+    re: /\*\*(\d+) rules\*\* \((\d+) always-on \+ (\d+) scoped\)/g,
+    expected: () => [ruleFiles.length, frontmatterAlwaysOn.length, scopedRuleCount],
+  },
+  {
+    label: "skill description count",
+    re: /all (\d+) descriptions/g,
+    expected: () => [diskSkills.length],
+  },
+  {
+    label: "DeepSeek Harness inventory",
+    re: /MMS standards corpus: \*\*(\d+) rules\*\* \((\d+) always-on \+ (\d+) scoped\) · (\d+) skills/g,
+    expected: () => [
+      ruleFiles.length,
+      frontmatterAlwaysOn.length,
+      scopedRuleCount,
+      diskSkills.length,
+    ],
+  },
+];
+
+for (const file of inventoryClaimFiles) {
+  const content = fs.readFileSync(file, "utf8");
+  const rel = path.relative(ROOT, file).replaceAll(path.sep, "/");
+  for (const { label, re, expected } of INVENTORY_CLAIMS) {
+    for (const match of content.matchAll(re)) {
+      const wanted = expected();
+      const actual = match.slice(1).map(Number);
+      if (actual.some((n, i) => n !== wanted[i])) {
+        fail(`In ${rel}: stale ${label} claim "${match[0]}" — disk says ${wanted.join(" / ")}`);
+      }
+    }
+  }
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// 7c. DeepSeek Harness mirror parity (.dsh)
+// ─────────────────────────────────────────────────────────────────────────────
+
+const dshDir = path.join(ROOT, ".dsh");
+const dshRulesDir = path.join(dshDir, "rules");
+const dshSkillsDir = path.join(dshDir, "skills");
+const walkRepoFiles = (dir, base = dir, out = []) => {
+  for (const entry of fs.readdirSync(dir, { withFileTypes: true })) {
+    const full = path.join(dir, entry.name);
+    if (entry.isDirectory()) walkRepoFiles(full, base, out);
+    else out.push(path.relative(base, full).replaceAll(path.sep, "/"));
+  }
+  return out.sort();
+};
+
+if (!isDir(dshDir)) {
+  fail(".dsh/ mirror is missing — run 'bash .agent/scripts/sync-all.sh'");
+} else {
+  // Rules: byte-identical to .agent/rules (23 rule files + README).
+  const agentRuleFiles = fs
+    .readdirSync(path.join(ROOT, ".agent/rules"))
+    .filter((f) => f.endsWith(".md"))
+    .sort();
+  const dshRuleFiles = isDir(dshRulesDir)
+    ? fs
+        .readdirSync(dshRulesDir)
+        .filter((f) => f.endsWith(".md"))
+        .sort()
+    : [];
+  const missingRules = agentRuleFiles.filter((f) => !dshRuleFiles.includes(f));
+  const extraRules = dshRuleFiles.filter((f) => !agentRuleFiles.includes(f));
+  if (missingRules.length || extraRules.length) {
+    fail(
+      ".dsh/rules file set disagrees with .agent/rules (missing: " +
+        (missingRules.join(", ") || "none") +
+        "; extra: " +
+        (extraRules.join(", ") || "none") +
+        ")",
+    );
+  }
+  for (const file of agentRuleFiles.filter((f) => dshRuleFiles.includes(f))) {
+    const expected = fs.readFileSync(path.join(ROOT, ".agent/rules", file));
+    const actual = fs.readFileSync(path.join(dshRulesDir, file));
+    if (!expected.equals(actual)) fail(".dsh/rules/" + file + " is out of sync with .agent/rules");
+  }
+
+  // Skills: same file set as .agent/skills (root README excluded — a flat .md
+  // under .dsh/skills would be parsed as a broken skill), identical bytes.
+  const agentSkillFiles = walkRepoFiles(path.join(ROOT, ".agent/skills")).filter(
+    (f) => f !== "README.md",
+  );
+  const dshSkillFiles = isDir(dshSkillsDir) ? walkRepoFiles(dshSkillsDir) : [];
+  const missingSkills = agentSkillFiles.filter((f) => !dshSkillFiles.includes(f));
+  const extraSkills = dshSkillFiles.filter((f) => !agentSkillFiles.includes(f));
+  if (missingSkills.length || extraSkills.length) {
+    fail(
+      ".dsh/skills file set disagrees with .agent/skills (missing: " +
+        missingSkills.slice(0, 5).join(", ") +
+        (missingSkills.length > 5 ? "…" : "") +
+        "; extra: " +
+        extraSkills.slice(0, 5).join(", ") +
+        (extraSkills.length > 5 ? "…" : "") +
+        ")",
+    );
+  }
+  for (const file of agentSkillFiles.filter((f) => dshSkillFiles.includes(f))) {
+    const expected = fs.readFileSync(path.join(ROOT, ".agent/skills", file));
+    const actual = fs.readFileSync(path.join(dshSkillsDir, file));
+    if (!expected.equals(actual))
+      fail(".dsh/skills/" + file + " is out of sync with .agent/skills");
+  }
+
+  // A flat .md at the skills root would be catalogued as a skill by DSH.
+  if (isDir(dshSkillsDir)) {
+    const flat = fs.readdirSync(dshSkillsDir, { withFileTypes: true }).filter((e) => e.isFile());
+    if (flat.length) {
+      fail(
+        ".dsh/skills root contains flat file(s) DSH would parse as skills: " +
+          flat.map((e) => e.name).join(", "),
+      );
+    }
+    const SKILL_NAME_RE = /^[a-z0-9]+(?:-[a-z0-9]+)*$/;
+    for (const entry of fs.readdirSync(dshSkillsDir, { withFileTypes: true })) {
+      if (!entry.isDirectory()) continue;
+      if (!SKILL_NAME_RE.test(entry.name)) {
+        fail(".dsh/skills/" + entry.name + ": invalid DSH skill name (kebab-case required)");
+        continue;
+      }
+      const skillFile = path.join(dshSkillsDir, entry.name, "SKILL.md");
+      if (!isFile(skillFile)) {
+        fail(".dsh/skills/" + entry.name + ": missing SKILL.md");
+        continue;
+      }
+      const declared = frontmatterOf(skillFile)
+        .front.match(/^name:\s*(.+)$/m)?.[1]
+        ?.trim();
+      if (declared !== entry.name) {
+        fail(
+          ".dsh/skills/" +
+            entry.name +
+            "/SKILL.md declares name '" +
+            (declared ?? "(missing)") +
+            "' instead of '" +
+            entry.name +
+            "'",
+        );
+      }
+    }
+  }
+
+  // The index must be the generated file, not a hand edit.
+  if (!isFile(dshAgentsMd)) {
+    fail(".dsh/AGENTS.md is missing");
+  } else if (
+    !fs.readFileSync(dshAgentsMd, "utf8").startsWith("<!-- GENERATED by .agent/scripts/sync-dsh.sh")
+  ) {
+    fail(".dsh/AGENTS.md is not the generated index (missing generation marker)");
+  }
+
+  if (errors === 0) pass("DeepSeek Harness mirror matches (.dsh/rules + .dsh/skills + AGENTS.md)");
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// 7d. Canonical mirror parity (.cursor ↔ .agent ↔ .claude)
+// ─────────────────────────────────────────────────────────────────────────────
+
+const normalizeRuleBody = (file) => {
+  const { body } = frontmatterOf(file);
+  return body.trim().replace(/\.mdc\b/g, ".md");
+};
+
+// Mirrors .agent/scripts/sync-skills.sh translateRuleRefs (bash-embedded JS).
+const translateSkillRuleRefs = (content) => {
+  const names = "mms-[a-z0-9-]+|antigravity-global|saas-architecture";
+  return content
+    .replace(new RegExp(`(?<![\\w/.-])(rules\\/(?:${names}))\\.md\\b`, "g"), "$1.mdc")
+    .replace(new RegExp(`(?<![\\w/.-])(?:${names})\\.md\\b`, "g"), (m) => `${m.slice(0, -3)}.mdc`);
+};
+
+let canonicalMismatch = 0;
+for (const file of ruleFiles) {
+  const base = file.replace(/\.mdc$/, ".md");
+  const canonical = normalizeRuleBody(path.join(cursorRulesDir, file));
+  for (const [tree, dir] of [
+    ["agent", path.join(ROOT, ".agent/rules")],
+    ["claude", path.join(ROOT, ".claude/rules")],
+  ]) {
+    const mirror = path.join(dir, base);
+    if (!isFile(mirror)) {
+      canonicalMismatch++;
+      fail(`Missing ${tree} mirror for rules/${base}`);
+      continue;
+    }
+    if (normalizeRuleBody(mirror) !== canonical) {
+      canonicalMismatch++;
+      fail(`rules/${base} is out of sync with the .${tree} mirror`);
+    }
+  }
+}
+
+const agentSkillsRoot = path.join(ROOT, ".agent/skills");
+const agentSkillFiles = walkRepoFiles(agentSkillsRoot);
+const skillMirrors = [
+  ["claude", path.join(ROOT, ".claude/skills"), false],
+  ["cursor", path.join(ROOT, ".cursor/skills"), true],
+];
+for (const [tree, dir, translate] of skillMirrors) {
+  const mirrorFiles = isDir(dir) ? walkRepoFiles(dir) : [];
+  const missing = agentSkillFiles.filter((f) => !mirrorFiles.includes(f));
+  const extra = mirrorFiles.filter((f) => !agentSkillFiles.includes(f));
+  if (missing.length || extra.length) {
+    canonicalMismatch++;
+    fail(
+      "." +
+        tree +
+        "/skills file set disagrees with .agent/skills (missing: " +
+        (missing.slice(0, 5).join(", ") || "none") +
+        "; extra: " +
+        (extra.slice(0, 5).join(", ") || "none") +
+        ")",
+    );
+  }
+  for (const rel of agentSkillFiles.filter((f) => mirrorFiles.includes(f))) {
+    const source = fs.readFileSync(path.join(agentSkillsRoot, rel), "utf8");
+    const expected =
+      translate && (rel === "README.md" || rel.endsWith("SKILL.md"))
+        ? translateSkillRuleRefs(source)
+        : source;
+    const actual = fs.readFileSync(path.join(dir, rel), "utf8");
+    if (actual !== expected) {
+      canonicalMismatch++;
+      fail("." + tree + "/skills/" + rel + " is out of sync with .agent/skills");
+    }
+  }
+}
+if (canonicalMismatch === 0) pass("Canonical mirrors match (.agent, .claude, .cursor)");
+
+// ─────────────────────────────────────────────────────────────────────────────
+// 7e. Coverage floors: rule snapshot ↔ vitest configs
+// ─────────────────────────────────────────────────────────────────────────────
+
+const parseThresholds = (rel) => {
+  const text = fs.readFileSync(path.join(ROOT, rel), "utf8");
+  const block = text.match(/thresholds:\s*\{([^}]*)\}/);
+  if (!block) return null;
+  const value = (key) => {
+    const m = block[1].match(new RegExp("\\b" + key + ":\\s*([\\d.]+)"));
+    return m ? Number(m[1]) : null;
+  };
+  return [value("lines"), value("statements"), value("functions"), value("branches")];
+};
+
+const coverageRule = fs.readFileSync(
+  path.join(cursorRulesDir, "mms-testing-observability.mdc"),
+  "utf8",
+);
+const coverageRows = [
+  ["Frontend", "apps/frontend/vitest.config.ts"],
+  ["Backend", "apps/backend/vitest.config.ts"],
+  ["`@mms/shared`", "packages/shared/vitest.config.ts"],
+];
+let coverageMismatch = 0;
+for (const [label, rel] of coverageRows) {
+  const line = coverageRule
+    .split("\n")
+    .find((l) => l.startsWith("| " + label + " |") && l.includes(rel));
+  if (!line) {
+    coverageMismatch++;
+    fail("Coverage table is missing the " + label + " row pointing at " + rel);
+    continue;
+  }
+  const m = line.match(/([\d.]+) \/ ([\d.]+) \/ ([\d.]+) \/ ([\d.]+)/);
+  if (!m) {
+    coverageMismatch++;
+    fail("Coverage row for " + label + " is not 'lines / statements / functions / branches'");
+    continue;
+  }
+  const ruleValues = m.slice(1).map(Number);
+  const configValues = parseThresholds(rel);
+  if (!configValues || configValues.some((v) => v === null)) {
+    coverageMismatch++;
+    fail("Could not read thresholds from " + rel);
+    continue;
+  }
+  if (ruleValues.some((v, i) => v !== configValues[i])) {
+    coverageMismatch++;
+    fail(
+      "Coverage floors drift for " +
+        label +
+        ": rule says " +
+        ruleValues.join("/") +
+        ", config says " +
+        configValues.join("/"),
+    );
+  }
+}
+if (coverageMismatch === 0) pass("Coverage floors match the rule snapshot");
 
 const skillsReadme = path.join(skillsDir, "README.md");
 if (isFile(skillsReadme)) {

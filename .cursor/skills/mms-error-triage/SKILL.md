@@ -4,12 +4,12 @@ description: Triages a production error report end to end in MMS — Sentry issu
 license: Proprietary
 metadata:
   owner: mms-platform
-  last-verified: 2026-10-16
+  last-verified: 2026-10-29
 ---
 
 # MMS Error Triage
 
-**Rules (norms SSOT):** `mms-testing-observability.mdc` §3–§4 (telemetry fields, correlation, ErrorBoundary) · `mms-api-interface.mdc` (error envelope and echo headers) · `mms-data-layer.mdc` §5 (immutable audit event rows). Audit trail workflow → `mms-audit-trail`.
+**Rules (norms SSOT):** `mms-testing-observability.mdc` §3–§4 (telemetry fields, correlation, ErrorBoundary) · `mms-tdd.mdc` §2 (regression proof) · `mms-api-interface.mdc` (error envelope and echo headers) · `mms-data-layer.mdc` §5 (immutable audit event rows). Audit trail workflow → `mms-audit-trail`.
 
 ## When to use
 
@@ -39,12 +39,18 @@ The server echoes `x-request-id` and `traceparent` back on responses (`mms-api-i
    - **Fetch failure / 4xx-5xx** → Query `isError` path, error mapping, RBAC gate, or RLS context missing in the service (`mms-data-layer.mdc` §1).
    - **Silent wrong data** → soft-delete leakage, projection mismatch vs the `@mms/shared` DTO, or a stale mirror/column config (`mms-soft-delete`, `mms-fields.mdc`).
    - **Slow/timeout** → hand off to `mms-db-performance` or `mms-queue-ops` rather than patching a timeout value.
-5. **Fix, then prove it.** Add a regression test that fails before the fix and passes after — a bug fix without one is how the same issue returns (`mms-testing-observability.mdc` §1). For tenant/RLS bugs, the test must assert allow **and** deny with the wrong tenant.
+5. **Fix, then prove it.** Add a regression test that fails before the fix and passes after (`mms-tdd.mdc` §2) — a bug fix without one is how the same issue returns. For tenant/RLS bugs, the test must assert allow **and** deny with the wrong tenant.
 6. **Record the outcome** where the next person will look: the migration/debt register if it is systemic (`mms-migration-status.mdc`), or the owning rule/skill if a norm was missing. Do not leave the knowledge only in the PR description.
 
 ## Escalate rather than guess
 
 If the report indicates cross-tenant data exposure, credential leakage, or destructive data loss, stop triaging and treat it as a security incident: capture evidence (ids, timestamps, audit rows) before touching anything, and do not "clean up" rows that are the evidence.
+
+## Verification
+
+- **Regression proof:** the new spec fails on the pre-fix code and passes after; the Red command + failure are recorded in the PR body (`mms-tdd.mdc` §1–§2).
+- **Gates:** the owning suite (`pnpm --filter mms-backend test <path>` / `pnpm --filter mms-frontend test <path>` / `pnpm --filter @mms/shared test`) plus `pnpm typecheck`; run `pnpm ci:local` before proposing the fix.
+- **Resolution evidence:** the Sentry issue links the request id/traceparent → audit row → the owning fix; "the error stopped" alone is not a resolution.
 
 ## Do not
 

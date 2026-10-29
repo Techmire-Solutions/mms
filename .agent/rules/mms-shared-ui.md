@@ -9,7 +9,7 @@ description: Shared UI component architecture governance — @shared/ui SSOT, cr
 - Duplicate ban + extraction → `mms-dry.md` §1 (Cross-Console Component Duplication Banned) · §4 (Pre-Deletion Checks)
 - Primitive SSOT enforcement → `mms-ui-ux-design.md` §1 (Central Primitives Enforcement)
 - Monorepo topology → `mms-structure-naming.md` §1 (Frontend Colocation)
-- Post-edit verification → `mms-completion-review.md` §1.3 (Shared UI & Pre-Deletion Verification)
+- Post-edit verification → `mms-completion-review.md` §1 ("Shared UI & Pre-Deletion Verification" bullet)
 
 **Workflow skill:** `mms-shared-ui` — invoke for authoring, auditing, migration, and cleanup.
 **Audit workflow:** `/shared-ui-audit` — run to prove zero violations before merge.

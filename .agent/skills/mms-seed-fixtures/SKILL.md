@@ -4,12 +4,12 @@ description: Authors, maintains, and runs database seed scripts, demo tenant fix
 license: Proprietary
 metadata:
   owner: mms-platform
-  last-verified: 2026-10-16
+  last-verified: 2026-10-29
 ---
 
 # MMS Database Seed Scripts & Test Fixtures
 
-**Rules (norms SSOT):** `mms-ops-infrastructure.md` (dev setup) · `mms-testing-observability.md` (test isolation) · `mms-data-layer.md` §1 (tenant constraints).
+**Rules (norms SSOT):** `mms-ops-infrastructure.md` (dev setup) · `mms-testing-observability.md` (test isolation) · `mms-tdd.md` (fixtures used by specs) · `mms-data-layer.md` §1 (tenant constraints).
 
 ## When to use
 
@@ -60,6 +60,12 @@ pnpm --filter mms-backend exec tsx src/scripts/seed-20-faculty.ts
 - **Deterministic data**: Avoid random timestamps or IDs in fixtures; deterministic values prevent brittle E2E tests.
 - **Tenant isolation**: Always specify the target workspace ID (`ws-demo` or tenant context) so seed rows never land with null or invalid tenant keys.
 - **RFC 8785 Audit Rows**: If seeding transactional entities that require tamper-evident logging, ensure audit outbox events are properly created or skipped appropriately for bulk fixtures.
+
+## Verification
+
+- Re-run the reset/seed command twice on a scratch database; both runs complete without FK errors and produce identical row counts (determinism).
+- Every seeded row carries the intended `workspace_subdomain`; spot-check with a tenant-scoped query rather than a global count.
+- Suites that consume the fixtures stay green: `pnpm --filter mms-backend test <fixture-dependent-suite>` and `pnpm test:e2e` for the journeys built on them.
 
 ## References
 

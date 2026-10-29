@@ -4,7 +4,7 @@ description: Implements or audits MMS finance and accounting workflows — invoi
 license: Proprietary
 metadata:
   owner: mms-platform
-  last-verified: 2026-10-16
+  last-verified: 2026-10-29
 ---
 
 # MMS Finance & Accounting Workflow
@@ -60,7 +60,7 @@ Journal lines carry IAS 21 dual amounts: `txn_currency` / `txn_debit` / `txn_cre
 5. Verify financial effects through the ledger and all affected consumers: subledger, trial balance, income statement, balance sheet, cash flow, dashboard, and export. A balanced journal alone does not prove correct recognition, classification, authorization, or completeness.
 6. Run the applicable evidence matrix and report what was actually tested, any skipped checks, and remaining capability gaps. Do not describe a mocked repository test as proof of PostgreSQL locking or RLS.
 
-## Completion
+## Verification
 
 Use [verification](references/verification.md) for exact scoped commands, then the completion review in `mms-completion-review.mdc`. Standards-only edits use `bash .agent/scripts/sync-all.sh` and `node scripts/verify-rules-integrity.mjs`; they do not by themselves require financial data changes or deployment.
 

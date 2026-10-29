@@ -1,3 +1,4 @@
+import { useMemo } from "react";
 import type {
   WorkspaceUser,
   ActivityLog,
@@ -51,14 +52,17 @@ export function useUsersByIds(
   });
 
   const responseData: unknown = query.data?.status === 200 ? query.data.body : undefined;
-  const users = Array.isArray(responseData)
-    ? responseData
-    : ((responseData as { users?: unknown[] } | null)?.users ?? []);
+  const normalizedUsers = useMemo(() => {
+    const rawUsers = Array.isArray(responseData)
+      ? responseData
+      : ((responseData as { users?: unknown[] } | null)?.users ?? []);
+    return rawUsers.map((user) =>
+      normalizeWorkspaceUser(user as Partial<SystemUser> & { roles?: string[]; role?: string }),
+    ) as WorkspaceUser[];
+  }, [responseData]);
   return {
     ...query,
-    data: users.map((user) =>
-      normalizeWorkspaceUser(user as Partial<SystemUser> & { roles?: string[]; role?: string }),
-    ) as WorkspaceUser[],
+    data: normalizedUsers,
   };
 }
 

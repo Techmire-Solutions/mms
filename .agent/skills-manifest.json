@@ -707,7 +707,8 @@
   ],
   "rules": {
     "always_on": [
-      "rules/mms-core.md"
+      "rules/mms-core.md",
+      "rules/mms-completion-review.md"
     ],
     "directory": "rules/"
   },

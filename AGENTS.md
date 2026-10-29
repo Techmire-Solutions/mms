@@ -1,6 +1,6 @@
 # MMS — Agent Guide
 
-Madrasa Management System monorepo. This file is the cross-tool standard: **Cursor**, **Codex**, **Copilot agents**, **Windsurf**, and **Antigravity** read it directly; **Claude Code** reads it through the `@AGENTS.md` import at the top of `CLAUDE.md`.
+Madrasa Management System monorepo. This file is the cross-tool standard: **Cursor**, **Codex**, **Copilot agents**, **Windsurf**, **Antigravity**, and **DeepSeek Harness** read it directly; **Claude Code** reads it through the `@AGENTS.md` import at the top of `CLAUDE.md`.
 
 ## Quick commands
 
@@ -44,15 +44,24 @@ CLAUDE.md            ← thin wrapper: `@AGENTS.md` import + Claude-only notes
   agents/            # mms-reviewer, mms-explorer, mms-test-triage, mms-docs-auditor
   commands/          # same six workflow commands
   settings.json      # team permissions (deny-list) + hooks
+.dsh/
+  AGENTS.md          # generated DeepSeek Harness index (rules + skills + load model)
+  rules/             # generated mirror of .agent/rules (read on demand)
+  skills/            # generated mirror of .agent/skills (DSH discovery root, rank 100)
 ```
 
 Start here in Antigravity: **skill `antigravity-workspace`**.
 
 ## Always-on rules (all tools)
 
-| Antigravity         | Cursor               |
-| ------------------- | -------------------- |
-| `rules/mms-core.md` | `rules/mms-core.mdc` |
+| Antigravity                      | Cursor                            |
+| -------------------------------- | --------------------------------- |
+| `rules/mms-core.md`              | `rules/mms-core.mdc`              |
+| `rules/mms-completion-review.md` | `rules/mms-completion-review.mdc` |
+
+## DeepSeek Harness (`.dsh`)
+
+DSH loads the repo-root `AGENTS.md` / `CLAUDE.md` chain as project instructions and discovers skills from `<projectRoot>/.dsh/skills` (rank 100; `dsh-base` mounts `@deepseek-ai/dsh-skill-filesystem`). Rules have no DSH-native loader, so `.dsh/rules` mirrors all rule bodies for on-demand reading and `.dsh/AGENTS.md` is the generated index (rules, skills, load model). Canonical sources stay `.cursor/rules/*.mdc` and `.agent/skills`; `bash .agent/scripts/sync-all.sh` regenerates `.dsh` together with the other mirrors.
 
 ## Browser support policy & Modern Web Guidance
 
@@ -67,8 +76,10 @@ On receiving any request, systematically plan before modifying code:
 1. **Discover & Plan**: Inspect the codebase, locate relevant files/abstractions, clarify requirements, evaluate modern web guides (`modern-web-guidance`), and identify boundaries (tenant isolation, 300 LOC cap, strict TS).
 2. **Actionable Task List**: Formulate an explicit, ordered task checklist (`- [ ]`) decomposing the work into discrete, verifiable phases.
 3. **Iterative Execution & Verification**: Execute task-by-task against the checklist, update progress (`- [x]`), apply surgical changes, and verify (typecheck/lint/test) after each phase before declaring completion. Never guess APIs or modify code without prior discovery.
+4. **Strict TDD & Failure Verification**: Write Vitest specs before business logic (`Red`), record the exact target failure in the PR body, implement the minimal solution (`Green`), then refactor (`mms-tdd.mdc` §1–§2; advisory pairing check `pnpm run check:tdd-pairing`).
+5. **Adversarial Loophole Audit**: Prior to completion, execute the 4-vector review (edge cases, failure modes, security/multi-tenancy, concurrency) and deliver the mandatory audit report (`mms-completion-review.mdc` §4).
 
-Owners: always-on `mms-core` §3 (**Workflow Discipline**) · universal standards `mms-agent-universal` §1 (**Cognition & Behaviour**).
+Owners: always-on `mms-core` §3 (**Workflow Discipline**) · universal standards `mms-agent-universal` §1 (**Cognition & Behaviour**) · verification `mms-completion-review` §4.
 
 ## Reuse first (DRY) — applies to every change
 
@@ -154,12 +165,12 @@ Index: [.agent/skills/README.md](.agent/skills/README.md)
 
 | Artifact         | Canonical                                                             | Generated mirrors                                            |
 | ---------------- | --------------------------------------------------------------------- | ------------------------------------------------------------ |
-| Rules            | `.cursor/rules/*.mdc`                                                 | `.agent/rules/*.md`, `.claude/rules/*.md`                    |
-| Skills           | `.agent/skills/*/SKILL.md` (+ `scripts/`, `references/`, `examples/`) | `.cursor/skills/`, `.claude/skills/`                         |
+| Rules            | `.cursor/rules/*.mdc`                                                 | `.agent/rules/*.md`, `.claude/rules/*.md`, `.dsh/rules/*.md` |
+| Skills           | `.agent/skills/*/SKILL.md` (+ `scripts/`, `references/`, `examples/`) | `.cursor/skills/`, `.claude/skills/`, `.dsh/skills/`         |
 | Workflows        | `.agent/workflows/*.md`                                               | `.claude/docs/workflows/` (commands read the canonical path) |
 | Docs (this file) | `AGENTS.md`                                                           | `CLAUDE.md` imports it                                       |
 
-Rule **bodies** are byte-identical across the three rule trees; only frontmatter differs:
+Rule **bodies** are identical modulo the rule-reference extension rewrite (`.mdc` → `.md`); only frontmatter differs otherwise:
 
 | Tool        | Frontmatter                            |
 | ----------- | -------------------------------------- |
@@ -169,18 +180,22 @@ Rule **bodies** are byte-identical across the three rule trees; only frontmatter
 
 Cross-references use `.mdc` in Cursor and `.md` in Antigravity/Claude — the sync script rewrites only rule-name references, never `.cursor/...` paths.
 
-**After editing standards:**
+**After editing standards (always-on `mms-core` rule):** every rule/skill/workflow edit must be
+mirrored to **all** trees — `.agent/`, `.cursor/`, `.claude/`, `.dsh/` — in the same change. Never
+hand-edit a generated mirror.
 
 ```bash
 bash .agent/scripts/sync-all.sh              # regenerate mirrors (add --dry-run for a preview)
-node scripts/verify-rules-integrity.mjs      # gate: frontmatter, paths, imports, globs, citations
+node scripts/verify-rules-integrity.mjs      # gate: mirrors parity, frontmatter, paths, citations
 ```
 
-CI fails if the mirrors are out of sync (`git diff --exit-code -- .agent .cursor .claude`) or the verifier reports an error. Both run in `.github/workflows/ci.yml`.
+CI fails if the mirrors are out of sync (`git diff --exit-code -- .agent .cursor .claude .dsh`) or the verifier reports an error. Both run in `.github/workflows/ci.yml` — `sync-all.sh` regenerates `.dsh` (DeepSeek Harness) along with the other trees.
+
+`.githooks/pre-commit` enforces the same thing locally: when a standards path is staged it regenerates every mirror, requires those mirrors to be staged with their source (`scripts/check-standards-staged.mjs`), then runs the verifier.
 
 **Enforcement rule** (from `mms-agent-universal.mdc`): a norm is either machine-enforced (lint rule, ratchet script, CI check, hook, test) or explicitly labelled advisory. Land the check with the norm.
 
-**22 rules** (1 always-on + 21 scoped) — index with the per-topic owner: [.cursor/rules/README.md](.cursor/rules/README.md).
+**23 rules** (2 always-on + 21 scoped) — index with the per-topic owner: [.cursor/rules/README.md](.cursor/rules/README.md).
 
 <!-- BEGIN:turborepo-agent-rules -->
 

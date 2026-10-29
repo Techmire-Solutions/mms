@@ -58,6 +58,7 @@ jobs:
             frontend:
               - 'apps/frontend/**'
               - 'packages/shared/**'
+              - 'packages/ui/**'
               - 'package.json'
               - 'pnpm-lock.yaml'
               - '.github/**'
@@ -71,11 +72,13 @@ jobs:
               - 'e2e/**'
               - 'apps/**'
               - 'packages/shared/**'
+              - 'packages/ui/**'
               - 'package.json'
               - 'pnpm-lock.yaml'
               - '.github/**'
             full_tests:
               - 'packages/shared/**'
+              - 'packages/ui/**'
               - '**/package.json'
               - 'pnpm-lock.yaml'
               - 'pnpm-workspace.yaml'
@@ -288,7 +291,7 @@ jobs:
       - name: Verify Agent & Rule Mirrors Sync
         run: |
           bash .agent/scripts/sync-all.sh
-          git diff --exit-code -- .agent .cursor .claude AGENTS.md || (echo "Agent rule/skill mirrors out of sync! Run 'bash .agent/scripts/sync-all.sh'" && exit 1)
+          git diff --exit-code -- .agent .cursor .claude .dsh AGENTS.md || (echo "Agent rule/skill mirrors out of sync! Run 'bash .agent/scripts/sync-all.sh'" && exit 1)
           node scripts/verify-rules-integrity.mjs
 
   build:
@@ -663,6 +666,7 @@ jobs:
           --health-timeout 5s
           --health-retries 5
           --tmpfs /var/lib/postgresql/data:rw,noexec,nosuid,size=1024m
+          --shm-size=256mb
 
     env:
       JWT_SECRET: "e2e-test-jwt-secret-key-at-least-32-chars-long"
@@ -718,6 +722,7 @@ jobs:
           --health-timeout 5s
           --health-retries 5
           --tmpfs /var/lib/postgresql/data:rw,noexec,nosuid,size=1024m
+          --shm-size=256mb
 
     env:
       JWT_SECRET: "e2e-test-jwt-secret-key-at-least-32-chars-long"
@@ -744,7 +749,7 @@ jobs:
         id: playwright-cache
         with:
           path: ~/.cache/ms-playwright
-          key: playwright-${{ runner.os }}-${{ hashFiles('pnpm-lock.yaml') }}
+          key: playwright-${{ runner.os }}-${{ hashFiles('e2e/package.json', 'pnpm-workspace.yaml') }}
 
       - name: Install Playwright Chromium Browser
         if: steps.playwright-cache.outputs.cache-hit != 'true'
@@ -942,7 +947,7 @@ jobs:
           | **Build & Release Artifact** | \`${{ needs.build.result }}\` | Build + Bundle Budget (parallel job) |
           | **Secret Scan** | \`${{ needs.secret-scan.result }}\` | gitleaks, full history (parallel job) |
           | **Sensitive File Guard** | \`${{ needs.sensitive-file-guard.result }}\` | Whole-tree sensitive-filename blocklist |
-          | **Frontend Tests** | \`${{ needs.test-frontend.result }}\` | 2-Way Sharded Parallel Matrix |
+          | **Frontend Tests** | \`${{ needs.test-frontend.result }}\` | 4-Way Sharded Parallel Matrix |
           | **Frontend Coverage** | \`${{ needs.test-frontend-coverage.result }}\` | Merged Blob Reports & Coverage Enforcement |
           | **Backend Unit Tests** | \`${{ needs.test-backend-unit.result }}\` | 2-Way Sharded In-Memory Unit |
           | **Backend Coverage** | \`${{ needs.test-backend-coverage.result }}\` | Merged Blob Reports & Coverage Enforcement |

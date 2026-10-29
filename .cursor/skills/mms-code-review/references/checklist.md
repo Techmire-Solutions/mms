@@ -24,11 +24,11 @@ Extracted from `SKILL.md` so the skill body stays loadable in one pass; the owni
 - [ ] Drizzle migration + journal via **`mms-schema-migrate`** (no `drizzle-kit push` on shared/prod)
 - [ ] Stable error `type` codes; no stack traces in responses
 - [ ] No banned Node 24 dependencies (`dotenv`, `axios`, `node-fetch`, `ws` for client, `glob`, `fast-glob`, `path-to-regexp`)
-- [ ] Core module imports use `node:` prefix (`node:fs`, `node:crypto`, `node:path`, `node:async_hooks`, `node:test`)
+- [ ] Core module imports use `node:` prefix (`node:fs`, `node:crypto`, `node:path`, `node:async_hooks`)
 - [ ] WHATWG `new URL()` used exclusively (no legacy `url.parse()`)
 - [ ] Explicit Resource Management (`using` / `await using`) for database connections / transactions
 - [ ] Single-shot hashing uses `crypto.hash()` from `node:crypto`
-- [ ] Context propagation via `AsyncLocalStorage` (`AsyncContextFrame`)
+- [ ] Context propagation via `AsyncLocalStorage` (`node:async_hooks`; no experimental `AsyncContextFrame` flag)
 - [ ] Zero wildcard DB projections (`SELECT *`), verified via `check:db-projections.mjs` — `mms-performance.md` §1
 - [ ] Outbound fetch uses `AbortSignal.timeout()`, request `bodyLimit` enforced, and send idempotency digest bound to body — `mms-api-interface.md` §6
 
@@ -127,6 +127,7 @@ Extracted from `SKILL.md` so the skill body stays loadable in one pass; the owni
 - [ ] Access to audit records logged as auditable event (`action_type = 'VIEW'`)
 
 ### Testing
+- [ ] Strict TDD verification: targeted Vitest spec written first, with the Red-phase command + failure in the PR body — `mms-tdd.md` §1–§2 (`pnpm run check:tdd-pairing` advisory)
 - [ ] New `@mms/shared` pure helpers have unit tests
 - [ ] Specification naming: tests follow `describe('Entity', () => it('given [condition], should [expected result] when [action]'))` — `mms-testing-observability.md` §2
 - [ ] AAA format: tests distinctly separate `// Arrange`, `// Act`, and `// Assert` phases — `mms-testing-observability.md` §2
@@ -137,10 +138,12 @@ Extracted from `SKILL.md` so the skill body stays loadable in one pass; the owni
 - [ ] Zero shared mutable state: no outer `describe` mutable `let`s; mandatory lifecycle resets; no arbitrary `sleep`/`waitForTimeout` — `mms-testing-observability.md` §4
 - [ ] Strict assertion specificity: ban `toBeTruthy()`, `toBeFalsy()`, generic `toBeDefined()`; use strict types, ISO regex (`/^\d{4}-\d{2}-\d{2}T/`), or typed DOM instances (`toBeInstanceOf(...)`) — `mms-testing-observability.md` §1
 - [ ] Zero DB skip latches: ban `isDbAvailable`; ordinary integration tests use in-memory repository mock fixtures and Fastify `inject()`; explicit PostgreSQL `test:db` must actually execute for locking/RLS evidence — `mms-testing-observability.md` §1
+- [ ] Multi-tenant integration & RLS: live DB tests verify cross-tenant isolation (Tenant A cannot read/mutate/delete Tenant B data) and transactional rollback on write failure — `mms-testing-observability.md` §12
 - [ ] Negative tests spy on `console.error` / `console.warn` for silent test output
 - [ ] Auth/RBAC/tenant changes have `inject()` allow+deny tests
-- [ ] Coverage ratchet: new additions meet category thresholds (Core ≥95%, Hooks ≥90%, UI/Routes ≥85%); PRs never decrease baseline coverage — `mms-testing-observability.md` §5
+- [ ] Coverage ratchet: no configured floor in any `vitest.config.ts` was lowered and new code is covered at the touched surface's measured level; raise a floor only with a green measured value — `mms-testing-observability.md` §5
 - [ ] Shell / touch / RTL / table changes: keep `responsive-shell` + `responsive-authenticated` green; extend when touching platform `md` nav or Reports/Setup builders
+- [ ] Adversarial Loophole Audit deliverable: PR or completion summary provides the 3-part markdown audit report — `mms-completion-review.md` §4
 
 ### Accessibility
 - [ ] When shells/primitives/FormModal change → run skill **`mms-a11y-smoke`** (axe serious/critical + focus-return)

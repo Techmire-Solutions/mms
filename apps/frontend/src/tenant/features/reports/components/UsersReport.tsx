@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useMemo } from "react";
 import type { ActivityLog } from "@mms/shared";
 import { ErrorBoundary } from "@/components/app/ErrorBoundary";
 import { UsersCommandMetrics } from "@/tenant/components/reports/moduleReportAdapters";
@@ -13,7 +13,7 @@ export default function UsersReport(): React.JSX.Element {
   const { t } = useTranslation();
   const activityQuery = useActivityLogs();
 
-  const logs = (() => {
+  const logs = useMemo(() => {
     if (!activityQuery.data || activityQuery.data.status !== 200) return [];
     const body = activityQuery.data.body;
     if (Array.isArray(body)) return body as ActivityLog[];
@@ -26,8 +26,10 @@ export default function UsersReport(): React.JSX.Element {
       return (body as { logs: ActivityLog[] }).logs;
     }
     return [];
-  })() as ActivityLog[];
-  const users = useUsersByIds(logs.map((log) => log.userId)).data;
+  }, [activityQuery.data]);
+
+  const userIds = useMemo(() => logs.map((log) => log.userId), [logs]);
+  const users = useUsersByIds(userIds).data;
 
   if (activityQuery.isError) {
     return (

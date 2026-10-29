@@ -22,9 +22,16 @@ const DRY = process.env.MMS_SYNC_DRY_RUN === "1";
 const src = ".agent/skills";
 const dest = ".cursor/skills";
 
-// Helper to translate rule references from .md to .mdc
+// Helper to translate rule references from .md to .mdc.
+// Only rule names are rewritten, and only as `rules/<name>.md` or a bare
+// `<name>.md`. Path-qualified files such as `.claude/agents/mms-docs-auditor.md`
+// must NOT be rewritten — the old blanket regex turned them into non-existent
+// `.mdc` paths inside the Cursor mirror.
 function translateRuleRefs(content) {
-  return content.replace(/\b(mms-[a-z0-9-]+|antigravity-global|saas-architecture)\.md\b/g, "$1.mdc");
+  const names = "mms-[a-z0-9-]+|antigravity-global|saas-architecture";
+  return content
+    .replace(new RegExp(`(?<![\\w/.-])(rules\\/(?:${names}))\\.md\\b`, "g"), "$1.mdc")
+    .replace(new RegExp(`(?<![\\w/.-])(?:${names})\\.md\\b`, "g"), (match) => `${match.slice(0, -3)}.mdc`);
 }
 
 // Prune orphaned skill directories in dest

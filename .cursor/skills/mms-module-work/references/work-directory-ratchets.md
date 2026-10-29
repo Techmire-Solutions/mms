@@ -1,6 +1,6 @@
 # Work Directory Architecture & CI Ratchets
 
-Governs compliance with `scripts/check-work-directory.mjs` and `mms-module-architecture.mdc` §3/§7.
+Governs compliance with `scripts/check-work-directory.mjs` and `mms-module-architecture.md` §3/§7.
 
 ## The Six Invariant Ratchets
 

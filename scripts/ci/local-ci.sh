@@ -61,7 +61,7 @@ paths_match() {
   return 1
 }
 
-COMMON_ROOT=('packages/shared/*' 'package.json' 'pnpm-lock.yaml' '.github/*')
+COMMON_ROOT=('packages/shared/*' 'packages/ui/*' 'package.json' 'pnpm-lock.yaml' '.github/*')
 
 bucket() {
   case "$1" in

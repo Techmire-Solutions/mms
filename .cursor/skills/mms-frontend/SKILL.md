@@ -4,12 +4,12 @@ description: Builds or modifies the MMS React frontend — apiClient, routing, p
 license: Proprietary
 metadata:
   owner: mms-platform
-  last-verified: 2026-10-16
+  last-verified: 2026-10-29
 ---
 
 # MMS Frontend Workflow
 
-**Rules (norms SSOT):** `mms-api-interface.mdc` · `mms-data-layer.mdc` · `mms-hooks.mdc` · `mms-ui-ux-design.mdc` §4, §8 · `mms-structure-naming.mdc`.
+**Rules (norms SSOT):** `mms-api-interface.mdc` · `mms-tdd.mdc` (hook/component tests) · `mms-data-layer.mdc` · `mms-hooks.mdc` · `mms-ui-ux-design.mdc` §4, §8 · `mms-structure-naming.mdc`.
 
 ## When to use
 
