@@ -77,6 +77,15 @@ pnpm run db:check-rls
 migrations and before the PM2 reload**. A failing check exits 1 and the previous
 release keeps serving.
 
+The env is snapshotted before the merge. On any failed deploy the script restores
+that snapshot, and a preflight failure leaves a `.deploy-preflight-failed`
+marker that makes the automatic rollback skip its PM2 reload — the running
+release is already unchanged. Without this, a rollback would reload the previous
+code with the failed deploy's new env (e.g. `strict`) and could take the site
+down. Each successful release also saves its `.env` as
+`.deploy-releases/<sha>.env`; a rollback restores that release's env before
+reloading.
+
 `MMS_DB_ROLE_ENFORCEMENT` defaults to `strict` in the deploy workflow, the env
 merge, and the on-server fallback. `warn`/`off` are rejected unless explicitly
 overridden for that deploy:
@@ -118,6 +127,12 @@ No data migration is involved. To return to the old behaviour:
 2. Redeploy (preflight warns instead of aborting).
 3. Investigate; do not leave `warn` in place indefinitely — the boot guard only
    logs, so RLS is off while it is set.
+
+`scripts/deploy-rollback.sh` restores the target release's env snapshot
+(`.deploy-releases/<sha>.env`) before reloading. If no snapshot exists for that
+release it keeps the current env and prints a warning; the failed deploy's own
+env is already restored by the pre-deploy trap, so the old release boots with
+the old mode.
 
 If the ownership transfer itself was wrong, restore the pre-change backup and
 re-run provisioning. `mms_app` can remain the owner while the mode is `warn`.
