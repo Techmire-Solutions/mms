@@ -1,4 +1,4 @@
-import { useEffect } from "react";
+import { useCallback, useEffect, useMemo } from "react";
 import { useTranslation } from "@/hooks/useTranslation";
 import { applyContactsWidgetWorkDrillDown } from "@/lib/contacts/contactsWidgetWorkDrillDown";
 import { notify } from "@/lib/notify";
@@ -22,20 +22,30 @@ export function useWidgetDrilldownModal(widget: CustomWidget) {
     }
   }, [widget]);
 
-  const requiredCollections = (() => new Set<ReportCollection>([widget.collection, "students"]))();
+  const requiredCollections = useMemo(
+    () => new Set<ReportCollection>([widget.collection, "students"]),
+    [widget.collection],
+  );
   const collections = useWidgetCollections({
     requiredCollections,
     enabled: widget.collection !== "contacts",
   });
 
-  const widgetRecords = (() =>
-    widget.collection === "contacts" ? [] : getFilteredRecords(widget, collections))();
+  const widgetRecords = useMemo(
+    () => (widget.collection === "contacts" ? [] : getFilteredRecords(widget, collections)),
+    [widget, collections],
+  );
+
+  const filterFn = useCallback(
+    (record: Record<string, unknown>, query: string) =>
+      Object.values(record).some((fieldValue) => String(fieldValue).toLowerCase().includes(query)),
+    [],
+  );
 
   const pagination = useLocalPagination({
     items: widgetRecords,
     pageSize: 10,
-    filterFn: (record, query) =>
-      Object.values(record).some((fieldValue) => String(fieldValue).toLowerCase().includes(query)),
+    filterFn,
   });
 
   const studentNameMap = (() => {

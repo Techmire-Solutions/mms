@@ -13,6 +13,8 @@
  *      shims; canonical paths win.
  *   4. `routeAggregatorFiles` — `routes/tenant/{module}.ts` module-aggregator files are
  *      being folded into `routes/tenant/{module}/` (folder-per-module).
+ *   5. `useCasesWithoutDirectTest` — domain use-case files must have a companion test
+ *      or be imported/tested in a test suite (mms-testing-observability.md §4).
  *
  * Ratchets, not cleanups: existing sites are grandfathered via BASELINE; lowering a
  * baseline as the seam tightens is always welcome.
@@ -32,6 +34,7 @@ const BASELINE = {
   servicesStorageImports: 66,
   servicesReexportShims: 0,
   routeAggregatorFiles: 17,
+  useCasesWithoutDirectTest: 55,
 };
 
 /** Route-aggregator files that are intentionally not `{module}` folders. */
@@ -107,6 +110,48 @@ const routeAggregatorFiles = fs
   .filter((e) => !SANCTIONED_TENANT_ROUTE_FILES.some((re) => re.test(e.name)))
   .map((e) => toRel(path.join(TENANT_ROUTES_DIR, e.name)));
 
+// --- Norm 5: use-case companion tests ---------------------------------------
+function walkAllTs(dir, out = []) {
+  if (!fs.existsSync(dir)) return out;
+  for (const entry of fs.readdirSync(dir, { withFileTypes: true })) {
+    if (entry.name === "node_modules") continue;
+    const full = path.join(dir, entry.name);
+    if (entry.isDirectory()) walkAllTs(full, out);
+    else if (entry.name.endsWith(".ts")) out.push(full);
+  }
+  return out;
+}
+
+const allBackendTs = walkAllTs(BACKEND_SRC);
+const testFiles = allBackendTs.filter((f) => isTest(toRel(f)));
+const testContents = testFiles.map((f) => fs.readFileSync(f, "utf8"));
+const useCaseFiles = allBackendTs.filter(
+  (f) => toRel(f).includes("/use-cases/") && !isTest(toRel(f)),
+);
+
+const useCasesWithoutDirectTest = [];
+for (const file of useCaseFiles) {
+  const base = path.basename(file, ".ts");
+  const dir = path.dirname(file);
+  const colocatedTest = path.join(dir, `${base}.test.ts`);
+  const colocatedSpec = path.join(dir, `${base}.spec.ts`);
+  const subTestsDir = path.join(dir, "__tests__", `${base}.test.ts`);
+  const subSpecsDir = path.join(dir, "__tests__", `${base}.spec.ts`);
+
+  const hasDirectCompanion =
+    fs.existsSync(colocatedTest) ||
+    fs.existsSync(colocatedSpec) ||
+    fs.existsSync(subTestsDir) ||
+    fs.existsSync(subSpecsDir);
+
+  if (hasDirectCompanion) continue;
+
+  const isImportedInTest = testContents.some((content) => content.includes(base));
+  if (!isImportedInTest) {
+    useCasesWithoutDirectTest.push(toRel(file));
+  }
+}
+
 const results = [
   {
     name: "use-case files importing db/repositories or drizzle-orm directly",
@@ -135,6 +180,13 @@ const results = [
     count: routeAggregatorFiles.length,
     baseline: BASELINE.routeAggregatorFiles,
     sample: routeAggregatorFiles.slice(0, 8),
+  },
+  {
+    name: "use-case files without companion test or test import",
+    norm: "mms-testing-observability.md §4",
+    count: useCasesWithoutDirectTest.length,
+    baseline: BASELINE.useCasesWithoutDirectTest,
+    sample: useCasesWithoutDirectTest.slice(0, 8),
   },
 ];
 
@@ -190,7 +242,7 @@ for (const result of results) {
 console.log("");
 if (regressions > 0) {
   console.error(
-    "💥 backend-structure ratchet(s) regressed. Route use-case/services storage access through the module adapter, avoid pure services/ shims, and keep tenant routes folder-per-module — or lower the BASELINE in scripts/check-backend-structure.mjs with a reviewed reason.",
+    "💥 backend-structure ratchet(s) regressed. Route use-case/services storage access through the module adapter, avoid pure services/ shims, keep tenant routes folder-per-module, and add companion tests for new use-cases (mms-testing-observability.md §4) — or lower the BASELINE in scripts/check-backend-structure.mjs with a reviewed reason.",
   );
   process.exit(1);
 }

@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useCallback, useMemo, useState } from "react";
 import { type ActivityLog, type SystemUser, type WorkspaceUser } from "@mms/shared";
 import { useLocalPagination } from "@/hooks/useLocalPagination";
 import { useWorkDirectoryViewMode } from "@/hooks/useWorkDirectoryViewMode";
@@ -21,15 +21,20 @@ export function ActivityLogs({ logs, users, columnLayout }: ActivityLogsProps): 
   const [dateTo, setTo] = useState("");
   const { viewMode, setViewMode } = useWorkDirectoryViewMode();
 
-  const userNamesById = new Map<string, string>();
-  for (const user of users) {
-    userNamesById.set(user.id, user.name);
-  }
+  const userNamesById = useMemo(() => {
+    const map = new Map<string, string>();
+    for (const user of users) {
+      map.set(user.id, user.name);
+    }
+    return map;
+  }, [users]);
 
-  const userNameFor = (log: ActivityLog): string =>
-    log.userName ?? userNamesById.get(log.userId) ?? log.userId;
+  const userNameFor = useCallback(
+    (log: ActivityLog): string => log.userName ?? userNamesById.get(log.userId) ?? log.userId,
+    [userNamesById],
+  );
 
-  const baseFilteredLogs = (() => {
+  const baseFilteredLogs = useMemo(() => {
     return logs.filter((log) => {
       if (userFilter !== "all" && log.userId !== userFilter) return false;
       if (actionFilter !== "all" && log.action !== actionFilter) return false;
@@ -37,7 +42,12 @@ export function ActivityLogs({ logs, users, columnLayout }: ActivityLogsProps): 
       if (dateTo && log.ts > `${dateTo}T23:59:59`) return false;
       return true;
     });
-  })();
+  }, [logs, userFilter, actionFilter, dateFrom, dateTo]);
+
+  const searchFields = useCallback(
+    (log: ActivityLog) => [userNameFor(log), log.detail],
+    [userNameFor],
+  );
 
   const {
     searchQuery: search,
@@ -49,8 +59,28 @@ export function ActivityLogs({ logs, users, columnLayout }: ActivityLogsProps): 
   } = useLocalPagination({
     items: baseFilteredLogs,
     pageSize: PAGE_SIZE,
-    searchFields: (log) => [userNameFor(log), log.detail],
+    searchFields,
   });
+
+  const handleUserFilterChange = (val: string) => {
+    setUser(val);
+    setPage(1);
+  };
+
+  const handleActionFilterChange = (val: string) => {
+    setAct(val);
+    setPage(1);
+  };
+
+  const handleDateFromChange = (val: string) => {
+    setFrom(val);
+    setPage(1);
+  };
+
+  const handleDateToChange = (val: string) => {
+    setTo(val);
+    setPage(1);
+  };
 
   return (
     <div className="space-y-4">
@@ -58,13 +88,13 @@ export function ActivityLogs({ logs, users, columnLayout }: ActivityLogsProps): 
         search={search}
         onSearchChange={setSearch}
         userFilter={userFilter}
-        onUserFilterChange={setUser}
+        onUserFilterChange={handleUserFilterChange}
         actionFilter={actionFilter}
-        onActionFilterChange={setAct}
+        onActionFilterChange={handleActionFilterChange}
         dateFrom={dateFrom}
-        onDateFromChange={setFrom}
+        onDateFromChange={handleDateFromChange}
         dateTo={dateTo}
-        onDateToChange={setTo}
+        onDateToChange={handleDateToChange}
         users={users}
         viewMode={viewMode}
         onViewModeChange={setViewMode}

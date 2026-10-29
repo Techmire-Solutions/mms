@@ -1,5 +1,8 @@
 #!/usr/bin/env bash
 # Git hook: fast pre-commit checks (seconds, staged files only).
+# - Standards mirror guard when a rule/skill/workflow/standards script is staged:
+#   regenerate all mirrors, require the mirrors to be staged with their source,
+#   then run the standards verifier (also catches hand-edited mirrors).
 # - Staged secrets scan.
 # - ESLint (cached) on staged files.
 # Typecheck + changed-related unit tests run in .githooks/pre-push (pnpm ci:local).
@@ -8,6 +11,14 @@ set -euo pipefail
 if [[ "${SKIP_LOCAL_CI:-}" == "1" ]]; then
   echo "⚠ SKIP_LOCAL_CI=1 — skipping pre-commit checks (agents must not set this unless the user asks)."
   exit 0
+fi
+
+STAGED_STANDARDS="$(git diff --cached --name-only --diff-filter=ACMR | grep -E '^(\.cursor/rules/|\.agent/(skills|workflows|scripts|rules)/|AGENTS\.md$|CLAUDE\.md$)' || true)"
+if [[ -n "$STAGED_STANDARDS" ]]; then
+  echo "🔍 Pre-commit: standards mirrors (sync + staging + verifier)..."
+  bash .agent/scripts/sync-all.sh >/dev/null
+  node scripts/check-standards-staged.mjs
+  node scripts/verify-rules-integrity.mjs
 fi
 
 echo "🔍 Pre-commit: secrets + lint on staged files..."

@@ -8,7 +8,7 @@ This workflow establishes and audits the Single Source of Truth (SSOT) policy fo
 
 ## Phase 1: Context & Discovery
 
-- [ ] **Load always-on rules**: Review `rules/mms-core.md`, `rules/mms-dry.md`, `rules/mms-ui-ux-design.md`, and `rules/mms-structure-naming.md`.
+- [ ] **Load the owning rules**: Review `rules/mms-core.md`, `rules/mms-dry.md`, `rules/mms-ui-ux-design.md`, and `rules/mms-structure-naming.md`.
 - [ ] **Inspect SSOT shared package**: Audit `packages/ui/src/` (`@shared/ui`) before authoring any new component.
 - [ ] **Check import patterns**: Verify consuming consoles:
   - Platform Console must import directly from `@shared/ui`.

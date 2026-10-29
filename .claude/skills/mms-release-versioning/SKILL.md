@@ -4,7 +4,7 @@ description: Manages MMS release bookkeeping — version bumps, changelog entrie
 license: Proprietary
 metadata:
   owner: mms-platform
-  last-verified: 2026-10-16
+  last-verified: 2026-10-29
 ---
 
 # MMS Release & Versioning
@@ -39,6 +39,12 @@ The repository is a private monorepo deployed from `main` via GitHub Actions →
    - convention changes → the owning rule/skill plus `bash .agent/scripts/sync-all.sh`.
 5. **Hand off the deploy SHA** rather than describing the change in prose. The deploy pipeline needs `DEPLOY_SHA`; the rollback path needs the previous release to still exist in `.deploy-releases/`.
 6. **Verify after deploy** with `bash scripts/deploy-verify.sh` and a real tenant login (`mms-ops-deploy`, `mms-incident-response`).
+
+## Verification
+
+- Release gate: the step-1 chain is green (`pnpm typecheck`, `pnpm lint`, `pnpm test`, optional `pnpm test:e2e`, `node scripts/verify-rules-integrity.mjs`, `pnpm audit --audit-level=high`).
+- Register integrity: every closed row exists in `docs/migration-milestones.md` and is gone from the open register; `mms-release-versioning` never edits app `version` fields.
+- Post-deploy: `bash scripts/deploy-verify.sh` plus a real tenant login; the previous release is still present in `.deploy-releases/` for rollback.
 
 ## Do not
 

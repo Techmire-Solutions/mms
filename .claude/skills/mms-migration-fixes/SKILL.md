@@ -4,7 +4,7 @@ description: Addresses the open priorities P1–P7 in mms-migration-status.md �
 license: Proprietary
 metadata:
   owner: mms-platform
-  last-verified: 2026-10-16
+  last-verified: 2026-10-29
 allowed-tools: Read Grep Glob Bash(pnpm typecheck) Bash(pnpm test)
 ---
 
@@ -41,7 +41,7 @@ Residual Work SQL-page debt for **other** modules (not Faculty/Users/Sessions) l
 
 **Fix:**
 - Partial unique indexes (`WHERE deleted_at IS NULL`) already landed in `apps/backend/src/db/migrations_drizzle/0104_soft_delete_system_complete.sql`; verify remaining tables against the three-tier index strategy rather than adding a new migration by hand.
-- Category B/C partial indexes live in the same baseline — audit coverage with `pnpm run check:migration-indexes` and add missing pairs as forward-only DDL (`mms-data-layer.mdc` §7).
+- Category B/C partial indexes live in the same baseline — audit coverage with `pnpm run check:migration-indexes` and add missing pairs as forward-only DDL (`mms-data-layer.md` §7).
 - Add `deleted_with_cascade` column to enrollments; update session cascade soft-delete and restore logic (`docs/soft-delete.md` §2.2).
 - Standardize all query-flag parsing on `isQueryFlagTrue`.
 - **Resolved 2026-09-18** — `purgeExpiredArchivedRecords` lives in `apps/backend/src/worker/purgeArchivedRecordsJob.ts` (bounded 500-row chunks, `FOR UPDATE SKIP LOCKED`, 50 ms inter-chunk pause, `entity.hard_purge` audit event + outbox CDC events, tenant-scoped) and runs on the daily 02:00 UTC schedule registered in `apps/backend/src/worker/index.ts` (`scheduleNextDailyPurge`, single-leader lease) — matching "Retention Hard-Purge: Implemented" in `docs/migration-milestones.md` (`docs/soft-delete.md` §13).
@@ -71,7 +71,7 @@ Residual Work SQL-page debt for **other** modules (not Faculty/Users/Sessions) l
 
 **Fix:** When touching hot routes, prefer tighter `SET LOCAL` budgets — `mms-data-layer.md` (align with Fastify `requestTimeout`).
 
-## After each fix
+## Verification (after each fix)
 
 ```bash
 pnpm typecheck && pnpm test

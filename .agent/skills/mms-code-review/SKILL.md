@@ -4,13 +4,13 @@ description: Reviews a concrete change set (PR or local diff) against MMS rules 
 license: Proprietary
 metadata:
   owner: mms-platform
-  last-verified: 2026-10-16
+  last-verified: 2026-10-29
 allowed-tools: Read Grep Glob Bash(pnpm typecheck) Bash(pnpm lint) Bash(pnpm test) Bash(pnpm ci:local) Bash(pnpm ci:local:full) Bash(bash scripts/ci/local-ci.sh) Bash(bash .agent/skills/mms-code-review/scripts/pre-pr-review.sh)
 ---
 
 # MMS Code Review
 
-**Rule (norms SSOT):** `mms-completion-review.md` · `mms-core.md` · `mms-structure-naming.md` · `mms-performance.md`.
+**Rule (norms SSOT):** `mms-completion-review.md` · `mms-tdd.md` (Red evidence) · `mms-core.md` · `mms-structure-naming.md` · `mms-performance.md`.
 
 ## When to use
 
@@ -96,8 +96,9 @@ E2E when touching auth/routing/onboard: `pnpm test:e2e` (critical path: `e2e/tes
 
 ## References
 
+- Pre-merge checklist: `references/checklist.md`
 - Fix-before-done checklist: `references/fix-before-done.md`
-- Route/review checklists also under `references/`
+- Adversarial loophole audit deliverable template: `references/adversarial-audit-template.md`
 
 ## Scripts
 

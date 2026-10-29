@@ -40,5 +40,5 @@ description: Authentication session cookies, JWT token scopes, tenant isolation 
 - **Hard-Delete Guard:** Schema `forbid_hard_delete()` trigger blocks SQL deletes. Bypass requires `SET LOCAL app.allow_hard_purge = 'true'`.
 
 ## 5. Audit Trail Security, Governance & Trace Context
-- **Security & Privilege Hardening:** Audit trail cryptographic chaining, RFC 8785 canonical JSON, and outbox transactions follow `mms-data-layer.md` §5. Propagate W3C `traceparent` via `AsyncLocalStorage` (`AsyncContextFrame`) as `correlation_id`. Database user has `INSERT`-only rights on audit tables; viewing audit logs is an auditable event.
+- **Security & Privilege Hardening:** Audit trail cryptographic chaining, RFC 8785 canonical JSON, and outbox transactions follow `mms-data-layer.md` §5. Propagate W3C `traceparent` via `AsyncLocalStorage` as `correlation_id`. Database user has `INSERT`-only rights on audit tables; viewing audit logs is an auditable event.
 

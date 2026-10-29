@@ -8,7 +8,7 @@ This workflow enforces the Single Source of Truth (SSOT) policy, eliminates dupl
 
 ## Phase 1: Context & Discovery
 
-- [ ] **Load always-on rules**: Review `rules/mms-core.md`, `rules/mms-dry.md`, and `rules/mms-structure-naming.md`.
+- [ ] **Load the owning rules**: Review `rules/mms-core.md`, `rules/mms-dry.md`, and `rules/mms-structure-naming.md`.
 - [ ] **Search before writing**: Before creating new helpers or components, search the following paths for existing solutions:
   - `@mms/shared`
   - `apps/frontend/src/lib/`

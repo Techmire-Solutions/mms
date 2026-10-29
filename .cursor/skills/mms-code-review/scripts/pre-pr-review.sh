@@ -32,6 +32,10 @@ echo "=================================================="
 echo "🚀 MMS Pre-PR Automated Verification (scope: $SCOPE, parallel)"
 echo "=================================================="
 
+# Advisory only (never fails): flags backend domain files changed without a
+# changed spec. Test-first ordering itself is unprovable (rule mms-tdd §2).
+node scripts/check-tdd-pairing.mjs || true
+
 gate "Staged secrets" pnpm run check:secrets
 gate "Rules & skills integrity" node scripts/verify-rules-integrity.mjs
 gate "i18n completeness (en/ar/ur/fa)" pnpm run check:i18n

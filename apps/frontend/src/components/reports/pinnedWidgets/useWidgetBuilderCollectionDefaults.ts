@@ -43,9 +43,12 @@ export function useWidgetBuilderCollectionDefaults({
   setBuilderTargetField,
   setBuilderFilterField,
 }: UseWidgetBuilderCollectionDefaultsOptions): void {
-  const [anchor, setAnchor] = useState(() => ({ collection, editWidgetConfig }));
-  if (anchor.collection !== collection || anchor.editWidgetConfig !== editWidgetConfig) {
-    setAnchor({ collection, editWidgetConfig });
+  const [anchorCollection, setAnchorCollection] = useState(collection);
+  const [anchorEditId, setAnchorEditId] = useState(editWidgetConfig?.id);
+
+  if (anchorCollection !== collection || anchorEditId !== editWidgetConfig?.id) {
+    setAnchorCollection(collection);
+    setAnchorEditId(editWidgetConfig?.id);
     if (!(editWidgetConfig && editWidgetConfig.collection === collection)) {
       setBuilderFilterField(defaultFilterField(collection));
       setBuilderTargetField(defaultTargetField(collection));

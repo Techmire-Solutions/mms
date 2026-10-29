@@ -11,10 +11,12 @@ paths:
 
 **Workflow skills:** code review & bottlenecks → `mms-code-review` · modern web performance → `modern-web-guidance` · query factories & caching → `mms-query-factories` · backend services → `mms-backend-api` · Drizzle indexes & DDL → `mms-schema-migrate` · soft-delete performance & purge → `mms-soft-delete` · frontend shell & rendering → `mms-frontend`.
 
+**Scope:** loaded on demand by design (`globs` cover the hot paths only). The norms apply to every query, render path and bundle change — attach this rule deliberately when optimizing, and see `mms-ui-ux-design.md` §5 and `mms-data-layer.md` §2 for the pointers that fire on ordinary files.
+
 ## 1. Database & I/O Optimization
 - **Zero Queries in Loops (N+1 Elimination):** NEVER query inside loops (`for`, `map`, `Promise.all`). Batch with Drizzle relational `with: { ... }`, `inArray(table.column, ids)` (bounded to <= 500 IDs via `bulkIdsBodySchema`), or SQL `JOIN`s.
 - **Zero Wildcard Projections:** NEVER emit `SELECT *` or bare `db.select().from(table)`. Enforce explicit typed column projections matching `@mms/shared` Response DTOs. CI enforces zero new sites via `pnpm run check:db-projections`.
-- **Mandatory Predicate Indexing:** Explicitly index columns used in `where()`, `leftJoin() ... on()`, and `orderBy()`. Multi-tenant compound indexes must prefix `tenant_id`. Apply Category B partial indexes (`WHERE deleted_at IS NULL`) on soft-deleted tables (`mms-data-layer.md`).
+- **Mandatory Predicate Indexing:** Explicitly index columns used in `where()`, `leftJoin() ... on()`, and `orderBy()`. Multi-tenant compound indexes prefix that table's tenant column (`workspace_subdomain` on existing tables, `tenant_id` where the module uses it). Apply Category B partial indexes (`WHERE deleted_at IS NULL`) on soft-deleted tables (`mms-data-layer.md`).
 - **Bounded Pagination:** Always paginate collection queries (default `limit: 25`, max `100` via `baseListQuerySchema`). Unbounded dumps (`loadAllFn`) are banned.
 - **Connection Pools & Prepared Statements:** Reuse persistent connection pool (`withTenant`, `PG_POOL_MAX=20`). Use Node 24 `using`/`await using` for cleanup. Hot read lookups by ID compile Drizzle prepared statements with parameter placeholders (`sql.placeholder`).
 - **Child Hydration & Batch Ceilings:** Hydrate multi-collection child entities via correlated subqueries (`json_agg` / `jsonb_agg`). Chunk hydration lists exceeding `BATCH_SIZE = 250` sequentially.

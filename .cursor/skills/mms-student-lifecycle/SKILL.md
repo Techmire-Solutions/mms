@@ -4,7 +4,7 @@ description: Implements academic student lifecycle workflows — admissions, enr
 license: Proprietary
 metadata:
   owner: mms-platform
-  last-verified: 2026-10-16
+  last-verified: 2026-10-29
 ---
 
 # MMS Student Lifecycle & Academic Operations

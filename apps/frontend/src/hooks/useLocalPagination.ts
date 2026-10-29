@@ -21,14 +21,8 @@ export function useLocalPagination<T>({
     setCurrentPage(1);
   };
 
-  // Reset to the first page when the data set changes. React's documented
-  // "adjust state during render" pattern — no effect, so no extra commit.
-  const [previousItems, setPreviousItems] = useState(items);
-  if (previousItems !== items) {
-    setPreviousItems(items);
-    setCurrentPage(1);
-  }
-
+  // Derives safe page bounds without in-render setState loops when callers pass
+  // arrays computed during render (filter, slice, map, etc.).
   const filteredItems = (() => {
     if (!searchQuery.trim()) return items;
     const query = searchQuery.toLowerCase();
@@ -53,15 +47,17 @@ export function useLocalPagination<T>({
     return Math.max(1, Math.ceil(filteredItems.length / pageSize));
   })();
 
+  const safeCurrentPage = Math.max(1, Math.min(currentPage, totalPages));
+
   const paginatedItems = (() => {
-    const startIndex = (currentPage - 1) * pageSize;
+    const startIndex = (safeCurrentPage - 1) * pageSize;
     return filteredItems.slice(startIndex, startIndex + pageSize);
   })();
 
   return {
     searchQuery,
     setSearchQuery,
-    currentPage,
+    currentPage: safeCurrentPage,
     setCurrentPage,
     handleSearchChange,
     filteredItems,

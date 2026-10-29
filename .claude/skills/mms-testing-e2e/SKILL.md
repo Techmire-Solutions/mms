@@ -4,14 +4,14 @@ description: Automated testing guide for MMS — Vitest unit/integration tests, 
 license: Proprietary
 metadata:
   owner: mms-platform
-  last-verified: 2026-10-16
+  last-verified: 2026-10-29
 compatibility: Requires Node 24+, Playwright browsers (pnpm --filter e2e-tests exec playwright install), and a live PostgreSQL for test:db.
 allowed-tools: Read Grep Glob Bash(pnpm test) Bash(pnpm test:e2e) Bash(pnpm --filter *)
 ---
 
 # MMS Testing & E2E Workflow
 
-**Rules (norms SSOT):** `mms-testing-observability.md` · `mms-completion-review.md` · `mms-ui-ux-design.md` §3–§4. Accessibility smoke → `mms-a11y-smoke`.
+**Rules (norms SSOT):** `mms-tdd.md` (Red → Green → Refactor) · `mms-testing-observability.md` · `mms-completion-review.md` · `mms-ui-ux-design.md` §3–§4. Accessibility smoke → `mms-a11y-smoke`.
 
 ## When to use
 
@@ -29,6 +29,7 @@ allowed-tools: Read Grep Glob Bash(pnpm test) Bash(pnpm test:e2e) Bash(pnpm --fi
 
 ## 2. Testing Quality Invariants
 
+- **Test-First (Red → Green → Refactor)**: write the failing spec before the production change and record the exact failure in the PR body (`mms-tdd.md` §1–§2); a bug fix without a regression spec does not ship.
 - **Zero Skip Latches**: Never write conditional test skips (`if (!isDbAvailable) return;`). Tests must fail explicitly when required infrastructure is missing (`mms-testing-observability.md` §1).
 - **Specification Naming & AAA**: Structure tests with specification titles (`describe('Entity', () => it('given [X], should [Y] when [Z]'))`) and explicit `// Arrange`, `// Act`, `// Assert` blocks (`mms-testing-observability.md` §2).
 - **User-Centric Locators & Black Box**: Query via accessible roles and labels (`getByRole`, `getByLabelText`, `getByText`); never assert on internal state or class names (`mms-testing-observability.md` §3).
@@ -36,7 +37,7 @@ allowed-tools: Read Grep Glob Bash(pnpm test) Bash(pnpm test:e2e) Bash(pnpm --fi
 - **Assertion Specificity**: Strict equality and type checks only. Loose `toBeTruthy()` or `toBeDefined()` on primitives or DOM elements are banned.
 - **Clean Stdout**: Spy on `console.error`/`console.warn` during expected error simulations. Test configs set `LOG_LEVEL = 'silent'`.
 - **Query Client Isolation**: Frontend tests wrap components in an isolated `new QueryClient({ defaultOptions: { queries: { retry: false, gcTime: 0 } } })`.
-- **Coverage Ratchet**: New additions must meet category coverage gates (utils ≥95%, hooks ≥90%, UI/routes ≥85%); PRs must never lower coverage baselines (`mms-testing-observability.md` §5).
+- **Coverage Ratchet**: never lower the `thresholds` configured in each workspace's `vitest.config.ts` (the only SSOT; `mms-testing-observability.md` §5); raise a floor only with a measured value from a green run.
 
 ## 3. Playwright E2E Best Practices
 
@@ -44,6 +45,13 @@ allowed-tools: Read Grep Glob Bash(pnpm test) Bash(pnpm test:e2e) Bash(pnpm --fi
 - **Auto-Retrying Assertions**: Use `expect(locator).toBeVisible()` and `expect(locator).toBeEnabled()`. Ban hardcoded `page.waitForTimeout()`.
 - **Auth Context Fixtures**: Reuse authenticated storage states (`e2e/helpers/tenantBootstrap.ts`) instead of submitting login forms in each spec.
 - **RTL Mirroring**: Verify Arabic/Urdu (`dir="rtl"`) renders with zero page horizontal overflow (`document.documentElement.scrollWidth <= window.innerWidth`).
+
+## Verification
+
+- Unit/integration: `pnpm --filter @mms/shared test`, `pnpm --filter mms-backend test`, `pnpm --filter mms-frontend test` — all suites green, no skipped files.
+- DB/RLS evidence: `pnpm --filter mms-backend test:db` (real PostgreSQL) or `pnpm ci:local --with-db` when schema/migrations/queries changed.
+- Browser: `pnpm test:e2e` (or a single spec path); a11y smoke must report zero serious/critical axe violations.
+- Red evidence: `pnpm run check:tdd-pairing` shows no unpaired backend domain file, and the PR body records the failing command + assertion.
 
 ## Examples
 

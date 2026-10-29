@@ -29,7 +29,7 @@ Extracted from `SKILL.md` so the skill body stays loadable in one pass; the owni
 - [ ] Use `URLPattern` for matching instead of `path-to-regexp`
 - [ ] Replace legacy `url.parse()` with WHATWG `new URL()`
 - [ ] Core module imports prefixed with `node:` (`node:fs/promises`, `node:crypto`, `node:path`, `node:async_hooks`)
-- [ ] Request / tenant tracking via `AsyncLocalStorage` (`AsyncContextFrame`)
+- [ ] Request / tenant tracking via `AsyncLocalStorage` (`node:async_hooks`; no experimental `AsyncContextFrame` flag)
 - [ ] Soft-delete endpoints use registerResourceRoutes (deleteFn/restoreFn) + registerSoftDeletableBulkTrashRoutes
 - [ ] Atomic conditional latch on soft-delete (`WHERE deleted_at IS NULL RETURNING id`)
 - [ ] Batched single-statement SQL for bulk delete/restore (no per-row loops)

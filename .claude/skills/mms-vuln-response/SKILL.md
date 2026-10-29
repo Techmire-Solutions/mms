@@ -4,7 +4,7 @@ description: Triages and responds to a dependency security advisory in MMS — r
 license: Proprietary
 metadata:
   owner: mms-platform
-  last-verified: 2026-10-16
+  last-verified: 2026-10-29
 ---
 
 # MMS Vulnerability Response
@@ -44,6 +44,12 @@ CI enforces `pnpm audit --audit-level=high` and, for pull requests, `actions/dep
    pnpm typecheck && pnpm test
    ```
    An override that changes a package's module format (CJS/ESM) breaks runtime behaviour that typecheck cannot see — run the affected tests, and for large bumps run `pnpm test:e2e`.
+
+## Verification
+
+- `pnpm audit --audit-level=high` reports the finding gone (or the reviewed exception still matches its advisory id and expiry). `bash .agent/skills/mms-dependency-upgrade/scripts/audit-deps.sh` stays green.
+- The override or bump is guarded by a test named in the exception entry; `pnpm typecheck && pnpm test` pass, plus `pnpm test:e2e` for module-format changes.
+- A gitleaks finding is closed only after the credential is rotated/revoked, not merely removed from the tree.
 
 ## Do not
 

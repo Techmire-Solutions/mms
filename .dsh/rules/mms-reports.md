@@ -1,0 +1,48 @@
+---
+trigger: model_decision
+description: Embedded analytics, KPI cards, Recharts visualizations, report builder, and PDF/Excel/CSV exports
+---
+
+# MMS Reports & Analytics
+
+**Workflow skills:** charts intelligence → `ui-ux-pro-max` · charts/exports/KPIs → `mms-reports-export` · mega export job tray → `mms-background-jobs`. Query policy → `mms-data-layer.md` · skill `mms-query-factories`.
+
+## 1. Data Layer (Query-First)
+- **Server-Authoritative Aggregates:** REST entities use TanStack Query, server aggregates, or `/metrics` endpoints. Client-side full collection loops or full table dumps (`loadAllFn`) are banned.
+- **Targeted Fetching:** Builders and drilldowns use `useWidgetCollections({ requiredCollections })` fetching only pinned data. Hydrate foreign entities via batched `/resolve` endpoints (N+1 client loops banned).
+- **Contacts Aggregates:** Contacts visualizer consumes server SQL `GROUP BY` via `POST /api/contacts/widget-aggregates`.
+
+## 2. Definitions & Builders
+- **Builder Scope:** `CustomReportBuilder` / `DynamicCardBuilder` support ad-hoc columns and basic aggregates (Sum, Avg, Count). Cap live preview at 20 rows.
+- **Column Registry Alignment:** Column picker keys match field registry keys. Module report categories must be module-specific (never generic `"academic"`).
+
+## 3. Export Architecture (ExportToolbar)
+- **Formats & Lazy Loading:** Support Print (`@media print`), Excel (`xlsx` dynamic `import()`), and PDF (`jspdf` + `jspdf-autotable`). Charts use `lazy` + `SafeResponsiveContainer`.
+- **Export Toolbar:** Standardize on `ExportToolbar` / `ExportToolbarCompact` (`exportToolbarUtils.ts`). Exports exceeding interactive thresholds offload to BullMQ worker process (`mms-module-architecture.md` §5).
+- **Formula Injection Mitigation:** Prefix untrusted cell values starting with `=`, `+`, `-`, or `@` with a single quote (`'`) in CSV/Excel outputs; preserve legitimate negative numbers.
+- **Field Whitelist & Bidirectional Data Transfer SSOT:** Form module CSV exports/imports must use `@mms/shared` transfer schemas (`createModuleTransferSchema`, `buildExportGrid`). All internal system metadata (`_id`, `id`, `tenantId`, `created_at`, `updated_at`, etc.) is stripped. Exported headers match primary import headers 1:1 for symmetric round-trips.
+
+## 4. Visualizations & Chart Rules
+- **Design Tokens:** Recharts must bind to semantic Tailwind tokens (`@theme`, `StatusBadge`). Export/print labels via `t()`.
+- **Chart Selection & Intelligence:** Consult UI/UX Pro Max chart recommendations (`python3 .agent/skills/ui-ux-pro-max/scripts/search.py "<data type>" --domain chart`, skill `ui-ux-pro-max`) to select accessible chart types with fallback data tables.
+- **Workload Modeling:** Simulated metric padding is banned; charts must reflect verifiable schedule and session records.
+
+## 5. Dashboard & KPI SSOT
+- **Widget Configuration:** Pinned widgets configure via `kpi_custom_widgets` (`DASHBOARD_WIDGETS_KEY`) and typed `saved_reports`.
+- **Data Sources:** Seeded KPIs use category-gated `use*Metrics` / widget aggregates. Pinned widgets use `useWidgetCollections`. Dynamic charts use `useReportCollectionRows`. Financial statements use `/metrics` or server aggregates.
+
+## 6. Module-Aware Filters
+- **Context-Sensitive Dimensions:** Module reports must display relevant dimensions only (hide financial filters on attendance reports).
+
+## 7. Permissions, Export Policy & Drill-Down
+- **Lifecycle Consistency:** Reports and exports adhere to manifest `softDelete`: `reportsIncludeDeleted: false` filters out soft-deleted entities; `exportsIncludeDeleted: false` hides export CTAs in trash view.
+- **Interactive Drill-Down:** Clicking chart segments or summary metrics routes to Work directory with equivalent URL query parameters, preserving tenant RBAC.
+
+## 8. Saved Reports
+- **Logic Over Snapshots:** Persist report queries (filters, columns, aggregates), never static data snapshots. Fail explicitly if referenced fields or tabs have been archived.
+- **Access Control:** Tenant modules use typed `saved_reports` with FORCE RLS (`/api/saved-reports?category=`). Contacts reports isolate share scopes inside `filters` JSONB via `/api/contacts/saved-reports`.
+
+## 9. Audit Trail & Compliance Reporting
+- **Cryptographic Provenance:** Compliance exports (`POST /api/audit/export`) embed canonical JSON hash chains, Merkle roots, and verification signatures in output metadata.
+- **Audit Data Tracking:** Access to audit trail records (viewing, searching, exporting) emits an immutable audit event (`action_type: 'VIEW'`).
+
