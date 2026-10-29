@@ -62,8 +62,13 @@ export async function listAuditEvents(tenant: string, query: ListAuditEventsQuer
 
 /** Full-projection export of the most recent audit events for the shard. */
 export async function listAuditEventsForExport(tenant: string, limit = 1000) {
-  const rows = await withTenantRead(tenant, async (db) => {
-    return db
+  // Decryption must run inside the tenant transaction: subject keys live in a
+  // FORCE-RLS table, and `decryptSubjectAuditState` resolves them through
+  // `activeDb()`. Decrypting after the callback committed used to read through
+  // the root pool with no tenant GUC, which rendered every encrypted state as
+  // `[DATA_SHREDDED]`.
+  return withTenantRead(tenant, async (db) => {
+    const rows = await db
       .select({
         id: auditTrailEvents.id,
         workspaceSubdomain: auditTrailEvents.workspaceSubdomain,
@@ -89,19 +94,19 @@ export async function listAuditEventsForExport(tenant: string, limit = 1000) {
       .where(eq(auditTrailEvents.workspaceSubdomain, tenant))
       .orderBy(desc(auditTrailEvents.transactionTimestamp))
       .limit(limit);
-  });
 
-  return Promise.all(
-    rows.map(async (row) => ({
-      ...row,
-      oldState: isEncryptedSubjectState(row.oldState)
-        ? await decryptSubjectAuditState(tenant, row.oldState)
-        : row.oldState,
-      newState: isEncryptedSubjectState(row.newState)
-        ? await decryptSubjectAuditState(tenant, row.newState)
-        : row.newState,
-    })),
-  );
+    return Promise.all(
+      rows.map(async (row) => ({
+        ...row,
+        oldState: isEncryptedSubjectState(row.oldState)
+          ? await decryptSubjectAuditState(tenant, row.oldState)
+          : row.oldState,
+        newState: isEncryptedSubjectState(row.newState)
+          ? await decryptSubjectAuditState(tenant, row.newState)
+          : row.newState,
+      })),
+    );
+  });
 }
 
 /** Most recent verification run for the shard, or null when none has been recorded. */
@@ -143,15 +148,16 @@ export interface TenantMerkleHead {
 
 /**
  * Transparency checkpoints visible to one tenant: the aggregate root plus only
- * that tenant's own head from the published `heads` map.
+ * that tenant's own head, extracted in SQL so other tenants' heads never leave
+ * the database.
  */
 export async function listMerkleRoots(tenant: string, limit = 20): Promise<TenantMerkleHead[]> {
-  const rows = await withTenantRead(tenant, async (db) => {
+  return withTenantRead(tenant, async (db) => {
     return db
       .select({
         id: auditMerkleRoots.id,
         rootHash: auditMerkleRoots.rootHash,
-        heads: auditMerkleRoots.heads,
+        headHash: sql<string | null>`${auditMerkleRoots.heads} ->> ${tenant}`,
         periodStart: auditMerkleRoots.periodStart,
         periodEnd: auditMerkleRoots.periodEnd,
         shardCount: auditMerkleRoots.shardCount,
@@ -161,11 +167,6 @@ export async function listMerkleRoots(tenant: string, limit = 20): Promise<Tenan
       .orderBy(desc(auditMerkleRoots.publishedAt))
       .limit(limit);
   });
-
-  return rows.map(({ heads, ...row }) => ({
-    ...row,
-    headHash: heads?.[tenant] ?? null,
-  }));
 }
 
 /** Platform-only checkpoint listing (no tenant filtering; callers must be platform auth). */

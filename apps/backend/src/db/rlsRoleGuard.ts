@@ -74,6 +74,41 @@ export async function inspectRuntimeRole(db: DbClient): Promise<RuntimeRoleCheck
   };
 }
 
+/** Outcome of applying the enforcement mode to an observed role. */
+export type RlsRoleDecision =
+  | { allow: true; level: "ok" | "warn" | "off"; message?: string }
+  | { allow: false; level: "error"; message: string };
+
+/**
+ * Pure policy decision for a role check. Shared by the boot guard and the
+ * deploy preflight so both enforce exactly the same rules.
+ */
+export function decideRlsRole(check: RuntimeRoleCheck, mode: RlsEnforcementMode): RlsRoleDecision {
+  if (mode === "off") return { allow: true, level: "off" };
+  if (check.rlsApplies) return { allow: true, level: "ok" };
+
+  const detail = {
+    role: check.role,
+    isSuperuser: check.isSuperuser,
+    bypassRls: check.bypassRls,
+    mode,
+  };
+
+  if (mode === "strict") {
+    return {
+      allow: false,
+      level: "error",
+      message: `[rls] refusing to start: the database role bypasses row-level security.\n${JSON.stringify(detail)}\n${REMEDIATION}`,
+    };
+  }
+
+  return {
+    allow: true,
+    level: "warn",
+    message: `[rls] the database role bypasses row-level security — every tenant RLS policy is inert. ${REMEDIATION}`,
+  };
+}
+
 /**
  * Fails (or warns) when the runtime role bypasses RLS.
  *
@@ -100,27 +135,12 @@ export async function assertRlsRuntimeRole(
     return { role: "unknown", isSuperuser: false, bypassRls: false, rlsApplies: true };
   }
 
-  if (check.rlsApplies) {
+  const decision = decideRlsRole(check, mode);
+  if (!decision.allow) throw new Error(decision.message);
+  if (decision.level === "ok") {
     logger.info({ role: check.role }, "[rls] runtime role is subject to row-level security");
-    return check;
+  } else if (decision.level === "warn") {
+    logger.error({ role: check.role }, decision.message);
   }
-
-  const detail = {
-    role: check.role,
-    isSuperuser: check.isSuperuser,
-    bypassRls: check.bypassRls,
-    mode,
-  };
-
-  if (mode === "strict") {
-    throw new Error(
-      `[rls] refusing to start: the database role bypasses row-level security.\n${JSON.stringify(detail)}\n${REMEDIATION}`,
-    );
-  }
-
-  logger.error(
-    { ...detail },
-    `[rls] the database role bypasses row-level security — every tenant RLS policy is inert. ${REMEDIATION}`,
-  );
   return check;
 }

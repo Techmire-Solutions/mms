@@ -148,6 +148,39 @@ export NODE_ENV=production
 export MMS_DB_ROLE_ENFORCEMENT="$(read_env_var MMS_DB_ROLE_ENFORCEMENT "warn" "$ENV_FILE")"
 assert_production_backend_port "$PORT" "Deploy PORT" || exit 1
 
+# RLS preflight: a role that bypasses row-level security makes every tenant
+# policy inert. Strict mode must abort here — before migrations or the PM2
+# reload — so the previous release keeps serving. Warn/off are reported during
+# the phase-2a rollout; phase 2b makes them abort unless explicitly overridden.
+export DATABASE_URL="$(read_env_var DATABASE_URL "" "$ENV_FILE")"
+if [ -z "$DATABASE_URL" ]; then
+  echo "FATAL: DATABASE_URL is missing from ${ENV_FILE} — cannot verify RLS."
+  exit 1
+fi
+if [ -f "$ROOT_DIR/apps/backend/dist/scripts/checkRlsRole.js" ]; then
+  echo "Checking database role for RLS enforcement (mode=${MMS_DB_ROLE_ENFORCEMENT})..."
+  if ! (cd "$ROOT_DIR/apps/backend" && node dist/scripts/checkRlsRole.js); then
+    echo "ERROR: RLS preflight failed — the database role bypasses row-level security."
+    echo "       Provision mms_app and point DATABASE_URL at it (docs/rls-operations.md),"
+    echo "       then redeploy. The running release has NOT been replaced."
+    exit 1
+  fi
+elif [ -f "$ROOT_DIR/apps/backend/src/scripts/checkRlsRole.ts" ]; then
+  echo "Checking database role for RLS enforcement (tsx fallback)..."
+  if ! (cd "$ROOT_DIR/apps/backend" && node --experimental-strip-types src/scripts/checkRlsRole.ts); then
+    echo "ERROR: RLS preflight failed — the database role bypasses row-level security."
+    echo "       Provision mms_app and point DATABASE_URL at it (docs/rls-operations.md),"
+    echo "       then redeploy. The running release has NOT been replaced."
+    exit 1
+  fi
+else
+  echo "WARNING: checkRlsRole script not found — skipping the RLS preflight."
+fi
+if [ "$MMS_DB_ROLE_ENFORCEMENT" != "strict" ] && [ "${MMS_ALLOW_RLS_WARN:-0}" != "1" ]; then
+  echo "WARNING: MMS_DB_ROLE_ENFORCEMENT=${MMS_DB_ROLE_ENFORCEMENT} — RLS is not enforced."
+  echo "         Provision mms_app, set strict, and remove the override before the next release."
+fi
+
 mkdir -p "$ROOT_DIR/.logs"
 # Legacy vite-preview PM2 app — SPA is served by Fastify from apps/frontend/dist.
 pm2 delete mmsv2-frontend 2>/dev/null || true

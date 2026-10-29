@@ -6,7 +6,7 @@ import { DashboardRolePanel } from "@/tenant/features/dashboard/components/Dashb
 import { DashboardCustomizePanel } from "@/tenant/features/dashboard/components/DashboardCustomizePanel";
 import { WelcomeBanner } from "@/tenant/features/dashboard/components/WelcomeBanner";
 import { SetupIncompleteCallout } from "@/tenant/features/dashboard/components/SetupIncompleteCallout";
-import { DashboardWidgets } from "@/lib/reports/pinnedWidgets";
+import { DashboardWidgets } from "@/tenant/features/reports/components/pinnedWidgets/DashboardWidgets";
 import { ErrorBoundary } from "@/components/app/ErrorBoundary";
 import { ModulePageShell } from "@/components/app/ModulePageShell";
 import { Button } from "@/components/ui/button";

@@ -6,6 +6,13 @@ const ACCESS_COOKIE = "mms_access";
 const REFRESH_COOKIE = "mms_refresh";
 const CSRF_COOKIE = "csrf_token";
 
+/**
+ * The refresh cookie is only needed by the refresh endpoint. Keeping it off
+ * every other request (as mms-auth-security documents) narrows the exposure of
+ * the 7-day token to path-scoped leaks and unnecessary subresource handlers.
+ */
+const REFRESH_PATH = "/api/auth/refresh";
+
 const ACCESS_TTL_SEC = 15 * 60;
 const REFRESH_TTL_SEC = 7 * 24 * 60 * 60;
 const CSRF_TTL_SEC = 7 * 24 * 60 * 60;
@@ -64,7 +71,7 @@ export function setAuthCookies(
     maxAge: ACCESS_TTL_SEC,
   });
   reply.setCookie(REFRESH_COOKIE, refreshToken, {
-    path: "/",
+    path: REFRESH_PATH,
     httpOnly: true,
     secure: base.secure,
     sameSite: "lax",
@@ -76,7 +83,10 @@ export function setAuthCookies(
 export function clearAuthCookies(reply: FastifyReply): void {
   const base = secureCookieBase();
   reply.clearCookie(ACCESS_COOKIE, base);
-  reply.clearCookie(REFRESH_COOKIE, base);
+  reply.clearCookie(REFRESH_COOKIE, { ...base, path: REFRESH_PATH });
+  // Evict a legacy broad cookie set before the path narrowing; a browser that
+  // still holds one would otherwise keep sending it to every path for 7 days.
+  reply.clearCookie(REFRESH_COOKIE, { ...base, path: "/" });
   reply.clearCookie(CSRF_COOKIE, { path: "/", secure: base.secure, sameSite: "lax" });
 }
 

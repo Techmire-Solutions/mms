@@ -58,4 +58,21 @@ describe("useUiStateStore", () => {
       root.unmount();
     });
   });
+
+  it("reset clears the previous user's state so the next session refetches", () => {
+    act(() => {
+      useUiStateStore.getState().initialize({
+        theme: "dark",
+        notifications_read: ["alert-a"],
+      });
+    });
+    expect(useUiStateStore.getState().isInitialized).toBe(true);
+
+    act(() => {
+      useUiStateStore.getState().reset();
+    });
+
+    expect(useUiStateStore.getState().state).toEqual({});
+    expect(useUiStateStore.getState().isInitialized).toBe(false);
+  });
 });

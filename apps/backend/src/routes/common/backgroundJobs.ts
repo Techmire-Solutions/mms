@@ -19,6 +19,7 @@ import {
 import { getUserBackgroundJob } from "../../services/backgroundJobWorkerService.js";
 import { readStreamFromStorage } from "../../config/storage.js";
 import { enforceModuleAccess } from "../../middleware/requireTenantModule.js";
+import { buildContentDisposition } from "../../lib/contentDisposition.js";
 
 export default async function backgroundJobRoutes(
   fastify: FastifyInstance,
@@ -73,10 +74,7 @@ export default async function backgroundJobRoutes(
       }
 
       reply.header("Content-Type", contentType);
-      reply.header(
-        "Content-Disposition",
-        `attachment; filename="${artifact.filename.replace(/"/g, "")}"`,
-      );
+      reply.header("Content-Disposition", buildContentDisposition(artifact.filename));
       return reply.send(stream);
     } catch {
       return sendDatabaseError(reply, "Failed to download export");

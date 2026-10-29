@@ -5,6 +5,7 @@
 import { z } from "zod";
 import { SessionClassSectionSchema } from "./sessionSectionTypes.js";
 import { WEEKDAY_NAMES } from "../attendance/academicCalendar.js";
+import { isoDateOrEmptySchema } from "../core/isoDateSchema.js";
 import {
   SessionClassBudgetInsertSchema,
   SessionClassBudgetSchema,
@@ -148,8 +149,8 @@ export const SessionSchema = z
     categoryId: z.string().optional(),
     /** `programs.id` — default program for the session's classes. */
     programId: z.string().optional(),
-    startDate: z.string().optional().default(""),
-    endDate: z.string().optional().default(""),
+    startDate: isoDateOrEmptySchema.optional().default(""),
+    endDate: isoDateOrEmptySchema.optional().default(""),
     /** Weekly teaching days for this session; empty/absent = the workspace attendance working days. */
     workingDays: z.array(z.enum(WEEKDAY_NAMES)).max(7).optional(),
     /** Short-course completion: minimum attendance % (null = not required). */
@@ -186,8 +187,8 @@ export const SessionInsertSchema = z
     categoryId: z.string().optional(),
     /** `programs.id` — default program for the session's classes. */
     programId: z.string().optional(),
-    startDate: z.string().optional().default(""),
-    endDate: z.string().optional().default(""),
+    startDate: isoDateOrEmptySchema.optional().default(""),
+    endDate: isoDateOrEmptySchema.optional().default(""),
     description: z.string().optional(),
     currency: z.string().optional().default("PKR"),
     baseFee: z.coerce.number().nonnegative().default(0),

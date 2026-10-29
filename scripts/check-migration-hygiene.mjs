@@ -39,7 +39,11 @@ const metaDir = path.join(migrationsDir, "meta");
 const BASELINE = {
   missingLockTimeout: 0, // new migrations only (diff-scoped)
   bareTimestamps: 311,
-  missingSnapshots: 63,
+  // 0197 now follows 0133 in the snapshot chain, so the metric is 0. Keeping the
+  // old 63 allowed 63 new migrations to ship without a snapshot; 0 makes any
+  // future journal entry without one fail. The historical 0134–0196 gap remains
+  // a one-time regeneration task (docs/open-items.md).
+  missingSnapshots: 0,
 };
 
 const args = process.argv.slice(2);
@@ -54,34 +58,42 @@ function fail(message) {
 
 if (!fs.existsSync(migrationsDir)) fail(`Migrations directory not found: ${migrationsDir}`);
 
+// A shallow/unresolvable base used to silently disable the new-migration check
+// (the function returned []), so a PR could add locking DDL without
+// `lock_timeout` and still pass. Fail closed instead.
+try {
+  execFileSync("git", ["rev-parse", "--verify", "--quiet", baseRef], {
+    cwd: rootDir,
+    stdio: "ignore",
+  });
+} catch {
+  fail(`Cannot resolve base ref "${baseRef}" — pass --base <ref> or fetch enough history.`);
+}
+
 const sqlFiles = fs
   .readdirSync(migrationsDir)
   .filter((name) => name.endsWith(".sql"))
   .sort();
 
-/** Files added relative to `baseRef` (empty when the ref cannot be resolved). */
+/** Files added relative to `baseRef`. */
 function addedMigrationFiles() {
-  try {
-    const out = execFileSync(
-      "git",
-      [
-        "diff",
-        "--name-only",
-        "--diff-filter=A",
-        `${baseRef}...HEAD`,
-        "--",
-        "apps/backend/src/db/migrations_drizzle",
-      ],
-      { cwd: rootDir, encoding: "utf8" },
-    );
-    return out
-      .split("\n")
-      .map((line) => line.trim())
-      .filter((line) => line.endsWith(".sql"))
-      .map((line) => path.basename(line));
-  } catch {
-    return [];
-  }
+  const out = execFileSync(
+    "git",
+    [
+      "diff",
+      "--name-only",
+      "--diff-filter=A",
+      `${baseRef}...HEAD`,
+      "--",
+      "apps/backend/src/db/migrations_drizzle",
+    ],
+    { cwd: rootDir, encoding: "utf8" },
+  );
+  return out
+    .split("\n")
+    .map((line) => line.trim())
+    .filter((line) => line.endsWith(".sql"))
+    .map((line) => path.basename(line));
 }
 
 // --- 1. lock_timeout on NEW locking DDL ------------------------------------

@@ -11,6 +11,9 @@ import { escapeHtml } from "@/lib/escapeHtml";
 export function printHtmlDocument(title: string, content: string): void {
   const win = window.open("", "_blank");
   if (!win) return;
+  // Same-origin about:blank; sever the opener so print content cannot reach back
+  // into the app window even if a future interpolation slips.
+  win.opener = null;
   win.document.write(`
     <!DOCTYPE html>
     <html>

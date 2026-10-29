@@ -147,6 +147,7 @@ export { escapeHtml };
 export function openPaperPrintWindow(content: HTMLElement, title: string): boolean {
   const printWindow = window.open("", "_blank", "width=900,height=800");
   if (!printWindow) return false;
+  printWindow.opener = null;
 
   printWindow.document.write(`
     <!DOCTYPE html>

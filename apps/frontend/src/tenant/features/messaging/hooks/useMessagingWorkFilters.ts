@@ -1,11 +1,46 @@
 import { useState } from "react";
 import type { SetURLSearchParams } from "react-router-dom";
+import { isValidIsoDate } from "@mms/shared";
 import { useDebounce } from "@/hooks/useDebounce";
 import { messagingExportEndDateBound } from "../lib/messagingReportsExport";
 import { useMessagingWorkTierUrlSync } from "./useMessagingWorkTierUrlSync";
 
 export type MessagingChannelFilter = "all" | "sms" | "whatsapp" | "email";
 export type MessagingStatusFilter = "all" | "sent" | "delivered" | "failed" | "skipped";
+
+const CHANNELS = new Set<MessagingChannelFilter>(["sms", "whatsapp", "email"]);
+const STATUSES = new Set<MessagingStatusFilter>(["sent", "delivered", "failed", "skipped"]);
+
+export interface MessagingWorkFilterParams {
+  channel: MessagingChannelFilter;
+  status: MessagingStatusFilter;
+  category: string;
+  search: string;
+  startDate: string;
+  endDate: string;
+}
+
+/**
+ * Parses URL filter state defensively: an unknown channel/status must not reach
+ * the API, and a malformed date must not produce an invalid query bound.
+ */
+export function parseMessagingWorkFilters(
+  searchParams: URLSearchParams,
+): MessagingWorkFilterParams {
+  const rawChannel = searchParams.get("channel") as MessagingChannelFilter | null;
+  const rawStatus = searchParams.get("status") as MessagingStatusFilter | null;
+  const rawStart = searchParams.get("startDate") ?? "";
+  const rawEnd = searchParams.get("endDate") ?? "";
+
+  return {
+    channel: rawChannel && CHANNELS.has(rawChannel) ? rawChannel : "all",
+    status: rawStatus && STATUSES.has(rawStatus) ? rawStatus : "all",
+    category: searchParams.get("category") || "all",
+    search: searchParams.get("search") || "",
+    startDate: isValidIsoDate(rawStart) ? rawStart : "",
+    endDate: isValidIsoDate(rawEnd) ? rawEnd : "",
+  };
+}
 
 export interface UseMessagingWorkFiltersProps {
   searchParams: URLSearchParams;
@@ -20,23 +55,18 @@ export function useMessagingWorkFilters({
   controlledChannel,
   controlledOnChannelChange,
 }: UseMessagingWorkFiltersProps) {
-  const channelParam = searchParams.get("channel") as MessagingChannelFilter | null;
-  const statusParam = searchParams.get("status") as MessagingStatusFilter | null;
-  const categoryParam = searchParams.get("category") || null;
-  const searchParam = searchParams.get("search") || "";
+  const initial = parseMessagingWorkFilters(searchParams);
 
-  const [search, setSearch] = useState(searchParam);
+  const [search, setSearch] = useState(initial.search);
   const [logsPage, setLogsPage] = useState(1);
-  const [internalChannel, setInternalChannel] = useState<MessagingChannelFilter>(
-    channelParam || "all",
-  );
+  const [internalChannel, setInternalChannel] = useState<MessagingChannelFilter>(initial.channel);
   const channel = controlledChannel !== undefined ? controlledChannel : internalChannel;
   const setChannel =
     controlledOnChannelChange !== undefined ? controlledOnChannelChange : setInternalChannel;
-  const [category, setCategory] = useState(categoryParam || "all");
-  const [status, setStatus] = useState<MessagingStatusFilter>(statusParam || "all");
-  const [startDate, setStartDate] = useState("");
-  const [endDate, setEndDate] = useState("");
+  const [category, setCategory] = useState(initial.category);
+  const [status, setStatus] = useState<MessagingStatusFilter>(initial.status);
+  const [startDate, setStartDate] = useState(initial.startDate);
+  const [endDate, setEndDate] = useState(initial.endDate);
 
   const debouncedSearch = useDebounce(search, 250);
   const queryStartDate = startDate.trim() || undefined;
@@ -49,6 +79,8 @@ export function useMessagingWorkFilters({
     status,
     category,
     debouncedSearch,
+    startDate,
+    endDate,
   });
 
   const hasActiveFilters =

@@ -15,8 +15,8 @@ Recorded so they are not lost, with the evidence gathered since.
    `apps/backend/src/__tests__/workspaceRepositoryGrantedModules.test.ts` ("returns all system modules when
    grantedModules is null or empty"). Changing it would break module roll-out. **Left as-is.**
 3. ~~Backend coverage floors unenforced.~~ **RESOLVED** — CI now runs the backend shards with coverage and a
-   `test-backend-coverage` merge job enforces the thresholds (measured Stmts 47.29 / Branch 35.76 /
-   Funcs 46.43 / Lines 49.63 against 43.2 / 27 / 37.5 / 45 before enabling).
+   `test-backend-coverage` merge job enforces the thresholds (measured Stmts 44.46 / Branch 33.91 /
+   Funcs 42.1 / Lines 46.8 against thresholds 43.5 / 33 / 41 / 46).
 4. ~~`check:backend-boundaries` not in CI.~~ **RESOLVED** — now a ratchet step in the `typecheck-lint` job.
    A `sensitive-file-guard` job also landed (whole-tree sensitive-filename blocklist, at any path depth).
 5. **Fat-file debt.** **69 → 8** files over the ADR-001 300-LOC cap (baseline ratcheted down via
@@ -228,7 +228,7 @@ transactions.`) and re-attaches triggers for **19** tables against 0104's **14**
     - **`lib/invoiceTemplatePresets.ts` split — done.** The 862-line file is now a thin re-export barrel
       over `lib/invoicePresets/*` (palette / types / classic / thermal / formalA5{Header,Amount}Elements /
       modern / available), every module <300 LOC; output proven byte-identical by hash before/after and
-      the code-norms `filesOverHardLimit` baseline lowered 59 → 58.
+      the code-norms `filesOverHardLimit` baseline is now 4 (only the four translation dictionaries).
 
 11. **Circular import in the dashboard collections barrel (fixed).** `tenant/hooks/collections/dashboard`
     re-exports `useDashboardData`, which imported `useDashboardSummaryQuery` **back** through that same
@@ -284,12 +284,13 @@ ratchet, so the fix cannot silently regress.
    while Drizzle declares `withTimezone: true`. Converting them is a table-rewrite
    project on the two largest tables and must be planned per-table. `check:migration-hygiene`
    stops new naive columns.
-2. **Historical migrations without `lock_timeout`** (143 of 197). Applied migrations are
+2. **Historical migrations without `lock_timeout`** (143 of 198). Applied migrations are
    immutable (forward-only), so they cannot be edited; `check:migration-hygiene` requires
    `SET LOCAL lock_timeout` on every new migration that runs locking DDL.
-3. **Drizzle snapshot chain stops at `0133` (63 migrations newer).** Regeneration needs a
-   dedicated pass (`drizzle-kit generate` would re-emit applied DDL otherwise); the gap may
-   not grow while it is pending.
+3. **Drizzle snapshot chain jumps `0133` → `0197` (63 intermediate snapshots missing).**
+   Regeneration needs a dedicated pass (`drizzle-kit generate` would re-emit applied DDL
+   otherwise). The ratchet baseline is now 0, so no new journal entry can ship without a
+   snapshot while the historical gap is pending.
 4. **`packages/ui` has no `package.json`** — it is a `@shared/ui` alias resolved by
    tsconfig/vite. Works, but it is invisible to the turbo task graph.
 5. **`useGlobalSettings` still hydrates from localStorage.** The 2FA gate it feeds is
@@ -334,3 +335,38 @@ follow-ups:
 - **Legacy crypto/erasure rows without a workspace** are hidden by RLS; an operator cleanup is
   still outstanding.
 - **Historical audit state is plaintext**; only new events carrying a `subjectId` are encrypted.
+
+## 2026-10-29 hardening (phase 2)
+
+**Fixed (tests added):**
+
+- Localized export downloads no longer 500: `Content-Disposition` is RFC 6266 with an ASCII
+  fallback plus `filename*` (`apps/backend/src/lib/contentDisposition.ts`, route + unit tests).
+- Session `startDate`/`endDate` (and class schedule/refreshment dates) are validated with
+  `isoDateSchema` / `isoDateOrEmptySchema`; impossible dates are rejected before rollover
+  arithmetic can produce `NaN`.
+- Logout resets `useUiStateStore`, so the next user in the same tab does not inherit column
+  layouts, tab state, or notification read markers.
+- The Home bundle no longer imports the Reports/charts chunks (direct component imports).
+- Document-template CRUD runs inside `withTenant`/`withTenantRead`; save + audit share one
+  transaction and broadcasts happen after commit.
+- Audit export decrypts subject state inside its read transaction, and `getLatestShardHash`
+  no longer defaults to the root pool (so the shard head is real, not genesis).
+- Refresh cookie is scoped to `/api/auth/refresh`; logout evicts the legacy broad cookie.
+- Gitleaks uses rule-scoped value allowlists instead of whole-file path exemptions.
+- Merkle checkpoints project only the caller's head in SQL.
+- External `mailto:`/`wa.me` links open with `noopener,noreferrer`; print windows null their
+  opener.
+- Messaging filters persist the date range in the URL and validate channel/status/date on read.
+- CI: draft→ready triggers a fresh run; a failed `changes` job or a skipped matched suite on a
+  ready PR fails the gate; changed files without coverage fail; ratchet baselines cannot be
+  raised silently; the new `test-backend-rls` job proves isolation as a non-bypass role.
+
+**Still open (operator/next):**
+
+- **Enable strict RLS on the Hetzner host.** Phase 2a ships the preflight and provisioning
+  script; phase 2b flips the deploy default to `strict` after
+  `docs/rls-operations.md` is run and verified on the server. Until then the deploy keeps
+  `warn` (reported loudly).
+- **Historical snapshot regeneration** (0134–0196) and the 311 timezone-naive columns.
+- **Legacy Gitleaks history** is clean under the new config; keep it that way.

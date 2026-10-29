@@ -92,8 +92,9 @@ export async function getShardHead(
  */
 export async function getLatestShardHash(
   workspaceSubdomain: string,
-  executor: DbOrTransaction = activeDb(),
+  executor?: DbOrTransaction,
 ): Promise<string> {
+  // Undefined lets `getShardHead` open its own tenant-scoped read (RLS-safe).
   return (await getShardHead(workspaceSubdomain, executor)).hash;
 }
 

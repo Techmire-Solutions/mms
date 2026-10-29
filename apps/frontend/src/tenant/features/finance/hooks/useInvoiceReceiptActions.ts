@@ -25,6 +25,7 @@ export function useInvoiceReceiptActions(
     if (!content) return;
     const win = window.open("", "_blank", "width=800,height=900");
     if (!win) return;
+    win.opener = null;
     win.document.write(`
       <!DOCTYPE html>
       <html>

@@ -64,6 +64,7 @@ export function usePrintInvoiceModalController({
       notify.error(t("templateEditor.exportFailed"));
       return;
     }
+    printWindow.opener = null;
 
     printWindow.document.write(
       buildPrintWindowHtml({
