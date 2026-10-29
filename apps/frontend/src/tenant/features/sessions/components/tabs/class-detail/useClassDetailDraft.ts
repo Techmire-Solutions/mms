@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from "react";
+import { useState, useCallback } from "react";
 import type { FacultyMember } from "@mms/shared";
 import type { Class } from "@/lib/data/sessionsData";
 import { EMPTY_CLASS } from "./classDetailDraftDefaults";
@@ -22,13 +22,18 @@ export function useClassDetailDraft({
     sessionClass ? { ...sessionClass } : { ...EMPTY_CLASS, id: crypto.randomUUID() },
   );
 
-  useEffect(() => {
+  // Re-seed the draft from the class being edited on every (re)open (render-phase reset).
+  const [prevOpen, setPrevOpen] = useState(open);
+  const [prevSessionClass, setPrevSessionClass] = useState(sessionClass);
+  if (prevOpen !== open || prevSessionClass !== sessionClass) {
+    setPrevOpen(open);
+    setPrevSessionClass(sessionClass);
     if (open) {
       setClassDraft(
         sessionClass ? { ...sessionClass } : { ...EMPTY_CLASS, id: crypto.randomUUID() },
       );
     }
-  }, [open, sessionClass]);
+  }
 
   const updateDraft = useCallback(<K extends keyof Class>(field: K, value: Class[K]) => {
     setClassDraft((prev) => ({ ...prev, [field]: value }));

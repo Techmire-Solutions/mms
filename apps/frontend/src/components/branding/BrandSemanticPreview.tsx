@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import {
   brandingTokenToHex,
   buildBrandingCssVariables,
@@ -39,9 +39,13 @@ export function BrandSemanticPreview({
   const [activeTab, setActiveTab] = useState<PreviewTab>("actions");
   const [visionFilter, setVisionFilter] = useState<ColorblindFilterType>("normal");
 
-  useEffect(() => {
+  // Adopt an externally changed preview mode; adjusted during render (React's
+  // documented prop-change pattern) so the preview never paints with the stale mode.
+  const [previousPreviewMode, setPreviousPreviewMode] = useState(previewMode);
+  if (previousPreviewMode !== previewMode) {
+    setPreviousPreviewMode(previewMode);
     setLocalMode(previewMode);
-  }, [previewMode]);
+  }
 
   const activeTokens = (() => buildBrandingCssVariables(primaryColor, secondaryColor, localMode))();
 

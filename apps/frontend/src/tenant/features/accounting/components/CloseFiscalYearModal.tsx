@@ -1,4 +1,4 @@
-import React, { useMemo, useState, useEffect } from "react";
+import React, { useMemo, useState } from "react";
 import type { Account, FiscalYear } from "@mms/shared";
 import { Lock } from "lucide-react";
 import { FormModal } from "@/components/app/FormModal";
@@ -28,7 +28,6 @@ export function CloseFiscalYearModal({
   t,
 }: CloseFiscalYearModalProps): React.JSX.Element | null {
   const closeFiscalYear = useCloseFiscalYear();
-  const [closeAccountId, setCloseAccountId] = useState("");
   const [closeError, setCloseError] = useState<string | null>(null);
   const [closing, setClosing] = useState(false);
 
@@ -41,15 +40,40 @@ export function CloseFiscalYearModal({
     [accounts],
   );
 
-  useEffect(() => {
+  const [closeAccountId, setCloseAccountId] = useState(() =>
+    closeTarget &&
+    equityAccountOptions.some((option) => option.value === preferredRetainedEarningsAccount)
+      ? (preferredRetainedEarningsAccount ?? "")
+      : "",
+  );
+
+  // Re-seed the retained-earnings selection whenever the modal is opened for a
+  // different year (or the preferred account/options change), during render
+  // instead of in an effect. Compared by content so an equal-value rerender of
+  // `accounts` cannot loop through the guard.
+  const closeTargetKey = closeTarget
+    ? [
+        "open",
+        closeTarget.id ?? "",
+        closeTarget.label,
+        closeTarget.startDate,
+        closeTarget.endDate,
+      ].join(":")
+    : "closed";
+  const optionsKey = equityAccountOptions.map((option) => option.value).join("|");
+  const resetKey = `${closeTargetKey}|${preferredRetainedEarningsAccount ?? ""}|${optionsKey}`;
+  const [prevResetKey, setPrevResetKey] = useState(resetKey);
+  if (prevResetKey !== resetKey) {
+    setPrevResetKey(resetKey);
     if (closeTarget) {
-      const preferred = preferredRetainedEarningsAccount;
       setCloseAccountId(
-        equityAccountOptions.some((option) => option.value === preferred) ? (preferred ?? "") : "",
+        equityAccountOptions.some((option) => option.value === preferredRetainedEarningsAccount)
+          ? (preferredRetainedEarningsAccount ?? "")
+          : "",
       );
       setCloseError(null);
     }
-  }, [closeTarget, preferredRetainedEarningsAccount, equityAccountOptions]);
+  }
 
   if (!closeTarget) return null;
 

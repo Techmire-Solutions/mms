@@ -1,4 +1,4 @@
-import React, { useMemo, useCallback, useState, useEffect } from "react";
+import React, { useMemo, useCallback, useState } from "react";
 import { useTranslation } from "@/hooks/useTranslation";
 import {
   obligationsSettingsToSequenceConfig,
@@ -16,17 +16,18 @@ export function ObligationsReceiptNumberingSection(): React.JSX.Element {
   const { settings, updateSettings } = useObligationsSettings();
   const [draft, setDraft] = useState<ObligationsSettings>(() => settings);
   const [saved, setSaved] = useState(false);
+  const [previousSettings, setPreviousSettings] = useState(settings);
 
   const isDirty = useMemo(
     () => JSON.stringify(draft) !== JSON.stringify(settings),
     [draft, settings],
   );
 
-  useEffect(() => {
-    if (!isDirty) {
-      setDraft(settings);
-    }
-  }, [settings, isDirty]);
+  // Adopt externally-saved settings during render while the draft has no unsaved edits.
+  if (previousSettings !== settings) {
+    setPreviousSettings(settings);
+    if (!isDirty) setDraft(settings);
+  }
 
   const config = useMemo(() => obligationsSettingsToSequenceConfig(draft), [draft]);
 

@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useState } from "react";
 import { Combine, Split, XCircle, type LucideIcon } from "lucide-react";
 import {
   enrollmentHoldsSeat,
@@ -80,15 +80,20 @@ export function SectionOperationModal(props: SectionOperationModalProps): React.
   const [day, setDay] = useState(today);
   const [reason, setReason] = useState("");
 
-  useEffect(() => {
-    if (!kind) return;
-    setTargetId("");
-    setName("");
-    setCapacity("30");
-    setChosen([]);
-    setDay(today);
-    setReason("");
-  }, [kind, section.id, today]);
+  // Fresh operation draft whenever the operation, section or day changes (render-phase reset).
+  const operationKey = `${kind}|${section.id}|${today}`;
+  const [prevOperationKey, setPrevOperationKey] = useState(operationKey);
+  if (prevOperationKey !== operationKey) {
+    setPrevOperationKey(operationKey);
+    if (kind) {
+      setTargetId("");
+      setName("");
+      setCapacity("30");
+      setChosen([]);
+      setDay(today);
+      setReason("");
+    }
+  }
 
   const reasonValid = reason.trim().length >= 3;
   const occupied = (section.enrolled ?? 0) > 0;

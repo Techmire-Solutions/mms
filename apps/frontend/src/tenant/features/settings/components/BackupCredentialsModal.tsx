@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useState } from "react";
 import { Lock, Mail } from "lucide-react";
 import { useTranslation } from "@/hooks/useTranslation";
 import { FormModal } from "@/components/app/FormModal";
@@ -30,12 +30,15 @@ export default function BackupCredentialsModal({
   const [email, setEmail] = useState(adminEmail);
   const [password, setPassword] = useState("");
 
-  useEffect(() => {
+  // Adjust state during render: opening the modal (or a new admin email) re-seeds the form.
+  const [prevSeed, setPrevSeed] = useState({ open, adminEmail });
+  if (prevSeed.open !== open || prevSeed.adminEmail !== adminEmail) {
+    setPrevSeed({ open, adminEmail });
     if (open) {
       setEmail(adminEmail);
       setPassword("");
     }
-  }, [open, adminEmail]);
+  }
 
   const title = mode === "export" ? t("backup.encryptExportTitle") : t("backup.decryptTitle");
   const subtitle = mode === "export" ? t("backup.encryptExportDesc") : t("backup.decryptDesc");

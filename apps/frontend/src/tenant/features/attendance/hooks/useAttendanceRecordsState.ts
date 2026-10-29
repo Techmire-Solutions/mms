@@ -44,9 +44,9 @@ export function useAttendanceRecordsState({
   const debouncedSearch = useDebounce(searchInput, ATTENDANCE_SEARCH_DEBOUNCE_MS);
   const deferredSearch = useDeferredValue(debouncedSearch);
 
-  useEffect(() => {
-    setListPage(1);
-  }, [
+  // Reset to the first page whenever a query input changes — during render, so
+  // the stale page number never issues a request.
+  const filtersKey = JSON.stringify([
     deferredSearch,
     statusFilter,
     dateFrom,
@@ -57,6 +57,11 @@ export function useAttendanceRecordsState({
     filters.date,
     showDeleted,
   ]);
+  const [prevFiltersKey, setPrevFiltersKey] = useState(filtersKey);
+  if (prevFiltersKey !== filtersKey) {
+    setPrevFiltersKey(filtersKey);
+    setListPage(1);
+  }
 
   const attendancePageQuery = useAttendancePaginated({
     page: listPage,

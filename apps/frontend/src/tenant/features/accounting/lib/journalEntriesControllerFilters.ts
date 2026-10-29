@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useMemo, useState } from "react";
 import type { AccountingListQuery } from "@mms/shared";
 import { moneyToCents } from "@mms/shared";
 import { useDebounce } from "@/hooks/useDebounce";
@@ -110,9 +110,11 @@ export function useJournalEntriesListQueryState(
   }, []);
 
   // The trash view is a different row set, so the previous page number is stale.
-  useEffect(() => {
+  const [prevIncludeDeleted, setPrevIncludeDeleted] = useState(includeDeleted);
+  if (prevIncludeDeleted !== includeDeleted) {
+    setPrevIncludeDeleted(includeDeleted);
     setPage(1);
-  }, [includeDeleted]);
+  }
 
   const query = useMemo(
     () =>

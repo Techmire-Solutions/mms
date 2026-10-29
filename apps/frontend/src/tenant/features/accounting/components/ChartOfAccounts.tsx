@@ -128,11 +128,15 @@ export function ChartOfAccounts({
       isActive: true,
     });
 
-  useEffect(() => {
+  // The page raises a create request by bumping `createRequestKey`; open the
+  // modal during render when that input changes instead of in an effect.
+  const [createRequest, setCreateRequest] = useState({ key: 0, canWrite: false });
+  if (createRequest.key !== createRequestKey || createRequest.canWrite !== canWrite) {
+    setCreateRequest({ key: createRequestKey, canWrite });
     if (createRequestKey > 0 && canWrite) {
       openAddAccount();
     }
-  }, [createRequestKey, canWrite]);
+  }
 
   const exportCSV = () => {
     runGridCsvExportJob({

@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from "react";
+import { useState, useCallback } from "react";
 import { useContactsContractList } from "@/tenant/hooks/collections/contacts";
 import { useStudentsContractList } from "@/tenant/hooks/collections/students";
 import { useSessionsCollection } from "@/tenant/hooks/collections/sessions";
@@ -36,7 +36,6 @@ export function useCustomReportBuilderState(initialSource?: string) {
   const [orientation, setOrientation] = useState<"p" | "l">("p");
   const [pageSize, setPageSize] = useState<string>("a4");
   const [reportName, setReportName] = useState<string>(() => t("reports.builder.defaultName"));
-  const [previewData, setPreviewData] = useState<PreviewRow[]>([]);
 
   const { data: contactsPreviewPage } = useContactsContractList(
     {
@@ -92,54 +91,32 @@ export function useCustomReportBuilderState(initialSource?: string) {
   const available = (() =>
     buildCustomReportFieldCatalog(source, selectedFields, contactsFieldCatalog))();
 
-  useEffect(() => {
-    if (groupBy && !selectedFields.includes(groupBy)) {
-      setGroupBy("");
-    }
-  }, [selectedFields, groupBy]);
+  // Adjust state during render: a group-by field that is no longer selected must be cleared.
+  if (groupBy && !selectedFields.includes(groupBy)) {
+    setGroupBy("");
+  }
 
-  useEffect(() => {
-    if (selectedFields.length === 0) {
-      setPreviewData([]);
-      return;
-    }
-
-    setPreviewData(
-      buildCustomReportPreviewRows({
-        source,
-        selectedFields,
-        aggregate,
-        groupBy,
-        collections: {
-          contacts: contactsColl,
-          students: studentsColl,
-          sessions: sessionsColl,
-          financial: financialColl,
-          attendance: attendanceColl,
-          hasanat: hasanatColl,
-          academic: academicColl,
-        },
-        currencyCode: activeCurrency.code,
-        translate: (key) => t(key),
-        resolveFieldLabel,
-      }),
-    );
-  }, [
-    source,
-    selectedFields,
-    aggregate,
-    groupBy,
-    contactsColl,
-    studentsColl,
-    sessionsColl,
-    financialColl,
-    attendanceColl,
-    hasanatColl,
-    academicColl,
-    t,
-    resolveFieldLabel,
-    activeCurrency.code,
-  ]);
+  const previewData: PreviewRow[] =
+    selectedFields.length === 0
+      ? []
+      : buildCustomReportPreviewRows({
+          source,
+          selectedFields,
+          aggregate,
+          groupBy,
+          collections: {
+            contacts: contactsColl,
+            students: studentsColl,
+            sessions: sessionsColl,
+            financial: financialColl,
+            attendance: attendanceColl,
+            hasanat: hasanatColl,
+            academic: academicColl,
+          },
+          currencyCode: activeCurrency.code,
+          translate: (key) => t(key),
+          resolveFieldLabel,
+        });
 
   const addField = (field: string): void => {
     setSelectedFields((currentFields) => [...currentFields, field]);

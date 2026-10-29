@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import { Save, CheckCircle2, Loader2 } from "lucide-react";
 import { type Exam, type ExamResult } from "@/lib/data/examinationData";
 import { Button } from "@/components/ui/button";
@@ -14,14 +14,29 @@ export interface EnterMarksProps {
   onSaveResults: (examId: string, results: ExamResult[]) => void | Promise<void>;
 }
 
+/** Marks already persisted for the exam, keyed by student id (the editable grid's seed). */
+function prefilledMarksFor(
+  exam: Exam | undefined,
+  results: ExamResult[],
+): Record<string, number | string> {
+  const prefilled: Record<string, number | string> = {};
+  if (!exam) return prefilled;
+  for (const result of results) {
+    if (result.examId === exam.id) prefilled[result.studentId] = result.marksObtained;
+  }
+  return prefilled;
+}
+
 export function EnterMarks({ exams, results, onSaveResults }: EnterMarksProps): React.JSX.Element {
   const { t } = useTranslation();
   const [selectedExam, setSelectedExam] = useState<string>(exams[0]?.id || "");
-  const [marks, setMarks] = useState<Record<string, number | string>>({});
+  const exam = exams.find((examOption) => examOption.id === selectedExam);
+  const [marks, setMarks] = useState<Record<string, number | string>>(() =>
+    prefilledMarksFor(exam, results),
+  );
   const [isSaving, setIsSaving] = useState<boolean>(false);
   const [saved, setSaved] = useState<boolean>(false);
 
-  const exam = exams.find((examOption) => examOption.id === selectedExam);
   const { classNamesById, students: allStudents, sections } = useEnterMarksStudents(exam);
   const [sectionId, setSectionId] = useState<string>("");
   // Saving only the visible section never overwrites marks of other sections (bulk upsert by id).
@@ -29,18 +44,18 @@ export function EnterMarks({ exams, results, onSaveResults }: EnterMarksProps): 
     ? allStudents.filter((student) => student.sectionId === sectionId)
     : allStudents;
 
-  useEffect(() => {
-    if (!exam) return;
-    const prefilledMarks: Record<string, number | string> = {};
-    results
-      .filter((examResult) => examResult.examId === exam.id)
-      .forEach((examResult) => {
-        prefilledMarks[examResult.studentId] = examResult.marksObtained;
-      });
-    setMarks(prefilledMarks);
-    setSaved(false);
-    setSectionId("");
-  }, [selectedExam, exam, results]);
+  // Re-seed the grid when the exam or the persisted results change (render-phase reset, no effect).
+  const [prevExam, setPrevExam] = useState(exam);
+  const [prevResults, setPrevResults] = useState(results);
+  if (prevExam !== exam || prevResults !== results) {
+    setPrevExam(exam);
+    setPrevResults(results);
+    if (exam) {
+      setMarks(prefilledMarksFor(exam, results));
+      setSaved(false);
+      setSectionId("");
+    }
+  }
 
   const hasInvalidMarks = (() => {
     if (!exam) return false;

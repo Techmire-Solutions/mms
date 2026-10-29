@@ -49,15 +49,22 @@ defaults are unaffected; weigh this against the `check:bundle` budget before fli
 Method: `pnpm --filter mms-frontend build` with and without `MMS_REACT_COMPILER=1`, then
 `find apps/frontend/dist/assets -name '*.js' -exec cat {} + | wc -c`.
 
-### Lint findings (all `warn`; `pnpm lint --quiet` stays green)
-- `mms-react/no-unmemoized-context-value`: **0** after the 5 fixes (was 5) — rule is `error`.
-- `jsx-a11y/*`: **146** findings (no-autofocus, click-events-have-key-events, no-redundant-roles,
-  control-has-associated-label, no-static-element-interactions, …).
-- `react-hooks/*` compiler rules (enabled from `recommended-latest` as `warn`): **359** findings —
-  `set-state-in-effect` 128, `refs` 43, `immutability` 13, `incompatible-library` 9, `globals` 8,
-  `purity` 4, `preserve-manual-memoization` 4, `use-memo` 2, `static-components` 2. These flag
-  compiler-readiness issues; promote to `error` after triage (the `set-state-in-effect` and `refs`
-  backlogs dominate).
+### Lint findings (2026-10-29: 0 errors, 150 warnings; `pnpm lint --quiet` green)
+- `mms-react/no-unmemoized-context-value`: **0** after the 5 fixes — rule is `error`.
+- `react-hooks/set-state-in-effect`: **0** (was 128) — burned down by moving state
+  derivation/resets to render, lazy initialisers, and event handlers. One documented
+  disable remains in `useIdleTimer` (its deadline lives in refs and must be re-synced
+  synchronously). The rule is now **`error`**, so a new scripted `setState` in an
+  effect fails `pnpm lint`.
+- `jsx-a11y/*`: **68** findings (`no-autofocus` 19, `no-static-element-interactions` 18,
+  `click-events-have-key-events` 14, `no-noninteractive-element-interactions` 7,
+  `no-noninteractive-tabindex` 6, `interactive-supports-focus` 3, one role rule). Triaged
+  in ADR-017 as mostly correct interaction patterns; the semantics-only rules are `error`.
+- Remaining `react-hooks/*` compiler rules (**82** findings, all `warn`): `refs` 45,
+  `incompatible-library` 13, `immutability` 11, `purity` 4,
+  `preserve-manual-memoization` 4, `use-memo` 3, `static-components` 2. Triage these
+  before flipping the compiler default; do not re-enable `set-state-in-effect` exceptions.
+- Total warnings fell 256 → 150 in this pass.
 
 > **Cache caveat:** `eslint --cache` can hide warnings seeded by an earlier `--quiet` run — an initial
 > `lint:warn` reported 0 jsx-a11y findings that a `--no-cache` run revealed as 146. Always measure with

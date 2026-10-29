@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useState } from "react";
 import { ListPlus } from "lucide-react";
 import {
   academicCatalogNameKey,
@@ -41,18 +41,30 @@ export function CatalogItemFormModal({
 }: CatalogItemFormModalProps): React.JSX.Element {
   const { t } = useTranslation();
   const item = t(`academicCatalog.kind.${kind}.singular`);
-  const [name, setName] = useState("");
-  const [code, setCode] = useState("");
-  const [shortName, setShortName] = useState("");
-  const [status, setStatus] = useState<AcademicCatalogStatus>("active");
+  const [name, setName] = useState(open ? (entry?.name ?? initialName) : "");
+  const [code, setCode] = useState(open ? (entry?.code ?? "") : "");
+  const [shortName, setShortName] = useState(open ? (entry?.shortName ?? "") : "");
+  const [status, setStatus] = useState<AcademicCatalogStatus>(
+    open ? (entry?.status ?? "active") : "active",
+  );
 
-  useEffect(() => {
-    if (!open) return;
-    setName(entry?.name ?? initialName);
-    setCode(entry?.code ?? "");
-    setShortName(entry?.shortName ?? "");
-    setStatus(entry?.status ?? "active");
-  }, [open, entry, initialName]);
+  // Re-seed the draft when the modal opens for another row. Adjusted during
+  // render (React's documented prop-change pattern) so no frame paints the
+  // previous entry's values.
+  const [previousOpen, setPreviousOpen] = useState(open);
+  const [previousEntry, setPreviousEntry] = useState(entry);
+  const [previousInitialName, setPreviousInitialName] = useState(initialName);
+  if (previousOpen !== open || previousEntry !== entry || previousInitialName !== initialName) {
+    setPreviousOpen(open);
+    setPreviousEntry(entry);
+    setPreviousInitialName(initialName);
+    if (open) {
+      setName(entry?.name ?? initialName);
+      setCode(entry?.code ?? "");
+      setShortName(entry?.shortName ?? "");
+      setStatus(entry?.status ?? "active");
+    }
+  }
 
   const key = academicCatalogNameKey(name);
   const duplicate =

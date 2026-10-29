@@ -1,4 +1,4 @@
-import { useState, useEffect, useDeferredValue, useMemo } from "react";
+import { useState, useDeferredValue, useMemo } from "react";
 import { isImeSafeEnter } from "@shared/ui";
 
 export interface UseCommandPaletteSearchOptions<T> {
@@ -21,9 +21,13 @@ export function useCommandPaletteSearch<T>({
   const items = useMemo(() => filterItems(deferredQuery), [filterItems, deferredQuery]);
   const selectedIndex = Math.max(0, Math.min(requestedIndex, items.length - 1));
 
-  useEffect(() => {
+  // A new query always starts from the first result. Adjusted during render
+  // rather than in an effect so the highlight never flashes on the old row.
+  const [previousQuery, setPreviousQuery] = useState(query);
+  if (previousQuery !== query) {
+    setPreviousQuery(query);
     setSelectedIndex(0);
-  }, [query]);
+  }
 
   const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
     if (e.key === "ArrowDown") {

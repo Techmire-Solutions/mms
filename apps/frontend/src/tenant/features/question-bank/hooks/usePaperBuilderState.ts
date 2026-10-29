@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { getQuestionCategoryIds, type QuestionBankQuestion as Question } from "@mms/shared";
 import {
   ALL_FILTER,
@@ -30,7 +30,7 @@ export function usePaperBuilderState({
   const [sections, setSections] = useState<PaperSection[]>(() => [
     createPaperSection(1, defaultSectionTitle(1)),
   ]);
-  const [activeSectionId, setActiveSectionId] = useState("");
+  const [activeSectionId, setActiveSectionId] = useState<string>(() => sections[0]?.id ?? "");
   const [search, setSearch] = useState("");
   const [categoryFilter, setCategoryFilter] = useState(ALL_FILTER);
   const [difficultyFilter, setDifficultyFilter] = useState<DifficultyFilter>(ALL_FILTER);
@@ -40,11 +40,6 @@ export function usePaperBuilderState({
   const selectedQuestionIds = (() => new Set(sections.flatMap((section) => section.questionIds)))();
   const selectedCount = selectedQuestionIds.size;
   const activeSection = sections.find((section) => section.id === activeSectionId) ?? sections[0];
-
-  useEffect(() => {
-    if (activeSectionId || !sections[0]) return;
-    setActiveSectionId(sections[0].id);
-  }, [activeSectionId, sections]);
 
   const filteredQuestions = (() => {
     const normalizedSearch = search.trim().toLowerCase();

@@ -1,4 +1,4 @@
-import { useState, useCallback, useMemo, useEffect } from "react";
+import { useState, useCallback, useMemo } from "react";
 import { useLocation } from "react-router-dom";
 import { History, Building2 } from "lucide-react";
 import { useTranslation } from "@/hooks/useTranslation";
@@ -44,10 +44,6 @@ export function useOmniCommandRegistry(): UseOmniCommandRegistryResult {
   const perms = usePlatformPermissions();
   const { data: workspaces } = usePlatformWorkspaces({ limit: 100 });
   const [recents, setRecents] = useState<RecentWorkspaceRecord[]>(() => loadRecentWorkspaces());
-
-  useEffect(() => {
-    setRecents(loadRecentWorkspaces());
-  }, []);
 
   const recordRecent = useCallback((workspace: RecentWorkspaceRecord) => {
     const updated = saveRecentWorkspace(workspace);

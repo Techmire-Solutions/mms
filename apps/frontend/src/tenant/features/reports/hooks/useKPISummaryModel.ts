@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { usePermissions } from "@/tenant/hooks/usePermissions";
 import { useTranslation } from "@/hooks/useTranslation";
 import { useFinanceCurrency } from "@/hooks/useCurrency";
@@ -108,9 +108,12 @@ export function useKPISummaryModel({ category, role }: KPISummaryProps): KPISumm
     t,
   );
 
-  useEffect(() => {
+  // Adjust state during render: switching report category closes any open card editor.
+  const [prevCategory, setPrevCategory] = useState(category);
+  if (prevCategory !== category) {
+    setPrevCategory(category);
     setEditingCardConfig(null);
-  }, [category]);
+  }
 
   const possibleCards = (() => buildPossibleCards(standardPossibleCards, computedCustomCards))();
 

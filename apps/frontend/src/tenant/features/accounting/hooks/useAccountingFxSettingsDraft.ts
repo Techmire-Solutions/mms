@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useMemo, useState } from "react";
 import { ISO_4217_CURRENCIES, isSupportedFunctionalCurrency } from "@mms/shared";
 import { useTranslation } from "@/hooks/useTranslation";
 import { notify } from "@/lib/notify";
@@ -29,7 +29,6 @@ export function useAccountingFxSettingsDraft() {
   const { t } = useTranslation();
   const query = useAccountingCurrencySettings();
   const save = useSaveAccountingCurrencySettings();
-  const [draft, setDraft] = useState<FxSettingsDraft>(EMPTY_DRAFT);
 
   const loaded = useMemo<FxSettingsDraft>(
     () =>
@@ -43,7 +42,18 @@ export function useAccountingFxSettingsDraft() {
     [query.data],
   );
 
-  useEffect(() => setDraft(loaded), [loaded]);
+  const [draft, setDraft] = useState<FxSettingsDraft>(() => loaded);
+  // Adopt freshly loaded settings during render rather than in an effect.
+  const loadedKey = [
+    loaded.functionalCurrency,
+    loaded.presentationCurrency,
+    loaded.enabledCurrencies.toSorted().join(","),
+  ].join("|");
+  const [prevLoadedKey, setPrevLoadedKey] = useState(loadedKey);
+  if (prevLoadedKey !== loadedKey) {
+    setPrevLoadedKey(loadedKey);
+    setDraft(loaded);
+  }
 
   const currencyCodes = useMemo(() => ISO_4217_CURRENCIES.map((currency) => currency.code), []);
   const currencyOptions = useMemo(

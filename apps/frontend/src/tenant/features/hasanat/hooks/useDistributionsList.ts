@@ -47,9 +47,19 @@ export function useDistributionsList({
   const debouncedSearch = useDebounce(search, DISTRIBUTION_SEARCH_DEBOUNCE_MS);
 
   // Server-side filter/page reset whenever a filter dimension changes.
-  useEffect(() => {
+  const filterKey = `${debouncedSearch}|${filterStatus.join(",")}|${String(showDeleted)}`;
+  const [previousFilterKey, setPreviousFilterKey] = useState(filterKey);
+  if (previousFilterKey !== filterKey) {
+    setPreviousFilterKey(filterKey);
     setListPage(1);
-  }, [debouncedSearch, filterStatus, showDeleted]);
+  }
+
+  // Open the distribute modal during render when the caller bumps the create request key.
+  const [previousCreateRequestKey, setPreviousCreateRequestKey] = useState(0);
+  if (previousCreateRequestKey !== createRequestKey) {
+    setPreviousCreateRequestKey(createRequestKey);
+    if (createRequestKey > 0 && canWrite && !showDeleted) setShowModal(true);
+  }
 
   const pageQuery = useHasanatContractList({
     page: listPage,
@@ -69,12 +79,6 @@ export function useDistributionsList({
   useEffect(() => {
     onFilteredCountChange?.(serverTotal);
   }, [onFilteredCountChange, serverTotal]);
-
-  useEffect(() => {
-    if (createRequestKey > 0 && canWrite && !showDeleted) {
-      setShowModal(true);
-    }
-  }, [createRequestKey, canWrite, showDeleted]);
 
   const toggleStatus = (status: DistributionStatus) =>
     setFilterStatus((selectedStatuses) => {

@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useState } from "react";
 import { Link2 } from "lucide-react";
 import type { RegistrationLink, RegistrationLinkWrite, Session } from "@mms/shared";
 import { Field } from "@/components/app/FormPrimitives";
@@ -45,16 +45,23 @@ export function RegistrationLinkFormModal({
   const [isActive, setIsActive] = useState(true);
   const [classIds, setClassIds] = useState<string[]>([]);
 
-  useEffect(() => {
-    if (!open) return;
-    setTitle(entry?.title ?? "");
-    setOpensOn(toDay(entry?.opensAt ?? null));
-    setClosesOn(toDay(entry?.closesAt ?? null));
-    setMaxSubmissions(entry?.maxSubmissions ? String(entry.maxSubmissions) : "");
-    setRequiresReview(entry?.requiresReview ?? true);
-    setIsActive(entry?.isActive ?? true);
-    setClassIds(entry?.classIds ?? []);
-  }, [open, entry]);
+  // Reset the form from the edited link on every (re)open — render-phase reset, no effect.
+  const [prevForm, setPrevForm] = useState<{
+    open: boolean;
+    entry: RegistrationLink | null;
+  } | null>(null);
+  if (!prevForm || prevForm.open !== open || prevForm.entry !== entry) {
+    setPrevForm({ open, entry });
+    if (open) {
+      setTitle(entry?.title ?? "");
+      setOpensOn(toDay(entry?.opensAt ?? null));
+      setClosesOn(toDay(entry?.closesAt ?? null));
+      setMaxSubmissions(entry?.maxSubmissions ? String(entry.maxSubmissions) : "");
+      setRequiresReview(entry?.requiresReview ?? true);
+      setIsActive(entry?.isActive ?? true);
+      setClassIds(entry?.classIds ?? []);
+    }
+  }
 
   const cap = maxSubmissions.trim() ? Number(maxSubmissions) : null;
   const capInvalid = cap !== null && (!Number.isInteger(cap) || cap < 1);

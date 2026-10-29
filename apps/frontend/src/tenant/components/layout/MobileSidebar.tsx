@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { Link } from "react-router-dom";
 import { X, LogOut } from "lucide-react";
 import { useBranding } from "@/tenant/hooks/useBranding";
@@ -29,19 +29,22 @@ export default function MobileSidebar({
   const branding = useBranding();
   const { user, logout } = useAuth();
   const { t } = useTranslation();
-  const [openedAt, setOpenedAt] = useState<number>(0);
+  const openedAtRef = useRef<number>(0);
   const [logoError, setLogoError] = useState<boolean>(false);
   const drawerRef = useOverlayBehavior<HTMLDivElement>({ open, onClose });
   const { openMenus, toggleMenu, visibleMenuItems } = useSidebarNav(false, () => {});
 
-  useEffect(() => {
-    setLogoError(false);
-  }, [branding.logoUrl]);
+  const [previousLogoUrl, setPreviousLogoUrl] = useState(branding.logoUrl);
 
+  // Reset the broken-image flag during render when the branding logo changes.
+  if (previousLogoUrl !== branding.logoUrl) {
+    setPreviousLogoUrl(branding.logoUrl);
+    setLogoError(false);
+  }
+
+  // Record when the drawer opens so the backdrop can ignore immediate touch-through clicks.
   useEffect(() => {
-    if (open) {
-      setOpenedAt(Date.now());
-    }
+    if (open) openedAtRef.current = Date.now();
   }, [open]);
 
   const initials = getInitials(user?.name, 2) || "AK";
@@ -67,7 +70,7 @@ export default function MobileSidebar({
         )}
         onClick={() => {
           // Ignore clicks within 300ms of opening (prevents touch-through / double-tap immediately closing)
-          if (Date.now() - openedAt > 300) {
+          if (Date.now() - openedAtRef.current > 300) {
             onClose();
           }
         }}

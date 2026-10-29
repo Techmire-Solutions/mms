@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import type { Account, JournalEntry, FiscalYear } from "@/lib/data/accountingData";
 import { useTranslation } from "@/hooks/useTranslation";
 import { useAuth } from "@/lib/contexts/AuthContext";
@@ -55,8 +55,13 @@ export function useJournalEntryForm({
   const [entryDate, setEntryDate] = useState(initial?.date ?? todayISO());
   const fx = useJournalEntryCurrency(initial, entryDate);
   const functionalCurrency = fx.functionalCurrency;
-  const [form, setForm] = useState<DraftForm>(() => {
-    return initial
+
+  // The blank/edit baseline the form resets to when its inputs change.
+  // functionalCurrency is deliberately not part of that trigger: a late settings
+  // load must not reset a draft the user is typing; draftLinesFromEntry renders
+  // stored lines either way.
+  const createDraftForm = (): DraftForm =>
+    initial
       ? {
           ...initial,
           lines: draftLinesFromEntry(initial.lines, functionalCurrency),
@@ -74,37 +79,43 @@ export function useJournalEntryForm({
           lines: [EMPTY_LINE(), EMPTY_LINE()],
           created_by: user?.name ?? "",
         };
-  });
+
+  const [form, setForm] = useState<DraftForm>(createDraftForm);
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [submitting, setSubmitting] = useState(false);
 
-  useEffect(() => {
-    const base: DraftForm = initial
-      ? {
-          ...initial,
-          lines: draftLinesFromEntry(initial.lines, functionalCurrency),
-        }
-      : {
-          id: "",
-          ref: "",
-          date: todayISO(),
-          description: "",
-          status: "draft",
-          tags: [],
-          attachments: [],
-          fiscal_year: activeFiscalYearRecord?.label || "",
-          fiscal_year_id: activeFiscalYear,
-          lines: [EMPTY_LINE(), EMPTY_LINE()],
-          created_by: user?.name ?? "",
-        };
-    setForm(base);
+  // Reset the draft when the edited entry, fiscal year or user changes — during
+  // render instead of in an effect. The entry is compared by content so an
+  // equal-value rerender of the same record cannot loop through the guard.
+  const initialKey = initial ? JSON.stringify(initial) : "";
+  const [formResetInputs, setFormResetInputs] = useState({
+    initialKey,
+    activeFiscalYear,
+    fiscalYearLabel: activeFiscalYearRecord?.label,
+    userName: user?.name,
+  });
+  if (
+    formResetInputs.initialKey !== initialKey ||
+    formResetInputs.activeFiscalYear !== activeFiscalYear ||
+    formResetInputs.fiscalYearLabel !== activeFiscalYearRecord?.label ||
+    formResetInputs.userName !== user?.name
+  ) {
+    setFormResetInputs({
+      initialKey,
+      activeFiscalYear,
+      fiscalYearLabel: activeFiscalYearRecord?.label,
+      userName: user?.name,
+    });
+    setForm(createDraftForm());
     setErrors({});
-    // functionalCurrency is deliberately not a dependency: a late settings load must not
-    // reset a draft the user is typing; draftLinesFromEntry renders stored lines either way.
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [initial, activeFiscalYear, activeFiscalYearRecord?.label, user?.name]);
+  }
 
-  useEffect(() => setEntryDate(form.date), [form.date]);
+  // The date field lives on the draft; keep the currency hook's date in step.
+  const [prevFormDate, setPrevFormDate] = useState(entryDate);
+  if (prevFormDate !== form.date) {
+    setPrevFormDate(form.date);
+    setEntryDate(form.date);
+  }
 
   // Money is summed through integer cents (and converted once) so the totals
   // shown beside the lines are the same figures the ledger posts, with no float

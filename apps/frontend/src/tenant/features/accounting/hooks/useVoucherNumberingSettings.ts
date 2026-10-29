@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useMemo, useState } from "react";
 import {
   DEFAULT_VOUCHER_NUMBERING,
   VOUCHER_DELIMITERS,
@@ -48,9 +48,13 @@ export function useVoucherNumberingSettings() {
     loaded ? pickFormat(loaded) : DEFAULT_VOUCHER_NUMBERING,
   );
 
-  useEffect(() => {
+  // Re-seed the draft when a new server config arrives, during render.
+  const loadedKey = loaded ? JSON.stringify(pickFormat(loaded)) : "";
+  const [prevLoadedKey, setPrevLoadedKey] = useState(loadedKey);
+  if (prevLoadedKey !== loadedKey) {
+    setPrevLoadedKey(loadedKey);
     if (loaded) setDraft(pickFormat(loaded));
-  }, [loaded]);
+  }
 
   const stored = loaded ? pickFormat(loaded) : null;
   const dirty =

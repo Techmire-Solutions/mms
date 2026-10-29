@@ -102,23 +102,25 @@ export function useMarkAttendanceController({
   const studentRosterKey = students.map((student) => `${student.id}-${student.name}`).join("|");
   const stableKey = `${filters.classId}:${filters.sectionId ?? ""}:${filters.date}:${studentRosterKey}`;
 
-  useEffect(() => {
-    if (!filters.classId || !filters.date) return;
-    const existing = existingRecordsForRoster(records, filters, students);
-    let nextRows: AttendanceRow[];
-    if (existing.length > 0) {
-      nextRows = attendanceRowsFromRecords(existing);
-    } else {
-      nextRows = buildDefaultRows(students, customFields);
+  // Rebuild the roster whenever the class/date/roster key changes — during
+  // render, so the previous roster is never editable under the new filters.
+  // stableKey encodes classId + date + roster, so it is the only input needed.
+  const [prevStableKey, setPrevStableKey] = useState(stableKey);
+  if (prevStableKey !== stableKey) {
+    setPrevStableKey(stableKey);
+    if (filters.classId && filters.date) {
+      const existing = existingRecordsForRoster(records, filters, students);
+      setRows(
+        existing.length > 0
+          ? attendanceRowsFromRecords(existing)
+          : buildDefaultRows(students, customFields),
+      );
+      setSubmitted(false);
+      setIsDraft(false);
+      setGeo(null);
+      setShowFaceAI(false);
     }
-    setRows(nextRows);
-    setSubmitted(false);
-    setIsDraft(false);
-    setGeo(null);
-    setShowFaceAI(false);
-    // stableKey encodes classId + date + roster — safe single dep
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [stableKey]);
+  }
 
   const filteredRows = (() =>
     rows.filter((row) => row.name.toLowerCase().includes(search.toLowerCase())))();

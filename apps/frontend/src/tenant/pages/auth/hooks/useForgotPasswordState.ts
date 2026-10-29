@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { DEFAULT_GLOBAL_SETTINGS, validatePasswordPolicy } from "@mms/shared";
 import { useGlobalSettings } from "@/tenant/hooks/useGlobalSettings";
@@ -36,15 +36,14 @@ export function useForgotPasswordState(emailFieldId: string) {
 
   const resendCountdown = useResendCountdown(view === "otp", 60, resendCycle);
 
-  useEffect(() => {
-    if (searchParams.get("activate")) {
-      setFlow("activate");
-    }
-    const emailParam = searchParams.get("email")?.trim();
-    if (emailParam) {
-      setEmail((prev) => prev || emailParam);
-    }
-  }, [searchParams]);
+  // Adjust state during render: an `activate`/`email` query param seeds the flow and the email.
+  if (searchParams.get("activate") && flow !== "activate") {
+    setFlow("activate");
+  }
+  const emailParam = searchParams.get("email")?.trim();
+  if (emailParam && !email) {
+    setEmail(emailParam);
+  }
 
   const handleRequestCode = async (event: React.FormEvent<HTMLFormElement>): Promise<void> => {
     event.preventDefault();

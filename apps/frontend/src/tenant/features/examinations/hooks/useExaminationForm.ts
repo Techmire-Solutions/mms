@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { useTranslation } from "@/hooks/useTranslation";
 import { useSessionsCollection } from "@/tenant/hooks/collections/sessions";
 import { notify } from "@/lib/notify";
@@ -25,11 +25,17 @@ export function useExaminationForm({ open, exam, onClose, onSave }: UseExaminati
     return exam ? { ...exam } : { ...EXAMINATION_FORM_EMPTY };
   });
 
-  useEffect(() => {
-    if (!open) return;
-    setExamDraft(exam ? { ...exam } : { ...EXAMINATION_FORM_EMPTY });
-    setErrors({});
-  }, [open, exam]);
+  // Reset the draft to the exam being edited whenever the dialog (re)opens (render-phase reset).
+  const [prevOpen, setPrevOpen] = useState(open);
+  const [prevExam, setPrevExam] = useState(exam);
+  if (prevOpen !== open || prevExam !== exam) {
+    setPrevOpen(open);
+    setPrevExam(exam);
+    if (open) {
+      setExamDraft(exam ? { ...exam } : { ...EXAMINATION_FORM_EMPTY });
+      setErrors({});
+    }
+  }
 
   const updateDraft = (patch: Partial<typeof examDraft>) => {
     setExamDraft((prev) => ({ ...prev, ...patch }));

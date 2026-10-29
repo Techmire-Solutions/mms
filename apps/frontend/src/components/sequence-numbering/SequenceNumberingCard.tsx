@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from "react";
+import React, { useMemo, useState } from "react";
 import { useTranslation } from "@/hooks/useTranslation";
 import { Hash } from "lucide-react";
 import { FORM_INPUT, SETUP_SECTION_CARD_CLASS } from "@/components/ui/formStyles";
@@ -70,10 +70,15 @@ export function SequenceNumberingCard({
   const [startText, setStartText] = useState(String(config.startingSequence));
   const [startError, setStartError] = useState<string | undefined>();
 
-  useEffect(() => {
+  // Follow externally applied config changes (reset/preset/other card edits) so the
+  // draft never drifts from the committed starting sequence. Adjusted during render
+  // per React's documented prop-change pattern.
+  const [previousStartingSequence, setPreviousStartingSequence] = useState(config.startingSequence);
+  if (previousStartingSequence !== config.startingSequence) {
+    setPreviousStartingSequence(config.startingSequence);
     setStartText(String(config.startingSequence));
     setStartError(undefined);
-  }, [config.startingSequence]);
+  }
 
   const livePreview = useMemo(() => {
     const currentSeq = config.currentSequence ?? 0;

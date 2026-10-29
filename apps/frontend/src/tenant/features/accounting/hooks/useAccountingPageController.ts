@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { usePersistedTabState } from "@/hooks/usePersistedTabState";
 import { useAccountingPageShortcuts } from "@/tenant/features/accounting/hooks/useAccountingPageShortcuts";
 import { useTranslation } from "@/hooks/useTranslation";
@@ -85,7 +85,7 @@ export function useAccountingPageController() {
     fiscalYearsEnvelope?.body?.fiscalYears ?? fiscalYearsEnvelope?.fiscalYears ?? [];
   const { settings } = useAccountingConfig();
   const { activeCurrency } = useAccountingCurrency();
-  const [filteredCount, setFilteredCount] = useState(0);
+  const [journalFilteredCount, setJournalFilteredCount] = useState(0);
   const journalColumnLayout = useAccountingJournalColumnLayout();
   const accountColumnLayout = useAccountingAccountColumnLayout();
 
@@ -99,10 +99,11 @@ export function useAccountingPageController() {
     handleBulkRestoreEntries,
   } = useAccountingPageActions({ accounts, journalEntries, fiscalYears });
 
-  useEffect(() => {
-    if (activeSubTab === "journal" || activeSubTab === "coa") return;
-    setFilteredCount(journalTotal);
-  }, [activeSubTab, journalTotal]);
+  // The journal/COA tabs report their own filtered count; the aggregate tabs
+  // show the journal total, derived here rather than copied into state by an
+  // effect.
+  const filteredCount =
+    activeSubTab === "journal" || activeSubTab === "coa" ? journalFilteredCount : journalTotal;
 
   const openJournalCreate = () => {
     setActiveTab("work");
@@ -154,7 +155,7 @@ export function useAccountingPageController() {
     aggregateEntriesResult,
     journalTotal,
     filteredCount,
-    setFilteredCount,
+    setFilteredCount: setJournalFilteredCount,
     settings,
     activeCurrency,
     activeFiscalYear,

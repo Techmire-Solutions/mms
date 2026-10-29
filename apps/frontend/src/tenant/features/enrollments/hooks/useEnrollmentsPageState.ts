@@ -122,11 +122,15 @@ export function useEnrollmentsPageState() {
     logExportAudit,
   });
 
-  useEffect(() => {
+  // No write access → the eligibility sub-tab is not available (render-phase reset, no effect).
+  const subTabAccessKey = `${canWriteEnrollments}|${activeSubTab}`;
+  const [prevSubTabAccessKey, setPrevSubTabAccessKey] = useState(subTabAccessKey);
+  if (prevSubTabAccessKey !== subTabAccessKey) {
+    setPrevSubTabAccessKey(subTabAccessKey);
     if (!canWriteEnrollments && activeSubTab === "eligibility") {
       setActiveSubTab("directory");
     }
-  }, [canWriteEnrollments, activeSubTab]);
+  }
 
   useModuleShortcuts({
     searchInputId: "enrollments-search-input",

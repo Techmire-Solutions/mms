@@ -36,15 +36,13 @@ export function useTemplateEditorModal({
   confirmDiscardPrompt,
   ignoreEscapeWhen,
 }: UseTemplateEditorModalOptions): UseTemplateEditorModalReturn {
-  const [isFullscreen, setIsFullscreen] = useState(initialFullscreen);
   const [isUserToggled, setIsUserToggled] = useState(false);
+  const [userFullscreen, setUserFullscreen] = useState(initialFullscreen);
 
-  // Sync state if parent toggles initialFullscreen prop and user hasn't explicitly toggled it locally
-  useEffect(() => {
-    if (!isUserToggled) {
-      setIsFullscreen(initialFullscreen);
-    }
-  }, [initialFullscreen, isUserToggled]);
+  // The user's explicit choice wins once they have toggled; otherwise the parent's
+  // prop is authoritative. Derived during render instead of mirrored into state by
+  // an effect, which also removes the stale frame after a prop change.
+  const isFullscreen = isUserToggled ? userFullscreen : initialFullscreen;
 
   // Keep volatile options in a ref so handleClose stays 100% stable. Updated in
   // an effect (not during render) to stay correct under concurrent rendering.
@@ -66,7 +64,6 @@ export function useTemplateEditorModal({
       if (!confirmed) return;
     }
     if (opts.isFullscreen && opts.isUserToggled) {
-      setIsFullscreen(false);
       setIsUserToggled(false);
     } else {
       opts.onClose();
@@ -110,9 +107,9 @@ export function useTemplateEditorModal({
   }, [isDirty]);
 
   const handleToggleFullscreen = useCallback(() => {
-    setIsFullscreen((prev) => !prev);
+    setUserFullscreen(!isFullscreen);
     setIsUserToggled(true);
-  }, []);
+  }, [isFullscreen]);
 
   return {
     isFullscreen,

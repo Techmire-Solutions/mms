@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import { GitCompare, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { motion } from "framer-motion";
@@ -24,7 +24,10 @@ export default function ComparisonMode({
 
   const isContacts = category.toLowerCase() === "contacts";
   const currentYear = new Date().getFullYear();
-  const [mode, setMode] = useState<"sessions" | "daterange">("sessions");
+  const [mode, setMode] = useState<"sessions" | "daterange">(() =>
+    isContacts ? "daterange" : "sessions",
+  );
+  const [previousCategory, setPreviousCategory] = useState(category);
   const [valA, setValA] = useState<string>("s1");
   const [valB, setValB] = useState<string>("s2");
   const [rangeA, setRangeA] = useState<DateRange>(() => ({
@@ -52,7 +55,9 @@ export default function ComparisonMode({
     t,
   });
 
-  useEffect(() => {
+  // Category changes reset the comparison selection during render (contacts only compare ranges).
+  if (previousCategory !== category) {
+    setPreviousCategory(category);
     if (isContacts) {
       setMode("daterange");
     } else {
@@ -60,7 +65,7 @@ export default function ComparisonMode({
       setValA("s1");
       setValB("s2");
     }
-  }, [category, isContacts]);
+  }
 
   return (
     <motion.div

@@ -29,11 +29,15 @@ export function usePlatformSessionTimeout({
   const { t } = useTranslation();
   const [policy, setPolicy] = useState<SessionTimeoutPolicy | null>(null);
 
+  // Disabling the watcher drops the cached policy — reset during render.
+  const [prevEnabled, setPrevEnabled] = useState(enabled);
+  if (prevEnabled !== enabled) {
+    setPrevEnabled(enabled);
+    if (!enabled) setPolicy(null);
+  }
+
   useEffect(() => {
-    if (!enabled) {
-      setPolicy(null);
-      return;
-    }
+    if (!enabled) return;
     let active = true;
     apiContract.platform
       .getSessionPolicy({})

@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useMemo, useState } from "react";
 import {
   useAccountingCurrencySettings,
   useExchangeRateLookup,
@@ -34,14 +34,31 @@ export function useDocumentCurrency({
 }: UseDocumentCurrencyOptions) {
   const settings = useAccountingCurrencySettings();
   const functionalCurrency = settings.data?.functionalCurrency ?? "";
-  const [currency, setCurrencyState] = useState("");
-  const [rateOverride, setRateOverride] = useState("");
+  const [currency, setCurrencyState] = useState(() =>
+    functionalCurrency ? initialCurrency || functionalCurrency : "",
+  );
+  const [rateOverride, setRateOverride] = useState(() =>
+    functionalCurrency ? (initialRate ?? "") : "",
+  );
 
-  useEffect(() => {
-    if (!functionalCurrency) return;
-    setCurrencyState(initialCurrency || functionalCurrency);
-    setRateOverride(initialRate ?? "");
-  }, [functionalCurrency, initialCurrency, initialRate]);
+  // Adjust state during render: a loaded functional currency (or a new document seed) re-seeds the
+  // selected currency and rate override from the document's stored values.
+  const [prevSeedInputs, setPrevSeedInputs] = useState({
+    functionalCurrency,
+    initialCurrency,
+    initialRate,
+  });
+  if (
+    prevSeedInputs.functionalCurrency !== functionalCurrency ||
+    prevSeedInputs.initialCurrency !== initialCurrency ||
+    prevSeedInputs.initialRate !== initialRate
+  ) {
+    setPrevSeedInputs({ functionalCurrency, initialCurrency, initialRate });
+    if (functionalCurrency) {
+      setCurrencyState(initialCurrency || functionalCurrency);
+      setRateOverride(initialRate ?? "");
+    }
+  }
 
   const effectiveCurrency = currency || functionalCurrency;
   const currencyOptions = useMemo(() => {

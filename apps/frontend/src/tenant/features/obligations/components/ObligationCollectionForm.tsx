@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import { useState } from "react";
 import { Receipt } from "lucide-react";
 import {
   generateReceiptNo,
@@ -79,6 +79,7 @@ export function ObligationCollectionForm({
     Partial<Record<keyof ObligationCollectionFormState, AppTranslationKey>>
   >({});
   const [submitting, setSubmitting] = useState(false);
+  const [previousObligationTypeId, setPreviousObligationTypeId] = useState(form.obligation_type_id);
 
   const catalogCreate = useObligationCollectionCatalogQuickCreate({
     obligationTypes,
@@ -112,11 +113,13 @@ export function ObligationCollectionForm({
 
   const eligibleReps = eligibleRepsForType(form.obligation_type_id, wakalaTypes, reps);
 
-  useEffect(() => {
+  // A new obligation type invalidates the chosen representative - clear it during render.
+  if (previousObligationTypeId !== form.obligation_type_id) {
+    setPreviousObligationTypeId(form.obligation_type_id);
     if (form.obligation_type_id) {
       setForm((currentForm) => ({ ...currentForm, mujtahid_representative_id: "" }));
     }
-  }, [form.obligation_type_id]);
+  }
 
   const handleSave = async (): Promise<void> => {
     const validationErrors = validateObligationCollectionForm(form);

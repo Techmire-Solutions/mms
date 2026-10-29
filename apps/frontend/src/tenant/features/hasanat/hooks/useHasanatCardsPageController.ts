@@ -79,7 +79,7 @@ export function useHasanatCardsPageController() {
     bulkDeleteDistributions,
     bulkRestoreDistributions,
   } = useHasanatMutations();
-  const [filteredCount, setFilteredCount] = useState(0);
+  const [reportedFilteredCount, setFilteredCount] = useState(0);
   const distributionColumnLayout = useHasanatDistributionColumnLayout();
   const redemptionColumnLayout = useHasanatRedemptionColumnLayout();
 
@@ -129,10 +129,10 @@ export function useHasanatCardsPageController() {
   const effectiveConfigTab =
     SETUP_TABS.find((tab) => tab.id === configSubTab)?.id ?? "denominations";
 
-  useEffect(() => {
-    if (effectiveSubTab === "distribute" || effectiveSubTab === "redemptions") return;
-    setFilteredCount(distributions.length);
-  }, [effectiveSubTab, distributions.length]);
+  // The distribute/redemptions lists report their own filtered count; every other sub-tab
+  // shows the full loaded collection.
+  const isCountedListTab = effectiveSubTab === "distribute" || effectiveSubTab === "redemptions";
+  const filteredCount = isCountedListTab ? reportedFilteredCount : distributions.length;
 
   useModuleShortcuts({
     searchInputId: "hasanat-search-input",
