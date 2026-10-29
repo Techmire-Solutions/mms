@@ -70,6 +70,29 @@ Method: `pnpm --filter mms-frontend build` with and without `MMS_REACT_COMPILER=
 > `lint:warn` reported 0 jsx-a11y findings that a `--no-cache` run revealed as 146. Always measure with
 > `--no-cache`.
 
+## Service-worker precache (2026-10-30)
+
+The PWA service worker used `globPatterns: ["**\/*.{js,css,html,ico,png,svg,woff2}"]`, so it
+precached **every** emitted chunk on install — including optional vendors that route-level lazy
+loading exists to defer, all four locale packs, and an unused 1.2 MB logo.
+
+| Measure | Before | After |
+| --- | --- | --- |
+| Precache entries | 647 | 38 |
+| Precached payload (raw) | 16.3 MB | 2.29 MB |
+| Compressed-equivalent | ~5.0 MB | ~0.5 MB |
+| `dist/sw.js` | 40 KB | 4.2 KB |
+
+After: `globPatterns` covers the shell only (`index.html`, manifest, icons), and a Workbox
+`manifestTransforms` hook (`apps/frontend/src/lib/pwa/entryClosurePrecache.ts`) adds the **static
+import closure** of the entry (30 files / 1.84 MB raw / 431 KB br) read from
+`dist/.vite/manifest.json`. Route chunks, mermaid/elk, xlsx, jspdf, katex and the non-default locale
+packs stay lazy and are captured by the `/assets/` `CacheFirst` runtime rule once visited.
+
+Measured with `pnpm --filter mms-frontend build && pnpm run check:pwa` (budget: ≤ 50 entries /
+≤ 3.5 MB raw, and no `elk`/`cytoscape`/`xlsx`/`jspdf`/`html2canvas`/`katex`/`i18n-{ar,ur,fa}`/
+`platform-logo` entry). Initial JS payload is unchanged: 30 files / 1,838 KB raw / 431 KB br.
+
 ## How to measure (render cost — manual)
 
 React Profiler needs a running app, so no render counts are recorded here. To capture them:
@@ -84,4 +107,4 @@ React Profiler needs a running app, so no render counts are recorded here. To ca
 ## Verification
 
 `pnpm --filter mms-frontend typecheck` · `pnpm --filter mms-frontend lint` · `pnpm test` ·
-`pnpm build` + `pnpm run check:bundle` (with the compiler flag on and off).
+`pnpm build` + `pnpm run check:bundle` (with the compiler flag on and off) + `pnpm run check:pwa`.

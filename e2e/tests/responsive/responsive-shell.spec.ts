@@ -125,3 +125,45 @@ test.describe("Public shell responsive layout", { tag: "@smoke" }, () => {
     });
   }
 });
+
+/**
+ * `public/theme-init.js` runs in `<head>` and must apply `lang`/`dir` from the
+ * persisted workspace settings before React mounts and before the lazily
+ * fetched locale pack can paint. The app entry is blocked so the only thing
+ * that could have set the attributes is the pre-paint script — without it an
+ * RTL tenant would paint LTR and mirror after hydration.
+ */
+test.describe("Pre-paint language direction", { tag: "@smoke" }, () => {
+  const APP_ENTRY = /\/(?:src\/main\.tsx|assets\/index-[\w-]+\.js)(?:\?.*)?$/;
+
+  const blockAppEntry = (page: Page) => page.route(APP_ENTRY, (route) => route.abort());
+
+  test("applies Arabic + RTL before the app bundle executes", async ({ page, baseURL }) => {
+    const tenantUrl = `${getTenantOrigin(`prepaint${Date.now()}`, baseURL)}/`;
+    await page.addInitScript(() => {
+      localStorage.setItem(
+        "mms_global_settings",
+        JSON.stringify({ language: "ar", theme: "light" }),
+      );
+    });
+    await blockAppEntry(page);
+
+    await page.goto(tenantUrl, { waitUntil: "domcontentloaded" });
+
+    await expect(page.locator("html")).toHaveAttribute("dir", "rtl");
+    await expect(page.locator("html")).toHaveAttribute("lang", "ar");
+  });
+
+  test("keeps the tenant auth entry English/LTR", async ({ page, baseURL }) => {
+    const loginUrl = `${getTenantOrigin(`prepaintlogin${Date.now()}`, baseURL)}/login`;
+    await page.addInitScript(() => {
+      localStorage.setItem("mms_global_settings", JSON.stringify({ language: "ar" }));
+    });
+    await blockAppEntry(page);
+
+    await page.goto(loginUrl, { waitUntil: "domcontentloaded" });
+
+    await expect(page.locator("html")).toHaveAttribute("dir", "ltr");
+    await expect(page.locator("html")).toHaveAttribute("lang", "en");
+  });
+});

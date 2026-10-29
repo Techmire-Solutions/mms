@@ -28,7 +28,11 @@ export function initSentry(dsn: string): void {
       return event;
     },
   });
-  console.log("[MMS] Sentry client error reporting initialized successfully.");
+  // Dev-only breadcrumb: production browsers keep a clean console (Sentry
+  // already records its own initialization as a client report).
+  if (import.meta.env.DEV) {
+    console.info("[MMS] Sentry client error reporting initialized successfully.");
+  }
 }
 
 /**
