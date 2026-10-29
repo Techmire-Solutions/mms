@@ -371,11 +371,14 @@ follow-ups:
 
 **Still open (operator/next):**
 
-- **Enable strict RLS on the Hetzner host.** The deploy now defaults to `strict` and
-  rejects `warn`/`off` without an explicit per-deploy override, so the next production
-  deploy aborts at the preflight until the operator runs `docs/rls-operations.md` §2 and
-  confirms `db:check-rls`. This is fail-closed: the running release keeps serving.
-- **Historical snapshot regeneration** (0134–0196) and the 311 timezone-naive columns.
+- **Production still connects as `postgres`.** The strict preflight correctly
+  refused it on 2026-10-30 (`role=postgres`, superuser/bypass). The repo
+  variables are temporarily `MMS_DB_ROLE_ENFORCEMENT=warn` +
+  `MMS_ALLOW_RLS_WARN=1` so deploys continue; RLS is **not** enforced on
+  production while they are set. Provision `mms_app`, point `DATABASE_URL` at
+  it, confirm `db:check-rls`, then set `strict` and remove the allow flag.
+- **Historical snapshot regeneration** (0134–0196) and the 144 live naive
+  timestamp columns (311 migration-history declarations).
 - **Legacy Gitleaks history** is clean under the new config; keep it that way.
 
 ## 2026-10-30 review residuals
