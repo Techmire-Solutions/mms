@@ -42,7 +42,8 @@ flow or otherwise need explicit maintenance attention.
 promptly and the remaining findings are explicit decisions:
 
 - **Patched via `overrides`** (`pnpm-workspace.yaml`): `fast-uri ^4.2.3`,
-  `ip-address >=10.7.4`, `serialize-javascript >=7.1.2` (build tooling only).
+  `ip-address >=10.7.4`, `serialize-javascript >=7.1.2` (build tooling only), and
+  `seroval >=1.6.11` (typed-array code-injection advisory; devtools-only path).
 - **`nodemailer`** is a direct dependency; keep it on the latest 10.x patch
   (currently `^10.2.1`) — it is the only runtime email transport.
 - **`ts-deepmerge@6`** is a *reviewed exception*: the advisory is unreachable

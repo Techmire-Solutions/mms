@@ -102,7 +102,9 @@ overrides:
   # patched release appears.
   # Security: Seroval GHSA-p6vx-979v-rg4c and GHSA-jp82-f5mq-hwhp.
   # Transitive path: @tanstack/react-query-devtools > @kobalte/core > solid-js > seroval.
-  seroval: ">=1.6.3"
+  # GHSA typed-array code injection requires >=1.6.11 (also covers the earlier
+  # prototype-pollution advisories).
+  seroval: ">=1.6.11"
   # Security: source-map-js GHSA-68fv-2mgg-jv7q event-loop DoS via indexed section offsets.
   # Transitive path: @vitest/coverage-v8 > magicast / vite > postcss > source-map-js.
   source-map-js: ">=1.2.2"

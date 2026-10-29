@@ -46,7 +46,7 @@ overrides:
   fast-uri: ^4.2.3
   ip-address: '>=10.7.4'
   serialize-javascript: '>=7.1.2'
-  seroval: '>=1.6.3'
+  seroval: '>=1.6.11'
   source-map-js: '>=1.2.2'
   dompurify: '>=3.4.17'
   happy-dom: '>=21.0.4'
@@ -5646,11 +5646,11 @@ packages:
     resolution: {integrity: sha512-kiDK/Tb8IWZ61WEU8pA2PDmAuw37gKph9Y77OZlD56mg0Y2g0Bg7gZ1HeHhs5d40w+nRoUq/wj08V26ilbez9g==}
     engines: {node: '>=10'}
     peerDependencies:
-      seroval: '>=1.6.3'
+      seroval: '>=1.6.11'
 
-  seroval@1.6.9:
-    resolution: {integrity: sha512-UeEzHwAK+yl0YLbsvROV1t5yMYEwZZ0CfKYxDvUgS2fO9Vxdf8djqVIB+OuVpuawRNPqw68LE1Du/GMsW2ZPqA==}
-    engines: {node: '>=10'}
+  seroval@1.7.2:
+    resolution: {integrity: sha512-NPOYrDVbvtuTo5m9InqKE7O6wBASON46OabjyqLUGPvoXNDYp0pReuFYkqOQwGsoj1OpZVj6mIdnRRgt5O1/gQ==}
+    engines: {node: '>=20'}
 
   set-cookie-parser@2.7.2:
     resolution: {integrity: sha512-oeM1lpU/UvhTxw+g3cIfxXHyJRc/uidd3yK1P242gzHds0udQBYzs3y8j4gCCW+ZJ7ad0yctld8RYO+bdurlvw==}
@@ -11716,11 +11716,11 @@ snapshots:
 
   serialize-javascript@7.1.4: {}
 
-  seroval-plugins@1.6.9(seroval@1.6.9):
+  seroval-plugins@1.6.9(seroval@1.7.2):
     dependencies:
-      seroval: 1.6.9
+      seroval: 1.7.2
 
-  seroval@1.6.9: {}
+  seroval@1.7.2: {}
 
   set-cookie-parser@2.7.2: {}
 
@@ -11801,8 +11801,8 @@ snapshots:
   solid-js@1.9.17:
     dependencies:
       csstype: 3.2.3
-      seroval: 1.6.9
-      seroval-plugins: 1.6.9(seroval@1.6.9)
+      seroval: 1.7.2
+      seroval-plugins: 1.6.9(seroval@1.7.2)
 
   solid-presence@0.2.0(solid-js@1.9.17):
     dependencies:

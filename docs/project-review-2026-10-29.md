@@ -112,6 +112,7 @@ patchable findings were resolved in the follow-up dependency pass:
 | `fast-uri` | 4.2.0 → 4.2.3 | `overrides` `^4.2.3` |
 | `ip-address` | 10.7.3 → 10.7.5 | `overrides` `>=10.7.4` |
 | `serialize-javascript` | 7.1.1 → 7.1.4 | `overrides` `>=7.1.2` (build tooling) |
+| `seroval` | 1.6.9 → 1.7.2 | `overrides` `>=1.6.11` (devtools path; typed-array injection advisory) |
 | `deepmerge` | 4.3.1 | **no patched release exists** — the advisory names `>=4.3.2`, which was never published (4.3.1 is the latest 4.x). Dev-only workbox path; recorded as a reviewed exception. |
 
 `ts-deepmerge@6` remains the other reviewed exception: the advisory is not
