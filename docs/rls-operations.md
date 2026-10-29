@@ -73,33 +73,33 @@ pnpm run db:check-rls
 
 ## 3. Deploy preflight
 
-`scripts/deploy-on-server.sh` runs `checkRlsRole` **before migrations and before
-the PM2 reload**. A failing check exits 1 and the previous release keeps
-serving. During the phase-2a rollout `warn`/`off` still continue with a warning;
-phase 2b turns them into failures unless explicitly overridden:
+`scripts/deploy-on-server.sh` runs `checkRlsRole` and the mode policy **before
+migrations and before the PM2 reload**. A failing check exits 1 and the previous
+release keeps serving.
+
+`MMS_DB_ROLE_ENFORCEMENT` defaults to `strict` in the deploy workflow, the env
+merge, and the on-server fallback. `warn`/`off` are rejected unless explicitly
+overridden for that deploy:
 
 ```bash
 MMS_ALLOW_RLS_WARN=1   # temporary, documented exception
 MMS_ALLOW_RLS_OFF=1    # intentional single-tenant installs
 ```
 
-The GitHub deploy workflow passes `MMS_ALLOW_RLS_WARN`/`OFF` (default `0`) and
-`MMS_DB_ROLE_ENFORCEMENT` (default `warn` until phase 2b flips it to `strict`).
+The overrides are per-deploy and are not written to `.env`; remove them after
+use. The GitHub deploy workflow passes them (default `0`) alongside
+`MMS_DB_ROLE_ENFORCEMENT` (default `strict`).
 
-### Phase 2b flip checklist (operator-gated)
+### Pre-deploy checklist
 
-Do this only after section 2 has been run on the target host and
-`db:check-rls` prints `rls_applies=true` with `mode=strict`.
-
-1. Change the defaults from `warn` to `strict`:
-   - `.github/workflows/deploy.yml` (`MMS_DB_ROLE_ENFORCEMENT` fallback),
-   - `scripts/merge-backend-env.sh` (the “not yet set” branch),
-   - `scripts/deploy-on-server.sh` (the `read_env_var` fallback).
-2. Make `warn`/`off` a hard preflight failure unless `MMS_ALLOW_RLS_WARN=1` /
-   `MMS_ALLOW_RLS_OFF=1` is explicitly set (replace the current warning-only
-   branch).
-3. Deploy; confirm the preflight prints the `mms_app` role and `strict`.
-4. Roll back with section 5 if anything fails.
+1. Run section 2 on the target host; confirm `db:check-rls` prints
+   `rls_applies=true` with `mode=strict`.
+2. Set the GitHub `MMS_DB_ROLE_ENFORCEMENT` variable to `strict` or remove it
+   so the workflow default applies. Keep `MMS_ALLOW_RLS_WARN`/`OFF` at `0`.
+3. Deploy; the preflight logs the connected role and the mode.
+4. If it aborts, the running release is still serving: provision the role and
+   redeploy, or use the documented override briefly.
+5. Roll back with section 5 if anything fails.
 
 ## 4. CI proof
 

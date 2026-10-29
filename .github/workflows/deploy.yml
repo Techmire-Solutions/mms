@@ -195,7 +195,7 @@ jobs:
           PLATFORM_ADMIN_NAME: ${{ secrets.PLATFORM_ADMIN_NAME }}
           MMS_DEPLOY_SKIP_PUBLIC_VERIFY: "1"
           MMS_REQUIRE_WILDCARD_TLS: ${{ secrets.MMS_REQUIRE_WILDCARD_TLS }}
-          MMS_DB_ROLE_ENFORCEMENT: ${{ vars.MMS_DB_ROLE_ENFORCEMENT || secrets.MMS_DB_ROLE_ENFORCEMENT || 'warn' }}
+          MMS_DB_ROLE_ENFORCEMENT: ${{ vars.MMS_DB_ROLE_ENFORCEMENT || secrets.MMS_DB_ROLE_ENFORCEMENT || 'strict' }}
           MMS_ALLOW_RLS_WARN: ${{ vars.MMS_ALLOW_RLS_WARN || '0' }}
           MMS_ALLOW_RLS_OFF: ${{ vars.MMS_ALLOW_RLS_OFF || '0' }}
         run: |

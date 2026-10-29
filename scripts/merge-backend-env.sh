@@ -58,11 +58,12 @@ for key in "${DEPLOY_KEYS[@]}"; do
   write_env_var "$key" "${!key-}"
 done
 
-# If MMS_DB_ROLE_ENFORCEMENT is not yet in ENV_FILE, default to "warn" so
-# existing single-user postgres instances do not crash on boot before a
-# dedicated non-superuser role (mms_app) is provisioned.
+# If MMS_DB_ROLE_ENFORCEMENT is not yet in ENV_FILE, default to "strict": a
+# missing mode must not silently disable the RLS backstop. Existing single-user
+# postgres installs must provision mms_app (docs/rls-operations.md) or set the
+# documented override before the next deploy.
 if ! grep -q '^MMS_DB_ROLE_ENFORCEMENT=' "$ENV_FILE" 2>/dev/null; then
-  write_env_var "MMS_DB_ROLE_ENFORCEMENT" "${MMS_DB_ROLE_ENFORCEMENT:-warn}"
+  write_env_var "MMS_DB_ROLE_ENFORCEMENT" "${MMS_DB_ROLE_ENFORCEMENT:-strict}"
 fi
 
 # MMS_API_URL was a legacy separate API host — Apache serves the platform at MMS_APP_DOMAIN only.

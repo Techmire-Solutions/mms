@@ -50,7 +50,7 @@ gate "Work directory convergence" pnpm run check:work-directory
 gate "Frontend structure ratchets" pnpm run check:frontend-structure
 gate "Shared UI architecture & governance" pnpm run check:shared-ui
 gate "Documentation ratchets" pnpm run check:docs
-gate "Script unit tests" node --test scripts/ci/ci-gate-policy.test.mjs scripts/ci/changed-coverage-core.test.mjs scripts/ci/check-ratchet-baselines.test.mjs scripts/lib/db-projections-core.test.mjs
+gate "Script unit tests" pnpm run test:scripts
 gate "Ratchet baselines did not increase" node scripts/ci/check-ratchet-baselines.mjs --base "${MMS_CI_BASE:-HEAD~1}"
 if [[ "$SCOPE" == "affected" ]]; then
   gate "DB projection hygiene (changed files)" node scripts/check-db-projections.mjs --changed
