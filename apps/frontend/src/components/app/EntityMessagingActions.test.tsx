@@ -58,6 +58,7 @@ describe("EntityMessagingActions Component", () => {
     expect(html).toContain("mailto:test@example.com");
     expect(html).toContain("https://wa.me/15551234567");
     expect(html).toContain("sms:+15551234567");
+    expect(html).toContain("gap-4");
   });
 
   it("renders button-group variant in a responsive grid", () => {

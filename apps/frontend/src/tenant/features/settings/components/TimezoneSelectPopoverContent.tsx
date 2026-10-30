@@ -39,7 +39,7 @@ export function TimezoneSelectPopoverContent({
           value={query}
           onChange={(event) => setQuery(event.target.value)}
           placeholder={t("global.timezoneSearch")}
-          className="h-9 border-0 bg-transparent px-0 text-xs shadow-none focus-visible:ring-0 focus-visible:outline-none placeholder:text-muted-foreground/70"
+          className="h-9 border-0 bg-transparent px-0 text-xs shadow-none focus-visible:ring-0 focus-visible:outline-none placeholder:text-muted-foreground"
           aria-label={t("global.timezoneSearch")}
         />
       </div>
@@ -83,7 +83,7 @@ export function TimezoneSelectPopoverContent({
         ) : (
           filtered.map(({ region, options: regionOptions }) => (
             <div key={region} className="pt-1">
-              <p className="px-2.5 py-1 text-3xs font-bold uppercase tracking-wider text-muted-foreground/80">
+              <p className="px-2.5 py-1 text-3xs font-bold uppercase tracking-wider text-muted-foreground">
                 {region}
               </p>
               {regionOptions.map((timezoneOption) => {
@@ -109,7 +109,7 @@ export function TimezoneSelectPopoverContent({
                       aria-hidden
                     />
                     <span className="truncate text-xs">{timezoneOption.label}</span>
-                    <span className="ms-auto ps-2 font-mono text-3xs text-muted-foreground/80">
+                    <span className="ms-auto ps-2 font-mono text-3xs text-muted-foreground">
                       {timezoneOption.value}
                     </span>
                   </Button>

@@ -2,6 +2,8 @@ import React from "react";
 import { Menu } from "lucide-react";
 import { Link, useLocation } from "react-router-dom";
 import { useTranslation } from "@/hooks/useTranslation";
+import { useMediaQuery } from "@/hooks/useMediaQuery";
+import { MEDIA_LG_UP } from "@/lib/breakpoints";
 import { usePlatformPermissions } from "@/platform/hooks/usePlatformPermissions";
 import { usePlatformSidebar } from "@/platform/lib/PlatformSidebarContext";
 import { usePlatformHealth } from "@/platform/hooks/usePlatformHealth";
@@ -33,6 +35,7 @@ export function PlatformPageShellHeader({
   const perms = usePlatformPermissions();
   const { isPlatformAuthenticated } = perms;
   const { openMobileSidebar } = usePlatformSidebar();
+  const isDesktop = useMediaQuery(MEDIA_LG_UP);
   const { status: rawStatus } = usePlatformHealth();
   const { extraSegments } = usePlatformBreadcrumb();
   const status = (rawStatus as HealthStatus | undefined) ?? "unknown";
@@ -61,7 +64,9 @@ export function PlatformPageShellHeader({
       : [];
 
   const breadcrumbItems = [
-    { label: t("platform.consoleTitle"), href: ROUTES.platformDashboard },
+    // The console root is a label, not a duplicate dashboard link; keeping it
+    // non-interactive also avoids a tiny breadcrumb target in the sticky header.
+    { label: t("platform.consoleTitle") },
     ...navSegment,
     ...extraSegments,
   ];
@@ -90,12 +95,12 @@ export function PlatformPageShellHeader({
 
           <Breadcrumb
             ariaLabel={t("common.breadcrumb")}
-            className="hidden lg:flex min-w-0"
+            className="hidden 2xl:flex min-w-0"
             items={breadcrumbItems}
             renderLink={(item, children) => (
               <Link
                 to={item.href!}
-                className="font-medium text-muted-foreground hover:text-foreground transition-colors cursor-pointer"
+                className="inline-flex min-h-11 min-w-11 items-center px-1 font-medium text-muted-foreground hover:text-foreground transition-colors cursor-pointer"
               >
                 {children}
               </Link>
@@ -106,7 +111,7 @@ export function PlatformPageShellHeader({
 
           <Link
             to={ROUTES.platformSystem}
-            className="hidden sm:inline-flex cursor-pointer shrink-0"
+            className="hidden 2xl:inline-flex cursor-pointer shrink-0"
             title={t("platform.systemMaintenance")}
             aria-label={`${t("platform.systemMaintenance")}: ${healthLabel}`}
           >
@@ -127,6 +132,7 @@ export function PlatformPageShellHeader({
         </div>
 
         <PlatformHeaderUserNav
+          compact={!isDesktop}
           onOpenSearch={onOpenSearch}
           searchOpen={searchOpen}
           onOpenAi={onOpenAi}

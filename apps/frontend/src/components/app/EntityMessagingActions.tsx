@@ -138,7 +138,8 @@ export function EntityMessagingActions({
 
   return (
     <TooltipProvider delayDuration={200}>
-      <div className={cn("flex flex-wrap items-center gap-1.5", className)}>
+      {/* 44px pseudo hit areas must not overlap: keep at least 16px between 28px buttons. */}
+      <div className={cn("flex flex-wrap items-center gap-4", className)}>
         {showCall && (
           <MessagingActionButton
             icon={Phone}

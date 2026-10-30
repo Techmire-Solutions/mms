@@ -55,7 +55,7 @@ export const ReportChartCard = function ReportChartCard({
       {empty && emptyNode ? (
         <div className={cn("flex items-center justify-center", heightClass)}>{emptyNode}</div>
       ) : (
-        <div className={cn("w-full", heightClass)} aria-hidden="true">
+        <div className={cn("w-full", heightClass)} inert>
           <SafeResponsiveContainer
             width="100%"
             height="100%"

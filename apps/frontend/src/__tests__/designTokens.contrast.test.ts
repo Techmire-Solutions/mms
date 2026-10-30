@@ -251,15 +251,15 @@ describe("design tokens — tint strength contract", () => {
 });
 
 describe("design tokens — typography legibility floor", () => {
-  it("keeps the sub-xs scale at or above 10px", () => {
-    // 9px and 10px steps were unreadable, and much worse for Nastaliq.
+  it("keeps the sub-xs scale at or above 12px", () => {
+    // 9–11px steps were unreadable, and much worse for Nastaliq.
     const sizeOf = (token: string) => {
       const match = new RegExp(`--text-${token}:\\s*([\\d.]+)rem`).exec(css);
       if (!match) throw new Error(`--text-${token} is missing`);
       return Number(match[1]) * 16;
     };
-    expect(sizeOf("4xs")).toBeGreaterThanOrEqual(10);
-    expect(sizeOf("3xs")).toBeGreaterThanOrEqual(11);
+    expect(sizeOf("4xs")).toBeGreaterThanOrEqual(12);
+    expect(sizeOf("3xs")).toBeGreaterThanOrEqual(12);
     expect(sizeOf("2xs")).toBeGreaterThanOrEqual(12);
   });
 

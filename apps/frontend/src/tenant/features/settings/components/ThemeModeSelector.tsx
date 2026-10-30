@@ -138,7 +138,7 @@ export default function ThemeModeSelector({
 
               {mode === "system" && (
                 <div className="w-full h-full flex items-center justify-center gap-1.5 backdrop-blur-xs">
-                  <Monitor className="h-4 w-4 text-foreground/80 drop-shadow-xs" />
+                  <Monitor className="h-4 w-4 text-foreground drop-shadow-xs" />
                 </div>
               )}
             </div>

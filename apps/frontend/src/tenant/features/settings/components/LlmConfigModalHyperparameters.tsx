@@ -33,7 +33,7 @@ export function LlmConfigModalHyperparameters({
         <div className="space-y-2">
           <div className="flex items-center justify-between text-xs font-semibold">
             <Label htmlFor="temperature">{t("settings.llmModalTemperature")}</Label>
-            <span className="font-mono text-xs text-muted-foreground/80">
+            <span className="font-mono text-xs text-muted-foreground">
               {formTemperature.toFixed(1)}
             </span>
           </div>
@@ -68,9 +68,7 @@ export function LlmConfigModalHyperparameters({
           <div className="space-y-2">
             <div className="flex items-center justify-between text-xs font-semibold">
               <Label htmlFor="topP">{t("settings.llmModalTopP")}</Label>
-              <span className="font-mono text-xs text-muted-foreground/80">
-                {formTopP.toFixed(2)}
-              </span>
+              <span className="font-mono text-xs text-muted-foreground">{formTopP.toFixed(2)}</span>
             </div>
             <Slider
               id="topP"

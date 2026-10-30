@@ -27,7 +27,7 @@ export function TemplateEditorCanvasEmptyState({
             )}
           </p>
           {!isPreviewMode && (
-            <p className="text-2xs text-muted-foreground/80 mt-0.5 m-0">
+            <p className="text-2xs text-muted-foreground mt-0.5 m-0">
               {t("templateEditor.emptyCanvasHintDetail")}
             </p>
           )}

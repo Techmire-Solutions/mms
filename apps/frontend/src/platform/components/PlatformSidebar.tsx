@@ -5,7 +5,6 @@ import { usePlatformPermissions } from "@/platform/hooks/usePlatformPermissions"
 import { usePlatformSidebar } from "@/platform/lib/PlatformSidebarContext";
 import { getVisiblePlatformNavSections } from "@/platform/lib/platformNav";
 import { PlatformSignOutDialog } from "@/platform/components/common/PlatformSignOutDialog";
-import { PlatformSidebarSearch } from "@/platform/components/sidebar/PlatformSidebarSearch";
 import { AppSidebar } from "@/components/common/AppSidebar";
 import { TooltipProvider } from "@shared/ui";
 import { PlatformSidebarNav } from "@/platform/components/PlatformSidebarNav";
@@ -22,7 +21,7 @@ export function PlatformSidebar(): React.JSX.Element | null {
   const { platformUser, platformLogout } = usePlatformAuth();
   const perms = usePlatformPermissions();
   const { isPlatformAuthenticated, isSuperUser } = perms;
-  const { collapsed, toggleCollapsed, openCommandPalette } = usePlatformSidebar();
+  const { collapsed, toggleCollapsed } = usePlatformSidebar();
   const [confirmSignOutOpen, setConfirmSignOutOpen] = useState<boolean>(false);
 
   if (!isPlatformAuthenticated) return null;
@@ -40,7 +39,7 @@ export function PlatformSidebar(): React.JSX.Element | null {
             reducedMotion={reducedMotion}
           />
         }
-        beforeNav={!collapsed ? <PlatformSidebarSearch onOpen={openCommandPalette} /> : null}
+        beforeNav={null}
         footer={
           <PlatformSidebarFooter
             isMobile={false}

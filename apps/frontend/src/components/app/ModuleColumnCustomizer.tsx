@@ -79,14 +79,14 @@ export const ModuleColumnCustomizer = function ModuleColumnCustomizer({
       </PopoverTrigger>
       <PopoverContent
         align="end"
-        className="w-76 p-3 space-y-3 rounded-xl shadow-lg border border-border/80"
+        className="max-h-[min(70vh,32rem)] w-76 overflow-y-auto p-3 space-y-3 rounded-xl border border-border/80 shadow-lg"
       >
         <div className="flex flex-wrap items-center justify-between gap-2 border-b border-border/50 pb-2">
           <div className="flex items-center gap-1.5 min-w-0">
             <h4 className="min-w-0 text-xs font-bold text-foreground uppercase tracking-wide">
               {resolvedLabels.title}
             </h4>
-            <span className="text-3xs text-foreground/75 font-medium">
+            <span className="text-3xs text-foreground font-medium">
               (
               {resolvedLabels.visibleCount
                 ? resolvedLabels.visibleCount(registry.length - hiddenCount, registry.length)
@@ -100,7 +100,7 @@ export const ModuleColumnCustomizer = function ModuleColumnCustomizer({
               variant="ghost"
               size="sm"
               onClick={onResetLayout}
-              className="px-2 text-3xs text-foreground/80 hover:text-foreground hover:bg-muted flex items-center gap-1 cursor-pointer"
+              className="px-2 text-3xs text-foreground hover:text-foreground hover:bg-muted flex items-center gap-1 cursor-pointer"
               title={resolvedLabels.reset}
             >
               <RotateCcw className="w-3 h-3" aria-hidden="true" />

@@ -59,7 +59,7 @@ export function ResizableTableHead({
     };
   }, []);
 
-  const resolvedWidth = draftWidth ?? width;
+  const resolvedWidth = draftWidth ?? (typeof width === "number" && width > 0 ? width : undefined);
 
   const handlePointerDown = (event: React.PointerEvent<HTMLSpanElement>) => {
     if (!onResize) return;

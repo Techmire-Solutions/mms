@@ -15,7 +15,7 @@ export function RevenueChartTooltip({
       active={active}
       payload={payload}
       label={label}
-      labelClassName="text-muted-foreground/80 font-bold"
+      labelClassName="text-muted-foreground font-bold"
       className="px-4 py-3 space-y-1.5"
     >
       {payload.map((payloadEntry: TooltipPayloadEntry) => (

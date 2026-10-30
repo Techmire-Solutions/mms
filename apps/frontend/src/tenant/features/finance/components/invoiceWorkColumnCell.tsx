@@ -1,6 +1,7 @@
 import type { ReactNode } from "react";
 import { formatDate } from "@mms/shared";
 import { StatusBadge, type StatusBadgeConfigItem } from "@/components/app/StatusBadge";
+import { DateText } from "@/components/app/DateText";
 import type { TranslationFunction } from "@/lib/contexts/TranslationContext";
 import type { Invoice } from "@/lib/data/financeData";
 import { formatDocumentAmount } from "@/tenant/features/finance/lib/documentAmount";
@@ -74,7 +75,7 @@ export function renderInvoiceWorkColumnValue(
         <span
           className={`text-sm ${invoice.status === "overdue" ? "font-semibold text-destructive" : "text-muted-foreground"}`}
         >
-          {formatDate(invoice.dueDate)}
+          <DateText>{formatDate(invoice.dueDate)}</DateText>
         </span>
       );
     default:

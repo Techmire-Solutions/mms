@@ -51,11 +51,11 @@ export function PlatformWorkspaceSwitcher(): React.JSX.Element | null {
         <Button
           type="button"
           variant="outline"
-          className="hidden md:inline-flex min-h-11 max-w-56 gap-2 rounded-xl border-border/80 px-3 text-xs font-bold cursor-pointer"
+          className="hidden md:inline-flex min-h-11 max-w-56 shrink-0 gap-2 rounded-xl border-border/80 px-3 text-xs font-bold cursor-pointer"
           aria-label={t("platform.workspaceSwitcher")}
         >
           <Building2 className="h-4 w-4 shrink-0 text-muted-foreground" aria-hidden />
-          <span className="truncate">{t("platform.workspaceSwitcher")}</span>
+          <span className="min-w-0 truncate">{t("platform.workspaceSwitcher")}</span>
           <ChevronsUpDown className="h-3.5 w-3.5 shrink-0 text-muted-foreground" aria-hidden />
         </Button>
       </DropdownMenuTrigger>

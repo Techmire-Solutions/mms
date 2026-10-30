@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Settings, Printer } from "lucide-react";
 import { StatisticsGrid } from "@/tenant/features/dashboard/components/StatisticsGrid";
@@ -12,6 +12,9 @@ import { ModulePageShell } from "@/components/app/ModulePageShell";
 import { Button } from "@/components/ui/button";
 import { useDashboardPageController } from "@/tenant/features/dashboard/hooks/useDashboardPageController";
 import { useBranding } from "@/tenant/hooks/useBranding";
+import { useMediaQuery } from "@/hooks/useMediaQuery";
+import { MEDIA_LG_UP } from "@/lib/breakpoints";
+import { splitDashboardWidgets } from "@/lib/reports/dashboardWidgetLayout";
 
 export function DashboardPage() {
   const {
@@ -56,6 +59,16 @@ export function DashboardPage() {
 
   const branding = useBranding();
   const isAdmin = can("settings.branding.write");
+  const isDesktop = useMediaQuery(MEDIA_LG_UP);
+  const [showAllMetrics, setShowAllMetrics] = useState(false);
+  const [showInsights, setShowInsights] = useState(false);
+  const mobileMetricLimit = 4;
+  const { primary: primaryWidgets, secondary: secondaryWidgets } =
+    splitDashboardWidgets(visiblePinnedWidgets);
+  const metricCards =
+    isDesktop || showAllMetrics
+      ? visibleDashboardMetricCards
+      : visibleDashboardMetricCards.slice(0, mobileMetricLimit);
 
   return (
     <ModulePageShell
@@ -66,36 +79,36 @@ export function DashboardPage() {
         dashboardRole={dashboardRole}
         activeSessionsCount={activeSessionsCount}
         activeStudentCount={studentMetricsActive}
+        actions={
+          <>
+            <Button
+              onClick={() => window.print()}
+              variant="capsOutline"
+              size="caps"
+              className="flex items-center justify-center px-4 py-2 transition-all duration-300 cursor-pointer"
+              title={t("dashboard.printSnapshot")}
+            >
+              <Printer className="w-4 h-4" />
+              {t("dashboard.printSnapshot")}
+            </Button>
+            {canCustomize && (
+              <Button
+                onClick={() => setIsEditMode(!isEditMode)}
+                variant={isEditMode ? "capsPrimary" : "capsOutline"}
+                size="caps"
+                className={`flex items-center justify-center px-4 py-2 transition-all duration-300 cursor-pointer ${
+                  isEditMode ? "shadow-md shadow-primary/20" : ""
+                }`}
+              >
+                <Settings className="w-4 h-4" />
+                {isEditMode ? t("dashboard.exitCustomization") : t("dashboard.customizeCards")}
+              </Button>
+            )}
+          </>
+        }
       />
 
       <SetupIncompleteCallout branding={branding} isAdmin={isAdmin} />
-
-      <div className="flex flex-col sm:flex-row justify-end items-stretch sm:items-center gap-2 select-none print:hidden">
-        <Button
-          onClick={() => window.print()}
-          variant="capsOutline"
-          size="caps"
-          className="flex items-center justify-center px-4 py-2 transition-all duration-300 cursor-pointer"
-          title={t("dashboard.printSnapshot")}
-        >
-          <Printer className="w-4 h-4" />
-          {t("dashboard.printSnapshot")}
-        </Button>
-
-        {canCustomize && (
-          <Button
-            onClick={() => setIsEditMode(!isEditMode)}
-            variant={isEditMode ? "capsPrimary" : "capsOutline"}
-            size="caps"
-            className={`flex items-center justify-center px-4 py-2 transition-all duration-300 cursor-pointer ${
-              isEditMode ? "shadow-md shadow-primary/20" : ""
-            }`}
-          >
-            <Settings className="w-4 h-4" />
-            {isEditMode ? t("dashboard.exitCustomization") : t("dashboard.customizeCards")}
-          </Button>
-        )}
-      </div>
 
       <AnimatePresence>
         {canCustomize && isEditMode && (
@@ -143,7 +156,7 @@ export function DashboardPage() {
         >
           <ErrorBoundary>
             <StatisticsGrid
-              statItems={visibleDashboardMetricCards}
+              statItems={metricCards}
               customCardIds={activeCustomCardIds}
               onDeleteCustomCard={handleDeleteWidget}
               onEditCustomCard={handleEditCustomCard}
@@ -153,17 +166,73 @@ export function DashboardPage() {
               onResetCards={handleResetCards}
             />
           </ErrorBoundary>
+          {!isDesktop && visibleDashboardMetricCards.length > mobileMetricLimit ? (
+            <div className="mt-3 flex justify-center">
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                className="min-h-11 rounded-xl text-xs"
+                aria-expanded={showAllMetrics}
+                onClick={() => setShowAllMetrics((current) => !current)}
+              >
+                {showAllMetrics
+                  ? t("dashboard.showFewerMetrics")
+                  : t("dashboard.showAllMetrics", {
+                      count: visibleDashboardMetricCards.length,
+                    })}
+              </Button>
+            </div>
+          ) : null}
         </motion.div>
       </AnimatePresence>
 
       <ErrorBoundary>
         <DashboardWidgets
-          widgets={visiblePinnedWidgets}
+          widgets={primaryWidgets}
           onUnpin={handleUnpinWidget}
           isEditMode={isEditMode}
           onEditWidget={handleEditWidget}
           onDeleteWidget={handleDeleteWidget}
+          showHeader={primaryWidgets.length > 0}
         />
+        {secondaryWidgets.length > 0 ? (
+          isDesktop ? (
+            <DashboardWidgets
+              widgets={secondaryWidgets}
+              onUnpin={handleUnpinWidget}
+              isEditMode={isEditMode}
+              onEditWidget={handleEditWidget}
+              onDeleteWidget={handleDeleteWidget}
+              showHeader={false}
+            />
+          ) : (
+            <div className="mt-4 space-y-3">
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                className="min-h-11 w-full rounded-xl text-xs"
+                aria-expanded={showInsights}
+                onClick={() => setShowInsights((current) => !current)}
+              >
+                {showInsights
+                  ? t("dashboard.hideInsights")
+                  : t("dashboard.showInsights", { count: secondaryWidgets.length })}
+              </Button>
+              {showInsights ? (
+                <DashboardWidgets
+                  widgets={secondaryWidgets}
+                  onUnpin={handleUnpinWidget}
+                  isEditMode={isEditMode}
+                  onEditWidget={handleEditWidget}
+                  onDeleteWidget={handleDeleteWidget}
+                  showHeader={false}
+                />
+              ) : null}
+            </div>
+          )
+        ) : null}
       </ErrorBoundary>
 
       <AnimatePresence mode="wait">

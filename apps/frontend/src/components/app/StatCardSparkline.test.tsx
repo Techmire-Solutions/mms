@@ -12,9 +12,10 @@ describe("StatCardSparkline Component", () => {
     expect(singlePointHtml).toBe("");
   });
 
-  it("renders container with aria-hidden when valid data points are provided", () => {
+  it("renders an inert container so the decorative chart is not focusable", () => {
     const html = renderToStaticMarkup(<StatCardSparkline data={[10, 25, 18, 30]} />);
-    expect(html).toContain('aria-hidden="true"');
+    expect(html).toContain("inert");
+    expect(html).not.toContain('aria-hidden="true"');
     expect(html).toContain("w-16 h-8");
   });
 });

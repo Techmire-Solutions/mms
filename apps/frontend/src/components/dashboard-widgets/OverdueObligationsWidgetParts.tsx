@@ -66,21 +66,22 @@ export function OverdueRemindButton({
   t: TranslationFunction;
   className?: string;
 }) {
+  const actionLabel = reminded ? t("dashboard.widgets.sent") : t("dashboard.widgets.remind");
   return (
     <Button
       variant={reminded ? "capsSuccess" : "capsAccent"}
       size="caps"
       onClick={() => onRemind(overdueStudent)}
       disabled={reminded || !hasPhone}
-      aria-label={
+      aria-label={`${actionLabel}: ${
         reminded
           ? t("dashboard.widgets.reminderSentTo", { name: overdueStudent.name })
           : t("dashboard.widgets.sendReminderTo", { name: overdueStudent.name })
-      }
+      }`}
       className={className}
     >
       <Bell className="w-2.5 h-2.5" aria-hidden="true" />
-      {reminded ? t("dashboard.widgets.sent") : t("dashboard.widgets.remind")}
+      {actionLabel}
     </Button>
   );
 }

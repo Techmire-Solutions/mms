@@ -21,6 +21,8 @@ export interface ListPaginationProps {
   variant?: "range" | "summary" | "compact";
   className?: string;
   labels?: ListPaginationLabels;
+  /** Locale-aware formatter for compact page counters (defaults to String). */
+  formatPageNumber?: (value: number) => string;
 }
 
 const DEFAULT_LABELS: Required<ListPaginationLabels> = {
@@ -45,6 +47,7 @@ export function ListPagination({
   variant = "range",
   className,
   labels,
+  formatPageNumber = String,
 }: ListPaginationProps): React.JSX.Element | null {
   const l = { ...DEFAULT_LABELS, ...labels };
 
@@ -77,9 +80,9 @@ export function ListPagination({
         >
           <ChevronLeft className="h-4 w-4 rtl:rotate-180" aria-hidden="true" />
         </Button>
-        <span className="text-xs font-bold text-muted-foreground select-none">
-          {safePage} / {totalPages}
-        </span>
+        <bdi dir="ltr" className="text-xs font-bold text-muted-foreground select-none tabular-nums">
+          {formatPageNumber(safePage)} / {formatPageNumber(totalPages)}
+        </bdi>
         <Button
           type="button"
           variant="outline"

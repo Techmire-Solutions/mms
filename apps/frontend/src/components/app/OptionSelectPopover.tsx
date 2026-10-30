@@ -100,7 +100,7 @@ export function OptionSelectPopover({
           type="button"
           {...triggerProps}
           name={name}
-          aria-label={resolvedPlaceholder}
+          aria-label={value ? `${resolvedPlaceholder}: ${value}` : resolvedPlaceholder}
           className={cn(
             "min-h-11 flex items-center justify-between gap-2 px-3.5 py-2.5 text-sm rounded-lg border border-border bg-background text-foreground hover:bg-muted/30 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/20 focus-visible:border-primary/40 transition-all text-start cursor-pointer",
             className,

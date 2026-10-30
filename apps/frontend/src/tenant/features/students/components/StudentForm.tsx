@@ -49,11 +49,17 @@ export const StudentForm = function StudentForm({
       </div>
     </div>
   ) : form.isFieldEnabled("contactId") ? (
-    <Alert
-      tone="destructive"
-      density="compact"
-      description={form.t("students.form.contactRequired")}
-    />
+    form.validationErrorSummary ? (
+      <Alert
+        tone="destructive"
+        density="compact"
+        description={form.t("students.form.contactRequired")}
+      />
+    ) : (
+      <p className="m-0 text-xs text-muted-foreground">
+        {form.t("students.form.contactRequiredHint")}
+      </p>
+    )
   ) : null;
 
   return (

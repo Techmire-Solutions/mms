@@ -174,6 +174,27 @@ export function formatNumber(
   return new Intl.NumberFormat(resolveLocale(), options).format(numeric);
 }
 
+/** Formats a whole percentage using the active locale's numbering system. */
+export function formatPercent(
+  value: number | string | null | undefined,
+  options?: {
+    maximumFractionDigits?: number;
+    minimumFractionDigits?: number;
+    signDisplay?: "auto" | "always" | "never" | "exceptZero";
+    locale?: string;
+  },
+): string {
+  if (value === null || value === undefined) return "0%";
+  const numeric = typeof value === "number" ? value : Number(String(value));
+  if (!Number.isFinite(numeric)) return "0%";
+  return new Intl.NumberFormat(resolveLocale(options?.locale), {
+    style: "percent",
+    maximumFractionDigits: options?.maximumFractionDigits ?? 0,
+    minimumFractionDigits: options?.minimumFractionDigits,
+    signDisplay: options?.signDisplay,
+  }).format(numeric / 100);
+}
+
 const ONES = [
   "",
   "One",

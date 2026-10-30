@@ -1,15 +1,13 @@
 import { formatDateParts, formatDatePartsWithMonthName } from "../core/dateFormatUtils.js";
 import { getIntlLocaleForLanguage } from "../core/languageUtils.js";
 import { getStoredGlobalSettings } from "./settingsDateProvider.js";
+import {
+  createDateNumberFormatter,
+  GREGORIAN_CALENDAR,
+  parseDatePart,
+} from "./settingsDateDigits.js";
 
-/**
- * Formats a Date object or date string according to the active global date format.
- *
- * @param date - The date to format.
- * @param dateFormatOrShowMonthName - Optional explicit format string or showMonthName boolean.
- * @param showMonthName - Whether to show the short month name instead of numeric.
- * @returns The formatted date string.
- */
+/** Formats a date according to the active global format. */
 export function formatDate(
   date: string | Date | number | null | undefined,
   dateFormatOrShowMonthName?: string | boolean,
@@ -33,36 +31,49 @@ export function formatDate(
 
   const intlLocale = getIntlLocaleForLanguage(language);
   const parts = new Intl.DateTimeFormat(intlLocale, {
+    calendar: GREGORIAN_CALENDAR,
     timeZone: timezone,
     day: "numeric",
     month: "numeric",
     year: "numeric",
   }).formatToParts(parsedDate);
-  const dayNum = Number(parts.find((part) => part.type === "day")?.value ?? parsedDate.getDate());
-  const monthNum = Number(
-    parts.find((part) => part.type === "month")?.value ?? parsedDate.getMonth() + 1,
+  const dayNum = parseDatePart(
+    parts.find((part) => part.type === "day")?.value,
+    parsedDate.getDate(),
   );
-  const yearNum = Number(
-    parts.find((part) => part.type === "year")?.value ?? parsedDate.getFullYear(),
+  const monthNum = parseDatePart(
+    parts.find((part) => part.type === "month")?.value,
+    parsedDate.getMonth() + 1,
   );
+  const yearNum = parseDatePart(
+    parts.find((part) => part.type === "year")?.value,
+    parsedDate.getFullYear(),
+  );
+  const formatNumberPart = createDateNumberFormatter(intlLocale);
 
   if (actualShowMonthName) {
     const month =
       new Intl.DateTimeFormat(intlLocale, {
+        calendar: GREGORIAN_CALENDAR,
         timeZone: timezone,
         month: "short",
       })
         .formatToParts(parsedDate)
         .find((part) => part.type === "month")?.value ?? String(monthNum);
-    return formatDatePartsWithMonthName(dayNum, month, monthNum, yearNum, actualDateFormat);
+    return formatDatePartsWithMonthName(
+      dayNum,
+      month,
+      monthNum,
+      yearNum,
+      actualDateFormat,
+      formatNumberPart,
+    );
   }
 
-  return formatDateParts(dayNum, monthNum, yearNum, actualDateFormat);
+  return formatDateParts(dayNum, monthNum, yearNum, actualDateFormat, formatNumberPart);
 }
 
-/**
- * Formats a Date object or date string with both date and time parts.
- */
+/** Formats a date and time. */
 export function formatDateTime(
   date: string | Date | number | null | undefined,
   showMonthName = true,
@@ -103,6 +114,7 @@ export function formatMonthYear(
 
   const intlLocale = getIntlLocaleForLanguage(language);
   return new Intl.DateTimeFormat(intlLocale, {
+    calendar: GREGORIAN_CALENDAR,
     timeZone: timezone,
     month: monthStyle,
     year: "numeric",
@@ -123,6 +135,7 @@ export function formatMonthName(date: string | Date | number | null | undefined)
 
   const intlLocale = getIntlLocaleForLanguage(language);
   return new Intl.DateTimeFormat(intlLocale, {
+    calendar: GREGORIAN_CALENDAR,
     timeZone: timezone,
     month: "short",
   }).format(parsedDate);
@@ -142,6 +155,7 @@ export function formatDayName(date: string | Date | null | undefined): string {
 
   const intlLocale = getIntlLocaleForLanguage(language);
   return new Intl.DateTimeFormat(intlLocale, {
+    calendar: GREGORIAN_CALENDAR,
     timeZone: timezone,
     weekday: "long",
   }).format(parsedDate);
@@ -155,6 +169,7 @@ export function formatShortWeekdayLabels(): string[] {
   const intlLocale = getIntlLocaleForLanguage(stored.language);
   // 2024-01-01 was a Monday (UTC).
   const formatter = new Intl.DateTimeFormat(intlLocale, {
+    calendar: GREGORIAN_CALENDAR,
     weekday: "short",
     timeZone: "UTC",
   });
@@ -178,6 +193,7 @@ export function formatLongDate(date: string | Date | null | undefined): string {
 
   const intlLocale = getIntlLocaleForLanguage(language);
   return new Intl.DateTimeFormat(intlLocale, {
+    calendar: GREGORIAN_CALENDAR,
     timeZone: timezone,
     day: "numeric",
     month: "long",
@@ -185,10 +201,7 @@ export function formatLongDate(date: string | Date | null | undefined): string {
   }).format(parsedDate);
 }
 
-/**
- * Helper to check if a specific calendar system is supported by the runtime environment.
- * Leverages Intl.supportedValuesOf('calendar') per modern web platform standards.
- */
+/** Checks whether the runtime supports a calendar system. */
 export function isCalendarSupported(calendarId: string): boolean {
   try {
     if (typeof Intl !== "undefined" && typeof Intl.supportedValuesOf === "function") {
@@ -201,10 +214,7 @@ export function isCalendarSupported(calendarId: string): boolean {
   }
 }
 
-/**
- * Formats a Date object or date string as a Hijri date using active global settings.
- * Supports lunar Hijri with Umm al-Qura calendar extension when available.
- */
+/** Formats a Hijri date; prefers Umm al-Qura when available. */
 export function formatHijriDate(
   date: string | Date | null | undefined,
   options?: { calendar?: "islamic" | "islamic-umalqura" },

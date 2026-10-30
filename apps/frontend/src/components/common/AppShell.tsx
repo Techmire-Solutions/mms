@@ -66,7 +66,7 @@ export function AppShell({
     <div
       dir={dir}
       lang={lang}
-      className="box-border min-h-screen w-full max-w-full overflow-x-hidden bg-background selection:bg-primary/10 selection:text-primary"
+      className="box-border min-h-screen w-full max-w-full overflow-x-clip bg-background selection:bg-primary/10 selection:text-primary"
     >
       <SkipToContentLink />
 

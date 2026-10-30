@@ -1,4 +1,4 @@
-import React, { useRef } from "react";
+import React, { useRef, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { cn } from "@/lib/utils";
 import { useTranslation } from "@/hooks/useTranslation";
@@ -37,9 +37,13 @@ export const ResponsiveAccordionTabs = function ResponsiveAccordionTabs({
   const reducedMotion = useReducedMotion();
   const safeViewTransition = useSafeViewTransition();
   const sectionRefs = useRef<Partial<Record<string, HTMLElement | null>>>({});
+  const [scrollOnChangeEnabled, setScrollOnChangeEnabled] = useState(false);
   const prefix = panelIdPrefix;
 
   const handleTabChange = async (tabId: string) => {
+    // Only a user-initiated tab change may scroll the page. Persisted/deep-linked
+    // tabs resolve after mount and used to move the viewport past the page header.
+    setScrollOnChangeEnabled(true);
     if (collapsible && activeTab === tabId) {
       safeViewTransition(() => onTabChange(""));
       return;
@@ -57,6 +61,7 @@ export const ResponsiveAccordionTabs = function ResponsiveAccordionTabs({
   };
 
   useScrollSurfaceOnChange(activeTab, {
+    enabled: scrollOnChangeEnabled,
     resolveMobileTarget: (key) => sectionRefs.current[key],
   });
 

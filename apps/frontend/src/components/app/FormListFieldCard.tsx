@@ -71,7 +71,7 @@ export function FormListFieldCard({
               </div>
             ) : null}
             {label ? (
-              <span className="min-w-0 truncate text-xs font-semibold text-foreground/80">
+              <span className="min-w-0 truncate text-xs font-semibold text-foreground">
                 {label}
               </span>
             ) : null}

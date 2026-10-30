@@ -1,5 +1,6 @@
 import React, { createContext, useState, useEffect, useCallback, useMemo } from "react";
 import { useGlobalSettings } from "@/tenant/hooks/useGlobalSettings";
+import { useHydrateGlobalSettings } from "@/tenant/hooks/useHydrateGlobalSettings";
 import { useLocation } from "react-router-dom";
 import { useTenant } from "@/lib/contexts/TenantContext";
 import {
@@ -44,6 +45,7 @@ export function TranslationProvider({
 }: {
   children: React.ReactNode;
 }): React.JSX.Element {
+  const { isHydrating } = useHydrateGlobalSettings();
   const settings = useGlobalSettings();
   const { pathname } = useLocation();
   const { isApex, workspace, workspaceLoading, workspaceLookupFailed } = useTenant();
@@ -129,7 +131,7 @@ export function TranslationProvider({
     [activeLanguage, t, isLoading, dir, isRtl],
   );
 
-  if (!isLanguageLoaded && !hasLoadedAnyLanguage) {
+  if (isHydrating || (!isLanguageLoaded && !hasLoadedAnyLanguage)) {
     return (
       <div className="flex min-h-screen items-center justify-center bg-background">
         <div className="flex flex-col items-center space-y-4">

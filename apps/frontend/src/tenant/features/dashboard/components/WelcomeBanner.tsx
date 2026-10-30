@@ -18,6 +18,8 @@ interface WelcomeBannerProps {
   activeSessionsCount: number;
   /** Active student count from student metrics (admin subtitle). */
   activeStudentCount: number;
+  /** Optional page actions (print/customize) rendered with the date chips. */
+  actions?: React.ReactNode;
 }
 
 const DATE_CHIP_CLASS =
@@ -28,6 +30,7 @@ export function WelcomeBanner({
   dashboardRole,
   activeSessionsCount,
   activeStudentCount,
+  actions,
 }: WelcomeBannerProps): React.JSX.Element {
   const { t } = useTranslation();
   const { user } = useAuth();
@@ -93,6 +96,11 @@ export function WelcomeBanner({
               <span className="text-sm font-semibold text-foreground whitespace-nowrap tracking-wide">
                 {hijriDate}
               </span>
+            </div>
+          ) : null}
+          {actions ? (
+            <div className="flex w-full flex-wrap items-center gap-2 sm:w-auto print:hidden">
+              {actions}
             </div>
           ) : null}
         </div>

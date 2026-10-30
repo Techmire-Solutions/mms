@@ -62,7 +62,7 @@ export function FacultyDetailIjazahSection({
               </div>
 
               <div className="text-xs text-muted-foreground flex items-center gap-1.5 flex-wrap">
-                <span className="text-foreground/70">{t("faculty.ijazah.grantingAuthority")}:</span>
+                <span className="text-foreground">{t("faculty.ijazah.grantingAuthority")}:</span>
                 <span className="font-medium text-foreground">{ijazah.grantingAuthority}</span>
               </div>
 

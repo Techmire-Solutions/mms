@@ -6,6 +6,7 @@ import {
   PRESETS,
 } from "./dateFormatPresets.js";
 import { formatDateParts } from "./dateFormatParse.js";
+import { formatIntlInteger, normalizeIntlDigits } from "./intlDigits.js";
 
 const INTL_FORMATTER_CACHE = new Map<string, Intl.DateTimeFormat>();
 
@@ -28,6 +29,7 @@ function getCachedIntlFormatter(
 export function detectLocaleDateFormat(language: string): DateFormatId {
   const locale = getIntlLocaleForLanguage(language);
   const parts = getCachedIntlFormatter(locale, {
+    calendar: "gregory",
     day: "2-digit",
     month: "2-digit",
     year: "numeric",
@@ -59,21 +61,28 @@ export function getDateFormatOptions(
 ): readonly DateFormatOption[] {
   const locale = getIntlLocaleForLanguage(language);
   const intlParts = getCachedIntlFormatter(locale, {
+    calendar: "gregory",
     day: "numeric",
     month: "numeric",
     year: "numeric",
     timeZone: "UTC",
   }).formatToParts(sample);
-  const day = Number(intlParts.find((p) => p.type === "day")?.value ?? sample.getUTCDate());
-  const month = Number(
-    intlParts.find((p) => p.type === "month")?.value ?? sample.getUTCMonth() + 1,
-  );
-  const year = Number(intlParts.find((p) => p.type === "year")?.value ?? sample.getUTCFullYear());
+  const parsePart = (type: "day" | "month" | "year", fallback: number): number => {
+    const raw = intlParts.find((part) => part.type === type)?.value;
+    if (!raw) return fallback;
+    const parsed = Number(normalizeIntlDigits(raw));
+    return Number.isFinite(parsed) ? parsed : fallback;
+  };
+  const day = parsePart("day", sample.getUTCDate());
+  const month = parsePart("month", sample.getUTCMonth() + 1);
+  const year = parsePart("year", sample.getUTCFullYear());
+  const formatNumberPart = (value: number, minimumIntegerDigits: number): string =>
+    formatIntlInteger(value, minimumIntegerDigits, locale);
 
   return PRESETS.map((preset) => ({
     value: preset.id,
     pattern: preset.id,
-    sample: formatDateParts(day, month, year, preset.id),
+    sample: formatDateParts(day, month, year, preset.id, formatNumberPart),
     hintKey: preset.hintKey,
   }));
 }

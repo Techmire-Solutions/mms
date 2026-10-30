@@ -8,7 +8,7 @@ export const CONTACT_PRIMARY_COLUMNS: ColumnRegistryEntry[] = [
     enabled: true,
     order: 0,
     sortable: true,
-    width: 0,
+    width: 220,
     fixed: true,
   },
   {

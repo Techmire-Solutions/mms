@@ -84,26 +84,29 @@ describe("filterSidebarNavItems", () => {
     expect(visiblePaths(items)).toContain(ROUTES.students);
   });
 
-  it("orders academics sub-items in canonical sequence (students, sessions, enrollments, attendance)", () => {
+  it("promotes students above the academics group", () => {
+    const labels = NAV_ITEMS.map((item) => item.labelKey);
+    expect(labels.indexOf("nav.students")).toBe(labels.indexOf("nav.contacts") + 1);
+
     const academicsItem = NAV_ITEMS.find((item) => item.labelKey === "nav.academics");
     expect(academicsItem).toBeDefined();
     const subItemKeys = academicsItem?.subItems?.map((s) => s.labelKey);
     expect(subItemKeys?.slice(0, 4)).toEqual([
-      "nav.students",
       "nav.sessions",
       "nav.enrollments",
       "nav.attendance",
+      "nav.hasanatCards",
     ]);
   });
 
-  it("positions faculty as a standalone item between contacts and messaging", () => {
+  it("positions faculty after students and before messaging", () => {
     const labels = NAV_ITEMS.map((item) => item.labelKey);
     const contactsIdx = labels.indexOf("nav.contacts");
     const facultyIdx = labels.indexOf("nav.faculty");
     const messagingIdx = labels.indexOf("nav.messaging");
 
     expect(contactsIdx).toBeGreaterThan(-1);
-    expect(facultyIdx).toBe(contactsIdx + 1);
+    expect(facultyIdx).toBe(contactsIdx + 2);
     expect(messagingIdx).toBe(facultyIdx + 1);
 
     const facultyItem = NAV_ITEMS[facultyIdx];

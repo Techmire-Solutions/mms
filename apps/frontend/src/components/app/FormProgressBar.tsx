@@ -23,7 +23,7 @@ export function FormProgressBar({
     <div className={cn("space-y-1", className)}>
       <div className="flex items-center justify-between">
         {label ? (
-          <span id={labelId} className="text-xs font-semibold uppercase text-foreground/80">
+          <span id={labelId} className="text-xs font-semibold uppercase text-foreground">
             {label}
           </span>
         ) : (

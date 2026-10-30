@@ -33,16 +33,15 @@
    * declared values below are therefore new *behaviour*, not just new numbers:
    * micro-labels will now actually render at 10/11/12px.
    *
-   * Sizes: the floor is 10px and the two workhorse steps land on 11px/12px (2xs
-   * previously declared 10px and 4xs 9px, both below a comfortable reading size —
-   * and much worse in Arabic/Urdu/Persian, where 10px Nastaliq is unreadable).
-   * `2xs` intentionally coincides with `text-xs` at 12px: that is the smallest size
-   * we are willing to ship for real content, so the steps converge there.
+   * Sizes: 12px is the floor for shipped copy. Earlier steps (9/10/11px) were
+   * unreadable in Arabic/Urdu/Persian — 10px Nastaliq in particular — so the
+   * sub-xs steps converge on `text-xs`. Hierarchy comes from weight, tracking and
+   * colour rather than shrinking below the legibility floor.
    * Explicit line-heights keep the density these micro-labels were designed for.
    */
-  --text-4xs: 0.625rem;
-  --text-4xs--line-height: 0.875rem;
-  --text-3xs: 0.6875rem;
+  --text-4xs: 0.75rem;
+  --text-4xs--line-height: 1rem;
+  --text-3xs: 0.75rem;
   --text-3xs--line-height: 0.9375rem;
   --text-2xs: 0.75rem;
   --text-2xs--line-height: 1rem;
@@ -503,10 +502,11 @@
      * hidden behind the sticky 4rem top header. The 0.5rem extra gives breathing room.
      */
     scroll-padding-top: calc(var(--spacing-header, 4rem) + 0.5rem);
+    scroll-padding-bottom: 5.5rem;
   }
 
   body {
-    @apply bg-background text-foreground font-sans max-w-full overflow-x-hidden;
+    @apply bg-background text-foreground font-sans max-w-full overflow-x-clip;
     font-family: var(--font-sans);
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
@@ -789,7 +789,9 @@
 
   #root {
     max-width: 100%;
-    overflow-x: hidden;
+    /* `clip` avoids creating a scroll container (unlike `hidden`), which would
+       break every `position: sticky` offset inside the app. */
+    overflow-x: clip;
   }
 
   img,
@@ -855,6 +857,11 @@
     display: none;
     background: none;
   }
+}
+
+/* Shared sticky offset for surfaces pinned below the application header. */
+@utility top-header {
+  top: var(--spacing-header);
 }
 
 /*

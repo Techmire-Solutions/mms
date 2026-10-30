@@ -36,7 +36,7 @@ export function MarkAttendanceActions({
             {t("attendance.mark.markedProgress", { marked: markedCount, total: totalRows })}
           </span>
         )}
-        <span className="text-3xs text-muted-foreground/75 hidden lg:inline">
+        <span className="text-3xs text-muted-foreground hidden lg:inline">
           {t("attendance.mark.keyboardHints")}
         </span>
       </div>

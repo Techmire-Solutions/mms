@@ -28,7 +28,7 @@ export function BrandSemanticPreviewDocumentTab({
             className="flex h-16 w-16 shrink-0 items-center justify-center rounded-xl border-2 border-dashed bg-muted/30 shadow-inner"
             style={{ borderColor: activeOnSecondaryBg }}
           >
-            <User className="h-8 w-8 text-muted-foreground/80" />
+            <User className="h-8 w-8 text-muted-foreground" />
           </div>
           <div className="space-y-1 min-w-0">
             <p className="text-sm font-bold text-foreground truncate">Zayd Al-Mansoor</p>

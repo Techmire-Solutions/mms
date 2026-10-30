@@ -22,6 +22,41 @@ describe("settingsDateFormatters", () => {
     expect(formatDate(null)).toBe("—");
   });
 
+  it.each([
+    ["ar", "ar-SA", "٣١/٠٣/٢٠٢٦"],
+    ["fa", "fa-IR", "۳۱/۰۳/۲۰۲۶"],
+    ["ur", "ur-PK", "31/03/2026"],
+    ["en", "en-GB", "31/03/2026"],
+  ] as const)("formats Gregorian dates without NaN for %s", (language, _locale, expected) => {
+    registerSettingsProvider(() => ({
+      dateFormat: "DD/MM/YYYY",
+      timezone: "UTC",
+      language,
+    }));
+
+    expect(formatDate("2026-03-31T12:00:00.000Z")).toBe(expected);
+  });
+
+  it("does not let the Arabic Islamic calendar replace the Gregorian date", () => {
+    registerSettingsProvider(() => ({
+      dateFormat: "YYYY-MM-DD",
+      timezone: "UTC",
+      language: "ar",
+    }));
+
+    expect(formatDate("2026-03-31T12:00:00.000Z")).toBe("٢٠٢٦-٠٣-٣١");
+  });
+
+  it("localizes the month-name path without NaN", () => {
+    registerSettingsProvider(() => ({
+      dateFormat: "DD/MM/YYYY",
+      timezone: "UTC",
+      language: "ar",
+    }));
+
+    expect(formatDate("2026-03-31T12:00:00.000Z", true)).toContain("٢٠٢٦");
+  });
+
   it("returns seven Monday-first short weekday labels", () => {
     const labels = formatShortWeekdayLabels();
     expect(labels).toHaveLength(7);
