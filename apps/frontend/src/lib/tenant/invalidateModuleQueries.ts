@@ -77,9 +77,14 @@ export function invalidateModuleQueries(queryClient: QueryClient, key: string): 
     case "attendance":
     case "attendance_records":
       return invalidateAttendanceQueries(queryClient);
+    // Fee structures and metrics are broadcast as their own collection keys
+    // (`financeBillingUseCases` / `financeMutationOperations`); without a case
+    // here another admin's change stayed invisible until a reload.
     case "finance":
     case "finance_invoices":
     case "finance_payments":
+    case "finance_fee_structures":
+    case "finance_metrics":
       return invalidateFinanceQueries(queryClient);
     case "hasanat":
     case "hasanat_distributions":

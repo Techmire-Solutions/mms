@@ -13,8 +13,24 @@ import { PlatformCommandPalette } from "@/platform/components/PlatformCommandPal
 import { PlatformAiDrawer } from "@/platform/components/intelligence/PlatformAiDrawer";
 import { PlatformInspectorDrawer } from "@/platform/components/inspector/PlatformInspectorDrawer";
 import { AppShell } from "@/components/common/AppShell";
+import { ErrorBoundary } from "@/components/app/ErrorBoundary";
 import { PlatformLiveRegionProvider } from "@/platform/components/common/PlatformLiveRegion";
 import { AppFooter, TooltipProvider } from "@shared/ui";
+
+/**
+ * Page-level fault isolation for platform console pages.
+ *
+ * Tenant pages get this from `AppPageShell`; without it a single render error
+ * on a console page replaced the whole apex app with the root fallback (nav and
+ * all). Only the page subtree is replaced here.
+ */
+export function PlatformPageBoundary({
+  children,
+}: {
+  children: React.ReactNode;
+}): React.JSX.Element {
+  return <ErrorBoundary>{children}</ErrorBoundary>;
+}
 
 const MAX_W: Record<NonNullable<PlatformPageShellProps["width"]>, string> = {
   md: "max-w-md",
@@ -87,7 +103,7 @@ function PlatformAuthenticatedShell({
       footer={footer}
     >
       <PlatformGlobalShortcuts onToggleAi={toggleAi} />
-      {children}
+      <PlatformPageBoundary>{children}</PlatformPageBoundary>
       <PlatformInspectorDrawer />
       {canSystem ? <PlatformAiDrawer isOpen={aiOpen} onClose={() => setAiOpen(false)} /> : null}
     </AppShell>
@@ -171,7 +187,7 @@ function UnauthenticatedShell({
       footer={footer}
     >
       <PlatformGlobalShortcuts />
-      {children}
+      <PlatformPageBoundary>{children}</PlatformPageBoundary>
     </AppShell>
   );
 }

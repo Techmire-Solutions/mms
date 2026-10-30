@@ -1,5 +1,5 @@
 import React, { Suspense, useEffect, useMemo } from "react";
-import { useLocation } from "react-router-dom";
+import { useLocation, useSearchParams } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import { Settings as SettingsIcon } from "lucide-react";
 import { ModulePageShell } from "@/components/app/ModulePageShell";
@@ -9,6 +9,7 @@ import {
   type AccordionTabItem,
 } from "@/components/app/ResponsiveAccordionTabs";
 import { isSettingsSection, type SettingsSection } from "@/lib/config/routes";
+import { resolveSettingsSection } from "@/lib/config/settingsDeepLink";
 import { SETTINGS_NAV } from "@/lib/config/settingsNavConfig";
 import { SETTINGS_SECTION_COMPONENTS } from "@/lib/config/settingsSectionComponents";
 import { usePersistedTabState } from "@/hooks/usePersistedTabState";
@@ -38,17 +39,23 @@ export default function Settings(): React.JSX.Element {
   const { can } = usePermissions();
   const reducedMotion = useReducedMotion();
   const [tab, setTab] = usePersistedTabState<SettingsSection>("mms-settings-tab", "global");
-  const requestedTab = (useLocation().state as { settingsTab?: unknown } | null)?.settingsTab;
+  const location = useLocation();
+  const [searchParams, setSearchParams] = useSearchParams();
+  const requestedTab = resolveSettingsSection(location.search, location.state);
 
-  // Deep links (e.g. "Open Settings → Modules" from a disabled-module screen) pick the section.
+  // Deep links (`?tab=` or navigation state) pick the section — e.g. "Open
+  // Settings → Modules" from a disabled-module screen. Plain visits keep the
+  // persisted tab.
   useEffect(() => {
-    if (typeof requestedTab === "string" && isSettingsSection(requestedTab)) setTab(requestedTab);
+    if (requestedTab) setTab(requestedTab);
   }, [requestedTab]); // eslint-disable-line react-hooks/exhaustive-deps -- setTab identity changes per render
 
   const handleTabChange = (id: string) => {
-    if (isSettingsSection(id)) {
-      setTab(id);
-    }
+    if (!isSettingsSection(id)) return;
+    setTab(id);
+    const nextParams = new URLSearchParams(searchParams);
+    nextParams.set("tab", id);
+    setSearchParams(nextParams, { replace: true });
   };
 
   const visibleNav = SETTINGS_NAV.filter(

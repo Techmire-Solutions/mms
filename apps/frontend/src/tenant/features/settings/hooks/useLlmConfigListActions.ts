@@ -3,6 +3,7 @@ import { apiContract } from "@/lib/api";
 import { useTranslation } from "@/hooks/useTranslation";
 import type { LlmConfig, LlmTestResult } from "@mms/shared";
 import type { LlmHealthStatus } from "../lib/llmSettingsControllerTypes";
+import { assertContractOk } from "@/lib/apiContractError";
 
 interface UseLlmConfigListActionsOptions {
   configs: LlmConfig[];
@@ -46,11 +47,8 @@ export function useLlmConfigListActions({
       const res = await apiContract.ai.test({
         body: { prompt: "Write a short greeting for a school portal.", configId },
       });
-      const status = res.status;
       const body = res.body as LlmTestResult;
-      if (status !== 200) {
-        throw new Error(body.message || "Failed to test connection");
-      }
+      assertContractOk(res, "Failed to test connection");
       setTestResult({
         configId,
         success: body.success,

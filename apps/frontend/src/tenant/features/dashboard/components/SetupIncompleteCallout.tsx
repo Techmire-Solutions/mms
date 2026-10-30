@@ -5,6 +5,7 @@ import { useNavigate } from "react-router-dom";
 import { type BrandingSettings } from "@mms/shared";
 import { Button } from "@/components/ui/button";
 import { useTranslation } from "@/hooks/useTranslation";
+import { settingsTabPath } from "@/lib/config/settingsDeepLink";
 
 interface SetupIncompleteCalloutProps {
   branding: BrandingSettings;
@@ -81,7 +82,7 @@ export function SetupIncompleteCallout({
             variant="outline"
             size="sm"
             className="mt-3 gap-1.5 rounded-lg border-warning/40 bg-background px-3 text-xs font-bold text-warning hover:bg-warning/15 transition-colors"
-            onClick={() => navigate("/settings", { state: { section: "branding" } })}
+            onClick={() => navigate(settingsTabPath("branding"))}
           >
             {t("dashboard.setupCallout.cta")}
             <ArrowRight className="h-3.5 w-3.5 rtl:rotate-180 transition-transform" aria-hidden />

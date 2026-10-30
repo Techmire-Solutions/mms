@@ -7,8 +7,8 @@ import type {
 } from "@mms/shared";
 import { ACCOUNTING_MODULE_MANIFEST, LIST_PAGE_MAX_LIMIT } from "@mms/shared";
 import { apiContract } from "@/lib/api";
-import { ApiError } from "@/lib/apiClient";
 import { useAuth } from "@/lib/contexts/AuthContext";
+import { assertContractOk } from "@/lib/apiContractError";
 
 /**
  * Hard bound on the sequential paging loop used by the whole-ledger aggregates.
@@ -43,13 +43,6 @@ export function buildAccountingEntriesPageParams(
   return params;
 }
 
-/** Throws an `ApiError` on a non-200 contract envelope (preserves the old throw-on-!ok). */
-function assertOk(response: { status: number; body: unknown }, context: string): void {
-  if (response.status === 200) return;
-  const errorBody = response.body as { message?: string; type?: string } | undefined;
-  throw new ApiError(response.status, errorBody?.message ?? context, errorBody?.type);
-}
-
 /**
  * One page of journal entries, with the server's total for the active filter.
  *
@@ -65,7 +58,7 @@ export async function fetchAccountingEntriesPage(
     signal,
     fetchOptions: { signal },
   });
-  assertOk(response, "Failed to fetch accounting entries");
+  assertContractOk(response, "Failed to fetch accounting entries");
   const body = response.body as Partial<AccountingEntriesListPageResult>;
   return {
     entries: body.entries ?? [],
@@ -125,7 +118,7 @@ export async function fetchAllAccountingEntries(
       signal,
       fetchOptions: { signal },
     });
-    assertOk(response, "Failed to fetch accounting entries");
+    assertContractOk(response, "Failed to fetch accounting entries");
     const body = response.body as { entries?: JournalEntry[]; hasMore?: boolean };
     const batch = body.entries ?? [];
     collected.push(...batch);
@@ -157,7 +150,7 @@ export async function fetchAllAccountingAccounts(
       signal,
       fetchOptions: { signal },
     });
-    assertOk(response, "Failed to fetch accounting accounts");
+    assertContractOk(response, "Failed to fetch accounting accounts");
     const body = response.body as { accounts?: Account[]; hasMore?: boolean };
     const batch = body.accounts ?? [];
     collected.push(...batch);

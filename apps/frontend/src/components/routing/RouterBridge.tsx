@@ -1,3 +1,4 @@
+import type React from "react";
 import { useEffect } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { registerAppNavigate, unregisterAppNavigate } from "@/lib/routing/appNavigate";
@@ -6,6 +7,7 @@ import { revertSettingsPreviews } from "@/lib/settingsPreview";
 import { useScrollToTopOnNavigate } from "@/lib/routing/useScrollToTopOnNavigate";
 import { useTenant } from "@/lib/contexts/TenantContext";
 import { shouldForcePlatformEnglish } from "@/platform/lib/themeScope";
+import { RouteAnnouncer } from "@/components/routing/RouteAnnouncer";
 
 /**
  * Registers React Router navigate for imperative redirects (logout, etc.)
@@ -17,7 +19,7 @@ import { shouldForcePlatformEnglish } from "@/platform/lib/themeScope";
  * are keyed per module and bail out on unmount + `gcTime`, so the abort is not
  * needed for correctness.
  */
-export default function RouterBridge(): null {
+export default function RouterBridge(): React.JSX.Element {
   const navigate = useNavigate();
   const location = useLocation();
   const { isApex, workspace, workspaceLoading, workspaceMissing, workspaceLookupFailed } =
@@ -59,5 +61,5 @@ export default function RouterBridge(): null {
     workspaceLookupFailed,
   ]);
 
-  return null;
+  return <RouteAnnouncer />;
 }

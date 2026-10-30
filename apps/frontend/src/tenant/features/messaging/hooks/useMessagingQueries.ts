@@ -8,6 +8,7 @@ import { apiContract } from "@/lib/api";
 import { serverMetricsQueryOptions } from "@/hooks/useServerMetrics";
 import { MESSAGING_LOGS_QUERY_KEY } from "@/hooks/useMessaging";
 import { MESSAGING_MODULE_MANIFEST, type MessagingMetricsDto } from "@mms/shared";
+import { assertContractOk } from "@/lib/apiContractError";
 
 export function messagingLogsListQueryOptions(
   query: {
@@ -30,9 +31,7 @@ export function messagingLogsListQueryOptions(
         signal,
         fetchOptions: { signal },
       });
-      if (response.status !== 200) {
-        throw new Error("Failed to fetch message logs");
-      }
+      assertContractOk(response, "Failed to fetch message logs");
       return response.body;
     },
     placeholderData: (prev) => prev,

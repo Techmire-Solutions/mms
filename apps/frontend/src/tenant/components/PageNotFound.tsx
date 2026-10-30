@@ -20,6 +20,7 @@ export default function PageNotFound(): React.JSX.Element {
   return (
     <main
       id="main-content"
+      tabIndex={-1}
       className="min-h-screen flex items-center justify-center p-6 bg-background"
     >
       <div className="max-w-md w-full">

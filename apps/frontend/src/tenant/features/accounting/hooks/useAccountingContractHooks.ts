@@ -10,6 +10,7 @@ import {
   ACCOUNTING_ENTRIES_QUERY_KEY,
   ACCOUNTING_FISCAL_YEARS_QUERY_KEY,
 } from "@/tenant/features/accounting/hooks/useAccountingApi";
+import { assertContractOk } from "@/lib/apiContractError";
 
 export function accountingAccountsListQueryOptions(query: Record<string, unknown> = {}) {
   return queryOptions({
@@ -20,9 +21,7 @@ export function accountingAccountsListQueryOptions(query: Record<string, unknown
         signal,
         fetchOptions: { signal },
       });
-      if (response.status !== 200) {
-        throw new Error("Failed to fetch accounting accounts");
-      }
+      assertContractOk(response, "Failed to fetch accounting accounts");
       return response.body;
     },
     placeholderData: (prev) => prev,
@@ -39,9 +38,7 @@ export function accountingEntriesListQueryOptions(query: Record<string, unknown>
         signal,
         fetchOptions: { signal },
       });
-      if (response.status !== 200) {
-        throw new Error("Failed to fetch accounting entries");
-      }
+      assertContractOk(response, "Failed to fetch accounting entries");
       return response.body;
     },
     placeholderData: (prev) => prev,
@@ -58,9 +55,7 @@ export function accountingFiscalYearsListQueryOptions(query: Record<string, unkn
         signal,
         fetchOptions: { signal },
       });
-      if (response.status !== 200) {
-        throw new Error("Failed to fetch accounting fiscal years");
-      }
+      assertContractOk(response, "Failed to fetch accounting fiscal years");
       return response.body;
     },
     placeholderData: (prev) => prev,

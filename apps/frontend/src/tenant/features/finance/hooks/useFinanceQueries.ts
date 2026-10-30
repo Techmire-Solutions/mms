@@ -14,6 +14,7 @@ import {
   FINANCE_REPORT_AGGREGATES_QUERY_KEY,
 } from "@/tenant/features/finance/hooks/financeQueryKeys";
 import { invalidateFinanceQueries } from "@/tenant/features/finance/hooks/invalidateFinanceQueries";
+import { assertContractOk } from "@/lib/apiContractError";
 
 export function financeInvoicesListQueryOptions(query: Record<string, unknown> = {}) {
   return queryOptions({
@@ -24,9 +25,7 @@ export function financeInvoicesListQueryOptions(query: Record<string, unknown> =
         signal,
         fetchOptions: { signal },
       });
-      if (response.status !== 200) {
-        throw new Error("Failed to fetch finance invoices");
-      }
+      assertContractOk(response, "Failed to fetch finance invoices");
       return response.body;
     },
     placeholderData: (prev) => prev,
@@ -43,9 +42,7 @@ export function financePaymentsListQueryOptions(query: Record<string, unknown> =
         signal,
         fetchOptions: { signal },
       });
-      if (response.status !== 200) {
-        throw new Error("Failed to fetch finance payments");
-      }
+      assertContractOk(response, "Failed to fetch finance payments");
       return response.body;
     },
     placeholderData: (prev) => prev,

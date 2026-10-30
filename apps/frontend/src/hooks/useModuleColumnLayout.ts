@@ -1,4 +1,4 @@
-import { useCallback } from "react";
+import { useCallback, useMemo } from "react";
 import {
   applyModuleColumnOverlay,
   clampModuleColumnWidth,
@@ -51,17 +51,30 @@ export function useModuleColumnLayout({
     null,
   );
 
-  const userOverlay = (() => {
-    return userOverlayRaw && normalizePreferences
-      ? normalizePreferences(userOverlayRaw)
-      : userOverlayRaw;
-  })();
+  const userOverlay = useMemo(
+    () =>
+      userOverlayRaw && normalizePreferences
+        ? normalizePreferences(userOverlayRaw)
+        : userOverlayRaw,
+    [userOverlayRaw, normalizePreferences],
+  );
 
-  const columnRegistry = (() => applyModuleColumnOverlay(tenantRegistry, userOverlay))();
+  // Stable registry identity keeps DataTable's visible columns (and therefore its
+  // memoized row props) stable across unrelated re-renders.
+  const columnRegistry = useMemo(
+    () => applyModuleColumnOverlay(tenantRegistry, userOverlay),
+    [tenantRegistry, userOverlay],
+  );
 
-  const isColumnVisible = (key: string) => isModuleColumnVisible(columnRegistry, key);
+  const isColumnVisible = useCallback(
+    (key: string) => isModuleColumnVisible(columnRegistry, key),
+    [columnRegistry],
+  );
 
-  const getColumnWidth = (key: string) => getModuleColumnWidth(columnRegistry, key);
+  const getColumnWidth = useCallback(
+    (key: string) => getModuleColumnWidth(columnRegistry, key),
+    [columnRegistry],
+  );
 
   const updateUserColumnLayout = useCallback(
     (newRegistry: ModuleColumnRegistryEntry[]) => {

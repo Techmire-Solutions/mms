@@ -7,6 +7,7 @@ import {
   clearUserScopedCachesOnLogout,
   getPersistedAuthUser,
   persistAuthUser,
+  readUserIdFromStoredAuth,
 } from "./authContextHelpers";
 import type { User } from "@mms/shared";
 
@@ -113,5 +114,19 @@ describe("authContextHelpers", () => {
       expect(getPersistedAuthUser()).toBeNull();
       expect(localStorage.getItem(AUTH_USER_STORAGE_KEY)).toBeNull();
     });
+  });
+});
+
+describe("readUserIdFromStoredAuth", () => {
+  it("given a stored auth payload, should return its user id when parsed", () => {
+    expect(readUserIdFromStoredAuth(JSON.stringify({ id: "user-1" }))).toBe("user-1");
+  });
+
+  it("given an empty or malformed payload, should return undefined when parsed", () => {
+    expect(readUserIdFromStoredAuth(null)).toBeUndefined();
+    expect(readUserIdFromStoredAuth("")).toBeUndefined();
+    expect(readUserIdFromStoredAuth("not-json")).toBeUndefined();
+    expect(readUserIdFromStoredAuth(JSON.stringify({ id: "" }))).toBeUndefined();
+    expect(readUserIdFromStoredAuth(JSON.stringify({ name: "no id" }))).toBeUndefined();
   });
 });

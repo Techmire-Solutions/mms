@@ -6,17 +6,11 @@ import type {
   ConsolidationReportQuery,
 } from "@mms/shared";
 import { apiContract } from "@/lib/api";
-import { ApiError } from "@/lib/apiClient";
 import { usePlatformPermissions } from "@/platform/hooks/usePlatformPermissions";
+import { assertContractOk } from "@/lib/apiContractError";
 
 const GROUPS_KEY = ["platform", "consolidation", "groups"] as const;
 const REPORT_KEY = ["platform", "consolidation", "report"] as const;
-
-function assertOk(response: { status: number; body: unknown }, context: string): void {
-  if (response.status >= 200 && response.status < 300) return;
-  const errorBody = response.body as { message?: string; type?: string } | undefined;
-  throw new ApiError(response.status, errorBody?.message ?? context, errorBody?.type);
-}
 
 export function useConsolidationGroups() {
   const { isPlatformAuthenticated, canWorkspaces } = usePlatformPermissions();
@@ -27,7 +21,7 @@ export function useConsolidationGroups() {
         signal,
         fetchOptions: { signal },
       });
-      assertOk(response, "Failed to load consolidation groups");
+      assertContractOk(response, "Failed to load consolidation groups");
       return (response.body as { groups: ConsolidationGroup[] }).groups;
     },
     enabled: isPlatformAuthenticated && canWorkspaces,
@@ -39,7 +33,7 @@ export function useSaveConsolidationGroup() {
   return useMutation({
     mutationFn: async ({ id, body }: { id: string; body: ConsolidationGroupPut }) => {
       const response = await apiContract.platformConsolidation.putGroup({ params: { id }, body });
-      assertOk(response, "Failed to save consolidation group");
+      assertContractOk(response, "Failed to save consolidation group");
       return (response.body as { group: ConsolidationGroup }).group;
     },
     onSuccess: () => {
@@ -57,7 +51,7 @@ export function useDeleteConsolidationGroup() {
         params: { id },
         body: {},
       });
-      assertOk(response, "Failed to delete consolidation group");
+      assertContractOk(response, "Failed to delete consolidation group");
     },
     onSuccess: () => void queryClient.invalidateQueries({ queryKey: GROUPS_KEY }),
   });
@@ -78,7 +72,7 @@ export function useConsolidationReport(
         signal,
         fetchOptions: { signal },
       });
-      assertOk(response, "Failed to build consolidation report");
+      assertContractOk(response, "Failed to build consolidation report");
       return (response.body as { report: ConsolidationReport }).report;
     },
     enabled: isPlatformAuthenticated && canWorkspaces && Boolean(groupId && period),

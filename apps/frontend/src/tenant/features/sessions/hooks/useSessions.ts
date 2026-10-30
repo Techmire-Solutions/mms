@@ -20,6 +20,7 @@ import {
   SESSIONS_REPORT_AGGREGATES_QUERY_KEY,
   SESSIONS_WIDGET_AGGREGATES_QUERY_KEY,
 } from "./sessionsQueryKeys.js";
+import { assertContractOk } from "@/lib/apiContractError";
 
 export {
   SESSIONS_METRICS_QUERY_KEY,
@@ -187,9 +188,7 @@ export function sessionsListQueryOptions(query: Record<string, unknown> = {}) {
         signal,
         fetchOptions: { signal },
       });
-      if (response.status !== 200) {
-        throw new Error("Failed to fetch sessions");
-      }
+      assertContractOk(response, "Failed to fetch sessions");
       return response.body;
     },
     placeholderData: (prev) => prev,

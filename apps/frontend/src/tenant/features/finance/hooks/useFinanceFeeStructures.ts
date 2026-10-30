@@ -1,16 +1,11 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import type { FeeStructure, FeeStructureInsert } from "@mms/shared";
 import { apiContract } from "@/lib/api";
-import { ApiError } from "@/lib/apiClient";
+import { FINANCE_FEE_STRUCTURES_QUERY_KEY } from "./financeQueryKeys";
+import { assertContractOk } from "@/lib/apiContractError";
 
-export const FINANCE_FEE_STRUCTURES_QUERY_KEY = ["finance", "fee-structures"] as const;
-
-/** Throws on any non-2xx (preserves the old `apiJson` throw-on-!ok). */
-function assertOk(response: { status: number; body: unknown }, context: string): void {
-  if (response.status >= 200 && response.status < 300) return;
-  const errorBody = response.body as { message?: string; type?: string } | undefined;
-  throw new ApiError(response.status, errorBody?.message ?? context, errorBody?.type);
-}
+// Key is declared in `financeQueryKeys` so the module invalidator can cover it.
+export { FINANCE_FEE_STRUCTURES_QUERY_KEY };
 
 export function useFinanceFeeStructures(enabled = true) {
   return useQuery({
@@ -20,7 +15,7 @@ export function useFinanceFeeStructures(enabled = true) {
         signal,
         fetchOptions: { signal },
       });
-      assertOk(response, "Failed to load fee structures");
+      assertContractOk(response, "Failed to load fee structures");
       return (response.body as { structures: FeeStructure[] }).structures;
     },
     enabled,
@@ -35,7 +30,7 @@ export function useFinanceFeeStructureMutations() {
   const save = useMutation({
     mutationFn: async (structure: FeeStructureInsert) => {
       const response = await apiContract.financeOps.putFeeStructure({ body: structure });
-      assertOk(response, "Failed to save fee structure");
+      assertContractOk(response, "Failed to save fee structure");
       return response.body as { structure: FeeStructure };
     },
     onSuccess: () => invalidate(),
@@ -44,7 +39,7 @@ export function useFinanceFeeStructureMutations() {
   const remove = useMutation({
     mutationFn: async (id: string) => {
       const response = await apiContract.financeOps.deleteFeeStructure({ params: { id } });
-      assertOk(response, "Failed to delete fee structure");
+      assertContractOk(response, "Failed to delete fee structure");
       return response.body as { success: boolean };
     },
     onSuccess: () => invalidate(),

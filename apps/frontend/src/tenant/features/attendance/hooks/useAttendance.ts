@@ -12,6 +12,7 @@ import {
   ATTENDANCE_QUERY_KEY,
   ATTENDANCE_REPORT_AGGREGATES_QUERY_KEY,
 } from "./attendanceQueryKeys.js";
+import { assertContractOk } from "@/lib/apiContractError";
 
 export {
   ATTENDANCE_METRICS_QUERY_KEY,
@@ -165,9 +166,7 @@ export function attendanceListQueryOptions(query: Record<string, unknown> = {}) 
         signal,
         fetchOptions: { signal },
       });
-      if (response.status !== 200) {
-        throw new Error("Failed to fetch attendance");
-      }
+      assertContractOk(response, "Failed to fetch attendance");
       return response.body;
     },
     placeholderData: (prev) => prev,

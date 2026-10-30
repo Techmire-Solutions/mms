@@ -107,4 +107,48 @@ describe("tenantWebSocket", () => {
     window.removeEventListener(SESSION_EXPIRED_EVENT, listener);
     globalThis.WebSocket = originalWS;
   });
+
+  it("reconnects a closed socket when the browser comes back online or regains focus", async () => {
+    // Arrange
+    const createdSockets: MockWebSocket[] = [];
+    class MockWebSocket extends EventTarget {
+      readyState = 0;
+      url = "";
+      constructor(url: string) {
+        super();
+        this.url = url;
+        createdSockets.push(this);
+      }
+      close() {
+        this.readyState = 3;
+      }
+    }
+    const originalWS = globalThis.WebSocket;
+    // @ts-expect-error Mocking WebSocket constructor for test
+    globalThis.WebSocket = MockWebSocket;
+    const { connectTenantDatabaseSocket } = await import("@/lib/tenantWebSocket");
+    const disconnect = connectTenantDatabaseSocket({ onDatabaseUpdate: () => {} });
+    expect(createdSockets).toHaveLength(1);
+
+    // Act / Assert: a connecting or open socket is left alone.
+    createdSockets[0].readyState = 1;
+    window.dispatchEvent(new Event("online"));
+    expect(createdSockets).toHaveLength(1);
+
+    // Act / Assert: a closed socket reconnects on the wake signals.
+    createdSockets[0].readyState = 3;
+    window.dispatchEvent(new Event("online"));
+    expect(createdSockets).toHaveLength(2);
+
+    createdSockets[1].readyState = 3;
+    window.dispatchEvent(new Event("focus"));
+    expect(createdSockets).toHaveLength(3);
+
+    // Act / Assert: cleanup removes the listeners.
+    disconnect();
+    window.dispatchEvent(new Event("online"));
+    expect(createdSockets).toHaveLength(3);
+
+    globalThis.WebSocket = originalWS;
+  });
 });

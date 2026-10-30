@@ -13,6 +13,7 @@ import {
   OBLIGATIONS_DISTRIBUTIONS_QUERY_KEY,
   OBLIGATIONS_COLLECTIONS_QUERY_KEY,
 } from "@/tenant/features/obligations/hooks/obligationsQueryKeys";
+import { assertContractOk } from "@/lib/apiContractError";
 
 export function obligationsCollectionsListQueryOptions(query: Record<string, unknown> = {}) {
   return queryOptions({
@@ -23,9 +24,7 @@ export function obligationsCollectionsListQueryOptions(query: Record<string, unk
         signal,
         fetchOptions: { signal },
       });
-      if (response.status !== 200) {
-        throw new Error("Failed to fetch obligations collections");
-      }
+      assertContractOk(response, "Failed to fetch obligations collections");
       return response.body;
     },
     placeholderData: (prev) => prev,

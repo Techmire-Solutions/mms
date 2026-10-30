@@ -1,16 +1,10 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import type { FxReport, FxRevaluationRun } from "@mms/shared";
 import { apiContract } from "@/lib/api";
-import { ApiError } from "@/lib/apiClient";
 import { invalidateAccountingQueries } from "@/tenant/features/accounting/hooks/invalidateAccountingQueries";
+import { assertContractOk } from "@/lib/apiContractError";
 
 const RUNS_KEY = ["accounting", "fx", "revaluations"] as const;
-
-function assertOk(response: { status: number; body: unknown }, context: string): void {
-  if (response.status >= 200 && response.status < 300) return;
-  const errorBody = response.body as { message?: string; type?: string } | undefined;
-  throw new ApiError(response.status, errorBody?.message ?? context, errorBody?.type);
-}
 
 export function useFxRevaluationRuns(enabled = true) {
   return useQuery({
@@ -20,7 +14,7 @@ export function useFxRevaluationRuns(enabled = true) {
         signal,
         fetchOptions: { signal },
       });
-      assertOk(response, "Failed to load FX revaluations");
+      assertContractOk(response, "Failed to load FX revaluations");
       return (response.body as { runs: FxRevaluationRun[] }).runs;
     },
     enabled,
@@ -34,7 +28,7 @@ export function usePreviewFxRevaluation() {
       const response = await apiContract.accountingFx.previewFxRevaluation({
         body: { revaluationDate },
       });
-      assertOk(response, "Failed to preview FX revaluation");
+      assertContractOk(response, "Failed to preview FX revaluation");
       return (response.body as { run: FxRevaluationRun }).run;
     },
   });
@@ -48,7 +42,7 @@ export function usePostFxRevaluation() {
       const response = await apiContract.accountingFx.postFxRevaluation({
         body: { revaluationDate },
       });
-      assertOk(response, "Failed to post FX revaluation");
+      assertContractOk(response, "Failed to post FX revaluation");
       return (response.body as { run: FxRevaluationRun }).run;
     },
     onSuccess: () => {
@@ -68,7 +62,7 @@ export function useFxReport(from: string, asOf: string, enabled = true) {
         signal,
         fetchOptions: { signal },
       });
-      assertOk(response, "Failed to load the FX report");
+      assertContractOk(response, "Failed to load the FX report");
       return (response.body as { report: FxReport }).report;
     },
     enabled: enabled && Boolean(from && asOf) && from <= asOf,

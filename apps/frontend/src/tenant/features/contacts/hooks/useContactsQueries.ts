@@ -51,6 +51,7 @@ export {
   useContactColumnPrefsMutation,
   useContactsSavedReportsSource,
 } from "@/tenant/features/contacts/hooks/useContactPrefsQueries";
+import { assertContractOk } from "@/lib/apiContractError";
 
 // --- Phase 7: contract-driven tsrClient hooks & query factories -------------
 
@@ -63,9 +64,7 @@ export function contactsListQueryOptions(query: Record<string, unknown> = {}) {
         signal,
         fetchOptions: { signal },
       });
-      if (response.status !== 200) {
-        throw new Error("Failed to fetch contacts");
-      }
+      assertContractOk(response, "Failed to fetch contacts");
       return response.body;
     },
     placeholderData: (prev) => prev,
@@ -83,9 +82,7 @@ export function contactsInfiniteQueryOptions(query: Record<string, unknown> = {}
         signal,
         fetchOptions: { signal },
       });
-      if (response.status !== 200) {
-        throw new Error("Failed to fetch contacts");
-      }
+      assertContractOk(response, "Failed to fetch contacts");
       return response.body as ContactsListPageResult;
     },
     initialPageParam: 1,

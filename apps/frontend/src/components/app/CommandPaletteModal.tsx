@@ -2,6 +2,7 @@ import React from "react";
 import { Search } from "lucide-react";
 import { AnimatePresence, motion } from "framer-motion";
 import { useReducedMotion } from "@/hooks/useReducedMotion";
+import { useOverlayBehavior } from "@/hooks/useOverlayBehavior";
 import { Input } from "@/components/ui/input";
 import { cn } from "@/lib/utils";
 import { OVERLAY_BACKDROP } from "@/components/ui/formStyles";
@@ -47,12 +48,17 @@ export function CommandPaletteModal({
   dialogClassName,
 }: CommandPaletteModalProps): React.JSX.Element | null {
   const reducedMotion = useReducedMotion();
+  // Focus trap + topmost-only Escape + focus return. Previously this dialog
+  // declared aria-modal but let Tab escape into the page behind it, and Escape
+  // only worked while the search input held focus.
+  const containerRef = useOverlayBehavior<HTMLDivElement>({ open, onClose, lockScroll: true });
 
   if (!open) return null;
 
   return (
     <AnimatePresence>
       <div
+        ref={containerRef}
         data-overlay-backdrop
         className={cn(
           "fixed inset-0 z-modal flex items-start justify-center pt-16 px-4",
@@ -83,7 +89,6 @@ export function CommandPaletteModal({
             />
             <Input
               type="text"
-              autoFocus
               value={query}
               onChange={(e) => onQueryChange(e.target.value)}
               onKeyDown={onKeyDown}

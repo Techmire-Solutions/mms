@@ -8,6 +8,7 @@ import { apiContract } from "@/lib/api";
 import { useTranslation } from "@/hooks/useTranslation";
 import { useQueryClientOrFallback } from "@/lib/query/optionalQueryContext";
 import { FACULTY_QUERY_KEY } from "./facultyQueryKeys";
+import { assertContractOk } from "@/lib/apiContractError";
 
 export const FACULTY_DEPARTMENTS_QUERY_KEY = [...FACULTY_QUERY_KEY, "departments"] as const;
 
@@ -24,7 +25,7 @@ export function facultyDepartmentsQueryOptions(input: {
         query: includeDeleted ? { includeDeleted: true } : undefined,
         fetchOptions: { signal },
       });
-      if (response.status !== 200) throw new Error(input.loadFailed);
+      assertContractOk(response, input.loadFailed);
       const parsed = facultyDepartmentSchema
         .array()
         .safeParse((response.body as { departments?: unknown }).departments);
@@ -63,13 +64,7 @@ export function useSaveFacultyDepartment(customClient?: QueryClient) {
           params: { id: input.id },
           body: input,
         });
-        if (response.status !== 200) {
-          const message =
-            typeof response.body === "object" && response.body && "message" in response.body
-              ? String(response.body.message)
-              : t("faculty.errors.saveDepartment");
-          throw new Error(message);
-        }
+        assertContractOk(response, t("faculty.errors.saveDepartment"));
         return facultyDepartmentSchema.parse(
           (response.body as { department?: unknown }).department,
         );
@@ -92,13 +87,7 @@ export function useDeleteFacultyDepartment(customClient?: QueryClient) {
           params: { id },
           body: {},
         });
-        if (response.status !== 200) {
-          const message =
-            typeof response.body === "object" && response.body && "message" in response.body
-              ? String(response.body.message)
-              : t("faculty.errors.deleteDepartment");
-          throw new Error(message);
-        }
+        assertContractOk(response, t("faculty.errors.deleteDepartment"));
       },
       onSuccess: () => client.invalidateQueries({ queryKey: FACULTY_DEPARTMENTS_QUERY_KEY }),
     },
@@ -118,13 +107,7 @@ export function useRestoreFacultyDepartment(customClient?: QueryClient) {
           params: { id },
           body: {},
         });
-        if (response.status !== 200) {
-          const message =
-            typeof response.body === "object" && response.body && "message" in response.body
-              ? String(response.body.message)
-              : t("faculty.errors.restoreDepartment");
-          throw new Error(message);
-        }
+        assertContractOk(response, t("faculty.errors.restoreDepartment"));
         return facultyDepartmentSchema.parse(
           (response.body as { department?: unknown }).department,
         );

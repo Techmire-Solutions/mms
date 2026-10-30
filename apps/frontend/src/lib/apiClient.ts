@@ -94,6 +94,22 @@ function throwIfAborted(signal: AbortSignal | null | undefined): void {
   }
 }
 
+/**
+ * A request retried after a successful refresh that is still rejected must end
+ * the session. Without this, a rotated/blocked cookie or a revoked grant left
+ * the app rendered as "authenticated" behind a permanent error because no
+ * `SESSION_EXPIRED_EVENT` ever fired.
+ */
+async function finaliseRetriedResponse(path: string, response: Response): Promise<Response> {
+  if (!isTenantSessionRequest(path) || response.status !== 401) return response;
+  // `isAuthenticationRequired` notifies for the idle/absolute expiry shapes and
+  // returns false; a generic 401 here means the refreshed session is unusable.
+  if (await isAuthenticationRequired(response)) {
+    notifySessionExpired("refresh_retry_failed");
+  }
+  return response;
+}
+
 /** Cookie-first API client (`credentials: 'include'`). */
 export async function apiFetch(path: string, init: RequestInit = {}): Promise<Response> {
   const headers = new Headers(init.headers ?? {});
@@ -137,11 +153,17 @@ export async function apiFetch(path: string, init: RequestInit = {}): Promise<Re
 
     if (Date.now() - lastRefreshedAt < REFRESH_GRACE_PERIOD_MS) {
       throwIfAborted(requestInit.signal);
-      return executeFetchWithTimeout(path, buildRetryRequestInit());
+      return finaliseRetriedResponse(
+        path,
+        await executeFetchWithTimeout(path, buildRetryRequestInit()),
+      );
     }
     if (await refreshSession()) {
       throwIfAborted(requestInit.signal);
-      return executeFetchWithTimeout(path, buildRetryRequestInit());
+      return finaliseRetriedResponse(
+        path,
+        await executeFetchWithTimeout(path, buildRetryRequestInit()),
+      );
     }
   }
 

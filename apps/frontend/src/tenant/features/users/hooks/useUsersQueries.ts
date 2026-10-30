@@ -103,6 +103,7 @@ export function useActivityLogsCollection(options?: { enabled?: boolean }): Acti
 
 import { queryOptions, useQueryClient } from "@tanstack/react-query";
 import { invalidateUsersQueries } from "@/tenant/features/users/hooks/invalidateUsersQueries";
+import { assertContractOk } from "@/lib/apiContractError";
 
 export function usersListQueryOptions(
   query: {
@@ -123,9 +124,7 @@ export function usersListQueryOptions(
         signal,
         fetchOptions: { signal },
       });
-      if (response.status !== 200) {
-        throw new Error("Failed to fetch users");
-      }
+      assertContractOk(response, "Failed to fetch users");
       return response.body;
     },
     placeholderData: (prev) => prev,

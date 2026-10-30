@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button";
 import { WidgetCard } from "@/components/app/WidgetCard";
 import { SEMANTIC_BADGE } from "@/lib/ui/semanticTone";
 import { useTranslation } from "@/hooks/useTranslation";
+import { settingsTabPath } from "@/lib/config/settingsDeepLink";
 import {
   useMessagingGatewaysStatus,
   type GatewayStatusItem,
@@ -16,14 +17,12 @@ interface GatewayChannelCardProps {
   name: string;
   icon: React.ComponentType<{ className?: string }>;
   item: GatewayStatusItem;
-  settingsTab: string;
 }
 
 function GatewayChannelCard({
   name,
   icon: Icon,
   item,
-  settingsTab,
 }: GatewayChannelCardProps): React.JSX.Element {
   const { t } = useTranslation();
 
@@ -85,7 +84,8 @@ function GatewayChannelCard({
         size="sm"
         className="w-full h-7 text-xs text-muted-foreground hover:text-foreground justify-between px-2 cursor-pointer"
       >
-        <Link to={`/settings?tab=${settingsTab}`}>
+        {/* SMS / WhatsApp / Email panels live under Settings → Global. */}
+        <Link to={settingsTabPath("global")}>
           <span>{t("messaging.gateways.configureInSettings")}</span>
           <ExternalLink className="h-3 w-3 ms-1 opacity-70" />
         </Link>
@@ -110,19 +110,16 @@ export function MessagingGatewayStatusOverview(): React.JSX.Element {
             name={t("messaging.channel.sms")}
             icon={MessageSquare}
             item={gateways.sms}
-            settingsTab="sms"
           />
           <GatewayChannelCard
             name={t("messaging.channel.whatsapp")}
             icon={MessageCircle}
             item={gateways.whatsapp}
-            settingsTab="whatsapp"
           />
           <GatewayChannelCard
             name={t("messaging.channel.email")}
             icon={Mail}
             item={gateways.email}
-            settingsTab="email"
           />
         </div>
       </CardContent>

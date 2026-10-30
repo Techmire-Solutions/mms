@@ -5,6 +5,8 @@ import { DayPicker, type DayPickerProps } from "react-day-picker";
 import { cn } from "@/lib/utils";
 import { buttonVariants } from "@/components/ui/button";
 import { CalendarDropdown } from "@/components/ui/CalendarDropdown";
+import { useTranslation } from "@/hooks/useTranslation";
+import { buildCalendarLocale } from "@/lib/ui/calendarLocale";
 
 export type CalendarProps = DayPickerProps;
 
@@ -15,6 +17,12 @@ function Calendar({
   components,
   ...props
 }: CalendarProps) {
+  const { language, dir, t } = useTranslation();
+  const locale = React.useMemo(
+    () => buildCalendarLocale(language, t as unknown as (key: string) => string),
+    [language, t],
+  );
+
   return (
     <DayPicker
       showOutsideDays={showOutsideDays}
@@ -63,6 +71,10 @@ function Calendar({
         ...classNames,
       }}
       {...props}
+      lang={props.lang ?? language}
+      dir={props.dir ?? dir}
+      formatters={{ ...locale.formatters, ...props.formatters }}
+      labels={{ ...locale.labels, ...props.labels }}
       components={{
         Chevron: ({ className: chevronClassName, orientation, ...chevronProps }) => {
           if (orientation === "left") {

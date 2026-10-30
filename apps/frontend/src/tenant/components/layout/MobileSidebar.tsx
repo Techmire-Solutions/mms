@@ -54,7 +54,7 @@ export default function MobileSidebar({
   return (
     <div
       role="region"
-      aria-label={t("nav.openMenu")}
+      aria-label={t("nav.mobileNavigation")}
       className={cn(
         "fixed inset-0 z-sidebar-mobile lg:hidden",
         open ? "pointer-events-auto" : "pointer-events-none",
@@ -80,7 +80,7 @@ export default function MobileSidebar({
         ref={drawerRef}
         role="dialog"
         aria-modal="true"
-        aria-label={t("nav.openMenu")}
+        aria-label={t("nav.mobileNavigation")}
         className="fixed start-0 top-0 z-sidebar-mobile flex h-full w-sidebar-mobile max-w-sheet flex-col bg-sidebar shadow-drawer border-e border-sidebar-border lg:hidden"
       >
         <div className="flex h-16 flex-shrink-0 items-center justify-between gap-2 border-b border-sidebar-border px-5">
@@ -92,7 +92,7 @@ export default function MobileSidebar({
             {branding.logoUrl && !logoError ? (
               <img
                 src={branding.logoUrl}
-                alt="Logo"
+                alt=""
                 className={`h-8 w-8 shrink-0 rounded-lg ${LOGO_IMAGE} border-sidebar-border`}
                 width={32}
                 height={32}

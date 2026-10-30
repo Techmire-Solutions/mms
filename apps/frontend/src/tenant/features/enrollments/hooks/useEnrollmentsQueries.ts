@@ -22,6 +22,7 @@ import {
   ENROLLMENTS_REPORT_AGGREGATES_QUERY_KEY,
   ENROLLMENTS_WIDGET_AGGREGATES_QUERY_KEY,
 } from "./enrollmentsQueryKeys.js";
+import { assertContractOk } from "@/lib/apiContractError";
 
 export {
   ENROLLMENTS_QUERY_KEY,
@@ -212,9 +213,7 @@ export function enrollmentsListQueryOptions(query: Record<string, unknown> = {})
         signal,
         fetchOptions: { signal },
       });
-      if (response.status !== 200) {
-        throw new Error("Failed to fetch enrollments");
-      }
+      assertContractOk(response, "Failed to fetch enrollments");
       return response.body;
     },
     placeholderData: (prev) => prev,

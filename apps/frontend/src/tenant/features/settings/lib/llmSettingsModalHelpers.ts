@@ -1,5 +1,6 @@
 import { apiContract } from "@/lib/api";
 import type { LlmConfig, LlmTestResult } from "@mms/shared";
+import { assertContractOk } from "@/lib/apiContractError";
 
 export function computeNextLlmConfigs(
   configs: LlmConfig[],
@@ -38,11 +39,8 @@ export async function testLlmConnectivity(
         customConfig,
       },
     });
-    const status = res.status;
     const body = res.body as LlmTestResult;
-    if (status !== 200) {
-      throw new Error(body.message || "Failed to test connection");
-    }
+    assertContractOk(res, "Failed to test connection");
     return body;
   } catch (err: unknown) {
     return {

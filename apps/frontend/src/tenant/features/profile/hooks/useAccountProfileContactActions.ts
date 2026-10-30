@@ -15,6 +15,7 @@ import { useAuth } from "@/lib/contexts/AuthContext";
 import { useQueryClient } from "@tanstack/react-query";
 import { TENANT_PROFILE_KEY } from "@/tenant/hooks/useTenantProfile";
 import { tsrClient } from "@/lib/api";
+import { assertContractOk } from "@/lib/apiContractError";
 
 /** Replaces the primary phone entry, preserving any secondary numbers. */
 function upsertPrimaryPhone(existing: readonly PhoneNumber[], number: string): PhoneNumber[] {
@@ -121,9 +122,7 @@ export function useAccountProfileContactActions() {
       const { status } = await updateContactMutation.mutateAsync({
         body: checked.data,
       });
-      if (status !== 200) {
-        throw new Error(t("errors.boundary.description"));
-      }
+      assertContractOk({ status }, t("errors.boundary.description"));
 
       await queryClient.invalidateQueries({ queryKey: TENANT_PROFILE_KEY });
       await refetch();
