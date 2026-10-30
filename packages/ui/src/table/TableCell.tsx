@@ -24,6 +24,14 @@ export function TableCell({
   const alignClass = getTableCellAlignClass(align, variant);
   const stickyClass =
     isSticky && "sticky inset-inline-start-0 z-1 bg-background/95 backdrop-blur-xs shadow-2xs";
+  const isNumeric = variant === "currency" || variant === "number";
+  const content = isNumeric ? (
+    <bdi dir="ltr" className="tabular-nums">
+      {children}
+    </bdi>
+  ) : (
+    children
+  );
 
   if (isRowHeader) {
     return (
@@ -44,7 +52,7 @@ export function TableCell({
         )}
         {...props}
       >
-        {children}
+        {content}
       </th>
     );
   }
@@ -66,7 +74,7 @@ export function TableCell({
       )}
       {...props}
     >
-      {children}
+      {content}
     </td>
   );
 }

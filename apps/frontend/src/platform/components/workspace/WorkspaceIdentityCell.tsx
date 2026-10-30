@@ -50,10 +50,10 @@ export function WorkspaceIdentityCell({
         <div className="text-xs font-medium text-muted-foreground flex items-center gap-1.5">
           <div
             dir="ltr"
-            className="inline-flex items-center gap-1 rounded-md bg-muted/60 px-2 py-0.5 border border-border/50 font-mono text-2xs"
+            className="inline-flex items-center gap-1 rounded-md bg-primary/10 px-2 py-0.5 border border-primary/20 font-mono text-2xs"
           >
-            <span className="font-bold text-primary">{workspace.subdomain}</span>
-            <span className="text-muted-foreground">.{appDomain}</span>
+            <span className="font-bold text-foreground">{workspace.subdomain}</span>
+            <span className="text-foreground">.{appDomain}</span>
           </div>
           <CopyButton
             text={tenantLink}

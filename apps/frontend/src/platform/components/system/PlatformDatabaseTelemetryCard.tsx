@@ -138,7 +138,7 @@ export function PlatformDatabaseTelemetryCard({
             <div className="text-sm font-mono font-bold text-foreground">
               {isLoading ? "…" : activeTenantsCount}
             </div>
-            <div className="text-3xs text-muted-foreground/75">Active tenant leases</div>
+            <div className="text-3xs text-muted-foreground">Active tenant leases</div>
           </div>
 
           <div className="p-2.5 rounded-lg bg-muted/20 border border-border/40">
@@ -148,7 +148,7 @@ export function PlatformDatabaseTelemetryCard({
             <div className="text-sm font-mono font-bold text-foreground">
               {isLoading ? "…" : totalTenantTx}
             </div>
-            <div className="text-3xs text-muted-foreground/75">In-flight transactions</div>
+            <div className="text-3xs text-muted-foreground">In-flight transactions</div>
           </div>
 
           <div className="p-2.5 rounded-lg bg-muted/20 border border-border/40">
@@ -156,7 +156,7 @@ export function PlatformDatabaseTelemetryCard({
             <div className="text-sm font-mono font-bold text-foreground">
               {isLoading ? "…" : `${capLimit} conns`}
             </div>
-            <div className="text-3xs text-muted-foreground/75">{budgetPct}% pool ceiling</div>
+            <div className="text-3xs text-muted-foreground">{budgetPct}% pool ceiling</div>
           </div>
         </div>
 
@@ -193,7 +193,7 @@ export function PlatformDatabaseTelemetryCard({
               })}
             </div>
           ) : (
-            <div className="text-3xs text-muted-foreground/80 italic flex items-center gap-1.5 py-0.5">
+            <div className="text-3xs text-muted-foreground italic flex items-center gap-1.5 py-0.5">
               <CheckCircle2 className="w-3 h-3 text-success shrink-0" />
               {t("platform.db.noActiveTenantTx")}
             </div>

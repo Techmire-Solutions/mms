@@ -71,6 +71,8 @@ coverage/
 test-results/
 playwright-report/
 blob-report/
+nightly-blob-report-*/
+nightly-playwright-html-report/
 playwright/.cache/
 # Generated UI-audit report (apps/frontend/scripts/ui-audit.js)
 apps/frontend/scripts/ui-audit-report.json

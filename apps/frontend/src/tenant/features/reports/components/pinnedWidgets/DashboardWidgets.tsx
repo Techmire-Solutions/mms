@@ -31,6 +31,8 @@ interface DashboardWidgetsProps {
   isEditMode?: boolean;
   onEditWidget?: (widget: CustomWidget) => void;
   onDeleteWidget?: (id: string) => void;
+  /** Hide the section header when the parent already rendered one. */
+  showHeader?: boolean;
 }
 
 /**
@@ -43,6 +45,7 @@ export function DashboardWidgets({
   isEditMode = false,
   onEditWidget,
   onDeleteWidget,
+  showHeader = true,
 }: DashboardWidgetsProps = {}): React.JSX.Element | null {
   const { t } = useTranslation();
   const { gridMode, updatePref } = useDashboardConfig();
@@ -108,10 +111,12 @@ export function DashboardWidgets({
 
   return (
     <div className="space-y-4 text-start font-sans mt-5">
-      <DashboardWidgetsHeader
-        gridMode={gridMode}
-        onToggleGridMode={(mode) => updatePref("gridMode", mode)}
-      />
+      {showHeader ? (
+        <DashboardWidgetsHeader
+          gridMode={gridMode}
+          onToggleGridMode={(mode) => updatePref("gridMode", mode)}
+        />
+      ) : null}
 
       <DashboardWidgetsGrid
         widgets={activeWidgets}

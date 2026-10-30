@@ -23,7 +23,7 @@ export function FacultyContactBackgroundSection({
     <div className="space-y-3 pt-3 border-t border-border/40 text-start">
       {educations.length > 0 && (
         <div className="space-y-1.5">
-          <div className="flex items-center gap-1.5 text-xs font-semibold text-foreground/80">
+          <div className="flex items-center gap-1.5 text-xs font-semibold text-foreground">
             <GraduationCap className="w-3.5 h-3.5 text-primary" aria-hidden />
             <span>{t("contacts.detail.education")}</span>
           </div>
@@ -46,7 +46,7 @@ export function FacultyContactBackgroundSection({
                   {edu.degree && edu.institution && (
                     <div className="text-muted-foreground text-3xs">{edu.institution}</div>
                   )}
-                  {details && <div className="text-muted-foreground/80 text-3xs">{details}</div>}
+                  {details && <div className="text-muted-foreground text-3xs">{details}</div>}
                 </div>
               );
             })}
@@ -56,7 +56,7 @@ export function FacultyContactBackgroundSection({
 
       {skills.length > 0 && (
         <div className="space-y-1.5">
-          <div className="flex items-center gap-1.5 text-xs font-semibold text-foreground/80">
+          <div className="flex items-center gap-1.5 text-xs font-semibold text-foreground">
             <Award className="w-3.5 h-3.5 text-primary" aria-hidden />
             <span>{t("contacts.detail.skills")}</span>
           </div>
@@ -79,7 +79,7 @@ export function FacultyContactBackgroundSection({
 
       {experiences.length > 0 && (
         <div className="space-y-1.5">
-          <div className="flex items-center gap-1.5 text-xs font-semibold text-foreground/80">
+          <div className="flex items-center gap-1.5 text-xs font-semibold text-foreground">
             <Briefcase className="w-3.5 h-3.5 text-primary" aria-hidden />
             <span>{t("contacts.detail.experience")}</span>
           </div>
@@ -99,7 +99,7 @@ export function FacultyContactBackgroundSection({
                   <div className="font-medium text-foreground">{exp.title}</div>
                   <div className="text-muted-foreground text-3xs">{exp.organization}</div>
                   {dates && (
-                    <div className="text-muted-foreground/80 text-3xs flex items-center gap-1">
+                    <div className="text-muted-foreground text-3xs flex items-center gap-1">
                       <Calendar className="w-3 h-3" aria-hidden />
                       <span>{dates}</span>
                     </div>

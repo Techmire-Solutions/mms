@@ -162,7 +162,8 @@ export const TENANT_APP_ENTRIES: readonly TenantAppEntry[] = [
     path: TENANT_PATHS.students,
     access: moduleAccess("students"),
     loader: () => import("@/tenant/features/students/StudentsPage"),
-    nav: { labelKey: "nav.students", icon: GraduationCap, order: 0, group: ACADEMICS_GROUP },
+    // Students is a daily destination, not a sub-tool of the Academics group.
+    nav: { labelKey: "nav.students", icon: GraduationCap, order: 1.5 },
     apexRedirectable: true,
   },
   {

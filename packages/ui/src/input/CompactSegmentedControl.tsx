@@ -75,7 +75,7 @@ export function CompactSegmentedControl<T extends string>({
             aria-pressed={isSelected}
             onClick={() => onChange(option.value)}
             className={cn(
-              "min-h-11 h-auto rounded-lg text-xs font-bold uppercase tracking-wider shadow-none transition-all",
+              "min-h-11 min-w-11 h-auto rounded-lg text-xs font-bold uppercase tracking-wider shadow-none transition-all",
               tone === "outline" ? "border px-2" : "px-3",
               fill && "flex-1",
               animated && "transition-all duration-200 ease-out",

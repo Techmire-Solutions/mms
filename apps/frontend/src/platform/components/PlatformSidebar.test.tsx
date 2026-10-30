@@ -68,7 +68,6 @@ describe("PlatformSidebar", () => {
 
     expect(html).toContain('aria-label="platform.navAria"');
     expect(html).toContain("w-sidebar");
-    expect(html).toContain('aria-label="platform.nav.searchConsole"');
   });
 
   it("renders desktop sidebar with collapsed width when collapsed is true", () => {

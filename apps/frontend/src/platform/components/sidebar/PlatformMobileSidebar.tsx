@@ -7,7 +7,6 @@ import { usePlatformSidebar } from "@/platform/lib/PlatformSidebarContext";
 import { getVisiblePlatformNavSections } from "@/platform/lib/platformNav";
 import { useOverlayBehavior } from "@/hooks/useOverlayBehavior";
 import { PlatformSignOutDialog } from "@/platform/components/common/PlatformSignOutDialog";
-import { PlatformSidebarSearch } from "@/platform/components/sidebar/PlatformSidebarSearch";
 import { TooltipProvider } from "@shared/ui";
 import { cn } from "@/lib/utils";
 import { OVERLAY_BACKDROP } from "@shared/ui";
@@ -25,7 +24,7 @@ export function PlatformMobileSidebar(): React.JSX.Element | null {
   const { platformUser, platformLogout } = usePlatformAuth();
   const perms = usePlatformPermissions();
   const { isPlatformAuthenticated, isSuperUser } = perms;
-  const { mobileOpen, closeMobileSidebar, openCommandPalette } = usePlatformSidebar();
+  const { mobileOpen, closeMobileSidebar } = usePlatformSidebar();
   const [confirmSignOutOpen, setConfirmSignOutOpen] = useState(false);
   const openGestureActiveRef = useRef(false);
 
@@ -77,13 +76,6 @@ export function PlatformMobileSidebar(): React.JSX.Element | null {
               collapsed={false}
               reducedMotion={reducedMotion}
               onCloseMobile={closeMobileSidebar}
-            />
-
-            <PlatformSidebarSearch
-              onOpen={() => {
-                closeMobileSidebar();
-                openCommandPalette();
-              }}
             />
 
             <TooltipProvider delayDuration={150}>

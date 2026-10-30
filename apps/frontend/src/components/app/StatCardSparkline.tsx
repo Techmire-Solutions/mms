@@ -10,7 +10,7 @@ export const StatCardSparkline = React.memo(function StatCardSparkline({
 }: StatCardSparklineProps): React.JSX.Element | null {
   if (!data || data.length < 2) return null;
   return (
-    <div className="w-16 h-8" aria-hidden="true">
+    <div className="w-16 h-8" inert>
       <ResponsiveContainer width="100%" height="100%">
         <LineChart data={data.map((v, i) => ({ v, i }))}>
           <Line

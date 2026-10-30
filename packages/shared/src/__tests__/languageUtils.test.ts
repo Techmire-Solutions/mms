@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 import {
   normalizeAppLanguage,
   getLanguageDirection,
+  getLanguageFontStacks,
   isRtlLanguage,
   resolveQuestionFormLanguage,
   APP_LANGUAGES,
@@ -36,6 +37,19 @@ describe("languageUtils", () => {
       expect(resolveQuestionFormLanguage("en", "ar", true)).toBe("ar");
       expect(resolveQuestionFormLanguage("en", "ar", false)).toBe("en");
       expect(resolveQuestionFormLanguage("ur", "invalid", true)).toBe("ur");
+    });
+  });
+
+  describe("getLanguageFontStacks", () => {
+    it("does not use Amiri for English display text", () => {
+      expect(getLanguageFontStacks("en").display).not.toContain("Amiri");
+      expect(getLanguageFontStacks("en").display).toContain("Inter");
+    });
+
+    it("keeps Amiri only for Arabic display text", () => {
+      expect(getLanguageFontStacks("ar").display).toContain("Amiri");
+      expect(getLanguageFontStacks("ur").display).toContain("Noto Nastaliq Urdu");
+      expect(getLanguageFontStacks("fa").display).toContain("Vazirmatn");
     });
   });
 

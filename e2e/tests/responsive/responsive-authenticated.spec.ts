@@ -115,6 +115,11 @@ async function gotoReadyRoute(page: Page, path: string, ready?: string): Promise
 
 async function assertModuleRouteLayout(page: Page, path: string, ready: string): Promise<void> {
   await gotoReadyRoute(page, path, ready);
+  if ((page.viewportSize()?.width ?? 0) < 1024) {
+    // Persisted tabs used to scroll the document to the tab panel on mount,
+    // hiding the page title and KPIs. A freshly opened module must start at 0.
+    expect(await page.evaluate(() => Math.round(window.scrollY))).toBe(0);
+  }
   await assertNoHorizontalOverflow(page);
   await assertPrimaryControlsMeetTouchTarget(page, { within: "#main-content" });
   await assertVisibleTablesScrollWrapped(page, path);

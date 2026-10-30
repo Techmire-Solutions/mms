@@ -12,6 +12,7 @@ import {
   getCollectedAmountForMonth,
   getOutstandingAmountForMonth,
   FINANCE_MODULE_MANIFEST,
+  formatPercent,
 } from "@mms/shared";
 import { useFinanceCurrency } from "@/hooks/useCurrency";
 import { percentChange } from "@/tenant/hooks/collections/dashboard";
@@ -177,7 +178,7 @@ export default function FeeCollectionSummary({ title }: { title?: string }) {
               dotClassName={b.color}
               label={b.label}
               labelClassName="text-muted-foreground font-medium"
-              value={`${b.pct}%`}
+              value={formatPercent(b.pct)}
             />
           ))}
         </div>

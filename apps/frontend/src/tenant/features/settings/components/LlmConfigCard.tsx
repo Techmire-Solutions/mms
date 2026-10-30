@@ -112,7 +112,7 @@ export function LlmConfigCard({
           </div>
           {config.baseUrl && (
             <div className="flex min-w-0 items-center gap-2">
-              <Globe className="h-3.5 w-3.5 text-muted-foreground/70 shrink-0" aria-hidden />
+              <Globe className="h-3.5 w-3.5 text-muted-foreground shrink-0" aria-hidden />
               <span className="min-w-0 truncate font-mono text-3xs">{config.baseUrl}</span>
             </div>
           )}

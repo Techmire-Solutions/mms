@@ -20,7 +20,7 @@ export function TemplateEditorCanvasStatusPill({
       role="status"
       className="mb-3 px-3 py-1 rounded-full bg-background/90 border border-border/70 text-3xs text-muted-foreground font-mono shadow-sm backdrop-blur-md flex items-center gap-2 ring-1 ring-black/[0.04] print:hidden"
     >
-      <span className="font-semibold text-foreground/80">{size.label}</span>
+      <span className="font-semibold text-foreground">{size.label}</span>
       <span className="text-border">·</span>
       <span>
         {size.width} × {size.height} px

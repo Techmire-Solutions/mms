@@ -51,6 +51,7 @@ export default function GlobalSettings(): React.JSX.Element {
       introKey="settings.introGlobal"
       isDirty={isGlobalDirty}
       saved={saved}
+      footerSticky
       footer={
         <SettingsFormActions
           saveLabel={t("global.saveSettings")}

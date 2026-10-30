@@ -83,6 +83,5 @@ describe("PlatformMobileSidebar", () => {
     expect(html).toContain('aria-modal="true"');
     expect(html).toContain("data-overlay-backdrop");
     expect(html).toContain("lg:hidden");
-    expect(html).toContain('aria-label="platform.nav.searchConsole"');
   });
 });

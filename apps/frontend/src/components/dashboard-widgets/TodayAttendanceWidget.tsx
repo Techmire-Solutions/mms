@@ -11,6 +11,7 @@ import { useAttendanceConfig } from "@/hooks/useStandardModuleConfig";
 import { useAttendanceRecordsCollection } from "@/tenant/hooks/collections/attendance";
 import { useSessionsCollection } from "@/tenant/hooks/collections/sessions";
 import { useTranslation } from "@/hooks/useTranslation";
+import { formatPercent } from "@mms/shared";
 import { rateToneClass } from "@/lib/ui/semanticTone";
 import { ProgressBar } from "@/components/app/ProgressBar";
 import { Badge } from "@/components/ui/badge";
@@ -91,7 +92,9 @@ export default function TodayAttendanceWidget({ title }: { title?: string }) {
                   <span className="text-xs text-muted-foreground font-semibold">
                     {t("dashboard.widgets.overallRate")}
                   </span>
-                  <span className={`text-sm font-bold tabular-nums ${rateColor}`}>{rate}%</span>
+                  <bdi dir="ltr" className={`text-sm font-bold tabular-nums ${rateColor}`}>
+                    {formatPercent(rate)}
+                  </bdi>
                 </div>
                 <ProgressBar
                   value={rate}
@@ -103,7 +106,7 @@ export default function TodayAttendanceWidget({ title }: { title?: string }) {
               </div>
               <div className="text-end">
                 <p className={`text-2xl font-black tabular-nums leading-none m-0 ${rateColor}`}>
-                  {rate}%
+                  <bdi dir="ltr">{formatPercent(rate)}</bdi>
                 </p>
                 <p className="text-xs text-muted-foreground mt-1 m-0 font-medium">
                   {t("dashboard.widgets.studentsCount", { count: stats.total })}
@@ -156,7 +159,7 @@ export default function TodayAttendanceWidget({ title }: { title?: string }) {
                     size="md"
                     fillClassName={`${rateToneClass(classStats.rate).bar} duration-700 ease-out`}
                     trackClassName="shadow-inner"
-                    label={`${classStats.rate}%`}
+                    label={formatPercent(classStats.rate)}
                     labelClassName={`w-10 text-end tabular-nums ${rateToneClass(classStats.rate).text}`}
                   />
                 </div>

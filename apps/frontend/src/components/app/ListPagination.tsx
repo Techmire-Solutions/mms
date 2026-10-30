@@ -5,7 +5,7 @@ import {
   type ListPaginationLabels,
 } from "@shared/ui";
 import { useTranslation } from "@/hooks/useTranslation";
-import type { AppTranslationKey } from "@mms/shared";
+import { formatNumber, type AppTranslationKey } from "@mms/shared";
 
 export interface ListPaginationProps extends Omit<SharedListPaginationProps, "labels"> {
   i18nNamespace?: string;
@@ -83,27 +83,38 @@ export function ListPagination({
         namespaceKey("range"),
         "common.pagination.range" as AppTranslationKey,
         `Showing ${from} to ${to} of ${total}`,
-        { from, to, total },
+        { from: formatNumber(from), to: formatNumber(to), total: formatNumber(total) },
       ),
     pageOf: (page, totalPages) =>
       resolve(
         namespaceKey("pageOf"),
         "common.pagination.pageOf" as AppTranslationKey,
         `Page ${page} of ${totalPages}`,
-        { page, totalPages },
+        { page: formatNumber(page), totalPages: formatNumber(totalPages) },
       ),
     summary: (count, page, totalPages) =>
       resolve(
         namespaceKey("summary"),
         "common.pagination.summary" as AppTranslationKey,
         `${count} items · Page ${page} of ${totalPages}`,
-        { count, page, totalPages },
+        {
+          count: formatNumber(count),
+          page: formatNumber(page),
+          totalPages: formatNumber(totalPages),
+        },
       ),
     label: navLabel,
     ...labels,
   };
 
-  return <SharedListPagination variant={variant} labels={resolvedLabels} {...props} />;
+  return (
+    <SharedListPagination
+      variant={variant}
+      labels={resolvedLabels}
+      formatPageNumber={formatNumber}
+      {...props}
+    />
+  );
 }
 
 ListPagination.displayName = "ListPagination";

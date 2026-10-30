@@ -119,7 +119,11 @@ export function CommandPalette({
       }
       footerTitle="MMS"
     >
-      <div className="max-h-80 overflow-y-auto p-2" role="listbox" id="tenant-command-listbox">
+      <div
+        className="max-h-[min(60vh,20rem)] scroll-py-2 overflow-y-auto p-2 pb-3"
+        role="listbox"
+        id="tenant-command-listbox"
+      >
         {flatItems.length === 0 ? (
           <div className="px-4 py-8 text-center text-sm text-muted-foreground">
             {t("nav.globalSearchNoResults", { query })}

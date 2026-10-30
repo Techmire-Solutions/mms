@@ -87,7 +87,7 @@ export function QuestionCardAnswerPreview({
           if (!citation) return null;
           return (
             <p className="text-xs leading-snug text-muted-foreground">
-              <span className="font-semibold text-foreground/80">
+              <span className="font-semibold text-foreground">
                 {t("questionBank.sourceReference")}:
               </span>{" "}
               {citation}

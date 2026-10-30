@@ -129,7 +129,7 @@ export function OutstandingFeesTableDesktopBody({
                     </TableCell>
                     <TableCell
                       truncate
-                      className="px-3 py-3 text-sm text-muted-foreground/80 font-medium hidden sm:table-cell max-w-36"
+                      className="px-3 py-3 text-sm text-muted-foreground font-medium hidden sm:table-cell max-w-36"
                     >
                       {outstandingFee.class}
                     </TableCell>
@@ -192,7 +192,7 @@ export function OutstandingFeesTableDesktopBody({
                 </TableCell>
                 <TableCell
                   truncate
-                  className="px-3 py-3 text-sm text-muted-foreground/80 font-medium hidden sm:table-cell max-w-36"
+                  className="px-3 py-3 text-sm text-muted-foreground font-medium hidden sm:table-cell max-w-36"
                 >
                   {outstandingFee.class}
                 </TableCell>

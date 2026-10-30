@@ -762,6 +762,158 @@ async function captureLocales(browser, state) {
   }
 }
 
+async function captureStates(browser, state) {
+  const desktop = await newContext(browser, {
+    viewport: { width: 1440, height: 900 },
+    storageState: tenantStoragePath,
+  });
+  const page = await desktop.newPage();
+  const shot = async (name, label, options = {}) => {
+    await page.waitForTimeout(500);
+    await capture(page, { name, path: new URL(page.url()).pathname, fullPage: false }, label, {
+      axe: options.axe ?? true,
+    });
+  };
+  const closeOverlay = async () => {
+    await page.keyboard.press("Escape").catch(() => undefined);
+    await page.waitForTimeout(400);
+  };
+
+  await page.goto(`${state.tenantOrigin}/contacts`, { waitUntil: "domcontentloaded" });
+  await settle(page);
+  await page
+    .getByRole("tab", { name: "Contacts", exact: true })
+    .click()
+    .catch(() => undefined);
+  await page.waitForTimeout(800);
+  await page.getByRole("button", { name: "Syeda Amina Bukhari", exact: true }).click();
+  await page.locator('[role="dialog"]').first().waitFor({ state: "visible", timeout: 8_000 });
+  await shot("contacts-detail-drawer", "1440-light-en");
+  await closeOverlay();
+
+  await page
+    .getByRole("button", { name: /Columns/ })
+    .first()
+    .click();
+  await page.locator('[role="dialog"]').first().waitFor({ state: "visible", timeout: 8_000 });
+  await shot("contacts-columns-dialog", "1440-light-en");
+  await closeOverlay();
+
+  await page.getByRole("tab", { name: /Reports/i }).click();
+  await page.waitForTimeout(1_200);
+  await shot("contacts-reports-tier", "1440-light-en", { axe: false });
+  await page.getByRole("tab", { name: /Setup/i }).click();
+  await page.waitForTimeout(1_200);
+  await shot("contacts-setup-tier", "1440-light-en", { axe: false });
+
+  await page.goto(`${state.tenantOrigin}/contacts`, { waitUntil: "domcontentloaded" });
+  await settle(page);
+  await page
+    .getByRole("tab", { name: "Contacts", exact: true })
+    .click()
+    .catch(() => undefined);
+  await page.waitForTimeout(800);
+  await page
+    .getByRole("button", { name: /Show Deleted|Deleted/i })
+    .first()
+    .click();
+  await page.waitForTimeout(1_200);
+  await shot("contacts-trash-empty", "1440-light-en");
+
+  await page.goto(`${state.tenantOrigin}/students`, { waitUntil: "domcontentloaded" });
+  await settle(page);
+  await page
+    .getByRole("tab", { name: "Students", exact: true })
+    .click()
+    .catch(() => undefined);
+  await page.waitForTimeout(800);
+  await page
+    .getByRole("button", { name: /^Student$/ })
+    .first()
+    .click();
+  await page.locator('[role="dialog"]').first().waitFor({ state: "visible", timeout: 8_000 });
+  await shot("students-create-modal", "1440-light-en");
+  await closeOverlay();
+
+  await page.keyboard.press("Meta+k");
+  await page.waitForTimeout(900);
+  await shot("command-palette", "1440-light-en");
+  await closeOverlay();
+
+  await page
+    .getByRole("button", { name: /Notifications/i })
+    .first()
+    .click()
+    .catch(() => undefined);
+  await page.waitForTimeout(900);
+  await shot("notifications-popover", "1440-light-en");
+  await closeOverlay();
+
+  await page.evaluate(() => window.dispatchEvent(new Event("offline")));
+  await page.waitForTimeout(1_000);
+  await shot("offline-indicator", "1440-light-en", { axe: false });
+
+  await desktop.close();
+
+  const mobile = await newContext(browser, {
+    viewport: { width: 375, height: 812 },
+    storageState: tenantStoragePath,
+  });
+  const mobilePage = await mobile.newPage();
+  const mobileShot = async (name) => {
+    await mobilePage.waitForTimeout(500);
+    await capture(
+      mobilePage,
+      { name, path: new URL(mobilePage.url()).pathname, fullPage: false },
+      "375-light-en",
+      { axe: true },
+    );
+  };
+  await mobilePage.goto(`${state.tenantOrigin}/`, { waitUntil: "domcontentloaded" });
+  await settle(mobilePage);
+  await mobilePage
+    .getByRole("button", { name: /open menu|navigation menu|menu/i })
+    .first()
+    .click();
+  await mobilePage.waitForTimeout(800);
+  await mobileShot("mobile-sidebar");
+  await mobilePage.keyboard.press("Escape");
+
+  await mobilePage.goto(`${state.tenantOrigin}/contacts`, { waitUntil: "domcontentloaded" });
+  await settle(mobilePage);
+  await mobilePage
+    .getByRole("button", { name: "Syeda Amina Bukhari", exact: true })
+    .click()
+    .catch(() => undefined);
+  await mobilePage.waitForTimeout(1_000);
+  await mobileShot("contacts-detail-drawer");
+  await mobile.close();
+
+  const platform = await newContext(browser, {
+    viewport: { width: 1440, height: 900 },
+    storageState: platformStoragePath,
+  });
+  const platformPage = await platform.newPage();
+  await platformPage.goto(`${state.baseUrl}/platform/dashboard`, { waitUntil: "domcontentloaded" });
+  await settle(platformPage, { main: false });
+  await platformPage
+    .getByRole("button", { name: /Create New Madrasa/i })
+    .first()
+    .click();
+  await platformPage
+    .locator('[role="dialog"]')
+    .first()
+    .waitFor({ state: "visible", timeout: 8_000 });
+  await platformPage.waitForTimeout(700);
+  await capture(
+    platformPage,
+    { name: "platform-create-dialog", path: "/platform/dashboard", fullPage: false },
+    "1440-light-en",
+    { axe: true },
+  );
+  await platform.close();
+}
+
 async function runCapture(mode) {
   assertLocal();
   ensureDirs();
@@ -787,6 +939,10 @@ async function runCapture(mode) {
       await capturePlatform(browser, state);
       return;
     }
+    if (mode === "--capture-states") {
+      await captureStates(browser, state);
+      return;
+    }
     throw new Error(`Unknown capture mode: ${mode}`);
   } finally {
     await browser.close();
@@ -806,14 +962,15 @@ async function main() {
     mode === "--session" ||
     mode === "--capture-core" ||
     mode === "--capture-locales" ||
-    mode === "--capture-breadth"
+    mode === "--capture-breadth" ||
+    mode === "--capture-states"
   ) {
     await runCapture(mode);
     return;
   }
   if (mode === "--help" || !mode) {
     console.log(
-      "Usage: --provision | --session | --capture-core | --capture-locales | --capture-breadth | --verify",
+      "Usage: --provision | --session | --capture-core | --capture-locales | --capture-breadth | --capture-states | --verify",
     );
     return;
   }

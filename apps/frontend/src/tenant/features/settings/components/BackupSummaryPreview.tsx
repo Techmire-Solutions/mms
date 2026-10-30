@@ -39,9 +39,7 @@ export function BackupSummaryPreview({
       ) : null}
       {summary.entityBreakdown && Object.keys(summary.entityBreakdown).length > 0 ? (
         <div className="space-y-1.5 pt-1 border-t border-border/40">
-          <p className="text-xs font-medium text-foreground/80">
-            {t("backup.entityBreakdownTitle")}
-          </p>
+          <p className="text-xs font-medium text-foreground">{t("backup.entityBreakdownTitle")}</p>
           <div className="flex flex-wrap gap-1.5">
             {Object.entries(summary.entityBreakdown)
               .filter(([, count]) => count > 0)

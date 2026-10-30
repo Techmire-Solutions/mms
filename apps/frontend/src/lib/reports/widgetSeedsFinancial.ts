@@ -77,7 +77,7 @@ export const financialWidgetSeeds: CustomWidget[] = [
     operation: "sum",
     targetField: "finalAmt",
     color: "red",
-    isPinnedToDashboard: true,
+    isPinnedToDashboard: false,
   },
   {
     id: "def-overdue-obligations",

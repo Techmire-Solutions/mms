@@ -29,7 +29,7 @@ export function SequenceNumberingPreview({
         </div>
         <p className="font-mono text-xs text-muted-foreground">
           <span>{template}: </span>
-          <span className="text-foreground/80">{formulaTemplate}</span>
+          <span className="text-foreground">{formulaTemplate}</span>
         </p>
       </div>
 

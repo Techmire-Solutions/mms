@@ -208,6 +208,38 @@ test.describe("accessibility smoke — populated surfaces @smoke", () => {
     await tryAuditRowDrawer(page, "finance (populated) @ 1440px");
   });
 
+  test("populated dashboard @ 1440", async ({ page }) => {
+    test.setTimeout(300_000);
+    const tenantOrigin = await bootstrapSeededTenant(page, "da", { finance: true });
+    await page.setViewportSize({ width: 1440, height: 900 });
+
+    await gotoAndSettle(page, tenantOrigin, "/", "#main-content");
+    await expect(
+      page
+        .locator("#main-content")
+        .getByText(/Total Students|Students/i)
+        .first(),
+    ).toBeVisible({
+      timeout: 20_000,
+    });
+
+    await assertNoSeriousA11yViolations(page, { context: "dashboard (populated) @ 1440px" });
+  });
+
+  test("new student modal @ 1440", async ({ page }) => {
+    test.setTimeout(300_000);
+    const tenantOrigin = await bootstrapSeededTenant(page, "st", { students: true });
+    await page.setViewportSize({ width: 1440, height: 900 });
+
+    await gotoAndSettle(page, tenantOrigin, "/students", "#main-content");
+    await page.getByRole("button", { name: "Student", exact: true }).first().click();
+    const dialog = page.getByRole("dialog", { name: /Register student/i });
+    await expect(dialog).toBeVisible({ timeout: 20_000 });
+
+    await assertNoSeriousA11yViolations(page, { context: "student form modal @ 1440px" });
+    await page.keyboard.press("Escape").catch(() => undefined);
+  });
+
   test("new enrollment wizard @ 1440", async ({ page }) => {
     test.setTimeout(300_000);
     const tenantOrigin = await bootstrapSeededTenant(page, "en", { enrollments: true });

@@ -112,9 +112,7 @@ export function FacultyIjazahSection({
                     )}
                   </div>
                   <p className="text-xs text-muted-foreground">
-                    <span className="font-medium text-foreground/80">
-                      {ijazah.grantingAuthority}
-                    </span>
+                    <span className="font-medium text-foreground">{ijazah.grantingAuthority}</span>
                   </p>
                   {ijazah.sanadChain && (
                     <p className="text-xs text-muted-foreground line-clamp-2 pt-1 border-t border-border/40 mt-1 italic">

@@ -98,7 +98,7 @@ export function getLanguageFontStacks(code: string): { sans: string; display: st
     default:
       return {
         sans: "'Inter', sans-serif",
-        display: "'Amiri', serif",
+        display: "'Plus Jakarta Sans', 'Inter', system-ui, sans-serif",
       };
   }
 }

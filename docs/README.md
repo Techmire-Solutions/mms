@@ -35,6 +35,7 @@ Project-wide entry points live at the repo root:
 - [date-format-audit.md](./date-format-audit.md)
 - [ui-ux-dry-ssot-review-2026-09-30.md](./ui-ux-dry-ssot-review-2026-09-30.md)
 - [ui-ux-review.md](./ui-ux-review.md) · [ui-ux-review-resolution.md](./ui-ux-review-resolution.md)
+- [ui-ux-review-2026-10-30/](./ui-ux-review-2026-10-30/) — rendered visual/UX review: localized date corruption, contacts table collapse, platform a11y gate red, mobile header/scroll, dashboard density. · [resolution](./ui-ux-review-2026-10-30/RESOLUTION.md)
 - [messaging-ui-ux-audit-2026-10-24.md](./messaging-ui-ux-audit-2026-10-24.md) — Messaging module UI/UX audit + SSOT consolidation findings.
 - [project-review-2026-10-29.md](./project-review-2026-10-29.md) — whole-repo review: gates, test/build evidence, two fixed XSS vectors, open debt.
 - [backend-review-2026-10-29.md](./backend-review-2026-10-29.md) — backend deep-dive: audit-trail/RLS and finance-ledger defects, job/queue findings, deploy and authorization gaps.

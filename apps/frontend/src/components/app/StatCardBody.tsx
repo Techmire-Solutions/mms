@@ -3,6 +3,7 @@ import { TrendingUp, TrendingDown } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
 import { useTranslation } from "@/hooks/useTranslation";
+import { formatPercent } from "@mms/shared";
 
 export interface StatCardBodyProps {
   /** COLOR_MAP theme: { bg, text, ring, glow }. */
@@ -67,10 +68,10 @@ export function StatCardBody({
                 ) : (
                   <TrendingDown className="w-3 h-3 text-destructive shrink-0" />
                 )}
-                <span>
-                  {isPositive ? "+" : ""}
-                  {trend}%
-                </span>
+                <bdi dir="ltr" className="tabular-nums">
+                  {isPositive ? "+" : "-"}
+                  {formatPercent(Math.abs(trend as number))}
+                </bdi>
               </Badge>
             )}
             {actions}
@@ -79,16 +80,16 @@ export function StatCardBody({
       </header>
       <div className="flex items-end justify-between mt-1">
         <div className="space-y-0.5 flex-1 min-w-0">
-          <p className="text-2xl font-black text-foreground tracking-tight leading-none m-0 truncate tabular-nums">
-            {value}
+          <p className="text-xl sm:text-2xl font-black text-foreground tracking-tight leading-tight m-0 break-words tabular-nums">
+            <bdi dir="ltr">{value}</bdi>
           </p>
-          <h4 className="text-sm font-bold text-foreground mt-1.5 m-0 truncate tracking-wide">
+          <h4 className="text-sm font-bold text-foreground mt-1.5 m-0 break-words tracking-wide">
             {title}
           </h4>
         </div>
       </div>
       {footer && (
-        <footer className="text-xs font-medium text-foreground mt-3 border-t border-border/30 pt-2 m-0 truncate">
+        <footer className="text-xs font-medium text-foreground mt-3 border-t border-border/30 pt-2 m-0 break-words">
           {footer}
         </footer>
       )}

@@ -1,6 +1,6 @@
 import React from "react";
 import { Link } from "react-router-dom";
-import { Radio, Building2, ArrowUpRight, Globe } from "lucide-react";
+import { Radio, Globe } from "lucide-react";
 import { motion } from "framer-motion";
 import { useTranslation } from "@/hooks/useTranslation";
 import { useReducedMotion } from "@/hooks/useReducedMotion";
@@ -16,7 +16,6 @@ export interface PlatformDashboardBannerProps {
   platformUser?: PlatformUser | null;
   isSuperUser: boolean;
   canWorkspaces: boolean;
-  canOnboard: boolean;
 }
 
 /** Greeting + primary CTAs only — fleet counts live in the metrics grid. */
@@ -24,7 +23,6 @@ export function PlatformDashboardBanner({
   platformUser,
   isSuperUser,
   canWorkspaces,
-  canOnboard,
 }: PlatformDashboardBannerProps): React.JSX.Element {
   const { t } = useTranslation();
   const reducedMotion = useReducedMotion();
@@ -65,19 +63,6 @@ export function PlatformDashboardBanner({
           </div>
 
           <div className="flex flex-wrap items-center gap-2.5">
-            {canOnboard && (
-              <Button
-                asChild
-                size="sm"
-                className="rounded-xl font-bold gap-1.5 shadow-sm shadow-primary/20 interactive-scale min-h-11 px-4 cursor-pointer"
-              >
-                <Link to={ROUTES.onboarding}>
-                  <Building2 className="w-4 h-4" aria-hidden />
-                  {t("auth.createMadrasa")}
-                  <ArrowUpRight className="w-3.5 h-3.5 opacity-80 rtl:-scale-x-100" />
-                </Link>
-              </Button>
-            )}
             {canWorkspaces && (
               <Button
                 asChild
