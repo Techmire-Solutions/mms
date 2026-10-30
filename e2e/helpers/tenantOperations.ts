@@ -13,12 +13,15 @@ const backendDir = path.resolve(__dirname, "../../apps/backend");
  * activates the first tab of the section navigation instead of a hardcoded "Work" label.
  */
 export async function ensureWorkTierActive(page: Page): Promise<void> {
+  await expect(page.locator("h1").first()).toBeVisible({ timeout: 20_000 });
+
   const sectionNav = page
     .getByRole("tablist", { name: "Section navigation" })
     .or(page.getByRole("navigation", { name: "Section navigation" }))
     .first();
 
-  if ((await sectionNav.count()) === 0) return;
+  const hasNav = await sectionNav.isVisible({ timeout: 5_000 }).catch(() => false);
+  if (!hasNav) return;
 
   const target = sectionNav.locator('[role="tab"], button').first();
   await expect(target).toBeVisible({ timeout: 15_000 });
@@ -27,7 +30,7 @@ export async function ensureWorkTierActive(page: Page): Promise<void> {
   const isExpanded = await target.getAttribute("aria-expanded");
   if (isSelected !== "true" && isExpanded !== "true") {
     await target.click();
-    await page.waitForLoadState("domcontentloaded");
+    await expect(target).toHaveAttribute("aria-selected", "true", { timeout: 10_000 });
   }
 }
 
@@ -929,8 +932,11 @@ export async function recordInvoicePayment(page: Page): Promise<void> {
  */
 export async function createMessagingTemplateAndCampaign(page: Page): Promise<void> {
   await test.step("Create messaging template & dispatch SMS campaign", async () => {
+    await expect(page.locator("h1").first()).toBeVisible({ timeout: 20_000 });
     const setupTab = page.getByRole("tab", { name: "Setup", exact: true }).first();
+    await expect(setupTab).toBeVisible({ timeout: 15_000 });
     await setupTab.click();
+    await expect(setupTab).toHaveAttribute("aria-selected", "true", { timeout: 10_000 });
     await page.getByRole("button", { name: "Create Preset Template" }).first().click();
     await expect(page.locator("#tplLabel").locator("visible=true")).toBeVisible({
       timeout: 15_000,
@@ -1054,6 +1060,7 @@ export async function createAccountsAndJournalEntry(page: Page): Promise<void> {
     const coaTab = page.getByRole("tab", { name: /Chart of Accounts/i }).first();
     await expect(coaTab).toBeVisible({ timeout: 15_000 });
     await coaTab.click();
+    await expect(coaTab).toHaveAttribute("aria-selected", "true", { timeout: 10_000 });
     await expect(page.getByRole("region", { name: "Chart of Accounts" })).toBeVisible({
       timeout: 15_000,
     });
@@ -1092,9 +1099,11 @@ export async function createAccountsAndJournalEntry(page: Page): Promise<void> {
     const journalTab = page.getByRole("tab", { name: /Journal Entries/i }).first();
     await expect(journalTab).toBeVisible({ timeout: 15_000 });
     await journalTab.click();
+    await expect(journalTab).toHaveAttribute("aria-selected", "true", { timeout: 10_000 });
     const advancedTab = page.getByRole("tab", { name: /Advanced/i }).first();
     await expect(advancedTab).toBeVisible({ timeout: 15_000 });
     await advancedTab.click();
+    await expect(advancedTab).toHaveAttribute("aria-selected", "true", { timeout: 10_000 });
     await expect(page.getByRole("region", { name: "Advanced Journal Entries" })).toBeVisible({
       timeout: 15_000,
     });

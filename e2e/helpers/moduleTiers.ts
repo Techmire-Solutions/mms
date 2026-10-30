@@ -17,7 +17,9 @@ export async function assertModuleTierSmoke(
   tenantOrigin: string,
 ): Promise<void> {
   await page.goto(`${tenantOrigin}${modulePath}`);
-  await page.waitForLoadState("domcontentloaded");
+  await expect(page.locator("h1").first(), `${modulePath} missing h1`).toBeVisible({
+    timeout: 20_000,
+  });
 
   const tierNav = page
     .getByRole("tablist", { name: "Section navigation" })
@@ -32,12 +34,33 @@ export async function assertModuleTierSmoke(
   for (let index = 0; index < tabCount; index += 1) {
     const tab = tierTabs.nth(index);
     await expect(tab, `${modulePath} tier tab ${index} not visible`).toBeVisible();
-    await tab.click();
-    await expect(tab, `${modulePath} tier tab ${index} not selectable`).toBeVisible();
+    const currentSelected = await tab.getAttribute("aria-selected");
+    if (currentSelected !== "true") {
+      await tab.click();
+    }
+    const isSelected = await tab.getAttribute("aria-selected");
+    if (isSelected !== null) {
+      await expect(tab, `${modulePath} tier tab ${index} not selected`).toHaveAttribute(
+        "aria-selected",
+        "true",
+        { timeout: 10_000 },
+      );
+    }
   }
 
-  await tierTabs.first().click();
-  await page.waitForLoadState("domcontentloaded");
+  const firstTab = tierTabs.first();
+  const currentFirstSelected = await firstTab.getAttribute("aria-selected");
+  if (currentFirstSelected !== "true") {
+    await firstTab.click();
+  }
+  const firstSelected = await firstTab.getAttribute("aria-selected");
+  if (firstSelected !== null) {
+    await expect(firstTab, `${modulePath} reset to first tab failed`).toHaveAttribute(
+      "aria-selected",
+      "true",
+      { timeout: 10_000 },
+    );
+  }
 }
 
 export async function completeInstitutionSetupIfPresent(page: Page): Promise<void> {
