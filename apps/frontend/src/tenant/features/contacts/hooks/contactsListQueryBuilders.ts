@@ -5,6 +5,7 @@ import {
   CONTACTS_API,
   CONTACTS_QUERY_KEY,
 } from "@/tenant/features/contacts/hooks/contactsQueryKeys";
+import { assertContractOk } from "@/lib/apiContractError";
 
 export interface ContactsPaginatedParams {
   page: number;
@@ -52,7 +53,7 @@ export async function fetchContactById(
   _signal?: AbortSignal,
 ): Promise<Contact | undefined> {
   const response = await apiContract.contacts.get({ params: { id: contactId } });
-  if (response.status !== 200) throw new Error("Failed to fetch contact");
+  assertContractOk(response, "Failed to fetch contact");
   const body = response.body as { contact?: Contact } | undefined;
   return body?.contact;
 }

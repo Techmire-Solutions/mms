@@ -1,18 +1,12 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import type { HyperinflationSettings, Ias29Run, PriceIndexPoint } from "@mms/shared";
 import { apiContract } from "@/lib/api";
-import { ApiError } from "@/lib/apiClient";
 import { invalidateAccountingQueries } from "@/tenant/features/accounting/hooks/invalidateAccountingQueries";
+import { assertContractOk } from "@/lib/apiContractError";
 
 const SETTINGS_KEY = ["accounting", "ias29", "settings"] as const;
 const INDICES_KEY = ["accounting", "ias29", "priceIndices"] as const;
 const RUNS_KEY = ["accounting", "ias29", "runs"] as const;
-
-function assertOk(response: { status: number; body: unknown }, context: string): void {
-  if (response.status >= 200 && response.status < 300) return;
-  const errorBody = response.body as { message?: string; type?: string } | undefined;
-  throw new ApiError(response.status, errorBody?.message ?? context, errorBody?.type);
-}
 
 export function useHyperinflationSettings() {
   return useQuery({
@@ -22,7 +16,7 @@ export function useHyperinflationSettings() {
         signal,
         fetchOptions: { signal },
       });
-      assertOk(response, "Failed to load hyperinflation settings");
+      assertContractOk(response, "Failed to load hyperinflation settings");
       return (response.body as { settings: HyperinflationSettings }).settings;
     },
   });
@@ -33,7 +27,7 @@ export function useSaveHyperinflationSettings() {
   return useMutation({
     mutationFn: async (settings: HyperinflationSettings) => {
       const response = await apiContract.accountingFx.putHyperinflationSettings({ body: settings });
-      assertOk(response, "Failed to save hyperinflation settings");
+      assertContractOk(response, "Failed to save hyperinflation settings");
       return (response.body as { settings: HyperinflationSettings }).settings;
     },
     onSuccess: (settings) => queryClient.setQueryData(SETTINGS_KEY, settings),
@@ -48,7 +42,7 @@ export function usePriceIndices() {
         signal,
         fetchOptions: { signal },
       });
-      assertOk(response, "Failed to load price indices");
+      assertContractOk(response, "Failed to load price indices");
       return (response.body as { points: PriceIndexPoint[] }).points;
     },
   });
@@ -59,7 +53,7 @@ export function useSavePriceIndices() {
   return useMutation({
     mutationFn: async (points: PriceIndexPoint[]) => {
       const response = await apiContract.accountingFx.putPriceIndices({ body: { points } });
-      assertOk(response, "Failed to save price indices");
+      assertContractOk(response, "Failed to save price indices");
       return (response.body as { points: PriceIndexPoint[] }).points;
     },
     onSuccess: (points) => queryClient.setQueryData(INDICES_KEY, points),
@@ -74,7 +68,7 @@ export function useIas29Runs() {
         signal,
         fetchOptions: { signal },
       });
-      assertOk(response, "Failed to load IAS 29 restatements");
+      assertContractOk(response, "Failed to load IAS 29 restatements");
       return (response.body as { runs: Ias29Run[] }).runs;
     },
   });
@@ -87,7 +81,7 @@ export function usePreviewIas29() {
       const response = await apiContract.accountingFx.previewIas29Restatement({
         body: { restatementDate },
       });
-      assertOk(response, "Failed to preview IAS 29 restatement");
+      assertContractOk(response, "Failed to preview IAS 29 restatement");
       return (response.body as { run: Ias29Run }).run;
     },
   });
@@ -101,7 +95,7 @@ export function usePostIas29() {
       const response = await apiContract.accountingFx.postIas29Restatement({
         body: { restatementDate },
       });
-      assertOk(response, "Failed to post IAS 29 restatement");
+      assertContractOk(response, "Failed to post IAS 29 restatement");
       return (response.body as { run: Ias29Run }).run;
     },
     onSuccess: () => {

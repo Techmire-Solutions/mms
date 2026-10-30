@@ -86,6 +86,7 @@ export default function WizardLayout({
 
       <main
         id="main-content"
+        tabIndex={-1}
         className="relative z-elevated flex flex-1 flex-col items-center px-4 py-8 sm:px-6 sm:py-10"
       >
         <nav aria-label={stepLabel} className="mb-8 flex justify-center w-full max-w-2xl sm:mb-10">

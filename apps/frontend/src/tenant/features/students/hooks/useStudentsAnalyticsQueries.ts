@@ -16,6 +16,7 @@ import {
   type StudentNextGrNumberParams,
   type StudentsWidgetAggregateWidgetInput,
 } from "@/tenant/features/students/hooks/studentsQueryKeys";
+import { assertContractOk } from "@/lib/apiContractError";
 
 export function studentsCommandMetricsQueryOptions() {
   return serverMetricsQueryOptions<StudentsCommandMetricsSnapshot>({
@@ -53,7 +54,7 @@ export async function checkStudentRegistrationDuplicate(
   input: StudentDuplicateCheckInput,
 ): Promise<StudentDuplicateReason | null> {
   const res = await apiContract.students.duplicateCheck({ body: input });
-  if (res.status !== 200) throw new Error("Duplicate check failed");
+  assertContractOk(res, "Duplicate check failed");
   return (res.body as { reason?: StudentDuplicateReason | null } | null)?.reason ?? null;
 }
 

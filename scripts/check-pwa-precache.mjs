@@ -40,6 +40,10 @@ const FORBIDDEN = [
   { pattern: /(?:^|\/)jspdf[\w.-]*\.js$/, label: "jspdf export library" },
   { pattern: /(?:^|\/)html2canvas-[\w-]+\.js$/, label: "html2canvas capture library" },
   { pattern: /(?:^|\/)katex-[\w-]+\.js$/, label: "katex math renderer" },
+  {
+    pattern: /(?:^|\/)vendor-motion-[\w-]+\.js$/,
+    label: "framer-motion runtime (loads with the authenticated shell, not first paint)",
+  },
   { pattern: /(?:^|\/)mms-i18n-(?:ar|ur|fa)-[\w-]+\.js$/, label: "non-default locale pack" },
   { pattern: /(?:^|\/)platform-logo\.png$/, label: "unused platform logo raster" },
 ];

@@ -56,6 +56,7 @@ export function AuthPageFrame({
   return (
     <main
       id="main-content"
+      tabIndex={-1}
       dir={dir}
       className="relative flex min-h-dvh flex-col items-center justify-center overflow-hidden bg-background px-4 py-10 sm:px-6"
     >

@@ -11,19 +11,13 @@ import type {
   ExchangeRateType,
 } from "@mms/shared";
 import { apiContract } from "@/lib/api";
-import { ApiError } from "@/lib/apiClient";
 import { invalidateAccountingQueries } from "@/tenant/features/accounting/hooks/invalidateAccountingQueries";
+import { assertContractOk } from "@/lib/apiContractError";
 
 const FX_KEY = ["accounting", "fx"] as const;
 export const ACCOUNTING_CURRENCY_SETTINGS_QUERY_KEY = [...FX_KEY, "currency-settings"] as const;
 const RATES_KEY = [...FX_KEY, "exchange-rates"] as const;
 const LOOKUP_KEY = [...FX_KEY, "rate-lookup"] as const;
-
-function assertOk(response: { status: number; body: unknown }, context: string): void {
-  if (response.status >= 200 && response.status < 300) return;
-  const errorBody = response.body as { message?: string; type?: string } | undefined;
-  throw new ApiError(response.status, errorBody?.message ?? context, errorBody?.type);
-}
 
 export function useAccountingCurrencySettings(enabled = true) {
   return useQuery({
@@ -33,7 +27,7 @@ export function useAccountingCurrencySettings(enabled = true) {
         signal,
         fetchOptions: { signal },
       });
-      assertOk(response, "Failed to load currency settings");
+      assertContractOk(response, "Failed to load currency settings");
       return (response.body as { settings: AccountingCurrencySettings }).settings;
     },
     enabled,
@@ -45,7 +39,7 @@ export function useSaveAccountingCurrencySettings() {
   return useMutation({
     mutationFn: async (body: AccountingCurrencySettingsPut) => {
       const response = await apiContract.accountingFx.putCurrencySettings({ body });
-      assertOk(response, "Failed to save currency settings");
+      assertContractOk(response, "Failed to save currency settings");
       return (response.body as { settings: AccountingCurrencySettings }).settings;
     },
     onSuccess: (settings) => {
@@ -64,7 +58,7 @@ export function useAccountingExchangeRates(query: ExchangeRateListQuery = {}, en
         signal,
         fetchOptions: { signal },
       });
-      assertOk(response, "Failed to load exchange rates");
+      assertContractOk(response, "Failed to load exchange rates");
       return (response.body as { rates: ExchangeRateRecord[] }).rates;
     },
     enabled,
@@ -77,7 +71,7 @@ export function useSaveAccountingExchangeRates() {
   return useMutation({
     mutationFn: async (rates: ExchangeRatePutItem[]) => {
       const response = await apiContract.accountingFx.putExchangeRates({ body: { rates } });
-      assertOk(response, "Failed to save exchange rates");
+      assertContractOk(response, "Failed to save exchange rates");
       return (response.body as { rates: ExchangeRateRecord[] }).rates;
     },
     onSuccess: () => {
@@ -109,7 +103,7 @@ export function useExchangeRateLookup(input: ExchangeRateLookupInput | null) {
         fetchOptions: { signal },
       });
       if (response.status === 404) return null;
-      assertOk(response, "Failed to look up exchange rate");
+      assertContractOk(response, "Failed to look up exchange rate");
       return (response.body as { rate: ExchangeRateLookupResult }).rate;
     },
     enabled: input !== null && input.fromCurrency !== input.toCurrency,
@@ -127,7 +121,7 @@ export function useCurrencyExchangeability(enabled = true) {
         signal,
         fetchOptions: { signal },
       });
-      assertOk(response, "Failed to load exchangeability assessments");
+      assertContractOk(response, "Failed to load exchangeability assessments");
       return (response.body as { currencies: CurrencyExchangeability[] }).currencies;
     },
     enabled,
@@ -139,7 +133,7 @@ export function useSaveCurrencyExchangeability() {
   return useMutation({
     mutationFn: async (body: CurrencyExchangeabilityPut) => {
       const response = await apiContract.accountingFx.putExchangeability({ body });
-      assertOk(response, "Failed to save exchangeability assessments");
+      assertContractOk(response, "Failed to save exchangeability assessments");
       return (response.body as { currencies: CurrencyExchangeability[] }).currencies;
     },
     onSuccess: (currencies) => {

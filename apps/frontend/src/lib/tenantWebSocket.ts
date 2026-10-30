@@ -85,7 +85,11 @@ type TenantWebSocketHandlers = {
 
 /**
  * Cookie-auth tenant WS client for `/api/ws`.
- * Reconnects with exponential backoff; browser handles ping/pong automatically.
+ * Reconnects with exponential backoff on close, and on wake/online/focus when the
+ * socket is closed — a browser ping/pong reply does not surface a half-open socket
+ * (sleep, NAT/proxy idle timeout), so live push would otherwise stay silent until
+ * a reload. True half-open detection needs an application-level pong from the
+ * server; wake/online recovery is the client-side half.
  */
 export function connectTenantDatabaseSocket(handlers: TenantWebSocketHandlers): () => void {
   let socket: WebSocket | null = null;
@@ -178,9 +182,37 @@ export function connectTenantDatabaseSocket(handlers: TenantWebSocketHandlers): 
 
   open();
 
+  // A socket that closed without a `close` event (sleep/wake, proxy timeout) or
+  // whose reconnect timer was missed is repaired when the tab wakes or the
+  // network returns. Numeric ready states: 0 CONNECTING, 1 OPEN, 2 CLOSING, 3 CLOSED.
+  const ensureConnected = (): void => {
+    if (closedByCaller) return;
+    if (socket && socket.readyState < 2) return;
+    attempt = 0;
+    open();
+  };
+  const handleWake = (): void => ensureConnected();
+  const handleVisibilityChange = (): void => {
+    if (document.visibilityState === "visible") ensureConnected();
+  };
+  if (typeof window !== "undefined") {
+    window.addEventListener("online", handleWake);
+    window.addEventListener("focus", handleWake);
+  }
+  if (typeof document !== "undefined") {
+    document.addEventListener("visibilitychange", handleVisibilityChange);
+  }
+
   return () => {
     closedByCaller = true;
     clearReconnect();
+    if (typeof window !== "undefined") {
+      window.removeEventListener("online", handleWake);
+      window.removeEventListener("focus", handleWake);
+    }
+    if (typeof document !== "undefined") {
+      document.removeEventListener("visibilitychange", handleVisibilityChange);
+    }
     if (socket) {
       const s = socket;
       socket = null;

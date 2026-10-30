@@ -15,6 +15,7 @@ export interface SidebarProps {
 export default function Sidebar({ collapsed, onToggle }: SidebarProps): React.JSX.Element {
   const { t } = useTranslation();
   const { location, openMenus, toggleMenu, visibleMenuItems } = useSidebarNav(collapsed, onToggle);
+  const toggleLabel = collapsed ? t("nav.expand") : t("nav.collapse");
 
   return (
     <AppSidebar
@@ -26,14 +27,16 @@ export default function Sidebar({ collapsed, onToggle }: SidebarProps): React.JS
             type="button"
             variant="ghost"
             onClick={onToggle}
+            aria-label={toggleLabel}
+            aria-expanded={!collapsed}
             className="flex min-h-11 w-full items-center justify-center gap-2 rounded-lg px-3 py-2 text-sidebar-muted-foreground transition-colors hover:bg-sidebar-accent/50 hover:text-sidebar-foreground"
           >
             {collapsed ? (
-              <ChevronRight className="h-4 w-4 rtl:rotate-180" />
+              <ChevronRight className="h-4 w-4 rtl:rotate-180" aria-hidden="true" />
             ) : (
               <>
-                <ChevronLeft className="h-4 w-4 rtl:rotate-180" />
-                <span className="text-xs font-medium">{t("nav.collapse")}</span>
+                <ChevronLeft className="h-4 w-4 rtl:rotate-180" aria-hidden="true" />
+                <span className="text-xs font-medium">{toggleLabel}</span>
               </>
             )}
           </Button>

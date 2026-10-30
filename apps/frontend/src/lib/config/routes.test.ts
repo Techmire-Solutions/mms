@@ -10,6 +10,7 @@ import {
   isTenantAppPath,
   SETTINGS_SECTIONS,
 } from "@/lib/config/routes";
+import { TENANT_APP_ENTRIES, TENANT_PATHS } from "@/lib/routing/moduleRegistry";
 
 describe("tenantNotFoundPath", () => {
   it("builds the redirect path with a subdomain query param", () => {
@@ -98,5 +99,34 @@ describe("isTenantAppPath", () => {
   it("rejects non-tenant paths", () => {
     expect(isTenantAppPath("/login")).toBe(false);
     expect(isTenantAppPath("/platform/dashboard")).toBe(false);
+  });
+});
+
+describe("ROUTES tenant registry parity", () => {
+  it("given the tenant module registry, should expose every registered path when read from ROUTES", () => {
+    // Arrange
+    const routeValues = new Set<string>(Object.values(ROUTES));
+
+    // Act
+    const missingPaths = Object.values(TENANT_PATHS).filter((path) => !routeValues.has(path));
+    const missingEntries = TENANT_APP_ENTRIES.filter((entry) => !routeValues.has(entry.path)).map(
+      (entry) => entry.path,
+    );
+
+    // Assert
+    expect(missingPaths).toEqual([]);
+    expect(missingEntries).toEqual([]);
+  });
+
+  it("given a registered module id, should map it to the same path when read from ROUTES", () => {
+    // Arrange
+    const workshopsEntry = TENANT_APP_ENTRIES.find((entry) => entry.id === "workshops");
+
+    // Act
+    const registeredPath = workshopsEntry?.path;
+
+    // Assert
+    expect(registeredPath).toBe(TENANT_PATHS.workshops);
+    expect(Object.values(ROUTES)).toContain(registeredPath);
   });
 });

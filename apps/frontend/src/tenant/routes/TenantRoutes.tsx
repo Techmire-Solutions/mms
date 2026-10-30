@@ -8,6 +8,7 @@ import ProtectedRoute from "@/tenant/components/guards/ProtectedRoute";
 import GuestRoute from "@/tenant/components/guards/GuestRoute";
 import ModuleAccessRoute from "@/tenant/components/guards/ModuleAccessRoute";
 import RequirePermission from "@/tenant/components/guards/RequirePermission";
+import SettingsSectionRedirect from "@/tenant/features/settings/components/SettingsSectionRedirect";
 import WorkspaceDisabledScreen from "@/tenant/components/WorkspaceDisabledScreen";
 import RouteStatusFallback from "@/components/routing/RouteStatusFallback";
 import { AuthPageFrame } from "@/components/entry";
@@ -185,10 +186,7 @@ function TenantRoutesInner(): React.JSX.Element {
                   }
                 />
               ))}
-              <Route
-                path={`${ROUTES.settings}/:section`}
-                element={<Navigate to={ROUTES.settings} replace />}
-              />
+              <Route path={`${ROUTES.settings}/:section`} element={<SettingsSectionRedirect />} />
             </Route>
           </Route>
         </Route>

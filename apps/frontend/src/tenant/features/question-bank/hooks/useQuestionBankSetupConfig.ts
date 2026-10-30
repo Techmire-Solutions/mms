@@ -8,6 +8,7 @@ import {
   normalizeQuestionBankModulePreferences,
   normalizeQuestionBankFieldConfigOnly,
 } from "@mms/shared";
+import { assertContractOk } from "@/lib/apiContractError";
 
 const QUERY_KEY_COMPOSED = ["question-bank", "config", "composed"] as const;
 const QUERY_KEY_FIELDS = ["question-bank", "config", "fields"] as const;
@@ -34,9 +35,8 @@ export function useComposedQuestionBankSettings() {
       updatePrefsMutation.mutateAsync({ body: prefsOnly }),
     ]);
 
-    if (fieldsRes.status !== 200 || prefsRes.status !== 200) {
-      throw new Error("Failed to update question bank settings");
-    }
+    assertContractOk(fieldsRes, "Failed to update question bank settings");
+    assertContractOk(prefsRes, "Failed to update question bank settings");
 
     const composedSettings = composeQuestionBankSettings(
       normalizeQuestionBankFieldConfigOnly(fieldsRes.body),

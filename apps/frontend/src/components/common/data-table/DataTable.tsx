@@ -1,4 +1,4 @@
-import React, { useId } from "react";
+import React, { useId, useMemo } from "react";
 import { SearchX } from "lucide-react";
 import {
   WorkBatchTable,
@@ -58,18 +58,23 @@ export function DataTable<TData extends { id: string | number }>({
   });
   const { layout } = state;
 
-  const tableColumns: WorkBatchTableColumn<TData>[] = state.visibleColumns.map((column) => ({
-    id: column.id,
-    label: column.label,
-    width: column.width,
-    headerClassName: column.headerClassName,
-    cellClassName: column.cellClassName,
-    render: column.render,
-    noWrap: column.noWrap,
-    truncate: column.truncate,
-    align: column.align,
-    variant: column.variant,
-  }));
+  // Stable identity: rows are memoized and receive this array as a prop.
+  const tableColumns: WorkBatchTableColumn<TData>[] = useMemo(
+    () =>
+      state.visibleColumns.map((column) => ({
+        id: column.id,
+        label: column.label,
+        width: column.width,
+        headerClassName: column.headerClassName,
+        cellClassName: column.cellClassName,
+        render: column.render,
+        noWrap: column.noWrap,
+        truncate: column.truncate,
+        align: column.align,
+        variant: column.variant,
+      })),
+    [state.visibleColumns],
+  );
 
   const sourceEmpty = !isLoading && data.length === 0;
   const noMatches = (
@@ -154,7 +159,7 @@ export function DataTable<TData extends { id: string | number }>({
             }
           }
           {...tableProps}
-          data={[...state.rows]}
+          data={state.rows}
           columns={tableColumns}
           caption={caption ?? label}
           isLoading={isLoading}

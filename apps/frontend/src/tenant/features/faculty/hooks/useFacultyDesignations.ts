@@ -4,6 +4,7 @@ import { apiContract } from "@/lib/api";
 import { useTranslation } from "@/hooks/useTranslation";
 import { useQueryClientOrFallback } from "@/lib/query/optionalQueryContext";
 import { FACULTY_QUERY_KEY } from "./facultyQueryKeys";
+import { assertContractOk } from "@/lib/apiContractError";
 
 export const FACULTY_DESIGNATIONS_QUERY_KEY = [...FACULTY_QUERY_KEY, "designations"] as const;
 
@@ -20,7 +21,7 @@ export function facultyDesignationsQueryOptions(input: {
         query: includeDeleted ? { includeDeleted: true } : undefined,
         fetchOptions: { signal },
       });
-      if (response.status !== 200) throw new Error(input.loadFailed);
+      assertContractOk(response, input.loadFailed);
       const parsed = facultyDesignationSchema
         .array()
         .safeParse((response.body as { designations?: unknown }).designations);
@@ -55,7 +56,7 @@ export function useSaveFacultyDesignation(customClient?: QueryClient) {
           params: { id: input.id },
           body: input,
         });
-        if (response.status !== 200) throw new Error(t("faculty.errors.saveDesignation"));
+        assertContractOk(response, t("faculty.errors.saveDesignation"));
         return facultyDesignationSchema.parse(
           (response.body as { designation?: unknown }).designation,
         );
@@ -78,13 +79,7 @@ export function useDeleteFacultyDesignation(customClient?: QueryClient) {
           params: { id },
           body: {},
         });
-        if (response.status !== 200) {
-          const message =
-            typeof response.body === "object" && response.body && "message" in response.body
-              ? String(response.body.message)
-              : t("faculty.errors.deleteDesignation");
-          throw new Error(message);
-        }
+        assertContractOk(response, t("faculty.errors.deleteDesignation"));
       },
       onSuccess: () => client.invalidateQueries({ queryKey: FACULTY_DESIGNATIONS_QUERY_KEY }),
     },
@@ -104,13 +99,7 @@ export function useRestoreFacultyDesignation(customClient?: QueryClient) {
           params: { id },
           body: {},
         });
-        if (response.status !== 200) {
-          const message =
-            typeof response.body === "object" && response.body && "message" in response.body
-              ? String(response.body.message)
-              : t("faculty.errors.restoreDesignation");
-          throw new Error(message);
-        }
+        assertContractOk(response, t("faculty.errors.restoreDesignation"));
         return facultyDesignationSchema.parse(
           (response.body as { designation?: unknown }).designation,
         );

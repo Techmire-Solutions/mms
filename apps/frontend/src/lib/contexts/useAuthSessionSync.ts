@@ -15,6 +15,7 @@ import {
   clearPersistedAuthUser,
   clearUserScopedCachesOnLogout,
   getPersistedAuthUser,
+  readUserIdFromStoredAuth,
 } from "@/lib/contexts/authContextHelpers";
 
 export interface UseAuthSessionSyncParams {
@@ -100,6 +101,12 @@ export function useAuthSessionSync({
     const handleStorage = (event: StorageEvent) => {
       if (event.key === AUTH_USER_STORAGE_KEY) {
         if (!event.newValue) {
+          // Another tab signed out: evict the previous user's scoped caches
+          // before clearing the shared cache, matching the logout path.
+          const previousUserId = readUserIdFromStoredAuth(event.oldValue);
+          if (previousUserId) {
+            clearUserScopedCachesOnLogout(previousUserId, getWorkspaceLocalStoragePrefix());
+          }
           setUser(null);
           setIsAuthenticated(false);
           setAuthChecked(true);

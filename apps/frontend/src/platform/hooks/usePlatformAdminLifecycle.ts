@@ -5,6 +5,7 @@ import { useTranslation } from "@/hooks/useTranslation";
 import { notify } from "@/lib/notify";
 import { getPlatformErrorMessage } from "@/platform/lib/platformAuthErrors";
 import { updateAdminsCache } from "./platformAdminsCache";
+import { assertContractOk } from "@/lib/apiContractError";
 
 export const PLATFORM_ADMINS_QUERY_KEY = ["platform", "admins"] as const;
 
@@ -86,11 +87,7 @@ export function useVerifyPlatformAdminEmail() {
       const res = await apiContract.platform.verifyAdminEmail({
         params: { adminId },
       });
-      if (res.status !== 200) {
-        throw new Error(
-          (res.body as { message?: string })?.message ?? "Failed to verify admin email",
-        );
-      }
+      assertContractOk(res, "Failed to verify admin email");
       return res.body as { user: PlatformUserProfile; success: boolean };
     },
     onSuccess: () => {

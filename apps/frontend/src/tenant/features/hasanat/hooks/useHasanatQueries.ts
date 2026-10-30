@@ -171,6 +171,7 @@ export function useHasanatMetrics(options?: { enabled?: boolean }) {
 
 import { queryOptions, useQueryClient } from "@tanstack/react-query";
 import { invalidateHasanatQueries } from "@/tenant/features/hasanat/hooks/invalidateHasanatQueries";
+import { assertContractOk } from "@/lib/apiContractError";
 
 export function hasanatListQueryOptions(query: Record<string, unknown> = {}) {
   return queryOptions({
@@ -181,9 +182,7 @@ export function hasanatListQueryOptions(query: Record<string, unknown> = {}) {
         signal,
         fetchOptions: { signal },
       });
-      if (response.status !== 200) {
-        throw new Error("Failed to fetch hasanat distributions");
-      }
+      assertContractOk(response, "Failed to fetch hasanat distributions");
       return response.body;
     },
     placeholderData: (prev) => prev,

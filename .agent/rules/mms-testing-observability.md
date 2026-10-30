@@ -60,7 +60,7 @@ The per-workspace `thresholds` blocks are the only authoritative floors — neve
 
 | Workspace | Config (SSOT) | lines / statements / functions / branches |
 | :--- | :--- | :--- |
-| Frontend | `apps/frontend/vitest.config.ts` | 56 / 55 / 46 / 51 |
+| Frontend | `apps/frontend/vitest.config.ts` | 42 / 41 / 34 / 40 |
 | Backend | `apps/backend/vitest.config.ts` | 46 / 43.5 / 41 / 33 |
 | `@mms/shared` | `packages/shared/vitest.config.ts` | 79 / 75 / 72 / 57 |
 

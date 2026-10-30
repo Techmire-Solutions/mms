@@ -40,6 +40,7 @@ Project-wide entry points live at the repo root:
 - [backend-review-2026-10-29.md](./backend-review-2026-10-29.md) — backend deep-dive: audit-trail/RLS and finance-ledger defects, job/queue findings, deploy and authorization gaps.
 - [backend-review-2026-10-30.md](./backend-review-2026-10-30.md) — post-hardening backend review: verification of F1–F46, 7-pillar audit, and adversarial evaluation.
 - [frontend-review-2026-10-30.md](./frontend-review-2026-10-30.md) — frontend deep-dive: PWA precache budget, stale-chunk recovery, pre-paint BiDi, coverage depth, deferred i18n split.
+- [frontend-review-2026-10-30-deep.md](./frontend-review-2026-10-30-deep.md) — whole-frontend review: routing/data/a11y/i18n findings, 12 fixes (pagination labels, settings deep links, palette focus trap, finance live push, 401 escalation, platform boundary), deferred register.
 - [rules-review-2026-10-29.md](./rules-review-2026-10-29.md) — agent standards review: rule findings H/M/L, per-rule scorecard, 49-skill review + fixes, and the DeepSeek Harness `.dsh` mirror.
 - [migration-milestones.md](./migration-milestones.md) — closed-milestone register.
 

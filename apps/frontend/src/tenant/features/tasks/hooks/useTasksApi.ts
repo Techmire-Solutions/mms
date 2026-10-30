@@ -8,7 +8,6 @@ import {
   type TaskSettings,
 } from "@mms/shared";
 import { apiContract } from "@/lib/api";
-import { ApiError } from "@/lib/apiClient";
 import {
   TASKS_QUERY_KEY,
   TASKS_LIST_QUERY_KEY,
@@ -17,6 +16,7 @@ import {
   TASKS_ELIGIBLE_ASSIGNEES_QUERY_KEY,
   TASKS_SETTINGS_QUERY_KEY,
 } from "./tasksQueryKeys";
+import { assertContractOk } from "@/lib/apiContractError";
 
 export interface TasksListResponse {
   tasks: TaskRecord[];
@@ -38,13 +38,6 @@ export interface TaskMetricsResponse {
     high: number;
     urgent: number;
   };
-}
-
-/** Throws on any non-2xx (create returns 201, so this must accept the whole 2xx range). */
-function assertOk(response: { status: number; body: unknown }, context: string): void {
-  if (response.status >= 200 && response.status < 300) return;
-  const errorBody = response.body as { message?: string; type?: string } | undefined;
-  throw new ApiError(response.status, errorBody?.message ?? context, errorBody?.type);
 }
 
 export function invalidateTasksQueries(queryClient: ReturnType<typeof useQueryClient>) {
@@ -74,7 +67,7 @@ export function useTasks(query?: Partial<TaskListQuery>, options: { enabled?: bo
         signal,
         fetchOptions: { signal },
       });
-      assertOk(response, "Failed to load tasks");
+      assertContractOk(response, "Failed to load tasks");
       return response.body as TasksListResponse;
     },
     enabled: options.enabled ?? true,
@@ -87,7 +80,7 @@ export function useTaskMetrics(options: { enabled?: boolean } = {}) {
     queryKey: TASKS_METRICS_QUERY_KEY,
     queryFn: async ({ signal }) => {
       const response = await apiContract.tasks.metrics({ signal, fetchOptions: { signal } });
-      assertOk(response, "Failed to load task metrics");
+      assertContractOk(response, "Failed to load task metrics");
       return response.body as TaskMetricsResponse;
     },
     enabled: options.enabled ?? true,
@@ -104,7 +97,7 @@ export function useTask(id: string, options: { enabled?: boolean } = {}) {
         signal,
         fetchOptions: { signal },
       });
-      assertOk(response, "Failed to load task");
+      assertContractOk(response, "Failed to load task");
       return response.body as TaskRecord;
     },
     enabled: Boolean(id) && (options.enabled ?? true),
@@ -117,7 +110,7 @@ export function useCreateTask() {
   return useMutation({
     mutationFn: async (data: TaskInsert) => {
       const response = await apiContract.tasks.create({ body: data });
-      assertOk(response, "Failed to create task");
+      assertContractOk(response, "Failed to create task");
       return response.body as TaskRecord;
     },
     onSuccess: () => {
@@ -131,7 +124,7 @@ export function useUpdateTask() {
   return useMutation({
     mutationFn: async ({ id, data }: { id: string; data: TaskUpdate }) => {
       const response = await apiContract.tasks.update({ params: { id }, body: data });
-      assertOk(response, "Failed to update task");
+      assertContractOk(response, "Failed to update task");
       return response.body as TaskRecord;
     },
     onSuccess: (_data, variables) => {
@@ -146,7 +139,7 @@ export function useUpdateTaskStatus() {
   return useMutation({
     mutationFn: async ({ id, status }: { id: string; status: TaskStatus }) => {
       const response = await apiContract.tasks.updateStatus({ params: { id }, body: { status } });
-      assertOk(response, "Failed to update task status");
+      assertContractOk(response, "Failed to update task status");
       return response.body as TaskRecord;
     },
     onSuccess: (_data, variables) => {
@@ -161,7 +154,7 @@ export function useDeleteTask() {
   return useMutation({
     mutationFn: async (id: string) => {
       const response = await apiContract.tasks.remove({ params: { id } });
-      assertOk(response, "Failed to delete task");
+      assertContractOk(response, "Failed to delete task");
       return response.body as { success: boolean };
     },
     onSuccess: () => {
@@ -175,7 +168,7 @@ export function useRestoreTask() {
   return useMutation({
     mutationFn: async (id: string) => {
       const response = await apiContract.tasks.restore({ params: { id } });
-      assertOk(response, "Failed to restore task");
+      assertContractOk(response, "Failed to restore task");
       return response.body as { success: boolean; task: TaskRecord };
     },
     onSuccess: () => {
@@ -189,7 +182,7 @@ export function useBulkDeleteTasks() {
   return useMutation({
     mutationFn: async (ids: string[]) => {
       const response = await apiContract.tasks.bulkDelete({ body: { ids } });
-      assertOk(response, "Failed to bulk delete tasks");
+      assertContractOk(response, "Failed to bulk delete tasks");
       return response.body as { deletedIds: string[] };
     },
     onSuccess: () => {
@@ -203,7 +196,7 @@ export function useBulkRestoreTasks() {
   return useMutation({
     mutationFn: async (ids: string[]) => {
       const response = await apiContract.tasks.bulkRestore({ body: { ids } });
-      assertOk(response, "Failed to bulk restore tasks");
+      assertContractOk(response, "Failed to bulk restore tasks");
       return response.body as { restoredIds: string[] };
     },
     onSuccess: () => {
@@ -222,7 +215,7 @@ export function useBulkUpdateTaskStatus() {
             params: { id },
             body: { status },
           });
-          assertOk(response, "Failed to update task status");
+          assertContractOk(response, "Failed to update task status");
           return response.body as TaskRecord;
         }),
       );
@@ -252,7 +245,7 @@ export function useEligibleTaskAssignees(options: { enabled?: boolean } = {}) {
         signal,
         fetchOptions: { signal },
       });
-      assertOk(response, "Failed to load eligible assignees");
+      assertContractOk(response, "Failed to load eligible assignees");
       return response.body as EligibleAssigneeItem[];
     },
     enabled: options.enabled ?? true,
@@ -265,7 +258,7 @@ export function useTaskSettings(options: { enabled?: boolean } = {}) {
     queryKey: TASKS_SETTINGS_QUERY_KEY,
     queryFn: async ({ signal }) => {
       const response = await apiContract.tasks.getSettings({ signal, fetchOptions: { signal } });
-      assertOk(response, "Failed to load task settings");
+      assertContractOk(response, "Failed to load task settings");
       return response.body as TaskSettings;
     },
     enabled: options.enabled ?? true,
@@ -278,7 +271,7 @@ export function useUpdateTaskSettings() {
   return useMutation({
     mutationFn: async (settings: TaskSettings) => {
       const response = await apiContract.tasks.updateSettings({ body: settings });
-      assertOk(response, "Failed to update task settings");
+      assertContractOk(response, "Failed to update task settings");
       return response.body as TaskSettings;
     },
     onSuccess: () => {

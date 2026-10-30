@@ -7,6 +7,7 @@ import { PlatformPageShell } from "@/platform/components/PlatformPageShell";
 import RouteStatusFallback from "@/components/routing/RouteStatusFallback";
 import { PlatformAuthProvider } from "@/platform/lib/PlatformAuthContext";
 import { ApexBootPrefetch } from "@/platform/components/ApexBootPrefetch";
+import { MotionPreferences } from "@/providers/MotionPreferences";
 import {
   PLATFORM_CONSOLE_GROUPS,
   type ApexConsoleEntry,
@@ -173,11 +174,13 @@ export default function ApexRoutes(): React.JSX.Element {
 
 export function ApexRoutesWithSuspense(): React.JSX.Element {
   return (
-    <PlatformAuthProvider>
-      <ApexBootPrefetch />
-      <React.Suspense fallback={<RouteStatusFallback fullScreen />}>
-        <ApexRoutes />
-      </React.Suspense>
-    </PlatformAuthProvider>
+    <MotionPreferences>
+      <PlatformAuthProvider>
+        <ApexBootPrefetch />
+        <React.Suspense fallback={<RouteStatusFallback fullScreen />}>
+          <ApexRoutes />
+        </React.Suspense>
+      </PlatformAuthProvider>
+    </MotionPreferences>
   );
 }

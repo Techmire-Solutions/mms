@@ -19,6 +19,7 @@ export const ROUTES = {
   hasanatCards: TENANT_PATHS.hasanatCards,
   examinations: TENANT_PATHS.examinations,
   questionBank: TENANT_PATHS.questionBank,
+  workshops: TENANT_PATHS.workshops,
   accounting: TENANT_PATHS.accounting,
   obligations: TENANT_PATHS.obligations,
   tasks: TENANT_PATHS.tasks,

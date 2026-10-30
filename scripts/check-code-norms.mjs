@@ -49,7 +49,7 @@ const ROOT = process.cwd();
  * expanded 28 files that had been compressed under the ceiling with dense
  * one-liners (e.g. invoiceTemplatePresets.ts 174→863, contactFieldSeed.ts
  * 89→634). That was a one-time formatting normalization; the decomposition work
- * ratchets it back down (currently 69 — shared setup/manifest/global-settings modules split).
+ * ratcheted it back down to 4 (only the generated translation dictionaries).
  */
 const BASELINE = {
   anyAnnotations: 0,

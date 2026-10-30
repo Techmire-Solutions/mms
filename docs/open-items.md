@@ -210,8 +210,13 @@ transactions.`) and re-attaches triggers for **19** tables against 0104's **14**
      (broadcast `"faculty"` on save/delete/restore; the frontend already covers the keys by prefix).
    - **Contacts saved reports** (`savedReports` routes) are **owner-scoped** — each user has their own
      presets — so cross-client push is intentionally not applicable.
-   - `FINANCE_FEE_STRUCTURES_QUERY_KEY` / `FINANCE_FIELD_CONFIG_QUERY_KEY` are setup-config reads, not
-     nested under the finance list key and not broadcast; revisit only if a cross-client need appears.
+   - `FINANCE_FEE_STRUCTURES_QUERY_KEY` is a setup-config read outside the finance list key, but the
+     backend **does** broadcast `finance_fee_structures` (`financeBillingUseCases`) and
+     `finance_metrics`. The dispatcher previously had no case for either, so another admin's
+     fee-structure change stayed stale (and the next save overwrote it). **Fixed** in
+     `lib/tenant/invalidateModuleQueries.ts` + `invalidateFinanceQueries`; the key now lives in
+     `financeQueryKeys` so the module invalidator owns it. `FINANCE_FIELD_CONFIG_QUERY_KEY` remains
+     unbroadcast; revisit only if a cross-client need appears.
 
 10. **Frontend review follow-ups (updated).**
     - **Sidebar/chrome unification (audit F6) — largely done.** Both hosts now compose the shared
@@ -405,3 +410,102 @@ follow-ups:
 
 - Historical Drizzle snapshot regeneration and timezone-naive timestamp conversion.
 - i18n dead-key pruning (product/QA decision).
+
+## 2026-10-30 frontend deep-review residuals
+
+See [frontend-review-2026-10-30-deep.md](./frontend-review-2026-10-30-deep.md) for the full register.
+
+**Fixed in the deep pass:**
+
+- Pagination fell back to literal translation keys (`common.pagination.*` missing;
+  `t(key) ?? "English"` never fired). Shared keys added + explicit resolution chain.
+- Settings deep links (`/settings/:section`, the dashboard branding CTA,
+  messaging "configure in Settings") now share one validated `?tab=` contract.
+- Command palette: focus trap, topmost Escape and focus return (was `aria-modal`
+  without any of them).
+- Form-level save errors announce (`role="alert"`) and take focus once.
+- Collapsed sidebar toggle has an accessible name and `aria-expanded`.
+- `finance_fee_structures` / `finance_metrics` live push now invalidates finance.
+- A second 401 after a refresh attempt escalates to session expiry.
+- Platform console pages get a page-level error boundary.
+- `ROUTES.workshops` added; registry↔ROUTES parity test.
+- `user_not_registered` overlay no longer overrides login/forgot/apply pages.
+- Cross-tab logout clears user-scoped caches.
+- Tenant logo alt text, mobile drawer labels, `nav.recentItems`.
+
+**Fixed in tranche 2 (2026-10-30):**
+
+- **Entry-path motion.** `MotionConfig` moved from `AppProviders` to a
+  `providers/MotionPreferences.tsx` mounted by `AppLayout` and the apex tree; the
+  entry closure lost framer-motion (29 files / 1,829 KB → 28 / 1,693 KB raw;
+  precache 38 / 2.29 MB → 37 / 2.16 MB). `check:pwa` now forbids `vendor-motion`
+  in the precache. Reduced-motion coverage is unchanged (every `motion.*` renderer
+  is below one of the two wrappers).
+- **Table render hot path.** Stable `rowMotion` (`useCallback`), memoized column
+  registry (`useModuleColumnLayout`), memoized `DataTable` columns and direct
+  `state.rows`; `useDeferredValue` on search. New render-count test proves rows do
+  not re-render on unrelated parent renders while data/search updates still do.
+- **Route announcements.** `components/routing/RouteAnnouncer.tsx` focuses
+  `#main-content` and announces the page heading via a polite live region on
+  pathname changes (silent on first paint, no focus steal while a modal is open);
+  the remaining `#main-content` landmarks gained `tabIndex={-1}`.
+- **Calendar localization.** `lib/ui/calendarLocale.ts` feeds Intl formatters/labels
+  (month, weekday, day numerals, ARIA) into `components/ui/calendar.tsx`, with
+  `calendar: "gregory"` so `fa-IR`/`ar-SA` do not switch to Jalali/Umm al-Qura
+  while the grid stays Gregorian; four `datePicker.*` keys added ×4 locales.
+
+**Fixed in tranche 3 (2026-10-30):**
+
+- **Contract errors carry structure.** `lib/apiContractError.ts` is now the only
+  way a non-2xx ts-rest envelope becomes an error (`assertContractOk` /
+  `apiContractError` / `contractBodyOrThrow`): 12 local `assertOk`-style helpers
+  were deleted and 48 inline status-based `throw new Error` sites migrated, so
+  every contract failure is an `ApiError` with status, body message/type/code,
+  validation `errors`, `x-request-id` and `Retry-After`. The ts-rest fetcher's
+  401/403 path uses the same helper. A static test
+  (`src/__tests__/apiContractErrorUsage.test.ts`) fails if a generic `Error` or a
+  local helper reappears after a status guard. Envelope returns for ≥400 are
+  unchanged (form flows still read the body).
+- **Retry policy.** `lib/query/retryPolicy.ts`: 401/403/404/409/422/429 are not
+  retried; other failures keep three attempts; `Retry-After` (now present on
+  contract `ApiError`s) overrides the exponential delay, capped at 30 s.
+- **Socket wake recovery.** `connectTenantDatabaseSocket` reconnects a closed or
+  closing socket on `online`, `focus` and `visibilitychange` (visible), leaves a
+  CONNECTING/OPEN socket alone, and removes the listeners on disconnect. A true
+  half-open heartbeat still needs a server pong.
+
+**Fixed in tranche 4 (2026-10-30):**
+
+- **The coverage gate now measures the whole source tree.** `vitest.config.ts` gained
+  `coverage.include: ["src/**/*.{ts,tsx}"]`; before it, Vitest only instrumented files a
+  test had loaded, so 715 of 2,820 source files never entered the denominator. Whole-tree
+  measurement (2,823 files, unsharded and a 2-shard merge both identical):
+  statements **41.48%**, branches **40.95%**, functions **34.58%**, lines **42.41%** — the
+  floors are now `42 / 41 / 34 / 40` (lines/statements/functions/branches). The previous
+  56/55/46/51 described the 2,104-file subset; this is a basis correction, not a tolerance
+  change. The canonical rule row and all four mirrors were updated via `sync-all.sh`.
+  Runtime: ~1m48s unsharded; the 2-shard blob+merge smoke reproduced the totals exactly.
+- **Assertion-specificity ratchet.** New
+  `src/__tests__/testAssertionSpecificity.test.ts` counts `toBeTruthy`/`toBeFalsy`/
+  `toBeDefined` across the suite and fails above a baseline that may only go down
+  (**288** after deleting the attendance contract-hooks vanity test, which only asserted
+  seven imports were defined).
+- **Test infrastructure.** Pruned 21 stale + 1 deleted-test keys from
+  `src/test/shard-timings.json` (877 remain, all existing) and tightened
+  `shardSequencer.test.ts` from "≥90% exist" to per-key existence; the global teardown now
+  clears `localStorage` as well as `sessionStorage`; the stale `filesOverHardLimit` comment
+  in `check-code-norms.mjs` was corrected.
+
+**Still open (tracked in the review's deferred register):**
+
+- Widget toggle full-record PUT from a cached list row (needs a field-level
+  backend write endpoint; `GET /:id` is role-sanitized so fetch-then-PUT is unsafe).
+- Shared-contract chunking, `modulePreload`, service-worker update UX, `en`
+  dictionary split (the remaining entry-chunk work).
+- `useGlobalSettings` fan-out (single provider / identity bail-out).
+- Dead-code deletion (27 orphans + 26 test-only modules); duplicated setup hooks;
+  bulk-bar SSOT rule drift.
+- Remaining test hygiene: burn the 288 loose assertions down, Testing Library migration,
+  React root leaks (19 files).
+- WS half-open heartbeat; bounded persisted cache.
+- Template-editor server-save failure UX (product decision).

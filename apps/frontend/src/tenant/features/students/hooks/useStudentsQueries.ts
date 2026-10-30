@@ -26,6 +26,7 @@ import type { StudentsListPageResult } from "@mms/shared";
 import { STUDENTS_QUERY_KEY } from "@/tenant/features/students/hooks/studentsQueryKeys";
 import { invalidateStudentsQueries } from "@/tenant/features/students/hooks/invalidateStudentsQueries";
 import { SESSIONS_QUERY_KEY } from "@/tenant/hooks/collections/sessions";
+import { assertContractOk } from "@/lib/apiContractError";
 
 const studentsClient = tsrClient.students;
 
@@ -52,9 +53,7 @@ export function studentsListQueryOptions(query: StudentsContractQueryParams = {}
         signal,
         fetchOptions: { signal },
       });
-      if (response.status !== 200) {
-        throw new Error("Failed to fetch students");
-      }
+      assertContractOk(response, "Failed to fetch students");
       return response.body as StudentsListPageResult;
     },
     placeholderData: (prev) => prev,
@@ -72,9 +71,7 @@ export function studentsInfiniteQueryOptions(query: StudentsContractQueryParams 
         signal,
         fetchOptions: { signal },
       });
-      if (response.status !== 200) {
-        throw new Error("Failed to fetch students");
-      }
+      assertContractOk(response, "Failed to fetch students");
       return response.body as StudentsListPageResult;
     },
     initialPageParam: 1,

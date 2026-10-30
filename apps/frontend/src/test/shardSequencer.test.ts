@@ -49,8 +49,9 @@ describe("pickShard", () => {
 });
 
 // Keys must match `timingKey()` on CI or every file falls back to the median
-// weight. Deleted or renamed tests may leave a few stale keys (they only
-// unbalance the split), so presence is checked as a share, not per key.
+// weight. Stale keys (deleted/renamed tests) silently unbalance the split, so the
+// file must name only existing tests — regenerate it with
+// `pnpm --filter mms-frontend test:shard-timings` after deleting or moving a test.
 describe("shard-timings.json", () => {
   it("given the recorded keys, should all be POSIX paths relative to the frontend root", () => {
     // Arrange
@@ -63,16 +64,16 @@ describe("shard-timings.json", () => {
     expect(nonRelative).toEqual([]);
   });
 
-  it("given the recorded keys, should mostly name test files that exist", () => {
+  it("given the recorded keys, should name only existing test files", () => {
     // Arrange
     const frontendRoot = path.resolve(import.meta.dirname, "../..");
     const keys = Object.keys(recorded);
 
     // Act
-    const present = keys.filter((key) => existsSync(path.join(frontendRoot, key))).length;
+    const missing = keys.filter((key) => !existsSync(path.join(frontendRoot, key)));
 
     // Assert
-    expect(present / keys.length).toBeGreaterThanOrEqual(0.9);
+    expect(missing).toEqual([]);
   });
 });
 

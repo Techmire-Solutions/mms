@@ -1,4 +1,4 @@
-import { useCallback, useMemo, useState } from "react";
+import { useCallback, useDeferredValue, useMemo, useState } from "react";
 import { useModuleColumnLayout } from "@/hooks/useModuleColumnLayout";
 import {
   useWorkDirectoryViewMode,
@@ -65,9 +65,13 @@ export function useDataTableState<TData>({
     });
   }, []);
 
+  // The input stays responsive while filtering runs at transition priority: typing
+  // in a multi-thousand-row directory is the common long-task path here.
+  const deferredSearch = useDeferredValue(search);
+
   const filteredRows = useMemo(
-    () => filterDataTableRows(data, visibleColumns, search, filters, filterSelection),
-    [data, visibleColumns, search, filters, filterSelection],
+    () => filterDataTableRows(data, visibleColumns, deferredSearch, filters, filterSelection),
+    [data, visibleColumns, deferredSearch, filters, filterSelection],
   );
 
   const rows = useMemo(

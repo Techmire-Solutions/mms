@@ -93,6 +93,36 @@ Measured with `pnpm --filter mms-frontend build && pnpm run check:pwa` (budget: 
 ≤ 3.5 MB raw, and no `elk`/`cytoscape`/`xlsx`/`jspdf`/`html2canvas`/`katex`/`i18n-{ar,ur,fa}`/
 `platform-logo` entry). Initial JS payload is unchanged: 30 files / 1,838 KB raw / 431 KB br.
 
+## Entry chunk and table render hot path (2026-10-30, tranche 2)
+
+**framer-motion leaves the entry closure.** `MotionConfig` used to be mounted in
+`src/providers/AppProviders.tsx`, which is eagerly imported by `main.tsx`, so the whole
+runtime sat on the first paint and in the precache — even though every `motion.*` renderer
+lives under the authenticated tenant shell or the apex tree. It now lives in
+`src/providers/MotionPreferences.tsx`, mounted by `tenant/components/layout/AppLayout.tsx`
+and `platform/routes/ApexRoutes.tsx` (`ApexRoutesWithSuspense`); unauthenticated entry pages
+(login, forgot, 2FA, admissions, institution setup) never load it.
+
+| Measure | Before | After |
+| --- | --- | --- |
+| Entry closure (static imports of `index.html`) | 29 JS files / 1,829 KB raw | 28 / 1,693 KB raw |
+| `vendor-motion` in the entry closure | yes — 137 KB raw / 46 KB gzip | no (still emitted for the shells) |
+| PWA precache | 38 entries / 2.29 MB raw | 37 / 2.16 MB raw |
+| Total emitted JS | 14.66 MB raw / 4.18 MB gzip | 14.66 MB raw / 4.18 MB gzip |
+
+Method: `pnpm --filter mms-frontend build`, then walk `dist/.vite/manifest.json` from the
+entry's static `imports`; `node scripts/check-pwa-precache.mjs`;
+`node scripts/check-bundle-budget.mjs`. `check:pwa` now also fails if
+`vendor-motion-*.js` reappears in the precache.
+
+**Table rows stop re-rendering on unrelated updates.** `useListRowMotion` returned a new
+closure per render, `useModuleColumnLayout` rebuilt its column registry, and `DataTable`
+rebuilt its column array and spread `state.rows`, so the `React.memo` row never hit.
+All four identities are stable now, and search filtering runs through `useDeferredValue`.
+`components/common/data-table/DataTable.memoization.test.tsx` asserts: three rows render
+three cells once; an unrelated parent re-render causes **0** further cell renders; adding a
+row renders exactly the new one; typing a search still narrows the table.
+
 ## How to measure (render cost — manual)
 
 React Profiler needs a running app, so no render counts are recorded here. To capture them:

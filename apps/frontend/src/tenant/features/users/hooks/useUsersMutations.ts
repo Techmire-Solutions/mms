@@ -3,6 +3,7 @@ import type { MutateOptions } from "@tanstack/react-query";
 import type { WorkspaceUser, ActivityLog } from "@mms/shared";
 import { tsrClient } from "@/lib/api";
 import { invalidateUsersQueries } from "./invalidateUsersQueries";
+import { assertContractOk } from "@/lib/apiContractError";
 
 export function useUsersMutations() {
   const queryClient = useQueryClient();
@@ -27,8 +28,7 @@ export function useUsersMutations() {
         createUser.mutate({ body: user }, opts),
       mutateAsync: async (user: Record<string, unknown>) => {
         const res = await createUser.mutateAsync({ body: user });
-        if (res.status !== 200)
-          throw new Error((res.body as { message?: string })?.message ?? "Failed to create user");
+        assertContractOk(res, "Failed to create user");
         return res.body.user;
       },
     },
@@ -38,8 +38,7 @@ export function useUsersMutations() {
         updateUser.mutate({ params: { id: input.id }, body: input.data }, opts),
       mutateAsync: async (input: { id: string; data: Record<string, unknown> }) => {
         const res = await updateUser.mutateAsync({ params: { id: input.id }, body: input.data });
-        if (res.status !== 200)
-          throw new Error((res.body as { message?: string })?.message ?? "Failed to update user");
+        assertContractOk(res, "Failed to update user");
         return res.body.user;
       },
     },
@@ -49,8 +48,7 @@ export function useUsersMutations() {
         inviteUser.mutate({ body: user }, opts),
       mutateAsync: async (user: Record<string, unknown>) => {
         const res = await inviteUser.mutateAsync({ body: user });
-        if (res.status !== 200)
-          throw new Error((res.body as { message?: string })?.message ?? "Failed to invite user");
+        assertContractOk(res, "Failed to invite user");
         return res.body.user;
       },
     },
@@ -97,8 +95,7 @@ export function useUsersMutations() {
           params: { id: input.userId },
           body: { temporaryPassword: input.temporaryPassword },
         });
-        if (response.status !== 200)
-          throw new Error((response.body as { message?: string })?.message ?? "");
+        assertContractOk(response, "");
         return response.body;
       },
     },
