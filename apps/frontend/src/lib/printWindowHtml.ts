@@ -47,32 +47,31 @@ export function buildPrintWindowHtml({
 </head>
 <body>
   ${bodyContent}
-  <script>
-    function triggerPrint() {
-      window.focus();
-      if (document.fonts && document.fonts.ready) {
-        document.fonts.ready.then(function() {
-          window.print();
-        }).catch(function() {
-          window.print();
-        });
-      } else {
-        setTimeout(function() {
-          window.print();
-        }, 200);
-      }
-    }
-
-    if (document.readyState === 'complete') {
-      triggerPrint();
-    } else {
-      window.addEventListener('load', triggerPrint);
-    }
-
-    window.onafterprint = function() {
-      window.close();
-    };
-  </script>
 </body>
 </html>`;
+}
+
+/**
+ * Arms a same-origin print window opened with `window.open("")`: print once fonts are
+ * ready, and close when the print dialog finishes.
+ *
+ * The app serves a nonce-only `script-src` CSP and an `about:blank` popup inherits the
+ * opener's policy container, so an inline `<script>` written into the print document is
+ * blocked and never runs (`docs/project-review-2026-10-30.md` P-01). Printing and the
+ * close hook therefore originate here, in the opener, which CSP does not gate.
+ */
+export function autoPrintWindow(win: Window): void {
+  win.addEventListener("afterprint", () => win.close());
+
+  const trigger = (): void => {
+    win.focus();
+    win.print();
+  };
+
+  const ready = win.document.fonts?.ready;
+  if (ready) {
+    void ready.then(trigger).catch(trigger);
+    return;
+  }
+  trigger();
 }

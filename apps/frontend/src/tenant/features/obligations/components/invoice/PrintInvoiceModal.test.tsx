@@ -108,12 +108,14 @@ describe("PrintInvoiceModal", () => {
     const mockDocument = {
       write: vi.fn(),
       close: vi.fn(),
+      fonts: { ready: Promise.resolve() },
     };
     const mockWindow = {
       document: mockDocument,
       focus: vi.fn(),
       print: vi.fn(),
       close: vi.fn(),
+      addEventListener: vi.fn(),
     };
     vi.spyOn(window, "open").mockReturnValue(mockWindow as unknown as Window);
 
@@ -162,12 +164,14 @@ describe("PrintInvoiceModal", () => {
     const mockDocument = {
       write: vi.fn(),
       close: vi.fn(),
+      fonts: { ready: Promise.resolve() },
     };
     const mockWindow = {
       document: mockDocument,
       focus: vi.fn(),
       print: vi.fn(),
       close: vi.fn(),
+      addEventListener: vi.fn(),
     };
     vi.spyOn(window, "open").mockReturnValue(mockWindow as unknown as Window);
 

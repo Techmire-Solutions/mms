@@ -509,3 +509,36 @@ See [frontend-review-2026-10-30-deep.md](./frontend-review-2026-10-30-deep.md) f
   React root leaks (19 files).
 - WS half-open heartbeat; bounded persisted cache.
 - Template-editor server-save failure UX (product decision).
+
+## 2026-10-30 project review
+
+Full report: [project-review-2026-10-30.md](./project-review-2026-10-30.md). Read-only review at
+`84516ad04`; evidence: 21/21 blocking gates, 7,736 unit tests, forced build + bundle/PWA budgets,
+and `pnpm audit`. Findings P-01…P-06 were then fixed on `fix/project-review-2026-10-30`.
+
+**Fixed in the resolution pass:**
+
+- **P-01 Major — production print windows never auto-printed.** `printWindowHtml.ts` and
+  `paperBuilderUtils.ts` wrote an inline `<script>` into an `about:blank` popup; the nonce-only CSP
+  is inherited by that document, so the script was blocked (reproduced with Playwright). Vouchers,
+  invoice receipts, certificates, and question-bank papers rendered but never called
+  `print()`/`onafterprint` in production. Fixed by removing the inline scripts and printing from the
+  opener via `autoPrintWindow(win)`; both builders now have tests asserting no `<script>` is emitted.
+- **P-02 Major (gate integrity) — backend/shared coverage measured only loaded files.** Both
+  `vitest.config.ts` files now set `coverage.include`; whole-tree measured on 2026-10-30 (backend
+  4 shards + merge: lines 45.19 / stmts 43.06 / funcs 41.41 / branches 33.96; shared:
+  78.24 / 74.96 / 71.89 / 56.17). Floors re-based to 44/42/40/32 (backend) and 77/74/71/55
+  (shared); rule snapshot + all mirrors resynced.
+- **P-03 Minor — CI source maps shipped and public.** `package-dist.sh` now tars with
+  `--exclude='*.map'` and fails if the artefact contains one (verified: 590 files on disk, 0 in the
+  tarball). Maps stay on disk for a future Sentry upload.
+- **P-04 Minor — `Math.random()` admin password** → `randomInt` from `node:crypto`.
+- **P-05 Minor — e2e seed helpers interpolated `subdomain` into shell strings** → every
+  `execSync` in `e2e/helpers/` is now `execFileSync` with argv (`runBackendSeedScript` helper).
+- **P-06 Minor — OTP + email logged whenever `NODE_ENV !== "production"`** → requires
+  `MMS_DEBUG_OTP=1` (never in production), with unit coverage.
+
+**Still open / unchanged:** production RLS in `warn` + `MMS_ALLOW_RLS_WARN=1` (highest residual
+risk; deploy default is `strict` and fails closed), snapshot regeneration and naive timestamps,
+143 historical migrations without `lock_timeout`, 517 dead i18n keys, legacy localStorage store
+(no new non-test call site), and the 10-30 frontend deferred register.

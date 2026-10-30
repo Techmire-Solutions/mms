@@ -13,7 +13,7 @@ import {
 } from "@/tenant/features/obligations/hooks/useObligationLookups";
 import { useTranslation } from "@/hooks/useTranslation";
 import { notify } from "@/lib/notify";
-import { buildPrintWindowHtml } from "@/lib/printWindowHtml";
+import { buildPrintWindowHtml, autoPrintWindow } from "@/lib/printWindowHtml";
 
 interface UsePrintInvoiceModalControllerProps {
   collection: ObligationCollection;
@@ -78,6 +78,7 @@ export function usePrintInvoiceModalController({
       }),
     );
     printWindow.document.close();
+    autoPrintWindow(printWindow);
   }, [collection.receipt_no, isRtl, language, size.height, size.width, t, template.orientation]);
 
   useEffect(() => {

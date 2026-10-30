@@ -5,7 +5,7 @@ import { useTranslation } from "@/hooks/useTranslation";
 import { useAccountingCurrency } from "@/hooks/useCurrency";
 import { useAuth } from "@/lib/contexts/AuthContext";
 import { notify } from "@/lib/notify";
-import { buildPrintWindowHtml } from "@/lib/printWindowHtml";
+import { buildPrintWindowHtml, autoPrintWindow } from "@/lib/printWindowHtml";
 import { getScopedBrandingSettings } from "@/lib/settingsPreviewStore";
 import type { Account, JournalEntry } from "@/lib/data/accountingData";
 import { facultyResolveQueryOptions } from "@/tenant/hooks/collections/faculty";
@@ -146,6 +146,7 @@ export function usePaymentVoucherPrint(accounts: readonly Account[]) {
         }),
       );
       printWindow.document.close();
+      autoPrintWindow(printWindow);
     },
     [accounts, activeCurrency.code, formatCurrency, isRtl, language, resolvePayee, t, user?.name],
   );

@@ -174,7 +174,17 @@ export async function dispatchTenantPasswordOtp(
     }
   }
 
-  if (!emailSent && !smsSent && process.env.NODE_ENV !== "production") {
+  if (!emailSent && !smsSent && isOtpDebugLoggingEnabled()) {
     logger.info({ email, code }, "Tenant password OTP (dev, not sent)");
   }
+}
+
+/**
+ * Whether an undelivered OTP may be echoed to the log.
+ *
+ * Requires an explicit opt-in: gating only on `NODE_ENV !== "production"` let any
+ * staging host that keeps `NODE_ENV=development` write reset codes into its logs.
+ */
+export function isOtpDebugLoggingEnabled(env: NodeJS.ProcessEnv = process.env): boolean {
+  return env.MMS_DEBUG_OTP === "1" && env.NODE_ENV !== "production";
 }
