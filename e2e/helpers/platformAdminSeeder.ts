@@ -1,4 +1,4 @@
-import { execSync } from "node:child_process";
+import { execFileSync } from "node:child_process";
 import { mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
@@ -33,7 +33,7 @@ function runGuardedScript(script: string, extraEnv: Record<string, string> = {})
   const scriptPath = path.join(tmpDir, "seed.cjs");
   writeFileSync(scriptPath, script);
   try {
-    return execSync(`node "${scriptPath}"`, {
+    return execFileSync(process.execPath, [scriptPath], {
       cwd: backendDir,
       encoding: "utf8",
       timeout: 60_000,

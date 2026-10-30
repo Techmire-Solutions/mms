@@ -1,11 +1,27 @@
 import { expect, test, type Locator, type Page } from "@playwright/test";
-import { execSync } from "node:child_process";
+import { execFileSync } from "node:child_process";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 const backendDir = path.resolve(__dirname, "../../apps/backend");
+
+/**
+ * Runs a backend seed script without a shell: the script name and subdomain travel as
+ * argv, so a generated tenant name can never inject shell metacharacters.
+ */
+function runBackendSeedScript(scriptName: string, subdomain: string): string {
+  return execFileSync("pnpm", ["exec", "tsx", scriptName, subdomain], {
+    cwd: backendDir,
+    encoding: "utf8",
+    env: {
+      ...process.env,
+      NODE_ENV: process.env.NODE_ENV || "test",
+      JWT_SECRET: process.env.JWT_SECRET || "e2e-test-jwt-secret-key-at-least-32-chars-long",
+    },
+  });
+}
 
 /**
  * Ensures the module's Work (first) tier tab is active. Tier labels are module-specific —
@@ -383,15 +399,7 @@ export function seedTestClassAndEnrollment(subdomain: string): void {
     return;
   }
   try {
-    const output = execSync(`pnpm exec tsx src/scripts/seed-test-class.ts ${subdomain}`, {
-      cwd: backendDir,
-      encoding: "utf8",
-      env: {
-        ...process.env,
-        NODE_ENV: process.env.NODE_ENV || "test",
-        JWT_SECRET: process.env.JWT_SECRET || "e2e-test-jwt-secret-key-at-least-32-chars-long",
-      },
-    });
+    const output = runBackendSeedScript("src/scripts/seed-test-class.ts", subdomain);
     console.log(output);
   } catch (err: unknown) {
     const message = err instanceof Error ? err.message : String(err);
@@ -417,15 +425,7 @@ export function seedFacultySetup(subdomain: string): void {
     return;
   }
   try {
-    const output = execSync(`pnpm exec tsx src/scripts/seed-faculty-setup.ts ${subdomain}`, {
-      cwd: backendDir,
-      encoding: "utf8",
-      env: {
-        ...process.env,
-        NODE_ENV: process.env.NODE_ENV || "test",
-        JWT_SECRET: process.env.JWT_SECRET || "e2e-test-jwt-secret-key-at-least-32-chars-long",
-      },
-    });
+    const output = runBackendSeedScript("src/scripts/seed-faculty-setup.ts", subdomain);
     console.log(output);
   } catch (err: unknown) {
     const message = err instanceof Error ? err.message : String(err);
@@ -446,15 +446,7 @@ export function seedContacts(subdomain: string): void {
     return;
   }
   try {
-    const output = execSync(`pnpm exec tsx src/scripts/seed-20-contacts.ts ${subdomain}`, {
-      cwd: backendDir,
-      encoding: "utf8",
-      env: {
-        ...process.env,
-        NODE_ENV: process.env.NODE_ENV || "test",
-        JWT_SECRET: process.env.JWT_SECRET || "e2e-test-jwt-secret-key-at-least-32-chars-long",
-      },
-    });
+    const output = runBackendSeedScript("src/scripts/seed-20-contacts.ts", subdomain);
     console.log(output);
   } catch (err: unknown) {
     const message = err instanceof Error ? err.message : String(err);
@@ -474,15 +466,7 @@ export function seedStudents(subdomain: string): void {
     return;
   }
   try {
-    const output = execSync(`pnpm exec tsx src/scripts/seed-20-students.ts ${subdomain}`, {
-      cwd: backendDir,
-      encoding: "utf8",
-      env: {
-        ...process.env,
-        NODE_ENV: process.env.NODE_ENV || "test",
-        JWT_SECRET: process.env.JWT_SECRET || "e2e-test-jwt-secret-key-at-least-32-chars-long",
-      },
-    });
+    const output = runBackendSeedScript("src/scripts/seed-20-students.ts", subdomain);
     console.log(output);
   } catch (err: unknown) {
     const message = err instanceof Error ? err.message : String(err);
@@ -502,15 +486,7 @@ export function seedSessions(subdomain: string): void {
     return;
   }
   try {
-    const output = execSync(`pnpm exec tsx src/scripts/seed-20-sessions.ts ${subdomain}`, {
-      cwd: backendDir,
-      encoding: "utf8",
-      env: {
-        ...process.env,
-        NODE_ENV: process.env.NODE_ENV || "test",
-        JWT_SECRET: process.env.JWT_SECRET || "e2e-test-jwt-secret-key-at-least-32-chars-long",
-      },
-    });
+    const output = runBackendSeedScript("src/scripts/seed-20-sessions.ts", subdomain);
     console.log(output);
   } catch (err: unknown) {
     const message = err instanceof Error ? err.message : String(err);
@@ -530,15 +506,7 @@ export function seedFaculty(subdomain: string): void {
     return;
   }
   try {
-    const output = execSync(`pnpm exec tsx src/scripts/seed-20-faculty.ts ${subdomain}`, {
-      cwd: backendDir,
-      encoding: "utf8",
-      env: {
-        ...process.env,
-        NODE_ENV: process.env.NODE_ENV || "test",
-        JWT_SECRET: process.env.JWT_SECRET || "e2e-test-jwt-secret-key-at-least-32-chars-long",
-      },
-    });
+    const output = runBackendSeedScript("src/scripts/seed-20-faculty.ts", subdomain);
     console.log(output);
   } catch (err: unknown) {
     const message = err instanceof Error ? err.message : String(err);
@@ -557,15 +525,7 @@ export function seedInvoices(subdomain: string): void {
     return;
   }
   try {
-    const output = execSync(`pnpm exec tsx src/scripts/seed-20-invoices.ts ${subdomain}`, {
-      cwd: backendDir,
-      encoding: "utf8",
-      env: {
-        ...process.env,
-        NODE_ENV: process.env.NODE_ENV || "test",
-        JWT_SECRET: process.env.JWT_SECRET || "e2e-test-jwt-secret-key-at-least-32-chars-long",
-      },
-    });
+    const output = runBackendSeedScript("src/scripts/seed-20-invoices.ts", subdomain);
     console.log(output);
   } catch (err: unknown) {
     const message = err instanceof Error ? err.message : String(err);

@@ -71,8 +71,8 @@ The per-workspace `thresholds` blocks are the only authoritative floors — neve
 | Workspace | Config (SSOT) | lines / statements / functions / branches |
 | :--- | :--- | :--- |
 | Frontend | `apps/frontend/vitest.config.ts` | 42 / 41 / 34 / 40 |
-| Backend | `apps/backend/vitest.config.ts` | 46 / 43.5 / 41 / 33 |
-| `@mms/shared` | `packages/shared/vitest.config.ts` | 79 / 75 / 72 / 57 |
+| Backend | `apps/backend/vitest.config.ts` | 44 / 42 / 40 / 32 |
+| `@mms/shared` | `packages/shared/vitest.config.ts` | 77 / 74 / 71 / 55 |
 
 - **The Ratchet Rule:** A pull request or code generation task must never lower the configured floors to make a change pass; raise a floor only with the measured value from a green run.
 - **Branch Coverage Over Line Coverage:** Line coverage alone is insufficient. All edge cases (early returns, error catches, fallback defaults) must have explicit branch coverage.

@@ -1,4 +1,5 @@
 import { escapeHtml } from "@/lib/escapeHtml";
+import { autoPrintWindow } from "@/lib/printWindowHtml";
 
 /**
  * Opens a print window for an HTML fragment (certificates, report cards) and prints it.
@@ -32,9 +33,5 @@ export function printHtmlDocument(title: string, content: string): void {
     </html>
   `);
   win.document.close();
-  win.focus();
-  void win.document.fonts.ready.then(() => {
-    win.print();
-    win.close();
-  });
+  autoPrintWindow(win);
 }

@@ -17,16 +17,21 @@ export default defineConfig({
     coverage: {
       provider: "v8",
       reporter: ["text", "json", "html"],
+      // Whole-tree basis (the correction the frontend received on 2026-10-30): without
+      // `include`, Vitest only instruments files a test happened to load, so untested
+      // modules never entered the denominator.
+      include: ["src/**/*.{ts,tsx}"],
       exclude: ["src/**/*.{test,spec}.ts", "dist/**", "**/*.d.ts"],
       // Coverage gate: lock in the current baseline so regressions fail CI.
       // Raise these as coverage improves — never lower one to unblock a change.
-      // Measured 2026-10-29 (after the money/fx edge-case pass):
-      // stmts 76.86 / branches 58.63 / funcs 73.23 / lines 80.25.
+      // Measured 2026-10-30 over the whole tree: stmts 74.96 / branches 56.17 /
+      // funcs 71.89 / lines 78.24. The floors are the same gate re-based onto the
+      // whole tree, not a tolerance change.
       thresholds: {
-        lines: 79,
-        statements: 75,
-        functions: 72,
-        branches: 57,
+        lines: 77,
+        statements: 74,
+        functions: 71,
+        branches: 55,
       },
     },
   },

@@ -12,6 +12,7 @@ function stubPrintWindow() {
     focus: vi.fn(),
     print: vi.fn(),
     close: vi.fn(),
+    addEventListener: vi.fn(),
   };
   vi.spyOn(window, "open").mockReturnValue(fakeWindow as unknown as Window);
   return { write, fakeWindow };
@@ -37,5 +38,15 @@ describe("printHtmlDocument", () => {
     vi.spyOn(window, "open").mockReturnValue(null);
 
     expect(() => printHtmlDocument("Title", "<p>certificate</p>")).not.toThrow();
+  });
+
+  it("prints from the opener once the document's fonts are ready", async () => {
+    const { fakeWindow } = stubPrintWindow();
+
+    printHtmlDocument("Title", "<p>certificate</p>");
+    await Promise.resolve();
+    await Promise.resolve();
+
+    expect(fakeWindow.print).toHaveBeenCalledTimes(1);
   });
 });

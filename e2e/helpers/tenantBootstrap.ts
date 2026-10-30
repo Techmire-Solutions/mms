@@ -1,4 +1,4 @@
-import { execSync } from "node:child_process";
+import { execFileSync } from "node:child_process";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { expect, type Page } from "@playwright/test";
@@ -38,7 +38,7 @@ export function resetPlatformUsers(): void {
     return;
   }
   try {
-    execSync("pnpm exec tsx src/scripts/reset-platform-users.ts", {
+    execFileSync("pnpm", ["exec", "tsx", "src/scripts/reset-platform-users.ts"], {
       cwd: backendDir,
       encoding: "utf8",
       env: {

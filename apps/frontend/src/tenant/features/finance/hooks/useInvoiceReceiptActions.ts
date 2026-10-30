@@ -7,6 +7,7 @@ import {
   mapToZohoInvoice,
 } from "@/components/template-editor/templatePayloadMappers";
 import { notify } from "@/lib/notify";
+import { autoPrintWindow } from "@/lib/printWindowHtml";
 import {
   buildPrintBodyStyle,
   PRINT_NEUTRAL_PALETTE,
@@ -51,11 +52,7 @@ export function useInvoiceReceiptActions(
       </html>
     `);
     win.document.close();
-    win.focus();
-    void win.document.fonts.ready.then(() => {
-      win.print();
-      win.close();
-    });
+    autoPrintWindow(win);
   }, [printRef, t]);
 
   const handleExportTypst = useCallback(() => {

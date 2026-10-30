@@ -109,24 +109,29 @@ describe("paperBuilderUtils", () => {
   });
 
   /**
-   * Source-read ratchet: guards the print-script contract in openPaperPrintWindow.
-   * Same technique as printStyles.test.ts — reads the source so the test runs
-   * without a real DOM and catches regressions in the generated HTML string.
+   * Source-read ratchet: guards the print contract. The popup inherits the app's
+   * nonce-only CSP, so the document must carry no inline script; the opener helper is
+   * the only place that may touch fonts/afterprint.
    */
-  describe("openPaperPrintWindow print-script contract", () => {
+  describe("openPaperPrintWindow print contract", () => {
     const src = readFileSync(
       path.resolve(import.meta.dirname, "../lib/paperBuilderUtils.ts"),
       "utf-8",
     );
+    const printHelper = readFileSync(
+      path.resolve(import.meta.dirname, "../../../../lib/printWindowHtml.ts"),
+      "utf-8",
+    );
 
-    it("uses document.fonts.ready instead of a fixed setTimeout for print", () => {
-      expect(src).toContain("document.fonts.ready");
-      expect(src).not.toMatch(/setTimeout[^)]*window\.print/);
+    it("emits no inline script, which the app CSP would block", () => {
+      expect(src).not.toMatch(/<script/i);
+      expect(src).not.toMatch(/window\.onafterprint/);
     });
 
-    it("closes via onafterprint rather than a timed setTimeout", () => {
-      expect(src).toContain("window.onafterprint");
-      expect(src).not.toMatch(/setTimeout[^)]*window\.close/);
+    it("delegates printing to the opener helper", () => {
+      expect(src).toContain("autoPrintWindow(");
+      expect(printHelper).toContain("document.fonts?.ready");
+      expect(printHelper).toContain('addEventListener("afterprint"');
     });
   });
 });
