@@ -21,10 +21,11 @@ import {
   SANDBOXED_PDF_PROCESSOR_PATH,
   SANDBOXED_EXPORT_PROCESSOR_PATH,
   WORKER_FORK_OPTIONS,
-  JOB_EXECUTION_TIMEOUT_MS,
+  WORKER_FORCE_EXIT_MS,
 } from "./queues/queueConfig.js";
 import { processBackgroundJob } from "./processors/jobProcessor.js";
 import { registerDefaultBackgroundJobRunners } from "../services/backgroundJobRunnerService.js";
+import { abortBackgroundJobsOnShutdown } from "../services/backgroundJobDeadline.js";
 import { logger } from "../lib/logger.js";
 import { defaultSearchAdapter } from "./adapters/searchIndexAdapter.js";
 import { purgeExpiredArchivedRecords } from "./purgeArchivedRecordsJob.js";
@@ -176,9 +177,10 @@ export async function startWorkerDaemon(): Promise<void> {
     process.removeAllListeners("SIGTERM");
     process.removeAllListeners("SIGINT");
 
-    // Give the longest-running job its full timeout plus a drain margin before
-    // forcing exit; the old fixed 10s budget killed legitimate work.
-    const shutdownBudgetMs = JOB_EXECUTION_TIMEOUT_MS + 10_000;
+    // Abort in-flight runners first: messaging batches can run for minutes and
+    // `pause()` would otherwise wait for them, racing PM2's kill_timeout.
+    // Exports/PDF settle through the same deadline path (5s grace).
+    const shutdownBudgetMs = WORKER_FORCE_EXIT_MS;
     const forceExitTimer = setTimeout(() => {
       logger.fatal("Graceful shutdown timed out; forcing exit");
       process.exit(1);
@@ -193,10 +195,12 @@ export async function startWorkerDaemon(): Promise<void> {
       clearRetentionPurgeScheduler();
       clearSessionLifecycleScheduler();
       clearFxRateFeedScheduler();
-      // Stop accepting new jobs before draining the active ones.
+
+      abortBackgroundJobsOnShutdown("SIGTERM");
+      // Stop accepting new jobs without waiting for the now-aborting active ones.
       for (const worker of activeWorkers) {
         try {
-          await worker.pause();
+          await worker.pause(true);
         } catch (err) {
           logger.error({ err }, "Error pausing worker");
         }

@@ -272,6 +272,7 @@ describe("financeCollectUseCases", () => {
       expect(mockFinanceUseCases.financeUseCases.updateInvoiceById).toHaveBeenCalledWith(
         "inv-1",
         expect.objectContaining({ creditedAmt: 100, status: "paid" }),
+        { allowLedgerSensitive: true },
       );
       expect(mockLedgerPosting.tryPostCreditNoteJournal).toHaveBeenCalled();
     });

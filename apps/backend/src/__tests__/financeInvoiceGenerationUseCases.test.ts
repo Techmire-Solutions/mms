@@ -45,7 +45,12 @@ const mockLedgerPosting = vi.hoisted(() => ({
   tryPostInvoiceJournals: vi.fn().mockResolvedValue(undefined),
 }));
 
+const mockAudit = vi.hoisted(() => ({
+  recordInvoiceAudit: vi.fn().mockResolvedValue(undefined),
+}));
+
 vi.mock("../accounting/ledgerPosting/ledgerPostingService.js", () => mockLedgerPosting);
+vi.mock("../finance/use-cases/financeAuditEvents.js", () => mockAudit);
 
 vi.mock("../db/repositories/financeBillingRepository.js", () => mockBillingRepo);
 vi.mock("../db/repositories/financeInvoicesRepository.js", () => mockInvoicesRepo);
@@ -159,6 +164,13 @@ describe("financeInvoiceGenerationUseCases", () => {
         { enrollmentId: "e-1", invoiceId: expect.any(String) },
         { enrollmentId: "e-2", invoiceId: expect.any(String) },
       ]);
+      // Batch billing must audit every generated invoice, like createInvoice does.
+      expect(mockAudit.recordInvoiceAudit).toHaveBeenCalledTimes(2);
+      expect(mockAudit.recordInvoiceAudit).toHaveBeenCalledWith(
+        "tenant-1",
+        "CREATE",
+        expect.objectContaining({ invoiceNumber: "INV-2026-0001" }),
+      );
       expect(mockWs.broadcastTenantUpdate).toHaveBeenCalledWith(
         "tenant-1",
         "collection",

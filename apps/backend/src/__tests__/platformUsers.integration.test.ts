@@ -161,6 +161,34 @@ describe("platformUsers REST API integration routes", () => {
     expect(body.message).toContain("Cannot delete your own platform account");
   });
 
+  it("refuses a delegated admins grant disabling a super-user", async () => {
+    const token = signPlatformToken("p-admin", 0);
+    const res = await app.inject({
+      method: "PATCH",
+      url: "/api/platform/users/p-super/disabled",
+      headers: { origin: "http://localhost" },
+      cookies: { mms_platform_access: token },
+      payload: { disabled: true, password: "Password123!" },
+    });
+
+    expect(res.statusCode).toBe(403);
+    expect(res.json().message).toContain("Super-user privilege required");
+  });
+
+  it("refuses a delegated admins grant deleting a super-user", async () => {
+    const token = signPlatformToken("p-admin", 0);
+    const res = await app.inject({
+      method: "DELETE",
+      url: "/api/platform/users/p-super",
+      headers: { origin: "http://localhost" },
+      cookies: { mms_platform_access: token },
+      payload: { password: "Password123!" },
+    });
+
+    expect(res.statusCode).toBe(403);
+    expect(res.json().message).toContain("Super-user privilege required");
+  });
+
   it("persists and updates all 5 granular permission keys for a platform admin", async () => {
     const token = signPlatformToken("p-super", 0);
 

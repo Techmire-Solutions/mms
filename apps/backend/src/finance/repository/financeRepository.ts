@@ -38,7 +38,7 @@ export interface FinanceRepository {
   findInvoicesByIds(
     tenant: string,
     ids: string[],
-    options?: { includeDeleted?: boolean },
+    options?: { includeDeleted?: boolean; forUpdate?: boolean },
   ): Promise<Invoice[]>;
   saveInvoice(tenant: string, record: Invoice): Promise<void>;
   /** Live invoice ids raised for one enrollment (any billing period). */
@@ -90,6 +90,17 @@ export interface FinanceRepository {
     ids: string[],
     userId?: string,
   ): Promise<{ succeeded: number; failed: number }>;
+
+  /**
+   * Ledger posting id for a finance source (invoice/payment), or null when the
+   * document was never posted. Lets use-cases guard ledger-sensitive edits
+   * without importing the accounting repository directly.
+   */
+  findLedgerPostingIdBySource(
+    tenant: string,
+    sourceType: "invoice" | "payment",
+    sourceId: string,
+  ): Promise<string | null>;
 
   // Aggregates
   aggregateFinanceCommandMetrics(tenant: string): Promise<FinanceCommandMetricsSnapshot>;

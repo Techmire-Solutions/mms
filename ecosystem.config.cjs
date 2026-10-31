@@ -73,7 +73,8 @@ module.exports = {
       autorestart: true,
       max_restarts: 15,
       min_uptime: "10s",
-      kill_timeout: 70000,
+      // 15s above WORKER_FORCE_EXIT_MS (75s): the process exits before SIGKILL.
+      kill_timeout: 90000,
       max_memory_restart: "1800M",
       node_args: "--max-old-space-size=1536",
       time: true,

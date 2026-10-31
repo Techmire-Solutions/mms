@@ -57,6 +57,7 @@ export function CommandPaletteModal({
 
   return (
     <AnimatePresence>
+      {/* eslint-disable-next-line jsx-a11y/click-events-have-key-events, jsx-a11y/no-noninteractive-element-interactions -- Backdrop dismiss; Escape and focus trap managed by useOverlayBehavior */}
       <div
         ref={containerRef}
         data-overlay-backdrop

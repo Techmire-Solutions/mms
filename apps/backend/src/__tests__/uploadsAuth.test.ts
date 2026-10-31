@@ -78,6 +78,23 @@ describe("cache headers", () => {
     const { headers, reply } = headerSink();
     setStaticAssetHeaders(reply, "/srv/uploads/tenants/demo/exports/students.csv");
     expect(headers["Cache-Control"]).toBe("private, no-store");
+    expect(headers["Vary"]).toContain("Authorization");
+  });
+
+  it("keeps root-level avatars and images private (legacy layout)", () => {
+    for (const path of ["/srv/uploads/avatars/u1.webp", "/srv/uploads/images/scan.webp"]) {
+      const { headers, reply } = headerSink();
+      setStaticAssetHeaders(reply, path);
+      expect(headers["Cache-Control"]).toBe("private, no-store");
+      expect(headers["Vary"]).toContain("Authorization");
+    }
+  });
+
+  it("keeps tenant branding publicly cacheable", () => {
+    const { headers, reply } = headerSink();
+    setStaticAssetHeaders(reply, "/srv/uploads/tenants/demo/branding/logo.webp");
+    expect(headers["Cache-Control"]).toContain("public");
+    expect(headers["Vary"]).not.toContain("Authorization");
   });
 
   it("sets the private cache contract on tenant and root-level attachments", () => {

@@ -24,7 +24,9 @@ export function useUsersTabState({
   t,
 }: UseUsersTabStateOptions) {
   const onResetSelectionRef = useRef(onResetSelection);
-  onResetSelectionRef.current = onResetSelection;
+  useEffect(() => {
+    onResetSelectionRef.current = onResetSelection;
+  }, [onResetSelection]);
 
   const USERS_CONFIG_TABS = getUsersConfigTabs(canAccessRoles, t);
   const SUB_TABS = getUsersSubTabs(t);

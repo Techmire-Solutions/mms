@@ -17,9 +17,28 @@ import {
 import { formatTraceParent } from "../config/telemetry.js";
 import { getWorkspaceBySubdomain } from "../services/workspaceService.js";
 import { loadGlobalSettings } from "../services/globalSettingsService.js";
-import { sendForbidden, sendUnauthorized } from "../lib/httpErrors.js";
+import { sendForbidden, sendServiceUnavailable, sendUnauthorized } from "../lib/httpErrors.js";
 import { checkTenantAuthPipelineBatch } from "../services/authSessionService.js";
+import { RedisUnavailableError } from "../lib/redis.js";
 import { markRequestDiagnosticStage } from "../lib/requestDiagnostics.js";
+
+/**
+ * Redis is the shared source of truth for revocation/blocklist/session-clock
+ * state. When it is configured but unreachable, deny the request with a
+ * retryable 503 instead of falling back to a per-process view that may still
+ * consider a revoked session valid.
+ */
+async function rejectOnAuthDependencyFailure(
+  reply: FastifyReply,
+  error: unknown,
+): Promise<boolean> {
+  if (!(error instanceof RedisUnavailableError)) return false;
+  await sendServiceUnavailable(
+    reply,
+    "Session validation is temporarily unavailable. Please retry.",
+  );
+  return true;
+}
 
 export interface AuthenticatedRequest extends FastifyRequest {
   user: User & {
@@ -83,14 +102,21 @@ export async function authenticateTenant(
   // Fast-path Redis tenant blocklist, token/session revocation, user active status,
   // global settings, and workspace lookup batched into a single pipelined round-trip.
   markRequestDiagnosticStage(request, "authentication_tenant_blocklist");
-  const { tenantBlocked, tokenRevoked, userSessionRevoked, globalSettingsCached, workspaceCached } =
-    await checkTenantAuthPipelineBatch({
+  let authPipeline: Awaited<ReturnType<typeof checkTenantAuthPipelineBatch>>;
+  try {
+    authPipeline = await checkTenantAuthPipelineBatch({
       tenant,
       jti: user.jti,
       userId: user.id ? String(user.id) : undefined,
       role: user.role,
       issuedAtMs: user.iat_ms ?? (user.iat ? user.iat * 1000 : undefined),
     });
+  } catch (error) {
+    if (await rejectOnAuthDependencyFailure(reply, error)) return;
+    throw error;
+  }
+  const { tenantBlocked, tokenRevoked, userSessionRevoked, globalSettingsCached, workspaceCached } =
+    authPipeline;
   if (tenantBlocked) {
     await reply.status(403).send({
       type: "workspace_disabled",
@@ -176,12 +202,18 @@ export async function authenticateTenant(
   );
   const idleScope = user.id ? tenantSessionScope(tenant, String(user.id)) : "";
 
-  const idleOutcome = await enforceTenantSessionClock({
-    scope: idleScope,
-    policy: sessionPolicy,
-    jti: user.jti,
-    userId: user.id ? String(user.id) : undefined,
-  });
+  let idleOutcome: Awaited<ReturnType<typeof enforceTenantSessionClock>>;
+  try {
+    idleOutcome = await enforceTenantSessionClock({
+      scope: idleScope,
+      policy: sessionPolicy,
+      jti: user.jti,
+      userId: user.id ? String(user.id) : undefined,
+    });
+  } catch (error) {
+    if (await rejectOnAuthDependencyFailure(reply, error)) return;
+    throw error;
+  }
   if (idleOutcome !== "ok") {
     const expiry = SESSION_EXPIRY_RESPONSE[idleOutcome];
     await sendUnauthorized(reply, expiry.message, expiry.type);

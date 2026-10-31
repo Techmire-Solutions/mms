@@ -38,14 +38,45 @@ describe("rateLimitConfig", () => {
   });
 
   describe("generateCompositeRateLimitKey", () => {
-    it("uses getRequestTenant() when inside tenant context", () => {
+    it("keeps the tenant dimension for session-bearing requests", () => {
       runWithTenant("tenant-ctx", () => {
         const fakeReq = {
-          headers: {},
+          headers: { cookie: "theme=dark; mms_access=token" },
           ip: "192.168.1.100",
         } as unknown as FastifyRequest;
         expect(generateCompositeRateLimitKey(fakeReq)).toBe("tenant-ctx:192.168.1.100");
       });
+    });
+
+    it("keys unauthenticated requests by IP even when a tenant is bound", () => {
+      // The Host header (and therefore the ALS tenant) is client-controlled.
+      // Pre-auth buckets must not reset when it rotates.
+      const fakeReq = {
+        headers: { host: "victim.mms.local" },
+        ip: "203.0.113.7",
+      } as unknown as FastifyRequest;
+      const keyA = runWithTenant("tenant-a", () => generateCompositeRateLimitKey(fakeReq));
+      const keyB = runWithTenant("tenant-b", () => generateCompositeRateLimitKey(fakeReq));
+      expect(keyA).toBe("203.0.113.7");
+      expect(keyB).toBe("203.0.113.7");
+    });
+
+    it("recognises the platform session cookie", () => {
+      runWithTenant("demo", () => {
+        const fakeReq = {
+          headers: { cookie: "mms_platform_access=platform-token" },
+          ip: "10.1.2.3",
+        } as unknown as FastifyRequest;
+        expect(generateCompositeRateLimitKey(fakeReq)).toBe("demo:10.1.2.3");
+      });
+    });
+
+    it("does not treat a cookie value containing mms_access as a session cookie", () => {
+      const fakeReq = {
+        headers: { cookie: "note=mentions-mms_access-elsewhere" },
+        ip: "10.1.2.4",
+      } as unknown as FastifyRequest;
+      expect(generateCompositeRateLimitKey(fakeReq)).toBe("10.1.2.4");
     });
 
     it("ignores the client-supplied x-tenant-id header", () => {
@@ -74,7 +105,10 @@ describe("rateLimitConfig", () => {
     });
 
     it("still isolates distinct trusted tenants behind one IP", () => {
-      const fakeReq = { headers: {}, ip: "192.168.1.100" } as unknown as FastifyRequest;
+      const fakeReq = {
+        headers: { cookie: "mms_access=token" },
+        ip: "192.168.1.100",
+      } as unknown as FastifyRequest;
       const keyA = runWithTenant("tenant-a", () => generateCompositeRateLimitKey(fakeReq));
       const keyB = runWithTenant("tenant-b", () => generateCompositeRateLimitKey(fakeReq));
       expect(keyA).toBe("tenant-a:192.168.1.100");

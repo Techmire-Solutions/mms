@@ -32,7 +32,6 @@ function ModuleToggleCard({
   requiredLabel,
   onToggle,
 }: ModuleToggleCardProps): React.JSX.Element {
-  const Icon = resolveModuleIcon(module.icon);
   const toggleId = `module-toggle-${module.id}`;
   const descId = `module-desc-${module.id}`;
 
@@ -51,7 +50,10 @@ function ModuleToggleCard({
           enabled ? "bg-primary/10 text-primary" : "bg-muted text-muted-foreground",
         )}
       >
-        <Icon className="h-4 w-4" aria-hidden />
+        {React.createElement(resolveModuleIcon(module.icon), {
+          className: "h-4 w-4",
+          "aria-hidden": true,
+        })}
       </div>
       <div className="min-w-0 flex-1">
         <div className="flex items-start justify-between gap-2.5">

@@ -1,4 +1,6 @@
 import type { FastifyRequest } from "fastify";
+import { ACCESS_COOKIE } from "../services/auth/authCookieService.js";
+import { PLATFORM_ACCESS_COOKIE } from "../services/platform/platformCookieService.js";
 import { getRequestTenant } from "./tenantContext.js";
 
 interface RateLimitErrorContext {
@@ -16,23 +18,32 @@ function buildRateLimitError(message: string, context: RateLimitErrorContext) {
   };
 }
 
+/** Session cookies that prove the caller is an authenticated tenant/platform user. */
+const SESSION_COOKIE_PATTERN = new RegExp(
+  `(?:^|;\\s*)(?:${ACCESS_COOKIE}|${PLATFORM_ACCESS_COOKIE})=`,
+);
+
+function hasTenantSessionCookie(request: FastifyRequest): boolean {
+  const header = request.headers.cookie;
+  return typeof header === "string" && SESSION_COOKIE_PATTERN.test(header);
+}
+
 /**
  * Derives the rate-limit bucket key.
  *
- * The tenant comes ONLY from the request's AsyncLocalStorage context, which is
- * bound from the verified host by `registerRequestHooks` (registered before the
- * security plugins for exactly this reason). When no tenant is bound the bucket
- * is the client IP alone.
+ * Unauthenticated traffic is keyed on the client IP alone. The tenant comes from
+ * the request's AsyncLocalStorage context, which is bound from the Host header —
+ * still client-controlled, even if it is no longer trusted for identity. Keying
+ * pre-auth buckets on it let an attacker mint a fresh login/registration bucket
+ * per request just by rotating `Host: tNNNN.<appDomain>`.
  *
- * This used to read `X-Tenant-Id` (and fall back to the `Host` subdomain). Both
- * are client-controlled — a caller could mint a fresh bucket per request just by
- * changing the header, so the only throttle on ~500 non-auth routes was
- * unbounded by rotation. A trusted tenant still isolates tenants from each other
- * (one tenant cannot starve another behind a shared NAT), but it can no longer be
- * fabricated.
+ * Authenticated requests (a tenant/platform session cookie is present) keep the
+ * tenant dimension so one workspace cannot starve another behind a shared NAT.
+ * Bearer-only clients have no cookie and fall back to IP-only, which is stricter.
  */
 export function generateCompositeRateLimitKey(request: FastifyRequest): string {
   const clientIp = request.ip || request.socket?.remoteAddress || "127.0.0.1";
+  if (!hasTenantSessionCookie(request)) return clientIp;
   const tenant = getRequestTenant()?.trim().toLowerCase();
   return tenant ? `${tenant}:${clientIp}` : clientIp;
 }

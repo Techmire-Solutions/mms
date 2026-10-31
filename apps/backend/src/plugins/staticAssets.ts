@@ -75,15 +75,23 @@ export function setStaticAssetHeaders(reply: HeaderTarget, filePath: string): vo
     return;
   }
 
-  // User-uploaded documents (exports, attachments, tenant images) may contain
-  // pupil/finance data — never let a shared proxy cache them.
-  if (/(?:^|[\\/])uploads[\\/]tenants[\\/]/i.test(cleanPath)) {
-    reply.header("Cache-Control", "private, no-store");
-    reply.header("Vary", "Authorization, Accept-Encoding");
+  // Every /uploads/** file except public branding is session-gated (see
+  // authorizeUpload). The cache header must match that gate: a shared proxy must
+  // never re-serve a personal photo, export or attachment to an unauthenticated
+  // caller. Root-level uploads (legacy avatars/images) are included.
+  if (/(?:^|[\\/])uploads[\\/]/i.test(cleanPath)) {
+    const belowUploads = cleanPath.replace(/^.*?[\\/]uploads[\\/]/i, "");
+    if (isPublicUploadPath(belowUploads)) {
+      reply.header("Cache-Control", "public, max-age=86400, must-revalidate");
+      reply.header("Vary", "Accept-Encoding");
+    } else {
+      reply.header("Cache-Control", "private, no-store");
+      reply.header("Vary", "Authorization, Accept-Encoding");
+    }
     return;
   }
 
-  // Default for non-hashed, non-entry static files (public branding, images)
+  // Default for other non-hashed, non-entry static files (brand assets, images)
   reply.header("Cache-Control", "public, max-age=86400");
   reply.header("Vary", "Accept-Encoding");
 }

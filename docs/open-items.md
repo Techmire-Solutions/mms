@@ -542,3 +542,37 @@ and `pnpm audit`. Findings P-01…P-06 were then fixed on `fix/project-review-20
 risk; deploy default is `strict` and fails closed), snapshot regeneration and naive timestamps,
 143 historical migrations without `lock_timeout`, 517 dead i18n keys, legacy localStorage store
 (no new non-test call site), and the 10-30 frontend deferred register.
+
+## 2026-10-31 backend review — accepted debt
+
+Full report: [backend-review-2026-10-31.md](./backend-review-2026-10-31.md). Read-only re-review at
+`cf69f9d17` (backend tree identical to `1a9b1d942`); gates green, 2,237 unit tests + 181 real-Postgres
+tests passing.
+
+**B-01–B-09 (P0/P1) — FIXED 2026-10-31, no commit/PR.** Ledger guards on the invoice/payment `PUT`
+endpoints, reset-password session revocation, strict auth Redis reads (503 instead of fail-open),
+cross-node cache-invalidation startup, bounded messaging jobs with a shutdown margin, cross-currency
+archive arithmetic with row locks, atomic restore auditing, and per-invoice batch auditing all landed
+with regression tests. Evidence and behaviour changes: review report §11. The unit suite is now
+329 files / 2,274 tests and the real-Postgres suite still passes.
+
+**P2 batch 2 — FIXED 2026-10-31, no commit/PR.** B-10 (IP-only pre-auth rate-limit buckets), B-11
+(atomic 2FA challenge + attempt ceiling), B-12 (super-user-only platform admin disable/delete), B-14
+(private cache for session-gated uploads), B-15 (`/ready` probe memoisation), B-16 (loopback-or-token
+`/metrics`), B-17 (CI `lib/**`/`middleware/**` → DB + RLS) and B-21 (subject-encrypted erasure audit)
+landed with regression tests. Evidence: review report §11 (“P2 batch 2”); unit suite 331 files /
+2,291 tests and the real-Postgres suite still pass.
+
+**P2/P3 — still open**
+
+- **B-13** Audit immutability `REVOKE` is gated on `mms_app_user`; the app role is `mms_app`, and
+  checkpoints are signed inside the same database. Needs a migration + external signing design.
+- **B-18** Credit notes have no idempotency key; a retried POST double-credits. Changes the shared
+  contract and replay semantics.
+- **B-19** Bank reconciliation stores unchecked ids (no amount/account validation, no unmatch, no
+  audit). Needs product rules for statement sign/account matching and partial matches.
+- **B-20** Invoice numbering is a racy max-scan; fixing the retry requires moving transaction
+  ownership out of the finance routes.
+- **B-22** Logic coverage 44 % (mocked unit run only); 54 use-cases without companion tests.
+- **B-23–B-36** Remaining hygiene/audit/jobs findings, recorded in the report with evidence and
+  proposed tests.

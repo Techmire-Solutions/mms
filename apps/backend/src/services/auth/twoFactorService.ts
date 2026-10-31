@@ -1,16 +1,16 @@
 import { randomBytes } from "node:crypto";
 import type { JWT } from "@fastify/jwt";
 import type { User } from "@mms/shared";
-import { resolveNotificationChannel } from "@mms/shared";
+import { resolveNotificationChannel, TENANT_OTP_MAX_ATTEMPTS } from "@mms/shared";
 import {
   authArtifactUserScopeKey,
   authArtifactWorkspaceScopeKey,
+  consumeAuthArtifactWithPayload,
   createArtifactId,
   deleteAuthArtifact,
   findRefreshTokenByHash,
   getAuthArtifact,
   putAuthArtifact,
-  takeAuthArtifact,
 } from "./authArtifactService.js";
 import {
   generateOtpCode,
@@ -38,6 +38,8 @@ export interface TwoFactorChallengePayload {
   contactId?: string | number;
   workspaceSubdomain: string;
   codeHash: string;
+  /** Failed guesses against this challenge; the challenge dies at the shared ceiling. */
+  attempts: number;
 }
 
 export interface RefreshTokenPayload {
@@ -57,6 +59,7 @@ export async function createTwoFactorChallenge(user: User): Promise<string> {
       contactId: user.contactId,
       workspaceSubdomain: user.workspaceSubdomain,
       codeHash: hashOtpCode(code),
+      attempts: 0,
     },
     CHALLENGE_TTL_MS,
     {
@@ -90,6 +93,7 @@ export async function resendTwoFactorChallenge(
 
   const code = generateOtpCode();
   entry.payload.codeHash = hashOtpCode(code);
+  entry.payload.attempts = 0;
   await deleteAuthArtifact(challengeId);
   await putAuthArtifact("two_factor_challenge", entry.payload, CHALLENGE_TTL_MS, {
     id: challengeId,
@@ -104,13 +108,33 @@ export async function verifyTwoFactorChallenge(
   code: string,
   expectedTenant: string,
 ): Promise<User | null> {
-  const entry = await takeAuthArtifact<TwoFactorChallengePayload>(
+  // Atomic claim: DELETE … RETURNING gives the challenge to exactly one caller,
+  // so parallel guesses cannot all read the same code before it is deleted.
+  const entry = await consumeAuthArtifactWithPayload<TwoFactorChallengePayload>(
     challengeId,
     "two_factor_challenge",
   );
   if (!entry) return null;
   if (!challengeMatchesTenant(entry.payload, expectedTenant)) return null;
-  if (!verifyOtpCode(code.replace(/\s/g, ""), entry.payload.codeHash)) return null;
+
+  if (!verifyOtpCode(code.replace(/\s/g, ""), entry.payload.codeHash)) {
+    const attempts = (entry.payload.attempts ?? 0) + 1;
+    const remainingMs = entry.expiresAt.getTime() - Date.now();
+    if (attempts >= TENANT_OTP_MAX_ATTEMPTS || remainingMs <= 0) return null;
+
+    // Re-arm the (single-use) challenge with the incremented counter so the
+    // caller can retry, bounded by the shared five-attempt ceiling.
+    await putAuthArtifact<TwoFactorChallengePayload>(
+      "two_factor_challenge",
+      { ...entry.payload, attempts },
+      remainingMs,
+      {
+        id: entry.id,
+        scopeKey: authArtifactWorkspaceScopeKey(entry.payload.workspaceSubdomain),
+      },
+    );
+    return null;
+  }
 
   const user = await runWithTenant(entry.payload.workspaceSubdomain, () =>
     getPublicUserById(entry.payload.userId),

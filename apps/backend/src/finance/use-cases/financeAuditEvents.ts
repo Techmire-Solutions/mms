@@ -76,12 +76,18 @@ export async function recordInvoiceAudit(
   });
 }
 
-export async function recordPaymentAudit(tenant: string, payment: Payment): Promise<void> {
+export async function recordPaymentAudit(
+  tenant: string,
+  payment: Payment,
+  actionType: AuditActionType = "CREATE",
+  oldState?: PaymentAuditState | null,
+): Promise<void> {
   await recordModernAuditEvent({
     workspaceSubdomain: tenant,
     tableName: "finance_payments",
     recordId: payment.id,
-    actionType: "CREATE",
+    actionType,
+    oldState: oldState ?? undefined,
     newState: paymentAuditState(payment),
   });
 }

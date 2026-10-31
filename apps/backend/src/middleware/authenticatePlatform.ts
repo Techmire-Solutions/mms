@@ -14,8 +14,9 @@ import {
   getStoredPlatformUserById,
   toPublicPlatformUser,
 } from "../services/platform/platformUserService.js";
-import { sendForbidden, sendUnauthorized } from "../lib/httpErrors.js";
+import { sendForbidden, sendServiceUnavailable, sendUnauthorized } from "../lib/httpErrors.js";
 import { isTokenRevoked } from "../services/authSessionService.js";
+import { RedisUnavailableError } from "../lib/redis.js";
 
 export interface PlatformAuthenticatedRequest extends FastifyRequest {
   platformUser: PlatformUser;
@@ -26,7 +27,12 @@ export interface PlatformOptionalAuthRequest extends FastifyRequest {
 }
 
 type PlatformAuthFailureReason =
-  "auth_required" | "invalid_session" | "user_missing" | "account_disabled" | "session_revoked";
+  | "auth_required"
+  | "invalid_session"
+  | "user_missing"
+  | "account_disabled"
+  | "session_revoked"
+  | "dependency_unavailable";
 
 type PlatformAuthResolveResult =
   { ok: true; user: PlatformUser } | { ok: false; reason: PlatformAuthFailureReason };
@@ -65,8 +71,17 @@ export async function resolvePlatformUser(
     return { ok: false, reason: "invalid_session" };
   }
 
-  if (payload.jti && (await isTokenRevoked(payload.jti))) {
-    return { ok: false, reason: "session_revoked" };
+  if (payload.jti) {
+    let revoked: boolean;
+    try {
+      revoked = await isTokenRevoked(payload.jti);
+    } catch (error) {
+      if (error instanceof RedisUnavailableError) {
+        return { ok: false, reason: "dependency_unavailable" };
+      }
+      throw error;
+    }
+    if (revoked) return { ok: false, reason: "session_revoked" };
   }
 
   const stored = await getStoredPlatformUserById(payload.id);
@@ -102,6 +117,12 @@ async function sendPlatformAuthFailure(
     case "invalid_session":
       await sendUnauthorized(reply, "Invalid platform session");
       return;
+    case "dependency_unavailable":
+      await sendServiceUnavailable(
+        reply,
+        "Platform session validation is temporarily unavailable. Please retry.",
+      );
+      return;
     case "auth_required":
     default:
       await sendUnauthorized(reply, "Platform authentication is required");
@@ -129,11 +150,23 @@ export async function authenticatePlatform(
   const sessionPolicy = platformSessionPolicy();
   const idleScope = platformSessionScope(resolved.user.id);
   const jti = (request.user as PlatformAccessTokenPayload | undefined)?.jti;
-  const idleOutcome = await enforcePlatformSessionClock({
-    scope: idleScope,
-    policy: sessionPolicy,
-    jti,
-  });
+  let idleOutcome: Awaited<ReturnType<typeof enforcePlatformSessionClock>>;
+  try {
+    idleOutcome = await enforcePlatformSessionClock({
+      scope: idleScope,
+      policy: sessionPolicy,
+      jti,
+    });
+  } catch (error) {
+    if (error instanceof RedisUnavailableError) {
+      await sendServiceUnavailable(
+        reply,
+        "Platform session validation is temporarily unavailable. Please retry.",
+      );
+      return;
+    }
+    throw error;
+  }
   if (idleOutcome !== "ok") {
     const expiry = SESSION_EXPIRY_RESPONSE[idleOutcome];
     return sendUnauthorized(reply, expiry.message, expiry.type);

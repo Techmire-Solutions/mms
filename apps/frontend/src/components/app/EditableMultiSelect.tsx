@@ -41,11 +41,13 @@ export function EditableMultiSelect({
   maxVisible,
 }: EditableMultiSelectProps): React.JSX.Element {
   const { t } = useTranslation();
+  const triggerRef = React.useRef<HTMLButtonElement>(null);
   const state = useEditableMultiSelectState({
     options,
     values,
     onChange,
     onUpdateOptions,
+    triggerRef,
   });
 
   const fallbackId = useId();
@@ -71,7 +73,7 @@ export function EditableMultiSelect({
       }}
     >
       <PopoverTrigger
-        ref={state.triggerRef}
+        ref={triggerRef}
         type="button"
         id={resolvedId}
         name={resolvedName}

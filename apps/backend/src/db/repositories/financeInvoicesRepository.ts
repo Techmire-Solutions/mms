@@ -1,7 +1,7 @@
-import { and, eq, inArray, isNull } from "drizzle-orm";
+import { and, asc, eq, inArray, isNull } from "drizzle-orm";
 import { dedupeTrimmedIds, type Invoice, type RepositoryListOptions } from "@mms/shared";
 import { financeInvoiceLines, financeInvoices } from "../schema.js";
-import { withTenant, withTenantRead } from "../tenant-context.js";
+import { withTenant, withTenantRead, type TenantTransaction } from "../tenant-context.js";
 import { buildTenantSoftDeleteConditions } from "../../services/genericRelationalService.js";
 import { invoiceLineRowToRecord } from "./financeBillingRepository.js";
 import { canonicalStoredRate } from "./repositoryFxMappers.js";
@@ -205,12 +205,13 @@ export async function findInvoiceById(
 export async function findInvoicesByIds(
   tenant: string,
   ids: string[],
-  options?: { includeDeleted?: boolean },
+  options?: { includeDeleted?: boolean; forUpdate?: boolean },
 ): Promise<Invoice[]> {
   const cleanIds = dedupeTrimmedIds(ids);
   if (cleanIds.length === 0) return [];
   const subdomain = tenant.trim().toLowerCase();
-  return withTenantRead(subdomain, async (tx) => {
+
+  const load = async (tx: TenantTransaction): Promise<Invoice[]> => {
     const conditions = [
       eq(financeInvoices.workspaceSubdomain, subdomain),
       inArray(financeInvoices.id, cleanIds),
@@ -218,7 +219,7 @@ export async function findInvoicesByIds(
     if (!options?.includeDeleted) {
       conditions.push(isNull(financeInvoices.deletedAt));
     }
-    const rows = await tx
+    const query = tx
       .select({
         id: financeInvoices.id,
         workspaceSubdomain: financeInvoices.workspaceSubdomain,
@@ -258,6 +259,13 @@ export async function findInvoicesByIds(
       })
       .from(financeInvoices)
       .where(and(...conditions));
+    const rows = options?.forUpdate
+      ? await query.orderBy(asc(financeInvoices.id)).for("update")
+      : await query;
     return rows.map(invoiceRowToRecord);
-  });
+  };
+
+  // `FOR UPDATE` needs a writable transaction; the plain read path stays on the
+  // replica. Nested calls join the caller's active transaction either way.
+  return options?.forUpdate ? withTenant(subdomain, load) : withTenantRead(subdomain, load);
 }

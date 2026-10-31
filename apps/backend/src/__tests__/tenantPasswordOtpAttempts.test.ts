@@ -6,6 +6,7 @@ const mocks = vi.hoisted(() => ({
   findAuthArtifactByLookupKey: vi.fn(),
   updateAuthArtifactPayload: vi.fn(),
   deleteAuthArtifact: vi.fn(),
+  deleteRefreshTokensForUser: vi.fn(),
   putAuthArtifact: vi.fn(),
   activateInvitedTenantUserRow: vi.fn(),
   establishSession: vi.fn(),
@@ -15,13 +16,23 @@ const mocks = vi.hoisted(() => ({
   assertPasswordMeetsPolicy: vi.fn(),
   loadGlobalSettings: vi.fn(),
   dispatchTenantPasswordOtp: vi.fn(),
+  revokeAllUserSessions: vi.fn(),
 }));
 
 vi.mock("../services/auth/authArtifactService.js", () => ({
   findAuthArtifactByLookupKey: mocks.findAuthArtifactByLookupKey,
   updateAuthArtifactPayload: mocks.updateAuthArtifactPayload,
   deleteAuthArtifact: mocks.deleteAuthArtifact,
+  deleteRefreshTokensForUser: mocks.deleteRefreshTokensForUser,
   putAuthArtifact: mocks.putAuthArtifact,
+}));
+
+vi.mock("../services/authSessionService.js", () => ({
+  revokeAllUserSessions: mocks.revokeAllUserSessions,
+}));
+
+vi.mock("../services/auth/passwordService.js", () => ({
+  hashPassword: vi.fn().mockResolvedValue("hashed-password"),
 }));
 
 vi.mock("../services/auth/tenantPasswordOtpDispatch.js", () => ({
@@ -153,5 +164,79 @@ describe("tenant password OTP attempt lockout", () => {
     });
     expect(mocks.deleteAuthArtifact).toHaveBeenCalledWith("otp-1");
     expect(mocks.updateAuthArtifactPayload).toHaveBeenCalledTimes(4);
+  });
+});
+
+describe("tenant password reset session revocation", () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+    stored = {
+      userId: "u-1",
+      workspaceSubdomain: "demo",
+      email: "user@example.com",
+      codeHash: hashOtpCode(correctCode),
+      attempts: 0,
+      createdAt: new Date().toISOString(),
+    };
+    mocks.findAuthArtifactByLookupKey.mockImplementation(async () => ({
+      id: "otp-1",
+      kind: "tenant_password_otp",
+      payload: stored,
+      expiresAt: new Date(Date.now() + 60_000),
+    }));
+    mocks.assertPasswordMeetsPolicy.mockResolvedValue(undefined);
+    mocks.activateInvitedTenantUserRow.mockResolvedValue(true);
+    mocks.getPublicUserById.mockResolvedValue({
+      id: "u-1",
+      workspaceSubdomain: "demo",
+      role: "admin",
+    });
+    mocks.deleteRefreshTokensForUser.mockResolvedValue(undefined);
+    mocks.revokeAllUserSessions.mockResolvedValue(undefined);
+    mocks.establishSession.mockResolvedValue({ user: { id: "u-1" } });
+  });
+
+  it("revokes the old sessions and refresh tokens before establishing the new session", async () => {
+    const order: string[] = [];
+    mocks.revokeAllUserSessions.mockImplementation(async () => {
+      order.push("revoke");
+    });
+    mocks.deleteRefreshTokensForUser.mockImplementation(async () => {
+      order.push("refresh");
+    });
+    mocks.establishSession.mockImplementation(async () => {
+      order.push("establish");
+      return { user: { id: "u-1" } };
+    });
+
+    await resetTenantPassword({ ...resetInput(), code: correctCode });
+
+    expect(mocks.revokeAllUserSessions).toHaveBeenCalledWith("u-1");
+    expect(mocks.deleteRefreshTokensForUser).toHaveBeenCalledWith("u-1");
+    expect(order).toEqual(["revoke", "refresh", "establish"]);
+  });
+
+  it("fails closed when the revocation cannot be recorded", async () => {
+    mocks.revokeAllUserSessions.mockRejectedValue(new Error("redis unavailable"));
+
+    await expect(resetTenantPassword({ ...resetInput(), code: correctCode })).rejects.toThrow(
+      /redis unavailable/,
+    );
+
+    expect(mocks.activateInvitedTenantUserRow).not.toHaveBeenCalled();
+    expect(mocks.establishSession).not.toHaveBeenCalled();
+  });
+
+  it("refuses to sign in a user from another workspace", async () => {
+    mocks.getPublicUserById.mockResolvedValue({
+      id: "u-1",
+      workspaceSubdomain: "other",
+      role: "admin",
+    });
+
+    await expect(resetTenantPassword({ ...resetInput(), code: correctCode })).rejects.toMatchObject(
+      { code: "not_found" },
+    );
+    expect(mocks.establishSession).not.toHaveBeenCalled();
   });
 });
