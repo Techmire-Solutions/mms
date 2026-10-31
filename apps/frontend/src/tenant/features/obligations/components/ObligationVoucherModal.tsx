@@ -7,12 +7,21 @@ import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { SEMANTIC_BADGE } from "@/lib/ui/semanticTone";
 import { useTranslation } from "@/hooks/useTranslation";
+import { WorkBatchTable, type WorkBatchTableColumn } from "@/components/common/work/WorkBatchTable";
 import type { ObligationCollection } from "@/lib/data/obligationsData";
 import { useObligationVoucher } from "@/tenant/features/obligations/hooks/useObligationVoucher";
 
 export interface ObligationVoucherModalProps {
   collection: ObligationCollection | null;
   onClose: () => void;
+}
+
+interface VoucherTableLine {
+  id: string;
+  account_id: string;
+  description?: string;
+  debit: number;
+  credit: number;
 }
 
 /**
@@ -31,17 +40,14 @@ export function ObligationVoucherModal({ collection, onClose }: ObligationVouche
     return map;
   }, [accounts]);
 
+  const voucherTitle = t("obligations.voucher.title");
+  const modalTitle = collection ? `${voucherTitle} — ${collection.receipt_no}` : voucherTitle;
+
   if (!collection) return null;
 
   if (voucherQuery.isLoading) {
     return (
-      <DetailDrawerShell
-        open
-        onClose={onClose}
-        title={`${t("obligations.voucher.title")} — ${collection.receipt_no}`}
-        icon={Receipt}
-        size="2xl"
-      >
+      <DetailDrawerShell open onClose={onClose} title={modalTitle} icon={Receipt} size="2xl">
         <div className="flex flex-col items-center justify-center p-12 space-y-4">
           <Loader2 className="w-8 h-8 animate-spin text-primary" aria-hidden="true" />
           <p className="text-sm text-muted-foreground">{t("common.loading")}</p>
@@ -52,13 +58,7 @@ export function ObligationVoucherModal({ collection, onClose }: ObligationVouche
 
   if (voucherQuery.isError || !voucherQuery.data?.entry) {
     return (
-      <DetailDrawerShell
-        open
-        onClose={onClose}
-        title={`${t("obligations.voucher.title")} — ${collection.receipt_no}`}
-        icon={Receipt}
-        size="2xl"
-      >
+      <DetailDrawerShell open onClose={onClose} title={modalTitle} icon={Receipt} size="2xl">
         <div className="flex flex-col items-center justify-center p-8 space-y-4 text-center">
           <AlertCircle className="w-10 h-10 text-warning" aria-hidden="true" />
           <p className="text-sm text-muted-foreground">{t("obligations.voucher.notFound")}</p>
@@ -80,14 +80,57 @@ export function ObligationVoucherModal({ collection, onClose }: ObligationVouche
   const totalCredit = entry.lines.reduce((sum, line) => sum + (line.credit || 0), 0);
   const isBalanced = Math.abs(totalDebit - totalCredit) < 0.005;
 
+  const tableLines: VoucherTableLine[] = entry.lines.map((line, idx) => ({
+    id: line.id || `line-${idx}`,
+    account_id: line.account_id,
+    description: line.description,
+    debit: line.debit || 0,
+    credit: line.credit || 0,
+  }));
+
+  const columns: WorkBatchTableColumn<VoucherTableLine>[] = [
+    {
+      id: "account",
+      label: t("accounting.journal.voucher.account"),
+      cellClassName: "px-3 py-2.5",
+      render: (line) => {
+        const acc = accountMap.get(line.account_id);
+        return (
+          <div>
+            <div className="font-mono text-xs font-bold text-primary">
+              {acc?.code || line.account_id}
+            </div>
+            <div className="text-xs text-muted-foreground">{acc?.name || "—"}</div>
+          </div>
+        );
+      },
+    },
+    {
+      id: "description",
+      label: t("accounting.columns.journal.description"),
+      cellClassName: "px-3 py-2.5 text-xs text-muted-foreground",
+      render: (line) => line.description || "—",
+    },
+    {
+      id: "debit",
+      label: t("accounting.columns.journal.debit"),
+      variant: "currency",
+      headerClassName: "w-28 text-end",
+      cellClassName: "px-3 py-2.5 text-end font-mono text-xs font-medium",
+      render: (line) => (line.debit ? formatMoney(line.debit) : "—"),
+    },
+    {
+      id: "credit",
+      label: t("accounting.columns.journal.credit"),
+      variant: "currency",
+      headerClassName: "w-28 text-end",
+      cellClassName: "px-3 py-2.5 text-end font-mono text-xs font-medium",
+      render: (line) => (line.credit ? formatMoney(line.credit) : "—"),
+    },
+  ];
+
   return (
-    <DetailDrawerShell
-      open
-      onClose={onClose}
-      title={`${t("obligations.voucher.title")} — ${collection.receipt_no}`}
-      icon={Receipt}
-      size="3xl"
-    >
+    <DetailDrawerShell open onClose={onClose} title={modalTitle} icon={Receipt} size="3xl">
       <div className="space-y-5">
         <Card className="p-4 flex flex-wrap items-center justify-between gap-4 bg-primary/5 border-primary/25">
           <div className="flex items-center gap-3">
@@ -122,66 +165,40 @@ export function ObligationVoucherModal({ collection, onClose }: ObligationVouche
         )}
 
         <div className="border rounded-lg overflow-hidden bg-card">
-          <table className="w-full text-sm">
-            <thead className="bg-muted/50 border-b text-xs text-muted-foreground font-semibold">
-              <tr>
-                <th className="px-3 py-2.5 text-start">
-                  {t("accounting.journal.voucher.account")}
-                </th>
-                <th className="px-3 py-2.5 text-start">
-                  {t("accounting.columns.journal.description")}
-                </th>
-                <th className="px-3 py-2.5 text-end w-28">
-                  {t("accounting.columns.journal.debit")}
-                </th>
-                <th className="px-3 py-2.5 text-end w-28">
-                  {t("accounting.columns.journal.credit")}
-                </th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-border">
-              {entry.lines.map((line, idx) => {
-                const acc = accountMap.get(line.account_id);
-                return (
-                  <tr key={line.id || idx} className="hover:bg-muted/20">
-                    <td className="px-3 py-2.5">
-                      <div className="font-mono text-xs font-bold text-primary">
-                        {acc?.code || line.account_id}
-                      </div>
-                      <div className="text-xs text-muted-foreground">{acc?.name || "—"}</div>
-                    </td>
-                    <td className="px-3 py-2.5 text-xs text-muted-foreground">
-                      {line.description || "—"}
-                    </td>
-                    <td className="px-3 py-2.5 text-end font-mono text-xs font-medium">
-                      {line.debit ? formatMoney(line.debit) : "—"}
-                    </td>
-                    <td className="px-3 py-2.5 text-end font-mono text-xs font-medium">
-                      {line.credit ? formatMoney(line.credit) : "—"}
-                    </td>
-                  </tr>
-                );
-              })}
-            </tbody>
-            <tfoot className="bg-muted/30 border-t font-semibold text-xs">
-              <tr>
-                <td colSpan={2} className="px-3 py-2.5 text-start">
-                  <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
-                    {isBalanced && (
-                      <CheckCircle2 className="w-3.5 h-3.5 text-success" aria-hidden="true" />
-                    )}
-                    <span>{t("accounting.journal.voucher.total")}</span>
-                  </div>
-                </td>
-                <td className="px-3 py-2.5 text-end font-mono text-xs font-bold text-foreground">
-                  {formatMoney(totalDebit)}
-                </td>
-                <td className="px-3 py-2.5 text-end font-mono text-xs font-bold text-foreground">
-                  {formatMoney(totalCredit)}
-                </td>
-              </tr>
-            </tfoot>
-          </table>
+          <WorkBatchTable
+            data={tableLines}
+            columns={columns}
+            caption={t("accounting.journal.voucher.account")}
+            className="border-t-0"
+            rowClassName={() => "hover:bg-muted/20"}
+            footerRow={{
+              className: "bg-muted/30 border-t font-semibold text-xs",
+              cells: [
+                {
+                  colSpan: 2,
+                  className: "px-3 py-2.5 text-start",
+                  content: (
+                    <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
+                      {isBalanced && (
+                        <CheckCircle2 className="w-3.5 h-3.5 text-success" aria-hidden="true" />
+                      )}
+                      <span>{t("accounting.journal.voucher.total")}</span>
+                    </div>
+                  ),
+                },
+                {
+                  className: "px-3 py-2.5 text-end font-mono text-xs font-bold text-foreground",
+                  align: "end",
+                  content: formatMoney(totalDebit),
+                },
+                {
+                  className: "px-3 py-2.5 text-end font-mono text-xs font-bold text-foreground",
+                  align: "end",
+                  content: formatMoney(totalCredit),
+                },
+              ],
+            }}
+          />
         </div>
 
         <footer className="flex items-center justify-between gap-2 pt-2">
