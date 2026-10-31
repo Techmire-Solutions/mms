@@ -41,6 +41,7 @@ Project-wide entry points live at the repo root:
 - [project-review-2026-10-30.md](./project-review-2026-10-30.md) — whole-repo re-review at `84516ad04`: 21/21 gates, 7,736 tests, production print/CSP regression, backend/shared coverage-basis gap, CI source-map disclosure; P-01–P-06 fixed in the same change.
 - [backend-review-2026-10-29.md](./backend-review-2026-10-29.md) — backend deep-dive: audit-trail/RLS and finance-ledger defects, job/queue findings, deploy and authorization gaps.
 - [backend-review-2026-10-30.md](./backend-review-2026-10-30.md) — post-hardening backend review: verification of F1–F46, 7-pillar audit, and adversarial evaluation.
+- [backend-review-2026-10-31.md](./backend-review-2026-10-31.md) — independent backend re-review at `cf69f9d17`: two P0 finance `PUT` ledger bypasses, session/cache freshness failures, unbounded messaging jobs, and audit gaps on restore and batch billing.
 - [frontend-review-2026-10-30.md](./frontend-review-2026-10-30.md) — frontend deep-dive: PWA precache budget, stale-chunk recovery, pre-paint BiDi, coverage depth, deferred i18n split.
 - [frontend-review-2026-10-30-deep.md](./frontend-review-2026-10-30-deep.md) — whole-frontend review: routing/data/a11y/i18n findings, 12 fixes (pagination labels, settings deep links, palette focus trap, finance live push, 401 escalation, platform boundary), deferred register.
 - [rules-review-2026-10-29.md](./rules-review-2026-10-29.md) — agent standards review: rule findings H/M/L, per-rule scorecard, 49-skill review + fixes, and the DeepSeek Harness `.dsh` mirror.

@@ -1,3 +1,27 @@
+/**
+ * True when the request came from loopback without a proxied client.
+ *
+ * `X-Forwarded-For` means the request reached us through a proxy, so it is
+ * treated as external even if the proxy itself connected over loopback. Used by
+ * the ops probes (`/health`, `/metrics`) to decide whether topology can be
+ * exposed without a token.
+ */
+export function isLoopbackRequest(request: {
+  ip?: string;
+  headers: Record<string, unknown>;
+}): boolean {
+  const forwardedFor = request.headers["x-forwarded-for"];
+  const hasForwardedClient = Array.isArray(forwardedFor)
+    ? forwardedFor.length > 0
+    : Boolean(forwardedFor);
+  if (hasForwardedClient) return false;
+
+  const normalized = (request.ip ?? "").trim().toLowerCase();
+  if (!normalized) return false;
+  if (normalized === "::1" || normalized === "::ffff:127.0.0.1") return true;
+  return normalized === "127.0.0.1" || normalized.startsWith("127.");
+}
+
 function isInternalHost(host: string): boolean {
   if (!host) return true;
   if (host === "localhost" || host.endsWith(".localhost")) return true;

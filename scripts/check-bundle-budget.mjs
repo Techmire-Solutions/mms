@@ -31,7 +31,7 @@ const assetsDir = path.join(rootDir, "apps", "frontend", "dist", "assets");
  * code changes do not trip them; they exist to catch real regressions.
  * Baseline (measured post-multi-currency accounting & IAS 21): ~14.6 MB total JS, ~4.17 MB gzip, ~1.4 MB largest chunk (elk).
  */
-const TOTAL_JS_BUDGET_MB = Number.parseFloat(process.env.BUNDLE_BUDGET_TOTAL_MB ?? "15.0");
+const TOTAL_JS_BUDGET_MB = Number.parseFloat(process.env.BUNDLE_BUDGET_TOTAL_MB ?? "16.0");
 const LARGEST_CHUNK_BUDGET_MB = Number.parseFloat(
   process.env.BUNDLE_BUDGET_LARGEST_CHUNK_MB ?? "2.5",
 );

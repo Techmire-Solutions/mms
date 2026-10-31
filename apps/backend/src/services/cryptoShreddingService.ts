@@ -109,6 +109,10 @@ export async function executeSubjectErasure(
         recordId: subjectId,
         actionType: "DELETE",
         realUserId: requestedBy,
+        // Encrypt both states with the subject key at capture, otherwise the
+        // erasure event itself would keep the identifier readable after the
+        // shred. (recordId stays as the pseudonymous audit handle.)
+        subjectId,
         oldState: { subjectId, status: "ACTIVE" },
         newState: { subjectId, status: "SHREDDED", destroyedAt: now.toISOString() },
       });

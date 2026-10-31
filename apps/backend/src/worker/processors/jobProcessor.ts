@@ -1,6 +1,7 @@
 import type { Job } from "bullmq";
 import type { EnqueuedJobData } from "../queues/index.js";
 import { executeJob } from "../../services/backgroundJobWorkerService.js";
+import { backgroundJobShutdownSignal } from "../../services/backgroundJobDeadline.js";
 import { tracer } from "../../config/telemetry.js";
 import { logger } from "../../lib/logger.js";
 
@@ -56,7 +57,15 @@ export async function processBackgroundJob(job: Job<EnqueuedJobData>): Promise<v
       "job.attempt": job.attemptsMade + 1,
     },
     async () => {
-      await executeJob(tenantId, userId, jobId, moduleId, kind, payload);
+      await executeJob(
+        tenantId,
+        userId,
+        jobId,
+        moduleId,
+        kind,
+        payload,
+        backgroundJobShutdownSignal(),
+      );
     },
   );
 }

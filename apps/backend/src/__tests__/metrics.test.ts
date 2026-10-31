@@ -123,12 +123,17 @@ describe("metrics endpoint", () => {
     registerMetricsPlugin(app);
     await app.register(metricsRoutes);
 
-    expect((await app.inject({ method: "GET", url: "/metrics" })).statusCode).toBe(401);
+    // Non-loopback scrapes need the token; loopback (below) is trusted.
+    const external = { remoteAddress: "203.0.113.9" } as const;
+    expect((await app.inject({ method: "GET", url: "/metrics", ...external })).statusCode).toBe(
+      401,
+    );
     expect(
       (
         await app.inject({
           method: "GET",
           url: "/metrics",
+          ...external,
           headers: { authorization: "Bearer wrong" },
         })
       ).statusCode,
@@ -138,7 +143,17 @@ describe("metrics endpoint", () => {
         await app.inject({
           method: "GET",
           url: "/metrics",
+          ...external,
           headers: { authorization: "Bearer s3cret" },
+        })
+      ).statusCode,
+    ).toBe(200);
+    expect(
+      (
+        await app.inject({
+          method: "GET",
+          url: "/metrics",
+          remoteAddress: "127.0.0.1",
         })
       ).statusCode,
     ).toBe(200);

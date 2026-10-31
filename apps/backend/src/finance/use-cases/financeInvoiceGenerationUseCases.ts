@@ -28,6 +28,7 @@ import {
   listEnrollmentInvoiceMarks,
 } from "../../db/repositories/financeInvoiceGenerationRepository.js";
 import { financeUseCases } from "./financeUseCases.js";
+import { recordInvoiceAudit } from "./financeAuditEvents.js";
 import { applyGeneratedInvoiceFx } from "./financeDocumentFx.js";
 import { logger } from "../../lib/logger.js";
 import { withTenant } from "../../db/tenant-context.js";
@@ -73,6 +74,11 @@ async function persistGeneratedInvoices(
     }));
     await bulkSaveInvoices(tenant, invoices);
     await tryPostInvoiceJournals(tenant, invoices);
+    // The single-draft path audits through createInvoice; a batch must emit the
+    // same per-invoice CREATE events or the term's billing has no audit trail.
+    for (const invoice of invoices) {
+      await recordInvoiceAudit(tenant, "CREATE", invoice);
+    }
     return invoices;
   });
 }

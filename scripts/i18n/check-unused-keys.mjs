@@ -28,7 +28,7 @@ const ROOT = process.cwd();
 const EN_PACK = path.join(ROOT, "packages/shared/src/i18n/appTranslationsEn.ts");
 
 /** Measured when the ratchet landed. Only ever lower this. */
-const BASELINE = 518;
+const BASELINE = 517;
 
 const SCAN_ROOTS = [
   "apps/backend/src",

@@ -8,10 +8,12 @@ import {
 } from "@mms/shared";
 import {
   deleteAuthArtifact,
+  deleteRefreshTokensForUser,
   findAuthArtifactByLookupKey,
   putAuthArtifact,
   updateAuthArtifactPayload,
 } from "./authArtifactService.js";
+import { revokeAllUserSessions } from "../authSessionService.js";
 import { generateOtpCode, hashOtpCode, verifyOtpCode } from "./authCookieService.js";
 import { hashPassword } from "./passwordService.js";
 import { assertPasswordMeetsPolicy } from "../globalSettingsService.js";
@@ -194,6 +196,12 @@ export async function resetTenantPassword(input: {
   await assertPasswordMeetsPolicy(input.password);
   const passwordHash = await hashPassword(input.password);
 
+  // The recovery path must evict every existing session (stolen refresh chains
+  // included). Revoke BEFORE the password changes: if revocation cannot be
+  // recorded, the credential must stay as it was.
+  await revokeAllUserSessions(String(entry.payload.userId));
+  await deleteRefreshTokensForUser(String(entry.payload.userId));
+
   await deleteAuthArtifact(entry.id);
 
   const activated = await activateInvitedTenantUserRow(
@@ -206,7 +214,11 @@ export async function resetTenantPassword(input: {
   }
 
   const user = await getPublicUserById(entry.payload.userId);
-  if (!user) {
+  if (
+    !user ||
+    user.workspaceSubdomain.trim().toLowerCase() !==
+      entry.payload.workspaceSubdomain.trim().toLowerCase()
+  ) {
     throw new TenantPasswordOtpError("not_found", "This account is no longer available");
   }
 

@@ -56,10 +56,14 @@ export default async function platformUsersRoutes(
 
     verifyAdminEmail: handleVerifyAdminEmail,
 
+    // Disabling/deleting an operator is as sensitive as creating one: a delegated
+    // `admins` grant must not be able to remove the only super-user/system holder.
     setAdminDisabled: {
       hooks: {
         preHandler: async (request: FastifyRequest, reply: FastifyReply) => {
           await authRateLimit(request, reply);
+          if (reply.sent) return;
+          await requirePlatformSuperUser()(request, reply);
         },
       },
       handler: handleSetAdminDisabled,
@@ -69,6 +73,8 @@ export default async function platformUsersRoutes(
       hooks: {
         preHandler: async (request: FastifyRequest, reply: FastifyReply) => {
           await authRateLimit(request, reply);
+          if (reply.sent) return;
+          await requirePlatformSuperUser()(request, reply);
         },
       },
       handler: handleDeleteAdmin,

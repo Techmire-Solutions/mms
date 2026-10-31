@@ -242,12 +242,16 @@ export function HasanatTemplateEditor({
   const { t } = useTranslation();
   const branding = useBranding();
 
-  const handleSave = (tmpl: DocumentTemplate<HasanatPayload>) => {
+  const handleSave = async (tmpl: DocumentTemplate<HasanatPayload>) => {
     saveObject(HASANAT_TEMPLATE_STORAGE_KEY, tmpl);
-    void saveDocumentTemplateServer(HASANAT_TEMPLATE_STORAGE_KEY, tmpl).catch((err) => {
+    try {
+      await saveDocumentTemplateServer(HASANAT_TEMPLATE_STORAGE_KEY, tmpl);
+      notify.success(t("hasanat.templateSaved"));
+    } catch (err) {
       console.warn("[HasanatTemplateEditor] Server save failed:", err);
-    });
-    notify.success(t("hasanat.templateSaved"));
+      notify.error(t("templateEditor.saveFailed"));
+      throw err;
+    }
   };
 
   return (

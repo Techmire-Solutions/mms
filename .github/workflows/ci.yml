@@ -53,6 +53,11 @@ jobs:
               # changes must run the real-Postgres suite.
               - 'apps/backend/src/services/**'
               - 'apps/backend/src/accounting/**'
+              # lib/auditCheckpoint.ts, lib/subjectKeyService.ts and the auth
+              # middleware issue real SQL / protect RLS-critical paths; without
+              # these a PR can skip both DB integration and the RLS suite.
+              - 'apps/backend/src/lib/**'
+              - 'apps/backend/src/middleware/**'
               - 'apps/backend/src/__tests__/db-integration/**'
               - 'apps/backend/src/__tests__/rls/**'
               - 'apps/backend/vitest.db.config.ts'

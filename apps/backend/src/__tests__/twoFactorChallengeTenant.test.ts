@@ -2,7 +2,7 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 import { hashOtpCode } from "../services/auth/authCookieService.js";
 
 const mocks = vi.hoisted(() => ({
-  takeAuthArtifact: vi.fn(),
+  consumeAuthArtifactWithPayload: vi.fn(),
   getAuthArtifact: vi.fn(),
   putAuthArtifact: vi.fn(),
   deleteAuthArtifact: vi.fn(),
@@ -16,7 +16,7 @@ vi.mock("../services/auth/authArtifactService.js", () => ({
   authArtifactUserScopeKey: (userId: string) => `user:${userId}`,
   authArtifactWorkspaceScopeKey: (subdomain: string) => `ws:${subdomain}`,
   createArtifactId: () => "challenge-id",
-  takeAuthArtifact: mocks.takeAuthArtifact,
+  consumeAuthArtifactWithPayload: mocks.consumeAuthArtifactWithPayload,
   getAuthArtifact: mocks.getAuthArtifact,
   putAuthArtifact: mocks.putAuthArtifact,
   deleteAuthArtifact: mocks.deleteAuthArtifact,
@@ -44,12 +44,13 @@ import {
 } from "../services/auth/twoFactorService.js";
 import type { TwoFactorChallengePayload } from "../services/auth/twoFactorService.js";
 
-function challengePayload(workspaceSubdomain: string): TwoFactorChallengePayload {
+function challengePayload(workspaceSubdomain: string, attempts = 0): TwoFactorChallengePayload {
   return {
     userId: "u-1",
     email: "admin@example.com",
     workspaceSubdomain,
     codeHash: hashOtpCode("123456"),
+    attempts,
   };
 }
 
@@ -88,14 +89,14 @@ describe("2FA challenge tenant binding", () => {
   });
 
   it("verifies a challenge from the requesting workspace", async () => {
-    mocks.takeAuthArtifact.mockResolvedValue(artifactFor(challengePayload("alpha")));
+    mocks.consumeAuthArtifactWithPayload.mockResolvedValue(artifactFor(challengePayload("alpha")));
 
     await expect(verifyTwoFactorChallenge("challenge-1", "123456", "alpha")).resolves.toEqual(user);
     expect(mocks.getPublicUserById).toHaveBeenCalledTimes(1);
   });
 
   it("rejects a challenge minted for another workspace", async () => {
-    mocks.takeAuthArtifact.mockResolvedValue(artifactFor(challengePayload("alpha")));
+    mocks.consumeAuthArtifactWithPayload.mockResolvedValue(artifactFor(challengePayload("alpha")));
 
     await expect(verifyTwoFactorChallenge("challenge-1", "123456", "beta")).resolves.toBeNull();
     expect(mocks.getPublicUserById).not.toHaveBeenCalled();
@@ -109,11 +110,44 @@ describe("2FA challenge tenant binding", () => {
     expect(mocks.sendTenantEmail).not.toHaveBeenCalled();
   });
 
-  it("resends a challenge for the requesting workspace", async () => {
-    mocks.getAuthArtifact.mockResolvedValue(artifactFor(challengePayload("alpha")));
+  it("resends a challenge for the requesting workspace and resets attempts", async () => {
+    mocks.getAuthArtifact.mockResolvedValue(artifactFor(challengePayload("alpha", 3)));
 
     await expect(resendTwoFactorChallenge("challenge-1", "Alpha")).resolves.toBe(true);
     expect(mocks.deleteAuthArtifact).toHaveBeenCalledTimes(1);
     expect(mocks.putAuthArtifact).toHaveBeenCalledTimes(1);
+    expect(mocks.putAuthArtifact.mock.calls[0]?.[1]).toMatchObject({ attempts: 0 });
+  });
+
+  it("re-arms the challenge with an incremented attempt count on a wrong code", async () => {
+    mocks.consumeAuthArtifactWithPayload.mockResolvedValue(
+      artifactFor(challengePayload("alpha", 0)),
+    );
+
+    await expect(verifyTwoFactorChallenge("challenge-1", "000000", "alpha")).resolves.toBeNull();
+
+    expect(mocks.putAuthArtifact).toHaveBeenCalledTimes(1);
+    const [, payload, ttl, options] = mocks.putAuthArtifact.mock.calls[0] ?? [];
+    expect(payload).toMatchObject({ attempts: 1 });
+    expect(ttl).toBeGreaterThan(0);
+    expect(options).toMatchObject({ id: "challenge-1" });
+  });
+
+  it("does not re-arm the challenge at the shared attempt ceiling", async () => {
+    mocks.consumeAuthArtifactWithPayload.mockResolvedValue(
+      artifactFor(challengePayload("alpha", 4)),
+    );
+
+    await expect(verifyTwoFactorChallenge("challenge-1", "000000", "alpha")).resolves.toBeNull();
+
+    expect(mocks.putAuthArtifact).not.toHaveBeenCalled();
+    expect(mocks.getPublicUserById).not.toHaveBeenCalled();
+  });
+
+  it("fails closed when another request already claimed the challenge", async () => {
+    mocks.consumeAuthArtifactWithPayload.mockResolvedValue(null);
+
+    await expect(verifyTwoFactorChallenge("challenge-1", "123456", "alpha")).resolves.toBeNull();
+    expect(mocks.getPublicUserById).not.toHaveBeenCalled();
   });
 });

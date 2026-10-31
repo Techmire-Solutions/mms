@@ -1,5 +1,4 @@
 import type { FinanceRepository } from "./repository/financeRepository.js";
-import { financeRepository } from "./repository/financeRepositoryAdapter.js";
 import {
   invoiceTotalsFromLines,
   resolveFamilyContactId,
@@ -10,7 +9,6 @@ import {
 import type { createGenericRelationalService } from "../services/genericRelationalService.js";
 import { allocateNextInvoiceNumber } from "../db/repositories/financeBillingRepository.js";
 import { tryPostInvoiceJournal } from "../accounting/ledgerPosting/ledgerPostingService.js";
-import { findEntryIdBySource } from "../db/repositories/accountingRepository.js";
 import { resolveDocumentFx } from "./use-cases/financeDocumentFx.js";
 import { loadFinanceModulePreferences } from "../services/financePreferencesService.js";
 import { withTenant } from "../db/tenant-context.js";
@@ -23,6 +21,9 @@ const LEDGER_SENSITIVE_INVOICE_AMOUNTS = [
   "lateFeeAmt",
   "paidAmt",
 ] as const satisfies readonly (keyof Invoice)[];
+
+/** Statuses whose persisted value changes the subledger balance with no posting. */
+const LEDGER_AFFECTING_INVOICE_STATUSES = new Set<Invoice["status"]>(["cancelled", "paid"]);
 
 /**
  * A POST with an explicit id may replay an earlier request (the specialized
@@ -51,28 +52,66 @@ function isIdempotentInvoiceReplay(
   );
 }
 
-async function assertInvoiceAmountsEditable(
+function cents(value: unknown): number {
+  return Math.round(Number(value ?? 0) * 100);
+}
+
+/**
+ * Fields whose persisted change silently desynchronises the invoice from its
+ * posted journal: the four amounts, the credited total, and the two statuses
+ * (`cancelled`, `paid`) that zero the subledger balance.
+ */
+function ledgerSensitiveInvoiceChanges(existing: Invoice, incoming: Partial<Invoice>): string[] {
+  const changed: string[] = [];
+  for (const field of LEDGER_SENSITIVE_INVOICE_AMOUNTS) {
+    if (incoming[field] !== undefined && cents(incoming[field]) !== cents(existing[field])) {
+      changed.push(field);
+    }
+  }
+  if (
+    incoming.creditedAmt !== undefined &&
+    cents(incoming.creditedAmt) !== cents(existing.creditedAmt)
+  ) {
+    changed.push("creditedAmt");
+  }
+  if (
+    incoming.status !== undefined &&
+    incoming.status !== existing.status &&
+    LEDGER_AFFECTING_INVOICE_STATUSES.has(incoming.status)
+  ) {
+    changed.push("status");
+  }
+  return changed;
+}
+
+async function assertInvoiceLedgerFieldsEditable(
+  repo: FinanceRepository,
   tenant: string,
   invoiceId: string,
   incoming: Partial<Invoice>,
+  allowLedgerSensitive: boolean,
 ): Promise<void> {
-  const touched = LEDGER_SENSITIVE_INVOICE_AMOUNTS.filter((field) => incoming[field] !== undefined);
-  if (touched.length === 0) return;
+  if (allowLedgerSensitive) return;
 
-  const existing = await financeRepository.findInvoiceById(tenant, invoiceId);
+  const existing = await repo.findInvoiceById(tenant, invoiceId);
   if (!existing) return;
 
-  const changed = touched.filter(
-    (field) => Number(incoming[field] ?? 0) !== Number(existing[field] ?? 0),
-  );
+  const changed = ledgerSensitiveInvoiceChanges(existing, incoming);
   if (changed.length === 0) return;
 
-  const ledgerEntryId = await findEntryIdBySource(tenant, "invoice", invoiceId);
+  const ledgerEntryId = await repo.findLedgerPostingIdBySource(tenant, "invoice", invoiceId);
   if (!ledgerEntryId) return;
+
+  const guidance =
+    incoming.status === "cancelled"
+      ? "cancel it through the cancel-invoice action so the ledger reversal is posted"
+      : incoming.status === "paid"
+        ? "record a payment so the collection and ledger are posted"
+        : "reverse it with a credit note or adjusting entry";
 
   throw Object.assign(
     new Error(
-      `This invoice is posted to the ledger — reverse it with a credit note or adjusting entry instead of editing ${changed.join(", ")}`,
+      `This invoice is posted to the ledger — ${guidance} instead of editing ${changed.join(", ")}`,
     ),
     { statusCode: 422, type: "validation_error" },
   );
@@ -166,7 +205,7 @@ export function createFinanceInvoiceMutationOperations({
     updateInvoiceById: async (
       id: string,
       record: InvoiceUpdate,
-      options?: { audit?: boolean },
+      options?: { audit?: boolean; allowLedgerSensitive?: boolean },
     ): Promise<Invoice | null> => {
       const tenant = requireTenant();
       return withTenant(tenant, async () => {
@@ -188,7 +227,13 @@ export function createFinanceInvoiceMutationOperations({
               id: line.id ?? `il-${index + 1}`,
             })) as Invoice["lines"])
           : undefined;
-        await assertInvoiceAmountsEditable(tenant, id, rest);
+        await assertInvoiceLedgerFieldsEditable(
+          repo,
+          tenant,
+          id,
+          rest,
+          options?.allowLedgerSensitive === true,
+        );
         const before = await repo.findInvoiceById(tenant, id, { forUpdate: true });
         const beforeState = invoiceAuditState(before);
         const updated = await invoiceCrud.updateById(id, {

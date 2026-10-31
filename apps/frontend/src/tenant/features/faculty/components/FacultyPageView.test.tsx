@@ -70,12 +70,6 @@ vi.mock("@/tenant/features/faculty/components/FacultyPageHeaderActions", () => (
   FacultyPageHeaderActions: () => <div data-testid="faculty-dashboard-io">Dashboard IO</div>,
 }));
 
-vi.mock("@/tenant/features/faculty/components/FacultyTabIoToolbar", () => ({
-  FacultyTabIoToolbar: ({ entity }: { entity: string }) => (
-    <div data-testid="faculty-tab-io">Tab IO {entity}</div>
-  ),
-}));
-
 describe("FacultyPageView Component", () => {
   const baseProps = {
     canWrite: true,

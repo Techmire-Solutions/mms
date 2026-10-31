@@ -13,8 +13,11 @@ import {
   type Payment,
   type PaymentUpdate,
 } from "@mms/shared";
+import { withTenant } from "../../db/tenant-context.js";
 import { createFinanceLifecycleOperations } from "./financeRecordLifecycle.js";
 import { createFinanceMutationOperations } from "./financeMutationOperations.js";
+import { paymentAuditState, recordPaymentAudit } from "./financeAuditEvents.js";
+import { assertPaymentLedgerFieldsUnchanged } from "./financePaymentEditGuards.js";
 
 const EMPTY_FINANCE_METRICS: FinanceCommandMetricsSnapshot = {
   totalInvoices: 0,
@@ -149,6 +152,17 @@ export function createFinanceUseCases(repo: FinanceRepository = financeRepositor
     updatePaymentById: async (id: string, record: PaymentUpdate): Promise<Payment | null> => {
       const tenant = getRequestTenant();
       if (!tenant) throw new Error("Tenant context required");
+      const cleanId = id?.trim();
+      if (!cleanId) return null;
+
+      const existing = await repo.findPaymentById(tenant, cleanId);
+      if (!existing || existing.deletedAt) return null;
+
+      // A posted payment is a ledger document: money/date/currency/allocations
+      // edits would leave the journal and the invoice balance behind.
+      const postingId = await repo.findLedgerPostingIdBySource(tenant, "payment", cleanId);
+      assertPaymentLedgerFieldsUnchanged(existing, record, Boolean(postingId));
+
       const { allocations: rawAllocations, ...rest } = record;
       const allocations = rawAllocations
         ? (rawAllocations.map((alloc, index) => ({
@@ -156,9 +170,16 @@ export function createFinanceUseCases(repo: FinanceRepository = financeRepositor
             id: alloc.id ?? `pa-${index + 1}`,
           })) as Payment["allocations"])
         : undefined;
-      return paymentCrud.updateById(id, {
-        ...rest,
-        ...(allocations ? { allocations } : {}),
+
+      return withTenant(tenant, async () => {
+        const updated = await paymentCrud.updateById(cleanId, {
+          ...rest,
+          ...(allocations ? { allocations } : {}),
+        });
+        if (updated) {
+          await recordPaymentAudit(tenant, updated, "UPDATE", paymentAuditState(existing));
+        }
+        return updated;
       });
     },
     deletePaymentById: lifecycle.deletePaymentById,

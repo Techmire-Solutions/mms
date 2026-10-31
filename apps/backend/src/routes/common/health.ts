@@ -5,6 +5,7 @@ import { checkIsRedisConnected } from "../../lib/redis.js";
 import { isShuttingDown } from "../../lib/lifecycle.js";
 import { getMultiTierCacheMetrics } from "../../lib/cache/index.js";
 import { isMetricsRequestAuthorized } from "../../plugins/metricsPlugin.js";
+import { isLoopbackRequest } from "../../lib/requestHost.js";
 
 function safeGetPoolMetrics() {
   try {
@@ -12,13 +13,6 @@ function safeGetPoolMetrics() {
   } catch {
     return null;
   }
-}
-
-function isLoopbackAddress(ip: string | undefined): boolean {
-  const normalized = (ip ?? "").trim().toLowerCase();
-  if (!normalized) return false;
-  if (normalized === "::1" || normalized === "::ffff:127.0.0.1") return true;
-  return normalized === "127.0.0.1" || normalized.startsWith("127.");
 }
 
 /**
@@ -32,13 +26,61 @@ function isDetailedHealthAuthorized(request: FastifyRequest): boolean {
   // as external even when the proxy itself connected over loopback, otherwise
   // an Apache-fronted deployment without TRUST_PROXY would leak detail to the
   // internet. A direct local probe carries no X-Forwarded-For.
-  const forwardedFor = request.headers["x-forwarded-for"];
-  const hasForwardedClient = Array.isArray(forwardedFor)
-    ? forwardedFor.length > 0
-    : Boolean(forwardedFor);
-  if (!hasForwardedClient && isLoopbackAddress(request.ip)) return true;
+  if (isLoopbackRequest(request)) return true;
   if (!process.env.METRICS_TOKEN) return false;
   return isMetricsRequestAuthorized(request.headers.authorization);
+}
+
+interface ReadyProbeResult {
+  statusCode: 200 | 503;
+  payload: Record<string, unknown>;
+}
+
+const READY_PROBE_CACHE_DEFAULT_MS = 1_000;
+let readyProbeCache: { at: number; result: ReadyProbeResult } | null = null;
+let readyProbeInFlight: Promise<ReadyProbeResult> | null = null;
+
+/** `READY_PROBE_CACHE_MS=0` disables the memoisation (tests/override). */
+function readyProbeCacheMs(): number {
+  const raw = Number(process.env.READY_PROBE_CACHE_MS);
+  return Number.isFinite(raw) && raw >= 0 ? raw : READY_PROBE_CACHE_DEFAULT_MS;
+}
+
+/** Test helper: readiness is process-global so independent cases must reset it. */
+export function resetReadyProbeCacheForTests(): void {
+  readyProbeCache = null;
+  readyProbeInFlight = null;
+}
+
+async function probeReadiness(): Promise<ReadyProbeResult> {
+  const dbOk = await pingDatabase();
+  const isRedisRequired = Boolean(
+    process.env.REDIS_URL && process.env.NODE_ENV !== "test" && !process.env.VITEST,
+  );
+  const redisConnected = checkIsRedisConnected();
+  const redisOk = !isRedisRequired || redisConnected;
+
+  if (!dbOk || !redisOk) {
+    return {
+      statusCode: 503,
+      payload: {
+        type: "server_error",
+        status: "not_ready",
+        database: dbOk ? "connected" : "disconnected",
+        redis: redisConnected ? "connected" : "disconnected",
+      },
+    };
+  }
+
+  return {
+    statusCode: 200,
+    payload: {
+      status: "ready",
+      database: "connected",
+      redis: redisConnected ? "connected" : isRedisRequired ? "disconnected" : "optional",
+      timestamp: new Date().toISOString(),
+    },
+  };
 }
 
 export default async function healthRoutes(fastify: FastifyInstance): Promise<void> {
@@ -101,27 +143,20 @@ export default async function healthRoutes(fastify: FastifyInstance): Promise<vo
         });
       }
 
-      const dbOk = await pingDatabase();
-      const isRedisRequired = Boolean(
-        process.env.REDIS_URL && process.env.NODE_ENV !== "test" && !process.env.VITEST,
-      );
-      const redisConnected = checkIsRedisConnected();
-      const redisOk = !isRedisRequired || redisConnected;
-
-      if (!dbOk || !redisOk) {
-        return reply.status(503).send({
-          type: "server_error",
-          status: "not_ready",
-          database: dbOk ? "connected" : "disconnected",
-          redis: redisConnected ? "connected" : "disconnected",
+      const cacheMs = readyProbeCacheMs();
+      let result: ReadyProbeResult;
+      if (cacheMs > 0 && readyProbeCache && Date.now() - readyProbeCache.at < cacheMs) {
+        result = readyProbeCache.result;
+      } else {
+        // Single-flight: concurrent probes share one database round-trip.
+        readyProbeInFlight ??= probeReadiness().finally(() => {
+          readyProbeInFlight = null;
         });
+        result = await readyProbeInFlight;
+        readyProbeCache = { at: Date.now(), result };
       }
-      return {
-        status: "ready",
-        database: "connected",
-        redis: redisConnected ? "connected" : isRedisRequired ? "disconnected" : "optional",
-        timestamp: new Date().toISOString(),
-      };
+
+      return reply.status(result.statusCode).send(result.payload);
     },
   );
 }

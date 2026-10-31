@@ -45,18 +45,6 @@ vi.mock("@/components/app/SubTabBar", () => ({
   SubTabBar: () => <div data-testid="sub-tab-bar">SubTabBar</div>,
 }));
 
-vi.mock("./ObligationTypeManager", () => ({
-  default: () => <div data-testid="obligation-type-manager">Obligation Type Manager</div>,
-  ObligationTypeManager: () => (
-    <div data-testid="obligation-type-manager">Obligation Type Manager</div>
-  ),
-}));
-
-vi.mock("./MujtahidManager", () => ({
-  default: () => <div data-testid="mujtahid-manager">Mujtahid Manager</div>,
-  MujtahidManager: () => <div data-testid="mujtahid-manager">Mujtahid Manager</div>,
-}));
-
 vi.mock("./WakalaTypeManager", () => ({
   default: () => <div data-testid="wakala-type-manager">Wakala Type Manager</div>,
   WakalaTypeManager: () => <div data-testid="wakala-type-manager">Wakala Type Manager</div>,

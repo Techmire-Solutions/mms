@@ -171,7 +171,7 @@ export async function cancelInvoice(invoiceId: string): Promise<Invoice> {
     const updated = await financeUseCases.updateInvoiceById(
       invoiceId,
       { ...invoice, status: "cancelled" },
-      { audit: false },
+      { audit: false, allowLedgerSensitive: true },
     );
     if (!updated) throw domainError("Invoice not found", 404, "not_found");
     await tryPostInvoiceReversalJournal(tenant, updated);
@@ -219,11 +219,15 @@ export async function createCreditNote(input: CreditNoteInsert): Promise<CreditN
     const creditedAmt = (invoice.creditedAmt ?? 0) + parsed.amount;
     const remaining = invoiceOpenBalance({ ...invoice, creditedAmt });
     await saveCreditNote(tenant, created);
-    await financeUseCases.updateInvoiceById(invoice.id, {
-      ...invoice,
-      creditedAmt,
-      status: remaining <= 0 ? "paid" : invoice.status,
-    });
+    await financeUseCases.updateInvoiceById(
+      invoice.id,
+      {
+        ...invoice,
+        creditedAmt,
+        status: remaining <= 0 ? "paid" : invoice.status,
+      },
+      { allowLedgerSensitive: true },
+    );
     await tryPostCreditNoteJournal(tenant, invoice, created.id, parsed.amount);
     await recordCreditNoteAudit(tenant, created, creditedAmt);
     return created;

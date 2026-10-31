@@ -1,6 +1,7 @@
 import { Readable } from "node:stream";
 import type { FastifyPluginAsync } from "fastify";
-import { synchronizeData, resetToDefaults } from "../../../services/dbSyncService.js";
+import { resetToDefaults } from "../../../services/dbSyncService.js";
+import { restoreWorkspaceWithAudit } from "../../../services/dbSyncRestoreAudit.js";
 import {
   canBulkSync,
   canDownloadBulkSync,
@@ -8,7 +9,6 @@ import {
 } from "../../../services/rbacService.js";
 import { type TenantDatabaseSnapshot, validateAndNormalizeSnapshot } from "@mms/shared";
 import type { User } from "@mms/shared";
-import { recordAuditEventSafely } from "../../../services/auditTrailService.js";
 import {
   SYNC_ABORTED_MESSAGE,
   SYNC_MAX_BODY_BYTES,
@@ -156,17 +156,13 @@ export const dbSyncRoutes: FastifyPluginAsync = async (fastify) => {
         stripServerOnlyObjects(payload.objects);
         stripUnwritableObjects(payload.objects, user);
       }
-      await withSyncTimeout((signal) => synchronizeData(payload, signal, true));
-      await recordAuditEventSafely({
-        workspaceSubdomain: getRequestTenant() ?? "unknown",
-        tableName: "sync",
-        recordId: "sync",
-        actionType: "RESTORE",
-        realUserId: String(user.id),
-        newState: {
-          summary: `Restored workspace backup with ${Object.keys(payload.collections || {}).length} collections and ${Object.keys(payload.objects || {}).length} objects`,
-        },
-      });
+      const tenant = getRequestTenant();
+      if (!tenant) {
+        return sendForbidden(reply, "Tenant context is required for a workspace restore");
+      }
+      await withSyncTimeout((signal) =>
+        restoreWorkspaceWithAudit({ tenant, payload, signal, actorUserId: String(user.id) }),
+      );
       return reply.send({ success: true });
     } catch (error: unknown) {
       const err = error as Error & { statusCode?: number; type?: string };

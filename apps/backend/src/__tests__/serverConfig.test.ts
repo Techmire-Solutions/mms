@@ -264,8 +264,9 @@ describe("Static asset edge caching and Content-Encoding strategy", () => {
       },
     };
     setStaticAssetHeaders(imageReply, "/uploads/avatars/student_photo.webp");
-    expect(imageHeaders["cache-control"]).toBe("public, max-age=86400");
-    expect(imageHeaders["vary"]).toBe("Accept-Encoding");
+    // Avatars are session-gated; the header must not let a shared proxy cache them.
+    expect(imageHeaders["cache-control"]).toBe("private, no-store");
+    expect(imageHeaders["vary"]).toContain("Authorization");
   });
 
   it("exports zero-latency streaming SSE headers with unbuffered flags", () => {

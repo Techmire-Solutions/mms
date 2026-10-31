@@ -8,15 +8,19 @@ vi.mock("../db/database.js", () => ({
 
 import { pingDatabase } from "../db/database.js";
 import { buildApp } from "../app.js";
+import { resetReadyProbeCacheForTests } from "../routes/common/health.js";
 
 describe("health routes", () => {
   beforeEach(() => {
     process.env.JWT_SECRET = "test-secret";
+    resetReadyProbeCacheForTests();
   });
 
   afterEach(() => {
     vi.mocked(pingDatabase).mockResolvedValue(true);
+    vi.unstubAllEnvs();
     delete process.env.METRICS_TOKEN;
+    resetReadyProbeCacheForTests();
   });
 
   it("GET /health returns OK and pool metrics", async () => {
@@ -93,6 +97,31 @@ describe("health routes", () => {
     const res = await app.inject({ method: "GET", url: "/ready" });
     expect(res.statusCode).toBe(503);
     expect(res.json()).toMatchObject({ status: "not_ready", database: "disconnected" });
+    await app.close();
+  });
+
+  it("coalesces concurrent /ready probes into one database round-trip", async () => {
+    const app = await buildApp();
+    vi.mocked(pingDatabase).mockClear();
+
+    const responses = await Promise.all(
+      Array.from({ length: 20 }, () => app.inject({ method: "GET", url: "/ready" })),
+    );
+
+    expect(responses.every((res) => res.statusCode === 200)).toBe(true);
+    expect(vi.mocked(pingDatabase)).toHaveBeenCalledTimes(1);
+    await app.close();
+  });
+
+  it("can disable the readiness cache for operators and tests", async () => {
+    vi.stubEnv("READY_PROBE_CACHE_MS", "0");
+    const app = await buildApp();
+    vi.mocked(pingDatabase).mockClear();
+
+    await app.inject({ method: "GET", url: "/ready" });
+    await app.inject({ method: "GET", url: "/ready" });
+
+    expect(vi.mocked(pingDatabase)).toHaveBeenCalledTimes(2);
     await app.close();
   });
 

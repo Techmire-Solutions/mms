@@ -119,8 +119,8 @@ export function FormSelect({
               isSearchable && "pointer-events-none",
             )}
           >
-            {listOptions.map((option) => (
-              <option key={option.value} value={option.value}>
+            {listOptions.map((option, index) => (
+              <option key={`${option.value}-${index}`} value={option.value}>
                 {option.label}
               </option>
             ))}

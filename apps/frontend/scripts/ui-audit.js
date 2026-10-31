@@ -60,6 +60,9 @@ const EXEMPT_PATTERNS = [
   /contactTablePrimaryCells/, // resizable table columns
   /ContactMetadataCell/, // resizable table columns
   /ListDesktopTable/, // virtualized tables
+  /EnterMarksTable/, // virtualized student marks list
+  /PaperQuestionPicker/, // virtualized question list
+  /ChartEmptyState/, // dynamic chart container min-height
   /Grid/, // virtualized grids
   /Dashboard/, // charts/dashboards with dynamic colors
   /Progress/, // dynamic width/svg paths
