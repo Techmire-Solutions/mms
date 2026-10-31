@@ -106,19 +106,17 @@ export function ObligationVoucherModal({ collection, onClose }: ObligationVouche
               <p className="text-xs font-semibold text-muted-foreground uppercase m-0">
                 {t("accounting.columns.journal.date")}
               </p>
-              <p className="text-sm font-semibold text-foreground m-0">
-                {formatDate(entry.date)}
-              </p>
+              <p className="text-sm font-semibold text-foreground m-0">{formatDate(entry.date)}</p>
             </div>
-            <Badge className={SEMANTIC_BADGE.successStrong}>
-              {entry.status || "posted"}
-            </Badge>
+            <Badge className={SEMANTIC_BADGE.successStrong}>{entry.status || "posted"}</Badge>
           </div>
         </Card>
 
         {entry.description && (
           <div className="text-sm text-muted-foreground">
-            <span className="font-semibold text-foreground">{t("accounting.columns.journal.description")}: </span>
+            <span className="font-semibold text-foreground">
+              {t("accounting.columns.journal.description")}:{" "}
+            </span>
             {entry.description}
           </div>
         )}
@@ -127,10 +125,18 @@ export function ObligationVoucherModal({ collection, onClose }: ObligationVouche
           <table className="w-full text-sm">
             <thead className="bg-muted/50 border-b text-xs text-muted-foreground font-semibold">
               <tr>
-                <th className="px-3 py-2.5 text-start">{t("accounting.journal.voucher.account")}</th>
-                <th className="px-3 py-2.5 text-start">{t("accounting.columns.journal.description")}</th>
-                <th className="px-3 py-2.5 text-end w-28">{t("accounting.columns.journal.debit")}</th>
-                <th className="px-3 py-2.5 text-end w-28">{t("accounting.columns.journal.credit")}</th>
+                <th className="px-3 py-2.5 text-start">
+                  {t("accounting.journal.voucher.account")}
+                </th>
+                <th className="px-3 py-2.5 text-start">
+                  {t("accounting.columns.journal.description")}
+                </th>
+                <th className="px-3 py-2.5 text-end w-28">
+                  {t("accounting.columns.journal.debit")}
+                </th>
+                <th className="px-3 py-2.5 text-end w-28">
+                  {t("accounting.columns.journal.credit")}
+                </th>
               </tr>
             </thead>
             <tbody className="divide-y divide-border">
@@ -179,12 +185,7 @@ export function ObligationVoucherModal({ collection, onClose }: ObligationVouche
         </div>
 
         <footer className="flex items-center justify-between gap-2 pt-2">
-          <Button
-            type="button"
-            variant="outline"
-            onClick={() => window.print()}
-            className="gap-2"
-          >
+          <Button type="button" variant="outline" onClick={() => window.print()} className="gap-2">
             <Printer className="w-4 h-4" aria-hidden="true" />
             {t("obligations.actions.printShort")}
           </Button>

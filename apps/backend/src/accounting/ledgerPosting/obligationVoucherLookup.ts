@@ -22,7 +22,10 @@ export async function findObligationJournalEntry(
   let entryId = latest ? await findEntryIdBySource(tenant, "obligation", latest.sourceId) : null;
 
   if (!entryId) {
-    const collection = await obligationsRepository.findObligationCollectionById(tenant, collectionId);
+    const collection = await obligationsRepository.findObligationCollectionById(
+      tenant,
+      collectionId,
+    );
     if (collection && !collection.deletedAt && collection.amount > 0) {
       await tryPostObligationJournal(tenant, collection);
       latest = await findLatestObligationPosting(tenant, collectionId);

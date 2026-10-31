@@ -83,7 +83,10 @@ function ObligationCollectionCard({
               title={t("obligations.actions.viewVoucher")}
             >
               <span>{collection.receipt_no}</span>
-              <Receipt className="w-3 h-3 opacity-70 group-hover:opacity-100 text-muted-foreground group-hover:text-primary transition-opacity" aria-hidden="true" />
+              <Receipt
+                className="w-3 h-3 opacity-70 group-hover:opacity-100 text-muted-foreground group-hover:text-primary transition-opacity"
+                aria-hidden="true"
+              />
             </button>
           ) : (
             <p className="mt-0.5 truncate font-mono text-xs font-bold text-primary">

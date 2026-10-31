@@ -49,10 +49,19 @@ async function resolvePostingAccounts(tenant: string): Promise<ResolvedPostingAc
   ]);
   if (accounts.length === 0) {
     try {
-      const { DEFAULT_CHART_OF_ACCOUNTS, DEFAULT_CHART_RETAINED_EARNINGS_CODE, DEFAULT_CHART_CASH_ACCOUNT_CODE } = await import("@mms/shared");
+      const {
+        DEFAULT_CHART_OF_ACCOUNTS,
+        DEFAULT_CHART_RETAINED_EARNINGS_CODE,
+        DEFAULT_CHART_CASH_ACCOUNT_CODE,
+      } = await import("@mms/shared");
       const { randomUUID } = await import("node:crypto");
-      const { seedAccountsIfEmpty } = await import("../../db/repositories/accountingAccountsSeed.js");
-      const records = DEFAULT_CHART_OF_ACCOUNTS.map((a) => ({ ...a, id: `a${randomUUID()}`, isActive: true }));
+      const { seedAccountsIfEmpty } =
+        await import("../../db/repositories/accountingAccountsSeed.js");
+      const records = DEFAULT_CHART_OF_ACCOUNTS.map((a) => ({
+        ...a,
+        id: `a${randomUUID()}`,
+        isActive: true,
+      }));
       const idByCode = new Map(records.map((r) => [r.code, r.id]));
       await seedAccountsIfEmpty(tenant, records, {
         retainedEarningsAccountId: idByCode.get(DEFAULT_CHART_RETAINED_EARNINGS_CODE),
@@ -71,7 +80,10 @@ async function resolvePostingAccounts(tenant: string): Promise<ResolvedPostingAc
     : null;
   const bankAccount = rules.bankAccountId
     ? accounts.find((a) => a.id === rules.bankAccountId)
-    : (rules.cashAccountId ? (accounts.find((a) => a.code === "10300") ?? accounts.find((a) => a.subtype?.toLowerCase() === "bank")) : null);
+    : rules.cashAccountId
+      ? (accounts.find((a) => a.code === "10300") ??
+        accounts.find((a) => a.subtype?.toLowerCase() === "bank"))
+      : null;
   const incomeAccount =
     accounts.find((a) => a.id === rules.incomeAccountId) ??
     accounts.find((a) => a.code === "41000") ??
@@ -279,4 +291,3 @@ export async function tryPostObligationRestoreJournal(
 }
 
 export { findObligationJournalEntry } from "./obligationVoucherLookup.js";
-

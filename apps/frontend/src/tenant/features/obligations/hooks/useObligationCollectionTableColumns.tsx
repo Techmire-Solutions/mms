@@ -64,7 +64,10 @@ export function useObligationCollectionTableColumns(
             title={t("obligations.actions.viewVoucher")}
           >
             <span>{collection.receipt_no}</span>
-            <Receipt className="w-3.5 h-3.5 opacity-60 group-hover:opacity-100 text-muted-foreground group-hover:text-primary transition-opacity" aria-hidden="true" />
+            <Receipt
+              className="w-3.5 h-3.5 opacity-60 group-hover:opacity-100 text-muted-foreground group-hover:text-primary transition-opacity"
+              aria-hidden="true"
+            />
           </button>
         ),
       });

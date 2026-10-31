@@ -110,7 +110,9 @@ export const ObligationCollectionDetail = function ObligationCollectionDetail({
                 {t("obligations.columns.receiptNo")}
               </p>
               <div className="flex items-center gap-2">
-                <p className="text-xl font-bold text-primary font-mono m-0">{collection.receipt_no}</p>
+                <p className="text-xl font-bold text-primary font-mono m-0">
+                  {collection.receipt_no}
+                </p>
                 {onViewVoucher && (
                   <Button
                     type="button"
