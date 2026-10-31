@@ -1,7 +1,14 @@
 import { loadBackendEnv } from "../config/loadEnv.js";
 import { initDb } from "../db/database.js";
 import { getDb } from "../db/dbClient.js";
-import { sessions, sessionClasses, enrollments, students, contacts } from "../db/schema.js";
+import {
+  sessions,
+  sessionClasses,
+  enrollments,
+  students,
+  contacts,
+  attendanceModulePreferences,
+} from "../db/schema.js";
 import { eq } from "drizzle-orm";
 
 loadBackendEnv();
@@ -160,6 +167,35 @@ async function main() {
         sessionName: "Quran Hifz Session 2026",
         status: "confirmed",
         enrolledDate: new Date().toISOString().split("T")[0] ?? "",
+        updatedAt: new Date(),
+      },
+    });
+
+  // 5. Ensure attendance preferences allow marking on any day of the week
+  await db
+    .insert(attendanceModulePreferences)
+    .values({
+      workspaceSubdomain: subdomain,
+      preferences: {
+        workingDays: ["monday", "tuesday", "wednesday", "thursday", "friday", "saturday", "sunday"],
+        allowExtraClassOnHolidays: true,
+      },
+    })
+    .onConflictDoUpdate({
+      target: [attendanceModulePreferences.workspaceSubdomain],
+      set: {
+        preferences: {
+          workingDays: [
+            "monday",
+            "tuesday",
+            "wednesday",
+            "thursday",
+            "friday",
+            "saturday",
+            "sunday",
+          ],
+          allowExtraClassOnHolidays: true,
+        },
         updatedAt: new Date(),
       },
     });
