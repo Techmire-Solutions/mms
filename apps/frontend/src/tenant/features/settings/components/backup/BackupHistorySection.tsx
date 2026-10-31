@@ -88,7 +88,7 @@ export default function BackupHistorySection({
                   ) : null}
 
                   {!backup.data ? (
-                    <div className="mt-1 flex items-center gap-1.5 text-xs font-semibold text-warning/90">
+                    <div className="mt-1 flex items-center gap-1.5 text-xs font-semibold text-warning">
                       <AlertTriangle className="h-3 w-3 animate-pulse" aria-hidden />
                       <span>{t("backup.metadataOnly")}</span>
                     </div>

@@ -60,7 +60,11 @@ export function CompactSegmentedControl<T extends string>({
       className={cn(
         "select-none",
         layout === "tray"
-          ? "flex items-center gap-1 p-1 rounded-xl border border-border/60 bg-muted/30"
+          ? // A tray with more options than fit must scroll, never squeeze: flex
+            // children default to `min-width: auto`, but the `whitespace-nowrap`
+            // button labels still overflowed their shrunk boxes and superimposed
+            // at 375px (2026-10-31 review). Items are `shrink-0`; this is the scroller.
+            "flex max-w-full items-center gap-1 overflow-x-auto overscroll-x-contain p-1 rounded-xl border border-border/60 bg-muted/30"
           : "flex flex-wrap gap-1",
         className,
       )}
@@ -77,7 +81,8 @@ export function CompactSegmentedControl<T extends string>({
             className={cn(
               "min-h-11 min-w-11 h-auto rounded-lg text-xs font-bold uppercase tracking-wider shadow-none transition-all",
               tone === "outline" ? "border px-2" : "px-3",
-              fill && "flex-1",
+              // Equal-width fill and no-shrink are mutually exclusive strategies.
+              fill ? "flex-1" : "shrink-0",
               animated && "transition-all duration-200 ease-out",
               isSelected ? SELECTED_CLASSES[tone] : UNSELECTED_CLASSES[tone],
             )}

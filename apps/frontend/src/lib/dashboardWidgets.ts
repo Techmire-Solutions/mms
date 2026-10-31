@@ -178,12 +178,20 @@ export function resolveWidgetTitle(
   return widget.title;
 }
 
-/** Resolve card subtitle: keyed defaults first, then user fixed text. Empty string if neither. */
+/**
+ * Resolve card subtitle: keyed defaults first, then user fixed text. Empty string
+ * if neither.
+ *
+ * A subtitle that repeats the title (three seeded widgets did: “Total Contacts” /
+ * “Total contacts”) is suppressed; consumers fall back to a count subtitle, so the
+ * card shows useful information instead of a duplicate label (2026-10-31 review).
+ */
 export function resolveWidgetSubText(
   widget: WidgetI18nSource,
   t: (key: AppTranslationKey) => string,
 ): string {
   const key = widget.fixedSubTextKey ?? DASHBOARD_WIDGET_REGISTRY[widget.id]?.subTextKey;
-  if (key) return t(key);
-  return widget.fixedSubText ?? "";
+  const subText = key ? t(key) : (widget.fixedSubText ?? "");
+  const title = resolveWidgetTitle(widget, t);
+  return subText.trim().toLowerCase() === title.trim().toLowerCase() ? "" : subText;
 }

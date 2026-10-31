@@ -20,6 +20,20 @@ describe("EntityCard Component", () => {
     expect(html).toContain("border-primary/50");
   });
 
+  it("uses a tighter mobile rhythm while keeping the desktop spacing", () => {
+    // Regression guard for the 2026-10-31 review (UX-17): the desktop
+    // padding/rhythm was also applied on phones, adding height to every row of
+    // a 20-card feed.
+    const html = renderToStaticMarkup(
+      <EntityCard reducedMotion>
+        <div>Body</div>
+      </EntityCard>,
+    );
+
+    expect(html).toContain("p-3 space-y-3");
+    expect(html).toContain("sm:p-4 sm:space-y-4");
+  });
+
   it("exposes compound components Header, MetaGrid, and Footer", () => {
     expect(EntityCard.Header).toBeDefined();
     expect(EntityCard.MetaGrid).toBeDefined();

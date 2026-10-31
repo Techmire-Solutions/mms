@@ -136,7 +136,7 @@ export default function MobileSidebar({
         <div className="shrink-0 border-t border-sidebar-border p-4">
           <div className="mb-3 flex items-center gap-3">
             <Avatar className="h-9 w-9">
-              <AvatarFallback className="bg-sidebar-primary/20 text-sidebar-primary text-xs font-semibold">
+              <AvatarFallback className="bg-sidebar-primary text-sidebar-primary-foreground text-xs font-semibold">
                 {initials}
               </AvatarFallback>
             </Avatar>

@@ -1,20 +1,24 @@
 #!/usr/bin/env node
 /**
- * Rendered UI/UX review harness (2026-10-30).
+ * Rendered UI/UX review harness.
  *
  * One-off review tooling, deliberately NOT wired into CI. It provisions a synthetic
  * tenant, seeds deterministic demo data, and captures the screenshot/measurement corpus
- * referenced by `docs/ui-ux-review-2026-10-30/README.md`.
+ * referenced by `docs/ui-ux-review-<date>/README.md`.
+ *
+ * The corpus directory is derived from `UIUX_REVIEW_RUN` (default `2026-10-30`, the
+ * original review). Set it to a new date to keep a later review from overwriting the
+ * previous evidence, e.g. `UIUX_REVIEW_RUN=2026-10-31`.
  *
  * Safety:
  *  - refuses to run unless BASE_URL is localhost/127.0.0.1 and E2E_TARGET !== production;
- *  - only writes to `.logs/ui-ux-review-2026-10-30/` and a dedicated `uiuxreview*` tenant;
+ *  - only writes to `.logs/ui-ux-review-<run>/` and a dedicated `uiuxreview*` tenant;
  *  - never touches an existing tenant's rows (language is changed only on the review tenant).
  *
  * Usage:
- *   node scripts/capture-ui-ux-review.mjs --provision
- *   node scripts/capture-ui-ux-review.mjs --capture [--locale en]
- *   node scripts/capture-ui-ux-review.mjs --verify
+ *   UIUX_REVIEW_RUN=2026-10-31 node scripts/capture-ui-ux-review.mjs --provision
+ *   UIUX_REVIEW_RUN=2026-10-31 node scripts/capture-ui-ux-review.mjs --capture-core
+ *   UIUX_REVIEW_RUN=2026-10-31 node scripts/capture-ui-ux-review.mjs --verify
  */
 import { AxeBuilder } from "@axe-core/playwright";
 import { chromium } from "@playwright/test";
@@ -27,7 +31,8 @@ const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const e2eDir = path.resolve(__dirname, "..");
 const repoRoot = path.resolve(e2eDir, "..");
 const backendDir = path.join(repoRoot, "apps/backend");
-const outDir = path.join(repoRoot, ".logs/ui-ux-review-2026-10-30");
+const REVIEW_RUN = process.env.UIUX_REVIEW_RUN ?? "2026-10-30";
+const outDir = path.join(repoRoot, `.logs/ui-ux-review-${REVIEW_RUN}`);
 const screensDir = path.join(outDir, "screens");
 const statePath = path.join(outDir, "review-tenant.json");
 
@@ -722,21 +727,44 @@ async function captureLocales(browser, state) {
     { locale: "ur", label: "375-light", viewport: { width: 375, height: 812 }, theme: "light" },
     { locale: "fa", label: "1024-light", viewport: { width: 1024, height: 768 }, theme: "light" },
   ];
+  // One context for every locale. Language hydrates from the server-side
+  // `global_settings` object on boot (2026-10-30 finding: language must survive a
+  // new device), so the tenant is switched through the same persistence path the
+  // Settings UI uses. Replaying the same storage state across three contexts also
+  // races refresh-token rotation and 401s mid-run, so the session is refreshed in
+  // place instead.
+  const context = await newContext(browser, {
+    viewport: plan[0].viewport,
+    theme: "light",
+    storageState: tenantStoragePath,
+    locale: plan[0].locale,
+  });
+  const page = await context.newPage();
+  const persistLocale = async (locale) => {
+    try {
+      await postJson(
+        page,
+        state.tenantOrigin,
+        "/api/db/objects/global_settings",
+        localeSettings(locale),
+      );
+    } catch (error) {
+      if (!String(error).includes("401")) throw error;
+      // The access token can lapse during a long capture run; sign in again and
+      // retry once rather than abandoning the remaining locales.
+      await loginTenantPage(page, state);
+      await postJson(
+        page,
+        state.tenantOrigin,
+        "/api/db/objects/global_settings",
+        localeSettings(locale),
+      );
+    }
+  };
+
   for (const item of plan) {
-    const context = await newContext(browser, {
-      viewport: item.viewport,
-      theme: item.theme,
-      storageState: tenantStoragePath,
-      locale: item.locale,
-    });
-    // Language is a device-local preference in the current app (see the review's
-    // "language does not rehydrate" finding), so seed the same localStorage the
-    // Settings UI writes rather than relying on a server round-trip.
-    await context.addInitScript(
-      ({ key, settings }) => localStorage.setItem(key, JSON.stringify(settings)),
-      { key: `mms_t:${state.subdomain}:global_settings`, settings: localeSettings(item.locale) },
-    );
-    const page = await context.newPage();
+    await page.setViewportSize(item.viewport);
+    await persistLocale(item.locale);
     for (const surface of CORE_SURFACES) {
       await page.goto(`${state.tenantOrigin}${surface.path}`, { waitUntil: "domcontentloaded" });
       await settle(page);
@@ -758,8 +786,12 @@ async function captureLocales(browser, state) {
         axe: surface.axe,
       });
     }
-    await context.close();
   }
+
+  // Leave the review tenant in its original English state so later capture modes
+  // are not silently localized.
+  await persistLocale("en");
+  await context.close();
 }
 
 async function captureStates(browser, state) {
@@ -949,6 +981,247 @@ async function runCapture(mode) {
   }
 }
 
+/**
+ * Post-fix verification mode: re-measures the invariants the resolution claims,
+ * so evidence is reproducible without re-running the full capture corpus.
+ * Exits non-zero when any invariant regresses.
+ */
+async function verify(browser, state) {
+  const checks = [];
+  const record = (name, ok, detail) => {
+    checks.push({ name, ok, detail });
+    console.log(
+      `${ok ? "✓" : "✗"} ${name}: ${typeof detail === "string" ? detail : JSON.stringify(detail)}`,
+    );
+  };
+
+  // A fresh context: the corpus storage state can hold expired cookies, and a
+  // half-authenticated session used to make every measurement below vacuous.
+  const context = await newContext(browser, {
+    viewport: { width: 375, height: 812 },
+    locale: "en",
+  });
+  const page = await context.newPage();
+
+  await loginTenantPage(page, state);
+  await settle(page);
+
+  // 1. Quick-filter presets fit their labels; the tray is the scroller.
+  await page.goto(`${state.tenantOrigin}/students`, { waitUntil: "domcontentloaded" });
+  await settle(page);
+  const chips = await page.evaluate(() => {
+    const groups = [...document.querySelectorAll("[role=group]")].filter(
+      (group) => group.querySelectorAll("button[aria-pressed]").length >= 2,
+    );
+    return groups.map((group) => ({
+      overflowX: getComputedStyle(group).overflowX,
+      items: [...group.querySelectorAll("button[aria-pressed]")].map((button) => ({
+        label: (button.textContent ?? "").trim().slice(0, 20),
+        clientWidth: button.clientWidth,
+        scrollWidth: button.scrollWidth,
+      })),
+    }));
+  });
+  const squeezed = chips.flatMap((group) =>
+    group.items.filter((item) => item.scrollWidth > item.clientWidth + 1),
+  );
+  record(
+    "quick-filter labels fit",
+    squeezed.length === 0,
+    squeezed.length === 0 ? "all presets fit" : squeezed,
+  );
+
+  // 1b. The metadata block is the density regression itself (407px -> ~250px at
+  // 375). The 2-up layout is asserted by the later "mobile card metadata 2-up"
+  // check, which also guards horizontal overflow.
+  const metaDensity = await page.evaluate(() => {
+    const grids = [...document.querySelectorAll("[data-card-meta-grid]")].filter(
+      (grid) => grid.offsetParent !== null,
+    );
+    return {
+      grids: grids.length,
+      metaHeight: grids.length ? Math.round(grids[0].getBoundingClientRect().height) : 0,
+    };
+  });
+  record(
+    "card metadata height budget",
+    metaDensity.grids > 0 && metaDensity.metaHeight > 0 && metaDensity.metaHeight <= 280,
+    `${metaDensity.metaHeight}px`,
+  );
+
+  // 2. Settings integration panel copy column is no longer a 58px sliver.
+  await page.goto(`${state.tenantOrigin}/settings`, { waitUntil: "domcontentloaded" });
+  await settle(page);
+  const notificationsLink = page
+    .locator("#main-content")
+    .getByText("Notifications", { exact: true })
+    .first();
+  if (await notificationsLink.isVisible().catch(() => false)) {
+    await notificationsLink.click().catch(() => undefined);
+    await page
+      .waitForFunction(
+        () =>
+          [...document.querySelectorAll("p")].some((p) =>
+            /Connect Gmail|SMTP|Outlook/i.test(p.textContent ?? ""),
+          ),
+        null,
+        { timeout: 10_000 },
+      )
+      .catch(() => undefined);
+  }
+  const integrationWidth = await page.evaluate(() => {
+    const description = [...document.querySelectorAll("p")].find((p) =>
+      /Connect Gmail|SMTP|Outlook/i.test(p.textContent ?? ""),
+    );
+    return description ? Math.round(description.getBoundingClientRect().width) : 0;
+  });
+  record("integration panel copy width", integrationWidth >= 160, `${integrationWidth}px`);
+
+  // 3. Open mobile drawer is axe-clean (the audit path added by UX-02).
+  await page.setViewportSize({ width: 375, height: 812 });
+  await page.goto(`${state.tenantOrigin}/`, { waitUntil: "domcontentloaded" });
+  await settle(page);
+  const menuButton = page.getByRole("button", { name: "Open Navigation Menu" }).first();
+  if (await menuButton.isVisible().catch(() => false)) {
+    await menuButton.click();
+    const drawer = page.locator('[role="dialog"][aria-label="Mobile Navigation"]').first();
+    const opened = await drawer
+      .waitFor({ state: "visible", timeout: 5_000 })
+      .then(() => true)
+      .catch(() => false);
+    let serious = [];
+    if (opened) {
+      const results = await new AxeBuilder({ page })
+        .withTags(["wcag2a", "wcag2aa", "wcag22aa"])
+        .analyze();
+      serious = results.violations.filter((violation) =>
+        ["serious", "critical"].includes(violation.impact),
+      );
+    }
+    record(
+      "mobile drawer contrast/a11y",
+      opened && serious.length === 0,
+      opened ? `${serious.length} serious/critical` : "drawer did not open",
+    );
+    await page.keyboard.press("Escape").catch(() => undefined);
+  } else {
+    record("mobile drawer contrast/a11y", false, "trigger missing");
+  }
+
+  // 4. Desktop: sort targets, greeting height, collapsed insights.
+  await page.setViewportSize({ width: 1440, height: 900 });
+  await page.goto(`${state.tenantOrigin}/students`, { waitUntil: "domcontentloaded" });
+  await settle(page);
+  const sortTargets = await page.evaluate(() =>
+    [...document.querySelectorAll("table thead th button")].slice(0, 6).map((button) => {
+      const rect = button.getBoundingClientRect();
+      const after = getComputedStyle(button, "::after");
+      return {
+        height: Math.max(
+          rect.height,
+          after.content === "none" ? 0 : Number.parseFloat(after.height) || 0,
+        ),
+      };
+    }),
+  );
+  const smallTargets = sortTargets.filter((target) => target.height < 44);
+  record(
+    "sort-header hit area ≥ 44px",
+    sortTargets.length > 0 && smallTargets.length === 0,
+    sortTargets.length === 0
+      ? "no sort headers rendered"
+      : smallTargets.length
+        ? smallTargets
+        : `${sortTargets.length} headers`,
+  );
+
+  await page.goto(`${state.tenantOrigin}/`, { waitUntil: "domcontentloaded" });
+  await settle(page);
+  const dashboard = await page.evaluate(() => {
+    const heading = document.querySelector("h1");
+    const insights = [...document.querySelectorAll("button")].find((button) =>
+      /Show insights|Hide insights/i.test(button.textContent ?? ""),
+    );
+    return {
+      h1Height: heading ? Math.round(heading.getBoundingClientRect().height) : 0,
+      scrollHeight: document.documentElement.scrollHeight,
+      insightsExpanded: insights?.getAttribute("aria-expanded") ?? "absent",
+    };
+  });
+  record(
+    "greeting ≤ 2 lines",
+    dashboard.h1Height > 0 && dashboard.h1Height <= 80,
+    `${dashboard.h1Height}px`,
+  );
+  record("dashboard height", dashboard.scrollHeight < 3000, `${dashboard.scrollHeight}px`);
+  record(
+    "insights collapsed by default",
+    dashboard.insightsExpanded === "false",
+    dashboard.insightsExpanded,
+  );
+
+  // 5. Mobile directory cards pack metadata two-up (UX-17).
+  await page.setViewportSize({ width: 375, height: 812 });
+  await page.goto(`${state.tenantOrigin}/students`, { waitUntil: "domcontentloaded" });
+  await settle(page);
+  const metaGrids = await page.evaluate(() => {
+    const grids = [...document.querySelectorAll("#main-content div")].filter((element) => {
+      const style = getComputedStyle(element);
+      return (
+        element.children.length > 1 &&
+        style.display === "grid" &&
+        style.borderTopWidth !== "0px" &&
+        style.borderTopStyle !== "none"
+      );
+    });
+    return {
+      count: grids.length,
+      columns: grids
+        .slice(0, 3)
+        .map((grid) => getComputedStyle(grid).gridTemplateColumns.split(" ").length),
+      heights: grids.slice(0, 3).map((grid) => Math.round(grid.getBoundingClientRect().height)),
+      overflow: document.documentElement.scrollWidth - document.documentElement.clientWidth,
+    };
+  });
+  record(
+    "mobile card metadata 2-up",
+    metaGrids.count > 0 &&
+      metaGrids.columns.every((columns) => columns === 2) &&
+      metaGrids.overflow <= 0,
+    metaGrids,
+  );
+
+  // 6. Caps tracking is neutralised in a real Arabic session. A runtime `lang`
+  // flip is not a valid probe: the app boots its language from server settings,
+  // and Chromium does not reliably re-evaluate the `:is([lang])` invalidation
+  // for an attribute mutated after first paint (measured: still tracked).
+  await postJson(page, state.tenantOrigin, "/api/db/objects/global_settings", localeSettings("ar"));
+  await page.goto(`${state.tenantOrigin}/students`, { waitUntil: "domcontentloaded" });
+  await settle(page);
+  const arabicTracking = await page.evaluate(() => {
+    const element = [...document.querySelectorAll(".uppercase")].find(
+      (node) => node.offsetParent !== null && /tracking-(wide|wider|widest)/.test(node.className),
+    );
+    return {
+      lang: document.documentElement.lang,
+      dir: document.documentElement.dir,
+      letterSpacing: element ? getComputedStyle(element).letterSpacing : null,
+    };
+  });
+  record(
+    "RTL caps tracking neutralised",
+    arabicTracking.lang === "ar" && arabicTracking.letterSpacing === "normal",
+    arabicTracking,
+  );
+  // Leave the review tenant in English for the next run.
+  await postJson(page, state.tenantOrigin, "/api/db/objects/global_settings", localeSettings("en"));
+
+  await context.close();
+  const failed = checks.filter((check) => !check.ok);
+  console.log(`\n${checks.length - failed.length}/${checks.length} verification checks passed`);
+  if (failed.length > 0) process.exitCode = 1;
+}
+
 async function main() {
   const mode = process.argv[2];
   if (mode === "--provision") {
@@ -957,6 +1230,18 @@ async function main() {
   }
   if (!existsSync(statePath) && mode !== "--help") {
     throw new Error(`No review tenant state at ${statePath}; run --provision first.`);
+  }
+  if (mode === "--verify") {
+    assertLocal();
+    ensureDirs();
+    const state = loadState();
+    const browser = await chromium.launch();
+    try {
+      await verify(browser, state);
+    } finally {
+      await browser.close();
+    }
+    return;
   }
   if (
     mode === "--session" ||
@@ -972,6 +1257,7 @@ async function main() {
     console.log(
       "Usage: --provision | --session | --capture-core | --capture-locales | --capture-breadth | --capture-states | --verify",
     );
+    console.log(`Corpus: ${outDir} (override with UIUX_REVIEW_RUN=<date>)`);
     return;
   }
   throw new Error(`Unknown mode: ${mode}`);

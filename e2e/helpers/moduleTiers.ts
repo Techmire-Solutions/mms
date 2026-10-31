@@ -129,7 +129,16 @@ export async function loginTenant(
     await retryBtn.click().catch(() => {});
   }
 
-  await emailInput.or(dashboardHeading).first().waitFor({ state: "visible", timeout: 30_000 });
+  const loginEntry = emailInput.or(dashboardHeading).first();
+  try {
+    await loginEntry.waitFor({ state: "visible", timeout: 30_000 });
+  } catch {
+    // Cold-start dev-server navigation: Vite can spend the whole wait optimising
+    // dependencies and leave the SPA on its loading shell. One reload recovers
+    // (2026-10-31 review, README §8 — this masqueraded as a dozen product failures).
+    await page.reload({ waitUntil: "domcontentloaded" }).catch(() => undefined);
+    await loginEntry.waitFor({ state: "visible", timeout: 60_000 });
+  }
 
   if (await dashboardHeading.isVisible().catch(() => false)) {
     await completeInstitutionSetupIfPresent(page);

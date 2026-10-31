@@ -98,7 +98,10 @@ export async function bootstrapAuthenticatedTenant(
 
   ensureE2ePlatformAdmin(platformEmail, platformPassword);
 
-  await page.goto("/");
+  await page.goto("/", { waitUntil: "domcontentloaded" }).catch(async () => {
+    // Cold dev-server navigation: one reload after the first transform wave.
+    await page.reload({ waitUntil: "domcontentloaded" });
+  });
   await page.waitForLoadState("domcontentloaded");
 
   const setupEmailInput = page.locator("#platform-setup-email");

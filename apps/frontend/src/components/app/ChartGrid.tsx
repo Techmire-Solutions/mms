@@ -28,7 +28,20 @@ export function ChartPolarGrid({
  * SSOT axis tick object — the repeated `tick={{ fontSize: N }}` config shared
  * by every report/widget chart. `muted` adds the muted-foreground fill used by
  * the dashboard widget dialect.
+ *
+ * Size is clamped to the 12 px token floor: individual charts used to pass
+ * 10/11, which bypassed the token scale and produced 146 sub-floor SVG text
+ * nodes in the 2026-10-31 corpus.
  */
-export function chartAxisTick(fontSize = 11, muted = false): { fontSize: number; fill?: string } {
-  return muted ? { fontSize, fill: "hsl(var(--muted-foreground))" } : { fontSize };
+export const CHART_TEXT_MIN_PX = 12;
+
+export function chartAxisTick(
+  fontSize = CHART_TEXT_MIN_PX,
+  muted = false,
+): {
+  fontSize: number;
+  fill?: string;
+} {
+  const size = Math.max(fontSize, CHART_TEXT_MIN_PX);
+  return muted ? { fontSize: size, fill: "hsl(var(--muted-foreground))" } : { fontSize: size };
 }

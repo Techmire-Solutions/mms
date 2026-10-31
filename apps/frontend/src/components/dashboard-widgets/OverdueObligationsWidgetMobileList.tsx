@@ -83,7 +83,9 @@ export function OverdueObligationsWidgetMobileList({
                 </div>
               </div>
               <span className="shrink-0 text-xs font-bold text-foreground tabular-nums">
-                {formatMoney(overdueStudent.amount, overdueStudent.currency || activeCurrencyCode)}
+                {formatMoney(overdueStudent.amount, overdueStudent.currency || activeCurrencyCode, {
+                  useSymbol: true,
+                })}
               </span>
             </div>
             <StatGrid columns="1">

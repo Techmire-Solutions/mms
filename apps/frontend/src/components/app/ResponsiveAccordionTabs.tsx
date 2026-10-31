@@ -39,12 +39,17 @@ export const ResponsiveAccordionTabs = function ResponsiveAccordionTabs({
   const sectionRefs = useRef<Partial<Record<string, HTMLElement | null>>>({});
   const [scrollOnChangeEnabled, setScrollOnChangeEnabled] = useState(false);
   const prefix = panelIdPrefix;
+  // Declared before the handler: collapse-on-active-click is an accordion
+  // affordance. On desktop the tier strip is a tablist, so re-clicking the
+  // selected tab must be a no-op — it used to blank the whole module body and
+  // persist the collapsed `""` key.
+  const isDesktop = useMediaQuery(MEDIA_LG_UP);
 
   const handleTabChange = async (tabId: string) => {
     // Only a user-initiated tab change may scroll the page. Persisted/deep-linked
     // tabs resolve after mount and used to move the viewport past the page header.
     setScrollOnChangeEnabled(true);
-    if (collapsible && activeTab === tabId) {
+    if (!isDesktop && collapsible && activeTab === tabId) {
       safeViewTransition(() => onTabChange(""));
       return;
     }
@@ -65,7 +70,6 @@ export const ResponsiveAccordionTabs = function ResponsiveAccordionTabs({
     resolveMobileTarget: (key) => sectionRefs.current[key],
   });
 
-  const isDesktop = useMediaQuery(MEDIA_LG_UP);
   const panelContent = collapsible && !activeTab ? null : children;
 
   if (hideWhenSingle && tabs.length <= 1) {

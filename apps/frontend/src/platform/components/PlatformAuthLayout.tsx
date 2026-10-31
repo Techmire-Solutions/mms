@@ -27,12 +27,12 @@ export default function PlatformAuthLayout({
         <div className="flex items-center justify-center gap-3 text-3xs font-semibold text-muted-foreground">
           <span className="flex items-center gap-1 text-primary">
             <Lock className="w-3 h-3 shrink-0" aria-hidden />
-            {t("platform.authTrustTls")}
+            {t("platform.authTrustSession")}
           </span>
           <span className="text-border">•</span>
           <span className="flex items-center gap-1 text-success">
             <ShieldCheck className="w-3 h-3 shrink-0" aria-hidden />
-            {t("platform.authTrustRls")}
+            {t("platform.authTrustAccess")}
           </span>
         </div>
         <p className="text-2xs text-muted-foreground font-medium uppercase tracking-wider">

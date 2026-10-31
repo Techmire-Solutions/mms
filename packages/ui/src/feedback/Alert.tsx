@@ -21,25 +21,25 @@ const TONE_CLASSES: Record<
   warning: {
     shell: "border-warning/30 bg-warning/10",
     icon: "text-warning",
-    descriptionWithTitle: "text-warning/90",
+    descriptionWithTitle: "text-warning",
     bannerText: "text-warning",
   },
   info: {
     shell: "border-info/30 bg-info/10",
     icon: "text-info",
-    descriptionWithTitle: "text-info/90",
+    descriptionWithTitle: "text-info",
     bannerText: "text-info",
   },
   destructive: {
     shell: "border-destructive/30 bg-destructive/10",
     icon: "text-destructive",
-    descriptionWithTitle: "text-destructive/90",
+    descriptionWithTitle: "text-destructive",
     bannerText: "text-destructive",
   },
   success: {
     shell: "border-success/30 bg-success/10",
     icon: "text-success",
-    descriptionWithTitle: "text-success/90",
+    descriptionWithTitle: "text-success",
     bannerText: "text-success",
   },
 };

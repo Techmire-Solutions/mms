@@ -60,6 +60,16 @@ describe("Button component", () => {
     expect(container.textContent).toContain("Processing...");
   });
 
+  it("keeps caps labels trackable in LTR and untracked in RTL", async () => {
+    // 2026-10-31 review: letter-spacing on Arabic/Urdu caps labels breaks joining.
+    await act(async () => {
+      root.render(<Button size="caps">Print summary</Button>);
+    });
+    const button = container.querySelector("button") as HTMLButtonElement;
+    expect(button.className).toContain("tracking-wider");
+    expect(button.className).toContain("rtl:tracking-normal");
+  });
+
   it("renders badge variants correctly", async () => {
     await act(async () => {
       root.render(<Badge variant="destructive">Failed</Badge>);

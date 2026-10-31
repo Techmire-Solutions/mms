@@ -19,4 +19,15 @@ describe("StatCardTrend Component", () => {
     expect(html).toContain("12%");
     expect(html).toContain("vs last month");
   });
+
+  it("caps absurd deltas instead of blowing out the card", () => {
+    // Regression guard for the 2026-10-31 review (UX-18): a prior-period jump
+    // rendered as `42467%` and overflowed the KPI.
+    expect(renderToStaticMarkup(<StatCardTrend trend={42467} />)).toContain("999%+");
+    expect(renderToStaticMarkup(<StatCardTrend trend={-1200} />)).toContain("999%+");
+    expect(renderToStaticMarkup(<StatCardTrend trend={999} />)).toContain("999%");
+    expect(renderToStaticMarkup(<StatCardTrend trend={Number.POSITIVE_INFINITY} />)).toContain(
+      "0%",
+    );
+  });
 });

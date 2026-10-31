@@ -68,6 +68,20 @@ describe("IntegrationPanelChrome Component (@shared/ui)", () => {
     expect(html).toContain("Connection timed out");
   });
 
+  it("stacks the status badge below the copy on narrow screens", () => {
+    // Regression guard for the 2026-10-31 review (UX-01): the badge used to
+    // share the row with the icon and text, shrinking the copy column to 58px
+    // at 375px.
+    const html = renderToStaticMarkup(
+      <IntegrationPanelChrome {...baseProps}>
+        <div>Fields</div>
+      </IntegrationPanelChrome>,
+    );
+    expect(html).toContain("sm:flex-row");
+    expect(html).toContain("min-w-0 flex-1");
+    expect(html).toContain("self-start ps-12 sm:ps-0");
+  });
+
   it("renders footer content when provided", () => {
     const html = renderToStaticMarkup(
       <IntegrationPanelChrome

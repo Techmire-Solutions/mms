@@ -65,7 +65,12 @@ export const ModuleTableHeaderCell = function ModuleTableHeaderCell({
           type="button"
           onClick={() => onSort(sortKey as string)}
           className={cn(
-            "flex w-full items-center gap-1 cursor-pointer select-none hover:text-foreground transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring rounded-sm",
+            // The 16px text keeps the header dense, but a 44px `::after` overlay
+            // makes the whole header cell the sort target (WCAG 2.2 2.5.8 / the
+            // project's 44px floor) without growing the row. The end-edge resize
+            // handle keeps its own elevated layer, so dragging still wins.
+            "relative flex w-full items-center gap-1 cursor-pointer select-none hover:text-foreground transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring rounded-sm",
+            "after:absolute after:inset-x-0 after:top-1/2 after:h-11 after:-translate-y-1/2 after:content-['']",
             isEnd
               ? "justify-end text-end"
               : isCenter

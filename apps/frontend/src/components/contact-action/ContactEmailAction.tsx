@@ -126,7 +126,14 @@ export const ContactEmailAction = function ContactEmailAction({
 
   const valueDisplayNode = (
     <span
-      className="max-w-full truncate text-sm text-muted-foreground font-medium select-all"
+      data-cell-truncate
+      className={cn(
+        "max-w-full truncate text-sm text-muted-foreground font-medium select-all",
+        // Stacked cells need a full-width block for `truncate` to have a definite
+        // width; the inline (drawer) variant stays a flex child so the actions
+        // remain on the same line.
+        variant === "inline" ? "min-w-0" : "block w-full",
+      )}
       title={cleanEmail}
     >
       {cleanEmail}

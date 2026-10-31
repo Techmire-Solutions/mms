@@ -197,22 +197,16 @@ export function DashboardPage() {
           showHeader={primaryWidgets.length > 0}
         />
         {secondaryWidgets.length > 0 ? (
-          isDesktop ? (
-            <DashboardWidgets
-              widgets={secondaryWidgets}
-              onUnpin={handleUnpinWidget}
-              isEditMode={isEditMode}
-              onEditWidget={handleEditWidget}
-              onDeleteWidget={handleDeleteWidget}
-              showHeader={false}
-            />
-          ) : (
-            <div className="mt-4 space-y-3">
+          // Desktop used to expand every secondary insight by default, which made
+          // the dashboard 3,650 px tall with four empty analytics panels. The
+          // disclosure is now the same on every viewport (2026-10-31 review, UX-08).
+          <div className="mt-4 space-y-3">
+            <div className="flex justify-center">
               <Button
                 type="button"
                 variant="outline"
                 size="sm"
-                className="min-h-11 w-full rounded-xl text-xs"
+                className="min-h-11 w-full rounded-xl text-xs sm:w-auto"
                 aria-expanded={showInsights}
                 onClick={() => setShowInsights((current) => !current)}
               >
@@ -220,18 +214,18 @@ export function DashboardPage() {
                   ? t("dashboard.hideInsights")
                   : t("dashboard.showInsights", { count: secondaryWidgets.length })}
               </Button>
-              {showInsights ? (
-                <DashboardWidgets
-                  widgets={secondaryWidgets}
-                  onUnpin={handleUnpinWidget}
-                  isEditMode={isEditMode}
-                  onEditWidget={handleEditWidget}
-                  onDeleteWidget={handleDeleteWidget}
-                  showHeader={false}
-                />
-              ) : null}
             </div>
-          )
+            {showInsights ? (
+              <DashboardWidgets
+                widgets={secondaryWidgets}
+                onUnpin={handleUnpinWidget}
+                isEditMode={isEditMode}
+                onEditWidget={handleEditWidget}
+                onDeleteWidget={handleDeleteWidget}
+                showHeader={false}
+              />
+            ) : null}
+          </div>
         ) : null}
       </ErrorBoundary>
 

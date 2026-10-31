@@ -59,14 +59,11 @@ export async function fetchLanguagePack(language: string): Promise<void> {
     const translationModule = await import("@mms/shared/translations/ur");
     registerLanguagePack("ur", translationModule.APP_TRANSLATIONS_UR);
   } else if (language === "fa") {
-    const [arModule, faModule] = await Promise.all([
-      import("@mms/shared/translations/ar"),
-      import("@mms/shared/translations/fa"),
-    ]);
-    registerLanguagePack("ar", arModule.APP_TRANSLATIONS_AR);
-    registerLanguagePack("fa", {
-      ...arModule.APP_TRANSLATIONS_AR,
-      ...faModule.APP_TRANSLATIONS_FA,
-    });
+    // The Persian pack covers every English key (asserted by
+    // `appTranslations.test.ts`), so it no longer pulls the 0.64 MB Arabic chunk
+    // in just to merge a fallback that never fires. That merge made Persian the
+    // heaviest first paint of the four locales (2026-10-31 review, UX-13).
+    const faModule = await import("@mms/shared/translations/fa");
+    registerLanguagePack("fa", faModule.APP_TRANSLATIONS_FA);
   }
 }

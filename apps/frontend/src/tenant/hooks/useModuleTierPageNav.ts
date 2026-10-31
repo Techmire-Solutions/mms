@@ -1,6 +1,8 @@
 import type { AppTranslationKey } from "@mms/shared";
 import { resolveModuleTierTab } from "@mms/shared";
+import { useMediaQuery } from "@/hooks/useMediaQuery";
 import { usePersistedTabState } from "@/hooks/usePersistedTabState";
+import { MEDIA_LG_UP } from "@/lib/breakpoints";
 import { useFilteredModuleTierTabs, type ModuleTierTab } from "@/tenant/hooks/useModuleTierTabs";
 import {
   useModulePermissions,
@@ -44,10 +46,16 @@ export function useModuleTierPageNav({
     workLabelKey,
   });
   const [activeTab, setActiveTab] = usePersistedTabState<string>(storageKey, defaultTab);
-  const effectiveTab = resolveModuleTierTab(
+  const isDesktop = useMediaQuery(MEDIA_LG_UP);
+  const resolvedTab = resolveModuleTierTab(
     activeTab,
     visibleTabs.map((tab) => tab.id),
   );
+  // `""` is the mobile accordion's collapsed state. Persisted into a desktop
+  // session it would render a module with no body at all, so desktop resolves
+  // the collapsed key back to the first visible tier.
+  const effectiveTab =
+    isDesktop && resolvedTab === "" ? (visibleTabs[0]?.id ?? defaultTab) : resolvedTab;
 
   return { ...permissions, visibleTabs, activeTab, effectiveTab, setActiveTab };
 }

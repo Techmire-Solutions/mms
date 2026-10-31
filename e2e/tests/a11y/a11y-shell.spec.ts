@@ -145,6 +145,39 @@ async function auditCommandPalette(page: Page, context: string): Promise<void> {
   });
 }
 
+/**
+ * The mobile navigation drawer was never audited: it is closed during every
+ * shell sweep, which is how its 1.49:1 member-initials contrast survived CI
+ * (2026-10-31 review, UX-02). Open it at 375, audit the open state, close it.
+ */
+async function auditMobileSidebar(page: Page, context: string): Promise<void> {
+  await test.step(`Audit Mobile Sidebar @ ${context}`, async () => {
+    const trigger = page.getByRole("button", { name: "Open Navigation Menu" }).first();
+    const present = await trigger
+      .waitFor({ state: "visible", timeout: 5_000 })
+      .then(() => true)
+      .catch(() => false);
+    if (!present) return;
+
+    await trigger.click();
+    const drawer = page.locator('[role="dialog"][aria-label="Mobile Navigation"]').first();
+    const opened = await drawer
+      .waitFor({ state: "visible", timeout: 5_000 })
+      .then(() => true)
+      .catch(() => false);
+    expect(opened, `${context}: mobile navigation drawer must open`).toBe(true);
+
+    const focusInside = await drawer
+      .evaluate((el) => el.contains(document.activeElement))
+      .catch(() => false);
+    expect(focusInside, `${context}: focus must move inside the drawer`).toBe(true);
+
+    await assertNoSeriousA11yViolations(page, { context: `${context} (mobile sidebar)` });
+    await page.keyboard.press("Escape");
+    await drawer.waitFor({ state: "hidden", timeout: 3_000 }).catch(() => undefined);
+  });
+}
+
 /** LTR sweep for one route group; overlays run on the flagged desktop Work routes. */
 async function ltrSweep(
   page: Page,
@@ -162,6 +195,10 @@ async function ltrSweep(
         await assertNoSeriousA11yViolations(page, { context });
 
         if (route.path === "/") await auditCommandPalette(page, `${viewport.width}px (ltr)`);
+
+        if (viewport.width === 375 && route.path === "/") {
+          await auditMobileSidebar(page, context);
+        }
 
         if (viewport.width === 1440 && route.overlay) {
           await auditOverlay(page, context, "dialog");

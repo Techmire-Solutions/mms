@@ -15,7 +15,12 @@ import {
   LineChart,
   Line,
 } from "recharts";
-import { ChartGrid, ChartPolarGrid, chartAxisTick } from "@/components/app/ChartGrid";
+import {
+  CHART_TEXT_MIN_PX,
+  ChartGrid,
+  ChartPolarGrid,
+  chartAxisTick,
+} from "@/components/app/ChartGrid";
 import { AlertTriangle, Trophy } from "lucide-react";
 import {
   QUESTION_ACCURACY_EXCELLENT_THRESHOLD,
@@ -69,7 +74,7 @@ export function PerformanceAnalyticsPanels({
                   </span>
                   <div>
                     <p className="text-sm font-bold text-warning m-0">{categoryResult.name}</p>
-                    <p className="text-xs text-warning/90 m-0">
+                    <p className="text-xs text-warning m-0">
                       {t("questionBank.analytics.accuracy", { percent: categoryResult.accuracy })}
                     </p>
                   </div>
@@ -92,7 +97,7 @@ export function PerformanceAnalyticsPanels({
             <YAxis domain={[0, 100]} tick={chartAxisTick(10)} tickFormatter={(v) => `${v}%`} />
             <Tooltip
               formatter={(v) => [`${v}%`, t("questionBank.analytics.tooltipAvgScore")]}
-              contentStyle={{ fontSize: 11, borderRadius: 8 }}
+              contentStyle={{ fontSize: CHART_TEXT_MIN_PX, borderRadius: 8 }}
             />
             <Line
               type="monotone"
@@ -130,7 +135,7 @@ export function PerformanceAnalyticsPanels({
             />
             <Tooltip
               formatter={(v) => [`${v}%`, t("questionBank.analytics.tooltipAccuracy")]}
-              contentStyle={{ fontSize: 11, borderRadius: 8 }}
+              contentStyle={{ fontSize: CHART_TEXT_MIN_PX, borderRadius: 8 }}
             />
           </RadarChart>
         </ReportChartCard>
@@ -153,7 +158,7 @@ export function PerformanceAnalyticsPanels({
             <YAxis type="category" dataKey="name" tick={chartAxisTick(10)} width={90} />
             <Tooltip
               formatter={(v) => [`${v}%`, t("questionBank.analytics.tooltipAvg")]}
-              contentStyle={{ fontSize: 11, borderRadius: 8 }}
+              contentStyle={{ fontSize: CHART_TEXT_MIN_PX, borderRadius: 8 }}
             />
             <Bar dataKey="avg" fill="hsl(var(--primary))" radius={[0, 4, 4, 0]} />
           </BarChart>
@@ -170,7 +175,7 @@ export function PerformanceAnalyticsPanels({
             <YAxis domain={[0, 100]} tick={chartAxisTick(10)} tickFormatter={(v) => `${v}%`} />
             <Tooltip
               formatter={(v) => [`${v}%`, t("questionBank.analytics.tooltipAccuracy")]}
-              contentStyle={{ fontSize: 11, borderRadius: 8 }}
+              contentStyle={{ fontSize: CHART_TEXT_MIN_PX, borderRadius: 8 }}
             />
             <Bar dataKey="accuracy" radius={[4, 4, 0, 0]} fill="hsl(var(--chart-1))" />
           </BarChart>

@@ -17,7 +17,7 @@ export async function auditOverlay(
       '[data-testid="add-record-cta"], #main-content button:has-text("Add"), #main-content button:has-text("New")',
     )
     .first();
-  const rowTrigger = page.locator("table tbody tr button").first();
+  const rowTrigger = page.locator('table tbody tr button[aria-haspopup="menu"]').first();
 
   const trigger =
     kind === "dialog"
@@ -35,10 +35,25 @@ export async function auditOverlay(
 
   await trigger.click({ timeout: 3_000 }).catch(() => undefined);
   const overlay = page.locator('[role="dialog"]').first();
-  const opened = await overlay
+  let opened = await overlay
     .waitFor({ state: "visible", timeout: kind === "dialog" ? 5_000 : 3_000 })
     .then(() => true)
     .catch(() => false);
+
+  if (!opened && kind === "drawer") {
+    // A row-actions menu is the first click; the drawer (or its edit modal) is
+    // behind the first menu item. Without this the audit only ever opened a
+    // menu and reported "no dialog opened", so drawers went unaudited
+    // (2026-10-31 review, UX-04).
+    const firstItem = page.locator('[role="menu"] [role="menuitem"]').first();
+    if (await firstItem.isVisible({ timeout: 2_000 }).catch(() => false)) {
+      await firstItem.click({ timeout: 3_000 }).catch(() => undefined);
+      opened = await overlay
+        .waitFor({ state: "visible", timeout: 3_000 })
+        .then(() => true)
+        .catch(() => false);
+    }
+  }
 
   if (!opened) {
     console.log(`[a11y] ${context}: ${kind} trigger present but no dialog opened — skipped`);

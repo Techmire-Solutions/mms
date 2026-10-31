@@ -51,7 +51,7 @@ const EntityCardBase = memo(function EntityCardBase({
       variants={reducedMotion ? entityCardVariantsReduced : entityCardVariants}
       className={cn(
         FORM_CARD,
-        "p-4 space-y-4 shadow-xs [contain-intrinsic-size:180px] [content-visibility:auto]",
+        "p-3 space-y-3 shadow-xs sm:p-4 sm:space-y-4 [contain-intrinsic-size:180px] [content-visibility:auto]",
         effectiveAccent && CARD_STRIPE_INSET,
         isSelected
           ? "border-primary/50 bg-primary/5 shadow-xs"
