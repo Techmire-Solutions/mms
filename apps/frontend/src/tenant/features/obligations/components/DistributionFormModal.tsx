@@ -8,6 +8,7 @@ import { Input } from "@/components/ui/input";
 import { useTranslation } from "@/hooks/useTranslation";
 import { DISTRIBUTION_TYPES, type ObligationDistribution } from "@/lib/data/obligationsData";
 import { type DistributionType } from "@/tenant/features/obligations/components/WakalaTypeManager";
+import { useDistributionAccountOptions } from "@/tenant/features/obligations/hooks/useDistributionAccountOptions";
 
 interface DistributionFormModalProps {
   title: string;
@@ -27,6 +28,8 @@ export function DistributionFormModal({
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [saving, setSaving] = useState(false);
   const [submitError, setSubmitError] = useState("");
+
+  const accountOptions = useDistributionAccountOptions(form.type ?? "Income");
 
   const validate = (): Record<string, string> => {
     const nextErrors: Record<string, string> = {};
@@ -113,6 +116,15 @@ export function DistributionFormModal({
                   ? t("obligations.distribution.income")
                   : t("obligations.distribution.liability"),
             }))}
+          />
+        </Field>
+        <Field id="dist-account" label={t("obligations.distribution.account")}>
+          <FormSelect
+            id="dist-account"
+            name="account_id"
+            value={form.account_id || ""}
+            onChange={(val) => setForm({ ...form, account_id: val ? val : null })}
+            options={accountOptions}
           />
         </Field>
         <Field id="dist-pct" label={t("obligations.wakala.distPct")} required error={errors.pct}>

@@ -18,6 +18,7 @@ import {
   updateObligationPreferencesService,
 } from "../../../services/obligationPreferencesService.js";
 import { createCollectionAuditHelper } from "../../../lib/createCollectionAuditHelper.js";
+import { findObligationJournalEntry } from "../../../accounting/ledgerPosting/obligationVoucherLookup.js";
 
 const auditObligations = createCollectionAuditHelper("obligation_collections");
 const s = initServer();
@@ -186,6 +187,41 @@ export const obligationContractRouter: FastifyPluginAsync = async (fastify) => {
         return {
           status: 500 as const,
           body: { type: "database_error", message: "Failed to update preferences" },
+        };
+      }
+    },
+    getCollectionVoucher: async ({
+      params,
+      request,
+    }: ContractRouteArgs<(typeof obligationContract)["getCollectionVoucher"]>): Promise<
+      ContractRouteResponse<(typeof obligationContract)["getCollectionVoucher"]>
+    > => {
+      const user = request.user as User;
+      if (!canReadCollection(user, "obligation_collections")) {
+        return {
+          status: 403 as const,
+          body: { type: "forbidden", message: "Insufficient permissions" },
+        };
+      }
+      try {
+        const result = await findObligationJournalEntry(String(request.tenant?.id), params.id);
+        if (!result) {
+          return {
+            status: 404 as const,
+            body: { type: "not_found", message: "Accounting voucher not found" },
+          };
+        }
+        return {
+          status: 200 as const,
+          body: {
+            entry: result.entry as unknown as Record<string, unknown>,
+            accounts: result.accounts as unknown as Record<string, unknown>[],
+          },
+        };
+      } catch {
+        return {
+          status: 500 as const,
+          body: { type: "database_error", message: "Failed to load obligation voucher" },
         };
       }
     },

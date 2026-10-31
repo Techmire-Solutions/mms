@@ -32,6 +32,7 @@ interface ObligationsWorkTierProps {
   onBulkRestore: (ids: string[]) => Promise<void>;
   onRetry: () => void;
   onMessage: (channel: "sms" | "whatsapp" | "email", collections: ObligationCollection[]) => void;
+  onViewVoucher?: (collection: ObligationCollection) => void;
   selectedIds?: string[];
   onToggleSelectedCollection?: (id: string, checked: boolean) => void;
   onToggleSelectAll?: (checked: boolean, visibleIds: string[]) => void;
@@ -59,6 +60,7 @@ export function ObligationsWorkTier({
   onBulkRestore,
   onRetry,
   onMessage,
+  onViewVoucher,
   selectedIds,
   onToggleSelectedCollection,
   onToggleSelectAll,
@@ -109,6 +111,7 @@ export function ObligationsWorkTier({
             labels: columnLayout.customizerLabels,
           }}
           onMessage={canWriteMessaging && !showDeleted ? onMessage : undefined}
+          onViewVoucher={onViewVoucher}
         />
       </ModuleTierMotion>
     </ErrorBoundary>

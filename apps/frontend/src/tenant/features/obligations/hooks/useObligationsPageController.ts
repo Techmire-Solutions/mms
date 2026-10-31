@@ -87,6 +87,7 @@ export function useObligationsPageController() {
 
   const [showForm, setShowForm] = useState(false);
   const [viewCollection, setViewCollection] = useState<ObligationCollection | null>(null);
+  const [voucherCollection, setVoucherCollection] = useState<ObligationCollection | null>(null);
   const [filteredCount, setFilteredCount] = useState(0);
   const columnLayout = useObligationColumnLayout();
 
@@ -160,6 +161,8 @@ export function useObligationsPageController() {
     setShowForm,
     viewCollection,
     setViewCollection,
+    voucherCollection,
+    setVoucherCollection,
     filteredCount,
     setFilteredCount,
     columnLayout,

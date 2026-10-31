@@ -116,6 +116,7 @@ export const obligationDistributionRecordSchema = z
     percentage: z.number().min(0).max(100),
     wakala_type_id: z.string(),
     type: z.enum(["Liability", "Income"]),
+    account_id: z.string().nullable().optional(),
     created_at: z.string().optional(),
     updated_at: z.string().optional(),
   })
@@ -131,6 +132,7 @@ export const obligationDistributionInsertSchema = z
     percentage: z.number().min(0).max(100),
     wakala_type_id: z.string().min(1),
     type: z.enum(["Liability", "Income"]),
+    account_id: z.string().nullable().optional(),
     created_at: z.string().optional(),
     updated_at: z.string().optional(),
   })

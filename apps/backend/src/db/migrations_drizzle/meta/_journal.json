@@ -1289,6 +1289,20 @@
       "when": 1791276500000,
       "tag": "0183_whatsapp_integrations_table",
       "breakpoints": true
+    },
+    {
+      "idx": 184,
+      "version": "7",
+      "when": 1791276600000,
+      "tag": "0184_obligation_distributions_account_id",
+      "breakpoints": true
+    },
+    {
+      "idx": 185,
+      "version": "7",
+      "when": 1791276700000,
+      "tag": "0185_posting_rules_bank_account",
+      "breakpoints": true
     }
   ]
 }

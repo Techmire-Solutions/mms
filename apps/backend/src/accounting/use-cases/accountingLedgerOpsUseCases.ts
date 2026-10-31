@@ -42,6 +42,7 @@ async function broadcast(tenant: string, collection: string): Promise<void> {
 const POSTING_RULE_ACCOUNT_TYPES = {
   arAccountId: ["Asset"],
   cashAccountId: ["Asset"],
+  bankAccountId: ["Asset"],
   incomeAccountId: ["Revenue"],
   discountAccountId: ["Expense", "Revenue"],
 } as const satisfies Record<keyof PostingRulesUpdate, readonly string[]>;

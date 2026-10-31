@@ -10,6 +10,7 @@ export const JOURNAL_SOURCE_TYPES = [
   "closing",
   "reversal",
   "opening",
+  "obligation",
 ] as const;
 
 export type JournalSourceType = (typeof JOURNAL_SOURCE_TYPES)[number];

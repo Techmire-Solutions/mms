@@ -41,6 +41,7 @@ export function ObligationCollectionsListDesktopTable(
     onToggleSelectedCollection,
     onTrashAction,
     onMessage,
+    onViewVoucher,
   } = props;
   const { t } = useTranslation();
   const selectedSet = React.useMemo(() => new Set(selectedIds), [selectedIds]);
@@ -66,6 +67,7 @@ export function ObligationCollectionsListDesktopTable(
     getMujtahid,
     getObligationType,
     userMap,
+    onViewVoucher,
     t,
   });
 
@@ -114,6 +116,7 @@ export function ObligationCollectionsListDesktopTable(
             onView={onView}
             onPrint={onPrint}
             onMessage={onMessage}
+            onViewVoucher={onViewVoucher}
             onTrashAction={onTrashAction}
             triggerClassName={MODULE_ROW_ACTIONS_TRIGGER_CLASS}
           />

@@ -10,6 +10,7 @@ import {
   OBLIGATION_COLLECTION_CURRENCIES,
   type ObligationCollectionListContentProps,
 } from "@/tenant/features/obligations/lib/obligationCollectionListContentShared";
+import { Receipt } from "lucide-react";
 import type { TranslationFunction } from "@/lib/contexts/TranslationContext";
 
 export interface UseObligationCollectionTableColumnsOptions {
@@ -20,6 +21,7 @@ export interface UseObligationCollectionTableColumnsOptions {
   getMujtahid: ObligationCollectionListContentProps["getMujtahid"];
   getObligationType: ObligationCollectionListContentProps["getObligationType"];
   userMap?: Map<string, string>;
+  onViewVoucher?: (collection: ObligationCollection) => void;
   t: TranslationFunction;
 }
 
@@ -34,6 +36,7 @@ export function useObligationCollectionTableColumns(
     getMujtahid,
     getObligationType,
     userMap,
+    onViewVoucher,
     t,
   } = options;
 
@@ -51,7 +54,18 @@ export function useObligationCollectionTableColumns(
         label: t("obligations.columns.receiptNo"),
         noWrap: true,
         render: (collection) => (
-          <span className="font-mono text-xs font-bold text-primary">{collection.receipt_no}</span>
+          <button
+            type="button"
+            onClick={(e) => {
+              e.stopPropagation();
+              onViewVoucher?.(collection);
+            }}
+            className="inline-flex items-center gap-1.5 font-mono text-xs font-bold text-primary hover:underline hover:text-primary/80 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring rounded px-1 py-0.5 -mx-1 -my-0.5 group"
+            title={t("obligations.actions.viewVoucher")}
+          >
+            <span>{collection.receipt_no}</span>
+            <Receipt className="w-3.5 h-3.5 opacity-60 group-hover:opacity-100 text-muted-foreground group-hover:text-primary transition-opacity" aria-hidden="true" />
+          </button>
         ),
       });
     }
@@ -173,5 +187,5 @@ export function useObligationCollectionTableColumns(
     }
 
     return cols;
-  }, [getContact, helpers, isColumnVisible, paymentModeConfig, t, userMap]);
+  }, [getContact, helpers, isColumnVisible, onViewVoucher, paymentModeConfig, t, userMap]);
 }

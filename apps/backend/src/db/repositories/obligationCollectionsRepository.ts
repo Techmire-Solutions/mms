@@ -8,6 +8,7 @@ import { buildTenantSoftDeleteConditions } from "../../services/genericRelationa
 import { obligationCollections } from "../schema.js";
 import { withTenantRead } from "../tenant-context.js";
 import { mapAuditTimestamps } from "./repositoryMappers.js";
+
 import {
   saveObligationCollection,
   bulkSaveObligationCollections,
@@ -19,9 +20,27 @@ import {
 
 type ObligationCollectionRow = typeof obligationCollections.$inferSelect;
 
+/**
+ * Maps a stored collection row to its API record.
+ *
+ * This contract spells its creation and update stamps `created_at` /
+ * `updated_at`, so the camelCase `createdAt`, `updatedAt`, `createdBy` and
+ * `updatedBy` that the shared audit mapper also emits are dropped. The write
+ * schema is strict and the bulk save endpoint echoes back rows this function
+ * produced, so leaving them in rejected every save as soon as the workspace
+ * held one collection.
+ */
 export function obligationCollectionRowToRecord(
   row: ObligationCollectionRow,
 ): ObligationCollection {
+  const {
+    createdAt: _createdAt,
+    updatedAt: _updatedAt,
+    createdBy: _createdBy,
+    updatedBy: _updatedBy,
+    ...softDeleteFields
+  } = mapAuditTimestamps(row);
+
   const collection: ObligationCollection = {
     id: row.id,
     receipt_no: row.receiptNo,
@@ -36,7 +55,7 @@ export function obligationCollectionRowToRecord(
     received_by: row.receivedBy,
     created_at: row.createdAt.toISOString(),
     updated_at: row.updatedAt.toISOString(),
-    ...mapAuditTimestamps(row),
+    ...softDeleteFields,
   };
 
   return collection;

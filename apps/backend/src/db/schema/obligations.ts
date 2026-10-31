@@ -105,6 +105,7 @@ export const obligationDistributions = pgTable(
     percentage: numeric("percentage", { precision: 5, scale: 2 }).notNull().default("0"),
     wakalaTypeId: text("wakala_type_id").notNull(),
     type: varchar("type", { length: 30 }).notNull(),
+    accountId: text("account_id"),
     createdAt: timestamp("created_at", { withTimezone: true, mode: "date" }).notNull().defaultNow(),
     updatedAt: timestamp("updated_at", { withTimezone: true, mode: "date" }).notNull().defaultNow(),
   },

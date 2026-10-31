@@ -25,6 +25,7 @@ export const accountingPostingRules = pgTable(
       .references(() => workspaces.subdomain, { onDelete: "cascade" }),
     arAccountId: text("ar_account_id"),
     cashAccountId: text("cash_account_id"),
+    bankAccountId: text("bank_account_id"),
     incomeAccountId: text("income_account_id"),
     discountAccountId: text("discount_account_id"),
     updatedAt: timestamp("updated_at", { withTimezone: true, mode: "date" }).notNull().defaultNow(),
@@ -37,6 +38,10 @@ export const accountingPostingRules = pgTable(
     }),
     foreignKey({
       columns: [table.workspaceSubdomain, table.cashAccountId],
+      foreignColumns: [accountingAccounts.workspaceSubdomain, accountingAccounts.id],
+    }),
+    foreignKey({
+      columns: [table.workspaceSubdomain, table.bankAccountId],
       foreignColumns: [accountingAccounts.workspaceSubdomain, accountingAccounts.id],
     }),
     foreignKey({

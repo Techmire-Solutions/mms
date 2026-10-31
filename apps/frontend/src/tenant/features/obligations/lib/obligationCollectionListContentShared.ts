@@ -38,6 +38,7 @@ export interface ObligationCollectionListContentProps {
   onToggleSelectedCollection: (id: string, checked: boolean) => void;
   onTrashAction: (id: string) => void;
   onMessage?: (channel: "sms" | "whatsapp" | "email", collections: ObligationCollection[]) => void;
+  onViewVoucher?: (collection: ObligationCollection) => void;
 }
 
 export const OBLIGATION_COLLECTION_CURRENCIES = DEFAULT_CURRENCIES;
