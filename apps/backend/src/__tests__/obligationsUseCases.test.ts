@@ -34,6 +34,7 @@ function createFakeRepo(): ObligationsRepository {
     replaceWakalaTypesForWorkspace: vi.fn().mockResolvedValue(undefined),
 
     listObligationDistributionsByWorkspace: vi.fn().mockResolvedValue([]),
+    listLedgerAccountIds: vi.fn().mockResolvedValue([]),
     findObligationDistributionById: vi.fn().mockResolvedValue(null),
     findObligationDistributionsByIds: vi.fn().mockResolvedValue([]),
     saveObligationDistribution: vi.fn().mockResolvedValue(undefined),

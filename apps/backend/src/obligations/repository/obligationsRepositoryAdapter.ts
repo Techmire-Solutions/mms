@@ -1,4 +1,5 @@
 import type { ObligationsRepository } from "./obligationsRepository.js";
+import { listAccountsByWorkspace } from "../../db/repositories/accountingAccountsRepository.js";
 import {
   listObligationTypesByWorkspace,
   findObligationTypeById,
@@ -46,6 +47,12 @@ import {
   setObligationModulePreferences,
 } from "../../db/repositories/obligationModulePreferencesRepository.js";
 
+/** Active ledger account ids, used to validate wakala distribution mappings. */
+async function listLedgerAccountIds(tenant: string): Promise<string[]> {
+  const accounts = await listAccountsByWorkspace(tenant);
+  return accounts.map((account) => account.id);
+}
+
 /**
  * Drizzle-backed adapter for {@link ObligationsRepository}. Delegates to the
  * existing concrete repository functions (no SQL rewrite in this pass).
@@ -75,6 +82,7 @@ export const obligationsRepository: ObligationsRepository = {
   saveWakalaType,
   bulkSaveWakalaTypes,
   replaceWakalaTypesForWorkspace,
+  listLedgerAccountIds,
   listObligationDistributionsByWorkspace,
   findObligationDistributionById,
   findObligationDistributionsByIds,

@@ -1,5 +1,6 @@
 import type { ObligationsRepository } from "../repository/obligationsRepository.js";
 import { getRequestTenant } from "../../lib/tenantContext.js";
+import { assertDistributionAccountsValid } from "./obligationDistributionAccounts.js";
 import {
   defineTenantBulkCollectionService,
   upsertWithBroadcast,
@@ -166,9 +167,16 @@ export function createObligationsCatalogUseCases(repo: ObligationsRepository) {
     saveObligationDistribution: async (record: ObligationDistribution): Promise<void> => {
       const tenant = getRequestTenant();
       if (!tenant) return;
+      await assertDistributionAccountsValid(repo, tenant, [record]);
       await repo.saveObligationDistribution(tenant, record);
     },
-    replaceObligationDistributions: distributionService.replace,
+    replaceObligationDistributions: async (
+      records: ObligationDistribution[],
+    ): Promise<ObligationDistribution[]> => {
+      const tenant = getRequestTenant();
+      if (tenant) await assertDistributionAccountsValid(repo, tenant, records);
+      return distributionService.replace(records);
+    },
 
     upsertObligationTypes: (types: ObligationType[]) =>
       upsertWithBroadcast(

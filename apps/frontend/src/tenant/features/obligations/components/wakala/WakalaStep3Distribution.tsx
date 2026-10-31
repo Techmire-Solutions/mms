@@ -13,6 +13,7 @@ import { useTranslation } from "@/hooks/useTranslation";
 import { cn } from "@/lib/utils";
 import type { Mujtahid, MujtahidRep, ObligationType } from "@/lib/data/obligationsData";
 import type { InitialDistRow } from "./wakalaFormModalTypes";
+import { WakalaDistributionAccountSelect } from "./WakalaDistributionAccountSelect";
 
 interface WakalaStep3DistributionProps {
   selectedObType: ObligationType | undefined;
@@ -111,40 +112,48 @@ export function WakalaStep3Distribution({
             canRemove
             onRemove={() => onRemoveRow(row.id)}
           >
-            <div className="grid grid-cols-1 gap-3 sm:grid-cols-[1fr_6rem] items-start">
-              <Input
-                id={`wakala-dist-name-${row.id}`}
-                name={`wakala-dist-name-${row.id}`}
-                placeholder={t("obligations.wakala.namePlaceholder")}
-                aria-label={t("obligations.wakala.distName")}
-                value={row.name}
-                onChange={(e) => onUpdateRow(row.id, { name: e.target.value })}
-                className="text-xs min-h-11"
-              />
-              <Input
-                id={`wakala-dist-pct-${row.id}`}
-                name={`wakala-dist-pct-${row.id}`}
-                type="text"
-                inputMode="decimal"
-                placeholder="%"
-                aria-label={t("obligations.wakala.distPct")}
-                value={
-                  row.percentage === undefined || row.percentage === null
-                    ? ""
-                    : String(row.percentage)
-                }
-                onChange={(e) => {
-                  const val = e.target.value;
-                  if (val === "" || /^\d*(\.\d{0,2})?$/.test(val)) {
-                    const num = parseFloat(val) || 0;
-                    if (num <= 100) {
-                      onUpdateRow(row.id, {
-                        percentage: val === "" ? ("" as unknown as number) : num,
-                      });
-                    }
+            <div className="space-y-3">
+              <div className="grid grid-cols-1 gap-3 sm:grid-cols-[1fr_6rem] items-start">
+                <Input
+                  id={`wakala-dist-name-${row.id}`}
+                  name={`wakala-dist-name-${row.id}`}
+                  placeholder={t("obligations.wakala.namePlaceholder")}
+                  aria-label={t("obligations.wakala.distName")}
+                  value={row.name}
+                  onChange={(e) => onUpdateRow(row.id, { name: e.target.value })}
+                  className="text-xs min-h-11"
+                />
+                <Input
+                  id={`wakala-dist-pct-${row.id}`}
+                  name={`wakala-dist-pct-${row.id}`}
+                  type="text"
+                  inputMode="decimal"
+                  placeholder="%"
+                  aria-label={t("obligations.wakala.distPct")}
+                  value={
+                    row.percentage === undefined || row.percentage === null
+                      ? ""
+                      : String(row.percentage)
                   }
-                }}
-                className="text-xs min-h-11"
+                  onChange={(e) => {
+                    const val = e.target.value;
+                    if (val === "" || /^\d*(\.\d{0,2})?$/.test(val)) {
+                      const num = parseFloat(val) || 0;
+                      if (num <= 100) {
+                        onUpdateRow(row.id, {
+                          percentage: val === "" ? ("" as unknown as number) : num,
+                        });
+                      }
+                    }
+                  }}
+                  className="text-xs min-h-11"
+                />
+              </div>
+              <WakalaDistributionAccountSelect
+                rowId={row.id}
+                type={row.type}
+                value={row.account_id ?? null}
+                onChange={(accountId) => onUpdateRow(row.id, { account_id: accountId })}
               />
             </div>
           </FormListFieldCard>

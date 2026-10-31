@@ -1,6 +1,7 @@
 import type { ObligationCollection } from "@mms/shared";
 import { toMessagingRecipient } from "@mms/shared";
 import { notify } from "@/lib/notify";
+import { apiErrorMessage } from "@/lib/apiErrorMessage";
 import {
   NotifiedObligationsMutationError,
   type useObligationsMutations,
@@ -39,7 +40,7 @@ export function useObligationsPageActions({
   const notifySaveFailure = (error: unknown) => {
     if (error instanceof NotifiedObligationsMutationError) return;
     notify.error(t("obligations.saveFailed"), {
-      description: error instanceof Error ? error.message : String(error),
+      description: apiErrorMessage(error, t("errors.state.generic")),
     });
   };
 

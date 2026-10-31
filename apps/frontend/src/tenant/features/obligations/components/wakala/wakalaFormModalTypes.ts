@@ -11,6 +11,7 @@ export interface InitialDistRow {
   name: string;
   percentage: number;
   type: "Income" | "Liability";
+  account_id?: string | null;
 }
 
 export interface WakalaFormModalProps {

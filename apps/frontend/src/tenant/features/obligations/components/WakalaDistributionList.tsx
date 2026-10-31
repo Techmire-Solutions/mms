@@ -10,6 +10,8 @@ import {
 } from "@/components/common/data-table";
 import type { WorkDirectoryViewMode } from "@/hooks/useWorkDirectoryViewMode";
 import type { TranslationFunction } from "@/lib/contexts/TranslationContext";
+import type { Account } from "@mms/shared";
+import { useAccountingContractAccounts } from "@/tenant/hooks/collections/accounting";
 
 interface WakalaDistributionListProps {
   distributions: ObligationDistribution[];
@@ -28,6 +30,14 @@ export function WakalaDistributionList({
   onDelete,
   viewMode,
 }: WakalaDistributionListProps): React.JSX.Element {
+  const accountsQuery = useAccountingContractAccounts({});
+  const accounts: Account[] | undefined =
+    accountsQuery.data?.status === 200 ? accountsQuery.data.body.accounts : undefined;
+  const accountMap = React.useMemo(
+    () => new Map<string, Account>((accounts ?? []).map((account) => [account.id, account])),
+    [accounts],
+  );
+
   const columns: DataTableColumn<ObligationDistribution>[] = [
     {
       id: "name",
@@ -40,6 +50,25 @@ export function WakalaDistributionList({
       label: t("obligations.wakala.colType"),
       searchValue: (d) => distributionTypeConfig[d.type]?.label ?? d.type,
       render: (d) => <StatusBadge status={d.type} config={distributionTypeConfig} size="sm" />,
+    },
+    {
+      id: "account",
+      label: t("obligations.wakala.colAccount"),
+      render: (d) => {
+        if (!d.account_id) {
+          return (
+            <span className="text-muted-foreground text-xs italic">
+              {t("obligations.distribution.notMapped")}
+            </span>
+          );
+        }
+        const account = accountMap.get(d.account_id);
+        return (
+          <span className="text-xs font-mono font-medium text-foreground">
+            {account ? `${account.code} · ${account.name}` : d.account_id}
+          </span>
+        );
+      },
     },
     {
       id: "percentage",

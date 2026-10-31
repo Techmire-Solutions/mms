@@ -21,6 +21,12 @@ const ObligationCollectionForm = lazy(() =>
   })),
 );
 
+const ObligationVoucherModal = lazy(() =>
+  import("@/tenant/features/obligations/components/ObligationVoucherModal").then((m) => ({
+    default: m.ObligationVoucherModal,
+  })),
+);
+
 const MessageComposer = React.lazy(
   () => import("@/tenant/components/messaging/TenantMessageComposer"),
 );
@@ -43,6 +49,9 @@ interface ObligationsModalLayerProps {
   distributions: ObligationDistribution[];
   collections: ObligationCollection[];
   messagingTarget: MessagingTarget | null;
+  voucherCollection?: ObligationCollection | null;
+  onViewVoucher?: (collection: ObligationCollection) => void;
+  onCloseVoucher?: () => void;
   onSaveCollection: (collection: ObligationCollection) => Promise<void>;
   onChangeTypes?: (types: ObligationType[]) => Promise<void> | void;
   onChangeMujtahids?: (mujtahids: Mujtahid[]) => Promise<void> | void;
@@ -67,6 +76,9 @@ export function ObligationsModalLayer({
   distributions,
   collections,
   messagingTarget,
+  voucherCollection,
+  onViewVoucher,
+  onCloseVoucher,
   onSaveCollection,
   onChangeTypes,
   onChangeMujtahids,
@@ -109,10 +121,20 @@ export function ObligationsModalLayer({
               canDelete={canDelete}
               onRestore={onRestore}
               onClose={onCloseDetail}
+              onViewVoucher={onViewVoucher}
             />
           </React.Suspense>
         )}
       </AnimatePresence>
+
+      {voucherCollection && (
+        <React.Suspense fallback={null}>
+          <ObligationVoucherModal
+            collection={voucherCollection}
+            onClose={onCloseVoucher ?? (() => {})}
+          />
+        </React.Suspense>
+      )}
 
       {messagingTarget && (
         <React.Suspense fallback={null}>

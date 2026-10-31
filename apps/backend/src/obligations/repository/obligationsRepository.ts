@@ -54,6 +54,8 @@ export interface ObligationsRepository {
 
   // Distributions
   listObligationDistributionsByWorkspace(tenant: string): Promise<ObligationDistribution[]>;
+  /** Ids of the workspace's active ledger accounts, for validating distribution mappings. */
+  listLedgerAccountIds(tenant: string): Promise<string[]>;
   findObligationDistributionById(
     tenant: string,
     id: string,

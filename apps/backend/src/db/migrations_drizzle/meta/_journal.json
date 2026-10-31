@@ -1387,6 +1387,20 @@
       "when": 1792922800000,
       "tag": "0197_backend_review_hardening",
       "breakpoints": true
+    },
+    {
+      "idx": 198,
+      "version": "7",
+      "when": 1792923800000,
+      "tag": "0198_obligation_distributions_account_id",
+      "breakpoints": true
+    },
+    {
+      "idx": 199,
+      "version": "7",
+      "when": 1792924800000,
+      "tag": "0199_posting_rules_bank_account",
+      "breakpoints": true
     }
   ]
 }

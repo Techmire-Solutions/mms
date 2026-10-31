@@ -73,6 +73,7 @@ export function useWakalaTypeManager({
         type: d.type || "Income",
         id: generateId("od"),
         wakala_type_id: wakalaId,
+        account_id: d.account_id ?? null,
       })) as ObligationDistribution[];
       await onChangeDistributions([...distributions, ...distsToAdd]);
     }

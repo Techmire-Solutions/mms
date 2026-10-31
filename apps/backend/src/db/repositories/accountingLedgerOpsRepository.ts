@@ -23,6 +23,7 @@ export async function getPostingRules(tenant: string): Promise<PostingRules> {
       .select({
         arAccountId: accountingPostingRules.arAccountId,
         cashAccountId: accountingPostingRules.cashAccountId,
+        bankAccountId: accountingPostingRules.bankAccountId,
         incomeAccountId: accountingPostingRules.incomeAccountId,
         discountAccountId: accountingPostingRules.discountAccountId,
         fxRealizedAccountId: accountingPostingRules.fxRealizedAccountId,
@@ -39,6 +40,7 @@ export async function getPostingRules(tenant: string): Promise<PostingRules> {
     return {
       arAccountId: row.arAccountId,
       cashAccountId: row.cashAccountId,
+      bankAccountId: row.bankAccountId,
       incomeAccountId: row.incomeAccountId,
       discountAccountId: row.discountAccountId,
       fxRealizedAccountId: row.fxRealizedAccountId,
@@ -73,6 +75,7 @@ export async function savePostingRules(tenant: string, rules: PostingRules): Pro
         workspaceSubdomain: subdomain,
         arAccountId: rules.arAccountId ?? null,
         cashAccountId: rules.cashAccountId ?? null,
+        bankAccountId: rules.bankAccountId ?? null,
         incomeAccountId: rules.incomeAccountId ?? null,
         discountAccountId: rules.discountAccountId ?? null,
         ...fxAccounts,
@@ -83,6 +86,7 @@ export async function savePostingRules(tenant: string, rules: PostingRules): Pro
         set: {
           arAccountId: rules.arAccountId ?? null,
           cashAccountId: rules.cashAccountId ?? null,
+          bankAccountId: rules.bankAccountId ?? null,
           incomeAccountId: rules.incomeAccountId ?? null,
           discountAccountId: rules.discountAccountId ?? null,
           ...fxAccounts,

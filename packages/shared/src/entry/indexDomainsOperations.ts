@@ -25,6 +25,7 @@ export * from "../finance/accountingLedgerInvariants.js";
 export * from "../finance/accountingLedgerOps.js";
 export * from "../finance/accountingVoucherNumbering.js";
 export * from "../finance/accountingLedgerPosting.js";
+export * from "../finance/obligationPostingLogic.js";
 export * from "../finance/accountingListQuery.js";
 export * from "../finance/accountingModuleManifest.js";
 export * from "../finance/accountingModuleSettings.js";

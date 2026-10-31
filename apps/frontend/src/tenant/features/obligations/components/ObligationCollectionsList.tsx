@@ -37,6 +37,7 @@ export function ObligationCollectionsList({
   onColumnResize,
   columnCustomizer,
   onMessage,
+  onViewVoucher,
 }: ObligationCollectionListProps) {
   const { viewMode, setViewMode } = useWorkDirectoryViewMode();
   const columnVisible = isColumnVisible ?? ALWAYS_COLUMN_VISIBLE;
@@ -144,6 +145,7 @@ export function ObligationCollectionsList({
           else setPendingTrashId(id);
         }}
         onMessage={onMessage}
+        onViewVoucher={onViewVoucher}
       />
 
       <ObligationInvoiceModals

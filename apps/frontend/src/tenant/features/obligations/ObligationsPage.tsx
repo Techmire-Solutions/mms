@@ -103,6 +103,7 @@ export default function Obligations() {
                   onBulkRestore={c.handleBulkRestore}
                   onRetry={c.refetchCollections}
                   onMessage={c.handleMessageCollections}
+                  onViewVoucher={c.setVoucherCollection}
                   selectedIds={c.collectionSelection.selectedIds}
                   onToggleSelectedCollection={c.collectionSelection.toggleSelected}
                   onToggleSelectAll={c.collectionSelection.toggleSelectAll}
@@ -152,6 +153,9 @@ export default function Obligations() {
         distributions={c.distributions}
         collections={c.collections}
         messagingTarget={c.messagingTarget}
+        voucherCollection={c.voucherCollection}
+        onViewVoucher={c.setVoucherCollection}
+        onCloseVoucher={() => c.setVoucherCollection(null)}
         onSaveCollection={c.handleSaveCollection}
         onChangeTypes={
           c.canEditSetup
