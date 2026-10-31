@@ -27,6 +27,18 @@ export function PlatformDashboardFleet(): React.JSX.Element | null {
   const [selected, setSelected] = useState<Set<string>>(() => new Set());
   const [exportOpen, setExportOpen] = useState(false);
 
+  // Changing the filters/sort invalidates the current page and selection — adjust during render.
+  const [prevFilterKey, setPrevFilterKey] = useState({ search, status, sortDir });
+  if (
+    prevFilterKey.search !== search ||
+    prevFilterKey.status !== status ||
+    prevFilterKey.sortDir !== sortDir
+  ) {
+    setPrevFilterKey({ search, status, sortDir });
+    setPage(1);
+    setSelected(new Set());
+  }
+
   const { data, total, isLoading, refetch } = usePlatformWorkspaces({
     page,
     limit: PAGE_SIZE,
@@ -35,11 +47,6 @@ export function PlatformDashboardFleet(): React.JSX.Element | null {
     sortField: "name",
     sortDir,
   });
-
-  useEffect(() => {
-    setPage(1);
-    setSelected(new Set());
-  }, [search, status, sortDir]);
 
   useEffect(() => {
     if (!autoRefresh) return;

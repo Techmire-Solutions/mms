@@ -90,7 +90,7 @@ export async function establishSession(
   const accessExpiresIn = await getJwtExpiresIn();
   const jti = randomUUID();
   const accessToken = jwtSigner.sign(
-    { ...user, twoFactorVerified, tokenType: "access", jti },
+    { ...user, twoFactorVerified, tokenType: "access", jti, iat_ms: Date.now() },
     { expiresIn: accessExpiresIn },
   );
   const refreshToken = await issueRefreshToken(user);
@@ -151,9 +151,10 @@ export async function completeTwoFactorLogin(
   code: string,
   jwtSigner: JWT,
   reply: FastifyReply,
+  expectedTenant: string,
 ): Promise<AuthResult | null> {
   const { verifyTwoFactorChallenge } = await import("./twoFactorService.js");
-  const user = await verifyTwoFactorChallenge(challengeId, code);
+  const user = await verifyTwoFactorChallenge(challengeId, code, expectedTenant);
   if (!user) return null;
   await assertWorkspaceActive(user.workspaceSubdomain);
   return establishSession(user, jwtSigner, reply, true);

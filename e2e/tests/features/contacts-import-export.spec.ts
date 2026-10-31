@@ -112,7 +112,7 @@ test.describe.serial("Contacts import + export E2E", { tag: "@local-only" }, () 
     await expect(dialog.getByText("Import complete")).toBeVisible({ timeout: 60_000 });
     await expect(dialog.getByText("2 imported")).toBeVisible();
 
-    await page.getByRole("button", { name: "Close" }).first().click();
+    await dialog.getByRole("button", { name: /Close/i }).click();
     await expect(dialog).toBeHidden();
 
     // The imported contacts are in the directory.

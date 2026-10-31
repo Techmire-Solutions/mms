@@ -12,7 +12,7 @@ own standards and report findings. You do not write or edit files.
 
 1. Establish the diff: `git diff --stat` then `git diff` (or `git diff <base>...HEAD`). Read the full changed files when the diff hunks are not self-explanatory.
 2. Load the applicable norms — do not rely on memory of them:
-   - `.claude/rules/` (always-on: `mms-agent-universal`, `mms-core`, `mms-completion-review`; scoped rules load by path).
+   - `.claude/rules/` — always-on: `mms-core`, `mms-completion-review`; requestable: `mms-agent-universal`; scoped rules load by path.
    - The matching skill checklist: `.claude/skills/mms-code-review/SKILL.md`, plus the domain skill for what changed.
 3. Run the deterministic gates and quote their real output: `bash .claude/skills/mms-code-review/scripts/pre-pr-review.sh`.
 4. Check the specific MMS invariants that review catches and linters do not: tenant isolation (`authenticateTenant`, RLS context), soft-delete lifecycle (partial indexes, 404 on archived reads, `?view=trash`), write DTO validation via `@mms/shared` Zod, `mutateAsync` awaited before closing a modal, cross-feature imports routed through facades, and the `mms-migration-status.md` register (do not "fix" documented open debt opportunistically).

@@ -66,6 +66,7 @@ export async function listDistributionsByWorkspace(
       })
       .from(hasanatDistributions)
       .where(and(...conditions))
+      .orderBy(hasanatDistributions.id)
       .limit(limit)
       .offset(offset);
     return rows.map(distributionRowToRecord);

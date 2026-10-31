@@ -1,11 +1,36 @@
+/**
+ * True when the request came from loopback without a proxied client.
+ *
+ * `X-Forwarded-For` means the request reached us through a proxy, so it is
+ * treated as external even if the proxy itself connected over loopback. Used by
+ * the ops probes (`/health`, `/metrics`) to decide whether topology can be
+ * exposed without a token.
+ */
+export function isLoopbackRequest(request: {
+  ip?: string;
+  headers: Record<string, unknown>;
+}): boolean {
+  const forwardedFor = request.headers["x-forwarded-for"];
+  const hasForwardedClient = Array.isArray(forwardedFor)
+    ? forwardedFor.length > 0
+    : Boolean(forwardedFor);
+  if (hasForwardedClient) return false;
+
+  const normalized = (request.ip ?? "").trim().toLowerCase();
+  if (!normalized) return false;
+  if (normalized === "::1" || normalized === "::ffff:127.0.0.1") return true;
+  return normalized === "127.0.0.1" || normalized.startsWith("127.");
+}
+
 function isInternalHost(host: string): boolean {
   if (!host) return true;
   if (host === "localhost" || host.endsWith(".localhost")) return true;
   if (host === "127.0.0.1" || host.startsWith("127.")) return true;
-  // Any dotted-numeric Host is treated as internal so we fall back to
-  // X-Forwarded-Host. This is safe because TRUST_PROXY is restricted to known
-  // proxy IPs/CIDRs (serverConfig rejects TRUST_PROXY=true), so a public-IP Host
-  // header cannot be used to spoof the tenant subdomain.
+  // Any dotted-numeric Host is treated as internal so we may fall back to
+  // X-Forwarded-Host (see canTrustForwardedHost). This is safe in development
+  // because TRUST_PROXY is restricted to known proxy IPs/CIDRs (serverConfig
+  // rejects TRUST_PROXY=true); production additionally requires
+  // MMS_TRUST_X_FORWARDED_HOST=true before the header is honoured.
   return /^\d+\.\d+\.\d+\.\d+$/.test(host);
 }
 
@@ -14,6 +39,16 @@ export function headerHost(value: unknown): string {
   return String(raw ?? "")
     .split(":")[0]
     .toLowerCase();
+}
+
+/** Whether a client-supplied X-Forwarded-Host may drive tenant resolution. */
+function canTrustForwardedHost(): boolean {
+  if (process.env.MMS_TRUST_X_FORWARDED_HOST === "true") return true;
+  // Development/test keep the Vite/dev-proxy fallback. Production requires the
+  // explicit opt-in above: otherwise an attacker who can reach the Node port
+  // directly could rotate the tenant (and thus the rate-limit bucket) per
+  // request with a forged header.
+  return process.env.NODE_ENV !== "production";
 }
 
 /** Prefer Host from ProxyPreserveHost; use X-Forwarded-Host only for dev/internal proxies. */
@@ -25,11 +60,13 @@ export function requestHostname(request: {
   if (!isInternalHost(fromHost)) {
     return fromHost;
   }
-  const fromForwarded = headerHost(request.headers["x-forwarded-host"]);
-  if (fromForwarded) {
-    return fromForwarded;
+  if (canTrustForwardedHost()) {
+    const fromForwarded = headerHost(request.headers["x-forwarded-host"]);
+    if (fromForwarded) {
+      return fromForwarded;
+    }
   }
-  return headerHost(request.hostname);
+  return fromHost || headerHost(request.hostname);
 }
 
 function headerValue(value: unknown): string | undefined {

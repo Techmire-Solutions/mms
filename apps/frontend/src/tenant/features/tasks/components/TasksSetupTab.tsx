@@ -1,9 +1,15 @@
-import React, { useState, useEffect } from "react";
-import { Bell, Save, UserCheck } from "lucide-react";
-import { type TaskSettings, DEFAULT_TASK_SETTINGS, type DelegationScope } from "@mms/shared";
+import React, { useState } from "react";
+import { Save } from "lucide-react";
+import {
+  type TaskSettings,
+  type DelegationScope,
+  DELEGATION_SCOPES,
+  DEFAULT_TASK_SETTINGS,
+} from "@mms/shared";
 import { Button } from "@/components/ui/button";
-import { Checkbox } from "@/components/ui/checkbox";
-import { RadioGroup, RadioGroupItem } from "@/components/app/RadioGroup";
+import { FormCheckboxCard } from "@/components/app/FormCheckboxCard";
+import { FormSelect } from "@/components/app/FormSelect";
+import { Field } from "@/components/app/FormPrimitives";
 import { useTranslation } from "@/hooks/useTranslation";
 import { useTaskSettings, useUpdateTaskSettings } from "@/tenant/hooks/collections/tasks";
 import { notify } from "@/lib/notify";
@@ -30,18 +36,16 @@ export function TasksSetupTab({
   const { t } = useTranslation();
   const { data: serverSettings, isLoading } = useTaskSettings();
   const updateSettingsMutation = useUpdateTaskSettings();
-  const [settings, setSettings] = useState<TaskSettings>(initialSettings);
+  const [draft, setDraft] = useState<TaskSettings | null>(null);
   const baseline = serverSettings ?? initialSettings;
-  const dirty = !settingsEqual(settings, baseline);
-
-  useEffect(() => {
-    if (serverSettings) setSettings(serverSettings);
-  }, [serverSettings]);
+  const settings = draft ?? baseline;
+  const dirty = draft !== null && !settingsEqual(draft, baseline);
 
   const handleSave = async () => {
     if (!dirty) return;
     try {
       await updateSettingsMutation.mutateAsync(settings);
+      setDraft(null);
       notify.success(t("tasks.setup.saved"));
     } catch (err) {
       notify.error(err instanceof Error ? err.message : t("tasks.setup.saveFailed"));
@@ -50,121 +54,63 @@ export function TasksSetupTab({
 
   return (
     <ModuleSetupContent>
-      <div className="rounded-lg border border-border bg-card p-5 shadow-xs space-y-5">
-        <div>
-          <h3 className="font-semibold text-base text-foreground mb-1 text-wrap-balance">
-            {t("tasks.setup.delegationScope")}
-          </h3>
-          <p className="text-xs text-muted-foreground text-wrap-pretty">
-            {t("tasks.setup.delegationScopeDesc")}
-          </p>
+      <div className="rounded-lg border border-border bg-card p-5 shadow-xs space-y-6">
+        <div className="space-y-2">
+          <Field
+            id="tasks-delegation-scope"
+            label={t("tasks.setup.delegationScope")}
+            hint={t("tasks.setup.delegationScopeDesc")}
+          >
+            <FormSelect
+              id="tasks-delegation-scope"
+              value={settings.delegationScope}
+              onChange={(v) => setDraft({ ...settings, delegationScope: v as DelegationScope })}
+              disabled={!canEditSetup || isLoading}
+              options={DELEGATION_SCOPES.map((scope) => ({
+                value: scope,
+                label:
+                  scope === "descendants"
+                    ? t("tasks.setup.descendants")
+                    : t("tasks.setup.directReports"),
+              }))}
+            />
+          </Field>
         </div>
 
-        <RadioGroup
-          value={settings.delegationScope}
-          onValueChange={(val) =>
-            setSettings({ ...settings, delegationScope: val as DelegationScope })
-          }
-          disabled={!canEditSetup || isLoading}
-          className="space-y-3"
-        >
-          {(["descendants", "direct_reports"] as const).map((scope) => (
-            <label
-              key={scope}
-              htmlFor={`scope-${scope}`}
-              className="flex items-start gap-3 p-3 rounded-md border border-border bg-background cursor-pointer hover:bg-muted/30 transition-colors"
-            >
-              <RadioGroupItem id={`scope-${scope}`} value={scope} className="mt-0.5" />
-              <div>
-                <div className="text-sm font-medium text-foreground">
-                  {t(
-                    scope === "descendants"
-                      ? "tasks.setup.descendants"
-                      : "tasks.setup.directReports",
-                  )}
-                </div>
-                <div className="text-xs text-muted-foreground">
-                  {t(
-                    scope === "descendants"
-                      ? "tasks.setup.descendantsDesc"
-                      : "tasks.setup.directReportsDesc",
-                  )}
-                </div>
-              </div>
-            </label>
-          ))}
-        </RadioGroup>
+        <div className="space-y-3 pt-2 border-t border-border/50">
+          <FormCheckboxCard
+            id="tasks-allow-self-assignment"
+            name="allowSelfAssignment"
+            label={t("tasks.setup.allowSelfAssignment")}
+            description={t("tasks.setup.allowSelfAssignmentDesc")}
+            checked={settings.allowSelfAssignment}
+            onCheckedChange={(checked) => setDraft({ ...settings, allowSelfAssignment: checked })}
+            disabled={!canEditSetup || isLoading}
+          />
 
-        <div className="border-t border-border pt-4 space-y-4">
-          <div className="flex items-center justify-between gap-3">
-            <div className="flex items-center gap-2">
-              <UserCheck className="h-4 w-4 text-muted-foreground" aria-hidden />
-              <div>
-                <div className="text-sm font-medium text-foreground">
-                  {t("tasks.setup.allowSelfAssignment")}
-                </div>
-                <div className="text-xs text-muted-foreground">
-                  {t("tasks.setup.allowSelfAssignmentDesc")}
-                </div>
-              </div>
-            </div>
-            <Checkbox
-              checked={settings.allowSelfAssignment}
-              onCheckedChange={(checked) =>
-                setSettings({ ...settings, allowSelfAssignment: checked === true })
-              }
-              disabled={!canEditSetup || isLoading}
-              aria-label={t("tasks.setup.allowSelfAssignment")}
-            />
-          </div>
+          <FormCheckboxCard
+            id="tasks-notify-assignment"
+            name="notifyOnAssignment"
+            label={t("tasks.setup.notifyOnAssignment")}
+            description={t("tasks.setup.notifyOnAssignmentDesc")}
+            checked={settings.notifyOnAssignment}
+            onCheckedChange={(checked) => setDraft({ ...settings, notifyOnAssignment: checked })}
+            disabled={!canEditSetup || isLoading}
+          />
 
-          <div className="flex items-center justify-between gap-3">
-            <div className="flex items-center gap-2">
-              <Bell className="h-4 w-4 text-muted-foreground" aria-hidden />
-              <div>
-                <div className="text-sm font-medium text-foreground">
-                  {t("tasks.setup.notifyOnAssignment")}
-                </div>
-                <div className="text-xs text-muted-foreground">
-                  {t("tasks.setup.notifyOnAssignmentDesc")}
-                </div>
-              </div>
-            </div>
-            <Checkbox
-              checked={settings.notifyOnAssignment}
-              onCheckedChange={(checked) =>
-                setSettings({ ...settings, notifyOnAssignment: checked === true })
-              }
-              disabled={!canEditSetup || isLoading}
-              aria-label={t("tasks.setup.notifyOnAssignment")}
-            />
-          </div>
-
-          <div className="flex items-center justify-between gap-3">
-            <div className="flex items-center gap-2">
-              <Bell className="h-4 w-4 text-muted-foreground" aria-hidden />
-              <div>
-                <div className="text-sm font-medium text-foreground">
-                  {t("tasks.setup.notifyOnStatusChange")}
-                </div>
-                <div className="text-xs text-muted-foreground">
-                  {t("tasks.setup.notifyOnStatusChangeDesc")}
-                </div>
-              </div>
-            </div>
-            <Checkbox
-              checked={settings.notifyOnStatusChange}
-              onCheckedChange={(checked) =>
-                setSettings({ ...settings, notifyOnStatusChange: checked === true })
-              }
-              disabled={!canEditSetup || isLoading}
-              aria-label={t("tasks.setup.notifyOnStatusChange")}
-            />
-          </div>
+          <FormCheckboxCard
+            id="tasks-notify-status-change"
+            name="notifyOnStatusChange"
+            label={t("tasks.setup.notifyOnStatusChange")}
+            description={t("tasks.setup.notifyOnStatusChangeDesc")}
+            checked={settings.notifyOnStatusChange}
+            onCheckedChange={(checked) => setDraft({ ...settings, notifyOnStatusChange: checked })}
+            disabled={!canEditSetup || isLoading}
+          />
         </div>
 
         {canEditSetup ? (
-          <div className="pt-2 flex items-center justify-end gap-2">
+          <div className="pt-2 flex items-center justify-end gap-2 border-t border-border">
             <Button
               type="button"
               className="min-h-11 gap-1.5"

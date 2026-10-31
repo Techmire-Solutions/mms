@@ -9,6 +9,7 @@ alwaysApply: false
 **Workflow skills:** PR/self-review gates → `mms-code-review` · axe/focus-return smoke → `mms-a11y-smoke` · automated testing workflows → `mms-testing-e2e`.
 
 ## 1. Testing Strategy & Execution Invariants
+- **Test-first delivery:** Red → Green → Refactor is owned by `mms-tdd.mdc` (advisory pairing check: `pnpm run check:tdd-pairing`). The rules below govern how that spec is written and run.
 - **Workspace Test Execution:**
   - Unit/Integration: `pnpm test` (root turbo) · `pnpm --filter mms-backend test:coverage` · `pnpm --filter @mms/shared test:coverage`.
   - Backend DB/RLS Integration: `pnpm --filter mms-backend run test:db` (requires live PostgreSQL).
@@ -41,6 +42,13 @@ alwaysApply: false
 - **Realistic Interactions:** Use user-event dispatchers (`userEvent` over `fireEvent`) in happy-dom/DOM tests to preserve complete event lifecycles. In Playwright, use web-first user actions (`page.getByRole().click()`).
 
 ## 4. Isolation, Mocking & Factory Boundaries
+- **Comprehensive Unit & Logic Isolation:**
+  - **Coverage Scope:** Every domain service, helper utility, custom hook, use-case function, and repository mapper must have unit coverage.
+  - **Dependency Isolation:** Mock all I/O boundaries (PostgreSQL/Drizzle queries, Redis/BullMQ instances, external HTTP clients, file storage, email gateways) using Vitest mocks (`vi.fn()`, `vi.spyOn()`). Unit tests must execute deterministically in milliseconds without network or database dependencies.
+  - **Boundary & Contract Coverage:**
+    - *Happy Path:* Valid input scenarios and expected return payloads.
+    - *Schema & Boundary Conditions:* Null, undefined, empty strings, boundary integers, invalid date strings, and malformed payload structures validated against `@mms/shared` Zod schemas.
+    - *Error Contracts:* Ensure custom domain exceptions (`ContractError`, `HttpError`, RBAC rejections) throw with expected HTTP status codes, structured error payloads, and diagnostic codes.
 - **Transport-Level Mocking:** Intercept network calls at the transport layer (Fastify `inject()` for backend; transport/network interception or isolated facade boundaries for frontend). Never mock raw `fetch`, `axios`, or internal API client classes directly with ad-hoc stubs.
 - **Typed Factories over JSON:** Never create static `.json` fixtures for mutable domain models. Use typed factory builders exporting pure functions with sensible `@mms/shared` defaults that accept partial overrides.
 - **Zero Shared Mutable State:**
@@ -49,17 +57,15 @@ alwaysApply: false
   - Strictly ban arbitrary delays (`sleep(1000)`, `waitForTimeout(500)`). Use deterministic async awaiters (`findBy*`, `waitFor`, Playwright web-first assertions).
 
 ## 5. Code Coverage Thresholds & Quality Gates
-All new additions, updates, and refactored modules must satisfy the following metric quality thresholds:
+The per-workspace `thresholds` blocks are the only authoritative floors — never restate or invent percentages. The snapshot below is dated; re-read the configs when a floor changes:
 
-| Code Category | Min. Line Coverage | Min. Branch Coverage | Min. Function Coverage |
-| :--- | :--- | :--- | :--- |
-| **Core Domain / Business Logic / Utils** | **95%** | **90%** | **95%** |
-| **Custom Hooks & State Reducers** | **90%** | **85%** | **90%** |
-| **Shared UI Components** | **85%** | **80%** | **85%** |
-| **API Route Handlers / Controllers** | **85%** | **80%** | **85%** |
-| **Global Package Minimum (Baseline)** | **80%** | **75%** | **80%** |
+| Workspace | Config (SSOT) | lines / statements / functions / branches |
+| :--- | :--- | :--- |
+| Frontend | `apps/frontend/vitest.config.ts` | 42 / 41 / 34 / 40 |
+| Backend | `apps/backend/vitest.config.ts` | 44 / 42 / 40 / 32 |
+| `@mms/shared` | `packages/shared/vitest.config.ts` | 77 / 74 / 71 / 55 |
 
-- **The Ratchet Rule:** A pull request or code generation task must never lower overall repository or package test coverage percentages below their established baselines.
+- **The Ratchet Rule:** A pull request or code generation task must never lower the configured floors to make a change pass; raise a floor only with the measured value from a green run.
 - **Branch Coverage Over Line Coverage:** Line coverage alone is insufficient. All edge cases (early returns, error catches, fallback defaults) must have explicit branch coverage.
 - **No Vanity Tests:** Tests written without actionable assertions purely to execute code paths are banned. Every test must include at least one visible or structural behavioral assertion.
 - **Coverage Exclusions:** Only exclude type definitions (`*.types.ts`, `*.d.ts`), re-export barrels (`index.ts`), configs (`*.config.ts`), and static test fixtures (`__fixtures__/**`).
@@ -68,9 +74,9 @@ All new additions, updates, and refactored modules must satisfy the following me
 - Assert production-safe JSON `{ type, message }` in API tests. Never leak SQL syntax, raw database errors, or stack traces in responses.
 
 ## 7. Telemetry & Logging Hygiene
-- **Context Propagation:** Use `AsyncLocalStorage` (`AsyncContextFrame`) for request and trace ID propagation across asynchronous call stacks.
+- **Context Propagation:** Use `AsyncLocalStorage` for request and trace ID propagation across asynchronous call stacks (the experimental `AsyncContextFrame` flag is not enabled).
 - **Structured Logs:** Emit JSON logs to stdout via Pino. Never log passwords, tokens, OTP codes, session cookies, or PII.
-- **OpenTelemetry & Sentry:** Align log fields and span attributes with OpenTelemetry v1.26+ conventions. Scrub PII in Sentry; do not double-report handled `notify.error` paths as unhandled exceptions.
+- **Telemetry & Sentry:** Name log fields after OpenTelemetry semantic conventions (advisory — no OTel SDK is installed). Scrub PII in Sentry; do not double-report handled `notify.error` paths as unhandled exceptions.
 
 ## 8. Frontend Resilience & Boundaries
 - **Boundary Isolation:** Central `ErrorBoundary` wraps lazy route modules and heavy tiers to catch render crashes. Fetch failures are handled by TanStack Query `isError` (`ErrorState` with retry), never thrown render crashes.
@@ -90,4 +96,13 @@ All new additions, updates, and refactored modules must satisfy the following me
 ## 11. Client Error Surface & Retry Policy
 - **Correlation Tracing:** Surface `x-request-id` (or Sentry event ID) in user-facing error UI to allow direct trace lookup.
 - **Safe Retries:** Query retries idempotent GETs; mutations never auto-retry. On 429, honor `Retry-After`. Failed dynamic chunk imports must provide a reload affordance.
+
+## 12. Multi-Tenant Integration & Contract Testing
+- **Database & Persistence Verification:** A change touching Drizzle schemas, migrations, relations or SQL queries needs an integration test (`*.integration.test.ts` or `vitest.db.config.ts`) against a real test database. Run the DB bucket locally with `pnpm ci:local --with-db` (`pnpm --filter mms-backend run test:db`); CI runs `test-backend-db` on the same path filter. Review-gated: no gate can prove the test exists.
+- **Multi-Tenant RLS & Boundary Verification:**
+  - Explicitly test Row-Level Security (RLS) enforcement and `tenant_id` scoping.
+  - Execute cross-tenant isolation assertions: verify that Tenant A cannot read, mutate, or soft-delete records belonging to Tenant B under any circumstance.
+  - Validate transaction rollbacks on failure to ensure atomic consistency across multi-table writes.
+- **API Route & Serialization Integrity:** Validate Fastify route handlers, authentication/session cookies, CSRF guards, and response payload serialization against their corresponding `@mms/shared` contract schemas.
+- **Zero Regression Suite:** Run the dependent subsystem suites (`pnpm --filter mms-backend run test:db` and `pnpm test`) to guarantee modifications do not introduce regressions across related modules.
 

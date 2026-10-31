@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { Star } from "lucide-react";
 
 import { FormModal } from "@/components/app/FormModal";
@@ -43,10 +43,15 @@ export function DistributeModal({
   const [submitting, setSubmitting] = useState(false);
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [submitError, setSubmitError] = useState<string | null>(null);
-  const [data, setData] = useState<Partial<Distribution>>({
+  const [data, setData] = useState<Partial<Distribution>>(() => ({
     ...EMPTY_DIST,
     denominationId: denoms[0]?.id || "",
-  });
+    issuedDate: todayISO(),
+    issuedByUserId: authUser?.id || "",
+  }));
+  const [previousOpen, setPreviousOpen] = useState(open);
+  const [previousDenoms, setPreviousDenoms] = useState(denoms);
+  const [previousIssuedByUserId, setPreviousIssuedByUserId] = useState(authUser?.id);
 
   const updateField = (field: string, value: unknown) => {
     setData(
@@ -62,7 +67,15 @@ export function DistributeModal({
     }
   };
 
-  useEffect(() => {
+  // Re-seed the draft during render when the modal is (re)opened or its catalog/actor inputs change.
+  if (
+    previousOpen !== open ||
+    previousDenoms !== denoms ||
+    previousIssuedByUserId !== authUser?.id
+  ) {
+    setPreviousOpen(open);
+    setPreviousDenoms(denoms);
+    setPreviousIssuedByUserId(authUser?.id);
     if (open) {
       setData({
         ...EMPTY_DIST,
@@ -73,7 +86,7 @@ export function DistributeModal({
       setErrors({});
       setSubmitError(null);
     }
-  }, [open, denoms, authUser?.id]);
+  }
 
   const selectedDenomination = denoms.find(
     (denomination) => denomination.id === data.denominationId,

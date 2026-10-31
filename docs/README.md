@@ -16,6 +16,7 @@ Project-wide entry points live at the repo root:
 - [a11y-baseline.md](./a11y-baseline.md) — executable axe/WCAG gate baseline.
 - [frontend-performance-baseline.md](./frontend-performance-baseline.md) — render-hygiene + React Compiler baseline.
 - [dependencies-notes.md](./dependencies-notes.md) — dependency/tooling operational notes.
+- [rls-operations.md](./rls-operations.md) — RLS role model, provisioning, deploy preflight, rollback.
 
 ## Decisions
 
@@ -32,14 +33,24 @@ Project-wide entry points live at the repo root:
 - [accounting-test-coverage-audit.md](./accounting-test-coverage-audit.md)
 - [db-performance-audit.md](./db-performance-audit.md)
 - [date-format-audit.md](./date-format-audit.md)
-- [platform-ui-ownership-review.md](./platform-ui-ownership-review.md)
 - [ui-ux-dry-ssot-review-2026-09-30.md](./ui-ux-dry-ssot-review-2026-09-30.md)
 - [ui-ux-review.md](./ui-ux-review.md) · [ui-ux-review-resolution.md](./ui-ux-review-resolution.md)
+- [ui-ux-review-2026-10-30/](./ui-ux-review-2026-10-30/) — rendered visual/UX review: localized date corruption, contacts table collapse, platform a11y gate red, mobile header/scroll, dashboard density. · [resolution](./ui-ux-review-2026-10-30/RESOLUTION.md)
+- [messaging-ui-ux-audit-2026-10-24.md](./messaging-ui-ux-audit-2026-10-24.md) — Messaging module UI/UX audit + SSOT consolidation findings.
+- [project-review-2026-10-29.md](./project-review-2026-10-29.md) — whole-repo review: gates, test/build evidence, two fixed XSS vectors, open debt.
+- [project-review-2026-10-30.md](./project-review-2026-10-30.md) — whole-repo re-review at `84516ad04`: 21/21 gates, 7,736 tests, production print/CSP regression, backend/shared coverage-basis gap, CI source-map disclosure; P-01–P-06 fixed in the same change.
+- [backend-review-2026-10-29.md](./backend-review-2026-10-29.md) — backend deep-dive: audit-trail/RLS and finance-ledger defects, job/queue findings, deploy and authorization gaps.
+- [backend-review-2026-10-30.md](./backend-review-2026-10-30.md) — post-hardening backend review: verification of F1–F46, 7-pillar audit, and adversarial evaluation.
+- [backend-review-2026-10-31.md](./backend-review-2026-10-31.md) — independent backend re-review at `cf69f9d17`: two P0 finance `PUT` ledger bypasses, session/cache freshness failures, unbounded messaging jobs, and audit gaps on restore and batch billing.
+- [frontend-review-2026-10-30.md](./frontend-review-2026-10-30.md) — frontend deep-dive: PWA precache budget, stale-chunk recovery, pre-paint BiDi, coverage depth, deferred i18n split.
+- [frontend-review-2026-10-30-deep.md](./frontend-review-2026-10-30-deep.md) — whole-frontend review: routing/data/a11y/i18n findings, 12 fixes (pagination labels, settings deep links, palette focus trap, finance live push, 401 escalation, platform boundary), deferred register.
+- [rules-review-2026-10-29.md](./rules-review-2026-10-29.md) — agent standards review: rule findings H/M/L, per-rule scorecard, 49-skill review + fixes, and the DeepSeek Harness `.dsh` mirror.
 - [migration-milestones.md](./migration-milestones.md) — closed-milestone register.
 
 ## Engineering notes
 
 - [engineering/](./engineering/) — frontend refactor plan/backlog + reuse audit, data-transfer.
+- [timestamp-migration.md](./timestamp-migration.md) — naive timestamp inventory + per-table migration playbook.
 
 ## Plans
 
@@ -52,4 +63,5 @@ Project-wide entry points live at the repo root:
 
 ## Archive
 
-- [archive/](./archive/) — historical/superseded documents (kept for reference).
+- [archive/](./archive/) — historical/superseded documents (kept for reference),
+  including the point-in-time [platform UI ownership review](./archive/platform-ui-ownership-review.md).

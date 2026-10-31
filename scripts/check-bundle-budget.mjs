@@ -29,13 +29,13 @@ const assetsDir = path.join(rootDir, "apps", "frontend", "dist", "assets");
 /**
  * Budgets are deliberately a little above the measured baseline so ordinary
  * code changes do not trip them; they exist to catch real regressions.
- * Baseline (measured post-mermaid 12 + modular splitting): ~13.1 MB total JS, ~1.4 MB largest chunk (elk).
+ * Baseline (measured post-multi-currency accounting & IAS 21): ~14.6 MB total JS, ~4.17 MB gzip, ~1.4 MB largest chunk (elk).
  */
-const TOTAL_JS_BUDGET_MB = Number.parseFloat(process.env.BUNDLE_BUDGET_TOTAL_MB ?? "14.5");
+const TOTAL_JS_BUDGET_MB = Number.parseFloat(process.env.BUNDLE_BUDGET_TOTAL_MB ?? "16.0");
 const LARGEST_CHUNK_BUDGET_MB = Number.parseFloat(
   process.env.BUNDLE_BUDGET_LARGEST_CHUNK_MB ?? "2.5",
 );
-const GZIP_TOTAL_BUDGET_MB = Number.parseFloat(process.env.BUNDLE_BUDGET_GZIP_MB ?? "4.2");
+const GZIP_TOTAL_BUDGET_MB = Number.parseFloat(process.env.BUNDLE_BUDGET_GZIP_MB ?? "4.5");
 
 const MB = 1024 * 1024;
 

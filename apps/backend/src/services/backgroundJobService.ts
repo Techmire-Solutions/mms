@@ -1,12 +1,19 @@
-import { and, eq, ne, desc, or } from "drizzle-orm";
+import { and, eq, desc, or } from "drizzle-orm";
 import {
   BACKGROUND_JOBS_MAX_PER_USER,
   type BackgroundJobRecord,
   type BackgroundJobStatus,
 } from "@mms/shared";
 import { getRequestTenant } from "../lib/tenantContext.js";
-import { withTenant, type TenantTransaction } from "../db/tenant-context.js";
-import { backgroundJobs, tenantUsers } from "../db/schema.js";
+import { withTenant } from "../db/tenant-context.js";
+import { backgroundJobs } from "../db/schema.js";
+import { resolveEffectiveTenantUserId } from "../db/repositories/backgroundJobCleanupRepository.js";
+
+export {
+  CLEARABLE_BACKGROUND_JOB_STATUSES,
+  clearFinishedUserBackgroundJobs,
+  clearTenantBackgroundJobs,
+} from "../db/repositories/backgroundJobCleanupRepository.js";
 
 export function rowToJobRecord(row: typeof backgroundJobs.$inferSelect): BackgroundJobRecord {
   const record: BackgroundJobRecord = {
@@ -65,31 +72,6 @@ export async function listUserBackgroundJobs(userId: string): Promise<Background
 
     return rows.map(rowToJobRecord);
   });
-}
-
-async function resolveEffectiveTenantUserId(
-  tx: TenantTransaction,
-  tenantId: string,
-  userId: string,
-): Promise<string> {
-  const existing = await tx
-    .select({ id: tenantUsers.id })
-    .from(tenantUsers)
-    .where(and(eq(tenantUsers.workspaceSubdomain, tenantId), eq(tenantUsers.id, userId)))
-    .limit(1);
-
-  if (existing.length > 0) return userId;
-
-  // Fallback for platform admins or non-tenant auth identities: use the first tenant user
-  // so the composite foreign key ("tenant_id", "user_id") -> ("workspace_subdomain", "id")
-  // is satisfied.
-  const fallback = await tx
-    .select({ id: tenantUsers.id })
-    .from(tenantUsers)
-    .where(eq(tenantUsers.workspaceSubdomain, tenantId))
-    .limit(1);
-
-  return fallback[0]?.id ?? userId;
 }
 
 export async function upsertUserBackgroundJob(
@@ -167,53 +149,32 @@ export async function createDatabaseBackgroundJob(
   });
 }
 
-export async function dismissUserBackgroundJob(_userId: string, jobId: string): Promise<boolean> {
+/**
+ * Dismisses one job owned by the caller (or the caller's effective tenant
+ * identity) and returns the owning user id so the route can delete the right
+ * export artifact.
+ */
+export async function dismissUserBackgroundJob(
+  userId: string,
+  jobId: string,
+): Promise<string | null> {
   const tenantId = getRequestTenant();
   if (!tenantId) throw new Error("Tenant context is required to dismiss background job");
 
   return withTenant(tenantId, async (tx) => {
-    const deleted = await tx
-      .delete(backgroundJobs)
-      .where(and(eq(backgroundJobs.tenantId, tenantId), eq(backgroundJobs.id, jobId)))
-      .returning({ id: backgroundJobs.id });
-
-    return deleted.length > 0;
-  });
-}
-
-export async function clearFinishedUserBackgroundJobs(userId: string): Promise<number> {
-  const tenantId = getRequestTenant();
-  if (!tenantId) throw new Error("Tenant context is required to clear background jobs");
-
-  return withTenant(tenantId, async (tx) => {
     const effectiveUserId = await resolveEffectiveTenantUserId(tx, tenantId, userId);
-    const cleared = await tx
+    const deleted = await tx
       .delete(backgroundJobs)
       .where(
         and(
           eq(backgroundJobs.tenantId, tenantId),
+          eq(backgroundJobs.id, jobId),
           or(eq(backgroundJobs.userId, userId), eq(backgroundJobs.userId, effectiveUserId)),
-          ne(backgroundJobs.status, "running"),
         ),
       )
-      .returning({ id: backgroundJobs.id });
+      .returning({ id: backgroundJobs.id, userId: backgroundJobs.userId });
 
-    return cleared.length;
-  });
-}
-
-/** Wipe every queued/finished/running job for the request tenant (full restore). */
-export async function clearTenantBackgroundJobs(): Promise<number> {
-  const tenantId = getRequestTenant();
-  if (!tenantId) return 0;
-
-  return withTenant(tenantId, async (tx) => {
-    const cleared = await tx
-      .delete(backgroundJobs)
-      .where(eq(backgroundJobs.tenantId, tenantId))
-      .returning({ id: backgroundJobs.id });
-
-    return cleared.length;
+    return deleted[0]?.userId ?? null;
   });
 }
 

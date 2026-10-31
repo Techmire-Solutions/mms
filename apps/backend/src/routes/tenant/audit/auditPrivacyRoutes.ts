@@ -6,7 +6,7 @@ import {
   type User,
 } from "@mms/shared";
 import { getRequestTenant } from "../../../lib/tenantContext.js";
-import { sendForbidden } from "../../../lib/httpErrors.js";
+import { sendBadRequest, sendForbidden } from "../../../lib/httpErrors.js";
 import {
   evaluateAuditRetentionPolicy,
   purgeExpiredCryptoShreddingKeys,
@@ -17,10 +17,11 @@ import { parseRequest, replyValidationError } from "../../../lib/zodRequest.js";
 export const auditPrivacyRoutes: FastifyPluginAsync = async (fastify) => {
   /**
    * POST /api/audit/erasure - Privacy / right-to-erasure GDPR execution.
+   * Irreversible: requires `audit.manage` plus a step-up header naming the subject.
    */
   fastify.post("/api/audit/erasure", async (request, reply) => {
     const user = request.user as User | undefined;
-    if (!roleHasPermission(user?.role ?? "", "analytics.view")) {
+    if (!roleHasPermission(user?.role ?? "", "audit.manage")) {
       return sendForbidden(reply);
     }
     const tenant = getRequestTenant();
@@ -33,6 +34,14 @@ export const auditPrivacyRoutes: FastifyPluginAsync = async (fastify) => {
       return replyValidationError(reply, parsedBody.message);
     }
     const body = parsedBody.data;
+    const confirmation = String(request.headers["x-confirm-erasure"] ?? "").trim();
+    if (confirmation !== body.subjectId) {
+      return sendBadRequest(
+        reply,
+        "Set the X-Confirm-Erasure header to the exact subject id to confirm this irreversible action",
+      );
+    }
+
     const userId = (request.user as User | undefined)?.id || "system";
 
     const result = await executeSubjectErasure({
@@ -44,6 +53,14 @@ export const auditPrivacyRoutes: FastifyPluginAsync = async (fastify) => {
       reason: body.reason,
     });
 
+    if (result.status === "NO_KEY") {
+      return reply.status(409).send({
+        type: "conflict",
+        code: "NO_KEY",
+        message: result.message,
+      });
+    }
+
     return reply.send(result);
   });
 
@@ -52,7 +69,7 @@ export const auditPrivacyRoutes: FastifyPluginAsync = async (fastify) => {
    */
   fastify.post("/api/audit/retention/evaluate", async (request, reply) => {
     const user = request.user as User | undefined;
-    if (!roleHasPermission(user?.role ?? "", "analytics.view")) {
+    if (!roleHasPermission(user?.role ?? "", "audit.manage")) {
       return sendForbidden(reply);
     }
     const tenant = getRequestTenant();
@@ -67,11 +84,11 @@ export const auditPrivacyRoutes: FastifyPluginAsync = async (fastify) => {
 
     const { regime, dryRun } = parsedBody.data;
     if (dryRun) {
-      const evaluation = await evaluateAuditRetentionPolicy(regime);
+      const evaluation = await evaluateAuditRetentionPolicy(regime, tenant);
       return reply.send(evaluation);
     }
 
-    const purgeResult = await purgeExpiredCryptoShreddingKeys({ regime, dryRun: false });
+    const purgeResult = await purgeExpiredCryptoShreddingKeys({ regime, dryRun: false }, tenant);
     return reply.send(purgeResult);
   });
 };

@@ -2,7 +2,7 @@ import { loadBackendEnv } from "../config/loadEnv.js";
 import { initializeDatabaseConnection, getRootDb, closeDatabase } from "../db/dbConnection.js";
 import { tenantUsers } from "../db/schema.js";
 import { hashPassword } from "../services/auth/passwordService.js";
-import { randomBytes } from "node:crypto";
+import { randomBytes, randomInt } from "node:crypto";
 import { eq, and } from "drizzle-orm";
 
 loadBackendEnv();
@@ -11,7 +11,8 @@ function generatePassword(): string {
   const chars = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789!@#$%^&*";
   let password = "DQ-";
   for (let i = 0; i < 12; i++) {
-    password += chars.charAt(Math.floor(Math.random() * chars.length));
+    // CSPRNG: this is an initial admin credential, so a predictable PRNG is unsafe.
+    password += chars.charAt(randomInt(chars.length));
   }
   return password;
 }

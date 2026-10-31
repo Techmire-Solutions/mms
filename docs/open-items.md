@@ -15,8 +15,8 @@ Recorded so they are not lost, with the evidence gathered since.
    `apps/backend/src/__tests__/workspaceRepositoryGrantedModules.test.ts` ("returns all system modules when
    grantedModules is null or empty"). Changing it would break module roll-out. **Left as-is.**
 3. ~~Backend coverage floors unenforced.~~ **RESOLVED** — CI now runs the backend shards with coverage and a
-   `test-backend-coverage` merge job enforces the thresholds (measured Stmts 47.29 / Branch 35.76 /
-   Funcs 46.43 / Lines 49.63 against 43.2 / 27 / 37.5 / 45 before enabling).
+   `test-backend-coverage` merge job enforces the thresholds (measured Stmts 44.46 / Branch 33.91 /
+   Funcs 42.1 / Lines 46.8 against thresholds 43.5 / 33 / 41 / 46).
 4. ~~`check:backend-boundaries` not in CI.~~ **RESOLVED** — now a ratchet step in the `typecheck-lint` job.
    A `sensitive-file-guard` job also landed (whole-tree sensitive-filename blocklist, at any path depth).
 5. **Fat-file debt.** **69 → 8** files over the ADR-001 300-LOC cap (baseline ratcheted down via
@@ -210,8 +210,13 @@ transactions.`) and re-attaches triggers for **19** tables against 0104's **14**
      (broadcast `"faculty"` on save/delete/restore; the frontend already covers the keys by prefix).
    - **Contacts saved reports** (`savedReports` routes) are **owner-scoped** — each user has their own
      presets — so cross-client push is intentionally not applicable.
-   - `FINANCE_FEE_STRUCTURES_QUERY_KEY` / `FINANCE_FIELD_CONFIG_QUERY_KEY` are setup-config reads, not
-     nested under the finance list key and not broadcast; revisit only if a cross-client need appears.
+   - `FINANCE_FEE_STRUCTURES_QUERY_KEY` is a setup-config read outside the finance list key, but the
+     backend **does** broadcast `finance_fee_structures` (`financeBillingUseCases`) and
+     `finance_metrics`. The dispatcher previously had no case for either, so another admin's
+     fee-structure change stayed stale (and the next save overwrote it). **Fixed** in
+     `lib/tenant/invalidateModuleQueries.ts` + `invalidateFinanceQueries`; the key now lives in
+     `financeQueryKeys` so the module invalidator owns it. `FINANCE_FIELD_CONFIG_QUERY_KEY` remains
+     unbroadcast; revisit only if a cross-client need appears.
 
 10. **Frontend review follow-ups (updated).**
     - **Sidebar/chrome unification (audit F6) — largely done.** Both hosts now compose the shared
@@ -228,7 +233,12 @@ transactions.`) and re-attaches triggers for **19** tables against 0104's **14**
     - **`lib/invoiceTemplatePresets.ts` split — done.** The 862-line file is now a thin re-export barrel
       over `lib/invoicePresets/*` (palette / types / classic / thermal / formalA5{Header,Amount}Elements /
       modern / available), every module <300 LOC; output proven byte-identical by hash before/after and
-      the code-norms `filesOverHardLimit` baseline lowered 59 → 58.
+      the code-norms `filesOverHardLimit` baseline is now 4 (only the four translation dictionaries).
+    - **2026-10-30 frontend review — see [frontend-review-2026-10-30.md](./frontend-review-2026-10-30.md).**
+      That pass fixed the PWA precache blow-up (647 → 38 entries), added stale-chunk recovery, moved
+      `lang`/`dir` before first paint, removed dead assets, and de-silenced the query/auth provider
+      fallbacks. Coverage depth (reports/platform), the 4 × ~10k-line translation packs, and the
+      `invalidateQueries` convergence remain open there.
 
 11. **Circular import in the dashboard collections barrel (fixed).** `tenant/hooks/collections/dashboard`
     re-exports `useDashboardData`, which imported `useDashboardSummaryQuery` **back** through that same
@@ -247,3 +257,322 @@ transactions.`) and re-attaches triggers for **19** tables against 0104's **14**
     recent frontend work — most likely shared-DB state / rot (these specs are `@local-only`, not CI-gated;
     the repo notes they need an isolated disposable database). Needs a clean-DB reproduction before it is
     treated as a product bug.
+
+## 2026-10-28 project review — fixed vs. still open
+
+A full read-only review of the repository (architecture, tenancy, money, frontend
+data layer, CI/ratchets, docs) landed these fixes. Each is enforced by a test or a
+ratchet, so the fix cannot silently regress.
+
+**Fixed**
+
+| Finding | Fix | Enforcement |
+| --- | --- | --- |
+| RLS could be inert: no role assertion, `getDb()` paths outside any transaction | `db/rlsRoleGuard.ts` inspects `current_user` at boot (strict in production, `MMS_DB_ROLE_ENFORCEMENT` to opt out); the three platform-admin queries now run inside `withGlobalTenant` | `__tests__/tenantScopeGuards.test.ts` |
+| `runInTransaction` / `beginLongLivedTenantTransaction` failed **open** on a missing tenant | Both share `resolveTenantScope` with `withTenant`; explicit `runInGlobalTransaction` / `runInGlobalReadSnapshotTransaction` escape hatches | `tenantScopeGuards.test.ts`, `tenantContextGuards.test.ts` |
+| Document store fell back to unprefixed keys when the tenant was lost | `runWithGlobalDocumentStore` scope; boot seeding + data migrations are the only global callers | boundary tests |
+| Invoice `paid_amt` lost update (read-modify-write + blind upsert) | `findInvoiceById(..., { forUpdate: true })` takes a row lock during settlement | finance use-case tests |
+| Audit events appended with `void … .catch()` after commit | Writes + audit share one tenant transaction (`dbObjectRoutes`, `dbCollectionRoutes`, `userActivityLogUseCases`) | `settingsFieldRbac.integration.test.ts`, `facultyRoleUnionAssert.test.ts` |
+| Rate-limit bucket keyed on client `x-tenant-id` | Key is the trusted ALS tenant + IP (never a header); tenant binding now runs before the security plugins | `rateLimitConfig.test.ts` |
+| `/uploads/*` public, proxy-cacheable | Auth hook + tenant-path match; only `branding`/`avatars` stay public; `private, no-store` for tenant files | `uploadsAuth.test.ts` |
+| Any `/auth/me` failure wiped the QueryClient **and** the offline IDB cache | Only 401/403 clears; other errors fall back to the persisted identity | `useAuthSessionSync` |
+| Widget aggregates keyed without `xAxisField`/`chartLimit`, never invalidated | `dynamicWidgetAggregatesQueryKey` (all request fields) + invalidation from the live-push dispatcher | key module |
+| IndexedDB connection leak (one per save) | Single shared connection with `versionchange`/`close` handling | `idbCachePersister.ts` |
+| Money formatting ignored the UI locale and parsed via `parseFloat` | `registerFinanceLocaleProvider`; decimal strings go through the BigInt money layer; `.toFixed(2)` removed from opening balances | shared money tests |
+| 21 bespoke query invalidators (18 modules missing setup/lookups invalidation) | All but `messaging` now use `createModuleQueryInvalidator` with `lists`/`preferences`/`lookups` | `queryFactories.test.ts` |
+| gitleaks skipped the whole `__tests__` trees | Exclusions replaced by exact fixture literals; every rule scans those files again | `gitleaks detect` (verified: a planted token in a test file still fails) |
+| APRs could merge untested source (coverage gate skipped) | `scripts/ci/check-changed-coverage.mjs` gates the files a PR touches | CI `Changed-file coverage` |
+| DB tests skipped `services/**` + `use-cases/**` | Added to the `backend_db` path filter | CI |
+| Baselines could be padded upward; E2E deep flows ran only locally | `--ratchet` wired into CI; nightly full-suite workflow with `E2E_FULL_SUITE=1` | `ci.yml`, `e2e-nightly.yml` |
+| Docs: stale architectures, 59 `file:///Users/…` links, dead links | Rewritten; new broken-relative-link ratchet | `scripts/check-docs.mjs` |
+| CSP allowed `ws:`/`wss:` to any host | Same-origin only; extra origins must be listed in `MMS_WS_ORIGINS` | `plugins/security.ts` |
+| Failed deploy rollback reported success | Rollback failure now fails the job | `deploy.yml` |
+
+**Still open (deliberate, measured, and now ratcheted)**
+
+1. **Timezone-naive timestamps.** The migration-history ratchet sees **311** bare
+   `timestamp` declarations; the live inventory on a freshly migrated DB is **144
+   columns across 86 tables** (127 tenant, 17 global) — historical/dropped
+   declarations explain the difference. Drizzle declares `withTimezone: true`.
+   Converting them is a table-rewrite project and must be planned per-table; run
+   `pnpm --filter mms-backend audit:timestamps` and follow
+   [timestamp-migration.md](./timestamp-migration.md). `check:migration-hygiene`
+   stops new naive columns.
+2. **Historical migrations without `lock_timeout`** (143 of 198). Applied migrations are
+   immutable (forward-only), so they cannot be edited; `check:migration-hygiene` requires
+   `SET LOCAL lock_timeout` on every new migration that runs locking DDL.
+3. **Drizzle snapshot chain jumps `0133` → `0197` (63 intermediate snapshots missing).**
+   Regeneration needs a dedicated pass (`drizzle-kit generate` would re-emit applied DDL
+   otherwise). The ratchet baseline is now 0, so no new journal entry can ship without a
+   snapshot while the historical gap is pending.
+4. ~~`packages/ui` has no `package.json`~~ **RESOLVED** — it is now the private
+   `@mms/ui` workspace package with a source-only `typecheck` task
+   (`tsconfig.build.json` excludes tests). Runtime imports still use the
+   `@shared/ui` alias; tests stay in the frontend Vitest run, and structural
+   rules are covered by `check:code-norms`/`check:shared-ui`.
+5. **`useGlobalSettings` still hydrates from localStorage.** The 2FA gate it feeds is
+   backend-authoritative (`authenticate.ts` rejects `twoFactorVerified === false`), so this
+   is a cache-first UX choice rather than an authorization hole; migrating it to TanStack
+   Query remains worthwhile.
+6. **The 5 unreferenced-key i18n baseline is 518** (5.5% of 9,414). Pruning them is a
+   product/QA decision; `check:i18n-unused` blocks growth in the meantime.
+
+## 2026-10-29 project review
+
+Full report: [project-review-2026-10-29.md](./project-review-2026-10-29.md). Two stored-XSS
+vectors were fixed with regression tests:
+
+- Print-window titles are now escaped in `printHtmlDocument` and `buildPrintWindowHtml` (certificate
+  names, journal-entry refs, receipt numbers reached a same-origin `<title>` unescaped).
+- `formatSocialPlatformUrl` rejects executable URL schemes (`javascript:`, `data:`, `vbscript:`)
+  instead of passing them to an `href`/`window.open` target.
+
+Everything recorded above still stands.
+
+**Follow-up applied (same day):** the dependency advisories are patched
+(`nodemailer 10.2.1`, `fast-uri 4.2.3`, `ip-address 10.7.5`, `serialize-javascript 7.1.4`; audit
+now 1 moderate + 1 low, both reviewed exceptions), coverage floors were raised to the measured
+values, the axe sweep now audits all 20 tenant routes (two violations found and fixed), and the
+`set-state-in-effect` backlog was burned down with the rule promoted to `error`. Remaining open
+items are the localStorage migration (blocked on endpoints) and the data-layer debt above.
+
+
+## 2026-10-29 backend review
+
+Full report: [backend-review-2026-10-29.md](./backend-review-2026-10-29.md). All findings were
+implemented on `fix/backend-review-hardening`; the review document tracks each one. Deliberate
+follow-ups:
+
+- **Trgm indexes are an operator step.** Drizzle migrations run in one transaction, so the new
+  contact/student expression indexes are in `apps/backend/scripts/sql/0197_search_indexes_concurrent.sql`
+  and are applied with `create-index-concurrently.ts --file` after the migration.
+- **Snapshot ordering is partial.** Sixteen high-volume loaders got `ORDER BY id`; the rest rely on
+  the REPEATABLE READ snapshot plus the duplicate-id abort in `streamingSnapshotProducer`.
+- **XLSX/JSON exports are capped at 50k rows**, not streamed yet (CSV is streamed).
+- **Legacy crypto/erasure rows without a workspace** are hidden by RLS; an operator cleanup is
+  still outstanding.
+- **Historical audit state is plaintext**; only new events carrying a `subjectId` are encrypted.
+
+## 2026-10-29 hardening (phase 2)
+
+**Fixed (tests added):**
+
+- Localized export downloads no longer 500: `Content-Disposition` is RFC 6266 with an ASCII
+  fallback plus `filename*` (`apps/backend/src/lib/contentDisposition.ts`, route + unit tests).
+- Session `startDate`/`endDate` (and class schedule/refreshment dates) are validated with
+  `isoDateSchema` / `isoDateOrEmptySchema`; impossible dates are rejected before rollover
+  arithmetic can produce `NaN`.
+- Logout resets `useUiStateStore`, so the next user in the same tab does not inherit column
+  layouts, tab state, or notification read markers.
+- The Home bundle no longer imports the Reports/charts chunks (direct component imports).
+- Document-template CRUD runs inside `withTenant`/`withTenantRead`; save + audit share one
+  transaction and broadcasts happen after commit.
+- Audit export decrypts subject state inside its read transaction, and `getLatestShardHash`
+  no longer defaults to the root pool (so the shard head is real, not genesis).
+- Refresh cookie is scoped to `/api/auth/refresh`; logout evicts the legacy broad cookie.
+- Gitleaks uses rule-scoped value allowlists instead of whole-file path exemptions.
+- Merkle checkpoints project only the caller's head in SQL.
+- External `mailto:`/`wa.me` links open with `noopener,noreferrer`; print windows null their
+  opener.
+- Messaging filters persist the date range in the URL and validate channel/status/date on read.
+- CI: draft→ready triggers a fresh run; a failed `changes` job or a skipped matched suite on a
+  ready PR fails the gate; changed files without coverage fail; ratchet baselines cannot be
+  raised silently; the new `test-backend-rls` job proves isolation as a non-bypass role.
+
+**Still open (operator/next):**
+
+- **Production still connects as `postgres`.** The strict preflight correctly
+  refused it on 2026-10-30 (`role=postgres`, superuser/bypass). The repo
+  variables are temporarily `MMS_DB_ROLE_ENFORCEMENT=warn` +
+  `MMS_ALLOW_RLS_WARN=1` so deploys continue; RLS is **not** enforced on
+  production while they are set. Provision `mms_app`, point `DATABASE_URL` at
+  it, confirm `db:check-rls`, then set `strict` and remove the allow flag.
+- **Historical snapshot regeneration** (0134–0196) and the 144 live naive
+  timestamp columns (311 migration-history declarations).
+- **Legacy Gitleaks history** is clean under the new config; keep it that way.
+
+## 2026-10-30 review residuals
+
+**Fixed:**
+
+- `/institution-setup` now sits behind a `RequirePermission` guard for
+  `settings.branding.write`: guests go to login, other roles go Home, and only a
+  role that can actually persist the profile sees the wizard.
+- `packages/ui` is included in the code-norm ratchets; its only raw hex values
+  (the WCAG contrast fallbacks in `ThemeScope`) are now CSS keyword colors.
+- `minimumReleaseAge: 1440` activates the dependency cooldown that the existing
+  `minimumReleaseAgeExclude` list was written for.
+- The backend route→storage boundary detector also flags `db/dbClient` imports
+  and direct `getDb()`/`getRootDb()` calls; `db/dbConnection` remains sanctioned
+  for the long-lived snapshot transaction primitives.
+
+**Still open:**
+
+- Historical Drizzle snapshot regeneration and timezone-naive timestamp conversion.
+- i18n dead-key pruning (product/QA decision).
+
+## 2026-10-30 frontend deep-review residuals
+
+See [frontend-review-2026-10-30-deep.md](./frontend-review-2026-10-30-deep.md) for the full register.
+
+**Fixed in the deep pass:**
+
+- Pagination fell back to literal translation keys (`common.pagination.*` missing;
+  `t(key) ?? "English"` never fired). Shared keys added + explicit resolution chain.
+- Settings deep links (`/settings/:section`, the dashboard branding CTA,
+  messaging "configure in Settings") now share one validated `?tab=` contract.
+- Command palette: focus trap, topmost Escape and focus return (was `aria-modal`
+  without any of them).
+- Form-level save errors announce (`role="alert"`) and take focus once.
+- Collapsed sidebar toggle has an accessible name and `aria-expanded`.
+- `finance_fee_structures` / `finance_metrics` live push now invalidates finance.
+- A second 401 after a refresh attempt escalates to session expiry.
+- Platform console pages get a page-level error boundary.
+- `ROUTES.workshops` added; registry↔ROUTES parity test.
+- `user_not_registered` overlay no longer overrides login/forgot/apply pages.
+- Cross-tab logout clears user-scoped caches.
+- Tenant logo alt text, mobile drawer labels, `nav.recentItems`.
+
+**Fixed in tranche 2 (2026-10-30):**
+
+- **Entry-path motion.** `MotionConfig` moved from `AppProviders` to a
+  `providers/MotionPreferences.tsx` mounted by `AppLayout` and the apex tree; the
+  entry closure lost framer-motion (29 files / 1,829 KB → 28 / 1,693 KB raw;
+  precache 38 / 2.29 MB → 37 / 2.16 MB). `check:pwa` now forbids `vendor-motion`
+  in the precache. Reduced-motion coverage is unchanged (every `motion.*` renderer
+  is below one of the two wrappers).
+- **Table render hot path.** Stable `rowMotion` (`useCallback`), memoized column
+  registry (`useModuleColumnLayout`), memoized `DataTable` columns and direct
+  `state.rows`; `useDeferredValue` on search. New render-count test proves rows do
+  not re-render on unrelated parent renders while data/search updates still do.
+- **Route announcements.** `components/routing/RouteAnnouncer.tsx` focuses
+  `#main-content` and announces the page heading via a polite live region on
+  pathname changes (silent on first paint, no focus steal while a modal is open);
+  the remaining `#main-content` landmarks gained `tabIndex={-1}`.
+- **Calendar localization.** `lib/ui/calendarLocale.ts` feeds Intl formatters/labels
+  (month, weekday, day numerals, ARIA) into `components/ui/calendar.tsx`, with
+  `calendar: "gregory"` so `fa-IR`/`ar-SA` do not switch to Jalali/Umm al-Qura
+  while the grid stays Gregorian; four `datePicker.*` keys added ×4 locales.
+
+**Fixed in tranche 3 (2026-10-30):**
+
+- **Contract errors carry structure.** `lib/apiContractError.ts` is now the only
+  way a non-2xx ts-rest envelope becomes an error (`assertContractOk` /
+  `apiContractError` / `contractBodyOrThrow`): 12 local `assertOk`-style helpers
+  were deleted and 48 inline status-based `throw new Error` sites migrated, so
+  every contract failure is an `ApiError` with status, body message/type/code,
+  validation `errors`, `x-request-id` and `Retry-After`. The ts-rest fetcher's
+  401/403 path uses the same helper. A static test
+  (`src/__tests__/apiContractErrorUsage.test.ts`) fails if a generic `Error` or a
+  local helper reappears after a status guard. Envelope returns for ≥400 are
+  unchanged (form flows still read the body).
+- **Retry policy.** `lib/query/retryPolicy.ts`: 401/403/404/409/422/429 are not
+  retried; other failures keep three attempts; `Retry-After` (now present on
+  contract `ApiError`s) overrides the exponential delay, capped at 30 s.
+- **Socket wake recovery.** `connectTenantDatabaseSocket` reconnects a closed or
+  closing socket on `online`, `focus` and `visibilitychange` (visible), leaves a
+  CONNECTING/OPEN socket alone, and removes the listeners on disconnect. A true
+  half-open heartbeat still needs a server pong.
+
+**Fixed in tranche 4 (2026-10-30):**
+
+- **The coverage gate now measures the whole source tree.** `vitest.config.ts` gained
+  `coverage.include: ["src/**/*.{ts,tsx}"]`; before it, Vitest only instrumented files a
+  test had loaded, so 715 of 2,820 source files never entered the denominator. Whole-tree
+  measurement (2,823 files, unsharded and a 2-shard merge both identical):
+  statements **41.48%**, branches **40.95%**, functions **34.58%**, lines **42.41%** — the
+  floors are now `42 / 41 / 34 / 40` (lines/statements/functions/branches). The previous
+  56/55/46/51 described the 2,104-file subset; this is a basis correction, not a tolerance
+  change. The canonical rule row and all four mirrors were updated via `sync-all.sh`.
+  Runtime: ~1m48s unsharded; the 2-shard blob+merge smoke reproduced the totals exactly.
+- **Assertion-specificity ratchet.** New
+  `src/__tests__/testAssertionSpecificity.test.ts` counts `toBeTruthy`/`toBeFalsy`/
+  `toBeDefined` across the suite and fails above a baseline that may only go down
+  (**288** after deleting the attendance contract-hooks vanity test, which only asserted
+  seven imports were defined).
+- **Test infrastructure.** Pruned 21 stale + 1 deleted-test keys from
+  `src/test/shard-timings.json` (877 remain, all existing) and tightened
+  `shardSequencer.test.ts` from "≥90% exist" to per-key existence; the global teardown now
+  clears `localStorage` as well as `sessionStorage`; the stale `filesOverHardLimit` comment
+  in `check-code-norms.mjs` was corrected.
+
+**Still open (tracked in the review's deferred register):**
+
+- Widget toggle full-record PUT from a cached list row (needs a field-level
+  backend write endpoint; `GET /:id` is role-sanitized so fetch-then-PUT is unsafe).
+- Shared-contract chunking, `modulePreload`, service-worker update UX, `en`
+  dictionary split (the remaining entry-chunk work).
+- `useGlobalSettings` fan-out (single provider / identity bail-out).
+- Dead-code deletion (27 orphans + 26 test-only modules); duplicated setup hooks;
+  bulk-bar SSOT rule drift.
+- Remaining test hygiene: burn the 288 loose assertions down, Testing Library migration,
+  React root leaks (19 files).
+- WS half-open heartbeat; bounded persisted cache.
+- Template-editor server-save failure UX (product decision).
+
+## 2026-10-30 project review
+
+Full report: [project-review-2026-10-30.md](./project-review-2026-10-30.md). Read-only review at
+`84516ad04`; evidence: 21/21 blocking gates, 7,736 unit tests, forced build + bundle/PWA budgets,
+and `pnpm audit`. Findings P-01…P-06 were then fixed on `fix/project-review-2026-10-30`.
+
+**Fixed in the resolution pass:**
+
+- **P-01 Major — production print windows never auto-printed.** `printWindowHtml.ts` and
+  `paperBuilderUtils.ts` wrote an inline `<script>` into an `about:blank` popup; the nonce-only CSP
+  is inherited by that document, so the script was blocked (reproduced with Playwright). Vouchers,
+  invoice receipts, certificates, and question-bank papers rendered but never called
+  `print()`/`onafterprint` in production. Fixed by removing the inline scripts and printing from the
+  opener via `autoPrintWindow(win)`; both builders now have tests asserting no `<script>` is emitted.
+- **P-02 Major (gate integrity) — backend/shared coverage measured only loaded files.** Both
+  `vitest.config.ts` files now set `coverage.include`; whole-tree measured on 2026-10-30 (backend
+  4 shards + merge: lines 45.19 / stmts 43.06 / funcs 41.41 / branches 33.96; shared:
+  78.24 / 74.96 / 71.89 / 56.17). Floors re-based to 44/42/40/32 (backend) and 77/74/71/55
+  (shared); rule snapshot + all mirrors resynced.
+- **P-03 Minor — CI source maps shipped and public.** `package-dist.sh` now tars with
+  `--exclude='*.map'` and fails if the artefact contains one (verified: 590 files on disk, 0 in the
+  tarball). Maps stay on disk for a future Sentry upload.
+- **P-04 Minor — `Math.random()` admin password** → `randomInt` from `node:crypto`.
+- **P-05 Minor — e2e seed helpers interpolated `subdomain` into shell strings** → every
+  `execSync` in `e2e/helpers/` is now `execFileSync` with argv (`runBackendSeedScript` helper).
+- **P-06 Minor — OTP + email logged whenever `NODE_ENV !== "production"`** → requires
+  `MMS_DEBUG_OTP=1` (never in production), with unit coverage.
+
+**Still open / unchanged:** production RLS in `warn` + `MMS_ALLOW_RLS_WARN=1` (highest residual
+risk; deploy default is `strict` and fails closed), snapshot regeneration and naive timestamps,
+143 historical migrations without `lock_timeout`, 517 dead i18n keys, legacy localStorage store
+(no new non-test call site), and the 10-30 frontend deferred register.
+
+## 2026-10-31 backend review — accepted debt
+
+Full report: [backend-review-2026-10-31.md](./backend-review-2026-10-31.md). Read-only re-review at
+`cf69f9d17` (backend tree identical to `1a9b1d942`); gates green, 2,237 unit tests + 181 real-Postgres
+tests passing.
+
+**B-01–B-09 (P0/P1) — FIXED 2026-10-31, no commit/PR.** Ledger guards on the invoice/payment `PUT`
+endpoints, reset-password session revocation, strict auth Redis reads (503 instead of fail-open),
+cross-node cache-invalidation startup, bounded messaging jobs with a shutdown margin, cross-currency
+archive arithmetic with row locks, atomic restore auditing, and per-invoice batch auditing all landed
+with regression tests. Evidence and behaviour changes: review report §11. The unit suite is now
+329 files / 2,274 tests and the real-Postgres suite still passes.
+
+**P2 batch 2 — FIXED 2026-10-31, no commit/PR.** B-10 (IP-only pre-auth rate-limit buckets), B-11
+(atomic 2FA challenge + attempt ceiling), B-12 (super-user-only platform admin disable/delete), B-14
+(private cache for session-gated uploads), B-15 (`/ready` probe memoisation), B-16 (loopback-or-token
+`/metrics`), B-17 (CI `lib/**`/`middleware/**` → DB + RLS) and B-21 (subject-encrypted erasure audit)
+landed with regression tests. Evidence: review report §11 (“P2 batch 2”); unit suite 331 files /
+2,291 tests and the real-Postgres suite still pass.
+
+**P2/P3 — still open**
+
+- **B-13** Audit immutability `REVOKE` is gated on `mms_app_user`; the app role is `mms_app`, and
+  checkpoints are signed inside the same database. Needs a migration + external signing design.
+- **B-18** Credit notes have no idempotency key; a retried POST double-credits. Changes the shared
+  contract and replay semantics.
+- **B-19** Bank reconciliation stores unchecked ids (no amount/account validation, no unmatch, no
+  audit). Needs product rules for statement sign/account matching and partial matches.
+- **B-20** Invoice numbering is a racy max-scan; fixing the retry requires moving transaction
+  ownership out of the finance routes.
+- **B-22** Logic coverage 44 % (mocked unit run only); 54 use-cases without companion tests.
+- **B-23–B-36** Remaining hygiene/audit/jobs findings, recorded in the report with evidence and
+  proposed tests.

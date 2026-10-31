@@ -5,10 +5,10 @@ import { Button } from "@/components/ui/button";
 import { useReducedMotion } from "@/hooks/useReducedMotion";
 import { useTranslation } from "@/hooks/useTranslation";
 import { ENTITY_CARD_OVERFLOW_TRIGGER_CLASS } from "@/components/app/entityCardChrome";
-import { EntityCardMetaTile } from "@/components/app/EntityCardMetaTile";
-import { EntityCardsGrid } from "@/components/app/EntityCardsGrid";
+import { DirectoryCardMetaTile } from "@/components/app/DirectoryCardMetaTile";
+import { ModuleDirectoryCards } from "@/components/app/ModuleDirectoryCards";
 import { EntityCard } from "@/components/app/EntityCard";
-import { DirectoryCard } from "@/components/app/DirectoryCard";
+import { DirectoryEntityCard } from "@/components/app/DirectoryEntityCard";
 import { StatusBadge } from "@/components/app/StatusBadge";
 import { Badge } from "@/components/ui/badge";
 import { formatDirectoryPageCountLabel } from "@/lib/formatDirectoryPageCountLabel";
@@ -24,7 +24,7 @@ type ObligationCollectionListCardsProps = Omit<
   "search" | "typeFilter" | "onAddNew" | "getColumnWidth" | "onColumnResize"
 >;
 
-/** Work directory card — DirectoryCard SSOT (do not hand-compose EntityCard). */
+/** Work directory card — DirectoryEntityCard SSOT (do not hand-compose EntityCard). */
 function ObligationCollectionCard({
   collection,
   props,
@@ -62,7 +62,7 @@ function ObligationCollectionCard({
   const displayName = sender?.name || "—";
 
   return (
-    <DirectoryCard
+    <DirectoryEntityCard
       entity={collection}
       selectedIds={selectedIds}
       canSelect={canDelete}
@@ -97,34 +97,34 @@ function ObligationCollectionCard({
       metadataSlot={
         <EntityCard.MetaGrid>
           {isColumnVisible("receivedDate") && (
-            <EntityCardMetaTile label={t("obligations.columns.receivedDate")}>
+            <DirectoryCardMetaTile label={t("obligations.columns.receivedDate")}>
               {formatDate(collection.received_date)}
-            </EntityCardMetaTile>
+            </DirectoryCardMetaTile>
           )}
           {isColumnVisible("obligationType") && (
-            <EntityCardMetaTile label={t("obligations.columns.obligationType")}>
+            <DirectoryCardMetaTile label={t("obligations.columns.obligationType")}>
               <Badge pill tone="primary" className="px-2 font-bold">
                 {obligationType?.name || "—"}
               </Badge>
-            </EntityCardMetaTile>
+            </DirectoryCardMetaTile>
           )}
           {isColumnVisible("repMujtahid") && (
-            <EntityCardMetaTile label={t("obligations.columns.repMujtahid")}>
+            <DirectoryCardMetaTile label={t("obligations.columns.repMujtahid")}>
               <span>{rep?.name || "—"}</span>
               {mujtahid && (
                 <span className="block text-xs text-muted-foreground">{mujtahid.name}</span>
               )}
-            </EntityCardMetaTile>
+            </DirectoryCardMetaTile>
           )}
           {isColumnVisible("amount") && (
-            <EntityCardMetaTile label={t("obligations.columns.amount")}>
+            <DirectoryCardMetaTile label={t("obligations.columns.amount")}>
               <span className="font-semibold">{formatObligationCollectionAmount(collection)}</span>
-            </EntityCardMetaTile>
+            </DirectoryCardMetaTile>
           )}
           {isColumnVisible("paymentMode") && (
-            <EntityCardMetaTile label={t("obligations.columns.paymentMode")}>
+            <DirectoryCardMetaTile label={t("obligations.columns.paymentMode")}>
               <StatusBadge status={collection.payment_mode} config={paymentModeConfig} size="sm" />
-            </EntityCardMetaTile>
+            </DirectoryCardMetaTile>
           )}
         </EntityCard.MetaGrid>
       }
@@ -181,7 +181,7 @@ export function ObligationCollectionsListCards(
   });
 
   return (
-    <EntityCardsGrid
+    <ModuleDirectoryCards
       items={collections}
       selectedIds={selectedIds}
       onSelectAll={canDelete ? () => onToggleSelectAll(!allVisibleSelected) : undefined}

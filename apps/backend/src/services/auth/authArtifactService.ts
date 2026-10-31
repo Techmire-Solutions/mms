@@ -214,6 +214,40 @@ export async function consumeAuthArtifact(id: string, kind: AuthArtifactKind): P
   return rows.length > 0;
 }
 
+/**
+ * Atomically claims an artifact AND returns its payload in one statement.
+ *
+ * `DELETE … RETURNING` means exactly one concurrent caller receives the record;
+ * everyone else gets `null`. Used for one-shot challenges (tenant 2FA) so
+ * parallel guesses cannot all read the same challenge before it is deleted.
+ * Expired rows are removed and reported as missing.
+ */
+export async function consumeAuthArtifactWithPayload<T>(
+  id: string,
+  kind: AuthArtifactKind,
+): Promise<AuthArtifactRecord<T> | null> {
+  const rows = await db()
+    .delete(authArtifacts)
+    .where(and(eq(authArtifacts.id, id), eq(authArtifacts.kind, kind)))
+    .returning({
+      id: authArtifacts.id,
+      kind: authArtifacts.kind,
+      payload: authArtifacts.payload,
+      expiresAt: authArtifacts.expiresAt,
+    });
+
+  const row = rows[0];
+  if (!row) return null;
+  if (row.expiresAt.getTime() < Date.now()) return null;
+
+  return {
+    id: row.id,
+    kind: row.kind as AuthArtifactKind,
+    payload: row.payload as T,
+    expiresAt: row.expiresAt,
+  };
+}
+
 export async function purgeExpiredAuthArtifacts(): Promise<void> {
   await db().delete(authArtifacts).where(lt(authArtifacts.expiresAt, new Date()));
 }

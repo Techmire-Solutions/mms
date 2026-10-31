@@ -35,7 +35,7 @@ paths:
 
 ## 4. API Error Payloads & Status Codes
 - **Uniform Error Envelope:** `{ "type": string, "message": string, "details": object }`.
-- **Classifications:** `auth_required` (401), `forbidden` (403), `not_found` (404), `timeout` (408), `conflict` (409), `validation_error` (422), `rate_limit_exceeded` (429), `server_error` (500). Platform routes map against `@mms/shared` `PLATFORM_API_ERROR_TYPES`.
+- **Classifications:** `auth_required` (401), `session_revoked` (401), `forbidden` (403), `not_found` (404), `timeout` (408), `conflict` (409), `validation_error` (422 for request-body/Zod faults; **400** for domain uniqueness conflicts surfaced on restore — `mms-data-layer.md` §6.10), `rate_limit_exceeded` (429), `server_error` (500). Auth/tenant-specific types extend this list: `mms-auth-security.md` §1 (`session_revoked`) and §3 (module denials `MODULE_NOT_GRANTED` / `MODULE_DISABLED` / `PERMISSION_DENIED` / `MODULE_ACCESS_UNAVAILABLE`, sent as `403 { type: 'forbidden', code, moduleId }`). Platform routes map against `@mms/shared` `PLATFORM_API_ERROR_TYPES`.
 - **Exception Masking:** Never leak raw database errors, SQL syntax, or stack traces in production. Tenant UI maps `type` via `t('errors.{type}')`.
 
 ## 5. Bulk PUT & Collection Semantics

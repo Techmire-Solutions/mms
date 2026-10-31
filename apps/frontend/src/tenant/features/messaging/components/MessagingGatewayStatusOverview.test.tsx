@@ -65,8 +65,6 @@ describe("MessagingGatewayStatusOverview Component", () => {
     expect(html).toContain("no-reply@madrasa.org");
 
     // Links to settings
-    expect(html).toContain('href="/settings?tab=sms"');
-    expect(html).toContain('href="/settings?tab=whatsapp"');
-    expect(html).toContain('href="/settings?tab=email"');
+    expect(html).toContain('href="/settings?tab=global"');
   });
 });

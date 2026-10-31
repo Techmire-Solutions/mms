@@ -1,10 +1,13 @@
-import React, { useEffect, useState } from "react";
+import React, { useState } from "react";
 import { ReceiptText } from "lucide-react";
 import { FormModal } from "@/components/app/FormModal";
 import { useFinanceCurrency } from "@/hooks/useCurrency";
 import {
+  formatMoney,
   invoiceTotalsFromLines,
   invoiceRecordInsertSchema,
+  isValidExchangeRate,
+  previewConvertedAmount,
   type InvoiceCreateInput,
   type AppTranslationKey,
 } from "@mms/shared";
@@ -24,6 +27,8 @@ import {
   type InvoiceDraft,
 } from "@/tenant/features/finance/lib/invoiceFormDraft";
 import { useFinanceFeeStructures } from "@/tenant/features/finance/hooks/useFinanceFeeStructures";
+import { useDocumentCurrency } from "@/tenant/hooks/useDocumentCurrency";
+import { DocumentCurrencyFields } from "@/components/app/DocumentCurrencyFields";
 
 export interface InvoiceFormProps {
   open: boolean;
@@ -47,14 +52,23 @@ export const InvoiceForm = function InvoiceForm({
   const [submitting, setSubmitting] = useState(false);
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [submitError, setSubmitError] = useState<string | undefined>();
+  const fx = useDocumentCurrency({ date: draft.dueDate });
+  const formatDocumentAmount = fx.isForeign
+    ? (amount: number) => formatMoney(amount, fx.currency, { useSymbol: true })
+    : formatCurrency;
 
-  useEffect(() => {
+  // Fresh draft when the dialog (re)opens or the due-date policy changes (render-phase reset).
+  const [prevOpen, setPrevOpen] = useState(open);
+  const [prevDueDays, setPrevDueDays] = useState(settings.dueDays);
+  if (prevOpen !== open || prevDueDays !== settings.dueDays) {
+    setPrevOpen(open);
+    setPrevDueDays(settings.dueDays);
     if (open) {
       setDraft(createInitialDraft(settings.dueDays));
       setErrors({});
       setSubmitError(undefined);
     }
-  }, [open, settings.dueDays]);
+  }
 
   const { baseFee, discountValue, discountAmt, finalAmt } = computeInvoiceAmounts(
     draft.baseFee,
@@ -105,6 +119,7 @@ export const InvoiceForm = function InvoiceForm({
     setDraft(createInitialDraft(settings.dueDays));
     setErrors({});
     setSubmitError(undefined);
+    if (fx.functionalCurrency) fx.setCurrency(fx.functionalCurrency);
     onClose();
   };
 
@@ -116,6 +131,9 @@ export const InvoiceForm = function InvoiceForm({
     if (!draft.session.trim()) newErrors.session = t("common.required");
     if (!draft.baseFee.trim() || baseFee <= 0) newErrors.baseFee = t("finance.amountRequired");
     if (!draft.dueDate.trim()) newErrors.dueDate = t("finance.dateRequired");
+    if (fx.needsRate && !isValidExchangeRate(fx.rate)) {
+      newErrors.exchangeRate = t("fx.field.rateMissing");
+    }
 
     if (Object.keys(newErrors).length > 0 || !canSave) {
       setErrors(newErrors);
@@ -123,15 +141,19 @@ export const InvoiceForm = function InvoiceForm({
       return;
     }
 
-    const payload = buildInvoiceCreatePayload(
-      draft,
-      baseFee,
-      discountValue,
-      discountAmt,
-      finalAmt,
-      nextInvoiceId(settings),
-      feeStructures,
-    );
+    const payload = {
+      ...buildInvoiceCreatePayload(
+        draft,
+        baseFee,
+        discountValue,
+        discountAmt,
+        finalAmt,
+        nextInvoiceId(settings),
+        feeStructures,
+      ),
+      // Functional-currency invoices omit both fields (stored as rate 1).
+      ...(fx.isForeign ? { currency: fx.currency, exchangeRate: fx.rate.trim() } : {}),
+    };
 
     const parsed = invoiceRecordInsertSchema.safeParse(payload);
     if (!parsed.success) {
@@ -191,12 +213,32 @@ export const InvoiceForm = function InvoiceForm({
           onApplyFeeStructure={applyFeeStructure}
           errors={errors}
         />
+        <DocumentCurrencyFields
+          t={t}
+          idPrefix="invoice"
+          fx={fx}
+          error={errors.exchangeRate}
+          preview={{
+            label: t("fx.field.functionalEquivalent"),
+            value: (() => {
+              const converted = previewConvertedAmount(
+                finalAmt,
+                fx.currency,
+                fx.functionalCurrency,
+                fx.rate,
+              );
+              return converted === null
+                ? "—"
+                : formatMoney(converted, fx.functionalCurrency, { useSymbol: true });
+            })(),
+          }}
+        />
         <InvoiceFormSummarySection
           t={t}
           baseFee={baseFee}
           discountAmt={discountAmt}
           finalAmt={finalAmt}
-          formatCurrency={formatCurrency}
+          formatCurrency={formatDocumentAmount}
         />
       </form>
     </FormModal>

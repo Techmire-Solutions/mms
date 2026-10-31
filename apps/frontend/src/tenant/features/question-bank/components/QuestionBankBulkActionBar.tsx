@@ -1,7 +1,7 @@
 import type { ReactElement } from "react";
 import { ClipboardList } from "lucide-react";
 import { QUESTION_BANK_MODULE_MANIFEST } from "@mms/shared";
-import { ModuleUniversalBulkActionBar } from "@/components/app/ModuleUniversalBulkActionBar";
+import { BulkSelectionBar } from "@/components/app/BulkSelectionBar";
 
 export interface QuestionBankBulkActionBarProps {
   selectedCount: number;
@@ -13,7 +13,7 @@ export interface QuestionBankBulkActionBarProps {
   bulkActions?: readonly string[];
 }
 
-/** Question Bank Work bulk bar — thin adapter delegating to shared ModuleUniversalBulkActionBar. */
+/** Question Bank Work bulk bar — thin adapter delegating to shared BulkSelectionBar. */
 export function QuestionBankBulkActionBar({
   selectedCount,
   showDeleted,
@@ -24,7 +24,7 @@ export function QuestionBankBulkActionBar({
   bulkActions = QUESTION_BANK_MODULE_MANIFEST.work.bulkActions,
 }: QuestionBankBulkActionBarProps): ReactElement {
   return (
-    <ModuleUniversalBulkActionBar
+    <BulkSelectionBar
       selectedCount={selectedCount}
       viewingDeleted={showDeleted}
       canDelete={canDelete}

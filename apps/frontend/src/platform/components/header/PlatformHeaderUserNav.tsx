@@ -52,9 +52,9 @@ export function PlatformHeaderUserNav({
           type="button"
           variant="outline"
           onClick={onOpenSearch}
-          aria-label={t("platform.openSearchAria")}
           aria-keyshortcuts="Control+K Meta+K"
           aria-pressed={searchOpen}
+          aria-label={compact ? t("platform.nav.searchConsole") : undefined}
           className={cn(
             "relative flex items-center gap-2 rounded-xl text-xs text-muted-foreground border-border/80 hover:bg-muted/80 transition-colors cursor-pointer",
             compact
@@ -96,8 +96,8 @@ export function PlatformHeaderUserNav({
           <Sparkles className="h-4 w-4 shrink-0 text-primary" aria-hidden />
           {!compact && (
             <>
-              <span className="hidden lg:inline font-normal">{t("platform.aiCopilotTitle")}</span>
-              <kbd className="hidden lg:inline-flex items-center gap-0.5 rounded border border-border/80 bg-muted px-1.5 py-0.5 text-2xs font-semibold text-muted-foreground select-none font-mono">
+              <span className="hidden 2xl:inline font-normal">{t("platform.aiCopilotTitle")}</span>
+              <kbd className="hidden 2xl:inline-flex items-center gap-0.5 rounded border border-border/80 bg-muted px-1.5 py-0.5 text-2xs font-semibold text-muted-foreground select-none font-mono">
                 ⌘J
               </kbd>
             </>

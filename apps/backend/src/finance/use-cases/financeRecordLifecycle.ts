@@ -5,6 +5,7 @@ import {
   tryPostArchiveReversalJournal,
   tryPostRestoreJournal,
 } from "../../accounting/ledgerPosting/ledgerPostingService.js";
+import { applyPaymentDeltas } from "./financePaymentArchiveDeltas.js";
 
 /**
  * Ledger and subledger consequences of archiving or restoring a finance record.
@@ -28,60 +29,6 @@ function invoicePostingSources(invoice: Invoice): { sourceId: string; label: str
     { sourceId: invoice.id, label: `Archive ${label}` },
     { sourceId: `latefee:${invoice.id}`, label: `Archive late fee ${label}` },
   ];
-}
-
-/** Total the invoice must collect before it counts as settled. */
-function invoiceTotalDue(invoice: Invoice): number {
-  return invoice.finalAmt + (invoice.lateFeeAmt ?? 0) - (invoice.creditedAmt ?? 0);
-}
-
-/**
- * Applies a change in collected amount and re-derives the status.
- *
- * A fully un-collected invoice returns to `pending` rather than guessing at
- * `overdue` — `collectOverdueInvoices` owns that transition and will re-mark it
- * on its next sweep.
- */
-function applyCollectedDelta(invoice: Invoice, delta: number): Invoice {
-  const paidAmt = Math.max(0, (invoice.paidAmt ?? 0) + delta);
-  const totalDue = invoiceTotalDue(invoice);
-  return {
-    ...invoice,
-    paidAmt,
-    status: paidAmt <= 0 ? "pending" : paidAmt >= totalDue ? "paid" : "partial",
-  };
-}
-
-/**
- * Rolls the archived payments' amounts off their invoices.
- *
- * Amounts are summed per invoice first, so archiving several payments against
- * one invoice writes that invoice once instead of once per payment.
- */
-async function applyPaymentDeltas(
-  repo: ArchivableRepo,
-  tenant: string,
-  payments: readonly Payment[],
-  direction: 1 | -1,
-): Promise<void> {
-  const deltaByInvoice = new Map<string, number>();
-  for (const payment of payments) {
-    deltaByInvoice.set(
-      payment.invoiceId,
-      (deltaByInvoice.get(payment.invoiceId) ?? 0) + payment.amount * direction,
-    );
-  }
-  const invoices = await repo.findInvoicesByIds(tenant, [...deltaByInvoice.keys()], {
-    includeDeleted: true,
-  });
-  for (const invoice of invoices) {
-    // A cancelled invoice has already had its posting reversed; re-deriving its
-    // status from the collected amount would silently revive it.
-    if (invoice.status === "cancelled") continue;
-    const delta = deltaByInvoice.get(invoice.id);
-    if (!delta) continue;
-    await repo.saveInvoice(tenant, applyCollectedDelta(invoice, delta));
-  }
 }
 
 /** Reverses the ledger postings of every invoice that was just archived. */

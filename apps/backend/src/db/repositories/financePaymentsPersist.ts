@@ -9,6 +9,7 @@ import {
   financePayments,
 } from "../schema.js";
 import { withTenant } from "../tenant-context.js";
+import { requireDbDateValue } from "../../lib/dbDate.js";
 
 export async function bulkSavePayments(tenant: string, records: Payment[]): Promise<void> {
   if (records.length === 0) return;
@@ -32,11 +33,15 @@ export async function bulkSavePayments(tenant: string, records: Payment[]): Prom
           studentId: r.studentId ?? null,
           studentName: r.studentName ?? null,
           amount: String(r.amount ?? 0),
-          date: r.date,
+          date: requireDbDateValue(r.date, "date"),
           method: r.method ?? "cash",
           receivedByUserId: r.receivedByUserId ?? null,
           receivedBy: r.receivedBy ?? null,
           note: r.note ?? "",
+          currency: r.currency ?? null,
+          exchangeRate: r.exchangeRate ?? null,
+          realizedFx: r.realizedFx != null ? String(r.realizedFx) : null,
+          invoiceAmount: r.invoiceAmount != null ? String(r.invoiceAmount) : null,
           deletedAt: r.deletedAt ? new Date(r.deletedAt) : null,
           deletedBy: r.deletedBy ?? null,
           deletionReason: r.deletionReason ?? null,
@@ -87,11 +92,15 @@ export async function replacePaymentsForWorkspace(
           studentId: r.studentId ?? null,
           studentName: r.studentName ?? null,
           amount: String(r.amount ?? 0),
-          date: r.date,
+          date: requireDbDateValue(r.date, "date"),
           method: r.method ?? "cash",
           receivedByUserId: r.receivedByUserId ?? null,
           receivedBy: r.receivedBy ?? null,
           note: r.note ?? "",
+          currency: r.currency ?? null,
+          exchangeRate: r.exchangeRate ?? null,
+          realizedFx: r.realizedFx != null ? String(r.realizedFx) : null,
+          invoiceAmount: r.invoiceAmount != null ? String(r.invoiceAmount) : null,
           deletedAt: r.deletedAt ? new Date(r.deletedAt) : null,
           deletedBy: r.deletedBy ?? null,
           deletionReason: r.deletionReason ?? null,

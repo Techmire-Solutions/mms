@@ -9,6 +9,7 @@ import {
   EXAMINATIONS_RESULTS_QUERY_KEY,
 } from "@/tenant/features/examinations/hooks/useExaminationsApi";
 import { invalidateExaminationsQueries } from "@/tenant/features/examinations/hooks/invalidateExaminationsQueries";
+import { assertContractOk } from "@/lib/apiContractError";
 
 export function examinationsExamsListQueryOptions(query: Record<string, unknown> = {}) {
   return queryOptions({
@@ -19,9 +20,7 @@ export function examinationsExamsListQueryOptions(query: Record<string, unknown>
         signal,
         fetchOptions: { signal },
       });
-      if (response.status !== 200) {
-        throw new Error("Failed to fetch exams");
-      }
+      assertContractOk(response, "Failed to fetch exams");
       return response.body;
     },
     placeholderData: (prev) => prev,

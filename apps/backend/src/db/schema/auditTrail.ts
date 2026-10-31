@@ -8,6 +8,7 @@ import {
   primaryKey,
   varchar,
   bigint,
+  boolean,
 } from "drizzle-orm/pg-core";
 import { desc, sql } from "drizzle-orm";
 import { workspaces } from "./platform.js";
@@ -44,9 +45,7 @@ export const auditTrailEvents = pgTable(
     newState: text("new_state"),
     hashPrevious: varchar("hash_previous", { length: 64 }).notNull(),
     hashCurrent: varchar("hash_current", { length: 64 }).notNull(),
-    verificationStatus: varchar("verification_status", { length: 32 })
-      .notNull()
-      .default("VERIFIED"),
+    verificationStatus: varchar("verification_status", { length: 32 }).notNull().default("PENDING"),
     transactionTimestamp: timestamp("transaction_timestamp", {
       withTimezone: true,
       mode: "date",
@@ -95,6 +94,16 @@ export const auditVerificationRuns = pgTable(
     recordsChecked: integer("records_checked").notNull(),
     status: varchar("status", { length: 32 }).notNull(),
     discrepancies: jsonb("discrepancies").$type<string[]>().notNull().default([]),
+    /** Anchor this run verified from (null = chain genesis). */
+    fromId: bigint("from_id", { mode: "number" }),
+    fromTimestamp: timestamp("from_timestamp", { withTimezone: true, mode: "date" }),
+    fromHash: varchar("from_hash", { length: 64 }),
+    /** Head this run reached; the next run resumes strictly after it. */
+    toId: bigint("to_id", { mode: "number" }),
+    toTimestamp: timestamp("to_timestamp", { withTimezone: true, mode: "date" }),
+    toHash: varchar("to_hash", { length: 64 }),
+    /** False when the anchor row is no longer visible (e.g. an archived partition). */
+    anchored: boolean("anchored").notNull().default(true),
   },
   (table) => [
     index("audit_verification_runs_ws_time_idx").on(
@@ -124,6 +133,8 @@ export const auditMerkleRoots = pgTable(
       mode: "date",
     }).notNull(),
     shardCount: integer("shard_count").notNull(),
+    /** Published head hash per workspace shard (tenant-scoped reads use this map). */
+    heads: jsonb("heads").$type<Record<string, string>>().notNull().default({}),
     publishedAt: timestamp("published_at", {
       withTimezone: true,
       mode: "date",
@@ -146,6 +157,10 @@ export const cryptoShreddingKeys = pgTable(
   "crypto_shredding_keys",
   {
     id: varchar("id", { length: 64 }).primaryKey(),
+    /** Nullable only for legacy rows written before tenant scoping; new rows must set it. */
+    workspaceSubdomain: text("workspace_subdomain").references(() => workspaces.subdomain, {
+      onDelete: "cascade",
+    }),
     subjectId: varchar("subject_id", { length: 128 }).notNull(),
     encryptedKey: text("encrypted_key").notNull(),
     algorithm: varchar("algorithm", { length: 32 }).notNull().default("AES-256-GCM"),
@@ -161,7 +176,14 @@ export const cryptoShreddingKeys = pgTable(
       mode: "date",
     }),
   },
-  (table) => [index("crypto_shredding_keys_subject_status_idx").on(table.subjectId, table.status)],
+  (table) => [
+    index("crypto_shredding_keys_subject_status_idx").on(table.subjectId, table.status),
+    index("crypto_shredding_keys_ws_subject_status_idx").on(
+      table.workspaceSubdomain,
+      table.subjectId,
+      table.status,
+    ),
+  ],
 );
 
 export type CryptoShreddingKeyRow = typeof cryptoShreddingKeys.$inferSelect;
@@ -174,6 +196,10 @@ export const auditErasureRequests = pgTable(
   "audit_erasure_requests",
   {
     id: varchar("id", { length: 64 }).primaryKey(),
+    /** Nullable only for legacy rows written before tenant scoping; new rows must set it. */
+    workspaceSubdomain: text("workspace_subdomain").references(() => workspaces.subdomain, {
+      onDelete: "cascade",
+    }),
     subjectId: varchar("subject_id", { length: 128 }).notNull(),
     regime: varchar("regime", { length: 32 }).notNull(),
     erasureType: varchar("erasure_type", { length: 32 }).notNull(),
@@ -194,6 +220,11 @@ export const auditErasureRequests = pgTable(
   },
   (table) => [
     index("audit_erasure_requests_subject_time_idx").on(table.subjectId, desc(table.requestedAt)),
+    index("audit_erasure_requests_ws_subject_time_idx").on(
+      table.workspaceSubdomain,
+      table.subjectId,
+      desc(table.requestedAt),
+    ),
   ],
 );
 

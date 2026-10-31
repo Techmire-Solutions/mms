@@ -39,6 +39,11 @@ import {
   tryPostLateFeeReversalJournal,
 } from "../../accounting/ledgerPosting/ledgerPostingService.js";
 import { withTenant } from "../../db/tenant-context.js";
+import {
+  invoiceAuditState,
+  recordCreditNoteAudit,
+  recordInvoiceAudit,
+} from "./financeAuditEvents.js";
 
 function domainError(message: string, statusCode: number, type: string): Error {
   return Object.assign(new Error(message), { statusCode, type });
@@ -148,26 +153,40 @@ export async function remindOpenInvoices(
 
 export async function cancelInvoice(invoiceId: string): Promise<Invoice> {
   const tenant = requireTenant();
-  const invoice = await financeUseCases.getInvoiceById(invoiceId);
-  if (!invoice || invoice.deletedAt) throw domainError("Invoice not found", 404, "not_found");
-  if (!canCancelInvoice(invoice)) {
-    throw domainError(
-      (invoice.creditedAmt ?? 0) > 0
-        ? "Reverse the credit notes on this invoice before cancelling it"
-        : "Only unpaid invoices can be cancelled",
-      422,
-      "validation_error",
+  // The status flip, both reversals and the audit row must share one transaction,
+  // and the invoice row is locked so a concurrent payment/credit cannot settle it
+  // between the `canCancelInvoice` check and the write.
+  const cancelled = await withTenant(tenant, async () => {
+    const invoice = await financeUseCases.getInvoiceByIdForUpdate(invoiceId);
+    if (!invoice || invoice.deletedAt) throw domainError("Invoice not found", 404, "not_found");
+    if (!canCancelInvoice(invoice)) {
+      throw domainError(
+        (invoice.creditedAmt ?? 0) > 0
+          ? "Reverse the credit notes on this invoice before cancelling it"
+          : "Only unpaid invoices can be cancelled",
+        422,
+        "validation_error",
+      );
+    }
+    const updated = await financeUseCases.updateInvoiceById(
+      invoiceId,
+      { ...invoice, status: "cancelled" },
+      { audit: false, allowLedgerSensitive: true },
     );
-  }
-  const cancelled = await financeUseCases.updateInvoiceById(invoiceId, {
-    ...invoice,
-    status: "cancelled",
+    if (!updated) throw domainError("Invoice not found", 404, "not_found");
+    await tryPostInvoiceReversalJournal(tenant, updated);
+    // Late fees post under their own source key, so reversing the invoice entry
+    // alone left the fee on the books.
+    await tryPostLateFeeReversalJournal(tenant, updated);
+    await recordInvoiceAudit(
+      tenant,
+      "UPDATE",
+      updated,
+      invoiceAuditState(invoice),
+      "invoice_cancelled",
+    );
+    return updated;
   });
-  if (!cancelled) throw domainError("Invoice not found", 404, "not_found");
-  await tryPostInvoiceReversalJournal(tenant, cancelled);
-  // Late fees post under their own source key, so reversing the invoice entry
-  // alone left the fee on the books.
-  await tryPostLateFeeReversalJournal(tenant, cancelled);
   const { broadcastTenantUpdate } = await import("../../lib/livePush.js");
   broadcastTenantUpdate(tenant, "collection", "finance_invoices");
   return cancelled;
@@ -183,7 +202,9 @@ export async function createCreditNote(input: CreditNoteInsert): Promise<CreditN
   const tenant = requireTenant();
   const parsed = input;
   const note = await withTenant(tenant, async () => {
-    const invoice = await financeUseCases.getInvoiceById(parsed.invoiceId);
+    // Lock the invoice: the open-balance check and the `creditedAmt` write are a
+    // read-modify-write, so two concurrent credit notes must serialise.
+    const invoice = await financeUseCases.getInvoiceByIdForUpdate(parsed.invoiceId);
     if (!invoice || invoice.deletedAt) throw domainError("Invoice not found", 404, "not_found");
     if (!canCreditInvoice(invoice, parsed.amount)) {
       throw domainError("Credit exceeds the open balance", 422, "validation_error");
@@ -198,12 +219,17 @@ export async function createCreditNote(input: CreditNoteInsert): Promise<CreditN
     const creditedAmt = (invoice.creditedAmt ?? 0) + parsed.amount;
     const remaining = invoiceOpenBalance({ ...invoice, creditedAmt });
     await saveCreditNote(tenant, created);
-    await financeUseCases.updateInvoiceById(invoice.id, {
-      ...invoice,
-      creditedAmt,
-      status: remaining <= 0 ? "paid" : invoice.status,
-    });
+    await financeUseCases.updateInvoiceById(
+      invoice.id,
+      {
+        ...invoice,
+        creditedAmt,
+        status: remaining <= 0 ? "paid" : invoice.status,
+      },
+      { allowLedgerSensitive: true },
+    );
     await tryPostCreditNoteJournal(tenant, invoice, created.id, parsed.amount);
+    await recordCreditNoteAudit(tenant, created, creditedAmt);
     return created;
   });
   const { broadcastTenantUpdate } = await import("../../lib/livePush.js");

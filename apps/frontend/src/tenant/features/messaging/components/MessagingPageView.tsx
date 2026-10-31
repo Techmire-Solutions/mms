@@ -5,11 +5,9 @@ import type {
   MessageTemplate,
   StandardMessagingRecipient as MessagingRecipient,
 } from "@mms/shared";
-import { notify } from "@/lib/notify";
-import { exportMessagingLogsFiltered } from "../lib/messagingReportsExport";
 import { ConfirmAlertDialog } from "@/components/app/ConfirmAlertDialog";
 import { ErrorState } from "@/components/app/ErrorState";
-import { ModulePageShell } from "@/components/app/ModulePageShell";
+import { ModuleScaffold } from "@/components/common/ModuleScaffold";
 import { ResponsiveAccordionTabs } from "@/components/app/ResponsiveAccordionTabs";
 import RouteStatusFallback from "@/components/routing/RouteStatusFallback";
 import { useTranslation } from "@/hooks/useTranslation";
@@ -34,6 +32,8 @@ export interface MessagingPageViewProps {
   canViewSetup: boolean;
   canEditSetup: boolean;
   canClearLogs: boolean;
+  canRestoreLogs: boolean;
+  onRestoreLog: (log: Message) => Promise<void>;
   activeTab: "work" | "reports" | "setup";
   visibleTabs: { id: string; label: string; icon: LucideIcon }[];
   channelFilter: "all" | "sms" | "whatsapp" | "email";
@@ -44,6 +44,10 @@ export interface MessagingPageViewProps {
   metricsQueryIsError: boolean;
   deleteTemplateId: string | null;
   confirmClearLogsOpen: boolean;
+  /** Registers the work tier's filtered export handler so the header exports with active filters. */
+  registerExportLogs: (handler: (() => Promise<void>) | null) => void;
+  isExporting: boolean;
+  onExport: () => Promise<void> | void;
   handleTabChange: (tab: "work" | "reports" | "setup") => void;
   setChannelFilter: (channel: "all" | "sms" | "whatsapp" | "email") => void;
   setDeleteTemplateId: (id: string | null) => void;
@@ -65,28 +69,9 @@ export interface MessagingPageViewProps {
 export function MessagingPageView(p: MessagingPageViewProps): React.JSX.Element {
   const { t } = useTranslation();
   const [importOpen, setImportOpen] = useState(false);
-  const [isExporting, setIsExporting] = useState(false);
-
-  const handleExport = async (): Promise<void> => {
-    if (!p.canWrite || isExporting) return;
-    setIsExporting(true);
-    try {
-      await exportMessagingLogsFiltered({
-        channel: p.channelFilter,
-        category: "all",
-        debouncedSearch: "",
-        status: "all",
-        t,
-      });
-    } catch {
-      notify.error(t("messaging.exportFailed"), { description: t("messaging.loadFailedHint") });
-    } finally {
-      setIsExporting(false);
-    }
-  };
 
   return (
-    <ModulePageShell
+    <ModuleScaffold
       seoTitle={`MMS - ${t("nav.messaging")}`}
       seoDescription={t("messaging.subtitle")}
       headerIcon={MessageSquare}
@@ -95,12 +80,12 @@ export function MessagingPageView(p: MessagingPageViewProps): React.JSX.Element 
       headerActions={
         <MessagingPageHeaderActions
           canWrite={p.canWrite}
-          canExport={p.canWrite}
-          isExporting={isExporting}
+          canExport={p.canWrite && p.activeTab === "work"}
+          isExporting={p.isExporting}
           startingCampaign={p.startingCampaign}
           onStartCampaign={p.startCampaign}
           onImport={() => setImportOpen(true)}
-          onExport={handleExport}
+          onExport={p.onExport}
         />
       }
       metricsStrip={
@@ -129,11 +114,15 @@ export function MessagingPageView(p: MessagingPageViewProps): React.JSX.Element 
               <MessagingWorkTier
                 canWrite={p.canWrite}
                 canClearLogs={p.canClearLogs}
+                canRestoreLogs={p.canRestoreLogs}
+                onRestoreLog={p.onRestoreLog}
                 onClearLogsRequest={() => p.setConfirmClearLogsOpen(true)}
                 onResend={p.resend}
                 onBulkResend={p.handleBulkResend}
                 channel={p.channelFilter}
                 onChannelChange={p.setChannelFilter}
+                onStartCampaign={p.startCampaign}
+                onExportLogsRegister={p.registerExportLogs}
               />
             </div>
           )}
@@ -195,6 +184,6 @@ export function MessagingPageView(p: MessagingPageViewProps): React.JSX.Element 
         onClose={() => setImportOpen(false)}
         canWrite={p.canWrite}
       />
-    </ModulePageShell>
+    </ModuleScaffold>
   );
 }

@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useState } from "react";
 import type { PlatformWorkspaceRow as PlatformWorkspaceRowData } from "@mms/shared";
 import { SYSTEM_MODULES } from "@mms/shared";
 import { useTranslation } from "@/hooks/useTranslation";
@@ -29,12 +29,14 @@ export function PlatformWorkspaceModulesDialog({
   const { mutateAsync: updateModules, isPending } = useUpdateWorkspaceModules();
 
   const [selectedModules, setSelectedModules] = useState<string[]>([]);
-
-  useEffect(() => {
+  // Re-seed the selection during render when the dialog opens or the query resolves.
+  const [prevModules, setPrevModules] = useState({ currentModules, open });
+  if (prevModules.currentModules !== currentModules || prevModules.open !== open) {
+    setPrevModules({ currentModules, open });
     if (currentModules) {
       setSelectedModules(currentModules);
     }
-  }, [currentModules, open]);
+  }
 
   const toggleModule = (moduleId: string, checked: boolean) => {
     setSelectedModules((prev) => {

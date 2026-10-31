@@ -6,7 +6,8 @@
 import { initTsrReactQuery } from "@ts-rest/react-query/v5";
 import { initClient } from "@ts-rest/core";
 import { rootContract } from "@mms/shared";
-import { apiFetch, resolveApiUrl, ApiError } from "@/lib/apiClient";
+import { apiFetch, resolveApiUrl } from "@/lib/apiClient";
+import { apiContractError } from "@/lib/apiContractError";
 
 type TsrFetcherArgs = {
   path: string;
@@ -54,16 +55,10 @@ async function tsrApiFetcher(args: TsrFetcherArgs): Promise<{
     const isCredentialEndpoint =
       path.includes("/auth/change-password") || path.includes("/auth/login-email");
     if (!isCredentialEndpoint) {
-      const errorBody =
-        parsed && typeof parsed === "object" ? (parsed as Record<string, unknown>) : {};
-      const message =
-        typeof errorBody.message === "string"
-          ? errorBody.message
-          : `Authentication error (${res.status})`;
-      const type = typeof errorBody.type === "string" ? errorBody.type : undefined;
-      const requestId = res.headers.get("x-request-id") ?? undefined;
-      const code = typeof errorBody.code === "string" ? errorBody.code : undefined;
-      throw new ApiError(res.status, message, type, requestId, errorBody.errors, undefined, code);
+      throw apiContractError(
+        { status: res.status, body: parsed, headers: res.headers },
+        `Authentication error (${res.status})`,
+      );
     }
   }
 

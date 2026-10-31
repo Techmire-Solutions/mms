@@ -5,7 +5,7 @@ import { calcAge } from "@/lib/data/studentsData";
 import { type CheckResult, runFullEligibility, suggestClass } from "@/lib/data/enrollmentData";
 import { Field } from "@/components/app/FormField";
 import { FormSelect } from "@/components/app/FormSelect";
-import { WarningCallout } from "@/components/app/WarningCallout";
+import { Alert } from "@/components/app/Alert";
 import { useStudentsByIds } from "@/tenant/hooks/collections/students";
 import { RegistryPersonSelect } from "@/tenant/components/selectors/RegistryPersonSelect";
 import { useSessionsCollection } from "@/tenant/hooks/collections/sessions";
@@ -133,7 +133,7 @@ export function EligibilityCheck(): React.JSX.Element {
               </div>
             )}
             {warnCount > 0 && (
-              <WarningCallout
+              <Alert
                 density="compact"
                 className="rounded-xl py-1.5"
                 description={t("enrollments.eligibility.warnings", { count: warnCount })}

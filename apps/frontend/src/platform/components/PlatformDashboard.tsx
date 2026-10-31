@@ -55,7 +55,6 @@ export function PlatformDashboard(): React.JSX.Element {
         platformUser={platformUser}
         isSuperUser={isSuperUser}
         canWorkspaces={canWorkspaces}
-        canOnboard={canOnboard}
       />
 
       <motion.div variants={reducedMotion ? undefined : itemVariants}>

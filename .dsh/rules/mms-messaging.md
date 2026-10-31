@@ -1,0 +1,34 @@
+---
+trigger: model_decision
+description: SMS and WhatsApp campaign composition, template interpolation, delivery channels, and messaging API
+---
+
+# MMS Messaging & Campaign Specification
+
+**Workflow skills:** campaign authoring & templates → `mms-messaging` · background CSV exports → `mms-background-jobs`.
+
+## 1. Architectural Boundaries & Recipient Modeling
+- **Composer SSOT:** Outbound campaigns strictly consume `MessageComposer` with `MessagingRecipient` / `toMessagingRecipient` from `@mms/shared`. Feature modules enter via `useMessageComposerState`.
+- **Domain Isolation:** Never import Contacts-specific schemas or UI tables into messaging primitives.
+
+## 2. Data Layer, RLS & Idempotent Delivery
+- **Query-First Persistence:** Templates, logs, and metrics use TanStack Query (`useMessageTemplates`, `useMessageLogs`, `useMessagingMetrics`). Ad-hoc `fetch` or localStorage writes are banned.
+- **Tenant Isolation & RLS:** Enforce `authenticateTenant` + transaction RLS (`withTenant`). Derive `userId` from session; strip client-supplied `deletedAt` on POST.
+- **Idempotent Broadcasts:** Send POSTs must accept an `idempotencyKey` cryptographically bound to a body digest; reject mismatched payloads with `409 Conflict` (`mms-api-interface.md` §6). Surface `429 Too Many Requests` via shared notifications.
+- **Recipients & Aggregation:** Work directory pages via `GET /recipients`. Select-all queries use `GET /recipients/match` (capped at `MESSAGING_RECIPIENTS_MATCH_LIMIT`). Hydrate via `POST /contacts/resolve`. Client-side page walks are banned.
+- **Async CSV Export:** Queue large CSV exports via `POST /export/csv` (`messaging:export` worker). Enforce `canWriteMessaging`, `MESSAGING_CSV_EXPORT_MAX_ROWS`, and `MESSAGING_CSV_EXPORT_MAX_BYTES`. Exclude archived logs.
+
+## 3. Template Tokens, Security & Delivery Channels
+- **Safe Token Substitution:** Evaluate variable tokens (e.g. `{name}`) on the client against a strict manifest allowlist; reject unknown placeholders.
+- **Content Security:** Message templates and payloads are plain text; executable HTML or script tags are banned. Never log message bodies at INFO level.
+- **Delivery Providers:** WhatsApp number resolution requires `PuppeteerWhatsAppProvider.getNumberId` (`@mms/shared`). Sequential dispatch with configurable delay. SMS dispatches via `openDeviceSmsComposer`.
+
+## 4. Module Page Parity & Soft-Archive Semantics
+- **Three-Tier Parity:** Follow Work | Reports | Setup standard. Gate actions via `useModulePermissions(MESSAGING_MODULE_MANIFEST)`. Setup renders read-only when `!canEditSetup`.
+- **Soft-Archive Semantics:** `DELETE /logs` soft-archives records via typed `deleted_at` and records an immutable audit event (`messaging.logs.clear`). `GET /logs?includeDeleted` requires `canClearMessagingLogs`.
+- **Work UX & i18n:** Render `ErrorState` with retry. Keyboard shortcut `Cmd/Ctrl+N` initiates new campaigns when `canWrite`. All UI copy via `t()`.
+
+## 5. Architectural Invariants & Banned Patterns
+- **Banned Document Store:** Never include `message_logs` or `message_templates` in `ALLOWED_COLLECTIONS`. Never re-allowlist `messages_u:` or dual-write via `saveCollection`.
+- **Banned Mutations:** Bulk wipe PUT is strictly prohibited (`mms-api-interface.md` §5); use upsert only. Never echo raw SQL errors to clients.
+

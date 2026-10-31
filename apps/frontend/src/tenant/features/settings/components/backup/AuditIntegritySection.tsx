@@ -8,7 +8,7 @@ import {
   Hash,
   Layers,
 } from "lucide-react";
-import { WarningCallout } from "@/components/app/WarningCallout";
+import { Alert } from "@/components/app/Alert";
 import { SectionCard } from "@/components/app/SectionCard";
 import { Button } from "@/components/ui/button";
 import { StatCard } from "@/components/app/StatCard";
@@ -149,7 +149,7 @@ export function AuditIntegritySection({
         )}
 
         {(anomaliesQuery.data?.anomalies?.length ?? 0) > 0 && (
-          <WarningCallout
+          <Alert
             density="compact"
             title={t("audit.anomaliesDetected", {
               count: anomaliesQuery.data?.anomalies.length ?? 0,
@@ -160,7 +160,7 @@ export function AuditIntegritySection({
                 <li key={idx}>{anom.description}</li>
               ))}
             </ul>
-          </WarningCallout>
+          </Alert>
         )}
 
         <div className="flex flex-wrap items-center gap-3 pt-2">

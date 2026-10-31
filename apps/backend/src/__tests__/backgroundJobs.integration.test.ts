@@ -48,10 +48,12 @@ vi.mock("../services/backgroundJobService.js", () => ({
 
 const mockGetExportArtifact = vi.fn();
 const mockDeleteExportArtifact = vi.fn();
+const mockDeleteExportArtifacts = vi.fn();
 
 vi.mock("../services/exportArtifactService.js", () => ({
   getExportArtifact: (...args: unknown[]) => mockGetExportArtifact(...args),
   deleteExportArtifact: (...args: unknown[]) => mockDeleteExportArtifact(...args),
+  deleteExportArtifacts: (...args: unknown[]) => mockDeleteExportArtifacts(...args),
   saveExportArtifact: vi.fn(),
 }));
 
@@ -79,12 +81,13 @@ describe("background jobs REST routes", () => {
     process.env.JWT_SECRET = "test-secret";
     mockListUserBackgroundJobs.mockReset().mockResolvedValue([sampleJob]);
     mockUpsertUserBackgroundJob.mockReset().mockResolvedValue(sampleJob);
-    mockDismissUserBackgroundJob.mockReset().mockResolvedValue(true);
-    mockClearFinishedUserBackgroundJobs.mockReset().mockResolvedValue(1);
+    mockDismissUserBackgroundJob.mockReset().mockResolvedValue("u-teacher");
+    mockClearFinishedUserBackgroundJobs.mockReset().mockResolvedValue(["job-1"]);
     mockGetExportArtifact
       .mockReset()
       .mockResolvedValue({ filename: "contacts.csv", content: "id,name\n1,Ali" });
     mockDeleteExportArtifact.mockReset().mockResolvedValue(undefined);
+    mockDeleteExportArtifacts.mockReset().mockResolvedValue(1);
     mockGetUserBackgroundJob.mockReset().mockResolvedValue(sampleJob);
   });
 
@@ -132,9 +135,32 @@ describe("background jobs REST routes", () => {
     });
     expect(res.statusCode).toBe(200);
     expect(res.headers["content-type"]).toContain("text/csv");
-    expect(res.headers["content-disposition"]).toBe('attachment; filename="contacts.csv"');
+    expect(res.headers["content-disposition"]).toBe(
+      `attachment; filename="contacts.csv"; filename*=UTF-8''contacts.csv`,
+    );
     expect(res.body).toBe("id,name\n1,Ali");
     expect(mockGetExportArtifact).toHaveBeenCalledWith("u-teacher", "job-1");
+    await app.close();
+  });
+
+  it("GET /api/background-jobs/:id/download serves a localized filename without a 500", async () => {
+    mockGetUserBackgroundJob.mockResolvedValueOnce({ ...sampleJob, moduleId: "students" });
+    mockGetExportArtifact.mockResolvedValueOnce({
+      filename: "سجل_الرسائل.csv",
+      content: "id,name\n1,Ali",
+    });
+    const app = await buildApp();
+    const res = await app.inject({
+      method: "GET",
+      url: "/api/background-jobs/job-1/download",
+      headers: {
+        host: "demo.localhost",
+        authorization: `Bearer ${teacherToken(app)}`,
+      },
+    });
+    expect(res.statusCode).toBe(200);
+    expect(res.headers["content-disposition"]).toContain("filename*=UTF-8''");
+    expect(res.headers["content-disposition"]).toContain(encodeURIComponent("سجل_الرسائل.csv"));
     await app.close();
   });
 
@@ -222,6 +248,7 @@ describe("background jobs REST routes", () => {
     expect(res.statusCode).toBe(200);
     expect(res.json()).toEqual({ success: true, removed: 1 });
     expect(mockClearFinishedUserBackgroundJobs).toHaveBeenCalledWith("u-teacher");
+    expect(mockDeleteExportArtifacts).toHaveBeenCalledWith("u-teacher", ["job-1"]);
     await app.close();
   });
 });

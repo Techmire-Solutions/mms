@@ -9,8 +9,14 @@ import { useEnrollmentsReportAggregates } from "@/tenant/hooks/collections/enrol
 import { TrendingUp } from "lucide-react";
 import { useTranslation } from "@/hooks/useTranslation";
 import { useDashboardConfig } from "@/hooks/useDashboardConfig";
-import { formatMonthName, getRecentMonthsList, buildBucketedSeries } from "@mms/shared";
+import {
+  buildBucketedSeries,
+  formatMonthName,
+  formatPercent,
+  getRecentMonthsList,
+} from "@mms/shared";
 import { ChartPrefsControlGroup } from "@/components/dashboard-widgets/charts/ChartPrefsControlGroup";
+import { ChartEmptyState } from "@/components/dashboard-widgets/charts/ChartEmptyState";
 import {
   buildChartTooltip,
   ChartAreaGradient,
@@ -38,7 +44,7 @@ interface EnrollmentPoint {
 
 const CustomTooltip = buildChartTooltip({
   valueFormatter: (value, { t }) => t("dashboard.widgets.studentsCount", { count: value }),
-  labelClassName: "text-muted-foreground/80 mb-0.5 font-medium",
+  labelClassName: "text-muted-foreground mb-0.5 font-medium",
 });
 
 /**
@@ -59,12 +65,13 @@ export default function EnrollmentChart({ isEditMode = false }: { isEditMode?: b
   const months = (() => getRecentMonthsList(12))();
   const activeMonths = months.slice(-monthsCount);
 
+  const trendsEnvelope = reportAggregates as {
+    body?: { cumulativeTrends?: Array<{ monthKey: string; students: number }> };
+    cumulativeTrends?: Array<{ monthKey: string; students: number }>;
+  } | null;
+  const trends = trendsEnvelope?.body?.cumulativeTrends ?? trendsEnvelope?.cumulativeTrends ?? [];
+  const hasTrendData = trends.length > 0;
   const enrollmentData: EnrollmentPoint[] = (() => {
-    const trendsEnvelope = reportAggregates as {
-      body?: { cumulativeTrends?: Array<{ monthKey: string; students: number }> };
-      cumulativeTrends?: Array<{ monthKey: string; students: number }>;
-    } | null;
-    const trends = trendsEnvelope?.body?.cumulativeTrends ?? trendsEnvelope?.cumulativeTrends ?? [];
     const byKey = new Map<string, number>(
       trends.map((trend) => [trend.monthKey, Number(trend.students) || 0]),
     );
@@ -134,76 +141,82 @@ export default function EnrollmentChart({ isEditMode = false }: { isEditMode?: b
               pill
               variant="outline"
               className={`gap-1.5 px-2.5 py-1 ${activeColor.bg} ${activeColor.text}`}
-              aria-label={`Growth: ${growth}%`}
+              aria-label={`Growth: ${formatPercent(growth)}`}
             >
               <TrendingUp className="w-3.5 h-3.5" aria-hidden="true" />
-              <span className="text-xs font-bold tabular-nums">+{growth}%</span>
+              <bdi dir="ltr" className="text-xs font-bold tabular-nums">
+                +{formatPercent(growth)}
+              </bdi>
             </Badge>
           </>
         }
       />
 
-      <SafeResponsiveContainer height={200}>
-        <ComposedChart data={enrollmentData} margin={{ top: 4, right: 4, bottom: 0, left: -24 }}>
-          <defs>
-            {Object.entries(COLOR_MAP).map(([key, config]) => (
-              <ChartAreaGradient key={key} id={`enrollGrad-${key}`} color={config.stop} />
-            ))}
-          </defs>
-          <ChartGrid vertical={false} />
-          <XAxis dataKey="month" tick={chartAxisTick(11, true)} {...CHART_AXIS_LINE_PROPS} />
-          <YAxis
-            tick={chartAxisTick(11, true)}
-            {...CHART_AXIS_LINE_PROPS}
-            domain={["dataMin - 20", "dataMax + 10"]}
-          />
-          <Tooltip
-            content={<CustomTooltip />}
-            cursor={{ stroke: activeColor.stroke, strokeWidth: 1, strokeDasharray: "4 4" }}
-          />
+      {!hasTrendData ? (
+        <ChartEmptyState height={200} />
+      ) : (
+        <SafeResponsiveContainer height={200}>
+          <ComposedChart data={enrollmentData} margin={{ top: 4, right: 4, bottom: 0, left: -24 }}>
+            <defs>
+              {Object.entries(COLOR_MAP).map(([key, config]) => (
+                <ChartAreaGradient key={key} id={`enrollGrad-${key}`} color={config.stop} />
+              ))}
+            </defs>
+            <ChartGrid vertical={false} />
+            <XAxis dataKey="month" tick={chartAxisTick(11, true)} {...CHART_AXIS_LINE_PROPS} />
+            <YAxis
+              tick={chartAxisTick(11, true)}
+              {...CHART_AXIS_LINE_PROPS}
+              domain={["dataMin - 20", "dataMax + 10"]}
+            />
+            <Tooltip
+              content={<CustomTooltip />}
+              cursor={{ stroke: activeColor.stroke, strokeWidth: 1, strokeDasharray: "4 4" }}
+            />
 
-          {chartType === "area" && (
-            <Area
-              type="monotone"
-              dataKey="students"
-              stroke={activeColor.stroke}
-              strokeWidth={2.5}
-              fill={activeColor.fill}
-              dot={false}
-              activeDot={{
-                r: 5,
-                fill: activeColor.stroke,
-                strokeWidth: 2,
-                stroke: "hsl(var(--card))",
-              }}
-            />
-          )}
-          {chartType === "line" && (
-            <Line
-              type="monotone"
-              dataKey="students"
-              stroke={activeColor.stroke}
-              strokeWidth={2.5}
-              dot={{ r: 3, fill: activeColor.stroke }}
-              activeDot={{
-                r: 5,
-                fill: activeColor.stroke,
-                strokeWidth: 2,
-                stroke: "hsl(var(--card))",
-              }}
-            />
-          )}
-          {chartType === "bar" && (
-            <Bar
-              dataKey="students"
-              fill={activeColor.stroke}
-              fillOpacity={0.85}
-              radius={[4, 4, 0, 0]}
-              maxBarSize={28}
-            />
-          )}
-        </ComposedChart>
-      </SafeResponsiveContainer>
+            {chartType === "area" && (
+              <Area
+                type="monotone"
+                dataKey="students"
+                stroke={activeColor.stroke}
+                strokeWidth={2.5}
+                fill={activeColor.fill}
+                dot={false}
+                activeDot={{
+                  r: 5,
+                  fill: activeColor.stroke,
+                  strokeWidth: 2,
+                  stroke: "hsl(var(--card))",
+                }}
+              />
+            )}
+            {chartType === "line" && (
+              <Line
+                type="monotone"
+                dataKey="students"
+                stroke={activeColor.stroke}
+                strokeWidth={2.5}
+                dot={{ r: 3, fill: activeColor.stroke }}
+                activeDot={{
+                  r: 5,
+                  fill: activeColor.stroke,
+                  strokeWidth: 2,
+                  stroke: "hsl(var(--card))",
+                }}
+              />
+            )}
+            {chartType === "bar" && (
+              <Bar
+                dataKey="students"
+                fill={activeColor.stroke}
+                fillOpacity={0.85}
+                radius={[4, 4, 0, 0]}
+                maxBarSize={28}
+              />
+            )}
+          </ComposedChart>
+        </SafeResponsiveContainer>
+      )}
     </WidgetCard>
   );
 }

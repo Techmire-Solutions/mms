@@ -38,43 +38,87 @@ describe("rateLimitConfig", () => {
   });
 
   describe("generateCompositeRateLimitKey", () => {
-    it("uses getRequestTenant() when inside tenant context", () => {
+    it("keeps the tenant dimension for session-bearing requests", () => {
       runWithTenant("tenant-ctx", () => {
         const fakeReq = {
-          headers: {},
+          headers: { cookie: "theme=dark; mms_access=token" },
           ip: "192.168.1.100",
         } as unknown as FastifyRequest;
         expect(generateCompositeRateLimitKey(fakeReq)).toBe("tenant-ctx:192.168.1.100");
       });
     });
 
-    it("extracts tenant from x-tenant-id header", () => {
+    it("keys unauthenticated requests by IP even when a tenant is bound", () => {
+      // The Host header (and therefore the ALS tenant) is client-controlled.
+      // Pre-auth buckets must not reset when it rotates.
+      const fakeReq = {
+        headers: { host: "victim.mms.local" },
+        ip: "203.0.113.7",
+      } as unknown as FastifyRequest;
+      const keyA = runWithTenant("tenant-a", () => generateCompositeRateLimitKey(fakeReq));
+      const keyB = runWithTenant("tenant-b", () => generateCompositeRateLimitKey(fakeReq));
+      expect(keyA).toBe("203.0.113.7");
+      expect(keyB).toBe("203.0.113.7");
+    });
+
+    it("recognises the platform session cookie", () => {
+      runWithTenant("demo", () => {
+        const fakeReq = {
+          headers: { cookie: "mms_platform_access=platform-token" },
+          ip: "10.1.2.3",
+        } as unknown as FastifyRequest;
+        expect(generateCompositeRateLimitKey(fakeReq)).toBe("demo:10.1.2.3");
+      });
+    });
+
+    it("does not treat a cookie value containing mms_access as a session cookie", () => {
+      const fakeReq = {
+        headers: { cookie: "note=mentions-mms_access-elsewhere" },
+        ip: "10.1.2.4",
+      } as unknown as FastifyRequest;
+      expect(generateCompositeRateLimitKey(fakeReq)).toBe("10.1.2.4");
+    });
+
+    it("ignores the client-supplied x-tenant-id header", () => {
+      // A trusted header would let a caller mint a new bucket per request.
       const fakeReq = {
         headers: { "x-tenant-id": "Tenant-Alpha " },
         ip: "10.0.0.1",
       } as unknown as FastifyRequest;
-      expect(generateCompositeRateLimitKey(fakeReq)).toBe("tenant-alpha:10.0.0.1");
+      expect(generateCompositeRateLimitKey(fakeReq)).toBe("10.0.0.1");
     });
 
-    it("extracts tenant from host subdomain", () => {
+    it("ignores the host subdomain (also client-controlled, and only trusted once bound)", () => {
       const fakeReq = {
         headers: { host: "demo.mms.local" },
         ip: "127.0.0.1",
       } as unknown as FastifyRequest;
-      expect(generateCompositeRateLimitKey(fakeReq)).toBe("demo:127.0.0.1");
+      expect(generateCompositeRateLimitKey(fakeReq)).toBe("127.0.0.1");
     });
 
-    it("falls back to platform when no tenant is resolved", () => {
+    it("falls back to the socket address when no tenant is bound", () => {
       const fakeReq = {
         headers: { host: "localhost:3000" },
         socket: { remoteAddress: "172.16.0.5" },
       } as unknown as FastifyRequest;
-      expect(generateCompositeRateLimitKey(fakeReq)).toBe("platform:172.16.0.5");
+      expect(generateCompositeRateLimitKey(fakeReq)).toBe("172.16.0.5");
+    });
+
+    it("still isolates distinct trusted tenants behind one IP", () => {
+      const fakeReq = {
+        headers: { cookie: "mms_access=token" },
+        ip: "192.168.1.100",
+      } as unknown as FastifyRequest;
+      const keyA = runWithTenant("tenant-a", () => generateCompositeRateLimitKey(fakeReq));
+      const keyB = runWithTenant("tenant-b", () => generateCompositeRateLimitKey(fakeReq));
+      expect(keyA).toBe("tenant-a:192.168.1.100");
+      expect(keyB).toBe("tenant-b:192.168.1.100");
+      expect(keyA).not.toBe(keyB);
     });
   });
 
-  describe("Multi-tenant rate limit sliding window burst isolation", () => {
-    it("exhausting rate limit on Tenant A does not throttle Tenant B on the same IP", async () => {
+  describe("rate limit bucket cannot be forged by header rotation", () => {
+    it("rotating x-tenant-id does not grant a fresh budget", async () => {
       const app = fastify();
       await app.register(rateLimit, {
         global: true,
@@ -87,36 +131,26 @@ describe("rateLimitConfig", () => {
       app.get("/api/test-limit", async () => ({ status: "ok" }));
       await app.ready();
 
-      // Tenant A: 3 allowed requests
       for (let i = 0; i < 3; i++) {
         const res = await app.inject({
           method: "GET",
           url: "/api/test-limit",
-          headers: { "x-tenant-id": "tenant-a" },
+          headers: { "x-tenant-id": `tenant-${i}` },
           remoteAddress: "203.0.113.195",
         });
         expect(res.statusCode).toBe(200);
       }
 
-      // Tenant A: 4th request exceeds burst ceiling -> 429
-      const throttledA = await app.inject({
+      // Same client, new header value: the bucket is the IP, so the 4th request
+      // is throttled. This is the regression the old key allowed.
+      const throttled = await app.inject({
         method: "GET",
         url: "/api/test-limit",
-        headers: { "x-tenant-id": "tenant-a" },
+        headers: { "x-tenant-id": "tenant-fresh" },
         remoteAddress: "203.0.113.195",
       });
-      expect(throttledA.statusCode).toBe(429);
-      expect(throttledA.json()).toEqual(buildRateLimitExceededBody());
-
-      // Tenant B from the SAME client IP must NOT be throttled
-      const allowedB = await app.inject({
-        method: "GET",
-        url: "/api/test-limit",
-        headers: { "x-tenant-id": "tenant-b" },
-        remoteAddress: "203.0.113.195",
-      });
-      expect(allowedB.statusCode).toBe(200);
-      expect(allowedB.json()).toEqual({ status: "ok" });
+      expect(throttled.statusCode).toBe(429);
+      expect(throttled.json()).toEqual(buildRateLimitExceededBody());
 
       await app.close();
     });

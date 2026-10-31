@@ -10,6 +10,9 @@ import {
   streamCsvExportFromGenerator,
 } from "./csvExportStreamFactory.js";
 import { getSerializer } from "./exportSerializerResolver.js";
+
+/** JSON/XLSX materialize the result set; cap it instead of risking API OOM. */
+const MAX_MATERIALIZED_EXPORT_ROWS = 50_000;
 import { getRequestTenant } from "./tenantContext.js";
 import { xlsxSerializer } from "./xlsxExportSerializer.js";
 import {
@@ -25,6 +28,16 @@ export * from "./createModuleExportServiceTypes.js";
 function resolveFilename(rawFilename: string, ext: string): string {
   const base = rawFilename.endsWith(ext) ? rawFilename : `${rawFilename}${ext}`;
   return buildTenantExportFilename(getRequestTenant(), base);
+}
+
+function tooManyRowsError(): Error & { statusCode: number; type: string } {
+  const error = new Error(
+    `This export exceeds ${MAX_MATERIALIZED_EXPORT_ROWS.toLocaleString()} rows. ` +
+      "Narrow the filters or use CSV (streamed).",
+  ) as Error & { statusCode: number; type: string };
+  error.statusCode = 413;
+  error.type = "payload_too_large";
+  return error;
 }
 
 export function createModuleExportService<
@@ -69,6 +82,9 @@ export function createModuleExportService<
     const allRows: TRow[] = [];
 
     if (includeIds && includeIds.length > 0) {
+      if (includeIds.length > MAX_MATERIALIZED_EXPORT_ROWS) {
+        throw tooManyRowsError();
+      }
       const batchSize = options.manifest.exportChunkSize;
       for (let i = 0; i < includeIds.length; i += batchSize) {
         const chunk = await options.loadByIds(includeIds.slice(i, i + batchSize));
@@ -80,6 +96,7 @@ export function createModuleExportService<
       for (;;) {
         const pageResult = await options.loadPage(normalized, page, 250, cursor);
         allRows.push(...(pageResult.rows as TRow[]));
+        if (allRows.length > MAX_MATERIALIZED_EXPORT_ROWS) throw tooManyRowsError();
         if (!pageResult.hasMore) break;
         const last = pageResult.rows[pageResult.rows.length - 1] as { id?: unknown } | undefined;
         cursor = pageResult.nextCursor ?? (last?.id ? String(last.id) : undefined);

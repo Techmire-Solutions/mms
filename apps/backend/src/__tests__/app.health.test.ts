@@ -8,14 +8,19 @@ vi.mock("../db/database.js", () => ({
 
 import { pingDatabase } from "../db/database.js";
 import { buildApp } from "../app.js";
+import { resetReadyProbeCacheForTests } from "../routes/common/health.js";
 
 describe("health routes", () => {
   beforeEach(() => {
     process.env.JWT_SECRET = "test-secret";
+    resetReadyProbeCacheForTests();
   });
 
   afterEach(() => {
     vi.mocked(pingDatabase).mockResolvedValue(true);
+    vi.unstubAllEnvs();
+    delete process.env.METRICS_TOKEN;
+    resetReadyProbeCacheForTests();
   });
 
   it("GET /health returns OK and pool metrics", async () => {
@@ -23,6 +28,55 @@ describe("health routes", () => {
     const res = await app.inject({ method: "GET", url: "/health" });
     expect(res.statusCode).toBe(200);
     expect(res.json()).toMatchObject({
+      status: "OK",
+      pool: { totalCount: 5, idleCount: 4, waitingCount: 0 },
+    });
+    await app.close();
+  });
+
+  it("GET /health hides pool/cache topology from non-loopback callers", async () => {
+    const app = await buildApp();
+    const res = await app.inject({
+      method: "GET",
+      url: "/health",
+      remoteAddress: "203.0.113.9",
+    });
+    expect(res.statusCode).toBe(200);
+    const body = res.json();
+    expect(body.status).toBe("OK");
+    expect(typeof body.timestamp).toBe("string");
+    expect(body).not.toHaveProperty("pool");
+    expect(body).not.toHaveProperty("redis");
+    expect(body).not.toHaveProperty("cache");
+    await app.close();
+  });
+
+  it("GET /health keeps detail for a valid METRICS_TOKEN bearer only", async () => {
+    process.env.METRICS_TOKEN = "metrics-secret";
+    const app = await buildApp();
+
+    const unauthenticated = await app.inject({
+      method: "GET",
+      url: "/health",
+      remoteAddress: "203.0.113.9",
+    });
+    expect(unauthenticated.json()).not.toHaveProperty("pool");
+
+    const wrongToken = await app.inject({
+      method: "GET",
+      url: "/health",
+      remoteAddress: "203.0.113.9",
+      headers: { authorization: "Bearer wrong-token" },
+    });
+    expect(wrongToken.json()).not.toHaveProperty("pool");
+
+    const authorized = await app.inject({
+      method: "GET",
+      url: "/health",
+      remoteAddress: "203.0.113.9",
+      headers: { authorization: "Bearer metrics-secret" },
+    });
+    expect(authorized.json()).toMatchObject({
       status: "OK",
       pool: { totalCount: 5, idleCount: 4, waitingCount: 0 },
     });
@@ -43,6 +97,31 @@ describe("health routes", () => {
     const res = await app.inject({ method: "GET", url: "/ready" });
     expect(res.statusCode).toBe(503);
     expect(res.json()).toMatchObject({ status: "not_ready", database: "disconnected" });
+    await app.close();
+  });
+
+  it("coalesces concurrent /ready probes into one database round-trip", async () => {
+    const app = await buildApp();
+    vi.mocked(pingDatabase).mockClear();
+
+    const responses = await Promise.all(
+      Array.from({ length: 20 }, () => app.inject({ method: "GET", url: "/ready" })),
+    );
+
+    expect(responses.every((res) => res.statusCode === 200)).toBe(true);
+    expect(vi.mocked(pingDatabase)).toHaveBeenCalledTimes(1);
+    await app.close();
+  });
+
+  it("can disable the readiness cache for operators and tests", async () => {
+    vi.stubEnv("READY_PROBE_CACHE_MS", "0");
+    const app = await buildApp();
+    vi.mocked(pingDatabase).mockClear();
+
+    await app.inject({ method: "GET", url: "/ready" });
+    await app.inject({ method: "GET", url: "/ready" });
+
+    expect(vi.mocked(pingDatabase)).toHaveBeenCalledTimes(2);
     await app.close();
   });
 

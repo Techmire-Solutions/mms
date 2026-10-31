@@ -43,6 +43,7 @@ export async function listMessageTemplatesByWorkspace(
       })
       .from(messageTemplates)
       .where(eq(messageTemplates.workspaceSubdomain, subdomain))
+      .orderBy(messageTemplates.id)
       .limit(limit)
       .offset(offset);
     return rows.map(templateRowToRecord);

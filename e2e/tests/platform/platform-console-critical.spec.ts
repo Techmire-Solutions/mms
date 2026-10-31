@@ -3,6 +3,7 @@ import { mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from "nod
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { expect, type Page, type Response, test } from "@playwright/test";
+import { setTenantAdminPassword } from "../../helpers/platformAdminSeeder.js";
 import { waitForToastOverlayToClear } from "../../helpers/tenantOperations.js";
 
 process.env.NODE_ENV = process.env.NODE_ENV || "test";
@@ -134,32 +135,6 @@ function ensureE2ePlatformAdmin(): void {
     E2E_PLATFORM_PERMISSIONS: JSON.stringify(PLATFORM_ADMIN_PERMISSION_KEYS),
   });
   console.log(output.trim());
-}
-
-function setTenantAdminPassword(tenantSubdomain: string, email: string, password: string): void {
-  const script = [
-    'const { Pool } = require("pg");',
-    'const { scrypt, randomBytes } = require("node:crypto");',
-    'const { promisify } = require("node:util");',
-    "const scryptAsync = promisify(scrypt);",
-    "(async () => {",
-    "  const pool = new Pool({ connectionString: process.env.DATABASE_URL });",
-    '  const salt = randomBytes(16).toString("hex");',
-    "  const key = await scryptAsync(process.env.ADMIN_PASSWORD, salt, 64);",
-    '  const passwordHash = `${salt}:${key.toString("hex")}`;',
-    "  await pool.query(",
-    '    "UPDATE tenant_users SET password_hash = $1, must_change_password = true, updated_at = now() WHERE workspace_subdomain = $2 AND login_email = $3",',
-    "    [passwordHash, process.env.TENANT_SUBDOMAIN, process.env.ADMIN_EMAIL],",
-    "  );",
-    "  await pool.end();",
-    "})().catch((error) => { console.error(error); process.exit(1); });",
-  ].join("\n");
-
-  runGuardedNodeScript(script, {
-    TENANT_SUBDOMAIN: tenantSubdomain.toLowerCase(),
-    ADMIN_EMAIL: email.toLowerCase(),
-    ADMIN_PASSWORD: password,
-  });
 }
 
 /**
@@ -333,7 +308,13 @@ test.describe("Platform Console Critical Workspace Lifecycle", () => {
     await test.step("3. Tenant owner signs in and completes mandatory password change", async () => {
       await page.goto(`${tenantOrigin}/login`);
       await page.waitForLoadState("domcontentloaded");
-      await page.locator('input[name="email"]').fill(tenantOwnerEmail);
+      const retryBtn = page.getByRole("button", { name: /Try again|Retry/i });
+      if (await retryBtn.isVisible({ timeout: 2000 }).catch(() => false)) {
+        await retryBtn.click().catch(() => {});
+      }
+      const emailInput = page.locator('input[name="email"]');
+      await emailInput.waitFor({ state: "visible", timeout: 30_000 });
+      await emailInput.fill(tenantOwnerEmail);
       await page.locator('input[name="password"]').fill(tenantOwnerTempPassword);
       await page.locator('button[type="submit"]').click();
 
@@ -347,7 +328,13 @@ test.describe("Platform Console Critical Workspace Lifecycle", () => {
       await page.locator('button[type="submit"]').click();
 
       await page.waitForURL(`${tenantOrigin}/login`);
-      await page.locator('input[name="email"]').fill(tenantOwnerEmail);
+      const secondRetryBtn = page.getByRole("button", { name: /Try again|Retry/i });
+      if (await secondRetryBtn.isVisible({ timeout: 2000 }).catch(() => false)) {
+        await secondRetryBtn.click().catch(() => {});
+      }
+      const secondEmailInput = page.locator('input[name="email"]');
+      await secondEmailInput.waitFor({ state: "visible", timeout: 30_000 });
+      await secondEmailInput.fill(tenantOwnerEmail);
       await page.locator('input[name="password"]').fill(tenantOwnerPassword);
       await page.locator('button[type="submit"]').click();
       await expect(

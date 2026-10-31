@@ -1,5 +1,6 @@
+import { useEffect } from "react";
 import { FormModal } from "@/components/app/FormModal";
-import { WarningCallout } from "@/components/app/WarningCallout";
+import { Alert } from "@/components/app/Alert";
 import { useTranslation } from "@/hooks/useTranslation";
 import type {
   MessageTemplate,
@@ -53,6 +54,19 @@ export function MessageComposer(props: MessageComposerProps): React.JSX.Element 
   };
 
   const cancelLabel = canGoPrevious ? t("common.previous") : t("common.cancel");
+  const { saveDisabled, handleSave } = model;
+
+  // Keyboard shortcut: Cmd/Ctrl + Enter to trigger save/send when valid
+  useEffect(() => {
+    const handleKeyDown = (event: KeyboardEvent): void => {
+      if (!(event.metaKey || event.ctrlKey) || event.key !== "Enter") return;
+      if (event.isComposing) return;
+      event.preventDefault();
+      if (!saveDisabled) handleSave();
+    };
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [saveDisabled, handleSave]);
 
   return (
     <FormModal
@@ -82,18 +96,12 @@ export function MessageComposer(props: MessageComposerProps): React.JSX.Element 
           event.preventDefault();
           if (!model.saveDisabled) model.handleSave();
         }}
-        onKeyDown={(event) => {
-          if (!(event.metaKey || event.ctrlKey) || event.key !== "Enter") return;
-          if (event.nativeEvent.isComposing) return;
-          event.preventDefault();
-          if (!model.saveDisabled) model.handleSave();
-        }}
       >
         {step === "compose" && (
           <>
             <p className="text-xs leading-relaxed text-muted-foreground">{model.note}</p>
             {dispatch.pendingAudit ? (
-              <WarningCallout density="compact" description={t("messaging.pendingAuditHint")} />
+              <Alert density="compact" description={t("messaging.pendingAuditHint")} />
             ) : null}
             <MessageComposerDispatchControls
               skippedCount={dispatch.skippedRecipients.length}

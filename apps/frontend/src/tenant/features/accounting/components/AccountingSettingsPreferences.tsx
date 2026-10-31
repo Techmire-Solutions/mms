@@ -1,13 +1,13 @@
 import { type AccountingSettings, type Account, type FiscalYear } from "@mms/shared";
 import type { StatusBadgeConfigItem } from "@/components/app/StatusBadge";
 import { AccountingSettingsCurrencySection } from "./AccountingSettingsCurrencySection";
+import { AccountingSettingsFxSection } from "./AccountingSettingsFxSection";
+import { AccountingSettingsHyperinflationSection } from "./AccountingSettingsHyperinflationSection";
 import { AccountingSettingsFiscalYearsSection } from "./AccountingSettingsFiscalYearsSection";
 import { AccountingSettingsRulesSection } from "./AccountingSettingsRulesSection";
 import { AccountingSettingsTemplatesSection } from "./AccountingSettingsTemplatesSection";
 import { AccountingSettingsNumberingSection } from "./AccountingSettingsNumberingSection";
 import { AccountingSettingsPostingSection } from "./AccountingSettingsPostingSection";
-import { AccountingSettingsOpeningSection } from "./AccountingSettingsOpeningSection";
-import { AccountingSettingsBankRecSection } from "./AccountingSettingsBankRecSection";
 
 type CurrencyOption = {
   code: string;
@@ -48,7 +48,7 @@ export function AccountingSettingsPreferences({
   canEditSetup,
   onEditFiscalYear,
   onRequestCloseFiscalYear,
-  onAccountsChange,
+  onAccountsChange: _onAccountsChange,
   isPrefsDirty,
   saving,
   saved,
@@ -67,6 +67,10 @@ export function AccountingSettingsPreferences({
         saved={saved}
         onSave={onSave}
       />
+
+      <AccountingSettingsFxSection canEditSetup={canEditSetup} />
+
+      <AccountingSettingsHyperinflationSection accounts={accounts} canEditSetup={canEditSetup} />
 
       <AccountingSettingsFiscalYearsSection
         fiscalYears={fiscalYears}
@@ -104,16 +108,6 @@ export function AccountingSettingsPreferences({
 
       <AccountingSettingsNumberingSection canEdit={canEditSetup} />
       <AccountingSettingsPostingSection accounts={accounts} />
-      <AccountingSettingsOpeningSection
-        accounts={accounts}
-        fiscalYears={fiscalYears}
-        decimalSeparator={settingsDraft.decimalSeparator}
-        onAccountsChange={onAccountsChange}
-      />
-      <AccountingSettingsBankRecSection
-        accounts={accounts}
-        decimalSeparator={settingsDraft.decimalSeparator}
-      />
     </div>
   );
 }

@@ -1,6 +1,6 @@
 import React from "react";
 import { Mail, MessageCircle, MessageSquare, Phone } from "lucide-react";
-import { QuickActionButton } from "@/components/app/QuickActionButton";
+import { ActionButton } from "@/components/app/ActionButton";
 import { WORK_SURFACE_INNER } from "@/components/ui/formStyles";
 import {
   MESSAGING_QUICK_ACTION_BASE,
@@ -52,7 +52,7 @@ export function EntityMessagingButtonGroup({
   return (
     <div className={cn("grid grid-cols-2 gap-2 sm:grid-cols-4", className)}>
       {showCall && primaryPhone && (
-        <QuickActionButton
+        <ActionButton
           label={callLabel}
           icon={Phone}
           href={telHref || `tel:${primaryPhone}`}
@@ -62,7 +62,7 @@ export function EntityMessagingButtonGroup({
         />
       )}
       {showWhatsApp && onWhatsApp && (
-        <QuickActionButton
+        <ActionButton
           label={whatsappLabel}
           icon={MessageCircle}
           onClick={onWhatsApp}
@@ -70,7 +70,7 @@ export function EntityMessagingButtonGroup({
         />
       )}
       {showSms && onSms && (
-        <QuickActionButton
+        <ActionButton
           label={smsLabel}
           icon={MessageSquare}
           onClick={onSms}
@@ -78,7 +78,7 @@ export function EntityMessagingButtonGroup({
         />
       )}
       {showEmail && onEmail && (
-        <QuickActionButton
+        <ActionButton
           label={emailLabel}
           icon={Mail}
           onClick={onEmail}

@@ -13,6 +13,8 @@ import {
   accountingPostingRules,
 } from "../schema.js";
 import { withTenant, withTenantRead } from "../tenant-context.js";
+import { requireDbDateValue } from "../../lib/dbDate.js";
+import { ensureCurrencySettingsInTx } from "./accountingCurrencySettingsRepository.js";
 
 export async function getPostingRules(tenant: string): Promise<PostingRules> {
   const subdomain = tenant.trim().toLowerCase();
@@ -24,6 +26,10 @@ export async function getPostingRules(tenant: string): Promise<PostingRules> {
         bankAccountId: accountingPostingRules.bankAccountId,
         incomeAccountId: accountingPostingRules.incomeAccountId,
         discountAccountId: accountingPostingRules.discountAccountId,
+        fxRealizedAccountId: accountingPostingRules.fxRealizedAccountId,
+        fxUnrealizedAccountId: accountingPostingRules.fxUnrealizedAccountId,
+        fxRoundingAccountId: accountingPostingRules.fxRoundingAccountId,
+        ctaAccountId: accountingPostingRules.ctaAccountId,
         updatedAt: accountingPostingRules.updatedAt,
       })
       .from(accountingPostingRules)
@@ -37,6 +43,10 @@ export async function getPostingRules(tenant: string): Promise<PostingRules> {
       bankAccountId: row.bankAccountId,
       incomeAccountId: row.incomeAccountId,
       discountAccountId: row.discountAccountId,
+      fxRealizedAccountId: row.fxRealizedAccountId,
+      fxUnrealizedAccountId: row.fxUnrealizedAccountId,
+      fxRoundingAccountId: row.fxRoundingAccountId,
+      ctaAccountId: row.ctaAccountId,
       updatedAt: row.updatedAt.toISOString(),
     };
   });
@@ -44,6 +54,20 @@ export async function getPostingRules(tenant: string): Promise<PostingRules> {
 
 export async function savePostingRules(tenant: string, rules: PostingRules): Promise<void> {
   const subdomain = tenant.trim().toLowerCase();
+  // IAS 21 accounts are written only when sent, so a client that predates them
+  // never clears accounts configured elsewhere.
+  const fxAccounts = Object.fromEntries(
+    (
+      [
+        "fxRealizedAccountId",
+        "fxUnrealizedAccountId",
+        "fxRoundingAccountId",
+        "ctaAccountId",
+      ] as const
+    )
+      .filter((field) => rules[field] !== undefined)
+      .map((field) => [field, rules[field] ?? null]),
+  );
   await withTenant(subdomain, async (tx) => {
     await tx
       .insert(accountingPostingRules)
@@ -54,6 +78,7 @@ export async function savePostingRules(tenant: string, rules: PostingRules): Pro
         bankAccountId: rules.bankAccountId ?? null,
         incomeAccountId: rules.incomeAccountId ?? null,
         discountAccountId: rules.discountAccountId ?? null,
+        ...fxAccounts,
         updatedAt: new Date(),
       })
       .onConflictDoUpdate({
@@ -64,6 +89,7 @@ export async function savePostingRules(tenant: string, rules: PostingRules): Pro
           bankAccountId: rules.bankAccountId ?? null,
           incomeAccountId: rules.incomeAccountId ?? null,
           discountAccountId: rules.discountAccountId ?? null,
+          ...fxAccounts,
           updatedAt: new Date(),
         },
       });
@@ -117,15 +143,27 @@ export async function replaceOpeningBalances(
         ),
       );
     if (balances.length === 0) return;
+    const { functionalCurrency } = await ensureCurrencySettingsInTx(tx, subdomain);
     await tx.insert(accountingOpeningBalances).values(
-      balances.map((row) => ({
-        id: row.id,
-        workspaceSubdomain: subdomain,
-        fiscalYearId,
-        accountId: row.accountId,
-        debit: String(row.debit ?? 0),
-        credit: String(row.credit ?? 0),
-      })),
+      balances.map((row) => {
+        const debit = String(row.debit ?? 0);
+        const credit = String(row.credit ?? 0);
+        return {
+          id: row.id,
+          workspaceSubdomain: subdomain,
+          fiscalYearId,
+          accountId: row.accountId,
+          debit,
+          credit,
+          txnCurrency: functionalCurrency,
+          txnDebit: debit,
+          txnCredit: credit,
+          exchangeRate: "1",
+          rateType: "HISTORICAL",
+          funcDebit: debit,
+          funcCredit: credit,
+        };
+      }),
     );
   });
 }
@@ -161,8 +199,8 @@ export async function listBankStatements(tenant: string): Promise<BankStatement[
     return statements.map((statement) => ({
       id: statement.id,
       accountId: statement.accountId,
-      periodStart: statement.periodStart,
-      periodEnd: statement.periodEnd,
+      periodStart: requireDbDateValue(statement.periodStart, "periodStart"),
+      periodEnd: requireDbDateValue(statement.periodEnd, "periodEnd"),
       openingBalance: Number(statement.openingBalance),
       closingBalance: Number(statement.closingBalance),
       createdAt: statement.createdAt.toISOString(),
@@ -171,7 +209,7 @@ export async function listBankStatements(tenant: string): Promise<BankStatement[
         .filter((line) => line.statementId === statement.id)
         .map((line) => ({
           id: line.id,
-          date: line.date,
+          date: requireDbDateValue(line.date, "date"),
           description: line.description,
           amount: Number(line.amount),
         })),
@@ -188,8 +226,8 @@ export async function saveBankStatement(tenant: string, record: BankStatement): 
         id: record.id,
         workspaceSubdomain: subdomain,
         accountId: record.accountId,
-        periodStart: record.periodStart,
-        periodEnd: record.periodEnd,
+        periodStart: requireDbDateValue(record.periodStart, "periodStart"),
+        periodEnd: requireDbDateValue(record.periodEnd, "periodEnd"),
         openingBalance: String(record.openingBalance ?? 0),
         closingBalance: String(record.closingBalance ?? 0),
         updatedAt: new Date(),
@@ -198,8 +236,8 @@ export async function saveBankStatement(tenant: string, record: BankStatement): 
         target: [accountingBankStatements.workspaceSubdomain, accountingBankStatements.id],
         set: {
           accountId: record.accountId,
-          periodStart: record.periodStart,
-          periodEnd: record.periodEnd,
+          periodStart: requireDbDateValue(record.periodStart, "periodStart"),
+          periodEnd: requireDbDateValue(record.periodEnd, "periodEnd"),
           openingBalance: String(record.openingBalance ?? 0),
           closingBalance: String(record.closingBalance ?? 0),
           updatedAt: new Date(),
@@ -219,7 +257,7 @@ export async function saveBankStatement(tenant: string, record: BankStatement): 
           id: line.id,
           workspaceSubdomain: subdomain,
           statementId: record.id,
-          date: line.date,
+          date: requireDbDateValue(line.date, "date"),
           description: line.description ?? "",
           amount: String(line.amount ?? 0),
         })),

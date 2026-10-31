@@ -7,6 +7,7 @@ import {
   type DashboardWidgetDto,
   type DashboardWidgetsPutBody,
 } from "@mms/shared";
+import { assertContractOk } from "@/lib/apiContractError";
 
 export async function fetchDashboardPreferences(
   _signal?: AbortSignal,
@@ -69,9 +70,7 @@ export async function reorderDashboardWidgetsAsync(
   const res = await apiContract.dashboard.reorderWidgets({
     body: { order },
   });
-  if (res.status !== 200) {
-    throw new Error("Failed to reorder dashboard widgets");
-  }
+  assertContractOk(res, "Failed to reorder dashboard widgets");
 }
 
 export async function fetchDashboardSummaryAsync(

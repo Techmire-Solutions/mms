@@ -16,7 +16,7 @@
 [extend]
 useDefault = true
 
-[allowlist]
+[[allowlists]]
 description = "Reviewed false positives: test fixtures, localStorage key names, and placeholder values."
 
 # --- Test-only credentials -------------------------------------------------
@@ -30,28 +30,40 @@ regexes = [
   '''postgres://postgres:postgres@''',
   # Documented placeholder for the Resend API key in .env.example.
   '''re_123456789''',
+  # Exact fixture literals from tests. Listed by VALUE, not by path: the two
+  # `__tests__` trees used to be excluded wholesale, which stopped every rule —
+  # AWS keys, private keys, JWTs — from scanning ~500 files. These literals are
+  # obviously fake and appear only in test fixtures.
+  '''test-secret-key-1234567890''',
+  '''OperatorPass123''',
 ]
 
-# Reviewed paths:
+# Reviewed identifiers — allowlisted by VALUE and rule, never by path, so every
+# other rule keeps scanning these files.
+#
 #  - frontend `mms_*` constants are localStorage KEYS, not credentials;
 #    `generic-api-key` matches them because they contain "key" and are long
 #    identifiers.
-#  - the extracted template-data modules (`lib/*TemplateData.ts`) carry the same
-#    reviewed `key:` preset identifiers as the `*TemplateEditor.tsx` components
-#    they were split from.
-#  - test files use obviously-fake values throughout.
-#  - .env.example contains commented placeholders only.
+#  - the template presets (`certificate_a4_landscape`, `hasanat_a6_voucher`) are
+#    document-template keys shared by the editor components and their extracted
+#    data modules.
 #  - scratch/naming_report.txt was removed from the tree but remains in history;
 #    it listed exported symbol NAMES, one of which resembles an Asana client
-#    secret. The matched line is an "Exports:" line, not a credential.
-paths = [
-  '''apps/frontend/src/lib/ContactConfigContext\.tsx''',
-  '''apps/frontend/src/lib/contactConfig/prefsStorage\.ts''',
-  '''apps/frontend/src/lib/twoFactor\.ts''',
-  '''apps/frontend/src/tenant/features/(hasanat|examinations)/components/.*TemplateEditor\.tsx''',
-  '''apps/frontend/src/tenant/features/(hasanat|examinations)/lib/.*TemplateData\.ts''',
-  '''apps/backend/src/__tests__/.*\.ts''',
-  '''packages/shared/src/__tests__/.*\.ts''',
-  '''apps/backend/\.env\.example''',
-  '''scratch/naming_report\.txt''',
+#    secret. The matched line is an exported symbol, not a credential.
+[[allowlists]]
+description = "Reviewed localStorage/template identifiers matched by generic-api-key"
+targetRules = ["generic-api-key"]
+regexTarget = "match"
+regexes = [
+  '''certificate_a4_landscape''',
+  '''hasanat_a6_voucher''',
+  '''mms_visible_columns_v1''',
+  '''darul_quran_visible_columns_v1''',
+  '''mms_2fa_pending''',
 ]
+
+[[allowlists]]
+description = "Exported symbol name in the removed scratch/naming_report.txt"
+targetRules = ["asana-client-secret"]
+regexTarget = "match"
+regexes = ['''getHasanatSettingsMemoryFallback''']

@@ -14,7 +14,7 @@ import {
 } from "@/hooks/useWorkDirectoryViewMode";
 import { type AppTranslationKey } from "@mms/shared";
 
-/** ReportMoneyCard tile (report) — not DirectoryCard. */
+/** ReportMoneyCard tile (report) — not DirectoryEntityCard. */
 interface TrialBalanceRow {
   id: string;
   code: string;

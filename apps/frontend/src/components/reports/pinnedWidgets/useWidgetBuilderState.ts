@@ -1,6 +1,5 @@
-import { useState, useEffect } from "react";
+import { useCallback, useState } from "react";
 import { useTranslation } from "@/hooks/useTranslation";
-import { METADATA_FIELDS } from "@/lib/reports/reportMetadata";
 import type { CustomWidget } from "@/lib/reports/pinnedWidgetTypes";
 import { useWidgetCollections } from "@/lib/reports/useReportCollections";
 import type { ReportCollection } from "@/lib/reports/reportMetadata";
@@ -11,6 +10,11 @@ import {
   buildWidgetSavePayload,
 } from "@/components/reports/pinnedWidgets/widgetBuilderStateHelpers";
 import { useWidgetBuilderHydration } from "@/components/reports/pinnedWidgets/useWidgetBuilderHydration";
+import {
+  initialFilterField,
+  initialTargetField,
+  useWidgetBuilderCollectionDefaults,
+} from "@/components/reports/pinnedWidgets/useWidgetBuilderCollectionDefaults";
 
 interface UseWidgetBuilderStateOptions {
   initialCollection: CustomWidget["collection"];
@@ -39,8 +43,12 @@ export function useWidgetBuilderState({
   const [builderCollection, setBuilderCollection] =
     useState<CustomWidget["collection"]>(initialCollection);
   const [builderOperation, setBuilderOperation] = useState<CustomWidget["operation"]>("count");
-  const [builderTargetField, setBuilderTargetField] = useState("");
-  const [builderFilterField, setBuilderFilterField] = useState("");
+  const [builderTargetField, setBuilderTargetField] = useState(() =>
+    initialTargetField(initialCollection, editWidgetConfig),
+  );
+  const [builderFilterField, setBuilderFilterField] = useState(() =>
+    initialFilterField(initialCollection, editWidgetConfig),
+  );
   const [builderFilterOperator, setBuilderFilterOperator] =
     useState<CustomWidget["filterOperator"]>("equals");
   const [builderFilterValue, setBuilderFilterValue] = useState("");
@@ -77,6 +85,22 @@ export function useWidgetBuilderState({
   })();
   const collections = useWidgetCollections({ requiredCollections });
 
+  // `useWidgetBuilderHydration` clears these two drafts when it re-hydrates a fresh
+  // builder, but the collection defaults below own the empty case, so only forward
+  // hydrated values while editing an existing widget.
+  const hydrateFilterField = useCallback(
+    (value: string) => {
+      if (editWidgetConfig) setBuilderFilterField(value);
+    },
+    [editWidgetConfig],
+  );
+  const hydrateTargetField = useCallback(
+    (value: string) => {
+      if (editWidgetConfig) setBuilderTargetField(value);
+    },
+    [editWidgetConfig],
+  );
+
   useWidgetBuilderHydration({
     editWidgetConfig,
     initialCollection,
@@ -85,8 +109,8 @@ export function useWidgetBuilderState({
     setBuilderTitle,
     setBuilderCollection,
     setBuilderOperation,
-    setBuilderTargetField,
-    setBuilderFilterField,
+    setBuilderTargetField: hydrateTargetField,
+    setBuilderFilterField: hydrateFilterField,
     setBuilderFilterOperator,
     setBuilderFilterValue,
     setBuilderColor,
@@ -116,15 +140,12 @@ export function useWidgetBuilderState({
     setSwitchRecordId,
   });
 
-  useEffect(() => {
-    if (editWidgetConfig && editWidgetConfig.collection === builderCollection) return;
-    const meta = METADATA_FIELDS[builderCollection];
-    if (!meta) return;
-    const firstField = meta.fields[0];
-    setBuilderFilterField(firstField ? firstField.value : "");
-    const firstNumField = meta.numericFields[0];
-    setBuilderTargetField(firstNumField ? firstNumField.value : "");
-  }, [builderCollection, editWidgetConfig]);
+  useWidgetBuilderCollectionDefaults({
+    collection: builderCollection,
+    editWidgetConfig,
+    setBuilderTargetField,
+    setBuilderFilterField,
+  });
 
   const previewWidget = (() =>
     buildWidgetBuilderPreview(

@@ -26,9 +26,14 @@ vi.mock("@/tenant/features/accounting/hooks/useJournalTemplates", () => ({
   }),
 }));
 
-vi.mock("@/tenant/features/accounting/hooks/useVoucherNumbering", () => ({
-  useVoucherNumbering: () => ({ data: { autoGenerate: true, nextVoucherNumber: "JE-0001" } }),
-}));
+vi.mock("@/tenant/features/accounting/hooks/useVoucherNumbering", async (importOriginal) => {
+  const actual =
+    await importOriginal<typeof import("@/tenant/features/accounting/hooks/useVoucherNumbering")>();
+  return {
+    ...actual,
+    useVoucherNumbering: () => ({ data: { autoGenerate: true, nextVoucherNumber: "JE-0001" } }),
+  };
+});
 
 vi.mock("framer-motion", () => ({
   motion: {

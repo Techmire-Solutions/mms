@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { useDebounce } from "@/hooks/useDebounce";
 import { useDirectoryTrashState } from "@/hooks/useDirectoryTrashState";
 import type {
@@ -18,9 +18,13 @@ export function useSessionsDirectoryFilters() {
   const [filterStatus, setFilterStatus] = useState<SessionStatus[]>([]);
   const [filterType, setFilterType] = useState<SessionType[]>([]);
 
-  useEffect(() => {
+  // Page 1 whenever a server-side filter/sort dimension changes (render-phase reset, no effect).
+  const filterKey = `${debouncedSearch}|${filterStatus.join(",")}|${filterType.join(",")}|${showDeleted}|${sortField}|${sortDir}`;
+  const [prevFilterKey, setPrevFilterKey] = useState(filterKey);
+  if (prevFilterKey !== filterKey) {
+    setPrevFilterKey(filterKey);
     setListPage(1);
-  }, [debouncedSearch, filterStatus, filterType, showDeleted, sortField, sortDir]);
+  }
 
   const clearFilters = () => {
     setSearch("");

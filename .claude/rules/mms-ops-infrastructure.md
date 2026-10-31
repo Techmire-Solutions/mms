@@ -21,12 +21,12 @@ paths:
 **Workflow skills:** local install/run → `mms-dev-setup` · production Hetzner/Apache → `mms-ops-deploy` · VPS casing/LF/PM2 → `mms-linux-compatibility`.
 
 ## 1. Prerequisites & Environment Setup
-- **Runtimes & Tooling:** Node.js `>=24.14.0` (native `--env-file=.env` and `--experimental-strip-types`; `dotenv` is banned), Corepack `pnpm@11.15.1`, Turbo `^2.11.7`, PostgreSQL 16.
+- **Runtimes & Tooling:** Node.js `>=24.14.0` (native `--env-file=.env` and `--experimental-strip-types`; `dotenv` is banned), Corepack `pnpm@11.15.1`, Turbo 2 (root devDependency), PostgreSQL 16.
 - **Root Commands:** `pnpm dev` (concurrent apps), `pnpm build`, `pnpm typecheck`, `pnpm test`. Local screen session: `./restart_servers.sh [status|stop|--foreground]`.
 
 ## 2. Environment Variables & Ports Configuration
 - **Port Bindings:** Production Backend **`5002`** (`MMS_PRODUCTION_BACKEND_PORT`); Local Dev Backend `3000` (`MMS_DEV_BACKEND_PORT`); Local Dev Frontend `5173`. Binding to `3000` or `3001` under `NODE_ENV=production` is strictly forbidden (server must exit).
-- **Subdomain Routing:** Vite dev proxy forwards `X-Forwarded-Host`; resolved via `AsyncLocalStorage` (`AsyncContextFrame`).
+- **Subdomain Routing:** Vite dev proxy forwards `X-Forwarded-Host`; resolved via `AsyncLocalStorage` (standard `node:async_hooks`, no experimental flag).
 - **Reverse Proxy & Sockets:** Apache terminates TLS HTTP/2, Brotli/gzip, and routes `/ws` & `/api/ws` via `mod_proxy_wstunnel` (timeout 60s, keepalive on). Fastify synchronizes `keepAliveTimeout` (30s) and `headersTimeout` (35s) with TCP Keep-Alive.
 - **Graceful Shutdown:** On `SIGTERM`/`SIGINT`, flip `/ready` to 503, wait `SHUTDOWN_DRAIN_DELAY_MS` (5s), close server, pause BullMQ workers, and close DB pools before exit.
 - **Sanctioned Wipes:** Tenant wipe: `deleteWorkspace` → `purgeTenantDataBySubdomain`. Platform reset: `POST /api/platform/settings/reset-database` (super-user only). Ad-hoc `DROP SCHEMA` or client-side wipes are banned.

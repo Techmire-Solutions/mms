@@ -11,6 +11,7 @@ import {
   isTokenRevoked,
   isUserSessionRevoked,
 } from "../../services/authSessionService.js";
+import { RedisUnavailableError } from "../../lib/redis.js";
 import { getWorkspaceBySubdomain } from "../../services/workspaceService.js";
 import { registerConnection, type MinimalWebSocket } from "../../lib/livePush.js";
 import { ACCESS_COOKIE } from "../../services/auth/authCookieService.js";
@@ -177,8 +178,18 @@ export default async function websocketRoutes(app: FastifyInstance): Promise<voi
           return;
         }
 
-        registerConnection(subdomain, socket, decoded.id);
-      } catch {
+        // registerConnection returns null when the per-user (5) or per-tenant
+        // (500) cap is already reached; close with 1013 (Try Again Later) so the
+        // client backs off instead of assuming an auth failure.
+        if (!registerConnection(subdomain, socket, decoded.id)) {
+          socket.close(1013, "Too many live connections");
+        }
+      } catch (error) {
+        if (error instanceof RedisUnavailableError) {
+          // Fail closed but retryable: the revocation store cannot be consulted.
+          socket.close(1013, "Session validation unavailable");
+          return;
+        }
         socket.close(4001, "Unauthorized - Invalid token");
       }
     })();

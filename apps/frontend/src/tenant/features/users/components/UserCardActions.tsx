@@ -1,5 +1,5 @@
 import type { SystemUser } from "@mms/shared";
-import { EntityCardFooterActions } from "@/components/app/EntityCardFooterActions";
+import { DirectoryCardFooterActions } from "@/components/app/DirectoryCardFooterActions";
 import { useTranslation } from "@/hooks/useTranslation";
 import { UsersRowActions } from "@/tenant/features/users/components/UsersRowActions";
 
@@ -30,7 +30,7 @@ export function UserCardActions({
   const { t } = useTranslation();
 
   return (
-    <EntityCardFooterActions
+    <DirectoryCardFooterActions
       onView={() => onView(user)}
       viewLabel={t("users.actionViewShort")}
       viewAriaLabel={t("users.actionView", { name: user.name })}

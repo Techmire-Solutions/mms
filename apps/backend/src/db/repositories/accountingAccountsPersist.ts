@@ -3,6 +3,11 @@ import { dedupeTrimmedIds, type Account } from "@mms/shared";
 import { accountingAccounts, accountingJournalLines } from "../schema.js";
 import { withTenant } from "../tenant-context.js";
 import { ValidationError } from "../../lib/httpErrors.js";
+import {
+  accountFxInsertValues,
+  accountFxUpdateSet,
+  applyExplicitAccountFxFlags,
+} from "./accountingAccountsFxPersist.js";
 
 export async function saveAccount(tenant: string, record: Account): Promise<void> {
   const subdomain = tenant.trim().toLowerCase();
@@ -18,6 +23,7 @@ export async function saveAccount(tenant: string, record: Account): Promise<void
         subtype: record.subtype ?? "",
         description: record.description ?? "",
         isActive: record.isActive ?? true,
+        ...accountFxInsertValues(record),
         deletedAt: record.deletedAt ? new Date(record.deletedAt) : null,
         deletedBy: record.deletedBy ?? null,
         deletionReason: record.deletionReason ?? null,
@@ -32,6 +38,7 @@ export async function saveAccount(tenant: string, record: Account): Promise<void
           subtype: record.subtype ?? "",
           description: record.description ?? "",
           isActive: record.isActive ?? true,
+          ...accountFxUpdateSet(record),
           deletedAt: record.deletedAt ? new Date(record.deletedAt) : null,
           deletedBy: record.deletedBy ?? null,
           deletionReason: record.deletionReason ?? null,
@@ -65,6 +72,7 @@ export async function bulkSaveAccounts(tenant: string, records: Account[]): Prom
           subtype: r.subtype ?? "",
           description: r.description ?? "",
           isActive: r.isActive ?? true,
+          ...accountFxInsertValues(r),
           deletedAt: r.deletedAt ? new Date(r.deletedAt) : null,
           deletedBy: r.deletedBy ?? null,
           deletionReason: r.deletionReason ?? null,
@@ -86,6 +94,7 @@ export async function bulkSaveAccounts(tenant: string, records: Account[]): Prom
           updatedAt: new Date(),
         },
       });
+    await applyExplicitAccountFxFlags(tx, subdomain, uniqueRecords);
   });
 }
 
@@ -114,6 +123,7 @@ export async function replaceAccountsForWorkspace(
           subtype: r.subtype ?? "",
           description: r.description ?? "",
           isActive: r.isActive ?? true,
+          ...accountFxInsertValues(r),
           deletedAt: r.deletedAt ? new Date(r.deletedAt) : null,
           deletedBy: r.deletedBy ?? null,
           deletionReason: r.deletionReason ?? null,

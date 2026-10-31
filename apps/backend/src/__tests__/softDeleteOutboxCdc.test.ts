@@ -40,6 +40,7 @@ const { mockInsert, mockUpdate, mockSelect, mockActiveDb } = vi.hoisted(() => {
 vi.mock("../db/dbConnection.js", () => ({
   activeDb: mockActiveDb,
   runInTransaction: vi.fn((cb: () => unknown) => cb()),
+  runInGlobalTransaction: vi.fn((cb: () => unknown) => cb()),
   hasActiveTransaction: vi.fn(() => false),
   withActiveTransaction: vi.fn((_, cb: () => unknown) => cb()),
 }));

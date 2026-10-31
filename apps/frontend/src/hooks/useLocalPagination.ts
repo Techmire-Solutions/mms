@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 
 export interface UseLocalPaginationOptions<T> {
   items: T[];
@@ -21,10 +21,8 @@ export function useLocalPagination<T>({
     setCurrentPage(1);
   };
 
-  useEffect(() => {
-    setCurrentPage(1);
-  }, [items]);
-
+  // Derives safe page bounds without in-render setState loops when callers pass
+  // arrays computed during render (filter, slice, map, etc.).
   const filteredItems = (() => {
     if (!searchQuery.trim()) return items;
     const query = searchQuery.toLowerCase();
@@ -49,15 +47,17 @@ export function useLocalPagination<T>({
     return Math.max(1, Math.ceil(filteredItems.length / pageSize));
   })();
 
+  const safeCurrentPage = Math.max(1, Math.min(currentPage, totalPages));
+
   const paginatedItems = (() => {
-    const startIndex = (currentPage - 1) * pageSize;
+    const startIndex = (safeCurrentPage - 1) * pageSize;
     return filteredItems.slice(startIndex, startIndex + pageSize);
   })();
 
   return {
     searchQuery,
     setSearchQuery,
-    currentPage,
+    currentPage: safeCurrentPage,
     setCurrentPage,
     handleSearchChange,
     filteredItems,

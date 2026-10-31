@@ -1,5 +1,9 @@
 import { type TenantDatabaseSnapshot } from "@mms/shared";
-import { getAllData as dbGetAllData, runInReadSnapshotTransaction } from "../db/database.js";
+import {
+  getAllData as dbGetAllData,
+  runInGlobalReadSnapshotTransaction,
+  runInReadSnapshotTransaction,
+} from "../db/database.js";
 import { loadRelationalSnapshotCollections } from "../db/relationalSnapshot.js";
 import { getRequestTenant } from "../lib/tenantContext.js";
 import { maskGlobalSettingsForClient } from "./globalSettingsService.js";
@@ -50,7 +54,13 @@ export async function fetchDatabaseSnapshot(): Promise<TenantDatabaseSnapshot> {
  * @returns {Promise<TenantDatabaseSnapshot>} The full backup snapshot.
  */
 export async function fetchBackupSnapshot(): Promise<TenantDatabaseSnapshot> {
-  return await runInReadSnapshotTransaction(async () => {
+  // Tenant snapshot when a workspace is bound; a platform-wide export only when
+  // none is. `runInReadSnapshotTransaction` fails closed on a missing tenant.
+  const runSnapshot = getRequestTenant()
+    ? runInReadSnapshotTransaction
+    : runInGlobalReadSnapshotTransaction;
+
+  return await runSnapshot(async () => {
     const snapshot = await dbGetAllData();
     const tenant = getRequestTenant();
     if (!tenant) return snapshot;

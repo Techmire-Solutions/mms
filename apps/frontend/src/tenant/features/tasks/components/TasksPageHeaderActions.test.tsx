@@ -49,4 +49,49 @@ describe("TasksPageHeaderActions", () => {
     exportBtn?.dispatchEvent(new MouseEvent("click", { bubbles: true }));
     expect(onExport).toHaveBeenCalled();
   });
+
+  it("renders Export button but hides Create and Import when read-only with export rights", () => {
+    const onExport = vi.fn();
+    const onImport = vi.fn();
+
+    act(() => {
+      root.render(
+        <TasksPageHeaderActions
+          canWrite={false}
+          canExport={true}
+          showDeleted={false}
+          onCreate={vi.fn()}
+          onImport={onImport}
+          onExport={onExport}
+        />,
+      );
+    });
+
+    const exportBtn = container.querySelector("button:has(svg.lucide-download)");
+    const importBtn = container.querySelector("button:has(svg.lucide-upload)");
+    const createBtn = container.querySelector("button:has(svg.lucide-plus)");
+    expect(exportBtn).toBeTruthy();
+    expect(importBtn).toBeNull();
+    expect(createBtn).toBeNull();
+
+    exportBtn?.dispatchEvent(new MouseEvent("click", { bubbles: true }));
+    expect(onExport).toHaveBeenCalled();
+  });
+
+  it("renders null when in trash view", () => {
+    act(() => {
+      root.render(
+        <TasksPageHeaderActions
+          canWrite={true}
+          canExport={true}
+          showDeleted={true}
+          onCreate={vi.fn()}
+          onImport={vi.fn()}
+          onExport={vi.fn()}
+        />,
+      );
+    });
+
+    expect(container.innerHTML).toBe("");
+  });
 });

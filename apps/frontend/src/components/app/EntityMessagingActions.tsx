@@ -138,7 +138,8 @@ export function EntityMessagingActions({
 
   return (
     <TooltipProvider delayDuration={200}>
-      <div className={cn("flex flex-wrap items-center gap-1.5", className)}>
+      {/* 44px pseudo hit areas must not overlap: keep at least 16px between 28px buttons. */}
+      <div className={cn("flex flex-wrap items-center gap-4", className)}>
         {showCall && (
           <MessagingActionButton
             icon={Phone}
@@ -183,4 +184,34 @@ export function EntityMessagingActions({
       </div>
     </TooltipProvider>
   );
+}
+
+/**
+ * Dropdown menu items variant of EntityMessagingActions.
+ * Convenient helper for mounting inside a DropdownMenuContent.
+ */
+export function EntityMessagingDropdownItems(
+  props: Omit<EntityMessagingActionsProps, "variant">,
+): React.JSX.Element | null {
+  return <EntityMessagingActions variant="dropdown" {...props} />;
+}
+
+/**
+ * Icon row variant of EntityMessagingActions.
+ * Standard compact inline actions row with tooltips.
+ */
+export function EntityMessagingIconActions(
+  props: Omit<EntityMessagingActionsProps, "variant">,
+): React.JSX.Element | null {
+  return <EntityMessagingActions variant="icon-row" {...props} />;
+}
+
+/**
+ * Button group variant of EntityMessagingActions.
+ * Quick-actions grid with labeled buttons for detail hero cards.
+ */
+export function EntityMessagingQuickActions(
+  props: Omit<EntityMessagingActionsProps, "variant">,
+): React.JSX.Element | null {
+  return <EntityMessagingActions variant="button-group" {...props} />;
 }

@@ -11,8 +11,8 @@ type ExportAction = {
 
 let lastExportAction: ExportAction | undefined;
 
-vi.mock("@/components/app/ModuleUniversalBulkActionBar", () => ({
-  ModuleUniversalBulkActionBar: ({
+vi.mock("@/components/app/BulkSelectionBar", () => ({
+  BulkSelectionBar: ({
     selectedCount,
     deleteLabel,
     exportAction,

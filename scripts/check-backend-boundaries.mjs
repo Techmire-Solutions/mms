@@ -3,9 +3,14 @@
  * Ratchet: backend route handlers must not reach into storage directly.
  *
  * The documented chain is routes → use-cases → repository interface → Drizzle adapter
- * (`SYSTEM_ARCHITECTURE.md` §5). A route file that imports `db/repositories/**` or the
- * `drizzle-orm` query builder short-circuits that seam: the handler owns SQL, bypasses
- * the module's repository interface, and can't be exercised with a fake repository.
+ * (`SYSTEM_ARCHITECTURE.md` §5). A route file that imports `db/repositories/**`, the
+ * raw `db/dbClient`, `getDb()`/`getRootDb()`, or the `drizzle-orm` query builder
+ * short-circuits that seam: the handler owns SQL, bypasses the module's repository
+ * interface, and can't be exercised with a fake repository.
+ *
+ * `db/dbConnection` is deliberately not flagged as an import: `dbSyncRoutes` uses its
+ * long-lived transaction primitives directly. A route that reaches for `getDb` /
+ * `getRootDb` is caught by the separate call check.
  *
  * Why a ratchet rather than a fix-everything pass
  * ----------------------------------------------
@@ -61,11 +66,28 @@ function findDirectStorageImports(source) {
       lines[i].match(/\bimport\s*\(\s*["']([^"']+)["']\s*\)/);
     if (!m) continue;
     const specifier = m[1];
-    const isRepoImport = specifier.includes("db/repositories/");
+    // Module adapters (`<module>/repository/<x>Adapter.js`) are the SAME seam as
+    // `db/repositories/*`: a route that imports one has reached into storage.
+    // Matching only "db/repositories/" reported a false zero while
+    // `routes/common/auth/authSessionRoutes.ts` imported
+    // `users/repository/usersRepositoryAdapter.js`.
+    const isRepoImport = specifier.includes("db/repositories/") || /\/repository\//.test(specifier);
+    const isRawClient = specifier.includes("db/dbClient");
     const isQueryBuilder = specifier === "drizzle-orm" || specifier.startsWith("drizzle-orm/");
-    if (isRepoImport || isQueryBuilder) {
+    if (isRepoImport || isRawClient || isQueryBuilder) {
       hits.push({ line: i + 1, specifier });
     }
+  }
+  return hits;
+}
+
+/** Direct raw-client calls in a route source (`getDb()` / `getRootDb()`). */
+function findRawClientCalls(source) {
+  const hits = [];
+  const lines = source.split("\n");
+  for (let i = 0; i < lines.length; i += 1) {
+    if (/^\s*(\/\/|\*)/.test(lines[i])) continue;
+    if (/\b(?:getDb|getRootDb)\s*\(/.test(lines[i])) hits.push(i + 1);
   }
   return hits;
 }
@@ -90,12 +112,15 @@ const sources = changedMode
 
 const offenders = [];
 for (const file of sources) {
-  const hits = findDirectStorageImports(fs.readFileSync(file, "utf8"));
-  if (hits.length === 0) continue;
+  const source = fs.readFileSync(file, "utf8");
+  const hits = findDirectStorageImports(source);
+  const rawCalls = findRawClientCalls(source);
+  if (hits.length === 0 && rawCalls.length === 0) continue;
   offenders.push({
     file: path.relative(rootDir, file),
     specifiers: [...new Set(hits.map((h) => h.specifier))],
     lines: hits.map((h) => h.line),
+    rawCallLines: rawCalls,
   });
 }
 
@@ -104,7 +129,9 @@ if (process.argv.includes("--json")) {
   process.exit(0);
 }
 
-console.log("Backend route → storage boundary (direct db/repositories + drizzle-orm imports)");
+console.log(
+  "Backend route → storage boundary (db/repositories, db/dbClient, getDb()/getRootDb(), drizzle-orm)",
+);
 console.log(
   `  offenders: ${offenders.length} files (${changedMode ? "changed files" : `baseline ${BASELINE}`})`,
 );

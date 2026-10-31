@@ -1,10 +1,11 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import type { Account, JournalEntry, FiscalYear } from "@/lib/data/accountingData";
 import { useTranslation } from "@/hooks/useTranslation";
 import { useAuth } from "@/lib/contexts/AuthContext";
 import {
   generateClientEntityId,
   isJournalEntryBalanced,
+  isValidExchangeRate,
   journalEntryRecordSchema,
   moneyToCents,
   resolveDefaultFiscalYear,
@@ -19,6 +20,8 @@ import {
   validateJournalEntryForm,
   isJournalRefUnique,
 } from "../lib/journalEntryFormValidation";
+import { applyEntryCurrency, draftLinesFromEntry } from "../lib/journalEntryCurrency";
+import { useJournalEntryCurrency } from "./useJournalEntryCurrency";
 
 const EMPTY_LINE = (): DraftLine => ({
   id: generateClientEntityId("l", "-"),
@@ -49,15 +52,19 @@ export function useJournalEntryForm({
   const activeFiscalYearRecord = resolveDefaultFiscalYear(fiscalYears, todayISO());
   const activeFiscalYear = activeFiscalYearRecord?.id || "";
 
-  const [form, setForm] = useState<DraftForm>(() => {
-    return initial
+  const [entryDate, setEntryDate] = useState(initial?.date ?? todayISO());
+  const fx = useJournalEntryCurrency(initial, entryDate);
+  const functionalCurrency = fx.functionalCurrency;
+
+  // The blank/edit baseline the form resets to when its inputs change.
+  // functionalCurrency is deliberately not part of that trigger: a late settings
+  // load must not reset a draft the user is typing; draftLinesFromEntry renders
+  // stored lines either way.
+  const createDraftForm = (): DraftForm =>
+    initial
       ? {
           ...initial,
-          lines: initial.lines.map((entryLine) => ({
-            ...entryLine,
-            debit: entryLine.debit || "",
-            credit: entryLine.credit || "",
-          })),
+          lines: draftLinesFromEntry(initial.lines, functionalCurrency),
         }
       : {
           id: "",
@@ -72,36 +79,43 @@ export function useJournalEntryForm({
           lines: [EMPTY_LINE(), EMPTY_LINE()],
           created_by: user?.name ?? "",
         };
-  });
+
+  const [form, setForm] = useState<DraftForm>(createDraftForm);
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [submitting, setSubmitting] = useState(false);
 
-  useEffect(() => {
-    const base: DraftForm = initial
-      ? {
-          ...initial,
-          lines: initial.lines.map((entryLine) => ({
-            ...entryLine,
-            debit: entryLine.debit || "",
-            credit: entryLine.credit || "",
-          })),
-        }
-      : {
-          id: "",
-          ref: "",
-          date: todayISO(),
-          description: "",
-          status: "draft",
-          tags: [],
-          attachments: [],
-          fiscal_year: activeFiscalYearRecord?.label || "",
-          fiscal_year_id: activeFiscalYear,
-          lines: [EMPTY_LINE(), EMPTY_LINE()],
-          created_by: user?.name ?? "",
-        };
-    setForm(base);
+  // Reset the draft when the edited entry, fiscal year or user changes — during
+  // render instead of in an effect. The entry is compared by content so an
+  // equal-value rerender of the same record cannot loop through the guard.
+  const initialKey = initial ? JSON.stringify(initial) : "";
+  const [formResetInputs, setFormResetInputs] = useState({
+    initialKey,
+    activeFiscalYear,
+    fiscalYearLabel: activeFiscalYearRecord?.label,
+    userName: user?.name,
+  });
+  if (
+    formResetInputs.initialKey !== initialKey ||
+    formResetInputs.activeFiscalYear !== activeFiscalYear ||
+    formResetInputs.fiscalYearLabel !== activeFiscalYearRecord?.label ||
+    formResetInputs.userName !== user?.name
+  ) {
+    setFormResetInputs({
+      initialKey,
+      activeFiscalYear,
+      fiscalYearLabel: activeFiscalYearRecord?.label,
+      userName: user?.name,
+    });
+    setForm(createDraftForm());
     setErrors({});
-  }, [initial, activeFiscalYear, activeFiscalYearRecord?.label, user?.name]);
+  }
+
+  // The date field lives on the draft; keep the currency hook's date in step.
+  const [prevFormDate, setPrevFormDate] = useState(entryDate);
+  if (prevFormDate !== form.date) {
+    setPrevFormDate(form.date);
+    setEntryDate(form.date);
+  }
 
   // Money is summed through integer cents (and converted once) so the totals
   // shown beside the lines are the same figures the ledger posts, with no float
@@ -172,6 +186,10 @@ export function useJournalEntryForm({
       setErrors(validationErrors);
       return;
     }
+    if (fx.isForeign && !isValidExchangeRate(fx.rate)) {
+      setErrors({ exchangeRate: t("fx.field.rateMissing") });
+      return;
+    }
     const trimmedRef = form.ref?.trim();
     // Blank on create → the server assigns the next voucher number on save.
     const journalReference = trimmedRef || (isEdit ? form.ref : "");
@@ -185,11 +203,16 @@ export function useJournalEntryForm({
       ref: journalReference,
       status: targetStatus,
       created_by: form.created_by || user?.name || "system",
-      lines: form.lines.map((journalLine) => ({
-        ...journalLine,
-        debit: parseJournalLineAmount(journalLine.debit),
-        credit: parseJournalLineAmount(journalLine.credit),
-      })),
+      lines: applyEntryCurrency(
+        form.lines.map((journalLine) => ({
+          ...journalLine,
+          debit: parseJournalLineAmount(journalLine.debit),
+          credit: parseJournalLineAmount(journalLine.credit),
+        })),
+        fx.currency || functionalCurrency,
+        functionalCurrency || fx.currency,
+        fx.rate,
+      ),
     };
     const parsed = journalEntryRecordSchema.safeParse(candidate);
     if (!parsed.success) {
@@ -219,6 +242,7 @@ export function useJournalEntryForm({
 
   return {
     t,
+    fx,
     isEdit,
     activeFiscalYear,
     form,

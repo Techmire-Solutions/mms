@@ -1,9 +1,8 @@
 import { motion } from "framer-motion";
-import { MessageCircle, Send } from "lucide-react";
 import { SEMANTIC_BADGE } from "@/lib/ui/semanticTone";
-import { Button } from "@/components/ui/button";
 import type { TranslationFunction } from "@/lib/contexts/TranslationContext";
 import { type useMessageComposerState } from "@/hooks/useMessageComposerState";
+import { EntityMessagingIconActions } from "@/components/app/EntityMessagingActions";
 import { StatusBadge } from "@/components/app/StatusBadge";
 import { TableRow } from "@/components/ui/table";
 
@@ -55,30 +54,21 @@ export function OutstandingFeeMessagingActions({
   const recipient = [buildOutstandingFeeRecipient(row)];
 
   return (
-    <div className={className ?? "flex items-center justify-end gap-1.5"}>
-      <Button
-        variant="ghost"
-        size="icon"
-        aria-label={`${t("contacts.whatsapp.open")} ${row.student}`}
-        title={t("contacts.whatsapp.open")}
-        className="rounded-lg text-muted-foreground hover:text-foreground hover:bg-muted/50 transition-colors shadow-none cursor-pointer"
-        disabled={!row.contact}
-        onClick={() => openComposer("whatsapp", recipient)}
-      >
-        <MessageCircle className="w-3.5 h-3.5" aria-hidden="true" />
-      </Button>
-      <Button
-        variant="ghost"
-        size="icon"
-        aria-label={`${t("dashboard.widgets.sendReminder")} ${row.student}`}
-        title={t("dashboard.widgets.sendReminder")}
-        className="rounded-lg text-muted-foreground hover:text-primary hover:bg-primary/10 transition-colors shadow-none cursor-pointer"
-        disabled={!row.contact}
-        onClick={() => openComposer("sms", recipient)}
-      >
-        <Send className="w-3.5 h-3.5" aria-hidden="true" />
-      </Button>
-    </div>
+    <EntityMessagingIconActions
+      labels={{
+        whatsapp: t("contacts.whatsapp.open"),
+        sms: t("dashboard.widgets.sendReminder"),
+      }}
+      whatsappAriaLabel={`${t("contacts.whatsapp.open")} ${row.student}`}
+      smsAriaLabel={`${t("dashboard.widgets.sendReminder")} ${row.student}`}
+      primaryPhone={row.contact}
+      showCall={false}
+      showEmail={false}
+      messagingEnabled={Boolean(row.contact)}
+      onWhatsApp={() => openComposer("whatsapp", recipient)}
+      onSms={() => openComposer("sms", recipient)}
+      className={className ?? "justify-end"}
+    />
   );
 }
 

@@ -55,13 +55,14 @@ test.describe.serial("Tenant Operations & Module Flows E2E", { tag: "@local-only
       "/messaging",
       "/users",
       "/accounting",
+      "/tasks",
     ] as const) {
       await assertModuleTierSmoke(page, modulePath, credentials.tenantOrigin);
     }
 
     // 2. Soft-delete trash toggle check on Students
     await page.goto(`${credentials.tenantOrigin}/students`);
-    await page.waitForLoadState("domcontentloaded");
+    await expect(page.locator("h1").first()).toBeVisible({ timeout: 20_000 });
     const trashToggle = page.getByRole("button", { name: /Show deleted|Show active/i }).first();
     await expect(trashToggle).toBeVisible({ timeout: 20_000 });
     await trashToggle.click();
@@ -71,59 +72,58 @@ test.describe.serial("Tenant Operations & Module Flows E2E", { tag: "@local-only
 
     // 3. Settings shell check
     await page.goto(`${credentials.tenantOrigin}/settings`);
-    await page.waitForLoadState("domcontentloaded");
     await expect(page.getByRole("heading", { name: "Settings", exact: true })).toBeVisible({
       timeout: 20_000,
     });
 
     // 4. Create base contacts (Jane Doe & John Doe) and Student
     await page.goto(`${credentials.tenantOrigin}/contacts`);
-    await page.waitForLoadState("domcontentloaded");
+    await expect(page.locator("h1").first()).toBeVisible({ timeout: 20_000 });
     await createTestContactJaneDoe(page);
     await createTestContactJohnDoe(page);
 
     await page.goto(`${credentials.tenantOrigin}/students`);
-    await page.waitForLoadState("domcontentloaded");
+    await expect(page.locator("h1").first()).toBeVisible({ timeout: 20_000 });
     await registerStudentJaneDoe(page);
 
     // 5. Create Faculty from John Doe contact
     await page.goto(`${credentials.tenantOrigin}/faculty`);
-    await page.waitForLoadState("domcontentloaded");
+    await expect(page.locator("h1").first()).toBeVisible({ timeout: 20_000 });
     await createFacultyFromContact(page);
 
     // 6. Create Finance Invoice for Jane Doe
     await page.goto(`${credentials.tenantOrigin}/finance`);
-    await page.waitForLoadState("domcontentloaded");
+    await expect(page.locator("h1").first()).toBeVisible({ timeout: 20_000 });
     await createFinanceInvoice(page);
 
     // 7. Create Session & Class
     await page.goto(`${credentials.tenantOrigin}/sessions`);
-    await page.waitForLoadState("domcontentloaded");
+    await expect(page.locator("h1").first()).toBeVisible({ timeout: 20_000 });
     await createSessionAndClass(page);
 
     // 8. Enroll Jane Doe in Afternoon Tajweed 2026
     await page.goto(`${credentials.tenantOrigin}/enrollments`);
-    await page.waitForLoadState("domcontentloaded");
+    await expect(page.locator("h1").first()).toBeVisible({ timeout: 20_000 });
     await createStudentEnrollment(page);
 
     // 9. Record Invoice Payment
     await page.goto(`${credentials.tenantOrigin}/finance`);
-    await page.waitForLoadState("domcontentloaded");
+    await expect(page.locator("h1").first()).toBeVisible({ timeout: 20_000 });
     await recordInvoicePayment(page);
 
     // 10. Create Messaging Template & dispatch SMS campaign
     await page.goto(`${credentials.tenantOrigin}/messaging`);
-    await page.waitForLoadState("domcontentloaded");
+    await expect(page.locator("h1").first()).toBeVisible({ timeout: 20_000 });
     await createMessagingTemplateAndCampaign(page);
 
     // 11. Create Chart of Accounts & balanced Journal Entry
     await page.goto(`${credentials.tenantOrigin}/accounting`);
-    await page.waitForLoadState("domcontentloaded");
+    await expect(page.locator("h1").first()).toBeVisible({ timeout: 20_000 });
     await createAccountsAndJournalEntry(page);
 
     // 12. Create User account for John Doe
     await page.goto(`${credentials.tenantOrigin}/users`);
-    await page.waitForLoadState("domcontentloaded");
+    await expect(page.locator("h1").first()).toBeVisible({ timeout: 20_000 });
     await createUserFromContact(page);
   });
 });

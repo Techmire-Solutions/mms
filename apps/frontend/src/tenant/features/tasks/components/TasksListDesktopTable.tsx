@@ -5,9 +5,9 @@
 
 import React, { useMemo } from "react";
 import { Pencil, Trash2, RotateCcw } from "lucide-react";
-import type { TaskRecord, TaskStatus } from "@mms/shared";
+import type { ModuleColumnRegistryEntry, TaskRecord, TaskStatus } from "@mms/shared";
 import { WorkBatchTable } from "@/components/common/work/WorkBatchTable";
-import { DataTableRowActions } from "@/components/common/data-table";
+import { DataTableRowActions, resolveVisibleColumns } from "@/components/common/data-table";
 import { ModuleTableFooterCount } from "@/components/app/ModuleTableFooterCount";
 import { EmptyState } from "@/components/app/EmptyState";
 import { useTranslation } from "@/hooks/useTranslation";
@@ -20,8 +20,10 @@ export interface TasksListDesktopTableProps {
   selectedIds: string[];
   viewingDeleted: boolean;
   canWrite: boolean;
+  canComplete?: boolean;
   canDelete: boolean;
   isLoading: boolean;
+  columnRegistry?: ModuleColumnRegistryEntry[];
   isColumnVisible?: (key: string) => boolean;
   getColumnWidth?: (key: string) => number | undefined;
   onColumnResize?: (key: string, width: number) => void;
@@ -40,8 +42,10 @@ export function TasksListDesktopTable({
   selectedIds,
   viewingDeleted,
   canWrite,
+  canComplete,
   canDelete,
   isLoading,
+  columnRegistry,
   isColumnVisible,
   getColumnWidth,
   onColumnResize,
@@ -64,15 +68,26 @@ export function TasksListDesktopTable({
     onUpdateStatus(task.id, TASK_NEXT_STATUS[task.status] || "todo");
   };
 
-  const columns = useMemo(
+  const baseColumns = useMemo(
     () =>
-      buildTasksWorkBatchColumns(t, canWrite && !viewingDeleted, handleCycleStatus, onView, {
-        isColumnVisible,
-        getColumnWidth,
-      }),
+      buildTasksWorkBatchColumns(
+        t,
+        (canComplete ?? canWrite) && !viewingDeleted,
+        handleCycleStatus,
+        onView,
+        {
+          isColumnVisible,
+          getColumnWidth,
+        },
+      ),
     // eslint-disable-next-line react-hooks/exhaustive-deps -- handleCycleStatus is derived from the already-listed `viewingDeleted`; adding it (or its unstable onUpdateStatus dep) would rebuild the columns on every render.
-    [t, canWrite, viewingDeleted, onView, isColumnVisible, getColumnWidth],
+    [t, canComplete, canWrite, viewingDeleted, onView, isColumnVisible, getColumnWidth],
   );
+
+  const columns = useMemo(() => {
+    if (!columnRegistry || columnRegistry.length === 0) return baseColumns;
+    return resolveVisibleColumns(baseColumns, columnRegistry);
+  }, [baseColumns, columnRegistry]);
 
   const pageCountLabel = formatDirectoryPageCountLabel(tasks.length, t, {
     singular: "tasks.singular",

@@ -1,4 +1,3 @@
-import { and, eq } from "drizzle-orm";
 import { logger } from "../lib/logger.js";
 
 export class QueueUnavailableError extends Error {
@@ -12,11 +11,14 @@ export class QueueUnavailableError extends Error {
 import type { BackgroundJobRecord } from "@mms/shared";
 import { runWithTenant } from "../lib/tenantContext.js";
 import { getBackgroundJobModuleDenial } from "../lib/backgroundJobModuleAccess.js";
-import { withTenant } from "../db/tenant-context.js";
-import { backgroundJobs } from "../db/schema.js";
-import { rowToJobRecord, createDatabaseBackgroundJob } from "./backgroundJobService.js";
+import { createDatabaseBackgroundJob } from "./backgroundJobService.js";
+import { patchJob } from "./backgroundJobPatch.js";
+import { markJobPermanentlyFailed } from "./backgroundJobTerminalState.js";
+import { createJobDeadline, runWithJobDeadline } from "./backgroundJobDeadline.js";
 import { dispatchJobToQueue } from "../worker/queues/index.js";
 import { publishJobEvent } from "../worker/pubsub/jobPubSub.js";
+
+export { markJobPermanentlyFailed };
 
 export interface BackgroundJobRunContext {
   tenant: string;
@@ -39,54 +41,6 @@ export function registerBackgroundJobRunner(key: string, runner: BackgroundJobRu
   runners.set(key, runner);
 }
 
-async function patchJob(
-  tenantId: string,
-  _userId: string,
-  jobId: string,
-  patch: Partial<BackgroundJobRecord>,
-): Promise<BackgroundJobRecord> {
-  if (!tenantId) throw new Error("Tenant context is required to patch background job");
-
-  const updateValues: {
-    status?: string;
-    label?: string;
-    progressCurrent?: number | null;
-    progressTotal?: number | null;
-    error?: string | null;
-    hasDownload?: boolean;
-    completedAt?: Date | null;
-    updatedAt: Date;
-  } = {
-    updatedAt: new Date(),
-  };
-
-  if (patch.status !== undefined) updateValues.status = patch.status;
-  if (patch.label !== undefined) updateValues.label = patch.label;
-  if (patch.progress !== undefined) {
-    updateValues.progressCurrent = patch.progress.current;
-    updateValues.progressTotal = patch.progress.total;
-  }
-  if (patch.error !== undefined) updateValues.error = patch.error;
-  if (patch.hasDownload !== undefined) updateValues.hasDownload = patch.hasDownload;
-  if (patch.completedAt !== undefined) {
-    updateValues.completedAt = patch.completedAt ? new Date(patch.completedAt) : null;
-  }
-
-  const [updated] = await withTenant(tenantId, async (tx) => {
-    return tx
-      .update(backgroundJobs)
-      .set(updateValues)
-      .where(and(eq(backgroundJobs.tenantId, tenantId), eq(backgroundJobs.id, jobId)))
-      .returning();
-  });
-
-  if (!updated) {
-    throw new Error(`Background job ${jobId} not found for tenant ${tenantId}`);
-  }
-
-  return rowToJobRecord(updated);
-}
-
 export async function executeJob(
   tenant: string,
   userId: string,
@@ -102,12 +56,13 @@ export async function executeJob(
 
   const key = `${moduleId}:${kind}`;
   const runner = runners.get(key);
+  const deadline = createJobDeadline(moduleId, kind, signal);
 
   const runContext: BackgroundJobRunContext = {
     tenant,
     userId,
     jobId,
-    signal,
+    signal: deadline.signal,
     updateProgress: async (current, total) => {
       await patchJob(tenant, userId, jobId, { progress: { current, total } });
       const percent = total > 0 ? Math.round((current / total) * 100) : 0;
@@ -160,6 +115,7 @@ export async function executeJob(
 
   if (!runner) {
     await runContext.fail(`No runner registered for ${key}`);
+    deadline.dispose();
     return;
   }
 
@@ -167,8 +123,13 @@ export async function executeJob(
   const denial = await getBackgroundJobModuleDenial(tenant, userId, moduleId, kind);
   if (denial) {
     await runContext.fail(`Module access denied (${denial})`);
+    deadline.dispose();
     return;
   }
+
+  // Persist the transition out of `pending` before the runner starts. Retries
+  // of a previous attempt also re-enter here after a stalled-job recovery.
+  await patchJob(tenant, userId, jobId, { status: "running" });
 
   // Heartbeat: refresh updated_at while the runner is in flight so the startup
   // orphan-cleanup on other replicas can tell a live long-running job from one
@@ -181,11 +142,16 @@ export async function executeJob(
   heartbeat.unref?.();
 
   try {
-    await runWithTenant(tenant, async () => {
-      await runner(payload, runContext);
-    });
+    await runWithJobDeadline(deadline, () =>
+      runWithTenant(tenant, async () => {
+        await runner(payload, runContext);
+      }),
+    );
   } catch (error) {
-    const message = error instanceof Error ? error.message : "Background job failed";
+    // Deadline/shutdown aborts get a stable message; a real runner failure keeps its own.
+    const message =
+      deadline.reasonMessage() ??
+      (error instanceof Error ? error.message : "Background job failed");
     await runContext.fail(message);
     // Re-throw so BullMQ applies its retry/backoff policy and the DLQ handler
     // fires on the final attempt. Without this, BullMQ records the job as
@@ -193,37 +159,8 @@ export async function executeJob(
     throw error;
   } finally {
     clearInterval(heartbeat);
+    deadline.dispose();
   }
-}
-
-/**
- * Forcefully fails a job in the database and broadcasts the event.
- * Useful for Dead-Letter Queue (DLQ) handlers when a job exhausts retries.
- */
-export async function markJobPermanentlyFailed(
-  tenantId: string,
-  userId: string,
-  jobId: string,
-  moduleId: string,
-  kind: string,
-  error: string,
-): Promise<void> {
-  await patchJob(tenantId, userId, jobId, {
-    status: "failed",
-    error,
-    completedAt: new Date().toISOString(),
-  });
-
-  await publishJobEvent({
-    event: "job-failed",
-    tenantId,
-    userId,
-    jobId,
-    moduleId,
-    kind,
-    error,
-    completedAt: new Date().toISOString(),
-  });
 }
 
 /** Persists a running job and delegates execution to the out-of-process worker queue. */

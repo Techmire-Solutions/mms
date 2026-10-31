@@ -9,6 +9,7 @@ import { EXAMINATIONS_MODULE_MANIFEST } from "../examinations/examinationsModule
 import { FACULTY_MODULE_MANIFEST } from "../faculty/facultyModuleManifest.js";
 import { FINANCE_MODULE_MANIFEST } from "../finance/financeModuleManifest.js";
 import { HASANAT_MODULE_MANIFEST } from "../hasanat/hasanatModuleManifest.js";
+import { WORKSHOPS_MODULE_MANIFEST } from "../workshops/workshopsModuleManifest.js";
 import { MESSAGING_MODULE_MANIFEST } from "../messaging/messagingModuleManifest.js";
 import { OBLIGATIONS_MODULE_MANIFEST } from "../obligations/obligationsModuleManifest.js";
 import { QUESTION_BANK_MODULE_MANIFEST } from "../examinations/questionBankModuleManifest.js";
@@ -79,6 +80,7 @@ const MODULE_PERMISSION_SOURCES = {
   attendance: ATTENDANCE_MODULE_MANIFEST,
   enrollment: ENROLLMENTS_MODULE_MANIFEST,
   hasanat: HASANAT_MODULE_MANIFEST,
+  workshops: WORKSHOPS_MODULE_MANIFEST,
   examination: EXAMINATIONS_MODULE_MANIFEST,
   questionBank: QUESTION_BANK_MODULE_MANIFEST,
   finance: FINANCE_MODULE_MANIFEST,

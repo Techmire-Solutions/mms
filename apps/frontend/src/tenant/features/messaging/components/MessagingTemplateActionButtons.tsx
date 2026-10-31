@@ -1,7 +1,8 @@
 import React from "react";
-import { Copy, Edit3, Files, Trash2 } from "lucide-react";
+import { Edit3, Files, Trash2 } from "lucide-react";
 import type { MessageTemplate } from "@mms/shared";
 import { Button } from "@/components/ui/button";
+import { CopyBtn } from "@/components/app/CopyButton";
 import { useTranslation } from "@/hooks/useTranslation";
 import { SEMANTIC_BG, SEMANTIC_TEXT } from "@/lib/ui/semanticTone";
 
@@ -26,16 +27,12 @@ export function MessagingTemplateActionButtons({
 
   return (
     <div className="flex flex-wrap items-center justify-center gap-1.5">
-      <Button
-        variant="outline"
-        size="icon"
-        onClick={() => onCopy(template.body)}
-        className="min-h-11 min-w-11 rounded-xl border-muted-foreground/30 bg-muted-foreground/5 text-muted-foreground hover:text-foreground hover:bg-muted-foreground/15 hover:border-muted-foreground/40 shadow-none"
+      <CopyBtn
+        text={template.body}
         title={t("messaging.copyTemplate")}
-        aria-label={t("messaging.copyTemplate")}
-      >
-        <Copy className="h-4 w-4" />
-      </Button>
+        className="min-h-11 min-w-11 rounded-xl"
+        onCopy={() => onCopy(template.body)}
+      />
       {canWrite && (
         <Button
           variant="outline"

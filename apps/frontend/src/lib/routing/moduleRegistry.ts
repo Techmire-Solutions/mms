@@ -26,6 +26,7 @@ import {
   LayoutDashboard,
   Library,
   MessageSquare,
+  Presentation,
   Scale,
   School,
   Settings,
@@ -51,6 +52,7 @@ export const TENANT_PATHS = {
   hasanatCards: "/hasanat-cards",
   examinations: "/examinations",
   questionBank: "/question-bank",
+  workshops: "/workshops",
   accounting: "/accounting",
   obligations: "/obligations",
   tasks: "/tasks",
@@ -160,7 +162,8 @@ export const TENANT_APP_ENTRIES: readonly TenantAppEntry[] = [
     path: TENANT_PATHS.students,
     access: moduleAccess("students"),
     loader: () => import("@/tenant/features/students/StudentsPage"),
-    nav: { labelKey: "nav.students", icon: GraduationCap, order: 0, group: ACADEMICS_GROUP },
+    // Students is a daily destination, not a sub-tool of the Academics group.
+    nav: { labelKey: "nav.students", icon: GraduationCap, order: 1.5 },
     apexRedirectable: true,
   },
   {
@@ -209,6 +212,14 @@ export const TENANT_APP_ENTRIES: readonly TenantAppEntry[] = [
     access: moduleAccess("questionBank"),
     loader: () => import("@/tenant/features/question-bank/QuestionBankPage"),
     nav: { labelKey: "nav.questionBank", icon: Library, order: 6, group: ACADEMICS_GROUP },
+    apexRedirectable: true,
+  },
+  {
+    id: "workshops",
+    path: TENANT_PATHS.workshops,
+    access: moduleAccess("workshops"),
+    loader: () => import("@/tenant/features/workshops/WorkshopsPage"),
+    nav: { labelKey: "nav.workshops", icon: Presentation, order: 7, group: ACADEMICS_GROUP },
     apexRedirectable: true,
   },
   {

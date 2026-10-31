@@ -40,6 +40,7 @@ export async function listEntriesByWorkspace(
       .select(accountingEntrySelectFields)
       .from(accountingEntries)
       .where(and(...conditions))
+      .orderBy(accountingEntries.id)
       .limit(limit)
       .offset(offset);
     if (rows.length === 0) return [];

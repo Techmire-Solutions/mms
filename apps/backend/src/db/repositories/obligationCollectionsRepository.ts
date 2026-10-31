@@ -102,6 +102,7 @@ export async function listObligationCollectionsByWorkspace(
       })
       .from(obligationCollections)
       .where(and(...conditions))
+      .orderBy(obligationCollections.id)
       .limit(limit)
       .offset(offset);
     return rows.map(obligationCollectionRowToRecord);

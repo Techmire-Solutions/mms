@@ -51,6 +51,7 @@ export {
   useContactColumnPrefsMutation,
   useContactsSavedReportsSource,
 } from "@/tenant/features/contacts/hooks/useContactPrefsQueries";
+import { assertContractOk } from "@/lib/apiContractError";
 
 // --- Phase 7: contract-driven tsrClient hooks & query factories -------------
 
@@ -63,9 +64,7 @@ export function contactsListQueryOptions(query: Record<string, unknown> = {}) {
         signal,
         fetchOptions: { signal },
       });
-      if (response.status !== 200) {
-        throw new Error("Failed to fetch contacts");
-      }
+      assertContractOk(response, "Failed to fetch contacts");
       return response.body;
     },
     placeholderData: (prev) => prev,
@@ -77,22 +76,17 @@ export function contactsInfiniteQueryOptions(query: Record<string, unknown> = {}
   return infiniteQueryOptions({
     queryKey: [...CONTACTS_QUERY_KEY, "contract-infinite-list", query] as const,
     queryFn: async ({ pageParam, signal }) => {
-      const effectiveQuery = {
-        ...query,
-        ...(pageParam ? { afterId: pageParam } : {}),
-      };
+      const effectiveQuery = { ...query, page: pageParam };
       const response = await apiContract.contacts.list({
-        query: effectiveQuery as Record<string, string>,
+        query: effectiveQuery as unknown as Record<string, string>,
         signal,
         fetchOptions: { signal },
       });
-      if (response.status !== 200) {
-        throw new Error("Failed to fetch contacts");
-      }
+      assertContractOk(response, "Failed to fetch contacts");
       return response.body as ContactsListPageResult;
     },
-    initialPageParam: undefined as string | undefined,
-    getNextPageParam: (lastPage) => lastPage.nextCursor ?? undefined,
+    initialPageParam: 1,
+    getNextPageParam: (lastPage) => (lastPage.hasMore ? lastPage.page + 1 : undefined),
     staleTime: 15_000,
   });
 }

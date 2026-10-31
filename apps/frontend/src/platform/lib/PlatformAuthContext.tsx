@@ -23,34 +23,39 @@ export const PlatformAuthProvider: React.FC<{ children: React.ReactNode }> = ({ 
   const [isPlatformAuthenticated, setIsPlatformAuthenticated] = useState(false);
   const [isCheckingPlatformAuth, setIsCheckingPlatformAuth] = useState(isApex);
   const [isPlatformLoginSubmitting, setIsPlatformLoginSubmitting] = useState(false);
-  const [platformAuthChecked, setPlatformAuthChecked] = useState(false);
+  const [platformAuthChecked, setPlatformAuthChecked] = useState(!isApex);
 
-  const checkPlatformAuth = useCallback(async (): Promise<void> => {
+  // Tenant hosts never carry a platform session: clear it during render when apex is left.
+  const [prevIsApex, setPrevIsApex] = useState(isApex);
+  if (prevIsApex !== isApex) {
+    setPrevIsApex(isApex);
     if (!isApex) {
       setPlatformUser(null);
       setIsPlatformAuthenticated(false);
       setPlatformAuthChecked(true);
       setIsCheckingPlatformAuth(false);
-      return;
     }
+  }
+
+  const checkPlatformAuth = useCallback(async (): Promise<void> => {
+    if (!isApex) return;
 
     // Always probe cookie session on apex so new tabs, deep links, and
     // post-setup / password-reset flows restore auth without a sessionStorage gate.
     // Logged-out probe returns 200 { user: null } (not 401) to avoid DevTools noise.
+    // A failed probe is folded into a null session so every state update happens after
+    // the first await (this runs from a mount effect).
     try {
       const platformSession = await apiJson<{ user: PlatformUserProfile | null }>(
         PLATFORM_AUTH_PATHS.me,
-      );
-      if (platformSession.user) {
+      ).catch(() => null);
+      if (platformSession?.user) {
         setPlatformUser(normalizeSessionUser(platformSession.user));
         setIsPlatformAuthenticated(true);
       } else {
         setPlatformUser(null);
         setIsPlatformAuthenticated(false);
       }
-    } catch {
-      setPlatformUser(null);
-      setIsPlatformAuthenticated(false);
     } finally {
       setPlatformAuthChecked(true);
       setIsCheckingPlatformAuth(false);

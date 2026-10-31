@@ -1,6 +1,6 @@
 import type { SystemUser } from "@mms/shared";
-import { DirectoryCard } from "@/components/app/DirectoryCard";
-import { EntityCardsGrid } from "@/components/app/EntityCardsGrid";
+import { DirectoryEntityCard } from "@/components/app/DirectoryEntityCard";
+import { ModuleDirectoryCards } from "@/components/app/ModuleDirectoryCards";
 import { useReducedMotion } from "@/hooks/useReducedMotion";
 import { useTranslation } from "@/hooks/useTranslation";
 import { formatDirectoryPageCountLabel } from "@/lib/formatDirectoryPageCountLabel";
@@ -64,7 +64,7 @@ function UserCard({
   const displayName = user.name?.trim() || user.email || "";
 
   return (
-    <DirectoryCard
+    <DirectoryEntityCard
       entity={user}
       selectedIds={selectedIds}
       canSelect={canDelete}
@@ -141,7 +141,7 @@ export function UsersListCards({
   });
 
   return (
-    <EntityCardsGrid
+    <ModuleDirectoryCards
       items={users}
       selectedIds={selectedIds}
       onSelectAll={canDelete ? onToggleAll : undefined}

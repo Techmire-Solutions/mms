@@ -6,17 +6,20 @@ import { invalidateSessionsQueries } from "@/tenant/hooks/collections/sessions";
 import { invalidateAcademicCatalogQueries } from "@/lib/query/academicCatalogQueries";
 import { invalidateAcademicCalendarQueries } from "@/lib/query/academicCalendarQueries";
 import { invalidateRegistrationQueries } from "@/lib/query/registrationQueries";
+import { invalidateStoredNotificationsQueries } from "@/lib/query/notificationQueries";
 import { invalidateStudentsQueries } from "@/tenant/hooks/collections/students";
 import { invalidateFacultyQueries } from "@/tenant/hooks/collections/faculty";
 import { invalidateUsersQueries } from "@/tenant/hooks/collections/users";
 import { invalidateAttendanceQueries } from "@/tenant/hooks/collections/attendance";
 import { invalidateFinanceQueries } from "@/tenant/hooks/collections/finance";
 import { invalidateHasanatQueries } from "@/tenant/hooks/collections/hasanat";
+import { invalidateWorkshopsQueries } from "@/tenant/hooks/collections/workshops";
 import { invalidateExaminationsQueries } from "@/tenant/hooks/collections/examinations";
 import { invalidateQuestionBankQueries } from "@/tenant/hooks/collections/questionBank";
 import { invalidateAccountingQueries } from "@/tenant/hooks/collections/accounting";
 import { invalidateObligationsQueries } from "@/tenant/hooks/collections/obligations";
 import { invalidateDocumentTemplatesQueries } from "@/lib/templates/useDocumentTemplates";
+import { DYNAMIC_WIDGET_AGGREGATES_QUERY_KEY } from "@/lib/query/dynamicWidgetAggregatesQueryKey";
 import {
   DASHBOARD_SUMMARY_QUERY_KEY_ROOT,
   invalidateDashboardQueries,
@@ -31,11 +34,15 @@ export function invalidateModuleQueries(queryClient: QueryClient, key: string): 
   // Invalidate composite dashboard summary metrics when domain collections change
   if (
     key !== "dashboard" &&
+    key !== "notifications" &&
     key !== "user_activity_logs" &&
     key !== "message_logs" &&
     key !== "message_templates"
   ) {
     void queryClient.invalidateQueries({ queryKey: DASHBOARD_SUMMARY_QUERY_KEY_ROOT });
+    // Reports widgets are server-side aggregates over these same collections;
+    // nothing invalidated them before, so edited charts showed stale numbers.
+    void queryClient.invalidateQueries({ queryKey: DYNAMIC_WIDGET_AGGREGATES_QUERY_KEY });
   }
 
   switch (key) {
@@ -70,9 +77,14 @@ export function invalidateModuleQueries(queryClient: QueryClient, key: string): 
     case "attendance":
     case "attendance_records":
       return invalidateAttendanceQueries(queryClient);
+    // Fee structures and metrics are broadcast as their own collection keys
+    // (`financeBillingUseCases` / `financeMutationOperations`); without a case
+    // here another admin's change stayed invisible until a reload.
     case "finance":
     case "finance_invoices":
     case "finance_payments":
+    case "finance_fee_structures":
+    case "finance_metrics":
       return invalidateFinanceQueries(queryClient);
     case "hasanat":
     case "hasanat_distributions":
@@ -80,6 +92,9 @@ export function invalidateModuleQueries(queryClient: QueryClient, key: string): 
     case "hasanat_batches":
     case "hasanat_redemptions":
       return invalidateHasanatQueries(queryClient);
+    case "workshops":
+    case "workshop_events":
+      return invalidateWorkshopsQueries(queryClient);
     case "examinations":
     case "exams":
     case "exam_results":
@@ -118,5 +133,7 @@ export function invalidateModuleQueries(queryClient: QueryClient, key: string): 
       return invalidateMessagingQueries(queryClient);
     case "document_templates":
       return invalidateDocumentTemplatesQueries(queryClient);
+    case "notifications":
+      return invalidateStoredNotificationsQueries(queryClient);
   }
 }

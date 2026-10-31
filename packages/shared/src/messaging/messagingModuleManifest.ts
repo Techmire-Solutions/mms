@@ -55,6 +55,7 @@ export const MESSAGING_MODULE_MANIFEST = {
     read: "messaging.read",
     write: "messaging.write",
     clearLogs: "messaging.clearLogs",
+    restoreLogs: "messaging.restoreLogs",
     setupView: "configuration.view",
     setupWrite: "messaging.write",
     reports: "messaging.read",

@@ -1,6 +1,7 @@
 import React from "react";
 import { Loader2, RotateCcw, Save } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { cn } from "@/lib/utils";
 
 export interface SettingsFormActionsProps {
   saveLabel: string;
@@ -13,6 +14,8 @@ export interface SettingsFormActionsProps {
   saved?: boolean;
   saveDisabled?: boolean;
   showSave?: boolean;
+  /** Pin the action bar to the bottom of the scrollport on long settings panels. */
+  sticky?: boolean;
   children?: React.ReactNode;
 }
 
@@ -30,13 +33,22 @@ export function SettingsFormActions({
   saved: _saved = false,
   saveDisabled = false,
   showSave = true,
+  sticky = false,
   children,
 }: SettingsFormActionsProps): React.JSX.Element {
   const saveText = saving ? (savingLabel ?? saveLabel) : saveLabel;
+  const stickyClass = sticky
+    ? "sticky bottom-0 z-sticky -mx-1 bg-background/95 px-1 pb-[env(safe-area-inset-bottom)] backdrop-blur-md"
+    : "";
 
   if (!showSave || !onSave) {
     return children || (dirty && onDiscard) ? (
-      <div className="flex w-full items-center justify-end gap-3 border-t border-border/40 mt-6 pt-4">
+      <div
+        className={cn(
+          "flex w-full items-center justify-end gap-3 border-t border-border/40 mt-6 pt-4",
+          stickyClass,
+        )}
+      >
         {dirty && onDiscard && (
           <Button
             type="button"
@@ -58,7 +70,12 @@ export function SettingsFormActions({
   }
 
   return (
-    <div className="flex w-full flex-wrap items-center justify-between gap-3 border-t border-border/40 mt-6 pt-4">
+    <div
+      className={cn(
+        "flex w-full flex-wrap items-center justify-between gap-3 border-t border-border/40 mt-6 pt-4",
+        stickyClass,
+      )}
+    >
       <div className="flex flex-wrap items-center gap-2">
         {dirty && onDiscard && (
           <Button

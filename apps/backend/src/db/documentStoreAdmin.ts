@@ -7,6 +7,7 @@ import {
 import { eq } from "drizzle-orm";
 import { getRequestTenant } from "../lib/tenantContext.js";
 import { withTenant } from "./tenant-context.js";
+import { inGlobalDocumentStoreScope } from "./documentStoreScope.js";
 import * as schema from "./schema.js";
 import { logger } from "../lib/logger.js";
 
@@ -61,7 +62,7 @@ export async function getAllData(): Promise<{
 
         return { collections, objects };
       },
-      { allowGlobal: !tenant },
+      { allowGlobal: !tenant && inGlobalDocumentStoreScope() },
     );
   } catch (error) {
     logger.error({ err: error }, "Error retrieving all database data");
@@ -78,7 +79,7 @@ export async function listCollectionStorageNames(): Promise<string[]> {
       const colRows = await tx.select({ name: schema.collections.name }).from(schema.collections);
       return colRows.map((row) => row.name);
     },
-    { allowGlobal: !tenant },
+    { allowGlobal: !tenant && inGlobalDocumentStoreScope() },
   );
 }
 
@@ -97,7 +98,7 @@ export async function getCollectionByStorageName(name: string): Promise<unknown[
       if (!row) return null;
       return row.data;
     },
-    { allowGlobal: !tenant },
+    { allowGlobal: !tenant && inGlobalDocumentStoreScope() },
   );
 }
 
@@ -109,7 +110,7 @@ export async function deleteCollectionByStorageName(name: string): Promise<void>
     async (tx) => {
       await tx.delete(schema.collections).where(eq(schema.collections.name, name));
     },
-    { allowGlobal: !tenant },
+    { allowGlobal: !tenant && inGlobalDocumentStoreScope() },
   );
 }
 
@@ -121,7 +122,7 @@ export async function deleteObjectByStorageKey(key: string): Promise<void> {
     async (tx) => {
       await tx.delete(schema.objects).where(eq(schema.objects.key, key));
     },
-    { allowGlobal: !tenant },
+    { allowGlobal: !tenant && inGlobalDocumentStoreScope() },
   );
 }
 
@@ -134,7 +135,7 @@ export async function listObjectStorageKeys(): Promise<string[]> {
       const objRows = await tx.select({ key: schema.objects.key }).from(schema.objects);
       return objRows.map((row) => row.key);
     },
-    { allowGlobal: !tenant },
+    { allowGlobal: !tenant && inGlobalDocumentStoreScope() },
   );
 }
 
@@ -196,6 +197,6 @@ export async function getObjectByStorageKey(key: string): Promise<unknown | null
       if (!row) return null;
       return row.data;
     },
-    { allowGlobal: !tenant },
+    { allowGlobal: !tenant && inGlobalDocumentStoreScope() },
   );
 }

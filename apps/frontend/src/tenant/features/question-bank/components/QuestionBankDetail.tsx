@@ -2,7 +2,7 @@ import React from "react";
 import { FileQuestion } from "lucide-react";
 import type { QuestionBankQuestion as Question } from "@mms/shared";
 import { useTranslation } from "@/hooks/useTranslation";
-import { Drawer } from "@/components/app/Drawer";
+import { DetailDrawerShell } from "@/components/app/DetailDrawerShell";
 import {
   DetailDrawerArchivedBanner,
   DetailDrawerRestoreOrEditAction,
@@ -33,7 +33,7 @@ export const QuestionBankDetail = function QuestionBankDetail({
   const isArchived = !!question.deletedAt;
 
   return (
-    <Drawer
+    <DetailDrawerShell
       open
       onClose={onClose}
       title={t("questionBank.detail.title")}
@@ -95,6 +95,6 @@ export const QuestionBankDetail = function QuestionBankDetail({
           </DetailSectionCard>
         )}
       </div>
-    </Drawer>
+    </DetailDrawerShell>
   );
 };

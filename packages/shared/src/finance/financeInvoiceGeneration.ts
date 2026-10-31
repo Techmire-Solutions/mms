@@ -44,6 +44,8 @@ export interface EnrollmentBillingSource {
   finalFee: number;
   invoiceId?: string | null;
   status: string;
+  /** Billing currency of the enrollment's session (ISO 4217); fees are set in it. */
+  sessionCurrency?: string;
 }
 
 export interface GeneratedInvoiceDraft {
@@ -61,6 +63,9 @@ export interface GeneratedInvoiceDraft {
   paidAmt: number;
   billingPeriod: string;
   enrollmentId: string;
+  /** IAS 21 document currency; absent for a functional-currency invoice. */
+  currency?: string;
+  exchangeRate?: string;
 }
 
 /**
@@ -135,3 +140,17 @@ export const generateInvoicesResultSchema = z
   .strict();
 
 export type GenerateInvoicesResult = z.infer<typeof generateInvoicesResultSchema>;
+
+/**
+ * Currency a generated invoice is billed in: the session's currency when it is
+ * an enabled foreign currency, otherwise the functional currency (undefined).
+ * A session left on its default currency in a workspace that has not enabled
+ * it therefore keeps billing in the functional currency, as before.
+ */
+export function generatedInvoiceCurrency(
+  sessionCurrency: string | undefined,
+  settings: { functionalCurrency: string; enabledCurrencies: readonly string[] },
+): string | undefined {
+  if (!sessionCurrency || sessionCurrency === settings.functionalCurrency) return undefined;
+  return settings.enabledCurrencies.includes(sessionCurrency) ? sessionCurrency : undefined;
+}

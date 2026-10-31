@@ -1,6 +1,9 @@
-import { DEFAULT_CURRENCIES, formatMoney } from "@mms/shared";
+import { DEFAULT_CURRENCIES, findIsoCurrency, formatMoney } from "@mms/shared";
 import { useFinanceConfig, useAccountingConfig } from "./useStandardModuleConfig";
-import { useAccountingPreferencesQuery } from "@/tenant/hooks/collections/accounting";
+import {
+  useAccountingCurrencySettings,
+  useAccountingPreferencesQuery,
+} from "@/tenant/hooks/collections/accounting";
 
 export interface UseCurrencyOptions {
   currencyCode?: string;
@@ -9,8 +12,10 @@ export interface UseCurrencyOptions {
 
 export function useCurrency({ currencyCode, decimalPlaces }: UseCurrencyOptions = {}) {
   const activeCurrency = (() => {
+    const iso = currencyCode ? findIsoCurrency(currencyCode) : null;
     return (
       DEFAULT_CURRENCIES.find((c) => c.code === currencyCode) ||
+      (iso ? { code: iso.code, name: iso.name, symbol: iso.code } : null) ||
       DEFAULT_CURRENCIES[0] || { symbol: "$", code: "USD", name: "US Dollar" }
     );
   })();
@@ -62,8 +67,11 @@ export function useAccountingCurrency() {
   const { settings: fallbackSettings } = useAccountingConfig();
   const prefsQuery = useAccountingPreferencesQuery();
   const settings = (prefsQuery.data ?? fallbackSettings) as typeof fallbackSettings;
+  // The IAS 21 functional currency is the SSOT for ledger amounts; the legacy
+  // preference only applies until the settings query resolves.
+  const fxSettings = useAccountingCurrencySettings();
   const { activeCurrency, formatCurrency } = useCurrency({
-    currencyCode: settings.currency,
+    currencyCode: fxSettings.data?.functionalCurrency ?? settings.currency,
     decimalPlaces: settings.decimalPlaces,
   });
   return {

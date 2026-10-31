@@ -20,6 +20,36 @@ source "$ROOT_DIR/scripts/lib/deploy-ports.sh"
 # shellcheck source=lib/read-env.sh
 source "$ROOT_DIR/scripts/lib/read-env.sh"
 
+FAILED_PREFLIGHT_FILE="${ROOT_DIR}/.deploy-preflight-failed"
+ENV_BACKUP=""
+
+# A failed preflight used to leave the new `.env` in place. The running
+# processes kept the old env, but any restart (including the automated
+# rollback's PM2 reload) picked up the new mode and could fail to boot.
+# Snapshot the env before merging and restore it on any failed exit.
+restore_env_and_cleanup() {
+  local status=$?
+  trap - EXIT
+  if [ "$status" -ne 0 ] && [ -n "$ENV_BACKUP" ] && [ -f "$ENV_BACKUP" ]; then
+    if cp -p "$ENV_BACKUP" "$ENV_FILE"; then
+      echo "Restored ${ENV_FILE} from the pre-deploy snapshot after a failed deploy."
+    else
+      echo "ERROR: could not restore ${ENV_FILE} from ${ENV_BACKUP}"
+    fi
+  fi
+  if [ -n "$ENV_BACKUP" ]; then
+    rm -f "$ENV_BACKUP"
+  fi
+  exit "$status"
+}
+trap restore_env_and_cleanup EXIT
+rm -f "$FAILED_PREFLIGHT_FILE"
+
+fail_preflight() {
+  touch "$FAILED_PREFLIGHT_FILE" 2>/dev/null || true
+  exit 1
+}
+
 export GIT_TERMINAL_PROMPT=0
 
 # Pin to the CI-validated SHA when provided; otherwise pull main tip (manual fallback).
@@ -78,13 +108,14 @@ if [ -f "$TARBALL" ]; then
   RELEASE_NAME="${DEPLOY_SHA:-$(date -u +%Y%m%dT%H%M%SZ)}"
   cp -f "$TARBALL" "${RELEASES_DIR}/${RELEASE_NAME}.tar.gz" 2>/dev/null || true
   if [ -f "${TARBALL}.sha256" ]; then
-    cp -f "${TARBALL}.sha256" "${RELEASES_DIR}/${RELEASE_NAME}.tar.gz.sha256" 2>/dev/null || true
+    EXPECTED_HASH="$(awk '{print $1}' "${TARBALL}.sha256")"
+    printf '%s  %s\n' "$EXPECTED_HASH" "${RELEASE_NAME}.tar.gz" > "${RELEASES_DIR}/${RELEASE_NAME}.tar.gz.sha256" 2>/dev/null || true
   fi
   # Prune older releases (keep newest N by mtime).
   if [ -d "$RELEASES_DIR" ]; then
     # shellcheck disable=SC2012
     ls -1t "$RELEASES_DIR"/*.tar.gz 2>/dev/null | tail -n "+$((RELEASE_KEEP + 1))" | while read -r old; do
-      rm -f "$old" "${old}.sha256" 2>/dev/null || true
+      rm -f "$old" "${old}.sha256" "${old%.tar.gz}.env" 2>/dev/null || true
     done
   fi
 
@@ -105,6 +136,23 @@ else
 fi
 
 if [ -f scripts/merge-backend-env.sh ]; then
+  if [ ! -f "$ENV_FILE" ]; then
+    echo "FATAL: ${ENV_FILE} is missing — cannot snapshot it before merging."
+    exit 1
+  fi
+  if ! ENV_BACKUP_TMP="$(mktemp "${ENV_FILE}.pre-deploy.XXXXXX")"; then
+    echo "FATAL: could not create a pre-deploy env snapshot."
+    exit 1
+  fi
+  if ! cp -p "$ENV_FILE" "$ENV_BACKUP_TMP"; then
+    rm -f "$ENV_BACKUP_TMP"
+    echo "FATAL: could not copy ${ENV_FILE} to the pre-deploy snapshot."
+    exit 1
+  fi
+  chmod 600 "$ENV_BACKUP_TMP" 2>/dev/null || true
+  # Only arm the trap once the copy is complete; an empty temp file must never
+  # overwrite the live env on the failure path.
+  ENV_BACKUP="$ENV_BACKUP_TMP"
   bash scripts/merge-backend-env.sh "$ENV_FILE"
 else
   echo "WARNING: scripts/merge-backend-env.sh missing — skip env merge"
@@ -144,7 +192,48 @@ fi
 
 export PORT="$(read_env_var PORT "$MMS_PROD_BACKEND_PORT" "$ENV_FILE")"
 export NODE_ENV=production
+export MMS_DB_ROLE_ENFORCEMENT="$(read_env_var MMS_DB_ROLE_ENFORCEMENT "strict" "$ENV_FILE")"
 assert_production_backend_port "$PORT" "Deploy PORT" || exit 1
+
+# RLS preflight: a role that bypasses row-level security makes every tenant
+# policy inert. The check and the mode policy both run before migrations and the
+# PM2 reload, so the previous release keeps serving when either fails. `warn`
+# and `off` are accepted only with their explicit overrides.
+export DATABASE_URL="$(read_env_var DATABASE_URL "" "$ENV_FILE")"
+if [ -z "$DATABASE_URL" ]; then
+  echo "FATAL: DATABASE_URL is missing from ${ENV_FILE} — cannot verify RLS."
+  fail_preflight
+fi
+if [ -f "$ROOT_DIR/apps/backend/dist/scripts/checkRlsRole.js" ]; then
+  echo "Checking database role for RLS enforcement (mode=${MMS_DB_ROLE_ENFORCEMENT})..."
+  if ! (cd "$ROOT_DIR/apps/backend" && node dist/scripts/checkRlsRole.js); then
+    echo "ERROR: RLS preflight failed — the database role bypasses row-level security."
+    echo "       Provision mms_app and point DATABASE_URL at it (docs/rls-operations.md),"
+    echo "       then redeploy. The running release has NOT been replaced."
+    fail_preflight
+  fi
+elif [ -f "$ROOT_DIR/apps/backend/src/scripts/checkRlsRole.ts" ]; then
+  echo "Checking database role for RLS enforcement (tsx fallback)..."
+  if ! (cd "$ROOT_DIR/apps/backend" && node --experimental-strip-types src/scripts/checkRlsRole.ts); then
+    echo "ERROR: RLS preflight failed — the database role bypasses row-level security."
+    echo "       Provision mms_app and point DATABASE_URL at it (docs/rls-operations.md),"
+    echo "       then redeploy. The running release has NOT been replaced."
+    fail_preflight
+  fi
+else
+  echo "ERROR: checkRlsRole script not found — cannot verify RLS. Refusing to deploy."
+  echo "       The running release has NOT been replaced; restore the backend build and redeploy."
+  fail_preflight
+fi
+if ! node "$ROOT_DIR/scripts/ci/rls-deploy-policy.mjs" \
+  --mode "${MMS_DB_ROLE_ENFORCEMENT:-}" \
+  --allow-warn "${MMS_ALLOW_RLS_WARN:-0}" \
+  --allow-off "${MMS_ALLOW_RLS_OFF:-0}"; then
+  echo "ERROR: RLS enforcement policy rejected mode=${MMS_DB_ROLE_ENFORCEMENT}."
+  echo "       Provision mms_app and set strict (docs/rls-operations.md), or set the"
+  echo "       documented override, then redeploy. The running release has NOT been replaced."
+  fail_preflight
+fi
 
 mkdir -p "$ROOT_DIR/.logs"
 # Legacy vite-preview PM2 app — SPA is served by Fastify from apps/frontend/dist.
@@ -277,6 +366,15 @@ if [ "$DEPLOY_OK" != true ]; then
     bash scripts/server-diagnose.sh "$ENV_FILE" || true
   fi
   exit 1
+fi
+
+rm -f "$FAILED_PREFLIGHT_FILE"
+if [ -n "${RELEASE_NAME:-}" ]; then
+  if cp -p "$ENV_FILE" "${RELEASES_DIR}/${RELEASE_NAME}.env" 2>/dev/null; then
+    echo "Saved env snapshot for release ${RELEASE_NAME}."
+  else
+    echo "WARNING: could not save env snapshot for release ${RELEASE_NAME}; rollback will keep the current env."
+  fi
 fi
 
 echo "MMSv2 deploy finished — services healthy"

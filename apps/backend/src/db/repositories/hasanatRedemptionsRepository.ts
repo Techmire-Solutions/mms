@@ -7,6 +7,7 @@ import {
   hasanatRedemptions,
 } from "../schema.js";
 import { withTenant, withTenantRead } from "../tenant-context.js";
+import { requireDbDateValue } from "../../lib/dbDate.js";
 
 type RedempRow = typeof hasanatRedemptions.$inferSelect;
 function redemptionRowToRecord(row: RedempRow): Redemption {
@@ -49,6 +50,7 @@ export async function listRedemptionsByWorkspace(
       })
       .from(hasanatRedemptions)
       .where(eq(hasanatRedemptions.workspaceSubdomain, subdomain))
+      .orderBy(hasanatRedemptions.id)
       .limit(limit)
       .offset(offset);
     return rows.map(redemptionRowToRecord);
@@ -129,7 +131,7 @@ export async function saveRedemption(tenant: string, record: Redemption): Promis
         studentName: record.studentName ?? "",
         reward: record.reward,
         pointsUsed: record.pointsUsed ?? 0,
-        date: record.date,
+        date: requireDbDateValue(record.date, "date"),
         approvedByUserId: record.approvedByUserId ?? null,
         approvedBy: record.approvedBy ?? null,
         updatedAt: new Date(),
@@ -141,7 +143,7 @@ export async function saveRedemption(tenant: string, record: Redemption): Promis
           studentName: record.studentName ?? "",
           reward: record.reward,
           pointsUsed: record.pointsUsed ?? 0,
-          date: record.date,
+          date: requireDbDateValue(record.date, "date"),
           approvedByUserId: record.approvedByUserId ?? null,
           approvedBy: record.approvedBy ?? null,
           updatedAt: new Date(),
@@ -172,7 +174,7 @@ export async function bulkSaveRedemptions(tenant: string, records: Redemption[])
           studentName: r.studentName ?? "",
           reward: r.reward,
           pointsUsed: r.pointsUsed ?? 0,
-          date: r.date,
+          date: requireDbDateValue(r.date, "date"),
           approvedByUserId: r.approvedByUserId ?? null,
           approvedBy: r.approvedBy ?? null,
           updatedAt: new Date(),
@@ -217,7 +219,7 @@ export async function replaceRedemptionsForWorkspace(
           studentName: r.studentName ?? "",
           reward: r.reward,
           pointsUsed: r.pointsUsed ?? 0,
-          date: r.date,
+          date: requireDbDateValue(r.date, "date"),
           approvedByUserId: r.approvedByUserId ?? null,
           approvedBy: r.approvedBy ?? null,
           updatedAt: new Date(),

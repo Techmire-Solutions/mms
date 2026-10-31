@@ -4,7 +4,7 @@ description: Addresses the open priorities P1–P7 in mms-migration-status.mdc �
 license: Proprietary
 metadata:
   owner: mms-platform
-  last-verified: 2026-10-16
+  last-verified: 2026-10-29
 allowed-tools: Read Grep Glob Bash(pnpm typecheck) Bash(pnpm test)
 ---
 
@@ -71,7 +71,7 @@ Residual Work SQL-page debt for **other** modules (not Faculty/Users/Sessions) l
 
 **Fix:** When touching hot routes, prefer tighter `SET LOCAL` budgets — `mms-data-layer.mdc` (align with Fastify `requestTimeout`).
 
-## After each fix
+## Verification (after each fix)
 
 ```bash
 pnpm typecheck && pnpm test

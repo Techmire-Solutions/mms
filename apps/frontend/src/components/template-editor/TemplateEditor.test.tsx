@@ -230,7 +230,7 @@ describe("TemplateEditor Component", () => {
     // With 20+ absolutely positioned elements, one tab stop per element put the
     // inspector dozens of tabs away from the canvas.
     expect(html).toMatch(/tabindex="0"[^>]*aria-label="Invoice Title \(static\)"/);
-    expect(html).toMatch(/tabindex="-1"[^>]*aria-label="Student Name \(field\)"/);
+    expect(html).toMatch(/tabindex="-1"[^>]*aria-label="Student Name \{studentName\} \(field\)"/);
   });
 
   it("labels the page size in pixels, the unit the editor actually stores", () => {

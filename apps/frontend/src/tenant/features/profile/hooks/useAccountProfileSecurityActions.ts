@@ -10,6 +10,7 @@ import {
   confirmLoginEmailChangeBodySchema,
 } from "@mms/shared";
 import { tsrClient } from "@/lib/api";
+import { apiContractError, assertContractOk } from "@/lib/apiContractError";
 
 export function useAccountProfileSecurityActions() {
   const { t } = useTranslation();
@@ -53,10 +54,10 @@ export function useAccountProfileSecurityActions() {
         body: checked.data,
       });
       if (status !== 200) {
-        if (status === 401) {
-          throw new Error(t("account.wrongPassword"));
-        }
-        throw new Error(t("errors.boundary.description"));
+        throw apiContractError(
+          { status },
+          status === 401 ? t("account.wrongPassword") : t("errors.boundary.description"),
+        );
       }
       setChallengeId(body.challengeId);
       if (body.devCode) setDevCode(body.devCode);
@@ -87,7 +88,7 @@ export function useAccountProfileSecurityActions() {
       const { status } = await confirmLoginEmailMutation.mutateAsync({
         body: checked.data,
       });
-      if (status !== 200) throw new Error(t("errors.boundary.description"));
+      assertContractOk({ status }, t("errors.boundary.description"));
       setChallengeId(null);
       setVerifyCode("");
       setNewLoginEmail("");
@@ -127,10 +128,10 @@ export function useAccountProfileSecurityActions() {
         body: checked.data,
       });
       if (status !== 200) {
-        if (status === 401) {
-          throw new Error(t("account.wrongPassword"));
-        }
-        throw new Error(t("errors.boundary.description"));
+        throw apiContractError(
+          { status },
+          status === 401 ? t("account.wrongPassword") : t("errors.boundary.description"),
+        );
       }
       setCurrentPassword("");
       setNewPassword("");

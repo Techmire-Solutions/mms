@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import { Globe, Save } from "lucide-react";
 import { useTranslation } from "@/hooks/useTranslation";
 import {
@@ -27,14 +27,16 @@ export function PlatformGlobalSettingsPanel(): React.JSX.Element {
   const [syncTls, setSyncTls] = useState(true);
   const [tlsExtraSans, setTlsExtraSans] = useState("");
   const [certbotEmail, setCertbotEmail] = useState("");
-
-  useEffect(() => {
+  // Re-seed the editable form during render whenever the query data changes.
+  const [prevSettings, setPrevSettings] = useState(settings);
+  if (settings !== prevSettings) {
+    setPrevSettings(settings);
     if (settings) {
       setSyncTls(settings.syncTlsOnCreate ?? true);
       setTlsExtraSans(settings.tlsExtraSans ?? "");
       setCertbotEmail(settings.certbotEmail ?? "");
     }
-  }, [settings]);
+  }
 
   if (isLoading) return <CardSkeleton count={2} />;
 

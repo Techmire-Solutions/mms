@@ -4,12 +4,12 @@ description: Adds or modifies Fastify routes, middleware (authenticateTenant), s
 license: Proprietary
 metadata:
   owner: mms-platform
-  last-verified: 2026-10-16
+  last-verified: 2026-10-29
 ---
 
 # MMS Backend API Workflow
 
-**Rules (norms SSOT):** `mms-api-interface.mdc` · `mms-data-layer.mdc` §5–§6 · `mms-auth-security.mdc`. Checklists → `references/new-route-checklist.md` · `references/add-rest-resource.md`.
+**Rules (norms SSOT):** `mms-api-interface.mdc` · `mms-tdd.mdc` (route/use-case tests) · `mms-data-layer.mdc` §5–§6 · `mms-auth-security.mdc`. Checklists → `references/new-route-checklist.md` · `references/add-rest-resource.md`.
 
 ## When to use
 

@@ -9,6 +9,7 @@ import compress from "@fastify/compress";
 import { isOriginAllowedForAppDomain, isTrustedWorkspaceOrigin } from "@mms/shared";
 import type { ServerConfig } from "../config/serverConfig.js";
 import { getRedisClient, getRedisSubscriberClient } from "../lib/redis.js";
+import { startCacheInvalidationSubscriber } from "../lib/cache/index.js";
 import { configureRedisPubSub } from "../lib/livePush.js";
 
 import { getRequestTenant, resolveSubdomainFromRequest } from "../lib/tenantContext.js";
@@ -193,5 +194,13 @@ export async function registerHttpPlugins(
   const redisSub = getRedisSubscriberClient();
   if (redisPub) {
     configureRedisPubSub(redisPub, redisSub || undefined);
+    // Cross-instance L1 invalidation (RBAC matrix, settings, module availability)
+    // only works while a subscriber is registered. Starting it from the test-only
+    // cacheManager facade left every PM2 instance stale for up to the cache TTL.
+    if (!startCacheInvalidationSubscriber()) {
+      app.log.error(
+        "Redis pub/sub unavailable — cross-instance cache invalidation is disabled until it recovers",
+      );
+    }
   }
 }

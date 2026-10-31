@@ -1,8 +1,7 @@
-import React, { useState } from "react";
+import React from "react";
 import type { Message } from "@mms/shared";
-import { EntityCardsGrid } from "@/components/app/EntityCardsGrid";
+import { ModuleDirectoryCards } from "@/components/app/ModuleDirectoryCards";
 import { type StatusBadgeConfigItem } from "@/components/app/StatusBadge";
-import { notify } from "@/lib/notify";
 import { useReducedMotion } from "@/hooks/useReducedMotion";
 import { useTranslation } from "@/hooks/useTranslation";
 import { MessagingListCardItem } from "./MessagingListCardItem";
@@ -20,6 +19,8 @@ export interface MessagingListCardsProps {
   logStatusConfig: Record<string, StatusBadgeConfigItem>;
   getRecipientName: (contactId: string | number) => string;
   isColumnVisible: (key: string) => boolean;
+  /** id of the log targeted by j/k keyboard navigation (for visible focus styling). */
+  focusedLogId?: string | null;
   onToggleLog: (log: Message, shiftKey?: boolean) => void;
   onToggleAllVisible: (checked: boolean) => void;
   onResendLog: (log: Message) => void;
@@ -39,6 +40,7 @@ export const MessagingListCards = function MessagingListCards({
   logStatusConfig,
   getRecipientName,
   isColumnVisible,
+  focusedLogId,
   onToggleLog,
   onToggleAllVisible,
   onResendLog,
@@ -47,25 +49,12 @@ export const MessagingListCards = function MessagingListCards({
 }: MessagingListCardsProps): React.JSX.Element {
   const { t } = useTranslation();
   const reducedMotion = useReducedMotion();
-  const [copiedLogId, setCopiedLogId] = useState<string | null>(null);
-
-  const handleCopyBody = async (e: React.MouseEvent, log: Message): Promise<void> => {
-    e.stopPropagation();
-    try {
-      await navigator.clipboard.writeText(log.body);
-      setCopiedLogId(String(log.id));
-      notify.success(t("contacts.table.copied"));
-      setTimeout(() => setCopiedLogId(null), 2000);
-    } catch {
-      notify.error(t("messaging.loadFailedHint"));
-    }
-  };
 
   const selectedIdsArray = Object.keys(selectedIds).filter((k) => selectedIds[k]);
 
   return (
     <div className="space-y-3">
-      <EntityCardsGrid
+      <ModuleDirectoryCards
         items={logs}
         selectedIds={selectedIdsArray}
         onSelectAll={() => onToggleAllVisible(!allVisibleSelected)}
@@ -82,16 +71,15 @@ export const MessagingListCards = function MessagingListCards({
             log={log}
             isSelected={Boolean(selectedIds[String(log.id)])}
             name={getRecipientName(log.contactId)}
-            isCopied={copiedLogId === String(log.id)}
             canWrite={canWrite}
             reducedMotion={reducedMotion}
             logStatusConfig={logStatusConfig}
             isColumnVisible={isColumnVisible}
+            isKeyboardFocused={log.id === focusedLogId}
             onToggleLog={onToggleLog}
             onResendLog={onResendLog}
             onViewLog={onViewLog}
             onFilterContact={onFilterContact}
-            onCopyBody={handleCopyBody}
           />
         )}
       />

@@ -9,8 +9,8 @@ import type {
   PostingRules,
 } from "@mms/shared";
 import { apiContract } from "@/lib/api";
-import { ApiError } from "@/lib/apiClient";
 import { invalidateAccountingQueries } from "@/tenant/features/accounting/hooks/invalidateAccountingQueries";
+import { assertContractOk } from "@/lib/apiContractError";
 
 const RULES_KEY = ["accounting", "posting-rules"] as const;
 export { RULES_KEY as ACCOUNTING_POSTING_RULES_QUERY_KEY };
@@ -23,13 +23,6 @@ export {
   type MoneySeparator,
 } from "@/tenant/features/accounting/hooks/accountingMoneyParsers";
 
-/** Throws on any non-2xx (preserves the old `apiJson` throw-on-!ok). */
-function assertOk(response: { status: number; body: unknown }, context: string): void {
-  if (response.status >= 200 && response.status < 300) return;
-  const errorBody = response.body as { message?: string; type?: string } | undefined;
-  throw new ApiError(response.status, errorBody?.message ?? context, errorBody?.type);
-}
-
 export function useAccountingPostingRules(enabled = true) {
   return useQuery({
     queryKey: RULES_KEY,
@@ -38,7 +31,7 @@ export function useAccountingPostingRules(enabled = true) {
         signal,
         fetchOptions: { signal },
       });
-      assertOk(response, "Failed to load posting rules");
+      assertContractOk(response, "Failed to load posting rules");
       return (response.body as { rules: PostingRules }).rules;
     },
     enabled,
@@ -50,7 +43,7 @@ export function useSaveAccountingPostingRules() {
   return useMutation({
     mutationFn: async (rules: PostingRules) => {
       const response = await apiContract.accountingLedger.putPostingRules({ body: rules });
-      assertOk(response, "Failed to save posting rules");
+      assertContractOk(response, "Failed to save posting rules");
       return response.body as { rules: PostingRules };
     },
     /**
@@ -90,7 +83,7 @@ export function useCloseFiscalYear() {
         params: { id },
         body: retainedEarningsAccountId ? { retainedEarningsAccountId } : {},
       });
-      assertOk(response, "Failed to close fiscal year");
+      assertContractOk(response, "Failed to close fiscal year");
       return response.body as { fiscalYear: FiscalYear };
     },
     onSuccess: () => invalidateAccountingQueries(queryClient),
@@ -115,7 +108,7 @@ export function useOpeningBalances(fiscalYearId: string | undefined) {
         signal,
         fetchOptions: { signal },
       });
-      assertOk(response, "Failed to load opening balances");
+      assertContractOk(response, "Failed to load opening balances");
       return (response.body as { balances: OpeningBalance[] }).balances;
     },
     enabled: Boolean(fiscalYearId),
@@ -133,7 +126,7 @@ export function useSaveOpeningBalances() {
   return useMutation({
     mutationFn: async (payload: SaveOpeningBalancesInput) => {
       const response = await apiContract.accountingLedger.putOpeningBalances({ body: payload });
-      assertOk(response, "Failed to save opening balances");
+      assertContractOk(response, "Failed to save opening balances");
       return response.body as { balances: OpeningBalance[] };
     },
     onSuccess: (saved, payload) => {
@@ -160,7 +153,7 @@ export function usePostOpeningBalances() {
         params: { fiscalYearId },
         body: {},
       });
-      assertOk(response, "Failed to post opening balances");
+      assertContractOk(response, "Failed to post opening balances");
       return response.body as { success: boolean; posted: boolean };
     },
     onSuccess: () => invalidateAccountingQueries(queryClient),
@@ -175,7 +168,7 @@ export function useBankStatements(enabled = true) {
         signal,
         fetchOptions: { signal },
       });
-      assertOk(response, "Failed to load bank statements");
+      assertContractOk(response, "Failed to load bank statements");
       return (response.body as { statements: BankStatement[] }).statements;
     },
     enabled,
@@ -187,7 +180,7 @@ export function useSaveBankStatement() {
   return useMutation({
     mutationFn: async (statement: BankStatementInsert) => {
       const response = await apiContract.accountingLedger.putBankStatement({ body: statement });
-      assertOk(response, "Failed to save bank statement");
+      assertContractOk(response, "Failed to save bank statement");
       return response.body as { statement: BankStatement };
     },
     onSuccess: () => queryClient.invalidateQueries({ queryKey: BANK_KEY }),
@@ -199,7 +192,7 @@ export function useMatchBankReconciliation() {
   return useMutation({
     mutationFn: async (match: BankReconciliationMatch) => {
       const response = await apiContract.accountingLedger.matchBankReconciliation({ body: match });
-      assertOk(response, "Failed to save bank reconciliation");
+      assertContractOk(response, "Failed to save bank reconciliation");
       return response.body as { success: boolean };
     },
     onSuccess: () => queryClient.invalidateQueries({ queryKey: BANK_KEY }),

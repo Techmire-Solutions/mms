@@ -3,9 +3,9 @@ import { Eye, EyeOff, Pencil } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { DirectoryCard } from "@/components/app/DirectoryCard";
+import { DirectoryEntityCard } from "@/components/app/DirectoryEntityCard";
 import { EntityCard } from "@/components/app/EntityCard";
-import { EntityCardMetaTile } from "@/components/app/EntityCardMetaTile";
+import { DirectoryCardMetaTile } from "@/components/app/DirectoryCardMetaTile";
 import { cn } from "@/lib/utils";
 import { StatusBadge, type StatusBadgeConfigItem } from "@/components/app/StatusBadge";
 
@@ -76,7 +76,7 @@ export interface AccountRecordProps {
   onReactivate: (id: string) => void;
 }
 
-/** Work/setup entity card — DirectoryCard SSOT (do not hand-compose EntityCard). */
+/** Work/setup entity card — DirectoryEntityCard SSOT (do not hand-compose EntityCard). */
 export function AccountMobileCard({
   account,
   balanceConfig,
@@ -89,7 +89,7 @@ export function AccountMobileCard({
   const { t } = useTranslation();
 
   return (
-    <DirectoryCard
+    <DirectoryEntityCard
       entity={account}
       canSelect={false}
       className={cn("space-y-3 p-4", account.isActive === false && "opacity-50")}
@@ -126,17 +126,17 @@ export function AccountMobileCard({
       metadataSlot={
         <EntityCard.MetaGrid>
           {isColumnVisible("subtype") && (
-            <EntityCardMetaTile label={t("accounting.columns.account.subtype")}>
+            <DirectoryCardMetaTile label={t("accounting.columns.account.subtype")}>
               {account.subtype || "—"}
-            </EntityCardMetaTile>
+            </DirectoryCardMetaTile>
           )}
           {isColumnVisible("description") && (
-            <EntityCardMetaTile
+            <DirectoryCardMetaTile
               label={t("accounting.columns.account.description")}
               className="break-words"
             >
               {account.description || "—"}
-            </EntityCardMetaTile>
+            </DirectoryCardMetaTile>
           )}
         </EntityCard.MetaGrid>
       }

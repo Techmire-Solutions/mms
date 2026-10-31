@@ -48,6 +48,9 @@ function createFakeRepo(): MessagingRepository {
       },
     }),
     softDeleteActiveMessageLogs: vi.fn().mockResolvedValue(undefined),
+    restoreArchivedMessageLog: vi.fn().mockResolvedValue(0),
+    claimMessageLogForDelivery: vi.fn().mockResolvedValue(true),
+    updateMessageLogDeliveryStatus: vi.fn().mockResolvedValue(undefined),
     getWhatsappIntegrationRow: vi.fn().mockResolvedValue(null),
     upsertWhatsappIntegrationConfigRow: vi.fn().mockResolvedValue(undefined),
     upsertWhatsappIntegrationSecretsRow: vi.fn().mockResolvedValue(undefined),
@@ -74,6 +77,38 @@ describe("messaging use-cases (DI with fake repository)", () => {
 
     expect(result).toEqual([log]);
     expect(repo.insertMessageLogs).toHaveBeenCalledWith("demo", [log]);
+  });
+
+  it("restoreMessageLogs maps absent/empty ids to restore-all and broadcasts", async () => {
+    const repo = createFakeRepo();
+    const useCases = createMessagingUseCases(repo);
+
+    // null ids → restore-all passthrough
+    (repo.restoreArchivedMessageLog as any).mockResolvedValue(4);
+    const all = await useCases.restoreMessageLogs("demo", "u-1");
+    expect(repo.restoreArchivedMessageLog).toHaveBeenNthCalledWith(1, "demo", "u-1", null);
+    expect(all).toBe(4);
+
+    // blank ids → deduped to [] (repo treats an empty list as restore-all)
+    await useCases.restoreMessageLogs("demo", "u-1", ["  ", ""]);
+    expect(repo.restoreArchivedMessageLog).toHaveBeenNthCalledWith(2, "demo", "u-1", []);
+
+    // explicit ids → deduped + trimmed passthrough
+    await useCases.restoreMessageLogs("demo", "u-2", ["a", " a ", "b"]);
+    expect(repo.restoreArchivedMessageLog).toHaveBeenNthCalledWith(3, "demo", "u-2", ["a", "b"]);
+  });
+
+  it("restoreMessageLogs returns the repository restored count per call", async () => {
+    const repo = createFakeRepo();
+    (repo.restoreArchivedMessageLog as any).mockResolvedValue(0);
+    const useCases = createMessagingUseCases(repo);
+
+    const none = await useCases.restoreMessageLogs("demo", "u-1", ["m-1"]);
+    expect(none).toBe(0);
+
+    (repo.restoreArchivedMessageLog as any).mockResolvedValue(2);
+    await useCases.restoreMessageLogs("demo", "u-1", ["m-1"]);
+    expect(repo.restoreArchivedMessageLog).toHaveBeenLastCalledWith("demo", "u-1", ["m-1"]);
   });
 
   it("computeMessagingMetrics delegates to the injected repository", async () => {

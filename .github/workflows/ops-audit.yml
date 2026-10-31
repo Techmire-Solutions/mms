@@ -1,0 +1,76 @@
+name: Production Read-Only Audit
+
+# Runs one allowlisted, read-only database audit on the production host and
+# publishes its report. There is no free-form command input: the audit name is
+# a choice, re-checked against the same allowlist on the server
+# (scripts/ci/remote/ops-audit.sh), and the database session is read-only.
+
+on:
+  workflow_dispatch:
+    inputs:
+      audit:
+        description: "Audit to run (read-only)"
+        type: choice
+        required: true
+        default: finance-date-columns
+        options:
+          - finance-date-columns
+          - date-columns
+          - academic-contract
+          - class-references
+
+permissions:
+  contents: read
+
+concurrency:
+  group: mms-production-ops-audit
+  cancel-in-progress: false
+
+# Required GitHub Secrets: SERVER_IP, SERVER_USER, SSH_PRIVATE_KEY, SSH_KNOWN_HOSTS
+
+jobs:
+  audit:
+    name: Run audit on production
+    runs-on: ubuntu-24.04
+    environment: production
+    timeout-minutes: 15
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - name: Configure SSH
+        uses: ./.github/actions/ssh-setup
+        with:
+          private-key: ${{ secrets.SSH_PRIVATE_KEY }}
+          known-hosts: ${{ secrets.SSH_KNOWN_HOSTS }}
+          host: ${{ secrets.SERVER_IP }}
+
+      - name: Run audit via SSH
+        env:
+          SERVER_USER: ${{ secrets.SERVER_USER }}
+          SERVER_IP: ${{ secrets.SERVER_IP }}
+          AUDIT: ${{ inputs.audit }}
+        run: |
+          set -o pipefail
+          bash scripts/ci/ssh-exec.sh scripts/ci/remote/ops-audit.sh AUDIT | tee audit-report.txt
+
+      - name: Publish audit report
+        if: always()
+        env:
+          AUDIT: ${{ inputs.audit }}
+        run: |
+          {
+            echo "### Production audit: \`${AUDIT}\`"
+            echo
+            echo '```text'
+            cat audit-report.txt 2>/dev/null || echo "(no output)"
+            echo '```'
+          } >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Cleanup SSH Credentials
+        if: always()
+        run: |
+          shred -u ~/.ssh/deploy_key 2>/dev/null || rm -f ~/.ssh/deploy_key

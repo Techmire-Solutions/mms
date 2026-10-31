@@ -1,6 +1,5 @@
-import { randomUUID } from "node:crypto";
 import { and, eq, inArray, isNull, sql } from "drizzle-orm";
-import type { AcademicCatalogKind } from "@mms/shared";
+import { uuidv7, type AcademicCatalogKind } from "@mms/shared";
 import {
   exams,
   programs,
@@ -175,7 +174,7 @@ export async function ensureAcademicCatalogByNameTx(
   if (found) return found;
   await tx
     .insert(TABLES[kind])
-    .values({ id: randomUUID(), workspaceSubdomain: subdomain, name: text })
+    .values({ id: uuidv7(), workspaceSubdomain: subdomain, name: text })
     .onConflictDoNothing();
   return findAcademicCatalogByNameTx(tx, kind, subdomain, text);
 }

@@ -69,6 +69,9 @@ describe("resolveModuleRouteAction", () => {
 
   it("leaves handler-owned permissions to the handler but still gates availability", () => {
     expect(resolveModuleRouteAction("PUT", "/api/contacts/:id", "contacts")).toBe("availability");
+    expect(resolveModuleRouteAction("POST", "/api/messaging/logs/restore", "messaging")).toBe(
+      "availability",
+    );
     expect(resolveModuleRouteAction("GET", "/api/users/activity", "users")).toBe("availability");
     expect(resolveModuleRouteAction("PUT", "/api/users/activity/bulk", "users")).toBe(
       "availability",

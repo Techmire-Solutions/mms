@@ -1,6 +1,6 @@
 import { SessionCard } from "@/tenant/features/sessions/components/SessionCard";
 import type { SessionsWorkViewProps } from "@/tenant/features/sessions/lib/sessionsWorkListViewsShared";
-import { EntityCardsGrid } from "@/components/app/EntityCardsGrid";
+import { ModuleDirectoryCards } from "@/components/app/ModuleDirectoryCards";
 import { useReducedMotion } from "@/hooks/useReducedMotion";
 import { useTranslation } from "@/hooks/useTranslation";
 import { formatDirectoryPageCountLabel } from "@/lib/formatDirectoryPageCountLabel";
@@ -40,7 +40,7 @@ export function SessionsListCards({
   });
 
   return (
-    <EntityCardsGrid
+    <ModuleDirectoryCards
       items={sessions}
       selectedIds={selectedIds}
       onSelectAll={canSelectSessions ? () => onToggleSelectAll(!allVisibleSelected) : undefined}

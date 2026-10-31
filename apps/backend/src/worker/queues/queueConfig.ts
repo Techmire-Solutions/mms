@@ -25,12 +25,38 @@ export const QUEUE_SETTINGS: Record<string, QueueConcurrencyAndPriority> = {
 };
 
 export { getBullMQConnectionOptions } from "../../lib/redis.js";
+export { getQueuePrefix } from "../../lib/redisBullMQ.js";
 
 export const WORKER_HEAP_LIMIT_BYTES =
   (Number(process.env.WORKER_HEAP_LIMIT_MB) || 512) * 1024 * 1024;
 
 export const WORKER_SUBPROCESS_MEMORY_LIMIT_MB = 512;
 export const JOB_EXECUTION_TIMEOUT_MS = 60_000;
+
+/**
+ * A broadcast is `recipients × gateway latency`; bounding one attempt and
+ * retrying is safe because the message-log claim is idempotent per recipient.
+ */
+export const MESSAGING_JOB_TIMEOUT_MS = 10 * 60_000;
+
+/**
+ * Force-exit ceiling for the worker's graceful shutdown.
+ *
+ * Messaging jobs are aborted immediately; sandboxed export/PDF children get
+ * their full 60s processor budget to settle, plus 15s to close queues/Redis/DB.
+ * PM2 kill_timeout is 90s so the process always exits before SIGKILL.
+ */
+export const WORKER_FORCE_EXIT_MS = JOB_EXECUTION_TIMEOUT_MS + 15_000;
+
+/**
+ * Per-job wall clock. Messaging batches get the longer budget; every other
+ * queue keeps the 60s sandboxed-processor ceiling.
+ */
+export function resolveJobExecutionTimeoutMs(moduleId: string, _kind: string): number {
+  return moduleId.trim().toLowerCase() === "messaging"
+    ? MESSAGING_JOB_TIMEOUT_MS
+    : JOB_EXECUTION_TIMEOUT_MS;
+}
 
 import { fileURLToPath } from "node:url";
 import { existsSync } from "node:fs";

@@ -1,15 +1,15 @@
 /**
  * @file TaskCardItem.tsx
- * @description Work directory card for a single task — DirectoryCard SSOT (do not hand-compose EntityCard).
+ * @description Work directory card for a single task — DirectoryEntityCard SSOT (do not hand-compose EntityCard).
  */
 
 import React from "react";
 import { Pencil, Trash2, RotateCcw } from "lucide-react";
-import type { TaskRecord, TaskStatus } from "@mms/shared";
+import { formatDate, type TaskRecord, type TaskStatus } from "@mms/shared";
 import { DataTableRowActions } from "@/components/common/data-table";
-import { EntityCardMetaTile } from "@/components/app/EntityCardMetaTile";
-import { EntityCard } from "@/components/app/EntityCard";
-import { DirectoryCard } from "@/components/app/DirectoryCard";
+import { DirectoryCardMetaTile } from "@/components/app/DirectoryCardMetaTile";
+import { DirectoryCardMetaGrid } from "@/components/app/DirectoryCardMetaGrid";
+import { DirectoryEntityCard } from "@/components/app/DirectoryEntityCard";
 import { useTranslation } from "@/hooks/useTranslation";
 import { TaskPriorityBadge, TaskStatusBadge } from "./TaskBadges";
 import { TASK_NEXT_STATUS } from "./tasksWorkBatchColumns";
@@ -19,6 +19,7 @@ export interface TaskCardItemProps {
   selectedIds: string[];
   viewingDeleted: boolean;
   canWrite: boolean;
+  canComplete?: boolean;
   canDelete: boolean;
   isColumnVisible: (key: string) => boolean;
   onToggleSelected: (id: string, checked: boolean) => void;
@@ -30,12 +31,13 @@ export interface TaskCardItemProps {
   reducedMotion?: boolean;
 }
 
-/** Work directory card — DirectoryCard SSOT (do not hand-compose EntityCard). */
+/** Work directory card — DirectoryEntityCard SSOT (do not hand-compose EntityCard). */
 export function TaskCardItem({
   task,
   selectedIds,
   viewingDeleted,
   canWrite,
+  canComplete,
   canDelete,
   isColumnVisible,
   onToggleSelected,
@@ -81,7 +83,7 @@ export function TaskCardItem({
   }
 
   return (
-    <DirectoryCard
+    <DirectoryEntityCard
       entity={task}
       selectedIds={selectedIds}
       canSelect={canDelete}
@@ -98,33 +100,35 @@ export function TaskCardItem({
       viewLabel={t("tasks.actionViewShort")}
       viewAriaLabel={t("tasks.viewTask", { name: task.title })}
       metadataSlot={
-        <EntityCard.MetaGrid>
+        <DirectoryCardMetaGrid>
           {isColumnVisible("status") ? (
-            <EntityCardMetaTile label={t("tasks.status")}>
+            <DirectoryCardMetaTile label={t("tasks.status")}>
               <TaskStatusBadge
                 status={task.status}
                 onClick={
-                  canWrite && !viewingDeleted
+                  (canComplete ?? canWrite) && !viewingDeleted
                     ? () => onUpdateStatus(task.id, TASK_NEXT_STATUS[task.status] || "todo")
                     : undefined
                 }
               />
-            </EntityCardMetaTile>
+            </DirectoryCardMetaTile>
           ) : null}
           {isColumnVisible("description") ? (
-            <EntityCardMetaTile label={t("tasks.description")}>
+            <DirectoryCardMetaTile label={t("tasks.description")}>
               {task.description?.trim() || "—"}
-            </EntityCardMetaTile>
+            </DirectoryCardMetaTile>
           ) : null}
           {isColumnVisible("assignees") ? (
-            <EntityCardMetaTile label={t("tasks.assignees")}>{assigneeLabel}</EntityCardMetaTile>
+            <DirectoryCardMetaTile label={t("tasks.assignees")}>
+              {assigneeLabel}
+            </DirectoryCardMetaTile>
           ) : null}
           {isColumnVisible("dueAt") ? (
-            <EntityCardMetaTile label={t("tasks.dueAt")}>
-              {task.dueAt ? new Date(task.dueAt).toLocaleDateString() : t("tasks.noDueDate")}
-            </EntityCardMetaTile>
+            <DirectoryCardMetaTile label={t("tasks.dueAt")}>
+              {task.dueAt ? formatDate(task.dueAt) : t("tasks.noDueDate")}
+            </DirectoryCardMetaTile>
           ) : null}
-        </EntityCard.MetaGrid>
+        </DirectoryCardMetaGrid>
       }
       overflowActions={actions.length > 0 ? <DataTableRowActions actions={actions} /> : null}
     />

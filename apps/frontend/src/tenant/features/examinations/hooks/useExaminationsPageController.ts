@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { usePersistedTabState } from "@/hooks/usePersistedTabState";
 import { useModuleShortcuts } from "@/hooks/useModuleShortcuts";
 import { useTranslation } from "@/hooks/useTranslation";
@@ -101,11 +101,6 @@ export function useExaminationsPageController() {
   const effectiveSubTab = OPS_SUB_TABS.find((tab) => tab.id === activeSubTab)
     ? activeSubTab
     : "exams";
-
-  useEffect(() => {
-    if (effectiveSubTab === "exams" || effectiveSubTab === "results") return;
-    setFilteredCount(exams.length);
-  }, [effectiveSubTab, exams.length]);
 
   useModuleShortcuts({
     searchInputId: "examinations-search-input",

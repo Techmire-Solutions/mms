@@ -27,7 +27,7 @@ import {
 } from "@/tenant/features/accounting/components/useCashbookColumns";
 import { PaymentVoucherPrintButton } from "@/tenant/features/accounting/components/PaymentVoucherPrintButton";
 
-/** ReportMoneyCard tile (report) — not DirectoryCard. */
+/** ReportMoneyCard tile (report) — not DirectoryEntityCard. */
 interface CashbookViewTableProps {
   rows: CashbookRow[];
   totalIn: number;

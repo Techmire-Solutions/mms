@@ -1,9 +1,9 @@
 import type { User } from "@mms/shared";
 import { MutationCache, QueryCache, QueryClient, onlineManager } from "@tanstack/react-query";
-import { isApiError } from "@/lib/apiClient";
 import { createIdbCachePersister } from "@/lib/query/idbCachePersister";
 import { refreshModuleAccessOnDenial } from "@/lib/query/moduleAccessQuery";
 import { createQueryPersistenceLifecycle } from "@/lib/query/queryPersistenceLifecycle";
+import { computeRetryDelay, shouldRetryQuery } from "@/lib/query/retryPolicy";
 
 import {
   readQueryCacheSession,
@@ -85,16 +85,8 @@ export const queryClientInstance = new SessionQueryClient({
       refetchOnWindowFocus: false,
       refetchOnReconnect: true,
       networkMode: "online",
-      retry: (failureCount, error) => {
-        if (
-          isApiError(error) &&
-          (error.status === 401 || error.status === 403 || error.status === 404)
-        ) {
-          return false;
-        }
-        return failureCount < 3;
-      },
-      retryDelay: (attemptIndex) => Math.min(1000 * 2 ** attemptIndex, 30_000),
+      retry: shouldRetryQuery,
+      retryDelay: computeRetryDelay,
     },
     mutations: {
       networkMode: "online",

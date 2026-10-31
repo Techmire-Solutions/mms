@@ -1,7 +1,7 @@
 import type { ReactElement } from "react";
 import { UserCog } from "lucide-react";
 import { USERS_MODULE_MANIFEST, type SystemUser } from "@mms/shared";
-import { ModuleUniversalBulkActionBar } from "@/components/app/ModuleUniversalBulkActionBar";
+import { BulkSelectionBar } from "@/components/app/BulkSelectionBar";
 import type { BulkSelectionMessageChannel } from "@/components/app/BulkSelectionActions";
 import { useTranslation } from "@/hooks/useTranslation";
 
@@ -17,7 +17,7 @@ export interface UsersBulkActionBarProps {
   bulkActions?: readonly string[];
 }
 
-/** Users Work bulk bar — delegates to shared ModuleUniversalBulkActionBar. */
+/** Users Work bulk bar — delegates to shared BulkSelectionBar. */
 export function UsersBulkActionBar({
   selectedIds,
   selectedUsers,
@@ -32,7 +32,7 @@ export function UsersBulkActionBar({
   const { t } = useTranslation();
 
   return (
-    <ModuleUniversalBulkActionBar
+    <BulkSelectionBar
       selectedCount={selectedIds.length}
       viewingDeleted={showDeleted}
       canDelete={canDelete}

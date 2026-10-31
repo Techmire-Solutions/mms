@@ -9,7 +9,7 @@ import { KeyRound } from "lucide-react";
 import { FormModal } from "@/components/app/FormModal";
 import { Field } from "@/components/app/FormField";
 import { PasswordInput } from "@/components/app/PasswordInput";
-import { WarningCallout } from "@/components/app/WarningCallout";
+import { Alert } from "@/components/app/Alert";
 import { useTranslation } from "@/hooks/useTranslation";
 import { useGlobalSettings } from "@/tenant/hooks/useGlobalSettings";
 
@@ -86,7 +86,7 @@ export function ResetUserPasswordModal({
           void handleReset();
         }}
       >
-        <WarningCallout
+        <Alert
           tone="warning"
           density="compact"
           title={t("users.resetPasswordWarningTitle")}

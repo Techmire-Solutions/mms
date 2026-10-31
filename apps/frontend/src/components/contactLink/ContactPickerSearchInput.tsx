@@ -86,7 +86,7 @@ export function ContactPickerSearchInput({
         {required ? <RequiredMark /> : null}
       </label>
       <div ref={anchorRef} className="relative">
-        <Search className="absolute start-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground/75 pointer-events-none" />
+        <Search className="absolute start-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground pointer-events-none" />
         <Input
           id={resolvedId}
           name={resolvedName}

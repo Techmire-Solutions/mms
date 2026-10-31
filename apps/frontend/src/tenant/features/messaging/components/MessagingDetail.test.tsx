@@ -167,4 +167,37 @@ describe("MessagingDetail", () => {
     expect(onClose).toHaveBeenCalled();
     expect(onResend).toHaveBeenCalledWith(mockLog);
   });
+
+  it("renders inline retry button inside failure banner and triggers resend", async () => {
+    const onResend = vi.fn();
+    const onClose = vi.fn();
+    const failedLog = { ...mockLog, status: "failed" as const };
+
+    await act(async () => {
+      root.render(
+        <MemoryRouter>
+          <MessagingDetail
+            log={failedLog}
+            recipient={mockRecipient}
+            logStatusConfig={mockLogStatusConfig}
+            canWrite={true}
+            onClose={onClose}
+            onResend={onResend}
+          />
+        </MemoryRouter>,
+      );
+    });
+
+    const resendButtons = Array.from(document.body.querySelectorAll("button")).filter((b) =>
+      b.textContent?.includes("messaging.resend"),
+    );
+    expect(resendButtons.length).toBeGreaterThanOrEqual(2);
+
+    await act(async () => {
+      resendButtons[1]?.click();
+    });
+
+    expect(onClose).toHaveBeenCalled();
+    expect(onResend).toHaveBeenCalledWith(failedLog);
+  });
 });

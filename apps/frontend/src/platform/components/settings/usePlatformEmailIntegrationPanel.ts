@@ -22,7 +22,6 @@ export function usePlatformEmailIntegrationPanel() {
   const [smtpPassword, setSmtpPassword] = useState("");
 
   const load = useCallback(async (): Promise<void> => {
-    setLoading(true);
     try {
       const config = await fetchPlatformEmailIntegration();
       if (config) setForm(config);

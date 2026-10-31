@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import {
   applyTitleCaseToContact,
   getDuplicateConfidenceBadgeStyle,
@@ -68,17 +68,24 @@ export function useDuplicateDetectionState({
   const [merging, setMerging] = useState<DuplicatePair | null>(null);
   const [loadedPairs, setLoadedPairs] = useState<DuplicatePair[]>([]);
   const [confirming, setConfirming] = useState(false);
+  const [batchMerging, setBatchMerging] = useState(false);
+  const [batchConfirmOpen, setBatchConfirmOpen] = useState(false);
 
-  useEffect(() => {
-    if (!serverPairs?.pairs) return;
-    const mappedPairs = serverPairs.pairs.map((pair) => mapPairToViewModel(pair, t));
-    setLoadedPairs((prev) => {
-      if (dupPage <= 1) return mappedPairs;
-      const byId = new Map(prev.map((previousPair) => [previousPair.id, previousPair]));
-      for (const mappedPair of mappedPairs) byId.set(mappedPair.id, mappedPair);
-      return [...byId.values()];
-    });
-  }, [serverPairs, dupPage, t]);
+  const [prevServerPairs, setPrevServerPairs] = useState(serverPairs);
+  const [prevDupPage, setPrevDupPage] = useState(dupPage);
+  if (prevServerPairs !== serverPairs || prevDupPage !== dupPage) {
+    setPrevServerPairs(serverPairs);
+    setPrevDupPage(dupPage);
+    if (serverPairs?.pairs) {
+      const mappedPairs = serverPairs.pairs.map((pair) => mapPairToViewModel(pair, t));
+      setLoadedPairs((prev) => {
+        if (dupPage <= 1) return mappedPairs;
+        const byId = new Map(prev.map((previousPair) => [previousPair.id, previousPair]));
+        for (const mappedPair of mappedPairs) byId.set(mappedPair.id, mappedPair);
+        return [...byId.values()];
+      });
+    }
+  }
 
   const detectedPairs = (() => {
     if (pairsError) return [];
@@ -137,6 +144,35 @@ export function useDuplicateDetectionState({
 
   const totalPairs = serverPairs?.total ?? detectedPairs.length;
 
+  const highConfidencePairs = activePairs.filter(
+    (pair) => pair.confidence >= 95 || (pair.confidence >= 0.95 && pair.confidence <= 1),
+  );
+
+  const handleBatchMergeHighConfidence = async (): Promise<void> => {
+    if (batchMerging || highConfidencePairs.length === 0) return;
+    setBatchMerging(true);
+    let successCount = 0;
+    try {
+      for (const pair of highConfidencePairs) {
+        const selectedKeepIndex = keepIndex[pair.id] ?? 0;
+        const keep = pair.contacts[selectedKeepIndex];
+        const other = pair.contacts[1 - selectedKeepIndex];
+        const mergedRaw = mergeContacts(keep, other);
+        const mergedResult = applyTitleCaseToContact(mergedRaw);
+        await onMerge(keep.id, other.id, mergedResult);
+        setMergedPairIds((prev) => new Set(prev).add(pair.id));
+        successCount++;
+      }
+      notify.success(t("contacts.duplicates.batchMergeSuccess", { count: successCount }));
+      setBatchConfirmOpen(false);
+    } catch (err) {
+      notify.error(t("contacts.saveFailed"));
+      reportClientError(err, { scope: "contacts.duplicate_batch_merge" });
+    } finally {
+      setBatchMerging(false);
+    }
+  };
+
   const handleMergeConfirm = async (customMerged?: Contact): Promise<void> => {
     if (!merging || confirming) return;
     const pair = merging;
@@ -185,6 +221,11 @@ export function useDuplicateDetectionState({
     merging,
     confirming,
     totalMerged: mergedPairIds.size,
+    highConfidenceCount: highConfidencePairs.length,
+    batchMerging,
+    batchConfirmOpen,
+    setBatchConfirmOpen,
+    handleBatchMergeHighConfidence,
     setMerging,
     handleLoadMoreDuplicates,
     handleMergeConfirm,

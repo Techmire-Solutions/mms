@@ -44,12 +44,13 @@ mms/
 |---|---|---|
 | `@mms/shared` | shared **types/DTOs/zod schemas**, pure **format/validate/derive** helpers used by ≥2 packages, i18n packs, shared constants/contracts | UI components, I/O, runtime deps on app internals |
 | `apps/backend` | HTTP API, auth/security, persistence, background jobs | React/DOM, browser-only code |
-| `apps/frontend` | UI, client state (Query), the **shared component library** | server secrets, DB access |
+| `apps/frontend` | UI, client state (Query), and surface-specific chrome (shared primitives live in `packages/ui`) | server secrets, DB access |
 | `e2e` | Playwright specs/helpers | app logic |
 
 **Decision rule:** if ≥2 packages need a type/utility, move it to `@mms/shared` and
 re-export through `packages/shared/src/index.ts`. If ≥2 **UI surfaces** need a
-component, put it in `apps/frontend/src/components/**` and import via `@/components/...`.
+component, put it in `packages/ui/src` and import it via `@shared/ui` (enforced by
+`check:shared-ui`; `apps/frontend/src/components/ui` is only a facade).
 
 ## 3. Conventions
 
@@ -60,20 +61,21 @@ component, put it in `apps/frontend/src/components/**` and import via `@/compone
   missing a capability, extend the shared primitive (e.g. the labeled `CopyBtn`
   variant) instead of forking.
 - **Platform vs tenant chrome:** the platform console and the tenant workspace are
-  distinct surfaces, but both are built from the shared `src/components/**` layer;
-  only truly surface-specific chrome lives under `platform/` / `tenant/`.
+  distinct surfaces, but both are built from the shared `@shared/ui` layer
+  (`packages/ui/src`); only truly surface-specific chrome lives under `platform/` / `tenant/`.
 - **Domain grouping:** keep feature code together by module (backend `services/`,
   `routes/tenant/<module>/`, `db/repositories/`, frontend `tenant/features/<module>/`).
 - **Strictness:** compiler strictness is centralized in [`tsconfig.base.json`](../tsconfig.base.json);
   do not scatter flags across package tsconfigs.
 - **Editor config / npm:** `.editorconfig` and `.npmrc` are the base; match them.
 
-## 4. `@mms/shared/src` — current state & recommended target
+## 4. `@mms/shared/src` — domain de-flattened (enforced)
 
-Today `packages/shared/src` is a **flat** file dump (~hundreds of files). External
-imports all go through `@mms/shared` (the `index.ts` barrel), so the physical layout
-can be reorganized **without changing consumers**. Recommended target structure
-(migrate incrementally, a folder at a time):
+`packages/shared/src` is **de-flattened**: only `index.ts` may live at the root,
+and domain code sits in a folder per area. This is not a convention — it is gated
+by `pnpm run check:shared-structure` (root files other than `index.ts`, consumer
+imports of unexported subpaths, and `package.json` subpaths without a matching
+file all fail CI).
 
 ```
 packages/shared/src/
@@ -82,17 +84,19 @@ packages/shared/src/
   branding/        # theme tokens, color math, css variable builders
   backup/          # backup envelope/crypto/validation
   messaging/       # messaging types, template helpers
-  finance/         # finance/accounting/obligations contracts
+  finance/         # finance/accounting/obligations contracts, money formatting
+  money/           # exact BigInt minor-unit arithmetic + ISO 4217 data
   platform/        # apex platform types, RBAC, settings, errors
   auth/            # session policy, DTOs, credentials
   i18n/            # appTranslations{En,Ar,Ur,Fa}, language utils
-  __tests__/       # colocate with the folder they test
-  index.ts         # unchanged public barrel
+  core/            # env-agnostic helpers (language utils, formatting primitives)
+  entry/           # the public barrel split by domain
+  __tests__/       # cross-cutting tests
+  index.ts         # public barrel (the ONLY file allowed at the root)
 ```
 
-> ⚠️ **Deferred while another session is actively editing `packages/shared`.** The
-> flat layout is a real smell, but physically moving files now would collide with
-> in-flight contact/translation work. Move code in small, reviewable PRs.
+External imports go through `@mms/shared` (or an exported subpath), so the
+physical layout can keep evolving without changing consumers.
 
 ## 5. Tooling map
 
@@ -104,7 +108,7 @@ packages/shared/src/
 | Lint | ESLint (per-package; defers formatting to Prettier) | `eslint.config.js` (each package) |
 | Format | Prettier | `.prettierrc.json` → `pnpm format` / `pnpm format:check` |
 | Unit/integration tests | Vitest + coverage thresholds | `vitest.config.ts` (each package) |
-| E2E | Playwright (`chromium` + `a11y` projects, 2 CI shards each) | `e2e/playwright.config.ts` |
+| E2E | Playwright (`chromium` + `a11y` projects, 2 CI shards each; the mutation-heavy specs run nightly with `E2E_FULL_SUITE=1`) | `e2e/playwright.config.ts`, `.github/workflows/e2e-nightly.yml` |
 | CI | DAG: changes → [typecheck-lint, build (release artifact on main), secret-scan, test-frontend, test-backend-unit, test-backend-db (conditional), e2e] → ci-gate | `.github/workflows/ci.yml` |
 
 **In place:**
@@ -116,8 +120,9 @@ packages/shared/src/
 
 ## 6. Where common questions live
 
-- "Where does the platform reuse a shared widget?" → `apps/frontend/src/components/ui/`.
+- "Where does the platform reuse a shared widget?" → `packages/ui/src/` (`@shared/ui`;
+  `apps/frontend/src/components/ui/` is a facade that re-exports it).
 - "Is a type shared?" → `packages/shared/src` barrel.
 - "Which table/repo serves this?" → `apps/backend/src/db/schema.ts` + `db/repositories/`.
 - "Which route?" → `apps/backend/src/routes/index.ts` registry.
-- "Session/timeout policy?" → `packages/shared/src/sessionPolicy.ts` (SSOT).
+- "Session/timeout policy?" → `packages/shared/src/sessions/sessionPolicy.ts` (SSOT).

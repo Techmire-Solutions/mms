@@ -1,5 +1,5 @@
 import type React from "react";
-import { useEffect, useId, useState } from "react";
+import { useId, useState } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import {
   getPlatformPasswordError,
@@ -49,9 +49,12 @@ export function usePlatformForgotPasswordController() {
   const [resendCycle, setResendCycle] = useState(0);
   const resendCountdown = useResendCountdown(isResetStep, 30, resendCycle);
 
-  useEffect(() => {
+  // Adopt a reset id that arrives through the URL during render.
+  const [prevResetIdParam, setPrevResetIdParam] = useState(resetIdParam);
+  if (prevResetIdParam !== resetIdParam) {
+    setPrevResetIdParam(resetIdParam);
     if (resetIdParam) setResetId(resetIdParam);
-  }, [resetIdParam]);
+  }
 
   const resetPath = (passwordResetId: string): string =>
     `${ROUTES.platformForgotPassword}?resetId=${encodeURIComponent(passwordResetId)}`;

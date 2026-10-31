@@ -14,6 +14,7 @@ vi.mock("../lib/tenantContext.js", () => ({
 
 vi.mock("../db/database.js", () => ({
   runInTransaction: (cb: () => unknown) => cb(),
+  runInGlobalTransaction: (cb: () => unknown) => cb(),
   activeDb: () => ({
     execute: async () => undefined,
     update: () => ({ set: () => ({ where: async () => undefined }) }),

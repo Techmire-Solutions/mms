@@ -30,6 +30,7 @@ vi.mock("../services/contactService.js", () => ({
 
 import {
   dispatchTenantPasswordOtp,
+  isOtpDebugLoggingEnabled,
   sendTenantWelcomeEmail,
 } from "../services/auth/tenantPasswordOtpDispatch.js";
 import type { StoredUser } from "../services/auth/userService.js";
@@ -229,5 +230,17 @@ describe("tenantPasswordOtpDispatch", () => {
         }),
       );
     });
+  });
+});
+
+describe("isOtpDebugLoggingEnabled", () => {
+  it("requires the explicit MMS_DEBUG_OTP opt-in", () => {
+    expect(isOtpDebugLoggingEnabled({ NODE_ENV: "development" })).toBe(false);
+    expect(isOtpDebugLoggingEnabled({ NODE_ENV: "test" })).toBe(false);
+    expect(isOtpDebugLoggingEnabled({ NODE_ENV: "test", MMS_DEBUG_OTP: "1" })).toBe(true);
+  });
+
+  it("never echoes an OTP in production even when the flag is set", () => {
+    expect(isOtpDebugLoggingEnabled({ NODE_ENV: "production", MMS_DEBUG_OTP: "1" })).toBe(false);
   });
 });

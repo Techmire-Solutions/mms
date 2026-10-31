@@ -1,4 +1,4 @@
-import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { useQueryClient } from "@tanstack/react-query";
 import type { QueryClient } from "@tanstack/react-query";
 import {
   MESSAGE_LOGS_DEFAULT_PAGE_SIZE,
@@ -8,10 +8,10 @@ import {
   type MessagingMetricsDto,
 } from "@mms/shared";
 import { tsrClient } from "@/lib/api";
-import { apiJson } from "@/lib/apiClient";
 import { notifyApiFailure } from "@/lib/apiErrorNotify";
 import { useAuth } from "@/lib/contexts/AuthContext";
 import { useTranslation } from "@/hooks/useTranslation";
+import { useMessagingDispatchMutations } from "@/hooks/useMessagingDispatch";
 
 export const MESSAGING_TEMPLATES_QUERY_KEY = ["messaging", "templates"] as const;
 export const MESSAGING_LOGS_QUERY_KEY = ["messaging", "logs"] as const;
@@ -38,6 +38,9 @@ export interface RecordDispatchesInput {
   idempotencyKey?: string;
 }
 
+const EMPTY_TEMPLATES: MessageTemplate[] = [];
+const EMPTY_LOGS: Message[] = [];
+
 export function useMessageTemplates(options?: { enabled?: boolean }) {
   const { isAuthenticated } = useAuth();
   const query = tsrClient.messaging.listTemplates.useQuery({
@@ -49,8 +52,9 @@ export function useMessageTemplates(options?: { enabled?: boolean }) {
 
   const templates =
     query.data?.status === 200
-      ? ((query.data.body as { templates?: MessageTemplate[] } | null)?.templates ?? [])
-      : [];
+      ? ((query.data.body as { templates?: MessageTemplate[] } | null)?.templates ??
+        EMPTY_TEMPLATES)
+      : EMPTY_TEMPLATES;
 
   return { ...query, templates };
 }
@@ -110,7 +114,7 @@ export function useMessageLogs(options?: {
 
   return {
     ...query,
-    logs: res.logs ?? [],
+    logs: res.logs ?? EMPTY_LOGS,
     total: res.total ?? res.logs?.length ?? 0,
     page: res.page ?? page,
     pageSize: res.pageSize ?? pageSize,
@@ -176,100 +180,13 @@ export function useMessagingMutations() {
     onError,
   });
 
-  const dispatchServerSms = useMutation({
-    mutationFn: async (payload: {
-      recipients: Array<{
-        id: string | number;
-        phone: string;
-        name?: string;
-        [key: string]: unknown;
-      }>;
-      message: string;
-      category?: string;
-    }) => {
-      return apiJson<{ sentCount: number; failedCount: number; total: number }>(
-        "/api/messaging/dispatch/sms",
-        {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            ...payload,
-            recipients: payload.recipients.map((r) => ({
-              ...r,
-              id: String(r.id),
-              phone: r.phone ?? "",
-            })),
-          }),
-        },
-      );
-    },
+  const restoreLogs = tsrClient.messaging.restoreLogs.useMutation({
     onSuccess: () => invalidate(),
     onError,
   });
 
-  const dispatchServerEmail = useMutation({
-    mutationFn: async (payload: {
-      recipients: Array<{
-        id: string | number;
-        email: string;
-        name?: string;
-        [key: string]: unknown;
-      }>;
-      subject: string;
-      message: string;
-      html?: string;
-      category?: string;
-    }) => {
-      return apiJson<{ sentCount: number; failedCount: number; total: number }>(
-        "/api/messaging/dispatch/email",
-        {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            ...payload,
-            recipients: payload.recipients.map((r) => ({
-              ...r,
-              id: String(r.id),
-              email: r.email,
-            })),
-          }),
-        },
-      );
-    },
-    onSuccess: () => invalidate(),
-    onError,
-  });
-
-  const dispatchServerWhatsApp = useMutation({
-    mutationFn: async (payload: {
-      recipients: Array<{
-        id: string | number;
-        phone: string;
-        name?: string;
-        [key: string]: unknown;
-      }>;
-      message: string;
-      category?: string;
-    }) => {
-      return apiJson<{ sentCount: number; failedCount: number; total: number }>(
-        "/api/messaging/dispatch/whatsapp",
-        {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            ...payload,
-            recipients: payload.recipients.map((r) => ({
-              ...r,
-              id: String(r.id),
-              phone: r.phone ?? "",
-            })),
-          }),
-        },
-      );
-    },
-    onSuccess: () => invalidate(),
-    onError,
-  });
+  const { dispatchServerSms, dispatchServerEmail, dispatchServerWhatsApp } =
+    useMessagingDispatchMutations();
 
   return {
     saveTemplate,
@@ -286,6 +203,13 @@ export function useMessagingMutations() {
       mutateAsync: () =>
         (clearLogs.mutateAsync as (arg: { body: Record<string, never> }) => Promise<unknown>)({
           body: {},
+        }),
+    },
+    restoreLogs: {
+      ...restoreLogs,
+      mutateAsync: (ids?: string[]) =>
+        (restoreLogs.mutateAsync as (arg: { body: { ids?: string[] } }) => Promise<unknown>)({
+          body: ids?.length ? { ids } : {},
         }),
     },
     dispatchServerSms,

@@ -6,6 +6,7 @@ const state = vi.hoisted(() => ({
   pages: [] as unknown[][],
   pageIndex: 0,
   inserted: [] as unknown[],
+  limitCalls: 0,
 }));
 
 interface Chain {
@@ -23,7 +24,12 @@ vi.mock("../db/dbConnection.js", () => {
       from: () => chain,
       where: () => chain,
       orderBy: () => chain,
-      limit: () => Promise.resolve(state.pages[state.pageIndex++] ?? []),
+      limit: () => {
+        state.limitCalls += 1;
+        // First two selects are the previous-run anchor and the latest checkpoint.
+        if (state.limitCalls <= 2) return Promise.resolve([]);
+        return Promise.resolve(state.pages[state.pageIndex++] ?? []);
+      },
     };
     return chain;
   };
@@ -119,14 +125,36 @@ beforeEach(() => {
   state.pages = [];
   state.pageIndex = 0;
   state.inserted.length = 0;
+  state.limitCalls = 0;
 });
+
+function mockDb() {
+  const chain = {
+    select: () => chain,
+    from: () => chain,
+    where: () => chain,
+    orderBy: () => chain,
+    limit: () => {
+      state.limitCalls += 1;
+      if (state.limitCalls <= 2) return Promise.resolve([]);
+      return Promise.resolve(state.pages[state.pageIndex++] ?? []);
+    },
+    insert: () => ({
+      values: (row: unknown) => {
+        state.inserted.push(row);
+        return Promise.resolve(undefined);
+      },
+    }),
+  };
+  return chain as never;
+}
 
 describe("verifyTenantAuditChain pagination", () => {
   it("verifies records past the first page and reports tampering", async () => {
     const events = buildChain(["compute", "compute", "tampered"]);
     state.pages = [events.slice(0, 2), events.slice(2)];
 
-    const result = await verifyTenantAuditChain(SUBDOMAIN, { limit: 2 });
+    const result = await verifyTenantAuditChain(SUBDOMAIN, { limit: 2, executor: mockDb() });
 
     expect(result.recordsChecked).toBe(3);
     expect(result.status).toBe("TAMPERED");
@@ -137,7 +165,7 @@ describe("verifyTenantAuditChain pagination", () => {
     const events = buildChain(["compute", "compute", "compute"]);
     state.pages = [events.slice(0, 2), events.slice(2)];
 
-    const result = await verifyTenantAuditChain(SUBDOMAIN, { limit: 2 });
+    const result = await verifyTenantAuditChain(SUBDOMAIN, { limit: 2, executor: mockDb() });
 
     expect(result.recordsChecked).toBe(3);
     expect(result.status).toBe("VERIFIED");

@@ -1,16 +1,14 @@
 /**
- * Messaging contract-driven server-state surface: list query options, contract
- * query hooks, and contract mutations.
+ * Messaging contract-driven server-state surface: query option factories.
+ * React hook mutators come from the live `@/hooks/useMessaging` layer — this
+ * module never duplicates them (mms-dry §1: no parallel data surface).
  */
-import { apiContract, tsrClient } from "@/lib/api";
-import { queryOptions, useQueryClient } from "@tanstack/react-query";
+import { queryOptions } from "@tanstack/react-query";
+import { apiContract } from "@/lib/api";
 import { serverMetricsQueryOptions } from "@/hooks/useServerMetrics";
+import { MESSAGING_LOGS_QUERY_KEY } from "@/hooks/useMessaging";
 import { MESSAGING_MODULE_MANIFEST, type MessagingMetricsDto } from "@mms/shared";
-import {
-  MESSAGING_TEMPLATES_QUERY_KEY,
-  MESSAGING_LOGS_QUERY_KEY,
-} from "@/tenant/features/messaging/hooks/useMessaging";
-import { invalidateMessagingQueries } from "@/tenant/features/messaging/hooks/invalidateMessagingQueries";
+import { assertContractOk } from "@/lib/apiContractError";
 
 export function messagingLogsListQueryOptions(
   query: {
@@ -33,9 +31,7 @@ export function messagingLogsListQueryOptions(
         signal,
         fetchOptions: { signal },
       });
-      if (response.status !== 200) {
-        throw new Error("Failed to fetch message logs");
-      }
+      assertContractOk(response, "Failed to fetch message logs");
       return response.body;
     },
     placeholderData: (prev) => prev,
@@ -53,69 +49,5 @@ export function messagingCommandMetricsQueryOptions(options?: {
     extraParam: options?.startDate
       ? `startDate=${encodeURIComponent(options.startDate)}`
       : undefined,
-  });
-}
-
-export function useMessagingContractListLogs(
-  query: { page?: number; limit?: number; search?: string; [key: string]: unknown },
-  enabled = true,
-) {
-  return tsrClient.messaging.listLogs.useQuery({
-    queryKey: [...MESSAGING_LOGS_QUERY_KEY, "contract", query],
-    queryData: { query },
-    staleTime: 15_000,
-    enabled,
-  });
-}
-
-export function useMessagingContractListTemplates(
-  query: { page?: number; limit?: number; search?: string; [key: string]: unknown } = {},
-  enabled = true,
-) {
-  return tsrClient.messaging.listTemplates.useQuery({
-    queryKey: [...MESSAGING_TEMPLATES_QUERY_KEY, "contract", query],
-    queryData: { query },
-    staleTime: 30_000,
-    enabled,
-  });
-}
-
-export function useMessagingContractListRecipients(
-  query: { page?: number; limit?: number; search?: string; [key: string]: unknown } = {},
-  enabled = true,
-) {
-  return tsrClient.messaging.listRecipients.useQuery({
-    queryKey: ["messaging", "recipients", "contract", query],
-    queryData: { query },
-    staleTime: 30_000,
-    enabled,
-  });
-}
-
-export function useMessagingContractSaveTemplate() {
-  const queryClient = useQueryClient();
-  return tsrClient.messaging.saveTemplate.useMutation({
-    onSuccess: () => invalidateMessagingQueries(queryClient),
-  });
-}
-
-export function useMessagingContractDeleteTemplate() {
-  const queryClient = useQueryClient();
-  return tsrClient.messaging.deleteTemplate.useMutation({
-    onSuccess: () => invalidateMessagingQueries(queryClient),
-  });
-}
-
-export function useMessagingContractRecordLogs() {
-  const queryClient = useQueryClient();
-  return tsrClient.messaging.recordLogs.useMutation({
-    onSuccess: () => invalidateMessagingQueries(queryClient),
-  });
-}
-
-export function useMessagingContractClearLogs() {
-  const queryClient = useQueryClient();
-  return tsrClient.messaging.clearLogs.useMutation({
-    onSuccess: () => invalidateMessagingQueries(queryClient),
   });
 }

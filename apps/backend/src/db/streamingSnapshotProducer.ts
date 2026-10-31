@@ -16,6 +16,7 @@ import {
 import { RELATIONAL_REPLACE_MAPPING } from "./relationalReplaceMapping.js";
 import { stripCredentials } from "./relationalSnapshot.js";
 import { collectAssetUrlsFromValue, readAssetBase64 } from "../services/backupAssetService.js";
+import { logger } from "../lib/logger.js";
 
 const PAGE_SIZE = 200;
 
@@ -53,24 +54,21 @@ export async function* pageTenantCollections(
 
       async function* streamCollectionData(): AsyncIterable<unknown> {
         const CHUNK = 500;
-        let offset = 0;
-        for (;;) {
-          const chunkQuery = sql`
-            SELECT item
-            FROM (
-              SELECT jsonb_array_elements(data) AS item
-              FROM ${schema.collections}
-              WHERE name = ${row.name}
-            ) AS t
-            LIMIT ${CHUNK} OFFSET ${offset}
-          `;
-          const chunkResult = await tx.execute(chunkQuery);
-          if (chunkResult.rows.length === 0) break;
-          for (const chunkRow of chunkResult.rows) {
-            yield (chunkRow as { item: unknown }).item;
-          }
-          if (chunkResult.rows.length < CHUNK) break;
-          offset += CHUNK;
+        // Read the legacy array once; the previous OFFSET above
+        // jsonb_array_elements re-parsed the whole array for every page (O(n²)).
+        const result = await tx.execute(
+          sql`SELECT data FROM ${schema.collections} WHERE name = ${row.name}`,
+        );
+        const data = (result.rows[0] as { data?: unknown } | undefined)?.data;
+        const items = Array.isArray(data) ? data : [];
+        if (items.length > 100_000) {
+          logger.warn(
+            { collection: row.name, size: items.length },
+            "Legacy JSONB collection exceeds 100k elements; streaming from memory",
+          );
+        }
+        for (let i = 0; i < items.length; i += CHUNK) {
+          for (const item of items.slice(i, i + CHUNK)) yield item;
         }
       }
 
@@ -197,11 +195,8 @@ export async function* streamSyncSnapshot(
  * - doc-store objects + branding + full global_settings + email_integration;
  * - referenced upload assets, read from disk one at a time.
  *
- * Asset URLs are collected as each collection/object is streamed, so the assets
- * section is emitted after collections/objects complete. The caller must keep the
- * long-lived transaction active (e.g. via `enterActiveTransaction`) so the
- * relational `listRows` helpers and branding/settings loaders join the same
- * transaction, and must commit/roll back in a `finally`.
+ * The caller must keep the long-lived transaction active and commit/roll back
+ * in a `finally` so every loader joins the same snapshot.
  */
 export async function* streamBackupSnapshot(
   txn: LongLivedTenantTransaction,
@@ -233,16 +228,24 @@ export async function* streamBackupSnapshot(
       async function* streamTableRows(): AsyncGenerator<unknown, void, unknown> {
         const CHUNK_SIZE = 250;
         let offset = 0;
-        let previousFirstId: unknown = undefined;
+        const seenIds = new Set<string>();
         for (;;) {
           const chunk = await listRows(tenant ?? "", { limit: CHUNK_SIZE, offset });
           if (!Array.isArray(chunk) || chunk.length === 0) break;
-          const currentFirstId = (chunk[0] as { id?: unknown })?.id ?? chunk[0];
-          if (offset > 0 && currentFirstId !== undefined && currentFirstId === previousFirstId) {
-            break;
-          }
-          previousFirstId = currentFirstId;
           const cleaned = stripCredentials(chunk);
+          for (const item of cleaned) {
+            const id = (item as { id?: unknown } | null)?.id;
+            if (id !== undefined && id !== null) {
+              const idKey = String(id);
+              if (seenIds.has(idKey)) {
+                throw new Error(
+                  `Backup snapshot paging returned id "${idKey}" twice for collection "${key}"; ` +
+                    "refusing to emit a corrupt backup (add ORDER BY id to the snapshot loader).",
+                );
+              }
+              seenIds.add(idKey);
+            }
+          }
           collectAssetUrlsFromValue(cleaned, assetUrls);
           for (const item of cleaned) {
             yield item;
@@ -275,8 +278,7 @@ export async function* streamBackupSnapshot(
           extra.push(["branding", branding]);
         }
         if (globalSettings) extra.push(["global_settings", globalSettings]);
-        // email_integration is a server-only key (stripped by sanitizeSnapshot),
-        // so it is intentionally NOT emitted here to match the /backup contract.
+        // email_integration is server-only and intentionally omitted.
       });
       for (const entry of extra) yield entry;
     }

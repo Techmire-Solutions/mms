@@ -1,6 +1,6 @@
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { useAuth } from "@/lib/contexts/AuthContext";
+import { useMutation, useQuery } from "@tanstack/react-query";
 import { STATIC_LOOKUP_STALE_TIME } from "@/lib/queryClient";
+import { useAuthOrNull, useQueryClientOrFallback } from "@/lib/query/optionalQueryContext";
 
 export interface CreateModuleLookupsHooksOptions<
   TMap extends object,
@@ -24,32 +24,43 @@ export function createModuleLookupsHooks<
   putLookupKind,
   defaults,
 }: CreateModuleLookupsHooksOptions<TMap, TKind, TItems>) {
+  // Pre-resolve once at creation so placeholder reference identity is completely stable
+  // across every component render pass and does not trigger render-phase loops.
+  const staticDefaults = defaults();
+
   function useLookupsQuery() {
-    const { isAuthenticated } = useAuth();
-    return useQuery({
-      queryKey,
-      queryFn: ({ signal }) => fetchLookups(signal),
-      enabled: isAuthenticated,
-      // TanStack Query NonFunctionGuard cannot be proven for generic TMap (plain object at runtime).
-      // @ts-expect-error generic placeholderData vs NonFunctionGuard<TMap>
-      placeholderData: defaults(),
-      staleTime: STATIC_LOOKUP_STALE_TIME,
-      gcTime: 60 * 60_000,
-    });
+    const auth = useAuthOrNull();
+    const queryClient = useQueryClientOrFallback();
+    return useQuery<TMap, Error, TMap>(
+      {
+        queryKey,
+        queryFn: ({ signal }) => fetchLookups(signal),
+        enabled: Boolean(auth?.isAuthenticated),
+        // TanStack Query NonFunctionGuard cannot be proven for generic TMap (plain object at runtime).
+        // @ts-expect-error generic placeholderData vs NonFunctionGuard<TMap>
+        placeholderData: (previousData) => previousData ?? staticDefaults,
+        staleTime: STATIC_LOOKUP_STALE_TIME,
+        gcTime: 60 * 60_000,
+      },
+      queryClient,
+    );
   }
 
   function useLookupMutation() {
-    const queryClient = useQueryClient();
-    return useMutation({
-      mutationFn: ({ kind, items }: { kind: TKind; items: TItems }) => putLookupKind(kind, items),
-      onSuccess: (items, variables) => {
-        queryClient.setQueryData<TMap>(queryKey, (current) => {
-          const base = current ?? defaults();
-          return { ...base, [variables.kind]: items } as TMap;
-        });
-        void queryClient.invalidateQueries({ queryKey });
+    const queryClient = useQueryClientOrFallback();
+    return useMutation(
+      {
+        mutationFn: ({ kind, items }: { kind: TKind; items: TItems }) => putLookupKind(kind, items),
+        onSuccess: (items, variables) => {
+          queryClient.setQueryData<TMap>(queryKey, (current) => {
+            const base = current ?? staticDefaults;
+            return { ...base, [variables.kind]: items } as TMap;
+          });
+          void queryClient.invalidateQueries({ queryKey });
+        },
       },
-    });
+      queryClient,
+    );
   }
 
   return { useLookupsQuery, useLookupMutation };

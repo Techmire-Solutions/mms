@@ -19,6 +19,23 @@ export function clearUserScopedCachesOnLogout(userId: string, prefix: string): v
   }
 }
 
+/**
+ * Reads the user id out of a raw `mms_user` payload — used with
+ * `StorageEvent.oldValue` when another tab signs out, so the sign-out can
+ * clear caches scoped to the *previous* user instead of the next one.
+ */
+export function readUserIdFromStoredAuth(raw: string | null): string | undefined {
+  if (!raw) return undefined;
+  try {
+    const parsed: unknown = JSON.parse(raw);
+    if (!parsed || typeof parsed !== "object" || Array.isArray(parsed)) return undefined;
+    const id = (parsed as { id?: unknown }).id;
+    return typeof id === "string" && id.length > 0 ? id : undefined;
+  } catch {
+    return undefined;
+  }
+}
+
 export interface OnboardResult {
   user: User;
   workspace: Workspace;

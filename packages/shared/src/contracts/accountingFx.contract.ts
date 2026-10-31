@@ -1,0 +1,148 @@
+import { initContract } from "@ts-rest/core";
+import { z } from "zod";
+import { fxRevaluationRequestSchema } from "../finance/accountingFxRevaluation.js";
+import { fxReportQuerySchema } from "../finance/accountingFxReport.js";
+import { priceIndexPutSchema } from "../finance/accountingHyperinflation.js";
+import {
+  hyperinflationSettingsSchema,
+  ias29RequestSchema,
+} from "../finance/accountingHyperinflationSchemas.js";
+import { currencyExchangeabilityPutSchema } from "../finance/accountingFxExchangeability.js";
+import {
+  accountingCurrencySettingsPutSchema,
+  exchangeRateListQuerySchema,
+  exchangeRateLookupQuerySchema,
+  exchangeRatePutBodySchema,
+} from "../finance/accountingFxSettings.js";
+
+const c = initContract();
+
+const ok = z.unknown();
+const errorResponse = z.object({ type: z.string(), message: z.string() }).passthrough();
+
+/**
+ * IAS 21 currency settings and exchange rates. Served by the plain Fastify
+ * plugin `accountingExchangeRateRoutes`; responses stay `unknown` (ADR-010).
+ */
+export const accountingFxContract = c.router({
+  getCurrencySettings: {
+    method: "GET",
+    path: "/api/accounting/currency-settings",
+    responses: { 200: ok, 403: errorResponse, 500: errorResponse },
+    summary: "Get functional/presentation currency and enabled currencies",
+  },
+  putCurrencySettings: {
+    method: "PUT",
+    path: "/api/accounting/currency-settings",
+    body: accountingCurrencySettingsPutSchema,
+    responses: { 200: ok, 400: errorResponse, 403: errorResponse, 409: errorResponse },
+    summary: "Save currency settings (functional currency frozen once posted)",
+  },
+  listExchangeRates: {
+    method: "GET",
+    path: "/api/accounting/exchange-rates",
+    query: exchangeRateListQuerySchema,
+    responses: { 200: ok, 400: errorResponse, 403: errorResponse },
+    summary: "List tenant exchange rates, newest first",
+  },
+  putExchangeRates: {
+    method: "PUT",
+    path: "/api/accounting/exchange-rates",
+    body: exchangeRatePutBodySchema,
+    responses: { 200: ok, 400: errorResponse, 403: errorResponse },
+    summary: "Upsert exchange rates by (from, to, date, type)",
+  },
+  lookupExchangeRate: {
+    method: "GET",
+    path: "/api/accounting/exchange-rates/lookup",
+    query: exchangeRateLookupQuerySchema,
+    responses: { 200: ok, 400: errorResponse, 403: errorResponse, 404: errorResponse },
+    summary: "Rate in force on a date (latest on or before it)",
+  },
+  listExchangeability: {
+    method: "GET",
+    path: "/api/accounting/currency-exchangeability",
+    responses: { 200: ok, 403: errorResponse },
+    summary: "Currencies assessed as not exchangeable (IAS 21)",
+  },
+  putExchangeability: {
+    method: "PUT",
+    path: "/api/accounting/currency-exchangeability",
+    body: currencyExchangeabilityPutSchema,
+    responses: { 200: ok, 400: errorResponse, 403: errorResponse },
+    summary: "Replace the non-exchangeable currency assessments",
+  },
+  listFxRevaluations: {
+    method: "GET",
+    path: "/api/accounting/fx-revaluations",
+    responses: { 200: ok, 403: errorResponse },
+    summary: "Posted period-end FX revaluations, newest first",
+  },
+  getFxReport: {
+    method: "GET",
+    path: "/api/accounting/fx-report",
+    query: fxReportQuerySchema,
+    responses: { 200: ok, 400: errorResponse, 403: errorResponse },
+    summary: "FX exposure at closing rates, realized FX and posted revaluations",
+  },
+  previewFxRevaluation: {
+    method: "POST",
+    path: "/api/accounting/fx-revaluations/preview",
+    body: fxRevaluationRequestSchema,
+    responses: { 200: ok, 400: errorResponse, 403: errorResponse, 422: errorResponse },
+    summary: "Compute unrealized FX at the closing rate without posting",
+  },
+  postFxRevaluation: {
+    method: "POST",
+    path: "/api/accounting/fx-revaluations",
+    body: fxRevaluationRequestSchema,
+    responses: { 201: ok, 400: errorResponse, 403: errorResponse, 422: errorResponse },
+    summary: "Post the revaluation with an automatic next-day reversal",
+  },
+  getHyperinflationSettings: {
+    method: "GET",
+    path: "/api/accounting/hyperinflation-settings",
+    responses: { 200: ok, 403: errorResponse },
+    summary: "IAS 29 hyperinflation settings",
+  },
+  putHyperinflationSettings: {
+    method: "PUT",
+    path: "/api/accounting/hyperinflation-settings",
+    body: hyperinflationSettingsSchema,
+    responses: { 200: ok, 400: errorResponse, 403: errorResponse },
+    summary: "Turn IAS 29 restatement on or off and set its accounts",
+  },
+  listPriceIndices: {
+    method: "GET",
+    path: "/api/accounting/price-indices",
+    responses: { 200: ok, 403: errorResponse },
+    summary: "General price index points, oldest first",
+  },
+  putPriceIndices: {
+    method: "PUT",
+    path: "/api/accounting/price-indices",
+    body: priceIndexPutSchema,
+    responses: { 200: ok, 400: errorResponse, 403: errorResponse },
+    summary: "Upsert general price index points",
+  },
+  listIas29Restatements: {
+    method: "GET",
+    path: "/api/accounting/ias29-restatements",
+    responses: { 200: ok, 403: errorResponse },
+    summary: "Posted IAS 29 restatements, newest first",
+  },
+  previewIas29Restatement: {
+    method: "POST",
+    path: "/api/accounting/ias29-restatements/preview",
+    body: ias29RequestSchema,
+    responses: { 200: ok, 400: errorResponse, 403: errorResponse, 422: errorResponse },
+    summary: "Compute the IAS 29 restatement without posting",
+  },
+  postIas29Restatement: {
+    method: "POST",
+    path: "/api/accounting/ias29-restatements",
+    body: ias29RequestSchema,
+    responses: { 201: ok, 400: errorResponse, 403: errorResponse, 422: errorResponse },
+    summary: "Post the IAS 29 restatement with an automatic next-day reversal",
+  },
+});

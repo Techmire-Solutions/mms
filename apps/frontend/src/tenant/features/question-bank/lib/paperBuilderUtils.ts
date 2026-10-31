@@ -4,6 +4,7 @@ import type {
   QuestionBankTest,
 } from "@mms/shared";
 import { escapeHtml } from "@/lib/escapeHtml";
+import { autoPrintWindow } from "@/lib/printWindowHtml";
 import {
   PRINT_COLORS,
   PRINT_SECTION_NOTE,
@@ -144,12 +145,14 @@ export function createPaperDraftFromTest(
 
 export { escapeHtml };
 
-export function openPaperPrintWindow(content: HTMLElement, title: string): boolean {
-  const printWindow = window.open("", "_blank", "width=900,height=800");
-  if (!printWindow) return false;
-
-  printWindow.document.write(`
-    <!DOCTYPE html>
+/**
+ * Printable HTML for a paper preview. Deliberately contains no inline script element:
+ * the print popup inherits the app's nonce-only CSP, so inline scripts are blocked and
+ * never run (`docs/project-review-2026-10-30.md` P-01). `autoPrintWindow` does the
+ * printing.
+ */
+export function buildPaperPrintHtml(content: HTMLElement, title: string): string {
+  return `<!DOCTYPE html>
     <html lang="en">
     <head>
       <title>${escapeHtml(title)}</title>
@@ -157,25 +160,16 @@ export function openPaperPrintWindow(content: HTMLElement, title: string): boole
     </head>
     <body>
       ${content.innerHTML}
-      <script>
-        function triggerPrint() {
-          window.focus();
-          if (document.fonts && document.fonts.ready) {
-            document.fonts.ready.then(function() { window.print(); }).catch(function() { window.print(); });
-          } else {
-            window.print();
-          }
-        }
-        if (document.readyState === 'complete') {
-          triggerPrint();
-        } else {
-          window.addEventListener('load', triggerPrint);
-        }
-        window.onafterprint = function() { window.close(); };
-      </script>
     </body>
-    </html>
-  `);
+    </html>`;
+}
+
+export function openPaperPrintWindow(content: HTMLElement, title: string): boolean {
+  const printWindow = window.open("", "_blank", "width=900,height=800");
+  if (!printWindow) return false;
+  printWindow.opener = null;
+  printWindow.document.write(buildPaperPrintHtml(content, title));
   printWindow.document.close();
+  autoPrintWindow(printWindow);
   return true;
 }

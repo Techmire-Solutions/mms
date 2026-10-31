@@ -9,6 +9,14 @@ export const postingRulesRecordSchema = z
     bankAccountId: z.string().nullable().optional(),
     incomeAccountId: z.string().nullable().optional(),
     discountAccountId: z.string().nullable().optional(),
+    /** IAS 21: realized FX gain/loss on settlement (Revenue or Expense). */
+    fxRealizedAccountId: z.string().nullable().optional(),
+    /** IAS 21: unrealized FX gain/loss on period-end revaluation (Revenue or Expense). */
+    fxUnrealizedAccountId: z.string().nullable().optional(),
+    /** Absorbs sub-cent residue on multi-currency entries (Revenue or Expense). */
+    fxRoundingAccountId: z.string().nullable().optional(),
+    /** Foreign currency translation reserve (Equity / OCI). */
+    ctaAccountId: z.string().nullable().optional(),
     updatedAt: z.string().optional(),
   })
   .strict();

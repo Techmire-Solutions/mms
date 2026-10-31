@@ -162,6 +162,40 @@ export function createMessagingUseCases(repo: MessagingRepository = messagingRep
       await broadcastCollection("message_logs");
     },
 
+    /**
+     * Restores soft-archived message logs with actor attribution (`ids: null`
+     * restores every archived log in the workspace). Returns the restored count.
+     */
+    restoreMessageLogs: async (
+      workspaceSubdomain: string,
+      userId: string,
+      ids?: string[],
+    ): Promise<number> => {
+      const cleanIds = ids ? dedupeTrimmedIds(ids) : null;
+      const restored = await repo.restoreArchivedMessageLog(
+        workspaceSubdomain,
+        String(userId),
+        cleanIds,
+      );
+      if (restored > 0) await broadcastCollection("message_logs");
+      return restored;
+    },
+
+    /** Claims one campaign recipient; false means a prior attempt already owns it. */
+    claimMessageLogForDelivery: async (
+      workspaceSubdomain: string,
+      claim: Parameters<MessagingRepository["claimMessageLogForDelivery"]>[1],
+    ): Promise<boolean> => repo.claimMessageLogForDelivery(workspaceSubdomain, claim),
+
+    updateMessageLogDeliveryStatus: async (
+      workspaceSubdomain: string,
+      id: string,
+      status: "sent" | "failed",
+      errorMessage?: string | null,
+    ): Promise<void> => {
+      await repo.updateMessageLogDeliveryStatus(workspaceSubdomain, id, status, errorMessage);
+    },
+
     computeMessagingMetrics: async (
       workspaceSubdomain?: string,
       filters?: { startDate?: string; endDate?: string },

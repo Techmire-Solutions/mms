@@ -6,7 +6,7 @@ import { withTenant } from "../../../db/tenant-context.js";
 import { enableIncludeDeleted } from "../../../lib/softDeleteHelpers.js";
 
 /** Thin Students audit helper — shared factory, same shape as Contacts/Faculty. */
-export const auditStudent = createCollectionAuditHelper("students");
+export const auditStudent = createCollectionAuditHelper("students", { subjectScoped: true });
 
 /** Strips student properties the viewer role cannot read (field-config + viewer role). */
 export async function sanitizeStudentsForUser(students: Student[], user: User): Promise<Student[]> {

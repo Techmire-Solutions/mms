@@ -9,6 +9,8 @@ import {
 import { withTenant, type TenantTransaction } from "../tenant-context.js";
 import { lockJournalEntries } from "./accountingEntryLocks.js";
 import { entryInsertValues } from "./accountingEntriesLifecyclePersist.js";
+import { ensureCurrencySettingsInTx } from "./accountingCurrencySettingsRepository.js";
+import { journalLineFxInsertValues } from "./accountingJournalLineFx.js";
 
 export * from "./accountingEntriesLifecyclePersist.js";
 
@@ -45,6 +47,7 @@ async function syncEntryChildren(
   ]);
 
   if (entry.lines && entry.lines.length > 0) {
+    const { functionalCurrency } = await ensureCurrencySettingsInTx(tx, subdomain);
     await tx.insert(accountingJournalLines).values(
       entry.lines.map((l) => ({
         id: l.id,
@@ -53,6 +56,7 @@ async function syncEntryChildren(
         accountId: l.account_id,
         debit: String(l.debit ?? 0),
         credit: String(l.credit ?? 0),
+        ...journalLineFxInsertValues(l, functionalCurrency, entry.date),
         description: l.description ?? "",
       })),
     );
@@ -188,6 +192,7 @@ export async function bulkSaveEntries(tenant: string, records: JournalEntry[]): 
         ),
     ]);
 
+    const { functionalCurrency } = await ensureCurrencySettingsInTx(tx, subdomain);
     const allLines = uniqueRecords.flatMap((record) =>
       (record.lines ?? []).map((l) => ({
         id: l.id,
@@ -196,6 +201,7 @@ export async function bulkSaveEntries(tenant: string, records: JournalEntry[]): 
         accountId: l.account_id,
         debit: String(l.debit ?? 0),
         credit: String(l.credit ?? 0),
+        ...journalLineFxInsertValues(l, functionalCurrency, record.date),
         description: l.description ?? "",
       })),
     );

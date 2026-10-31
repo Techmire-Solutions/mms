@@ -1,6 +1,7 @@
-import { type Account } from "@mms/shared";
+import { type Account, type PostingRules } from "@mms/shared";
 import { BookOpen } from "lucide-react";
 import { FormSelect } from "@/components/app/FormSelect";
+import { accountOptions } from "@/tenant/features/accounting/lib/accountOptions";
 import { Field } from "@/components/app/FormPrimitives";
 import { SectionCard } from "@/components/app/SectionCard";
 import { Button } from "@/components/ui/button";
@@ -11,7 +12,8 @@ import {
   useAccountingPostingRules,
   useSaveAccountingPostingRules,
 } from "@/tenant/features/accounting/hooks/useAccountingLedgerOps";
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
+import { AccountingSettingsFxPostingFields } from "./AccountingSettingsFxPostingFields";
 
 /**
  * Mirrors the server's `POSTING_RULE_ACCOUNT_TYPES`: `arAccountId`/`cashAccountId`
@@ -19,17 +21,31 @@ import React, { useState, useEffect } from "react";
  * Revenue (contra-revenue) — offering only Expense hid every contra-revenue
  * account the server would have accepted.
  */
-function accountOptions(accounts: Account[], types?: Account["type"] | Account["type"][]) {
-  const allowed = types === undefined ? null : Array.isArray(types) ? types : [types];
-  return accounts
-    .filter((account) => account.isActive !== false && (!allowed || allowed.includes(account.type)))
-    .sort((left, right) => left.code.localeCompare(right.code))
-    .map((account) => ({ value: account.id, label: `${account.code} – ${account.name}` }));
-}
-
 interface AccountingSettingsPostingSectionProps {
   accounts: Account[];
 }
+
+interface PostingDraft {
+  arAccountId: string;
+  cashAccountId: string;
+  incomeAccountId: string;
+  discountAccountId: string;
+  fxRealizedAccountId: string;
+  fxUnrealizedAccountId: string;
+  fxRoundingAccountId: string;
+  ctaAccountId: string;
+}
+
+const postingDraftFrom = (rules: PostingRules | undefined): PostingDraft => ({
+  arAccountId: rules?.arAccountId ?? "",
+  cashAccountId: rules?.cashAccountId ?? "",
+  incomeAccountId: rules?.incomeAccountId ?? "",
+  discountAccountId: rules?.discountAccountId ?? "",
+  fxRealizedAccountId: rules?.fxRealizedAccountId ?? "",
+  fxUnrealizedAccountId: rules?.fxUnrealizedAccountId ?? "",
+  fxRoundingAccountId: rules?.fxRoundingAccountId ?? "",
+  ctaAccountId: rules?.ctaAccountId ?? "",
+});
 
 export function AccountingSettingsPostingSection({
   accounts,
@@ -37,22 +53,16 @@ export function AccountingSettingsPostingSection({
   const { t } = useTranslation();
   const { data: loaded } = useAccountingPostingRules();
   const save = useSaveAccountingPostingRules();
-  const [draft, setDraft] = useState({
-    arAccountId: "",
-    cashAccountId: "",
-    incomeAccountId: "",
-    discountAccountId: "",
-  });
+  const [draft, setDraft] = useState<PostingDraft>(() => postingDraftFrom(loaded));
 
-  useEffect(() => {
-    if (!loaded) return;
-    setDraft({
-      arAccountId: loaded.arAccountId ?? "",
-      cashAccountId: loaded.cashAccountId ?? "",
-      incomeAccountId: loaded.incomeAccountId ?? "",
-      discountAccountId: loaded.discountAccountId ?? "",
-    });
-  }, [loaded]);
+  // Adopt the server rules whenever new ones arrive, during render rather than
+  // in an effect that would render the stale draft once more.
+  const loadedKey = loaded ? JSON.stringify(postingDraftFrom(loaded)) : "";
+  const [prevLoadedKey, setPrevLoadedKey] = useState(loadedKey);
+  if (prevLoadedKey !== loadedKey) {
+    setPrevLoadedKey(loadedKey);
+    if (loaded) setDraft(postingDraftFrom(loaded));
+  }
 
   const handleSave = async (): Promise<void> => {
     try {
@@ -61,6 +71,10 @@ export function AccountingSettingsPostingSection({
         cashAccountId: draft.cashAccountId || null,
         incomeAccountId: draft.incomeAccountId || null,
         discountAccountId: draft.discountAccountId || null,
+        fxRealizedAccountId: draft.fxRealizedAccountId || null,
+        fxUnrealizedAccountId: draft.fxUnrealizedAccountId || null,
+        fxRoundingAccountId: draft.fxRoundingAccountId || null,
+        ctaAccountId: draft.ctaAccountId || null,
       });
       notify.success(t("accounting.settings.posting.saved"));
     } catch (error) {
@@ -137,6 +151,12 @@ export function AccountingSettingsPostingSection({
           />
         </Field>
       </div>
+      <AccountingSettingsFxPostingFields
+        accounts={accounts}
+        draft={draft}
+        onChange={(field, value) => setDraft((current) => ({ ...current, [field]: value }))}
+        accountOptions={accountOptions}
+      />
       <Button
         type="button"
         className="mt-4 min-h-11"

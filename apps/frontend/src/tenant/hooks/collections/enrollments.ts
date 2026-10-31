@@ -7,6 +7,8 @@ export {
   ENROLLMENTS_METRICS_QUERY_KEY,
   ENROLLMENTS_REPORT_AGGREGATES_QUERY_KEY,
   ENROLLMENTS_WIDGET_AGGREGATES_QUERY_KEY,
+} from "@/tenant/features/enrollments/hooks/enrollmentsQueryKeys";
+export {
   enrollmentsCommandMetricsQueryOptions,
   useEnrollments,
   useEnrollmentsPaginated,
@@ -34,3 +36,5 @@ export {
   useEnrollmentsContractBulkDelete,
   useEnrollmentsContractBulkRestore,
 } from "@/tenant/features/enrollments/hooks/useEnrollmentsQueries";
+
+export { applyEnrollmentsWorkDrillDown } from "@/tenant/features/enrollments/hooks/enrollmentsWorkDrillDown";

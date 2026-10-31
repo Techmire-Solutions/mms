@@ -8,6 +8,7 @@ import {
   syncPostingPeriods,
   type PostingPeriodSeed,
 } from "./accountingPostingPeriodsRepository.js";
+import { requireDbDateValue } from "../../lib/dbDate.js";
 
 export { generatePostingPeriods, type PostingPeriodSeed };
 
@@ -73,12 +74,22 @@ export async function listFiscalYearsByWorkspace(
   });
 }
 
-export async function findFiscalYearById(tenant: string, id: string): Promise<FiscalYear | null> {
+/**
+ * Reads one fiscal year. `forUpdate` takes a `SELECT … FOR UPDATE` row lock on
+ * the primary so the close's read → aggregate → flip sequence cannot interleave
+ * with another close attempt or a concurrent year edit.
+ */
+export async function findFiscalYearById(
+  tenant: string,
+  id: string,
+  options?: { forUpdate?: boolean },
+): Promise<FiscalYear | null> {
   const trimmedId = id?.trim();
   if (!trimmedId) return null;
   const subdomain = tenant.trim().toLowerCase();
-  return withTenantRead(subdomain, async (tx) => {
-    const rows = await tx
+  const withReader = options?.forUpdate ? withTenant : withTenantRead;
+  return withReader(subdomain, async (tx) => {
+    const query = tx
       .select({
         id: accountingFiscalYears.id,
         workspaceSubdomain: accountingFiscalYears.workspaceSubdomain,
@@ -105,9 +116,18 @@ export async function findFiscalYearById(tenant: string, id: string): Promise<Fi
         ),
       )
       .limit(1);
+    const rows = options?.forUpdate ? await query.for("update") : await query;
     const row = rows[0];
     return row ? fiscalYearRowToRecord(row) : null;
   });
+}
+
+/** Locking read used by the fiscal-year close. */
+export async function findFiscalYearByIdForUpdate(
+  tenant: string,
+  id: string,
+): Promise<FiscalYear | null> {
+  return findFiscalYearById(tenant, id, { forUpdate: true });
 }
 
 export async function findFiscalYearsByIds(
@@ -169,8 +189,8 @@ export async function saveFiscalYear(tenant: string, record: FiscalYear): Promis
         id: record.id,
         workspaceSubdomain: subdomain,
         label: record.label,
-        startDate: record.startDate,
-        endDate: record.endDate,
+        startDate: requireDbDateValue(record.startDate, "startDate"),
+        endDate: requireDbDateValue(record.endDate, "endDate"),
         status: record.status ?? "upcoming",
         closedAt: record.closedAt ? new Date(record.closedAt) : null,
         closedBy: record.closedBy ?? null,
@@ -183,8 +203,8 @@ export async function saveFiscalYear(tenant: string, record: FiscalYear): Promis
         target: [accountingFiscalYears.workspaceSubdomain, accountingFiscalYears.id],
         set: {
           label: record.label,
-          startDate: record.startDate,
-          endDate: record.endDate,
+          startDate: requireDbDateValue(record.startDate, "startDate"),
+          endDate: requireDbDateValue(record.endDate, "endDate"),
           status: record.status ?? "upcoming",
           closedAt: record.closedAt ? new Date(record.closedAt) : null,
           closedBy: record.closedBy ?? null,
@@ -203,8 +223,8 @@ function toFiscalYearRow(r: FiscalYear, subdomain: string) {
     id: r.id,
     workspaceSubdomain: subdomain,
     label: r.label,
-    startDate: r.startDate,
-    endDate: r.endDate,
+    startDate: requireDbDateValue(r.startDate, "startDate"),
+    endDate: requireDbDateValue(r.endDate, "endDate"),
     status: r.status ?? "upcoming",
     closedAt: r.closedAt ? new Date(r.closedAt) : null,
     closedBy: r.closedBy ?? null,

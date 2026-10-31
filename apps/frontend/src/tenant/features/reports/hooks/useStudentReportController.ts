@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useState } from "react";
 import { ENROLLMENTS_MODULE_MANIFEST, STUDENTS_MODULE_MANIFEST, type Student } from "@mms/shared";
 import { useTranslation } from "@/hooks/useTranslation";
 import { useSessionsCollection } from "@/tenant/hooks/collections/sessions";
@@ -50,13 +50,28 @@ export function useStudentReportController({ filters }: StudentReportProps) {
   const statusParam = reportStatusFilter || (filters.status !== "all" ? filters.status : undefined);
   const searchParam = filters.student || undefined;
 
-  useEffect(() => {
+  // Adjust state during render: any list filter change returns the list to its first page.
+  const listPageResetInputs = [
+    filters.student,
+    filters.status,
+    filters.session,
+    filters.class,
+    reportStatusFilter,
+  ];
+  const [prevListPageResetInputs, setPrevListPageResetInputs] = useState(listPageResetInputs);
+  if (prevListPageResetInputs.some((value, index) => value !== listPageResetInputs[index])) {
+    setPrevListPageResetInputs(listPageResetInputs);
     setListPage(1);
-  }, [filters.student, filters.status, filters.session, filters.class, reportStatusFilter]);
+  }
 
-  useEffect(() => {
+  // Adjust state during render: student/session changes return enrollment history to page one.
+  const historyPageResetInputs = [filters.student, filters.session];
+  const [prevHistoryPageResetInputs, setPrevHistoryPageResetInputs] =
+    useState(historyPageResetInputs);
+  if (prevHistoryPageResetInputs.some((value, index) => value !== historyPageResetInputs[index])) {
+    setPrevHistoryPageResetInputs(historyPageResetInputs);
     setHistoryPage(1);
-  }, [filters.student, filters.session]);
+  }
 
   const { data: metrics, isLoading: metricsLoading } = useStudentsMetrics();
   const { data: genderAggregates } = useStudentsWidgetAggregates([

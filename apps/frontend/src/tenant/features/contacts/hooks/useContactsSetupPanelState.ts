@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { type ContactPreferences } from "@mms/shared";
 import type { CountryCodeEntry } from "@/lib/contacts/countryCodeOptions";
 import { useContactConfig } from "@/lib/contexts/ContactConfigContext";
@@ -25,15 +25,29 @@ export function useContactsSetupPanelState() {
 
   const isPreferencesDirty = isPrefsDraftDirty || isCountryCodesDirty;
 
-  useEffect(() => {
-    if (isPreferencesDirty) return;
-    setPrefs(contextPrefs);
-  }, [contextPrefs, isPreferencesDirty]);
-
-  useEffect(() => {
-    if (isPreferencesDirty) return;
-    setCountryCodesDraft(countryCodes);
-  }, [countryCodes, isPreferencesDirty]);
+  // Mirror the context preferences/country codes into the local drafts while the
+  // drafts are clean — during render instead of in effects. Compared by content:
+  // the context may hand back new array/object identities for equal values.
+  const contextPrefsKey = JSON.stringify(contextPrefs);
+  const countryCodesKey = JSON.stringify(countryCodes);
+  const [syncInputs, setSyncInputs] = useState({
+    contextPrefsKey,
+    countryCodesKey,
+    isPreferencesDirty,
+  });
+  if (
+    syncInputs.contextPrefsKey !== contextPrefsKey ||
+    syncInputs.countryCodesKey !== countryCodesKey ||
+    syncInputs.isPreferencesDirty !== isPreferencesDirty
+  ) {
+    const prefsChanged = syncInputs.contextPrefsKey !== contextPrefsKey;
+    const countryCodesChanged = syncInputs.countryCodesKey !== countryCodesKey;
+    setSyncInputs({ contextPrefsKey, countryCodesKey, isPreferencesDirty });
+    if (!isPreferencesDirty) {
+      if (prefsChanged) setPrefs(contextPrefs);
+      if (countryCodesChanged) setCountryCodesDraft(countryCodes);
+    }
+  }
 
   const updatePreference = <K extends keyof ContactPreferences>(
     key: K,

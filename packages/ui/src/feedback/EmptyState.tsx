@@ -1,6 +1,6 @@
 import React from "react";
 import { Inbox } from "lucide-react";
-import { FeedbackStateLayout } from "./FeedbackStateLayout";
+import { LoadingState } from "./LoadingState";
 import { cn } from "../utils";
 
 export interface EmptyStateProps {
@@ -31,7 +31,7 @@ export function EmptyState({
   const Icon = icon === undefined ? (isDashed ? null : Inbox) : icon;
 
   return (
-    <FeedbackStateLayout
+    <LoadingState
       role={role}
       title={title}
       description={description}

@@ -5,12 +5,15 @@
 
 import React from "react";
 import { formatDate, formatDateTime, type TaskRecord } from "@mms/shared";
-import { Drawer } from "@/components/app/Drawer";
+import { DetailDrawerShell } from "@/components/app/DetailDrawerShell";
 import {
   DetailDrawerArchivedBanner,
   DetailDrawerRestoreOrEditAction,
 } from "@/components/app/DetailDrawerArchiveChrome";
+import { DetailSectionTitle } from "@/components/app/DetailSectionTitle";
+import { DetailAttributeRow } from "@/components/app/DetailAttributeRow";
 import { DrawerUpdatedStamp } from "@/components/app/DrawerUpdatedStamp";
+import { CopyBtn } from "@/components/app/CopyButton";
 import { useTranslation } from "@/hooks/useTranslation";
 import { TaskPriorityBadge, TaskStatusBadge } from "./TaskBadges";
 
@@ -37,7 +40,7 @@ export function TaskDetailDrawer({
   const isArchived = Boolean(task.deletedAt);
 
   return (
-    <Drawer
+    <DetailDrawerShell
       open
       onClose={onClose}
       title={task.title}
@@ -67,36 +70,52 @@ export function TaskDetailDrawer({
             title={t("common.archiveTitle", { title: task.title })}
           />
         ) : null}
-        <div className="flex flex-wrap gap-2">
-          <TaskStatusBadge status={task.status} />
-          <TaskPriorityBadge priority={task.priority} />
+        <div className="flex flex-wrap items-center justify-between gap-2">
+          <div className="flex flex-wrap gap-2">
+            <TaskStatusBadge status={task.status} />
+            <TaskPriorityBadge priority={task.priority} />
+          </div>
+          <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
+            <span className="font-mono">{task.id.slice(0, 8)}</span>
+            <CopyBtn text={task.id} showToast className="h-6 w-6 rounded-md" />
+          </div>
         </div>
         {task.description ? (
           <p className="text-sm text-foreground text-wrap-pretty">{task.description}</p>
         ) : null}
-        <dl className="grid gap-2 text-sm">
-          <div className="flex justify-between gap-3">
-            <dt className="text-muted-foreground">{t("tasks.startDate")}</dt>
-            <dd className="text-foreground">{task.startDate ? formatDate(task.startDate) : "—"}</dd>
+
+        <div className="space-y-3 pt-1">
+          <DetailSectionTitle>{t("common.details")}</DetailSectionTitle>
+          <div className="space-y-1">
+            <DetailAttributeRow
+              variant="list"
+              label={t("tasks.startDate")}
+              value={task.startDate ? formatDate(task.startDate) : "—"}
+            />
+            <DetailAttributeRow
+              variant="list"
+              label={t("tasks.dueAt")}
+              value={task.dueAt ? formatDateTime(task.dueAt) : "—"}
+            />
+            <DetailAttributeRow
+              variant="list"
+              label={t("tasks.parentTask")}
+              value={task.parentTaskId ?? "—"}
+            />
+            <DetailAttributeRow
+              variant="list"
+              label={t("tasks.assignees")}
+              value={
+                task.assignees?.length
+                  ? task.assignees
+                      .map((a) => a.facultyName || t("tasks.assigneeFallback"))
+                      .join(", ")
+                  : t("tasks.noAssignees")
+              }
+            />
           </div>
-          <div className="flex justify-between gap-3">
-            <dt className="text-muted-foreground">{t("tasks.dueAt")}</dt>
-            <dd className="text-foreground">{task.dueAt ? formatDateTime(task.dueAt) : "—"}</dd>
-          </div>
-          <div className="flex justify-between gap-3">
-            <dt className="text-muted-foreground">{t("tasks.parentTask")}</dt>
-            <dd className="text-foreground text-end">{task.parentTaskId ?? "—"}</dd>
-          </div>
-          <div className="flex justify-between gap-3">
-            <dt className="text-muted-foreground">{t("tasks.assignees")}</dt>
-            <dd className="text-foreground text-end">
-              {task.assignees?.length
-                ? task.assignees.map((a) => a.facultyName || t("tasks.assigneeFallback")).join(", ")
-                : t("tasks.noAssignees")}
-            </dd>
-          </div>
-        </dl>
+        </div>
       </div>
-    </Drawer>
+    </DetailDrawerShell>
   );
 }

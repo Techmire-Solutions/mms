@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import type { PlatformWorkspaceRow as PlatformWorkspaceRowData } from "@mms/shared";
 import { useDeleteWorkspace } from "@/platform/hooks/usePlatformWorkspaces";
 import { getPlatformErrorMessage } from "@/platform/lib/platformAuthErrors";
@@ -13,14 +13,17 @@ export function useWorkspaceDeleteState() {
   const [confirmSubdomain, setConfirmSubdomain] = useState("");
   const [passwordError, setPasswordError] = useState<string | null>(null);
 
-  useEffect(() => {
+  // Closing the confirm dialog discards the target and typed secrets — reset during render.
+  const [prevConfirmOpen, setPrevConfirmOpen] = useState(confirmOpen);
+  if (prevConfirmOpen !== confirmOpen) {
+    setPrevConfirmOpen(confirmOpen);
     if (!confirmOpen) {
       setTargetWorkspace(null);
       setPassword("");
       setConfirmSubdomain("");
       setPasswordError(null);
     }
-  }, [confirmOpen]);
+  }
 
   const handleOpenDelete = (workspace: PlatformWorkspaceRowData): void => {
     setTargetWorkspace(workspace);

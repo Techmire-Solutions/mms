@@ -19,6 +19,7 @@ import { useGlobalSettings } from "@/tenant/hooks/useGlobalSettings";
 import { ROUTES } from "@/lib/config/routes";
 import { useTranslation } from "@/hooks/useTranslation";
 import { apiContract } from "@/lib/api";
+import { apiContractError } from "@/lib/apiContractError";
 
 /** Stable ids for e2e (onboarding + responsive authenticated bootstrap). */
 const CURRENT_PASSWORD_ID = "current-password";
@@ -64,11 +65,9 @@ export default function ForcePasswordChange(): React.ReactElement {
         body: { currentPassword, newPassword },
       });
       if (status !== 200) {
-        const message =
-          (body as { message?: string; error?: string })?.message ||
-          (body as { message?: string; error?: string })?.error ||
-          t("account.wrongPassword");
-        throw new Error(message);
+        const fallback =
+          (body as { message?: string; error?: string })?.error || t("account.wrongPassword");
+        throw apiContractError({ status, body }, fallback);
       }
       logout(false);
       navigate(ROUTES.login, { replace: true, state: { passwordChanged: true } });

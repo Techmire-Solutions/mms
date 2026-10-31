@@ -74,8 +74,8 @@ async function signInPlatformAdmin(page: Page): Promise<void> {
   await expect(platformLanding.first()).toBeVisible({ timeout: 45_000 });
 }
 
-async function gotoWorkspacesAndSettle(page: Page): Promise<void> {
-  await page.goto("/platform/workspaces");
+async function gotoPlatformPageAndSettle(page: Page, path: string): Promise<void> {
+  await page.goto(path);
   await page.waitForLoadState("domcontentloaded");
   await waitForAppShellReady(page);
   await page
@@ -106,11 +106,33 @@ test.describe("platform workspaces accessibility smoke @smoke", () => {
     for (const viewport of AUDIT_VIEWPORTS) {
       await test.step(`Audit workspaces @ ${viewport.width}px (ltr)`, async () => {
         await page.setViewportSize({ width: viewport.width, height: viewport.height });
-        await gotoWorkspacesAndSettle(page);
+        await gotoPlatformPageAndSettle(page, "/platform/workspaces");
         await assertNoSeriousA11yViolations(page, {
           context: `platform workspaces @ ${viewport.width}px (ltr)`,
-          // Plan ready surface: directory content, not apex sidebar chrome.
-          include: ["#main-content"],
+          // Full page: the header/sidebar are part of the shell contract and
+          // previously escaped the main-content-only sweep.
+        });
+      });
+    }
+  });
+
+  test("platform dashboard passes full-page axe at 375 and 1440 (ltr)", async ({ page }) => {
+    test.setTimeout(180_000);
+
+    await test.step("Seed and sign in platform admin", async () => {
+      ensureE2ePlatformAdmin(platformEmail, platformPassword);
+      await signInPlatformAdmin(page);
+    });
+
+    for (const viewport of AUDIT_VIEWPORTS) {
+      await test.step(`Audit dashboard @ ${viewport.width}px (ltr)`, async () => {
+        await page.setViewportSize({ width: viewport.width, height: viewport.height });
+        await gotoPlatformPageAndSettle(page, "/platform/dashboard");
+        await expect(page.getByRole("heading", { name: /Dashboard/i })).toBeVisible({
+          timeout: 20_000,
+        });
+        await assertNoSeriousA11yViolations(page, {
+          context: `platform dashboard @ ${viewport.width}px (ltr)`,
         });
       });
     }

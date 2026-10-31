@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { useDebounce } from "@/hooks/useDebounce";
 import { useDirectoryTrashState } from "@/hooks/useDirectoryTrashState";
 import { toggleIdInSelection, togglePageIdsInSelection } from "@/lib/directorySelection";
@@ -16,37 +16,34 @@ export function useStudentsDirectoryFilters({
 }: {
   setActiveTab: (tab: string) => void;
 }) {
+  const [initialDrillDown] = useState(() => consumeStudentsWorkDrillDown());
   const [listPage, setListPage] = useState(1);
   const [viewingDeleted, setViewingDeleted] = useDirectoryTrashState();
   const [sortField, setSortField] = useState<StudentsListContentSortField | null>("grNumber");
   const [sortDir, setSortDir] = useState<"asc" | "desc">("desc");
   const [studentSearch, setStudentSearch] = useState("");
   const debouncedSearch = useDebounce(studentSearch, 250);
-  const [studentFilterStatus, setStudentFilterStatus] = useState<string[]>([]);
+  const [studentFilterStatus, setStudentFilterStatus] = useState<string[]>(() =>
+    initialDrillDown?.status ? [initialDrillDown.status] : [],
+  );
   const [studentFilterGender, setStudentFilterGender] = useState("");
   const [quickFilter, setQuickFilter] = useState<StudentsQuickFilter>("all");
   const [selectedIds, setSelectedIds] = useState<string[]>([]);
-  const isInitialMount = useRef(true);
 
-  useEffect(() => {
-    if (isInitialMount.current) {
-      isInitialMount.current = false;
-      return;
+  const filterKey = `${debouncedSearch}|${studentFilterStatus.join(",")}|${studentFilterGender}|${quickFilter}|${viewingDeleted}|${sortField}|${sortDir}`;
+  const [prevFilterKey, setPrevFilterKey] = useState(filterKey);
+  if (prevFilterKey !== filterKey) {
+    setPrevFilterKey(filterKey);
+    if (listPage !== 1) {
+      setListPage(1);
     }
-    setListPage(1);
-  }, [
-    debouncedSearch,
-    studentFilterStatus,
-    studentFilterGender,
-    quickFilter,
-    viewingDeleted,
-    sortField,
-    sortDir,
-  ]);
+  }
 
-  useEffect(() => {
+  const [prevViewingDeleted, setPrevViewingDeleted] = useState(viewingDeleted);
+  if (prevViewingDeleted !== viewingDeleted) {
+    setPrevViewingDeleted(viewingDeleted);
     setSelectedIds([]);
-  }, [viewingDeleted]);
+  }
 
   const applyDrillDown = useCallback(
     (filter: StudentsWorkDrillDown) => {
@@ -58,8 +55,9 @@ export function useStudentsDirectoryFilters({
   );
 
   useEffect(() => {
-    const pending = consumeStudentsWorkDrillDown();
-    if (pending) applyDrillDown(pending);
+    if (initialDrillDown) {
+      setActiveTab("work");
+    }
 
     const handler = (event: Event) => {
       const detail = (event as CustomEvent<StudentsWorkDrillDown>).detail;
@@ -67,7 +65,7 @@ export function useStudentsDirectoryFilters({
     };
     window.addEventListener(STUDENTS_WORK_DRILLDOWN_EVENT, handler);
     return () => window.removeEventListener(STUDENTS_WORK_DRILLDOWN_EVENT, handler);
-  }, [applyDrillDown]);
+  }, [applyDrillDown, initialDrillDown, setActiveTab]);
 
   const changeQuickFilter = useCallback((preset: string) => {
     if (!isStudentsQuickFilter(preset)) return;

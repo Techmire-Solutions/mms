@@ -3,7 +3,7 @@ import { UserCheck } from "lucide-react";
 import { useTranslation } from "@/hooks/useTranslation";
 import { FormSelect } from "@/components/app/FormSelect";
 import { Badge } from "@/components/ui/badge";
-import type { EligibleAssigneeItem } from "@/tenant/features/tasks/hooks/useTasksApi";
+import type { EligibleAssigneeItem } from "../hooks/useTasksApi";
 
 export interface SelectedAssignee {
   facultyId: string;
@@ -38,11 +38,12 @@ export function TaskFormAssigneePicker({
           if (facultyId) onAddAssignee(facultyId);
         }}
         placeholder={t("tasks.noAssignees")}
+        searchable
         options={eligibleList
           .filter((item) => !selectedAssignees.some((a) => a.facultyId === item.facultyId))
           .map((f) => ({
             value: f.facultyId,
-            label: `${f.name}${f.isSelf ? " • Self" : ""}`,
+            label: `${f.name}${f.departmentName ? ` (${f.departmentName})` : ""}${f.isSelf ? ` • ${t("tasks.assigneeSelf")}` : ""}`,
           }))}
       />
 
@@ -56,7 +57,7 @@ export function TaskFormAssigneePicker({
               pill
               size="sm"
               onRemove={() => onRemoveAssignee(assignee.facultyId)}
-              removeAriaLabel={`Remove ${assignee.name}`}
+              removeAriaLabel={t("tasks.removeAssignee", { name: assignee.name })}
             >
               <UserCheck className="h-3 w-3 shrink-0" aria-hidden="true" />
               <span>{assignee.name}</span>

@@ -1,5 +1,5 @@
 import type { ModuleColumnRegistryEntry, Student } from "@mms/shared";
-import { EntityCardMetadata } from "@/components/app/EntityCardMetadata";
+import { DirectoryCardMetadata } from "@/components/app/DirectoryCardMetadata";
 import type { StatusBadgeConfigItem } from "@/components/app/StatusBadge";
 import type { EntityDescriptor } from "@/components/common/entityRegistryTypes";
 import { useTranslation } from "@/hooks/useTranslation";
@@ -52,7 +52,7 @@ export function StudentCardMetadata({
       : undefined;
 
   return (
-    <EntityCardMetadata
+    <DirectoryCardMetadata
       descriptor={descriptor}
       entity={student}
       isColumnVisible={isColumnVisible}

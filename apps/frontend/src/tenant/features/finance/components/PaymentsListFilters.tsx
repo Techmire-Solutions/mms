@@ -6,7 +6,7 @@ import {
   ModuleColumnCustomizer,
   type ModuleColumnCustomizerProps,
 } from "@/components/app/ModuleColumnCustomizer";
-import { ModuleUniversalBulkActionBar } from "@/components/app/ModuleUniversalBulkActionBar";
+import { BulkSelectionBar } from "@/components/app/BulkSelectionBar";
 import { StatusBadge, type StatusBadgeConfigItem } from "@/components/app/StatusBadge";
 import { useTranslation } from "@/hooks/useTranslation";
 
@@ -57,7 +57,7 @@ export function PaymentSelectionBar({
   onClearSelection,
 }: PaymentSelectionBarProps): React.JSX.Element {
   return (
-    <ModuleUniversalBulkActionBar
+    <BulkSelectionBar
       selectedCount={selectedCount}
       viewingDeleted={showDeleted}
       canDelete={true}

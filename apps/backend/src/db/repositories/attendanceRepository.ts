@@ -46,6 +46,7 @@ export async function listAttendanceRecordsByWorkspace(
       .select(ATTENDANCE_RECORD_COLUMNS)
       .from(attendance)
       .where(and(...conditions))
+      .orderBy(attendance.id)
       .limit(limit)
       .offset(offset);
     return rows.map(rowToRecord);

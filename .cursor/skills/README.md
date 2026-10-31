@@ -64,7 +64,9 @@ Agent skills for Cursor, Antigravity, and Claude Code. Cursor/Claude discover th
 | **Rules** | `.cursor/rules/*.mdc` | Auto-applied (always or by glob) — norms/SSOT |
 | **Skills** | `.cursor/skills/*/SKILL.md` | Invoked when description matches — workflows/checklists that **point** at rules |
 
-Always-on rule: `mms-core`. Requestable (not always-on): `mms-agent-universal`, `mms-completion-review`. Scoped examples: `mms-performance`, `mms-migration-status`, `mms-dry`, `mms-dependencies`, `mms-structure-naming` (49 skills; rules: 1 always-on + 20 scoped).
+DeepSeek Harness: `.dsh/skills/<name>/SKILL.md` is auto-discovered (project rank 100) and `.dsh/rules/*.md` mirrors the rule bodies for on-demand reading (index: `.dsh/AGENTS.md`).
+
+Always-on rules: `mms-core`, `mms-completion-review`. Requestable (model-decided): `mms-agent-universal`. Scoped examples: `mms-performance`, `mms-migration-status`, `mms-dry`, `mms-dependencies`, `mms-structure-naming` (49 skills; rules: 2 always-on + 21 scoped).
 
 ## Verify setup
 

@@ -1,11 +1,4 @@
-import { useContext } from "react";
-import {
-  QueryClient,
-  QueryClientContext,
-  queryOptions,
-  useMutation,
-  useQuery,
-} from "@tanstack/react-query";
+import { type QueryClient, queryOptions, useMutation, useQuery } from "@tanstack/react-query";
 import {
   facultyDepartmentSchema,
   type FacultyDepartmentEntity,
@@ -13,11 +6,11 @@ import {
 } from "@mms/shared";
 import { apiContract } from "@/lib/api";
 import { useTranslation } from "@/hooks/useTranslation";
+import { useQueryClientOrFallback } from "@/lib/query/optionalQueryContext";
 import { FACULTY_QUERY_KEY } from "./facultyQueryKeys";
+import { assertContractOk } from "@/lib/apiContractError";
 
 export const FACULTY_DEPARTMENTS_QUERY_KEY = [...FACULTY_QUERY_KEY, "departments"] as const;
-
-const fallbackQueryClient = new QueryClient();
 
 export function facultyDepartmentsQueryOptions(input: {
   includeDeleted?: boolean;
@@ -32,7 +25,7 @@ export function facultyDepartmentsQueryOptions(input: {
         query: includeDeleted ? { includeDeleted: true } : undefined,
         fetchOptions: { signal },
       });
-      if (response.status !== 200) throw new Error(input.loadFailed);
+      assertContractOk(response, input.loadFailed);
       const parsed = facultyDepartmentSchema
         .array()
         .safeParse((response.body as { departments?: unknown }).departments);
@@ -62,8 +55,8 @@ export function useFacultyDepartments(options: { includeDeleted?: boolean } = {}
 /** Saves a department (create or update) and invalidates the departments list. */
 export function useSaveFacultyDepartment(customClient?: QueryClient) {
   const { t } = useTranslation();
-  const contextClient = useContext(QueryClientContext);
-  const client = customClient ?? contextClient ?? fallbackQueryClient;
+  const contextClient = useQueryClientOrFallback();
+  const client = customClient ?? contextClient;
   return useMutation(
     {
       mutationFn: async (input: FacultyDepartmentWrite & { id: string }) => {
@@ -71,13 +64,7 @@ export function useSaveFacultyDepartment(customClient?: QueryClient) {
           params: { id: input.id },
           body: input,
         });
-        if (response.status !== 200) {
-          const message =
-            typeof response.body === "object" && response.body && "message" in response.body
-              ? String(response.body.message)
-              : t("faculty.errors.saveDepartment");
-          throw new Error(message);
-        }
+        assertContractOk(response, t("faculty.errors.saveDepartment"));
         return facultyDepartmentSchema.parse(
           (response.body as { department?: unknown }).department,
         );
@@ -91,8 +78,8 @@ export function useSaveFacultyDepartment(customClient?: QueryClient) {
 /** Soft-deletes a department. Rejects (409) when active appointments reference it. */
 export function useDeleteFacultyDepartment(customClient?: QueryClient) {
   const { t } = useTranslation();
-  const contextClient = useContext(QueryClientContext);
-  const client = customClient ?? contextClient ?? fallbackQueryClient;
+  const contextClient = useQueryClientOrFallback();
+  const client = customClient ?? contextClient;
   return useMutation(
     {
       mutationFn: async (id: string) => {
@@ -100,13 +87,7 @@ export function useDeleteFacultyDepartment(customClient?: QueryClient) {
           params: { id },
           body: {},
         });
-        if (response.status !== 200) {
-          const message =
-            typeof response.body === "object" && response.body && "message" in response.body
-              ? String(response.body.message)
-              : t("faculty.errors.deleteDepartment");
-          throw new Error(message);
-        }
+        assertContractOk(response, t("faculty.errors.deleteDepartment"));
       },
       onSuccess: () => client.invalidateQueries({ queryKey: FACULTY_DEPARTMENTS_QUERY_KEY }),
     },
@@ -117,8 +98,8 @@ export function useDeleteFacultyDepartment(customClient?: QueryClient) {
 /** Restores a soft-deleted department. */
 export function useRestoreFacultyDepartment(customClient?: QueryClient) {
   const { t } = useTranslation();
-  const contextClient = useContext(QueryClientContext);
-  const client = customClient ?? contextClient ?? fallbackQueryClient;
+  const contextClient = useQueryClientOrFallback();
+  const client = customClient ?? contextClient;
   return useMutation(
     {
       mutationFn: async (id: string) => {
@@ -126,13 +107,7 @@ export function useRestoreFacultyDepartment(customClient?: QueryClient) {
           params: { id },
           body: {},
         });
-        if (response.status !== 200) {
-          const message =
-            typeof response.body === "object" && response.body && "message" in response.body
-              ? String(response.body.message)
-              : t("faculty.errors.restoreDepartment");
-          throw new Error(message);
-        }
+        assertContractOk(response, t("faculty.errors.restoreDepartment"));
         return facultyDepartmentSchema.parse(
           (response.body as { department?: unknown }).department,
         );

@@ -1,4 +1,5 @@
 import type { ZodType } from "zod";
+import type { FastifyRequest } from "fastify";
 import type { User } from "@mms/shared";
 
 export interface BulkRoutesOptions<T> {
@@ -13,7 +14,7 @@ export interface BulkRoutesOptions<T> {
   defaultPageSize?: number;
   saveFn: (data: T) => Promise<unknown>;
   /** Optional authorization / server-field stamping before save (e.g. teacher scope, `markedBy`). */
-  beforeSave?: (user: User, data: T) => Promise<T>;
+  beforeSave?: (user: User, data: T, request: FastifyRequest) => Promise<T>;
   responseKey: string;
   errorMessagePrefix: string;
   /** When true, omits registering the GET endpoint (e.g. handled by @ts-rest contract router). */

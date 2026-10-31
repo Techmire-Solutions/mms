@@ -13,7 +13,7 @@ export const ERD_DOMAIN_FINANCE: ErdDomain = {
         { name: "student_id", type: "varchar(64)", kind: "fk" },
         { name: "final_amt", type: "numeric(12,2)", kind: "column" },
         { name: "status", type: "varchar(20)", kind: "column" },
-        { name: "due_date", type: "varchar(10)", kind: "column" },
+        { name: "due_date", type: "date", kind: "column" },
         { name: "invoice_number", type: "varchar(40)", kind: "unique" },
         { name: "fee_structure_id", type: "text", kind: "fk" },
         { name: "billing_period", type: "varchar(7)", kind: "column" },

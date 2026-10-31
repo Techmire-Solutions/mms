@@ -9,6 +9,7 @@ import { useDashboardConfig } from "@/hooks/useDashboardConfig";
 import { useRevenueChartData } from "@/components/dashboard-widgets/charts/useRevenueChartData";
 import { LegendChip } from "@/components/app/LegendChip";
 import { RevenueChartPlot } from "@/components/dashboard-widgets/charts/RevenueChartPlot";
+import { ChartEmptyState } from "@/components/dashboard-widgets/charts/ChartEmptyState";
 import {
   DASHBOARD_CHART_TYPE_OPTIONS,
   REVENUE_CHART_COLOR_OPTIONS,
@@ -28,6 +29,9 @@ export default function RevenueChart({ isEditMode = false }: { isEditMode?: bool
   } = useDashboardConfig();
 
   const visibleRevenueData = period === "6m" ? revenueData.slice(-6) : revenueData;
+  const hasRevenueData = visibleRevenueData.some(
+    (point) => point.revenue !== 0 || point.expenses !== 0,
+  );
   const activeColors = COLOR_THEMES[colorTheme] || COLOR_THEMES.mixed;
 
   return (
@@ -66,25 +70,33 @@ export default function RevenueChart({ isEditMode = false }: { isEditMode?: bool
         }
       />
 
-      <div className="flex items-center gap-4 mb-4" aria-hidden="true">
-        <LegendChip
-          dotStyle={{ backgroundColor: activeColors.revenue }}
-          label={<span className="text-muted-foreground">{t("accounting.dashboard.revenue")}</span>}
-        />
-        <LegendChip
-          dotStyle={{ backgroundColor: activeColors.expenses }}
-          label={
-            <span className="text-muted-foreground">{t("accounting.dashboard.expenses")}</span>
-          }
-        />
-      </div>
+      {!hasRevenueData ? (
+        <ChartEmptyState height={210} />
+      ) : (
+        <>
+          <div className="flex items-center gap-4 mb-4" aria-hidden="true">
+            <LegendChip
+              dotStyle={{ backgroundColor: activeColors.revenue }}
+              label={
+                <span className="text-muted-foreground">{t("accounting.dashboard.revenue")}</span>
+              }
+            />
+            <LegendChip
+              dotStyle={{ backgroundColor: activeColors.expenses }}
+              label={
+                <span className="text-muted-foreground">{t("accounting.dashboard.expenses")}</span>
+              }
+            />
+          </div>
 
-      <RevenueChartPlot
-        data={visibleRevenueData}
-        chartType={chartType}
-        activeColors={activeColors}
-        isEditMode={isEditMode}
-      />
+          <RevenueChartPlot
+            data={visibleRevenueData}
+            chartType={chartType}
+            activeColors={activeColors}
+            isEditMode={isEditMode}
+          />
+        </>
+      )}
     </WidgetCard>
   );
 }

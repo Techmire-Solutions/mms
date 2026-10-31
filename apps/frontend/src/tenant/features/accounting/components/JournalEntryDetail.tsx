@@ -3,7 +3,7 @@ import type { AppTranslationKey } from "@mms/shared";
 import { formatDate, isJournalEntryBalanced, moneyToCents } from "@mms/shared";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Drawer } from "@/components/app/Drawer";
+import { DetailDrawerShell } from "@/components/app/DetailDrawerShell";
 import { ACCOUNT_TYPE_META, type Account, type JournalEntry } from "@/lib/data/accountingData";
 import { StatusBadge, type StatusBadgeConfigItem } from "@/components/app/StatusBadge";
 import { SEMANTIC_BADGE, balanceToneClass } from "@/lib/ui/semanticTone";
@@ -78,7 +78,7 @@ export function JournalEntryDetail({
   const balanceDifference = Math.abs(moneyToCents(totalDebit) - moneyToCents(totalCredit)) / 100;
 
   return (
-    <Drawer
+    <DetailDrawerShell
       open
       onClose={onClose}
       title={entry.ref}
@@ -226,6 +226,6 @@ export function JournalEntryDetail({
           )}
         </div>
       </div>
-    </Drawer>
+    </DetailDrawerShell>
   );
 }

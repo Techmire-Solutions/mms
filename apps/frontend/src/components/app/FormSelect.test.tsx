@@ -112,4 +112,19 @@ describe("FormSelect", () => {
     render({ disabled: true });
     expect(container.querySelector("[data-form-select-hit-area]")).toBeNull();
   });
+
+  it("given placeholder and an explicit empty option, should render without React duplicate key warnings", () => {
+    const consoleError = vi.spyOn(console, "error");
+    render({
+      placeholder: "Choose an option",
+      options: [{ value: "", label: "None" }, ...ACCOUNTS.slice(0, 2)],
+    });
+    const keyWarnings = consoleError.mock.calls.filter(
+      (call) =>
+        typeof call[0] === "string" &&
+        call[0].includes("Encountered two children with the same key"),
+    );
+    expect(keyWarnings).toHaveLength(0);
+    consoleError.mockRestore();
+  });
 });

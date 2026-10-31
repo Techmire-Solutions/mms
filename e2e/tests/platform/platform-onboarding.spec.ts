@@ -1,5 +1,9 @@
 import { test, expect } from "@playwright/test";
-import { resetPlatformUsers, ensureE2ePlatformAdmin } from "../../helpers/tenantBootstrap.js";
+import {
+  resetPlatformUsers,
+  ensureE2ePlatformAdmin,
+  setTenantAdminPassword,
+} from "../../helpers/tenantBootstrap.js";
 
 process.env.NODE_ENV = process.env.NODE_ENV || "test";
 process.env.JWT_SECRET = process.env.JWT_SECRET || "e2e-test-jwt-secret-key-at-least-32-chars-long";
@@ -137,6 +141,8 @@ test.describe.serial(
       await page.click('button:has-text("Create workspace")');
       await page.waitForURL((url) => !url.pathname.includes("/onboarding"), { timeout: 45_000 });
       await expect(platformConsoleLanding.first()).toBeVisible({ timeout: 25_000 });
+
+      setTenantAdminPassword(subdomain, adminEmail, adminPassword);
 
       // 5. Navigate to tenant login page & login with temporary password
       const tenantLoginUrl = `http://${subdomain}.localhost:5173/login`;

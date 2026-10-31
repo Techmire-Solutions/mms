@@ -1,6 +1,6 @@
 import type React from "react";
 import { toMessagingRecipient } from "@mms/shared";
-import { DirectoryCard } from "@/components/app/DirectoryCard";
+import { DirectoryEntityCard } from "@/components/app/DirectoryEntityCard";
 import { getGenderAccentBarClass } from "@/lib/ui/directoryCardAccent";
 import { StudentArchivedBanner } from "@/tenant/features/students/components/StudentArchivedBanner";
 import { StudentCardActions } from "@/tenant/features/students/components/StudentCardActions";
@@ -58,7 +58,7 @@ export function StudentCard({
   const email = student.email?.trim() || null;
 
   return (
-    <DirectoryCard
+    <DirectoryEntityCard
       entity={student}
       selectedIds={selectedIds}
       // NOTE: Selection is restricted to users with delete permission.

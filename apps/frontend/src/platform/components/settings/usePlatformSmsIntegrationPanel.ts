@@ -23,7 +23,6 @@ export function usePlatformSmsIntegrationPanel() {
   const [testPhone, setTestPhone] = useState("");
 
   const load = useCallback(async (): Promise<void> => {
-    setLoading(true);
     try {
       const config = await fetchPlatformSmsIntegration();
       if (config) setForm(config);

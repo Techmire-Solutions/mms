@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useMemo, useState } from "react";
 import { FACULTY_MODULE_MANIFEST, type Faculty, type FacultyQuickFilter } from "@mms/shared";
 import { BookOpen, Layers, Users } from "lucide-react";
 import { useTranslation } from "@/hooks/useTranslation";
@@ -47,9 +47,19 @@ export function useFacultyReportController({ filters }: FacultyReportProps) {
   const searchParam =
     filters.search?.trim() || filters.faculty?.trim() || filters.student?.trim() || undefined;
 
-  useEffect(() => {
+  // Adjust state during render: any filter change returns the roster to its first page.
+  const pageResetInputs = [
+    filters.search,
+    filters.faculty,
+    filters.student,
+    filters.status,
+    reportStatusFilter,
+  ];
+  const [prevPageResetInputs, setPrevPageResetInputs] = useState(pageResetInputs);
+  if (prevPageResetInputs.some((value, index) => value !== pageResetInputs[index])) {
+    setPrevPageResetInputs(pageResetInputs);
     setListPage(1);
-  }, [filters.search, filters.faculty, filters.student, filters.status, reportStatusFilter]);
+  }
 
   const { data: metrics, isLoading: metricsLoading } = useFacultyMetrics();
 

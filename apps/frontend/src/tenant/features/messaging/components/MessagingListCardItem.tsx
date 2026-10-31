@@ -1,22 +1,23 @@
 import type React from "react";
-import { AlertCircle, Check, Copy } from "lucide-react";
+import { AlertCircle } from "lucide-react";
 import {
   calculateSmsSegments,
   formatDateTime,
   getMessageCategoryLabelKey,
   type Message,
 } from "@mms/shared";
-import { Button } from "@/components/ui/button";
 import { ChannelBadge } from "@/components/app/ChannelBadge";
-import { DirectoryCard } from "@/components/app/DirectoryCard";
+import { CopyBtn } from "@/components/app/CopyButton";
+import { DirectoryEntityCard } from "@/components/app/DirectoryEntityCard";
 import { EntityCard } from "@/components/app/EntityCard";
-import { EntityCardMetaTile } from "@/components/app/EntityCardMetaTile";
+import { DirectoryCardMetaTile } from "@/components/app/DirectoryCardMetaTile";
 import { StatusBadge, type StatusBadgeConfigItem } from "@/components/app/StatusBadge";
 import { useTranslation } from "@/hooks/useTranslation";
 import { cn } from "@/lib/utils";
 import { SEMANTIC_TEXT } from "@/lib/ui/semanticTone";
 
 import { getMessagingChannelAccentBarClass } from "../lib/messagingCardTokens";
+import { MESSAGING_KB_FOCUS_CLASS } from "../hooks/useMessagingWorkTierKeyboardNav";
 import { MessagingListCardActions } from "./MessagingListCardActions";
 
 export { getMessagingChannelAccentBarClass };
@@ -25,33 +26,34 @@ export interface MessagingListCardItemProps {
   log: Message;
   isSelected: boolean;
   name: string;
-  isCopied: boolean;
+  isCopied?: boolean;
   canWrite: boolean;
   reducedMotion: boolean;
   logStatusConfig: Record<string, StatusBadgeConfigItem>;
   isColumnVisible: (key: string) => boolean;
+  /** While true, the j/k keyboard navigation targets this card (focus ring). */
+  isKeyboardFocused?: boolean;
   onToggleLog: (log: Message, shiftKey?: boolean) => void;
   onResendLog: (log: Message) => void;
   onViewLog?: (log: Message) => void;
   onFilterContact?: (name: string) => void;
-  onCopyBody: (e: React.MouseEvent, log: Message) => void;
+  onCopyBody?: (e: React.MouseEvent, log: Message) => void;
 }
 
-/** Work directory card — DirectoryCard SSOT (do not hand-compose EntityCard). */
+/** Work directory card — DirectoryEntityCard SSOT (do not hand-compose EntityCard). */
 export function MessagingListCardItem({
   log,
   isSelected,
   name,
-  isCopied,
   canWrite,
   reducedMotion,
   logStatusConfig,
   isColumnVisible,
+  isKeyboardFocused,
   onToggleLog,
   onResendLog,
   onViewLog,
   onFilterContact,
-  onCopyBody,
 }: MessagingListCardItemProps): React.JSX.Element {
   const { t } = useTranslation();
   const isFailed = log.status === "failed";
@@ -60,7 +62,7 @@ export function MessagingListCardItem({
   const categoryKey = log.category ? getMessageCategoryLabelKey(log.category) : null;
 
   return (
-    <DirectoryCard
+    <DirectoryEntityCard
       entity={log}
       selectedIds={isSelected ? [log.id] : []}
       canSelect
@@ -71,15 +73,19 @@ export function MessagingListCardItem({
       className={cn(
         "transition-all group",
         isFailed && `border-destructive/30 ${SEMANTIC_TEXT.destructive}`,
+        isKeyboardFocused && `ring-2 ring-primary/60 ${MESSAGING_KB_FOCUS_CLASS}`,
       )}
       header={{
         displayName: name,
         subtitle: (
           <div className="flex items-center gap-1.5 flex-wrap mt-0.5">
             {isColumnVisible("dateSent") && (
-              <p className="text-xs font-mono text-muted-foreground">
+              <time
+                dateTime={new Date(log.sentAt).toISOString()}
+                className="text-xs font-mono text-muted-foreground"
+              >
                 {formatDateTime(log.sentAt)}
-              </p>
+              </time>
             )}
             {categoryKey && (
               <span className="text-2xs px-1.5 py-0.5 bg-muted/60 text-muted-foreground rounded-md font-medium">
@@ -89,17 +95,17 @@ export function MessagingListCardItem({
           </div>
         ),
       }}
-      viewLabel={t("contacts.actionViewShort")}
-      viewAriaLabel={`${t("contacts.table.viewProfile")} - ${name}`}
+      viewLabel={t("common.details")}
+      viewAriaLabel={t("messaging.viewLogAria", { name })}
       metadataSlot={
         <EntityCard.MetaGrid>
           {isColumnVisible("channel") && (
-            <EntityCardMetaTile label={t("messaging.channel")}>
+            <DirectoryCardMetaTile label={t("messaging.channel")}>
               <div className="flex flex-wrap items-center gap-1.5 mt-0.5">
                 <ChannelBadge channel={log.channel} />
                 {smsSegments && (
                   <span className="text-2xs font-mono text-muted-foreground bg-muted/60 px-1 py-0.5 rounded-md">
-                    {smsSegments.totalSegments} {smsSegments.totalSegments === 1 ? "seg" : "segs"}
+                    {t("messaging.smsSegmentBadge", { count: smsSegments.totalSegments })}
                   </span>
                 )}
                 <StatusBadge status={log.status || "sent"} size="sm" config={logStatusConfig} />
@@ -110,11 +116,11 @@ export function MessagingListCardItem({
                   />
                 )}
               </div>
-            </EntityCardMetaTile>
+            </DirectoryCardMetaTile>
           )}
 
           {isColumnVisible("body") && (
-            <EntityCardMetaTile label={t("messaging.messageBody")} className="sm:col-span-2">
+            <DirectoryCardMetaTile label={t("messaging.messageBody")} className="sm:col-span-2">
               <div className="flex items-start justify-between gap-2 mt-0.5">
                 <div className="min-w-0 flex-1">
                   {log.channel === "email" && log.subject && (
@@ -124,22 +130,13 @@ export function MessagingListCardItem({
                   )}
                   <p className="line-clamp-2 leading-relaxed whitespace-pre-wrap">{log.body}</p>
                 </div>
-                <Button
-                  type="button"
-                  variant="ghost"
-                  size="icon"
-                  onClick={(e) => void onCopyBody(e, log)}
-                  className={`min-h-11 min-w-11 shrink-0 text-muted-foreground hover:${SEMANTIC_TEXT.primary}`}
-                  title={t("contacts.table.copy")}
-                >
-                  {isCopied ? (
-                    <Check className={`h-3 w-3 ${SEMANTIC_TEXT.success}`} />
-                  ) : (
-                    <Copy className="h-3 w-3" />
-                  )}
-                </Button>
+                <CopyBtn
+                  text={log.body}
+                  showToast
+                  className="min-h-11 min-w-11 shrink-0 text-muted-foreground hover:text-primary shadow-none cursor-pointer"
+                />
               </div>
-            </EntityCardMetaTile>
+            </DirectoryCardMetaTile>
           )}
         </EntityCard.MetaGrid>
       }

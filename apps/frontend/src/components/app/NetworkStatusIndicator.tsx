@@ -24,7 +24,9 @@ export function NetworkStatusIndicator({
     return "online";
   });
 
-  const [visible, setVisible] = useState(false);
+  const [visible, setVisible] = useState(
+    () => typeof navigator !== "undefined" && !navigator.onLine,
+  );
 
   useEffect(() => {
     if (typeof window === "undefined") return;
@@ -53,11 +55,6 @@ export function NetworkStatusIndicator({
 
     window.addEventListener("offline", handleOffline);
     window.addEventListener("online", handleOnline);
-
-    if (!navigator.onLine) {
-      setNetworkState("offline");
-      setVisible(true);
-    }
 
     return () => {
       window.removeEventListener("offline", handleOffline);

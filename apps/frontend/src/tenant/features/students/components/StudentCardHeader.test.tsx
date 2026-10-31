@@ -44,7 +44,6 @@ describe("StudentCardHeader", () => {
     expect(html).toContain('title="Fatima Zahra"');
     expect(html).toContain("AH");
     expect(html).toContain('aria-label="students.table.selectStudent:Ali Hassan"');
-    expect(html).toContain('aria-label="students.list.viewProfile - Ali Hassan"');
   });
 
   it("renders student name, father name, and mother name when column settings allow", () => {

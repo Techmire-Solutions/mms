@@ -13,9 +13,9 @@ import {
 } from "./userRbacModuleRegistry.js";
 
 describe("userRbacModuleRegistry", () => {
-  it("contains all 18 canonical RBAC modules", () => {
-    expect(RBAC_MODULE_IDS.length).toBe(18);
-    expect(RBAC_MODULE_REGISTRY.length).toBe(18);
+  it("contains all 20 canonical RBAC modules", () => {
+    expect(RBAC_MODULE_IDS.length).toBe(20);
+    expect(RBAC_MODULE_REGISTRY.length).toBe(20);
     for (const id of RBAC_MODULE_IDS) {
       expect(RBAC_MODULES_BY_ID[id]).toBeDefined();
       expect(RBAC_MODULES_BY_ID[id].id).toBe(id);
@@ -93,6 +93,6 @@ describe("userRbacModuleRegistry", () => {
 
   it("defaults to all modules enabled when null/undefined settings provided", () => {
     const visible = filterRbacModulesForSettings(null);
-    expect(visible.length).toBe(18);
+    expect(visible.length).toBe(20);
   });
 });

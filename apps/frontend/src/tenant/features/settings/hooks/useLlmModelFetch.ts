@@ -25,10 +25,13 @@ export function useLlmModelFetch({
   const [fetchingModels, setFetchingModels] = useState(false);
   const [showCustomModelInput, setShowCustomModelInput] = useState(false);
 
+  // Adjust state during render: without an API key (typed or saved) there is nothing to list.
+  const hasApiKey = Boolean(formApiKey.trim()) || Boolean(editingConfig?.apiKey);
+  if (!hasApiKey && fetchedModels.length > 0) setFetchedModels([]);
+
   useEffect(() => {
     const key = formApiKey.trim();
     if (!key && (!editingConfig || !editingConfig.apiKey)) {
-      setFetchedModels([]);
       return;
     }
 

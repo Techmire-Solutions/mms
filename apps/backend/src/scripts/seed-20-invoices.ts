@@ -48,7 +48,9 @@ async function main() {
         discountAmt: 0,
         finalAmt: base,
         status,
-        dueDate: "2026-03-31",
+        // Only overdue invoices are past due; the rest keep a future due date so
+        // the Outstanding and Overdue dashboard widgets show different cohorts.
+        dueDate: status === "overdue" ? "2026-03-31" : "2026-12-31",
         paidAmt: status === "paid" ? base : 0,
         invoiceNumber: `INV-SEED-${String(n).padStart(4, "0")}`,
         billingPeriod: "2026-01",

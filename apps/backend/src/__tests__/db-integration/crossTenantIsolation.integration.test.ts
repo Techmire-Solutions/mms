@@ -41,7 +41,7 @@ const VICTIM_USER_ID = "victim-user-1";
 const ATTACKER_USER_ID = "attacker-admin-1";
 
 async function cleanup(): Promise<void> {
-  const tx = await beginLongLivedTenantTransaction(null);
+  const tx = await beginLongLivedTenantTransaction(null, { allowGlobal: true });
   try {
     await tx.tx.execute(sql`SET LOCAL app.allow_hard_purge = 'true'`);
     for (const subdomain of [ATTACKER, VICTIM]) {
@@ -59,7 +59,7 @@ beforeAll(async () => {
 
   await cleanup();
 
-  const tx = await beginLongLivedTenantTransaction(null);
+  const tx = await beginLongLivedTenantTransaction(null, { allowGlobal: true });
   try {
     await tx.tx.insert(workspaces).values([
       { id: `ws-${ATTACKER}`, subdomain: ATTACKER, madrasaName: "Attacker Madrasa", enabled: true },

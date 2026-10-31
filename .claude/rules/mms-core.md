@@ -1,8 +1,10 @@
 ---
-description: MMS core invariants, security, boundaries, and limits
+description: MMS core invariants, standards mirroring, security, boundaries, and limits
 ---
 
 # MMS Core Invariants
+
+**Workflow skills:** orientation → `antigravity-workspace` · standards authoring/sync → `mms-agent-standards` · review → `mms-code-review`.
 
 ## 1. Critical Invariants
 - **Protected Zones:** Never edit migrations, auth middleware, CI/CD, or root configs without explicit consent.
@@ -11,13 +13,16 @@ description: MMS core invariants, security, boundaries, and limits
 
 ## 2. Boundaries & Limits
 - **Layers:** `@mms/shared` = pure types/DTOs. `@shared/ui` = unified shared UI component primitives. TanStack Query server authority. Zero cross-feature imports.
-- **Shared UI Governance:** Zero duplicate UI components across Tenant Console and Platform Console; all reusable components live in `@shared/ui`. Strict pre-deletion verification (`typecheck`, `lint`, `build`) required before cleaning up legacy UI files. Enforced by `pnpm run check:shared-ui` (CI ratchet) · rule `mms-shared-ui.md` · skill `mms-shared-ui` · workflow `/shared-ui-audit`.
+- **Shared UI Governance:** `@shared/ui` is the single source for reusable components; run `pnpm run check:shared-ui` before cleaning up legacy UI files. Norms → `mms-shared-ui.md` · `mms-dry.md` §1 · workflow `/shared-ui-audit`.
 - **Limits:** Strict TypeScript (zero `any`, no unsafe casts). 300 LOC hard cap per source file (ratcheted by `check:code-norms.mjs`).
-- **Modern Web Baseline:** Modern evergreen browsers. Execute `modern-web-guidance` first on all HTML/CSS/DOM/clientside JS tasks; zero polyfills; Baseline features native behind feature detection (`AGENTS.md`).
+- **Modern Web Baseline:** Modern evergreen browsers. Execute `modern-web-guidance` first on all HTML/CSS/DOM/client-side JS tasks; zero polyfills; Baseline features native behind feature detection (`AGENTS.md`).
 
 ## 3. Workflow Discipline
 - **Plan-Task-Execute:** On every user request, ALWAYS plan before modifying code:
   1. *Plan First:* Inspect existing code/patterns, analyze requirements/constraints (tenant isolation, 300 LOC cap, strict TS, DRY reuse, `modern-web-guidance` standards), and design the solution.
   2. *Create Task List:* Emit an explicit, structured task checklist (`- [ ]`) decomposing the work into discrete, verifiable phases.
   3. *Execute & Verify Iteratively:* Execute step-by-step against the checklist, update progress (`- [x]`), apply surgical changes, and verify (typecheck/lint/test) after each step before declaring completion.
+- **Strict TDD Protocol:** For bug fixes, services, use-cases, repositories, and shared helpers: Red → Green → Refactor, with the failing run recorded in the PR body (`mms-tdd.md` §1–§2; advisory pairing check `pnpm run check:tdd-pairing`).
+- **Adversarial Loophole Audit:** Prior to completion, execute structured 4-vector adversarial review (edge cases, failure modes, security/multi-tenancy, concurrency) and deliver markdown audit report (`mms-completion-review.md` §4).
+- **Standards Mirroring (always):** Any edit to a rule, skill, workflow, or standards script must be mirrored to **every** tree in the same change — `.agent/`, `.cursor/`, `.claude/`, `.dsh/` — by running `bash .agent/scripts/sync-all.sh`, then `node scripts/verify-rules-integrity.mjs`. Never hand-edit a generated mirror; CI fails on drift (`git diff --exit-code -- .agent .cursor .claude .dsh`).
 - **Execution:** Surgical diffs only. Zero filler prose. Never commit unless explicitly asked to commit; never push to remote under any circumstance unless explicitly instructed by the user. Always run full local CI (`pnpm ci:local`) and confirm 100% clean pass before committing.

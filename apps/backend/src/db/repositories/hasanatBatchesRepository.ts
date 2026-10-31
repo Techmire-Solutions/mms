@@ -2,6 +2,7 @@ import { and, eq, inArray, sql } from "drizzle-orm";
 import { dedupeTrimmedIds, type StockBatch } from "@mms/shared";
 import { hasanatBatches } from "../schema.js";
 import { withTenant, withTenantRead } from "../tenant-context.js";
+import { requireDbDateValue } from "../../lib/dbDate.js";
 
 type BatchRow = typeof hasanatBatches.$inferSelect;
 
@@ -47,6 +48,7 @@ export async function listBatchesByWorkspace(
       })
       .from(hasanatBatches)
       .where(eq(hasanatBatches.workspaceSubdomain, subdomain))
+      .orderBy(hasanatBatches.id)
       .limit(limit)
       .offset(offset);
     return rows.map(batchRowToRecord);
@@ -123,7 +125,7 @@ export async function saveBatch(tenant: string, record: StockBatch): Promise<voi
         denominationName: record.denominationName ?? "",
         quantity: record.quantity,
         remaining: record.remaining ?? record.quantity,
-        addedDate: record.addedDate,
+        addedDate: requireDbDateValue(record.addedDate, "addedDate"),
         addedByUserId: record.addedByUserId ?? null,
         addedBy: record.addedBy ?? null,
         note: record.note ?? "",
@@ -136,7 +138,7 @@ export async function saveBatch(tenant: string, record: StockBatch): Promise<voi
           denominationName: record.denominationName ?? "",
           quantity: record.quantity,
           remaining: record.remaining ?? record.quantity,
-          addedDate: record.addedDate,
+          addedDate: requireDbDateValue(record.addedDate, "addedDate"),
           addedByUserId: record.addedByUserId ?? null,
           addedBy: record.addedBy ?? null,
           note: record.note ?? "",
@@ -168,7 +170,7 @@ export async function bulkSaveBatches(tenant: string, records: StockBatch[]): Pr
           denominationName: r.denominationName ?? "",
           quantity: r.quantity,
           remaining: r.remaining ?? r.quantity,
-          addedDate: r.addedDate,
+          addedDate: requireDbDateValue(r.addedDate, "addedDate"),
           addedByUserId: r.addedByUserId ?? null,
           addedBy: r.addedBy ?? null,
           note: r.note ?? "",
@@ -215,7 +217,7 @@ export async function replaceBatchesForWorkspace(
           denominationName: r.denominationName ?? "",
           quantity: r.quantity,
           remaining: r.remaining ?? r.quantity,
-          addedDate: r.addedDate,
+          addedDate: requireDbDateValue(r.addedDate, "addedDate"),
           addedByUserId: r.addedByUserId ?? null,
           addedBy: r.addedBy ?? null,
           note: r.note ?? "",

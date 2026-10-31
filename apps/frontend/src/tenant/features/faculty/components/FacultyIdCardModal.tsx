@@ -156,7 +156,7 @@ export function FacultyIdCardModal({
                         title={qualification || faculty.qualification}
                         className="text-3xs text-muted-foreground truncate"
                       >
-                        <span className="font-semibold text-foreground/80">
+                        <span className="font-semibold text-foreground">
                           {t(facultyFieldLabelKey("qualification"))}:{" "}
                         </span>
                         <span>{qualification || faculty.qualification}</span>
@@ -165,7 +165,7 @@ export function FacultyIdCardModal({
 
                     {displayPhone && (
                       <div title={displayPhone} className="text-3xs text-muted-foreground truncate">
-                        <span className="font-semibold text-foreground/80">
+                        <span className="font-semibold text-foreground">
                           {t(facultyFieldLabelKey("phone"))}:{" "}
                         </span>
                         <span dir="ltr">{displayPhone}</span>

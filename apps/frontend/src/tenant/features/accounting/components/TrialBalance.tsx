@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useState } from "react";
 import { CheckCircle2, AlertCircle } from "lucide-react";
 import { EmptyState } from "@/components/app/EmptyState";
 import { ErrorState } from "@/components/app/ErrorState";
@@ -42,22 +42,28 @@ export function TrialBalance({ fiscalYears }: TrialBalanceProps) {
   const { formatCurrency } = useAccountingCurrency();
   const { viewMode } = useWorkDirectoryViewMode();
   const activeFiscalYear = resolveDefaultFiscalYear(fiscalYears, todayISO()) ?? undefined;
-  const [dateFrom, setDateFrom] = useState("");
-  const [dateTo, setDateTo] = useState("");
+  const [dateFrom, setDateFrom] = useState(activeFiscalYear?.startDate ?? "");
+  const [dateTo, setDateTo] = useState(activeFiscalYear?.endDate ?? "");
   const [hasUserSetRange, setHasUserSetRange] = useState(false);
 
   /**
    * A trial balance is a period statement, so the server's range rows are the
    * right set (`report-aggregates.trialBalance`). The fiscal-year list resolves
    * after first paint, so the default range is adopted once it lands; an explicit
-   * user range — including "All time" — always wins.
+   * user range — including "All time" — always wins. Adoption happens during
+   * render instead of in an effect.
    */
-  useEffect(() => {
-    if (hasUserSetRange || !activeFiscalYear) return;
-    const { startDate, endDate } = activeFiscalYear;
-    setDateFrom((prev) => (prev === startDate ? prev : startDate));
-    setDateTo((prev) => (prev === endDate ? prev : endDate));
-  }, [activeFiscalYear, hasUserSetRange]);
+  const activeRangeKey = activeFiscalYear
+    ? `${activeFiscalYear.startDate}:${activeFiscalYear.endDate}`
+    : "";
+  const [prevActiveRangeKey, setPrevActiveRangeKey] = useState(activeRangeKey);
+  if (prevActiveRangeKey !== activeRangeKey) {
+    setPrevActiveRangeKey(activeRangeKey);
+    if (activeFiscalYear && !hasUserSetRange) {
+      setDateFrom(activeFiscalYear.startDate);
+      setDateTo(activeFiscalYear.endDate);
+    }
+  }
 
   const aggregatesResult = useAccountingReportAggregates({
     dateFrom: dateFrom || undefined,

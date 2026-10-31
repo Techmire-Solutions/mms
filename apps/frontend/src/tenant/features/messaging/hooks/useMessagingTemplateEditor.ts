@@ -11,7 +11,7 @@ import { useAuth } from "@/lib/contexts/AuthContext";
 import { useTranslation } from "@/hooks/useTranslation";
 import { mapZodFormErrors } from "@/lib/forms/mapZodFormErrors";
 import { formatUnknownTokensLabel } from "@/components/messageComposer/messageComposerTokenErrors";
-import { useMessagingMutations } from "./useMessaging";
+import { useMessagingMutations } from "@/hooks/useMessaging";
 
 type TemplateChannel = "all" | "sms" | "whatsapp" | "email";
 interface Baseline {

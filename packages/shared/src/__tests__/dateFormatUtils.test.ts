@@ -274,6 +274,15 @@ describe("dateFormatUtils", () => {
       expect(typeof options[0]?.sample).toBe("string");
       expect(options[0]!.sample.length).toBeGreaterThan(0);
     });
+
+    it("renders localized Gregorian samples instead of NaN", () => {
+      const sampleDate = new Date(Date.UTC(2026, 6, 21));
+      const arabic = getDateFormatOptions("ar", sampleDate);
+      const dayFirst = arabic.find((option) => option.value === "DD/MM/YYYY");
+
+      expect(dayFirst?.sample).toBe("٢١/٠٧/٢٠٢٦");
+      expect(arabic.every((option) => !option.sample.includes("NaN"))).toBe(true);
+    });
   });
 
   describe("Date Storage & ISO Helpers", () => {

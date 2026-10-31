@@ -15,6 +15,9 @@ import {
 } from "../schema.js";
 import { withTenant } from "../tenant-context.js";
 import { ConflictError } from "../../lib/httpErrors.js";
+import { requireDbDateValue } from "../../lib/dbDate.js";
+import { ensureCurrencySettingsInTx } from "./accountingCurrencySettingsRepository.js";
+import { journalLineFxInsertValues } from "./accountingJournalLineFx.js";
 
 /**
  * Maps a JournalEntry to the accountingEntries insert/upsert value shape.
@@ -32,7 +35,7 @@ export function entryInsertValues(
   return {
     id: record.id,
     workspaceSubdomain: subdomain,
-    date: record.date,
+    date: requireDbDateValue(record.date, "date"),
     ref: record.ref ?? "",
     description: record.description ?? "",
     status: record.status ?? "posted",
@@ -81,6 +84,7 @@ export async function replaceEntriesForWorkspace(
       .insert(accountingEntries)
       .values(uniqueRecords.map((record) => entryInsertValues(subdomain, record)));
 
+    const { functionalCurrency } = await ensureCurrencySettingsInTx(tx, subdomain);
     const allLines = uniqueRecords.flatMap((record) =>
       (record.lines ?? []).map((l) => ({
         id: l.id,
@@ -89,6 +93,7 @@ export async function replaceEntriesForWorkspace(
         accountId: l.account_id,
         debit: String(l.debit ?? 0),
         credit: String(l.credit ?? 0),
+        ...journalLineFxInsertValues(l, functionalCurrency, record.date),
         description: l.description ?? "",
       })),
     );

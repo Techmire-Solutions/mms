@@ -1,6 +1,6 @@
 import { useMemo, useState } from "react";
 import { TrendingUp, TrendingDown, ArrowUpDown, AlertTriangle } from "lucide-react";
-import { WarningCallout } from "@/components/app/WarningCallout";
+import { Alert } from "@/components/app/Alert";
 import { centsToMoney, type JournalEntry, type Account } from "@/lib/data/accountingData";
 import { ModuleCommandMetricsGrid } from "@/components/app/ModuleCommandMetricsGrid";
 import { WorkTaskToolbar } from "@/components/common/work";
@@ -111,7 +111,7 @@ export function CashbookView({
         rendering a silently empty or all-transfer cashbook.
       */}
       {cashAccountIds.size === 0 && (
-        <WarningCallout density="compact" description={t("accounting.cashbook.noCashAccount")} />
+        <Alert density="compact" description={t("accounting.cashbook.noCashAccount")} />
       )}
       {countByType.unclassified > 0 && (
         <p

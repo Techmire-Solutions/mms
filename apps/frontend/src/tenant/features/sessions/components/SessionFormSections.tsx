@@ -5,7 +5,7 @@ import { Field } from "@/components/app/FormPrimitives";
 import { FormSelect } from "@/components/app/FormSelect";
 import { AcademicCatalogSelect } from "@/components/common/catalog/AcademicCatalogSelect";
 import { SectionCard } from "@/components/app/SectionCard";
-import { WarningCallout } from "@/components/app/WarningCallout";
+import { Alert } from "@/components/app/Alert";
 import { FORM_INPUT, FORM_TEXTAREA } from "@/components/ui/formStyles";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -55,7 +55,7 @@ export function SessionDetailsSection({
         className="shadow-sm text-start"
       >
         {structureLocked ? (
-          <WarningCallout
+          <Alert
             density="banner"
             title={t("sessions.lock.title")}
             description={t("sessions.lock.hint")}

@@ -4,7 +4,7 @@ import { SectionLabel } from "@/components/app/SectionLabel";
 import { WORK_SURFACE } from "@/components/ui/formStyles";
 import { Badge } from "@/components/ui/badge";
 import { type StatusBadgeConfigItem, StatusBadge } from "@/components/app/StatusBadge";
-import { EntityCardsGrid } from "@/components/app/EntityCardsGrid";
+import { ModuleDirectoryCards } from "@/components/app/ModuleDirectoryCards";
 import { WorkBatchTable, type WorkBatchTableColumn } from "@/components/common/work/WorkBatchTable";
 import { useTranslation } from "@/hooks/useTranslation";
 import {
@@ -163,7 +163,7 @@ export function AccountTypeGroup({
       </header>
       {viewMode === "cards" ? (
         <div className="p-3">
-          <EntityCardsGrid>
+          <ModuleDirectoryCards>
             {accountTypeRows.map((account) => (
               <AccountMobileCard
                 key={account.id}
@@ -176,7 +176,7 @@ export function AccountTypeGroup({
                 onReactivate={onReactivate}
               />
             ))}
-          </EntityCardsGrid>
+          </ModuleDirectoryCards>
         </div>
       ) : (
         <WorkBatchTable

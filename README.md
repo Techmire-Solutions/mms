@@ -27,7 +27,8 @@ mms/
 │   ├── backend/          # Fastify 5 API server + BullMQ worker
 │   └── frontend/         # React 19 SPA
 ├── packages/
-│   └── shared/           # @mms/shared — SSOT types, Zod schemas, pure utils
+│   ├── shared/           # @mms/shared — SSOT types, Zod schemas, pure utils
+│   └── ui/               # @shared/ui — shared UI primitives (SSOT for both consoles)
 ├── e2e/                  # Playwright end-to-end tests
 ├── scripts/              # i18n checker, ESLint TS compat shim, sync scripts
 ├── docker-compose.yml    # Postgres 16 + Redis 7 + backend + worker
@@ -64,7 +65,7 @@ mms/
 
 | Directory                   | Purpose                                                      |
 | --------------------------- | ------------------------------------------------------------ |
-| `tenant/features/`          | 20 feature modules (students, faculty, sessions, finance, …) |
+| `tenant/features/`          | 21 feature modules (students, faculty, sessions, finance, …) |
 | `tenant/hooks/collections/` | TanStack Query facades per resource                          |
 | `platform/`                 | Platform apex (super-admin, tenant management)               |
 | `components/ui/`            | Shared design-system primitives                              |
@@ -202,10 +203,16 @@ Runs Postgres 16 + Redis 7 + backend API + BullMQ worker — all secrets interpo
 
 ```bash
 # Copy and fill root .env first
-cp .env.example .env   # set POSTGRES_PASSWORD, REDIS_PASSWORD, JWT_SECRET
+cp .env.example .env   # set POSTGRES_PASSWORD, MMS_DB_PASSWORD, REDIS_PASSWORD, JWT_SECRET
 
 docker compose up -d
 ```
+
+The Postgres init script creates a dedicated `mms_app` role (`NOSUPERUSER NOBYPASSRLS`) and makes
+it the database owner; the backend refuses to boot if the runtime role bypasses RLS. On an existing
+`mms-pgdata` volume the init script does not run — either recreate the volume or apply the role
+manually (`REASSIGN OWNED BY postgres TO mms_app` after creating the role) before starting. The
+role password is embedded in `DATABASE_URL`, so use URL-safe characters.
 
 | Container      | Port             | Notes                             |
 | -------------- | ---------------- | --------------------------------- |
@@ -227,7 +234,18 @@ pm2 start ecosystem.config.cjs
 pm2 save
 ```
 
-PM2 manages two processes: `mmsv2-backend` (API on PORT 5002) and `mmsv2-worker` (BullMQ). Apache proxies `yourdomain.com → 127.0.0.1:5002`.
+PM2 manages the API (cluster mode, `PM2_INSTANCES` or `min(cores, 4)`) and `mmsv2-worker` (BullMQ).
+Apache proxies `yourdomain.com → 127.0.0.1:5002`. `PG_POOL_MAX` is derived from `PG_MAX_CONNECTIONS`
+(default 100, minus the worker's 10) divided by the instance count, so cluster mode cannot exhaust
+Postgres connections.
+
+After the migration, build the search indexes out of band (they are intentionally not in the
+migration, which runs in a transaction):
+
+```bash
+pnpm --filter mms-backend tsx src/scripts/create-index-concurrently.ts \
+  --file scripts/sql/0197_search_indexes_concurrent.sql
+```
 
 Automated deploys on push to `main` via [`.github/workflows/deploy.yml`](.github/workflows/deploy.yml).
 

@@ -4,11 +4,12 @@ import { Button } from "@/components/ui/button";
 import { EmptyState } from "@/components/app/EmptyState";
 import { Modal } from "@/components/app/Modal";
 import { ErrorState } from "@/components/app/ErrorState";
-import { WarningCallout } from "@/components/app/WarningCallout";
+import { Alert } from "@/components/app/Alert";
 import { useTranslation } from "@/hooks/useTranslation";
 import { ModulePanelSuspenseFallback } from "@/components/app/ModulePanelSuspenseFallback";
 import { DuplicatePairCard } from "@/tenant/features/contacts/components/DuplicatePairCard";
 import { DuplicateDetectionToolbar } from "@/tenant/features/contacts/components/DuplicateDetectionToolbar";
+import { ConfirmAlertDialog } from "@/components/app/ConfirmAlertDialog";
 import type { DuplicatePair } from "@/tenant/features/contacts/lib/duplicateDetectionTypes";
 import type { DuplicateTierFilter } from "@/tenant/features/contacts/hooks/useDuplicateDetectionState";
 
@@ -28,6 +29,11 @@ export interface DuplicateDetectionModalProps {
   keepIndex: Record<string, number>;
   totalMerged: number;
   canWrite: boolean;
+  highConfidenceCount?: number;
+  batchMerging?: boolean;
+  batchConfirmOpen?: boolean;
+  setBatchConfirmOpen?: (open: boolean) => void;
+  onBatchMergeConfirm?: () => Promise<void>;
   onClose: () => void;
   onMergePair: (pair: DuplicatePair) => void;
   onDismiss: (pairId: string) => void;
@@ -52,6 +58,11 @@ export function DuplicateDetectionModal({
   keepIndex,
   totalMerged,
   canWrite,
+  highConfidenceCount = 0,
+  batchMerging = false,
+  batchConfirmOpen = false,
+  setBatchConfirmOpen,
+  onBatchMergeConfirm,
   onClose,
   onMergePair,
   onDismiss,
@@ -69,101 +80,120 @@ export function DuplicateDetectionModal({
   ];
 
   return (
-    <Modal
-      open={true}
-      onClose={onClose}
-      title={t("contacts.duplicates.title")}
-      subtitle={t("contacts.duplicates.potentialFound", { count: totalPairs })}
-      icon={AlertTriangle}
-      size="lg"
-      footer={
-        <Button
-          type="button"
-          variant="ghost"
-          onClick={onClose}
-          className="min-h-11 px-4 text-sm font-medium text-muted-foreground hover:text-foreground transition-colors bg-transparent hover:bg-muted"
-        >
-          {t("common.close")}
-        </Button>
-      }
-    >
-      <div className="space-y-4">
-        {totalMerged > 0 && (
-          <WarningCallout
-            tone="success"
-            density="compact"
-            icon={Check}
-            description={t("contacts.duplicates.countMerged", { count: totalMerged })}
-          />
-        )}
+    <>
+      <Modal
+        open={true}
+        onClose={onClose}
+        title={t("contacts.duplicates.title")}
+        subtitle={t("contacts.duplicates.potentialFound", { count: totalPairs })}
+        icon={AlertTriangle}
+        size="lg"
+        footer={
+          <Button
+            type="button"
+            variant="ghost"
+            onClick={onClose}
+            className="min-h-11 px-4 text-sm font-medium text-muted-foreground hover:text-foreground transition-colors bg-transparent hover:bg-muted"
+          >
+            {t("common.close")}
+          </Button>
+        }
+      >
+        <div className="space-y-4">
+          {totalMerged > 0 && (
+            <Alert
+              tone="success"
+              density="compact"
+              icon={Check}
+              description={t("contacts.duplicates.countMerged", { count: totalMerged })}
+            />
+          )}
 
-        {!canWrite && activePairs.length > 0 && (
-          <WarningCallout
-            tone="warning"
-            density="compact"
-            description={t("contacts.duplicatesReadOnly")}
-          />
-        )}
+          {!canWrite && activePairs.length > 0 && (
+            <Alert
+              tone="warning"
+              density="compact"
+              description={t("contacts.duplicatesReadOnly")}
+            />
+          )}
 
-        <DuplicateDetectionToolbar
-          searchQuery={searchQuery}
-          onSearchChange={setSearchQuery}
-          tierFilter={tierFilter}
-          onTierFilterChange={setTierFilter}
-          filterTabs={filterTabs}
-          searchPlaceholder={t("contacts.duplicates.searchPlaceholder")}
+          <DuplicateDetectionToolbar
+            searchQuery={searchQuery}
+            onSearchChange={setSearchQuery}
+            tierFilter={tierFilter}
+            onTierFilterChange={setTierFilter}
+            filterTabs={filterTabs}
+            searchPlaceholder={t("contacts.duplicates.searchPlaceholder")}
+            canWrite={canWrite}
+            highConfidenceCount={highConfidenceCount}
+            batchMerging={batchMerging}
+            onBatchMergeClick={setBatchConfirmOpen ? () => setBatchConfirmOpen(true) : undefined}
+          />
+
+          {pairsError ? (
+            <ErrorState
+              title={t("contacts.duplicates.scanFailed")}
+              description={t("contacts.duplicates.scanFailedHint")}
+              onRetry={onRetry}
+            />
+          ) : pairsLoading ? (
+            <ModulePanelSuspenseFallback spinnerClassName="h-8 w-8" />
+          ) : activePairs.length === 0 ? (
+            <EmptyState
+              title={t("contacts.duplicates.allResolved")}
+              description={t("contacts.duplicates.listClean")}
+              icon={Check}
+            />
+          ) : (
+            <>
+              <p className="text-xs text-muted-foreground">
+                {t("contacts.duplicates.dismissSessionHint")}
+              </p>
+              {activePairs.map((pair) => (
+                <DuplicatePairCard
+                  key={pair.id}
+                  pair={pair}
+                  prefs={prefs}
+                  selectedKeepIndex={keepIndex[pair.id] ?? 0}
+                  canWrite={canWrite}
+                  onMerge={() => onMergePair(pair)}
+                  onDismiss={() => onDismiss(pair.id)}
+                  onSelectKeep={(contactIndex) => onSelectKeep(pair.id, contactIndex)}
+                  t={t}
+                />
+              ))}
+            </>
+          )}
+
+          {hasMore && !pairsError && (
+            <div className="flex justify-center pt-2">
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                onClick={onLoadMore}
+                disabled={pairsFetching}
+                className="font-semibold"
+              >
+                {pairsFetching ? t("common.loading") : t("contacts.duplicates.loadMore")}
+              </Button>
+            </div>
+          )}
+        </div>
+      </Modal>
+
+      {setBatchConfirmOpen && onBatchMergeConfirm && (
+        <ConfirmAlertDialog
+          open={Boolean(batchConfirmOpen)}
+          onOpenChange={setBatchConfirmOpen}
+          onConfirm={onBatchMergeConfirm}
+          title={t("contacts.duplicates.batchMergeConfirmTitle")}
+          description={t("contacts.duplicates.batchMergeConfirmDescription", {
+            count: highConfidenceCount,
+          })}
+          confirmLabel={t("contacts.duplicates.merge")}
         />
-
-        {pairsError ? (
-          <ErrorState
-            title={t("contacts.duplicates.scanFailed")}
-            description={t("contacts.duplicates.scanFailedHint")}
-            onRetry={onRetry}
-          />
-        ) : pairsLoading ? (
-          <ModulePanelSuspenseFallback spinnerClassName="h-8 w-8" />
-        ) : activePairs.length === 0 ? (
-          <EmptyState
-            title={t("contacts.duplicates.allResolved")}
-            description={t("contacts.duplicates.listClean")}
-            icon={Check}
-          />
-        ) : (
-          <>
-            <p className="text-xs text-muted-foreground">
-              {t("contacts.duplicates.dismissSessionHint")}
-            </p>
-            {activePairs.map((pair) => (
-              <DuplicatePairCard
-                key={pair.id}
-                pair={pair}
-                prefs={prefs}
-                selectedKeepIndex={keepIndex[pair.id] ?? 0}
-                canWrite={canWrite}
-                onMerge={() => onMergePair(pair)}
-                onDismiss={() => onDismiss(pair.id)}
-                onSelectKeep={(contactIndex) => onSelectKeep(pair.id, contactIndex)}
-                t={t}
-              />
-            ))}
-          </>
-        )}
-
-        {hasMore && !pairsError && (
-          <div className="flex justify-center pt-2">
-            <Button
-              type="button"
-              variant="outline"
-              size="sm"
-              onClick={onLoadMore}
-              disabled={pairsFetching}
-              className="font-semibold"
-            >
-              {pairsFetching ? t("common.loading") : t("contacts.duplicates.loadMore")}
-            </Button>
-          </div>
-        )}
-      </div>
-    </Modal>
+      )}
+    </>
   );
 }

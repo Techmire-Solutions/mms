@@ -2,7 +2,7 @@ import React from "react";
 import { describe, it, expect, vi } from "vitest";
 import { renderToStaticMarkup } from "react-dom/server";
 import { EntityCard } from "./EntityCard";
-import { EntityCardsGrid } from "./EntityCardsGrid";
+import { ModuleDirectoryCards } from "./ModuleDirectoryCards";
 
 vi.mock("@/hooks/useReducedMotion", () => ({
   useReducedMotion: () => false,
@@ -51,14 +51,14 @@ describe("EntityCard Component", () => {
   });
 });
 
-describe("EntityCardsGrid Component", () => {
+describe("ModuleDirectoryCards Component", () => {
   it("renders children in responsive grid layout", () => {
     const html = renderToStaticMarkup(
-      <EntityCardsGrid cols={3}>
+      <ModuleDirectoryCards cols={3}>
         <div>Card 1</div>
         <div>Card 2</div>
         <div>Card 3</div>
-      </EntityCardsGrid>,
+      </ModuleDirectoryCards>,
     );
 
     expect(html).toContain("Card 1");
@@ -74,7 +74,7 @@ describe("EntityCardsGrid Component", () => {
     ];
 
     const html = renderToStaticMarkup(
-      <EntityCardsGrid
+      <ModuleDirectoryCards
         items={items}
         renderItem={(item) => <div key={item.id}>{item.title}</div>}
       />,

@@ -5,6 +5,7 @@ import {
   resolveTenantExportKey,
   type StorageUploadResult,
 } from "../../config/storage.js";
+import { throwIfBackgroundJobAborted } from "../../lib/backgroundJobAbort.js";
 
 export interface PdfRenderJobPayload {
   template: TypstTemplateType;
@@ -18,8 +19,11 @@ export async function processPdfRenderJob(
   tenantId: string,
   payload: PdfRenderJobPayload,
   onProgress?: (percent: number) => Promise<void> | void,
+  signal?: AbortSignal,
 ): Promise<StorageUploadResult> {
+  throwIfBackgroundJobAborted(signal);
   if (onProgress) await onProgress(20);
+  throwIfBackgroundJobAborted(signal);
 
   const compiled = await compileTypstToFile({
     template: payload.template,
@@ -29,7 +33,9 @@ export async function processPdfRenderJob(
   });
 
   try {
+    throwIfBackgroundJobAborted(signal);
     if (onProgress) await onProgress(60);
+    throwIfBackgroundJobAborted(signal);
 
     const key = resolveTenantExportKey(
       tenantId,
@@ -38,7 +44,10 @@ export async function processPdfRenderJob(
 
     const readStream = createReadStream(compiled.filePath);
     try {
-      const result = await uploadStreamToStorage(tenantId, key, readStream, "application/pdf");
+      const result = await uploadStreamToStorage(tenantId, key, readStream, "application/pdf", {
+        signal,
+      });
+      throwIfBackgroundJobAborted(signal);
 
       if (onProgress) await onProgress(100);
 

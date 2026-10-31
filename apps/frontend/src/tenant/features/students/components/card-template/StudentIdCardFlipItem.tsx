@@ -35,10 +35,12 @@ export function StudentIdCardFlipItem({
 }: StudentIdCardFlipItemProps): React.JSX.Element {
   return (
     <div className="relative group">
-      <div
+      <button
+        type="button"
         style={{ perspective: 1000 }}
-        className="relative cursor-pointer select-none"
+        className="relative cursor-pointer select-none w-full text-start p-0 bg-transparent border-0 block"
         onClick={onToggleFlip}
+        aria-label={t("students.idCard.flipCard")}
         title={t("students.idCard.flipCard")}
       >
         <div
@@ -86,7 +88,7 @@ export function StudentIdCardFlipItem({
             />
           </div>
         </div>
-      </div>
+      </button>
 
       {/* Quick flip badge */}
       <Button

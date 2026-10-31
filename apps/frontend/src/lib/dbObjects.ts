@@ -8,7 +8,9 @@ import {
   DEFAULT_GLOBAL_SETTINGS,
   mergeBrandingSettings,
   mergeGlobalSettings,
+  getIntlLocaleForLanguage,
   registerFinanceCurrencyProvider,
+  registerFinanceLocaleProvider,
   registerSettingsProvider,
 } from "@mms/shared";
 import { syncToServer, type ServerSyncResult } from "@/lib/dbStorageCore";
@@ -63,6 +65,13 @@ registerSettingsProvider(() => {
 
 registerFinanceCurrencyProvider(
   () => getObject<FinanceSettings>("finance_settings", DEFAULT_FINANCE_SETTINGS).currency,
+);
+
+// Amounts must follow the workspace language, not the browser's locale: an
+// Arabic/Urdu/Persian workspace otherwise renders Latin digits and Western
+// grouping while its UI strings are localised.
+registerFinanceLocaleProvider(() =>
+  getIntlLocaleForLanguage(getEffectiveGlobalSettings().language),
 );
 
 /** Persists merged global settings and dispatches `local-database-update`. */

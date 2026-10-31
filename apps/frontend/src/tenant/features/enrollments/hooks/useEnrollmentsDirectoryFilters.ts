@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { useDebounce } from "@/hooks/useDebounce";
 import { useDirectoryTrashState } from "@/hooks/useDirectoryTrashState";
 
@@ -11,9 +11,13 @@ export function useEnrollmentsDirectoryFilters() {
   const [statusFilter, setStatusFilter] = useState("all");
   const [sessionFilter, setSessionFilter] = useState("all");
 
-  useEffect(() => {
+  // Page 1 whenever a server-side filter dimension changes (render-phase reset, no effect).
+  const filterKey = `${debouncedSearch}|${statusFilter}|${sessionFilter}|${showDeleted}`;
+  const [prevFilterKey, setPrevFilterKey] = useState(filterKey);
+  if (prevFilterKey !== filterKey) {
+    setPrevFilterKey(filterKey);
     setListPage(1);
-  }, [debouncedSearch, statusFilter, sessionFilter, showDeleted]);
+  }
 
   const clearFilters = () => {
     setSearch("");

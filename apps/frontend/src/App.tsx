@@ -10,6 +10,7 @@ const UserNotRegisteredError = React.lazy(
 const HostRoutes = React.lazy(() => import("@/components/routing/HostRoutes"));
 import RouterBridge from "@/components/routing/RouterBridge";
 import { isEntryPath } from "@/lib/config/routes";
+import { shouldShowUserNotRegisteredOverlay } from "@/lib/contexts/authErrorOverlay";
 import RouteStatusFallback from "@/components/routing/RouteStatusFallback";
 import { AppProviders } from "@/providers/AppProviders";
 import { NetworkStatusIndicator } from "@/components/app/NetworkStatusIndicator";
@@ -19,14 +20,20 @@ const AuthenticatedApp = (): React.JSX.Element | null => {
   const { isLoadingAuth, authError, authChecked } = useAuth();
 
   if (isTenantHost) {
-    const isEntry =
-      typeof window !== "undefined" && isEntryPath(window.location.pathname, { isApex: false });
+    const pathname = typeof window !== "undefined" ? window.location.pathname : "";
+    const isEntry = pathname !== "" && isEntryPath(pathname, { isApex: false });
     const bootLoading = !isEntry && isLoadingAuth && !authChecked;
     if (bootLoading) {
       return <RouteStatusFallback fullScreen />;
     }
 
-    if (authError?.type === "user_not_registered") {
+    if (
+      shouldShowUserNotRegisteredOverlay({
+        isTenantHost,
+        pathname,
+        authErrorType: authError?.type,
+      })
+    ) {
       return (
         <Suspense fallback={<RouteStatusFallback fullScreen />}>
           <UserNotRegisteredError />

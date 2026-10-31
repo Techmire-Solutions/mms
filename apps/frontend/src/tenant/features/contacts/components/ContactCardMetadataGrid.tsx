@@ -6,7 +6,7 @@ import {
   type Contact,
   type ContactPreferences,
 } from "@mms/shared";
-import { EntityCardMetadata } from "@/components/app/EntityCardMetadata";
+import { DirectoryCardMetadata } from "@/components/app/DirectoryCardMetadata";
 import type { TranslationFunction } from "@/lib/contexts/TranslationContext";
 import { ContactArchivedBanner } from "@/tenant/features/contacts/components/ContactArchivedBanner";
 import { ContactMetadataCell } from "@/tenant/features/contacts/components/ContactMetadataCell";
@@ -80,7 +80,7 @@ export function ContactCardMetadataGrid({
       : undefined;
 
   return (
-    <EntityCardMetadata
+    <DirectoryCardMetadata
       descriptor={descriptor}
       entity={entity ?? contact}
       isColumnVisible={isColumnVisible}

@@ -31,7 +31,10 @@ export function useTenantLoginController() {
   const rememberFieldId = `${credentials.formId}-remember`;
   const [rememberMe, setRememberMe] = useState<boolean>(readRememberMeEnabled);
   const [loading, setLoading] = useState<boolean>(false);
-  const [handoffProcessing, setHandoffProcessing] = useState<boolean>(false);
+  // Lazy initialise from the URL: a handoff link starts processing on the very first render.
+  const [handoffProcessing, setHandoffProcessing] = useState<boolean>(
+    () => !isAuthenticated && Boolean(new URLSearchParams(location.search).get("handoff")),
+  );
 
   useEffect(() => {
     if (!isAuthenticated) return;
@@ -46,7 +49,6 @@ export function useTenantLoginController() {
     const handoff = new URLSearchParams(location.search).get("handoff");
     if (!handoff || isAuthenticated) return;
 
-    setHandoffProcessing(true);
     credentials.setError("");
     void exchangeHandoff(handoff)
       .catch((err: unknown) => {

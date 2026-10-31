@@ -39,6 +39,8 @@ export function StockAddBatchModal({
     addedByUserId: "",
     note: "",
   });
+  const [previousOpen, setPreviousOpen] = useState(open);
+  const [previousDenoms, setPreviousDenoms] = useState(denoms);
 
   const updateField = <K extends keyof StockBatch>(field: K, value: StockBatch[K]) => {
     setData((previousData: Partial<StockBatch>) => ({ ...previousData, [field]: value }));
@@ -55,7 +57,10 @@ export function StockAddBatchModal({
     (denomination) => denomination.id === data.denominationId,
   );
 
-  React.useEffect(() => {
+  // Re-seed the draft during render when the modal is (re)opened or the catalog changes.
+  if (previousOpen !== open || previousDenoms !== denoms) {
+    setPreviousOpen(open);
+    setPreviousDenoms(denoms);
     if (open) {
       setData({
         denominationId: denoms[0]?.id || "",
@@ -67,7 +72,7 @@ export function StockAddBatchModal({
       setErrors({});
       setSubmitError(null);
     }
-  }, [open, denoms]);
+  }
 
   const handleSave = async () => {
     const newErrors: Record<string, string> = {};

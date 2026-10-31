@@ -122,7 +122,7 @@ describe("TemplateEditor keyboard interactions", () => {
 
   it("selects a canvas element with Space without arming canvas panning", async () => {
     await mountEditor();
-    const element = elementByLabel("Student Name (field)");
+    const element = elementByLabel("Student Name {studentName} (field)");
 
     // Only one element is a tab stop (the selection or the first element), so this one
     // is reached by selection/arrow keys rather than Tab — Space must select it anyway.

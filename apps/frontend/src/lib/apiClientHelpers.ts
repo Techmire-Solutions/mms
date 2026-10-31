@@ -44,6 +44,7 @@ const REFRESH_PATH = AUTH_PATHS.refresh;
 // Set for O(1) membership test — excluded from the token-refresh interceptor.
 const TENANT_SESSION_EXCLUDED_PATHS: Set<string> = new Set([
   AUTH_PATHS.login,
+  AUTH_PATHS.me,
   AUTH_PATHS.onboard,
   AUTH_PATHS.handoff,
   AUTH_PATHS.twoFactorVerify,

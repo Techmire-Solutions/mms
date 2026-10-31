@@ -1,10 +1,10 @@
 import React from "react";
 import { EntityCard } from "@/components/app/EntityCard";
-import { EntityCardsGrid } from "@/components/app/EntityCardsGrid";
-import { EntityCardMetaTile } from "@/components/app/EntityCardMetaTile";
+import { ModuleDirectoryCards } from "@/components/app/ModuleDirectoryCards";
+import { DirectoryCardMetaTile } from "@/components/app/DirectoryCardMetaTile";
 import type { DataTableCardContext, DataTableCardSlots, DataTableColumn } from "./dataTableTypes";
 
-/** EntityCard tile (DataTable default) — not DirectoryCard. */
+/** EntityCard tile (DataTable default) — not DirectoryEntityCard. */
 export interface DataTableCardsProps<TData extends { id: string | number }> {
   rows: readonly TData[];
   columns: readonly DataTableColumn<TData>[];
@@ -71,9 +71,9 @@ export function DataTableCards<TData extends { id: string | number }>({
         {metaColumns.length > 0 ? (
           <EntityCard.MetaGrid>
             {metaColumns.map((column) => (
-              <EntityCardMetaTile key={column.id} label={column.label}>
+              <DirectoryCardMetaTile key={column.id} label={column.label}>
                 {column.render(row, index)}
-              </EntityCardMetaTile>
+              </DirectoryCardMetaTile>
             ))}
           </EntityCard.MetaGrid>
         ) : null}
@@ -90,5 +90,5 @@ export function DataTableCards<TData extends { id: string | number }>({
   };
 
   /** `items` mode lets the grid virtualize past 30 cards (rows of two). */
-  return <EntityCardsGrid cols={2} items={rows} renderItem={renderOne} />;
+  return <ModuleDirectoryCards cols={2} items={rows} renderItem={renderOne} />;
 }

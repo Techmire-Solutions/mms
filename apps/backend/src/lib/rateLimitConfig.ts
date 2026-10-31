@@ -1,5 +1,7 @@
 import type { FastifyRequest } from "fastify";
-import { getRequestTenant, resolveSubdomainFromRequest } from "./tenantContext.js";
+import { ACCESS_COOKIE } from "../services/auth/authCookieService.js";
+import { PLATFORM_ACCESS_COOKIE } from "../services/platform/platformCookieService.js";
+import { getRequestTenant } from "./tenantContext.js";
 
 interface RateLimitErrorContext {
   statusCode: number;
@@ -16,25 +18,34 @@ function buildRateLimitError(message: string, context: RateLimitErrorContext) {
   };
 }
 
+/** Session cookies that prove the caller is an authenticated tenant/platform user. */
+const SESSION_COOKIE_PATTERN = new RegExp(
+  `(?:^|;\\s*)(?:${ACCESS_COOKIE}|${PLATFORM_ACCESS_COOKIE})=`,
+);
+
+function hasTenantSessionCookie(request: FastifyRequest): boolean {
+  const header = request.headers.cookie;
+  return typeof header === "string" && SESSION_COOKIE_PATTERN.test(header);
+}
+
 /**
- * Derives a composite identity key (tenant_id:client_ip) for multi-tenant rate limiting.
- * Ensures that traffic or brute-force attempts on one tenant cannot starve or throttle another.
+ * Derives the rate-limit bucket key.
+ *
+ * Unauthenticated traffic is keyed on the client IP alone. The tenant comes from
+ * the request's AsyncLocalStorage context, which is bound from the Host header —
+ * still client-controlled, even if it is no longer trusted for identity. Keying
+ * pre-auth buckets on it let an attacker mint a fresh login/registration bucket
+ * per request just by rotating `Host: tNNNN.<appDomain>`.
+ *
+ * Authenticated requests (a tenant/platform session cookie is present) keep the
+ * tenant dimension so one workspace cannot starve another behind a shared NAT.
+ * Bearer-only clients have no cookie and fall back to IP-only, which is stricter.
  */
 export function generateCompositeRateLimitKey(request: FastifyRequest): string {
-  const tenantHeader = request.headers["x-tenant-id"];
-  const tenantFromHeader =
-    typeof tenantHeader === "string" && tenantHeader.trim().length > 0
-      ? tenantHeader.trim().toLowerCase()
-      : null;
-  const tenantContext = getRequestTenant();
-  const subdomain = resolveSubdomainFromRequest(
-    request.headers.host,
-    request.headers["x-forwarded-host"],
-  );
-  const tenantId =
-    tenantContext || tenantFromHeader || subdomain?.trim().toLowerCase() || "platform";
   const clientIp = request.ip || request.socket?.remoteAddress || "127.0.0.1";
-  return `${tenantId}:${clientIp}`;
+  if (!hasTenantSessionCookie(request)) return clientIp;
+  const tenant = getRequestTenant()?.trim().toLowerCase();
+  return tenant ? `${tenant}:${clientIp}` : clientIp;
 }
 
 /**

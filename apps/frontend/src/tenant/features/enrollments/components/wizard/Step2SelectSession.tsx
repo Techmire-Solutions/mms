@@ -88,6 +88,7 @@ export function Step2SelectSession({
           return (
             <Button
               key={session.id}
+              type="button"
               role="radio"
               aria-checked={selected}
               disabled={isFull}

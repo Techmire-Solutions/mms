@@ -4,7 +4,7 @@
  */
 
 import React from "react";
-import type { TaskRecord, TaskStatus } from "@mms/shared";
+import type { ModuleColumnRegistryEntry, TaskRecord, TaskStatus } from "@mms/shared";
 import type { WorkDirectoryViewMode } from "@/hooks/useWorkDirectoryViewMode";
 import { TasksListDesktopTable } from "./TasksListDesktopTable";
 import { TasksListCards } from "./TasksListCards";
@@ -15,8 +15,10 @@ export interface TasksWorkDirectoryProps {
   selectedIds: string[];
   viewingDeleted: boolean;
   canWrite: boolean;
+  canComplete?: boolean;
   canDelete: boolean;
   isLoading: boolean;
+  columnRegistry?: ModuleColumnRegistryEntry[];
   isColumnVisible: (key: string) => boolean;
   getColumnWidth: (key: string) => number | undefined;
   onColumnResize: (key: string, width: number) => void;
@@ -36,8 +38,10 @@ export function TasksWorkDirectory({
   selectedIds,
   viewingDeleted,
   canWrite,
+  canComplete,
   canDelete,
   isLoading,
+  columnRegistry,
   isColumnVisible,
   getColumnWidth,
   onColumnResize,
@@ -50,6 +54,8 @@ export function TasksWorkDirectory({
   onUpdateStatus,
   emptyAction,
 }: TasksWorkDirectoryProps): React.JSX.Element {
+  const resolvedCanComplete = canComplete ?? canWrite;
+
   if (viewMode === "cards") {
     return (
       <TasksListCards
@@ -57,6 +63,7 @@ export function TasksWorkDirectory({
         selectedIds={selectedIds}
         viewingDeleted={viewingDeleted}
         canWrite={canWrite}
+        canComplete={resolvedCanComplete}
         canDelete={canDelete}
         isLoading={isLoading}
         isColumnVisible={isColumnVisible}
@@ -78,8 +85,10 @@ export function TasksWorkDirectory({
       selectedIds={selectedIds}
       viewingDeleted={viewingDeleted}
       canWrite={canWrite}
+      canComplete={resolvedCanComplete}
       canDelete={canDelete}
       isLoading={isLoading}
+      columnRegistry={columnRegistry}
       isColumnVisible={isColumnVisible}
       getColumnWidth={getColumnWidth}
       onColumnResize={onColumnResize}

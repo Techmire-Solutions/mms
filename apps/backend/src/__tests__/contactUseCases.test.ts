@@ -16,6 +16,7 @@ vi.mock("../lib/tenantContext.js", () => ({
 
 vi.mock("../db/database.js", () => ({
   runInTransaction: (cb: () => unknown) => cb(),
+  runInGlobalTransaction: (cb: () => unknown) => cb(),
 }));
 
 vi.mock("../lib/livePush.js", () => ({

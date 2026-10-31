@@ -4,8 +4,8 @@ import { renderToStaticMarkup } from "react-dom/server";
 import { PlatformAdminsDialogs } from "./PlatformAdminsDialogs";
 import type { PlatformUserProfile } from "@mms/shared";
 
-vi.mock("@/components/app/Drawer", () => ({
-  Drawer: ({
+vi.mock("@/components/app/DetailDrawerShell", () => ({
+  DetailDrawerShell: ({
     open,
     title,
     children,

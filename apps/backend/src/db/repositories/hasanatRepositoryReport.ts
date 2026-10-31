@@ -121,14 +121,13 @@ export async function loadHasanatReportAggregatesSql(
       const pointsExpr = denominationPointsSql("hd", "den");
       const monthResult = await tx.execute(sql`
         SELECT
-          to_char(left(hd.issued_date, 10)::date, 'YYYY-MM') AS "monthKey",
+          to_char(hd.issued_date, 'YYYY-MM') AS "monthKey",
           COALESCE(SUM(hd.quantity * ${pointsExpr}), 0)::float8 AS points
         FROM hasanat_distributions hd
         LEFT JOIN hasanat_denoms den
           ON den.workspace_subdomain = ${subdomain}
           AND den.id = hd.denomination_id
         WHERE ${activeDistributionWhere(subdomain, "hd")}
-          AND hd.issued_date ~ '^[0-9]{4}-[0-9]{2}-[0-9]{2}'
           AND hd.issued_date >= ${cleanFrom}
           AND hd.issued_date <= ${cleanTo}
         GROUP BY 1

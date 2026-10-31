@@ -7,6 +7,18 @@
 // 9. Attendance, Finance, Accounting & Obligations
 // ---------------------------------------------------------------------------
 export * from "../finance/accountingDefaultChart.js";
+export * from "../finance/accountingFxAccounts.js";
+export * from "../finance/accountingFxLines.js";
+export * from "../finance/accountingFxSettings.js";
+export * from "../finance/accountingFxExchangeability.js";
+export * from "../finance/accountingFxRevaluation.js";
+export * from "../finance/accountingFxReport.js";
+export * from "../finance/accountingHyperinflation.js";
+export * from "../finance/accountingHyperinflationSchemas.js";
+export * from "../finance/accountingHedgeSchemas.js";
+export * from "../finance/accountingHedges.js";
+export * from "../finance/consolidationTranslation.js";
+export * from "../finance/consolidationGroups.js";
 export * from "../finance/accountingJournalReversal.js";
 export * from "../finance/accountingJournalTemplates.js";
 export * from "../finance/accountingLedgerInvariants.js";
@@ -28,6 +40,8 @@ export * from "../attendance/attendanceModuleSettings.js";
 export * from "../attendance/attendanceReportAggregates.js";
 export * from "../attendance/attendanceSetupConfigTypes.js";
 export * from "../finance/financeBilling.js";
+export * from "../finance/financeDocumentFx.js";
+export * from "../finance/financeFxPosting.js";
 export * from "../finance/financeInvoiceGeneration.js";
 export * from "../finance/financeCollect.js";
 export * from "../finance/financeListQuery.js";
@@ -53,6 +67,10 @@ export * from "../hasanat/hasanatModuleSettings.js";
 export * from "../hasanat/hasanatPointsUtils.js";
 export * from "../hasanat/hasanatReportAggregates.js";
 export * from "../hasanat/hasanatSetupConfigTypes.js";
+export * from "../workshops/workshopsModuleManifest.js";
+export * from "../workshops/workshopsRecords.js";
+export * from "../workshops/workshopDays.js";
+export * from "../workshops/workshopCompletion.js";
 export * from "../examinations/questionBankAnswerUtils.js";
 export * from "../examinations/questionBankCategoryUtils.js";
 export * from "../examinations/questionBankCore.js";

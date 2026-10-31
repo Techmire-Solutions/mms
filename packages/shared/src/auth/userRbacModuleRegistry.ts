@@ -19,6 +19,7 @@ export const RBAC_MODULE_IDS = [
   "attendance",
   "enrollments",
   "hasanat",
+  "workshops",
   "examinations",
   "questionBank",
   "finance",
@@ -26,6 +27,7 @@ export const RBAC_MODULE_IDS = [
   "obligations",
   "users",
   "settings",
+  "audit",
 ] as const;
 
 export type RbacModuleId = (typeof RBAC_MODULE_IDS)[number];
@@ -42,6 +44,7 @@ export const RBAC_MODULE_REGISTRY: readonly RbacModuleDef[] = [
   { id: "attendance", labelKey: "nav.attendance" },
   { id: "enrollments", labelKey: "nav.enrollments" },
   { id: "hasanat", labelKey: "nav.hasanatCards" },
+  { id: "workshops", labelKey: "nav.workshops" },
   { id: "examinations", labelKey: "nav.examinations" },
   { id: "questionBank", labelKey: "nav.questionBank" },
   { id: "finance", labelKey: "nav.finance" },
@@ -49,6 +52,7 @@ export const RBAC_MODULE_REGISTRY: readonly RbacModuleDef[] = [
   { id: "obligations", labelKey: "nav.obligations" },
   { id: "users", labelKey: "nav.users" },
   { id: "settings", labelKey: "nav.settings" },
+  { id: "audit", labelKey: "users.rbac.audit" },
 ] as const;
 
 /** Fast O(1) module definition lookup map. */

@@ -1,4 +1,5 @@
 import { logger } from "./logger.js";
+import { connectionCapViolation } from "./livePushCaps.js";
 
 export interface MinimalWebSocket {
   close(code?: number, reason?: string): void;
@@ -36,6 +37,7 @@ export const WS_TELEMETRY_BUFFERED_LIMIT = 64 * 1024; // 64 KB soft threshold fo
 export const MAX_WS_BUFFERED_AMOUNT = 512 * 1024; // 512 KB hard ceiling for socket termination
 export const WS_HEARTBEAT_INTERVAL_MS = 30_000; // 30s ping cycle
 export const WS_PONG_DEADLINE_MS = 10_000; // 10s pong deadline
+export { MAX_WS_CONNECTIONS_PER_USER, MAX_WS_CONNECTIONS_PER_TENANT } from "./livePushCaps.js";
 
 export interface ActiveConnection {
   subdomain: string;
@@ -72,25 +74,35 @@ export function getTenantSseConnections(subdomain: string): Set<ActiveSseConnect
 }
 
 /**
- * Registers an active WebSocket connection for a given tenant subdomain and user ID.
- * Returns an unregister function to call when the connection closes.
+ * Registers an active WebSocket connection. Returns an unregister function, or
+ * `null` when a cap is reached (the caller closes 1013 and does not map it).
  */
 export function registerConnection(
   subdomain: string,
   socket: MinimalWebSocket,
   userId: string,
-): () => void {
+): (() => void) | null {
   const normSubdomain = subdomain.trim().toLowerCase();
+
+  const existingTenantSet = connectionsByTenant.get(normSubdomain);
+  const violation = connectionCapViolation(existingTenantSet, userId);
+  if (violation) {
+    logger.warn(
+      { userId, subdomain: normSubdomain, cap: violation },
+      "WS connection cap reached; refusing connection",
+    );
+    return null;
+  }
+
   const connection: ActiveConnection = { subdomain: normSubdomain, socket, userId };
 
-  let tenantSet = connectionsByTenant.get(normSubdomain);
+  let tenantSet = existingTenantSet;
   if (!tenantSet) {
     tenantSet = new Set<ActiveConnection>();
     connectionsByTenant.set(normSubdomain, tenantSet);
   }
   tenantSet.add(connection);
 
-  // Setup heartbeat ping intervals to proactively detect dead sockets
   let pongTimeout: NodeJS.Timeout | null = null;
   const clearPongDeadline = () => {
     if (pongTimeout) {
@@ -205,7 +217,6 @@ export function registerSseConnection(
     response.flushHeaders();
   }
 
-  // Initial connection frame
   response.write(": connected\n\n");
 
   let cleanedUp = false;
@@ -237,7 +248,6 @@ export function registerSseConnection(
   response.on("close", cleanup);
   response.on("error", cleanup);
 
-  // Keep-alive heartbeat comment every 25s
   const pingInterval = setInterval(() => {
     try {
       response.write(": ping\n\n");
@@ -266,7 +276,7 @@ export function closeAllConnections(): void {
       try {
         connection.socket.terminate();
       } catch {
-        // ignore errors on close
+        /* already closed */
       }
     }
   }
@@ -277,7 +287,7 @@ export function closeAllConnections(): void {
       try {
         connection.response.end();
       } catch {
-        // ignore errors on close
+        /* already closed */
       }
     }
   }

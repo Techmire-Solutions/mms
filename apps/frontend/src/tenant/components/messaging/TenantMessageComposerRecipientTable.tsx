@@ -10,8 +10,9 @@ import {
 } from "@/components/ui/table";
 import { ModuleTableSelectionCell } from "@/components/app/ModuleTableSelectionCell";
 import { Checkbox } from "@/components/ui/checkbox";
+import { Badge } from "@/components/ui/badge";
 import { useTranslation } from "@/hooks/useTranslation";
-import { SEMANTIC_BG, SEMANTIC_TEXT } from "@/lib/ui/semanticTone";
+import { SEMANTIC_BG, SEMANTIC_TEXT, SEMANTIC_BADGE } from "@/lib/ui/semanticTone";
 import { cn } from "@/lib/utils";
 
 export interface TenantMessageComposerRecipientTableProps {
@@ -54,10 +55,10 @@ export function TenantMessageComposerRecipientTable({
               {t("messaging.recipient")}
             </TableHead>
             <TableHead className="px-3 py-2 text-start font-medium text-muted-foreground">
-              {t("contacts.form.primaryPhone")}
+              {t("messaging.recipientPhone")}
             </TableHead>
             <TableHead className="px-3 py-2 text-start font-medium text-muted-foreground">
-              {t("contacts.form.primaryEmail")}
+              {t("messaging.recipientEmail")}
             </TableHead>
           </TableRow>
         </TableHeader>
@@ -101,20 +102,22 @@ export function TenantMessageComposerRecipientTable({
                 </TableCell>
                 <TableCell className="px-3 py-2 font-mono text-muted-foreground" dir="ltr">
                   {recipient.phone || (
-                    <span
-                      className={`rounded border border-warning/20 ${SEMANTIC_BG.warning} px-1.5 py-0.5 text-3xs ${SEMANTIC_TEXT.warning}`}
+                    <Badge
+                      variant="outline"
+                      className={`text-3xs font-medium ${SEMANTIC_BADGE.warning}`}
                     >
                       {t("messaging.missingPhone")}
-                    </span>
+                    </Badge>
                   )}
                 </TableCell>
                 <TableCell className="px-3 py-2 text-muted-foreground" dir="ltr">
                   {recipient.email || (
-                    <span
-                      className={`rounded border border-warning/20 ${SEMANTIC_BG.warning} px-1.5 py-0.5 text-3xs ${SEMANTIC_TEXT.warning}`}
+                    <Badge
+                      variant="outline"
+                      className={`text-3xs font-medium ${SEMANTIC_BADGE.warning}`}
                     >
                       {t("messaging.missingEmail")}
-                    </span>
+                    </Badge>
                   )}
                 </TableCell>
               </TableRow>

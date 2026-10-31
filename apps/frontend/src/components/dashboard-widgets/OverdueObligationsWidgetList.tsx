@@ -3,6 +3,7 @@ import { Link } from "react-router-dom";
 import { Scale } from "lucide-react";
 import { ROUTES } from "@/lib/config/routes";
 import { useTranslation } from "@/hooks/useTranslation";
+import { DateText } from "@/components/app/DateText";
 import { formatMoney, formatDate } from "@mms/shared";
 import { UserAvatar } from "@/components/app/UserAvatar";
 import { EmptyState } from "@/components/app/EmptyState";
@@ -171,7 +172,7 @@ export function OverdueObligationsWidgetList({
                     <TableCell noWrap className="px-3 py-3">
                       <div>
                         <p className="text-xs text-foreground font-semibold m-0 tabular-nums">
-                          {formatDate(overdueStudent.dueDate)}
+                          <DateText>{formatDate(overdueStudent.dueDate)}</DateText>
                         </p>
                         <p className="text-xs text-destructive font-bold mt-0.5 m-0 uppercase tracking-wide tabular-nums">
                           {t("dashboard.widgets.daysOverdue", {

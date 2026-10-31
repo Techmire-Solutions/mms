@@ -45,6 +45,10 @@ const POSTING_RULE_ACCOUNT_TYPES = {
   bankAccountId: ["Asset"],
   incomeAccountId: ["Revenue"],
   discountAccountId: ["Expense", "Revenue"],
+  fxRealizedAccountId: ["Revenue", "Expense"],
+  fxUnrealizedAccountId: ["Revenue", "Expense"],
+  fxRoundingAccountId: ["Revenue", "Expense"],
+  ctaAccountId: ["Equity"],
 } as const satisfies Record<keyof PostingRulesUpdate, readonly string[]>;
 
 export async function assertPostingRuleAccountsValid(

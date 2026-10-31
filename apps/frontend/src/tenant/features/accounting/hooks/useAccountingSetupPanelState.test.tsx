@@ -22,6 +22,7 @@ vi.mock("@/lib/api", () => ({
 
 vi.mock("@/lib/contexts/AuthContext", () => ({
   useAuth: () => ({ isAuthenticated: true }),
+  useOptionalAuth: () => ({ isAuthenticated: true }),
 }));
 
 vi.mock("@/lib/notify", () => ({

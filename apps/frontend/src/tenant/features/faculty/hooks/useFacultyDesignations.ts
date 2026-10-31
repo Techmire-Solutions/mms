@@ -1,19 +1,12 @@
-import { useContext } from "react";
-import {
-  QueryClient,
-  QueryClientContext,
-  queryOptions,
-  useMutation,
-  useQuery,
-} from "@tanstack/react-query";
+import { type QueryClient, queryOptions, useMutation, useQuery } from "@tanstack/react-query";
 import { facultyDesignationSchema, type FacultyDesignationWrite } from "@mms/shared";
 import { apiContract } from "@/lib/api";
 import { useTranslation } from "@/hooks/useTranslation";
+import { useQueryClientOrFallback } from "@/lib/query/optionalQueryContext";
 import { FACULTY_QUERY_KEY } from "./facultyQueryKeys";
+import { assertContractOk } from "@/lib/apiContractError";
 
 export const FACULTY_DESIGNATIONS_QUERY_KEY = [...FACULTY_QUERY_KEY, "designations"] as const;
-
-const fallbackQueryClient = new QueryClient();
 
 export function facultyDesignationsQueryOptions(input: {
   includeDeleted?: boolean;
@@ -28,7 +21,7 @@ export function facultyDesignationsQueryOptions(input: {
         query: includeDeleted ? { includeDeleted: true } : undefined,
         fetchOptions: { signal },
       });
-      if (response.status !== 200) throw new Error(input.loadFailed);
+      assertContractOk(response, input.loadFailed);
       const parsed = facultyDesignationSchema
         .array()
         .safeParse((response.body as { designations?: unknown }).designations);
@@ -54,8 +47,8 @@ export function useFacultyDesignations(options: { includeDeleted?: boolean } = {
 /** Saves a designation definition and refreshes every designation projection. */
 export function useSaveFacultyDesignation(customClient?: QueryClient) {
   const { t } = useTranslation();
-  const contextClient = useContext(QueryClientContext);
-  const client = customClient ?? contextClient ?? fallbackQueryClient;
+  const contextClient = useQueryClientOrFallback();
+  const client = customClient ?? contextClient;
   return useMutation(
     {
       mutationFn: async (input: FacultyDesignationWrite) => {
@@ -63,7 +56,7 @@ export function useSaveFacultyDesignation(customClient?: QueryClient) {
           params: { id: input.id },
           body: input,
         });
-        if (response.status !== 200) throw new Error(t("faculty.errors.saveDesignation"));
+        assertContractOk(response, t("faculty.errors.saveDesignation"));
         return facultyDesignationSchema.parse(
           (response.body as { designation?: unknown }).designation,
         );
@@ -77,8 +70,8 @@ export function useSaveFacultyDesignation(customClient?: QueryClient) {
 /** Soft-deletes a designation definition. Rejects (409) when active appointments reference it. */
 export function useDeleteFacultyDesignation(customClient?: QueryClient) {
   const { t } = useTranslation();
-  const contextClient = useContext(QueryClientContext);
-  const client = customClient ?? contextClient ?? fallbackQueryClient;
+  const contextClient = useQueryClientOrFallback();
+  const client = customClient ?? contextClient;
   return useMutation(
     {
       mutationFn: async (id: string) => {
@@ -86,13 +79,7 @@ export function useDeleteFacultyDesignation(customClient?: QueryClient) {
           params: { id },
           body: {},
         });
-        if (response.status !== 200) {
-          const message =
-            typeof response.body === "object" && response.body && "message" in response.body
-              ? String(response.body.message)
-              : t("faculty.errors.deleteDesignation");
-          throw new Error(message);
-        }
+        assertContractOk(response, t("faculty.errors.deleteDesignation"));
       },
       onSuccess: () => client.invalidateQueries({ queryKey: FACULTY_DESIGNATIONS_QUERY_KEY }),
     },
@@ -103,8 +90,8 @@ export function useDeleteFacultyDesignation(customClient?: QueryClient) {
 /** Restores a soft-deleted designation definition. */
 export function useRestoreFacultyDesignation(customClient?: QueryClient) {
   const { t } = useTranslation();
-  const contextClient = useContext(QueryClientContext);
-  const client = customClient ?? contextClient ?? fallbackQueryClient;
+  const contextClient = useQueryClientOrFallback();
+  const client = customClient ?? contextClient;
   return useMutation(
     {
       mutationFn: async (id: string) => {
@@ -112,13 +99,7 @@ export function useRestoreFacultyDesignation(customClient?: QueryClient) {
           params: { id },
           body: {},
         });
-        if (response.status !== 200) {
-          const message =
-            typeof response.body === "object" && response.body && "message" in response.body
-              ? String(response.body.message)
-              : t("faculty.errors.restoreDesignation");
-          throw new Error(message);
-        }
+        assertContractOk(response, t("faculty.errors.restoreDesignation"));
         return facultyDesignationSchema.parse(
           (response.body as { designation?: unknown }).designation,
         );

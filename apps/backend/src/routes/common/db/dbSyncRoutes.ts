@@ -1,6 +1,7 @@
 import { Readable } from "node:stream";
 import type { FastifyPluginAsync } from "fastify";
-import { synchronizeData, resetToDefaults } from "../../../services/dbSyncService.js";
+import { resetToDefaults } from "../../../services/dbSyncService.js";
+import { restoreWorkspaceWithAudit } from "../../../services/dbSyncRestoreAudit.js";
 import {
   canBulkSync,
   canDownloadBulkSync,
@@ -8,8 +9,6 @@ import {
 } from "../../../services/rbacService.js";
 import { type TenantDatabaseSnapshot, validateAndNormalizeSnapshot } from "@mms/shared";
 import type { User } from "@mms/shared";
-import { recordModernAuditEvent } from "../../../services/auditTrailService.js";
-import { logger } from "../../../lib/logger.js";
 import {
   SYNC_ABORTED_MESSAGE,
   SYNC_MAX_BODY_BYTES,
@@ -17,7 +16,7 @@ import {
 } from "../../../lib/syncLimits.js";
 import { tenantDatabaseSnapshotSchema as syncPayloadSchema } from "@mms/shared";
 import { parseRequest, replyValidationError } from "../../../lib/zodRequest.js";
-import { sendDatabaseError, sendForbidden } from "../../../lib/httpErrors.js";
+import { sendBadRequest, sendDatabaseError, sendForbidden } from "../../../lib/httpErrors.js";
 import {
   stripServerOnlyObjects,
   stripUnwritableCollections,
@@ -79,11 +78,16 @@ export const dbSyncRoutes: FastifyPluginAsync = async (fastify) => {
       return sendForbidden(reply, "Only administrators can download a database snapshot");
     }
     const tenant = getRequestTenant();
+    if (!tenant) return sendForbidden(reply, "This endpoint requires a tenant subdomain");
     const releaseSlot = snapshotAdmission.acquire(reply);
     if (!releaseSlot) return;
     let txn: LongLivedTenantTransaction | null = null;
     try {
-      txn = await beginLongLivedTenantTransaction(tenant);
+      txn = await beginLongLivedTenantTransaction(tenant, {
+        isolation: "repeatable read",
+        statementTimeoutMs: 600_000,
+        idleTimeoutMs: 600_000,
+      });
       enterActiveTransaction(txn.tx);
       reply.header("Content-Type", "application/json; charset=utf-8");
       return reply.send(
@@ -103,11 +107,16 @@ export const dbSyncRoutes: FastifyPluginAsync = async (fastify) => {
       return sendForbidden(reply, "Only administrators can download a workspace backup");
     }
     const tenant = getRequestTenant();
+    if (!tenant) return sendForbidden(reply, "This endpoint requires a tenant subdomain");
     const releaseSlot = snapshotAdmission.acquire(reply);
     if (!releaseSlot) return;
     let txn: LongLivedTenantTransaction | null = null;
     try {
-      txn = await beginLongLivedTenantTransaction(tenant);
+      txn = await beginLongLivedTenantTransaction(tenant, {
+        isolation: "repeatable read",
+        statementTimeoutMs: 600_000,
+        idleTimeoutMs: 600_000,
+      });
       enterActiveTransaction(txn.tx);
       reply.header("Content-Type", "application/json; charset=utf-8");
       return reply.send(
@@ -147,21 +156,12 @@ export const dbSyncRoutes: FastifyPluginAsync = async (fastify) => {
         stripServerOnlyObjects(payload.objects);
         stripUnwritableObjects(payload.objects, user);
       }
-      await withSyncTimeout((signal) => synchronizeData(payload, signal, true));
-      void recordModernAuditEvent({
-        workspaceSubdomain: getRequestTenant() ?? "unknown",
-        tableName: "sync",
-        recordId: "sync",
-        actionType: "RESTORE",
-        realUserId: String(user.id),
-        newState: {
-          summary: `Restored workspace backup with ${Object.keys(payload.collections || {}).length} collections and ${Object.keys(payload.objects || {}).length} objects`,
-        },
-      }).catch((err: unknown) =>
-        logger.error(
-          { err: err instanceof Error ? err.message : String(err) },
-          "audit event append failed",
-        ),
+      const tenant = getRequestTenant();
+      if (!tenant) {
+        return sendForbidden(reply, "Tenant context is required for a workspace restore");
+      }
+      await withSyncTimeout((signal) =>
+        restoreWorkspaceWithAudit({ tenant, payload, signal, actorUserId: String(user.id) }),
       );
       return reply.send({ success: true });
     } catch (error: unknown) {
@@ -187,21 +187,16 @@ export const dbSyncRoutes: FastifyPluginAsync = async (fastify) => {
     if (!canResetTenantData(user)) {
       return sendForbidden(reply, "Only administrators can reset the database");
     }
-    try {
-      await resetToDefaults();
-      void recordModernAuditEvent({
-        workspaceSubdomain: getRequestTenant() ?? "unknown",
-        tableName: "reset",
-        recordId: "reset",
-        actionType: "DELETE",
-        realUserId: String(user.id),
-        newState: { summary: "Reset database to minimal defaults" },
-      }).catch((err: unknown) =>
-        logger.error(
-          { err: err instanceof Error ? err.message : String(err) },
-          "audit event append failed",
-        ),
+    const body = (request.body ?? {}) as { confirm?: unknown };
+    if (body.confirm !== "RESET") {
+      return sendBadRequest(
+        reply,
+        'Send { "confirm": "RESET" } to acknowledge that this wipes the workspace',
       );
+    }
+    try {
+      // Purge + reseed + audit commit together; a failure rolls the workspace back.
+      await resetToDefaults();
       return reply.send({ success: true, message: "Workspace reset to minimal defaults" });
     } catch (error: unknown) {
       return sendDatabaseError(reply, "Failed to reset database", error);

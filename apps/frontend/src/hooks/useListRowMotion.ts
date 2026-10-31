@@ -1,3 +1,4 @@
+import { useCallback } from "react";
 import type { HTMLMotionProps } from "framer-motion";
 import { useReducedMotion } from "@/hooks/useReducedMotion";
 
@@ -29,16 +30,21 @@ export function useListRowMotion({
   duration = 0.1,
 }: UseListRowMotionOptions = {}): ListRowMotionFn {
   const reducedMotion = useReducedMotion();
-  return (delay = 0): ListRowMotionProps => {
-    if (reducedMotion) {
-      return { layout: false, initial: false };
-    }
-    const props: ListRowMotionProps = { layout };
-    if (fade) {
-      props.initial = { opacity: 0 };
-      props.animate = { opacity: 1 };
-      props.transition = delay > 0 ? { delay } : { duration };
-    }
-    return props;
-  };
+  // Stable identity: rows are React.memo'd and receive this as a prop, so a new
+  // closure per render made every table row re-render on unrelated state changes.
+  return useCallback(
+    (delay = 0): ListRowMotionProps => {
+      if (reducedMotion) {
+        return { layout: false, initial: false };
+      }
+      const props: ListRowMotionProps = { layout };
+      if (fade) {
+        props.initial = { opacity: 0 };
+        props.animate = { opacity: 1 };
+        props.transition = delay > 0 ? { delay } : { duration };
+      }
+      return props;
+    },
+    [reducedMotion, layout, fade, duration],
+  );
 }

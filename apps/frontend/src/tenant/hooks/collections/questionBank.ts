@@ -8,6 +8,8 @@ export {
   QUESTION_BANK_TESTS_QUERY_KEY,
   QUESTION_BANK_RESULTS_QUERY_KEY,
   QUESTION_BANK_REPORT_AGGREGATES_QUERY_KEY,
+} from "@/tenant/features/question-bank/hooks/questionBankQueryKeys";
+export {
   useQuestionBankQuestions,
   useQuestionBankQuestionsCollection,
   useQuestionBankTests,

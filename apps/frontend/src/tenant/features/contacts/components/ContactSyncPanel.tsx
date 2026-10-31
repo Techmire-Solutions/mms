@@ -1,6 +1,6 @@
 import React from "react";
 import { Info } from "lucide-react";
-import { WarningCallout } from "@/components/app/WarningCallout";
+import { Alert } from "@/components/app/Alert";
 import { useTranslation } from "@/hooks/useTranslation";
 import type { Contact } from "@mms/shared";
 import { GoogleContactsPanel } from "./sync/GoogleContactsPanel";
@@ -24,7 +24,7 @@ export function ContactSyncPanel({
   const { t } = useTranslation();
   return (
     <ModuleSetupContent className="space-y-5">
-      <WarningCallout
+      <Alert
         icon={Info}
         tone="info"
         title={t("contacts.sync.title")}

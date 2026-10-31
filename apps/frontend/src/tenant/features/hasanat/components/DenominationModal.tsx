@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import { useState } from "react";
 import { CreditCard } from "lucide-react";
 import { type Denomination } from "@/lib/data/hasanatData";
 import { generateClientEntityId } from "@mms/shared";
@@ -38,6 +38,8 @@ export function DenominationModal({ open, denom, onClose, onSave }: Denomination
   const [submitting, setSubmitting] = useState(false);
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [submitError, setSubmitError] = useState<string | null>(null);
+  const [previousOpen, setPreviousOpen] = useState(open);
+  const [previousDenom, setPreviousDenom] = useState(denom);
   const presetColors = getDenominationPresetColors();
 
   const updateField = <K extends keyof Denomination>(field: K, value: Denomination[K]) => {
@@ -51,13 +53,16 @@ export function DenominationModal({ open, denom, onClose, onSave }: Denomination
     }
   };
 
-  React.useEffect(() => {
+  // Re-seed the draft during render when the modal is (re)opened for a different card.
+  if (previousOpen !== open || previousDenom !== denom) {
+    setPreviousOpen(open);
+    setPreviousDenom(denom);
     if (open) {
       setData(denom || { ...EMPTY });
       setErrors({});
       setSubmitError(null);
     }
-  }, [open, denom]);
+  }
 
   const handleSave = async () => {
     const newErrors: Record<string, string> = {};

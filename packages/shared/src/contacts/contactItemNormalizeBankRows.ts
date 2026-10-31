@@ -1,9 +1,6 @@
 import type { ContactBankDetail } from "./contactEntityTypes.js";
-import { BANK_DETAIL_SYSTEM_KEYS } from "./contactItemNormalizeKeys.js";
-import {
-  retainExtraKeys,
-  type ContactItemNormalizeDefaults,
-} from "./contactItemNormalizeRowsShared.js";
+import { BANK_DETAIL_SYSTEM_KEYS, retainExtraKeys } from "./contactItemNormalizeKeys.js";
+import type { ContactItemNormalizeDefaults } from "./contactItemNormalizeRows.js";
 
 /**
  * Normalizes a single Bank Detail entry into a valid ContactBankDetail object.

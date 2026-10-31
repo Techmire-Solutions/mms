@@ -10,6 +10,7 @@ import {
   Waypoints,
   Settings,
   Palette,
+  Layers,
 } from "lucide-react";
 import { ROUTES } from "@/lib/config/routes";
 import type { AppTranslationKey } from "@mms/shared";
@@ -53,6 +54,14 @@ export const PLATFORM_NAV_ITEMS: readonly PlatformNavItem[] = [
     path: ROUTES.platformReports,
     labelKey: "module.reports",
     icon: BarChart3,
+    section: "workspaces",
+    isVisible: (perms) => perms.canWorkspaces,
+  },
+  {
+    id: "consolidation",
+    path: ROUTES.platformConsolidation,
+    labelKey: "platform.consolidation.title",
+    icon: Layers,
     section: "workspaces",
     isVisible: (perms) => perms.canWorkspaces,
   },

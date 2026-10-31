@@ -1,26 +1,6 @@
-import { useContext } from "react";
-import { QueryClient, QueryClientContext, useMutation, useQuery } from "@tanstack/react-query";
-import { useAuth } from "@/lib/contexts/AuthContext";
+import { useMutation, useQuery } from "@tanstack/react-query";
 import { SETUP_STALE_TIME } from "@/lib/queryClient";
-
-const fallbackQueryClient = new QueryClient({
-  defaultOptions: {
-    queries: { retry: false },
-  },
-});
-
-function useSafeQueryClient(): QueryClient {
-  const client = useContext(QueryClientContext);
-  return client ?? fallbackQueryClient;
-}
-
-function useSafeAuth() {
-  try {
-    return useAuth();
-  } catch {
-    return null;
-  }
-}
+import { useAuthOrNull, useQueryClientOrFallback } from "@/lib/query/optionalQueryContext";
 
 function resolveValue<T>(value: T | (() => T)): T {
   return typeof value === "function" ? (value as () => T)() : value;
@@ -48,17 +28,21 @@ export function createModuleSetupConfigHooks<
   setPreferencesMemory,
   preferencesPlaceholder,
 }: CreateModuleSetupConfigHooksOptions<TPreferences, TPreferencesInput>) {
+  // Pre-resolve once at creation so placeholder identity is completely stable
+  // across every component render pass and does not trigger render-phase loops.
+  const staticPlaceholder = resolveValue(preferencesPlaceholder);
+
   function usePreferencesQuery() {
-    const auth = useSafeAuth();
-    const queryClient = useSafeQueryClient();
-    return useQuery(
+    const auth = useAuthOrNull();
+    const queryClient = useQueryClientOrFallback();
+    return useQuery<TPreferences, Error, TPreferences>(
       {
         queryKey: preferencesQueryKey,
         queryFn: ({ signal }) => fetchPreferences(signal),
         enabled: Boolean(auth?.isAuthenticated),
         // TanStack Query NonFunctionGuard cannot be proven for generic TPreferences.
         // @ts-expect-error generic placeholderData vs NonFunctionGuard<TPreferences>
-        placeholderData: resolveValue(preferencesPlaceholder),
+        placeholderData: (previousData) => previousData ?? staticPlaceholder,
         staleTime: SETUP_STALE_TIME,
         gcTime: 10 * 60_000,
       },
@@ -67,7 +51,7 @@ export function createModuleSetupConfigHooks<
   }
 
   function usePreferencesMutation() {
-    const queryClient = useSafeQueryClient();
+    const queryClient = useQueryClientOrFallback();
     return useMutation(
       {
         mutationFn: (preferences: TPreferencesInput) => savePreferences(preferences),

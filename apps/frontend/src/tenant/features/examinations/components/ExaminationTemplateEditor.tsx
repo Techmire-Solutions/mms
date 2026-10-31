@@ -76,12 +76,16 @@ export function ExaminationTemplateEditor({
   const { t } = useTranslation();
   const branding = useBranding();
 
-  const handleSave = (tmpl: DocumentTemplate<TypstReportCardPayload>) => {
+  const handleSave = async (tmpl: DocumentTemplate<TypstReportCardPayload>) => {
     saveObject(EXAMINATION_TEMPLATE_STORAGE_KEY, tmpl);
-    void saveDocumentTemplateServer(EXAMINATION_TEMPLATE_STORAGE_KEY, tmpl).catch((err) => {
+    try {
+      await saveDocumentTemplateServer(EXAMINATION_TEMPLATE_STORAGE_KEY, tmpl);
+      notify.success(t("examinations.templateSaved"));
+    } catch (err) {
       console.warn("[ExaminationTemplateEditor] Server save failed:", err);
-    });
-    notify.success(t("examinations.templateSaved"));
+      notify.error(t("templateEditor.saveFailed"));
+      throw err;
+    }
   };
 
   const handleExportTypst = (payload: TypstReportCardPayload) => {

@@ -13,7 +13,7 @@ import {
   type WorkDirectoryViewMode,
 } from "@/hooks/useWorkDirectoryViewMode";
 
-/** ReportMoneyCard tile (report) — not DirectoryCard. */
+/** ReportMoneyCard tile (report) — not DirectoryEntityCard. */
 interface CashFlowStatementPanelProps {
   netSurplus: number;
   depreciationAdjustment: number;

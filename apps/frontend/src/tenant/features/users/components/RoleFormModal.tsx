@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import type React from "react";
 import {
   PERMISSION_ACTIONS,
@@ -55,7 +55,10 @@ export function RoleFormModal({
   const [error, setError] = useState("");
   const [discardConfirmOpen, setDiscardConfirmOpen] = useState(false);
 
-  useEffect(() => {
+  // Adjust state during render: a new role target (or a re-open) resets the whole form.
+  const [prevFormSource, setPrevFormSource] = useState({ role, open });
+  if (prevFormSource.role !== role || prevFormSource.open !== open) {
+    setPrevFormSource({ role, open });
     const next = roleBaseline(role);
     setName(next.name);
     setDesc(next.desc);
@@ -63,7 +66,7 @@ export function RoleFormModal({
     setBaseline(next);
     setError("");
     setDiscardConfirmOpen(false);
-  }, [role, open]);
+  }
 
   const formDirty = (() => {
     return (

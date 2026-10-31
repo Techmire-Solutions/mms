@@ -1,11 +1,11 @@
-import React, { useEffect, useState } from "react";
+import React, { useState } from "react";
 import { ClipboardCheck } from "lucide-react";
 import type { RegistrationApplication, RegistrationReview } from "@mms/shared";
 import { Field } from "@/components/app/FormPrimitives";
 import { FormModal } from "@/components/app/FormModal";
 import { Textarea } from "@/components/ui/textarea";
 import { ToggleRow } from "@shared/ui";
-import { WarningCallout } from "@/components/app/WarningCallout";
+import { Alert } from "@/components/app/Alert";
 import { useTranslation } from "@/hooks/useTranslation";
 
 export type AdmissionsDecision = RegistrationReview["decision"];
@@ -36,11 +36,15 @@ export function AdmissionsDecisionModal({
   const ineligible = applications.filter((app) => app.eligibilityReasons.length > 0).length;
   const reasonRequired = decision === "reject";
 
-  useEffect(() => {
-    if (!open) return;
-    setReason("");
-    setUseMatch(true);
-  }, [open]);
+  // Clear the previous decision's reason/match choice on each (re)open (render-phase reset).
+  const [prevOpen, setPrevOpen] = useState(open);
+  if (prevOpen !== open) {
+    setPrevOpen(open);
+    if (open) {
+      setReason("");
+      setUseMatch(true);
+    }
+  }
 
   return (
     <FormModal
@@ -77,9 +81,7 @@ export function AdmissionsDecisionModal({
     >
       <div className="space-y-3 py-1 text-start">
         {decision === "approve" && ineligible > 0 ? (
-          <WarningCallout
-            title={t("enrollments.admissions.ineligibleWarning", { count: ineligible })}
-          />
+          <Alert title={t("enrollments.admissions.ineligibleWarning", { count: ineligible })} />
         ) : null}
         {decision === "approve" && matchedStudentId ? (
           <ToggleRow

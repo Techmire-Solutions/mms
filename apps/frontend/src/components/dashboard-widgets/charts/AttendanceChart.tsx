@@ -15,6 +15,7 @@ import {
   type AttendancePoint,
 } from "@/components/dashboard-widgets/charts/attendanceChartData";
 import { ChartPrefsControlGroup } from "@/components/dashboard-widgets/charts/ChartPrefsControlGroup";
+import { ChartEmptyState } from "@/components/dashboard-widgets/charts/ChartEmptyState";
 import {
   buildChartTooltip,
   ChartAreaGradient,
@@ -23,10 +24,11 @@ import {
 import {
   DASHBOARD_CHART_TYPE_OPTIONS,
   ATTENDANCE_CHART_COLOR_OPTIONS,
+  formatPercent,
   type DashboardChartType,
 } from "@mms/shared";
 
-const AttTooltip = buildChartTooltip({ valueFormatter: (value) => `${value}%` });
+const AttTooltip = buildChartTooltip({ valueFormatter: (value) => formatPercent(value) });
 
 /**
  * AttendanceChart component.
@@ -47,6 +49,7 @@ export function AttendanceChart({ isEditMode = false }: { isEditMode?: boolean }
 
   const attendanceData: AttendancePoint[] = (() =>
     buildWeeklyAttendancePoints(attendanceRecords))();
+  const hasAttendanceData = attendanceRecords.length > 0;
 
   const avg = (() => {
     return attendanceData.length
@@ -88,7 +91,9 @@ export function AttendanceChart({ isEditMode = false }: { isEditMode?: boolean }
               />
             )}
             <div className="text-end select-none">
-              <p className="text-lg font-black text-foreground m-0 tabular-nums">{avg}%</p>
+              <p className="text-lg font-black text-foreground m-0 tabular-nums">
+                <bdi dir="ltr">{formatPercent(avg)}</bdi>
+              </p>
               <p className="text-xs text-muted-foreground mt-0.5 m-0 font-medium">
                 {t("dashboard.charts.attendance.weeklyAvg")}
               </p>
@@ -97,65 +102,72 @@ export function AttendanceChart({ isEditMode = false }: { isEditMode?: boolean }
         }
       />
 
-      <SafeResponsiveContainer height={170}>
-        <ComposedChart
-          data={attendanceData}
-          margin={{ top: 4, right: 4, bottom: 0, left: -28 }}
-          onClick={() => {
-            if (!isEditMode) {
-              navigate(ROUTES.attendance);
-            }
-          }}
-          className={isEditMode ? "cursor-default" : "cursor-pointer"}
-        >
-          <defs>
-            <ChartAreaGradient id="attGrad" color={themeColor} />
-          </defs>
-          <ChartGrid vertical={false} />
-          <XAxis dataKey="day" tick={chartAxisTick(11, true)} {...CHART_AXIS_LINE_PROPS} />
-          <YAxis
-            domain={[60, 100]}
-            tick={chartAxisTick(11, true)}
-            {...CHART_AXIS_LINE_PROPS}
-            tickFormatter={(v) => `${v}%`}
-          />
-          <Tooltip content={<AttTooltip />} cursor={{ fill: "hsl(var(--muted))", opacity: 0.5 }} />
-
-          {chartType === "area" && (
-            <Area
-              type="monotone"
-              dataKey="rate"
-              stroke={themeColor}
-              strokeWidth={2.5}
-              fill="url(#attGrad)"
-              activeDot={{ r: 5, fill: themeColor, strokeWidth: 2, stroke: "hsl(var(--card))" }}
+      {!hasAttendanceData ? (
+        <ChartEmptyState height={170} />
+      ) : (
+        <SafeResponsiveContainer height={170}>
+          <ComposedChart
+            data={attendanceData}
+            margin={{ top: 4, right: 4, bottom: 0, left: -28 }}
+            onClick={() => {
+              if (!isEditMode) {
+                navigate(ROUTES.attendance);
+              }
+            }}
+            className={isEditMode ? "cursor-default" : "cursor-pointer"}
+          >
+            <defs>
+              <ChartAreaGradient id="attGrad" color={themeColor} />
+            </defs>
+            <ChartGrid vertical={false} />
+            <XAxis dataKey="day" tick={chartAxisTick(11, true)} {...CHART_AXIS_LINE_PROPS} />
+            <YAxis
+              domain={[60, 100]}
+              tick={chartAxisTick(11, true)}
+              {...CHART_AXIS_LINE_PROPS}
+              tickFormatter={(v) => formatPercent(v)}
             />
-          )}
-
-          {chartType === "line" && (
-            <Line
-              type="monotone"
-              dataKey="rate"
-              stroke={themeColor}
-              strokeWidth={2.5}
-              dot={{ r: 3, fill: themeColor }}
-              activeDot={{ r: 5, fill: themeColor, strokeWidth: 2, stroke: "hsl(var(--card))" }}
+            <Tooltip
+              content={<AttTooltip />}
+              cursor={{ fill: "hsl(var(--muted))", opacity: 0.5 }}
             />
-          )}
 
-          {chartType === "bar" && (
-            <Bar dataKey="rate" radius={[5, 5, 0, 0]} maxBarSize={32}>
-              {attendanceData.map((attendancePoint, index) => (
-                <Cell
-                  key={index}
-                  fill={isSemantic ? semanticBarFill(attendancePoint.rate) : themeColor}
-                  fillOpacity={0.85}
-                />
-              ))}
-            </Bar>
-          )}
-        </ComposedChart>
-      </SafeResponsiveContainer>
+            {chartType === "area" && (
+              <Area
+                type="monotone"
+                dataKey="rate"
+                stroke={themeColor}
+                strokeWidth={2.5}
+                fill="url(#attGrad)"
+                activeDot={{ r: 5, fill: themeColor, strokeWidth: 2, stroke: "hsl(var(--card))" }}
+              />
+            )}
+
+            {chartType === "line" && (
+              <Line
+                type="monotone"
+                dataKey="rate"
+                stroke={themeColor}
+                strokeWidth={2.5}
+                dot={{ r: 3, fill: themeColor }}
+                activeDot={{ r: 5, fill: themeColor, strokeWidth: 2, stroke: "hsl(var(--card))" }}
+              />
+            )}
+
+            {chartType === "bar" && (
+              <Bar dataKey="rate" radius={[5, 5, 0, 0]} maxBarSize={32}>
+                {attendanceData.map((attendancePoint, index) => (
+                  <Cell
+                    key={index}
+                    fill={isSemantic ? semanticBarFill(attendancePoint.rate) : themeColor}
+                    fillOpacity={0.85}
+                  />
+                ))}
+              </Bar>
+            )}
+          </ComposedChart>
+        </SafeResponsiveContainer>
+      )}
     </WidgetCard>
   );
 }

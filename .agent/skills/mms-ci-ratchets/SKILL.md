@@ -4,7 +4,7 @@ description: Diagnoses and resolves failures in MMS custom CI ratchets and pre-c
 license: Proprietary
 metadata:
   owner: mms-platform
-  last-verified: 2026-10-16
+  last-verified: 2026-10-29
 ---
 
 # MMS CI Ratchets & Quality Gates
@@ -49,6 +49,12 @@ pnpm ci:local
 # Run complete gate suite across monorepo
 node scripts/verify-rules-integrity.mjs
 ```
+
+## Verification
+
+- Re-run the exact failing ratchet first: `pnpm run <check:name>` (or `node scripts/check-*.mjs --changed` for the affected-only form) and confirm it exits 0.
+- Then the full gate set: `pnpm ci:local` (gates + path-aware tests) and `node scripts/verify-rules-integrity.mjs` when rules/skills changed.
+- A ratchet fix is complete only when the same command that failed now passes **and** no suppression (`eslint-disable`, `@ts-ignore`) was added.
 
 ## References
 

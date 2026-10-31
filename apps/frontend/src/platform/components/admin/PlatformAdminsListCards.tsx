@@ -3,9 +3,9 @@ import type { PlatformUserProfile } from "@mms/shared";
 import { formatDate } from "@mms/shared";
 import { useTranslation } from "@/hooks/useTranslation";
 import { useReducedMotion } from "@/hooks/useReducedMotion";
-import { EntityCardsGrid } from "@/components/app/EntityCardsGrid";
-import { DirectoryCard } from "@/components/app/DirectoryCard";
-import { EntityCardMetadata } from "@/components/app/EntityCardMetadata";
+import { ModuleDirectoryCards } from "@/components/app/ModuleDirectoryCards";
+import { DirectoryEntityCard } from "@/components/app/DirectoryEntityCard";
+import { DirectoryCardMetadata } from "@/components/app/DirectoryCardMetadata";
 import {
   PlatformAdminStatusBadges,
   PlatformAdminPermissionsBadges,
@@ -46,9 +46,9 @@ export function PlatformAdminsListCards({
   const reducedMotion = useReducedMotion();
 
   return (
-    <EntityCardsGrid>
+    <ModuleDirectoryCards>
       {admins.map((admin) => (
-        <DirectoryCard
+        <DirectoryEntityCard
           key={admin.id}
           entity={admin}
           reducedMotion={reducedMotion}
@@ -79,7 +79,7 @@ export function PlatformAdminsListCards({
             </div>
           }
           metadataSlot={
-            <EntityCardMetadata
+            <DirectoryCardMetadata
               descriptor={descriptor}
               entity={admin}
               visibleColumnIds={["email"]}
@@ -109,8 +109,8 @@ export function PlatformAdminsListCards({
           }
         >
           <PlatformAdminPermissionsBadges admin={admin} />
-        </DirectoryCard>
+        </DirectoryEntityCard>
       ))}
-    </EntityCardsGrid>
+    </ModuleDirectoryCards>
   );
 }

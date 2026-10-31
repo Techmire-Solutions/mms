@@ -1,5 +1,5 @@
 import { describe, expect, it, beforeEach } from "vitest";
-import { resetSessionRefreshStateForTests } from "@/lib/apiClient";
+import { resetSessionRefreshStateForTests, SESSION_EXPIRED_EVENT } from "@/lib/apiClient";
 
 describe("apiClient", () => {
   beforeEach(() => {
@@ -248,5 +248,40 @@ describe("apiClient", () => {
       }
     }
     globalThis.fetch = original;
+  });
+
+  it("escalates a second 401 after a successful refresh to session expiry", async () => {
+    const original = globalThis.fetch;
+    const seenPaths: string[] = [];
+    globalThis.fetch = async (input) => {
+      const path = String(input);
+      seenPaths.push(path);
+      if (path === "/api/auth/refresh") {
+        return new Response("{}", { status: 200 });
+      }
+      return new Response(JSON.stringify({ type: "auth_required", message: "Unauthorized" }), {
+        status: 401,
+      });
+    };
+    const expiredReasons: string[] = [];
+    const onExpired = (event: Event): void => {
+      expiredReasons.push((event as CustomEvent<{ reason?: string }>).detail?.reason ?? "unknown");
+    };
+    window.addEventListener(SESSION_EXPIRED_EVENT, onExpired);
+
+    try {
+      const { apiFetch } = await import("@/lib/apiClient");
+
+      // Act
+      const response = await apiFetch("/api/students");
+
+      // Assert
+      expect(response.status).toBe(401);
+      expect(seenPaths).toEqual(["/api/students", "/api/auth/refresh", "/api/students"]);
+      expect(expiredReasons).toEqual(["refresh_retry_failed"]);
+    } finally {
+      window.removeEventListener(SESSION_EXPIRED_EVENT, onExpired);
+      globalThis.fetch = original;
+    }
   });
 });

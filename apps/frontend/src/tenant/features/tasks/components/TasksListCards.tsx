@@ -6,7 +6,8 @@
 import React, { useMemo } from "react";
 import type { TaskRecord, TaskStatus } from "@mms/shared";
 import { EmptyState } from "@/components/app/EmptyState";
-import { EntityCardsGrid } from "@/components/app/EntityCardsGrid";
+import { LoadingState } from "@/components/app/LoadingState";
+import { ModuleDirectoryCards } from "@/components/app/ModuleDirectoryCards";
 import { useReducedMotion } from "@/hooks/useReducedMotion";
 import { useTranslation } from "@/hooks/useTranslation";
 import { formatDirectoryPageCountLabel } from "@/lib/formatDirectoryPageCountLabel";
@@ -18,6 +19,7 @@ export interface TasksListCardsProps {
   selectedIds: string[];
   viewingDeleted: boolean;
   canWrite: boolean;
+  canComplete?: boolean;
   canDelete: boolean;
   isLoading: boolean;
   isColumnVisible: (key: string) => boolean;
@@ -36,6 +38,7 @@ export function TasksListCards({
   selectedIds,
   viewingDeleted,
   canWrite,
+  canComplete,
   canDelete,
   isLoading,
   isColumnVisible,
@@ -72,9 +75,9 @@ export function TasksListCards({
   return (
     <div aria-busy={isLoading || undefined}>
       {isLoading && tasks.length === 0 ? (
-        <p className="text-sm text-muted-foreground px-1 py-6">{t("common.loading")}</p>
+        <LoadingState title={t("common.loading")} />
       ) : (
-        <EntityCardsGrid
+        <ModuleDirectoryCards
           items={tasks}
           selectedIds={selectedIds}
           onSelectAll={canDelete ? () => onToggleSelectAll(!allSelected, pageIds) : undefined}
@@ -92,6 +95,7 @@ export function TasksListCards({
               selectedIds={selectedIds}
               viewingDeleted={viewingDeleted}
               canWrite={canWrite}
+              canComplete={canComplete ?? canWrite}
               canDelete={canDelete}
               isColumnVisible={isColumnVisible}
               onToggleSelected={onToggleSelected}

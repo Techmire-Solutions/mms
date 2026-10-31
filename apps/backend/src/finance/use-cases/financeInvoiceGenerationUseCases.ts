@@ -28,7 +28,11 @@ import {
   listEnrollmentInvoiceMarks,
 } from "../../db/repositories/financeInvoiceGenerationRepository.js";
 import { financeUseCases } from "./financeUseCases.js";
+import { recordInvoiceAudit } from "./financeAuditEvents.js";
+import { applyGeneratedInvoiceFx } from "./financeDocumentFx.js";
 import { logger } from "../../lib/logger.js";
+import { withTenant } from "../../db/tenant-context.js";
+import { tryPostInvoiceJournals } from "../../accounting/ledgerPosting/ledgerPostingService.js";
 
 function resolveFrequency(
   enrollment: EnrollmentBillingSource,
@@ -57,15 +61,26 @@ async function persistGeneratedInvoices(
   if (drafts.length === 1) {
     return [await financeUseCases.createInvoice({ ...drafts[0], invoiceNumber: undefined })];
   }
-  const year = Number(drafts[0]?.billingPeriod.slice(0, 4)) || new Date().getFullYear();
-  const numbers = await allocateInvoiceNumberBatch(tenant, year, drafts.length, prefix);
-  const invoices: Invoice[] = drafts.map((draft, index) => ({
-    ...draft,
-    id: `inv-${randomUUID()}`,
-    invoiceNumber: numbers[index],
-  }));
-  await bulkSaveInvoices(tenant, invoices);
-  return invoices;
+  // One transaction for the whole batch: the invoices and their ledger postings
+  // land together, so a posting failure rolls the batch back instead of leaving
+  // a term of unposted receivables behind.
+  return withTenant(tenant, async () => {
+    const year = Number(drafts[0]?.billingPeriod.slice(0, 4)) || new Date().getFullYear();
+    const numbers = await allocateInvoiceNumberBatch(tenant, year, drafts.length, prefix);
+    const invoices: Invoice[] = drafts.map((draft, index) => ({
+      ...draft,
+      id: `inv-${randomUUID()}`,
+      invoiceNumber: numbers[index],
+    }));
+    await bulkSaveInvoices(tenant, invoices);
+    await tryPostInvoiceJournals(tenant, invoices);
+    // The single-draft path audits through createInvoice; a batch must emit the
+    // same per-invoice CREATE events or the term's billing has no audit trail.
+    for (const invoice of invoices) {
+      await recordInvoiceAudit(tenant, "CREATE", invoice);
+    }
+    return invoices;
+  });
 }
 
 export async function generateInvoices(
@@ -117,10 +132,14 @@ export async function generateInvoices(
   const familyByStudent = new Map(
     students.map((student) => [student.id, resolveFamilyContactId(student)]),
   );
-  const draftsWithFamily = drafts.map((draft) => ({
-    ...draft,
-    familyContactId: familyByStudent.get(draft.studentId) ?? null,
-  }));
+  const draftsWithFamily = await applyGeneratedInvoiceFx(
+    tenant,
+    drafts.map((draft) => ({
+      ...draft,
+      familyContactId: familyByStudent.get(draft.studentId) ?? null,
+    })),
+    new Map(enrollments.map((enrollment) => [enrollment.id, enrollment.sessionCurrency])),
+  );
   const created = await persistGeneratedInvoices(tenant, draftsWithFamily, prefix);
   await linkEnrollmentInvoiceIds(
     tenant,

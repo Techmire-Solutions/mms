@@ -12,6 +12,15 @@ RELEASES_DIR="${ROOT_DIR}/.deploy-releases"
 
 cd "$ROOT_DIR" || { echo "FATAL: cannot cd to ${ROOT_DIR}"; exit 1; }
 
+# A preflight failure happens before the release swap; the running processes
+# still serve the old release. Reloading here used to pick up the failed
+# deploy's new env and take the site down, so skip the reload entirely.
+if [ -f "${ROOT_DIR}/.deploy-preflight-failed" ]; then
+  echo "Preflight failed before the release swap; running release is unchanged — skipping rollback."
+  rm -f "${ROOT_DIR}/.deploy-preflight-failed"
+  exit 0
+fi
+
 # shellcheck source=lib/deploy-ports.sh
 source "$ROOT_DIR/scripts/lib/deploy-ports.sh"
 
@@ -61,18 +70,28 @@ else
 fi
 
 if [ -f "${TARBALL}.sha256" ]; then
-  (
-    cd "$(dirname "$TARBALL")" || exit 1
-    sha256sum -c "$(basename "$TARBALL").sha256"
-  ) || {
-    echo "FATAL: release checksum mismatch"
+  EXPECTED_HASH="$(awk '{print $1}' "${TARBALL}.sha256")"
+  ACTUAL_HASH="$(sha256sum "$TARBALL" | awk '{print $1}')"
+  if [ "$EXPECTED_HASH" != "$ACTUAL_HASH" ]; then
+    echo "FATAL: release checksum mismatch (expected ${EXPECTED_HASH}, got ${ACTUAL_HASH})"
     exit 1
-  }
+  fi
 fi
 
 echo "Extracting ${TARBALL} → ${ROOT_DIR}"
 rm -rf "${ROOT_DIR}/apps/frontend/dist" "${ROOT_DIR}/apps/backend/dist"
 tar xzf "$TARBALL" -C "$ROOT_DIR"
+
+# Restore the env that belonged to this release. Without this, a rollback
+# after an env-changing deploy keeps the new env (e.g. strict RLS) and the
+# previous release can fail to boot.
+RELEASE_ENV="${TARBALL%.tar.gz}.env"
+if [ -f "$RELEASE_ENV" ]; then
+  cp -p "$RELEASE_ENV" "$ENV_FILE"
+  echo "Restored ${ENV_FILE} from $(basename "$RELEASE_ENV")"
+else
+  echo "WARNING: no env snapshot for $(basename "$TARBALL") — keeping current ${ENV_FILE}"
+fi
 
 export NVM_DIR="${NVM_DIR:-$HOME/.nvm}"
 if [ -s "$NVM_DIR/nvm.sh" ]; then

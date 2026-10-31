@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import {
   excludeFacultyManagedRoles,
   filterRbacModulesForSettings,
@@ -23,16 +23,23 @@ export function useRolesPermissionsController() {
   const { isAdmin, isSuperAdmin, canManageRole, canAccessRolesAndPermissions } = usePermissions();
   const loadedRoles = useWorkspaceRoles();
   const visibleModules = (() => filterRbacModulesForSettings(globalSettings.enabledModules))();
-  const [roles, setRoles] = useState<WorkspaceRole[]>(loadedRoles);
+  const [roles, setRoles] = useState<WorkspaceRole[]>(() =>
+    excludeFacultyManagedRoles(loadedRoles),
+  );
   const [editing, setEdit] = useState<WorkspaceRole | "new" | null>(null);
   const [selected, setSel] = useState<WorkspaceRole | null>(null);
   const [pendingMatrixLeave, setPendingMatrixLeave] = useState<PendingMatrixLeave | null>(null);
 
-  useEffect(() => {
+  // Adjust state during render: a server role change (or leaving the role form) refreshes the
+  // local list. `settings.workspaceRoles` is the stable source `useWorkspaceRoles` derives from,
+  // so this only re-syncs when the underlying saved settings actually change.
+  const [prevRoleSync, setPrevRoleSync] = useState({ source: settings.workspaceRoles, editing });
+  if (prevRoleSync.source !== settings.workspaceRoles || prevRoleSync.editing !== editing) {
+    setPrevRoleSync({ source: settings.workspaceRoles, editing });
     if (!editing) {
       setRoles(excludeFacultyManagedRoles(loadedRoles));
     }
-  }, [loadedRoles, editing]);
+  }
 
   const displayRole = selected ?? roles[0] ?? null;
   const canManageDisplayRole =

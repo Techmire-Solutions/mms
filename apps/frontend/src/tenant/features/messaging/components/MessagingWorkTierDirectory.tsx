@@ -1,12 +1,13 @@
 import React from "react";
-import { AlertTriangle, MessageSquareOff, RotateCcw } from "lucide-react";
+import { AlertTriangle, MessageSquareOff, RotateCcw, Send } from "lucide-react";
+import type { Message } from "@mms/shared";
 import { ErrorBoundary } from "@/components/app/ErrorBoundary";
 import { ModuleTierMotion } from "@/components/app/ModuleTierMotion";
 import { ModuleWorkDirectoryEmpty } from "@/components/app/ModuleWorkDirectoryEmpty";
 import { ModuleWorkListStateShell } from "@/components/app/ModuleWorkListStateShell";
 import { FilterChips } from "@/components/app/FilterChips";
 import { Button } from "@/components/ui/button";
-import { WarningCallout } from "@/components/app/WarningCallout";
+import { Alert } from "@/components/app/Alert";
 import { SEMANTIC_TEXT } from "@/lib/ui/semanticTone";
 import { MessagingDetail } from "./MessagingDetail";
 import { MessagingWorkBulkActionBar } from "./MessagingWorkBulkActionBar";
@@ -18,13 +19,19 @@ import type { useMessagingWorkTierController } from "../hooks/useMessagingWorkTi
 type MessagingWorkTierDirectoryProps = ReturnType<typeof useMessagingWorkTierController> & {
   canWrite: boolean;
   canClearLogs: boolean;
+  canRestoreLogs?: boolean;
+  onRestoreLog?: (log: Message) => Promise<void>;
   onClearLogsRequest: () => void;
+  onStartCampaign?: (channel: "whatsapp" | "sms" | "email") => void;
 };
 
 export function MessagingWorkTierDirectory({
   canWrite,
   canClearLogs,
+  canRestoreLogs,
+  onRestoreLog,
   onClearLogsRequest,
+  onStartCampaign,
   ...c
 }: MessagingWorkTierDirectoryProps): React.JSX.Element {
   return (
@@ -66,7 +73,7 @@ export function MessagingWorkTierDirectory({
       </ErrorBoundary>
 
       {c.status === "failed" && c.failedLogs.length > 0 && (
-        <WarningCallout
+        <Alert
           tone="destructive"
           density="compact"
           icon={AlertTriangle}
@@ -136,6 +143,20 @@ export function MessagingWorkTierDirectory({
             onClearFilters={c.clearFilters}
             clearFiltersLabel={c.t("common.clearFilters")}
             showActiveLabel=""
+            firstRunAction={
+              canWrite && onStartCampaign ? (
+                <Button
+                  type="button"
+                  variant="default"
+                  size="sm"
+                  onClick={() => onStartCampaign("whatsapp")}
+                  className="gap-1.5 min-h-11 px-3 font-semibold"
+                >
+                  <Send className="h-3.5 w-3.5" />
+                  {c.t("messaging.newCampaign")}
+                </Button>
+              ) : undefined
+            }
           />
         ) : c.viewMode === "cards" ? (
           <MessagingListCards
@@ -150,6 +171,7 @@ export function MessagingWorkTierDirectory({
             logStatusConfig={c.logStatusConfig}
             getRecipientName={c.getRecipientName}
             isColumnVisible={c.isColumnVisible}
+            focusedLogId={c.focusedLogId}
             onToggleLog={c.toggleLog}
             onToggleAllVisible={c.toggleAllVisible}
             onResendLog={c.handleResendLog}
@@ -168,6 +190,7 @@ export function MessagingWorkTierDirectory({
             getColumnWidth={c.getColumnWidth}
             isColumnVisible={c.isColumnVisible}
             setColumnWidth={c.setColumnWidth}
+            focusedLogId={c.focusedLogId}
             onToggleLog={c.toggleLog}
             onToggleAllVisible={c.toggleAllVisible}
             onResendLog={c.handleResendLog}
@@ -182,6 +205,8 @@ export function MessagingWorkTierDirectory({
         recipient={c.activeRecipient}
         logStatusConfig={c.logStatusConfig}
         canWrite={canWrite}
+        canRestoreLogs={canRestoreLogs}
+        onRestoreLog={onRestoreLog}
         onClose={c.handleCloseDetail}
         onResend={c.handleResendLog}
       />

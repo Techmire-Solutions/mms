@@ -1293,15 +1293,113 @@
     {
       "idx": 184,
       "version": "7",
-      "when": 1791276600000,
-      "tag": "0184_obligation_distributions_account_id",
+      "when": 1792836000000,
+      "tag": "0184_finance_date_columns",
       "breakpoints": true
     },
     {
       "idx": 185,
       "version": "7",
-      "when": 1791276700000,
-      "tag": "0185_posting_rules_bank_account",
+      "when": 1792840000000,
+      "tag": "0185_workshops_module",
+      "breakpoints": true
+    },
+    {
+      "idx": 186,
+      "version": "7",
+      "when": 1792860000000,
+      "tag": "0186_workshop_certificates",
+      "breakpoints": true
+    },
+    {
+      "idx": 187,
+      "version": "7",
+      "when": 1792920000000,
+      "tag": "0187_message_logs_restore_attribution",
+      "breakpoints": true
+    },
+    {
+      "idx": 188,
+      "version": "7",
+      "when": 1792920100000,
+      "tag": "0188_accounting_fx_reference_tables",
+      "breakpoints": true
+    },
+    {
+      "idx": 189,
+      "version": "7",
+      "when": 1792920200000,
+      "tag": "0189_accounting_fx_ledger_columns",
+      "breakpoints": true
+    },
+    {
+      "idx": 190,
+      "version": "7",
+      "when": 1792920300000,
+      "tag": "0190_finance_document_currency",
+      "breakpoints": true
+    },
+    {
+      "idx": 191,
+      "version": "7",
+      "when": 1792920400000,
+      "tag": "0191_accounting_fx_revaluation",
+      "breakpoints": true
+    },
+    {
+      "idx": 192,
+      "version": "7",
+      "when": 1792920500000,
+      "tag": "0192_platform_consolidation_groups",
+      "breakpoints": true
+    },
+    {
+      "idx": 193,
+      "version": "7",
+      "when": 1792920600000,
+      "tag": "0193_accounting_currency_exchangeability",
+      "breakpoints": true
+    },
+    {
+      "idx": 194,
+      "version": "7",
+      "when": 1792920700000,
+      "tag": "0194_accounting_ias29_hyperinflation",
+      "breakpoints": true
+    },
+    {
+      "idx": 195,
+      "version": "7",
+      "when": 1792920800000,
+      "tag": "0195_accounting_hedge_accounting",
+      "breakpoints": true
+    },
+    {
+      "idx": 196,
+      "version": "7",
+      "when": 1792921800000,
+      "tag": "0196_tenant_notifications",
+      "breakpoints": true
+    },
+    {
+      "idx": 197,
+      "version": "7",
+      "when": 1792922800000,
+      "tag": "0197_backend_review_hardening",
+      "breakpoints": true
+    },
+    {
+      "idx": 198,
+      "version": "7",
+      "when": 1792923800000,
+      "tag": "0198_obligation_distributions_account_id",
+      "breakpoints": true
+    },
+    {
+      "idx": 199,
+      "version": "7",
+      "when": 1792924800000,
+      "tag": "0199_posting_rules_bank_account",
       "breakpoints": true
     }
   ]

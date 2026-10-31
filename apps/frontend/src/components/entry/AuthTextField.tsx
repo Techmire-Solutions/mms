@@ -54,7 +54,7 @@ export function AuthTextField({
       <div className="relative">
         {Icon ? (
           <Icon
-            className="pointer-events-none absolute start-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground/80"
+            className="pointer-events-none absolute start-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground"
             aria-hidden
           />
         ) : null}

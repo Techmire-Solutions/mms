@@ -1,5 +1,5 @@
 import { expect, test, type Locator, type Page } from "@playwright/test";
-import { execSync } from "node:child_process";
+import { execFileSync } from "node:child_process";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 
@@ -8,17 +8,36 @@ const __dirname = path.dirname(__filename);
 const backendDir = path.resolve(__dirname, "../../apps/backend");
 
 /**
+ * Runs a backend seed script without a shell: the script name and subdomain travel as
+ * argv, so a generated tenant name can never inject shell metacharacters.
+ */
+function runBackendSeedScript(scriptName: string, subdomain: string): string {
+  return execFileSync("pnpm", ["exec", "tsx", scriptName, subdomain], {
+    cwd: backendDir,
+    encoding: "utf8",
+    env: {
+      ...process.env,
+      NODE_ENV: process.env.NODE_ENV || "test",
+      JWT_SECRET: process.env.JWT_SECRET || "e2e-test-jwt-secret-key-at-least-32-chars-long",
+    },
+  });
+}
+
+/**
  * Ensures the module's Work (first) tier tab is active. Tier labels are module-specific —
  * Faculty's Work tier is labelled "Faculties", Obligations' is "Obligations" — so this
  * activates the first tab of the section navigation instead of a hardcoded "Work" label.
  */
 export async function ensureWorkTierActive(page: Page): Promise<void> {
+  await expect(page.locator("h1").first()).toBeVisible({ timeout: 20_000 });
+
   const sectionNav = page
     .getByRole("tablist", { name: "Section navigation" })
     .or(page.getByRole("navigation", { name: "Section navigation" }))
     .first();
 
-  if ((await sectionNav.count()) === 0) return;
+  const hasNav = await sectionNav.isVisible({ timeout: 5_000 }).catch(() => false);
+  if (!hasNav) return;
 
   const target = sectionNav.locator('[role="tab"], button').first();
   await expect(target).toBeVisible({ timeout: 15_000 });
@@ -27,7 +46,7 @@ export async function ensureWorkTierActive(page: Page): Promise<void> {
   const isExpanded = await target.getAttribute("aria-expanded");
   if (isSelected !== "true" && isExpanded !== "true") {
     await target.click();
-    await page.waitForLoadState("domcontentloaded");
+    await expect(target).toHaveAttribute("aria-selected", "true", { timeout: 10_000 });
   }
 }
 
@@ -380,15 +399,7 @@ export function seedTestClassAndEnrollment(subdomain: string): void {
     return;
   }
   try {
-    const output = execSync(`pnpm exec tsx src/scripts/seed-test-class.ts ${subdomain}`, {
-      cwd: backendDir,
-      encoding: "utf8",
-      env: {
-        ...process.env,
-        NODE_ENV: process.env.NODE_ENV || "test",
-        JWT_SECRET: process.env.JWT_SECRET || "e2e-test-jwt-secret-key-at-least-32-chars-long",
-      },
-    });
+    const output = runBackendSeedScript("src/scripts/seed-test-class.ts", subdomain);
     console.log(output);
   } catch (err: unknown) {
     const message = err instanceof Error ? err.message : String(err);
@@ -414,15 +425,7 @@ export function seedFacultySetup(subdomain: string): void {
     return;
   }
   try {
-    const output = execSync(`pnpm exec tsx src/scripts/seed-faculty-setup.ts ${subdomain}`, {
-      cwd: backendDir,
-      encoding: "utf8",
-      env: {
-        ...process.env,
-        NODE_ENV: process.env.NODE_ENV || "test",
-        JWT_SECRET: process.env.JWT_SECRET || "e2e-test-jwt-secret-key-at-least-32-chars-long",
-      },
-    });
+    const output = runBackendSeedScript("src/scripts/seed-faculty-setup.ts", subdomain);
     console.log(output);
   } catch (err: unknown) {
     const message = err instanceof Error ? err.message : String(err);
@@ -443,15 +446,7 @@ export function seedContacts(subdomain: string): void {
     return;
   }
   try {
-    const output = execSync(`pnpm exec tsx src/scripts/seed-20-contacts.ts ${subdomain}`, {
-      cwd: backendDir,
-      encoding: "utf8",
-      env: {
-        ...process.env,
-        NODE_ENV: process.env.NODE_ENV || "test",
-        JWT_SECRET: process.env.JWT_SECRET || "e2e-test-jwt-secret-key-at-least-32-chars-long",
-      },
-    });
+    const output = runBackendSeedScript("src/scripts/seed-20-contacts.ts", subdomain);
     console.log(output);
   } catch (err: unknown) {
     const message = err instanceof Error ? err.message : String(err);
@@ -471,15 +466,7 @@ export function seedStudents(subdomain: string): void {
     return;
   }
   try {
-    const output = execSync(`pnpm exec tsx src/scripts/seed-20-students.ts ${subdomain}`, {
-      cwd: backendDir,
-      encoding: "utf8",
-      env: {
-        ...process.env,
-        NODE_ENV: process.env.NODE_ENV || "test",
-        JWT_SECRET: process.env.JWT_SECRET || "e2e-test-jwt-secret-key-at-least-32-chars-long",
-      },
-    });
+    const output = runBackendSeedScript("src/scripts/seed-20-students.ts", subdomain);
     console.log(output);
   } catch (err: unknown) {
     const message = err instanceof Error ? err.message : String(err);
@@ -499,15 +486,7 @@ export function seedSessions(subdomain: string): void {
     return;
   }
   try {
-    const output = execSync(`pnpm exec tsx src/scripts/seed-20-sessions.ts ${subdomain}`, {
-      cwd: backendDir,
-      encoding: "utf8",
-      env: {
-        ...process.env,
-        NODE_ENV: process.env.NODE_ENV || "test",
-        JWT_SECRET: process.env.JWT_SECRET || "e2e-test-jwt-secret-key-at-least-32-chars-long",
-      },
-    });
+    const output = runBackendSeedScript("src/scripts/seed-20-sessions.ts", subdomain);
     console.log(output);
   } catch (err: unknown) {
     const message = err instanceof Error ? err.message : String(err);
@@ -527,15 +506,7 @@ export function seedFaculty(subdomain: string): void {
     return;
   }
   try {
-    const output = execSync(`pnpm exec tsx src/scripts/seed-20-faculty.ts ${subdomain}`, {
-      cwd: backendDir,
-      encoding: "utf8",
-      env: {
-        ...process.env,
-        NODE_ENV: process.env.NODE_ENV || "test",
-        JWT_SECRET: process.env.JWT_SECRET || "e2e-test-jwt-secret-key-at-least-32-chars-long",
-      },
-    });
+    const output = runBackendSeedScript("src/scripts/seed-20-faculty.ts", subdomain);
     console.log(output);
   } catch (err: unknown) {
     const message = err instanceof Error ? err.message : String(err);
@@ -554,15 +525,7 @@ export function seedInvoices(subdomain: string): void {
     return;
   }
   try {
-    const output = execSync(`pnpm exec tsx src/scripts/seed-20-invoices.ts ${subdomain}`, {
-      cwd: backendDir,
-      encoding: "utf8",
-      env: {
-        ...process.env,
-        NODE_ENV: process.env.NODE_ENV || "test",
-        JWT_SECRET: process.env.JWT_SECRET || "e2e-test-jwt-secret-key-at-least-32-chars-long",
-      },
-    });
+    const output = runBackendSeedScript("src/scripts/seed-20-invoices.ts", subdomain);
     console.log(output);
   } catch (err: unknown) {
     const message = err instanceof Error ? err.message : String(err);
@@ -708,6 +671,13 @@ export async function createSessionAndClass(page: Page): Promise<void> {
     await endDate.fill("2026-12-31");
     await endDate.blur();
 
+    const statusSelect = sessionDialog.locator("#session-status, select[name='status']").first();
+    if (await statusSelect.isVisible({ timeout: 2000 }).catch(() => false)) {
+      await statusSelect.selectOption("open").catch(async () => {
+        await selectOptionByMatchingText(statusSelect, /Open/i);
+      });
+    }
+
     const sessionCreate = page.waitForResponse(
       (response) =>
         response.url().includes("/api/sessions") &&
@@ -773,7 +743,21 @@ export async function createSessionAndClass(page: Page): Promise<void> {
     }
     await expect(classDialog).toBeHidden({ timeout: 20_000 });
     await page.waitForLoadState("domcontentloaded");
-    await page.getByRole("button", { name: "Close" }).click();
+    const sessionDrawer = page
+      .getByRole("dialog", { name: /Session details/i })
+      .or(page.getByRole("dialog").filter({ hasText: "Afternoon Tajweed 2026" }))
+      .first();
+    if (await sessionDrawer.isVisible({ timeout: 5000 }).catch(() => false)) {
+      const closeDrawerBtn = sessionDrawer
+        .getByRole("button", { name: /Close/i })
+        .or(sessionDrawer.locator('button[aria-label="Close"]'))
+        .first();
+      await closeDrawerBtn.click().catch(async () => {
+        await page.keyboard.press("Escape");
+      });
+      await expect(sessionDrawer).toBeHidden({ timeout: 20_000 });
+    }
+    await waitForToastOverlayToClear(page, "after closing session detail drawer");
   });
 }
 
@@ -787,32 +771,61 @@ export async function createStudentEnrollment(page: Page): Promise<void> {
     const enrollmentDialog = page.getByRole("dialog", { name: "New Enrollment" });
     await expect(enrollmentDialog).toBeVisible();
 
-    await enrollmentDialog.getByPlaceholder("Search students by name…").fill("Jane Doe");
-    // Selecting a student/session/class card advances the wizard automatically (each card is a
-    // submit button inside the wizard form), so those steps need no explicit Next.
     const janeStudent = enrollmentDialog.getByRole("radio", { name: /Jane Doe/ }).first();
     await expect(janeStudent).toBeVisible({ timeout: 15_000 });
     await janeStudent.click();
+    await expect(janeStudent).toHaveAttribute("aria-checked", "true", { timeout: 10_000 });
 
+    const nextBtn = enrollmentDialog.getByRole("button", { name: /^Next$/i });
+
+    // Step 1: Session selection
     const afternoonSession = enrollmentDialog
       .getByRole("radio", { name: /Afternoon Tajweed 2026/ })
       .first();
+    if (!(await afternoonSession.isVisible().catch(() => false))) {
+      await expect(nextBtn).toBeEnabled({ timeout: 10_000 });
+      await nextBtn.click();
+    }
     await expect(afternoonSession).toBeVisible({ timeout: 15_000 });
     await afternoonSession.click();
+    await expect(afternoonSession).toHaveAttribute("aria-checked", "true", { timeout: 10_000 });
 
-    // Eligibility step has no selection — advance explicitly.
-    await expect(
-      enrollmentDialog.getByText("Student is eligible — you may proceed to class assignment."),
-    ).toBeVisible({ timeout: 15_000 });
-    await enrollmentDialog.getByRole("button", { name: "Next" }).click();
+    // Step 2: Eligibility Check
+    const eligibilityText = enrollmentDialog.getByText(
+      /Student is eligible — you may proceed to class assignment/i,
+    );
+    if (!(await eligibilityText.isVisible().catch(() => false))) {
+      await expect(nextBtn).toBeEnabled({ timeout: 10_000 });
+      await nextBtn.click();
+    }
+    await expect(eligibilityText).toBeVisible({ timeout: 15_000 });
 
-    // Class step: selecting the class card advances to the fee step.
+    // Step 3: Class Assignment
     const classCard = enrollmentDialog.getByRole("radio", { name: /Tajweed a/i }).first();
+    if (!(await classCard.isVisible().catch(() => false))) {
+      await expect(nextBtn).toBeEnabled({ timeout: 10_000 });
+      await nextBtn.click();
+    }
     await expect(classCard).toBeVisible({ timeout: 15_000 });
     await classCard.click();
+    await expect(classCard).toHaveAttribute("aria-checked", "true", { timeout: 10_000 });
 
-    // Fee step has no selection — advance explicitly to confirmation.
-    await enrollmentDialog.getByRole("button", { name: "Next" }).click();
+    // Step 4: Fee Calculation
+    const feeHeading = enrollmentDialog.getByText(/Fee Breakdown|Fee Calculation/i).first();
+    if (!(await feeHeading.isVisible().catch(() => false))) {
+      await expect(nextBtn).toBeEnabled({ timeout: 10_000 });
+      await nextBtn.click();
+    }
+    await expect(feeHeading).toBeVisible({ timeout: 15_000 });
+
+    // Step 5: Confirmation
+    const confirmBtn = enrollmentDialog.getByRole("button", { name: /New Enrollment/i });
+    if (!(await confirmBtn.isVisible().catch(() => false))) {
+      await expect(nextBtn).toBeEnabled({ timeout: 10_000 });
+      await nextBtn.click();
+    }
+    await expect(confirmBtn).toBeVisible({ timeout: 15_000 });
+    await expect(confirmBtn).toBeEnabled({ timeout: 15_000 });
 
     const enrollmentCreate = page.waitForResponse(
       (response) =>
@@ -821,7 +834,7 @@ export async function createStudentEnrollment(page: Page): Promise<void> {
         !response.url().includes("/bulk"),
       { timeout: 30_000 },
     );
-    await enrollmentDialog.getByRole("button", { name: "New Enrollment" }).click();
+    await confirmBtn.click();
     const enrollmentResponse = await enrollmentCreate;
     if (!enrollmentResponse.ok()) {
       throw new Error(
@@ -879,8 +892,11 @@ export async function recordInvoicePayment(page: Page): Promise<void> {
  */
 export async function createMessagingTemplateAndCampaign(page: Page): Promise<void> {
   await test.step("Create messaging template & dispatch SMS campaign", async () => {
+    await expect(page.locator("h1").first()).toBeVisible({ timeout: 20_000 });
     const setupTab = page.getByRole("tab", { name: "Setup", exact: true }).first();
+    await expect(setupTab).toBeVisible({ timeout: 15_000 });
     await setupTab.click();
+    await expect(setupTab).toHaveAttribute("aria-selected", "true", { timeout: 10_000 });
     await page.getByRole("button", { name: "Create Preset Template" }).first().click();
     await expect(page.locator("#tplLabel").locator("visible=true")).toBeVisible({
       timeout: 15_000,
@@ -904,7 +920,12 @@ export async function createMessagingTemplateAndCampaign(page: Page): Promise<vo
         `Messaging template create failed: HTTP ${templateResponse.status()} ${await templateResponse.text()}`,
       );
     }
-    await expect(page.getByText("E2e Fee Reminder").locator("visible=true").first()).toBeVisible({
+    await expect(
+      page
+        .getByText(/E2e Fee Reminder/i)
+        .locator("visible=true")
+        .first(),
+    ).toBeVisible({
       timeout: 20_000,
     });
 
@@ -912,7 +933,7 @@ export async function createMessagingTemplateAndCampaign(page: Page): Promise<vo
     await ensureWorkTierActive(page);
 
     // Click "New Campaign" dropdown trigger
-    const newCampaignBtn = page.getByRole("button", { name: /New Campaign/i });
+    const newCampaignBtn = page.getByRole("button", { name: /New Campaign/i }).first();
     await expect(newCampaignBtn).toBeVisible({ timeout: 10_000 });
     await newCampaignBtn.click();
 
@@ -958,28 +979,28 @@ export async function createMessagingTemplateAndCampaign(page: Page): Promise<vo
       .isVisible({ timeout: 5_000 })
       .catch(() => false);
     if (templateSelectVisible) {
-      const targetOption = templateSelect.locator("option", { hasText: /E2e Fee Reminder/i });
-      const hasOption = await targetOption.isVisible({ timeout: 5_000 }).catch(() => false);
-      if (hasOption) {
-        const feeTemplateValue = await targetOption.getAttribute("value");
-        if (feeTemplateValue) await templateSelect.selectOption(feeTemplateValue);
-      }
+      await selectOptionByMatchingText(templateSelect, /E2e Fee Reminder/i).catch(async () => {
+        await templateSelect.selectOption({ label: "E2E Fee Reminder" }).catch(() => undefined);
+      });
     }
     await expect(smsDialog.locator("#messageBody")).not.toHaveValue("", { timeout: 10_000 });
 
-    const logCreate = page.waitForResponse(
+    const dispatchResponsePromise = page.waitForResponse(
       (response) =>
-        response.url().includes("/api/messaging/logs") && response.request().method() === "POST",
+        (response.url().includes("/api/messaging/dispatch/sms") ||
+          response.url().includes("/api/messaging/logs")) &&
+        response.request().method() === "POST",
       { timeout: 30_000 },
     );
-    await smsDialog
-      .getByRole("button", { name: "Open Messages" })
-      .last()
-      .click({ timeout: 10_000 });
-    const logResponse = await logCreate;
-    if (!logResponse.ok()) {
+    const submitBtn = smsDialog
+      .getByRole("button", { name: /Open Messages|Send/i })
+      .or(smsDialog.locator('button[type="submit"]'))
+      .last();
+    await submitBtn.click({ timeout: 10_000 });
+    const dispatchResponse = await dispatchResponsePromise;
+    if (!dispatchResponse.ok()) {
       throw new Error(
-        `Messaging dispatch failed: HTTP ${logResponse.status()} ${await logResponse.text()}`,
+        `Messaging dispatch failed: HTTP ${dispatchResponse.status()} ${await dispatchResponse.text()}`,
       );
     }
     await expect(smsDialog).toBeHidden({ timeout: 20_000 });
@@ -999,6 +1020,7 @@ export async function createAccountsAndJournalEntry(page: Page): Promise<void> {
     const coaTab = page.getByRole("tab", { name: /Chart of Accounts/i }).first();
     await expect(coaTab).toBeVisible({ timeout: 15_000 });
     await coaTab.click();
+    await expect(coaTab).toHaveAttribute("aria-selected", "true", { timeout: 10_000 });
     await expect(page.getByRole("region", { name: "Chart of Accounts" })).toBeVisible({
       timeout: 15_000,
     });
@@ -1037,9 +1059,11 @@ export async function createAccountsAndJournalEntry(page: Page): Promise<void> {
     const journalTab = page.getByRole("tab", { name: /Journal Entries/i }).first();
     await expect(journalTab).toBeVisible({ timeout: 15_000 });
     await journalTab.click();
+    await expect(journalTab).toHaveAttribute("aria-selected", "true", { timeout: 10_000 });
     const advancedTab = page.getByRole("tab", { name: /Advanced/i }).first();
     await expect(advancedTab).toBeVisible({ timeout: 15_000 });
     await advancedTab.click();
+    await expect(advancedTab).toHaveAttribute("aria-selected", "true", { timeout: 10_000 });
     await expect(page.getByRole("region", { name: "Advanced Journal Entries" })).toBeVisible({
       timeout: 15_000,
     });
@@ -1076,7 +1100,10 @@ export async function createAccountsAndJournalEntry(page: Page): Promise<void> {
     }
     await expect(entryDialog).toBeHidden({ timeout: 20_000 });
     await expect(
-      page.getByText("E2e Fee Collection Journal").locator("visible=true").first(),
+      page
+        .getByText(/E2e Fee Collection Journal/i)
+        .locator("visible=true")
+        .first(),
     ).toBeVisible({ timeout: 20_000 });
   });
 }
@@ -1087,7 +1114,9 @@ export async function createAccountsAndJournalEntry(page: Page): Promise<void> {
 export async function createUserFromContact(page: Page): Promise<void> {
   await test.step("Create User from John Doe contact with Teacher role", async () => {
     await ensureWorkTierActive(page);
-    await page.getByRole("button", { name: "User" }).first().click();
+    const addUserBtn = page.getByRole("button", { name: "User", exact: true }).first();
+    await expect(addUserBtn).toBeVisible({ timeout: 15_000 });
+    await addUserBtn.click();
     const userDialog = page.getByRole("dialog", { name: /Add New User/i });
     await expect(userDialog).toBeVisible({ timeout: 15_000 });
 
@@ -1128,10 +1157,6 @@ export async function createUserFromContact(page: Page): Promise<void> {
       throw new Error(
         `User create failed: HTTP ${userResponse.status()} ${await userResponse.text()}`,
       );
-    }
-    const closeBtn = userDialog.getByRole("button", { name: /Close/i }).first();
-    if (await closeBtn.isVisible({ timeout: 2000 }).catch(() => false)) {
-      await closeBtn.click({ force: true });
     }
     await expect(userDialog).toBeHidden({ timeout: 20_000 });
     await expect(

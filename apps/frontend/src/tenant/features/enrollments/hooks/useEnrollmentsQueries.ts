@@ -16,17 +16,20 @@ import { serverMetricsQueryOptions, useServerMetrics } from "@/hooks/useServerMe
 import { useAuth } from "@/lib/contexts/AuthContext";
 import { tsrClient, apiContract } from "@/lib/api";
 import { invalidateEnrollmentsQueries } from "@/tenant/features/enrollments/hooks/invalidateEnrollmentsQueries";
+import {
+  ENROLLMENTS_QUERY_KEY,
+  ENROLLMENTS_METRICS_QUERY_KEY,
+  ENROLLMENTS_REPORT_AGGREGATES_QUERY_KEY,
+  ENROLLMENTS_WIDGET_AGGREGATES_QUERY_KEY,
+} from "./enrollmentsQueryKeys.js";
+import { assertContractOk } from "@/lib/apiContractError";
 
-export const ENROLLMENTS_QUERY_KEY = ["enrollments", "list"] as const;
-export const ENROLLMENTS_METRICS_QUERY_KEY = ["enrollments", "metrics"] as const;
-export const ENROLLMENTS_REPORT_AGGREGATES_QUERY_KEY = [
-  ENROLLMENTS_MODULE_MANIFEST.collectionKey,
-  "report-aggregates",
-] as const;
-export const ENROLLMENTS_WIDGET_AGGREGATES_QUERY_KEY = [
-  ENROLLMENTS_MODULE_MANIFEST.collectionKey,
-  "widget-aggregates",
-] as const;
+export {
+  ENROLLMENTS_QUERY_KEY,
+  ENROLLMENTS_METRICS_QUERY_KEY,
+  ENROLLMENTS_REPORT_AGGREGATES_QUERY_KEY,
+  ENROLLMENTS_WIDGET_AGGREGATES_QUERY_KEY,
+};
 
 export interface EnrollmentsWidgetAggregateWidgetInput {
   id: string;
@@ -210,9 +213,7 @@ export function enrollmentsListQueryOptions(query: Record<string, unknown> = {})
         signal,
         fetchOptions: { signal },
       });
-      if (response.status !== 200) {
-        throw new Error("Failed to fetch enrollments");
-      }
+      assertContractOk(response, "Failed to fetch enrollments");
       return response.body;
     },
     placeholderData: (prev) => prev,

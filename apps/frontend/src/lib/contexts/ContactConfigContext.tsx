@@ -13,7 +13,7 @@
  *   const columns = useContactColumns();         // dynamic table columns
  *   const schema  = useContactValidation();     // dynamic Zod-like validation
  */
-import React, { type ReactNode, useContext } from "react";
+import React, { useCallback, useMemo, useRef, type ReactNode, useContext } from "react";
 import {
   ContactConfigContext,
   type ContactConfigContextType,
@@ -56,15 +56,27 @@ export function ContactConfigProvider({ children }: { children: ReactNode }) {
   const { isAuthenticated } = useAuth();
   const { data: prefsData } = useContactPreferencesQuery();
   const { mutateAsync: updatePrefsAsync } = useContactPreferencesMutation();
-  const updatePrefs = (newPrefs: Partial<ContactPreferences>) => {
+
+  const updatePrefsAsyncRef = useRef(updatePrefsAsync);
+  updatePrefsAsyncRef.current = updatePrefsAsync;
+
+  const prefsDataRef = useRef(prefsData);
+  prefsDataRef.current = prefsData;
+
+  const updatePrefs = useCallback((newPrefs: Partial<ContactPreferences>) => {
     const fullPrefs: ContactPreferences = {
-      ...(prefsData || DEFAULT_CONTACT_PREFERENCES),
+      ...(prefsDataRef.current || DEFAULT_CONTACT_PREFERENCES),
       ...newPrefs,
     };
-    updatePrefsAsync(fullPrefs).catch((error) =>
-      reportClientError(error, { context: "contacts.updatePrefs" }),
-    );
-  };
+    updatePrefsAsyncRef
+      .current(fullPrefs)
+      .catch((error) => reportClientError(error, { context: "contacts.updatePrefs" }));
+  }, []);
+
+  const stableUpdatePrefsAsync = useCallback(
+    (newPrefs: ContactPreferences) => updatePrefsAsyncRef.current(newPrefs),
+    [],
+  );
 
   const {
     data: lookupsData,
@@ -73,65 +85,167 @@ export function ContactConfigProvider({ children }: { children: ReactNode }) {
   } = useContactLookupsQuery();
   const { mutateAsync: updateLookupKind } = useContactLookupMutation();
 
+  const updateLookupKindRef = useRef(updateLookupKind);
+  updateLookupKindRef.current = updateLookupKind;
+
   const { data: fieldConfigResponse } = useContactsContractFieldConfig(isAuthenticated);
   const { mutateAsync: updateFieldConfig } = useContactsContractUpdateFieldConfig();
 
-  const updateConfigAsync = async (nextConfig: FieldConfig) => {
-    await updateFieldConfig({ body: nextConfig });
-  };
-  const updateConfig = (nextConfig: FieldConfig) => {
-    updateConfigAsync(nextConfig).catch((error) =>
-      reportClientError(error, { context: "contacts.updateConfig" }),
-    );
-  };
+  const updateFieldConfigRef = useRef(updateFieldConfig);
+  updateFieldConfigRef.current = updateFieldConfig;
 
-  const config = {
-    prefs: prefsData,
-    lookupsLoading,
-    lookupsError,
-    genders: lookupsData?.genders,
-    socialPlatforms: lookupsData?.socialPlatforms,
-    relationships: lookupsData?.relationships,
-    phoneLabels: lookupsData?.phoneLabels,
-    emailLabels: lookupsData?.emailLabels,
-    addressLabels: lookupsData?.addressLabels,
-    countryCodes: lookupsData?.countryCodes,
-    educationDegrees: lookupsData?.educationDegrees,
-    employmentTypes: lookupsData?.employmentTypes,
-    skillCategories: lookupsData?.skillCategories,
-    skillProficiencies: lookupsData?.skillProficiencies,
-    bankNames: lookupsData?.bankNames,
-    tags: lookupsData?.tags,
-    updatePrefs,
-    updatePrefsAsync,
-    updateGenders: (genders: string[]) => updateLookupKind({ kind: "genders", items: genders }),
-    updateSocialPlatforms: (socialPlatforms: string[]) =>
-      updateLookupKind({ kind: "socialPlatforms", items: socialPlatforms }),
-    updateRelationships: (relationships: string[]) =>
-      updateLookupKind({ kind: "relationships", items: relationships }),
-    updatePhoneLabels: (phoneLabels: string[]) =>
-      updateLookupKind({ kind: "phoneLabels", items: phoneLabels }),
-    updateEmailLabels: (emailLabels: string[]) =>
-      updateLookupKind({ kind: "emailLabels", items: emailLabels }),
-    updateAddressLabels: (addressLabels: string[]) =>
-      updateLookupKind({ kind: "addressLabels", items: addressLabels }),
-    updateCountryCodes: (countryCodes: Array<{ country: string; code: string }>) =>
-      updateLookupKind({ kind: "countryCodes", items: countryCodes }),
-    updateEducationDegrees: (educationDegrees: string[]) =>
-      updateLookupKind({ kind: "educationDegrees", items: educationDegrees }),
-    updateEmploymentTypes: (employmentTypes: string[]) =>
-      updateLookupKind({ kind: "employmentTypes", items: employmentTypes }),
-    updateSkillCategories: (skillCategories: string[]) =>
-      updateLookupKind({ kind: "skillCategories", items: skillCategories }),
-    updateSkillProficiencies: (skillProficiencies: string[]) =>
-      updateLookupKind({ kind: "skillProficiencies", items: skillProficiencies }),
-    updateBankNames: (bankNames: string[]) =>
-      updateLookupKind({ kind: "bankNames", items: bankNames }),
-    updateTags: (tags: string[]) => updateLookupKind({ kind: "tags", items: tags }),
-    ...(fieldConfigResponse?.body ?? {}),
-    updateConfig,
-    updateConfigAsync,
-  };
+  const updateConfigAsync = useCallback(async (nextConfig: FieldConfig) => {
+    await updateFieldConfigRef.current({ body: nextConfig });
+  }, []);
+
+  const updateConfig = useCallback(
+    (nextConfig: FieldConfig) => {
+      updateConfigAsync(nextConfig).catch((error) =>
+        reportClientError(error, { context: "contacts.updateConfig" }),
+      );
+    },
+    [updateConfigAsync],
+  );
+
+  const updateGenders = useCallback(
+    (genders: string[]) => updateLookupKindRef.current({ kind: "genders", items: genders }),
+    [],
+  );
+  const updateSocialPlatforms = useCallback(
+    (socialPlatforms: string[]) =>
+      updateLookupKindRef.current({ kind: "socialPlatforms", items: socialPlatforms }),
+    [],
+  );
+  const updateRelationships = useCallback(
+    (relationships: string[]) =>
+      updateLookupKindRef.current({ kind: "relationships", items: relationships }),
+    [],
+  );
+  const updatePhoneLabels = useCallback(
+    (phoneLabels: string[]) =>
+      updateLookupKindRef.current({ kind: "phoneLabels", items: phoneLabels }),
+    [],
+  );
+  const updateEmailLabels = useCallback(
+    (emailLabels: string[]) =>
+      updateLookupKindRef.current({ kind: "emailLabels", items: emailLabels }),
+    [],
+  );
+  const updateAddressLabels = useCallback(
+    (addressLabels: string[]) =>
+      updateLookupKindRef.current({ kind: "addressLabels", items: addressLabels }),
+    [],
+  );
+  const updateCountryCodes = useCallback(
+    (countryCodes: Array<{ country: string; code: string }>) =>
+      updateLookupKindRef.current({ kind: "countryCodes", items: countryCodes }),
+    [],
+  );
+  const updateEducationDegrees = useCallback(
+    (educationDegrees: string[]) =>
+      updateLookupKindRef.current({ kind: "educationDegrees", items: educationDegrees }),
+    [],
+  );
+  const updateEmploymentTypes = useCallback(
+    (employmentTypes: string[]) =>
+      updateLookupKindRef.current({ kind: "employmentTypes", items: employmentTypes }),
+    [],
+  );
+  const updateSkillCategories = useCallback(
+    (skillCategories: string[]) =>
+      updateLookupKindRef.current({ kind: "skillCategories", items: skillCategories }),
+    [],
+  );
+  const updateSkillProficiencies = useCallback(
+    (skillProficiencies: string[]) =>
+      updateLookupKindRef.current({ kind: "skillProficiencies", items: skillProficiencies }),
+    [],
+  );
+  const updateBankNames = useCallback(
+    (bankNames: string[]) => updateLookupKindRef.current({ kind: "bankNames", items: bankNames }),
+    [],
+  );
+  const updateTags = useCallback(
+    (tags: string[]) => updateLookupKindRef.current({ kind: "tags", items: tags }),
+    [],
+  );
+
+  const fieldConfigBody = fieldConfigResponse?.body;
+
+  const config = useMemo(
+    () => ({
+      prefs: prefsData,
+      lookupsLoading,
+      lookupsError,
+      genders: lookupsData?.genders,
+      socialPlatforms: lookupsData?.socialPlatforms,
+      relationships: lookupsData?.relationships,
+      phoneLabels: lookupsData?.phoneLabels,
+      emailLabels: lookupsData?.emailLabels,
+      addressLabels: lookupsData?.addressLabels,
+      countryCodes: lookupsData?.countryCodes,
+      educationDegrees: lookupsData?.educationDegrees,
+      employmentTypes: lookupsData?.employmentTypes,
+      skillCategories: lookupsData?.skillCategories,
+      skillProficiencies: lookupsData?.skillProficiencies,
+      bankNames: lookupsData?.bankNames,
+      tags: lookupsData?.tags,
+      updatePrefs,
+      updatePrefsAsync: stableUpdatePrefsAsync,
+      updateGenders,
+      updateSocialPlatforms,
+      updateRelationships,
+      updatePhoneLabels,
+      updateEmailLabels,
+      updateAddressLabels,
+      updateCountryCodes,
+      updateEducationDegrees,
+      updateEmploymentTypes,
+      updateSkillCategories,
+      updateSkillProficiencies,
+      updateBankNames,
+      updateTags,
+      ...(fieldConfigBody ?? {}),
+      updateConfig,
+      updateConfigAsync,
+    }),
+    [
+      prefsData,
+      lookupsLoading,
+      lookupsError,
+      lookupsData?.genders,
+      lookupsData?.socialPlatforms,
+      lookupsData?.relationships,
+      lookupsData?.phoneLabels,
+      lookupsData?.emailLabels,
+      lookupsData?.addressLabels,
+      lookupsData?.countryCodes,
+      lookupsData?.educationDegrees,
+      lookupsData?.employmentTypes,
+      lookupsData?.skillCategories,
+      lookupsData?.skillProficiencies,
+      lookupsData?.bankNames,
+      lookupsData?.tags,
+      updatePrefs,
+      stableUpdatePrefsAsync,
+      updateGenders,
+      updateSocialPlatforms,
+      updateRelationships,
+      updatePhoneLabels,
+      updateEmailLabels,
+      updateAddressLabels,
+      updateCountryCodes,
+      updateEducationDegrees,
+      updateEmploymentTypes,
+      updateSkillCategories,
+      updateSkillProficiencies,
+      updateBankNames,
+      updateTags,
+      fieldConfigBody,
+      updateConfig,
+      updateConfigAsync,
+    ],
+  );
 
   const value: ContactConfigContextType = useContactConfigProviderValue(config);
 

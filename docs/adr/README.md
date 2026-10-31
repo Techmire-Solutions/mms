@@ -22,6 +22,7 @@ Enforced unless noted. Open follow-ups live in [`../open-items.md`](../open-item
 | 015 | [Backend Ports & Adapters over `db/repositories/`](./015-backend-ports-and-adapters.md) | Accepted |
 | 016 | [Two Frontend Data-Table Tiers (client-side `DataTable` vs server-driven directory)](./016-frontend-data-table-tiers.md) | Accepted |
 | 017 | [Static Accessibility Gating (jsx-a11y error rules + E2E axe)](./017-static-accessibility-gating.md) | Accepted |
+| 018 | [Audit Verification Anchoring and Dedicated Audit Permissions](./018-audit-verification-anchoring.md) | Accepted |
 
 ## Adding a record
 

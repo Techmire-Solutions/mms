@@ -3,7 +3,7 @@
  * @description Persistence and query operations for tasks.
  */
 
-import { and, desc, eq, ilike, inArray, isNotNull, isNull, or, sql } from "drizzle-orm";
+import { and, desc, eq, gte, ilike, inArray, isNotNull, isNull, lte, or, sql } from "drizzle-orm";
 import { toSqlSearchPattern, type TaskListQuery, type TaskRecord } from "@mms/shared";
 import { taskAssignees, tasks } from "../schema.js";
 import { withTenantRead } from "../tenant-context.js";
@@ -28,6 +28,20 @@ export async function listTasks(
     if (query.status) conditions.push(eq(tasks.status, query.status));
     if (query.priority) conditions.push(eq(tasks.priority, query.priority));
     if (query.createdById) conditions.push(eq(tasks.createdByUserId, query.createdById));
+    if (query.dueFrom?.trim()) {
+      const fromStr = query.dueFrom.trim();
+      const fromDate = new Date(fromStr.includes("T") ? fromStr : `${fromStr}T00:00:00.000Z`);
+      if (!isNaN(fromDate.getTime())) {
+        conditions.push(gte(tasks.dueAt, fromDate));
+      }
+    }
+    if (query.dueTo?.trim()) {
+      const toStr = query.dueTo.trim();
+      const toDate = new Date(toStr.includes("T") ? toStr : `${toStr}T23:59:59.999Z`);
+      if (!isNaN(toDate.getTime())) {
+        conditions.push(lte(tasks.dueAt, toDate));
+      }
+    }
     if (query.search) {
       const term = toSqlSearchPattern(query.search);
       conditions.push(or(ilike(tasks.title, term), ilike(tasks.description, term))!);

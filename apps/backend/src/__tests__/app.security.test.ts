@@ -9,6 +9,11 @@ vi.mock("../db/database.js", () => ({
   getObject: vi.fn().mockResolvedValue(null),
 }));
 
+vi.mock("../services/auditTrailService.js", async (importOriginal) => {
+  const actual = await importOriginal<typeof import("../services/auditTrailService.js")>();
+  return { ...actual, recordModernAuditEvent: vi.fn().mockResolvedValue(undefined) };
+});
+
 vi.mock("../services/dbSyncService.js", async (importOriginal) => {
   const actual = await importOriginal<typeof import("../services/dbSyncService.js")>();
   return {

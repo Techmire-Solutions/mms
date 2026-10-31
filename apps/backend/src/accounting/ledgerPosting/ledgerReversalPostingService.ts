@@ -14,6 +14,7 @@ import {
   postingDate,
   resolveYearId,
 } from "./ledgerPostingHelpers.js";
+import { stampLinesForDocument } from "./documentFxPosting.js";
 
 export async function tryPostInvoiceReversalJournal(
   tenant: string,
@@ -189,6 +190,8 @@ export async function tryPostCreditNoteJournal(
     accounts,
   });
   if (!lines) return;
+  // Credit notes are issued in the invoice's currency and reverse AR at its booked rate.
+  const stamped = await stampLinesForDocument(tenant, invoice, date, accounts, lines);
   const years = await listFiscalYearsByWorkspace(tenant);
   await persistGeneratedEntry(
     tenant,
@@ -197,7 +200,7 @@ export async function tryPostCreditNoteJournal(
       creditNoteId,
       date,
       `Credit note ${invoice.invoiceNumber ?? invoice.id}`,
-      lines,
+      stamped,
       resolveYearId(years, date),
     ),
     years,

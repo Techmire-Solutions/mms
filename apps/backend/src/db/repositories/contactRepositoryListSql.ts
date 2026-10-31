@@ -1,4 +1,4 @@
-import { sql, type SQL } from "drizzle-orm";
+import { or, sql, type SQL } from "drizzle-orm";
 import { normalizeSearchString, toSqlSearchPattern } from "@mms/shared";
 import {
   contacts,
@@ -10,7 +10,6 @@ import {
   contactAddresses,
   contactPhones,
 } from "../schema.js";
-import { primaryPhoneDigitsSql } from "./contactRepositorySql.js";
 
 export const FACULTY_USER_ROLES_SQL = sql`('faculty', 'teacher', 'assistant_teacher')`;
 
@@ -80,38 +79,37 @@ export function buildSearchSql(search: string): SQL | null {
   const normalized = normalizeSearchString(typeof search === "string" ? search.trim() : "");
   if (!normalized) return null;
   const pattern = toSqlSearchPattern(normalized);
-  const haystack = sql`concat_ws(' ',
-      COALESCE(${contacts.name}, ''),
-      COALESCE(${contacts.firstName}, ''),
-      COALESCE(${contacts.lastName}, ''),
-      COALESCE(${contacts.cnic}, ''),
-      NULLIF(${primaryPhoneDigitsSql()}, ''),
-      COALESCE((
-        SELECT string_agg(NULLIF(trim(p.number), ''), ' ')
-        FROM ${contactPhones} p
-        WHERE p.workspace_subdomain = ${contacts.workspaceSubdomain}
-          AND p.contact_id = ${contacts.id}
-      ), ''),
-      COALESCE((
-        SELECT string_agg(NULLIF(trim(e.address), ''), ' ')
-        FROM ${contactEmails} e
-        WHERE e.workspace_subdomain = ${contacts.workspaceSubdomain}
-          AND e.contact_id = ${contacts.id}
-      ), ''),
-      COALESCE((
-        SELECT string_agg(
-          concat_ws(' ',
-            NULLIF(trim(a.city), ''),
-            NULLIF(trim(a.state), ''),
-            NULLIF(trim(a.country), ''),
-            NULLIF(trim(a.line1), '')
-          ),
-          ' '
-        )
-        FROM ${contactAddresses} a
-        WHERE a.workspace_subdomain = ${contacts.workspaceSubdomain}
-          AND a.contact_id = ${contacts.id}
-      ), '')
-    )`;
-  return sql`(${sqlNormalizeSearchExpr(haystack)} LIKE ${pattern})`;
+
+  // Per-column predicates (instead of one concat_ws haystack) so each branch can
+  // use its pg_trgm expression index. The expressions must stay byte-identical to
+  // 0197_backend_review_hardening.sql.
+  const direct = or(
+    sql`${sqlNormalizeSearchExpr(sql`coalesce(${contacts.name}, '')`)} LIKE ${pattern}`,
+    sql`${sqlNormalizeSearchExpr(sql`coalesce(${contacts.firstName}, '')`)} LIKE ${pattern}`,
+    sql`${sqlNormalizeSearchExpr(sql`coalesce(${contacts.lastName}, '')`)} LIKE ${pattern}`,
+    sql`${sqlNormalizeSearchExpr(sql`coalesce(${contacts.cnic}, '')`)} LIKE ${pattern}`,
+  )!;
+
+  const phoneMatch = sql`EXISTS (
+    SELECT 1 FROM ${contactPhones} p
+    WHERE p.workspace_subdomain = ${contacts.workspaceSubdomain}
+      AND p.contact_id = ${contacts.id}
+      AND ${sqlNormalizeSearchExpr(sql`coalesce(p.number, '')`)} LIKE ${pattern}
+  )`;
+  const emailMatch = sql`EXISTS (
+    SELECT 1 FROM ${contactEmails} e
+    WHERE e.workspace_subdomain = ${contacts.workspaceSubdomain}
+      AND e.contact_id = ${contacts.id}
+      AND ${sqlNormalizeSearchExpr(sql`coalesce(e.address, '')`)} LIKE ${pattern}
+  )`;
+  const addressMatch = sql`EXISTS (
+    SELECT 1 FROM ${contactAddresses} a
+    WHERE a.workspace_subdomain = ${contacts.workspaceSubdomain}
+      AND a.contact_id = ${contacts.id}
+      AND ${sqlNormalizeSearchExpr(
+        sql`coalesce(a.line1, '') || ' ' || coalesce(a.city, '') || ' ' || coalesce(a.state, '') || ' ' || coalesce(a.country, '')`,
+      )} LIKE ${pattern}
+  )`;
+
+  return or(direct, phoneMatch, emailMatch, addressMatch)!;
 }

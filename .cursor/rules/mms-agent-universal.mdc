@@ -25,7 +25,7 @@ alwaysApply: false
 ## 3. Security, State & Standards
 - **Zero-Trust DTOs:** Validate via `@mms/shared` Zod + Fastify `parseRequest` (`mms-api-interface.mdc`, `mms-core.mdc`). Unidirectional state flow (`mms-data-layer.mdc` §4).
 - **Concurrency & Signals:** Pass `AbortSignal` into `apiFetch` and `queryFn`; combine via `AbortSignal.any()`. Clear timers and observers.
-- **TypeScript:** Strict mode. Use `unknown` + narrowing (never `any`, never `as unknown as T`). Native immutability: `toSorted()`, `toReversed()`, `toSpliced()`, `Object.groupBy()`. Zero `enum` or `namespace`.
+- **TypeScript:** Strict mode. Use `unknown` + narrowing (never `any`, never `as unknown as T`). Native immutable array methods: `toSorted()`, `toReversed()`, `toSpliced()`; `Object.groupBy()` for grouping. Zero `enum` or `namespace`.
 - **Node.js 24:** Native built-ins (`node:` imports, `new URL()`, `using` / `await using`) (`mms-dependencies.mdc`).
 - **A11y, Modern Web & UI:** Semantic HTML5, modern Baseline standards via `modern-web-guidance` (`pnpx modern-web-guidance@latest search "<query>"`), Tailwind utilities, landmarks (`<main>`, `<nav>`, `<header>`), 44×44px touch floor (`mms-ui-ux-design.mdc` §2, §8).
 - **Git Boundaries:** Conventional Commits. Protected `main`. NEVER run `git add`, `commit`, or `push` unless explicitly told "commit". Never push to GitHub under any circumstance unless explicitly instructed by the user. Always run full local CI (`pnpm ci:local`) and ensure 100% clean pass before committing.

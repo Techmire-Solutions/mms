@@ -81,9 +81,7 @@ export function useFacultyLinkedContactIds(excludeId?: string, enabled = true) {
         query: { excludeId },
         fetchOptions: { signal },
       });
-      if (res.status !== 200) {
-        throw new Error(t("faculty.errors.loadLinkedContactIds"));
-      }
+      assertContractOk(res, t("faculty.errors.loadLinkedContactIds"));
       const body = res.body as { contactIds?: Array<string | number> } | undefined;
       return body?.contactIds ?? [];
     },
@@ -136,9 +134,7 @@ export function useFacultyNextEmployeeId(params: FacultyNextEmployeeIdParams = {
         },
         fetchOptions: { signal },
       });
-      if (res.status !== 200) {
-        throw new Error(t("faculty.errors.loadNextEmployeeId"));
-      }
+      assertContractOk(res, t("faculty.errors.loadNextEmployeeId"));
       const body = res.body as { employeeId?: string } | undefined;
       return typeof body?.employeeId === "string" ? body.employeeId : "";
     },
@@ -153,9 +149,7 @@ export async function checkFacultyRegistrationDuplicate(
   messages?: { duplicateCheckFailed: string },
 ): Promise<FacultyDuplicateReason | null> {
   const res = await apiContract.faculty.duplicateCheck({ body: input });
-  if (res.status !== 200) {
-    throw new Error(messages?.duplicateCheckFailed ?? "Duplicate check failed");
-  }
+  assertContractOk(res, messages?.duplicateCheckFailed ?? "Duplicate check failed");
   return (res.body as { reason?: FacultyDuplicateReason | null } | null)?.reason ?? null;
 }
 
@@ -171,14 +165,13 @@ export {
   facultyWidgetAggregatesQueryOptions,
   useFacultyWidgetAggregates,
 } from "@/tenant/features/faculty/hooks/useFacultyWidgetAggregates";
+import { assertContractOk } from "@/lib/apiContractError";
 
 /** One-shot employee-id backfill for active faculty missing one (Setup writers). */
 export async function migrateFacultyEmployeeIds(messages?: {
   migrationFailed: string;
 }): Promise<{ updated: number }> {
   const res = await apiContract.faculty.migrateEmployeeIds({ body: {} });
-  if (res.status !== 200) {
-    throw new Error(messages?.migrationFailed ?? "Migration failed");
-  }
+  assertContractOk(res, messages?.migrationFailed ?? "Migration failed");
   return { updated: (res.body as { updated?: number } | null)?.updated ?? 0 };
 }

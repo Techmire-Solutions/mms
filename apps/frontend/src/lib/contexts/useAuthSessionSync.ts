@@ -11,8 +11,11 @@ import { clear2FAState } from "@/lib/twoFactor";
 import type { AuthError } from "@/lib/authErrors";
 import {
   AUTH_USER_STORAGE_KEY,
+  buildConnectionAuthError,
   clearPersistedAuthUser,
   clearUserScopedCachesOnLogout,
+  getPersistedAuthUser,
+  readUserIdFromStoredAuth,
 } from "@/lib/contexts/authContextHelpers";
 
 export interface UseAuthSessionSyncParams {
@@ -58,11 +61,27 @@ export function useAuthSessionSync({
         if (!isCurrent()) return;
         setAuthChecked(true);
         setIsLoadingAuth(false);
-        queryClientInstance.clear();
-        setUser(null);
-        setIsAuthenticated(false);
-        if (isApiError(error) && (error.status === 401 || error.status === 403)) {
+
+        const sessionRejected = isApiError(error) && (error.status === 401 || error.status === 403);
+        if (sessionRejected) {
+          // The session is genuinely gone: drop the tenant cache and identity.
+          queryClientInstance.clear();
           clearPersistedAuthUser();
+          setUser(null);
+          setIsAuthenticated(false);
+          return;
+        }
+
+        // Network error, timeout or 5xx — NOT an invalid session. Clearing the
+        // QueryClient here also stopped the IndexedDB persister and deleted the
+        // offline cache (`gcTime: 24h`), so a network blip on boot logged the
+        // user out AND destroyed the data the cache exists to provide. Fall back
+        // to the last persisted identity instead.
+        const persistedUser = getPersistedAuthUser();
+        setUser(persistedUser);
+        setIsAuthenticated(Boolean(persistedUser));
+        if (!persistedUser) {
+          setAuthError(buildConnectionAuthError(error));
         }
       } finally {
         if (isCurrent()) {
@@ -82,6 +101,12 @@ export function useAuthSessionSync({
     const handleStorage = (event: StorageEvent) => {
       if (event.key === AUTH_USER_STORAGE_KEY) {
         if (!event.newValue) {
+          // Another tab signed out: evict the previous user's scoped caches
+          // before clearing the shared cache, matching the logout path.
+          const previousUserId = readUserIdFromStoredAuth(event.oldValue);
+          if (previousUserId) {
+            clearUserScopedCachesOnLogout(previousUserId, getWorkspaceLocalStoragePrefix());
+          }
           setUser(null);
           setIsAuthenticated(false);
           setAuthChecked(true);

@@ -59,6 +59,12 @@ export const PLATFORM_CONSOLE_ENTRIES: readonly ApexConsoleEntry[] = [
     loader: () => import("@/platform/pages/PlatformReportsPage"),
   },
   {
+    id: "platformConsolidation",
+    path: ROUTES.platformConsolidation,
+    permission: "workspaces",
+    loader: () => import("@/platform/pages/PlatformConsolidationPage"),
+  },
+  {
     id: "onboarding",
     path: ROUTES.onboarding,
     permission: "onboard",

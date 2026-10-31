@@ -13,6 +13,33 @@ vi.mock("../db/database.js", () => ({
   getObject: vi.fn().mockResolvedValue(null),
 }));
 
+// The settings write path now runs the document write and its audit append in
+// one tenant transaction (see routes/common/db/dbObjectRoutes.ts). These tests
+// exercise the RBAC filtering, not Postgres, so the guard runs the callback with
+// the mocked client instead of opening a real transaction.
+// The audit append is now awaited inside the same transaction (no longer a
+// fire-and-forget `.catch()`), so stub the chain writer — this suite asserts the
+// RBAC field filtering, not the audit shard.
+vi.mock("../services/auditTrailService.js", async (importOriginal) => {
+  const actual = await importOriginal<typeof import("../services/auditTrailService.js")>();
+  return {
+    ...actual,
+    recordModernAuditEvent: vi.fn().mockResolvedValue({
+      hashPrevious: "",
+      hashCurrent: "",
+      canonicalPayload: "",
+    }),
+  };
+});
+
+vi.mock("../db/tenant-context.js", async (importOriginal) => {
+  const actual = await importOriginal<typeof import("../db/tenant-context.js")>();
+  return {
+    ...actual,
+    withTenant: (_tenant: string, cb: (tx: unknown) => Promise<unknown>) => cb({}),
+  };
+});
+
 vi.mock("../db/repositories/workspaceRepository.js", async (importOriginal) => {
   const actual = await importOriginal<typeof import("../db/repositories/workspaceRepository.js")>();
   return {

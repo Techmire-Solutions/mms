@@ -89,9 +89,10 @@ export default async function tasksRoutes(
         const updated = await updateTenantTaskSettings(request.body);
         return reply.status(200).send(updated);
       } catch (err) {
-        return reply
-          .status(400)
-          .send({ message: err instanceof Error ? err.message : "Invalid settings payload" });
+        return reply.status(400).send({
+          type: "validation_error",
+          message: err instanceof Error ? err.message : "Invalid settings payload",
+        });
       }
     },
   );
@@ -102,7 +103,7 @@ export default async function tasksRoutes(
     }
     const task = await findTaskById(String(request.tenant?.id), request.params.id);
     if (!task) {
-      return reply.status(404).send({ message: "Task not found" });
+      return reply.status(404).send({ type: "not_found", message: "Task not found" });
     }
     return reply.status(200).send(task);
   });
@@ -115,7 +116,11 @@ export default async function tasksRoutes(
     }
     const parsed = taskInsertSchema.safeParse(request.body);
     if (!parsed.success) {
-      return reply.status(400).send({ message: "Invalid payload", errors: parsed.error.issues });
+      return reply.status(400).send({
+        type: "validation_error",
+        message: "Invalid payload",
+        errors: parsed.error.issues,
+      });
     }
 
     if (parsed.data.assignees.length && !(await canPerformTaskAction(request, "tasks.assign"))) {
@@ -146,7 +151,11 @@ export default async function tasksRoutes(
     }
     const parsed = taskUpdateSchema.safeParse(request.body);
     if (!parsed.success) {
-      return reply.status(400).send({ message: "Invalid payload", errors: parsed.error.issues });
+      return reply.status(400).send({
+        type: "validation_error",
+        message: "Invalid payload",
+        errors: parsed.error.issues,
+      });
     }
 
     if (
@@ -184,13 +193,17 @@ export default async function tasksRoutes(
     }
     const parsed = taskStatusUpdateSchema.safeParse(request.body);
     if (!parsed.success) {
-      return reply.status(400).send({ message: "Invalid payload", errors: parsed.error.issues });
+      return reply.status(400).send({
+        type: "validation_error",
+        message: "Invalid payload",
+        errors: parsed.error.issues,
+      });
     }
     const tenant = String(request.tenant?.id);
     const previous = await findTaskById(tenant, request.params.id);
     const updated = await updateTaskStatus(tenant, request.params.id, parsed.data.status, user.id);
     if (!updated) {
-      return reply.status(404).send({ message: "Task not found" });
+      return reply.status(404).send({ type: "not_found", message: "Task not found" });
     }
     const settings = await getTenantTaskSettings();
     const { emitTaskNotificationIntents } =

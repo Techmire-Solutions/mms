@@ -25,8 +25,13 @@ export type {
   MessageLogsPageResult,
   MessagingMetricsFilterQuery,
 } from "./messagingLogsQueryRepository.js";
+export { queryFilteredMessageLogs, queryMessagingMetrics } from "./messagingLogsQueryRepository.js";
 export {
-  queryFilteredMessageLogs,
-  queryMessagingMetrics,
   softDeleteActiveMessageLogs,
-} from "./messagingLogsQueryRepository.js";
+  restoreArchivedMessageLog,
+  buildMessageLogClaimId,
+  claimMessageLogForDelivery,
+  updateMessageLogDeliveryStatus,
+  STALE_MESSAGE_LOG_CLAIM_MS,
+} from "./messagingLogsMutationRepository.js";
+export type { MessageLogClaim } from "./messagingLogsMutationRepository.js";

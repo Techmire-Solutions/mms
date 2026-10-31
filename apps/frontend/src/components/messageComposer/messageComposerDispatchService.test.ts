@@ -1,6 +1,10 @@
-import { describe, expect, it } from "vitest";
+import { describe, expect, it, vi } from "vitest";
 import type { StandardMessagingRecipient } from "@mms/shared";
-import { findUnknownTokens, validateMessagingRecipients } from "./messageComposerDispatchService";
+import {
+  executeRecipientSend,
+  findUnknownTokens,
+  validateMessagingRecipients,
+} from "./messageComposerDispatchService";
 
 describe("messageComposerDispatchService", () => {
   it("identifies unknown tokens in body and subject", () => {
@@ -30,5 +34,26 @@ describe("messageComposerDispatchService", () => {
     expect(emailValidated[0].isValid).toBe(true);
     expect(emailValidated[1].isValid).toBe(true);
     expect(emailValidated[2].isValid).toBe(false);
+  });
+
+  it("opens the mail composer without handing it an opener", () => {
+    const open = vi.spyOn(window, "open").mockReturnValue(null);
+
+    const sent = executeRecipientSend({
+      channel: "email",
+      recipient: { id: "1", name: "A", email: "a@example.com", phone: "" } as never,
+      text: "Hello",
+      subject: "Subject",
+      personalizeOptions: {},
+      defaultSubject: "Subject",
+    });
+
+    expect(sent).toBe(true);
+    expect(open).toHaveBeenCalledWith(
+      expect.stringContaining("mailto:a@example.com"),
+      "_blank",
+      "noopener,noreferrer",
+    );
+    open.mockRestore();
   });
 });

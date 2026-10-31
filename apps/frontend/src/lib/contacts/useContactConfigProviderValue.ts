@@ -20,6 +20,9 @@ type ContactConfigProviderInput = Partial<ContactConfigExtras> & {
 
 const EMPTY_ARRAY: never[] = [];
 const EMPTY_OBJECT: Record<string, never> = {};
+const DEFAULT_REQUIRED_TABS: string[] = ["basic"];
+const NOOP = () => {};
+const ASYNC_NOOP = async () => {};
 
 /**
  * Builds ContactConfig context value.
@@ -32,10 +35,10 @@ export function useContactConfigProviderValue(
 ): ContactConfigContextType {
   const {
     prefs: rawPrefs,
-    updateConfig = () => {},
-    updateConfigAsync = async () => {},
-    updatePrefs = () => {},
-    updatePrefsAsync = async () => {},
+    updateConfig = NOOP,
+    updateConfigAsync = ASYNC_NOOP,
+    updatePrefs = NOOP,
+    updatePrefsAsync = ASYNC_NOOP,
     genders = EMPTY_ARRAY,
     socialPlatforms = EMPTY_ARRAY,
     phoneLabels = EMPTY_ARRAY,
@@ -51,24 +54,24 @@ export function useContactConfigProviderValue(
     tags = EMPTY_ARRAY,
     lookupsLoading = false,
     lookupsError = null,
-    updateGenders = () => {},
-    updateSocialPlatforms = () => {},
-    updateRelationships = () => {},
-    updatePhoneLabels = () => {},
-    updateEmailLabels = () => {},
-    updateAddressLabels = () => {},
-    updateEducationDegrees = () => {},
-    updateEmploymentTypes = () => {},
-    updateSkillCategories = () => {},
-    updateSkillProficiencies = () => {},
-    updateBankNames = () => {},
-    updateTags = () => {},
-    updateCountryCodes = () => {},
+    updateGenders = NOOP,
+    updateSocialPlatforms = NOOP,
+    updateRelationships = NOOP,
+    updatePhoneLabels = NOOP,
+    updateEmailLabels = NOOP,
+    updateAddressLabels = NOOP,
+    updateEducationDegrees = NOOP,
+    updateEmploymentTypes = NOOP,
+    updateSkillCategories = NOOP,
+    updateSkillProficiencies = NOOP,
+    updateBankNames = NOOP,
+    updateTags = NOOP,
+    updateCountryCodes = NOOP,
     systemSortOptions = EMPTY_ARRAY,
     fields = EMPTY_OBJECT,
     formTabs = EMPTY_ARRAY,
     enabledTabs = EMPTY_ARRAY,
-    requiredTabs = ["basic"],
+    requiredTabs = DEFAULT_REQUIRED_TABS,
   } = config || {};
 
   const resolvedFields = React.useMemo(() => {

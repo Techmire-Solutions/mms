@@ -42,8 +42,8 @@ vi.mock("@/tenant/hooks/collections/users", () => ({
   }),
 }));
 
-vi.mock("@/components/app/Drawer", () => ({
-  Drawer: ({
+vi.mock("@/components/app/DetailDrawerShell", () => ({
+  DetailDrawerShell: ({
     title,
     subtitle,
     headerActions,

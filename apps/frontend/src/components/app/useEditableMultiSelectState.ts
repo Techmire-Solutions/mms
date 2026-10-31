@@ -12,6 +12,7 @@ export interface UseEditableMultiSelectStateParams {
   values: string[];
   onChange: (values: string[]) => void;
   onUpdateOptions?: (options: string[]) => void;
+  triggerRef?: React.RefObject<HTMLButtonElement | null>;
 }
 
 export function useEditableMultiSelectState({
@@ -19,13 +20,15 @@ export function useEditableMultiSelectState({
   values,
   onChange,
   onUpdateOptions,
+  triggerRef,
 }: UseEditableMultiSelectStateParams) {
   const [open, setOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const deferredSearchQuery = useDeferredValue(searchQuery);
   const [newTagValue, setNewTagValue] = useState("");
   const [highlightedIndex, setHighlightedIndex] = useState(-1);
-  const triggerRef = React.useRef<HTMLButtonElement>(null);
+  const internalTriggerRef = React.useRef<HTMLButtonElement>(null);
+  const resolvedTriggerRef = triggerRef ?? internalTriggerRef;
 
   const canRemoveOptions = Boolean(onUpdateOptions);
 
@@ -40,9 +43,9 @@ export function useEditableMultiSelectState({
     (valToRemove: string, event: React.SyntheticEvent): void => {
       event.stopPropagation();
       onChange(removeSelectedValue(values, valToRemove));
-      triggerRef.current?.focus();
+      resolvedTriggerRef.current?.focus();
     },
-    [onChange, values],
+    [onChange, resolvedTriggerRef, values],
   );
 
   const handleRemoveOption = useCallback(
@@ -91,7 +94,6 @@ export function useEditableMultiSelectState({
     setNewTagValue,
     highlightedIndex,
     setHighlightedIndex,
-    triggerRef,
     canRemoveOptions,
     toggleOption,
     removeValue,

@@ -1,6 +1,7 @@
 /** @type {import('pm2').StartOptions} */
 const path = require("path");
 const fs = require("fs");
+const os = require("os");
 
 const root = __dirname;
 const backendEnvPath = path.join(root, "apps/backend/.env");
@@ -31,21 +32,30 @@ if (fs.existsSync(backendEnvPath)) {
   }
 }
 
+// PM2 cluster mode opens one pool per instance. Derive the per-process pool from
+// the server's connection budget so N instances cannot exhaust Postgres.
+const requestedInstances = process.env.PM2_INSTANCES;
+const apiInstances = requestedInstances
+  ? Number(requestedInstances) || requestedInstances
+  : Math.min(os.cpus().length, 4);
+const instanceCount = typeof apiInstances === "number" ? Math.max(1, apiInstances) : 1;
+const maxDbConnections = Number(process.env.PG_MAX_CONNECTIONS || 100);
+const workerPool = 10;
+const derivedPool = Math.max(5, Math.floor((maxDbConnections - workerPool) / instanceCount));
+backendEnv.PG_POOL_MAX = String(derivedPool);
+
 module.exports = {
   apps: [
     {
       name: "mmsv2-backend",
       cwd: root,
       script: path.join(root, "apps/backend/dist/index.js"),
-      instances: process.env.PM2_INSTANCES
-        ? Number.isNaN(Number(process.env.PM2_INSTANCES))
-          ? process.env.PM2_INSTANCES
-          : Number(process.env.PM2_INSTANCES)
-        : "max",
+      instances: apiInstances,
       exec_mode: process.env.PM2_EXEC_MODE || "cluster",
       autorestart: true,
       max_restarts: 15,
       min_uptime: "10s",
+      kill_timeout: 70000,
       max_memory_restart: "1800M",
       node_args: "--max-old-space-size=1536",
       time: true,
@@ -63,6 +73,8 @@ module.exports = {
       autorestart: true,
       max_restarts: 15,
       min_uptime: "10s",
+      // 15s above WORKER_FORCE_EXIT_MS (75s): the process exits before SIGKILL.
+      kill_timeout: 90000,
       max_memory_restart: "1800M",
       node_args: "--max-old-space-size=1536",
       time: true,

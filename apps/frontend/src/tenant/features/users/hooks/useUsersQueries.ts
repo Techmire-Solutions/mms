@@ -1,3 +1,4 @@
+import { useMemo } from "react";
 import type {
   WorkspaceUser,
   ActivityLog,
@@ -51,14 +52,17 @@ export function useUsersByIds(
   });
 
   const responseData: unknown = query.data?.status === 200 ? query.data.body : undefined;
-  const users = Array.isArray(responseData)
-    ? responseData
-    : ((responseData as { users?: unknown[] } | null)?.users ?? []);
+  const normalizedUsers = useMemo(() => {
+    const rawUsers = Array.isArray(responseData)
+      ? responseData
+      : ((responseData as { users?: unknown[] } | null)?.users ?? []);
+    return rawUsers.map((user) =>
+      normalizeWorkspaceUser(user as Partial<SystemUser> & { roles?: string[]; role?: string }),
+    ) as WorkspaceUser[];
+  }, [responseData]);
   return {
     ...query,
-    data: users.map((user) =>
-      normalizeWorkspaceUser(user as Partial<SystemUser> & { roles?: string[]; role?: string }),
-    ) as WorkspaceUser[],
+    data: normalizedUsers,
   };
 }
 
@@ -99,6 +103,7 @@ export function useActivityLogsCollection(options?: { enabled?: boolean }): Acti
 
 import { queryOptions, useQueryClient } from "@tanstack/react-query";
 import { invalidateUsersQueries } from "@/tenant/features/users/hooks/invalidateUsersQueries";
+import { assertContractOk } from "@/lib/apiContractError";
 
 export function usersListQueryOptions(
   query: {
@@ -119,9 +124,7 @@ export function usersListQueryOptions(
         signal,
         fetchOptions: { signal },
       });
-      if (response.status !== 200) {
-        throw new Error("Failed to fetch users");
-      }
+      assertContractOk(response, "Failed to fetch users");
       return response.body;
     },
     placeholderData: (prev) => prev,

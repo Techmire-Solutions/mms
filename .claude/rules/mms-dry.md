@@ -39,7 +39,7 @@ paths:
 - **File Sizing Decomp:** When single files exceed the 300-line cap (`mms-structure-naming.md` §3), decompose by concern within the feature folder without modifying barrel exports.
 
 ## 3. Monorepo Layer Boundaries
-- **`@mms/shared`:** Pure validation schemas, types, constants, default configs, and formatters. Named exports only; subpath imports banned. Zero React, DOM, Fastify, or DB dependencies.
+- **`@mms/shared`:** Pure validation schemas, types, constants, default configs, and formatters. Named exports only; no `@mms/shared/src/**` deep imports — only the root entry point and the subpaths declared in `packages/shared/package.json` `exports` (`mms-structure-naming.md` §1). Zero React, DOM, Fastify, or DB dependencies.
 - **`apps/frontend`:** React hooks, UI primitives, providers, TanStack Query facades. Ban direct cross-feature imports (`featureA` from `featureB`); route via `@/tenant/hooks/collections/*` facades or promote to `components/app` (composites) / `@shared/ui` (`packages/ui`) (primitives).
 - **`apps/backend`:** Fastify routes, services, repositories, and Drizzle schemas/queries.
 

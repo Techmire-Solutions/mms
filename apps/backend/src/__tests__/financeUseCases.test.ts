@@ -26,6 +26,7 @@ function createFakeRepo(): FinanceRepository {
     savePayment: vi.fn().mockResolvedValue(undefined),
     bulkSoftDeletePayments: vi.fn().mockResolvedValue({ succeeded: 0, failed: 0 }),
     bulkRestorePayments: vi.fn().mockResolvedValue({ succeeded: 0, failed: 0 }),
+    findLedgerPostingIdBySource: vi.fn().mockResolvedValue(null),
     listPaymentsPage: vi.fn().mockResolvedValue({
       payments: [],
       total: 0,

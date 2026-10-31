@@ -31,7 +31,19 @@ export default function OpenRegistrationsPage(): React.JSX.Element {
         {query.isError ? (
           <ErrorState title={t("apply.loadFailed")} onRetry={() => void query.refetch()} />
         ) : query.data.length === 0 ? (
-          <EmptyState icon={ClipboardList} title={t("apply.noneOpen")} />
+          <EmptyState
+            icon={ClipboardList}
+            title={t("apply.noneOpen")}
+            description={t("apply.noneOpenDesc")}
+            action={
+              <Link
+                to={ROUTES.login}
+                className="inline-flex min-h-11 items-center justify-center rounded-md border border-border bg-card px-4 text-sm font-medium text-foreground transition-colors hover:bg-muted"
+              >
+                {t("apply.signIn")}
+              </Link>
+            }
+          />
         ) : (
           <ul className="grid gap-3 sm:grid-cols-2">
             {query.data.map((item) => (

@@ -22,6 +22,7 @@ export async function listEnrollmentsByWorkspace(
       .select(ENROLLMENT_COLUMNS)
       .from(enrollments)
       .where(and(eq(enrollments.workspaceSubdomain, subdomain), isNull(enrollments.deletedAt)))
+      .orderBy(enrollments.id)
       .limit(limit)
       .offset(offset);
     if (rows.length === 0) return [];

@@ -1,5 +1,5 @@
 import { ENTITY_CARD_OVERFLOW_TRIGGER_CLASS } from "@/components/app/entityCardChrome";
-import { EntityCardFooterActions } from "@/components/app/EntityCardFooterActions";
+import { DirectoryCardFooterActions } from "@/components/app/DirectoryCardFooterActions";
 import { useTranslation } from "@/hooks/useTranslation";
 import type { Faculty } from "@mms/shared";
 import { FacultyListRowActions } from "@/tenant/features/faculty/components/FacultyListRowActions";
@@ -39,7 +39,7 @@ export function FacultyCardActions({
   const { t } = useTranslation();
 
   return (
-    <EntityCardFooterActions
+    <DirectoryCardFooterActions
       onView={() => onView(faculty)}
       viewLabel={t("faculty.actionViewShort")}
       viewAriaLabel={`${t("faculty.list.viewDetails")} - ${displayName}`}

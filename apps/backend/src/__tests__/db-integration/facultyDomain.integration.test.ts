@@ -15,7 +15,7 @@ import { requireDatabaseConnection } from "./dbTestSupport.js";
  */
 
 async function queryRows<T>(statement: string): Promise<T[]> {
-  const tx = await beginLongLivedTenantTransaction(null);
+  const tx = await beginLongLivedTenantTransaction(null, { allowGlobal: true });
   try {
     const result = await tx.tx.execute(sql.raw(statement));
     await tx.rollback();

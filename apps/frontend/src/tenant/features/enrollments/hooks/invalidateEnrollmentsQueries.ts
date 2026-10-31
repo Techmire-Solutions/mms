@@ -4,7 +4,7 @@ import {
   ENROLLMENTS_QUERY_KEY,
   ENROLLMENTS_REPORT_AGGREGATES_QUERY_KEY,
   ENROLLMENTS_WIDGET_AGGREGATES_QUERY_KEY,
-} from "@/tenant/features/enrollments/hooks/useEnrollmentsApi";
+} from "./enrollmentsQueryKeys.js";
 
 /** Invalidate Enrollments list/metrics/widget-aggregates/report-aggregates/setup Query keys. */
 export function invalidateEnrollmentsQueries(queryClient: QueryClient): void {

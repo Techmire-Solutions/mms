@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import { useState } from "react";
 import { Gift } from "lucide-react";
 import { type Redemption, type Distribution } from "@/lib/data/hasanatData";
 import { DatePicker } from "@/components/app/DatePicker";
@@ -34,6 +34,8 @@ export function RedeemModal({ open, distributions, onClose, onSave }: RedeemModa
     date: todayISO(),
     approvedByUserId: "",
   });
+  const [previousOpen, setPreviousOpen] = useState(open);
+  const [previousDistributions, setPreviousDistributions] = useState(distributions);
 
   const updateField = <K extends keyof Redemption>(field: K, value: Redemption[K]) => {
     setData((previousData: Partial<Redemption>) => ({ ...previousData, [field]: value }));
@@ -50,7 +52,10 @@ export function RedeemModal({ open, distributions, onClose, onSave }: RedeemModa
     (distribution) => distribution.id === data.distributionId,
   );
 
-  React.useEffect(() => {
+  // Re-seed the draft during render when the modal is (re)opened or the source list changes.
+  if (previousOpen !== open || previousDistributions !== distributions) {
+    setPreviousOpen(open);
+    setPreviousDistributions(distributions);
     if (open) {
       const active = distributions.filter((distribution) => distribution.status === "active");
       setData({
@@ -64,7 +69,7 @@ export function RedeemModal({ open, distributions, onClose, onSave }: RedeemModa
       setErrors({});
       setSubmitError(null);
     }
-  }, [open, distributions]);
+  }
 
   const handleSave = async () => {
     const newErrors: Record<string, string> = {};

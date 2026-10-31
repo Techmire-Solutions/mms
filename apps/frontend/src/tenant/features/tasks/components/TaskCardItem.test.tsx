@@ -26,12 +26,12 @@ vi.mock("@/components/app/EntityCard", () => {
   return { EntityCard };
 });
 
-vi.mock("@/components/app/EntityCardMetaTile", () => ({
-  EntityCardMetaTile: ({ children }: { children: React.ReactNode }) => <div>{children}</div>,
+vi.mock("@/components/app/DirectoryCardMetaTile", () => ({
+  DirectoryCardMetaTile: ({ children }: { children: React.ReactNode }) => <div>{children}</div>,
 }));
 
-vi.mock("@/components/app/EntityCardFooterActions", () => ({
-  EntityCardFooterActions: () => null,
+vi.mock("@/components/app/DirectoryCardFooterActions", () => ({
+  DirectoryCardFooterActions: () => null,
 }));
 
 vi.mock("@/components/common/data-table", () => ({

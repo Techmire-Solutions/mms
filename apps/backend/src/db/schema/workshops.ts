@@ -1,9 +1,8 @@
 /**
- * Reserved module — schema only, no application surface (see `inventory.ts`).
- * No repository/route/use-case reads these tables; do not add CRUD without
- * product sign-off — removal needs a forward-only `DROP TABLE` migration.
- * Migration 0178 aligned the workshop tables with the short-course plan (capacity, deadline,
- * fee, program / subject, soft-delete, per-day `workshop_attendance`) ahead of that surface.
+ * Workshops module (product sign-off 2026-10-24). Migration 0178 aligned these tables with the
+ * short-course plan (capacity, deadline, fee, program / subject, soft-delete, per-day
+ * `workshop_attendance`); 0185 made the event dates calendar days and added timestamps, the
+ * per-criterion score key and CHECK constraints. `competition_*` below remain reserved.
  */
 import {
   pgTable,
@@ -34,13 +33,15 @@ export const workshopEvents = pgTable(
       .references(() => workspaces.subdomain, { onDelete: "cascade" }),
     title: text("title").notNull(),
     description: text("description"),
-    startDate: timestamp("start_date", { withTimezone: true, mode: "date" }),
-    endDate: timestamp("end_date", { withTimezone: true, mode: "date" }),
+    startDate: date("start_date", { mode: "string" }),
+    endDate: date("end_date", { mode: "string" }),
     capacity: integer("capacity"),
-    registrationDeadline: timestamp("registration_deadline", { withTimezone: true, mode: "date" }),
+    registrationDeadline: date("registration_deadline", { mode: "string" }),
     fee: numeric("fee", { precision: 12, scale: 2 }),
     programId: text("program_id"),
     subjectId: text("subject_id"),
+    minAttendancePct: numeric("min_attendance_pct", { precision: 5, scale: 2 }),
+    minScorePct: numeric("min_score_pct", { precision: 5, scale: 2 }),
     ...softDeleteColumns,
     createdAt: timestamp("created_at", { withTimezone: true, mode: "date" }).defaultNow().notNull(),
     updatedAt: timestamp("updated_at", { withTimezone: true, mode: "date" }).defaultNow().notNull(),
@@ -84,7 +85,11 @@ export const workshopParticipants = pgTable(
     workshopId: text("workshop_id").notNull(),
     contactId: text("contact_id").notNull(),
     status: varchar("status", { length: 20 }).default("registered").notNull(), // 'registered' | 'attended' | 'completed'
+    completedAt: timestamp("completed_at", { withTimezone: true, mode: "date" }),
+    certificateIssuedAt: timestamp("certificate_issued_at", { withTimezone: true, mode: "date" }),
     ...softDeleteColumns,
+    createdAt: timestamp("created_at", { withTimezone: true, mode: "date" }).defaultNow().notNull(),
+    updatedAt: timestamp("updated_at", { withTimezone: true, mode: "date" }).defaultNow().notNull(),
   },
   (table) => [
     primaryKey({ columns: [table.workspaceSubdomain, table.id] }),
@@ -174,6 +179,8 @@ export const workshopScores = pgTable(
     score: numeric("score", { precision: 15, scale: 2 }).notNull(),
     maxScore: numeric("max_score", { precision: 15, scale: 2 }).notNull(),
     remarks: text("remarks"),
+    createdAt: timestamp("created_at", { withTimezone: true, mode: "date" }).defaultNow().notNull(),
+    updatedAt: timestamp("updated_at", { withTimezone: true, mode: "date" }).defaultNow().notNull(),
   },
   (table) => [
     primaryKey({ columns: [table.workspaceSubdomain, table.id] }),
@@ -186,12 +193,27 @@ export const workshopScores = pgTable(
       foreignColumns: [workshopParticipants.workspaceSubdomain, workshopParticipants.id],
     }).onDelete("cascade"),
     index("workshop_scores_workspace_workshop_idx").on(table.workspaceSubdomain, table.workshopId),
+    uniqueIndex("workshop_scores_participant_criterion_uidx").on(
+      table.workspaceSubdomain,
+      table.participantId,
+      table.criterionName,
+    ),
     index("workshop_scores_workspace_participant_idx").on(
       table.workspaceSubdomain,
       table.participantId,
     ),
   ],
 );
+
+/** Per-workspace Setup defaults applied to new workshops (migration 0186). */
+export const workshopModulePreferences = pgTable("workshop_module_preferences", {
+  workspaceSubdomain: text("workspace_subdomain")
+    .primaryKey()
+    .references(() => workspaces.subdomain, { onDelete: "cascade" }),
+  defaultMinAttendancePct: numeric("default_min_attendance_pct", { precision: 5, scale: 2 }),
+  defaultMinScorePct: numeric("default_min_score_pct", { precision: 5, scale: 2 }),
+  updatedAt: timestamp("updated_at", { withTimezone: true, mode: "date" }).defaultNow().notNull(),
+});
 
 export const competitionEvents = pgTable(
   "competition_events",

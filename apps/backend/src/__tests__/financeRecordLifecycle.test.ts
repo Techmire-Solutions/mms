@@ -145,6 +145,48 @@ describe("payment archive / restore", () => {
     );
   });
 
+  it("un-collects a cross-currency payment by its invoice-currency amount", async () => {
+    // 280,000 PKR settles a 1,000-unit invoice: `paidAmt` tracks the invoice
+    // currency, so subtracting the cash figure would zero it incorrectly.
+    const repo = repoWith(
+      [invoice({ paidAmt: 100, status: "paid" })],
+      [
+        payment({
+          amount: 280000,
+          invoiceAmount: 100,
+          deletedAt: "2026-02-01T10:00:00.000Z",
+        } as never),
+      ],
+    );
+
+    await onPaymentsArchived(repo, TENANT, ["pay-1"]);
+
+    expect(repo.saveInvoice).toHaveBeenCalledWith(
+      TENANT,
+      expect.objectContaining({ paidAmt: 0, status: "pending" }),
+    );
+    expect(repo.findInvoicesByIds).toHaveBeenCalledWith(TENANT, ["inv-1"], {
+      includeDeleted: true,
+      forUpdate: true,
+    });
+  });
+
+  it("re-collects a cross-currency payment by its invoice-currency amount", async () => {
+    const repo = repoWith([invoice({ paidAmt: 0, status: "pending" })]);
+
+    await onPaymentsRestored(repo, TENANT, [
+      {
+        payment: payment({ amount: 280000, invoiceAmount: 100 } as never),
+        archivedAt: "2026-02-01T10:00:00.000Z",
+      },
+    ]);
+
+    expect(repo.saveInvoice).toHaveBeenCalledWith(
+      TENANT,
+      expect.objectContaining({ paidAmt: 100, status: "paid" }),
+    );
+  });
+
   it("writes the invoice once when several of its payments are archived together", async () => {
     const repo = repoWith(
       [invoice({ paidAmt: 100 })],

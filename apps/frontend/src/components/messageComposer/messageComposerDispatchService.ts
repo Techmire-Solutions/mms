@@ -82,20 +82,25 @@ export function executeRecipientSend({
       recipient,
       personalizeOptions,
     );
-    return (
-      window.open(
-        `mailto:${recipient.email}?subject=${encodeURIComponent(personalizedSubject)}&body=${encodeURIComponent(personalizedBody)}`,
-        "_blank",
-      ) !== null
+    window.open(
+      `mailto:${recipient.email}?subject=${encodeURIComponent(personalizedSubject)}&body=${encodeURIComponent(personalizedBody)}`,
+      "_blank",
+      "noopener,noreferrer",
     );
+    // `noopener` may make the returned handle null even when the composer opens,
+    // so success is "the call did not throw", not "a WindowProxy was returned".
+    return true;
   }
   if (!recipient.phone) return false;
   if (channel === "sms") return openDeviceSmsComposer(recipient.phone, personalizedBody);
   const numberId = PuppeteerWhatsAppProvider.getNumberId(recipient.phone);
-  return Boolean(
-    numberId &&
-    window.open(`https://wa.me/${numberId}?text=${encodeURIComponent(personalizedBody)}`, "_blank"),
+  if (!numberId) return false;
+  window.open(
+    `https://wa.me/${numberId}?text=${encodeURIComponent(personalizedBody)}`,
+    "_blank",
+    "noopener,noreferrer",
   );
+  return true;
 }
 
 export interface SaveDispatchHistoryParams {

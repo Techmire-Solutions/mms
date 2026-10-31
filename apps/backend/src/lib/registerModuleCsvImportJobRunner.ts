@@ -1,4 +1,5 @@
 import { registerBackgroundJobRunner } from "../services/backgroundJobWorkerService.js";
+import { throwIfBackgroundJobAborted } from "./backgroundJobAbort.js";
 
 export type ModuleCsvImportJobPayload<TRow = unknown> = {
   rows: TRow[];
@@ -38,7 +39,9 @@ export function registerModuleCsvImportJobRunner<TRow = unknown>(
     const rows = Array.isArray(importPayload.rows) ? importPayload.rows : [];
     const total = rows.length;
 
+    throwIfBackgroundJobAborted(ctx.signal);
     await ctx.updateProgress(0, Math.max(total, 1));
+    throwIfBackgroundJobAborted(ctx.signal);
 
     const result = await options.importBatch(rows, {
       tenant: ctx.tenant,
@@ -48,6 +51,7 @@ export function registerModuleCsvImportJobRunner<TRow = unknown>(
       updateProgress: (current, tot) => ctx.updateProgress(current, tot),
     });
 
+    throwIfBackgroundJobAborted(ctx.signal);
     const finalTotal = result.total ?? total;
     const importedCount = result.imported;
     const noun = options.entityNounPlural;

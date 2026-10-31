@@ -1,9 +1,9 @@
 import type React from "react";
 import { formatDate } from "@mms/shared";
 import { TimePicker } from "@/components/app/TimePicker";
-import { EntityCardMetaTile } from "@/components/app/EntityCardMetaTile";
+import { DirectoryCardMetaTile } from "@/components/app/DirectoryCardMetaTile";
 import { EntityCard } from "@/components/app/EntityCard";
-import { DirectoryCard } from "@/components/app/DirectoryCard";
+import { DirectoryEntityCard } from "@/components/app/DirectoryEntityCard";
 import type { TranslationFunction } from "@/lib/contexts/TranslationContext";
 import type { AttendanceRecord, AttendanceStatus } from "@/lib/data/attendanceData";
 import { AttendanceRecordStatusCell } from "./AttendanceRecordStatusCell";
@@ -31,7 +31,7 @@ const getAttendanceAccentClass = (status?: string): string => {
   return "bg-primary/50 group-hover:bg-primary";
 };
 
-/** Work directory card — DirectoryCard SSOT (do not hand-compose EntityCard). */
+/** Work directory card — DirectoryEntityCard SSOT (do not hand-compose EntityCard). */
 export function AttendanceCard({
   attendanceRecord,
   isColumnVisible,
@@ -47,7 +47,7 @@ export function AttendanceCard({
   t,
 }: AttendanceCardProps): React.JSX.Element {
   return (
-    <DirectoryCard
+    <DirectoryEntityCard
       entity={attendanceRecord}
       selectedIds={selectedIds}
       canSelect={canDelete}
@@ -65,27 +65,27 @@ export function AttendanceCard({
       metadataSlot={
         <EntityCard.MetaGrid>
           {isColumnVisible("date") && (
-            <EntityCardMetaTile label={t("attendance.columns.date")}>
+            <DirectoryCardMetaTile label={t("attendance.columns.date")}>
               <span className="font-mono">{formatDate(attendanceRecord.date, true)}</span>
-            </EntityCardMetaTile>
+            </DirectoryCardMetaTile>
           )}
           {isColumnVisible("session") && (
-            <EntityCardMetaTile label={t("attendance.columns.session")}>
+            <DirectoryCardMetaTile label={t("attendance.columns.session")}>
               {attendanceRecord.sessionName || "—"}
-            </EntityCardMetaTile>
+            </DirectoryCardMetaTile>
           )}
           {isColumnVisible("status") && (
-            <EntityCardMetaTile label={t("attendance.columns.status")}>
+            <DirectoryCardMetaTile label={t("attendance.columns.status")}>
               <AttendanceRecordStatusCell
                 attendanceRecord={attendanceRecord}
                 editingRecord={editingRecord}
                 statuses={statuses}
                 updateDraft={updateDraft}
               />
-            </EntityCardMetaTile>
+            </DirectoryCardMetaTile>
           )}
           {isColumnVisible("timeIn") && (
-            <EntityCardMetaTile label={t("attendance.columns.timeIn")}>
+            <DirectoryCardMetaTile label={t("attendance.columns.timeIn")}>
               {editingRecord?.id === attendanceRecord.id ? (
                 <TimePicker
                   id={`attendance-mobile-time-in-${attendanceRecord.id}`}
@@ -100,10 +100,10 @@ export function AttendanceCard({
                   {attendanceRecord.timeIn || "—"}
                 </span>
               )}
-            </EntityCardMetaTile>
+            </DirectoryCardMetaTile>
           )}
           {isColumnVisible("timeOut") && (
-            <EntityCardMetaTile label={t("attendance.columns.timeOut")}>
+            <DirectoryCardMetaTile label={t("attendance.columns.timeOut")}>
               {editingRecord?.id === attendanceRecord.id ? (
                 <TimePicker
                   id={`attendance-mobile-time-out-${attendanceRecord.id}`}
@@ -118,14 +118,14 @@ export function AttendanceCard({
                   {attendanceRecord.timeOut || "—"}
                 </span>
               )}
-            </EntityCardMetaTile>
+            </DirectoryCardMetaTile>
           )}
           {isColumnVisible("notes") && (
-            <EntityCardMetaTile label={t("attendance.columns.notes")}>
+            <DirectoryCardMetaTile label={t("attendance.columns.notes")}>
               <span className="break-words text-xs text-muted-foreground">
                 {attendanceRecord.notes || "—"}
               </span>
-            </EntityCardMetaTile>
+            </DirectoryCardMetaTile>
           )}
         </EntityCard.MetaGrid>
       }

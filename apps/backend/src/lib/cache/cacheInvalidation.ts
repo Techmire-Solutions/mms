@@ -148,3 +148,22 @@ export function initCacheInvalidationSubscriber(): () => void {
     }
   };
 }
+
+/** True once the pub/sub subscriber has been created for this process. */
+export function hasCacheInvalidationSubscriber(): boolean {
+  return isSubscriberInitialized;
+}
+
+/**
+ * Starts the cross-node invalidation subscriber. Must be called from process
+ * bootstrap: without it, `invalidateMultiTierCache` still evicts the local L1
+ * and the shared L2 key, but other instances keep their stale L1 entries until
+ * the TTL expires.
+ *
+ * Returns false when Redis pub/sub is unavailable so the caller can log the
+ * degradation (dev/test runs without Redis are expected to return false).
+ */
+export function startCacheInvalidationSubscriber(): boolean {
+  initCacheInvalidationSubscriber();
+  return isSubscriberInitialized;
+}

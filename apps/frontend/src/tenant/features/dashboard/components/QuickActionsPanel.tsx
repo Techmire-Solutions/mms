@@ -65,7 +65,6 @@ export function QuickActionsPanel({
             >
               <Link
                 to={href}
-                aria-label={label}
                 className="relative overflow-hidden group/item flex flex-col items-start gap-2.5 p-3.5 rounded-xl border border-border/70 bg-card/20 hover:bg-card/45 hover:-translate-y-1 hover:border-primary/20 hover:shadow-md transition-all duration-300 text-start h-full w-full shadow-xs"
               >
                 <div

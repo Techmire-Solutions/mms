@@ -79,7 +79,7 @@ describe("Cross-Console Shared UI Parity (Platform vs Tenant)", () => {
     expect(themeWrapper.className).toContain("dark");
     expect(themeWrapper.style.getPropertyValue("--primary")).toBe("#d99b00");
     // Luminance > 0.179 -> black text for accessibility
-    expect(themeWrapper.style.getPropertyValue("--primary-foreground")).toBe("#000000");
+    expect(themeWrapper.style.getPropertyValue("--primary-foreground")).toBe("black");
 
     expect(container.textContent).toContain("Create Workspace");
     expect(container.textContent).toContain("Al-Huda Institute");
@@ -125,7 +125,7 @@ describe("Cross-Console Shared UI Parity (Platform vs Tenant)", () => {
     const themeWrapper = container.firstElementChild as HTMLElement;
     expect(themeWrapper.style.getPropertyValue("--primary")).toBe("#0f766e");
     // Deep emerald luminance <= 0.179 -> white text for contrast
-    expect(themeWrapper.style.getPropertyValue("--primary-foreground")).toBe("#ffffff");
+    expect(themeWrapper.style.getPropertyValue("--primary-foreground")).toBe("white");
 
     expect(container.textContent).toContain("إضافة طالب");
     const searchInput = container.querySelector("input[type='search']") as HTMLInputElement;
@@ -162,9 +162,9 @@ describe("Cross-Console Shared UI Parity (Platform vs Tenant)", () => {
     const tenantRoot = container.querySelector("#tenant-scope")?.parentElement as HTMLElement;
 
     expect(platformRoot.style.getPropertyValue("--primary")).toBe("#d99b00");
-    expect(platformRoot.style.getPropertyValue("--primary-foreground")).toBe("#000000");
+    expect(platformRoot.style.getPropertyValue("--primary-foreground")).toBe("black");
 
     expect(tenantRoot.style.getPropertyValue("--primary")).toBe("#0f766e");
-    expect(tenantRoot.style.getPropertyValue("--primary-foreground")).toBe("#ffffff");
+    expect(tenantRoot.style.getPropertyValue("--primary-foreground")).toBe("white");
   });
 });

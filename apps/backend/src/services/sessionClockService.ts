@@ -1,4 +1,4 @@
-import { redisDel, redisGet, redisSet } from "../lib/redis.js";
+import { redisDel, redisGetStrict, redisSet } from "../lib/redis.js";
 import { revokeToken } from "./authSessionService.js";
 
 const SESSION_ACTIVITY_PREFIX = "session:idle:";
@@ -40,7 +40,7 @@ function activityKey(scope: string): string {
 }
 
 async function readClock(scope: string): Promise<SessionClockRecord | null> {
-  const raw = await redisGet(activityKey(scope));
+  const raw = await redisGetStrict(activityKey(scope));
   if (!raw) return null;
   try {
     const parsed = JSON.parse(raw) as SessionClockRecord;

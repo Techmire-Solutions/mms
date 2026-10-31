@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useState } from "react";
 import { Lock } from "lucide-react";
 import { FormModal } from "@/components/app/FormModal";
 import { Field } from "@/components/app/FormPrimitives";
@@ -15,9 +15,12 @@ export function SessionLockOverrideDialog(): React.JSX.Element | null {
   const prompt = useSessionLockOverridePrompt();
   const [reason, setReason] = useState("");
 
-  useEffect(() => {
+  // Every new prompt starts with an empty reason (render-phase reset, no effect).
+  const [prevPrompt, setPrevPrompt] = useState(prompt);
+  if (prevPrompt !== prompt) {
+    setPrevPrompt(prompt);
     if (prompt) setReason("");
-  }, [prompt]);
+  }
 
   if (!prompt) return null;
   const fields = prompt.violations.map((code) => t(`sessions.lock.field.${code}`)).join(", ");

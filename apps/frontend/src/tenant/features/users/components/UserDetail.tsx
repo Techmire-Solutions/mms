@@ -1,4 +1,4 @@
-import React, { lazy, Suspense, useState } from "react";
+import React, { useState } from "react";
 import { Shield } from "lucide-react";
 import {
   filterRbacModulesForSettings,
@@ -9,7 +9,7 @@ import {
 import { useTranslation } from "@/hooks/useTranslation";
 import { useGlobalSettings } from "@/tenant/hooks/useGlobalSettings";
 import { useWorkspaceRoles } from "@/tenant/hooks/useWorkspaceRoles";
-import { Drawer } from "@/components/app/Drawer";
+import { DetailDrawerShell } from "@/components/app/DetailDrawerShell";
 import {
   DetailDrawerArchivedBanner,
   DetailDrawerRestoreOrEditAction,
@@ -19,8 +19,7 @@ import { notify } from "@/lib/notify";
 import { usePermissions } from "@/tenant/hooks/usePermissions";
 import { useUsersContractVerifyEmail } from "@/tenant/hooks/collections/users";
 import { UserDetailSections } from "@/tenant/features/users/components/UserDetailSections";
-
-const MessageComposer = lazy(() => import("@/tenant/components/messaging/TenantMessageComposer"));
+import { TenantMessageComposerLauncher } from "@/tenant/components/messaging/TenantMessageComposerLauncher";
 
 export interface UserDetailProps {
   user: SystemUser;
@@ -82,7 +81,7 @@ export function UserDetail({
 
   return (
     <>
-      <Drawer
+      <DetailDrawerShell
         onClose={onClose}
         title={user.name}
         subtitle={isArchived ? t("users.detail.archivedSubtitle") : user.email}
@@ -122,17 +121,12 @@ export function UserDetail({
           onVerifyEmail={() => void handleVerifyEmail()}
           verifyEmailPending={verifyEmailMutation.isPending}
         />
-      </Drawer>
+      </DetailDrawerShell>
 
-      {messagingTarget && (
-        <Suspense fallback={null}>
-          <MessageComposer
-            channel={messagingTarget.channel}
-            recipients={messagingTarget.recipients}
-            onClose={() => setMessagingTarget(null)}
-          />
-        </Suspense>
-      )}
+      <TenantMessageComposerLauncher
+        messagingTarget={messagingTarget}
+        onClose={() => setMessagingTarget(null)}
+      />
     </>
   );
 }

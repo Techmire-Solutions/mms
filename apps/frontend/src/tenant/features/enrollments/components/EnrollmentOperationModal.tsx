@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useState } from "react";
 import { ArrowRightLeft, LogOut, PauseCircle, RotateCcw, type LucideIcon } from "lucide-react";
 import {
   todayISO,
@@ -13,7 +13,7 @@ import {
 import { Field } from "@/components/app/FormPrimitives";
 import { FormModal } from "@/components/app/FormModal";
 import { DatePicker } from "@/components/app/DatePicker";
-import { WarningCallout } from "@/components/app/WarningCallout";
+import { Alert } from "@/components/app/Alert";
 import { Textarea } from "@/components/ui/textarea";
 import { FORM_INPUT } from "@/components/ui/formStyles";
 import {
@@ -89,26 +89,32 @@ export function EnrollmentOperationModal(props: EnrollmentOperationModalProps): 
   const config = KINDS[kind ?? "transfer"];
   const readmitting = kind === "readmit";
   const { sessionId, classId: currentClassId, sectionId: currentSectionId } = enrollment;
-  const [target, setTarget] = useState<SessionClassSectionValue>({
+  const [target, setTarget] = useState<SessionClassSectionValue>(() => ({
     sessionId,
-    classId: "",
-    sectionId: "",
-  });
+    // Re-admitting resumes the class/section the enrollment left; the other ops start blank.
+    classId: readmitting ? currentClassId : "",
+    sectionId: readmitting ? (currentSectionId ?? "") : "",
+  }));
   const [day, setDay] = useState(today);
   const [toDay, setToDay] = useState(today);
   const [reason, setReason] = useState("");
 
-  useEffect(() => {
-    if (!kind) return;
-    setTarget({
-      sessionId,
-      classId: readmitting ? currentClassId : "",
-      sectionId: readmitting ? (currentSectionId ?? "") : "",
-    });
-    setDay(today);
-    setToDay(today);
-    setReason("");
-  }, [kind, readmitting, sessionId, currentClassId, currentSectionId, today]);
+  // Fresh operation draft whenever the operation or the enrollment being changed changes.
+  const operationKey = `${kind}|${sessionId}|${currentClassId}|${currentSectionId}|${today}`;
+  const [prevOperationKey, setPrevOperationKey] = useState(operationKey);
+  if (prevOperationKey !== operationKey) {
+    setPrevOperationKey(operationKey);
+    if (kind) {
+      setTarget({
+        sessionId,
+        classId: readmitting ? currentClassId : "",
+        sectionId: readmitting ? (currentSectionId ?? "") : "",
+      });
+      setDay(today);
+      setToDay(today);
+      setReason("");
+    }
+  }
 
   const reasonValid = reason.trim().length >= 3;
   const rangeValid = kind !== "suspend" || toDay >= day;
@@ -154,9 +160,7 @@ export function EnrollmentOperationModal(props: EnrollmentOperationModalProps): 
       onSave={() => void submit()}
     >
       <div className="space-y-4 py-1 text-start">
-        {config.callout ? (
-          <WarningCallout density="compact" description={t(config.callout)} />
-        ) : null}
+        {config.callout ? <Alert density="compact" description={t(config.callout)} /> : null}
         {config.picker ? (
           <div className="grid gap-4 sm:grid-cols-3">
             <SessionClassSectionSelect

@@ -63,12 +63,16 @@ export function FinanceTemplateEditor({
   const { t } = useTranslation();
   const branding = useBranding();
 
-  const handleSave = (tmpl: DocumentTemplate<TypstFeeReceiptPayload>) => {
+  const handleSave = async (tmpl: DocumentTemplate<TypstFeeReceiptPayload>) => {
     saveObject(FINANCE_TEMPLATE_STORAGE_KEY, tmpl);
-    void saveDocumentTemplateServer(FINANCE_TEMPLATE_STORAGE_KEY, tmpl).catch((err) => {
+    try {
+      await saveDocumentTemplateServer(FINANCE_TEMPLATE_STORAGE_KEY, tmpl);
+      notify.success(t("finance.templateSaved"));
+    } catch (err) {
       console.warn("[FinanceTemplateEditor] Server save failed:", err);
-    });
-    notify.success(t("finance.templateSaved"));
+      notify.error(t("templateEditor.saveFailed"));
+      throw err;
+    }
   };
 
   const handleExportTypst = (payload: TypstFeeReceiptPayload) => {

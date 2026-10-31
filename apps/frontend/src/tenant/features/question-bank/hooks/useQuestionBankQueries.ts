@@ -8,8 +8,9 @@ import {
   QUESTION_BANK_QUESTIONS_QUERY_KEY,
   QUESTION_BANK_TESTS_QUERY_KEY,
   QUESTION_BANK_RESULTS_QUERY_KEY,
-} from "@/tenant/features/question-bank/hooks/useQuestionBankApi";
+} from "./questionBankQueryKeys.js";
 import { invalidateQuestionBankQueries } from "@/tenant/features/question-bank/hooks/invalidateQuestionBankQueries";
+import { assertContractOk } from "@/lib/apiContractError";
 
 export function questionBankQuestionsListQueryOptions(
   query: {
@@ -28,9 +29,7 @@ export function questionBankQuestionsListQueryOptions(
         signal,
         fetchOptions: { signal },
       });
-      if (response.status !== 200) {
-        throw new Error("Failed to fetch question bank questions");
-      }
+      assertContractOk(response, "Failed to fetch question bank questions");
       return response.body;
     },
     placeholderData: (prev) => prev,

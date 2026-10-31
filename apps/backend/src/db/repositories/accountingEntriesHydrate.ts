@@ -8,6 +8,11 @@ import {
 } from "../schema.js";
 import { withTenantRead, type TenantTransaction } from "../tenant-context.js";
 import { mapAuditTimestamps } from "./repositoryMappers.js";
+import {
+  journalLineFxColumns,
+  journalLineFxToRecord,
+  type JournalLineFxRow,
+} from "./accountingJournalLineFx.js";
 
 export type EntryRow = typeof accountingEntries.$inferSelect;
 
@@ -18,7 +23,7 @@ export type JournalLineRow = Pick<
   debit?: string | number | null;
   credit?: string | number | null;
   description?: string | null;
-};
+} & JournalLineFxRow;
 
 export const accountingEntrySelectFields = {
   id: accountingEntries.id,
@@ -66,6 +71,7 @@ export function entryRowToRecord(
       debit: Number(l.debit ?? 0),
       credit: Number(l.credit ?? 0),
       description: l.description ?? "",
+      ...journalLineFxToRecord(l),
     })),
     tags,
     attachments,
@@ -107,6 +113,7 @@ export async function fetchEntriesChildrenTx(
         debit: accountingJournalLines.debit,
         credit: accountingJournalLines.credit,
         description: accountingJournalLines.description,
+        ...journalLineFxColumns,
       })
       .from(accountingJournalLines)
       .where(

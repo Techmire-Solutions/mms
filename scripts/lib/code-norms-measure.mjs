@@ -3,7 +3,12 @@
  * full-tree scan and the `--changed` per-file comparison.
  */
 
-export const SCAN_DIRS = ["apps/frontend/src", "apps/backend/src", "packages/shared/src"];
+export const SCAN_DIRS = [
+  "apps/frontend/src",
+  "apps/backend/src",
+  "packages/shared/src",
+  "packages/ui/src",
+];
 export const IGNORED = /(^|\/)(node_modules|dist|coverage|\.turbo)\//;
 export const SOURCE_EXT = /\.(ts|tsx)$/;
 export const TEST_FILE = /\.(test|spec)\.(ts|tsx)$/;

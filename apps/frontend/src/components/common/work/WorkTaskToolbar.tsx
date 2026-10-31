@@ -2,7 +2,7 @@ import React, { type JSX } from "react";
 import { ModuleWorkToolbar } from "@/components/app/ModuleWorkToolbar";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Calendar } from "lucide-react";
+import { DatePicker } from "@/components/app/DatePicker";
 import { cn } from "@/lib/utils";
 import { useTranslation } from "@/hooks/useTranslation";
 import type { WorkTaskStatusOption, WorkTaskToolbarProps } from "./workTaskToolbarTypes";
@@ -113,36 +113,35 @@ export function WorkTaskToolbar({
           )}
 
           {dateRange && (
-            <div className="flex items-center gap-2 text-xs">
-              <span className="flex items-center gap-1 text-muted-foreground">
-                <Calendar className="h-3.5 w-3.5" aria-hidden="true" />
-              </span>
-              <input
-                type="date"
+            <div className="flex items-center gap-1.5 text-xs">
+              <DatePicker
+                id="work-task-date-start"
+                name="workTaskDateStart"
                 value={dateRange.startDate ?? ""}
-                onChange={(e) =>
+                onChange={(val) =>
                   dateRange.onDateRangeChange({
-                    start: e.target.value || undefined,
+                    start: val || undefined,
                     end: dateRange.endDate,
                   })
                 }
-                placeholder={dateRange.startPlaceholder}
-                className="h-8 rounded-md border border-input bg-background px-2 py-1 text-xs text-foreground focus:outline-none focus:ring-1 focus:ring-ring"
-                aria-label={dateRange.startPlaceholder ?? t("common.startDate")}
+                placeholder={dateRange.startPlaceholder ?? t("common.startDate")}
+                className="w-32 min-w-0"
+                max={dateRange.endDate}
               />
               <span className="text-muted-foreground">–</span>
-              <input
-                type="date"
+              <DatePicker
+                id="work-task-date-end"
+                name="workTaskDateEnd"
                 value={dateRange.endDate ?? ""}
-                onChange={(e) =>
+                onChange={(val) =>
                   dateRange.onDateRangeChange({
                     start: dateRange.startDate,
-                    end: e.target.value || undefined,
+                    end: val || undefined,
                   })
                 }
-                placeholder={dateRange.endPlaceholder}
-                className="h-8 rounded-md border border-input bg-background px-2 py-1 text-xs text-foreground focus:outline-none focus:ring-1 focus:ring-ring"
-                aria-label={dateRange.endPlaceholder ?? t("common.endDate")}
+                placeholder={dateRange.endPlaceholder ?? t("common.endDate")}
+                className="w-32 min-w-0"
+                min={dateRange.startDate}
               />
             </div>
           )}

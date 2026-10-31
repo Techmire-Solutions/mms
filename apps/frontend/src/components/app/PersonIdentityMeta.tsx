@@ -1,6 +1,7 @@
 import React, { type ReactNode } from "react";
 import { CheckCircle2 } from "lucide-react";
 import { GenderIcon } from "@/components/app/GenderIcon";
+import { DirectoryCardSubtitleStack } from "@/components/app/DirectoryCardSubtitleStack";
 import { formatContactGenderLabel } from "@/lib/contacts/contactI18n";
 import { getGenderBadgeTone } from "@/lib/ui/genderUi";
 import { Badge } from "@/components/ui/badge";
@@ -96,13 +97,4 @@ export const PersonIdentityMeta = function PersonIdentityMeta({
   );
 };
 
-/** Optional wrapper when subtitle stacks multiple identity rows (e.g. GR + gender). */
-export const DirectoryCardSubtitleStack = function DirectoryCardSubtitleStack({
-  children,
-  className,
-}: {
-  children: ReactNode;
-  className?: string;
-}): React.JSX.Element {
-  return <div className={cn("mt-0.5 flex flex-col gap-0.5 min-w-0", className)}>{children}</div>;
-};
+export { DirectoryCardSubtitleStack };

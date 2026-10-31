@@ -3,6 +3,8 @@ import { ErrorState } from "@/components/app/ErrorState";
 import { SubTabBar } from "@/components/app/SubTabBar";
 import { useTranslation } from "@/hooks/useTranslation";
 import { AccountingDashboard } from "@/tenant/features/accounting/components/AccountingDashboard";
+import { AccountingBankingPanel } from "@/tenant/features/accounting/components/AccountingBankingPanel";
+import { AccountingPeriodEndPanel } from "@/tenant/features/accounting/components/AccountingPeriodEndPanel";
 import { ChartOfAccounts } from "@/tenant/features/accounting/components/ChartOfAccounts";
 import { GeneralLedger } from "@/tenant/features/accounting/components/GeneralLedger";
 import { JournalEntries } from "@/tenant/features/accounting/components/JournalEntries";
@@ -179,6 +181,24 @@ export function AccountingWorkTier({
           canWrite={canWrite}
           createRequestKey={createAccountRequestKey}
           {...accountColumnProps}
+        />
+      )}
+
+      {!listLoadFailed && activeSubTab === "banking" && (
+        <AccountingBankingPanel
+          accounts={accounts}
+          decimalSeparator={settings.decimalSeparator}
+          canWrite={canWrite}
+        />
+      )}
+
+      {!listLoadFailed && activeSubTab === "periodEnd" && (
+        <AccountingPeriodEndPanel
+          accounts={accounts}
+          fiscalYears={fiscalYears}
+          decimalSeparator={settings.decimalSeparator}
+          canWrite={canWrite}
+          onAccountsChange={onAccountsChange}
         />
       )}
     </>

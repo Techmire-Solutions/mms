@@ -8,12 +8,16 @@ export function PlatformHeaderBrand(): React.JSX.Element {
   const { t } = useTranslation();
 
   return (
-    <Link to={ROUTES.home} className="group flex min-h-11 min-w-11 items-center gap-3.5">
+    <Link
+      to={ROUTES.home}
+      aria-label={`${t("entry.productName")} ${t("platform.consoleTitle")}`}
+      className="group flex min-h-11 min-w-11 items-center gap-3.5"
+    >
       <PlatformLogoMark
         size="sm"
         className="h-10 w-10 border-primary/30 group-hover:scale-105 group-hover:shadow group-hover:border-primary/60 transition-all duration-300"
       />
-      <div className="flex flex-col text-start">
+      <div className="hidden min-w-0 flex-col text-start sm:flex">
         <span className="text-sm font-black tracking-wider uppercase text-foreground leading-none">
           {t("entry.productName")}
         </span>

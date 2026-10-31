@@ -4,7 +4,7 @@ description: Triages PostgreSQL performance in MMS — slow queries, missing or 
 license: Proprietary
 metadata:
   owner: mms-platform
-  last-verified: 2026-10-16
+  last-verified: 2026-10-29
 ---
 
 # MMS Database Performance
@@ -51,6 +51,12 @@ Run the relevant ratchet before and after a change — a green ratchet is the ch
 ## Report the numbers
 
 State baseline vs after (plan nodes, rows, buffers, milliseconds) and what you changed to get there. "Feels faster" is not a result; `mms-completion-review.mdc` requires the quantified resource saved.
+
+## Verification
+
+- Re-run the same `EXPLAIN (ANALYZE, BUFFERS)` before/after and attach the plan delta (rows, buffers, ms) to the change.
+- Ratchets: `pnpm run check:db-projections` and `pnpm run check:migration-indexes` stay green; `pnpm --filter mms-backend index:concurrent` is the only index-build path for live tables.
+- Suite: the owning backend tests (`pnpm --filter mms-backend test <path>`) plus `pnpm ci:local`; DB invariants need `pnpm ci:local --with-db`.
 
 ## Do not
 

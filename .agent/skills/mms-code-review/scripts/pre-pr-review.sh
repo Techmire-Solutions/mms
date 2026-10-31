@@ -32,18 +32,26 @@ echo "=================================================="
 echo "🚀 MMS Pre-PR Automated Verification (scope: $SCOPE, parallel)"
 echo "=================================================="
 
+# Advisory only (never fails): flags backend domain files changed without a
+# changed spec. Test-first ordering itself is unprovable (rule mms-tdd §2).
+node scripts/check-tdd-pairing.mjs || true
+
 gate "Staged secrets" pnpm run check:secrets
 gate "Rules & skills integrity" node scripts/verify-rules-integrity.mjs
 gate "i18n completeness (en/ar/ur/fa)" pnpm run check:i18n
+gate "i18n unused keys" pnpm run check:i18n-unused
 gate "@mms/shared purity & boundaries" pnpm run check:shared-purity
 gate "@mms/shared structure" pnpm run check:shared-structure
 gate "Faculty domain legacy surface" pnpm run check:faculty-domain
 gate "Migration index quality" pnpm run check:migration-indexes
+gate "Migration hygiene" pnpm run check:migration-hygiene
 gate "Migrations are forward-only" pnpm run check:migrations-forward-only
 gate "Work directory convergence" pnpm run check:work-directory
 gate "Frontend structure ratchets" pnpm run check:frontend-structure
 gate "Shared UI architecture & governance" pnpm run check:shared-ui
 gate "Documentation ratchets" pnpm run check:docs
+gate "Script unit tests" pnpm run test:scripts
+gate "Ratchet baselines did not increase" node scripts/ci/check-ratchet-baselines.mjs --base "${MMS_CI_BASE:-HEAD~1}"
 if [[ "$SCOPE" == "affected" ]]; then
   gate "DB projection hygiene (changed files)" node scripts/check-db-projections.mjs --changed
   gate "Backend route→storage boundary (changed files)" node scripts/check-backend-boundaries.mjs --changed

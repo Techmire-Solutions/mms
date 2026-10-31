@@ -1,5 +1,5 @@
 import type { ModuleColumnRegistryEntry } from "@mms/shared";
-import { DirectoryCard } from "@/components/app/DirectoryCard";
+import { DirectoryEntityCard } from "@/components/app/DirectoryEntityCard";
 import { ENTITY_CARD_OVERFLOW_TRIGGER_CLASS } from "@/components/app/entityCardChrome";
 import type { StatusBadgeConfigItem } from "@/components/app/StatusBadge";
 import { ProgressBar } from "@/components/app/ProgressBar";
@@ -11,6 +11,7 @@ import {
   getSessionCapacityMeta,
   renderSessionWorkColumnValue,
 } from "@/tenant/features/sessions/components/sessionWorkColumnCell";
+import { SessionCapacityPill } from "@/tenant/features/sessions/components/SessionCapacityPill";
 
 export interface SessionCardProps {
   session: Session;
@@ -30,7 +31,7 @@ export interface SessionCardProps {
   reducedMotion?: boolean;
 }
 
-/** Work directory card — DirectoryCard SSOT (do not hand-compose EntityCard). */
+/** Work directory card — DirectoryEntityCard SSOT (do not hand-compose EntityCard). */
 export function SessionCard({
   session,
   isSelected,
@@ -58,7 +59,7 @@ export function SessionCard({
   const columnOptions = { t, statusConfig, typeConfig };
 
   return (
-    <DirectoryCard
+    <DirectoryEntityCard
       entity={session}
       selectedIds={effectiveSelectedIds}
       canSelect={canSelectSessions}
@@ -67,9 +68,14 @@ export function SessionCard({
       reducedMotion={reducedMotion}
       header={{
         displayName: session.name,
-        subtitle: session.description ? (
-          <p className="text-xs text-muted-foreground mt-0.5 line-clamp-1">{session.description}</p>
-        ) : undefined,
+        subtitle: (
+          <div className="flex flex-col gap-1 mt-0.5">
+            {session.description && (
+              <p className="text-xs text-muted-foreground line-clamp-1">{session.description}</p>
+            )}
+            <SessionCapacityPill session={session} />
+          </div>
+        ),
       }}
       viewLabel={t("sessions.actionViewShort")}
       viewAriaLabel={`${t("sessions.table.viewProfile")} - ${session.name}`}
@@ -120,6 +126,6 @@ export function SessionCard({
           </p>
         </div>
       ) : null}
-    </DirectoryCard>
+    </DirectoryEntityCard>
   );
 }

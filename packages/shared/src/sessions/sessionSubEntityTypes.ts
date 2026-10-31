@@ -3,6 +3,7 @@
  * @description Child sub-entity Zod schemas and types for Academic Sessions (Model 6).
  */
 import { z } from "zod";
+import { isoDateSchema } from "../core/isoDateSchema.js";
 
 // ============================================================================
 // 1. Session Management (Faculty Assigned to Session)
@@ -65,8 +66,8 @@ export const SessionClassScheduleSchema = z
     id: z.string(),
     classId: z.string().optional(),
     scheduleType: z.string().min(1, "Schedule type is required"), // dynamic: daily, weekly, monthly, weekend
-    startDate: z.string().min(1, "Start date is required"),
-    endDate: z.string().min(1, "End date is required"),
+    startDate: isoDateSchema,
+    endDate: isoDateSchema,
   })
   .strict();
 
@@ -75,8 +76,8 @@ export const SessionClassScheduleInsertSchema = z
     id: z.string().optional(),
     classId: z.string().optional(),
     scheduleType: z.string().min(1, "Schedule type is required"),
-    startDate: z.string().min(1, "Start date is required"),
-    endDate: z.string().min(1, "End date is required"),
+    startDate: isoDateSchema,
+    endDate: isoDateSchema,
   })
   .strict();
 
@@ -209,7 +210,7 @@ export const SessionClassRefreshmentSchema = z
   .object({
     id: z.string(),
     classId: z.string().optional(),
-    date: z.string().min(1, "Date is required"),
+    date: isoDateSchema,
     item: z.string().min(1, "Item name is required"),
     quantity: z.coerce.number().int().nonnegative("Quantity must be non-negative").default(0),
     pricePerUnit: z.coerce.number().nonnegative("Unit price must be non-negative").default(0),
@@ -221,7 +222,7 @@ export const SessionClassRefreshmentInsertSchema = z
   .object({
     id: z.string().optional(),
     classId: z.string().optional(),
-    date: z.string().min(1, "Date is required"),
+    date: isoDateSchema,
     item: z.string().min(1, "Item name is required"),
     quantity: z.coerce.number().int().nonnegative("Quantity must be non-negative").default(0),
     pricePerUnit: z.coerce.number().nonnegative("Unit price must be non-negative").default(0),

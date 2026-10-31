@@ -1,4 +1,4 @@
-import { useContext, useMemo } from "react";
+import { useMemo } from "react";
 import {
   FACULTY_MODULE_MANIFEST,
   composeFacultySettings,
@@ -7,10 +7,10 @@ import {
   type FacultyModulePreferences,
   type FacultySettings,
 } from "@mms/shared";
-import { QueryClient, QueryClientContext, useQuery } from "@tanstack/react-query";
-import { useAuth } from "@/lib/contexts/AuthContext";
+import { useQuery } from "@tanstack/react-query";
 import { SETUP_STALE_TIME } from "@/lib/queryClient";
 import { createModuleSetupConfigHooks } from "@/lib/query/createModuleSetupConfigHooks";
+import { useAuthOrNull, useQueryClientOrFallback } from "@/lib/query/optionalQueryContext";
 import {
   fetchFacultyFieldConfig,
   fetchFacultyPreferences,
@@ -32,10 +32,6 @@ const DEFAULT_FACULTY_MODULE_PREFERENCES: FacultyModulePreferences =
   normalizeFacultyModulePreferences(null);
 const DEFAULT_FACULTY_FIELD_CONFIG: FacultySettings = normalizeFacultySettings(null);
 
-const fallbackQueryClient = new QueryClient({
-  defaultOptions: { queries: { retry: false } },
-});
-
 const setupConfigHooks = createModuleSetupConfigHooks<FacultyModulePreferences>({
   preferencesQueryKey: FACULTY_PREFERENCES_QUERY_KEY,
   fetchPreferences: fetchFacultyPreferences,
@@ -47,18 +43,10 @@ const setupConfigHooks = createModuleSetupConfigHooks<FacultyModulePreferences>(
 export const useFacultyPreferencesQuery = setupConfigHooks.usePreferencesQuery;
 export const useFacultyPreferencesMutation = setupConfigHooks.usePreferencesMutation;
 
-function useSafeAuth() {
-  try {
-    return useAuth();
-  } catch {
-    return null;
-  }
-}
-
 /** Tenant field-config from GET /api/faculty/field-config. */
 export function useFacultyFieldConfigQuery() {
-  const auth = useSafeAuth();
-  const client = useContext(QueryClientContext) ?? fallbackQueryClient;
+  const auth = useAuthOrNull();
+  const client = useQueryClientOrFallback();
   return useQuery(
     {
       queryKey: FACULTY_FIELD_CONFIG_QUERY_KEY,

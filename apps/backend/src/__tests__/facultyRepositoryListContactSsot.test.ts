@@ -10,10 +10,6 @@ const primarySqlSrc = readFileSync(
   join(process.cwd(), "src/db/repositories/facultyPrimaryAppointmentSql.ts"),
   "utf8",
 );
-const effectiveSqlSrc = readFileSync(
-  join(process.cwd(), "src/db/repositories/facultyPrimaryAppointmentEffective.ts"),
-  "utf8",
-);
 const listQueryOpsSrc = readFileSync(
   join(process.cwd(), "src/db/repositories/facultyRepositoryListQueryOps.ts"),
   "utf8",
@@ -56,12 +52,6 @@ describe("facultyRepositoryList Contacts SSOT", () => {
     expect(listQuerySqlSrc).toContain("facultyListStatusExpr()");
     expect(listQuerySqlSrc).toContain("facultyQuickFilterStatusValue");
     expect(listQuerySqlSrc).toContain("query.gender");
-  });
-
-  it("uses calendar-effective primary appointment predicates in LATERAL list SQL", () => {
-    expect(effectiveSqlSrc).toContain("primaryAssignmentEffectiveOnDateSql");
-    expect(effectiveSqlSrc).toContain("CURRENT_DATE");
-    expect(effectiveSqlSrc).toContain("primaryAssignmentEffectiveTodayWhere");
   });
 
   it("lists active faculty missing an employee id for backfill", () => {

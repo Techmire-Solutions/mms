@@ -26,6 +26,10 @@ import { accountingSetupConfigRoutes } from "./accountingSetupConfigRoutes.js";
 import { accountingContractRouter } from "./accounting/accountingContractRouter.js";
 import { accountingReportRoutes } from "./accounting/accountingReportRoutes.js";
 import { accountingLedgerOpsRoutes } from "./accounting/accountingLedgerOpsRoutes.js";
+import { accountingExchangeRateRoutes } from "./accounting/accountingExchangeRateRoutes.js";
+import { accountingFxRevaluationRoutes } from "./accounting/accountingFxRevaluationRoutes.js";
+import { accountingIas29Routes } from "./accounting/accountingIas29Routes.js";
+import { accountingHedgeRoutes } from "./accounting/accountingHedgeRoutes.js";
 import { accountingVoucherNumberingRoutes } from "./accounting/accountingVoucherNumberingRoutes.js";
 import { accountingSpecializedEntryRoutes } from "./accounting/accountingSpecializedEntryRoutes.js";
 import { accountingSeedChartRoutes } from "./accounting/accountingSeedChartRoutes.js";
@@ -173,6 +177,10 @@ export default async function accountingRoutes(
 
       await sub.register(accountingReportRoutes);
       await sub.register(accountingLedgerOpsRoutes);
+      await sub.register(accountingExchangeRateRoutes);
+      await sub.register(accountingFxRevaluationRoutes);
+      await sub.register(accountingIas29Routes);
+      await sub.register(accountingHedgeRoutes);
       await sub.register(accountingVoucherNumberingRoutes);
       await sub.register(accountingSpecializedEntryRoutes);
       await sub.register(accountingSeedChartRoutes);

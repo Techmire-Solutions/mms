@@ -4,8 +4,10 @@ import { ExternalLink, Mail, MessageCircle, MessageSquare } from "lucide-react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { WidgetCard } from "@/components/app/WidgetCard";
 import { SEMANTIC_BADGE } from "@/lib/ui/semanticTone";
 import { useTranslation } from "@/hooks/useTranslation";
+import { settingsTabPath } from "@/lib/config/settingsDeepLink";
 import {
   useMessagingGatewaysStatus,
   type GatewayStatusItem,
@@ -15,14 +17,12 @@ interface GatewayChannelCardProps {
   name: string;
   icon: React.ComponentType<{ className?: string }>;
   item: GatewayStatusItem;
-  settingsTab: string;
 }
 
 function GatewayChannelCard({
   name,
   icon: Icon,
   item,
-  settingsTab,
 }: GatewayChannelCardProps): React.JSX.Element {
   const { t } = useTranslation();
 
@@ -49,8 +49,11 @@ function GatewayChannelCard({
   };
 
   return (
-    <div className="flex flex-col justify-between rounded-lg border border-border/70 bg-background/50 p-3.5 space-y-3 transition-colors hover:border-border">
-      <div className="space-y-2">
+    <WidgetCard
+      className="flex flex-col justify-between space-y-3"
+      accentColor={item.isConnected ? "success" : item.isConfigured ? "warning" : undefined}
+    >
+      <div className="p-3.5 space-y-2">
         <div className="flex items-center justify-between gap-2">
           <div className="flex items-center gap-2">
             <div className="flex h-7 w-7 items-center justify-center rounded-md bg-muted text-muted-foreground">
@@ -75,20 +78,19 @@ function GatewayChannelCard({
         </div>
       </div>
 
-      <div className="pt-1">
-        <Button
-          asChild
-          variant="ghost"
-          size="sm"
-          className="w-full h-7 text-xs text-muted-foreground hover:text-foreground justify-between px-2 cursor-pointer"
-        >
-          <Link to={`/settings?tab=${settingsTab}`}>
-            <span>{t("messaging.gateways.configureInSettings")}</span>
-            <ExternalLink className="h-3 w-3 ms-1 opacity-70" />
-          </Link>
-        </Button>
-      </div>
-    </div>
+      <Button
+        asChild
+        variant="ghost"
+        size="sm"
+        className="w-full h-7 text-xs text-muted-foreground hover:text-foreground justify-between px-2 cursor-pointer"
+      >
+        {/* SMS / WhatsApp / Email panels live under Settings → Global. */}
+        <Link to={settingsTabPath("global")}>
+          <span>{t("messaging.gateways.configureInSettings")}</span>
+          <ExternalLink className="h-3 w-3 ms-1 opacity-70" />
+        </Link>
+      </Button>
+    </WidgetCard>
   );
 }
 
@@ -108,19 +110,16 @@ export function MessagingGatewayStatusOverview(): React.JSX.Element {
             name={t("messaging.channel.sms")}
             icon={MessageSquare}
             item={gateways.sms}
-            settingsTab="sms"
           />
           <GatewayChannelCard
             name={t("messaging.channel.whatsapp")}
             icon={MessageCircle}
             item={gateways.whatsapp}
-            settingsTab="whatsapp"
           />
           <GatewayChannelCard
             name={t("messaging.channel.email")}
             icon={Mail}
             item={gateways.email}
-            settingsTab="email"
           />
         </div>
       </CardContent>

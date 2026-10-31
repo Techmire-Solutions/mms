@@ -26,6 +26,8 @@ export interface ServerConfig {
   headersTimeoutMs: number;
   /** TCP Keep-Alive initial delay (ms) on accepted client sockets. */
   tcpKeepAliveInitialDelayMs: number;
+  /** Exchange-rate feed providers the worker polls daily (`FX_RATE_FEED_PROVIDERS`); empty = off. */
+  fxRateFeedProviders?: string[];
 }
 
 const VALID_LOG_LEVELS = new Set<LogLevel>([
@@ -205,5 +207,9 @@ function buildServerConfig(): ServerConfig {
       1_000,
       60_000,
     ),
+    fxRateFeedProviders: (process.env.FX_RATE_FEED_PROVIDERS ?? "")
+      .split(",")
+      .map((provider) => provider.trim().toLowerCase())
+      .filter(Boolean),
   };
 }

@@ -16,7 +16,7 @@ per-finding remedies and the review criteria.
 | DB skip latch (`isDbAvailable`) | Use mocks for ordinary route tests; use the explicit PostgreSQL suite for database invariants and report unavailable infrastructure as blocked, never passed — `mms-testing-observability.md` §1 |
 | Unspied error logs in tests | Spy on `console.error` / `console.warn` in negative tests so output stays clean |
 | Hardcoded copy | Add `t()` keys and update all four locale packs — `mms-settings-i18n.md` (ban `t(key) \|\| 'English'`) |
-| Work `ErrorState` title-only | Add the hint description (`loadFailedHint` pattern) — `mms-module-architecture.md` §7 |
+| Work `ErrorState` title-only | Add the hint description (`loadFailedHint` pattern) — `mms-module-architecture.md` §3 |
 | Manifest `directoryViews: list` with table/cards UI | Align to `['table','cards']` — `mms-module-architecture.md` §3 |
 | File still well over 300 lines with a clean seam | Split by concern behind a stable barrel — `mms-structure-naming.md` |
 | Bulk PUT dropped rows | Upsert/merge without deleting absent rows — `mms-api-interface.md` §5 |

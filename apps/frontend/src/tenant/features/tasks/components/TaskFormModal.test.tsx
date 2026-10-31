@@ -53,4 +53,24 @@ describe("TaskFormModal", () => {
     expect(html).toContain("tasks.parentTask");
     expect(html).toContain("Ustadh Zaid");
   });
+
+  it("renders edit mode with initial data", () => {
+    const html = renderToStaticMarkup(
+      <TaskFormModal
+        open={true}
+        onClose={() => {}}
+        onSave={async () => {}}
+        initialData={{
+          id: "t-1",
+          workspaceSubdomain: "demo",
+          title: "Existing Task",
+          status: "in_progress",
+          priority: "high",
+          assignees: [],
+        }}
+      />,
+    );
+    expect(html).toContain("tasks.edit");
+    expect(html).toContain("Existing Task");
+  });
 });

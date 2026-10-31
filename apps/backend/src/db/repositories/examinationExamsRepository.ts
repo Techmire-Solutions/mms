@@ -70,6 +70,7 @@ export async function listExamsByWorkspace(
       })
       .from(exams)
       .where(and(...conditions))
+      .orderBy(exams.id)
       .limit(limit)
       .offset(offset);
 

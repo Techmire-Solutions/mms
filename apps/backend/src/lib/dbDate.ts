@@ -37,3 +37,10 @@ export function requireDbDate(value: string | null | undefined, field: string): 
   if (!day) throw new ValidationError(`${field} must be a date (YYYY-MM-DD)`);
   return day;
 }
+
+/** {@link requireDbDate} for NOT NULL `date` columns: an empty value is rejected (400) as well. */
+export function requireDbDateValue(value: string | null | undefined, field: string): string {
+  const day = requireDbDate(value, field);
+  if (!day) throw new ValidationError(`${field} is required`);
+  return day;
+}

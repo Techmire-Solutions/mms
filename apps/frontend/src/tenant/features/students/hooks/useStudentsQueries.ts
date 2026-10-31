@@ -26,6 +26,7 @@ import type { StudentsListPageResult } from "@mms/shared";
 import { STUDENTS_QUERY_KEY } from "@/tenant/features/students/hooks/studentsQueryKeys";
 import { invalidateStudentsQueries } from "@/tenant/features/students/hooks/invalidateStudentsQueries";
 import { SESSIONS_QUERY_KEY } from "@/tenant/hooks/collections/sessions";
+import { assertContractOk } from "@/lib/apiContractError";
 
 const studentsClient = tsrClient.students;
 
@@ -52,9 +53,7 @@ export function studentsListQueryOptions(query: StudentsContractQueryParams = {}
         signal,
         fetchOptions: { signal },
       });
-      if (response.status !== 200) {
-        throw new Error("Failed to fetch students");
-      }
+      assertContractOk(response, "Failed to fetch students");
       return response.body as StudentsListPageResult;
     },
     placeholderData: (prev) => prev,
@@ -66,22 +65,17 @@ export function studentsInfiniteQueryOptions(query: StudentsContractQueryParams 
   return infiniteQueryOptions({
     queryKey: [...STUDENTS_QUERY_KEY, "contract-infinite-list", query] as const,
     queryFn: async ({ pageParam, signal }) => {
-      const effectiveQuery = {
-        ...query,
-        ...(pageParam ? { afterId: pageParam } : {}),
-      };
+      const effectiveQuery = { ...query, page: pageParam };
       const response = await apiContract.students.list({
-        query: effectiveQuery as Record<string, string>,
+        query: effectiveQuery as unknown as Record<string, string>,
         signal,
         fetchOptions: { signal },
       });
-      if (response.status !== 200) {
-        throw new Error("Failed to fetch students");
-      }
+      assertContractOk(response, "Failed to fetch students");
       return response.body as StudentsListPageResult;
     },
-    initialPageParam: undefined as string | undefined,
-    getNextPageParam: (lastPage) => lastPage.nextCursor ?? undefined,
+    initialPageParam: 1,
+    getNextPageParam: (lastPage) => (lastPage.hasMore ? lastPage.page + 1 : undefined),
     staleTime: 15_000,
   });
 }

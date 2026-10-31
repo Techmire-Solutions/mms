@@ -31,6 +31,9 @@ import { sessionCompletionContract } from "./sessionCompletion.contract.js";
 import { questionBankContract } from "./questionBank.contract.js";
 import { accountingContract } from "./accounting.contract.js";
 import { hasanatContract } from "./hasanat.contract.js";
+import { workshopsContract } from "./workshops.contract.js";
+import { workshopsCompletionContract } from "./workshopsCompletion.contract.js";
+import { notificationsContract } from "./notifications.contract.js";
 import { obligationContract } from "./obligations.contract.js";
 import { examinationContract } from "./examinations.contract.js";
 import { enrollmentContract } from "./enrollments.contract.js";
@@ -46,6 +49,9 @@ import { moduleAccessContract } from "./moduleAccess.contract.js";
 import { auditContract } from "./audit.contract.js";
 import { tasksContract } from "./tasks.contract.js";
 import { accountingLedgerContract } from "./accountingLedger.contract.js";
+import { accountingFxContract } from "./accountingFx.contract.js";
+import { accountingHedgesContract } from "./accountingHedges.contract.js";
+import { platformConsolidationContract } from "./platformConsolidation.contract.js";
 import { financeOpsContract } from "./financeOps.contract.js";
 import {
   platformContract,
@@ -80,6 +86,9 @@ export const rootContract = c.router({
   questionBank: questionBankContract,
   accounting: accountingContract,
   hasanat: hasanatContract,
+  workshops: workshopsContract,
+  workshopsCompletion: workshopsCompletionContract,
+  notifications: notificationsContract,
   obligations: obligationContract,
   examinations: examinationContract,
   enrollments: enrollmentContract,
@@ -95,6 +104,9 @@ export const rootContract = c.router({
   audit: auditContract,
   tasks: tasksContract,
   accountingLedger: accountingLedgerContract,
+  accountingFx: accountingFxContract,
+  accountingHedges: accountingHedgesContract,
+  platformConsolidation: platformConsolidationContract,
   financeOps: financeOpsContract,
   platform: platformContract,
   templates: documentTemplatesContract,
@@ -135,6 +147,9 @@ export {
   questionBankContract,
   accountingContract,
   hasanatContract,
+  workshopsContract,
+  workshopsCompletionContract,
+  notificationsContract,
   obligationContract,
   examinationContract,
   enrollmentContract,
@@ -150,6 +165,9 @@ export {
   auditContract,
   tasksContract,
   accountingLedgerContract,
+  accountingFxContract,
+  accountingHedgesContract,
+  platformConsolidationContract,
   financeOpsContract,
   platformContract,
   platformWorkspacesContract,
@@ -180,6 +198,9 @@ export type DomainContracts = {
   questionBank: typeof questionBankContract;
   accounting: typeof accountingContract;
   hasanat: typeof hasanatContract;
+  workshops: typeof workshopsContract;
+  workshopsCompletion: typeof workshopsCompletionContract;
+  notifications: typeof notificationsContract;
   obligations: typeof obligationContract;
   examinations: typeof examinationContract;
   enrollments: typeof enrollmentContract;
@@ -195,6 +216,9 @@ export type DomainContracts = {
   audit: typeof auditContract;
   tasks: typeof tasksContract;
   accountingLedger: typeof accountingLedgerContract;
+  accountingFx: typeof accountingFxContract;
+  accountingHedges: typeof accountingHedgesContract;
+  platformConsolidation: typeof platformConsolidationContract;
   financeOps: typeof financeOpsContract;
   platform: typeof platformContract;
   templates: typeof documentTemplatesContract;

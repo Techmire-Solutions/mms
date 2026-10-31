@@ -4,25 +4,13 @@ import type { FinanceRepository } from "../finance/repository/financeRepository.
 import { runWithTenant } from "../lib/tenantContext.js";
 
 /**
- * `assertInvoiceAmountsEditable` reads the stored invoice through the module-level
- * adapter and the ledger through the accounting repository, so both seams are
- * stubbed here.
+ * The ledger guard reads the stored invoice and the posting id through the
+ * injected repository seam, so no module-level adapter needs stubbing.
  */
-const mockAccountingRepo = vi.hoisted(() => ({ findEntryIdBySource: vi.fn() }));
-const mockInvoiceLookup = vi.hoisted(() => ({ findInvoiceById: vi.fn() }));
-
-vi.mock("../db/repositories/accountingRepository.js", () => mockAccountingRepo);
-vi.mock("../finance/repository/financeRepositoryAdapter.js", async (importOriginal) => {
-  const actual =
-    await importOriginal<typeof import("../finance/repository/financeRepositoryAdapter.js")>();
-  return {
-    ...actual,
-    financeRepository: {
-      ...actual.financeRepository,
-      findInvoiceById: mockInvoiceLookup.findInvoiceById,
-    },
-  };
-});
+const mockRecordModernAuditEvent = vi.hoisted(() => vi.fn().mockResolvedValue(undefined));
+vi.mock("../services/auditTrailService.js", () => ({
+  recordModernAuditEvent: mockRecordModernAuditEvent,
+}));
 
 function createFakeRepo(): FinanceRepository {
   return {
@@ -46,6 +34,7 @@ function createFakeRepo(): FinanceRepository {
     listPaymentsPage: vi
       .fn()
       .mockResolvedValue({ payments: [], total: 0, page: 1, limit: 12, hasMore: false }),
+    findLedgerPostingIdBySource: vi.fn().mockResolvedValue(null),
     aggregateFinanceCommandMetrics: vi.fn().mockResolvedValue({
       totalInvoices: 0,
       outstanding: 0,
@@ -82,18 +71,21 @@ const storedInvoice = {
   lines: [],
 };
 
+/** Repository whose invoice is readable and (by default) posted to the ledger. */
+function postedRepo(postingId: string | null = "je-invoice") {
+  const repo = createFakeRepo();
+  vi.mocked(repo.findInvoiceById).mockResolvedValue(storedInvoice as never);
+  vi.mocked(repo.findLedgerPostingIdBySource).mockResolvedValue(postingId);
+  return repo;
+}
+
 describe("finance ↔ ledger sync guards", () => {
   beforeEach(() => {
     vi.clearAllMocks();
-    mockInvoiceLookup.findInvoiceById.mockResolvedValue(storedInvoice);
-    mockAccountingRepo.findEntryIdBySource.mockResolvedValue(null);
   });
 
   describe("bulkUpdateInvoicesStatus", () => {
     it("refuses to cancel invoices in bulk, which would skip the ledger reversal", async () => {
-      // This endpoint used to accept 'cancelled' and write a bare status, leaving
-      // the Dr AR / Cr Income entry posted forever while the invoice read
-      // 'cancelled'.
       const repo = createFakeRepo();
       const useCases = createFinanceUseCases(repo);
 
@@ -132,38 +124,64 @@ describe("finance ↔ ledger sync guards", () => {
 
   describe("updateInvoiceById", () => {
     it("rejects editing a posted invoice amount", async () => {
-      // Nothing re-posted the difference, so the ledger mirrored the original
-      // figure forever and AR/revenue silently disagreed with the document.
-      mockAccountingRepo.findEntryIdBySource.mockResolvedValue("je-invoice");
-      const repo = createFakeRepo();
-      const useCases = createFinanceUseCases(repo);
+      const repo = postedRepo();
 
       await expect(
-        runWithTenant("demo", () => useCases.updateInvoiceById("inv-1", { finalAmt: 250 } as any)),
+        runWithTenant("demo", () =>
+          useCasesFor(repo).updateInvoiceById("inv-1", { finalAmt: 250 } as never),
+        ),
       ).rejects.toThrow(/reverse it with a credit note/);
       expect(repo.saveInvoice).not.toHaveBeenCalled();
     });
 
     it("rejects a late-fee or paid-amount edit on a posted invoice", async () => {
-      mockAccountingRepo.findEntryIdBySource.mockResolvedValue("je-invoice");
-      const useCases = createFinanceUseCases(createFakeRepo());
+      const repo = postedRepo();
+      const useCases = useCasesFor(repo);
 
       await expect(
-        runWithTenant("demo", () => useCases.updateInvoiceById("inv-1", { lateFeeAmt: 40 } as any)),
+        runWithTenant("demo", () =>
+          useCases.updateInvoiceById("inv-1", { lateFeeAmt: 40 } as never),
+        ),
       ).rejects.toThrow(/lateFeeAmt/);
       await expect(
-        runWithTenant("demo", () => useCases.updateInvoiceById("inv-1", { paidAmt: 100 } as any)),
+        runWithTenant("demo", () => useCases.updateInvoiceById("inv-1", { paidAmt: 100 } as never)),
       ).rejects.toThrow(/paidAmt/);
     });
 
+    it("rejects a cancel or paid status write on a posted invoice", async () => {
+      const repo = postedRepo();
+      const useCases = useCasesFor(repo);
+
+      await expect(
+        runWithTenant("demo", () =>
+          useCases.updateInvoiceById("inv-1", { status: "cancelled" } as never),
+        ),
+      ).rejects.toThrow(/cancel-invoice action/);
+      await expect(
+        runWithTenant("demo", () =>
+          useCases.updateInvoiceById("inv-1", { status: "paid" } as never),
+        ),
+      ).rejects.toThrow(/record a payment/i);
+      expect(repo.saveInvoice).not.toHaveBeenCalled();
+    });
+
+    it("rejects a credited-amount write on a posted invoice", async () => {
+      const repo = postedRepo();
+      const useCases = useCasesFor(repo);
+
+      await expect(
+        runWithTenant("demo", () =>
+          useCases.updateInvoiceById("inv-1", { creditedAmt: 50 } as never),
+        ),
+      ).rejects.toThrow(/creditedAmt/);
+      expect(repo.saveInvoice).not.toHaveBeenCalled();
+    });
+
     it("allows a non-financial edit on a posted invoice", async () => {
-      mockAccountingRepo.findEntryIdBySource.mockResolvedValue("je-invoice");
-      const repo = createFakeRepo();
-      vi.mocked(repo.findInvoiceById).mockResolvedValue(storedInvoice as any);
-      const useCases = createFinanceUseCases(repo);
+      const repo = postedRepo();
 
       await runWithTenant("demo", () =>
-        useCases.updateInvoiceById("inv-1", { status: "partial" } as any),
+        useCasesFor(repo).updateInvoiceById("inv-1", { status: "partial" } as never),
       );
 
       expect(repo.saveInvoice).toHaveBeenCalled();
@@ -171,10 +189,8 @@ describe("finance ↔ ledger sync guards", () => {
 
     it("allows a client that echoes the unchanged amounts back", async () => {
       // The UI sends the whole invoice on any edit; only real differences block.
-      mockAccountingRepo.findEntryIdBySource.mockResolvedValue("je-invoice");
-      const repo = createFakeRepo();
-      vi.mocked(repo.findInvoiceById).mockResolvedValue(storedInvoice as any);
-      const useCases = createFinanceUseCases(repo);
+      const repo = postedRepo();
+      const useCases = useCasesFor(repo);
 
       await runWithTenant("demo", () =>
         useCases.updateInvoiceById("inv-1", {
@@ -183,8 +199,9 @@ describe("finance ↔ ledger sync guards", () => {
           finalAmt: 100,
           paidAmt: 0,
           lateFeeAmt: 0,
+          creditedAmt: 0,
           status: "overdue",
-        } as any),
+        } as never),
       );
 
       expect(repo.saveInvoice).toHaveBeenCalled();
@@ -192,16 +209,31 @@ describe("finance ↔ ledger sync guards", () => {
 
     it("allows amount edits when the invoice was never posted", async () => {
       // Workspaces without posting rules keep full editing freedom.
-      mockAccountingRepo.findEntryIdBySource.mockResolvedValue(null);
-      const repo = createFakeRepo();
-      vi.mocked(repo.findInvoiceById).mockResolvedValue(storedInvoice as any);
-      const useCases = createFinanceUseCases(repo);
+      const repo = postedRepo(null);
 
       await runWithTenant("demo", () =>
-        useCases.updateInvoiceById("inv-1", { finalAmt: 250 } as any),
+        useCasesFor(repo).updateInvoiceById("inv-1", { finalAmt: 250 } as never),
+      );
+
+      expect(repo.saveInvoice).toHaveBeenCalled();
+    });
+
+    it("keeps the internal cancel/credit escape hatch", async () => {
+      // cancelInvoice and createCreditNote pass this flag after their own
+      // canCancel/canCredit checks and post the reversal themselves.
+      const repo = postedRepo();
+
+      await runWithTenant("demo", () =>
+        useCasesFor(repo).updateInvoiceById("inv-1", { status: "cancelled" } as never, {
+          allowLedgerSensitive: true,
+        }),
       );
 
       expect(repo.saveInvoice).toHaveBeenCalled();
     });
   });
 });
+
+function useCasesFor(repo: FinanceRepository) {
+  return createFinanceUseCases(repo);
+}

@@ -1,9 +1,10 @@
-import { and, eq, inArray, isNull } from "drizzle-orm";
+import { and, asc, eq, inArray, isNull } from "drizzle-orm";
 import { dedupeTrimmedIds, type Invoice, type RepositoryListOptions } from "@mms/shared";
 import { financeInvoiceLines, financeInvoices } from "../schema.js";
-import { withTenantRead } from "../tenant-context.js";
+import { withTenant, withTenantRead, type TenantTransaction } from "../tenant-context.js";
 import { buildTenantSoftDeleteConditions } from "../../services/genericRelationalService.js";
 import { invoiceLineRowToRecord } from "./financeBillingRepository.js";
+import { canonicalStoredRate } from "./repositoryFxMappers.js";
 import { mapAuditTimestamps } from "./repositoryMappers.js";
 
 // Re-export persistence functions for backward compatibility
@@ -47,6 +48,8 @@ export function invoiceRowToRecord(row: InvoiceRow): Invoice {
   if (row.creditedAmt != null) invoice.creditedAmt = Number(row.creditedAmt);
   if (row.lastRemindedAt) invoice.lastRemindedAt = row.lastRemindedAt.toISOString();
   if (row.reminderCount != null) invoice.reminderCount = row.reminderCount;
+  if (row.currency) invoice.currency = row.currency;
+  if (row.exchangeRate) invoice.exchangeRate = canonicalStoredRate(row.exchangeRate);
 
   return invoice;
 }
@@ -90,6 +93,8 @@ export async function listInvoicesByWorkspace(
         creditedAmt: financeInvoices.creditedAmt,
         lastRemindedAt: financeInvoices.lastRemindedAt,
         reminderCount: financeInvoices.reminderCount,
+        currency: financeInvoices.currency,
+        exchangeRate: financeInvoices.exchangeRate,
         deletedAt: financeInvoices.deletedAt,
         deletedBy: financeInvoices.deletedBy,
         deletionReason: financeInvoices.deletionReason,
@@ -101,18 +106,32 @@ export async function listInvoicesByWorkspace(
       })
       .from(financeInvoices)
       .where(and(...conditions))
+      .orderBy(financeInvoices.id)
       .limit(limit)
       .offset(offset);
     return rows.map(invoiceRowToRecord);
   });
 }
 
-export async function findInvoiceById(tenant: string, id: string): Promise<Invoice | null> {
+/**
+ * Reads one invoice.
+ *
+ * `forUpdate` takes a row lock (`SELECT … FOR UPDATE`) on the primary so a
+ * read-modify-write settlement cannot interleave with a concurrent payment on
+ * the same invoice. It also implies a read-write transaction: the read replica
+ * cannot serve a locking read.
+ */
+export async function findInvoiceById(
+  tenant: string,
+  id: string,
+  options?: { forUpdate?: boolean; includeDeleted?: boolean },
+): Promise<Invoice | null> {
   const trimmedId = id?.trim();
   if (!trimmedId) return null;
   const subdomain = tenant.trim().toLowerCase();
-  return withTenantRead(subdomain, async (tx) => {
-    const rows = await tx
+  const withReader = options?.forUpdate ? withTenant : withTenantRead;
+  return withReader(subdomain, async (tx) => {
+    const query = tx
       .select({
         id: financeInvoices.id,
         workspaceSubdomain: financeInvoices.workspaceSubdomain,
@@ -139,6 +158,8 @@ export async function findInvoiceById(tenant: string, id: string): Promise<Invoi
         creditedAmt: financeInvoices.creditedAmt,
         lastRemindedAt: financeInvoices.lastRemindedAt,
         reminderCount: financeInvoices.reminderCount,
+        currency: financeInvoices.currency,
+        exchangeRate: financeInvoices.exchangeRate,
         deletedAt: financeInvoices.deletedAt,
         deletedBy: financeInvoices.deletedBy,
         deletionReason: financeInvoices.deletionReason,
@@ -153,6 +174,8 @@ export async function findInvoiceById(tenant: string, id: string): Promise<Invoi
         and(eq(financeInvoices.workspaceSubdomain, subdomain), eq(financeInvoices.id, trimmedId)),
       )
       .limit(1);
+
+    const rows = options?.forUpdate ? await query.for("update") : await query;
     const row = rows[0];
     if (!row) return null;
 
@@ -182,12 +205,13 @@ export async function findInvoiceById(tenant: string, id: string): Promise<Invoi
 export async function findInvoicesByIds(
   tenant: string,
   ids: string[],
-  options?: { includeDeleted?: boolean },
+  options?: { includeDeleted?: boolean; forUpdate?: boolean },
 ): Promise<Invoice[]> {
   const cleanIds = dedupeTrimmedIds(ids);
   if (cleanIds.length === 0) return [];
   const subdomain = tenant.trim().toLowerCase();
-  return withTenantRead(subdomain, async (tx) => {
+
+  const load = async (tx: TenantTransaction): Promise<Invoice[]> => {
     const conditions = [
       eq(financeInvoices.workspaceSubdomain, subdomain),
       inArray(financeInvoices.id, cleanIds),
@@ -195,7 +219,7 @@ export async function findInvoicesByIds(
     if (!options?.includeDeleted) {
       conditions.push(isNull(financeInvoices.deletedAt));
     }
-    const rows = await tx
+    const query = tx
       .select({
         id: financeInvoices.id,
         workspaceSubdomain: financeInvoices.workspaceSubdomain,
@@ -222,6 +246,8 @@ export async function findInvoicesByIds(
         creditedAmt: financeInvoices.creditedAmt,
         lastRemindedAt: financeInvoices.lastRemindedAt,
         reminderCount: financeInvoices.reminderCount,
+        currency: financeInvoices.currency,
+        exchangeRate: financeInvoices.exchangeRate,
         deletedAt: financeInvoices.deletedAt,
         deletedBy: financeInvoices.deletedBy,
         deletionReason: financeInvoices.deletionReason,
@@ -233,6 +259,13 @@ export async function findInvoicesByIds(
       })
       .from(financeInvoices)
       .where(and(...conditions));
+    const rows = options?.forUpdate
+      ? await query.orderBy(asc(financeInvoices.id)).for("update")
+      : await query;
     return rows.map(invoiceRowToRecord);
-  });
+  };
+
+  // `FOR UPDATE` needs a writable transaction; the plain read path stays on the
+  // replica. Nested calls join the caller's active transaction either way.
+  return options?.forUpdate ? withTenant(subdomain, load) : withTenantRead(subdomain, load);
 }

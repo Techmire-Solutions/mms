@@ -1,4 +1,4 @@
-import { randomUUID } from "node:crypto";
+import { buildBackgroundJobId } from "../../../lib/backgroundJobIds.js";
 import type { FastifyReply } from "fastify";
 import {
   type BackgroundJobRecord,
@@ -74,7 +74,7 @@ export async function enqueueContactBackgroundJob(options: {
   }
 
   const userId = String(options.user.id);
-  const jobId = options.idempotencyKey?.trim() || randomUUID();
+  const jobId = buildBackgroundJobId(tenant, userId, options.idempotencyKey);
   const existing = await getUserBackgroundJob(userId, jobId);
   if (existing) return existing;
 
@@ -119,4 +119,4 @@ export async function sanitizeOneForUser(contact: Contact, user: User): Promise<
 }
 
 /** Contacts audit helper — shared factory, same shape as Faculty/Students. */
-export const auditContact = createCollectionAuditHelper("contacts");
+export const auditContact = createCollectionAuditHelper("contacts", { subjectScoped: true });

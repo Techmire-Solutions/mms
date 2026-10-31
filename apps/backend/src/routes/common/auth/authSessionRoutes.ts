@@ -19,7 +19,8 @@ import { consumeAuthArtifact } from "../../../services/auth/authArtifactService.
 import { revokeAllUserSessions, revokeToken } from "../../../services/authSessionService.js";
 import { getJwtExpiresIn, loadGlobalSettings } from "../../../services/globalSettingsService.js";
 import { tenantSessionScope, touchSession } from "../../../services/sessionClockService.js";
-import { usersRepository } from "../../../users/repository/usersRepositoryAdapter.js";
+import { usersUseCases } from "../../../users/use-cases/usersUseCases.js";
+import { facultyUseCases } from "../../../faculty/use-cases/facultyUseCases.js";
 import {
   enforceTenantSessionClock,
   SESSION_EXPIRY_RESPONSE,
@@ -70,8 +71,17 @@ export const authSessionRoutes: FastifyPluginAsync = async (fastify) => {
         const decoded = fastify.jwt.decode(accessToken) as {
           jti?: string;
           id?: string | number;
+          exp?: number;
         } | null;
-        if (decoded?.jti) await revokeToken(decoded.jti);
+        if (decoded?.jti) {
+          // Keep the marker at least as long as the token can still be
+          // presented. The old fixed 15-minute TTL expired long before a
+          // default 60-minute access token (up to 24 h), so a stolen token
+          // became valid again after sign-out.
+          const nowSeconds = Math.floor(Date.now() / 1000);
+          const remainingSeconds = typeof decoded.exp === "number" ? decoded.exp - nowSeconds : 0;
+          await revokeToken(decoded.jti, Math.max(60, remainingSeconds));
+        }
         if (!userId && decoded?.id !== undefined) userId = String(decoded.id);
       } catch {
         // Best effort — an unverifiable token cannot be revoked by jti.
@@ -93,20 +103,16 @@ export const authSessionRoutes: FastifyPluginAsync = async (fastify) => {
         // runs with RLS bypassed and could resolve another tenant's user.
         const sessionTenant = getRequestTenant() ?? user.workspaceSubdomain;
         const userRow = sessionTenant
-          ? await usersRepository.findTenantUserRowById(sessionTenant, String(user.id))
+          ? await usersUseCases.loadTenantUserRowById(sessionTenant, String(user.id))
           : null;
         if (userRow?.deletedAt) {
           return sendUnauthorized(reply, "Session revoked");
         }
         if (user.role === "faculty" || user.role === "teacher") {
-          const tenant = getRequestTenant() ?? user.workspaceSubdomain;
-          if (tenant) {
-            const { facultyRepository } =
-              await import("../../../faculty/repository/facultyRepositoryAdapter.js");
-            const facultyRow = await facultyRepository.findById(tenant, String(user.id));
-            if (facultyRow?.deletedAt) {
-              return sendUnauthorized(reply, "Session revoked");
-            }
+          // Tombstone probe only — a hydrated load returns null when the linked
+          // contact is unreadable, which would keep a deleted teacher signed in.
+          if (await facultyUseCases.isFacultyProfileDeleted(String(user.id))) {
+            return sendUnauthorized(reply, "Session revoked");
           }
         }
       } catch {

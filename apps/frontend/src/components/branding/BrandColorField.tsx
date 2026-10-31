@@ -24,9 +24,13 @@ export function BrandColorField({
   const { t } = useTranslation();
   const [hexDraft, setHexDraft] = React.useState(value);
 
-  React.useEffect(() => {
+  // Re-seed the draft when the committed colour changes (e.g. another field or a
+  // preset updated it). React's documented "adjust state during render" pattern.
+  const [previousValue, setPreviousValue] = React.useState(value);
+  if (previousValue !== value) {
+    setPreviousValue(value);
     setHexDraft(value);
-  }, [value]);
+  }
 
   const isValidHex = /^#([0-9a-fA-F]{3}){1,2}$/.test(
     hexDraft.startsWith("#") ? hexDraft : `#${hexDraft}`,

@@ -8,10 +8,12 @@ import {
 } from "@mms/shared";
 import {
   deleteAuthArtifact,
+  deleteRefreshTokensForUser,
   findAuthArtifactByLookupKey,
   putAuthArtifact,
   updateAuthArtifactPayload,
 } from "./authArtifactService.js";
+import { revokeAllUserSessions } from "../authSessionService.js";
 import { generateOtpCode, hashOtpCode, verifyOtpCode } from "./authCookieService.js";
 import { hashPassword } from "./passwordService.js";
 import { assertPasswordMeetsPolicy } from "../globalSettingsService.js";
@@ -51,6 +53,38 @@ export class TenantPasswordOtpError extends Error {
 
 function otpLookupKey(workspaceSubdomain: string, email: string): string {
   return `tenant-otp:${workspaceSubdomain.trim().toLowerCase()}:${email.trim().toLowerCase()}`;
+}
+
+interface OtpArtifact {
+  id: string;
+  payload: TenantPasswordOtpPayload;
+}
+
+/**
+ * Single attempt-counting path for every OTP check.
+ *
+ * Both `/forgot-password/verify` and `/forgot-password/reset` must count an
+ * invalid code, otherwise the reset route is a lockout bypass (previously only
+ * verify incremented `attempts`, so guesses could continue indefinitely through
+ * reset). Throws `invalid_code` while attempts remain and `too_many_attempts`
+ * once the shared ceiling is reached, deleting the artifact so the code is
+ * dead even if a later call re-reads it.
+ */
+async function verifyOtpWithAttempts(entry: OtpArtifact, code: string): Promise<void> {
+  const normalizedCode = code.replace(/\s/g, "");
+  if (verifyOtpCode(normalizedCode, entry.payload.codeHash)) return;
+
+  const attempts = entry.payload.attempts + 1;
+  if (attempts >= TENANT_OTP_MAX_ATTEMPTS) {
+    await deleteAuthArtifact(entry.id);
+    throw new TenantPasswordOtpError(
+      "too_many_attempts",
+      "Too many invalid attempts. Request a new code.",
+    );
+  }
+
+  await updateAuthArtifactPayload(entry.id, { ...entry.payload, attempts });
+  throw new TenantPasswordOtpError("invalid_code", "Invalid or expired code");
 }
 
 async function recordPasswordSetActivity(tenant: string, userId: string): Promise<void> {
@@ -132,19 +166,7 @@ export async function verifyTenantPasswordResetOtp(input: {
     throw new TenantPasswordOtpError("invalid_code", "Invalid or expired code");
   }
 
-  const normalizedCode = input.code.replace(/\s/g, "");
-  if (!verifyOtpCode(normalizedCode, entry.payload.codeHash)) {
-    const attempts = entry.payload.attempts + 1;
-    if (attempts >= TENANT_OTP_MAX_ATTEMPTS) {
-      await deleteAuthArtifact(entry.id);
-      throw new TenantPasswordOtpError(
-        "too_many_attempts",
-        "Too many invalid attempts. Request a new code.",
-      );
-    }
-    await updateAuthArtifactPayload(entry.id, { ...entry.payload, attempts });
-    throw new TenantPasswordOtpError("invalid_code", "Invalid or expired code");
-  }
+  await verifyOtpWithAttempts(entry, input.code);
 
   return { ok: true };
 }
@@ -168,14 +190,17 @@ export async function resetTenantPassword(input: {
     throw new TenantPasswordOtpError("invalid_code", "Invalid or expired code");
   }
 
-  const normalizedCode = input.code.replace(/\s/g, "");
-  if (!verifyOtpCode(normalizedCode, entry.payload.codeHash)) {
-    throw new TenantPasswordOtpError("invalid_code", "Invalid or expired code");
-  }
+  await verifyOtpWithAttempts(entry, input.code);
 
   // Validate before consuming — a policy-rejected password must not burn the one-shot code.
   await assertPasswordMeetsPolicy(input.password);
   const passwordHash = await hashPassword(input.password);
+
+  // The recovery path must evict every existing session (stolen refresh chains
+  // included). Revoke BEFORE the password changes: if revocation cannot be
+  // recorded, the credential must stay as it was.
+  await revokeAllUserSessions(String(entry.payload.userId));
+  await deleteRefreshTokensForUser(String(entry.payload.userId));
 
   await deleteAuthArtifact(entry.id);
 
@@ -189,7 +214,11 @@ export async function resetTenantPassword(input: {
   }
 
   const user = await getPublicUserById(entry.payload.userId);
-  if (!user) {
+  if (
+    !user ||
+    user.workspaceSubdomain.trim().toLowerCase() !==
+      entry.payload.workspaceSubdomain.trim().toLowerCase()
+  ) {
     throw new TenantPasswordOtpError("not_found", "This account is no longer available");
   }
 

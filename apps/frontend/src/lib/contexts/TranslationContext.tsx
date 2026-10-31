@@ -1,5 +1,6 @@
 import React, { createContext, useState, useEffect, useCallback, useMemo } from "react";
 import { useGlobalSettings } from "@/tenant/hooks/useGlobalSettings";
+import { useHydrateGlobalSettings } from "@/tenant/hooks/useHydrateGlobalSettings";
 import { useLocation } from "react-router-dom";
 import { useTenant } from "@/lib/contexts/TenantContext";
 import {
@@ -34,11 +35,17 @@ interface TranslationContextType {
 
 export const TranslationContext = createContext<TranslationContextType | null>(null);
 
+/** Languages whose packs are loaded on demand (see `fetchLanguagePack`). */
+function isPackLanguage(language: string): boolean {
+  return language === "ar" || language === "ur" || language === "fa";
+}
+
 export function TranslationProvider({
   children,
 }: {
   children: React.ReactNode;
 }): React.JSX.Element {
+  const { isHydrating } = useHydrateGlobalSettings();
   const settings = useGlobalSettings();
   const { pathname } = useLocation();
   const { isApex, workspace, workspaceLoading, workspaceLookupFailed } = useTenant();
@@ -52,25 +59,34 @@ export function TranslationProvider({
     settingsLanguage: settings.language,
   });
   const [loadedLanguages, setLoadedLanguages] = useState<Record<string, boolean>>({ en: true });
-  const [activeLanguage, setActiveLanguage] = useState<AppLanguageCode>("en");
-  const [isLoading, setIsLoading] = useState(false);
-
   const isLanguageLoaded = !!loadedLanguages[language];
   const hasLoadedAnyLanguage = Object.values(loadedLanguages).some(Boolean);
+  const [activeLanguage, setActiveLanguage] = useState<AppLanguageCode>("en");
+  const [isLoading, setIsLoading] = useState(() => !isLanguageLoaded && isPackLanguage(language));
 
-  useEffect(() => {
+  // Follow the resolved UI language: adopt a loaded pack immediately, otherwise flag
+  // the pending download. Adjusted during render (React's documented prop-change
+  // pattern) instead of synchronously inside the fetch effect below, so no frame
+  // renders text in the previous language while the effect catches up.
+  const [languageAnchor, setLanguageAnchor] = useState({ language, isLanguageLoaded });
+  if (
+    languageAnchor.language !== language ||
+    languageAnchor.isLanguageLoaded !== isLanguageLoaded
+  ) {
+    setLanguageAnchor({ language, isLanguageLoaded });
     if (isLanguageLoaded) {
       setActiveLanguage(language as AppLanguageCode);
-      return;
+    } else if (isPackLanguage(language)) {
+      setIsLoading(true);
+    } else {
+      setIsLoading(false);
     }
+  }
+
+  useEffect(() => {
+    if (isLanguageLoaded || !isPackLanguage(language)) return;
 
     let active = true;
-    setIsLoading(true);
-
-    if (language !== "ar" && language !== "ur" && language !== "fa") {
-      setIsLoading(false);
-      return;
-    }
 
     fetchLanguagePack(language)
       .then(() => {
@@ -79,7 +95,6 @@ export function TranslationProvider({
           ...currentLoadedLanguages,
           [language]: true,
         }));
-        setActiveLanguage(language as AppLanguageCode);
         setIsLoading(false);
       })
       .catch((translationError) => {
@@ -116,7 +131,7 @@ export function TranslationProvider({
     [activeLanguage, t, isLoading, dir, isRtl],
   );
 
-  if (!isLanguageLoaded && !hasLoadedAnyLanguage) {
+  if (isHydrating || (!isLanguageLoaded && !hasLoadedAnyLanguage)) {
     return (
       <div className="flex min-h-screen items-center justify-center bg-background">
         <div className="flex flex-col items-center space-y-4">

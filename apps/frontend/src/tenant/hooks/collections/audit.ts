@@ -1,6 +1,5 @@
 import { useQuery, useMutation, useQueryClient, queryOptions } from "@tanstack/react-query";
 import { apiContract } from "@/lib/api";
-import { ApiError } from "@/lib/apiClient";
 import type {
   AuditRetentionRegime,
   AuditActionType,
@@ -11,6 +10,7 @@ import type {
   AuditMerkleRootsResponse,
   AuditErasureResponse,
 } from "@mms/shared";
+import { assertContractOk } from "@/lib/apiContractError";
 
 export const AUDIT_EVENTS_QUERY_KEY = ["audit", "events"] as const;
 export const AUDIT_MERKLE_ROOTS_QUERY_KEY = ["audit", "merkle-roots"] as const;
@@ -39,13 +39,6 @@ export interface ExecuteErasureParams {
   reason?: string;
 }
 
-/** Throws an `ApiError` on a non-200 contract envelope (preserves the old throw-on-!ok). */
-function assertOk(response: { status: number; body: unknown }, context: string): void {
-  if (response.status === 200) return;
-  const errorBody = response.body as { message?: string; type?: string } | undefined;
-  throw new ApiError(response.status, errorBody?.message ?? context, errorBody?.type);
-}
-
 export function auditEventsQueryOptions(filters: AuditListFilters = {}) {
   const query = {
     ...(filters.limit ? { limit: filters.limit } : {}),
@@ -63,7 +56,7 @@ export function auditEventsQueryOptions(filters: AuditListFilters = {}) {
         signal,
         fetchOptions: { signal },
       });
-      assertOk(response, "Failed to load audit events");
+      assertContractOk(response, "Failed to load audit events");
       return response.body as AuditListResponse;
     },
     staleTime: 30_000,
@@ -82,7 +75,7 @@ export function useAuditMerkleRootsQuery() {
         signal,
         fetchOptions: { signal },
       });
-      assertOk(response, "Failed to load Merkle roots");
+      assertContractOk(response, "Failed to load Merkle roots");
       return response.body as AuditMerkleRootsResponse;
     },
     staleTime: 60_000,
@@ -94,7 +87,7 @@ export function useAuditVerifyMutation() {
   return useMutation({
     mutationFn: async () => {
       const response = await apiContract.audit.verifyChain({});
-      assertOk(response, "Audit verification failed");
+      assertContractOk(response, "Audit verification failed");
       return response.body as AuditVerificationResult;
     },
     onSuccess: () => {
@@ -108,7 +101,7 @@ export function useAuditErasureMutation() {
   return useMutation({
     mutationFn: async (params: ExecuteErasureParams) => {
       const response = await apiContract.audit.executeErasure({ body: params });
-      assertOk(response, "Audit erasure failed");
+      assertContractOk(response, "Audit erasure failed");
       return response.body as AuditErasureResponse;
     },
     onSuccess: () => {
@@ -126,7 +119,7 @@ export function useAuditAnomaliesQuery(windowHours = 24) {
         signal,
         fetchOptions: { signal },
       });
-      assertOk(response, "Failed to load audit anomalies");
+      assertContractOk(response, "Failed to load audit anomalies");
       return response.body as AuditAnomalyReport;
     },
     staleTime: 60_000,

@@ -19,12 +19,11 @@ export default defineConfig({
       MMS_LOG_DEV_CREDENTIALS: "true",
     },
     include: ["src/__tests__/**/*.{test,spec}.ts"],
-    // Real-Postgres integration tests live in db-integration/ and are opt-in
-    // (run explicitly with `vitest run src/__tests__/db-integration/...` when a
-    // database is available). They are excluded from the default suite so the
-    // mocked unit suite stays green without a database and their global pool
-    // lifecycle cannot interfere with other tests.
-    exclude: ["src/__tests__/db-integration/**"],
+    // Real-Postgres integration tests live in db-integration/ and rls/ and are
+    // opt-in (run via test:db / test:rls when a database is available). They are
+    // excluded from the default suite so the mocked unit suite stays green
+    // without a database and their global pool lifecycle cannot interfere.
+    exclude: ["src/__tests__/db-integration/**", "src/__tests__/rls/**"],
     // Pre-bundle @mms/shared (~500 dist modules) so isolated test files evaluate
     // one file instead of re-walking the whole graph. `force` re-bundles once per
     // run: Vite's cache key ignores linked workspace builds, so a cached bundle
@@ -46,6 +45,10 @@ export default defineConfig({
     coverage: {
       provider: "v8",
       reporter: ["text", "json", "html"],
+      // Whole-tree basis (the correction the frontend received on 2026-10-30): without
+      // `include`, Vitest only instruments files a test happened to load, so untested
+      // modules never entered the denominator.
+      include: ["src/**/*.{ts,tsx}"],
       exclude: [
         "src/db/migrations/**",
         "src/db/migrations_drizzle/**",
@@ -53,12 +56,15 @@ export default defineConfig({
         "**/*.d.ts",
       ],
       // Coverage gate: lock in the current baseline so regressions fail CI.
-      // Raise these as coverage improves.
+      // Raise these as coverage improves — never lower one to unblock a change.
+      // Measured 2026-10-30 over the whole tree (CI-equivalent: 4 shards + merged
+      // report): stmts 43.06 / branches 33.96 / funcs 41.41 / lines 45.19. The floors
+      // are the same gate re-based onto the whole tree, not a tolerance change.
       thresholds: {
-        lines: 45,
-        statements: 43.2,
-        functions: 37.5,
-        branches: 27,
+        lines: 44,
+        statements: 42,
+        functions: 40,
+        branches: 32,
       },
     },
   },

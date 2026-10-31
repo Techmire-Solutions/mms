@@ -84,7 +84,7 @@ export function FormSelectSearchContent({
           const isSelected = option.value === value;
           return (
             <div
-              key={option.value}
+              key={`${option.value}-${index}`}
               id={optionId(index)}
               role="option"
               aria-selected={isSelected}

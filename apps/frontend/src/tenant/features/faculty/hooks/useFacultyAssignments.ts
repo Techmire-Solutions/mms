@@ -1,16 +1,12 @@
-import { useContext } from "react";
-import { QueryClient, QueryClientContext, useQuery } from "@tanstack/react-query";
+import { type QueryClient, useQuery } from "@tanstack/react-query";
 import type { FacultyAssignmentEntity } from "@mms/shared";
 import { apiContract } from "@/lib/api";
+import { useQueryClientOrFallback } from "@/lib/query/optionalQueryContext";
 import { FACULTY_QUERY_KEY } from "./facultyQueryKeys";
 
-const fallbackQueryClient = new QueryClient({
-  defaultOptions: { queries: { retry: false } },
-});
-
 export function useFacultyAssignments(facultyId?: string | null, customClient?: QueryClient) {
-  const contextClient = useContext(QueryClientContext);
-  const client = customClient ?? contextClient ?? fallbackQueryClient;
+  const contextClient = useQueryClientOrFallback();
+  const client = customClient ?? contextClient;
 
   return useQuery(
     {

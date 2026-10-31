@@ -90,7 +90,7 @@ export function LlmSandboxPanel({
         <div className="border border-border/70 bg-card/40 rounded-2xl flex flex-col overflow-hidden shadow-inner">
           {/* Chat Header */}
           <div className="flex flex-wrap items-center justify-between gap-2 px-4 py-2 border-b border-border/60 bg-muted/20 shrink-0">
-            <div className="flex min-w-0 items-center gap-1.5 text-xs font-semibold text-muted-foreground/80 uppercase tracking-wider">
+            <div className="flex min-w-0 items-center gap-1.5 text-xs font-semibold text-muted-foreground uppercase tracking-wider">
               <MessageSquare className="h-3.5 w-3.5 shrink-0 text-muted-foreground" aria-hidden />
               <span className="min-w-0 truncate">{t("settings.llmSandboxHistory")}</span>
             </div>
@@ -143,7 +143,7 @@ export function LlmSandboxPanel({
                       <p className="whitespace-pre-wrap">{msg.content}</p>
                     </div>
                     {!isUser && msg.metrics && (
-                      <div className="mt-1.5 flex flex-wrap items-center gap-x-3 gap-y-1 px-2 text-xs font-semibold text-muted-foreground/80">
+                      <div className="mt-1.5 flex flex-wrap items-center gap-x-3 gap-y-1 px-2 text-xs font-semibold text-muted-foreground">
                         <span>
                           {t("settings.llmLatency")}: {msg.metrics.latencyMs}ms
                         </span>

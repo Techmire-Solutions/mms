@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { roleObjectHasPermission } from "../auth/permissions.js";
-import { taskInsertSchema, taskUpdateSchema } from "./tasksModuleManifest.js";
+import { taskInsertSchema, taskListQuerySchema, taskUpdateSchema } from "./tasksModuleManifest.js";
 import type { WorkspaceRole } from "../auth/userEntityTypes.js";
 
 const manager: WorkspaceRole = {
@@ -60,5 +60,40 @@ describe("Tasks capability boundaries", () => {
 
     // Assert
     expect(result).toEqual(payload);
+  });
+
+  it("given dueFrom and dueTo query parameters, should parse successfully", () => {
+    // Arrange
+    const query = {
+      dueFrom: "2026-10-01",
+      dueTo: "2026-10-31T23:59:59.999Z",
+      status: "in_progress",
+    };
+
+    // Act
+    const result = taskListQuerySchema.safeParse(query);
+
+    // Assert
+    expect(result.success).toBe(true);
+    if (result.success) {
+      expect(result.data.dueFrom).toBe("2026-10-01");
+      expect(result.data.dueTo).toBe("2026-10-31T23:59:59.999Z");
+      expect(result.data.status).toBe("in_progress");
+      expect(result.data.limit).toBe(50);
+      expect(result.data.offset).toBe(0);
+    }
+  });
+
+  it("given unallowed query properties, should reject due to strict schema", () => {
+    // Arrange
+    const invalidQuery = {
+      unknownField: "malicious_or_accidental",
+    };
+
+    // Act
+    const result = taskListQuerySchema.safeParse(invalidQuery);
+
+    // Assert
+    expect(result.success).toBe(false);
   });
 });

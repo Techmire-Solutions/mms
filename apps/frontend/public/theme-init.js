@@ -25,12 +25,13 @@
       }
     }
 
-    var theme = null;
+    var settings = null;
     if (raw) {
       try {
-        theme = JSON.parse(raw).theme;
+        settings = JSON.parse(raw);
       } catch (_) {}
     }
+    var theme = settings ? settings.theme : null;
 
     var meta = document.querySelector('meta[name="color-scheme"]');
     if (theme === "dark" || (!theme && window.matchMedia("(prefers-color-scheme: dark)").matches)) {
@@ -41,6 +42,49 @@
       d.classList.remove("dark");
       d.style.colorScheme = "light";
       if (meta) meta.content = "light";
+    }
+
+    // Language + direction before first paint. Without this, ar/ur/fa tenants
+    // lay out LTR until React mounts and the locale pack downloads, then the
+    // whole shell mirrors. Kept in sync with `ENTRY_PATHS` in
+    // `src/lib/config/routes.ts` by `src/__tests__/themeInitPrelanguage.test.ts`.
+    // `isEntryPath` covers `/onboarding`; the platform apex console is always
+    // English/LTR (`shouldForcePlatformEnglish`).
+    var ENTRY_PATHS = [
+      "/login",
+      "/forgot-password",
+      "/platform/forgot-password",
+      "/2fa",
+      "/onboarding",
+    ];
+    var PLATFORM_PREFIX = "/platform";
+    var RTL_LANGUAGES = ["ar", "ur", "fa"];
+    var FONT_CLASSES = { ar: "font-arabic", ur: "font-urdu", fa: "font-persian" };
+    var pathname = location.pathname;
+
+    var forceEnglish = pathname.indexOf(PLATFORM_PREFIX) === 0;
+    for (var j = 0; j < ENTRY_PATHS.length && !forceEnglish; j++) {
+      var entry = ENTRY_PATHS[j];
+      forceEnglish = pathname === entry || pathname.indexOf(entry + "/") === 0;
+    }
+
+    var language = "en";
+    if (!forceEnglish && settings && typeof settings.language === "string") {
+      language = settings.language.toLowerCase();
+    }
+    if (RTL_LANGUAGES.indexOf(language) === -1) {
+      language = "en";
+    }
+
+    d.setAttribute("lang", language);
+    d.setAttribute("dir", RTL_LANGUAGES.indexOf(language) === -1 ? "ltr" : "rtl");
+
+    var fontNames = ["font-arabic", "font-urdu", "font-persian"];
+    for (var k = 0; k < fontNames.length; k++) {
+      d.classList.remove(fontNames[k]);
+    }
+    if (FONT_CLASSES[language]) {
+      d.classList.add(FONT_CLASSES[language]);
     }
   } catch (_) {}
 })();

@@ -1,4 +1,3 @@
-import { type MutableRefObject } from "react";
 import { useContactById } from "@/tenant/hooks/collections/contacts";
 import { formatContactGenderLabel } from "@/lib/contacts/contactI18n";
 import { formatDate, todayISO, type Student } from "@mms/shared";
@@ -19,7 +18,8 @@ interface UseStudentFormLinkedDataOptions {
     grNumberDigits?: number;
     grNumberRestartAnnually?: boolean;
   };
-  grManuallyEdited: MutableRefObject<boolean>;
+  isGrManuallyEdited: boolean;
+  setIsGrManuallyEdited: (val: boolean) => void;
   updateDraft: (patch: Partial<Student>) => void;
   t: TranslationFunction;
 }
@@ -28,7 +28,8 @@ export function useStudentFormLinkedData({
   student,
   studentDraft,
   settings,
-  grManuallyEdited,
+  isGrManuallyEdited,
+  setIsGrManuallyEdited,
   updateDraft,
   t,
 }: UseStudentFormLinkedDataOptions) {
@@ -56,14 +57,14 @@ export function useStudentFormLinkedData({
   });
 
   const handleGrNumberChange = (value: string) => {
-    grManuallyEdited.current = true;
+    setIsGrManuallyEdited(true);
     updateDraft({ grNumber: value });
   };
 
   const excludeIds = (() =>
     buildStudentContactExcludeIds(linkedStudentContactIds, linkedContact))();
 
-  const isGrAutoAssigned = autoGenerateId && isStudentCreate(student) && !grManuallyEdited.current;
+  const isGrAutoAssigned = autoGenerateId && isStudentCreate(student) && !isGrManuallyEdited;
 
   return {
     linkedContact,

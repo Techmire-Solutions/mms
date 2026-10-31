@@ -4,11 +4,12 @@ Project rules for the Madrasa Management System. Cursor loads `.mdc` files from 
 
 **Architecture rules:** `mms-module-architecture.mdc`, `mms-ops-infrastructure.mdc`, `mms-ui-ux-design.mdc`, `mms-data-layer.mdc`.
 
-## Always Applied (1)
+## Always Applied (2)
 
 | Rule | Purpose |
 |------|---------|
 | `mms-core.mdc` | Stack, boundaries, ownership matrix, edit discipline |
+| `mms-completion-review.mdc` | Mandatory self-review + adversarial audit before marking work done |
 
 ## Scoped Rules (21)
 
@@ -17,7 +18,6 @@ Project rules for the Madrasa Management System. Cursor loads `.mdc` files from 
 | Rule | Focus / Topic |
 |------|---------------|
 | `mms-agent-universal.mdc` | Universal agent cognition, output economy, security, TS/git standards |
-| `mms-completion-review.mdc` | Self-review after code edits — verify, fix bugs, then mark done |
 
 ### Architecture & Platform Standards
 
@@ -56,6 +56,7 @@ Project rules for the Madrasa Management System. Cursor loads `.mdc` files from 
 |------|---------------|
 | `mms-messaging.mdc` | SMS/WhatsApp campaigns, `MessageComposer`, templates, and message-log soft-archive semantics |
 | `mms-reports.mdc` | Analytics implementation & exports, KPI SSOT, `ExportToolbar`, saved reports |
+| `mms-tdd.mdc` | Test-first delivery for backend domain layers, shared helpers, tenant hooks, and bug fixes (advisory pairing check) |
 | `mms-testing-observability.mdc` | Vitest, API tests, logging, ErrorBoundary, Sentry, request-id |
 
 ## Ownership matrix (topic → owner rule → workflow skill)
@@ -69,6 +70,7 @@ in the enforcement registry below are how the norm is actually held.
 | Agent cognition, output economy, TS/git discipline | `mms-agent-universal.mdc` | `antigravity-workspace` |
 | Stack, boundaries, layering, ownership | `mms-core.mdc` | `mms-dev-setup` |
 | Post-edit verification | `mms-completion-review.mdc` | `mms-code-review` |
+| Test-first delivery, Red evidence | `mms-tdd.mdc` | `mms-testing-e2e` · `mms-code-review` |
 | Dependencies, engines, catalogs | `mms-dependencies.mdc` | `mms-dependency-upgrade` · `mms-vuln-response` |
 | File structure, naming, size bands | `mms-structure-naming.mdc` | `mms-frontend` · `mms-shared-package` · `mms-shared-ui` |
 | DRY, extraction, `@mms/shared` boundaries | `mms-dry.mdc` | `mms-shared-package` · `mms-shared-ui` |
@@ -132,6 +134,11 @@ Update this table in the same change that adds or removes a check.
 | Workflow security (SHA pinning, no credential persistence, no template injection, gated triggers) | `workflow-lint` job: actionlint + zizmor `min-severity: medium` (CI) | CI |
 | Deployed bytes match CI's build of the commit | `actions/attest-build-provenance` in CI + `gh attestation verify` in `deploy.yml` | CI |
 | Rule/skill/command/agent/mirror integrity (incl. `.agent/workflows` ↔ `.cursor/commands` ↔ `.claude/commands` ↔ `.claude/agents` parity) | `node scripts/verify-rules-integrity.mjs` + sync drift diff (CI) | CI |
+| Rule-cited `pnpm` scripts exist in a workspace `package.json` | `node scripts/verify-rules-integrity.mjs` (CI + pre-PR gate) | CI |
+| Rule-cited version ranges resolve to a manifest (catalog / `package.json` / `engines` / `packageManager`) | `node scripts/verify-rules-integrity.mjs` (CI + pre-PR gate) | CI |
+| Rule/skill inventory claims in prose match frontmatter + disk (`Always-on rules (N)`, `rules: X always-on + Y scoped`, `Scoped (N rules, M total)`, `all N descriptions`, `.dsh/AGENTS.md`) | `node scripts/verify-rules-integrity.mjs` (CI + pre-PR gate) | CI |
+| DeepSeek Harness mirror is generated and byte-identical (`.dsh/rules` ↔ `.agent/rules`, `.dsh/skills` ↔ `.agent/skills`, no flat `.md` at the skills root, kebab skill names matching folder) | `node scripts/verify-rules-integrity.mjs` + sync drift diff over `.dsh` (CI) | CI |
+| Canonical skills cite rules as `.md` and keep a verification section | `node scripts/verify-rules-integrity.mjs` (CI + pre-PR gate) | CI |
 | Local CI before commit (gates + path-aware unit tests) | `.githooks/pre-commit` (secrets + staged-file ESLint); `.githooks/pre-push` (blocks `main`, runs affected-only `pnpm ci:local` / `scripts/ci/local-ci.sh`) | hook + script |
 | `drizzle-kit push` / destructive rm / .env reads | `.cursor/hooks/guard-shell.sh` (Claude + Cursor hooks) | hook |
 | Tenant RLS enablement per table | `mms-schema-migrate/scripts/check-migrations.sh` | skill script |
@@ -140,11 +147,14 @@ Update this table in the same change that adds or removes a check.
 | `@mms/shared` runtime purity | `pnpm run check:shared-purity` (CI, `typecheck-lint`) | CI |
 | a11y serious/critical violations | `e2e/tests/a11y/a11y-shell.spec.ts` (CI e2e job) | test |
 | Platform UI ownership (native controls, duplicate exports/JSX, semantic palette classes) | `apps/frontend/src/platform/platformUiArchitecture.test.ts` | test |
-| Coverage floors (FE 55/50, BE 45/27 lines/branches) | vitest thresholds in each workspace | test |
+| Configured coverage floors match the rule §5 snapshot | verifier parses each workspace `vitest.config.ts` and compares it with `mms-testing-observability.mdc` §5 | test + CI |
+| Standards mirrors regenerated and staged with their source before commit | `.githooks/pre-commit` (`sync-all.sh` + `scripts/check-standards-staged.mjs` + verifier when standards paths are staged) + CI drift diff over `.agent .cursor .claude .dsh` | hook + CI |
 | Work directory convergence (selection SSOT, two-layer bulk chrome, no dead adapters) | `pnpm run check:work-directory` | ratchet |
 | Data tables use `DataTable` / `WorkBatchTable` (no hand-rolled `<Table>` outside the report/ledger allowlist) | `pnpm run check:work-directory` | ratchet |
 | Shared UI component governance (zero duplicate components across consoles, `@shared/ui` SSOT, zero orphaned imports) | `mms-shared-ui.mdc` (norm) + `pnpm run check:shared-ui` (CI + pre-PR gate) | rule + ratchet |
 | Reuse-first / consumer-compatible shared changes (`mms-dry` §1) | none — **advisory** (review discipline) | advisory |
+| Test-first ordering (Red before Green) | none can prove ordering — **advisory**; `pnpm run check:tdd-pairing` warns when a changed backend domain file has no changed spec (pre-PR gate, never fails) | advisory |
+| Adversarial audit report before completion | `.github/pull_request_template.md` §Adversarial Loophole Audit + `mms-code-review` `adversarial-audit-template.md` — **advisory** (self-review, no gate) | advisory |
 | Every module-owned API route gated (`registerModuleAccess`), every route classified | `apps/backend/src/__tests__/moduleAccessCoverage.test.ts` | test |
 | Every tenant app-shell route classified in `TENANT_APP_ROUTE_ACCESS` | `apps/frontend/src/lib/config/routeAccess.test.ts` | test |
 | Tier structure, trunk tests, review criteria, UI/UX Pro Max design intelligence | none — **advisory** (review discipline) | advisory |
@@ -164,7 +174,7 @@ All rules in this directory apply **equally** to tenant workspace code and platf
 | File size cap (300 lines hard), naming | ✅ Yes |
 | `ErrorState` with hint description on list failures | ✅ Yes |
 | `notify.*` for all toasts | ✅ Yes |
-| Fastify layering (routes → services → repository) | ✅ Yes |
+| Fastify layering (routes → use-cases → repository ports → Drizzle adapters, `mms-api-interface.mdc` §2) | ✅ Yes |
 
 The only *differences* are intentional domain split: `authenticatePlatform` vs `authenticateTenant`; platform uses `platformUserCan`/`requirePlatformPermission` instead of `can()`; platform WS uses existing `/api/ws` tenant channel or its own mechanism — **no new parallel stacks**.
 
@@ -211,13 +221,15 @@ Every rule starts with a **Workflow skills:** line; the full topic→rule→skil
 | **Antigravity** | `.agent/rules/*.md` | `.agent/skills/` |
 | **Claude Code** | `.claude/rules/*.md` | `.claude/skills/` |
 | **Cursor** | `.cursor/rules/*.mdc` (canonical for rule bodies) | `.cursor/skills/` |
+| **DeepSeek Harness** | `.dsh/rules/*.md` (generated index: `.dsh/AGENTS.md`) | `.dsh/skills/` (discovered at project rank 100) |
 
-**Sync policy:** rule bodies identical across all three; only frontmatter differs (Cursor: `globs` + `alwaysApply`; Antigravity: `trigger`; Claude: `paths` or always-on). Cross-references use `.mdc` in Cursor, `.md` elsewhere.
+**Sync policy:** rule bodies are identical modulo the `.mdc` → `.md` rule-reference rewrite; only frontmatter differs otherwise (Cursor: `globs` + `alwaysApply`; Antigravity: `trigger`; Claude: `paths` or always-on; DSH: none — rules load on demand). Cross-references use `.mdc` in Cursor, `.md` elsewhere.
 
 After editing standards:
 
 ```bash
 bash .agent/scripts/sync-all.sh
+node scripts/verify-rules-integrity.mjs
 ```
 
 ## PR / Change Checklist
@@ -227,7 +239,7 @@ bash .agent/scripts/sync-all.sh
 - [ ] No new hardcoded labels/colours — see `mms-settings-i18n.mdc` (en/ar/ur/fa) + registries
 - [ ] Module tiers respect isolation boundaries in `mms-module-architecture.mdc`
 - [ ] Person-directory Work: `directoryViews: ['table','cards']` (never `list`) — `mms-module-architecture.mdc` §3
-- [ ] Bulk PUT upsert / ban wipe-missing-rows — `mms-api-interface.mdc` §5; form close after `mutateAsync` — module-arch §7
+- [ ] Bulk PUT upsert / ban wipe-missing-rows — `mms-api-interface.mdc` §5; form close after `mutateAsync` — `mms-form-architecture.mdc` §2
 - [ ] Write Zod `.strict()` — `mms-form-architecture.mdc`
 - [ ] Work column widths persist (local + `/column-preferences`; merge preserves device widths) — `mms-module-architecture.mdc` §3
 - [ ] Dashboard/report KPI cards use `/metrics` where available — `mms-reports.mdc`
@@ -237,12 +249,13 @@ bash .agent/scripts/sync-all.sh
 - [ ] **Legacy UI cleanup**: if deleting component files, run `pnpm typecheck && pnpm --filter mms-frontend lint && pnpm --filter mms-frontend build` **before** deletion, and the same suite + `pnpm run check:shared-ui` **after** — `mms-dry.mdc` §4
 - [ ] Touched app files stay under the hard 300 lines; splits keep public import barrels — `mms-structure-naming.mdc`
 - [ ] No commit unless user requested
-- [ ] Update **all mirrors** when changing standards: `bash .agent/scripts/sync-all.sh`
+- [ ] Update **all mirrors** when changing standards: `bash .agent/scripts/sync-all.sh` + `node scripts/verify-rules-integrity.mjs`
 - [ ] Auth/write routes: `mms-auth-security.mdc` (do not OR entity write with `canEditSetup`)
 - [ ] Backup/restore: admin + `canBulkSync`, safety backup + password step-up, sync timeout rollback, strip secrets / exclude credential tables — `mms-settings-i18n.mdc` / `mms-data-layer.mdc` / `mms-auth-security.mdc`
 - [ ] Soft-delete: 3-tier indexes, partial unique indexes `WHERE deleted_at IS NULL`, URL sync `?view=trash`, 23505 conflict trap, session invalidation, outbox CDC — `mms-soft-delete`
 - [ ] New UI: `mms-ui-ux-design.mdc` keyboard + labels + §4 responsive checklist (375 / 768 / 1440)
-- [ ] New `@mms/shared` pure helpers: unit test per `mms-testing-observability.mdc`
+- [ ] Backend domain change: Red-phase evidence recorded in the PR body — `mms-tdd.mdc` §1–§2
+- [ ] New `@mms/shared` pure helpers: unit test per `mms-tdd.mdc`
 
 ## Removed / Merged (History)
 
@@ -262,6 +275,8 @@ bash .agent/scripts/sync-all.sh
 | `mms-contacts.mdc`, `mms-contact-link.mdc` | Completely Deleted |
 | `mms-testing.mdc`, `mms-observability.mdc` | `mms-testing-observability.mdc` |
 
+<!-- Split (not removed): the TDD protocol moved out of `mms-testing-observability.mdc` §1 into `mms-tdd.mdc` (2026-10-29) so it loads for backend domain source files. -->
+
 ## Verify in Cursor
 
-**Settings → Rules** — 1 always-apply rule (`mms-core`) + 21 scoped rules when matching paths are open (**22 total**).
+**Settings → Rules** — 2 always-apply rules (`mms-core`, `mms-completion-review`) + 21 scoped rules when matching paths are open (**23 total**).

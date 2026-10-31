@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from "react";
+import React, { useState, useMemo } from "react";
 import { formatDateTime, todayISO } from "@mms/shared";
 import { EmptyState } from "@/components/app/EmptyState";
 import { ClipboardList, RefreshCw } from "lucide-react";
@@ -47,7 +47,35 @@ interface AuditLogRow {
 export function AuditLog({ filters, viewMode }: AuditLogProps): React.JSX.Element {
   const { t } = useTranslation();
   const sessions = useSessionsCollection();
-  const [log, setLog] = useState<AuditEntry[]>([]);
+  const [classId, setClassId] = useState(filters.classId || "");
+  const [date, setDate] = useState(filters.date || todayISO());
+
+  const [prevFilterClassId, setPrevFilterClassId] = useState(filters.classId);
+  const [prevFilterDate, setPrevFilterDate] = useState(filters.date);
+
+  if (prevFilterClassId !== filters.classId) {
+    setPrevFilterClassId(filters.classId);
+    if (filters.classId) setClassId(filters.classId);
+  }
+  if (prevFilterDate !== filters.date) {
+    setPrevFilterDate(filters.date);
+    if (filters.date) setDate(filters.date);
+  }
+
+  const [reloadKey, setReloadKey] = useState(0);
+  const reload = () => setReloadKey((prev) => prev + 1);
+
+  const log = useMemo<AuditEntry[]>(() => {
+    if (reloadKey < 0) return [];
+    try {
+      const result = getAuditLog(classId, date);
+      return Array.isArray(result) ? result : [];
+    } catch (error) {
+      reportClientError(error, { context: "attendance.loadAuditLog" });
+      return [];
+    }
+  }, [classId, date, reloadKey]);
+
   const studentIds = uniqueRegistryIds(log.map((entry) => entry.studentId));
   const { data: students = [] } = useStudentsByIds(studentIds);
   const actionConfig = buildAuditActionConfig(t);
@@ -74,28 +102,6 @@ export function AuditLog({ filters, viewMode }: AuditLogProps): React.JSX.Elemen
       sessionName: session.name,
     })),
   );
-
-  const [classId, setClassId] = useState(filters.classId || "");
-  const [date, setDate] = useState(filters.date || todayISO());
-
-  const reload = useCallback(() => {
-    try {
-      const result = getAuditLog(classId, date);
-      setLog(Array.isArray(result) ? result : []);
-    } catch (error) {
-      reportClientError(error, { context: "attendance.loadAuditLog" });
-      setLog([]);
-    }
-  }, [classId, date]);
-
-  useEffect(() => {
-    reload();
-  }, [reload]);
-
-  useEffect(() => {
-    if (filters.classId) setClassId(filters.classId);
-    if (filters.date) setDate(filters.date);
-  }, [filters.classId, filters.date]);
 
   const rows: AuditLogRow[] = log.map((entry, index) => ({ id: index, entry }));
   const actionLabel = (row: AuditLogRow) =>

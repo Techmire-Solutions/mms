@@ -3,16 +3,22 @@ import { normalizeDateFormat } from "./dateFormatPresets.js";
 /**
  * Formats numeric day/month/year parts using a preset pattern.
  */
+export type DateNumberFormatter = (value: number, minimumIntegerDigits: number) => string;
+
+const defaultDateNumberFormatter: DateNumberFormatter = (value, minimumIntegerDigits) =>
+  String(value).padStart(minimumIntegerDigits, "0");
+
 export function formatDateParts(
   day: number,
   month: number,
   year: number,
   formatId: string,
+  formatNumberPart: DateNumberFormatter = defaultDateNumberFormatter,
 ): string {
   const id = normalizeDateFormat(formatId);
-  const paddedDay = String(day).padStart(2, "0");
-  const paddedMonth = String(month).padStart(2, "0");
-  const fullYear = String(year);
+  const paddedDay = formatNumberPart(day, 2);
+  const paddedMonth = formatNumberPart(month, 2);
+  const fullYear = formatNumberPart(year, 4);
 
   switch (id) {
     case "MM/DD/YYYY":
@@ -40,18 +46,19 @@ export function formatDatePartsWithMonthName(
   monthNum: number,
   year: number,
   formatId: string,
+  formatNumberPart: DateNumberFormatter = defaultDateNumberFormatter,
 ): string {
   const id = normalizeDateFormat(formatId);
-  const paddedMonth = String(monthNum).padStart(2, "0");
-  const paddedDay = String(day).padStart(2, "0");
+  const paddedMonth = formatNumberPart(monthNum, 2);
+  const paddedDay = formatNumberPart(day, 2);
 
   if (id === "MM/DD/YYYY") {
-    return `${monthLabel} ${day}, ${year}`;
+    return `${monthLabel} ${formatNumberPart(day, 1)}, ${formatNumberPart(year, 4)}`;
   }
   if (id === "YYYY-MM-DD" || id === "YYYY/MM/DD") {
-    return `${year}-${paddedMonth}-${paddedDay}`;
+    return `${formatNumberPart(year, 4)}-${paddedMonth}-${paddedDay}`;
   }
-  return `${day} ${monthLabel} ${year}`;
+  return `${formatNumberPart(day, 1)} ${monthLabel} ${formatNumberPart(year, 4)}`;
 }
 
 /**

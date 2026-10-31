@@ -103,16 +103,13 @@ export function FacultyDetailAssignmentsSection({
 
               {item.departmentName ? (
                 <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
-                  <Briefcase
-                    className="w-3.5 h-3.5 text-muted-foreground/70 shrink-0"
-                    aria-hidden
-                  />
+                  <Briefcase className="w-3.5 h-3.5 text-muted-foreground shrink-0" aria-hidden />
                   <span className="truncate">{item.departmentName}</span>
                 </div>
               ) : null}
 
               {item.startDate ? (
-                <div className="flex items-center gap-1.5 text-2xs text-muted-foreground/80 pt-1 border-t border-border/40">
+                <div className="flex items-center gap-1.5 text-2xs text-muted-foreground pt-1 border-t border-border/40">
                   <Calendar className="w-3 h-3 text-muted-foreground/60 shrink-0" aria-hidden />
                   <span>
                     {item.startDate} —{" "}

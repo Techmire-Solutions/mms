@@ -50,15 +50,19 @@ vi.mock("@/lib/contexts/AuthContext", () => ({
   }),
 }));
 
-vi.mock("@tanstack/react-query", () => ({
-  useQuery: () => ({
-    data: { overallRate: 85 },
-    isLoading: false,
-  }),
-  useQueryClient: () => ({
-    invalidateQueries: vi.fn(),
-  }),
-}));
+vi.mock("@tanstack/react-query", async (importOriginal) => {
+  const actual = await importOriginal<typeof import("@tanstack/react-query")>();
+  return {
+    ...actual,
+    useQuery: () => ({
+      data: { overallRate: 85 },
+      isLoading: false,
+    }),
+    useQueryClient: () => ({
+      invalidateQueries: vi.fn(),
+    }),
+  };
+});
 
 vi.mock("@/lib/api", () => ({
   tsrClient: {

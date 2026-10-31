@@ -21,6 +21,8 @@ interface SettingsPanelProps {
   saved?: boolean;
   children: React.ReactNode;
   footer?: React.ReactNode;
+  /** Reserve space for a sticky footer action bar. */
+  footerSticky?: boolean;
 }
 
 /**
@@ -33,6 +35,7 @@ export function SettingsPanel({
   saved = false,
   children,
   footer,
+  footerSticky = false,
 }: SettingsPanelProps): React.JSX.Element {
   const { t } = useTranslation();
   const introDescKey = `${introKey}Desc` as AppTranslationKey;
@@ -41,8 +44,13 @@ export function SettingsPanel({
     <div className={cn(SETTINGS_WIDTH[width], "space-y-8 pb-2")}>
       <SettingsPanelIntro description={t(introDescKey)} />
       <SettingsStatusBadges isDirty={isDirty} saved={saved} />
+      {footerSticky && footer ? (
+        <div className="sticky top-header z-sticky -mx-1 bg-background/95 px-1 backdrop-blur-md">
+          {footer}
+        </div>
+      ) : null}
       <div className="space-y-8">{children}</div>
-      {footer}
+      {!footerSticky ? footer : null}
     </div>
   );
 }

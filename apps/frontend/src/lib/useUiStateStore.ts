@@ -1,3 +1,4 @@
+import { useCallback } from "react";
 import { create } from "zustand";
 import type { UserUiState } from "@mms/shared";
 import { apiJson } from "@/lib/apiClient";
@@ -9,6 +10,8 @@ interface UiStateStore {
   isInitialized: boolean;
   initialize: (initialState: UserUiState) => void;
   updateState: (key: string, value: unknown) => void;
+  /** Drops the current user's preferences so the next session refetches them. */
+  reset: () => void;
 }
 
 /**
@@ -72,6 +75,15 @@ export const useUiStateStore = create<UiStateStore>((set) => {
         }, SYNC_DEBOUNCE_MS),
       );
     },
+
+    reset: () => {
+      // A sign-out must not leave one user's preferences visible to the next
+      // user of the same tab (column layouts, tabs, notification read markers).
+      for (const timer of pendingTimers.values()) clearTimeout(timer);
+      pendingTimers.clear();
+      confirmedState = {};
+      set({ state: {}, isInitialized: false });
+    },
   };
 });
 
@@ -83,9 +95,12 @@ export function useUiPreference<T>(key: string, defaultValue: T): [T, (val: T) =
   ) as T;
   const updateState = useUiStateStore((s) => s.updateState);
 
-  const setValue = (newVal: T) => {
-    updateState(key, newVal);
-  };
+  const setValue = useCallback(
+    (newVal: T) => {
+      updateState(key, newVal);
+    },
+    [updateState, key],
+  );
 
   // If not initialized yet, we return the default, but we should not crash.
   // The caller needs to decide if they should render a skeleton, or just use default.

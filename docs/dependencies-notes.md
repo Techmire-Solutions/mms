@@ -36,6 +36,25 @@ flow or otherwise need explicit maintenance attention.
   typescript-eslint release supports TS 7, remove the shim, the
   `typescript-v6` alias, and this note together.
 
+## Audit overrides and reviewed exceptions
+
+`pnpm audit` is a CI gate (`--audit-level high`), so runtime advisories are patched
+promptly and the remaining findings are explicit decisions:
+
+- **Patched via `overrides`** (`pnpm-workspace.yaml`): `fast-uri ^4.2.3`,
+  `ip-address >=10.7.4`, `serialize-javascript >=7.1.2` (build tooling only), and
+  `seroval >=1.6.11` (typed-array code-injection advisory; devtools-only path).
+- **`nodemailer`** is a direct dependency; keep it on the latest 10.x patch
+  (currently `^10.2.1`) — it is the only runtime email transport.
+- **`ts-deepmerge@6`** is a *reviewed exception*: the advisory is unreachable
+  (static OpenAPI args) and the `>=8` override breaks `/api/openapi.json`; see the
+  comment in `pnpm-workspace.yaml`.
+- **`deepmerge@4.3.1`** (dev-only, workbox build chain) has a low advisory whose
+  `patched_versions` (`>=4.3.2`) was never published on npm; revisit when it is.
+
+When bumping any of these: update the override + lockfile in one commit, run
+`pnpm audit`, then the package's unit suite (backend email tests for nodemailer).
+
 ## Node version alignment
 
 - CI, Docker, and `engines` all target Node 24 LTS; `.nvmrc` pins 24 so

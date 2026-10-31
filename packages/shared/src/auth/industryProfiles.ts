@@ -51,6 +51,7 @@ export const INDUSTRY_PROFILES: Record<IndustryType, IndustryProfile> = {
       "attendance",
       "enrollment",
       "hasanat",
+      "workshops",
       "examination",
       "questionBank",
       "finance",

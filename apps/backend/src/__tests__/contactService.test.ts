@@ -57,6 +57,7 @@ vi.mock("../contacts/use-cases/contactPreferencesService.js", () => ({
 
 vi.mock("../db/database.js", () => ({
   runInTransaction: (cb: () => unknown) => cb(),
+  runInGlobalTransaction: (cb: () => unknown) => cb(),
 }));
 
 vi.mock("../services/outboxEventService.js", () => ({

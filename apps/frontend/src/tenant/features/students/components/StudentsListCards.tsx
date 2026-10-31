@@ -2,7 +2,7 @@ import type React from "react";
 import { formatDirectoryPageCountLabel } from "@/lib/formatDirectoryPageCountLabel";
 import { useReducedMotion } from "@/hooks/useReducedMotion";
 import { useTranslation } from "@/hooks/useTranslation";
-import { EntityCardsGrid } from "@/components/app/EntityCardsGrid";
+import { ModuleDirectoryCards } from "@/components/app/ModuleDirectoryCards";
 import { useStudentEntityDescriptor } from "@/tenant/features/students/hooks/useStudentEntityDescriptor";
 import type { StudentsListCardsProps } from "@/tenant/features/students/lib/studentsListTypes";
 
@@ -41,7 +41,7 @@ export function StudentsListCards({
   });
 
   return (
-    <EntityCardsGrid
+    <ModuleDirectoryCards
       items={paginatedStudents}
       selectedIds={selectedIds}
       onSelectAll={onSelectAll}

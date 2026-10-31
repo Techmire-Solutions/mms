@@ -188,8 +188,8 @@ describe("@shared/ui Core UI Library Integration", () => {
     expect(scopedDiv.className).toContain("dark");
     expect(scopedDiv.dataset.theme).toBe("dark");
     expect(scopedDiv.style.getPropertyValue("--primary")).toBe("#d99b00");
-    // Luminance of #d99b00 is high, foreground calculates to #000000
-    expect(scopedDiv.style.getPropertyValue("--primary-foreground")).toBe("#000000");
+    // Luminance of #d99b00 is high, foreground calculates to black
+    expect(scopedDiv.style.getPropertyValue("--primary-foreground")).toBe("black");
   });
 
   it("UiConfigProvider injects console-specific labels and RTL direction", async () => {

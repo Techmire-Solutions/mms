@@ -42,9 +42,12 @@ export function useDatePickerYearMode({
   const resolvedMinYear = yearBounds.minYear;
   const resolvedMaxYear = yearBounds.maxYear;
 
-  const [yearPageStart, setYearPageStart] = React.useState<number>(
-    () => Math.floor((selectedYear ?? new Date().getFullYear()) / 10) * 10,
-  );
+  const initialYearPage = React.useMemo(() => {
+    const year = selectedYear ?? new Date().getFullYear();
+    return Math.floor(year / 10) * 10;
+  }, [selectedYear]);
+
+  const [yearPageStart, setYearPageStart] = React.useState<number>(initialYearPage);
 
   // Mirror external `value` changes into the typed input while in year mode.
   React.useEffect(() => {
@@ -56,11 +59,18 @@ export function useDatePickerYearMode({
     }
   }, [selectedYear, isYearMode, lastParsedRef, setInputValue]);
 
-  // Re-open: jump the decade grid to the selected (or current) year.
-  React.useEffect(() => {
-    if (!open || !isYearMode) return;
-    setYearPageStart(Math.floor((selectedYear ?? new Date().getFullYear()) / 10) * 10);
-  }, [open, selectedYear, isYearMode]);
+  // Re-open (or a new selection): jump the decade grid back to the selected year.
+  // Adjusted during render (React's documented prop-change pattern) so the grid is
+  // never shown on the previous decade.
+  const [pageAnchor, setPageAnchor] = React.useState(() => ({ open, selectedYear, isYearMode }));
+  if (
+    pageAnchor.open !== open ||
+    pageAnchor.selectedYear !== selectedYear ||
+    pageAnchor.isYearMode !== isYearMode
+  ) {
+    setPageAnchor({ open, selectedYear, isYearMode });
+    if (open && isYearMode) setYearPageStart(initialYearPage);
+  }
 
   const handleSelectYear = (year: number) => {
     if (!isYearWithinBounds(year, resolvedMinYear, resolvedMaxYear)) return;

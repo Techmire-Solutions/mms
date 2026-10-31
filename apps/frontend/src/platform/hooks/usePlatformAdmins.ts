@@ -31,9 +31,7 @@ export function usePlatformAdmins(): {
       const res = await apiContract.platform.listAdmins({
         fetchOptions: { signal },
       });
-      if (res.status !== 200) {
-        throw new Error((res.body as { message?: string })?.message ?? "Failed to list admins");
-      }
+      assertContractOk(res, "Failed to list admins");
       return (res.body as { users: PlatformUserProfile[] }).users;
     },
     enabled: canAdmins,
@@ -121,3 +119,4 @@ export {
   useDeletePlatformAdmin,
   useVerifyPlatformAdminEmail,
 } from "./usePlatformAdminLifecycle";
+import { assertContractOk } from "@/lib/apiContractError";

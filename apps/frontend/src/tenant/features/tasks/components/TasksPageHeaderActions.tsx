@@ -24,7 +24,7 @@ export function TasksPageHeaderActions({
 }: TasksPageHeaderActionsProps): React.JSX.Element | null {
   const { t } = useTranslation();
 
-  if (!canWrite || showDeleted) return null;
+  if (showDeleted || (!canWrite && !(canExport && onExport))) return null;
 
   return (
     <div className="flex items-center gap-2">
@@ -39,12 +39,16 @@ export function TasksPageHeaderActions({
           {t("common.export")}
         </Button>
       ) : null}
-      <Button variant="outline" icon={Upload} onClick={onImport}>
-        {t("common.import")}
-      </Button>
-      <Button variant="primary" icon={Plus} onClick={onCreate}>
-        {t("tasks.create")}
-      </Button>
+      {canWrite ? (
+        <>
+          <Button variant="outline" icon={Upload} onClick={onImport}>
+            {t("common.import")}
+          </Button>
+          <Button variant="primary" icon={Plus} onClick={onCreate}>
+            {t("tasks.create")}
+          </Button>
+        </>
+      ) : null}
     </div>
   );
 }

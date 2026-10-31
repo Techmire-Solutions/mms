@@ -10,7 +10,7 @@ description: Consolidated UI component primitives, design tokens, navigation tab
 ## 1. Central Primitives Enforcement
 - **Modern Web Standards:** All UI primitives, dialogs, drawers, popovers, and layout elements adhere to `modern-web-guidance` (`pnpx modern-web-guidance@latest search "<query>"`). Implement top layer popovers (`declarative-dialog-popover-control`), backdrop light-dismiss (`light-dismiss-a-dialog`), body scroll locking (`prevent-page-scroll-under-modal-dialog`), entry/exit transitions (`@starting-style`), and motion scaling (`respect-os-text-scale`, `prefers-reduced-motion`).
 - **Shared UI SSOT (`@shared/ui`):** All foundational design-system primitives (`Button`, `Badge`, `Input`, `Select`, `Switch`, `Checkbox`, `Textarea`, `Slider`, `Label`, `Card`, `Table`, `Modal`, `DropdownMenu`, `Popover`, `Tooltip`, `Skeleton`, `Avatar`) live in `@shared/ui` (`packages/ui`). Platform Console imports directly from `@shared/ui`. Tenant Console imports either directly or via `@/components/ui/*` facades. Hand-rolled or duplicate UI component implementations across consoles are strictly banned.
-- **Banned Raw Controls:** Never emit raw `<button>`, `<input>`, `<select>`, `<textarea>`, `<table>`, `<dialog>`, or native checkboxes/switches where design system primitives exist.
+- **Banned Raw Controls:** Never emit raw `<button>`, `<input>`, `<select>`, `<textarea>`, `<table>`, `<dialog>`, or native checkboxes/switches where design system primitives exist. The sanctioned `Table` primitive renders the real `<table>` required by §5; the ban targets hand-rolled markup, not the semantic element.
 - **Sanctioned Primitives (`@shared/ui` primitives, `@/components/ui/*` facades, `@/components/app/*` composites, `@/components/common/*` engines):**
   - **Inputs & Controls:** `Button` (min 44×44px), `Input`, `LeadingIconInput`, `FormSelect`, `EditableSelect`, `Textarea`, `Checkbox`, `Switch`.
   - **Overlays & Drawers:** `FormModal` (portal shell), `DetailSheet` / `DetailDrawerShell` (drawer with archive banner and `WarningCallout`), `Popover`, `Tooltip`, `DropdownMenu`.
@@ -20,7 +20,7 @@ description: Consolidated UI component primitives, design tokens, navigation tab
   - **Feedback & States:** `EmptyState`, `ErrorState`, `FieldErrorMessage`, `WarningCallout`, `StatusBadge` (pair with `t()`, never color alone), `notify.{success,error,warning}` from `lib/notify.ts`.
 
 ## 2. Design Tokens & Surface Styling
-- **Semantic Tokens Only:** Use `index.css` theme mapping (`hsl(var(--primary))`; no standalone `oklch()`). Zero raw hex colors or arbitrary Tailwind brackets (`bg-gray-100`, `rounded-[2rem]`). Print styles quarantined in `lib/printTemplateStyles.ts`.
+- **Semantic Tokens Only:** Use `index.css` theme mapping (`hsl(var(--primary))`; no `oklch()` outside the `index.css` theme map). Zero raw hex colors or arbitrary Tailwind brackets (`bg-gray-100`, `rounded-[2rem]`). Print styles quarantined in `lib/printTemplateStyles.ts`.
 - **Token-Exemption Register:** Exclusively allowed in `ThemeModeSelector.tsx`, `printTemplateStyles.ts`, `printBrandingTokens.ts`, `documentFavicon.ts`, `qrCodeGenerator.ts`, `extractLogoBrandColors.ts`, `ErdMermaidDiagram.tsx`, `themeScope.ts`, `Brand*.tsx`, and `template-editor/`.
 - **Micro-Typography & Sizing:** `text-4xs` (10px floor), `text-3xs` (11px) for pills, `text-2xs` (12px) for compact meta. Semantic z-index: `z-modal` (50), `z-modal-priority` (60), `z-popover` (70), `z-toast` (100). Never write arbitrary font-size or z-index bracket classes (`z-[100]`).
 - **Touch Target Floor:** Mandatory `min-h-11 min-w-11` (44×44px) on all interactive triggers, buttons, inputs, and action icons. Never use `min-h-[44px]`.
@@ -57,14 +57,12 @@ description: Consolidated UI component primitives, design tokens, navigation tab
 - **Mandatory Usage When Coding UI/UX:**
   - Consult UI/UX Pro Max (`python3 .agent/skills/ui-ux-pro-max/scripts/search.py "<keywords>" --design-system -p "MMS"`, skill `ui-ux-pro-max`). Use dials: `--density 7-9` for compact administrative directories, `--motion 2-4` for enterprise transitions.
   - Search targeted domains: `--domain style`, `--domain ux`, `--domain typography`, `--domain chart`, `--domain color`, `--stack react`.
-- **Mandatory Checks When Reviewing UI/UX:**
-  - Semantic Token Compliance: Every color must map to semantic HSL CSS tokens in `index.css`. Raw hex and arbitrary bracket colors are banned.
-  - Strict BiDi Logical CSS: Zero physical direction classes (`ps-*`, `ms-*`, `start-*`, `border-s-*`, `rtl:rotate-180`).
-  - Touch Target Floor: Mandatory 44×44px (`min-h-11 min-w-11`) on all interactive controls.
-  - Text Resilience: Headings use `text-wrap: balance`; layouts reflow cleanly at 375, 768, 1024, 1440px. Chips/tags wrap or use `+n` disclosure.
-  - Visual Polish: Pair badge colors with localized text via `t()`. Micro-interactions 150–300ms ease-out, respecting `prefers-reduced-motion`.
-  - Keyboard & Focus: Visible focus rings (`focus-visible:ring-2`), no blocked paste, focus return on dismiss.
-  - Modern Web Standards Compliance: Cross-check against `modern-web-guidance` guides for all web UI controls (forms, dialogs, popovers, scrollbars, text balancing, animations). Ensure proper disclosure of applied guides.
+- **Mandatory Checks When Reviewing UI/UX** (each check is owned by the cited section — verify there, do not restate):
+  - Semantic tokens & raw colours → §2 · BiDi logical CSS → §3 · touch-target floor → §2.
+  - Text resilience, heading balance and reflow at 375 / 768 / 1024 / 1440px → §3, §4.
+  - Status/badge pairing (`t()` + colour) and micro-interaction timing → §2, §5.
+  - Keyboard, focus rings, focus return, no blocked paste → §3.
+  - Modern Web Standards compliance and guide disclosure → §1.
 
 ## 9. Verification Standards
 - **Verification Gates:** Verify interactive controls with axe smoke (`e2e/tests/a11y/a11y-shell.spec.ts`, skill `mms-a11y-smoke`) for zero serious/critical violations. Spot-check 375 / 768 / 1024px viewports and RTL (`dir="rtl"`).

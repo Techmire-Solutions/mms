@@ -1,4 +1,4 @@
-import type { QueryClient } from "@tanstack/react-query";
+import { createModuleQueryInvalidator } from "@/lib/query/createModuleQueryInvalidator";
 import {
   ACCOUNTING_ACCOUNTS_QUERY_KEY,
   ACCOUNTING_ENTRIES_QUERY_KEY,
@@ -6,6 +6,7 @@ import {
   ACCOUNTING_METRICS_QUERY_KEY,
   ACCOUNTING_REPORT_AGGREGATES_QUERY_KEY,
 } from "@/tenant/features/accounting/hooks/accountingQueryKeys";
+import { ACCOUNTING_PREFERENCES_QUERY_KEY } from "@/tenant/features/accounting/hooks/useAccountingSetupConfig";
 import { VOUCHER_NUMBERING_QUERY_KEY } from "@/tenant/features/accounting/hooks/useVoucherNumbering";
 
 /**
@@ -16,13 +17,17 @@ import { VOUCHER_NUMBERING_QUERY_KEY } from "@/tenant/features/accounting/hooks/
  * ledger figures outside the entries list, and it held a 5-minute `staleTime`,
  * so an omitted invalidation left the Trial Balance, Income Statement, Balance
  * Sheet and Cash Flow showing pre-posting numbers for minutes after a journal
- * entry was saved, a period was closed or a reversal was posted.
+ * entry was saved, a period was closed or a reversal was posted. Setup and
+ * voucher numbering are invalidated for the same reason.
  */
-export function invalidateAccountingQueries(queryClient: QueryClient): void {
-  void queryClient.invalidateQueries({ queryKey: ACCOUNTING_ACCOUNTS_QUERY_KEY });
-  void queryClient.invalidateQueries({ queryKey: ACCOUNTING_ENTRIES_QUERY_KEY });
-  void queryClient.invalidateQueries({ queryKey: ACCOUNTING_FISCAL_YEARS_QUERY_KEY });
-  void queryClient.invalidateQueries({ queryKey: ACCOUNTING_METRICS_QUERY_KEY });
-  void queryClient.invalidateQueries({ queryKey: ACCOUNTING_REPORT_AGGREGATES_QUERY_KEY });
-  void queryClient.invalidateQueries({ queryKey: VOUCHER_NUMBERING_QUERY_KEY });
-}
+export const invalidateAccountingQueries = createModuleQueryInvalidator({
+  list: ACCOUNTING_ENTRIES_QUERY_KEY,
+  lists: [
+    ACCOUNTING_ACCOUNTS_QUERY_KEY,
+    ACCOUNTING_FISCAL_YEARS_QUERY_KEY,
+    ACCOUNTING_REPORT_AGGREGATES_QUERY_KEY,
+    VOUCHER_NUMBERING_QUERY_KEY,
+  ],
+  metrics: ACCOUNTING_METRICS_QUERY_KEY,
+  preferences: ACCOUNTING_PREFERENCES_QUERY_KEY,
+});

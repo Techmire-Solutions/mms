@@ -64,7 +64,11 @@ export function scheduleSessionLifecycle(isWorkerRunning: () => boolean, delayMs
       } finally {
         await lease.release();
       }
-    })().finally(() => scheduleSessionLifecycle(isWorkerRunning, INTERVAL_MS));
+    })()
+      .catch((err: unknown) => {
+        logger.error({ err }, "[SessionLifecycle] Failed to acquire leader lease");
+      })
+      .finally(() => scheduleSessionLifecycle(isWorkerRunning, INTERVAL_MS));
   }, delayMs);
   lifecycleTimer.unref?.();
 }

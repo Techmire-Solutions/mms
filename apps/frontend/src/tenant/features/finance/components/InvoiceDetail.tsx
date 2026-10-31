@@ -2,7 +2,7 @@ import React from "react";
 import { ReceiptText, User, Calendar, CreditCard, Printer } from "lucide-react";
 import { type Invoice } from "@/lib/data/financeData";
 import { Button } from "@/components/ui/button";
-import { Drawer } from "@/components/app/Drawer";
+import { DetailDrawerShell } from "@/components/app/DetailDrawerShell";
 import { StatusBadge, type StatusBadgeConfigItem } from "@/components/app/StatusBadge";
 import { cn } from "@/lib/utils";
 import { SEMANTIC_BADGE } from "@/lib/ui/semanticTone";
@@ -16,6 +16,7 @@ import { useTranslation } from "@/hooks/useTranslation";
 import { formatDate, getOutstandingAmountForInvoice } from "@mms/shared";
 import { useFinanceCurrency } from "@/hooks/useCurrency";
 import { InvoiceCorrectionActions } from "@/tenant/features/finance/components/InvoiceCorrectionActions";
+import { formatDocumentAmount } from "@/tenant/features/finance/lib/documentAmount";
 
 export interface InvoiceDetailProps {
   invoice: Invoice;
@@ -61,7 +62,7 @@ export const InvoiceDetail = function InvoiceDetail({
   const rows = (() => [
     {
       label: t("finance.columns.baseFee"),
-      value: formatCurrency(invoice.baseFee),
+      value: formatDocumentAmount(invoice, invoice.baseFee, formatCurrency),
       highlight: false,
       neg: false,
     },
@@ -72,7 +73,7 @@ export const InvoiceDetail = function InvoiceDetail({
               type: invoice.discountType ?? t("common.none"),
               value: invoice.discountValue,
             }),
-            value: `– ${formatCurrency(invoice.discountAmt)}`,
+            value: `– ${formatDocumentAmount(invoice, invoice.discountAmt, formatCurrency)}`,
             highlight: false,
             neg: true,
           },
@@ -80,7 +81,7 @@ export const InvoiceDetail = function InvoiceDetail({
       : []),
     {
       label: t("finance.form.finalAmount"),
-      value: formatCurrency(invoice.finalAmt),
+      value: formatDocumentAmount(invoice, invoice.finalAmt, formatCurrency),
       highlight: true,
       neg: false,
     },
@@ -88,7 +89,7 @@ export const InvoiceDetail = function InvoiceDetail({
       ? [
           {
             label: t("finance.detail.amountPaid"),
-            value: formatCurrency(invoice.paidAmt),
+            value: formatDocumentAmount(invoice, invoice.paidAmt, formatCurrency),
             highlight: false,
             neg: false,
           },
@@ -98,7 +99,7 @@ export const InvoiceDetail = function InvoiceDetail({
       ? [
           {
             label: t("finance.collect.lateFee"),
-            value: formatCurrency(invoice.lateFeeAmt),
+            value: formatDocumentAmount(invoice, invoice.lateFeeAmt, formatCurrency),
             highlight: false,
             neg: false,
           },
@@ -108,9 +109,19 @@ export const InvoiceDetail = function InvoiceDetail({
       ? [
           {
             label: t("finance.collect.credited"),
-            value: `– ${formatCurrency(invoice.creditedAmt)}`,
+            value: `– ${formatDocumentAmount(invoice, invoice.creditedAmt, formatCurrency)}`,
             highlight: false,
             neg: true,
+          },
+        ]
+      : []),
+    ...(invoice.currency && invoice.exchangeRate
+      ? [
+          {
+            label: t("fx.field.bookedRate"),
+            value: `1 ${invoice.currency} = ${invoice.exchangeRate}`,
+            highlight: false,
+            neg: false,
           },
         ]
       : []),
@@ -118,7 +129,7 @@ export const InvoiceDetail = function InvoiceDetail({
       ? [
           {
             label: t("finance.balanceDue"),
-            value: formatCurrency(outstanding),
+            value: formatDocumentAmount(invoice, outstanding, formatCurrency),
             highlight: false,
             neg: true,
           },
@@ -158,7 +169,7 @@ export const InvoiceDetail = function InvoiceDetail({
   ))();
 
   return (
-    <Drawer
+    <DetailDrawerShell
       open
       onClose={onClose}
       title={t("finance.detail.title", { id: invoice.id })}
@@ -249,6 +260,6 @@ export const InvoiceDetail = function InvoiceDetail({
           </div>
         )}
       </div>
-    </Drawer>
+    </DetailDrawerShell>
   );
 };

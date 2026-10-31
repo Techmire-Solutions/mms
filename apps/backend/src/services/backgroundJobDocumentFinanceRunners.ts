@@ -19,6 +19,7 @@ export function registerDocumentAndFinanceJobRunners(): void {
         filename,
       },
       async (pct) => ctx.updateProgress(pct, 100),
+      ctx.signal,
     );
     await saveStreamedExportArtifact(ctx.userId, ctx.jobId, {
       key: result.key,
@@ -46,6 +47,7 @@ export function registerDocumentAndFinanceJobRunners(): void {
         filename,
       },
       async (pct) => ctx.updateProgress(pct, 100),
+      ctx.signal,
     );
     await saveStreamedExportArtifact(ctx.userId, ctx.jobId, {
       key: result.key,
@@ -73,6 +75,7 @@ export function registerDocumentAndFinanceJobRunners(): void {
         filename,
       },
       async (pct) => ctx.updateProgress(pct, 100),
+      ctx.signal,
     );
     await saveStreamedExportArtifact(ctx.userId, ctx.jobId, {
       key: result.key,

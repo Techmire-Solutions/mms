@@ -1,16 +1,7 @@
 export { Skeleton } from "./Skeleton";
 export { EmptyState, type EmptyStateProps } from "./EmptyState";
-export { FeedbackStateLayout, type FeedbackStateLayoutProps } from "./FeedbackStateLayout";
-export {
-  Callout,
-  WarningCallout,
-  type CalloutProps,
-  type CalloutDensity,
-  type CalloutTone,
-  type WarningCalloutProps,
-  type WarningCalloutDensity,
-  type WarningCalloutTone,
-} from "./Callout";
+export { LoadingState, type LoadingStateProps } from "./LoadingState";
+export { Alert, type AlertProps, type AlertDensity, type AlertTone } from "./Alert";
 export { ErrorState, type ErrorStateProps } from "./ErrorState";
 export {
   CardSkeleton,

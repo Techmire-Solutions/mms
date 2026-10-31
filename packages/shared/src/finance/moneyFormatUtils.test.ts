@@ -1,5 +1,11 @@
 import { describe, expect, it } from "vitest";
-import { formatAmountInWords, formatMoney, formatNumber } from "./moneyFormatUtils.js";
+import {
+  formatAmountInWords,
+  formatMoney,
+  formatNumber,
+  formatPercent,
+  registerFinanceLocaleProvider,
+} from "./moneyFormatUtils.js";
 
 describe("formatAmountInWords", () => {
   it("formats zero correctly", () => {
@@ -43,5 +49,23 @@ describe("formatMoney and formatNumber", () => {
   it("formats number safely", () => {
     expect(formatNumber(1250)).toBe("1,250");
     expect(formatNumber(null)).toBe("0");
+  });
+
+  it("formats percentages with the active locale numbering system", () => {
+    registerFinanceLocaleProvider(() => "ar-SA");
+    try {
+      expect(formatPercent(100)).toMatch(/[\u0660-\u0669]/);
+      expect(formatPercent(12.5, { maximumFractionDigits: 1 })).toContain("٪");
+      expect(formatPercent(5, { signDisplay: "always" })).toContain("+");
+    } finally {
+      registerFinanceLocaleProvider(null);
+    }
+  });
+
+  it("defaults the maximum decimals to the currency's ISO minor units", () => {
+    expect(formatMoney(1250.567, "USD")).toBe("USD 1,250.57");
+    expect(formatMoney(1250.567, "JPY")).toBe("JPY 1,251");
+    expect(formatMoney(1.2345, "KWD")).toBe("KWD 1.235");
+    expect(formatMoney(1, "JPY", { minimumFractionDigits: 2 })).toBe("JPY 1.00");
   });
 });

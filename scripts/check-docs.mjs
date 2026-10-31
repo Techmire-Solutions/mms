@@ -7,6 +7,10 @@
  *   2. `adrNumbering` — `docs/adr/<file>.md` use `NNN-` (or `NNNN-`) unique numbers.
  *   3. `strayDsStore` — no macOS `.DS_Store` under `docs/`.
  *   4. `legacyCursorrules` — the legacy `.cursorrules` stub must not exist.
+ *   5. `brokenLinks` — every relative markdown link in the docs corpus (docs/,
+ *      README.md, SYSTEM_ARCHITECTURE.md, CONTRIBUTING.md, AGENTS.md) resolves to
+ *      a file that exists. This is what catches the `file:///Users/<name>/…`
+ *      links and renamed files that no other gate noticed.
  *
  *   node scripts/check-docs.mjs [--json] [--update-baselines]
  */
@@ -23,6 +27,7 @@ const BASELINE = {
   adrNumbering: 0,
   strayDsStore: 0,
   legacyCursorrules: 0,
+  brokenLinks: 0,
 };
 
 const isDir = (p) => {
@@ -74,6 +79,52 @@ const strayDsStore = [];
 }
 const legacyCursorrules = fs.existsSync(path.join(ROOT, ".cursorrules")) ? [".cursorrules"] : [];
 
+/**
+ * Relative markdown links that point at a file which does not exist.
+ *
+ * External URLs, anchors-only links and `mailto:` are ignored; absolute
+ * `file:///…` links are reported unconditionally because they only resolve on
+ * the machine that wrote them.
+ */
+const brokenLinks = [];
+{
+  const DOC_ROOTS = ["docs", "README.md", "SYSTEM_ARCHITECTURE.md", "CONTRIBUTING.md", "AGENTS.md"];
+  const markdownFiles = [];
+  const collect = (target) => {
+    const full = path.join(ROOT, target);
+    if (!fs.existsSync(full)) return;
+    if (isDir(full)) {
+      for (const entry of fs.readdirSync(full, { withFileTypes: true })) {
+        if (entry.name === "archive" || entry.name === "node_modules") continue;
+        collect(path.join(target, entry.name));
+      }
+    } else if (target.endsWith(".md")) {
+      markdownFiles.push(target);
+    }
+  };
+  DOC_ROOTS.forEach(collect);
+
+  const LINK = /\]\(([^)\s]+)\)/g;
+  for (const file of markdownFiles) {
+    const content = fs.readFileSync(path.join(ROOT, file), "utf8");
+    for (const match of content.matchAll(LINK)) {
+      const rawTarget = match[1];
+      if (!rawTarget || rawTarget.startsWith("#")) continue;
+      if (/^[a-z]+:/i.test(rawTarget) && !rawTarget.startsWith("file:")) continue;
+      if (rawTarget.startsWith("file:")) {
+        brokenLinks.push(`${file}: ${rawTarget} (absolute file:// link)`);
+        continue;
+      }
+      const withoutAnchor = rawTarget.split("#")[0];
+      if (!withoutAnchor) continue;
+      const resolved = path.resolve(path.dirname(path.join(ROOT, file)), withoutAnchor);
+      if (!fs.existsSync(resolved)) {
+        brokenLinks.push(`${file}: ${rawTarget}`);
+      }
+    }
+  }
+}
+
 const results = [
   {
     name: "Docs missing from docs/README.md index",
@@ -102,6 +153,13 @@ const results = [
     count: legacyCursorrules.length,
     baseline: BASELINE.legacyCursorrules,
     sample: legacyCursorrules,
+  },
+  {
+    name: "Broken relative links in the docs corpus",
+    norm: "docs/README.md (documentation integrity)",
+    count: brokenLinks.length,
+    baseline: BASELINE.brokenLinks,
+    sample: brokenLinks.slice(0, 10),
   },
 ];
 

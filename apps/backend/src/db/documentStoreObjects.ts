@@ -2,28 +2,35 @@ import { applyTitleCaseRecursive } from "@mms/shared";
 import { eq } from "drizzle-orm";
 import { getRequestTenant } from "../lib/tenantContext.js";
 import { withTenant } from "./tenant-context.js";
+import { inGlobalDocumentStoreScope } from "./documentStoreScope.js";
 import * as schema from "./schema.js";
 import { resolveObjectStorageKey } from "./documentStoreKeys.js";
 import { deleteObjectByStorageKey } from "./documentStoreAdmin.js";
 import { logger } from "../lib/logger.js";
 
-export async function getObject(key: string): Promise<unknown | null> {
+export async function getObject(
+  key: string,
+  options: { forUpdate?: boolean } = {},
+): Promise<unknown | null> {
   try {
     const storageKey = resolveObjectStorageKey(key);
     const tenant = getRequestTenant();
     return await withTenant(
       tenant,
       async (tx) => {
-        const rows = await tx
+        const query = tx
           .select({ data: schema.objects.data })
           .from(schema.objects)
           .where(eq(schema.objects.key, storageKey))
           .limit(1);
+        // Row lock for read-modify-write callers. It only has an effect when
+        // this call joins an already-active `withTenant` transaction.
+        const rows = options.forUpdate ? await query.for("update") : await query;
         const row = rows[0];
         if (!row) return null;
         return row.data;
       },
-      { allowGlobal: !tenant },
+      { allowGlobal: !tenant && inGlobalDocumentStoreScope() },
     );
   } catch (error) {
     logger.error({ key, err: error }, "Error getting object");
@@ -48,7 +55,7 @@ export async function saveObject(key: string, data: unknown): Promise<void> {
             set: { data: processedData },
           });
       },
-      { allowGlobal: !tenant },
+      { allowGlobal: !tenant && inGlobalDocumentStoreScope() },
     );
 
     if (tenant) {

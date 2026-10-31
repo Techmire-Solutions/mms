@@ -1,0 +1,52 @@
+---
+trigger: model_decision
+description: Performance rules, query optimization, render hygiene, caching, streaming, and DOM virtualization
+---
+
+# MMS Performance & Resource Efficiency Rules
+
+**Workflow skills:** code review & bottlenecks → `mms-code-review` · modern web performance → `modern-web-guidance` · query factories & caching → `mms-query-factories` · backend services → `mms-backend-api` · Drizzle indexes & DDL → `mms-schema-migrate` · soft-delete performance & purge → `mms-soft-delete` · frontend shell & rendering → `mms-frontend`.
+
+**Scope:** loaded on demand by design (`globs` cover the hot paths only). The norms apply to every query, render path and bundle change — attach this rule deliberately when optimizing, and see `mms-ui-ux-design.md` §5 and `mms-data-layer.md` §2 for the pointers that fire on ordinary files.
+
+## 1. Database & I/O Optimization
+- **Zero Queries in Loops (N+1 Elimination):** NEVER query inside loops (`for`, `map`, `Promise.all`). Batch with Drizzle relational `with: { ... }`, `inArray(table.column, ids)` (bounded to <= 500 IDs via `bulkIdsBodySchema`), or SQL `JOIN`s.
+- **Zero Wildcard Projections:** NEVER emit `SELECT *` or bare `db.select().from(table)`. Enforce explicit typed column projections matching `@mms/shared` Response DTOs. CI enforces zero new sites via `pnpm run check:db-projections`.
+- **Mandatory Predicate Indexing:** Explicitly index columns used in `where()`, `leftJoin() ... on()`, and `orderBy()`. Multi-tenant compound indexes prefix that table's tenant column (`workspace_subdomain` on existing tables, `tenant_id` where the module uses it). Apply Category B partial indexes (`WHERE deleted_at IS NULL`) on soft-deleted tables (`mms-data-layer.md`).
+- **Bounded Pagination:** Always paginate collection queries (default `limit: 25`, max `100` via `baseListQuerySchema`). Unbounded dumps (`loadAllFn`) are banned.
+- **Connection Pools & Prepared Statements:** Reuse persistent connection pool (`withTenant`, `PG_POOL_MAX=20`). Use Node 24 `using`/`await using` for cleanup. Hot read lookups by ID compile Drizzle prepared statements with parameter placeholders (`sql.placeholder`).
+- **Child Hydration & Batch Ceilings:** Hydrate multi-collection child entities via correlated subqueries (`json_agg` / `jsonb_agg`). Chunk hydration lists exceeding `BATCH_SIZE = 250` sequentially.
+- **Soft-Delete & BRIN Indexing:** High-churn soft-deleted tables set `autovacuum_vacuum_scale_factor = 0.05`. Sequential append-only tables (`audit_trail_events`, `message_logs`) index monotonic timestamps with PostgreSQL BRIN indexes (`using: 'brin'`).
+
+## 2. Server Compute & Memory Discipline
+- **BullMQ Sandboxed Workers:** CPU/memory tasks (PDF via Typst, bulk export via Excel/CSV) must run in BullMQ sandboxed child processes (`useWorkerThreads: false`, `--max-old-space-size=512`, 60s deadline with `AbortController`). Never run in the main Fastify thread (`mms-background-jobs`).
+- **Fair-Share Queue Scheduling:** Task queues enforce tenant priority bands (1 inflight = priority 1, 2–5 = priority 2, >5 = priority 3) tracked in Redis (`mms:tenant:{tenantId}:inflight_jobs`). Partition pools: HTTP API (`max: 20–30`), background workers (`max: 10`).
+- **Memory-Bounded Streaming (<50 MB Heap):** Bulk exports must stream row-by-row with 16 KB buffers (`highWaterMark: 16384`) maintaining peak heap delta < 50 MB. Multipart uploads must stream directly to disk/storage; never buffer files or datasets into memory arrays.
+- **Bulk Updates & Purge:** `bulkDeleteFn` and `bulkRestoreFn` execute a single batched SQL `UPDATE` via `inArray()`. Hard-purge workers delete in chunks of 500 using `LIMIT 500 FOR UPDATE SKIP LOCKED` (`mms-data-layer.md` §6.11).
+- **Compression & Transport:** Configure `@fastify/compress` (Brotli quality 4, gzip level 6). Stream pre-compressed assets directly (`@fastify/static` with `preCompressed: true`). Never serialize internal attributes or unformatted money.
+
+## 3. Caching Architecture (Redis & In-Memory)
+- **Multi-Tier Caching Hierarchy (`multiTierCache.ts`):** L1 In-Process LRU (max 5,000 items, TTL 5m, 50 MB heap ceiling) + L2 Redis fallback. Mutations evict L1/L2 and broadcast cross-node eviction via Redis channel `mms:cache-invalidation`. Coalesce concurrent in-flight reads (single-flight) to prevent cache stampedes.
+- **Tenant Isolation:** Cache keys must isolate by tenant and context: `mms:{tenantId}:{module}:{resource}:{hash(params)}`. Include viewer role when payload varies by user.
+- **HTTP Edge Caching:** Emit tenant-salted weak ETags (`W/"<tenantId>-<digest>"`) and `Vary: Accept-Encoding, X-Tenant-Id, Authorization`. Hashed assets (`/assets/*`): `public, max-age=31536000, immutable`. App shell (`index.html`): `no-cache, no-store, must-revalidate`.
+- **Service Worker Runtime Caching:** `NetworkOnly` for `/api/*`, `/uploads/*`, `/health`; `CacheFirst` for versioned `/assets/*` (30 days); `StaleWhileRevalidate` for `index.html`.
+
+## 4. Client Bundle & Asset Optimization
+- **Modern Web Performance:** Follow `modern-web-guidance` guides for CWV, LCP, INP (`optimize-image-priority`, `defer-rendering-heavy-content`, `optimize-script-priority`, `break-up-long-tasks`, `faster-spa-view-transitions`). Critical above-the-fold assets must use `fetchpriority="high"`; offscreen content utilizes `content-visibility: auto` with `contain-intrinsic-size` to minimize render tree cost.
+- **Pre-compression:** Vite builds generate `.br` (quality 11) and `.gz` (level 9) for outputs > 1 KB (`vite-plugin-compression2`). Fastify serves directly via `preCompressed: true`.
+- **Modular Imports:** Ban `lodash`, `moment`, and full `date-fns`. Use modern JS (`toSorted`, `Object.groupBy`), `@mms/shared` (`formatDate`, `formatMoney`), and named icon imports.
+- **Route & Code Splitting:** React `lazy` + `Suspense` on feature routes. Dynamically import heavy libraries (Recharts, `jspdf`, `xlsx`) only within action handlers (`mms-reports.md`).
+- **Zero CLS:** WebP/AVIF images with explicit dimensions or aspect-ratio containers (`aspect-video`, `aspect-square`). Native `loading="lazy"` on non-hero images.
+
+## 5. Client Rendering & Interaction Performance
+- **Long Tasks & Interaction:** Break up long tasks via `scheduler.yield()` or microtask scheduling (`break-up-long-tasks`), and detect initial visibility (`detect-initial-visibility-state`) to prevent unneeded background rendering.
+- **Subtree Isolation:** Colocate transient input/toggle state to leaf components; never store keystroke state in page controllers. Debounce server search requests.
+- **Targeted Memoization:** Use `useMemo` for expensive sorting/filtering and `useCallback` for callbacks passed to memoized children. Avoid blanket premature memoization.
+- **Mandatory Virtualization (> 30 Items):** ALWAYS virtualize lists, tables, card grids, and high-cardinality select menus (> 50 items) via `@tanstack/react-virtual` (`useVirtualizer`) with 5–8 item overscan.
+- **WebSocket Batching:** Consolidate incoming collection push invalidations in microtask/`requestAnimationFrame` to prevent render cascades.
+- **TanStack Query State:** Deduplicate network requests using tuple keys (`queryOptions` factories). Ban `useEffect` fetch loops.
+
+## 6. Safety, Verification & Documentation Standards
+- **Contract Compatibility:** Performance refactors must preserve API response schemas and DTO contracts.
+- **Verification Gates:** Verify with `pnpm typecheck`, `pnpm test`, and relevant CI ratchets (`pnpm run check:db-projections`, `pnpm run check:migration-indexes`, `pnpm run check:bundle`).
+- **Quantify Impact:** Document baseline bottleneck and quantified resource saved (CPU, RAM, DB queries, bundle size) in reviews.

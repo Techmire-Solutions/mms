@@ -41,6 +41,14 @@ export const MODULE_ROUTE_ACTION_RULES: readonly ModuleRouteActionRule[] = [
     action: "availability",
     onlyModules: ["contacts"],
   },
+  // Messaging log restore rolls the handler's own canRestoreMessagingLogs check;
+  // still gate module grant + enablement.
+  {
+    methods: ["POST"],
+    pattern: /^\/api\/messaging\/logs\/restore$/,
+    action: "availability",
+    onlyModules: ["messaging"],
+  },
   {
     methods: ["PUT"],
     pattern: /\/(field-config|preferences|config\/fields|config\/preferences|lookups\/:kind)$/,

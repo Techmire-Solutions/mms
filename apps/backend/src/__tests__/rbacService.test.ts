@@ -18,6 +18,7 @@ import {
   canWriteContacts,
   canWriteObject,
   canClearMessagingLogs,
+  canRestoreMessagingLogs,
   isAllowedCollectionName,
   isAllowedObjectKey,
 } from "../services/rbacService.js";
@@ -69,12 +70,12 @@ describe("rbacService", () => {
     expect(canWriteCollection(accountant, "backups")).toBe(false);
     expect(canWriteCollection(viewer, "backups")).toBe(false);
 
-    // User Activity Logs (Requires analytics.view permission, viewer denied)
+    // User Activity Logs (read = audit.view, write = audit.manage; teachers/viewers denied)
     expect(canReadCollection(admin, "user_activity_logs")).toBe(true);
-    expect(canReadCollection(teacher, "user_activity_logs")).toBe(true);
+    expect(canReadCollection(teacher, "user_activity_logs")).toBe(false);
     expect(canReadCollection(viewer, "user_activity_logs")).toBe(false);
     expect(canWriteCollection(admin, "user_activity_logs")).toBe(true);
-    expect(canWriteCollection(teacher, "user_activity_logs")).toBe(true);
+    expect(canWriteCollection(teacher, "user_activity_logs")).toBe(false);
     expect(canWriteCollection(viewer, "user_activity_logs")).toBe(false);
   });
 
@@ -220,5 +221,11 @@ describe("rbacService", () => {
     expect(canClearMessagingLogs(admin)).toBe(true);
     expect(canClearMessagingLogs(teacher)).toBe(false);
     expect(canClearMessagingLogs(accountant)).toBe(false);
+  });
+
+  it("restricts messaging restore logs to messaging.restoreLogs", () => {
+    expect(canRestoreMessagingLogs(admin)).toBe(true);
+    expect(canRestoreMessagingLogs(teacher)).toBe(false);
+    expect(canRestoreMessagingLogs(accountant)).toBe(false);
   });
 });

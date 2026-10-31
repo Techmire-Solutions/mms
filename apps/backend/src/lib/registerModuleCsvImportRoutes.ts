@@ -8,13 +8,12 @@ import {
   recordModernAuditEvent,
   mapActionStringToAuditType,
 } from "../services/auditTrailService.js";
-import { logger } from "./logger.js";
 import {
   enqueueBackgroundJob,
   getUserBackgroundJob,
   QueueUnavailableError,
 } from "../services/backgroundJobWorkerService.js";
-import { randomUUID } from "node:crypto";
+import { buildBackgroundJobId } from "./backgroundJobIds.js";
 
 export type RegisterModuleCsvImportRoutesOptions = {
   canWrite: (user: User) => boolean;
@@ -55,7 +54,7 @@ export function registerModuleCsvImportRoutes(
 
     const label = data.label?.trim() || options.defaultLabel;
     const userId = String(user.id);
-    const jobId = data.idempotencyKey?.trim() || randomUUID();
+    const jobId = buildBackgroundJobId(tenant, userId, data.idempotencyKey);
 
     const existing = await getUserBackgroundJob(userId, jobId);
     if (existing) return reply.status(202).send({ job: existing });
@@ -87,7 +86,7 @@ export function registerModuleCsvImportRoutes(
       throw err;
     }
 
-    void recordModernAuditEvent({
+    await recordModernAuditEvent({
       workspaceSubdomain: tenant,
       tableName: options.moduleId,
       recordId: job.id,
@@ -97,12 +96,7 @@ export function registerModuleCsvImportRoutes(
         summary: `Queued ${options.entityNoun} import (${data.rows.length} rows)`,
         action: options.queueAuditAction,
       },
-    }).catch((err: unknown) =>
-      logger.error(
-        { err: err instanceof Error ? err.message : String(err) },
-        "audit event append failed",
-      ),
-    );
+    });
 
     return reply.status(202).send({ job });
   });
