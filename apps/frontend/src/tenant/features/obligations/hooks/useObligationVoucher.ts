@@ -1,5 +1,5 @@
 import { useQuery } from "@tanstack/react-query";
-import { tsrClient } from "@/lib/api";
+import { apiContract } from "@/lib/api";
 import type { Account, JournalEntry } from "@/lib/data/accountingData";
 
 export interface ObligationVoucherResult {
@@ -12,7 +12,7 @@ export function useObligationVoucher(collectionId: string | null | undefined) {
     queryKey: ["obligation-voucher", collectionId],
     queryFn: async () => {
       if (!collectionId) return null;
-      const res = await tsrClient.obligations.getCollectionVoucher({
+      const res = await apiContract.obligations.getCollectionVoucher({
         params: { id: collectionId },
       });
       if (res.status === 200) {

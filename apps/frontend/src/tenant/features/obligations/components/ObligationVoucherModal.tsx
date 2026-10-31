@@ -1,7 +1,7 @@
 import React from "react";
 import { Receipt, AlertCircle, Loader2, Printer, CheckCircle2 } from "lucide-react";
 import { formatDate, formatMoney } from "@mms/shared";
-import { Drawer } from "@/components/app/Drawer";
+import { DetailDrawerShell } from "@/components/app/DetailDrawerShell";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -35,29 +35,29 @@ export function ObligationVoucherModal({ collection, onClose }: ObligationVouche
 
   if (voucherQuery.isLoading) {
     return (
-      <Drawer
+      <DetailDrawerShell
         open
         onClose={onClose}
         title={`${t("obligations.voucher.title")} — ${collection.receipt_no}`}
         icon={Receipt}
-        className="max-w-2xl"
+        size="2xl"
       >
         <div className="flex flex-col items-center justify-center p-12 space-y-4">
           <Loader2 className="w-8 h-8 animate-spin text-primary" aria-hidden="true" />
           <p className="text-sm text-muted-foreground">{t("common.loading")}</p>
         </div>
-      </Drawer>
+      </DetailDrawerShell>
     );
   }
 
   if (voucherQuery.isError || !voucherQuery.data?.entry) {
     return (
-      <Drawer
+      <DetailDrawerShell
         open
         onClose={onClose}
         title={`${t("obligations.voucher.title")} — ${collection.receipt_no}`}
         icon={Receipt}
-        className="max-w-2xl"
+        size="2xl"
       >
         <div className="flex flex-col items-center justify-center p-8 space-y-4 text-center">
           <AlertCircle className="w-10 h-10 text-warning" aria-hidden="true" />
@@ -71,7 +71,7 @@ export function ObligationVoucherModal({ collection, onClose }: ObligationVouche
             </Button>
           </div>
         </div>
-      </Drawer>
+      </DetailDrawerShell>
     );
   }
 
@@ -81,12 +81,12 @@ export function ObligationVoucherModal({ collection, onClose }: ObligationVouche
   const isBalanced = Math.abs(totalDebit - totalCredit) < 0.005;
 
   return (
-    <Drawer
+    <DetailDrawerShell
       open
       onClose={onClose}
       title={`${t("obligations.voucher.title")} — ${collection.receipt_no}`}
       icon={Receipt}
-      className="max-w-3xl"
+      size="3xl"
     >
       <div className="space-y-5">
         <Card className="p-4 flex flex-wrap items-center justify-between gap-4 bg-primary/5 border-primary/25">
@@ -94,7 +94,7 @@ export function ObligationVoucherModal({ collection, onClose }: ObligationVouche
             <Receipt className="w-5 h-5 text-primary" aria-hidden="true" />
             <div>
               <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide m-0">
-                {t("obligations.columns.receiptNo")} / {t("accounting.journal.ref")}
+                {t("obligations.columns.receiptNo")} / {t("accounting.columns.journal.ref")}
               </p>
               <p className="text-lg font-bold text-primary font-mono m-0">
                 {entry.ref || entry.id}
@@ -104,7 +104,7 @@ export function ObligationVoucherModal({ collection, onClose }: ObligationVouche
           <div className="flex items-center gap-3">
             <div className="text-end">
               <p className="text-xs font-semibold text-muted-foreground uppercase m-0">
-                {t("accounting.journal.date")}
+                {t("accounting.columns.journal.date")}
               </p>
               <p className="text-sm font-semibold text-foreground m-0">
                 {formatDate(entry.date)}
@@ -118,7 +118,7 @@ export function ObligationVoucherModal({ collection, onClose }: ObligationVouche
 
         {entry.description && (
           <div className="text-sm text-muted-foreground">
-            <span className="font-semibold text-foreground">{t("accounting.journal.description")}: </span>
+            <span className="font-semibold text-foreground">{t("accounting.columns.journal.description")}: </span>
             {entry.description}
           </div>
         )}
@@ -127,10 +127,10 @@ export function ObligationVoucherModal({ collection, onClose }: ObligationVouche
           <table className="w-full text-sm">
             <thead className="bg-muted/50 border-b text-xs text-muted-foreground font-semibold">
               <tr>
-                <th className="px-3 py-2.5 text-start">{t("accounting.columns.account")}</th>
-                <th className="px-3 py-2.5 text-start">{t("common.description")}</th>
-                <th className="px-3 py-2.5 text-end w-28">{t("accounting.journal.debit")}</th>
-                <th className="px-3 py-2.5 text-end w-28">{t("accounting.journal.credit")}</th>
+                <th className="px-3 py-2.5 text-start">{t("accounting.journal.voucher.account")}</th>
+                <th className="px-3 py-2.5 text-start">{t("accounting.columns.journal.description")}</th>
+                <th className="px-3 py-2.5 text-end w-28">{t("accounting.columns.journal.debit")}</th>
+                <th className="px-3 py-2.5 text-end w-28">{t("accounting.columns.journal.credit")}</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-border">
@@ -164,7 +164,7 @@ export function ObligationVoucherModal({ collection, onClose }: ObligationVouche
                     {isBalanced && (
                       <CheckCircle2 className="w-3.5 h-3.5 text-success" aria-hidden="true" />
                     )}
-                    <span>{t("accounting.journal.total")}</span>
+                    <span>{t("accounting.journal.voucher.total")}</span>
                   </div>
                 </td>
                 <td className="px-3 py-2.5 text-end font-mono text-xs font-bold text-foreground">
@@ -193,6 +193,6 @@ export function ObligationVoucherModal({ collection, onClose }: ObligationVouche
           </Button>
         </footer>
       </div>
-    </Drawer>
+    </DetailDrawerShell>
   );
 }
