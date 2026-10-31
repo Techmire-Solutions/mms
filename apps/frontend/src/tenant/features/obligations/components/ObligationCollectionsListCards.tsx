@@ -1,5 +1,5 @@
 import React from "react";
-import { Printer } from "lucide-react";
+import { Printer, Receipt } from "lucide-react";
 import { formatDate } from "@mms/shared";
 import { Button } from "@/components/ui/button";
 import { useReducedMotion } from "@/hooks/useReducedMotion";
@@ -51,6 +51,7 @@ function ObligationCollectionCard({
     onToggleSelectedCollection,
     onTrashAction,
     onMessage,
+    onViewVoucher,
   } = props;
 
   const helpers = { getContact, getRep, getMujtahid, getObligationType };
@@ -71,9 +72,27 @@ function ObligationCollectionCard({
       header={{
         displayName,
         subtitle: isColumnVisible("receiptNo") ? (
-          <p className="mt-0.5 truncate font-mono text-xs font-bold text-primary">
-            {collection.receipt_no}
-          </p>
+          onViewVoucher ? (
+            <button
+              type="button"
+              onClick={(e) => {
+                e.stopPropagation();
+                onViewVoucher(collection);
+              }}
+              className="mt-0.5 inline-flex items-center gap-1 truncate font-mono text-xs font-bold text-primary hover:underline group"
+              title={t("obligations.actions.viewVoucher")}
+            >
+              <span>{collection.receipt_no}</span>
+              <Receipt
+                className="w-3 h-3 opacity-70 group-hover:opacity-100 text-muted-foreground group-hover:text-primary transition-opacity"
+                aria-hidden="true"
+              />
+            </button>
+          ) : (
+            <p className="mt-0.5 truncate font-mono text-xs font-bold text-primary">
+              {collection.receipt_no}
+            </p>
+          )
         ) : undefined,
       }}
       viewLabel={t("obligations.actions.viewShort")}
@@ -136,6 +155,7 @@ function ObligationCollectionCard({
           onView={onView}
           onPrint={onPrint}
           onMessage={onMessage}
+          onViewVoucher={onViewVoucher}
           onTrashAction={onTrashAction}
           triggerClassName={ENTITY_CARD_OVERFLOW_TRIGGER_CLASS}
         />

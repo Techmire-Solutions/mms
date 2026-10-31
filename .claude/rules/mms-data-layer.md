@@ -76,11 +76,12 @@ paths:
 ## 7. Migration Safety & Zero-Downtime DDL
 1. **No Write-Blocking Index Builds:** Plain `CREATE INDEX` on live tables is banned. Build out-of-band via `index:concurrent`, or use `CREATE INDEX IF NOT EXISTS` for small/new tables (enforced by `check:migration-indexes`).
 2. **No CONCURRENTLY in Transaction:** Drizzle migrations run inside transactions; execute concurrent index builds via standalone scripts.
-3. **Lock Timeout Guard:** Populated `ALTER TABLE` must set `SET LOCAL lock_timeout = '2s'`.
+3. **Lock Timeout Guard:** Every new migration with locking DDL (`ALTER TABLE`, `CREATE TABLE`, `CREATE INDEX`, etc.) MUST set `SET LOCAL lock_timeout = '2s';` at the top of the file before any DDL statements (enforced by `check:migration-hygiene`).
 4. **Expand / Contract:** Add column, backfill in batches, switch reads, then drop old shape in subsequent migration.
 5. **Additive Defaults:** `NOT NULL` requires default value or two-phase backfill.
 6. **Forward-Only:** Schema migrations are forward-only; data backfills must be idempotent and resumable.
 7. **Ban `drizzle-kit push`:** Push is strictly banned against shared/staging/production databases.
+8. **Drizzle Meta Snapshot:** Every new migration must include its corresponding Drizzle meta snapshot under `apps/backend/src/db/migrations_drizzle/meta` to maintain zero gap in the snapshot chain (enforced by `check:migration-hygiene`).
 
 ## 8. Business Dates & Timezone Semantics
 1. **Instants:** Always `timestamptz`. Never store naive local times for instants.

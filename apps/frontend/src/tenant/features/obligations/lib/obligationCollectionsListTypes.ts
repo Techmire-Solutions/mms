@@ -31,4 +31,5 @@ export interface ObligationCollectionListProps {
   onColumnResize?: (key: string, width: number) => void;
   columnCustomizer?: ModuleColumnCustomizerProps;
   onMessage?: (channel: "sms" | "whatsapp" | "email", collections: ObligationCollection[]) => void;
+  onViewVoucher?: (collection: ObligationCollection) => void;
 }

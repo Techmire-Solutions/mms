@@ -14,6 +14,7 @@ export function obligationDistributionRowToRecord(
     percentage: Number(row.percentage),
     wakala_type_id: row.wakalaTypeId,
     type: row.type as ObligationDistribution["type"],
+    account_id: row.accountId ?? null,
   };
 }
 
@@ -30,6 +31,7 @@ export async function listObligationDistributionsByWorkspace(
         percentage: obligationDistributions.percentage,
         wakalaTypeId: obligationDistributions.wakalaTypeId,
         type: obligationDistributions.type,
+        accountId: obligationDistributions.accountId,
         createdAt: obligationDistributions.createdAt,
         updatedAt: obligationDistributions.updatedAt,
       })
@@ -55,6 +57,7 @@ export async function findObligationDistributionById(
         percentage: obligationDistributions.percentage,
         wakalaTypeId: obligationDistributions.wakalaTypeId,
         type: obligationDistributions.type,
+        accountId: obligationDistributions.accountId,
         createdAt: obligationDistributions.createdAt,
         updatedAt: obligationDistributions.updatedAt,
       })
@@ -87,6 +90,7 @@ export async function findObligationDistributionsByIds(
         percentage: obligationDistributions.percentage,
         wakalaTypeId: obligationDistributions.wakalaTypeId,
         type: obligationDistributions.type,
+        accountId: obligationDistributions.accountId,
         createdAt: obligationDistributions.createdAt,
         updatedAt: obligationDistributions.updatedAt,
       })
@@ -116,6 +120,7 @@ export async function saveObligationDistribution(
         percentage: String(record.percentage),
         wakalaTypeId: record.wakala_type_id,
         type: record.type,
+        accountId: record.account_id ?? null,
         createdAt: new Date(),
         updatedAt: new Date(),
       })
@@ -126,6 +131,7 @@ export async function saveObligationDistribution(
           percentage: String(record.percentage),
           wakalaTypeId: record.wakala_type_id,
           type: record.type,
+          accountId: record.account_id ?? null,
           updatedAt: new Date(),
         },
       });
@@ -157,6 +163,7 @@ export async function bulkSaveObligationDistributions(
           percentage: String(record.percentage),
           wakalaTypeId: record.wakala_type_id,
           type: record.type,
+          accountId: record.account_id ?? null,
           createdAt: new Date(),
           updatedAt: new Date(),
         })),
@@ -168,6 +175,7 @@ export async function bulkSaveObligationDistributions(
           percentage: sql`excluded.percentage`,
           wakalaTypeId: sql`excluded.wakala_type_id`,
           type: sql`excluded.type`,
+          accountId: sql`excluded.account_id`,
           updatedAt: new Date(),
         },
       });
@@ -212,6 +220,7 @@ export async function replaceObligationDistributionsForWorkspace(
             percentage: String(record.percentage),
             wakalaTypeId: record.wakala_type_id,
             type: record.type,
+            accountId: record.account_id ?? null,
             createdAt: new Date(),
             updatedAt: new Date(),
           })),
@@ -223,6 +232,7 @@ export async function replaceObligationDistributionsForWorkspace(
             percentage: sql`excluded.percentage`,
             wakalaTypeId: sql`excluded.wakala_type_id`,
             type: sql`excluded.type`,
+            accountId: sql`excluded.account_id`,
             updatedAt: new Date(),
           },
         });

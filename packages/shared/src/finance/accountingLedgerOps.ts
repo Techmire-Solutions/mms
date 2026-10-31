@@ -6,6 +6,7 @@ export const postingRulesRecordSchema = z
   .object({
     arAccountId: z.string().nullable().optional(),
     cashAccountId: z.string().nullable().optional(),
+    bankAccountId: z.string().nullable().optional(),
     incomeAccountId: z.string().nullable().optional(),
     discountAccountId: z.string().nullable().optional(),
     /** IAS 21: realized FX gain/loss on settlement (Revenue or Expense). */

@@ -24,4 +24,28 @@ fi
 echo "🔍 Pre-commit: secrets + lint on staged files..."
 pnpm run check:secrets
 git diff --cached --name-only --diff-filter=ACMR | bash scripts/ci/lint-changed.sh
+
+STAGED_FILES="$(git diff --cached --name-only --diff-filter=ACMR || true)"
+if [[ -n "$STAGED_FILES" ]]; then
+  echo "🔍 Pre-commit: formatting check (Prettier) on staged files..."
+  printf '%s\n' "$STAGED_FILES" | xargs -r pnpm exec prettier --check --end-of-line auto --ignore-unknown
+fi
+
+STAGED_MIGRATIONS="$(printf '%s\n' "$STAGED_FILES" | grep -E '^apps/backend/src/db/migrations_drizzle/' || true)"
+if [[ -n "$STAGED_MIGRATIONS" ]]; then
+  echo "🔍 Pre-commit: migration hygiene check..."
+  pnpm run check:migration-hygiene -- --base origin/main
+fi
+
+STAGED_FE="$(printf '%s\n' "$STAGED_FILES" | grep -E '^apps/frontend/' || true)"
+if [[ -n "$STAGED_FE" ]]; then
+  echo "🔍 Pre-commit: frontend structure ratchets..."
+  node scripts/check-frontend-structure.mjs --ratchet
+fi
+
+if [[ -n "$STAGED_FILES" ]]; then
+  echo "🔍 Pre-commit: code norms check..."
+  node scripts/check-code-norms.mjs --changed
+fi
+
 echo "✅ Pre-commit checks passed."

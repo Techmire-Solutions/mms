@@ -33,6 +33,12 @@ export {
   tryPostRestoreJournal,
   tryPostCreditNoteJournal,
 } from "./ledgerReversalPostingService.js";
+export {
+  syncObligationJournal,
+  tryPostObligationArchiveJournal,
+  tryPostObligationJournal,
+  tryPostObligationRestoreJournal,
+} from "./obligationPostingService.js";
 
 /** Posts Dr AR / Cr Income when posting accounts are configured. Skips otherwise. */
 export async function tryPostInvoiceJournal(tenant: string, invoice: Invoice): Promise<void> {

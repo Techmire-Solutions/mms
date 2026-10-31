@@ -205,4 +205,19 @@ export const obligationContract = c.router({
     },
     summary: "Update obligations module preferences",
   },
+  getCollectionVoucher: {
+    method: "GET",
+    path: "/api/obligations/collections/:id/voucher",
+    pathParams: z.object({ id: z.string() }),
+    responses: {
+      200: z.object({
+        entry: z.record(z.string(), z.unknown()),
+        accounts: z.array(z.record(z.string(), z.unknown())),
+      }),
+      403: ok,
+      404: ok,
+      500: ok,
+    },
+    summary: "Get accounting voucher for an obligation collection",
+  },
 });

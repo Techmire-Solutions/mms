@@ -31,6 +31,7 @@ export interface ObligationCollectionDetailProps {
   onClose: () => void;
   canDelete?: boolean;
   onRestore?: (id: string) => void | Promise<void>;
+  onViewVoucher?: (collection: ObligationCollection) => void;
 }
 
 /**
@@ -46,6 +47,7 @@ export const ObligationCollectionDetail = function ObligationCollectionDetail({
   onClose,
   canDelete = false,
   onRestore,
+  onViewVoucher,
 }: ObligationCollectionDetailProps): React.JSX.Element {
   const {
     t,
@@ -100,13 +102,31 @@ export const ObligationCollectionDetail = function ObligationCollectionDetail({
       }
     >
       <div className="space-y-5">
-        <Card className="p-4 flex items-center gap-3.5 bg-primary/5 border-primary/25">
-          <Receipt className="w-5 h-5 text-primary" aria-hidden="true" />
-          <div>
-            <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide m-0">
-              {t("obligations.columns.receiptNo")}
-            </p>
-            <p className="text-xl font-bold text-primary font-mono m-0">{collection.receipt_no}</p>
+        <Card className="p-4 flex flex-wrap items-center justify-between gap-3.5 bg-primary/5 border-primary/25">
+          <div className="flex items-center gap-3.5">
+            <Receipt className="w-5 h-5 text-primary" aria-hidden="true" />
+            <div>
+              <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide m-0">
+                {t("obligations.columns.receiptNo")}
+              </p>
+              <div className="flex items-center gap-2">
+                <p className="text-xl font-bold text-primary font-mono m-0">
+                  {collection.receipt_no}
+                </p>
+                {onViewVoucher && (
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    className="h-7 text-xs gap-1 font-sans"
+                    onClick={() => onViewVoucher(collection)}
+                  >
+                    <Receipt className="w-3.5 h-3.5" aria-hidden="true" />
+                    {t("obligations.actions.viewVoucher")}
+                  </Button>
+                )}
+              </div>
+            </div>
           </div>
           <div className="ms-auto text-end">
             <p className="text-xs font-semibold text-muted-foreground uppercase m-0">
@@ -141,12 +161,25 @@ export const ObligationCollectionDetail = function ObligationCollectionDetail({
         />
 
         <footer className="flex flex-wrap items-center justify-between gap-2">
-          {!isArchived && (
-            <Button type="button" onClick={() => setShowPrint(true)} className="gap-2">
-              <Printer className="w-4 h-4" aria-hidden="true" />{" "}
-              {t("obligations.actions.printShort")}
-            </Button>
-          )}
+          <div className="flex items-center gap-2">
+            {!isArchived && (
+              <Button type="button" onClick={() => setShowPrint(true)} className="gap-2">
+                <Printer className="w-4 h-4" aria-hidden="true" />{" "}
+                {t("obligations.actions.printShort")}
+              </Button>
+            )}
+            {onViewVoucher && (
+              <Button
+                type="button"
+                variant="outline"
+                onClick={() => onViewVoucher(collection)}
+                className="gap-2"
+              >
+                <Receipt className="w-4 h-4" aria-hidden="true" />
+                {t("obligations.actions.viewVoucher")}
+              </Button>
+            )}
+          </div>
           <Button type="button" onClick={onClose} variant="outline">
             {t("common.close")}
           </Button>

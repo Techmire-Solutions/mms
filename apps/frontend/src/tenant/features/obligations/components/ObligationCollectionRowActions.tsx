@@ -1,5 +1,5 @@
 import type { JSX } from "react";
-import { Printer } from "lucide-react";
+import { Printer, Receipt } from "lucide-react";
 import { DropdownMenuItem } from "@/components/ui/dropdown-menu";
 import { EntityMessagingActions } from "@/components/app/EntityMessagingActions";
 import { ModuleRowActionsMenu } from "@/components/app/ModuleRowActionsMenu";
@@ -16,6 +16,7 @@ interface ObligationCollectionRowActionsProps {
   onView: (collection: ObligationCollection) => void;
   onPrint: (collection: ObligationCollection) => void;
   onMessage?: (channel: "sms" | "whatsapp" | "email", collections: ObligationCollection[]) => void;
+  onViewVoucher?: (collection: ObligationCollection) => void;
   onTrashAction: (id: string) => void;
   triggerClassName?: string;
 }
@@ -35,12 +36,14 @@ export function ObligationCollectionRowActions({
   onView,
   onPrint,
   onMessage,
+  onViewVoucher,
   onTrashAction,
   triggerClassName,
 }: ObligationCollectionRowActionsProps): JSX.Element {
   const { t } = useTranslation();
   const showMessaging = Boolean(onMessage) && !showDeleted;
   const showPrint = !showDeleted;
+  const showVoucher = Boolean(onViewVoucher) && !showDeleted;
 
   return (
     <ModuleRowActionsMenu
@@ -58,8 +61,13 @@ export function ObligationCollectionRowActions({
       hideViewItem={hideViewItem}
       triggerClassName={triggerClassName}
       extras={
-        showPrint || showMessaging ? (
+        showPrint || showMessaging || showVoucher ? (
           <>
+            {showVoucher && onViewVoucher ? (
+              <DropdownMenuItem onClick={() => onViewVoucher(collection)}>
+                <Receipt className="w-3.5 h-3.5 me-2" /> {t("obligations.actions.viewVoucher")}
+              </DropdownMenuItem>
+            ) : null}
             {showPrint ? (
               <DropdownMenuItem onClick={() => onPrint(collection)}>
                 <Printer className="w-3.5 h-3.5 me-2" /> {t("obligations.actions.printShort")}

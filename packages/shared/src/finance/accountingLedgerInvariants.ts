@@ -10,6 +10,7 @@ export const JOURNAL_SOURCE_TYPES = [
   "closing",
   "reversal",
   "opening",
+  "obligation",
   /** IAS 21 period-end revaluation and its automatic next-day reversal. */
   "fx_reval",
   "fx_reval_reversal",

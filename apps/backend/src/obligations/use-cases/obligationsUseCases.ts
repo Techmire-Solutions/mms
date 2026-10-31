@@ -16,6 +16,14 @@ import {
   obligationCollectionRecordSchema,
 } from "@mms/shared";
 import { createObligationsCatalogUseCases } from "./obligationsCatalogUseCases.js";
+import {
+  loadCollectionsById,
+  postArchivedCollections,
+  postCreatedCollection,
+  postRestoredCollections,
+  postSavedCollection,
+  snapshotArchivedCollections,
+} from "./obligationLedgerSync.js";
 
 const EMPTY_OBLIGATIONS_METRICS: ObligationsCommandMetricsSnapshot = {
   total: 0,
@@ -89,24 +97,101 @@ export function createObligationsUseCases(repo: ObligationsRepository = obligati
     saveObligationCollection: async (record: ObligationCollection): Promise<void> => {
       const tenant = getRequestTenant();
       if (!tenant) return;
+      const previous =
+        (await loadCollectionsById(repo, tenant, [record.id])).get(record.id) ?? null;
       await repo.saveObligationCollection(tenant, record);
+      await postSavedCollection(tenant, record, previous);
     },
 
-    createObligationCollection: collectionCrud.create,
-    updateObligationCollectionById: collectionCrud.updateById,
+    createObligationCollection: async (
+      record: Parameters<typeof collectionCrud.create>[0],
+    ): Promise<ObligationCollection> => {
+      const created = await collectionCrud.create(record);
+      const tenant = getRequestTenant();
+      if (tenant && created) await postCreatedCollection(tenant, created);
+      return created;
+    },
 
-    upsertObligationCollections: (records: ObligationCollection[]) =>
-      upsertWithBroadcast(
+    updateObligationCollectionById: async (
+      id: string,
+      record: Partial<ObligationCollection>,
+    ): Promise<ObligationCollection | null> => {
+      const tenant = getRequestTenant();
+      const previous = tenant
+        ? ((await loadCollectionsById(repo, tenant, [id])).get(id) ?? null)
+        : null;
+      const updated = await collectionCrud.updateById(id, record);
+      if (tenant && updated) await postSavedCollection(tenant, updated, previous);
+      return updated;
+    },
+
+    upsertObligationCollections: async (
+      records: ObligationCollection[],
+    ): Promise<ObligationCollection[]> => {
+      const tenant = getRequestTenant();
+      // Read the pre-write rows first: after the upsert they would be the new
+      // values, every edit would look unchanged, and the stale journal entry
+      // would stay on the books.
+      const previousById = tenant
+        ? await loadCollectionsById(
+            repo,
+            tenant,
+            records.map((record) => record.id),
+          )
+        : new Map<string, ObligationCollection>();
+      const saved = await upsertWithBroadcast(
         obligationCollectionListSchema,
         records,
         repo.bulkSaveObligationCollections,
         "obligation_collections",
-      ),
+      );
+      if (!tenant) return saved;
+      for (const record of saved) {
+        await postSavedCollection(tenant, record, previousById.get(record.id) ?? null);
+      }
+      return saved;
+    },
 
-    deleteObligationCollectionById: collectionCrud.deleteById,
-    restoreObligationCollectionById: collectionCrud.restoreById,
-    bulkSoftDeleteObligationCollections: collectionCrud.bulkDeleteByIds,
-    bulkRestoreObligationCollections: collectionCrud.bulkRestoreByIds,
+    deleteObligationCollectionById: async (
+      id: string,
+      deletedBy: string = "system",
+      reason?: string,
+    ) => {
+      const res = await collectionCrud.deleteById(id, deletedBy, reason);
+      const tenant = getRequestTenant();
+      if (tenant && res) await postArchivedCollections(repo, tenant, [id]);
+      return res;
+    },
+
+    restoreObligationCollectionById: async (id: string, userId?: string): Promise<boolean> => {
+      const tenant = getRequestTenant();
+      const archived = tenant ? await snapshotArchivedCollections(repo, tenant, [id]) : [];
+      const res = await collectionCrud.restoreById(id, userId);
+      if (tenant && res) await postRestoredCollections(tenant, archived);
+      return res;
+    },
+
+    bulkSoftDeleteObligationCollections: async (
+      ids: string[],
+      deletedBy: string = "system",
+      reason?: string,
+    ) => {
+      const res = await collectionCrud.bulkDeleteByIds(ids, deletedBy, reason);
+      const tenant = getRequestTenant();
+      if (tenant && res.succeeded > 0) await postArchivedCollections(repo, tenant, ids);
+      return res;
+    },
+
+    bulkRestoreObligationCollections: async (
+      ids: string[],
+      userId?: string,
+    ): Promise<{ succeeded: number; failed: number }> => {
+      const tenant = getRequestTenant();
+      const archived = tenant ? await snapshotArchivedCollections(repo, tenant, ids) : [];
+      const res = await collectionCrud.bulkRestoreByIds(ids, userId);
+      if (tenant && res.succeeded > 0) await postRestoredCollections(tenant, archived);
+      return res;
+    },
 
     loadObligationsCommandMetrics: async (): Promise<ObligationsCommandMetricsSnapshot> => {
       const tenant = getRequestTenant();
