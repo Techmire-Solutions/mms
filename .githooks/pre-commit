@@ -37,4 +37,15 @@ if [[ -n "$STAGED_MIGRATIONS" ]]; then
   pnpm run check:migration-hygiene -- --base origin/main
 fi
 
+STAGED_FE="$(printf '%s\n' "$STAGED_FILES" | grep -E '^apps/frontend/' || true)"
+if [[ -n "$STAGED_FE" ]]; then
+  echo "🔍 Pre-commit: frontend structure ratchets..."
+  node scripts/check-frontend-structure.mjs --ratchet
+fi
+
+if [[ -n "$STAGED_FILES" ]]; then
+  echo "🔍 Pre-commit: code norms check..."
+  node scripts/check-code-norms.mjs --changed
+fi
+
 echo "✅ Pre-commit checks passed."

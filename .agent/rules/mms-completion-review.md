@@ -14,7 +14,7 @@ Mandatory self-review before marking tasks done. Change boundary includes edited
 2. **Fix In-Scope Defects:** Resolve all bugs introduced inside the change boundary before completion.
 3. **Verify Applicable Scopes:**
    - TypeScript & Lint: Run `pnpm typecheck` on any non-trivial TS change, `pnpm lint` (or app-scoped lint), and `pnpm format:check` (Prettier code style).
-   - Code Norms & Architecture: Run `pnpm run check:code-norms` (zero explicit `any`, semantic tokens only, ≤300 LOC) and `pnpm run check:work-directory` (DataTable/WorkBatchTable reuse, viewMode SSOT) when modifying components or tables.
+   - Code Norms & Architecture: Run `pnpm run check:code-norms` (zero explicit `any`, semantic tokens only, ≤300 LOC), `pnpm run check:frontend-structure`, and `pnpm run check:work-directory` (DataTable/WorkBatchTable reuse, viewMode SSOT) when modifying components or tables.
    - Shared UI & Pre-Deletion Verification: execute the pre- and post-deletion gates in `mms-shared-ui.md` §4 when modifying, moving, or cleaning up UI components or legacy files.
    - Database & Projections: Run `pnpm run check:db-projections` (zero `SELECT *`), `pnpm run check:migration-indexes`, and `pnpm run check:migration-hygiene` when touching DB schema, migrations, or queries.
    - Module Access Gates: Enforce authoritative tenant grant + module enablement + user action permission checks for module-owned routes/APIs (`moduleAccessCoverage.test.ts` & `routeAccess.test.ts`).
