@@ -44,7 +44,7 @@ const ignoredSpecs = [
  * them on their own runners: sharding hands each runner a contiguous slice of
  * tests by count, which put every long test on shard 1.
  */
-const A11Y_SWEEP_SPECS = ["**/a11y-shell.spec.ts", "**/a11y-populated.spec.ts"];
+const A11Y_SWEEP_SPECS = ["**/a11y-*.spec.ts"];
 
 /**
  * See https://playwright.dev/docs/test-configuration.
@@ -70,7 +70,7 @@ export default defineConfig({
   workers: 1,
   /* Reporter to use. See https://playwright.dev/docs/test-reporters */
   reporter: process.env.CI
-    ? [["github"], ["blob", { outputDir: "blob-report" }]]
+    ? [["github"], ["list"], ["blob", { outputDir: "blob-report" }]]
     : [["html", { open: "never" }]],
   /* Shared settings for all the projects below. See https://playwright.dev/docs/api/class-testoptions. */
   use: {
