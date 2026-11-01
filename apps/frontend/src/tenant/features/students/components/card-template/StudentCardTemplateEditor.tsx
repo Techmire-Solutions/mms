@@ -1,7 +1,17 @@
-import React, { useCallback, useMemo, useState } from "react";
+/**
+ * @file StudentCardTemplateEditor.tsx
+ * @description Student ID-card front/back editor on top of the shared TemplateEditor.
+ *
+ * The card is one server-backed document (`elements` = front, `backElements` = back).
+ * Switching sides therefore edits the same record; changing paper size must not remount
+ * the editor (that used to reset undo history and the dirty baseline).
+ */
+
+import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useTranslation } from "@/hooks/useTranslation";
 import { useBranding } from "@/tenant/hooks/useBranding";
 import { TemplateEditor } from "@/components/app/TemplateEditor";
+import { useDocumentTemplate } from "@/lib/templates/useDocumentTemplates";
 import { notify } from "@/lib/notify";
 import type { Student } from "@mms/shared";
 import type {
@@ -16,14 +26,16 @@ import {
 import { getAvailableStudentCardPresets } from "../../lib/studentCardTemplatePresets";
 import {
   AVAILABLE_STUDENT_CARD_FIELDS,
-  loadStudentCardTemplate,
-  saveStudentCardTemplate,
+  STUDENT_CARD_TEMPLATE_KEY,
+  useSaveStudentCardTemplate,
 } from "../../lib/studentCardTemplateStore";
 import { useStudentCardSampleData } from "./useStudentCardSampleData";
 import { StudentCardSideSwitcher } from "./StudentCardSideSwitcher";
 
 export interface StudentCardTemplateEditorProps {
   onClose: () => void;
+  /** Reports unsaved layout changes to the Setup leave-guard. */
+  onDirtyChange?: (dirty: boolean) => void;
   fullscreen?: boolean;
   sampleStudent?: Student | null;
   sessionNames?: string[];
@@ -34,6 +46,7 @@ export interface StudentCardTemplateEditorProps {
 
 export function StudentCardTemplateEditor({
   onClose,
+  onDirtyChange,
   fullscreen = true,
   sampleStudent = null,
   sessionNames = [],
@@ -44,15 +57,32 @@ export function StudentCardTemplateEditor({
   const { t } = useTranslation();
   const branding = useBranding();
   const [activeSide, setActiveSide] = useState<CardSide>("front");
-
-  // Keep full template with both front elements and backElements
-  const [fullTemplate, setFullTemplate] = useState<StudentCardTemplate>(() =>
-    loadStudentCardTemplate(branding),
-  );
+  // The editor reports dirtiness; only a *pristine* card adopts a late server layout.
+  const dirtyRef = useRef(false);
 
   const defaultFullTemplate = useMemo<StudentCardTemplate>(
     () => getDefaultStudentCardTemplate(branding),
     [branding],
+  );
+
+  const { template: storedFullTemplate } = useDocumentTemplate<StudentCardPayload>(
+    STUDENT_CARD_TEMPLATE_KEY,
+    defaultFullTemplate,
+  );
+
+  // Keep both sides in one record. Server updates (initial fetch, another tab, WS
+  // invalidation) are adopted only while the user has not touched the card.
+  const [fullTemplate, setFullTemplate] = useState<StudentCardTemplate>(storedFullTemplate);
+  useEffect(() => {
+    if (!dirtyRef.current) setFullTemplate(storedFullTemplate);
+  }, [storedFullTemplate]);
+
+  const handleDirtyChange = useCallback(
+    (dirty: boolean) => {
+      dirtyRef.current = dirty;
+      onDirtyChange?.(dirty);
+    },
+    [onDirtyChange],
   );
 
   const availableFields = useMemo(
@@ -116,27 +146,24 @@ export function StudentCardTemplateEditor({
     return defaultFullTemplate;
   }, [defaultFullTemplate, activeSide, branding]);
 
-  const handleSave = useCallback(
-    (currentSideTmpl: StudentCardTemplate) => {
-      try {
-        const updatedFullTemplate: StudentCardTemplate = {
-          ...fullTemplate,
-          pageSize: currentSideTmpl.pageSize,
-          orientation: currentSideTmpl.orientation,
-          ...(activeSide === "front"
-            ? { elements: currentSideTmpl.elements }
-            : { backElements: currentSideTmpl.elements }),
-        };
+  const { mutateAsync: saveCardTemplate } = useSaveStudentCardTemplate();
 
-        saveStudentCardTemplate(updatedFullTemplate);
-        setFullTemplate(updatedFullTemplate);
-        notify.success(t("students.idCard.templateSaved"));
-      } catch (err) {
-        console.error("Failed to save student card template:", err);
-        notify.error(t("templateEditor.saveFailed"));
-      }
+  const handleSave = useCallback(
+    async (currentSideTmpl: StudentCardTemplate): Promise<void> => {
+      const updatedFullTemplate: StudentCardTemplate = {
+        ...fullTemplate,
+        pageSize: currentSideTmpl.pageSize,
+        orientation: currentSideTmpl.orientation,
+        ...(activeSide === "front"
+          ? { elements: currentSideTmpl.elements }
+          : { backElements: currentSideTmpl.elements }),
+      };
+
+      await saveCardTemplate(updatedFullTemplate);
+      setFullTemplate(updatedFullTemplate);
+      notify.success(t("students.idCard.templateSaved"));
     },
-    [fullTemplate, activeSide, t],
+    [fullTemplate, activeSide, saveCardTemplate, t],
   );
 
   const handleSideTemplateChange = useCallback(
@@ -171,7 +198,7 @@ export function StudentCardTemplateEditor({
 
       <div className="flex-1 min-h-0">
         <TemplateEditor<StudentCardPayload>
-          key={`card-editor-${activeSide}-${fullTemplate.pageSize}-${fullTemplate.orientation}`}
+          key={`card-editor-${activeSide}`}
           title={`${t("students.cardTemplate.title")} (${sideLabel})`}
           template={activeSideTemplate}
           defaultTemplate={activeSideDefaultTemplate}
@@ -184,6 +211,7 @@ export function StudentCardTemplateEditor({
           onChange={handleSideTemplateChange}
           onSave={handleSave}
           onClose={onClose}
+          onDirtyChange={handleDirtyChange}
         />
       </div>
     </div>

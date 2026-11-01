@@ -28,7 +28,6 @@ export interface TemplateEditorToolbarCenterProps<TPayload = Record<string, unkn
   presets?: DocumentTemplatePreset<TPayload>[];
   activePresetKey?: string | null;
   saving?: boolean;
-  isDirty?: boolean;
   onApplyPreset: (presetKey: string) => void;
   onExportJson?: () => void;
   onImportJson?: (file: File) => void;
@@ -55,7 +54,6 @@ export function TemplateEditorToolbarCenter<TPayload = Record<string, unknown>>(
   presets = [],
   activePresetKey = null,
   saving = false,
-  isDirty = false,
   onApplyPreset,
   onExportJson,
   onImportJson,
@@ -111,7 +109,6 @@ export function TemplateEditorToolbarCenter<TPayload = Record<string, unknown>>(
             presets={presets}
             activePresetKey={activePresetKey}
             saving={saving}
-            isDirty={isDirty}
             onApplyPreset={onApplyPreset}
             t={t}
           />

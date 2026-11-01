@@ -32,6 +32,8 @@ export interface UseTemplateEditorOptions<TPayload = Record<string, unknown>> {
   onSave?: (template: DocumentTemplate<TPayload>) => void | Promise<void>;
   onClose?: () => void;
   documentType?: string;
+  /** DOM id used to scope keyboard/pan shortcuts to this editor instance. */
+  editorId?: string;
 }
 
 const FALLBACK_TEMPLATE: DocumentTemplate = {
@@ -47,6 +49,7 @@ export function useTemplateEditor<TPayload = Record<string, unknown>>({
   presets = [],
   onSave,
   documentType,
+  editorId,
 }: UseTemplateEditorOptions<TPayload> = {}) {
   const { t, isRtl } = useTranslation();
 
@@ -97,8 +100,8 @@ export function useTemplateEditor<TPayload = Record<string, unknown>>({
     resizeState,
     canvasViewportRef: zoom.canvasViewportRef,
     updateElements: doc.updateElements,
-    setHistory: doc.setHistory,
-    setFuture: doc.setFuture,
+    pushHistory: doc.pushHistory,
+    editorId,
   });
 
   const elementActions = useTemplateEditorElementActions<TPayload>({
@@ -130,15 +133,14 @@ export function useTemplateEditor<TPayload = Record<string, unknown>>({
     clipboard,
     zoom,
     selectedIds,
+    editorId,
   });
 
   const { exportTemplateJson, importTemplateJson, applyPreset } =
     useTemplateEditorPresetsAndIo<TPayload>({
       template: doc.template,
-      setTemplate: doc.setTemplate,
-      pushHistory: doc.pushHistory,
+      replaceTemplate: doc.replaceTemplate,
       setSelectedIds,
-      setActivePresetKey: doc.setActivePresetKey,
       presets,
       documentType,
       t,
@@ -183,6 +185,7 @@ export function useTemplateEditor<TPayload = Record<string, unknown>>({
     importTemplateJson,
     applyPreset,
     activePresetKey: doc.activePresetKey,
+    discardChanges: doc.discardChanges,
     copySelected: clipboard.copySelected,
     paste: clipboard.paste,
     onMouseDownElement,

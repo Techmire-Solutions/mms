@@ -13,6 +13,8 @@ export interface UseTemplateEditorModalOptions {
   isDirty?: boolean;
   onClose: () => void;
   confirmDiscardPrompt?: () => boolean;
+  /** Runs after the user confirms discarding, so "discard" really discards. */
+  onDiscard?: () => void;
   /**
    * Lets the editor reserve Escape for a nearer concern. The shortcut layer uses
    * Escape to clear the canvas selection, and both layers listen on `window`, so
@@ -34,6 +36,7 @@ export function useTemplateEditorModal({
   isDirty = false,
   onClose,
   confirmDiscardPrompt,
+  onDiscard,
   ignoreEscapeWhen,
 }: UseTemplateEditorModalOptions): UseTemplateEditorModalReturn {
   const [isUserToggled, setIsUserToggled] = useState(false);
@@ -49,12 +52,20 @@ export function useTemplateEditorModal({
   const optionsRef = useRef({
     isDirty,
     confirmDiscardPrompt,
+    onDiscard,
     onClose,
     isFullscreen,
     isUserToggled,
   });
   useEffect(() => {
-    optionsRef.current = { isDirty, confirmDiscardPrompt, onClose, isFullscreen, isUserToggled };
+    optionsRef.current = {
+      isDirty,
+      confirmDiscardPrompt,
+      onDiscard,
+      onClose,
+      isFullscreen,
+      isUserToggled,
+    };
   });
 
   const handleClose = useCallback(() => {
@@ -64,8 +75,11 @@ export function useTemplateEditorModal({
       if (!confirmed) return;
     }
     if (opts.isFullscreen && opts.isUserToggled) {
+      // Leaving fullscreen is not closing: keep the draft.
       setIsUserToggled(false);
     } else {
+      // Closing must actually throw the draft away, not just ask.
+      if (opts.isDirty) opts.onDiscard?.();
       opts.onClose();
     }
   }, []);

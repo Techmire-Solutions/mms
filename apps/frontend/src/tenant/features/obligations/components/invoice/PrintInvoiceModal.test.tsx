@@ -2,6 +2,13 @@ import React, { act } from "react";
 import { describe, expect, it, vi, beforeEach } from "vitest";
 import { createRoot } from "react-dom/client";
 import { PrintInvoiceModal } from "./PrintInvoiceModal";
+import { withQueryClient } from "@/test/queryClientTestUtils";
+
+vi.mock("@/lib/templates/documentTemplatesApi", () => ({
+  fetchDocumentTemplateServer: vi.fn().mockResolvedValue(null),
+  saveDocumentTemplateServer: vi.fn().mockImplementation(async (_key, template) => template),
+  deleteDocumentTemplateServer: vi.fn().mockResolvedValue(true),
+}));
 import type { ObligationCollection } from "@/lib/data/obligationsData";
 import { notify } from "@/lib/notify";
 
@@ -79,11 +86,13 @@ describe("PrintInvoiceModal", () => {
 
     await act(async () => {
       root.render(
-        <PrintInvoiceModal
-          collection={mockCollection}
-          onClose={onClose}
-          onOpenEditor={onOpenEditor}
-        />,
+        withQueryClient(
+          <PrintInvoiceModal
+            collection={mockCollection}
+            onClose={onClose}
+            onOpenEditor={onOpenEditor}
+          />,
+        ),
       );
     });
 
@@ -122,7 +131,9 @@ describe("PrintInvoiceModal", () => {
     const root = createRoot(container!);
 
     await act(async () => {
-      root.render(<PrintInvoiceModal collection={mockCollection} onClose={vi.fn()} />);
+      root.render(
+        withQueryClient(<PrintInvoiceModal collection={mockCollection} onClose={vi.fn()} />),
+      );
     });
 
     const printBtn = Array.from(document.body.querySelectorAll("button")).find((btn) =>
@@ -145,7 +156,9 @@ describe("PrintInvoiceModal", () => {
     const root = createRoot(container!);
 
     await act(async () => {
-      root.render(<PrintInvoiceModal collection={mockCollection} onClose={vi.fn()} />);
+      root.render(
+        withQueryClient(<PrintInvoiceModal collection={mockCollection} onClose={vi.fn()} />),
+      );
     });
 
     const printBtn = Array.from(document.body.querySelectorAll("button")).find((btn) =>
@@ -178,7 +191,9 @@ describe("PrintInvoiceModal", () => {
     const root = createRoot(container!);
 
     await act(async () => {
-      root.render(<PrintInvoiceModal collection={mockCollection} onClose={vi.fn()} />);
+      root.render(
+        withQueryClient(<PrintInvoiceModal collection={mockCollection} onClose={vi.fn()} />),
+      );
     });
 
     await act(async () => {
@@ -198,7 +213,9 @@ describe("PrintInvoiceModal", () => {
     const root = createRoot(container!);
 
     await act(async () => {
-      root.render(<PrintInvoiceModal collection={mockCollection} onClose={vi.fn()} />);
+      root.render(
+        withQueryClient(<PrintInvoiceModal collection={mockCollection} onClose={vi.fn()} />),
+      );
     });
 
     const region = document.body.querySelector('[role="region"]');

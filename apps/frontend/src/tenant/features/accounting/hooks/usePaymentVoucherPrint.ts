@@ -1,4 +1,4 @@
-import { useCallback } from "react";
+import { useCallback, useMemo } from "react";
 import { useQueryClient } from "@tanstack/react-query";
 import { formatAmountInWords, formatDate, getPageDimensions } from "@mms/shared";
 import { useTranslation } from "@/hooks/useTranslation";
@@ -7,6 +7,7 @@ import { useAuth } from "@/lib/contexts/AuthContext";
 import { notify } from "@/lib/notify";
 import { buildPrintWindowHtml, autoPrintWindow } from "@/lib/printWindowHtml";
 import { getScopedBrandingSettings } from "@/lib/settingsPreviewStore";
+import { useDocumentTemplate } from "@/lib/templates/useDocumentTemplates";
 import type { Account, JournalEntry } from "@/lib/data/accountingData";
 import { facultyResolveQueryOptions } from "@/tenant/hooks/collections/faculty";
 import {
@@ -19,7 +20,7 @@ import {
 } from "@/tenant/features/accounting/lib/paymentVoucherModel";
 import type { PaymentVoucherPrintInput } from "@/tenant/features/accounting/lib/paymentVoucherHtml";
 import {
-  loadVoucherTemplate,
+  ACCOUNTING_VOUCHER_TEMPLATE_KEY,
   voucherContactLine,
   voucherTableLines,
   type VoucherPrintPayload,
@@ -43,6 +44,14 @@ export function usePaymentVoucherPrint(accounts: readonly Account[]) {
   const { user } = useAuth();
   const queryClient = useQueryClient();
 
+  // The layout is a server-backed document template; the factory layout is only the
+  // fallback while the query resolves.
+  const defaultTemplate = useMemo(() => buildVoucherTemplate("A6", voucherLayoutCopy(t)), [t]);
+  const { template } = useDocumentTemplate<VoucherPrintPayload>(
+    ACCOUNTING_VOUCHER_TEMPLATE_KEY,
+    defaultTemplate,
+  );
+
   const resolvePayee = useCallback(
     async (salary: SalaryVoucherRef | null): Promise<Payee> => {
       if (!salary) return null;
@@ -65,7 +74,6 @@ export function usePaymentVoucherPrint(accounts: readonly Account[]) {
 
   return useCallback(
     async (entry: JournalEntry): Promise<void> => {
-      const template = loadVoucherTemplate(buildVoucherTemplate("A6", voucherLayoutCopy(t)));
       const page = getPageDimensions(template.pageSize, template.orientation ?? "portrait");
       // Open synchronously inside the click so popup blockers allow it; content is written after the payee lookup.
       const printWindow = window.open(
@@ -148,6 +156,16 @@ export function usePaymentVoucherPrint(accounts: readonly Account[]) {
       printWindow.document.close();
       autoPrintWindow(printWindow);
     },
-    [accounts, activeCurrency.code, formatCurrency, isRtl, language, resolvePayee, t, user?.name],
+    [
+      accounts,
+      activeCurrency.code,
+      formatCurrency,
+      isRtl,
+      language,
+      resolvePayee,
+      t,
+      template,
+      user?.name,
+    ],
   );
 }

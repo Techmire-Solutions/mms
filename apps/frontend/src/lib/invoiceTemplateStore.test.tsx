@@ -1,142 +1,80 @@
 import React, { act } from "react";
-import { describe, expect, it, beforeEach, vi } from "vitest";
+import { beforeEach, describe, expect, it, vi } from "vitest";
 import { createRoot } from "react-dom/client";
+import { QueryClientProvider } from "@tanstack/react-query";
 import {
   getDefaultTemplate,
   getPageDimensions,
   PAGE_SIZES,
   AVAILABLE_FIELDS,
   resolveField,
-  loadTemplate,
-  saveTemplate,
-  resetTemplate,
   getAvailablePresets,
   getInvoiceTemplateBranding,
   generateQrSvgUri,
   generateQrMatrix,
-  INVOICE_TEMPLATE_CHANGED_EVENT,
   useInvoiceTemplate,
-  type InvoiceTemplate,
+  INVOICE_TEMPLATE_KEY,
 } from "./invoiceTemplateStore";
+import * as api from "./templates/documentTemplatesApi";
+import { createTestQueryClient } from "@/test/queryClientTestUtils";
 
 (globalThis as unknown as { IS_REACT_ACT_ENVIRONMENT: boolean }).IS_REACT_ACT_ENVIRONMENT = true;
 
-describe("invoiceTemplateStore facade", () => {
+describe("invoice template facade", () => {
   beforeEach(() => {
     localStorage.clear();
-    vi.spyOn(globalThis, "fetch").mockImplementation(() =>
-      Promise.resolve(new Response(JSON.stringify({ ok: true }), { status: 200 })),
+    vi.restoreAllMocks();
+    vi.spyOn(api, "fetchDocumentTemplateServer").mockResolvedValue(null);
+    vi.spyOn(api, "saveDocumentTemplateServer").mockImplementation(
+      async (_key, template) => template as never,
     );
     vi.spyOn(console, "error").mockImplementation(() => {});
   });
 
-  it("exports all required domain primitives and utilities", () => {
+  it("exports the template primitives and utilities", () => {
     expect(typeof getDefaultTemplate).toBe("function");
     expect(typeof getPageDimensions).toBe("function");
     expect(PAGE_SIZES).toBeDefined();
     expect(Array.isArray(AVAILABLE_FIELDS)).toBe(true);
     expect(typeof resolveField).toBe("function");
-    expect(typeof loadTemplate).toBe("function");
-    expect(typeof saveTemplate).toBe("function");
-    expect(typeof resetTemplate).toBe("function");
-    expect(typeof getAvailablePresets).toBe("function");
+    expect(getAvailablePresets().length).toBeGreaterThan(0);
     expect(typeof getInvoiceTemplateBranding).toBe("function");
     expect(typeof generateQrSvgUri).toBe("function");
     expect(typeof generateQrMatrix).toBe("function");
-    expect(INVOICE_TEMPLATE_CHANGED_EVENT).toBe("mms:invoice-template-changed");
-    expect(typeof useInvoiceTemplate).toBe("function");
+    expect(INVOICE_TEMPLATE_KEY).toBe("mms_invoice_template");
   });
 
-  it("provides reactive useInvoiceTemplate hook that synchronizes updates", async () => {
-    let currentHookState: ReturnType<typeof useInvoiceTemplate> | null = null;
+  it("renders the factory layout for a tenant without a stored layout", async () => {
+    let state: ReturnType<typeof useInvoiceTemplate> | null = null;
+    function Probe() {
+      state = useInvoiceTemplate();
+      return <span data-testid="size">{state.template.pageSize}</span>;
+    }
 
-    function TestComponent() {
-      const state = useInvoiceTemplate();
-      currentHookState = state;
-      return (
-        <div data-testid="template-view">
-          <span data-testid="page-size">{state.template.pageSize}</span>
-          <span data-testid="element-count">{state.template.elements.length}</span>
-        </div>
+    const container = document.createElement("div");
+    document.body.appendChild(container);
+    const root = createRoot(container);
+
+    await act(async () => {
+      root.render(
+        <QueryClientProvider client={createTestQueryClient()}>
+          <Probe />
+        </QueryClientProvider>,
       );
-    }
-
-    const container = document.createElement("div");
-    document.body.appendChild(container);
-    const root = createRoot(container);
-
-    await act(async () => {
-      root.render(<TestComponent />);
     });
 
-    expect(currentHookState).not.toBeNull();
-    expect(container.querySelector('[data-testid="page-size"]')?.textContent).toBe("A6");
-
-    // Mutate via hook saveTemplate
-    await act(async () => {
-      currentHookState!.saveTemplate({
-        ...currentHookState!.template,
-        pageSize: "A5",
-        elements: [],
-      });
-    });
-
-    expect(container.querySelector('[data-testid="page-size"]')?.textContent).toBe("A5");
-    expect(container.querySelector('[data-testid="element-count"]')?.textContent).toBe("0");
-
-    // Reset back to defaults
-    await act(async () => {
-      currentHookState!.resetTemplate();
-    });
-
-    expect(container.querySelector('[data-testid="page-size"]')?.textContent).toBe("A6");
-    expect(
-      Number(container.querySelector('[data-testid="element-count"]')?.textContent),
-    ).toBeGreaterThan(0);
+    expect(container.querySelector('[data-testid="size"]')?.textContent).toBe("A6");
+    expect(state!.template.elements.length).toBeGreaterThan(0);
 
     root.unmount();
     container.remove();
   });
 
-  it("updates useInvoiceTemplate when external storage or custom event is dispatched", async () => {
-    const container = document.createElement("div");
-    document.body.appendChild(container);
-    const root = createRoot(container);
-
-    function TestComponent() {
-      const { template } = useInvoiceTemplate();
-      return <div data-testid="title">{template.orientation ?? "portrait"}</div>;
-    }
-
-    await act(async () => {
-      root.render(<TestComponent />);
-    });
-
-    expect(container.querySelector('[data-testid="title"]')?.textContent).toBe("portrait");
-
-    // Simulate external save from another component
-    const updated: InvoiceTemplate = {
-      ...loadTemplate(),
-      orientation: "landscape",
-    };
-
-    await act(async () => {
-      saveTemplate(updated);
-    });
-
-    expect(container.querySelector('[data-testid="title"]')?.textContent).toBe("landscape");
-
-    root.unmount();
-    container.remove();
-  });
-
-  it("applies presets and updates hook state", async () => {
-    let currentHookState: ReturnType<typeof useInvoiceTemplate> | null = null;
-
-    function TestComponent() {
-      const state = useInvoiceTemplate();
-      currentHookState = state;
-      return <div data-testid="preset-test">{state.template.pageSize}</div>;
+  it("saves the applied preset through /api/templates", async () => {
+    let state: ReturnType<typeof useInvoiceTemplate> | null = null;
+    function Probe() {
+      state = useInvoiceTemplate();
+      return <span data-testid="size">{state.template.pageSize}</span>;
     }
 
     const container = document.createElement("div");
@@ -144,28 +82,23 @@ describe("invoiceTemplateStore facade", () => {
     const root = createRoot(container);
 
     await act(async () => {
-      root.render(<TestComponent />);
+      root.render(
+        <QueryClientProvider client={createTestQueryClient()}>
+          <Probe />
+        </QueryClientProvider>,
+      );
     });
 
-    const presets = getAvailablePresets();
-    expect(presets.length).toBeGreaterThan(0);
-    const firstPreset = presets[0]!;
-
+    const preset = getAvailablePresets()[0]!;
     await act(async () => {
-      const applied = currentHookState!.applyPreset(firstPreset.key);
-      expect(applied).not.toBeNull();
-      expect(applied?.pageSize).toBe(firstPreset.template.pageSize);
+      const applied = state!.applyPreset(preset.key);
+      expect(applied?.pageSize).toBe(preset.template.pageSize);
     });
 
-    expect(container.querySelector('[data-testid="preset-test"]')?.textContent).toBe(
-      firstPreset.template.pageSize,
+    expect(api.saveDocumentTemplateServer).toHaveBeenCalledWith(
+      INVOICE_TEMPLATE_KEY,
+      preset.template,
     );
-
-    // Applying non-existent preset returns null
-    await act(async () => {
-      const nonExistent = currentHookState!.applyPreset("non-existent-preset-key-xyz");
-      expect(nonExistent).toBeNull();
-    });
 
     root.unmount();
     container.remove();

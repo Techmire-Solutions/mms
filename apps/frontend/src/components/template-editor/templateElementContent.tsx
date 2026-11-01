@@ -68,7 +68,9 @@ export function TemplateElementContent({
     const payload = resolveQrPayload(el, data, {
       explicitPayload: qrPayload,
       qrCodeLabel: t("templateEditor.qrCode"),
-      placeholder: logoUrl || "MMS-DOC",
+      // Never fall back to the logo URL: an unbound QR used to encode a brand asset
+      // (or a data URI), which is not a document payload and produces an unusable code.
+      placeholder: "MMS-DOC",
     });
     return (
       <img

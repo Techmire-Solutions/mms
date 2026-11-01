@@ -13,6 +13,7 @@ import { useTranslation } from "@/hooks/useTranslation";
 import { SetupReadOnlyMessage } from "@/components/app/SetupReadOnlyMessage";
 import { ModulePanelSuspenseFallback } from "@/components/app/ModulePanelSuspenseFallback";
 import { useModuleSetupSubTabs } from "@/lib/setup/useModuleSetupSubTabs";
+import { useTemplateDraftGuard } from "@/lib/setup/useTemplateDraftGuard";
 
 const WakalaTypeManager = lazy(() =>
   import("@/tenant/features/obligations/components/WakalaTypeManager").then((m) => ({
@@ -72,10 +73,13 @@ export function ObligationsSetupTier({
 }: ObligationsSetupTierProps): React.JSX.Element {
   const { t } = useTranslation();
 
+  const templateGuard = useTemplateDraftGuard();
   const subTabs = useModuleSetupSubTabs({
     initialKey: activeTab || "wakala",
-    isDirty: () => false,
-    onDiscard: () => {},
+    isDirty: (currentKey: string) => currentKey === "invoice_template" && templateGuard.isDirty(),
+    onDiscard: (leavingKey: string) => {
+      if (leavingKey === "invoice_template") templateGuard.discard();
+    },
     onChange: onTabChange,
   });
 
@@ -117,10 +121,12 @@ export function ObligationsSetupTier({
 
               {subTabs.sub === "invoice_template" && (
                 <InvoiceTemplateEditor
+                  key={templateGuard.resetNonce}
                   fullscreen={false}
                   obligationTypes={obligationTypes}
                   reps={reps}
                   mujtahids={mujtahids}
+                  onDirtyChange={templateGuard.markDirty}
                   onClose={() => subTabs.handleSubTabChange("wakala")}
                 />
               )}

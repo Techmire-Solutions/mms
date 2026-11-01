@@ -2,6 +2,7 @@ import React from "react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { renderToStaticMarkup } from "react-dom/server";
 import { InvoiceTemplateEditor } from "./InvoiceTemplateEditor";
+import { withQueryClient } from "@/test/queryClientTestUtils";
 
 vi.mock("@/hooks/useTranslation", () => ({
   useTranslation: () => ({
@@ -22,6 +23,11 @@ vi.mock("@/lib/notify", () => ({
     success: vi.fn(),
     error: vi.fn(),
   },
+}));
+
+vi.mock("@/lib/templates/documentTemplatesApi", () => ({
+  fetchDocumentTemplateServer: vi.fn().mockResolvedValue(null),
+  saveDocumentTemplateServer: vi.fn().mockImplementation(async (_key, template) => template),
 }));
 
 vi.mock("@/lib/invoiceTemplateStore", async (importOriginal) => {
@@ -53,7 +59,7 @@ describe("InvoiceTemplateEditor", () => {
   });
 
   it("renders the editor with title, default sample values, and all presets", () => {
-    const html = renderToStaticMarkup(<InvoiceTemplateEditor onClose={vi.fn()} />);
+    const html = renderToStaticMarkup(withQueryClient(<InvoiceTemplateEditor onClose={vi.fn()} />));
 
     expect(html).toContain("obligations.templateEditorTitle");
     expect(html).toContain("obligations.invoiceTemplate.presetClassic");
@@ -64,7 +70,7 @@ describe("InvoiceTemplateEditor", () => {
   });
 
   it("renders export actions for Typst and Zoho in toolbar", () => {
-    const html = renderToStaticMarkup(<InvoiceTemplateEditor onClose={vi.fn()} />);
+    const html = renderToStaticMarkup(withQueryClient(<InvoiceTemplateEditor onClose={vi.fn()} />));
 
     expect(html).toContain("Typst");
     expect(html).toContain("Zoho");
@@ -85,7 +91,7 @@ describe("InvoiceTemplateEditor", () => {
     } as unknown as Parameters<typeof InvoiceTemplateEditor>[0]["collection"];
 
     const html = renderToStaticMarkup(
-      <InvoiceTemplateEditor collection={mockCollection} onClose={vi.fn()} />,
+      withQueryClient(<InvoiceTemplateEditor collection={mockCollection} onClose={vi.fn()} />),
     );
 
     expect(html).toContain("REC-LIVE-9999");
@@ -107,7 +113,7 @@ describe("InvoiceTemplateEditor", () => {
     } as unknown as Parameters<typeof InvoiceTemplateEditor>[0]["collection"];
 
     const html = renderToStaticMarkup(
-      <InvoiceTemplateEditor collection={nullableCollection} onClose={vi.fn()} />,
+      withQueryClient(<InvoiceTemplateEditor collection={nullableCollection} onClose={vi.fn()} />),
     );
 
     expect(html).toContain("REC-NULL-0001");
@@ -116,7 +122,7 @@ describe("InvoiceTemplateEditor", () => {
 
   it("renders embedded mode with region accessibility landmark when fullscreen is false", () => {
     const html = renderToStaticMarkup(
-      <InvoiceTemplateEditor fullscreen={false} onClose={vi.fn()} />,
+      withQueryClient(<InvoiceTemplateEditor fullscreen={false} onClose={vi.fn()} />),
     );
 
     expect(html).toContain('role="region"');
@@ -126,13 +132,13 @@ describe("InvoiceTemplateEditor", () => {
 
   it("does not query contact lookups when collection is null", () => {
     mockUseMergedObligationContacts.mockClear();
-    renderToStaticMarkup(<InvoiceTemplateEditor onClose={vi.fn()} />);
+    renderToStaticMarkup(withQueryClient(<InvoiceTemplateEditor onClose={vi.fn()} />));
     expect(mockUseMergedObligationContacts).toHaveBeenCalledWith([]);
   });
 
   it("renders modal dialog landmark when fullscreen is true", () => {
     const html = renderToStaticMarkup(
-      <InvoiceTemplateEditor fullscreen={true} onClose={vi.fn()} />,
+      withQueryClient(<InvoiceTemplateEditor fullscreen={true} onClose={vi.fn()} />),
     );
 
     expect(html).toContain('role="dialog"');

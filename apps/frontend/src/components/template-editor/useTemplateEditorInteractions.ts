@@ -40,12 +40,12 @@ export function useTemplateEditorInteractions<TPayload = Record<string, unknown>
   resizeState,
   canvasViewportRef,
   updateElements,
-  setHistory,
-  setFuture,
+  pushHistory,
+  editorId,
 }: UseTemplateEditorInteractionsOptions<TPayload>) {
   const [activeGuides, setActiveGuides] = useState<SmartGuideLine[]>([]);
   const { isSpacePressed, isPanning, onPointerDownViewport, handlePanMove, handlePanEnd } =
-    useTemplateEditorPan(canvasViewportRef);
+    useTemplateEditorPan(canvasViewportRef, editorId);
 
   const onPointerMove = useEffectEvent((event: PointerEvent) => {
     if (handlePanMove(event)) {
@@ -120,13 +120,9 @@ export function useTemplateEditorInteractions<TPayload = Record<string, unknown>
     handlePanEnd();
     setActiveGuides([]);
     if (dragState.current?.hasMoved) {
-      const initial = dragState.current.initialTemplate;
-      setHistory((historyStack) => [...historyStack.slice(-30), initial]);
-      setFuture([]);
+      pushHistory(dragState.current.initialTemplate);
     } else if (resizeState.current?.hasMoved) {
-      const initial = resizeState.current.initialTemplate;
-      setHistory((historyStack) => [...historyStack.slice(-30), initial]);
-      setFuture([]);
+      pushHistory(resizeState.current.initialTemplate);
     }
     dragState.current = null;
     resizeState.current = null;

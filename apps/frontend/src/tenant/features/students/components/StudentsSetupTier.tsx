@@ -8,6 +8,7 @@ import { useTranslation } from "@/hooks/useTranslation";
 import { useModulePermissions } from "@/tenant/hooks/usePermissions";
 import { ModulePanelSuspenseFallback } from "@/components/app/ModulePanelSuspenseFallback";
 import { useModuleSetupSubTabs } from "@/lib/setup/useModuleSetupSubTabs";
+import { useTemplateDraftGuard } from "@/lib/setup/useTemplateDraftGuard";
 
 const StudentsSetupPanel = lazy(
   () => import("@/tenant/features/students/components/StudentsSetupPanel"),
@@ -38,10 +39,16 @@ export const StudentsSetupTier = function StudentsSetupTier({
     onPrefsDirtyChange?.(dirty);
   };
 
+  const templateGuard = useTemplateDraftGuard();
+
   const subTabs = useModuleSetupSubTabs({
     initialKey: activeSubTab || "preferences",
-    isDirty: (key) => key === "preferences" && prefsDirty,
-    onDiscard: () => setPrefsDirty(false),
+    isDirty: (key) =>
+      (key === "preferences" && prefsDirty) || (key === "card_template" && templateGuard.isDirty()),
+    onDiscard: (leavingKey) => {
+      if (leavingKey === "preferences") setPrefsDirty(false);
+      if (leavingKey === "card_template") templateGuard.discard();
+    },
     onChange: onSubTabChange,
   });
 
@@ -72,7 +79,9 @@ export const StudentsSetupTier = function StudentsSetupTier({
               )}
               {subTabs.sub === "card_template" && (
                 <StudentCardTemplateEditor
+                  key={templateGuard.resetNonce}
                   fullscreen={false}
+                  onDirtyChange={templateGuard.markDirty}
                   onClose={() => subTabs.handleSubTabChange("preferences")}
                 />
               )}

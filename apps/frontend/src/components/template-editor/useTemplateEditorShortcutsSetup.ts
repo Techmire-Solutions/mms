@@ -24,6 +24,7 @@ export interface UseTemplateEditorShortcutsSetupOptions {
     zoomReset: () => void;
   };
   selectedIds: string[];
+  editorId?: string;
 }
 
 export function useTemplateEditorShortcutsSetup({
@@ -34,6 +35,7 @@ export function useTemplateEditorShortcutsSetup({
   clipboard,
   zoom,
   selectedIds,
+  editorId,
 }: UseTemplateEditorShortcutsSetupOptions) {
   useTemplateEditorShortcuts({
     undo: doc.undo,
@@ -51,5 +53,6 @@ export function useTemplateEditorShortcutsSetup({
     zoomIn: zoom.zoomIn,
     zoomOut: zoom.zoomOut,
     zoomReset: zoom.zoomReset,
+    editorId,
   });
 }

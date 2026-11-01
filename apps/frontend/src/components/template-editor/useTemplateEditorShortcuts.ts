@@ -6,6 +6,7 @@
 
 import { useEffect, useEffectEvent } from "react";
 import {
+  isEventInsideEditor,
   isInputElementFocused,
   handleResizeShortcut,
   handleNudgeShortcut,
@@ -27,6 +28,8 @@ export interface UseTemplateEditorShortcutsOptions {
   zoomIn?: () => void;
   zoomOut?: () => void;
   zoomReset?: () => void;
+  /** Restricts shortcuts to the DOM subtree of this editor instance. */
+  editorId?: string;
 }
 
 export function useTemplateEditorShortcuts({
@@ -45,12 +48,16 @@ export function useTemplateEditorShortcuts({
   zoomIn,
   zoomOut,
   zoomReset,
+  editorId,
 }: UseTemplateEditorShortcutsOptions): void {
   const handleKeyDown = useEffectEvent((e: KeyboardEvent) => {
+    if (!isEventInsideEditor(e, editorId)) return;
+
     // Intercept global Cmd/Ctrl+S before anything else
     if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === "s") {
+      if (!onSave) return;
       e.preventDefault();
-      onSave?.();
+      onSave();
       return;
     }
 

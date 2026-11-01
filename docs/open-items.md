@@ -138,7 +138,14 @@ transactions.`) and re-attaches triggers for **19** tables against 0104's **14**
      `BrandingShared`, `InstitutionSetup` → need `/api/settings/global` + `/api/branding` object endpoints
      (or an `AuthContext` session-settings extension).
    - ~~_Document templates_ — `documentTemplatePersistence` + `invoiceTemplateStore` / student-card / finance /
-     exam / hasanat editors (~15 consumers)~~ **RESOLVED** — migrated to server-authoritative relational storage (`document_templates` table with FORCE RLS + `documentTemplatesContract` `GET`/`PUT`/`DELETE /api/templates/:key` routes + TanStack Query hooks + WebSocket live push invalidation + hybrid sync bridge in `documentTemplatePersistence`).
+     exam / hasanat editors (~15 consumers)~~ **PARTIALLY RESOLVED (2026-11-02).** All template editors now read and
+     write `/api/templates/:key` through `lib/templates/useDocumentTemplates` (TanStack Query seeded from a
+     tenant cache); the legacy `documentTemplatePersistence` store, its background
+     `/api/db/objects/:key` double-write and the bespoke per-module save handlers are deleted, and
+     `check:frontend-structure` ratchets the legacy store out of template modules. **Still open:**
+     Finance, Examinations and Hasanat print paths render fixed components and never read the saved layout
+     (the Setup tabs now show `templateEditor.layoutNotRendered`); their field/preset labels remain English;
+     concurrent edits are last-write-wins (no `updated_at` → 409).
    - _Reports/KPI config_ — `usePinnedWidgetsController`, `useDashboardSectionSettings`, `kpiSummaryCard*`,
      `DynamicCardBuilder`, `ModuleReportsToolPanels` → need `/api/reports/section-settings` + per-module KPI
      config endpoints.
@@ -508,7 +515,10 @@ See [frontend-review-2026-10-30-deep.md](./frontend-review-2026-10-30-deep.md) f
 - Remaining test hygiene: burn the 288 loose assertions down, Testing Library migration,
   React root leaks (19 files).
 - WS half-open heartbeat; bounded persisted cache.
-- Template-editor server-save failure UX (product decision).
+- ~~Template-editor server-save failure UX~~ **RESOLVED 2026-11-02** — save failures now surface one
+  `templateEditor.saveFailed` toast, the editor stays dirty, and no success toast is shown.
+- Document-template follow-ups: Finance/Examinations/Hasanat print renderers must consume their layouts;
+  template field/preset labels need reviewed translations; optimistic concurrency (`updated_at` → 409).
 
 ## 2026-10-30 project review
 

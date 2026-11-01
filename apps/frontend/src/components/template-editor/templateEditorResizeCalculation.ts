@@ -1,5 +1,6 @@
 import type { PageSizeInfo, TemplateElement } from "@mms/shared";
 import { snap } from "./templateEditorUtils";
+import { clampElementBox } from "./templateEditorBounds";
 import type { ResizeHandle, ResizeStateInfo } from "./templateEditorInteractionTypes";
 
 export function computeResizedElement<TPayload = Record<string, unknown>>(
@@ -47,11 +48,14 @@ export function computeResizedElement<TPayload = Record<string, unknown>>(
     }
   }
 
-  return {
-    ...templateElement,
-    x: snap(Math.max(0, newX)),
-    y: snap(Math.max(0, newY)),
-    w: snap(newW),
-    h: snap(newH),
-  };
+  return clampElementBox(
+    {
+      ...templateElement,
+      x: snap(Math.max(0, newX)),
+      y: snap(Math.max(0, newY)),
+      w: snap(newW),
+      h: snap(newH),
+    },
+    size,
+  );
 }

@@ -8,7 +8,6 @@ export interface TemplateEditorPresetsControlProps<TPayload = Record<string, unk
   presets?: DocumentTemplatePreset<TPayload>[];
   activePresetKey?: string | null;
   saving?: boolean;
-  isDirty?: boolean;
   onApplyPreset: (presetKey: string) => void;
   t: TranslationFunction;
 }
@@ -17,7 +16,6 @@ export function TemplateEditorPresetsControl<TPayload = Record<string, unknown>>
   presets = [],
   activePresetKey = null,
   saving = false,
-  isDirty = false,
   onApplyPreset,
   t,
 }: TemplateEditorPresetsControlProps<TPayload>): React.JSX.Element | null {
@@ -32,9 +30,8 @@ export function TemplateEditorPresetsControl<TPayload = Record<string, unknown>>
         disabled={saving}
         onChange={(val) => {
           if (!val) return;
-          if (isDirty && !window.confirm(t("templateEditor.discardUnsavedPrompt"))) {
-            return;
-          }
+          // Applying a preset is one undoable history step, so it must not ask to
+          // "discard unsaved changes".
           onApplyPreset(val);
         }}
         options={[

@@ -2,7 +2,14 @@ import { beforeAll, beforeEach, describe, expect, it, vi } from "vitest";
 import type { FastifyInstance } from "fastify";
 import type { DocumentTemplate } from "@mms/shared";
 import { buildApp } from "../app.js";
-import { adminToken, bearerAuth, viewerToken } from "./helpers/tokens.js";
+import {
+  accountantToken,
+  adminToken,
+  assistantTeacherToken,
+  bearerAuth,
+  teacherToken,
+  viewerToken,
+} from "./helpers/tokens.js";
 
 // In-memory test storage for templates
 const mockTemplates = new Map<string, DocumentTemplate>();
@@ -181,5 +188,36 @@ describe("documentTemplatesContractRouter", () => {
     });
 
     expect(res.statusCode).toBe(403);
+  });
+
+  it.each([
+    ["teacher", teacherToken],
+    ["accountant", accountantToken],
+    ["assistant teacher", assistantTeacherToken],
+  ])("rejects a %s from overwriting a template with 403", async (_label, makeToken) => {
+    const token = makeToken(app, { email: "staff@demo.test", name: "Staff" });
+    const res = await app.inject({
+      method: "PUT",
+      url: "/api/templates/test_receipt_template",
+      headers: authHeaders(token),
+      payload: { template: sampleTemplate },
+    });
+
+    expect(res.statusCode).toBe(403);
+    expect(mockTemplates.size).toBe(0);
+  });
+
+  it("rejects a teacher from deleting a template with 403", async () => {
+    mockTemplates.set("demo:test_receipt_template", sampleTemplate);
+    const token = teacherToken(app, { email: "teacher@demo.test", name: "Teacher" });
+
+    const res = await app.inject({
+      method: "DELETE",
+      url: "/api/templates/test_receipt_template",
+      headers: authHeaders(token),
+    });
+
+    expect(res.statusCode).toBe(403);
+    expect(mockTemplates.has("demo:test_receipt_template")).toBe(true);
   });
 });

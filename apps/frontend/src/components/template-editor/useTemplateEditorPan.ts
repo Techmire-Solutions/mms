@@ -5,8 +5,12 @@ import {
   type PointerEvent as ReactPointerEvent,
   type RefObject,
 } from "react";
+import { isEventInsideEditor } from "./templateEditorShortcutUtils";
 
-export function useTemplateEditorPan(canvasViewportRef?: RefObject<HTMLElement | null>) {
+export function useTemplateEditorPan(
+  canvasViewportRef?: RefObject<HTMLElement | null>,
+  editorId?: string,
+) {
   const panState = useRef<{
     startX: number;
     startY: number;
@@ -18,6 +22,7 @@ export function useTemplateEditorPan(canvasViewportRef?: RefObject<HTMLElement |
 
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
+      if (!isEventInsideEditor(e, editorId)) return;
       const target = e.target as HTMLElement | null;
       if (
         target &&
@@ -58,7 +63,7 @@ export function useTemplateEditorPan(canvasViewportRef?: RefObject<HTMLElement |
       window.removeEventListener("keyup", handleKeyUp);
       window.removeEventListener("blur", handleBlur);
     };
-  }, []);
+  }, [editorId]);
 
   const onPointerDownViewport = (event: ReactPointerEvent<HTMLElement>) => {
     if ((event.button === 1 || isSpacePressed) && canvasViewportRef?.current) {

@@ -158,7 +158,7 @@ describe("TemplateEditor keyboard interactions", () => {
     await keydown(elementByLabel("Invoice Title (static)"), "Enter");
     expect(inspectorShowsEmptyState()).toBe(false);
 
-    await keydown(document.body, "Escape");
+    await keydown(canvasRegion(), "Escape");
 
     expect(inspectorShowsEmptyState()).toBe(true);
     expect(onClose).not.toHaveBeenCalled();
@@ -194,7 +194,7 @@ describe("TemplateEditor keyboard interactions", () => {
     const statusMessages = Array.from(container.querySelectorAll('[role="status"]')).map(
       (node) => node.textContent ?? "",
     );
-    expect(statusMessages.some((text) => text.includes("templateEditor.elementDeleted"))).toBe(
+    expect(statusMessages.some((text) => text.includes("templateEditor.elementsDeleted"))).toBe(
       true,
     );
   });
@@ -225,7 +225,7 @@ describe("TemplateEditor keyboard interactions", () => {
      * pushed its own history entry — a 14-character label consumed 14 of the 30 undo
      * slots, and a single label edit could flush a whole design session's history.
      */
-    await keydown(document.body, "z", { ctrlKey: true });
+    await keydown(canvasRegion(), "z", { ctrlKey: true });
     expect(labelInput.value).toBe("Invoice Title");
   });
 
@@ -255,5 +255,43 @@ describe("TemplateEditor keyboard interactions", () => {
     expect(inspectorShowsEmptyState()).toBe(false);
     expect(element.style.left).toBe(leftBefore);
     expect(container.textContent).not.toContain("templateEditor.dirtyNotice");
+  });
+
+  it("discards the draft when a dirty editor is closed and confirmed", async () => {
+    const onClose = vi.fn();
+    const originalConfirm = window.confirm;
+    const confirmSpy = vi.fn().mockReturnValue(true);
+    window.confirm = confirmSpy as typeof window.confirm;
+    await mountEditor(onClose);
+    await keydown(elementByLabel("Invoice Title (static)"), "Enter");
+
+    const labelInput = container.querySelector<HTMLInputElement>("#label-input-el_1");
+    if (!labelInput) throw new Error("label input not found after selecting the element");
+    const nativeValueSetter = Object.getOwnPropertyDescriptor(
+      window.HTMLInputElement.prototype,
+      "value",
+    )!.set!;
+
+    await act(async () => {
+      nativeValueSetter.call(labelInput, "Invoice Title Edited");
+      labelInput.dispatchEvent(new Event("input", { bubbles: true }));
+    });
+
+    const closeButton = Array.from(container.querySelectorAll<HTMLElement>("button")).find(
+      (button) => button.getAttribute("aria-label") === "templateEditor.close",
+    );
+    expect(closeButton).toBeTruthy();
+
+    await act(async () => {
+      closeButton!.dispatchEvent(new MouseEvent("click", { bubbles: true }));
+    });
+
+    expect(confirmSpy).toHaveBeenCalledTimes(1);
+    expect(onClose).toHaveBeenCalledTimes(1);
+    // Confirmed discard really reverts the draft instead of only asking.
+    expect(container.querySelector<HTMLInputElement>("#label-input-el_1")?.value).toBe(
+      "Invoice Title",
+    );
+    window.confirm = originalConfirm;
   });
 });

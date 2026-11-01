@@ -206,4 +206,70 @@ describe("useTemplateEditorModal Hook", () => {
       root.unmount();
     });
   });
+
+  it("runs the discard callback when a dirty editor is closed", async () => {
+    let hookResult: ReturnType<typeof useTemplateEditorModal> | undefined;
+    const onClose = vi.fn();
+    const onDiscard = vi.fn();
+
+    function TestComponent() {
+      hookResult = useTemplateEditorModal({
+        initialFullscreen: false,
+        isDirty: true,
+        confirmDiscardPrompt: () => true,
+        onDiscard,
+        onClose,
+      });
+      return null;
+    }
+
+    const root = createRoot(container!);
+    await act(async () => {
+      root.render(<TestComponent />);
+    });
+
+    await act(async () => {
+      hookResult?.handleClose();
+    });
+
+    expect(onDiscard).toHaveBeenCalledTimes(1);
+    expect(onClose).toHaveBeenCalledTimes(1);
+
+    await act(async () => {
+      root.unmount();
+    });
+  });
+
+  it("does not discard when the user declines the prompt", async () => {
+    let hookResult: ReturnType<typeof useTemplateEditorModal> | undefined;
+    const onClose = vi.fn();
+    const onDiscard = vi.fn();
+
+    function TestComponent() {
+      hookResult = useTemplateEditorModal({
+        initialFullscreen: true,
+        isDirty: true,
+        confirmDiscardPrompt: () => false,
+        onDiscard,
+        onClose,
+      });
+      return null;
+    }
+
+    const root = createRoot(container!);
+    await act(async () => {
+      root.render(<TestComponent />);
+    });
+
+    await act(async () => {
+      hookResult?.handleClose();
+    });
+
+    expect(onDiscard).not.toHaveBeenCalled();
+    expect(onClose).not.toHaveBeenCalled();
+
+    await act(async () => {
+      root.unmount();
+    });
+  });
 });

@@ -2,6 +2,13 @@ import React from "react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { renderToStaticMarkup } from "react-dom/server";
 import { StudentCardTemplateEditor } from "./StudentCardTemplateEditor";
+import { withQueryClient } from "@/test/queryClientTestUtils";
+import { fetchDocumentTemplateServer } from "@/lib/templates/documentTemplatesApi";
+
+vi.mock("@/lib/templates/documentTemplatesApi", () => ({
+  fetchDocumentTemplateServer: vi.fn().mockResolvedValue(null),
+  saveDocumentTemplateServer: vi.fn().mockImplementation(async (_key, template) => template),
+}));
 
 vi.mock("@/hooks/useTranslation", () => ({
   useTranslation: () => ({
@@ -31,7 +38,9 @@ describe("StudentCardTemplateEditor", () => {
   });
 
   it("renders the editor with title, side switcher, and presets", () => {
-    const html = renderToStaticMarkup(<StudentCardTemplateEditor onClose={vi.fn()} />);
+    const html = renderToStaticMarkup(
+      withQueryClient(<StudentCardTemplateEditor onClose={vi.fn()} />),
+    );
 
     expect(html).toContain("students.cardTemplate.title");
     expect(html).toContain("students.cardTemplate.side.front");
@@ -50,7 +59,7 @@ describe("StudentCardTemplateEditor", () => {
     const root = createRoot(container);
 
     await act(async () => {
-      root.render(<StudentCardTemplateEditor onClose={vi.fn()} />);
+      root.render(withQueryClient(<StudentCardTemplateEditor onClose={vi.fn()} />));
     });
 
     const buttons = container.querySelectorAll("button");
@@ -75,6 +84,36 @@ describe("StudentCardTemplateEditor", () => {
     });
 
     expect(container.textContent).toContain("students.cardTemplate.side.front");
+
+    await act(async () => {
+      root.unmount();
+    });
+    container.remove();
+  });
+
+  it("adopts the server card layout when nothing has been edited", async () => {
+    const { createRoot } = await import("react-dom/client");
+    const { act } = await import("react");
+
+    vi.mocked(fetchDocumentTemplateServer).mockResolvedValueOnce({
+      pageSize: "CR80",
+      orientation: "landscape",
+      elements: [
+        { id: "srv_1", type: "static", label: "SERVER CARD", x: 10, y: 10, w: 120, h: 20 },
+      ],
+    } as never);
+
+    const container = document.createElement("div");
+    document.body.appendChild(container);
+    const root = createRoot(container);
+
+    await act(async () => {
+      root.render(withQueryClient(<StudentCardTemplateEditor onClose={vi.fn()} />));
+    });
+
+    await vi.waitFor(() => {
+      expect(container.textContent).toContain("SERVER CARD");
+    });
 
     await act(async () => {
       root.unmount();

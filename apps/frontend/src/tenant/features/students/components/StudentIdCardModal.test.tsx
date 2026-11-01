@@ -3,6 +3,13 @@ import { describe, expect, it, vi } from "vitest";
 import { renderToStaticMarkup } from "react-dom/server";
 import type { Student } from "@mms/shared";
 import { StudentIdCardModal } from "./StudentIdCardModal";
+import { withQueryClient } from "@/test/queryClientTestUtils";
+
+vi.mock("@/lib/templates/documentTemplatesApi", () => ({
+  fetchDocumentTemplateServer: vi.fn().mockResolvedValue(null),
+  saveDocumentTemplateServer: vi.fn().mockImplementation(async (_key, template) => template),
+  deleteDocumentTemplateServer: vi.fn().mockResolvedValue(true),
+}));
 
 vi.mock("@/hooks/useTranslation", () => ({
   useTranslation: () => ({
@@ -57,18 +64,20 @@ const mockStudent: Student = {
 describe("StudentIdCardModal Component", () => {
   it("renders printable ID card preview with student details", () => {
     const html = renderToStaticMarkup(
-      <StudentIdCardModal
-        open={true}
-        onClose={vi.fn()}
-        items={[
-          {
-            student: mockStudent,
-            sessionNames: ["Quran Hifz 2025"],
-            guardianName: "Abu Zayd",
-            bloodGroup: "O+",
-          },
-        ]}
-      />,
+      withQueryClient(
+        <StudentIdCardModal
+          open={true}
+          onClose={vi.fn()}
+          items={[
+            {
+              student: mockStudent,
+              sessionNames: ["Quran Hifz 2025"],
+              guardianName: "Abu Zayd",
+              bloodGroup: "O+",
+            },
+          ]}
+        />,
+      ),
     );
 
     expect(html).toContain("students.idCard.title");
@@ -86,7 +95,7 @@ describe("StudentIdCardModal Component", () => {
 
   it("returns null when closed or items empty", () => {
     const htmlClosed = renderToStaticMarkup(
-      <StudentIdCardModal open={false} onClose={vi.fn()} items={[]} />,
+      withQueryClient(<StudentIdCardModal open={false} onClose={vi.fn()} items={[]} />),
     );
     expect(htmlClosed).toBe("");
   });

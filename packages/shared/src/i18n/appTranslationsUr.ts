@@ -9199,7 +9199,10 @@ export const APP_TRANSLATIONS_UR: Record<AppTranslationKey, string> = {
   "templateEditor.rtl": "دائیں سے بائیں",
   "templateEditor.positionSize": "مقام اور سائز",
   "templateEditor.delete": "حذف کریں",
-  "templateEditor.elementDeleted": "عنصر حذف کر دیا گیا",
+  "templateEditor.elementsDeleted":
+    "{count} {count, select, one {عنصر حذف ہوا} other {عناصر حذف ہوئے}}",
+  "templateEditor.layoutNotRendered":
+    "یہ ترتیب محفوظ ہوتی ہے، لیکن طباعت شدہ دستاویز ابھی اسے استعمال نہیں کرتی۔ یہاں کی تبدیلیاں طباعت شدہ نتیجے کو متاثر نہیں کرتیں۔",
   "templateEditor.duplicate": "ڈپلیکیٹ کریں",
   "templateEditor.emptyHint": "کسی عنصر پر کلک کر کے اس کی خصوصیات میں ترمیم کریں",
   "templateEditor.emptyHintDetail":

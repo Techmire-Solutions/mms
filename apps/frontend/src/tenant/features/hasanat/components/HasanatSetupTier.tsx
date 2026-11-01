@@ -7,6 +7,7 @@ import { SetupReadOnlyMessage } from "@/components/app/SetupReadOnlyMessage";
 import { ConfirmAlertDialog } from "@/components/app/ConfirmAlertDialog";
 import { ModulePanelSuspenseFallback } from "@/components/app/ModulePanelSuspenseFallback";
 import { useModuleSetupSubTabs } from "@/lib/setup/useModuleSetupSubTabs";
+import { useTemplateDraftGuard } from "@/lib/setup/useTemplateDraftGuard";
 import { useTranslation } from "@/hooks/useTranslation";
 
 const DenominationsManager = lazy(() =>
@@ -56,10 +57,13 @@ export const HasanatSetupTier = function HasanatSetupTier({
     onPrefsDirtyChange?.(dirty);
   };
 
+  const templateGuard = useTemplateDraftGuard();
+
   const subTabs = useModuleSetupSubTabs({
     initialKey: activeTab || "denominations",
     isDirty: (currentKey: string) => {
       if (currentKey === "preferences") return prefsDirtyRef.current;
+      if (currentKey === "templates") return templateGuard.isDirty();
       return false;
     },
     onDiscard: (leavingKey: string) => {
@@ -67,6 +71,7 @@ export const HasanatSetupTier = function HasanatSetupTier({
         prefsDirtyRef.current = false;
         onPrefsDirtyChange?.(false);
       }
+      if (leavingKey === "templates") templateGuard.discard();
     },
     onChange: onTabChange,
   });
@@ -94,7 +99,13 @@ export const HasanatSetupTier = function HasanatSetupTier({
               {subTabs.sub === "preferences" && (
                 <HasanatSettings onPrefsDirtyChange={handlePrefsDirtyChange} />
               )}
-              {subTabs.sub === "templates" && <HasanatTemplateEditor />}
+              {subTabs.sub === "templates" && (
+                <HasanatTemplateEditor
+                  key={templateGuard.resetNonce}
+                  onDirtyChange={templateGuard.markDirty}
+                  onClose={() => subTabs.handleSubTabChange("denominations")}
+                />
+              )}
             </Suspense>
           )}
 

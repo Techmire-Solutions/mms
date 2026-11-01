@@ -1,9 +1,14 @@
 import React from "react";
-import { describe, expect, it, vi } from "vitest";
+import { beforeEach, describe, expect, it, vi } from "vitest";
 import { renderToStaticMarkup } from "react-dom/server";
+import type { DocumentTemplate } from "@mms/shared";
 import { HasanatTemplateEditor } from "./HasanatTemplateEditor";
-import { saveDocumentTemplateServer } from "@/lib/templates/documentTemplatesApi";
+import {
+  fetchDocumentTemplateServer,
+  saveDocumentTemplateServer,
+} from "@/lib/templates/documentTemplatesApi";
 import { notify } from "@/lib/notify";
+import { withQueryClient } from "@/test/queryClientTestUtils";
 
 vi.mock("@/hooks/useTranslation", () => ({
   useTranslation: () => ({
@@ -12,25 +17,16 @@ vi.mock("@/hooks/useTranslation", () => ({
 }));
 
 vi.mock("@/tenant/hooks/useBranding", () => ({
-  useBranding: () => ({
-    logoUrl: null,
-  }),
-}));
-
-vi.mock("@/lib/db", () => ({
-  getObject: (_key: string, fallback: unknown) => fallback,
-  saveObject: vi.fn(),
-}));
-
-vi.mock("@/lib/templates/documentTemplatesApi", () => ({
-  saveDocumentTemplateServer: vi.fn().mockResolvedValue({}),
+  useBranding: () => ({ logoUrl: null, primaryColor: "#059669", secondaryColor: "#047857" }),
 }));
 
 vi.mock("@/lib/notify", () => ({
-  notify: {
-    success: vi.fn(),
-    error: vi.fn(),
-  },
+  notify: { success: vi.fn(), error: vi.fn() },
+}));
+
+vi.mock("@/lib/templates/documentTemplatesApi", () => ({
+  fetchDocumentTemplateServer: vi.fn().mockResolvedValue(null),
+  saveDocumentTemplateServer: vi.fn().mockImplementation(async (_key, template) => template),
 }));
 
 type MockTemplate = { id: string } & Record<string, unknown>;
@@ -42,33 +38,48 @@ vi.mock("@/components/app/TemplateEditor", () => ({
   },
 }));
 
+function renderEditor(): string {
+  return renderToStaticMarkup(withQueryClient(<HasanatTemplateEditor onClose={vi.fn()} />));
+}
+
 describe("HasanatTemplateEditor", () => {
-  it("renders the hasanat template editor with award voucher fields", () => {
-    const html = renderToStaticMarkup(<HasanatTemplateEditor onClose={vi.fn()} />);
-
-    expect(html).toContain('data-testid="mock-template-editor"');
-  });
-
-  it("given server save error, notifies error toast and throws", async () => {
-    renderToStaticMarkup(<HasanatTemplateEditor onClose={vi.fn()} />);
-    expect(capturedOnSave).not.toBeNull();
-
-    vi.mocked(saveDocumentTemplateServer).mockRejectedValueOnce(new Error("Hasanat save failed"));
-
-    await expect(capturedOnSave!({ id: "hasanat-template" })).rejects.toThrow(
-      "Hasanat save failed",
+  beforeEach(() => {
+    vi.clearAllMocks();
+    vi.mocked(fetchDocumentTemplateServer).mockResolvedValue(null);
+    vi.mocked(saveDocumentTemplateServer).mockImplementation(
+      async (_key, template) => template as never,
     );
-    expect(notify.error).toHaveBeenCalledWith("templateEditor.saveFailed");
-    expect(notify.success).not.toHaveBeenCalled();
   });
 
-  it("given successful save, notifies success toast", async () => {
-    renderToStaticMarkup(<HasanatTemplateEditor onClose={vi.fn()} />);
+  it("renders the shared editor shell", () => {
+    expect(renderEditor()).toContain('data-testid="mock-template-editor"');
+  });
+
+  it("warns that the layout is not printed yet while embedded", () => {
+    expect(renderEditor()).toContain("templateEditor.layoutNotRendered");
+  });
+
+  it("saves through /api/templates with the finance key", async () => {
+    renderEditor();
     expect(capturedOnSave).not.toBeNull();
+    const template = { id: "hasanat-template" } as unknown as DocumentTemplate;
 
-    vi.mocked(saveDocumentTemplateServer).mockResolvedValueOnce({} as never);
+    await capturedOnSave!(template as unknown as MockTemplate);
 
-    await capturedOnSave!({ id: "hasanat-template" });
+    expect(saveDocumentTemplateServer).toHaveBeenCalledWith(
+      "mms_hasanat_voucher_template",
+      template,
+    );
     expect(notify.success).toHaveBeenCalledWith("hasanat.templateSaved");
+  });
+
+  it("rejects without a success toast when the server save fails", async () => {
+    renderEditor();
+    vi.mocked(saveDocumentTemplateServer).mockRejectedValueOnce(new Error("Network disconnect"));
+
+    await expect(
+      capturedOnSave!({ id: "hasanat-template" } as unknown as MockTemplate),
+    ).rejects.toThrow("Network disconnect");
+    expect(notify.success).not.toHaveBeenCalled();
   });
 });

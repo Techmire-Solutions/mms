@@ -3,18 +3,16 @@
  * @description Hasanat module donation receipt and distribution voucher template editor wrapping SSOT TemplateEditor.
  */
 
-import React, { useMemo } from "react";
+import React from "react";
 import { useTranslation } from "@/hooks/useTranslation";
 import { useBranding } from "@/tenant/hooks/useBranding";
-import { TemplateEditor } from "@/components/app/TemplateEditor";
-import { getObject, saveObject } from "@/lib/db";
-import { saveDocumentTemplateServer } from "@/lib/templates/documentTemplatesApi";
+import { DocumentTemplateEditor } from "@/components/app/DocumentTemplateEditor";
+import { TemplateEditorGapNotice } from "@/components/app/TemplateEditorGapNotice";
 import type {
   DocumentTemplate,
   DocumentTemplatePreset,
   TemplateFieldDefinition,
 } from "@mms/shared";
-import { notify } from "@/lib/notify";
 import {
   PRINT_EMERALD,
   PRINT_EMERALD_LIGHT,
@@ -211,21 +209,18 @@ export const HASANAT_PRESETS: DocumentTemplatePreset<HasanatPayload>[] = [
 ];
 
 export interface HasanatTemplateEditorProps {
-  onClose?: () => void;
+  /** Leaving the Templates sub-tab (or closing the modal). */
+  onClose: () => void;
+  /** Reports unsaved layout changes to the Setup leave-guard. */
+  onDirtyChange?: (dirty: boolean) => void;
   fullscreen?: boolean;
 }
 
 export function HasanatTemplateEditor({
-  onClose = () => {},
+  onClose,
+  onDirtyChange,
   fullscreen = false,
 }: HasanatTemplateEditorProps): React.JSX.Element {
-  const currentTemplate = useMemo(() => {
-    return getObject<DocumentTemplate<HasanatPayload>>(
-      HASANAT_TEMPLATE_STORAGE_KEY,
-      DEFAULT_HASANAT_TEMPLATE,
-    );
-  }, []);
-
   const sampleData: HasanatPayload = {
     institution: "Madrasa Management System",
     receiptNo: "HAS-2026-904",
@@ -242,32 +237,24 @@ export function HasanatTemplateEditor({
   const { t } = useTranslation();
   const branding = useBranding();
 
-  const handleSave = async (tmpl: DocumentTemplate<HasanatPayload>) => {
-    saveObject(HASANAT_TEMPLATE_STORAGE_KEY, tmpl);
-    try {
-      await saveDocumentTemplateServer(HASANAT_TEMPLATE_STORAGE_KEY, tmpl);
-      notify.success(t("hasanat.templateSaved"));
-    } catch (err) {
-      console.warn("[HasanatTemplateEditor] Server save failed:", err);
-      notify.error(t("templateEditor.saveFailed"));
-      throw err;
-    }
-  };
-
   return (
-    <TemplateEditor<HasanatPayload>
-      title={t("hasanat.templateEditorTitle")}
-      template={currentTemplate}
-      defaultTemplate={DEFAULT_HASANAT_TEMPLATE}
-      availableFields={HASANAT_AVAILABLE_FIELDS}
-      presets={HASANAT_PRESETS}
-      documentType="voucher"
-      sampleData={sampleData}
-      fullscreen={fullscreen}
-      branding={branding}
-      onSave={handleSave}
-      onClose={onClose}
-    />
+    <div className="min-w-0">
+      {!fullscreen && <TemplateEditorGapNotice t={t} />}
+      <DocumentTemplateEditor<HasanatPayload>
+        templateKey={HASANAT_TEMPLATE_STORAGE_KEY}
+        defaultTemplate={DEFAULT_HASANAT_TEMPLATE}
+        savedMessage={t("hasanat.templateSaved")}
+        title={t("hasanat.templateEditorTitle")}
+        availableFields={HASANAT_AVAILABLE_FIELDS}
+        presets={HASANAT_PRESETS}
+        documentType="voucher"
+        sampleData={sampleData}
+        fullscreen={fullscreen}
+        branding={branding}
+        onClose={onClose}
+        onDirtyChange={onDirtyChange}
+      />
+    </div>
   );
 }
 

@@ -11,6 +11,7 @@ import { useTemplateEditorLayerActions } from "./useTemplateEditorLayerActions";
 import { useTemplateEditorAddActions } from "./useTemplateEditorAddActions";
 import { useTemplateEditorDuplicateActions } from "./useTemplateEditorDuplicateActions";
 import { useTemplateEditorBatchTransformActions } from "./useTemplateEditorBatchTransformActions";
+import { clampElementBox } from "./templateEditorBounds";
 
 export interface UseTemplateEditorElementActionsOptions<TPayload = Record<string, unknown>> {
   elements: TemplateElement<keyof TPayload & string>[];
@@ -60,10 +61,10 @@ export function useTemplateEditorElementActions<TPayload = Record<string, unknow
     (elementId: string, patch: Partial<TemplateElement<keyof TPayload & string>>) => {
       const keys = Object.keys(patch).join(",");
       commitUpdateCoalesced(`patch:${elementId}:${keys}`, (els) =>
-        els.map((el) => (el.id === elementId ? { ...el, ...patch } : el)),
+        els.map((el) => (el.id === elementId ? clampElementBox({ ...el, ...patch }, size) : el)),
       );
     },
-    [commitUpdateCoalesced],
+    [commitUpdateCoalesced, size],
   );
 
   const patchStyle = useCallback(

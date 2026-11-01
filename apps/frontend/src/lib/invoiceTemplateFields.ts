@@ -1,50 +1,18 @@
-import { INVOICE_TEMPLATE_OBJECT_KEY, type TemplateFieldDefinition } from "@mms/shared";
-import { createDocumentTemplateStore } from "./documentTemplatePersistence";
-import { getDefaultTemplate } from "./invoiceTemplateDefaults";
-import type {
-  BrandingInfo,
-  InvoiceTemplate,
-  IndexedFieldLookups,
-  InvoiceTemplateFieldKey,
-  InvoiceReceiptPayload,
-} from "./invoiceTemplateTypes";
+/**
+ * @file invoiceTemplateFields.ts
+ * @description Obligations invoice template fields plus the resolver barrel.
+ *
+ * Split out of the deleted `invoiceTemplatePersistence` module: layouts are now read
+ * and written through `/api/templates/:key`, but the field catalog and field resolver
+ * remain pure and shared by the editor, the print preview and the sample data hook.
+ */
+
+import type { TemplateFieldDefinition } from "@mms/shared";
+import type { IndexedFieldLookups, InvoiceReceiptPayload } from "./invoiceTemplateTypes";
 import { indexLookups, resolveField } from "./invoiceTemplateResolver";
 
-export type { IndexedFieldLookups, InvoiceTemplateFieldKey };
+export type { IndexedFieldLookups };
 export { indexLookups, resolveField };
-
-export const INVOICE_TEMPLATE_CHANGED_EVENT = "mms:invoice-template-changed";
-
-export const invoiceTemplateDocumentStore = createDocumentTemplateStore<InvoiceReceiptPayload>({
-  key: INVOICE_TEMPLATE_OBJECT_KEY,
-  changedEvent: INVOICE_TEMPLATE_CHANGED_EVENT,
-  documentName: "invoice",
-});
-
-/**
- * Loads the current invoice template configuration from local cache.
- * Falls back to default template if cached object is missing or corrupted.
- */
-export function loadTemplate(branding?: BrandingInfo): InvoiceTemplate {
-  return invoiceTemplateDocumentStore.load(getDefaultTemplate(branding));
-}
-
-/**
- * Saves/updates the current invoice template config after verifying structural validity.
- * Dispatches an update event for reactive subscribers.
- */
-export function saveTemplate(tmpl: InvoiceTemplate): void {
-  invoiceTemplateDocumentStore.save(tmpl);
-}
-
-/**
- * Resets local invoice template back to system defaults.
- */
-export function resetTemplate(branding?: BrandingInfo): InvoiceTemplate {
-  const defaultTmpl = getDefaultTemplate(branding);
-  saveTemplate(defaultTmpl);
-  return defaultTmpl;
-}
 
 export const AVAILABLE_FIELDS: TemplateFieldDefinition<InvoiceReceiptPayload>[] = [
   { field: "receipt_no", label: "Receipt No", category: "Receipt", sampleValue: "REC-2026-0042" },

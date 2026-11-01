@@ -9306,7 +9306,10 @@ export const APP_TRANSLATIONS_EN = {
   "templateEditor.rtl": "RTL",
   "templateEditor.positionSize": "Position & Size",
   "templateEditor.delete": "Delete",
-  "templateEditor.elementDeleted": "Element deleted",
+  "templateEditor.elementsDeleted":
+    "{count} {count, select, one {element deleted} other {elements deleted}}",
+  "templateEditor.layoutNotRendered":
+    "This layout is saved, but the printed document does not use it yet. Changes here do not affect printed output.",
   "templateEditor.duplicate": "Duplicate",
   "templateEditor.emptyHint": "Click an element to edit its properties",
   "templateEditor.emptyHintDetail": "Drag to move • Drag corner to resize",

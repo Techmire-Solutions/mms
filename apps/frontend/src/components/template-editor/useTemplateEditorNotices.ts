@@ -34,7 +34,7 @@ export function useTemplateEditorNotices({ t }: UseTemplateEditorNoticesOptions)
     (deletedCount: number) => {
       setDeletionNotice((prev) => ({
         nonce: (prev?.nonce ?? 0) + 1,
-        message: `${t("templateEditor.elementDeleted")} (${deletedCount})`,
+        message: t("templateEditor.elementsDeleted", { count: deletedCount }),
       }));
       if (deletionTimerRef.current) clearTimeout(deletionTimerRef.current);
       deletionTimerRef.current = setTimeout(() => setDeletionNotice(null), DELETION_NOTICE_MS);

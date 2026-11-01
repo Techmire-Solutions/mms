@@ -1,21 +1,21 @@
-import { useCallback, useSyncExternalStore } from "react";
-import {
-  STUDENT_CARD_TEMPLATE_OBJECT_KEY,
-  documentTemplateSchema,
-  type TemplateFieldDefinition,
-} from "@mms/shared";
-import { getObject, saveObject } from "@/lib/db";
-import {
-  deleteDocumentTemplateServer,
-  saveDocumentTemplateServer,
-} from "@/lib/templates/documentTemplatesApi";
-import type { BrandingInfo } from "@/lib/invoiceTemplateStore";
-import type { StudentCardPayload, StudentCardTemplate } from "./studentCardTemplateTypes";
-import { getDefaultStudentCardTemplate } from "./studentCardTemplateDefaults";
-import { getAvailableStudentCardPresets } from "./studentCardTemplatePresets";
+/**
+ * @file studentCardTemplateStore.ts
+ * @description Student ID-card layout: field catalog and server-backed hooks.
+ *
+ * The card has two layouts (front/back) stored as one `document_templates` row
+ * (`elements` + `backElements`). Persistence is `/api/templates/:key`; this module
+ * keeps no local store or event bus of its own.
+ */
 
-export const STUDENT_CARD_TEMPLATE_CHANGED_EVENT = "mms:student-card-template-changed";
-const STORAGE_KEY = STUDENT_CARD_TEMPLATE_OBJECT_KEY;
+import { useMemo } from "react";
+import { STUDENT_CARD_TEMPLATE_OBJECT_KEY, type TemplateFieldDefinition } from "@mms/shared";
+import { useDocumentTemplate, useSaveDocumentTemplate } from "@/lib/templates/useDocumentTemplates";
+import type { BrandingInfo } from "@/lib/invoiceTemplateStore";
+import { getDefaultStudentCardTemplate } from "./studentCardTemplateDefaults";
+import type { StudentCardPayload, StudentCardTemplate } from "./studentCardTemplateTypes";
+
+/** Server-side key for the ID-card layout (front + back). */
+export const STUDENT_CARD_TEMPLATE_KEY = STUDENT_CARD_TEMPLATE_OBJECT_KEY;
 
 export const AVAILABLE_STUDENT_CARD_FIELDS: TemplateFieldDefinition<StudentCardPayload>[] = [
   { field: "photo", label: "Student Photo", category: "Student", sampleValue: "" },
@@ -109,163 +109,16 @@ export const AVAILABLE_STUDENT_CARD_FIELDS: TemplateFieldDefinition<StudentCardP
   },
 ];
 
-let cachedTemplate: StudentCardTemplate | null = null;
-let defaultSnapshot: StudentCardTemplate | null = null;
-const listeners = new Set<() => void>();
-
-function notifyListeners(): void {
-  listeners.forEach((listener) => listener());
-}
-
-function handleWindowUpdate(e?: Event): void {
-  if (
-    e instanceof CustomEvent &&
-    e.detail &&
-    typeof e.detail === "object" &&
-    Array.isArray(e.detail.elements)
-  ) {
-    cachedTemplate = e.detail as StudentCardTemplate;
-  } else {
-    cachedTemplate = loadStudentCardTemplate();
-  }
-  notifyListeners();
-}
-
-function handleStorage(e: StorageEvent): void {
-  if (e.key === STORAGE_KEY) {
-    cachedTemplate = loadStudentCardTemplate();
-    notifyListeners();
-  }
-}
-
-function setupGlobalListeners(): void {
-  if (typeof window !== "undefined") {
-    window.addEventListener(STUDENT_CARD_TEMPLATE_CHANGED_EVENT, handleWindowUpdate);
-    window.addEventListener("storage", handleStorage);
-  }
-}
-
-function teardownGlobalListeners(): void {
-  if (typeof window !== "undefined") {
-    window.removeEventListener(STUDENT_CARD_TEMPLATE_CHANGED_EVENT, handleWindowUpdate);
-    window.removeEventListener("storage", handleStorage);
-  }
-}
-
-/**
- * Loads the current student card template from cache or database object store.
- */
-export function loadStudentCardTemplate(branding?: BrandingInfo): StudentCardTemplate {
-  const fallback = getDefaultStudentCardTemplate(branding);
-  const loaded = getObject<StudentCardTemplate>(STORAGE_KEY, fallback);
-  const parsed = documentTemplateSchema.safeParse(loaded);
-  return parsed.success ? (parsed.data as StudentCardTemplate) : fallback;
-}
-
-/**
- * Saves/updates the student card template after verifying structural validity.
- */
-export function saveStudentCardTemplate(tmpl: StudentCardTemplate): void {
-  const parsed = documentTemplateSchema.safeParse(tmpl);
-  if (!parsed.success) {
-    const detail = parsed.error.issues
-      .map((issue) => `${issue.path.join(".") || "(root)"}: ${issue.message}`)
-      .join("; ");
-    throw new TypeError(
-      `Cannot save invalid student card template: missing pageSize or elements array. ${detail}`,
-    );
-  }
-  const validTemplate = parsed.data as StudentCardTemplate;
-  saveObject(STORAGE_KEY, validTemplate);
-  cachedTemplate = validTemplate;
-  if (typeof window !== "undefined") {
-    window.dispatchEvent(
-      new CustomEvent(STUDENT_CARD_TEMPLATE_CHANGED_EVENT, { detail: validTemplate }),
-    );
-  }
-  void saveDocumentTemplateServer(STORAGE_KEY, validTemplate).catch((err) => {
-    console.warn("[studentCardTemplateStore] Failed to save template to server:", err);
-  });
-  notifyListeners();
-}
-
-/**
- * Resets local student card template back to system defaults.
- */
-export function resetStudentCardTemplate(branding?: BrandingInfo): StudentCardTemplate {
-  const defaultTmpl = getDefaultStudentCardTemplate(branding);
-  saveStudentCardTemplate(defaultTmpl);
-  void deleteDocumentTemplateServer(STORAGE_KEY).catch((err) => {
-    console.warn("[studentCardTemplateStore] Failed to delete template from server:", err);
-  });
-  return defaultTmpl;
-}
-
-export interface UseStudentCardTemplateReturn {
+/** Server-backed layout for print previews; cached locally for first paint. */
+export function useStudentCardTemplate(branding?: BrandingInfo): {
   template: StudentCardTemplate;
-  saveTemplate: (tmpl: StudentCardTemplate) => void;
-  resetTemplate: () => StudentCardTemplate;
-  applyPreset: (presetKey: string) => StudentCardTemplate | null;
+} {
+  const fallback = useMemo(() => getDefaultStudentCardTemplate(branding), [branding]);
+  const { template } = useDocumentTemplate<StudentCardPayload>(STUDENT_CARD_TEMPLATE_KEY, fallback);
+  return { template };
 }
 
-/**
- * React hook subscribing to live student card template changes across tabs and windows.
- */
-export function useStudentCardTemplate(branding?: BrandingInfo): UseStudentCardTemplateReturn {
-  const subscribe = useCallback((listener: () => void) => {
-    if (listeners.size === 0) {
-      setupGlobalListeners();
-    }
-    listeners.add(listener);
-    return () => {
-      listeners.delete(listener);
-      if (listeners.size === 0) {
-        teardownGlobalListeners();
-      }
-    };
-  }, []);
-
-  const getSnapshot = useCallback((): StudentCardTemplate => {
-    if (!cachedTemplate) {
-      cachedTemplate = loadStudentCardTemplate(branding);
-    }
-    return cachedTemplate;
-  }, [branding]);
-
-  const getServerSnapshot = useCallback((): StudentCardTemplate => {
-    if (!defaultSnapshot) {
-      defaultSnapshot = getDefaultStudentCardTemplate(branding);
-    }
-    return defaultSnapshot;
-  }, [branding]);
-
-  const template = useSyncExternalStore(subscribe, getSnapshot, getServerSnapshot);
-
-  const handleSave = useCallback((tmpl: StudentCardTemplate) => {
-    saveStudentCardTemplate(tmpl);
-  }, []);
-
-  const handleReset = useCallback(() => {
-    return resetStudentCardTemplate(branding);
-  }, [branding]);
-
-  const handleApplyPreset = useCallback(
-    (presetKey: string) => {
-      const presets = getAvailableStudentCardPresets(branding);
-      const target = presets.find((p) => p.key === presetKey);
-      if (target) {
-        saveStudentCardTemplate(target.template);
-        return target.template;
-      }
-      return null;
-    },
-    [branding],
-  );
-
-  return {
-    template,
-    saveTemplate: handleSave,
-    resetTemplate: handleReset,
-    applyPreset: handleApplyPreset,
-  };
+/** Mutation used by the card-template editor. */
+export function useSaveStudentCardTemplate() {
+  return useSaveDocumentTemplate<StudentCardPayload>(STUDENT_CARD_TEMPLATE_KEY);
 }

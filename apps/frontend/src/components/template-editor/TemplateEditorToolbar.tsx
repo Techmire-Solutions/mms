@@ -30,6 +30,8 @@ export interface TemplateEditorToolbarProps<TPayload = Record<string, unknown>> 
   onResetDefault: () => void;
   onToggleFullscreen?: () => void;
   onSave: () => void;
+  /** False when the host wired no save handler; the button then disappears. */
+  canSave?: boolean;
   onClose: () => void;
   onZoomIn?: () => void;
   onZoomOut?: () => void;
@@ -69,6 +71,7 @@ export function TemplateEditorToolbar<TPayload = Record<string, unknown>>({
   onResetDefault,
   onToggleFullscreen,
   onSave,
+  canSave = true,
   onClose,
   onZoomIn,
   onZoomOut,
@@ -125,7 +128,6 @@ export function TemplateEditorToolbar<TPayload = Record<string, unknown>>({
           presets={presets}
           activePresetKey={activePresetKey}
           saving={saving}
-          isDirty={isDirty}
           onApplyPreset={onApplyPreset}
           onExportJson={onExportJson}
           onImportJson={onImportJson}
@@ -142,6 +144,7 @@ export function TemplateEditorToolbar<TPayload = Record<string, unknown>>({
         onToggleFullscreen={onToggleFullscreen}
         fullscreen={fullscreen}
         onSave={onSave}
+        canSave={canSave}
         onClose={onClose}
         saved={saved}
         saving={saving}

@@ -8,6 +8,8 @@ export interface TemplateEditorHeaderActionsProps {
   onToggleFullscreen?: () => void;
   fullscreen?: boolean;
   onSave: () => void;
+  /** False when the host wired no save handler; the button then disappears. */
+  canSave?: boolean;
   onClose: () => void;
   saved: boolean;
   saving?: boolean;
@@ -23,6 +25,7 @@ export function TemplateEditorHeaderActions({
   onToggleFullscreen,
   fullscreen = false,
   onSave,
+  canSave = true,
   onClose,
   saved,
   saving = false,
@@ -69,37 +72,43 @@ export function TemplateEditorHeaderActions({
       <div className="h-6 w-px bg-border/60 mx-1 shrink-0" aria-hidden="true" />
 
       {/* Save button — animated success state & loading spinner */}
-      <Button
-        type="button"
-        onClick={onSave}
-        disabled={saving}
-        aria-busy={saving}
-        aria-label={
-          saving ? t("global.saving") : saved ? t("templateEditor.saved") : t("templateEditor.save")
-        }
-        className={`min-h-11 h-11 px-3.5 text-xs font-semibold rounded-lg transition-all duration-300 shadow-none flex items-center gap-1.5 ${
-          saved
-            ? "bg-success hover:bg-success text-success-foreground"
-            : "bg-primary text-primary-foreground hover:bg-primary/90"
-        }`}
-      >
-        {saving ? (
-          <>
-            <Loader2 className="w-4 h-4 animate-spin" aria-hidden="true" />
-            <span>{t("global.saving")}</span>
-          </>
-        ) : saved ? (
-          <>
-            <CheckCheck className="w-4 h-4" aria-hidden="true" />
-            <span>{t("templateEditor.saved")}</span>
-          </>
-        ) : (
-          <>
-            <Save className="w-4 h-4" aria-hidden="true" />
-            <span>{t("templateEditor.save")}</span>
-          </>
-        )}
-      </Button>
+      {canSave && (
+        <Button
+          type="button"
+          onClick={onSave}
+          disabled={saving}
+          aria-busy={saving}
+          aria-label={
+            saving
+              ? t("global.saving")
+              : saved
+                ? t("templateEditor.saved")
+                : t("templateEditor.save")
+          }
+          className={`min-h-11 h-11 px-3.5 text-xs font-semibold rounded-lg transition-all duration-300 shadow-none flex items-center gap-1.5 ${
+            saved
+              ? "bg-success hover:bg-success text-success-foreground"
+              : "bg-primary text-primary-foreground hover:bg-primary/90"
+          }`}
+        >
+          {saving ? (
+            <>
+              <Loader2 className="w-4 h-4 animate-spin" aria-hidden="true" />
+              <span>{t("global.saving")}</span>
+            </>
+          ) : saved ? (
+            <>
+              <CheckCheck className="w-4 h-4" aria-hidden="true" />
+              <span>{t("templateEditor.saved")}</span>
+            </>
+          ) : (
+            <>
+              <Save className="w-4 h-4" aria-hidden="true" />
+              <span>{t("templateEditor.save")}</span>
+            </>
+          )}
+        </Button>
+      )}
 
       <Button
         type="button"

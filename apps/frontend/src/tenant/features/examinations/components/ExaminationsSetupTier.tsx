@@ -8,6 +8,7 @@ import { ModulePanelSuspenseFallback } from "@/components/app/ModulePanelSuspens
 import { useTranslation } from "@/hooks/useTranslation";
 import { useModulePermissions } from "@/tenant/hooks/usePermissions";
 import { useModuleSetupSubTabs } from "@/lib/setup/useModuleSetupSubTabs";
+import { useTemplateDraftGuard } from "@/lib/setup/useTemplateDraftGuard";
 
 const ExaminationsSettings = lazy(
   () => import("@/tenant/features/examinations/components/ExaminationsSettings"),
@@ -27,11 +28,14 @@ export const ExaminationsSetupTier = function ExaminationsSetupTier({
 }: ExaminationsSetupTierProps = {}): React.JSX.Element {
   const { t } = useTranslation();
   const { canEditSetup } = useModulePermissions(EXAMINATIONS_MODULE_MANIFEST);
+  const templateGuard = useTemplateDraftGuard();
 
   const subTabs = useModuleSetupSubTabs({
     initialKey: "preferences",
-    isDirty: () => false,
-    onDiscard: () => {},
+    isDirty: (currentKey: string) => currentKey === "templates" && templateGuard.isDirty(),
+    onDiscard: (leavingKey: string) => {
+      if (leavingKey === "templates") templateGuard.discard();
+    },
     onChange: () => {},
   });
 
@@ -53,7 +57,13 @@ export const ExaminationsSetupTier = function ExaminationsSetupTier({
               {subTabs.sub === "preferences" && (
                 <ExaminationsSettings onPrefsDirtyChange={onPrefsDirtyChange} />
               )}
-              {subTabs.sub === "templates" && <ExaminationTemplateEditor />}
+              {subTabs.sub === "templates" && (
+                <ExaminationTemplateEditor
+                  key={templateGuard.resetNonce}
+                  onDirtyChange={templateGuard.markDirty}
+                  onClose={() => subTabs.handleSubTabChange("preferences")}
+                />
+              )}
             </Suspense>
           )}
         </div>

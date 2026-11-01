@@ -2,6 +2,12 @@ import React from "react";
 import { describe, expect, it, vi } from "vitest";
 import { renderToStaticMarkup } from "react-dom/server";
 import { AccountingVoucherTemplateEditor } from "./AccountingVoucherTemplateEditor";
+import { withQueryClient } from "@/test/queryClientTestUtils";
+
+vi.mock("@/lib/templates/documentTemplatesApi", () => ({
+  fetchDocumentTemplateServer: vi.fn().mockResolvedValue(null),
+  saveDocumentTemplateServer: vi.fn().mockImplementation(async (_key, template) => template),
+}));
 
 vi.mock("@/hooks/useTranslation", () => ({
   useTranslation: () => ({ t: (key: string) => key }),
@@ -35,7 +41,9 @@ vi.mock("@/lib/notify", () => ({
 describe("AccountingVoucherTemplateEditor", () => {
   it("given default props, should render an embedded editor with branded sample data and both presets", () => {
     // Act
-    const html = renderToStaticMarkup(<AccountingVoucherTemplateEditor onClose={vi.fn()} />);
+    const html = renderToStaticMarkup(
+      withQueryClient(<AccountingVoucherTemplateEditor onClose={vi.fn()} />),
+    );
 
     // Assert
     expect(html).toContain('role="region"');
@@ -50,7 +58,7 @@ describe("AccountingVoucherTemplateEditor", () => {
   it("given fullscreen, should render a modal dialog landmark", () => {
     // Act
     const html = renderToStaticMarkup(
-      <AccountingVoucherTemplateEditor fullscreen onClose={vi.fn()} />,
+      withQueryClient(<AccountingVoucherTemplateEditor fullscreen onClose={vi.fn()} />),
     );
 
     // Assert
