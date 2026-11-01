@@ -967,10 +967,9 @@ export async function createMessagingTemplateAndCampaign(page: Page): Promise<vo
     }
 
     // Click "Next" to advance to compose step
-    await composerDialog
-      .getByRole("button", { name: /^Next$/i })
-      .last()
-      .click();
+    const nextBtn = composerDialog.getByRole("button", { name: /^Next$/i }).last();
+    await expect(nextBtn).toBeEnabled({ timeout: 10_000 });
+    await nextBtn.click();
 
     // Compose step — select the template we created
     const smsDialog = page.getByRole("dialog").last();

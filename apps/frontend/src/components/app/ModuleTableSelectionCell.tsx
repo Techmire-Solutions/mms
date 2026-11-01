@@ -29,7 +29,7 @@ export const ModuleTableSelectionCell = React.memo(function ModuleTableSelection
       e.stopPropagation();
     }
     const target = e.target as HTMLElement;
-    if (!target.closest('button[role="checkbox"]')) {
+    if (!target.closest('button[role="checkbox"], input')) {
       onCheckedChange(!checked);
     }
     onClick?.(e);
