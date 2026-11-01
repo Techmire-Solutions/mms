@@ -12,7 +12,11 @@ import {
 vi.mock("@/lib/query/createModuleSetupConfigHooks", () => ({
   createModuleSetupConfigHooks: () => ({
     usePreferencesQuery: () => ({
-      data: { lateThresholdMins: 15 },
+      data: {
+        lateThresholdMins: 25,
+        workingDays: ["saturday", "sunday"],
+        allowExtraClassOnHolidays: true,
+      },
       isLoading: false,
     }),
     usePreferencesMutation: () => ({
@@ -55,6 +59,8 @@ describe("useAttendanceSetupConfig Hook suite", () => {
 
     expect(queryResult.data).toBeDefined();
     expect(mutationResult.mutateAsync).toBeDefined();
-    expect(composedResult.lateThresholdMins).toBe(15);
+    expect(composedResult.lateThresholdMins).toBe(25);
+    expect(composedResult.workingDays).toEqual(["saturday", "sunday"]);
+    expect(composedResult.allowExtraClassOnHolidays).toBe(true);
   });
 });
