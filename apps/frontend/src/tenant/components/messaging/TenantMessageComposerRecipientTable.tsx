@@ -80,14 +80,12 @@ export function TenantMessageComposerRecipientTable({
               >
                 <ModuleTableSelectionCell
                   checked={isSelected}
-                  onCheckedChange={() => {}}
+                  onCheckedChange={() => {
+                    if (!disabled) onToggle(recipient);
+                  }}
                   ariaLabel={t("messaging.selectRecipient", { name: recipient.name })}
                   sticky={false}
                   stopPropagation={true}
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    if (!disabled) onToggle(recipient);
-                  }}
                   className="px-3 py-2"
                 />
                 <TableCell className="px-3 py-2 font-medium text-foreground">
