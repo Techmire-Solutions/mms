@@ -40,6 +40,14 @@ describe("StatusBadge Component", () => {
     expect(html).toContain("unknown_status");
   });
 
+  it("does not inherit the primary hover fill over a semantic status tone", () => {
+    // 2026-11-01: the default Badge variant's `hover:bg-primary/80` survived
+    // class merging, turning a green status badge gold on hover (1.68:1).
+    const html = renderToStaticMarkup(<StatusBadge status="active" />);
+    expect(html).not.toContain("hover:bg-primary");
+    expect(html).toContain("bg-success/10");
+  });
+
   it("applies small size styling when size is sm", () => {
     const html = renderToStaticMarkup(<StatusBadge status="active" size="sm" />);
     expect(html).toContain("text-xs");

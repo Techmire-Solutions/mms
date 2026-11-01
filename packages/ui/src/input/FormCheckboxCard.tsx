@@ -39,7 +39,11 @@ export function FormCheckboxCard({
   const handleCardClick = (event: React.MouseEvent<HTMLDivElement>): void => {
     if (disabled) return;
     const target = event.target as HTMLElement;
-    if (target.closest('button[role="checkbox"]') || target.closest("label")) {
+    // Any form control or link owns its own activation. Radix also renders a
+    // visually hidden native input and programmatically clicks it, whose event
+    // bubbles here; without the `input` guard that produced a second toggle and
+    // left form checkboxes stuck at their previous value.
+    if (target.closest("button,label,input,select,textarea,a")) {
       return;
     }
     onCheckedChange(!checked);
@@ -76,7 +80,8 @@ export function FormCheckboxCard({
           name={name || id}
           checked={checked}
           disabled={disabled}
-          onCheckedChange={(val) => onCheckedChange(Boolean(val))}
+          error={Boolean(error)}
+          onCheckedChange={onCheckedChange}
           className="data-[state=checked]:bg-primary data-[state=checked]:border-primary"
         />
         <label htmlFor={id} className="flex flex-col min-w-0 flex-1 cursor-pointer">

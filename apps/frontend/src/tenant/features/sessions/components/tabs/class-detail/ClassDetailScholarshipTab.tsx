@@ -77,7 +77,7 @@ export function ClassDetailScholarshipTab({
               <Checkbox
                 id="scholarship-orphan"
                 checked={Boolean(eligibility?.orphan)}
-                onCheckedChange={(checked) => onUpdateEligibility({ orphan: checked === true })}
+                onCheckedChange={(checked) => onUpdateEligibility({ orphan: checked })}
                 className="h-4 w-4"
               />
               <label htmlFor="scholarship-orphan" className="cursor-pointer">

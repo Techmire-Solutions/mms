@@ -46,11 +46,7 @@ export const ModuleTableSelectionCell = React.memo(function ModuleTableSelection
         className,
       )}
     >
-      <Checkbox
-        checked={checked}
-        onCheckedChange={(val) => onCheckedChange(val === true)}
-        aria-label={ariaLabel}
-      />
+      <Checkbox checked={checked} onCheckedChange={onCheckedChange} aria-label={ariaLabel} />
     </TableCell>
   );
 });

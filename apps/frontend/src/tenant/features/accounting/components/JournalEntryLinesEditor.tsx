@@ -1,6 +1,6 @@
 import { AlertCircle, BookOpen, CheckCircle2 } from "lucide-react";
 import { type Account } from "@/lib/data/accountingData";
-import { Checkbox } from "@/components/ui/checkbox";
+import { CheckboxField } from "@/components/ui/checkbox";
 import { FieldErrorMessage } from "@/components/app/FormField";
 import { FormCollectionShell } from "@/components/app/FormPrimitives";
 import { ModuleTableHeaderCell } from "@/components/app/ModuleTableHeaderCell";
@@ -183,16 +183,14 @@ export function JournalEntryLinesEditor({
       </FormCollectionShell>
 
       {mirror && (
-        <div className="flex min-h-11 items-center gap-2 px-1 text-xs font-semibold text-foreground">
-          <Checkbox
-            id="journal-mirror-amount"
-            checked={mirror.checked}
-            onCheckedChange={(checked) => mirror.onChange(checked === true)}
-          />
-          <label htmlFor="journal-mirror-amount" className="cursor-pointer select-none">
-            {t("accounting.journal.form.mirrorAmount")}
-          </label>
-        </div>
+        <CheckboxField
+          id="journal-mirror-amount"
+          checked={mirror.checked}
+          onCheckedChange={mirror.onChange}
+          label={t("accounting.journal.form.mirrorAmount")}
+          className="px-1"
+          labelClassName="text-xs font-semibold"
+        />
       )}
 
       <div

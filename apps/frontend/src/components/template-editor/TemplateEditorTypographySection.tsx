@@ -5,7 +5,7 @@
 
 import React, { useId } from "react";
 import { Type } from "lucide-react";
-import { Checkbox } from "@/components/ui/checkbox";
+import { CheckboxField } from "@/components/ui/checkbox";
 import { FormSelect } from "@/components/app/FormSelect";
 import type { ElementStyle, TemplateElement } from "@mms/shared";
 import type { TranslationFunction } from "@/lib/contexts/TranslationContext";
@@ -109,22 +109,13 @@ export function TemplateEditorTypographySection({
       <TemplateEditorTypographyStyleButtons states={states} onPatchStyle={handlePatch} t={t} />
 
       <div className="pt-1">
-        <div className="min-h-11 flex items-center gap-2.5 select-none">
-          <Checkbox
-            id={rtlToggleId}
-            checked={isMixedRtl ? "indeterminate" : allRtl}
-            onCheckedChange={(checked) =>
-              handlePatch({ direction: checked === true ? "rtl" : "ltr" })
-            }
-            className="cursor-pointer"
-          />
-          <label
-            htmlFor={rtlToggleId}
-            className="cursor-pointer text-xs font-medium text-foreground"
-          >
-            {t("templateEditor.rtl")}
-          </label>
-        </div>
+        <CheckboxField
+          id={rtlToggleId}
+          checked={isMixedRtl ? "indeterminate" : allRtl}
+          onCheckedChange={(checked) => handlePatch({ direction: checked ? "rtl" : "ltr" })}
+          label={t("templateEditor.rtl")}
+          labelClassName="text-xs font-medium"
+        />
       </div>
     </TemplateEditorSection>
   );

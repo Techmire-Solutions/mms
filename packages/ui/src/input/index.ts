@@ -1,6 +1,7 @@
 export { Input, INPUT_CLASS, type InputProps } from "./Input";
 export { Textarea, type TextareaProps } from "./Textarea";
 export { Checkbox, type CheckboxProps } from "./Checkbox";
+export { CheckboxField, type CheckboxFieldProps } from "./CheckboxField";
 export {
   Select,
   SelectGroup,

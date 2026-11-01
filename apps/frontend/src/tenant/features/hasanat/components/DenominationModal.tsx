@@ -11,7 +11,7 @@ import {
 } from "@/lib/ui/denominationColors";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Checkbox } from "@/components/ui/checkbox";
+import { CheckboxField } from "@/components/ui/checkbox";
 import { useTranslation } from "@/hooks/useTranslation";
 
 const EMPTY: Denomination = {
@@ -211,21 +211,13 @@ export function DenominationModal({ open, denom, onClose, onSave }: Denomination
           </div>
         </fieldset>
 
-        <div className="flex items-center gap-2.5">
-          <Checkbox
-            id="denom-active"
-            name="active"
-            checked={data.active}
-            onCheckedChange={(checked) => updateField("active", !!checked)}
-            className="cursor-pointer"
-          />
-          <label
-            htmlFor="denom-active"
-            className="cursor-pointer text-sm font-medium text-foreground select-none"
-          >
-            {t("hasanat.status.active")}
-          </label>
-        </div>
+        <CheckboxField
+          id="denom-active"
+          name="active"
+          checked={data.active}
+          onCheckedChange={(checked) => updateField("active", checked)}
+          label={t("hasanat.status.active")}
+        />
       </form>
     </FormModal>
   );

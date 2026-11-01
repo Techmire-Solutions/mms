@@ -1,6 +1,6 @@
 import React from "react";
 import type { ContactsSavedReportShareScope, WorkspaceUser } from "@mms/shared";
-import { Checkbox } from "@/components/ui/checkbox";
+import { CheckboxField } from "@/components/ui/checkbox";
 import { FormModal } from "@/components/app/FormModal";
 import { FORM_INPUT } from "@/components/ui/formStyles";
 import { FormSelect } from "@/components/app/FormSelect";
@@ -56,19 +56,15 @@ function ContactsSavedReportUserPicker({
           options.map((user) => {
             const checkboxId = `saved-report-user-${user.id}`;
             return (
-              <div
+              <CheckboxField
                 key={user.id}
-                className="flex items-center gap-2 px-3 py-2 text-sm hover:bg-muted/50"
-              >
-                <Checkbox
-                  id={checkboxId}
-                  checked={valueSet.has(String(user.id))}
-                  onCheckedChange={() => toggle(String(user.id))}
-                />
-                <label htmlFor={checkboxId} className="truncate cursor-pointer flex-1">
-                  {user.name || user.email}
-                </label>
-              </div>
+                id={checkboxId}
+                checked={valueSet.has(String(user.id))}
+                onCheckedChange={() => toggle(String(user.id))}
+                label={user.name || user.email}
+                className="px-3 hover:bg-muted/50"
+                labelClassName="truncate text-sm"
+              />
             );
           })
         )}

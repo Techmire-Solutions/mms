@@ -29,21 +29,13 @@ export function DynamicChartVisualizerDisplayFields({
       </SectionLabel>
       <div className="grid grid-cols-1 gap-2 sm:grid-cols-3">
         <div className="flex items-center gap-2 p-2.5 rounded-xl border border-border bg-card/25 hover:bg-card/45 transition-colors text-xs font-semibold text-foreground">
-          <Checkbox
-            id="display-show-grid"
-            checked={showGrid}
-            onCheckedChange={(checked) => setShowGrid(Boolean(checked))}
-          />
+          <Checkbox id="display-show-grid" checked={showGrid} onCheckedChange={setShowGrid} />
           <label htmlFor="display-show-grid" className="cursor-pointer select-none">
             {t("reports.visualizer.gridLines")}
           </label>
         </div>
         <div className="flex items-center gap-2 p-2.5 rounded-xl border border-border bg-card/25 hover:bg-card/45 transition-colors text-xs font-semibold text-foreground">
-          <Checkbox
-            id="display-show-legend"
-            checked={showLegend}
-            onCheckedChange={(checked) => setShowLegend(Boolean(checked))}
-          />
+          <Checkbox id="display-show-legend" checked={showLegend} onCheckedChange={setShowLegend} />
           <label htmlFor="display-show-legend" className="cursor-pointer select-none">
             {t("reports.visualizer.legends")}
           </label>
@@ -52,7 +44,7 @@ export function DynamicChartVisualizerDisplayFields({
           <Checkbox
             id="display-show-tooltip"
             checked={showTooltip}
-            onCheckedChange={(checked) => setShowTooltip(Boolean(checked))}
+            onCheckedChange={setShowTooltip}
           />
           <label htmlFor="display-show-tooltip" className="cursor-pointer select-none">
             {t("reports.visualizer.tooltips")}

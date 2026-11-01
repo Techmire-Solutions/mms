@@ -143,7 +143,7 @@ export function WorkshopsDirectory({
                       id={`workshops-select-cards-${workshop.id}`}
                       aria-label={workshop.title}
                       checked={selectedSet.has(workshop.id)}
-                      onCheckedChange={(checked) => onToggleSelected(workshop.id, checked === true)}
+                      onCheckedChange={(checked) => onToggleSelected(workshop.id, checked)}
                       className="mt-1"
                     />
                   ) : null}

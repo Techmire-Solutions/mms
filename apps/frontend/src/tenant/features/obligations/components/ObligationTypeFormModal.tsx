@@ -6,7 +6,7 @@ import { useTranslation } from "@/hooks/useTranslation";
 import { FORM_INPUT } from "@/components/ui/formStyles";
 import { Input } from "@/components/ui/input";
 import { FormSelect } from "@/components/app/FormSelect";
-import { Checkbox } from "@/components/ui/checkbox";
+import { CheckboxField } from "@/components/ui/checkbox";
 import type { AppTranslationKey } from "@mms/shared";
 import type { ObligationType } from "@/lib/data/obligationsData";
 import {
@@ -116,20 +116,13 @@ export function ObligationTypeFormModal({
             options={designatedOptions}
           />
         </Field>
-        <div className="flex min-h-11 items-center gap-3">
-          <Checkbox
-            id="qty"
-            name="quantity_based"
-            checked={form.quantity_based}
-            onCheckedChange={(checked) => setForm({ ...form, quantity_based: !!checked })}
-          />
-          <label
-            htmlFor="qty"
-            className="text-sm font-medium text-foreground cursor-pointer select-none"
-          >
-            {t("obligations.types.colQuantity")}
-          </label>
-        </div>
+        <CheckboxField
+          id="qty"
+          name="quantity_based"
+          checked={Boolean(form.quantity_based)}
+          onCheckedChange={(checked) => setForm({ ...form, quantity_based: checked })}
+          label={t("obligations.types.colQuantity")}
+        />
       </form>
     </FormModal>
   );

@@ -3,7 +3,7 @@ import type { Dispatch, SetStateAction } from "react";
 import type { OnboardingData } from "@/platform/pages/onboarding/OnboardingWizard";
 import { useTranslation } from "@/hooks/useTranslation";
 import { Mail } from "lucide-react";
-import { Alert, Checkbox, Field, Input } from "@shared/ui";
+import { Alert, CheckboxField, Field, Input } from "@shared/ui";
 import { AuthEmailField } from "@/components/entry";
 
 /** The subset of onboarding data used by this step. */
@@ -73,21 +73,15 @@ export default function AdminSetup({ data, onChange }: AdminSetupProps) {
 
       <Alert icon={Mail} tone="info" description={t("onboarding.admin.passwordEmailNotice")} />
 
-      <div className="flex min-h-11 items-start gap-2.5 rounded-lg pt-1 select-none">
-        <Checkbox
-          id="terms"
-          name="terms"
-          checked={data.agreedTerms || false}
-          onCheckedChange={(checked) => update("agreedTerms", checked === true)}
-          className="mt-0.5 cursor-pointer"
-        />
-        <label
-          htmlFor="terms"
-          className="cursor-pointer text-xs leading-relaxed text-muted-foreground flex-1"
-        >
-          {t("onboarding.agreeTerms")}
-        </label>
-      </div>
+      <CheckboxField
+        id="terms"
+        name="terms"
+        checked={data.agreedTerms || false}
+        onCheckedChange={(checked) => update("agreedTerms", checked)}
+        label={t("onboarding.agreeTerms")}
+        className="rounded-lg pt-1"
+        labelClassName="text-xs font-normal leading-relaxed text-muted-foreground"
+      />
     </div>
   );
 }
