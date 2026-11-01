@@ -7,6 +7,7 @@ import { SubTabBar } from "@/components/app/SubTabBar";
 import { useTranslation } from "@/hooks/useTranslation";
 import { useModulePermissions } from "@/tenant/hooks/usePermissions";
 import { useModuleSetupSubTabs } from "@/lib/setup/useModuleSetupSubTabs";
+import { useTemplateDraftGuard } from "@/lib/setup/useTemplateDraftGuard";
 import { ModulePanelSuspenseFallback } from "@/components/app/ModulePanelSuspenseFallback";
 
 const FinanceSettings = lazy(() => import("@/tenant/features/finance/components/FinanceSettings"));
@@ -25,11 +26,14 @@ export const FinanceSetupTier = function FinanceSetupTier({
 }: FinanceSetupTierProps = {}): React.JSX.Element {
   const { t } = useTranslation();
   const { canEditSetup } = useModulePermissions(FINANCE_MODULE_MANIFEST);
+  const templateGuard = useTemplateDraftGuard();
 
   const subTabs = useModuleSetupSubTabs({
     initialKey: "preferences",
-    isDirty: () => false,
-    onDiscard: () => {},
+    isDirty: (currentKey: string) => currentKey === "templates" && templateGuard.isDirty(),
+    onDiscard: (leavingKey: string) => {
+      if (leavingKey === "templates") templateGuard.discard();
+    },
     onChange: () => {},
   });
 
@@ -51,7 +55,13 @@ export const FinanceSetupTier = function FinanceSetupTier({
               {subTabs.sub === "preferences" && (
                 <FinanceSettings onPrefsDirtyChange={onPrefsDirtyChange} />
               )}
-              {subTabs.sub === "templates" && <FinanceTemplateEditor />}
+              {subTabs.sub === "templates" && (
+                <FinanceTemplateEditor
+                  key={templateGuard.resetNonce}
+                  onDirtyChange={templateGuard.markDirty}
+                  onClose={() => subTabs.handleSubTabChange("preferences")}
+                />
+              )}
             </Suspense>
           )}
         </div>

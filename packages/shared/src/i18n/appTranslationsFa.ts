@@ -9242,7 +9242,10 @@ export const APP_TRANSLATIONS_FA: Partial<Record<AppTranslationKey, string>> = {
   "templateEditor.rtl": "راست‌به‌چپ",
   "templateEditor.positionSize": "موقعیت و ابعاد",
   "templateEditor.delete": "حذف",
-  "templateEditor.elementDeleted": "عنصر حذف شد",
+  "templateEditor.elementsDeleted":
+    "{count} {count, select, one {عنصر حذف شد} other {عنصر حذف شد}}",
+  "templateEditor.layoutNotRendered":
+    "این چیدمان ذخیره می‌شود، اما سند چاپی هنوز از آن استفاده نمی‌کند. تغییرات اینجا بر خروجی چاپی اثر ندارد.",
   "templateEditor.duplicate": "تکثیر",
   "templateEditor.emptyHint": "برای ویرایش مشخصات، روی یک عنصر کلیک کنید",
   "templateEditor.emptyHintDetail": "کشیدن برای حرکت • کشیدن گوشه برای تغییر اندازه",

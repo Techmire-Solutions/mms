@@ -1,19 +1,17 @@
 /**
  * @file FinanceTemplateEditor.tsx
- * @description Finance module invoice and fee receipt template editor wrapping the SSOT TemplateEditor.
+ * @description Finance module invoice and fee receipt template editor.
+ *
+ * Persistence lives in `DocumentTemplateEditor` (`/api/templates/:key`); this wrapper
+ * only supplies finance's fields, presets, sample payload and data exports.
  */
 
-import React, { useMemo } from "react";
+import React from "react";
 import { useTranslation } from "@/hooks/useTranslation";
 import { useBranding } from "@/tenant/hooks/useBranding";
-import { TemplateEditor } from "@/components/app/TemplateEditor";
-import { getObject, saveObject } from "@/lib/db";
-import { saveDocumentTemplateServer } from "@/lib/templates/documentTemplatesApi";
-import {
-  type DocumentTemplate,
-  type TypstFeeReceiptPayload,
-  type ZohoInvoicePayload,
-} from "@mms/shared";
+import { DocumentTemplateEditor } from "@/components/app/DocumentTemplateEditor";
+import { TemplateEditorGapNotice } from "@/components/app/TemplateEditorGapNotice";
+import { type TypstFeeReceiptPayload, type ZohoInvoicePayload } from "@mms/shared";
 import {
   mapToTypstFeeReceipt,
   mapToZohoInvoice,
@@ -27,21 +25,18 @@ import {
 } from "@/tenant/features/finance/lib/financeTemplateData";
 
 export interface FinanceTemplateEditorProps {
-  onClose?: () => void;
+  /** Leaving the Templates sub-tab (or closing the modal). */
+  onClose: () => void;
+  /** Reports unsaved layout changes to the Setup leave-guard. */
+  onDirtyChange?: (dirty: boolean) => void;
   fullscreen?: boolean;
 }
 
 export function FinanceTemplateEditor({
-  onClose = () => {},
+  onClose,
+  onDirtyChange,
   fullscreen = false,
 }: FinanceTemplateEditorProps): React.JSX.Element {
-  const currentTemplate = useMemo(() => {
-    return getObject<DocumentTemplate<TypstFeeReceiptPayload>>(
-      FINANCE_TEMPLATE_STORAGE_KEY,
-      DEFAULT_FINANCE_TEMPLATE,
-    );
-  }, []);
-
   const sampleData: TypstFeeReceiptPayload = {
     institution: "Madrasa Management System",
     receiptNo: "REC-2026-0089",
@@ -62,18 +57,6 @@ export function FinanceTemplateEditor({
 
   const { t } = useTranslation();
   const branding = useBranding();
-
-  const handleSave = async (tmpl: DocumentTemplate<TypstFeeReceiptPayload>) => {
-    saveObject(FINANCE_TEMPLATE_STORAGE_KEY, tmpl);
-    try {
-      await saveDocumentTemplateServer(FINANCE_TEMPLATE_STORAGE_KEY, tmpl);
-      notify.success(t("finance.templateSaved"));
-    } catch (err) {
-      console.warn("[FinanceTemplateEditor] Server save failed:", err);
-      notify.error(t("templateEditor.saveFailed"));
-      throw err;
-    }
-  };
 
   const handleExportTypst = (payload: TypstFeeReceiptPayload) => {
     const conforming = mapToTypstFeeReceipt({ ...payload });
@@ -102,21 +85,25 @@ export function FinanceTemplateEditor({
   };
 
   return (
-    <TemplateEditor<TypstFeeReceiptPayload>
-      title={t("finance.templateEditorTitle")}
-      template={currentTemplate}
-      defaultTemplate={DEFAULT_FINANCE_TEMPLATE}
-      availableFields={FINANCE_AVAILABLE_FIELDS}
-      presets={FINANCE_PRESETS}
-      documentType="invoice"
-      sampleData={sampleData}
-      fullscreen={fullscreen}
-      branding={branding}
-      onSave={handleSave}
-      onClose={onClose}
-      onExportTypst={handleExportTypst}
-      onExportZoho={handleExportZoho}
-    />
+    <div className="min-w-0">
+      {!fullscreen && <TemplateEditorGapNotice t={t} />}
+      <DocumentTemplateEditor<TypstFeeReceiptPayload>
+        templateKey={FINANCE_TEMPLATE_STORAGE_KEY}
+        defaultTemplate={DEFAULT_FINANCE_TEMPLATE}
+        savedMessage={t("finance.templateSaved")}
+        title={t("finance.templateEditorTitle")}
+        availableFields={FINANCE_AVAILABLE_FIELDS}
+        presets={FINANCE_PRESETS}
+        documentType="invoice"
+        sampleData={sampleData}
+        fullscreen={fullscreen}
+        branding={branding}
+        onClose={onClose}
+        onDirtyChange={onDirtyChange}
+        onExportTypst={handleExportTypst}
+        onExportZoho={handleExportZoho}
+      />
+    </div>
   );
 }
 

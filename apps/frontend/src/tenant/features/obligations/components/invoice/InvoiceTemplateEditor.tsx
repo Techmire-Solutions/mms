@@ -12,7 +12,7 @@ import {
   getAvailablePresets,
   getDefaultTemplate,
   INVOICE_TEMPLATE_FIELD_KEY_PREFIX,
-  invoiceTemplateDocumentStore,
+  INVOICE_TEMPLATE_KEY,
   type InvoiceTemplate,
   type InvoiceReceiptPayload,
   type TemplateTranslate,
@@ -33,6 +33,8 @@ import { useInvoiceTemplateExports } from "./useInvoiceTemplateExports";
 
 export interface InvoiceTemplateEditorProps {
   onClose: () => void;
+  /** Reports unsaved layout changes to the Setup leave-guard. */
+  onDirtyChange?: (dirty: boolean) => void;
   fullscreen?: boolean;
   collection?: ObligationCollection | null;
   obligationTypes?: ObligationType[];
@@ -46,6 +48,7 @@ const EMPTY_MUJTAHIDS: Mujtahid[] = [];
 
 export function InvoiceTemplateEditor({
   onClose,
+  onDirtyChange,
   fullscreen = true,
   collection = null,
   obligationTypes = EMPTY_OBLIGATION_TYPES,
@@ -109,7 +112,7 @@ export function InvoiceTemplateEditor({
 
   return (
     <DocumentTemplateEditor<InvoiceReceiptPayload>
-      store={invoiceTemplateDocumentStore}
+      templateKey={INVOICE_TEMPLATE_KEY}
       savedMessage={t("obligations.templateSaved")}
       title={t("obligations.templateEditorTitle")}
       defaultTemplate={defaultTemplate}
@@ -120,6 +123,7 @@ export function InvoiceTemplateEditor({
       fullscreen={fullscreen}
       branding={branding}
       onClose={onClose}
+      onDirtyChange={onDirtyChange}
       onExportTypst={handleExportTypst}
       onExportZoho={handleExportZoho}
     />

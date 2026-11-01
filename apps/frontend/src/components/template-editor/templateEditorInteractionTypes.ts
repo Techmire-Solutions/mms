@@ -1,4 +1,4 @@
-import type { Dispatch, RefObject, SetStateAction } from "react";
+import type { RefObject } from "react";
 import type { DocumentTemplate, PageSizeInfo, TemplateElement } from "@mms/shared";
 
 export interface DragItem {
@@ -47,6 +47,8 @@ export interface UseTemplateEditorInteractionsOptions<
       templateElements: TemplateElement<keyof TPayload & string>[],
     ) => TemplateElement<keyof TPayload & string>[],
   ) => void;
-  setHistory: Dispatch<SetStateAction<DocumentTemplate<TPayload>[]>>;
-  setFuture: Dispatch<SetStateAction<DocumentTemplate<TPayload>[]>>;
+  /** Records the pre-drag snapshot as one undo step. */
+  pushHistory: (snapshot: DocumentTemplate<TPayload>) => void;
+  /** Restricts the Space-to-pan shortcut to this editor instance. */
+  editorId?: string;
 }

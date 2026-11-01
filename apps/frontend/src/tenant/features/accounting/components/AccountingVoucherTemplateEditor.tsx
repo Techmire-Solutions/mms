@@ -4,7 +4,7 @@ import { DocumentTemplateEditor } from "@/components/app/DocumentTemplateEditor"
 import { useTranslation } from "@/hooks/useTranslation";
 import { useBranding } from "@/tenant/hooks/useBranding";
 import {
-  voucherTemplateDocumentStore,
+  ACCOUNTING_VOUCHER_TEMPLATE_KEY,
   type VoucherPrintPayload,
 } from "@/tenant/features/accounting/lib/voucherTemplateModel";
 import {
@@ -15,11 +15,14 @@ import { useVoucherTemplateSampleData } from "@/tenant/features/accounting/hooks
 
 export interface AccountingVoucherTemplateEditorProps {
   onClose: () => void;
+  /** Reports unsaved layout changes to the Setup leave-guard. */
+  onDirtyChange?: (dirty: boolean) => void;
   fullscreen?: boolean;
 }
 
 export function AccountingVoucherTemplateEditor({
   onClose,
+  onDirtyChange,
   fullscreen = false,
 }: AccountingVoucherTemplateEditorProps): React.JSX.Element {
   const { t } = useTranslation();
@@ -48,7 +51,7 @@ export function AccountingVoucherTemplateEditor({
 
   return (
     <DocumentTemplateEditor<VoucherPrintPayload>
-      store={voucherTemplateDocumentStore}
+      templateKey={ACCOUNTING_VOUCHER_TEMPLATE_KEY}
       savedMessage={t("accounting.voucherTemplate.saved")}
       title={t("accounting.voucherTemplate.title")}
       defaultTemplate={a6}
@@ -59,6 +62,7 @@ export function AccountingVoucherTemplateEditor({
       fullscreen={fullscreen}
       branding={branding}
       onClose={onClose}
+      onDirtyChange={onDirtyChange}
     />
   );
 }

@@ -6,7 +6,6 @@ import { standardRequestValidationErrorHandler } from "../../../lib/contractRegi
 import type { ContractRouteArgs, ContractRouteResponse } from "../../../lib/contractRouterTypes.js";
 import { authenticateTenant } from "../../../middleware/authenticate.js";
 import { getRequestTenant } from "../../../lib/tenantContext.js";
-import { WRITE_ROLES } from "../../../lib/rbacPermissionMaps.js";
 import {
   deleteDocumentTemplateUseCase,
   getDocumentTemplateUseCase,
@@ -15,9 +14,14 @@ import {
 
 const s = initServer();
 
+/**
+ * Document templates are shared tenant-wide print layouts, so they follow the same
+ * privilege as the rest of global settings. Staff write roles (teacher/accountant/…)
+ * deliberately do NOT qualify: before this gate every staff role could overwrite any
+ * module's layout through the generic `/api/templates/:key` route.
+ */
 function canModifyDocumentTemplate(user: User | undefined): boolean {
   if (!user || !user.role) return false;
-  if (user.role === "admin" || WRITE_ROLES.has(user.role)) return true;
   return roleHasPermission(user.role, "settings.global.write");
 }
 

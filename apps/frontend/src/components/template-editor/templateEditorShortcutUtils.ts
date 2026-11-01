@@ -2,6 +2,21 @@
  * Helper utilities for keyboard shortcut detection and direction handling.
  */
 
+/**
+ * True when the event originated inside the editor instance identified by `editorId`
+ * (or when no id was supplied, e.g. a hook used in isolation by a test).
+ *
+ * The editor mounts real `<button>` elements, so "not an input" was not a strong
+ * enough scope: a Delete press on a toolbar/header button used to delete the selected
+ * canvas element, and Space used to block page scrolling from anywhere on the page.
+ */
+export function isEventInsideEditor(event: Event, editorId?: string): boolean {
+  if (!editorId) return true;
+  const target = event.target as HTMLElement | null;
+  const root = target?.closest?.("[data-template-editor-root]") as HTMLElement | null;
+  return root?.dataset.templateEditorRoot === editorId;
+}
+
 export function isInputElementFocused(target: HTMLElement | null): boolean {
   return Boolean(
     target &&

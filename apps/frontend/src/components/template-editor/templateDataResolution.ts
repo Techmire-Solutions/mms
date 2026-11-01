@@ -87,6 +87,15 @@ export function resolveTableRows(
   data: Record<string, unknown> | null | undefined,
 ): Record<string, unknown>[] | null {
   if (el.type !== "table" || !data || typeof data !== "object") return null;
+
+  // An explicitly bound array wins. Falling back to "the first array in the payload"
+  // is ambiguous for receipts with more than one array (e.g. lines + taxes).
+  const boundField = el.field ? String(el.field) : "";
+  const boundValue = boundField ? data[boundField] : undefined;
+  if (Array.isArray(boundValue) && boundValue.length > 0) {
+    return boundValue as Record<string, unknown>[];
+  }
+
   for (const key of Object.keys(data)) {
     const value = data[key];
     if (Array.isArray(value) && value.length > 0) {

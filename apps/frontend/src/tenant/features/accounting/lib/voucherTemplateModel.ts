@@ -1,10 +1,8 @@
 import type { BrandingSettings, DocumentTemplate } from "@mms/shared";
-import { createDocumentTemplateStore } from "@/lib/documentTemplatePersistence";
 import type { PaymentVoucherModel } from "@/tenant/features/accounting/lib/paymentVoucherModel";
 
-/** Settings singleton for the accounting voucher layout. Includes "template" so title-case is skipped. */
+/** Server-side key for the accounting voucher layout (`/api/templates/:key`). */
 export const ACCOUNTING_VOUCHER_TEMPLATE_KEY = "accounting_voucher_template";
-export const ACCOUNTING_VOUCHER_TEMPLATE_CHANGED_EVENT = "mms:accounting-voucher-template-changed";
 
 export interface VoucherLine {
   account: string;
@@ -45,16 +43,6 @@ export interface VoucherPrintPayload {
 }
 
 export type VoucherTemplate = DocumentTemplate<VoucherPrintPayload>;
-
-export const voucherTemplateDocumentStore = createDocumentTemplateStore<VoucherPrintPayload>({
-  key: ACCOUNTING_VOUCHER_TEMPLATE_KEY,
-  changedEvent: ACCOUNTING_VOUCHER_TEMPLATE_CHANGED_EVENT,
-  documentName: "voucher",
-});
-
-export function loadVoucherTemplate(fallback: VoucherTemplate): VoucherTemplate {
-  return voucherTemplateDocumentStore.load(fallback);
-}
 
 /** Institution contact strip printed under the voucher heading. */
 export function voucherContactLine(

@@ -20,8 +20,6 @@ export interface TemplateEditorExportActionsProps {
   t: TranslationFunction;
 }
 
-const MAX_TEMPLATE_FILE_SIZE = 5 * 1024 * 1024; // 5 MB
-
 const ACTION_BUTTON =
   "min-h-11 h-11 px-2.5 text-xs font-semibold rounded-lg border border-border hover:bg-muted transition-colors shadow-none flex items-center gap-1.5";
 
@@ -39,14 +37,9 @@ export function TemplateEditorExportActions({
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
-    if (file) {
-      if (file.size <= MAX_TEMPLATE_FILE_SIZE && onImportJson) {
-        onImportJson(file);
-      } else if (file.size > MAX_TEMPLATE_FILE_SIZE) {
-        window.alert(t("templateEditor.importFileTooLarge"));
-      }
-      e.target.value = "";
-    }
+    // Size, schema and element caps are enforced (and reported) by the import pipeline.
+    if (file && onImportJson) onImportJson(file);
+    e.target.value = "";
   };
 
   const isDisabled = disabled || isExporting;

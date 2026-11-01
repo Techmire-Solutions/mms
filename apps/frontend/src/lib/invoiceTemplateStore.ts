@@ -1,14 +1,23 @@
-import { useCallback, useSyncExternalStore } from "react";
+/**
+ * @file invoiceTemplateStore.ts
+ * @description Invoice template facade: types, defaults, presets, field resolution,
+ * and the server-backed `useInvoiceTemplate` hook.
+ *
+ * Layouts live in `/api/templates/:key` (see `lib/templates/useDocumentTemplates`).
+ * This module no longer owns localStorage persistence or a custom event bus — the
+ * TanStack Query cache and the realtime invalidation cover both.
+ */
+
+import { useCallback, useMemo } from "react";
 import { INVOICE_TEMPLATE_OBJECT_KEY } from "@mms/shared";
 import {
-  loadTemplate,
-  saveTemplate,
-  resetTemplate,
-  INVOICE_TEMPLATE_CHANGED_EVENT,
-} from "./invoiceTemplatePersistence";
+  useDocumentTemplate,
+  useResetDocumentTemplate,
+  useSaveDocumentTemplate,
+} from "@/lib/templates/useDocumentTemplates";
 import { getDefaultTemplate } from "./invoiceTemplateDefaults";
 import { getAvailablePresets } from "./invoiceTemplatePresets";
-import type { InvoiceTemplate } from "./invoiceTemplateTypes";
+import type { InvoiceReceiptPayload, InvoiceTemplate } from "./invoiceTemplateTypes";
 
 /** Invoice print template types, defaults, and field resolution. */
 export type {
@@ -37,19 +46,17 @@ export {
 export { getDefaultTemplate } from "./invoiceTemplateDefaults";
 export { getInvoiceTemplateBranding } from "./invoiceTemplateBranding";
 export {
-  loadTemplate,
-  saveTemplate,
-  resetTemplate,
   AVAILABLE_FIELDS,
   resolveField,
   indexLookups,
   type IndexedFieldLookups,
-  INVOICE_TEMPLATE_CHANGED_EVENT,
-  invoiceTemplateDocumentStore,
-  type InvoiceTemplateFieldKey,
-} from "./invoiceTemplatePersistence";
+} from "./invoiceTemplateFields";
+export type { InvoiceTemplateFieldKey } from "./invoiceTemplateTypes";
 export { getAvailablePresets, type InvoiceTemplatePreset } from "./invoiceTemplatePresets";
 export { generateQrSvgUri, generateQrMatrix } from "./qrCodeGenerator";
+
+/** Server-side key for the obligations invoice layout. */
+export const INVOICE_TEMPLATE_KEY = INVOICE_TEMPLATE_OBJECT_KEY;
 
 export interface UseInvoiceTemplateReturn {
   template: InvoiceTemplate;
@@ -58,108 +65,37 @@ export interface UseInvoiceTemplateReturn {
   applyPreset: (presetKey: string) => InvoiceTemplate | null;
 }
 
-let cachedTemplate: InvoiceTemplate | null = null;
-let defaultTemplateSnapshot: InvoiceTemplate | null = null;
-const listeners = new Set<() => void>();
-
-function notifyListeners(): void {
-  listeners.forEach((listener) => listener());
-}
-
-function handleWindowUpdate(e?: Event): void {
-  if (
-    e instanceof CustomEvent &&
-    e.detail &&
-    typeof e.detail === "object" &&
-    Array.isArray(e.detail.elements)
-  ) {
-    cachedTemplate = e.detail as InvoiceTemplate;
-  } else {
-    cachedTemplate = loadTemplate();
-  }
-  notifyListeners();
-}
-
-function handleStorage(e: StorageEvent): void {
-  if (e.key === INVOICE_TEMPLATE_OBJECT_KEY) {
-    cachedTemplate = loadTemplate();
-    notifyListeners();
-  }
-}
-
-function setupGlobalListeners(): void {
-  if (typeof window !== "undefined") {
-    window.addEventListener(INVOICE_TEMPLATE_CHANGED_EVENT, handleWindowUpdate);
-    window.addEventListener("storage", handleStorage);
-  }
-}
-
-function teardownGlobalListeners(): void {
-  if (typeof window !== "undefined") {
-    window.removeEventListener(INVOICE_TEMPLATE_CHANGED_EVENT, handleWindowUpdate);
-    window.removeEventListener("storage", handleStorage);
-  }
-}
-
-function getTemplateSnapshot(): InvoiceTemplate {
-  if (!cachedTemplate) {
-    cachedTemplate = loadTemplate();
-  }
-  return cachedTemplate;
-}
-
-function getDefaultTemplateSnapshot(): InvoiceTemplate {
-  if (!defaultTemplateSnapshot) {
-    defaultTemplateSnapshot = getDefaultTemplate();
-  }
-  return defaultTemplateSnapshot;
-}
-
-function subscribeTemplate(callback: () => void): () => void {
-  if (listeners.size === 0) {
-    setupGlobalListeners();
-  }
-  listeners.add(callback);
-
-  return () => {
-    listeners.delete(callback);
-    if (listeners.size === 0) {
-      teardownGlobalListeners();
-    }
-  };
-}
-
 /**
- * Reactive React hook for invoice template state using React's useSyncExternalStore.
- * Guarantees tear-free synchronization across modals, preview components, and browser tabs.
+ * Server-backed invoice layout for previews and print modals.
+ *
+ * The query is seeded from the tenant cache (or the factory layout), so a print
+ * preview renders on the first paint and updates when the server copy arrives.
  */
 export function useInvoiceTemplate(): UseInvoiceTemplateReturn {
-  const template = useSyncExternalStore(
-    subscribeTemplate,
-    getTemplateSnapshot,
-    getDefaultTemplateSnapshot,
+  const fallback = useMemo(() => getDefaultTemplate(), []);
+  const { template } = useDocumentTemplate<InvoiceReceiptPayload>(INVOICE_TEMPLATE_KEY, fallback);
+  const { mutateAsync: saveMutation } =
+    useSaveDocumentTemplate<InvoiceReceiptPayload>(INVOICE_TEMPLATE_KEY);
+  const { mutateAsync: resetMutation } = useResetDocumentTemplate(INVOICE_TEMPLATE_KEY);
+
+  const handleSave = useCallback(
+    (tmpl: InvoiceTemplate) => {
+      void saveMutation(tmpl);
+    },
+    [saveMutation],
   );
 
-  const handleSave = useCallback((tmpl: InvoiceTemplate) => {
-    cachedTemplate = tmpl;
-    saveTemplate(tmpl);
-  }, []);
-
-  const handleReset = useCallback(() => {
-    const restored = resetTemplate();
-    cachedTemplate = restored;
-    return restored;
-  }, []);
+  const handleReset = useCallback((): InvoiceTemplate => {
+    void resetMutation();
+    return getDefaultTemplate();
+  }, [resetMutation]);
 
   const handleApplyPreset = useCallback(
     (presetKey: string): InvoiceTemplate | null => {
-      const presets = getAvailablePresets();
-      const found = presets.find((p) => p.key === presetKey);
-      if (found) {
-        handleSave(found.template);
-        return found.template;
-      }
-      return null;
+      const found = getAvailablePresets().find((preset) => preset.key === presetKey);
+      if (!found) return null;
+      handleSave(found.template);
+      return found.template;
     },
     [handleSave],
   );

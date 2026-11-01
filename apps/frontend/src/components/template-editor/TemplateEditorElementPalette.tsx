@@ -166,7 +166,6 @@ export function TemplateEditorElementPalette<TPayload = Record<string, unknown>>
 
           <div
             role="region"
-            aria-live="polite"
             aria-label={t("templateEditor.addFields")}
             className="space-y-1 max-h-64 overflow-y-auto pe-0.5"
           >
@@ -192,6 +191,9 @@ export function TemplateEditorElementPalette<TPayload = Record<string, unknown>>
                 />
               </Button>
             ))}
+            <div role="status" aria-live="polite" className="sr-only">
+              {filteredFields.length} / {availableFields.length}
+            </div>
             {filteredFields.length === 0 && (
               <div className="flex flex-col items-center justify-center py-4 text-center">
                 <Search className="w-4 h-4 text-muted-foreground/40 mb-1" aria-hidden="true" />

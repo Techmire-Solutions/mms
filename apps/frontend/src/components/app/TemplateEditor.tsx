@@ -48,6 +48,9 @@ export function TemplateEditor<TPayload = Record<string, unknown>>({
   const [pane, setPane] = useState<EditorPane>("canvas");
   const branding = brandingProp ?? DEFAULT_FALLBACK_BRANDING;
   const titleId = useId();
+  // Scopes the editor's window listeners to this instance (embedded Setup tabs co-exist
+  // with the rest of the page).
+  const editorId = useId();
 
   // The editor's Escape/Ctrl-close handler must invoke the modal's close logic,
   // but the modal needs the editor's live `isDirty` — a circular dependency.
@@ -63,10 +66,14 @@ export function TemplateEditor<TPayload = Record<string, unknown>>({
     documentType,
     onSave,
     onClose: handleEditorClose,
+    editorId,
   });
 
   const confirmDiscardPrompt = useCallback(
-    () => window.confirm(editor.t("templateEditor.discardUnsavedPrompt")),
+    () =>
+      typeof window.confirm === "function"
+        ? window.confirm(editor.t("templateEditor.discardUnsavedPrompt"))
+        : true,
     // eslint-disable-next-line react-hooks/exhaustive-deps -- editor.t is the stable slice this callback needs; depending on the whole `editor` object (a fresh hook return each render) would recreate the callback every render.
     [editor.t],
   );
@@ -77,6 +84,7 @@ export function TemplateEditor<TPayload = Record<string, unknown>>({
     isDirty: editor.isDirty,
     onClose,
     confirmDiscardPrompt,
+    onDiscard: editor.discardChanges,
     // Escape clears the selection first (the shortcut layer owns that press); only a
     // second Escape with nothing selected leaves the editor.
     ignoreEscapeWhen: () => hasSelection,
@@ -137,6 +145,7 @@ export function TemplateEditor<TPayload = Record<string, unknown>>({
       role={modal.isFullscreen ? "dialog" : "region"}
       aria-modal={modal.isFullscreen ? "true" : undefined}
       aria-labelledby={titleId}
+      data-template-editor-root={editorId}
       data-print-unclamp
       className={
         modal.isFullscreen
@@ -181,6 +190,7 @@ export function TemplateEditor<TPayload = Record<string, unknown>>({
         onApplyPreset={editor.applyPreset}
         onToggleFullscreen={modal.handleToggleFullscreen}
         onSave={editor.handleSave}
+        canSave={Boolean(onSave)}
         onClose={modal.handleClose}
         onExportTypst={onExportTypst ? handleExportTypst : undefined}
         onExportZoho={onExportZoho ? handleExportZoho : undefined}

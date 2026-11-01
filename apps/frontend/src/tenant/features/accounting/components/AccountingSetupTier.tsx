@@ -7,6 +7,7 @@ import { SubTabBar } from "@/components/app/SubTabBar";
 import { useTranslation } from "@/hooks/useTranslation";
 import { useModulePermissions } from "@/tenant/hooks/usePermissions";
 import { useModuleSetupSubTabs } from "@/lib/setup/useModuleSetupSubTabs";
+import { useTemplateDraftGuard } from "@/lib/setup/useTemplateDraftGuard";
 import { ModulePanelSuspenseFallback } from "@/components/app/ModulePanelSuspenseFallback";
 
 const AccountingSettings = lazy(
@@ -39,10 +40,13 @@ export const AccountingSetupTier = function AccountingSetupTier({
 }: AccountingSetupTierProps): React.JSX.Element {
   const { t } = useTranslation();
   const { canEditSetup } = useModulePermissions(ACCOUNTING_MODULE_MANIFEST);
+  const templateGuard = useTemplateDraftGuard();
   const subTabs = useModuleSetupSubTabs({
     initialKey: "preferences",
-    isDirty: () => false,
-    onDiscard: () => {},
+    isDirty: (currentKey: string) => currentKey === "templates" && templateGuard.isDirty(),
+    onDiscard: (leavingKey: string) => {
+      if (leavingKey === "templates") templateGuard.discard();
+    },
   });
   const tabs = [
     { key: "preferences", label: t("accounting.setup.preferences") },
@@ -69,6 +73,8 @@ export const AccountingSetupTier = function AccountingSetupTier({
               )}
               {subTabs.sub === "templates" && (
                 <AccountingVoucherTemplateEditor
+                  key={templateGuard.resetNonce}
+                  onDirtyChange={templateGuard.markDirty}
                   onClose={() => subTabs.handleSubTabChange("preferences")}
                 />
               )}

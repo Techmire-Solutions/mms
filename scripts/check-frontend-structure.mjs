@@ -14,6 +14,8 @@
  *      (mms-hooks §1).
  *   4. UI-presentation helpers live under `lib/ui`, not the `lib/` root.
  *   5. Barrels (`index.ts`) are an allowlist — no new ones without review.
+ *   6. Template layouts use `/api/templates`, never the legacy document store
+ *      (`getObject`/`saveObject`), which also POSTed a second, divergent copy.
  *
  * Ratchets, not cleanups: existing sites are grandfathered via BASELINE; lowering
  * a baseline as code improves is always welcome.
@@ -46,6 +48,7 @@ const BASELINE = {
   logicFilesInFeatureComponents: 0,
   uiHelpersInLibRoot: 0,
   unexpectedBarrels: 0,
+  legacyTemplatePersistence: 0,
 };
 
 const toRel = (p) => path.relative(ROOT, p).split(path.sep).join("/");
@@ -194,6 +197,38 @@ const barrelViolations = walkFiles(FE)
   .map(toRel)
   .filter((rel) => !KEEP_BARRELS.has(rel));
 
+// --- Norm 6: template layouts must not use the legacy document store ---------
+const TEMPLATE_MODULE_DIRS = [
+  path.join(FE, "components/template-editor"),
+  path.join(FE, "lib/templates"),
+];
+const TEMPLATE_MODULE_FILES = [
+  "components/app/TemplateEditor.tsx",
+  "components/app/DocumentTemplateEditor.tsx",
+  "lib/invoiceTemplateStore.ts",
+  "lib/invoiceTemplateFields.ts",
+  "tenant/features/students/lib/studentCardTemplateStore.ts",
+  "tenant/features/accounting/lib/voucherTemplateModel.ts",
+  "tenant/features/finance/components/FinanceTemplateEditor.tsx",
+  "tenant/features/examinations/components/ExaminationTemplateEditor.tsx",
+  "tenant/features/hasanat/components/HasanatTemplateEditor.tsx",
+  "tenant/features/students/components/card-template/StudentCardTemplateEditor.tsx",
+  "tenant/features/accounting/components/AccountingVoucherTemplateEditor.tsx",
+  "tenant/features/obligations/components/invoice/InvoiceTemplateEditor.tsx",
+].map((rel) => path.join(FE, rel));
+
+const LEGACY_TEMPLATE_PERSISTENCE_PATTERN =
+  /(?:from\s+["\']@\/lib\/db["\']|\b(?:getObject|saveObject)\s*\()/;
+const legacyTemplatePersistenceViolations = [
+  ...TEMPLATE_MODULE_DIRS.flatMap((dir) => walkFiles(dir)),
+  ...TEMPLATE_MODULE_FILES.filter((file) => fs.existsSync(file)),
+]
+  .filter((file) => /\.(?:ts|tsx)$/.test(file) && !/\.test\.(?:ts|tsx)$/.test(file))
+  .filter((file) => LEGACY_TEMPLATE_PERSISTENCE_PATTERN.test(fs.readFileSync(file, "utf8")))
+  .map(toRel);
+
+const uniqueLegacyTemplatePersistence = [...new Set(legacyTemplatePersistenceViolations)];
+
 const results = [
   {
     name: "Non-primitive files in components/ui/",
@@ -229,6 +264,13 @@ const results = [
     count: barrelViolations.length,
     baseline: BASELINE.unexpectedBarrels,
     sample: barrelViolations.slice(0, 8),
+  },
+  {
+    name: "Legacy document-store persistence in template modules",
+    norm: "mms-dry.md §1",
+    count: uniqueLegacyTemplatePersistence.length,
+    baseline: BASELINE.legacyTemplatePersistence,
+    sample: uniqueLegacyTemplatePersistence.slice(0, 8),
   },
 ];
 

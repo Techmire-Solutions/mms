@@ -1,15 +1,17 @@
 /**
  * @file ExaminationTemplateEditor.tsx
- * @description Examinations module report card and certificate template editor wrapping the SSOT TemplateEditor.
+ * @description Examinations module report card and certificate template editor.
+ *
+ * Persistence lives in `DocumentTemplateEditor` (`/api/templates/:key`); this wrapper
+ * only supplies examination fields, presets, sample payload and the Typst export.
  */
 
-import React, { useMemo } from "react";
+import React from "react";
 import { useTranslation } from "@/hooks/useTranslation";
 import { useBranding } from "@/tenant/hooks/useBranding";
-import { TemplateEditor } from "@/components/app/TemplateEditor";
-import { getObject, saveObject } from "@/lib/db";
-import { saveDocumentTemplateServer } from "@/lib/templates/documentTemplatesApi";
-import { type DocumentTemplate, type TypstReportCardPayload } from "@mms/shared";
+import { DocumentTemplateEditor } from "@/components/app/DocumentTemplateEditor";
+import { TemplateEditorGapNotice } from "@/components/app/TemplateEditorGapNotice";
+import { type TypstReportCardPayload } from "@mms/shared";
 import { mapToTypstReportCard } from "@/components/template-editor/templatePayloadMappers";
 import { notify } from "@/lib/notify";
 import {
@@ -20,21 +22,18 @@ import {
 } from "@/tenant/features/examinations/lib/examinationTemplateData";
 
 export interface ExaminationTemplateEditorProps {
-  onClose?: () => void;
+  /** Leaving the Templates sub-tab (or closing the modal). */
+  onClose: () => void;
+  /** Reports unsaved layout changes to the Setup leave-guard. */
+  onDirtyChange?: (dirty: boolean) => void;
   fullscreen?: boolean;
 }
 
 export function ExaminationTemplateEditor({
-  onClose = () => {},
+  onClose,
+  onDirtyChange,
   fullscreen = false,
 }: ExaminationTemplateEditorProps): React.JSX.Element {
-  const currentTemplate = useMemo(() => {
-    return getObject<DocumentTemplate<TypstReportCardPayload>>(
-      EXAMINATION_TEMPLATE_STORAGE_KEY,
-      DEFAULT_EXAMINATION_TEMPLATE,
-    );
-  }, []);
-
   const sampleData: TypstReportCardPayload = {
     institution: "Madrasa Management System",
     studentName: "Fatima Al-Zahra",
@@ -76,18 +75,6 @@ export function ExaminationTemplateEditor({
   const { t } = useTranslation();
   const branding = useBranding();
 
-  const handleSave = async (tmpl: DocumentTemplate<TypstReportCardPayload>) => {
-    saveObject(EXAMINATION_TEMPLATE_STORAGE_KEY, tmpl);
-    try {
-      await saveDocumentTemplateServer(EXAMINATION_TEMPLATE_STORAGE_KEY, tmpl);
-      notify.success(t("examinations.templateSaved"));
-    } catch (err) {
-      console.warn("[ExaminationTemplateEditor] Server save failed:", err);
-      notify.error(t("templateEditor.saveFailed"));
-      throw err;
-    }
-  };
-
   const handleExportTypst = (payload: TypstReportCardPayload) => {
     const conforming = mapToTypstReportCard({ ...payload });
     const jsonStr = JSON.stringify(conforming, null, 2);
@@ -102,20 +89,24 @@ export function ExaminationTemplateEditor({
   };
 
   return (
-    <TemplateEditor<TypstReportCardPayload>
-      title={t("examinations.templateEditorTitle")}
-      template={currentTemplate}
-      defaultTemplate={DEFAULT_EXAMINATION_TEMPLATE}
-      availableFields={EXAMINATION_AVAILABLE_FIELDS}
-      presets={EXAMINATION_PRESETS}
-      documentType="report-card"
-      sampleData={sampleData}
-      fullscreen={fullscreen}
-      branding={branding}
-      onSave={handleSave}
-      onClose={onClose}
-      onExportTypst={handleExportTypst}
-    />
+    <div className="min-w-0">
+      {!fullscreen && <TemplateEditorGapNotice t={t} />}
+      <DocumentTemplateEditor<TypstReportCardPayload>
+        templateKey={EXAMINATION_TEMPLATE_STORAGE_KEY}
+        defaultTemplate={DEFAULT_EXAMINATION_TEMPLATE}
+        savedMessage={t("examinations.templateSaved")}
+        title={t("examinations.templateEditorTitle")}
+        availableFields={EXAMINATION_AVAILABLE_FIELDS}
+        presets={EXAMINATION_PRESETS}
+        documentType="report-card"
+        sampleData={sampleData}
+        fullscreen={fullscreen}
+        branding={branding}
+        onClose={onClose}
+        onDirtyChange={onDirtyChange}
+        onExportTypst={handleExportTypst}
+      />
+    </div>
   );
 }
 
