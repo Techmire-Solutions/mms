@@ -25,14 +25,31 @@ permissions:
 
 jobs:
   e2e-full:
-    name: Full Playwright suite (chromium + a11y)
+    name: Full Playwright (${{ matrix.project }}) (${{ matrix.shardIndex }}/${{ matrix.shardTotal }})
     runs-on: ubuntu-24.04
     timeout-minutes: 60
     strategy:
       fail-fast: false
       matrix:
-        shardIndex: [1, 2]
-        shardTotal: [2]
+        include:
+          - project: chromium
+            shardIndex: 1
+            shardTotal: 4
+          - project: chromium
+            shardIndex: 2
+            shardTotal: 4
+          - project: chromium
+            shardIndex: 3
+            shardTotal: 4
+          - project: chromium
+            shardIndex: 4
+            shardTotal: 4
+          - project: a11y
+            shardIndex: 1
+            shardTotal: 2
+          - project: a11y
+            shardIndex: 2
+            shardTotal: 2
     services:
       postgres:
         image: postgres:16-alpine
@@ -48,6 +65,7 @@ jobs:
           --health-timeout 5s
           --health-retries 5
           --tmpfs /var/lib/postgresql/data:rw,noexec,nosuid,size=1024m
+          --shm-size=256mb
 
     env:
       JWT_SECRET: "e2e-test-jwt-secret-key-at-least-32-chars-long"
@@ -76,7 +94,7 @@ jobs:
         id: playwright-cache
         with:
           path: ~/.cache/ms-playwright
-          key: playwright-${{ runner.os }}-${{ hashFiles('pnpm-lock.yaml') }}
+          key: playwright-${{ runner.os }}-${{ hashFiles('e2e/package.json', 'pnpm-workspace.yaml') }}
 
       - name: Install Playwright Chromium Browser
         if: steps.playwright-cache.outputs.cache-hit != 'true'
@@ -84,16 +102,17 @@ jobs:
 
       - name: Run the full E2E suite
         env:
+          PROJECT: ${{ matrix.project }}
           SHARD_INDEX: ${{ matrix.shardIndex }}
           SHARD_TOTAL: ${{ matrix.shardTotal }}
-          PLAYWRIGHT_BLOB_OUTPUT_NAME: nightly-${{ matrix.shardIndex }}.zip
-        run: pnpm test:e2e --project=chromium --shard="${SHARD_INDEX}/${SHARD_TOTAL}"
+          PLAYWRIGHT_BLOB_OUTPUT_NAME: nightly-${{ matrix.project }}-${{ matrix.shardIndex }}.zip
+        run: pnpm test:e2e --project="${PROJECT}" --shard="${SHARD_INDEX}/${SHARD_TOTAL}"
 
       - name: Upload Blob Report
         if: always()
         uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         with:
-          name: nightly-blob-report-${{ matrix.shardIndex }}
+          name: nightly-blob-report-${{ matrix.project }}-${{ matrix.shardIndex }}
           path: e2e/blob-report
           retention-days: 7
 
@@ -101,12 +120,12 @@ jobs:
         if: failure()
         run: |
           {
-            echo "## Nightly E2E shard ${{ matrix.shardIndex }} failed"
+            echo "## Nightly E2E shard ${{ matrix.project }} (${{ matrix.shardIndex }}/${{ matrix.shardTotal }}) failed"
             echo ""
             echo "These specs never run on PR CI. Reproduce locally with:"
             echo ""
             echo '```bash'
-            echo "E2E_FULL_SUITE=1 pnpm test:e2e --project=chromium"
+            echo "E2E_FULL_SUITE=1 pnpm test:e2e --project=${{ matrix.project }} --shard=${{ matrix.shardIndex }}/${{ matrix.shardTotal }}"
             echo '```'
             echo ""
             echo "Download the blob report artifact for the trace and screenshots."
@@ -147,3 +166,16 @@ jobs:
           name: nightly-playwright-html-report
           path: e2e/playwright-report
           retention-days: 14
+
+      - name: Summarise Results
+        if: always()
+        run: |
+          {
+            echo "## Nightly E2E Test Run Summary"
+            echo ""
+            echo "- **Matrix Shards:** 6 parallel jobs (4 chromium + 2 a11y)"
+            echo "- **Full Suite Flag:** \`E2E_FULL_SUITE=1\` (includes @local-only and mutation/seed flows)"
+            echo "- **HTML Report Artifact:** \`nightly-playwright-html-report\`"
+            echo ""
+            echo "Download the HTML report artifact to inspect full traces, screenshots, and execution timelines."
+          } >> "$GITHUB_STEP_SUMMARY"
