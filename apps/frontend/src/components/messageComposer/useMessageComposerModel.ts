@@ -209,10 +209,11 @@ export function useMessageComposerModel(props: UseMessageComposerModelProps) {
     templateId !== initial.templateId ||
     recipientIdsKey(localRecipients) !== recipientIdsKey(initial.localRecipients);
   const hasDraftableContent = Boolean(
-    message.trim() || subject.trim() || localRecipients.length > 0,
+    composeChanged || localRecipients.length > 0 || initial.draft,
   );
   /** Pick-step close must confirm when compose content/draft remains after Previous. */
-  const isDirty = step === "compose" ? composeChanged : hasDraftableContent;
+  const isDirty =
+    step === "compose" ? composeChanged || Boolean(initial.draft) : hasDraftableContent;
   const saveDisabled =
     step === "pick"
       ? localRecipients.length === 0
