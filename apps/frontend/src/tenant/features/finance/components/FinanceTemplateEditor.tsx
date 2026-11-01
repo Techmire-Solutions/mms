@@ -10,7 +10,6 @@ import React from "react";
 import { useTranslation } from "@/hooks/useTranslation";
 import { useBranding } from "@/tenant/hooks/useBranding";
 import { DocumentTemplateEditor } from "@/components/app/DocumentTemplateEditor";
-import { TemplateEditorGapNotice } from "@/components/app/TemplateEditorGapNotice";
 import { type TypstFeeReceiptPayload, type ZohoInvoicePayload } from "@mms/shared";
 import {
   mapToTypstFeeReceipt,
@@ -86,7 +85,6 @@ export function FinanceTemplateEditor({
 
   return (
     <div className="min-w-0">
-      {!fullscreen && <TemplateEditorGapNotice t={t} />}
       <DocumentTemplateEditor<TypstFeeReceiptPayload>
         templateKey={FINANCE_TEMPLATE_STORAGE_KEY}
         defaultTemplate={DEFAULT_FINANCE_TEMPLATE}

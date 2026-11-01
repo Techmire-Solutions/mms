@@ -165,6 +165,9 @@ export default function HasanatCards() {
         {c.activeDistribution && (
           <DistributionDetail
             distribution={c.activeDistribution}
+            denomination={c.denoms.find(
+              (denomination) => denomination.id === c.activeDistribution?.denominationId,
+            )}
             onClose={() => c.setActiveDistribution(null)}
             canDelete={c.canDelete}
             onRestore={(id) => c.handleRestoreDistribution(id)}

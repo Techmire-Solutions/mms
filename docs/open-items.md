@@ -142,10 +142,12 @@ transactions.`) and re-attaches triggers for **19** tables against 0104's **14**
      write `/api/templates/:key` through `lib/templates/useDocumentTemplates` (TanStack Query seeded from a
      tenant cache); the legacy `documentTemplatePersistence` store, its background
      `/api/db/objects/:key` double-write and the bespoke per-module save handlers are deleted, and
-     `check:frontend-structure` ratchets the legacy store out of template modules. **Still open:**
-     Finance, Examinations and Hasanat print paths render fixed components and never read the saved layout
-     (the Setup tabs now show `templateEditor.layoutNotRendered`); their field/preset labels remain English;
-     concurrent edits are last-write-wins (no `updated_at` → 409).
+     `check:frontend-structure` ratchets the legacy store out of template modules. **Print paths now consume
+     the saved layouts** (`2026-11-02`): Finance receipts (`InvoiceReceiptModal`), Examination result cards
+     (`StudentResultCard`) and Hasanat distribution vouchers (`DistributionDetail`, new print entry point) all
+     render through the shared `TemplateDocumentPreview` + `printTemplateDocument`. **Still open:** template
+     field/preset labels for those modules remain English; an examination report card covers one paper (a
+     term-wide multi-subject card needs aggregation); concurrent edits are last-write-wins (no `updated_at` → 409).
    - _Reports/KPI config_ — `usePinnedWidgetsController`, `useDashboardSectionSettings`, `kpiSummaryCard*`,
      `DynamicCardBuilder`, `ModuleReportsToolPanels` → need `/api/reports/section-settings` + per-module KPI
      config endpoints.

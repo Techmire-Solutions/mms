@@ -4843,6 +4843,7 @@ export const APP_TRANSLATIONS_AR: Record<AppTranslationKey, string> = {
   "hasanat.dashboard.stockUsed": "مستعمل {count}",
   "hasanat.detail.overview": "نظرة عامة",
   "hasanat.detail.title": "تفاصيل التوزيع",
+  "hasanat.detail.printVoucher": "طباعة القسيمة",
   "hasanat.denominations": "الفئات",
   "hasanat.denominations.activate": "تفعيل",
   "hasanat.denominations.aria": "مدير الفئات",
@@ -9094,8 +9095,6 @@ export const APP_TRANSLATIONS_AR: Record<AppTranslationKey, string> = {
   "templateEditor.delete": "حذف",
   "templateEditor.elementsDeleted":
     "{count} {count, select, one {عنصر محذوف} other {عناصر محذوفة}}",
-  "templateEditor.layoutNotRendered":
-    "يُحفظ هذا التصميم، لكن المستند المطبوع لا يستخدمه بعد. التعديلات هنا لا تؤثر على المخرجات المطبوعة.",
   "templateEditor.duplicate": "تكرار",
   "templateEditor.emptyHint": "انقر على عنصر لتعديل خصائصه",
   "templateEditor.emptyHintDetail": "اسحب للتحريك • اسحب الزاوية لتغيير الحجم",
