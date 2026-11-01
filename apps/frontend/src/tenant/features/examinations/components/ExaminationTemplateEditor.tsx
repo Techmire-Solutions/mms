@@ -10,7 +10,6 @@ import React from "react";
 import { useTranslation } from "@/hooks/useTranslation";
 import { useBranding } from "@/tenant/hooks/useBranding";
 import { DocumentTemplateEditor } from "@/components/app/DocumentTemplateEditor";
-import { TemplateEditorGapNotice } from "@/components/app/TemplateEditorGapNotice";
 import { type TypstReportCardPayload } from "@mms/shared";
 import { mapToTypstReportCard } from "@/components/template-editor/templatePayloadMappers";
 import { notify } from "@/lib/notify";
@@ -90,7 +89,6 @@ export function ExaminationTemplateEditor({
 
   return (
     <div className="min-w-0">
-      {!fullscreen && <TemplateEditorGapNotice t={t} />}
       <DocumentTemplateEditor<TypstReportCardPayload>
         templateKey={EXAMINATION_TEMPLATE_STORAGE_KEY}
         defaultTemplate={DEFAULT_EXAMINATION_TEMPLATE}

@@ -55,10 +55,6 @@ describe("ExaminationTemplateEditor", () => {
     expect(renderEditor()).toContain('data-testid="mock-template-editor"');
   });
 
-  it("warns that the layout is not printed yet while embedded", () => {
-    expect(renderEditor()).toContain("templateEditor.layoutNotRendered");
-  });
-
   it("saves through /api/templates with the finance key", async () => {
     renderEditor();
     expect(capturedOnSave).not.toBeNull();

@@ -4954,6 +4954,7 @@ export const APP_TRANSLATIONS_EN = {
   "hasanat.dashboard.stockUsed": "{count} used",
   "hasanat.detail.overview": "Overview",
   "hasanat.detail.title": "Distribution Details",
+  "hasanat.detail.printVoucher": "Print Voucher",
   "hasanat.denominations": "Denominations",
   "hasanat.denominations.activate": "Activate",
   "hasanat.denominations.aria": "Denominations Manager",
@@ -9308,8 +9309,6 @@ export const APP_TRANSLATIONS_EN = {
   "templateEditor.delete": "Delete",
   "templateEditor.elementsDeleted":
     "{count} {count, select, one {element deleted} other {elements deleted}}",
-  "templateEditor.layoutNotRendered":
-    "This layout is saved, but the printed document does not use it yet. Changes here do not affect printed output.",
   "templateEditor.duplicate": "Duplicate",
   "templateEditor.emptyHint": "Click an element to edit its properties",
   "templateEditor.emptyHintDetail": "Drag to move • Drag corner to resize",

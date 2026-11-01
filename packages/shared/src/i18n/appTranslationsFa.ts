@@ -4929,6 +4929,7 @@ export const APP_TRANSLATIONS_FA: Partial<Record<AppTranslationKey, string>> = {
   "hasanat.dashboard.stockUsed": "{count} استفاده شده",
   "hasanat.detail.overview": "بررسی اجمالی",
   "hasanat.detail.title": "جزئیات توزیع",
+  "hasanat.detail.printVoucher": "چاپ کوپن",
   "hasanat.denominations": "ارزش کارت‌ها (امتیازها)",
   "hasanat.denominations.activate": "فعال‌سازی",
   "hasanat.denominations.aria": "مدیر واحدها",
@@ -9244,8 +9245,6 @@ export const APP_TRANSLATIONS_FA: Partial<Record<AppTranslationKey, string>> = {
   "templateEditor.delete": "حذف",
   "templateEditor.elementsDeleted":
     "{count} {count, select, one {عنصر حذف شد} other {عنصر حذف شد}}",
-  "templateEditor.layoutNotRendered":
-    "این چیدمان ذخیره می‌شود، اما سند چاپی هنوز از آن استفاده نمی‌کند. تغییرات اینجا بر خروجی چاپی اثر ندارد.",
   "templateEditor.duplicate": "تکثیر",
   "templateEditor.emptyHint": "برای ویرایش مشخصات، روی یک عنصر کلیک کنید",
   "templateEditor.emptyHintDetail": "کشیدن برای حرکت • کشیدن گوشه برای تغییر اندازه",

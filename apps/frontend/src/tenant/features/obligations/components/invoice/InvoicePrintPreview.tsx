@@ -2,28 +2,23 @@
  * InvoicePrintPreview
  * Pure render of the invoice/receipt on a page canvas.
  *
- * Content rendering is delegated to the shared `TemplateElementContent` module — the
- * same one the editor canvas uses. It used to be a second, independent renderer, and
- * the two disagreed: print ignored the editor's RTL auto-detection, truncated nothing
- * while the canvas truncated, built a different QR payload, and had **no table branch
- * at all**, so a table designed in the editor printed as the literal word "Table".
+ * This module now only resolves the record into the flat payload shape and delegates
+ * rendering to the shared `TemplateDocumentPreview` — the same element renderer every
+ * module print path uses. Historically it was a second, independent renderer and the
+ * two disagreed (RTL, truncation, QR payload, and tables printed as the word "Table").
  */
 import React from "react";
+import type { DocumentTemplate } from "@mms/shared";
 import {
-  getPageDimensions,
   resolveField,
   type InvoiceTemplate,
-  type TemplateElement,
   type FieldLookupInfo,
   AVAILABLE_FIELDS,
 } from "@/lib/invoiceTemplateStore";
 import { type ObligationCollection } from "@/lib/data/obligationsData";
 import { useBranding } from "@/tenant/hooks/useBranding";
 import { useTranslation } from "@/hooks/useTranslation";
-import { getPrintBrandingTokens } from "@/lib/ui/printBrandingTokens";
-import { interpolateTemplateTokens } from "@/components/template-editor/templateEditorUtils";
-import { TemplateElementContent } from "@/components/template-editor/templateElementContent";
-import { resolveElementGeometry } from "@/components/template-editor/templateDataResolution";
+import { TemplateDocumentPreview } from "@/components/template-editor/TemplateDocumentPreview";
 
 export interface InvoicePrintPreviewProps {
   template: InvoiceTemplate;
@@ -67,12 +62,9 @@ export function InvoicePrintPreview({
   onSelect = null,
   scale = 1,
   showBoundary = true,
-}: InvoicePrintPreviewProps) {
+}: InvoicePrintPreviewProps): React.JSX.Element {
   const branding = useBranding();
-  const { t, isRtl } = useTranslation();
-  const printTokens = getPrintBrandingTokens();
-  const size = getPageDimensions(template.pageSize, template.orientation);
-  const appDir = isRtl ? "rtl" : "ltr";
+  const { isRtl } = useTranslation();
 
   const data = React.useMemo(() => buildFieldData(collection, lookups), [collection, lookups]);
 
@@ -86,106 +78,19 @@ export function InvoicePrintPreview({
     return `${origin}/verify/receipt?no=${encodeURIComponent(collection.receipt_no)}&amount=${collection.amount}&date=${collection.received_date}`;
   }, [collection]);
 
-  const renderElement = (templateElement: TemplateElement) => {
-    const isSelected = selectedId === templateElement.id;
-    const elementStyle = templateElement.style || {};
-    const geometry = resolveElementGeometry(
-      templateElement,
-      appDir,
-      data?.[String(templateElement.field ?? "")] as string | undefined,
-    );
-
-    return (
-      <div
-        key={templateElement.id}
-        dir={geometry.direction}
-        role={onSelect ? "button" : undefined}
-        tabIndex={onSelect ? 0 : undefined}
-        aria-label={onSelect ? templateElement.label || t("templateEditor.element") : undefined}
-        onClick={
-          onSelect
-            ? (event: React.MouseEvent) => {
-                event.stopPropagation();
-                onSelect(templateElement.id);
-              }
-            : undefined
-        }
-        onKeyDown={
-          onSelect
-            ? (event: React.KeyboardEvent) => {
-                if (event.key === "Enter" || event.key === " ") {
-                  event.preventDefault();
-                  onSelect(templateElement.id);
-                }
-              }
-            : undefined
-        }
-        style={{
-          position: "absolute",
-          left: templateElement.x,
-          top: templateElement.y,
-          width: templateElement.w,
-          height: templateElement.h,
-          boxSizing: "border-box",
-          fontSize: elementStyle.fontSize || 10,
-          fontWeight: elementStyle.fontWeight || "normal",
-          fontFamily: elementStyle.fontFamily || "inherit",
-          fontStyle: elementStyle.fontStyle || "normal",
-          textDecoration: elementStyle.textDecoration || "none",
-          textAlign: geometry.textAlign,
-          direction: geometry.direction,
-          color: elementStyle.color || printTokens.text,
-          backgroundColor: elementStyle.backgroundColor || "transparent",
-          border: elementStyle.borderWidth
-            ? `${elementStyle.borderWidth}px solid ${elementStyle.borderColor || printTokens.border}`
-            : "none",
-          borderRadius:
-            elementStyle.borderRadius != null ? `${elementStyle.borderRadius}px` : undefined,
-          /*
-           * Text is allowed to overflow its box on paper rather than being clipped with
-           * an ellipsis — a printed receipt must not silently drop half a value.
-           */
-          overflow: "visible",
-          cursor: onSelect ? "pointer" : "default",
-          boxShadow: isSelected ? `0 0 0 2px ${printTokens.primary}` : undefined,
-        }}
-      >
-        <TemplateElementContent
-          el={templateElement}
-          data={data}
-          mode="print"
-          logoUrl={branding.logoUrl}
-          qrPayload={qrPayload}
-          hideMissingLogo
-          geometry={geometry}
-          interpolate={interpolateTemplateTokens}
-          t={t}
-        />
-      </div>
-    );
-  };
-
   return (
-    <div
-      style={{
-        position: "relative",
-        width: size.width,
-        height: size.height,
-        background: printTokens.paper,
-        boxShadow: showBoundary ? "0 2px 20px rgba(0,0,0,0.15)" : "none",
-        border: showBoundary ? `1px solid ${printTokens.border}` : "none",
-        transform: `scale(${scale})`,
-        transformOrigin: "top left",
-        overflow: "hidden",
-        /*
-         * No hardcoded `fontFamily: 'Inter', 'Amiri'` any more: the element style wins
-         * when set, and otherwise the page inherits the app's language-aware stack
-         * (including the Urdu/Persian faces, which the print window used to omit).
-         */
-        direction: appDir,
-      }}
-    >
-      {template.elements.map(renderElement)}
-    </div>
+    <TemplateDocumentPreview<Record<string, unknown>>
+      template={template as DocumentTemplate<Record<string, unknown>>}
+      data={data}
+      logoUrl={branding.logoUrl}
+      isRtl={isRtl}
+      scale={scale}
+      showBoundary={showBoundary}
+      qrPayload={qrPayload}
+      selectedId={selectedId}
+      onSelect={onSelect}
+    />
   );
 }
+
+export default InvoicePrintPreview;

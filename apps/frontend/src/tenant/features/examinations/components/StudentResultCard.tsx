@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useRef } from "react";
 import { Award, Printer } from "lucide-react";
 import { getRankSuffix, type GradeInfo } from "@/tenant/features/examinations/lib/gradeUtils";
 import { type Exam } from "@/lib/data/examinationData";
@@ -10,6 +10,16 @@ import { StatusBadge, type StatusBadgeConfigItem } from "@/components/app/Status
 import { CARD_STRIPE_INSET, SEMANTIC_BADGE } from "@/lib/ui/semanticTone";
 import { cn } from "@/lib/utils";
 import { useTranslation } from "@/hooks/useTranslation";
+import { useBranding } from "@/tenant/hooks/useBranding";
+import { notify } from "@/lib/notify";
+import { useDocumentTemplate } from "@/lib/templates/useDocumentTemplates";
+import { TemplateDocumentPreview } from "@/components/template-editor/TemplateDocumentPreview";
+import { printTemplateDocument } from "@/components/template-editor/templateDocumentPrint";
+import {
+  DEFAULT_EXAMINATION_TEMPLATE,
+  EXAMINATION_TEMPLATE_STORAGE_KEY,
+} from "@/tenant/features/examinations/lib/examinationTemplateData";
+import { buildReportCardPayload } from "@/tenant/features/examinations/lib/reportCardPayload";
 
 export interface StudentResultItem {
   pct: number;
@@ -52,7 +62,18 @@ export function StudentResultCard({
   onClose,
   onCertificate,
 }: StudentResultCardProps): React.JSX.Element {
-  const { t } = useTranslation();
+  const { t, language, isRtl } = useTranslation();
+  const branding = useBranding();
+  const { template } = useDocumentTemplate(
+    EXAMINATION_TEMPLATE_STORAGE_KEY,
+    DEFAULT_EXAMINATION_TEMPLATE,
+  );
+  const printRef = useRef<HTMLDivElement>(null);
+  const printPayload = buildReportCardPayload({
+    result,
+    exam,
+    institution: branding.madrasaName,
+  });
   const percentage = result.pct;
   const grade = result.grade;
   const circumference = 2 * Math.PI * 42;
@@ -87,7 +108,16 @@ export function StudentResultCard({
           )}
           <Button
             type="button"
-            onClick={() => window.print()}
+            onClick={() => {
+              const printed = printTemplateDocument({
+                previewElement: printRef.current,
+                template,
+                windowTitle: t("examinations.resultCard.print"),
+                language,
+                isRtl,
+              });
+              if (!printed) notify.error(t("templateEditor.exportFailed"));
+            }}
             className="flex-1 flex items-center justify-center gap-2 py-2.5 rounded-xl border border-border bg-muted text-foreground text-sm font-semibold hover:bg-muted/80"
           >
             <Printer className="w-4 h-4" aria-hidden="true" /> {t("examinations.resultCard.print")}
@@ -95,6 +125,28 @@ export function StudentResultCard({
         </div>
       }
     >
+      {/* Offscreen 1:1 report card — the designed template is what prints. */}
+      <div
+        aria-hidden="true"
+        style={{
+          position: "fixed",
+          top: -99999,
+          left: -99999,
+          pointerEvents: "none",
+          zIndex: -9999,
+        }}
+      >
+        <div ref={printRef}>
+          <TemplateDocumentPreview
+            template={template}
+            data={printPayload}
+            logoUrl={branding.logoUrl}
+            isRtl={isRtl}
+            showBoundary={false}
+          />
+        </div>
+      </div>
+
       <div className="space-y-4">
         {/* Circular progress */}
         <div className="p-4 rounded-xl border border-border bg-muted/20 text-center relative overflow-hidden">

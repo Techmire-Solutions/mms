@@ -4908,6 +4908,7 @@ export const APP_TRANSLATIONS_UR: Record<AppTranslationKey, string> = {
   "hasanat.dashboard.stockUsed": "{count} استعمال شدہ",
   "hasanat.detail.overview": "جائزہ",
   "hasanat.detail.title": "تقسیم کی تفصیلات",
+  "hasanat.detail.printVoucher": "واؤچر پرنٹ کریں",
   "hasanat.denominations": "فئات",
   "hasanat.denominations.activate": "فعال کریں",
   "hasanat.denominations.aria": "فرقہ جات مینیجر",
@@ -9201,8 +9202,6 @@ export const APP_TRANSLATIONS_UR: Record<AppTranslationKey, string> = {
   "templateEditor.delete": "حذف کریں",
   "templateEditor.elementsDeleted":
     "{count} {count, select, one {عنصر حذف ہوا} other {عناصر حذف ہوئے}}",
-  "templateEditor.layoutNotRendered":
-    "یہ ترتیب محفوظ ہوتی ہے، لیکن طباعت شدہ دستاویز ابھی اسے استعمال نہیں کرتی۔ یہاں کی تبدیلیاں طباعت شدہ نتیجے کو متاثر نہیں کرتیں۔",
   "templateEditor.duplicate": "ڈپلیکیٹ کریں",
   "templateEditor.emptyHint": "کسی عنصر پر کلک کر کے اس کی خصوصیات میں ترمیم کریں",
   "templateEditor.emptyHintDetail":
