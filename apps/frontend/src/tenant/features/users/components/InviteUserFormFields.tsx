@@ -3,7 +3,7 @@ import type { UseFormReturn } from "react-hook-form";
 import { USER_STATUS_VALUES, type InviteWorkspaceUserInput, type WorkspaceRole } from "@mms/shared";
 import ContactPicker from "@/components/contactLink/ContactPicker";
 import { Button } from "@/components/ui/button";
-import { Checkbox } from "@/components/ui/checkbox";
+import { CheckboxField } from "@/components/ui/checkbox";
 import { FormSelect } from "@/components/app/FormSelect";
 import { FormControl, FormField, FormItem, FormLabel } from "@/components/ui/form";
 import { TranslatedFormMessage } from "@/lib/forms/TranslatedFormMessage";
@@ -93,21 +93,14 @@ export function InviteUserFormFields({
         name="sendEmail"
         render={({ field }) => (
           <FormItem>
-            <div className="flex min-h-11 items-center gap-2">
-              <Checkbox
-                id={field.name}
-                name={field.name}
-                checked={field.value}
-                onCheckedChange={(checked) => field.onChange(checked === true)}
-                className="cursor-pointer"
-              />
-              <label
-                htmlFor={field.name}
-                className="cursor-pointer text-xs font-medium text-foreground select-none"
-              >
-                {t("users.inviteSendEmail")}
-              </label>
-            </div>
+            <CheckboxField
+              id={field.name}
+              name={field.name}
+              checked={field.value}
+              onCheckedChange={field.onChange}
+              label={t("users.inviteSendEmail")}
+              labelClassName="text-xs"
+            />
           </FormItem>
         )}
       />

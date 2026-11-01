@@ -62,9 +62,8 @@ describe("Checkbox component", () => {
     expect(button?.getAttribute("data-state")).toBe("indeterminate");
     expect(button?.getAttribute("aria-checked")).toBe("mixed");
 
-    const svg = button?.querySelector("svg");
-    expect(svg).not.toBeNull();
-    expect(svg?.classList.contains("lucide-minus")).toBe(true);
+    expect(button?.querySelector("svg.lucide-minus")).not.toBeNull();
+    expect(button?.querySelector("svg.lucide-check")).not.toBeNull();
   });
 
   it("applies error styling when error is true", async () => {
@@ -74,6 +73,33 @@ describe("Checkbox component", () => {
 
     const button = container.querySelector('button[role="checkbox"]');
     expect(button?.className).toContain("border-destructive");
+  });
+
+  it("emits a boolean onCheckedChange and never bubbles activation to a clickable ancestor", async () => {
+    const onCheckedChange = vi.fn();
+    const parentClick = vi.fn();
+    await act(async () => {
+      root.render(
+        <div onClick={parentClick}>
+          <Checkbox id="bubble-check" checked={false} onCheckedChange={onCheckedChange} />
+        </div>,
+      );
+    });
+    const button = container.querySelector<HTMLButtonElement>('button[role="checkbox"]');
+    await act(async () => {
+      button?.click();
+    });
+    expect(onCheckedChange).toHaveBeenCalledTimes(1);
+    expect(onCheckedChange.mock.calls[0]?.[0]).toBe(true);
+    expect(parentClick).not.toHaveBeenCalled();
+  });
+
+  it("marks the checkbox invalid for assistive technology when error is set", async () => {
+    await act(async () => {
+      root.render(<Checkbox id="invalid-check" error />);
+    });
+    const button = container.querySelector('button[role="checkbox"]');
+    expect(button?.getAttribute("aria-invalid")).toBe("true");
   });
 
   it("applies disabled styling and attribute when disabled", async () => {

@@ -2,7 +2,7 @@ import React from "react";
 import { motion } from "framer-motion";
 import { TableCell, TableRow } from "@/components/ui/table";
 import { ModuleTableSelectionCell } from "@/components/app/ModuleTableSelectionCell";
-import { workTableStickyCellBg } from "@/components/app/tableWorkSticky";
+import { workTableRowBg, workTableStickyCellBg } from "@/components/app/tableWorkSticky";
 import { cn } from "@/lib/utils";
 import type { ListRowMotionFn } from "@/hooks/useListRowMotion";
 import type { WorkBatchTableColumn } from "./WorkBatchTable";
@@ -67,8 +67,8 @@ function WorkBatchTableRowComponent<TData extends { id: string | number }>(
     role: onRowClick && !hasNestedInteractive ? ("button" as const) : undefined,
     onMouseEnter: onRowHover ? () => onRowHover(row) : undefined,
     className: cn(
-      "group border-b border-border/40 transition-colors hover:bg-muted/40",
-      isSelected && "bg-accent/15",
+      "group border-b border-border/40 transition-colors",
+      workTableRowBg(isSelected),
       onRowClick && "cursor-pointer",
       rowClassName?.(row),
     ),

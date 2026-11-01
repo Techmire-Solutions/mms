@@ -1,6 +1,6 @@
 import type React from "react";
 import { SlidersHorizontal } from "lucide-react";
-import { Checkbox } from "@/components/ui/checkbox";
+import { Checkbox, CheckboxField } from "@/components/ui/checkbox";
 import { DatePicker } from "@/components/app/DatePicker";
 import { Field } from "@/components/app/FormPrimitives";
 import { FormSelect } from "@/components/app/FormSelect";
@@ -108,16 +108,13 @@ export function FacultyCustomFieldsSection({
                   })}
                 </div>
               ) : field.type === "boolean" ? (
-                <div className="flex min-h-11 items-center gap-3 rounded-md border border-border px-3">
-                  <Checkbox
-                    {...common}
-                    checked={Boolean(value)}
-                    onCheckedChange={(next) => change(field.key, Boolean(next))}
-                  />
-                  <label htmlFor={field.key} className="cursor-pointer text-sm">
-                    {label}
-                  </label>
-                </div>
+                <CheckboxField
+                  {...common}
+                  checked={Boolean(value)}
+                  onCheckedChange={(next) => change(field.key, next)}
+                  label={label}
+                  className="rounded-md border border-border px-3"
+                />
               ) : field.type === "currency" || field.type === "number" ? (
                 <Input
                   {...common}

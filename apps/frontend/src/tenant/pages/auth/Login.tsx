@@ -8,7 +8,7 @@ import { AuthSubmitButton } from "@/components/entry/AuthFormControls";
 import { AuthStatusBanner } from "@/components/entry/AuthStatusBanner";
 import { ROUTES } from "@/lib/config/routes";
 import { apexUrl } from "@/lib/config/tenantConfig";
-import { Checkbox } from "@/components/ui/checkbox";
+import { CheckboxField } from "@/components/ui/checkbox";
 import { useTenantLoginController } from "./useTenantLoginController";
 
 export default function Login(): React.ReactElement {
@@ -102,22 +102,15 @@ export default function Login(): React.ReactElement {
             />
 
             <div className="flex items-center justify-between gap-3 pt-0.5">
-              <div className="flex min-h-11 items-center gap-2.5 rounded-lg">
-                <Checkbox
-                  id={rememberFieldId}
-                  name="rememberMe"
-                  checked={rememberMe}
-                  disabled={isBusy}
-                  onCheckedChange={handleRememberMeChange}
-                  className="cursor-pointer"
-                />
-                <label
-                  htmlFor={rememberFieldId}
-                  className="cursor-pointer text-sm text-muted-foreground select-none"
-                >
-                  {t("auth.rememberMe")}
-                </label>
-              </div>
+              <CheckboxField
+                id={rememberFieldId}
+                name="rememberMe"
+                checked={rememberMe}
+                disabled={isBusy}
+                onCheckedChange={handleRememberMeChange}
+                label={t("auth.rememberMe")}
+                labelClassName="text-sm text-muted-foreground"
+              />
 
               <Link
                 to={ROUTES.forgotPassword}

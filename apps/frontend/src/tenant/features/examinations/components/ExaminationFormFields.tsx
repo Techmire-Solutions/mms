@@ -184,8 +184,7 @@ export function ExaminationFormFields({
                       <Button
                         key={sessionClass.id}
                         type="button"
-                        role="checkbox"
-                        aria-checked={active}
+                        aria-pressed={active}
                         onClick={() => {
                           const next = new Set(examDraft.classIds ?? []);
                           if (next.has(sessionClass.id)) {

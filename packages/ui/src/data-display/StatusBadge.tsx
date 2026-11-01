@@ -103,6 +103,10 @@ export function StatusBadge({
   return (
     <Badge
       as={onClick ? "button" : "span"}
+      // Status colours are fully specified by `resolvedConfig.cls`; the default
+      // variant's `hover:bg-primary/80` survived class merging and turned the
+      // background gold on hover while the status text stayed green (1.68:1).
+      variant="outline"
       size={size}
       onClick={
         onClick

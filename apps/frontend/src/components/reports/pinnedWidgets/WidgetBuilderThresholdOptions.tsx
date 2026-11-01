@@ -1,5 +1,5 @@
 import React from "react";
-import { Checkbox } from "@/components/ui/checkbox";
+import { CheckboxField } from "@/components/ui/checkbox";
 import { FormSelect } from "@/components/app/FormSelect";
 import { Input } from "@/components/ui/input";
 import { SectionLabel } from "@/components/app/SectionLabel";
@@ -30,19 +30,13 @@ export function WidgetBuilderThresholdOptions({
 
   return (
     <div className="p-4 rounded-2xl border border-border bg-card/20 space-y-3">
-      <div className="flex items-center gap-2">
-        <Checkbox
-          id="threshold-enabled"
-          checked={thresholdEnabled}
-          onCheckedChange={(checked) => setThresholdEnabled(Boolean(checked))}
-        />
-        <label
-          htmlFor="threshold-enabled"
-          className="text-xs font-bold text-foreground cursor-pointer select-none"
-        >
-          {t("reports.widgets.builder.enableThreshold")}
-        </label>
-      </div>
+      <CheckboxField
+        id="threshold-enabled"
+        checked={thresholdEnabled}
+        onCheckedChange={setThresholdEnabled}
+        label={t("reports.widgets.builder.enableThreshold")}
+        labelClassName="text-xs font-bold"
+      />
 
       {thresholdEnabled && (
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 animate-fade-in text-start">

@@ -73,7 +73,7 @@ export function ConsolidationMemberRow({
           <Checkbox
             id={`${id}-parent`}
             checked={member.isParent}
-            onCheckedChange={(checked) => onChange({ isParent: checked === true })}
+            onCheckedChange={(checked) => onChange({ isParent: checked })}
           />
           {t("platform.consolidation.isParent")}
         </label>

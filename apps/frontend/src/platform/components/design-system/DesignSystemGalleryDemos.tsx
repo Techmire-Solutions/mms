@@ -6,7 +6,7 @@ import {
   Input,
   LeadingIconInput,
   Textarea,
-  Checkbox,
+  CheckboxField,
   Switch,
   DensityToggle,
   FormSelect,
@@ -60,16 +60,27 @@ export function DesignSystemInputsDemo(): React.JSX.Element {
   const [seg, setSeg] = React.useState<"all" | "active">("all");
   const [from, setFrom] = React.useState("");
   const [to, setTo] = React.useState("");
+  const [checkboxOn, setCheckboxOn] = React.useState(true);
   return (
     <div className="grid w-full max-w-xl grid-cols-1 gap-3">
       <Input placeholder="Input" className="min-h-11" />
       <LeadingIconInput icon={Search} placeholder="Leading icon input" />
       <Textarea placeholder="Textarea" rows={3} />
-      <div className="flex items-center gap-3">
-        <Checkbox id="ds-check" />
-        <label htmlFor="ds-check" className="text-sm">
-          Checkbox
-        </label>
+      <CheckboxField
+        id="ds-check"
+        checked={checkboxOn}
+        onCheckedChange={setCheckboxOn}
+        label="Checkbox field"
+        description="Labelled, 44px row with an optional description — the shared SSOT pattern."
+      />
+      <CheckboxField
+        id="ds-check-disabled"
+        checked={false}
+        onCheckedChange={() => undefined}
+        label="Disabled checkbox"
+        disabled
+      />
+      <div className="flex min-h-11 items-center gap-3">
         <Switch id="ds-switch" />
         <label htmlFor="ds-switch" className="text-sm">
           Switch

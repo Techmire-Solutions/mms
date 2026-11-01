@@ -1,1 +1,1 @@
-export { Checkbox, type CheckboxProps } from "@shared/ui";
+export { Checkbox, CheckboxField, type CheckboxFieldProps, type CheckboxProps } from "@shared/ui";
