@@ -555,11 +555,18 @@
     word-break: normal;
   }
 
-  table td .truncate,
-  table td[class*="truncate"],
+  /*
+   * Truncation inside table cells is opt-in per node: the blanket override below
+   * keeps cells readable (no mid-column clipping), but single-token values such
+   * as email addresses wrapped at an arbitrary character (`mansoor@example.c` /
+   * `om`). A cell that opts into ellipsis carries `data-cell-truncate` and keeps
+   * the full value in `title` (2026-10-31 review, UX-07).
+   */
+  table td .truncate:not([data-cell-truncate]),
+  table td[class*="truncate"]:not([data-cell-truncate]),
   table td.truncate,
-  table th .truncate,
-  table th[class*="truncate"],
+  table th .truncate:not([data-cell-truncate]),
+  table th[class*="truncate"]:not([data-cell-truncate]),
   table th.truncate {
     white-space: normal !important;
     text-overflow: clip !important;
@@ -588,6 +595,12 @@
   [lang="fa"] {
     line-height: 1.55;
   }
+
+  /*
+   * Arabic/Urdu/Persian caps tracking is neutralised in the unlayered rule at
+   * the end of this file: a `@layer base` rule loses to the `tracking-*`
+   * utilities, which is exactly the cascade this needs to beat.
+   */
 
   /* Amiri is fetched only for ar/ur (lib/localeFonts.ts) — scope it to the
      locales that actually load it instead of applying a serif globally. */
@@ -1555,4 +1568,19 @@
  */
 @utility scroll-initial-nearest {
   scroll-initial-target: nearest;
+}
+
+/*
+ * RTL caps tracking — deliberately unlayered.
+ *
+ * Arabic, Urdu and Persian have no letter case, and wide tracking is a Latin
+ * display device that only inserts gaps into a cursive run. The shared `caps`
+ * chrome pairs `uppercase` with `tracking-wider`; the case transform is inert in
+ * these scripts and the tracking is the part that damages the type. Utilities
+ * live in Tailwind's `utilities` layer, which outranks `@layer base` regardless
+ * of specificity, so this reset must stay outside every layer to win.
+ * (2026-10-31 review, RTL typography follow-up.)
+ */
+:is([lang="ar"], [lang="ur"], [lang="fa"]) .uppercase {
+  letter-spacing: normal;
 }

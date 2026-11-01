@@ -17,6 +17,23 @@ const AUDIT_VIEWPORTS = RESPONSIVE_VIEWPORTS.filter(
   (viewport) => viewport.width === 375 || viewport.width === 1440,
 );
 
+/**
+ * Every console route the 2026-10-31 review captured. The gate used to audit
+ * only `/workspaces` and `/dashboard`, which is how the Design System subtitle
+ * contrast defect escaped it. Keep this list in step with the platform sidebar.
+ */
+const PLATFORM_ROUTES = [
+  { name: "dashboard", path: "/platform/dashboard" },
+  { name: "workspaces", path: "/platform/workspaces" },
+  { name: "reports", path: "/platform/reports" },
+  { name: "consolidation", path: "/platform/consolidation" },
+  { name: "users", path: "/platform/users" },
+  { name: "settings", path: "/platform/settings" },
+  { name: "activity logs", path: "/platform/activity-logs" },
+  { name: "system", path: "/platform/system" },
+  { name: "design system", path: "/platform/design-system" },
+] as const;
+
 async function signInPlatformAdmin(page: Page): Promise<void> {
   const platformLanding = page
     .getByRole("heading", { name: /Dashboard|Welcome back|Workspaces|Madrasas/i })
@@ -92,31 +109,46 @@ async function gotoPlatformPageAndSettle(page: Page, path: string): Promise<void
 }
 
 /**
- * Apex platform workspaces directory — axe smoke at 375 / 1440 (LTR only; English lock).
+ * Apex platform console — full-page axe at 375 / 1440 (LTR, English lock).
+ *
+ * Contexts must keep `reducedMotion` from the project config (`reduce`): the
+ * directory cards fade in through a framer-motion opacity transition, and an
+ * audit that samples mid-animation reports blended colours as contrast
+ * failures (17–18 false positives on `/platform/users` at 375 when motion ran).
  */
-test.describe("platform workspaces accessibility smoke @smoke", () => {
-  test("platform workspaces directory passes axe at 375 and 1440 (ltr)", async ({ page }) => {
-    test.setTimeout(180_000);
+test.describe("platform console accessibility smoke @smoke", () => {
+  for (const route of PLATFORM_ROUTES) {
+    test(`${route.name} passes full-page axe at 375 and 1440 (ltr)`, async ({ page }) => {
+      test.setTimeout(180_000);
 
-    await test.step("Seed and sign in platform admin", async () => {
-      ensureE2ePlatformAdmin(platformEmail, platformPassword);
-      await signInPlatformAdmin(page);
-    });
+      await test.step("Seed and sign in platform admin", async () => {
+        ensureE2ePlatformAdmin(platformEmail, platformPassword);
+        await signInPlatformAdmin(page);
+      });
 
-    for (const viewport of AUDIT_VIEWPORTS) {
-      await test.step(`Audit workspaces @ ${viewport.width}px (ltr)`, async () => {
-        await page.setViewportSize({ width: viewport.width, height: viewport.height });
-        await gotoPlatformPageAndSettle(page, "/platform/workspaces");
-        await assertNoSeriousA11yViolations(page, {
-          context: `platform workspaces @ ${viewport.width}px (ltr)`,
+      for (const viewport of AUDIT_VIEWPORTS) {
+        await test.step(`Audit ${route.name} @ ${viewport.width}px (ltr)`, async () => {
+          await page.setViewportSize({ width: viewport.width, height: viewport.height });
+          await gotoPlatformPageAndSettle(page, route.path);
           // Full page: the header/sidebar are part of the shell contract and
-          // previously escaped the main-content-only sweep.
+          // previously escaped a main-content-only sweep.
+          await assertNoSeriousA11yViolations(page, {
+            context: `platform ${route.name} @ ${viewport.width}px (ltr)`,
+          });
         });
-      });
-    }
-  });
+      }
+    });
+  }
+});
 
-  test("platform dashboard passes full-page axe at 375 and 1440 (ltr)", async ({ page }) => {
+/**
+ * The one platform contrast defect found so far lived in the Design System
+ * gallery's dark render, and the light-only sweep could not see it.
+ */
+test.describe("platform design system dark accessibility @smoke", () => {
+  test.use({ colorScheme: "dark" });
+
+  test("design system gallery passes full-page axe in dark at 1440 (ltr)", async ({ page }) => {
     test.setTimeout(180_000);
 
     await test.step("Seed and sign in platform admin", async () => {
@@ -124,17 +156,10 @@ test.describe("platform workspaces accessibility smoke @smoke", () => {
       await signInPlatformAdmin(page);
     });
 
-    for (const viewport of AUDIT_VIEWPORTS) {
-      await test.step(`Audit dashboard @ ${viewport.width}px (ltr)`, async () => {
-        await page.setViewportSize({ width: viewport.width, height: viewport.height });
-        await gotoPlatformPageAndSettle(page, "/platform/dashboard");
-        await expect(page.getByRole("heading", { name: /Dashboard/i })).toBeVisible({
-          timeout: 20_000,
-        });
-        await assertNoSeriousA11yViolations(page, {
-          context: `platform dashboard @ ${viewport.width}px (ltr)`,
-        });
-      });
-    }
+    await page.setViewportSize({ width: 1440, height: 900 });
+    await gotoPlatformPageAndSettle(page, "/platform/design-system");
+    await assertNoSeriousA11yViolations(page, {
+      context: "platform design system @ 1440px (ltr, dark)",
+    });
   });
 });

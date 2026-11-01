@@ -77,7 +77,10 @@ export default defineConfig({
     /* Base URL to use in actions like `await page.goto('/')`. */
     baseURL: process.env.BASE_URL || "http://localhost:5173",
     actionTimeout: 10 * 1000,
-    navigationTimeout: 20 * 1000,
+    // Vite's first navigation after a cold start (or a machine wake) can outlast
+    // the old 20s budget while dependencies optimise; the shell-ready waits in
+    // each spec still gate on real content.
+    navigationTimeout: 30 * 1000,
     trace: "retain-on-failure",
     video: "off",
     screenshot: "only-on-failure",

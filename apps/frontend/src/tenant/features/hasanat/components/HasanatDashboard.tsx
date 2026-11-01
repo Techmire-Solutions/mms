@@ -5,6 +5,7 @@ import { ProgressBar } from "@/components/app/ProgressBar";
 import { Star, Package, Gift, RotateCcw, TrendingUp, Layers } from "lucide-react";
 import { PieChart, Pie, Cell, Tooltip } from "recharts";
 import { SafeResponsiveContainer } from "@/components/app/SafeResponsiveContainer";
+import { CHART_TEXT_MIN_PX } from "@/components/app/ChartGrid";
 import type { Denomination, StockBatch, Distribution } from "@/lib/data/hasanatData";
 import { useBrandPalette } from "@/lib/contexts/BrandingPaletteContext";
 import { useTranslation } from "@/hooks/useTranslation";
@@ -165,7 +166,7 @@ export function HasanatDashboard({
                       t("hasanat.dashboard.cardsCount", { count: Number(value) }),
                       "",
                     ]}
-                    contentStyle={{ fontSize: 11, borderRadius: 8 }}
+                    contentStyle={{ fontSize: CHART_TEXT_MIN_PX, borderRadius: 8 }}
                   />
                 </PieChart>
               </SafeResponsiveContainer>

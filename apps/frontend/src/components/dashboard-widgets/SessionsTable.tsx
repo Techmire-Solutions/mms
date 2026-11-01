@@ -99,7 +99,7 @@ export default function SessionsTable({ title, items }: SessionsTableProps) {
 
       <div className="p-3 px-6 border-b border-border/40 flex items-center gap-2 bg-muted/10">
         <SearchBar
-          placeholder={t("contacts.searchPlaceholder")}
+          placeholder={t("dashboard.widgets.searchSessions")}
           value={searchQuery}
           onChange={handleSearchChange}
           className="flex-1"

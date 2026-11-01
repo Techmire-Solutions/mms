@@ -1,6 +1,7 @@
 import React, { act } from "react";
 import { createRoot, type Root } from "react-dom/client";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import { useMediaQuery } from "@/hooks/useMediaQuery";
 import { ResponsiveAccordionTabs } from "./ResponsiveAccordionTabs";
 
 declare global {
@@ -19,7 +20,7 @@ vi.mock("@/lib/routing/useScrollSurfaceOnChange", () => ({
 }));
 
 vi.mock("@/hooks/useMediaQuery", () => ({
-  useMediaQuery: () => true, // Desktop mode for testing tab click
+  useMediaQuery: vi.fn(() => true), // Desktop mode by default
 }));
 
 describe("ResponsiveAccordionTabs", () => {
@@ -30,6 +31,7 @@ describe("ResponsiveAccordionTabs", () => {
     container = document.createElement("div");
     document.body.appendChild(container);
     root = createRoot(container);
+    vi.mocked(useMediaQuery).mockReturnValue(true);
   });
 
   afterEach(async () => {
@@ -69,6 +71,54 @@ describe("ResponsiveAccordionTabs", () => {
     expect(onTabChange).toHaveBeenCalledWith("details");
   });
 
+  it("treats a re-click on the selected tab as a no-op on desktop", async () => {
+    // The desktop strip is a tablist, not an accordion: collapsing it used to
+    // blank the whole module body and persist the "" key (2026-10-31 review).
+    const onTabChange = vi.fn();
+
+    await act(async () => {
+      root.render(
+        <ResponsiveAccordionTabs tabs={sampleTabs} activeTab="overview" onTabChange={onTabChange}>
+          <div>Active Tab Content</div>
+        </ResponsiveAccordionTabs>,
+      );
+    });
+
+    const overviewButton = Array.from(container.querySelectorAll("button")).find((b) =>
+      b.textContent?.includes("Overview"),
+    );
+    expect(overviewButton).toBeDefined();
+
+    await act(async () => {
+      overviewButton?.click();
+    });
+
+    expect(onTabChange).not.toHaveBeenCalled();
+    expect(container.textContent).toContain("Active Tab Content");
+  });
+
+  it("still collapses the active section on mobile", async () => {
+    vi.mocked(useMediaQuery).mockReturnValue(false);
+    const onTabChange = vi.fn();
+
+    await act(async () => {
+      root.render(
+        <ResponsiveAccordionTabs tabs={sampleTabs} activeTab="overview" onTabChange={onTabChange}>
+          <div>Active Tab Content</div>
+        </ResponsiveAccordionTabs>,
+      );
+    });
+
+    const overviewButton = Array.from(container.querySelectorAll("button")).find((b) =>
+      b.textContent?.includes("Overview"),
+    );
+
+    await act(async () => {
+      overviewButton?.click();
+    });
+
+    expect(onTabChange).toHaveBeenCalledWith("");
+  });
   it("handles document.startViewTransition when available", async () => {
     const transitionSpy = vi.fn((cb: () => void) => cb());
     const doc = document as unknown as { startViewTransition?: (fn: () => void) => void };

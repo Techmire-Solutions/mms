@@ -9,9 +9,15 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 
-/** Hover-reveal trigger styling shared by Work table/card row action menus. */
+/**
+ * Row-action trigger styling shared by Work table/card row action menus.
+ *
+ * Always visible: hover-only reveal made the Actions column look empty at rest
+ * (and on touch there is no hover), so the primary record affordance was
+ * undiscoverable. The 44px target and muted border keep it quiet.
+ */
 export const MODULE_ROW_ACTIONS_TRIGGER_CLASS =
-  "min-w-11 min-h-11 rounded-lg border border-border/50 bg-background/50 hover:bg-muted text-muted-foreground hover:text-foreground transition-colors opacity-100 md:opacity-0 md:group-hover:opacity-100 md:focus-within:opacity-100 shadow-none";
+  "min-w-11 min-h-11 rounded-lg border border-border/50 bg-background/50 hover:bg-muted text-muted-foreground hover:text-foreground transition-colors opacity-100 shadow-none";
 
 export interface ModuleRowActionsMenuProps {
   /** Trigger aria-label (translated by the module). */

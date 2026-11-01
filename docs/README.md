@@ -36,6 +36,7 @@ Project-wide entry points live at the repo root:
 - [ui-ux-dry-ssot-review-2026-09-30.md](./ui-ux-dry-ssot-review-2026-09-30.md)
 - [ui-ux-review.md](./ui-ux-review.md) · [ui-ux-review-resolution.md](./ui-ux-review-resolution.md)
 - [ui-ux-review-2026-10-30/](./ui-ux-review-2026-10-30/) — rendered visual/UX review: localized date corruption, contacts table collapse, platform a11y gate red, mobile header/scroll, dashboard density. · [resolution](./ui-ux-review-2026-10-30/RESOLUTION.md)
+- [ui-ux-review-2026-10-31/](./ui-ux-review-2026-10-31/) — fresh rendered review at `a7f22cfb5`: prior fixes re-verified, mobile integration-panel collapse, two new contrast exceptions, currency/numeral inconsistency, hidden row actions. · [resolution](./ui-ux-review-2026-10-31/RESOLUTION.md) · [resolution](./ui-ux-review-2026-10-31/RESOLUTION.md)
 - [messaging-ui-ux-audit-2026-10-24.md](./messaging-ui-ux-audit-2026-10-24.md) — Messaging module UI/UX audit + SSOT consolidation findings.
 - [project-review-2026-10-29.md](./project-review-2026-10-29.md) — whole-repo review: gates, test/build evidence, two fixed XSS vectors, open debt.
 - [project-review-2026-10-30.md](./project-review-2026-10-30.md) — whole-repo re-review at `84516ad04`: 21/21 gates, 7,736 tests, production print/CSP regression, backend/shared coverage-basis gap, CI source-map disclosure; P-01–P-06 fixed in the same change.

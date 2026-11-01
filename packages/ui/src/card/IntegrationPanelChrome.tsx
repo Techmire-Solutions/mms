@@ -79,23 +79,29 @@ export function IntegrationPanelChrome({
 
   return (
     <div className={cn(WORK_SURFACE_INNER, "space-y-4 p-4")}>
-      <div className="flex items-start gap-3">
-        <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-primary/10">
-          <Icon className="h-4 w-4 text-primary" aria-hidden="true" />
+      <div className="flex flex-col gap-2 sm:flex-row sm:items-start sm:gap-3">
+        <div className="flex min-w-0 flex-1 items-start gap-3">
+          <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-primary/10">
+            <Icon className="h-4 w-4 text-primary" aria-hidden="true" />
+          </div>
+          <div className="min-w-0 flex-1">
+            <p className="text-sm font-semibold text-foreground text-balance">{title}</p>
+            <p className="text-xs text-muted-foreground text-pretty">{description}</p>
+          </div>
         </div>
-        <div className="min-w-0 flex-1">
-          <p className="text-sm font-semibold text-foreground text-balance">{title}</p>
-          <p className="text-xs text-muted-foreground text-pretty">{description}</p>
+        {/* The status badge must never outbid the title column on narrow screens:
+            below `sm` it drops to its own row instead of squeezing the copy to ~58px. */}
+        <div className="shrink-0 self-start ps-12 sm:ps-0">
+          {connected && lastTestOk ? (
+            <Badge as="span" tone="success" size="sm">
+              {statusConnectedText}
+            </Badge>
+          ) : (
+            <Badge as="span" tone="muted" size="sm">
+              {statusNotConnectedText}
+            </Badge>
+          )}
         </div>
-        {connected && lastTestOk ? (
-          <Badge as="span" tone="success" size="sm">
-            {statusConnectedText}
-          </Badge>
-        ) : (
-          <Badge as="span" tone="muted" size="sm">
-            {statusNotConnectedText}
-          </Badge>
-        )}
       </div>
 
       <div

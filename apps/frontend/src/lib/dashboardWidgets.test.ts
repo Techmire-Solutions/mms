@@ -57,4 +57,24 @@ describe("dashboardWidgets", () => {
     );
     expect(subText).toBe("Custom Subtitle");
   });
+
+  it("suppresses a subtitle that only repeats the title", () => {
+    // Regression guard for the 2026-10-31 review: seeded contacts/sessions cards
+    // rendered "Total Contacts" over "Total contacts" (and the same for sessions).
+    const sameT = () => "Total Contacts";
+    const subText = resolveWidgetSubText({ id: "def-card-admin-contacts", title: "" }, sameT);
+    expect(subText).toBe("");
+  });
+
+  it("matches title and subtitle case- and whitespace-insensitively", () => {
+    const subText = resolveWidgetSubText(
+      {
+        id: "custom-widget",
+        title: "Total Contacts",
+        fixedSubText: "  Total contacts  ",
+      },
+      mockT,
+    );
+    expect(subText).toBe("");
+  });
 });

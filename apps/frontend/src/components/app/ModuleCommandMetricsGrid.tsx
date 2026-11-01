@@ -23,13 +23,16 @@ export interface ModuleCommandMetricsGridProps {
 
 const GRID_COLS_BY_COUNT: Record<number, string> = {
   1: "grid-cols-1",
-  2: "grid-cols-1 sm:grid-cols-2",
-  3: "grid-cols-1 sm:grid-cols-3",
-  4: "grid-cols-1 sm:grid-cols-2 lg:grid-cols-4",
-  5: "grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5",
-  6: "grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-6",
-  7: "grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 xl:grid-cols-4 2xl:grid-cols-7",
-  8: "grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 xl:grid-cols-4 2xl:grid-cols-8",
+  // Two-up from 375px: a single stacked column pushed the directory itself below
+  // the fold on mobile, and a 5-item module left a lone card on a second row at
+  // 1440 (2026-10-31 review, UX-14/UX-17).
+  2: "grid-cols-2",
+  3: "grid-cols-2 sm:grid-cols-3",
+  4: "grid-cols-2 lg:grid-cols-4",
+  5: "grid-cols-2 sm:grid-cols-3 lg:grid-cols-5",
+  6: "grid-cols-2 sm:grid-cols-3 xl:grid-cols-6",
+  7: "grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 2xl:grid-cols-7",
+  8: "grid-cols-2 sm:grid-cols-4 lg:grid-cols-4 2xl:grid-cols-8",
 };
 
 export const ModuleCommandMetricsGrid = function ModuleCommandMetricsGrid({

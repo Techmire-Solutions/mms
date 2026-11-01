@@ -122,7 +122,7 @@ export default function OutstandingFeesTable({ title }: { title?: string }) {
 
       <div className="p-3 px-6 border-b border-border/40 flex items-center gap-2 bg-muted/10">
         <SearchBar
-          placeholder={t("contacts.searchPlaceholder")}
+          placeholder={t("dashboard.widgets.searchStudents")}
           value={searchQuery}
           onChange={handleSearchChange}
           className="flex-1"

@@ -37,7 +37,10 @@ export const buttonVariants = cva(
         lg: "min-h-11 h-12 rounded-xl px-8 text-base",
         xl: "min-h-11 px-6 text-base",
         icon: "min-h-11 min-w-11 h-11 w-11",
-        caps: "min-h-11 h-auto rounded-xl px-3 py-2 text-xs font-bold uppercase tracking-wider gap-1.5",
+        // `tracking-wider` is a Latin typographic choice; letter-spacing breaks
+        // Arabic/Urdu joining, so caps labels keep normal tracking in RTL
+        // (2026-10-31 review). `uppercase` is a no-op for those scripts.
+        caps: "min-h-11 h-auto rounded-xl px-3 py-2 text-xs font-bold uppercase tracking-wider rtl:tracking-normal gap-1.5",
       },
     },
     defaultVariants: {

@@ -135,6 +135,19 @@ describe("Translation System Enhancements", () => {
     }
 
     const urKeys = Object.keys(APP_TRANSLATIONS_UR);
+
+    // Mixed-script ratchet (2026-10-31 review, UX-12): Urdu had `کropper` and
+    // `sync` glued into otherwise-Urdu labels. Latin words are allowed (SMTP,
+    // WhatsApp) — only a Latin letter directly attached to an Urdu letter is a
+    // defect, because it breaks shaping and direction resolution.
+    const glued: string[] = [];
+    for (const key of urKeys) {
+      const val = APP_TRANSLATIONS_UR[key as AppTranslationKey];
+      if (!val) continue;
+      if (/[\u0621-\u064A][A-Za-z]|[A-Za-z][\u0621-\u064A]/.test(val)) glued.push(key);
+    }
+    expect(glued, `Urdu values with glued Latin script: ${glued.join(", ")}`).toEqual([]);
+
     expect(urKeys.length).toBeGreaterThan(6000);
     for (const key of urKeys) {
       const val = APP_TRANSLATIONS_UR[key as AppTranslationKey];
@@ -143,5 +156,14 @@ describe("Translation System Enhancements", () => {
       const closeCount = (val.match(/\}/g) || []).length;
       expect(openCount).toBe(closeCount);
     }
+  });
+
+  it("Persian covers every English key so it can load without the Arabic chunk", () => {
+    // 2026-10-31 review (UX-13): `fetchLanguagePack("fa")` merged the Arabic
+    // pack for a fallback that cannot fire today. This pins the assumption.
+    const missing = Object.keys(APP_TRANSLATIONS_EN).filter(
+      (key) => APP_TRANSLATIONS_FA[key as AppTranslationKey] === undefined,
+    );
+    expect(missing, `Persian keys missing: ${missing.slice(0, 10).join(", ")}`).toEqual([]);
   });
 });
