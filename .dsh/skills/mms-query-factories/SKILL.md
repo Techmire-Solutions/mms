@@ -4,7 +4,7 @@ description: Implements TanStack Query v5 queryOptions/mutationOptions factories
 license: Proprietary
 metadata:
   owner: mms-platform
-  last-verified: 2026-10-29
+  last-verified: 2026-11-02
 ---
 
 # MMS Query Factories Workflow
@@ -29,6 +29,7 @@ Under the existing no-optimistic-money rule, await persisted success, retain for
 - ❌ **NEVER use ad-hoc string keys**: Always define structured tuple key constants with `as const satisfies readonly unknown[]`.
 - ❌ **NEVER perform optimistic updates on financial or bulk writes**: Optimistic updates are strictly limited to idempotent, low-risk UI (e.g. single-item soft-delete hide with 5–10s undo toast).
 - ❌ **NEVER deep-import feature hooks across modules**: Always re-export public surfaces through `@/tenant/hooks/collections/{module}.ts`.
+- ❌ **NEVER overwrite a versioned record without its token**: document-template saves carry the cached `updatedAt`; 409 is a conflict the UI must surface, never retry silently (`mms-document-templates`).
 
 ## Step-by-Step Workflow
 

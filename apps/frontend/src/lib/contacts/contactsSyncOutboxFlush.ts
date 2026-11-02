@@ -1,6 +1,6 @@
 import type { Contact } from "@mms/shared";
 import {
-  OUTBOX_KEY,
+  currentContactsSyncKeys,
   getContactsOutbox,
   notifyContactsSyncOutboxChanged,
   writeJson,
@@ -21,13 +21,13 @@ export function enqueueContactsOutbox(entry: ContactsOutboxInput): void {
     createdAt: new Date().toISOString(),
   } as ContactsOutboxEntry;
   queue.push(full);
-  writeJson(OUTBOX_KEY, queue);
+  writeJson(currentContactsSyncKeys().outbox, queue);
   notifyContactsSyncOutboxChanged();
 }
 
 function removeOutboxEntry(id: string): void {
   writeJson(
-    OUTBOX_KEY,
+    currentContactsSyncKeys().outbox,
     getContactsOutbox().filter((outboxEntry) => outboxEntry.id !== id),
   );
   notifyContactsSyncOutboxChanged();
@@ -39,16 +39,32 @@ interface ContactsOutboxFlushHandlers {
   delete: (contactId: string, deletionReason?: string) => Promise<unknown>;
 }
 
-interface ContactsOutboxFlushResult {
+export interface ContactsOutboxFlushResult {
   synced: number;
   failed: number;
   conflicts: number;
 }
 
+/**
+ * Single-flight guard: `useContactsSyncOutbox` is mounted by the metrics header,
+ * the offline banner and the conflict panel, each with its own `online`
+ * listener. Without this guard a single reconnect replays the same queue three
+ * times (duplicate writes, duplicate conflict rows).
+ */
+let inFlightFlush: Promise<ContactsOutboxFlushResult> | null = null;
+
 /** Replays queued mutations when back online (globle1 §1.4). */
-export async function flushContactsOutbox(
+export function flushContactsOutbox(
   handlers: ContactsOutboxFlushHandlers,
 ): Promise<ContactsOutboxFlushResult> {
+  if (inFlightFlush) return inFlightFlush;
+  inFlightFlush = runFlush(handlers).finally(() => {
+    inFlightFlush = null;
+  });
+  return inFlightFlush;
+}
+
+async function runFlush(handlers: ContactsOutboxFlushHandlers): Promise<ContactsOutboxFlushResult> {
   const queue = [...getContactsOutbox()];
   let synced = 0;
   let failed = 0;
@@ -78,4 +94,9 @@ export async function flushContactsOutbox(
   }
 
   return { synced, failed, conflicts };
+}
+
+/** Test-only reset for the single-flight guard. */
+export function resetContactsOutboxFlushForTests(): void {
+  inFlightFlush = null;
 }

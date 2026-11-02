@@ -6,7 +6,7 @@ alwaysApply: false
 
 # MMS Reports & Analytics
 
-**Workflow skills:** charts intelligence → `ui-ux-pro-max` · charts/exports/KPIs → `mms-reports-export` · mega export job tray → `mms-background-jobs`. Query policy → `mms-data-layer.mdc` · skill `mms-query-factories`.
+**Workflow skills:** charts intelligence → `ui-ux-pro-max` · charts/exports/KPIs → `mms-reports-export` · mega export job tray → `mms-background-jobs` · printable document layouts → `mms-document-templates`. Query policy → `mms-data-layer.mdc` · skill `mms-query-factories`.
 
 ## 1. Data Layer (Query-First)
 - **Server-Authoritative Aggregates:** REST entities use TanStack Query, server aggregates, or `/metrics` endpoints. Client-side full collection loops or full table dumps (`loadAllFn`) are banned.

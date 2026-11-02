@@ -2,8 +2,7 @@ import { getDisplayName } from "@mms/shared";
 import type { ContactsOutboxEntry } from "@/lib/contacts/contactsSyncOutboxStorage";
 
 export {
-  OUTBOX_KEY,
-  CONFLICTS_KEY,
+  currentContactsSyncKeys,
   getContactsOutbox,
   getContactsSyncConflicts,
   type ContactsOutboxEntry,

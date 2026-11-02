@@ -1282,7 +1282,7 @@ describe("contacts REST routes", () => {
     await app.close();
   });
 
-  it("PUT /api/contacts/:id allows self-service update without contacts.write and skips inference", async () => {
+  it("PUT /api/contacts/:id rejects person-model fields on a self-service update", async () => {
     mockGetLinkedContactId.mockResolvedValue("c1");
     const app = await buildApp();
     const res = await app.inject({
@@ -1299,13 +1299,86 @@ describe("contacts REST routes", () => {
         relationshipContacts: [{ contactId: "peer-1", relationship: "Father" }],
       },
     });
+    // `relationshipContacts` is outside the profile whitelist: a self-service
+    // editor must not rewrite the relationship graph without `contacts.write`.
+    expect(res.statusCode).toBe(400);
+    expect(res.json()).toMatchObject({
+      type: "validation_error",
+      errors: [expect.objectContaining({ fieldId: "relationshipContacts" })],
+    });
+    expect(mockUpdateContactById).not.toHaveBeenCalled();
+    await app.close();
+  });
+
+  it("PUT /api/contacts/:id applies the profile value rules on a self-service update", async () => {
+    mockGetLinkedContactId.mockResolvedValue("c1");
+    const app = await buildApp();
+    const res = await app.inject({
+      method: "PUT",
+      url: "/api/contacts/c1",
+      headers: {
+        host: "demo.localhost",
+        authorization: `Bearer ${accountantToken(app)}`,
+      },
+      payload: { id: "c1", firstName: "Ali", email: "not-an-email" },
+    });
+    expect(res.statusCode).toBe(400);
+    expect(res.json()).toMatchObject({
+      type: "validation_error",
+      errors: [expect.objectContaining({ fieldId: "email" })],
+    });
+    expect(mockUpdateContactById).not.toHaveBeenCalled();
+    await app.close();
+  });
+
+  it("PUT /api/contacts/:id allows self-service profile fields without contacts.write and skips inference", async () => {
+    mockGetLinkedContactId.mockResolvedValue("c1");
+    const app = await buildApp();
+    const res = await app.inject({
+      method: "PUT",
+      url: "/api/contacts/c1",
+      headers: {
+        host: "demo.localhost",
+        authorization: `Bearer ${accountantToken(app)}`,
+      },
+      payload: {
+        id: "c1",
+        firstName: "Ali",
+        lastName: "Khan",
+        phone: "03001234567",
+        email: "ali@example.com",
+      },
+    });
     expect(res.statusCode).toBe(200);
     expect(mockUpdateContactById).toHaveBeenCalledWith(
       "c1",
-      expect.objectContaining({
-        relationshipContacts: [{ contactId: "peer-1", relationship: "Father" }],
-      }),
+      expect.objectContaining({ firstName: "Ali", phone: "03001234567" }),
       expect.objectContaining({ applyRelationshipInference: false }),
+    );
+    await app.close();
+  });
+
+  it("PUT /api/contacts/:id stamps the acting user and passes the expected timestamp", async () => {
+    mockGetLinkedContactId.mockResolvedValue(null);
+    const app = await buildApp();
+    const res = await app.inject({
+      method: "PUT",
+      url: "/api/contacts/c1",
+      headers: {
+        host: "demo.localhost",
+        authorization: `Bearer ${adminToken(app)}`,
+        "x-expected-updated-at": "2026-01-01T00:00:00.000Z",
+      },
+      payload: { id: "c1", firstName: "Ali" },
+    });
+    expect(res.statusCode).toBe(200);
+    expect(mockUpdateContactById).toHaveBeenCalledWith(
+      "c1",
+      expect.objectContaining({ firstName: "Ali" }),
+      expect.objectContaining({
+        expectedUpdatedAt: "2026-01-01T00:00:00.000Z",
+        actorId: expect.any(String),
+      }),
     );
     await app.close();
   });

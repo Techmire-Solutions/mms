@@ -59,6 +59,7 @@ paths:
     - *Schema & Boundary Conditions:* Null, undefined, empty strings, boundary integers, invalid date strings, and malformed payload structures validated against `@mms/shared` Zod schemas.
     - *Error Contracts:* Ensure custom domain exceptions (`ContractError`, `HttpError`, RBAC rejections) throw with expected HTTP status codes, structured error payloads, and diagnostic codes.
 - **Transport-Level Mocking:** Intercept network calls at the transport layer (Fastify `inject()` for backend; transport/network interception or isolated facade boundaries for frontend). Never mock raw `fetch`, `axios`, or internal API client classes directly with ad-hoc stubs.
+- **Query-Backed Components & Print:** Component tests that render `useDocumentTemplate`/Query hooks wrap in `withQueryClient` (`src/test/queryClientTestUtils.tsx`); print tests stub `window.open` and assert the written HTML. Never assert raw translation keys or rely on the live API.
 - **Typed Factories over JSON:** Never create static `.json` fixtures for mutable domain models. Use typed factory builders exporting pure functions with sensible `@mms/shared` defaults that accept partial overrides.
 - **Zero Shared Mutable State:**
   - Prohibit `let` variables in outer `describe` scopes that mutate across tests.

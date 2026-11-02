@@ -1,11 +1,10 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import {
   clearContactsSyncConflicts,
+  currentContactsSyncKeys,
   flushContactsOutbox,
   getContactsOutbox,
   getContactsSyncConflicts,
-  OUTBOX_KEY,
-  CONFLICTS_KEY,
 } from "@/lib/contacts/contactsSyncOutbox";
 import {
   useContactMutations,
@@ -31,7 +30,12 @@ export function useContactsSyncOutbox() {
   useEffect(() => {
     const handler = () => refreshCounts();
     const handleStorage = (event: StorageEvent) => {
-      if (event.key === null || event.key === OUTBOX_KEY || event.key === CONFLICTS_KEY) {
+      if (event.key === null) {
+        refreshCounts();
+        return;
+      }
+      const keys = currentContactsSyncKeys();
+      if (event.key === keys.outbox || event.key === keys.conflicts) {
         refreshCounts();
       }
     };

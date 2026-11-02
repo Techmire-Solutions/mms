@@ -3,6 +3,7 @@ import {
   cleanContactDraft,
   normalizeToE164,
   parsePhoneNumber,
+  stripClientAuditFields,
   stripContactClientSoftDeleteFields,
   stripContactRetiredClassificationFields,
   syncContactScalarFields,
@@ -110,5 +111,7 @@ export async function prepareContactRecord(
     rawId ??
     `temp-${typeof crypto !== "undefined" && crypto.randomUUID ? crypto.randomUUID() : `${Date.now()}-${Math.random().toString(36).slice(2, 9)}`}`;
   const titled = applyTitleCaseToContact({ ...withScalars, id: resolvedId });
-  return stripContactRetiredClassificationFields({ ...titled });
+  // Audit attribution is server-owned; the acting user is stamped by the write
+  // use cases *after* this step (`upsertContact` / `updateContactById`).
+  return stripClientAuditFields(stripContactRetiredClassificationFields({ ...titled }));
 }

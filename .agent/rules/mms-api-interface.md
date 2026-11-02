@@ -34,7 +34,8 @@ description: Client-server REST interface contracts, apiClient fetch wrappers, F
 - **Pagination:** Clients send `page` and `limit` (default 25, max 100 via `baseListQuerySchema`). Unbounded list dumps (`loadAllFn`) are banned.
 - **HTTP Caching:** Emit weak `ETag` and `Cache-Control: private, no-cache` on idempotent GETs; return `304 Not Modified` on `If-None-Match`.
 - **Idempotency Standard:** State-changing POSTs accept `Idempotency-Key` bound to SHA-256 canonical body digest in Redis (24h TTL). Replays return `Idempotency-Replay: true`; payload mismatches reject with `409 Conflict`.
-- **Optimistic Concurrency:** Contested single-row updates verify `updated_at` / version checks or return `409 Conflict`.
+- **Optimistic Concurrency:** Contested single-row updates echo the version the client read, compare-and-set it atomically, and return `409 Conflict` when it no longer matches. The client keeps its draft and offers an explicit reload; silent overwrite and read-then-write checks are banned.
+- **Document-template example:** `GET /api/templates/:key` returns `{ template, updatedAt }`; `PUT` accepts `expectedUpdatedAt` (`null` = insert-only); the repository uses `onConflictDoNothing` or `WHERE updated_at = expected`; a zero-row result is 409. See `mms-document-templates.md`.
 
 ## 7. Soft-Delete & Restore REST Contracts
 - **Endpoints & Router Wiring:** `DELETE /:id` (soft-delete), `POST /:id/restore` (restore), `POST /bulk-delete`, `POST /bulk-restore`, `GET /?includeDeleted=true` (trash list). Isolate soft-delete and restore routes in dedicated `<module>SoftDeleteRoutes.ts` plugins (Contacts gold standard).

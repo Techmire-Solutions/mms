@@ -49,7 +49,11 @@ export async function runContactsImportJob(
 
   for (let index = 0; index < total; index += 1) {
     try {
-      await upsertContact(contacts[index] as Contact, { canRestore, language });
+      await upsertContact(contacts[index] as Contact, {
+        canRestore,
+        language,
+        actorId: context.userId,
+      });
       imported += 1;
     } catch (error) {
       if (failures.length < MAX_RECORDED_FAILURES) {

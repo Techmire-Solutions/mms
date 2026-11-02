@@ -4,7 +4,7 @@ description: Reviews a concrete change set (PR or local diff) against MMS rules 
 license: Proprietary
 metadata:
   owner: mms-platform
-  last-verified: 2026-10-29
+  last-verified: 2026-11-02
 allowed-tools: Read Grep Glob Bash(pnpm typecheck) Bash(pnpm lint) Bash(pnpm test) Bash(pnpm ci:local) Bash(pnpm ci:local:full) Bash(bash scripts/ci/local-ci.sh) Bash(bash .agent/skills/mms-code-review/scripts/pre-pr-review.sh)
 ---
 
@@ -62,6 +62,7 @@ Separate demonstrated controls from capability gaps and framework-dependent poli
 | Module access gates & coverage checks | `mms-auth-security.mdc` §3 · **`mms-backend-api`** / **`mms-frontend`** |
 | Code norms (zero `any`, semantic tokens, 300 LOC) | `mms-dry.mdc` §4 · `mms-ui-ux-design.mdc` §2 · `mms-structure-naming.mdc` §3 |
 | Work directory convergence (DataTable SSOT) | `mms-dry.mdc` §1 · `mms-module-architecture.mdc` §3 · **`mms-module-work`** |
+| Template persistence, CAS/409 and print SSOT | `mms-document-templates.mdc` · **`mms-document-templates`** |
 
 ## Review order
 
@@ -70,7 +71,8 @@ Separate demonstrated controls from capability gaps and framework-dependent poli
 3. Data layer (Query vs legacy, bulk upsert, RLS, zero wildcard projections, soft-delete)
 4. Module §7 gold-standard (+ messaging variants when touched)
 5. UI design tokens & i18n / a11y (semantic HSL tokens, 44×44px touch floor, axe smoke via `mms-a11y-smoke`)
-6. Scope creep & dead code removal
+6. Document templates (server row vs legacy store, CAS/409 keeps draft, one renderer/print path, localized field catalogs)
+7. Scope creep & dead code removal
 
 ## Automated checks
 

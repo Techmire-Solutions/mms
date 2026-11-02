@@ -29,7 +29,7 @@ alwaysApply: false
 
 ## 3. Client Persistence (`db.ts` [DEPRECATED])
 1. **Legacy Settings Only:** `db.ts` is restricted to non-migrated settings singletons (`branding`, `global_settings`). Event: `local-database-update`.
-2. **REST Entities Ban:** Primary entities (Contacts, Students, Faculty, Finance) must use Query/REST, never `getCollection` or `saveCollection`.
+2. **REST Entities Ban:** Primary entities (Contacts, Students, Faculty, Finance) must use Query/REST, never `getCollection` or `saveCollection`. Document templates are migrated rows: layouts live in `document_templates` behind `/api/templates/:key`, never in `db.ts`/`saveObject` or a localStorage layout key.
 
 ## 4. TanStack Query v5 (Server-Authoritative REST)
 1. **Client Defaults:** Tiered stale-times, 24h gcTime, focus refetch off, reconnect on, retries bounded (exclude 401/403/404) in `apps/frontend/src/lib/queryClient.ts`.
@@ -38,6 +38,7 @@ alwaysApply: false
 4. **Mutations & Cache:** Call-site `notify.*` + `t()` after `mutateAsync`. Await mutation before dialog close. Invalidate specific list/count tuple keys.
 5. **Optimistic Policy:** Only for idempotent actions with undo. Ban for money, bulk ops, messaging. Single-record soft-delete uses 5–10s Undo toast.
 6. **Live WebSockets:** `/api/ws` with `broadcastTenantUpdate` invalidates Query tuple keys on server events.
+7. **Document Templates:** The GET record carries `{ template, updatedAt }`; saves send `expectedUpdatedAt` and surface 409 conflicts instead of overwriting. The read-through cache is first-paint only; the server row is authoritative.
 
 ## 5. Modern Database Audit Trail & Cryptographic Integrity
 1. **Five-Dimension Capture:** Who (`real_user_id`), What (`table_name`, `record_id`, `old_state`, `new_state`), When (UTC microsecond), Why (`correlation_id` / traceparent, `action_type`), Integrity (`hash_previous`, `hash_current`).

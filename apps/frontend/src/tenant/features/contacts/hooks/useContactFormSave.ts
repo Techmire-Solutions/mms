@@ -108,7 +108,9 @@ export function useContactFormSave({
           name: composeContactName(firstName, lastName),
           phones: normalizedPhones,
           socials: normalizedSocials,
-          updatedAt: todayISO(),
+          // Keep the timestamp the record was loaded with — the server stamps
+          // the new one and uses this value as the optimistic-concurrency token.
+          updatedAt: contact?.updatedAt ?? cleanedDraft.updatedAt ?? todayISO(),
           createdAt: cleanedDraft.createdAt || todayISO(),
         } as Contact;
 

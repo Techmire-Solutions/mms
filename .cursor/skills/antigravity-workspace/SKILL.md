@@ -4,7 +4,7 @@ description: Orients Antigravity agents to the MMS workspace layout — .agent r
 license: Proprietary
 metadata:
   owner: mms-platform
-  last-verified: 2026-10-29
+  last-verified: 2026-11-02
 allowed-tools: Read Grep Glob Bash(bash .agent/scripts/sync-all.sh) Bash(node scripts/verify-rules-integrity.mjs)
 ---
 
@@ -47,7 +47,7 @@ Keep in sync when editing: `bash .agent/scripts/sync-all.sh`
 
 Requestable (not always-on): `rules/mms-agent-universal.mdc` (cognition, output economy, security, TS/git).
 
-Scoped (21 rules, 23 total): `mms-performance` (compute/virtualization), `mms-migration-status` (active debt register), `mms-data-layer` (Postgres/RLS/Query), `mms-tdd` (test-first delivery), `mms-dry`, `mms-dependencies`, `mms-structure-naming`, `mms-hooks`, `mms-module-architecture`, `mms-ui-ux-design`, etc.
+Scoped (22 rules, 24 total): `mms-performance` (compute/virtualization), `mms-migration-status` (active debt register), `mms-data-layer` (Postgres/RLS/Query), `mms-tdd` (test-first delivery), `mms-dry`, `mms-dependencies`, `mms-structure-naming`, `mms-hooks`, `mms-module-architecture`, `mms-ui-ux-design`, etc.
 
 Claude Code difference: a rule with no `paths:` loads every session, so `.claude/rules/` always-on = the two above **plus** `rules/mms-agent-universal.mdc` (requestable in Cursor/Antigravity). `verify-rules-integrity.mjs` enforces that parity.
 

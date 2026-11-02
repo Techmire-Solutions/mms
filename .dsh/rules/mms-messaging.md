@@ -5,7 +5,7 @@ description: SMS and WhatsApp campaign composition, template interpolation, deli
 
 # MMS Messaging & Campaign Specification
 
-**Workflow skills:** campaign authoring & templates → `mms-messaging` · background CSV exports → `mms-background-jobs`.
+**Workflow skills:** campaign authoring & templates → `mms-messaging` · background CSV exports → `mms-background-jobs` · printable document layouts → `mms-document-templates`.
 
 ## 1. Architectural Boundaries & Recipient Modeling
 - **Composer SSOT:** Outbound campaigns strictly consume `MessageComposer` with `MessagingRecipient` / `toMessagingRecipient` from `@mms/shared`. Feature modules enter via `useMessageComposerState`.
@@ -21,6 +21,7 @@ description: SMS and WhatsApp campaign composition, template interpolation, deli
 ## 3. Template Tokens, Security & Delivery Channels
 - **Safe Token Substitution:** Evaluate variable tokens (e.g. `{name}`) on the client against a strict manifest allowlist; reject unknown placeholders.
 - **Content Security:** Message templates and payloads are plain text; executable HTML or script tags are banned. Never log message bodies at INFO level.
+- **Template Scope:** Message templates are plain-text campaign content. Invoice/receipt/student-card/report-card layouts and their print surfaces are owned by `mms-document-templates.md`; do not extend the messaging template stack for printable documents.
 - **Delivery Providers:** WhatsApp number resolution requires `PuppeteerWhatsAppProvider.getNumberId` (`@mms/shared`). Sequential dispatch with configurable delay. SMS dispatches via `openDeviceSmsComposer`.
 
 ## 4. Module Page Parity & Soft-Archive Semantics

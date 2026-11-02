@@ -6,14 +6,37 @@ export interface ContactFieldConfigSnapshot {
   tabs: TabDefinition[];
 }
 
-const TAB_COLLECTION_KEYS: Record<string, (keyof Contact)[]> = {
+/**
+ * Every contact property owned by a Setup tab, including the array-backed list
+ * tabs. Miss an entry here and a hidden/role-restricted tab's rows are returned
+ * verbatim to the viewer, so the map is deliberately exhaustive.
+ */
+const TAB_COLLECTION_KEYS: Record<string, readonly (keyof Contact)[]> = {
   phones: ["phones", "phone"],
   emails: ["emails", "email"],
-  addresses: ["addresses", "city", "state", "country"],
+  addresses: ["addresses", "line1", "city", "state", "country"],
   socials: ["socials"],
   relationship: ["relationshipContacts"],
   relationships: ["relationships"],
+  education: ["education"],
+  experience: ["experience"],
+  skills: ["skills"],
+  bankDetails: ["bankDetails"],
+  activities: ["activities"],
+  attachments: ["attachments"],
 };
+
+/** Row field whose absence makes the whole collection meaningless → drop every row. */
+const TAB_IDENTITY_FIELDS: Record<string, string> = {
+  phones: "number",
+  emails: "address",
+};
+
+/** Top-level keys to delete plus per-collection row fields the viewer cannot read. */
+interface ContactStripPlan {
+  keys: string[];
+  rowFields: Array<{ collection: string; fields: string[] }>;
+}
 
 function fieldVisible(viewerRole: string, field: FieldDefinition | undefined): boolean {
   if (!field) return true;
@@ -21,14 +44,10 @@ function fieldVisible(viewerRole: string, field: FieldDefinition | undefined): b
   return canViewContactField(viewerRole, field);
 }
 
-/**
- * Resolves contact field keys that the viewer role cannot read.
- * Precomputed once per batch to avoid O(N * T * F) iterations and repeated tab/field finds.
- */
-export function resolveContactKeysToStripForViewer(
+function resolveContactStripPlan(
   viewerRole: string,
   config: ContactFieldConfigSnapshot,
-): string[] {
+): ContactStripPlan {
   const { fields, tabs = [] } = config;
   const tabMap = new Map<string, TabDefinition>();
   for (const t of tabs) {
@@ -38,6 +57,7 @@ export function resolveContactKeysToStripForViewer(
   }
 
   const toStrip = new Set<string>();
+  const rowFields: ContactStripPlan["rowFields"] = [];
 
   const fieldLookup = new Map<string, FieldDefinition>();
   for (const [tabId, tabFields] of Object.entries(fields || {})) {
@@ -57,39 +77,37 @@ export function resolveContactKeysToStripForViewer(
       }
       continue;
     }
-    if (
-      tabId === "phones" &&
-      fields.phones?.length &&
-      !fieldVisible(viewerRole, fieldLookup.get("phones:number"))
-    ) {
-      toStrip.add("phones");
-      toStrip.add("phone");
+    const tabFields = fields[tabId] ?? [];
+    const hiddenFields = tabFields.filter((field) => !fieldVisible(viewerRole, field));
+    if (hiddenFields.length === 0) continue;
+    const identityField = TAB_IDENTITY_FIELDS[tabId];
+    if (identityField && hiddenFields.some((field) => field.key === identityField)) {
+      for (const key of keys) {
+        toStrip.add(String(key));
+      }
+      continue;
     }
-    if (
-      tabId === "emails" &&
-      fields.emails?.length &&
-      !fieldVisible(viewerRole, fieldLookup.get("emails:address"))
-    ) {
-      toStrip.add("emails");
-      toStrip.add("email");
-    }
+    rowFields.push({
+      collection: String(keys[0]),
+      fields: hiddenFields.map((field) => field.key),
+    });
   }
 
+  // Custom (Setup-defined) tabs: the collection lives under the tab id itself.
   for (const [tabId, tabFields] of Object.entries(fields)) {
     if (TAB_COLLECTION_KEYS[tabId]) continue;
     const tab = tabMap.get(tabId.toLowerCase());
     const isEnabled = tab ? tab.enabled !== false : true;
-    if (!isEnabled) {
+    if (!isEnabled || (tab && !canViewContactTab(viewerRole, tab))) {
+      toStrip.add(tabId);
       for (const field of tabFields) {
         toStrip.add(field.key);
       }
       continue;
     }
-    for (const field of tabFields) {
-      if (!fieldVisible(viewerRole, field)) {
-        toStrip.add(field.key);
-      }
-    }
+    const hiddenFields = tabFields.filter((field) => !fieldVisible(viewerRole, field));
+    if (hiddenFields.length === 0) continue;
+    rowFields.push({ collection: tabId, fields: hiddenFields.map((field) => field.key) });
   }
 
   if (!fieldVisible(viewerRole, fieldLookup.get("basic:firstName"))) {
@@ -100,7 +118,37 @@ export function resolveContactKeysToStripForViewer(
     toStrip.add("lastName");
   }
 
-  return Array.from(toStrip);
+  return { keys: Array.from(toStrip), rowFields };
+}
+
+/**
+ * Resolves contact field keys that the viewer role cannot read.
+ * Precomputed once per batch to avoid O(N * T * F) iterations and repeated tab/field finds.
+ */
+export function resolveContactKeysToStripForViewer(
+  viewerRole: string,
+  config: ContactFieldConfigSnapshot,
+): string[] {
+  return resolveContactStripPlan(viewerRole, config).keys;
+}
+
+function applyContactStripPlan(contact: Contact, plan: ContactStripPlan): Contact {
+  const sanitized: Contact = { ...contact };
+  const mutable = sanitized as Record<string, unknown>;
+  for (const key of plan.keys) {
+    delete mutable[key];
+  }
+  for (const { collection, fields: hiddenFields } of plan.rowFields) {
+    const rows = mutable[collection];
+    if (!Array.isArray(rows)) continue;
+    mutable[collection] = rows.map((row) => {
+      if (!row || typeof row !== "object" || Array.isArray(row)) return row;
+      const copy: Record<string, unknown> = { ...(row as Record<string, unknown>) };
+      for (const field of hiddenFields) delete copy[field];
+      return copy;
+    });
+  }
+  return sanitized;
 }
 
 /** Strips contact properties the viewer role cannot read (API + export guard). */
@@ -109,13 +157,9 @@ export function sanitizeContactForViewer(
   viewerRole: string,
   config: ContactFieldConfigSnapshot,
 ): Contact {
-  const keysToStrip = resolveContactKeysToStripForViewer(viewerRole, config);
-  if (keysToStrip.length === 0) return contact;
-  const sanitizedContact: Contact = { ...contact };
-  for (const key of keysToStrip) {
-    delete sanitizedContact[key as keyof Contact];
-  }
-  return sanitizedContact;
+  const plan = resolveContactStripPlan(viewerRole, config);
+  if (plan.keys.length === 0 && plan.rowFields.length === 0) return contact;
+  return applyContactStripPlan(contact, plan);
 }
 
 export function sanitizeContactsForViewer(
@@ -123,15 +167,9 @@ export function sanitizeContactsForViewer(
   viewerRole: string,
   config: ContactFieldConfigSnapshot,
 ): Contact[] {
-  const keysToStrip = resolveContactKeysToStripForViewer(viewerRole, config);
-  if (keysToStrip.length === 0) return contacts;
-  return contacts.map((contact) => {
-    const sanitizedContact: Contact = { ...contact };
-    for (const key of keysToStrip) {
-      delete sanitizedContact[key as keyof Contact];
-    }
-    return sanitizedContact;
-  });
+  const plan = resolveContactStripPlan(viewerRole, config);
+  if (plan.keys.length === 0 && plan.rowFields.length === 0) return contacts;
+  return contacts.map((contact) => applyContactStripPlan(contact, plan));
 }
 
 /** Summarises changed top-level keys for audit (globle1 §1.3). */

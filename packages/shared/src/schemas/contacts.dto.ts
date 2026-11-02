@@ -3,6 +3,7 @@ import { deepSanitizeStrings } from "./sanitize.js";
 import type { FieldConfig } from "../contacts/contactTypes.js";
 import { isContactCustomCollectionTab } from "../contacts/contactEnabledTabs.js";
 import { stripContactClientSoftDeleteFields } from "../contacts/contactSoftDelete.js";
+import { stripClientAuditFields } from "../contacts/contactWriteSanitize.js";
 import { hydrateContactRelationshipFields } from "../contacts/contactRelationshipHydrate.js";
 import {
   activitySchema,
@@ -170,7 +171,9 @@ export function buildContactWriteSchema(extraFieldKeys: string[] = []): z.ZodTyp
 
   return z.preprocess((raw) => {
     if (!raw || typeof raw !== "object" || Array.isArray(raw)) return raw;
-    const stripped = stripContactClientSoftDeleteFields(raw as Record<string, unknown>);
+    const stripped = stripClientAuditFields(
+      stripContactClientSoftDeleteFields(raw as Record<string, unknown>),
+    );
     const hydrated = hydrateContactRelationshipFields(stripped);
     return deepSanitizeStrings(hydrated);
   }, shapeSchema);
@@ -182,10 +185,15 @@ export const contactWriteSchema = buildContactWriteSchema();
 /**
  * Wire-level contact write DTO allowing custom setup fields to pass through to tenant dynamic validation.
  * Used at the @ts-rest contract gateway boundary.
+ *
+ * Soft-delete and audit-attribution keys are stripped before validation: both are
+ * server-owned (soft-delete helpers and `mapAuditToInsert` respectively).
  */
 export const contactWireWriteSchema = z.preprocess((raw) => {
   if (!raw || typeof raw !== "object" || Array.isArray(raw)) return raw;
-  const stripped = stripContactClientSoftDeleteFields(raw as Record<string, unknown>);
+  const stripped = stripClientAuditFields(
+    stripContactClientSoftDeleteFields(raw as Record<string, unknown>),
+  );
   const hydrated = hydrateContactRelationshipFields(stripped);
   return deepSanitizeStrings(hydrated);
 }, contactWriteRawObjectSchema.passthrough());

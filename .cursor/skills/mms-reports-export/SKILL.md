@@ -1,10 +1,10 @@
 ---
 name: mms-reports-export
-description: Builds MMS module analytics, CustomReportBuilder, Recharts dashboards, and PDF/Excel/print exports. Use when editing Reports tabs, KPIs, ExportToolbar, drill-down, saved reports, or dashboard widgets. Do NOT use for primary entity CRUD directories (use mms-module-work), multi-tier module layout (use mms-module-page), or background worker scheduling (use mms-background-jobs).
+description: Builds MMS module analytics, CustomReportBuilder, Recharts dashboards, and PDF/Excel/print exports. Use when editing Reports tabs, KPIs, ExportToolbar, drill-down, saved reports, or dashboard widgets. Do NOT use for printable document templates (use mms-document-templates), primary entity CRUD directories (use mms-module-work), multi-tier module layout (use mms-module-page), or background worker scheduling (use mms-background-jobs).
 license: Proprietary
 metadata:
   owner: mms-platform
-  last-verified: 2026-10-16
+  last-verified: 2026-11-02
 ---
 
 # MMS Reports & Export Workflow

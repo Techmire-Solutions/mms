@@ -4,6 +4,7 @@ import { getRequestTenant } from "../../lib/tenantContext.js";
 import { applyContactRelationshipInference } from "./contactInferenceUseCases.js";
 import { runInTransaction } from "../../db/database.js";
 import { canDeleteContacts } from "../../lib/rbacCanHelpers.js";
+import { ConflictError } from "../../lib/httpErrors.js";
 import {
   assertContactUniqueFields,
   ContactPermissionError,
@@ -21,6 +22,8 @@ interface UpsertContactOptions {
   canRestore?: boolean;
   /** Accept-Language for unique-field conflict messages. */
   language?: string;
+  /** Acting user when no full `User` is available (queued import worker). */
+  actorId?: string;
 }
 
 export async function upsertContact(
@@ -43,6 +46,7 @@ export async function upsertContact(
     const user = options && "role" in options ? (options as User) : opts?.user;
     const explicitCanRestore = opts?.canRestore;
     const language = opts?.language || "en";
+    const actorId = user?.id != null ? String(user.id) : opts?.actorId;
 
     if (restoredFromDelete) {
       if (explicitCanRestore === false) {
@@ -69,6 +73,11 @@ export async function upsertContact(
           deletedBy: undefined,
           deletionReason: undefined,
         };
+    // Audit attribution is stamped from the session, never from the payload.
+    if (actorId) {
+      saved.createdBy = existing?.createdBy ?? actorId;
+      saved.updatedBy = actorId;
+    }
 
     await repo.save(tenant, saved);
     await applyContactRelationshipInference(tenant, saved, undefined, repo);
@@ -91,6 +100,13 @@ interface UpdateContactByIdOptions {
    * @default true
    */
   applyRelationshipInference?: boolean;
+  /** Acting user — stamped into `updated_by`; never taken from the payload. */
+  actorId?: string;
+  /**
+   * Optimistic concurrency: the `updatedAt` the client based its edit on.
+   * A mismatch means another writer saved first → `ConflictError` (409).
+   */
+  expectedUpdatedAt?: string;
 }
 
 export async function updateContactById(
@@ -103,6 +119,8 @@ export async function updateContactById(
     typeof languageOrOptions === "string" ? { language: languageOrOptions } : languageOrOptions;
   const language = options.language ?? "en";
   const applyInference = options.applyRelationshipInference !== false;
+  const actorId = options.actorId;
+  const expectedUpdatedAt = options.expectedUpdatedAt?.trim();
 
   const saved = await runInTransaction(async () => {
     const tenant = getRequestTenant();
@@ -111,12 +129,17 @@ export async function updateContactById(
     if (!existing || existing.deletedAt) {
       return null;
     }
+    if (expectedUpdatedAt && existing.updatedAt && existing.updatedAt !== expectedUpdatedAt) {
+      throw new ConflictError("This contact was changed by someone else. Reload it and try again.");
+    }
     const stripped = stripClientSoftDeleteFields({ ...contact, id });
     const contactWithId = await prepareContactRecord(mergeContactPatch(existing, stripped), id);
     await assertContactUniqueFields(tenant, contactWithId, language, [], repo);
     const next: Contact = {
       ...contactWithId,
       id,
+      createdBy: existing.createdBy,
+      updatedBy: actorId ?? existing.updatedBy,
       deletedAt: existing.deletedAt,
       deletedBy: existing.deletedBy,
       deletionReason: existing.deletionReason,

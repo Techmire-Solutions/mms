@@ -21,6 +21,7 @@ export * from "../contacts/contactRelationshipRules.js";
 export * from "../contacts/contactResponseSanitizer.js";
 export * from "../contacts/contactSetupConfigTypes.js";
 export * from "../contacts/contactSiblingDerivation.js";
+export * from "../contacts/contactWriteSanitize.js";
 export * from "../contacts/contactSoftDelete.js";
 export {
   stripClientSoftDeleteFields,
