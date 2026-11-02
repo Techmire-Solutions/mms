@@ -1,13 +1,13 @@
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import { inArray, sql } from "drizzle-orm";
-import { beginLongLivedTenantTransaction, closeDatabase } from "../db/dbConnection.js";
-import { withGlobalTenant, withTenant } from "../db/tenant-context.js";
-import { documentTemplates, workspaces } from "../db/schema.js";
+import { beginLongLivedTenantTransaction, closeDatabase } from "../../db/dbConnection.js";
+import { withGlobalTenant, withTenant } from "../../db/tenant-context.js";
+import { documentTemplates, workspaces } from "../../db/schema.js";
 import {
   getDocumentTemplateRepo,
   upsertDocumentTemplateRepo,
-} from "../db/repositories/documentTemplatesRepository.js";
-import { requireDatabaseConnection } from "./db-integration/dbTestSupport.js";
+} from "../../db/repositories/documentTemplatesRepository.js";
+import { requireDatabaseConnection } from "./dbTestSupport.js";
 
 /**
  * Compare-and-set semantics of the document-template repository against a real
