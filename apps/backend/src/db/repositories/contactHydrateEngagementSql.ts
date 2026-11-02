@@ -17,6 +17,8 @@ export function buildRelationshipsAggSql(subdomain: string) {
       'name', r.name,
       'relationship', r.relationship,
       'phone', r.phone,
+      'email', r.email,
+      'gender', r.gender,
       'inferred', r.inferred,
       'inferredFromContactId', r.inferred_from_contact_id,
       'inferenceDepth', r.inference_depth,

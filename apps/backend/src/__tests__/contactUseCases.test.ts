@@ -377,7 +377,10 @@ describe("createContactsUseCases (DI composition root)", () => {
       "a",
       fakeContact("a", { relationshipContacts: [{ contactId: "b", relationship: "Parent" }] }),
     );
-    expect(repo.bulkSave).toHaveBeenCalled();
+    expect(repo.save).toHaveBeenCalledWith(
+      "demo",
+      expect.objectContaining({ id: "b", relationshipContacts: expect.any(Array) }),
+    );
   });
 
   it("updateContactById stamps the actor and ignores forged audit attribution", async () => {

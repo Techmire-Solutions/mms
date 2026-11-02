@@ -11,6 +11,7 @@ import { loadFacultyModulePreferences } from "./facultyPreferencesService.js";
 import { broadcastCollection } from "../../lib/livePush.js";
 import type { FacultyRepository } from "../repository/facultyRepository.js";
 import { facultyRepository } from "../repository/facultyRepositoryAdapter.js";
+import { reconcileFacultyContactsByFacultyIds } from "../../contacts/systemTags/contactSystemTagUseCases.js";
 
 /** Active duplicate probe (contact / employeeId) before save — server authoritative. */
 export async function checkFacultyRegistrationDuplicate(
@@ -36,6 +37,7 @@ export async function bulkUpdateFacultyStatus(
 
   const succeeded = await repo.bulkUpdateStatusSql(tenant, uniqueIds, status);
   if (succeeded > 0) {
+    await reconcileFacultyContactsByFacultyIds(tenant, uniqueIds);
     await broadcastCollection("faculty");
   }
   return { succeeded, failed: uniqueIds.length - succeeded };

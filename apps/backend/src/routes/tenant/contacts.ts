@@ -15,6 +15,7 @@ import { contactCrudRoutes } from "./contacts/contactCrudRoutes.js";
 import { contactSavedReportRoutes } from "./contacts/savedReportRoutes.js";
 import { contactLookupRoutes } from "./contacts/contactLookupRoutes.js";
 import { contactSetupConfigRoutes } from "./contacts/contactSetupConfigRoutes.js";
+import { contactPickerRoutes } from "./contacts/contactPickerRoutes.js";
 import { sanitizeForUser } from "./contacts/contactRouteHelpers.js";
 
 /**
@@ -66,4 +67,8 @@ export const contactRoutes: FastifyPluginAsync = async (fastify, _options) => {
   );
 
   await fastify.register(contactCrudRoutes);
+  // Contract paths are absolute (`/api/contacts/picker`), so this registers on
+  // the module-scoped root exactly like `contactCrudRoutes` — not inside the
+  // `/api/contacts` prefix, which would double the prefix.
+  await fastify.register(contactPickerRoutes);
 };

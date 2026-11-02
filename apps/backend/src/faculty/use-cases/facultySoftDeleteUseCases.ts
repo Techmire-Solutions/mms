@@ -11,6 +11,7 @@ import { facultyRepository } from "../repository/facultyRepositoryAdapter.js";
 import { nowIso } from "../../lib/softDeleteHelpers.js";
 import { restoreFacultyById, bulkRestoreFaculty } from "./facultyRestoreUseCases.js";
 import { cascadeFacultySoftDeleteSideEffects } from "./facultySoftDeleteCascade.js";
+import { reconcileFacultyContactsByFacultyIds } from "../../contacts/systemTags/contactSystemTagUseCases.js";
 import {
   guardBulkSubordinatesOnDelete,
   guardSubordinatesOnDelete,
@@ -51,6 +52,13 @@ export async function softDeleteFacultyById(
     if (toSave.length === 0) return { succeeded: 0, failed: 1 };
     await repo.bulkSave(tenant, toSave);
     await cascadeFacultySoftDeleteSideEffects(tenant, toSave, deletedBy, trimmedReason, now);
+    await reconcileFacultyContactsByFacultyIds(
+      tenant,
+      toSave.map((f) => String(f.id)),
+      {
+        actorId: deletedBy,
+      },
+    );
     return { succeeded: 1, failed: 0 };
   });
 
@@ -100,6 +108,13 @@ export async function bulkSoftDeleteFaculty(
     if (toSave.length > 0) {
       await repo.bulkSave(tenant, toSave);
       await cascadeFacultySoftDeleteSideEffects(tenant, toSave, deletedBy, trimmedReason, now);
+      await reconcileFacultyContactsByFacultyIds(
+        tenant,
+        toSave.map((f) => String(f.id)),
+        {
+          actorId: deletedBy,
+        },
+      );
     }
     return { succeeded, failed };
   });

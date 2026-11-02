@@ -12,6 +12,7 @@ description: System vs custom fields registry, field tabs, delete guards, and co
 - **Custom Fields & Tabs:** Typed in `@mms/shared` + concrete relational tables / typed columns. Dynamic form compilers and untyped JSONB/EAV blobs are banned.
 - **Custom Collections:** Tenant-created custom collections persist via child/junction tables. Blank rows strip on save via `cleanContactDraft`; empty arrays are authoritative (`mms-form-architecture.md` §3).
 - **Column Preferences:** Visibility and width follow `mms-module-architecture.md` §3 (clamp with `clampModuleColumnWidth`).
+- **System-Managed Projections:** Derived values (e.g. Student/Parent/Guardian and `faculty-<Designation>` tags) are server-owned read-only fields. They never appear in the editable field lookup, render as locked chips outside the editable control, and are stripped with their owning field by the response sanitizer (`mms-data-layer.md` §9, `mms-ui-ux-design.md` §3).
 
 ## 2. New / Changed Field Checklist
 1. **Shared:** Strict type and Zod schema in `@mms/shared` (`FIELD_TYPES_META`, `createFormCustomFieldHelpers`, field configs).
@@ -30,6 +31,7 @@ description: System vs custom fields registry, field tabs, delete guards, and co
 - **Stable References:** Pass `CONTACT_LOCKED_ENABLED_TABS` (`basic` only) as a stable, memoized reference to prevent re-render loops.
 - **One Tab→Property Map:** The mapping from list/collection tabs to entity properties (`phones`→`phones`, `emails`→`emails`, `addresses`→`addresses`, `relationship`→`relationshipContacts`, `education`/`experience`/`skills`/`bankDetails`→same-named arrays, custom tab→its array) is declared **once** and consumed by the write DTO allowlist, dynamic validation, unique-field values, profile completeness, and the response sanitizer/export. Divergent copies silently skip unique-field enforcement and leak hidden tabs.
 - **Permission Enforcement on Read:** Field/tab permissions strip the whole collection when a tab is hidden or role-restricted, and strip individual row fields inside a visible list tab. Deleting a top-level property that only exists inside the array (e.g. `institution`) is a no-op — the sanitizer must traverse the collection.
+- **Cross-Module Sanitizer Parity:** Any surface that lets contacts leave their module (messaging recipient list/resolve/match, VCF/CSV export, WhatsApp links) runs `sanitizeContactsForViewer` with the viewer role and a minimal projection. Module access is not field authorization; a hidden field must not reappear through a borrowing module.
 
 ## 5. Contact-Linked Module Identity (Students & Faculty)
 - **Registry Configuration:** Identity fields (contact link, gender, DOB, relationships) are registry configurations; Contacts remains the person data SSOT.

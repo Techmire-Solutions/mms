@@ -1,11 +1,19 @@
 import React from "react";
 import { Check } from "lucide-react";
-import type { Contact } from "@mms/shared";
+import { splitContactTags, type Contact } from "@mms/shared";
 import type { TranslationFunction } from "@/lib/contexts/TranslationContext";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { getDuplicateFieldLabel, getDuplicateFieldValue } from "@/lib/contacts/contactI18n";
 import type { getDuplicateThemeColors } from "@/tenant/features/contacts/lib/duplicateDetectionTypes";
+
+function resolveMergeFieldValue(field: string, contact: Contact, t: TranslationFunction): string {
+  // System tags are server-owned: only manual tags are selectable merge choices.
+  if (field === "tag" || field === "tags") {
+    return splitContactTags(contact).manualTags.join(", ");
+  }
+  return getDuplicateFieldValue(field, contact, t);
+}
 
 export interface DuplicateMergeFieldsListProps {
   fields: string[];
@@ -33,9 +41,9 @@ export function DuplicateMergeFieldsList({
   return (
     <div className="rounded-xl border border-border bg-muted/20 p-4 space-y-3 text-foreground">
       {fields.map((field) => {
-        const keepValue = getDuplicateFieldValue(field, keep, t);
-        const otherValue = getDuplicateFieldValue(field, other, t);
-        const mergedValue = getDuplicateFieldValue(field, customMerged, t);
+        const keepValue = resolveMergeFieldValue(field, keep, t);
+        const otherValue = resolveMergeFieldValue(field, other, t);
+        const mergedValue = resolveMergeFieldValue(field, customMerged, t);
 
         const hasConflict =
           keepValue &&

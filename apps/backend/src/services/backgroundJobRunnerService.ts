@@ -1,6 +1,5 @@
 import { randomUUID } from "node:crypto";
 import {
-  buildTenantExportFilename,
   CONTACTS_MODULE_MANIFEST,
   ENROLLMENTS_MODULE_MANIFEST,
   MESSAGING_MODULE_MANIFEST,
@@ -22,7 +21,6 @@ import {
   buildContactsCsvExport,
   generateContactsCsvStreamChunks,
 } from "../contacts/use-cases/contactExportUseCases.js";
-import { buildContactsVcfExport } from "./contactsVcfExportService.js";
 import type { StudentsExportQueryInput } from "./studentsExportService.js";
 import {
   buildStudentsCsvExport,
@@ -44,7 +42,6 @@ import {
   buildMessagingCsvExport,
   generateMessagingCsvStreamChunks,
 } from "./messagingExportService.js";
-import { saveExportArtifact } from "./exportArtifactService.js";
 import { runContactsDuplicateScan } from "../contacts/use-cases/contactDuplicateScanUseCases.js";
 import {
   buildContactsImportJobLabel,
@@ -54,6 +51,7 @@ import { registerBackgroundJobRunner } from "./backgroundJobWorkerService.js";
 import { registerSessionRolloverJobRunner } from "../sessions/use-cases/sessionRolloverJob.js";
 import { registerModuleCsvExportJobRunner } from "../lib/registerModuleCsvExportJobRunner.js";
 import { registerModuleCsvImportJobRunner } from "../lib/registerModuleCsvImportJobRunner.js";
+import { registerContactsVcfExportJobRunner } from "../lib/registerContactsVcfExportJobRunner.js";
 import { messagingUseCases } from "../messaging/use-cases/messagingUseCases.js";
 import { registerMessagingCampaignJobRunner } from "./messagingCampaignJobRunner.js";
 import { registerFacultyBackgroundJobRunners } from "./backgroundJobFacultyRunners.js";
@@ -61,7 +59,6 @@ import {
   registerDocumentAndFinanceJobRunners,
   MAX_EXCEL_PAYLOAD_ENTRIES,
 } from "./backgroundJobDocumentFinanceRunners.js";
-import type { ContactsVcfExportJobPayload } from "./backgroundJobPayloads.js";
 
 export { MAX_EXCEL_PAYLOAD_ENTRIES };
 export type {
@@ -100,25 +97,7 @@ export function registerDefaultBackgroundJobRunners(): void {
       }),
   });
 
-  registerBackgroundJobRunner(`${contactsModuleId}:export-vcf`, async (payload, ctx) => {
-    const exportPayload = payload as ContactsVcfExportJobPayload;
-    await ctx.updateProgress(0, 1);
-    const targetFilename = buildTenantExportFilename(
-      ctx.tenant,
-      exportPayload.filename?.trim() || "contacts.vcf",
-    );
-    const { vcf, filename, count } = await buildContactsVcfExport({
-      filename: targetFilename,
-      viewerRole: exportPayload.viewerRole ?? "",
-      onProgress: (processed, total) => ctx.updateProgress(processed, Math.max(total, 1)),
-    });
-    await saveExportArtifact(ctx.userId, ctx.jobId, vcf, filename);
-    await ctx.complete({
-      label: exportPayload.label ?? `Exported ${count} contacts`,
-      progress: { current: count, total: count },
-      hasDownload: true,
-    });
-  });
+  registerContactsVcfExportJobRunner();
 
   registerBackgroundJobRunner(`${contactsModuleId}:duplicate-scan`, async (_payload, ctx) => {
     const result = await runContactsDuplicateScan(async (processed, total) => {

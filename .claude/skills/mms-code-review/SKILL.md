@@ -70,6 +70,7 @@ Separate demonstrated controls from capability gaps and framework-dependent poli
 - **"Untested" is not "broken".** Missing coverage is a test gap; report it as such (and add the spec). Do not inflate it into a defect.
 - **Reachable denial codes only.** A `required: true` module (`dashboard`, `contacts`, …) can never return `MODULE_DISABLED`/`MODULE_NOT_GRANTED` — a test that expects it is itself the bug. Check `globalSettingsModuleRegistry.ts` before writing the assertion.
 - **Specs that pin a bug are part of the fix.** When a fix changes documented behaviour, the spec asserting the old behaviour must be rewritten with the new intent, and the PR body must name the changed assertion.
+- **Close findings with fix + test + status.** Every finding maps to a pinning test on production's path and a status entry (closed/partial/deferred). Keep the original findings as the point-in-time record and add a status table; name residuals for partial/deferred items. A skipped/self-skipping browser spec is untested evidence and cannot close a finding.
 
 ## Review order
 
@@ -81,7 +82,11 @@ Separate demonstrated controls from capability gaps and framework-dependent poli
 6. UI design tokens & i18n / a11y (semantic HSL tokens, 44×44px touch floor, axe smoke via `mms-a11y-smoke`)
 7. Document templates (server row vs legacy store, CAS/409 keeps draft, one renderer/print path, localized field catalogs)
 8. Batch writers (one config load, one broadcast/invalidation, batched outbox, per-row audit)
-9. Scope creep & dead code removal
+9. Derived projections & read-only fields (reconciled on every lifecycle/batch path, archive semantics, workspace-local dates, per-entity lock, write stripping)
+10. Cross-module reads (lean DTO + owner viewer sanitizer; no full owner read shape)
+11. Upload/media lifecycle (tenant paths, owning-action gate, URL whitelist, reference-checked unlink, sweep dry-run)
+12. Derived caches (TTL, config invalidation, write-version guard, post-save recheck)
+13. Scope creep & dead code removal
 
 ## Automated checks
 

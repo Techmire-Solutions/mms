@@ -11,7 +11,7 @@ import {
   useInfiniteQuery,
   useQueryClient,
 } from "@tanstack/react-query";
-import type { ContactsListPageResult } from "@mms/shared";
+import type { ContactsListPageResult, ContactPickerSearchQuery } from "@mms/shared";
 import {
   CONTACTS_FIELD_CONFIG_QUERY_KEY,
   CONTACTS_QUERY_KEY,
@@ -113,6 +113,29 @@ export function useContactsContractGet(id: string, enabled = true) {
     queryKey: [...CONTACTS_QUERY_KEY, "detail", id],
     queryData: { params: { id } },
     enabled,
+    staleTime: 30_000,
+  });
+}
+
+/**
+ * Lean picker search — `/api/contacts/picker`, readable by roles holding the
+ * students/faculty/workshops read grants without `contacts.read`.
+ */
+export function useContactPickerSearch(query: ContactPickerSearchQuery, enabled = true) {
+  return tsrClient.contacts.picker.search.useQuery({
+    queryKey: [...CONTACTS_QUERY_KEY, "picker", "search", query],
+    queryData: { query: query as Record<string, unknown> },
+    enabled,
+    staleTime: 15_000,
+  });
+}
+
+/** Resolve one picker option by id (`/api/contacts/picker/:id`). */
+export function useContactPickerOption(id: string | undefined, enabled = true) {
+  return tsrClient.contacts.picker.get.useQuery({
+    queryKey: [...CONTACTS_QUERY_KEY, "picker", id],
+    queryData: { params: { id: id ?? "" } },
+    enabled: enabled && Boolean(id),
     staleTime: 30_000,
   });
 }

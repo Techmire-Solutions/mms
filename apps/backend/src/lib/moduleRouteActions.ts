@@ -41,6 +41,14 @@ export const MODULE_ROUTE_ACTION_RULES: readonly ModuleRouteActionRule[] = [
     action: "availability",
     onlyModules: ["contacts"],
   },
+  // Lean picker: any role that can read students/faculty/workshops may resolve a
+  // person to link. The handler owns that finer gate (`canUseContactPicker`).
+  {
+    methods: ["GET"],
+    pattern: /^\/api\/contacts\/picker(\/|$)/,
+    action: "availability",
+    onlyModules: ["contacts"],
+  },
   // Messaging log restore rolls the handler's own canRestoreMessagingLogs check;
   // still gate module grant + enablement.
   {

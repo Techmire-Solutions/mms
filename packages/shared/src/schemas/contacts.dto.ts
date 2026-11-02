@@ -5,6 +5,7 @@ import { isContactCustomCollectionTab } from "../contacts/contactEnabledTabs.js"
 import { stripContactClientSoftDeleteFields } from "../contacts/contactSoftDelete.js";
 import { stripClientAuditFields } from "../contacts/contactWriteSanitize.js";
 import { hydrateContactRelationshipFields } from "../contacts/contactRelationshipHydrate.js";
+import { contactSystemTagSchema } from "../contacts/contactSystemTags.js";
 import {
   activitySchema,
   attachmentSchema,
@@ -121,6 +122,8 @@ const contactWriteRawObjectSchema = z.object({
   isSyed: z.boolean().optional(),
   tag: z.string().optional(),
   tags: z.array(z.string()).optional(),
+  // Read-only projection accepted then stripped by prepareContactRecord.
+  systemTags: z.array(contactSystemTagSchema).optional(),
   avatar: z.string().nullable().optional(),
   notes: z.string().optional(),
   createdAt: z.string().optional(),

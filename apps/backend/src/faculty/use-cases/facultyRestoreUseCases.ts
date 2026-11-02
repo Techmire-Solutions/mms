@@ -11,6 +11,7 @@ import { emitOutboxEvent } from "../../services/outboxEventService.js";
 import { cascadeRestoreFacultyAssignments } from "../../db/repositories/facultyAssignmentCascade.js";
 import { cascadeRestoreFacultyEmployments } from "../../db/repositories/facultyEmploymentRepository.js";
 import { cascadeRestoreFacultyEmployDesignations } from "../../db/repositories/facultyEmployDesignationRepository.js";
+import { reconcileFacultyContactsByFacultyIds } from "../../contacts/systemTags/contactSystemTagUseCases.js";
 export async function restoreFacultyById(
   id: string,
   userId?: string,
@@ -65,6 +66,7 @@ export async function restoreFacultyById(
       restoredBy: userId ?? "unknown",
       version: Date.now(),
     });
+    await reconcileFacultyContactsByFacultyIds(tenant, [String(id)], { actorId: userId });
 
     return next;
   });
@@ -145,6 +147,11 @@ export async function bulkRestoreFaculty(
           version: Date.now(),
         });
       }
+      await reconcileFacultyContactsByFacultyIds(
+        tenant,
+        toSave.map((m) => String(m.id)),
+        { actorId: userId },
+      );
     }
     return { succeeded, failed };
   });

@@ -24,6 +24,7 @@ Operational guide for authoring React 19 frontend features, UI components, hooks
 - **HTTP Client**: Route all internal API calls through `@/lib/apiClient` (`apiJson`, `apiFetch`) using cookie sessions (`credentials: 'include'`). Never read tokens from `localStorage`.
 - **Bundle Isolation**: Only `VITE_*` variables may be bundled into client code. Server secrets (`DATABASE_URL`, `JWT_SECRET`) are strictly forbidden.
 - **WebSocket Invalidation**: Real-time invalidations arrive via `/api/ws` (`TenantLivePushSubscriber`); invalidate query keys rather than mutating local state directly.
+- **Read-only projections**: server-owned metadata (`systemTags`, source/key/archived) is display-only. Render it through the locked chip component, never as an editable option; a role mutation that changes projected tags must invalidate the owning collection (`contacts`), not just `faculty`/`students`.
 - **Offline/queued writes**: a module that queues failed mutations in `localStorage` scopes the keys by tenant + user (`contactsOutboxStorageKeys`: `mms_{tenant}_…_u:{userId}`), clears them in `clearUserScopedCachesOnLogout`, and flushes single-flight (`contactsSyncOutboxFlush.ts`) so several mounted hooks cannot replay the same queue concurrently. A global key leaks one account's payloads into the next session.
 - **One derivation per directory**: resolve entity descriptors, filter chips and column maps once in the directory/controller and pass them down; calling a registry-flattening hook per card multiplies work by row count (`mms-performance.mdc` §5).
 - **Local input state**: debounce search/typing in the leaf control before pushing upward — a controlled input wired straight to the page controller re-renders metrics, directory and lazy tiers on every keystroke.
@@ -59,6 +60,8 @@ cd apps/frontend && pnpm typecheck && pnpm lint && pnpm test
 # Run E2E smoke tests
 pnpm test:e2e tests/responsive-shell.spec.ts
 ```
+
+- A changed hook/component ships a test that pins the contract it consumes (lean recipient DTO, relative upload URL, post-save unlink), not only a render assertion; mock the data source at its boundary.
 
 ## References
 

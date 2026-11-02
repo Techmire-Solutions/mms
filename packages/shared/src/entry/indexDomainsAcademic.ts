@@ -18,6 +18,8 @@ export * from "../contacts/contactIdentityMatch.js";
 export * from "../contacts/contactLookupTypes.js";
 export * from "../contacts/contactProfileCompleteness.js";
 export * from "../contacts/contactRelationshipRules.js";
+export * from "../contacts/contactSystemTags.js";
+export * from "../contacts/contactPicker.js";
 export * from "../contacts/contactResponseSanitizer.js";
 export * from "../contacts/contactSetupConfigTypes.js";
 export * from "../contacts/contactSiblingDerivation.js";

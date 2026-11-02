@@ -10,6 +10,7 @@ import { recordRestoreEvents } from "./studentAuditEvents.js";
 import { invalidateMultiTierCache } from "../../lib/cache/index.js";
 import { buildRestoredRecord, enableIncludeDeleted } from "../../lib/softDeleteHelpers.js";
 import { restoreCascadedEnrollmentsForStudents } from "../../db/repositories/studentEnrollmentCascade.js";
+import { reconcileContactSystemTags } from "../../contacts/systemTags/contactSystemTagUseCases.js";
 
 interface StudentBulkRestoreConflict {
   id: string;
@@ -93,6 +94,11 @@ export async function restoreStudentById(
       new Date(restoredAt),
     );
     await recordRestoreEvents(tenant, next, restoredAt, userId);
+    await reconcileContactSystemTags(
+      tenant,
+      [next.contactId, next.fatherContactId, next.motherContactId, next.guardianContactId],
+      { actorId: userId },
+    );
     return next;
   });
   if (restored) {
@@ -217,6 +223,16 @@ export async function bulkRestoreStudents(
       for (const s of toSave) {
         await recordRestoreEvents(tenant, s, restoredAt, userId);
       }
+      await reconcileContactSystemTags(
+        tenant,
+        toSave.flatMap((s) => [
+          s.contactId,
+          s.fatherContactId,
+          s.motherContactId,
+          s.guardianContactId,
+        ]),
+        { actorId: userId },
+      );
     }
     return { succeeded, failed, conflicts };
   });

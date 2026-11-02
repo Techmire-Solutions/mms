@@ -3,6 +3,7 @@ import {
   findContactDuplicatePairs,
   getContactDuplicateCandidateKeys,
   CONTACTS_DUPLICATE_SCAN_CACHE_OBJECT_KEY,
+  CONTACT_DUPLICATE_MAX_PAIRS,
   type Contact,
 } from "@mms/shared";
 import type { ContactsRepository } from "../contacts/repository/contactsRepository.js";
@@ -12,9 +13,19 @@ const mockFetchObject = vi.fn();
 const mockDeletePersistedObject = vi.fn();
 const mockPersistObject = vi.fn();
 const mockLoadContactPreferences = vi.fn();
+const mockLoggerWarn = vi.fn();
 
 vi.mock("../lib/tenantContext.js", () => ({
   getRequestTenant: () => "demo",
+}));
+
+vi.mock("../lib/logger.js", () => ({
+  logger: {
+    warn: (...args: unknown[]) => mockLoggerWarn(...args),
+    info: vi.fn(),
+    error: vi.fn(),
+    debug: vi.fn(),
+  },
 }));
 
 vi.mock("../db/database.js", () => ({
@@ -200,6 +211,35 @@ describe("contactDuplicateScanService (SQL-scoped)", () => {
     expect(repo.findSummaryByIds).toHaveBeenCalledWith("demo", expect.arrayContaining(["a", "b"]));
     expect(repo.listPage).not.toHaveBeenCalled();
     expect(progress).toHaveBeenCalled();
+    expect(mockLoggerWarn).not.toHaveBeenCalled();
+  });
+
+  it("warns and caches the capped pair list when the scan reaches the pair cap", async () => {
+    const store = new Map<string, Contact>();
+    // 101 contacts sharing one phone → 5,050 potential pairs, above the 5,000 cap.
+    for (let index = 0; index < 101; index++) {
+      store.set(`capped-${index}`, contact(`capped-${index}`, `Person ${index}`, "+923001111111"));
+    }
+    const repo = createFakeRepo(store);
+
+    const result = await runContactsDuplicateScan(vi.fn(), repo);
+
+    expect(result.pairCount).toBe(CONTACT_DUPLICATE_MAX_PAIRS);
+    expect(mockLoggerWarn).toHaveBeenCalledWith(
+      expect.objectContaining({
+        pairCount: CONTACT_DUPLICATE_MAX_PAIRS,
+        maxPairs: CONTACT_DUPLICATE_MAX_PAIRS,
+      }),
+      expect.stringContaining("pair cap"),
+    );
+    expect(mockPersistObject).toHaveBeenCalledTimes(1);
+    const [cacheKey, cached] = mockPersistObject.mock.calls[0] as [
+      string,
+      { pairCount: number; pairs: unknown[] },
+    ];
+    expect(cacheKey).toBe(CONTACTS_DUPLICATE_SCAN_CACHE_OBJECT_KEY);
+    expect(cached.pairCount).toBe(CONTACT_DUPLICATE_MAX_PAIRS);
+    expect(cached.pairs).toHaveLength(CONTACT_DUPLICATE_MAX_PAIRS);
   });
 
   it("loadDuplicatePairsPage warms the cache from the blocked participant set", async () => {

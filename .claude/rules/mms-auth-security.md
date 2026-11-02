@@ -43,6 +43,8 @@ paths:
   - **Frontend:** every app-shell route is classified in `TENANT_APP_ROUTE_ACCESS`; `ModuleAccessRoute`, sidebar, command palette, quick actions, and dashboard widgets all evaluate `useModuleAccess()` (server snapshot, never persisted). Non-module routes are classified explicitly, never exempted by omission.
   - **Required Modules:** `required: true` entries in `globalSettingsModuleRegistry.ts` (`dashboard`, `contacts`, `messaging`, …) can never be disabled or un-granted, so they only ever produce `PERMISSION_DENIED`. A denial test for such a module must assert the reachable code — expecting `MODULE_DISABLED` from a required module yields a 500 from the un-gated handler, not a 403.
   - **`availability` Action:** Routes whose handler owns a finer rule (self-service profile edits, personal preferences) take `action: 'availability'` in `MODULE_ROUTE_ACTION_RULES` — grant + enablement only. The handler must then enforce the permission **and** a field whitelist: a self-service own-record write validates against the profile DTO (`OWN_CONTACT_PATCH_KEYS`), never the module write DTO (`mms-api-interface.md` §6).
+  - **Cross-Module Reads:** A module grant authorizes that module's purpose only. Borrowing another module's records (e.g. messaging recipients from contacts) requires a purpose-built minimal DTO plus the owner's field visibility (`mms-fields.md` §4) — never the owner's full read shape. `messaging.read` must not expose contact notes/DOB/addresses; pin it with a restricted-role payload test.
+  - **New-Route Classification:** Every new route — including upload/media/maintenance endpoints — is classified in `moduleAccessCoverage.test.ts` (and `TENANT_APP_ROUTE_ACCESS` for app-shell routes) and names its manual gate; update the classification test in the same change.
 
 ## 4. Threat Mitigations & Security Checklist
 - **IDOR Defense:** Authorize via permissions + transaction RLS (`SET LOCAL app.current_tenant`). Bind IDs strictly from session context.
@@ -55,6 +57,7 @@ paths:
 - **Cryptography:** Use `scrypt` + `crypto.timingSafeEqual` for passwords/OTPs; `crypto.randomInt()` for OTP generation (`Math.random()` banned).
 - **XSS & Injection:** Ban unsanitized `dangerouslySetInnerHTML`; sanitize formula triggers (`=`, `+`, `-`, `@`) in CSV/Excel/PDF cell exports.
 - **Hard-Delete Guard:** Schema `forbid_hard_delete()` trigger blocks SQL deletes. Bypass requires `SET LOCAL app.allow_hard_purge = 'true'`.
+- **Mass-Assignment of Server-Owned Projections:** Write permission never grants control of derived/system-managed fields (role tags, computed status, provenance, audit metadata). Strip them before validation and again at the write choke point; reject bulk attempts to edit reserved values with `400`.
 
 ## 5. Audit Trail Security, Governance & Trace Context
 - **Security & Privilege Hardening:** Audit trail cryptographic chaining, RFC 8785 canonical JSON, and outbox transactions follow `mms-data-layer.md` §5. Propagate W3C `traceparent` via `AsyncLocalStorage` as `correlation_id`. Database user has `INSERT`-only rights on audit tables; viewing audit logs is an auditable event.

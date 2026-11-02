@@ -52,6 +52,9 @@ Financial posted ledgers are append-only/reversal-driven; see ledger controls be
    - Default queries enforce `isNull(table.deletedAt)`.
    - `?includeDeleted=true` requires explicit delete permission and applies `isQueryFlagTrue(query.includeDeleted)`.
    - The list projection must carry `restoredAt`, `restoredBy`, and `deletedWithCascade` so trash rows keep their restore evidence.
+7. **Derived Projections**:
+   - Soft-deleting a source entity archives its derived rows (`Former …`) and restoring reactivates them; do not delete derived history.
+   - Reconcile inside the delete/restore transaction, with a per-entity advisory lock; batch delete/restore reconciles all affected ids once after the cascade.
 
 ## 3. Frontend Work Tier Integration
 

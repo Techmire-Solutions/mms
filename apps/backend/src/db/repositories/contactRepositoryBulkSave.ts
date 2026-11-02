@@ -1,4 +1,4 @@
-import { and, eq, inArray, sql } from "drizzle-orm";
+import { and, eq, inArray, isNull, sql } from "drizzle-orm";
 import { hydrateContactRelationshipFields, type Contact } from "@mms/shared";
 import {
   contacts,
@@ -75,14 +75,14 @@ export async function bulkSaveContacts(tenant: string, records: Contact[]): Prom
             inArray(contactPhones.contactId, contactIds),
           ),
         ),
-      tx
-        .delete(contactTags)
-        .where(
-          and(
-            eq(contactTags.workspaceSubdomain, subdomain),
-            inArray(contactTags.contactId, contactIds),
-          ),
+      tx.delete(contactTags).where(
+        and(
+          eq(contactTags.workspaceSubdomain, subdomain),
+          inArray(contactTags.contactId, contactIds),
+          // Preserve module-managed role tags across bulk writes/imports.
+          isNull(contactTags.source),
         ),
+      ),
       tx
         .delete(contactEmails)
         .where(

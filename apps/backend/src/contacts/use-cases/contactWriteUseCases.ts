@@ -16,6 +16,7 @@ import {
 import { broadcastCollection } from "../../lib/livePush.js";
 import { invalidateMultiTierCache } from "../../lib/cache/index.js";
 import { loadContactWriteContext } from "./contactWriteContext.js";
+import { reconcileContactSystemTags } from "../systemTags/contactSystemTagUseCases.js";
 import type { ContactWriteContext } from "./contactWriteContextTypes.js";
 import type { ContactsRepository } from "../repository/contactsRepository.js";
 import { contactsRepository } from "../repository/contactsRepositoryAdapter.js";
@@ -37,6 +38,17 @@ interface UpsertContactOptions {
   batchMode?: boolean;
 }
 
+function relatedContactIds(
+  ...contacts: Array<{ relationshipContacts?: Array<{ contactId?: string | number }> } | undefined>
+): string[] {
+  return contacts.flatMap((contact) =>
+    (contact?.relationshipContacts ?? [])
+      .map((entry) => entry.contactId)
+      .filter((id): id is string | number => id != null)
+      .map(String),
+  );
+}
+
 export async function upsertContact(
   contact: Contact,
   options?: User | UpsertContactOptions,
@@ -53,7 +65,11 @@ export async function upsertContact(
   const result = await runInTransaction(async () => {
     const tenant = getRequestTenant();
     if (!tenant) throw new Error("Tenant context required");
-    const existing = await repo.findById(tenant, String(contact.id ?? ""));
+    // Include trashed rows: an upsert that revives an archived contact must see
+    // it (and stamp restore provenance) instead of creating a duplicate.
+    const existing = await repo.findById(tenant, String(contact.id ?? ""), {
+      includeDeleted: true,
+    });
     const created = !existing;
     const restoredFromDelete = existing && Boolean(existing.deletedAt);
 
@@ -109,7 +125,21 @@ export async function upsertContact(
     }
 
     await repo.save(tenant, saved);
-    await applyContactRelationshipInference(tenant, saved, undefined, repo);
+    await applyContactRelationshipInference(tenant, saved, undefined, repo, {
+      actorId,
+      previousSource: existing ?? undefined,
+    });
+    // Relationship edits can add/remove Student/Parent/Guardian roles; the
+    // reconcile expands to related contacts, and removed links are included
+    // explicitly so their archived tag is written. Batch writers skip the
+    // per-row role probe (their bulk path preserves system tags).
+    if (!opts?.batchMode) {
+      await reconcileContactSystemTags(
+        tenant,
+        [String(saved.id), ...relatedContactIds(existing ?? undefined, saved)],
+        { actorId, touchContacts: false },
+      );
+    }
     if (!opts?.batchMode) {
       await invalidateDuplicateScanCache();
     }
@@ -205,8 +235,16 @@ export async function updateContactById(
       await repo.save(tenant, next);
     }
     if (applyInference) {
-      await applyContactRelationshipInference(tenant, next, undefined, repo);
+      await applyContactRelationshipInference(tenant, next, undefined, repo, {
+        actorId,
+        previousSource: existing,
+      });
     }
+    await reconcileContactSystemTags(
+      tenant,
+      [String(next.id), ...relatedContactIds(existing, next)],
+      { actorId, touchContacts: false },
+    );
     await invalidateDuplicateScanCache();
     return next;
   });

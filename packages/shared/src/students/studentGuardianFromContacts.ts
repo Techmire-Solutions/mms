@@ -1,6 +1,10 @@
 import type { ContactRelationship, RelationshipContact } from "../contacts/contactEntityTypes.js";
 import type { ContactLike } from "../contacts/contactLinkPolicy.js";
-import { isAllowedRelationshipLabel } from "../contacts/contactRelationshipRules.js";
+import {
+  genderIsFemale,
+  genderIsMale,
+  isAllowedRelationshipLabel,
+} from "../contacts/contactRelationshipRules.js";
 import {
   DEFAULT_RELATIONSHIP_PAIRS,
   normalizeRelationshipTerm,
@@ -175,8 +179,8 @@ export function resolveStudentGuardianLinks(
     const relTerm = normalizeRelationshipTerm(link.relationship);
     if (relTerm === "parent") {
       parentLinks.push(link);
-      if (!explicitFatherLink && link.gender === "male") explicitFatherLink = link;
-      else if (!explicitMotherLink && link.gender === "female") explicitMotherLink = link;
+      if (!explicitFatherLink && genderIsMale(link.gender)) explicitFatherLink = link;
+      else if (!explicitMotherLink && genderIsFemale(link.gender)) explicitMotherLink = link;
     } else if (!guardian && relTerm === "guardian") {
       guardian = link;
     }
@@ -188,9 +192,9 @@ export function resolveStudentGuardianLinks(
   if (explicitFatherLink || explicitMotherLink) {
     fatherLink =
       explicitFatherLink ??
-      parentLinks.find((l) => l !== explicitMotherLink && l.gender !== "female");
+      parentLinks.find((l) => l !== explicitMotherLink && !genderIsFemale(l.gender));
     motherLink =
-      explicitMotherLink ?? parentLinks.find((l) => l !== fatherLink && l.gender !== "male");
+      explicitMotherLink ?? parentLinks.find((l) => l !== fatherLink && !genderIsMale(l.gender));
   } else {
     [fatherLink, motherLink] = parentLinks;
   }

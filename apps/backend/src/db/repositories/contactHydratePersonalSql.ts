@@ -71,6 +71,10 @@ export function buildTagsAggSql(subdomain: string) {
       'contactId', t.contact_id,
       'workspaceSubdomain', t.workspace_subdomain,
       'name', t.name,
+      'source', t.source,
+      'systemKey', t.system_key,
+      'archived', t.archived,
+      'updatedAt', t.updated_at,
       'createdAt', t.created_at
     ) ORDER BY t.created_at)
     FROM contact_tags t

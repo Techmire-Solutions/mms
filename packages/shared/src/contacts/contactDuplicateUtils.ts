@@ -1,9 +1,4 @@
-import {
-  COLOR_PALETTES,
-  DEFAULT_CONTACT_PREFERENCES,
-  type Contact,
-  type ContactPreferences,
-} from "./contactTypes.js";
+import type { Contact, ContactPreferences } from "./contactTypes.js";
 import { cleanName, getEmails, getPhoneNumbers } from "../core/utils.js";
 import { filterActiveContacts } from "./contactSoftDelete.js";
 
@@ -16,6 +11,20 @@ export interface ContactDuplicatePair {
   reasonKey: ContactDuplicateReasonKey;
   contacts: [Contact, Contact];
 }
+
+/**
+ * Name buckets larger than this are not paired on name alone. Exact-name buckets
+ * with many members (common South-Asian names) are quadratic (k² pairs without a
+ * second signal), so once a bucket is this large only phone/email/cnic matches
+ * are considered for its members.
+ */
+export const CONTACT_DUPLICATE_NAME_BUCKET_PAIRING_LIMIT = 100;
+
+/**
+ * Hard ceiling on pairs emitted by a single scan. Keeps the persisted cache
+ * document and scan CPU bounded for directories with many shared keys.
+ */
+export const CONTACT_DUPLICATE_MAX_PAIRS = 5_000;
 
 const DEFAULT_DUPLICATE_SCORES = {
   default: 70,
@@ -212,18 +221,25 @@ export function findContactDuplicatePairs(
   const list: ContactDuplicatePair[] = [];
 
   for (let i = 0; i < entries.length; i++) {
+    if (list.length >= CONTACT_DUPLICATE_MAX_PAIRS) break;
     const entry1 = entries[i];
     const candidates = new Map<string, ContactIndexEntry>();
     collectCandidatesFromKeys(phoneIndex, entry1.keys.phones, candidates);
     collectCandidatesFromKeys(emailIndex, entry1.keys.emails, candidates);
     if (entry1.keys.name) {
-      collectCandidatesFromKeys(nameIndex, [entry1.keys.name], candidates);
+      // Skip oversized name buckets: pairing them on name alone is quadratic and
+      // low-confidence. High-confidence phone/email/cnic candidates are unaffected.
+      const nameBucket = nameIndex.get(entry1.keys.name);
+      if (nameBucket && nameBucket.length <= CONTACT_DUPLICATE_NAME_BUCKET_PAIRING_LIMIT) {
+        collectCandidatesFromKeys(nameIndex, [entry1.keys.name], candidates);
+      }
     }
     if (entry1.keys.cnic) {
       collectCandidatesFromKeys(cnicIndex, [entry1.keys.cnic], candidates);
     }
 
     for (const entry2 of candidates.values()) {
+      if (list.length >= CONTACT_DUPLICATE_MAX_PAIRS) break;
       if (String(entry1.contact.id) === String(entry2.contact.id)) continue;
       const key = pairKey(entry1.contact, entry2.contact);
       if (matchedPairs.has(key)) continue;
@@ -246,34 +262,5 @@ export function findContactDuplicatePairs(
 }
 
 /** Resolves badge styling and tier classification for duplicate match confidence scores. */
-export function getDuplicateConfidenceBadgeStyle(
-  score: number,
-  prefs?: Partial<ContactPreferences>,
-): { colorClass: string; labelTier: "high" | "medium" | "low" } {
-  const highThreshold =
-    prefs?.duplicateDetectionThresholdHigh ??
-    DEFAULT_CONTACT_PREFERENCES.duplicateDetectionThresholdHigh!;
-  const medThreshold =
-    prefs?.duplicateDetectionThresholdMedium ??
-    DEFAULT_CONTACT_PREFERENCES.duplicateDetectionThresholdMedium!;
-  const highColor =
-    prefs?.duplicateDetectionColorHigh ??
-    DEFAULT_CONTACT_PREFERENCES.duplicateDetectionColorHigh ??
-    COLOR_PALETTES.red.bg;
-  const medColor =
-    prefs?.duplicateDetectionColorMedium ??
-    DEFAULT_CONTACT_PREFERENCES.duplicateDetectionColorMedium ??
-    COLOR_PALETTES.amber.bg;
-  const lowColor =
-    prefs?.duplicateDetectionColorLow ??
-    DEFAULT_CONTACT_PREFERENCES.duplicateDetectionColorLow ??
-    COLOR_PALETTES.slate.bg;
 
-  if (score >= highThreshold) {
-    return { colorClass: highColor, labelTier: "high" };
-  }
-  if (score >= medThreshold) {
-    return { colorClass: medColor, labelTier: "medium" };
-  }
-  return { colorClass: lowColor, labelTier: "low" };
-}
+export { getDuplicateConfidenceBadgeStyle } from "./contactDuplicateDisplay.js";

@@ -60,8 +60,16 @@ export interface ContactsRepository {
       recipientProjection?: boolean;
     },
   ): Promise<ContactsListPageResult & { nextCursor?: string }>;
-  findById(tenant: string, id: string): Promise<Contact | null>;
-  findByIds(tenant: string, ids: string[]): Promise<Contact[]>;
+  findById(
+    tenant: string,
+    id: string,
+    options?: { includeDeleted?: boolean },
+  ): Promise<Contact | null>;
+  findByIds(
+    tenant: string,
+    ids: string[],
+    options?: { includeDeleted?: boolean },
+  ): Promise<Contact[]>;
   findSummaryByIds?(tenant: string, ids: string[]): Promise<Contact[]>;
   save(tenant: string, contact: Contact): Promise<void>;
   /**

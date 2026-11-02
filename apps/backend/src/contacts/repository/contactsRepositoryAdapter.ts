@@ -39,8 +39,10 @@ function createContactsRepository(): ContactsRepository {
     countByWorkspace: (tenant, options) => countContactsByWorkspace(tenant, options),
     getLatestWriteAt: (tenant) => getLatestContactWriteAt(tenant),
     listPage: (tenant, query) => listContactsPage(tenant, query),
-    findById: (tenant, id) => findContactById(tenant, id),
-    findByIds: (tenant, ids) => findContactsByIds(tenant, ids),
+    findById: (tenant, id, options) =>
+      options ? findContactById(tenant, id, options) : findContactById(tenant, id),
+    findByIds: (tenant, ids, options) =>
+      options ? findContactsByIds(tenant, ids, options) : findContactsByIds(tenant, ids),
     findSummaryByIds: (tenant, ids) => findContactsSummaryByIds(tenant, ids),
     save: (tenant, contact) => saveContact(tenant, contact),
     saveIfVersionMatches: (tenant, contact, expectedUpdatedAt) =>

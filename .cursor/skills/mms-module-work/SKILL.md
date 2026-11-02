@@ -48,6 +48,7 @@ metadata:
 - Hide Create/Add and Export in trash mode; guard `Cmd/Ctrl+N`.
 - Archived drawers: archive banner + Restore; hide Edit/communication CTAs (full lifecycle → `mms-soft-delete`).
 - Two-layer bulk chrome: `ModuleUniversalBulkActionBar` over `ModuleWorkBulkActionBar`. Never fork adapters or duplicate selection hooks.
+- Bulk actions never add/remove system-managed values (role tags, computed fields). Filter them from selection UI and rely on the server's `400` for reserved names.
 
 For the full list of 6 invariant ratchets enforced by CI, see [references/work-directory-ratchets.md](references/work-directory-ratchets.md).
 

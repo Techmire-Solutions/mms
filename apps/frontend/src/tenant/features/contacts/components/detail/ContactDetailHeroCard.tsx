@@ -1,11 +1,11 @@
 import React from "react";
 import { BrainCircuit } from "lucide-react";
-import { type Contact, getDisplayName, getContactTags } from "@mms/shared";
+import { type Contact, getDisplayName } from "@mms/shared";
 import { useTranslation } from "@/hooks/useTranslation";
 import { ContactIdentityMeta } from "../ContactIdentityMeta";
+import { ContactTagList } from "../ContactTagBadge";
 import { PersonDetailHeroCard } from "@/components/app/PersonDetailHeroCard";
 import { DetailNotesBlock } from "@/components/app/DetailNotesBlock";
-import { Badge } from "@/components/ui/badge";
 import { Card } from "@/components/ui/card";
 import { getGenderCardAccent } from "@/lib/ui/genderUi";
 
@@ -17,7 +17,6 @@ export function ContactDetailHeroCard({ contact }: ContactDetailHeroCardProps): 
   const { t } = useTranslation();
   const aiSummary = typeof contact.aiSummary === "string" ? contact.aiSummary.trim() : "";
   const notes = typeof contact.notes === "string" ? contact.notes.trim() : "";
-  const contactTags = getContactTags(contact);
 
   return (
     <>
@@ -29,15 +28,7 @@ export function ContactDetailHeroCard({ contact }: ContactDetailHeroCardProps): 
         accentColor={getGenderCardAccent(contact.gender)}
       >
         <ContactIdentityMeta gender={contact.gender} isSyed={contact.isSyed} size="md" />
-        {contactTags.length > 0 && (
-          <div className="flex flex-wrap gap-1.5 mt-1.5">
-            {contactTags.map((tag) => (
-              <Badge key={tag} tone="primary" size="sm" className="font-medium">
-                {tag}
-              </Badge>
-            ))}
-          </div>
-        )}
+        <ContactTagList contact={contact} size="sm" className="mt-1.5 gap-1.5" />
       </PersonDetailHeroCard>
 
       {aiSummary ? (

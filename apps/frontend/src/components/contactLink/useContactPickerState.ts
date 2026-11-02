@@ -8,17 +8,39 @@ import {
   type RefObject,
   useMemo,
 } from "react";
-import { type Contact, filterContactsForQuery } from "@mms/shared";
+import {
+  type Contact,
+  type ContactPickerOption,
+  type ContactPickerSearchQuery,
+  filterContactsForQuery,
+} from "@mms/shared";
 import { uploadUserImage } from "@/lib/imageUpload";
 import type { ContactCreateDefaults } from "./ContactCreateModal";
 import { useDebounce } from "@/hooks/useDebounce";
 import { useTranslation } from "@/hooks/useTranslation";
-import { useContactById, useContactsContractList } from "@/tenant/hooks/collections/contacts";
+import {
+  useContactPickerOption,
+  useContactPickerSearch,
+} from "@/tenant/hooks/collections/contacts";
 import { notify } from "@/lib/notify";
 import { reportClientError } from "@/lib/clientErrorReporting";
 import { useAnchorMenuStyle } from "./useAnchorMenuStyle";
 
 const PICKER_PAGE_SIZE = 8;
+/** Mirrors the backend picker cap so the query string stays inside the contract. */
+const PICKER_MAX_EXCLUDE_IDS = 100;
+
+/** Lean picker option → the minimal Contact the picker's match/selected views read. */
+function toPickerContact(option: ContactPickerOption): Contact {
+  return {
+    id: option.id,
+    name: option.name,
+    firstName: option.name.split(" ")[0] ?? option.name,
+    ...(option.email ? { email: option.email } : {}),
+    ...(option.phone ? { phone: option.phone } : {}),
+    addresses: option.city ? [{ city: option.city }] : [],
+  };
+}
 
 export interface UseContactPickerStateOptions {
   value: string | number | null;
@@ -71,24 +93,37 @@ export function useContactPickerState({
   );
 
   const debouncedQuery = useDebounce(query, 250);
-  const { data: searchPage, isFetching: isSearching } = useContactsContractList(
-    {
-      page: 1,
-      limit: PICKER_PAGE_SIZE,
+  const pickerSearchQuery = useMemo<ContactPickerSearchQuery>(
+    () => ({
       search: debouncedQuery,
-      gender: filterGender,
-      hasPhone,
-      excludeIds: normalizedExcludeIds,
-    },
+      limit: PICKER_PAGE_SIZE,
+      ...(filterGender ? { gender: filterGender } : {}),
+      ...(hasPhone ? { hasPhone } : {}),
+      ...(normalizedExcludeIds.length > 0
+        ? { excludeIds: normalizedExcludeIds.slice(0, PICKER_MAX_EXCLUDE_IDS).join(",") }
+        : {}),
+    }),
+    [debouncedQuery, filterGender, hasPhone, normalizedExcludeIds],
+  );
+  const { data: searchPage, isFetching: isSearching } = useContactPickerSearch(
+    pickerSearchQuery,
     serverMode && open,
   );
-  const { data: selectedFromServer } = useContactById(
+  const { data: resolvedOption } = useContactPickerOption(
     value != null ? String(value) : undefined,
     serverMode && value != null,
   );
 
-  const directory = (() =>
-    serverMode ? ((searchPage?.body?.contacts ?? []) as Contact[]) : contacts)();
+  const selectedFromServer = (() => {
+    const option = resolvedOption?.body?.contact as ContactPickerOption | null | undefined;
+    return option ? toPickerContact(option) : null;
+  })();
+
+  const directory = (() => {
+    if (!serverMode) return contacts ?? [];
+    const options = (searchPage?.body?.contacts ?? []) as ContactPickerOption[];
+    return options.map(toPickerContact);
+  })();
 
   const closeDropdown = useCallback(() => {
     setQuery("");

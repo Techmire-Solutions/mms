@@ -63,6 +63,16 @@ Extracted from `SKILL.md` so the skill body stays loadable in one pass; the owni
 - [ ] UI/UX Pro Max alignment on coding and review (`mms-ui-ux-design.md` §8, skill `ui-ux-pro-max`): semantic tokens (no raw hex/brackets), BiDi logical CSS, touch targets ≥ 44×44px, text-wrap: balance on headings, chip/tag wrapping, table overflow wrapping, 150-300ms transitions respecting prefers-reduced-motion
 - [ ] **Platform apex English-only** (`mms-settings-i18n.md`) / **missing tenant hard-redirect** (`mms-auth-security.md`)
 
+### Derived / system-managed projections
+- [ ] One idempotent reconciler owns the rows; every lifecycle path (single, bulk, import, delete/restore, merge) calls it
+- [ ] Batch writers reconcile once after the loop; no per-record reconcile
+- [ ] Ended roles archive (`Former …`); rows are not deleted except when the owning entity is merged/removed
+- [ ] Stable system key + partial unique index on `(tenant, entity, system_key)`; display-name collisions collapse deterministically
+- [ ] Per-entity advisory lock prevents concurrent double-insert; no unique-violation retry
+- [ ] Start/end windows use the workspace-local day; date-only transitions are repaired by a leader-locked, candidate-scoped sweep
+- [ ] Read projection metadata is stripped with the owning field; write DTO accepts it only to strip; bulk reserved values return `400`
+- [ ] DB integration covers add, rename, end/unlink, delete/restore, batch-once, concurrency, and archived naming
+
 ### RBAC (frontend)
 - [ ] Module pages use `useModulePermissions(X_MODULE_MANIFEST)` (or `can()`) — not `role ===` / `disabled={role === '…'}`
 - [ ] Forbidden actions omitted — not disabled placeholders

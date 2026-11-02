@@ -8,6 +8,13 @@ vi.mock("../contacts/use-cases/contactPreferencesService.js", () => ({
 }));
 
 import { applyContactRelationshipInference } from "../contacts/use-cases/contactInferenceUseCases.js";
+import { applyContactRelationshipInference as applyInferenceDirect } from "../contacts/use-cases/contactInferenceApply.js";
+
+describe("contact inference apply module", () => {
+  it("keeps the direct apply entry point importable", () => {
+    expect(typeof applyInferenceDirect).toBe("function");
+  });
+});
 
 function fakeContact(id: string, overrides: Partial<Contact> = {}): Contact {
   return {
@@ -116,5 +123,86 @@ describe("applyContactRelationshipInference", () => {
     });
     await applyContactRelationshipInference("demo", source, undefined, repo);
     expect(bulkSave).not.toHaveBeenCalled();
+  });
+
+  it("never relabels a user-authored relationship as inferred", async () => {
+    const { repo, store, bulkSave } = createFakeRepo();
+    store.set(
+      "c2",
+      fakeContact("c2", {
+        relationshipContacts: [{ contactId: "c1", relationship: "Ward" }],
+      }),
+    );
+    const source = fakeContact("c1", {
+      relationshipContacts: [{ contactId: "c2", relationship: "Parent" }],
+    });
+
+    await applyContactRelationshipInference("demo", source, undefined, repo);
+
+    expect(bulkSave).not.toHaveBeenCalled();
+    expect(store.get("c2")?.relationshipContacts?.[0]).toEqual({
+      contactId: "c1",
+      relationship: "Ward",
+    });
+  });
+
+  it("removes a stale inferred link when the source link is gone", async () => {
+    const store = new Map<string, Contact>();
+    store.set(
+      "c2",
+      fakeContact("c2", {
+        relationshipContacts: [
+          {
+            contactId: "c1",
+            relationship: "Child",
+            inferred: true,
+            inferredFromContactId: "c1",
+            inferenceDepth: 1,
+          },
+        ],
+      }),
+    );
+    const bulkSave = vi.fn(async (_tenant: string, contacts: Contact[]) => {
+      contacts.forEach((contact) => store.set(String(contact.id), contact));
+    });
+    const repo = {
+      findByIds: vi.fn(async (_tenant: string, ids: string[]) =>
+        ids.map((id) => store.get(id)).filter((c): c is Contact => Boolean(c)),
+      ),
+      bulkSave,
+    } as unknown as Parameters<typeof applyContactRelationshipInference>[3];
+
+    await applyContactRelationshipInference("demo", fakeContact("c1"), undefined, repo, {
+      // The link existed before this write; cleanup must remove the stale row.
+      previousSource: fakeContact("c1", {
+        relationshipContacts: [{ contactId: "c2", relationship: "Parent" }],
+      }),
+    });
+
+    expect(bulkSave).toHaveBeenCalledOnce();
+    expect(store.get("c2")?.relationshipContacts).toEqual([]);
+  });
+
+  it("skips a target whose version changed concurrently instead of overwriting it", async () => {
+    const store = new Map<string, Contact>();
+    store.set("c2", fakeContact("c2", { updatedAt: "2026-01-01T00:00:00.000Z" }));
+    const saveIfVersionMatches = vi.fn(async () => false);
+    const bulkSave = vi.fn(async () => undefined);
+    const repo = {
+      findByIds: vi.fn(async (_tenant: string, ids: string[]) =>
+        ids.map((id) => store.get(id)).filter((c): c is Contact => Boolean(c)),
+      ),
+      saveIfVersionMatches,
+      bulkSave,
+    } as unknown as Parameters<typeof applyContactRelationshipInference>[3];
+    const source = fakeContact("c1", {
+      relationshipContacts: [{ contactId: "c2", relationship: "Parent" }],
+    });
+
+    await applyContactRelationshipInference("demo", source, undefined, repo);
+
+    expect(saveIfVersionMatches).toHaveBeenCalledOnce();
+    expect(bulkSave).not.toHaveBeenCalled();
+    expect(store.get("c2")?.relationshipContacts).toEqual([]);
   });
 });

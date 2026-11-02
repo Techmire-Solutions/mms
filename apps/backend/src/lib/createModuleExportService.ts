@@ -95,11 +95,19 @@ export function createModuleExportService<
       let cursor: string | undefined;
       for (;;) {
         const pageResult = await options.loadPage(normalized, page, 250, cursor);
+        if (pageResult.hasMore && pageResult.rows.length === 0) {
+          throw new Error(
+            `Export pager reported hasMore=true with zero rows on page ${page}; ` +
+              "refusing to loop forever. Return hasMore=false or the next rows.",
+          );
+        }
         allRows.push(...(pageResult.rows as TRow[]));
         if (allRows.length > MAX_MATERIALIZED_EXPORT_ROWS) throw tooManyRowsError();
         if (!pageResult.hasMore) break;
-        const last = pageResult.rows[pageResult.rows.length - 1] as { id?: unknown } | undefined;
-        cursor = pageResult.nextCursor ?? (last?.id ? String(last.id) : undefined);
+        // Only advance a cursor when the pager emits one; otherwise stay on
+        // OFFSET paging so the caller's sort (e.g. contacts by name) is kept and
+        // no rows are dropped by an unexpected `ORDER BY id` keyset page.
+        cursor = pageResult.nextCursor;
         page += 1;
       }
     }

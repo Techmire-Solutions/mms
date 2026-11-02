@@ -8,6 +8,7 @@ import {
   listFacultyDesignations,
   saveFacultyDesignation,
 } from "../../db/repositories/facultyDesignationRepository.js";
+import { reconcileDesignationContacts } from "../../contacts/systemTags/contactSystemTagUseCases.js";
 
 export interface CatalogImportJobContext {
   tenant: string;
@@ -137,6 +138,13 @@ export async function runFacultyDesignationsImportJob(
     } catch {
       // ignore parent-link failures (cycle / depth guards)
     }
+  }
+
+  // Keep module role tags in step with imported designation names/status.
+  for (const entry of saved) {
+    await reconcileDesignationContacts(context.tenant, entry.id, {
+      actorId: context.userId,
+    });
   }
 
   return { imported, failed: total - imported, total };

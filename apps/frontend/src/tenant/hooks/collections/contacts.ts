@@ -10,6 +10,8 @@ export {
   contactsCommandMetricsQueryOptions,
   useContactById,
   useContactsByIds,
+  useContactPickerSearch,
+  useContactPickerOption,
   useContactMutations,
   useContactsMetrics,
   useContactsReportAnalytics,

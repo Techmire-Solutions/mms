@@ -46,6 +46,7 @@ Form list cards use default primary stripe/icon — ban per-collection `accentCl
 - ❌ **NEVER block paste on inputs**: Banning paste on password, OTP, or 2FA fields is strictly forbidden (WCAG 2.2 3.3.8).
 - ❌ **NEVER display premature validation errors**: Avoid showing red errors on clean, untouched fields while the user types; validate on blur or submit attempt.
 - ❌ **NEVER accept client soft-delete fields**: Strip `deletedAt`, `deletedBy`, `deletionReason` on create/update schemas.
+- ❌ **NEVER render system-managed values as editable controls**: Derived tags/status/provenance are locked read-only chrome; the draft may carry the read projection but the write DTO strips it.
 - ❌ **NEVER assign soft-deleted foreign keys**: Enforce active foreign key guarding (`deleted_at IS NULL`).
 - ❌ **NEVER buffer uploads into memory**: Stream files directly using Fastify `@fastify/multipart`.
 - ❌ **NEVER invent per-feature “add another” row chrome**: Use `FormCollectionShell` + `FormListFieldCard` (+ `CardRemoveButton`) + `FormAddAnotherButton` from `FormPrimitives` for every repeatable form collection — contacts, faculty designations, QB matching/ordering/citations, Wakala distribution, journal lines, paper sections, class fee/schedule/budget rows, and future lists. Ban one-off `Button`+`Plus`, custom dashed borders, or `SectionCard` wrapping list cards. `ContactSubListShell` is a thin adapter over `FormCollectionShell`.
@@ -91,6 +92,8 @@ python3 .agent/skills/ui-ux-pro-max/scripts/search.py "<form-topic>" --domain ux
 - [ ] Shared Zod write schema validates inputs strictly (.strict())
 - [ ] Dates validated with isoDateSchema / isoDateOrEmptySchema
 - [ ] Active foreign keys verified (deleted_at IS NULL)
+- [ ] Uploads: tenant-scoped path, owning module action gate, relative attachment URL whitelist (legacy absolute grandfathered)
+- [ ] Attachment removal unlinks only after the save commits and no row references the file
 - [ ] Focus-return restored to opener on dialog close
 - [ ] Run: pnpm typecheck && cd apps/frontend && pnpm lint
 ```

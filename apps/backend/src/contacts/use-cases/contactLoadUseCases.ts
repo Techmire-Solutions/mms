@@ -40,11 +40,12 @@ export async function loadContactsPage(
 export async function loadContactsByIds(
   ids: string[],
   repo: ContactsRepository = contactsRepository,
+  options?: { includeDeleted?: boolean },
 ): Promise<Contact[]> {
   if (ids.length === 0) return [];
   const tenant = getRequestTenant();
   if (!tenant) return [];
-  return loadContactsByIdsForTenant(tenant, ids, repo);
+  return loadContactsByIdsForTenant(tenant, ids, repo, options);
 }
 
 /** Tenant-parameterized variant for cross-module services (e.g. Messaging recipients). */
@@ -52,10 +53,13 @@ export async function loadContactsByIdsForTenant(
   tenant: string,
   ids: string[],
   repo: ContactsRepository = contactsRepository,
+  options?: { includeDeleted?: boolean },
 ): Promise<Contact[]> {
   if (ids.length === 0) return [];
-  const matched = await repo.findByIds(tenant, ids);
-  return matched.filter((contact) => !contact.deletedAt);
+  const matched = options?.includeDeleted
+    ? await repo.findByIds(tenant, ids, { includeDeleted: true })
+    : await repo.findByIds(tenant, ids);
+  return options?.includeDeleted ? matched : matched.filter((contact) => !contact.deletedAt);
 }
 
 /** Lean variant fetching only summary fields + relationships (bypasses heavy subcollections). */
@@ -127,7 +131,9 @@ export async function getContactById(
 ): Promise<Contact | null> {
   const tenant = getRequestTenant();
   if (!tenant) return null;
-  const found = await repo.findById(tenant, id);
+  const found = includeDeleted
+    ? await repo.findById(tenant, id, { includeDeleted: true })
+    : await repo.findById(tenant, id);
   if (!found) return null;
   if (!includeDeleted && found.deletedAt) return null;
   return found;

@@ -39,6 +39,7 @@ paths:
 - **Inputs & Forms:** `useId()` for `id`/`htmlFor`, `aria-label` on icon buttons, never block paste on inputs (`onPaste` prevention banned). Provide single-pointer buttons for draggable interactions.
 - **BiDi Logical Properties Only:** Physical direction classes are strictly banned. Use logical equivalents: `ms-*`/`me-*`, `ps-*`/`pe-*`, `start-*`/`end-*`, `text-start`/`text-end`, `border-s-*`/`border-e-*`, `rounded-s-*`/`rounded-e-*`, and `rtl:rotate-180` for directional icons.
 - **Typography:** `text-wrap: balance` on headings, `text-wrap: pretty` on copy. Urdu (`lang="ur"`) requires `line-height: 2.2` and `dir="auto"`.
+- **System-Managed Values:** Render server-owned chips with a lock icon, the visible value in the accessible label (value + “managed automatically”), and a non-color cue for archived state. No remove control; do not put them in editable multi-selects. Permission-hidden fields must hide the chip and its metadata.
 
 ## 4. Mobile-First Responsiveness & Breakpoints
 - **Layout Bounds:** Zero horizontal overflow (`max-w-full`, `100vw` limit). No fixed pixel widths (`w-[1200px]`); use relative units. Wrap wide tables in `overflow-x-auto max-w-full`.

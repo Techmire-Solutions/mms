@@ -10,6 +10,7 @@ import {
 } from "../../../faculty/use-cases/facultyCatalogUseCases.js";
 import { auditFaculty } from "./facultyRouteHelpers.js";
 import { broadcastCollection } from "../../../lib/livePush.js";
+import { reconcileDesignationContacts } from "../../../contacts/systemTags/contactSystemTagUseCases.js";
 import {
   authorizeCatalogRoute,
   canArchiveFacultySetup,
@@ -60,6 +61,9 @@ export async function handleRestoreDesignation({
         body: { type: "not_found", message: "Designation not found in trash" },
       };
     }
+    await reconcileDesignationContacts(auth.tenantId, String(designation.id), {
+      actorId: auth.user.id,
+    });
     await broadcastCollection("faculty");
     return { status: 200 as const, body: { designation } };
   } catch (error) {
@@ -84,6 +88,9 @@ export async function handleSaveDesignation({
       ...body,
       id,
       updatedBy: auth.user.id,
+    });
+    await reconcileDesignationContacts(auth.tenantId, String(designation.id), {
+      actorId: auth.user.id,
     });
     await auditFaculty(
       auth.user,
@@ -130,6 +137,7 @@ export async function handleDeleteDesignation({
   if ("status" in auth) return auth;
   try {
     await softDeleteFacultyDesignation(auth.tenantId, id, auth.user.id);
+    await reconcileDesignationContacts(auth.tenantId, id, { actorId: auth.user.id });
     await auditFaculty(
       auth.user,
       "faculty.designation.delete",

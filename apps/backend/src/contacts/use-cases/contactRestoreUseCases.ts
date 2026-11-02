@@ -11,6 +11,7 @@ import type { ContactsRepository } from "../repository/contactsRepository.js";
 import { contactsRepository } from "../repository/contactsRepositoryAdapter.js";
 import { emitOutboxEvent, emitOutboxEvents } from "../../services/outboxEventService.js";
 import { recordModernAuditEvent } from "../../services/auditTrailService.js";
+import { reconcileContactSystemTags } from "../systemTags/contactSystemTagUseCases.js";
 
 export interface ContactBulkRestoreConflict {
   id: string;
@@ -32,7 +33,9 @@ export async function restoreContactById(
   const restored = await runInTransaction(async () => {
     const tenant = getRequestTenant();
     if (!tenant) return null;
-    const existing = await repo.findById(tenant, id);
+    // `includeDeleted` sets the soft-delete RLS GUC for the read; the setting is
+    // transaction-local, so the subsequent restore write sees the same row.
+    const existing = await repo.findById(tenant, id, { includeDeleted: true });
     if (!existing) return null;
     // An already-active contact is not a restore. Returning null makes the route
     // answer 404 and skip the restore audit/outbox row (C-07).
@@ -107,6 +110,10 @@ export async function restoreContactById(
       newState: next,
       minimizeDelta: false,
     });
+    await reconcileContactSystemTags(tenant, [String(id)], {
+      actorId: userId,
+      touchContacts: false,
+    });
     return next;
   });
   if (restored) await broadcastCollection("contacts");
@@ -131,7 +138,7 @@ export async function bulkRestoreContacts(
     const toSave: Contact[] = [];
     const accepted: Contact[] = [];
 
-    const existingContacts = await repo.findByIds(tenant, uniqueIds);
+    const existingContacts = await repo.findByIds(tenant, uniqueIds, { includeDeleted: true });
     const existingMap = new Map(existingContacts.map((c) => [String(c.id), c]));
 
     for (const id of uniqueIds) {
@@ -219,6 +226,11 @@ export async function bulkRestoreContacts(
           minimizeDelta: false,
         });
       }
+      await reconcileContactSystemTags(
+        tenant,
+        toSave.map((c) => String(c.id)),
+        { actorId: userId, touchContacts: false },
+      );
     }
     return { succeeded, failed, conflicts };
   });

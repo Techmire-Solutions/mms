@@ -16,6 +16,7 @@ import {
   type FacultyWriteGuards,
 } from "./facultyWriteHelpers.js";
 import { ConflictError } from "../../lib/httpErrors.js";
+import { reconcileContactSystemTags } from "../../contacts/systemTags/contactSystemTagUseCases.js";
 
 export { HierarchyValidationError, HierarchyCycleError } from "./facultyHierarchyValidator.js";
 
@@ -95,11 +96,17 @@ export async function createFaculty(
         repo.save.bind(repo),
       );
       await guards.syncPrimaryAppointment(tenant, merged, guarded.departmentId);
+      await reconcileContactSystemTags(tenant, [merged.contactId], {
+        actorId: merged.updatedBy ?? undefined,
+      });
       return { record: merged, restored: true };
     }
 
     await repo.save(tenant, guarded.record, { createOnly: true });
     await guards.syncPrimaryAppointment(tenant, guarded.record, guarded.departmentId);
+    await reconcileContactSystemTags(tenant, [guarded.record.contactId], {
+      actorId: guarded.record.updatedBy ?? undefined,
+    });
     return { record: guarded.record, restored: false };
   });
   await broadcastCollection("faculty");
@@ -131,6 +138,9 @@ export async function updateFacultyById(
 
     await repo.save(tenant, guarded.record);
     await guards.syncPrimaryAppointment(tenant, guarded.record, guarded.departmentId);
+    await reconcileContactSystemTags(tenant, [existing.contactId, guarded.record.contactId], {
+      actorId: guarded.record.updatedBy ?? undefined,
+    });
     return guarded.record;
   });
   if (saved) {

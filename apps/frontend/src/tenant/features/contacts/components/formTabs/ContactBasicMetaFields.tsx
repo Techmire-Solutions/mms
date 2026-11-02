@@ -4,7 +4,16 @@ import { DatePicker } from "@/components/app/DatePicker";
 import { EditableMultiSelect, Field, FormCheckboxCard } from "@/components/app/FormPrimitives";
 import { LeadingIconInput } from "@/components/app/LeadingIconInput";
 import { useTranslation } from "@/hooks/useTranslation";
-import { type Contact, formatCnic, todayISO, getContactTags } from "@mms/shared";
+import {
+  type Contact,
+  formatCnic,
+  getContactTags,
+  isReservedSystemTagName,
+  normalizeContactTagName,
+  splitContactTags,
+  todayISO,
+} from "@mms/shared";
+import { ContactTagBadge } from "@/tenant/features/contacts/components/ContactTagBadge";
 import { cn } from "@/lib/utils";
 
 export interface ContactBasicMetaFieldsProps {
@@ -35,10 +44,19 @@ export function ContactBasicMetaFields({
 
   const draftTags = contactDraft.tags;
   const draftTag = contactDraft.tag;
-  const currentTags = useMemo(
-    () => getContactTags({ tags: draftTags, tag: draftTag }),
-    [draftTags, draftTag],
-  );
+  const draftSystemTags = contactDraft.systemTags;
+
+  const { manualTags, systemTags } = useMemo(() => {
+    const allTags = getContactTags({ tags: draftTags, tag: draftTag });
+    return splitContactTags({ tags: allTags, systemTags: draftSystemTags });
+  }, [draftTags, draftTag, draftSystemTags]);
+
+  const editableOptions = useMemo(() => {
+    const systemNames = new Set(systemTags.map((tag) => normalizeContactTagName(tag.name)));
+    return (tags ?? []).filter(
+      (tag) => !isReservedSystemTagName(tag) && !systemNames.has(normalizeContactTagName(tag)),
+    );
+  }, [tags, systemTags]);
 
   return (
     <>
@@ -114,8 +132,8 @@ export function ContactBasicMetaFields({
         >
           <EditableMultiSelect
             id={`cf-${formInstanceId}-tag`}
-            options={tags ?? []}
-            values={currentTags}
+            options={editableOptions}
+            values={manualTags}
             onChange={(selected) =>
               updateDraft({
                 tags: selected,
@@ -127,6 +145,20 @@ export function ContactBasicMetaFields({
             error={Boolean(tagError)}
             className="w-full"
           />
+          {systemTags.length > 0 && (
+            <div className="mt-2 space-y-1" data-testid="contact-system-tags">
+              <div className="flex flex-wrap gap-1">
+                {systemTags.map((systemTag) => (
+                  <ContactTagBadge
+                    key={`${systemTag.systemKey}:${systemTag.name}`}
+                    tag={systemTag.name}
+                    system={systemTag}
+                  />
+                ))}
+              </div>
+              <p className="m-0 text-2xs text-muted-foreground">{t("contacts.tags.systemHint")}</p>
+            </div>
+          )}
         </Field>
       )}
 

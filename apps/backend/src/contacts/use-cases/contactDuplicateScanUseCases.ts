@@ -3,12 +3,14 @@ import {
   getContactDuplicateCandidateKeys,
   paginateContactDuplicatePairs,
   CONTACTS_DUPLICATE_SCAN_CACHE_OBJECT_KEY,
+  CONTACT_DUPLICATE_MAX_PAIRS,
   type Contact,
   type ContactDuplicatePair,
   type ContactPreferences,
   type ContactsDuplicatePairsPageResult,
 } from "@mms/shared";
 import { getRequestTenant } from "../../lib/tenantContext.js";
+import { logger } from "../../lib/logger.js";
 import { deleteObject, getObject, saveObject } from "../../db/database.js";
 import { loadContactPreferences } from "./contactPreferencesService.js";
 import type {
@@ -125,6 +127,14 @@ export async function runContactsDuplicateScan(
   const total = tenant ? await repo.countByWorkspace(tenant, { deleted: "active" }) : 0;
   await onProgress?.(0, Math.max(total, 1));
   const pairs = await findBlockedDuplicatePairs(preferences, repo);
+  if (pairs.length >= CONTACT_DUPLICATE_MAX_PAIRS) {
+    // The pair finder stopped at its ceiling; keep the capped snapshot cacheable but
+    // make the truncation observable instead of silently serving a partial result.
+    logger.warn(
+      { pairCount: pairs.length, maxPairs: CONTACT_DUPLICATE_MAX_PAIRS },
+      "Contact duplicate scan reached the pair cap; results are truncated",
+    );
+  }
 
   const versionAfter =
     tenant && repo.getLatestWriteAt ? await repo.getLatestWriteAt(tenant) : versionBefore;

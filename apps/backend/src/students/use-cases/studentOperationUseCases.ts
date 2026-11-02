@@ -15,6 +15,7 @@ import { invalidateMultiTierCache } from "../../lib/cache/index.js";
 import type { StudentsRepository } from "../repository/studentsRepository.js";
 import { studentsRepository } from "../repository/studentsRepositoryAdapter.js";
 import { throwGrUniqueConflict } from "./studentNormalizeUseCases.js";
+import { reconcileContactSystemTags } from "../../contacts/systemTags/contactSystemTagUseCases.js";
 
 import {
   bulkEnrollStudentsIntoClass,
@@ -105,8 +106,18 @@ export async function bulkUpdateStudentStatus(
   const uniqueIds = [...new Set(ids.map((id) => String(id).trim()).filter(Boolean))];
   if (uniqueIds.length === 0) return { succeeded: 0, failed: 0 };
 
+  const affected = await repo.findByIds(tenant, uniqueIds);
   const succeeded = await repo.bulkUpdateStatusSql(tenant, uniqueIds, normalizedStatus);
   if (succeeded > 0) {
+    await reconcileContactSystemTags(
+      tenant,
+      affected.flatMap((s) => [
+        s.contactId,
+        s.fatherContactId,
+        s.motherContactId,
+        s.guardianContactId,
+      ]),
+    );
     await invalidateMultiTierCache({ tenantId: tenant, domain: "students" });
     await broadcastCollection("students");
   }

@@ -1,6 +1,7 @@
 import React, { act } from "react";
 import { createRoot, type Root } from "react-dom/client";
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
+import type { BackgroundJobRecord, Contact } from "@mms/shared";
 import { ContactsCsvImportDialog } from "./ContactsCsvImportDialog";
 
 vi.mock("@/lib/download", () => ({
@@ -20,16 +21,23 @@ vi.mock("@/hooks/useTranslation", async () => {
   return { useTranslation: useTranslationEnMock() };
 });
 
-const mockStartServerImport = vi.fn().mockResolvedValue({
-  id: "job-contacts-1",
-  label: "Imported 1 contact",
-  status: "completed",
-  progress: { current: 1, total: 1 },
-});
+const mockStartServerImport = vi.fn();
 
-vi.mock("@/lib/backgroundJobs/startServerModuleCsvImport", () => ({
-  startServerModuleCsvImport: (...args: unknown[]) => mockStartServerImport(...args),
+vi.mock("@/lib/backgroundJobs/startServerContactsImport", () => ({
+  startServerContactsImport: (...args: unknown[]) => mockStartServerImport(...args),
 }));
+
+interface ContactsImportRequest {
+  contacts: Contact[];
+  label: string;
+  onProgress?: (job: BackgroundJobRecord) => void;
+}
+
+const twoRowCsv = [
+  '"Full Name","Phone Number","Email Address","City"',
+  '"Syed Ali","+923001234567","ali@example.com","Karachi"',
+  '"Zayd ibn Ali","+923009876543","zayd@example.com","Lahore"',
+].join("\n");
 
 describe("ContactsCsvImportDialog", () => {
   let container: HTMLDivElement;
@@ -40,6 +48,21 @@ describe("ContactsCsvImportDialog", () => {
     document.body.appendChild(container);
     root = createRoot(container);
     vi.clearAllMocks();
+    mockStartServerImport.mockImplementation(
+      async (options: ContactsImportRequest): Promise<BackgroundJobRecord> => {
+        const job: BackgroundJobRecord = {
+          id: `job-contacts-${options.contacts.length}`,
+          moduleId: "contacts",
+          kind: "import",
+          status: "completed",
+          label: `Imported ${options.contacts.length} contacts`,
+          progress: { current: options.contacts.length, total: options.contacts.length },
+          createdAt: "2026-11-02T00:00:00.000Z",
+        };
+        options.onProgress?.(job);
+        return job;
+      },
+    );
   });
 
   afterEach(() => {
@@ -49,6 +72,37 @@ describe("ContactsCsvImportDialog", () => {
     container.remove();
     document.body.innerHTML = "";
   });
+
+  function findButton(label: string): HTMLButtonElement | undefined {
+    return Array.from(document.body.querySelectorAll("button")).find((btn) =>
+      btn.textContent?.includes(label),
+    );
+  }
+
+  async function selectCsv(content: string, fileName = "contacts.csv"): Promise<void> {
+    const fileInput = document.body.querySelector('input[type="file"]') as HTMLInputElement;
+    expect(fileInput).toBeDefined();
+    const file = new File([content], fileName, { type: "text/csv" });
+
+    await act(async () => {
+      Object.defineProperty(fileInput, "files", {
+        value: [file],
+        writable: true,
+      });
+      fileInput.dispatchEvent(new Event("change", { bubbles: true }));
+    });
+  }
+
+  async function clickImport(label: string): Promise<void> {
+    const importBtn = findButton(label);
+    expect(importBtn).toBeDefined();
+
+    await act(async () => {
+      importBtn?.click();
+      // Let the batched submit promise chain settle before rendering assertions.
+      await new Promise((resolve) => setTimeout(resolve, 0));
+    });
+  }
 
   it("renders nothing when closed or without write permission", () => {
     act(() => {
@@ -72,9 +126,7 @@ describe("ContactsCsvImportDialog", () => {
     expect(document.body.textContent).toContain("Import");
     expect(document.body.textContent).toContain("Download CSV Template");
 
-    const templateBtn = Array.from(document.body.querySelectorAll("button")).find((btn) =>
-      btn.textContent?.includes("Download CSV Template"),
-    );
+    const templateBtn = findButton("Download CSV Template");
     expect(templateBtn).toBeDefined();
 
     act(() => {
@@ -84,55 +136,80 @@ describe("ContactsCsvImportDialog", () => {
     expect(triggerFileDownload).toHaveBeenCalledWith(expect.any(Blob), "contacts.csv");
   });
 
-  it("accepts a valid exported contact CSV and initiates background import", async () => {
+  it("submits a 2-row file as one contacts batch and never posts {rows}", async () => {
+    act(() => {
+      root.render(<ContactsCsvImportDialog open={true} onClose={vi.fn()} canWrite={true} />);
+    });
+
+    await selectCsv(twoRowCsv, "two_contacts.csv");
+
+    expect(document.body.textContent).toContain("2 valid record(s) ready to import");
+    await clickImport("Import 2 Records");
+
+    expect(mockStartServerImport).toHaveBeenCalledTimes(1);
+    const request = mockStartServerImport.mock.calls[0]?.[0] as ContactsImportRequest;
+    expect(request.contacts).toHaveLength(2);
+    expect(request.contacts[0]).toMatchObject({
+      name: "Syed Ali",
+      firstName: "Syed",
+      lastName: "Ali",
+      phone: "+923001234567",
+      email: "ali@example.com",
+      city: "Karachi",
+    });
+    expect(request.contacts[1]).toMatchObject({
+      name: "Zayd ibn Ali",
+      firstName: "Zayd",
+      lastName: "ibn Ali",
+    });
+    expect(request).not.toHaveProperty("rows");
+    expect(request).not.toHaveProperty("body");
+    expect(document.body.textContent).toContain("Imported 2 of 2 contacts");
+  });
+
+  it("chunks a 501-row file into 500 + 1 contacts batches", async () => {
+    act(() => {
+      root.render(<ContactsCsvImportDialog open={true} onClose={vi.fn()} canWrite={true} />);
+    });
+
+    const rows = Array.from(
+      { length: 501 },
+      (_, index) =>
+        `"Contact ${index + 1}","+92300${String(index).padStart(7, "0")}","contact${index + 1}@example.com"`,
+    );
+    const csv = ['"Full Name","Phone Number","Email Address"', ...rows].join("\n");
+
+    await selectCsv(csv, "large_contacts.csv");
+
+    expect(document.body.textContent).toContain("501 valid record(s) ready to import");
+    await clickImport("Import 501 Records");
+
+    expect(mockStartServerImport).toHaveBeenCalledTimes(2);
+    const first = mockStartServerImport.mock.calls[0]?.[0] as ContactsImportRequest;
+    const second = mockStartServerImport.mock.calls[1]?.[0] as ContactsImportRequest;
+    expect(first.contacts).toHaveLength(500);
+    expect(second.contacts).toHaveLength(1);
+    expect(document.body.textContent).toContain("Imported 501 of 501 contacts");
+  });
+
+  it("surfaces a failed import and keeps the dialog open when the starter rejects", async () => {
+    const { notify } = await import("@/lib/notify");
     const onClose = vi.fn();
 
     act(() => {
       root.render(<ContactsCsvImportDialog open={true} onClose={onClose} canWrite={true} />);
     });
 
-    const fileInput = document.body.querySelector('input[type="file"]') as HTMLInputElement;
-    expect(fileInput).toBeDefined();
+    await selectCsv(twoRowCsv, "two_contacts.csv");
+    mockStartServerImport.mockRejectedValueOnce(new Error("network down"));
 
-    // Exact export headers from contactsTransferSchema
-    const csvContent =
-      '"Full Name","Phone Number","Email Address","City"\n"Syed Ali","+923001234567","ali@example.com","Karachi"';
-    const file = new File([csvContent], "exported_contacts.csv", { type: "text/csv" });
+    await clickImport("Import 2 Records");
 
-    await act(async () => {
-      Object.defineProperty(fileInput, "files", {
-        value: [file],
-        writable: true,
-      });
-      fileInput.dispatchEvent(new Event("change", { bubbles: true }));
-    });
-
-    expect(document.body.textContent).toContain("exported_contacts.csv");
-    expect(document.body.textContent).toContain("1 valid record(s) ready to import");
-
-    const importBtn = Array.from(document.body.querySelectorAll("button")).find((btn) =>
-      btn.textContent?.includes("Import 1 Records"),
-    );
-    expect(importBtn).toBeDefined();
-
-    await act(async () => {
-      importBtn?.click();
-    });
-
-    expect(mockStartServerImport).toHaveBeenCalledWith(
-      expect.objectContaining({
-        path: "/api/contacts/import",
-        body: expect.objectContaining({
-          rows: [
-            expect.objectContaining({
-              name: "Syed Ali",
-              phone: "+923001234567",
-              email: "ali@example.com",
-              city: "Karachi",
-            }),
-          ],
-        }),
-      }),
-    );
+    expect(notify.error).toHaveBeenCalledWith(expect.stringContaining("Import failed"));
+    expect(notify.success).not.toHaveBeenCalled();
+    expect(onClose).not.toHaveBeenCalled();
+    expect(document.body.textContent).toContain("two_contacts.csv");
+    expect(findButton("Import 2 Records")).toBeDefined();
+    expect(document.body.textContent).not.toContain("Imported 2 of 2 contacts");
   });
 });

@@ -142,6 +142,8 @@ export function mapChildRelationships(
     if (r.name) item.name = r.name;
     if (r.relationship) item.relationship = r.relationship;
     if (r.phone) item.phone = r.phone;
+    if (r.email) item.email = r.email;
+    if (r.gender) item.gender = r.gender;
     if (r.relatedContactId) item.contactId = r.relatedContactId;
     if (r.inferredFromContactId) item.inferredFromContactId = r.inferredFromContactId;
     return item;

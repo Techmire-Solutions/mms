@@ -48,6 +48,7 @@ description: FormModal shell, Zod form validation, decimal currency formatting, 
 - **Write DTO Hygiene:** Write schemas (POST/PUT) omit server-owned fields (`deletedAt`, `deletedBy`, `deletionReason`). Enforce `.strict()` on all write DTOs.
 - **Active FK Guarding:** Validators and forms assigning foreign keys (`contactId`, `sessionId`, `facultyId`) must verify referenced entities are active (`deleted_at IS NULL`) (`mms-data-layer.md` §6).
 - **Error Mapping & Hydration:** Map Zod issues via shared `mapZodFormErrors` in `@mms/shared` to `t()` keys (ban per-form issue switches). Decimal strings for money, E.164 for phones. Hydrate edit defaults from Query cache to prevent empty flashes.
+- **Read-Only Projections:** System-managed values (derived tags, computed status/provenance) render as locked read-only chrome, never as editable controls or lookup options. A draft may carry the read projection, but the write DTO strips it; editing the record must preserve the server-owned rows rather than dropping them.
 
 ## 5. RTL, Styling & Validation UX
 - **Logical CSS:** Use logical Tailwind (`start-0`, `border-e`, `ms-auto`, `ps-4`).
@@ -57,6 +58,7 @@ description: FormModal shell, Zod form validation, decimal currency formatting, 
 ## 6. Security & Upload Boundaries
 - **Isolation:** Tenant writes enforce transaction-scoped RLS (`SET LOCAL app.current_tenant`). Platform writes require `authenticatePlatform` + `platformUserCan`.
 - **Multipart Uploads:** Authenticated multipart to `/api/uploads/image` or `/attachment` (disk storage via `resolveApiUrl`). Enforce magic-byte sniff, MIME allowlist, and dimension limits (`mms-auth-security.md`).
+- **Upload Lifecycle:** Tenant sessions read only `tenants/<tenant>/…`; root-level non-public files are platform-only. Upload/delete requires the owning module action (e.g. `contacts.write`), not just a session. New/changed attachment URLs must be relative tenant attachment paths; unchanged legacy absolute URLs are grandfathered. Unlink after the DB save commits and only when no row still references the file; a reconciler sweeps orphans (`mms-module-architecture.md` §5).
 
 ## 7. FormModal vs DetailSheet Boundary
 - **FormModal:** Exclusively owns write mutations, create, edit, builder workflows, and data modifications with shared Zod validation.

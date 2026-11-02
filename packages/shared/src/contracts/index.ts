@@ -8,7 +8,11 @@ import {
 } from "./students.contract.js";
 import { financeContract } from "./finance.contract.js";
 import { attendanceContract } from "./attendance.contract.js";
-import { contactsContract } from "./contacts.contract.js";
+import {
+  contactsContract,
+  contactsPickerContract,
+  contactsPickerRoutes,
+} from "./contacts.contract.js";
 import { facultyContract } from "./faculty.contract.js";
 import { userContract } from "./users.contract.js";
 import { messagingContract } from "./messaging.contract.js";
@@ -129,6 +133,8 @@ export {
   financeContract,
   attendanceContract,
   contactsContract,
+  contactsPickerContract,
+  contactsPickerRoutes,
   facultyContract,
   userContract,
   messagingContract,

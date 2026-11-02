@@ -45,6 +45,8 @@ metadata:
 - [ ] Upsert saves; clear-logs soft-archive + audit `messaging.logs.clear`
 - [ ] message_logs follows Bucket 3 TTL purge with 365-day retention window and tuned autovacuum (mms-soft-delete)
 - [ ] Select-all uses /recipients/match (lean); CSV uses /export/csv job
+- [ ] `/recipients` + resolve/match return lean `{id,name,phone,email}` DTOs, never the full contact page
+- [ ] Recipient mapping applies `sanitizeContactsForViewer` with the session role (no notes/DOB/addresses for messaging-only roles)
 - [ ] CSV export respects MESSAGING_CSV_EXPORT_MAX_ROWS / MAX_BYTES
 - [ ] No messages_u: / message_* in ALLOWED_COLLECTIONS dual-write
 - [ ] Send/export: idempotency key bound to body digest (409 on mismatch) + 429 backoff

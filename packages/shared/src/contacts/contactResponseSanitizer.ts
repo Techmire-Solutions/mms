@@ -127,6 +127,12 @@ function resolveContactStripPlan(
   if (!fieldVisible(viewerRole, fieldLookup.get("basic:lastName"))) {
     toStrip.add("lastName");
   }
+  if (!fieldVisible(viewerRole, fieldLookup.get("basic:tag"))) {
+    // System-tag metadata is the same field surface as manual tags.
+    toStrip.add("tag");
+    toStrip.add("tags");
+    toStrip.add("systemTags");
+  }
 
   return { keys: Array.from(toStrip), rowFields };
 }

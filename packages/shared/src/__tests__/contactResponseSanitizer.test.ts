@@ -53,7 +53,46 @@ describe("contactResponseSanitizer", () => {
     phones: [{ label: "Mobile", number: "+123456789" }],
   };
 
+  const tagHiddenConfig: ContactFieldConfigSnapshot = {
+    ...mockConfig,
+    fields: {
+      ...mockConfig.fields,
+      basic: [
+        ...(mockConfig.fields.basic ?? []),
+        {
+          key: "tag",
+          type: "text",
+          label: "Tag",
+          required: false,
+          enabled: false,
+          order: 3,
+        },
+      ],
+    },
+  };
+
   describe("sanitizeContactForViewer", () => {
+    it("strips manual and system tags when the tag field is hidden", () => {
+      const sanitized = sanitizeContactForViewer(
+        {
+          ...sampleContact,
+          tags: ["VIP"],
+          systemTags: [
+            {
+              name: "Student",
+              source: "student",
+              systemKey: "student:self",
+              archived: false,
+            },
+          ],
+        },
+        "admin",
+        tagHiddenConfig,
+      );
+      expect(sanitized.tags).toBeUndefined();
+      expect(sanitized.systemTags).toBeUndefined();
+    });
+
     it("preserves fields authorized for admin role", () => {
       const sanitized = sanitizeContactForViewer(sampleContact, "admin", mockConfig);
       expect(sanitized.firstName).toBe("Jane");

@@ -15,8 +15,11 @@ export async function startServerContactsVcfExport(options: {
 }
 
 export async function startContactsDuplicateScan(label?: string): Promise<BackgroundJobRecord> {
+  // Fresh per explicit trigger: the backend derives the job id from this key, so a
+  // repeat request from the same trigger dedupes onto the existing scan job.
+  const idempotencyKey = crypto.randomUUID();
   return startServerBackgroundJob({
     path: "/api/contacts/duplicates/scan",
-    body: { label },
+    body: { label, idempotencyKey },
   });
 }

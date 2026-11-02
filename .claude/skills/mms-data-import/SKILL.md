@@ -25,7 +25,8 @@ metadata:
 - **Idempotency & Queuing**: Large imports (> 50 rows) are dispatched as asynchronous BullMQ background jobs with status tracking and artifact error logs (`mms-background-jobs`).
 - **Bulk Upsert Semantics**: Import writes adhere to bulk PUT/upsert contracts (`mms-api-interface.md` §5). Never wipe or truncate missing existing rows during an import batch.
 - **Column Parity with the Exporter**: every column the module's CSV/VCF exporter writes must parse into a schema-valid import row — including nested relationship/card fields. The parser's output is validated by the contract, so an unknown key (e.g. `relationship_email`) becomes a 400 for the whole file. Add a round-trip test that parses an exported file.
-- **One Config Load Per Batch**: the worker loads tenant config once (`loadContactWriteContext` pattern) and runs in batch mode — per-record broadcast, cache invalidation and duplicate-scan invalidation are suppressed and executed once after the loop. Per-record transactions are acceptable; per-record config reads and live updates are not.
+- **One Config Load Per Batch**: the worker loads tenant config once (`loadContactWriteContext` pattern) and runs in batch mode — per-record broadcast, cache invalidation, duplicate-scan invalidation, and derived-projection reconciliation are suppressed and executed once after the loop. Per-record transactions are acceptable; per-record config reads and live updates are not.
+- **Derived Rows After Import**: collect successful entity ids and run one derived-state reconcile after the batch (contacts: `reconcileContactSystemTags`). Reserved/system-managed values in an import file are filtered, not persisted as manual duplicates.
 
 ## 2. Implementation Map
 

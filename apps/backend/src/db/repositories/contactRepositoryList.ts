@@ -1,7 +1,13 @@
 import { sql, type SQL } from "drizzle-orm";
-import { dedupeTrimmedIds, type ContactsListPageResult, type ContactsListQuery } from "@mms/shared";
+import {
+  dedupeTrimmedIds,
+  isQueryFlagTrue,
+  type ContactsListPageResult,
+  type ContactsListQuery,
+} from "@mms/shared";
 import { contacts, students, faculty, facultyEmployments, tenantUsers } from "../schema.js";
 import { withTenantRead } from "../tenant-context.js";
+import { enableIncludeDeleted } from "../../lib/softDeleteHelpers.js";
 import { runListPage } from "./listPageHelper.js";
 import { hydrateContactsList, hydrateContactsSummaryList } from "./contactRepositoryCore.js";
 import { hydrateContactsRecipientList } from "./contactRepositoryRecipientHydrate.js";
@@ -95,6 +101,8 @@ export async function listContactsPage(
   }
 
   return withTenantRead(subdomain, async (tx) => {
+    // Trash reads need the soft-delete GUC under the restrictive RLS policy.
+    if (isQueryFlagTrue(query.includeDeleted)) await enableIncludeDeleted(tx);
     const result = await runListPage(tx, contacts, {
       conditions: buildListConditions(subdomain, query, excludeIds, includeIds),
       orderBy: buildOrderBy(query.sortField, query.sortDir),

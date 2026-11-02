@@ -118,6 +118,69 @@ describe("csvExportStreamFactory", () => {
       expect(res.csv).toContain("1,Row 1");
       expect(res.csv).toContain("3,Row 3");
     });
+
+    it("keeps OFFSET paging (no cursor, increasing pages) when nextCursor is absent", async () => {
+      // Rows are ordered by the caller (name desc here) and their ids are not
+      // monotonic; the pager never emits a nextCursor, so paging must stay
+      // OFFSET-based and every row must be collected exactly once.
+      const pages: Array<Array<{ id: string; name: string }>> = [
+        [
+          { id: "b", name: "Row B" },
+          { id: "a", name: "Row A" },
+        ],
+        [
+          { id: "d", name: "Row D" },
+          { id: "c", name: "Row C" },
+        ],
+        [{ id: "f", name: "Row F" }],
+      ];
+      const pageCalls: Array<{ page: number; afterId?: string }> = [];
+
+      const generator = generateCsvStreamChunks({
+        filename: "offset.csv",
+        chunkSize: 2,
+        columns,
+        loadByIds: async () => [],
+        loadPage: async (page, _limit, afterId) => {
+          pageCalls.push({ page, afterId });
+          return { rows: pages[page - 1] ?? [], hasMore: page < pages.length };
+        },
+        yieldDataChunks: mockYieldChunks,
+      });
+
+      const chunks: string[] = [];
+      let step = await generator.next();
+      while (!step.done) {
+        chunks.push(step.value);
+        step = await generator.next();
+      }
+
+      expect(pageCalls.map((call) => call.page)).toEqual([1, 2, 3]);
+      expect(pageCalls.every((call) => call.afterId === undefined)).toBe(true);
+      expect(step.value).toEqual({ count: 5, filename: "offset.csv" });
+      expect(chunks.slice(1).join("").trim().split("\n")).toEqual([
+        "b,Row B",
+        "a,Row A",
+        "d,Row D",
+        "c,Row C",
+        "f,Row F",
+      ]);
+    });
+
+    it("throws instead of looping when hasMore is true with zero rows", async () => {
+      const generator = generateCsvStreamChunks({
+        filename: "stuck.csv",
+        chunkSize: 10,
+        columns,
+        loadByIds: async () => [],
+        loadPage: async () => ({ rows: [], hasMore: true }),
+        yieldDataChunks: mockYieldChunks,
+      });
+
+      await expect(buildCsvExportFromGenerator(generator, "fallback.csv")).rejects.toThrow(
+        /hasMore=true with zero rows/,
+      );
+    });
   });
 
   describe("streamCsvExportFromGenerator", () => {

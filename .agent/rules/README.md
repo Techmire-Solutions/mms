@@ -110,6 +110,11 @@ in the enforcement registry below are how the norm is actually held.
 | Bulk CSV data import & onboarding | `mms-api-interface.md` §5 · `mms-data-layer.md` | `mms-data-import` · `mms-background-jobs` |
 | Tenant user management & staff RBAC | `mms-auth-security.md` §2 · `mms-module-architecture.md` | `mms-user-management` · `mms-backend-security` |
 | Request/response DTO parity & server-owned write fields | `mms-api-interface.md` §1, §4 · `mms-data-layer.md` §5 | `mms-shared-package` · `mms-backend-api` |
+| Derived/system-managed projections (role tags, read-only fields) | `mms-data-layer.md` §9 · `mms-fields.md` §1 · `mms-api-interface.md` §1 | `mms-fields-registry` · `mms-backend-api` · `mms-faculty-domain` · `mms-student-lifecycle` |
+| Cross-module read DTOs & field visibility | `mms-auth-security.md` §3 · `mms-fields.md` §4 | `mms-backend-security` · `mms-fields-registry` · `mms-messaging` |
+| Upload/media lifecycle (paths, gates, unlink, sweep) | `mms-form-architecture.md` §6 · `mms-module-architecture.md` §5 | `mms-form-architecture` · `mms-background-jobs` |
+| Derived-cache generation & invalidation | `mms-performance.md` §3 | `mms-backend-api` · `mms-db-performance` |
+| Review remediation status & residuals | `mms-completion-review.md` §4 | `mms-code-review` |
 | Queued/offline client storage scoping | `mms-data-layer.md` §3 · `mms-hooks.md` §6 | `mms-data-sync` · `mms-frontend` |
 | Aggregate buckets & tenant timezone | `mms-data-layer.md` §8 · `mms-reports.md` §1 | `mms-db-performance` · `mms-reports-export` |
 | Agent standards corpus (rules/skills/mirrors) | `mms-agent-universal.md` · `mms-core.md` | `mms-agent-standards` |
@@ -170,9 +175,14 @@ Update this table in the same change that adds or removes a check.
 | Batched CDC outbox for bulk operations (audit stays per record) | reference test: `apps/backend/src/__tests__/softDeleteOutboxCdc.test.ts` | test |
 | Widget/aggregate field allowlist, `filters[]`, 400 on unsupported field | reference test: `apps/backend/src/__tests__/contactRepositoryWidgets.test.ts` | test |
 | Aggregate month/year buckets use the workspace timezone | reference test: `apps/backend/src/__tests__/contactRepositoryMetrics.test.ts` | test |
+| Derived projection lifecycle, archive/reactivate, batch-once, concurrency and read-only write stripping | reference test: `apps/backend/src/__tests__/db-integration/contactsSystemTagsDb.integration.test.ts` | test |
 | Required-module denial semantics (reachable code only) | reference test: `apps/backend/src/__tests__/moduleAccessGuard.integration.test.ts` | test |
 | Scoped offline outbox keys + single-flight flush | reference test: `apps/frontend/src/lib/contacts/contactsSyncOutbox*.test.ts` | test |
 | Restore provenance stamped by any resurrection (upsert/update) | reference test: `apps/backend/src/__tests__/contactUseCases.test.ts` (upsert restore) | test |
+| Cross-module read minimization + viewer field visibility | reference tests: `apps/backend/src/__tests__/messagingRecipientsService.test.ts`, `apps/backend/src/__tests__/messaging.integration.test.ts` | test |
+| Attachment lifecycle (tenant path, owning-action gate, URL whitelist, unlink, sweep dry-run) | reference tests: `apps/backend/src/__tests__/uploadsHardening.test.ts`, `apps/backend/src/__tests__/attachmentStorageService.test.ts`, `apps/backend/src/__tests__/attachmentSweepService.test.ts` | test |
+| Derived-cache write-version guard (skip/delete raced snapshot) | reference tests: `apps/backend/src/__tests__/contactDuplicateScanService.test.ts`, `apps/backend/src/__tests__/db-integration/contactsConcurrencyDb.integration.test.ts` | test |
+| Review findings closed with fix + test + status table | none — **advisory** (review/docs discipline) | advisory |
 
 
 ## Tenant = Platform Parity Principle
