@@ -1,7 +1,6 @@
 import { initContract } from "@ts-rest/core";
 import { z } from "zod";
 import { baseListQuerySchema } from "../core/apiSchemas.js";
-import { contactListPageResponseSchema } from "./contacts.contract.js";
 import {
   messageRecordSchema,
   messagingRecipientsMatchResponseSchema,
@@ -9,7 +8,10 @@ import {
   messagingMetricsSchema,
 } from "../schemas/messaging.dto.js";
 import { messageTemplateSchema } from "../messaging/messagingTemplateSchemas.js";
-import { messagingResolveResponseSchema } from "../messaging/messagingModuleManifest.js";
+import {
+  messagingRecipientsPageResponseSchema,
+  messagingResolveResponseSchema,
+} from "../messaging/messagingModuleManifest.js";
 import { messagingPreferencesSchema } from "../messaging/messagingPreferencesSchemas.js";
 
 const c = initContract();
@@ -60,7 +62,7 @@ export const messagingContract = c.router({
     method: "GET",
     path: "/api/messaging/recipients",
     query: messagingRecipientsQuerySchema,
-    responses: { 200: contactListPageResponseSchema, 403: ok, 500: ok },
+    responses: { 200: messagingRecipientsPageResponseSchema, 403: ok, 500: ok },
     summary: "List message recipients",
   },
   getMetrics: {

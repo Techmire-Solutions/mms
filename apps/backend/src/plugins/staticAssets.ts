@@ -138,6 +138,23 @@ export function tenantSegmentOf(pathBelowUploads: string): string | null {
 }
 
 /**
+ * A tenant-bound session must not read a non-public upload without a
+ * `tenants/<t>/` segment. Root-level uploads are legacy/platform-scoped files
+ * (e.g. pre-hardening attachments/avatars), and the tenant match has nothing to
+ * compare against — allow only platform (apex) sessions (B-01).
+ */
+export function isCrossTenantRootUpload(
+  pathBelowUploads: string,
+  requestTenant: string | null | undefined,
+): boolean {
+  return (
+    Boolean(requestTenant?.trim()) &&
+    tenantSegmentOf(pathBelowUploads) === null &&
+    !isPublicUploadPath(pathBelowUploads)
+  );
+}
+
+/**
  * Authorizes a `/uploads/*` request.
  *
  * Uploads used to be served by a bare `@fastify/static` registration: no auth,
@@ -158,9 +175,13 @@ async function authorizeUpload(request: FastifyRequest, reply: FastifyReply): Pr
   if (reply.sent) return;
 
   const pathTenant = tenantSegmentOf(path);
+  const requestTenant = getRequestTenant();
+  if (isCrossTenantRootUpload(path, requestTenant)) {
+    await sendForbidden(reply, "Upload path is not tenant-scoped");
+    return;
+  }
   if (!pathTenant) return;
 
-  const requestTenant = getRequestTenant();
   if (requestTenant && requestTenant.toLowerCase() !== pathTenant) {
     await sendForbidden(reply, "This file belongs to another workspace");
   }

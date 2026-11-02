@@ -121,6 +121,18 @@ export const messagingResolveResponseSchema = z.object({
   recipients: z.array(messagingRecipientSchema),
 });
 
+/** GET /api/messaging/recipients page — lean recipients only (no contact fields). */
+export const messagingRecipientsPageResponseSchema = z.object({
+  recipients: z.array(messagingRecipientSchema),
+  total: z.number().int().nonnegative(),
+  page: z.number().int().positive(),
+  limit: z.number().int().positive(),
+  hasMore: z.boolean(),
+});
+
+/** Inferred lean recipient page from Zod. */
+export type MessagingRecipientsPageResponse = z.infer<typeof messagingRecipientsPageResponseSchema>;
+
 /** Inferred lean recipient from Zod (matches StandardMessagingRecipient). */
 export type MessagingRecipientDto = z.infer<typeof messagingRecipientSchema>;
 /** Resolve endpoint response DTO. */

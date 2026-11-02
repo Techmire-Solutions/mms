@@ -5,7 +5,22 @@ vi.mock("../middleware/authenticateUploader.js", () => ({
   authenticateUploader: vi.fn().mockResolvedValue(undefined),
 }));
 
-import uploadRoutes, { buildUploadErrorResponse } from "../routes/common/uploads.js";
+import uploadRoutes, {
+  buildUploadErrorResponse,
+  canUploadAttachments,
+} from "../routes/common/uploads.js";
+import { authenticateUploader } from "../middleware/authenticateUploader.js";
+import { bindRequestTenant } from "../lib/tenantContext.js";
+
+const mockResolveAttachmentPath = vi.hoisted(() => vi.fn());
+const mockIsAttachmentReferenced = vi.hoisted(() => vi.fn());
+const mockDeleteTenantAttachment = vi.hoisted(() => vi.fn());
+
+vi.mock("../services/attachmentStorageService.js", () => ({
+  resolveTenantAttachmentPath: mockResolveAttachmentPath,
+  isAttachmentReferenced: mockIsAttachmentReferenced,
+  deleteTenantAttachment: mockDeleteTenantAttachment,
+}));
 
 const logContext = () => {
   const error = vi.fn();
@@ -53,7 +68,112 @@ describe("upload handler error masking (F40)", () => {
   });
 });
 
+describe("attachment upload permission (B-02)", () => {
+  it("requires contacts.write on the uploading user", () => {
+    expect(canUploadAttachments({ role: "admin" } as never)).toBe(true);
+    expect(canUploadAttachments({ role: "registrar" } as never)).toBe(true);
+    expect(canUploadAttachments({ role: "teacher" } as never)).toBe(false);
+    expect(canUploadAttachments({ role: "accountant" } as never)).toBe(false);
+    expect(canUploadAttachments({ role: "viewer" } as never)).toBe(false);
+  });
+});
+
+describe("attachment delete route (B-03)", () => {
+  const register = async () => {
+    const app = fastify({ logger: false });
+    app.addHook("onRequest", async () => {
+      bindRequestTenant("demo");
+    });
+    await app.register(uploadRoutes, { prefix: "/api/uploads" });
+    return app;
+  };
+
+  const injectDelete = (app: Awaited<ReturnType<typeof register>>, url = "a.pdf") =>
+    app.inject({
+      method: "POST",
+      url: "/api/uploads/attachment/delete",
+      headers: { host: "demo.localhost" },
+      payload: { url: `/uploads/tenants/demo/attachments/${url}` },
+    });
+
+  it("forbids a user without contacts.write", async () => {
+    vi.mocked(authenticateUploader).mockImplementation(async (request) => {
+      (request as { user?: unknown }).user = { role: "teacher" };
+    });
+    const app = await register();
+    const res = await injectDelete(app);
+    expect(res.statusCode).toBe(403);
+    expect(res.json()).toEqual({ type: "forbidden", message: "Insufficient permissions" });
+    await app.close();
+  });
+
+  it("rejects an invalid attachment URL", async () => {
+    vi.mocked(authenticateUploader).mockImplementation(async (request) => {
+      (request as { user?: unknown }).user = { role: "admin" };
+    });
+    mockResolveAttachmentPath.mockReturnValueOnce(null);
+    const app = await register();
+    const res = await injectDelete(app);
+    expect(res.statusCode).toBe(400);
+    expect(res.json()).toMatchObject({
+      type: "validation_error",
+      message: "Invalid attachment URL",
+    });
+    await app.close();
+  });
+
+  it("skips a file that is still referenced by a contact row", async () => {
+    vi.mocked(authenticateUploader).mockImplementation(async (request) => {
+      (request as { user?: unknown }).user = { role: "admin" };
+    });
+    mockResolveAttachmentPath.mockReturnValueOnce("/tmp/a.pdf");
+    mockIsAttachmentReferenced.mockResolvedValueOnce(true);
+    const app = await register();
+    const res = await injectDelete(app);
+    expect(res.json()).toEqual({ deleted: false, reason: "referenced" });
+    expect(mockDeleteTenantAttachment).not.toHaveBeenCalled();
+    await app.close();
+  });
+
+  it("unlinks an unreferenced file and reports a missing file as not deleted", async () => {
+    vi.mocked(authenticateUploader).mockImplementation(async (request) => {
+      (request as { user?: unknown }).user = { role: "admin" };
+    });
+    mockResolveAttachmentPath.mockReturnValue("/tmp/a.pdf");
+    mockIsAttachmentReferenced.mockResolvedValue(false);
+    mockDeleteTenantAttachment.mockResolvedValueOnce(true);
+    const app = await register();
+
+    const res = await injectDelete(app);
+    expect(res.json()).toEqual({ deleted: true });
+
+    mockDeleteTenantAttachment.mockResolvedValueOnce(false);
+    const missing = await injectDelete(app);
+    expect(missing.json()).toEqual({ deleted: false });
+    await app.close();
+  });
+});
+
 describe("attachment tenant scoping (F39)", () => {
+  it("rejects /api/uploads/attachment/delete when no tenant is bound", async () => {
+    const app = fastify({ logger: false });
+    await app.register(uploadRoutes, { prefix: "/api/uploads" });
+
+    const res = await app.inject({
+      method: "POST",
+      url: "/api/uploads/attachment/delete",
+      headers: { host: "localhost" },
+      payload: { url: "/uploads/tenants/demo/attachments/a.pdf" },
+    });
+
+    expect(res.statusCode).toBe(403);
+    expect(res.json()).toEqual({
+      type: "forbidden",
+      message: "Tenant context is required for attachments",
+    });
+    await app.close();
+  });
+
   it("rejects /api/uploads/attachment when no tenant is bound", async () => {
     const app = fastify({ logger: false });
     await app.register(uploadRoutes, { prefix: "/api/uploads" });

@@ -4,6 +4,7 @@ import { logger } from "../lib/logger.js";
 import { LEADER_LOCK_RETENTION_PURGE, tryAcquireLeaderLease } from "../lib/leaderElection.js";
 import { purgeExpiredArchivedRecords } from "./purgeArchivedRecordsJob.js";
 import { purgeExpiredPlatformActivityLogs } from "./purgePlatformActivityLogsJob.js";
+import { runAttachmentSweep } from "../services/attachmentSweepService.js";
 
 /** NodeJS timer handle for the daily retention purge scheduler — cleared on shutdown. */
 let purgeSchedulerTimer: ReturnType<typeof setTimeout> | null = null;
@@ -56,6 +57,28 @@ export async function runRetentionPurgeCycle(
       };
     } catch (platformErr) {
       logger.error({ err: platformErr }, "[RetentionPurge] Failed platform activity log purge");
+    }
+
+    if (process.env.MMS_ORPHAN_ATTACHMENT_SWEEP !== "off") {
+      try {
+        // `DRY_RUN=true` must never delete: report orphan candidates only.
+        const applySweep = process.env.DRY_RUN !== "true";
+        const { orphanFiles: _orphanFiles, ...sweep } = await runAttachmentSweep({
+          apply: applySweep,
+        });
+        results.__orphaned_attachments = {
+          scanned: sweep.scanned,
+          referencedKeys: sweep.referencedKeys,
+          orphans: sweep.orphans,
+          deleted: sweep.deleted,
+        };
+        logger.info(
+          { ...sweep, apply: applySweep },
+          "[RetentionPurge] Attachment orphan sweep completed",
+        );
+      } catch (sweepErr) {
+        logger.error({ err: sweepErr }, "[RetentionPurge] Attachment orphan sweep failed");
+      }
     }
 
     logger.info({ results }, "[RetentionPurge] Completed scheduled daily purge cycle");

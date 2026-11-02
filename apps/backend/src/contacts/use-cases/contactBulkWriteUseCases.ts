@@ -4,6 +4,7 @@ import { getRequestTenant } from "../../lib/tenantContext.js";
 import { applyContactRelationshipInference } from "./contactInferenceUseCases.js";
 import { runInTransaction } from "../../db/database.js";
 import { assertContactUniqueFields, prepareContactRecord } from "./contactValidationUseCases.js";
+import { assertContactAttachmentUrls } from "./contactAttachmentUrls.js";
 import { loadContactWriteContext } from "./contactWriteContext.js";
 import { broadcastCollection } from "../../lib/livePush.js";
 import { invalidateMultiTierCache } from "../../lib/cache/index.js";
@@ -34,6 +35,10 @@ export async function mergeContactsById(
       ? { ...mergedInput, id: keepId }
       : mergeContactRecords(keep, other);
     const prepared = await prepareContactRecord(mergedSource, keepId, context);
+    assertContactAttachmentUrls(prepared, tenant, [
+      ...(keep.attachments ?? []).map((attachment) => attachment.url),
+      ...(other.attachments ?? []).map((attachment) => attachment.url),
+    ]);
     await assertContactUniqueFields(
       tenant,
       prepared,

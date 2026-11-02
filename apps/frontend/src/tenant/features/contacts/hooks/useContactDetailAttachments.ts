@@ -8,7 +8,7 @@ import {
 } from "react";
 import type { AppTranslationKey, Contact } from "@mms/shared";
 import { todayISO } from "@mms/shared";
-import { uploadAttachmentFile } from "@/lib/attachmentUpload";
+import { deleteAttachmentFile, uploadAttachmentFile } from "@/lib/attachmentUpload";
 import { notify } from "@/lib/notify";
 import { useTranslation } from "@/hooks/useTranslation";
 
@@ -95,8 +95,9 @@ export function useContactDetailAttachments({
 
   const confirmAttachmentDelete = async (): Promise<void> => {
     if (!pendingAttachmentDelete || !canPersistContact) return;
+    const attachment = pendingAttachmentDelete;
     const remainingAttachments = (contactState.attachments || []).filter(
-      (attachment) => attachment.id !== pendingAttachmentDelete.id,
+      (item) => item.id !== attachment.id,
     );
     const removed = await updateContactAttachments(
       remainingAttachments,
@@ -104,7 +105,16 @@ export function useContactDetailAttachments({
       "contacts.saveFailed",
       false,
     );
-    if (removed) setPendingAttachmentDelete(null);
+    if (!removed) return;
+    setPendingAttachmentDelete(null);
+    const removedUrl = (contactState.attachments || []).find(
+      (item) => item.id === attachment.id,
+    )?.url;
+    if (removedUrl) {
+      // The row is gone after the successful save; a failed unlink is healed by
+      // the ops orphan sweep, so it must not surface as a save error.
+      void deleteAttachmentFile(removedUrl).catch(() => {});
+    }
   };
 
   return {

@@ -6,11 +6,13 @@ export {
   findContactsByIds,
   findContactsSummaryByIds,
   saveContact,
+  getLatestContactWriteAt,
   saveContactIfVersionMatches,
   bulkSaveContacts,
   bulkSoftDeleteContactsSql,
   bulkRestoreContactsSql,
   replaceContactsForWorkspace,
+  isContactAttachmentReferenced,
 } from "./contactRepositoryCore.js";
 export { listContactsPage } from "./contactRepositoryList.js";
 export { replaceContactTags, type ContactTagUpdate } from "./contactRepositoryTags.js";

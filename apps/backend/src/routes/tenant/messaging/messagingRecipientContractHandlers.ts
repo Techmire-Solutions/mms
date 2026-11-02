@@ -37,7 +37,7 @@ export async function messagingListRecipientsHandler({
     const tenant = getTenantInfo(request);
     const result = await withTenant(
       tenant.id,
-      () => messagingUseCases.loadMessagingRecipients(tenant.subdomain, query),
+      () => messagingUseCases.loadMessagingRecipients(tenant.subdomain, query, String(user.role)),
       { readOnly: true },
     );
     return { status: 200 as const, body: result };
@@ -76,7 +76,12 @@ export async function messagingMatchRecipientsHandler({
     const tenant = getTenantInfo(request);
     const result = await withTenant(
       tenant.id,
-      () => messagingUseCases.matchMessagingRecipients(tenant.subdomain, parsed.data),
+      () =>
+        messagingUseCases.matchMessagingRecipients(
+          tenant.subdomain,
+          parsed.data,
+          String(user.role),
+        ),
       { readOnly: true },
     );
     return { status: 200 as const, body: result };
@@ -115,7 +120,12 @@ export async function messagingResolveContactsHandler({
     const tenant = getTenantInfo(request);
     const recipients = await withTenant(
       tenant.id,
-      () => messagingUseCases.resolveMessagingRecipients(tenant.subdomain, parsed.data.ids),
+      () =>
+        messagingUseCases.resolveMessagingRecipients(
+          tenant.subdomain,
+          parsed.data.ids,
+          String(user.role),
+        ),
       { readOnly: true },
     );
     return { status: 200 as const, body: { recipients } };

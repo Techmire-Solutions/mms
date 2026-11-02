@@ -1,6 +1,7 @@
 import { sql } from "drizzle-orm";
 import {
   countContactsByWorkspace,
+  getLatestContactWriteAt,
   findContactById,
   findContactsByIds,
   findContactsSummaryByIds,
@@ -15,6 +16,7 @@ import {
   reparentContactReferences,
   replaceContactTags,
   listContactsPage,
+  isContactAttachmentReferenced,
 } from "../../db/repositories/contactRepository.js";
 import {
   aggregateContactsCommandMetrics,
@@ -35,6 +37,7 @@ import type { ContactsRepository } from "./contactsRepository.js";
 function createContactsRepository(): ContactsRepository {
   return {
     countByWorkspace: (tenant, options) => countContactsByWorkspace(tenant, options),
+    getLatestWriteAt: (tenant) => getLatestContactWriteAt(tenant),
     listPage: (tenant, query) => listContactsPage(tenant, query),
     findById: (tenant, id) => findContactById(tenant, id),
     findByIds: (tenant, ids) => findContactsByIds(tenant, ids),
@@ -77,6 +80,8 @@ function createContactsRepository(): ContactsRepository {
       aggregateContactsMonthlyCreatedCounts(tenant, years, monthCount, language),
     aggregateWidgetQueries: (tenant, queries) => aggregateContactsWidgetQueries(tenant, queries),
     guardDeleteDependents: (tenant, ids) => guardContactSoftDeleteDependents(tenant, ids),
+    isAttachmentReferenced: (tenant, url, alternateUrl) =>
+      isContactAttachmentReferenced(tenant, url, alternateUrl),
   };
 }
 

@@ -61,6 +61,7 @@ vi.mock("../lib/rbacCanHelpers.js", () => ({
 }));
 
 import { createContactsUseCases } from "../contacts/use-cases/contactUseCases.js";
+import { ValidationError } from "../lib/httpErrors.js";
 import { ContactUniqueFieldError } from "../contacts/use-cases/contactValidationUseCases.js";
 import { ContactPermissionError } from "../contacts/use-cases/contactValidationUseCases.js";
 import type { ContactDuplicateCandidateKeys } from "../contacts/repository/contactsRepository.js";
@@ -248,6 +249,43 @@ describe("createContactsUseCases (DI composition root)", () => {
       "demo",
       expect.objectContaining({ id: "a", firstName: "New" }),
     );
+  });
+
+  it("upsertContact rejects a new external attachment URL (B-04)", async () => {
+    const { repo } = createFakeRepo();
+    const useCases = createContactsUseCases(repo);
+    const external = {
+      id: "att-ext",
+      name: "evil.pdf",
+      type: "application/pdf",
+      size: 1,
+      url: "https://evil.example/evil.pdf",
+      date: "2026-01-01",
+    };
+
+    await expect(
+      useCases.upsertContact(fakeContact("new-ext", { attachments: [external] })),
+    ).rejects.toBeInstanceOf(ValidationError);
+    expect(repo.save).not.toHaveBeenCalled();
+  });
+
+  it("upsertContact grandfathers an unchanged legacy attachment URL (B-04)", async () => {
+    const legacy = {
+      id: "att-legacy",
+      name: "old.pdf",
+      type: "application/pdf",
+      size: 1,
+      url: "https://legacy.example/uploads/old.pdf",
+      date: "2026-01-01",
+    };
+    const { repo, store } = createFakeRepo();
+    store.set("legacy", fakeContact("legacy", { attachments: [legacy] }));
+    const useCases = createContactsUseCases(repo);
+
+    const { contact } = await useCases.upsertContact(
+      fakeContact("legacy", { firstName: "New", attachments: [legacy] }),
+    );
+    expect(contact.firstName).toBe("New");
   });
 
   it("upsertContact rejects restoring a deleted record when canRestore is false", async () => {

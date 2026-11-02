@@ -74,7 +74,7 @@ export async function loadContactsSummaryByIdsForTenant(
 
 export async function loadContactsPageForTenant(
   tenant: string,
-  query: ContactsListQuery,
+  query: ContactsListQuery & { recipientProjection?: boolean },
   repo: ContactsRepository = contactsRepository,
 ): Promise<ContactsListPageResult> {
   return repo.listPage(tenant, query);

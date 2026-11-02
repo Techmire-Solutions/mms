@@ -2,6 +2,7 @@ import { type Contact, type User } from "@mms/shared";
 import { invalidateDuplicateScanCache } from "./contactDuplicateScanUseCases.js";
 import { getRequestTenant } from "../../lib/tenantContext.js";
 import { applyContactRelationshipInference } from "./contactInferenceUseCases.js";
+import { assertContactAttachmentUrls } from "./contactAttachmentUrls.js";
 import { runInTransaction } from "../../db/database.js";
 import { canDeleteContacts } from "../../lib/rbacCanHelpers.js";
 import { ConflictError, ValidationError } from "../../lib/httpErrors.js";
@@ -80,6 +81,11 @@ export async function upsertContact(
       mergedInput,
       contact.id ?? existing?.id,
       context,
+    );
+    assertContactAttachmentUrls(
+      contactWithId,
+      tenant,
+      (existing?.attachments ?? []).map((attachment) => attachment.url),
     );
     await assertContactUniqueFields(tenant, contactWithId, { language, context }, [], repo);
     const saved: Contact = created
@@ -170,6 +176,11 @@ export async function updateContactById(
       mergeContactPatch(existing, stripped),
       id,
       context,
+    );
+    assertContactAttachmentUrls(
+      contactWithId,
+      tenant,
+      (existing.attachments ?? []).map((attachment) => attachment.url),
     );
     await assertContactUniqueFields(tenant, contactWithId, { language, context }, [], repo);
     const next: Contact = {

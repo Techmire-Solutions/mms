@@ -48,9 +48,13 @@ function createFakeRepo(store: Map<string, Contact>) {
   const active = () => [...store.values()].filter((c) => c.deletedAt === undefined);
   return {
     countByWorkspace: vi.fn(async () => active().length),
+    getLatestWriteAt: vi.fn(async () => null),
     listPage: vi.fn(async () => ({ contacts: [], total: 0, page: 1, limit: 50, hasMore: false })),
     findById: vi.fn(async (_tenant: string, id: string) => store.get(id) ?? null),
     findByIds: vi.fn(async (_tenant: string, ids: string[]) =>
+      ids.map((id) => store.get(id)).filter((c): c is Contact => Boolean(c)),
+    ),
+    findSummaryByIds: vi.fn(async (_tenant: string, ids: string[]) =>
       ids.map((id) => store.get(id)).filter((c): c is Contact => Boolean(c)),
     ),
     save: vi.fn(async () => undefined),
@@ -156,7 +160,7 @@ describe("contactDuplicateScanService (SQL-scoped)", () => {
     );
 
     expect(matchCount).toBe(0);
-    expect(repo.findByIds).not.toHaveBeenCalled();
+    expect(repo.findSummaryByIds).not.toHaveBeenCalled();
   });
 
   it("countContactDuplicateMatches matches draft contact when id is null or undefined", async () => {
@@ -193,7 +197,7 @@ describe("contactDuplicateScanService (SQL-scoped)", () => {
       CONTACTS_DUPLICATE_SCAN_CACHE_OBJECT_KEY,
       expect.objectContaining({ pairCount: 1, contactCount: 3 }),
     );
-    expect(repo.findByIds).toHaveBeenCalledWith("demo", expect.arrayContaining(["a", "b"]));
+    expect(repo.findSummaryByIds).toHaveBeenCalledWith("demo", expect.arrayContaining(["a", "b"]));
     expect(repo.listPage).not.toHaveBeenCalled();
     expect(progress).toHaveBeenCalled();
   });
@@ -211,8 +215,87 @@ describe("contactDuplicateScanService (SQL-scoped)", () => {
     const page = await loadDuplicatePairsPage({ page: 1, limit: 50 }, repo);
 
     expect(page.total).toBe(1);
-    expect(repo.findByIds).toHaveBeenCalledWith("demo", ["a", "b"]);
-    expect(repo.findByIds).not.toHaveBeenCalledWith("demo", expect.arrayContaining(["c"]));
+    expect(repo.findSummaryByIds).toHaveBeenCalledWith("demo", ["a", "b"]);
+    expect(repo.findSummaryByIds).not.toHaveBeenCalledWith("demo", expect.arrayContaining(["c"]));
+  });
+
+  it("falls back to full hydration when the repository lacks a summary projection", async () => {
+    const store = new Map<string, Contact>();
+    store.set("a", contact("a", "Alice", "+923001111111"));
+    store.set("b", contact("b", "Bob", "+923001111111"));
+    const repo = createFakeRepo(store);
+    delete (repo as { findSummaryByIds?: unknown }).findSummaryByIds;
+
+    const result = await runContactsDuplicateScan(vi.fn(), repo);
+
+    expect(result.pairCount).toBe(1);
+    expect(repo.findByIds).toHaveBeenCalledWith("demo", expect.arrayContaining(["a", "b"]));
+    expect(mockPersistObject).toHaveBeenCalled();
+  });
+
+  it("skips the cache save when a contact write lands during the scan (C-02)", async () => {
+    const store = new Map<string, Contact>();
+    store.set("a", contact("a", "Alice", "+923001111111"));
+    store.set("b", contact("b", "Bob", "+923001111111"));
+    const repo = createFakeRepo(store);
+    vi.mocked(repo.getLatestWriteAt!).mockResolvedValueOnce("v1").mockResolvedValueOnce("v2");
+
+    const result = await runContactsDuplicateScan(vi.fn(), repo);
+
+    expect(result.pairCount).toBe(1);
+    expect(mockPersistObject).not.toHaveBeenCalled();
+  });
+
+  it("drops the cache when a write lands after the scan save (C-02)", async () => {
+    const store = new Map<string, Contact>();
+    store.set("a", contact("a", "Alice", "+923001111111"));
+    store.set("b", contact("b", "Bob", "+923001111111"));
+    const repo = createFakeRepo(store);
+    vi.mocked(repo.getLatestWriteAt!)
+      .mockResolvedValueOnce("v1")
+      .mockResolvedValueOnce("v1")
+      .mockResolvedValueOnce("v2");
+
+    await runContactsDuplicateScan(vi.fn(), repo);
+
+    expect(mockPersistObject).toHaveBeenCalledTimes(1);
+    expect(mockDeletePersistedObject).toHaveBeenCalledWith(
+      CONTACTS_DUPLICATE_SCAN_CACHE_OBJECT_KEY,
+    );
+  });
+
+  it("skips the on-demand cache fill when a write lands during the page scan (C-02)", async () => {
+    const store = new Map<string, Contact>();
+    store.set("a", contact("a", "Alice", "+923001111111"));
+    store.set("b", contact("b", "Bob", "+923001111111"));
+    const repo = createFakeRepo(store);
+    mockFetchObject.mockResolvedValue(null);
+    vi.mocked(repo.getLatestWriteAt!).mockResolvedValueOnce("v1").mockResolvedValueOnce("v2");
+
+    const page = await loadDuplicatePairsPage({ page: 1, limit: 50 }, repo);
+
+    expect(page.total).toBe(1);
+    expect(mockPersistObject).not.toHaveBeenCalled();
+  });
+
+  it("fills the cache on an uncached page read so the next page reuses it", async () => {
+    const store = new Map<string, Contact>();
+    store.set("a", contact("a", "Alice", "+923001111111"));
+    store.set("b", contact("b", "Bob", "+923001111111"));
+    const repo = createFakeRepo(store);
+
+    const page = await loadDuplicatePairsPage({ page: 1, limit: 50 }, repo);
+
+    expect(page.total).toBe(1);
+    expect(mockPersistObject).toHaveBeenCalledWith(
+      CONTACTS_DUPLICATE_SCAN_CACHE_OBJECT_KEY,
+      expect.objectContaining({
+        pairCount: 1,
+        contactCount: 2,
+        computedAt: expect.any(String),
+        pairs: expect.any(Array),
+      }),
+    );
   });
 
   it("loadDuplicatePairsPage uses the persisted cache when present", async () => {
@@ -221,7 +304,7 @@ describe("contactDuplicateScanService (SQL-scoped)", () => {
     store.set("b", contact("b", "Bob", "+923001111111"));
     const repo = createFakeRepo(store);
     const cached = {
-      computedAt: "2026-08-10T00:00:00.000Z",
+      computedAt: new Date().toISOString(),
       contactCount: 2,
       pairCount: 1,
       pairs: findContactDuplicatePairs([...store.values()], {}),
@@ -231,7 +314,44 @@ describe("contactDuplicateScanService (SQL-scoped)", () => {
     const page = await loadDuplicatePairsPage({ page: 1, limit: 50 }, repo);
 
     expect(page.total).toBe(1);
-    expect(repo.findByIds).not.toHaveBeenCalled();
+    expect(repo.findSummaryByIds).not.toHaveBeenCalled();
     expect(repo.findContactDuplicateBlockedIds).not.toHaveBeenCalled();
+  });
+
+  it("recomputes when the cached scan is older than the TTL", async () => {
+    const store = new Map<string, Contact>();
+    store.set("a", contact("a", "Alice", "+923001111111"));
+    store.set("b", contact("b", "Bob", "+923001111111"));
+    const repo = createFakeRepo(store);
+    mockFetchObject.mockResolvedValue({
+      computedAt: new Date(Date.now() - 25 * 60 * 60 * 1000).toISOString(),
+      contactCount: 2,
+      pairCount: 1,
+      pairs: findContactDuplicatePairs([...store.values()], {}),
+    });
+
+    const page = await loadDuplicatePairsPage({ page: 1, limit: 50 }, repo);
+
+    expect(page.total).toBe(1);
+    expect(repo.findContactDuplicateBlockedIds).toHaveBeenCalled();
+    expect(repo.findSummaryByIds).toHaveBeenCalled();
+  });
+
+  it("recomputes when the cached scan has no usable timestamp", async () => {
+    const store = new Map<string, Contact>();
+    store.set("a", contact("a", "Alice", "+923001111111"));
+    store.set("b", contact("b", "Bob", "+923001111111"));
+    const repo = createFakeRepo(store);
+    mockFetchObject.mockResolvedValue({
+      computedAt: "not-a-date",
+      contactCount: 2,
+      pairCount: 1,
+      pairs: findContactDuplicatePairs([...store.values()], {}),
+    });
+
+    const page = await loadDuplicatePairsPage({ page: 1, limit: 50 }, repo);
+
+    expect(page.total).toBe(1);
+    expect(repo.findContactDuplicateBlockedIds).toHaveBeenCalled();
   });
 });

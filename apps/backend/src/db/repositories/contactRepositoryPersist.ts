@@ -1,7 +1,7 @@
-import { and, eq, or, sql } from "drizzle-orm";
+import { and, eq, inArray, or, sql } from "drizzle-orm";
 import { hydrateContactRelationshipFields, type Contact } from "@mms/shared";
-import { contacts } from "../schema.js";
-import { withTenant, type TenantTransaction } from "../tenant-context.js";
+import { contactAttachments, contacts } from "../schema.js";
+import { withTenant, withTenantRead, type TenantTransaction } from "../tenant-context.js";
 import {
   countContactsByWorkspace,
   findContactById,
@@ -49,6 +49,18 @@ export async function persistContactTx(
     });
 
   await syncContactChildrenTx(tx, subdomain, String(contact.id), contact);
+}
+
+/** Latest contact write time (or null), used to detect writes during duplicate scans (C-02). */
+export async function getLatestContactWriteAt(tenant: string): Promise<string | null> {
+  const subdomain = tenant.trim().toLowerCase();
+  return withTenantRead(subdomain, async (tx) => {
+    const [row] = await tx
+      .select({ latest: sql<string | null>`max(${contacts.updatedAt})::text` })
+      .from(contacts)
+      .where(eq(contacts.workspaceSubdomain, subdomain));
+    return row?.latest ?? null;
+  });
 }
 
 export async function saveContact(tenant: string, contact: Contact): Promise<void> {
@@ -129,9 +141,33 @@ export async function saveContactIfVersionMatches(
   return saved;
 }
 
+/** True when any contact attachment row still stores this URL (or its relative form). */
+export async function isContactAttachmentReferenced(
+  subdomain: string,
+  url: string,
+  alternateUrl?: string | null,
+): Promise<boolean> {
+  const candidates = new Set<string>([url]);
+  if (alternateUrl) candidates.add(alternateUrl);
+  return withTenantRead(subdomain, async (tx) => {
+    const rows = await tx
+      .select({ id: contactAttachments.id })
+      .from(contactAttachments)
+      .where(
+        and(
+          eq(contactAttachments.workspaceSubdomain, subdomain),
+          inArray(contactAttachments.url, [...candidates]),
+        ),
+      )
+      .limit(1);
+    return rows.length > 0;
+  });
+}
+
 export const contactRepo = {
   listByWorkspace: listContactsByWorkspace,
   countByWorkspace: countContactsByWorkspace,
+  getLatestWriteAt: getLatestContactWriteAt,
   findById: findContactById,
   findByIds: findContactsByIds,
   save: saveContact,
@@ -139,4 +175,5 @@ export const contactRepo = {
   bulkSoftDelete: bulkSoftDeleteContactsSql,
   bulkRestore: bulkRestoreContactsSql,
   replaceForWorkspace: replaceContactsForWorkspace,
+  isAttachmentReferenced: isContactAttachmentReferenced,
 };

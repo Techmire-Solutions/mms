@@ -29,9 +29,21 @@ vi.mock("../services/outboxEventService.js", () => ({
   emitOutboxEvent: vi.fn().mockResolvedValue(undefined),
 }));
 
+const mockRunAttachmentSweep = vi.hoisted(() => vi.fn());
+vi.mock("../services/attachmentSweepService.js", () => ({
+  runAttachmentSweep: mockRunAttachmentSweep,
+}));
+
 describe("Purge Archived Records Worker & GDPR Article 17 Erasure", () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    mockRunAttachmentSweep.mockResolvedValue({
+      scanned: 0,
+      referencedKeys: 0,
+      orphans: 0,
+      deleted: 0,
+      orphanFiles: [],
+    });
   });
 
   it("Verify chunked purge deletes records in batches of 500 without deadlocks", async () => {
@@ -254,5 +266,53 @@ describe("Purge Archived Records Worker & GDPR Article 17 Erasure", () => {
     const results = await runRetentionPurgeCycle(mockDb);
     expect(results).toBeDefined();
     expect(mockDb.select).toHaveBeenCalled();
+    expect(mockRunAttachmentSweep).toHaveBeenCalledWith({ apply: true });
+  });
+
+  it("isolates attachment sweep failures from the retention cycle", async () => {
+    const mockDb = {
+      select: vi.fn().mockReturnValue({
+        from: vi.fn().mockResolvedValue([{ subdomain: "tenant-a" }]),
+      }),
+    } as unknown as DbClient;
+    mockRunAttachmentSweep.mockRejectedValueOnce(new Error("attachment storage unavailable"));
+
+    const results = await runRetentionPurgeCycle(mockDb);
+
+    expect(results).toBeDefined();
+  });
+
+  it("runs the attachment sweep in report-only mode when DRY_RUN=true", async () => {
+    const mockDb = {
+      select: vi.fn().mockReturnValue({
+        from: vi.fn().mockResolvedValue([{ subdomain: "tenant-a" }]),
+      }),
+    } as unknown as DbClient;
+
+    process.env.DRY_RUN = "true";
+    try {
+      await runRetentionPurgeCycle(mockDb);
+    } finally {
+      delete process.env.DRY_RUN;
+    }
+
+    expect(mockRunAttachmentSweep).toHaveBeenCalledWith({ apply: false });
+  });
+
+  it("skips the attachment sweep when MMS_ORPHAN_ATTACHMENT_SWEEP=off", async () => {
+    const mockDb = {
+      select: vi.fn().mockReturnValue({
+        from: vi.fn().mockResolvedValue([{ subdomain: "tenant-a" }]),
+      }),
+    } as unknown as DbClient;
+
+    process.env.MMS_ORPHAN_ATTACHMENT_SWEEP = "off";
+    try {
+      await runRetentionPurgeCycle(mockDb);
+    } finally {
+      delete process.env.MMS_ORPHAN_ATTACHMENT_SWEEP;
+    }
+
+    expect(mockRunAttachmentSweep).not.toHaveBeenCalled();
   });
 });
