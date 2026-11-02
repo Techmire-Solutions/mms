@@ -86,3 +86,12 @@ description: PostgreSQL database, Drizzle schema, migrations, transactions, and 
 6. **Filter Alignment:** Range filters must match storage representation (date vs instant).
 7. **Calendar Policy:** Stored data is Gregorian; Hijri/lunar display is a derived presentation layer.
 8. **Aggregate Buckets:** Month/year/`date_trunc` aggregates convert with `(created_at AT TIME ZONE <workspace tz>)` in the SELECT **and** the `GROUP BY`. Resolve the timezone from `loadWorkspaceRow` with a `UTC` fallback — never inherit the DB session timezone, which shifts a 01:00 local save into the previous day/month.
+
+## 9. Derived & System-Managed Projections
+1. **Server-owned rows:** Derived values (role tags, computed labels, projections) are written only by a module reconciler, never by a client payload. Read projections may be accepted by a write DTO solely to strip them before persistence.
+2. **Idempotent lifecycle reconciliation:** Every role/status write path (single, bulk, import, delete/restore, merge) calls one reconciler. Batch writers reconcile once after the loop; archive historical rows instead of deleting them unless the owning entity is merged/removed.
+3. **Stable identity & uniqueness:** Persist a stable system key plus display name; enforce partial unique indexes on `(tenant, entity, system_key)` and a case/spacing-insensitive visible-name index. Collapse duplicate display names deterministically.
+4. **Concurrency:** Serialize per-entity reconciliation with transaction-scoped advisory locks acquired before reading/modifying rows (set-based where supported; a bounded lock loop is the fallback); never rely on retrying a unique violation.
+5. **Time windows:** Evaluate start/end dates against the workspace-local day (`§8.3`), not UTC/server time. A leader-locked periodic sweep handles date-only transitions; it must query only candidate rows, never full-scan every tenant.
+6. **Read-only projection:** Return metadata (`source`, `systemKey`, `archived`) with display values and strip it with the owning field's permission in the response sanitizer.
+7. **Tests:** Prove lifecycle, archive/reactivate, batch-once, concurrency, and a non-queryable mock boundary with real DB integration tests.

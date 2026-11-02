@@ -1,11 +1,13 @@
 import type React from "react";
 import { useState } from "react";
 import { Tag } from "lucide-react";
+import { isReservedSystemTagName } from "@mms/shared";
 import { FormModal } from "@/components/app/FormModal";
 import { Field } from "@/components/app/FormPrimitives";
 import { Input } from "@/components/ui/input";
 import { useTranslation } from "@/hooks/useTranslation";
 import { FORM_INPUT } from "@/components/ui/formStyles";
+import { notify } from "@/lib/notify";
 
 export interface ContactsBulkTagModalProps {
   open: boolean;
@@ -28,11 +30,17 @@ export function ContactsBulkTagModal({
   if (!open) return null;
 
   const handleSave = async () => {
-    const tags = tagInput
+    const parsed = tagInput
       .split(",")
-      .map((t) => t.trim())
-      .filter((t) => t.length > 0);
+      .map((value) => value.trim())
+      .filter((value) => value.length > 0);
 
+    if (parsed.some((value) => isReservedSystemTagName(value))) {
+      notify.error(t("contacts.tags.reserved"));
+      return;
+    }
+
+    const tags = parsed.filter((value) => !isReservedSystemTagName(value));
     if (tags.length === 0) return;
     await onConfirm(tags);
     setTagInput("");

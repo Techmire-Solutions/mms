@@ -41,6 +41,8 @@ allowed-tools: Read Grep Glob Bash(pnpm test) Bash(pnpm test:e2e) Bash(pnpm --fi
 - **Clean Stdout**: Spy on `console.error`/`console.warn` during expected error simulations. Test configs set `LOG_LEVEL = 'silent'`.
 - **Query Client Isolation**: Frontend tests wrap components in an isolated `new QueryClient({ defaultOptions: { queries: { retry: false, gcTime: 0 } } })`.
 - **Coverage Ratchet**: never lower the `thresholds` configured in each workspace's `vitest.config.ts` (the only SSOT; `mms-testing-observability.md` §5); raise a floor only with a measured value from a green run.
+- **Derived Projection Matrix**: Test add, rename/relabel, end/unlink, soft-delete/restore, and archived naming for every system-managed projection. Add a batch-once assertion, a two-writer concurrency test, and an explicit workspace-local date boundary.
+- **Queryable Fakes Only**: A DB test double must implement every method the reconciler calls or deliberately no-op; half-queryable fakes hide SQL failures (`mms-testing-observability.md` §13).
 
 ## 2.1 Query-Backed Editors & Print Surfaces
 
@@ -59,8 +61,9 @@ allowed-tools: Read Grep Glob Bash(pnpm test) Bash(pnpm test:e2e) Bash(pnpm --fi
 ## Verification
 
 - Unit/integration: `pnpm --filter @mms/shared test`, `pnpm --filter mms-backend test`, `pnpm --filter mms-frontend test` — all suites green, no skipped files.
-- DB/RLS evidence: `pnpm --filter mms-backend test:db` (real PostgreSQL) or `pnpm ci:local --with-db` when schema/migrations/queries changed.
-- Browser: `pnpm test:e2e` (or a single spec path); a11y smoke must report zero serious/critical axe violations.
+- DB/RLS evidence: `pnpm --filter mms-backend test:db` (real PostgreSQL) or `pnpm ci:local --with-db` when schema/migrations/queries/derived projections changed.
+- Browser: `pnpm test:e2e` (or a single spec path); a11y smoke must report zero serious/critical axe violations. A self-skipping spec must log its reason and is reported as skipped, never as browser evidence.
+- New endpoints: pin forbidden, invalid/malformed, guarded/skipped, and success branches. Changed hooks/components: pin the new contract (lean DTO shape, relative upload URL, post-save unlink), not just render output.
 - Red evidence: `pnpm run check:tdd-pairing` shows no unpaired backend domain file, and the PR body records the failing command + assertion.
 
 ## Examples

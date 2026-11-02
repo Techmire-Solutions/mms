@@ -10,11 +10,11 @@ import {
 import { contacts } from "../schema.js";
 import { withTenantRead } from "../tenant-context.js";
 import { loadWorkspaceRow } from "./workspaceRepositoryCache.js";
-import { hasEmailSql, hasPhoneSql, hasWhatsAppSql } from "./contactRepositorySql.js";
 import {
   activeWorkspaceWhere,
   buildProfileIncompleteSql,
 } from "./contactRepositoryAggregateHelpers.js";
+import { contactMetricsAggregateSql, type ContactMetricsSqlRow } from "./contactMetricsSql.js";
 
 /** Fallback when a workspace has no timezone configured. */
 const DEFAULT_TIMEZONE = "UTC";
@@ -29,21 +29,10 @@ export async function aggregateContactsCommandMetrics(
   const incompleteSql = buildProfileIncompleteSql(fieldConfig);
 
   return withTenantRead(subdomain, async (tx) => {
-    const rows = await tx
-      .select({
-        total: sql<number>`count(*)::int`,
-        newThisPeriod: sql<number>`count(*) FILTER (WHERE
-          ${contacts.createdAt} >= (NOW() - (${periodDays} * INTERVAL '1 day'))
-        )::int`,
-        whatsappCount: sql<number>`count(*) FILTER (WHERE ${hasWhatsAppSql()})::int`,
-        incompleteCount: incompleteSql
-          ? sql<number>`count(*) FILTER (WHERE ${incompleteSql})::int`
-          : sql<number>`0::int`,
-      })
-      .from(contacts)
-      .where(activeWorkspaceWhere(subdomain));
-
-    const row = rows[0];
+    const result = await tx.execute<ContactMetricsSqlRow>(
+      contactMetricsAggregateSql({ subdomain, periodDays, incompleteSql }),
+    );
+    const row = result.rows[0];
     return {
       total: Number(row?.total ?? 0),
       newThisPeriod: Number(row?.newThisPeriod ?? 0),
@@ -61,31 +50,18 @@ export async function aggregateContactsReportAnalytics(
   const subdomain = tenant.trim().toLowerCase();
   const periodDays = options?.periodDays ?? CONTACT_METRICS_DEFAULT_PERIOD_DAYS;
   const referenceDate = options?.referenceDate ?? new Date();
-  const refIso = referenceDate.toISOString();
 
   return withTenantRead(subdomain, async (tx) => {
-    const rows = await tx
-      .select({
-        total: sql<number>`count(*)::int`,
-        whatsappCount: sql<number>`count(*) FILTER (WHERE ${hasWhatsAppSql()})::int`,
-        missingInfoCount: sql<number>`count(*) FILTER (WHERE NOT ${hasPhoneSql()} OR NOT ${hasEmailSql()})::int`,
-        newLast30Days: sql<number>`count(*) FILTER (WHERE
-          ${contacts.createdAt} >= ((${refIso}::timestamptz) - INTERVAL '30 days')
-        )::int`,
-        newPrior30Days: sql<number>`count(*) FILTER (WHERE
-          ${contacts.createdAt} >= ((${refIso}::timestamptz) - INTERVAL '60 days')
-          AND ${contacts.createdAt} < ((${refIso}::timestamptz) - INTERVAL '30 days')
-        )::int`,
-        newThisPeriod: sql<number>`count(*) FILTER (WHERE
-          ${contacts.createdAt} >= ((${refIso}::timestamptz) - (${periodDays} * INTERVAL '1 day'))
-        )::int`,
-        maxCreatedAt: sql<string | null>`max(${contacts.createdAt})::text`,
-        signupCount: sql<number>`count(*)::int`,
-      })
-      .from(contacts)
-      .where(activeWorkspaceWhere(subdomain));
+    const result = await tx.execute<ContactMetricsSqlRow>(
+      contactMetricsAggregateSql({
+        subdomain,
+        periodDays,
+        referenceDate,
+        includeMissingInfo: true,
+      }),
+    );
 
-    const row = rows[0];
+    const row = result.rows[0];
     const total = Number(row?.total ?? 0);
     const whatsappCount = Number(row?.whatsappCount ?? 0);
     const hasSignupDates = Number(row?.signupCount ?? 0) > 0;

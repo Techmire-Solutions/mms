@@ -36,6 +36,8 @@ Instead of pushing heavy entity payloads over WebSocket, MMS sends lightweight e
 | `notification` | `{ id: string, title: string, level: 'info'\|'warning'\|'error' }` | Triggers toast or updates bell notification count |
 
 ### Dispatching Events from Backend Services
+Derived writes broadcast the **owning collection** after commit. A faculty/student role change that mutates contact tags must also broadcast `contacts`, not only `faculty`/`students`; otherwise open contact drawers keep stale locked chips.
+
 ```typescript
 import { broadcastToTenant } from '../lib/livePush.js';
 

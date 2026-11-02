@@ -2,6 +2,7 @@ import React from "react";
 import type { AppTranslationKey, ModuleTransferSchema } from "@mms/shared";
 import { ModuleImportDialog } from "@/components/app/ModuleImportDialog";
 import { useModuleCsvImportActions } from "@/lib/backgroundJobs/useModuleCsvImportActions";
+import type { ModuleCsvImportSubmitRows } from "@/lib/backgroundJobs/useModuleCsvImportActions";
 import { useTranslation } from "@/hooks/useTranslation";
 
 export interface StandardModuleCsvImportDialogProps<TRow = Record<string, unknown>> {
@@ -13,6 +14,7 @@ export interface StandardModuleCsvImportDialogProps<TRow = Record<string, unknow
   navKey?: AppTranslationKey;
   title?: string;
   subtitle?: string;
+  submitRows?: ModuleCsvImportSubmitRows<TRow>;
 }
 
 /**
@@ -28,12 +30,14 @@ export function StandardModuleCsvImportDialog<TRow = Record<string, unknown>>({
   navKey,
   title,
   subtitle,
+  submitRows,
 }: StandardModuleCsvImportDialogProps<TRow>): React.JSX.Element | null {
   const { t } = useTranslation();
 
   const actions = useModuleCsvImportActions<TRow>({
     apiPath,
     schema,
+    submitRows,
     onSuccess: onClose,
   });
 

@@ -1,6 +1,7 @@
 import React, { act } from "react";
 import { createRoot, type Root } from "react-dom/client";
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
+import type { BackgroundJobRecord } from "@mms/shared";
 import { useModuleCsvImportActions } from "./useModuleCsvImportActions";
 
 vi.mock("@/lib/download", () => ({
@@ -151,5 +152,99 @@ describe("useModuleCsvImportActions", () => {
       phone: "+923001234567",
       isSyed: true,
     });
+  });
+
+  it("submits parsed rows through a custom submitRows and forwards progress", async () => {
+    const { startServerModuleCsvImport } =
+      await import("@/lib/backgroundJobs/startServerModuleCsvImport");
+    const { notify } = await import("@/lib/notify");
+
+    const submitRows = vi.fn(
+      async (
+        rows: Record<string, unknown>[],
+        onProgress: (progress: { current: number; total: number }) => void,
+      ): Promise<BackgroundJobRecord> => {
+        onProgress({ current: 1, total: rows.length });
+        return {
+          id: "job-custom-1",
+          moduleId: "test-module",
+          kind: "import",
+          status: "completed",
+          label: "Imported 2 of 2 rows",
+          progress: { current: 2, total: 2 },
+          createdAt: "2026-11-02T00:00:00.000Z",
+        };
+      },
+    );
+
+    function SubmitRowsHookTester() {
+      hookResult = useModuleCsvImportActions<Record<string, unknown>>({
+        ...options,
+        submitRows,
+      });
+      return <div>{hookResult.completedJob?.label}</div>;
+    }
+
+    act(() => {
+      root.render(<SubmitRowsHookTester />);
+    });
+
+    const file = new File(['Name,Age\n"Sara",22\n"Zayd",24'], "custom.csv", { type: "text/csv" });
+
+    await act(async () => {
+      await hookResult.handleFileSelect(file);
+    });
+
+    await act(async () => {
+      await hookResult.handleStartImport();
+    });
+
+    expect(submitRows).toHaveBeenCalledTimes(1);
+    expect(submitRows).toHaveBeenCalledWith(
+      [
+        { name: "Sara", age: "22" },
+        { name: "Zayd", age: "24" },
+      ],
+      expect.any(Function),
+    );
+    expect(hookResult.completedJob).toMatchObject({ id: "job-custom-1" });
+    expect(hookResult.progress).toEqual({ current: 1, total: 2 });
+    expect(container.textContent).toContain("Imported 2 of 2 rows");
+    expect(startServerModuleCsvImport).not.toHaveBeenCalled();
+    expect(notify.success).toHaveBeenCalledWith("Imported 2 of 2 rows");
+  });
+
+  it("posts through the module starter when submitRows is not supplied", async () => {
+    const { startServerModuleCsvImport } =
+      await import("@/lib/backgroundJobs/startServerModuleCsvImport");
+
+    act(() => {
+      root.render(<HookTester />);
+    });
+
+    const file = new File(['Name,Age\n"Sara",22\n"Zayd",24'], "default.csv", {
+      type: "text/csv",
+    });
+
+    await act(async () => {
+      await hookResult.handleFileSelect(file);
+    });
+
+    await act(async () => {
+      await hookResult.handleStartImport();
+    });
+
+    expect(startServerModuleCsvImport).toHaveBeenCalledWith({
+      path: "/api/test/import",
+      body: {
+        rows: [
+          { name: "Sara", age: "22" },
+          { name: "Zayd", age: "24" },
+        ],
+        label: "Importing test-module",
+      },
+      onProgress: expect.any(Function),
+    });
+    expect(hookResult.completedJob).toMatchObject({ id: "job-import-1" });
   });
 });

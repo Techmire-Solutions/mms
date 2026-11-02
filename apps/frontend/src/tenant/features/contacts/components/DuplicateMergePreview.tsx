@@ -1,10 +1,18 @@
 import type React from "react";
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { AlertTriangle, GitMerge, Loader2 } from "lucide-react";
-import { mergeContacts, getDisplayName, type Contact } from "@mms/shared";
+import {
+  mergeContacts,
+  getDisplayName,
+  normalizeContactTagName,
+  splitContactTags,
+  type Contact,
+  type ContactSystemTag,
+} from "@mms/shared";
 import { Button } from "@/components/ui/button";
 import { Modal } from "@/components/app/Modal";
 import { Alert } from "@/components/app/Alert";
+import { ContactTagBadge } from "@/tenant/features/contacts/components/ContactTagBadge";
 import { useContactConfig } from "@/lib/contexts/ContactConfigContext";
 import { useTranslation } from "@/hooks/useTranslation";
 import {
@@ -89,6 +97,16 @@ export function MergePreview({
 
   const fields = prefs.duplicateDetectionFields || ["name", "phone", "email", "cnic"];
 
+  const managedTags = useMemo(() => {
+    const byName = new Map<string, ContactSystemTag>();
+    for (const contact of [keep, other]) {
+      for (const systemTag of splitContactTags(contact).systemTags) {
+        byName.set(normalizeContactTagName(systemTag.name), systemTag);
+      }
+    }
+    return [...byName.values()];
+  }, [keep, other]);
+
   return (
     <Modal
       open={true}
@@ -135,6 +153,24 @@ export function MergePreview({
             </>
           }
         />
+
+        {managedTags.length > 0 && (
+          <div className="rounded-xl border border-border bg-muted/20 p-4 space-y-2">
+            <p className="m-0 text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+              {t("contacts.tags.systemManaged")}
+            </p>
+            <div className="flex flex-wrap gap-1">
+              {managedTags.map((systemTag) => (
+                <ContactTagBadge
+                  key={`${systemTag.systemKey}:${systemTag.name}`}
+                  tag={systemTag.name}
+                  system={systemTag}
+                />
+              ))}
+            </div>
+            <p className="m-0 text-2xs text-muted-foreground">{t("contacts.tags.systemHint")}</p>
+          </div>
+        )}
 
         <div>
           <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide mb-3">

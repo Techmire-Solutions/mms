@@ -1,6 +1,7 @@
 import {
   applyTitleCaseToContact,
   cleanContactDraft,
+  filterManualContactTags,
   normalizeToE164,
   parsePhoneNumber,
   stripClientAuditFields,
@@ -107,7 +108,15 @@ export async function prepareContactRecord(
   context?: ContactWriteContext,
 ): Promise<Contact> {
   const cleaned = cleanContactDraft(contact);
-  const withPhones = await normalizeContactPhones(cleaned as Contact, context);
+  // System tags are server-owned: a contact write can never add, rename, or
+  // delete them. Reserved names are dropped from the manual tag input.
+  const manualTags = filterManualContactTags(cleaned.tags ?? []);
+  const cleanedWithManualTags: Contact = {
+    ...(cleaned as Contact),
+    tags: manualTags,
+    systemTags: undefined,
+  };
+  const withPhones = await normalizeContactPhones(cleanedWithManualTags, context);
   const withScalars = syncContactScalarFields(withPhones);
   const rawId =
     (typeof id === "string" && id.trim()) ||

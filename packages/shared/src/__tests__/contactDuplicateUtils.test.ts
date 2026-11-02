@@ -1,5 +1,7 @@
 import { describe, expect, it } from "vitest";
 import {
+  CONTACT_DUPLICATE_MAX_PAIRS,
+  CONTACT_DUPLICATE_NAME_BUCKET_PAIRING_LIMIT,
   findContactDuplicatePairs,
   getContactDuplicateCandidateKeys,
 } from "../contacts/contactDuplicateUtils.js";
@@ -125,6 +127,51 @@ describe("findContactDuplicatePairs (indexed)", () => {
     expect(pairs).toHaveLength(1);
     expect(pairs[0]?.reasonKey).toBe("cnicName");
     expect(pairs[0]?.confidence).toBe(100);
+  });
+
+  it("skips name-only pairing once the exact-name bucket exceeds the limit", () => {
+    const bigNameBucket = Array.from(
+      { length: CONTACT_DUPLICATE_NAME_BUCKET_PAIRING_LIMIT + 50 },
+      (_, index) => contact(`same-name-${index}`, "Muhammad Ali"),
+    );
+
+    expect(findContactDuplicatePairs(bigNameBucket)).toHaveLength(0);
+  });
+
+  it("still pairs a moderate same-name bucket on name alone", () => {
+    const smallNameBucket = Array.from({ length: 10 }, (_, index) =>
+      contact(`small-name-${index}`, "Muhammad Ali"),
+    );
+
+    const pairs = findContactDuplicatePairs(smallNameBucket);
+
+    expect(pairs).toHaveLength(45);
+    expect(pairs.every((pair) => pair.reasonKey === "name")).toBe(true);
+  });
+
+  it("caps the emitted pairs at the max even when high-confidence matches exceed it", () => {
+    // 101 contacts sharing one phone → C(101, 2) = 5,050 potential pairs.
+    const sharedPhone = Array.from({ length: 101 }, (_, index) =>
+      contact(`capped-${index}`, `Person ${index}`, "+923001111111"),
+    );
+
+    const pairs = findContactDuplicatePairs(sharedPhone);
+
+    expect(pairs).toHaveLength(CONTACT_DUPLICATE_MAX_PAIRS);
+  });
+
+  it("still pairs phone/email matches inside an oversized name bucket", () => {
+    const oversizedBucket = Array.from(
+      { length: CONTACT_DUPLICATE_NAME_BUCKET_PAIRING_LIMIT + 50 },
+      (_, index) => contact(`oversized-${index}`, "Muhammad Ali"),
+    );
+    oversizedBucket[0] = contact("oversized-0", "Muhammad Ali", "+923001111111");
+    oversizedBucket[1] = contact("oversized-1", "Muhammad Ali", "+923001111111");
+
+    const pairs = findContactDuplicatePairs(oversizedBucket);
+
+    expect(pairs).toHaveLength(1);
+    expect(pairs[0]?.reasonKey).toBe("namePhone");
   });
 });
 

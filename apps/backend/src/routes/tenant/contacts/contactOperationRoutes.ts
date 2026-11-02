@@ -1,6 +1,6 @@
 import type { FastifyPluginAsync } from "fastify";
 import type { User } from "@mms/shared";
-import { contactsBulkTagBodySchema } from "@mms/shared";
+import { contactsBulkTagBodySchema, isReservedSystemTagName } from "@mms/shared";
 import { parseRequest, replyValidationError } from "../../../lib/zodRequest.js";
 import { sendDatabaseError } from "../../../lib/httpErrors.js";
 import { contactUseCases } from "../../../contacts/use-cases/contactUseCases.js";
@@ -17,6 +17,17 @@ export const contactOperationRoutes: FastifyPluginAsync = async (fastify) => {
 
     const parsed = parseRequest(contactsBulkTagBodySchema, request.body);
     if (!parsed.ok) return replyValidationError(reply, parsed.message);
+
+    // Module-managed tags are read-only; never let a bulk edit add/remove them.
+    const reservedTags = [...(parsed.data.addTags ?? []), ...(parsed.data.removeTags ?? [])].filter(
+      (tag) => isReservedSystemTagName(tag),
+    );
+    if (reservedTags.length > 0) {
+      return replyValidationError(
+        reply,
+        `System-managed tags cannot be edited manually: ${reservedTags.join(", ")}`,
+      );
+    }
 
     try {
       const result = await contactUseCases.bulkTagContacts(parsed.data.ids, {

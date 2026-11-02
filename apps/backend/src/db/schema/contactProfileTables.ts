@@ -12,6 +12,7 @@ import {
   varchar,
   primaryKey,
 } from "drizzle-orm/pg-core";
+import { sql } from "drizzle-orm";
 import { workspaces } from "./platform.js";
 import { contacts } from "./contactCoreTables.js";
 
@@ -23,8 +24,14 @@ export const contactTags = pgTable(
       .notNull()
       .references(() => workspaces.subdomain, { onDelete: "cascade" }),
     contactId: text("contact_id").notNull(),
-    name: varchar("name", { length: 100 }).notNull(),
+    name: varchar("name", { length: 200 }).notNull(),
+    /** null = manually created; otherwise the owning module. */
+    source: varchar("source", { length: 20 }),
+    /** Stable identity for system-managed tags, e.g. `faculty:designation:<id>`. */
+    systemKey: varchar("system_key", { length: 200 }),
+    archived: boolean("archived").notNull().default(false),
     createdAt: timestamp("created_at", { withTimezone: true, mode: "date" }).notNull().defaultNow(),
+    updatedAt: timestamp("updated_at", { withTimezone: true, mode: "date" }).notNull().defaultNow(),
   },
   (table) => [
     primaryKey({ columns: [table.workspaceSubdomain, table.contactId, table.id] }),
@@ -33,6 +40,20 @@ export const contactTags = pgTable(
       table.workspaceSubdomain,
       table.contactId,
       table.name,
+    ),
+    // One row per contact per module role; never let concurrent reconciles duplicate.
+    uniqueIndex("contact_tags_ws_contact_system_key_uidx")
+      .on(table.workspaceSubdomain, table.contactId, table.systemKey)
+      .where(sql`${table.systemKey} is not null`),
+    // Reconcile/rename lookups by role key.
+    index("contact_tags_ws_system_key_idx")
+      .on(table.workspaceSubdomain, table.systemKey)
+      .where(sql`${table.systemKey} is not null`),
+    // A manual tag can never shadow a system tag by casing/spacing.
+    uniqueIndex("contact_tags_ws_contact_lower_name_uidx").on(
+      table.workspaceSubdomain,
+      table.contactId,
+      sql`lower(btrim(${table.name}))`,
     ),
     foreignKey({
       columns: [table.workspaceSubdomain, table.contactId],
@@ -163,6 +184,8 @@ export const contactRelationships = pgTable(
     name: varchar("name", { length: 255 }),
     relationship: varchar("relationship", { length: 100 }),
     phone: varchar("phone", { length: 50 }),
+    email: varchar("email", { length: 255 }),
+    gender: varchar("gender", { length: 20 }),
     inferred: boolean("inferred").notNull().default(false),
     inferredFromContactId: varchar("inferred_from_contact_id", { length: 64 }),
     inferenceDepth: integer("inference_depth").notNull().default(0),

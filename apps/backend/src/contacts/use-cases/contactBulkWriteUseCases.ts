@@ -1,6 +1,15 @@
-import { getContactTags, mergeContacts as mergeContactRecords, type Contact } from "@mms/shared";
+import {
+  filterManualContactTags,
+  getContactTags,
+  mergeContacts as mergeContactRecords,
+  type Contact,
+} from "@mms/shared";
 import { invalidateDuplicateScanCache } from "./contactDuplicateScanUseCases.js";
 import { getRequestTenant } from "../../lib/tenantContext.js";
+import {
+  reconcileContactSystemTags,
+  removeSystemTagsForContacts,
+} from "../systemTags/contactSystemTagUseCases.js";
 import { applyContactRelationshipInference } from "./contactInferenceUseCases.js";
 import { runInTransaction } from "../../db/database.js";
 import { assertContactUniqueFields, prepareContactRecord } from "./contactValidationUseCases.js";
@@ -59,7 +68,10 @@ export async function mergeContactsById(
     };
 
     await repo.save(tenant, next);
-    await applyContactRelationshipInference(tenant, next, undefined, repo);
+    await applyContactRelationshipInference(tenant, next, undefined, repo, {
+      actorId: deletedBy,
+      previousSource: keep,
+    });
 
     const now = new Date().toISOString();
     await repo.save(tenant, {
@@ -71,6 +83,13 @@ export async function mergeContactsById(
     });
 
     await repo.reparentContactReferences(tenant, keepId, deleteId);
+    // Merge is not a role end: the merged-away contact's system rows go away,
+    // while the surviving contact inherits the reconciled roles.
+    await removeSystemTagsForContacts(tenant, [deleteId]);
+    await reconcileContactSystemTags(tenant, [keepId], {
+      actorId: deletedBy,
+      touchContacts: false,
+    });
 
     await invalidateDuplicateScanCache();
     return next;
@@ -91,6 +110,13 @@ export async function bulkSaveContacts(
   const tenant = getRequestTenant();
   if (!tenant || contacts.length === 0) return;
   await repo.bulkSave(tenant, contacts);
+  const ids = contacts
+    .map((contact) => contact.id)
+    .filter((id): id is string | number => id != null)
+    .map(String);
+  if (ids.length > 0) {
+    await reconcileContactSystemTags(tenant, ids, { touchContacts: false });
+  }
   await invalidateMultiTierCache({ tenantId: tenant, domain: "contacts" });
 }
 
@@ -103,15 +129,16 @@ export async function bulkTagContacts(
     const tenant = getRequestTenant();
     if (!tenant) throw new Error("Tenant context required");
     const contactsToUpdate = await repo.findByIds(tenant, ids);
-    const toAdd = options.addTags?.map((t) => t.trim()).filter(Boolean) ?? [];
+    const toAdd = filterManualContactTags(options.addTags ?? []);
     const toRemove = new Set(
-      options.removeTags?.map((t) => t.trim().toLowerCase()).filter(Boolean) ?? [],
+      filterManualContactTags(options.removeTags ?? []).map((t) => t.toLowerCase()),
     );
 
     const toSave: Contact[] = [];
     for (const c of contactsToUpdate) {
       if (c.deletedAt) continue;
-      const currentTags = getContactTags(c);
+      // Module-managed tags are read-only: compute only over manual tags.
+      const currentTags = filterManualContactTags(getContactTags(c));
       const tagSet = new Set(currentTags);
       let changed = false;
 

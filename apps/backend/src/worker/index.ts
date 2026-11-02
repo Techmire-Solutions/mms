@@ -36,6 +36,10 @@ import {
   scheduleSessionLifecycle,
 } from "./sessionLifecycleScheduler.js";
 import { clearFxRateFeedScheduler, scheduleFxRateFeed } from "./fxRates/fxRateFeedScheduler.js";
+import {
+  clearContactSystemTagSweep,
+  scheduleContactSystemTagSweep,
+} from "./contactSystemTagSweep.js";
 import { startOutboxCdcListener, type OutboxCdcHandle } from "./outboxCdcListener.js";
 import { cleanupOrphanedJobs } from "./workerOrphanCleanup.js";
 
@@ -168,6 +172,8 @@ export async function startWorkerDaemon(): Promise<void> {
   scheduleSessionLifecycle(() => isRunning);
   // Daily IAS 21 reference rates (no-op unless FX_RATE_FEED_PROVIDERS is set)
   scheduleFxRateFeed(() => isRunning);
+  // Hourly: archive role tags whose employment/assignment end date has passed.
+  scheduleContactSystemTagSweep(() => isRunning);
 
   const shutdown = async (signal: string) => {
     if (!isRunning) return;
@@ -195,6 +201,7 @@ export async function startWorkerDaemon(): Promise<void> {
       clearRetentionPurgeScheduler();
       clearSessionLifecycleScheduler();
       clearFxRateFeedScheduler();
+      clearContactSystemTagSweep();
 
       abortBackgroundJobsOnShutdown("SIGTERM");
       // Stop accepting new jobs without waiting for the now-aborting active ones.

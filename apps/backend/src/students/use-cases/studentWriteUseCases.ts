@@ -15,6 +15,7 @@ import {
 import { recordRestoreEvents } from "./studentAuditEvents.js";
 import { restoreCascadedEnrollmentsForStudents } from "../../db/repositories/studentEnrollmentCascade.js";
 import { loadStudentModulePreferences } from "./studentPreferencesService.js";
+import { reconcileContactSystemTags } from "../../contacts/systemTags/contactSystemTagUseCases.js";
 import { withdrawEnrollmentsForStudentStatus } from "../../enrollments/use-cases/enrollmentEndUseCases.js";
 
 interface CreateStudentResult {
@@ -101,6 +102,16 @@ export async function createStudent(
           new Date(restoredAt),
         );
         await recordRestoreEvents(tenant, merged, restoredAt, userId);
+        await reconcileContactSystemTags(
+          tenant,
+          [
+            merged.contactId,
+            merged.fatherContactId,
+            merged.motherContactId,
+            merged.guardianContactId,
+          ],
+          { actorId: userId },
+        );
         return { record: merged, restored: true };
       }
     }
@@ -128,6 +139,16 @@ export async function createStudent(
     } catch (error: unknown) {
       throwGrUniqueConflict(error);
     }
+    await reconcileContactSystemTags(
+      tenant,
+      [
+        normalized.contactId,
+        normalized.fatherContactId,
+        normalized.motherContactId,
+        normalized.guardianContactId,
+      ],
+      { actorId: userId },
+    );
     return { record: normalized, restored: false };
   });
   await broadcastCollection("students");
@@ -176,6 +197,21 @@ export async function updateStudentById(
     } catch (error: unknown) {
       throwGrUniqueConflict(error);
     }
+    // Reconcile both the previous and the new links so removed roles archive.
+    await reconcileContactSystemTags(
+      tenant,
+      [
+        existing.contactId,
+        existing.fatherContactId,
+        existing.motherContactId,
+        existing.guardianContactId,
+        normalized.contactId,
+        normalized.fatherContactId,
+        normalized.motherContactId,
+        normalized.guardianContactId,
+      ],
+      { actorId: userId },
+    );
     return normalized;
   });
   if (saved) await broadcastCollection("students");

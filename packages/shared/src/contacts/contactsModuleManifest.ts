@@ -1,6 +1,7 @@
 import type { Permission } from "../auth/permissions.js";
 import { DEFAULT_SETTINGS_SUB_TABS } from "./contactTypes.js";
 import { WHATSAPP_STATUS_VALUES } from "./contactEntityTypes.js";
+import { contactSystemTagSchema } from "./contactSystemTags.js";
 import { z } from "zod";
 import {
   activitySchema,
@@ -50,6 +51,7 @@ export const contactRecordSchema = z
     avatar: z.union([z.string(), z.null()]).optional(),
     tag: z.string().optional(),
     tags: z.array(z.string()).optional(),
+    systemTags: z.array(contactSystemTagSchema).optional(),
     notes: z.string().optional(),
     aiSummary: z.string().optional(),
     createdAt: z.string().optional(),

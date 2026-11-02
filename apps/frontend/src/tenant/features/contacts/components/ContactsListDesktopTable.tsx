@@ -118,6 +118,9 @@ export const ContactsListDesktopTable = React.memo(function ContactsListDesktopT
         onSelectAll,
         allSelected,
         someSelected,
+        selectAllAriaLabel: t("contacts.table.selectAll"),
+        selectRowAriaLabel: (contact) =>
+          t("contacts.table.selectContact", { name: getDisplayName(contact) }),
       }}
       sort={{
         field: sortField,

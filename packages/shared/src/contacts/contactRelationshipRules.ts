@@ -19,14 +19,14 @@ export interface PlannedRelationship {
   inferenceDepth: number;
 }
 
-function genderIsFemale(gender?: string | null): boolean {
+export function genderIsFemale(gender?: string | null): boolean {
   const normalized = typeof gender === "string" ? gender.trim().toLowerCase() : "";
   return (
     normalized === "female" || normalized === "f" || normalized === "woman" || normalized === "girl"
   );
 }
 
-function genderIsMale(gender?: string | null): boolean {
+export function genderIsMale(gender?: string | null): boolean {
   const normalized = typeof gender === "string" ? gender.trim().toLowerCase() : "";
   return (
     normalized === "male" || normalized === "m" || normalized === "man" || normalized === "boy"

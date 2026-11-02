@@ -87,6 +87,77 @@ describe("createModuleExportService multi-format export", () => {
   });
 });
 
+describe("createModuleExportService OFFSET continuation", () => {
+  type OffsetRow = { id: string; name: string };
+
+  // Caller-sorted by name while ids are deliberately non-monotonic: advancing
+  // the cursor from the last row's id would switch later pages to `ORDER BY id`
+  // and drop rows.
+  const offsetPages: OffsetRow[][] = [
+    [
+      { id: "b", name: "Bilal" },
+      { id: "a", name: "Aisha" },
+    ],
+    [
+      { id: "d", name: "Daud" },
+      { id: "c", name: "Chand" },
+    ],
+    [{ id: "f", name: "Faiz" }],
+  ];
+
+  function createOffsetService(
+    loadPage: (
+      page: number,
+      afterId?: string,
+    ) => Promise<{ rows: OffsetRow[]; hasMore: boolean; nextCursor?: string }>,
+  ) {
+    return createModuleExportService<
+      OffsetRow,
+      Record<string, never>,
+      { id: string; label: string }
+    >({
+      manifest: { defaultExportFilename: "offset_export", exportChunkSize: 2 },
+      normalizeQuery: (query) => query,
+      prepareExport: () => ({ columns: [{ id: "name", label: "Name" }], context: undefined }),
+      loadByIds: async () => [],
+      loadPage: (_query, page, _limit, afterId) => loadPage(page, afterId),
+      yieldDataChunks: function* (rows) {
+        for (const row of rows) yield `${row.name}\n`;
+      },
+      extractCell: (row) => row.name,
+    });
+  }
+
+  it("keeps OFFSET paging when the pager emits no nextCursor", async () => {
+    const loadPage = vi.fn(async (page: number, afterId?: string) => {
+      void afterId;
+      return { rows: offsetPages[page - 1] ?? [], hasMore: page < offsetPages.length };
+    });
+    const service = createOffsetService(loadPage);
+
+    const result = await service.buildExport({}, { viewerRole: "admin", format: "json" });
+
+    expect(loadPage.mock.calls.map(([page]) => page)).toEqual([1, 2, 3]);
+    expect(loadPage.mock.calls.every(([, afterId]) => afterId === undefined)).toBe(true);
+    expect(result.count).toBe(5);
+    expect(JSON.parse(result.content)).toEqual([
+      { Name: "Bilal" },
+      { Name: "Aisha" },
+      { Name: "Daud" },
+      { Name: "Chand" },
+      { Name: "Faiz" },
+    ]);
+  });
+
+  it("throws instead of looping when hasMore is true with zero rows", async () => {
+    const service = createOffsetService(async () => ({ rows: [], hasMore: true }));
+
+    await expect(service.buildExport({}, { viewerRole: "admin", format: "json" })).rejects.toThrow(
+      /hasMore=true with zero rows/,
+    );
+  });
+});
+
 describe("createModuleImportService", () => {
   const rowSchema = z.object({
     name: z.string().min(2),

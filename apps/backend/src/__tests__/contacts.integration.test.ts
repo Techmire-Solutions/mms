@@ -660,6 +660,40 @@ describe("contacts REST routes", () => {
     await app.close();
   });
 
+  it("GET /api/contacts/:id returns the systemTags projection", async () => {
+    const app = await buildApp();
+    mockGetContactById.mockResolvedValueOnce({
+      ...sampleContact,
+      tags: ["Student"],
+      systemTags: [
+        {
+          name: "Student",
+          source: "student",
+          systemKey: "student:self",
+          archived: false,
+        },
+      ],
+    });
+    const res = await app.inject({
+      method: "GET",
+      url: "/api/contacts/c1",
+      headers: {
+        host: "demo.localhost",
+        authorization: `Bearer ${adminToken(app)}`,
+      },
+    });
+    expect(res.statusCode).toBe(200);
+    expect(res.json().contact.systemTags).toEqual([
+      {
+        name: "Student",
+        source: "student",
+        systemKey: "student:self",
+        archived: false,
+      },
+    ]);
+    await app.close();
+  });
+
   it("PUT /api/contacts/:id updates a contact", async () => {
     const app = await buildApp();
     const res = await app.inject({
@@ -669,12 +703,27 @@ describe("contacts REST routes", () => {
         host: "demo.localhost",
         authorization: `Bearer ${adminToken(app)}`,
       },
-      payload: { id: "c1", firstName: "Ali", lastName: "Updated" },
+      payload: {
+        id: "c1",
+        firstName: "Ali",
+        lastName: "Updated",
+        systemTags: [
+          {
+            name: "Student",
+            source: "student",
+            systemKey: "student:self",
+            archived: false,
+          },
+        ],
+      },
     });
     expect(res.statusCode).toBe(200);
     expect(mockUpdateContactById).toHaveBeenCalledWith(
       "c1",
-      expect.objectContaining({ firstName: "Ali" }),
+      expect.objectContaining({
+        firstName: "Ali",
+        systemTags: [expect.objectContaining({ name: "Student" })],
+      }),
       expect.objectContaining({ applyRelationshipInference: true, language: expect.any(String) }),
     );
     await app.close();
@@ -1611,6 +1660,21 @@ describe("contacts REST routes", () => {
       },
     });
     expect(denied.statusCode).toBe(403);
+
+    const reserved = await app.inject({
+      method: "POST",
+      url: "/api/contacts/bulk-tag",
+      headers: {
+        host: "demo.localhost",
+        authorization: `Bearer ${adminToken(app)}`,
+      },
+      payload: {
+        ids: ["c-1"],
+        addTags: ["faculty-Teacher"],
+      },
+    });
+    expect(reserved.statusCode).toBe(400);
+    expect(mockBulkTagContacts).not.toHaveBeenCalled();
 
     const ok = await app.inject({
       method: "POST",

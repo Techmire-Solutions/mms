@@ -2,6 +2,7 @@ import { and, eq, inArray } from "drizzle-orm";
 import type { Contact } from "@mms/shared";
 import { contacts } from "../schema.js";
 import { withTenantRead, type TenantTransaction } from "../tenant-context.js";
+import { enableIncludeDeleted } from "../../lib/softDeleteHelpers.js";
 import { getPreparedContactById } from "../preparedStatements.js";
 import { contactSelectColumns } from "./contactRepositoryColumns.js";
 import { hydrateContactsList, hydrateContactsSummaryList } from "./contactRepositoryHydrate.js";
@@ -47,9 +48,14 @@ async function fetchRowsByIds(
   return rows;
 }
 
-export async function findContactById(tenant: string, id: string): Promise<Contact | null> {
+export async function findContactById(
+  tenant: string,
+  id: string,
+  options?: { includeDeleted?: boolean },
+): Promise<Contact | null> {
   const subdomain = tenant.trim().toLowerCase();
   return withTenantRead(subdomain, async (tx) => {
+    if (options?.includeDeleted) await enableIncludeDeleted(tx);
     let rows: ContactRow[];
     if (
       process.env.MMS_USE_PREPARED_STATEMENTS !== "false" &&
@@ -79,10 +85,15 @@ export async function findContactById(tenant: string, id: string): Promise<Conta
   });
 }
 
-export async function findContactsByIds(tenant: string, ids: string[]): Promise<Contact[]> {
+export async function findContactsByIds(
+  tenant: string,
+  ids: string[],
+  options?: { includeDeleted?: boolean },
+): Promise<Contact[]> {
   if (ids.length === 0) return [];
   const subdomain = tenant.trim().toLowerCase();
   return withTenantRead(subdomain, async (tx) => {
+    if (options?.includeDeleted) await enableIncludeDeleted(tx);
     const rows = await fetchRowsByIds(tx, subdomain, ids);
     return hydrateContactsList(tx, subdomain, rows);
   });

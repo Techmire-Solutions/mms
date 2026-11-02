@@ -46,6 +46,9 @@ Token persistence: `authArtifactService`. Cookie names below are authoritative.
 
 - **Reachable denial codes**: `required: true` modules (`dashboard`, `contacts`, `messaging`, …) can never be disabled or un-granted, so they only produce `PERMISSION_DENIED`. A denial test that expects `MODULE_DISABLED` for a required module gets a 500 from the ungated handler instead of a 403.
 - **`availability` action**: routes whose handler owns a finer rule (self-service own-record edits, personal preferences) use `MODULE_ROUTE_ACTION_RULES` `action: 'availability'`; the handler must enforce the permission **and** a field whitelist (`OWN_CONTACT_PATCH_KEYS` + `ownContactPatchBodySchema`), never the module write DTO.
+- **Server-owned projections**: write permission never implies control of derived/system-managed fields (role tags, computed status, provenance). Strip them before validation and at the write choke point; bulk endpoints reject reserved values with `400` (mass-assignment guard).
+- **Cross-module reads**: a module grant authorizes that module's purpose only. Borrowing another module's records requires a lean DTO plus the owner's viewer sanitizer (`sanitizeContactsForViewer`); never return the owner's full read shape. A messaging-only role must not receive contact notes/DOB/addresses.
+- **Upload gates**: `/attachment` upload/delete require the owning module action (`canWriteCollection(user, 'contacts')`), not merely a session; tenant sessions must not read root-level non-public uploads.
 
 ## 3. Cryptographic & Storage Invariants
 
@@ -61,6 +64,8 @@ Execute the backend security test matrix when modifying auth or route handlers:
 
 ```bash
 cd apps/backend && pnpm test -- src/__tests__/app.security.test.ts src/__tests__/auth.integration.test.ts src/__tests__/rbacService.test.ts
+# Cross-module reads + upload gates
+cd apps/backend && pnpm test -- src/__tests__/messagingRecipientsService.test.ts src/__tests__/uploadsHardening.test.ts
 ```
 
 ## Related skills

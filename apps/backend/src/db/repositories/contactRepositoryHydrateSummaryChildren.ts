@@ -72,7 +72,12 @@ export async function loadContactSummaryChildMapsAggregated(
           'id', t.id,
           'contactId', t.contact_id,
           'workspaceSubdomain', t.workspace_subdomain,
-          'name', t.name
+          'name', t.name,
+          'source', t.source,
+          'systemKey', t.system_key,
+          'archived', t.archived,
+          'updatedAt', t.updated_at,
+          'createdAt', t.created_at
         ) ORDER BY t.created_at)
         FROM contact_tags t
         WHERE t.contact_id = c.id AND t.workspace_subdomain = ${subdomain}
@@ -98,6 +103,8 @@ export async function loadContactSummaryChildMapsAggregated(
           'name', r.name,
           'relationship', r.relationship,
           'phone', r.phone,
+          'email', r.email,
+          'gender', r.gender,
           'inferred', r.inferred,
           'inferredFromContactId', r.inferred_from_contact_id,
           'inferenceDepth', r.inference_depth,

@@ -11,6 +11,7 @@ import {
 } from "@mms/shared";
 import type { ContractRouteArgs, ContractRouteResponse } from "../../../lib/contractRouterTypes.js";
 import type { FacultyAssignmentRow } from "../../../db/schema/facultyAssignmentTables.js";
+import { reconcileFacultyContactsByFacultyIds } from "../../../contacts/systemTags/contactSystemTagUseCases.js";
 import {
   findFacultyAssignmentById,
   listFacultyAssignments,
@@ -114,6 +115,9 @@ export async function handleSaveAssignment({
       workspaceSubdomain: String(tenantId),
       updatedBy: user.id,
     });
+    await reconcileFacultyContactsByFacultyIds(String(tenantId), [facultyId], {
+      actorId: user.id,
+    });
     const saved = await findFacultyAssignmentById(String(tenantId), id);
     if (!saved) {
       return {
@@ -166,6 +170,9 @@ export async function handleCloseAssignment({
       };
     }
     await closeAssignment(String(tenantId), id, body.endDate, user.id);
+    await reconcileFacultyContactsByFacultyIds(String(tenantId), [facultyId], {
+      actorId: user.id,
+    });
     return { status: 200 as const, body: { success: true as const } };
   } catch (error) {
     return {
@@ -204,6 +211,9 @@ export async function handleDeleteAssignment({
       return { status: 404 as const, body: { type: "not_found", message: "Assignment not found" } };
     }
     await softDeleteFacultyAssignment(String(tenantId), id, user.id, "User deleted");
+    await reconcileFacultyContactsByFacultyIds(String(tenantId), [facultyId], {
+      actorId: user.id,
+    });
     return { status: 200 as const, body: { success: true as const } };
   } catch (error) {
     return {

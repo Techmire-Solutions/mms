@@ -7,7 +7,7 @@ import {
   type ContactPreferences,
 } from "@mms/shared";
 import type { TranslationFunction } from "@/lib/contexts/TranslationContext";
-import { Badge } from "@/components/ui/badge";
+import { ContactTagList } from "@/tenant/features/contacts/components/ContactTagBadge";
 import { formatContactCellValue } from "@/lib/contacts/contactI18n";
 import {
   renderSocialMetadata,
@@ -104,17 +104,9 @@ export function renderContactMetadataCellValue({
     }
     case "tag":
     case "tags": {
-      const contactTags = getContactTags(contact);
-      if (contactTags.length === 0) return renderDash();
-      return (
-        <div className="flex flex-wrap gap-1">
-          {contactTags.map((tag) => (
-            <Badge key={tag} tone="primary" className="px-2 py-0.5 text-xs font-medium">
-              {tag}
-            </Badge>
-          ))}
-        </div>
-      );
+      const hasTags = getContactTags(contact).length > 0 || (contact.systemTags?.length ?? 0) > 0;
+      if (!hasTags) return renderDash();
+      return <ContactTagList contact={contact} className="gap-1" />;
     }
     case "notes": {
       if (!contact.notes) return renderDash();

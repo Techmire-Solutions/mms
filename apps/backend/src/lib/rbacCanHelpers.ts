@@ -14,6 +14,7 @@ export {
   canReadContacts,
   canWriteContacts,
   canDeleteContacts,
+  canUseContactPicker,
   canReadMessaging,
   canWriteMessaging,
   canClearMessagingLogs,

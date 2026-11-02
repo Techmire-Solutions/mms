@@ -28,23 +28,27 @@ export function buildOrderBy(
   if (!field || !CONTACT_SORT_FIELDS.has(field)) {
     return sql`${contacts.id} asc`;
   }
+  // Deterministic tiebreaker: SQL does not guarantee a stable order for rows
+  // with equal sort keys, so page-walking exports could skip or repeat rows
+  // across OFFSET pages without one.
+  const tiebreak = (expression: SQL): SQL => sql`${expression}, ${contacts.id} asc`;
   if (field === "updatedAt") {
-    return dir === "desc" ? desc(contacts.updatedAt) : asc(contacts.updatedAt);
+    return tiebreak(dir === "desc" ? desc(contacts.updatedAt) : asc(contacts.updatedAt));
   }
   if (field === "createdAt") {
-    return dir === "desc" ? desc(contacts.createdAt) : asc(contacts.createdAt);
+    return tiebreak(dir === "desc" ? desc(contacts.createdAt) : asc(contacts.createdAt));
   }
   if (field === "name") {
-    return dir === "desc" ? desc(contacts.name) : asc(contacts.name);
+    return tiebreak(dir === "desc" ? desc(contacts.name) : asc(contacts.name));
   }
   if (field === "firstName") {
-    return dir === "desc" ? desc(contacts.firstName) : asc(contacts.firstName);
+    return tiebreak(dir === "desc" ? desc(contacts.firstName) : asc(contacts.firstName));
   }
   if (field === "lastName") {
-    return dir === "desc" ? desc(contacts.lastName) : asc(contacts.lastName);
+    return tiebreak(dir === "desc" ? desc(contacts.lastName) : asc(contacts.lastName));
   }
   if (field === "gender") {
-    return dir === "desc" ? desc(contacts.gender) : asc(contacts.gender);
+    return tiebreak(dir === "desc" ? desc(contacts.gender) : asc(contacts.gender));
   }
   if (field === "city") {
     const cityExpr = sql`(
@@ -54,7 +58,7 @@ export function buildOrderBy(
       ORDER BY CASE WHEN a.is_primary THEN 0 ELSE 1 END, a.sort_order ASC
       LIMIT 1
     )`;
-    return dir === "desc" ? desc(cityExpr) : asc(cityExpr);
+    return tiebreak(dir === "desc" ? desc(cityExpr) : asc(cityExpr));
   }
   return sql`${contacts.id} asc`;
 }

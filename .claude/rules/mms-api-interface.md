@@ -24,12 +24,15 @@ paths:
 - **Credentials & Cancellation:** Always include `credentials: 'include'`. Pass TanStack Query `signal` to `apiFetch`; composite signals via `AbortSignal.any([signal, AbortSignal.timeout(ms)])`. Fastify handlers propagate `request.raw.signal` to abort downstream DB operations on client disconnect.
 - **Contract Boundary (SSOT):** Define DTOs in `packages/shared/src/contracts/*` using Zod (`parseRequest` / `@ts-rest`). Never enable parallel Fastify JSON-Schema validation.
 - **Read/Write DTO Parity:** A request-body schema must accept exactly the shape the read path emits — the repository mapper output, child rows included. Prove it with a round-trip test that feeds a mapper-produced fixture through the write DTO. `@ts-rest` validates requests but not responses (`responseValidation` is off), so a strict nested row that rejects hydrated keys fails silently as a 400 on every edit while the suite stays green.
+- **Purpose-Built Response DTOs:** Never hand a consuming module the owner's full page/read schema. Define a lean response schema and map at the boundary (e.g. recipients → `{id,name,phone,email}`); changing an internal response shape updates every consumer (contract → hook → component → tests) in the same change. Consumer tests are the de-facto response contract because `responseValidation` is off.
+- **Server-Owned Projections:** A read projection may include server-owned metadata (derived tags, source/key/archived). Accept it on the write DTO only to strip it in preprocess; never persist it. Bulk endpoints that try to edit reserved/derived values return `400 validation_error` (`mms-data-layer.md` §9).
 - **Distributed Tracing:** Frontend generates W3C `traceparent` (v00); Fastify extracts into `tenantStorage` (`AsyncLocalStorage`) and echoes `traceparent` + `x-request-id` headers.
 
 ## 2. Fastify Router & Layering
 - **Layer Hierarchy:** Route router (`routes/**`) → Use Case (`{module}/use-cases/**`, pure DI) → Repository Interface (`{module}/repository/**`) → Drizzle Adapter. Route files must never import `db/repositories` or `drizzle-orm` directly (`check:backend-boundaries`).
 - **Streaming & Request Budgets:** Enforce `bodyLimit` and `requestTimeout`. Never buffer large uploads or datasets (`Buffer.concat` banned); stream uploads via `@fastify/multipart` and exports via `node:stream` (`mms-performance.md`).
 - **Outbound HTTP:** External backend fetches must enforce `AbortSignal.timeout(ms)`.
+- **Batch Writers:** Preload tenant config once per batch and suppress per-record side effects; after the loop run exactly one broadcast/cache/scan invalidation and one derived-projection reconcile. Per-record reconciliation inside a batch is an N+1 write path.
 
 ## 3. Auth Middleware & Isolation
 - Enforce `authenticateTenant` or `authenticatePlatform`. Raw `jwtVerify()` calls inside route handlers are banned (`mms-auth-security.md`).
@@ -64,4 +67,5 @@ paths:
 ## 8. Versioning, Deprecation & Contract Discipline
 - **Additive by Default:** No `/v2` URL prefixes. Contract changes must be additive and land in the same commit across `@mms/shared`, Fastify, and React.
 - **Deprecation:** Mark deprecated fields in `@mms/shared` before removal in a subsequent release. Never repurpose existing field names.
+- **Response Shape Changes:** An internal response-shape change is breaking for every consumer; update the contract, hook, component, and tests in the same change. There is no response validation to catch a stale consumer for you.
 

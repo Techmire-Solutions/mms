@@ -98,6 +98,7 @@ Integrate design intelligence from the `ui-ux-pro-max` skill (`.agent/skills/ui-
 - [ ] E2E tests include testing the UI on both LTR (English) and RTL (Urdu/Arabic) modes
 - [ ] Tables, lists, and card feeds > 30 items use @tanstack/react-virtual virtualization — mms-performance.md
 - [ ] Images and charts have explicit width/height dimensions for CLS = 0 — mms-performance.md
+- [ ] System-managed chips use a lock, include the value in the accessible label, expose archived state without color alone, and have no remove control
 ```
 
 ## Done

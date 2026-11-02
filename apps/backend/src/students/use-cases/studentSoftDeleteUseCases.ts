@@ -10,6 +10,7 @@ import { buildStudentForensicSnapshot } from "../../services/forensicSnapshotSer
 import { nowIso } from "../../lib/softDeleteHelpers.js";
 import { cascadeSoftDeleteEnrollmentsForStudents } from "../../db/repositories/studentEnrollmentCascade.js";
 import { invalidateMultiTierCache } from "../../lib/cache/index.js";
+import { reconcileContactSystemTags } from "../../contacts/systemTags/contactSystemTagUseCases.js";
 
 export async function softDeleteStudentById(
   id: string,
@@ -98,6 +99,16 @@ export async function bulkSoftDeleteStudents(
           minimizeDelta: false,
         });
       }
+      await reconcileContactSystemTags(
+        tenant,
+        toSave.flatMap((s) => [
+          s.contactId,
+          s.fatherContactId,
+          s.motherContactId,
+          s.guardianContactId,
+        ]),
+        { actorId: deletedBy },
+      );
     }
     return { succeeded, failed };
   });

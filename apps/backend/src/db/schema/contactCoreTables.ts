@@ -11,7 +11,7 @@ import {
   varchar,
   primaryKey,
 } from "drizzle-orm/pg-core";
-import { sql } from "drizzle-orm";
+import { desc, sql } from "drizzle-orm";
 import { workspaces } from "./platform.js";
 import { softDeleteColumns } from "./softDeleteSchema.js";
 
@@ -118,6 +118,13 @@ export const contactPhones = pgTable(
     primaryKey({ columns: [table.workspaceSubdomain, table.contactId, table.id] }),
     index("contact_phones_workspace_contact_idx").on(table.workspaceSubdomain, table.contactId),
     index("contact_phones_workspace_number_idx").on(table.workspaceSubdomain, table.number),
+    // Serves the metrics lateral's "primary phone" pick without a per-row Sort.
+    index("contact_phones_workspace_contact_priority_idx").on(
+      table.workspaceSubdomain,
+      table.contactId,
+      desc(table.isPrimary),
+      table.sortOrder,
+    ),
     foreignKey({
       columns: [table.workspaceSubdomain, table.contactId],
       foreignColumns: [contacts.workspaceSubdomain, contacts.id],

@@ -37,13 +37,14 @@ metadata:
 ## 2. Migration Execution Procedure
 
 1. **Author Schema**: Add/edit `apps/backend/src/db/schema/[entity].ts` and export from `schema.ts`.
-2. **Generate Migration**: Run `pnpm --filter mms-backend exec drizzle-kit generate` (requires `DATABASE_URL`). Never squash or alter existing committed migrations.
+2. **Generate Migration**: Run `pnpm --filter mms-backend exec drizzle-kit generate` (requires `DATABASE_URL`). If generation is blocked by a malformed historical snapshot, stop and report; a hand-authored migration is a reviewed exception only (copy the previous snapshot, append the journal entry, document the reason in the PR). Never squash or alter existing committed migrations.
 3. **Commit Parity**: Always commit SQL migration + `_journal.json` + meta snapshot in the exact same change.
 4. **Expand/Contract Workflow**: Add nullable column → deploy & backfill → apply NOT NULL/CHECK constraint. Drop old columns only after dual-read window.
 5. **Attach RLS Policies**: Tenant tables must include `tenant_isolation_policy` and `platform_superadmin_policy` (`mms-data-layer.mdc` §1).
 6. **Soft-Delete Strategy**: Soft-deletable tables use `softDeleteColumns` from `softDeleteSchema.ts`, Category B partial index (`WHERE deleted_at IS NULL`), and `forbid_hard_delete()` trigger (`mms-soft-delete`).
 7. **Non-Blocking Indexes**: Never write-blocking `CREATE INDEX` on large production tables in migration SQL. Run concurrent indexes via `pnpm --filter mms-backend index:concurrent`.
 8. **Ban Direct Push**: `drizzle-kit push` and `db push` are strictly banned against shared or production databases.
+9. **Data-Only Backfills**: Derived-row backfills (e.g. system tags) are forward-only, idempotent, and conflict-targeted. They still require a journal entry + meta snapshot even when no schema column changes (`0202_backfill_relationship_role_tags.sql` is the reference). Do not edit an applied backfill.
 
 ## 3. Verification & CI Ratchets
 

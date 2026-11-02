@@ -80,6 +80,9 @@ For report packs use a cutoff-consistent dataset and retain evidence per [closin
 - [ ] W3C traceparent propagated as correlation ID in audit events
 - [ ] Scheduled verification runner registered for audit integrity
 - [ ] Scheduled retention hard-purge runner registered for expired soft-deleted entities (LIMIT 500 SKIP LOCKED)
+- [ ] Periodic derived-state reconciler is leader-locked, candidate-scoped (not a full tenant scan), and cleared on worker shutdown
+- [ ] Destructive sweep is dry-run by default (`--apply` to mutate) and honors `DRY_RUN` in scheduled runs
+- [ ] Sweep loads its reference set before deleting, enforces an age floor, and exposes an env kill switch
 - [ ] Datasets exceeding interactive threshold (>500 rows) offloaded to background worker jobs with streaming pipelines
 - [ ] Jobs use BullMQ + Redis 7+ for durable queuing
 - [ ] Tests cover success, forbidden, and failure paths

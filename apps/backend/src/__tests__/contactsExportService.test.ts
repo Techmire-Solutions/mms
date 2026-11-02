@@ -126,7 +126,9 @@ describe("contactsExportService", () => {
     );
 
     expect(result.count).toBe(2);
-    expect(mockLoadContactsByIds).toHaveBeenCalledWith(["c1", "c2"]);
+    expect(mockLoadContactsByIds).toHaveBeenCalledWith(["c1", "c2"], undefined, {
+      includeDeleted: true,
+    });
     expect(mockLoadContactsPage).not.toHaveBeenCalled();
   });
 

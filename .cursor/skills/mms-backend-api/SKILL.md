@@ -46,10 +46,14 @@ metadata:
 - **Audit Outbox**: Mutating audited entities emits RFC 8785 canonical JSON outbox records inside the primary transaction (`mms-audit-trail`).
 - **Optimistic Concurrency**: Contested single-row updates echo the read version and compare-and-set atomically (`onConflictDoNothing` / `WHERE updated_at = expected`); a zero-row result is `409 Conflict`, never a silent overwrite. The token is the value the client read — a body `expectedUpdatedAt` or an explicit header (contacts: `x-expected-updated-at`), never the payload's regenerated `updatedAt` — and the route/integration test must assert the 409. Document-template example: `mms-document-templates`.
 - **Read/Write DTO Parity**: A request-body schema must accept exactly what the response mapper emits (child rows included). Prove it with a round-trip test that feeds a mapper fixture through the write DTO; `@ts-rest` validates requests but not responses, so a strict nested row shows up as a silent 400 on edits.
+- **Cross-Module Response DTOs**: Never expose another module's full page/read schema. Define a lean response schema and map at the boundary; a response-shape change updates every consumer (contract, hook, component, tests) in the same change.
+- **New-Route Classification**: Run `moduleAccessCoverage.test.ts` when adding any route (including upload/media); add non-module paths to its explicit allowlist with the manual gate named.
 - **Server-Owned Attribution**: Strip `createdBy`/`updatedBy`/`createdAt` and soft-delete columns before validation (`stripClientAuditFields` + `stripContactClientSoftDeleteFields`), then stamp the actor from the session in the use case.
 - **Self-Service Writes**: An own-record path validates against the profile DTO whitelist (`ownContactPatchBodySchema` / `OWN_CONTACT_PATCH_KEYS`), not the module DTO, and skips peer-graph side effects.
 - **Domain Errors in Shared Helpers**: Generic route helpers map `sendIfHttpDomainError(reply, err)` before `sendDatabaseError` — a repository `ValidationError` must reach the client as 400, not 500.
-- **Batch Writers**: Preload tenant config once per job/batch (`loadContactWriteContext` pattern) and suppress per-record side effects (`batchMode`: broadcast, cache invalidation, scan invalidation), running each once after the loop.
+- **Batch Writers**: Preload tenant config once per job/batch (`loadContactWriteContext` pattern) and suppress per-record side effects (`batchMode`: broadcast, cache invalidation, scan invalidation, derived reconciliation), running each once after the loop.
+- **Server-Owned Projections**: Accept read-only metadata (e.g. `systemTags`) in the strict DTO only to strip it; never persist client values. Bulk endpoints reject reserved/derived values with `400`. Add a route/DB test proving the stored row is preserved and the projection is returned read-only (`mms-data-layer.mdc` §9).
+- **Derived Reconciliation**: One idempotent reconciler owns derived rows; call it from single, bulk, import, delete/restore, and merge paths. Use a per-entity advisory lock, workspace-local date windows, and archive-not-delete semantics.
 
 ## 3. Verification
 
@@ -59,6 +63,8 @@ cd apps/backend && pnpm typecheck && pnpm test && pnpm lint
 
 # Verify explicit column projections across all queries
 pnpm run check:db-projections
+pnpm --filter mms-backend test:db contactsSystemTagsDb
+pnpm --filter mms-backend test moduleAccessCoverage
 ```
 
 ## Examples

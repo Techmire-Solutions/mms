@@ -49,8 +49,17 @@ For seniority ranking rules, cycle prevention, and temporal constraint details, 
 | Frontend Page Shell | `apps/frontend/src/tenant/features/faculty/FacultyPage.tsx` |
 | Frontend Work Sub-tabs | `apps/frontend/src/tenant/features/faculty/facultyPageWorkSubTabs.ts` |
 | Legacy Surface Ratchet | `scripts/check-faculty-domain.mjs` |
+| Contact role tags | `apps/backend/src/contacts/systemTags/contactSystemTagFacultyCompute.ts`, `contactSystemTagReconcile.ts` |
 
-## 4. Verification
+## 4. Role-Derived Contact Tags
+
+- Every contact linked to active faculty receives `faculty-<Designation>` tags from **both** HR tenure (`faculty_employ_designations`) and multi-role assignments (`faculty_assignments`).
+- Active means: employment `active`/`on_leave` and inside its start/end window; designation active/not deleted; the tenure/assignment row active and inside its own window. Use the workspace-local day, not UTC.
+- Designation rename/status/delete, assignment save/close/delete, faculty create/update/soft-delete/restore, and imports must reconcile the affected contacts. Archive ended roles as `Former faculty-…`; never delete the row.
+- Two same-name designations collapse to one visible tag deterministically. Reconcile is idempotent, advisory-locked per contact, and runs once after a batch.
+- Date-only ends are repaired by the leader-locked hourly sweep; see `mms-data-layer.md` §9.
+
+## 5. Verification
 
 ```bash
 # Check legacy surface compliance
@@ -59,6 +68,7 @@ pnpm run check:faculty-domain
 # Run faculty domain tests
 pnpm --filter mms-backend test faculty
 pnpm --filter mms-frontend test apps/frontend/src/tenant/features/faculty
+pnpm --filter mms-backend test:db contactsSystemTagsDb
 ```
 
 ## Related skills

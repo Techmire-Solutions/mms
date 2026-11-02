@@ -5,6 +5,7 @@ const mockRecordModernAuditEvent = vi.fn();
 const mockLoadContactWriteContext = vi.fn();
 const mockInvalidateDuplicateScanCache = vi.fn();
 const mockBroadcastCollection = vi.fn();
+const mockReconcileContactSystemTags = vi.fn();
 
 vi.mock("../contacts/use-cases/contactWriteUseCases.js", () => ({
   upsertContact: (...args: unknown[]) => mockUpsertContact(...args),
@@ -17,6 +18,9 @@ vi.mock("../contacts/use-cases/contactDuplicateScanUseCases.js", () => ({
 }));
 vi.mock("../lib/livePush.js", () => ({
   broadcastCollection: (...args: unknown[]) => mockBroadcastCollection(...args),
+}));
+vi.mock("../contacts/systemTags/contactSystemTagUseCases.js", () => ({
+  reconcileContactSystemTags: (...args: unknown[]) => mockReconcileContactSystemTags(...args),
 }));
 vi.mock("../services/auditTrailService.js", async (importOriginal) => {
   const actual = await importOriginal<typeof import("../services/auditTrailService.js")>();
@@ -56,6 +60,7 @@ describe("runContactsImportJob", () => {
     });
     mockInvalidateDuplicateScanCache.mockReset().mockResolvedValue(undefined);
     mockBroadcastCollection.mockReset().mockResolvedValue(undefined);
+    mockReconcileContactSystemTags.mockReset().mockResolvedValue(0);
   });
 
   it("imports every contact and reports progress", async () => {
@@ -78,6 +83,21 @@ describe("runContactsImportJob", () => {
     // Per-record side effects are collapsed into one live update + one invalidation.
     expect(mockInvalidateDuplicateScanCache).toHaveBeenCalledTimes(1);
     expect(mockBroadcastCollection).toHaveBeenCalledTimes(1);
+  });
+
+  it("reconciles successfully imported contact ids once", async () => {
+    mockUpsertContact
+      .mockResolvedValueOnce({ contact: { id: "c-1" }, created: true })
+      .mockResolvedValueOnce({ contact: { id: "c-2" }, created: true });
+
+    await runContactsImportJob({ contacts: contacts(2), viewerRole: "admin" }, buildContext());
+
+    expect(mockReconcileContactSystemTags).toHaveBeenCalledTimes(1);
+    expect(mockReconcileContactSystemTags).toHaveBeenCalledWith(
+      "demo",
+      expect.arrayContaining(["c-1", "c-2"]),
+      { actorId: "u-admin", touchContacts: false },
+    );
   });
 
   it("counts per-contact failures without aborting the batch", async () => {

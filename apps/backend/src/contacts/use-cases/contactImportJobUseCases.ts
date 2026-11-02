@@ -1,6 +1,7 @@
 import { CONTACTS_MODULE_MANIFEST, type Contact, type ContactsImportJobPayload } from "@mms/shared";
 import { roleHasPermission } from "@mms/shared";
 import { upsertContact } from "./contactWriteUseCases.js";
+import { reconcileContactSystemTags } from "../systemTags/contactSystemTagUseCases.js";
 import { loadContactWriteContext } from "./contactWriteContext.js";
 import { invalidateDuplicateScanCache } from "./contactDuplicateScanUseCases.js";
 import { broadcastCollection } from "../../lib/livePush.js";
@@ -46,6 +47,7 @@ export async function runContactsImportJob(
   );
   const language = payload.language || "en";
   const failures: string[] = [];
+  const importedContactIds = new Set<string>();
   let imported = 0;
 
   await context.updateProgress(0, total);
@@ -55,13 +57,14 @@ export async function runContactsImportJob(
 
   for (let index = 0; index < total; index += 1) {
     try {
-      await upsertContact(contacts[index] as Contact, {
+      const saved = await upsertContact(contacts[index] as Contact, {
         canRestore,
         language,
         actorId: context.userId,
         context: writeContext,
         batchMode: true,
       });
+      if (saved?.contact?.id != null) importedContactIds.add(String(saved.contact.id));
       imported += 1;
     } catch (error) {
       if (failures.length < MAX_RECORDED_FAILURES) {
@@ -78,6 +81,13 @@ export async function runContactsImportJob(
   // Per-record side effects were suppressed by `batchMode`; run each once for
   // the whole batch instead of once per contact.
   if (imported > 0) {
+    // Batch writes skip per-record role probes; reconcile the imported contacts once.
+    if (importedContactIds.size > 0) {
+      await reconcileContactSystemTags(context.tenant, [...importedContactIds], {
+        actorId: context.userId,
+        touchContacts: false,
+      });
+    }
     await invalidateDuplicateScanCache();
     await broadcastCollection("contacts");
   }

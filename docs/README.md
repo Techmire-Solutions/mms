@@ -12,6 +12,7 @@ Project-wide entry points live at the repo root:
 - [architecture.md](./architecture.md) — repository layout & layer boundaries.
 - [soft-delete.md](./soft-delete.md) — soft-delete architecture.
 - [faculty.md](./faculty.md) — Faculty module engineering spec (production gold standard).
+- [automatic-role-tagging.md](./automatic-role-tagging.md) — Student/Faculty role-to-contact tag projection: sources, archival, read-only enforcement, backfill, and the hourly date sweep.
 - [engineering/data-transfer-import-export.md](./engineering/data-transfer-import-export.md) — import/export framework.
 - [a11y-baseline.md](./a11y-baseline.md) — executable axe/WCAG gate baseline.
 - [frontend-performance-baseline.md](./frontend-performance-baseline.md) — render-hygiene + React Compiler baseline.
@@ -46,6 +47,7 @@ Project-wide entry points live at the repo root:
 - [backend-review-2026-10-31.md](./backend-review-2026-10-31.md) — independent backend re-review at `cf69f9d17`: two P0 finance `PUT` ledger bypasses, session/cache freshness failures, unbounded messaging jobs, and audit gaps on restore and batch billing.
 - [contacts-module-review-2026-11-02.md](./contacts-module-review-2026-11-02.md) — contacts domain review at `ef994f0f9`: racy optimistic concurrency, unencrypted PII in delete/restore audit snapshots, stale child rewrites on bulk tag, and two field-visibility bypasses.
 - [contacts-module-review-2026-11-02-addendum.md](./contacts-module-review-2026-11-02-addendum.md) — deep-dive addendum: messaging recipient list exposes full contact records under `messaging.read` (P1), recipient field-permission bypass, legacy root-upload tenant gap, attachment orphans, and duplicate-cache staleness.
+- [contacts-module-review-2026-11-02-round2.md](./contacts-module-review-2026-11-02-round2.md) — independent round-2 review at `e7fd7134b`: all 21 prior findings re-verified, one P1 (sorted CSV export silently truncates rows), CSV import and >500 VCF export failures, relationship-field loss, quadratic duplicate scan, unstable pagination, picker 403s for staff roles, and an inert soft-delete RLS policy.
 - [frontend-review-2026-10-30.md](./frontend-review-2026-10-30.md) — frontend deep-dive: PWA precache budget, stale-chunk recovery, pre-paint BiDi, coverage depth, deferred i18n split.
 - [frontend-review-2026-10-30-deep.md](./frontend-review-2026-10-30-deep.md) — whole-frontend review: routing/data/a11y/i18n findings, 12 fixes (pagination labels, settings deep links, palette focus trap, finance live push, 401 escalation, platform boundary), deferred register.
 - [rules-review-2026-10-29.md](./rules-review-2026-10-29.md) — agent standards review: rule findings H/M/L, per-rule scorecard, 49-skill review + fixes, and the DeepSeek Harness `.dsh` mirror.

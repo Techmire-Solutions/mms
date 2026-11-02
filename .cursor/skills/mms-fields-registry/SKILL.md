@@ -49,11 +49,19 @@ Every new or modified field must complete:
 - **One tab→property map**: the mapping from list/collection tabs to entity properties (`phones`→`phones`, `relationship`→`relationshipContacts`, `education`/`experience`/`skills`/`bankDetails`→same-named arrays, custom tab→its array) is declared once and consumed by the write DTO allowlist, dynamic validation, unique-field collection, profile completeness, and the response sanitizer/export. Divergent copies silently skip unique checks and leak hidden tabs (`mms-fields.mdc` §4).
 - **Permission enforcement traverses collections**: a hidden/role-restricted tab strips its whole array; a hidden field inside a visible list tab is removed from each row. Deleting a top-level property that only exists inside the array is a no-op — see `contactResponseSanitizer.ts` and assert it with a disabled-tab test.
 
+## 5. System-Managed Projections
+
+- A derived field (e.g. Student/Parent/Guardian and `faculty-<Designation>` tags) is read-only even though it appears in the field surface. Keep it out of editable lookup options, render locked chips outside the control, and submit only the editable field value.
+- Expose metadata (`source`, `systemKey`, `archived`) with the display value; the response sanitizer strips the metadata and values together when the owning field is hidden.
+- Accept the projection on a strict write DTO only to strip it; bulk/import attempts to edit reserved values return `400`. Server-side reconciler owns inserts/updates/archives (`mms-data-layer.mdc` §9).
+- **Cross-module parity**: every surface that exports contacts (messaging recipients, VCF/CSV export, WhatsApp links) runs `sanitizeContactsForViewer` with the viewer role and a minimal projection. Module access is not field authorization; verify a hidden phone/email/notes field cannot reappear through a borrowing module.
+
 ## Verification
 
 ```bash
 pnpm typecheck
 pnpm --filter mms-frontend lint
+pnpm --filter mms-backend test:db contactsSystemTagsDb
 ```
 
 ## Related skills

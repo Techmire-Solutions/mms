@@ -12,6 +12,8 @@ export {
   fetchContactById,
   useContactById,
   useContactsByIds,
+  useContactPickerSearch,
+  useContactPickerOption,
   useContactGoogleSyncConfig,
   useContactGoogleSyncMutations,
   useContactColumnPrefs,

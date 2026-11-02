@@ -39,6 +39,8 @@ export type ContactsCsvExportResult = ContactsExportResult;
 type ContactsExportContext = {
   viewerRole: string;
   fieldConfig: FieldConfig | null;
+  /** Selection exports load trashed rows under the soft-delete RLS GUC; keep them only when allowed. */
+  allowDeleted: boolean;
 };
 
 async function prepareContactsExport(
@@ -58,7 +60,11 @@ async function prepareContactsExport(
   );
   return {
     columns,
-    context: { viewerRole: options.viewerRole, fieldConfig },
+    context: {
+      viewerRole: options.viewerRole,
+      fieldConfig,
+      allowDeleted: options.allowDeleted === true,
+    },
   };
 }
 
@@ -74,7 +80,7 @@ const contactsCsv = createModuleExportService<
     includeDeleted: normalizeIncludeDeletedFlag(query.includeDeleted, allowDeleted),
   }),
   prepareExport: prepareContactsExport,
-  loadByIds: loadContactsByIds,
+  loadByIds: (ids) => loadContactsByIds(ids, undefined, { includeDeleted: true }),
   loadPage: async (query, page, limit, afterId) => {
     const pageResult = await loadContactsPage({
       ...query,
@@ -96,8 +102,11 @@ const contactsCsv = createModuleExportService<
     const sanitizeSnapshot = resolveContactFieldConfigSnapshot(context.fieldConfig);
 
     function* gen(): Generator<string, void, undefined> {
-      for (let i = 0; i < contacts.length; i += chunkSize) {
-        const chunk = contacts.slice(i, i + chunkSize);
+      const visible = context.allowDeleted
+        ? contacts
+        : contacts.filter((contact) => !contact.deletedAt);
+      for (let i = 0; i < visible.length; i += chunkSize) {
+        const chunk = visible.slice(i, i + chunkSize);
         const sanitizedChunk = sanitizeContactsForViewer(
           chunk,
           context.viewerRole,

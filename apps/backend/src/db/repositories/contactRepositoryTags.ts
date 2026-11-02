@@ -1,4 +1,5 @@
-import { and, eq, inArray } from "drizzle-orm";
+import { and, eq, inArray, isNull } from "drizzle-orm";
+import { filterManualContactTags } from "@mms/shared";
 import { contactTags, contacts } from "../schema.js";
 import { withTenant } from "../tenant-context.js";
 import { invalidateMultiTierCache } from "../../lib/cache/index.js";
@@ -10,17 +11,7 @@ export interface ContactTagUpdate {
 
 /** Case-insensitive de-duplication that preserves the first observed casing. */
 function normalizeTagNames(tags: string[]): string[] {
-  const seen = new Set<string>();
-  const names: string[] = [];
-  for (const raw of tags) {
-    const name = String(raw ?? "").trim();
-    if (!name) continue;
-    const key = name.toLowerCase();
-    if (seen.has(key)) continue;
-    seen.add(key);
-    names.push(name);
-  }
-  return names;
+  return filterManualContactTags(tags);
 }
 
 /**
@@ -48,11 +39,14 @@ export async function replaceContactTags(
   const ids = normalized.map((update) => update.id);
   const now = new Date();
   await withTenant(subdomain, async (tx) => {
-    await tx
-      .delete(contactTags)
-      .where(
-        and(eq(contactTags.workspaceSubdomain, subdomain), inArray(contactTags.contactId, ids)),
-      );
+    await tx.delete(contactTags).where(
+      and(
+        eq(contactTags.workspaceSubdomain, subdomain),
+        inArray(contactTags.contactId, ids),
+        // Bulk tagging owns manual tags only; module roles are system-managed.
+        isNull(contactTags.source),
+      ),
+    );
 
     const rows = normalized.flatMap((update) =>
       update.tags.map((name, index) => ({

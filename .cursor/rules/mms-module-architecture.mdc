@@ -46,6 +46,7 @@ alwaysApply: false
 - **Live Progress Tray:** Stream execution status via global `BackgroundJobsTray` (`running | completed | failed`, percentage progress, error counts, download artifacts).
 - **Worker Job Contracts:** Jobs require idempotency keys, bounded retries with exponential backoff, execution-time tenant/user verification, and concurrency isolation. Auto-retrying message broadcasts or charging payments is banned.
 - **Data Transfer Standard:** Module CSV imports and exports must use unified `@mms/shared` transfer schemas (`createModuleTransferSchema`, `ModuleImportDialog`, `useModuleCsvImportActions`, `useModuleServerCsvExportActions`). Field Whitelist stripping of system metadata (`id`, `tenantId`, `createdAt`, etc.) and 1:1 bidirectional header symmetry are strictly required.
+- **Destructive Maintenance Jobs:** Sweeps, purges, and reconcilers are dry-run by default (`--apply` to mutate), honor `DRY_RUN` when scheduled, load the reference set before deleting, enforce an age floor, expose an env kill switch, and run under the leader lease. Deletion without a prior reference read is banned.
 
 ## 6. Security Boundaries & Soft-Delete Standards
 - **RLS & RBAC:** Enforce transaction-scoped RLS (`SET LOCAL app.current_tenant`) and `can('module.action')`. Omit unauthorized actions from DOM.

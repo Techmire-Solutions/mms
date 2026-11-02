@@ -1,5 +1,10 @@
-import { and, eq } from "drizzle-orm";
-import { dedupeTrimmedIds, getContactTags, type Contact } from "@mms/shared";
+import { and, eq, isNull } from "drizzle-orm";
+import {
+  dedupeTrimmedIds,
+  filterManualContactTags,
+  getContactTags,
+  type Contact,
+} from "@mms/shared";
 import { contactTags, contactPhones, contactEmails, contactAddresses } from "../schema.js";
 import { type TenantTransaction } from "../tenant-context.js";
 
@@ -32,12 +37,15 @@ export async function syncContactPersonalChildrenTx(
     );
   }
 
-  await tx
-    .delete(contactTags)
-    .where(
-      and(eq(contactTags.workspaceSubdomain, subdomain), eq(contactTags.contactId, contactId)),
-    );
-  const tagsToSave = getContactTags(contact);
+  await tx.delete(contactTags).where(
+    and(
+      eq(contactTags.workspaceSubdomain, subdomain),
+      eq(contactTags.contactId, contactId),
+      // System-managed rows are owned by the role-tag reconciler, never by a contact save.
+      isNull(contactTags.source),
+    ),
+  );
+  const tagsToSave = filterManualContactTags(getContactTags(contact));
   if (tagsToSave.length > 0) {
     const validTags = dedupeTrimmedIds(tagsToSave);
     if (validTags.length > 0) {
@@ -128,7 +136,7 @@ export async function bulkInsertContactPersonalChildrenTx(
   for (let i = 0; i < rawContacts.length; i++) {
     const c = rawContacts[i];
     const contactId = String(c.id);
-    const validTags = dedupeTrimmedIds(getContactTags(c));
+    const validTags = dedupeTrimmedIds(filterManualContactTags(getContactTags(c)));
     for (let idx = 0; idx < validTags.length; idx++) {
       allTags.push({
         id: `tag-${contactId}-${idx + 1}`,

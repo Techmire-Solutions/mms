@@ -65,6 +65,14 @@ export function contactRowToRecord(
     isSyed: row.isSyed,
     tags: tagsRows.map((t) => t.name),
     tag: tagsRows.map((t) => t.name).join(", "),
+    systemTags: tagsRows
+      .filter((t) => t.source === "student" || t.source === "faculty")
+      .map((t) => ({
+        name: t.name,
+        source: t.source as "student" | "faculty",
+        systemKey: String(t.systemKey ?? ""),
+        archived: Boolean(t.archived),
+      })),
     whatsappStatus: (row.whatsappStatus as Contact["whatsappStatus"]) ?? "unknown",
     phones: mapChildPhones(phones),
     emails: mapChildEmails(emails),

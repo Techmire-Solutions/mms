@@ -15,6 +15,9 @@ alwaysApply: false
   - Backend DB/RLS Integration: `pnpm --filter mms-backend run test:db` (requires live PostgreSQL).
   - Browser E2E: `pnpm test:e2e` (root) or `pnpm --filter e2e-tests exec playwright test tests/<spec>.spec.ts`.
 - **Deterministic Execution (Zero Skip Latches):** Banned: conditionally-skipping tests (`if (!isDbAvailable) return;`). Mocks use in-memory repository fakes with Fastify `inject()`. Real DB integration tests must fail if database infrastructure is unavailable.
+- **New-Endpoint Branch Coverage:** A new route/endpoint pins at least forbidden, invalid/malformed, guarded/skipped, and success outcomes; upload/media routes also pin the owning-action gate.
+- **Contract-Pinning UI Tests:** A changed hook or component gets a test that pins the new contract (lean recipient DTO, relative upload URL, post-save unlink), not just a render assertion.
+- **Skip Honesty:** A browser spec that self-skips must log its reason; it is reported as skipped/untested and can never be cited as passing evidence or close a finding.
 - **Assertion Specificity:** Banned: loose `toBeTruthy()`/`toBeFalsy()`/`toBeDefined()` on knowable primitives. Required: strict type checks, ISO timestamp regexes (`/^\d{4}-\d{2}-\d{2}T/`), exact object structures, and typed DOM instances (`toBeInstanceOf(HTMLInputElement)`).
 - **Hermetic & Silent Output:** Spies on `console.error` and `LOG_LEVEL = 'silent'` for negative tests. Hermetic runs require `clearMocks: true`, `restoreMocks: true`, and explicit fixture teardown.
 
@@ -107,3 +110,9 @@ The per-workspace `thresholds` blocks are the only authoritative floors — neve
 - **API Route & Serialization Integrity:** Validate Fastify route handlers, authentication/session cookies, CSRF guards, and response payload serialization against their corresponding `@mms/shared` contract schemas.
 - **Zero Regression Suite:** Run the dependent subsystem suites (`pnpm --filter mms-backend run test:db` and `pnpm test`) to guarantee modifications do not introduce regressions across related modules.
 
+## 13. Derived Projection & Concurrency Testing
+- **Lifecycle matrix:** Every system-managed projection needs real-DB coverage for add, rename/relabel, end/unlink, soft-delete/restore, and archived naming. Event-only or import-only paths are not enough.
+- **Batch-once evidence:** Assert a batch writer calls the reconciler exactly once with the successfully written ids, and that no per-row reconcile runs inside the loop.
+- **Concurrency:** Run two reconciles for the same entity concurrently and assert both succeed with exactly one row per system key; per-entity advisory locking is the required safeguard.
+- **Dates:** Supply an explicit workspace-local day to date-window helpers and add a UTC-boundary case; never derive business-day state from the server clock.
+- **Mock boundaries:** A fake transaction must either support every method the reconciler calls or cause a deliberate no-op. Half-queryable doubles hide production SQL failures and are banned.

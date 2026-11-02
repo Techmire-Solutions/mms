@@ -12,6 +12,17 @@ import { triggerFileDownload } from "@/lib/download";
 import { notify } from "@/lib/notify";
 import { startServerModuleCsvImport } from "@/lib/backgroundJobs/startServerModuleCsvImport";
 
+export interface ModuleCsvImportProgress {
+  current: number;
+  total: number;
+}
+
+/** Custom submitter for modules whose import route expects a body other than `{ rows }`. */
+export type ModuleCsvImportSubmitRows<TRow = Record<string, unknown>> = (
+  rows: TRow[],
+  onProgress: (progress: ModuleCsvImportProgress) => void,
+) => Promise<BackgroundJobRecord>;
+
 export interface UseModuleCsvImportActionsOptions<TRow = Record<string, unknown>> {
   apiPath: string;
   moduleId?: string;
@@ -19,13 +30,14 @@ export interface UseModuleCsvImportActionsOptions<TRow = Record<string, unknown>
   mappings?: CsvImportFieldMapping<TRow>[];
   templateColumns?: CsvTemplateColumn[];
   defaultLabel?: string;
+  submitRows?: ModuleCsvImportSubmitRows<TRow>;
   onSuccess?: () => void;
 }
 
 export function useModuleCsvImportActions<TRow = Record<string, unknown>>(
   options: UseModuleCsvImportActionsOptions<TRow>,
 ) {
-  const { apiPath, schema, onSuccess } = options;
+  const { apiPath, schema, submitRows, onSuccess } = options;
   const effectiveModuleId = schema?.moduleId ?? options.moduleId ?? "module";
   const effectiveMappings = useMemo(
     () => schema?.importMappings ?? options.mappings ?? [],
@@ -93,18 +105,20 @@ export function useModuleCsvImportActions<TRow = Record<string, unknown>>(
     setProgress({ current: 0, total: parsedRows.length });
 
     try {
-      const job = await startServerModuleCsvImport({
-        path: apiPath,
-        body: {
-          rows: parsedRows,
-          label: defaultLabel,
-        },
-        onProgress: (updatedJob) => {
-          if (updatedJob.progress) {
-            setProgress(updatedJob.progress);
-          }
-        },
-      });
+      const job = submitRows
+        ? await submitRows(parsedRows, (nextProgress) => setProgress(nextProgress))
+        : await startServerModuleCsvImport({
+            path: apiPath,
+            body: {
+              rows: parsedRows,
+              label: defaultLabel,
+            },
+            onProgress: (updatedJob) => {
+              if (updatedJob.progress) {
+                setProgress(updatedJob.progress);
+              }
+            },
+          });
 
       setCompletedJob(job);
       notify.success(job.label || `Successfully imported ${effectiveModuleId}`);
@@ -115,7 +129,7 @@ export function useModuleCsvImportActions<TRow = Record<string, unknown>>(
     } finally {
       setIsImporting(false);
     }
-  }, [apiPath, defaultLabel, effectiveModuleId, isImporting, onSuccess, parsedRows]);
+  }, [apiPath, defaultLabel, effectiveModuleId, isImporting, onSuccess, parsedRows, submitRows]);
 
   return {
     isOpen,

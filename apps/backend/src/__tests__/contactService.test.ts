@@ -101,10 +101,6 @@ function contact(overrides: Partial<Contact>): Contact {
   };
 }
 
-function link(contactId: string, relationship: string) {
-  return expect.objectContaining({ contactId, relationship });
-}
-
 function inferredLink(contactId: string, relationship: string, inferenceDepth?: number) {
   return expect.objectContaining({
     contactId,
@@ -267,12 +263,13 @@ describe("contactService relationship reciprocal mapping", () => {
 
     expect(mockSaveContact).toHaveBeenCalledWith("demo", expect.objectContaining({ id: "a" }));
     expect(mockFindContactsByIds).toHaveBeenCalledWith("demo", ["b"]);
-    expect(mockBulkSaveContacts).toHaveBeenCalledWith("demo", [
+    expect(mockSaveContact).toHaveBeenCalledWith(
+      "demo",
       expect.objectContaining({
         id: "b",
         relationshipContacts: expect.arrayContaining([inferredLink("a", "Child", 1)]),
       }),
-    ]);
+    );
     expect(mockInvalidateDuplicateScanCache).toHaveBeenCalled();
   });
 
@@ -295,12 +292,13 @@ describe("contactService relationship reciprocal mapping", () => {
 
     await upsertContact(source);
 
-    expect(mockBulkSaveContacts).toHaveBeenCalledWith("demo", [
+    expect(mockSaveContact).toHaveBeenCalledWith(
+      "demo",
       expect.objectContaining({
         id: "b",
         relationshipContacts: expect.arrayContaining([inferredLink("a", "Wife", 1)]),
       }),
-    ]);
+    );
   });
 
   it("uses explicit custom pairs override for reciprocal link creation in tests", async () => {
@@ -324,15 +322,16 @@ describe("contactService relationship reciprocal mapping", () => {
       { id: "m1", forward: "Mentor", inverse: "Mentee" },
     ]);
 
-    expect(mockBulkSaveContacts).toHaveBeenCalledWith("demo", [
+    expect(mockSaveContact).toHaveBeenCalledWith(
+      "demo",
       expect.objectContaining({
         id: "b",
         relationshipContacts: expect.arrayContaining([inferredLink("a", "Mentee", 1)]),
       }),
-    ]);
+    );
   });
 
-  it("updates the reciprocal relationship link when editing an existing contact", async () => {
+  it("leaves a manual reciprocal link untouched when editing an existing contact", async () => {
     const existingSource = contact({
       id: "a",
       name: "Ahmed Khan",
@@ -357,15 +356,12 @@ describe("contactService relationship reciprocal mapping", () => {
       relationshipContacts: [{ contactId: "b", relationship: "Child" }],
     });
 
-    expect(mockBulkSaveContacts).toHaveBeenCalledWith("demo", [
-      expect.objectContaining({
-        id: "b",
-        relationshipContacts: expect.arrayContaining([
-          inferredLink("a", "Parent", 1),
-          link("c", "Sister"),
-        ]),
-      }),
-    ]);
+    // The target already has a user-authored link; inference must not relabel it.
+    const targetWrites = mockSaveContact.mock.calls.filter(
+      (call) => (call[1] as Contact | undefined)?.id === "b",
+    );
+    expect(targetWrites).toHaveLength(0);
+    expect(target.relationshipContacts?.[0]?.relationship).toBe("Other");
   });
 
   it("maps guardian and husband reciprocal terms from the system catalog", async () => {
@@ -386,16 +382,20 @@ describe("contactService relationship reciprocal mapping", () => {
 
     await upsertContact(source);
 
-    expect(mockBulkSaveContacts).toHaveBeenCalledWith("demo", [
+    expect(mockSaveContact).toHaveBeenCalledWith(
+      "demo",
       expect.objectContaining({
         id: "c",
         relationshipContacts: expect.arrayContaining([inferredLink("a", "Wife", 1)]),
       }),
+    );
+    expect(mockSaveContact).toHaveBeenCalledWith(
+      "demo",
       expect.objectContaining({
         id: "d",
         relationshipContacts: expect.arrayContaining([inferredLink("a", "Dependent", 1)]),
       }),
-    ]);
+    );
   });
 
   it("skips reciprocal inference for labels outside the system catalog", async () => {
@@ -413,7 +413,9 @@ describe("contactService relationship reciprocal mapping", () => {
 
     await upsertContact(source);
 
-    expect(mockBulkSaveContacts).not.toHaveBeenCalled();
+    // Only the source contact is saved; no inferred target write happens.
+    expect(mockSaveContact).toHaveBeenCalledTimes(1);
+    expect(mockSaveContact).toHaveBeenCalledWith("demo", expect.objectContaining({ id: "a" }));
   });
 
   it("writes reciprocal links from legacy relationships[] as well as relationshipContacts", async () => {
@@ -430,12 +432,13 @@ describe("contactService relationship reciprocal mapping", () => {
 
     await upsertContact(source);
 
-    expect(mockBulkSaveContacts).toHaveBeenCalledWith("demo", [
+    expect(mockSaveContact).toHaveBeenCalledWith(
+      "demo",
       expect.objectContaining({
         id: "b",
         relationshipContacts: expect.arrayContaining([inferredLink("a", "Child", 1)]),
       }),
-    ]);
+    );
   });
 
   it("merges PUT updates onto the existing contact without wiping collections", async () => {

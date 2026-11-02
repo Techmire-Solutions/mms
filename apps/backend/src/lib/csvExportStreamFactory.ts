@@ -66,6 +66,12 @@ export async function* generateCsvStreamChunks<TRow, TCol extends { label: strin
   let currentCursor: string | undefined = undefined;
   for (;;) {
     const pageResult = await loadPage(page, batchSize, currentCursor);
+    if (pageResult.hasMore && pageResult.rows.length === 0) {
+      throw new Error(
+        `CSV export pager reported hasMore=true with zero rows on page ${page}; ` +
+          "refusing to loop forever. Return hasMore=false or the next rows.",
+      );
+    }
     if (pageResult.rows.length > 0) {
       yield* yieldDataChunks(pageResult.rows, columns, batchSize);
       exported += pageResult.rows.length;
@@ -73,8 +79,11 @@ export async function* generateCsvStreamChunks<TRow, TCol extends { label: strin
     if (!pageResult.hasMore) {
       return { count: exported, filename };
     }
-    const lastRow = pageResult.rows[pageResult.rows.length - 1] as { id?: unknown } | undefined;
-    currentCursor = pageResult.nextCursor ?? (lastRow?.id ? String(lastRow.id) : undefined);
+    // Cursor paging only exists when the pager produces `nextCursor` (id keyset
+    // mode). Without it, keep OFFSET paging (`page += 1`) so the caller's sort
+    // stays in force — advancing the cursor from the last row's id would switch
+    // the next page to `ORDER BY id` and silently drop rows that sort before it.
+    currentCursor = pageResult.nextCursor;
     page += 1;
   }
 }

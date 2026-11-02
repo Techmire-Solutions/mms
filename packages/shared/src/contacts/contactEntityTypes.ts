@@ -1,5 +1,6 @@
 import { z } from "zod";
 import type { SerializedEntityAuditFields } from "../core/softDelete.js";
+import type { ContactSystemTag } from "./contactSystemTags.js";
 
 /** Status of WhatsApp registration checks for phone numbers. */
 export const WHATSAPP_STATUS_VALUES = [
@@ -173,6 +174,8 @@ export interface Contact extends SerializedEntityAuditFields {
   isSyed?: boolean;
   tag?: string;
   tags?: string[];
+  /** Read-only metadata for module-managed tags (`Student`, `faculty-Teacher`, …). */
+  systemTags?: ContactSystemTag[];
   avatar?: string | null;
   notes?: string;
 

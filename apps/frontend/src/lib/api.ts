@@ -91,16 +91,20 @@ type TsrHookOptions = Record<string, any>;
 // spreads (index signatures do not spread) — see ADR-010.
 // eslint-disable-next-line @typescript-eslint/no-explicit-any -- single documented ts-rest type escape (ADR-010)
 type TsrHookResult = any;
-type TsrHooksContainer = Record<
-  string,
-  Record<
-    string,
-    {
-      useQuery: (options: TsrHookOptions) => TsrHookResult;
-      useMutation: (options?: TsrHookOptions) => TsrHookResult;
-    }
-  >
->;
+/**
+ * A hook entry also acts as a namespace: ts-rest contracts may nest routers
+ * (e.g. `contacts.picker.search`), and `recursiveInit` in
+ * `@ts-rest/react-query` builds matching nested hook containers at runtime.
+ * The index signature keeps that depth expressible without per-call casts.
+ */
+interface TsrHookGroupNamespace {
+  [routeOrGroup: string]: TsrHookGroup;
+}
+type TsrHookGroup = TsrHookGroupNamespace & {
+  useQuery: (options: TsrHookOptions) => TsrHookResult;
+  useMutation: (options?: TsrHookOptions) => TsrHookResult;
+};
+type TsrHooksContainer = Record<string, Record<string, TsrHookGroup>>;
 
 export const tsrClient = initTsrReactQuery(rootContract, {
   baseUrl: typeof window !== "undefined" ? window.location.origin : "",
