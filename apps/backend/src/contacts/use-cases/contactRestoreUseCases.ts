@@ -6,9 +6,10 @@ import { broadcastCollection } from "../../lib/livePush.js";
 import { ConflictError } from "../../lib/httpErrors.js";
 import { isUniqueViolation } from "../../lib/pgErrors.js";
 import { assertContactUniqueFields, ContactUniqueFieldError } from "./contactValidationUseCases.js";
+import { loadContactWriteContext } from "./contactWriteContext.js";
 import type { ContactsRepository } from "../repository/contactsRepository.js";
 import { contactsRepository } from "../repository/contactsRepositoryAdapter.js";
-import { emitOutboxEvent } from "../../services/outboxEventService.js";
+import { emitOutboxEvent, emitOutboxEvents } from "../../services/outboxEventService.js";
 import { recordModernAuditEvent } from "../../services/auditTrailService.js";
 
 export interface ContactBulkRestoreConflict {
@@ -27,6 +28,7 @@ export async function restoreContactById(
   userId?: string,
   repo: ContactsRepository = contactsRepository,
 ): Promise<Contact | null> {
+  const context = await loadContactWriteContext();
   const restored = await runInTransaction(async () => {
     const tenant = getRequestTenant();
     if (!tenant) return null;
@@ -63,7 +65,7 @@ export async function restoreContactById(
       updatedAt: now,
     };
 
-    await assertContactUniqueFields(tenant, next, "en", [], repo);
+    await assertContactUniqueFields(tenant, next, { language: "en", context }, [], repo);
 
     // 2. Persist with 23505 race condition protection
     try {
@@ -113,6 +115,7 @@ export async function bulkRestoreContacts(
   userId?: string,
   repo: ContactsRepository = contactsRepository,
 ): Promise<ContactBulkRestoreResult> {
+  const context = await loadContactWriteContext();
   const result = await runInTransaction(async () => {
     const tenant = getRequestTenant();
     if (!tenant) return { succeeded: 0, failed: ids.length, conflicts: [] };
@@ -148,6 +151,7 @@ export async function bulkRestoreContacts(
           {
             language: "en",
             additionalPeers: accepted,
+            context,
           },
           [],
           repo,
@@ -184,17 +188,22 @@ export async function bulkRestoreContacts(
       }
       await invalidateDuplicateScanCache();
 
-      // Emit CDC outbox + audit for each successfully restored contact
+      // Emit CDC outbox (one batched insert for the whole restore) + per-row audit
       const restoredAt = new Date().toISOString();
+      await emitOutboxEvents(
+        toSave.map((c) => ({
+          type: "entity.restored" as const,
+          payload: {
+            entityType: "contacts",
+            entityId: String(c.id),
+            tenantId: tenant,
+            restoredAt,
+            restoredBy: userId ?? "unknown",
+            version: Date.now(),
+          },
+        })),
+      );
       for (const c of toSave) {
-        await emitOutboxEvent("entity.restored", {
-          entityType: "contacts",
-          entityId: String(c.id),
-          tenantId: tenant,
-          restoredAt,
-          restoredBy: userId ?? "unknown",
-          version: Date.now(),
-        });
         await recordModernAuditEvent({
           workspaceSubdomain: tenant,
           tableName: "contacts",

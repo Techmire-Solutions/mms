@@ -16,6 +16,37 @@ function createSelectMock(rows: Array<{ id: string }>) {
   return { select, from, where };
 }
 
+/** Flattens a Drizzle SQL tree into readable text (fragments + bound values). */
+function collectSqlText(value: unknown, parts: string[] = []): string {
+  if (value == null) return parts.join(" ");
+  if (typeof value === "string") {
+    parts.push(value);
+    return parts.join(" ");
+  }
+  if (Array.isArray(value)) {
+    for (const entry of value) collectSqlText(entry, parts);
+    return parts.join(" ");
+  }
+  const record = value as Record<string, unknown>;
+  if (Array.isArray(record.queryChunks)) {
+    collectSqlText(record.queryChunks, parts);
+    return parts.join(" ");
+  }
+  if (Array.isArray(record.value)) {
+    parts.push((record.value as unknown[]).map((entry) => String(entry)).join(""));
+    return parts.join(" ");
+  }
+  if (typeof record.value === "string") {
+    parts.push(record.value);
+    return parts.join(" ");
+  }
+  if (typeof record.name === "string") {
+    parts.push(record.name);
+    return parts.join(" ");
+  }
+  return parts.join(" ");
+}
+
 import {
   findContactDuplicateBlockedIds,
   findContactDuplicateCandidateIds,
@@ -39,6 +70,13 @@ describe("contactRepositoryDuplicates (SQL)", () => {
 
     expect(ids).toEqual(["a", "b"]);
     expect(mockTxExecute).toHaveBeenCalledTimes(1);
+    // Key spaces are namespaced: a name that textually matches another
+    // contact's phone digits must not land in the same duplicate bucket.
+    const queryText = collectSqlText(mockTxExecute.mock.calls[0]?.[0]).toUpperCase();
+    expect(queryText).toContain("'P:'");
+    expect(queryText).toContain("'E:'");
+    expect(queryText).toContain("'C:'");
+    expect(queryText).toContain("'N:'");
   });
 
   it("findContactDuplicateBlockedIds returns empty when the query yields no rows", async () => {

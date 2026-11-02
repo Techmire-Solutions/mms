@@ -56,6 +56,14 @@ export const CONTACT_LIST_COLUMNS = {
   deletedAt: contacts.deletedAt,
   deletedBy: contacts.deletedBy,
   deletionReason: contacts.deletionReason,
+  // Restore provenance + text columns the list rows hydrate into the record;
+  // omitting them left `notes`/`aiSummary` undefined and lost trash restore
+  // evidence while the `$inferSelect` cast hid the drift from the compiler.
+  restoredAt: contacts.restoredAt,
+  restoredBy: contacts.restoredBy,
+  deletedWithCascade: contacts.deletedWithCascade,
+  notes: contacts.notes,
+  aiSummary: contacts.aiSummary,
   createdAt: contacts.createdAt,
   updatedAt: contacts.updatedAt,
   createdBy: contacts.createdBy,
@@ -77,7 +85,7 @@ export async function listContactsPage(
 
   if (includeIds && includeIds.length === 0) {
     const page = Math.max(1, query.page ?? 1);
-    const limit = Math.min(Math.max(1, query.limit ?? 50), 500);
+    const limit = Math.min(Math.max(1, query.limit ?? 50), 100);
     return { contacts: [], total: 0, page, limit, hasMore: false };
   }
 

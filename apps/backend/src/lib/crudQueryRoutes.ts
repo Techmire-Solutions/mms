@@ -11,7 +11,7 @@ import {
   linkedContactIdsQuerySchema,
 } from "@mms/shared";
 import { canReadCollection, canWriteCollection } from "./rbacCanHelpers.js";
-import { sendForbidden, sendDatabaseError } from "./httpErrors.js";
+import { sendForbidden, sendDatabaseError, sendIfHttpDomainError } from "./httpErrors.js";
 import { parseRequest, replyValidationError } from "./zodRequest.js";
 import { getRequestTenant } from "./tenantContext.js";
 import { redisGet, redisSet, redisKeys } from "./redis.js";
@@ -169,6 +169,10 @@ export function registerWidgetAggregatesRoute(
       const results = await loadAggregatesFn(parsed.data.widgets, request);
       return reply.send({ results });
     } catch (err) {
+      // Domain rejections (e.g. an unsupported widget field) must reach the
+      // client as 4xx instead of being flattened into a generic 500.
+      const domainReply = sendIfHttpDomainError(reply, err);
+      if (domainReply) return domainReply;
       request.log.error(err, `Failed to load ${errorMessagePrefix} widget aggregates`);
       return sendDatabaseError(reply, `Failed to load ${errorMessagePrefix} widget aggregates`);
     }

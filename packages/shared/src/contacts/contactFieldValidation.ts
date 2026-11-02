@@ -23,14 +23,18 @@ const TEXT_LIKE_FIELD_TYPES: ReadonlySet<FieldDefinition["type"]> = new Set([
 ]);
 
 function isValidOption(options: unknown[], targetValue: string, fieldKey?: string): boolean {
-  // Relationship labels are the fixed system catalog (prefs pairs are hardcoded).
+  const normalizedTarget = targetValue.trim().toLowerCase();
+  const matchesConfiguredOption = options.some(
+    (option) => typeof option === "string" && option.trim().toLowerCase() === normalizedTarget,
+  );
+  if (matchesConfiguredOption) return true;
+  // Relationship labels: tenant Setup options are authoritative, and the system
+  // pair catalog keeps legacy/imported labels (e.g. "Father") valid instead of
+  // making an existing contact unsavable.
   if (fieldKey === "relationship") {
     return isAllowedRelationshipLabel(targetValue);
   }
-  const normalizedTarget = targetValue.trim().toLowerCase();
-  return options.some(
-    (option) => typeof option === "string" && option.trim().toLowerCase() === normalizedTarget,
-  );
+  return false;
 }
 
 /** Absolute URL, scheme-less domain/path, or @handle / username. */

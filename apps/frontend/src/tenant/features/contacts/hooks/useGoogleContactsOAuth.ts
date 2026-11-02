@@ -1,5 +1,6 @@
 import { useCallback, useEffect, type Dispatch, type SetStateAction } from "react";
 import {
+  createGoogleContactsOAuthState,
   GOOGLE_CONTACTS_OAUTH_MESSAGE,
   takeGoogleContactsOAuthCode,
 } from "@/lib/contacts/googleContactsOAuth";
@@ -79,7 +80,7 @@ export function useGoogleContactsOAuth({
     if (!canWrite || !config.clientId) return;
     const redirectUri = window.location.origin + "/contacts";
     const scope = encodeURIComponent("https://www.googleapis.com/auth/contacts.readonly");
-    const state = encodeURIComponent(JSON.stringify({ source: "google_contacts" }));
+    const state = createGoogleContactsOAuthState();
     const url = `https://accounts.google.com/o/oauth2/v2/auth?client_id=${config.clientId}&redirect_uri=${encodeURIComponent(
       redirectUri,
     )}&response_type=code&scope=${scope}&access_type=offline&state=${state}&prompt=consent`;

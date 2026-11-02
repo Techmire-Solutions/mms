@@ -6,7 +6,7 @@ import { broadcastCollection } from "../../lib/livePush.js";
 import type { ContactsRepository } from "../repository/contactsRepository.js";
 
 import { contactsRepository } from "../repository/contactsRepositoryAdapter.js";
-import { emitOutboxEvent } from "../../services/outboxEventService.js";
+import { emitOutboxEvents } from "../../services/outboxEventService.js";
 import { recordModernAuditEvent } from "../../services/auditTrailService.js";
 import { buildContactForensicSnapshot } from "../../services/forensicSnapshotService.js";
 
@@ -79,19 +79,25 @@ export async function bulkSoftDeleteContacts(
     if (outcome.succeeded > 0) {
       await invalidateDuplicateScanCache();
 
-      // Emit CDC outbox + audit for each archived contact within the same tx
+      // CDC outbox is one batched insert (+ one NOTIFY) for the whole archive;
+      // audit stays per row because it appends to a sharded hash chain.
       if (toDeleteContacts.length > 0) {
+        await emitOutboxEvents(
+          toDeleteContacts.map((c) => ({
+            type: "entity.soft_deleted" as const,
+            payload: {
+              entityType: "contacts",
+              entityId: String(c.id),
+              tenantId: tenant,
+              deletedAt: (c.deletedAt as string | undefined) ?? now,
+              deletedBy,
+              deletionReason: c.deletionReason,
+              version: Date.now(),
+              snapshot: buildContactForensicSnapshot(c),
+            },
+          })),
+        );
         for (const c of toDeleteContacts) {
-          await emitOutboxEvent("entity.soft_deleted", {
-            entityType: "contacts",
-            entityId: String(c.id),
-            tenantId: tenant,
-            deletedAt: (c.deletedAt as string | undefined) ?? now,
-            deletedBy,
-            deletionReason: c.deletionReason,
-            version: Date.now(),
-            snapshot: buildContactForensicSnapshot(c),
-          });
           await recordModernAuditEvent({
             workspaceSubdomain: tenant,
             tableName: "contacts",
@@ -103,17 +109,20 @@ export async function bulkSoftDeleteContacts(
         }
       } else {
         // Fallback for mocked repos where findByIds is not populated
-        for (const id of uniqueIds) {
-          await emitOutboxEvent("entity.soft_deleted", {
-            entityType: "contacts",
-            entityId: String(id),
-            tenantId: tenant,
-            deletedAt: now,
-            deletedBy,
-            deletionReason: trimmedReason || undefined,
-            version: Date.now(),
-          });
-        }
+        await emitOutboxEvents(
+          uniqueIds.map((id) => ({
+            type: "entity.soft_deleted" as const,
+            payload: {
+              entityType: "contacts",
+              entityId: String(id),
+              tenantId: tenant,
+              deletedAt: now,
+              deletedBy,
+              deletionReason: trimmedReason || undefined,
+              version: Date.now(),
+            },
+          })),
+        );
       }
     }
 

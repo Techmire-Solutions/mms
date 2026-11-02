@@ -163,6 +163,23 @@ describe("module access guard (direct API requests)", () => {
     }
   });
 
+  it("denies contacts before the handler when the role lacks contacts.read", async () => {
+    // `teacher` has no `contacts.read`, so the gate rejects before the contacts
+    // list use case runs (no DB access needed to prove this).
+    const res = await call("GET", "/api/contacts", teacherToken);
+    expect(res.statusCode).toBe(403);
+    expect(res.json()).toMatchObject({ code: "PERMISSION_DENIED", moduleId: "contacts" });
+  });
+
+  it("keeps the required contacts module enabled even when a tenant disables it", async () => {
+    mockModuleRow.mockResolvedValue({ grantedModules: null, enabledModules: { contacts: false } });
+    const res = await call("GET", "/api/contacts", teacherToken);
+    // Contacts is a required core module: the denial is the role permission, never
+    // MODULE_DISABLED — matching `buildModuleAvailability`'s required semantics.
+    expect(res.statusCode).toBe(403);
+    expect(res.json()).toMatchObject({ code: "PERMISSION_DENIED", moduleId: "contacts" });
+  });
+
   it("rejects a token from another workspace without reading module data", async () => {
     const res = await call("GET", "/api/students", (app) =>
       signTenantToken(app, { role: "admin", id: "u-admin", workspaceSubdomain: "other" }),

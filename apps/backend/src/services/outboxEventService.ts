@@ -129,3 +129,36 @@ export async function emitOutboxEvent(
     }
   }
 }
+
+export interface OutboxBatchEvent {
+  type: OutboxEventType;
+  payload: OutboxPayload;
+}
+
+/**
+ * Batched variant of {@link emitOutboxEvent}: one multi-row INSERT and one
+ * `NOTIFY` for the whole batch instead of a round trip per row.
+ *
+ * Bulk module operations (e.g. contact soft-delete/restore) previously emitted
+ * one insert **plus** one NOTIFY per row while holding the write transaction.
+ * Audit rows deliberately stay per-row: `recordModernAuditEvent` appends to a
+ * sharded hash chain, so batching it would break the chain.
+ */
+export async function emitOutboxEvents(events: readonly OutboxBatchEvent[]): Promise<void> {
+  if (events.length === 0) return;
+  const rows = events.map(({ type, payload }) => ({
+    workspaceSubdomain: payload.tenantId,
+    eventType: type,
+    entityType: payload.entityType,
+    entityId: payload.entityId,
+    payload,
+  }));
+
+  const db = activeDb();
+  await db.insert(outboxEvents).values(rows);
+  try {
+    await db.execute(sql`NOTIFY mms_outbox_events, 'new_event'`);
+  } catch {
+    // Non-blocking fallback if NOTIFY is unsupported in testing or mock transactions
+  }
+}

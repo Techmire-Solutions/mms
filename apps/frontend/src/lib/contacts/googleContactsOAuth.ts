@@ -1,23 +1,87 @@
 export const GOOGLE_CONTACTS_OAUTH_MESSAGE = "mms-google-contacts-oauth" as const;
 const GOOGLE_CONTACTS_OAUTH_PENDING_KEY = "mms_pending_google_oauth_code";
 const GOOGLE_CONTACTS_OPEN_SYNC_SETUP_KEY = "mms_open_contacts_sync_setup";
+const GOOGLE_CONTACTS_OAUTH_STATE_KEY = "mms_google_google_oauth_state";
+/** A stale authorization code is useless after this window; also bounds replay. */
+const OAUTH_STATE_TTL_MS = 10 * 60 * 1000;
 
-function parseGoogleContactsOAuthState(stateRaw: string | null): boolean {
-  if (!stateRaw) return false;
+interface StoredOAuthState {
+  nonce: string;
+  createdAt: number;
+}
+
+interface ParsedOAuthState {
+  source?: string;
+  nonce?: string;
+}
+
+function parseOAuthState(stateRaw: string | null): ParsedOAuthState | null {
+  if (!stateRaw) return null;
   try {
-    const state = JSON.parse(decodeURIComponent(stateRaw)) as { source?: string };
-    return state.source === "google_contacts";
+    const parsed = JSON.parse(decodeURIComponent(stateRaw)) as ParsedOAuthState;
+    return parsed && typeof parsed === "object" ? parsed : null;
   } catch {
-    return false;
+    return null;
   }
 }
 
-/** Read OAuth `code` from the current URL when returning from Google (Contacts redirect URI). */
+/**
+ * Builds the OAuth `state` for a new connect attempt. A per-attempt nonce is
+ * stored in `sessionStorage`; the callback only accepts a code whose echoed
+ * nonce matches it. A crafted `?code=…&state=…` link therefore cannot bind an
+ * attacker's Google account to the victim's session, because the attacker
+ * cannot know the victim's nonce.
+ */
+export function createGoogleContactsOAuthState(): string {
+  const nonce =
+    typeof crypto !== "undefined" && typeof crypto.randomUUID === "function"
+      ? crypto.randomUUID()
+      : `${Date.now()}-${Math.random().toString(36).slice(2)}`;
+  try {
+    sessionStorage.setItem(
+      GOOGLE_CONTACTS_OAUTH_STATE_KEY,
+      JSON.stringify({ nonce, createdAt: Date.now() } satisfies StoredOAuthState),
+    );
+  } catch {
+    // Private-mode / disabled storage: the callback will simply be rejected.
+  }
+  return encodeURIComponent(JSON.stringify({ source: "google_contacts", nonce }));
+}
+
+/** Reads and clears the stored nonce — one authorization code per attempt. */
+function consumeStoredOAuthNonce(): string | null {
+  let raw: string | null = null;
+  try {
+    raw = sessionStorage.getItem(GOOGLE_CONTACTS_OAUTH_STATE_KEY);
+    sessionStorage.removeItem(GOOGLE_CONTACTS_OAUTH_STATE_KEY);
+  } catch {
+    return null;
+  }
+  if (!raw) return null;
+  try {
+    const stored = JSON.parse(raw) as Partial<StoredOAuthState>;
+    if (typeof stored.nonce !== "string" || typeof stored.createdAt !== "number") return null;
+    if (Date.now() - stored.createdAt > OAUTH_STATE_TTL_MS) return null;
+    return stored.nonce;
+  } catch {
+    return null;
+  }
+}
+
+/**
+ * Read OAuth `code` from the current URL when returning from Google (Contacts
+ * redirect URI). Requires a matching, unexpired `state` nonce.
+ */
 export function readGoogleContactsOAuthCodeFromUrl(): string | null {
   if (typeof window === "undefined") return null;
   const params = new URLSearchParams(window.location.search);
   const code = params.get("code");
-  if (!code || !parseGoogleContactsOAuthState(params.get("state"))) return null;
+  const state = parseOAuthState(params.get("state"));
+  // Only a real callback consumes the pending nonce: an unrelated navigation to
+  // /contacts must not clear an in-flight connect attempt.
+  if (!code || !state || state.source !== "google_contacts") return null;
+  const expectedNonce = consumeStoredOAuthNonce();
+  if (!expectedNonce || state.nonce !== expectedNonce) return null;
   return code;
 }
 

@@ -62,6 +62,7 @@ vi.mock("../db/database.js", () => ({
 
 vi.mock("../services/outboxEventService.js", () => ({
   emitOutboxEvent: vi.fn().mockResolvedValue(undefined),
+  emitOutboxEvents: vi.fn().mockResolvedValue(undefined),
 }));
 
 vi.mock("../services/auditTrailService.js", () => ({
@@ -200,7 +201,7 @@ describe("contactService relationship reciprocal mapping", () => {
     expect(mockAssertContactUniqueFields).toHaveBeenCalledWith(
       "demo",
       expect.objectContaining({ id: "c1", deletedAt: undefined }),
-      "en",
+      expect.objectContaining({ language: "en" }),
       [],
       expect.anything(),
     );

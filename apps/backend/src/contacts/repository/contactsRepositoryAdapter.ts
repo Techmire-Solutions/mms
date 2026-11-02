@@ -7,7 +7,6 @@ import {
   saveContact,
   bulkSaveContacts,
   bulkSoftDeleteContactsSql,
-  bulkRestoreContactsSql,
   findExistingNormalizedContactNames,
   findActiveContactsMatchingUniqueValues,
   findContactDuplicateCandidateIds,
@@ -42,7 +41,6 @@ function createContactsRepository(): ContactsRepository {
     bulkSave: (tenant, contacts) => bulkSaveContacts(tenant, contacts),
     bulkSoftDelete: (tenant, ids, deletedBy, deletionReason) =>
       bulkSoftDeleteContactsSql(tenant, ids, deletedBy, deletionReason),
-    bulkRestore: (tenant, ids, userId) => bulkRestoreContactsSql(tenant, ids, userId),
     findExistingNormalizedContactNames: (tenant, names) =>
       findExistingNormalizedContactNames(tenant, names),
     findActiveContactsMatchingUniqueValues: (tenant, values, excludeIds) =>

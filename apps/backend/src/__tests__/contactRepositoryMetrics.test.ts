@@ -2,6 +2,11 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 import type { FieldConfig } from "@mms/shared";
 
 const mockWithTenantTransaction = vi.fn();
+const mockLoadWorkspaceRow = vi.fn();
+
+vi.mock("../db/repositories/workspaceRepositoryCache.js", () => ({
+  loadWorkspaceRow: (...args: unknown[]) => mockLoadWorkspaceRow(...args),
+}));
 
 vi.mock("../db/tenant-context.js", () => ({
   withTenant: (...args: unknown[]) => mockWithTenantTransaction(...args),
@@ -14,6 +19,45 @@ import {
   aggregateContactsMonthlyCreatedCounts,
   aggregateContactsReportAnalytics,
 } from "../db/repositories/contactRepositoryMetrics.js";
+
+/** Flattens a Drizzle SQL tree into readable text (SQL fragments + bound values). */
+function collectSqlText(value: unknown, parts: string[] = []): string {
+  if (value == null) return parts.join(" ");
+  if (typeof value === "string") {
+    parts.push(value);
+    return parts.join(" ");
+  }
+  if (Array.isArray(value)) {
+    for (const entry of value) collectSqlText(entry, parts);
+    return parts.join(" ");
+  }
+  const record = value as Record<string, unknown>;
+  if (Array.isArray(record.queryChunks)) {
+    collectSqlText(record.queryChunks, parts);
+    return parts.join(" ");
+  }
+  if (Array.isArray(record.value)) {
+    parts.push((record.value as unknown[]).map((entry) => String(entry)).join(""));
+    return parts.join(" ");
+  }
+  if (typeof record.value === "string") {
+    parts.push(record.value);
+    return parts.join(" ");
+  }
+  if (typeof record.name === "string") {
+    parts.push(record.name);
+    return parts.join(" ");
+  }
+  return parts.join(" ");
+}
+
+/** SQL text of the first `select({...})` projection the metrics query built. */
+function compiledSelectProjection(tx: { select: { mock: { calls: unknown[][] } } }): string {
+  const projection = (tx.select.mock.calls[0]?.[0] ?? {}) as Record<string, unknown>;
+  return Object.values(projection)
+    .map((column) => collectSqlText(column))
+    .join(" | ");
+}
 
 /** Chainable fake tx for the metrics queries (select → from → where terminal, plus groupBy for the monthly counts query). */
 function createChainableTx(rowsQueue: unknown[][]) {
@@ -44,6 +88,7 @@ const EMPTY_FIELD_CONFIG: FieldConfig = {
 describe("contactRepositoryMetrics (SQL)", () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    mockLoadWorkspaceRow.mockResolvedValue({ timezone: "Asia/Karachi" });
   });
 
   describe("aggregateContactsCommandMetrics", () => {
@@ -176,6 +221,27 @@ describe("contactRepositoryMetrics (SQL)", () => {
       expect(result[0]?.months[0]).toMatchObject({ count: 2 });
       expect(result[0]?.months[1]).toMatchObject({ count: 0 });
       expect(result[0]?.months[2]).toMatchObject({ count: 4 });
+    });
+
+    it("buckets months in the workspace timezone, not the DB session timezone", async () => {
+      const { tx } = createChainableTx([[]]);
+      runWithTx(tx);
+
+      await aggregateContactsMonthlyCreatedCounts("Demo", [2026], 3, "en");
+
+      const compiled = compiledSelectProjection(tx);
+      expect(compiled).toContain("AT TIME ZONE");
+      expect(compiled).toContain("Asia/Karachi");
+    });
+
+    it("falls back to UTC when the workspace has no timezone configured", async () => {
+      mockLoadWorkspaceRow.mockResolvedValue({ timezone: "" });
+      const { tx } = createChainableTx([[]]);
+      runWithTx(tx);
+
+      await aggregateContactsMonthlyCreatedCounts("Demo", [2026], 3, "en");
+
+      expect(compiledSelectProjection(tx)).toContain("UTC");
     });
   });
 });

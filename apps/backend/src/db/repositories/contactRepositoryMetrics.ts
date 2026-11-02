@@ -9,11 +9,15 @@ import {
 } from "@mms/shared";
 import { contacts } from "../schema.js";
 import { withTenantRead } from "../tenant-context.js";
+import { loadWorkspaceRow } from "./workspaceRepositoryCache.js";
 import { hasEmailSql, hasPhoneSql, hasWhatsAppSql } from "./contactRepositorySql.js";
 import {
   activeWorkspaceWhere,
   buildProfileIncompleteSql,
 } from "./contactRepositoryAggregateHelpers.js";
+
+/** Fallback when a workspace has no timezone configured. */
+const DEFAULT_TIMEZONE = "UTC";
 
 export async function aggregateContactsCommandMetrics(
   tenant: string,
@@ -132,30 +136,34 @@ export async function aggregateContactsMonthlyCreatedCounts(
   if (years.length === 0) return [];
   const subdomain = tenant.trim().toLowerCase();
   const monthLabels = formatContactsMonthLabels(language, monthCount);
+  // Calendar buckets belong to the workspace's calendar, not the DB session's
+  // (`mms-data-layer` §8.3): `created_at` is a timestamptz, so converting it to
+  // a local wall-clock `timestamp` first keeps a 01:00 Karachi save in the
+  // month it actually happened.
+  const workspaceTimezone =
+    (await loadWorkspaceRow(subdomain))?.timezone?.trim() || DEFAULT_TIMEZONE;
+  const createdAtLocal = sql`(${contacts.createdAt} AT TIME ZONE ${workspaceTimezone})`;
 
   return withTenantRead(subdomain, async (tx) => {
     // Single grouped query over all requested years (one scan) instead of one
     // GROUP BY query per year inside a loop → eliminates the per-year N+1.
     const rows = await tx
       .select({
-        year: sql<number>`extract(year from ${contacts.createdAt})::int`,
-        month: sql<string>`to_char(${contacts.createdAt}, 'MM')`,
+        year: sql<number>`extract(year from ${createdAtLocal})::int`,
+        month: sql<string>`to_char(${createdAtLocal}, 'MM')`,
         count: sql<number>`count(*)::int`,
       })
       .from(contacts)
       .where(
         and(
           activeWorkspaceWhere(subdomain),
-          sql`extract(year from ${contacts.createdAt}) IN (${sql.join(
+          sql`extract(year from ${createdAtLocal}) IN (${sql.join(
             years.map((year) => sql`${year}`),
             sql`, `,
           )})`,
         ),
       )
-      .groupBy(
-        sql`extract(year from ${contacts.createdAt})`,
-        sql`to_char(${contacts.createdAt}, 'MM')`,
-      );
+      .groupBy(sql`extract(year from ${createdAtLocal})`, sql`to_char(${createdAtLocal}, 'MM')`);
 
     const byYearMonth = new Map<string, Map<string, number>>();
     for (const row of rows) {

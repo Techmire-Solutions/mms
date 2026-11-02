@@ -23,7 +23,7 @@ describe("buildCustomFieldSchema", () => {
     expect(schema.safeParse("").success).toBe(false);
   });
 
-  it("accepts only system catalog labels on relationship fields", () => {
+  it("accepts tenant-configured relationship options and the system catalog fallback", () => {
     const schema = buildCustomFieldSchema(
       field({
         key: "relationship",
@@ -33,10 +33,13 @@ describe("buildCustomFieldSchema", () => {
         options: ["Husband", "Wife", "Spouse"],
       }),
     );
+    // Configured in Setup → valid, even though it is not a system pair label.
     expect(schema.safeParse("Husband").success).toBe(true);
+    expect(schema.safeParse("Spouse").success).toBe(true);
+    // System pair catalog → still valid so legacy/imported values stay savable.
     expect(schema.safeParse("Parent").success).toBe(true);
+    // Neither configured nor in the catalog.
     expect(schema.safeParse("Mentor").success).toBe(false);
-    expect(schema.safeParse("Spouse").success).toBe(false);
   });
 
   it("rejects unlisted options for non-relationship select fields", () => {

@@ -25,6 +25,7 @@ vi.mock("../lib/livePush.js", () => ({
 
 vi.mock("../services/outboxEventService.js", () => ({
   emitOutboxEvent: vi.fn().mockResolvedValue(undefined),
+  emitOutboxEvents: vi.fn().mockResolvedValue(undefined),
 }));
 
 vi.mock("../services/auditTrailService.js", () => ({
@@ -259,6 +260,21 @@ describe("createContactsUseCases (DI composition root)", () => {
     ).rejects.toBeInstanceOf(ContactPermissionError);
     expect(mockCanDeleteContacts).toHaveBeenCalled();
     expect(repo.save).not.toHaveBeenCalled();
+  });
+
+  it("upsertContact records restore provenance when it resurrects a trashed contact", async () => {
+    const { repo, store } = createFakeRepo();
+    store.set("a", fakeContact("a", { deletedAt: "2026-01-01T00:00:00.000Z" }));
+    const useCases = createContactsUseCases(repo);
+
+    const { contact, restoredFromDelete } = await useCases.upsertContact(
+      fakeContact("a", { firstName: "New" }),
+      { canRestore: true, actorId: "u-restorer" },
+    );
+
+    expect(restoredFromDelete).toBe(true);
+    expect(contact.restoredAt).toEqual(expect.any(String));
+    expect(contact.restoredBy).toBe("u-restorer");
   });
 
   it("updateContactById returns null for a missing id", async () => {

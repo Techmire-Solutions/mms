@@ -1,10 +1,11 @@
-import React from "react";
+import React, { useEffect, useRef, useState } from "react";
 import type { ContactsQuickFilter } from "@mms/shared";
 import type { ContactsWorkViewMode } from "@/tenant/features/contacts/lib/contactsWorkTierTypes";
 import { ContactsFiltersMenuButton } from "@/tenant/features/contacts/components/ContactsFiltersMenuButton";
 import { useContactsToolbarModel } from "@/tenant/features/contacts/hooks/useContactsToolbarModel";
 import { CONTACTS_WORK_SEARCH_INPUT_ID } from "@/tenant/features/contacts/hooks/useContactsKeyboardShortcuts";
 import { ModuleWorkToolbar } from "@/components/app/ModuleWorkToolbar";
+import { useDebounce } from "@/hooks/useDebounce";
 
 export interface ContactsListFiltersProps {
   search: string;
@@ -57,14 +58,36 @@ export const ContactsListFilters = React.memo(function ContactsListFilters({
     columnCustomizerLabels,
   } = useContactsToolbarModel();
 
+  /**
+   * Keystrokes are local: the page controller (metrics, directory, overlays)
+   * only re-renders once the debounced value settles, instead of on every
+   * character. The ref distinguishes our own pushes from external resets
+   * (clear filters, drill-down navigation).
+   */
+  const [searchInput, setSearchInput] = useState(search);
+  const debouncedInput = useDebounce(searchInput, 250);
+  const lastPushedRef = useRef(search);
+
+  useEffect(() => {
+    if (debouncedInput === lastPushedRef.current) return;
+    lastPushedRef.current = debouncedInput;
+    onSearchChange(debouncedInput);
+  }, [debouncedInput, onSearchChange]);
+
+  useEffect(() => {
+    if (search === lastPushedRef.current) return;
+    lastPushedRef.current = search;
+    setSearchInput(search);
+  }, [search]);
+
   return (
     <ModuleWorkToolbar
       shownCountLabel={
         shownCount != null ? t("contacts.shownCount", { count: shownCount }) : undefined
       }
       regionLabel={t("contacts.filters")}
-      search={search}
-      onSearchChange={onSearchChange}
+      search={searchInput}
+      onSearchChange={setSearchInput}
       searchPlaceholder={t("contacts.searchPlaceholder")}
       searchId={CONTACTS_WORK_SEARCH_INPUT_ID}
       hasActiveFilters={hasActiveFilters}

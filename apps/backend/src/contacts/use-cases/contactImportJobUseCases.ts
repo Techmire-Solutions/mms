@@ -1,6 +1,9 @@
 import { CONTACTS_MODULE_MANIFEST, type Contact, type ContactsImportJobPayload } from "@mms/shared";
 import { roleHasPermission } from "@mms/shared";
 import { upsertContact } from "./contactWriteUseCases.js";
+import { loadContactWriteContext } from "./contactWriteContext.js";
+import { invalidateDuplicateScanCache } from "./contactDuplicateScanUseCases.js";
+import { broadcastCollection } from "../../lib/livePush.js";
 import { logger } from "../../lib/logger.js";
 import {
   mapActionStringToAuditType,
@@ -46,6 +49,9 @@ export async function runContactsImportJob(
   let imported = 0;
 
   await context.updateProgress(0, total);
+  // Tenant configuration is identical for every record in the batch: read it
+  // once instead of once per contact (each read was ~5 queries).
+  const writeContext = await loadContactWriteContext();
 
   for (let index = 0; index < total; index += 1) {
     try {
@@ -53,6 +59,8 @@ export async function runContactsImportJob(
         canRestore,
         language,
         actorId: context.userId,
+        context: writeContext,
+        batchMode: true,
       });
       imported += 1;
     } catch (error) {
@@ -65,6 +73,13 @@ export async function runContactsImportJob(
     if ((index + 1) % 10 === 0 || index + 1 === total) {
       await context.updateProgress(index + 1, total);
     }
+  }
+
+  // Per-record side effects were suppressed by `batchMode`; run each once for
+  // the whole batch instead of once per contact.
+  if (imported > 0) {
+    await invalidateDuplicateScanCache();
+    await broadcastCollection("contacts");
   }
 
   const failed = total - imported;

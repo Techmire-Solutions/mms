@@ -6,6 +6,7 @@ import {
 } from "@mms/shared";
 import { getRequestTenant } from "../../lib/tenantContext.js";
 import { runInTransaction } from "../../db/database.js";
+import { loadContactWriteContext } from "./contactWriteContext.js";
 import { broadcastCollection } from "../../lib/livePush.js";
 import {
   loadContactRuntimeDefaults,
@@ -19,7 +20,6 @@ import {
   ContactUniqueFieldError,
 } from "./contactValidationUseCases.js";
 import { invalidateDuplicateScanCache } from "./contactDuplicateScanUseCases.js";
-import { loadContactFieldConfig } from "./contactConfigService.js";
 import {
   mapGoogleConnectionToContact,
   extractPhoneKeys,
@@ -86,6 +86,9 @@ export async function runGoogleContactsSync(userId: string): Promise<GoogleConta
   const acceptedComposites = new Map<string, string>(); // composite -> accepted contact id
   const acceptedById = new Map<string, Contact>(); // accepted contact id -> contact
 
+  // One tenant-config read for the whole sync instead of two per candidate.
+  const writeContext = await loadContactWriteContext();
+
   await runInTransaction(async () => {
     for (const candidate of mapped) {
       const match = peerIndex.findMatch(candidate);
@@ -95,10 +98,11 @@ export async function runGoogleContactsSync(userId: string): Promise<GoogleConta
         const merged = mergeContacts(match, candidate);
         if (hasMeaningfulChanges(match, merged)) {
           try {
-            const prepared = await prepareContactRecord(merged, match.id);
+            const prepared = await prepareContactRecord(merged, match.id, writeContext);
             await assertContactUniqueFields(tenant, prepared, {
               language: "en",
               excludeContactIds: [match.id],
+              context: writeContext,
             });
             acceptedUpdates.push(prepared);
             peerIndex.update(match, prepared);
@@ -116,12 +120,12 @@ export async function runGoogleContactsSync(userId: string): Promise<GoogleConta
         skippedName += 1;
       } else {
         try {
-          const prepared = await prepareContactRecord(candidate, candidate.id);
+          const prepared = await prepareContactRecord(candidate, candidate.id, writeContext);
 
           // Load unique field refs once on first insert (absent config -> [] makes
           // the in-run index a no-op, matching the pre-optimisation behaviour).
           if (syncUniqueFields === null) {
-            const syncFieldConfig = await loadContactFieldConfig();
+            const syncFieldConfig = writeContext.fieldConfig;
             syncUniqueFields = syncFieldConfig?.fields
               ? listUniqueContactFieldRefs(syncFieldConfig.fields)
               : [];
@@ -148,6 +152,7 @@ export async function runGoogleContactsSync(userId: string): Promise<GoogleConta
           await assertContactUniqueFields(tenant, prepared, {
             language: "en",
             additionalPeers: collidingContacts,
+            context: writeContext,
           });
 
           acceptedInserts.push(prepared);

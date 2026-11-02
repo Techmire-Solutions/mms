@@ -1,5 +1,6 @@
 import { and, eq, isNull, sql, type SQL } from "drizzle-orm";
 import type { WidgetAggregateResult, WidgetQuery } from "@mms/shared";
+import { ValidationError } from "../../lib/httpErrors.js";
 import { contacts } from "../schema.js";
 import { withTenantRead } from "../tenant-context.js";
 
@@ -7,15 +8,47 @@ function activeWorkspaceWhere(subdomain: string): SQL {
   return and(eq(contacts.workspaceSubdomain, subdomain), isNull(contacts.deletedAt))!;
 }
 
-const FIELD_TO_SQL_COLUMN: Record<string, string> = {
-  gender: "gender",
-  isSyed: "is_syed",
-  whatsappStatus: "whatsapp_status",
+/**
+ * Columns a contacts widget may filter, group or aggregate on.
+ *
+ * Explicit Drizzle references (never `sql.raw`): an unknown field is a client
+ * error, not a silent fallback to `gender`, which used to return a plausible but
+ * completely wrong KPI.
+ */
+const FIELD_TO_COLUMN: Record<string, SQL> = {
+  gender: sql`${contacts.gender}`,
+  isSyed: sql`${contacts.isSyed}`,
+  whatsappStatus: sql`${contacts.whatsappStatus}`,
 };
 
-function resolveSqlColumn(field: string): SQL {
-  const col = FIELD_TO_SQL_COLUMN[field] ?? "gender";
-  return sql.raw(`"contacts"."${col}"`);
+/** Fields a numeric aggregate (sum/avg) may target. Contacts has none today. */
+const NUMERIC_FIELDS: ReadonlySet<string> = new Set();
+
+function resolveColumn(field: string): SQL {
+  const key = field.trim();
+  const column = FIELD_TO_COLUMN[key];
+  if (!column) {
+    throw new ValidationError(`Unsupported contact widget field "${key}"`);
+  }
+  return column;
+}
+
+/** Rejects unsupported widget fields/operations before any SQL runs. */
+function assertWidgetQueriesSupported(queries: readonly WidgetQuery[]): void {
+  for (const query of queries) {
+    if (query.filterField) resolveColumn(query.filterField);
+    for (const filter of query.filters ?? []) resolveColumn(filter.field);
+    if (query.xAxisField) resolveColumn(query.xAxisField);
+    if (query.targetField) {
+      resolveColumn(query.targetField);
+      const target = query.targetField.trim();
+      if ((query.operation === "sum" || query.operation === "avg") && !NUMERIC_FIELDS.has(target)) {
+        throw new ValidationError(
+          `Operation "${query.operation}" is not supported for contact field "${target}"`,
+        );
+      }
+    }
+  }
 }
 
 function singleFilterSql(
@@ -25,7 +58,7 @@ function singleFilterSql(
 ): SQL | null {
   const trimmedField = field?.trim();
   if (!trimmedField || value == null || value === "") return null;
-  const colSql = resolveSqlColumn(trimmedField);
+  const colSql = resolveColumn(trimmedField);
   const op = operator ?? "equals";
   if (op === "equals") {
     if (value === "true" || value === "false") {
@@ -36,6 +69,9 @@ function singleFilterSql(
   if (op === "contains") {
     return sql`lower(${colSql}::text) LIKE ${`%${value.trim().toLowerCase()}%`}`;
   }
+  if (op === "startsWith") {
+    return sql`lower(${colSql}::text) LIKE ${`${value.trim().toLowerCase()}%`}`;
+  }
   if (op === "gt") {
     return sql`${colSql}::numeric > ${Number(value)}`;
   }
@@ -45,8 +81,19 @@ function singleFilterSql(
   return null;
 }
 
+/**
+ * Primary filter plus every `filters[]` rule, AND-ed. The visualizer/multi-rule
+ * widgets send `filters[]`; ignoring them returned tenant-wide numbers.
+ */
 function widgetFilterSql(query: WidgetQuery): SQL | null {
-  return singleFilterSql(query.filterField, query.filterOperator, query.filterValue);
+  const parts = [
+    singleFilterSql(query.filterField, query.filterOperator, query.filterValue),
+    ...(query.filters ?? []).map((filter) =>
+      singleFilterSql(filter.field, filter.operator, filter.value),
+    ),
+  ].filter((part): part is SQL => part != null);
+  if (parts.length === 0) return null;
+  return and(...parts) ?? null;
 }
 
 export async function aggregateContactsWidgetQueries(
@@ -56,6 +103,7 @@ export async function aggregateContactsWidgetQueries(
   const subdomain = tenant.trim().toLowerCase();
   const results: Record<string, WidgetAggregateResult> = {};
   if (queries.length === 0) return results;
+  assertWidgetQueriesSupported(queries);
 
   return withTenantRead(subdomain, async (tx) => {
     const totalRows = await tx
@@ -88,7 +136,7 @@ export async function aggregateContactsWidgetQueries(
         } else if (query.operation === "sum" || query.operation === "avg") {
           const target = query.targetField?.trim() || "";
           if (target) {
-            const targetColSql = resolveSqlColumn(target);
+            const targetColSql = resolveColumn(target);
             const aggRows = await tx
               .select({
                 sum: sql<number>`coalesce(sum(${targetColSql}::numeric), 0)`,
@@ -103,7 +151,7 @@ export async function aggregateContactsWidgetQueries(
         }
 
         const xAxis = query.xAxisField?.trim() || "gender";
-        const xAxisColSql = resolveSqlColumn(xAxis);
+        const xAxisColSql = resolveColumn(xAxis);
         const groupExpr = sql<string>`COALESCE(NULLIF(trim(${xAxisColSql}::text), ''), 'Unknown')`;
 
         // For sum/avg with a target the count-based chart is discarded by the
@@ -115,7 +163,7 @@ export async function aggregateContactsWidgetQueries(
 
         let chartData: { name: string; value: number }[];
         if (target) {
-          const targetColSql = resolveSqlColumn(target);
+          const targetColSql = resolveColumn(target);
           const sortExpr =
             query.operation === "sum"
               ? sql`coalesce(sum(${targetColSql}::numeric), 0) desc`

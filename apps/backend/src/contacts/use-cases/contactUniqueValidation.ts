@@ -8,6 +8,7 @@ import {
 import { ConflictError } from "../../lib/httpErrors.js";
 import { loadContactFieldConfig } from "./contactConfigService.js";
 import { loadContactRuntimeDefaults } from "./contactLoadUseCases.js";
+import type { ContactWriteContext } from "./contactWriteContextTypes.js";
 import type { ContactsRepository } from "../repository/contactsRepository.js";
 import { contactsRepository } from "../repository/contactsRepositoryAdapter.js";
 
@@ -35,6 +36,11 @@ export interface AssertContactUniqueFieldsOptions {
    * @default true
    */
   acquireLocks?: boolean;
+  /**
+   * Preloaded tenant configuration (batch writers). When present, the field
+   * config and runtime defaults are not re-read per contact.
+   */
+  context?: ContactWriteContext;
 }
 
 /**
@@ -75,14 +81,19 @@ export async function assertContactUniqueFields(
   const additionalPeers = options.additionalPeers ?? [];
   const acquireLocks = options.acquireLocks !== false;
 
-  const fieldConfig = await loadContactFieldConfig();
+  const fieldConfig = options.context
+    ? options.context.fieldConfig
+    : await loadContactFieldConfig();
   const fields = fieldConfig?.fields;
   if (!fields) return;
 
   const uniqueFields = listUniqueContactFieldRefs(fields);
   if (uniqueFields.length === 0) return;
 
-  const { defaultPhoneCountryCode } = await loadContactRuntimeDefaults();
+  const runtimeDefaults = options.context
+    ? options.context.runtimeDefaults
+    : await loadContactRuntimeDefaults();
+  const { defaultPhoneCountryCode } = runtimeDefaults;
   const collectOptions = { defaultPhoneCountryCode };
   const candidateValues = collectUniqueContactFieldValues(contact, uniqueFields, collectOptions);
 

@@ -49,6 +49,16 @@ vi.mock("../contacts/use-cases/contactValidationUseCases.js", () => ({
   },
 }));
 
+vi.mock("../contacts/use-cases/contactWriteContext.js", () => ({
+  // Tenant config is not under test here; the sync loop must read it once and
+  // pass it to every candidate.
+  loadContactWriteContext: vi.fn(async () => ({
+    runtimeDefaults: { defaultPhoneCountryCode: "+92", phoneLabel: "Mobile", emailLabel: "Email" },
+    countryCodes: [],
+    fieldConfig: null,
+  })),
+}));
+
 vi.mock("../db/repositories/contactRepository.js", () => ({
   bulkSaveContacts: (...args: unknown[]) => mockBulkSaveContacts(...args),
   findExistingNormalizedContactNames: (...args: unknown[]) =>

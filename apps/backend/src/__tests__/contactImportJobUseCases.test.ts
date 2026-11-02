@@ -2,9 +2,21 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 
 const mockUpsertContact = vi.fn();
 const mockRecordModernAuditEvent = vi.fn();
+const mockLoadContactWriteContext = vi.fn();
+const mockInvalidateDuplicateScanCache = vi.fn();
+const mockBroadcastCollection = vi.fn();
 
 vi.mock("../contacts/use-cases/contactWriteUseCases.js", () => ({
   upsertContact: (...args: unknown[]) => mockUpsertContact(...args),
+}));
+vi.mock("../contacts/use-cases/contactWriteContext.js", () => ({
+  loadContactWriteContext: (...args: unknown[]) => mockLoadContactWriteContext(...args),
+}));
+vi.mock("../contacts/use-cases/contactDuplicateScanUseCases.js", () => ({
+  invalidateDuplicateScanCache: (...args: unknown[]) => mockInvalidateDuplicateScanCache(...args),
+}));
+vi.mock("../lib/livePush.js", () => ({
+  broadcastCollection: (...args: unknown[]) => mockBroadcastCollection(...args),
 }));
 vi.mock("../services/auditTrailService.js", async (importOriginal) => {
   const actual = await importOriginal<typeof import("../services/auditTrailService.js")>();
@@ -33,6 +45,17 @@ describe("runContactsImportJob", () => {
   beforeEach(() => {
     mockUpsertContact.mockReset().mockResolvedValue({ contact: {}, created: true });
     mockRecordModernAuditEvent.mockReset().mockResolvedValue({});
+    mockLoadContactWriteContext.mockReset().mockResolvedValue({
+      runtimeDefaults: {
+        defaultPhoneCountryCode: "+92",
+        phoneLabel: "Mobile",
+        emailLabel: "Email",
+      },
+      countryCodes: [],
+      fieldConfig: null,
+    });
+    mockInvalidateDuplicateScanCache.mockReset().mockResolvedValue(undefined);
+    mockBroadcastCollection.mockReset().mockResolvedValue(undefined);
   });
 
   it("imports every contact and reports progress", async () => {
@@ -46,6 +69,15 @@ describe("runContactsImportJob", () => {
     expect(mockUpsertContact).toHaveBeenCalledTimes(12);
     expect(updateProgress).toHaveBeenCalledWith(0, 12);
     expect(updateProgress).toHaveBeenCalledWith(12, 12);
+    // Tenant config is read once per batch, not once per contact.
+    expect(mockLoadContactWriteContext).toHaveBeenCalledTimes(1);
+    expect(mockUpsertContact).toHaveBeenCalledWith(
+      expect.anything(),
+      expect.objectContaining({ context: expect.any(Object), batchMode: true }),
+    );
+    // Per-record side effects are collapsed into one live update + one invalidation.
+    expect(mockInvalidateDuplicateScanCache).toHaveBeenCalledTimes(1);
+    expect(mockBroadcastCollection).toHaveBeenCalledTimes(1);
   });
 
   it("counts per-contact failures without aborting the batch", async () => {
@@ -86,19 +118,25 @@ describe("runContactsImportJob", () => {
 
   it("gates soft-delete restoration on the enqueue-time role", async () => {
     await runContactsImportJob({ contacts: contacts(1), viewerRole: "accountant" }, buildContext());
-    expect(mockUpsertContact).toHaveBeenCalledWith(expect.anything(), {
-      canRestore: false,
-      language: "en",
-      actorId: "u-admin",
-    });
+    expect(mockUpsertContact).toHaveBeenCalledWith(
+      expect.anything(),
+      expect.objectContaining({
+        canRestore: false,
+        language: "en",
+        actorId: "u-admin",
+      }),
+    );
 
     mockUpsertContact.mockClear();
     await runContactsImportJob({ contacts: contacts(1), viewerRole: "admin" }, buildContext());
-    expect(mockUpsertContact).toHaveBeenCalledWith(expect.anything(), {
-      canRestore: true,
-      language: "en",
-      actorId: "u-admin",
-    });
+    expect(mockUpsertContact).toHaveBeenCalledWith(
+      expect.anything(),
+      expect.objectContaining({
+        canRestore: true,
+        language: "en",
+        actorId: "u-admin",
+      }),
+    );
   });
 
   it("does not fail the job when the audit append throws", async () => {
