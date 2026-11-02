@@ -93,6 +93,7 @@ export async function bulkSoftDeleteStudents(
           tableName: "students",
           recordId: String(s.id),
           actionType: "DELETE",
+          subjectId: String(s.id),
           oldState: s,
           minimizeDelta: false,
         });

@@ -1,4 +1,4 @@
-import type { Contact } from "@mms/shared";
+import { dedupeTrimmedIds, type Contact } from "@mms/shared";
 import { invalidateDuplicateScanCache } from "./contactDuplicateScanUseCases.js";
 import { getRequestTenant } from "../../lib/tenantContext.js";
 import { runInTransaction } from "../../db/database.js";
@@ -34,7 +34,9 @@ export async function restoreContactById(
     if (!tenant) return null;
     const existing = await repo.findById(tenant, id);
     if (!existing) return null;
-    if (!existing.deletedAt) return existing;
+    // An already-active contact is not a restore. Returning null makes the route
+    // answer 404 and skip the restore audit/outbox row (C-07).
+    if (!existing.deletedAt) return null;
 
     // 1. Pre-check active conflicts on recyclable unique fields
     if (existing.email && existing.email.trim()) {
@@ -101,6 +103,7 @@ export async function restoreContactById(
       tableName: "contacts",
       recordId: String(id),
       actionType: "RESTORE",
+      subjectId: String(id),
       newState: next,
       minimizeDelta: false,
     });
@@ -115,10 +118,12 @@ export async function bulkRestoreContacts(
   userId?: string,
   repo: ContactsRepository = contactsRepository,
 ): Promise<ContactBulkRestoreResult> {
+  // Duplicate ids in one request must not inflate succeeded/failed (C-08).
+  const uniqueIds = dedupeTrimmedIds(ids);
   const context = await loadContactWriteContext();
   const result = await runInTransaction(async () => {
     const tenant = getRequestTenant();
-    if (!tenant) return { succeeded: 0, failed: ids.length, conflicts: [] };
+    if (!tenant) return { succeeded: 0, failed: uniqueIds.length, conflicts: [] };
     let succeeded = 0;
     let failed = 0;
     const conflicts: ContactBulkRestoreConflict[] = [];
@@ -126,10 +131,10 @@ export async function bulkRestoreContacts(
     const toSave: Contact[] = [];
     const accepted: Contact[] = [];
 
-    const existingContacts = await repo.findByIds(tenant, ids);
+    const existingContacts = await repo.findByIds(tenant, uniqueIds);
     const existingMap = new Map(existingContacts.map((c) => [String(c.id), c]));
 
-    for (const id of ids) {
+    for (const id of uniqueIds) {
       const existing = existingMap.get(String(id));
       if (!(existing && existing.deletedAt)) {
         failed += 1;
@@ -209,6 +214,7 @@ export async function bulkRestoreContacts(
           tableName: "contacts",
           recordId: String(c.id),
           actionType: "RESTORE",
+          subjectId: String(c.id),
           newState: c,
           minimizeDelta: false,
         });

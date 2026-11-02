@@ -129,6 +129,49 @@ describe("contactResponseSanitizer", () => {
       expect(sanitized.education).toEqual([{ id: "edu1", degree: "PhD", sortOrder: 0 }]);
     });
 
+    it("strips permission-gated scalar fields on the basic tab", () => {
+      const config: ContactFieldConfigSnapshot = {
+        tabs: [{ key: "basic", label: "Basic", enabled: true, order: 1 }],
+        fields: {
+          basic: [
+            { key: "firstName", type: "text", label: "First", enabled: true, order: 1 },
+            {
+              key: "cnic",
+              type: "text",
+              label: "CNIC",
+              enabled: true,
+              order: 2,
+              permissions: ["admin"],
+            },
+            {
+              key: "notes",
+              type: "textarea",
+              label: "Notes",
+              enabled: true,
+              order: 3,
+              permissions: ["admin"],
+            },
+          ],
+        },
+      };
+      const contact: Contact = {
+        id: "c1",
+        name: "Ali",
+        firstName: "Ali",
+        cnic: "12345-6789012-3",
+        notes: "private note",
+      };
+
+      const teacherView = sanitizeContactForViewer(contact, "teacher", config);
+      expect(teacherView.firstName).toBe("Ali");
+      expect(teacherView.cnic).toBeUndefined();
+      expect(teacherView.notes).toBeUndefined();
+
+      const adminView = sanitizeContactForViewer(contact, "admin", config);
+      expect(adminView.cnic).toBe("12345-6789012-3");
+      expect(adminView.notes).toBe("private note");
+    });
+
     it("drops the whole phones collection when the phone number field is hidden", () => {
       const config: ContactFieldConfigSnapshot = {
         tabs: [{ key: "phones", label: "Phones", enabled: true, order: 1 }],

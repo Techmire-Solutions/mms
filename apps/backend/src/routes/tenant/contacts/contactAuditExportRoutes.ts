@@ -84,7 +84,7 @@ export const contactAuditExportRoutes: FastifyPluginAsync = async (fastify) => {
       moduleId: CONTACTS_MODULE_MANIFEST.moduleId,
       kind: "export-vcf",
       label,
-      payload: { filename, label },
+      payload: { filename, label, viewerRole: user.role },
       idempotencyKey: parsed.data.idempotencyKey,
       user,
     });

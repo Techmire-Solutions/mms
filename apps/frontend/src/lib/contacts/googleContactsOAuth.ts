@@ -2,11 +2,17 @@ export const GOOGLE_CONTACTS_OAUTH_MESSAGE = "mms-google-contacts-oauth" as cons
 const GOOGLE_CONTACTS_OAUTH_PENDING_KEY = "mms_pending_google_oauth_code";
 const GOOGLE_CONTACTS_OPEN_SYNC_SETUP_KEY = "mms_open_contacts_sync_setup";
 const GOOGLE_CONTACTS_OAUTH_STATE_KEY = "mms_google_google_oauth_state";
+const GOOGLE_CONTACTS_OAUTH_VERIFIER_KEY = "mms_google_google_oauth_verifier";
 /** A stale authorization code is useless after this window; also bounds replay. */
 const OAUTH_STATE_TTL_MS = 10 * 60 * 1000;
 
 interface StoredOAuthState {
   nonce: string;
+  createdAt: number;
+}
+
+interface StoredOAuthVerifier {
+  verifier: string;
   createdAt: number;
 }
 
@@ -46,6 +52,74 @@ export function createGoogleContactsOAuthState(): string {
     // Private-mode / disabled storage: the callback will simply be rejected.
   }
   return encodeURIComponent(JSON.stringify({ source: "google_contacts", nonce }));
+}
+
+function base64UrlEncode(bytes: Uint8Array): string {
+  let binary = "";
+  for (const byte of bytes) binary += String.fromCharCode(byte);
+  return btoa(binary).replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/, "");
+}
+
+/** RFC 7636 verifier: 32 random bytes → 43 base64url characters. */
+function randomCodeVerifier(): string {
+  const bytes = new Uint8Array(32);
+  crypto.getRandomValues(bytes);
+  return base64UrlEncode(bytes);
+}
+
+async function computeCodeChallenge(verifier: string): Promise<string> {
+  if (typeof crypto === "undefined" || !crypto.subtle) {
+    throw new Error("Web Crypto is required for Google Contacts OAuth PKCE");
+  }
+  const digest = await crypto.subtle.digest("SHA-256", new TextEncoder().encode(verifier));
+  return base64UrlEncode(new Uint8Array(digest));
+}
+
+/**
+ * Builds the OAuth `state` plus an S256 PKCE pair for a new connect attempt.
+ *
+ * The verifier stays in `sessionStorage` (never in the URL); only its SHA-256
+ * challenge goes to Google. An intercepted authorization code is therefore
+ * useless without the verifier, and the existing nonce still blocks a crafted
+ * `?code=…&state=…` callback (C-11).
+ */
+export async function createGoogleContactsOAuthRequest(): Promise<{
+  state: string;
+  codeChallenge: string;
+}> {
+  const state = createGoogleContactsOAuthState();
+  const verifier = randomCodeVerifier();
+  const codeChallenge = await computeCodeChallenge(verifier);
+  try {
+    sessionStorage.setItem(
+      GOOGLE_CONTACTS_OAUTH_VERIFIER_KEY,
+      JSON.stringify({ verifier, createdAt: Date.now() } satisfies StoredOAuthVerifier),
+    );
+  } catch {
+    // Private-mode / disabled storage: exchange proceeds without a verifier and
+    // Google rejects the code when a challenge was sent (fail closed).
+  }
+  return { state, codeChallenge };
+}
+
+/** Reads and clears the PKCE verifier — one exchange per connect attempt. */
+export function takeGoogleContactsOAuthVerifier(): string | null {
+  let raw: string | null = null;
+  try {
+    raw = sessionStorage.getItem(GOOGLE_CONTACTS_OAUTH_VERIFIER_KEY);
+    sessionStorage.removeItem(GOOGLE_CONTACTS_OAUTH_VERIFIER_KEY);
+  } catch {
+    return null;
+  }
+  if (!raw) return null;
+  try {
+    const stored = JSON.parse(raw) as Partial<StoredOAuthVerifier>;
+    if (typeof stored.verifier !== "string" || typeof stored.createdAt !== "number") return null;
+    if (Date.now() - stored.createdAt > OAUTH_STATE_TTL_MS) return null;
+    return stored.verifier;
+  } catch {
+    return null;
+  }
 }
 
 /** Reads and clears the stored nonce — one authorization code per attempt. */

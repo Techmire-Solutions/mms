@@ -9,6 +9,7 @@ import {
   OWN_CONTACT_PATCH_KEYS,
   ownContactPatchBodySchema,
   roleHasPermission,
+  resolveContactFieldConfigSnapshot,
   sanitizeContactForViewer,
   sanitizeContactsForViewer,
 } from "@mms/shared";
@@ -100,23 +101,18 @@ export function savedReportViewer(user: User): ContactsSavedReportViewer {
 }
 
 export async function getContactFieldConfigViewerOptions() {
-  const fieldConfig = await loadContactFieldConfig();
-  if (!fieldConfig) return null;
-  return {
-    fields: fieldConfig.fields,
-    tabs: fieldConfig.formTabs ?? [],
-  };
+  // Never disable sanitization because the tenant row is missing: fall back to
+  // the seed snapshot, exactly like the export path (C-10).
+  return resolveContactFieldConfigSnapshot(await loadContactFieldConfig());
 }
 
 export async function sanitizeForUser(contacts: Contact[], user: User): Promise<Contact[]> {
   const options = await getContactFieldConfigViewerOptions();
-  if (!options) return contacts;
   return sanitizeContactsForViewer(contacts, user.role, options);
 }
 
 export async function sanitizeOneForUser(contact: Contact, user: User): Promise<Contact> {
   const options = await getContactFieldConfigViewerOptions();
-  if (!options) return contact;
   return sanitizeContactForViewer(contact, user.role, options);
 }
 

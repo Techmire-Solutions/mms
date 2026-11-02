@@ -91,7 +91,7 @@ export async function bulkSaveContacts(
 
 export async function bulkTagContacts(
   ids: string[],
-  options: { addTags?: string[]; removeTags?: string[] },
+  options: { addTags?: string[]; removeTags?: string[]; actorId?: string },
   repo: ContactsRepository = contactsRepository,
 ): Promise<{ updatedCount: number }> {
   const result = await runInTransaction(async () => {
@@ -130,17 +130,21 @@ export async function bulkTagContacts(
       if (!changed) continue;
 
       const nextTags = [...tagSet];
-      const tagStr = nextTags.length > 0 ? nextTags.join(", ") : undefined;
       const next: Contact = {
         ...c,
         tags: nextTags,
-        tag: tagStr,
         updatedAt: new Date().toISOString(),
       };
       toSave.push(next);
     }
     if (toSave.length > 0) {
-      await repo.bulkSave(tenant, toSave);
+      // Tag-only write: never re-save hydrated children from this snapshot, or a
+      // concurrent phone/email edit would be reverted (C-03).
+      await repo.replaceContactTags(
+        tenant,
+        toSave.map((contact) => ({ id: String(contact.id), tags: contact.tags ?? [] })),
+        options.actorId,
+      );
     }
     return { updatedCount: toSave.length };
   });

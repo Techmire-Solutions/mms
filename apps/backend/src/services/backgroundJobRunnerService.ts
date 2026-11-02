@@ -109,6 +109,7 @@ export function registerDefaultBackgroundJobRunners(): void {
     );
     const { vcf, filename, count } = await buildContactsVcfExport({
       filename: targetFilename,
+      viewerRole: exportPayload.viewerRole ?? "",
       onProgress: (processed, total) => ctx.updateProgress(processed, Math.max(total, 1)),
     });
     await saveExportArtifact(ctx.userId, ctx.jobId, vcf, filename);

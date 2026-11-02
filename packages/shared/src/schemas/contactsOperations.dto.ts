@@ -37,6 +37,17 @@ const contactGoogleSyncExchangeBaseSchema = z
   .object({
     code: z.string().min(1),
     redirectUri: z.string().url(),
+    /**
+     * RFC 7636 PKCE verifier (S256). Optional at the boundary so a stale SPA
+     * bundle without a challenge can still exchange; Google rejects the code
+     * when the authorization request carried a `code_challenge` and no verifier.
+     */
+    codeVerifier: z
+      .string()
+      .min(43)
+      .max(128)
+      .regex(/^[A-Za-z0-9_-]+$/)
+      .optional(),
   })
   .strict();
 

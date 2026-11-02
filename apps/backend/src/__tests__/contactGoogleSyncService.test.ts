@@ -126,10 +126,12 @@ describe("contactGoogleSyncService", () => {
       json: async () => ({ access_token: "access-1", refresh_token: "refresh-1" }),
     } as Response);
 
+    const verifier = "v".repeat(43);
     const config = await exchangeGoogleContactsOAuthCode(
       "u1",
       "auth-code",
       "https://demo.localhost/contacts",
+      verifier,
     );
 
     expect(config.isConnected).toBe(true);
@@ -138,6 +140,8 @@ describe("contactGoogleSyncService", () => {
       "https://oauth2.googleapis.com/token",
       expect.objectContaining({ method: "POST" }),
     );
+    const body = vi.mocked(fetch).mock.calls[0]?.[1]?.body as URLSearchParams;
+    expect(body.get("code_verifier")).toBe(verifier);
   });
 
   it("rejects invalid redirect URIs", async () => {

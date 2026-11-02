@@ -90,6 +90,7 @@ export const contactGoogleSyncRoutes: FastifyPluginAsync = async (fastify) => {
         String(user.id),
         parsed.data.code,
         parsed.data.redirectUri,
+        parsed.data.codeVerifier,
       );
       await auditContact(
         user,

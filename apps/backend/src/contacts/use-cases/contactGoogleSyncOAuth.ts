@@ -80,6 +80,7 @@ export async function exchangeGoogleContactsOAuthCode(
   userId: string,
   code: string,
   redirectUri: string,
+  codeVerifier?: string,
 ): Promise<ContactGoogleSyncConfigClient> {
   if (!isAllowedOAuthRedirectUri(redirectUri)) {
     throw new GoogleOAuthExchangeError("Invalid redirect URI");
@@ -97,6 +98,9 @@ export async function exchangeGoogleContactsOAuthCode(
     redirect_uri: redirectUri,
     grant_type: "authorization_code",
   });
+  // PKCE: the verifier never left the initiating browser; forwarding it lets
+  // Google bind the code to that browser (C-11).
+  if (codeVerifier) params.set("code_verifier", codeVerifier);
 
   const tokenResponse = await requestGoogleToken(params);
 

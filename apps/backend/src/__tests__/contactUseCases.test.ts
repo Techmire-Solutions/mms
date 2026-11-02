@@ -66,6 +66,7 @@ import { ContactPermissionError } from "../contacts/use-cases/contactValidationU
 import type { ContactDuplicateCandidateKeys } from "../contacts/repository/contactsRepository.js";
 import { loadContactLookupKind } from "../contacts/use-cases/contactLookupsService.js";
 import { loadContactPreferences } from "../contacts/use-cases/contactPreferencesService.js";
+import { recordModernAuditEvent } from "../services/auditTrailService.js";
 
 function fakeContact(id: string, overrides: Partial<Contact> = {}): Contact {
   return {
@@ -115,6 +116,25 @@ function createFakeRepo() {
         void tenant;
         store.set(String(contact.id), contact);
       }),
+      saveIfVersionMatches: vi.fn(
+        async (tenant: string, contact: Contact, expectedUpdatedAt: string) => {
+          void tenant;
+          const existing = store.get(String(contact.id));
+          if (!existing || existing.updatedAt !== expectedUpdatedAt) return false;
+          store.set(String(contact.id), contact);
+          return true;
+        },
+      ),
+      replaceContactTags: vi.fn(
+        async (tenant: string, updates: Array<{ id: string; tags: string[] }>): Promise<number> => {
+          void tenant;
+          for (const update of updates) {
+            const existing = store.get(update.id);
+            if (existing) store.set(update.id, { ...existing, tags: update.tags });
+          }
+          return updates.length;
+        },
+      ),
       bulkSave: vi.fn(async (tenant: string, contacts: Contact[]) => {
         void tenant;
         contacts.forEach((contact) => store.set(String(contact.id), contact));
@@ -361,6 +381,32 @@ describe("createContactsUseCases (DI composition root)", () => {
     expect(updated?.firstName).toBe("New");
   });
 
+  it("updateContactById returns 409 when the conditional save loses the version race", async () => {
+    const { repo, store } = createFakeRepo();
+    store.set("a", fakeContact("a", { updatedAt: "2026-01-01T00:00:00.000Z" }));
+    vi.mocked(repo.saveIfVersionMatches).mockResolvedValueOnce(false);
+    const useCases = createContactsUseCases(repo);
+
+    await expect(
+      useCases.updateContactById("a", fakeContact("a", { firstName: "New" }), {
+        expectedUpdatedAt: "2026-01-01T00:00:00.000Z",
+      }),
+    ).rejects.toMatchObject({ statusCode: 409 });
+  });
+
+  it("updateContactById rejects an unparseable expectedUpdatedAt", async () => {
+    const { repo, store } = createFakeRepo();
+    store.set("a", fakeContact("a", { updatedAt: "2026-01-01T00:00:00.000Z" }));
+    const useCases = createContactsUseCases(repo);
+
+    await expect(
+      useCases.updateContactById("a", fakeContact("a", { firstName: "New" }), {
+        expectedUpdatedAt: "not-a-date",
+      }),
+    ).rejects.toMatchObject({ statusCode: 400 });
+    expect(repo.saveIfVersionMatches).not.toHaveBeenCalled();
+  });
+
   it("updateContactById skips relationship inference when disabled", async () => {
     const { repo, store } = createFakeRepo();
     store.set("a", fakeContact("a"));
@@ -386,6 +432,9 @@ describe("createContactsUseCases (DI composition root)", () => {
     expect(saved?.deletedAt).toMatch(/^\d{4}-\d{2}-\d{2}T/);
     expect(saved?.deletedBy).toBe("u-admin");
     expect(saved?.deletionReason).toBe("Duplicate");
+    expect(recordModernAuditEvent).toHaveBeenCalledWith(
+      expect.objectContaining({ actionType: "DELETE", subjectId: "a" }),
+    );
   });
 
   it("softDeleteContactById reports failure for an already-deleted row", async () => {
@@ -408,16 +457,18 @@ describe("createContactsUseCases (DI composition root)", () => {
     const restored = await useCases.restoreContactById("a");
     expect(restored?.deletedAt).toBeUndefined();
     expect(store.get("a")?.deletedAt).toBeUndefined();
+    expect(recordModernAuditEvent).toHaveBeenCalledWith(
+      expect.objectContaining({ actionType: "RESTORE", subjectId: "a" }),
+    );
   });
 
-  it("restoreContactById returns the existing active record unchanged", async () => {
+  it("restoreContactById returns null for an already-active contact", async () => {
     const { repo, store } = createFakeRepo();
     store.set("a", fakeContact("a"));
     const useCases = createContactsUseCases(repo);
 
     const restored = await useCases.restoreContactById("a");
-    expect(restored?.id).toBe("a");
-    expect(restored?.deletedAt).toBeUndefined();
+    expect(restored).toBeNull();
     expect(repo.save).not.toHaveBeenCalled();
   });
 
@@ -668,6 +719,19 @@ describe("createContactsUseCases (DI composition root)", () => {
     expect(mockInvalidateDuplicateScanCache).toHaveBeenCalled();
   });
 
+  it("bulkRestoreContacts deduplicates repeated ids before counting", async () => {
+    const { repo, store } = createFakeRepo();
+    store.set(
+      "a",
+      fakeContact("a", { deletedAt: "2026-07-27T00:00:00.000Z", deletedBy: "u-admin" }),
+    );
+    const useCases = createContactsUseCases(repo);
+
+    const result = await useCases.bulkRestoreContacts(["a", "a"]);
+    expect(result).toEqual({ succeeded: 1, failed: 0, conflicts: [] });
+    expect(repo.bulkSave).toHaveBeenCalledTimes(1);
+  });
+
   it("bulkRestoreContacts collects conflicts when a restore collides with an accepted peer", async () => {
     const { repo, store } = createFakeRepo();
     mockLoadContactFieldConfig.mockResolvedValue(makeUniqueEmailFieldConfig());
@@ -859,7 +923,8 @@ describe("bulkTagContacts use case", () => {
     expect(result.updatedCount).toBe(2);
     expect(store.get("c-1")?.tags).toEqual(["Donor", "2026", "Ramadan"]);
     expect(store.get("c-2")?.tags).toEqual(["Volunteer", "2026", "Ramadan"]);
-    expect(repo.bulkSave).toHaveBeenCalledTimes(1);
+    expect(repo.replaceContactTags).toHaveBeenCalledTimes(1);
+    expect(repo.bulkSave).not.toHaveBeenCalled();
     expect(repo.save).not.toHaveBeenCalled();
     expect(mockBroadcastCollection).toHaveBeenCalledWith("contacts");
   });

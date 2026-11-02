@@ -345,6 +345,20 @@ describe("contacts REST routes", () => {
     await app.close();
   });
 
+  it("GET /api/contacts rejects repeated filter params with 400", async () => {
+    const app = await buildApp();
+    const res = await app.inject({
+      method: "GET",
+      url: "/api/contacts?gender=male&gender=female",
+      headers: {
+        host: "demo.localhost",
+        authorization: `Bearer ${accountantToken(app)}`,
+      },
+    });
+    expect(res.statusCode).toBe(400);
+    await app.close();
+  });
+
   it("GET /api/contacts/count returns count", async () => {
     const app = await buildApp();
     const res = await app.inject({
@@ -797,6 +811,21 @@ describe("contacts REST routes", () => {
     await app.close();
   });
 
+  it("POST /api/contacts/:id/restore returns 404 for an already-active contact", async () => {
+    const app = await buildApp();
+    mockRestoreContactById.mockResolvedValueOnce(null);
+    const res = await app.inject({
+      method: "POST",
+      url: "/api/contacts/c1/restore",
+      headers: {
+        host: "demo.localhost",
+        authorization: `Bearer ${adminToken(app)}`,
+      },
+    });
+    expect(res.statusCode).toBe(404);
+    await app.close();
+  });
+
   it("POST /api/contacts/bulk-restore restores multiple contacts for admin", async () => {
     const app = await buildApp();
     const res = await app.inject({
@@ -937,7 +966,7 @@ describe("contacts REST routes", () => {
       "demo",
       "u-accountant",
       expect.objectContaining({ moduleId: "contacts", kind: "export-vcf", label: "Apple VCF" }),
-      expect.objectContaining({ filename: "contacts.vcf" }),
+      expect.objectContaining({ filename: "contacts.vcf", viewerRole: "accountant" }),
     );
     await app.close();
   });
@@ -1648,6 +1677,7 @@ describe("contacts REST routes", () => {
     expect(mockBulkTagContacts).toHaveBeenCalledWith(["c-1", "c-2"], {
       addTags: ["VIP", "Donor"],
       removeTags: ["Lead"],
+      actorId: expect.any(String),
     });
     await app.close();
   });

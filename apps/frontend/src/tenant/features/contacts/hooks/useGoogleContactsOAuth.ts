@@ -1,8 +1,9 @@
 import { useCallback, useEffect, type Dispatch, type SetStateAction } from "react";
 import {
-  createGoogleContactsOAuthState,
+  createGoogleContactsOAuthRequest,
   GOOGLE_CONTACTS_OAUTH_MESSAGE,
   takeGoogleContactsOAuthCode,
+  takeGoogleContactsOAuthVerifier,
 } from "@/lib/contacts/googleContactsOAuth";
 import type { ContactGoogleSyncConfigClient } from "@mms/shared";
 import type { TranslationFunction } from "@/lib/contexts/TranslationContext";
@@ -11,6 +12,7 @@ type ExchangeOAuthMutation = {
   mutateAsync: (input: {
     code: string;
     redirectUri: string;
+    codeVerifier?: string;
   }) => Promise<{ config: ContactGoogleSyncConfigClient }>;
 };
 
@@ -46,9 +48,11 @@ export function useGoogleContactsOAuth({
       setError("");
       try {
         const redirectUri = `${window.location.origin}/contacts`;
+        const codeVerifier = takeGoogleContactsOAuthVerifier();
         const { config: exchangedConfig } = await exchangeOAuth.mutateAsync({
           code: code.trim(),
           redirectUri,
+          ...(codeVerifier ? { codeVerifier } : {}),
         });
         setConfig((prev) => ({
           ...prev,
@@ -76,14 +80,22 @@ export function useGoogleContactsOAuth({
     ],
   );
 
-  const handleConnect = (): void => {
+  const handleConnect = async (): Promise<void> => {
     if (!canWrite || !config.clientId) return;
     const redirectUri = window.location.origin + "/contacts";
     const scope = encodeURIComponent("https://www.googleapis.com/auth/contacts.readonly");
-    const state = createGoogleContactsOAuthState();
+    let request: { state: string; codeChallenge: string };
+    try {
+      request = await createGoogleContactsOAuthRequest();
+    } catch {
+      // Web Crypto unavailable (insecure context): fail closed rather than
+      // sending an authorization request without PKCE.
+      setError(t("contacts.sync.oauthError"));
+      return;
+    }
     const url = `https://accounts.google.com/o/oauth2/v2/auth?client_id=${config.clientId}&redirect_uri=${encodeURIComponent(
       redirectUri,
-    )}&response_type=code&scope=${scope}&access_type=offline&state=${state}&prompt=consent`;
+    )}&response_type=code&scope=${scope}&access_type=offline&state=${request.state}&code_challenge=${request.codeChallenge}&code_challenge_method=S256&prompt=consent`;
     window.open(url, "_blank", "width=500,height=600");
     setError(t("contacts.sync.oauthRedirectHint"));
     setShowAuthCode(true);
