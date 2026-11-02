@@ -151,10 +151,12 @@ transactions.`) and re-attaches triggers for **19** tables against 0104's **14**
      `update … where updated_at = ?`), and the editor blocks saving with a “reload latest” banner instead of
      overwriting. **Template field and preset labels are localized** (`2026-11-02`) in en/ar/ur/fa through
      `templateLocalization.ts` + per-module key prefixes; the previously missing Student-card field keys are
-     restored, and a guard test pins every field/preset key. **Still open:** an examination report card covers
-     one paper (a term-wide multi-subject card needs aggregation); DELETE remains unchecked (no UI, documented
-     residual). The version token is the row's `updated_at` (JS `Date` millisecond precision); if a future
-     writer uses SQL `now()`, switch to a dedicated integer version column.
+     restored, and a guard test pins every field/preset key. **Term report cards are supported** (`2026-11-02`):
+     from a student’s result card the admin picks the papers to include (default: the current paper plus papers
+     sharing its exam name), and `buildTermReportCardPayload` aggregates them into the stored report-card
+     template. There is no term entity, so the selection is explicit per print. **Still open:** DELETE remains
+     unchecked (no UI, documented residual). The version token is the row's `updated_at` (JS `Date` millisecond
+     precision); if a future writer uses SQL `now()`, switch to a dedicated integer version column.
    - _Reports/KPI config_ — `usePinnedWidgetsController`, `useDashboardSectionSettings`, `kpiSummaryCard*`,
      `DynamicCardBuilder`, `ModuleReportsToolPanels` → need `/api/reports/section-settings` + per-module KPI
      config endpoints.
