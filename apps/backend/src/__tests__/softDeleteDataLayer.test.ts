@@ -107,8 +107,15 @@ vi.mock("../contacts/use-cases/contactDuplicateScanUseCases.js", () => ({
 const defaultReadTx = {
   select: vi.fn().mockReturnValue({
     from: vi.fn().mockReturnValue({
-      where: vi.fn().mockReturnValue({
-        limit: vi.fn().mockResolvedValue([]),
+      where: vi.fn().mockImplementation(() => {
+        const qb: any = Promise.resolve([]);
+        qb.limit = vi.fn().mockResolvedValue([]);
+        qb.orderBy = vi.fn().mockImplementation(() => {
+          const orderedQb: any = Promise.resolve([]);
+          orderedQb.limit = vi.fn().mockResolvedValue([]);
+          return orderedQb;
+        });
+        return qb;
       }),
     }),
   }),

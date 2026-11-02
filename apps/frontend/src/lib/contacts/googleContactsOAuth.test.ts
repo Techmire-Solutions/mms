@@ -1,6 +1,7 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import {
   clearGoogleContactsOAuthUrlParams,
+  createGoogleContactsOAuthState,
   readGoogleContactsOAuthCodeFromUrl,
   relayGoogleContactsOAuthPopup,
   shouldOpenContactsSyncSetup,
@@ -8,32 +9,90 @@ import {
   takeGoogleContactsOAuthCode,
 } from "@/lib/contacts/googleContactsOAuth";
 
-const STATE = encodeURIComponent(JSON.stringify({ source: "google_contacts" }));
+const LEGACY_STATE = encodeURIComponent(JSON.stringify({ source: "google_contacts" }));
 
 function setUrl(search: string): void {
   window.history.replaceState({}, "", `${window.location.pathname}${search}`);
 }
 
+/** Encodes the state the connect handler would have produced for `nonce`. */
+function stateWithNonce(nonce: string): string {
+  return encodeURIComponent(JSON.stringify({ source: "google_contacts", nonce }));
+}
+
+/** Stores the nonce the callback is expected to echo. */
+function storeNonce(nonce: string, createdAt = Date.now()): void {
+  sessionStorage.setItem("mms_google_google_oauth_state", JSON.stringify({ nonce, createdAt }));
+}
+
 describe("readGoogleContactsOAuthCodeFromUrl", () => {
   beforeEach(() => {
     setUrl("");
+    sessionStorage.clear();
   });
 
-  it("returns the code when state is a valid google_contacts payload", () => {
-    setUrl(`?code=abc123&state=${STATE}`);
+  it("returns the code when the returned nonce matches the stored one", () => {
+    storeNonce("nonce-1");
+    setUrl(`?code=abc123&state=${stateWithNonce("nonce-1")}`);
     expect(readGoogleContactsOAuthCodeFromUrl()).toBe("abc123");
   });
 
+  it("consumes the nonce so a replayed callback is rejected", () => {
+    storeNonce("nonce-1");
+    setUrl(`?code=abc123&state=${stateWithNonce("nonce-1")}`);
+    expect(readGoogleContactsOAuthCodeFromUrl()).toBe("abc123");
+    setUrl(`?code=abc123&state=${stateWithNonce("nonce-1")}`);
+    expect(readGoogleContactsOAuthCodeFromUrl()).toBeNull();
+  });
+
+  it("rejects a crafted state without the stored nonce", () => {
+    storeNonce("victim-nonce");
+    setUrl(`?code=attacker-code&state=${stateWithNonce("attacker-nonce")}`);
+    expect(readGoogleContactsOAuthCodeFromUrl()).toBeNull();
+  });
+
+  it("rejects the legacy constant state (no nonce)", () => {
+    setUrl(`?code=abc123&state=${LEGACY_STATE}`);
+    expect(readGoogleContactsOAuthCodeFromUrl()).toBeNull();
+  });
+
+  it("rejects an expired nonce", () => {
+    storeNonce("nonce-1", Date.now() - 11 * 60 * 1000);
+    setUrl(`?code=abc123&state=${stateWithNonce("nonce-1")}`);
+    expect(readGoogleContactsOAuthCodeFromUrl()).toBeNull();
+  });
+
   it("returns null when the code is missing", () => {
-    setUrl(`?state=${STATE}`);
+    storeNonce("nonce-1");
+    setUrl(`?state=${stateWithNonce("nonce-1")}`);
     expect(readGoogleContactsOAuthCodeFromUrl()).toBeNull();
   });
 
   it("returns null for missing or foreign state", () => {
+    storeNonce("nonce-1");
     setUrl("?code=abc123");
     expect(readGoogleContactsOAuthCodeFromUrl()).toBeNull();
     setUrl(`?code=abc123&state=${encodeURIComponent(JSON.stringify({ source: "other" }))}`);
     expect(readGoogleContactsOAuthCodeFromUrl()).toBeNull();
+  });
+});
+
+describe("createGoogleContactsOAuthState", () => {
+  beforeEach(() => {
+    sessionStorage.clear();
+  });
+
+  it("embeds a fresh nonce and stores it for the callback", () => {
+    const state = JSON.parse(decodeURIComponent(createGoogleContactsOAuthState())) as {
+      source?: string;
+      nonce?: string;
+    };
+    expect(state.source).toBe("google_contacts");
+    expect(typeof state.nonce).toBe("string");
+    const stored = JSON.parse(sessionStorage.getItem("mms_google_google_oauth_state") ?? "{}") as {
+      nonce?: string;
+    };
+    expect(stored.nonce).toBe(state.nonce);
   });
 });
 

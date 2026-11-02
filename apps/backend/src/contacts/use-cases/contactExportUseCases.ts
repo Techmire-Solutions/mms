@@ -136,10 +136,13 @@ export interface ContactsVcfExportResult {
 export async function* generateContactsVcfStreamChunks(options?: {
   filename?: string;
   chunkSize?: number;
+  /** Hard cap; enforced while streaming so memory stays bounded. */
+  maxRecords?: number;
   onProgress?: (processed: number, total: number) => void | Promise<void>;
 }): AsyncGenerator<string, { count: number; filename: string }, undefined> {
   const filename = options?.filename?.trim() || "contacts.vcf";
   const limit = Math.max(1, options?.chunkSize ?? VCF_PAGE_SIZE);
+  const maxRecords = options?.maxRecords;
   let page = 1;
   let count = 0;
 
@@ -151,6 +154,12 @@ export async function* generateContactsVcfStreamChunks(options?: {
     } as never);
     const contacts = pageResult.contacts as Contact[];
     if (contacts.length > 0) {
+      // Enforce the cap before yielding, so an oversized tenant never buffers.
+      if (maxRecords != null && count + contacts.length > maxRecords) {
+        throw new CsvExportLimitError(
+          `VCF export exceeds in-memory cap of ${maxRecords} records. Use streaming export instead.`,
+        );
+      }
       const chunk = contacts.map(toVCard).join("\r\n");
       yield count === 0 ? chunk : "\r\n" + chunk;
       count += contacts.length;
@@ -173,7 +182,7 @@ export async function buildContactsVcfExport(options?: {
   onProgress?: (processed: number, total: number) => void | Promise<void>;
 }): Promise<ContactsVcfExportResult> {
   const maxRecords = options?.maxRecords ?? 500;
-  const generator = generateContactsVcfStreamChunks(options);
+  const generator = generateContactsVcfStreamChunks({ ...options, maxRecords });
   const chunks: string[] = [];
   let step = await generator.next();
   while (!step.done) {
@@ -181,11 +190,6 @@ export async function buildContactsVcfExport(options?: {
     step = await generator.next();
   }
   const meta = step.value;
-  if (meta && meta.count > maxRecords) {
-    throw new CsvExportLimitError(
-      `VCF export exceeds in-memory cap of ${maxRecords} records (${meta.count} records). Use streaming export instead.`,
-    );
-  }
   return {
     vcf: chunks.join(""),
     filename: meta?.filename || options?.filename?.trim() || "contacts.vcf",

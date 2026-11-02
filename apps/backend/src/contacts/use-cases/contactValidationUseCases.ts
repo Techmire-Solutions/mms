@@ -16,6 +16,7 @@ import {
   ContactUniqueFieldError,
   assertContactUniqueFields,
 } from "./contactUniqueValidation.js";
+import type { ContactCountryCodeRow, ContactWriteContext } from "./contactWriteContextTypes.js";
 import { validateContactDynamic } from "./contactBlueprintValidation.js";
 
 export {
@@ -47,10 +48,14 @@ export function mergeContactPatch(existing: Contact, patch: Contact): Contact {
   return next;
 }
 
-async function normalizeContactPhones(contact: Contact): Promise<Contact> {
+async function normalizeContactPhones(
+  contact: Contact,
+  context?: ContactWriteContext,
+): Promise<Contact> {
   let phones = contact.phones;
   const phonesProvided = Array.isArray(contact.phones);
-  const { defaultPhoneCountryCode, phoneLabel } = await loadContactRuntimeDefaults();
+  const runtimeDefaults = context?.runtimeDefaults ?? (await loadContactRuntimeDefaults());
+  const { defaultPhoneCountryCode, phoneLabel } = runtimeDefaults;
   const dialDefault = defaultPhoneCountryCode || "";
   const labelDefault = phoneLabel || "Mobile";
 
@@ -70,8 +75,10 @@ async function normalizeContactPhones(contact: Contact): Promise<Contact> {
     return { ...contact, phones: phones || [] };
   }
 
-  const countryCodes = (await loadContactLookupKind("countryCodes")) || [];
-  const knownCodes = (countryCodes as Array<{ code?: string } | string>)
+  const countryCodes: ReadonlyArray<ContactCountryCodeRow> =
+    context?.countryCodes ??
+    ((await loadContactLookupKind("countryCodes")) as ContactCountryCodeRow[]);
+  const knownCodes = countryCodes
     .map((row) =>
       row && typeof row === "object" && typeof row.code === "string" ? String(row.code) : "",
     )
@@ -97,9 +104,10 @@ async function normalizeContactPhones(contact: Contact): Promise<Contact> {
 export async function prepareContactRecord(
   contact: Contact,
   id?: string | number,
+  context?: ContactWriteContext,
 ): Promise<Contact> {
   const cleaned = cleanContactDraft(contact);
-  const withPhones = await normalizeContactPhones(cleaned as Contact);
+  const withPhones = await normalizeContactPhones(cleaned as Contact, context);
   const withScalars = syncContactScalarFields(withPhones);
   const rawId =
     (typeof id === "string" && id.trim()) ||

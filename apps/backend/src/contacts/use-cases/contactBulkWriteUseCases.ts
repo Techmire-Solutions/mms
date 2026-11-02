@@ -4,8 +4,10 @@ import { getRequestTenant } from "../../lib/tenantContext.js";
 import { applyContactRelationshipInference } from "./contactInferenceUseCases.js";
 import { runInTransaction } from "../../db/database.js";
 import { assertContactUniqueFields, prepareContactRecord } from "./contactValidationUseCases.js";
+import { loadContactWriteContext } from "./contactWriteContext.js";
 import { broadcastCollection } from "../../lib/livePush.js";
 import { invalidateMultiTierCache } from "../../lib/cache/index.js";
+import { NotFoundError, ValidationError } from "../../lib/httpErrors.js";
 import type { ContactsRepository } from "../repository/contactsRepository.js";
 import { contactsRepository } from "../repository/contactsRepositoryAdapter.js";
 
@@ -16,22 +18,29 @@ export async function mergeContactsById(
   deletedBy: string,
   repo: ContactsRepository = contactsRepository,
 ): Promise<Contact> {
+  const context = await loadContactWriteContext();
   const saved = await runInTransaction(async () => {
     const tenant = getRequestTenant();
     if (!tenant) throw new Error("Tenant context required");
     if (String(keepId) === String(deleteId)) {
-      throw new Error("Cannot merge a contact into itself");
+      throw new ValidationError("Cannot merge a contact into itself");
     }
     const keep = await repo.findById(tenant, keepId);
     const other = await repo.findById(tenant, deleteId);
-    if (!keep || keep.deletedAt) throw new Error("Keep contact not found");
-    if (!other || other.deletedAt) throw new Error("Delete contact not found");
+    if (!keep || keep.deletedAt) throw new NotFoundError("Keep contact not found");
+    if (!other || other.deletedAt) throw new NotFoundError("Delete contact not found");
 
     const mergedSource = mergedInput
       ? { ...mergedInput, id: keepId }
       : mergeContactRecords(keep, other);
-    const prepared = await prepareContactRecord(mergedSource, keepId);
-    await assertContactUniqueFields(tenant, prepared, "en", [deleteId], repo);
+    const prepared = await prepareContactRecord(mergedSource, keepId, context);
+    await assertContactUniqueFields(
+      tenant,
+      prepared,
+      { language: "en", excludeContactIds: [deleteId], context },
+      [],
+      repo,
+    );
     const next: Contact = {
       ...keep,
       ...prepared,
@@ -101,12 +110,15 @@ export async function bulkTagContacts(
       const tagSet = new Set(currentTags);
       let changed = false;
 
-      for (let i = 0; i < toAdd.length; i++) {
-        const tag = toAdd[i];
-        if (!tagSet.has(tag)) {
-          tagSet.add(tag);
-          changed = true;
-        }
+      // Case-insensitive on both ends: adding `Maths` to a contact tagged
+      // `maths` must not create a duplicate tag, matching the remove behaviour.
+      const existingLower = new Set([...tagSet].map((tag) => tag.toLowerCase()));
+      for (const tag of toAdd) {
+        const key = tag.toLowerCase();
+        if (existingLower.has(key)) continue;
+        tagSet.add(tag);
+        existingLower.add(key);
+        changed = true;
       }
       for (const tag of tagSet) {
         if (toRemove.has(tag.toLowerCase())) {

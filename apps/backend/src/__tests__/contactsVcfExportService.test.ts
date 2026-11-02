@@ -109,4 +109,28 @@ describe("contactsVcfExportService", () => {
     expect(result.filename).toBe("ali.vcf");
     expect(result.count).toBe(0);
   });
+
+  it("enforces the in-memory cap while streaming instead of after buffering", async () => {
+    mockLoadContactsPage
+      .mockResolvedValueOnce({
+        contacts: [fakeContact("c1"), fakeContact("c2")],
+        total: 4,
+        page: 1,
+        limit: 2,
+        hasMore: true,
+      })
+      .mockResolvedValueOnce({
+        contacts: [fakeContact("c3"), fakeContact("c4")],
+        total: 4,
+        page: 2,
+        limit: 2,
+        hasMore: false,
+      });
+
+    await expect(buildContactsVcfExport({ chunkSize: 2, maxRecords: 3 })).rejects.toMatchObject({
+      name: "CsvExportLimitError",
+    });
+    // The cap trips on the second page — the third/fourth contacts are never read.
+    expect(mockLoadContactsPage).toHaveBeenCalledTimes(2);
+  });
 });

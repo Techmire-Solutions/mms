@@ -61,12 +61,6 @@ export interface ContactsRepository {
     deletedBy?: string,
     deletionReason?: string,
   ): Promise<{ succeeded: number; failed: number }>;
-  bulkRestore?(
-    tenant: string,
-    ids: string[],
-    userId?: string,
-  ): Promise<{ succeeded: number; failed: number }>;
-
   findExistingNormalizedContactNames(tenant: string, names: string[]): Promise<Set<string>>;
   findActiveContactsMatchingUniqueValues(
     tenant: string,

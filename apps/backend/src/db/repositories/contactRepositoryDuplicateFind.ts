@@ -122,7 +122,7 @@ export async function findContactDuplicateBlockedIds(
     const result = await tx.execute(sql`
       WITH keyed AS (
         SELECT p.contact_id AS id,
-               ${phoneComparisonKeySql(sql`p.number`)} AS k
+               'p:' || ${phoneComparisonKeySql(sql`p.number`)} AS k
         FROM ${contactPhones} p
         JOIN ${contacts} c ON c.workspace_subdomain = p.workspace_subdomain AND c.id = p.contact_id
         WHERE p.workspace_subdomain = ${subdomain}
@@ -130,7 +130,7 @@ export async function findContactDuplicateBlockedIds(
           AND ${phoneComparisonKeySql(sql`p.number`)} <> ''
         UNION ALL
         SELECT e.contact_id AS id,
-               ${emailKeySql(sql`e.address`)} AS k
+               'e:' || ${emailKeySql(sql`e.address`)} AS k
         FROM ${contactEmails} e
         JOIN ${contacts} c ON c.workspace_subdomain = e.workspace_subdomain AND c.id = e.contact_id
         WHERE e.workspace_subdomain = ${subdomain}
@@ -138,7 +138,7 @@ export async function findContactDuplicateBlockedIds(
           AND ${emailKeySql(sql`e.address`)} <> ''
         UNION ALL
         SELECT c.id AS id,
-               ${cnicComparisonKeySql(sql`c.cnic`)} AS k
+               'c:' || ${cnicComparisonKeySql(sql`c.cnic`)} AS k
         FROM ${contacts} c
         WHERE c.workspace_subdomain = ${subdomain}
           AND c.deleted_at IS NULL
@@ -146,7 +146,7 @@ export async function findContactDuplicateBlockedIds(
           AND ${cnicComparisonKeySql(sql`c.cnic`)} <> ''
         UNION ALL
         SELECT ${contacts.id} AS id,
-               ${nameKeySql(prefixRegex)} AS k
+               'n:' || ${nameKeySql(prefixRegex)} AS k
         FROM ${contacts}
         WHERE ${activeWorkspaceWhere(subdomain)}
           AND ${nameKeySql(prefixRegex)} <> ''

@@ -1,7 +1,15 @@
 import { z } from "zod";
 import { contactRecordSchema } from "../contacts/contactsModuleManifest.js";
-import { contactIdentityMatchResultSchema } from "../contacts/contactIdentityMatch.js";
-import { baseListQuerySchema, includeDeletedQuerySchema } from "../core/apiSchemas.js";
+import { contactsBulkTagBodySchema } from "../contacts/contactEntityTypes.js";
+import {
+  contactIdentityMatchBodySchema,
+  contactIdentityMatchResultSchema,
+} from "../contacts/contactIdentityMatch.js";
+import {
+  baseListQuerySchema,
+  includeDeletedQuerySchema,
+  softDeleteBodySchema,
+} from "../core/apiSchemas.js";
 import { contactWireWriteSchema } from "../schemas/contacts.dto.js";
 import { widgetAggregateResultSchema } from "../schemas/common.dto.js";
 import {
@@ -89,7 +97,8 @@ export const contactsCrudRoutes = {
     method: "DELETE",
     path: "/api/contacts/:id",
     pathParams: z.object({ id: z.string() }),
-    body: z.unknown(),
+    /** Optional: DELETE may be sent with no body at all. */
+    body: softDeleteBodySchema.optional(),
     responses: {
       200: z.object({ success: z.literal(true) }),
       403: z.unknown(),
@@ -143,21 +152,32 @@ export const contactsCrudRoutes = {
   merge: {
     method: "POST",
     path: "/api/contacts/merge",
-    body: z.unknown(),
+    /**
+     * `merged` uses the wire DTO (passthrough) so tenant custom field keys are
+     * not rejected at the boundary — the route re-parses with the tenant-aware
+     * `buildContactMergeBodySchema(extraKeys)`.
+     */
+    body: z
+      .object({
+        keepId: z.union([z.string(), z.number()]),
+        deleteId: z.union([z.string(), z.number()]),
+        merged: contactWireWriteSchema.optional(),
+      })
+      .strict(),
     responses: { 200: responseWrapper, 400: z.unknown(), 500: z.unknown() },
     summary: "Merge contacts",
   },
   identityMatch: {
     method: "POST",
     path: "/api/contacts/identity-match",
-    body: z.unknown(),
+    body: contactIdentityMatchBodySchema,
     responses: { 200: contactIdentityMatchResultSchema, 400: z.unknown(), 500: z.unknown() },
     summary: "Match contact identity",
   },
   bulkTag: {
     method: "POST",
     path: "/api/contacts/bulk-tag",
-    body: z.unknown(),
+    body: contactsBulkTagBodySchema,
     responses: {
       200: z.object({ success: z.literal(true), updatedCount: z.number() }),
       500: z.unknown(),
@@ -178,7 +198,12 @@ export const contactsCrudRoutes = {
   duplicateCheck: {
     method: "POST",
     path: "/api/contacts/duplicate-check",
-    body: z.object({ contact: z.unknown() }),
+    /**
+     * The candidate is re-validated tenant-aware in the handler
+     * (`buildContactDuplicateCheckBodySchema(extraKeys)`); here we only pin the
+     * envelope, because custom fields and a partially filled draft are valid.
+     */
+    body: z.object({ contact: z.record(z.string(), z.unknown()) }).strict(),
     responses: { 200: z.object({ matchCount: z.number() }), 500: z.unknown() },
     summary: "Check for duplicate contacts",
   },

@@ -14,6 +14,8 @@ import {
 } from "./contactValidationUseCases.js";
 import { broadcastCollection } from "../../lib/livePush.js";
 import { invalidateMultiTierCache } from "../../lib/cache/index.js";
+import { loadContactWriteContext } from "./contactWriteContext.js";
+import type { ContactWriteContext } from "./contactWriteContextTypes.js";
 import type { ContactsRepository } from "../repository/contactsRepository.js";
 import { contactsRepository } from "../repository/contactsRepositoryAdapter.js";
 
@@ -24,6 +26,14 @@ interface UpsertContactOptions {
   language?: string;
   /** Acting user when no full `User` is available (queued import worker). */
   actorId?: string;
+  /** Preloaded tenant config (batch writers) — avoids re-reading it per contact. */
+  context?: ContactWriteContext;
+  /**
+   * Batch mode: skip per-record live-update broadcast, multi-tier cache
+   * invalidation and duplicate-scan invalidation. The caller must run each
+   * exactly once after the batch.
+   */
+  batchMode?: boolean;
 }
 
 export async function upsertContact(
@@ -35,6 +45,10 @@ export async function upsertContact(
   created: boolean;
   restoredFromDelete?: boolean;
 }> {
+  const opts = options && !("role" in options) ? (options as UpsertContactOptions) : undefined;
+  // Load tenant config before the write transaction: it is read-only and does
+  // not belong inside the row-locked scope.
+  const context = opts?.context ?? (await loadContactWriteContext());
   const result = await runInTransaction(async () => {
     const tenant = getRequestTenant();
     if (!tenant) throw new Error("Tenant context required");
@@ -42,7 +56,6 @@ export async function upsertContact(
     const created = !existing;
     const restoredFromDelete = existing && Boolean(existing.deletedAt);
 
-    const opts = options && !("role" in options) ? (options as UpsertContactOptions) : undefined;
     const user = options && "role" in options ? (options as User) : opts?.user;
     const explicitCanRestore = opts?.canRestore;
     const language = opts?.language || "en";
@@ -63,8 +76,12 @@ export async function upsertContact(
 
     const stripped = stripClientSoftDeleteFields(contact);
     const mergedInput = existing ? mergeContactPatch(existing, stripped) : stripped;
-    const contactWithId = await prepareContactRecord(mergedInput, contact.id ?? existing?.id);
-    await assertContactUniqueFields(tenant, contactWithId, language, [], repo);
+    const contactWithId = await prepareContactRecord(
+      mergedInput,
+      contact.id ?? existing?.id,
+      context,
+    );
+    await assertContactUniqueFields(tenant, contactWithId, { language, context }, [], repo);
     const saved: Contact = created
       ? contactWithId
       : {
@@ -78,17 +95,27 @@ export async function upsertContact(
       saved.createdBy = existing?.createdBy ?? actorId;
       saved.updatedBy = actorId;
     }
+    if (restoredFromDelete) {
+      // Restore provenance belongs to the delete sextuple — an upsert that
+      // resurrects a trashed contact must record who did it and when.
+      saved.restoredAt = new Date().toISOString();
+      saved.restoredBy = actorId ?? existing?.restoredBy;
+    }
 
     await repo.save(tenant, saved);
     await applyContactRelationshipInference(tenant, saved, undefined, repo);
-    await invalidateDuplicateScanCache();
+    if (!opts?.batchMode) {
+      await invalidateDuplicateScanCache();
+    }
     return { contact: saved, created, restoredFromDelete: restoredFromDelete || undefined };
   });
   const tenant = getRequestTenant();
-  if (tenant) {
-    await invalidateMultiTierCache({ tenantId: tenant, domain: "contacts" });
+  if (!opts?.batchMode) {
+    if (tenant) {
+      await invalidateMultiTierCache({ tenantId: tenant, domain: "contacts" });
+    }
+    await broadcastCollection("contacts");
   }
-  await broadcastCollection("contacts");
   return result;
 }
 
@@ -107,6 +134,8 @@ interface UpdateContactByIdOptions {
    * A mismatch means another writer saved first → `ConflictError` (409).
    */
   expectedUpdatedAt?: string;
+  /** Preloaded tenant config (batch writers). */
+  context?: ContactWriteContext;
 }
 
 export async function updateContactById(
@@ -121,6 +150,7 @@ export async function updateContactById(
   const applyInference = options.applyRelationshipInference !== false;
   const actorId = options.actorId;
   const expectedUpdatedAt = options.expectedUpdatedAt?.trim();
+  const context = options.context ?? (await loadContactWriteContext());
 
   const saved = await runInTransaction(async () => {
     const tenant = getRequestTenant();
@@ -133,8 +163,12 @@ export async function updateContactById(
       throw new ConflictError("This contact was changed by someone else. Reload it and try again.");
     }
     const stripped = stripClientSoftDeleteFields({ ...contact, id });
-    const contactWithId = await prepareContactRecord(mergeContactPatch(existing, stripped), id);
-    await assertContactUniqueFields(tenant, contactWithId, language, [], repo);
+    const contactWithId = await prepareContactRecord(
+      mergeContactPatch(existing, stripped),
+      id,
+      context,
+    );
+    await assertContactUniqueFields(tenant, contactWithId, { language, context }, [], repo);
     const next: Contact = {
       ...contactWithId,
       id,

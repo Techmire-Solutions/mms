@@ -13,7 +13,7 @@ import type { SoftDeletedPayload } from "../services/outboxEventService.js";
 import { buildStudentForensicSnapshot } from "../services/forensicSnapshotService.js";
 import { buildContactForensicSnapshot } from "../services/forensicSnapshotService.js";
 import { redisGet, redisSet, redisDelPattern } from "../lib/redis.js";
-import { emitOutboxEvent } from "../services/outboxEventService.js";
+import { emitOutboxEvent, emitOutboxEvents } from "../services/outboxEventService.js";
 
 // ---------------------------------------------------------------------------
 // Module mocks (factory state is created in vi.hoisted)
@@ -198,6 +198,45 @@ describe("Outbox CDC — soft-delete / restore pipeline", () => {
           payload: expect.objectContaining({ version: 1_700_000_000_000 }),
         }),
       );
+    });
+
+    it("emitOutboxEvents inserts the whole batch with one statement", async () => {
+      await emitOutboxEvents([
+        {
+          type: "entity.soft_deleted",
+          payload: {
+            entityType: "contacts",
+            entityId: "con-1",
+            tenantId: "demo",
+            deletedAt: "2026-09-11T00:00:00.000Z",
+            deletedBy: "u-admin",
+            version: 1,
+          },
+        },
+        {
+          type: "entity.soft_deleted",
+          payload: {
+            entityType: "contacts",
+            entityId: "con-2",
+            tenantId: "demo",
+            deletedAt: "2026-09-11T00:00:00.000Z",
+            deletedBy: "u-admin",
+            version: 2,
+          },
+        },
+      ]);
+
+      expect(mockInsert).toHaveBeenCalledTimes(1);
+      const valuesCall = mockInsert.mock.results[0].value.values;
+      expect(valuesCall).toHaveBeenCalledTimes(1);
+      const rows = valuesCall.mock.calls[0]?.[0] as Array<Record<string, unknown>>;
+      expect(rows).toHaveLength(2);
+      expect(rows.map((row) => row.entityId)).toEqual(["con-1", "con-2"]);
+    });
+
+    it("emitOutboxEvents is a no-op for an empty batch", async () => {
+      await emitOutboxEvents([]);
+      expect(mockInsert).not.toHaveBeenCalled();
     });
 
     it("emitOutboxEvent can be called with an explicit tx overload", async () => {

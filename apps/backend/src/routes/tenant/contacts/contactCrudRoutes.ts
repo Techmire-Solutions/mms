@@ -62,6 +62,7 @@ export const contactCrudRoutes: FastifyPluginAsync = async (fastify) => {
           body: { ...result, contacts: sanitized },
         };
       } catch (error) {
+        request.log.error(error, "Failed to list contacts");
         return {
           status: 500 as const,
           body: { type: "database_error", message: "Failed to list contacts" },
@@ -105,6 +106,7 @@ export const contactCrudRoutes: FastifyPluginAsync = async (fastify) => {
         }
         return { status: 200 as const, body: { contact: await sanitizeOneForUser(contact, user) } };
       } catch (error) {
+        request.log.error(error, "Failed to load contact");
         return {
           status: 500 as const,
           body: { type: "database_error", message: "Failed to load contact" },
@@ -151,6 +153,7 @@ export const contactCrudRoutes: FastifyPluginAsync = async (fastify) => {
           body: { success: true, contact: await sanitizeOneForUser(contact, user) },
         };
       } catch (error: unknown) {
+        request.log.error(error, "Failed to save contact record");
         return formatContactWriteError(error, "Failed to save contact record");
       }
     },
@@ -199,12 +202,14 @@ export const contactCrudRoutes: FastifyPluginAsync = async (fastify) => {
           body: { success: true, contact: await sanitizeOneForUser(updated, user) },
         };
       } catch (error: unknown) {
+        // A stale-write conflict is an expected outcome, not a server failure.
         if (error instanceof ConflictError) {
           return {
             status: 409 as const,
             body: { type: "conflict" as const, message: error.message },
           };
         }
+        request.log.error(error, "Failed to update contact");
         return formatContactWriteError(error, "Failed to update contact");
       }
     },
@@ -239,6 +244,7 @@ export const contactCrudRoutes: FastifyPluginAsync = async (fastify) => {
         await auditContact(user, "contact.soft_delete", `Soft-deleted contact ${id}`, id);
         return { status: 200 as const, body: { success: true } };
       } catch (error) {
+        request.log.error(error, "Failed to delete contact");
         return {
           status: 500 as const,
           body: { type: "database_error", message: "Failed to delete contact" },
@@ -265,6 +271,7 @@ export const contactCrudRoutes: FastifyPluginAsync = async (fastify) => {
         });
         return { status: 200 as const, body: result };
       } catch (error) {
+        request.log.error(error, "Failed to load contact report analytics");
         return {
           status: 500 as const,
           body: { type: "database_error", message: "Failed to load contact report analytics" },
