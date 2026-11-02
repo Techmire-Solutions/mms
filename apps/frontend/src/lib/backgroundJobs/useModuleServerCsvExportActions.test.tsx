@@ -55,7 +55,9 @@ describe("useModuleServerCsvExportActions", () => {
   let root: Root;
   let startExport: Mock<Options["startExport"]>;
   let onError: Mock<Options["onError"]>;
-  let logExportAudit: { mutateAsync: Mock<Options["logExportAudit"]["mutateAsync"]> };
+  let logExportAudit: {
+    mutateAsync: Mock<NonNullable<Options["logExportAudit"]>["mutateAsync"]>;
+  };
   let actions: {
     handleExportCSV: () => Promise<void>;
     handleBulkExport: () => Promise<void>;
@@ -100,7 +102,7 @@ describe("useModuleServerCsvExportActions", () => {
     onError = vi.fn<Options["onError"]>();
     logExportAudit = {
       mutateAsync: vi
-        .fn<Options["logExportAudit"]["mutateAsync"]>()
+        .fn<NonNullable<Options["logExportAudit"]>["mutateAsync"]>()
         .mockResolvedValue({ ok: true }),
     };
     vi.clearAllMocks();
@@ -132,6 +134,18 @@ describe("useModuleServerCsvExportActions", () => {
     expect(safeAudit).toHaveBeenCalledWith(expect.anything(), "contacts.export_audit");
     expect(notify.info).not.toHaveBeenCalled();
     expect(onError).not.toHaveBeenCalled();
+  });
+
+  it("skips the client audit when the module omits logExportAudit", async () => {
+    renderHook({ hasActiveFilters: true, logExportAudit: undefined });
+
+    await act(async () => {
+      await actions.handleExportCSV();
+    });
+
+    expect(notify.success).toHaveBeenCalledWith("Export downloaded");
+    expect(logExportAudit.mutateAsync).not.toHaveBeenCalled();
+    expect(safeAudit).not.toHaveBeenCalled();
   });
 
   it("audits an unfiltered whole-directory export with scope all", async () => {

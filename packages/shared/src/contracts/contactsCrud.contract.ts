@@ -125,20 +125,6 @@ export const contactsCrudRoutes = {
     responses: { 200: contactBulkRestoreResponseSchema, 500: z.unknown() },
     summary: "Bulk restore contacts",
   },
-  exportAudit: {
-    method: "POST",
-    path: "/api/contacts/export-audit",
-    body: z.object({ count: z.number(), scope: z.enum(["all", "filtered", "selection"]) }),
-    responses: { 200: z.object({ success: z.literal(true) }), 500: z.unknown() },
-    summary: "Log export audit",
-  },
-  setupAudit: {
-    method: "POST",
-    path: "/api/contacts/setup-audit",
-    body: z.object({ area: z.enum(["fields", "preferences"]), summary: z.string() }),
-    responses: { 200: z.object({ success: z.literal(true) }), 500: z.unknown() },
-    summary: "Log setup audit",
-  },
   resolve: {
     method: "POST",
     path: "/api/contacts/resolve",

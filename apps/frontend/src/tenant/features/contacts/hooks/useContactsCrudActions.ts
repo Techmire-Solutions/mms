@@ -1,11 +1,9 @@
-import { useContactMutations } from "@/tenant/features/contacts/hooks/useContacts";
 import { useContactsCrudNotify } from "@/tenant/features/contacts/hooks/useContactsCrudNotify";
 import { useContactsCrudWriteActions } from "@/tenant/features/contacts/hooks/useContactsCrudWriteActions";
 import { useContactsCrudDeleteActions } from "@/tenant/features/contacts/hooks/useContactsCrudDeleteActions";
 
 export function useContactsCrudActions() {
   const { t, handleError, notifyBulkResult, notifyArchivedWithUndo } = useContactsCrudNotify();
-  const { logExportAudit } = useContactMutations();
   const write = useContactsCrudWriteActions({ t, handleError, notifyBulkResult });
   const remove = useContactsCrudDeleteActions({
     t,
@@ -16,7 +14,6 @@ export function useContactsCrudActions() {
 
   return {
     updateContact: write.updateContact,
-    logExportAudit,
     handleError,
     notifyBulkResult,
     saveContact: write.saveContact,

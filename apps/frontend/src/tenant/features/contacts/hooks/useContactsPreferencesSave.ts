@@ -6,9 +6,7 @@ import {
   prepareContactPreferencesSetupSave,
 } from "@mms/shared";
 import { useTranslation } from "@/hooks/useTranslation";
-import { useContactMutations } from "@/tenant/features/contacts/hooks/useContacts";
 import { notify } from "@/lib/notify";
-import { safeAudit } from "@/lib/safeAudit";
 import type { CountryCodeEntry } from "@/lib/contacts/countryCodeOptions";
 
 const PREFS_SETUP_ISSUE_KEYS: Record<ContactPreferencesSetupIssue, AppTranslationKey> = {
@@ -47,7 +45,6 @@ export function useContactsPreferencesSave({
   setSaved: Dispatch<SetStateAction<boolean>>;
 }) {
   const { t } = useTranslation();
-  const { logSetupAudit } = useContactMutations();
   const [isSaving, setIsSaving] = useState(false);
 
   const handleSave = async (): Promise<void> => {
@@ -67,13 +64,6 @@ export function useContactsPreferencesSave({
         await updatePrefsAsync(contextPrefs);
         throw countryError;
       }
-      safeAudit(
-        logSetupAudit.mutateAsync({
-          area: "preferences",
-          summary: t("contacts.setup.auditSummary", { area: "preferences" }),
-        }),
-        "contacts.setup_audit",
-      );
       setPrefs(prepared.prefs);
       setCountryCodesDraft(prepared.countryCodes);
       notify.success(t("contacts.setup.preferencesSaved"));

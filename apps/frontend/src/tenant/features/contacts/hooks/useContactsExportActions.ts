@@ -29,7 +29,11 @@ interface UseContactsExportActionsOptions {
   /** Whether any directory filter is applied — selects the audit scope. */
   hasActiveFilters: boolean;
   selected: (string | number)[];
-  logExportAudit: {
+  /**
+   * Legacy client-reported audit; omitted for contacts because the queued export
+   * already writes the authoritative server-side audit row (C-09).
+   */
+  logExportAudit?: {
     mutateAsync: (payload: {
       count: number;
       scope: "all" | "filtered" | "selection";

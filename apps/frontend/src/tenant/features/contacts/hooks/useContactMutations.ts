@@ -10,8 +10,6 @@ import {
   useContactsContractRestore,
   useContactsContractBulkDelete,
   useContactsContractBulkRestore,
-  useContactsContractLogExportAudit,
-  useContactsContractLogSetupAudit,
 } from "@/tenant/features/contacts/hooks/useContactsQueries";
 import { invalidateContactsQueries } from "@/tenant/features/contacts/hooks/invalidateContactsQueries";
 import { unwrapContactMutationBody } from "@/tenant/features/contacts/hooks/contactMutationResponse";
@@ -40,8 +38,6 @@ export function useContactMutations() {
   const bulkDeleteMutation = useContactsContractBulkDelete();
   const restoreMutation = useContactsContractRestore();
   const bulkRestoreMutation = useContactsContractBulkRestore();
-  const logExportAuditMutation = useContactsContractLogExportAudit();
-  const logSetupAuditMutation = useContactsContractLogSetupAudit();
 
   const upsertContactMutation = tsrClient.contacts.create.useMutation({
     onSuccess: invalidate,
@@ -169,20 +165,6 @@ export function useContactMutations() {
         const response = await bulkTagContactsMutation.mutateAsync({ body: payload });
         return unwrapContactMutationBody<ContactBulkTagResult>(response);
       },
-    },
-    logExportAudit: {
-      mutateAsync: async (payload: { count: number; scope: "all" | "filtered" | "selection" }) => {
-        const response = await logExportAuditMutation.mutateAsync({ body: payload });
-        return unwrapContactMutationBody<ContactSuccessResponse>(response);
-      },
-      isPending: logExportAuditMutation.isPending,
-    },
-    logSetupAudit: {
-      mutateAsync: async (payload: { area: "fields" | "preferences"; summary: string }) => {
-        const response = await logSetupAuditMutation.mutateAsync({ body: payload });
-        return unwrapContactMutationBody<ContactSuccessResponse>(response);
-      },
-      isPending: logSetupAuditMutation.isPending,
     },
   };
 }

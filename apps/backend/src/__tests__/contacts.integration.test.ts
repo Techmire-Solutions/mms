@@ -843,19 +843,20 @@ describe("contacts REST routes", () => {
     await app.close();
   });
 
-  it("POST /api/contacts/export-audit records export audit for read roles", async () => {
+  it("does not register the legacy client audit endpoints", async () => {
     const app = await buildApp();
-    const res = await app.inject({
-      method: "POST",
-      url: "/api/contacts/export-audit",
-      headers: {
-        host: "demo.localhost",
-        authorization: `Bearer ${accountantToken(app)}`,
-      },
-      payload: { count: 12, scope: "filtered" },
-    });
-    expect(res.statusCode).toBe(200);
-    expect(res.json()).toEqual({ success: true });
+    for (const url of ["/api/contacts/export-audit", "/api/contacts/setup-audit"]) {
+      const res = await app.inject({
+        method: "POST",
+        url,
+        headers: {
+          host: "demo.localhost",
+          authorization: `Bearer ${adminToken(app)}`,
+        },
+        payload: {},
+      });
+      expect(res.statusCode).toBe(404);
+    }
     await app.close();
   });
 
@@ -1097,21 +1098,6 @@ describe("contacts REST routes", () => {
     await app.close();
   });
 
-  it("POST /api/contacts/export-audit returns 403 for viewer", async () => {
-    const app = await buildApp();
-    const res = await app.inject({
-      method: "POST",
-      url: "/api/contacts/export-audit",
-      headers: {
-        host: "demo.localhost",
-        authorization: `Bearer ${viewerToken(app)}`,
-      },
-      payload: { count: 3, scope: "filtered" },
-    });
-    expect(res.statusCode).toBe(403);
-    await app.close();
-  });
-
   it("POST /api/contacts/merge merges contacts for roles with write+delete", async () => {
     const app = await buildApp();
     const res = await app.inject({
@@ -1203,39 +1189,6 @@ describe("contacts REST routes", () => {
     );
     expect(typeof res.json().report.lastRunAt).toBe("string");
     expect(res.json().report.lastRunAt).toMatch(/^\d{4}-\d{2}-\d{2}T/);
-    await app.close();
-  });
-
-  it("POST /api/contacts/setup-audit requires setup write permission", async () => {
-    const app = await buildApp();
-    const res = await app.inject({
-      method: "POST",
-      url: "/api/contacts/setup-audit",
-      headers: {
-        host: "demo.localhost",
-        authorization: `Bearer ${teacherToken(app)}`,
-      },
-      payload: { area: "fields", summary: "Changed fields" },
-    });
-    expect(res.statusCode).toBe(403);
-    await app.close();
-  });
-
-  it("POST /api/contacts/setup-audit records setup changes for admin", async () => {
-    const app = await buildApp();
-    const res = await app.inject({
-      method: "POST",
-      url: "/api/contacts/setup-audit",
-      headers: {
-        host: "demo.localhost",
-        authorization: `Bearer ${adminToken(app)}`,
-      },
-      payload: { area: "fields", summary: "Changed fields" },
-    });
-    expect(res.statusCode).toBe(200);
-    expect(mockRecordAudit).toHaveBeenCalledWith(
-      expect.objectContaining({ action: "contact.setup" }),
-    );
     await app.close();
   });
 

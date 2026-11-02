@@ -24,11 +24,19 @@ export type RegisterModuleCsvExportRoutesOptions = {
   exportAuditAction: string;
   queueAuditAction: string;
   exportAuditSchema?: ZodTypeAny;
+  /**
+   * Register the legacy client-initiated `/export-audit` endpoint. When the
+   * module's queue path already writes an authoritative audit row, a caller can
+   * still forge the client-supplied count/scope — callers that do not need the
+   * duplicate row pass `false` (C-09).
+   * @default true
+   */
+  registerExportAudit?: boolean;
 };
 
 /**
- * Register POST `/export/csv` + POST `/export-audit` for a module.
- * Contacts keeps VCF/merge/setup-audit as separate handlers.
+ * Register POST `/export/csv` (+ optional POST `/export-audit`) for a module.
+ * Contacts keeps VCF/merge/import as separate handlers.
  */
 export function registerModuleCsvExportRoutes(
   fastify: FastifyInstance,
@@ -98,29 +106,31 @@ export function registerModuleCsvExportRoutes(
     return reply.status(202).send({ job });
   });
 
-  fastify.post("/export-audit", async (request, reply) => {
-    const user = request.user as User;
-    if (!options.canRead(user)) return sendForbidden(reply);
+  if (options.registerExportAudit !== false) {
+    fastify.post("/export-audit", async (request, reply) => {
+      const user = request.user as User;
+      if (!options.canRead(user)) return sendForbidden(reply);
 
-    const parsed = parseRequest(exportAuditSchema, request.body);
-    if (!parsed.ok) return replyValidationError(reply, parsed.message);
+      const parsed = parseRequest(exportAuditSchema, request.body);
+      if (!parsed.ok) return replyValidationError(reply, parsed.message);
 
-    const data = parsed.data as {
-      count: number;
-      scope?: "all" | "filtered" | "selection";
-    };
-    const scope = data.scope ?? "filtered";
-    await recordModernAuditEvent({
-      workspaceSubdomain: getRequestTenant() ?? "unknown",
-      tableName: options.moduleId,
-      recordId: options.moduleId,
-      actionType: mapActionStringToAuditType(options.exportAuditAction),
-      realUserId: String(user.id),
-      newState: {
-        summary: `Exported ${data.count} ${options.entityNoun}(s) (${scope})`,
-        action: options.exportAuditAction,
-      },
+      const data = parsed.data as {
+        count: number;
+        scope?: "all" | "filtered" | "selection";
+      };
+      const scope = data.scope ?? "filtered";
+      await recordModernAuditEvent({
+        workspaceSubdomain: getRequestTenant() ?? "unknown",
+        tableName: options.moduleId,
+        recordId: options.moduleId,
+        actionType: mapActionStringToAuditType(options.exportAuditAction),
+        realUserId: String(user.id),
+        newState: {
+          summary: `Exported ${data.count} ${options.entityNoun}(s) (${scope})`,
+          action: options.exportAuditAction,
+        },
+      });
+      return reply.send({ success: true });
     });
-    return reply.send({ success: true });
-  });
+  }
 }

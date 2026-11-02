@@ -52,7 +52,12 @@ export interface UseModuleServerCsvExportActionsOptions<
     ids?: Array<string | number>;
     idempotencyKey?: string;
   }) => Promise<BackgroundJobRecord>;
-  logExportAudit: {
+  /**
+   * Legacy client-reported export audit. Omit when the module's queue path
+   * already writes an authoritative audit row (contacts) so the caller cannot
+   * forge count/scope (C-09).
+   */
+  logExportAudit?: {
     mutateAsync: (payload: { count: number; scope: ModuleCsvExportAuditScope }) => Promise<unknown>;
   };
   onError: (err: unknown, scope: string) => void;
@@ -123,13 +128,15 @@ export function useModuleServerCsvExportActions<
           await downloadBackgroundJobArtifact(job.id, resolvedFilename);
         }
         notify.success(successMessage);
-        safeAudit(
-          logExportAudit.mutateAsync({
-            count: job.progress?.total ?? job.progress?.current ?? fallbackCount,
-            scope,
-          }),
-          auditScope,
-        );
+        if (logExportAudit) {
+          safeAudit(
+            logExportAudit.mutateAsync({
+              count: job.progress?.total ?? job.progress?.current ?? fallbackCount,
+              scope,
+            }),
+            auditScope,
+          );
+        }
       } catch (err) {
         if (err instanceof BackgroundJobTimeoutError) {
           // Still running server-side: keep the attempt key so a retry dedupes onto it.
