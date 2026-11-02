@@ -1,6 +1,7 @@
 import { test, expect } from "@playwright/test";
 import {
   bootstrapAuthenticatedTenant,
+  ensureE2ePlatformAdmin,
   type TenantBootstrapCredentials,
 } from "../../helpers/tenantBootstrap.js";
 
@@ -44,10 +45,18 @@ const VCARD = [
 /**
  * Skips (rather than fails) when the platform console is already claimed by another account:
  * this spec never resets platform users, so it cannot onboard a tenant in that case.
+ *
+ * The login below runs before `bootstrapAuthenticatedTenant` seeds its platform admin, so a
+ * claimed console would otherwise report "invalid credentials" for an account that does not
+ * exist yet. Seed the default E2E admin first; never overwrite a caller-supplied account.
  */
 async function skipWhenPlatformConsoleUnavailable(
   page: import("@playwright/test").Page,
 ): Promise<void> {
+  if (!process.env.E2E_PLATFORM_EMAIL) {
+    ensureE2ePlatformAdmin(credentials.platformEmail, credentials.platformPassword);
+  }
+
   await page.goto("/");
   await page.waitForLoadState("domcontentloaded");
   const setupEmail = page.locator("#platform-setup-email");
@@ -124,6 +133,9 @@ test.describe.serial("Contacts import + export E2E", { tag: "@local-only" }, () 
     const download = page.waitForEvent("download", { timeout: 90_000 });
     await page.getByRole("button", { name: "Export", exact: true }).click();
     const file = await download;
-    expect(file.suggestedFilename()).toBe("contacts.csv");
+    // Exports are tenant-qualified (`buildTenantExportFilename`), not the bare base name.
+    const filename = file.suggestedFilename().toLowerCase();
+    expect(filename).toContain("responsive_shell_madrasa");
+    expect(filename).toMatch(/contacts\.csv$/);
   });
 });
