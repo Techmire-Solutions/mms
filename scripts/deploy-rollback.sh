@@ -115,6 +115,9 @@ fi
 
 ROLLBACK_SHA="$(basename "$TARBALL" .tar.gz)"
 printf '%s\n' "$ROLLBACK_SHA" > "${ROOT_DIR}/.deploy-current-sha"
+if git rev-parse --is-inside-work-tree >/dev/null 2>&1; then
+  git checkout --detach "$ROLLBACK_SHA" 2>/dev/null || true
+fi
 pm2 save 2>/dev/null || true
 
 echo "Rollback complete — dist from ${ROLLBACK_SHA}"

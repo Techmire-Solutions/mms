@@ -1,4 +1,5 @@
 import { ensureFacultyContactIndex } from "./migrations/facultyContactIndex.js";
+import { prepareContactSystemTagsPreMigration } from "./migrations/contactSystemTagsPreMigration.js";
 import { dataMigrationsToRun } from "./dataMigrationRegistry.js";
 import { existsSync } from "node:fs";
 import { join } from "node:path";
@@ -39,6 +40,9 @@ export function resolveMigrationsFolder(): string {
   const backendRoot = resolveBackendRoot();
   const srcMigrations = join(backendRoot, "src/db/migrations_drizzle");
   const distMigrations = join(backendRoot, "dist/db/migrations_drizzle");
+  if (process.env.NODE_ENV === "production" && existsSync(distMigrations)) {
+    return distMigrations;
+  }
   return existsSync(srcMigrations) ? srcMigrations : distMigrations;
 }
 
@@ -67,6 +71,7 @@ export async function applyDrizzleMigrations(): Promise<{ migrationsFolder: stri
   // Bound every migration's lock wait centrally: applied migrations are
   // forward-only and some predate the lock_timeout preamble.
   await migrateClient.query(`SET lock_timeout = '2s'`);
+  await prepareContactSystemTagsPreMigration(migrateClient);
   const migrateDb = drizzle(migrateClient, { schema });
   await migrate(migrateDb, { migrationsFolder });
   await migrateClient.query(`SET lock_timeout = 0`);
