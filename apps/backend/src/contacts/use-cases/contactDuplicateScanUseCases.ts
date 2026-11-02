@@ -19,6 +19,13 @@ import { contactsRepository } from "../repository/contactsRepositoryAdapter.js";
 
 const CACHE_KEY = CONTACTS_DUPLICATE_SCAN_CACHE_OBJECT_KEY;
 
+/**
+ * Upper bound on how long a stored scan is trusted. Contact writes invalidate the
+ * cache, but a missed/raced invalidation (e.g. a preferences change before C-01's
+ * fix) must not leave stale duplicate pairs forever.
+ */
+const DUPLICATE_SCAN_CACHE_TTL_MS = 24 * 60 * 60 * 1000;
+
 interface ContactDuplicateScanCache {
   computedAt: string;
   contactCount: number;
@@ -48,6 +55,21 @@ export async function loadContactDuplicateBlockedIds(
 }
 
 /**
+ * Hydrates duplicate participants with the summary projection when the repository
+ * supports it (C-02): the pair finder only needs name/phones/emails/cnic, never
+ * the full child graph. Adapters without `findSummaryByIds` fall back to full.
+ */
+async function hydrateDuplicateParticipants(
+  tenant: string,
+  ids: string[],
+  repo: ContactsRepository,
+): Promise<Contact[]> {
+  if (ids.length === 0) return [];
+  const fetch = repo.findSummaryByIds ?? repo.findByIds;
+  return await fetch.call(repo, tenant, ids);
+}
+
+/**
  * Pair-finding over only the SQL-blocked participant set.
  *
  * SQL returns the distinct ids that share a normalized phone/email/name key with
@@ -65,7 +87,7 @@ async function findBlockedDuplicatePairs(
     repo,
   );
   if (blockedIds.length === 0) return [];
-  const pool = await repo.findByIds(tenant, blockedIds);
+  const pool = await hydrateDuplicateParticipants(tenant, blockedIds, repo);
   return findContactDuplicatePairs(
     pool.filter((contact) => !contact.deletedAt),
     preferences ?? {},
@@ -77,6 +99,10 @@ export async function getDuplicateScanCache(): Promise<ContactDuplicateScanCache
   if (!raw || typeof raw !== "object" || Array.isArray(raw)) return null;
   const cache = raw as ContactDuplicateScanCache;
   if (!Array.isArray(cache.pairs)) return null;
+  const computedAt = Date.parse(String(cache.computedAt ?? ""));
+  if (!Number.isFinite(computedAt) || Date.now() - computedAt > DUPLICATE_SCAN_CACHE_TTL_MS) {
+    return null;
+  }
   return cache;
 }
 
@@ -94,10 +120,19 @@ export async function runContactsDuplicateScan(
   repo: ContactsRepository = contactsRepository,
 ): Promise<{ pairCount: number; contactCount: number }> {
   const tenant = getRequestTenant();
+  const versionBefore = tenant ? await repo.getLatestWriteAt?.(tenant) : undefined;
   const preferences = await loadContactPreferences();
   const total = tenant ? await repo.countByWorkspace(tenant, { deleted: "active" }) : 0;
   await onProgress?.(0, Math.max(total, 1));
   const pairs = await findBlockedDuplicatePairs(preferences, repo);
+
+  const versionAfter =
+    tenant && repo.getLatestWriteAt ? await repo.getLatestWriteAt(tenant) : versionBefore;
+  if (repo.getLatestWriteAt && versionBefore !== versionAfter) {
+    // A contact write landed mid-scan; its invalidation must win over this snapshot (C-02).
+    await onProgress?.(total, Math.max(total, 1));
+    return { pairCount: pairs.length, contactCount: total };
+  }
 
   const cache: ContactDuplicateScanCache = {
     computedAt: new Date().toISOString(),
@@ -106,6 +141,14 @@ export async function runContactsDuplicateScan(
     pairs,
   };
   await saveObject(CACHE_KEY, cache);
+  if (tenant && repo.getLatestWriteAt) {
+    // A write between the version check and the save already invalidated; re-delete
+    // so the stale snapshot cannot survive the race.
+    const versionFinal = await repo.getLatestWriteAt(tenant);
+    if (versionFinal !== versionAfter) {
+      await deleteObject(CACHE_KEY);
+    }
+  }
   await onProgress?.(total, Math.max(total, 1));
 
   return { pairCount: pairs.length, contactCount: total };
@@ -118,9 +161,28 @@ export async function loadDuplicatePairsPage(
   },
   repo: ContactsRepository = contactsRepository,
 ): Promise<ContactsDuplicatePairsPageResult> {
+  const tenant = getRequestTenant();
   let pairs = await getCachedDuplicatePairs();
   if (!pairs) {
+    const versionBefore = tenant ? await repo.getLatestWriteAt?.(tenant) : undefined;
     pairs = await findBlockedDuplicatePairs(await loadContactPreferences(), repo);
+    const versionAfter =
+      tenant && repo.getLatestWriteAt ? await repo.getLatestWriteAt(tenant) : versionBefore;
+    if (tenant && (!repo.getLatestWriteAt || versionBefore === versionAfter)) {
+      // Persist the on-demand result so paginating/reopening does not rescan the
+      // tenant (C-02). A cache-write failure must not fail the read.
+      try {
+        const contactCount = await repo.countByWorkspace(tenant, { deleted: "active" });
+        await saveObject(CACHE_KEY, {
+          computedAt: new Date().toISOString(),
+          contactCount,
+          pairCount: pairs.length,
+          pairs,
+        });
+      } catch {
+        // Best-effort cache fill; the page result is returned regardless.
+      }
+    }
   }
   return paginateContactDuplicatePairs(pairs, query.page ?? 1, query.limit ?? 50);
 }
@@ -140,7 +202,9 @@ export async function countContactDuplicateMatches(
   const ids = await loadContactDuplicateCandidateIds(keys, excludeIds, repo);
   if (ids.length === 0) return 0;
 
-  const peers = tenant ? (await repo.findByIds(tenant, ids)).filter((c) => !c.deletedAt) : [];
+  const peers = tenant
+    ? (await hydrateDuplicateParticipants(tenant, ids, repo)).filter((c) => !c.deletedAt)
+    : [];
   const pairs = findContactDuplicatePairs([...peers, contact], preferences ?? {});
   return pairs.filter((pair) =>
     pair.contacts.some(

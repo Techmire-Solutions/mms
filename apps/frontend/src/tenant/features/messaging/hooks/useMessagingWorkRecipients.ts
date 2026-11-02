@@ -1,10 +1,9 @@
 import { keepPreviousData, useQuery } from "@tanstack/react-query";
 import type {
-  Contact,
   MessagingRoleFilter,
   MessagingGenderFilter,
-  ContactsListPageResult,
   MessagingRecipientsMatchResponseDto,
+  MessagingRecipientsPageResponse,
   StandardMessagingRecipient,
 } from "@mms/shared";
 import { CONTACTS_MODULE_MANIFEST } from "@mms/shared";
@@ -27,7 +26,7 @@ export interface UseMessagingWorkRecipientsParams {
 }
 
 export interface MessagingWorkRecipientsResult {
-  contacts: Contact[];
+  recipients: StandardMessagingRecipient[];
   page: number;
   total: number;
   limit: number;
@@ -126,7 +125,7 @@ export function useMessagingWorkRecipients(
           errorBody?.type,
         );
       }
-      return response.body as ContactsListPageResult;
+      return response.body as MessagingRecipientsPageResponse;
     },
     enabled,
     staleTime: 15_000,
@@ -136,7 +135,7 @@ export function useMessagingWorkRecipients(
   const data = query.data;
 
   return (() => ({
-    contacts: data?.contacts ?? [],
+    recipients: data?.recipients ?? [],
     page: data?.page ?? page,
     total: data?.total ?? 0,
     limit: data?.limit ?? pageSize,

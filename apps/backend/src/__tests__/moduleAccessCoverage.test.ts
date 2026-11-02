@@ -229,7 +229,7 @@ const NON_MODULE_ROUTES: ReadonlyArray<{
   {
     prefix: "/api/uploads/",
     reason: "module-agnostic attachment storage",
-    paths: ["/api/uploads/attachment", "/api/uploads/image"],
+    paths: ["/api/uploads/attachment", "/api/uploads/attachment/delete", "/api/uploads/image"],
   },
   {
     prefix: "/api/audit/",

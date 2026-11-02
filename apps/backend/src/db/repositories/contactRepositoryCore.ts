@@ -13,6 +13,7 @@ export {
 export {
   persistContactTx,
   saveContact,
+  getLatestContactWriteAt,
   saveContactIfVersionMatches,
   bulkSaveContacts,
   bulkSoftDeleteContactsSql,

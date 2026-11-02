@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 import {
+  isCrossTenantRootUpload,
   isPublicUploadPath,
   setStaticAssetHeaders,
   tenantSegmentOf,
@@ -65,6 +66,24 @@ describe("tenant segment", () => {
     expect(tenantSegmentOf("branding/x.webp")).toBeNull();
     expect(tenantSegmentOf("images/x.webp")).toBeNull();
     expect(tenantSegmentOf("tenants/")).toBeNull();
+  });
+});
+
+describe("root-level upload tenant isolation (B-01)", () => {
+  it("blocks a tenant session from non-public root-level paths", () => {
+    expect(isCrossTenantRootUpload("images/scan.webp", "demo")).toBe(true);
+    expect(isCrossTenantRootUpload("attachments/legacy.pdf", "demo")).toBe(true);
+    expect(isCrossTenantRootUpload("avatars/u.webp", "demo")).toBe(true);
+  });
+
+  it("allows tenant-scoped paths and platform (apex) sessions", () => {
+    expect(isCrossTenantRootUpload("tenants/demo/attachments/x.pdf", "demo")).toBe(false);
+    expect(isCrossTenantRootUpload("images/scan.webp", null)).toBe(false);
+    expect(isCrossTenantRootUpload("images/scan.webp", "")).toBe(false);
+  });
+
+  it("leaves public branding public for every caller", () => {
+    expect(isCrossTenantRootUpload("branding/logo.webp", "demo")).toBe(false);
   });
 });
 

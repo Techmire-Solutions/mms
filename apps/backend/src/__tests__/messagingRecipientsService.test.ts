@@ -25,12 +25,18 @@ vi.mock("../db/repositories/messagingRepository.js", () => ({
   deleteMessageLogsByWorkspace: vi.fn(),
 }));
 
-const mockLoadContactsByIdsForTenant = vi.fn();
 const mockLoadContactsPageForTenant = vi.fn();
+const mockLoadContactsSummaryByIdsForTenant = vi.fn();
+const mockLoadContactFieldConfig = vi.fn();
 
 vi.mock("../services/contactService.js", () => ({
-  loadContactsByIdsForTenant: (...args: unknown[]) => mockLoadContactsByIdsForTenant(...args),
   loadContactsPageForTenant: (...args: unknown[]) => mockLoadContactsPageForTenant(...args),
+  loadContactsSummaryByIdsForTenant: (...args: unknown[]) =>
+    mockLoadContactsSummaryByIdsForTenant(...args),
+}));
+
+vi.mock("../contacts/use-cases/contactConfigService.js", () => ({
+  loadContactFieldConfig: (...args: unknown[]) => mockLoadContactFieldConfig(...args),
 }));
 
 import {
@@ -51,14 +57,26 @@ function fakeContact(id: string, overrides: Partial<Contact> = {}): Contact {
   };
 }
 
+function pageOf(contacts: Contact[], overrides: Partial<ContactsListPageResult> = {}) {
+  return {
+    contacts,
+    total: contacts.length,
+    page: 1,
+    limit: 50,
+    hasMore: false,
+    ...overrides,
+  } satisfies ContactsListPageResult;
+}
+
 describe("messaging recipient resolvers (contacts use-case seam)", () => {
   beforeEach(() => {
-    mockLoadContactsByIdsForTenant.mockReset();
     mockLoadContactsPageForTenant.mockReset();
+    mockLoadContactsSummaryByIdsForTenant.mockReset();
+    mockLoadContactFieldConfig.mockReset().mockResolvedValue(null);
   });
 
-  it("resolveMessagingRecipients converts survivors via the tenant read use case", async () => {
-    mockLoadContactsByIdsForTenant.mockResolvedValue([
+  it("resolveMessagingRecipients converts survivors via the summary loader", async () => {
+    mockLoadContactsSummaryByIdsForTenant.mockResolvedValue([
       fakeContact("a", {
         phones: [{ label: "Mobile", countryCode: "+92", number: "3001234567", isPrimary: true }],
       }),
@@ -66,8 +84,8 @@ describe("messaging recipient resolvers (contacts use-case seam)", () => {
       fakeContact("b", { emails: [{ label: "Primary", address: "b@example.com" }] }),
     ]);
 
-    const recipients = await resolveMessagingRecipients("Demo", ["a", "gone", "b"]);
-    expect(mockLoadContactsByIdsForTenant).toHaveBeenCalledWith("demo", ["a", "gone", "b"]);
+    const recipients = await resolveMessagingRecipients("Demo", ["a", "gone", "b"], "teacher");
+    expect(mockLoadContactsSummaryByIdsForTenant).toHaveBeenCalledWith("demo", ["a", "gone", "b"]);
     expect(recipients.map((r) => r.id)).toEqual(["a", "b"]);
     expect(recipients[0]).toMatchObject({ name: "Contact a", phone: "+92 3001234567" });
     expect(recipients[1]).toMatchObject({ name: "Contact b", email: "b@example.com" });
@@ -75,27 +93,25 @@ describe("messaging recipient resolvers (contacts use-case seam)", () => {
 
   it("resolveMessagingRecipients returns [] for empty input without touching the use case", async () => {
     expect(await resolveMessagingRecipients("demo", [])).toEqual([]);
-    expect(mockLoadContactsByIdsForTenant).not.toHaveBeenCalled();
+    expect(mockLoadContactsSummaryByIdsForTenant).not.toHaveBeenCalled();
   });
 
   it("loadMessagingRecipients maps role and reachability onto the list query", async () => {
-    mockLoadContactsPageForTenant.mockResolvedValue({
-      contacts: [fakeContact("a")],
-      total: 1,
-      page: 2,
-      limit: 25,
-      hasMore: false,
-    });
+    mockLoadContactsPageForTenant.mockResolvedValue(pageOf([fakeContact("a")], { page: 2 }));
 
-    await loadMessagingRecipients("demo", {
-      role: "students",
-      gender: "male",
-      search: "ali",
-      page: 2,
-      pageSize: 25,
-      hasPhone: true,
-      hasEmail: undefined,
-    });
+    await loadMessagingRecipients(
+      "demo",
+      {
+        role: "students",
+        gender: "male",
+        search: "ali",
+        page: 2,
+        pageSize: 25,
+        hasPhone: true,
+        hasEmail: undefined,
+      },
+      "teacher",
+    );
     expect(mockLoadContactsPageForTenant).toHaveBeenCalledWith("demo", {
       page: 2,
       limit: 25,
@@ -103,17 +119,111 @@ describe("messaging recipient resolvers (contacts use-case seam)", () => {
       gender: "male",
       hasPhone: true,
       moduleLinkFilter: "students",
+      recipientProjection: true,
     });
   });
 
-  it("loadMessagingRecipients uses unlinked filter for the contacts role", async () => {
-    mockLoadContactsPageForTenant.mockResolvedValue({
-      contacts: [],
-      total: 0,
-      page: 1,
-      limit: 50,
-      hasMore: false,
+  it("returns lean recipients only — no notes, DOB or addresses (A-01)", async () => {
+    mockLoadContactsPageForTenant.mockResolvedValue(
+      pageOf([
+        fakeContact("a", {
+          notes: "private note",
+          dob: "1990-01-01",
+          cnic: "12345-6789012-3",
+          phones: [{ label: "Mobile", number: "3001111", isPrimary: true }],
+          emails: [{ label: "Primary", address: "a@example.com" }],
+          addresses: [{ line1: "1 Street", city: "Lahore" }],
+        } as Partial<Contact>),
+      ]),
+    );
+
+    const result = await loadMessagingRecipients(
+      "demo",
+      {
+        role: "all",
+        gender: "all",
+        page: 1,
+        pageSize: 50,
+        hasPhone: undefined,
+        hasEmail: undefined,
+      },
+      "teacher",
+    );
+    expect(result).toMatchObject({ total: 1, page: 1, limit: 50, hasMore: false });
+    expect(result.recipients).toHaveLength(1);
+    expect(Object.keys(result.recipients[0]).sort()).toEqual(["email", "id", "name", "phone"]);
+    expect(result.recipients[0]).not.toHaveProperty("notes");
+    expect(result.recipients[0]).not.toHaveProperty("addresses");
+  });
+
+  it("drops a channel hidden by the viewer's contact field config (A-02)", async () => {
+    mockLoadContactFieldConfig.mockResolvedValue({
+      version: 1,
+      enabledTabs: [],
+      requiredTabs: [],
+      fields: {
+        phones: [
+          {
+            key: "number",
+            label: "Phone",
+            type: "text",
+            enabled: true,
+            order: 0,
+            permissions: ["admin"],
+          },
+        ],
+        emails: [
+          {
+            key: "address",
+            label: "Email",
+            type: "email",
+            enabled: true,
+            order: 0,
+            permissions: ["admin"],
+          },
+        ],
+      },
     });
+    mockLoadContactsPageForTenant.mockResolvedValue(
+      pageOf([
+        fakeContact("a", {
+          phones: [{ label: "Mobile", number: "3001111", isPrimary: true }],
+          emails: [{ label: "Primary", address: "a@example.com" }],
+        }),
+      ]),
+    );
+
+    const visible = await loadMessagingRecipients(
+      "demo",
+      {
+        role: "all",
+        gender: "all",
+        page: 1,
+        pageSize: 50,
+        hasPhone: undefined,
+        hasEmail: undefined,
+      },
+      "teacher",
+    );
+    expect(visible.recipients[0]).toMatchObject({ id: "a", phone: "", email: "" });
+
+    const phoneRequired = await loadMessagingRecipients(
+      "demo",
+      { role: "all", gender: "all", page: 1, pageSize: 50, hasPhone: true, hasEmail: undefined },
+      "teacher",
+    );
+    expect(phoneRequired.recipients).toHaveLength(0);
+
+    const adminView = await loadMessagingRecipients(
+      "demo",
+      { role: "all", gender: "all", page: 1, pageSize: 50, hasPhone: true, hasEmail: undefined },
+      "admin",
+    );
+    expect(adminView.recipients).toHaveLength(1);
+  });
+
+  it("loadMessagingRecipients uses unlinked filter for the contacts role", async () => {
+    mockLoadContactsPageForTenant.mockResolvedValue(pageOf([]));
 
     await loadMessagingRecipients("demo", {
       role: "contacts",
@@ -130,13 +240,7 @@ describe("messaging recipient resolvers (contacts use-case seam)", () => {
   });
 
   it("loadMessagingRecipients falls back to hasReachable and no role filter", async () => {
-    mockLoadContactsPageForTenant.mockResolvedValue({
-      contacts: [],
-      total: 0,
-      page: 1,
-      limit: 50,
-      hasMore: false,
-    });
+    mockLoadContactsPageForTenant.mockResolvedValue(pageOf([]));
 
     await loadMessagingRecipients("demo", {
       role: "all",
@@ -148,7 +252,7 @@ describe("messaging recipient resolvers (contacts use-case seam)", () => {
     });
     expect(mockLoadContactsPageForTenant).toHaveBeenCalledWith(
       "demo",
-      expect.objectContaining({ hasReachable: true }),
+      expect.objectContaining({ hasReachable: true, recipientProjection: true }),
     );
     expect(mockLoadContactsPageForTenant).toHaveBeenCalledWith(
       "demo",
@@ -157,23 +261,21 @@ describe("messaging recipient resolvers (contacts use-case seam)", () => {
   });
 
   it("matchMessagingRecipients stops on the final page and reports truncation", async () => {
-    const pageResult: ContactsListPageResult = {
-      contacts: [
-        fakeContact("a", { phones: [{ label: "Mobile", number: "3001111" }] }),
-        fakeContact("b", { phones: [{ label: "Mobile", number: "3002222" }] }),
-      ],
-      total: 900,
-      page: 1,
-      limit: 500,
-      hasMore: false,
-    };
-    mockLoadContactsPageForTenant.mockResolvedValue(pageResult);
+    mockLoadContactsPageForTenant.mockResolvedValue(
+      pageOf(
+        [
+          fakeContact("a", { phones: [{ label: "Mobile", number: "3001111" }] }),
+          fakeContact("b", { phones: [{ label: "Mobile", number: "3002222" }] }),
+        ],
+        { total: 900, limit: 500, hasMore: false },
+      ),
+    );
 
-    const result = await matchMessagingRecipients("demo", {
-      role: "all",
-      gender: "all",
-      kind: "phone",
-    });
+    const result = await matchMessagingRecipients(
+      "demo",
+      { role: "all", gender: "all", kind: "phone" },
+      "teacher",
+    );
     expect(mockLoadContactsPageForTenant).toHaveBeenCalledWith(
       "demo",
       expect.objectContaining({ page: 1, limit: 500, hasPhone: true }),
@@ -184,22 +286,22 @@ describe("messaging recipient resolvers (contacts use-case seam)", () => {
   });
 
   it("matchMessagingRecipients pages until hasMore is false", async () => {
-    const makePage = (page: number, ids: string[]): ContactsListPageResult => ({
-      contacts: ids.map((id) => fakeContact(id, { phones: [{ label: "Mobile", number: id }] })),
-      total: 4,
-      page,
-      limit: 2,
-      hasMore: page === 1,
-    });
+    const makePage = (page: number, ids: string[]): ContactsListPageResult =>
+      pageOf(
+        ids.map((id) =>
+          fakeContact(id, { emails: [{ label: "Primary", address: `${id}@example.com` }] }),
+        ),
+        { page, limit: 500, hasMore: page === 1 },
+      );
     mockLoadContactsPageForTenant
       .mockResolvedValueOnce(makePage(1, ["a", "b"]))
       .mockResolvedValueOnce(makePage(2, ["c", "d"]));
 
-    const result = await matchMessagingRecipients("demo", {
-      role: "all",
-      gender: "all",
-      kind: "email",
-    });
+    const result = await matchMessagingRecipients(
+      "demo",
+      { role: "all", gender: "all", kind: "email" },
+      "teacher",
+    );
     expect(mockLoadContactsPageForTenant).toHaveBeenCalledTimes(2);
     expect(result.recipients.map((r) => r.id)).toEqual(["a", "b", "c", "d"]);
     expect(result.truncated).toBe(false);

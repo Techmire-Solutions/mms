@@ -162,7 +162,7 @@ describe("messaging REST routes", () => {
       successRate: 100,
     });
     mockLoadMessagingRecipients.mockReset().mockResolvedValue({
-      contacts: [],
+      recipients: [],
       total: 0,
       page: 1,
       limit: 50,
@@ -228,6 +228,7 @@ describe("messaging REST routes", () => {
         pageSize: 25,
         hasPhone: true,
       }),
+      "teacher",
     );
     await app.close();
   });
@@ -255,6 +256,7 @@ describe("messaging REST routes", () => {
         role: "students",
         kind: "phone",
       }),
+      "teacher",
     );
     expect(res.json()).toEqual({
       recipients: [{ id: "c1", name: "Ali", phone: "+100", email: "" }],
@@ -280,7 +282,7 @@ describe("messaging REST routes", () => {
       payload: { ids: ["c1"] },
     });
     expect(res.statusCode).toBe(200);
-    expect(mockResolveMessagingRecipients).toHaveBeenCalledWith("demo", ["c1"]);
+    expect(mockResolveMessagingRecipients).toHaveBeenCalledWith("demo", ["c1"], "teacher");
     expect(res.json()).toEqual({
       recipients: [{ id: "c1", name: "Ali", phone: "", email: "" }],
     });

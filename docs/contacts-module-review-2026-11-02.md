@@ -376,3 +376,34 @@ remainder can be scheduled. No P0s were found, so no hotfix is implied.
 - Google tokens are encrypted at rest (`contactGoogleSyncRepository.ts:67-69`), and the redirect
   URI is origin-allowlisted.
 - i18n parity is complete (9,476 keys, 0 missing across ar/ur/fa).
+
+---
+
+## 8. Remediation status
+
+The findings above are the point-in-time record; this section records their disposition.
+
+| ID | Status | Resolution | Commit / pinning evidence |
+| --- | --- | --- | --- |
+| C-01 | Closed | Conditional `UPDATE` on `updated_at` inside the write transaction | `63fc80696` (#261); two-connection 409 test |
+| C-02 | Closed | `subjectId` added to delete/restore modern-audit calls | `63fc80696` (#261); ciphertext/subject-id audit test |
+| C-03 | Closed | Dedicated tag UPDATE; no full child rewrite | `63fc80696` (#261); concurrent child-edit test |
+| C-04 | Closed | Hidden scalar fields stripped for non-collection tabs | `63fc80696` (#261); sanitizer `cnic` spec |
+| C-05 | Closed | `viewerRole` threaded into the VCF job and sanitized before `toVCard` | `63fc80696` (#261); restricted-field VCF test |
+| C-06 | Closed | List query validated with the domain schema | `63fc80696` (#261); 400-on-array test |
+| C-07 | Closed | Restore audited only on an actual transition | `63fc80696` (#261); idempotent-restore audit test |
+| C-08 | Closed | Bulk-restore ids deduped | `63fc80696` (#261); duplicate-id test |
+| C-09 | Closed | Server-derived export counts; diff-based setup audit | `63fc80696` (#261) + `ff6adc93f` (#262); audit content tests |
+| C-10 | Closed | Seed-snapshot fallback in the request sanitizer | `63fc80696` (#261); missing-config spec |
+| C-11 | Closed | PKCE + server-side OAuth state binding | `63fc80696` (#261); OAuth state-mismatch test |
+
+**Deep-dive addendum (working tree, uncommitted).** The follow-up findings from the deep-dive review —
+A-01/A-02 (messaging recipient exposure and field permissions), A-03/A-04 (recipient over-fetch),
+B-01/B-02 (root uploads, upload permissions), B-03 (attachment orphan lifecycle), B-04 (attachment URL
+whitelist), and C-01/C-02 (duplicate-cache TTL, invalidation, and scan/write race) — are closed in the
+current uncommitted working tree. Per-finding fixes, tests, and residual notes are in
+[contacts-module-review-2026-11-02-addendum.md](contacts-module-review-2026-11-02-addendum.md) §7.
+
+Remaining operational notes: legacy absolute attachment URLs stay editable while unchanged; the nightly
+orphan sweep requires the worker and API to share `MMS_UPLOADS_DIR`; the new B-03/B-04 flows are
+API/unit-verified rather than covered by a new browser spec.

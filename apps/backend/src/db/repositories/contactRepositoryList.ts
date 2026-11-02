@@ -4,6 +4,7 @@ import { contacts, students, faculty, facultyEmployments, tenantUsers } from "..
 import { withTenantRead } from "../tenant-context.js";
 import { runListPage } from "./listPageHelper.js";
 import { hydrateContactsList, hydrateContactsSummaryList } from "./contactRepositoryCore.js";
+import { hydrateContactsRecipientList } from "./contactRepositoryRecipientHydrate.js";
 import { buildListConditions, buildOrderBy } from "./contactRepositoryListFilter.js";
 
 export const FACULTY_USER_ROLES_SQL = sql`('faculty', 'teacher', 'assistant_teacher')`;
@@ -76,7 +77,11 @@ export const CONTACT_LIST_COLUMNS = {
  */
 export async function listContactsPage(
   tenant: string,
-  query: ContactsListQuery & { afterId?: string; skipCount?: boolean },
+  query: ContactsListQuery & {
+    afterId?: string;
+    skipCount?: boolean;
+    recipientProjection?: boolean;
+  },
 ): Promise<ContactsListPageResult & { nextCursor?: string }> {
   const subdomain = tenant.trim().toLowerCase();
   const excludeIds = dedupeTrimmedIds(query.excludeIds ?? []);
@@ -102,9 +107,11 @@ export async function listContactsPage(
       rowMapper: (row) => row as typeof contacts.$inferSelect,
     });
 
-    const pageContacts = query.fullHydration
-      ? await hydrateContactsList(tx, subdomain, result.items)
-      : await hydrateContactsSummaryList(tx, subdomain, result.items);
+    const pageContacts = query.recipientProjection
+      ? await hydrateContactsRecipientList(tx, subdomain, result.items)
+      : query.fullHydration
+        ? await hydrateContactsList(tx, subdomain, result.items)
+        : await hydrateContactsSummaryList(tx, subdomain, result.items);
     return {
       contacts: pageContacts,
       total: result.total,

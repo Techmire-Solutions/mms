@@ -39,7 +39,8 @@
     "audit:academic-contract": "tsx src/scripts/audit-academic-contract.ts",
     "backfill:attendance-sections": "tsx src/scripts/backfill-attendance-sections.ts",
     "backfill:date-columns": "tsx src/scripts/backfill-date-columns.ts",
-    "purge:selected-modules": "tsx src/scripts/purgeSelectedModules.ts"
+    "purge:selected-modules": "tsx src/scripts/purgeSelectedModules.ts",
+    "purge:orphaned-attachments": "tsx src/scripts/sweepOrphanedAttachments.ts"
   },
   "dependencies": {
     "@aws-sdk/client-s3": "^3.1156.0",

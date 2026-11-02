@@ -46,9 +46,19 @@ export interface ContactsReportAnalyticsOptions {
  */
 export interface ContactsRepository {
   countByWorkspace(tenant: string, options?: ListContactsOptions): Promise<number>;
+  /**
+   * Latest contact write timestamp for the tenant — the duplicate-scan cache
+   * generation token (C-02). Optional so test fakes/alternate adapters can opt out.
+   */
+  getLatestWriteAt?(tenant: string): Promise<string | null>;
   listPage(
     tenant: string,
-    query: ContactsListQuery & { afterId?: string; skipCount?: boolean },
+    query: ContactsListQuery & {
+      afterId?: string;
+      skipCount?: boolean;
+      /** Hydrate only phones/emails (messaging recipients) instead of the directory summary. */
+      recipientProjection?: boolean;
+    },
   ): Promise<ContactsListPageResult & { nextCursor?: string }>;
   findById(tenant: string, id: string): Promise<Contact | null>;
   findByIds(tenant: string, ids: string[]): Promise<Contact[]>;

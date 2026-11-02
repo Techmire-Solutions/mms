@@ -1,7 +1,7 @@
 import { and, eq, or, sql } from "drizzle-orm";
 import { hydrateContactRelationshipFields, type Contact } from "@mms/shared";
 import { contacts } from "../schema.js";
-import { withTenant, type TenantTransaction } from "../tenant-context.js";
+import { withTenant, withTenantRead, type TenantTransaction } from "../tenant-context.js";
 import {
   countContactsByWorkspace,
   findContactById,
@@ -49,6 +49,18 @@ export async function persistContactTx(
     });
 
   await syncContactChildrenTx(tx, subdomain, String(contact.id), contact);
+}
+
+/** Latest contact write time (or null), used to detect writes during duplicate scans (C-02). */
+export async function getLatestContactWriteAt(tenant: string): Promise<string | null> {
+  const subdomain = tenant.trim().toLowerCase();
+  return withTenantRead(subdomain, async (tx) => {
+    const [row] = await tx
+      .select({ latest: sql<string | null>`max(${contacts.updatedAt})::text` })
+      .from(contacts)
+      .where(eq(contacts.workspaceSubdomain, subdomain));
+    return row?.latest ?? null;
+  });
 }
 
 export async function saveContact(tenant: string, contact: Contact): Promise<void> {
@@ -132,6 +144,7 @@ export async function saveContactIfVersionMatches(
 export const contactRepo = {
   listByWorkspace: listContactsByWorkspace,
   countByWorkspace: countContactsByWorkspace,
+  getLatestWriteAt: getLatestContactWriteAt,
   findById: findContactById,
   findByIds: findContactsByIds,
   save: saveContact,

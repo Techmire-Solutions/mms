@@ -1,12 +1,6 @@
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { Loader2 } from "lucide-react";
-import type { StandardMessagingRecipient, Contact } from "@mms/shared";
-import {
-  getDisplayName,
-  getPrimaryEmail,
-  getPrimaryPhone,
-  toMessagingRecipient,
-} from "@mms/shared";
+import type { StandardMessagingRecipient } from "@mms/shared";
 import { useTranslation } from "@/hooks/useTranslation";
 import { useMessagingWorkRecipients } from "@/tenant/features/messaging/hooks/useMessagingWorkRecipients";
 import { SearchBar } from "@/components/app/SearchBar";
@@ -45,24 +39,16 @@ export function TenantMessageComposerRecipientPicker({
     return () => clearTimeout(id);
   }, [query]);
 
-  const { contacts, total, isPending, isFetching, isError, refetch } = useMessagingWorkRecipients({
-    roleFilter: "all",
-    genderFilter: "all",
-    search: debouncedQuery,
-    kind,
-    page,
-    pageSize: 50,
-  });
-
-  const toRecipient = useCallback((contact: Contact): StandardMessagingRecipient => {
-    return toMessagingRecipient(contact, {
-      getPrimaryPhone,
-      getPrimaryEmail,
-      getDisplayName,
-    });
-  }, []);
-
-  const recipients = useMemo(() => contacts.map(toRecipient), [contacts, toRecipient]);
+  const { recipients, total, isPending, isFetching, isError, refetch } = useMessagingWorkRecipients(
+    {
+      roleFilter: "all",
+      genderFilter: "all",
+      search: debouncedQuery,
+      kind,
+      page,
+      pageSize: 50,
+    },
+  );
 
   const handleToggle = useCallback(
     (recipient: StandardMessagingRecipient): void => {
@@ -120,7 +106,7 @@ export function TenantMessageComposerRecipientPicker({
               onRetry={refetch}
             />
           </div>
-        ) : contacts.length === 0 && !isPending && !isFetching ? (
+        ) : recipients.length === 0 && !isPending && !isFetching ? (
           <div className="flex flex-1 items-center justify-center p-8 text-center text-sm text-muted-foreground">
             {t("messaging.noRecipientsFound")}
           </div>
@@ -140,7 +126,7 @@ export function TenantMessageComposerRecipientPicker({
       <div className="pt-1">
         <ListPagination
           page={page}
-          total={total || contacts.length}
+          total={total || recipients.length}
           limit={50}
           onPageChange={setPage}
         />

@@ -1,5 +1,5 @@
 import { type AttachmentUploadResponse } from "@mms/shared";
-import { apiJson, resolveApiUrl } from "@/lib/apiClient";
+import { apiJson } from "@/lib/apiClient";
 
 /**
  * Uploads an attachment file to the MMS backend.
@@ -13,8 +13,15 @@ export async function uploadAttachmentFile(file: File): Promise<AttachmentUpload
     body: form,
   });
 
-  return {
-    ...response,
-    url: resolveApiUrl(response.url),
-  };
+  // Store the relative path so B-04 can accept it as a tenant upload; the
+  // browser resolves it against the current origin (`/uploads` is proxied in dev).
+  return response;
+}
+
+/** Best-effort unlink of an attachment file after its contact row is removed. */
+export async function deleteAttachmentFile(url: string): Promise<{ deleted: boolean }> {
+  return apiJson<{ deleted: boolean }>("/api/uploads/attachment/delete", {
+    method: "POST",
+    body: JSON.stringify({ url }),
+  });
 }

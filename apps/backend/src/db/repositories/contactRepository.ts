@@ -6,6 +6,7 @@ export {
   findContactsByIds,
   findContactsSummaryByIds,
   saveContact,
+  getLatestContactWriteAt,
   saveContactIfVersionMatches,
   bulkSaveContacts,
   bulkSoftDeleteContactsSql,

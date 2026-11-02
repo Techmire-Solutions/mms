@@ -5,6 +5,7 @@ import { closeDatabase } from "../../db/dbConnection.js";
 import { withTenant } from "../../db/tenant-context.js";
 import { workspaces } from "../../db/schema.js";
 import { contactUseCases } from "../../contacts/use-cases/contactUseCases.js";
+import { contactsRepository } from "../../contacts/repository/contactsRepositoryAdapter.js";
 import { runWithTenant } from "../../lib/tenantContext.js";
 import { requireDatabaseConnection } from "./dbTestSupport.js";
 
@@ -19,7 +20,9 @@ async function seedContact(): Promise<void> {
       lastName: "Khan",
       name: "Ali Khan",
       phones: [{ label: "Mobile", number: "03001234567", countryCode: "PK", isPrimary: true }],
-      emails: [],
+      emails: [{ label: "Primary", address: "ali@example.com", isPrimary: true }],
+      addresses: [{ label: "Home", line1: "1 Street", city: "Lahore", isPrimary: true }],
+      socials: [{ platform: "Facebook", url: "https://example.com/ali" }],
     } as Contact),
   );
 }
@@ -74,6 +77,40 @@ describe("contacts concurrent writes (Postgres)", () => {
     expect(fulfilled).toHaveLength(1);
     expect(rejected).toHaveLength(1);
     expect((rejected[0] as PromiseRejectedResult).reason).toMatchObject({ statusCode: 409 });
+  });
+
+  it("exposes a monotonic contact write version (C-02)", async () => {
+    expect(contactsRepository.getLatestWriteAt).toBeDefined();
+    const before = await contactsRepository.getLatestWriteAt!(tenant);
+    await new Promise((resolve) => setTimeout(resolve, 5));
+    await runWithTenant(tenant, () =>
+      contactUseCases.updateContactById(contactId, {
+        id: contactId,
+        firstName: "Ali",
+        name: "Ali Khan",
+        notes: "version bump",
+      }),
+    );
+    const after = await contactsRepository.getLatestWriteAt!(tenant);
+
+    expect(before).not.toBeNull();
+    expect(after).not.toBeNull();
+    expect(after).not.toBe(before);
+  });
+
+  it("recipient projection hydrates phones/emails only (A-03)", async () => {
+    const page = await contactsRepository.listPage(tenant, {
+      page: 1,
+      limit: 10,
+      recipientProjection: true,
+    } as never);
+    const row = page.contacts.find((contact) => String(contact.id) === contactId);
+
+    expect(row?.phones?.length).toBeGreaterThan(0);
+    expect(row?.emails?.length).toBeGreaterThan(0);
+    expect(row?.addresses ?? []).toHaveLength(0);
+    expect(row?.socials ?? []).toHaveLength(0);
+    expect(row?.relationships ?? []).toHaveLength(0);
   });
 
   it("tag writes preserve child collections (C-03)", async () => {

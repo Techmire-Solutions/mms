@@ -12,6 +12,22 @@ import { getRequestTenant } from "../../lib/tenantContext.js";
 import { saveUploadedImage } from "../../services/imageAssetService.js";
 import { replyValidationError } from "../../lib/zodRequest.js";
 import { sendForbidden } from "../../lib/httpErrors.js";
+import {
+  deleteTenantAttachment,
+  isAttachmentReferenced,
+  resolveTenantAttachmentPath,
+} from "../../services/attachmentStorageService.js";
+import { canWriteCollection } from "../../lib/rbacCanHelpers.js";
+import type { User } from "@mms/shared";
+
+/**
+ * Attachment uploads are contact documents (currently the only consumer of
+ * `/api/uploads/attachment`), so they require contacts.write (B-02). Image
+ * uploads stay session-gated for avatars/branding.
+ */
+export function canUploadAttachments(user: User): boolean {
+  return canWriteCollection(user, "contacts");
+}
 
 interface UploadLogContext {
   id: string;
@@ -93,6 +109,33 @@ export default async function uploadRoutes(
     },
   );
 
+  fastify.post(
+    "/attachment/delete",
+    { preHandler: authenticateUploader },
+    async (request, reply) => {
+      const tenant = getRequestTenant()?.trim().toLowerCase();
+      if (!tenant) {
+        return sendForbidden(reply, "Tenant context is required for attachments");
+      }
+      const user = request.user as User | undefined;
+      if (!user || !canUploadAttachments(user)) {
+        return sendForbidden(reply, "Insufficient permissions");
+      }
+
+      const body = request.body as { url?: unknown } | undefined;
+      const url = typeof body?.url === "string" ? body.url.trim() : "";
+      if (!url) return replyValidationError(reply, "File URL is required");
+      if (!resolveTenantAttachmentPath(tenant, url)) {
+        return replyValidationError(reply, "Invalid attachment URL");
+      }
+
+      if (await isAttachmentReferenced(tenant, url)) {
+        return reply.send({ deleted: false, reason: "referenced" });
+      }
+      return reply.send({ deleted: await deleteTenantAttachment(tenant, url) });
+    },
+  );
+
   fastify.post("/attachment", { preHandler: authenticateUploader }, async (request, reply) => {
     let filepath: string | undefined;
     try {
@@ -102,6 +145,10 @@ export default async function uploadRoutes(
       const tenant = getRequestTenant()?.trim().toLowerCase();
       if (!tenant) {
         return sendForbidden(reply, "Tenant context is required for attachments");
+      }
+      const user = request.user as User | undefined;
+      if (!user || !canUploadAttachments(user)) {
+        return sendForbidden(reply, "Insufficient permissions");
       }
 
       const file = await request.file();
