@@ -32,6 +32,7 @@ metadata:
 - **Document Templates Excluded**: Printable layouts are migrated (`document_templates`, `/api/templates/:key`); never store them via `saveObject`/`saveCollection` or in localStorage. See `mms-document-templates`.
 - **REST Entities**: Primary entities use TanStack Query facades (`@/tenant/hooks/collections/*`). Never dual-write REST entities to `saveCollection`.
 - **Async Saves**: Await `saveCollectionAsync` or `mutateAsync` before indicating saved state.
+- **Queued Writes Are Not Collections**: A REST module's offline retry queue (contacts: `contactsSyncOutbox*`) is client-scoped, not a document collection. Its `localStorage` keys carry tenant + user (`contactsOutboxStorageKeys` → `mms_{tenant}_…_u:{userId}`), are removed by `clearUserScopedCachesOnLogout`, and the flush is single-flight so multiple mounted hooks replay once. Never key user payloads with a global `mms_*` name (`mms-data-layer.md` §3).
 
 ## 2. Document Store APIs (`/api/db`)
 

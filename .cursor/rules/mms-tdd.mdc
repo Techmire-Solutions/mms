@@ -19,4 +19,5 @@ Applies to business logic, use-case handlers, services, repositories, `@mms/shar
 ## 2. Enforcement & Evidence
 - **Advisory (review discipline):** no gate can prove test-first ordering. `pnpm run check:tdd-pairing` (run by `pre-pr-review.sh`) warns when a changed backend domain file has no changed test in the same module, and `.github/pull_request_template.md` requires the Red evidence.
 - **Regression tests are mandatory:** every bug fix lands with a spec that failed before the fix and passes after it, kept permanently.
+- **Tests That Encode a Bug:** a green spec can pin the wrong behaviour. When a fix changes documented behaviour (e.g. relationship options now honour tenant Setup instead of a hardcoded catalog), updating that spec is part of the change — rewrite it to the new intent and name the changed assertion and its reason in the PR body. Never delete the assertion silently, and never keep it green by narrowing the fix.
 - **Scope:** a spec that only asserts a mock was called is not a Red — assert observable behaviour (`mms-testing-observability.mdc` §4).

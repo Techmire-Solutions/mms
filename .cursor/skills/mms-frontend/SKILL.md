@@ -24,6 +24,9 @@ Operational guide for authoring React 19 frontend features, UI components, hooks
 - **HTTP Client**: Route all internal API calls through `@/lib/apiClient` (`apiJson`, `apiFetch`) using cookie sessions (`credentials: 'include'`). Never read tokens from `localStorage`.
 - **Bundle Isolation**: Only `VITE_*` variables may be bundled into client code. Server secrets (`DATABASE_URL`, `JWT_SECRET`) are strictly forbidden.
 - **WebSocket Invalidation**: Real-time invalidations arrive via `/api/ws` (`TenantLivePushSubscriber`); invalidate query keys rather than mutating local state directly.
+- **Offline/queued writes**: a module that queues failed mutations in `localStorage` scopes the keys by tenant + user (`contactsOutboxStorageKeys`: `mms_{tenant}_…_u:{userId}`), clears them in `clearUserScopedCachesOnLogout`, and flushes single-flight (`contactsSyncOutboxFlush.ts`) so several mounted hooks cannot replay the same queue concurrently. A global key leaks one account's payloads into the next session.
+- **One derivation per directory**: resolve entity descriptors, filter chips and column maps once in the directory/controller and pass them down; calling a registry-flattening hook per card multiplies work by row count (`mms-performance.mdc` §5).
+- **Local input state**: debounce search/typing in the leaf control before pushing upward — a controlled input wired straight to the page controller re-renders metrics, directory and lazy tiers on every keystroke.
 
 ## 1.1 Document Templates
 

@@ -64,15 +64,24 @@ Separate demonstrated controls from capability gaps and framework-dependent poli
 | Work directory convergence (DataTable SSOT) | `mms-dry.mdc` §1 · `mms-module-architecture.mdc` §3 · **`mms-module-work`** |
 | Template persistence, CAS/409 and print SSOT | `mms-document-templates.mdc` · **`mms-document-templates`** |
 
+## Evidence rules
+
+- **Reproduce on production's path.** A defect is real only when it reproduces through what production runs: the repository mapper's output, the contract's request validation, the actual guard. A neighbouring shape (raw SQL projection, a mock, a static reading) makes a *hypothesis*, not a finding — label it and verify before assigning severity.
+- **"Untested" is not "broken".** Missing coverage is a test gap; report it as such (and add the spec). Do not inflate it into a defect.
+- **Reachable denial codes only.** A `required: true` module (`dashboard`, `contacts`, …) can never return `MODULE_DISABLED`/`MODULE_NOT_GRANTED` — a test that expects it is itself the bug. Check `globalSettingsModuleRegistry.ts` before writing the assertion.
+- **Specs that pin a bug are part of the fix.** When a fix changes documented behaviour, the spec asserting the old behaviour must be rewritten with the new intent, and the PR body must name the changed assertion.
+
 ## Review order
 
 1. Automated gates (`pnpm ci:local`: pre-pr gates + path-aware FE/BE/shared unit tests)
 2. Security, tenant isolation & module access gates (`authenticateTenant`, `registerModuleAccess`, `TENANT_APP_ROUTE_ACCESS`, RBAC)
 3. Data layer (Query vs legacy, bulk upsert, RLS, zero wildcard projections, soft-delete)
-4. Module §7 gold-standard (+ messaging variants when touched)
-5. UI design tokens & i18n / a11y (semantic HSL tokens, 44×44px touch floor, axe smoke via `mms-a11y-smoke`)
-6. Document templates (server row vs legacy store, CAS/409 keeps draft, one renderer/print path, localized field catalogs)
-7. Scope creep & dead code removal
+4. Contract parity (write DTO accepts the read mapper's shape), server-owned fields, OCC 409 path
+5. Module §7 gold-standard (+ messaging variants when touched)
+6. UI design tokens & i18n / a11y (semantic HSL tokens, 44×44px touch floor, axe smoke via `mms-a11y-smoke`)
+7. Document templates (server row vs legacy store, CAS/409 keeps draft, one renderer/print path, localized field catalogs)
+8. Batch writers (one config load, one broadcast/invalidation, batched outbox, per-row audit)
+9. Scope creep & dead code removal
 
 ## Automated checks
 

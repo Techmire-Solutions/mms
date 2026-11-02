@@ -74,6 +74,8 @@ For report packs use a cutoff-consistent dataset and retain evidence per [closin
 - [ ] Download requires current user ownership
 - [ ] Export respects field visibility and soft-delete policy
 - [ ] Module CSV import/export adheres to @mms/shared data transfer schemas (Field Whitelist, 1:1 header symmetry)
+- [ ] Tenant config/lookups load once per batch (threaded context), not once per record
+- [ ] Per-record live-update broadcast and cache/scan invalidations collapse to one call per batch
 - [ ] Sensitive job is audited
 - [ ] W3C traceparent propagated as correlation ID in audit events
 - [ ] Scheduled verification runner registered for audit integrity

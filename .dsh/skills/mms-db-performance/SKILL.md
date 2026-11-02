@@ -39,6 +39,10 @@ Run the relevant ratchet before and after a change — a green ratchet is the ch
    - **RLS not applied as expected** — tenant predicates must be in the plan; if the plan shows a full scan of a multi-tenant table, the query is not scoped by `workspace_subdomain` at all (`mms-data-layer.md` §1).
    - **Parameterized boolean predicates on soft-delete** — `WHERE ($2::boolean IS TRUE OR deleted_at IS NULL)` defeats the Category B partial index. Conditionally append `isNull(table.deletedAt)` in the Drizzle AST instead (`mms-data-layer.md` §6.6).
    - **N+1 from a loop** — one query per row inside `map`/`forEach`; batch with `inArray`, relational `with:`, or a `/resolve` endpoint (`mms-performance.md` §1).
+   - **Per-record tenant config reads** — `load*Config` / runtime defaults / lookup reads inside a loop or a batch transaction. Load them once per use case or job and thread the context (reference: `ContactWriteContext` + `loadContactWriteContext`); each read is several queries.
+   - **Id-fetch bind overflow** — `inArray` with an unbounded id list. Chunk at `BATCH_SIZE = 250` (`contactRepositoryFind.ts`) to stay under the 65 535 bind-parameter cap.
+   - **Projection drift** — a list projection missing columns the row mapper hydrates (a `$inferSelect` cast hides it). Assert `CONTACT_LIST_COLUMNS`-style projections in a unit test.
+   - **Timezone bucket drift** — `extract`/`to_char` on a `timestamptz` uses the DB session zone. Convert `(created_at AT TIME ZONE <workspace tz>)` in SELECT **and** GROUP BY (`mms-data-layer.md` §8).
 4. **Index with the MMS conventions:** prefix compound indexes with the tenant scope, add the matching partial index for the active/trash split (`WHERE deleted_at IS NULL` / `IS NOT NULL`), and use BRIN for append-only time-series (`transaction_timestamp`, `created_at`) rather than another B-tree (`mms-data-layer.md` §6.3, `mms-performance.md` §1).
 5. **Build indexes without locking the app:**
    ```bash

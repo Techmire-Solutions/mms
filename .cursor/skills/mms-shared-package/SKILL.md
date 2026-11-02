@@ -42,6 +42,9 @@ metadata:
 - Soft-delete: `softDeleteBodySchema`, `bulkIdsBodySchema` (max 500), `isQueryFlagTrue()` for `includeDeleted`.
 - Modules declare `*ModuleManifest.ts` (permissions, routes, `softDelete` config).
 - Document templates: GET/PUT records carry `{ template, updatedAt }`; saves accept `expectedUpdatedAt` (`null` = insert-only) and the contract declares `409` (`mms-document-templates.mdc`).
+- **Request DTOs must accept the read shape**: a contract write schema validates bodies only (`@ts-rest` response validation is off), so its nested rows must accept exactly what the response mapper emits. Prove it with a round-trip test (`contactWriteSchema.test.ts` fixture built from the `mapChild*` mappers) — a `.strict()` child row that rejects hydrated keys becomes a silent 400 on every edit.
+- **Server-owned fields are stripped, not accepted**: `stripClientAuditFields` (createdAt/createdBy/updatedBy) and `stripContactClientSoftDeleteFields` run in the DTO preprocess and again at the write choke point; the server stamps attribution (`mms-data-layer.mdc` §5).
+- **Export/import parity**: every value the exporter's column list produces must be schema-valid for the importer; nested relationship rows (`email`, `gender`) belong in the nested schema, not lost at the boundary.
 
 ## 3. Workflow & Verification
 
