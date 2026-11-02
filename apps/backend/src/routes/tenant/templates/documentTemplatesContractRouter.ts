@@ -40,10 +40,13 @@ export const documentTemplatesRouter = s.router(documentTemplatesContract, {
           body: { type: "unauthorized", message: "Tenant context is required" },
         };
       }
-      const template = await getDocumentTemplateUseCase(tenant, params.key);
+      const stored = await getDocumentTemplateUseCase(tenant, params.key);
       return {
         status: 200 as const,
-        body: { template },
+        body: {
+          template: stored?.template ?? null,
+          updatedAt: stored?.updatedAt.toISOString() ?? null,
+        },
       };
     } catch (err) {
       return handleContractError(request, err, {
@@ -78,10 +81,16 @@ export const documentTemplatesRouter = s.router(documentTemplatesContract, {
           },
         };
       }
-      const saved = await saveDocumentTemplateUseCase(tenant, params.key, body.template, user);
+      const saved = await saveDocumentTemplateUseCase(
+        tenant,
+        params.key,
+        body.template,
+        user,
+        body.expectedUpdatedAt,
+      );
       return {
         status: 200 as const,
-        body: { template: saved },
+        body: { template: saved.template, updatedAt: saved.updatedAt.toISOString() },
       };
     } catch (err) {
       return handleContractError(request, err, {

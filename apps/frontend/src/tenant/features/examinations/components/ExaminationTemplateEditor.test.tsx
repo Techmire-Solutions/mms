@@ -26,7 +26,10 @@ vi.mock("@/lib/notify", () => ({
 
 vi.mock("@/lib/templates/documentTemplatesApi", () => ({
   fetchDocumentTemplateServer: vi.fn().mockResolvedValue(null),
-  saveDocumentTemplateServer: vi.fn().mockImplementation(async (_key, template) => template),
+  saveDocumentTemplateServer: vi.fn().mockImplementation(async (_key, template) => ({
+    template,
+    updatedAt: "2026-01-01T00:00:00.000Z",
+  })),
 }));
 
 type MockTemplate = { id: string } & Record<string, unknown>;
@@ -65,6 +68,7 @@ describe("ExaminationTemplateEditor", () => {
     expect(saveDocumentTemplateServer).toHaveBeenCalledWith(
       "mms_examination_report_template",
       template,
+      null,
     );
     expect(notify.success).toHaveBeenCalledWith("examinations.templateSaved");
   });

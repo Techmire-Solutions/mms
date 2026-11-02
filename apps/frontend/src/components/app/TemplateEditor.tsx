@@ -43,6 +43,8 @@ export function TemplateEditor<TPayload = Record<string, unknown>>({
   onPrint,
   onChange,
   onDirtyChange,
+  canSave: canSaveProp,
+  topBanner,
   branding: brandingProp,
 }: TemplateEditorProps<TPayload>): React.JSX.Element {
   const [pane, setPane] = useState<EditorPane>("canvas");
@@ -159,6 +161,8 @@ export function TemplateEditor<TPayload = Record<string, unknown>>({
         orientation={editor.orientation}
       />
 
+      {topBanner ? <div className="shrink-0 px-3 pt-2 print:hidden">{topBanner}</div> : null}
+
       <TemplateEditorToolbar
         /* `editorLabel` already applies the title → documentType → generic fallbacks. */
         title={editorLabel}
@@ -190,7 +194,7 @@ export function TemplateEditor<TPayload = Record<string, unknown>>({
         onApplyPreset={editor.applyPreset}
         onToggleFullscreen={modal.handleToggleFullscreen}
         onSave={editor.handleSave}
-        canSave={Boolean(onSave)}
+        canSave={canSaveProp ?? Boolean(onSave)}
         onClose={modal.handleClose}
         onExportTypst={onExportTypst ? handleExportTypst : undefined}
         onExportZoho={onExportZoho ? handleExportZoho : undefined}

@@ -11,8 +11,15 @@ import {
   viewerToken,
 } from "./helpers/tokens.js";
 
-// In-memory test storage for templates
-const mockTemplates = new Map<string, DocumentTemplate>();
+interface StoredTemplate {
+  template: DocumentTemplate;
+  updatedAt: Date;
+}
+
+// In-memory test storage for templates (records carry the CAS token).
+const mockTemplates = new Map<string, StoredTemplate>();
+let clock = Date.parse("2026-01-01T00:00:00.000Z");
+const nextTimestamp = (): Date => new Date((clock += 1000));
 
 vi.mock("../db/database.js", () => ({
   initDb: vi.fn().mockResolvedValue(undefined),
@@ -38,9 +45,27 @@ vi.mock("../db/repositories/documentTemplatesRepository.js", () => ({
     return mockTemplates.get(`${tenant}:${key}`) ?? null;
   }),
   upsertDocumentTemplateRepo: vi.fn(
-    async (tenant: string, key: string, template: DocumentTemplate) => {
-      mockTemplates.set(`${tenant}:${key}`, template);
-      return template;
+    async (
+      tenant: string,
+      key: string,
+      template: DocumentTemplate,
+      expectedUpdatedAt: Date | null,
+    ) => {
+      const composite = `${tenant}:${key}`;
+      const existing = mockTemplates.get(composite);
+
+      if (expectedUpdatedAt === null) {
+        if (existing) return null;
+        const record = { template, updatedAt: nextTimestamp() };
+        mockTemplates.set(composite, record);
+        return record;
+      }
+      if (!existing) return null;
+      if (existing.updatedAt.getTime() !== expectedUpdatedAt.getTime()) return null;
+
+      const record = { template, updatedAt: nextTimestamp() };
+      mockTemplates.set(composite, record);
+      return record;
     },
   ),
   deleteDocumentTemplateRepo: vi.fn(async (tenant: string, key: string) => {
@@ -48,10 +73,10 @@ vi.mock("../db/repositories/documentTemplatesRepository.js", () => ({
   }),
   listDocumentTemplatesRepo: vi.fn(async (tenant: string) => {
     const results: Array<{ key: string; template: DocumentTemplate; updatedAt: Date }> = [];
-    for (const [composite, template] of mockTemplates.entries()) {
+    for (const [composite, record] of mockTemplates.entries()) {
       const [t, k] = composite.split(":");
       if (t === tenant) {
-        results.push({ key: k, template, updatedAt: new Date() });
+        results.push({ key: k, template: record.template, updatedAt: record.updatedAt });
       }
     }
     return results;
@@ -87,6 +112,9 @@ function authHeaders(token: string): Record<string, string> {
   return { host: "demo.localhost", authorization: bearerAuth(token) };
 }
 
+const KEY = "test_receipt_template";
+const URL = `/api/templates/${KEY}`;
+
 describe("documentTemplatesContractRouter", () => {
   let app: FastifyInstance;
 
@@ -99,55 +127,143 @@ describe("documentTemplatesContractRouter", () => {
     mockTemplates.clear();
   });
 
-  it("returns null template when none is stored", async () => {
+  async function getTemplate(): Promise<{
+    template: DocumentTemplate | null;
+    updatedAt: string | null;
+  }> {
     const token = adminToken(app, { email: "admin@demo.test", name: "Admin" });
-    const res = await app.inject({
-      method: "GET",
-      url: "/api/templates/test_receipt_template",
-      headers: authHeaders(token),
-    });
-
+    const res = await app.inject({ method: "GET", url: URL, headers: authHeaders(token) });
     expect(res.statusCode).toBe(200);
-    const body = JSON.parse(res.body);
-    expect(body.template).toBeNull();
+    return JSON.parse(res.body);
+  }
+
+  it("returns null template and updatedAt when none is stored", async () => {
+    await expect(getTemplate()).resolves.toEqual({ template: null, updatedAt: null });
   });
 
-  it("saves a valid template and returns 200", async () => {
+  it("inserts with expectedUpdatedAt null and returns the new version", async () => {
     const token = adminToken(app, { email: "admin@demo.test", name: "Admin" });
     const res = await app.inject({
       method: "PUT",
-      url: "/api/templates/test_receipt_template",
+      url: URL,
       headers: authHeaders(token),
-      payload: {
-        template: sampleTemplate,
-      },
+      payload: { template: sampleTemplate, expectedUpdatedAt: null },
     });
 
     expect(res.statusCode).toBe(200);
     const body = JSON.parse(res.body);
     expect(body.template).toEqual(sampleTemplate);
+    expect(body.updatedAt).toEqual(expect.any(String));
 
-    // Verify GET now returns the saved template
-    const getRes = await app.inject({
-      method: "GET",
-      url: "/api/templates/test_receipt_template",
-      headers: authHeaders(token),
+    await expect(getTemplate()).resolves.toEqual({
+      template: sampleTemplate,
+      updatedAt: body.updatedAt,
     });
-    expect(getRes.statusCode).toBe(200);
-    expect(JSON.parse(getRes.body).template).toEqual(sampleTemplate);
+  });
+
+  it("updates with the matching version and advances updatedAt", async () => {
+    const token = adminToken(app, { email: "admin@demo.test", name: "Admin" });
+    const first = await app.inject({
+      method: "PUT",
+      url: URL,
+      headers: authHeaders(token),
+      payload: { template: sampleTemplate, expectedUpdatedAt: null },
+    });
+    const firstBody = JSON.parse(first.body);
+    const updatedTemplate = { ...sampleTemplate, pageSize: "A5" };
+
+    const second = await app.inject({
+      method: "PUT",
+      url: URL,
+      headers: authHeaders(token),
+      payload: { template: updatedTemplate, expectedUpdatedAt: firstBody.updatedAt },
+    });
+
+    expect(second.statusCode).toBe(200);
+    const secondBody = JSON.parse(second.body);
+    expect(secondBody.template).toEqual(updatedTemplate);
+    expect(secondBody.updatedAt).not.toBe(firstBody.updatedAt);
+  });
+
+  it("rejects a stale save with 409 and leaves the stored layout untouched", async () => {
+    const token = adminToken(app, { email: "admin@demo.test", name: "Admin" });
+    const first = await app.inject({
+      method: "PUT",
+      url: URL,
+      headers: authHeaders(token),
+      payload: { template: sampleTemplate, expectedUpdatedAt: null },
+    });
+    const firstBody = JSON.parse(first.body);
+
+    // Another admin saves first…
+    await app.inject({
+      method: "PUT",
+      url: URL,
+      headers: authHeaders(token),
+      payload: {
+        template: { ...sampleTemplate, pageSize: "A4" },
+        expectedUpdatedAt: firstBody.updatedAt,
+      },
+    });
+
+    // …then the first client's stale draft is rejected.
+    const stale = await app.inject({
+      method: "PUT",
+      url: URL,
+      headers: authHeaders(token),
+      payload: {
+        template: { ...sampleTemplate, pageSize: "80mm" },
+        expectedUpdatedAt: firstBody.updatedAt,
+      },
+    });
+
+    expect(stale.statusCode).toBe(409);
+    expect(JSON.parse(stale.body).type).toBe("conflict");
+    const stored = await getTemplate();
+    expect(stored.template?.pageSize).toBe("A4");
+  });
+
+  it("rejects an insert with expectedUpdatedAt null when a row already exists", async () => {
+    const token = adminToken(app, { email: "admin@demo.test", name: "Admin" });
+    await app.inject({
+      method: "PUT",
+      url: URL,
+      headers: authHeaders(token),
+      payload: { template: sampleTemplate, expectedUpdatedAt: null },
+    });
+
+    const res = await app.inject({
+      method: "PUT",
+      url: URL,
+      headers: authHeaders(token),
+      payload: { template: { ...sampleTemplate, pageSize: "A5" }, expectedUpdatedAt: null },
+    });
+
+    expect(res.statusCode).toBe(409);
+    await expect(getTemplate()).resolves.toMatchObject({ template: { pageSize: "A6" } });
+  });
+
+  it("rejects a missing expectedUpdatedAt with 400", async () => {
+    const token = adminToken(app, { email: "admin@demo.test", name: "Admin" });
+    const res = await app.inject({
+      method: "PUT",
+      url: URL,
+      headers: authHeaders(token),
+      payload: { template: sampleTemplate },
+    });
+
+    expect(res.statusCode).toBe(400);
   });
 
   it("rejects invalid template payload with 400", async () => {
     const token = adminToken(app, { email: "admin@demo.test", name: "Admin" });
     const res = await app.inject({
       method: "PUT",
-      url: "/api/templates/test_receipt_template",
+      url: URL,
       headers: authHeaders(token),
       payload: {
-        template: {
-          pageSize: "A6",
-          elements: "invalid",
-        },
+        template: { pageSize: "A6", elements: "invalid" },
+        expectedUpdatedAt: null,
       },
     });
 
@@ -155,36 +271,27 @@ describe("documentTemplatesContractRouter", () => {
   });
 
   it("deletes a saved template and returns success: true", async () => {
-    mockTemplates.set("demo:test_receipt_template", sampleTemplate);
+    mockTemplates.set(`demo:${KEY}`, { template: sampleTemplate, updatedAt: nextTimestamp() });
     const token = adminToken(app, { email: "admin@demo.test", name: "Admin" });
 
     const deleteRes = await app.inject({
       method: "DELETE",
-      url: "/api/templates/test_receipt_template",
+      url: URL,
       headers: authHeaders(token),
     });
 
     expect(deleteRes.statusCode).toBe(200);
     expect(JSON.parse(deleteRes.body).success).toBe(true);
-
-    // Verify GET now returns null
-    const getRes = await app.inject({
-      method: "GET",
-      url: "/api/templates/test_receipt_template",
-      headers: authHeaders(token),
-    });
-    expect(JSON.parse(getRes.body).template).toBeNull();
+    await expect(getTemplate()).resolves.toEqual({ template: null, updatedAt: null });
   });
 
   it("rejects non-staff user from modifying template with 403", async () => {
     const nonStaffToken = viewerToken(app, { email: "viewer@demo.test", name: "Viewer" });
     const res = await app.inject({
       method: "PUT",
-      url: "/api/templates/test_receipt_template",
+      url: URL,
       headers: authHeaders(nonStaffToken),
-      payload: {
-        template: sampleTemplate,
-      },
+      payload: { template: sampleTemplate, expectedUpdatedAt: null },
     });
 
     expect(res.statusCode).toBe(403);
@@ -198,9 +305,9 @@ describe("documentTemplatesContractRouter", () => {
     const token = makeToken(app, { email: "staff@demo.test", name: "Staff" });
     const res = await app.inject({
       method: "PUT",
-      url: "/api/templates/test_receipt_template",
+      url: URL,
       headers: authHeaders(token),
-      payload: { template: sampleTemplate },
+      payload: { template: sampleTemplate, expectedUpdatedAt: null },
     });
 
     expect(res.statusCode).toBe(403);
@@ -208,16 +315,16 @@ describe("documentTemplatesContractRouter", () => {
   });
 
   it("rejects a teacher from deleting a template with 403", async () => {
-    mockTemplates.set("demo:test_receipt_template", sampleTemplate);
+    mockTemplates.set(`demo:${KEY}`, { template: sampleTemplate, updatedAt: nextTimestamp() });
     const token = teacherToken(app, { email: "teacher@demo.test", name: "Teacher" });
 
     const res = await app.inject({
       method: "DELETE",
-      url: "/api/templates/test_receipt_template",
+      url: URL,
       headers: authHeaders(token),
     });
 
     expect(res.statusCode).toBe(403);
-    expect(mockTemplates.has("demo:test_receipt_template")).toBe(true);
+    expect(mockTemplates.has(`demo:${KEY}`)).toBe(true);
   });
 });

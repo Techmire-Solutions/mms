@@ -145,9 +145,14 @@ transactions.`) and re-attaches triggers for **19** tables against 0104's **14**
      `check:frontend-structure` ratchets the legacy store out of template modules. **Print paths now consume
      the saved layouts** (`2026-11-02`): Finance receipts (`InvoiceReceiptModal`), Examination result cards
      (`StudentResultCard`) and Hasanat distribution vouchers (`DistributionDetail`, new print entry point) all
-     render through the shared `TemplateDocumentPreview` + `printTemplateDocument`. **Still open:** template
-     field/preset labels for those modules remain English; an examination report card covers one paper (a
-     term-wide multi-subject card needs aggregation); concurrent edits are last-write-wins (no `updated_at` → 409).
+     render through the shared `TemplateDocumentPreview` + `printTemplateDocument`. **Saves are now
+     optimistic-concurrency guarded** (`2026-11-02`): GET returns `updatedAt`, PUT requires
+     `expectedUpdatedAt`, a stale write returns `409 Conflict` (atomic `insert … on conflict do nothing` /
+     `update … where updated_at = ?`), and the editor blocks saving with a “reload latest” banner instead of
+     overwriting. **Still open:** template field/preset labels for those modules remain English; an
+     examination report card covers one paper (a term-wide multi-subject card needs aggregation); DELETE
+     remains unchecked (no UI, documented residual). The version token is the row's `updated_at` (JS `Date`
+     millisecond precision); if a future writer uses SQL `now()`, switch to a dedicated integer version column.
    - _Reports/KPI config_ — `usePinnedWidgetsController`, `useDashboardSectionSettings`, `kpiSummaryCard*`,
      `DynamicCardBuilder`, `ModuleReportsToolPanels` → need `/api/reports/section-settings` + per-module KPI
      config endpoints.

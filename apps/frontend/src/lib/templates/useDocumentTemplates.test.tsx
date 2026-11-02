@@ -5,6 +5,7 @@ import { QueryClientProvider } from "@tanstack/react-query";
 import type { DocumentTemplate } from "@mms/shared";
 import {
   DOCUMENT_TEMPLATES_QUERY_KEY_ROOT,
+  DocumentTemplateConflictError,
   documentTemplateQueryKey,
   fetchDocumentTemplateLayout,
   useDocumentTemplate,
@@ -19,6 +20,9 @@ import { createTestQueryClient } from "@/test/queryClientTestUtils";
 interface SamplePayload {
   title: string;
 }
+
+const VERSION = "2026-01-01T00:00:00.000Z";
+const NEXT_VERSION = "2026-01-02T00:00:00.000Z";
 
 const fallback: DocumentTemplate<SamplePayload> = {
   pageSize: "A6",
@@ -41,32 +45,45 @@ describe("document template query layer", () => {
     ]);
   });
 
-  it("returns the server layout when it is valid", async () => {
-    vi.spyOn(api, "fetchDocumentTemplateServer").mockResolvedValue(serverTemplate as never);
+  it("returns the server layout and its version", async () => {
+    vi.spyOn(api, "fetchDocumentTemplateServer").mockResolvedValue({
+      template: serverTemplate,
+      updatedAt: VERSION,
+    } as never);
 
-    await expect(fetchDocumentTemplateLayout("test_key", fallback)).resolves.toEqual(
-      serverTemplate,
-    );
+    await expect(fetchDocumentTemplateLayout("test_key", fallback)).resolves.toEqual({
+      template: serverTemplate,
+      updatedAt: VERSION,
+    });
     expect(api.fetchDocumentTemplateServer).toHaveBeenCalledWith("test_key");
   });
 
-  it("falls back when the server has no layout", async () => {
+  it("falls back to the factory layout when the server has no row", async () => {
     vi.spyOn(api, "fetchDocumentTemplateServer").mockResolvedValue(null);
 
-    await expect(fetchDocumentTemplateLayout("test_key", fallback)).resolves.toEqual(fallback);
+    await expect(fetchDocumentTemplateLayout("test_key", fallback)).resolves.toEqual({
+      template: fallback,
+      updatedAt: null,
+    });
   });
 
   it("falls back when the stored layout is structurally invalid", async () => {
     vi.spyOn(api, "fetchDocumentTemplateServer").mockResolvedValue({
-      pageSize: "A6",
-      elements: "not-an-array",
+      template: { pageSize: "A6", elements: "not-an-array" },
+      updatedAt: VERSION,
     } as never);
 
-    await expect(fetchDocumentTemplateLayout("test_key", fallback)).resolves.toEqual(fallback);
+    await expect(fetchDocumentTemplateLayout("test_key", fallback)).resolves.toEqual({
+      template: fallback,
+      updatedAt: null,
+    });
   });
 
   it("seeds the first paint from the cache while the server read is in flight", async () => {
-    writeCachedDocumentTemplate("test_key", { ...fallback, pageSize: "A4" });
+    writeCachedDocumentTemplate("test_key", {
+      template: { ...fallback, pageSize: "A4" },
+      updatedAt: VERSION,
+    });
     vi.spyOn(api, "fetchDocumentTemplateServer").mockImplementation(
       () => new Promise(() => {}) as never,
     );
@@ -101,12 +118,22 @@ describe("document template query layer", () => {
   });
 
   it("replaces the cached layout with the server layout and rewrites the cache", async () => {
-    writeCachedDocumentTemplate("test_key", { ...fallback, pageSize: "A4" });
-    vi.spyOn(api, "fetchDocumentTemplateServer").mockResolvedValue(serverTemplate as never);
+    writeCachedDocumentTemplate("test_key", {
+      template: { ...fallback, pageSize: "A4" },
+      updatedAt: VERSION,
+    });
+    vi.spyOn(api, "fetchDocumentTemplateServer").mockResolvedValue({
+      template: serverTemplate,
+      updatedAt: NEXT_VERSION,
+    } as never);
 
     function Probe() {
-      const { template } = useDocumentTemplate<SamplePayload>("test_key", fallback);
-      return <span data-testid="size">{template.pageSize}</span>;
+      const { template, updatedAt } = useDocumentTemplate<SamplePayload>("test_key", fallback);
+      return (
+        <span data-testid="size" data-version={updatedAt ?? ""}>
+          {template.pageSize}
+        </span>
+      );
     }
 
     const container = document.createElement("div");
@@ -124,20 +151,36 @@ describe("document template query layer", () => {
     await vi.waitFor(() => {
       expect(container.querySelector('[data-testid="size"]')?.textContent).toBe("A5");
     });
-    expect(readCachedDocumentTemplate<SamplePayload>("test_key")?.pageSize).toBe("A5");
+    expect(container.querySelector('[data-testid="size"]')?.getAttribute("data-version")).toBe(
+      NEXT_VERSION,
+    );
+    expect(readCachedDocumentTemplate<SamplePayload>("test_key")?.template.pageSize).toBe("A5");
+    expect(readCachedDocumentTemplate<SamplePayload>("test_key")?.updatedAt).toBe(NEXT_VERSION);
 
     root.unmount();
     container.remove();
   });
 
-  it("persists a saved layout into the cache and the query cache", async () => {
-    vi.spyOn(api, "fetchDocumentTemplateServer").mockResolvedValue(null);
+  it("sends the version the client holds and stores the new one on success", async () => {
+    writeCachedDocumentTemplate("test_key", { template: fallback, updatedAt: VERSION });
+    // The server keeps answering with the newest record after a save (the mutation
+    // invalidates the query, so a static mock would echo the old version back).
+    let current = { template: fallback, updatedAt: VERSION };
+    vi.spyOn(api, "fetchDocumentTemplateServer").mockImplementation(async () => current as never);
     const saveSpy = vi
       .spyOn(api, "saveDocumentTemplateServer")
-      .mockImplementation(async (_key, template) => template as never);
+      .mockImplementation(async (_key, template) => {
+        current = {
+          template: template as DocumentTemplate<SamplePayload>,
+          updatedAt: NEXT_VERSION,
+        };
+        return current as never;
+      });
 
     let save: ((template: DocumentTemplate<SamplePayload>) => Promise<unknown>) | null = null;
     function Probe() {
+      // Mount the read query too: the mutation reads the version from its cache entry.
+      useDocumentTemplate<SamplePayload>("test_key", fallback);
       const mutation = useSaveDocumentTemplate<SamplePayload>("test_key");
       save = mutation.mutateAsync as unknown as typeof save;
       return <span>{mutation.isPending ? "saving" : "idle"}</span>;
@@ -156,13 +199,76 @@ describe("document template query layer", () => {
       );
     });
 
+    // Wait for the GET to settle so the mutation has a version to send.
+    await vi.waitFor(() => {
+      expect(client.getQueryData(documentTemplateQueryKey("test_key"))).toMatchObject({
+        updatedAt: VERSION,
+      });
+    });
+
     await act(async () => {
       await save!(serverTemplate);
     });
 
-    expect(saveSpy).toHaveBeenCalledWith("test_key", serverTemplate);
-    expect(readCachedDocumentTemplate<SamplePayload>("test_key")?.pageSize).toBe("A5");
-    expect(client.getQueryData(documentTemplateQueryKey("test_key"))).toEqual(serverTemplate);
+    expect(saveSpy).toHaveBeenCalledWith("test_key", serverTemplate, VERSION);
+    await vi.waitFor(() => {
+      expect(readCachedDocumentTemplate<SamplePayload>("test_key")?.updatedAt).toBe(NEXT_VERSION);
+    });
+    expect(client.getQueryData(documentTemplateQueryKey("test_key"))).toMatchObject({
+      updatedAt: NEXT_VERSION,
+    });
+
+    root.unmount();
+    container.remove();
+  });
+
+  it("keeps the stale version and cache when the server reports a conflict", async () => {
+    writeCachedDocumentTemplate("test_key", { template: fallback, updatedAt: VERSION });
+    vi.spyOn(api, "fetchDocumentTemplateServer").mockResolvedValue({
+      template: fallback,
+      updatedAt: VERSION,
+    } as never);
+    const saveSpy = vi
+      .spyOn(api, "saveDocumentTemplateServer")
+      .mockRejectedValue(new DocumentTemplateConflictError());
+
+    let save: ((template: DocumentTemplate<SamplePayload>) => Promise<unknown>) | null = null;
+    function Probe() {
+      useDocumentTemplate<SamplePayload>("test_key", fallback);
+      const mutation = useSaveDocumentTemplate<SamplePayload>("test_key");
+      save = mutation.mutateAsync as unknown as typeof save;
+      return null;
+    }
+
+    const container = document.createElement("div");
+    document.body.appendChild(container);
+    const root = createRoot(container);
+    const client = createTestQueryClient();
+
+    await act(async () => {
+      root.render(
+        <QueryClientProvider client={client}>
+          <Probe />
+        </QueryClientProvider>,
+      );
+    });
+
+    await vi.waitFor(() => {
+      expect(client.getQueryData(documentTemplateQueryKey("test_key"))).toMatchObject({
+        updatedAt: VERSION,
+      });
+    });
+
+    await act(async () => {
+      await expect(save!(serverTemplate)).rejects.toBeInstanceOf(DocumentTemplateConflictError);
+    });
+
+    expect(saveSpy).toHaveBeenCalledWith("test_key", serverTemplate, VERSION);
+    // Still the version the client read: a retry cannot silently overwrite the other edit.
+    expect(client.getQueryData(documentTemplateQueryKey("test_key"))).toMatchObject({
+      updatedAt: VERSION,
+    });
+    expect(readCachedDocumentTemplate<SamplePayload>("test_key")?.updatedAt).toBe(VERSION);
 
     root.unmount();
     container.remove();

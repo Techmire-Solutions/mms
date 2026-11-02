@@ -9288,6 +9288,8 @@ export const APP_TRANSLATIONS_UR: Record<AppTranslationKey, string> = {
     "آپ کے پاس غیر محفوظ شدہ تبدیلیاں ہیں۔ تبدیلیاں مسترد کریں اور باہر نکلیں؟",
   "templateEditor.exportFailed": "برآمد نہیں ہو سکا۔",
   "templateEditor.saveFailed": "ٹیمپلیٹ محفوظ نہیں ہو سکا۔",
+  "templateEditor.saveConflict": "یہ ٹیمپلیٹ کسی اور نے تبدیل کر دیا ہے۔ آپ کی تبدیلیاں محفوظ نہیں ہوئیں۔",
+  "templateEditor.reloadLatest": "تازہ ترین دوبارہ لوڈ کریں (تبدیلیاں ضائع ہوں گی)",
   "templateEditor.importFileTooLarge": "درآمد ناکام: فائل 5 MB کی حد سے تجاوز کر گئی۔",
   "templateEditor.emptyPreviewHint": "پیش نمائش کے لیے کوئی عنصر موجود نہیں",
   "templateEditor.snapToEdge": "کنارے سے ملائیں",
