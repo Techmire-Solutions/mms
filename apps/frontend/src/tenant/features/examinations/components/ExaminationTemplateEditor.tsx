@@ -6,13 +6,17 @@
  * only supplies examination fields, presets, sample payload and the Typst export.
  */
 
-import React from "react";
+import React, { useMemo } from "react";
 import { useTranslation } from "@/hooks/useTranslation";
 import { useBranding } from "@/tenant/hooks/useBranding";
 import { DocumentTemplateEditor } from "@/components/app/DocumentTemplateEditor";
 import { type TypstReportCardPayload } from "@mms/shared";
 import { mapToTypstReportCard } from "@/components/template-editor/templatePayloadMappers";
 import { notify } from "@/lib/notify";
+import {
+  localizeTemplateFields,
+  localizeTemplatePresets,
+} from "@/components/template-editor/templateLocalization";
 import {
   EXAMINATION_TEMPLATE_STORAGE_KEY,
   EXAMINATION_AVAILABLE_FIELDS,
@@ -73,6 +77,24 @@ export function ExaminationTemplateEditor({
 
   const { t } = useTranslation();
   const branding = useBranding();
+  const availableFields = useMemo(
+    () =>
+      localizeTemplateFields(
+        EXAMINATION_AVAILABLE_FIELDS,
+        (field) => `examinations.templateField.${String(field.field)}`,
+        t,
+      ),
+    [t],
+  );
+  const presets = useMemo(
+    () =>
+      localizeTemplatePresets(
+        EXAMINATION_PRESETS,
+        (preset) => `examinations.templatePreset.${preset.key}`,
+        t,
+      ),
+    [t],
+  );
 
   const handleExportTypst = (payload: TypstReportCardPayload) => {
     const conforming = mapToTypstReportCard({ ...payload });
@@ -94,8 +116,8 @@ export function ExaminationTemplateEditor({
         defaultTemplate={DEFAULT_EXAMINATION_TEMPLATE}
         savedMessage={t("examinations.templateSaved")}
         title={t("examinations.templateEditorTitle")}
-        availableFields={EXAMINATION_AVAILABLE_FIELDS}
-        presets={EXAMINATION_PRESETS}
+        availableFields={availableFields}
+        presets={presets}
         documentType="report-card"
         sampleData={sampleData}
         fullscreen={fullscreen}

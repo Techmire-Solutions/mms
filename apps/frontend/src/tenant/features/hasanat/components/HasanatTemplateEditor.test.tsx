@@ -33,10 +33,15 @@ vi.mock("@/lib/templates/documentTemplatesApi", () => ({
 }));
 
 type MockTemplate = { id: string } & Record<string, unknown>;
-let capturedOnSave: ((tmpl: MockTemplate) => Promise<void>) | null = null;
+type CapturedEditorProps = {
+  onSave: (tmpl: MockTemplate) => Promise<void>;
+  availableFields?: Array<{ label: string }>;
+  presets?: Array<{ label: string }>;
+};
+let capturedProps: CapturedEditorProps | null = null;
 vi.mock("@/components/app/TemplateEditor", () => ({
-  TemplateEditor: ({ onSave }: { onSave: (tmpl: MockTemplate) => Promise<void> }) => {
-    capturedOnSave = onSave;
+  TemplateEditor: (props: CapturedEditorProps) => {
+    capturedProps = props;
     return <div data-testid="mock-template-editor">TemplateEditor</div>;
   },
 }));
@@ -58,12 +63,18 @@ describe("HasanatTemplateEditor", () => {
     expect(renderEditor()).toContain('data-testid="mock-template-editor"');
   });
 
+  it("localizes palette field and preset labels", () => {
+    renderEditor();
+    expect(capturedProps?.availableFields?.[0]?.label).toBe("hasanat.templateField.receiptNo");
+    expect(capturedProps?.presets?.[0]?.label).toBe("hasanat.templatePreset.hasanat_a6_voucher");
+  });
+
   it("saves through /api/templates with the finance key", async () => {
     renderEditor();
-    expect(capturedOnSave).not.toBeNull();
+    expect(capturedProps?.onSave).not.toBeNull();
     const template = { id: "hasanat-template" } as unknown as DocumentTemplate;
 
-    await capturedOnSave!(template as unknown as MockTemplate);
+    await capturedProps?.onSave!(template as unknown as MockTemplate);
 
     expect(saveDocumentTemplateServer).toHaveBeenCalledWith(
       "mms_hasanat_voucher_template",
@@ -78,7 +89,7 @@ describe("HasanatTemplateEditor", () => {
     vi.mocked(saveDocumentTemplateServer).mockRejectedValueOnce(new Error("Network disconnect"));
 
     await expect(
-      capturedOnSave!({ id: "hasanat-template" } as unknown as MockTemplate),
+      capturedProps?.onSave!({ id: "hasanat-template" } as unknown as MockTemplate),
     ).rejects.toThrow("Network disconnect");
     expect(notify.success).not.toHaveBeenCalled();
   });
