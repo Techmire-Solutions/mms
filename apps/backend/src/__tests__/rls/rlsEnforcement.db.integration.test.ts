@@ -121,9 +121,12 @@ describe("RLS enforcement", () => {
   it("round-trips a document template through its tenant-scoped use cases", async () => {
     const template = { pageSize: "A6", elements: [] };
 
-    await saveDocumentTemplateUseCase(TENANT_A, "invoice", template, USER);
+    await saveDocumentTemplateUseCase(TENANT_A, "invoice", template, USER, null);
 
-    await expect(getDocumentTemplateUseCase(TENANT_A, "invoice")).resolves.toEqual(template);
+    await expect(getDocumentTemplateUseCase(TENANT_A, "invoice")).resolves.toMatchObject({
+      template,
+      updatedAt: expect.any(Date),
+    });
     await expect(getDocumentTemplateUseCase(TENANT_B, "invoice")).resolves.toBeNull();
   });
 

@@ -9178,6 +9178,8 @@ export const APP_TRANSLATIONS_AR: Record<AppTranslationKey, string> = {
     "لديك تغييرات غير محفوظة. هل تريد تجاهل التغييرات والخروج؟",
   "templateEditor.exportFailed": "تعذّر التصدير.",
   "templateEditor.saveFailed": "تعذّر حفظ القالب.",
+  "templateEditor.saveConflict": "تم تغيير هذا القالب من قِبل شخص آخر. لم تُحفظ تغييراتك.",
+  "templateEditor.reloadLatest": "إعادة تحميل الأحدث (يتجاهل التغييرات)",
   "templateEditor.importFileTooLarge": "فشل الاستيراد: الملف يتجاوز الحد الأقصى البالغ 5 ميغابايت.",
   "templateEditor.emptyPreviewHint": "لا توجد عناصر للمعاينة",
   "templateEditor.snapToEdge": "محاذاة للحافة",

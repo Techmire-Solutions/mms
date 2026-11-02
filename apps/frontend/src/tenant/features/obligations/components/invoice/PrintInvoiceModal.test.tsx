@@ -6,7 +6,10 @@ import { withQueryClient } from "@/test/queryClientTestUtils";
 
 vi.mock("@/lib/templates/documentTemplatesApi", () => ({
   fetchDocumentTemplateServer: vi.fn().mockResolvedValue(null),
-  saveDocumentTemplateServer: vi.fn().mockImplementation(async (_key, template) => template),
+  saveDocumentTemplateServer: vi.fn().mockImplementation(async (_key, template) => ({
+    template,
+    updatedAt: "2026-01-01T00:00:00.000Z",
+  })),
   deleteDocumentTemplateServer: vi.fn().mockResolvedValue(true),
 }));
 import type { ObligationCollection } from "@/lib/data/obligationsData";

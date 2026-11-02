@@ -7,7 +7,10 @@ import { fetchDocumentTemplateServer } from "@/lib/templates/documentTemplatesAp
 
 vi.mock("@/lib/templates/documentTemplatesApi", () => ({
   fetchDocumentTemplateServer: vi.fn().mockResolvedValue(null),
-  saveDocumentTemplateServer: vi.fn().mockImplementation(async (_key, template) => template),
+  saveDocumentTemplateServer: vi.fn().mockImplementation(async (_key, template) => ({
+    template,
+    updatedAt: "2026-01-01T00:00:00.000Z",
+  })),
 }));
 
 vi.mock("@/hooks/useTranslation", () => ({
@@ -96,11 +99,14 @@ describe("StudentCardTemplateEditor", () => {
     const { act } = await import("react");
 
     vi.mocked(fetchDocumentTemplateServer).mockResolvedValueOnce({
-      pageSize: "CR80",
-      orientation: "landscape",
-      elements: [
-        { id: "srv_1", type: "static", label: "SERVER CARD", x: 10, y: 10, w: 120, h: 20 },
-      ],
+      template: {
+        pageSize: "CR80",
+        orientation: "landscape",
+        elements: [
+          { id: "srv_1", type: "static", label: "SERVER CARD", x: 10, y: 10, w: 120, h: 20 },
+        ],
+      },
+      updatedAt: "2026-01-01T00:00:00.000Z",
     } as never);
 
     const container = document.createElement("div");

@@ -1,13 +1,27 @@
 import { documentTemplateSchema, type DocumentTemplate, type User } from "@mms/shared";
-import { documentsRepositoryAdapter } from "../repository/documentsRepositoryAdapter.js";
+import {
+  documentsRepositoryAdapter,
+  type StoredDocumentTemplate,
+} from "../repository/documentsRepositoryAdapter.js";
 import { broadcastCollection, broadcastTenantUpdate } from "../../lib/livePush.js";
 import { recordModernAuditEvent } from "../../services/auditTrailService.js";
 import { withTenant, withTenantRead } from "../../db/tenant-context.js";
 
+/** A save whose `expectedUpdatedAt` no longer matches the stored row. Maps to 409. */
+export class DocumentTemplateConflictError extends Error {
+  readonly statusCode = 409;
+  readonly type = "conflict";
+
+  constructor() {
+    super("This template was changed by someone else. Reload it before saving.");
+    this.name = "DocumentTemplateConflictError";
+  }
+}
+
 export async function getDocumentTemplateUseCase(
   tenant: string,
   key: string,
-): Promise<DocumentTemplate | null> {
+): Promise<StoredDocumentTemplate | null> {
   // `document_templates` is FORCE ROW LEVEL SECURITY: without a tenant-scoped
   // transaction the lookup sees no rows at all under a non-bypass role. The
   // repository uses `activeDb()`, so it joins this transaction.
@@ -19,7 +33,8 @@ export async function saveDocumentTemplateUseCase(
   key: string,
   template: DocumentTemplate,
   user: User,
-): Promise<DocumentTemplate> {
+  expectedUpdatedAt: string | null,
+): Promise<StoredDocumentTemplate> {
   const parsed = documentTemplateSchema.safeParse(template);
   if (!parsed.success) {
     const detail = parsed.error.issues
@@ -28,10 +43,22 @@ export async function saveDocumentTemplateUseCase(
     throw new TypeError(`Cannot save invalid document template: ${detail}`);
   }
 
+  const expected = expectedUpdatedAt === null ? null : new Date(expectedUpdatedAt);
+  if (expected !== null && Number.isNaN(expected.getTime())) {
+    throw new TypeError(`Invalid expectedUpdatedAt for document template "${key}"`);
+  }
+
   // Save and audit share one tenant transaction; broadcasts are emitted only
-  // after it commits, so a failed write cannot invalidate clients.
+  // after it commits, so a failed write cannot invalidate clients. A stale
+  // expectation returns null from the repository and no audit row is written.
   const saved = await withTenant(tenant, async () => {
-    const stored = await documentsRepositoryAdapter.saveTemplate(tenant, key, parsed.data);
+    const stored = await documentsRepositoryAdapter.saveTemplate(
+      tenant,
+      key,
+      parsed.data,
+      expected,
+    );
+    if (!stored) throw new DocumentTemplateConflictError();
 
     // Modern RFC 8785 canonical audit log entry (joins the active transaction).
     await recordModernAuditEvent({

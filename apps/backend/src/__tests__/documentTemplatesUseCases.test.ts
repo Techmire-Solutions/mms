@@ -47,8 +47,14 @@ const template: DocumentTemplate = { pageSize: "A6", elements: [] };
 describe("document template use cases", () => {
   beforeEach(() => {
     vi.clearAllMocks();
-    mocks.getTemplate.mockResolvedValue(template);
-    mocks.saveTemplate.mockResolvedValue(template);
+    mocks.getTemplate.mockResolvedValue({
+      template,
+      updatedAt: new Date("2026-01-01T00:00:00.000Z"),
+    });
+    mocks.saveTemplate.mockResolvedValue({
+      template,
+      updatedAt: new Date("2026-01-01T00:00:00.000Z"),
+    });
     mocks.deleteTemplate.mockResolvedValue(true);
   });
 
@@ -68,7 +74,7 @@ describe("document template use cases", () => {
     });
     mocks.saveTemplate.mockImplementationOnce(async () => {
       order.push("save");
-      return template;
+      return { template, updatedAt: new Date("2026-01-01T00:00:00.000Z") };
     });
     mocks.recordModernAuditEvent.mockImplementationOnce(async () => {
       order.push("audit");
@@ -77,10 +83,29 @@ describe("document template use cases", () => {
       order.push("broadcast");
     });
 
-    await saveDocumentTemplateUseCase("demo", "invoice", template, user);
+    await saveDocumentTemplateUseCase("demo", "invoice", template, user, null);
 
     expect(mocks.withTenant).toHaveBeenCalledWith("demo", expect.any(Function));
+    expect(mocks.saveTemplate).toHaveBeenCalledWith("demo", "invoice", template, null);
     expect(order).toEqual(["tx:start", "save", "audit", "tx:commit", "broadcast"]);
+  });
+
+  it("rejects a stale save with 409 and writes no audit or broadcast", async () => {
+    mocks.saveTemplate.mockResolvedValueOnce(null);
+    const expected = new Date("2026-01-01T00:00:00.000Z").toISOString();
+
+    await expect(
+      saveDocumentTemplateUseCase("demo", "invoice", template, user, expected),
+    ).rejects.toMatchObject({ statusCode: 409, type: "conflict" });
+
+    expect(mocks.saveTemplate).toHaveBeenCalledWith(
+      "demo",
+      "invoice",
+      template,
+      new Date(expected),
+    );
+    expect(mocks.recordModernAuditEvent).not.toHaveBeenCalled();
+    expect(mocks.broadcastCollection).not.toHaveBeenCalled();
   });
 
   it("does not append an audit row or broadcast when the delete removes nothing", async () => {

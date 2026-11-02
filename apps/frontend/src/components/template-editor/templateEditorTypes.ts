@@ -3,6 +3,7 @@
  * @description Type definitions for TemplateEditor component and its props.
  */
 
+import type { ReactNode } from "react";
 import type {
   DocumentTemplate,
   DocumentTemplatePreset,
@@ -43,6 +44,10 @@ export interface TemplateEditorProps<TPayload = Record<string, unknown>> {
   onChange?: (template: DocumentTemplate<TPayload>) => void;
   /** Optional callback notifying parent of dirty state changes */
   onDirtyChange?: (isDirty: boolean) => void;
+  /** Overrides save availability; adapters set false while a save conflict is unresolved. */
+  canSave?: boolean;
+  /** Optional banner rendered inside the editor shell (visible in embedded and fullscreen modes). */
+  topBanner?: ReactNode;
   /** Optional branding overrides for logo and brand colors. */
   branding?: TemplateEditorBranding;
 }

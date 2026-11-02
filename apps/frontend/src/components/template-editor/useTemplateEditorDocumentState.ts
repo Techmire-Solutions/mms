@@ -17,6 +17,7 @@ import {
 } from "@mms/shared";
 import type { TranslationFunction } from "@/lib/contexts/TranslationContext";
 import { cloneTemplateElements } from "./templateEditorCloning";
+import { SilentTemplateSaveError } from "./templateEditorSaveErrors";
 import { notify } from "@/lib/notify";
 
 import { documentReducer } from "./templateEditorDocumentReducer";
@@ -144,6 +145,8 @@ export function useTemplateEditorDocumentState<TPayload = Record<string, unknown
       if (savedTimerRef.current) clearTimeout(savedTimerRef.current);
       savedTimerRef.current = setTimeout(() => setSaved(false), 2000);
     } catch (err) {
+      // The adapter already reported this one (e.g. a 409 conflict banner/toast).
+      if (err instanceof SilentTemplateSaveError) return;
       // One failure toast, owned here; adapters only toast success.
       console.error("Template save error:", err);
       notify.error(t("templateEditor.saveFailed"));

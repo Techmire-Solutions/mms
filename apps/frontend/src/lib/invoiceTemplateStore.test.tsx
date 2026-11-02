@@ -98,6 +98,7 @@ describe("invoice template facade", () => {
     expect(api.saveDocumentTemplateServer).toHaveBeenCalledWith(
       INVOICE_TEMPLATE_KEY,
       preset.template,
+      null,
     );
 
     root.unmount();

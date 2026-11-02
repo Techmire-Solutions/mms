@@ -24,7 +24,10 @@ vi.mock("@/lib/notify", () => ({
 
 vi.mock("@/lib/templates/documentTemplatesApi", () => ({
   fetchDocumentTemplateServer: vi.fn().mockResolvedValue(null),
-  saveDocumentTemplateServer: vi.fn().mockImplementation(async (_key, template) => template),
+  saveDocumentTemplateServer: vi.fn().mockImplementation(async (_key, template) => ({
+    template,
+    updatedAt: "2026-01-01T00:00:00.000Z",
+  })),
   deleteDocumentTemplateServer: vi.fn().mockResolvedValue(true),
 }));
 
@@ -116,8 +119,14 @@ describe("DistributionDetail voucher printing", () => {
   beforeEach(() => {
     localStorage.clear();
     vi.clearAllMocks();
-    vi.mocked(fetchDocumentTemplateServer).mockResolvedValue(customTemplate as never);
-    writeCachedDocumentTemplate(HASANAT_TEMPLATE_STORAGE_KEY, customTemplate);
+    vi.mocked(fetchDocumentTemplateServer).mockResolvedValue({
+      template: customTemplate,
+      updatedAt: "2026-01-01T00:00:00.000Z",
+    } as never);
+    writeCachedDocumentTemplate(HASANAT_TEMPLATE_STORAGE_KEY, {
+      template: customTemplate,
+      updatedAt: "2026-01-01T00:00:00.000Z",
+    });
   });
 
   it("prints the saved voucher layout with the recipient and points", async () => {

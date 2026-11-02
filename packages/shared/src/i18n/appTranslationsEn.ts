@@ -9392,6 +9392,8 @@ export const APP_TRANSLATIONS_EN = {
   "templateEditor.discardUnsavedPrompt": "You have unsaved changes. Discard changes and exit?",
   "templateEditor.exportFailed": "Could not export.",
   "templateEditor.saveFailed": "Could not save the template.",
+  "templateEditor.saveConflict": "This template was changed by someone else. Your changes were not saved.",
+  "templateEditor.reloadLatest": "Reload latest (discards changes)",
   "templateEditor.importFileTooLarge": "Import failed: file exceeds the 5 MB limit.",
   "templateEditor.emptyPreviewHint": "No elements to preview",
   "templateEditor.snapToEdge": "Snap to Edge",

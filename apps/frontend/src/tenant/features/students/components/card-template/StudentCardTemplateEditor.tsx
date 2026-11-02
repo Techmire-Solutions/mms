@@ -12,6 +12,9 @@ import { useTranslation } from "@/hooks/useTranslation";
 import { useBranding } from "@/tenant/hooks/useBranding";
 import { TemplateEditor } from "@/components/app/TemplateEditor";
 import { useDocumentTemplate } from "@/lib/templates/useDocumentTemplates";
+import { useTemplateSaveConflict } from "@/lib/templates/useTemplateSaveConflict";
+import { SilentTemplateSaveError } from "@/components/template-editor/templateEditorSaveErrors";
+import { TemplateSaveConflictBanner } from "@/components/template-editor/TemplateSaveConflictBanner";
 import { notify } from "@/lib/notify";
 import type { Student } from "@mms/shared";
 import type {
@@ -147,9 +150,19 @@ export function StudentCardTemplateEditor({
   }, [defaultFullTemplate, activeSide, branding]);
 
   const { mutateAsync: saveCardTemplate } = useSaveStudentCardTemplate();
+  const conflict = useTemplateSaveConflict(STUDENT_CARD_TEMPLATE_KEY, t);
+
+  const handleReload = useCallback(async () => {
+    const record = await conflict.reload();
+    if (!record) return;
+    dirtyRef.current = false;
+    setFullTemplate(record.template as StudentCardTemplate);
+  }, [conflict]);
 
   const handleSave = useCallback(
     async (currentSideTmpl: StudentCardTemplate): Promise<void> => {
+      if (conflict.blocked) return;
+
       const updatedFullTemplate: StudentCardTemplate = {
         ...fullTemplate,
         pageSize: currentSideTmpl.pageSize,
@@ -159,11 +172,16 @@ export function StudentCardTemplateEditor({
           : { backElements: currentSideTmpl.elements }),
       };
 
-      await saveCardTemplate(updatedFullTemplate);
+      try {
+        await saveCardTemplate(updatedFullTemplate);
+      } catch (err) {
+        if (conflict.handleSaveError(err)) throw new SilentTemplateSaveError();
+        throw err;
+      }
       setFullTemplate(updatedFullTemplate);
       notify.success(t("students.idCard.templateSaved"));
     },
-    [fullTemplate, activeSide, saveCardTemplate, t],
+    [fullTemplate, activeSide, conflict, saveCardTemplate, t],
   );
 
   const handleSideTemplateChange = useCallback(
@@ -187,6 +205,11 @@ export function StudentCardTemplateEditor({
 
   return (
     <div className="relative w-full h-full flex flex-col">
+      {conflict.blocked && (
+        <div className="px-4 pt-2">
+          <TemplateSaveConflictBanner onReload={handleReload} t={t} />
+        </div>
+      )}
       {/* Side Switcher Bar */}
       <div className="flex items-center justify-between px-4 py-2 bg-card border-b border-border text-xs">
         <div className="flex items-center gap-2">
@@ -198,7 +221,7 @@ export function StudentCardTemplateEditor({
 
       <div className="flex-1 min-h-0">
         <TemplateEditor<StudentCardPayload>
-          key={`card-editor-${activeSide}`}
+          key={`card-editor-${activeSide}-${conflict.reloadNonce}`}
           title={`${t("students.cardTemplate.title")} (${sideLabel})`}
           template={activeSideTemplate}
           defaultTemplate={activeSideDefaultTemplate}
@@ -208,6 +231,7 @@ export function StudentCardTemplateEditor({
           sampleData={sampleData}
           fullscreen={fullscreen}
           branding={branding}
+          canSave={!conflict.blocked}
           onChange={handleSideTemplateChange}
           onSave={handleSave}
           onClose={onClose}

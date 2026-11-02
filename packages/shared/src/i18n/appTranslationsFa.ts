@@ -9329,6 +9329,8 @@ export const APP_TRANSLATIONS_FA: Partial<Record<AppTranslationKey, string>> = {
     "شما تغییرات ذخیره‌نشده دارید. آیا می‌خواهید تغییرات را لغو کرده و خارج شوید؟",
   "templateEditor.exportFailed": "خروجی گرفتن ممکن نشد.",
   "templateEditor.saveFailed": "الگو ذخیره نشد.",
+  "templateEditor.saveConflict": "این الگو توسط شخص دیگری تغییر کرده است. تغییرات شما ذخیره نشد.",
+  "templateEditor.reloadLatest": "بارگذاری آخرین نسخه (تغییرات کنار گذاشته می‌شود)",
   "templateEditor.importFileTooLarge":
     "وارد کردن ناموفق بود: حجم فایل از محدودیت ۵ مگابایت تجاوز می‌کند.",
   "templateEditor.emptyPreviewHint": "هیچ عنصری برای پیش‌نمایش وجود ندارد",
