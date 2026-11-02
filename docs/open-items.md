@@ -149,10 +149,12 @@ transactions.`) and re-attaches triggers for **19** tables against 0104's **14**
      optimistic-concurrency guarded** (`2026-11-02`): GET returns `updatedAt`, PUT requires
      `expectedUpdatedAt`, a stale write returns `409 Conflict` (atomic `insert … on conflict do nothing` /
      `update … where updated_at = ?`), and the editor blocks saving with a “reload latest” banner instead of
-     overwriting. **Still open:** template field/preset labels for those modules remain English; an
-     examination report card covers one paper (a term-wide multi-subject card needs aggregation); DELETE
-     remains unchecked (no UI, documented residual). The version token is the row's `updated_at` (JS `Date`
-     millisecond precision); if a future writer uses SQL `now()`, switch to a dedicated integer version column.
+     overwriting. **Template field and preset labels are localized** (`2026-11-02`) in en/ar/ur/fa through
+     `templateLocalization.ts` + per-module key prefixes; the previously missing Student-card field keys are
+     restored, and a guard test pins every field/preset key. **Still open:** an examination report card covers
+     one paper (a term-wide multi-subject card needs aggregation); DELETE remains unchecked (no UI, documented
+     residual). The version token is the row's `updated_at` (JS `Date` millisecond precision); if a future
+     writer uses SQL `now()`, switch to a dedicated integer version column.
    - _Reports/KPI config_ — `usePinnedWidgetsController`, `useDashboardSectionSettings`, `kpiSummaryCard*`,
      `DynamicCardBuilder`, `ModuleReportsToolPanels` → need `/api/reports/section-settings` + per-module KPI
      config endpoints.

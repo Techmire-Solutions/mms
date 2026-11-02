@@ -3,10 +3,14 @@
  * @description Hasanat module donation receipt and distribution voucher template editor.
  */
 
-import React from "react";
+import React, { useMemo } from "react";
 import { useTranslation } from "@/hooks/useTranslation";
 import { useBranding } from "@/tenant/hooks/useBranding";
 import { DocumentTemplateEditor } from "@/components/app/DocumentTemplateEditor";
+import {
+  localizeTemplateFields,
+  localizeTemplatePresets,
+} from "@/components/template-editor/templateLocalization";
 import {
   DEFAULT_HASANAT_TEMPLATE,
   HASANAT_AVAILABLE_FIELDS,
@@ -43,6 +47,24 @@ export function HasanatTemplateEditor({
 
   const { t } = useTranslation();
   const branding = useBranding();
+  const availableFields = useMemo(
+    () =>
+      localizeTemplateFields(
+        HASANAT_AVAILABLE_FIELDS,
+        (field) => `hasanat.templateField.${String(field.field)}`,
+        t,
+      ),
+    [t],
+  );
+  const presets = useMemo(
+    () =>
+      localizeTemplatePresets(
+        HASANAT_PRESETS,
+        (preset) => `hasanat.templatePreset.${preset.key}`,
+        t,
+      ),
+    [t],
+  );
 
   return (
     <div className="min-w-0">
@@ -51,8 +73,8 @@ export function HasanatTemplateEditor({
         defaultTemplate={DEFAULT_HASANAT_TEMPLATE}
         savedMessage={t("hasanat.templateSaved")}
         title={t("hasanat.templateEditorTitle")}
-        availableFields={HASANAT_AVAILABLE_FIELDS}
-        presets={HASANAT_PRESETS}
+        availableFields={availableFields}
+        presets={presets}
         documentType="voucher"
         sampleData={sampleData}
         fullscreen={fullscreen}

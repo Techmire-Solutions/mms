@@ -6,7 +6,7 @@
  * only supplies finance's fields, presets, sample payload and data exports.
  */
 
-import React from "react";
+import React, { useMemo } from "react";
 import { useTranslation } from "@/hooks/useTranslation";
 import { useBranding } from "@/tenant/hooks/useBranding";
 import { DocumentTemplateEditor } from "@/components/app/DocumentTemplateEditor";
@@ -16,6 +16,10 @@ import {
   mapToZohoInvoice,
 } from "@/components/template-editor/templatePayloadMappers";
 import { notify } from "@/lib/notify";
+import {
+  localizeTemplateFields,
+  localizeTemplatePresets,
+} from "@/components/template-editor/templateLocalization";
 import {
   FINANCE_TEMPLATE_STORAGE_KEY,
   FINANCE_AVAILABLE_FIELDS,
@@ -56,6 +60,24 @@ export function FinanceTemplateEditor({
 
   const { t } = useTranslation();
   const branding = useBranding();
+  const availableFields = useMemo(
+    () =>
+      localizeTemplateFields(
+        FINANCE_AVAILABLE_FIELDS,
+        (field) => `finance.templateField.${String(field.field)}`,
+        t,
+      ),
+    [t],
+  );
+  const presets = useMemo(
+    () =>
+      localizeTemplatePresets(
+        FINANCE_PRESETS,
+        (preset) => `finance.templatePreset.${preset.key}`,
+        t,
+      ),
+    [t],
+  );
 
   const handleExportTypst = (payload: TypstFeeReceiptPayload) => {
     const conforming = mapToTypstFeeReceipt({ ...payload });
@@ -90,8 +112,8 @@ export function FinanceTemplateEditor({
         defaultTemplate={DEFAULT_FINANCE_TEMPLATE}
         savedMessage={t("finance.templateSaved")}
         title={t("finance.templateEditorTitle")}
-        availableFields={FINANCE_AVAILABLE_FIELDS}
-        presets={FINANCE_PRESETS}
+        availableFields={availableFields}
+        presets={presets}
         documentType="invoice"
         sampleData={sampleData}
         fullscreen={fullscreen}
