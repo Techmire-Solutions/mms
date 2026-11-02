@@ -19,12 +19,18 @@ import {
   ContactCardMetadataGrid,
 } from "@/tenant/features/contacts/components/ContactCardSections";
 import type { ContactsColumnConfig } from "@/tenant/features/contacts/components/ContactTableRow";
+import type { EntityDescriptor } from "@/components/common/entityRegistryTypes";
 import { useReducedMotion } from "@/hooks/useReducedMotion";
 import { useTranslation } from "@/hooks/useTranslation";
-import { useContactEntityDescriptor } from "@/tenant/features/contacts/hooks/useContactEntityDescriptor";
 
 export interface ContactCardItemProps {
   contact: Contact;
+  /**
+   * Resolved once by the directory (`ContactsListCards`) and shared by every
+   * card: calling the descriptor hook per card re-flattened the whole field
+   * registry for each row on every render.
+   */
+  descriptor: EntityDescriptor<Contact>;
   isSelected: boolean;
   prefs: ContactPreferences;
   countryCodesMap: Record<string, string>;
@@ -51,6 +57,7 @@ export interface ContactCardItemProps {
  */
 export const ContactCardItem = React.memo(function ContactCardItem({
   contact,
+  descriptor,
   isSelected,
   prefs,
   countryCodesMap,
@@ -73,7 +80,6 @@ export const ContactCardItem = React.memo(function ContactCardItem({
 }: ContactCardItemProps): React.JSX.Element {
   const { t } = useTranslation();
   const reducedMotion = useReducedMotion();
-  const contactDescriptor = useContactEntityDescriptor();
 
   const { phone, countryCode, phoneDisplay } = resolveContactPhoneDisplay(
     contact,
@@ -135,7 +141,7 @@ export const ContactCardItem = React.memo(function ContactCardItem({
           otherColumns={otherColumns}
           isColumnVisible={columnVisibleFn}
           t={t}
-          descriptor={contactDescriptor}
+          descriptor={descriptor}
           entity={contact}
         />
       }
