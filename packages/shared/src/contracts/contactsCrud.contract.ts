@@ -68,12 +68,19 @@ export const contactsCrudRoutes = {
     method: "PUT",
     path: "/api/contacts/:id",
     pathParams: z.object({ id: z.string() }),
+    /**
+     * The `updatedAt` the client based its edit on. When present and stale, the
+     * server rejects with 409 so two editors cannot silently overwrite each
+     * other (`mms-api-interface` §6 Optimistic Concurrency).
+     */
+    headers: z.object({ "x-expected-updated-at": z.string().optional() }),
     body: contactWireWriteSchema,
     responses: {
       200: responseWrapper,
       400: z.unknown(),
       403: z.unknown(),
       404: z.unknown(),
+      409: z.object({ type: z.literal("conflict"), message: z.string() }),
       500: z.unknown(),
     },
     summary: "Update a contact",

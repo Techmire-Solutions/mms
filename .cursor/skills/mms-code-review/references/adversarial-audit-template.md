@@ -15,6 +15,7 @@ Systematic review across the 4 adversarial review vectors:
 
 - **Vector 2: Failure Modes & Silent Failures:**
   - *Promise & Async Handling:* Verified zero unhandled Promise rejections; all async operations have bounded rejection handling or propagate to Fastify central error handlers.
+  - *Persistence & Print Claims:* Verified saves await server confirmation (version echoed, 409 conflict handled, no swallowed rejection) and every print/preview consumes the stored template rather than parallel hardcoded markup.
   - *Logging & Exception Masking:* Checked that `try/catch` blocks never swallow errors silently; all caught exceptions log to Pino or translate into user-facing `notify.error(t(...))`.
   - *Timeouts & Hanging Transactions:* Outbound network requests enforce `AbortSignal.timeout(ms)`; database transactions release connection pools via `using` / `await using`.
 

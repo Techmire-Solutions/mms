@@ -4,7 +4,7 @@ description: Authors and verifies the MMS agent-standards corpus itself — rule
 license: Proprietary
 metadata:
   owner: mms-platform
-  last-verified: 2026-10-29
+  last-verified: 2026-11-02
 allowed-tools: Read Grep Glob Write Edit Bash(node scripts/verify-rules-integrity.mjs) Bash(bash .agent/scripts/sync-all.sh)
 ---
 
@@ -76,7 +76,7 @@ The verifier covers: skill inventory vs manifest, AGENTS.md count, the `@AGENTS.
 
 ## Checking whether a skill actually fires
 
-A skill nobody invokes is invisible cost: all 49 descriptions load on every turn. Probes worth using: `/skill-doctor` for per-skill context cost and invocation counts, and the `InstructionsLoaded` hook to log which rule files loaded. If a skill never fires on the prompts it is meant for, the fix is the **description**, not the body.
+A skill nobody invokes is invisible cost: all 50 descriptions load on every turn. Probes worth using: `/skill-doctor` for per-skill context cost and invocation counts, and the `InstructionsLoaded` hook to log which rule files loaded. If a skill never fires on the prompts it is meant for, the fix is the **description**, not the body.
 
 ## Related skills
 

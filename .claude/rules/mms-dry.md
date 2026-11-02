@@ -26,6 +26,7 @@ paths:
   - Entity Messaging: `EntityMessagingActions`.
   - Data Tables: Standard tables use `DataTable` (`@/components/common/data-table`); server-paginated Work directories use `WorkTaskToolbar` + `WorkBatchTable` with `useModuleColumnLayout`. Hand-rolled `<Table>` is restricted to reviewed allowlist in `scripts/check-work-directory.mjs`.
   - Ban duplicating UI markup or overlay chrome across features.
+- **Document Template SSOT:** One editor (`DocumentTemplateEditor`), one renderer (`TemplateElementContent`/`TemplateDocumentPreview`) and one print helper (`printTemplateDocument`) serve every printable module document. Adapters supply localized fields/presets, sample payload and layout only; per-module receipt/report-card markup or persistence forks are banned (`mms-document-templates.md`).
 - **Entity Descriptors:** Consume `EntityDescriptor<T>` registries (`@/components/common/entityRegistry`, `mms-ui-ux-design.md` §6). Runtime labels mandate `labelKey: AppTranslationKey`.
 - **Node 24 Built-Ins:** Prefer native built-ins over external dependencies (`mms-dependencies.md` §3).
 - **Zod DTO SSOT:** Share DTO contracts in `@mms/shared`. Derive variants via `.pick()`, `.omit()`, or `.extend()`.

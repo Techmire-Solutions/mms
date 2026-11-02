@@ -306,6 +306,45 @@ describe("createContactsUseCases (DI composition root)", () => {
     expect(repo.bulkSave).toHaveBeenCalled();
   });
 
+  it("updateContactById stamps the actor and ignores forged audit attribution", async () => {
+    const { repo, store } = createFakeRepo();
+    store.set("a", fakeContact("a", { createdBy: "original-creator" }));
+    const useCases = createContactsUseCases(repo);
+
+    const updated = await useCases.updateContactById(
+      "a",
+      fakeContact("a", { firstName: "New", updatedBy: "forged-admin", createdBy: "forged-admin" }),
+      { actorId: "real-editor" },
+    );
+
+    expect(updated?.updatedBy).toBe("real-editor");
+    expect(updated?.createdBy).toBe("original-creator");
+  });
+
+  it("updateContactById rejects a stale expectedUpdatedAt with a 409 conflict", async () => {
+    const { repo, store } = createFakeRepo();
+    store.set("a", fakeContact("a", { updatedAt: "2026-01-02T00:00:00.000Z" }));
+    const useCases = createContactsUseCases(repo);
+
+    await expect(
+      useCases.updateContactById("a", fakeContact("a", { firstName: "New" }), {
+        expectedUpdatedAt: "2026-01-01T00:00:00.000Z",
+      }),
+    ).rejects.toMatchObject({ statusCode: 409 });
+    expect(repo.save).not.toHaveBeenCalled();
+  });
+
+  it("updateContactById accepts a matching expectedUpdatedAt", async () => {
+    const { repo, store } = createFakeRepo();
+    store.set("a", fakeContact("a", { updatedAt: "2026-01-01T00:00:00.000Z" }));
+    const useCases = createContactsUseCases(repo);
+
+    const updated = await useCases.updateContactById("a", fakeContact("a", { firstName: "New" }), {
+      expectedUpdatedAt: "2026-01-01T00:00:00.000Z",
+    });
+    expect(updated?.firstName).toBe("New");
+  });
+
   it("updateContactById skips relationship inference when disabled", async () => {
     const { repo, store } = createFakeRepo();
     store.set("a", fakeContact("a"));

@@ -4,7 +4,7 @@ description: Adds or modifies Fastify routes, middleware (authenticateTenant), s
 license: Proprietary
 metadata:
   owner: mms-platform
-  last-verified: 2026-10-29
+  last-verified: 2026-11-02
 ---
 
 # MMS Backend API Workflow
@@ -44,6 +44,7 @@ metadata:
 - **Standard CRUD Factories**: Use `registerResourceRoutes` and `registerSoftDeletableBulkTrashRoutes` for standard REST entities.
 - **Single-Record Reads**: Filter `isNull(table.deletedAt)`; return `404 Not Found` for archived records unless caller has delete permissions and specifies `?includeDeleted=true`.
 - **Audit Outbox**: Mutating audited entities emits RFC 8785 canonical JSON outbox records inside the primary transaction (`mms-audit-trail`).
+- **Optimistic Concurrency**: Contested single-row updates echo the read version and compare-and-set atomically (`onConflictDoNothing` / `WHERE updated_at = expected`); a zero-row result is `409 Conflict`, never a silent overwrite. Document-template example: `mms-document-templates`.
 
 ## 3. Verification
 

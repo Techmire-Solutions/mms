@@ -76,3 +76,13 @@ export const ownContactPatchBodySchema = z.preprocess((raw) => {
   if (!raw || typeof raw !== "object" || Array.isArray(raw)) return raw;
   return deepSanitizeStrings(raw);
 }, ownContactPatchBodyBaseSchema);
+
+/**
+ * Fields a user may change on **their own** contact record without
+ * `contacts.write` (profile self-service). Anything else — relationships,
+ * bank details, attachments, classification fields — requires the module
+ * permission and is rejected on the self-service path.
+ */
+export const OWN_CONTACT_PATCH_KEYS: readonly string[] = Object.keys(
+  ownContactPatchBodyBaseSchema.shape,
+);

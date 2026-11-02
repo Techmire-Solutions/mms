@@ -1,6 +1,5 @@
 import {
-  CONFLICTS_KEY,
-  OUTBOX_KEY,
+  currentContactsSyncKeys,
   getContactsOutbox,
   getContactsSyncConflicts,
   notifyContactsSyncOutboxChanged,
@@ -10,13 +9,13 @@ import {
 } from "@/lib/contacts/contactsSyncOutboxStorage";
 
 export function clearContactsSyncConflicts(): void {
-  writeJson(CONFLICTS_KEY, []);
+  writeJson(currentContactsSyncKeys().conflicts, []);
   notifyContactsSyncOutboxChanged();
 }
 
 export function dismissContactsSyncConflict(id: string): void {
   writeJson(
-    CONFLICTS_KEY,
+    currentContactsSyncKeys().conflicts,
     getContactsSyncConflicts().filter((conflict) => conflict.id !== id),
   );
   notifyContactsSyncOutboxChanged();
@@ -29,7 +28,7 @@ export function requeueContactsSyncConflict(id: string): void {
   const { failedAt: _failedAt, ...outboxEntry } = entry;
   const queue = getContactsOutbox();
   queue.push(outboxEntry);
-  writeJson(OUTBOX_KEY, queue);
+  writeJson(currentContactsSyncKeys().outbox, queue);
   dismissContactsSyncConflict(id);
 }
 
@@ -44,5 +43,5 @@ export function requeueAllContactsSyncConflicts(): number {
 export function recordContactsSyncConflict(entry: ContactsOutboxEntry): void {
   const conflicts: ContactsSyncConflict[] = getContactsSyncConflicts();
   conflicts.push({ ...entry, failedAt: new Date().toISOString() });
-  writeJson(CONFLICTS_KEY, conflicts);
+  writeJson(currentContactsSyncKeys().conflicts, conflicts);
 }

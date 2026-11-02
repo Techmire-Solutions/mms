@@ -11,7 +11,7 @@ Project rules for the Madrasa Management System. Antigravity loads `.md` files f
 | `mms-core.md` | Stack, boundaries, ownership matrix, edit discipline |
 | `mms-completion-review.md` | Mandatory self-review + adversarial audit before marking work done |
 
-## Scoped Rules (21)
+## Scoped Rules (22)
 
 ### Agent Cognition & Review (On-Demand)
 
@@ -44,6 +44,7 @@ Project rules for the Madrasa Management System. Antigravity loads `.md` files f
 |------|---------------|
 | `mms-shared-ui.md` | @shared/ui SSOT, zero cross-console duplicates, pre-deletion gates, orphaned import detection |
 | `mms-ui-ux-design.md` | UI primitives, design tokens, tabs, notifications, a11y (RTL / WCAG), and **§4 responsiveness** (FormModal chrome → `mms-form-architecture.md`) |
+| `mms-document-templates.md` | Printable document-template engine: server-authoritative layouts, CAS/409 conflict UX, one editor/renderer/print path, localized field/preset catalogs |
 | `mms-module-architecture.md` | Universal module manifest schemas, **§0 surface triad** (directory / DetailSheet / FormModal), three-tier tab layout, Work/Reports/Setup scopes, soft-delete, **gold-standard parity (§7)**, background jobs |
 | `mms-form-architecture.md` | Static FormModal forms, **control decision table**, collection chrome (`FormCollectionShell` / `FormListFieldCard` / `FormCardTypeSelect`), write Zod `.strict()`, React 19 defaults, decimal-as-string, local multipart uploads |
 | `mms-hooks.md` | Custom React hooks (Query recipes, page controllers / action handlers, Work layout) |
@@ -89,6 +90,7 @@ in the enforcement registry below are how the norm is actually held.
 | Form collection rows / catalog quick-create chrome | `mms-form-architecture.md` §1, §3 | `mms-form-architecture` |
 | Hooks, page controllers, facades | `mms-hooks.md` | `mms-query-factories` · `mms-frontend` |
 | UI primitives, tokens, a11y, responsiveness | `mms-ui-ux-design.md` | `mms-ui-ux-design` · `ui-ux-pro-max` · `mms-a11y-smoke` |
+| Document templates (editor, persistence/CAS, print) | `mms-document-templates.md` · `mms-data-layer.md` §4 · `mms-api-interface.md` §6 | `mms-document-templates` · `mms-frontend` · `mms-backend-api` |
 | Settings, navigation, i18n keys | `mms-settings-i18n.md` | `mms-settings-i18n` · `mms-i18n-completeness` |
 | Reports, analytics, exports | `mms-reports.md` | `mms-reports-export` · `ui-ux-pro-max` |
 | Messaging campaigns and logs | `mms-messaging.md` | `mms-messaging` |
@@ -128,6 +130,8 @@ Update this table in the same change that adds or removes a check.
 | Canonical date/month schemas have a single definition (`isoDateSchema` / `monthKeySchema` / `billingPeriodSchema`; no re-declared canonical schema) | SSOT idiom guard inside `.agent/skills/mms-shared-package/scripts/check-shared-exports.sh`, via `pnpm run check:shared-purity` | ratchet |
 | Bundle budget | `pnpm run check:bundle` (CI, build-dist job) | ratchet |
 | i18n completeness across en/ar/ur/fa | `pnpm run check:i18n` (CI + pre-PR gate) — exits non-zero on any key missing or falling back to English | ratchet |
+| Legacy document-template persistence (`db.ts` / `saveObject` for layouts) | `pnpm run check:frontend-structure` (norm 6) | ratchet |
+| Template field/preset label coverage | `apps/frontend/src/tenant/features/templateFieldI18n.test.ts` + `pnpm run check:i18n` | test + ratchet |
 | Dependency advisories | `pnpm audit --audit-level=high` + dependency-review (CI) | CI |
 | Secrets in history | gitleaks (CI, full history) | CI |
 | Sensitive filenames never committed, at any path depth (`.env`, private keys, service-account JSON) | `sensitive-file-guard` CI job (`node scripts/check-staged-secrets.mjs --tracked`) | CI |

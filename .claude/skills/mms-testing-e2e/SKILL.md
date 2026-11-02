@@ -4,7 +4,7 @@ description: Automated testing guide for MMS — Vitest unit/integration tests, 
 license: Proprietary
 metadata:
   owner: mms-platform
-  last-verified: 2026-10-29
+  last-verified: 2026-11-02
 compatibility: Requires Node 24+, Playwright browsers (pnpm --filter e2e-tests exec playwright install), and a live PostgreSQL for test:db.
 allowed-tools: Read Grep Glob Bash(pnpm test) Bash(pnpm test:e2e) Bash(pnpm --filter *)
 ---
@@ -38,6 +38,13 @@ allowed-tools: Read Grep Glob Bash(pnpm test) Bash(pnpm test:e2e) Bash(pnpm --fi
 - **Clean Stdout**: Spy on `console.error`/`console.warn` during expected error simulations. Test configs set `LOG_LEVEL = 'silent'`.
 - **Query Client Isolation**: Frontend tests wrap components in an isolated `new QueryClient({ defaultOptions: { queries: { retry: false, gcTime: 0 } } })`.
 - **Coverage Ratchet**: never lower the `thresholds` configured in each workspace's `vitest.config.ts` (the only SSOT; `mms-testing-observability.md` §5); raise a floor only with a measured value from a green run.
+
+## 2.1 Query-Backed Editors & Print Surfaces
+
+- Wrap component tests that render `useDocumentTemplate`/Query hooks in `withQueryClient` (`apps/frontend/src/test/queryClientTestUtils.tsx`).
+- Print tests stub `window.open`, assert the written HTML fields/rows, and cover the popup-blocked path.
+- Never assert raw translation keys; assert visible localized copy or the payload that reaches print.
+- Full template test matrix: `mms-document-templates`.
 
 ## 3. Playwright E2E Best Practices
 

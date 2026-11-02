@@ -4,7 +4,7 @@ Agent skills for Cursor, Antigravity, and Claude Code. Cursor/Claude discover th
 
 **Antigravity:** start with [antigravity-workspace](antigravity-workspace/SKILL.md). Manifest: [.agent/skills-manifest.json](../skills-manifest.json)
 
-## Skills index (49)
+## Skills index (50)
 
 | Skill | Use when |
 |-------|----------|
@@ -23,6 +23,7 @@ Agent skills for Cursor, Antigravity, and Claude Code. Cursor/Claude discover th
 | [mms-db-performance](mms-db-performance/SKILL.md) | A list, report, or dashboard is slow, a query plan regressed, or DB load is climbing |
 | [mms-dependency-upgrade](mms-dependency-upgrade/SKILL.md) | Bumping Node/pnpm/React/Vite/Fastify/Drizzle/Zod/Query, enabling Dependabot, or turning on React Compiler |
 | [mms-dev-setup](mms-dev-setup/SKILL.md) | Installing dependencies, starting dev servers, fixing env issues, or onboarding to the project |
+| [mms-document-templates](mms-document-templates/SKILL.md) | Editing the template editor, documentTemplates contracts, template persistence hooks, or any module preview/print that consumes a stored layout |
 | [mms-error-triage](mms-error-triage/SKILL.md) | Investigating a reported bug, an error spike, or a Sentry alert that needs a root cause and an owning fix |
 | [mms-faculty-domain](mms-faculty-domain/SKILL.md) | Modifying faculty tables, appointments, or staff directory/drawers |
 | [mms-fields-registry](mms-fields-registry/SKILL.md) | Working with custom fields, system tabs, field types, column registries, field delete guards, or getSortedFields |
@@ -66,7 +67,7 @@ Agent skills for Cursor, Antigravity, and Claude Code. Cursor/Claude discover th
 
 DeepSeek Harness: `.dsh/skills/<name>/SKILL.md` is auto-discovered (project rank 100) and `.dsh/rules/*.md` mirrors the rule bodies for on-demand reading (index: `.dsh/AGENTS.md`).
 
-Always-on rules: `mms-core`, `mms-completion-review`. Requestable (model-decided): `mms-agent-universal`. Scoped examples: `mms-performance`, `mms-migration-status`, `mms-dry`, `mms-dependencies`, `mms-structure-naming` (49 skills; rules: 2 always-on + 21 scoped).
+Always-on rules: `mms-core`, `mms-completion-review`. Requestable (model-decided): `mms-agent-universal`. Scoped examples: `mms-performance`, `mms-migration-status`, `mms-dry`, `mms-dependencies`, `mms-structure-naming` (50 skills; rules: 2 always-on + 22 scoped).
 
 ## Verify setup
 

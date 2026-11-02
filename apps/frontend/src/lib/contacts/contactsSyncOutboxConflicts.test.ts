@@ -1,7 +1,6 @@
 import { beforeEach, describe, expect, it } from "vitest";
 import {
-  CONFLICTS_KEY,
-  OUTBOX_KEY,
+  currentContactsSyncKeys,
   getContactsOutbox,
   getContactsSyncConflicts,
   writeJson,
@@ -53,7 +52,7 @@ describe("recordContactsSyncConflict", () => {
 describe("dismissContactsSyncConflict / clearContactsSyncConflicts", () => {
   beforeEach(() => {
     localStorage.clear();
-    writeJson(CONFLICTS_KEY, [conflictFixture("a"), conflictFixture("b")]);
+    writeJson(currentContactsSyncKeys().conflicts, [conflictFixture("a"), conflictFixture("b")]);
   });
 
   it("removes only the requested conflict", () => {
@@ -62,7 +61,7 @@ describe("dismissContactsSyncConflict / clearContactsSyncConflicts", () => {
   });
 
   it("clears all conflicts and leaves the outbox intact", () => {
-    writeJson(OUTBOX_KEY, [conflictFixture("outbox", "update")]);
+    writeJson(currentContactsSyncKeys().outbox, [conflictFixture("outbox", "update")]);
     clearContactsSyncConflicts();
     expect(getContactsSyncConflicts()).toEqual([]);
     expect(getContactsOutbox()).toHaveLength(1);
@@ -72,7 +71,10 @@ describe("dismissContactsSyncConflict / clearContactsSyncConflicts", () => {
 describe("requeueContactsSyncConflict", () => {
   beforeEach(() => {
     localStorage.clear();
-    writeJson(CONFLICTS_KEY, [conflictFixture("a", "upsert"), conflictFixture("b", "delete")]);
+    writeJson(currentContactsSyncKeys().conflicts, [
+      conflictFixture("a", "upsert"),
+      conflictFixture("b", "delete"),
+    ]);
   });
 
   it("moves the conflict to the outbox without failedAt and removes it from conflicts", () => {

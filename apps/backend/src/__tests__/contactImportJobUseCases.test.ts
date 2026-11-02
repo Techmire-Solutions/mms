@@ -89,6 +89,7 @@ describe("runContactsImportJob", () => {
     expect(mockUpsertContact).toHaveBeenCalledWith(expect.anything(), {
       canRestore: false,
       language: "en",
+      actorId: "u-admin",
     });
 
     mockUpsertContact.mockClear();
@@ -96,6 +97,7 @@ describe("runContactsImportJob", () => {
     expect(mockUpsertContact).toHaveBeenCalledWith(expect.anything(), {
       canRestore: true,
       language: "en",
+      actorId: "u-admin",
     });
   });
 

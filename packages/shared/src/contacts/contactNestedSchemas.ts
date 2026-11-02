@@ -116,6 +116,13 @@ export const relationshipContactSchema = z
     name: z.string().optional(),
     relationship: z.string().optional(),
     phone: z.string().optional(),
+    /**
+     * Contact-card fields produced by the CSV/vCard import parsers
+     * (`contactsCsvRowParser.buildRelationships`) and present on
+     * `RelationshipContact` — a row carrying either must stay importable.
+     */
+    email: z.string().optional(),
+    gender: z.string().optional(),
     contactId: z.union([z.string(), z.number()]).optional(),
     inferred: z.boolean().optional(),
     inferredFromContactId: z.union([z.string(), z.number()]).optional(),

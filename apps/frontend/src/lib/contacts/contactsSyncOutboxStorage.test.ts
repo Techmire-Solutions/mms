@@ -1,7 +1,6 @@
 import { describe, expect, it, vi, beforeEach, afterEach } from "vitest";
 import {
-  OUTBOX_KEY,
-  CONFLICTS_KEY,
+  currentContactsSyncKeys,
   writeJson,
   getContactsOutbox,
   getContactsSyncConflicts,
@@ -23,12 +22,12 @@ describe("contactsSyncOutboxStorage", () => {
 
   it("getContactsOutbox returns stored entries", () => {
     const entry = { id: "1", kind: "upsert", contact: { id: "c1" }, createdAt: "now" };
-    writeJson(OUTBOX_KEY, [entry]);
+    writeJson(currentContactsSyncKeys().outbox, [entry]);
     expect(getContactsOutbox()).toEqual([entry]);
   });
 
   it("getContactsOutbox falls back to empty on malformed JSON", () => {
-    localStorage.setItem(OUTBOX_KEY, "not-json");
+    localStorage.setItem(currentContactsSyncKeys().outbox, "not-json");
     expect(getContactsOutbox()).toEqual([]);
   });
 
@@ -40,7 +39,7 @@ describe("contactsSyncOutboxStorage", () => {
       createdAt: "now",
       failedAt: "later",
     };
-    writeJson(CONFLICTS_KEY, [conflict]);
+    writeJson(currentContactsSyncKeys().conflicts, [conflict]);
     expect(getContactsSyncConflicts()).toEqual([conflict]);
   });
 

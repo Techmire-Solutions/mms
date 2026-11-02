@@ -2,6 +2,7 @@ import type { FastifyPluginAsync } from "fastify";
 import { isQueryFlagTrue, type Contact, type User, contactsContract } from "@mms/shared";
 import { initServer, type RouterImplementation } from "@ts-rest/fastify";
 import type { ContractRouteArgs, ContractRouteResponse } from "../../../lib/contractRouterTypes.js";
+import { ConflictError } from "../../../lib/httpErrors.js";
 import { getLinkedContactId } from "../../../services/auth/userService.js";
 import { contactUseCases } from "../../../contacts/use-cases/contactUseCases.js";
 import {
@@ -14,26 +15,13 @@ import { replyValidationError } from "../../../lib/zodRequest.js";
 import {
   auditContact,
   formatContactWriteError,
+  ownProfileFieldDenial,
+  RESERVED_CONTACT_ROUTE_IDS,
   sanitizeOneForUser,
   sanitizeForUser,
 } from "./contactRouteHelpers.js";
 
 const s = initServer();
-
-const RESERVED_CONTACT_ROUTE_IDS = new Set([
-  "column-preferences",
-  "column-prefs",
-  "count",
-  "metrics",
-  "widget-aggregates",
-  "resolve",
-  "saved-reports",
-  "lookups",
-  "setup-config",
-  "preferences",
-  "field-configs",
-  "google-sync",
-]);
 
 export const contactCrudRoutes: FastifyPluginAsync = async (fastify) => {
   const router = s.router(contactsContract, {
@@ -169,6 +157,7 @@ export const contactCrudRoutes: FastifyPluginAsync = async (fastify) => {
     update: async ({
       params: { id },
       body,
+      headers,
       request,
     }: ContractRouteArgs<(typeof contactsContract)["update"]>): Promise<
       ContractRouteResponse<(typeof contactsContract)["update"]>
@@ -185,6 +174,10 @@ export const contactCrudRoutes: FastifyPluginAsync = async (fastify) => {
           body: { type: "forbidden", message: "Insufficient permissions" },
         };
       }
+      if (isOwnContact && !canWriteContacts(user)) {
+        const ownProfileDenial = ownProfileFieldDenial(body);
+        if (ownProfileDenial) return ownProfileDenial;
+      }
       const lang = (request.headers?.["accept-language"] as string | undefined) || "en";
 
       try {
@@ -192,6 +185,8 @@ export const contactCrudRoutes: FastifyPluginAsync = async (fastify) => {
         const updated = await contactUseCases.updateContactById(id, updatePayload, {
           language: lang,
           applyRelationshipInference: canWriteContacts(user),
+          actorId: String(user.id),
+          expectedUpdatedAt: headers?.["x-expected-updated-at"],
         });
         if (!updated)
           return {
@@ -204,6 +199,12 @@ export const contactCrudRoutes: FastifyPluginAsync = async (fastify) => {
           body: { success: true, contact: await sanitizeOneForUser(updated, user) },
         };
       } catch (error: unknown) {
+        if (error instanceof ConflictError) {
+          return {
+            status: 409 as const,
+            body: { type: "conflict" as const, message: error.message },
+          };
+        }
         return formatContactWriteError(error, "Failed to update contact");
       }
     },

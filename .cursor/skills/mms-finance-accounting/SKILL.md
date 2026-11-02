@@ -1,10 +1,10 @@
 ---
 name: mms-finance-accounting
-description: Implements or audits MMS finance and accounting workflows — invoices, payments, double-entry bookkeeping, chart of accounts, fiscal years, fee structures, and financial reports. Use when modifying finance or accounting features, payment gateways, invoice templates, or ledger entries. Do NOT use for general custom form building (use mms-form-architecture), generic data querying (use mms-query-factories), or low-level database audit hash chains (use mms-audit-trail).
+description: Implements or audits MMS finance and accounting workflows — invoices, payments, double-entry bookkeeping, chart of accounts, fiscal years, fee structures, and financial reports. Use when modifying finance or accounting features, payment gateways, invoice templates, or ledger entries. Do NOT use for printable document layouts/print surfaces (use mms-document-templates), general custom form building (use mms-form-architecture), generic data querying (use mms-query-factories), or low-level database audit hash chains (use mms-audit-trail).
 license: Proprietary
 metadata:
   owner: mms-platform
-  last-verified: 2026-10-29
+  last-verified: 2026-11-02
 ---
 
 # MMS Finance & Accounting Workflow
@@ -15,6 +15,7 @@ metadata:
 
 - Changing invoices, payments, ledgers, or accounting posting
 - Working payment gateways, invoice templates, or double-entry rules
+- Invoice/receipt **layout or print** changes: route through `mms-document-templates`; this skill owns finance semantics and payload data
 
 Use for ledger posting, fee billing and collections, payroll journals, chart of accounts, periods, reconciliation, and financial statements. This is a software implementation workflow, not an assertion that MMS meets any accounting framework.
 

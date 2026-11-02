@@ -4,7 +4,7 @@ description: Extends @mms/shared with types, settings defaults, module manifests
 license: Proprietary
 metadata:
   owner: mms-platform
-  last-verified: 2026-10-16
+  last-verified: 2026-11-02
 ---
 
 # @mms/shared Package Workflow
@@ -41,6 +41,7 @@ metadata:
 - Dates: `isoDateSchema` / `isoDateOrEmptySchema` + `compareIsoDates()`.
 - Soft-delete: `softDeleteBodySchema`, `bulkIdsBodySchema` (max 500), `isQueryFlagTrue()` for `includeDeleted`.
 - Modules declare `*ModuleManifest.ts` (permissions, routes, `softDelete` config).
+- Document templates: GET/PUT records carry `{ template, updatedAt }`; saves accept `expectedUpdatedAt` (`null` = insert-only) and the contract declares `409` (`mms-document-templates.md`).
 
 ## 3. Workflow & Verification
 

@@ -4,7 +4,7 @@ description: Implements academic student lifecycle workflows — admissions, enr
 license: Proprietary
 metadata:
   owner: mms-platform
-  last-verified: 2026-10-29
+  last-verified: 2026-11-02
 ---
 
 # MMS Student Lifecycle & Academic Operations
@@ -16,6 +16,7 @@ metadata:
 - Building or modifying student profiles, enrollment records, class assignments, or admissions
 - Implementing attendance marking tables, bulk status recording, or session attendance logs
 - Configuring examinations, grading schemes, GPA scales, question banks, or term report cards
+- Term report-card **layout/print** changes: use `mms-document-templates`; this skill owns exam/result data and aggregation
 - Managing student merit, demerit, or hasanat award records
 
 ## 1. Domain Invariants & Data Flow

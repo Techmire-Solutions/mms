@@ -95,7 +95,7 @@ Owners: norm `mms-auth-security` §3 (**Module Access Gates**) · policy `@mms/s
 
 **Rule → skill map:** every rule carries a **Workflow skills:** line, and the full ownership matrix lives in [.cursor/rules/README.md](.cursor/rules/README.md) (that file is the single owner of the topic→rule→skill index — do not restate it here).
 
-## Skills (49)
+## Skills (50)
 
 | Skill                     | Purpose                                                                                                                                                     |
 | ------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------- |
@@ -114,6 +114,7 @@ Owners: norm `mms-auth-security` §3 (**Module Access Gates**) · policy `@mms/s
 | `mms-db-performance`      | Query/index/autovacuum triage                                                                                                                               |
 | `mms-dependency-upgrade`  | Catalogs, Dependabot, audits, React Compiler                                                                                                                |
 | `mms-dev-setup`           | Install, run, env verify                                                                                                                                    |
+| `mms-document-templates`  | Printable document templates — server persistence/CAS, shared editor/renderer, module print surfaces, localized field catalogs                              |
 | `mms-error-triage`        | Sentry issue → traceparent → audit row                                                                                                                      |
 | `mms-faculty-domain`      | Faculty staff hierarchy, temporal appointments, designations, departments                                                                                   |
 | `mms-fields-registry`     | Fields & tabs, field guards                                                                                                                                 |
@@ -195,7 +196,7 @@ CI fails if the mirrors are out of sync (`git diff --exit-code -- .agent .cursor
 
 **Enforcement rule** (from `mms-agent-universal.mdc`): a norm is either machine-enforced (lint rule, ratchet script, CI check, hook, test) or explicitly labelled advisory. Land the check with the norm.
 
-**23 rules** (2 always-on + 21 scoped) — index with the per-topic owner: [.cursor/rules/README.md](.cursor/rules/README.md).
+**24 rules** (2 always-on + 22 scoped) — index with the per-topic owner: [.cursor/rules/README.md](.cursor/rules/README.md).
 
 <!-- BEGIN:turborepo-agent-rules -->
 

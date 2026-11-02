@@ -87,6 +87,12 @@ export function useContactMutations() {
           const response = await updateContactMutation.mutateAsync({
             params: { id },
             body: contact,
+            // Optimistic concurrency: the contact still carries the `updatedAt`
+            // the form was opened with, so the server can reject a save that
+            // would silently overwrite another editor's change (409).
+            ...(contact.updatedAt
+              ? { headers: { "x-expected-updated-at": contact.updatedAt } }
+              : {}),
           });
           return unwrapContactMutationBody<ContactWrappedResponse>(response);
         } catch (error) {

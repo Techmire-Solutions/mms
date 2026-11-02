@@ -1,10 +1,10 @@
 ---
 name: mms-data-sync
-description: Governs legacy localStorage and /api/db document-store persistence (db.ts, useLiveCollection, objects/collections) for non-migrated entities. Use when modifying legacy storage keys, local drafts, or document sync endpoints. Do NOT use for ANY newly created modules or migrated REST entities (use mms-query-factories + mms-backend-api), full workspace encrypted backups (use mms-backup-restore), or database DDL migrations (use mms-schema-migrate).
+description: Governs legacy localStorage and /api/db document-store persistence (db.ts, useLiveCollection, objects/collections) for non-migrated entities. Use when modifying legacy storage keys, local drafts, or document sync endpoints. Do NOT use for ANY newly created modules or migrated REST entities (use mms-query-factories + mms-backend-api), printable document templates (migrated; use mms-document-templates), full workspace encrypted backups (use mms-backup-restore), or database DDL migrations (use mms-schema-migrate).
 license: Proprietary
 metadata:
   owner: mms-platform
-  last-verified: 2026-10-16
+  last-verified: 2026-11-02
 ---
 
 # MMS Data Sync Workflow
@@ -29,6 +29,7 @@ metadata:
 ## 1. Scope & Layer Boundaries
 
 - **Legacy Only**: Restricted to non-migrated document collections. Creating new collections or adding `useLiveCollection` for new or REST-migrated modules is strictly banned.
+- **Document Templates Excluded**: Printable layouts are migrated (`document_templates`, `/api/templates/:key`); never store them via `saveObject`/`saveCollection` or in localStorage. See `mms-document-templates`.
 - **REST Entities**: Primary entities use TanStack Query facades (`@/tenant/hooks/collections/*`). Never dual-write REST entities to `saveCollection`.
 - **Async Saves**: Await `saveCollectionAsync` or `mutateAsync` before indicating saved state.
 

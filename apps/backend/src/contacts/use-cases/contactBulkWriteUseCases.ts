@@ -36,6 +36,8 @@ export async function mergeContactsById(
       ...keep,
       ...prepared,
       id: keepId,
+      createdBy: keep.createdBy,
+      updatedBy: deletedBy,
       deletedAt: undefined,
       deletedBy: undefined,
       deletionReason: undefined,

@@ -4,7 +4,7 @@ description: Audits and fixes MMS translation coverage across en/ar/ur/fa — mi
 license: Proprietary
 metadata:
   owner: mms-platform
-  last-verified: 2026-10-16
+  last-verified: 2026-11-02
 ---
 
 # MMS i18n Completeness
@@ -31,6 +31,10 @@ Advisory: pair translation parity with [accounting policy applicability](../mms-
 | `packages/shared/src/i18n/appTranslations.ts` | aggregation/lookup used by the runtime |
 
 Locales are `en`, `ar`, `ur`, `fa`; `ar`/`ur`/`fa` are RTL, `en` is LTR.
+
+## Dynamic label catalogs
+
+Template fields/presets and other generated labels must keep their key prefix as an inline template literal at the call site so the unused-key ratchet can see it. Add a guard test asserting every derived key exists in the English pack; never use `t(key) || "English"` (a missing key returns the key, not `undefined`).
 
 ## The gate
 

@@ -60,6 +60,16 @@ describe("authContextHelpers", () => {
       expect(localStorage.getItem("tenant_messages")).toBeNull();
       expect(localStorage.getItem("tenant_whatsappTemplates_u:u123")).toBeNull();
     });
+
+    it("removes the contacts offline outbox so it cannot leak to the next user", () => {
+      localStorage.setItem("tenant_contacts_sync_outbox_u:u123", "[]");
+      localStorage.setItem("tenant_contacts_sync_conflicts_u:u123", "[]");
+
+      clearUserScopedCachesOnLogout("u123", "tenant_");
+
+      expect(localStorage.getItem("tenant_contacts_sync_outbox_u:u123")).toBeNull();
+      expect(localStorage.getItem("tenant_contacts_sync_conflicts_u:u123")).toBeNull();
+    });
   });
 
   describe("PersistedAuthUser", () => {

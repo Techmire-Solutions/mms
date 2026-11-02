@@ -2,6 +2,7 @@ import type { AuthError } from "@/lib/authErrors";
 import type { IndustryType, TenantLoginResponse, User, Workspace } from "@mms/shared";
 import { getCurrentSubdomain, isCurrentHostApex } from "@/lib/config/tenantConfig";
 import { reportClientError } from "@/lib/clientErrorReporting";
+import { contactsOutboxStorageKeys } from "@/lib/contacts/contactsOutboxKeys";
 
 export class AuthFailureError extends Error {
   constructor(readonly authError: AuthError) {
@@ -14,6 +15,12 @@ export function clearUserScopedCachesOnLogout(userId: string, prefix: string): v
   try {
     localStorage.removeItem(`${prefix}messages`);
     localStorage.removeItem(`${prefix}whatsappTemplates_u:${userId}`);
+    // The contacts offline outbox holds full contact payloads (phones, CNIC,
+    // bank details) — a signed-out device must not replay it into the next
+    // user's session.
+    const contactsKeys = contactsOutboxStorageKeys(prefix, userId);
+    localStorage.removeItem(contactsKeys.outbox);
+    localStorage.removeItem(contactsKeys.conflicts);
   } catch (cacheClearError) {
     reportClientError(cacheClearError, { context: "auth.clearUserScopedCaches" });
   }

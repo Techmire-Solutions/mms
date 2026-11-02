@@ -211,6 +211,22 @@
       ]
     },
     {
+      "name": "mms-document-templates",
+      "path": "skills/mms-document-templates",
+      "keywords": [
+        "implements",
+        "printable",
+        "document",
+        "templates",
+        "server-authoritative",
+        "layouts",
+        "compare-and-set",
+        "saves",
+        "conflict",
+        "shared"
+      ]
+    },
+    {
       "name": "mms-error-triage",
       "path": "skills/mms-error-triage",
       "keywords": [

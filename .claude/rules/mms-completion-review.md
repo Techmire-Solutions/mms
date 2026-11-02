@@ -39,6 +39,7 @@ Once all unit and integration tests pass, pause prior to declaring completion an
 - **Edge Cases & Payload Integrity:** Malformed nested objects, unexpected unicode characters, timezone offsets (UTC normalization), SQL/NoSQL edge values, and duplicate submission idempotency (e.g., double form submits, webhook retries).
 - **Failure Modes & Silent Failures:** Check for unhandled Promise rejections, swallowed `try/catch` blocks without logging, missing timeouts on network calls, and hanging database transactions.
 - **Security, Authorization & Multi-Tenancy:** Authentication token validation, session revocation checks, fine-grained RBAC permission checks, Direct Object Reference (IDOR) vulnerabilities, tenant leakages in logging, and unmasked sensitive settings/passwords.
+- **Persistence & Print Claims:** Verify every save is awaited and server-confirmed (CAS version echoed, 409 handled, no swallowed catch), and every print/preview consumes the stored layout rather than parallel hardcoded markup.
 - **Concurrency & Resource Management:** Race conditions on status updates (e.g., concurrent balance adjustments, inventory allocations), leaked connection pools, unclosed file handles, hanging BullMQ job locks, or unbounded memory arrays.
 
 **Mandatory Audit Deliverable:** Produce a markdown audit report before final submission (template: `.agent/skills/mms-code-review/references/adversarial-audit-template.md`; the PR template carries the same three sections) containing:
