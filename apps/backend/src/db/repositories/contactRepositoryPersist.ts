@@ -1,3 +1,4 @@
+import { and, eq, or, sql } from "drizzle-orm";
 import { hydrateContactRelationshipFields, type Contact } from "@mms/shared";
 import { contacts } from "../schema.js";
 import { withTenant, type TenantTransaction } from "../tenant-context.js";
@@ -60,6 +61,72 @@ export async function saveContact(tenant: string, contact: Contact): Promise<voi
     domain: "contacts",
     key: String(contact.id),
   });
+}
+
+/**
+ * Formats a `Date` as the wall-clock string node-postgres writes into a naive
+ * `timestamp` column (same fields `toISOString()` would show in local time).
+ */
+function toNaiveTimestamp(date: Date): string {
+  const pad = (value: number, width = 2): string => String(value).padStart(width, "0");
+  return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())} ${pad(
+    date.getHours(),
+  )}:${pad(date.getMinutes())}:${pad(date.getSeconds())}.${pad(date.getMilliseconds(), 3)}`;
+}
+
+/**
+ * Conditional save for optimistic concurrency (`mms-api-interface` §6).
+ *
+ * The version predicate is part of the `UPDATE` — not a preceding read — so a
+ * competing writer that commits between our read and our write leaves zero
+ * matching rows instead of being silently overwritten.
+ *
+ * The comparison accepts either stored representation: `contacts.updated_at` is
+ * declared `timestamp with time zone`, but some deployments still carry the
+ * legacy naive column, where node-postgres keeps the writer's wall clock. The
+ * naive branch matches that value directly; the timestamptz branch matches the
+ * instant. Both are millisecond-truncated because the client token round-trips
+ * through a JS `Date`.
+ *
+ * Returns `false` for both a stale version and a concurrently deleted row; the
+ * caller maps that to 409 (the client's view is stale either way).
+ */
+export async function saveContactIfVersionMatches(
+  tenant: string,
+  rawContact: Contact,
+  expectedUpdatedAt: string,
+): Promise<boolean> {
+  const subdomain = tenant.trim().toLowerCase();
+  const contact = hydrateContactRelationshipFields(rawContact);
+  const expected = new Date(expectedUpdatedAt);
+  const naiveExpected = toNaiveTimestamp(expected);
+  const saved = await withTenant(subdomain, async (tx) => {
+    const rows = await tx
+      .update(contacts)
+      .set(contactUpdateSetValues(subdomain, contact))
+      .where(
+        and(
+          eq(contacts.workspaceSubdomain, subdomain),
+          eq(contacts.id, String(contact.id)),
+          or(
+            sql`date_trunc('milliseconds', ${contacts.updatedAt}) = ${naiveExpected}::timestamp`,
+            sql`date_trunc('milliseconds', ${contacts.updatedAt}) = ${expected}::timestamptz`,
+          ),
+        ),
+      )
+      .returning({ id: contacts.id });
+    if (rows.length === 0) return false;
+    await syncContactChildrenTx(tx, subdomain, String(contact.id), contact);
+    return true;
+  });
+  if (saved) {
+    await invalidateMultiTierCache({
+      tenantId: subdomain,
+      domain: "contacts",
+      key: String(contact.id),
+    });
+  }
+  return saved;
 }
 
 export const contactRepo = {

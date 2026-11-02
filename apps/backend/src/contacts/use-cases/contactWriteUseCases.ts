@@ -4,7 +4,7 @@ import { getRequestTenant } from "../../lib/tenantContext.js";
 import { applyContactRelationshipInference } from "./contactInferenceUseCases.js";
 import { runInTransaction } from "../../db/database.js";
 import { canDeleteContacts } from "../../lib/rbacCanHelpers.js";
-import { ConflictError } from "../../lib/httpErrors.js";
+import { ConflictError, ValidationError } from "../../lib/httpErrors.js";
 import {
   assertContactUniqueFields,
   ContactPermissionError,
@@ -150,6 +150,9 @@ export async function updateContactById(
   const applyInference = options.applyRelationshipInference !== false;
   const actorId = options.actorId;
   const expectedUpdatedAt = options.expectedUpdatedAt?.trim();
+  if (expectedUpdatedAt && Number.isNaN(Date.parse(expectedUpdatedAt))) {
+    throw new ValidationError("Invalid x-expected-updated-at header");
+  }
   const context = options.context ?? (await loadContactWriteContext());
 
   const saved = await runInTransaction(async () => {
@@ -178,7 +181,18 @@ export async function updateContactById(
       deletedBy: existing.deletedBy,
       deletionReason: existing.deletionReason,
     };
-    await repo.save(tenant, next);
+    if (expectedUpdatedAt) {
+      // The version predicate lives in the UPDATE itself, so a writer that
+      // commits after our read cannot be silently overwritten (C-01).
+      const savedWithVersion = await repo.saveIfVersionMatches(tenant, next, expectedUpdatedAt);
+      if (!savedWithVersion) {
+        throw new ConflictError(
+          "This contact was changed by someone else. Reload it and try again.",
+        );
+      }
+    } else {
+      await repo.save(tenant, next);
+    }
     if (applyInference) {
       await applyContactRelationshipInference(tenant, next, undefined, repo);
     }

@@ -54,6 +54,26 @@ export interface ContactsRepository {
   findByIds(tenant: string, ids: string[]): Promise<Contact[]>;
   findSummaryByIds?(tenant: string, ids: string[]): Promise<Contact[]>;
   save(tenant: string, contact: Contact): Promise<void>;
+  /**
+   * Save only when the stored `updated_at` still matches the client's token
+   * (millisecond-truncated comparison). Returns `false` on a stale version or a
+   * concurrently removed row; callers map that to 409 (`mms-api-interface` §6).
+   */
+  saveIfVersionMatches(
+    tenant: string,
+    contact: Contact,
+    expectedUpdatedAt: string,
+  ): Promise<boolean>;
+  /**
+   * Replace contact tags only (delete + insert `contact_tags`, bump the parent
+   * `updated_at`). Never rewrites child collections, so a tag change cannot
+   * revert a concurrent phone/email edit.
+   */
+  replaceContactTags(
+    tenant: string,
+    updates: Array<{ id: string; tags: string[] }>,
+    updatedBy?: string,
+  ): Promise<number>;
   bulkSave(tenant: string, contacts: Contact[]): Promise<void>;
   bulkSoftDelete?(
     tenant: string,

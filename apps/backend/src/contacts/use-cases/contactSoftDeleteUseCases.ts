@@ -103,6 +103,7 @@ export async function bulkSoftDeleteContacts(
             tableName: "contacts",
             recordId: String(c.id),
             actionType: "DELETE",
+            subjectId: String(c.id),
             oldState: c,
             minimizeDelta: false,
           });

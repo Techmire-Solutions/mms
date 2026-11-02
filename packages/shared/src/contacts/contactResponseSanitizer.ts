@@ -38,6 +38,13 @@ interface ContactStripPlan {
   rowFields: Array<{ collection: string; fields: string[] }>;
 }
 
+/**
+ * Setup tabs whose fields are top-level Contact scalars rather than row arrays.
+ * Hidden fields on these tabs must be deleted from the record itself; the
+ * `rowFields` path is a no-op for them (there is no `contact.basic` collection).
+ */
+const SCALAR_TAB_KEYS = new Set(["basic"]);
+
 function fieldVisible(viewerRole: string, field: FieldDefinition | undefined): boolean {
   if (!field) return true;
   if (!field.enabled) return false;
@@ -107,6 +114,9 @@ function resolveContactStripPlan(
     }
     const hiddenFields = tabFields.filter((field) => !fieldVisible(viewerRole, field));
     if (hiddenFields.length === 0) continue;
+    if (SCALAR_TAB_KEYS.has(tabId.toLowerCase())) {
+      for (const field of hiddenFields) toStrip.add(field.key);
+    }
     rowFields.push({ collection: tabId, fields: hiddenFields.map((field) => field.key) });
   }
 

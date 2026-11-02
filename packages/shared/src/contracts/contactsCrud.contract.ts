@@ -5,11 +5,8 @@ import {
   contactIdentityMatchBodySchema,
   contactIdentityMatchResultSchema,
 } from "../contacts/contactIdentityMatch.js";
-import {
-  baseListQuerySchema,
-  includeDeletedQuerySchema,
-  softDeleteBodySchema,
-} from "../core/apiSchemas.js";
+import { includeDeletedQuerySchema, softDeleteBodySchema } from "../core/apiSchemas.js";
+import { contactsListQuerySchema } from "../contacts/contactsListQuery.js";
 import { contactWireWriteSchema } from "../schemas/contacts.dto.js";
 import { widgetAggregateResultSchema } from "../schemas/common.dto.js";
 import {
@@ -38,7 +35,7 @@ export const contactsCrudRoutes = {
   list: {
     method: "GET",
     path: "/api/contacts",
-    query: baseListQuerySchema,
+    query: contactsListQuerySchema,
     responses: {
       200: contactListPageResponseSchema,
       403: z.unknown(),

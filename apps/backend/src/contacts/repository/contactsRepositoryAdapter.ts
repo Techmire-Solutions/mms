@@ -5,6 +5,7 @@ import {
   findContactsByIds,
   findContactsSummaryByIds,
   saveContact,
+  saveContactIfVersionMatches,
   bulkSaveContacts,
   bulkSoftDeleteContactsSql,
   findExistingNormalizedContactNames,
@@ -12,6 +13,7 @@ import {
   findContactDuplicateCandidateIds,
   findContactDuplicateBlockedIds,
   reparentContactReferences,
+  replaceContactTags,
   listContactsPage,
 } from "../../db/repositories/contactRepository.js";
 import {
@@ -38,6 +40,10 @@ function createContactsRepository(): ContactsRepository {
     findByIds: (tenant, ids) => findContactsByIds(tenant, ids),
     findSummaryByIds: (tenant, ids) => findContactsSummaryByIds(tenant, ids),
     save: (tenant, contact) => saveContact(tenant, contact),
+    saveIfVersionMatches: (tenant, contact, expectedUpdatedAt) =>
+      saveContactIfVersionMatches(tenant, contact, expectedUpdatedAt),
+    replaceContactTags: (tenant, updates, updatedBy) =>
+      replaceContactTags(tenant, updates, updatedBy),
     bulkSave: (tenant, contacts) => bulkSaveContacts(tenant, contacts),
     bulkSoftDelete: (tenant, ids, deletedBy, deletionReason) =>
       bulkSoftDeleteContactsSql(tenant, ids, deletedBy, deletionReason),

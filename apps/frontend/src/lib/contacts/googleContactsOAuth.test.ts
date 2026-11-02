@@ -1,12 +1,14 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import {
   clearGoogleContactsOAuthUrlParams,
+  createGoogleContactsOAuthRequest,
   createGoogleContactsOAuthState,
   readGoogleContactsOAuthCodeFromUrl,
   relayGoogleContactsOAuthPopup,
   shouldOpenContactsSyncSetup,
   stashGoogleContactsOAuthCode,
   takeGoogleContactsOAuthCode,
+  takeGoogleContactsOAuthVerifier,
 } from "@/lib/contacts/googleContactsOAuth";
 
 const LEGACY_STATE = encodeURIComponent(JSON.stringify({ source: "google_contacts" }));
@@ -93,6 +95,43 @@ describe("createGoogleContactsOAuthState", () => {
       nonce?: string;
     };
     expect(stored.nonce).toBe(state.nonce);
+  });
+});
+
+describe("createGoogleContactsOAuthRequest (PKCE)", () => {
+  beforeEach(() => {
+    setUrl("");
+    sessionStorage.clear();
+  });
+
+  async function expectedChallenge(verifier: string): Promise<string> {
+    const digest = await crypto.subtle.digest("SHA-256", new TextEncoder().encode(verifier));
+    let binary = "";
+    for (const byte of new Uint8Array(digest)) binary += String.fromCharCode(byte);
+    return btoa(binary).replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/, "");
+  }
+
+  it("stores a one-shot verifier and returns its S256 challenge", async () => {
+    const { state, codeChallenge } = await createGoogleContactsOAuthRequest();
+    const parsed = JSON.parse(decodeURIComponent(state)) as {
+      source?: string;
+      nonce?: string;
+    };
+    expect(parsed.source).toBe("google_contacts");
+    expect(typeof parsed.nonce).toBe("string");
+
+    const verifier = takeGoogleContactsOAuthVerifier();
+    expect(verifier).toMatch(/^[A-Za-z0-9_-]{43}$/);
+    expect(codeChallenge).toMatch(/^[A-Za-z0-9_-]{43}$/);
+    expect(codeChallenge).toBe(await expectedChallenge(verifier ?? ""));
+    expect(takeGoogleContactsOAuthVerifier()).toBeNull();
+  });
+
+  it("keeps the verifier after the callback consumes the nonce", async () => {
+    const { state } = await createGoogleContactsOAuthRequest();
+    setUrl(`?code=abc123&state=${state}`);
+    expect(readGoogleContactsOAuthCodeFromUrl()).toBe("abc123");
+    expect(takeGoogleContactsOAuthVerifier()).toMatch(/^[A-Za-z0-9_-]{43}$/);
   });
 });
 

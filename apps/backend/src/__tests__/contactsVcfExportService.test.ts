@@ -2,10 +2,15 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 import type { Contact } from "@mms/shared";
 
 const mockLoadContactsPage = vi.fn();
+const mockLoadContactFieldConfig = vi.fn();
 
 vi.mock("../contacts/use-cases/contactLoadUseCases.js", () => ({
   loadContactsPage: (...args: unknown[]) => mockLoadContactsPage(...args),
   loadContactsByIds: vi.fn(),
+}));
+
+vi.mock("../contacts/use-cases/contactConfigService.js", () => ({
+  loadContactFieldConfig: (...args: unknown[]) => mockLoadContactFieldConfig(...args),
 }));
 
 import { buildContactsVcfExport } from "../services/contactsVcfExportService.js";
@@ -24,6 +29,7 @@ function fakeContact(id: string): Contact {
 describe("contactsVcfExportService", () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    mockLoadContactFieldConfig.mockResolvedValue(null);
   });
 
   it("joins vCard cards from a single page with CRLF separators", async () => {
@@ -45,6 +51,69 @@ describe("contactsVcfExportService", () => {
     expect(mockLoadContactsPage).toHaveBeenCalledWith(
       expect.objectContaining({ page: 1, limit: 500, includeDeleted: false }),
     );
+  });
+
+  it("omits fields the viewer cannot read before serializing vCards", async () => {
+    mockLoadContactFieldConfig.mockResolvedValue({
+      version: 1,
+      enabledTabs: [],
+      requiredTabs: [],
+      formTabs: [{ key: "basic", label: "Basic", enabled: true, order: 0 }],
+      fields: {
+        basic: [
+          { key: "firstName", label: "First", type: "text", enabled: true, order: 0 },
+          {
+            key: "notes",
+            label: "Notes",
+            type: "textarea",
+            enabled: true,
+            order: 1,
+            permissions: ["admin"],
+          },
+        ],
+      },
+    });
+    mockLoadContactsPage.mockResolvedValueOnce({
+      contacts: [
+        {
+          id: "c1",
+          name: "Ali Khan",
+          firstName: "Ali",
+          lastName: "Khan",
+          notes: "private note",
+          phones: [],
+          emails: [],
+        },
+      ],
+      total: 1,
+      page: 1,
+      limit: 500,
+      hasMore: false,
+    });
+
+    const teacherExport = await buildContactsVcfExport({ viewerRole: "teacher" });
+    expect(teacherExport.vcf).toContain("FN:Ali Khan");
+    expect(teacherExport.vcf).not.toContain("NOTE:private note");
+
+    mockLoadContactsPage.mockResolvedValueOnce({
+      contacts: [
+        {
+          id: "c1",
+          name: "Ali Khan",
+          firstName: "Ali",
+          lastName: "Khan",
+          notes: "private note",
+          phones: [],
+          emails: [],
+        },
+      ],
+      total: 1,
+      page: 1,
+      limit: 500,
+      hasMore: false,
+    });
+    const adminExport = await buildContactsVcfExport({ viewerRole: "admin" });
+    expect(adminExport.vcf).toContain("NOTE:private note");
   });
 
   it("paginates across multiple pages until hasMore is false", async () => {

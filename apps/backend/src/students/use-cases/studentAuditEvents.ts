@@ -23,6 +23,7 @@ export async function recordRestoreEvents(
     tableName: "students",
     recordId: entityId,
     actionType: "RESTORE",
+    subjectId: entityId,
     newState: student,
     minimizeDelta: false,
   });

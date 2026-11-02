@@ -22,6 +22,7 @@ export const contactOperationRoutes: FastifyPluginAsync = async (fastify) => {
       const result = await contactUseCases.bulkTagContacts(parsed.data.ids, {
         addTags: parsed.data.addTags,
         removeTags: parsed.data.removeTags,
+        actorId: String(user.id),
       });
 
       const addSummary = parsed.data.addTags?.length

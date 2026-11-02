@@ -138,11 +138,17 @@ export async function* generateContactsVcfStreamChunks(options?: {
   chunkSize?: number;
   /** Hard cap; enforced while streaming so memory stays bounded. */
   maxRecords?: number;
+  /** Viewer role for field/tab sanitization; empty hides non-empty permissions. */
+  viewerRole?: string;
   onProgress?: (processed: number, total: number) => void | Promise<void>;
 }): AsyncGenerator<string, { count: number; filename: string }, undefined> {
   const filename = options?.filename?.trim() || "contacts.vcf";
   const limit = Math.max(1, options?.chunkSize ?? VCF_PAGE_SIZE);
   const maxRecords = options?.maxRecords;
+  const viewerRole = options?.viewerRole ?? "";
+  // Resolve the tenant config once; every page is sanitized before serializing,
+  // matching the CSV export path (C-05).
+  const viewerSnapshot = resolveContactFieldConfigSnapshot(await loadContactFieldConfig());
   let page = 1;
   let count = 0;
 
@@ -160,7 +166,8 @@ export async function* generateContactsVcfStreamChunks(options?: {
           `VCF export exceeds in-memory cap of ${maxRecords} records. Use streaming export instead.`,
         );
       }
-      const chunk = contacts.map(toVCard).join("\r\n");
+      const sanitized = sanitizeContactsForViewer(contacts, viewerRole, viewerSnapshot);
+      const chunk = sanitized.map(toVCard).join("\r\n");
       yield count === 0 ? chunk : "\r\n" + chunk;
       count += contacts.length;
     }
@@ -179,6 +186,7 @@ export async function buildContactsVcfExport(options?: {
   filename?: string;
   chunkSize?: number;
   maxRecords?: number;
+  viewerRole?: string;
   onProgress?: (processed: number, total: number) => void | Promise<void>;
 }): Promise<ContactsVcfExportResult> {
   const maxRecords = options?.maxRecords ?? 500;
