@@ -46,6 +46,8 @@ Every new or modified field must complete:
 
 - Pre-check dependencies before delete; block seed fields, active column keys, and in-use duplicate-detection fields.
 - Every enabled registry field needs a FormModal control and a detail-drawer read row.
+- **One tab→property map**: the mapping from list/collection tabs to entity properties (`phones`→`phones`, `relationship`→`relationshipContacts`, `education`/`experience`/`skills`/`bankDetails`→same-named arrays, custom tab→its array) is declared once and consumed by the write DTO allowlist, dynamic validation, unique-field collection, profile completeness, and the response sanitizer/export. Divergent copies silently skip unique checks and leak hidden tabs (`mms-fields.mdc` §4).
+- **Permission enforcement traverses collections**: a hidden/role-restricted tab strips its whole array; a hidden field inside a visible list tab is removed from each row. Deleting a top-level property that only exists inside the array is a no-op — see `contactResponseSanitizer.ts` and assert it with a disabled-tab test.
 
 ## Verification
 

@@ -28,6 +28,8 @@ description: System vs custom fields registry, field tabs, delete guards, and co
 ## 4. Tab Enablement SSOT (Contacts Reference)
 - **Authoritative Flags:** Active `formTabs.enabled` flags govern forms, drawers, exports, and backend validation. Resolve tab IDs via `resolveContactEnabledTabIds` from `@mms/shared` (never blind-union `DEFAULT_ENABLED_TABS`).
 - **Stable References:** Pass `CONTACT_LOCKED_ENABLED_TABS` (`basic` only) as a stable, memoized reference to prevent re-render loops.
+- **One Tab→Property Map:** The mapping from list/collection tabs to entity properties (`phones`→`phones`, `emails`→`emails`, `addresses`→`addresses`, `relationship`→`relationshipContacts`, `education`/`experience`/`skills`/`bankDetails`→same-named arrays, custom tab→its array) is declared **once** and consumed by the write DTO allowlist, dynamic validation, unique-field values, profile completeness, and the response sanitizer/export. Divergent copies silently skip unique-field enforcement and leak hidden tabs.
+- **Permission Enforcement on Read:** Field/tab permissions strip the whole collection when a tab is hidden or role-restricted, and strip individual row fields inside a visible list tab. Deleting a top-level property that only exists inside the array (e.g. `institution`) is a no-op — the sanitizer must traverse the collection.
 
 ## 5. Contact-Linked Module Identity (Students & Faculty)
 - **Registry Configuration:** Identity fields (contact link, gender, DOB, relationships) are registry configurations; Contacts remains the person data SSOT.

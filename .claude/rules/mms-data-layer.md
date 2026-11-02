@@ -33,14 +33,16 @@ paths:
 1. **Connection Pools:** Persistent pool (`PG_POOL_MAX=20`). Partitioned pools: workers (`max: 10`), API (`max: 20–30`). Node 24 `using`/`await using` for cleanup.
 2. **Transaction RLS:** Execute tenant queries inside `withTenant` executing `SET LOCAL app.current_tenant = :tenant_id` within explicit transaction blocks.
 3. **Tenant Boundary API (`tenantContext.ts`):** `withTenant` (read-write RLS), `withTenantRead` (replica; ban for read-your-writes), `withGlobalTenant` (migrations/workers/seeding).
-4. **Query Performance:** Zero N+1 loops (batch via relational `with:` or `inArray` <= 500). Zero wildcard projections (`SELECT *` ban; specify columns). Prepared statements on hot point lookups.
+4. **Query Performance:** Zero N+1 loops (batch via relational `with:` or `inArray`). Chunk `inArray` id fetches at `BATCH_SIZE = 250` (65 535 bind-parameter cap). Zero wildcard projections (`SELECT *` ban; specify columns), and a list projection must cover every column its row mapper hydrates — a cast to `$inferSelect` hides the drift, so assert the projection in a unit test. Prepared statements on hot point lookups.
 5. **SQL Safety:** Parameterized `sql` tagged templates only; ban `sql.raw` and string concatenation.
 6. **Clean Architecture:** Route → Use Case (DI) → Repository Interface → Drizzle Adapter. Route files must never import `db/repositories` or `drizzle-orm` directly.
 7. **Backup & Wipe-Restore:** `GET /backup` takes encrypted AES-GCM snapshot. `POST /sync` executes atomic wipe-restore under `withSyncTimeout`. Validate backup envelope before wipe.
+8. **Match-Key Namespacing:** When one query unions alternative match keys (phone / email / cnic / name), namespace each source (`'p:'`, `'e:'`, `'c:'`, `'n:'`). Unprefixed keys let a name that textually equals another record's digits pair two unrelated rows.
 
 ## 3. Client Persistence (`db.ts` [DEPRECATED])
 1. **Legacy Settings Only:** `db.ts` is restricted to non-migrated settings singletons (`branding`, `global_settings`). Event: `local-database-update`.
 2. **REST Entities Ban:** Primary entities (Contacts, Students, Faculty, Finance) must use Query/REST, never `getCollection` or `saveCollection`. Document templates are migrated rows: layouts live in `document_templates` behind `/api/templates/:key`, never in `db.ts`/`saveObject` or a localStorage layout key.
+3. **Scoped Client Storage:** Queued/cached user data in `localStorage` uses a tenant + user key (`mms_{tenant}_…_u:{userId}` via `contactsOutboxStorageKeys` for the contacts outbox), is cleared by `clearUserScopedCachesOnLogout`, and is replayed single-flight. A global key for user-owned data leaks one account's payloads into the next session on a shared device.
 
 ## 4. TanStack Query v5 (Server-Authoritative REST)
 1. **Client Defaults:** Tiered stale-times, 24h gcTime, focus refetch off, reconnect on, retries bounded (exclude 401/403/404) in `apps/frontend/src/lib/queryClient.ts`.
@@ -60,6 +62,8 @@ paths:
 6. **Revoked Privileges:** DB user has `INSERT`-only on audit tables (`UPDATE`/`DELETE` revoked).
 7. **Right-to-Erasure:** Crypto-shredding (destroy subject key) or redact-and-append (`[REDACTED_PER_REQUEST]`). Never rewrite historical rows.
 8. **Partition Archival:** Monthly date partitions (`PARTITION BY RANGE`). Archive via partition detachment (`ALTER TABLE ... DETACH PARTITION`).
+9. **Server-Owned Attribution:** `created_by` / `updated_by` / `created_at` come from the session and the DB clock. Strip client values at the wire DTO (`stripClientAuditFields`) and again at the write choke point (`prepare*Record`), then stamp the actor — a payload must never choose who did it or backdate creation.
+10. **Batched Outbox Emission:** Bulk operations emit one multi-row `INSERT` plus one `NOTIFY` (`emitOutboxEvents`) inside the same transaction. Audit rows stay per record: `recordModernAuditEvent` appends to a sharded hash chain, so batching audit breaks integrity.
 
 ## 6. Authoritative Soft-Delete Architecture & Index Strategy
 1. **Deletion Taxonomy:** Bucket 1: Soft-delete (primary entities, self-service restore); Bucket 2: Ephemeral hard-delete (drafts, join edges); Bucket 3: TTL sweeper purge (logs, sessions); Bucket 4: Append-only immutable (audit, accounting).
@@ -73,6 +77,7 @@ paths:
 9. **Single-Statement Bulk Updates:** `bulkDeleteFn` and `bulkRestoreFn` execute a single batched SQL `UPDATE ... WHERE id IN (...) AND deleted_at IS NULL`. N+1 loops are banned.
 10. **Uniqueness on Restore & Viewer Sanitization:** Pre-validate active uniqueness conflicts in domain use cases and translate to HTTP 400 (`type: 'validation_error'` — the documented exception to the 422 default in `mms-api-interface.md` §4) with structured field errors via `mapRestoreError`; trap concurrent race-condition DB error `23505` (`unique_violation`) and map to `409 Conflict`. Sanitize restored entity payload for the caller via `buildRestoreResponse` (`sanitizeOneForUser`).
 11. **Lock-Free Chunked Purge:** Purge worker deletes in chunks of 500 rows using `LIMIT 500 FOR UPDATE SKIP LOCKED` with 50ms pauses and `SET LOCAL app.allow_hard_purge = 'true'`.
+12. **Restore Provenance on Any Resurrection:** An update/upsert that clears `deleted_at` — not only `POST /:id/restore` — stamps `restored_at` / `restored_by`, keeping the sextuple complete and the trash history attributable.
 
 ## 7. Migration Safety & Zero-Downtime DDL
 1. **No Write-Blocking Index Builds:** Plain `CREATE INDEX` on live tables is banned. Build out-of-band via `index:concurrent`, or use `CREATE INDEX IF NOT EXISTS` for small/new tables (enforced by `check:migration-indexes`).
@@ -92,4 +97,4 @@ paths:
 5. **DST Safety:** Derive day boundaries from calendar date in tenant timezone, not `+ 24h`.
 6. **Filter Alignment:** Range filters must match storage representation (date vs instant).
 7. **Calendar Policy:** Stored data is Gregorian; Hijri/lunar display is a derived presentation layer.
-
+8. **Aggregate Buckets:** Month/year/`date_trunc` aggregates convert with `(created_at AT TIME ZONE <workspace tz>)` in the SELECT **and** the `GROUP BY`. Resolve the timezone from `loadWorkspaceRow` with a `UTC` fallback — never inherit the DB session timezone, which shifts a 01:00 local save into the previous day/month.

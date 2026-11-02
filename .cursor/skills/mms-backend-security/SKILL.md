@@ -39,7 +39,13 @@ Token persistence: `authArtifactService`. Cookie names below are authoritative.
   - `mms_refresh`: Opaque refresh token hash, HttpOnly, `Path=/api/auth/refresh`.
   - `mms_platform_access`: Platform session JWT, HttpOnly, `Path=/` (must be `/` so the cookie is sent to `/api/auth/onboard` and apex `/api/uploads`, not only `/api/platform`).
 - **CSRF Protection**: Double-Submit Token. Mutating requests (`POST`/`PUT`/`DELETE`) must match CSRF cookie via `X-CSRF-Token` header.
+- **OAuth Connect Flows (Google Contacts)**: `state` carries a per-attempt random nonce stored one-shot in `sessionStorage` (≤10 min TTL) and verified before the code exchange; a constant `{source: …}` marker is not CSRF protection. Keep the server-side redirect-URI host/path allowlist as the second gate.
 - **CORS**: `credentials: true`; production requires explicit domain allowlist (`ALLOWED_ORIGIN`).
+
+### Module gates and self-service carve-outs
+
+- **Reachable denial codes**: `required: true` modules (`dashboard`, `contacts`, `messaging`, …) can never be disabled or un-granted, so they only produce `PERMISSION_DENIED`. A denial test that expects `MODULE_DISABLED` for a required module gets a 500 from the ungated handler instead of a 403.
+- **`availability` action**: routes whose handler owns a finer rule (self-service own-record edits, personal preferences) use `MODULE_ROUTE_ACTION_RULES` `action: 'availability'`; the handler must enforce the permission **and** a field whitelist (`OWN_CONTACT_PATCH_KEYS` + `ownContactPatchBodySchema`), never the module write DTO.
 
 ## 3. Cryptographic & Storage Invariants
 

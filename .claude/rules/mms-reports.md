@@ -21,7 +21,7 @@ paths:
 ## 1. Data Layer (Query-First)
 - **Server-Authoritative Aggregates:** REST entities use TanStack Query, server aggregates, or `/metrics` endpoints. Client-side full collection loops or full table dumps (`loadAllFn`) are banned.
 - **Targeted Fetching:** Builders and drilldowns use `useWidgetCollections({ requiredCollections })` fetching only pinned data. Hydrate foreign entities via batched `/resolve` endpoints (N+1 client loops banned).
-- **Contacts Aggregates:** Contacts visualizer consumes server SQL `GROUP BY` via `POST /api/contacts/widget-aggregates`.
+- **Contacts Aggregates:** Contacts visualizer consumes server SQL `GROUP BY` via `POST /api/contacts/widget-aggregates`. The SQL builder maps each field through an explicit column allowlist (never `sql.raw`, never a `?? 'gender'` fallback), rejects an unknown field or a numeric aggregate on a text column with `validation_error` (400), and ANDs every `filters[]` rule alongside the primary filter — a silent fallback or ignored filter is a plausible-but-wrong KPI.
 
 ## 2. Definitions & Builders
 - **Builder Scope:** `CustomReportBuilder` / `DynamicCardBuilder` support ad-hoc columns and basic aggregates (Sum, Avg, Count). Cap live preview at 20 rows.
@@ -30,8 +30,9 @@ paths:
 ## 3. Export Architecture (ExportToolbar)
 - **Formats & Lazy Loading:** Support Print (`@media print`), Excel (`xlsx` dynamic `import()`), and PDF (`jspdf` + `jspdf-autotable`). Charts use `lazy` + `SafeResponsiveContainer`.
 - **Export Toolbar:** Standardize on `ExportToolbar` / `ExportToolbarCompact` (`exportToolbarUtils.ts`). Exports exceeding interactive thresholds offload to BullMQ worker process (`mms-module-architecture.md` §5).
+- **Streaming Caps:** An in-memory export cap (`maxRecords`) is enforced **inside** the generator before a chunk is yielded. Draining the generator into an array first and checking the count afterwards bounds nothing — an oversized tenant is already buffered.
 - **Formula Injection Mitigation:** Prefix untrusted cell values starting with `=`, `+`, `-`, or `@` with a single quote (`'`) in CSV/Excel outputs; preserve legitimate negative numbers.
-- **Field Whitelist & Bidirectional Data Transfer SSOT:** Form module CSV exports/imports must use `@mms/shared` transfer schemas (`createModuleTransferSchema`, `buildExportGrid`). All internal system metadata (`_id`, `id`, `tenantId`, `created_at`, `updated_at`, etc.) is stripped. Exported headers match primary import headers 1:1 for symmetric round-trips.
+- **Field Whitelist & Bidirectional Data Transfer SSOT:** Form module CSV exports/imports must use `@mms/shared` transfer schemas (`createModuleTransferSchema`, `buildExportGrid`). All internal system metadata (`_id`, `id`, `tenantId`, `created_at`, `updated_at`, etc.) is stripped. Exported headers match primary import headers 1:1 for symmetric round-trips. Every row the parser emits — including nested relationship/contact-card fields — must be accepted by the write/import DTO; add a round-trip test that parses an exported file, so a column the exporter writes can never reach a strict schema as an unknown key.
 
 ## 4. Visualizations & Chart Rules
 - **Design Tokens:** Recharts must bind to semantic Tailwind tokens (`@theme`, `StatusBadge`). Export/print labels via `t()`.

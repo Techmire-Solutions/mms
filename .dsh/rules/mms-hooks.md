@@ -31,6 +31,8 @@ description: Frontend React hooks standards, TanStack Query factories, page cont
 - **Soft-Delete URL Sync:** Synchronize `viewingDeleted` with URL via `useDirectoryTrashState` (`?view=trash`). Toggling trash must preserve active search and filter state (`mms-soft-delete`).
 - **Single Soft-Delete Optimistic Pattern:** Eligible non-financial single deletions trigger instant Query cache hide + 5–10s Undo toast that executes `POST /:id/restore` on click without view change.
 - **Memoization:** Memoize non-trivial calculations (`useMemo`) and callbacks (`useCallback`) passed to children to prevent render cascades (`mms-performance.md`).
+- **Single-Flight Side Effects:** An effect that several components can mount (offline/outbox flush, reconnect handlers, migration runs) owns a module-level in-flight promise so one trigger executes once; per-instance `useState`/`useRef` guards do not coordinate instances. The contacts outbox (`contactsSyncOutboxFlush.ts`) is the reference.
+- **Derive Once:** Registry-derived values (entity descriptors, filter chips, column maps) resolve in the controller/directory and are passed down — never re-derived inside a row/card (`mms-performance.md` §5).
 
 ## 7. Work Directory Layout
 - Directory view mode: `useWorkDirectoryViewMode` (`table` | `cards`).

@@ -44,7 +44,12 @@ metadata:
 - **Standard CRUD Factories**: Use `registerResourceRoutes` and `registerSoftDeletableBulkTrashRoutes` for standard REST entities.
 - **Single-Record Reads**: Filter `isNull(table.deletedAt)`; return `404 Not Found` for archived records unless caller has delete permissions and specifies `?includeDeleted=true`.
 - **Audit Outbox**: Mutating audited entities emits RFC 8785 canonical JSON outbox records inside the primary transaction (`mms-audit-trail`).
-- **Optimistic Concurrency**: Contested single-row updates echo the read version and compare-and-set atomically (`onConflictDoNothing` / `WHERE updated_at = expected`); a zero-row result is `409 Conflict`, never a silent overwrite. Document-template example: `mms-document-templates`.
+- **Optimistic Concurrency**: Contested single-row updates echo the read version and compare-and-set atomically (`onConflictDoNothing` / `WHERE updated_at = expected`); a zero-row result is `409 Conflict`, never a silent overwrite. The token is the value the client read — a body `expectedUpdatedAt` or an explicit header (contacts: `x-expected-updated-at`), never the payload's regenerated `updatedAt` — and the route/integration test must assert the 409. Document-template example: `mms-document-templates`.
+- **Read/Write DTO Parity**: A request-body schema must accept exactly what the response mapper emits (child rows included). Prove it with a round-trip test that feeds a mapper fixture through the write DTO; `@ts-rest` validates requests but not responses, so a strict nested row shows up as a silent 400 on edits.
+- **Server-Owned Attribution**: Strip `createdBy`/`updatedBy`/`createdAt` and soft-delete columns before validation (`stripClientAuditFields` + `stripContactClientSoftDeleteFields`), then stamp the actor from the session in the use case.
+- **Self-Service Writes**: An own-record path validates against the profile DTO whitelist (`ownContactPatchBodySchema` / `OWN_CONTACT_PATCH_KEYS`), not the module DTO, and skips peer-graph side effects.
+- **Domain Errors in Shared Helpers**: Generic route helpers map `sendIfHttpDomainError(reply, err)` before `sendDatabaseError` — a repository `ValidationError` must reach the client as 400, not 500.
+- **Batch Writers**: Preload tenant config once per job/batch (`loadContactWriteContext` pattern) and suppress per-record side effects (`batchMode`: broadcast, cache invalidation, scan invalidation), running each once after the loop.
 
 ## 3. Verification
 

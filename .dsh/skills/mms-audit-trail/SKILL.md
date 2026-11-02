@@ -51,6 +51,9 @@ MMS uses an **Application-Level Outbox** pattern:
 1. Always write audit events in the **exact same database transaction** as the primary business entity mutation (`withTenant(async (tx) => { ... })`).
 2. If the transaction rolls back, no orphan audit rows exist; if it commits, the audit event is atomically persisted.
 3. For soft-delete operations, use the existing outbox events `entity.soft_deleted` and `entity.restored`. Advisory: use a persisted sequence/version for ordering; `Date.now()` can collide or move backwards across workers and is not a monotonic business version.
+4. **Server-owned attribution.** `created_by` / `updated_by` / `created_at` come from the session and the DB clock. Strip client-supplied values at the wire DTO (`stripClientAuditFields`) and again at the write choke point, then stamp the actor — a payload must never choose who did it or backdate creation (`mms-data-layer.md` §5).
+5. **Batch the outbox, never the audit.** A bulk delete/restore emits its CDC rows in one multi-row `INSERT` plus one `NOTIFY` (`emitOutboxEvents`), but audit rows stay per record: `recordModernAuditEvent` appends to a sharded hash chain, so batching audit breaks integrity. Do not "optimise" that loop.
+6. **Restore provenance on any resurrection.** An update/upsert that clears `deleted_at` stamps `restored_at` / `restored_by`, not only the dedicated restore endpoint.
 
 ---
 

@@ -46,9 +46,12 @@ Financial posted ledgers are append-only/reversal-driven; see ledger controls be
    - Register via `registerSoftDeletableBulkTrashRoutes` with `bulkBodySchema: bulkIdsBodySchema` (capped at 500 IDs).
    - `bulkDeleteFn` and `bulkRestoreFn` execute single batched SQL `UPDATE ... WHERE id IN (...) AND deleted_at IS NULL/NOT NULL RETURNING id`.
    - Transactional audit hooks: `onAfterBulkDelete` (recording deletion reason) and `onAfterBulkRestore`.
-5. **List Queries**:
+   - CDC outbox rows emit in **one** multi-row INSERT + one `NOTIFY` (`emitOutboxEvents`); audit rows stay per record (hash chain). Do not loop the outbox emitter.
+5. **Provenance on Any Resurrection**: an update/upsert that clears `deleted_at` (an upsert restoring a trashed record) stamps `restoredAt`/`restoredBy`, not only `POST /:id/restore` — otherwise the sextuple is incomplete and the restore is unattributable.
+6. **List Queries**:
    - Default queries enforce `isNull(table.deletedAt)`.
    - `?includeDeleted=true` requires explicit delete permission and applies `isQueryFlagTrue(query.includeDeleted)`.
+   - The list projection must carry `restoredAt`, `restoredBy`, and `deletedWithCascade` so trash rows keep their restore evidence.
 
 ## 3. Frontend Work Tier Integration
 

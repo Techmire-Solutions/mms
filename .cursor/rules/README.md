@@ -109,6 +109,9 @@ in the enforcement registry below are how the norm is actually held.
 | In-app notifications & alerts | `mms-ui-ux-design.mdc` §1 · `mms-api-interface.mdc` | `mms-notifications` · `mms-realtime-events` |
 | Bulk CSV data import & onboarding | `mms-api-interface.mdc` §5 · `mms-data-layer.mdc` | `mms-data-import` · `mms-background-jobs` |
 | Tenant user management & staff RBAC | `mms-auth-security.mdc` §2 · `mms-module-architecture.mdc` | `mms-user-management` · `mms-backend-security` |
+| Request/response DTO parity & server-owned write fields | `mms-api-interface.mdc` §1, §4 · `mms-data-layer.mdc` §5 | `mms-shared-package` · `mms-backend-api` |
+| Queued/offline client storage scoping | `mms-data-layer.mdc` §3 · `mms-hooks.mdc` §6 | `mms-data-sync` · `mms-frontend` |
+| Aggregate buckets & tenant timezone | `mms-data-layer.mdc` §8 · `mms-reports.mdc` §1 | `mms-db-performance` · `mms-reports-export` |
 | Agent standards corpus (rules/skills/mirrors) | `mms-agent-universal.mdc` · `mms-core.mdc` | `mms-agent-standards` |
 
 ## Enforcement registry (norm → how it is actually held)
@@ -162,6 +165,14 @@ Update this table in the same change that adds or removes a check.
 | Every module-owned API route gated (`registerModuleAccess`), every route classified | `apps/backend/src/__tests__/moduleAccessCoverage.test.ts` | test |
 | Every tenant app-shell route classified in `TENANT_APP_ROUTE_ACCESS` | `apps/frontend/src/lib/config/routeAccess.test.ts` | test |
 | Tier structure, trunk tests, review criteria, UI/UX Pro Max design intelligence | none — **advisory** (review discipline) | advisory |
+| Contract DTO ↔ read-shape parity (a write body accepts the mapper's read shape) | reference test: `packages/shared/src/__tests__/contactWriteSchema.test.ts` (round-trip) — generalise when a second module lands | test |
+| Server-owned audit attribution (client `createdBy`/`updatedBy`/`createdAt` ignored) | reference test: `apps/backend/src/__tests__/contactUseCases.test.ts` (attribution stamping) | test |
+| Batched CDC outbox for bulk operations (audit stays per record) | reference test: `apps/backend/src/__tests__/softDeleteOutboxCdc.test.ts` | test |
+| Widget/aggregate field allowlist, `filters[]`, 400 on unsupported field | reference test: `apps/backend/src/__tests__/contactRepositoryWidgets.test.ts` | test |
+| Aggregate month/year buckets use the workspace timezone | reference test: `apps/backend/src/__tests__/contactRepositoryMetrics.test.ts` | test |
+| Required-module denial semantics (reachable code only) | reference test: `apps/backend/src/__tests__/moduleAccessGuard.integration.test.ts` | test |
+| Scoped offline outbox keys + single-flight flush | reference test: `apps/frontend/src/lib/contacts/contactsSyncOutbox*.test.ts` | test |
+| Restore provenance stamped by any resurrection (upsert/update) | reference test: `apps/backend/src/__tests__/contactUseCases.test.ts` (upsert restore) | test |
 
 
 ## Tenant = Platform Parity Principle
