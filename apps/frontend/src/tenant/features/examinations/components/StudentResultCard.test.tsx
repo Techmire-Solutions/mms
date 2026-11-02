@@ -151,4 +151,46 @@ describe("StudentResultCard Component", () => {
     container.remove();
     openSpy.mockRestore();
   });
+
+  it("offers the term report card only when the student has more than one paper", () => {
+    const secondExam = { ...mockExam, id: "ex-2", subject: "Fiqh" };
+    const termPapers = [
+      {
+        exam: mockExam,
+        result: { id: "r1", examId: mockExam.id, studentId: "s1", marksObtained: 95 },
+      },
+      {
+        exam: secondExam,
+        result: { id: "r2", examId: secondExam.id, studentId: "s1", marksObtained: 80 },
+      },
+    ] as never;
+
+    const withTerm = renderToStaticMarkup(
+      withQueryClient(
+        <StudentResultCard
+          result={mockResult}
+          exam={mockExam}
+          allResults={[mockResult]}
+          termPapers={termPapers}
+          onClose={vi.fn()}
+          onCertificate={vi.fn()}
+        />,
+      ),
+    );
+    expect(withTerm).toContain("examinations.termReportCard.action");
+
+    const singlePaper = renderToStaticMarkup(
+      withQueryClient(
+        <StudentResultCard
+          result={mockResult}
+          exam={mockExam}
+          allResults={[mockResult]}
+          termPapers={[termPapers[0]] as never}
+          onClose={vi.fn()}
+          onCertificate={vi.fn()}
+        />,
+      ),
+    );
+    expect(singlePaper).not.toContain("examinations.termReportCard.action");
+  });
 });

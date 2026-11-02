@@ -7,6 +7,7 @@ import { ModuleColumnCustomizer } from "@/components/app/ModuleColumnCustomizer"
 import { Button } from "@/components/ui/button";
 import { SEMANTIC_BADGE } from "@/lib/ui/semanticTone";
 import { useResultsViewData } from "@/tenant/features/examinations/hooks/useResultsViewData";
+import { collectStudentPapers } from "@/tenant/features/examinations/lib/studentExamPapers";
 import { ResultsViewStats } from "@/tenant/features/examinations/components/ResultsViewStats";
 import { ResultsViewRankingsList } from "@/tenant/features/examinations/components/ResultsViewRankingsList";
 import type {
@@ -45,6 +46,9 @@ export function ResultsView({
   });
 
   const columnVisible = isColumnVisible ?? ALWAYS_COLUMN_VISIBLE;
+  const termPapers = selectedStudent
+    ? collectStudentPapers(exams, results, selectedStudent.studentId)
+    : [];
 
   return (
     <section className="space-y-5" aria-labelledby="results-view-title">
@@ -105,6 +109,7 @@ export function ResultsView({
             result={selectedStudent}
             exam={exam!}
             allResults={rankedResults}
+            termPapers={termPapers}
             onClose={() => setSelectedStudent(null)}
             onCertificate={() => {
               setCertStudent(selectedStudent);
