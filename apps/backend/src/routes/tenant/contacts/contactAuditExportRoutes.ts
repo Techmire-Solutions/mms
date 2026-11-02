@@ -2,14 +2,12 @@ import type { FastifyPluginAsync } from "fastify";
 import type { Contact, User } from "@mms/shared";
 import { CONTACTS_MODULE_MANIFEST, getDisplayName } from "@mms/shared";
 import { registerModuleCsvExportRoutes } from "../../../lib/registerModuleCsvExportRoutes.js";
-import { registerModuleSetupAuditRoute } from "../../../lib/registerModuleSetupAuditRoute.js";
 import { sendDatabaseError, sendNotFound } from "../../../lib/httpErrors.js";
 import { parseRequest, replyValidationError } from "../../../lib/zodRequest.js";
 import { canReadContacts, canDeleteContacts } from "../../../services/rbacService.js";
 import { contactUseCases } from "../../../contacts/use-cases/contactUseCases.js";
 import {
   buildContactMergeBodySchema,
-  moduleSetupAuditBodySchema as contactSetupAuditSchema,
   contactsCsvExportBodySchema,
   contactsImportBodySchema,
   contactsVcfExportBodySchema,
@@ -35,6 +33,10 @@ export const contactAuditExportRoutes: FastifyPluginAsync = async (fastify) => {
     entityNoun: "contact",
     exportAuditAction: "contact.export",
     queueAuditAction: "contact.export.queue",
+    // The queue path above writes the authoritative `contact.export.queue` row.
+    // A client-initiated `/export-audit` row would let the caller forge count/scope
+    // (C-09), so contacts does not register it.
+    registerExportAudit: false,
   });
 
   /**
@@ -156,10 +158,4 @@ export const contactAuditExportRoutes: FastifyPluginAsync = async (fastify) => {
       }
     },
   );
-
-  registerModuleSetupAuditRoute(fastify, {
-    setupWritePermission: CONTACTS_MODULE_MANIFEST.permissions.setupWrite,
-    auditAction: "contact.setup",
-    bodySchema: contactSetupAuditSchema,
-  });
 };

@@ -171,14 +171,6 @@ export function useContactsContractBulkRestore() {
   });
 }
 
-export function useContactsContractLogExportAudit() {
-  return tsrClient.contacts.exportAudit.useMutation({});
-}
-
-export function useContactsContractLogSetupAudit() {
-  return tsrClient.contacts.setupAudit.useMutation({});
-}
-
 export function useContactsContractFieldConfig(enabled = true) {
   return tsrClient.contacts.getFieldConfig.useQuery({
     queryKey: CONTACTS_FIELD_CONFIG_QUERY_KEY,

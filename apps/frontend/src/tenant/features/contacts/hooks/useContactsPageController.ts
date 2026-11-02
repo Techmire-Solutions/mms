@@ -40,7 +40,7 @@ export function useContactsPageController() {
   const tableColumns = useContactColumns();
   const { t } = useTranslation();
   const crud = useContactsCrudActions();
-  const { logExportAudit, handleError } = crud;
+  const { handleError } = crud;
 
   const overlay = useContactsPageOverlayState();
   const { pendingCount, conflictCount, flushing, flush, openConflictReview } =
@@ -93,7 +93,6 @@ export function useContactsPageController() {
     viewingDeleted: directory.viewingDeleted,
     hasActiveFilters: directory.hasActiveFilters,
     selected: directory.selected,
-    logExportAudit,
     handleError,
     t,
   });
