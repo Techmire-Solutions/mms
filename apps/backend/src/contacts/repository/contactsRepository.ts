@@ -127,4 +127,9 @@ export interface ContactsRepository {
     queries: ContactsWidgetQuery[],
   ): Promise<Record<string, ContactsWidgetAggregateResult>>;
   guardDeleteDependents?(tenant: string, ids: string[]): Promise<void>;
+  isAttachmentReferenced(
+    tenant: string,
+    url: string,
+    alternateUrl?: string | null,
+  ): Promise<boolean>;
 }

@@ -1,9 +1,7 @@
-import { and, eq, inArray } from "drizzle-orm";
 import { unlink } from "node:fs/promises";
 import { resolve, sep } from "node:path";
 import { resolveUploadsRoot } from "../config/uploadConfig.js";
-import { contactAttachments } from "../db/schema.js";
-import { withTenantRead } from "../db/tenant-context.js";
+import { contactsRepository } from "../contacts/repository/contactsRepositoryAdapter.js";
 
 /**
  * `/uploads/tenants/<tenant>/attachments/<file>` — exactly one segment for each
@@ -64,21 +62,8 @@ export function resolveTenantAttachmentPath(tenant: string, url: string): string
 /** True when any contact attachment row still stores this URL (or its relative form). */
 export async function isAttachmentReferenced(tenant: string, url: string): Promise<boolean> {
   const key = attachmentFileKey(url);
-  const candidates = new Set<string>([url]);
-  if (key) candidates.add(`/uploads/${key}`);
-  const rows = await withTenantRead(tenant, (tx) =>
-    tx
-      .select({ id: contactAttachments.id })
-      .from(contactAttachments)
-      .where(
-        and(
-          eq(contactAttachments.workspaceSubdomain, tenant),
-          inArray(contactAttachments.url, [...candidates]),
-        ),
-      )
-      .limit(1),
-  );
-  return rows.length > 0;
+  const alternateUrl = key ? `/uploads/${key}` : null;
+  return contactsRepository.isAttachmentReferenced(tenant, url, alternateUrl);
 }
 
 /** Idempotent unlink; returns false when the file was already absent. */

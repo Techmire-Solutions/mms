@@ -19,5 +19,6 @@ export {
   bulkSoftDeleteContactsSql,
   bulkRestoreContactsSql,
   replaceContactsForWorkspace,
+  isContactAttachmentReferenced,
   contactRepo,
 } from "./contactRepositoryPersist.js";

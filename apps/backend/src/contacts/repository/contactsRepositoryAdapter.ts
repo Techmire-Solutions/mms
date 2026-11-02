@@ -16,6 +16,7 @@ import {
   reparentContactReferences,
   replaceContactTags,
   listContactsPage,
+  isContactAttachmentReferenced,
 } from "../../db/repositories/contactRepository.js";
 import {
   aggregateContactsCommandMetrics,
@@ -79,6 +80,8 @@ function createContactsRepository(): ContactsRepository {
       aggregateContactsMonthlyCreatedCounts(tenant, years, monthCount, language),
     aggregateWidgetQueries: (tenant, queries) => aggregateContactsWidgetQueries(tenant, queries),
     guardDeleteDependents: (tenant, ids) => guardContactSoftDeleteDependents(tenant, ids),
+    isAttachmentReferenced: (tenant, url, alternateUrl) =>
+      isContactAttachmentReferenced(tenant, url, alternateUrl),
   };
 }
 
