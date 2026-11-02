@@ -2,6 +2,22 @@ import { describe, expect, it, vi } from "vitest";
 import { renderToStaticMarkup } from "react-dom/server";
 import { DEFAULT_CONTACT_PREFERENCES, type Contact } from "@mms/shared";
 import { ContactCardItem } from "@/tenant/features/contacts/components/ContactCardItem";
+import { createEntityDescriptorFromFieldConfig } from "@/components/common/entityDescriptorFromFieldConfig";
+
+/**
+ * The directory resolves this once and shares it; the card test builds the same
+ * minimal descriptor shape (no fields configured → hero/pills come from the
+ * contact itself).
+ */
+const descriptor = createEntityDescriptorFromFieldConfig<Contact>({
+  entityType: "contacts",
+  singularLabel: "Contact",
+  pluralLabel: "Contacts",
+  idField: "id",
+  titleField: "name",
+  fieldsByTab: {},
+  resolveLabel: (field) => field.label ?? field.key,
+});
 
 vi.mock("@/hooks/useTranslation", () => ({
   useTranslation: () => ({
@@ -39,6 +55,7 @@ describe("ContactCardItem", () => {
   it("renders contact card with header, info pills, and action triggers", () => {
     const html = renderToStaticMarkup(
       <ContactCardItem
+        descriptor={descriptor}
         contact={mockContact}
         isSelected={false}
         prefs={DEFAULT_CONTACT_PREFERENCES}
@@ -71,6 +88,7 @@ describe("ContactCardItem", () => {
   it("renders archived banner when viewing deleted contacts", () => {
     const html = renderToStaticMarkup(
       <ContactCardItem
+        descriptor={descriptor}
         contact={mockDeletedContact}
         isSelected={false}
         prefs={DEFAULT_CONTACT_PREFERENCES}
@@ -98,6 +116,7 @@ describe("ContactCardItem", () => {
   it("respects isColumnVisible by omitting gender and syed when hidden", () => {
     const html = renderToStaticMarkup(
       <ContactCardItem
+        descriptor={descriptor}
         contact={mockContact}
         isSelected={false}
         prefs={DEFAULT_CONTACT_PREFERENCES}
@@ -125,6 +144,7 @@ describe("ContactCardItem", () => {
   it("marks checkbox as checked when isSelected is true", () => {
     const html = renderToStaticMarkup(
       <ContactCardItem
+        descriptor={descriptor}
         contact={mockContact}
         isSelected={true}
         prefs={DEFAULT_CONTACT_PREFERENCES}

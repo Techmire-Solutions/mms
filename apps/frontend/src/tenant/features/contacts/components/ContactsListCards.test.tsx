@@ -20,9 +20,26 @@ vi.mock("@/hooks/useTranslation", () => ({
   }),
 }));
 
+const mockDescriptorCalls = vi.fn();
+
+vi.mock("@/tenant/features/contacts/hooks/useContactEntityDescriptor", () => ({
+  useContactEntityDescriptor: () => {
+    mockDescriptorCalls();
+    return { entityType: "contacts", fields: [], cardSlots: {} };
+  },
+}));
+
 vi.mock("@/tenant/features/contacts/components/ContactCardItem", () => ({
-  ContactCardItem: ({ contact }: { contact: { name: string } }) => (
-    <div data-testid="contact-card-item">{contact.name}</div>
+  ContactCardItem: ({
+    contact,
+    descriptor,
+  }: {
+    contact: { name: string };
+    descriptor: unknown;
+  }) => (
+    <div data-testid="contact-card-item" data-has-descriptor={String(Boolean(descriptor))}>
+      {contact.name}
+    </div>
   ),
 }));
 
@@ -51,5 +68,28 @@ describe("ContactsListCards Component", () => {
 
     expect(html).toContain("contact-card-item");
     expect(html).toContain("Zayd Harith");
+  });
+
+  it("resolves one descriptor for the whole directory and shares it with every card", () => {
+    mockDescriptorCalls.mockClear();
+    const cards: Contact[] = [
+      mockContact,
+      { ...mockContact, id: "cnt-2", name: "Second Card" },
+      { ...mockContact, id: "cnt-3", name: "Third Card" },
+    ];
+
+    const html = renderToStaticMarkup(
+      <ContactsListCards
+        contacts={cards}
+        selected={[]}
+        onSelect={vi.fn()}
+        onEdit={vi.fn()}
+        onDelete={vi.fn()}
+      />,
+    );
+
+    // One resolution for three cards — the per-card hook was the regression.
+    expect(mockDescriptorCalls).toHaveBeenCalledTimes(1);
+    expect(html.match(/data-has-descriptor="true"/g)).toHaveLength(3);
   });
 });

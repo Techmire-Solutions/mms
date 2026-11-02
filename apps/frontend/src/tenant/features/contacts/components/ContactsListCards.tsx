@@ -7,6 +7,7 @@ import { useTranslation } from "@/hooks/useTranslation";
 import { ModuleDirectoryCards } from "@/components/app/ModuleDirectoryCards";
 import type { ContactsColumnConfig } from "@/tenant/features/contacts/components/ContactTableRow";
 import { ContactCardItem } from "@/tenant/features/contacts/components/ContactCardItem";
+import { useContactEntityDescriptor } from "@/tenant/features/contacts/hooks/useContactEntityDescriptor";
 
 export interface ContactsListCardsProps {
   contacts: Contact[];
@@ -84,6 +85,10 @@ export const ContactsListCards = React.memo(function ContactsListCards({
     }));
   }, [columnRegistry, isColumnVisible, columns]);
 
+  // One descriptor for the whole directory (each card would otherwise re-flatten
+  // the entire field registry, ~44 fields × row count per render).
+  const descriptor = useContactEntityDescriptor();
+
   const pageCountLabel = formatDirectoryPageCountLabel(contacts.length, t, {
     singular: "contacts.form.contact",
     plural: "contacts.table.contacts",
@@ -105,6 +110,7 @@ export const ContactsListCards = React.memo(function ContactsListCards({
         <ContactCardItem
           key={contact.id}
           contact={contact}
+          descriptor={descriptor}
           isSelected={selectedSet.has(contact.id)}
           prefs={prefs}
           countryCodesMap={countryCodesMap}

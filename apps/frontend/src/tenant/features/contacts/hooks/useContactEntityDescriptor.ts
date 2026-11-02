@@ -27,7 +27,7 @@ export function useContactEntityDescriptor(): EntityDescriptor<Contact> {
         pluralLabel: t("contacts.entity.plural"),
         idField: "id",
         titleField: "name",
-        fieldsByTab: fields,
+        fieldsByTab: fields ?? {},
         resolveLabel: (field: RegistryFieldDefinition) => resolveRegistryLabel(field, t),
         canViewField: (field: RegistryFieldDefinition) => canViewContactField(viewerRole, field),
         fieldOverrides: {
