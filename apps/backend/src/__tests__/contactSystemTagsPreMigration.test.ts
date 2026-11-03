@@ -1,6 +1,6 @@
 import { describe, expect, it, vi } from "vitest";
 import type pg from "pg";
-import { prepareContactSystemTagsPreMigration } from "../db/migrations/contactSystemTagsPreMigration.js";
+import { prepareContactSystemTagsPreMigration } from "../db/contactSystemTagsPreMigration.js";
 
 describe("prepareContactSystemTagsPreMigration", () => {
   it("skips cleanup if contact_tags table does not exist (fresh database)", async () => {

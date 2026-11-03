@@ -1,5 +1,5 @@
 import { ensureFacultyContactIndex } from "./migrations/facultyContactIndex.js";
-import { prepareContactSystemTagsPreMigration } from "./migrations/contactSystemTagsPreMigration.js";
+import { prepareContactSystemTagsPreMigration } from "./contactSystemTagsPreMigration.js";
 import { dataMigrationsToRun } from "./dataMigrationRegistry.js";
 import { existsSync } from "node:fs";
 import { join } from "node:path";
