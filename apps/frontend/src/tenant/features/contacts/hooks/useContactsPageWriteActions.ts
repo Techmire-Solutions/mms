@@ -121,11 +121,11 @@ export function useContactsPageWriteActions({
     async (
       list: Contact[],
       options?: { onProgress?: (progress: { imported: number; total: number }) => void },
-    ): Promise<void> => {
+    ): Promise<{ succeeded: number; failed: number }> => {
       if (!canWrite) {
         throw new Error(t("contacts.form.writeDenied"));
       }
-      await importContacts(list, options);
+      return importContacts(list, options);
     },
     [canWrite, t, importContacts],
   );

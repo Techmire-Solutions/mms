@@ -74,6 +74,7 @@ jobs:
       LOG_LEVEL: "warn"
       # The whole point: do not exclude LOCAL_ONLY_SPECS / @local-only specs.
       E2E_FULL_SUITE: "1"
+      MMS_ALLOW_IN_PROCESS_JOB_FALLBACK: "true"
 
     steps:
       - name: Checkout Code

@@ -24,7 +24,10 @@ export function useAppleContactsPanel({
   onImport: (
     contacts: Contact[],
     options?: { onProgress?: (progress: { imported: number; total: number }) => void },
-  ) => void | Promise<void>;
+  ) =>
+    | void
+    | { succeeded: number; failed: number }
+    | Promise<void | { succeeded: number; failed: number }>;
   canWrite: boolean;
 }) {
   const { t } = useTranslation();
@@ -91,9 +94,23 @@ export function useAppleContactsPanel({
       const candidates = buildAppleImportIdentityCandidates(previewList, defaultPhoneCountryCode);
       const existing = await matchContactIdentity.mutateAsync(candidates);
       const fresh = filterAppleImportFreshContacts(previewList, existing);
-      await onImport(fresh, { onProgress: setImportProgress });
-      setResult({ imported: fresh.length, skipped: previewList.length - fresh.length });
-      setPreviewList([]);
+      const importResult = await onImport(fresh, { onProgress: setImportProgress });
+      const actuallyImported =
+        importResult && typeof importResult === "object" && "succeeded" in importResult
+          ? importResult.succeeded
+          : fresh.length;
+      const importFailed =
+        importResult && typeof importResult === "object" && "failed" in importResult
+          ? importResult.failed
+          : 0;
+
+      if (actuallyImported > 0 || previewList.length === 0) {
+        setResult({
+          imported: actuallyImported,
+          skipped: previewList.length - fresh.length + importFailed,
+        });
+        setPreviewList([]);
+      }
     } catch (err) {
       // Surface the API/validation detail (e.g. a duplicate phone) instead of a bare failure toast.
       const validationMessage = getApiValidationMessage(err);

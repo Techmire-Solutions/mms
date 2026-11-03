@@ -25,6 +25,7 @@ function start(name, packageDir, command, args) {
       ...process.env,
       NODE_ENV: process.env.NODE_ENV || "test",
       JWT_SECRET: process.env.JWT_SECRET || "e2e-test-jwt-secret-key-at-least-32-chars-long",
+      MMS_ALLOW_IN_PROCESS_JOB_FALLBACK: process.env.MMS_ALLOW_IN_PROCESS_JOB_FALLBACK || "true",
     },
     stdio: "inherit",
   });
