@@ -14,7 +14,13 @@ import {
 } from "@/tenant/features/contacts/components/sync/AppleContactsPanelSections";
 
 export interface AppleContactsPanelProps {
-  onImport: (contacts: Contact[]) => void | Promise<void>;
+  onImport: (
+    contacts: Contact[],
+    options?: { onProgress?: (progress: { imported: number; total: number }) => void },
+  ) =>
+    | void
+    | { succeeded: number; failed: number }
+    | Promise<void | { succeeded: number; failed: number }>;
   canWrite?: boolean;
 }
 

@@ -216,4 +216,17 @@ describe("useAppleContactsPanel import flow", () => {
     expect(panel.previewList[0]?.lastName).toBe("Haider");
     expect(panel.previewList[0]?.phones?.[0]?.number).toBe("03001234567");
   });
+
+  it("does not report success result when onImport reports 0 succeeded", async () => {
+    const onImport = vi.fn().mockResolvedValue({ succeeded: 0, failed: 1 });
+    renderHook(onImport);
+    readPreview();
+
+    await act(async () => {
+      await panel.handleImport();
+    });
+
+    expect(panel.result).toBeNull();
+    expect(panel.previewList).toHaveLength(1);
+  });
 });

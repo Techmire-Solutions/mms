@@ -8,7 +8,13 @@ import { AppleContactsPanel } from "./sync/AppleContactsPanel";
 import { ModuleSetupContent } from "@/components/app/ModuleSetupContent";
 
 export interface ContactSyncPanelProps {
-  onImport: (contacts: Contact[]) => void | Promise<void>;
+  onImport: (
+    contacts: Contact[],
+    options?: { onProgress?: (progress: { imported: number; total: number }) => void },
+  ) =>
+    | void
+    | { succeeded: number; failed: number }
+    | Promise<void | { succeeded: number; failed: number }>;
   /** Requires `contacts.write` — sync imports/mutates entities; do not gate on canEditSetup alone. */
   canWrite?: boolean;
 }
