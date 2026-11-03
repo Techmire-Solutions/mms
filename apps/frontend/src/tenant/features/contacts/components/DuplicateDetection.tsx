@@ -11,6 +11,7 @@ export interface DuplicateDetectionProps {
     keepId: string | number,
     deleteId: string | number,
     mergedData: Contact,
+    keepUpdatedAt?: string,
   ) => Promise<void>;
   canWrite?: boolean;
 }

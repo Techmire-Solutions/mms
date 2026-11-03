@@ -143,8 +143,14 @@ export function useContactMutations() {
         keepId: string | number;
         deleteId: string | number;
         merged?: Contact;
+        /** `updatedAt` of the survivor the preview was computed from (409 guard). */
+        keepUpdatedAt?: string;
       }) => {
-        const response = await mergeContactsMutation.mutateAsync({ body: payload });
+        const { keepUpdatedAt, ...body } = payload;
+        const response = await mergeContactsMutation.mutateAsync({
+          body,
+          ...(keepUpdatedAt ? { headers: { "x-expected-updated-at": keepUpdatedAt } } : {}),
+        });
         return unwrapContactMutationBody<ContactWrappedResponse>(response);
       },
     },

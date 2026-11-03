@@ -1,5 +1,6 @@
 import type { Contact, FieldDefinition, TabDefinition } from "./contactTypes.js";
 import { canViewContactField, canViewContactTab } from "./contactFieldAccess.js";
+import { CONTACT_TAB_COLLECTION_KEYS } from "./contactCollectionKeys.js";
 
 export interface ContactFieldConfigSnapshot {
   fields: Record<string, FieldDefinition[]>;
@@ -11,20 +12,7 @@ export interface ContactFieldConfigSnapshot {
  * tabs. Miss an entry here and a hidden/role-restricted tab's rows are returned
  * verbatim to the viewer, so the map is deliberately exhaustive.
  */
-const TAB_COLLECTION_KEYS: Record<string, readonly (keyof Contact)[]> = {
-  phones: ["phones", "phone"],
-  emails: ["emails", "email"],
-  addresses: ["addresses", "line1", "city", "state", "country"],
-  socials: ["socials"],
-  relationship: ["relationshipContacts"],
-  relationships: ["relationships"],
-  education: ["education"],
-  experience: ["experience"],
-  skills: ["skills"],
-  bankDetails: ["bankDetails"],
-  activities: ["activities"],
-  attachments: ["attachments"],
-};
+const TAB_COLLECTION_KEYS = CONTACT_TAB_COLLECTION_KEYS;
 
 /** Row field whose absence makes the whole collection meaningless → drop every row. */
 const TAB_IDENTITY_FIELDS: Record<string, string> = {
@@ -165,6 +153,29 @@ function applyContactStripPlan(contact: Contact, plan: ContactStripPlan): Contac
     });
   }
   return sanitized;
+}
+
+/**
+ * Removes the top-level keys the viewer role cannot read from a contact **write
+ * patch** (the write-side mirror of `sanitizeContactForViewer`).
+ *
+ * A read path deletes an unreadable tab's collection, so the client cannot tell
+ * "tab hidden" from "collection empty" and a form save would send `[]`. Letting
+ * that patch through would clear rows the user never saw, so an unreadable key
+ * is never written (`mms-fields` §4, soft-delete.md §6.7).
+ */
+export function stripUnreadableViewerWriteKeys<T extends Partial<Contact>>(
+  patch: T,
+  viewerRole: string,
+  config: ContactFieldConfigSnapshot,
+): T {
+  const plan = resolveContactStripPlan(viewerRole, config);
+  if (plan.keys.length === 0) return patch;
+  const next: Record<string, unknown> = { ...(patch as Record<string, unknown>) };
+  for (const key of plan.keys) {
+    delete next[key];
+  }
+  return next as T;
 }
 
 /** Strips contact properties the viewer role cannot read (API + export guard). */

@@ -1,5 +1,5 @@
 import type { FastifyReply } from "fastify";
-import { sendDatabaseError, sendForbidden } from "../../../lib/httpErrors.js";
+import { ConflictError, sendDatabaseError, sendForbidden } from "../../../lib/httpErrors.js";
 import { replyValidationError } from "../../../lib/zodRequest.js";
 import {
   ContactPermissionError,
@@ -54,12 +54,16 @@ export function handleContactWriteError(
   if (error instanceof ContactUniqueFieldError) {
     return replyValidationError(reply, error.message, { errors: error.errors });
   }
-
   const uniqueError = parsePostgresUniqueError(error);
   if (uniqueError) {
     return replyValidationError(reply, uniqueError.message, {
       errors: [uniqueError],
     });
+  }
+  // `ContactUniqueFieldError` extends ConflictError, so this must run after the
+  // field-level branches or a unique conflict would lose its per-field errors.
+  if (error instanceof ConflictError) {
+    return reply.status(409).send({ type: "conflict", message: error.message });
   }
 
   return sendDatabaseError(reply, fallbackMessage, error);
@@ -100,6 +104,15 @@ export function formatContactWriteError(error: unknown, fallbackMessage: string)
         message: uniqueError.message,
         errors: [uniqueError],
       },
+    };
+  }
+
+  // `ContactUniqueFieldError` extends ConflictError, so this must run after the
+  // field-level branches or a unique conflict would lose its per-field errors.
+  if (error instanceof ConflictError) {
+    return {
+      status: 409 as const,
+      body: { type: "conflict" as const, message: error.message },
     };
   }
 

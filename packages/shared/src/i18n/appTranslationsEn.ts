@@ -2844,6 +2844,8 @@ export const APP_TRANSLATIONS_EN = {
   "contacts.sync.conflictMergeSuccess": "Merged change saved",
   "contacts.sync.conflictNoServer": "Contact not found on server (may have been deleted).",
   "contacts.sync.conflictRetryAll": "Retry all",
+  "contacts.sync.conflictRetryLimit":
+    "This change could not be applied automatically. Open the contact and apply it manually, or dismiss the conflict.",
   "contacts.sync.conflictReviewDesc":
     "These offline changes could not reach the server. Retry after fixing connectivity, or dismiss entries you no longer need.",
   "contacts.sync.conflictReviewEmpty": "No pending conflicts.",

@@ -988,3 +988,52 @@ describe("bulkTagContacts use case", () => {
     expect(store.get("c-2")?.tags).toEqual(["Deleted"]);
   });
 });
+
+describe("viewer write guard (R4-03)", () => {
+  function configHidingPhones(): FieldConfig {
+    return {
+      version: 1,
+      enabledTabs: [],
+      requiredTabs: [],
+      fields: {},
+      formTabs: [{ key: "phones", label: "Phones", enabled: false, order: 1, isSystem: true }],
+    } as unknown as FieldConfig;
+  }
+
+  const storedPhones = [{ number: "3001234567", label: "Mobile", isPrimary: true }];
+
+  it("does not let a role clear a collection it cannot read", async () => {
+    mockLoadContactFieldConfig.mockResolvedValue(configHidingPhones());
+    const { repo, store } = createFakeRepo();
+    store.set("c-1", fakeContact("c-1", { phones: storedPhones }));
+
+    const useCases = createContactsUseCases(repo);
+    // This is exactly the payload the edit form produced before the fix: the
+    // viewer never received `phones`, so the draft rendered blank rows and saved [].
+    await useCases.updateContactById(
+      "c-1",
+      fakeContact("c-1", { firstName: "Renamed", phones: [] }),
+      { viewerRole: "teacher" },
+    );
+
+    expect(store.get("c-1")?.firstName).toBe("Renamed");
+    // Persisted through the edit path (which normalizes the country code) — the
+    // point is that the collection was not emptied.
+    expect(store.get("c-1")?.phones).toEqual([expect.objectContaining({ number: "3001234567" })]);
+  });
+
+  it("applies the same patch when the role can read the tab", async () => {
+    mockLoadContactFieldConfig.mockResolvedValue(null);
+    const { repo, store } = createFakeRepo();
+    store.set("c-1", fakeContact("c-1", { phones: storedPhones }));
+
+    const useCases = createContactsUseCases(repo);
+    await useCases.updateContactById(
+      "c-1",
+      fakeContact("c-1", { firstName: "Renamed", phones: [] }),
+      { viewerRole: "admin" },
+    );
+
+    expect(store.get("c-1")?.phones).toEqual([]);
+  });
+});

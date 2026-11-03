@@ -12,15 +12,30 @@ import {
 } from "../systemTags/contactSystemTagUseCases.js";
 import { applyContactRelationshipInference } from "./contactInferenceUseCases.js";
 import { runInTransaction } from "../../db/database.js";
-import { assertContactUniqueFields, prepareContactRecord } from "./contactValidationUseCases.js";
+import {
+  assertContactUniqueFields,
+  mergeContactPatch,
+  prepareContactRecord,
+} from "./contactValidationUseCases.js";
+import { stripUnreadableContactWriteKeys } from "./contactViewerWriteGuard.js";
 import { assertContactAttachmentUrls } from "./contactAttachmentUrls.js";
 import { loadContactWriteContext } from "./contactWriteContext.js";
 import { loadPreviousRelationshipTargets } from "./contactRelationshipIds.js";
 import { broadcastCollection } from "../../lib/livePush.js";
 import { invalidateMultiTierCache } from "../../lib/cache/index.js";
-import { NotFoundError, ValidationError } from "../../lib/httpErrors.js";
+import { ConflictError, NotFoundError, ValidationError } from "../../lib/httpErrors.js";
 import type { ContactsRepository } from "../repository/contactsRepository.js";
 import { contactsRepository } from "../repository/contactsRepositoryAdapter.js";
+
+const CONTACT_VERSION_CONFLICT =
+  "This contact was changed by someone else. Reload it and try again.";
+
+export interface MergeContactsOptions {
+  /** Acting role — its unreadable tabs are never written by the merge (R4-03). */
+  viewerRole?: string;
+  /** `updatedAt` of the surviving contact the caller decided to merge on (R4-05). */
+  expectedKeepUpdatedAt?: string;
+}
 
 export async function mergeContactsById(
   keepId: string,
@@ -28,8 +43,13 @@ export async function mergeContactsById(
   mergedInput: Contact | undefined,
   deletedBy: string,
   repo: ContactsRepository = contactsRepository,
+  options: MergeContactsOptions = {},
 ): Promise<Contact> {
   const context = await loadContactWriteContext();
+  const expectedKeepUpdatedAt = options.expectedKeepUpdatedAt?.trim();
+  if (expectedKeepUpdatedAt && Number.isNaN(Date.parse(expectedKeepUpdatedAt))) {
+    throw new ValidationError("Invalid x-expected-updated-at header");
+  }
   const saved = await runInTransaction(async () => {
     const tenant = getRequestTenant();
     if (!tenant) throw new Error("Tenant context required");
@@ -40,9 +60,19 @@ export async function mergeContactsById(
     const other = await repo.findById(tenant, deleteId);
     if (!keep || keep.deletedAt) throw new NotFoundError("Keep contact not found");
     if (!other || other.deletedAt) throw new NotFoundError("Delete contact not found");
+    // Merge is a whole-row write of the survivor: reject a stale snapshot instead
+    // of silently reverting an edit committed since the client opened the preview.
+    if (expectedKeepUpdatedAt && keep.updatedAt && keep.updatedAt !== expectedKeepUpdatedAt) {
+      throw new ConflictError(CONTACT_VERSION_CONFLICT);
+    }
 
-    const mergedSource = mergedInput
-      ? { ...mergedInput, id: keepId }
+    // `merged` is a patch, not a replacement: a field the client omitted (or a
+    // collection the role cannot read) keeps the survivor's value.
+    const viewerSafeInput = mergedInput
+      ? stripUnreadableContactWriteKeys(mergedInput, options.viewerRole, context.fieldConfig)
+      : undefined;
+    const mergedSource = viewerSafeInput
+      ? mergeContactPatch(keep, { ...viewerSafeInput, id: keepId })
       : mergeContactRecords(keep, other);
     const prepared = await prepareContactRecord(mergedSource, keepId, context);
     assertContactAttachmentUrls(prepared, tenant, [
@@ -68,7 +98,13 @@ export async function mergeContactsById(
       updatedAt: new Date().toISOString(),
     };
 
-    await repo.save(tenant, next);
+    if (expectedKeepUpdatedAt) {
+      // Same predicate-in-the-UPDATE guarantee as the interactive edit path.
+      const savedWithVersion = await repo.saveIfVersionMatches(tenant, next, expectedKeepUpdatedAt);
+      if (!savedWithVersion) throw new ConflictError(CONTACT_VERSION_CONFLICT);
+    } else {
+      await repo.save(tenant, next);
+    }
     await applyContactRelationshipInference(tenant, next, undefined, repo, {
       actorId: deletedBy,
       previousSource: keep,
@@ -83,7 +119,7 @@ export async function mergeContactsById(
       updatedAt: now,
     });
 
-    await repo.reparentContactReferences(tenant, keepId, deleteId);
+    await repo.reparentContactReferences(tenant, keepId, deleteId, deletedBy);
     // Merge is not a role end: the merged-away contact's system rows go away,
     // while the surviving contact inherits the reconciled roles.
     await removeSystemTagsForContacts(tenant, [deleteId]);

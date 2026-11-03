@@ -16,26 +16,29 @@ import {
 import { broadcastCollection } from "../../lib/livePush.js";
 import { invalidateMultiTierCache } from "../../lib/cache/index.js";
 import { loadContactWriteContext } from "./contactWriteContext.js";
+import { stripUnreadableContactWriteKeys } from "./contactViewerWriteGuard.js";
 import { collectRelatedContactIds } from "./contactRelationshipIds.js";
 import { reconcileContactSystemTags } from "../systemTags/contactSystemTagUseCases.js";
 import type { ContactWriteContext } from "./contactWriteContextTypes.js";
 import type { ContactsRepository } from "../repository/contactsRepository.js";
 import { contactsRepository } from "../repository/contactsRepositoryAdapter.js";
 
+const CONTACT_VERSION_CONFLICT =
+  "This contact was changed by someone else. Reload it and try again.";
+const CONTACT_EXISTS_CONFLICT =
+  "A contact with this id already exists. Reload it and retry the edit.";
+
 interface UpsertContactOptions {
   user?: User;
   canRestore?: boolean;
-  /** Accept-Language for unique-field conflict messages. */
   language?: string;
-  /** Acting user when no full `User` is available (queued import worker). */
   actorId?: string;
-  /** Preloaded tenant config (batch writers) — avoids re-reading it per contact. */
+  viewerRole?: string;
   context?: ContactWriteContext;
-  /**
-   * Batch mode: skip per-record live-update broadcast, multi-tier cache
-   * invalidation and duplicate-scan invalidation. The caller must run each
-   * exactly once after the batch.
-   */
+  /** HTTP create: existing id without expectedUpdatedAt conflicts. */
+  requireExpectedVersion?: boolean;
+  expectedUpdatedAt?: string;
+  /** Batch mode: caller invalidates cache/broadcasts after loop. */
   batchMode?: boolean;
 }
 
@@ -82,7 +85,23 @@ export async function upsertContact(
     }
 
     const stripped = stripClientSoftDeleteFields(contact);
-    const mergedInput = existing ? mergeContactPatch(existing, stripped) : stripped;
+    const viewerRole = opts?.viewerRole ?? user?.role;
+    // Never write a key the acting role cannot read: a hidden tab's collection is
+    // indistinguishable from an empty one on the wire (R4-03).
+    const patch = stripUnreadableContactWriteKeys(stripped, viewerRole, context.fieldConfig);
+    // `POST` is create-shaped, so an existing id is either a versioned upsert or a
+    // conflict. Without the token the write would bypass the PUT 409 contract and
+    // silently overwrite a concurrent edit (R4-05).
+    const requiredToken = opts?.requireExpectedVersion
+      ? opts?.expectedUpdatedAt?.trim()
+      : undefined;
+    if (existing && opts?.requireExpectedVersion) {
+      if (!requiredToken) throw new ConflictError(CONTACT_EXISTS_CONFLICT);
+      if (existing.updatedAt && existing.updatedAt !== requiredToken) {
+        throw new ConflictError(CONTACT_VERSION_CONFLICT);
+      }
+    }
+    const mergedInput = existing ? mergeContactPatch(existing, patch) : patch;
     const contactWithId = await prepareContactRecord(
       mergedInput,
       contact.id ?? existing?.id,
@@ -114,7 +133,14 @@ export async function upsertContact(
       saved.restoredBy = actorId ?? existing?.restoredBy;
     }
 
-    await repo.save(tenant, saved);
+    if (existing && requiredToken) {
+      // The version predicate lives in the UPDATE, so a writer that commits after
+      // our read cannot be silently overwritten.
+      const savedWithVersion = await repo.saveIfVersionMatches(tenant, saved, requiredToken);
+      if (!savedWithVersion) throw new ConflictError(CONTACT_VERSION_CONFLICT);
+    } else {
+      await repo.save(tenant, saved);
+    }
     await applyContactRelationshipInference(tenant, saved, undefined, repo, {
       actorId,
       previousSource: existing ?? undefined,
@@ -160,6 +186,8 @@ interface UpdateContactByIdOptions {
    * A mismatch means another writer saved first → `ConflictError` (409).
    */
   expectedUpdatedAt?: string;
+  /** Acting role for the read/write field-permission guard. */
+  viewerRole?: string;
   /** Preloaded tenant config (batch writers). */
   context?: ContactWriteContext;
 }
@@ -189,11 +217,18 @@ export async function updateContactById(
       return null;
     }
     if (expectedUpdatedAt && existing.updatedAt && existing.updatedAt !== expectedUpdatedAt) {
-      throw new ConflictError("This contact was changed by someone else. Reload it and try again.");
+      throw new ConflictError(CONTACT_VERSION_CONFLICT);
     }
     const stripped = stripClientSoftDeleteFields({ ...contact, id });
+    // A role that cannot read a tab receives the contact without it; its save must
+    // not clear the rows it never saw (R4-03).
+    const patch = stripUnreadableContactWriteKeys(
+      stripped,
+      options.viewerRole,
+      context.fieldConfig,
+    );
     const contactWithId = await prepareContactRecord(
-      mergeContactPatch(existing, stripped),
+      mergeContactPatch(existing, patch),
       id,
       context,
     );
@@ -217,9 +252,7 @@ export async function updateContactById(
       // commits after our read cannot be silently overwritten (C-01).
       const savedWithVersion = await repo.saveIfVersionMatches(tenant, next, expectedUpdatedAt);
       if (!savedWithVersion) {
-        throw new ConflictError(
-          "This contact was changed by someone else. Reload it and try again.",
-        );
+        throw new ConflictError(CONTACT_VERSION_CONFLICT);
       }
     } else {
       await repo.save(tenant, next);

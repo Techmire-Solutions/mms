@@ -16,93 +16,111 @@ export async function syncContactPersonalChildrenTx(
   contactId: string,
   contact: Contact,
 ): Promise<void> {
-  await tx
-    .delete(contactPhones)
-    .where(
-      and(eq(contactPhones.workspaceSubdomain, subdomain), eq(contactPhones.contactId, contactId)),
-    );
-  if (contact.phones && contact.phones.length > 0) {
-    await tx.insert(contactPhones).values(
-      contact.phones.map((p, idx) => ({
-        id: `phone-${idx + 1}`,
-        workspaceSubdomain: subdomain,
-        contactId,
-        number: p.number,
-        label: p.label || "Main",
-        countryCode: p.countryCode ?? null,
-        isPrimary: p.isPrimary ?? idx === 0,
-        whatsappStatus: p.whatsappStatus ?? null,
-        sortOrder: idx,
-      })),
-    );
-  }
-
-  await tx.delete(contactTags).where(
-    and(
-      eq(contactTags.workspaceSubdomain, subdomain),
-      eq(contactTags.contactId, contactId),
-      // System-managed rows are owned by the role-tag reconciler, never by a contact save.
-      isNull(contactTags.source),
-    ),
-  );
-  const tagsToSave = filterManualContactTags(getContactTags(contact));
-  if (tagsToSave.length > 0) {
-    const validTags = dedupeTrimmedIds(tagsToSave);
-    if (validTags.length > 0) {
-      await tx.insert(contactTags).values(
-        validTags.map((t, idx) => ({
-          id: `tag-${idx + 1}`,
+  // `undefined` = not provided by this write: keep the stored rows. A write that
+  // wants to clear a collection sends `[]` (R4-02/R4-03/R4-04). Every full-record
+  // caller (read → merge → save) always carries the arrays, so this only changes
+  // partial patches (merge body, CSV import with absent columns).
+  if (contact.phones !== undefined) {
+    await tx
+      .delete(contactPhones)
+      .where(
+        and(
+          eq(contactPhones.workspaceSubdomain, subdomain),
+          eq(contactPhones.contactId, contactId),
+        ),
+      );
+    if (contact.phones.length > 0) {
+      await tx.insert(contactPhones).values(
+        contact.phones.map((p, idx) => ({
+          id: `phone-${idx + 1}`,
           workspaceSubdomain: subdomain,
           contactId,
-          name: t,
+          number: p.number,
+          label: p.label || "Main",
+          countryCode: p.countryCode ?? null,
+          isPrimary: p.isPrimary ?? idx === 0,
+          whatsappStatus: p.whatsappStatus ?? null,
+          sortOrder: idx,
         })),
       );
     }
   }
 
-  await tx
-    .delete(contactEmails)
-    .where(
-      and(eq(contactEmails.workspaceSubdomain, subdomain), eq(contactEmails.contactId, contactId)),
-    );
-  if (contact.emails && contact.emails.length > 0) {
-    await tx.insert(contactEmails).values(
-      contact.emails.map((e, idx) => ({
-        id: `email-${idx + 1}`,
-        workspaceSubdomain: subdomain,
-        contactId,
-        address: e.address,
-        label: e.label || "Primary",
-        isPrimary: e.isPrimary ?? idx === 0,
-        isVerified: e.isVerified ?? false,
-        sortOrder: idx,
-      })),
-    );
-  }
-
-  await tx
-    .delete(contactAddresses)
-    .where(
+  if (contact.tags !== undefined || contact.tag !== undefined) {
+    await tx.delete(contactTags).where(
       and(
-        eq(contactAddresses.workspaceSubdomain, subdomain),
-        eq(contactAddresses.contactId, contactId),
+        eq(contactTags.workspaceSubdomain, subdomain),
+        eq(contactTags.contactId, contactId),
+        // System-managed rows are owned by the role-tag reconciler, never by a contact save.
+        isNull(contactTags.source),
       ),
     );
-  if (contact.addresses && contact.addresses.length > 0) {
-    await tx.insert(contactAddresses).values(
-      contact.addresses.map((a, idx) => ({
-        id: `addr-${idx + 1}`,
-        workspaceSubdomain: subdomain,
-        contactId,
-        label: a.label ?? null,
-        line1: a.line1 ?? null,
-        city: a.city ?? null,
-        state: a.state ?? null,
-        country: a.country ?? null,
-        isPrimary: a.isPrimary ?? idx === 0,
-        sortOrder: idx,
-      })),
-    );
+    const tagsToSave = filterManualContactTags(getContactTags(contact));
+    if (tagsToSave.length > 0) {
+      const validTags = dedupeTrimmedIds(tagsToSave);
+      if (validTags.length > 0) {
+        await tx.insert(contactTags).values(
+          validTags.map((t, idx) => ({
+            id: `tag-${idx + 1}`,
+            workspaceSubdomain: subdomain,
+            contactId,
+            name: t,
+          })),
+        );
+      }
+    }
+  }
+
+  if (contact.emails !== undefined) {
+    await tx
+      .delete(contactEmails)
+      .where(
+        and(
+          eq(contactEmails.workspaceSubdomain, subdomain),
+          eq(contactEmails.contactId, contactId),
+        ),
+      );
+    if (contact.emails.length > 0) {
+      await tx.insert(contactEmails).values(
+        contact.emails.map((e, idx) => ({
+          id: `email-${idx + 1}`,
+          workspaceSubdomain: subdomain,
+          contactId,
+          address: e.address,
+          label: e.label || "Primary",
+          isPrimary: e.isPrimary ?? idx === 0,
+          isVerified: e.isVerified ?? false,
+          sortOrder: idx,
+        })),
+      );
+    }
+  }
+
+  if (contact.addresses !== undefined) {
+    await tx
+      .delete(contactAddresses)
+      .where(
+        and(
+          eq(contactAddresses.workspaceSubdomain, subdomain),
+          eq(contactAddresses.contactId, contactId),
+        ),
+      );
+    if (contact.addresses.length > 0) {
+      await tx.insert(contactAddresses).values(
+        contact.addresses.map((a, idx) => ({
+          id: `addr-${idx + 1}`,
+          workspaceSubdomain: subdomain,
+          contactId,
+          label: a.label ?? null,
+          line1: a.line1 ?? null,
+          city: a.city ?? null,
+          state: a.state ?? null,
+          country: a.country ?? null,
+          isPrimary: a.isPrimary ?? idx === 0,
+          sortOrder: idx,
+        })),
+      );
+    }
   }
 }
 

@@ -73,7 +73,10 @@ async function normalizeContactPhones(
   }
 
   if (!phones?.length) {
-    return { ...contact, phones: phones || [] };
+    // `undefined` means "the caller did not provide phones": keep them out of the
+    // record so the persist layer leaves the stored rows untouched. An explicit
+    // `[]` still clears them (R4-02/R4-04).
+    return phones === undefined ? contact : { ...contact, phones: [] };
   }
 
   const countryCodes: ReadonlyArray<ContactCountryCodeRow> =

@@ -15,6 +15,7 @@ import {
   buildSocials,
   cleanCell,
   generateId,
+  hasAnyColumn,
   parseBool,
   type ParseContactsRowContext,
 } from "./contactsCsvRowParser.js";
@@ -77,6 +78,7 @@ export function parseContactsCsv(
 
     const ctx: ParseContactsRowContext = {
       getVal,
+      hasColumn: (key: string) => colMap.has(key),
       defaultPhoneLabel: options?.defaultPhoneLabel,
       defaultEmailLabel: options?.defaultEmailLabel,
       defaultAddressLabel: options?.defaultAddressLabel,
@@ -129,15 +131,22 @@ export function parseContactsCsv(
       ...(whatsappStatus ? { whatsappStatus: whatsappStatus as Contact["whatsappStatus"] } : {}),
       ...(lastCheckedAt ? { lastCheckedAt } : {}),
       ...(aiSummary ? { aiSummary } : {}),
-      phones: buildPhones(ctx),
-      emails: buildEmails(ctx),
-      addresses: buildAddresses(ctx),
-      socials: buildSocials(ctx),
-      education: buildEducation(ctx),
-      experience: buildExperience(ctx),
-      skills: buildSkills(ctx),
-      relationshipContacts: buildRelationships(ctx),
-      bankDetails: buildBankDetails(ctx),
+      // A collection is emitted only when the file carries its columns. An absent
+      // column means "not exported", not "empty": sending `[]` for it would clear
+      // the stored rows on re-import (R4-04).
+      ...(hasAnyColumn(ctx, ["phone_number"]) ? { phones: buildPhones(ctx) } : {}),
+      ...(hasAnyColumn(ctx, ["email_address"]) ? { emails: buildEmails(ctx) } : {}),
+      ...(hasAnyColumn(ctx, ["line1", "city"]) ? { addresses: buildAddresses(ctx) } : {}),
+      ...(hasAnyColumn(ctx, ["socials_platform", "socials_url"])
+        ? { socials: buildSocials(ctx) }
+        : {}),
+      ...(hasAnyColumn(ctx, ["education_institution"]) ? { education: buildEducation(ctx) } : {}),
+      ...(hasAnyColumn(ctx, ["experience_title"]) ? { experience: buildExperience(ctx) } : {}),
+      ...(hasAnyColumn(ctx, ["skills_name"]) ? { skills: buildSkills(ctx) } : {}),
+      ...(hasAnyColumn(ctx, ["relationship_contact"])
+        ? { relationshipContacts: buildRelationships(ctx) }
+        : {}),
+      ...(hasAnyColumn(ctx, ["bank_name"]) ? { bankDetails: buildBankDetails(ctx) } : {}),
       ...(activities.length > 0 ? { activities } : {}),
       ...(attachments.length > 0 ? { attachments } : {}),
       ...(createdAt ? { createdAt } : {}),

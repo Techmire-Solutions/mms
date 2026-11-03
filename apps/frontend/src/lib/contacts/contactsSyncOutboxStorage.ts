@@ -6,12 +6,28 @@ import {
   type ContactsOutboxStorageKeys,
 } from "@/lib/contacts/contactsOutboxKeys";
 
-export type ContactsOutboxEntry =
-  | { id: string; kind: "upsert"; contact: Contact; createdAt: string }
-  | { id: string; kind: "update"; contactId: string; contact: Contact; createdAt: string }
-  | { id: string; kind: "delete"; contactId: string; deletionReason?: string; createdAt: string };
+interface ContactsOutboxEntryBase {
+  id: string;
+  createdAt: string;
+  /**
+   * Replay attempts after a conflict. "Keep local"/"Retry all" re-queue the entry,
+   * so an unresolvable payload must stop looping instead of minting a new conflict
+   * on every flush (R4-08).
+   */
+  attempts?: number;
+}
+
+export type ContactsOutboxEntry = ContactsOutboxEntryBase &
+  (
+    | { kind: "upsert"; contact: Contact }
+    | { kind: "update"; contactId: string; contact: Contact }
+    | { kind: "delete"; contactId: string; deletionReason?: string }
+  );
 
 export type ContactsSyncConflict = ContactsOutboxEntry & { failedAt: string };
+
+/** Re-queue budget for one conflicted entry before it is reported as permanent. */
+export const MAX_CONTACTS_SYNC_CONFLICT_ATTEMPTS = 3;
 
 /**
  * Keys for the current workspace + signed-in user. The queue is PII, so it is

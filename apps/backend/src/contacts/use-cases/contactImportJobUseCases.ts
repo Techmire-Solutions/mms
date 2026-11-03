@@ -76,6 +76,9 @@ export async function runContactsImportJob(
         canRestore,
         language,
         actorId: context.userId,
+        // The queued import writes with the enqueuing user's role, so a hidden
+        // tab is never written by an import either (R4-03).
+        viewerRole: payload.viewerRole,
         context: writeContext,
         batchMode: true,
       });

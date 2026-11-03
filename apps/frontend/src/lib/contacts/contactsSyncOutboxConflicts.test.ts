@@ -86,6 +86,22 @@ describe("requeueContactsSyncConflict", () => {
     expect(getContactsSyncConflicts().map((c) => c.id)).toEqual(["b"]);
   });
 
+  it("rebases the local payload onto the fresh server version and counts the attempt", () => {
+    requeueContactsSyncConflict("a", {
+      id: 1,
+      updatedAt: "2026-02-02T00:00:00.000Z",
+    } as never);
+
+    const [entry] = getContactsOutbox();
+    expect(entry).toMatchObject({
+      id: "a",
+      kind: "upsert",
+      // Without the rebase the replay re-sends the stale token and 409s forever.
+      contact: { id: 1, updatedAt: "2026-02-02T00:00:00.000Z" },
+      attempts: 1,
+    });
+  });
+
   it("is a no-op for unknown ids", () => {
     requeueContactsSyncConflict("nope");
     expect(getContactsOutbox()).toEqual([]);

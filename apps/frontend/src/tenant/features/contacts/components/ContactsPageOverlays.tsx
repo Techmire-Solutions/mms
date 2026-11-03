@@ -34,6 +34,7 @@ export interface ContactsPageOverlaysProps {
     keepId: string | number,
     deleteId: string | number,
     mergedData: Contact,
+    keepUpdatedAt?: string,
   ) => Promise<void>;
   importOpen: boolean;
   onCloseImport: () => void;

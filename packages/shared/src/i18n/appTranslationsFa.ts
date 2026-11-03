@@ -2833,6 +2833,8 @@ export const APP_TRANSLATIONS_FA: Partial<Record<AppTranslationKey, string>> = {
   "contacts.sync.conflictMergeSuccess": "تغییرات ادغام شده ذخیره شدند",
   "contacts.sync.conflictNoServer": "مخاطب در سرور یافت نشد (احتمالاً حذف شده است).",
   "contacts.sync.conflictRetryAll": "تلاش مجدد برای همه",
+  "contacts.sync.conflictRetryLimit":
+    "این تغییر به‌طور خودکار اعمال نشد. مخاطب را باز کنید و آن را دستی اعمال کنید یا تداخل را رد کنید.",
   "contacts.sync.conflictReviewDesc":
     "این تغییرات آفلاین به سرور ارسال نشدند. پس از رفع مشکل اتصال دوباره تلاش کنید یا تغییراتی را که نیاز ندارید رد کنید.",
   "contacts.sync.conflictReviewEmpty": "هیچ تداخلی وجود ندارد.",

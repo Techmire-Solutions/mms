@@ -2794,6 +2794,8 @@ export const APP_TRANSLATIONS_AR: Record<AppTranslationKey, string> = {
   "contacts.sync.conflictMergeSuccess": "تم حفظ التغيير المدمج",
   "contacts.sync.conflictNoServer": "جهة الاتصال غير موجودة على الخادم (ربما حُذفت).",
   "contacts.sync.conflictRetryAll": "إعادة المحاولة للكل",
+  "contacts.sync.conflictRetryLimit":
+    "تعذر تطبيق هذا التغيير تلقائياً. افتح جهة الاتصال وطبّقه يدوياً، أو تجاهل التعارض.",
   "contacts.sync.conflictReviewDesc":
     "تعذر رفع هذه التغييرات دون اتصال. أعد المحاولة بعد استقرار الاتصال أو تجاهل ما لا تحتاجه.",
   "contacts.sync.conflictReviewEmpty": "لا توجد تعارضات.",

@@ -115,6 +115,7 @@ export const contactCrudRoutes: FastifyPluginAsync = async (fastify) => {
     },
     create: async ({
       body,
+      headers,
       request,
     }: ContractRouteArgs<(typeof contactsContract)["create"]>): Promise<
       ContractRouteResponse<(typeof contactsContract)["create"]>
@@ -131,7 +132,14 @@ export const contactCrudRoutes: FastifyPluginAsync = async (fastify) => {
       try {
         const { contact, created, restoredFromDelete } = await contactUseCases.upsertContact(
           body as Contact,
-          { user, language: lang },
+          {
+            user,
+            language: lang,
+            // `create` must not silently update: an existing id needs the version
+            // token, otherwise this is a conflict (R4-05).
+            requireExpectedVersion: true,
+            expectedUpdatedAt: headers?.["x-expected-updated-at"],
+          },
         );
         if (restoredFromDelete) {
           await auditContact(
@@ -189,6 +197,7 @@ export const contactCrudRoutes: FastifyPluginAsync = async (fastify) => {
           language: lang,
           applyRelationshipInference: canWriteContacts(user),
           actorId: String(user.id),
+          viewerRole: user.role,
           expectedUpdatedAt: headers?.["x-expected-updated-at"],
         });
         if (!updated)

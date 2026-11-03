@@ -1,4 +1,5 @@
 import { useMemo, useState } from "react";
+import { useQueryClient } from "@tanstack/react-query";
 import type { Contact } from "@mms/shared";
 import {
   defaultSyncFieldPicks,
@@ -12,8 +13,11 @@ import {
   dismissContactsSyncConflict,
   requeueContactsSyncConflict,
 } from "@/lib/contacts/contactsSyncOutbox";
+import { MAX_CONTACTS_SYNC_CONFLICT_ATTEMPTS } from "@/lib/contacts/contactsSyncOutboxStorage";
 import { useTranslation } from "@/hooks/useTranslation";
 import { useContactById, useContactMutations } from "@/tenant/features/contacts/hooks/useContacts";
+import { contactDetailQueryKey } from "@/tenant/features/contacts/hooks/contactsQueryKeys";
+import { fetchContactById } from "@/tenant/features/contacts/hooks/contactsListQueryBuilders";
 import { notify } from "@/lib/notify";
 
 function localContactFromEntry(entry: ContactsSyncConflict): Contact | undefined {
@@ -29,6 +33,7 @@ export function useContactsSyncConflictRow({
   onResolved: () => void;
 }) {
   const { t } = useTranslation();
+  const queryClient = useQueryClient();
   const { updateContact, upsertContact, deleteContact } = useContactMutations();
   const [expanded, setExpanded] = useState(false);
   const [applying, setApplying] = useState(false);
@@ -40,6 +45,25 @@ export function useContactsSyncConflictRow({
     contactId,
     expanded && Boolean(contactId),
   );
+
+  /**
+   * Current server record for the rebase. `fetchQuery` with `staleTime: 0` bypasses
+   * the cached detail copy that produced the conflict in the first place.
+   */
+  const loadFreshServerContact = async (): Promise<Contact | undefined> => {
+    if (!contactId) return undefined;
+    try {
+      return (
+        (await queryClient.fetchQuery({
+          queryKey: contactDetailQueryKey(contactId),
+          queryFn: ({ signal }) => fetchContactById(contactId, signal),
+          staleTime: 0,
+        })) ?? undefined
+      );
+    } catch {
+      return undefined;
+    }
+  };
 
   const diffs = (() => {
     if (!local) return [];
@@ -64,7 +88,23 @@ export function useContactsSyncConflictRow({
   const handleKeepMine = async () => {
     setApplying(true);
     try {
-      requeueContactsSyncConflict(entry.id);
+      if ((entry.attempts ?? 0) >= MAX_CONTACTS_SYNC_CONFLICT_ATTEMPTS) {
+        notify.error(t("contacts.saveFailed"), {
+          description: t("contacts.sync.conflictRetryLimit"),
+        });
+        return;
+      }
+      // A 409 cannot be resolved by replaying the same stale token: rebase the local
+      // values onto the current server record before re-queueing (R4-08).
+      const fresh = await loadFreshServerContact();
+      if (contactId && !fresh && local) {
+        notify.error(t("contacts.saveFailed"), {
+          description: t("contacts.sync.conflictNoServer"),
+        });
+        return;
+      }
+      const rebased = local && fresh ? { ...local, updatedAt: fresh.updatedAt } : undefined;
+      requeueContactsSyncConflict(entry.id, rebased);
       onResolved();
       notify.info(t("contacts.sync.conflictKeepLocal"));
     } finally {

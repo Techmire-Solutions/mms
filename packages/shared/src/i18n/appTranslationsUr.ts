@@ -2820,6 +2820,8 @@ export const APP_TRANSLATIONS_UR: Record<AppTranslationKey, string> = {
   "contacts.sync.conflictMergeSuccess": "ضم شدہ تبدیلی محفوظ",
   "contacts.sync.conflictNoServer": "سرور پر رابطہ نہیں ملا (شاید حذف ہو چکا)۔",
   "contacts.sync.conflictRetryAll": "سب دوبارہ کوشش",
+  "contacts.sync.conflictRetryLimit":
+    "یہ تبدیلی خودکار طور پر لاگو نہیں ہو سکی۔ رابطہ کھول کر دستی طور پر لاگو کریں یا تنازع ہٹا دیں۔",
   "contacts.sync.conflictReviewDesc":
     "آف لائن تبدیلیاں سرور تک نہیں پہنچیں۔ کنکشن درست ہونے پر دوبارہ کوشش کریں یا غیر ضروری ہٹا دیں۔",
   "contacts.sync.conflictReviewEmpty": "کوئی تنازع نہیں۔",

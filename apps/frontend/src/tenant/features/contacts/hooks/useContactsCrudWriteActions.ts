@@ -72,12 +72,14 @@ export function useContactsCrudWriteActions({
     keepId: string | number,
     deleteId: string | number,
     merged: Contact,
+    keepUpdatedAt?: string,
   ): Promise<void> => {
     try {
       await mergeContactsMutation.mutateAsync({
         keepId,
         deleteId,
         merged,
+        keepUpdatedAt,
       });
       notify.success(t("contacts.mergeSuccessTitle"), {
         description: t("contacts.mergeSuccessDesc"),

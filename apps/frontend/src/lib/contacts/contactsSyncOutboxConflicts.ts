@@ -1,3 +1,4 @@
+import type { Contact } from "@mms/shared";
 import {
   currentContactsSyncKeys,
   getContactsOutbox,
@@ -21,13 +22,27 @@ export function dismissContactsSyncConflict(id: string): void {
   notifyContactsSyncOutboxChanged();
 }
 
-export function requeueContactsSyncConflict(id: string): void {
+/**
+ * Re-queues a conflicted entry.
+ *
+ * A conflict caused by a stale optimistic-concurrency token can never resolve by
+ * replaying the same payload, so the caller passes the local values rebased onto
+ * the current server record (`rebasedContact` carries the fresh `updatedAt`).
+ * Each re-queue increments `attempts`; after `MAX_CONTACTS_SYNC_CONFLICT_ATTEMPTS`
+ * the caller stops and reports a permanent failure (R4-08).
+ */
+export function requeueContactsSyncConflict(id: string, rebasedContact?: Contact): void {
   const conflicts = getContactsSyncConflicts();
   const entry = conflicts.find((conflict) => conflict.id === id);
   if (!entry) return;
   const { failedAt: _failedAt, ...outboxEntry } = entry;
+  const attempts = (entry.attempts ?? 0) + 1;
+  const withContact =
+    rebasedContact && (outboxEntry.kind === "upsert" || outboxEntry.kind === "update")
+      ? { ...outboxEntry, contact: rebasedContact }
+      : outboxEntry;
   const queue = getContactsOutbox();
-  queue.push(outboxEntry);
+  queue.push({ ...withContact, attempts } as ContactsOutboxEntry);
   writeJson(currentContactsSyncKeys().outbox, queue);
   dismissContactsSyncConflict(id);
 }
