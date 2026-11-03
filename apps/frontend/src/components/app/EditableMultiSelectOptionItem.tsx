@@ -35,9 +35,16 @@ export const EditableMultiSelectOptionItem = React.memo(function EditableMultiSe
     <div
       id={`${resolvedId}-opt-${index}`}
       role="option"
+      tabIndex={-1}
       aria-selected={isSelected}
       onMouseEnter={() => onHoverOption?.(index)}
       onClick={() => onToggleOption(option)}
+      onKeyDown={(e) => {
+        if (e.key === "Enter" || e.key === " ") {
+          e.preventDefault();
+          onToggleOption(option);
+        }
+      }}
       className={cn(
         "flex min-h-9 items-center justify-between gap-2 px-3 py-1.5 text-sm cursor-pointer transition-colors select-none",
         isSelected
