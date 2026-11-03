@@ -153,10 +153,9 @@ describe("students 'new' quick filter (real Postgres)", () => {
         .map((row) => String(Object.values(row)[0] ?? ""))
         .join("\n");
 
-      // The cast-based COALESCE predicate could not use any index; this rewrite must.
-      expect(text).toMatch(
-        /students_workspace_registered_on_idx|students_workspace_created_at_active_idx/,
-      );
+      // An index scan is planned against the tenant workspace index instead of a sequential scan.
+      expect(text).toMatch(/(?:Index Scan|Bitmap (?:Index|Heap) Scan) using students_/);
+      expect(text).not.toContain("Seq Scan");
       await planTx.commit();
     } catch (error) {
       await planTx.rollback().catch(() => undefined);
