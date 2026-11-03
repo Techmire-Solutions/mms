@@ -16,7 +16,6 @@ import { getStudentVisibleWorkColumns } from "@/tenant/features/students/lib/stu
 export type StudentsListDesktopTableProps = Pick<
   StudentsListContentTableProps,
   | "paginatedStudents"
-  | "sessions"
   | "selectedIds"
   | "allSelected"
   | "someSelected"
@@ -43,7 +42,6 @@ export type StudentsListDesktopTableProps = Pick<
 
 export function StudentsListDesktopTable({
   paginatedStudents,
-  sessions: _sessions,
   selectedIds,
   allSelected,
   someSelected,

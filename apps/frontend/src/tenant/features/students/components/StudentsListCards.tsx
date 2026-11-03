@@ -13,7 +13,6 @@ export type { StudentCardComponentProps } from "@/tenant/features/students/compo
 
 export function StudentsListCards({
   paginatedStudents,
-  sessions: _sessions,
   selectedIds,
   allSelected,
   someSelected,

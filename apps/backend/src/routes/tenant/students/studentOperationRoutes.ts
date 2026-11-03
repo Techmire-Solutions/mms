@@ -55,10 +55,10 @@ export const studentOperationRoutes: FastifyPluginAsync = async (fastify) => {
         ) {
           return { status: 400 as const, body: { type: "validation_error", message: err.message } };
         }
-        return {
-          status: 500 as const,
+        return handleContractError(request, err, {
+          status: 500,
           body: { type: "database_error", message: "Failed to bulk update student status" },
-        };
+        });
       }
     },
 
@@ -196,11 +196,11 @@ export const studentOperationRoutes: FastifyPluginAsync = async (fastify) => {
           { readOnly: false },
         );
         return { status: 200 as const, body: { success: true, ...result } };
-      } catch {
-        return {
-          status: 500 as const,
+      } catch (error: unknown) {
+        return handleContractError(request, error, {
+          status: 500,
           body: { type: "database_error", message: "Failed to migrate GR numbers" },
-        };
+        });
       }
     },
   } as unknown as RouterImplementation<typeof studentOperationsContract>);

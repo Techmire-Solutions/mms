@@ -67,7 +67,10 @@ export function useStudentsPageController() {
 
   const useServerWork = effectiveTab === "work";
   const { workPageQuery, workStudents, shownCount } = useStudentsPageWorkQuery({
-    enabled: useServerWork,
+    // The command centre's "Filtered" KPI renders on every tier, so the filtered total must be
+    // available off the Work tab too; gating this on `useServerWork` made the KPI read 0 whenever
+    // the page opened on Reports/Setup (the tier UI itself stays gated by `useServerWork`).
+    enabled: true,
     listPage: directory.listPage,
     debouncedSearch: directory.debouncedSearch,
     studentFilterStatus: directory.studentFilterStatus,

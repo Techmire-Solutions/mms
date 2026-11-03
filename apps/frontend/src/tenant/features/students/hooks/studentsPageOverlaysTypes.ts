@@ -23,13 +23,13 @@ export type StudentsPageOverlaysProps = {
   bulkDeleteOpen: boolean;
   onBulkDeleteOpenChange: (open: boolean) => void;
   selectedCount: number;
-  onConfirmBulkDelete: (reason?: string) => void | Promise<void>;
+  onConfirmBulkDelete: (reason?: string) => void | Promise<void | boolean>;
   deleteTarget: StudentsDeleteTarget | null;
   onDeleteTargetOpenChange: (open: boolean) => void;
   onConfirmSingleDelete: (reason?: string) => void | Promise<void>;
   bulkRestoreOpen: boolean;
   onBulkRestoreOpenChange: (open: boolean) => void;
-  onConfirmBulkRestore: () => void | Promise<void>;
+  onConfirmBulkRestore: () => void | Promise<void | boolean>;
   idCardStudents: Student[];
   onCloseIdCards: () => void;
   onPrintIdCard?: (student: Student) => void;

@@ -6,7 +6,7 @@ export function activeWorkspaceWhere(subdomain: string): SQL {
   return and(eq(students.workspaceSubdomain, subdomain), isNull(students.deletedAt))!;
 }
 
-export const STUDENT_CONTACT_WIDGET_FIELDS = new Set(["gender", "dob", "name", "city"]);
+export const STUDENT_CONTACT_WIDGET_FIELDS = new Set(["gender", "dob", "age", "name", "city"]);
 
 export function widgetNeedsContactsJoin(query: StudentsWidgetQuery): boolean {
   if (query.targetField && STUDENT_CONTACT_WIDGET_FIELDS.has(query.targetField.trim())) return true;
@@ -64,6 +64,16 @@ export function resolveStudentFieldExpr(field: string, useJoinedContacts = false
     return useJoinedContacts
       ? sql`COALESCE(${contacts.dob}::text, '')`
       : sql`COALESCE((SELECT c.dob::text FROM ${contacts} c WHERE c.workspace_subdomain = ${students.workspaceSubdomain} AND c.id = ${students.contactId} LIMIT 1), '')`;
+  }
+  if (f === "age") {
+    // Derived from the linked contact's DOB (contacts SSOT). The Reports catalog publishes `age`
+    // as a numeric field, so an unimplemented branch silently collapsed every row into a single
+    // "Unknown" bucket and made sum/avg always 0. Blank for a missing DOB so grouping still
+    // resolves to "Unknown"; future DOBs clamp to 0 instead of producing a negative age.
+    const dob = useJoinedContacts
+      ? sql`${contacts.dob}`
+      : sql`(SELECT c.dob FROM ${contacts} c WHERE c.workspace_subdomain = ${students.workspaceSubdomain} AND c.id = ${students.contactId} LIMIT 1)`;
+    return sql`CASE WHEN ${dob} IS NULL THEN '' ELSE GREATEST(EXTRACT(YEAR FROM AGE(CURRENT_DATE, ${dob}))::int, 0)::text END`;
   }
   if (f === "city") {
     return sql`COALESCE((SELECT ca.city FROM ${contactAddresses} ca WHERE ca.workspace_subdomain = ${students.workspaceSubdomain} AND ca.contact_id = ${students.contactId} ORDER BY ca.is_primary DESC, ca.sort_order ASC LIMIT 1), '')`;

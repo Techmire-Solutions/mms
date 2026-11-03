@@ -5,11 +5,6 @@ import type { WorkDirectoryViewMode } from "@/hooks/useWorkDirectoryViewMode";
 
 export type StudentsListContentSortField = StudentSortField;
 
-interface StudentsListContentSession {
-  id: string;
-  name: string;
-}
-
 export type StudentsListContentMessagingRecipient = ReturnType<typeof toMessagingRecipient>;
 
 interface StudentsListContentSelectionProps {
@@ -32,7 +27,6 @@ interface StudentsListContentSelectionProps {
 
 export interface StudentsListCardsProps extends StudentsListContentSelectionProps {
   paginatedStudents: Student[];
-  sessions: StudentsListContentSession[];
   allSelected: boolean;
   someSelected: boolean;
   onSelectAll: () => void;
@@ -44,7 +38,6 @@ export interface StudentsListCardsProps extends StudentsListContentSelectionProp
 
 export interface StudentsListContentTableProps extends StudentsListContentSelectionProps {
   paginatedStudents: Student[];
-  sessions: StudentsListContentSession[];
   allSelected: boolean;
   someSelected: boolean;
   sortField: StudentsListContentSortField | null;

@@ -20,6 +20,27 @@ const ALL_METHODS = ["GET", "HEAD", "POST", "PUT", "PATCH", "DELETE"] as const;
  * `config.moduleAction`, which wins over this table.
  */
 export const MODULE_ROUTE_ACTION_RULES: readonly ModuleRouteActionRule[] = [
+  // Students: restore / bulk-trash are delete-permission operations and the GR backfill is Setup
+  // data. Left to the HTTP-method default they resolved to `write`, so the module gate 403'd a
+  // role that legitimately held `students.delete` (or setup-write) without `students.write`.
+  {
+    methods: ["DELETE"],
+    pattern: /^\/api\/students\/:id$/,
+    action: "delete",
+    onlyModules: ["students"],
+  },
+  {
+    methods: ["POST"],
+    pattern: /^\/api\/students\/(bulk-delete|bulk-restore)$|^\/api\/students\/:id\/restore$/,
+    action: "delete",
+    onlyModules: ["students"],
+  },
+  {
+    methods: ["POST"],
+    pattern: /^\/api\/students\/migrate-gr-numbers$/,
+    action: "setupWrite",
+    onlyModules: ["students"],
+  },
   // Handler-owned permissions (grant + enablement still enforced here):
   // personal dashboard prefs/widgets (setupWrite|customize; summary filtered per module),
   // the staff activity log (analytics.view), and self-service edits of the caller's own contact.

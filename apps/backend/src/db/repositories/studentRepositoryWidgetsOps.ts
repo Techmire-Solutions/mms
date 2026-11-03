@@ -1,15 +1,23 @@
-import { and, eq, isNotNull, isNull, ne, sql, type SQL } from "drizzle-orm";
+import { and, eq, inArray, isNotNull, isNull, ne, sql, type SQL } from "drizzle-orm";
 import { students, contacts, contactEmails } from "../schema.js";
 import { withTenantRead } from "../tenant-context.js";
 import { studentRowToRecord } from "./studentRepositoryMappers.js";
 import { enableIncludeDeleted } from "../../lib/softDeleteHelpers.js";
 import { STUDENT_COLUMNS } from "./studentRepositoryColumns.js";
+import { resolveGrYear } from "./studentRepositorySequence.js";
 
 export async function listStudentLinkedContactIdsSql(
   tenant: string,
   excludeStudentId?: string,
+  onlyContactIds?: string[],
 ): Promise<Array<string | number>> {
   const subdomain = tenant.trim().toLowerCase();
+  const candidateIds = [
+    ...new Set((onlyContactIds ?? []).map((id) => String(id).trim()).filter(Boolean)),
+  ];
+  // A bounded candidate set that is empty means "no candidate can conflict" — skip the query
+  // instead of falling back to the unbounded workspace scan.
+  if (onlyContactIds && candidateIds.length === 0) return [];
   return withTenantRead(subdomain, async (tx) => {
     const conditions: SQL[] = [
       eq(students.workspaceSubdomain, subdomain),
@@ -17,6 +25,9 @@ export async function listStudentLinkedContactIdsSql(
     ];
     if (excludeStudentId?.trim()) {
       conditions.push(ne(students.id, excludeStudentId.trim()));
+    }
+    if (candidateIds.length > 0) {
+      conditions.push(inArray(students.contactId, candidateIds));
     }
     const rows = await tx
       .select({
@@ -34,8 +45,7 @@ export async function countStudentsForNextGrNumber(
   restartAnnually: boolean,
 ): Promise<number> {
   const subdomain = tenant.trim().toLowerCase();
-  const parsedYear = regDate ? new Date(regDate).getFullYear() : NaN;
-  const year = Number.isFinite(parsedYear) ? parsedYear : new Date().getFullYear();
+  const year = resolveGrYear(regDate);
   return withTenantRead(subdomain, async (tx) => {
     await enableIncludeDeleted(tx);
     const base = eq(students.workspaceSubdomain, subdomain);

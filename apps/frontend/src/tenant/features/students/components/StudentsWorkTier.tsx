@@ -140,7 +140,6 @@ export function StudentsWorkTier({
           canExport={canExport}
           bulkActions={bulkActions}
           selectedTargets={selectedTargets}
-          studentStatusOptions={studentStatusOptions}
           statusBadgeConfig={workOverlays.statusBadgeConfig}
           onWhatsApp={(targets) => workOverlays.openSelectionMessage("whatsapp", targets)}
           onSms={(targets) => workOverlays.openSelectionMessage("sms", targets)}

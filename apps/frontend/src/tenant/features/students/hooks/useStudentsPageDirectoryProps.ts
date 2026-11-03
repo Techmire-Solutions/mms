@@ -1,3 +1,4 @@
+import { useMemo } from "react";
 import type { Student } from "@mms/shared";
 import { getDirectoryPageSelection } from "@/lib/directorySelection";
 
@@ -9,12 +10,12 @@ export function useStudentsPageDirectoryProps({
   workStudents: Student[];
   selectedIds: string[];
 }) {
-  const pageIds = (() => workStudents.map((student) => String(student.id)))();
-
-  const pageSelection = (() => getDirectoryPageSelection(pageIds, selectedIds))();
-
-  return {
-    allSelected: pageSelection.allSelected,
-    someSelected: pageSelection.someSelected,
-  };
+  return useMemo(() => {
+    const pageIds = workStudents.map((student) => String(student.id));
+    const pageSelection = getDirectoryPageSelection(pageIds, selectedIds);
+    return {
+      allSelected: pageSelection.allSelected,
+      someSelected: pageSelection.someSelected,
+    };
+  }, [selectedIds, workStudents]);
 }

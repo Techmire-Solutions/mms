@@ -22,6 +22,12 @@ export interface ImportPipelineContext {
   userId: string;
   jobId: string;
   viewerRole: string;
+  /**
+   * 0-based position of this chunk in the original file. `persist` receives one chunk at a time, so
+   * a module that reports row-level errors must add this to its local index or every chunk after
+   * the first mislabels its rows.
+   */
+  offset?: number;
   updateProgress(current: number, total: number): Promise<void>;
 }
 
@@ -94,7 +100,9 @@ export async function runImportPipeline<TRow>(
   let imported = 0;
   for (let offset = 0; offset < transformed.length; offset += maxBatch) {
     const chunk = transformed.slice(offset, offset + maxBatch);
-    const result = await persist(chunk, ctx);
+    // Hand the chunk's absolute position to `persist` so its row-level errors can be reported
+    // against the original file instead of restarting at 1 for every chunk.
+    const result = await persist(chunk, { ...ctx, offset });
     imported += result.imported;
     if (result.errors) allErrors.push(...result.errors);
     await ctx.updateProgress(imported, Math.max(total, 1));

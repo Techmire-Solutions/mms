@@ -26,6 +26,7 @@ import { loadStudentModulePreferences } from "./studentPreferencesService.js";
 import { reconcileContactSystemTags } from "../../contacts/systemTags/contactSystemTagUseCases.js";
 import { withdrawEnrollmentsForStudentStatus } from "../../enrollments/use-cases/enrollmentEndUseCases.js";
 import { buildStudentStatusActor } from "./studentStatusTransitionUseCases.js";
+import { invalidateStudentsCache } from "./studentCacheInvalidation.js";
 
 interface CreateStudentResult {
   record: StudentRecord;
@@ -37,6 +38,8 @@ interface CreateStudentOptions {
   user?: User;
   /** Background jobs have no session user; the acting user id is still stamped. */
   actorId?: string;
+  /** Batch callers (CSV import) broadcast once per chunk instead of live-pushing per row. */
+  deferBroadcast?: boolean;
 }
 
 interface RestoreArchivedStudentInput {
@@ -215,8 +218,9 @@ export async function createStudent(
       { actorId: userId },
     );
     return { record: normalized, restored: false };
-  });
-  await broadcastCollection("students");
+  }).finally(invalidateStudentsCache);
+  const deferBroadcast = options && !("role" in options) && Boolean(options.deferBroadcast);
+  if (!deferBroadcast) await broadcastCollection("students");
   return result;
 }
 
@@ -289,7 +293,7 @@ export async function updateStudentById(
       { actorId: userId },
     );
     return normalized;
-  });
+  }).finally(invalidateStudentsCache);
   if (saved) await broadcastCollection("students");
   return saved;
 }

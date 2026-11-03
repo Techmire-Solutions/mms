@@ -96,12 +96,10 @@ export function buildStudentsWorkSource(
     handleRestore: workActions.handleRestore,
     handleBulkStatusChange: workActions.handleBulkStatusChange,
     handleBulkEnroll: async (payload: StudentsBulkEnrollPlacement) => {
-      try {
-        await workActions.handleBulkEnroll(directory.selectedIds, payload);
-        directory.clearSelection();
-      } catch {
-        // Keep selection on error
-      }
+      const saved = await workActions.handleBulkEnroll(directory.selectedIds, payload);
+      // Keep the selection (and the modal's inputs) on failure so the user can retry.
+      if (saved) directory.clearSelection();
+      return saved;
     },
     bulkEnrollPending: workActions.bulkEnrollPending,
     handleBulkPrintIdCards: () => {

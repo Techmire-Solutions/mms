@@ -50,7 +50,7 @@ export interface StudentsWorkTierProps {
   onBulkStatusChange: (studentIds: string[], status: string) => void | Promise<void>;
   onBulkEnroll?: (
     payload: import("@mms/shared").StudentsBulkEnrollPlacement,
-  ) => void | Promise<void>;
+  ) => void | Promise<void | boolean>;
   bulkEnrollPending?: boolean;
   onBulkPrintIdCards?: () => void;
   onBulkExport: () => void | Promise<void>;

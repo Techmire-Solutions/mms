@@ -60,7 +60,15 @@ export interface StudentsRepository {
     tenant: string,
     queries: StudentsWidgetQuery[],
   ): Promise<Record<string, StudentsWidgetAggregateResult>>;
-  listLinkedContactIds(tenant: string, excludeStudentId?: string): Promise<Array<string | number>>;
+  /**
+   * Contact ids linked to active students. `onlyContactIds` bounds the probe to a candidate set
+   * (bulk restore) instead of materialising every active student's contact id for the workspace.
+   */
+  listLinkedContactIds(
+    tenant: string,
+    excludeStudentId?: string,
+    onlyContactIds?: string[],
+  ): Promise<Array<string | number>>;
 
   countNextGrNumber(tenant: string, input: StudentGrSequenceInput): Promise<number>;
   previewNextGrNumber?(
