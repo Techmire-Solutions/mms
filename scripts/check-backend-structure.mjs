@@ -34,7 +34,7 @@ const BASELINE = {
   servicesStorageImports: 66,
   servicesReexportShims: 0,
   routeAggregatorFiles: 17,
-  useCasesWithoutDirectTest: 55,
+  useCasesWithoutDirectTest: 53,
 };
 
 /** Route-aggregator files that are intentionally not `{module}` folders. */

@@ -4,7 +4,7 @@ description: Governs the Faculty and Academic Staff domain — faculty records, 
 license: Proprietary
 metadata:
   owner: mms-platform
-  last-verified: 2026-10-16
+  last-verified: 2026-11-04
 ---
 
 # MMS Faculty & Academic Staff Domain
@@ -26,16 +26,30 @@ The term "Teacher" and the acronym "FDA" (`facultyDesignationAssignments`) are r
   - `faculty`: Core staff record, employment metadata, employee ID, contact link.
   - `facultyDesignations`: Academic titles (e.g. Mudarris, Muhaffiz, HOD).
   - `facultyDesignationRoles`: RBAC role bindings for designations.
-  - `facultyAssignments`: Temporal staff assignments with non-overlapping period constraints.
+  - `facultyAssignments`: Temporal staff appointments (`start_date`/`end_date`), app-enforced single-primary non-overlap (§2).
   - `facultyDepartments`: Academic faculties/departments.
 - **Ratchet**: Enforced by `pnpm run check:faculty-domain`.
 
-## 2. Temporal Appointments & Non-Overlapping Exclusion
+## 2. Temporal Appointments & Non-Overlap
 
-Migration `0123_faculty_temporal_designations.sql` introduced PostgreSQL exclusion constraints (`faculty_designation_assignments_no_overlap_excl`):
-- A faculty member cannot hold overlapping active assignments in conflicting designations within the same time boundary.
-- All appointment queries must evaluate temporal bounds (`effective_from` to `effective_to`).
-- Always validate assignment changes through `facultyHierarchyValidator.ts`.
+There is **no database exclusion constraint** on appointments. The retired
+`faculty_designation_assignments` table (and its
+`faculty_designation_assignments_no_overlap_excl` constraint from migration
+`0123`) was dropped by `0143_drop_faculty_designation_assignments.sql`;
+`faculty_assignments` is the appointment SSOT.
+
+Non-overlap is enforced in the application, not by DDL:
+- `apps/backend/src/db/repositories/facultyAssignmentValidation.ts` —
+  `lockFacultyHierarchy()` takes `pg_advisory_xact_lock` on the workspace key,
+  then `validateFacultyAssignment()` rejects a second overlapping `is_primary`
+  row for the same faculty (`start_date`–`end_date`, open ends = infinity),
+  missing/inactive faculty-department-designation links, and `endDate < startDate`.
+- Domain failures throw typed `ValidationError` (400) / `ConflictError` (409) so
+  route handlers never report infrastructure failures as client input.
+- All appointment reads evaluate temporal bounds (`start_date` to `end_date`);
+  date-only ends are written with the **workspace-local day**, not UTC.
+- Reporting-hierarchy ranking and cycle prevention live in
+  `apps/backend/src/faculty/use-cases/facultyHierarchyValidator.ts`.
 
 For seniority ranking rules, cycle prevention, and temporal constraint details, see [references/faculty-hierarchy-rules.md](references/faculty-hierarchy-rules.md).
 
@@ -45,6 +59,7 @@ For seniority ranking rules, cycle prevention, and temporal constraint details, 
 |---|---|
 | Drizzle Schema | `apps/backend/src/db/schema/faculty.ts`, `facultyDesignationTables.ts`, `facultyAssignmentTables.ts`, `facultyDepartmentTables.ts` |
 | Backend Use-Cases | `apps/backend/src/faculty/use-cases/facultyWriteUseCases.ts`, `facultyHierarchyValidator.ts` |
+| Appointment Overlap Guard | `apps/backend/src/db/repositories/facultyAssignmentValidation.ts` |
 | Employee ID Generator | `apps/backend/src/faculty/use-cases/facultyEmployeeIdGenerator.ts` |
 | Frontend Page Shell | `apps/frontend/src/tenant/features/faculty/FacultyPage.tsx` |
 | Frontend Work Sub-tabs | `apps/frontend/src/tenant/features/faculty/facultyPageWorkSubTabs.ts` |

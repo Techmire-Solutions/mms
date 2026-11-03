@@ -45,6 +45,7 @@ export const facultyDesignationContractEndpoints = {
       200: z.object({ designation: facultyDesignationSchema }),
       400: errorResponse,
       403: errorResponse,
+      409: errorResponse,
     },
     summary: "Create or update a Faculty designation definition",
   },

@@ -37,6 +37,13 @@ vi.mock("../services/outboxEventService.js", () => ({
   emitOutboxEvent: vi.fn().mockResolvedValue(undefined),
 }));
 
+const mockReconcileContactSystemTags = vi.fn();
+vi.mock("../contacts/systemTags/contactSystemTagUseCases.js", () => ({
+  reconcileContactSystemTags: (...args: unknown[]) => mockReconcileContactSystemTags(...args),
+  reconcileFacultyContactsByFacultyIds: vi.fn().mockResolvedValue(undefined),
+  reconcileDesignationContacts: vi.fn().mockResolvedValue(undefined),
+}));
+
 // Link guards are DB-backed (contacts / designations); the DI composition root is under test here.
 vi.mock("../faculty/use-cases/facultyWriteGuards.js", () => ({
   validateFacultyContactLink: vi.fn().mockResolvedValue({ userId: null }),
@@ -216,6 +223,21 @@ describe("createFacultyUseCases (DI composition root)", () => {
       { createOnly: true },
     );
     expect(mockBroadcastCollection).toHaveBeenCalledWith("faculty");
+  });
+
+  it("createFaculty defers tag reconcile and broadcast when a batch collector is passed", async () => {
+    const { repo } = createFakeRepo();
+    const useCases = createFacultyUseCases(repo);
+    const batch = { contactIds: new Set<string>() };
+
+    await useCases.createFaculty(
+      { contactId: "c-batch", status: "active", designationId: "des-1" },
+      { batch },
+    );
+
+    expect([...batch.contactIds]).toEqual(["c-batch"]);
+    expect(mockReconcileContactSystemTags).not.toHaveBeenCalled();
+    expect(mockBroadcastCollection).not.toHaveBeenCalled();
   });
 
   it("createFaculty strips contact-owned profile keys (Contacts SSOT)", async () => {

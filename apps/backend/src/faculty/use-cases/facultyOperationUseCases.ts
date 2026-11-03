@@ -28,6 +28,7 @@ export async function bulkUpdateFacultyStatus(
   ids: string[],
   status: string,
   repo: FacultyRepository = facultyRepository,
+  updatedBy?: string,
 ): Promise<{ succeeded: number; failed: number }> {
   const tenant = getRequestTenant();
   if (!tenant) return { succeeded: 0, failed: ids.length };
@@ -35,7 +36,9 @@ export async function bulkUpdateFacultyStatus(
   const uniqueIds = [...new Set(ids.map((id) => String(id).trim()).filter(Boolean))];
   if (uniqueIds.length === 0) return { succeeded: 0, failed: 0 };
 
-  const succeeded = await repo.bulkUpdateStatusSql(tenant, uniqueIds, status);
+  const succeeded = updatedBy
+    ? await repo.bulkUpdateStatusSql(tenant, uniqueIds, status, updatedBy)
+    : await repo.bulkUpdateStatusSql(tenant, uniqueIds, status);
   if (succeeded > 0) {
     await reconcileFacultyContactsByFacultyIds(tenant, uniqueIds);
     await broadcastCollection("faculty");

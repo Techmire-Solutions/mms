@@ -34,7 +34,8 @@ export async function handleGetSubordinates({
     }
     const tree = await findAssignmentSubordinateTree(String(tenantId), id);
     return { status: 200 as const, body: { tree: tree } };
-  } catch {
+  } catch (error: unknown) {
+    request.log.error({ err: error }, "Failed to retrieve assignment subordinates");
     return {
       status: 500 as const,
       body: { type: "server_error", message: "Failed to retrieve assignment subordinates" },
@@ -69,7 +70,8 @@ export async function handleGetManagers({
     }
     const chain = await findAssignmentManagerChain(String(tenantId), id);
     return { status: 200 as const, body: { chain: chain } };
-  } catch {
+  } catch (error: unknown) {
+    request.log.error({ err: error }, "Failed to retrieve assignment manager chain");
     return {
       status: 500 as const,
       body: { type: "server_error", message: "Failed to retrieve assignment manager chain" },

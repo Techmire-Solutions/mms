@@ -8,10 +8,6 @@ import { hasWhatsApp, type Faculty } from "@mms/shared";
 export interface FacultyListRowActionsProps {
   faculty?: Faculty;
   facultyId?: string;
-  /** @deprecated use faculty */
-  member?: Faculty;
-  /** @deprecated use facultyId */
-  memberId?: string;
   showDeleted: boolean;
   canWrite: boolean;
   canDelete: boolean;
@@ -39,8 +35,6 @@ export function FacultyListRowActions(props: FacultyListRowActionsProps): React.
   const {
     faculty,
     facultyId,
-    member,
-    memberId,
     showDeleted,
     canWrite,
     canDelete,
@@ -55,11 +49,11 @@ export function FacultyListRowActions(props: FacultyListRowActionsProps): React.
     onWhatsApp,
     onEmail,
   } = props;
-  const effectiveFaculty = faculty ?? member;
+  const effectiveFaculty = faculty;
   if (!effectiveFaculty) {
     return <></>;
   }
-  const effectiveId = facultyId ?? memberId ?? String(effectiveFaculty.id);
+  const effectiveId = facultyId ?? String(effectiveFaculty.id);
   const { phone, email } = resolveFacultyPrimaryChannels(effectiveFaculty);
 
   return (

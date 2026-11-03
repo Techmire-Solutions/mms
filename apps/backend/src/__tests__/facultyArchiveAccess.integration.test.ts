@@ -19,7 +19,12 @@ vi.mock("../routes/tenant/faculty/index.js", () => ({
   sanitizeOneFacultyForUser: async (row: unknown) => row,
 }));
 vi.mock("../faculty/use-cases/facultyUseCases.js", () => ({
-  facultyUseCases: { loadFacultyPage: loadPage, loadFacultyById: loadOne },
+  facultyUseCases: {
+    loadFacultyPage: loadPage,
+    loadFacultyById: loadOne,
+    sanitizeFacultyListForViewer: async (rows: unknown) => rows,
+    sanitizeFacultyForViewer: async (row: unknown) => row,
+  },
 }));
 beforeEach(() => {
   loadPage.mockReset().mockResolvedValue({

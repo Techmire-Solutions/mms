@@ -17,6 +17,7 @@ import {
 } from "./facultyWriteHelpers.js";
 import { ConflictError } from "../../lib/httpErrors.js";
 import { reconcileContactSystemTags } from "../../contacts/systemTags/contactSystemTagUseCases.js";
+import { logger } from "../../lib/logger.js";
 
 export { HierarchyValidationError, HierarchyCycleError } from "./facultyHierarchyValidator.js";
 
@@ -36,11 +37,40 @@ export class FacultyPermissionError extends Error {
   }
 }
 
+/**
+ * Batch writers (CSV import) pass one collector so contact-tag reconciliation
+ * and the live-push broadcast run once after the loop instead of per row.
+ * See `mms-code-review.md` §8 (batch writers) and `mms-data-layer.md` §9.
+ */
+export interface FacultyBatchSideEffects {
+  contactIds: Set<string>;
+}
+
 export interface CreateFacultyOptions {
   /** False when the caller lacks `faculty.delete`; blocks implicit restore. */
   canRestore?: boolean;
   /** DI seam for the DB-backed link guards (unit tests pass fakes). */
   guards?: FacultyWriteGuards;
+  /** Present on batch writes: defers reconcile + broadcast to the caller. */
+  batch?: FacultyBatchSideEffects;
+}
+
+/** Options for the single-record update path (batch deferred side effects optional). */
+export interface UpdateFacultyOptions {
+  guards?: FacultyWriteGuards;
+  /** Present on batch writes: defers reconcile + broadcast to the caller. */
+  batch?: FacultyBatchSideEffects;
+}
+
+function collectFacultyBatchContacts(
+  batch: FacultyBatchSideEffects,
+  contactIds: Array<string | number | null | undefined>,
+): void {
+  for (const value of contactIds) {
+    if (value == null) continue;
+    const contactId = String(value).trim();
+    if (contactId) batch.contactIds.add(contactId);
+  }
 }
 
 /**
@@ -73,8 +103,12 @@ export async function createFaculty(
           const generated = await generateNextFacultyEmployeeId(tenant);
           normalized.employeeId = generated.employeeId;
         }
-      } catch {
+      } catch (error: unknown) {
         // Keep the client-provided ID when the sequence table is unavailable.
+        logger.warn(
+          { err: error, tenant, employeeId: providedEmployeeId },
+          "Faculty employee-id preview failed; keeping client-provided ID",
+        );
       }
     }
 
@@ -96,20 +130,28 @@ export async function createFaculty(
         repo.save.bind(repo),
       );
       await guards.syncPrimaryAppointment(tenant, merged, guarded.departmentId);
-      await reconcileContactSystemTags(tenant, [merged.contactId], {
-        actorId: merged.updatedBy ?? undefined,
-      });
+      if (options.batch) {
+        collectFacultyBatchContacts(options.batch, [merged.contactId]);
+      } else {
+        await reconcileContactSystemTags(tenant, [merged.contactId], {
+          actorId: merged.updatedBy ?? undefined,
+        });
+      }
       return { record: merged, restored: true };
     }
 
     await repo.save(tenant, guarded.record, { createOnly: true });
     await guards.syncPrimaryAppointment(tenant, guarded.record, guarded.departmentId);
-    await reconcileContactSystemTags(tenant, [guarded.record.contactId], {
-      actorId: guarded.record.updatedBy ?? undefined,
-    });
+    if (options.batch) {
+      collectFacultyBatchContacts(options.batch, [guarded.record.contactId]);
+    } else {
+      await reconcileContactSystemTags(tenant, [guarded.record.contactId], {
+        actorId: guarded.record.updatedBy ?? undefined,
+      });
+    }
     return { record: guarded.record, restored: false };
   });
-  await broadcastCollection("faculty");
+  if (!options.batch) await broadcastCollection("faculty");
   return result;
 }
 
@@ -117,7 +159,7 @@ export async function updateFacultyById(
   id: string,
   record: FacultyRecord | FacultyWrite | Record<string, unknown>,
   repo: FacultyRepository = facultyRepository,
-  options: { guards?: FacultyWriteGuards } = {},
+  options: UpdateFacultyOptions = {},
 ): Promise<FacultyRecord | null> {
   const guards = options.guards ?? defaultFacultyWriteGuards;
   const saved = await runInTransaction(async () => {
@@ -138,12 +180,16 @@ export async function updateFacultyById(
 
     await repo.save(tenant, guarded.record);
     await guards.syncPrimaryAppointment(tenant, guarded.record, guarded.departmentId);
-    await reconcileContactSystemTags(tenant, [existing.contactId, guarded.record.contactId], {
-      actorId: guarded.record.updatedBy ?? undefined,
-    });
+    if (options.batch) {
+      collectFacultyBatchContacts(options.batch, [existing.contactId, guarded.record.contactId]);
+    } else {
+      await reconcileContactSystemTags(tenant, [existing.contactId, guarded.record.contactId], {
+        actorId: guarded.record.updatedBy ?? undefined,
+      });
+    }
     return guarded.record;
   });
-  if (saved) {
+  if (saved && !options.batch) {
     await broadcastCollection("faculty");
   }
   return saved;

@@ -12,6 +12,7 @@ import {
 import { findAncestorChain } from "../../db/repositories/facultyRepositorySubordinates.js";
 import { guardFacultyAssignmentDependents } from "../../db/repositories/facultyDeleteGuard.js";
 import { listFacultyPage } from "../../db/repositories/facultyRepositoryListQueryPage.js";
+import { findFacultyIdsByEmployeeIdsSql } from "../../db/repositories/facultyRepositoryListOps.js";
 import { saveFaculty } from "../../db/repositories/facultyRepository.js";
 import {
   findCurrentFacultyDesignationAssignment,
@@ -102,6 +103,32 @@ describe("Faculty review fixes against PostgreSQL", () => {
       office: "Room 12",
       notes: "Office hours",
     });
+  });
+
+  it("maps employee ids to active faculty ids in one batched, tenant-scoped query", async () => {
+    // Act
+    const byEmployeeId = await findFacultyIdsByEmployeeIdsSql(tenant, [
+      "e1",
+      " E2 ",
+      "missing",
+      "",
+    ]);
+
+    // Assert: case/whitespace insensitive, unknown ids omitted, active rows only.
+    expect(byEmployeeId).toEqual({ e1: "f1", e2: "f2" });
+
+    await withTenant(tenant, (tx) =>
+      tx.execute(sql`UPDATE faculty SET deleted_at = now()
+        WHERE workspace_subdomain = ${tenant} AND id = 'f2'`),
+    );
+    try {
+      await expect(findFacultyIdsByEmployeeIdsSql(tenant, ["E2"])).resolves.toEqual({});
+    } finally {
+      await withTenant(tenant, (tx) =>
+        tx.execute(sql`UPDATE faculty SET deleted_at = NULL
+          WHERE workspace_subdomain = ${tenant} AND id = 'f2'`),
+      );
+    }
   });
 
   it("given primary faculty_assignments, projects designation-history from FA rows", async () => {

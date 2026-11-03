@@ -51,7 +51,8 @@ export async function handleDuplicateCheck({
       { readOnly: true },
     );
     return { status: 200 as const, body: result };
-  } catch {
+  } catch (error: unknown) {
+    request.log.error({ err: error }, "Failed to check faculty duplicate");
     return {
       status: 500 as const,
       body: { type: "server_error", message: "Failed to check duplicate" },
@@ -133,7 +134,8 @@ export async function handleMigrateEmployeeIds({
       { readOnly: false },
     );
     return { status: 200 as const, body: { success: true as const, ...result } };
-  } catch {
+  } catch (error: unknown) {
+    request.log.error({ err: error }, "Failed to migrate faculty employee IDs");
     return {
       status: 500 as const,
       body: { type: "server_error", message: "Failed to migrate employee IDs" },

@@ -1,5 +1,5 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
-import type { FacultyRecord } from "@mms/shared";
+import { todayISO, type FacultyRecord } from "@mms/shared";
 
 const mocks = vi.hoisted(() => ({
   findPrimary: vi.fn(),
@@ -24,7 +24,8 @@ import {
   type FacultyWriteGuards,
 } from "../faculty/use-cases/facultyWriteHelpers.js";
 
-const today = new Date().toISOString().slice(0, 10);
+// Appointment boundaries follow the calendar-local day, not UTC.
+const today = todayISO();
 const record: FacultyRecord = {
   id: "fac-1",
   contactId: "c-1",

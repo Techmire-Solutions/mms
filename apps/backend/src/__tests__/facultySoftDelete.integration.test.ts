@@ -172,12 +172,11 @@ describe("faculty soft delete routes", () => {
     });
     expect(res.statusCode).toBe(200);
     expect(res.json()).toEqual({ success: true, succeeded: 1, failed: 0 });
-    expect(mockBulkUpdateFacultyStatus).toHaveBeenCalledWith(["t1"], "on_leave");
+    expect(mockBulkUpdateFacultyStatus).toHaveBeenCalledWith(["t1"], "on_leave", "u-admin");
     await app.close();
   });
 
-  it("POST /api/faculty/bulk-status accepts custom lookup statuses", async () => {
-    mockBulkUpdateFacultyStatus.mockResolvedValue({ succeeded: 1, failed: 0 });
+  it("POST /api/faculty/bulk-status rejects a status outside the employment enum", async () => {
     const app = await buildApp();
     const res = await app.inject({
       method: "POST",
@@ -186,10 +185,10 @@ describe("faculty soft delete routes", () => {
         host: "demo.localhost",
         authorization: `Bearer ${adminToken(app)}`,
       },
-      payload: { ids: ["t1"], status: "on_leave" },
+      payload: { ids: ["t1"], status: "sabbatical" },
     });
-    expect(res.statusCode).toBe(200);
-    expect(mockBulkUpdateFacultyStatus).toHaveBeenCalledWith(["t1"], "on_leave");
+    expect(res.statusCode).toBe(400);
+    expect(mockBulkUpdateFacultyStatus).not.toHaveBeenCalled();
     await app.close();
   });
 });

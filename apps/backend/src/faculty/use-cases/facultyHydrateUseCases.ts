@@ -6,6 +6,7 @@ import {
 } from "@mms/shared";
 import { loadContactsByIdsForTenant } from "../../services/contactService.js";
 import { listFacultyDesignations } from "../../db/repositories/facultyDesignationRepository.js";
+import { logger } from "../../lib/logger.js";
 
 async function loadSupervisorNames(
   tenant: string,
@@ -27,8 +28,12 @@ async function loadSupervisorNames(
         .map((s) => hydrateFacultyFromContact(s, supContactMap as never))
         .map((s) => [String(s.id), s.name || s.employeeId || String(s.id)]),
     );
-  } catch {
+  } catch (error: unknown) {
     // Non-blocking in decoupled unit tests
+    logger.warn(
+      { err: error, tenant, supervisorIds: [...supervisorIds] },
+      "Faculty supervisor name hydration failed",
+    );
     return new Map();
   }
 }
@@ -41,7 +46,8 @@ async function loadAssignableRolesByDesignation(
   try {
     const definitions = await listFacultyDesignations(tenant, { limit: null });
     return new Map(definitions.map((d) => [d.id, d.assignableRoles]));
-  } catch {
+  } catch (error: unknown) {
+    logger.warn({ err: error, tenant }, "Faculty designation assignable-role hydration failed");
     return new Map();
   }
 }
