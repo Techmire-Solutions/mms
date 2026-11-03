@@ -131,11 +131,16 @@ export function useContactsPageWriteActions({
   );
 
   const handleMerge = useCallback(
-    async (keepId: string | number, deleteId: string | number, mergedData: Contact) => {
+    async (
+      keepId: string | number,
+      deleteId: string | number,
+      mergedData: Contact,
+      keepUpdatedAt?: string,
+    ) => {
       if (!canWrite) {
         throw new Error(t("contacts.form.writeDenied"));
       }
-      await mergeContacts(keepId, deleteId, mergedData);
+      await mergeContacts(keepId, deleteId, mergedData, keepUpdatedAt);
     },
     [canWrite, t, mergeContacts],
   );

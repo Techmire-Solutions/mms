@@ -4,6 +4,8 @@ import { ensureUploadsRoot } from "../config/uploadConfig.js";
 import { authenticateUploader } from "../middleware/authenticateUploader.js";
 import { getRequestTenant } from "../lib/tenantContext.js";
 import { sendForbidden } from "../lib/httpErrors.js";
+import { canReadContacts } from "../services/rbacService.js";
+import type { User } from "@mms/shared";
 
 export type HeaderTarget = {
   header: (name: string, value: string) => unknown;
@@ -138,6 +140,31 @@ export function tenantSegmentOf(pathBelowUploads: string): string | null {
 }
 
 /**
+ * Contact attachments (`tenants/<t>/attachments/…`, and the legacy root
+ * `attachments/…` layout) are contact documents: reading one requires the
+ * contacts module's read grant, not merely a session in the tenant (R4-09).
+ */
+export function isContactAttachmentUploadPath(pathBelowUploads: string): boolean {
+  const segments = pathBelowUploads.split("/").filter(Boolean);
+  if (segments.length < 2) return false;
+  return (segments[segments.length - 2]?.toLowerCase() ?? "") === "attachments";
+}
+
+/**
+ * Module gate for a tenant session: contact attachments require `contacts.read`.
+ *
+ * Session + tenant match is not enough — an attendance-only or picker-only role
+ * could otherwise download any contact document whose URL it learned (R4-09).
+ */
+export function isUploadModuleAccessDenied(
+  pathBelowUploads: string,
+  user: User | undefined,
+): boolean {
+  if (!isContactAttachmentUploadPath(pathBelowUploads)) return false;
+  return !user || !canReadContacts(user);
+}
+
+/**
  * A tenant-bound session must not read a non-public upload without a
  * `tenants/<t>/` segment. Root-level uploads are legacy/platform-scoped files
  * (e.g. pre-hardening attachments/avatars), and the tenant match has nothing to
@@ -184,6 +211,13 @@ async function authorizeUpload(request: FastifyRequest, reply: FastifyReply): Pr
 
   if (requestTenant && requestTenant.toLowerCase() !== pathTenant) {
     await sendForbidden(reply, "This file belongs to another workspace");
+    return;
+  }
+
+  // Contact documents are module-owned: a tenant session without the contacts
+  // read grant must not download them even when it knows the URL (R4-09).
+  if (requestTenant && isUploadModuleAccessDenied(path, request.user as User | undefined)) {
+    await sendForbidden(reply, "Contact attachments require contacts read permission");
   }
 }
 

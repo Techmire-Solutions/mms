@@ -7,6 +7,7 @@
 // 5. Contacts Feature Module
 // ---------------------------------------------------------------------------
 export * from "../contacts/contactColumnAccess.js";
+export * from "../contacts/contactCollectionKeys.js";
 export * from "../contacts/contactColumnRegistrySync.js";
 export * from "../contacts/contactDuplicateUtils.js";
 export * from "../contacts/contactEnabledTabs.js";

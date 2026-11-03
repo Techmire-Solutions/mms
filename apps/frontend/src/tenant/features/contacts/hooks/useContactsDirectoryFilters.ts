@@ -39,6 +39,19 @@ export function useContactsDirectoryFilters({
     }
   }
 
+  // Bulk delete/tag/export bind to what the directory shows, so a selection must
+  // not outlive the filter/search/sort/page/trash view that produced it — the
+  // actions would hit rows the user can no longer see (R4-06, faculty parity).
+  // Adjusted during render (React's recommended pattern) rather than in an effect.
+  const selectionScopeKey = `${currentFilterKey}|${listPage}`;
+  const [prevSelectionScopeKey, setPrevSelectionScopeKey] = useState(selectionScopeKey);
+  if (prevSelectionScopeKey !== selectionScopeKey) {
+    setPrevSelectionScopeKey(selectionScopeKey);
+    if (selected.length > 0) {
+      setSelected([]);
+    }
+  }
+
   const applyDrillDown = useCallback(
     (filter: ContactsWorkDrillDown) => {
       if (filter.gender) setFilterGender(filter.gender);

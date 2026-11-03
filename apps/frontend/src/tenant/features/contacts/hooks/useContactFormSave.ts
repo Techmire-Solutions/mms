@@ -12,6 +12,7 @@ import {
   type Contact,
   todayISO,
   cleanContactDraft,
+  stripAbsentContactCollections,
   syncContactScalarFields,
   normalizeToE164,
   parsePhoneNumber,
@@ -114,7 +115,15 @@ export function useContactFormSave({
           createdAt: cleanedDraft.createdAt || todayISO(),
         } as Contact;
 
-        const titleCased = applyTitleCaseToContact(contactRaw) as Contact;
+        // A tab the viewer cannot read is absent from the loaded record; the form
+        // still rendered blank rows for it. Never send those back — the server
+        // would read them as "clear the collection" (R4-03).
+        const withPresence = stripAbsentContactCollections(
+          contactRaw as unknown as Record<string, unknown>,
+          contact as unknown as Record<string, unknown> | undefined,
+        ) as unknown as Contact;
+
+        const titleCased = applyTitleCaseToContact(withPresence) as Contact;
         const finalized = syncContactScalarFields(titleCased);
 
         await onSave(finalized);

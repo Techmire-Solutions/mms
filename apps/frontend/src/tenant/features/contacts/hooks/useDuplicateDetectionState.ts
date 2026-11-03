@@ -42,6 +42,7 @@ export function useDuplicateDetectionState({
     keepId: string | number,
     deleteId: string | number,
     mergedData: Contact,
+    keepUpdatedAt?: string,
   ) => Promise<void>;
 }) {
   const { prefs } = useContactConfig();
@@ -159,7 +160,7 @@ export function useDuplicateDetectionState({
         const other = pair.contacts[1 - selectedKeepIndex];
         const mergedRaw = mergeContacts(keep, other);
         const mergedResult = applyTitleCaseToContact(mergedRaw);
-        await onMerge(keep.id, other.id, mergedResult);
+        await onMerge(keep.id, other.id, mergedResult, keep.updatedAt);
         setMergedPairIds((prev) => new Set(prev).add(pair.id));
         successCount++;
       }
@@ -184,7 +185,7 @@ export function useDuplicateDetectionState({
     const mergedResult = applyTitleCaseToContact(mergedRaw);
     setConfirming(true);
     try {
-      await onMerge(keep.id, other.id, mergedResult);
+      await onMerge(keep.id, other.id, mergedResult, keep.updatedAt);
       setMergedPairIds((prev) => new Set(prev).add(pair.id));
       setMerging(null);
     } catch (err) {

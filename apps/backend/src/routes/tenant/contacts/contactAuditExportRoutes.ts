@@ -139,6 +139,12 @@ export const contactAuditExportRoutes: FastifyPluginAsync = async (fastify) => {
           deleteId,
           parsed.data.merged as Contact | undefined,
           String(user.id),
+          {
+            // The merge is a whole-row write of the survivor: a stale snapshot must
+            // not silently revert an edit made since the duplicate list was read (R4-05).
+            viewerRole: user.role,
+            expectedKeepUpdatedAt: request.headers["x-expected-updated-at"] as string | undefined,
+          },
         );
         await auditContact(
           user,

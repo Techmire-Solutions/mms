@@ -60,8 +60,8 @@ function createContactsRepository(): ContactsRepository {
       findContactDuplicateCandidateIds(tenant, keys, excludeIds),
     findContactDuplicateBlockedIds: (tenant, namePrefixes) =>
       findContactDuplicateBlockedIds(tenant, namePrefixes),
-    reparentContactReferences: (tenant, keepId, deleteId) =>
-      reparentContactReferences(tenant, keepId, deleteId),
+    reparentContactReferences: (tenant, keepId, deleteId, actorId) =>
+      reparentContactReferences(tenant, keepId, deleteId, actorId),
     acquireUniqueValueLocks: async (tenant, lockKeys) => {
       if (lockKeys.length === 0) return;
       const subdomain = tenant.trim().toLowerCase();
