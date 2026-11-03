@@ -15,6 +15,7 @@ import { runInTransaction } from "../../db/database.js";
 import { assertContactUniqueFields, prepareContactRecord } from "./contactValidationUseCases.js";
 import { assertContactAttachmentUrls } from "./contactAttachmentUrls.js";
 import { loadContactWriteContext } from "./contactWriteContext.js";
+import { loadPreviousRelationshipTargets } from "./contactRelationshipIds.js";
 import { broadcastCollection } from "../../lib/livePush.js";
 import { invalidateMultiTierCache } from "../../lib/cache/index.js";
 import { NotFoundError, ValidationError } from "../../lib/httpErrors.js";
@@ -88,7 +89,6 @@ export async function mergeContactsById(
     await removeSystemTagsForContacts(tenant, [deleteId]);
     await reconcileContactSystemTags(tenant, [keepId], {
       actorId: deletedBy,
-      touchContacts: false,
     });
 
     await invalidateDuplicateScanCache();
@@ -109,13 +109,16 @@ export async function bulkSaveContacts(
 ): Promise<void> {
   const tenant = getRequestTenant();
   if (!tenant || contacts.length === 0) return;
-  await repo.bulkSave(tenant, contacts);
   const ids = contacts
     .map((contact) => contact.id)
     .filter((id): id is string | number => id != null)
     .map(String);
+  // Bulk save replaces the child graph, so removed relationship links must be
+  // reconciled too: read the prior targets before the write.
+  const previousTargets = await loadPreviousRelationshipTargets(repo, tenant, ids);
+  await repo.bulkSave(tenant, contacts);
   if (ids.length > 0) {
-    await reconcileContactSystemTags(tenant, ids, { touchContacts: false });
+    await reconcileContactSystemTags(tenant, [...ids, ...previousTargets]);
   }
   await invalidateMultiTierCache({ tenantId: tenant, domain: "contacts" });
 }

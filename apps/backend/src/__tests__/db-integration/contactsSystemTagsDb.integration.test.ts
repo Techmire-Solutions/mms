@@ -246,11 +246,21 @@ describe("automatic module role tags (Postgres)", () => {
   });
 
   it("archives student roles on status end and restores them", async () => {
+    const fatherBefore = await contact(fatherContact);
+    const studentBefore = await contact(studentContact);
     await runWithTenant(tenant, () =>
       studentUseCases.updateStudentById("sys-tag-student-row", { status: "graduated" }),
     );
     expect(tagNames(await contact(studentContact))).toEqual(["Former Student"]);
     expect(tagNames(await contact(fatherContact))).toEqual(["Former Parent"]);
+    // Role tags are a projection: they must not rewrite the contact's OCC token or
+    // last editor (round-3 N-02).
+    const fatherAfter = await contact(fatherContact);
+    const studentAfter = await contact(studentContact);
+    expect(fatherAfter?.updatedAt).toBe(fatherBefore?.updatedAt);
+    expect(fatherAfter?.updatedBy).toBe(fatherBefore?.updatedBy);
+    expect(studentAfter?.updatedAt).toBe(studentBefore?.updatedAt);
+    expect(studentAfter?.updatedBy).toBe(studentBefore?.updatedBy);
 
     await runWithTenant(tenant, () =>
       studentUseCases.updateStudentById("sys-tag-student-row", { status: "active" }),
@@ -283,6 +293,45 @@ describe("automatic module role tags (Postgres)", () => {
       }),
     );
     expect(tagNames(await contact(guardianContact))).toEqual(["Guardian"]);
+  });
+
+  it("archives a role tag when a bulk save removes the relationship", async () => {
+    const bulkStudent = "sys-tag-bulk-student";
+    const bulkGuardian = "sys-tag-bulk-guardian";
+    await runWithTenant(tenant, () =>
+      contactUseCases.upsertContact(baseContact(bulkStudent, "Bulk Student")),
+    );
+    await runWithTenant(tenant, () =>
+      contactUseCases.upsertContact(baseContact(bulkGuardian, "Bulk Guardian")),
+    );
+    await runWithTenant(tenant, () =>
+      studentUseCases.createStudent({
+        id: "sys-tag-bulk-student-row",
+        contactId: bulkStudent,
+        status: "active",
+      } as never),
+    );
+    await runWithTenant(tenant, () =>
+      contactUseCases.updateContactById(bulkStudent, {
+        ...baseContact(bulkStudent, "Bulk Student"),
+        relationshipContacts: [
+          { contactId: bulkGuardian, name: "Bulk Guardian", relationship: "Guardian" },
+        ],
+      }),
+    );
+    expect(tagNames(await contact(bulkGuardian))).toEqual(["Guardian"]);
+
+    // The batch path replaces the child graph, so it must reconcile the target it
+    // just unlinked (round-3 N-03).
+    await runWithTenant(tenant, () =>
+      contactUseCases.bulkSaveContacts([
+        {
+          ...baseContact(bulkStudent, "Bulk Student"),
+          relationshipContacts: [],
+        },
+      ]),
+    );
+    expect(tagNames(await contact(bulkGuardian))).toEqual(["Former Guardian"]);
   });
 
   it("archives student roles on soft-delete and restores them", async () => {

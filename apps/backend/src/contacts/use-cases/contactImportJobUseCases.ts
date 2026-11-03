@@ -4,8 +4,11 @@ import { upsertContact } from "./contactWriteUseCases.js";
 import { reconcileContactSystemTags } from "../systemTags/contactSystemTagUseCases.js";
 import { loadContactWriteContext } from "./contactWriteContext.js";
 import { invalidateDuplicateScanCache } from "./contactDuplicateScanUseCases.js";
-import { broadcastCollection } from "../../lib/livePush.js";
+import { broadcastTenantUpdate } from "../../lib/livePush.js";
 import { logger } from "../../lib/logger.js";
+import type { ContactsRepository } from "../repository/contactsRepository.js";
+import { contactsRepository } from "../repository/contactsRepositoryAdapter.js";
+import { loadPreviousRelationshipTargets } from "./contactRelationshipIds.js";
 import {
   mapActionStringToAuditType,
   recordModernAuditEvent,
@@ -38,6 +41,7 @@ export interface ContactsImportJobResult {
 export async function runContactsImportJob(
   payload: ContactsImportJobPayload,
   context: ContactsImportJobRunContext,
+  repo: ContactsRepository = contactsRepository,
 ): Promise<ContactsImportJobResult> {
   const contacts = Array.isArray(payload.contacts) ? payload.contacts : [];
   const total = contacts.length;
@@ -54,6 +58,17 @@ export async function runContactsImportJob(
   // Tenant configuration is identical for every record in the batch: read it
   // once instead of once per contact (each read was ~5 queries).
   const writeContext = await loadContactWriteContext();
+  // The batch replaces each contact's relationship list; retain the prior targets
+  // so a removed guardian link archives the former related contact's role tag.
+  const payloadIds = Array.from(
+    new Set(
+      contacts
+        .map((contact) => contact.id)
+        .filter((id): id is string | number => id != null)
+        .map(String),
+    ),
+  );
+  const previousTargets = await loadPreviousRelationshipTargets(repo, context.tenant, payloadIds);
 
   for (let index = 0; index < total; index += 1) {
     try {
@@ -81,15 +96,17 @@ export async function runContactsImportJob(
   // Per-record side effects were suppressed by `batchMode`; run each once for
   // the whole batch instead of once per contact.
   if (imported > 0) {
-    // Batch writes skip per-record role probes; reconcile the imported contacts once.
-    if (importedContactIds.size > 0) {
-      await reconcileContactSystemTags(context.tenant, [...importedContactIds], {
+    // Batch writes skip per-record role probes; reconcile the imported contacts and
+    // any relationship target they just unlinked.
+    const reconcileIds = [...importedContactIds, ...previousTargets];
+    if (reconcileIds.length > 0) {
+      await reconcileContactSystemTags(context.tenant, reconcileIds, {
         actorId: context.userId,
-        touchContacts: false,
       });
     }
     await invalidateDuplicateScanCache();
-    await broadcastCollection("contacts");
+    // The import runs in the worker: use the explicit tenant, not the request context.
+    broadcastTenantUpdate(context.tenant, "collection", "contacts");
   }
 
   const failed = total - imported;

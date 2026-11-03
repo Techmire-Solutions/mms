@@ -43,9 +43,14 @@ faculty tags plus Student/Parent/Guardian tags.
 - Faculty names use the designation's display name exactly: `faculty-Teacher`.
 - Two active designations with the same name collapse to one visible tag. If one
   is later renamed, the names diverge and a second tag is created.
-- A manual tag whose name matches an incoming system tag is converted in place:
-  the row keeps its id/created-at, gains `source`/`system_key`, and is no longer
-  editable.
+- When reconciliation runs, a manual tag whose name matches an incoming system tag
+  is converted in place: the row keeps its id/created-at, gains `source`/`system_key`,
+  and is no longer editable.
+- The one-time `0201`/`0202` backfill predates that conversion path. It replaces a
+  colliding manual row with a new system row: the display name and role survive, but
+  the old id/created-at do not. The boot-time cleanup is scoped to the rows the
+  backfill recreates, so a manual tag on a relationship owned by a non-student
+  contact is left untouched.
 - `faculty-…`, `Former faculty-…`, and the six student role labels are reserved.
   Contact writes and CSV imports drop them from manual input; bulk tag requests
   return `400`.
