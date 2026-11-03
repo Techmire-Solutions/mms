@@ -20,7 +20,13 @@ const ContactSyncPanel = lazy(
 );
 
 export interface ContactsSetupTierProps {
-  onImport: (list: Contact[]) => void | Promise<void>;
+  onImport: (
+    list: Contact[],
+    options?: { onProgress?: (progress: { imported: number; total: number }) => void },
+  ) =>
+    | void
+    | { succeeded: number; failed: number }
+    | Promise<void | { succeeded: number; failed: number }>;
   canWrite: boolean;
   canEditSetup: boolean;
 }
