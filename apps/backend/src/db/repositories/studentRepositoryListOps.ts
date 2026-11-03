@@ -40,6 +40,7 @@ export async function bulkUpdateStudentsStatusSql(
   workspaceSubdomain: string,
   ids: string[],
   status: string,
+  updatedBy?: string,
 ): Promise<number> {
   const subdomain = workspaceSubdomain.trim().toLowerCase();
   const uniqueIds = dedupeTrimmedIds(ids);
@@ -52,6 +53,7 @@ export async function bulkUpdateStudentsStatusSql(
       .set({
         status: normalizedStatus,
         updatedAt: new Date(),
+        ...(updatedBy ? { updatedBy } : {}),
       })
       .where(
         and(

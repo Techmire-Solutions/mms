@@ -16,6 +16,14 @@ import { studentStatusLabel } from "@/lib/students/studentStatusUi";
 import { useTranslation } from "@/hooks/useTranslation";
 import type { StudentsListContentSortField } from "@/tenant/features/students/lib/studentsListTypes";
 
+/**
+ * Maps the sort radio value onto the directory sort field.
+ * `"none"` clears the sort (`null`) instead of silently switching to name ordering.
+ */
+export function resolveStudentsSortSelection(value: string): StudentsListContentSortField | null {
+  return value === "none" ? null : (value as StudentsListContentSortField);
+}
+
 export interface StudentsFiltersMenuButtonProps {
   studentFilterStatus: string[];
   studentFilterGender: string;
@@ -30,7 +38,7 @@ export interface StudentsFiltersMenuButtonProps {
   sortOptions: Array<{ field: StudentsListContentSortField; label: string }>;
   onToggleStatus: (status: string) => void;
   onGenderChange: (value: string) => void;
-  onSortChange: (field: StudentsListContentSortField) => void;
+  onSortChange: (field: StudentsListContentSortField | null) => void;
   onClearFilters: () => void;
 }
 
@@ -121,11 +129,7 @@ export function StudentsFiltersMenuButton({
               })),
             ]}
             onValueChange={(val: string) => {
-              if (val === "none") {
-                onSortChange("name");
-              } else {
-                onSortChange(val as StudentsListContentSortField);
-              }
+              onSortChange(resolveStudentsSortSelection(val));
             }}
           />
         </>

@@ -55,6 +55,7 @@ import { registerContactsVcfExportJobRunner } from "../lib/registerContactsVcfEx
 import { messagingUseCases } from "../messaging/use-cases/messagingUseCases.js";
 import { registerMessagingCampaignJobRunner } from "./messagingCampaignJobRunner.js";
 import { registerFacultyBackgroundJobRunners } from "./backgroundJobFacultyRunners.js";
+import { registerStudentsImportJobRunner } from "../students/studentsImportService.js";
 import {
   registerDocumentAndFinanceJobRunners,
   MAX_EXCEL_PAYLOAD_ENTRIES,
@@ -141,6 +142,8 @@ export function registerDefaultBackgroundJobRunners(): void {
         allowDeleted: options.allowDeleted === true,
       }),
   });
+
+  registerStudentsImportJobRunner();
 
   registerModuleCsvExportJobRunner({
     moduleId: sessionsModuleId,

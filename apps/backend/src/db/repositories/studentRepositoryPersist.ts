@@ -68,8 +68,10 @@ export function studentWriteValues(subdomain: string, student: Student): Student
   const fatherContactId = student.fatherContactId ? String(student.fatherContactId) : null;
   const motherContactId = student.motherContactId ? String(student.motherContactId) : null;
   const guardianContactId = student.guardianContactId ? String(student.guardianContactId) : null;
-  const grNumber = student.grNumber?.trim() ? student.grNumber.trim().toLowerCase() : null;
-  const studentId = student.studentId?.trim() ? student.studentId.trim().toLowerCase() : null;
+  // Store the operator's casing; the partial unique indexes use `lower(btrim(...))`, so
+  // uniqueness stays case-insensitive while `GR{yy}{seq}` templates keep their literal case.
+  const grNumber = student.grNumber?.trim() ? student.grNumber.trim() : null;
+  const studentId = student.studentId?.trim() ? student.studentId.trim() : null;
   return {
     id: String(student.id),
     workspaceSubdomain: subdomain,

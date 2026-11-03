@@ -87,7 +87,12 @@ export interface StudentsRepository {
   /** Soft-deleted student sharing `contactId` (restore-on-create probe). */
   findSoftDeletedByContactId(tenant: string, contactId: string): Promise<Student | null>;
   listActiveMissingGrNumber(tenant: string, options?: { limit?: number }): Promise<Student[]>;
-  bulkUpdateStatusSql(tenant: string, ids: string[], status: string): Promise<number>;
+  bulkUpdateStatusSql(
+    tenant: string,
+    ids: string[],
+    status: string,
+    updatedBy?: string,
+  ): Promise<number>;
   bulkSoftDelete?(
     tenant: string,
     ids: string[],

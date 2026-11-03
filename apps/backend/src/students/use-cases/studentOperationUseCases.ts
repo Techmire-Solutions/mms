@@ -7,14 +7,22 @@ import {
   type StudentStatus,
   type StudentDuplicateCheckInput,
   type StudentGrNumberSettings,
+  type User,
 } from "@mms/shared";
 import { getRequestTenant } from "../../lib/tenantContext.js";
+import { runInTransaction } from "../../db/database.js";
 import { loadStudentModulePreferences } from "./studentPreferencesService.js";
 import { broadcastCollection } from "../../lib/livePush.js";
 import { invalidateMultiTierCache } from "../../lib/cache/index.js";
 import type { StudentsRepository } from "../repository/studentsRepository.js";
 import { studentsRepository } from "../repository/studentsRepositoryAdapter.js";
 import { throwGrUniqueConflict } from "./studentNormalizeUseCases.js";
+import {
+  buildStudentStatusActor,
+  collectStatusTransitions,
+  recordStudentStatusAuditEvents,
+  withdrawEnrollmentsEndedByStatus,
+} from "./studentStatusTransitionUseCases.js";
 import { reconcileContactSystemTags } from "../../contacts/systemTags/contactSystemTagUseCases.js";
 
 import {
@@ -86,10 +94,19 @@ export async function checkStudentRegistrationDuplicate(
   return { reason };
 }
 
+/**
+ * Bulk status change with the same domain side effects as a single edit.
+ *
+ * Runs in one transaction so the status write, the enrollment withdrawals it triggers (seat
+ * release, waitlist offer, withdrawal invoice settlement) and the per-student audit rows commit
+ * together — a withdrawal failure rolls the status change back instead of leaving the two domains
+ * disagreeing.
+ */
 export async function bulkUpdateStudentStatus(
   ids: string[],
   status: string,
   repo: StudentsRepository = studentsRepository,
+  user?: User,
 ): Promise<{ succeeded: number; failed: number }> {
   const tenant = getRequestTenant();
   if (!tenant) return { succeeded: 0, failed: ids.length };
@@ -106,9 +123,30 @@ export async function bulkUpdateStudentStatus(
   const uniqueIds = [...new Set(ids.map((id) => String(id).trim()).filter(Boolean))];
   if (uniqueIds.length === 0) return { succeeded: 0, failed: 0 };
 
-  const affected = await repo.findByIds(tenant, uniqueIds);
-  const succeeded = await repo.bulkUpdateStatusSql(tenant, uniqueIds, normalizedStatus);
-  if (succeeded > 0) {
+  const userId = user?.id ? String(user.id) : undefined;
+  const actor = buildStudentStatusActor(user);
+
+  const result = await runInTransaction(async () => {
+    const affected = await repo.findByIds(tenant, uniqueIds);
+    const previousStatusById = new Map(
+      affected.map((student) => [String(student.id), student.status as string | undefined]),
+    );
+    const succeeded = userId
+      ? await repo.bulkUpdateStatusSql(tenant, uniqueIds, normalizedStatus, userId)
+      : await repo.bulkUpdateStatusSql(tenant, uniqueIds, normalizedStatus);
+
+    const transitions = collectStatusTransitions(
+      affected.map((student) => ({ id: String(student.id), status: student.status })),
+      normalizedStatus,
+    );
+    await withdrawEnrollmentsEndedByStatus(
+      tenant,
+      transitions.map((transition) => transition.id),
+      normalizedStatus,
+      previousStatusById,
+      actor,
+    );
+    await recordStudentStatusAuditEvents(tenant, transitions, userId);
     await reconcileContactSystemTags(
       tenant,
       affected.flatMap((s) => [
@@ -117,11 +155,16 @@ export async function bulkUpdateStudentStatus(
         s.motherContactId,
         s.guardianContactId,
       ]),
+      userId ? { actorId: userId } : undefined,
     );
+    return { succeeded, failed: uniqueIds.length - succeeded };
+  });
+
+  if (result.succeeded > 0) {
     await invalidateMultiTierCache({ tenantId: tenant, domain: "students" });
     await broadcastCollection("students");
   }
-  return { succeeded, failed: uniqueIds.length - succeeded };
+  return result;
 }
 
 /** Cap per migrate request so Setup backfill stays bounded (re-invoke while hasMore). */

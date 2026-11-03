@@ -98,7 +98,12 @@ export function useStudentsDirectoryFilters({
     (quickFilter !== "all" ? 1 : 0);
 
   const handleServerSort = useCallback(
-    (field: StudentsListContentSortField) => {
+    (field: StudentsListContentSortField | null) => {
+      // `null` is the Filters menu's "None": clear the column sort and let the server default apply.
+      if (field === null) {
+        setSortField(null);
+        return;
+      }
       if (sortField === field) {
         setSortDir((currentDir) => (currentDir === "asc" ? "desc" : "asc"));
       } else {

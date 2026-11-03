@@ -804,7 +804,6 @@
   "src/tenant/features/students/components/card-template/StudentCardTemplateEditor.test.tsx": 1669,
   "src/tenant/features/students/components/studentWorkColumnCell.test.tsx": 1195,
   "src/tenant/features/students/components/studentsListCustomColumns.test.ts": 858,
-  "src/tenant/features/students/hooks/studentsListQueryBuilders.test.ts": 616,
   "src/tenant/features/students/hooks/studentsPageWorkTierProps.test.ts": 351,
   "src/tenant/features/students/hooks/studentsSelectionTargets.test.ts": 837,
   "src/tenant/features/students/hooks/studentsWorkDrillDown.test.ts": 563,

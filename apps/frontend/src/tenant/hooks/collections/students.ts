@@ -24,17 +24,14 @@ export {
 export { setStudentPreferencesMemory } from "@/tenant/features/students/hooks/studentSetupConfigApi";
 export { applyStudentsWorkDrillDown } from "@/tenant/features/students/hooks/studentsWorkDrillDown";
 export { invalidateStudentsQueries } from "@/tenant/features/students/hooks/invalidateStudentsQueries";
-// Phase 7: contract-driven tsrClient hooks & query factories
+// Phase 7: contract-driven tsrClient hooks (single list key + fetcher)
 export {
   studentsListQueryOptions,
-  studentsInfiniteQueryOptions,
-  useStudentsInfiniteList,
   useStudentsContractList,
   useStudentsContractCreate,
   useStudentsContractUpdate,
   useStudentsContractDelete,
   useStudentsContractBulkStatus,
   useStudentsContractBulkEnroll,
-  useStudentsContractNextGrNumber,
   useStudentsContractDuplicateCheck,
 } from "@/tenant/features/students/hooks/useStudentsQueries";

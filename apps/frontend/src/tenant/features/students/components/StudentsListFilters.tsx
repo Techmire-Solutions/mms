@@ -34,7 +34,7 @@ interface StudentsListFiltersProps {
   onSearchChange: (value: string) => void;
   onToggleStatus: (status: string) => void;
   onGenderChange: (value: string) => void;
-  onSortChange: (field: StudentsListContentSortField) => void;
+  onSortChange: (field: StudentsListContentSortField | null) => void;
   onToggleDeleted: () => void;
   onClearFilters: () => void;
   shownCount?: number;

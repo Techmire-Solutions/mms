@@ -1,15 +1,22 @@
 import { useEffect, useRef, useState } from "react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { apiContract } from "@/lib/api";
+import { assertContractOk } from "@/lib/apiContractError";
+import { scopedStorageKey } from "@/lib/dbStorageCore";
 import { notify } from "@/lib/notify";
 import { useTranslation } from "@/hooks/useTranslation";
 import { invalidateStudentsQueries } from "@/tenant/features/students/hooks/invalidateStudentsQueries";
 
-const STUDENTS_GR_MIGRATION_KEY = "mms_students_gr_migration_v1";
+const STUDENTS_GR_MIGRATION_KEY = "students_gr_migration_v1";
+
+/** Workspace-scoped gate: the backfill must run once per tenant, not once per browser. */
+function grMigrationStorageKey(): string {
+  return scopedStorageKey(STUDENTS_GR_MIGRATION_KEY);
+}
 
 function grMigrationAlreadyDone(): boolean {
   try {
-    return localStorage.getItem(STUDENTS_GR_MIGRATION_KEY) === "1";
+    return localStorage.getItem(grMigrationStorageKey()) === "1";
   } catch {
     return false;
   }
@@ -17,7 +24,7 @@ function grMigrationAlreadyDone(): boolean {
 
 function markGrMigrationDone(): void {
   try {
-    localStorage.setItem(STUDENTS_GR_MIGRATION_KEY, "1");
+    localStorage.setItem(grMigrationStorageKey(), "1");
   } catch {
     // non-fatal: the one-shot gate is best-effort dedupe only
   }
@@ -30,8 +37,8 @@ interface GrMigrationResult {
 
 /**
  * One-shot GR number backfill for legacy students missing `grNumber`.
- * Runs once per browser (localStorage gate) when a Setup writer opens the Work
- * tab — matches BE `setupWrite`. The POST goes through a `useMutation` so the
+ * Runs once per workspace (tenant-scoped localStorage gate) when a Setup writer
+ * opens the Work tab — matches BE `setupWrite`. The POST goes through a `useMutation` so the
  * outcome surfaces via `notify.*` + `t()` instead of silent console warnings.
  */
 export function useGrMigration(activeTab: string, canEditSetup: boolean): void {
@@ -41,10 +48,11 @@ export function useGrMigration(activeTab: string, canEditSetup: boolean): void {
   const migrationAppliedRef = useRef(false);
 
   const { mutate } = useMutation({
-    mutationFn: () =>
-      apiContract.students
-        .migrateGrNumbers({ body: {} })
-        .then((res) => res.body as GrMigrationResult),
+    mutationFn: async () => {
+      const res = await apiContract.students.migrateGrNumbers({ body: {} });
+      assertContractOk(res, "Failed to backfill GR numbers");
+      return res.body as GrMigrationResult;
+    },
     onSuccess: (result: GrMigrationResult) => {
       invalidateStudentsQueries(queryClient);
       markGrMigrationDone();

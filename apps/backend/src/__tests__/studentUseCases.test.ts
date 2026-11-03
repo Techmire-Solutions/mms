@@ -178,7 +178,7 @@ describe("createStudentsUseCases (DI composition root)", () => {
     expect(restored).toBe(false);
     expect(typeof record.id).toBe("string");
     expect(String(record.id).length).toBeGreaterThan(0);
-    expect(repo.save).toHaveBeenCalledWith("demo", expect.objectContaining({ grNumber: "gr-1" }));
+    expect(repo.save).toHaveBeenCalledWith("demo", expect.objectContaining({ grNumber: "GR-1" }));
     expect(mockBroadcastCollection).toHaveBeenCalledTimes(1);
     expect(mockBroadcastCollection).toHaveBeenCalledWith("students");
   });
@@ -208,11 +208,11 @@ describe("createStudentsUseCases (DI composition root)", () => {
 
     expect(restored).toBe(true);
     expect(record.id).toBe("archived");
-    expect(record.grNumber).toBe("gr-new");
+    expect(record.grNumber).toBe("GR-NEW");
     expect(record.deletedAt).toBeUndefined();
     expect(repo.findRegistrationConflict).toHaveBeenCalledWith(
       "demo",
-      expect.objectContaining({ grNumber: "gr-new", excludeId: "archived" }),
+      expect.objectContaining({ grNumber: "GR-NEW", excludeId: "archived" }),
     );
     expect(repo.save).toHaveBeenCalledWith("demo", expect.objectContaining({ id: "archived" }));
   });
@@ -280,7 +280,7 @@ describe("createStudentsUseCases (DI composition root)", () => {
     expect(updated?.deletedAt).toBeUndefined();
     expect(repo.save).toHaveBeenCalledWith(
       "demo",
-      expect.objectContaining({ id: "a", grNumber: "gr-99" }),
+      expect.objectContaining({ id: "a", grNumber: "GR-99" }),
     );
     expect(mockBroadcastCollection).toHaveBeenCalledWith("students");
   });
@@ -315,6 +315,30 @@ describe("createStudentsUseCases (DI composition root)", () => {
     expect(mockBroadcastCollection).toHaveBeenCalledTimes(1);
   });
 
+  it("bulkSoftDeleteStudents dedupes repeated ids so counts are truthful", async () => {
+    const { repo, store } = createFakeRepo();
+    store.set("a", fakeStudent("a"));
+    const useCases = createStudentsUseCases(repo);
+
+    const result = await useCases.bulkSoftDeleteStudents(["a", " a "], "u-admin");
+
+    expect(result).toEqual({ succeeded: 1, failed: 0 });
+    expect(repo.bulkSave).toHaveBeenCalledWith("demo", [expect.objectContaining({ id: "a" })]);
+  });
+
+  it("bulkRestoreStudents dedupes repeated ids instead of reporting a phantom conflict", async () => {
+    const { repo, store } = createFakeRepo();
+    store.set("a", fakeStudent("a", { deletedAt: "2026-07-27T00:00:00.000Z" }));
+    const useCases = createStudentsUseCases(repo);
+
+    const result = await useCases.bulkRestoreStudents(["a", "a"]);
+
+    expect(result.succeeded).toBe(1);
+    expect(result.failed).toBe(0);
+    expect(result.conflicts).toEqual([]);
+    expect(repo.bulkSave).toHaveBeenCalledWith("demo", [expect.objectContaining({ id: "a" })]);
+  });
+
   it("restoreStudentById clears soft-delete fields on the stored record", async () => {
     const { repo, store } = createFakeRepo();
     store.set(
@@ -331,14 +355,14 @@ describe("createStudentsUseCases (DI composition root)", () => {
     expect(store.get("a")?.deletedAt).toBeUndefined();
   });
 
-  it("restoreStudentById returns an active record unchanged without saving", async () => {
+  it("restoreStudentById reports nothing to restore for an active row (no false audit)", async () => {
     const { repo, store } = createFakeRepo();
     store.set("a", fakeStudent("a"));
     const useCases = createStudentsUseCases(repo);
 
     const restored = await useCases.restoreStudentById("a");
 
-    expect(restored?.id).toBe("a");
+    expect(restored).toBeNull();
     expect(repo.save).not.toHaveBeenCalled();
   });
 

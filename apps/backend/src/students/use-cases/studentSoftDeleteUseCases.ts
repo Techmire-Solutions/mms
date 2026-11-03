@@ -28,11 +28,14 @@ export async function bulkSoftDeleteStudents(
   deletionReason?: string,
   repo: StudentsRepository = studentsRepository,
 ): Promise<{ succeeded: number; failed: number }> {
+  // Dedupe first: the SQL layer dedupes too, so a repeated id previously inflated `succeeded` and
+  // wrote duplicate DELETE audit/outbox rows for the same student.
+  const uniqueIds = [...new Set(ids.map((id) => String(id).trim()).filter(Boolean))];
   const result = await runInTransaction(async () => {
     const tenant = getRequestTenant();
-    if (!tenant) return { succeeded: 0, failed: ids.length };
+    if (!tenant) return { succeeded: 0, failed: uniqueIds.length };
     if (repo.guardDeleteDependents) {
-      await repo.guardDeleteDependents(tenant, ids);
+      await repo.guardDeleteDependents(tenant, uniqueIds);
     }
     let succeeded = 0;
     let failed = 0;
@@ -40,10 +43,10 @@ export async function bulkSoftDeleteStudents(
     const trimmedReason = deletionReason?.trim();
     const toSave: Student[] = [];
 
-    const existingStudents = await repo.findByIds(tenant, ids);
+    const existingStudents = await repo.findByIds(tenant, uniqueIds);
     const existingMap = new Map(existingStudents.map((student) => [String(student.id), student]));
 
-    for (const id of ids) {
+    for (const id of uniqueIds) {
       const existing = existingMap.get(String(id));
       if (existing && !existing.deletedAt) {
         toSave.push({

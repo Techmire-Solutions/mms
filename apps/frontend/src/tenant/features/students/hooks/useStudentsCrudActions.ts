@@ -6,6 +6,7 @@ import {
 } from "@/tenant/features/students/hooks/useStudents";
 import { useStudentsBulkEnrollMutation } from "@/tenant/features/students/hooks/useStudentMutations";
 import { useStudentsCrudNotify } from "@/tenant/features/students/hooks/useStudentsCrudNotify";
+import { assertContractOk } from "@/lib/apiContractError";
 
 /** Mutate + notify wrappers for Students Work (Contacts-shaped action cluster). */
 export function useStudentsCrudActions({
@@ -34,11 +35,13 @@ export function useStudentsCrudActions({
           params: { id: String(studentToSave.id) },
           body: studentToSave as StudentRecord,
         });
+        assertContractOk(res, "Failed to update student");
         return ((res.body as { student?: Student })?.student ?? res.body) as Student;
       } else {
         const res = await createStudent.mutateAsync({
           body: studentToSave as StudentRecord,
         });
+        assertContractOk(res, "Failed to create student");
         return ((res.body as { student?: Student })?.student ?? res.body) as Student;
       }
     },
@@ -48,7 +51,11 @@ export function useStudentsCrudActions({
   const handleRestore = useCallback(
     async (studentId: string): Promise<void> => {
       try {
-        await restoreStudent.mutateAsync({ params: { id: String(studentId) }, body: {} });
+        const result = await restoreStudent.mutateAsync({
+          params: { id: String(studentId) },
+          body: {},
+        });
+        assertContractOk(result, "Failed to restore student");
         notifyBulkResult(1, 0, "students.restoreSuccess", "students.bulkRestoreSuccess");
       } catch (error) {
         handleError(error, "students.restore", "students.restoreFailed");
@@ -61,10 +68,11 @@ export function useStudentsCrudActions({
   const handleDelete = useCallback(
     async (studentId: string, deletionReason?: string): Promise<void> => {
       try {
-        await deleteStudent.mutateAsync({
+        const result = await deleteStudent.mutateAsync({
           params: { id: String(studentId) },
           body: { deletionReason },
         });
+        assertContractOk(result, "Failed to archive student");
         notifyArchivedWithUndo(() => handleRestore(studentId));
       } catch (error) {
         handleError(error, "students.delete", "students.deleteFailed");
@@ -79,6 +87,7 @@ export function useStudentsCrudActions({
         const result = await bulkDeleteStudents.mutateAsync({
           body: { ids: studentIds.map(String), deletionReason },
         });
+        assertContractOk(result, "Failed to archive students");
         notifyBulkResult(
           result.body.succeeded,
           result.body.failed,
@@ -98,6 +107,7 @@ export function useStudentsCrudActions({
         const result = await bulkRestoreStudents.mutateAsync({
           body: { ids: studentIds.map(String) },
         });
+        assertContractOk(result, "Failed to restore students");
         notifyBulkResult(
           result.body.succeeded,
           result.body.failed,
@@ -117,6 +127,7 @@ export function useStudentsCrudActions({
         const result = await bulkUpdateStudentStatus.mutateAsync({
           body: { ids: studentIds.map(String), status },
         });
+        assertContractOk(result, "Failed to update student status");
         notifyBulkResult(
           result.body.succeeded,
           result.body.failed,
@@ -135,6 +146,7 @@ export function useStudentsCrudActions({
     async (studentIds: string[], payload: StudentsBulkEnrollPlacement): Promise<void> => {
       try {
         const result = await bulkEnrollMutation.mutateAsync({ studentIds, ...payload });
+        assertContractOk(result, "Failed to enroll students");
         const resBody =
           (result as { body?: { succeeded?: number; failed?: number } }).body ?? result;
         notifyBulkResult(

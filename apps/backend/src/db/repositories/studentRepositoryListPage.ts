@@ -38,6 +38,10 @@ export async function listStudentsPage(
       conditions.push(sql`${students.id} > ${query.afterId!.trim()}`);
     }
     const whereClause = and(...conditions);
+    // Keyset paging is id-ordered by contract: the cursor is a bare `id`, so any other order would
+    // make `id > afterId` skip or repeat rows. Offset paging (the only mode the Work directory and
+    // exports use today) honours `sortField`/`sortDir`; a sort-aware cursor needs a composite
+    // cursor and is intentionally out of scope.
     const effectiveOrderBy = isCursorPaging
       ? sql`${students.id} asc`
       : buildOrderBy(query.sortField, query.sortDir, needsContactsJoin);

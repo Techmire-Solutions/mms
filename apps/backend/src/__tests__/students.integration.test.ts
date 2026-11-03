@@ -543,43 +543,20 @@ describe("students routes", () => {
     await app.close();
   });
 
-  it("POST /api/students/export-audit records export audit for read roles", async () => {
+  it("POST /api/students/export-audit is not registered (queue path owns export audit)", async () => {
     const app = await buildApp();
     const res = await app.inject({
       method: "POST",
       url: "/api/students/export-audit",
       headers: {
         host: "demo.localhost",
-        authorization: `Bearer ${teacherToken(app)}`,
+        authorization: `Bearer ${adminToken(app)}`,
         "content-type": "application/json",
       },
       payload: { count: 12, scope: "filtered" },
     });
-    expect(res.statusCode).toBe(200);
-    expect(res.json()).toEqual({ success: true });
-    expect(mockRecordAudit).toHaveBeenCalledWith(
-      expect.objectContaining({
-        action: "student.export",
-        summary: "Exported 12 student(s) (filtered)",
-      }),
-    );
-    await app.close();
-  });
-
-  it("POST /api/students/export-audit returns 403 for viewer", async () => {
-    const app = await buildApp();
-    const res = await app.inject({
-      method: "POST",
-      url: "/api/students/export-audit",
-      headers: {
-        host: "demo.localhost",
-        authorization: `Bearer ${viewerToken(app)}`,
-        "content-type": "application/json",
-      },
-      payload: { count: 1, scope: "selection" },
-    });
-    expect(res.statusCode).toBe(403);
-    expect(mockRecordAudit).not.toHaveBeenCalled();
+    // A client-supplied count must never be persisted as audit truth (contacts C-09 parity).
+    expect(res.statusCode).toBe(404);
     await app.close();
   });
 

@@ -6,6 +6,7 @@ import {
   ModuleOverlayLoadingFallback,
 } from "@/components/app/ModuleOverlayLoadingChrome";
 import { useSessionsCollection } from "@/tenant/hooks/collections/sessions";
+import { useBranding } from "@/tenant/hooks/useBranding";
 import { StudentsPageConfirmDialogs } from "@/tenant/features/students/components/StudentsPageConfirmDialogs";
 import type { StudentsPageOverlaysProps } from "@/tenant/features/students/hooks/studentsPageOverlaysTypes";
 import React from "react";
@@ -58,6 +59,7 @@ export const StudentsPageOverlays = function StudentsPageOverlays({
   onCloseImport,
 }: StudentsPageOverlaysProps): React.JSX.Element {
   const sessions = useSessionsCollection();
+  const branding = useBranding();
 
   const idCardItems = useMemo(() => {
     if (idCardStudents.length === 0) return [];
@@ -132,6 +134,8 @@ export const StudentsPageOverlays = function StudentsPageOverlays({
               open={idCardStudents.length > 0}
               onClose={onCloseIdCards}
               items={idCardItems}
+              // Printed cards must carry the workspace name, not the product name.
+              madrasaName={branding.madrasaName}
             />
           </Suspense>
         </ErrorBoundary>

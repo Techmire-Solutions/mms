@@ -13,40 +13,30 @@ export {
   useStudentsWidgetAggregates,
 } from "@/tenant/features/students/hooks/useStudentsAnalyticsQueries";
 
-// --- Contract-driven list queryOptions & mutation hooks ------------------------------
+// --- Contract-driven list & mutation hooks -------------------------------------------
 
 import { apiContract, tsrClient } from "@/lib/api";
-import {
-  infiniteQueryOptions,
-  queryOptions,
-  useInfiniteQuery,
-  useQueryClient,
-} from "@tanstack/react-query";
-import type { StudentsListPageResult } from "@mms/shared";
-import { STUDENTS_QUERY_KEY } from "@/tenant/features/students/hooks/studentsQueryKeys";
-import { invalidateStudentsQueries } from "@/tenant/features/students/hooks/invalidateStudentsQueries";
-import { SESSIONS_QUERY_KEY } from "@/tenant/hooks/collections/sessions";
+import { queryOptions, useQueryClient } from "@tanstack/react-query";
 import { assertContractOk } from "@/lib/apiContractError";
+import {
+  studentsListQueryKey,
+  type StudentsContractQueryParams,
+} from "@/tenant/features/students/hooks/studentsQueryKeys";
+import {
+  invalidateStudentsBulkEnrollQueries,
+  invalidateStudentsQueries,
+} from "@/tenant/features/students/hooks/invalidateStudentsQueries";
 
 const studentsClient = tsrClient.students;
 
-export interface StudentsContractQueryParams {
-  page?: number;
-  limit?: number;
-  search?: string;
-  sessionId?: string;
-  className?: string;
-  relatedContactIds?: string;
-  fatherName?: string;
-  excludeId?: string;
-  afterId?: string;
-  skipCount?: boolean;
-  [key: string]: unknown;
-}
-
+/**
+ * Canonical Students list factory — the one list cache key
+ * (`studentsListQueryKey`) and the ts-rest envelope shape the hook also stores, so
+ * imperative callers (`fetchQuery`) and `useStudentsContractList` share one entry.
+ */
 export function studentsListQueryOptions(query: StudentsContractQueryParams = {}) {
   return queryOptions({
-    queryKey: [...STUDENTS_QUERY_KEY, "contract", query] as const,
+    queryKey: studentsListQueryKey(query),
     queryFn: async ({ signal }) => {
       const response = await apiContract.students.list({
         query: query as Record<string, string>,
@@ -54,42 +44,16 @@ export function studentsListQueryOptions(query: StudentsContractQueryParams = {}
         fetchOptions: { signal },
       });
       assertContractOk(response, "Failed to fetch students");
-      return response.body as StudentsListPageResult;
+      return response;
     },
     placeholderData: (prev) => prev,
     staleTime: 15_000,
   });
 }
 
-export function studentsInfiniteQueryOptions(query: StudentsContractQueryParams = {}) {
-  return infiniteQueryOptions({
-    queryKey: [...STUDENTS_QUERY_KEY, "contract-infinite-list", query] as const,
-    queryFn: async ({ pageParam, signal }) => {
-      const effectiveQuery = { ...query, page: pageParam };
-      const response = await apiContract.students.list({
-        query: effectiveQuery as unknown as Record<string, string>,
-        signal,
-        fetchOptions: { signal },
-      });
-      assertContractOk(response, "Failed to fetch students");
-      return response.body as StudentsListPageResult;
-    },
-    initialPageParam: 1,
-    getNextPageParam: (lastPage) => (lastPage.hasMore ? lastPage.page + 1 : undefined),
-    staleTime: 15_000,
-  });
-}
-
-export function useStudentsInfiniteList(query: StudentsContractQueryParams = {}, enabled = true) {
-  return useInfiniteQuery({
-    ...studentsInfiniteQueryOptions(query),
-    enabled,
-  });
-}
-
 export function useStudentsContractList(query: StudentsContractQueryParams, enabled = true) {
   return studentsClient.list.useQuery({
-    queryKey: [...STUDENTS_QUERY_KEY, "contract", query],
+    queryKey: studentsListQueryKey(query),
     queryData: { query },
     staleTime: 15_000,
     enabled,
@@ -127,27 +91,7 @@ export function useStudentsContractBulkStatus() {
 export function useStudentsContractBulkEnroll() {
   const queryClient = useQueryClient();
   return studentsClient.bulkEnroll.useMutation({
-    onSuccess: () => {
-      void invalidateStudentsQueries(queryClient);
-      void queryClient.invalidateQueries({ queryKey: SESSIONS_QUERY_KEY });
-    },
-  });
-}
-
-export function useStudentsContractNextGrNumber(
-  query: {
-    registeredDate: string;
-    template?: string;
-    digits?: number;
-    restartAnnually?: "true" | "false";
-  },
-  enabled = true,
-) {
-  return studentsClient.nextGrNumber.useQuery({
-    queryKey: [...STUDENTS_QUERY_KEY, "next-gr", query],
-    queryData: { query },
-    staleTime: 0,
-    enabled,
+    onSuccess: () => invalidateStudentsBulkEnrollQueries(queryClient),
   });
 }
 
@@ -174,10 +118,6 @@ export function useStudentsContractBulkRestore() {
   return studentsClient.bulkRestore.useMutation({
     onSuccess: () => invalidateStudentsQueries(queryClient),
   });
-}
-
-export function useStudentsContractLogExportAudit() {
-  return studentsClient.exportAudit.useMutation({});
 }
 
 export function useStudentsContractLogSetupAudit() {

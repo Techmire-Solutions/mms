@@ -2,7 +2,7 @@ import { and, eq, sql } from "drizzle-orm";
 import { formatTemplateSequence, type StudentGrNumberSettings } from "@mms/shared";
 import { students, studentSequenceConfig } from "../schema.js";
 import { withTenant, type TenantTransaction } from "../tenant-context.js";
-import { enableIncludeDeleted } from "../../lib/softDeleteHelpers.js";
+import { withIncludeDeletedScope } from "../../lib/softDeleteHelpers.js";
 
 export interface GenerateGrNumberInput {
   regDate: string;
@@ -39,20 +39,24 @@ export async function generateNextGrNumberBatchSql(
       .for("update");
 
     if (!row) {
-      await enableIncludeDeleted(tx);
       const base = eq(students.workspaceSubdomain, subdomain);
       const yearStr = String(year);
-      const countRows = await tx
-        .select({ count: sql<number>`count(*)::int` })
-        .from(students)
-        .where(
-          restartAnnually
-            ? and(
-                base,
-                sql`(COALESCE(${students.registeredDate}::text, '') LIKE ${`${yearStr}%`} OR COALESCE(${students.grNumber}, '') LIKE ${`%${yearStr}%`})`,
-              )
-            : base,
-        );
+      // Scope deleted-row visibility to this seed count: `set_config(..., true)` is
+      // transaction-scoped, and the caller's create transaction must not keep reading
+      // soft-deleted rows after the sequence row exists.
+      const countRows = await withIncludeDeletedScope(tx, () =>
+        tx
+          .select({ count: sql<number>`count(*)::int` })
+          .from(students)
+          .where(
+            restartAnnually
+              ? and(
+                  base,
+                  sql`(COALESCE(${students.registeredDate}::text, '') LIKE ${`${yearStr}%`} OR COALESCE(${students.grNumber}, '') LIKE ${`%${yearStr}%`})`,
+                )
+              : base,
+          ),
+      );
       const initialCount = Number(countRows[0]?.count ?? 0);
 
       await tx
@@ -139,20 +143,24 @@ export async function previewNextGrNumberSql(
 
     let nextSeq: number;
     if (!row) {
-      await enableIncludeDeleted(tx);
       const base = eq(students.workspaceSubdomain, subdomain);
       const yearStr = String(year);
-      const countRows = await tx
-        .select({ count: sql<number>`count(*)::int` })
-        .from(students)
-        .where(
-          restartAnnually
-            ? and(
-                base,
-                sql`(COALESCE(${students.registeredDate}::text, '') LIKE ${`${yearStr}%`} OR COALESCE(${students.grNumber}, '') LIKE ${`%${yearStr}%`})`,
-              )
-            : base,
-        );
+      // Scope deleted-row visibility to this seed count: `set_config(..., true)` is
+      // transaction-scoped, and the caller's create transaction must not keep reading
+      // soft-deleted rows after the sequence row exists.
+      const countRows = await withIncludeDeletedScope(tx, () =>
+        tx
+          .select({ count: sql<number>`count(*)::int` })
+          .from(students)
+          .where(
+            restartAnnually
+              ? and(
+                  base,
+                  sql`(COALESCE(${students.registeredDate}::text, '') LIKE ${`${yearStr}%`} OR COALESCE(${students.grNumber}, '') LIKE ${`%${yearStr}%`})`,
+                )
+              : base,
+          ),
+      );
       const initialCount = Number(countRows[0]?.count ?? 0);
       nextSeq = initialCount + 1;
     } else {
