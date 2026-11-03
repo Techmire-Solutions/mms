@@ -47,6 +47,29 @@ function toFacultyAssignmentEntity(row: FacultyAssignmentRow): FacultyAssignment
   };
 }
 
+/**
+ * Maps a thrown assignment error onto its contract status code.
+ * Domain errors carry an explicit `statusCode` (400/404/409); anything else is
+ * an infrastructure/DB failure and must surface as 500, never as client input.
+ */
+export function assignmentErrorResponse(error: unknown, serverErrorMessage: string) {
+  const message = error instanceof Error ? error.message : serverErrorMessage;
+  const statusCode = (error as { statusCode?: unknown } | null)?.statusCode;
+  if (statusCode === 404) {
+    return { status: 404 as const, body: { type: "not_found", message } };
+  }
+  if (statusCode === 409) {
+    return { status: 409 as const, body: { type: "conflict", message } };
+  }
+  if (statusCode === 400) {
+    return { status: 400 as const, body: { type: "validation_error", message } };
+  }
+  return {
+    status: 500 as const,
+    body: { type: "server_error", message: serverErrorMessage },
+  };
+}
+
 export async function handleListAssignments({
   params: { facultyId },
   query,
@@ -78,7 +101,8 @@ export async function handleListAssignments({
     }
     const rows = await listFacultyAssignments(String(tenantId), facultyId, { activeOnly });
     return { status: 200 as const, body: { assignments: rows.map(toFacultyAssignmentEntity) } };
-  } catch {
+  } catch (error: unknown) {
+    request.log.error({ err: error }, "Failed to list faculty assignments");
     return {
       status: 500 as const,
       body: { type: "server_error", message: "Failed to list faculty assignments" },
@@ -126,14 +150,9 @@ export async function handleSaveAssignment({
       };
     }
     return { status: 200 as const, body: { assignment: toFacultyAssignmentEntity(saved) } };
-  } catch (error) {
-    return {
-      status: 400 as const,
-      body: {
-        type: "validation_error",
-        message: error instanceof Error ? error.message : "Invalid assignment",
-      },
-    };
+  } catch (error: unknown) {
+    request.log.error({ err: error }, "Failed to save faculty assignment");
+    return assignmentErrorResponse(error, "Failed to save faculty assignment");
   }
 }
 
@@ -174,14 +193,9 @@ export async function handleCloseAssignment({
       actorId: user.id,
     });
     return { status: 200 as const, body: { success: true as const } };
-  } catch (error) {
-    return {
-      status: 400 as const,
-      body: {
-        type: "validation_error",
-        message: error instanceof Error ? error.message : "Failed to close assignment",
-      },
-    };
+  } catch (error: unknown) {
+    request.log.error({ err: error }, "Failed to close faculty assignment");
+    return assignmentErrorResponse(error, "Failed to close faculty assignment");
   }
 }
 
@@ -215,13 +229,11 @@ export async function handleDeleteAssignment({
       actorId: user.id,
     });
     return { status: 200 as const, body: { success: true as const } };
-  } catch (error) {
+  } catch (error: unknown) {
+    request.log.error({ err: error }, "Failed to delete faculty assignment");
     return {
       status: 500 as const,
-      body: {
-        type: "server_error",
-        message: error instanceof Error ? error.message : "Failed to delete assignment",
-      },
+      body: { type: "server_error", message: "Failed to delete faculty assignment" },
     };
   }
 }

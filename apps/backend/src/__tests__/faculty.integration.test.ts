@@ -107,7 +107,7 @@ describe("Faculty REST API Endpoints Integration", () => {
     expect(res.json().faculty).toHaveLength(1);
   });
 
-  it("GET /api/v1/tenant/faculty routes to faculty list via URL rewrite", async () => {
+  it("GET /api/v1/tenant/faculty serves the legacy alias through the canonical list handler", async () => {
     mockLoadFacultyPage.mockResolvedValueOnce({
       faculty: [sampleFaculty],
       total: 1,

@@ -9,6 +9,7 @@ export function facultyRepositoryFixture(): FacultyRepository {
       .mockResolvedValue({ faculty: [], total: 0, page: 1, limit: 100, hasMore: false }),
     findById: vi.fn().mockResolvedValue(null),
     findByIds: vi.fn().mockResolvedValue([]),
+    findIdsByEmployeeIds: vi.fn().mockResolvedValue({}),
     findSoftDeletedByContactId: vi.fn().mockResolvedValue(null),
     save: vi.fn().mockResolvedValue(undefined),
     bulkSave: vi.fn().mockResolvedValue(undefined),

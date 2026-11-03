@@ -37,7 +37,8 @@ export async function handleListDepartments({
   try {
     const departments = await listFacultyDepartments(auth.tenantId, { includeDeleted });
     return { status: 200 as const, body: { departments } };
-  } catch {
+  } catch (error: unknown) {
+    request.log.error({ err: error }, "Failed to list faculty departments");
     return {
       status: 500 as const,
       body: { type: "server_error", message: "Failed to list faculty departments" },
@@ -124,11 +125,12 @@ export async function handleDeleteDepartment({
         },
       };
     }
+    request.log.error({ err: error }, "Failed to delete faculty department");
     return {
       status: 500 as const,
       body: {
         type: "server_error",
-        message: error instanceof Error ? error.message : "Failed to delete department",
+        message: "Failed to delete department",
       },
     };
   }

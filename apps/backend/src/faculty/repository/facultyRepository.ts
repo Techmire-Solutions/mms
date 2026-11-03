@@ -25,6 +25,8 @@ export interface FacultyRepository {
   listPage(tenant: string, query: FacultyListQuery): Promise<FacultyListPageResult>;
   findById(tenant: string, id: string): Promise<Faculty | null>;
   findByIds(tenant: string, ids: string[]): Promise<Faculty[]>;
+  /** Active faculty id lookup keyed by lowercased employee id (batch import matching). */
+  findIdsByEmployeeIds(tenant: string, employeeIds: string[]): Promise<Record<string, string>>;
   /** Soft-delete probe for restore-on-create re-registration (Contact SSOT). */
   findSoftDeletedByContactId(tenant: string, contactId: string): Promise<Faculty | null>;
   save(
@@ -55,7 +57,12 @@ export interface FacultyRepository {
     tenant: string,
     input: FacultyDuplicateCheckInput,
   ): Promise<FacultyDuplicateReason | null>;
-  bulkUpdateStatusSql(tenant: string, ids: string[], status: string): Promise<number>;
+  bulkUpdateStatusSql(
+    tenant: string,
+    ids: string[],
+    status: string,
+    updatedBy?: string,
+  ): Promise<number>;
   bulkUpdateSpecializationSql(
     tenant: string,
     ids: string[],

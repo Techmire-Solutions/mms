@@ -9,6 +9,7 @@ import {
   saveFacultyDesignation,
 } from "../../db/repositories/facultyDesignationRepository.js";
 import { reconcileDesignationContacts } from "../../contacts/systemTags/contactSystemTagUseCases.js";
+import { logger } from "../../lib/logger.js";
 
 export interface CatalogImportJobContext {
   tenant: string;
@@ -61,8 +62,11 @@ export async function runFacultyDepartmentsImportJob(
       });
       idByName.set(key, id);
       imported += 1;
-    } catch {
-      // Continue batch
+    } catch (error: unknown) {
+      logger.warn(
+        { err: error, tenant: context.tenant, department: row?.name },
+        "Faculty department import row failed; continuing batch",
+      );
     }
     await reportProgress(context, i, total);
   }
@@ -112,8 +116,16 @@ export async function runFacultyDesignationsImportJob(
       idByKey.set(key, id);
       saved.push({ id, departmentId, row });
       imported += 1;
-    } catch {
-      // Continue batch
+    } catch (error: unknown) {
+      logger.warn(
+        {
+          err: error,
+          tenant: context.tenant,
+          designation: row?.name,
+          department: row?.department,
+        },
+        "Faculty designation import row failed; continuing batch",
+      );
     }
     await reportProgress(context, i, total);
   }
@@ -135,8 +147,12 @@ export async function runFacultyDesignationsImportJob(
         status: entry.row.status ?? "active",
         updatedBy: context.userId,
       });
-    } catch {
-      // ignore parent-link failures (cycle / depth guards)
+    } catch (error: unknown) {
+      // Expected for cycle / depth guards; log so real failures stay visible.
+      logger.warn(
+        { err: error, tenant: context.tenant, designationId: entry.id, parentName },
+        "Faculty designation parent link skipped",
+      );
     }
   }
 

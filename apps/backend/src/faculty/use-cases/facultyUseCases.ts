@@ -32,6 +32,8 @@ export function createFacultyUseCases(repo: FacultyRepository = facultyRepositor
   const isFacultyProfileDeleted = (id: string) => load.isFacultyProfileDeleted(id, repo);
   const loadFacultyLinkedContactIds = (excludeFacultyId?: string) =>
     load.loadFacultyLinkedContactIds(excludeFacultyId, repo);
+  const findFacultyIdsByEmployeeIds = (employeeIds: string[]) =>
+    load.findFacultyIdsByEmployeeIds(employeeIds, repo);
   const loadFacultyCommandMetrics = () => load.loadFacultyCommandMetrics(repo);
   const loadFacultyWidgetAggregates = (
     queries: Parameters<typeof load.loadFacultyWidgetAggregates>[0],
@@ -41,8 +43,11 @@ export function createFacultyUseCases(repo: FacultyRepository = facultyRepositor
     record: Parameters<typeof write.createFaculty>[0],
     options?: Parameters<typeof write.createFaculty>[2],
   ) => write.createFaculty(record, repo, options);
-  const updateFacultyById = (id: string, record: Parameters<typeof write.updateFacultyById>[1]) =>
-    write.updateFacultyById(id, record, repo);
+  const updateFacultyById = (
+    id: string,
+    record: Parameters<typeof write.updateFacultyById>[1],
+    options?: Parameters<typeof write.updateFacultyById>[3],
+  ) => write.updateFacultyById(id, record, repo, options);
   const softDeleteFacultyById = (
     id: string,
     deletedBy: string,
@@ -56,8 +61,8 @@ export function createFacultyUseCases(repo: FacultyRepository = facultyRepositor
     softDelete.restoreFacultyById(id, userId, repo);
   const bulkRestoreFaculty = (ids: string[], userId?: string) =>
     softDelete.bulkRestoreFaculty(ids, userId, repo);
-  const bulkUpdateFacultyStatus = (ids: string[], status: string) =>
-    operation.bulkUpdateFacultyStatus(ids, status, repo);
+  const bulkUpdateFacultyStatus = (ids: string[], status: string, updatedBy?: string) =>
+    operation.bulkUpdateFacultyStatus(ids, status, repo, updatedBy);
   const bulkUpdateFacultySpecialization = (ids: string[], specialization: string) =>
     operation.bulkUpdateFacultySpecialization(ids, specialization, repo);
   const computeNextFacultyEmployeeIdForSettings = (
@@ -82,6 +87,7 @@ export function createFacultyUseCases(repo: FacultyRepository = facultyRepositor
     loadFacultyByIds,
     isFacultyProfileDeleted,
     loadFacultyLinkedContactIds,
+    findFacultyIdsByEmployeeIds,
     loadFacultyCommandMetrics,
     loadFacultyWidgetAggregates,
     loadFacultyHierarchyTree,

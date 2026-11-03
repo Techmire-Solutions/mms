@@ -37,7 +37,8 @@ export async function handleListDesignations({
   try {
     const designations = await listFacultyDesignations(auth.tenantId, { includeDeleted });
     return { status: 200 as const, body: { designations } };
-  } catch {
+  } catch (error: unknown) {
+    request.log.error({ err: error }, "Failed to list Faculty designations");
     return {
       status: 500 as const,
       body: { type: "server_error", message: "Failed to list Faculty designations" },
@@ -119,7 +120,8 @@ export async function handleListDesignationHistory({
   try {
     const assignments = await listFacultyDesignationAssignments(auth.tenantId, facultyId);
     return { status: 200 as const, body: { assignments } };
-  } catch {
+  } catch (error: unknown) {
+    request.log.error({ err: error }, "Failed to load designation history");
     return {
       status: 500 as const,
       body: { type: "server_error", message: "Failed to load designation history" },

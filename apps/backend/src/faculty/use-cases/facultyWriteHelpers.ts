@@ -1,4 +1,5 @@
 import type { FacultyRecord } from "@mms/shared";
+import { todayISO } from "@mms/shared";
 import {
   closeAssignment,
   findPrimaryFacultyAssignment,
@@ -18,7 +19,12 @@ export interface FacultyWriteGuards {
   syncPrimaryAppointment: typeof syncPrimaryAppointment;
 }
 
-const isoToday = (): string => new Date().toISOString().slice(0, 10);
+/**
+ * Calendar-local day, not UTC: appointment open/close dates are date-only and
+ * must follow the workspace day (`mms-data-layer.md` §5), otherwise a UTC clock
+ * shifts the appointment boundary by a day in UTC+ time zones.
+ */
+const isoToday = (): string => todayISO();
 
 function shiftIsoDate(iso: string, days: number): string {
   const date = new Date(`${iso}T00:00:00Z`);

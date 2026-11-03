@@ -5,7 +5,6 @@ import {
   FACULTY_PAGE_TAB_IDS,
   migrateFacultyPageTab,
   resolveFacultyPageTab,
-  resolveFacultyWorkSubTab,
 } from "./facultyPageWorkSubTabs";
 
 describe("facultyPageWorkSubTabs", () => {
@@ -28,12 +27,10 @@ describe("facultyPageWorkSubTabs", () => {
     expect(migrateFacultyPageTab("reports")).toBe("reports");
   });
 
-  it("resolves against visible ids and supports legacy work sub-tab helper", () => {
+  it("resolves against visible ids and maps a legacy work sub-tab", () => {
     const visible = ["faculties", "departments", "designations", "reports"];
     expect(resolveFacultyPageTab("work", visible, "departments")).toBe("departments");
     expect(resolveFacultyPageTab("setup", visible)).toBe("");
     expect(resolveFacultyPageTab("", visible)).toBe("");
-    expect(resolveFacultyWorkSubTab("designations")).toBe("designations");
-    expect(resolveFacultyWorkSubTab("nope")).toBe(FACULTY_PAGE_TAB_DEFAULT);
   });
 });

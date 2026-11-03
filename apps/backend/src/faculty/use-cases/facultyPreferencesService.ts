@@ -10,6 +10,7 @@ import {
 import { createModulePreferencesService } from "../../lib/createModulePreferencesService.js";
 import { getRequestTenant } from "../../lib/tenantContext.js";
 import { getFacultySetupConfig, updateFacultySetupConfig } from "./facultyEmployeeIdService.js";
+import { logger } from "../../lib/logger.js";
 
 const service = createModulePreferencesService<FacultyModulePreferences>({
   broadcastKey: "faculty",
@@ -42,7 +43,11 @@ export const loadFacultyModulePreferences = async (): Promise<FacultyModulePrefe
           delimiter: config.delimiter,
         }),
       };
-    } catch {
+    } catch (error: unknown) {
+      logger.warn(
+        { err: error, tenant },
+        "Faculty setup config overlay failed; returning stored module preferences",
+      );
       return prefs;
     }
   }
@@ -57,8 +62,12 @@ export const saveFacultyModulePreferences = async (
   if (tenant) {
     try {
       await updateFacultySetupConfig(tenant, preferences);
-    } catch {
+    } catch (error: unknown) {
       // Best-effort sync to dedicated sequence table
+      logger.warn(
+        { err: error, tenant },
+        "Faculty employee-id sequence sync failed; module preferences were saved",
+      );
     }
   }
   return result;

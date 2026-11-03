@@ -2,6 +2,7 @@ import { eq } from "drizzle-orm";
 import { formatDeterministicEmployeeId, DEFAULT_FACULTY_SETTINGS } from "@mms/shared";
 import { facultySetupConfig } from "../../db/schema/faculty.js";
 import { withTenantRead } from "../../db/tenant-context.js";
+import { logger } from "../../lib/logger.js";
 
 export interface NextEmployeeIdResult {
   employeeId: string;
@@ -81,8 +82,12 @@ export async function previewNextFacultyEmployeeId(
         lastYear: row?.lastYear ?? currentYear,
       });
     });
-  } catch {
+  } catch (error: unknown) {
     // Table missing / transient DB errors — still return a deterministic preview.
+    logger.warn(
+      { err: error, tenant: subdomain },
+      "Faculty employee-id preview fell back to defaults",
+    );
     return formatPreview(fallbackConfig);
   }
 }

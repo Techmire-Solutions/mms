@@ -104,6 +104,7 @@ export const facultyContract = c.router({
       200: z.object({
         nodes: z.array(z.record(z.string(), z.unknown())),
       }),
+      400: errorResponse,
       403: errorResponse,
       500: errorResponse,
     },

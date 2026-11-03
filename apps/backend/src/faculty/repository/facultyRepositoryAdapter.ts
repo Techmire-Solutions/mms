@@ -18,6 +18,7 @@ import {
   countFacultyForNextEmployeeId,
   findSoftDeletedFacultyByContactIdSql,
   findFacultyRegistrationConflictSql,
+  findFacultyIdsByEmployeeIdsSql,
   listActiveFacultyMissingEmployeeId,
   listFacultyLinkedContactIdsSql,
   listFacultyPage,
@@ -38,6 +39,8 @@ function createFacultyRepository(): FacultyRepository {
     listPage: (tenant, query) => listFacultyPage(tenant, query),
     findById: (tenant, id) => findFacultyById(tenant, id),
     findByIds: (tenant, ids) => findFacultyByIds(tenant, ids),
+    findIdsByEmployeeIds: (tenant, employeeIds) =>
+      findFacultyIdsByEmployeeIdsSql(tenant, employeeIds),
     findSoftDeletedByContactId: (tenant, contactId) =>
       findSoftDeletedFacultyByContactIdSql(tenant, contactId),
     save: (tenant, member, options) => saveFaculty(tenant, member as Faculty, options),
@@ -51,7 +54,8 @@ function createFacultyRepository(): FacultyRepository {
     countNextEmployeeId: (tenant, options) => countFacultyForNextEmployeeId(tenant, options),
     listActiveMissingEmployeeId: (tenant) => listActiveFacultyMissingEmployeeId(tenant),
     findRegistrationConflict: (tenant, input) => findFacultyRegistrationConflictSql(tenant, input),
-    bulkUpdateStatusSql: (tenant, ids, status) => bulkUpdateFacultyStatusSql(tenant, ids, status),
+    bulkUpdateStatusSql: (tenant, ids, status, updatedBy) =>
+      bulkUpdateFacultyStatusSql(tenant, ids, status, updatedBy),
     bulkUpdateSpecializationSql: (tenant, ids, specialization) =>
       bulkUpdateFacultySpecializationSql(tenant, ids, specialization),
     countSubordinates: (tenant, supervisorId) => countSubordinates(tenant, supervisorId),
