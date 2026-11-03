@@ -88,41 +88,47 @@ export function useStudentFormActionHandlers({
   const handleSave = async (options?: { keepOpen?: boolean }): Promise<boolean> => {
     if (savingRef.current) return false;
     savingRef.current = true;
-    const draftForSave = resolveStudentGrForSave(
-      student,
-      studentDraft,
-      nextGrNumber,
-      autoGenerateId,
-    );
-    const success = await runStudentSaveFlow({
-      studentDraft: draftForSave,
-      student,
-      linkedContact,
-      linkedGenderRaw: linkedContact?.gender?.trim() || "",
-      validationContext: {
-        settings,
-        enabledTabs,
-        requiredTabs: new Set(settings.requiredTabs || []),
-        fields: (settings.fields ?? {}) as Record<string, FieldDefinition[]>,
-        language,
-      },
-      blueprintVersion: settings.version,
-      formInstanceId,
-      t,
-      onSave,
-      onClose,
-      keepOpen: options?.keepOpen,
-      onBaselineReset,
-      setValidationErrors,
-      setSaving: (value: boolean) => {
-        savingRef.current = value;
-        setSaving(value);
-      },
-      setPendingSaveData,
-      setTypedDuplicateReason,
-      setDuplicateConfirmOpen,
-    });
-    return success;
+    try {
+      const draftForSave = resolveStudentGrForSave(
+        student,
+        studentDraft,
+        nextGrNumber,
+        autoGenerateId,
+      );
+      return await runStudentSaveFlow({
+        studentDraft: draftForSave,
+        student,
+        linkedContact,
+        linkedGenderRaw: linkedContact?.gender?.trim() || "",
+        validationContext: {
+          settings,
+          enabledTabs,
+          requiredTabs: new Set(settings.requiredTabs || []),
+          fields: (settings.fields ?? {}) as Record<string, FieldDefinition[]>,
+          language,
+        },
+        blueprintVersion: settings.version,
+        formInstanceId,
+        t,
+        onSave,
+        onClose,
+        keepOpen: options?.keepOpen,
+        onBaselineReset,
+        setValidationErrors,
+        setSaving: (value: boolean) => {
+          savingRef.current = value;
+          setSaving(value);
+        },
+        setPendingSaveData,
+        setTypedDuplicateReason,
+        setDuplicateConfirmOpen,
+      });
+    } finally {
+      // The flow clears saving on every exit path; this also releases the guard
+      // when a save is aborted before the flow's own finally runs.
+      savingRef.current = false;
+      setSaving(false);
+    }
   };
 
   const confirmDuplicateSave = () => {

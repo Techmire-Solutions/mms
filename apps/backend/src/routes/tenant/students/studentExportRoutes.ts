@@ -25,6 +25,9 @@ export const studentExportRoutes: FastifyPluginAsync = async (fastify) => {
     entityNoun: "student",
     exportAuditAction: "student.export",
     queueAuditAction: "student.export.queue",
+    // The queue path already writes the authoritative export audit row; a client-reportable
+    // `count`/`scope` endpoint would let any reader forge export volume (contacts C-09 parity).
+    registerExportAudit: false,
   });
 
   registerModuleCsvImportRoutes(fastify, {

@@ -58,6 +58,6 @@ export interface StudentsWorkTierProps {
   bulkStatusPending?: boolean;
   sortField: StudentsListContentSortField | null;
   sortDir: "asc" | "desc";
-  onServerSort: (field: StudentsListContentSortField) => void;
+  onServerSort: (field: StudentsListContentSortField | null) => void;
   workOverlays: StudentsWorkOverlayInteractions;
 }

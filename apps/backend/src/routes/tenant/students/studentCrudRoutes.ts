@@ -17,6 +17,7 @@ import {
   sanitizeStudentsForUser,
   withStudentTenantScope,
 } from "./studentRouteHelpers.js";
+import { validateStudentWrite } from "./studentWriteValidation.js";
 
 const s = initServer();
 
@@ -125,7 +126,10 @@ export const studentCrudRoutes: FastifyPluginAsync = async (fastify) => {
       try {
         const result = await withTenant(
           String(request.tenant?.id),
-          () => studentUseCases.createStudent(body, user),
+          async () => {
+            const validated = await validateStudentWrite(request, body);
+            return studentUseCases.createStudent(validated, user);
+          },
           { readOnly: false },
         );
         if (result.restored) {
@@ -175,15 +179,17 @@ export const studentCrudRoutes: FastifyPluginAsync = async (fastify) => {
       try {
         const updated = await withTenant(
           String(request.tenant?.id),
-          () =>
-            studentUseCases.updateStudentById(
+          async () => {
+            const validated = await validateStudentWrite(request, body);
+            return studentUseCases.updateStudentById(
               id,
               {
-                ...body,
+                ...validated,
                 id,
               },
               user,
-            ),
+            );
+          },
           { readOnly: false },
         );
         if (!updated) {

@@ -98,9 +98,10 @@ export function prepareStudentRecord(
     fatherName: fatherContactId ? undefined : raw.fatherName,
     motherName: motherContactId ? undefined : raw.motherName,
     guardianName: guardianContactId ? undefined : raw.guardianName,
-    grNumber: typeof grRaw === "string" && grRaw ? grRaw.toLowerCase() : grRaw,
-    studentId:
-      typeof studentIdRaw === "string" && studentIdRaw ? studentIdRaw.toLowerCase() : studentIdRaw,
+    // GR/Student-ID casing is preserved: templates may carry literal case (`GR{yy}{seq}`), and
+    // uniqueness is already enforced case-insensitively by the `lower(btrim(...))` indexes.
+    grNumber: grRaw,
+    studentId: studentIdRaw,
   };
   return normalizeStoredStudent(stripStudentClientSoftDeleteFields(withId) as StudentRecord);
 }
@@ -121,6 +122,23 @@ export class StudentRestoreConflictError extends Error {
     super(message);
     this.name = "StudentRestoreConflictError";
     this.field = field;
+  }
+}
+
+/**
+ * Raised when a create reuses the id of an existing active student.
+ *
+ * Students persist through an upsert keyed on `(workspace_subdomain, id)`, so accepting the id
+ * would silently overwrite that row. Routes map this to a 409 conflict on the `id` field.
+ */
+export class StudentCreateIdConflictError extends Error {
+  readonly statusCode = 409;
+  readonly type = "conflict";
+  readonly field = "id";
+
+  constructor(message = "A student with this ID already exists") {
+    super(message);
+    this.name = "StudentCreateIdConflictError";
   }
 }
 

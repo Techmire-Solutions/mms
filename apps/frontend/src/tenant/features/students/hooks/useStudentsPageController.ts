@@ -120,7 +120,6 @@ export function useStudentsPageController() {
     viewingDeleted: directory.viewingDeleted,
     hasActiveFilters: directory.hasActiveFilters,
     selectedIds: directory.selectedIds,
-    logExportAudit: mutations.logExportAudit,
   });
 
   const tabPanelProps = useStudentsPageTabPanelProps(

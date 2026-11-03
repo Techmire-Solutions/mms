@@ -8,7 +8,7 @@ import {
   useStudentsContractRestore,
   useStudentsContractBulkRestore,
   useStudentsContractBulkStatus,
-  useStudentsContractLogExportAudit,
+  useStudentsContractBulkEnroll,
   useStudentsContractLogSetupAudit,
 } from "@/tenant/features/students/hooks/useStudentsQueries";
 
@@ -21,7 +21,6 @@ export function useStudentMutations() {
   const restoreStudentMutation = useStudentsContractRestore();
   const bulkRestoreStudentsMutation = useStudentsContractBulkRestore();
   const bulkUpdateStudentStatusMutation = useStudentsContractBulkStatus();
-  const logExportAuditMutation = useStudentsContractLogExportAudit();
   const logSetupAuditMutation = useStudentsContractLogSetupAudit();
 
   return {
@@ -32,11 +31,7 @@ export function useStudentMutations() {
     restoreStudent: restoreStudentMutation,
     bulkRestoreStudents: bulkRestoreStudentsMutation,
     bulkUpdateStudentStatus: bulkUpdateStudentStatusMutation,
-    logExportAudit: {
-      mutateAsync: (payload: { count: number; scope: "all" | "filtered" | "selection" }) =>
-        logExportAuditMutation.mutateAsync({ body: payload }),
-      isPending: logExportAuditMutation.isPending,
-    },
+    // Export audit is written server-side by the queue path; a client-supplied count is not truth.
     logSetupAudit: {
       mutateAsync: (payload: { area: "fields" | "preferences"; summary: string }) =>
         logSetupAuditMutation.mutateAsync({ body: payload }),
@@ -44,8 +39,6 @@ export function useStudentMutations() {
     },
   };
 }
-
-import { useStudentsContractBulkEnroll } from "@/tenant/features/students/hooks/useStudentsQueries";
 
 /** Atomic bulk session enrollment mutation for selected students. */
 export function useStudentsBulkEnrollMutation() {

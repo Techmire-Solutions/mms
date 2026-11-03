@@ -105,6 +105,16 @@ describe("studentNormalizeUseCases", () => {
       expect(parsed).not.toHaveProperty("fatherContactId");
       expect(parsed).not.toHaveProperty("guardianName");
     });
+
+    it("preserves GR and Student-ID casing from literal-case templates", () => {
+      const parsed = prepareStudentRecord({
+        name: "Aisha",
+        grNumber: "  GR26001 ",
+        studentId: " ST-9X ",
+      } as never);
+      expect(parsed.grNumber).toBe("GR26001");
+      expect(parsed.studentId).toBe("ST-9X");
+    });
   });
 
   describe("mergeStudentPatch", () => {

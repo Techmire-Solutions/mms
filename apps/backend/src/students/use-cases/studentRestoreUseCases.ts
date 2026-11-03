@@ -40,7 +40,9 @@ export async function restoreStudentById(
     await enableIncludeDeleted(activeDb());
     const existing = await repo.findById(tenant, id, { includeDeleted: true });
     if (!existing) return null;
-    if (!existing.deletedAt) return existing;
+    // An already-active student is not a restore. Returning null makes the route answer 404 and
+    // skip the restore audit/outbox row (contacts C-07 parity) instead of reporting a false restore.
+    if (!existing.deletedAt) return null;
 
     const conflict = await repo.findRegistrationConflict(tenant, {
       excludeId: id,
@@ -114,16 +116,19 @@ export async function bulkRestoreStudents(
   userId?: string,
   repo: StudentsRepository = studentsRepository,
 ): Promise<StudentBulkRestoreResult> {
+  // Dedupe first: a repeated id used to be counted twice (and, when it carried a contactId, the
+  // second pass was mis-reported as a contact conflict) while the SQL layer restored it once.
+  const uniqueIds = [...new Set(ids.map((id) => String(id).trim()).filter(Boolean))];
   const result = await runInTransaction(async () => {
     const tenant = getRequestTenant();
-    if (!tenant) return { succeeded: 0, failed: ids.length, conflicts: [] };
+    if (!tenant) return { succeeded: 0, failed: uniqueIds.length, conflicts: [] };
     await enableIncludeDeleted(activeDb());
     let succeeded = 0;
     let failed = 0;
     const conflicts: StudentBulkRestoreConflict[] = [];
     const toSave: Student[] = [];
 
-    const existingStudents = await repo.findByIds(tenant, ids, { includeDeleted: true });
+    const existingStudents = await repo.findByIds(tenant, uniqueIds, { includeDeleted: true });
     const existingMap = new Map(existingStudents.map((student) => [String(student.id), student]));
     const acceptedGrNumbers = new Set<string>();
     const acceptedContactIds = new Set<string>();
@@ -143,7 +148,7 @@ export async function bulkRestoreStudents(
     ]);
     const activeContactIds = new Set(activeContactsList.map(String));
 
-    for (const id of ids) {
+    for (const id of uniqueIds) {
       const existing = existingMap.get(String(id));
       if (!existing || !existing.deletedAt) {
         failed += 1;

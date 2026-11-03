@@ -12,6 +12,7 @@ import {
   DUPLICATE_ERROR_KEYS,
   type StudentValidationContext,
 } from "./studentFormValidation";
+import { isGrNumberConflict, studentFieldErrorsFromApi } from "./studentFormApiErrors";
 
 interface StudentSaveFlowInput {
   studentDraft: Partial<Student>;
@@ -45,8 +46,14 @@ function focusStudentValidationField(formInstanceId: string, fieldId: string): v
   scrollAndFocusFirstError(candidates, { behavior: "smooth", block: "center" });
 }
 
-function notifyStudentSaveFailed(t: TranslationFunction, err: unknown, scope: string): void {
-  const validationMessage = getApiValidationMessage(err);
+function notifyStudentSaveFailed(
+  t: TranslationFunction,
+  err: unknown,
+  scope: string,
+  fieldMessage?: string,
+): void {
+  // A field-level message is more actionable than the envelope message ("Invalid student").
+  const validationMessage = fieldMessage ?? getApiValidationMessage(err);
   notify.error(
     t("students.saveFailed"),
     validationMessage ? { description: validationMessage } : undefined,
@@ -55,26 +62,26 @@ function notifyStudentSaveFailed(t: TranslationFunction, err: unknown, scope: st
 }
 
 export async function runStudentSaveFlow(input: StudentSaveFlowInput): Promise<boolean> {
-  input.setValidationErrors([]);
-
-  const zodErrors = validateStudentDraft(input.studentDraft, {
-    ...input.validationContext,
-    linkedGenderRaw: input.linkedGenderRaw,
-    linkedDob: input.linkedContact?.dob || "",
-    linkedContact: input.linkedContact,
-  });
-  if (zodErrors) {
-    input.setValidationErrors(zodErrors);
-    const first = zodErrors[0];
-    if (first) {
-      focusStudentValidationField(input.formInstanceId, first.fieldId);
-    }
-    notify.error(input.t("common.formPleaseFixErrors"));
-    return false;
-  }
-
   input.setSaving(true);
   try {
+    input.setValidationErrors([]);
+
+    const zodErrors = validateStudentDraft(input.studentDraft, {
+      ...input.validationContext,
+      linkedGenderRaw: input.linkedGenderRaw,
+      linkedDob: input.linkedContact?.dob || "",
+      linkedContact: input.linkedContact,
+    });
+    if (zodErrors) {
+      input.setValidationErrors(zodErrors);
+      const first = zodErrors[0];
+      if (first) {
+        focusStudentValidationField(input.formInstanceId, first.fieldId);
+      }
+      notify.error(input.t("common.formPleaseFixErrors"));
+      return false;
+    }
+
     const duplicateReason = await checkStudentFormDuplicate({
       studentId: input.student?.id ? String(input.student.id) : undefined,
       contactId: String(input.studentDraft.contactId),
@@ -93,7 +100,6 @@ export async function runStudentSaveFlow(input: StudentSaveFlowInput): Promise<b
       ]);
       focusStudentValidationField(input.formInstanceId, "grNumber");
       notify.error(input.t(DUPLICATE_ERROR_KEYS.grNumber));
-      input.setSaving(false);
       return false;
     }
 
@@ -101,7 +107,6 @@ export async function runStudentSaveFlow(input: StudentSaveFlowInput): Promise<b
       input.setPendingSaveData(input.studentDraft);
       input.setTypedDuplicateReason(duplicateReason);
       input.setDuplicateConfirmOpen(true);
-      input.setSaving(false);
       return false;
     }
 
@@ -117,15 +122,7 @@ export async function runStudentSaveFlow(input: StudentSaveFlowInput): Promise<b
     }
     return true;
   } catch (err: unknown) {
-    const validationMessage = getApiValidationMessage(err);
-    const errText = String(err instanceof Error ? err.message : err || "").toLowerCase();
-    const isGrConflict =
-      errText.includes("gr") ||
-      errText.includes("grnumber") ||
-      errText.includes("duplicate_gr") ||
-      (typeof validationMessage === "string" && validationMessage.toLowerCase().includes("gr"));
-
-    if (isGrConflict) {
+    if (isGrNumberConflict(err)) {
       input.setValidationErrors([
         {
           fieldId: "grNumber",
@@ -138,7 +135,14 @@ export async function runStudentSaveFlow(input: StudentSaveFlowInput): Promise<b
       return false;
     }
 
-    notifyStudentSaveFailed(input.t, err, "students.form_save");
+    const fieldErrors = studentFieldErrorsFromApi(err, input.validationContext.fields);
+    if (fieldErrors.length > 0) {
+      input.setValidationErrors(fieldErrors);
+      const first = fieldErrors[0];
+      if (first) focusStudentValidationField(input.formInstanceId, first.fieldId);
+    }
+
+    notifyStudentSaveFailed(input.t, err, "students.form_save", fieldErrors[0]?.message);
     return false;
   } finally {
     input.setSaving(false);

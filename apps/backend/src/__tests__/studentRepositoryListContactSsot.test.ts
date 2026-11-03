@@ -37,8 +37,12 @@ describe("studentRepositoryList Contacts SSOT", () => {
     expect(listSrc).toContain("fc.id = ${students.fatherContactId}");
   });
 
-  it("given registered_date is a date column (migration 0181), should cast it without a text regex guard", () => {
-    expect(listSrc).toContain("${students.registeredDate}::timestamptz");
+  it("compares the date column directly and never casts it to timestamptz", () => {
+    // `date::timestamptz` is not IMMUTABLE (it depends on the session TimeZone) and cannot be
+    // indexed; the "new" filter compares the date column with a text-free cast to `date`.
+    expect(listSrc).toContain("${students.registeredDate} >= (${since})::date");
+    expect(listSrc).toContain("${students.registeredDate} IS NULL AND ${students.createdAt} >=");
+    expect(listSrc).not.toContain("${students.registeredDate}::timestamptz");
     expect(listSrc).not.toContain("^[0-9]{4}-[0-9]{2}-[0-9]{2}");
   });
 });

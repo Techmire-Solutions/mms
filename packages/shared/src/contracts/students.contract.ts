@@ -40,6 +40,8 @@ export const studentContract = c.router({
     body: z.unknown(),
     responses: {
       200: z.object({ success: z.literal(true), student: studentRecordSchema }),
+      // Restore conflicts (GR, Student ID, contact) are answered as 400 validation errors.
+      400: errorResponse,
       403: errorResponse,
       404: errorResponse,
       500: errorResponse,
@@ -76,21 +78,12 @@ export const studentContract = c.router({
           }),
         ),
       }),
+      // Per-row restore conflicts are reported in `conflicts`; a whole-request conflict can 400.
+      400: errorResponse,
       403: errorResponse,
       500: errorResponse,
     },
     summary: "Bulk restore students",
-  },
-  exportAudit: {
-    method: "POST",
-    path: "/api/students/export-audit",
-    body: z.object({ count: z.number(), scope: z.enum(["all", "filtered", "selection"]) }),
-    responses: {
-      200: z.object({ success: z.literal(true) }),
-      403: errorResponse,
-      500: errorResponse,
-    },
-    summary: "Log export audit",
   },
   setupAudit: {
     method: "POST",
@@ -189,12 +182,9 @@ export const studentContract = c.router({
     },
     summary: "Get all lookups",
   },
-  getLookupKind: {
-    method: "GET",
-    path: "/api/students/lookups/:kind",
-    responses: { 200: z.unknown(), 403: errorResponse, 500: errorResponse },
-    summary: "Get a specific lookup kind",
-  },
+  // `GET /api/students/lookups/:kind` was declared here but never registered (only `GET /lookups`
+  // and `PUT /lookups/:kind` exist), so a generated client could call a route that 404s. Removed
+  // rather than registered: the bulk `GET /lookups` map is the only consumer surface.
   updateLookupKind: {
     method: "PUT",
     path: "/api/students/lookups/:kind",

@@ -34,15 +34,17 @@ export const studentOperationRoutes: FastifyPluginAsync = async (fastify) => {
         };
       }
       try {
+        // Per-student subject-scoped audit rows are written by the transition pipeline itself;
+        // a collection summary here would duplicate them under the bogus "students" subject.
         const result = await withTenant(
           String(request.tenant?.id),
-          () => studentUseCases.bulkUpdateStudentStatus(body.ids.map(String), body.status),
+          () =>
+            studentUseCases.bulkUpdateStudentStatus(
+              body.ids.map(String),
+              body.status,
+              request.user as User,
+            ),
           { readOnly: false },
-        );
-        await auditStudent(
-          user,
-          "student.bulk_status",
-          `Updated status to ${body.status} for ${result.succeeded} student(s); ${result.failed} failed`,
         );
         return { status: 200 as const, body: { success: true, ...result } };
       } catch (err: unknown) {

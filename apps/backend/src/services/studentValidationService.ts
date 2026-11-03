@@ -10,7 +10,6 @@ import {
 } from "@mms/shared";
 import { loadStudentsSettingsCombined } from "../students/use-cases/studentConfigService.js";
 import { loadContactsSummaryByIdsForTenant } from "./contactService.js";
-import { validateOrThrow } from "../lib/zodRequest.js";
 
 // Cache compiled schema by tenant and config version: `${tenant}:${configVersion}:${language}`
 const schemaCache = new Map<string, z.ZodTypeAny>();
@@ -62,21 +61,31 @@ async function hydrateStudentValidationSubject(
   };
 }
 
-/**
- * Validates one or more student records against the current tenant's dynamic field blueprint.
- *
- * @param tenant - The workspace subdomain/tenant.
- * @param student - The student record or array of student records to validate.
- * @param language - Optional language code for error message translation.
- * @throws {Error} if validation fails.
- */
-export async function validateStudentDynamic(
+/** A single rejected Setup field, shaped for the HTTP error contract. */
+export interface StudentValidationIssue {
+  field: string;
+  message: string;
+}
+
+function toFieldIssues(error: z.ZodError): StudentValidationIssue[] {
+  return error.issues.map((issue) => ({
+    field: issue.path.length > 0 ? issue.path.map(String).join(".") : "form",
+    message: issue.message,
+  }));
+}
+
+interface PreparedValidation {
+  schema: z.ZodTypeAny;
+  subject: unknown;
+}
+
+async function prepareValidation(
   tenant: string,
   student: unknown,
-  language = "en",
-): Promise<void> {
+  language: string,
+): Promise<PreparedValidation | null> {
   const settings = await loadStudentsSettingsCombined();
-  if (!settings) return;
+  if (!settings) return null;
 
   // Version Lock check (Rule 16.3 / CS-6)
   const submittedBlueprintId = getSubmittedBlueprintId(student);
@@ -120,9 +129,48 @@ export async function validateStudentDynamic(
     return cachedContactMap;
   };
 
-  const validationSubject = Array.isArray(student)
+  const subject = Array.isArray(student)
     ? await Promise.all(student.map((item) => hydrateStudentValidationSubject(item, getContactMap)))
     : await hydrateStudentValidationSubject(student, getContactMap);
 
-  validateOrThrow(schema, validationSubject);
+  return { schema, subject };
+}
+
+/**
+ * Collects per-field validation failures for a student payload against the tenant blueprint.
+ *
+ * Returns `[]` when the tenant has no field configuration yet (a fresh workspace has nothing to
+ * enforce) and throws only when the submitted blueprint version is stale. Writers use this to
+ * answer 400 with field-level errors instead of relying on browser validation.
+ */
+export async function collectStudentDynamicIssues(
+  tenant: string,
+  student: unknown,
+  language = "en",
+): Promise<StudentValidationIssue[]> {
+  const prepared = await prepareValidation(tenant, student, language);
+  if (!prepared) return [];
+  const results = Array.isArray(prepared.subject)
+    ? prepared.subject.map((item) => prepared.schema.safeParse(item))
+    : [prepared.schema.safeParse(prepared.subject)];
+  return results.flatMap((result) =>
+    result.success ? [] : toFieldIssues(result.error as z.ZodError),
+  );
+}
+
+/**
+ * Validates one or more student records against the current tenant's dynamic field blueprint.
+ *
+ * @param tenant - The workspace subdomain/tenant.
+ * @param student - The student record or array of student records to validate.
+ * @param language - Optional language code for error message translation.
+ * @throws {Error} if validation fails.
+ */
+export async function validateStudentDynamic(
+  tenant: string,
+  student: unknown,
+  language = "en",
+): Promise<void> {
+  const issues = await collectStudentDynamicIssues(tenant, student, language);
+  if (issues.length > 0) throw new Error(issues.map((issue) => issue.message).join("; "));
 }

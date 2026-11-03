@@ -55,7 +55,20 @@ export function mapStudentWriteHttpError(
       "type" in error && typeof (error as { type?: unknown }).type === "string"
         ? (error as { type: string }).type
         : "conflict";
-    return { status: 409, body: { type, message: error.message } };
+    // Conflict errors raised by the domain carry the offending field; the client keys its
+    // GR/Student-ID/contact messaging off `errors[0].field` instead of message text.
+    const field =
+      "field" in error && typeof (error as { field?: unknown }).field === "string"
+        ? (error as { field: string }).field
+        : undefined;
+    return {
+      status: 409,
+      body: {
+        type,
+        message: error.message,
+        ...(field ? { errors: [{ field, message: error.message }] } : {}),
+      },
+    };
   }
   if (
     error instanceof Error &&

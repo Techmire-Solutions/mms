@@ -67,7 +67,8 @@ function createStudentsRepository(): StudentsRepository {
       findSoftDeletedStudentByContactIdSql(tenant, contactId),
     listActiveMissingGrNumber: (tenant, options) =>
       listActiveStudentsMissingGrNumber(tenant, options),
-    bulkUpdateStatusSql: (tenant, ids, status) => bulkUpdateStudentsStatusSql(tenant, ids, status),
+    bulkUpdateStatusSql: (tenant, ids, status, updatedBy) =>
+      bulkUpdateStudentsStatusSql(tenant, ids, status, updatedBy),
     bulkSoftDelete: (tenant, ids, deletedBy, deletionReason) =>
       bulkSoftDeleteStudentsSql(tenant, ids, deletedBy, deletionReason),
     bulkRestore: (tenant, ids, userId) => bulkRestoreStudentsSql(tenant, ids, userId),

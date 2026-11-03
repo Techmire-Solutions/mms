@@ -6,14 +6,12 @@ import {
   type StudentExportColumn,
   type StudentsListQuery,
   type StudentsSettings,
+  type StudentsQuickFilter,
 } from "@mms/shared";
 import { startServerStudentsCsvExport } from "@/lib/backgroundJobs/startServerStudentsCsvExport";
 import { useModuleServerCsvExportActions } from "@/lib/backgroundJobs/useModuleServerCsvExportActions";
 import type { StudentsListContentSortField } from "@/tenant/features/students/lib/studentsListTypes";
-import type { StudentsQuickFilter } from "@mms/shared";
 import { useStudentsCrudNotify } from "@/tenant/features/students/hooks/useStudentsCrudNotify";
-
-type ExportAuditScope = "all" | "filtered" | "selection";
 
 interface UseStudentsExportActionsOptions {
   tableColumns: StudentExportColumn[];
@@ -29,12 +27,13 @@ interface UseStudentsExportActionsOptions {
   /** Whether any directory filter is applied — selects the audit scope. */
   hasActiveFilters: boolean;
   selectedIds: string[];
-  logExportAudit: {
-    mutateAsync: (payload: { count: number; scope: ExportAuditScope }) => Promise<unknown>;
-  };
 }
 
-/** Server CSV export actions for Students Work (Contacts-shaped shared factory). */
+/**
+ * Server CSV export actions for Students Work (Contacts-shaped shared factory).
+ *
+ * The export queue writes the authoritative audit row, so no client-reported audit call is wired.
+ */
 export function useStudentsExportActions({
   tableColumns,
   canExport,
@@ -47,7 +46,6 @@ export function useStudentsExportActions({
   viewingDeleted,
   hasActiveFilters,
   selectedIds,
-  logExportAudit,
 }: UseStudentsExportActionsOptions) {
   const { t, handleError } = useStudentsCrudNotify();
 
@@ -78,7 +76,6 @@ export function useStudentsExportActions({
     hasActiveFilters,
     buildFilteredQuery,
     startExport: startServerStudentsCsvExport,
-    logExportAudit,
     onError,
   });
 }
