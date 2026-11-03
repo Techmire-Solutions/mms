@@ -48,6 +48,7 @@ export function SimpleTransactionAmountInput({
       <Field
         id={`${prefix}-amount`}
         label={t("accounting.journal.dashboard.wizard.amount")}
+        required
         error={errorMessage}
       >
         <div className="relative">

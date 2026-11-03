@@ -40,7 +40,7 @@ export function SimpleTransactionAccountLegs({
 
   return (
     <>
-      <Field id={leg1.id} label={leg1.label}>
+      <Field id={leg1.id} label={leg1.label} required>
         <FormSelectWithQuickCreate
           id={leg1.id}
           name={leg1.field}
@@ -61,7 +61,7 @@ export function SimpleTransactionAccountLegs({
           </p>
         )}
       </Field>
-      <Field id={leg2.id} label={leg2.label}>
+      <Field id={leg2.id} label={leg2.label} required>
         <FormSelectWithQuickCreate
           id={leg2.id}
           name={leg2.field}

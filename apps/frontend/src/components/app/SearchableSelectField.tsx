@@ -2,6 +2,7 @@ import { useId } from "react";
 import { FORM_LABEL } from "../ui/formStyles";
 import { FormSelect, type FormSelectProps } from "./FormSelect";
 import { SearchBar } from "./SearchBar";
+import { RequiredMark } from "./FormField";
 import { Button } from "../ui/button";
 
 export interface SearchableSelectFieldProps extends Pick<
@@ -46,7 +47,7 @@ export function SearchableSelectField({
     <div className="space-y-1.5" aria-busy={isLoading}>
       <label htmlFor={selectId} className={FORM_LABEL}>
         {label}
-        {selectProps.required ? " *" : ""}
+        {selectProps.required && <RequiredMark />}
       </label>
       {!selectProps.disabled && (
         <SearchBar

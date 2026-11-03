@@ -26,7 +26,7 @@ export function QuestionSourceInput({
   const { t } = useTranslation();
   return (
     <div key={field.id} className={field.type === "textarea" ? "sm:col-span-2" : ""}>
-      <Field id={inputId} label={`${label}${required ? " *" : ""}`} required={required}>
+      <Field id={inputId} label={label} required={required}>
         {field.type === "textarea" ? (
           <Textarea
             id={inputId}

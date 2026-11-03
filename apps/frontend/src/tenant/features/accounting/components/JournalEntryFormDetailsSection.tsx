@@ -100,6 +100,7 @@ export function JournalEntryFormDetailsSection({
           <Field
             id="journal-entry-description"
             label={t("accounting.journal.form.narrationLabel")}
+            required
             error={errors.description}
             errorId="je-description-error"
           >
