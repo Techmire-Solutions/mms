@@ -139,27 +139,16 @@ export function ResizableTableHead({
     >
       {children}
       {onResize ? (
-        <button
-          type="button"
+        // eslint-disable-next-line jsx-a11y/no-noninteractive-element-interactions, jsx-a11y/click-events-have-key-events
+        <span
+          role="separator"
+          aria-orientation="vertical"
           aria-label={t("table.resizeColumn")}
           title={t("table.resizeColumn")}
           onPointerDown={handlePointerDown}
           onClick={(event) => event.stopPropagation()}
           onDoubleClick={handleDoubleClick}
-          onKeyDown={(event) => {
-            if (event.key === "ArrowLeft" || event.key === "ArrowRight") {
-              event.preventDefault();
-              event.stopPropagation();
-              const delta = (event.key === "ArrowRight" ? 1 : -1) * (isRtl ? -10 : 10);
-              const currentW =
-                resolvedWidth ?? thRef.current?.getBoundingClientRect().width ?? minWidth;
-              const nextW = clampModuleColumnWidth(
-                Math.min(maxWidth, Math.max(minWidth, currentW + delta)),
-              );
-              onResize(columnKey, nextW);
-            }
-          }}
-          className="absolute inset-y-0 end-0 z-elevated flex w-11 min-w-11 cursor-col-resize select-none items-stretch justify-end border-none bg-transparent p-0 after:absolute after:inset-y-1 after:end-0 after:w-px after:bg-border/70 hover:after:bg-primary/60 focus-visible:outline-none focus-visible:after:bg-primary"
+          className="absolute inset-y-0 end-0 z-elevated flex w-11 min-w-11 cursor-col-resize select-none items-stretch justify-end after:absolute after:inset-y-1 after:end-0 after:w-px after:bg-border/70 hover:after:bg-primary/60"
         />
       ) : null}
     </th>
