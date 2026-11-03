@@ -9,6 +9,7 @@ import { isQueryFlagTrue, type User, type Student, studentCrudContract } from "@
 import { studentUseCases } from "../../../students/use-cases/studentUseCases.js";
 import { initServer, type RouterImplementation } from "@ts-rest/fastify";
 import type { ContractRouteArgs, ContractRouteResponse } from "../../../lib/contractRouterTypes.js";
+import { handleContractError } from "../../../lib/contractError.js";
 import { replyValidationError } from "../../../lib/zodRequest.js";
 import {
   auditStudent,
@@ -102,11 +103,11 @@ export const studentCrudRoutes: FastifyPluginAsync = async (fastify) => {
         }
         const response = await sanitizeOneStudentForUser(item as Student, user);
         return { status: 200 as const, body: { student: response } };
-      } catch {
-        return {
-          status: 500 as const,
+      } catch (error: unknown) {
+        return handleContractError(request, error, {
+          status: 500,
           body: { type: "database_error", message: "Failed to load student" },
-        };
+        });
       }
     },
 
@@ -204,10 +205,10 @@ export const studentCrudRoutes: FastifyPluginAsync = async (fastify) => {
       } catch (error: unknown) {
         const mapped = mapStudentWriteHttpError(error);
         if (mapped) return { status: mapped.status as 400 | 403 | 409, body: mapped.body };
-        return {
-          status: 500 as const,
+        return handleContractError(request, error, {
+          status: 500,
           body: { type: "database_error", message: "Failed to update student" },
-        };
+        });
       }
     },
 
@@ -251,10 +252,10 @@ export const studentCrudRoutes: FastifyPluginAsync = async (fastify) => {
         if (mapped && mapped.status === 409) {
           return { status: 409 as const, body: mapped.body };
         }
-        return {
-          status: 500 as const,
+        return handleContractError(request, error, {
+          status: 500,
           body: { type: "database_error", message: "Failed to delete student" },
-        };
+        });
       }
     },
   } as unknown as RouterImplementation<typeof studentCrudContract>);

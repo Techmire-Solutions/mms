@@ -1,5 +1,6 @@
 import { describe, expect, it, vi, beforeEach } from "vitest";
 import { listStudentsPage } from "../db/repositories/studentRepositoryListPage.js";
+import { generateCsvStreamChunks } from "../lib/csvExportStreamFactory.js";
 
 const mocks = vi.hoisted(() => ({
   hydrate: vi.fn(async (_tx: unknown, _tenant: string, rows: unknown[]) => rows),
@@ -97,6 +98,50 @@ describe("listStudentsPage", () => {
 
     expect(page.total).toBe(0);
     expect(mocks.captured).toHaveLength(1);
+  });
+
+  it("derives hasMore from a full page when skipCount suppresses the count", async () => {
+    // C1: the export pager walks with skipCount and no cursor, so `total` is 0 and a
+    // count-relative hasMore is always false — the export stopped after one page.
+    mocks.selectResults = [[{ id: "s-1" }, { id: "s-2" }]];
+    const full = await listStudentsPage("demo", { page: 1, limit: 2, skipCount: true });
+    expect(full.total).toBe(0);
+    expect(full.hasMore).toBe(true);
+
+    mocks.selectResults = [[{ id: "s-5" }]];
+    const last = await listStudentsPage("demo", { page: 3, limit: 2, skipCount: true });
+    expect(last.hasMore).toBe(false);
+  });
+
+  it("exports every page of a count-free walk", async () => {
+    // C1 regression: mirrors listPageExportRegression for modules that use runListPage.
+    mocks.selectResults = [
+      [{ id: "s-1" }, { id: "s-2" }],
+      [{ id: "s-3" }, { id: "s-4" }],
+      [{ id: "s-5" }],
+    ];
+
+    const chunks = generateCsvStreamChunks({
+      filename: "students.csv",
+      chunkSize: 2,
+      columns: [{ label: "ID" }],
+      loadByIds: async () => [],
+      loadPage: async (page, limit) => {
+        const result = await listStudentsPage("demo", { page, limit, skipCount: true });
+        return {
+          rows: result.students as Array<{ id: string }>,
+          hasMore: result.hasMore,
+        };
+      },
+      yieldDataChunks: function* (rows) {
+        for (const row of rows) yield `\n${row.id}`;
+      },
+    });
+
+    let csv = "";
+    for await (const chunk of chunks) csv += chunk;
+
+    expect(csv.split("\n").slice(1)).toEqual(["s-1", "s-2", "s-3", "s-4", "s-5"]);
   });
 
   it("uses an id-only order and no offset for keyset paging, emitting a cursor", async () => {

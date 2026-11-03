@@ -4,7 +4,6 @@ import type { useMessageComposerState } from "@/hooks/useMessageComposerState";
 import { StudentsListViews } from "@/tenant/features/students/components/StudentsListViews";
 import { useStudentListController } from "@/tenant/features/students/hooks/useStudentListController";
 import type { StudentsListContentSortField } from "@/tenant/features/students/lib/studentsListTypes";
-import { useSessionsCollection } from "@/tenant/hooks/collections/sessions";
 import { studentStatusBadgeConfig } from "@/lib/students/studentStatusUi";
 
 export interface StudentsListContentProps {
@@ -59,7 +58,6 @@ export function StudentsListContent({
   canWriteMessaging,
   onDeleteTargetChange,
 }: StudentsListContentProps): React.JSX.Element {
-  const sessions = useSessionsCollection();
   const list = useStudentListController({
     students,
     onSelectOne,
@@ -83,7 +81,6 @@ export function StudentsListContent({
     <div className="space-y-4">
       <StudentsListViews
         paginatedStudents={list.paginatedStudents}
-        sessions={sessions}
         viewMode={viewMode}
         selectedIds={selectedIds}
         allSelected={list.allSelected}

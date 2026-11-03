@@ -1,6 +1,6 @@
 import { describe, expect, it, vi } from "vitest";
 import type { FastifyInstance, RouteOptions } from "fastify";
-import { ACCESS_CONTROLLED_MODULE_IDS } from "@mms/shared";
+import { ACCESS_CONTROLLED_MODULE_IDS, type ModuleAction } from "@mms/shared";
 
 const collected: RouteOptions[] = [];
 
@@ -313,6 +313,22 @@ function preHandlersByRoute(tree: string): Map<string, string> {
   return out;
 }
 
+/**
+ * Routes whose required module action differs from the HTTP-method default.
+ *
+ * The coverage assertion below only proved that *an* action was stamped, so a destructive or
+ * setup-mutating route could silently resolve to `write`/`read` and the suite stayed green.
+ * Extended per module as its route table gains stricter actions.
+ */
+const EXPECTED_MODULE_ROUTE_ACTIONS: Readonly<Record<string, ModuleAction>> = {
+  "DELETE /api/students/:id": "delete",
+  "POST /api/students/:id/restore": "delete",
+  "POST /api/students/bulk-delete": "delete",
+  "POST /api/students/bulk-restore": "delete",
+  "POST /api/students/migrate-gr-numbers": "setupWrite",
+  "POST /api/students/duplicate-check": "read",
+};
+
 describe("module access coverage", () => {
   it("classifies every route and gates every module-owned route", async () => {
     const app = await buildApp();
@@ -322,6 +338,8 @@ describe("module access coverage", () => {
 
     const unclassified: string[] = [];
     const ungated: string[] = [];
+    const wrongAction: string[] = [];
+    const seenActions = new Set<string>();
     const modulesSeen = new Set<string>();
 
     for (const route of collected) {
@@ -336,6 +354,13 @@ describe("module access coverage", () => {
           if (access?.moduleId !== expected || !access.action || !guarded) {
             ungated.push(`${key} → stamped ${access?.moduleId ?? "none"}, guard ${guarded}`);
           }
+          const expectedAction = EXPECTED_MODULE_ROUTE_ACTIONS[key];
+          if (expectedAction) {
+            seenActions.add(key);
+            if (access?.action !== expectedAction) {
+              wrongAction.push(`${key} → ${access?.action ?? "none"}, expected ${expectedAction}`);
+            }
+          }
         } else {
           const entry = NON_MODULE_ROUTES.find((c) => matchesPrefix(url, c.prefix));
           if (access || !entry || !entry.paths.includes(url)) {
@@ -349,11 +374,17 @@ describe("module access coverage", () => {
     const liveNonModuleUrls = new Set(collected.map((r) => r.url).filter((url) => !moduleFor(url)));
     const listedPaths = NON_MODULE_ROUTES.flatMap((c) => c.paths).filter((p) => p !== "*");
     const stale = [...new Set(listedPaths)].filter((p) => !liveNonModuleUrls.has(p));
+    // A pinned action for a route that no longer exists would silently stop protecting anything.
+    const staleActions = Object.keys(EXPECTED_MODULE_ROUTE_ACTIONS).filter(
+      (key) => !seenActions.has(key),
+    );
 
     expect(collected.length).toBeGreaterThan(500);
     expect(ungated).toEqual([]);
     expect(unclassified).toEqual([]);
+    expect(wrongAction).toEqual([]);
     expect(stale).toEqual([]);
+    expect(staleActions).toEqual([]);
     expect([...modulesSeen].sort()).toEqual([...ACCESS_CONTROLLED_MODULE_IDS].sort());
   }, 60_000);
 });

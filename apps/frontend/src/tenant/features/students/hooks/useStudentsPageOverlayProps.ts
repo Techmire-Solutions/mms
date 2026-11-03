@@ -69,8 +69,10 @@ export function useStudentsPageOverlayProps({
     onBulkDeleteOpenChange: overlays.setConfirmBulkDeleteOpen,
     selectedCount: selectedIds.length,
     onConfirmBulkDelete: async (reason) => {
-      await workActions.handleBulkDelete(selectedIds, reason);
-      clearSelection();
+      const deleted = await workActions.handleBulkDelete(selectedIds, reason);
+      // `false` keeps the dialog open (ConfirmAlertDialog honours it) and the selection retryable.
+      if (deleted) clearSelection();
+      return deleted;
     },
     deleteTarget: overlays.deleteTarget,
     onDeleteTargetOpenChange: (open) => {
@@ -84,8 +86,10 @@ export function useStudentsPageOverlayProps({
     bulkRestoreOpen: overlays.confirmBulkRestoreOpen,
     onBulkRestoreOpenChange: overlays.setConfirmBulkRestoreOpen,
     onConfirmBulkRestore: async () => {
-      await workActions.handleBulkRestore(selectedIds);
-      clearSelection();
+      const restored = await workActions.handleBulkRestore(selectedIds);
+      // `false` keeps the dialog open (ConfirmAlertDialog honours it) and the selection retryable.
+      if (restored) clearSelection();
+      return restored;
     },
     idCardStudents: overlays.idCardStudents,
     onCloseIdCards: overlays.closeIdCards,

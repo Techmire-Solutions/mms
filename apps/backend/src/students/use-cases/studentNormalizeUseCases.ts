@@ -3,6 +3,7 @@ import {
   type StudentRecord,
   normalizeStoredStudent,
   stripStudentClientSoftDeleteFields,
+  stripStudentServerOwnedAuditFields,
 } from "@mms/shared";
 import { isUniqueViolation } from "../../lib/pgErrors.js";
 
@@ -68,8 +69,9 @@ export function mergeStudentPatch(
 }
 
 /**
- * Parses + normalizes a write payload: strips client soft-delete metadata and
- * contact-owned identity keys. Accepts pre-validated StudentRecord.
+ * Parses + normalizes a write payload: strips client soft-delete metadata,
+ * server-owned audit attribution/timestamps, and contact-owned identity keys.
+ * Accepts pre-validated StudentRecord.
  */
 export function prepareStudentRecord(
   record: StudentRecord | Record<string, unknown>,
@@ -103,7 +105,15 @@ export function prepareStudentRecord(
     grNumber: grRaw,
     studentId: studentIdRaw,
   };
-  return normalizeStoredStudent(stripStudentClientSoftDeleteFields(withId) as StudentRecord);
+  // The read mapper emits a nested `customFields` map alongside the flattened keys. Accept it on
+  // the wire (round-trips) but never persist it directly — the flattened keys are the write SSOT,
+  // and writing the map would let a client bypass the strict allowlist.
+  delete (withId as Record<string, unknown>).customFields;
+  return normalizeStoredStudent(
+    stripStudentServerOwnedAuditFields(
+      stripStudentClientSoftDeleteFields(withId) as StudentRecord,
+    ) as StudentRecord,
+  );
 }
 
 /**
@@ -121,6 +131,26 @@ export class StudentRestoreConflictError extends Error {
   ) {
     super(message);
     this.name = "StudentRestoreConflictError";
+    this.field = field;
+  }
+}
+
+/**
+ * Raised when the *database* rejects a restore on a unique index — i.e. a concurrent writer claimed
+ * the GR / Student-ID / contact between the pre-check and the write. §6.10 requires 409 for that
+ * race; only the pre-validated conflicts are 400 (`StudentRestoreConflictError`).
+ */
+export class StudentRestoreRaceError extends Error {
+  readonly statusCode = 409;
+  readonly type = "conflict";
+  readonly field: "grNumber" | "contact" | "studentId";
+
+  constructor(
+    field: "grNumber" | "contact" | "studentId" = "grNumber",
+    message = "A concurrent change claimed this student's unique identifier. Reload and try again.",
+  ) {
+    super(message);
+    this.name = "StudentRestoreRaceError";
     this.field = field;
   }
 }

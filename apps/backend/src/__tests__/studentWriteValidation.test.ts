@@ -3,7 +3,7 @@ import type { FastifyRequest } from "fastify";
 
 const mockLoadSettings = vi.fn();
 const mockCollectIssues = vi.fn();
-const mockGetRequestTenant = vi.fn(() => "demo");
+const mockGetRequestTenant = vi.fn((): string | undefined => "demo");
 
 vi.mock("../students/use-cases/studentConfigService.js", () => ({
   loadStudentsSettingsCombined: () => mockLoadSettings(),
@@ -114,6 +114,47 @@ describe("validateStudentWrite", () => {
 
     await validateStudentWrite(fakeRequest("ur-PK,ur;q=0.9"), { contactId: "c-1" });
 
-    expect(mockCollectIssues).toHaveBeenCalledWith("demo", expect.anything(), "ur");
+    expect(mockCollectIssues).toHaveBeenCalledWith(
+      "demo",
+      expect.anything(),
+      "ur",
+      expect.anything(),
+    );
+  });
+
+  it("loads the composed settings once and reuses them for the blueprint check", async () => {
+    // m4: validateStudentWrite loaded the settings, then collectStudentDynamicIssues loaded them
+    // again — two field-config + preferences reads on every student write.
+    const settings = settingsWithFields(["grNumber"]);
+    mockLoadSettings.mockResolvedValue(settings);
+
+    await validateStudentWrite(fakeRequest(), { contactId: "c-1" });
+
+    expect(mockLoadSettings).toHaveBeenCalledTimes(1);
+    expect(mockCollectIssues).toHaveBeenCalledWith("demo", expect.anything(), "en", settings);
+  });
+
+  it("accepts the nested customFields map so a hydrated record can round-trip", async () => {
+    // m5: GET emits `customFields`; the strict allowlist rejected it, so GET -> PUT answered 400.
+    mockLoadSettings.mockResolvedValue(settingsWithFields(["grNumber"]));
+
+    const parsed = await validateStudentWrite(fakeRequest(), {
+      contactId: "c-1",
+      grNumber: "GR-1",
+      customFields: { nickname: "Aisha" },
+    });
+
+    expect(parsed).toMatchObject({ contactId: "c-1", grNumber: "GR-1" });
+    expect((parsed as Record<string, unknown>).customFields).toEqual({ nickname: "Aisha" });
+  });
+
+  it("fails closed instead of skipping blueprint validation without a tenant", async () => {
+    mockLoadSettings.mockResolvedValue(settingsWithFields(["grNumber"]));
+    mockGetRequestTenant.mockReturnValue(undefined);
+    const request = { headers: {}, tenant: undefined } as unknown as FastifyRequest;
+
+    await expect(validateStudentWrite(request, { contactId: "c-1" })).rejects.toBeInstanceOf(
+      StudentWriteValidationError,
+    );
   });
 });

@@ -39,10 +39,17 @@ export function useStudentsDirectoryFilters({
     }
   }
 
-  const [prevViewingDeleted, setPrevViewingDeleted] = useState(viewingDeleted);
-  if (prevViewingDeleted !== viewingDeleted) {
-    setPrevViewingDeleted(viewingDeleted);
-    setSelectedIds([]);
+  // Bulk delete/status/export/ID-card bind to what the directory shows, so a selection must not
+  // outlive the filter/search/sort/page/trash view that produced it — the actions would hit rows
+  // the user can no longer see (contacts R4-06 parity). Adjusted during render, not in an effect.
+  // `filterKey` already carries the trash flag, so this subsumes the previous trash-only reset.
+  const selectionScopeKey = `${filterKey}|${listPage}`;
+  const [prevSelectionScopeKey, setPrevSelectionScopeKey] = useState(selectionScopeKey);
+  if (prevSelectionScopeKey !== selectionScopeKey) {
+    setPrevSelectionScopeKey(selectionScopeKey);
+    if (selectedIds.length > 0) {
+      setSelectedIds([]);
+    }
   }
 
   const applyDrillDown = useCallback(

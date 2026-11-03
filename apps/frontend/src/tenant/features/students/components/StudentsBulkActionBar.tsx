@@ -21,13 +21,12 @@ export interface StudentsBulkActionBarProps {
   canExport?: boolean;
   bulkActions?: readonly string[];
   selectedTargets: StudentsSelectionTargets;
-  studentStatusOptions: readonly string[];
   statusBadgeConfig: Record<string, StatusBadgeConfigItem>;
   onWhatsApp: (targets: Student[]) => void;
   onSms: (targets: Student[]) => void;
   onEmail: (targets: Student[]) => void;
   onBulkStatusChange?: (status: string) => void;
-  onBulkEnroll?: (payload: StudentsBulkEnrollPlacement) => Promise<void> | void;
+  onBulkEnroll?: (payload: StudentsBulkEnrollPlacement) => Promise<void | boolean> | void;
   isBulkEnrollPending?: boolean;
   onBulkPrintIdCards?: () => void;
   onBulkExport?: () => void;
@@ -48,7 +47,6 @@ export function StudentsBulkActionBar({
   canExport = false,
   bulkActions = STUDENTS_MODULE_MANIFEST.work.bulkActions,
   selectedTargets,
-  studentStatusOptions: _studentStatusOptions,
   statusBadgeConfig,
   onWhatsApp,
   onSms,

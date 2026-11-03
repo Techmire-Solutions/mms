@@ -5,6 +5,7 @@ const mockRegisterRunner = vi.fn();
 const mockUpsertContact = vi.fn();
 const mockFindContacts = vi.fn();
 const mockCreateStudent = vi.fn();
+const mockBroadcastCollection = vi.fn();
 
 vi.mock("../lib/registerModuleCsvImportJobRunner.js", () => ({
   registerModuleCsvImportJobRunner: (...args: unknown[]) => mockRegisterRunner(...args),
@@ -25,6 +26,10 @@ vi.mock("../contacts/use-cases/contactLoadUseCases.js", () => ({
 
 vi.mock("../students/use-cases/studentWriteUseCases.js", () => ({
   createStudent: (...args: unknown[]) => mockCreateStudent(...args),
+}));
+
+vi.mock("../lib/livePush.js", () => ({
+  broadcastCollection: (...args: unknown[]) => mockBroadcastCollection(...args),
 }));
 
 import {
@@ -76,7 +81,7 @@ describe("students CSV import", () => {
     );
     expect(mockCreateStudent).toHaveBeenCalledWith(
       expect.objectContaining({ contactId: "c-1", grNumber: "GR-1" }),
-      { actorId: "u-1" },
+      { actorId: "u-1", deferBroadcast: true },
     );
   });
 
@@ -88,7 +93,7 @@ describe("students CSV import", () => {
     expect(mockUpsertContact).not.toHaveBeenCalled();
     expect(mockCreateStudent).toHaveBeenCalledWith(
       expect.objectContaining({ contactId: "c-existing" }),
-      { actorId: "u-1" },
+      { actorId: "u-1", deferBroadcast: true },
     );
   });
 
@@ -101,6 +106,39 @@ describe("students CSV import", () => {
     expect(result.imported).toBe(1);
     expect(result.errors).toEqual([{ row: 1, reason: "Name is required" }]);
     expect(mockCreateStudent).toHaveBeenCalledTimes(1);
+  });
+
+  it("numbers row errors against the original file across chunk boundaries", async () => {
+    // m3: the pipeline persists one chunk per 200 rows; numbering locally restarted at 1, so a
+    // 201st-row failure was reported as row 1.
+    const rows = Array.from({ length: 201 }, (_, index) => ({ name: `Student ${index + 1}` }));
+    rows[200] = { name: "" } as unknown as { name: string };
+
+    const result = await studentsImportService.runImport(rows, context());
+
+    expect(result.imported).toBe(200);
+    expect(result.errors).toEqual([{ row: 201, reason: "Name is required" }]);
+  });
+
+  it("defers per-row live pushes and broadcasts once per chunk", async () => {
+    // 2a: a 200-row batch used to publish one collection event per imported row.
+    const rows = Array.from({ length: 201 }, (_, index) => ({ name: `Student ${index + 1}` }));
+
+    const result = await studentsImportService.runImport(rows, context());
+
+    expect(result.imported).toBe(201);
+    expect(mockCreateStudent).toHaveBeenCalledWith(
+      expect.anything(),
+      expect.objectContaining({ deferBroadcast: true }),
+    );
+    // Two chunks (200 + 1) → two broadcasts, not 201.
+    expect(mockBroadcastCollection).toHaveBeenCalledTimes(2);
+  });
+
+  it("offsets row errors by the chunk position passed in the context", async () => {
+    const result = await importStudentRows([{ name: "" }], { ...context(), offset: 200 });
+
+    expect(result.errors).toEqual([{ row: 201, reason: "Name is required" }]);
   });
 
   it("rejects an unknown status before touching the database", async () => {

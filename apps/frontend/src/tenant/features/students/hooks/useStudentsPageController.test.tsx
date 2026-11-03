@@ -15,9 +15,11 @@ const mocks = vi.hoisted(() => ({
   buildStudentsWorkSource: vi.fn(() => ({ builtWorkSource: true })),
   defaultExportColumns: vi.fn(() => [{ id: "name", label: "Name" }]),
   exportActions: vi.fn(),
+  workQueryInput: undefined as { enabled: boolean } | undefined,
 }));
 
 let viewMode: "table" | "card" = "table";
+let effectiveTab = "work";
 
 vi.mock("@/hooks/useWorkDirectoryViewMode", () => ({
   useWorkDirectoryViewMode: () => ({ viewMode, setViewMode: mocks.setViewMode }),
@@ -31,7 +33,7 @@ vi.mock("@/tenant/hooks/useModuleTierPageNav", () => ({
     canEditSetup: true,
     visibleTabs: ["work", "reports", "setup"],
     setActiveTab: mocks.setActiveTab,
-    effectiveTab: "work",
+    effectiveTab,
   }),
 }));
 
@@ -116,11 +118,14 @@ vi.mock("@/tenant/features/students/hooks/useStudentsWorkTierSource", () => ({
 }));
 
 vi.mock("@/tenant/features/students/hooks/useStudentsPageWorkQuery", () => ({
-  useStudentsPageWorkQuery: () => ({
-    workPageQuery: { data: null },
-    workStudents: [],
-    shownCount: 0,
-  }),
+  useStudentsPageWorkQuery: (input: { enabled: boolean }) => {
+    mocks.workQueryInput = input;
+    return {
+      workPageQuery: { data: null },
+      workStudents: [],
+      shownCount: 0,
+    };
+  },
 }));
 
 vi.mock("@/tenant/features/students/hooks/useStudentsSelectionTargets", () => ({
@@ -223,5 +228,17 @@ describe("useStudentsPageController", () => {
         canExport: true,
       }),
     );
+  });
+
+  it("keeps the filtered count query enabled off the Work tab", () => {
+    // m9: the command centre's "Filtered" KPI renders on every tier, but gating the list query on
+    // `effectiveTab === "work"` made it read 0 whenever the page opened on Reports/Setup.
+    effectiveTab = "reports";
+    try {
+      renderController();
+      expect(mocks.workQueryInput?.enabled).toBe(true);
+    } finally {
+      effectiveTab = "work";
+    }
   });
 });

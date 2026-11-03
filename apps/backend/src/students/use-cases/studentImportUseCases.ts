@@ -8,6 +8,7 @@ import {
   type ImportRowError,
 } from "@mms/shared";
 import { runWithTenant } from "../../lib/tenantContext.js";
+import { broadcastCollection } from "../../lib/livePush.js";
 import { withTenant } from "../../db/tenant-context.js";
 import { upsertContact } from "../../contacts/use-cases/contactWriteUseCases.js";
 import { findContactsMatchingUniqueValues } from "../../contacts/use-cases/contactLoadUseCases.js";
@@ -101,7 +102,9 @@ export const importStudentRows: ImportBatchFn<StudentImportRow> = async (rows, c
 
   for (let index = 0; index < rows.length; index += 1) {
     const row = rows[index]!;
-    const rowNumber = index + 1;
+    // `ctx.offset` is the chunk's position in the original file: one persist call per 200 rows
+    // would otherwise report every later chunk's errors as rows 1..200.
+    const rowNumber = (ctx.offset ?? 0) + index + 1;
     const name = (row.name ?? "").trim();
     if (!name) {
       errors.push({ row: rowNumber, reason: "Name is required" });
@@ -123,6 +126,8 @@ export const importStudentRows: ImportBatchFn<StudentImportRow> = async (rows, c
             const contactId = await resolveImportContact(row);
             await createStudent(buildImportPayload(row, contactId), {
               actorId: ctx.userId,
+              // One live-push per chunk (below) instead of one per imported row.
+              deferBroadcast: true,
             });
           },
           { readOnly: false },
@@ -136,6 +141,8 @@ export const importStudentRows: ImportBatchFn<StudentImportRow> = async (rows, c
       });
     }
   }
+
+  if (imported > 0) await broadcastCollection("students");
 
   return { imported, errors: errors.length > 0 ? errors : undefined };
 };

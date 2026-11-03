@@ -67,6 +67,7 @@ vi.mock("../students/use-cases/studentPreferencesService.js", () => ({
 
 import { createStudentsUseCases } from "../students/use-cases/studentUseCases.js";
 import { StudentRestoreConflictError } from "../students/use-cases/studentNormalizeUseCases.js";
+import { restoreCascadedEnrollmentsForStudents } from "../db/repositories/studentEnrollmentCascade.js";
 
 function fakeStudent(id: string, overrides: Partial<Student> = {}): Student {
   return {
@@ -337,6 +338,94 @@ describe("createStudentsUseCases (DI composition root)", () => {
     expect(result.failed).toBe(0);
     expect(result.conflicts).toEqual([]);
     expect(repo.bulkSave).toHaveBeenCalledWith("demo", [expect.objectContaining({ id: "a" })]);
+  });
+
+  it("bulkRestoreStudents bounds the active-contact probe to the restored candidates", async () => {
+    // m11: the pre-check used to load every active student's contact id for the workspace.
+    const { repo, store } = createFakeRepo();
+    store.set("a", fakeStudent("a", { deletedAt: "2026-07-27T00:00:00.000Z" }));
+    const useCases = createStudentsUseCases(repo);
+
+    await useCases.bulkRestoreStudents(["a"]);
+
+    expect(repo.listLinkedContactIds).toHaveBeenCalledWith("demo", undefined, ["c-a"]);
+  });
+
+  it("bulkRestoreStudents reports the database's restored count and one shared restoredAt", async () => {
+    vi.useFakeTimers();
+    vi.setSystemTime(new Date("2026-08-01T00:00:00.000Z"));
+    try {
+      const { repo, store } = createFakeRepo();
+      store.set("a", fakeStudent("a", { deletedAt: "2026-07-27T00:00:00.000Z" }));
+      // Simulate a concurrent restore: the pre-count saw a deletable row, the UPDATE restored none.
+      Object.assign(repo as unknown as Record<string, unknown>, {
+        bulkRestore: vi.fn(async () => ({ succeeded: 0, failed: 1 })),
+      });
+      const useCases = createStudentsUseCases(repo);
+
+      const result = await useCases.bulkRestoreStudents(["a"]);
+
+      expect(result.succeeded).toBe(0);
+      expect(result.failed).toBe(1);
+    } finally {
+      vi.useRealTimers();
+    }
+  });
+
+  it("bulkRestoreStudents stamps the rows and the enrollment cascade with one restoredAt", async () => {
+    vi.useFakeTimers();
+    vi.setSystemTime(new Date("2026-08-01T00:00:00.000Z"));
+    try {
+      const { repo, store } = createFakeRepo();
+      store.set("a", fakeStudent("a", { deletedAt: "2026-07-27T00:00:00.000Z" }));
+      // Advance the clock across the write: a post-write `new Date()` would now diverge from the
+      // timestamp already stamped on the restored row.
+      vi.mocked(repo.bulkSave).mockImplementationOnce(async (_tenant, students) => {
+        for (const student of students) store.set(String(student.id), student as Student);
+        vi.setSystemTime(new Date("2026-08-01T00:00:05.000Z"));
+      });
+      const useCases = createStudentsUseCases(repo);
+
+      await useCases.bulkRestoreStudents(["a"]);
+
+      const enrollmentArgs = vi.mocked(restoreCascadedEnrollmentsForStudents).mock.calls[0]!;
+      const enrollmentAt = (enrollmentArgs[4] as Date).toISOString();
+      expect(store.get("a")?.restoredAt).toBe(enrollmentAt);
+    } finally {
+      vi.useRealTimers();
+    }
+  });
+
+  it("restoreStudentById maps a database unique-index race to a 409 conflict", async () => {
+    // m6: a concurrent writer that claims the GR between the pre-check and the write is a conflict
+    // (mms-data-layer §6.10), not a 400 validation error.
+    const { repo, store } = createFakeRepo();
+    store.set("a", fakeStudent("a", { deletedAt: "2026-07-27T00:00:00.000Z" }));
+    vi.mocked(repo.save).mockRejectedValueOnce(
+      Object.assign(
+        new Error(
+          'duplicate key value violates unique constraint "students_workspace_gr_number_active_uidx"',
+        ),
+        { code: "23505" },
+      ),
+    );
+    const useCases = createStudentsUseCases(repo);
+
+    await expect(useCases.restoreStudentById("a")).rejects.toMatchObject({
+      statusCode: 409,
+      type: "conflict",
+    });
+  });
+
+  it("restoreStudentById keeps a pre-validated conflict as a 400 validation error", async () => {
+    const { repo, store } = createFakeRepo();
+    store.set("a", fakeStudent("a", { deletedAt: "2026-07-27T00:00:00.000Z", grNumber: "GR-1" }));
+    vi.mocked(repo.findRegistrationConflict).mockResolvedValue("grNumber");
+    const useCases = createStudentsUseCases(repo);
+
+    await expect(useCases.restoreStudentById("a")).rejects.toBeInstanceOf(
+      StudentRestoreConflictError,
+    );
   });
 
   it("restoreStudentById clears soft-delete fields on the stored record", async () => {
@@ -723,7 +812,7 @@ describe("createStudentsUseCases (DI composition root)", () => {
     const countNextGrNumberMock = vi.mocked(repo.countNextGrNumber);
     countNextGrNumberMock.mockImplementation(async (_tenant, input) => {
       void input;
-      // countNextGrNumber is called once per persisted row; return a growing count.
+      // countNextGrNumber is called once per generated GR; return a growing count.
       return countNextGrNumberMock.mock.calls.length - 1;
     });
     const useCases = createStudentsUseCases(repo);
@@ -735,6 +824,45 @@ describe("createStudentsUseCases (DI composition root)", () => {
     expect(typeof store.get("m2")?.grNumber).toBe("string");
     expect(store.get("m2")?.grNumber).not.toBe(store.get("m1")?.grNumber);
     expect(mockBroadcastCollection).toHaveBeenCalledWith("students");
+  });
+
+  it("migrateStudentsMissingGrNumbers writes the chunk in one statement", async () => {
+    // 2b: the backfill used to run one transaction per row (up to 100), so a failure could leave
+    // the batch half-applied.
+    const { repo } = createFakeRepo();
+    vi.mocked(repo.listActiveMissingGrNumber).mockResolvedValue([
+      fakeStudent("m1", { registeredDate: "2026-01-05" }),
+      fakeStudent("m2", { registeredDate: "2026-01-06" }),
+    ]);
+    const useCases = createStudentsUseCases(repo);
+
+    const result = await useCases.migrateStudentsMissingGrNumbers();
+
+    expect(result).toEqual({ updated: 2, hasMore: false });
+    // One extra candidate is requested so `hasMore` can be exact.
+    expect(repo.listActiveMissingGrNumber).toHaveBeenCalledWith("demo", { limit: 101 });
+    expect(repo.bulkSave).toHaveBeenCalledTimes(1);
+    expect(repo.save).not.toHaveBeenCalled();
+    const [, written] = vi.mocked(repo.bulkSave).mock.calls[0]!;
+    expect(written).toHaveLength(2);
+  });
+
+  it("migrateStudentsMissingGrNumbers reports hasMore exactly at the chunk boundary", async () => {
+    const { repo } = createFakeRepo();
+    let generated = 0;
+    vi.mocked(repo.countNextGrNumber).mockImplementation(async () => generated++);
+    vi.mocked(repo.listActiveMissingGrNumber).mockResolvedValue(
+      Array.from({ length: 101 }, (_, index) =>
+        fakeStudent(`m${index}`, { registeredDate: "2026-01-05" }),
+      ),
+    );
+    const useCases = createStudentsUseCases(repo);
+
+    const result = await useCases.migrateStudentsMissingGrNumbers();
+
+    expect(result).toEqual({ updated: 100, hasMore: true });
+    const [, written] = vi.mocked(repo.bulkSave).mock.calls[0]!;
+    expect(written).toHaveLength(100);
   });
 
   it("migrateStudentsMissingGrNumbers is a no-op when no rows are missing", async () => {

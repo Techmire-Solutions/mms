@@ -3,6 +3,7 @@ import {
   generateNextGrNumberSql,
   generateNextGrNumberBatchSql,
   previewNextGrNumberSql,
+  resolveGrYear,
 } from "../db/repositories/studentRepositorySequence.js";
 
 function createFakeSequenceTx(initialSeq: number, initialYear: number) {
@@ -110,5 +111,40 @@ describe("studentSequenceGenerator", () => {
     expect(gr).toBe("GR-0011/2026");
     expect(getStored()).toEqual({ storedSeq: 10, storedYear: 2026 });
     expect(fakeTx.update).not.toHaveBeenCalled();
+  });
+
+  it("derives the GR year from the ISO text, never by parsing it as a Date", () => {
+    // m10: `new Date("2026-01-01").getFullYear()` is 2025 west of UTC (date-only strings parse as
+    // UTC midnight), which rolled the {year} token and skipped the annual restart. The runner's
+    // own timezone cannot be switched inside a worker, so pin the invariant instead: a valid ISO
+    // date must resolve without touching Date at all.
+    const dateSpy = vi.spyOn(globalThis, "Date");
+    try {
+      expect(resolveGrYear("2026-01-01")).toBe(2026);
+      expect(resolveGrYear(" 2026-12-31 ")).toBe(2026);
+      expect(dateSpy).not.toHaveBeenCalled();
+    } finally {
+      dateSpy.mockRestore();
+    }
+  });
+
+  it("rolls the sequence over on 1 January and keeps the ISO year in the template", async () => {
+    const { fakeTx, getStored } = createFakeSequenceTx(50, 2025);
+
+    const gr = await generateNextGrNumberSql(
+      "demo",
+      {
+        regDate: "2026-01-01",
+        settings: {
+          grNumberTemplate: "{year}-{seq}",
+          grNumberDigits: 3,
+          grNumberRestartAnnually: true,
+        },
+      },
+      fakeTx as unknown as Parameters<typeof generateNextGrNumberSql>[2],
+    );
+
+    expect(gr).toBe("2026-001");
+    expect(getStored()).toEqual({ storedSeq: 1, storedYear: 2026 });
   });
 });

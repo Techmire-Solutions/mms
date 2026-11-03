@@ -4,6 +4,7 @@ import {
   normalizeStudentModulePreferences,
   todayISO,
   STUDENT_STATUS_VALUES,
+  type Student,
   type StudentStatus,
   type StudentDuplicateCheckInput,
   type StudentGrNumberSettings,
@@ -192,8 +193,14 @@ export async function migrateStudentsMissingGrNumbers(
         : studentsRepository;
 
   const settings = normalizeStudentModulePreferences(await loadStudentModulePreferences());
-  const missing = await repo.listActiveMissingGrNumber(tenant, { limit: MIGRATE_GR_CHUNK });
-  if (missing.length === 0) return { updated: 0, hasMore: false };
+  // One extra candidate makes `hasMore` exact instead of forcing a second, no-op round trip when
+  // exactly one chunk is left.
+  const candidates = await repo.listActiveMissingGrNumber(tenant, {
+    limit: MIGRATE_GR_CHUNK + 1,
+  });
+  if (candidates.length === 0) return { updated: 0, hasMore: false };
+  const missing = candidates.slice(0, MIGRATE_GR_CHUNK);
+  const hasMore = candidates.length > MIGRATE_GR_CHUNK;
 
   const fallbackDate = todayISO();
   const prefs = {
@@ -202,20 +209,21 @@ export async function migrateStudentsMissingGrNumbers(
     grNumberRestartAnnually: settings.grNumberRestartAnnually,
   };
   const batchGrs = await computeNextGrNumberBatchForDate(fallbackDate, missing.length, prefs, repo);
-  let updated = 0;
-  for (let i = 0; i < missing.length; i++) {
-    const row = missing[i]!;
-    const grNumber = batchGrs[i] ?? (await computeNextGrNumberForDate(fallbackDate, prefs, repo));
-    try {
-      await repo.save(tenant, { ...row, grNumber, updatedBy: userId });
-    } catch (error: unknown) {
-      throwGrUniqueConflict(error);
-    }
-    updated += 1;
+  const updates: Student[] = missing.map((row, index) => {
+    const grNumber = batchGrs[index];
+    if (!grNumber) throw new Error("GR batch generation returned fewer numbers than rows");
+    return { ...row, grNumber, updatedBy: userId };
+  });
+  try {
+    // One statement for the whole chunk: the previous loop ran up to 100 separate transactions
+    // and could leave a partially-migrated batch behind.
+    await repo.bulkSave(tenant, updates);
+  } catch (error: unknown) {
+    throwGrUniqueConflict(error);
   }
 
   await broadcastCollection("students");
-  return { updated, hasMore: missing.length >= MIGRATE_GR_CHUNK };
+  return { updated: updates.length, hasMore };
 }
 
 /** Students-module entry point; enrollment rows are created/cancelled by the Enrollments domain. */

@@ -6,13 +6,13 @@ export interface StudentsPageConfirmDialogsProps {
   bulkDeleteOpen: boolean;
   onBulkDeleteOpenChange: (open: boolean) => void;
   selectedCount: number;
-  onConfirmBulkDelete: (reason?: string) => void | Promise<void>;
+  onConfirmBulkDelete: (reason?: string) => void | Promise<void | boolean>;
   deleteTarget: StudentsDeleteTarget | null;
   onDeleteTargetOpenChange: (open: boolean) => void;
   onConfirmSingleDelete: (reason?: string) => void | Promise<void>;
   bulkRestoreOpen: boolean;
   onBulkRestoreOpenChange: (open: boolean) => void;
-  onConfirmBulkRestore: () => void | Promise<void>;
+  onConfirmBulkRestore: () => void | Promise<void | boolean>;
 }
 
 /** Delete/restore confirm dialogs for Students page (Contacts-shaped thin adapter). */

@@ -52,6 +52,10 @@ const studentWriteBaseObjectSchema = z
     updatedAt: z.string().optional(),
     createdBy: z.string().optional(),
     updatedBy: z.string().optional(),
+    // The read mapper emits both the flattened custom keys and this nested map, so rejecting it
+    // made GET -> PUT fail with `Unknown field "customFields"`. Accepted for round-trips and then
+    // dropped during normalization — the flattened keys stay the only write surface.
+    customFields: z.record(z.string(), z.unknown()).optional(),
   })
   .strict();
 

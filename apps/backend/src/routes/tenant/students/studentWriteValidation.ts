@@ -109,10 +109,15 @@ export async function validateStudentWrite(
   }
 
   const tenant = getRequestTenant() ?? String(request.tenant?.id ?? "");
-  if (settings && tenant) {
+  if (!tenant) {
+    // Fail closed: skipping the dynamic blueprint here would let a tenant-less caller persist a
+    // record that violates the workspace configuration.
+    throw new StudentWriteValidationError([{ field: "form", message: "Tenant context required" }]);
+  }
+  if (settings) {
     let issues: Array<{ field: string; message: string }>;
     try {
-      issues = await collectStudentDynamicIssues(tenant, data, requestLanguage(request));
+      issues = await collectStudentDynamicIssues(tenant, data, requestLanguage(request), settings);
     } catch (error: unknown) {
       // The blueprint changed between the two loads; treat it like any other stale-form conflict.
       throw new StudentBlueprintConflictError(error instanceof Error ? error.message : undefined);

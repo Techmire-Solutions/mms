@@ -82,7 +82,8 @@ export function useStudentsCrudActions({
   );
 
   const handleBulkDelete = useCallback(
-    async (studentIds: string[], deletionReason?: string): Promise<void> => {
+    /** Resolves `false` on failure so the confirm dialog stays open and the selection survives. */
+    async (studentIds: string[], deletionReason?: string): Promise<boolean> => {
       try {
         const result = await bulkDeleteStudents.mutateAsync({
           body: { ids: studentIds.map(String), deletionReason },
@@ -94,15 +95,18 @@ export function useStudentsCrudActions({
           "students.deleteSuccess",
           "students.bulkDeleteSuccess",
         );
+        return true;
       } catch (error) {
         handleError(error, "students.bulk_delete", "students.deleteFailed");
+        return false;
       }
     },
     [bulkDeleteStudents, notifyBulkResult, handleError],
   );
 
   const handleBulkRestore = useCallback(
-    async (studentIds: string[]): Promise<void> => {
+    /** Resolves `false` on failure so the confirm dialog stays open and the selection survives. */
+    async (studentIds: string[]): Promise<boolean> => {
       try {
         const result = await bulkRestoreStudents.mutateAsync({
           body: { ids: studentIds.map(String) },
@@ -114,8 +118,10 @@ export function useStudentsCrudActions({
           "students.restoreSuccess",
           "students.bulkRestoreSuccess",
         );
+        return true;
       } catch (error) {
         handleError(error, "students.bulk_restore", "students.restoreFailed");
+        return false;
       }
     },
     [bulkRestoreStudents, notifyBulkResult, handleError],
@@ -143,7 +149,8 @@ export function useStudentsCrudActions({
   );
 
   const handleBulkEnroll = useCallback(
-    async (studentIds: string[], payload: StudentsBulkEnrollPlacement): Promise<void> => {
+    /** Resolves `false` on failure so the enroll modal keeps its placement inputs open. */
+    async (studentIds: string[], payload: StudentsBulkEnrollPlacement): Promise<boolean> => {
       try {
         const result = await bulkEnrollMutation.mutateAsync({ studentIds, ...payload });
         assertContractOk(result, "Failed to enroll students");
@@ -155,9 +162,10 @@ export function useStudentsCrudActions({
           "students.bulkEnrollSuccess",
           "students.bulkEnrollSuccess",
         );
+        return true;
       } catch (error) {
         handleError(error, "students.bulk_enroll", "students.saveFailed");
-        throw error;
+        return false;
       }
     },
     [bulkEnrollMutation, notifyBulkResult, handleError],

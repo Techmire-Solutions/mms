@@ -7,6 +7,7 @@ import {
   resolveStudentGuardianLinks,
   type Contact,
   type FieldDefinition,
+  type StudentsSettings,
 } from "@mms/shared";
 import { loadStudentsSettingsCombined } from "../students/use-cases/studentConfigService.js";
 import { loadContactsSummaryByIdsForTenant } from "./contactService.js";
@@ -83,8 +84,11 @@ async function prepareValidation(
   tenant: string,
   student: unknown,
   language: string,
+  preloadedSettings?: StudentsSettings | null,
 ): Promise<PreparedValidation | null> {
-  const settings = await loadStudentsSettingsCombined();
+  // The route boundary already loaded the composed settings for its allowlist check; reuse them
+  // instead of paying the field-config + preferences reads twice per write.
+  const settings = preloadedSettings ?? (await loadStudentsSettingsCombined());
   if (!settings) return null;
 
   // Version Lock check (Rule 16.3 / CS-6)
@@ -147,8 +151,9 @@ export async function collectStudentDynamicIssues(
   tenant: string,
   student: unknown,
   language = "en",
+  preloadedSettings?: StudentsSettings | null,
 ): Promise<StudentValidationIssue[]> {
-  const prepared = await prepareValidation(tenant, student, language);
+  const prepared = await prepareValidation(tenant, student, language, preloadedSettings);
   if (!prepared) return [];
   const results = Array.isArray(prepared.subject)
     ? prepared.subject.map((item) => prepared.schema.safeParse(item))

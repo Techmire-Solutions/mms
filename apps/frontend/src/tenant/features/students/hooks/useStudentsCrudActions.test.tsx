@@ -245,6 +245,52 @@ describe("useStudentsCrudActions", () => {
     );
   });
 
+  it("resolves false for failed bulk delete/restore so the dialog stays open and selection survives", async () => {
+    // m8: the confirm dialog closes (and the selection clears) when the handler resolves; only a
+    // `false` result makes ConfirmAlertDialog keep the dialog open for a retry.
+    bulkDeleteStudents.mutateAsync.mockResolvedValue(
+      response(500, { type: "database_error", message: "nope" }),
+    );
+    bulkRestoreStudents.mutateAsync.mockResolvedValue(
+      response(500, { type: "database_error", message: "nope" }),
+    );
+    mocks.bulkEnrollMutate.mockResolvedValue(
+      response(500, { type: "database_error", message: "nope" }),
+    );
+    renderHook();
+
+    await act(async () => {
+      await expect(actions.handleBulkDelete(["std-1"])).resolves.toBe(false);
+      await expect(actions.handleBulkRestore(["std-1"])).resolves.toBe(false);
+      await expect(
+        actions.handleBulkEnroll(["std-1"], {
+          sessionId: "ses-1",
+          classId: "cls-1",
+          mode: "add",
+        }),
+      ).resolves.toBe(false);
+    });
+  });
+
+  it("resolves true for successful bulk delete/restore/enroll", async () => {
+    bulkDeleteStudents.mutateAsync.mockResolvedValue(response(200, { succeeded: 1, failed: 0 }));
+    bulkRestoreStudents.mutateAsync.mockResolvedValue(response(200, { succeeded: 1, failed: 0 }));
+    mocks.bulkEnrollMutate.mockResolvedValue(response(200, { succeeded: 1, failed: 0 }));
+    renderHook();
+
+    await act(async () => {
+      await expect(actions.handleBulkDelete(["std-1"])).resolves.toBe(true);
+      await expect(actions.handleBulkRestore(["std-1"])).resolves.toBe(true);
+      await expect(
+        actions.handleBulkEnroll(["std-1"], {
+          sessionId: "ses-1",
+          classId: "cls-1",
+          mode: "add",
+        }),
+      ).resolves.toBe(true);
+    });
+  });
+
   it("reports a successful bulk enrollment", async () => {
     mocks.bulkEnrollMutate.mockResolvedValue(response(200, { succeeded: 2, failed: 0 }));
     renderHook();

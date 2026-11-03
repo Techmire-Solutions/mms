@@ -10,6 +10,19 @@ export interface GenerateGrNumberInput {
 }
 
 /**
+ * Calendar year of a `YYYY-MM-DD` registration date.
+ *
+ * Parsed from the ISO text, not `new Date(iso).getFullYear()`: a date-only string is UTC midnight,
+ * so a server west of UTC read 1 January as the previous year — rolling the `{year}` token and
+ * defeating the annual-restart gate. Only an absent/malformed date falls back to the server year.
+ */
+export function resolveGrYear(regDate: string | null | undefined): number {
+  const prefix = typeof regDate === "string" ? regDate.trim().slice(0, 4) : "";
+  const year = /^\d{4}$/.test(prefix) ? Number(prefix) : Number.NaN;
+  return Number.isFinite(year) ? year : new Date().getFullYear();
+}
+
+/**
  * Concurrency-safe atomic batch GR number sequence generator.
  * Uses SELECT ... FOR UPDATE on student_sequence_config with annual rollover,
  * reserving `count` sequential numbers in a single atomic database transaction.
@@ -22,8 +35,7 @@ export async function generateNextGrNumberBatchSql(
 ): Promise<string[]> {
   if (count <= 0) return [];
   const subdomain = tenant.trim().toLowerCase();
-  const parsedYear = input.regDate ? new Date(input.regDate).getFullYear() : NaN;
-  const year = Number.isFinite(parsedYear) ? parsedYear : new Date().getFullYear();
+  const year = resolveGrYear(input.regDate);
   const template = input.settings.grNumberTemplate || "{seq}-{year}";
   const digits = input.settings.grNumberDigits || 4;
   const restartAnnually = input.settings.grNumberRestartAnnually !== false;
@@ -126,8 +138,7 @@ export async function previewNextGrNumberSql(
   txClient?: TenantTransaction,
 ): Promise<string> {
   const subdomain = tenant.trim().toLowerCase();
-  const parsedYear = input.regDate ? new Date(input.regDate).getFullYear() : NaN;
-  const year = Number.isFinite(parsedYear) ? parsedYear : new Date().getFullYear();
+  const year = resolveGrYear(input.regDate);
   const template = input.settings.grNumberTemplate || "{seq}-{year}";
   const digits = input.settings.grNumberDigits || 4;
   const restartAnnually = input.settings.grNumberRestartAnnually !== false;

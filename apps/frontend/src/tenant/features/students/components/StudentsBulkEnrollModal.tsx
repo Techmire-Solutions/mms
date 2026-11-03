@@ -12,7 +12,8 @@ export interface StudentsBulkEnrollModalProps {
   open: boolean;
   onClose: () => void;
   selectedCount: number;
-  onConfirm: (payload: StudentsBulkEnrollPlacement) => Promise<void> | void;
+  /** May resolve `false` on failure — the modal then keeps the placement inputs for a retry. */
+  onConfirm: (payload: StudentsBulkEnrollPlacement) => void | Promise<void | boolean>;
   isPending?: boolean;
 }
 
@@ -43,11 +44,13 @@ export function StudentsBulkEnrollModal({
 
   const handleSave = async () => {
     if (!ready) return;
-    await onConfirm(
+    const saved = await onConfirm(
       mode === "remove"
         ? { mode, sessionId }
         : { mode, sessionId, classId, ...(sectionId ? { sectionId } : {}) },
     );
+    // A failed enroll must not discard the chosen session/class: close only on success.
+    if (saved === false) return;
     setSessionId("");
     setClassId("");
     setSectionId("");
@@ -66,6 +69,7 @@ export function StudentsBulkEnrollModal({
       onSave={handleSave}
       saving={isPending}
       saveDisabled={isPending || !ready}
+      isDirty={Boolean(sessionId || classId || sectionId || mode !== "add")}
     >
       <div className="space-y-5 text-start">
         <p className="m-0 text-sm text-muted-foreground">

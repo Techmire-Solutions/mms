@@ -51,8 +51,8 @@ function createStudentsRepository(): StudentsRepository {
     aggregateCommandMetrics: (tenant, periodDays) =>
       aggregateStudentsCommandMetrics(tenant, periodDays),
     aggregateWidgetQueries: (tenant, queries) => aggregateStudentsWidgetQueries(tenant, queries),
-    listLinkedContactIds: (tenant, excludeStudentId) =>
-      listStudentLinkedContactIdsSql(tenant, excludeStudentId),
+    listLinkedContactIds: (tenant, excludeStudentId, onlyContactIds) =>
+      listStudentLinkedContactIdsSql(tenant, excludeStudentId, onlyContactIds),
     countNextGrNumber: (tenant, input) =>
       countStudentsForNextGrNumber(tenant, input.regDate, input.restartAnnually),
     previewNextGrNumber: (tenant, input) => previewNextGrNumberSql(tenant, input),

@@ -146,6 +146,45 @@ describe("useStudentsDirectoryFilters", () => {
     expect(filters.selectedIds).toEqual([]);
   });
 
+  it("clears the selection when the filter/search/sort view changes", () => {
+    // M3: bulk delete/status/export bind to the selection, so it must not outlive the view that
+    // produced it (contacts R4-06 parity) — otherwise the actions hit rows no longer on screen.
+    vi.useFakeTimers();
+    renderFilters();
+
+    act(() => filters.handleSelectOne("s-1"));
+    act(() => filters.toggleStudentStatus("graduated"));
+    expect(filters.studentFilterStatus).toEqual(["graduated"]);
+    expect(filters.selectedIds).toEqual([]);
+
+    act(() => filters.handleSelectOne("s-2"));
+    act(() => filters.handleServerSort("name"));
+    expect(filters.selectedIds).toEqual([]);
+
+    act(() => filters.handleSelectOne("s-3"));
+    act(() => filters.setStudentSearch("ali"));
+    act(() => {
+      vi.advanceTimersByTime(400);
+    });
+    expect(filters.debouncedSearch).toBe("ali");
+    expect(filters.selectedIds).toEqual([]);
+
+    act(() => filters.handleSelectOne("s-4"));
+    act(() => filters.toggleViewingDeleted());
+    expect(filters.viewingDeleted).toBe(true);
+    expect(filters.selectedIds).toEqual([]);
+  });
+
+  it("clears the selection when the page changes", () => {
+    renderFilters();
+
+    act(() => filters.handleSelectOne("s-1"));
+    act(() => filters.setListPage(2));
+
+    expect(filters.listPage).toBe(2);
+    expect(filters.selectedIds).toEqual([]);
+  });
+
   it("applies a drill-down event by switching to Work and setting the status", () => {
     renderFilters();
 
