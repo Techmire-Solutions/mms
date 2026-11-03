@@ -70,7 +70,7 @@ export default defineConfig({
   workers: 1,
   /* Reporter to use. See https://playwright.dev/docs/test-reporters */
   reporter: process.env.CI
-    ? [["github"], ["list"], ["blob", { outputDir: "blob-report" }]]
+    ? [["list"], ["blob", { outputDir: "blob-report" }]]
     : [["html", { open: "never" }]],
   /* Shared settings for all the projects below. See https://playwright.dev/docs/api/class-testoptions. */
   use: {

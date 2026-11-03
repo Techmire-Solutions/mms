@@ -68,46 +68,46 @@ export const ModuleColumnCustomizerList = function ModuleColumnCustomizerList({
           {visibleColumns.map((col) => (
             <div
               key={col.key}
-              tabIndex={col.fixed ? undefined : 0}
+              role="presentation"
               draggable={!col.fixed}
-              aria-description={
-                col.fixed ? undefined : "Press Alt+ArrowUp or Alt+ArrowDown to reorder"
-              }
               onDragStart={(event) => !col.fixed && handleDragStart(event, col.key)}
               onDragOver={(event) => handleDragOver(event, col.key)}
               onDrop={(event) => handleDrop(event, col.key)}
               onDragEnd={clearDrag}
-              onKeyDown={(event) => {
-                if (col.fixed) return;
-                if (
-                  (event.key === "ArrowUp" || event.key === "Up") &&
-                  (event.altKey || event.metaKey)
-                ) {
-                  event.preventDefault();
-                  onMoveColumn?.(col.key, "up");
-                } else if (
-                  (event.key === "ArrowDown" || event.key === "Down") &&
-                  (event.altKey || event.metaKey)
-                ) {
-                  event.preventDefault();
-                  onMoveColumn?.(col.key, "down");
-                }
-              }}
               className={cn(
-                "flex items-center gap-2 px-2.5 py-1.5 rounded-lg border transition-all select-none border-transparent hover:bg-muted/60 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-primary",
+                "flex items-center gap-2 px-2.5 py-1.5 rounded-lg border transition-all select-none border-transparent hover:bg-muted/60 focus-within:ring-1 focus-within:ring-primary",
                 dragging === col.key && "opacity-40",
                 dragOver === col.key && "border-primary bg-primary/5",
               )}
             >
-              <GripVertical
-                className={cn(
-                  "w-3.5 h-3.5 flex-shrink-0",
-                  col.fixed
-                    ? "opacity-20"
-                    : "text-muted-foreground cursor-grab active:cursor-grabbing",
-                )}
-                aria-hidden="true"
-              />
+              {!col.fixed ? (
+                <button
+                  type="button"
+                  tabIndex={0}
+                  aria-label={`${col.label}: reorder`}
+                  title="Press Alt+ArrowUp or Alt+ArrowDown to reorder"
+                  onKeyDown={(event) => {
+                    if (
+                      (event.key === "ArrowUp" || event.key === "Up") &&
+                      (event.altKey || event.metaKey)
+                    ) {
+                      event.preventDefault();
+                      onMoveColumn?.(col.key, "up");
+                    } else if (
+                      (event.key === "ArrowDown" || event.key === "Down") &&
+                      (event.altKey || event.metaKey)
+                    ) {
+                      event.preventDefault();
+                      onMoveColumn?.(col.key, "down");
+                    }
+                  }}
+                  className="p-0 border-none bg-transparent text-muted-foreground hover:text-foreground cursor-grab active:cursor-grabbing focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-primary rounded"
+                >
+                  <GripVertical className="w-3.5 h-3.5 flex-shrink-0" aria-hidden="true" />
+                </button>
+              ) : (
+                <GripVertical className="w-3.5 h-3.5 flex-shrink-0 opacity-20" aria-hidden="true" />
+              )}
               <span className="flex-1 text-xs font-medium text-foreground text-start truncate">
                 {col.label}
               </span>

@@ -109,7 +109,6 @@ export function BrandColorImportModal({
             onChange={(e) => setImportRawText(e.target.value)}
             placeholder={t("theme.importPalettePlaceholder")}
             rows={4}
-            autoFocus
             className="font-mono text-xs"
           />
         </div>

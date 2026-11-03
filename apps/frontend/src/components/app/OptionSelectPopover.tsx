@@ -125,9 +125,16 @@ export function OptionSelectPopover({
                 key={option}
                 id={`${listboxId}-opt-${index}`}
                 role="option"
+                tabIndex={-1}
                 aria-selected={isSelected}
                 onMouseEnter={() => setHighlightedIndex(index)}
                 onClick={() => select(option)}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter" || e.key === " ") {
+                    e.preventDefault();
+                    select(option);
+                  }
+                }}
                 className={cn(
                   "flex min-h-11 items-center justify-between gap-2 px-3 py-2 text-sm cursor-pointer transition-colors",
                   isSelected

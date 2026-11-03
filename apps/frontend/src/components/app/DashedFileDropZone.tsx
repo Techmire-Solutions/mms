@@ -138,6 +138,7 @@ export function DashedFileDropZone({
   if (browseLabel) {
     return (
       <div
+        role="presentation"
         onDragOver={handleDragOver}
         onDragLeave={handleDragLeave}
         onDrop={handleDrop}
