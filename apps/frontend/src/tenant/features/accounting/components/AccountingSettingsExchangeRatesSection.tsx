@@ -17,6 +17,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { SETUP_SECTION_CARD_CLASS } from "@/components/ui/formStyles";
 import { useTranslation } from "@/hooks/useTranslation";
+import { FX_SETUP_ANCHORS } from "../lib/fxSetupReadiness";
 import { useExchangeRateDraft } from "@/tenant/features/accounting/hooks/useExchangeRateDraft";
 
 export interface AccountingSettingsExchangeRatesSectionProps {
@@ -82,6 +83,7 @@ export function AccountingSettingsExchangeRatesSection({
       title={t("accounting.settings.fx.rates.title")}
       icon={ArrowLeftRight}
       className={SETUP_SECTION_CARD_CLASS}
+      headingId={FX_SETUP_ANCHORS.rates}
     >
       <p className="m-0 mb-3 text-xs text-muted-foreground text-pretty">
         {t("accounting.settings.fx.rates.hint", { currency: functionalCurrency })}

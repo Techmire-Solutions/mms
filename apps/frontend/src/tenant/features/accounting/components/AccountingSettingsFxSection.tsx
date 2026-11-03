@@ -11,6 +11,8 @@ import { SETUP_SECTION_CARD_CLASS } from "@/components/ui/formStyles";
 import { useTranslation } from "@/hooks/useTranslation";
 import { useAccountingFxSettingsDraft } from "@/tenant/features/accounting/hooks/useAccountingFxSettingsDraft";
 import { AccountingSettingsExchangeabilitySection } from "./AccountingSettingsExchangeabilitySection";
+import { FxSetupGuide } from "./FxSetupGuide";
+import { FX_SETUP_ANCHORS } from "../lib/fxSetupReadiness";
 
 interface AccountingSettingsFxSectionProps {
   canEditSetup: boolean;
@@ -29,10 +31,12 @@ export function AccountingSettingsFxSection({
       title={t("accounting.settings.secFx")}
       icon={Globe2}
       className={SETUP_SECTION_CARD_CLASS}
+      headingId={FX_SETUP_ANCHORS.currencies}
     >
       <p className="m-0 mb-3 text-xs text-muted-foreground text-pretty">
         {t("accounting.settings.fx.hint")}
       </p>
+      <FxSetupGuide className="mb-4" />
 
       {fx.isError ? (
         <ErrorState

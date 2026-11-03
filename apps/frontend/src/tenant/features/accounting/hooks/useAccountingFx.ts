@@ -1,4 +1,4 @@
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { queryOptions, useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import type {
   AccountingCurrencySettings,
   AccountingCurrencySettingsPut,
@@ -88,12 +88,9 @@ export interface ExchangeRateLookupInput {
   rateType?: ExchangeRateType;
 }
 
-/**
- * The rate in force on `date`; resolves to `null` (not an error) when none is on
- * file so forms can ask the user for one instead of assuming 1.
- */
-export function useExchangeRateLookup(input: ExchangeRateLookupInput | null) {
-  return useQuery({
+/** Rate-in-force lookup shared by forms and the setup guide; `null` when no rate is on file. */
+export function exchangeRateLookupQueryOptions(input: ExchangeRateLookupInput | null) {
+  return queryOptions({
     queryKey: [...LOOKUP_KEY, input],
     queryFn: async ({ signal }): Promise<ExchangeRateLookupResult | null> => {
       if (!input) return null;
@@ -108,6 +105,14 @@ export function useExchangeRateLookup(input: ExchangeRateLookupInput | null) {
     },
     enabled: input !== null && input.fromCurrency !== input.toCurrency,
   });
+}
+
+/**
+ * The rate in force on `date`; resolves to `null` (not an error) when none is on
+ * file so forms can ask the user for one instead of assuming 1.
+ */
+export function useExchangeRateLookup(input: ExchangeRateLookupInput | null) {
+  return useQuery(exchangeRateLookupQueryOptions(input));
 }
 
 const EXCHANGEABILITY_KEY = [...FX_KEY, "exchangeability"] as const;

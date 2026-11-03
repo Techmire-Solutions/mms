@@ -4,6 +4,9 @@ import { renderToStaticMarkup } from "react-dom/server";
 import { AccountingPeriodEndPanel } from "./AccountingPeriodEndPanel";
 import type { Account, FiscalYear, HedgeRelationship } from "@mms/shared";
 
+// The setup guide has its own spec; keep these suites on their sections.
+vi.mock("./FxSetupGuide", () => ({ FxSetupGuide: () => null }));
+
 vi.mock("@/hooks/useTranslation", () => ({
   useTranslation: () => ({ t: (key: string) => key }),
 }));

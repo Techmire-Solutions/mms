@@ -1,6 +1,6 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { mkdtemp, mkdir, writeFile } from "node:fs/promises";
-import { join } from "node:path";
+import { join, resolve } from "node:path";
 import { tmpdir } from "node:os";
 
 const mockWithTenantRead = vi.fn();
@@ -44,7 +44,7 @@ describe("attachment storage keys and paths", () => {
 
   it("resolves only the caller's tenant attachment directory", () => {
     expect(resolveTenantAttachmentPath("demo", "/uploads/tenants/demo/attachments/a.pdf")).toBe(
-      "/tmp/mms-attachment-test/tenants/demo/attachments/a.pdf",
+      resolve("/tmp/mms-attachment-test", "tenants", "demo", "attachments", "a.pdf"),
     );
     expect(
       resolveTenantAttachmentPath("other", "/uploads/tenants/demo/attachments/a.pdf"),
