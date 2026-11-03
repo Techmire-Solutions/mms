@@ -5,6 +5,9 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { AccountingSettingsPreferences } from "./AccountingSettingsPreferences";
 import { DEFAULT_ACCOUNTING_SETTINGS, type Account, type FiscalYear } from "@mms/shared";
 
+// The setup guide has its own spec; keep these suites on their sections.
+vi.mock("./FxSetupGuide", () => ({ FxSetupGuide: () => null }));
+
 vi.mock("@/hooks/useTranslation", () => ({
   useTranslation: () => ({ t: (key: string) => key }),
 }));

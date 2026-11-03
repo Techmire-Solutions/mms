@@ -3,6 +3,9 @@ import { describe, expect, it, vi } from "vitest";
 import { renderToStaticMarkup } from "react-dom/server";
 import { AccountingSettingsFxSection } from "./AccountingSettingsFxSection";
 
+// The setup guide has its own spec; keep these suites on their sections.
+vi.mock("./FxSetupGuide", () => ({ FxSetupGuide: () => null }));
+
 vi.mock("@/hooks/useTranslation", () => ({
   useTranslation: () => ({ t: (key: string) => key }),
 }));

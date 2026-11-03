@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useCallback, useState } from "react";
 import { usePersistedTabState } from "@/hooks/usePersistedTabState";
 import { useAccountingPageShortcuts } from "@/tenant/features/accounting/hooks/useAccountingPageShortcuts";
 import { useTranslation } from "@/hooks/useTranslation";
@@ -8,6 +8,8 @@ import { useModulePermissions } from "@/tenant/hooks/usePermissions";
 import { useAccountingJournalColumnLayout } from "@/tenant/features/accounting/hooks/useAccountingJournalColumnLayout";
 import { useAccountingAccountColumnLayout } from "@/tenant/features/accounting/hooks/useAccountingAccountColumnLayout";
 import { useAccountingConfig } from "@/hooks/useStandardModuleConfig";
+import { useAccountingNavigationController } from "@/tenant/features/accounting/hooks/useAccountingNavigation";
+import type { AccountingSubTabId } from "@/tenant/features/accounting/accountingPageSubTabs";
 import { useAccountingCurrency } from "@/hooks/useCurrency";
 import {
   ACCOUNTING_MODULE_MANIFEST,
@@ -117,6 +119,18 @@ export function useAccountingPageController() {
     setCreateAccountRequestKey((key) => key + 1);
   };
 
+  const openSubTab = useCallback(
+    (next: AccountingSubTabId) => {
+      setActiveSubTab(next);
+      if (next !== "journal") setShowDeleted(false);
+    },
+    [setShowDeleted],
+  );
+  const navigate = useAccountingNavigationController({
+    setActiveTab,
+    setActiveSubTab: openSubTab,
+  });
+
   const { handleShortcutStateChange } = useAccountingPageShortcuts({
     activeTab,
     activeSubTab,
@@ -173,5 +187,6 @@ export function useAccountingPageController() {
     handleShortcutStateChange,
     openJournalCreate,
     openAccountCreate,
+    navigate,
   };
 }

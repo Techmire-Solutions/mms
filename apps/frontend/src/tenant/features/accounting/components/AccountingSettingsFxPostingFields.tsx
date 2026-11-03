@@ -3,6 +3,7 @@ import type { Account, AppTranslationKey } from "@mms/shared";
 import { Field } from "@/components/app/FormPrimitives";
 import { FormSelect } from "@/components/app/FormSelect";
 import { useTranslation } from "@/hooks/useTranslation";
+import { FX_SETUP_ANCHORS } from "../lib/fxSetupReadiness";
 
 type FxPostingField =
   "fxRealizedAccountId" | "fxUnrealizedAccountId" | "fxRoundingAccountId" | "ctaAccountId";
@@ -59,7 +60,10 @@ export function AccountingSettingsFxPostingFields({
   const { t } = useTranslation();
   return (
     <div className="mt-4 border-t border-border pt-4">
-      <p className="m-0 mb-3 text-xs font-semibold text-muted-foreground">
+      <p
+        id={FX_SETUP_ANCHORS.accounts}
+        className="m-0 mb-3 scroll-mt-24 text-xs font-semibold text-muted-foreground"
+      >
         {t("accounting.settings.posting.fxHeading")}
       </p>
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">

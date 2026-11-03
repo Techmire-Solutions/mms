@@ -8,6 +8,7 @@ import { AccountingFxRevaluationSection } from "./AccountingFxRevaluationSection
 import { AccountingIas29Panel } from "./AccountingIas29Panel";
 import { AccountingHedgesSection } from "./AccountingHedgesSection";
 import { AccountingOpeningSection } from "./AccountingOpeningSection";
+import { FxSetupGuide } from "./FxSetupGuide";
 
 export interface AccountingPeriodEndPanelProps {
   accounts: Account[];
@@ -41,6 +42,8 @@ export function AccountingPeriodEndPanel({
       <p className="m-0 text-xs text-muted-foreground text-pretty">
         {t("accounting.periodEnd.hint")}
       </p>
+
+      <FxSetupGuide />
 
       <AccountingSettingsExchangeRatesSection
         functionalCurrency={functionalCurrency}
