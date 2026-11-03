@@ -89,7 +89,7 @@ describe("BrandColorImportModal & parseImportCandidate", () => {
       });
 
       const textarea = document.querySelector("#import-palette-input") as HTMLTextAreaElement;
-      expect(textarea).toBeTruthy();
+      expect(textarea).not.toBeNull();
 
       // Enter valid colors
       await act(async () => {
@@ -107,7 +107,7 @@ describe("BrandColorImportModal & parseImportCandidate", () => {
       const importBtn = buttons.find((btn) =>
         btn.textContent?.includes("theme.importPaletteAction"),
       );
-      expect(importBtn).toBeTruthy();
+      expect(importBtn).not.toBeNull();
       expect(importBtn?.disabled).toBe(false);
 
       // Click confirm import
@@ -127,7 +127,7 @@ describe("BrandColorImportModal & parseImportCandidate", () => {
       });
 
       const textarea = document.querySelector("#import-palette-input") as HTMLTextAreaElement;
-      expect(textarea).toBeTruthy();
+      expect(textarea).not.toBeNull();
 
       // Enter invalid text
       await act(async () => {
@@ -144,7 +144,7 @@ describe("BrandColorImportModal & parseImportCandidate", () => {
       // Cancel button triggers onClose
       const buttons = Array.from(document.querySelectorAll("button"));
       const cancelBtn = buttons.find((btn) => btn.textContent?.includes("common.cancel"));
-      expect(cancelBtn).toBeTruthy();
+      expect(cancelBtn).not.toBeNull();
 
       await act(async () => {
         cancelBtn?.click();

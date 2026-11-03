@@ -9,10 +9,10 @@ import { describe, expect, it } from "vitest";
  * The baseline can only go down. When assertions are tightened, lower the
  * constant in the same change; do not raise it to admit a new loose assertion.
  *
- * Measured 2026-10-30: 288 after deleting the attendance contract-hooks vanity
- * test (which asserted seven imports were `toBeDefined()`).
+ * Measured 2026-11-03: 283 after tightening assertions in newly added
+ * component specs.
  */
-const BASELINE = 288;
+const BASELINE = 283;
 const LOOSE_ASSERTION = /\btoBeTruthy\(|\btoBeFalsy\(|\btoBeDefined\(/g;
 
 // Tests run with `apps/frontend` as cwd; tolerate a repo-root invocation.

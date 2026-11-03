@@ -54,7 +54,7 @@ describe("EditableMultiSelectOptionItem", () => {
     });
 
     const item = container.querySelector('[role="option"]') as HTMLElement;
-    expect(item).toBeTruthy();
+    expect(item).not.toBeNull();
     expect(item.getAttribute("aria-selected")).toBe("false");
 
     // Mouse enter / over
@@ -83,7 +83,7 @@ describe("EditableMultiSelectOptionItem", () => {
 
     // Remove button
     const removeBtn = container.querySelector("button") as HTMLButtonElement;
-    expect(removeBtn).toBeTruthy();
+    expect(removeBtn).not.toBeNull();
     await act(async () => {
       removeBtn.click();
     });
