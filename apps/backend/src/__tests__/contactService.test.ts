@@ -13,6 +13,12 @@ const mockGetRequestTenant = vi.fn();
 const mockInvalidateDuplicateScanCache = vi.fn();
 
 const mockAssertContactUniqueFields = vi.fn();
+const mockReconcileContactSystemTags = vi.fn().mockResolvedValue(0);
+
+vi.mock("../contacts/systemTags/contactSystemTagUseCases.js", () => ({
+  reconcileContactSystemTags: (...args: unknown[]) => mockReconcileContactSystemTags(...args),
+  removeSystemTagsForContacts: vi.fn().mockResolvedValue(undefined),
+}));
 
 vi.mock("../db/repositories/contactRepository.js", () => ({
   listContactsByWorkspace: (...args: unknown[]) => mockListContactsByWorkspace(...args),
@@ -202,6 +208,9 @@ describe("contactService relationship reciprocal mapping", () => {
       expect.anything(),
     );
     expect(mockSaveContact).toHaveBeenCalled();
+    expect(mockReconcileContactSystemTags).toHaveBeenCalledWith("demo", ["c1"], {
+      actorId: undefined,
+    });
     expect(restored?.deletedAt).toBeUndefined();
   });
 
@@ -240,6 +249,9 @@ describe("contactService relationship reciprocal mapping", () => {
     expect(mockBulkSaveContacts).toHaveBeenCalledWith("demo", [
       expect.objectContaining({ id: "c1", deletedAt: undefined }),
     ]);
+    expect(mockReconcileContactSystemTags).toHaveBeenCalledWith("demo", ["c1"], {
+      actorId: undefined,
+    });
   });
 
   it("adds a reciprocal relationship link when creating a new contact", async () => {

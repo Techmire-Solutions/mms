@@ -16,6 +16,7 @@ import {
 import { broadcastCollection } from "../../lib/livePush.js";
 import { invalidateMultiTierCache } from "../../lib/cache/index.js";
 import { loadContactWriteContext } from "./contactWriteContext.js";
+import { collectRelatedContactIds } from "./contactRelationshipIds.js";
 import { reconcileContactSystemTags } from "../systemTags/contactSystemTagUseCases.js";
 import type { ContactWriteContext } from "./contactWriteContextTypes.js";
 import type { ContactsRepository } from "../repository/contactsRepository.js";
@@ -36,17 +37,6 @@ interface UpsertContactOptions {
    * exactly once after the batch.
    */
   batchMode?: boolean;
-}
-
-function relatedContactIds(
-  ...contacts: Array<{ relationshipContacts?: Array<{ contactId?: string | number }> } | undefined>
-): string[] {
-  return contacts.flatMap((contact) =>
-    (contact?.relationshipContacts ?? [])
-      .map((entry) => entry.contactId)
-      .filter((id): id is string | number => id != null)
-      .map(String),
-  );
 }
 
 export async function upsertContact(
@@ -136,8 +126,8 @@ export async function upsertContact(
     if (!opts?.batchMode) {
       await reconcileContactSystemTags(
         tenant,
-        [String(saved.id), ...relatedContactIds(existing ?? undefined, saved)],
-        { actorId, touchContacts: false },
+        [String(saved.id), ...collectRelatedContactIds(existing ?? undefined, saved)],
+        { actorId },
       );
     }
     if (!opts?.batchMode) {
@@ -242,8 +232,8 @@ export async function updateContactById(
     }
     await reconcileContactSystemTags(
       tenant,
-      [String(next.id), ...relatedContactIds(existing, next)],
-      { actorId, touchContacts: false },
+      [String(next.id), ...collectRelatedContactIds(existing, next)],
+      { actorId },
     );
     await invalidateDuplicateScanCache();
     return next;

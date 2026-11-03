@@ -1,8 +1,8 @@
 import { and, eq, inArray, sql } from "drizzle-orm";
 import { formatArchivedSystemTag, normalizeContactTagName, systemTagBaseName } from "@mms/shared";
 import { logger } from "../../lib/logger.js";
-import { broadcastCollection } from "../../lib/livePush.js";
-import { contactRelationships, contactTags, contacts } from "../../db/schema.js";
+import { broadcastTenantUpdate } from "../../lib/livePush.js";
+import { contactRelationships, contactTags } from "../../db/schema.js";
 import { withTenant, type TenantTransaction } from "../../db/tenant-context.js";
 import { invalidateMultiTierCache } from "../../lib/cache/index.js";
 import { recordModernAuditEvent } from "../../services/auditTrailService.js";
@@ -101,7 +101,7 @@ async function loadExistingTags(
 export async function reconcileContactSystemTags(
   tenant: string,
   contactIds: Array<string | number | null | undefined>,
-  options?: { actorId?: string; touchContacts?: boolean },
+  options?: { actorId?: string },
 ): Promise<number> {
   const subdomain = tenant.trim().toLowerCase();
   const rootIds = Array.from(
@@ -142,11 +142,11 @@ export async function reconcileContactSystemTags(
         );
       }
       const today = await loadWorkspaceToday(tx, subdomain);
-      const [studentTags, facultyTags, existing] = await Promise.all([
-        computeStudentDesiredTags(tx, subdomain, batch),
-        computeFacultyDesiredTags(tx, subdomain, batch, today),
-        loadExistingTags(tx, subdomain, batch),
-      ]);
+      // Sequential on purpose: these share one transaction client and node-postgres
+      // deprecates concurrent client.query() calls (pg 9 removes the behaviour).
+      const studentTags = await computeStudentDesiredTags(tx, subdomain, batch);
+      const facultyTags = await computeFacultyDesiredTags(tx, subdomain, batch, today);
+      const existing = await loadExistingTags(tx, subdomain, batch);
 
       const changed = new Set<string>();
       const now = new Date();
@@ -232,21 +232,14 @@ export async function reconcileContactSystemTags(
         }
       }
 
-      if (changed.size > 0 && options?.touchContacts !== false) {
-        await tx
-          .update(contacts)
-          .set({ updatedAt: now, ...(options?.actorId ? { updatedBy: options.actorId } : {}) })
-          .where(
-            and(eq(contacts.workspaceSubdomain, subdomain), inArray(contacts.id, [...changed])),
-          );
-      }
       return changed.size;
     });
   }
 
   if (changedContacts > 0) {
     await invalidateMultiTierCache({ tenantId: subdomain, domain: "contacts" });
-    await broadcastCollection("contacts");
+    // Explicit tenant: request handlers and the worker sweep both reconcile tags.
+    broadcastTenantUpdate(subdomain, "collection", "contacts");
     if (options?.actorId) {
       await recordModernAuditEvent({
         workspaceSubdomain: subdomain,

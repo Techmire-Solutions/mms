@@ -112,7 +112,6 @@ export async function restoreContactById(
     });
     await reconcileContactSystemTags(tenant, [String(id)], {
       actorId: userId,
-      touchContacts: false,
     });
     return next;
   });
@@ -229,7 +228,9 @@ export async function bulkRestoreContacts(
       await reconcileContactSystemTags(
         tenant,
         toSave.map((c) => String(c.id)),
-        { actorId: userId, touchContacts: false },
+        {
+          actorId: userId,
+        },
       );
     }
     return { succeeded, failed, conflicts };

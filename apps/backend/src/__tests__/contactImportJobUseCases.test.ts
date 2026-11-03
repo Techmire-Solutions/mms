@@ -4,7 +4,7 @@ const mockUpsertContact = vi.fn();
 const mockRecordModernAuditEvent = vi.fn();
 const mockLoadContactWriteContext = vi.fn();
 const mockInvalidateDuplicateScanCache = vi.fn();
-const mockBroadcastCollection = vi.fn();
+const mockBroadcastTenantUpdate = vi.fn();
 const mockReconcileContactSystemTags = vi.fn();
 
 vi.mock("../contacts/use-cases/contactWriteUseCases.js", () => ({
@@ -17,7 +17,7 @@ vi.mock("../contacts/use-cases/contactDuplicateScanUseCases.js", () => ({
   invalidateDuplicateScanCache: (...args: unknown[]) => mockInvalidateDuplicateScanCache(...args),
 }));
 vi.mock("../lib/livePush.js", () => ({
-  broadcastCollection: (...args: unknown[]) => mockBroadcastCollection(...args),
+  broadcastTenantUpdate: (...args: unknown[]) => mockBroadcastTenantUpdate(...args),
 }));
 vi.mock("../contacts/systemTags/contactSystemTagUseCases.js", () => ({
   reconcileContactSystemTags: (...args: unknown[]) => mockReconcileContactSystemTags(...args),
@@ -59,7 +59,7 @@ describe("runContactsImportJob", () => {
       fieldConfig: null,
     });
     mockInvalidateDuplicateScanCache.mockReset().mockResolvedValue(undefined);
-    mockBroadcastCollection.mockReset().mockResolvedValue(undefined);
+    mockBroadcastTenantUpdate.mockReset();
     mockReconcileContactSystemTags.mockReset().mockResolvedValue(0);
   });
 
@@ -82,7 +82,7 @@ describe("runContactsImportJob", () => {
     );
     // Per-record side effects are collapsed into one live update + one invalidation.
     expect(mockInvalidateDuplicateScanCache).toHaveBeenCalledTimes(1);
-    expect(mockBroadcastCollection).toHaveBeenCalledTimes(1);
+    expect(mockBroadcastTenantUpdate).toHaveBeenCalledWith("demo", "collection", "contacts");
   });
 
   it("reconciles successfully imported contact ids once", async () => {
@@ -96,7 +96,32 @@ describe("runContactsImportJob", () => {
     expect(mockReconcileContactSystemTags).toHaveBeenCalledWith(
       "demo",
       expect.arrayContaining(["c-1", "c-2"]),
-      { actorId: "u-admin", touchContacts: false },
+      { actorId: "u-admin" },
+    );
+  });
+
+  it("reconciles relationship targets removed by the import", async () => {
+    mockUpsertContact.mockResolvedValueOnce({ contact: { id: "c-1" }, created: true });
+    const repo = {
+      findSummaryByIds: vi.fn().mockResolvedValue([
+        {
+          id: "c-1",
+          relationshipContacts: [{ contactId: "g-1", relationship: "Guardian" }],
+        },
+      ]),
+    } as unknown as import("../contacts/repository/contactsRepository.js").ContactsRepository;
+
+    await runContactsImportJob(
+      { contacts: [{ id: "c-1", firstName: "Ali" }], viewerRole: "admin" },
+      buildContext(),
+      repo,
+    );
+
+    expect(repo.findSummaryByIds).toHaveBeenCalledWith("demo", ["c-1"]);
+    expect(mockReconcileContactSystemTags).toHaveBeenCalledWith(
+      "demo",
+      expect.arrayContaining(["c-1", "g-1"]),
+      { actorId: "u-admin" },
     );
   });
 
