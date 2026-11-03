@@ -1,6 +1,6 @@
 import type { FastifyPluginAsync } from "fastify";
-import type { Message, User } from "@mms/shared";
-import { messagingSmsDispatchSchema, personalizeMessage } from "@mms/shared";
+import type { User } from "@mms/shared";
+import { messagingSmsDispatchSchema } from "@mms/shared";
 import { randomUUID } from "node:crypto";
 import { buildBackgroundJobId } from "../../../lib/backgroundJobIds.js";
 import { getRequestTenant } from "../../../lib/tenantContext.js";
@@ -9,20 +9,18 @@ import { MESSAGING_LOG_RATE_LIMIT } from "../../../lib/rateLimitConfig.js";
 import { createStrictRateLimitGuard } from "../../../lib/rateLimitGuard.js";
 import { parseRequest, replyValidationError } from "../../../lib/zodRequest.js";
 import { canWriteMessaging } from "../../../services/rbacService.js";
-import { sendTenantSms } from "../../../services/sms/smsService.js";
 import {
   enqueueBackgroundJob,
   getUserBackgroundJob,
   getUserBackgroundJobPayload,
 } from "../../../services/backgroundJobWorkerService.js";
-import { messagingUseCases } from "../../../messaging/use-cases/messagingUseCases.js";
 import {
   collectUnknownPersonalizationTokens,
   formatUnknownTokensMessage,
 } from "./messagingPersonalizationGuard.js";
+import { dispatchMessagingCampaignDirect } from "./messagingDirectDispatch.js";
 import {
   type MessagingDispatchPayload,
-  type MessagingDispatchSummary,
   messagingDispatchBodyDigest,
   resolveIdempotencyKey,
   withMessagingIdempotency,
@@ -54,7 +52,10 @@ export const messagingSmsDispatchRoute: FastifyPluginAsync = async (fastify) => 
     const { recipients, message, category } = parsed.data;
     const sentAt = new Date().toISOString();
     const userId = String(user.id);
-    const idempotencyKey = resolveIdempotencyKey(parsed.data.idempotencyKey, undefined);
+    const idempotencyKey = resolveIdempotencyKey(
+      parsed.data.idempotencyKey,
+      req.headers["idempotency-key"],
+    );
     const bodyDigest = messagingDispatchBodyDigest({ recipients, message, category });
 
     const isQueued =
@@ -109,76 +110,23 @@ export const messagingSmsDispatchRoute: FastifyPluginAsync = async (fastify) => 
       });
     }
 
-    const runDispatch = async (): Promise<MessagingDispatchSummary> => {
-      let sentCount = 0;
-      let failedCount = 0;
-      const logs: Message[] = [];
-
-      for (const recipient of recipients) {
-        const personalizedBody = personalizeMessage(message, recipient);
-        try {
-          const sendResult = await sendTenantSms({
-            to: recipient.phone,
-            body: personalizedBody,
-          });
-
-          if (sendResult.sent) {
-            sentCount++;
-            logs.push({
-              id: randomUUID(),
-              userId: user.id,
-              contactId: recipient.id,
-              channel: "sms",
-              body: personalizedBody,
-              sentAt,
-              status: "sent",
-              category,
-            });
-          } else {
-            failedCount++;
-            logs.push({
-              id: randomUUID(),
-              userId: user.id,
-              contactId: recipient.id,
-              channel: "sms",
-              body: personalizedBody,
-              sentAt,
-              status: "failed",
-              category,
-              errorMessage:
-                sendResult.message || sendResult.reason || "SMS gateway rejected dispatch",
-            });
-          }
-        } catch (err) {
-          failedCount++;
-          logs.push({
-            id: randomUUID(),
-            userId: user.id,
-            contactId: recipient.id,
-            channel: "sms",
-            body: personalizedBody,
-            sentAt,
-            status: "failed",
-            category,
-            errorMessage: err instanceof Error ? err.message : "SMS dispatch error",
-          });
-        }
-      }
-
-      if (logs.length > 0) {
-        await messagingUseCases.recordMessageLogs(tenantSubdomain, logs);
-      }
-      return { sentCount, failedCount, total: recipients.length };
-    };
-
-    const finishDispatch = async (summary: MessagingDispatchSummary): Promise<unknown> =>
-      reply.send(summary);
+    const runDispatch = () =>
+      dispatchMessagingCampaignDirect({
+        tenantSubdomain,
+        userId,
+        dispatchId: idempotencyKey ?? randomUUID(),
+        channel: "sms",
+        recipients,
+        message,
+        sentAt,
+        category,
+      });
 
     if (idempotencyKey) {
       try {
         const result = await withMessagingIdempotency<
           MessagingDispatchPayload,
-          MessagingDispatchSummary
+          Awaited<ReturnType<typeof runDispatch>>
         >({
           tenantId: tenantSubdomain,
           userId,
@@ -191,12 +139,13 @@ export const messagingSmsDispatchRoute: FastifyPluginAsync = async (fastify) => 
             run: runDispatch,
           },
         });
+        if (result.replayed) reply.header("Idempotency-Replay", "true");
         return reply.status(result.status).send(result.body);
       } catch (err) {
         return sendDatabaseError(reply, "Failed to dispatch SMS", err);
       }
     }
 
-    return finishDispatch(await runDispatch());
+    return reply.send(await runDispatch());
   });
 };

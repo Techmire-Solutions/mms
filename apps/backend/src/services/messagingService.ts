@@ -15,7 +15,6 @@ export const getMessageTemplateById = messagingUseCases.getMessageTemplateById;
 export const saveMessageTemplate = messagingUseCases.saveMessageTemplate;
 export const removeMessageTemplate = messagingUseCases.removeMessageTemplate;
 export const loadMessageLogs = messagingUseCases.loadMessageLogs;
-export const loadMessageLogById = messagingUseCases.loadMessageLogById;
 export const loadMessageLogsByIds = messagingUseCases.loadMessageLogsByIds;
 export const saveMessageLog = messagingUseCases.saveMessageLog;
 export const replaceMessageLogs = messagingUseCases.replaceMessageLogs;

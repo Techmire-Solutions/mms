@@ -1,6 +1,6 @@
 import type { FastifyPluginAsync } from "fastify";
-import type { Message, User } from "@mms/shared";
-import { messagingEmailDispatchSchema, personalizeMessage } from "@mms/shared";
+import type { User } from "@mms/shared";
+import { messagingEmailDispatchSchema } from "@mms/shared";
 import { randomUUID } from "node:crypto";
 import { buildBackgroundJobId } from "../../../lib/backgroundJobIds.js";
 import { getRequestTenant } from "../../../lib/tenantContext.js";
@@ -9,20 +9,19 @@ import { MESSAGING_LOG_RATE_LIMIT } from "../../../lib/rateLimitConfig.js";
 import { createStrictRateLimitGuard } from "../../../lib/rateLimitGuard.js";
 import { parseRequest, replyValidationError } from "../../../lib/zodRequest.js";
 import { canWriteMessaging } from "../../../services/rbacService.js";
-import { sendTenantEmail } from "../../../services/email/emailService.js";
 import {
   enqueueBackgroundJob,
   getUserBackgroundJob,
   getUserBackgroundJobPayload,
 } from "../../../services/backgroundJobWorkerService.js";
-import { messagingUseCases } from "../../../messaging/use-cases/messagingUseCases.js";
 import {
   collectUnknownPersonalizationTokens,
+  containsExecutableHtml,
   formatUnknownTokensMessage,
 } from "./messagingPersonalizationGuard.js";
+import { dispatchMessagingCampaignDirect } from "./messagingDirectDispatch.js";
 import {
   type MessagingDispatchPayload,
-  type MessagingDispatchSummary,
   messagingDispatchBodyDigest,
   resolveIdempotencyKey,
   withMessagingIdempotency,
@@ -45,6 +44,9 @@ export const messagingEmailDispatchRoute: FastifyPluginAsync = async (fastify) =
     if (allUnknown.length > 0) {
       return replyValidationError(reply, formatUnknownTokensMessage(allUnknown));
     }
+    if (parsed.data.html && containsExecutableHtml(parsed.data.html)) {
+      return replyValidationError(reply, "Executable HTML is not allowed in email messages");
+    }
 
     const tenantSubdomain = getRequestTenant();
     if (!tenantSubdomain) {
@@ -56,7 +58,10 @@ export const messagingEmailDispatchRoute: FastifyPluginAsync = async (fastify) =
     const { recipients, subject, message, html, category } = parsed.data;
     const sentAt = new Date().toISOString();
     const userId = String(user.id);
-    const idempotencyKey = resolveIdempotencyKey(parsed.data.idempotencyKey, undefined);
+    const idempotencyKey = resolveIdempotencyKey(
+      parsed.data.idempotencyKey,
+      req.headers["idempotency-key"],
+    );
     const bodyDigest = messagingDispatchBodyDigest({
       recipients,
       subject,
@@ -118,84 +123,25 @@ export const messagingEmailDispatchRoute: FastifyPluginAsync = async (fastify) =
       });
     }
 
-    const runDispatch = async (): Promise<MessagingDispatchSummary> => {
-      let sentCount = 0;
-      let failedCount = 0;
-      const logs: Message[] = [];
-
-      for (const recipient of recipients) {
-        const personalizedSubject = personalizeMessage(subject, recipient);
-        const personalizedBody = personalizeMessage(message, recipient);
-        const personalizedHtml = html ? personalizeMessage(html, recipient) : undefined;
-
-        try {
-          const sendResult = await sendTenantEmail({
-            to: recipient.email,
-            subject: personalizedSubject,
-            text: personalizedBody,
-            html: personalizedHtml,
-          });
-
-          if (sendResult.sent) {
-            sentCount++;
-            logs.push({
-              id: randomUUID(),
-              userId: user.id,
-              contactId: recipient.id,
-              channel: "email",
-              subject: personalizedSubject,
-              body: personalizedBody,
-              sentAt,
-              status: "sent",
-              category,
-            });
-          } else {
-            failedCount++;
-            logs.push({
-              id: randomUUID(),
-              userId: user.id,
-              contactId: recipient.id,
-              channel: "email",
-              subject: personalizedSubject,
-              body: personalizedBody,
-              sentAt,
-              status: "failed",
-              category,
-              errorMessage:
-                sendResult.message || sendResult.reason || "Email gateway rejected dispatch",
-            });
-          }
-        } catch (err) {
-          failedCount++;
-          logs.push({
-            id: randomUUID(),
-            userId: user.id,
-            contactId: recipient.id,
-            channel: "email",
-            subject: personalizedSubject,
-            body: personalizedBody,
-            sentAt,
-            status: "failed",
-            category,
-            errorMessage: err instanceof Error ? err.message : "Email dispatch error",
-          });
-        }
-      }
-
-      if (logs.length > 0) {
-        await messagingUseCases.recordMessageLogs(tenantSubdomain, logs);
-      }
-      return { sentCount, failedCount, total: recipients.length };
-    };
-
-    const finishDispatch = async (summary: MessagingDispatchSummary): Promise<unknown> =>
-      reply.send(summary);
+    const runDispatch = () =>
+      dispatchMessagingCampaignDirect({
+        tenantSubdomain,
+        userId,
+        dispatchId: idempotencyKey ?? randomUUID(),
+        channel: "email",
+        recipients,
+        message,
+        sentAt,
+        category,
+        subject,
+        html,
+      });
 
     if (idempotencyKey) {
       try {
         const result = await withMessagingIdempotency<
           MessagingDispatchPayload,
-          MessagingDispatchSummary
+          Awaited<ReturnType<typeof runDispatch>>
         >({
           tenantId: tenantSubdomain,
           userId,
@@ -208,12 +154,13 @@ export const messagingEmailDispatchRoute: FastifyPluginAsync = async (fastify) =
             run: runDispatch,
           },
         });
+        if (result.replayed) reply.header("Idempotency-Replay", "true");
         return reply.status(result.status).send(result.body);
       } catch (err) {
         return sendDatabaseError(reply, "Failed to dispatch email", err);
       }
     }
 
-    return finishDispatch(await runDispatch());
+    return reply.send(await runDispatch());
   });
 };

@@ -68,6 +68,8 @@ export function MessagingWorkTierDirectory({
           updateUserColumnLayout={c.updateUserColumnLayout}
           columnCustomizerLabels={c.customizerLabels}
           shownCount={c.logsQuery.logs.length}
+          showArchived={c.showArchived}
+          onShowArchivedChange={c.canViewArchived ? c.setShowArchived : undefined}
           filterChips={<FilterChips chips={c.filterChips} onClearAll={c.clearFilters} />}
         />
       </ErrorBoundary>
@@ -131,7 +133,11 @@ export function MessagingWorkTierDirectory({
           <ModuleWorkDirectoryEmpty
             icon={MessageSquareOff}
             title={
-              c.hasActiveFilters ? c.t("messaging.noLogsMatchFilters") : c.t("messaging.noLogs")
+              c.showArchived && !c.hasActiveFilters
+                ? c.t("messaging.archivedEmpty")
+                : c.hasActiveFilters
+                  ? c.t("messaging.noLogsMatchFilters")
+                  : c.t("messaging.noLogs")
             }
             description={
               c.hasActiveFilters
@@ -139,7 +145,7 @@ export function MessagingWorkTierDirectory({
                 : c.t("messaging.selectRecipientsDesc")
             }
             hasActiveFilters={c.hasActiveFilters}
-            viewingDeleted={false}
+            viewingDeleted={c.showArchived}
             onClearFilters={c.clearFilters}
             clearFiltersLabel={c.t("common.clearFilters")}
             showActiveLabel=""
@@ -164,7 +170,6 @@ export function MessagingWorkTierDirectory({
             selectedIds={c.selectedById}
             allVisibleSelected={c.allVisibleSelected}
             someVisibleSelected={c.someVisibleSelected}
-            selectedCount={c.selectedCount}
             selectedCountLabel={c.selectedCountLabel}
             pageCountLabel={c.pageCountLabel}
             canWrite={canWrite}

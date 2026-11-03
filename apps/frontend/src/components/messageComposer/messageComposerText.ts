@@ -51,11 +51,14 @@ export function getComposerSubtitle({
   const isEmail = channel === "email";
   const isSms = channel === "sms";
 
-  return isEmail
-    ? `${eligibleCount} ${t("messaging.of")} ${total} ${t("messaging.selectRecipientsDesc")}`
+  // One key per channel: concatenating translated fragments around raw numbers
+  // cannot be word-ordered correctly in ar/ur/fa.
+  const key = isEmail
+    ? "messaging.composerSummaryEmail"
     : isSms
-      ? `${eligibleCount} ${t("messaging.of")} ${total} ${t("messaging.contactsHavePhone")}`
-      : `${eligibleCount} ${t("messaging.of")} ${total} ${t("messaging.contactsHaveWhatsapp")}`;
+      ? "messaging.composerSummarySms"
+      : "messaging.composerSummaryWhatsapp";
+  return t(key, { eligible: String(eligibleCount), total: String(total) });
 }
 
 export function getComposerNote(

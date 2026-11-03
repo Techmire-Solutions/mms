@@ -7,9 +7,17 @@ import type {
 } from "@mms/shared";
 import type {
   MessageLogClaim,
+  MessageLogDeliveryOutcome,
   MessageLogsFilterQuery,
   MessageLogsPageResult,
 } from "../../db/repositories/messagingRepository.js";
+
+export type {
+  MessageLogClaim,
+  MessageLogDeliveryOutcome,
+  MessageLogsFilterQuery,
+  MessageLogsPageResult,
+};
 import type { WhatsappIntegrationRow } from "../../db/schema/messaging.js";
 
 /**
@@ -33,7 +41,6 @@ export interface MessagingRepository {
 
   // Logs
   listMessageLogsByWorkspace(tenant: string): Promise<Message[]>;
-  findMessageLogById(tenant: string, id: string): Promise<Message | null>;
   findMessageLogsByIds(
     tenant: string,
     ids: string[],
@@ -51,7 +58,11 @@ export interface MessagingRepository {
     tenant: string,
     filters?: { startDate?: string; endDate?: string },
   ): Promise<MessagingMetricsDto>;
-  softDeleteActiveMessageLogs(tenant: string): Promise<void>;
+  softDeleteActiveMessageLogs(
+    tenant: string,
+    userId: string,
+    deletionReason?: string,
+  ): Promise<void>;
   /** Restores archived logs (`ids: null` = restore all); returns the restored count. */
   restoreArchivedMessageLog(tenant: string, userId: string, ids: string[] | null): Promise<number>;
   /** Atomically claims one campaign recipient before the gateway send. */
@@ -62,6 +73,11 @@ export interface MessagingRepository {
     id: string,
     status: "sent" | "failed",
     errorMessage?: string | null,
+  ): Promise<void>;
+  /** Persists a batch of delivery outcomes in one tenant transaction. */
+  saveMessageLogDeliveryOutcomes(
+    tenant: string,
+    outcomes: readonly MessageLogDeliveryOutcome[],
   ): Promise<void>;
 
   // WhatsApp Integrations

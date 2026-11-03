@@ -3,6 +3,7 @@ import { z } from "zod";
 import { baseListQuerySchema } from "../core/apiSchemas.js";
 import {
   messageRecordSchema,
+  messagingLogsQuerySchema,
   messagingRecipientsMatchResponseSchema,
   messagingRecipientsQuerySchema,
   messagingMetricsSchema,
@@ -38,16 +39,19 @@ export const messagingLogsRestoredResponseSchema = z.object({ restored: z.number
 /**
  * POST /api/messaging/logs/restore body — `ids` absent or empty restores ALL
  * archived logs in the workspace; a non-empty list restores only those ids.
+ * Capped at `ENTITY_RESOLVE_MAX_IDS` so the `IN (...)` list stays bounded.
  */
 export const messagingRestoreLogsBodySchema = z.object({
-  ids: z.array(z.string()).optional(),
+  ids: z.array(z.string()).max(500).optional(),
 });
 
 export const messagingContract = c.router({
   listLogs: {
     method: "GET",
     path: "/api/messaging/history",
-    query: baseListQuerySchema,
+    // `messagingLogsQuerySchema` (not `baseListQuerySchema`) so `includeDeleted`
+    // arrives as a boolean and the archived view actually filters — `mms-messaging` §4.
+    query: messagingLogsQuerySchema,
     responses: { 200: messagingLogsPageResponseSchema, 403: ok, 500: ok },
     summary: "List message logs",
   },

@@ -116,7 +116,7 @@ export function useMessagingTemplateEditor() {
     }
     try {
       await saveTemplate.mutateAsync({ body: parsed.data });
-      notify.success(t("messaging.saveTemplate"));
+      notify.success(t("messaging.templateSaved"));
       resetForm();
     } catch {
       /* Mutation hook reports the failure. */

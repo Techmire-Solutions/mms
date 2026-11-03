@@ -105,6 +105,7 @@ describe("messageComposerServerGateway", () => {
         message: "Hello Alice",
         subject: "",
         category: "general",
+        idempotencyKey: "test-dispatch-key-1",
         personalizeOptions: { madrasaName: "Test" },
         dispatchServerSms,
         dispatchServerEmail: { mutateAsync: vi.fn() },
@@ -117,6 +118,39 @@ describe("messageComposerServerGateway", () => {
       expect(notify.info).toHaveBeenCalledWith(
         expect.stringContaining("messaging.campaignQueuedNotice"),
       );
+      expect(onClose).toHaveBeenCalled();
+    });
+
+    it("reports a replayed dispatch as already sent instead of a fresh success", async () => {
+      const dispatchServerSms = {
+        mutateAsync: vi
+          .fn()
+          .mockResolvedValue({ sentCount: 2, failedCount: 0, skippedCount: 2, replayed: true }),
+      };
+      const onSent = vi.fn();
+      const onClose = vi.fn();
+
+      await dispatchViaServerGateway({
+        channel: "sms",
+        eligibleRecipients: mockRecipients,
+        message: "Hello Alice",
+        subject: "",
+        category: "general",
+        idempotencyKey: "test-dispatch-key-2",
+        personalizeOptions: { madrasaName: "Test" },
+        dispatchServerSms,
+        dispatchServerEmail: { mutateAsync: vi.fn() },
+        dispatchServerWhatsApp: { mutateAsync: vi.fn() },
+        onSent,
+        onClose,
+        t: mockT,
+      });
+
+      expect(notify.info).toHaveBeenCalledWith(
+        expect.stringContaining("messaging.dispatchAlreadySent"),
+      );
+      expect(notify.success).not.toHaveBeenCalled();
+      expect(onSent).not.toHaveBeenCalled();
       expect(onClose).toHaveBeenCalled();
     });
 
@@ -133,6 +167,7 @@ describe("messageComposerServerGateway", () => {
         message: "Hello Alice",
         subject: "",
         category: "general",
+        idempotencyKey: "test-dispatch-key-1",
         personalizeOptions: { madrasaName: "Test" },
         dispatchServerSms: { mutateAsync: vi.fn() },
         dispatchServerEmail: { mutateAsync: vi.fn() },

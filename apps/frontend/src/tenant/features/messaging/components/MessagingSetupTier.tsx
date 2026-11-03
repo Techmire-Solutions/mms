@@ -63,13 +63,11 @@ export const MessagingSetupTier = function MessagingSetupTier({
     onDiscard: resetForm,
   });
 
-  const setupTabs = (() =>
-    MESSAGING_MODULE_MANIFEST.setupSubTabs.map((key) => ({
-      key,
-      label:
-        key === "preferences" ? t("messaging.tabs.preferences") : t("messaging.tabs.templates"),
-    })))();
-  const templates = (() => mergeMessageTemplates(templatesQuery.templates))();
+  const setupTabs = MESSAGING_MODULE_MANIFEST.setupSubTabs.map((key) => ({
+    key,
+    label: key === "preferences" ? t("messaging.tabs.preferences") : t("messaging.tabs.templates"),
+  }));
+  const templates = mergeMessageTemplates(templatesQuery.templates);
 
   if (templatesQuery.isError) {
     return (

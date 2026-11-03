@@ -2,6 +2,7 @@ import type { FastifyReply, FastifyRequest } from "fastify";
 import type { Message, MessageLogCreateDto, User } from "@mms/shared";
 import { randomUUID } from "node:crypto";
 import { getRequestTenant } from "../../../lib/tenantContext.js";
+import { logger } from "../../../lib/logger.js";
 import { canWriteMessaging } from "../../../services/rbacService.js";
 import { messagingUseCases } from "../../../messaging/use-cases/messagingUseCases.js";
 import {
@@ -89,7 +90,11 @@ export async function processRecordMessageLogs(
 
     const recorded = await runRecordMessageLogs(user, tenantSubdomain, data.logs);
     return { status: 200, body: { recorded: recorded.length } };
-  } catch {
+  } catch (err) {
+    logger.error(
+      { err: err instanceof Error ? err.message : String(err) },
+      "messaging record-logs handler failed",
+    );
     return {
       status: 500,
       body: { type: "database_error", message: "Failed to record message logs" },

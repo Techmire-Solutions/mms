@@ -33,10 +33,13 @@ vi.mock("../services/workspaceService.js", async (importOriginal) => {
   };
 });
 
-const mockRecordMessageLogs = vi.fn();
+const mockClaimMessageLogForDelivery = vi.fn();
+const mockUpdateMessageLogDeliveryStatus = vi.fn();
 vi.mock("../messaging/use-cases/messagingUseCases.js", () => ({
   messagingUseCases: {
-    recordMessageLogs: (...args: unknown[]) => mockRecordMessageLogs(...args),
+    claimMessageLogForDelivery: (...args: unknown[]) => mockClaimMessageLogForDelivery(...args),
+    updateMessageLogDeliveryStatus: (...args: unknown[]) =>
+      mockUpdateMessageLogDeliveryStatus(...args),
   },
 }));
 
@@ -77,7 +80,8 @@ const authHeaders = async () => {
 describe("Messaging Campaign Dispatch Routes", () => {
   beforeEach(async () => {
     process.env.JWT_SECRET = "test-secret";
-    mockRecordMessageLogs.mockReset().mockResolvedValue(1);
+    mockClaimMessageLogForDelivery.mockReset().mockResolvedValue(true);
+    mockUpdateMessageLogDeliveryStatus.mockReset().mockResolvedValue(undefined);
     mockSendTenantEmail.mockReset().mockResolvedValue({ sent: true });
     mockSendTenantWhatsApp.mockReset().mockResolvedValue({ sent: true });
     mockEnqueueBackgroundJob.mockReset().mockResolvedValue({
@@ -151,9 +155,10 @@ describe("Messaging Campaign Dispatch Routes", () => {
 
       expect(res.statusCode).toBe(200);
       const body = JSON.parse(res.body);
-      expect(body).toEqual({ sentCount: 2, failedCount: 0, total: 2 });
+      expect(body).toEqual({ sentCount: 2, failedCount: 0, skippedCount: 0, total: 2 });
       expect(mockSendTenantEmail).toHaveBeenCalledTimes(2);
-      expect(mockRecordMessageLogs).toHaveBeenCalledTimes(1);
+      expect(mockClaimMessageLogForDelivery).toHaveBeenCalledTimes(2);
+      expect(mockUpdateMessageLogDeliveryStatus).toHaveBeenCalledTimes(2);
     });
 
     it("enqueues background job with 202 when queued: true", async () => {
@@ -210,17 +215,18 @@ describe("Messaging Campaign Dispatch Routes", () => {
         payload,
       });
       expect(first.statusCode).toBe(200);
-      expect(first.json()).toEqual({ sentCount: 2, failedCount: 0, total: 2 });
+      expect(first.json()).toEqual({ sentCount: 2, failedCount: 0, skippedCount: 0, total: 2 });
       expect(mockSendTenantEmail).toHaveBeenCalledTimes(2);
       expect(tryClaimAuthArtifactByLookupKey).toHaveBeenCalledTimes(1);
 
       const finalizedPayload = vi.mocked(updateAuthArtifactPayload).mock.calls[0]?.[1] as {
-        response: { sentCount: number; failedCount: number; total: number };
+        response: { sentCount: number; failedCount: number; skippedCount?: number; total: number };
         bodyDigest: string;
       };
       expect(finalizedPayload.response).toEqual({
         sentCount: 2,
         failedCount: 0,
+        skippedCount: 0,
         total: 2,
       });
       expect(finalizedPayload.bodyDigest).toMatch(/^[a-f0-9]{64}$/);
@@ -242,9 +248,10 @@ describe("Messaging Campaign Dispatch Routes", () => {
         payload,
       });
       expect(second.statusCode).toBe(200);
-      expect(second.json()).toEqual({ sentCount: 2, failedCount: 0, total: 2 });
+      expect(second.json()).toEqual({ sentCount: 2, failedCount: 0, skippedCount: 0, total: 2 });
+      expect(second.headers["idempotency-replay"]).toBe("true");
       expect(mockSendTenantEmail).toHaveBeenCalledTimes(2);
-      expect(mockRecordMessageLogs).toHaveBeenCalledTimes(1);
+      expect(mockClaimMessageLogForDelivery).toHaveBeenCalledTimes(2);
       expect(tryClaimAuthArtifactByLookupKey).toHaveBeenCalledTimes(1);
       await app.close();
     });
@@ -258,7 +265,7 @@ describe("Messaging Campaign Dispatch Routes", () => {
           id: "art-email-mismatch",
           kind: "messaging_idempotency",
           payload: {
-            response: { sentCount: 1, failedCount: 0, total: 1 },
+            response: { sentCount: 1, failedCount: 0, skippedCount: 0, total: 1 },
             bodyDigest: "b".repeat(64),
           },
           expiresAt: new Date(Date.now() + 60_000),
@@ -282,7 +289,7 @@ describe("Messaging Campaign Dispatch Routes", () => {
         message: "Idempotency key reused with a different request body",
       });
       expect(mockSendTenantEmail).not.toHaveBeenCalled();
-      expect(mockRecordMessageLogs).not.toHaveBeenCalled();
+      expect(mockClaimMessageLogForDelivery).not.toHaveBeenCalled();
       await app.close();
     });
 
@@ -369,9 +376,10 @@ describe("Messaging Campaign Dispatch Routes", () => {
 
       expect(res.statusCode).toBe(200);
       const body = JSON.parse(res.body);
-      expect(body).toEqual({ sentCount: 2, failedCount: 0, total: 2 });
+      expect(body).toEqual({ sentCount: 2, failedCount: 0, skippedCount: 0, total: 2 });
       expect(mockSendTenantWhatsApp).toHaveBeenCalledTimes(2);
-      expect(mockRecordMessageLogs).toHaveBeenCalledTimes(1);
+      expect(mockClaimMessageLogForDelivery).toHaveBeenCalledTimes(2);
+      expect(mockUpdateMessageLogDeliveryStatus).toHaveBeenCalledTimes(2);
     });
 
     it("enqueues background job with 202 when recipients count exceeds 50", async () => {
@@ -430,17 +438,18 @@ describe("Messaging Campaign Dispatch Routes", () => {
         payload,
       });
       expect(first.statusCode).toBe(200);
-      expect(first.json()).toEqual({ sentCount: 2, failedCount: 0, total: 2 });
+      expect(first.json()).toEqual({ sentCount: 2, failedCount: 0, skippedCount: 0, total: 2 });
       expect(mockSendTenantWhatsApp).toHaveBeenCalledTimes(2);
       expect(tryClaimAuthArtifactByLookupKey).toHaveBeenCalledTimes(1);
 
       const finalizedPayload = vi.mocked(updateAuthArtifactPayload).mock.calls[0]?.[1] as {
-        response: { sentCount: number; failedCount: number; total: number };
+        response: { sentCount: number; failedCount: number; skippedCount?: number; total: number };
         bodyDigest: string;
       };
       expect(finalizedPayload.response).toEqual({
         sentCount: 2,
         failedCount: 0,
+        skippedCount: 0,
         total: 2,
       });
 
@@ -461,9 +470,10 @@ describe("Messaging Campaign Dispatch Routes", () => {
         payload,
       });
       expect(second.statusCode).toBe(200);
-      expect(second.json()).toEqual({ sentCount: 2, failedCount: 0, total: 2 });
+      expect(second.json()).toEqual({ sentCount: 2, failedCount: 0, skippedCount: 0, total: 2 });
+      expect(second.headers["idempotency-replay"]).toBe("true");
       expect(mockSendTenantWhatsApp).toHaveBeenCalledTimes(2);
-      expect(mockRecordMessageLogs).toHaveBeenCalledTimes(1);
+      expect(mockClaimMessageLogForDelivery).toHaveBeenCalledTimes(2);
       expect(tryClaimAuthArtifactByLookupKey).toHaveBeenCalledTimes(1);
       await app.close();
     });

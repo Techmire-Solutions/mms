@@ -14,6 +14,10 @@ export interface ServerDispatchResult {
   failedCount?: number;
   total?: number;
   queued?: boolean;
+  /** Recipients already claimed by an earlier attempt of this submission. */
+  skippedCount?: number;
+  /** The server replayed a stored response instead of sending again. */
+  replayed?: boolean;
 }
 
 export function toCompletedRecords(
@@ -71,12 +75,18 @@ export interface DispatchViaServerGatewayArgs {
   message: string;
   subject: string;
   category: string;
+  /**
+   * Per-submission key minted by the composer (retry-stable, never derived from
+   * the body). The server binds it to the canonical body digest.
+   */
+  idempotencyKey: string;
   personalizeOptions: { madrasaName?: string };
   dispatchServerSms: {
     mutateAsync: (args: {
       recipients: { id: string | number; phone: string; name: string }[];
       message: string;
       category?: string;
+      idempotencyKey: string;
     }) => Promise<ServerDispatchResult>;
   };
   dispatchServerEmail: {
@@ -85,6 +95,7 @@ export interface DispatchViaServerGatewayArgs {
       subject: string;
       message: string;
       category?: string;
+      idempotencyKey: string;
     }) => Promise<ServerDispatchResult>;
   };
   dispatchServerWhatsApp: {
@@ -92,6 +103,7 @@ export interface DispatchViaServerGatewayArgs {
       recipients: { id: string | number; phone: string; name: string }[];
       message: string;
       category?: string;
+      idempotencyKey: string;
     }) => Promise<ServerDispatchResult>;
   };
   onSent?: (sent: SentDispatchRecord[]) => void;
@@ -106,6 +118,7 @@ export async function dispatchViaServerGateway(args: DispatchViaServerGatewayArg
     message,
     subject,
     category,
+    idempotencyKey,
     personalizeOptions,
     dispatchServerSms,
     dispatchServerEmail,
@@ -124,10 +137,20 @@ export async function dispatchViaServerGateway(args: DispatchViaServerGatewayArg
       })),
       message,
       category,
+      idempotencyKey,
     });
     if (res.queued) {
       notify.info(
         t("messaging.campaignQueuedNotice", { count: String(eligibleRecipients.length) }),
+      );
+      onClose();
+      return;
+    }
+    if (res.replayed || (res.sentCount === 0 && (res.skippedCount ?? 0) > 0)) {
+      notify.info(
+        t("messaging.dispatchAlreadySent", {
+          count: String(res.skippedCount ?? res.sentCount),
+        }),
       );
       onClose();
       return;
@@ -155,10 +178,20 @@ export async function dispatchViaServerGateway(args: DispatchViaServerGatewayArg
       subject: subject || t("messaging.defaultSubject"),
       message,
       category,
+      idempotencyKey,
     });
     if (res.queued) {
       notify.info(
         t("messaging.campaignQueuedNotice", { count: String(eligibleRecipients.length) }),
+      );
+      onClose();
+      return;
+    }
+    if (res.replayed || (res.sentCount === 0 && (res.skippedCount ?? 0) > 0)) {
+      notify.info(
+        t("messaging.dispatchAlreadySent", {
+          count: String(res.skippedCount ?? res.sentCount),
+        }),
       );
       onClose();
       return;
@@ -183,33 +216,38 @@ export async function dispatchViaServerGateway(args: DispatchViaServerGatewayArg
     return;
   }
 
-  if (channel === "whatsapp") {
-    const res = await dispatchServerWhatsApp.mutateAsync({
-      recipients: eligibleRecipients.map((recipient) => ({
-        id: recipient.id,
-        phone: recipient.phone ?? "",
-        name: recipient.name,
-      })),
-      message,
-      category,
-    });
-    if (res.queued) {
-      notify.info(
-        t("messaging.campaignQueuedNotice", { count: String(eligibleRecipients.length) }),
-      );
-      onClose();
-      return;
-    }
-    if (res.sentCount > 0) {
-      onSent?.(toCompletedRecords(eligibleRecipients, message, personalizeOptions));
-    }
-    notifyServerDispatchOutcome({
-      channel: "whatsapp",
-      sentCount: res.sentCount,
-      failedCount: res.failedCount,
-      t,
-    });
+  const res = await dispatchServerWhatsApp.mutateAsync({
+    recipients: eligibleRecipients.map((recipient) => ({
+      id: recipient.id,
+      phone: recipient.phone ?? "",
+      name: recipient.name,
+    })),
+    message,
+    category,
+    idempotencyKey,
+  });
+  if (res.queued) {
+    notify.info(t("messaging.campaignQueuedNotice", { count: String(eligibleRecipients.length) }));
     onClose();
     return;
   }
+  if (res.replayed || (res.sentCount === 0 && (res.skippedCount ?? 0) > 0)) {
+    notify.info(
+      t("messaging.dispatchAlreadySent", {
+        count: String(res.skippedCount ?? res.sentCount),
+      }),
+    );
+    onClose();
+    return;
+  }
+  if (res.sentCount > 0) {
+    onSent?.(toCompletedRecords(eligibleRecipients, message, personalizeOptions));
+  }
+  notifyServerDispatchOutcome({
+    channel: "whatsapp",
+    sentCount: res.sentCount,
+    failedCount: res.failedCount,
+    t,
+  });
+  onClose();
 }

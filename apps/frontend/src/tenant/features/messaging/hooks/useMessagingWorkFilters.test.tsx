@@ -18,6 +18,7 @@ describe("parseMessagingWorkFilters", () => {
       search: "ali",
       startDate: "2026-10-01",
       endDate: "2026-10-31",
+      showArchived: false,
     });
   });
 

@@ -1,6 +1,6 @@
 import React, { type JSX } from "react";
-import type { ModuleColumnRegistryEntry } from "@mms/shared";
-import { AlertTriangle } from "lucide-react";
+import { formatDateToIso, type ModuleColumnRegistryEntry } from "@mms/shared";
+import { AlertTriangle, Archive } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { MessagingFiltersMenuButton } from "./MessagingFiltersMenuButton";
 import { WorkTaskToolbar } from "@/components/common/work";
@@ -38,6 +38,9 @@ export interface MessagingListFiltersProps {
   columnCustomizerLabels?: ModuleColumnCustomizerLabels;
   shownCount?: number;
   filterChips?: React.ReactNode;
+  /** Archived (soft-deleted) logs view — only rendered for `messaging.clearLogs`. */
+  showArchived?: boolean;
+  onShowArchivedChange?: (value: boolean) => void;
 }
 
 export function MessagingListFilters({
@@ -67,21 +70,25 @@ export function MessagingListFilters({
   onResetColumnLayout,
   columnCustomizerLabels,
   shownCount,
+  showArchived = false,
+  onShowArchivedChange,
 }: MessagingListFiltersProps): JSX.Element {
   const { t } = useTranslation();
 
+  // Local-calendar dates: `toISOString()` is UTC, so "today" would be yesterday
+  // for every user east of UTC (Asia/Karachi is UTC+5).
   const handlePresetDate = (days: number): void => {
     const end = new Date();
     const start = new Date();
     if (days === 0) {
-      const todayStr = end.toISOString().split("T")[0]!;
+      const todayStr = formatDateToIso(end);
       onStartDateChange(todayStr);
       onEndDateChange(todayStr);
       return;
     }
     start.setDate(end.getDate() - days);
-    onStartDateChange(start.toISOString().split("T")[0]!);
-    onEndDateChange(end.toISOString().split("T")[0]!);
+    onStartDateChange(formatDateToIso(start));
+    onEndDateChange(formatDateToIso(end));
   };
 
   const clearDates = (): void => {
@@ -166,6 +173,20 @@ export function MessagingListFilters({
         <AlertTriangle className="w-4 h-4" aria-hidden="true" />
         <span>{t("messaging.status.failed")}</span>
       </Button>
+
+      {onShowArchivedChange ? (
+        <Button
+          variant={showArchived ? "default" : "outline"}
+          size="sm"
+          aria-pressed={showArchived}
+          aria-label={t("messaging.showArchived")}
+          onClick={() => onShowArchivedChange(!showArchived)}
+          className="gap-2 h-9"
+        >
+          <Archive className="w-4 h-4" aria-hidden="true" />
+          <span>{t("messaging.showArchived")}</span>
+        </Button>
+      ) : null}
     </WorkTaskToolbar>
   );
 }

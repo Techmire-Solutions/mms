@@ -64,7 +64,7 @@ export function useMessagingTableColumns({
                     e.stopPropagation();
                     onFilterContact(name);
                   }}
-                  className="h-6 w-6 min-h-6 min-w-6 opacity-0 group-hover:opacity-100 transition-opacity text-muted-foreground hover:text-primary cursor-pointer"
+                  className="h-11 w-11 min-h-11 min-w-11 opacity-0 group-hover:opacity-100 transition-opacity text-muted-foreground hover:text-primary cursor-pointer"
                   title={t("messaging.selectRecipientsDesc")}
                 >
                   <Filter className="h-3 w-3" />
@@ -127,7 +127,7 @@ export function useMessagingTableColumns({
               <CopyBtn
                 text={log.body}
                 showToast
-                className="h-6 w-6 min-h-6 min-w-6 shrink-0 opacity-0 group-hover:opacity-100 transition-opacity text-muted-foreground hover:text-primary shadow-none cursor-pointer"
+                className="h-11 w-11 min-h-11 min-w-11 shrink-0 opacity-0 group-hover:opacity-100 transition-opacity text-muted-foreground hover:text-primary shadow-none cursor-pointer"
               />
             </div>
           );

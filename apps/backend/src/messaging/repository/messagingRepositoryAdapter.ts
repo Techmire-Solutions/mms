@@ -8,7 +8,6 @@ import {
   bulkSaveMessageTemplates,
   deleteMessageTemplateById,
   listMessageLogsByWorkspace,
-  findMessageLogById,
   findMessageLogsByIds,
   saveMessageLog,
   bulkSaveMessageLogs,
@@ -20,6 +19,7 @@ import {
   restoreArchivedMessageLog,
   claimMessageLogForDelivery,
   updateMessageLogDeliveryStatus,
+  saveMessageLogDeliveryOutcomes,
 } from "../../db/repositories/messagingRepository.js";
 import {
   getWhatsappIntegrationRow,
@@ -40,7 +40,6 @@ export const messagingRepository: MessagingRepository = {
   replaceMessageTemplatesForWorkspace,
   deleteMessageTemplateById,
   listMessageLogsByWorkspace,
-  findMessageLogById,
   findMessageLogsByIds,
   saveMessageLog,
   bulkSaveMessageLogs,
@@ -52,6 +51,7 @@ export const messagingRepository: MessagingRepository = {
   restoreArchivedMessageLog,
   claimMessageLogForDelivery,
   updateMessageLogDeliveryStatus,
+  saveMessageLogDeliveryOutcomes,
   getWhatsappIntegrationRow,
   upsertWhatsappIntegrationConfigRow,
   upsertWhatsappIntegrationSecretsRow,

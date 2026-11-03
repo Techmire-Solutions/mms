@@ -1,7 +1,8 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
-import { MESSAGING_CSV_EXPORT_MAX_ROWS } from "@mms/shared";
+import { MESSAGING_CSV_EXPORT_MAX_BYTES, MESSAGING_CSV_EXPORT_MAX_ROWS } from "@mms/shared";
 import {
   buildMessagingCsvExport,
+  generateMessagingCsvStreamChunks,
   MessagingCsvExportLimitError,
 } from "../services/messagingExportService.js";
 
@@ -60,5 +61,71 @@ describe("buildMessagingCsvExport", () => {
     expect(result.count).toBe(1);
     expect(result.csv).toContain("Ali");
     expect(result.csv).toContain("Hello");
+  });
+});
+
+describe("generateMessagingCsvStreamChunks (worker path)", () => {
+  beforeEach(() => {
+    mockLoadFilteredMessageLogs.mockReset();
+    mockResolveMessagingRecipients.mockReset().mockResolvedValue([]);
+  });
+
+  it("enforces the byte cap on the streaming path the worker uses", async () => {
+    mockLoadFilteredMessageLogs.mockResolvedValueOnce({
+      logs: [
+        {
+          id: "1",
+          userId: "u1",
+          contactId: "c1",
+          channel: "sms",
+          body: "x".repeat(MESSAGING_CSV_EXPORT_MAX_BYTES + 1),
+          sentAt: "2026-01-01T00:00:00.000Z",
+          status: "sent",
+          category: "general",
+        },
+      ],
+      total: 1,
+      page: 1,
+      pageSize: 250,
+      hasMore: false,
+    });
+
+    const consume = async (): Promise<void> => {
+      for await (const _chunk of generateMessagingCsvStreamChunks("demo", {})) {
+        // drain
+      }
+    };
+    await expect(consume()).rejects.toBeInstanceOf(MessagingCsvExportLimitError);
+  });
+
+  it("resolves recipient names with the session role", async () => {
+    mockLoadFilteredMessageLogs.mockResolvedValueOnce({
+      logs: [
+        {
+          id: "1",
+          userId: "u1",
+          contactId: "c1",
+          channel: "sms",
+          body: "Hello",
+          sentAt: "2026-01-01T00:00:00.000Z",
+          status: "sent",
+          category: "general",
+        },
+      ],
+      total: 1,
+      page: 1,
+      pageSize: 250,
+      hasMore: false,
+    });
+    mockResolveMessagingRecipients.mockResolvedValueOnce([{ id: "c1", name: "Ali", phone: "1" }]);
+
+    for await (const _chunk of generateMessagingCsvStreamChunks(
+      "demo",
+      {},
+      { viewerRole: "teacher" },
+    )) {
+      // drain
+    }
+    expect(mockResolveMessagingRecipients).toHaveBeenCalledWith("demo", ["c1"], "teacher");
   });
 });

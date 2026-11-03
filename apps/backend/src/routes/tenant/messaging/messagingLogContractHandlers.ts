@@ -1,6 +1,5 @@
 import type { User } from "@mms/shared";
 import {
-  isQueryFlagTrue,
   messagingMetricsQuerySchema,
   recordMessageLogsSchema,
   type messagingContract,
@@ -29,6 +28,13 @@ function getTenantInfo(request: { tenant?: { id?: string; subdomain?: string } }
   return { id: String(id), subdomain: String(subdomain) };
 }
 
+function logHandlerFailure(operation: string, err: unknown): void {
+  logger.error(
+    { err: err instanceof Error ? err.message : String(err), operation },
+    "messaging contract handler failed",
+  );
+}
+
 export async function messagingListLogsHandler({
   query,
   request,
@@ -42,11 +48,8 @@ export async function messagingListLogsHandler({
       body: { type: "forbidden", message: "Insufficient permissions" },
     };
   }
-  const includeDeleted =
-    query &&
-    "includeDeleted" in query &&
-    isQueryFlagTrue((query as Record<string, unknown>).includeDeleted);
-  if (includeDeleted && !canClearMessagingLogs(user)) {
+  // Archived (soft-deleted) logs are a privileged view — `mms-messaging` §4.
+  if (query?.includeDeleted === true && !canClearMessagingLogs(user)) {
     return {
       status: 403 as const,
       body: { type: "forbidden", message: "Insufficient permissions" },
@@ -60,7 +63,8 @@ export async function messagingListLogsHandler({
       { readOnly: true },
     );
     return { status: 200 as const, body: result };
-  } catch {
+  } catch (err) {
+    logHandlerFailure("listLogs", err);
     return {
       status: 500 as const,
       body: { type: "database_error", message: "Failed to list message logs" },
@@ -103,7 +107,8 @@ export async function messagingGetMetricsHandler({
       { readOnly: true },
     );
     return { status: 200 as const, body: { metrics } };
-  } catch {
+  } catch (err) {
+    logHandlerFailure("getMetrics", err);
     return {
       status: 500 as const,
       body: { type: "database_error", message: "Failed to load messaging metrics" },
@@ -173,9 +178,9 @@ export async function messagingClearLogsHandler({
       body: { type: "forbidden", message: "Insufficient permissions" },
     };
   }
-  let tenantSubdomain: string;
+  let tenant: { id: string; subdomain: string };
   try {
-    tenantSubdomain = getTenantInfo(request).subdomain;
+    tenant = getTenantInfo(request);
   } catch {
     return {
       status: 400 as const,
@@ -184,20 +189,25 @@ export async function messagingClearLogsHandler({
   }
 
   try {
-    await messagingUseCases.clearAllMessageLogs(tenantSubdomain);
-    await recordModernAuditEvent({
-      workspaceSubdomain: tenantSubdomain,
-      tableName: "message_logs",
-      recordId: "message_logs",
-      actionType: "DELETE",
-      realUserId: String(user.id),
-      newState: {
-        summary: "Soft-archived all message logs from Reports",
-        action: "messaging.logs.clear",
-      },
+    // Archive + audit share one tenant transaction: a failed audit must not leave
+    // logs archived with no attributable event (`mms-data-layer` §5.4).
+    await withTenant(tenant.id, async () => {
+      await messagingUseCases.clearAllMessageLogs(tenant.subdomain, String(user.id));
+      await recordModernAuditEvent({
+        workspaceSubdomain: tenant.subdomain,
+        tableName: "message_logs",
+        recordId: "message_logs",
+        actionType: "DELETE",
+        realUserId: String(user.id),
+        newState: {
+          summary: "Soft-archived all message logs from Reports",
+          action: "messaging.logs.clear",
+        },
+      });
     });
     return { status: 200 as const, body: { success: true as const } };
-  } catch {
+  } catch (err) {
+    logHandlerFailure("clearLogs", err);
     return {
       status: 500 as const,
       body: { type: "database_error", message: "Failed to clear message logs" },
@@ -219,9 +229,9 @@ export async function messagingRestoreLogsHandler({
       body: { type: "forbidden", message: "Insufficient permissions" },
     };
   }
-  let tenantSubdomain: string;
+  let tenant: { id: string; subdomain: string };
   try {
-    tenantSubdomain = getTenantInfo(request).subdomain;
+    tenant = getTenantInfo(request);
   } catch {
     return {
       status: 400 as const,
@@ -234,41 +244,41 @@ export async function messagingRestoreLogsHandler({
     : undefined;
 
   try {
-    const restoredCount = await messagingUseCases.restoreMessageLogs(
-      tenantSubdomain,
-      String(user.id),
-      requestedIds,
-    );
-
-    if (restoredCount > 0) {
-      void emitOutboxEvent("entity.restored", {
-        entityType: "message_logs",
-        entityId: "message_logs",
-        tenantId: tenantSubdomain,
-        restoredAt: new Date().toISOString(),
-        restoredBy: String(user.id),
-        version: Date.now(),
-      }).catch((err: unknown) =>
-        logger.error(
-          { err: err instanceof Error ? err.message : String(err) },
-          "outbox event emit failed",
-        ),
+    const restoredCount = await withTenant(tenant.id, async () => {
+      const restored = await messagingUseCases.restoreMessageLogs(
+        tenant.subdomain,
+        String(user.id),
+        requestedIds,
       );
-      await recordModernAuditEvent({
-        workspaceSubdomain: tenantSubdomain,
-        tableName: "message_logs",
-        recordId: "message_logs",
-        actionType: "RESTORE",
-        realUserId: String(user.id),
-        newState: {
-          summary: `Restored archived message logs (${restoredCount} restored)`,
-          action: "messaging.logs.restore",
-        },
-      });
-    }
+      if (restored > 0) {
+        // Both writes join the surrounding transaction (outbox + audit resolve the
+        // active tenant tx), so restore, CDC event, and audit commit atomically.
+        await emitOutboxEvent("entity.restored", {
+          entityType: "message_logs",
+          entityId: "message_logs",
+          tenantId: tenant.subdomain,
+          restoredAt: new Date().toISOString(),
+          restoredBy: String(user.id),
+          version: Date.now(),
+        });
+        await recordModernAuditEvent({
+          workspaceSubdomain: tenant.subdomain,
+          tableName: "message_logs",
+          recordId: "message_logs",
+          actionType: "RESTORE",
+          realUserId: String(user.id),
+          newState: {
+            summary: `Restored archived message logs (${restored} restored)`,
+            action: "messaging.logs.restore",
+          },
+        });
+      }
+      return restored;
+    });
 
     return { status: 200 as const, body: { restored: restoredCount } };
-  } catch {
+  } catch (err) {
+    logHandlerFailure("restoreLogs", err);
     return {
       status: 500 as const,
       body: { type: "database_error", message: "Failed to restore message logs" },

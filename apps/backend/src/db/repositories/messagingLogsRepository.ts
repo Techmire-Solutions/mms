@@ -1,5 +1,5 @@
 import { and, eq, inArray, isNull, isNotNull, sql } from "drizzle-orm";
-import { messageTemplates, messageLogs } from "../schema.js";
+import { messageLogs } from "../schema.js";
 import { dedupeTrimmedIds, type Message, type RepositoryListOptions } from "@mms/shared";
 import { withTenant } from "../tenant-context.js";
 import { mapAuditToInsert } from "./repositoryMappers.js";
@@ -38,6 +38,8 @@ export async function listMessageLogsByWorkspace(
         deletedAt: messageLogs.deletedAt,
         deletedBy: messageLogs.deletedBy,
         deletionReason: messageLogs.deletionReason,
+        restoredAt: messageLogs.restoredAt,
+        restoredBy: messageLogs.restoredBy,
       })
       .from(messageLogs)
       .where(and(eq(messageLogs.workspaceSubdomain, subdomain), isNull(messageLogs.deletedAt)))
@@ -45,38 +47,6 @@ export async function listMessageLogsByWorkspace(
       .limit(limit)
       .offset(offset);
     return rows.map((r) => logRowToRecord(r as LogRow));
-  });
-}
-
-export async function findMessageLogById(tenant: string, id: string): Promise<Message | null> {
-  const cleanId = id?.trim();
-  if (!cleanId) return null;
-  const subdomain = tenant.trim().toLowerCase();
-  return withTenant(subdomain, async (tx) => {
-    const rows = await tx
-      .select({
-        id: messageLogs.id,
-        workspaceSubdomain: messageLogs.workspaceSubdomain,
-        userId: messageLogs.userId,
-        contactId: messageLogs.contactId,
-        channel: messageLogs.channel,
-        body: messageLogs.body,
-        sentAt: messageLogs.sentAt,
-        status: messageLogs.status,
-        subject: messageLogs.subject,
-        category: messageLogs.category,
-        errorMessage: messageLogs.errorMessage,
-        deletedAt: messageLogs.deletedAt,
-        deletedBy: messageLogs.deletedBy,
-        deletionReason: messageLogs.deletionReason,
-        createdAt: messageLogs.createdAt,
-        updatedAt: messageLogs.updatedAt,
-      })
-      .from(messageLogs)
-      .where(and(eq(messageLogs.workspaceSubdomain, subdomain), eq(messageLogs.id, cleanId)))
-      .limit(1);
-    const row = rows[0];
-    return row ? logRowToRecord(row as LogRow) : null;
   });
 }
 
@@ -119,6 +89,8 @@ export async function findMessageLogsByIds(
         deletedAt: messageLogs.deletedAt,
         deletedBy: messageLogs.deletedBy,
         deletionReason: messageLogs.deletionReason,
+        restoredAt: messageLogs.restoredAt,
+        restoredBy: messageLogs.restoredBy,
         createdAt: messageLogs.createdAt,
         updatedAt: messageLogs.updatedAt,
       })
@@ -171,9 +143,9 @@ export async function saveMessageLog(tenant: string, record: Message): Promise<v
           subject: sql`excluded.subject`,
           category: sql`excluded.category`,
           errorMessage: sql`excluded.error_message`,
-          deletedAt: sql`excluded.deleted_at`,
-          deletedBy: sql`excluded.deleted_by`,
-          deletionReason: sql`excluded.deletion_reason`,
+          // Soft-delete columns are intentionally NOT copied here: archive and
+          // restore own that lifecycle (with attribution + audit). Copying them
+          // made a content save able to resurrect a row unattributed.
           updatedAt: new Date(),
         },
       });
@@ -228,20 +200,12 @@ export async function bulkSaveMessageLogs(tenant: string, records: Message[]): P
           subject: sql`excluded.subject`,
           category: sql`excluded.category`,
           errorMessage: sql`excluded.error_message`,
-          deletedAt: sql`excluded.deleted_at`,
-          deletedBy: sql`excluded.deleted_by`,
-          deletionReason: sql`excluded.deletion_reason`,
+          // Soft-delete columns are intentionally NOT copied here: archive and
+          // restore own that lifecycle (with attribution + audit). Copying them
+          // made a content save able to resurrect a row unattributed.
           updatedAt: new Date(),
         },
       });
-  });
-}
-
-export async function deleteMessageLogsByWorkspace(workspaceSubdomain: string): Promise<void> {
-  const subdomain = workspaceSubdomain.trim().toLowerCase();
-  await withTenant(subdomain, async (tx) => {
-    await tx.delete(messageLogs).where(eq(messageLogs.workspaceSubdomain, subdomain));
-    await tx.delete(messageTemplates).where(eq(messageTemplates.workspaceSubdomain, subdomain));
   });
 }
 
