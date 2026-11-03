@@ -50,7 +50,7 @@ describe("OptionSelectPopover", () => {
     });
 
     const trigger = container.querySelector("button") as HTMLButtonElement;
-    expect(trigger).toBeTruthy();
+    expect(trigger).not.toBeNull();
     expect(trigger.textContent).toContain("Option Alpha");
 
     // Open the popover by clicking trigger

@@ -50,7 +50,7 @@ describe("DashedFileDropZone", () => {
     expect(container.textContent).toContain("Select Document");
 
     const dropzone = container.querySelector('[role="presentation"]') as HTMLElement;
-    expect(dropzone).toBeTruthy();
+    expect(dropzone).not.toBeNull();
 
     // Drag over
     await act(async () => {
@@ -77,7 +77,7 @@ describe("DashedFileDropZone", () => {
 
     // Click browse button
     const browseBtn = container.querySelector("button") as HTMLButtonElement;
-    expect(browseBtn).toBeTruthy();
+    expect(browseBtn).not.toBeNull();
     await act(async () => {
       browseBtn.click();
     });
@@ -106,7 +106,7 @@ describe("DashedFileDropZone", () => {
     });
 
     const fileInput = container.querySelector("input#photo-input") as HTMLInputElement;
-    expect(fileInput).toBeTruthy();
+    expect(fileInput).not.toBeNull();
 
     const file = new File(["dummy"], "avatar.png", { type: "image/png" });
     await act(async () => {

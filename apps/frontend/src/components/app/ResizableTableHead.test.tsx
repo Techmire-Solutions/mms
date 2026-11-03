@@ -82,7 +82,7 @@ describe("ResizableTableHead", () => {
       });
 
       const handle = container.querySelector('[role="separator"]') as HTMLElement;
-      expect(handle).toBeTruthy();
+      expect(handle).not.toBeNull();
 
       // Start drag
       await act(async () => {
@@ -126,7 +126,7 @@ describe("ResizableTableHead", () => {
       });
 
       const handle = container.querySelector('[role="separator"]') as HTMLElement;
-      expect(handle).toBeTruthy();
+      expect(handle).not.toBeNull();
 
       await act(async () => {
         handle.dispatchEvent(new MouseEvent("dblclick", { bubbles: true, cancelable: true }));
