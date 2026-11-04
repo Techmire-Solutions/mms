@@ -4,7 +4,6 @@ import {
   SESSION_LOOKUP_KINDS,
   type User,
   type SessionLookupKind,
-  roleHasPermission,
   normalizeSessionModulePreferences,
 } from "@mms/shared";
 import { canReadCollection } from "../../../services/rbacService.js";
@@ -23,6 +22,7 @@ import { putSessionLookupKind } from "./sessionLookupKindPut.js";
 import { handleContractError } from "../../../lib/contractError.js";
 import type { ContractRouteArgs, ContractRouteResponse } from "../../../lib/contractRouterTypes.js";
 import { withTenant } from "../../../db/tenant-context.js";
+import { userHasPermission } from "../../../lib/userPermissionContext.js";
 
 const COLLECTION = SESSIONS_MODULE_MANIFEST.collectionKey;
 const SETUP_WRITE_PERM = SESSIONS_MODULE_MANIFEST.permissions.setupWrite;
@@ -123,7 +123,7 @@ export const sessionSetupContractHandlers = {
     ContractRouteResponse<(typeof sessionContract)["updateFieldConfig"]>
   > => {
     const user = request.user as User;
-    if (!roleHasPermission(user.role, SETUP_WRITE_PERM))
+    if (!userHasPermission(user, SETUP_WRITE_PERM))
       return {
         status: 403 as const,
         body: { type: "forbidden", message: "Insufficient permissions" },
@@ -175,7 +175,7 @@ export const sessionSetupContractHandlers = {
     ContractRouteResponse<(typeof sessionContract)["updatePreferences"]>
   > => {
     const user = request.user as User;
-    if (!roleHasPermission(user.role, SETUP_WRITE_PERM))
+    if (!userHasPermission(user, SETUP_WRITE_PERM))
       return {
         status: 403 as const,
         body: { type: "forbidden", message: "Insufficient permissions" },

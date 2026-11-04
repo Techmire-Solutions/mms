@@ -2,7 +2,6 @@ import {
   type Faculty,
   type User,
   FACULTY_MODULE_MANIFEST,
-  roleHasPermission,
   type facultyContract,
 } from "@mms/shared";
 import { createCollectionAuditHelper } from "../../../lib/createCollectionAuditHelper.js";
@@ -12,6 +11,7 @@ import { withTenant } from "../../../db/tenant-context.js";
 import { getRequestTenant } from "../../../lib/tenantContext.js";
 import { canReadCollection, canWriteCollection } from "../../../services/rbacService.js";
 import type { ContractRouteArgs, ContractRouteResponse } from "../../../lib/contractRouterTypes.js";
+import { userHasPermission } from "../../../lib/userPermissionContext.js";
 
 /** Thin Faculty audit helper — same shape as Contacts `auditContact`. */
 export const auditFaculty = createCollectionAuditHelper("faculty", { subjectScoped: true });
@@ -120,7 +120,7 @@ export async function handleMigrateEmployeeIds({
   const user = request.user as User;
   if (
     !canWriteCollection(user, "faculty") ||
-    !roleHasPermission(user.role, FACULTY_MODULE_MANIFEST.permissions.setupWrite)
+    !userHasPermission(user, FACULTY_MODULE_MANIFEST.permissions.setupWrite)
   ) {
     return {
       status: 403 as const,

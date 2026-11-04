@@ -1,4 +1,4 @@
-import { ALL_PERMISSIONS, roleHasPermission, type User } from "@mms/shared";
+import { ALL_PERMISSIONS, type User } from "@mms/shared";
 import type {
   NewTenantNotification,
   NotificationsRepository,
@@ -7,13 +7,14 @@ import { notificationsRepository } from "../repository/notificationsRepositoryAd
 import { broadcastTenantUpdate } from "../../lib/livePush.js";
 import { logger } from "../../lib/logger.js";
 import { NotFoundError } from "../../lib/httpErrors.js";
+import { userHasPermission } from "../../lib/userPermissionContext.js";
 
 /** Live-push key the frontend refetches stored notifications on. */
 export const NOTIFICATIONS_BROADCAST_KEY = "notifications";
 
 /** Permissions the user's role holds; a notification is visible when its audience is one of them. */
 function permissionsOf(user: User): string[] {
-  return ALL_PERMISSIONS.filter((permission) => roleHasPermission(user.role, permission));
+  return ALL_PERMISSIONS.filter((permission) => userHasPermission(user, permission));
 }
 
 export function createNotificationsUseCases(

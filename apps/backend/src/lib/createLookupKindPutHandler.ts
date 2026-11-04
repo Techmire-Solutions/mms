@@ -1,8 +1,9 @@
 import type { FastifyRequest } from "fastify";
 import type { ZodType } from "zod";
 import type { Permission, User } from "@mms/shared";
-import { roleHasPermission } from "@mms/shared";
+import {} from "@mms/shared";
 import { handleContractError } from "./contractError.js";
+import { userHasPermission } from ".//userPermissionContext.js";
 
 type ErrorBody = { type: string; message: string };
 
@@ -30,7 +31,7 @@ export function createLookupKindPutHandler<TKind extends string, TItems>(options
     request: FastifyRequest;
   }): Promise<LookupKindPutResult<TItems>> => {
     const user = args.request.user as User;
-    if (!roleHasPermission(user.role, options.setupWritePermission)) {
+    if (!userHasPermission(user, options.setupWritePermission)) {
       return { status: 403, body: { type: "forbidden", message: "Insufficient permissions" } };
     }
     const kind = args.params.kind;

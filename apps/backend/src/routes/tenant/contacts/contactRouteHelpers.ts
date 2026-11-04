@@ -8,7 +8,6 @@ import {
   CONTACTS_MODULE_MANIFEST,
   OWN_CONTACT_PATCH_KEYS,
   ownContactPatchBodySchema,
-  roleHasPermission,
   resolveContactFieldConfigSnapshot,
   sanitizeContactForViewer,
   sanitizeContactsForViewer,
@@ -33,6 +32,7 @@ import {
   handleContactWriteError,
   formatContactWriteError,
 } from "./contactRouteErrors.js";
+import { userHasPermission } from "../../../lib/userPermissionContext.js";
 
 export type ContactPermission = "read" | "write" | "delete";
 
@@ -96,7 +96,7 @@ export function savedReportViewer(user: User): ContactsSavedReportViewer {
   return {
     id: String(user.id),
     role: user.role,
-    isAdmin: roleHasPermission(user.role, CONTACTS_MODULE_MANIFEST.permissions.setupWrite),
+    isAdmin: userHasPermission(user, CONTACTS_MODULE_MANIFEST.permissions.setupWrite),
   };
 }
 

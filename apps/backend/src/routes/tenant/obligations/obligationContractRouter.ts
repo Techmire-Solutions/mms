@@ -5,7 +5,6 @@ import {
   obligationContract,
   OBLIGATIONS_MODULE_MANIFEST,
   normalizeObligationsModulePreferences,
-  roleHasPermission,
 } from "@mms/shared";
 import { initServer, type RouterImplementation } from "@ts-rest/fastify";
 import { standardRequestValidationErrorHandler } from "../../../lib/contractRegistration.js";
@@ -19,6 +18,7 @@ import {
 } from "../../../services/obligationPreferencesService.js";
 import { createCollectionAuditHelper } from "../../../lib/createCollectionAuditHelper.js";
 import { findObligationJournalEntry } from "../../../accounting/ledgerPosting/obligationVoucherLookup.js";
+import { userHasPermission } from "../../../lib/userPermissionContext.js";
 
 const auditObligations = createCollectionAuditHelper("obligation_collections");
 const s = initServer();
@@ -167,7 +167,7 @@ export const obligationContractRouter: FastifyPluginAsync = async (fastify) => {
       ContractRouteResponse<(typeof obligationContract)["updatePreferences"]>
     > => {
       const user = request.user as User;
-      if (!roleHasPermission(user.role, OBLIGATIONS_MODULE_MANIFEST.permissions.setupWrite)) {
+      if (!userHasPermission(user, OBLIGATIONS_MODULE_MANIFEST.permissions.setupWrite)) {
         return {
           status: 403 as const,
           body: { type: "forbidden", message: "Insufficient permissions" },

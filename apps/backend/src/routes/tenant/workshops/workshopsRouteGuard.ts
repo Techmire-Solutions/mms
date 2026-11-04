@@ -1,5 +1,5 @@
 import type { FastifyRequest } from "fastify";
-import { roleHasPermission, type Permission, type User } from "@mms/shared";
+import { type Permission, type User } from "@mms/shared";
 import { handleContractError } from "../../../lib/contractError.js";
 import { HttpDomainError } from "../../../lib/httpErrors.js";
 import { runWithTenant } from "../../../lib/tenantContext.js";
@@ -8,6 +8,7 @@ import {
   canReadCollection,
   canWriteCollection,
 } from "../../../services/rbacService.js";
+import { userHasPermission } from "../../../lib/userPermissionContext.js";
 
 export type WorkshopAccess = "read" | "write" | "delete";
 
@@ -23,7 +24,7 @@ export const forbidden = {
 type ErrorResult = { status: number; body: { type: string; message: string } };
 
 function allowed(user: User, rule: WorkshopRule): boolean {
-  if ("permission" in rule) return roleHasPermission(user.role, rule.permission);
+  if ("permission" in rule) return userHasPermission(user, rule.permission);
   if (rule.access === "read") return canReadCollection(user, rule.collection);
   if (rule.access === "write") return canWriteCollection(user, rule.collection);
   return canDeleteCollection(user, rule.collection);

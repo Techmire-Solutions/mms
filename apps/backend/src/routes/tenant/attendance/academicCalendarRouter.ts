@@ -4,7 +4,6 @@ import {
   academicCalendarContract,
   ATTENDANCE_MODULE_MANIFEST,
   isQueryFlagTrue,
-  roleHasPermission,
   type User,
 } from "@mms/shared";
 import { handleContractError } from "../../../lib/contractError.js";
@@ -13,6 +12,7 @@ import type { ContractRouteArgs } from "../../../lib/contractRouterTypes.js";
 import { HttpDomainError } from "../../../lib/httpErrors.js";
 import { canDeleteCollection, canReadCollection } from "../../../services/rbacService.js";
 import { academicCalendarUseCases } from "../../../attendance/use-cases/academicCalendarUseCases.js";
+import { userHasPermission } from "../../../lib/userPermissionContext.js";
 
 type Contract = typeof academicCalendarContract;
 const COLLECTION = ATTENDANCE_MODULE_MANIFEST.collectionKey;
@@ -29,7 +29,7 @@ function tenantOf(request: AnyRequest): string {
 }
 
 function canWriteSetup(user: User): boolean {
-  return roleHasPermission(user.role, ATTENDANCE_MODULE_MANIFEST.permissions.setupWrite);
+  return userHasPermission(user, ATTENDANCE_MODULE_MANIFEST.permissions.setupWrite);
 }
 
 function domainError(request: AnyRequest, error: unknown, message: string) {

@@ -1,13 +1,13 @@
 import type { FastifyPluginAsync } from "fastify";
 import {
   DASHBOARD_MODULE_MANIFEST,
-  roleHasPermission,
   dashboardContract,
   normalizeDashboardPreferences,
   type DashboardPreferences,
   type DashboardWidgetDto,
   type User,
 } from "@mms/shared";
+import { userHasPermission } from "../../lib/userPermissionContext.js";
 import { initServer, type RouterImplementation } from "@ts-rest/fastify";
 import { standardRequestValidationErrorHandler } from "../../lib/contractRegistration.js";
 import type { ContractRouteArgs, ContractRouteResponse } from "../../lib/contractRouterTypes.js";
@@ -36,11 +36,9 @@ const auditDashboard = createCollectionAuditHelper("dashboard");
 const s = initServer();
 
 function canWriteDashboard(user: User): boolean {
-  if (!user || !user.role) return false;
-  const role = String(user.role).toLowerCase();
   return (
-    roleHasPermission(role, DASHBOARD_MODULE_MANIFEST.permissions.setupWrite) ||
-    roleHasPermission(role, DASHBOARD_MODULE_MANIFEST.permissions.customize)
+    userHasPermission(user, DASHBOARD_MODULE_MANIFEST.permissions.setupWrite) ||
+    userHasPermission(user, DASHBOARD_MODULE_MANIFEST.permissions.customize)
   );
 }
 

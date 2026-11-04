@@ -11,6 +11,7 @@ import {
   isSuperAdminRole,
   resolveFacultyDesignationRoleAssignment,
   roleHasPermission,
+  type WorkspaceRole,
   type FacultyEmployDesignationWriteRow,
   type FacultyMember,
   type FacultyProfileStatus,
@@ -51,12 +52,15 @@ async function resolveActorRole(tenant: string): Promise<string | null> {
   return resolveCurrentTenantRole(tenant, actorId);
 }
 
-function actorMayAssignRoles(actorRole: string | null): boolean {
+function actorMayAssignRoles(
+  actorRole: string | null,
+  roleCatalog: readonly WorkspaceRole[],
+): boolean {
   if (!actorRole) return false;
   return (
     isAdminRole(actorRole) ||
     isSuperAdminRole(actorRole) ||
-    roleHasPermission(actorRole, "users.manage")
+    roleHasPermission(actorRole, "users.manage", roleCatalog)
   );
 }
 
@@ -147,7 +151,7 @@ export async function syncFacultyLinkedUserRole(
     }
     const actorIsAdmin = isAdminRole(actorRole) || isSuperAdminRole(actorRole);
     const linkedIsAdmin = isAdminRole(linked.role) || isSuperAdminRole(linked.role);
-    if ((linkedIsAdmin && !actorIsAdmin) || !actorMayAssignRoles(actorRole)) {
+    if ((linkedIsAdmin && !actorIsAdmin) || !actorMayAssignRoles(actorRole, roleCatalog)) {
       logger.warn(
         { tenant: subdomain, contactId, actorRole, linkedRole: linked.role, nextRole },
         "Blocked faculty linked-role change",

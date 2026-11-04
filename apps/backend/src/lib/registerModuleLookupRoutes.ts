@@ -1,9 +1,10 @@
 import type { FastifyInstance } from "fastify";
 import type { ZodTypeAny } from "zod";
 import type { Permission, User } from "@mms/shared";
-import { roleHasPermission } from "@mms/shared";
+import {} from "@mms/shared";
 import { sendDatabaseError, sendForbidden } from "./httpErrors.js";
 import { parseRequest, replyValidationError } from "./zodRequest.js";
+import { userHasPermission } from ".//userPermissionContext.js";
 
 export type RegisterModuleLookupRoutesOptions<TKind extends string = string, TItems = unknown> = {
   canRead: (user: User) => boolean;
@@ -48,7 +49,7 @@ export function registerModuleLookupRoutes<TKind extends string = string, TItems
 
   fastify.put("/lookups/:kind", async (request, reply) => {
     const user = request.user as User;
-    if (!roleHasPermission(user.role, options.setupWritePermission)) {
+    if (!userHasPermission(user, options.setupWritePermission)) {
       return sendForbidden(reply);
     }
 

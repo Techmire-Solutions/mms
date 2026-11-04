@@ -1,6 +1,5 @@
 import type { User } from "@mms/shared";
-import { PLATFORM_SUPER_USERS_OBJECT_KEY, roleHasPermission } from "@mms/shared";
-import { LRUCache } from "lru-cache";
+import { PLATFORM_SUPER_USERS_OBJECT_KEY } from "@mms/shared";
 import {
   OBJECT_READ_PERMISSION,
   OBJECT_WRITE_PERMISSION,
@@ -8,14 +7,7 @@ import {
   isAllowedObjectKey,
   isStaffWriteObjectKey,
 } from "./rbacPermissionMaps.js";
-
-const canReadObjectCache = new LRUCache<string, boolean>({ max: 2048 });
-const canWriteObjectCache = new LRUCache<string, boolean>({ max: 2048 });
-
-export function clearRbacObjectCache(): void {
-  canReadObjectCache.clear();
-  canWriteObjectCache.clear();
-}
+import { userHasPermission } from "./userPermissionContext.js";
 
 function computeCanReadObject(user: User, key: string): boolean {
   if (!user || !user.role) {
@@ -29,7 +21,7 @@ function computeCanReadObject(user: User, key: string): boolean {
   }
   const mapped = OBJECT_READ_PERMISSION[key];
   if (mapped) {
-    return roleHasPermission(user.role, mapped);
+    return userHasPermission(user, mapped);
   }
   if (isStaffWriteObjectKey(key)) {
     return WRITE_ROLES.has(user.role);
@@ -46,12 +38,7 @@ export function canReadObject(user: User, key: string): boolean {
   if (!user || !user.role) {
     return false;
   }
-  const cacheKey = `${user.role}:${key}`;
-  const cached = canReadObjectCache.get(cacheKey);
-  if (cached !== undefined) return cached;
-
   const result = computeCanReadObject(user, key);
-  canReadObjectCache.set(cacheKey, result);
   return result;
 }
 
@@ -72,7 +59,7 @@ function computeCanWriteObject(user: User, key: string): boolean {
   }
   const mapped = OBJECT_WRITE_PERMISSION[key];
   if (mapped) {
-    return roleHasPermission(user.role, mapped);
+    return userHasPermission(user, mapped);
   }
   if (isStaffWriteObjectKey(key)) {
     return WRITE_ROLES.has(user.role);
@@ -88,12 +75,7 @@ export function canWriteObject(user: User, key: string): boolean {
   if (!user || !user.role) {
     return false;
   }
-  const cacheKey = `${user.role}:${key}`;
-  const cached = canWriteObjectCache.get(cacheKey);
-  if (cached !== undefined) return cached;
-
   const result = computeCanWriteObject(user, key);
-  canWriteObjectCache.set(cacheKey, result);
   return result;
 }
 
@@ -102,7 +84,7 @@ export function canBulkSync(user: User): boolean {
   if (!user || !user.role) {
     return false;
   }
-  return roleHasPermission(user.role, "settings.global.write");
+  return userHasPermission(user, "settings.global.write");
 }
 
 /** Bulk sync download — same privilege as canBulkSync / settings.global.write. */

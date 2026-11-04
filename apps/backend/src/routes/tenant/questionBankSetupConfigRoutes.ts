@@ -7,7 +7,6 @@ import {
   composeQuestionBankSettings,
   normalizeQuestionBankModulePreferences,
   normalizeQuestionBankFieldConfigOnly,
-  roleHasPermission,
   type User,
 } from "@mms/shared";
 import { getRequestTenant } from "../../lib/tenantContext.js";
@@ -22,6 +21,7 @@ import {
   getQuestionBankPreferences,
   updateQuestionBankPreferences,
 } from "../../services/questionBankPreferencesService.js";
+import { userHasPermission } from "../../lib/userPermissionContext.js";
 
 const auditQuestionBank = createCollectionAuditHelper("questionBank");
 
@@ -31,9 +31,9 @@ export const questionBankSetupConfigRoutes: FastifyPluginAsync = async (
   fastify.addHook("onRequest", authenticateTenant);
 
   const canViewSetup = (user: User | undefined) =>
-    roleHasPermission(user?.role, QUESTION_BANK_MODULE_MANIFEST.permissions.setupView);
+    userHasPermission(user, QUESTION_BANK_MODULE_MANIFEST.permissions.setupView);
   const canWriteSetup = (user: User | undefined) =>
-    roleHasPermission(user?.role, QUESTION_BANK_MODULE_MANIFEST.permissions.setupWrite);
+    userHasPermission(user, QUESTION_BANK_MODULE_MANIFEST.permissions.setupWrite);
 
   fastify.get("/config/fields", async (request, reply) => {
     if (!canViewSetup(request.user as User | undefined)) return sendForbidden(reply);
