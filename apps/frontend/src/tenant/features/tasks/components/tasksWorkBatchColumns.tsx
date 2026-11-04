@@ -7,21 +7,13 @@ import { User as UserIcon } from "lucide-react";
 import { formatDate, type TaskRecord, type TaskStatus, type AppTranslationKey } from "@mms/shared";
 import type { WorkBatchTableColumn } from "@/components/common/work/WorkBatchTable";
 import { TableCellLink } from "@shared/ui";
-import { TaskPriorityBadge, TaskStatusBadge } from "./TaskBadges";
-
-export const TASK_NEXT_STATUS: Record<TaskStatus, TaskStatus> = {
-  todo: "in_progress",
-  in_progress: "in_review",
-  in_review: "completed",
-  blocked: "in_progress",
-  completed: "todo",
-  cancelled: "todo",
-};
+import { TaskPriorityBadge } from "./TaskBadges";
+import { TaskStatusMenu } from "./TaskStatusMenu";
 
 export function buildTasksWorkBatchColumns(
   t: (key: AppTranslationKey) => string,
   canWrite: boolean,
-  onCycleStatus: (task: TaskRecord) => void,
+  onChangeStatus: (task: TaskRecord, status: TaskStatus) => void,
   onView: (task: TaskRecord) => void,
   options?: {
     isColumnVisible?: (key: string) => boolean;
@@ -66,10 +58,7 @@ export function buildTasksWorkBatchColumns(
       width: widthOf?.("status") ?? 140,
       noWrap: true,
       render: (task) => (
-        <TaskStatusBadge
-          status={task.status}
-          onClick={canWrite ? () => onCycleStatus(task) : undefined}
-        />
+        <TaskStatusMenu task={task} canChange={canWrite} onChangeStatus={onChangeStatus} />
       ),
     },
     {

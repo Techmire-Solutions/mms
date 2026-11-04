@@ -8,6 +8,7 @@ import {
   taskListQuerySchema,
   taskInsertSchema,
   taskStatusUpdateSchema,
+  tasksBulkStatusBodySchema,
   taskUpdateSchema,
   type User,
 } from "@mms/shared";
@@ -20,12 +21,14 @@ import {
   getTaskMetrics,
   listTasks,
   updateTaskStatus,
+  bulkUpdateTaskStatus,
 } from "../../tasks/use-cases/tasksUseCases.js";
 import { getEligibleTaskAssignees } from "../../services/taskEligibleAssigneesService.js";
 import {
   getTenantTaskSettings,
   updateTenantTaskSettings,
 } from "../../services/taskSettingsService.js";
+import { ValidationError } from "../../lib/httpErrors.js";
 import { registerTasksSoftDeleteRoutes } from "./tasksSoftDeleteRoutes.js";
 import { tasksExportRoutes } from "./tasksExportRoutes.js";
 
@@ -201,7 +204,15 @@ export default async function tasksRoutes(
     }
     const tenant = String(request.tenant?.id);
     const previous = await findTaskById(tenant, request.params.id);
-    const updated = await updateTaskStatus(tenant, request.params.id, parsed.data.status, user.id);
+    let updated;
+    try {
+      updated = await updateTaskStatus(tenant, request.params.id, parsed.data.status, user.id);
+    } catch (err) {
+      if (err instanceof ValidationError) {
+        return reply.status(400).send({ type: "validation_error", message: err.message });
+      }
+      throw err;
+    }
     if (!updated) {
       return reply.status(404).send({ type: "not_found", message: "Task not found" });
     }
@@ -216,6 +227,38 @@ export default async function tasksRoutes(
       next: updated,
     });
     return reply.status(200).send(updated);
+  });
+
+  fastify.post("/api/tasks/bulk-status", async (request, reply) => {
+    const user = request.user as User;
+    if (
+      !(await canPerformTaskAction(request, "tasks.write")) &&
+      !(await canPerformTaskAction(request, "tasks.complete"))
+    ) {
+      return reply.status(403).send({ type: "forbidden", message: "Forbidden" });
+    }
+    const parsed = tasksBulkStatusBodySchema.safeParse(request.body);
+    if (!parsed.success) {
+      return reply.status(400).send({ type: "validation_error", message: "Invalid payload" });
+    }
+    const tenant = String(request.tenant?.id);
+    const result = await bulkUpdateTaskStatus(tenant, parsed.data.ids, parsed.data.status, user.id);
+    if (result.changes.length > 0) {
+      const settings = await getTenantTaskSettings();
+      const { emitTaskBulkStatusNotifications } =
+        await import("../../services/taskNotificationService.js");
+      await emitTaskBulkStatusNotifications({
+        tenant,
+        settings,
+        actorUserId: user.id,
+        changes: result.changes,
+      });
+    }
+    return reply.status(200).send({
+      success: true,
+      updatedIds: result.updatedIds,
+      skipped: result.skipped,
+    });
   });
 
   await registerTasksSoftDeleteRoutes(fastify);

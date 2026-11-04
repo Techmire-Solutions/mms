@@ -16,6 +16,29 @@ export const TASK_STATUSES = [
 ] as const;
 export type TaskStatus = (typeof TASK_STATUSES)[number];
 
+/**
+ * Legal workflow edges for a status change. The same status is a no-op and is
+ * not listed. `completed → in_progress` and `cancelled → todo` are explicit
+ * reopens (the UI asks for them through the status menu, never a one-click cycle).
+ */
+export const TASK_STATUS_TRANSITIONS: Readonly<Record<TaskStatus, readonly TaskStatus[]>> = {
+  todo: ["in_progress", "blocked", "cancelled"],
+  in_progress: ["in_review", "blocked", "completed", "cancelled"],
+  in_review: ["in_progress", "completed", "cancelled"],
+  blocked: ["todo", "in_progress", "cancelled"],
+  completed: ["in_progress"],
+  cancelled: ["todo"],
+};
+
+/** Statuses reachable from `status` (empty for an unknown value). */
+export function taskStatusTransitionsFrom(status: TaskStatus): readonly TaskStatus[] {
+  return TASK_STATUS_TRANSITIONS[status] ?? [];
+}
+
+export function isTaskStatusTransitionAllowed(from: TaskStatus, to: TaskStatus): boolean {
+  return from === to || taskStatusTransitionsFrom(from).includes(to);
+}
+
 export const TASK_PRIORITIES = ["low", "medium", "high", "urgent"] as const;
 export type TaskPriority = (typeof TASK_PRIORITIES)[number];
 
@@ -98,6 +121,15 @@ export const taskStatusUpdateSchema = z
   .strict();
 
 export type TaskStatusUpdate = z.infer<typeof taskStatusUpdateSchema>;
+
+export const tasksBulkStatusBodySchema = z
+  .object({
+    ids: z.array(z.string().min(1)).min(1).max(500),
+    status: z.enum(TASK_STATUSES),
+  })
+  .strict();
+
+export type TasksBulkStatusBody = z.infer<typeof tasksBulkStatusBodySchema>;
 
 export const taskListQuerySchema = z
   .object({

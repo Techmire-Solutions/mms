@@ -1,11 +1,17 @@
 import { and, eq, isNull, sql } from "drizzle-orm";
-import type { TaskInsert, TaskUpdate, TaskStatus } from "@mms/shared";
+import {
+  isTaskStatusTransitionAllowed,
+  type TaskInsert,
+  type TaskStatus,
+  type TaskUpdate,
+} from "@mms/shared";
 import { tasks } from "../schema.js";
 import { withTenant, type TenantTransaction } from "../tenant-context.js";
 import { findTaskById } from "./tasksRepository.js";
 import { syncTaskAssignees } from "./tasksAssigneesRepository.js";
 import { lockFacultyHierarchy } from "./facultyAssignmentValidation.js";
 import { recordModernAuditEvent } from "../../services/auditTrailService.js";
+import { ValidationError } from "../../lib/httpErrors.js";
 
 type Recipients = Parameters<typeof syncTaskAssignees>[3];
 
@@ -107,6 +113,13 @@ export async function updateTask(
     };
     if (data.title !== undefined) payload.title = data.title;
     if (data.description !== undefined) payload.description = data.description;
+    if (
+      data.status !== undefined &&
+      data.status !== current.status &&
+      !isTaskStatusTransitionAllowed(current.status, data.status)
+    ) {
+      throw new ValidationError(`Invalid status transition: ${current.status} → ${data.status}`);
+    }
     if (data.status !== undefined) {
       payload.status = data.status;
       if (data.status !== current.status)

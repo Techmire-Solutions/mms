@@ -4,7 +4,7 @@
  */
 
 import React from "react";
-import { formatDate, formatDateTime, type TaskRecord } from "@mms/shared";
+import { formatDate, formatDateTime, type TaskRecord, type TaskStatus } from "@mms/shared";
 import { DetailDrawerShell } from "@/components/app/DetailDrawerShell";
 import {
   DetailDrawerArchivedBanner,
@@ -15,24 +15,29 @@ import { DetailAttributeRow } from "@/components/app/DetailAttributeRow";
 import { DrawerUpdatedStamp } from "@/components/app/DrawerUpdatedStamp";
 import { CopyBtn } from "@/components/app/CopyButton";
 import { useTranslation } from "@/hooks/useTranslation";
-import { TaskPriorityBadge, TaskStatusBadge } from "./TaskBadges";
+import { TaskPriorityBadge } from "./TaskBadges";
+import { TaskStatusMenu } from "./TaskStatusMenu";
 
 export interface TaskDetailDrawerProps {
   task: TaskRecord | null;
   canWrite: boolean;
+  canComplete?: boolean;
   canDelete: boolean;
   onClose: () => void;
   onEdit?: (task: TaskRecord) => void;
   onRestore?: (id: string) => void;
+  onUpdateStatus?: (id: string, status: TaskStatus) => void;
 }
 
 export function TaskDetailDrawer({
   task,
   canWrite,
+  canComplete,
   canDelete,
   onClose,
   onEdit,
   onRestore,
+  onUpdateStatus,
 }: TaskDetailDrawerProps): React.JSX.Element | null {
   const { t } = useTranslation();
   if (!task) return null;
@@ -72,7 +77,11 @@ export function TaskDetailDrawer({
         ) : null}
         <div className="flex flex-wrap items-center justify-between gap-2">
           <div className="flex flex-wrap gap-2">
-            <TaskStatusBadge status={task.status} />
+            <TaskStatusMenu
+              task={task}
+              canChange={Boolean(onUpdateStatus) && Boolean(canWrite || canComplete) && !isArchived}
+              onChangeStatus={(changed, status) => onUpdateStatus?.(changed.id, status)}
+            />
             <TaskPriorityBadge priority={task.priority} />
           </div>
           <div className="flex items-center gap-1.5 text-xs text-muted-foreground">

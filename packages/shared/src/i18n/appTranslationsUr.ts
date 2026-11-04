@@ -5929,6 +5929,7 @@ export const APP_TRANSLATIONS_UR: Record<AppTranslationKey, string> = {
   "tasks.removeAssignee": "{name} کو ہٹائیں",
   "tasks.bulkStatus": "حیثیت تبدیل کریں",
   "tasks.bulkStatusSuccess": "{count} ٹاسکس کی حیثیت اپ ڈیٹ ہو گئی",
+  "tasks.bulkSkipped": "{count} اپ ڈیٹ ہوئے؛ {skipped} چھوڑے گئے",
   "tasks.bulkStatusFailed": "ٹاسک کی حیثیت اپ ڈیٹ نہیں ہو سکی",
   "tasks.dateFrom": "آخری تاریخ از",
   "tasks.dateTo": "آخری تاریخ تا",

@@ -4,9 +4,9 @@
  * Delivery to SMS/WhatsApp/email is owned by messaging consumers of these events.
  */
 
-import type { TaskRecord, TaskSettings } from "@mms/shared";
+import type { TaskRecord, TaskSettings, TaskStatus } from "@mms/shared";
 import { withTenant } from "../db/tenant-context.js";
-import { emitOutboxEvent } from "./outboxEventService.js";
+import { emitOutboxEvent, emitOutboxEvents, type OutboxBatchEvent } from "./outboxEventService.js";
 
 export async function emitTaskNotificationIntents(input: {
   tenant: string;
@@ -61,5 +61,48 @@ export async function emitTaskNotificationIntents(input: {
         title: next.title,
       });
     }
+  });
+}
+
+export interface TaskBulkStatusNotificationChange {
+  id: string;
+  title: string;
+  createdById: string | null;
+  status: TaskStatus;
+}
+
+/**
+ * Batched creator notification for a bulk status change: one transaction, one
+ * outbox insert + NOTIFY for the whole batch (single-task parity).
+ */
+export async function emitTaskBulkStatusNotifications(input: {
+  tenant: string;
+  settings: TaskSettings;
+  actorUserId: string;
+  changes: readonly TaskBulkStatusNotificationChange[];
+}): Promise<void> {
+  const { tenant, settings, actorUserId, changes } = input;
+  if (!settings.notifyOnStatusChange || changes.length === 0) return;
+
+  const events: OutboxBatchEvent[] = changes
+    .filter((change) => change.createdById && change.createdById !== actorUserId)
+    .map((change) => ({
+      type: "task.status_changed",
+      payload: {
+        entityType: "tasks",
+        entityId: change.id,
+        tenantId: tenant,
+        version: Date.now(),
+        recipientUserIds: [change.createdById as string],
+        actorUserId,
+        reason: "status_change",
+        status: change.status,
+        title: change.title,
+      },
+    }));
+  if (events.length === 0) return;
+
+  await withTenant(tenant, async () => {
+    await emitOutboxEvents(events);
   });
 }

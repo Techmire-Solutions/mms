@@ -11,8 +11,8 @@ import { DirectoryCardMetaTile } from "@/components/app/DirectoryCardMetaTile";
 import { DirectoryCardMetaGrid } from "@/components/app/DirectoryCardMetaGrid";
 import { DirectoryEntityCard } from "@/components/app/DirectoryEntityCard";
 import { useTranslation } from "@/hooks/useTranslation";
-import { TaskPriorityBadge, TaskStatusBadge } from "./TaskBadges";
-import { TASK_NEXT_STATUS } from "./tasksWorkBatchColumns";
+import { TaskPriorityBadge } from "./TaskBadges";
+import { TaskStatusMenu } from "./TaskStatusMenu";
 
 export interface TaskCardItemProps {
   task: TaskRecord;
@@ -103,13 +103,10 @@ export function TaskCardItem({
         <DirectoryCardMetaGrid>
           {isColumnVisible("status") ? (
             <DirectoryCardMetaTile label={t("tasks.status")}>
-              <TaskStatusBadge
-                status={task.status}
-                onClick={
-                  (canComplete ?? canWrite) && !viewingDeleted
-                    ? () => onUpdateStatus(task.id, TASK_NEXT_STATUS[task.status] || "todo")
-                    : undefined
-                }
+              <TaskStatusMenu
+                task={task}
+                canChange={Boolean(canComplete ?? canWrite) && !viewingDeleted}
+                onChangeStatus={(changed, status) => onUpdateStatus(changed.id, status)}
               />
             </DirectoryCardMetaTile>
           ) : null}

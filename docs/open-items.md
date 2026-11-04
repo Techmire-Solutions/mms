@@ -611,15 +611,15 @@ reports under `docs/*-module-review-2026-11-04*.md` hold the evidence and the pe
   shadowed by a stored custom role. Covered by `customRoleAuthorization.integration.test.ts`,
   `customRoleModuleAccess.test.ts`, `tenantRoleCatalog.test.ts` and `rbacCustomRoleHelpers.test.ts`.
 - **Tasks (Tier 2):** M1 delegation scope (no reporting hierarchy exists — remove the dead setting or
-  grant `assign_anywhere` by decision), M2 task ownership policy, M4 assignment notification delivery,
-  M6 status-transition table + badge menu, M8 batched bulk ops + bulk-status endpoint.
-- **Faculty (Tier 2):** M1 subordinate reassignment stub, M3 workspace-local appointment day,
-  M4 workload pill/column producer, M5 reporting-hierarchy model.
-- **Students (Tier 2):** M1 import idempotency under retry, M4 bulk-restore audit provenance.
-- **Contacts (Tier 2):** the minors in the round-5 report (contacts→students invalidation, inferred
-  relationship re-parent, merge `notes`, post-commit audit rows, …).
+  grant `assign_anywhere` by decision), M2 task ownership policy, M4 assignment notification delivery.
+  M6 status transitions and M8 batched bulk operations landed 2026-11-04.
+- **Faculty (Tier 2):** M1 subordinate reassignment stub, M4 workload pill/column producer,
+  M5 reporting-hierarchy model. M3 workspace-local appointment day landed 2026-11-04.
+- **Students (Tier 2):** M1 import idempotency under retry. M4 bulk-restore audit provenance landed
+  2026-11-04.
+- **Contacts (Tier 2):** merge `notes`, post-commit audit rows, and the remaining round-5 minors
+  (contacts→students invalidation and inferred-relationship re-parent landed 2026-11-04).
 - **Dashboard (Tier 2):** D1 per-user preferences/widgets (needs a migration + the shared-vs-personal
   product decision), plus the minors in the dashboard report.
 - **Product decisions still needed:** dashboard prefs scope, tasks delegation model, tasks task
-  ownership/visibility, tasks notification delivery, and whether tenant custom roles authorize server
-  module access (S1).
+  ownership/visibility, and tasks notification delivery.

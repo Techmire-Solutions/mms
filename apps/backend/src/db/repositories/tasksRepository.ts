@@ -33,7 +33,7 @@ import { fetchAssigneesByTaskIds } from "./tasksAssigneesRepository.js";
 
 export { getTaskMetrics } from "./tasksMetricsRepository.js";
 export { createTask, updateTask, updateTaskStatus } from "./tasksWriteRepository.js";
-export { deleteTask, restoreTask, bulkRestoreTasks } from "./tasksTrashRepository.js";
+export { deleteTask, restoreTask } from "./tasksTrashRepository.js";
 import { SELECT_COLS, mapTaskRow } from "./tasksRowMapping.js";
 
 function splitEnum<T extends string>(raw: string | undefined, allowed: readonly T[]): T[] {

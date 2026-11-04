@@ -5957,6 +5957,7 @@ export const APP_TRANSLATIONS_FA: Partial<Record<AppTranslationKey, string>> = {
   "tasks.removeAssignee": "حذف {name}",
   "tasks.bulkStatus": "تغییر وضعیت",
   "tasks.bulkStatusSuccess": "وضعیت {count} وظیفه به‌روز شد",
+  "tasks.bulkSkipped": "{count} به‌روزرسانی شد؛ {skipped} نادیده گرفته شد",
   "tasks.bulkStatusFailed": "به‌روزرسانی وضعیت وظیفه ناموفق بود",
   "tasks.dateFrom": "از تاریخ مهلت",
   "tasks.dateTo": "تا تاریخ مهلت",
