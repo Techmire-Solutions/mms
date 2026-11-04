@@ -105,8 +105,10 @@ export const contactsCrudRoutes = {
     body: softDeleteBodySchema.optional(),
     responses: {
       200: z.object({ success: z.literal(true) }),
+      400: z.unknown(),
       403: z.unknown(),
       404: z.unknown(),
+      409: z.unknown(),
       500: z.unknown(),
     },
     summary: "Delete a contact",

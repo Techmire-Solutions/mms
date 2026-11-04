@@ -66,7 +66,14 @@ export function useContactMutations() {
       ...upsertContactMutation,
       mutateAsync: async (contact: Contact) => {
         try {
-          const response = await upsertContactMutation.mutateAsync({ body: contact });
+          const response = await upsertContactMutation.mutateAsync({
+            body: contact,
+            // Versioned upsert: an offline replay of an existing contact must
+            // prove which version it is based on, or the server 409s every retry.
+            ...(contact.updatedAt
+              ? { headers: { "x-expected-updated-at": contact.updatedAt } }
+              : {}),
+          });
           return unwrapContactMutationBody<ContactWrappedResponse>(response);
         } catch (error) {
           if (typeof navigator !== "undefined" && !navigator.onLine) {

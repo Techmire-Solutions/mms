@@ -98,6 +98,19 @@ export async function mergeContactsById(
       updatedAt: new Date().toISOString(),
     };
 
+    const now = new Date().toISOString();
+    // Archive the merged-away row FIRST. The survivor may inherit a
+    // workspace-unique value from it (e.g. `cnic`), and that partial unique
+    // index only covers active rows — saving the survivor first aborts the
+    // merge with a false 400 "duplicate CNIC".
+    await repo.save(tenant, {
+      ...other,
+      deletedAt: now,
+      deletedBy,
+      deletionReason: `Merged into ${keepId}`,
+      updatedAt: now,
+    });
+
     if (expectedKeepUpdatedAt) {
       // Same predicate-in-the-UPDATE guarantee as the interactive edit path.
       const savedWithVersion = await repo.saveIfVersionMatches(tenant, next, expectedKeepUpdatedAt);
@@ -108,15 +121,6 @@ export async function mergeContactsById(
     await applyContactRelationshipInference(tenant, next, undefined, repo, {
       actorId: deletedBy,
       previousSource: keep,
-    });
-
-    const now = new Date().toISOString();
-    await repo.save(tenant, {
-      ...other,
-      deletedAt: now,
-      deletedBy,
-      deletionReason: `Merged into ${keepId}`,
-      updatedAt: now,
     });
 
     await repo.reparentContactReferences(tenant, keepId, deleteId, deletedBy);

@@ -254,10 +254,10 @@ export const contactCrudRoutes: FastifyPluginAsync = async (fastify) => {
         return { status: 200 as const, body: { success: true } };
       } catch (error) {
         request.log.error(error, "Failed to delete contact");
-        return {
-          status: 500 as const,
-          body: { type: "database_error", message: "Failed to delete contact" },
-        };
+        // A dependent-link guard throws ConflictError (active student/faculty/
+        // staff user); the shared formatter keeps that 409 actionable instead of
+        // collapsing it into an opaque 500.
+        return formatContactWriteError(error, "Failed to delete contact");
       }
     },
     reportAnalytics: async ({

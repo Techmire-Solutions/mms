@@ -183,6 +183,36 @@ describe("contact merge (Postgres)", () => {
     expect(archivedThird?.reason).toContain("Merged into");
   });
 
+  it("merges when only the losing contact holds a workspace-unique CNIC", async () => {
+    const survivorId = "merge-contact-cnic-keep";
+    const loserId = "merge-contact-cnic-loser";
+    await runWithTenant(tenant, async () => {
+      await contactUseCases.upsertContact(
+        baseContact(survivorId, "Hamza", "3001000020", "h@x.com"),
+      );
+      await contactUseCases.upsertContact(baseContact(loserId, "Hamzaa", "3001000021", "hh@x.com"));
+    });
+    await withTenant(tenant, async (tx) => {
+      await tx.execute(
+        sql`UPDATE contacts SET cnic = '42101-1111111-1'
+            WHERE workspace_subdomain = ${tenant} AND id = ${loserId}`,
+      );
+    });
+
+    // The survivor inherits the loser's CNIC. Saving the survivor before
+    // archiving the loser trips the workspace-wide partial unique index and
+    // aborts the merge with a false 400.
+    const merged = await runWithTenant(tenant, () =>
+      contactUseCases.mergeContactsById(survivorId, loserId, undefined, "u-admin"),
+    );
+
+    expect(merged.cnic).toContain("42101");
+    const archived = await runWithTenant(tenant, () =>
+      contactUseCases.getContactById(loserId, true),
+    );
+    expect(archived?.deletedAt).toBeTruthy();
+  });
+
   it("treats the merge body as a patch, never as a whole-record replacement", async () => {
     const patchId = "merge-contact-patch";
     const loserId = "merge-contact-patch-loser";

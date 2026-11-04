@@ -23,8 +23,8 @@ export const contactSavedReportRoutes: FastifyPluginAsync = async (fastify) => {
     try {
       const reports = await listContactsSavedReports(savedReportViewer(user));
       return reply.send({ reports });
-    } catch {
-      return sendDatabaseError(reply, "Failed to list saved reports");
+    } catch (error) {
+      return sendDatabaseError(reply, "Failed to list saved reports", error);
     }
   });
 
@@ -59,8 +59,8 @@ export const contactSavedReportRoutes: FastifyPluginAsync = async (fastify) => {
         `Saved report "${report.name}" (${scope})`,
       );
       return reply.status(201).send({ report });
-    } catch {
-      return sendDatabaseError(reply, "Failed to save report");
+    } catch (error) {
+      return sendDatabaseError(reply, "Failed to save report", error);
     }
   });
 
@@ -80,8 +80,8 @@ export const contactSavedReportRoutes: FastifyPluginAsync = async (fastify) => {
         `Deleted saved report ${params.data.id}`,
       );
       return reply.send({ success: true });
-    } catch {
-      return sendDatabaseError(reply, "Failed to delete saved report");
+    } catch (error) {
+      return sendDatabaseError(reply, "Failed to delete saved report", error);
     }
   });
 
@@ -97,8 +97,8 @@ export const contactSavedReportRoutes: FastifyPluginAsync = async (fastify) => {
       }
       await auditContact(user, "contact.saved_report.run", `Ran saved report "${report.name}"`);
       return reply.send({ report });
-    } catch {
-      return sendDatabaseError(reply, "Failed to run saved report");
+    } catch (error) {
+      return sendDatabaseError(reply, "Failed to run saved report", error);
     }
   });
 };
