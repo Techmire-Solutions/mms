@@ -66,7 +66,7 @@ export function renderAddressFieldMetadata({
   if (!addressValue) return emptyNode;
   return (
     <span className="flex min-w-0 items-center gap-1 truncate">
-      <MapPin className="w-3.5 h-3.5 text-primary/70 shrink-0" />
+      <MapPin className="w-3.5 h-3.5 text-muted-foreground shrink-0" aria-hidden="true" />
       <span className="min-w-0 truncate">{String(addressValue)}</span>
     </span>
   );
