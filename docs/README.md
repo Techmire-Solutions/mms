@@ -30,6 +30,10 @@ Project-wide entry points live at the repo root:
 
 ## Audits & reviews (point-in-time)
 
+- [ui-ux-review-2026-11-04/](./ui-ux-review-2026-11-04/) — rendered UI/UX pass over Dashboard, Contacts, Students, Faculty, Tasks at `30abb1b41`: Tasks table collapse at 768–1024, truncated KPI labels, mobile tier headers below content, wide-table overflow, task status/dirty-close defects, failed-metric skeletons, six critical/serious axe findings; 85 captures, 35 curated screenshots.
+- [backend-module-review-2026-11-04-round2.md](./backend-module-review-2026-11-04-round2.md) — independent backend verification across Dashboard, Contacts, Students, Faculty, Tasks: 3 Critical (dashboard auditor write/delete, faculty dead session guard, faculty restore/trash unreachable), 28 Major (contacts PII/merge/OCC, student import/enrollment/export, faculty hierarchy/temporal SSOT, tasks ownership/notifications/export); 390/2,650 unit and 59/235 DB tests pass; RLS suite not run under `postgres`; corrects the earlier "production-grade" summary.
+- [backend-module-review-2026-11-04.md](./backend-module-review-2026-11-04.md) — earlier summary across the same five modules; its "no Critical / production-grade" claims are corrected by the independent round-2 review above (RLS runtime unproven, faculty hierarchy stubs, contacts PII defaults, tasks ownership/notification gaps).
+- [frontend-module-review-2026-11-04.md](./frontend-module-review-2026-11-04.md) — consolidated frontend pass over Dashboard, Contacts, Students, Faculty, Tasks at `30abb1b41`: metrics-failure zeros, widget/prefs hydration, drawer field gating, OCC recovery, Faculty blank-tier/filter defects, Tasks reports/row-click, and shared Setup-draft/pagination/import gaps; 7/7 focused axe sweeps passed.
 - [frontend-architecture-audit.md](./frontend-architecture-audit.md)
 - [accounting-test-coverage-audit.md](./accounting-test-coverage-audit.md)
 - [db-performance-audit.md](./db-performance-audit.md)

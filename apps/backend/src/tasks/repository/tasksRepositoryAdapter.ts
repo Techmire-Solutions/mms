@@ -1,9 +1,11 @@
 import {
+  createTask,
   deleteTask,
   findTaskById,
   getTaskMetrics,
   listTasks,
   restoreTask,
+  updateTask,
   updateTaskStatus,
 } from "../../db/repositories/tasksRepository.js";
 import {
@@ -21,6 +23,8 @@ export const tasksRepositoryAdapter: TasksRepository = {
   listTasks,
   findTaskById,
   getTaskMetrics,
+  createTask,
+  updateTask,
   updateTaskStatus,
   deleteTask,
   restoreTask,

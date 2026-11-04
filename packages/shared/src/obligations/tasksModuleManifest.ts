@@ -181,6 +181,29 @@ export const DEFAULT_TASK_SETTINGS: TaskSettings = {
   notifyOnStatusChange: true,
 };
 
+export const tasksCommandMetricsSnapshotSchema = z
+  .object({
+    total: z.number().int().min(0),
+    todo: z.number().int().min(0),
+    inProgress: z.number().int().min(0),
+    inReview: z.number().int().min(0),
+    blocked: z.number().int().min(0),
+    completed: z.number().int().min(0),
+    cancelled: z.number().int().min(0),
+    overdue: z.number().int().min(0),
+    byPriority: z
+      .object({
+        low: z.number().int().min(0),
+        medium: z.number().int().min(0),
+        high: z.number().int().min(0),
+        urgent: z.number().int().min(0),
+      })
+      .strict(),
+  })
+  .strict();
+
+export type TasksCommandMetricsSnapshot = z.infer<typeof tasksCommandMetricsSnapshotSchema>;
+
 export const TASKS_MODULE_MANIFEST = {
   moduleId: "tasks",
   entityType: "Task",

@@ -12,6 +12,8 @@ export interface TasksRepository {
   listTasks: TasksModule["listTasks"];
   findTaskById: TasksModule["findTaskById"];
   getTaskMetrics: TasksModule["getTaskMetrics"];
+  createTask: TasksModule["createTask"];
+  updateTask: TasksModule["updateTask"];
   updateTaskStatus: TasksModule["updateTaskStatus"];
   deleteTask: TasksModule["deleteTask"];
   restoreTask: TasksModule["restoreTask"];

@@ -8,6 +8,7 @@ import type {
   HasanatCommandMetricsSnapshot,
   QuestionBankCommandMetricsSnapshot,
   AccountingCommandMetricsSnapshot,
+  TasksCommandMetricsSnapshot,
 } from "@mms/shared";
 import { getRequestTenant } from "../lib/tenantContext.js";
 import { withTenant } from "../db/tenant-context.js";
@@ -21,6 +22,7 @@ import { loadFinanceCommandMetrics } from "./financeService.js";
 import { loadHasanatCommandMetrics } from "./hasanatService.js";
 import { loadAccountingCommandMetrics } from "./accountingService.js";
 import { loadQuestionBankCommandMetrics } from "./questionBankMetricsService.js";
+import { tasksUseCases } from "../tasks/use-cases/tasksUseCases.js";
 
 export interface DashboardSummaryResponse {
   students?: StudentsCommandMetricsSnapshot;
@@ -32,6 +34,7 @@ export interface DashboardSummaryResponse {
   hasanat?: HasanatCommandMetricsSnapshot;
   questionBank?: QuestionBankCommandMetricsSnapshot;
   accounting?: AccountingCommandMetricsSnapshot;
+  tasks?: TasksCommandMetricsSnapshot;
 }
 
 /**
@@ -77,6 +80,7 @@ export async function loadDashboardSummary(
       const hasanat = await loadHasanatCommandMetrics();
       const questionBank = await loadQuestionBankCommandMetrics();
       const accounting = await loadAccountingCommandMetrics();
+      const tasks = await tasksUseCases.getTaskMetrics(cleanTenant);
 
       return {
         students,
@@ -88,6 +92,7 @@ export async function loadDashboardSummary(
         hasanat,
         questionBank,
         accounting,
+        tasks,
       };
     },
     { readOnly: true, statementTimeoutMs: 10000 },

@@ -1,7 +1,7 @@
 import type { TaskInsert, TaskUpdate } from "@mms/shared";
 import { withTenant } from "../db/tenant-context.js";
 import { lockFacultyHierarchy } from "../db/repositories/facultyAssignmentValidation.js";
-import { createTask, findTaskById, updateTask } from "../db/repositories/tasksRepository.js";
+import { createTask, findTaskById, updateTask } from "../tasks/use-cases/tasksUseCases.js";
 import { validateTaskDelegation } from "./taskDelegationService.js";
 import { getTenantTaskSettings } from "./taskSettingsService.js";
 import { emitTaskNotificationIntents } from "./taskNotificationService.js";
