@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 import { SectionCard } from "@/components/app/SectionCard";
 import { Field } from "@/components/app/FormField";
 import { Input } from "@/components/ui/input";
@@ -23,6 +23,39 @@ export function DashboardAlertThresholdsSection({
   t,
 }: DashboardAlertThresholdsSectionProps): React.JSX.Element {
   const title = t("dashboard.alertSettings");
+  // Draft + commit on blur: each keystroke used to send a full-document PUT, so
+  // typing "60" issued three writes that could land out of order.
+  const [lowDraft, setLowDraft] = useState(() => String(lowAttendanceThreshold ?? 75));
+  const [urgentDraft, setUrgentDraft] = useState(() => String(urgentAttendanceThreshold ?? 60));
+
+  // Derived-state reset during render (the project's lint rule forbids
+  // setState in an effect): a server-side change from another editor refreshes
+  // the draft, while ordinary typing keeps the local value until blur.
+  const [previousLow, setPreviousLow] = useState(lowAttendanceThreshold);
+  const [previousUrgent, setPreviousUrgent] = useState(urgentAttendanceThreshold);
+  if (previousLow !== lowAttendanceThreshold) {
+    setPreviousLow(lowAttendanceThreshold);
+    setLowDraft(String(lowAttendanceThreshold ?? 75));
+  }
+  if (previousUrgent !== urgentAttendanceThreshold) {
+    setPreviousUrgent(urgentAttendanceThreshold);
+    setUrgentDraft(String(urgentAttendanceThreshold ?? 60));
+  }
+
+  const commitThreshold = (
+    key: "lowAttendanceThreshold" | "urgentAttendanceThreshold",
+    draft: string,
+    fallback: number,
+    setDraft: (value: string) => void,
+  ) => {
+    const value = parseInt(draft, 10);
+    if (!Number.isNaN(value) && value >= 1 && value <= 100) {
+      onUpdateThreshold(key, value);
+      setDraft(String(value));
+      return;
+    }
+    setDraft(String(fallback));
+  };
   return (
     <div className={hasGridMode ? "md:col-span-1" : "md:col-span-2"}>
       <SectionCard
@@ -41,12 +74,18 @@ export function DashboardAlertThresholdsSection({
                   name="lowAttendanceThreshold"
                   type="text"
                   inputMode="numeric"
-                  value={lowAttendanceThreshold ?? 75}
-                  onChange={(e) => {
-                    const val = parseInt(e.target.value, 10);
-                    if (!isNaN(val) && val >= 1 && val <= 100) {
-                      onUpdateThreshold("lowAttendanceThreshold", val);
-                    }
+                  value={lowDraft}
+                  onChange={(e) => setLowDraft(e.target.value)}
+                  onBlur={() =>
+                    commitThreshold(
+                      "lowAttendanceThreshold",
+                      lowDraft,
+                      lowAttendanceThreshold ?? 75,
+                      setLowDraft,
+                    )
+                  }
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter") e.currentTarget.blur();
                   }}
                   className="min-h-11 text-sm"
                 />
@@ -57,12 +96,18 @@ export function DashboardAlertThresholdsSection({
                   name="urgentAttendanceThreshold"
                   type="text"
                   inputMode="numeric"
-                  value={urgentAttendanceThreshold ?? 60}
-                  onChange={(e) => {
-                    const val = parseInt(e.target.value, 10);
-                    if (!isNaN(val) && val >= 1 && val <= 100) {
-                      onUpdateThreshold("urgentAttendanceThreshold", val);
-                    }
+                  value={urgentDraft}
+                  onChange={(e) => setUrgentDraft(e.target.value)}
+                  onBlur={() =>
+                    commitThreshold(
+                      "urgentAttendanceThreshold",
+                      urgentDraft,
+                      urgentAttendanceThreshold ?? 60,
+                      setUrgentDraft,
+                    )
+                  }
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter") e.currentTarget.blur();
                   }}
                   className="min-h-11 text-sm"
                 />

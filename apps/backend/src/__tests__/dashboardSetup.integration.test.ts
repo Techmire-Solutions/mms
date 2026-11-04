@@ -134,6 +134,23 @@ describe("dashboard config routes", () => {
     expect(widgetsWriteOk.statusCode).toBe(200);
     expect(mockUpsertDashboardWidgets).toHaveBeenCalled();
 
+    // Partial PUT must merge over the stored document, not reset omitted keys.
+    mockLoadDashboardPreferences.mockResolvedValue({
+      disabledCardIds: ["keep-me"],
+      gridMode: "comfortable",
+      lowAttendanceThreshold: 80,
+      urgentAttendanceThreshold: 55,
+      enrollmentChartType: "area",
+      enrollmentChartColor: "#000000",
+      enrollmentChartPeriod: 6,
+      revenueChartType: "bar",
+      revenueChartColor: "#000000",
+      attendanceChartType: "line",
+      attendanceChartColor: "#000000",
+      hasanatChartType: "bar",
+      hasanatChartColor: "#000000",
+    });
+
     // PUT preferences — admin allowed.
     const prefsWriteOk = await app.inject({
       method: "PUT",
@@ -143,6 +160,12 @@ describe("dashboard config routes", () => {
     });
     expect(prefsWriteOk.statusCode).toBe(200);
     expect(mockSaveDashboardPreferences).toHaveBeenCalled();
+    expect(mockSaveDashboardPreferences.mock.calls.at(-1)?.[0]).toMatchObject({
+      gridMode: "compact",
+      disabledCardIds: ["keep-me"],
+      lowAttendanceThreshold: 80,
+      urgentAttendanceThreshold: 55,
+    });
 
     // DELETE widget — teacher denied.
     const deleteDenied = await app.inject({

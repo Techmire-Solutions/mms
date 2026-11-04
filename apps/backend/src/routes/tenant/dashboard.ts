@@ -103,8 +103,15 @@ const dashboardRouter = s.router(dashboardContract, {
   > => {
     try {
       const result = await handleDashboardWrite(request, async (user) => {
+        // The write DTO declares every field optional, but the stored document
+        // is a full singleton: merge the body over the stored row so a partial
+        // PUT cannot reset every omitted preference to its default.
+        const stored = await loadDashboardPreferences();
         const saved = await saveDashboardPreferences(
-          normalizeDashboardPreferences(body as DashboardPreferences),
+          normalizeDashboardPreferences({
+            ...(stored ?? {}),
+            ...(body as Record<string, unknown>),
+          } as DashboardPreferences),
         );
         try {
           await auditDashboard(
