@@ -103,6 +103,37 @@ export function executeRecipientSend({
   return true;
 }
 
+export interface BuildSentRecordParams {
+  recipient: MessagingRecipient;
+  message: string;
+  channel: "sms" | "whatsapp" | "email";
+  subject: string;
+  defaultSubject: string;
+  personalizeOptions: { madrasaName?: string };
+  success: boolean;
+}
+
+/** Builds the per-recipient audit record for a dispatch attempt. */
+export function buildSentDispatchRecord({
+  recipient,
+  message,
+  channel,
+  subject,
+  defaultSubject,
+  personalizeOptions,
+  success,
+}: BuildSentRecordParams): SentDispatchRecord {
+  return {
+    recipientId: recipient.id,
+    body: personalizeMessage(message, recipient, personalizeOptions),
+    subject:
+      channel === "email"
+        ? personalizeMessage(subject || defaultSubject, recipient, personalizeOptions)
+        : undefined,
+    status: success ? "sent" : "failed",
+  };
+}
+
 export interface SaveDispatchHistoryParams {
   sentRecords: SentDispatchRecord[];
   user: unknown;

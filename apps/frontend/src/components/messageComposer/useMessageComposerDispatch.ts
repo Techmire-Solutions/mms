@@ -1,6 +1,5 @@
 import { useEffect, useRef, useState } from "react";
 import {
-  personalizeMessage,
   type MessageTemplate,
   type StandardMessagingRecipient as MessagingRecipient,
 } from "@mms/shared";
@@ -8,6 +7,7 @@ import { useTranslation } from "@/hooks/useTranslation";
 import { notify } from "@/lib/notify";
 import { useMessagingMutations } from "@/hooks/useMessaging";
 import {
+  buildSentDispatchRecord,
   executeRecipientSend,
   findUnknownTokens,
   saveDispatchHistory,
@@ -18,7 +18,8 @@ import {
   type ValidatedMessagingRecipient,
 } from "./messageComposerDispatchService";
 import { dispatchViaServerGateway } from "./messageComposerServerGateway";
-import { formatUnknownTokensLabel } from "./messageComposerTokenErrors";
+import { resolveSubmissionKey, type SubmissionKeyState } from "./messageComposerSubmissionKey";
+import { notifyUnknownTokenErrors } from "./messageComposerTokenErrors";
 
 export type { DispatchSpeed, ValidatedMessagingRecipient };
 
@@ -69,6 +70,7 @@ export function useMessageComposerDispatch({
   const pausedRef = useRef(false);
   const auditSavedCountRef = useRef(0);
   const auditIdempotencyKeyRef = useRef<string | null>(null);
+  const submissionKeyRef = useRef<SubmissionKeyState | null>(null);
 
   useEffect(() => {
     pausedRef.current = isPaused;
@@ -102,6 +104,89 @@ export function useMessageComposerDispatch({
       auditIdempotencyKeyRef,
     });
 
+  /**
+   * Submission idempotency key: a retry of the same composition reuses it (the
+   * server dedupes the partial delivery), while a new — or already completed —
+   * submission mints a fresh one so a deliberate repeat campaign still sends.
+   */
+  const submissionKeyFor = (targetRecipients: ValidatedMessagingRecipient[]): string => {
+    const activeTemplate = activeTemplates.find((template) => template.id === templateId);
+    const digest = JSON.stringify({
+      channel,
+      message,
+      subject,
+      category: activeTemplate?.category ?? "general",
+      recipients: targetRecipients.map((recipient) => String(recipient.id)),
+    });
+    const resolved = resolveSubmissionKey(submissionKeyRef.current, digest, () =>
+      crypto.randomUUID(),
+    );
+    submissionKeyRef.current = resolved.state;
+    return resolved.key;
+  };
+
+  const markSubmissionCompleted = (): void => {
+    if (submissionKeyRef.current) {
+      submissionKeyRef.current = { ...submissionKeyRef.current, completed: true };
+    }
+  };
+
+  const dispatchViaGateway = async (
+    targetRecipients: ValidatedMessagingRecipient[],
+  ): Promise<void> => {
+    const activeTemplate = activeTemplates.find((template) => template.id === templateId);
+    await dispatchViaServerGateway({
+      channel,
+      eligibleRecipients: targetRecipients,
+      message,
+      subject,
+      category: activeTemplate?.category || "general",
+      idempotencyKey: submissionKeyFor(targetRecipients),
+      personalizeOptions,
+      dispatchServerSms,
+      dispatchServerEmail,
+      dispatchServerWhatsApp,
+      onSent,
+      onClose,
+      t,
+    });
+    markSubmissionCompleted();
+  };
+
+  /** Sends one recipient and persists its audit row (previously never recorded). */
+  const sendOne = async (recipient: MessagingRecipient): Promise<void> => {
+    if (opening || saving || !message.trim()) return;
+    const unknownTokens = findUnknownTokens(channel, subject, message);
+    if (unknownTokens.length > 0) {
+      notifyUnknownTokenErrors(unknownTokens, t);
+      return;
+    }
+    if (useServerGateway) {
+      const [validated] = validateMessagingRecipients([recipient], channel);
+      if (!validated?.isValid) return;
+      await dispatchViaGateway([validated]);
+      return;
+    }
+
+    const success = executeSend(recipient, message);
+    const record = buildSentDispatchRecord({
+      recipient,
+      message,
+      channel,
+      subject,
+      defaultSubject: t("messaging.defaultSubject"),
+      personalizeOptions,
+      success,
+    });
+    // A single send is its own submission: reset the batch counters so the
+    // history offset starts at this row.
+    auditSavedCountRef.current = 0;
+    auditIdempotencyKeyRef.current = null;
+    if (!(await saveHistory([record]))) {
+      notify.error(t("messaging.singleSendAuditFailed"));
+    }
+  };
+
   const sendAll = async (): Promise<void> => {
     if (opening || saving) return;
 
@@ -123,28 +208,22 @@ export function useMessageComposerDispatch({
     if (!eligibleRecipients.length || !message.trim()) return;
     const unknownTokens = findUnknownTokens(channel, subject, message);
     if (unknownTokens.length > 0) {
-      notify.error(
-        t("messaging.unknownTokens", {
-          tokens: formatUnknownTokensLabel(unknownTokens),
-        }),
-      );
+      notifyUnknownTokenErrors(unknownTokens, t);
       return;
     }
     const sentRecords: SentDispatchRecord[] = [];
     const record = (recipient: MessagingRecipient, success: boolean): void => {
-      sentRecords.push({
-        recipientId: recipient.id,
-        body: personalizeMessage(message, recipient, personalizeOptions),
-        subject:
-          channel === "email"
-            ? personalizeMessage(
-                subject || t("messaging.defaultSubject"),
-                recipient,
-                personalizeOptions,
-              )
-            : undefined,
-        status: success ? "sent" : "failed",
-      });
+      sentRecords.push(
+        buildSentDispatchRecord({
+          recipient,
+          message,
+          channel,
+          subject,
+          defaultSubject: t("messaging.defaultSubject"),
+          personalizeOptions,
+          success,
+        }),
+      );
     };
 
     setSaving(true);
@@ -153,21 +232,7 @@ export function useMessageComposerDispatch({
     try {
       if (useServerGateway) {
         setOpening(true);
-        const activeTemplate = activeTemplates.find((template) => template.id === templateId);
-        await dispatchViaServerGateway({
-          channel,
-          eligibleRecipients,
-          message,
-          subject,
-          category: activeTemplate?.category || "general",
-          personalizeOptions,
-          dispatchServerSms,
-          dispatchServerEmail,
-          dispatchServerWhatsApp,
-          onSent,
-          onClose,
-          t,
-        });
+        await dispatchViaGateway(eligibleRecipients);
         return;
       }
 
@@ -226,6 +291,7 @@ export function useMessageComposerDispatch({
     isPaused,
     setIsPaused,
     executeSend,
+    sendOne,
     sendAll,
     cancelDispatch,
   };

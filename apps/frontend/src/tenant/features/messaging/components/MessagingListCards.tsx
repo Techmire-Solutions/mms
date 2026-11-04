@@ -12,7 +12,6 @@ export interface MessagingListCardsProps {
   selectedIds: MessagingSelectedLogsMap;
   allVisibleSelected: boolean;
   someVisibleSelected: boolean;
-  selectedCount: number;
   selectedCountLabel: React.ReactNode;
   pageCountLabel: React.ReactNode;
   canWrite: boolean;
@@ -33,7 +32,6 @@ export const MessagingListCards = function MessagingListCards({
   selectedIds,
   allVisibleSelected,
   someVisibleSelected,
-  selectedCount: _selectedCount,
   selectedCountLabel,
   pageCountLabel,
   canWrite,

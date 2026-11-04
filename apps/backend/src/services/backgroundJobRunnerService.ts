@@ -211,10 +211,12 @@ export function registerDefaultBackgroundJobRunners(): void {
     buildExport: (query, options, tenant) =>
       buildMessagingCsvExport(tenant || "", query as MessagingCsvExportQueryDto, {
         filename: options.filename,
+        viewerRole: options.viewerRole,
       }),
     generateStreamChunks: (query, options, tenant) =>
       generateMessagingCsvStreamChunks(tenant || "", query as MessagingCsvExportQueryDto, {
         filename: options.filename,
+        viewerRole: options.viewerRole,
       }),
   });
 

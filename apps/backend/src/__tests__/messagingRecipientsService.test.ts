@@ -10,7 +10,6 @@ vi.mock("../db/repositories/messagingRepository.js", () => ({
   replaceMessageTemplatesForWorkspace: vi.fn(),
   deleteMessageTemplateById: vi.fn(),
   listMessageLogsByWorkspace: vi.fn(),
-  findMessageLogById: vi.fn(),
   findMessageLogsByIds: vi.fn(),
   saveMessageLog: vi.fn(),
   bulkSaveMessageLogs: vi.fn(),
@@ -22,7 +21,7 @@ vi.mock("../db/repositories/messagingRepository.js", () => ({
   restoreArchivedMessageLog: vi.fn(),
   claimMessageLogForDelivery: vi.fn(),
   updateMessageLogDeliveryStatus: vi.fn(),
-  deleteMessageLogsByWorkspace: vi.fn(),
+  saveMessageLogDeliveryOutcomes: vi.fn(),
 }));
 
 const mockLoadContactsPageForTenant = vi.fn();

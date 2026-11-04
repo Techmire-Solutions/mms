@@ -1,3 +1,4 @@
+import { useMemo } from "react";
 import { useQuery } from "@tanstack/react-query";
 import type { StandardMessagingRecipient } from "@mms/shared";
 import { useAuth } from "@/lib/contexts/AuthContext";
@@ -11,14 +12,16 @@ const RESOLVE_BATCH_SIZE = 100;
 /**
  * Resolve lean messaging recipients under messaging.read (not contacts.read).
  */
+/** Shared empty array keeps the `useMemo` dependency honest. */
+const NO_RECIPIENTS: StandardMessagingRecipient[] = [];
+
 export function useMessagingRecipientsByIds(ids: (string | number | null | undefined)[]) {
   const { isAuthenticated } = useAuth();
-  const normalized = (() =>
-    [
-      ...new Set(
-        ids.filter((id) => id !== null && id !== undefined && String(id).length > 0).map(String),
-      ),
-    ].sort())();
+  const normalized = [
+    ...new Set(
+      ids.filter((id) => id !== null && id !== undefined && String(id).length > 0).map(String),
+    ),
+  ].sort();
   const signature = normalized.join(",");
 
   const query = useQuery({
@@ -54,15 +57,19 @@ export function useMessagingRecipientsByIds(ids: (string | number | null | undef
     staleTime: 30_000,
   });
 
-  const recipients = query.data ?? [];
+  // Stable identity for the memo below (`query.data ?? []` allocates per render).
+  const recipients = useMemo(() => query.data ?? NO_RECIPIENTS, [query.data]);
 
-  const recipientMap = (() =>
-    new Map(
-      recipients.flatMap((recipient) => [
-        [recipient.id, recipient],
-        [String(recipient.id), recipient],
-      ]),
-    ))();
+  const recipientMap = useMemo(
+    () =>
+      new Map(
+        recipients.flatMap((recipient) => [
+          [recipient.id, recipient],
+          [String(recipient.id), recipient],
+        ]),
+      ),
+    [recipients],
+  );
 
   const getRecipient = (
     id: string | number | null | undefined,

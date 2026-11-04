@@ -13,6 +13,8 @@ const CSV_HEADERS = ["Recipient", "Channel", "Category", "Message", "Date Sent"]
 
 export interface MessagingCsvExportOptions {
   filename?: string;
+  /** Session role used to sanitize resolved recipient names (`sanitizeContactsForViewer`). */
+  viewerRole?: string;
   onProgress?: (current: number, total: number) => void | Promise<void>;
 }
 
@@ -56,10 +58,13 @@ export async function* generateMessagingCsvStreamChunks(
 ): AsyncGenerator<string, { count: number; filename: string }, undefined> {
   const filters = normalizeFilters(query);
   const filename = normalizeFilename(options.filename);
+  const viewerRole = options.viewerRole ?? "";
   const CHUNK_SIZE = 250;
 
   // Yield header
-  yield CSV_HEADERS.map((header) => escapeCsvCell(header)).join(",") + "\n";
+  const header = CSV_HEADERS.map((cell) => escapeCsvCell(cell)).join(",") + "\n";
+  let totalBytes = Buffer.byteLength(header, "utf8");
+  yield header;
 
   let page = 1;
   let count = 0;
@@ -90,7 +95,7 @@ export async function* generateMessagingCsvStreamChunks(
       const nameById = new Map<string, string>();
       for (let index = 0; index < uniqueIds.length; index += RESOLVE_CHUNK_SIZE) {
         const chunk = uniqueIds.slice(index, index + RESOLVE_CHUNK_SIZE);
-        const recipients = await resolveMessagingRecipients(workspaceSubdomain, chunk);
+        const recipients = await resolveMessagingRecipients(workspaceSubdomain, chunk, viewerRole);
         for (const recipient of recipients) {
           nameById.set(String(recipient.id), recipient.name);
         }
@@ -107,7 +112,16 @@ export async function* generateMessagingCsvStreamChunks(
             .join(","),
         );
       }
-      yield lines.join("\n") + "\n";
+      const csvChunk = lines.join("\n") + "\n";
+      // The worker streams chunks straight to storage, so the byte cap must be
+      // enforced here (not only in the buffered builder) — `mms-messaging` §2.
+      totalBytes += Buffer.byteLength(csvChunk, "utf8");
+      if (totalBytes > MESSAGING_CSV_EXPORT_MAX_BYTES) {
+        throw new MessagingCsvExportLimitError(
+          `Export exceeds maximum of ${MESSAGING_CSV_EXPORT_MAX_BYTES} bytes`,
+        );
+      }
+      yield csvChunk;
       count += logs.length;
       if (count > MESSAGING_CSV_EXPORT_MAX_ROWS) {
         throw new MessagingCsvExportLimitError(

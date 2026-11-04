@@ -134,7 +134,7 @@ export function useMessagingWorkRecipients(
 
   const data = query.data;
 
-  return (() => ({
+  return {
     recipients: data?.recipients ?? [],
     page: data?.page ?? page,
     total: data?.total ?? 0,
@@ -146,5 +146,5 @@ export function useMessagingWorkRecipients(
     refetch: () => {
       void query.refetch();
     },
-  }))();
+  };
 }

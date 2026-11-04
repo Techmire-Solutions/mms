@@ -1,4 +1,6 @@
 import { findUnknownPersonalizationTokens } from "@mms/shared";
+import { notify } from "@/lib/notify";
+import type { TranslationFunction } from "@/lib/contexts/TranslationContext";
 import { findUnknownTokens } from "./messageComposerDispatchService";
 
 export function formatUnknownTokensLabel(tokens: string[]): string {
@@ -33,4 +35,9 @@ export function hasUnknownComposeTokens(
 export function liveUnknownTokenLabels(value: string): string | undefined {
   const unknown = findUnknownPersonalizationTokens(value);
   return unknown.length > 0 ? formatUnknownTokensLabel(unknown) : undefined;
+}
+
+/** Surfaces rejected personalization tokens once, as an error toast. */
+export function notifyUnknownTokenErrors(tokens: string[], t: TranslationFunction): void {
+  notify.error(t("messaging.unknownTokens", { tokens: formatUnknownTokensLabel(tokens) }));
 }

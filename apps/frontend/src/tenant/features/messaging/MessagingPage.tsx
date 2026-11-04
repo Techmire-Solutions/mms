@@ -8,13 +8,11 @@ import {
   type StandardMessagingRecipient as MessagingRecipient,
 } from "@mms/shared";
 import { useMessageComposerState } from "@/hooks/useMessageComposerState";
-import { useModuleShortcuts } from "@/hooks/useModuleShortcuts";
 import { usePersistedTabState } from "@/hooks/usePersistedTabState";
 import { useTranslation } from "@/hooks/useTranslation";
 import { notify } from "@/lib/notify";
 import { useFilteredModuleTierTabs } from "@/tenant/hooks/useModuleTierTabs";
 import { useModulePermissions } from "@/tenant/hooks/usePermissions";
-import { MESSAGING_WORK_SEARCH_INPUT_ID } from "./components/MessagingListFilters";
 import { useMessagingKeyboardShortcuts } from "./hooks/useMessagingKeyboardShortcuts";
 import {
   invalidateMessagingQueries,
@@ -59,13 +57,13 @@ export default function MessagingPage(): React.JSX.Element {
     setSearchParams(next, { replace: true });
   };
 
-  const templates = (() => mergeMessageTemplates(templatesQuery.templates))();
-  const stats = (() => ({
+  const templates = mergeMessageTemplates(templatesQuery.templates);
+  const stats = {
     total: metricsQuery.data?.total ?? 0,
     sms: metricsQuery.data?.smsCount ?? 0,
     whatsapp: metricsQuery.data?.whatsappCount ?? 0,
     email: metricsQuery.data?.emailCount ?? 0,
-  }))();
+  };
 
   const triggerCompose = useCallback(
     (
@@ -134,17 +132,8 @@ export default function MessagingPage(): React.JSX.Element {
     startCampaign,
   });
 
-  useModuleShortcuts({
-    searchInputId: MESSAGING_WORK_SEARCH_INPUT_ID,
-    selectedCount: 0,
-    hasActiveFilters: false,
-    clearFilters: () => {},
-    clearSelection: () => {},
-    canWrite,
-    showDeleted: false,
-    onCreate: () => void startCampaign("whatsapp"),
-    enabled: activeTab === "work",
-  });
+  // Search/Escape/create shortcuts live in the Work-tier controller, where the
+  // real selection and filter state are (a page-level stub passed zeros).
 
   const resend = (log: Message, recipient: MessagingRecipient): void => {
     triggerCompose(log.channel, [recipient], log.body, log.subject);
@@ -167,7 +156,7 @@ export default function MessagingPage(): React.JSX.Element {
     try {
       await deleteTemplate.mutateAsync(deleteTemplateId);
       setDeleteTemplateId(null);
-      notify.success(t("common.delete"));
+      notify.success(t("messaging.templateDeleted"));
     } catch {
       // Mutation hook reports the failure.
     }
@@ -177,7 +166,7 @@ export default function MessagingPage(): React.JSX.Element {
     try {
       await clearLogs.mutateAsync();
       setConfirmClearLogsOpen(false);
-      notify.success(t("messaging.clearLogs"));
+      notify.success(t("messaging.logsArchived"));
     } catch {
       // Mutation hook reports the failure.
     }

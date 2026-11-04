@@ -3,6 +3,7 @@ import { buildBackgroundJobId } from "../../../lib/backgroundJobIds.js";
 import type { FastifyPluginAsync } from "fastify";
 import type { BackgroundJobRecord, User } from "@mms/shared";
 import {
+  canonicalizeJson,
   MESSAGING_MODULE_MANIFEST,
   messagingCsvExportBodySchema,
   messagingImportBodySchema,
@@ -20,15 +21,18 @@ import {
   getUserBackgroundJobPayload,
 } from "../../../services/backgroundJobWorkerService.js";
 import { canWriteMessaging } from "../../../services/rbacService.js";
+import { resolveIdempotencyKey } from "./messagingLogIdempotency.js";
 
 function messagingExportBodyDigest(input: {
   query?: unknown;
   filename?: string;
   label?: string;
 }): string {
+  // RFC 8785 canonical JSON so a retried export with re-ordered keys still
+  // matches its original digest (`mms-api-interface` §6).
   return crypto.hash(
     "sha256",
-    JSON.stringify({
+    canonicalizeJson({
       query: input.query ?? {},
       filename: input.filename ?? null,
       label: input.label ?? null,
@@ -56,7 +60,11 @@ export const messagingExportRoutes: FastifyPluginAsync = async (fastify) => {
           .send({ type: "validation_error", message: "Tenant context required" });
       }
       const userId = String(user.id);
-      const jobId = buildBackgroundJobId(tenant, userId, parsed.data.idempotencyKey);
+      const idempotencyKey = resolveIdempotencyKey(
+        parsed.data.idempotencyKey,
+        request.headers["idempotency-key"],
+      );
+      const jobId = buildBackgroundJobId(tenant, userId, idempotencyKey);
       const bodyDigest = messagingExportBodyDigest({
         query: parsed.data.query,
         filename: parsed.data.filename,
@@ -92,6 +100,9 @@ export const messagingExportRoutes: FastifyPluginAsync = async (fastify) => {
         filename: parsed.data.filename,
         label,
         bodyDigest,
+        // Session role so exported recipient names go through the same
+        // `sanitizeContactsForViewer` gate as the recipient endpoints.
+        viewerRole: String(user.role),
       });
 
       await recordModernAuditEvent({

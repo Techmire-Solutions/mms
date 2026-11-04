@@ -65,6 +65,17 @@ export const MessagingDetail = function MessagingDetail({
   useEffect(() => {
     if (!log || !canWrite) return;
     const handleKeyDown = (e: KeyboardEvent): void => {
+      // Never hijack Cmd/Ctrl+Enter while another field or dialog owns the
+      // keyboard — it would resend the open log from anywhere on the page.
+      const target = e.target as HTMLElement | null;
+      if (
+        target &&
+        (target.isContentEditable ||
+          ["INPUT", "TEXTAREA", "SELECT"].includes(target.tagName) ||
+          target.closest("[role='dialog']") !== null)
+      ) {
+        return;
+      }
       if ((e.metaKey || e.ctrlKey) && e.key === "Enter") {
         e.preventDefault();
         handleResend();

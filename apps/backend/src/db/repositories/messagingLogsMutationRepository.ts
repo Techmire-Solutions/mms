@@ -1,11 +1,18 @@
-import { and, eq, inArray, isNotNull, isNull, lt } from "drizzle-orm";
+import { and, eq, inArray, isNotNull, isNull, lt, sql } from "drizzle-orm";
 import { messageLogs } from "../schema.js";
 import { withTenant } from "../tenant-context.js";
 
 export { buildMessageLogClaimId } from "../../lib/messageLogClaimId.js";
 
-/** Soft-archives active message logs for a workspace in one tenant-scoped update. */
-export async function softDeleteActiveMessageLogs(workspaceSubdomain: string): Promise<void> {
+/**
+ * Soft-archives active message logs for a workspace in one tenant-scoped update,
+ * stamping the archiving actor (`deleted_by` + reason) so the clear is attributable.
+ */
+export async function softDeleteActiveMessageLogs(
+  workspaceSubdomain: string,
+  userId: string,
+  deletionReason = "messaging.logs.clear",
+): Promise<void> {
   const subdomain = workspaceSubdomain?.trim().toLowerCase();
   if (!subdomain) return;
   await withTenant(subdomain, async (tx) => {
@@ -13,6 +20,8 @@ export async function softDeleteActiveMessageLogs(workspaceSubdomain: string): P
       .update(messageLogs)
       .set({
         deletedAt: new Date(),
+        deletedBy: userId || null,
+        deletionReason,
         updatedAt: new Date(),
       })
       .where(and(eq(messageLogs.workspaceSubdomain, subdomain), isNull(messageLogs.deletedAt)));
@@ -31,6 +40,12 @@ export type MessageLogClaim = {
   sentAt: string;
   subject?: string | null;
   category?: string;
+};
+
+/** A claimed recipient plus its provider outcome, for batched persistence. */
+export type MessageLogDeliveryOutcome = MessageLogClaim & {
+  status: "sent" | "failed";
+  errorMessage?: string | null;
 };
 
 /**
@@ -101,6 +116,60 @@ export async function updateMessageLogDeliveryStatus(
         updatedAt: new Date(),
       })
       .where(and(eq(messageLogs.workspaceSubdomain, subdomain), eq(messageLogs.id, id)));
+  });
+}
+
+/**
+ * Persists delivery outcomes for a batch of claimed recipients in one statement.
+ *
+ * The batch is claimed before the provider calls, so every row already exists as
+ * `sending`; an `INSERT … ON CONFLICT DO UPDATE` updates only `status`,
+ * `error_message` and `updated_at` per row (mixed `sent`/`failed` outcomes and
+ * their distinct error messages stay in one round trip instead of one per
+ * recipient).
+ */
+export async function saveMessageLogDeliveryOutcomes(
+  workspaceSubdomain: string,
+  outcomes: readonly MessageLogDeliveryOutcome[],
+): Promise<void> {
+  const subdomain = workspaceSubdomain.trim().toLowerCase();
+  if (!subdomain) return;
+  const byId = new Map<string, MessageLogDeliveryOutcome>();
+  for (const outcome of outcomes) {
+    const id = outcome.id?.trim();
+    if (!id) continue;
+    byId.set(id, { ...outcome, id });
+  }
+  const rows = [...byId.values()];
+  if (rows.length === 0) return;
+  const now = new Date();
+  await withTenant(subdomain, async (tx) => {
+    await tx
+      .insert(messageLogs)
+      .values(
+        rows.map((outcome) => ({
+          id: outcome.id,
+          workspaceSubdomain: subdomain,
+          userId: outcome.userId,
+          contactId: outcome.contactId,
+          channel: outcome.channel,
+          body: outcome.body,
+          sentAt: outcome.sentAt,
+          status: outcome.status,
+          subject: outcome.subject ?? null,
+          category: outcome.category ?? "general",
+          errorMessage: outcome.errorMessage ?? null,
+          updatedAt: now,
+        })),
+      )
+      .onConflictDoUpdate({
+        target: [messageLogs.workspaceSubdomain, messageLogs.id],
+        set: {
+          status: sql`excluded.status`,
+          errorMessage: sql`excluded.error_message`,
+          updatedAt: now,
+        },
+      });
   });
 }
 

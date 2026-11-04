@@ -6,6 +6,8 @@ import {
   type StandardMessagingRecipient as MessagingRecipient,
 } from "@mms/shared";
 import { useDescriptorFilterChips } from "@/components/common/useDescriptorFilterChips";
+import { MESSAGING_WORK_SEARCH_INPUT_ID } from "../components/MessagingListFilters";
+import { useModuleShortcuts } from "@/hooks/useModuleShortcuts";
 import { useTranslation } from "@/hooks/useTranslation";
 import { useWorkDirectoryViewMode } from "@/hooks/useWorkDirectoryViewMode";
 import { formatDirectoryPageCountLabel } from "@/lib/formatDirectoryPageCountLabel";
@@ -21,6 +23,8 @@ import { useMessagingWorkTierDetail } from "./useMessagingWorkTierDetail";
 
 export interface MessagingWorkTierControllerProps {
   canWrite: boolean;
+  /** `messaging.clearLogs` — archived logs are a privileged view. */
+  canClearLogs?: boolean;
   onClearLogsRequest: () => void;
   onResend: (log: Message, recipient: MessagingRecipient) => void;
   onBulkResend?: (
@@ -32,15 +36,18 @@ export interface MessagingWorkTierControllerProps {
   onChannelChange?: (channel: "all" | "sms" | "whatsapp" | "email") => void;
   /** Lets the page header use the single filtered export path owned by the work tier. */
   onExportLogsRegister?: (handler: (() => Promise<void>) | null) => void;
+  onStartCampaign?: (channel: "whatsapp" | "sms" | "email") => void;
 }
 
 export function useMessagingWorkTierController({
   canWrite,
+  canClearLogs = false,
   onResend,
   onBulkResend,
   channel: controlledChannel,
   onChannelChange: controlledOnChannelChange,
   onExportLogsRegister,
+  onStartCampaign,
 }: MessagingWorkTierControllerProps) {
   const { t } = useTranslation();
   const [searchParams, setSearchParams] = useSearchParams();
@@ -48,14 +55,17 @@ export function useMessagingWorkTierController({
     useMessagingPageOptions();
   const { viewMode, setViewMode } = useWorkDirectoryViewMode();
 
+  const canViewArchived = canClearLogs;
   const filters = useMessagingWorkFilters({
     searchParams,
     setSearchParams,
     controlledChannel,
     controlledOnChannelChange,
+    canViewArchived,
   });
 
   const logsQuery = useMessageLogs({
+    includeDeleted: filters.showArchived,
     channel: filters.channel,
     category: filters.category,
     search: filters.debouncedSearch,
@@ -98,7 +108,34 @@ export function useMessagingWorkTierController({
     selectedCount,
     toggleLog,
     toggleAllVisible,
-  } = useMessagingWorkTierSelection({ logs: logsQuery.logs });
+  } = useMessagingWorkTierSelection({
+    logs: logsQuery.logs,
+    scopeKey: [
+      filters.channel,
+      filters.category,
+      filters.status,
+      filters.debouncedSearch,
+      filters.queryStartDate ?? "",
+      filters.endDate,
+      filters.logsPage,
+      filters.showArchived ? "archived" : "active",
+    ].join("|"),
+  });
+
+  // Real Work-tier shortcut state: `/` focuses search, Escape clears the
+  // selection then the filters, Cmd/Ctrl+N starts a campaign. The old page-level
+  // stub passed zeros and no-op handlers, so Escape did nothing.
+  useModuleShortcuts({
+    searchInputId: MESSAGING_WORK_SEARCH_INPUT_ID,
+    selectedCount,
+    hasActiveFilters: filters.hasActiveFilters,
+    clearFilters: filters.clearFilters,
+    clearSelection: () => setSelectedById({}),
+    canWrite,
+    showDeleted: false,
+    viewingDeleted: filters.showArchived,
+    onCreate: () => onStartCampaign?.("whatsapp"),
+  });
 
   const selectedCountLabel = t("messaging.selectedCount", { count: selectedCount });
   const pageCountLabel = formatDirectoryPageCountLabel(logsQuery.logs.length, t, {

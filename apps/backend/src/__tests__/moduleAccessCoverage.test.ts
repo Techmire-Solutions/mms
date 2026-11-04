@@ -327,6 +327,11 @@ const EXPECTED_MODULE_ROUTE_ACTIONS: Readonly<Record<string, ModuleAction>> = {
   "POST /api/students/bulk-restore": "delete",
   "POST /api/students/migrate-gr-numbers": "setupWrite",
   "POST /api/students/duplicate-check": "read",
+  // Messaging: clear/restore are handler-owned capabilities (grant + enablement
+  // still gated); CSV export requires messaging.write.
+  "DELETE /api/messaging/logs": "availability",
+  "POST /api/messaging/logs/restore": "availability",
+  "POST /api/messaging/export/csv": "write",
 };
 
 describe("module access coverage", () => {

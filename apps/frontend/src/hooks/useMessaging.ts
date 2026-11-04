@@ -61,6 +61,8 @@ export function useMessageTemplates(options?: { enabled?: boolean }) {
 
 export function useMessageLogs(options?: {
   enabled?: boolean;
+  /** Archived (soft-deleted) logs — a privileged view (`messaging.clearLogs`). */
+  includeDeleted?: boolean;
   channel?: string;
   category?: string;
   search?: string;
@@ -86,11 +88,13 @@ export function useMessageLogs(options?: {
       options?.endDate,
       page,
       pageSize,
+      options?.includeDeleted === true ? "archived" : "active",
     ],
     queryData: {
       query: {
         page,
         pageSize,
+        ...(options?.includeDeleted === true ? { includeDeleted: true } : {}),
         ...(options?.channel && options.channel !== "all" ? { channel: options.channel } : {}),
         ...(options?.category && options.category !== "all" ? { category: options.category } : {}),
         ...(options?.search?.trim() ? { search: options.search.trim() } : {}),

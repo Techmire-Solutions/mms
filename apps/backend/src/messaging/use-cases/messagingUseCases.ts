@@ -107,16 +107,6 @@ export function createMessagingUseCases(repo: MessagingRepository = messagingRep
     },
 
     loadMessageLogs: logBulkService.load,
-    loadMessageLogById: async (id: string, includeDeleted = false): Promise<Message | null> => {
-      const tenant = getRequestTenant();
-      const cleanId = id?.trim();
-      if (!tenant || !cleanId) return null;
-      const log = await repo.findMessageLogById(tenant, cleanId);
-      if (!log) return null;
-      if (!includeDeleted && log.deletedAt) return null;
-      if (includeDeleted && !log.deletedAt) return null;
-      return log;
-    },
     loadMessageLogsByIds: async (ids: string[], includeDeleted = false): Promise<Message[]> => {
       const tenant = getRequestTenant();
       if (!tenant) return [];
@@ -156,9 +146,9 @@ export function createMessagingUseCases(repo: MessagingRepository = messagingRep
       return logs;
     },
 
-    /** Soft-deletes all active message logs for the workspace (sets deletedAt). */
-    clearAllMessageLogs: async (workspaceSubdomain: string): Promise<void> => {
-      await repo.softDeleteActiveMessageLogs(workspaceSubdomain);
+    /** Soft-deletes all active message logs for the workspace (sets deletedAt + actor). */
+    clearAllMessageLogs: async (workspaceSubdomain: string, userId: string): Promise<void> => {
+      await repo.softDeleteActiveMessageLogs(workspaceSubdomain, userId);
       await broadcastCollection("message_logs");
     },
 
@@ -194,6 +184,14 @@ export function createMessagingUseCases(repo: MessagingRepository = messagingRep
       errorMessage?: string | null,
     ): Promise<void> => {
       await repo.updateMessageLogDeliveryStatus(workspaceSubdomain, id, status, errorMessage);
+    },
+
+    /** Persists a campaign's delivery outcomes in one batched write. */
+    saveMessageLogDeliveryOutcomes: async (
+      workspaceSubdomain: string,
+      outcomes: Parameters<MessagingRepository["saveMessageLogDeliveryOutcomes"]>[1],
+    ): Promise<void> => {
+      await repo.saveMessageLogDeliveryOutcomes(workspaceSubdomain, outcomes);
     },
 
     computeMessagingMetrics: async (

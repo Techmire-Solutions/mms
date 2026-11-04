@@ -78,6 +78,15 @@ export const MODULE_ROUTE_ACTION_RULES: readonly ModuleRouteActionRule[] = [
     action: "availability",
     onlyModules: ["messaging"],
   },
+  // Clearing logs is the handler-owned `messaging.clearLogs` capability (the
+  // manifest has no `delete` permission, so the method default `write` would 403 a
+  // role that legitimately holds clearLogs without write).
+  {
+    methods: ["DELETE"],
+    pattern: /^\/api\/messaging\/logs$/,
+    action: "availability",
+    onlyModules: ["messaging"],
+  },
   {
     methods: ["PUT"],
     pattern: /\/(field-config|preferences|config\/fields|config\/preferences|lookups\/:kind)$/,
@@ -89,6 +98,10 @@ export const MODULE_ROUTE_ACTION_RULES: readonly ModuleRouteActionRule[] = [
     methods: ["POST"],
     pattern: /\/(export|export\/csv|export\/vcf|export-audit)$/,
     action: "export",
+    // Messaging defines no `export` permission, so the action would fall back to
+    // `read` while the handler requires `messaging.write`; method default (write)
+    // is the correct gate here.
+    exceptModules: ["messaging"],
   },
   // Academic catalogs (session categories / programs / subjects) are Sessions setup data.
   {

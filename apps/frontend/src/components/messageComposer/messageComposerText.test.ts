@@ -69,7 +69,7 @@ describe("messageComposerText", () => {
         localRecipients: mockRecipients,
         eligibleCount: 2,
       }),
-    ).toBe("2 messaging.of 2 messaging.contactsHaveWhatsapp");
+    ).toBe('messaging.composerSummaryWhatsapp:{"eligible":"2","total":"2"}');
 
     expect(
       getComposerSubtitle({

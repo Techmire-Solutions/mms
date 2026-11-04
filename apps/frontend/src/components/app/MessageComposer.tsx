@@ -154,7 +154,7 @@ export function MessageComposer(props: MessageComposerProps): React.JSX.Element 
           onRecipientTabChange={model.setRecipientTab}
           onSearchChange={model.setRecipientSearch}
           onPreviewIndexChange={model.setPreviewIndex}
-          onSendOne={dispatch.executeSend}
+          onSendOne={(recipient) => void dispatch.sendOne(recipient)}
           onAdd={model.addRecipient}
           onRemove={model.removeRecipient}
           isPickStep={step === "pick"}
