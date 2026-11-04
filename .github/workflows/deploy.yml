@@ -218,7 +218,7 @@ jobs:
           BASE="https://${MMS_APP_DOMAIN}"
 
           # Fast-fail on TLS certificate errors — retrying won't fix an expired cert.
-          TLS_CHECK=$(curl -sS --connect-timeout 5 --max-time 10 "${BASE}/health" 2>&1 || true)
+          TLS_CHECK=$(curl -sS --connect-timeout 15 --max-time 20 "${BASE}/health" 2>&1 || true)
           if echo "${TLS_CHECK}" | grep -qi "certificate has expired\|SSL certificate problem\|certificate verify failed"; then
             EXPIRY=$(echo | openssl s_client -servername "${MMS_APP_DOMAIN}" \
               -connect "${MMS_APP_DOMAIN}:443" 2>/dev/null \
@@ -228,30 +228,35 @@ jobs:
             exit 1
           fi
 
+          # Allow 5s initial grace period for Apache reverse proxy workers to settle connections
+          sleep 5
+
           for i in 1 2 3 4 5 6 7 8 9 10; do
-            if curl -fsS --connect-timeout 5 --max-time 15 "${BASE}/health" >/dev/null \
-              && curl -fsS --connect-timeout 5 --max-time 15 "${BASE}/ready" >/dev/null \
-              && curl -fsS --connect-timeout 5 --max-time 15 "${BASE}/" >/dev/null; then
+            if curl -fsS --connect-timeout 15 --max-time 25 "${BASE}/health" >/dev/null \
+              && curl -fsS --connect-timeout 15 --max-time 25 "${BASE}/ready" >/dev/null \
+              && curl -fsS --connect-timeout 15 --max-time 25 "${BASE}/" >/dev/null; then
               break
             fi
             echo "Waiting for public site (attempt ${i}/10)..."
             sleep 10
             if [ "$i" -eq 10 ]; then
               echo "ERROR: ${BASE} unreachable — check Apache ProxyPass → :5002"
+              echo "Diagnostic trace:"
+              curl -iv --connect-timeout 15 --max-time 25 "${BASE}/health" || true
               echo "Diagnose: ssh to server and run: bash scripts/server-diagnose.sh apps/backend/.env"
               exit 1
             fi
           done
           echo "Health, ready, and SPA OK: ${BASE}/"
 
-          SETUP_CODE="$(curl -s -o /tmp/setup.json -w '%{http_code}' "${BASE}/api/platform/auth/setup/status")"
+          SETUP_CODE="$(curl -s -o /tmp/setup.json -w '%{http_code}' --connect-timeout 15 --max-time 25 "${BASE}/api/platform/auth/setup/status")"
           echo "Platform setup/status → HTTP ${SETUP_CODE}"
           if [ "${SETUP_CODE}" = "403" ]; then
             echo "ERROR: Apex misconfigured — MMS_APP_DOMAIN must be ${MMS_APP_DOMAIN} (full hostname, not root domain)"
             exit 1
           fi
 
-          CONFIG="$(curl -fsS "${BASE}/api/public/deployment-config")"
+          CONFIG="$(curl -fsS --connect-timeout 15 --max-time 25 "${BASE}/api/public/deployment-config")"
           echo "deployment-config: ${CONFIG}"
           if ! echo "${CONFIG}" | grep -q "\"appDomain\":\"${MMS_APP_DOMAIN}\""; then
             echo "::warning::deployment-config appDomain does not match MMS_APP_DOMAIN — check server .env"
