@@ -1,6 +1,5 @@
 import type { User } from "@mms/shared";
-import { WORKSPACES_COLLECTION, roleHasPermission } from "@mms/shared";
-import { LRUCache } from "lru-cache";
+import { WORKSPACES_COLLECTION } from "@mms/shared";
 import {
   COLLECTION_DELETE_PERMISSION,
   COLLECTION_READ_PERMISSION,
@@ -10,6 +9,7 @@ import {
   isAllowedCollectionName,
 } from "./rbacPermissionMaps.js";
 import { REST_ONLY_TYPED_COLLECTIONS } from "./rbacCanRestCollections.js";
+import { userHasPermission } from "./userPermissionContext.js";
 import {
   canDeleteContacts,
   canReadContacts,
@@ -17,16 +17,6 @@ import {
   canWriteContacts,
   canWriteMessaging,
 } from "./rbacCanModuleHelpers.js";
-
-const canReadCollectionCache = new LRUCache<string, boolean>({ max: 2048 });
-const canWriteCollectionCache = new LRUCache<string, boolean>({ max: 2048 });
-const canDeleteCollectionCache = new LRUCache<string, boolean>({ max: 2048 });
-
-export function clearRbacCollectionCache(): void {
-  canReadCollectionCache.clear();
-  canWriteCollectionCache.clear();
-  canDeleteCollectionCache.clear();
-}
 
 function computeCanReadCollection(user: User, collectionName: string): boolean {
   if (!user || !user.role) {
@@ -41,32 +31,32 @@ function computeCanReadCollection(user: User, collectionName: string): boolean {
   // Typed students table is REST-only (not document-store allowlisted).
   if (collectionName === "students") {
     const mapped = COLLECTION_READ_PERMISSION.students;
-    return mapped ? roleHasPermission(user.role, mapped) : false;
+    return mapped ? userHasPermission(user, mapped) : false;
   }
   // Typed faculty table is REST-only (not document-store allowlisted).
   if (collectionName === "faculty") {
     const mapped = COLLECTION_READ_PERMISSION.faculty;
-    return mapped ? roleHasPermission(user.role, mapped) : false;
+    return mapped ? userHasPermission(user, mapped) : false;
   }
   // Typed sessions table is REST-only (not document-store allowlisted).
   if (collectionName === "sessions") {
     const mapped = COLLECTION_READ_PERMISSION.sessions;
-    return mapped ? roleHasPermission(user.role, mapped) : false;
+    return mapped ? userHasPermission(user, mapped) : false;
   }
   // Typed enrollments table is REST-only (not document-store allowlisted).
   if (collectionName === "enrollments") {
     const mapped = COLLECTION_READ_PERMISSION.enrollments;
-    return mapped ? roleHasPermission(user.role, mapped) : false;
+    return mapped ? userHasPermission(user, mapped) : false;
   }
   // Typed users table is REST-only (not document-store allowlisted).
   if (collectionName === "users") {
     const mapped = COLLECTION_READ_PERMISSION.users;
-    return mapped ? roleHasPermission(user.role, mapped) : false;
+    return mapped ? userHasPermission(user, mapped) : false;
   }
   // Typed user_activity_logs table is REST-only (not document-store allowlisted).
   if (collectionName === "user_activity_logs") {
     const mapped = COLLECTION_READ_PERMISSION.user_activity_logs;
-    return mapped ? roleHasPermission(user.role, mapped) : false;
+    return mapped ? userHasPermission(user, mapped) : false;
   }
   // Typed messaging tables are REST-only (not document-store allowlisted).
   if (collectionName === "message_logs" || collectionName === "message_templates") {
@@ -75,14 +65,14 @@ function computeCanReadCollection(user: User, collectionName: string): boolean {
   // Typed legacy entity tables are REST-only (not document-store allowlisted).
   if (REST_ONLY_TYPED_COLLECTIONS.has(collectionName)) {
     const mapped = COLLECTION_READ_PERMISSION[collectionName];
-    return mapped ? roleHasPermission(user.role, mapped) : false;
+    return mapped ? userHasPermission(user, mapped) : false;
   }
   if (!isAllowedCollectionName(collectionName)) {
     return false;
   }
   const mapped = COLLECTION_READ_PERMISSION[collectionName];
   if (mapped) {
-    return roleHasPermission(user.role, mapped);
+    return userHasPermission(user, mapped);
   }
   if (STAFF_WRITE_COLLECTION_KEYS.has(collectionName)) {
     return WRITE_ROLES.has(user.role);
@@ -99,12 +89,7 @@ export function canReadCollection(user: User, collectionName: string): boolean {
   if (!user || !user.role) {
     return false;
   }
-  const cacheKey = `${user.role}:${collectionName}`;
-  const cached = canReadCollectionCache.get(cacheKey);
-  if (cached !== undefined) return cached;
-
   const result = computeCanReadCollection(user, collectionName);
-  canReadCollectionCache.set(cacheKey, result);
   return result;
 }
 
@@ -121,32 +106,32 @@ function computeCanWriteCollection(user: User, collectionName: string): boolean 
   // Typed students table is REST-only (not document-store allowlisted).
   if (collectionName === "students") {
     const mapped = COLLECTION_WRITE_PERMISSION.students;
-    return mapped ? roleHasPermission(user.role, mapped) : false;
+    return mapped ? userHasPermission(user, mapped) : false;
   }
   // Typed faculty table is REST-only (not document-store allowlisted).
   if (collectionName === "faculty") {
     const mapped = COLLECTION_WRITE_PERMISSION.faculty;
-    return mapped ? roleHasPermission(user.role, mapped) : false;
+    return mapped ? userHasPermission(user, mapped) : false;
   }
   // Typed sessions table is REST-only (not document-store allowlisted).
   if (collectionName === "sessions") {
     const mapped = COLLECTION_WRITE_PERMISSION.sessions;
-    return mapped ? roleHasPermission(user.role, mapped) : false;
+    return mapped ? userHasPermission(user, mapped) : false;
   }
   // Typed enrollments table is REST-only (not document-store allowlisted).
   if (collectionName === "enrollments") {
     const mapped = COLLECTION_WRITE_PERMISSION.enrollments;
-    return mapped ? roleHasPermission(user.role, mapped) : false;
+    return mapped ? userHasPermission(user, mapped) : false;
   }
   // Typed users table is REST-only (not document-store allowlisted).
   if (collectionName === "users") {
     const mapped = COLLECTION_WRITE_PERMISSION.users;
-    return mapped ? roleHasPermission(user.role, mapped) : false;
+    return mapped ? userHasPermission(user, mapped) : false;
   }
   // Typed user_activity_logs table is REST-only (not document-store allowlisted).
   if (collectionName === "user_activity_logs") {
     const mapped = COLLECTION_WRITE_PERMISSION.user_activity_logs;
-    return mapped ? roleHasPermission(user.role, mapped) : false;
+    return mapped ? userHasPermission(user, mapped) : false;
   }
   // Typed messaging tables are REST-only (not document-store allowlisted).
   if (collectionName === "message_logs" || collectionName === "message_templates") {
@@ -155,14 +140,14 @@ function computeCanWriteCollection(user: User, collectionName: string): boolean 
   // Typed legacy entity tables are REST-only (not document-store allowlisted).
   if (REST_ONLY_TYPED_COLLECTIONS.has(collectionName)) {
     const mapped = COLLECTION_WRITE_PERMISSION[collectionName];
-    return mapped ? roleHasPermission(user.role, mapped) : false;
+    return mapped ? userHasPermission(user, mapped) : false;
   }
   if (!isAllowedCollectionName(collectionName)) {
     return false;
   }
   const mapped = COLLECTION_WRITE_PERMISSION[collectionName];
   if (mapped) {
-    return roleHasPermission(user.role, mapped);
+    return userHasPermission(user, mapped);
   }
   if (STAFF_WRITE_COLLECTION_KEYS.has(collectionName)) {
     return WRITE_ROLES.has(user.role);
@@ -179,12 +164,7 @@ export function canWriteCollection(user: User, collectionName: string): boolean 
   if (!user || !user.role) {
     return false;
   }
-  const cacheKey = `${user.role}:${collectionName}`;
-  const cached = canWriteCollectionCache.get(cacheKey);
-  if (cached !== undefined) return cached;
-
   const result = computeCanWriteCollection(user, collectionName);
-  canWriteCollectionCache.set(cacheKey, result);
   return result;
 }
 
@@ -198,12 +178,12 @@ function computeCanDeleteCollection(user: User, collectionName: string): boolean
   // Typed students table is REST-only (not document-store allowlisted).
   if (collectionName === "students") {
     const mapped = COLLECTION_DELETE_PERMISSION.students;
-    return mapped ? roleHasPermission(user.role, mapped) : false;
+    return mapped ? userHasPermission(user, mapped) : false;
   }
   // Typed faculty table is REST-only (not document-store allowlisted).
   if (collectionName === "faculty") {
     const mapped = COLLECTION_DELETE_PERMISSION.faculty;
-    return mapped ? roleHasPermission(user.role, mapped) : false;
+    return mapped ? userHasPermission(user, mapped) : false;
   }
   // Typed sessions table is REST-only (not document-store allowlisted).
   if (collectionName === "sessions") {
@@ -224,14 +204,14 @@ function computeCanDeleteCollection(user: User, collectionName: string): boolean
   // Typed legacy entity tables are REST-only (not document-store allowlisted).
   if (REST_ONLY_TYPED_COLLECTIONS.has(collectionName)) {
     const mapped = COLLECTION_DELETE_PERMISSION[collectionName];
-    return mapped ? roleHasPermission(user.role, mapped) : canWriteCollection(user, collectionName);
+    return mapped ? userHasPermission(user, mapped) : canWriteCollection(user, collectionName);
   }
   if (!isAllowedCollectionName(collectionName)) {
     return false;
   }
   const mapped = COLLECTION_DELETE_PERMISSION[collectionName];
   if (mapped) {
-    return roleHasPermission(user.role, mapped);
+    return userHasPermission(user, mapped);
   }
   return canWriteCollection(user, collectionName);
 }
@@ -244,11 +224,6 @@ export function canDeleteCollection(user: User, collectionName: string): boolean
   if (!user || !user.role) {
     return false;
   }
-  const cacheKey = `${user.role}:${collectionName}`;
-  const cached = canDeleteCollectionCache.get(cacheKey);
-  if (cached !== undefined) return cached;
-
   const result = computeCanDeleteCollection(user, collectionName);
-  canDeleteCollectionCache.set(cacheKey, result);
   return result;
 }

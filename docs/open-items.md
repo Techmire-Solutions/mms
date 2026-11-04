@@ -603,14 +603,13 @@ landed with regression tests. Evidence: review report §11 (“P2 batch 2”); u
 Tier 1 of the dashboard / contacts / students / faculty / tasks reviews landed with tests; the
 reports under `docs/*-module-review-2026-11-04*.md` hold the evidence and the per-finding status.
 
-- **S1 — CRITICAL, open: the module gate ignores tenant custom roles.** `checkModuleAccess` calls
-  `roleHasPermission(role, permission)` without the workspace's `workspaceRoles`, and the same
-  omission runs through `rbacCanCollectionHelpers` and the route helper checks. A designation-managed
-  composite role (`faculty_ed_*`, created by `syncFacultyLinkedUserRole`) therefore matches no
-  default role and every module route answers `403 PERMISSION_DENIED`. Reproduced by
-  `apps/backend/src/__tests__/customRoleModuleAccess.test.ts` (`it.fails`). Fix = load the tenant role
-  catalog once per request and thread it through the gate + `canRead/Write/DeleteCollection` (and the
-  setup-route helpers); this touches every module, so it is a dedicated security change.
+- **S1 — RESOLVED 2026-11-04: tenant custom roles authorize server module access.** Authentication
+  attaches the tenant role catalog (cached per tenant under the `rbac` domain) to the request user in a
+  WeakMap; `userHasPermission` is the single evaluation used by the module gate, collection/object
+  helpers, setup and route guards, and queued-job permission checks. Role edits invalidate the whole
+  RBAC domain, process-local permission caches were removed, and system-role ids can no longer be
+  shadowed by a stored custom role. Covered by `customRoleAuthorization.integration.test.ts`,
+  `customRoleModuleAccess.test.ts`, `tenantRoleCatalog.test.ts` and `rbacCustomRoleHelpers.test.ts`.
 - **Tasks (Tier 2):** M1 delegation scope (no reporting hierarchy exists — remove the dead setting or
   grant `assign_anywhere` by decision), M2 task ownership policy, M4 assignment notification delivery,
   M6 status-transition table + badge menu, M8 batched bulk ops + bulk-status endpoint.

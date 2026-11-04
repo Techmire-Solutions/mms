@@ -1,11 +1,14 @@
 import {
   evaluateModuleAccess,
   getModuleAvailabilityDenial,
+  isSystemRole,
   roleHasPermission,
   type ModuleAccessDenialCode,
   type ModuleAction,
+  type WorkspaceRole,
 } from "@mms/shared";
 import { loadModuleAvailability } from "./moduleAvailabilityService.js";
+import { getTenantRoleCatalog } from "./tenantRoleCatalog.js";
 import { resolveCurrentTenantRole } from "./currentTenantRole.js";
 
 /** Action a queued job performs, keyed by its runner `kind`. */
@@ -29,9 +32,13 @@ export async function getBackgroundJobModuleDenial(
 ): Promise<ModuleAccessDenialCode | null> {
   let availability;
   let role: string | null;
+  let roleCatalog: readonly WorkspaceRole[] = [];
   try {
     availability = await loadModuleAvailability(tenant);
     role = await resolveCurrentTenantRole(tenant, userId);
+    // A queued job must be evaluated against the workspace catalog too, or a
+    // custom/composite role can never export/import.
+    roleCatalog = role && !isSystemRole(role) ? await getTenantRoleCatalog(tenant) : [];
   } catch {
     return "MODULE_ACCESS_UNAVAILABLE";
   }
@@ -43,7 +50,7 @@ export async function getBackgroundJobModuleDenial(
     moduleId,
     availability,
     action: backgroundJobModuleAction(kind),
-    can: (permission) => role !== null && roleHasPermission(role, permission),
+    can: (permission) => role !== null && roleHasPermission(role, permission, roleCatalog),
   });
   return decision.allowed ? null : decision.code;
 }

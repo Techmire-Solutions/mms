@@ -5,7 +5,6 @@ import {
   facultyDesignationsCsvExportBodySchema,
   facultyDepartmentImportBodySchema,
   facultyDesignationImportBodySchema,
-  roleHasPermission,
   type User,
 } from "@mms/shared";
 import { registerModuleCsvExportRoutes } from "../../../lib/registerModuleCsvExportRoutes.js";
@@ -23,11 +22,12 @@ import {
   QueueUnavailableError,
 } from "../../../services/backgroundJobWorkerService.js";
 import { buildBackgroundJobId } from "../../../lib/backgroundJobIds.js";
+import { userHasPermission } from "../../../lib/userPermissionContext.js";
 
 const setupWrite = FACULTY_MODULE_MANIFEST.permissions.setupWrite;
 
 function canSetupWrite(user: User): boolean {
-  return canWriteCollection(user, "faculty") && roleHasPermission(user.role, setupWrite);
+  return canWriteCollection(user, "faculty") && userHasPermission(user, setupWrite);
 }
 
 async function enqueueImportJob(options: {

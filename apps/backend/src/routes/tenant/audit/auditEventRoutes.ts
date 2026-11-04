@@ -1,5 +1,5 @@
 import type { FastifyPluginAsync, FastifyRequest } from "fastify";
-import { listAuditEventsQuerySchema, roleHasPermission, type User } from "@mms/shared";
+import { listAuditEventsQuerySchema, type User } from "@mms/shared";
 import { getRequestTenant } from "../../../lib/tenantContext.js";
 import { sendForbidden } from "../../../lib/httpErrors.js";
 import { recordAuditEventSafely, getLatestShardHash } from "../../../services/auditTrailService.js";
@@ -10,6 +10,7 @@ import {
   listAuditEvents,
   listAuditEventsForExport,
 } from "../../../audit/use-cases/auditQueryUseCases.js";
+import { userHasPermission } from "../../../lib/userPermissionContext.js";
 
 /**
  * Helper to extract W3C traceparent from request context.
@@ -32,7 +33,7 @@ export const auditEventRoutes: FastifyPluginAsync = async (fastify) => {
    */
   fastify.get("/api/audit/events", async (request, reply) => {
     const user = request.user as User | undefined;
-    if (!roleHasPermission(user?.role ?? "", "audit.view")) {
+    if (!userHasPermission(user, "audit.view")) {
       return sendForbidden(reply);
     }
     const tenant = getRequestTenant();
@@ -80,7 +81,7 @@ export const auditEventRoutes: FastifyPluginAsync = async (fastify) => {
    */
   fastify.get("/api/audit/export", async (request, reply) => {
     const user = request.user as User | undefined;
-    if (!roleHasPermission(user?.role ?? "", "audit.view")) {
+    if (!userHasPermission(user, "audit.view")) {
       return sendForbidden(reply);
     }
     const tenant = getRequestTenant();

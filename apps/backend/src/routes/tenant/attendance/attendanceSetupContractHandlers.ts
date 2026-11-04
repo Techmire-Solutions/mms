@@ -2,7 +2,6 @@ import {
   type User,
   ATTENDANCE_MODULE_MANIFEST,
   type attendanceContract,
-  roleHasPermission,
   normalizeAttendanceModulePreferences,
   normalizeAttendanceReportComparisonQuery,
   parseComparisonQueryParams,
@@ -25,6 +24,7 @@ import {
 import { loadAttendanceLookupsMap } from "../../../services/attendanceLookupsService.js";
 import { createCollectionAuditHelper } from "../../../lib/createCollectionAuditHelper.js";
 import { getTenantId } from "./attendanceRecordHandlers.js";
+import { userHasPermission } from "../../../lib/userPermissionContext.js";
 
 const COLLECTION = ATTENDANCE_MODULE_MANIFEST.collectionKey;
 const SETUP_WRITE_PERM = ATTENDANCE_MODULE_MANIFEST.permissions.setupWrite;
@@ -155,7 +155,7 @@ export async function attendanceUpdateFieldConfigHandler({
   ContractRouteResponse<(typeof attendanceContract)["updateFieldConfig"]>
 > {
   const user = request.user as User;
-  if (!roleHasPermission(user.role, SETUP_WRITE_PERM)) {
+  if (!userHasPermission(user, SETUP_WRITE_PERM)) {
     return {
       status: 403 as const,
       body: { type: "forbidden", message: "Insufficient permissions" },
@@ -209,7 +209,7 @@ export async function attendanceUpdatePreferencesHandler({
   ContractRouteResponse<(typeof attendanceContract)["updatePreferences"]>
 > {
   const user = request.user as User;
-  if (!roleHasPermission(user.role, SETUP_WRITE_PERM)) {
+  if (!userHasPermission(user, SETUP_WRITE_PERM)) {
     return {
       status: 403 as const,
       body: { type: "forbidden", message: "Insufficient permissions" },

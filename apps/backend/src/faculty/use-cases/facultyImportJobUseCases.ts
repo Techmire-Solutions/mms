@@ -1,5 +1,5 @@
 import { randomUUID } from "node:crypto";
-import { roleHasPermission, type FacultyImportJobPayload } from "@mms/shared";
+import type { FacultyImportJobPayload } from "@mms/shared";
 import { listFacultyDepartments } from "../../db/repositories/facultyDepartmentRepository.js";
 import { listFacultyDesignations } from "../../db/repositories/facultyDesignationRepository.js";
 import {
@@ -8,6 +8,7 @@ import {
   updateFacultyById,
 } from "../../services/facultyService.js";
 import { reconcileContactSystemTags } from "../../contacts/systemTags/contactSystemTagUseCases.js";
+import { tenantUserHasPermission } from "../../lib/tenantRoleCatalog.js";
 import { broadcastCollection } from "../../lib/livePush.js";
 import { logger } from "../../lib/logger.js";
 import type { FacultyBatchSideEffects } from "./facultyWriteUseCases.js";
@@ -67,10 +68,14 @@ export async function runFacultyMembersImportJob(
     rows.map((row) => row.employeeId ?? "").filter((value) => value.trim().length > 0),
   );
   const batch: FacultyBatchSideEffects = { contactIds: new Set<string>() };
-  // The queued job runs outside the request guard: carry the actor role's
-  // restore capability so an import cannot resurrect an archived profile
-  // without `faculty.delete`.
-  const canRestore = roleHasPermission(payload.viewerRole, "faculty.delete");
+  // The queued job runs outside the request guard: evaluate the acting user's
+  // current role + tenant catalog so an import cannot resurrect an archived
+  // profile without `faculty.delete`.
+  const canRestore = await tenantUserHasPermission(
+    context.tenant,
+    context.userId,
+    "faculty.delete",
+  );
 
   for (let i = 0; i < total; i += 1) {
     const row = rows[i];

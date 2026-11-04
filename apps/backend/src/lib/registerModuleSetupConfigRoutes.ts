@@ -1,11 +1,12 @@
 import type { FastifyInstance, FastifyReply, FastifyRequest } from "fastify";
 import type { ZodType, z } from "zod";
 import type { Permission, User } from "@mms/shared";
-import { roleHasPermission } from "@mms/shared";
+import {} from "@mms/shared";
 import { sendDatabaseError, sendForbidden } from "./httpErrors.js";
 import { parseRequest, replyValidationError } from "./zodRequest.js";
 import { getRequestTenant } from "./tenantContext.js";
 import { getOrSetMultiTier, invalidateMultiTierCache } from "./cache/index.js";
+import { userHasPermission } from ".//userPermissionContext.js";
 
 export type RegisterModuleSetupConfigRoutesOptions<
   TConfigSchema extends ZodType = ZodType,
@@ -55,7 +56,7 @@ export function registerModuleSetupConfigRoutes<
     TPrefsInput
   >,
 ): void {
-  const canWriteSetup = (user: User) => roleHasPermission(user.role, options.setupWritePermission);
+  const canWriteSetup = (user: User) => userHasPermission(user, options.setupWritePermission);
 
   const domain = options.domain ?? options.fieldConfigAuditAction.split(".")[0] ?? "setup";
 

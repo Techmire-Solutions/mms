@@ -2,12 +2,7 @@ import type { FastifyPluginAsync } from "fastify";
 import { withTenant } from "../../../db/tenant-context.js";
 import { getRequestTenant } from "../../../lib/tenantContext.js";
 import { canWriteCollection, canReadCollection } from "../../../services/rbacService.js";
-import {
-  STUDENTS_MODULE_MANIFEST,
-  roleHasPermission,
-  type User,
-  studentOperationsContract,
-} from "@mms/shared";
+import { STUDENTS_MODULE_MANIFEST, type User, studentOperationsContract } from "@mms/shared";
 import { studentUseCases } from "../../../students/use-cases/studentUseCases.js";
 import { initServer, type RouterImplementation } from "@ts-rest/fastify";
 import type { ContractRouteArgs, ContractRouteResponse } from "../../../lib/contractRouterTypes.js";
@@ -16,6 +11,7 @@ import { auditStudent } from "./studentRouteHelpers.js";
 import { getModuleAccessDenial } from "../../../middleware/requireTenantModule.js";
 
 import { handleContractError } from "../../../lib/contractError.js";
+import { userHasPermission } from "../../../lib/userPermissionContext.js";
 const s = initServer();
 
 /** Students operations — bulk status, bulk enroll, next GR, duplicate check, migrate GR. */
@@ -196,7 +192,7 @@ export const studentOperationRoutes: FastifyPluginAsync = async (fastify) => {
       ContractRouteResponse<(typeof studentOperationsContract)["migrateGrNumbers"]>
     > => {
       const user = request.user as User;
-      if (!roleHasPermission(user.role, STUDENTS_MODULE_MANIFEST.permissions.setupWrite)) {
+      if (!userHasPermission(user, STUDENTS_MODULE_MANIFEST.permissions.setupWrite)) {
         return {
           status: 403 as const,
           body: { type: "forbidden", message: "Insufficient permissions" },

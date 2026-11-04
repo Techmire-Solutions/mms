@@ -1,4 +1,4 @@
-import { FACULTY_MODULE_MANIFEST, roleHasPermission, type User } from "@mms/shared";
+import { FACULTY_MODULE_MANIFEST, type User } from "@mms/shared";
 import {
   canDeleteCollection,
   canReadCollection,
@@ -6,6 +6,7 @@ import {
 } from "../../../services/rbacService.js";
 import type { ContractRouteArgs } from "../../../lib/contractRouterTypes.js";
 import { FacultyCatalogConflictError } from "../../../faculty/errors.js";
+import { userHasPermission } from "../../../lib/userPermissionContext.js";
 
 export type CatalogForbidden = { status: 403; body: { type: "forbidden"; message: string } };
 export type CatalogAuth = { user: User; tenantId: string };
@@ -35,10 +36,10 @@ export function authorizeCatalogRoute(
 export const canReadFacultyCatalog = (user: User) => canReadCollection(user, "faculty");
 export const canManageFacultySetup = (user: User) =>
   canWriteCollection(user, "faculty") &&
-  roleHasPermission(user.role, FACULTY_MODULE_MANIFEST.permissions.setupWrite);
+  userHasPermission(user, FACULTY_MODULE_MANIFEST.permissions.setupWrite);
 export const canArchiveFacultySetup = (user: User) =>
   canDeleteCollection(user, "faculty") &&
-  roleHasPermission(user.role, FACULTY_MODULE_MANIFEST.permissions.setupWrite);
+  userHasPermission(user, FACULTY_MODULE_MANIFEST.permissions.setupWrite);
 
 /** True when the error is a catalog uniqueness / dependency conflict (HTTP 409). */
 export function isCatalogConflict(error: unknown): boolean {
