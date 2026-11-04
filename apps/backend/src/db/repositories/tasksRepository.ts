@@ -3,8 +3,30 @@
  * @description Persistence and query operations for tasks.
  */
 
-import { and, desc, eq, gte, ilike, inArray, isNotNull, isNull, lte, or, sql } from "drizzle-orm";
-import { toSqlSearchPattern, type TaskListQuery, type TaskRecord } from "@mms/shared";
+import {
+  and,
+  desc,
+  eq,
+  gte,
+  ilike,
+  inArray,
+  isNotNull,
+  isNull,
+  lt,
+  lte,
+  notInArray,
+  or,
+  sql,
+} from "drizzle-orm";
+import {
+  TASK_PRIORITIES,
+  TASK_STATUSES,
+  toSqlSearchPattern,
+  type TaskListQuery,
+  type TaskPriority,
+  type TaskRecord,
+  type TaskStatus,
+} from "@mms/shared";
 import { taskAssignees, tasks } from "../schema.js";
 import { withTenantRead } from "../tenant-context.js";
 import { fetchAssigneesByTaskIds } from "./tasksAssigneesRepository.js";
@@ -13,6 +35,14 @@ export { getTaskMetrics } from "./tasksMetricsRepository.js";
 export { createTask, updateTask, updateTaskStatus } from "./tasksWriteRepository.js";
 export { deleteTask, restoreTask, bulkRestoreTasks } from "./tasksTrashRepository.js";
 import { SELECT_COLS, mapTaskRow } from "./tasksRowMapping.js";
+
+function splitEnum<T extends string>(raw: string | undefined, allowed: readonly T[]): T[] {
+  if (!raw?.trim()) return [];
+  return raw
+    .split(",")
+    .map((value) => value.trim())
+    .filter((value): value is T => (allowed as readonly string[]).includes(value));
+}
 
 export async function listTasks(
   tenant: string,
@@ -41,6 +71,24 @@ export async function listTasks(
       if (!isNaN(toDate.getTime())) {
         conditions.push(lte(tasks.dueAt, toDate));
       }
+    }
+    const statuses = splitEnum<TaskStatus>(query.statuses, TASK_STATUSES);
+    if (statuses.length > 0) conditions.push(inArray(tasks.status, statuses));
+    const priorities = splitEnum<TaskPriority>(query.priorities, TASK_PRIORITIES);
+    if (priorities.length > 0) conditions.push(inArray(tasks.priority, priorities));
+    if (query.overdue) {
+      conditions.push(
+        and(lt(tasks.dueAt, new Date()), notInArray(tasks.status, ["completed", "cancelled"]))!,
+      );
+    }
+    if (query.dueOn?.trim() && /^\d{4}-\d{2}-\d{2}$/.test(query.dueOn.trim())) {
+      const day = query.dueOn.trim();
+      conditions.push(
+        and(
+          gte(tasks.dueAt, new Date(`${day}T00:00:00.000Z`)),
+          lte(tasks.dueAt, new Date(`${day}T23:59:59.999Z`)),
+        )!,
+      );
     }
     if (query.search) {
       const term = toSqlSearchPattern(query.search);

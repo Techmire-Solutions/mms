@@ -3,6 +3,7 @@ import { type TaskRecord, type TaskInsert, type TaskPriority, type TaskStatus } 
 import { useTranslation } from "@/hooks/useTranslation";
 import { useEligibleTaskAssignees, useTasks } from "@/tenant/hooks/collections/tasks";
 import type { SelectedAssignee } from "../components/TaskFormAssigneePicker";
+import { buildTaskFormPayload } from "../lib/taskFormPayload";
 
 export interface UseTaskFormControllerProps {
   open: boolean;
@@ -124,20 +125,17 @@ export function useTaskFormController({
       return;
     }
 
-    const assignees = selectedAssignees.map((a) => ({
-      facultyId: a.facultyId,
-    }));
-
-    const payload: TaskInsert = {
+    const payload: TaskInsert = buildTaskFormPayload({
       title: trimmedTitle,
-      description: description.trim() || undefined,
+      description,
       priority,
       status,
-      startDate: startDate || null,
-      dueAt: dueAt || null,
-      parentTaskId: parentTaskId || null,
-      assignees,
-    };
+      startDate,
+      dueAt,
+      parentTaskId,
+      assignees: selectedAssignees,
+      initialData,
+    });
 
     try {
       await onSave(payload);

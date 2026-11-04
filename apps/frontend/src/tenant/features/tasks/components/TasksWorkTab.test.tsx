@@ -129,6 +129,11 @@ const baseProps = {
   onEdit: vi.fn(),
   onDelete: vi.fn(),
   onUpdateStatus: vi.fn(),
+  total: 1,
+  pageIndex: 0,
+  pageSize: 50,
+  onPageChange: vi.fn(),
+  onServerFiltersChange: vi.fn(),
 };
 
 describe("TasksWorkTab", () => {

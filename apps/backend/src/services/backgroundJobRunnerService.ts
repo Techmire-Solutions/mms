@@ -55,6 +55,7 @@ import { registerContactsVcfExportJobRunner } from "../lib/registerContactsVcfEx
 import { messagingUseCases } from "../messaging/use-cases/messagingUseCases.js";
 import { registerMessagingCampaignJobRunner } from "./messagingCampaignJobRunner.js";
 import { registerFacultyBackgroundJobRunners } from "./backgroundJobFacultyRunners.js";
+import { registerTasksBackgroundJobRunners } from "./backgroundJobTasksRunners.js";
 import { registerStudentsImportJobRunner } from "../students/studentsImportService.js";
 import {
   registerDocumentAndFinanceJobRunners,
@@ -166,6 +167,8 @@ export function registerDefaultBackgroundJobRunners(): void {
 
   // Modular faculty and catalog export/import runners
   registerFacultyBackgroundJobRunners();
+
+  registerTasksBackgroundJobRunners();
 
   registerModuleCsvExportJobRunner({
     moduleId: ENROLLMENTS_MODULE_MANIFEST.moduleId,

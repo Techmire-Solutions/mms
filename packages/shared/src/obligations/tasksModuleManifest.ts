@@ -109,6 +109,17 @@ export const taskListQuerySchema = z
     search: z.string().optional(),
     dueFrom: z.string().max(32).optional(),
     dueTo: z.string().max(32).optional(),
+    /** Comma-separated statuses for multi-select quick filters (`todo,in_progress`). */
+    statuses: z.string().max(200).optional(),
+    /** Comma-separated priorities for multi-select quick filters (`high,urgent`). */
+    priorities: z.string().max(200).optional(),
+    /** Only tasks past due and not completed/cancelled. */
+    overdue: z
+      .union([z.boolean(), z.literal("true"), z.literal("false")])
+      .optional()
+      .transform((v) => v === true || v === "true"),
+    /** Due on this ISO day (inclusive UTC-day range). */
+    dueOn: z.string().max(32).optional(),
     includeDeleted: z
       .union([z.boolean(), z.literal("true"), z.literal("false")])
       .optional()

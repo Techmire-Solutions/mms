@@ -12,15 +12,15 @@ import {
 import { FilterChips } from "@/components/app/FilterChips";
 import { CompactSegmentedControl } from "@/components/app/CompactSegmentedControl";
 import { useTasksWorkTabFilters, type TaskQuickFilter } from "../hooks/useTasksWorkTabFilters";
+import { useTaskSelectionScope } from "../hooks/useTaskSelectionScope";
+import { buildTaskFilterScopeKey } from "../lib/taskFilterScope";
+import type { TaskServerFilters } from "../lib/tasksServerFilters";
+import { useTaskServerFiltersSync } from "../hooks/useTaskServerFiltersSync";
+import { useTasksBulkActions } from "../hooks/useTasksBulkActions";
+import { TasksPaginationFooter } from "./TasksPaginationFooter";
 import { WorkTaskToolbar } from "@/components/common/work/WorkTaskToolbar";
 import { useWorkDirectoryViewMode } from "@/hooks/useWorkDirectoryViewMode";
 import { useTranslation } from "@/hooks/useTranslation";
-import { notify } from "@/lib/notify";
-import {
-  useBulkDeleteTasks,
-  useBulkRestoreTasks,
-  useBulkUpdateTaskStatus,
-} from "@/tenant/hooks/collections/tasks";
 import { useTasksColumnLayout } from "../hooks/useTasksColumnLayout";
 import { TaskDetailDrawer } from "./TaskDetailDrawer";
 import { TasksBulkActionBar } from "./TasksBulkActionBar";
@@ -43,6 +43,11 @@ export interface TasksWorkTabProps {
   onDelete: (id: string) => void;
   onRestore?: (id: string) => void;
   onUpdateStatus: (id: string, status: TaskStatus) => void;
+  total: number;
+  pageIndex: number;
+  pageSize: number;
+  onPageChange: (pageIndex: number) => void;
+  onServerFiltersChange: (filters: TaskServerFilters) => void;
 }
 
 export function TasksWorkTab({
@@ -62,6 +67,11 @@ export function TasksWorkTab({
   onDelete,
   onRestore,
   onUpdateStatus,
+  total,
+  pageIndex,
+  pageSize,
+  onPageChange,
+  onServerFiltersChange,
 }: TasksWorkTabProps): React.JSX.Element {
   const { t } = useTranslation();
   const {
@@ -82,6 +92,26 @@ export function TasksWorkTab({
     activeChips,
     handleClearFilters,
   } = useTasksWorkTabFilters(tasks);
+
+  useTaskServerFiltersSync(
+    { quickFilter, search, statusFilter, priorityFilter, dueFrom, dueTo },
+    onServerFiltersChange,
+  );
+
+  // Clearing on any filter/search change prevents a bulk archive from hitting
+  // rows the user can no longer see (`mms-module-architecture` §3).
+  useTaskSelectionScope(
+    buildTaskFilterScopeKey({
+      quickFilter,
+      search,
+      statusFilter,
+      priorityFilter,
+      dueFrom,
+      dueTo,
+      page: pageIndex,
+    }),
+    onClearSelection,
+  );
   const [viewingTask, setViewingTask] = useState<TaskRecord | null>(null);
   const { viewMode, setViewMode } = useWorkDirectoryViewMode();
   const {
@@ -94,56 +124,8 @@ export function TasksWorkTab({
     customizerLabels,
   } = useTasksColumnLayout();
 
-  const bulkDeleteMutation = useBulkDeleteTasks();
-  const bulkRestoreMutation = useBulkRestoreTasks();
-  const bulkUpdateStatusMutation = useBulkUpdateTaskStatus();
-
-  const handleBulkDelete = () => {
-    if (!selectedIds.length) return;
-    const targets = [...selectedIds];
-    bulkDeleteMutation.mutate(targets, {
-      onSuccess: ({ deletedIds }) => {
-        onClearSelection();
-        notify.archivedWithUndo(t("common.recordArchived"), () => {
-          void bulkRestoreMutation.mutateAsync(deletedIds);
-        });
-      },
-      onError: (err) => {
-        notify.error(err instanceof Error ? err.message : t("tasks.deleteFailed"));
-      },
-    });
-  };
-
-  const handleBulkRestore = () => {
-    if (!selectedIds.length) return;
-    const targets = [...selectedIds];
-    bulkRestoreMutation.mutate(targets, {
-      onSuccess: () => {
-        onClearSelection();
-        notify.success(t("tasks.restored"));
-      },
-      onError: (err) => {
-        notify.error(err instanceof Error ? err.message : t("tasks.restoreFailed"));
-      },
-    });
-  };
-
-  const handleBulkStatusChange = (status: string) => {
-    if (!selectedIds.length) return;
-    const targets = [...selectedIds];
-    bulkUpdateStatusMutation.mutate(
-      { ids: targets, status: status as TaskStatus },
-      {
-        onSuccess: () => {
-          onClearSelection();
-          notify.success(t("tasks.bulkStatusSuccess", { count: targets.length }));
-        },
-        onError: (err) => {
-          notify.error(err instanceof Error ? err.message : t("tasks.bulkStatusFailed"));
-        },
-      },
-    );
-  };
+  const { handleBulkDelete, handleBulkRestore, handleBulkStatusChange, isStatusPending } =
+    useTasksBulkActions(selectedIds, onClearSelection);
 
   const primaryAction = undefined;
 
@@ -244,7 +226,7 @@ export function TasksWorkTab({
         onRequestBulkDelete={handleBulkDelete}
         onRequestBulkRestore={handleBulkRestore}
         onBulkStatusChange={handleBulkStatusChange}
-        statusPending={bulkUpdateStatusMutation.isPending}
+        statusPending={isStatusPending}
       />
 
       <TasksWorkDirectory
@@ -268,6 +250,13 @@ export function TasksWorkTab({
         onRestore={onRestore}
         onUpdateStatus={onUpdateStatus}
         emptyAction={primaryAction}
+      />
+
+      <TasksPaginationFooter
+        total={total}
+        pageIndex={pageIndex}
+        pageSize={pageSize}
+        onPageChange={onPageChange}
       />
 
       <TaskDetailDrawer
