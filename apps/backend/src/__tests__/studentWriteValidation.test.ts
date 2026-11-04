@@ -73,6 +73,15 @@ describe("validateStudentWrite", () => {
     expect(parsed.bloodGroup).toBe("O+");
   });
 
+  it("fails closed when the settings read rejects", async () => {
+    mockLoadSettings.mockRejectedValue(new Error("settings unavailable"));
+
+    await expect(validateStudentWrite(fakeRequest(), { contactId: "c-1" })).rejects.toThrow(
+      "settings unavailable",
+    );
+    expect(mockCollectIssues).not.toHaveBeenCalled();
+  });
+
   it("strips client soft-delete metadata before persisting", async () => {
     const parsed = await validateStudentWrite(fakeRequest(), {
       contactId: "c-1",

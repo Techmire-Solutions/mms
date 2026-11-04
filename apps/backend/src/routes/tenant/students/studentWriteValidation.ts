@@ -94,7 +94,9 @@ export async function validateStudentWrite(
   request: FastifyRequest,
   body: unknown,
 ): Promise<StudentRecord> {
-  const settings = await loadStudentsSettingsCombined().catch(() => null);
+  // Fail closed: a settings read failure must not silently disable the
+  // dynamic blueprint (required fields, types and the stale-form lock).
+  const settings = await loadStudentsSettingsCombined();
   const schema = buildStudentWriteSchema(collectStudentWriteExtraFieldKeys(settings));
   const result = schema.safeParse(body);
   if (!result.success) {
