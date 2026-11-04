@@ -61,6 +61,7 @@ vi.mock("../services/workspaceService.js", async (importOriginal) => {
 
 const mockFindTenantUserRowById = vi.fn();
 const mockFindTeacherById = vi.fn();
+const mockIsTeacherDeletedByUserId = vi.fn();
 
 vi.mock("../db/repositories/tenantUserRepositoryHydrate.js", async (importOriginal) => {
   const actual =
@@ -79,6 +80,7 @@ vi.mock("../faculty/repository/facultyRepositoryAdapter.js", async (importOrigin
     facultyRepository: {
       ...actual.facultyRepository,
       findById: (...args: unknown[]) => mockFindTeacherById(...args),
+      isDeletedByUserId: (...args: unknown[]) => mockIsTeacherDeletedByUserId(...args),
     },
   };
 });
@@ -172,6 +174,7 @@ describe("Soft Delete Route Semantics & Session Invalidation Integration", () =>
     });
 
     mockFindTeacherById.mockResolvedValue(null);
+    mockIsTeacherDeletedByUserId.mockResolvedValue(false);
 
     if (!app) {
       app = await buildApp();
@@ -463,6 +466,12 @@ describe("Soft Delete Route Semantics & Session Invalidation Integration", () =>
     const targetTeacherId = "t-test-99";
     let teacherDeletedAt: string | null = null;
 
+    // The session guard resolves the linked faculty row by the JWT user id
+    // (`faculty.user_id`), not by the faculty primary key.
+    mockIsTeacherDeletedByUserId.mockImplementation(
+      async (_tenant: string, userId: string) =>
+        Boolean(teacherDeletedAt) && userId === targetTeacherId,
+    );
     mockFindTeacherById.mockImplementation(async (_tenant: string, id: string) => {
       if (id === targetTeacherId) {
         return {
