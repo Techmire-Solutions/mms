@@ -188,7 +188,10 @@ jobs:
       # Non-blocking visibility for warning-level rules that the errors-only
       # `lint` (`--quiet`) hides — currently react-hooks/exhaustive-deps.
       # Report only; make it blocking once the remaining warnings are triaged.
+      # Main-only: it is a second full ESLint pass over the frontend (2-75 s) and
+      # cannot block a PR, so PRs should not pay for it.
       - name: Lint warnings report (frontend, non-blocking)
+        if: github.event_name != 'pull_request'
         continue-on-error: true
         run: pnpm --filter mms-frontend lint:warn
 
@@ -200,8 +203,20 @@ jobs:
 
       # Formatting is owned by Prettier (.prettierrc.json); ESLint defers all
       # stylistic rules to it via eslint-config-prettier (see each eslint.config.js).
+      # A full-repo scan costs 45-57 s per run; PRs check only the files they
+      # touch (the diff base is available via the fetch-depth: 2 checkout above)
+      # while pushes to main keep the full check. Formatting-config edits force a
+      # full check so a config change cannot silently reformat untouched files.
       - name: Formatting (Prettier)
-        run: pnpm format:check
+        env:
+          BASE_SHA: ${{ github.event.pull_request.base.sha }}
+        run: |
+          if [ -n "${BASE_SHA}" ] \
+            && ! git diff --name-only "${BASE_SHA}...HEAD" | grep -qE '^(\.prettierrc|\.prettierignore|\.editorconfig)'; then
+            bash scripts/ci/format-changed.sh "${BASE_SHA}"
+          else
+            pnpm format:check
+          fi
 
       # Fails on high/critical advisories. One moderate finding is a reviewed,
       # documented exception (ts-deepmerge via @ts-rest/open-api) — see the
@@ -522,9 +537,12 @@ jobs:
         with:
           persist-credentials: false
 
-      # Merging blob reports runs no tests, so @mms/shared need not be built.
+      # Merging blob reports runs no tests, so @mms/shared need not be built and
+      # only the frontend workspace project is installed (~20 s -> ~8 s).
       - name: Setup Environment
         uses: ./.github/actions/setup-mms
+        with:
+          install-filter: "mms-frontend..."
 
       - name: Download All Shard Report Artifacts
         uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
@@ -650,6 +668,8 @@ jobs:
         uses: ./.github/actions/setup-mms
         with:
           build-shared: "true"
+          # Only the backend workspace project is needed to merge reports.
+          install-filter: "mms-backend..."
 
       - name: Download All Shard Report Artifacts
         uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
@@ -788,15 +808,31 @@ jobs:
       (needs.changes.outputs.e2e == 'true' || github.event_name != 'pull_request')
     runs-on: ubuntu-24.04
     timeout-minutes: 30
-    # Two Playwright projects, two shards each (playwright.config.ts). A shard
-    # is a contiguous slice of tests by count, so the long axe sweeps (`a11y`)
-    # get their own runners instead of all landing on shard 1.
+    # Shard balance is measured, not guessed. Playwright 1.64 splits a project's
+    # test list into contiguous slices, so the 310 s `a11y-shell` file lands on a
+    # single runner: 2 shards produced 173 s vs 444 s legs. Four a11y shards bring
+    # the slowest leg to ~245 s of test time; chromium's whole suite is 129 s and
+    # fits one leg, well below the a11y critical path (one fewer runner too).
+    # Re-tune totals from the merged HTML report when a suite grows by >20 %.
     strategy:
       fail-fast: false
       matrix:
-        project: [chromium, a11y]
-        shardIndex: [1, 2]
-        shardTotal: [2]
+        include:
+          - project: chromium
+            shardIndex: 1
+            shardTotal: 1
+          - project: a11y
+            shardIndex: 1
+            shardTotal: 4
+          - project: a11y
+            shardIndex: 2
+            shardTotal: 4
+          - project: a11y
+            shardIndex: 3
+            shardTotal: 4
+          - project: a11y
+            shardIndex: 4
+            shardTotal: 4
     services:
       postgres:
         image: postgres:16-alpine
@@ -839,7 +875,7 @@ jobs:
         id: playwright-cache
         with:
           path: ~/.cache/ms-playwright
-          key: playwright-${{ runner.os }}-${{ hashFiles('e2e/package.json', 'pnpm-workspace.yaml') }}
+          key: playwright-${{ runner.os }}-${{ hashFiles('e2e/package.json', 'pnpm-workspace.yaml', 'pnpm-lock.yaml') }}
 
       - name: Install Playwright Chromium Browser
         if: steps.playwright-cache.outputs.cache-hit != 'true'
@@ -876,6 +912,10 @@ jobs:
 
       - name: Setup Environment
         uses: ./.github/actions/setup-mms
+        with:
+          # Merging reports only needs Playwright: a full workspace install was
+          # 19 s of the job's 34 s.
+          install-filter: "e2e-tests..."
 
       - name: Download Blob Reports
         uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
@@ -902,6 +942,9 @@ jobs:
   ci-gate:
     name: CI Gate (All Checks Passed)
     if: always()
+    # `merge-reports` is deliberately absent: it only builds the HTML report.
+    # Gating on it added its ~34 s runtime to the critical path after E2E
+    # finished, while the E2E results themselves remain required.
     needs:
       [
         changes,
@@ -918,7 +961,6 @@ jobs:
         test-backend-db,
         test-backend-rls,
         e2e,
-        merge-reports,
       ]
     runs-on: ubuntu-24.04
     timeout-minutes: 5
@@ -957,7 +999,6 @@ jobs:
           echo "Backend DB Tests:       ${{ needs.test-backend-db.result }}"
           echo "Backend RLS Tests:      ${{ needs.test-backend-rls.result }}"
           echo "E2E Tests:              ${{ needs.e2e.result }}"
-          echo "E2E Merge Reports:      ${{ needs.merge-reports.result }}"
           echo "========================================================="
 
           failed=0
@@ -1040,11 +1081,6 @@ jobs:
             failed=1
           fi
 
-          if [ "${{ needs.merge-reports.result }}" != "success" ] && [ "${{ needs.merge-reports.result }}" != "skipped" ]; then
-            echo "::error::merge-reports failed or was cancelled (result: ${{ needs.merge-reports.result }})"
-            failed=1
-          fi
-
           if [ "$failed" -ne 0 ]; then
             STATUS_HEADER="❌ MMS CI Gate Status: Failed"
           else
@@ -1069,8 +1105,7 @@ jobs:
           | **Backend Unit Tests** | \`${{ needs.test-backend-unit.result }}\` | 2-Way Sharded In-Memory Unit |
           | **Backend Coverage** | \`${{ needs.test-backend-coverage.result }}\` | Merged Blob Reports & Coverage Enforcement |
           | **Backend DB Tests** | \`${{ needs.test-backend-db.result }}\` | Docker Postgres 16 (Healthchecked, tmpfs) |
-          | **E2E Tests** | \`${{ needs.e2e.result }}\` | 4-Way Sharded Playwright Matrix |
-          | **E2E Report Merge** | \`${{ needs.merge-reports.result }}\` | Merged HTML Playwright Report |
+          | **E2E Tests** | \`${{ needs.e2e.result }}\` | 5-Way Sharded Playwright (1 chromium + 4 a11y) |
           EOF
 
           if [ "$failed" -ne 0 ]; then
