@@ -1,7 +1,7 @@
 import React from "react";
 import { AnimatePresence } from "framer-motion";
 import { WidgetBuilder } from "@/components/reports/pinnedWidgets/WidgetBuilder";
-import { CustomWidgetRenderer } from "@/tenant/features/reports/components/pinnedWidgets/CustomWidgetRenderer";
+import { CustomWidgetRenderer } from "@/tenant/components/reports/pinnedWidgetsFacade";
 import { useTranslation } from "@/hooks/useTranslation";
 import { resolveDefaultDashboardWidgetScope } from "@/lib/dashboardRole";
 import { CustomizeItemRow } from "@/tenant/features/dashboard/components/CustomizeItemRow";

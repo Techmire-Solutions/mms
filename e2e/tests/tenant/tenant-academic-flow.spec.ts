@@ -15,25 +15,25 @@ process.env.NODE_ENV = process.env.NODE_ENV || "test";
 process.env.JWT_SECRET = process.env.JWT_SECRET || "e2e-test-jwt-secret-key-at-least-32-chars-long";
 
 test.describe.serial("Tenant Academic Flow E2E", { tag: "@local-only" }, () => {
-  const subdomain = `acad${Date.now()}`;
-  const credentials: TenantBootstrapCredentials = {
-    subdomain,
-    tenantOrigin: `http://${subdomain}.localhost:5173`,
-    adminEmail: `admin@${subdomain}.com`,
-    adminPassword: "Madrasa@1234",
-    changedAdminPassword: "Madrasa@5678",
-    platformEmail: `platform-${subdomain}@test.com`,
-    platformPassword: "Pa$$w0rd123",
-  };
-
   test.beforeAll(async () => {
     resetPlatformUsers();
   });
 
   test("should create contacts, register student with guardian relationship, and submit class attendance", async ({
     page,
-  }) => {
+  }, testInfo) => {
     test.setTimeout(120_000);
+
+    const subdomain = `acad${Date.now()}-${testInfo.retry}`;
+    const credentials: TenantBootstrapCredentials = {
+      subdomain,
+      tenantOrigin: `http://${subdomain}.localhost:5173`,
+      adminEmail: `admin@${subdomain}.com`,
+      adminPassword: "Madrasa@1234",
+      changedAdminPassword: "Madrasa@5678",
+      platformEmail: `platform-${subdomain}@test.com`,
+      platformPassword: "Pa$$w0rd123",
+    };
 
     // Bootstrap tenant workspace and login
     await bootstrapAuthenticatedTenant(page, credentials);

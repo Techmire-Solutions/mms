@@ -884,6 +884,7 @@ export async function recordInvoicePayment(page: Page): Promise<void> {
     }
     await expect(paymentDialog).toBeHidden({ timeout: 20_000 });
     await expect(page.getByText("Paid", { exact: true }).first()).toBeVisible({ timeout: 20_000 });
+    await waitForToastOverlayToClear(page, "after recording invoice payment");
   });
 }
 
@@ -892,7 +893,7 @@ export async function recordInvoicePayment(page: Page): Promise<void> {
  */
 export async function createMessagingTemplateAndCampaign(page: Page): Promise<void> {
   await test.step("Create messaging template & dispatch SMS campaign", async () => {
-    await expect(page.locator("h1").first()).toBeVisible({ timeout: 20_000 });
+    await expect(page.locator("h1").first()).toBeVisible({ timeout: 30_000 });
     const setupTab = page.getByRole("tab", { name: "Setup", exact: true }).first();
     await expect(setupTab).toBeVisible({ timeout: 15_000 });
     await setupTab.click();

@@ -30,11 +30,10 @@ import { useFinanceMetrics } from "@/tenant/hooks/collections/finance";
 import { useHasanatMetrics } from "@/tenant/hooks/collections/hasanat";
 import { useQuestionBankMetrics } from "@/tenant/hooks/collections/questionBank";
 import { useAccountingMetrics } from "@/tenant/hooks/collections/accounting";
-// Imported from its defining module (not the `collections/dashboard` barrel) to break the
-// cycle: collections/dashboard re-exports `useDashboardData`, which would otherwise import
-// back through the barrel and make Vite's dev ESM fail to expose the barrel's re-exports
-// ("does not provide an export named 'DASHBOARD_SUMMARY_QUERY_KEY_ROOT'").
-import { useDashboardSummaryQuery } from "./useDashboardSetupConfig";
+// Own module (not `useDashboardSetupConfig`) — the summary hook is independent of the
+// preferences/widgets config, and importing it from the barrel would close a cycle
+// through `collections/dashboard`.
+import { useDashboardSummaryQuery } from "./useDashboardSummaryQuery";
 
 import {
   todayISO,
@@ -86,7 +85,9 @@ export function useDashboardData(
   enabledModules?: Record<string, boolean | undefined>,
   can?: (permission: Permission) => boolean,
 ): DashboardCollectionData {
-  const isModuleEnabled = (mod: string) => !enabledModules || enabledModules[mod] !== false;
+  // `effectiveModules` is always fully populated (all-false while loading), so the
+  // flags are the only authority here.
+  const isModuleEnabled = (mod: string) => enabledModules?.[mod] !== false;
   // Same read permission the backend module gate enforces (shared policy).
   const canReadModule = (mod: string) => {
     const moduleId = resolveAccessModuleId(mod);

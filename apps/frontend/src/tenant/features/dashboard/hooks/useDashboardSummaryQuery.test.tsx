@@ -14,11 +14,10 @@ vi.mock("@/lib/api", () => ({ tsrClient: {} }));
 
 import {
   DASHBOARD_PREFERENCES_QUERY_KEY,
-  DASHBOARD_SUMMARY_QUERY_KEY,
   DASHBOARD_WIDGETS_QUERY_KEY,
   invalidateDashboardQueries,
-  useDashboardSummaryQuery,
 } from "./useDashboardSetupConfig";
+import { DASHBOARD_SUMMARY_QUERY_KEY, useDashboardSummaryQuery } from "./useDashboardSummaryQuery";
 
 declare global {
   var IS_REACT_ACT_ENVIRONMENT: boolean | undefined;

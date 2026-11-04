@@ -5941,6 +5941,8 @@ export const APP_TRANSLATIONS_FA: Partial<Record<AppTranslationKey, string>> = {
   "tasks.restored": "وظیفه بازیابی شد",
   "tasks.restoreFailed": "بازیابی وظیفه ممکن نشد",
   "tasks.deleteFailed": "بایگانی وظیفه ممکن نشد",
+  "tasks.loadFailed": "بارگیری وظایف ممکن نشد",
+  "tasks.loadFailedHint": "اتصال خود را بررسی کنید و دوباره تلاش کنید.",
   "tasks.trashEmptyTitle": "سطل زباله خالی است",
   "tasks.trashEmptyDescription": "وظایف بایگانی‌شده تا زمان بازیابی اینجا نمایش داده می‌شوند.",
   "tasks.searchPlaceholder": "جستجوی وظایف…",

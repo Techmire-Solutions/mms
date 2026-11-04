@@ -5,6 +5,7 @@ import {
   type FacultySortField,
   type FacultyQuickFilter,
 } from "@mms/shared";
+import { contractBody, isContractQueryError } from "@/lib/contractQuery";
 import type { TranslationFunction } from "@/lib/contexts/TranslationContext";
 import { useFacultyContractList } from "@/tenant/features/faculty/hooks/useFacultyTsrQueries";
 import { buildFacultyDirectoryQuery } from "@/tenant/features/faculty/hooks/facultyQueryShared";
@@ -106,9 +107,10 @@ export function useFacultyWorkTierState({
 
   const workFaculty = (workPageQuery.data?.body?.faculty ?? []) as FacultyMember[];
   const shownCount = workPageQuery.data?.body?.total ?? workFaculty.length;
-  const isWorkError =
-    workPageQuery.isError || (workPageQuery.data != null && workPageQuery.data.status !== 200);
-  const workPageData = workPageQuery.data?.status === 200 ? workPageQuery.data.body : undefined;
+  const isWorkError = isContractQueryError(workPageQuery);
+  const workPageData = contractBody<NonNullable<typeof workPageQuery.data>["body"]>(
+    workPageQuery.data ?? undefined,
+  );
 
   return {
     useServerWork,

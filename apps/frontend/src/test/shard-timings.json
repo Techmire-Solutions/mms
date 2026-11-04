@@ -59,7 +59,6 @@
   "src/components/app/Modal.test.tsx": 1230,
   "src/components/app/ModuleColumnCustomizer.test.tsx": 1430,
   "src/components/app/ModuleColumnCustomizerList.test.tsx": 793,
-  "src/components/app/ModuleEntityIoToolbar.test.tsx": 1117,
   "src/components/app/ModuleFiltersMenuButton.test.tsx": 1394,
   "src/components/app/ModuleImportDialog.test.tsx": 1048,
   "src/components/app/ModulePanelSuspenseFallback.test.tsx": 675,

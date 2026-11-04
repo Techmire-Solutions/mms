@@ -1,15 +1,22 @@
 import { useMemo, useState } from "react";
-import type { TaskRecord } from "@mms/shared";
+import { todayISO, type TaskRecord } from "@mms/shared";
 import type { FilterChip } from "@/components/app/FilterChips";
 import type { CompactSegmentedOption } from "@/components/app/CompactSegmentedControl";
+import { useDebounce } from "@/hooks/useDebounce";
 import { useTranslation } from "@/hooks/useTranslation";
+
+/** Same leaf-debounce window the Contacts/Students/Faculty directories use. */
+const SEARCH_DEBOUNCE_MS = 250;
 
 export type TaskQuickFilter = "all" | "open" | "due_today" | "urgent_high" | "overdue";
 
 export function useTasksWorkTabFilters(tasks: TaskRecord[]) {
   const { t } = useTranslation();
   const [quickFilter, setQuickFilter] = useState<TaskQuickFilter>("all");
-  const [search, setSearch] = useState("");
+  // Raw input stays in the leaf control; only the settled value reaches the
+  // directory query, so typing does not fire one request per keystroke.
+  const [searchInput, setSearchInput] = useState("");
+  const search = useDebounce(searchInput, SEARCH_DEBOUNCE_MS);
   const [statusFilter, setStatusFilter] = useState<string[]>([]);
   const [priorityFilter, setPriorityFilter] = useState<string[]>([]);
   const [dueFrom, setDueFrom] = useState<string | undefined>(undefined);
@@ -17,7 +24,10 @@ export function useTasksWorkTabFilters(tasks: TaskRecord[]) {
 
   const filteredTasks = useMemo(() => {
     const q = search.trim().toLowerCase();
-    const today = new Date().toISOString().slice(0, 10);
+    // Workspace-local calendar day. The server filter (`dueOn`) uses the same
+    // `todayISO()`; a UTC slice here made the client hide the rows the server
+    // had just returned for the first UTC-offset hours of every day.
+    const today = todayISO();
 
     return tasks.filter((task) => {
       if (quickFilter === "open") {
@@ -76,6 +86,13 @@ export function useTasksWorkTabFilters(tasks: TaskRecord[]) {
       });
     }
 
+    for (const s of statusFilter) {
+      list.push({
+        key: `status-${s}`,
+        label: `${t("tasks.status")}: ${t(`tasks.status.${s}` as Parameters<typeof t>[0])}`,
+        onRemove: () => setStatusFilter((prev) => prev.filter((item) => item !== s)),
+      });
+    }
     for (const p of priorityFilter) {
       list.push({
         key: `priority-${p}`,
@@ -98,13 +115,20 @@ export function useTasksWorkTabFilters(tasks: TaskRecord[]) {
       });
     }
     return list;
-  }, [quickFilter, priorityFilter, dueFrom, dueTo, t]);
+  }, [quickFilter, statusFilter, priorityFilter, dueFrom, dueTo, t]);
+
+  // Every filter dimension the directory owns — including search, which has no
+  // removable chip but must still enable "clear filters" and the Escape reset.
+  const hasActiveFilters = activeChips.length > 0 || search.trim().length > 0;
+  const activeFilterCount = activeChips.length + (search.trim() ? 1 : 0);
 
   const handleClearFilters = () => {
     setQuickFilter("all");
+    setStatusFilter([]);
     setPriorityFilter([]);
     setDueFrom(undefined);
     setDueTo(undefined);
+    setSearchInput("");
   };
 
   const quickFilterOptions = useMemo<CompactSegmentedOption<TaskQuickFilter>[]>(
@@ -123,7 +147,9 @@ export function useTasksWorkTabFilters(tasks: TaskRecord[]) {
     setQuickFilter,
     quickFilterOptions,
     search,
-    setSearch,
+    searchInput,
+    setSearchInput,
+    setSearch: setSearchInput,
     statusFilter,
     setStatusFilter,
     priorityFilter,
@@ -134,6 +160,8 @@ export function useTasksWorkTabFilters(tasks: TaskRecord[]) {
     setDueTo,
     filteredTasks,
     activeChips,
+    hasActiveFilters,
+    activeFilterCount,
     handleClearFilters,
   };
 }

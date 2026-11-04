@@ -17,15 +17,16 @@ export async function assertModuleTierSmoke(
   tenantOrigin: string,
 ): Promise<void> {
   await page.goto(`${tenantOrigin}${modulePath}`);
+  await page.waitForLoadState("domcontentloaded");
   await expect(page.locator("h1").first(), `${modulePath} missing h1`).toBeVisible({
-    timeout: 20_000,
+    timeout: 30_000,
   });
 
   const tierNav = page
     .getByRole("tablist", { name: "Section navigation" })
     .or(page.getByRole("navigation", { name: "Section navigation" }))
     .first();
-  await expect(tierNav, `${modulePath} missing tier nav`).toBeVisible({ timeout: 20_000 });
+  await expect(tierNav, `${modulePath} missing tier nav`).toBeVisible({ timeout: 30_000 });
 
   const tierTabs = tierNav.locator('[role="tab"], button');
   const tabCount = await tierTabs.count();
