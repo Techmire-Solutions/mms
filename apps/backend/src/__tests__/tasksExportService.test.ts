@@ -7,7 +7,7 @@ vi.mock("../lib/tenantContext.js", () => ({
   getRequestTenant: () => "demo",
 }));
 
-vi.mock("../db/repositories/tasksRepository.js", () => ({
+vi.mock("../tasks/use-cases/tasksUseCases.js", () => ({
   listTasks: (...args: unknown[]) => mockListTasks(...args),
 }));
 

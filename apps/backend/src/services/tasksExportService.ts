@@ -14,7 +14,7 @@ import {
   type TaskStatus,
 } from "@mms/shared";
 import { getRequestTenant } from "../lib/tenantContext.js";
-import { listTasks } from "../db/repositories/tasksRepository.js";
+import { listTasks } from "../tasks/use-cases/tasksUseCases.js";
 
 export interface TasksExportOptions {
   columns?: unknown;
