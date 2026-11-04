@@ -1,8 +1,9 @@
-import React from "react";
+import React, { useEffect, useRef } from "react";
 import { AnimatePresence } from "framer-motion";
 import { WidgetBuilder } from "@/components/reports/pinnedWidgets/WidgetBuilder";
 import { CustomWidgetRenderer } from "@/tenant/components/reports/pinnedWidgetsFacade";
 import { useTranslation } from "@/hooks/useTranslation";
+import { useReducedMotion } from "@/hooks/useReducedMotion";
 import { resolveDefaultDashboardWidgetScope } from "@/lib/dashboardRole";
 import { CustomizeItemRow } from "@/tenant/features/dashboard/components/CustomizeItemRow";
 import { DashboardCustomizeWidgetsSection } from "@/tenant/features/dashboard/components/DashboardCustomizeWidgetsSection";
@@ -14,7 +15,12 @@ import type { DashboardCustomizePanelProps } from "@/tenant/features/dashboard/l
 export type { DashboardCustomizePanelProps };
 
 /**
- * Dashboard customize mode: metric card visibility + pinned widget management + alert thresholds + layout density.
+ * Dashboard customize mode: metric card visibility + pinned widget management +
+ * alert thresholds.
+ *
+ * Layout density lives in the pinned-panels header, next to the panels it
+ * actually changes — this panel used to duplicate that control with copy that
+ * promised dashboard-wide density (2026-11-04 UI review).
  */
 export function DashboardCustomizePanel({
   can,
@@ -29,9 +35,7 @@ export function DashboardCustomizePanel({
   widgetBuilderType,
   lowAttendanceThreshold,
   urgentAttendanceThreshold,
-  gridMode = "comfortable",
   onUpdateThreshold,
-  onUpdateGridMode,
   onCloseBuilder,
   onSaveWidget,
   onEditWidget,
@@ -39,18 +43,38 @@ export function DashboardCustomizePanel({
   onToggleWidgetPin,
   onOpenWidgetBuilder,
   onReorderWidgets,
+  onDone,
 }: DashboardCustomizePanelProps): React.JSX.Element {
   const { t } = useTranslation();
+  const reducedMotion = useReducedMotion();
   const widgetScope = resolveDefaultDashboardWidgetScope(can);
   const disabledSet = new Set(disabledCardIds);
   const metricTitle = t("dashboard.metricCardsSettings");
-  const densityTitle = t("dashboard.layoutDensity");
+  const builderRef = useRef<HTMLDivElement | null>(null);
+
+  // Reveal the builder instead of yanking the document to the top: the builder
+  // renders inside this panel, below the greeting (2026-11-04 UI review).
+  useEffect(() => {
+    if (!isWidgetBuilderOpen) return;
+    const node = builderRef.current;
+    if (!node) return;
+    node.scrollIntoView({
+      block: "nearest",
+      behavior: reducedMotion ? "auto" : "smooth",
+    });
+    node.focus({ preventScroll: true });
+  }, [isWidgetBuilderOpen, reducedMotion]);
 
   return (
-    <div className="space-y-5 pb-1">
+    <div
+      id="dashboard-customize-panel"
+      role="region"
+      aria-label={t("dashboard.customizeCards")}
+      className="space-y-5 pb-1 print:hidden"
+    >
       <AnimatePresence>
         {isWidgetBuilderOpen && (
-          <div className="mb-5">
+          <div ref={builderRef} tabIndex={-1} className="mb-5 scroll-mt-24 outline-none">
             <WidgetBuilder
               initialCollection={widgetScope.collection}
               editWidgetConfig={editingWidget}
@@ -111,50 +135,25 @@ export function DashboardCustomizePanel({
           onReorderWidgets={onReorderWidgets}
         />
 
-        {onUpdateGridMode && (
-          <SectionCard
-            title={densityTitle}
-            subtitle={t("dashboard.layoutDensityDesc")}
-            padding="p-6"
-            accentColor="primary"
-          >
-            <fieldset className="space-y-4 border-0 p-0 m-0 min-w-0">
-              <legend className="sr-only">{densityTitle}</legend>
-              <div className="space-y-2 max-h-preview-tall overflow-y-auto pe-1">
-                <div className="flex items-center gap-3 pt-2">
-                  <Button
-                    type="button"
-                    variant={gridMode === "comfortable" ? "default" : "outline"}
-                    size="sm"
-                    onClick={() => onUpdateGridMode("comfortable")}
-                    className="flex-1 cursor-pointer font-bold"
-                  >
-                    {t("dashboard.densityComfortable")}
-                  </Button>
-                  <Button
-                    type="button"
-                    variant={gridMode === "compact" ? "default" : "outline"}
-                    size="sm"
-                    onClick={() => onUpdateGridMode("compact")}
-                    className="flex-1 cursor-pointer font-bold"
-                  >
-                    {t("dashboard.densityCompact")}
-                  </Button>
-                </div>
-              </div>
-            </fieldset>
-          </SectionCard>
-        )}
-
         {onUpdateThreshold && (
           <DashboardAlertThresholdsSection
             lowAttendanceThreshold={lowAttendanceThreshold}
             urgentAttendanceThreshold={urgentAttendanceThreshold}
             onUpdateThreshold={onUpdateThreshold}
-            hasGridMode={Boolean(onUpdateGridMode)}
             t={t}
           />
         )}
+      </div>
+
+      <div className="flex justify-end">
+        <Button
+          type="button"
+          variant="outline"
+          onClick={onDone}
+          className="min-h-11 cursor-pointer"
+        >
+          {t("dashboard.exitCustomization")}
+        </Button>
       </div>
     </div>
   );

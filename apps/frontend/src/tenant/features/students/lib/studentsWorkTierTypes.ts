@@ -47,7 +47,10 @@ export interface StudentsWorkTierProps {
   onPageChange: (page: number) => void;
   onEdit: (student: Student) => void;
   onRestore: (studentId: string) => void | Promise<void>;
-  onBulkStatusChange: (studentIds: string[], status: string) => void | Promise<void>;
+  onBulkStatusChange: (
+    studentIds: string[],
+    status: string,
+  ) => void | Promise<{ succeeded: number; failed: number }>;
   onBulkEnroll?: (
     payload: import("@mms/shared").StudentsBulkEnrollPlacement,
   ) => void | Promise<void | boolean>;

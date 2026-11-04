@@ -22,7 +22,7 @@ import { invalidateDocumentTemplatesQueries } from "@/lib/templates/useDocumentT
 import { DYNAMIC_WIDGET_AGGREGATES_QUERY_KEY } from "@/lib/query/dynamicWidgetAggregatesQueryKey";
 import {
   DASHBOARD_SUMMARY_QUERY_KEY_ROOT,
-  invalidateDashboardQueries,
+  invalidateDashboardConfigQueries,
 } from "@/tenant/hooks/collections/dashboard";
 
 /**
@@ -126,7 +126,9 @@ export function invalidateModuleQueries(queryClient: QueryClient, key: string): 
     case "obligation_distributions":
       return invalidateObligationsQueries(queryClient);
     case "dashboard":
-      return invalidateDashboardQueries(queryClient);
+      // Layout/preferences only — the composite summary is a domain aggregate and
+      // must not refetch when someone toggles their own dashboard chrome.
+      return invalidateDashboardConfigQueries(queryClient);
     case "messaging":
     case "message_logs":
     case "message_templates":

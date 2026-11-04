@@ -25,6 +25,7 @@ export function useTaskServerFiltersSync(
       input.priorityFilter,
       input.dueFrom,
       input.dueTo,
+      input.currentUserId,
     ],
   );
   const filtersKey = JSON.stringify(filters);

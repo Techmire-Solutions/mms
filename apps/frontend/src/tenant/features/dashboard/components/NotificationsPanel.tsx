@@ -2,6 +2,9 @@ import React, { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Bell, X } from "lucide-react";
 import { useTranslation } from "@/hooks/useTranslation";
+import { useReducedMotion } from "@/hooks/useReducedMotion";
+import { useAuth } from "@/lib/contexts/AuthContext";
+import { getWorkspaceLocalStoragePrefix } from "@/lib/dbStorageCore";
 import type { DashboardNotificationItem } from "@/lib/buildDashboardNotifications";
 import { DASHBOARD_NOTIFICATION_ICONS as ICONS } from "@/lib/ui/dashboardNotificationIcons";
 import { Button } from "@/components/ui/button";
@@ -18,23 +21,30 @@ interface NotificationsPanelProps {
 
 const SESSION_STORAGE_KEY = "mms_dashboard_dismissed_notifs";
 
-function getInitialDismissed(): Array<string | number> {
+/**
+ * Dismissals are personal and must never leak into the next account on a shared
+ * device, so the key carries the workspace prefix plus the user id.
+ */
+function dismissedStorageKey(userId?: string): string {
+  return `${getWorkspaceLocalStoragePrefix()}${SESSION_STORAGE_KEY}${userId ? `_u:${userId}` : ""}`;
+}
+
+function getInitialDismissed(storageKey: string): Array<string | number> {
   try {
-    const raw =
-      typeof window !== "undefined" ? window.sessionStorage?.getItem(SESSION_STORAGE_KEY) : null;
+    const raw = typeof window !== "undefined" ? window.sessionStorage?.getItem(storageKey) : null;
     return raw ? (JSON.parse(raw) as Array<string | number>) : [];
   } catch {
     return [];
   }
 }
 
-function saveDismissedToSession(ids: Array<string | number>): void {
+function saveDismissedToSession(storageKey: string, ids: Array<string | number>): void {
   try {
     if (typeof window !== "undefined" && window.sessionStorage) {
       if (ids.length === 0) {
-        window.sessionStorage.removeItem(SESSION_STORAGE_KEY);
+        window.sessionStorage.removeItem(storageKey);
       } else {
-        window.sessionStorage.setItem(SESSION_STORAGE_KEY, JSON.stringify(ids));
+        window.sessionStorage.setItem(storageKey, JSON.stringify(ids));
       }
     }
   } catch {
@@ -44,7 +54,12 @@ function saveDismissedToSession(ids: Array<string | number>): void {
 
 export function NotificationsPanel({ items, onOpen }: NotificationsPanelProps): React.JSX.Element {
   const { t } = useTranslation();
-  const [dismissed, setDismissed] = useState<Array<string | number>>(getInitialDismissed);
+  const reducedMotion = useReducedMotion();
+  const { user } = useAuth();
+  const storageKey = dismissedStorageKey(user?.id);
+  const [dismissed, setDismissed] = useState<Array<string | number>>(() =>
+    getInitialDismissed(storageKey),
+  );
 
   const dismissedSet = (() => new Set(dismissed))();
 
@@ -61,14 +76,14 @@ export function NotificationsPanel({ items, onOpen }: NotificationsPanelProps): 
   const handleDismiss = (id: string | number) => {
     setDismissed((prev) => {
       const next = [...prev, id];
-      saveDismissedToSession(next);
+      saveDismissedToSession(storageKey, next);
       return next;
     });
   };
 
   const handleRestoreAll = () => {
     setDismissed([]);
-    saveDismissedToSession([]);
+    saveDismissedToSession(storageKey, []);
   };
 
   return (
@@ -77,7 +92,7 @@ export function NotificationsPanel({ items, onOpen }: NotificationsPanelProps): 
         headingId="notifications-heading"
         icon={
           <Bell
-            className={`w-4 h-4 text-warning/70 group-hover:text-warning transition-colors shrink-0 ${urgent > 0 ? "animate-pulse" : ""}`}
+            className={`w-4 h-4 text-warning/70 group-hover:text-warning transition-colors shrink-0 ${urgent > 0 && !reducedMotion ? "animate-pulse" : ""}`}
             aria-hidden="true"
           />
         }
@@ -107,7 +122,7 @@ export function NotificationsPanel({ items, onOpen }: NotificationsPanelProps): 
       />
 
       <div
-        className="divide-y divide-border/40 max-h-notifications overflow-y-auto"
+        className="divide-y divide-border/40 max-h-notifications overflow-y-auto print:max-h-none print:overflow-visible"
         aria-live="polite"
         aria-atomic="false"
       >
@@ -127,10 +142,10 @@ export function NotificationsPanel({ items, onOpen }: NotificationsPanelProps): 
               return (
                 <motion.article
                   key={notif.id}
-                  layout
-                  initial={{ opacity: 0, height: 0 }}
+                  layout={!reducedMotion}
+                  initial={reducedMotion ? false : { opacity: 0, height: 0 }}
                   animate={{ opacity: 1, height: "auto" }}
-                  exit={{ opacity: 0, height: 0 }}
+                  exit={reducedMotion ? { opacity: 1 } : { opacity: 0, height: 0 }}
                   className={`flex items-start gap-1 pe-3 hover:bg-muted/30 transition-colors ${
                     notif.urgent ? "bg-destructive/[0.03]" : ""
                   }`}
@@ -175,7 +190,7 @@ export function NotificationsPanel({ items, onOpen }: NotificationsPanelProps): 
                     variant="ghost"
                     size="icon"
                     onClick={() => handleDismiss(notif.id)}
-                    className="text-muted-foreground/30 hover:text-muted-foreground hover:bg-muted/50 rounded-lg transition-colors flex-shrink-0 mt-2 shadow-none cursor-pointer min-h-11 min-w-11"
+                    className="text-muted-foreground hover:text-destructive hover:bg-destructive/10 rounded-lg transition-colors flex-shrink-0 mt-2 shadow-none cursor-pointer min-h-11 min-w-11"
                     aria-label={t("notifications.dismiss", { title: notif.title })}
                   >
                     <X className="w-3.5 h-3.5" aria-hidden="true" />

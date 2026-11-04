@@ -1,6 +1,7 @@
 import { useTranslation } from "@/hooks/useTranslation";
 import { useMessageComposerState } from "@/hooks/useMessageComposerState";
 import { notify } from "@/lib/notify";
+import { assertContractOk } from "@/lib/apiContractError";
 import type { Faculty } from "@mms/shared";
 import { useFacultyMutations } from "@/tenant/features/faculty/hooks/useFaculty";
 import { useFacultyCrudNotify } from "@/tenant/features/faculty/hooks/useFacultyCrudNotify";
@@ -59,6 +60,9 @@ export function useFacultyPageActions({ editFaculty }: UseFacultyPageActionsPara
           ? { extraHeaders: { "x-expected-updated-at": expectedUpdatedAt } }
           : {}),
       });
+      // The ts-rest fetcher resolves 4xx/5xx: without this guard a 409 OCC
+      // conflict would be announced as a successful update.
+      assertContractOk(res, t("faculty.toast.saveFailed"));
       notify.success(t("faculty.toast.updated"));
       const raw = res.body as unknown;
       if (raw && typeof raw === "object") {
@@ -71,6 +75,7 @@ export function useFacultyPageActions({ editFaculty }: UseFacultyPageActionsPara
       const res = await createFaculty.mutateAsync({
         body: facultyToSave as FacultyRecord,
       });
+      assertContractOk(res, t("faculty.toast.saveFailed"));
       notify.success(t("faculty.toast.created"));
       const raw = res.body as unknown;
       if (raw && typeof raw === "object") {
@@ -84,7 +89,8 @@ export function useFacultyPageActions({ editFaculty }: UseFacultyPageActionsPara
 
   const handleDelete = async (id: string, deletionReason?: string): Promise<void> => {
     try {
-      await deleteFaculty.mutateAsync({ params: { id }, body: { deletionReason } });
+      const res = await deleteFaculty.mutateAsync({ params: { id }, body: { deletionReason } });
+      assertContractOk(res, t("faculty.deleteFailed"));
       notifyArchivedWithUndo(() => handleRestore(id));
     } catch (error) {
       handleError(error, "faculty.delete", "faculty.deleteFailed");
@@ -94,7 +100,8 @@ export function useFacultyPageActions({ editFaculty }: UseFacultyPageActionsPara
 
   const handleRestore = async (id: string): Promise<void> => {
     try {
-      await restoreFaculty.mutateAsync({ params: { id }, body: {} });
+      const res = await restoreFaculty.mutateAsync({ params: { id }, body: {} });
+      assertContractOk(res, t("faculty.restoreFailed"));
       notifyBulkResult(1, 0, "faculty.restoreSuccess", "faculty.restoreSuccess");
     } catch (error) {
       handleError(error, "faculty.restore", "faculty.restoreFailed");
@@ -105,6 +112,7 @@ export function useFacultyPageActions({ editFaculty }: UseFacultyPageActionsPara
   const handleBulkDelete = async (ids: string[], deletionReason?: string): Promise<void> => {
     try {
       const result = await bulkDeleteFaculty.mutateAsync({ body: { ids, deletionReason } });
+      assertContractOk(result, t("faculty.deleteFailed"));
       notifyBulkResult(
         result.body.succeeded,
         result.body.failed,
@@ -120,6 +128,7 @@ export function useFacultyPageActions({ editFaculty }: UseFacultyPageActionsPara
   const handleBulkRestore = async (ids: string[]): Promise<void> => {
     try {
       const result = await bulkRestoreFaculty.mutateAsync({ body: { ids } });
+      assertContractOk(result, t("faculty.restoreFailed"));
       notifyBulkResult(
         result.body.succeeded,
         result.body.failed,
@@ -135,6 +144,7 @@ export function useFacultyPageActions({ editFaculty }: UseFacultyPageActionsPara
   const handleBulkStatusChange = async (ids: string[], status: string): Promise<void> => {
     try {
       const result = await bulkUpdateFacultyStatus.mutateAsync({ body: { ids, status } });
+      assertContractOk(result, t("faculty.bulkStatusFailed"));
       notifyBulkResult(
         result.body.succeeded,
         result.body.failed,
@@ -153,6 +163,7 @@ export function useFacultyPageActions({ editFaculty }: UseFacultyPageActionsPara
   ): Promise<void> => {
     try {
       const result = await bulkUpdateFacultySpecialization({ body: { ids, specialization } });
+      assertContractOk(result, t("faculty.bulkStatusFailed"));
       notifyBulkResult(
         result.body.succeeded,
         result.body.failed,

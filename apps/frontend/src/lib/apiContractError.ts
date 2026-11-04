@@ -68,6 +68,20 @@ export function assertContractOk(response: ContractResponse, context: string): v
 }
 
 /**
+ * True for a domain/optimistic-concurrency conflict (HTTP 409).
+ *
+ * Call sites use it to show conflict-specific copy instead of a generic save
+ * failure — e.g. a stale `x-expected-updated-at` token.
+ */
+export function isConflictError(error: unknown): boolean {
+  if (error instanceof ApiError) return error.status === 409;
+  if (typeof error === "object" && error !== null) {
+    return (error as { status?: unknown }).status === 409;
+  }
+  return false;
+}
+
+/**
  * `assertContractOk` for call sites whose helper returned the parsed body
  * (e.g. mutation wrappers that used to inline a returning `assertSuccess`).
  */

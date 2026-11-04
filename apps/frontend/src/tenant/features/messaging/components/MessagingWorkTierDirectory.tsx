@@ -1,6 +1,7 @@
-import React from "react";
-import { AlertTriangle, MessageSquareOff, RotateCcw, Send } from "lucide-react";
+import React, { useState } from "react";
+import { Archive, AlertTriangle, MessageSquareOff, RotateCcw, Send } from "lucide-react";
 import type { Message } from "@mms/shared";
+import { ConfirmAlertDialog } from "@/components/app/ConfirmAlertDialog";
 import { ErrorBoundary } from "@/components/app/ErrorBoundary";
 import { ModuleTierMotion } from "@/components/app/ModuleTierMotion";
 import { ModuleWorkDirectoryEmpty } from "@/components/app/ModuleWorkDirectoryEmpty";
@@ -14,6 +15,7 @@ import { MessagingWorkBulkActionBar } from "./MessagingWorkBulkActionBar";
 import { MessagingListCards } from "./MessagingListCards";
 import { MessagingListDesktopTable } from "./MessagingListDesktopTable";
 import { MessagingListFilters } from "./MessagingListFilters";
+import { resolveMessagingDirectoryCopy } from "../lib/messagingDirectoryCopy";
 import type { useMessagingWorkTierController } from "../hooks/useMessagingWorkTierController";
 
 type MessagingWorkTierDirectoryProps = ReturnType<typeof useMessagingWorkTierController> & {
@@ -21,6 +23,8 @@ type MessagingWorkTierDirectoryProps = ReturnType<typeof useMessagingWorkTierCon
   canClearLogs: boolean;
   canRestoreLogs?: boolean;
   onRestoreLog?: (log: Message) => Promise<void>;
+  /** Bulk restore of the selected archived logs. */
+  onBulkRestore?: (ids: string[]) => Promise<void> | void;
   onClearLogsRequest: () => void;
   onStartCampaign?: (channel: "whatsapp" | "sms" | "email") => void;
 };
@@ -30,10 +34,18 @@ export function MessagingWorkTierDirectory({
   canClearLogs,
   canRestoreLogs,
   onRestoreLog,
+  onBulkRestore,
   onClearLogsRequest,
   onStartCampaign,
   ...c
 }: MessagingWorkTierDirectoryProps): React.JSX.Element {
+  const [bulkRestoreOpen, setBulkRestoreOpen] = useState(false);
+  const selectedIds = Object.keys(c.selectedById);
+  const emptyCopy = resolveMessagingDirectoryCopy({
+    showArchived: c.showArchived,
+    hasActiveFilters: c.hasActiveFilters,
+  });
+
   return (
     <ModuleTierMotion tier="work-messaging" className="space-y-4">
       <ErrorBoundary
@@ -68,18 +80,38 @@ export function MessagingWorkTierDirectory({
           updateUserColumnLayout={c.updateUserColumnLayout}
           columnCustomizerLabels={c.customizerLabels}
           shownCount={c.logsQuery.logs.length}
+          shownTotal={c.logsQuery.total}
           showArchived={c.showArchived}
           onShowArchivedChange={c.canViewArchived ? c.setShowArchived : undefined}
           filterChips={<FilterChips chips={c.filterChips} onClearAll={c.clearFilters} />}
         />
       </ErrorBoundary>
 
+      {c.showArchived && (
+        <Alert
+          tone="info"
+          density="compact"
+          icon={Archive}
+          title={c.t("messaging.showArchived")}
+          action={
+            <Button
+              variant="link"
+              size="sm"
+              onClick={() => c.setShowArchived(false)}
+              className="min-h-11 shrink-0 px-2 text-xs font-semibold"
+            >
+              {c.t("messaging.showActiveLogs")}
+            </Button>
+          }
+        />
+      )}
+
       {c.status === "failed" && c.failedLogs.length > 0 && (
         <Alert
           tone="destructive"
           density="compact"
           icon={AlertTriangle}
-          title={`${c.failedLogs.length} ${c.t("messaging.status.failed")}`}
+          title={c.t("messaging.failedOnPage", { count: c.failedLogs.length })}
           action={
             canWrite && c.hasBulkResend ? (
               <Button
@@ -100,13 +132,30 @@ export function MessagingWorkTierDirectory({
         <MessagingWorkBulkActionBar
           selectedCount={c.selectedCount}
           canWrite={canWrite}
-          canClearLogs={canClearLogs}
+          canClearLogs={!c.showArchived && canClearLogs}
+          viewingDeleted={c.showArchived}
+          canRestoreLogs={Boolean(canRestoreLogs)}
           onClearSelection={() => c.setSelectedById({})}
           onBulkExport={() => void c.handleExportLogs()}
           onBulkResend={c.handleBulkResend}
           onClearLogsRequest={onClearLogsRequest}
+          onBulkRestoreRequest={() => setBulkRestoreOpen(true)}
         />
       )}
+
+      <ConfirmAlertDialog
+        open={bulkRestoreOpen}
+        onOpenChange={(open) => {
+          if (!open) setBulkRestoreOpen(false);
+        }}
+        title={c.t("messaging.restoreLog")}
+        description={c.t("messaging.bulkRestoreConfirm", { count: selectedIds.length })}
+        confirmLabel={c.t("messaging.restoreLog")}
+        onConfirm={() => {
+          setBulkRestoreOpen(false);
+          void onBulkRestore?.(selectedIds);
+        }}
+      />
 
       <ModuleWorkListStateShell
         isError={c.logsQuery.isError}
@@ -132,25 +181,16 @@ export function MessagingWorkTierDirectory({
         {c.logsQuery.logs.length === 0 ? (
           <ModuleWorkDirectoryEmpty
             icon={MessageSquareOff}
-            title={
-              c.showArchived && !c.hasActiveFilters
-                ? c.t("messaging.archivedEmpty")
-                : c.hasActiveFilters
-                  ? c.t("messaging.noLogsMatchFilters")
-                  : c.t("messaging.noLogs")
-            }
-            description={
-              c.hasActiveFilters
-                ? c.t("messaging.tryAdjustingFilters")
-                : c.t("messaging.selectRecipientsDesc")
-            }
+            title={c.t(emptyCopy.titleKey)}
+            description={c.t(emptyCopy.descriptionKey)}
             hasActiveFilters={c.hasActiveFilters}
             viewingDeleted={c.showArchived}
             onClearFilters={c.clearFilters}
+            onShowActive={c.showArchived ? () => c.setShowArchived(false) : undefined}
             clearFiltersLabel={c.t("common.clearFilters")}
-            showActiveLabel=""
+            showActiveLabel={c.t("messaging.showActiveLogs")}
             firstRunAction={
-              canWrite && onStartCampaign ? (
+              emptyCopy.showFirstRunAction && canWrite && onStartCampaign ? (
                 <Button
                   type="button"
                   variant="default"
@@ -201,6 +241,7 @@ export function MessagingWorkTierDirectory({
             onResendLog={c.handleResendLog}
             onViewLog={c.handleOpenDetail}
             onFilterContact={c.handleFilterContact}
+            pageCountLabel={c.pageCountLabel}
           />
         )}
       </ModuleWorkListStateShell>

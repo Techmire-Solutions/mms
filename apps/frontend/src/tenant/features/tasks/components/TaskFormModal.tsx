@@ -58,7 +58,7 @@ export function TaskFormModal({
     handleAddAssignee,
     handleRemoveAssignee,
     handleSubmit,
-  } = useTaskFormController({ open, onClose, initialData, onSave });
+  } = useTaskFormController({ open, onClose, initialData, onSave, saving });
 
   const statusOptions = initialData
     ? [initialData.status, ...taskStatusTransitionsFrom(initialData.status)].filter(

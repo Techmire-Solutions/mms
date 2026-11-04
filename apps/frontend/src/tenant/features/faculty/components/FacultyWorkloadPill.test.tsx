@@ -26,10 +26,11 @@ const baseFaculty: Faculty = {
 };
 
 describe("FacultyWorkloadPill", () => {
-  it("renders Available pill for active faculty with 0 classes", () => {
+  it("renders nothing when no class-count producer exists", () => {
+    // 2026-11-04 UI review UX-11: the list never carries assignedClasses, so the
+    // "Available" dot was decorative for every member.
     const html = renderToStaticMarkup(<FacultyWorkloadPill faculty={baseFaculty} />);
-    expect(html).toContain("Available");
-    expect(html).toContain("bg-info");
+    expect(html).toBe("");
   });
 
   it("renders Active Load pill with count for faculty with 2 classes", () => {

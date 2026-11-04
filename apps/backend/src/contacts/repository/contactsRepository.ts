@@ -71,17 +71,25 @@ export interface ContactsRepository {
     options?: { includeDeleted?: boolean },
   ): Promise<Contact[]>;
   findSummaryByIds?(tenant: string, ids: string[]): Promise<Contact[]>;
-  save(tenant: string, contact: Contact): Promise<void>;
+  /**
+   * Persists the contact and returns the row's stored `updated_at` (ISO).
+   *
+   * The version token must come from the database write, not from the pre-write
+   * record: responses echo it and clients present it as `x-expected-updated-at`
+   * on the next save.
+   */
+  save(tenant: string, contact: Contact): Promise<string>;
   /**
    * Save only when the stored `updated_at` still matches the client's token
-   * (millisecond-truncated comparison). Returns `false` on a stale version or a
-   * concurrently removed row; callers map that to 409 (`mms-api-interface` §6).
+   * (millisecond-truncated comparison). Returns the new stored `updated_at` on
+   * success, or `null` on a stale version / concurrently removed row; callers map
+   * that to 409 (`mms-api-interface` §6).
    */
   saveIfVersionMatches(
     tenant: string,
     contact: Contact,
     expectedUpdatedAt: string,
-  ): Promise<boolean>;
+  ): Promise<string | null>;
   /**
    * Replace contact tags only (delete + insert `contact_tags`, bump the parent
    * `updated_at`). Never rewrites child collections, so a tag change cannot

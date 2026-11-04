@@ -5,7 +5,7 @@ vi.mock("../services/auditTrailService.js", () => ({
 }));
 
 const { recordModernAuditEvent } = await import("../services/auditTrailService.js");
-const { auditContactPersisted, auditContactUpdated } =
+const { auditContactBulkTagged, auditContactMerged, auditContactPersisted, auditContactUpdated } =
   await import("../contacts/use-cases/contactWriteAudit.js");
 
 const record = vi.mocked(recordModernAuditEvent);
@@ -71,6 +71,50 @@ describe("contactWriteAudit", () => {
         realUserId: "u-2",
         subjectId: "c-2",
         newState: expect.objectContaining({ action: "contact.update" }),
+      }),
+    );
+  });
+
+  it("records a merge against the survivor with the archived contact named", async () => {
+    await auditContactMerged({
+      tenant: "demo",
+      keepId: "c-keep",
+      deleteId: "c-delete",
+      actorId: "u-3",
+    });
+
+    expect(record).toHaveBeenCalledWith(
+      expect.objectContaining({
+        actionType: "UPDATE",
+        recordId: "c-keep",
+        realUserId: "u-3",
+        subjectId: "c-keep",
+        newState: expect.objectContaining({
+          action: "contact.merge",
+          archivedContactId: "c-delete",
+        }),
+      }),
+    );
+  });
+
+  it("records a bulk tag edit per contact with the applied diff", async () => {
+    await auditContactBulkTagged({
+      tenant: "demo",
+      contactId: "c-4",
+      actorId: "u-4",
+      addedTags: ["English"],
+      removedTags: ["Science"],
+    });
+
+    expect(record).toHaveBeenCalledWith(
+      expect.objectContaining({
+        recordId: "c-4",
+        realUserId: "u-4",
+        subjectId: "c-4",
+        newState: expect.objectContaining({
+          action: "contact.bulk_tag",
+          summary: expect.stringContaining("added [English]; removed [Science]"),
+        }),
       }),
     );
   });

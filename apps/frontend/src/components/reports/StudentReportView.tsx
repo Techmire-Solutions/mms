@@ -1,4 +1,5 @@
 import React from "react";
+import { History, Users } from "lucide-react";
 import { ENROLLMENTS_MODULE_MANIFEST, STUDENTS_MODULE_MANIFEST, toTitleCase } from "@mms/shared";
 import { SubTabBar } from "@/components/app/SubTabBar";
 import { ReportDataGridContainer } from "./ReportDataGridContainer";
@@ -14,23 +15,11 @@ export function StudentReportView({
   report: StudentReportViewModel;
   widgets?: React.ReactNode;
 }): React.JSX.Element {
-  if (
-    (report.activeSubTab === "list" && report.listError) ||
-    (report.activeSubTab === "history" && report.historyError)
-  ) {
-    return (
-      <div className="p-4">
-        <ErrorState
-          title={report.t("students.report.loadFailed")}
-          description={report.t("students.report.loadFailedHint")}
-          onRetry={() => {
-            if (report.activeSubTab === "list") void report.listRefetch();
-            else report.retryHistory();
-          }}
-        />
-      </div>
-    );
-  }
+  const activeLoading = report.activeSubTab === "list" ? report.listLoading : report.historyLoading;
+  const activeError =
+    (report.activeSubTab === "list" && Boolean(report.listError)) ||
+    (report.activeSubTab === "history" && Boolean(report.historyError));
+  const activeRows = report.activeSubTab === "list" ? report.students : report.enrollments;
 
   return (
     <div className="space-y-4">
@@ -94,16 +83,38 @@ export function StudentReportView({
         onPageChange={report.activeSubTab === "list" ? report.setListPage : report.setHistoryPage}
         i18nNamespace="students"
         paginationVariant="range"
+        isLoading={activeLoading}
+        empty={!activeLoading && !activeError && activeRows.length === 0}
+        emptyTitle={
+          report.activeSubTab === "list"
+            ? report.t("students.report.noStudentsFound")
+            : report.t("students.report.noEnrollmentsFound")
+        }
+        emptyDescription={
+          report.activeSubTab === "list" ? report.t("students.report.adjustFilters") : undefined
+        }
+        emptyIcon={report.activeSubTab === "list" ? Users : History}
       >
-        <StudentReportTables
-          activeSubTab={report.activeSubTab}
-          students={report.students}
-          enrollments={report.enrollments}
-          statusBadgeConfig={report.statusBadgeConfig}
-          enrollmentStatusConfig={report.enrollmentStatusConfig}
-          listLoading={report.listLoading}
-          historyLoading={report.historyLoading}
-        />
+        {activeError ? (
+          <div className="p-4">
+            <ErrorState
+              title={report.t("students.report.loadFailed")}
+              description={report.t("students.report.loadFailedHint")}
+              onRetry={() => {
+                if (report.activeSubTab === "list") void report.listRefetch();
+                else report.retryHistory();
+              }}
+            />
+          </div>
+        ) : (
+          <StudentReportTables
+            activeSubTab={report.activeSubTab}
+            students={report.students}
+            enrollments={report.enrollments}
+            statusBadgeConfig={report.statusBadgeConfig}
+            enrollmentStatusConfig={report.enrollmentStatusConfig}
+          />
+        )}
       </ReportDataGridContainer>
 
       {widgets}

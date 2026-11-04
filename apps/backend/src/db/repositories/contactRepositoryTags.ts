@@ -9,6 +9,9 @@ export interface ContactTagUpdate {
   tags: string[];
 }
 
+/** Row/parameter batch size for tag writes (matches the child-hydration batching). */
+const ID_BATCH_SIZE = 250;
+
 /** Case-insensitive de-duplication that preserves the first observed casing. */
 function normalizeTagNames(tags: string[]): string[] {
   return filterManualContactTags(tags);
@@ -39,14 +42,19 @@ export async function replaceContactTags(
   const ids = normalized.map((update) => update.id);
   const now = new Date();
   await withTenant(subdomain, async (tx) => {
-    await tx.delete(contactTags).where(
-      and(
-        eq(contactTags.workspaceSubdomain, subdomain),
-        inArray(contactTags.contactId, ids),
-        // Bulk tagging owns manual tags only; module roles are system-managed.
-        isNull(contactTags.source),
-      ),
-    );
+    // Batch the id lists: `IN ($1..$n)` has a hard 65 535-parameter ceiling and a
+    // large bulk-tag request must not turn into a database error.
+    for (let index = 0; index < ids.length; index += ID_BATCH_SIZE) {
+      const batch = ids.slice(index, index + ID_BATCH_SIZE);
+      await tx.delete(contactTags).where(
+        and(
+          eq(contactTags.workspaceSubdomain, subdomain),
+          inArray(contactTags.contactId, batch),
+          // Bulk tagging owns manual tags only; module roles are system-managed.
+          isNull(contactTags.source),
+        ),
+      );
+    }
 
     const rows = normalized.flatMap((update) =>
       update.tags.map((name, index) => ({
@@ -56,17 +64,20 @@ export async function replaceContactTags(
         name,
       })),
     );
-    if (rows.length > 0) {
-      await tx.insert(contactTags).values(rows);
+    for (let index = 0; index < rows.length; index += ID_BATCH_SIZE) {
+      await tx.insert(contactTags).values(rows.slice(index, index + ID_BATCH_SIZE));
     }
 
-    await tx
-      .update(contacts)
-      .set({
-        updatedAt: now,
-        ...(updatedBy ? { updatedBy } : {}),
-      })
-      .where(and(eq(contacts.workspaceSubdomain, subdomain), inArray(contacts.id, ids)));
+    for (let index = 0; index < ids.length; index += ID_BATCH_SIZE) {
+      const batch = ids.slice(index, index + ID_BATCH_SIZE);
+      await tx
+        .update(contacts)
+        .set({
+          updatedAt: now,
+          ...(updatedBy ? { updatedBy } : {}),
+        })
+        .where(and(eq(contacts.workspaceSubdomain, subdomain), inArray(contacts.id, batch)));
+    }
   });
 
   await invalidateMultiTierCache({ tenantId: subdomain, domain: "contacts" });

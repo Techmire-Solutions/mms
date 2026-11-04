@@ -38,6 +38,7 @@ export function FormModal<K extends string = string>({
   progressLabel,
   headerExtra,
   error,
+  onSelectError,
   tabs,
   activeTab,
   onTabChange,
@@ -118,6 +119,7 @@ export function FormModal<K extends string = string>({
         panelClassName={panelClassName}
         priority={priority}
         error={error}
+        onSelectError={onSelectError}
         tabs={tabs}
         activeTab={activeTab}
         onTabChange={handleTabChange}

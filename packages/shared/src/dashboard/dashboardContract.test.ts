@@ -1,7 +1,9 @@
 import { describe, expect, it } from "vitest";
 import { dashboardContract } from "../contracts/dashboard.contract.js";
+import { DASHBOARD_WIDGETS_MAX } from "./dashboardWidgetSchema.js";
 
 const summaryQuery = dashboardContract.getSummary.query;
+const reorderBody = dashboardContract.reorderWidgets.body;
 
 describe("dashboard summary query", () => {
   it("accepts a calendar date plus the presentation-only role hint", () => {
@@ -17,5 +19,29 @@ describe("dashboard summary query", () => {
 
   it("stays optional for the default dashboard load", () => {
     expect(summaryQuery.safeParse(undefined).success).toBe(true);
+  });
+});
+
+describe("dashboard reorder body", () => {
+  const entry = (id: string, sortOrder = 0) => ({ id, sortOrder });
+
+  it("caps the order list at the widget write cap so an oversized body is a 400", () => {
+    const atCap = Array.from({ length: DASHBOARD_WIDGETS_MAX }, (_, i) => entry(`w-${i}`));
+    expect(reorderBody.safeParse({ order: atCap }).success).toBe(true);
+
+    const overCap = [...atCap, entry("w-overflow")];
+    expect(reorderBody.safeParse({ order: overCap }).success).toBe(false);
+  });
+
+  it("rejects sortOrder values the integer column cannot store", () => {
+    for (const sortOrder of [1.5, -1, 2 ** 31, Number.NaN, Number.POSITIVE_INFINITY]) {
+      expect(reorderBody.safeParse({ order: [entry("w-1", sortOrder)] }).success).toBe(false);
+    }
+  });
+
+  it("accepts a bounded integer sortOrder", () => {
+    expect(reorderBody.safeParse({ order: [entry("w-1", 0), entry("w-2", 499)] }).success).toBe(
+      true,
+    );
   });
 });

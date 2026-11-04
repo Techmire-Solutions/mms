@@ -21,8 +21,10 @@ export interface ContactsFiltersMenuButtonProps {
   genders: string[];
   onGenderChange: (gender: string) => void;
   sortField: string;
+  sortDir: "asc" | "desc";
   sortOptions: Array<{ field: string; label: string }>;
   onSort: (field: string) => void;
+  onSortDirChange: (dir: "asc" | "desc") => void;
   t: TranslationFunction;
 }
 
@@ -34,8 +36,10 @@ export const ContactsFiltersMenuButton = React.memo(function ContactsFiltersMenu
   genders,
   onGenderChange,
   sortField,
+  sortDir,
   sortOptions,
   onSort,
+  onSortDirChange,
   t,
 }: ContactsFiltersMenuButtonProps): JSX.Element {
   const quickFilterOptions = useMemo(
@@ -93,6 +97,19 @@ export const ContactsFiltersMenuButton = React.memo(function ContactsFiltersMenu
         value={sortField}
         onValueChange={onSort}
         options={sortRadioOptions}
+      />
+
+      <ModuleFilterDivider />
+      <ModuleFilterRadioGroup
+        label={t("contacts.sort.direction")}
+        value={sortDir}
+        onValueChange={(value) => {
+          if (value === "asc" || value === "desc") onSortDirChange(value);
+        }}
+        options={[
+          { value: "asc", label: t("contacts.sort.ascending") },
+          { value: "desc", label: t("contacts.sort.descending") },
+        ]}
       />
     </ModuleFilterDropdown>
   );

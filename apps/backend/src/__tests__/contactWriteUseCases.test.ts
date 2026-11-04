@@ -80,10 +80,11 @@ describe("contactWriteUseCases", () => {
     it("upserts contact and reconciles target and related contact ids", async () => {
       const existing = makeContact("c-1", "rel-old");
       const next = makeContact("c-1", "rel-new");
+      const persistedAt = "2026-02-01T10:00:00.000Z";
 
       const repo = {
         findById: vi.fn().mockResolvedValue(existing),
-        save: vi.fn().mockResolvedValue(next),
+        save: vi.fn().mockResolvedValue(persistedAt),
       } as unknown as ContactsRepository;
 
       const result = await runWithTenant("demo", () =>
@@ -91,6 +92,9 @@ describe("contactWriteUseCases", () => {
       );
 
       expect(result.contact.id).toBe("c-1");
+      // The response carries the token the database actually stored, so the client
+      // can present it as `x-expected-updated-at` on the next save.
+      expect(result.contact.updatedAt).toBe(persistedAt);
       expect(mockReconcile).toHaveBeenCalledWith(
         "demo",
         expect.arrayContaining(["c-1", "rel-old", "rel-new"]),
@@ -103,10 +107,11 @@ describe("contactWriteUseCases", () => {
     it("updates contact by id and reconciles target and related contact ids", async () => {
       const existing = makeContact("c-1", "rel-old");
       const next = makeContact("c-1", "rel-new");
+      const persistedAt = "2026-02-01T11:00:00.000Z";
 
       const repo = {
         findById: vi.fn().mockResolvedValue(existing),
-        save: vi.fn().mockResolvedValue(next),
+        save: vi.fn().mockResolvedValue(persistedAt),
       } as unknown as ContactsRepository;
 
       const updated = await runWithTenant("demo", () =>
@@ -115,11 +120,35 @@ describe("contactWriteUseCases", () => {
 
       expect(updated).not.toBeNull();
       expect(updated?.id).toBe("c-1");
+      expect(updated?.updatedAt).toBe(persistedAt);
       expect(mockReconcile).toHaveBeenCalledWith(
         "demo",
         expect.arrayContaining(["c-1", "rel-old", "rel-new"]),
         { actorId: "user-1" },
       );
+    });
+
+    it("returns the new token from the conditional UPDATE, not the pre-write one", async () => {
+      const existing = makeContact("c-1");
+      existing.updatedAt = "2026-02-01T09:00:00.000Z";
+      const next = makeContact("c-1");
+      const persistedAt = "2026-02-01T12:00:00.000Z";
+
+      const repo = {
+        findById: vi.fn().mockResolvedValue(existing),
+        saveIfVersionMatches: vi.fn().mockResolvedValue(persistedAt),
+      } as unknown as ContactsRepository;
+
+      const updated = await runWithTenant("demo", () =>
+        updateContactById(
+          "c-1",
+          next,
+          { actorId: "user-1", expectedUpdatedAt: "2026-02-01T09:00:00.000Z" },
+          repo,
+        ),
+      );
+
+      expect(updated?.updatedAt).toBe(persistedAt);
     });
   });
 });

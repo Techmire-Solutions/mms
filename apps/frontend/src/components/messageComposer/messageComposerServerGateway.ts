@@ -20,6 +20,8 @@ export interface ServerDispatchResult {
   replayed?: boolean;
 }
 
+type DispatchChannel = "sms" | "whatsapp" | "email";
+
 export function toCompletedRecords(
   recipients: MessagingRecipient[],
   msg: string,
@@ -35,7 +37,7 @@ export function toCompletedRecords(
 }
 
 export interface ServerDispatchOutcomeArgs {
-  channel: "sms" | "whatsapp" | "email";
+  channel: DispatchChannel;
   sentCount: number;
   failedCount?: number;
   t: TranslationFunction;
@@ -69,8 +71,66 @@ export function notifyServerDispatchOutcome({
   }
 }
 
+interface ApplyServerDispatchResultArgs {
+  channel: DispatchChannel;
+  result: ServerDispatchResult;
+  eligibleRecipients: ValidatedMessagingRecipient[];
+  message: string;
+  subject: string;
+  personalizeOptions: { madrasaName?: string };
+  onSent?: (sent: SentDispatchRecord[]) => void;
+  onClose: () => void;
+  t: TranslationFunction;
+}
+
+/**
+ * Shared post-response handling for every channel: queued campaign, replayed
+ * submission, success/partial success and close. Payload construction stays in
+ * the channel branch; this only decides what the user sees.
+ */
+function applyServerDispatchResult({
+  channel,
+  result,
+  eligibleRecipients,
+  message,
+  subject,
+  personalizeOptions,
+  onSent,
+  onClose,
+  t,
+}: ApplyServerDispatchResultArgs): void {
+  const alreadySentCount = result.skippedCount ?? result.sentCount;
+  if (result.queued) {
+    notify.info(t("messaging.campaignQueuedNotice", { count: String(eligibleRecipients.length) }));
+    onClose();
+    return;
+  }
+  if (result.replayed || (result.sentCount === 0 && (result.skippedCount ?? 0) > 0)) {
+    notify.info(t("messaging.dispatchAlreadySent", { count: String(alreadySentCount) }));
+    onClose();
+    return;
+  }
+  if (result.sentCount > 0) {
+    onSent?.(
+      toCompletedRecords(
+        eligibleRecipients,
+        message,
+        personalizeOptions,
+        channel === "email" ? subject : undefined,
+      ),
+    );
+  }
+  notifyServerDispatchOutcome({
+    channel,
+    sentCount: result.sentCount,
+    failedCount: result.failedCount,
+    t,
+  });
+  onClose();
+}
+
 export interface DispatchViaServerGatewayArgs {
-  channel: "sms" | "whatsapp" | "email";
+  channel: DispatchChannel;
   eligibleRecipients: ValidatedMessagingRecipient[];
   message: string;
   subject: string;
@@ -128,8 +188,9 @@ export async function dispatchViaServerGateway(args: DispatchViaServerGatewayArg
     t,
   } = args;
 
+  let result: ServerDispatchResult;
   if (channel === "sms") {
-    const res = await dispatchServerSms.mutateAsync({
+    result = await dispatchServerSms.mutateAsync({
       recipients: eligibleRecipients.map((recipient) => ({
         id: recipient.id,
         phone: recipient.phone ?? "",
@@ -139,37 +200,8 @@ export async function dispatchViaServerGateway(args: DispatchViaServerGatewayArg
       category,
       idempotencyKey,
     });
-    if (res.queued) {
-      notify.info(
-        t("messaging.campaignQueuedNotice", { count: String(eligibleRecipients.length) }),
-      );
-      onClose();
-      return;
-    }
-    if (res.replayed || (res.sentCount === 0 && (res.skippedCount ?? 0) > 0)) {
-      notify.info(
-        t("messaging.dispatchAlreadySent", {
-          count: String(res.skippedCount ?? res.sentCount),
-        }),
-      );
-      onClose();
-      return;
-    }
-    if (res.sentCount > 0) {
-      onSent?.(toCompletedRecords(eligibleRecipients, message, personalizeOptions));
-    }
-    notifyServerDispatchOutcome({
-      channel: "sms",
-      sentCount: res.sentCount,
-      failedCount: res.failedCount,
-      t,
-    });
-    onClose();
-    return;
-  }
-
-  if (channel === "email") {
-    const res = await dispatchServerEmail.mutateAsync({
+  } else if (channel === "email") {
+    result = await dispatchServerEmail.mutateAsync({
       recipients: eligibleRecipients.map((recipient) => ({
         id: recipient.id,
         email: recipient.email ?? "",
@@ -180,74 +212,29 @@ export async function dispatchViaServerGateway(args: DispatchViaServerGatewayArg
       category,
       idempotencyKey,
     });
-    if (res.queued) {
-      notify.info(
-        t("messaging.campaignQueuedNotice", { count: String(eligibleRecipients.length) }),
-      );
-      onClose();
-      return;
-    }
-    if (res.replayed || (res.sentCount === 0 && (res.skippedCount ?? 0) > 0)) {
-      notify.info(
-        t("messaging.dispatchAlreadySent", {
-          count: String(res.skippedCount ?? res.sentCount),
-        }),
-      );
-      onClose();
-      return;
-    }
-    if (res.sentCount > 0) {
-      onSent?.(
-        toCompletedRecords(
-          eligibleRecipients,
-          message,
-          personalizeOptions,
-          subject || t("messaging.defaultSubject"),
-        ),
-      );
-    }
-    notifyServerDispatchOutcome({
-      channel: "email",
-      sentCount: res.sentCount,
-      failedCount: res.failedCount,
-      t,
+  } else {
+    result = await dispatchServerWhatsApp.mutateAsync({
+      recipients: eligibleRecipients.map((recipient) => ({
+        id: recipient.id,
+        phone: recipient.phone ?? "",
+        name: recipient.name,
+      })),
+      message,
+      category,
+      idempotencyKey,
     });
-    onClose();
-    return;
   }
 
-  const res = await dispatchServerWhatsApp.mutateAsync({
-    recipients: eligibleRecipients.map((recipient) => ({
-      id: recipient.id,
-      phone: recipient.phone ?? "",
-      name: recipient.name,
-    })),
+  applyServerDispatchResult({
+    channel,
+    result,
+    eligibleRecipients,
     message,
-    category,
-    idempotencyKey,
-  });
-  if (res.queued) {
-    notify.info(t("messaging.campaignQueuedNotice", { count: String(eligibleRecipients.length) }));
-    onClose();
-    return;
-  }
-  if (res.replayed || (res.sentCount === 0 && (res.skippedCount ?? 0) > 0)) {
-    notify.info(
-      t("messaging.dispatchAlreadySent", {
-        count: String(res.skippedCount ?? res.sentCount),
-      }),
-    );
-    onClose();
-    return;
-  }
-  if (res.sentCount > 0) {
-    onSent?.(toCompletedRecords(eligibleRecipients, message, personalizeOptions));
-  }
-  notifyServerDispatchOutcome({
-    channel: "whatsapp",
-    sentCount: res.sentCount,
-    failedCount: res.failedCount,
+    // Email completes its records with the subject actually sent.
+    subject: subject || t("messaging.defaultSubject"),
+    personalizeOptions,
+    onSent,
+    onClose,
     t,
   });
-  onClose();
 }

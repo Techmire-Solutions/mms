@@ -134,7 +134,12 @@ export function useContactsCrudWriteActions({
   ): Promise<number> => {
     try {
       const res = await bulkTagMutation.mutateAsync({ ids, addTags, removeTags });
-      notify.success(t("contacts.bulkTagSuccess", { count: res.updatedCount }));
+      const removingOnly = Boolean(removeTags?.length) && !addTags?.length;
+      notify.success(
+        t(removingOnly ? "contacts.bulkTagRemoveSuccess" : "contacts.bulkTagSuccess", {
+          count: res.updatedCount,
+        }),
+      );
       return res.updatedCount;
     } catch (err) {
       handleError(err, "contacts.bulk_tag");

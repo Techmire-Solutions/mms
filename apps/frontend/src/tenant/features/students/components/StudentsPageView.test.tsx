@@ -65,6 +65,9 @@ describe("StudentsPageView Component", () => {
         ]}
         metricsTotal={25}
         metricsSnapshot={null}
+        metricsLoading={false}
+        metricsError={false}
+        metricsRetry={vi.fn()}
         activeTab="work"
         setActiveTab={vi.fn()}
         viewingDeleted={false}

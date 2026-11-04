@@ -3,9 +3,14 @@ import { and, eq, isNull } from "drizzle-orm";
 import { facultyAssignments } from "../schema.js";
 import { withTenant } from "../tenant-context.js";
 import type { InsertFacultyAssignmentRow } from "../schema/facultyAssignmentTables.js";
-import { validateFacultyAssignment, lockFacultyHierarchy } from "./facultyAssignmentValidation.js";
+import {
+  assertFacultyAssignmentDeletable,
+  lockFacultyHierarchy,
+  validateFacultyAssignment,
+} from "./facultyAssignmentValidation.js";
 import { findFacultyAssignmentById } from "./facultyAssignmentRepository.js";
 import { recordModernAuditEvent } from "../../services/auditTrailService.js";
+import { workspaceTodayIso } from "../../lib/workspaceDay.js";
 
 export async function saveFacultyAssignment(
   tenant: string,
@@ -15,6 +20,18 @@ export async function saveFacultyAssignment(
   await withTenant(subdomain, async (tx) => {
     await lockFacultyHierarchy(tx, subdomain);
     await validateFacultyAssignment(tx, subdomain, assignment);
+    // An upsert cannot tell an insert from an edit; read the row first so a new
+    // appointment is audited as CREATE, not UPDATE.
+    const [existing] = await tx
+      .select({ id: facultyAssignments.id })
+      .from(facultyAssignments)
+      .where(
+        and(
+          eq(facultyAssignments.workspaceSubdomain, subdomain),
+          eq(facultyAssignments.id, assignment.id),
+        ),
+      )
+      .limit(1);
     await tx
       .insert(facultyAssignments)
       .values({ ...assignment, workspaceSubdomain: subdomain })
@@ -36,7 +53,7 @@ export async function saveFacultyAssignment(
       workspaceSubdomain: subdomain,
       tableName: "faculty_assignments",
       recordId: assignment.id,
-      actionType: "UPDATE",
+      actionType: existing ? "UPDATE" : "CREATE",
       realUserId: assignment.updatedBy,
       newState: assignment,
     });
@@ -85,6 +102,27 @@ export async function softDeleteFacultyAssignment(
   const subdomain = tenant.trim().toLowerCase();
   await withTenant(subdomain, async (tx) => {
     await lockFacultyHierarchy(tx, subdomain);
+    // The row that currently backs the faculty's primary appointment must be
+    // closed (end date), never archived: the primary row is the SSOT for the
+    // Work projection, exports, task delegation and contact role tags.
+    const [current] = await tx
+      .select({
+        isPrimary: facultyAssignments.isPrimary,
+        startDate: facultyAssignments.startDate,
+        endDate: facultyAssignments.endDate,
+        deletedAt: facultyAssignments.deletedAt,
+      })
+      .from(facultyAssignments)
+      .where(
+        and(
+          eq(facultyAssignments.workspaceSubdomain, subdomain),
+          eq(facultyAssignments.id, id),
+          isNull(facultyAssignments.deletedAt),
+        ),
+      )
+      .for("update");
+    if (!current) return;
+    assertFacultyAssignmentDeletable(current, await workspaceTodayIso(subdomain));
     const deletedAt = new Date();
     const changed = await tx
       .update(facultyAssignments)

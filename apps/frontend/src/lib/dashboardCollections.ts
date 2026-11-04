@@ -132,6 +132,23 @@ export function getActiveCustomCardIds(
     .map((widget) => widget.id);
 }
 
+/**
+ * The canonical widget list for `/aggregates` prefetching.
+ *
+ * The aggregate hooks key their cache entry on a signature of the widget set, so
+ * every caller must pass this exact list — otherwise the same widget is fetched
+ * once per surface (data hook, primary panels, secondary insights) and the cache
+ * readers must scan every variant (2026-11-05 review).
+ *
+ * Seeded KPI cards are excluded: their values come from the composite metrics
+ * summary, not from widget aggregates.
+ */
+export function selectAggregateWidgets(widgets: readonly CustomWidget[]): CustomWidget[] {
+  return widgets.filter(
+    (widget) => widget.widgetType !== "card" || !isSeededDashboardWidget(widget.id),
+  );
+}
+
 /** Count of widgets pinned to the dashboard layout. */
 export function getPinnedDashboardWidgetCount(
   widgets: CustomWidget[],

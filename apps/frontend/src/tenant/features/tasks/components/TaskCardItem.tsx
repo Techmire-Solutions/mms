@@ -20,6 +20,7 @@ export interface TaskCardItemProps {
   viewingDeleted: boolean;
   canWrite: boolean;
   canComplete?: boolean;
+  statusPending?: boolean;
   canDelete: boolean;
   isColumnVisible: (key: string) => boolean;
   onToggleSelected: (id: string, checked: boolean) => void;
@@ -27,7 +28,7 @@ export interface TaskCardItemProps {
   onEdit: (task: TaskRecord) => void;
   onDelete: (id: string) => void;
   onRestore?: (id: string) => void;
-  onUpdateStatus: (id: string, status: TaskStatus) => void;
+  onUpdateStatus: (task: TaskRecord, status: TaskStatus) => void;
   reducedMotion?: boolean;
 }
 
@@ -38,6 +39,7 @@ export function TaskCardItem({
   viewingDeleted,
   canWrite,
   canComplete,
+  statusPending = false,
   canDelete,
   isColumnVisible,
   onToggleSelected,
@@ -86,7 +88,7 @@ export function TaskCardItem({
     <DirectoryEntityCard
       entity={task}
       selectedIds={selectedIds}
-      canSelect={canDelete}
+      canSelect={canWrite || canDelete}
       onToggleSelected={onToggleSelected}
       onView={onView}
       onEdit={onEdit}
@@ -106,7 +108,8 @@ export function TaskCardItem({
               <TaskStatusMenu
                 task={task}
                 canChange={Boolean(canComplete ?? canWrite) && !viewingDeleted}
-                onChangeStatus={(changed, status) => onUpdateStatus(changed.id, status)}
+                pending={statusPending}
+                onChangeStatus={onUpdateStatus}
               />
             </DirectoryCardMetaTile>
           ) : null}

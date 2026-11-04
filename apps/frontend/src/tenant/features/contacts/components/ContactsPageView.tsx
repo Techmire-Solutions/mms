@@ -81,6 +81,7 @@ export function ContactsPageView({
           flushing={flushing}
           onFlushPending={() => void flush()}
           onReviewConflicts={openConflictReview}
+          onReviewDuplicates={() => void handleOpenDuplicates()}
         />
       }
       banner={

@@ -1,6 +1,7 @@
 import React, { useMemo } from "react";
 import { Award, Pencil, RotateCcw, Trash2 } from "lucide-react";
 import type { FacultyDesignationDefinition } from "@mms/shared";
+import { EmptyCellDash } from "@/components/app/EmptyCellDash";
 import { EmptyState } from "@/components/app/EmptyState";
 import { StatusBadge, type StatusBadgeConfigItem } from "@/components/app/StatusBadge";
 import { SEMANTIC_BADGE } from "@/lib/ui/semanticTone";
@@ -23,8 +24,6 @@ export interface FacultyDesignationsTableProps {
   onRestore?: (designation: FacultyDesignationDefinition) => void;
   primaryAction?: React.ReactNode;
 }
-
-const Dash = () => <span className="text-muted-foreground/50">—</span>;
 
 /** Designations directory — Faculty Management model: department, name, parent, status. */
 export function FacultyDesignationsTable({
@@ -64,7 +63,9 @@ export function FacultyDesignationsTable({
       label: t("faculty.designations.department"),
       searchValue: (d) => d.departmentName ?? "",
       render: (d) => (
-        <span className="text-xs text-muted-foreground">{d.departmentName ?? <Dash />}</span>
+        <span className="text-xs text-muted-foreground">
+          {d.departmentName ?? <EmptyCellDash />}
+        </span>
       ),
     },
     {
@@ -72,7 +73,9 @@ export function FacultyDesignationsTable({
       label: t("faculty.designations.parentDesignation"),
       searchValue: (d) => d.parentDesignationName ?? "",
       render: (d) => (
-        <span className="text-xs text-muted-foreground">{d.parentDesignationName ?? <Dash />}</span>
+        <span className="text-xs text-muted-foreground">
+          {d.parentDesignationName ?? <EmptyCellDash />}
+        </span>
       ),
     },
     {

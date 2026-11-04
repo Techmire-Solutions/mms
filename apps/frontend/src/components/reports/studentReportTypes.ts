@@ -12,7 +12,8 @@ export interface ReportStudent {
   class: string;
   city: string;
   registered: string;
-  age: number;
+  /** Numeric age, or the em-dash sentinel when the DOB is unknown. */
+  age: number | string;
 }
 
 export interface EnrollmentHistoryItem {
@@ -73,7 +74,7 @@ export function mapStudentRow(
   student: Student | StudentRecord,
   sessions: Session[] = [],
 ): ReportStudent {
-  const age = calcAge(student.dob) ?? 0;
+  const age = calcAge(student.dob) ?? "—";
   const { sessionLabel, classLabel } = resolveStudentSessionLabels(student, sessions);
   const registeredDate = (student as { registeredDate?: string }).registeredDate;
   return {

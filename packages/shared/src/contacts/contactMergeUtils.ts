@@ -58,6 +58,16 @@ export const mergeContacts = (keep: Contact, other: Contact): Contact => {
     merged.tag = combinedTags.join(", ");
   }
 
+  // Notes are free text, not a "fill the blank" field: the merge preview does not
+  // expose them, so dropping the removed record's note would be silent data loss.
+  const keepNotes = typeof keep.notes === "string" ? keep.notes.trim() : "";
+  const otherNotes = typeof other.notes === "string" ? other.notes.trim() : "";
+  if (!keepNotes) {
+    if (otherNotes) merged.notes = other.notes;
+  } else if (otherNotes && otherNotes !== keepNotes) {
+    merged.notes = `${keep.notes}\n\n${other.notes}`;
+  }
+
   // Merge phones list: match by normalized number
   const seenNumbers = new Set<string>();
   const mergedPhones: ContactPhone[] = [];

@@ -17,7 +17,8 @@ import {
   writeComposerDraft,
 } from "./messageComposerDraft";
 import { recipientIdsKey, resolveComposerInitialState } from "./messageComposerInitialState";
-import { filterDisplayedRecipients, withAddedRecipient } from "./messageComposerRecipientsUtils";
+import { filterDisplayedRecipients } from "./messageComposerRecipientsUtils";
+import { useComposerRecipients } from "./useComposerRecipients";
 import {
   formatUnknownTokensLabel,
   hasUnknownComposeTokens,
@@ -84,9 +85,16 @@ export function useMessageComposerModel(props: UseMessageComposerModelProps) {
   const [recipientTab, setRecipientTab] = useState<RecipientTab>("all");
   const [recipientSearch, setRecipientSearch] = useState("");
   const [previewIndex, setPreviewIndex] = useState(0);
-  const [localRecipients, setLocalRecipients] = useState(initial.localRecipients);
   const [step, setStep] = useState(initial.step);
   const [useServerGateway, setUseServerGateway] = useState(props.useServerGateway ?? true);
+  const {
+    localRecipients,
+    setLocalRecipients,
+    addRecipient,
+    addRecipients,
+    removeRecipient,
+    removeRecipients,
+  } = useComposerRecipients(initial.localRecipients, t);
 
   useEffect(() => {
     if (draftRestoredRef.current || !initial.draft) return;
@@ -125,19 +133,6 @@ export function useMessageComposerModel(props: UseMessageComposerModelProps) {
     const error = tokens ? t("messaging.unknownTokens", { tokens }) : undefined;
     if (field === "body") setBodyError(error);
     else setSubjectError(error);
-  };
-  const addRecipient = (candidate: MessagingRecipient): void => {
-    const { next, duplicate } = withAddedRecipient(localRecipients, candidate);
-    if (duplicate) {
-      notify.warning(t("messaging.recipientAlreadyAdded"));
-      return;
-    }
-    setLocalRecipients(next);
-    notify.success(t("messaging.recipientAdded"));
-  };
-  const removeRecipient = (id: string | number): void => {
-    setLocalRecipients((prev) => prev.filter((r) => String(r.id) !== String(id)));
-    notify.success(t("messaging.recipientRemoved"));
   };
   const clearDraftStorage = (): void => {
     clearComposerDraft(channel, userId);
@@ -244,7 +239,9 @@ export function useMessageComposerModel(props: UseMessageComposerModelProps) {
     setPreviewIndex,
     localRecipients,
     addRecipient,
+    addRecipients,
     removeRecipient,
+    removeRecipients,
     channelTemplates,
     changeTemplate,
     dispatch,
@@ -263,7 +260,7 @@ export function useMessageComposerModel(props: UseMessageComposerModelProps) {
     Icon: isEmail ? Mail : isSms ? MessageSquare : MessageCircle,
     title: getComposerTitle({ t, step, channel, localRecipients }),
     subtitle: getComposerSubtitle({ t, step, channel, localRecipients, eligibleCount }),
-    note: getComposerNote(t, channel),
+    note: getComposerNote(t, channel, useServerGateway),
     saveLabel: getComposerSaveLabel({
       t,
       step,
@@ -272,6 +269,7 @@ export function useMessageComposerModel(props: UseMessageComposerModelProps) {
       eligibleCount,
       pendingAudit: !!dispatch.pendingAudit,
       opening: dispatch.opening,
+      useServerGateway,
     }),
     handleSave,
     showSkipped: () => setRecipientTab("skipped"),

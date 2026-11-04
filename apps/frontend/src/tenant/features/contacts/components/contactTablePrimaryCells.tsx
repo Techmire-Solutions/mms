@@ -4,6 +4,7 @@ import { type Contact, type ContactPreferences, getDisplayName } from "@mms/shar
 import { resolveAllContactPhones, resolveAllContactEmails } from "@/lib/contacts/contactI18n";
 import { ContactIdentityMeta } from "@/tenant/features/contacts/components/ContactIdentityMeta";
 import { UserAvatar } from "@/components/app/UserAvatar";
+import { BiDiText } from "@/components/app/BiDiText";
 import { ContactPhoneAction, ContactEmailAction } from "@/components/app/ContactAction";
 
 import type { useTranslation } from "@/hooks/useTranslation";
@@ -46,7 +47,9 @@ export function renderContactNameCell({
           type="button"
           title={displayName}
         >
-          <span className="block truncate">{displayName}</span>
+          <BiDiText as="span" className="block truncate">
+            {displayName}
+          </BiDiText>
         </Button>
         <ContactIdentityMeta gender={contact.gender} isSyed={contact.isSyed} className="mt-0.5" />
         {showArchived && contact.deletionReason && (

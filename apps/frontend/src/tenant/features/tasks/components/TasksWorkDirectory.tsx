@@ -18,6 +18,9 @@ export interface TasksWorkDirectoryProps {
   viewingDeleted: boolean;
   canWrite: boolean;
   canComplete?: boolean;
+  statusPending?: boolean;
+  hasActiveFilters?: boolean;
+  onClearFilters?: () => void;
   canDelete: boolean;
   isLoading: boolean;
   isError?: boolean;
@@ -32,7 +35,7 @@ export interface TasksWorkDirectoryProps {
   onEdit: (task: TaskRecord) => void;
   onDelete: (id: string) => void;
   onRestore?: (id: string) => void;
-  onUpdateStatus: (id: string, status: TaskStatus) => void;
+  onUpdateStatus: (task: TaskRecord, status: TaskStatus) => void;
   emptyAction?: React.ReactNode;
 }
 
@@ -43,6 +46,9 @@ export function TasksWorkDirectory({
   viewingDeleted,
   canWrite,
   canComplete,
+  statusPending = false,
+  hasActiveFilters = false,
+  onClearFilters,
   canDelete,
   isLoading,
   isError,
@@ -93,6 +99,9 @@ export function TasksWorkDirectory({
         onDelete={onDelete}
         onRestore={onRestore}
         onUpdateStatus={onUpdateStatus}
+        statusPending={statusPending}
+        hasActiveFilters={hasActiveFilters}
+        onClearFilters={onClearFilters}
         emptyAction={emptyAction}
       />
     );
@@ -118,6 +127,9 @@ export function TasksWorkDirectory({
       onDelete={onDelete}
       onRestore={onRestore}
       onUpdateStatus={onUpdateStatus}
+      statusPending={statusPending}
+      hasActiveFilters={hasActiveFilters}
+      onClearFilters={onClearFilters}
       emptyAction={emptyAction}
     />
   );

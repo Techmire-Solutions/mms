@@ -95,7 +95,7 @@ export function buildWidgetSavePayload(
   trendType: "manual" | "database",
   builderRole: string,
 ): CustomWidget {
-  return {
+  const built: CustomWidget = {
     id: editWidgetConfig?.id || "widget-" + crypto.randomUUID(),
     title: builderTitle,
     category: editWidgetConfig?.category || category,
@@ -126,4 +126,9 @@ export function buildWidgetSavePayload(
     trendType: widgetType === "card" ? trendType : undefined,
     role: widgetType === "card" && mode === "dashboard" ? builderRole : undefined,
   };
+
+  // Editing must not drop fields the builder does not own — the save is a full-row
+  // upsert, so a missing `sortOrder` reorders the widget to the top and a missing
+  // `chartType`/`xAxisField` resets a visualizer chart (2026-11-05 review).
+  return editWidgetConfig ? { ...editWidgetConfig, ...built } : built;
 }

@@ -1,4 +1,5 @@
 import { useEffect } from "react";
+import { overlayLayerCount } from "@/lib/overlayStack";
 
 export interface UseModuleCreateHotkeyOptions {
   enabled: boolean;
@@ -14,6 +15,8 @@ export function useModuleCreateHotkey({ enabled, onCreate }: UseModuleCreateHotk
     if (!enabled) return;
 
     const handleKeyDown = (event: KeyboardEvent) => {
+      // Do not open a create form on top of an open dialog/drawer (n3).
+      if (overlayLayerCount() > 0) return;
       const target = event.target as HTMLElement | null;
       if (
         target &&

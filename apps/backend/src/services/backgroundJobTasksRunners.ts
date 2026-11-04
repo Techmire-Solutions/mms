@@ -28,7 +28,6 @@ export function registerTasksBackgroundJobRunners(): void {
       runTasksImportJob(rows, {
         tenant: ctx.tenant,
         userId: ctx.userId,
-        viewerRole: ctx.viewerRole,
         updateProgress: ctx.updateProgress,
       }),
   });

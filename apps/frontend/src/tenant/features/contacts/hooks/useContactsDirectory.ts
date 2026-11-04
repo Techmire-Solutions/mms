@@ -103,6 +103,7 @@ export function useContactsDirectory({
     hasActiveFilters: filters.hasActiveFilters,
     activeFilterCount: filters.activeFilterCount,
     handleSort: filters.handleSort,
+    handleSortDir: filters.handleSortDir,
     handleSelect: filters.handleSelect,
     handleSelectAll,
     clearFilters: filters.clearFilters,

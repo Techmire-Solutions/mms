@@ -1,4 +1,4 @@
-import { useCallback, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import {
   TASKS_MODULE_MANIFEST,
   tasksTransferSchema,
@@ -52,9 +52,15 @@ export function useTasksPageController() {
   const { handleExport, isExporting } = useGenericModuleExport({
     path: "/api/tasks/export/csv",
     filename: "tasks.csv",
-    auditPath: "/api/tasks/export-audit",
     columns: tasksTransferSchema.exportColumns,
     canExport: canRead,
+    // The queue owns the authoritative audit row; the legacy client-counted
+    // `/export-audit` row would duplicate and trust caller-supplied numbers.
+    query: {
+      ...serverFilters,
+      ...(viewingDeleted ? { includeDeleted: true } : {}),
+      ...(selectedIds.length > 0 ? { ids: selectedIds.join(",") } : {}),
+    },
   });
 
   const {
@@ -72,12 +78,22 @@ export function useTasksPageController() {
 
   const createTaskMutation = useCreateTask();
   const updateTaskMutation = useUpdateTask();
-  const updateStatusMutation = useUpdateTaskStatus();
+  const { mutate: mutateTaskStatus, isPending: statusPending } = useUpdateTaskStatus();
   const deleteTaskMutation = useDeleteTask();
   const restoreTaskMutation = useRestoreTask();
+  const isSaving = createTaskMutation.isPending || updateTaskMutation.isPending;
 
   const tasks = tasksData?.tasks ?? [];
   const totalTasks = tasksData?.total ?? 0;
+
+  // Delete side effects can leave the index past the last page. Only clamp once
+  // data for the current key exists, otherwise a pending page fetch (data
+  // undefined) would snap every page back to 0.
+  const lastPage = tasksData ? Math.max(0, Math.ceil(tasksData.total / TASKS_PAGE_SIZE) - 1) : null;
+  useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- clamp after the page's own total arrives; deriving it for the query would require a second fetch.
+    if (lastPage !== null && pageIndex > lastPage) setPageIndex(lastPage);
+  }, [lastPage, pageIndex]);
 
   const handleOpenCreate = useCallback(() => {
     if (viewingDeleted) return;
@@ -107,31 +123,36 @@ export function useTasksPageController() {
     } else await createTaskMutation.mutateAsync(data);
   };
 
-  const handleUpdateStatus = (id: string, status: TaskStatus) => {
-    if (viewingDeleted) return;
-    // Optimistic concurrency: echo the row's `updatedAt` so a concurrent edit is
-    // a 409 instead of a silent overwrite. Missing row/token keeps legacy behavior.
-    const task = tasks.find((row) => String(row.id) === id);
-    const expectedUpdatedAt =
-      typeof task?.updatedAt === "string"
-        ? task.updatedAt
-        : task?.updatedAt instanceof Date
-          ? task.updatedAt.toISOString()
-          : undefined;
-    updateStatusMutation.mutate(
-      { id, status, expectedUpdatedAt },
-      {
-        onError: (err) =>
-          notify.error(err instanceof Error ? err.message : t("tasks.bulkStatusFailed")),
-      },
-    );
-  };
+  // The token travels with the row that was clicked. Looking it up through the
+  // current `tasks` array here made the memoized table columns capture a
+  // first-render closure with an empty list, silently disabling OCC.
+  const handleUpdateStatus = useCallback(
+    (task: TaskRecord, status: TaskStatus) => {
+      if (viewingDeleted) return;
+      const expectedUpdatedAt =
+        typeof task.updatedAt === "string"
+          ? task.updatedAt
+          : task.updatedAt instanceof Date
+            ? task.updatedAt.toISOString()
+            : undefined;
+      mutateTaskStatus(
+        { id: task.id, status, expectedUpdatedAt },
+        {
+          onError: (err) =>
+            notify.error(err instanceof Error ? err.message : t("tasks.bulkStatusFailed")),
+        },
+      );
+    },
+    [mutateTaskStatus, t, viewingDeleted],
+  );
 
   const handleDelete = (id: string) => {
     deleteTaskMutation.mutate(id, {
       onSuccess: () => {
         notify.archivedWithUndo(t("common.recordArchived"), () => {
-          void restoreTaskMutation.mutateAsync(id);
+          void restoreTaskMutation.mutateAsync(id).catch((err: unknown) => {
+            notify.error(err instanceof Error ? err.message : t("tasks.restoreFailed"));
+          });
         });
       },
       onError: (err) => {
@@ -153,6 +174,7 @@ export function useTasksPageController() {
     (next: boolean) => {
       setViewingDeleted(next);
       clearSelection();
+      setPageIndex(0);
     },
     [clearSelection, setViewingDeleted],
   );
@@ -195,6 +217,8 @@ export function useTasksPageController() {
     setImportOpen,
     handleExport,
     isExporting,
+    isSaving,
+    statusPending,
     tasks,
     totalTasks,
     tasksLoading,

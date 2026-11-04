@@ -14,6 +14,7 @@ import { useTranslation } from "@/hooks/useTranslation";
 import { useTaskSettings, useUpdateTaskSettings } from "@/tenant/hooks/collections/tasks";
 import { notify } from "@/lib/notify";
 import { ModuleSetupContent } from "@/components/app/ModuleSetupContent";
+import { ErrorState } from "@/components/app/ErrorState";
 
 export interface TasksSetupTabProps {
   initialSettings?: TaskSettings;
@@ -34,7 +35,7 @@ export function TasksSetupTab({
   canEditSetup = true,
 }: TasksSetupTabProps): React.JSX.Element {
   const { t } = useTranslation();
-  const { data: serverSettings, isLoading } = useTaskSettings();
+  const { data: serverSettings, isLoading, isError, refetch } = useTaskSettings();
   const updateSettingsMutation = useUpdateTaskSettings();
   const [draft, setDraft] = useState<TaskSettings | null>(null);
   const baseline = serverSettings ?? initialSettings;
@@ -51,6 +52,16 @@ export function TasksSetupTab({
       notify.error(err instanceof Error ? err.message : t("tasks.setup.saveFailed"));
     }
   };
+
+  if (isError) {
+    return (
+      <ErrorState
+        title={t("tasks.setup.loadFailed")}
+        description={t("tasks.setup.loadFailedHint")}
+        onRetry={() => void refetch()}
+      />
+    );
+  }
 
   return (
     <ModuleSetupContent>
@@ -115,7 +126,7 @@ export function TasksSetupTab({
               type="button"
               className="min-h-11 gap-1.5"
               onClick={() => void handleSave()}
-              disabled={!dirty || updateSettingsMutation.isPending || isLoading}
+              disabled={!serverSettings || !dirty || updateSettingsMutation.isPending || isLoading}
             >
               <Save className="h-4 w-4" aria-hidden />
               <span>

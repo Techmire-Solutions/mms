@@ -9,6 +9,8 @@ export interface MessageComposerTextProps {
   eligibleCount: number;
   pendingAudit: boolean;
   opening: boolean;
+  /** True when the workspace gateway dispatches; false when the device app opens. */
+  useServerGateway: boolean;
 }
 
 export function getComposerTitle({
@@ -64,10 +66,41 @@ export function getComposerSubtitle({
 export function getComposerNote(
   t: TranslationFunction,
   channel: "sms" | "whatsapp" | "email",
+  useServerGateway: boolean,
 ): string {
+  // The note is the last thing a user reads before an irreversible send, so it
+  // must describe the mode that will actually run (`mms-messaging` §7).
+  if (useServerGateway) {
+    if (channel === "email") return t("messaging.gatewayNoteEmail");
+    if (channel === "sms") return t("messaging.gatewayNoteSms");
+    return t("messaging.gatewayNoteWhatsapp");
+  }
   if (channel === "email") return t("messaging.bulkEmailDesc");
   if (channel === "sms") return t("messaging.smsManualSendNote");
   return t("messaging.whatsappBulkManualNote");
+}
+
+/** Per-recipient "send one" label for the current dispatch mode. */
+export function getRecipientSendLabel({
+  t,
+  channel,
+  isServerGateway,
+  isValid,
+}: {
+  t: TranslationFunction;
+  channel: "sms" | "whatsapp" | "email";
+  isServerGateway: boolean;
+  isValid: boolean;
+}): string {
+  if (!isValid) return t("messaging.skippedStatus");
+  if (isServerGateway) {
+    if (channel === "email") return t("messaging.gatewaySendEmail");
+    if (channel === "sms") return t("messaging.gatewaySendSms");
+    return t("messaging.gatewaySendWhatsapp");
+  }
+  if (channel === "email") return t("messaging.sendEmail");
+  if (channel === "sms") return t("messaging.openSmsApp");
+  return t("messaging.openWhatsapp");
 }
 
 export function getComposerSaveLabel({
@@ -78,14 +111,23 @@ export function getComposerSaveLabel({
   eligibleCount,
   pendingAudit,
   opening,
+  useServerGateway,
 }: MessageComposerTextProps): string {
   if (step === "pick") return t("common.next");
   if (pendingAudit) return t("messaging.retrySaveHistory");
   const isEmail = channel === "email";
   const isSms = channel === "sms";
-  if (opening) return isEmail ? t("messaging.openingMail") : t("messaging.openingTabs");
   const isBulk = localRecipients.length > 1;
   const count = String(eligibleCount);
+
+  if (useServerGateway) {
+    if (isBulk) return t("messaging.gatewaySendAll", { count });
+    if (isEmail) return t("messaging.gatewaySendEmail");
+    if (isSms) return t("messaging.gatewaySendSms");
+    return t("messaging.gatewaySendWhatsapp");
+  }
+
+  if (opening) return isEmail ? t("messaging.openingMail") : t("messaging.openingTabs");
 
   return isEmail
     ? isBulk

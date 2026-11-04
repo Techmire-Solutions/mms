@@ -1,4 +1,3 @@
-import React from "react";
 import { describe, it, expect, vi } from "vitest";
 import { renderToStaticMarkup } from "react-dom/server";
 import { MessagingWorkBulkActionBar } from "./MessagingWorkBulkActionBar";
@@ -8,6 +7,7 @@ vi.mock("@/hooks/useTranslation", () => ({
     t: (key: string, params?: Record<string, unknown>) => {
       if (key === "messaging.selectedCount") return `${params?.count} selected`;
       if (key === "messaging.exportLogs") return "Export";
+      if (key === "messaging.exportLogsFiltered") return "Export matching logs";
       if (key === "messaging.clearLogs") return "Clear";
       if (key === "messaging.resend") return "Resend";
       if (key === "common.deselect") return "Deselect";
@@ -35,7 +35,9 @@ describe("MessagingWorkBulkActionBar", () => {
     expect(html).toContain("3 selected");
     expect(html).toContain("Deselect");
     expect(html).toContain("Resend");
-    expect(html).toContain("Export (3)");
+    // Export runs the active filters, so it must not advertise the selection.
+    expect(html).toContain("Export matching logs");
+    expect(html).not.toContain("Export (3)");
     expect(html).toContain("Clear");
   });
 
@@ -55,5 +57,29 @@ describe("MessagingWorkBulkActionBar", () => {
     expect(html).toContain("Deselect");
     expect(html).not.toContain("Export");
     expect(html).not.toContain("Clear");
+  });
+
+  it("restores in the archived view instead of archiving or exporting", () => {
+    const onBulkRestoreRequest = vi.fn();
+    const html = renderToStaticMarkup(
+      <MessagingWorkBulkActionBar
+        selectedCount={2}
+        canWrite={true}
+        canClearLogs={false}
+        viewingDeleted={true}
+        canRestoreLogs={true}
+        onBulkRestoreRequest={onBulkRestoreRequest}
+        onClearSelection={() => {}}
+        onBulkExport={() => {}}
+        onBulkResend={() => {}}
+        onClearLogsRequest={() => {}}
+      />,
+    );
+
+    expect(html).toContain("messaging.restoreLog");
+    // Archived logs are not exported through this bar, and the archive action
+    // must not appear while browsing archived rows.
+    expect(html).not.toContain("messaging.clearLogs");
+    expect(html).not.toContain("Export matching logs");
   });
 });

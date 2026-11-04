@@ -13,9 +13,6 @@ export const facultySoftDeleteRoutes: FastifyPluginAsync = async (fastify) => {
     nameSingular: "faculty",
     canDelete: (user) => canDeleteCollection(user, "faculty"),
     restoreFn: (id, userId) => facultyUseCases.restoreFacultyById(id, userId),
-    onAfterRestore: async (user, id) => {
-      await auditFaculty(user, "faculty.restore", `Restored faculty member ${id}`, id);
-    },
     buildRestoreResponse: async (restored, user) => ({
       success: true,
       faculty: await sanitizeOneFacultyForUser(restored as Faculty, user as User),
@@ -35,13 +32,6 @@ export const facultySoftDeleteRoutes: FastifyPluginAsync = async (fastify) => {
         user,
         "faculty.bulk_soft_delete",
         `Soft-deleted ${result.succeeded} faculty member(s); ${result.failed} failed${reasonNote}`,
-      );
-    },
-    onAfterBulkRestore: async (user, result) => {
-      await auditFaculty(
-        user,
-        "faculty.bulk_restore",
-        `Restored ${result.succeeded} faculty member(s); ${result.failed} failed`,
       );
     },
   });

@@ -23,6 +23,9 @@ const WIDGET_TYPES = [
   "card",
 ] as const;
 
+/** Upper bound for one widget payload set — shared by the read cap, write and reorder DTOs. */
+export const DASHBOARD_WIDGETS_MAX = 500;
+
 const OPERATIONS = ["count", "sum", "avg", "percentage"] as const;
 const SUB_TEXT_TYPES = ["fixed", "dynamic"] as const;
 const TREND_TYPES = ["manual", "database"] as const;
@@ -244,7 +247,7 @@ export function normalizeDashboardWidgets(raw: unknown): DashboardWidgetDto[] {
 /** PUT /api/dashboard/widgets — bulk upsert (insert + update; no wipe). */
 export const dashboardWidgetsPutBodySchema = z.preprocess(
   (val) => normalizeDashboardWidgets(val),
-  z.array(customWidgetSchema).max(500, "Too many widgets in one request"),
+  z.array(customWidgetSchema).max(DASHBOARD_WIDGETS_MAX, "Too many widgets in one request"),
 );
 
 export type DashboardWidgetsPutBody = z.infer<typeof dashboardWidgetsPutBodySchema>;

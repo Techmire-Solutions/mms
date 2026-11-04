@@ -20,6 +20,7 @@ import {
   queryFilteredMessageLogs,
   queryMessagingMetrics,
 } from "../../db/repositories/messagingLogsQueryRepository.js";
+import { listAllMessageLogsByWorkspace } from "../../db/repositories/messagingLogsRepository.js";
 
 const TEST_SUBDOMAIN = "messaging-review-test";
 const backendRoot = resolve(dirname(fileURLToPath(import.meta.url)), "..", "..", "..");
@@ -111,6 +112,8 @@ describe("messaging logs against real PostgreSQL", () => {
     expect(inFlight.total).toBe(2);
     expect(inFlight.queuedCount).toBe(2);
     expect(inFlight.sentCount).toBe(0);
+    // Queued rows have no outcome yet: the rate must not read as 0% failure.
+    expect(inFlight.successRate).toBe(100);
 
     await saveMessageLogDeliveryOutcomes(TEST_SUBDOMAIN, [
       { ...first, status: "sent", errorMessage: null },
@@ -121,6 +124,39 @@ describe("messaging logs against real PostgreSQL", () => {
     expect(settled.queuedCount).toBe(0);
     expect(settled.sentCount).toBe(1);
     expect(settled.failedCount).toBe(1);
+    // Attempted = sent + failed (2), successful = 1.
+    expect(settled.successRate).toBe(50);
+
+    const third = claim("log-claim-3", "sms", "2026-11-04T10:02:00.000Z");
+    await claimMessageLogForDelivery(TEST_SUBDOMAIN, third);
+    await saveMessageLogDeliveryOutcomes(TEST_SUBDOMAIN, [
+      { ...third, status: "failed", errorMessage: "Gateway rejected dispatch" },
+    ]);
+    // A skipped row (recipient had no address on file) is inserted directly:
+    // delivery outcomes only model sent/failed.
+    const skipTx = await beginLongLivedTenantTransaction(TEST_SUBDOMAIN);
+    try {
+      await skipTx.tx.insert(messageLogs).values({
+        id: "log-skipped-1",
+        workspaceSubdomain: TEST_SUBDOMAIN,
+        userId: "u-admin",
+        contactId: "c-skipped",
+        channel: "sms",
+        body: "Skipped body",
+        sentAt: "2026-11-05T10:05:00.000Z",
+        status: "skipped",
+        category: "general",
+      });
+      await skipTx.commit();
+    } catch (error) {
+      await skipTx.rollback().catch(() => undefined);
+      throw error;
+    }
+    const withSkipped = await queryMessagingMetrics(TEST_SUBDOMAIN, {});
+    // Attempted = 3 settled rows (1 successful) — the skipped row is not an
+    // attempt and must not dilute the rate.
+    expect(withSkipped.skippedCount).toBe(1);
+    expect(withSkipped.successRate).toBe(33);
 
     const page = await queryFilteredMessageLogs(TEST_SUBDOMAIN, { search: "log-claim-2" });
     expect(page.logs[0]?.errorMessage).toBe("Gateway rejected dispatch");
@@ -171,5 +207,27 @@ describe("messaging logs against real PostgreSQL", () => {
     expect(archived.logs.length).toBeGreaterThan(0);
     expect(archived.logs.every((log) => log.deletedBy === "u-admin")).toBe(true);
     expect(archived.logs.every((log) => log.deletionReason === "messaging.logs.clear")).toBe(true);
+  });
+
+  it("includes archived rows in the backup snapshot with their attribution", async (ctx) => {
+    if (!dbAvailable) {
+      ctx.skip();
+      return;
+    }
+
+    // Runs after the archive test: every row is currently soft-archived.
+    const snapshot = await listAllMessageLogsByWorkspace(TEST_SUBDOMAIN, {
+      limit: 250,
+      offset: 0,
+    });
+
+    expect(snapshot.length).toBeGreaterThan(0);
+    expect(snapshot.some((log) => Boolean(log.deletedAt))).toBe(true);
+    expect(snapshot.every((log) => (log.deletedAt ? log.deletedBy === "u-admin" : true))).toBe(
+      true,
+    );
+    // Stable paging key for the streamed backup.
+    const ids = snapshot.map((log) => log.id);
+    expect(ids).toEqual([...ids].sort());
   });
 });

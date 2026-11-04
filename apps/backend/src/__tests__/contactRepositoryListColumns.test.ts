@@ -1,10 +1,13 @@
 import { describe, expect, it } from "vitest";
-import { CONTACT_LIST_COLUMNS } from "../db/repositories/contactRepositoryList.js";
+import { contactSelectColumns } from "../db/repositories/contactRepositoryColumns.js";
 
 /**
- * The Work directory projection must carry every column the row mapper hydrates
- * into a `Contact`. Missing keys silently became `undefined` because the mapper
- * casts projected rows to the full table type.
+ * The Work directory projection (and every id-based hydrate) must carry every
+ * column the row mapper hydrates into a `Contact`. Missing keys silently became
+ * `undefined` because the mapper casts projected rows to the full table type.
+ *
+ * There is one projection map (`contactSelectColumns`); this spec pins it so a
+ * future trimming of the constant cannot silently drop a hydrated column.
  */
 describe("contactRepositoryList projection", () => {
   const requiredColumns = [
@@ -34,7 +37,7 @@ describe("contactRepositoryList projection", () => {
   ];
 
   it("projects every hydrated contact column, including restore provenance", () => {
-    expect(Object.keys(CONTACT_LIST_COLUMNS).sort()).toEqual(
+    expect(Object.keys(contactSelectColumns).sort()).toEqual(
       expect.arrayContaining(requiredColumns),
     );
   });

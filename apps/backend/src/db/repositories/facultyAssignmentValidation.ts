@@ -3,6 +3,34 @@ import type { TenantTransaction } from "../tenant-context.js";
 import type { InsertFacultyAssignmentRow } from "../schema/facultyAssignmentTables.js";
 import { ConflictError, ValidationError } from "../../lib/httpErrors.js";
 
+/** Minimal shape of the appointment row needed by the archive guard. */
+export interface FacultyAssignmentDeletability {
+  isPrimary: boolean;
+  startDate: string;
+  endDate: string | null;
+  deletedAt: Date | null;
+}
+
+/**
+ * A faculty's primary appointment is the SSOT behind the Work list projection,
+ * exports, sessions/task delegation and contact role tags. Archiving the period
+ * that currently backs it would silently strip designation/department from every
+ * one of those surfaces, so the supported path is closing it with an end date.
+ */
+export function assertFacultyAssignmentDeletable(
+  row: FacultyAssignmentDeletability,
+  onDate: string,
+): void {
+  if (row.deletedAt) return;
+  const coversToday =
+    row.isPrimary && row.startDate <= onDate && (row.endDate == null || row.endDate >= onDate);
+  if (coversToday) {
+    throw new ConflictError(
+      "The primary appointment cannot be deleted; close it with an end date instead",
+    );
+  }
+}
+
 export async function lockFacultyHierarchy(
   tx: Pick<TenantTransaction, "execute">,
   tenant: string,

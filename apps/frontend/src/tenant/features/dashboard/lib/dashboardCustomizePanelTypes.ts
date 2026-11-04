@@ -15,12 +15,10 @@ export interface DashboardCustomizePanelProps {
   widgetBuilderType: CustomWidget["widgetType"];
   lowAttendanceThreshold?: number;
   urgentAttendanceThreshold?: number;
-  gridMode?: "comfortable" | "compact";
   onUpdateThreshold?: (
     key: "lowAttendanceThreshold" | "urgentAttendanceThreshold",
     value: number,
   ) => void;
-  onUpdateGridMode?: (mode: "comfortable" | "compact") => void;
   onCloseBuilder: () => void;
   onSaveWidget: (widget: CustomWidget) => void;
   onEditWidget: (widget: CustomWidget) => void;
@@ -28,4 +26,6 @@ export interface DashboardCustomizePanelProps {
   onToggleWidgetPin: (widgetId: string) => void;
   onOpenWidgetBuilder: (type: CustomWidget["widgetType"], widget?: CustomWidget | null) => void;
   onReorderWidgets?: (widgets: CustomWidget[]) => void;
+  /** Leaves customize mode from the panel footer (the banner toggle can be scrolled off). */
+  onDone: () => void;
 }

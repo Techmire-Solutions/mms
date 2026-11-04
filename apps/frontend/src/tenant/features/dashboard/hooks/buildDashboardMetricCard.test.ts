@@ -4,7 +4,12 @@ import type { DashboardMetricTrends } from "./dashboardMetricTrends";
 import type { DashboardCollectionData } from "./useDashboardData";
 import type { CustomWidget } from "@/lib/reports/pinnedWidgetTypes";
 import type { TranslationFunction } from "@/lib/contexts/TranslationContext";
-import type { AttendanceCommandMetricsSnapshot, SessionsCommandMetricsSnapshot } from "@mms/shared";
+import type {
+  AttendanceCommandMetricsSnapshot,
+  FinanceCommandMetricsSnapshot,
+  SessionsCommandMetricsSnapshot,
+  StudentsCommandMetricsSnapshot,
+} from "@mms/shared";
 import { queryClientInstance } from "@/lib/queryClient";
 import { STUDENTS_WIDGET_AGGREGATES_QUERY_KEY } from "@/tenant/hooks/collections/students";
 
@@ -23,6 +28,30 @@ describe("buildDashboardMetricCard", () => {
     studentMetricsNew: 8,
     facultyMetricsNew: 1,
     contactMetricsNew: 3,
+    // A card is only "available" when its source snapshot exists — the resolver
+    // never fabricates a zero from a missing snapshot.
+    studentMetrics: {
+      total: 120,
+      active: 115,
+      inactive: 5,
+      suspended: 0,
+      newThisPeriod: 8,
+    } as StudentsCommandMetricsSnapshot,
+    financeMetrics: {
+      totalInvoices: 17,
+      outstanding: 1800,
+      overdue: 2,
+      paid: 9,
+      partial: 1,
+      totalPayments: 10,
+      collectedTotal: 3200,
+      outstandingBalance: 1800,
+      discountTotal: 0,
+      collectedThisMonth: 900,
+      collectedPrevMonth: 800,
+      outstandingThisMonth: 1800,
+      outstandingPrevMonth: 2000,
+    } as FinanceCommandMetricsSnapshot,
     sessionsMetrics: {
       active: 4,
       totalClasses: 8,
@@ -164,5 +193,30 @@ describe("buildDashboardMetricCard", () => {
     });
 
     expect(card.trend).toBe(42);
+  });
+
+  it("marks a card unavailable when its metric snapshot is missing", () => {
+    const card = buildDashboardMetricCard({
+      widget: {
+        id: "def-card-admin-students",
+        widgetType: "card",
+        role: "admin",
+        collection: "students",
+        isPinnedToDashboard: true,
+        title: "Total Students",
+        category: "students",
+        operation: "count",
+        color: "emerald",
+        trend: 42,
+      },
+      data: { ...mockData, studentMetrics: undefined },
+      trends: mockTrends,
+      t: mockT,
+    });
+
+    expect(card.unavailable).toBe(true);
+    expect(card.value).toBe("");
+    // No trend chip on a card whose value we could not establish.
+    expect(card.trend).toBe(0);
   });
 });

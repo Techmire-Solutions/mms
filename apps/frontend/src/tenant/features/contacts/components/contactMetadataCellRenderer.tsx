@@ -8,6 +8,7 @@ import {
 } from "@mms/shared";
 import type { TranslationFunction } from "@/lib/contexts/TranslationContext";
 import { ContactTagList } from "@/tenant/features/contacts/components/ContactTagBadge";
+import { BiDiText } from "@/components/app/BiDiText";
 import { formatContactCellValue } from "@/lib/contacts/contactI18n";
 import {
   renderSocialMetadata,
@@ -100,7 +101,11 @@ export function renderContactMetadataCellValue({
       });
     case "cnic": {
       if (!contact.cnic) return renderDash();
-      return <span className="font-mono">{formatCnic(contact.cnic) || contact.cnic}</span>;
+      return (
+        <bdi dir="ltr" className="font-mono">
+          {formatCnic(contact.cnic) || contact.cnic}
+        </bdi>
+      );
     }
     case "tag":
     case "tags": {
@@ -111,9 +116,9 @@ export function renderContactMetadataCellValue({
     case "notes": {
       if (!contact.notes) return renderDash();
       return (
-        <span className="truncate max-w-50 block" title={contact.notes}>
+        <BiDiText as="span" className="truncate max-w-50 block" titleFromContent>
           {contact.notes}
-        </span>
+        </BiDiText>
       );
     }
     case "education":
@@ -158,7 +163,7 @@ export function renderContactMetadataCellValue({
       }
       const raw = contact[colId as keyof Contact];
       const formatted = formatContactCellValue(raw, t);
-      return formatted ? <span>{formatted}</span> : renderDash();
+      return formatted ? <BiDiText as="span">{formatted}</BiDiText> : renderDash();
     }
   }
 }

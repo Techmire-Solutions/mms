@@ -1,5 +1,6 @@
-import React from "react";
-import { describe, expect, it, vi } from "vitest";
+import { act } from "react";
+import { createRoot } from "react-dom/client";
+import { afterEach, describe, expect, it, vi } from "vitest";
 import { renderToStaticMarkup } from "react-dom/server";
 import type { AppTranslationKey } from "@mms/shared";
 import { ContactsListFilters } from "./ContactsListFilters";
@@ -62,7 +63,9 @@ describe("ContactsListFilters Component", () => {
     quickFilter: "all" as const,
     onQuickFilterChange: vi.fn(),
     sortField: "name",
+    sortDir: "asc" as const,
     onSort: vi.fn(),
+    onSortDirChange: vi.fn(),
     hasActiveFilters: false,
     activeFilterCount: 0,
     onClearFilters: vi.fn(),
@@ -134,5 +137,55 @@ describe("ContactsListFilters Component", () => {
       <ContactsListFilters {...defaultProps} viewMode="cards" />,
     );
     expect(cardsHtml).toContain('aria-pressed="true"');
+  });
+});
+
+describe("ContactsListFilters card-view sort chip", () => {
+  let container: HTMLDivElement | null = null;
+
+  afterEach(() => {
+    container?.remove();
+    container = null;
+  });
+
+  it("shows the active sort and flips direction on click in cards view", () => {
+    const onSortDirChange = vi.fn();
+    container = document.createElement("div");
+    document.body.appendChild(container);
+    const root = createRoot(container);
+
+    act(() => {
+      root.render(
+        <ContactsListFilters
+          search=""
+          onSearchChange={vi.fn()}
+          filterGender=""
+          onGenderChange={vi.fn()}
+          quickFilter="all"
+          onQuickFilterChange={vi.fn()}
+          sortField="name"
+          sortDir="asc"
+          onSort={vi.fn()}
+          onSortDirChange={onSortDirChange}
+          hasActiveFilters={false}
+          activeFilterCount={0}
+          onClearFilters={vi.fn()}
+          viewMode="cards"
+          onViewModeChange={vi.fn()}
+        />,
+      );
+    });
+
+    const chip = Array.from(container.querySelectorAll("button")).find((button) =>
+      button.textContent?.includes("contacts.sort.chip"),
+    );
+    expect(chip).toBeInstanceOf(HTMLButtonElement);
+
+    act(() => {
+      chip?.click();
+    });
+
+    expect(onSortDirChange).toHaveBeenCalledWith("desc");
+    act(() => root.unmount());
   });
 });

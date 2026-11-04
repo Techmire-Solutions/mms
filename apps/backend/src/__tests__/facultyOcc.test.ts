@@ -74,6 +74,7 @@ describe("Faculty optimistic concurrency", () => {
       "demo",
       expect.objectContaining({ id: "f-1" }),
       "2026-01-01T00:00:00.000Z",
+      { syncRole: false },
     );
     expect(save).not.toHaveBeenCalled();
   });

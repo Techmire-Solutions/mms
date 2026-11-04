@@ -120,6 +120,26 @@ export function ModuleImportDialog<TRow = Record<string, unknown>>({
           <div className="p-4 bg-success/10 border border-success/20 rounded-lg text-xs text-success space-y-2 text-center">
             <CheckCircle2 className="w-8 h-8 mx-auto text-success" aria-hidden="true" />
             <div className="font-semibold text-sm">{completedJob.label}</div>
+            {/* S-01: the dialog now stays open, so the outcome must be readable here:
+                imported/total from the job progress, and the failed remainder when the
+                import was partial. */}
+            {completedJob.progress ? (
+              <div className="space-y-0.5 text-muted-foreground" aria-live="polite">
+                <p>
+                  {t("module.import.importedOfTotal", {
+                    imported: completedJob.progress.current,
+                    total: completedJob.progress.total,
+                  })}
+                </p>
+                {completedJob.progress.total > completedJob.progress.current ? (
+                  <p className="text-destructive">
+                    {t("module.import.failedRows", {
+                      count: completedJob.progress.total - completedJob.progress.current,
+                    })}
+                  </p>
+                ) : null}
+              </div>
+            ) : null}
             <Button variant="outline" size="sm" onClick={resetState} className="cursor-pointer">
               {t("module.import.importAnother")}
             </Button>

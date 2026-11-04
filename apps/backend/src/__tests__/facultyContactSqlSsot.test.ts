@@ -22,14 +22,14 @@ describe("Faculty contact / employee-id SQL SSOT", () => {
   });
 
   it("contacts list faculty link filter uses typed contact_id", () => {
-    const contactListSrc = readFileSync(
-      join(here, "../db/repositories/contactRepositoryList.ts"),
+    const linkSqlSrc = readFileSync(
+      join(here, "../db/repositories/contactRepositoryLinkSql.ts"),
       "utf8",
     );
-    expect(contactListSrc).toContain("existsActiveFacultyLinkSql");
-    expect(contactListSrc).toContain("facultyEmployments.contactId");
-    expect(contactListSrc).toContain("faculty.employmentId");
-    expect(contactListSrc).not.toContain("faculty.customData}->>'contactId'");
-    expect(contactListSrc).not.toContain("faculty.contactId");
+    expect(linkSqlSrc).toContain("existsActiveFacultyLinkSql");
+    expect(linkSqlSrc).toContain("facultyEmployments.contactId");
+    expect(linkSqlSrc).toContain("faculty.employmentId");
+    expect(linkSqlSrc).not.toContain("faculty.customData}->>'contactId'");
+    expect(linkSqlSrc).not.toContain("faculty.contactId");
   });
 });

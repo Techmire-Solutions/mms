@@ -229,6 +229,9 @@ export function buildCustomFieldSchema(
   if (TEXT_LIKE_FIELD_TYPES.has(fieldDefinition.type)) {
     return z.preprocess(
       (value) => {
+        // A required field that is absent must report the localized "required"
+        // message, not zod's raw "expected string, received undefined".
+        if (value === undefined || value === null) return "";
         if (typeof value === "number" || typeof value === "bigint") return String(value);
         if (typeof value === "string") return value.trim();
         return value;
@@ -239,9 +242,12 @@ export function buildCustomFieldSchema(
     );
   }
   if (fieldDefinition.type === "multiselect" || fieldDefinition.type === "multi_select") {
-    return baseSchema.refine((value) => Array.isArray(value) && value.length > 0, {
-      message: requiredMessage,
-    });
+    return z.preprocess(
+      (value) => (value === undefined || value === null ? [] : value),
+      baseSchema.refine((value) => Array.isArray(value) && value.length > 0, {
+        message: requiredMessage,
+      }),
+    );
   }
   if (fieldDefinition.type === "number") {
     return baseSchema.refine(
@@ -255,10 +261,15 @@ export function buildCustomFieldSchema(
     });
   }
   if (fieldDefinition.type === "tags") {
-    return baseSchema.refine(
-      (value) =>
-        Array.isArray(value) ? value.length > 0 : typeof value === "string" && value.trim() !== "",
-      { message: requiredMessage },
+    return z.preprocess(
+      (value) => (value === undefined || value === null ? [] : value),
+      baseSchema.refine(
+        (value) =>
+          Array.isArray(value)
+            ? value.length > 0
+            : typeof value === "string" && value.trim() !== "",
+        { message: requiredMessage },
+      ),
     );
   }
   return baseSchema;

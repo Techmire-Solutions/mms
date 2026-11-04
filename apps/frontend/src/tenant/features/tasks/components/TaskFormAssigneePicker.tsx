@@ -37,7 +37,7 @@ export function TaskFormAssigneePicker({
         onChange={(facultyId) => {
           if (facultyId) onAddAssignee(facultyId);
         }}
-        placeholder={t("tasks.noAssignees")}
+        placeholder={t("tasks.addAssignee")}
         searchable
         options={eligibleList
           .filter((item) => !selectedAssignees.some((a) => a.facultyId === item.facultyId))

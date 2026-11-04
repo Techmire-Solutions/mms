@@ -98,12 +98,6 @@ export function idempotencyBodyMatches(
   return crypto.timingSafeEqual(stored, candidate);
 }
 
-export function replyIdempotencyBodyMismatch(reply: {
-  status: (code: number) => { send: (body: unknown) => unknown };
-}) {
-  return reply.status(409).send(MISMATCH_BODY);
-}
-
 /**
  * A claim is stale when its 24 h expiry minus the TTL puts the claim time more
  * than {@link MESSAGING_IDEMPOTENCY_STALE_MS} in the past (works for artifacts

@@ -97,6 +97,7 @@ export async function messagingSaveTemplateHandler({
 
   const requestedId = parsed.data.id?.trim();
   let templateId: string;
+  let isUpdate = false;
   if (!requestedId) {
     templateId = `custom_${randomUUID()}`;
   } else if (!requestedId.startsWith("custom_")) {
@@ -118,6 +119,7 @@ export async function messagingSaveTemplateHandler({
       };
     }
     templateId = requestedId;
+    isUpdate = true;
   }
 
   const template: MessageTemplate = {
@@ -130,7 +132,23 @@ export async function messagingSaveTemplateHandler({
   };
 
   try {
-    const saved = await messagingUseCases.saveMessageTemplate(tenantSubdomain, template);
+    // Setup mutations are audited (`mms-module-setup`); save + audit share one
+    // tenant transaction so a committed template can never lose its event.
+    const saved = await withTenant(tenantSubdomain, async () => {
+      const record = await messagingUseCases.saveMessageTemplate(tenantSubdomain, template);
+      await recordModernAuditEvent({
+        workspaceSubdomain: tenantSubdomain,
+        tableName: "message_templates",
+        recordId: record.id,
+        actionType: isUpdate ? "UPDATE" : "CREATE",
+        realUserId: String(user.id),
+        newState: {
+          summary: `${isUpdate ? "Updated" : "Created"} message template "${record.label}"`,
+          action: "messaging.templates.save",
+        },
+      });
+      return record;
+    });
     return { status: 200 as const, body: { template: saved } };
   } catch (err) {
     logHandlerFailure("saveTemplate", err);
@@ -177,18 +195,21 @@ export async function messagingDeleteTemplateHandler({
     if (!existing) {
       return { status: 400 as const, body: { type: "not_found", message: "Template not found" } };
     }
-    await messagingUseCases.removeMessageTemplate(tenantSubdomain, id);
-    // Templates hard-delete, so the audit row is the only record of the removal.
-    await recordModernAuditEvent({
-      workspaceSubdomain: tenantSubdomain,
-      tableName: "message_templates",
-      recordId: id,
-      actionType: "DELETE",
-      realUserId: String(user.id),
-      newState: {
-        summary: `Deleted message template "${existing.label}"`,
-        action: "messaging.templates.delete",
-      },
+    // Templates hard-delete, so the audit row is the only record of the removal —
+    // delete and audit commit together (`mms-data-layer` §5.4).
+    await withTenant(tenantSubdomain, async () => {
+      await messagingUseCases.removeMessageTemplate(tenantSubdomain, id);
+      await recordModernAuditEvent({
+        workspaceSubdomain: tenantSubdomain,
+        tableName: "message_templates",
+        recordId: id,
+        actionType: "DELETE",
+        realUserId: String(user.id),
+        newState: {
+          summary: `Deleted message template "${existing.label}"`,
+          action: "messaging.templates.delete",
+        },
+      });
     });
     return { status: 200 as const, body: { success: true as const } };
   } catch (err) {

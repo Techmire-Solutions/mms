@@ -25,6 +25,9 @@ export const tasksExportRoutes: FastifyPluginAsync = async (fastify) => {
     entityNoun: "task",
     exportAuditAction: "tasks.export",
     queueAuditAction: "tasks.export.queue",
+    // The queue already writes the authoritative audit row; a client-supplied
+    // count/scope row would duplicate it and trust caller input.
+    registerExportAudit: false,
   });
 
   registerModuleCsvImportRoutes(fastify, {

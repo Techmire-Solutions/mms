@@ -1,4 +1,3 @@
-import React from "react";
 import { act } from "react";
 import { createRoot, type Root } from "react-dom/client";
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
@@ -82,5 +81,51 @@ describe("useContactsDirectoryFilters selection scope", () => {
 
     act(() => filters.handleSelectAll(["c-1", "c-2"]));
     expect(filters.selected).toEqual([]);
+  });
+});
+
+describe("useContactsDirectoryFilters sort direction", () => {
+  let container: HTMLDivElement;
+  let root: Root;
+  let filters: Filters;
+
+  beforeEach(() => {
+    container = document.createElement("div");
+    document.body.appendChild(container);
+    root = createRoot(container);
+    function TestComponent() {
+      filters = useContactsDirectoryFilters({ setActiveTab: () => undefined });
+      return null;
+    }
+    act(() => {
+      root.render(
+        <MemoryRouter initialEntries={["/contacts"]}>
+          <TestComponent />
+        </MemoryRouter>,
+      );
+    });
+  });
+
+  afterEach(() => {
+    act(() => root.unmount());
+    container.remove();
+  });
+
+  it("changes direction explicitly and returns to page 1", () => {
+    act(() => filters.setListPage(3));
+    act(() => filters.handleSortDir("desc"));
+
+    expect(filters.sortDir).toBe("desc");
+    expect(filters.sortField).toBe("name");
+    expect(filters.listPage).toBe(1);
+  });
+
+  it("keeps the toggle behaviour of the table header", () => {
+    act(() => filters.handleSort("name"));
+    expect(filters.sortDir).toBe("desc");
+
+    act(() => filters.handleSort("createdAt"));
+    expect(filters.sortField).toBe("createdAt");
+    expect(filters.sortDir).toBe("asc");
   });
 });

@@ -263,7 +263,11 @@ export async function queryMessagingMetrics(
     const total = num("total");
     const sentCount = num("sent_count");
     const deliveredCount = num("delivered_count");
+    const failedCount = num("failed_count");
     const successfulTotal = sentCount + deliveredCount;
+    // Attempted = rows that reached a delivery outcome (queued/sending/skipped
+    // are not attempts and must not dilute the rate).
+    const attemptedTotal = successfulTotal + failedCount;
 
     return {
       total,
@@ -272,10 +276,13 @@ export async function queryMessagingMetrics(
       emailCount: num("email_count"),
       sentCount,
       deliveredCount,
-      failedCount: num("failed_count"),
+      failedCount,
       skippedCount: num("skipped_count"),
       queuedCount: num("queued_count"),
-      successRate: total > 0 ? Math.round((successfulTotal / total) * 100) : 100,
+      // Rate over attempted rows only: a queued/sending or skipped row has no
+      // delivery outcome yet (skipped means no address on file), so counting it
+      // as a failure reported 0% for a campaign that simply had not started.
+      successRate: attemptedTotal > 0 ? Math.round((successfulTotal / attemptedTotal) * 100) : 100,
       categoryBreakdown: {
         general: num("cat_general"),
         academic: num("cat_academic"),

@@ -17,6 +17,8 @@ import { TasksEmptyCreateAction, TasksWorkToolbar } from "./TasksWorkToolbar";
 import { useWorkDirectoryViewMode } from "@/hooks/useWorkDirectoryViewMode";
 import { useTranslation } from "@/hooks/useTranslation";
 import { useTasksColumnLayout } from "../hooks/useTasksColumnLayout";
+import { useTask } from "@/tenant/hooks/collections/tasks";
+import { useOptionalAuth } from "@/lib/contexts/AuthContext";
 import { TaskDetailDrawer } from "./TaskDetailDrawer";
 import { TasksBulkActionBar } from "./TasksBulkActionBar";
 import { TasksWorkDirectory } from "./TasksWorkDirectory";
@@ -28,6 +30,7 @@ export interface TasksWorkTabProps {
   onRetry?: () => void;
   canWrite: boolean;
   canComplete?: boolean;
+  statusPending?: boolean;
   canDelete: boolean;
   viewingDeleted?: boolean;
   selectedIds: string[];
@@ -39,7 +42,7 @@ export interface TasksWorkTabProps {
   onEdit: (task: TaskRecord) => void;
   onDelete: (id: string) => void;
   onRestore?: (id: string) => void;
-  onUpdateStatus: (id: string, status: TaskStatus) => void;
+  onUpdateStatus: (task: TaskRecord, status: TaskStatus) => void;
   total: number;
   pageIndex: number;
   pageSize: number;
@@ -54,6 +57,7 @@ export function TasksWorkTab({
   onRetry,
   canWrite,
   canComplete,
+  statusPending = false,
   canDelete,
   viewingDeleted = false,
   selectedIds,
@@ -88,11 +92,12 @@ export function TasksWorkTab({
     setDueFrom,
     dueTo,
     setDueTo,
-    filteredTasks,
     activeChips,
     hasActiveFilters,
     handleClearFilters,
-  } = useTasksWorkTabFilters(tasks);
+  } = useTasksWorkTabFilters();
+  const auth = useOptionalAuth();
+  const currentUserId = auth?.user?.id ? String(auth.user.id) : undefined;
 
   useTasksKeyboardShortcuts({
     selectedCount: selectedIds.length,
@@ -105,7 +110,7 @@ export function TasksWorkTab({
   });
 
   useTaskServerFiltersSync(
-    { quickFilter, search, statusFilter, priorityFilter, dueFrom, dueTo },
+    { quickFilter, search, statusFilter, priorityFilter, dueFrom, dueTo, currentUserId },
     onServerFiltersChange,
   );
 
@@ -123,7 +128,16 @@ export function TasksWorkTab({
     }),
     onClearSelection,
   );
-  const [viewingTask, setViewingTask] = useState<TaskRecord | null>(null);
+  // Keep the drawer pointed at an id, not a snapshot: the detail query and the
+  // current list row both refresh after a status change or restore, so the
+  // drawer cannot show a stale badge or archived banner.
+  const [viewingTaskId, setViewingTaskId] = useState<string | null>(null);
+  const { data: fetchedTask } = useTask(viewingTaskId ?? "", {
+    enabled: Boolean(viewingTaskId),
+  });
+  const viewingTask = fetchedTask ?? tasks.find((task) => task.id === viewingTaskId) ?? null;
+  const parentTaskId = viewingTask?.parentTaskId ?? "";
+  const { data: parentTask } = useTask(parentTaskId, { enabled: Boolean(parentTaskId) });
   const { viewMode, setViewMode } = useWorkDirectoryViewMode();
   const {
     columnRegistry,
@@ -157,7 +171,7 @@ export function TasksWorkTab({
         onQuickFilterChange={setQuickFilter}
         searchInput={searchInput}
         onSearchChange={setSearchInput}
-        shownCount={filteredTasks.length}
+        shownCount={tasks.length}
         statusFilter={statusFilter}
         onStatusFilterChange={setStatusFilter}
         priorityFilter={priorityFilter}
@@ -197,6 +211,7 @@ export function TasksWorkTab({
         selectedCount={selectedIds.length}
         viewingDeleted={viewingDeleted}
         canWrite={canWrite && !viewingDeleted}
+        canComplete={canComplete}
         canDelete={canDelete}
         onClearSelection={onClearSelection}
         onRequestBulkDelete={handleBulkDelete}
@@ -207,7 +222,7 @@ export function TasksWorkTab({
 
       <TasksWorkDirectory
         viewMode={viewMode}
-        tasks={filteredTasks}
+        tasks={tasks}
         selectedIds={selectedIds}
         viewingDeleted={viewingDeleted}
         canWrite={canWrite}
@@ -222,11 +237,14 @@ export function TasksWorkTab({
         onColumnResize={setColumnWidth}
         onToggleSelected={onToggleSelected}
         onToggleSelectAll={onToggleSelectAll}
-        onView={setViewingTask}
+        onView={(task) => setViewingTaskId(task.id)}
         onEdit={onEdit}
         onDelete={onDelete}
         onRestore={onRestore}
         onUpdateStatus={onUpdateStatus}
+        statusPending={statusPending}
+        hasActiveFilters={hasActiveFilters}
+        onClearFilters={handleClearFilters}
         emptyAction={emptyAction}
       />
 
@@ -239,12 +257,14 @@ export function TasksWorkTab({
 
       <TaskDetailDrawer
         task={viewingTask}
+        parentTaskTitle={parentTask?.title}
         canWrite={canWrite && !viewingDeleted}
         canComplete={canComplete}
+        pending={statusPending}
         canDelete={canDelete}
-        onClose={() => setViewingTask(null)}
+        onClose={() => setViewingTaskId(null)}
         onEdit={(task) => {
-          setViewingTask(null);
+          setViewingTaskId(null);
           onEdit(task);
         }}
         onRestore={onRestore}

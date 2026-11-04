@@ -78,4 +78,17 @@ describe("MessagingSetupTier Component", () => {
     expect(html).toContain("messaging.setup.readOnly");
     expect(html).toContain("read-only");
   });
+
+  it("still lets view-only roles browse presets and preferences", () => {
+    const html = renderToStaticMarkup(
+      <MessagingSetupTier canWrite={false} canEditSetup={false} onDeleteRequest={vi.fn()} />,
+    );
+
+    // The notice explains the restriction; the content must still render —
+    // hiding the template list made "you can view setup" untrue.
+    expect(html).toContain("messaging.setup.readOnly");
+    expect(html).toContain("Template List");
+    expect(html).toContain("SubTabBar");
+    expect(html).not.toContain("messaging.createPreset");
+  });
 });

@@ -1,4 +1,4 @@
-import { type z } from "zod";
+import { z } from "zod";
 import { translateAppParams, type AppTranslationKey } from "../i18n/appTranslations.js";
 import { isContactCustomCollectionTab } from "./contactEnabledTabs.js";
 import type { FieldDefinition } from "./contactTypes.js";
@@ -37,6 +37,14 @@ export interface ValidationError {
   index?: number;
 }
 
+/** Wire shape of a `ValidationError` — SSOT for every API response carrying field issues. */
+export const contactValidationErrorSchema = z.object({
+  fieldId: z.string(),
+  tabId: z.string(),
+  message: z.string(),
+  index: z.number().optional(),
+});
+
 /** Maps Zod issues to contact form fields and tabs. */
 export function formatZodIssues(
   error: z.ZodError,
@@ -62,6 +70,19 @@ export function formatZodIssues(
         message: `${prefix}: ${issue.message}`,
         index: pathIndex,
       };
+    }
+
+    // Tab-level issue (e.g. a required list tab absent or empty): map it to that
+    // tab instead of falling back to "basic", which pointed the form at the wrong
+    // tab. Only do this for a key that is actually a tab — a scalar field path
+    // (e.g. `name`) is not one, and `isContactCustomCollectionTab` treats every
+    // non-seed key as a custom tab.
+    if (
+      typeof pathRoot === "string" &&
+      (Object.hasOwn(fields, pathRoot) || Object.hasOwn(LIST_TAB_TO_TAB_ID, pathRoot))
+    ) {
+      const tabKey = listTabId ?? pathRoot;
+      return { fieldId: tabKey, tabId: tabKey, message: issue.message };
     }
 
     const fieldId = String(pathRoot ?? "");

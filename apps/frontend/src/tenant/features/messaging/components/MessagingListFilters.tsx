@@ -8,6 +8,7 @@ import type { WorkDirectoryViewMode } from "@/hooks/useWorkDirectoryViewMode";
 import { useTranslation } from "@/hooks/useTranslation";
 import { cn } from "@/lib/utils";
 import { type ModuleColumnCustomizerLabels } from "@/components/app/ModuleColumnCustomizer";
+import { formatShownMessagesLabel } from "../lib/messagingCounts";
 
 export const MESSAGING_WORK_SEARCH_INPUT_ID = "messaging-work-search";
 
@@ -37,6 +38,8 @@ export interface MessagingListFiltersProps {
   onResetColumnLayout?: () => void;
   columnCustomizerLabels?: ModuleColumnCustomizerLabels;
   shownCount?: number;
+  /** Total matching rows — makes the toolbar count read "N of M", not a page-only number. */
+  shownTotal?: number;
   filterChips?: React.ReactNode;
   /** Archived (soft-deleted) logs view — only rendered for `messaging.clearLogs`. */
   showArchived?: boolean;
@@ -70,6 +73,7 @@ export function MessagingListFilters({
   onResetColumnLayout,
   columnCustomizerLabels,
   shownCount,
+  shownTotal,
   showArchived = false,
   onShowArchivedChange,
 }: MessagingListFiltersProps): JSX.Element {
@@ -101,7 +105,9 @@ export function MessagingListFilters({
   return (
     <WorkTaskToolbar
       shownCountLabel={
-        shownCount != null ? t("messaging.shownCount", { count: shownCount }) : undefined
+        shownCount != null
+          ? formatShownMessagesLabel(shownCount, shownTotal ?? shownCount, t)
+          : undefined
       }
       regionLabel={t("messaging.title")}
       search={search}

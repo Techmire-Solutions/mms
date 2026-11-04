@@ -9,7 +9,6 @@ import {
   type Message,
   type MessagingMetricsDto,
   messageTemplateListSchema,
-  messageLogListSchema,
 } from "@mms/shared";
 import type {
   MessageLogsFilterQuery,
@@ -22,7 +21,6 @@ import {
 } from "./messagingRecipientUseCases.js";
 
 const templateListSchema = messageTemplateListSchema;
-const logListSchema = messageLogListSchema;
 
 /**
  * Messaging use-cases — composition root binding a {@link MessagingRepository}
@@ -38,15 +36,6 @@ export function createMessagingUseCases(repo: MessagingRepository = messagingRep
     },
     templateListSchema,
     "message_templates",
-  );
-
-  const logBulkService = defineTenantBulkCollectionService<Message>(
-    {
-      listByWorkspace: repo.listMessageLogsByWorkspace,
-      replaceForWorkspace: repo.replaceMessageLogsForWorkspace,
-    },
-    logListSchema,
-    "message_logs",
   );
 
   return {
@@ -106,7 +95,11 @@ export function createMessagingUseCases(repo: MessagingRepository = messagingRep
       await broadcastCollection("message_templates");
     },
 
-    loadMessageLogs: logBulkService.load,
+    loadMessageLogs: async (): Promise<Message[]> => {
+      const tenant = getRequestTenant();
+      if (!tenant) return [];
+      return repo.listMessageLogsByWorkspace(tenant);
+    },
     loadMessageLogsByIds: async (ids: string[], includeDeleted = false): Promise<Message[]> => {
       const tenant = getRequestTenant();
       if (!tenant) return [];
@@ -120,7 +113,6 @@ export function createMessagingUseCases(repo: MessagingRepository = messagingRep
       await repo.saveMessageLog(tenant, record);
       await broadcastCollection("message_logs");
     },
-    replaceMessageLogs: logBulkService.replace,
 
     loadFilteredMessageLogs: async (
       workspaceSubdomain?: string,
@@ -138,12 +130,16 @@ export function createMessagingUseCases(repo: MessagingRepository = messagingRep
       return repo.queryFilteredMessageLogs(workspaceSubdomain, query ?? {});
     },
 
-    /** Insert-only dispatch audit — never upsert/overwrite existing log rows. */
-    recordMessageLogs: async (workspaceSubdomain: string, logs: Message[]): Promise<Message[]> => {
-      if (!logs || logs.length === 0) return [];
-      await repo.insertMessageLogs(workspaceSubdomain, logs);
+    /**
+     * Insert-only dispatch audit — never upsert/overwrite existing log rows.
+     * Returns the number of rows actually persisted (`ON CONFLICT DO NOTHING`
+     * can skip an id that already exists).
+     */
+    recordMessageLogs: async (workspaceSubdomain: string, logs: Message[]): Promise<number> => {
+      if (!logs || logs.length === 0) return 0;
+      const inserted = await repo.insertMessageLogs(workspaceSubdomain, logs);
       await broadcastCollection("message_logs");
-      return logs;
+      return inserted;
     },
 
     /** Soft-deletes all active message logs for the workspace (sets deletedAt + actor). */

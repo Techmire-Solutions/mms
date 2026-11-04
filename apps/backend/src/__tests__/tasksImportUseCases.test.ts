@@ -36,11 +36,10 @@ const eligible = [
   },
 ];
 
-function context(viewerRole = "principal") {
+function context() {
   return {
     tenant: "demo",
     userId: "actor-1",
-    viewerRole,
     updateProgress: vi.fn().mockResolvedValue(undefined),
   };
 }
@@ -88,7 +87,7 @@ describe("runTasksImportJob", () => {
     mockTenantUserHasPermission.mockResolvedValue(false);
     const result = await runTasksImportJob(
       [{ title: "Call parents", assignee: "Zaid Khan" }],
-      context("teacher"),
+      context(),
     );
 
     expect(result).toMatchObject({ imported: 0, failed: 1 });

@@ -19,7 +19,6 @@ import { listTasks } from "../tasks/use-cases/tasksUseCases.js";
 export interface TasksExportOptions {
   columns?: unknown;
   filename?: string;
-  viewerRole: string;
   allowDeleted?: boolean;
 }
 
@@ -57,6 +56,21 @@ function readString(value: unknown): string | undefined {
   return typeof value === "string" && value.trim() ? value.trim() : undefined;
 }
 
+function readBool(value: unknown): boolean {
+  return value === true || value === "true";
+}
+
+function readIds(value: unknown): string | undefined {
+  const list = Array.isArray(value)
+    ? value.map((entry) => String(entry).trim()).filter(Boolean)
+    : (readString(value) ?? "").split(",");
+  const ids = list
+    .map((entry) => entry.trim())
+    .filter(Boolean)
+    .slice(0, 500);
+  return ids.length > 0 ? ids.join(",") : undefined;
+}
+
 function toListQuery(query: Record<string, unknown>, allowDeleted: boolean): TaskListQuery {
   return {
     status: readString(query.status) as TaskStatus | undefined,
@@ -67,8 +81,12 @@ function toListQuery(query: Record<string, unknown>, allowDeleted: boolean): Tas
     search: readString(query.search),
     dueFrom: readString(query.dueFrom),
     dueTo: readString(query.dueTo),
-    overdue: false,
-    includeDeleted: allowDeleted && query.includeDeleted === true,
+    statuses: readString(query.statuses),
+    priorities: readString(query.priorities),
+    overdue: readBool(query.overdue),
+    dueOn: readString(query.dueOn),
+    ids: readIds(query.ids) ?? readIds(query.includeIds),
+    includeDeleted: allowDeleted && readBool(query.includeDeleted),
     limit: PAGE_SIZE,
     offset: 0,
   };

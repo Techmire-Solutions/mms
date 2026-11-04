@@ -8,6 +8,8 @@ import { DatePicker } from "@/components/app/DatePicker";
 import { Switch } from "@/components/ui/switch";
 import { useTranslation } from "@/hooks/useTranslation";
 import { notify } from "@/lib/notify";
+import { apiErrorMessage } from "@/lib/apiErrorMessage";
+import { isConflictError } from "@/lib/apiContractError";
 import type {
   FacultyLeaveDetails,
   FacultyLeaveCategory,
@@ -101,8 +103,13 @@ function FacultyLeaveModalContent({
       await onSave({ leaveDetails: nextLeaveDetails });
       notify.success(t("faculty.leave.saved"));
       onClose();
-    } catch {
-      notify.error(t("faculty.toast.saveFailed"));
+    } catch (error) {
+      if (isConflictError(error)) {
+        const description = apiErrorMessage(error, "");
+        notify.error(t("faculty.toast.conflict"), description ? { description } : undefined);
+      } else {
+        notify.error(t("faculty.toast.saveFailed"));
+      }
     } finally {
       setSaving(false);
     }
@@ -125,16 +132,22 @@ function FacultyLeaveModalContent({
       <div className="space-y-4 py-2 text-start">
         <div className="flex items-center justify-between p-3.5 rounded-lg border border-border bg-muted/40">
           <div>
-            <p className="font-semibold text-sm text-foreground">{t("faculty.leave.status")}</p>
+            <p id="leave-status-label" className="font-semibold text-sm text-foreground">
+              {t("faculty.leave.status")}
+            </p>
             <p className="text-xs text-muted-foreground mt-0.5">
               {isOnLeave ? t("faculty.leave.onLeave") : t("faculty.leave.active")}
             </p>
           </div>
-          <Switch checked={isOnLeave} onCheckedChange={setIsOnLeave} />
+          <Switch
+            checked={isOnLeave}
+            onCheckedChange={setIsOnLeave}
+            aria-labelledby="leave-status-label"
+          />
         </div>
 
         {isOnLeave && (
-          <div className="space-y-4 pt-1 animate-in fade-in duration-150">
+          <div className="space-y-4 pt-1 motion-safe:animate-in motion-safe:fade-in motion-safe:duration-150">
             <Field label={t("faculty.leave.category")} id="leave-category">
               <FormSelect
                 id="leave-category"
@@ -179,7 +192,7 @@ function FacultyLeaveModalContent({
                 rows={2}
                 value={reason}
                 onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) => setReason(e.target.value)}
-                placeholder="Optional leave remarks or substitute handover notes..."
+                placeholder={t("faculty.leave.reasonPlaceholder")}
               />
             </Field>
           </div>

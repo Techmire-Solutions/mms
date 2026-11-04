@@ -28,7 +28,9 @@ export function DetailNotesBlock({
       <DetailSectionTitle>{title}</DetailSectionTitle>
       <div className={cn("flex gap-2 p-3.5 border-border/60 text-xs", WORK_SURFACE_INNER)}>
         <Icon className="size-3.5 text-primary shrink-0 mt-0.5" aria-hidden />
-        <p className="min-w-0 whitespace-pre-wrap leading-relaxed text-muted-foreground">{notes}</p>
+        <p dir="auto" className="min-w-0 whitespace-pre-wrap leading-relaxed text-muted-foreground">
+          {notes}
+        </p>
       </div>
     </div>
   );

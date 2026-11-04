@@ -83,7 +83,6 @@ vi.mock("../messaging/use-cases/messagingUseCases.js", () => ({
     matchMessagingRecipients: (...args: unknown[]) => mockMatchMessagingRecipients(...args),
     resolveMessagingRecipients: (...args: unknown[]) => mockResolveMessagingRecipients(...args),
     replaceMessageTemplates: vi.fn(),
-    replaceMessageLogs: vi.fn(),
   },
 }));
 
@@ -167,7 +166,7 @@ describe("messaging REST routes", () => {
     mockRemoveMessageTemplate.mockReset().mockResolvedValue(undefined);
     mockRecordMessageLogs
       .mockReset()
-      .mockImplementation(async (_tenant: string, logs: unknown[]) => logs);
+      .mockImplementation(async (_tenant: string, logs: unknown[]) => logs.length);
     mockComputeMessagingMetrics.mockReset().mockResolvedValue({
       total: 0,
       smsCount: 0,
@@ -687,6 +686,31 @@ describe("messaging REST routes", () => {
     expect(template.label).toBe("Fee Reminder");
     expect(template.category).toBe("financial");
     expect(res.json().template.id).toBe(template.id);
+    await app.close();
+  });
+
+  it("POST /api/messaging/templates audits the saved template", async () => {
+    const app = await buildApp();
+    const res = await app.inject({
+      method: "POST",
+      url: "/api/messaging/templates",
+      headers: {
+        host: "demo.localhost",
+        authorization: `Bearer ${signTenantToken(app, { role: "admin", name: "admin" })}`,
+      },
+      payload: { label: "Audit Me", body: "Hello {name}", category: "general", channel: "sms" },
+    });
+
+    expect(res.statusCode).toBe(200);
+    const savedId = (res.json() as { template: { id: string } }).template.id;
+    // Setup mutations are audited; save + audit share the handler transaction.
+    expect(mockRecordAudit).toHaveBeenCalledWith(
+      expect.objectContaining({
+        action: "messaging.templates.save",
+        entityId: savedId,
+        userId: "u-admin",
+      }),
+    );
     await app.close();
   });
 

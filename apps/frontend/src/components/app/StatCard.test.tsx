@@ -72,6 +72,20 @@ describe("StatCard Component", () => {
     expect(html).not.toContain("ms-0.5");
   });
 
+  it("lets a compact label wrap to two lines instead of ellipsizing", () => {
+    // 2026-11-04 review (UX-02): compact KPI labels were `truncate`, so long
+    // localized labels were unreadable at 1024/375. They now wrap and keep the
+    // full text as a tooltip/title fallback.
+    const html = renderToStaticMarkup(
+      <StatCard label="New this period" value="12" variant="compact" />,
+    );
+
+    expect(html).toContain("line-clamp-2");
+    expect(html).toContain("break-words");
+    expect(html).not.toMatch(/tracking-wide[^"]*truncate/);
+    expect(html).toContain('title="New this period"');
+  });
+
   it("supports interactive button mode with aria-pressed", () => {
     const html = renderToStaticMarkup(
       <StatCard label="Interactive Card" value="100" onClick={() => {}} isActive={true} />,

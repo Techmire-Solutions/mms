@@ -1,5 +1,6 @@
 import React, { lazy, Suspense, useMemo, useState } from "react";
 import { STUDENTS_MODULE_MANIFEST } from "@mms/shared";
+import { ConfirmAlertDialog } from "@/components/app/ConfirmAlertDialog";
 import { ErrorBoundary } from "@/components/app/ErrorBoundary";
 import { ModuleTierMotion } from "@/components/app/ModuleTierMotion";
 import { SetupReadOnlyMessage } from "@/components/app/SetupReadOnlyMessage";
@@ -88,6 +89,22 @@ export const StudentsSetupTier = function StudentsSetupTier({
             </Suspense>
           )}
         </div>
+
+        {/* The sub-tab hook refuses to switch away from a dirty tab and waits for the
+            consumer to confirm; without this dialog the click was a no-op
+            (2026-11-04 review, M4). */}
+        <ConfirmAlertDialog
+          open={subTabs.discardConfirmOpen}
+          onOpenChange={(open) => {
+            if (!open) subTabs.clearPendingSubTab();
+          }}
+          title={t("settings.unsavedChanges")}
+          description={t("students.setup.discardUnsavedPreferencesConfirm")}
+          confirmLabel={t("common.yes")}
+          cancelLabel={t("common.cancel")}
+          destructive
+          onConfirm={subTabs.handleConfirmDiscard}
+        />
       </ErrorBoundary>
     </ModuleTierMotion>
   );

@@ -76,6 +76,12 @@ export async function listTasks(
     if (statuses.length > 0) conditions.push(inArray(tasks.status, statuses));
     const priorities = splitEnum<TaskPriority>(query.priorities, TASK_PRIORITIES);
     if (priorities.length > 0) conditions.push(inArray(tasks.priority, priorities));
+    const ids = (query.ids ?? "")
+      .split(",")
+      .map((value) => value.trim())
+      .filter(Boolean)
+      .slice(0, 500);
+    if (ids.length > 0) conditions.push(inArray(tasks.id, ids));
     if (query.overdue) {
       conditions.push(
         and(lt(tasks.dueAt, new Date()), notInArray(tasks.status, ["completed", "cancelled"]))!,

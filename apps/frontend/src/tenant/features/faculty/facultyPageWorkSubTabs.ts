@@ -74,12 +74,26 @@ export function migrateFacultyPageTab(
   return FACULTY_PAGE_TAB_DEFAULT;
 }
 
+/** First tab the caller may show: the default tier when visible, else the first visible id. */
+function firstVisibleFacultyTab(visibleTabIds: readonly string[]): string {
+  if (visibleTabIds.includes(FACULTY_PAGE_TAB_DEFAULT)) return FACULTY_PAGE_TAB_DEFAULT;
+  return visibleTabIds[0] ?? "";
+}
+
+/**
+ * Resolves the persisted tier against the tabs the user may see.
+ *
+ * A persisted tier that is no longer visible (revoked Reports/Setup permission)
+ * must never blank the module body, so it repairs to the first visible tab —
+ * both the tab strip and the body read this value.
+ */
 export function resolveFacultyPageTab(
   value: string,
   visibleTabIds: readonly string[],
   legacyWorkSubTab: string = FACULTY_PAGE_TAB_DEFAULT,
 ): string {
-  if (value === "") return "";
+  const fallback = firstVisibleFacultyTab(visibleTabIds);
+  if (value === "") return fallback;
   const migrated = migrateFacultyPageTab(value, legacyWorkSubTab);
-  return visibleTabIds.includes(migrated) ? migrated : "";
+  return visibleTabIds.includes(migrated) ? migrated : fallback;
 }

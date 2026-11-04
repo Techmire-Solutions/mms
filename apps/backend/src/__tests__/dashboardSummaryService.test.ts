@@ -80,7 +80,7 @@ describe("loadDashboardSummary", () => {
   });
 
   it("returns one complete tenant snapshot", async () => {
-    const summary = await loadDashboardSummary("2026-08-31", "admin");
+    const summary = await loadDashboardSummary("2026-08-31");
 
     expect(summary.students).toEqual({ total: 1441 });
     expect(summary.faculty).toEqual({ total: 60 });
@@ -98,8 +98,46 @@ describe("loadDashboardSummary", () => {
   it("rejects the snapshot if any metric fails instead of returning partial zeros", async () => {
     mocks.contacts.mockRejectedValueOnce(new Error("contacts query failed"));
 
-    await expect(loadDashboardSummary("2026-08-31", "admin")).rejects.toThrow(
-      "contacts query failed",
-    );
+    await expect(loadDashboardSummary("2026-08-31")).rejects.toThrow("contacts query failed");
+  });
+
+  it("serves a repeat load of the same tenant+date from cache", async () => {
+    await loadDashboardSummary("2026-08-31");
+    expect(mocks.students).toHaveBeenCalledTimes(1);
+
+    const second = await loadDashboardSummary("2026-08-31");
+    expect(second.students).toEqual({ total: 1441 });
+    expect(mocks.students).toHaveBeenCalledTimes(1);
+    expect(mocks.attendance).toHaveBeenCalledTimes(1);
+  });
+
+  it("recomputes for a different calendar date (separate cache entry)", async () => {
+    await loadDashboardSummary("2026-08-31");
+    await loadDashboardSummary("2026-09-01");
+
+    expect(mocks.students).toHaveBeenCalledTimes(2);
+    expect(mocks.attendance).toHaveBeenLastCalledWith("darulquran", {
+      selectedDate: "2026-09-01",
+    });
+  });
+
+  it("coalesces concurrent cold loads into a single aggregation", async () => {
+    const [first, second] = await Promise.all([
+      loadDashboardSummary("2026-08-31"),
+      loadDashboardSummary("2026-08-31"),
+    ]);
+
+    expect(first).toEqual(second);
+    expect(mocks.students).toHaveBeenCalledTimes(1);
+    expect(mocks.tasks).toHaveBeenCalledTimes(1);
+  });
+
+  it("does not cache a failed aggregation", async () => {
+    mocks.contacts.mockRejectedValueOnce(new Error("contacts query failed"));
+    await expect(loadDashboardSummary("2026-08-31")).rejects.toThrow("contacts query failed");
+
+    const retried = await loadDashboardSummary("2026-08-31");
+    expect(retried.contacts).toEqual({ total: 1543 });
+    expect(mocks.contacts).toHaveBeenCalledTimes(2);
   });
 });

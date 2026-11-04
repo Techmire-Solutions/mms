@@ -19,7 +19,6 @@ type TaskImportRow = TasksImportBody["rows"][number];
 export interface TaskImportJobContext {
   tenant: string;
   userId: string;
-  viewerRole: string;
   updateProgress: (current: number, total: number) => Promise<void>;
 }
 

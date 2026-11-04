@@ -74,7 +74,7 @@ export async function restoreContactById(
 
     // 2. Persist with 23505 race condition protection
     try {
-      await repo.save(tenant, next);
+      next.updatedAt = await repo.save(tenant, next);
     } catch (err: unknown) {
       if (
         isUniqueViolation(err) ||

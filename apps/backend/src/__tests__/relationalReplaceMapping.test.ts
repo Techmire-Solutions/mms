@@ -84,6 +84,14 @@ describe("RELATIONAL_REPLACE_MAPPING backup coverage", () => {
     expect(RELATIONAL_REPLACE_MAPPING.audit_log).toBeUndefined();
   });
 
+  it("snapshots archived message logs, not just the active view", () => {
+    // A restore hard-replaces message_logs, so an active-only snapshot would
+    // destroy the archived window the Reports tier can still restore.
+    expect(RELATIONAL_REPLACE_MAPPING.message_logs?.snapshotFnName).toBe(
+      "listAllMessageLogsByWorkspace",
+    );
+  });
+
   it("restores contacts before users to preserve contact_id foreign keys", () => {
     expect(
       sortCollectionNamesForRestore(["users", "students", "contacts", "message_logs"]),

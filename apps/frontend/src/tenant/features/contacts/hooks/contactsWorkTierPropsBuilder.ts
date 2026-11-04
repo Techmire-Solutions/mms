@@ -20,7 +20,11 @@ export interface BuildContactsWorkTierPropsParams {
   directory: Directory;
   overlay: Pick<Overlay, "viewMode" | "setViewMode">;
   messaging: Pick<Messaging, "canWriteMessaging" | "handleWhatsApp" | "handleSms" | "handleEmail">;
-  actions: Pick<Actions, "requestBulkDelete" | "requestBulkRestore" | "handleBulkTag">;
+  actions: Pick<
+    Actions,
+    "requestBulkDelete" | "requestBulkRestore" | "handleBulkTag" | "handleCreateContact"
+  >;
+  onOpenImport?: () => void;
   selectedTargets: SelectedTargets;
   viewingDeleted: boolean;
   bulkActions: readonly string[];
@@ -57,6 +61,7 @@ export function buildContactsWorkTierProps({
   handleShowDeletedChange,
   handleClearSelection,
   handleRetryWork,
+  onOpenImport,
 }: BuildContactsWorkTierPropsParams): ContactsWorkTierProps {
   const {
     search,
@@ -68,6 +73,7 @@ export function buildContactsWorkTierProps({
     sortField,
     sortDir,
     handleSort,
+    handleSortDir,
     hasActiveFilters,
     activeFilterCount,
     clearFilters,
@@ -92,6 +98,8 @@ export function buildContactsWorkTierProps({
     sortField,
     sortDir,
     onSort: handleSort,
+    onSortDirChange: handleSortDir,
+    isSearching: isWorkFetching,
     hasActiveFilters,
     activeFilterCount,
     onClearFilters: clearFilters,
@@ -116,6 +124,8 @@ export function buildContactsWorkTierProps({
     onRequestBulkDelete: actions.requestBulkDelete,
     onRequestBulkRestore: actions.requestBulkRestore,
     onBulkTag: actions.handleBulkTag,
+    onCreate: actions.handleCreateContact,
+    onImport: onOpenImport,
     isWorkError,
     isWorkLoading,
     isWorkFetching,

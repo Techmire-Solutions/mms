@@ -38,6 +38,8 @@ export function TasksPageView({
   canEditSetup,
   canViewSetup,
   canComplete,
+  isSaving,
+  statusPending,
   viewingDeleted,
   handleToggleTrash,
   formOpen,
@@ -70,7 +72,7 @@ export function TasksPageView({
 }: TasksPageViewProps): React.JSX.Element {
   return (
     <ModulePageShell
-      seoTitle={`MMS - ${t("nav.tasks")}`}
+      seoTitle={t("page.tasks.seoTitle")}
       seoDescription={t("page.tasks.subtitle")}
       headerIcon={CheckSquare}
       headerTitle={t("nav.tasks")}
@@ -87,20 +89,22 @@ export function TasksPageView({
         />
       }
       metricsStrip={
-        <div className="flex items-center gap-4 text-xs font-medium text-muted-foreground">
-          <span>
-            {t("tasks.metrics.total")}:{" "}
-            <strong className="text-foreground">{metrics?.total ?? tasks.length}</strong>
-          </span>
-          <span>
-            {t("tasks.metrics.inProgress")}:{" "}
-            <strong className="text-foreground">{metrics?.inProgress ?? 0}</strong>
-          </span>
-          <span>
-            {t("tasks.metrics.completed")}:{" "}
-            <strong className="text-foreground">{metrics?.completed ?? 0}</strong>
-          </span>
-        </div>
+        viewingDeleted || activeTab !== "work" ? undefined : (
+          <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-xs font-medium text-muted-foreground">
+            <span>
+              {t("tasks.metrics.total")}:{" "}
+              <strong className="text-foreground">{metrics ? metrics.total : "—"}</strong>
+            </span>
+            <span>
+              {t("tasks.metrics.inProgress")}:{" "}
+              <strong className="text-foreground">{metrics ? metrics.inProgress : "—"}</strong>
+            </span>
+            <span>
+              {t("tasks.metrics.completed")}:{" "}
+              <strong className="text-foreground">{metrics ? metrics.completed : "—"}</strong>
+            </span>
+          </div>
+        )
       }
     >
       <ResponsiveAccordionTabs
@@ -123,6 +127,7 @@ export function TasksPageView({
                 onRetry={handleRetry}
                 canWrite={canWrite && !viewingDeleted}
                 canComplete={canComplete && !viewingDeleted}
+                statusPending={statusPending}
                 canDelete={canDelete}
                 viewingDeleted={viewingDeleted}
                 selectedIds={selectedIds}
@@ -163,6 +168,7 @@ export function TasksPageView({
         onClose={handleCloseForm}
         initialData={editingTask}
         onSave={handleSave}
+        saving={isSaving}
       />
 
       <TasksCsvImportDialog

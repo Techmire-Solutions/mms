@@ -1,4 +1,3 @@
-import React from "react";
 import { act } from "react";
 import { createRoot, type Root } from "react-dom/client";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
@@ -113,6 +112,34 @@ describe("useGrMigration", () => {
     await vi.waitFor(() => expect(mocks.notifyError).toHaveBeenCalled());
     expect(localStorage.getItem(MIGRATION_KEY)).toBeNull();
     expect(mocks.invalidate).not.toHaveBeenCalled();
+  });
+
+  it("keeps backfilling chunk by chunk until the server reports no more work", async () => {
+    // 2026-11-04 review (M5): the route caps one call at 100 rows and returns
+    // `hasMore`; ignoring it backfilled exactly one chunk and gated forever.
+    mocks.migrate
+      .mockResolvedValueOnce({ status: 200, body: { success: true, updated: 100, hasMore: true } })
+      .mockResolvedValueOnce({ status: 200, body: { success: true, updated: 3, hasMore: false } });
+
+    renderHook("work", true);
+
+    await vi.waitFor(() => expect(mocks.migrate).toHaveBeenCalledTimes(2));
+    await vi.waitFor(() => expect(localStorage.getItem(MIGRATION_KEY)).toBe("1"));
+    expect(mocks.invalidate).toHaveBeenCalledTimes(1);
+  });
+
+  it("leaves the gate open when the chunk cap is reached with work remaining", async () => {
+    mocks.migrate.mockResolvedValue({
+      status: 200,
+      body: { success: true, updated: 100, hasMore: true },
+    });
+
+    renderHook("work", true);
+
+    await vi.waitFor(() => expect(mocks.migrate).toHaveBeenCalledTimes(20), {
+      timeout: 5_000,
+    });
+    expect(localStorage.getItem(MIGRATION_KEY)).toBeNull();
   });
 
   it("does not re-run after a completed backfill on the next mount", async () => {

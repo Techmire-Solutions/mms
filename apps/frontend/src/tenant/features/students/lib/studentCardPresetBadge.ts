@@ -8,7 +8,7 @@ export { getVerticalBadgeBackElements };
  * Returns the vertical badge ID card preset (CR80 portrait lanyard format).
  */
 export function getVerticalBadgeTemplate(
-  branding?: BrandingInfo,
+  _branding?: BrandingInfo,
   madrasaName = "Madrasa Management System",
 ): StudentCardTemplate {
   return {

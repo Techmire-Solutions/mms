@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import type { TaskRecord } from "@mms/shared";
-import { assigneesChanged, buildTaskFormPayload } from "./taskFormPayload";
+import { assigneesChanged, buildTaskFormPayload, validateTaskDates } from "./taskFormPayload";
 
 const existing: TaskRecord = {
   id: "task-1",
@@ -28,6 +28,23 @@ const baseInput = {
   parentTaskId: null,
   initialData: existing,
 };
+
+describe("validateTaskDates", () => {
+  it("accepts a due time later on the start day", () => {
+    expect(validateTaskDates("2026-11-04", new Date(2026, 10, 4, 10).toISOString())).toBeNull();
+  });
+
+  it("rejects a due time before the start day", () => {
+    expect(validateTaskDates("2026-11-04", new Date(2026, 10, 3, 12).toISOString())).toBe(
+      "tasks.dueBeforeStart",
+    );
+  });
+
+  it("ignores missing dates", () => {
+    expect(validateTaskDates(null, "2026-11-04T10:00:00.000Z")).toBeNull();
+    expect(validateTaskDates("2026-11-04", null)).toBeNull();
+  });
+});
 
 describe("buildTaskFormPayload", () => {
   it("omits assignees when an update leaves the set unchanged", () => {

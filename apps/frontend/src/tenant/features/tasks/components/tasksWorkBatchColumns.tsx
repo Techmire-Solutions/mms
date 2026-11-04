@@ -15,6 +15,7 @@ export function buildTasksWorkBatchColumns(
   canWrite: boolean,
   onChangeStatus: (task: TaskRecord, status: TaskStatus) => void,
   onView: (task: TaskRecord) => void,
+  statusPending?: boolean,
   options?: {
     isColumnVisible?: (key: string) => boolean;
     getColumnWidth?: (key: string) => number | undefined;
@@ -42,7 +43,7 @@ export function buildTasksWorkBatchColumns(
         task.description ? (
           <div className="text-xs text-muted-foreground line-clamp-2">{task.description}</div>
         ) : (
-          <span className="text-muted-foreground/60 text-xs">—</span>
+          <span className="text-muted-foreground text-xs">—</span>
         ),
     },
     {
@@ -58,7 +59,12 @@ export function buildTasksWorkBatchColumns(
       width: widthOf?.("status") ?? 140,
       noWrap: true,
       render: (task) => (
-        <TaskStatusMenu task={task} canChange={canWrite} onChangeStatus={onChangeStatus} />
+        <TaskStatusMenu
+          task={task}
+          canChange={canWrite}
+          pending={statusPending}
+          onChangeStatus={onChangeStatus}
+        />
       ),
     },
     {
@@ -75,7 +81,7 @@ export function buildTasksWorkBatchColumns(
             </span>
           </div>
         ) : (
-          <span className="text-muted-foreground/60 text-xs">{t("tasks.noAssignees")}</span>
+          <span className="text-muted-foreground text-xs">{t("tasks.noAssignees")}</span>
         ),
     },
     {
@@ -84,7 +90,7 @@ export function buildTasksWorkBatchColumns(
       width: widthOf?.("dueAt") ?? 120,
       noWrap: true,
       render: (task) => {
-        if (!task.dueAt) return <span className="text-muted-foreground/60 text-xs">—</span>;
+        if (!task.dueAt) return <span className="text-muted-foreground text-xs">—</span>;
         const isOverdue =
           task.status !== "completed" &&
           task.status !== "cancelled" &&

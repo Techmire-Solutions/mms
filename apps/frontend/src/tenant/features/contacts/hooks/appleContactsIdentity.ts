@@ -5,6 +5,7 @@ import {
   normalizeUniqueContactFieldValue,
   type Contact,
   type ContactIdentityMatchBody,
+  type ContactIdentityMatchResult,
 } from "@mms/shared";
 
 /** Build identity-match candidates from an Apple VCF preview list. */
@@ -72,4 +73,105 @@ export function filterAppleImportFreshContacts(
     }
     return true;
   });
+}
+
+/** Server schema caps each identity list at 2,000 values; chunk well below it. */
+export const APPLE_IDENTITY_MATCH_MAX_PER_LIST = 2_000;
+export const APPLE_IDENTITY_MATCH_CHUNK_SIZE = 500;
+
+function chunkValues(values: readonly string[], size: number): string[][] {
+  const chunks: string[][] = [];
+  for (let index = 0; index < values.length; index += size) {
+    chunks.push(values.slice(index, index + size));
+  }
+  return chunks;
+}
+
+/**
+ * Runs the identity-match check in chunks.
+ *
+ * An import may carry up to 5,000 contacts, each contributing phone/email/name
+ * keys — far beyond the server's 2,000-values-per-list schema cap. One oversized
+ * body would fail validation and abort the whole import, so every list is sent in
+ * bounded batches and the existence sets are unioned.
+ */
+export async function matchAppleImportIdentity(
+  candidates: ContactIdentityMatchBody,
+  match: (body: ContactIdentityMatchBody) => Promise<ContactIdentityMatchResult>,
+): Promise<ContactIdentityMatchResult> {
+  if (
+    candidates.phones.length === 0 &&
+    candidates.emails.length === 0 &&
+    candidates.names.length === 0
+  ) {
+    return { phones: [], emails: [], names: [] };
+  }
+
+  const withinServerCap =
+    candidates.phones.length <= APPLE_IDENTITY_MATCH_MAX_PER_LIST &&
+    candidates.emails.length <= APPLE_IDENTITY_MATCH_MAX_PER_LIST &&
+    candidates.names.length <= APPLE_IDENTITY_MATCH_MAX_PER_LIST;
+  if (withinServerCap) {
+    const result = await match(candidates);
+    return {
+      phones: [...new Set(result.phones ?? [])],
+      emails: [...new Set(result.emails ?? [])],
+      names: [...new Set(result.names ?? [])],
+    };
+  }
+
+  const phones = new Set<string>();
+  const emails = new Set<string>();
+  const names = new Set<string>();
+
+  const lists: Array<{
+    key: "phones" | "emails" | "names";
+    values: string[];
+    target: Set<string>;
+  }> = [
+    { key: "phones", values: candidates.phones, target: phones },
+    { key: "emails", values: candidates.emails, target: emails },
+    { key: "names", values: candidates.names, target: names },
+  ];
+
+  for (const { key, values, target } of lists) {
+    for (const chunk of chunkValues(values, APPLE_IDENTITY_MATCH_CHUNK_SIZE)) {
+      const result = await match({ phones: [], emails: [], names: [], [key]: chunk });
+      for (const value of result[key]) target.add(value);
+    }
+  }
+
+  return { phones: [...phones], emails: [...emails], names: [...names] };
+}
+
+/**
+ * Removes duplicate rows inside one imported file.
+ *
+ * Server uniqueness catches most collisions, but a vCard exported twice would
+ * otherwise surface as a partial import; dedupe the preview by normalized phone,
+ * email, or (for rows with neither) display name before matching against the DB.
+ */
+export function dedupeAppleImportPreview(previewList: readonly Contact[]): Contact[] {
+  const seenPhones = new Set<string>();
+  const seenEmails = new Set<string>();
+  const seenNames = new Set<string>();
+  const unique: Contact[] = [];
+
+  for (const contact of previewList) {
+    const phones = getPhoneNumbers(contact);
+    const emails = getEmails(contact).map((email) => email.toLowerCase().trim());
+    const name = getDisplayName(contact).toLowerCase().trim();
+    const duplicate =
+      phones.some((phone) => seenPhones.has(phone)) ||
+      emails.some((email) => seenEmails.has(email)) ||
+      (phones.length === 0 && emails.length === 0 && Boolean(name) && seenNames.has(name));
+    if (duplicate) continue;
+
+    phones.forEach((phone) => seenPhones.add(phone));
+    emails.forEach((email) => seenEmails.add(email));
+    if (phones.length === 0 && emails.length === 0 && name) seenNames.add(name);
+    unique.push(contact);
+  }
+
+  return unique;
 }

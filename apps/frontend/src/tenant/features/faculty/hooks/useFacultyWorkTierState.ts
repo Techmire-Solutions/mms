@@ -13,7 +13,6 @@ import type { useFacultyColumnLayout } from "@/tenant/features/faculty/hooks/use
 import {
   resolveFacultyExportColumns,
   useFacultyExportActions,
-  type UseFacultyExportActionsOptions,
 } from "@/tenant/features/faculty/hooks/useFacultyExportActions";
 
 export interface UseFacultyWorkTierStateInput {
@@ -34,7 +33,6 @@ export interface UseFacultyWorkTierStateInput {
   canExport: boolean;
   hasActiveFilters: boolean;
   selectedIds: string[];
-  logExportAudit: UseFacultyExportActionsOptions["logExportAudit"];
   t: TranslationFunction;
 }
 
@@ -56,7 +54,6 @@ export function useFacultyWorkTierState({
   canExport,
   hasActiveFilters,
   selectedIds,
-  logExportAudit,
   t,
 }: UseFacultyWorkTierStateInput) {
   const exportColumns = useMemo(
@@ -80,7 +77,6 @@ export function useFacultyWorkTierState({
     viewingDeleted: showDeleted,
     hasActiveFilters,
     selectedIds,
-    logExportAudit,
   });
 
   const useServerWork = effectiveTab === "faculties";

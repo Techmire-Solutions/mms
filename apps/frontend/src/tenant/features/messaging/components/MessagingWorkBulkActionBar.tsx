@@ -1,4 +1,4 @@
-import React, { type JSX } from "react";
+import { type JSX } from "react";
 import { ChevronDown, MessageSquare, RotateCcw } from "lucide-react";
 import type { AppTranslationKey } from "@mms/shared";
 import { Button } from "@/components/ui/button";
@@ -17,6 +17,10 @@ export interface MessagingWorkBulkActionBarProps {
   selectedCount: number;
   canWrite: boolean;
   canClearLogs: boolean;
+  /** Archived view: the same bar restores instead of archiving. */
+  viewingDeleted?: boolean;
+  canRestoreLogs?: boolean;
+  onBulkRestoreRequest?: () => void;
   onClearSelection: () => void;
   onBulkExport?: () => void;
   onBulkResend?: (targetChannel?: "whatsapp" | "sms" | "email") => void;
@@ -27,6 +31,9 @@ export const MessagingWorkBulkActionBar = function MessagingWorkBulkActionBar({
   selectedCount,
   canWrite,
   canClearLogs,
+  viewingDeleted = false,
+  canRestoreLogs = false,
+  onBulkRestoreRequest,
   onClearSelection,
   onBulkExport,
   onBulkResend,
@@ -37,21 +44,30 @@ export const MessagingWorkBulkActionBar = function MessagingWorkBulkActionBar({
   return (
     <BulkSelectionBar
       selectedCount={selectedCount}
-      viewingDeleted={false}
+      viewingDeleted={viewingDeleted}
       canWrite={canWrite}
-      canDelete={canClearLogs && Boolean(onClearLogsRequest)}
-      canExport={Boolean(onBulkExport)}
+      canDelete={
+        viewingDeleted
+          ? canRestoreLogs && Boolean(onBulkRestoreRequest)
+          : canClearLogs && Boolean(onClearLogsRequest)
+      }
+      // Archived logs are exported through the active-view query, so the export
+      // action stays out of the archived bar instead of exporting the wrong set.
+      canExport={!viewingDeleted && Boolean(onBulkExport)}
       leadingIcon={MessageSquare}
       i18nNamespace="messaging"
       bulkActions={["export", "delete"]}
       onClearSelection={onClearSelection}
       onRequestBulkDelete={() => onClearLogsRequest?.()}
-      onRequestBulkRestore={() => undefined}
+      onRequestBulkRestore={() => onBulkRestoreRequest?.()}
       deleteLabel={t("messaging.clearLogs")}
+      restoreLabel={t("messaging.restoreLog")}
       exportAction={
-        canWrite && onBulkExport
+        !viewingDeleted && canWrite && onBulkExport
           ? {
-              label: `${t("messaging.exportLogs")} (${selectedCount})`,
+              // The export runs the active filters, not the selection — a
+              // "(N selected)" label would promise something different.
+              label: t("messaging.exportLogsFiltered"),
               onClick: onBulkExport,
             }
           : undefined

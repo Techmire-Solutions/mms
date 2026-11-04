@@ -86,7 +86,7 @@ export default function MessagingReport({
             >
               <MessageSquareOff className="h-8 w-8 text-muted-foreground" />
               <p className="text-sm font-semibold text-foreground">{t("messaging.noLogs")}</p>
-              <p className="text-xs text-muted-foreground">{t("messaging.selectRecipientsDesc")}</p>
+              <p className="text-xs text-muted-foreground">{t("messaging.reportEmptyDesc")}</p>
             </div>
           ) : (
             <Suspense

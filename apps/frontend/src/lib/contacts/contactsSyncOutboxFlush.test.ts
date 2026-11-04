@@ -76,7 +76,7 @@ describe("flushContactsOutbox", () => {
 
     const result = await flushContactsOutbox(handlers);
 
-    expect(result).toEqual({ synced: 3, failed: 0, conflicts: 0 });
+    expect(result).toEqual({ synced: 3, failed: 0, conflicts: 0, retryable: 0 });
     expect(handlers.upsert).toHaveBeenCalledWith(contactFixture(1));
     expect(handlers.update).toHaveBeenCalledWith("2", contactFixture(2));
     expect(handlers.delete).toHaveBeenCalledWith("3", "Duplicate");
@@ -102,7 +102,7 @@ describe("flushContactsOutbox", () => {
     expect(getContactsOutbox()).toEqual([]);
   });
 
-  it("records a conflict and increments failed/conflicts when a handler rejects", async () => {
+  it("keeps the queue intact when the server is unreachable (no false conflicts)", async () => {
     writeJson(currentContactsSyncKeys().outbox, [
       {
         id: "e1",
@@ -119,18 +119,81 @@ describe("flushContactsOutbox", () => {
       },
     ]);
     const handlers = {
-      upsert: vi.fn().mockRejectedValue(new Error("offline")),
+      upsert: vi.fn().mockRejectedValue(new TypeError("fetch failed")),
       update: vi.fn().mockResolvedValue(undefined),
       delete: vi.fn().mockResolvedValue(undefined),
     };
 
     const result = await flushContactsOutbox(handlers);
 
-    expect(result).toEqual({ synced: 1, failed: 1, conflicts: 1 });
+    expect(result).toEqual({ synced: 0, failed: 0, conflicts: 0, retryable: 1 });
+    // The rest of the queue is untouched: it would fail identically right now.
+    expect(getContactsOutbox().map((entry) => entry.id)).toEqual(["e1", "e2"]);
+    expect(getContactsSyncConflicts()).toEqual([]);
+    expect(handlers.update).not.toHaveBeenCalled();
+  });
+
+  it("records a conflict for a non-retryable client error", async () => {
+    writeJson(currentContactsSyncKeys().outbox, [
+      {
+        id: "e1",
+        kind: "upsert",
+        contact: contactFixture(1),
+        createdAt: "2026-01-01T00:00:00.000Z",
+      },
+    ]);
+    const handlers = {
+      upsert: vi.fn().mockRejectedValue({ status: 409, body: { type: "conflict" } }),
+      update: vi.fn().mockResolvedValue(undefined),
+      delete: vi.fn().mockResolvedValue(undefined),
+    };
+
+    const result = await flushContactsOutbox(handlers);
+
+    expect(result).toEqual({ synced: 0, failed: 1, conflicts: 1, retryable: 0 });
     expect(getContactsOutbox()).toEqual([]);
-    const conflicts = getContactsSyncConflicts();
-    expect(conflicts).toHaveLength(1);
-    expect(conflicts[0]).toMatchObject({ id: "e1", kind: "upsert" });
+    expect(getContactsSyncConflicts()).toHaveLength(1);
+  });
+
+  it("treats a delete replay that 404s as already archived, not a conflict", async () => {
+    writeJson(currentContactsSyncKeys().outbox, [
+      { id: "e1", kind: "delete", contactId: "9", createdAt: "2026-01-01T00:00:00.000Z" },
+    ]);
+    const handlers = {
+      upsert: vi.fn().mockResolvedValue(undefined),
+      update: vi.fn().mockResolvedValue(undefined),
+      delete: vi.fn().mockRejectedValue({ status: 404, body: { type: "not_found" } }),
+    };
+
+    const result = await flushContactsOutbox(handlers);
+
+    expect(result).toEqual({ synced: 1, failed: 0, conflicts: 0, retryable: 0 });
+    expect(getContactsOutbox()).toEqual([]);
+    expect(getContactsSyncConflicts()).toEqual([]);
+  });
+
+  it("stops replaying an entry that already exhausted its retry budget", async () => {
+    writeJson(currentContactsSyncKeys().outbox, [
+      {
+        id: "e1",
+        kind: "upsert",
+        contact: contactFixture(1),
+        attempts: 3,
+        createdAt: "2026-01-01T00:00:00.000Z",
+      },
+    ]);
+    const handlers = {
+      upsert: vi.fn().mockResolvedValue(undefined),
+      update: vi.fn().mockResolvedValue(undefined),
+      delete: vi.fn().mockResolvedValue(undefined),
+    };
+
+    const result = await flushContactsOutbox(handlers);
+
+    expect(handlers.upsert).not.toHaveBeenCalled();
+    expect(result).toEqual({ synced: 0, failed: 1, conflicts: 1, retryable: 0 });
+    expect(getContactsOutbox()).toEqual([]);
+    expect(getContactsSyncConflicts()).toHaveLength(1);
   });
 
   it("skips entries already removed from the queue before flush", async () => {
@@ -157,7 +220,7 @@ describe("flushContactsOutbox", () => {
 
     expect(handlers.upsert).not.toHaveBeenCalled();
     expect(handlers.delete).toHaveBeenCalledWith("2", undefined);
-    expect(result).toEqual({ synced: 1, failed: 0, conflicts: 0 });
+    expect(result).toEqual({ synced: 1, failed: 0, conflicts: 0, retryable: 0 });
   });
 
   it("replays the queue once when several mounted hooks flush concurrently", async () => {
@@ -183,9 +246,9 @@ describe("flushContactsOutbox", () => {
 
     expect(handlers.upsert).toHaveBeenCalledTimes(1);
     expect(results).toEqual([
-      { synced: 1, failed: 0, conflicts: 0 },
-      { synced: 1, failed: 0, conflicts: 0 },
-      { synced: 1, failed: 0, conflicts: 0 },
+      { synced: 1, failed: 0, conflicts: 0, retryable: 0 },
+      { synced: 1, failed: 0, conflicts: 0, retryable: 0, joined: true },
+      { synced: 1, failed: 0, conflicts: 0, retryable: 0, joined: true },
     ]);
   });
 });
@@ -213,5 +276,26 @@ describe("contacts outbox storage scoping", () => {
     const keys = currentContactsSyncKeys();
     expect(keys.outbox).toContain("contacts_sync_outbox");
     expect(keys.outbox).not.toContain("_u:");
+  });
+});
+
+describe("isRetryableContactsOutboxError", () => {
+  it("treats transport failures and 5xx as retryable", async () => {
+    const { isRetryableContactsOutboxError } =
+      await import("@/lib/contacts/contactsSyncOutboxFlush");
+
+    expect(isRetryableContactsOutboxError(new TypeError("Failed to fetch"))).toBe(true);
+    expect(isRetryableContactsOutboxError({ status: 500 })).toBe(true);
+    expect(isRetryableContactsOutboxError({ status: 429 })).toBe(true);
+    expect(isRetryableContactsOutboxError({ status: 408 })).toBe(true);
+  });
+
+  it("treats validation/conflict responses as terminal", async () => {
+    const { isRetryableContactsOutboxError } =
+      await import("@/lib/contacts/contactsSyncOutboxFlush");
+
+    expect(isRetryableContactsOutboxError({ status: 400 })).toBe(false);
+    expect(isRetryableContactsOutboxError({ status: 409 })).toBe(false);
+    expect(isRetryableContactsOutboxError({ status: 404 })).toBe(false);
   });
 });

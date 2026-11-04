@@ -1,4 +1,4 @@
-import React, { act } from "react";
+import { act } from "react";
 import { createRoot, type Root } from "react-dom/client";
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 import type { BackgroundJobRecord, Contact } from "@mms/shared";
@@ -205,7 +205,7 @@ describe("ContactsCsvImportDialog", () => {
 
     await clickImport("Import 2 Records");
 
-    expect(notify.error).toHaveBeenCalledWith(expect.stringContaining("Import failed"));
+    expect(notify.error).toHaveBeenCalledWith("Import failed", { description: "network down" });
     expect(notify.success).not.toHaveBeenCalled();
     expect(onClose).not.toHaveBeenCalled();
     expect(document.body.textContent).toContain("two_contacts.csv");

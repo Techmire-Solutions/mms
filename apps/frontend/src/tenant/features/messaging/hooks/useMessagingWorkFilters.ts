@@ -60,7 +60,9 @@ export function useMessagingWorkFilters({
   controlledOnChannelChange,
   canViewArchived = false,
 }: UseMessagingWorkFiltersProps) {
-  const initial = parseMessagingWorkFilters(searchParams);
+  // Parse the initial URL exactly once per mount: the parse only seeds state,
+  // so doing it every render was wasted work in the hottest directory hook.
+  const [initial] = useState(() => parseMessagingWorkFilters(searchParams));
 
   const [search, setSearch] = useState(initial.search);
   const [logsPage, setLogsPage] = useState(1);

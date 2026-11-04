@@ -6,7 +6,7 @@ import {
   existsActiveStudentLinkSql,
   existsActiveFacultyLinkSql,
   existsActiveStaffLinkSql,
-} from "./contactRepositoryList.js";
+} from "./contactRepositoryLinkSql.js";
 import { isSyedSql, buildSearchSql } from "./contactRepositoryListSql.js";
 
 export const CONTACT_SORT_FIELDS = new Set([

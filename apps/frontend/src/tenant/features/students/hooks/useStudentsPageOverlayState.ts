@@ -9,9 +9,11 @@ type MessageChannel = "whatsapp" | "sms" | "email";
 export type StudentsDeleteTarget = { id: string; name?: string };
 
 /** Page-owned Work overlays: composer, soft-delete confirms, profile drawer target. */
-export function useStudentsPageOverlayState() {
+export function useStudentsPageOverlayState(options?: { statuses?: readonly string[] }) {
   const { t } = useTranslation();
-  const statusBadgeConfig = studentStatusBadgeConfig(t);
+  // The bulk-status menu reads its options from this config, so it must use the
+  // tenant's configured statuses (S-02), not the global defaults.
+  const statusBadgeConfig = studentStatusBadgeConfig(t, options?.statuses);
   const { messagingTarget, openComposer, closeComposer, canWriteMessaging } =
     useMessageComposerState();
   const [confirmBulkDeleteOpen, setConfirmBulkDeleteOpen] = useState(false);

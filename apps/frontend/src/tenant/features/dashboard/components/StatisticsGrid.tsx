@@ -39,17 +39,20 @@ export function StatisticsGrid({
 }: StatisticsGridProps): React.JSX.Element {
   const { t } = useTranslation();
   const reducedMotion = useReducedMotion();
-  const customCardSet = (() => new Set(customCardIds))();
+  const customCardSet = React.useMemo(() => new Set(customCardIds), [customCardIds]);
 
   if (isLoading) {
     return (
       <section
         aria-label={t("dashboard.statsSectionLabel")}
+        aria-busy="true"
         className="grid grid-cols-2 sm:grid-cols-3 xl:grid-cols-4 gap-3 md:gap-4 font-sans"
       >
+        <h2 className="sr-only">{t("dashboard.statsSectionLabel")}</h2>
         {Array.from({ length: 4 }).map((_, idx) => (
           <div
             key={`stat-skeleton-${idx}`}
+            aria-hidden="true"
             className="rounded-2xl border border-border/40 bg-card/20 p-5 min-h-32 flex flex-col justify-between animate-pulse select-none"
           >
             <div className="flex items-center justify-between">
@@ -91,6 +94,7 @@ export function StatisticsGrid({
       aria-label={t("dashboard.statsSectionLabel")}
       className="grid grid-cols-2 sm:grid-cols-3 xl:grid-cols-4 gap-3 md:gap-4 font-sans"
     >
+      <h2 className="sr-only">{t("dashboard.statsSectionLabel")}</h2>
       {statItems.map((statItem, statIndex) => {
         const { IconComponent: Icon, colorTheme, accent } = resolveCardVisuals(statItem);
         const hasPositiveTrend = statItem.trend >= 0;
@@ -112,14 +116,26 @@ export function StatisticsGrid({
             className="p-4.5 md:p-5 px-5.5 flex flex-col justify-between"
           >
             <StatCardBody
+              titleHeadingLevel={3}
               colorTheme={colorTheme}
               icon={<Icon className={`w-4.5 h-4.5 ${colorTheme.text}`} />}
-              value={statItem.value}
+              value={
+                statItem.unavailable ? (
+                  <>
+                    <span aria-hidden="true" className="text-muted-foreground">
+                      —
+                    </span>
+                    <span className="sr-only">{t("common.notAvailable")}</span>
+                  </>
+                ) : (
+                  statItem.value
+                )
+              }
               title={statItem.title}
               footer={statItem.sub}
-              trend={isEditMode ? undefined : statItem.trend}
+              trend={isEditMode || statItem.unavailable ? undefined : statItem.trend}
               trendAriaLabel={
-                statItem.trend !== 0 && !isEditMode
+                statItem.trend !== 0 && !isEditMode && !statItem.unavailable
                   ? t("dashboard.trendAria", {
                       direction: hasPositiveTrend
                         ? t("dashboard.trendUp")

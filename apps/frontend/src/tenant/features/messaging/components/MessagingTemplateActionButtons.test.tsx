@@ -1,4 +1,4 @@
-import React, { act } from "react";
+import { act } from "react";
 import { createRoot, type Root } from "react-dom/client";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { MessagingTemplateActionButtons } from "./MessagingTemplateActionButtons";
@@ -108,6 +108,27 @@ describe("MessagingTemplateActionButtons", () => {
     });
 
     expect(onDuplicate).toHaveBeenCalledWith(systemTemplate);
+  });
+
+  it("does not tag a custom template as system for read-only viewers", async () => {
+    await act(async () => {
+      root.render(
+        <MessagingTemplateActionButtons
+          template={customTemplate}
+          canWrite={false}
+          onCopy={vi.fn()}
+          onDuplicate={vi.fn()}
+          onEdit={vi.fn()}
+          onDeleteRequest={vi.fn()}
+        />,
+      );
+    });
+
+    // Only non-custom templates carry the SYSTEM tag; a read-only role simply
+    // gets no edit/delete actions for a custom one.
+    expect(container.textContent).not.toContain("messaging.tagSystem");
+    expect(container.querySelector("button[aria-label='common.edit']")).toBeNull();
+    expect(container.querySelector("button[aria-label='common.delete']")).toBeNull();
   });
 
   it("renders edit and delete buttons for custom templates when canWrite is true", async () => {

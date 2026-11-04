@@ -12,6 +12,7 @@ export {
 export {
   logRowToRecord,
   listMessageLogsByWorkspace,
+  listAllMessageLogsByWorkspace,
   findMessageLogsByIds,
   saveMessageLog,
   replaceMessageLogsForWorkspace,

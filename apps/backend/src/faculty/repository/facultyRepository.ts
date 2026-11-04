@@ -34,7 +34,7 @@ export interface FacultyRepository {
   save(
     tenant: string,
     member: Faculty | FacultyRecord,
-    options?: { createOnly?: boolean },
+    options?: { createOnly?: boolean; syncRole?: boolean },
   ): Promise<void>;
   /**
    * Compare-and-set save keyed on the client's `updatedAt` token
@@ -44,9 +44,19 @@ export interface FacultyRepository {
     tenant: string,
     member: Faculty | FacultyRecord,
     expectedUpdatedAt: string,
+    options?: { syncRole?: boolean },
   ): Promise<boolean>;
   guardAssignmentDependents(tenant: string, ids: string[]): Promise<void>;
-  bulkSave(tenant: string, members: Array<Faculty | FacultyRecord>): Promise<void>;
+  /**
+   * Takes the faculty-hierarchy advisory lock on the caller's transaction so a
+   * multi-row domain batch is serialized against appointment writes.
+   */
+  lockHierarchy?(tx: Pick<TenantTransaction, "execute">, tenant: string): Promise<void>;
+  bulkSave(
+    tenant: string,
+    members: Array<Faculty | FacultyRecord>,
+    options?: { syncRole?: boolean },
+  ): Promise<void>;
   aggregateCommandMetrics(
     tenant: string,
     periodDays?: number,

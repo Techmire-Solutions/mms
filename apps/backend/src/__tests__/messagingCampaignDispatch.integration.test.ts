@@ -340,6 +340,47 @@ describe("Messaging Campaign Dispatch Routes", () => {
       );
       await app.close();
     });
+
+    it("keys direct-dispatch claims in the queued job namespace", async () => {
+      const {
+        findAuthArtifactByLookupKey,
+        tryClaimAuthArtifactByLookupKey,
+        updateAuthArtifactPayload,
+      } = await import("../services/auth/authArtifactService.js");
+      vi.mocked(findAuthArtifactByLookupKey).mockReset().mockResolvedValue(null);
+      vi.mocked(tryClaimAuthArtifactByLookupKey)
+        .mockReset()
+        .mockResolvedValue({ claimed: true, id: "art-ns-email" });
+      vi.mocked(updateAuthArtifactPayload).mockReset().mockResolvedValue(undefined);
+      const { buildBackgroundJobId } = await import("../lib/backgroundJobIds.js");
+      const { buildMessageLogClaimId } = await import("../lib/messageLogClaimId.js");
+      const { app, headers } = await authHeaders();
+
+      const res = await app.inject({
+        method: "POST",
+        url: "/api/messaging/dispatch/email",
+        headers,
+        payload: {
+          recipients: [{ id: "c-1", email: "alice@example.com", name: "Alice" }],
+          subject: "Notice",
+          message: "Classes start Monday",
+          idempotencyKey: "email-mode-switch-01",
+        },
+      });
+
+      expect(res.statusCode).toBe(200);
+      const [, claim] = mockClaimMessageLogForDelivery.mock.calls[0] as [string, { id: string }];
+      // Same namespace the queued runner claims with (`ctx.jobId`), so retrying
+      // the same submission through the other path cannot re-message recipients.
+      expect(claim.id).toBe(
+        buildMessageLogClaimId(
+          buildBackgroundJobId("demo", "u-admin", "email-mode-switch-01"),
+          "c-1",
+          "email",
+        ),
+      );
+      await app.close();
+    });
   });
 
   describe("POST /api/messaging/dispatch/whatsapp", () => {
@@ -475,6 +516,44 @@ describe("Messaging Campaign Dispatch Routes", () => {
       expect(mockSendTenantWhatsApp).toHaveBeenCalledTimes(2);
       expect(mockClaimMessageLogForDelivery).toHaveBeenCalledTimes(2);
       expect(tryClaimAuthArtifactByLookupKey).toHaveBeenCalledTimes(1);
+      await app.close();
+    });
+
+    it("keys direct-dispatch claims in the queued job namespace", async () => {
+      const {
+        findAuthArtifactByLookupKey,
+        tryClaimAuthArtifactByLookupKey,
+        updateAuthArtifactPayload,
+      } = await import("../services/auth/authArtifactService.js");
+      vi.mocked(findAuthArtifactByLookupKey).mockReset().mockResolvedValue(null);
+      vi.mocked(tryClaimAuthArtifactByLookupKey)
+        .mockReset()
+        .mockResolvedValue({ claimed: true, id: "art-ns-wa" });
+      vi.mocked(updateAuthArtifactPayload).mockReset().mockResolvedValue(undefined);
+      const { buildBackgroundJobId } = await import("../lib/backgroundJobIds.js");
+      const { buildMessageLogClaimId } = await import("../lib/messageLogClaimId.js");
+      const { app, headers } = await authHeaders();
+
+      const res = await app.inject({
+        method: "POST",
+        url: "/api/messaging/dispatch/whatsapp",
+        headers,
+        payload: {
+          recipients: [{ id: "c-1", phone: "+1234567890", name: "Alice" }],
+          message: "Salaam {name}",
+          idempotencyKey: "whatsapp-claim-namespace-01",
+        },
+      });
+
+      expect(res.statusCode).toBe(200);
+      const [, claim] = mockClaimMessageLogForDelivery.mock.calls[0] as [string, { id: string }];
+      expect(claim.id).toBe(
+        buildMessageLogClaimId(
+          buildBackgroundJobId("demo", "u-admin", "whatsapp-claim-namespace-01"),
+          "c-1",
+          "whatsapp",
+        ),
+      );
       await app.close();
     });
   });

@@ -135,7 +135,7 @@ export function FacultyIjazahSection({
           })}
 
           {isAdding && (
-            <div className="p-4 rounded-lg border border-primary/30 bg-primary/5 space-y-3 animate-in fade-in duration-150">
+            <div className="p-4 rounded-lg border border-primary/30 bg-primary/5 space-y-3 motion-safe:animate-in motion-safe:fade-in motion-safe:duration-150">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                 <Field label={t("faculty.ijazah.name")} id="ijazah-title" required>
                   <Input
@@ -162,7 +162,7 @@ export function FacultyIjazahSection({
                     onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
                       setGrantingAuthority(e.target.value)
                     }
-                    placeholder="e.g. Sheikh Abu al-Hasan..."
+                    placeholder={t("faculty.ijazah.authorityPlaceholder")}
                   />
                 </Field>
 
@@ -171,7 +171,7 @@ export function FacultyIjazahSection({
                     id="ijazah-year"
                     value={year}
                     onChange={(e: React.ChangeEvent<HTMLInputElement>) => setYear(e.target.value)}
-                    placeholder="e.g. 1442 / 2021"
+                    placeholder={t("faculty.ijazah.yearPlaceholder")}
                   />
                 </Field>
               </div>

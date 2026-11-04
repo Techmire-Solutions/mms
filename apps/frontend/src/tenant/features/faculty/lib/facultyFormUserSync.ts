@@ -1,5 +1,7 @@
 import { notify } from "@/lib/notify";
 import { apiContract } from "@/lib/api";
+import { apiErrorMessage } from "@/lib/apiErrorMessage";
+import { isConflictError } from "@/lib/apiContractError";
 import { DEFAULT_FACULTY_USER_ROLE, type FacultyMember } from "@mms/shared";
 import type { TranslationFunction } from "@/lib/contexts/TranslationContext";
 import { getApiValidationMessage } from "@/lib/apiValidationMessage";
@@ -7,6 +9,17 @@ import { reportClientError } from "@/lib/clientErrorReporting";
 import type { FacultyUserAccountDraft } from "@/tenant/features/faculty/components/FacultyUserAccountSection";
 
 export function notifyFacultySaveFailed(t: TranslationFunction, err: unknown, scope: string): void {
+  // A stale OCC token is a conflict, not a generic failure: name it, keep the
+  // server's explanation, and leave the form open so the user can reload.
+  if (isConflictError(err)) {
+    const conflictMessage = getApiValidationMessage(err) ?? apiErrorMessage(err, "");
+    notify.error(
+      t("faculty.toast.conflict"),
+      conflictMessage ? { description: conflictMessage } : undefined,
+    );
+    reportClientError(err, { scope });
+    return;
+  }
   const validationMessage = getApiValidationMessage(err);
   notify.error(
     t("faculty.toast.saveFailed"),
@@ -113,22 +126,31 @@ export async function confirmPendingFacultySave(
   if (!input.pendingSaveData) return;
   input.setSaving(true);
   try {
-    const userOk = await syncUserAccount({
-      userAccountDraft: input.userAccountDraft,
-      linkedUser: input.linkedUser,
-      contactId: input.pendingSaveData.contactId,
-      payload: input.pendingSaveData as Record<string, unknown>,
-      t: input.t,
-      setErrors: input.setErrors || (() => {}),
-      onUserInvalidate: input.onUserInvalidate,
-    });
+    // Same ordering as the main flow: record first, account second.
+    await input.onSave(input.pendingSaveData as FacultyMember);
+
+    let userOk = true;
+    try {
+      userOk = await syncUserAccount({
+        userAccountDraft: input.userAccountDraft,
+        linkedUser: input.linkedUser,
+        contactId: input.pendingSaveData.contactId,
+        payload: input.pendingSaveData as Record<string, unknown>,
+        t: input.t,
+        setErrors: input.setErrors || (() => {}),
+        onUserInvalidate: input.onUserInvalidate,
+      });
+    } catch {
+      userOk = false;
+    }
     if (!userOk) {
+      notify.warning(input.t("faculty.toast.savedAccountFailed"));
+      input.setPendingSaveData(null);
       input.setDuplicateConfirmOpen(false);
       input.setSaving(false);
       return;
     }
 
-    await input.onSave(input.pendingSaveData as FacultyMember);
     input.setPendingSaveData(null);
     input.setDuplicateConfirmOpen(false);
     input.onClose();

@@ -50,7 +50,12 @@ function hiddenSelectors(block: string): string[] {
     .map((line) => line.trim())
     .map((line) => line.replace(/\{$/, "").trim()) // `sel {` -> `sel`
     .map((line) => line.replace(/,$/, "").trim()) // `sel,` -> `sel`
-    .filter((line) => line.length > 0 && !line.startsWith("/*") && !line.includes(":"));
+    .filter(
+      (line) =>
+        line.length > 0 &&
+        !line.startsWith("/*") &&
+        (!line.includes(":") || line.includes(":not(")),
+    );
 }
 
 const css = readFileSync(INDEX_CSS, "utf-8");
@@ -73,7 +78,7 @@ describe("print stylesheet", () => {
   );
 
   it("hides app chrome", () => {
-    for (const selector of ["aside", "header", "nav", ".print-hidden"]) {
+    for (const selector of ["aside", "header:not([data-print-header])", "nav", ".print-hidden"]) {
       expect(selectors).toContain(selector);
     }
   });

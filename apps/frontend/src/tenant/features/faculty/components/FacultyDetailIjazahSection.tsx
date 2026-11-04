@@ -88,7 +88,7 @@ export function FacultyDetailIjazahSection({
                   {isSanadExpanded && (
                     <div
                       dir="auto"
-                      className="p-3 rounded-md bg-muted/40 border border-border/60 text-xs text-foreground/90 leading-relaxed font-serif whitespace-pre-wrap text-pretty animate-in fade-in duration-150"
+                      className="p-3 rounded-md bg-muted/40 border border-border/60 text-xs text-foreground/90 leading-relaxed font-serif whitespace-pre-wrap text-pretty motion-safe:animate-in motion-safe:fade-in motion-safe:duration-150"
                     >
                       {ijazah.sanadChain}
                     </div>

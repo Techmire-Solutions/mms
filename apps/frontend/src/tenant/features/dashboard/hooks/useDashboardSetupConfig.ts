@@ -4,11 +4,14 @@ import type { QueryClient } from "@tanstack/react-query";
 import { useAuth } from "@/lib/contexts/AuthContext";
 import { useTranslation } from "@/hooks/useTranslation";
 import { notify } from "@/lib/notify";
-import { DEFAULT_DASHBOARD_PREFERENCES, normalizeDashboardPreferences } from "@mms/shared";
+import {
+  DEFAULT_DASHBOARD_PREFERENCES,
+  normalizeDashboardPreferences,
+  normalizeDashboardWidgets,
+} from "@mms/shared";
 import { buildDefaultCustomWidgets } from "@/lib/reports/widgetDefaults";
 import type { CustomWidget } from "@/lib/reports/pinnedWidgetTypes";
-import { tsrClient } from "@/lib/api";
-import { DASHBOARD_SUMMARY_QUERY_KEY_ROOT } from "./useDashboardSummaryQuery";
+import { apiContract, tsrClient } from "@/lib/api";
 
 export {
   DASHBOARD_SUMMARY_QUERY_KEY,
@@ -22,10 +25,29 @@ export const DASHBOARD_WIDGETS_QUERY_KEY = ["dashboard", "widgets"] as const;
 /** Pure seeded default widgets, computed once — placeholder while the server query loads. */
 const DEFAULT_WIDGETS_PLACEHOLDER: CustomWidget[] = buildDefaultCustomWidgets();
 
-export function invalidateDashboardQueries(queryClient: QueryClient): void {
+/**
+ * Invalidates only the dashboard *configuration* documents. The composite
+ * summary is a domain-metrics aggregate: it does not read the layout, so a
+ * grid-density toggle or a pin must not refetch the 10-way aggregation.
+ * Domain collection changes invalidate the summary through
+ * `invalidateModuleQueries`.
+ */
+export function invalidateDashboardConfigQueries(queryClient: QueryClient): void {
   queryClient.invalidateQueries({ queryKey: DASHBOARD_PREFERENCES_QUERY_KEY });
   queryClient.invalidateQueries({ queryKey: DASHBOARD_WIDGETS_QUERY_KEY });
-  queryClient.invalidateQueries({ queryKey: DASHBOARD_SUMMARY_QUERY_KEY_ROOT });
+}
+
+/**
+ * One-time local→server widget seed for a brand-new workspace.
+ *
+ * Uses the plain contract client (not the mutation hook) so a failed background
+ * seed never surfaces a "save failed" toast for a write the user did not make.
+ */
+export async function seedDashboardWidgets(widgets: CustomWidget[]): Promise<boolean> {
+  const res = await apiContract.dashboard.putWidgets({
+    body: normalizeDashboardWidgets(widgets),
+  });
+  return res.status === 200;
 }
 
 export function useDashboardPreferencesQuery() {
@@ -45,7 +67,10 @@ export function useDashboardPreferencesQuery() {
     [rawPreferences],
   );
 
-  return { ...query, data: preferences };
+  // `isSuccess` alone is not enough: a 200 body without a preferences document
+  // must not be treated as a loaded configuration.
+  const hasLoadedPreferences = query.isSuccess && rawPreferences !== undefined;
+  return { ...query, data: preferences, hasLoadedPreferences };
 }
 
 export function useDashboardPreferencesMutation() {
@@ -53,13 +78,21 @@ export function useDashboardPreferencesMutation() {
   const { t } = useTranslation();
   return tsrClient.dashboard.putPreferences.useMutation({
     // Optimistic: two toggles inside one round-trip must not lose the first
-    // write (the prefs document is a full singleton).
+    // write (the prefs document is a full singleton). The body is merged over
+    // the last known document so a partial caller can never reset omitted fields.
     onMutate: async (variables: { body: unknown }) => {
       await queryClient.cancelQueries({ queryKey: DASHBOARD_PREFERENCES_QUERY_KEY });
       const previous = queryClient.getQueryData(DASHBOARD_PREFERENCES_QUERY_KEY);
+      const previousDoc = (
+        previous as { body?: { preferences?: Record<string, unknown> } } | undefined
+      )?.body?.preferences;
+      const merged = normalizeDashboardPreferences({
+        ...(previousDoc ?? {}),
+        ...(variables.body as Record<string, unknown>),
+      });
       queryClient.setQueryData(DASHBOARD_PREFERENCES_QUERY_KEY, {
         status: 200,
-        body: { success: true, preferences: variables.body },
+        body: { success: true, preferences: merged },
       });
       return { previous };
     },
@@ -76,8 +109,8 @@ export function useDashboardPreferencesMutation() {
     onSuccess: (res: { status: number; body?: { preferences?: unknown } }) => {
       if (res.status === 200 && res.body?.preferences) {
         queryClient.setQueryData(DASHBOARD_PREFERENCES_QUERY_KEY, res);
-        invalidateDashboardQueries(queryClient);
       }
+      invalidateDashboardConfigQueries(queryClient);
     },
   });
 }
@@ -96,7 +129,10 @@ export function useDashboardWidgetsQuery() {
     [rawWidgets],
   );
 
-  return { ...query, data: widgets };
+  // Distinguishes "server says empty" (authoritative) from "no server body yet"
+  // (loading placeholder) — the seed decision depends on it.
+  const hasServerData = rawWidgets !== undefined;
+  return { ...query, data: widgets, hasServerData };
 }
 
 export function useDashboardWidgetsMutation() {
@@ -106,8 +142,8 @@ export function useDashboardWidgetsMutation() {
     onSuccess: (res: { status: number; body?: { widgets?: unknown } }) => {
       if (res.status === 200 && res.body?.widgets) {
         queryClient.setQueryData(DASHBOARD_WIDGETS_QUERY_KEY, res);
-        invalidateDashboardQueries(queryClient);
       }
+      invalidateDashboardConfigQueries(queryClient);
     },
     onError: () => notify.error(t("dashboard.toast.saveFailed")),
   });
@@ -135,7 +171,7 @@ export function useDashboardWidgetDeleteMutation() {
           };
         });
       }
-      invalidateDashboardQueries(queryClient);
+      invalidateDashboardConfigQueries(queryClient);
     },
     onError: () => notify.error(t("dashboard.toast.deleteFailed")),
   });

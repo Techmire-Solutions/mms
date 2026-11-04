@@ -181,6 +181,7 @@ describe("useTasksPageController", () => {
     ]) {
       fn.mockReset();
     }
+    restoreMutateAsync.mockResolvedValue(undefined);
   });
 
   it("exposes the work/reports/setup tabs in order", async () => {

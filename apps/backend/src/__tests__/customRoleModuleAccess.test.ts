@@ -72,3 +72,72 @@ describe("module access with a tenant custom role (S1)", () => {
     expect(decision).toMatchObject({ allowed: false, code: "PERMISSION_DENIED" });
   });
 });
+
+/**
+ * Contacts archive/restore routes require `contacts.delete`, not `contacts.write`
+ * (`MODULE_ROUTE_ACTION_RULES`). A tenant may compose a role with delete only, so
+ * the gate must not demand write as a prerequisite.
+ */
+describe("contacts delete-only custom role", () => {
+  const deleteOnlyRole: WorkspaceRole = {
+    id: "contacts_archivist_c1",
+    labelKey: "nav.contacts",
+    descriptionKey: "nav.contacts",
+    isSystem: false,
+    badgeVariant: "primary",
+    permissions: { contacts: ["delete"] },
+  };
+
+  function deleteOnlyRequest(): FastifyRequest {
+    return {
+      tenant: { id: "demo" },
+      user: { id: "u-2", role: "contacts_archivist_c1", workspaceSubdomain: "demo" },
+    } as unknown as FastifyRequest;
+  }
+
+  beforeEach(() => {
+    vi.clearAllMocks();
+    mockAvailability.mockResolvedValue({
+      contacts: { granted: true, enabled: true },
+    });
+    mockMatrix.mockResolvedValue({
+      "u-2": { role: "contacts_archivist_c1", deletedAt: null },
+    });
+  });
+
+  it("allows the delete action used by archive/restore routes", async () => {
+    const req = deleteOnlyRequest();
+    setUserRoleCatalog(req.user as User, [deleteOnlyRole]);
+
+    const decision = await checkModuleAccess(req, "contacts", "delete");
+
+    expect(decision).toMatchObject({ allowed: true });
+  });
+
+  it("denies write, so the route table must not fall back to the method default", async () => {
+    const req = deleteOnlyRequest();
+    setUserRoleCatalog(req.user as User, [deleteOnlyRole]);
+
+    const decision = await checkModuleAccess(req, "contacts", "write");
+
+    expect(decision).toMatchObject({ allowed: false, code: "PERMISSION_DENIED" });
+  });
+
+  it("denies the delete action to a write-only role", async () => {
+    const writeOnlyRole: WorkspaceRole = {
+      ...deleteOnlyRole,
+      id: "contacts_editor_c1",
+      permissions: { contacts: ["create", "read", "update"] },
+    };
+    mockMatrix.mockResolvedValue({
+      "u-2": { role: "contacts_editor_c1", deletedAt: null },
+    });
+    const req = deleteOnlyRequest();
+    (req.user as User).role = "contacts_editor_c1";
+    setUserRoleCatalog(req.user as User, [writeOnlyRole]);
+
+    const decision = await checkModuleAccess(req, "contacts", "delete");
+
+    expect(decision).toMatchObject({ allowed: false, code: "PERMISSION_DENIED" });
+  });
+});

@@ -49,7 +49,7 @@ export interface MessagingRepository {
   saveMessageLog(tenant: string, record: Message): Promise<void>;
   bulkSaveMessageLogs(tenant: string, records: Message[]): Promise<void>;
   replaceMessageLogsForWorkspace(tenant: string, records: Message[]): Promise<void>;
-  insertMessageLogs(tenant: string, logs: Message[]): Promise<void>;
+  insertMessageLogs(tenant: string, logs: Message[]): Promise<number>;
   queryFilteredMessageLogs(
     tenant: string,
     query?: MessageLogsFilterQuery,

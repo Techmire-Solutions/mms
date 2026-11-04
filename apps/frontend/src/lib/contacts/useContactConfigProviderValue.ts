@@ -16,6 +16,8 @@ import { useContactConfigColumnLayout } from "@/lib/contacts/useContactConfigCol
 type ContactConfigProviderInput = Partial<ContactConfigExtras> & {
   enabledTabs?: string[];
   requiredTabs?: string[];
+  /** Tenant field-config version (spread from the field-config response). */
+  version?: number;
 };
 
 const EMPTY_ARRAY: never[] = [];
@@ -72,6 +74,7 @@ export function useContactConfigProviderValue(
     formTabs = EMPTY_ARRAY,
     enabledTabs = EMPTY_ARRAY,
     requiredTabs = DEFAULT_REQUIRED_TABS,
+    version = 1,
   } = config || {};
 
   const resolvedFields = React.useMemo(() => {
@@ -113,6 +116,7 @@ export function useContactConfigProviderValue(
   return React.useMemo(
     () => ({
       formTabsReady: true,
+      fieldConfigVersion: version,
       enabledTabIds: resolveContactEnabledTabIds({ formTabs, enabledTabs }, "admin"),
       requiredTabIds: new Set(requiredTabs),
       fields: resolvedFields,
@@ -176,6 +180,7 @@ export function useContactConfigProviderValue(
     [
       enabledTabs,
       requiredTabs,
+      version,
       resolvedFields,
       formTabs,
       prefs,

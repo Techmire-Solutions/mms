@@ -53,7 +53,7 @@ describe("ContactBasicIdentityFields Component", () => {
         contactDraft={{ firstName: "Zayd", lastName: "Harith", gender: "male" }}
         formInstanceId="inst-1"
         isFieldEnabled={() => true}
-        isFieldRequired={(tab, field) => field === "firstName" || field === "gender"}
+        isFieldRequired={(_tab, field) => field === "firstName" || field === "gender"}
         getFieldError={() => undefined}
         updateDraft={vi.fn()}
         onUpdateGenders={vi.fn()}

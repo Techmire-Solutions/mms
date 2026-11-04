@@ -1,3 +1,4 @@
+import { useMemo } from "react";
 import type { Permission } from "@mms/shared";
 import type { CustomWidget } from "@/lib/reports/pinnedWidgetTypes";
 import type { DashboardRole } from "@/lib/dashboardRole";
@@ -21,6 +22,9 @@ interface UseDashboardMetricCardsArgs {
 
 /**
  * Builds role-scoped, module-filtered dashboard KPI cards with live trends.
+ *
+ * Memoized: the dashboard re-renders on every customize-panel interaction, and
+ * rebuilding every card (plus the trend math) each keystroke is wasted work.
  */
 export function useDashboardMetricCards({
   customWidgets,
@@ -30,7 +34,7 @@ export function useDashboardMetricCards({
   data,
   t,
 }: UseDashboardMetricCardsArgs): StatItem[] {
-  return (() => {
+  return useMemo(() => {
     const trends = computeDashboardMetricTrends(data);
 
     const dashboardCardWidgets = filterDashboardCardWidgets(customWidgets, dashboardRole);
@@ -43,5 +47,5 @@ export function useDashboardMetricCards({
     return enabledDashboardCardWidgets.map((widget) =>
       buildDashboardMetricCard({ widget, data, trends, t }),
     );
-  })();
+  }, [customWidgets, dashboardRole, enabledModules, can, data, t]);
 }

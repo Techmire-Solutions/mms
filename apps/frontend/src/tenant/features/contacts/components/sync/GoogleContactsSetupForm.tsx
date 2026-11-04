@@ -65,6 +65,11 @@ export function GoogleContactsSetupForm({
           value={clientSecret}
           onChange={(event) => onClientSecretChange(event.target.value)}
           placeholder={t("contacts.sync.clientSecretPlaceholder")}
+          // Not a login password: stop password managers from injecting the
+          // user's account password into the OAuth client-secret field.
+          autoComplete="new-password"
+          autoCapitalize="none"
+          spellCheck={false}
         />
       </Field>
       <FieldErrorMessage message={error || undefined} className={FORM_ERROR_BOX} />

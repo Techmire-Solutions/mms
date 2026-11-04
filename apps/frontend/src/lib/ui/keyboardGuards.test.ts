@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { isOverlayOpen, isTypingTarget } from "./keyboardGuards";
+import { isConfirmDialogOpen, isOverlayOpen, isTypingTarget } from "./keyboardGuards";
 
 describe("keyboardGuards", () => {
   it("treats text-entry controls as typing targets", () => {
@@ -33,5 +33,25 @@ describe("keyboardGuards", () => {
     drawer.remove();
 
     expect(isOverlayOpen()).toBe(false);
+  });
+
+  it("distinguishes a confirmation dialog from the dialog it confirms over", () => {
+    expect(isConfirmDialogOpen()).toBe(false);
+
+    const formDialog = document.createElement("div");
+    formDialog.setAttribute("role", "dialog");
+    document.body.appendChild(formDialog);
+    expect(isOverlayOpen()).toBe(true);
+    // An open form is not an unanswered confirmation: save shortcuts still work.
+    expect(isConfirmDialogOpen()).toBe(false);
+
+    const confirm = document.createElement("div");
+    confirm.setAttribute("role", "alertdialog");
+    document.body.appendChild(confirm);
+    expect(isConfirmDialogOpen()).toBe(true);
+
+    confirm.remove();
+    formDialog.remove();
+    expect(isConfirmDialogOpen()).toBe(false);
   });
 });

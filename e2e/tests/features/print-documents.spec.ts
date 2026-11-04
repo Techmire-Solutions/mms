@@ -61,6 +61,22 @@ test.describe("printable documents", () => {
       make("shadow-xl p-2", "print-probe-shadow-xl");
       // Control: this one MUST be hidden for print, proving print media applied.
       make("print:hidden p-2", "print-probe-control");
+
+      // Content headers (dashboard greeting, widget-card titles, stat-card
+      // icon/trend strip) are `<header>` elements too. The print block used to
+      // hide every one of them, so a printed dashboard had no titles at all.
+      const contentHeader = document.createElement("header");
+      contentHeader.id = "print-probe-content-header";
+      contentHeader.setAttribute("data-print-header", "");
+      contentHeader.textContent = "content header";
+      document.body.appendChild(contentHeader);
+
+      // The app shell's own headers stay hidden — they are chrome.
+      const chromeHeader = document.createElement("header");
+      chromeHeader.id = "print-probe-chrome-header";
+      chromeHeader.setAttribute("role", "banner");
+      chromeHeader.textContent = "chrome header";
+      document.body.appendChild(chromeHeader);
     });
 
     const displayOf = (id: string) =>
@@ -74,6 +90,8 @@ test.describe("printable documents", () => {
     expect(await displayOf("print-probe-shadow-sm")).not.toBe("none");
     expect(await displayOf("print-probe-shadow-xl")).not.toBe("none");
     expect(await displayOf("print-probe-control")).not.toBe("none");
+    expect(await displayOf("print-probe-content-header")).not.toBe("none");
+    expect(await displayOf("print-probe-chrome-header")).not.toBe("none");
 
     // --- print media ----------------------------------------------------------
     await page.emulateMedia({ media: "print" });
@@ -93,6 +111,16 @@ test.describe("printable documents", () => {
       await displayOf("print-probe-shadow-xl"),
       ".shadow-xl is hidden under print media — a blanket print rule is hiding printable content again",
     ).not.toBe("none");
+
+    expect(
+      await displayOf("print-probe-content-header"),
+      "a content <header> is hidden under print media — printed dashboards/cards lose their titles",
+    ).not.toBe("none");
+
+    expect(
+      await displayOf("print-probe-chrome-header"),
+      "the shell's banner header is printing — app chrome must stay hidden on paper",
+    ).toBe("none");
 
     await page.emulateMedia({ media: "screen" });
   });

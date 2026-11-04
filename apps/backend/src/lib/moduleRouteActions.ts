@@ -100,8 +100,9 @@ export const MODULE_ROUTE_ACTION_RULES: readonly ModuleRouteActionRule[] = [
     onlyModules: ["tasks"],
   },
   // Handler-owned permissions (grant + enablement still enforced here):
-  // personal dashboard prefs/widgets (setupWrite|customize; summary filtered per module),
-  // the staff activity log (analytics.view), and self-service edits of the caller's own contact.
+  // workspace-shared dashboard prefs/widgets (setupWrite|customize; the summary
+  // is filtered per module by the caller's permissions), the staff activity log
+  // (analytics.view), and self-service edits of the caller's own contact.
   {
     methods: ALL_METHODS,
     pattern: /^\/api\/dashboard\//,
@@ -118,6 +119,21 @@ export const MODULE_ROUTE_ACTION_RULES: readonly ModuleRouteActionRule[] = [
     methods: ["PUT", "PATCH"],
     pattern: /^\/api\/contacts\/:id$/,
     action: "availability",
+    onlyModules: ["contacts"],
+  },
+  // Contacts archive/restore are `contacts.delete` operations: the handlers
+  // already require `canDeleteContacts`, so the method default (`write`) wrongly
+  // 403'd a custom role holding only `contacts.delete`. Mirrors students/faculty/tasks.
+  {
+    methods: ["DELETE"],
+    pattern: /^\/api\/contacts\/:id$/,
+    action: "delete",
+    onlyModules: ["contacts"],
+  },
+  {
+    methods: ["POST"],
+    pattern: /^\/api\/contacts\/(bulk-delete|bulk-restore)$|^\/api\/contacts\/:id\/restore$/,
+    action: "delete",
     onlyModules: ["contacts"],
   },
   // Lean picker: any role that can read students/faculty/workshops may resolve a

@@ -19,9 +19,16 @@ export async function handleBulkStatus({
       body: { type: "forbidden", message: "Insufficient permissions" },
     };
   }
+  const tenantId = request.tenant?.id;
+  if (!tenantId) {
+    return {
+      status: 403 as const,
+      body: { type: "forbidden", message: "Tenant context required" },
+    };
+  }
   try {
     const result = await withTenant(
-      String(request.tenant?.id),
+      String(tenantId),
       () => facultyUseCases.bulkUpdateFacultyStatus(body.ids.map(String), body.status, user.id),
       { readOnly: false },
     );
@@ -53,9 +60,16 @@ export async function handleBulkSpecialization({
       body: { type: "forbidden", message: "Insufficient permissions" },
     };
   }
+  const tenantId = request.tenant?.id;
+  if (!tenantId) {
+    return {
+      status: 403 as const,
+      body: { type: "forbidden", message: "Tenant context required" },
+    };
+  }
   try {
     const result = await withTenant(
-      String(request.tenant?.id),
+      String(tenantId),
       () =>
         facultyUseCases.bulkUpdateFacultySpecialization(body.ids.map(String), body.specialization),
       { readOnly: false },

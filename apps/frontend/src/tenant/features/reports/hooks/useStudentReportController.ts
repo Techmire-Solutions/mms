@@ -1,13 +1,9 @@
-import { useCallback, useState } from "react";
+import { useState } from "react";
 import { ENROLLMENTS_MODULE_MANIFEST, STUDENTS_MODULE_MANIFEST, type Student } from "@mms/shared";
 import { useTranslation } from "@/hooks/useTranslation";
 import { useSessionsCollection } from "@/tenant/hooks/collections/sessions";
 import { useEnrollmentsPaginated } from "@/tenant/hooks/collections/enrollments";
-import {
-  useStudentsMetrics,
-  useStudentsWidgetAggregates,
-  useStudentsContractList,
-} from "@/tenant/hooks/collections/students";
+import { useStudentsContractList } from "@/tenant/hooks/collections/students";
 import { studentStatusBadgeConfig } from "@/lib/students/studentStatusUi";
 import { enrollmentStatusBadgeConfig } from "@/lib/ui/enrollmentStatusBadge";
 import {
@@ -15,10 +11,6 @@ import {
   resolveEnrollmentReportExportRows,
   resolveStudentReportExportRows,
 } from "@/tenant/features/reports/hooks/studentReportExport";
-import {
-  applyStudentsReportDrillDown,
-  buildStudentReportMetricItems,
-} from "@/tenant/features/reports/hooks/studentReportMetrics";
 import type { SubTab as UINavTab } from "@/components/app/SubTabBar";
 import type { ExportColumn } from "@/components/app/ExportToolbar";
 import {
@@ -73,26 +65,6 @@ export function useStudentReportController({ filters }: StudentReportProps) {
     setHistoryPage(1);
   }
 
-  const { data: metrics, isLoading: metricsLoading } = useStudentsMetrics();
-  const { data: genderAggregates } = useStudentsWidgetAggregates([
-    {
-      id: "male",
-      collection: "students",
-      operation: "count",
-      filterField: "gender",
-      filterOperator: "equals",
-      filterValue: "male",
-    },
-    {
-      id: "female",
-      collection: "students",
-      operation: "count",
-      filterField: "gender",
-      filterOperator: "equals",
-      filterValue: "female",
-    },
-  ]);
-
   const studentsPageQuery = useStudentsContractList(
     {
       page: listPage,
@@ -132,9 +104,6 @@ export function useStudentReportController({ filters }: StudentReportProps) {
       mapEnrollmentRow,
     ))() as EnrollmentHistoryItem[];
 
-  const male = genderAggregates?.male?.value ?? 0;
-  const female = genderAggregates?.female?.value ?? 0;
-
   const studentExportColumns = (() => [
     { header: t("students.report.colName"), key: "name" },
     { header: t("students.report.colGender"), key: "gender" },
@@ -166,23 +135,6 @@ export function useStudentReportController({ filters }: StudentReportProps) {
   const resolveEnrollmentExportRows = () =>
     resolveEnrollmentReportExportRows({ search: searchParam, sessionId: sessionFilter });
 
-  const drillDownToWork = useCallback(
-    (status: string | undefined) => applyStudentsReportDrillDown(t, status),
-    [t],
-  );
-
-  const metricItems = (() =>
-    buildStudentReportMetricItems({
-      t,
-      metrics,
-      male,
-      female,
-      reportStatusFilter,
-      onStatusFilterChange: setReportStatusFilter,
-      onListFocus: () => setActiveSubTab("list"),
-      onDrillDown: drillDownToWork,
-    }))();
-
   return {
     t,
     activeSubTab,
@@ -210,9 +162,6 @@ export function useStudentReportController({ filters }: StudentReportProps) {
     enrollmentExportColumns,
     resolveStudentExportRows,
     resolveEnrollmentExportRows,
-    metricItems,
-    metrics,
-    metricsLoading,
     filters,
   };
 }

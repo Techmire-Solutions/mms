@@ -2,24 +2,31 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 import type { FieldConfig } from "@mms/shared";
 
 const mockLoadContactFieldConfig = vi.fn();
-const mockValidateOrThrow = vi.fn();
 
 vi.mock("../contacts/use-cases/contactConfigService.js", () => ({
   loadContactFieldConfig: () => mockLoadContactFieldConfig(),
 }));
 
-vi.mock("../lib/zodRequest.js", () => ({
-  validateOrThrow: (...args: unknown[]) => mockValidateOrThrow(...args),
-}));
-
+import { ContactBlueprintValidationError } from "../contacts/use-cases/contactBlueprintValidation.js";
 import { validateContactDynamic } from "../contacts/use-cases/contactValidationUseCases.js";
 
-function makeFieldConfig(version = 1): FieldConfig {
+function makeFieldConfig(version = 1, requiredName = false): FieldConfig {
   return {
     version,
-    fields: {},
-    formTabs: [],
-    enabledTabs: [],
+    fields: {
+      basic: [
+        {
+          key: "name",
+          label: "Full Name",
+          type: "text",
+          enabled: true,
+          order: 1,
+          required: requiredName,
+        },
+      ],
+    },
+    formTabs: [{ key: "basic", label: "Basic", enabled: true, order: 1 }],
+    enabledTabs: ["basic"],
     requiredTabs: [],
   } as unknown as FieldConfig;
 }
@@ -27,31 +34,23 @@ function makeFieldConfig(version = 1): FieldConfig {
 describe("contactValidationService", () => {
   beforeEach(() => {
     vi.clearAllMocks();
-    mockValidateOrThrow.mockImplementation(() => undefined);
   });
 
   it("is a no-op when no field config exists", async () => {
     mockLoadContactFieldConfig.mockResolvedValue(null);
 
     await expect(validateContactDynamic("demo", { name: "Aisha" })).resolves.toBeUndefined();
-    expect(mockValidateOrThrow).not.toHaveBeenCalled();
   });
 
-  it("validates a contact through validateOrThrow", async () => {
-    mockLoadContactFieldConfig.mockResolvedValue(makeFieldConfig());
+  it("rejects a configured required field that the payload omits as a 400 with field issues", async () => {
+    mockLoadContactFieldConfig.mockResolvedValue(makeFieldConfig(1, true));
 
-    await expect(validateContactDynamic("demo", { name: "Aisha" })).resolves.toBeUndefined();
-    expect(mockValidateOrThrow).toHaveBeenCalled();
-  });
-
-  it("rethrows validation errors from validateOrThrow", async () => {
-    mockLoadContactFieldConfig.mockResolvedValue(makeFieldConfig());
-    const validationError = new Error("Field name is required");
-    mockValidateOrThrow.mockImplementation(() => {
-      throw validationError;
+    const rejection = validateContactDynamic("demo", {});
+    await expect(rejection).rejects.toBeInstanceOf(ContactBlueprintValidationError);
+    await expect(rejection).rejects.toMatchObject({
+      statusCode: 400,
+      errors: [expect.objectContaining({ fieldId: "name", tabId: "basic" })],
     });
-
-    await expect(validateContactDynamic("demo", {})).rejects.toBe(validationError);
   });
 
   it("throws a blueprint-version-mismatch when _blueprintId differs", async () => {
@@ -59,26 +58,26 @@ describe("contactValidationService", () => {
 
     await expect(
       validateContactDynamic("demo", { name: "Aisha", _blueprintId: 2 }),
-    ).rejects.toThrow(/Blueprint version mismatch/);
-    expect(mockValidateOrThrow).not.toHaveBeenCalled();
+    ).rejects.toMatchObject({
+      statusCode: 400,
+      errors: [expect.objectContaining({ fieldId: "_blueprintId" })],
+    });
   });
 
-  it("accepts a matching _blueprintId", async () => {
-    mockLoadContactFieldConfig.mockResolvedValue(makeFieldConfig(3));
+  it("accepts a matching _blueprintId and a valid payload", async () => {
+    mockLoadContactFieldConfig.mockResolvedValue(makeFieldConfig(3, true));
 
     await expect(
       validateContactDynamic("demo", { name: "Aisha", _blueprintId: 3 }),
     ).resolves.toBeUndefined();
-    expect(mockValidateOrThrow).toHaveBeenCalled();
   });
 
-  it("validates repeatedly across calls with the same config", async () => {
-    mockLoadContactFieldConfig.mockResolvedValue(makeFieldConfig());
+  it("reuses a preloaded field config instead of re-reading it", async () => {
+    const config = makeFieldConfig(1, true);
 
-    await validateContactDynamic("demo", { name: "A" });
-    await validateContactDynamic("demo", { name: "B" });
+    await validateContactDynamic("demo", { name: "A" }, { fieldConfig: config });
+    await validateContactDynamic("demo", { name: "B" }, { fieldConfig: config });
 
-    expect(mockValidateOrThrow).toHaveBeenCalledTimes(2);
-    expect(mockLoadContactFieldConfig).toHaveBeenCalledTimes(2);
+    expect(mockLoadContactFieldConfig).not.toHaveBeenCalled();
   });
 });

@@ -7,7 +7,6 @@ import {
   useFacultyContractBulkRestore,
   useFacultyContractBulkStatus,
   useFacultyContractBulkSpecialization,
-  useFacultyContractLogExportAudit,
   useFacultyContractLogSetupAudit,
 } from "@/tenant/features/faculty/hooks/useFacultyTsrMutations";
 
@@ -21,7 +20,6 @@ export function useFacultyMutations() {
   const bulkRestoreFacultyMutation = useFacultyContractBulkRestore();
   const bulkUpdateFacultyStatusMutation = useFacultyContractBulkStatus();
   const bulkSpecializationMutation = useFacultyContractBulkSpecialization();
-  const logExportAuditMutation = useFacultyContractLogExportAudit();
   const logSetupAuditMutation = useFacultyContractLogSetupAudit();
 
   return {
@@ -34,11 +32,6 @@ export function useFacultyMutations() {
     bulkUpdateFacultyStatus: bulkUpdateFacultyStatusMutation,
     bulkUpdateFacultySpecialization: bulkSpecializationMutation.mutateAsync,
     isBulkSpecializationPending: bulkSpecializationMutation.isPending,
-    logExportAudit: {
-      mutateAsync: (payload: { count: number; scope: "all" | "filtered" | "selection" }) =>
-        logExportAuditMutation.mutateAsync({ body: payload }),
-      isPending: logExportAuditMutation.isPending,
-    },
     logSetupAudit: {
       mutateAsync: (payload: { area: "fields" | "preferences"; summary: string }) =>
         logSetupAuditMutation.mutateAsync({ body: payload }),
