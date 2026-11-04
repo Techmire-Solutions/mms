@@ -1,9 +1,9 @@
 import { CONTACTS_MODULE_MANIFEST, type Contact, type ContactsImportJobPayload } from "@mms/shared";
-import { roleHasPermission } from "@mms/shared";
 import { upsertContact } from "./contactWriteUseCases.js";
 import { reconcileContactSystemTags } from "../systemTags/contactSystemTagUseCases.js";
 import { loadContactWriteContext } from "./contactWriteContext.js";
 import { invalidateDuplicateScanCache } from "./contactDuplicateScanUseCases.js";
+import { tenantUserHasPermission } from "../../lib/tenantRoleCatalog.js";
 import { broadcastTenantUpdate } from "../../lib/livePush.js";
 import { logger } from "../../lib/logger.js";
 import type { ContactsRepository } from "../repository/contactsRepository.js";
@@ -45,9 +45,12 @@ export async function runContactsImportJob(
 ): Promise<ContactsImportJobResult> {
   const contacts = Array.isArray(payload.contacts) ? payload.contacts : [];
   const total = contacts.length;
-  const canRestore = Boolean(
-    payload.viewerRole &&
-    roleHasPermission(payload.viewerRole, CONTACTS_MODULE_MANIFEST.permissions.delete),
+  // Evaluate the acting user's *current* role + tenant catalog, not the
+  // queue-time role string (revoked/edited roles must not run imports).
+  const canRestore = await tenantUserHasPermission(
+    context.tenant,
+    context.userId,
+    CONTACTS_MODULE_MANIFEST.permissions.delete,
   );
   const language = payload.language || "en";
   const failures: string[] = [];

@@ -5,11 +5,11 @@
 import {
   TASK_PRIORITIES,
   TASK_STATUSES,
-  roleHasPermission,
   type TaskAssigneeInput,
   type TaskInsert,
   type TasksImportBody,
 } from "@mms/shared";
+import { tenantUserHasPermission } from "../../lib/tenantRoleCatalog.js";
 import { getTenantTaskSettings } from "../../services/taskSettingsService.js";
 import { getEligibleTaskAssignees } from "../../services/taskEligibleAssigneesService.js";
 import { mutateTask } from "../../services/taskMutationService.js";
@@ -81,8 +81,12 @@ export async function runTasksImportJob(
 ): Promise<TaskImportJobResult> {
   const total = rows.length;
   const settings = await getTenantTaskSettings();
-  const canAssign = roleHasPermission(context.viewerRole, "tasks.assign");
-  const canAssignAnywhere = roleHasPermission(context.viewerRole, "tasks.assign_anywhere");
+  const canAssign = await tenantUserHasPermission(context.tenant, context.userId, "tasks.assign");
+  const canAssignAnywhere = await tenantUserHasPermission(
+    context.tenant,
+    context.userId,
+    "tasks.assign_anywhere",
+  );
   const eligible = await getEligibleTaskAssignees(context.tenant, context.userId, {
     ...settings,
     canAssignAnywhere,
