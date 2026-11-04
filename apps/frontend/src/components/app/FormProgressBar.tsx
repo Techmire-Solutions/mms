@@ -29,7 +29,9 @@ export function FormProgressBar({
         ) : (
           <span id={labelId} />
         )}
-        <span className={cn("text-xs font-bold", complete ? "text-primary" : "text-primary/70")}>
+        <span
+          className={cn("text-xs font-bold", complete ? "text-primary" : "text-muted-foreground")}
+        >
           {Math.round(clamped)}%
         </span>
       </div>
