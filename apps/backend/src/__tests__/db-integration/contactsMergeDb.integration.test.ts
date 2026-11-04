@@ -11,6 +11,7 @@ import {
   workshopEvents,
   workshopParticipants,
   financeInvoices,
+  contactRelationships,
 } from "../../db/schema.js";
 import { contactUseCases } from "../../contacts/use-cases/contactUseCases.js";
 import { ConflictError } from "../../lib/httpErrors.js";
@@ -56,6 +57,15 @@ beforeAll(async () => {
     await contactUseCases.upsertContact(
       baseContact(otherId, "Ayesha", "3001000002", "other@x.com"),
     );
+  });
+  await withTenant(tenant, async (tx) => {
+    await tx.insert(contactRelationships).values({
+      id: "merge-inferred-rel",
+      workspaceSubdomain: tenant,
+      contactId: otherId,
+      relationship: "guardian",
+      inferredFromContactId: otherId,
+    });
   });
   // References owned by other modules that must all follow the survivor.
   await withTenant(tenant, async (tx) => {
@@ -137,11 +147,25 @@ describe("contact merge (Postgres)", () => {
         .select({ familyContactId: financeInvoices.familyContactId })
         .from(financeInvoices)
         .where(eq(financeInvoices.id, invoiceId));
-      return { participants, invoices };
+      const inferred = await tx
+        .select({
+          contactId: contactRelationships.contactId,
+          inferredFrom: contactRelationships.inferredFromContactId,
+        })
+        .from(contactRelationships)
+        .where(
+          and(
+            eq(contactRelationships.workspaceSubdomain, tenant),
+            eq(contactRelationships.relationship, "guardian"),
+            eq(contactRelationships.inferredFromContactId, keepId),
+          ),
+        );
+      return { participants, invoices, inferred };
     });
 
     expect(references.participants).toEqual([{ id: "merge-participant", contactId: keepId }]);
     expect(references.invoices).toEqual([{ familyContactId: keepId }]);
+    expect(references.inferred).toEqual([{ contactId: keepId, inferredFrom: keepId }]);
 
     const employments = await loadEmployments(tenant);
     expect(employments).toEqual([

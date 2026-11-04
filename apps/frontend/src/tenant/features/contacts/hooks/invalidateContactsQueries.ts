@@ -15,6 +15,10 @@ import {
 } from "@/tenant/hooks/collections/messaging";
 
 import { CONTACTS_PREFERENCES_QUERY_KEY } from "@/tenant/features/contacts/hooks/useContactSetupConfig";
+import {
+  STUDENTS_METRICS_QUERY_KEY,
+  STUDENTS_QUERY_KEY,
+} from "@/tenant/hooks/collections/students";
 
 const invalidateModuleQueries = createModuleQueryInvalidator({
   list: CONTACTS_QUERY_KEY,
@@ -32,4 +36,7 @@ export function invalidateContactsQueries(queryClient: QueryClient): void {
   void queryClient.invalidateQueries({ queryKey: CONTACTS_GOOGLE_SYNC_QUERY_KEY });
   void queryClient.invalidateQueries({ queryKey: MESSAGING_CONTACTS_RESOLVE_QUERY_KEY });
   void queryClient.invalidateQueries({ queryKey: MESSAGING_RECIPIENTS_QUERY_KEY });
+  // Student rows derive guardian/father/mother names from contact records.
+  void queryClient.invalidateQueries({ queryKey: STUDENTS_QUERY_KEY });
+  void queryClient.invalidateQueries({ queryKey: STUDENTS_METRICS_QUERY_KEY });
 }
