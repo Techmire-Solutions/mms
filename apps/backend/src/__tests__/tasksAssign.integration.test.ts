@@ -43,6 +43,8 @@ vi.mock("../db/repositories/tasksRepository.js", () => ({
   listTasks: (...args: unknown[]) => listTasks(...args),
   findTaskById: (...args: unknown[]) => findTaskById(...args),
   getTaskMetrics: (...args: unknown[]) => getTaskMetrics(...args),
+  createTask: vi.fn(),
+  updateTask: vi.fn(),
   updateTaskStatus: (...args: unknown[]) => updateTaskStatus(...args),
   deleteTask: vi.fn(),
   restoreTask: vi.fn(),

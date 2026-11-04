@@ -12,6 +12,7 @@ const mocks = vi.hoisted(() => ({
   hasanat: vi.fn(),
   questionBank: vi.fn(),
   accounting: vi.fn(),
+  tasks: vi.fn(),
 }));
 
 vi.mock("../lib/tenantContext.js", () => ({
@@ -49,6 +50,11 @@ vi.mock("../services/questionBankMetricsService.js", () => ({
 vi.mock("../services/accountingService.js", () => ({
   loadAccountingCommandMetrics: mocks.accounting,
 }));
+vi.mock("../tasks/use-cases/tasksUseCases.js", () => ({
+  tasksUseCases: {
+    getTaskMetrics: mocks.tasks,
+  },
+}));
 
 import { loadDashboardSummary } from "../services/dashboardSummaryService.js";
 import { clearInMemoryRedisFallback } from "../lib/redis.js";
@@ -70,6 +76,7 @@ describe("loadDashboardSummary", () => {
     mocks.hasanat.mockResolvedValue({ totalPoints: 100 });
     mocks.questionBank.mockResolvedValue({ questions: 20 });
     mocks.accounting.mockResolvedValue({ revenue: 500 });
+    mocks.tasks.mockResolvedValue({ total: 15, todo: 5, inProgress: 4, overdue: 1 });
   });
 
   it("returns one complete tenant snapshot", async () => {
@@ -78,6 +85,7 @@ describe("loadDashboardSummary", () => {
     expect(summary.students).toEqual({ total: 1441 });
     expect(summary.faculty).toEqual({ total: 60 });
     expect(summary.contacts).toEqual({ total: 1543 });
+    expect(summary.tasks).toEqual({ total: 15, todo: 5, inProgress: 4, overdue: 1 });
     expect(mocks.attendance).toHaveBeenCalledWith("darulquran", {
       selectedDate: "2026-08-31",
     });
