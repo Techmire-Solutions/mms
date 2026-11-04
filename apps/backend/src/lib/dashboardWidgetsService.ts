@@ -33,8 +33,10 @@ export async function reorderDashboardWidgets(
   return listDashboardWidgetsByWorkspace(tenant);
 }
 
-/** Delete a single widget by id and broadcast the change. */
-export async function deleteDashboardWidget(id: string): Promise<void> {
-  await deleteDashboardWidgetById(requireTenant(), id);
+/** Delete a single widget by id and broadcast the change; false when it did not exist. */
+export async function deleteDashboardWidget(id: string): Promise<boolean> {
+  const deleted = await deleteDashboardWidgetById(requireTenant(), id);
+  if (deleted === 0) return false;
   await broadcastCollection("dashboard");
+  return true;
 }

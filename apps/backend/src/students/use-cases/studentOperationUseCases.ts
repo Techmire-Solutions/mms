@@ -140,6 +140,11 @@ export async function bulkUpdateStudentStatus(
       affected.map((student) => ({ id: String(student.id), status: student.status })),
       normalizedStatus,
     );
+    // Status-driven withdrawal is a student-lifecycle cascade (like the
+    // soft-delete enrollment cascade), not a user-invoked enrollment write:
+    // ending a student's status must end the enrollments it depends on, so this
+    // path intentionally does not require `enrollments.write` (the explicit
+    // enrollment operations on the students surface are gated separately).
     await withdrawEnrollmentsEndedByStatus(
       tenant,
       transitions.map((transition) => transition.id),

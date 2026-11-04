@@ -22,7 +22,7 @@ import { reconcileContactSystemTags } from "../systemTags/contactSystemTagUseCas
 import type { ContactWriteContext } from "./contactWriteContextTypes.js";
 import type { ContactsRepository } from "../repository/contactsRepository.js";
 import { contactsRepository } from "../repository/contactsRepositoryAdapter.js";
-
+import { auditContactPersisted, auditContactUpdated } from "./contactWriteAudit.js";
 const CONTACT_VERSION_CONFLICT =
   "This contact was changed by someone else. Reload it and try again.";
 const CONTACT_EXISTS_CONFLICT =
@@ -159,6 +159,16 @@ export async function upsertContact(
     if (!opts?.batchMode) {
       await invalidateDuplicateScanCache();
     }
+    // Authoritative audit row commits with the write (mms-data-layer §5.4).
+    if (!opts?.batchMode) {
+      await auditContactPersisted({
+        tenant,
+        contactId: String(saved.id),
+        actorId,
+        created,
+        restored: Boolean(restoredFromDelete),
+      });
+    }
     return { contact: saved, created, restoredFromDelete: restoredFromDelete || undefined };
   });
   const tenant = getRequestTenant();
@@ -269,6 +279,7 @@ export async function updateContactById(
       { actorId },
     );
     await invalidateDuplicateScanCache();
+    await auditContactUpdated({ tenant, contactId: id, actorId });
     return next;
   });
   if (saved) {

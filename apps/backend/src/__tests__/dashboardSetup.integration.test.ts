@@ -1,6 +1,7 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { buildApp } from "../app.js";
 import { adminToken, teacherToken, viewerToken } from "./helpers/tokens.js";
+import { recordModernAuditEvent } from "../services/auditTrailService.js";
 
 vi.mock("../db/database.js", () => ({
   initDb: vi.fn().mockResolvedValue(undefined),
@@ -93,7 +94,7 @@ describe("dashboard config routes", () => {
     });
     mockLoadDashboardWidgets.mockResolvedValue([sampleWidget]);
     mockUpsertDashboardWidgets.mockResolvedValue([sampleWidget]);
-    mockDeleteDashboardWidget.mockResolvedValue(undefined);
+    mockDeleteDashboardWidget.mockResolvedValue(true);
   });
 
   it("GET preferences/widgets allowed for any authenticated tenant; PUT/DELETE gated on setupWrite", async () => {
@@ -270,6 +271,61 @@ describe("dashboard config routes", () => {
       message: "Failed to load dashboard summary",
     });
 
+    await app.close();
+  });
+
+  it("returns 404 when the widget to delete no longer exists", async () => {
+    const app = await buildApp();
+    mockDeleteDashboardWidget.mockResolvedValueOnce(false);
+
+    const res = await app.inject({
+      method: "DELETE",
+      url: "/api/dashboard/widgets/already-gone",
+      headers: { host: "demo.localhost", authorization: `Bearer ${adminToken(app)}` },
+    });
+
+    expect(res.statusCode).toBe(404);
+    expect(res.json()).toMatchObject({ type: "not_found" });
+    await app.close();
+  });
+
+  it("audits a widget reorder", async () => {
+    const app = await buildApp();
+    mockReorderDashboardWidgets.mockResolvedValueOnce([sampleWidget]);
+
+    const res = await app.inject({
+      method: "PUT",
+      url: "/api/dashboard/widgets/reorder",
+      headers: { host: "demo.localhost", authorization: `Bearer ${adminToken(app)}` },
+      payload: { order: [{ id: "custom-1", sortOrder: 3 }] },
+    });
+
+    expect(res.statusCode).toBe(200);
+    expect(vi.mocked(recordModernAuditEvent)).toHaveBeenCalledWith(
+      expect.objectContaining({
+        tableName: "dashboard",
+        recordId: "widgets",
+        newState: expect.objectContaining({ action: "dashboard.widgets.reorder" }),
+      }),
+    );
+    await app.close();
+  });
+
+  it("logs and answers 500 when a dashboard read fails", async () => {
+    const app = await buildApp();
+    mockLoadDashboardPreferences.mockRejectedValueOnce(new Error("db down"));
+
+    const res = await app.inject({
+      method: "GET",
+      url: "/api/dashboard/preferences",
+      headers: { host: "demo.localhost", authorization: `Bearer ${teacherToken(app)}` },
+    });
+
+    expect(res.statusCode).toBe(500);
+    expect(res.json()).toEqual({
+      type: "database_error",
+      message: "Failed to load dashboard preferences",
+    });
     await app.close();
   });
 });

@@ -43,6 +43,7 @@ function canWriteDashboard(user: User): boolean {
 }
 
 async function handleDashboardRead<T>(
+  request: { log: { error: (payload: unknown, message?: string) => void } },
   action: (tenant: string) => Promise<T>,
   errorMessage: string,
 ) {
@@ -53,7 +54,8 @@ async function handleDashboardRead<T>(
       statementTimeoutMs: 5000,
     });
     return { status: 200 as const, body: result };
-  } catch {
+  } catch (error) {
+    request.log.error({ err: error }, errorMessage);
     return {
       status: 500 as const,
       body: { type: "database_error", message: errorMessage },
@@ -85,13 +87,19 @@ async function handleDashboardWrite<T>(
 }
 
 const dashboardRouter = s.router(dashboardContract, {
-  getPreferences: async (): Promise<
+  getPreferences: async ({
+    request,
+  }: ContractRouteArgs<(typeof dashboardContract)["getPreferences"]>): Promise<
     ContractRouteResponse<(typeof dashboardContract)["getPreferences"]>
   > =>
-    handleDashboardRead(async () => {
-      const preferences = await loadDashboardPreferences();
-      return { preferences: preferences ?? normalizeDashboardPreferences(null) };
-    }, "Failed to load dashboard preferences"),
+    handleDashboardRead(
+      request,
+      async () => {
+        const preferences = await loadDashboardPreferences();
+        return { preferences: preferences ?? normalizeDashboardPreferences(null) };
+      },
+      "Failed to load dashboard preferences",
+    ),
 
   putPreferences: async ({
     body,
@@ -133,11 +141,19 @@ const dashboardRouter = s.router(dashboardContract, {
     }
   },
 
-  getWidgets: async (): Promise<ContractRouteResponse<(typeof dashboardContract)["getWidgets"]>> =>
-    handleDashboardRead(async () => {
-      const widgets = await loadDashboardWidgets();
-      return { widgets };
-    }, "Failed to load dashboard widgets"),
+  getWidgets: async ({
+    request,
+  }: ContractRouteArgs<(typeof dashboardContract)["getWidgets"]>): Promise<
+    ContractRouteResponse<(typeof dashboardContract)["getWidgets"]>
+  > =>
+    handleDashboardRead(
+      request,
+      async () => {
+        const widgets = await loadDashboardWidgets();
+        return { widgets };
+      },
+      "Failed to load dashboard widgets",
+    ),
 
   putWidgets: async ({
     body,
@@ -178,8 +194,10 @@ const dashboardRouter = s.router(dashboardContract, {
       };
     }
     try {
+      let deleted = false;
       const result = await handleDashboardWrite(request, async (user) => {
-        await deleteDashboardWidget(id);
+        deleted = await deleteDashboardWidget(id);
+        if (!deleted) return;
         try {
           await auditDashboard(
             user,
@@ -192,6 +210,12 @@ const dashboardRouter = s.router(dashboardContract, {
         }
       });
       if (!result.ok) return result.error;
+      if (!deleted) {
+        return {
+          status: 404 as const,
+          body: { type: "not_found", message: "Dashboard widget not found" },
+        };
+      }
       return { status: 200 as const, body: { success: true } };
     } catch {
       return {
@@ -208,8 +232,18 @@ const dashboardRouter = s.router(dashboardContract, {
     ContractRouteResponse<(typeof dashboardContract)["reorderWidgets"]>
   > => {
     try {
-      const result = await handleDashboardWrite(request, async () => {
+      const result = await handleDashboardWrite(request, async (user) => {
         await reorderDashboardWidgets(body.order);
+        try {
+          await auditDashboard(
+            user,
+            "dashboard.widgets.reorder",
+            `Reordered ${body.order.length} dashboard widget(s)`,
+            "widgets",
+          );
+        } catch {
+          /* non-critical */
+        }
       });
       if (!result.ok) return result.error;
       return { status: 200 as const, body: { success: true } };
@@ -229,9 +263,11 @@ const dashboardRouter = s.router(dashboardContract, {
   > => {
     try {
       requireTenant();
+      // `role` stays in the wire contract for the FE client but is intentionally
+      // ignored: sections are filtered by the caller's authoritative permissions.
       const summary = await pickReadableModuleSections(
         request,
-        await loadDashboardSummary(query?.date, query?.role),
+        await loadDashboardSummary(query?.date),
       );
       return { status: 200 as const, body: { summary: summary as Record<string, unknown> } };
     } catch (err) {

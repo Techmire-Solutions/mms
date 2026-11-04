@@ -67,22 +67,23 @@ export const studentOperationRoutes: FastifyPluginAsync = async (fastify) => {
     > => {
       const user = request.user as User;
       if (!canWriteCollection(user, "students")) {
-        // Enrollments are a separately gated module: the students surface must not
-        // create or cancel enrollment rows without `enrollments.write` and the
-        // enrollment module enabled for the workspace.
-        if (!canWriteCollection(user, "enrollments")) {
-          return {
-            status: 403 as const,
-            body: { type: "forbidden", message: "Enrollment write permission required" },
-          };
-        }
-        const enrollmentDenial = await getModuleAccessDenial(request, "enrollment", "write");
-        if (enrollmentDenial) {
-          return { status: 403 as const, body: enrollmentDenial };
-        }
         return {
           status: 403 as const,
           body: { type: "forbidden", message: "Insufficient permissions" },
+        };
+      }
+      // Enrollment rows belong to the enrollments module: writing them from the
+      // students surface still requires `enrollments.write` and an enabled
+      // enrollments module for the workspace (module access gates are enforced
+      // server-side, not by frontend visibility).
+      const enrollmentDenial = await getModuleAccessDenial(request, "enrollment", "write");
+      if (enrollmentDenial) {
+        return { status: 403 as const, body: enrollmentDenial };
+      }
+      if (!canWriteCollection(user, "enrollments")) {
+        return {
+          status: 403 as const,
+          body: { type: "forbidden", message: "Enrollment write permission required" },
         };
       }
       try {

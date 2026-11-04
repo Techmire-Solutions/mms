@@ -5,6 +5,7 @@ import { lockFacultyHierarchy } from "./facultyAssignmentValidation.js";
 import { recordModernAuditEvent } from "../../services/auditTrailService.js";
 import { emitOutboxEvent } from "../../services/outboxEventService.js";
 import { findTaskById } from "./tasksRepository.js";
+import { ConflictError } from "../../lib/httpErrors.js";
 
 export async function deleteTask(
   tenant: string,
@@ -24,7 +25,7 @@ export async function deleteTask(
         ),
       )
       .limit(1);
-    if (children.length) throw new Error("Task has active subtasks");
+    if (children.length) throw new ConflictError("Task has active subtasks");
     const now = new Date();
     const [changed] = await tx
       .update(tasks)
@@ -62,7 +63,7 @@ export async function restoreTask(tenant: string, id: string, actorUserId: strin
       );
     if (!current) return null;
     if (current.parentTaskId && !(await findTaskById(tenant, current.parentTaskId))) {
-      throw new Error("Restore the parent task first");
+      throw new ConflictError("Restore the parent task first");
     }
     const now = new Date();
     await tx

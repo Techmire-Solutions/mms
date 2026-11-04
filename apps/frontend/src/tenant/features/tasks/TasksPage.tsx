@@ -93,12 +93,34 @@ export default function TasksPage(): React.JSX.Element {
   };
 
   const handleSave = async (data: TaskInsert) => {
-    if (editingTask) await updateTaskMutation.mutateAsync({ id: editingTask.id, data });
-    else await createTaskMutation.mutateAsync(data);
+    if (editingTask) {
+      await updateTaskMutation.mutateAsync({
+        id: editingTask.id,
+        data,
+        expectedUpdatedAt:
+          typeof editingTask.updatedAt === "string" ? editingTask.updatedAt : undefined,
+      });
+    } else await createTaskMutation.mutateAsync(data);
   };
 
   const handleUpdateStatus = (id: string, status: TaskStatus) => {
-    if (!viewingDeleted) updateStatusMutation.mutate({ id, status });
+    if (viewingDeleted) return;
+    // Optimistic concurrency: echo the row's `updatedAt` so a concurrent edit is
+    // a 409 instead of a silent overwrite. Missing row/token keeps legacy behavior.
+    const task = tasks.find((row) => String(row.id) === id);
+    const expectedUpdatedAt =
+      typeof task?.updatedAt === "string"
+        ? task.updatedAt
+        : task?.updatedAt instanceof Date
+          ? task.updatedAt.toISOString()
+          : undefined;
+    updateStatusMutation.mutate(
+      { id, status, expectedUpdatedAt },
+      {
+        onError: (err) =>
+          notify.error(err instanceof Error ? err.message : t("tasks.bulkStatusFailed")),
+      },
+    );
   };
 
   const handleDelete = (id: string) => {

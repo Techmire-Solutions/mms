@@ -9,7 +9,9 @@ import {
 } from "../contacts/contactLinkPolicy.js";
 export {
   FACULTY_CLIENT_SOFT_DELETE_KEYS,
+  FACULTY_SERVER_OWNED_AUDIT_KEYS,
   stripFacultyClientSoftDeleteFields,
+  stripFacultyServerOwnedAuditFields,
   stripClientSoftDeleteFields,
   isEntityDeleted,
   filterActiveEntities,

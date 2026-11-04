@@ -77,4 +77,30 @@ describe("Versioned faculty archive permissions", () => {
       }
     },
   );
+
+  it("rejects an unvalidated legacy list query before it reaches the SQL page builder", async () => {
+    const app = Fastify();
+    app.addHook("preHandler", async (request) => {
+      request.user = {
+        id: "u",
+        name: "User",
+        email: "u@example.test",
+        role: "admin",
+        workspaceSubdomain: "demo",
+      };
+      request.tenant = { id: "demo" };
+    });
+    await app.register(facultyRoutes);
+    try {
+      const response = await app.inject({
+        method: "GET",
+        url: "/api/v1/tenant/faculty?quickFilter=bogus",
+        headers: { host: "demo.localhost" },
+      });
+      expect(response.statusCode).toBe(400);
+      expect(loadPage).not.toHaveBeenCalled();
+    } finally {
+      await app.close();
+    }
+  });
 });

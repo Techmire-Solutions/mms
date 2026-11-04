@@ -1,4 +1,4 @@
-import { and, eq, isNull, sql } from "drizzle-orm";
+import { and, eq, isNull, or, sql } from "drizzle-orm";
 import {
   isTaskStatusTransitionAllowed,
   type TaskInsert,
@@ -11,7 +11,8 @@ import { findTaskById } from "./tasksRepository.js";
 import { syncTaskAssignees } from "./tasksAssigneesRepository.js";
 import { lockFacultyHierarchy } from "./facultyAssignmentValidation.js";
 import { recordModernAuditEvent } from "../../services/auditTrailService.js";
-import { ValidationError } from "../../lib/httpErrors.js";
+import { ConflictError, ValidationError } from "../../lib/httpErrors.js";
+import { naiveTimestamp } from "../../lib/dbDate.js";
 
 type Recipients = Parameters<typeof syncTaskAssignees>[3];
 
@@ -47,7 +48,7 @@ async function validateParent(
       (row) => row.id === id || row.cycle || (row.parent_id && !visited.has(row.parent_id)),
     )
   )
-    throw new Error("Invalid parent task");
+    throw new ValidationError("Invalid parent task");
 }
 
 export async function createTask(
@@ -101,12 +102,18 @@ export async function updateTask(
   data: TaskUpdate,
   recipients?: Recipients,
   actorUserId?: string,
+  expectedUpdatedAt?: string,
 ) {
   const subdomain = tenant.trim().toLowerCase();
   return withTenant(subdomain, async (tx) => {
     await validateParent(tx, subdomain, id, data.parentTaskId);
     const current = await findTaskById(subdomain, id);
     if (!current) return null;
+    const versionToken = expectedUpdatedAt?.trim();
+    const expectedDate = versionToken ? new Date(versionToken) : null;
+    if (versionToken && (!expectedDate || Number.isNaN(expectedDate.getTime()))) {
+      throw new ValidationError("Invalid x-expected-updated-at header");
+    }
     const payload: Partial<typeof tasks.$inferInsert> = {
       updatedAt: new Date(),
       updatedBy: actorUserId,
@@ -130,12 +137,28 @@ export async function updateTask(
     if (data.dueAt !== undefined) payload.dueAt = data.dueAt ? new Date(data.dueAt) : null;
     if (data.parentTaskId !== undefined) payload.parentTaskId = data.parentTaskId;
     if (recipients !== undefined) payload.assignedByUserId = actorUserId;
-    await tx
+    const versionPredicate = expectedDate
+      ? or(
+          sql`date_trunc('milliseconds', ${tasks.updatedAt}) = ${naiveTimestamp(expectedDate)}::timestamp`,
+          sql`date_trunc('milliseconds', ${tasks.updatedAt}) = ${expectedDate}::timestamptz`,
+        )
+      : undefined;
+    const updatedRows = await tx
       .update(tasks)
       .set(payload)
       .where(
-        and(eq(tasks.workspaceSubdomain, subdomain), eq(tasks.id, id), isNull(tasks.deletedAt)),
-      );
+        and(
+          eq(tasks.workspaceSubdomain, subdomain),
+          eq(tasks.id, id),
+          isNull(tasks.deletedAt),
+          versionPredicate,
+        ),
+      )
+      .returning({ id: tasks.id });
+    if (updatedRows.length === 0 && expectedDate) {
+      // A stale version token is a conflict, not a missing task (`mms-api-interface` §6).
+      throw new ConflictError("This task was changed by someone else. Reload it and try again.");
+    }
     if (recipients !== undefined)
       await syncTaskAssignees(tx, subdomain, id, recipients, actorUserId);
     await recordModernAuditEvent(tx, {
@@ -160,6 +183,7 @@ export async function updateTaskStatus(
   id: string,
   status: TaskStatus,
   actorUserId?: string,
+  expectedUpdatedAt?: string,
 ) {
-  return updateTask(tenant, id, { status }, undefined, actorUserId);
+  return updateTask(tenant, id, { status }, undefined, actorUserId, expectedUpdatedAt);
 }

@@ -1,14 +1,8 @@
-import {
-  studentStatusEndsEnrollments,
-  type Student,
-  type StudentRecord,
-  type User,
-} from "@mms/shared";
+import { studentStatusEndsEnrollments, type StudentRecord, type User } from "@mms/shared";
 import { getRequestTenant } from "../../lib/tenantContext.js";
-import { activeDb, runInTransaction } from "../../db/database.js";
+import { runInTransaction } from "../../db/database.js";
 import { broadcastCollection } from "../../lib/livePush.js";
-import { canDeleteCollection } from "../../lib/rbacCanHelpers.js";
-import { buildRestoredRecord } from "../../lib/softDeleteHelpers.js";
+import { ConflictError } from "../../lib/httpErrors.js";
 import type { StudentsRepository } from "../repository/studentsRepository.js";
 import { studentsRepository } from "../repository/studentsRepositoryAdapter.js";
 import {
@@ -16,17 +10,15 @@ import {
   prepareStudentRecord,
   throwGrUniqueConflict,
   StudentCreateIdConflictError,
-  StudentPermissionError,
-  StudentRestoreConflictError,
 } from "./studentNormalizeUseCases.js";
 import { readSuppliedStudentId, resolveStudentIdCollision } from "./studentCreateGuard.js";
-import { recordRestoreEvents } from "./studentAuditEvents.js";
-import { restoreCascadedEnrollmentsForStudents } from "../../db/repositories/studentEnrollmentCascade.js";
 import { loadStudentModulePreferences } from "./studentPreferencesService.js";
 import { reconcileContactSystemTags } from "../../contacts/systemTags/contactSystemTagUseCases.js";
 import { withdrawEnrollmentsForStudentStatus } from "../../enrollments/use-cases/enrollmentEndUseCases.js";
 import { buildStudentStatusActor } from "./studentStatusTransitionUseCases.js";
 import { invalidateStudentsCache } from "./studentCacheInvalidation.js";
+import { restoreArchivedStudentOnCreate } from "./studentRestoreOnCreate.js";
+import { appendCollectionAuditInTx } from "../../lib/collectionAuditInTx.js";
 
 interface CreateStudentResult {
   record: StudentRecord;
@@ -34,89 +26,15 @@ interface CreateStudentResult {
   restored: boolean;
 }
 
+const STUDENT_VERSION_CONFLICT =
+  "This student was changed by someone else. Reload it and try again.";
+
 interface CreateStudentOptions {
   user?: User;
   /** Background jobs have no session user; the acting user id is still stamped. */
   actorId?: string;
   /** Batch callers (CSV import) broadcast once per chunk instead of live-pushing per row. */
   deferBroadcast?: boolean;
-}
-
-interface RestoreArchivedStudentInput {
-  tenant: string;
-  archived: Student;
-  incoming: StudentRecord;
-  user?: User;
-  userId?: string;
-  repo: StudentsRepository;
-}
-
-/**
- * Restores a soft-deleted student in place (same id) for a re-registration.
- *
- * Shared by both create-time collisions — an archived row matching the payload `contactId`, and an
- * archived row matching the client-supplied `id` — so both enforce the same delete permission, run
- * the same GR/Student-ID/contact conflict probes, persist restore provenance, restore
- * cascade-deleted enrollments, and write the restore audit/outbox events.
- */
-async function restoreArchivedStudentOnCreate({
-  tenant,
-  archived,
-  incoming,
-  user,
-  userId,
-  repo,
-}: RestoreArchivedStudentInput): Promise<StudentRecord> {
-  if (!user || !canDeleteCollection(user, "students")) {
-    throw new StudentPermissionError("Restoring soft-deleted students requires delete permissions");
-  }
-  const pending = prepareStudentRecord({ ...archived, ...incoming, id: archived.id });
-  const merged = buildRestoredRecord(
-    pending as unknown as Record<string, unknown>,
-    userId,
-  ) as unknown as StudentRecord;
-  if (userId) merged.updatedBy = userId;
-
-  const conflict = await repo.findRegistrationConflict(tenant, {
-    grNumber: merged.grNumber?.trim() || undefined,
-    contactId: merged.contactId ? String(merged.contactId) : undefined,
-    excludeId: String(archived.id),
-  });
-  if (conflict === "grNumber") throw new StudentRestoreConflictError();
-  if (conflict === "contact") {
-    throw new StudentRestoreConflictError("A student with this contact already exists", "contact");
-  }
-  if (merged.studentId?.trim() && repo.findActiveStudentIdOwners) {
-    const activeSidOwners = await repo.findActiveStudentIdOwners(tenant, [merged.studentId.trim()]);
-    const normalizedSid = merged.studentId.trim().toLowerCase();
-    const activeOwner = activeSidOwners.get(normalizedSid);
-    if (activeOwner && activeOwner !== String(archived.id)) {
-      throw new StudentRestoreConflictError(
-        "A student with this Student ID already exists",
-        "studentId",
-      );
-    }
-  }
-
-  await repo.save(tenant, merged);
-  const restoredAt =
-    typeof merged.restoredAt === "string" && merged.restoredAt
-      ? merged.restoredAt
-      : new Date().toISOString();
-  await restoreCascadedEnrollmentsForStudents(
-    activeDb(),
-    tenant,
-    [String(archived.id)],
-    userId,
-    new Date(restoredAt),
-  );
-  await recordRestoreEvents(tenant, merged, restoredAt, userId);
-  await reconcileContactSystemTags(
-    tenant,
-    [merged.contactId, merged.fatherContactId, merged.motherContactId, merged.guardianContactId],
-    { actorId: userId },
-  );
-  return merged;
 }
 
 /**
@@ -217,6 +135,16 @@ export async function createStudent(
       ],
       { actorId: userId },
     );
+    // Authoritative audit row commits with the write (mms-data-layer §5.4).
+    await appendCollectionAuditInTx({
+      tenant,
+      tableName: "students",
+      recordId: String(normalized.id),
+      action: "student.create",
+      summary: `Created student ${String(normalized.id)}`,
+      realUserId: userId,
+      subjectId: String(normalized.id),
+    });
     return { record: normalized, restored: false };
   }).finally(invalidateStudentsCache);
   const deferBroadcast = options && !("role" in options) && Boolean(options.deferBroadcast);
@@ -227,13 +155,18 @@ export async function createStudent(
 export async function updateStudentById(
   id: string,
   record: StudentRecord | Record<string, unknown>,
-  options?: { user?: User; userId?: string } | User | StudentsRepository,
+  options?:
+    { user?: User; userId?: string; expectedUpdatedAt?: string } | User | StudentsRepository,
   repo: StudentsRepository = studentsRepository,
 ): Promise<StudentRecord | null> {
   const actualRepo =
     options && typeof (options as StudentsRepository).findById === "function"
       ? (options as StudentsRepository)
       : repo;
+  const expectedUpdatedAt =
+    options && "expectedUpdatedAt" in options
+      ? (options as { expectedUpdatedAt?: string }).expectedUpdatedAt?.trim()
+      : undefined;
   const user =
     options && "role" in options
       ? (options as User)
@@ -262,8 +195,23 @@ export async function updateStudentById(
       normalized.updatedBy = userId;
     }
     try {
-      await actualRepo.save(tenant, normalized);
+      if (expectedUpdatedAt) {
+        // Optimistic concurrency: the token the caller read must still match the
+        // stored `updated_at`, otherwise the edit is a 409 (mms-api-interface §6).
+        if (!actualRepo.saveIfVersionMatches) {
+          throw new ConflictError(STUDENT_VERSION_CONFLICT);
+        }
+        const savedWithVersion = await actualRepo.saveIfVersionMatches(
+          tenant,
+          normalized,
+          expectedUpdatedAt,
+        );
+        if (!savedWithVersion) throw new ConflictError(STUDENT_VERSION_CONFLICT);
+      } else {
+        await actualRepo.save(tenant, normalized);
+      }
     } catch (error: unknown) {
+      if (error instanceof ConflictError) throw error;
       throwGrUniqueConflict(error);
     }
     // A status that ends enrollments must withdraw them in the same transaction: the enrollment
@@ -292,6 +240,16 @@ export async function updateStudentById(
       ],
       { actorId: userId },
     );
+    // Authoritative audit row commits with the write (mms-data-layer §5.4).
+    await appendCollectionAuditInTx({
+      tenant,
+      tableName: "students",
+      recordId: id,
+      action: "student.update",
+      summary: `Updated student ${id}`,
+      realUserId: userId,
+      subjectId: id,
+    });
     return normalized;
   }).finally(invalidateStudentsCache);
   if (saved) await broadcastCollection("students");

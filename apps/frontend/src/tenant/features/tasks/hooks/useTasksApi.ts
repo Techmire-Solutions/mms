@@ -126,8 +126,14 @@ export function useCreateTask() {
 export function useUpdateTask() {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: async ({ id, data }: { id: string; data: TaskUpdate }) => {
-      const response = await apiContract.tasks.update({ params: { id }, body: data });
+    mutationFn: async (v: { id: string; data: TaskUpdate; expectedUpdatedAt?: string }) => {
+      const response = await apiContract.tasks.update({
+        params: { id: v.id },
+        body: v.data,
+        ...(v.expectedUpdatedAt
+          ? { extraHeaders: { "x-expected-updated-at": v.expectedUpdatedAt } }
+          : {}),
+      });
       assertContractOk(response, "Failed to update task");
       return response.body as TaskRecord;
     },
@@ -141,8 +147,14 @@ export function useUpdateTask() {
 export function useUpdateTaskStatus() {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: async ({ id, status }: { id: string; status: TaskStatus }) => {
-      const response = await apiContract.tasks.updateStatus({ params: { id }, body: { status } });
+    mutationFn: async (v: { id: string; status: TaskStatus; expectedUpdatedAt?: string }) => {
+      const response = await apiContract.tasks.updateStatus({
+        params: { id: v.id },
+        body: { status: v.status },
+        ...(v.expectedUpdatedAt
+          ? { extraHeaders: { "x-expected-updated-at": v.expectedUpdatedAt } }
+          : {}),
+      });
       assertContractOk(response, "Failed to update task status");
       return response.body as TaskRecord;
     },

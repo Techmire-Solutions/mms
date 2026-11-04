@@ -51,6 +51,15 @@ export interface StudentsRepository {
     options?: { includeDeleted?: boolean },
   ): Promise<Student[]>;
   save(tenant: string, student: Student | StudentRecord): Promise<void>;
+  /**
+   * Compare-and-set save keyed on the client's `updatedAt` token
+   * (`mms-api-interface` §6). Returns false on a stale token or removed row.
+   */
+  saveIfVersionMatches?(
+    tenant: string,
+    student: Student | StudentRecord,
+    expectedUpdatedAt: string,
+  ): Promise<boolean>;
   bulkSave(tenant: string, students: Array<Student | StudentRecord>): Promise<void>;
   aggregateCommandMetrics(
     tenant: string,

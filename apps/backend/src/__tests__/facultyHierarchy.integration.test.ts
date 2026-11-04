@@ -31,6 +31,11 @@ vi.mock("../lib/livePush.js", () => ({
   broadcastCollection: vi.fn().mockResolvedValue(undefined),
 }));
 
+vi.mock("../services/auditTrailService.js", () => ({
+  recordModernAuditEvent: vi.fn().mockResolvedValue({ id: 1 }),
+  sanitizeAuditState: (value: unknown) => value,
+}));
+
 vi.mock("../faculty/use-cases/facultyHydrateUseCases.js", () => ({
   hydrateFacultyFromContacts: async (_tenant: unknown, rows: unknown) => rows,
   hydrateTeachersFromContacts: async (_tenant: unknown, rows: unknown) => rows,

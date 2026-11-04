@@ -36,6 +36,15 @@ export interface FacultyRepository {
     member: Faculty | FacultyRecord,
     options?: { createOnly?: boolean },
   ): Promise<void>;
+  /**
+   * Compare-and-set save keyed on the client's `updatedAt` token
+   * (`mms-api-interface` §6). Returns false on a stale token or removed row.
+   */
+  saveIfVersionMatches?(
+    tenant: string,
+    member: Faculty | FacultyRecord,
+    expectedUpdatedAt: string,
+  ): Promise<boolean>;
   guardAssignmentDependents(tenant: string, ids: string[]): Promise<void>;
   bulkSave(tenant: string, members: Array<Faculty | FacultyRecord>): Promise<void>;
   aggregateCommandMetrics(

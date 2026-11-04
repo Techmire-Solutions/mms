@@ -37,6 +37,11 @@ vi.mock("../services/outboxEventService.js", () => ({
   emitOutboxEvent: vi.fn().mockResolvedValue(undefined),
 }));
 
+vi.mock("../services/auditTrailService.js", () => ({
+  recordModernAuditEvent: vi.fn().mockResolvedValue({ id: 1 }),
+  sanitizeAuditState: (value: unknown) => value,
+}));
+
 const mockReconcileContactSystemTags = vi.fn();
 vi.mock("../contacts/systemTags/contactSystemTagUseCases.js", () => ({
   reconcileContactSystemTags: (...args: unknown[]) => mockReconcileContactSystemTags(...args),

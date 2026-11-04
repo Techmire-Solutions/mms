@@ -1,10 +1,7 @@
 import type { User } from "@mms/shared";
 import { getRequestTenant } from "./tenantContext.js";
-import {
-  recordModernAuditEvent,
-  mapActionStringToAuditType,
-  type DbOrTransaction,
-} from "../services/auditTrailService.js";
+import { type DbOrTransaction, recordModernAuditEvent } from "../services/auditTrailService.js";
+import { mapActionStringToAuditType } from "./auditState.js";
 import { logger } from "./logger.js";
 
 export interface CollectionAuditExtraOptions {

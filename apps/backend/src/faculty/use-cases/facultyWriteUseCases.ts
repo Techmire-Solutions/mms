@@ -18,6 +18,7 @@ import {
 import { ConflictError } from "../../lib/httpErrors.js";
 import { reconcileContactSystemTags } from "../../contacts/systemTags/contactSystemTagUseCases.js";
 import { logger } from "../../lib/logger.js";
+import { appendCollectionAuditInTx } from "../../lib/collectionAuditInTx.js";
 
 export { HierarchyValidationError, HierarchyCycleError } from "./facultyHierarchyValidator.js";
 
@@ -60,7 +61,12 @@ export interface UpdateFacultyOptions {
   guards?: FacultyWriteGuards;
   /** Present on batch writes: defers reconcile + broadcast to the caller. */
   batch?: FacultyBatchSideEffects;
+  /** `updatedAt` the client read — enforces the 409 compare-and-set path. */
+  expectedUpdatedAt?: string;
 }
+
+const FACULTY_VERSION_CONFLICT =
+  "This faculty member was changed by someone else. Reload it and try again.";
 
 function collectFacultyBatchContacts(
   batch: FacultyBatchSideEffects,
@@ -137,6 +143,19 @@ export async function createFaculty(
           actorId: merged.updatedBy ?? undefined,
         });
       }
+      // Authoritative audit row commits with the write (mms-data-layer §5.4).
+      // CSV import records one queue-level `faculty.import` aggregate row instead.
+      if (!options.batch) {
+        await appendCollectionAuditInTx({
+          tenant,
+          tableName: "faculty",
+          recordId: String(merged.id),
+          action: "faculty.restore",
+          summary: `Restored faculty member ${String(merged.id)} via re-registration`,
+          realUserId: merged.updatedBy ?? null,
+          subjectId: String(merged.id),
+        });
+      }
       return { record: merged, restored: true };
     }
 
@@ -147,6 +166,17 @@ export async function createFaculty(
     } else {
       await reconcileContactSystemTags(tenant, [guarded.record.contactId], {
         actorId: guarded.record.updatedBy ?? undefined,
+      });
+      // Authoritative audit row commits with the write (mms-data-layer §5.4).
+      // CSV import records one queue-level `faculty.import` aggregate row instead.
+      await appendCollectionAuditInTx({
+        tenant,
+        tableName: "faculty",
+        recordId: String(guarded.record.id),
+        action: "faculty.create",
+        summary: `Created faculty member ${String(guarded.record.id)}`,
+        realUserId: guarded.record.updatedBy ?? null,
+        subjectId: String(guarded.record.id),
       });
     }
     return { record: guarded.record, restored: false };
@@ -178,13 +208,36 @@ export async function updateFacultyById(
       contactChanged: String(normalized.contactId ?? "") !== String(existing.contactId ?? ""),
     });
 
-    await repo.save(tenant, guarded.record);
+    const versionToken = options.expectedUpdatedAt?.trim();
+    if (versionToken) {
+      // Optimistic concurrency: the token the caller read must still match the
+      // stored `updated_at`, otherwise the edit is a 409 (mms-api-interface §6).
+      if (!repo.saveIfVersionMatches) throw new ConflictError(FACULTY_VERSION_CONFLICT);
+      const savedWithVersion = await repo.saveIfVersionMatches(
+        tenant,
+        guarded.record,
+        versionToken,
+      );
+      if (!savedWithVersion) throw new ConflictError(FACULTY_VERSION_CONFLICT);
+    } else {
+      await repo.save(tenant, guarded.record);
+    }
     await guards.syncPrimaryAppointment(tenant, guarded.record, guarded.departmentId);
     if (options.batch) {
       collectFacultyBatchContacts(options.batch, [existing.contactId, guarded.record.contactId]);
     } else {
       await reconcileContactSystemTags(tenant, [existing.contactId, guarded.record.contactId], {
         actorId: guarded.record.updatedBy ?? undefined,
+      });
+      // Authoritative audit row commits with the write (mms-data-layer §5.4).
+      await appendCollectionAuditInTx({
+        tenant,
+        tableName: "faculty",
+        recordId: id,
+        action: "faculty.update",
+        summary: `Updated faculty member ${id}`,
+        realUserId: guarded.record.updatedBy ?? null,
+        subjectId: id,
       });
     }
     return guarded.record;

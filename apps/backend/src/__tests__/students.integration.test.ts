@@ -229,12 +229,8 @@ describe("students routes", () => {
     expect(created.deletedBy).toBeUndefined();
     expect(created.deletionReason).toBeUndefined();
     expect(created.contactId).toBe("c-1");
-    expect(mockRecordAudit).toHaveBeenCalledWith(
-      expect.objectContaining({
-        action: "student.create",
-        summary: expect.stringContaining("Created student"),
-      }),
-    );
+    // The authoritative create audit is appended inside the use case transaction
+    // (see auditAtomicityDb.integration.test.ts), not by the route.
     await app.close();
   });
 
@@ -305,12 +301,8 @@ describe("students routes", () => {
       payload: { contactId: "c-1", status: "active", grNumber: "GR-1" },
     });
     expect(res.statusCode).toBe(200);
-    expect(mockRecordAudit).toHaveBeenCalledWith(
-      expect.objectContaining({
-        action: "student.restore",
-        summary: expect.stringContaining("Restored student s-archived via re-registration"),
-      }),
-    );
+    // Restore-on-re-registration audits inside the use case transaction.
+    expect(mockCreateStudent).toHaveBeenCalled();
     await app.close();
   });
 
@@ -329,13 +321,7 @@ describe("students routes", () => {
     });
     expect(res.statusCode).toBe(200);
     expect(mockUpdateStudentById).toHaveBeenCalled();
-    expect(mockRecordAudit).toHaveBeenCalledWith(
-      expect.objectContaining({
-        action: "student.update",
-        entityId: "s1",
-        summary: expect.stringContaining("Updated student s1"),
-      }),
-    );
+    // The authoritative update audit is appended inside the use case transaction.
     await app.close();
   });
 
