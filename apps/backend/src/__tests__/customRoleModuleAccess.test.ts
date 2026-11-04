@@ -1,5 +1,6 @@
-import { describe, expect, it, vi } from "vitest";
+import { beforeEach, describe, expect, it, vi } from "vitest";
 import type { FastifyRequest } from "fastify";
+import type { User, WorkspaceRole } from "@mms/shared";
 
 const mockAvailability = vi.fn();
 const mockMatrix = vi.fn();
@@ -17,6 +18,16 @@ vi.mock("../lib/tenantContext.js", () => ({
 }));
 
 import { checkModuleAccess } from "../middleware/requireTenantModule.js";
+import { setUserRoleCatalog } from "../lib/userPermissionContext.js";
+
+const compositeRole: WorkspaceRole = {
+  id: "faculty_ed_c1",
+  labelKey: "nav.tasks",
+  descriptionKey: "nav.tasks",
+  isSystem: false,
+  badgeVariant: "primary",
+  permissions: { students: ["read"] },
+};
 
 function request(): FastifyRequest {
   return {
@@ -26,21 +37,38 @@ function request(): FastifyRequest {
 }
 
 describe("module access with a tenant custom role (S1)", () => {
-  it.fails("grants a composite role the permissions its workspace catalog defines", async () => {
-    // KNOWN GAP: `checkModuleAccess` calls `roleHasPermission(role, permission)`
-    // without the workspace's `workspaceRoles`, so a designation-managed
-    // composite role (`faculty_ed_*`) can never match the default role map and
-    // every module route answers 403 PERMISSION_DENIED. This test is marked
-    // `fails` so it starts failing (and demands removal) when the gate is fixed.
+  beforeEach(() => {
+    vi.clearAllMocks();
     mockAvailability.mockResolvedValue({
       students: { granted: true, enabled: true },
+      finance: { granted: true, enabled: true },
     });
     mockMatrix.mockResolvedValue({
       "u-1": { role: "faculty_ed_c1", deletedAt: null },
     });
+  });
 
+  it("grants a composite role the permissions its workspace catalog defines", async () => {
+    const req = request();
+    setUserRoleCatalog(req.user as User, [compositeRole]);
+
+    const decision = await checkModuleAccess(req, "students", "read");
+
+    expect(decision).toMatchObject({ allowed: true });
+  });
+
+  it("denies the same role when no catalog was attached", async () => {
     const decision = await checkModuleAccess(request(), "students", "read");
 
-    expect(decision.allowed).toBe(true);
+    expect(decision).toMatchObject({ allowed: false, code: "PERMISSION_DENIED" });
+  });
+
+  it("still denies a catalog role that lacks the module permission", async () => {
+    const req = request();
+    setUserRoleCatalog(req.user as User, [compositeRole]);
+
+    const decision = await checkModuleAccess(req, "finance", "read");
+
+    expect(decision).toMatchObject({ allowed: false, code: "PERMISSION_DENIED" });
   });
 });

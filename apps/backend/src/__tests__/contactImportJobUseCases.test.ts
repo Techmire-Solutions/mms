@@ -6,6 +6,7 @@ const mockLoadContactWriteContext = vi.fn();
 const mockInvalidateDuplicateScanCache = vi.fn();
 const mockBroadcastTenantUpdate = vi.fn();
 const mockReconcileContactSystemTags = vi.fn();
+const mockTenantUserHasPermission = vi.fn();
 
 vi.mock("../contacts/use-cases/contactWriteUseCases.js", () => ({
   upsertContact: (...args: unknown[]) => mockUpsertContact(...args),
@@ -15,6 +16,9 @@ vi.mock("../contacts/use-cases/contactWriteContext.js", () => ({
 }));
 vi.mock("../contacts/use-cases/contactDuplicateScanUseCases.js", () => ({
   invalidateDuplicateScanCache: (...args: unknown[]) => mockInvalidateDuplicateScanCache(...args),
+}));
+vi.mock("../lib/tenantRoleCatalog.js", () => ({
+  tenantUserHasPermission: (...args: unknown[]) => mockTenantUserHasPermission(...args),
 }));
 vi.mock("../lib/livePush.js", () => ({
   broadcastTenantUpdate: (...args: unknown[]) => mockBroadcastTenantUpdate(...args),
@@ -48,6 +52,7 @@ function buildContext(updateProgress = vi.fn().mockResolvedValue(undefined)) {
 describe("runContactsImportJob", () => {
   beforeEach(() => {
     mockUpsertContact.mockReset().mockResolvedValue({ contact: {}, created: true });
+    mockTenantUserHasPermission.mockReset().mockResolvedValue(true);
     mockRecordModernAuditEvent.mockReset().mockResolvedValue({});
     mockLoadContactWriteContext.mockReset().mockResolvedValue({
       runtimeDefaults: {
@@ -161,8 +166,10 @@ describe("runContactsImportJob", () => {
     );
   });
 
-  it("gates soft-delete restoration on the enqueue-time role", async () => {
-    await runContactsImportJob({ contacts: contacts(1), viewerRole: "accountant" }, buildContext());
+  it("gates soft-delete restoration on the acting user's current permission", async () => {
+    mockTenantUserHasPermission.mockResolvedValueOnce(false);
+    await runContactsImportJob({ contacts: contacts(1), viewerRole: "admin" }, buildContext());
+    expect(mockTenantUserHasPermission).toHaveBeenCalledWith("demo", "u-admin", "contacts.delete");
     expect(mockUpsertContact).toHaveBeenCalledWith(
       expect.anything(),
       expect.objectContaining({
@@ -173,7 +180,7 @@ describe("runContactsImportJob", () => {
     );
 
     mockUpsertContact.mockClear();
-    await runContactsImportJob({ contacts: contacts(1), viewerRole: "admin" }, buildContext());
+    await runContactsImportJob({ contacts: contacts(1), viewerRole: "accountant" }, buildContext());
     expect(mockUpsertContact).toHaveBeenCalledWith(
       expect.anything(),
       expect.objectContaining({

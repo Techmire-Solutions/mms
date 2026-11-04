@@ -8,6 +8,7 @@ const mocks = vi.hoisted(() => ({
   broadcast: vi.fn(),
   listDepartments: vi.fn(),
   listDesignations: vi.fn(),
+  tenantUserHasPermission: vi.fn(),
 }));
 
 vi.mock("../services/facultyService.js", () => ({
@@ -26,6 +27,10 @@ vi.mock("../db/repositories/facultyDesignationRepository.js", () => ({
 
 vi.mock("../contacts/systemTags/contactSystemTagUseCases.js", () => ({
   reconcileContactSystemTags: mocks.reconcile,
+}));
+
+vi.mock("../lib/tenantRoleCatalog.js", () => ({
+  tenantUserHasPermission: mocks.tenantUserHasPermission,
 }));
 
 vi.mock("../lib/livePush.js", () => ({
@@ -59,6 +64,7 @@ beforeEach(() => {
   mocks.listDesignations.mockResolvedValue([]);
   mocks.reconcile.mockResolvedValue(undefined);
   mocks.broadcast.mockResolvedValue(undefined);
+  mocks.tenantUserHasPermission.mockResolvedValue(true);
   mocks.findIdsByEmployeeIds.mockResolvedValue({ "emp-2": "fac-existing" });
   mocks.updateFacultyById.mockImplementation(
     async (_id: string, _patch: unknown, options?: { batch?: { contactIds: Set<string> } }) => {
