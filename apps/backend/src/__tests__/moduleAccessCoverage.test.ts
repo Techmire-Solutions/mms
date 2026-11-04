@@ -332,6 +332,30 @@ const EXPECTED_MODULE_ROUTE_ACTIONS: Readonly<Record<string, ModuleAction>> = {
   "DELETE /api/messaging/logs": "availability",
   "POST /api/messaging/logs/restore": "availability",
   "POST /api/messaging/export/csv": "write",
+  // Faculty archive/restore are `faculty.delete` operations (handlers already
+  // re-check `canDeleteCollection("faculty")`); the three prefixes are real.
+  "DELETE /api/faculty/:id": "delete",
+  "POST /api/faculty/:id/restore": "delete",
+  "POST /api/faculty/bulk-delete": "delete",
+  "POST /api/faculty/bulk-restore": "delete",
+  "POST /api/tenant/faculty/:id/restore": "delete",
+  "POST /api/tenant/faculty/bulk-delete": "delete",
+  "POST /api/tenant/faculty/bulk-restore": "delete",
+  "POST /api/v1/tenant/faculty/:id/restore": "delete",
+  "POST /api/v1/tenant/faculty/bulk-delete": "delete",
+  "POST /api/v1/tenant/faculty/bulk-restore": "delete",
+  "DELETE /api/faculty/designations/:id": "delete",
+  "POST /api/faculty/designations/:id/restore": "delete",
+  "DELETE /api/faculty/departments/:id": "delete",
+  "POST /api/faculty/departments/:id/restore": "delete",
+  "DELETE /api/faculty/:facultyId/assignments/:id": "delete",
+  // Tasks archive/restore require `tasks.delete`; the status route is
+  // handler-owned (`tasks.write` OR `tasks.complete`).
+  "DELETE /api/tasks/:id": "delete",
+  "POST /api/tasks/:id/restore": "delete",
+  "POST /api/tasks/bulk-delete": "delete",
+  "POST /api/tasks/bulk-restore": "delete",
+  "PATCH /api/tasks/:id/status": "availability",
 };
 
 describe("module access coverage", () => {

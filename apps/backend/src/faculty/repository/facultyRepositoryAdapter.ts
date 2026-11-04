@@ -3,6 +3,7 @@ import {
   bulkSaveFaculty,
   findFacultyById,
   findFacultyByIds,
+  isFacultyDeletedByUserId,
   saveFaculty,
   countSubordinates,
   countSubordinatesBatch,
@@ -39,6 +40,7 @@ function createFacultyRepository(): FacultyRepository {
     listPage: (tenant, query) => listFacultyPage(tenant, query),
     findById: (tenant, id) => findFacultyById(tenant, id),
     findByIds: (tenant, ids) => findFacultyByIds(tenant, ids),
+    isDeletedByUserId: (tenant, userId) => isFacultyDeletedByUserId(tenant, userId),
     findIdsByEmployeeIds: (tenant, employeeIds) =>
       findFacultyIdsByEmployeeIdsSql(tenant, employeeIds),
     findSoftDeletedByContactId: (tenant, contactId) =>

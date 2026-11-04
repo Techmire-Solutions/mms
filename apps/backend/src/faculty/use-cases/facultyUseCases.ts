@@ -30,6 +30,8 @@ export function createFacultyUseCases(repo: FacultyRepository = facultyRepositor
     load.loadFacultyById(id, includeDeleted, repo);
   const loadFacultyByIds = (ids: string[]) => load.loadFacultyByIds(ids, repo);
   const isFacultyProfileDeleted = (id: string) => load.isFacultyProfileDeleted(id, repo);
+  const isFacultyProfileDeletedForUser = (userId: string) =>
+    load.isFacultyProfileDeletedForUser(userId, repo);
   const loadFacultyLinkedContactIds = (excludeFacultyId?: string) =>
     load.loadFacultyLinkedContactIds(excludeFacultyId, repo);
   const findFacultyIdsByEmployeeIds = (employeeIds: string[]) =>
@@ -86,6 +88,7 @@ export function createFacultyUseCases(repo: FacultyRepository = facultyRepositor
     loadFacultyById,
     loadFacultyByIds,
     isFacultyProfileDeleted,
+    isFacultyProfileDeletedForUser,
     loadFacultyLinkedContactIds,
     findFacultyIdsByEmployeeIds,
     loadFacultyCommandMetrics,

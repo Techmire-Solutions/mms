@@ -206,7 +206,7 @@ export function buildDynamicFacultySchema(
   return z.preprocess((raw) => {
     if (!raw || typeof raw !== "object" || Array.isArray(raw)) return raw;
     const stripped = stripFacultyWriteNoise(raw as Record<string, unknown>);
-    for (const key of FACULTY_WRITE_SERVER_OWNED_KEYS) delete stripped[key];
+    for (const key of FACULTY_WRITE_STRIP_KEYS) delete stripped[key];
     return deepSanitizeStrings(stripped);
   }, objectSchema);
 }
@@ -235,6 +235,10 @@ const FACULTY_WRITE_STRIP_KEYS = [
   "departmentId",
   "designation",
   "parentDesignationId",
+  // The linked tenant user is a server-owned projection of `faculty.contact_id`;
+  // accepting it from a write payload would let `faculty.write` point a record
+  // at any tenant user (and have that account's sessions revoked on archive).
+  "userId",
   "reportingFacultyId",
   "reportingFacultyName",
   "reportingRole",

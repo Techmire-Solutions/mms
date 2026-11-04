@@ -25,6 +25,8 @@ export interface FacultyRepository {
   listPage(tenant: string, query: FacultyListQuery): Promise<FacultyListPageResult>;
   findById(tenant: string, id: string): Promise<Faculty | null>;
   findByIds(tenant: string, ids: string[]): Promise<Faculty[]>;
+  /** Session-guard tombstone probe keyed by the linked tenant user id. */
+  isDeletedByUserId(tenant: string, userId: string): Promise<boolean>;
   /** Active faculty id lookup keyed by lowercased employee id (batch import matching). */
   findIdsByEmployeeIds(tenant: string, employeeIds: string[]): Promise<Record<string, string>>;
   /** Soft-delete probe for restore-on-create re-registration (Contact SSOT). */

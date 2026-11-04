@@ -67,6 +67,25 @@ export async function findFacultyById(tenant: string, id: string): Promise<Facul
   });
 }
 
+/**
+ * Tombstone probe for the session guard. Looks the faculty profile up by its
+ * linked **tenant user id** (`faculty.user_id`), not by the faculty primary
+ * key, and skips hydration so an unreadable contact cannot hide a deleted
+ * profile. Backed by `faculty_workspace_user_idx`.
+ */
+export async function isFacultyDeletedByUserId(tenant: string, userId: string): Promise<boolean> {
+  const subdomain = tenant.trim().toLowerCase();
+  if (!subdomain || !userId) return false;
+  return withTenantRead(subdomain, async (tx) => {
+    const rows = await tx
+      .select({ deletedAt: faculty.deletedAt })
+      .from(faculty)
+      .where(and(eq(faculty.workspaceSubdomain, subdomain), eq(faculty.userId, userId)))
+      .limit(1);
+    return Boolean(rows[0]?.deletedAt);
+  });
+}
+
 /** Finds the active faculty record linked to a contact, if one exists. */
 export async function findFacultyByContactId(
   tenant: string,
@@ -117,27 +136,27 @@ export async function saveFaculty(
   options?: { createOnly?: boolean },
 ): Promise<void> {
   const subdomain = tenant.trim().toLowerCase();
-  await withTenant(subdomain, async (tx) => {
-    await persistFacultyTx(tx, subdomain, member, options);
-  });
   const { syncFacultyLinkedUserRole } =
     await import("../../faculty/use-cases/facultyLinkedUserRoleSync.js");
-  await syncFacultyLinkedUserRole(subdomain, member);
+  // Role sync runs inside the faculty transaction so a rejected privilege
+  // change (FacultyRoleSyncForbiddenError) rolls the faculty write back too.
+  await withTenant(subdomain, async (tx) => {
+    await persistFacultyTx(tx, subdomain, member, options);
+    await syncFacultyLinkedUserRole(subdomain, member);
+  });
 }
 
 export async function bulkSaveFaculty(tenant: string, items: Faculty[]): Promise<void> {
   const subdomain = tenant.trim().toLowerCase();
   if (items.length === 0) return;
+  const { syncFacultyLinkedUserRole } =
+    await import("../../faculty/use-cases/facultyLinkedUserRoleSync.js");
   await withTenant(subdomain, async (tx) => {
     for (const item of items) {
       await persistFacultyTx(tx, subdomain, item);
+      await syncFacultyLinkedUserRole(subdomain, item);
     }
   });
-  const { syncFacultyLinkedUserRole } =
-    await import("../../faculty/use-cases/facultyLinkedUserRoleSync.js");
-  for (const item of items) {
-    await syncFacultyLinkedUserRole(subdomain, item);
-  }
 }
 
 export async function replaceFacultyForWorkspace(tenant: string, items: Faculty[]): Promise<void> {

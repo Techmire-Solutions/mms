@@ -41,6 +41,64 @@ export const MODULE_ROUTE_ACTION_RULES: readonly ModuleRouteActionRule[] = [
     action: "setupWrite",
     onlyModules: ["students"],
   },
+  // Faculty: archive/restore are `faculty.delete` operations. The handlers
+  // already require `canDeleteCollection("faculty")`, so the method default
+  // (`write`) wrongly 403'd a delete-only role. Registered on the canonical,
+  // `/api/tenant` and `/api/v1/tenant` prefixes.
+  {
+    methods: ["DELETE"],
+    pattern: /^\/api\/(tenant\/|v1\/tenant\/)?faculty\/[^/]+$/,
+    action: "delete",
+    onlyModules: ["faculty"],
+  },
+  {
+    methods: ["POST"],
+    pattern: /^\/api\/(tenant\/|v1\/tenant\/)?faculty\/(:id\/restore|bulk-delete|bulk-restore)$/,
+    action: "delete",
+    onlyModules: ["faculty"],
+  },
+  // Catalog archive/restore (departments, designations) and assignment removal
+  // require delete + setup-write in the handlers; the delete action is the
+  // stricter module-gate requirement.
+  {
+    methods: ["DELETE"],
+    pattern: /^\/api\/faculty\/(departments|designations)\/:id$/,
+    action: "delete",
+    onlyModules: ["faculty"],
+  },
+  {
+    methods: ["POST"],
+    pattern: /^\/api\/faculty\/(departments|designations)\/:id\/restore$/,
+    action: "delete",
+    onlyModules: ["faculty"],
+  },
+  {
+    methods: ["DELETE"],
+    pattern: /^\/api\/faculty\/[^/]+\/assignments\/:id$/,
+    action: "delete",
+    onlyModules: ["faculty"],
+  },
+  // Tasks: archive/restore are `tasks.delete` operations in the handlers. The
+  // status route is handler-owned because it accepts `tasks.write` OR
+  // `tasks.complete`.
+  {
+    methods: ["DELETE"],
+    pattern: /^\/api\/tasks\/:id$/,
+    action: "delete",
+    onlyModules: ["tasks"],
+  },
+  {
+    methods: ["POST"],
+    pattern: /^\/api\/tasks\/(bulk-delete|bulk-restore)$|^\/api\/tasks\/:id\/restore$/,
+    action: "delete",
+    onlyModules: ["tasks"],
+  },
+  {
+    methods: ["PATCH"],
+    pattern: /^\/api\/tasks\/:id\/status$/,
+    action: "availability",
+    onlyModules: ["tasks"],
+  },
   // Handler-owned permissions (grant + enablement still enforced here):
   // personal dashboard prefs/widgets (setupWrite|customize; summary filtered per module),
   // the staff activity log (analytics.view), and self-service edits of the caller's own contact.

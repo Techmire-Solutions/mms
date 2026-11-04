@@ -9,6 +9,20 @@ const mockInvalidateTenantRbac = vi.fn();
 const mockBroadcastCollection = vi.fn();
 const mockUpsertFacultyManagedWorkspaceRole = vi.fn();
 const mockRemoveFacultyManagedWorkspaceRole = vi.fn();
+const mockGetRequestUserId = vi.fn();
+const mockResolveCurrentTenantRole = vi.fn();
+
+vi.mock("../lib/tenantContext.js", () => ({
+  getRequestUserId: () => mockGetRequestUserId(),
+}));
+
+vi.mock("../lib/currentTenantRole.js", () => ({
+  resolveCurrentTenantRole: (...args: unknown[]) => mockResolveCurrentTenantRole(...args),
+}));
+
+vi.mock("../lib/logger.js", () => ({
+  logger: { warn: vi.fn(), error: vi.fn(), info: vi.fn(), debug: vi.fn() },
+}));
 
 vi.mock("../db/repositories/tenantUserRepository.js", () => ({
   findTenantUserRowByContactId: (...args: unknown[]) => mockFindTenantUserRowByContactId(...args),
@@ -38,6 +52,18 @@ vi.mock("../faculty/use-cases/facultyManagedRolesPrefs.js", () => ({
     mockRemoveFacultyManagedWorkspaceRole(...args),
 }));
 
+function linkedUser(role: string) {
+  return {
+    id: "u1",
+    role,
+    contactId: "c1",
+    loginEmail: "a@b.c",
+    passwordHash: "x",
+    name: "A",
+    workspaceSubdomain: "demo",
+  };
+}
+
 describe("syncFacultyLinkedUserRole (composite)", () => {
   beforeEach(() => {
     vi.clearAllMocks();
@@ -47,18 +73,12 @@ describe("syncFacultyLinkedUserRole (composite)", () => {
     mockBroadcastCollection.mockResolvedValue(undefined);
     mockUpsertFacultyManagedWorkspaceRole.mockResolvedValue(undefined);
     mockRemoveFacultyManagedWorkspaceRole.mockResolvedValue(undefined);
+    mockGetRequestUserId.mockReturnValue("admin-1");
+    mockResolveCurrentTenantRole.mockResolvedValue("admin");
   });
 
   it("creates a managed composite role for multiple assignable designations", async () => {
-    mockFindTenantUserRowByContactId.mockResolvedValue({
-      id: "u1",
-      role: "teacher",
-      contactId: "c1",
-      loginEmail: "a@b.c",
-      passwordHash: "x",
-      name: "A",
-      workspaceSubdomain: "demo",
-    });
+    mockFindTenantUserRowByContactId.mockResolvedValue(linkedUser("teacher"));
     mockListFacultyDesignations.mockResolvedValue([
       { id: "d1", status: "active", assignableRoles: ["teacher"] },
       { id: "d2", status: "active", assignableRoles: ["accountant"] },
@@ -91,15 +111,7 @@ describe("syncFacultyLinkedUserRole (composite)", () => {
   });
 
   it("assigns catalog role for a single assignable designation", async () => {
-    mockFindTenantUserRowByContactId.mockResolvedValue({
-      id: "u1",
-      role: "assistant_teacher",
-      contactId: "c1",
-      loginEmail: "a@b.c",
-      passwordHash: "x",
-      name: "A",
-      workspaceSubdomain: "demo",
-    });
+    mockFindTenantUserRowByContactId.mockResolvedValue(linkedUser("assistant_teacher"));
     mockListFacultyDesignations.mockResolvedValue([
       { id: "d1", status: "active", assignableRoles: ["teacher"] },
     ]);
@@ -120,18 +132,83 @@ describe("syncFacultyLinkedUserRole (composite)", () => {
   });
 
   it("does not change role when assignable lists are empty", async () => {
-    mockFindTenantUserRowByContactId.mockResolvedValue({
-      id: "u1",
-      role: "teacher",
-      contactId: "c1",
-      loginEmail: "a@b.c",
-      passwordHash: "x",
-      name: "A",
-      workspaceSubdomain: "demo",
-    });
+    mockFindTenantUserRowByContactId.mockResolvedValue(linkedUser("teacher"));
     mockListFacultyDesignations.mockResolvedValue([
       { id: "d1", status: "active", assignableRoles: [] },
     ]);
+
+    const result = await syncFacultyLinkedUserRole("demo", {
+      contactId: "c1",
+      employDesignations: [
+        { designationId: "d1", employDesignationStatus: "active", designationEndDate: null },
+      ],
+    });
+
+    expect(result).toEqual({ updated: false });
+    expect(mockUpsertTenantUserRow).not.toHaveBeenCalled();
+  });
+
+  it("blocks a teacher from assigning an admin-mapped designation", async () => {
+    mockFindTenantUserRowByContactId.mockResolvedValue(linkedUser("teacher"));
+    mockListFacultyDesignations.mockResolvedValue([
+      { id: "d1", status: "active", assignableRoles: ["admin"] },
+    ]);
+    mockResolveCurrentTenantRole.mockResolvedValue("teacher");
+
+    await expect(
+      syncFacultyLinkedUserRole("demo", {
+        contactId: "c1",
+        employDesignations: [
+          { designationId: "d1", employDesignationStatus: "active", designationEndDate: null },
+        ],
+      }),
+    ).rejects.toMatchObject({ statusCode: 403, type: "forbidden" });
+
+    expect(mockUpsertTenantUserRow).not.toHaveBeenCalled();
+    expect(mockUpsertFacultyManagedWorkspaceRole).not.toHaveBeenCalled();
+  });
+
+  it("blocks a non-admin from demoting a linked admin", async () => {
+    mockFindTenantUserRowByContactId.mockResolvedValue(linkedUser("admin"));
+    mockListFacultyDesignations.mockResolvedValue([
+      { id: "d1", status: "active", assignableRoles: ["teacher"] },
+    ]);
+    mockResolveCurrentTenantRole.mockResolvedValue("principal");
+
+    await expect(
+      syncFacultyLinkedUserRole("demo", {
+        contactId: "c1",
+        employDesignations: [
+          { designationId: "d1", employDesignationStatus: "active", designationEndDate: null },
+        ],
+      }),
+    ).rejects.toMatchObject({ statusCode: 403 });
+
+    expect(mockUpsertTenantUserRow).not.toHaveBeenCalled();
+  });
+
+  it("lets an admin change a linked role", async () => {
+    mockFindTenantUserRowByContactId.mockResolvedValue(linkedUser("admin"));
+    mockListFacultyDesignations.mockResolvedValue([
+      { id: "d1", status: "active", assignableRoles: ["teacher"] },
+    ]);
+
+    const result = await syncFacultyLinkedUserRole("demo", {
+      contactId: "c1",
+      employDesignations: [
+        { designationId: "d1", employDesignationStatus: "active", designationEndDate: null },
+      ],
+    });
+
+    expect(result).toEqual({ updated: true, roleId: "teacher" });
+  });
+
+  it("skips the role change when no authenticated actor is bound", async () => {
+    mockFindTenantUserRowByContactId.mockResolvedValue(linkedUser("teacher"));
+    mockListFacultyDesignations.mockResolvedValue([
+      { id: "d1", status: "active", assignableRoles: ["admin"] },
+    ]);
+    mockGetRequestUserId.mockReturnValue(null);
 
     const result = await syncFacultyLinkedUserRole("demo", {
       contactId: "c1",
