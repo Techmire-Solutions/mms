@@ -18,6 +18,11 @@ vi.mock("../lib/livePush.js", () => ({
   broadcastCollection: (...args: unknown[]) => mockBroadcastCollection(...args),
 }));
 
+vi.mock("../services/auditTrailService.js", () => ({
+  recordModernAuditEvent: vi.fn().mockResolvedValue({ id: 1 }),
+  sanitizeAuditState: (value: unknown) => value,
+}));
+
 vi.mock("../faculty/use-cases/facultyWriteGuards.js", () => ({
   validateFacultyContactLink: vi.fn().mockResolvedValue({ userId: null }),
   validateFacultyDesignationLink: vi.fn().mockResolvedValue({ departmentId: "" }),

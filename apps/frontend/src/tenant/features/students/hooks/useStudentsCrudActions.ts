@@ -31,9 +31,16 @@ export function useStudentsCrudActions({
   const handleSaveStudent = useCallback(
     async (studentToSave: Student): Promise<Student> => {
       if (editStudent) {
+        const expectedUpdatedAt =
+          typeof editStudent.updatedAt === "string" ? editStudent.updatedAt : undefined;
         const res = await updateStudent.mutateAsync({
           params: { id: String(studentToSave.id) },
           body: studentToSave as StudentRecord,
+          // Optimistic concurrency: a stale token is a 409 the form surfaces
+          // instead of silently overwriting a concurrent edit.
+          ...(expectedUpdatedAt
+            ? { extraHeaders: { "x-expected-updated-at": expectedUpdatedAt } }
+            : {}),
         });
         assertContractOk(res, "Failed to update student");
         return ((res.body as { student?: Student })?.student ?? res.body) as Student;

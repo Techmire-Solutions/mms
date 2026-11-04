@@ -40,6 +40,11 @@ vi.mock("../db/database.js", () => ({
 vi.mock("../lib/livePush.js", () => ({
   broadcastCollection: vi.fn(),
 }));
+
+vi.mock("../services/auditTrailService.js", () => ({
+  recordModernAuditEvent: vi.fn().mockResolvedValue({ id: 1 }),
+  sanitizeAuditState: (value: unknown) => value,
+}));
 vi.mock("../lib/cache/index.js", () => ({
   invalidateMultiTierCache: (...args: unknown[]) => mockInvalidateCache(...args),
 }));

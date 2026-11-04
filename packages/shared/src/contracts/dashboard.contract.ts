@@ -83,6 +83,7 @@ export const dashboardContract = c.router({
       200: dashboardSuccessResponseSchema,
       400: errorResponse,
       403: errorResponse,
+      404: errorResponse,
       500: errorResponse,
     },
     summary: "Delete a dashboard widget",
@@ -111,7 +112,9 @@ export const dashboardContract = c.router({
     path: "/api/dashboard/summary",
     query: z
       .object({
-        date: z.string().optional(),
+        /** Calendar date for attendance/date-scoped metrics; also keys the 30s Redis cache. */
+        date: z.iso.date().optional(),
+        /** Presentation-only hint kept for the FE client; the server filters sections by permission. */
         role: z.string().optional(),
       })
       .optional(),

@@ -5,6 +5,7 @@ import {
   findFacultyByIds,
   isFacultyDeletedByUserId,
   saveFaculty,
+  saveFacultyIfVersionMatches,
   countSubordinates,
   countSubordinatesBatch,
   findSubordinates,
@@ -46,6 +47,8 @@ function createFacultyRepository(): FacultyRepository {
     findSoftDeletedByContactId: (tenant, contactId) =>
       findSoftDeletedFacultyByContactIdSql(tenant, contactId),
     save: (tenant, member, options) => saveFaculty(tenant, member as Faculty, options),
+    saveIfVersionMatches: (tenant, member, expectedUpdatedAt) =>
+      saveFacultyIfVersionMatches(tenant, member as Faculty, expectedUpdatedAt),
     guardAssignmentDependents: guardFacultyAssignmentDependents,
     bulkSave: (tenant, members) => bulkSaveFaculty(tenant, members as Faculty[]),
     aggregateCommandMetrics: (tenant, periodDays) =>

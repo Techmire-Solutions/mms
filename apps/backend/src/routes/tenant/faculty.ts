@@ -12,6 +12,8 @@ import {
 import { facultyCatalogIoRoutes } from "./faculty/facultyCatalogIoRoutes.js";
 import { facultyImportRoutes } from "./faculty/facultyImportRoutes.js";
 import { handleGetFaculty, handleListFaculty } from "./faculty/facultyCrudRoutes.js";
+import { facultyListQuerySchema } from "@mms/shared";
+import { replyValidationError } from "../../lib/zodRequest.js";
 
 /**
  * Server-first faculty resource routes (TanStack Query on FE).
@@ -50,8 +52,14 @@ export default async function facultyRoutes(
   // Legacy /api/v1/tenant/faculty read aliases. Both delegate to the canonical
   // contract handlers so permissions, soft-delete gating, and sanitization stay SSOT.
   fastify.get("/api/v1/tenant/faculty", async (request, reply) => {
+    // The contract router validates this query on `/api/faculty`; the alias must
+    // not hand raw page/limit/sort/filter strings to the SQL page builder.
+    const parsed = facultyListQuerySchema.safeParse(request.query);
+    if (!parsed.success) {
+      return replyValidationError(reply, parsed.error.issues[0]?.message ?? "Invalid list query");
+    }
     const result = await handleListFaculty({
-      query: request.query as Record<string, unknown>,
+      query: parsed.data as Record<string, unknown>,
       request,
     });
     return reply.status(result.status).send(result.body);

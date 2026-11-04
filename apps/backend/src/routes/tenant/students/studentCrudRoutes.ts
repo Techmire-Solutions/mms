@@ -125,6 +125,8 @@ export const studentCrudRoutes: FastifyPluginAsync = async (fastify) => {
         };
       }
       try {
+        // Audit is appended inside the write transaction by the use case
+        // (`mms-data-layer` §5.4), including the restore-on-re-registration path.
         const result = await withTenant(
           String(request.tenant?.id),
           async () => {
@@ -133,21 +135,6 @@ export const studentCrudRoutes: FastifyPluginAsync = async (fastify) => {
           },
           { readOnly: false },
         );
-        if (result.restored) {
-          await auditStudent(
-            user,
-            "student.restore",
-            `Restored student ${result.record.id} via re-registration`,
-            String(result.record.id),
-          );
-        } else {
-          await auditStudent(
-            user,
-            "student.create",
-            `Created student ${result.record.id}`,
-            String(result.record.id),
-          );
-        }
         const response = await sanitizeOneStudentForUser(result.record as Student, user);
         return result.restored
           ? { status: 200 as const, body: { student: response } }
@@ -188,7 +175,10 @@ export const studentCrudRoutes: FastifyPluginAsync = async (fastify) => {
                 ...validated,
                 id,
               },
-              user,
+              {
+                user,
+                expectedUpdatedAt: request.headers["x-expected-updated-at"] as string | undefined,
+              },
             );
           },
           { readOnly: false },
@@ -199,7 +189,7 @@ export const studentCrudRoutes: FastifyPluginAsync = async (fastify) => {
             body: { type: "not_found", message: "Student not found" },
           };
         }
-        await auditStudent(user, "student.update", `Updated student ${id}`, id);
+        // The use case appends the audit row inside the write transaction.
         const response = await sanitizeOneStudentForUser(updated as Student, user);
         return { status: 200 as const, body: { student: response } };
       } catch (error: unknown) {

@@ -47,9 +47,17 @@ export function useFacultyPageActions({ editFaculty }: UseFacultyPageActionsPara
 
   const handleSaveFaculty = async (facultyToSave: Faculty): Promise<Faculty> => {
     if (effectiveEditTarget) {
+      const expectedUpdatedAt =
+        typeof effectiveEditTarget.updatedAt === "string"
+          ? effectiveEditTarget.updatedAt
+          : undefined;
       const res = await updateFaculty.mutateAsync({
         params: { id: String(facultyToSave.id) },
         body: facultyToSave as FacultyRecord,
+        // Optimistic concurrency: surface a 409 instead of silently overwriting.
+        ...(expectedUpdatedAt
+          ? { extraHeaders: { "x-expected-updated-at": expectedUpdatedAt } }
+          : {}),
       });
       notify.success(t("faculty.toast.updated"));
       const raw = res.body as unknown;

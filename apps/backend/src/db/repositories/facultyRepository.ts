@@ -1,7 +1,8 @@
-import { and, eq, inArray, isNull, sql } from "drizzle-orm";
+import { and, eq, inArray, isNull, or, sql } from "drizzle-orm";
 import { type Faculty, type RepositoryListOptions } from "@mms/shared";
 import { faculty, facultyEmployments } from "../schema.js";
 import { withTenant, withTenantRead } from "../tenant-context.js";
+import { naiveTimestamp } from "../../lib/dbDate.js";
 import { buildTenantSoftDeleteConditions } from "../../services/genericRelationalService.js";
 import {
   type FacultyInsert,
@@ -144,6 +145,51 @@ export async function saveFaculty(
     await persistFacultyTx(tx, subdomain, member, options);
     await syncFacultyLinkedUserRole(subdomain, member);
   });
+}
+
+/**
+ * Conditional save for optimistic concurrency (`mms-api-interface` §6).
+ *
+ * The `updated_at` predicate is checked under `FOR UPDATE` inside the same
+ * transaction that persists the row, so a writer that committed after the
+ * caller's read cannot be silently overwritten. A stale token returns false
+ * (caller maps it to 409).
+ */
+export async function saveFacultyIfVersionMatches(
+  tenant: string,
+  member: Faculty,
+  expectedUpdatedAt: string,
+): Promise<boolean> {
+  const subdomain = tenant.trim().toLowerCase();
+  const expected = new Date(expectedUpdatedAt);
+  if (Number.isNaN(expected.getTime())) return false;
+  const naiveExpected = naiveTimestamp(expected);
+  const { syncFacultyLinkedUserRole } =
+    await import("../../faculty/use-cases/facultyLinkedUserRoleSync.js");
+  let saved = false;
+  await withTenant(subdomain, async (tx) => {
+    const rows = await tx
+      .select({ id: faculty.id })
+      .from(faculty)
+      .where(
+        and(
+          eq(faculty.workspaceSubdomain, subdomain),
+          eq(faculty.id, String(member.id)),
+          isNull(faculty.deletedAt),
+          or(
+            sql`date_trunc('milliseconds', ${faculty.updatedAt}) = ${naiveExpected}::timestamp`,
+            sql`date_trunc('milliseconds', ${faculty.updatedAt}) = ${expected}::timestamptz`,
+          ),
+        ),
+      )
+      .for("update")
+      .limit(1);
+    if (rows.length === 0) return;
+    await persistFacultyTx(tx, subdomain, member);
+    await syncFacultyLinkedUserRole(subdomain, member);
+    saved = true;
+  });
+  return saved;
 }
 
 export async function bulkSaveFaculty(tenant: string, items: Faculty[]): Promise<void> {

@@ -12,6 +12,7 @@ import {
   deleteTask,
   restoreTask,
 } from "../../tasks/use-cases/tasksUseCases.js";
+import { mapTaskRouteError } from "../../lib/taskRouteErrors.js";
 
 export async function registerTasksSoftDeleteRoutes(fastify: FastifyInstance): Promise<void> {
   fastify.delete<{ Params: { id: string } }>("/api/tasks/:id", async (request, reply) => {
@@ -22,11 +23,11 @@ export async function registerTasksSoftDeleteRoutes(fastify: FastifyInstance): P
     try {
       const success = await deleteTask(String(request.tenant?.id), request.params.id, user.id);
       return reply.status(200).send({ success });
-    } catch (err) {
-      return reply.status(409).send({
-        type: "conflict",
-        message: err instanceof Error ? err.message : "Could not archive task",
-      });
+    } catch (error) {
+      const mapped = mapTaskRouteError(error);
+      if (mapped) return reply.status(mapped.status).send(mapped.body);
+      request.log.error({ err: error }, "Failed to archive task");
+      return reply.status(500).send({ type: "server_error", message: "Failed to archive task" });
     }
   });
 
@@ -41,11 +42,11 @@ export async function registerTasksSoftDeleteRoutes(fastify: FastifyInstance): P
         return reply.status(404).send({ type: "not_found", message: "Task not found in trash" });
       }
       return reply.status(200).send({ success: true, task: restored });
-    } catch (err) {
-      return reply.status(400).send({
-        type: "validation_error",
-        message: err instanceof Error ? err.message : "Could not restore task",
-      });
+    } catch (error) {
+      const mapped = mapTaskRouteError(error);
+      if (mapped) return reply.status(mapped.status).send(mapped.body);
+      request.log.error({ err: error }, "Failed to restore task");
+      return reply.status(500).send({ type: "server_error", message: "Failed to restore task" });
     }
   });
 
@@ -58,8 +59,17 @@ export async function registerTasksSoftDeleteRoutes(fastify: FastifyInstance): P
     if (!parsed.success) {
       return reply.status(400).send({ type: "validation_error", message: "Invalid payload" });
     }
-    const result = await bulkRestoreTasks(String(request.tenant?.id), parsed.data.ids, user.id);
-    return reply.status(200).send(result);
+    try {
+      const result = await bulkRestoreTasks(String(request.tenant?.id), parsed.data.ids, user.id);
+      return reply.status(200).send(result);
+    } catch (error) {
+      const mapped = mapTaskRouteError(error);
+      if (mapped) return reply.status(mapped.status).send(mapped.body);
+      request.log.error({ err: error }, "Failed to bulk restore tasks");
+      return reply
+        .status(500)
+        .send({ type: "server_error", message: "Failed to bulk restore tasks" });
+    }
   });
 
   fastify.post("/api/tasks/bulk-delete", async (request, reply) => {
@@ -71,7 +81,16 @@ export async function registerTasksSoftDeleteRoutes(fastify: FastifyInstance): P
     if (!parsed.success) {
       return reply.status(400).send({ type: "validation_error", message: "Invalid payload" });
     }
-    const result = await bulkDeleteTasks(String(request.tenant?.id), parsed.data.ids, user.id);
-    return reply.status(200).send(result);
+    try {
+      const result = await bulkDeleteTasks(String(request.tenant?.id), parsed.data.ids, user.id);
+      return reply.status(200).send(result);
+    } catch (error) {
+      const mapped = mapTaskRouteError(error);
+      if (mapped) return reply.status(mapped.status).send(mapped.body);
+      request.log.error({ err: error }, "Failed to bulk archive tasks");
+      return reply
+        .status(500)
+        .send({ type: "server_error", message: "Failed to bulk archive tasks" });
+    }
   });
 }

@@ -12,6 +12,7 @@ import { nowIso } from "../../lib/softDeleteHelpers.js";
 import { restoreFacultyById, bulkRestoreFaculty } from "./facultyRestoreUseCases.js";
 import { cascadeFacultySoftDeleteSideEffects } from "./facultySoftDeleteCascade.js";
 import { reconcileFacultyContactsByFacultyIds } from "../../contacts/systemTags/contactSystemTagUseCases.js";
+import { appendCollectionAuditInTx } from "../../lib/collectionAuditInTx.js";
 import {
   guardBulkSubordinatesOnDelete,
   guardSubordinatesOnDelete,
@@ -59,6 +60,16 @@ export async function softDeleteFacultyById(
         actorId: deletedBy,
       },
     );
+    // Per-record audit commits with the archive (mms-data-layer §5.4).
+    await appendCollectionAuditInTx({
+      tenant,
+      tableName: "faculty",
+      recordId: String(toSave[0].id),
+      action: "faculty.soft_delete",
+      summary: `Soft-deleted faculty member ${String(toSave[0].id)}${trimmedReason ? ` — ${trimmedReason}` : ""}`,
+      realUserId: deletedBy,
+      subjectId: String(toSave[0].id),
+    });
     return { succeeded: 1, failed: 0 };
   });
 
@@ -115,6 +126,18 @@ export async function bulkSoftDeleteFaculty(
           actorId: deletedBy,
         },
       );
+      // Per-record audit rows commit with the archive (mms-data-layer §5.4).
+      for (const member of toSave) {
+        await appendCollectionAuditInTx({
+          tenant,
+          tableName: "faculty",
+          recordId: String(member.id),
+          action: "faculty.soft_delete",
+          summary: `Soft-deleted faculty member ${String(member.id)}${trimmedReason ? ` — ${trimmedReason}` : ""}`,
+          realUserId: deletedBy,
+          subjectId: String(member.id),
+        });
+      }
     }
     return { succeeded, failed };
   });

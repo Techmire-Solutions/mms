@@ -4,6 +4,7 @@ import {
   findStudentsByIds,
   resolveStudentsByIdentifiers,
   saveStudent,
+  saveStudentIfVersionMatches,
   bulkSaveStudents,
   bulkSoftDeleteStudentsSql,
   bulkRestoreStudentsSql,
@@ -47,6 +48,8 @@ function createStudentsRepository(): StudentsRepository {
     resolveByIdentifiers: (tenant, ids, options) =>
       resolveStudentsByIdentifiers(tenant, ids, options),
     save: (tenant, student) => saveStudent(tenant, student as Student),
+    saveIfVersionMatches: (tenant, student, expectedUpdatedAt) =>
+      saveStudentIfVersionMatches(tenant, student as Student, expectedUpdatedAt),
     bulkSave: (tenant, students) => bulkSaveStudents(tenant, students as Student[]),
     aggregateCommandMetrics: (tenant, periodDays) =>
       aggregateStudentsCommandMetrics(tenant, periodDays),

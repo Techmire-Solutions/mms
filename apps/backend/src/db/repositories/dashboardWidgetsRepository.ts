@@ -147,16 +147,17 @@ export async function upsertDashboardWidgetsForWorkspace(
   });
 }
 
-/** Delete a single dashboard widget by id within the workspace. */
+/** Delete a single dashboard widget by id within the workspace. Returns the deleted row count. */
 export async function deleteDashboardWidgetById(
   workspaceSubdomain: string,
   id: string,
-): Promise<void> {
+): Promise<number> {
   const subdomain = workspaceSubdomain.trim().toLowerCase();
-  await withTenant(subdomain, async (tx) => {
-    await tx
+  return withTenant(subdomain, async (tx) => {
+    const result = await tx
       .delete(dashboardWidgets)
       .where(and(eq(dashboardWidgets.workspaceSubdomain, subdomain), eq(dashboardWidgets.id, id)));
+    return result.rowCount ?? 0;
   });
 }
 

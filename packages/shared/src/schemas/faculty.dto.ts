@@ -51,6 +51,17 @@ const optionalCalendarDate = z
 /** Server-computed keys silently dropped from client writes. */
 const FACULTY_WRITE_SERVER_OWNED_KEYS = ["performanceRating"] as const;
 
+/**
+ * Audit attribution/timestamps are stamped from the session and the DB clock
+ * (`repositoryMappers.mapAuditToInsert`), never chosen by the payload.
+ */
+const FACULTY_WRITE_CLIENT_AUDIT_KEYS = [
+  "createdAt",
+  "updatedAt",
+  "createdBy",
+  "updatedBy",
+] as const;
+
 const FACULTY_WRITE_SYSTEM_KEY_SET = new Set<string>(FACULTY_WRITE_SYSTEM_KEYS);
 
 /** Enabled Setup custom field keys beyond the system faculty model. */
@@ -247,6 +258,7 @@ const FACULTY_WRITE_STRIP_KEYS = [
   "hierarchyRank",
   "subordinateCount",
   ...FACULTY_WRITE_SERVER_OWNED_KEYS,
+  ...FACULTY_WRITE_CLIENT_AUDIT_KEYS,
 ] as const;
 
 export const facultyWriteSchema = z.preprocess((raw) => {

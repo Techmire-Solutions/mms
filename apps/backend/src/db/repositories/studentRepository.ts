@@ -11,6 +11,7 @@ export type { ListStudentsOptions } from "./studentRepositoryHydrate.js";
 export {
   persistStudentTx,
   saveStudent,
+  saveStudentIfVersionMatches,
   bulkSaveStudents,
   replaceStudentsForWorkspace,
 } from "./studentRepositoryPersist.js";

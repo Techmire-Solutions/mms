@@ -4,7 +4,7 @@ import type { Faculty, User, facultyContract } from "@mms/shared";
 import type { ContractRouteArgs, ContractRouteResponse } from "../../../lib/contractRouterTypes.js";
 import { facultyUseCases } from "../../../faculty/use-cases/facultyUseCases.js";
 import { validateFacultyDynamic } from "../../../services/facultyValidationService.js";
-import { auditFaculty, sanitizeOneFacultyForUser } from "./facultyRouteHelpers.js";
+import { sanitizeOneFacultyForUser } from "./facultyRouteHelpers.js";
 import { isUniqueViolation } from "../../../lib/pgErrors.js";
 
 export async function handleCreateFaculty({
@@ -40,6 +40,8 @@ export async function handleCreateFaculty({
     };
   }
   try {
+    // Audit is appended inside the create transaction by the use case
+    // (`mms-data-layer` §5.4).
     const result = await withTenant(
       String(tenant),
       () =>
@@ -47,12 +49,6 @@ export async function handleCreateFaculty({
           canRestore: canDeleteCollection(user, "faculty"),
         }),
       { readOnly: false },
-    );
-    await auditFaculty(
-      user,
-      "faculty.create",
-      `Created faculty member ${result.record.id}`,
-      String(result.record.id),
     );
     const sanitized = await sanitizeOneFacultyForUser(result.record as Faculty, user);
     return result.restored
@@ -134,7 +130,10 @@ export async function handleUpdateFaculty({
   try {
     const updated = await withTenant(
       String(tenant),
-      () => facultyUseCases.updateFacultyById(id, body),
+      () =>
+        facultyUseCases.updateFacultyById(id, body, {
+          expectedUpdatedAt: request.headers["x-expected-updated-at"] as string | undefined,
+        }),
       { readOnly: false },
     );
     if (!updated) {
@@ -143,7 +142,7 @@ export async function handleUpdateFaculty({
         body: { type: "not_found", message: "Faculty member not found" },
       };
     }
-    await auditFaculty(user, "faculty.update", `Updated faculty member ${id}`, id);
+    // The use case appends the audit row inside the write transaction.
     const sanitized = await sanitizeOneFacultyForUser(updated as Faculty, user);
     return {
       status: 200 as const,
@@ -151,6 +150,21 @@ export async function handleUpdateFaculty({
     };
   } catch (error: unknown) {
     request.log.error({ err: error }, "Failed to update faculty member");
+    // A duplicate employee ID/contact link is a client-resolvable conflict, and a
+    // blocked linked-user role change is an authorization denial — neither may
+    // surface as a server error.
+    if (isUniqueViolation(error) || (error as { statusCode?: number }).statusCode === 409) {
+      return {
+        status: 409 as const,
+        body: { type: "conflict", message: "Faculty ID, contact or employee ID already exists" },
+      };
+    }
+    if ((error as { statusCode?: number }).statusCode === 403) {
+      return {
+        status: 403 as const,
+        body: { type: "forbidden", message: error instanceof Error ? error.message : "Forbidden" },
+      };
+    }
     if ((error as { statusCode?: number }).statusCode === 400) {
       return {
         status: 400 as const,
@@ -204,22 +218,32 @@ export async function handleDeleteFaculty({
         status: 404 as const,
         body: { type: "not_found", message: "Faculty member not found" },
       };
-    const reasonNote = reason?.trim() ? ` — ${reason.trim()}` : "";
-    await auditFaculty(
-      user,
-      "faculty.soft_delete",
-      `Soft-deleted faculty member ${id}${reasonNote}`,
-      id,
-    );
+    // The use case appends the per-record audit row inside the archive transaction.
     return { status: 200 as const, body: { success: true as const } };
   } catch (error: unknown) {
     request.log.error({ err: error }, "Failed to delete faculty member");
-    if ((error as { statusCode?: number }).statusCode === 409) {
+    const status = (error as { statusCode?: number }).statusCode;
+    if (status === 409) {
       return {
         status: 409 as const,
         body: {
           type: "conflict",
           message: error instanceof Error ? error.message : "Subordinate reassignment required",
+        },
+      };
+    }
+    if (status === 403) {
+      return {
+        status: 403 as const,
+        body: { type: "forbidden", message: error instanceof Error ? error.message : "Forbidden" },
+      };
+    }
+    if (status === 400) {
+      return {
+        status: 400 as const,
+        body: {
+          type: "validation_error",
+          message: error instanceof Error ? error.message : "Invalid request",
         },
       };
     }
