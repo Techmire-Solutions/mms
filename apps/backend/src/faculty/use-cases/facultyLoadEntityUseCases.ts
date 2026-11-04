@@ -108,6 +108,23 @@ export async function isFacultyProfileDeleted(
   return Boolean(found?.deletedAt);
 }
 
+/**
+ * Session-guard tombstone probe keyed by the linked **tenant user id**.
+ *
+ * `isFacultyProfileDeleted` above expects a faculty primary key, which is not
+ * what the JWT carries — the guard must resolve through `faculty.user_id`.
+ * The repository probe is un-hydrated, so an unreadable contact cannot mask a
+ * deleted profile.
+ */
+export async function isFacultyProfileDeletedForUser(
+  userId: string,
+  repo: FacultyRepository = facultyRepository,
+): Promise<boolean> {
+  const tenant = getRequestTenant();
+  if (!tenant) return false;
+  return repo.isDeletedByUserId(tenant, userId);
+}
+
 export async function loadFacultyByIds(
   ids: string[],
   repo: FacultyRepository = facultyRepository,

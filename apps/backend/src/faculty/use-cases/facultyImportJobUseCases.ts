@@ -1,5 +1,5 @@
 import { randomUUID } from "node:crypto";
-import type { FacultyImportJobPayload } from "@mms/shared";
+import { roleHasPermission, type FacultyImportJobPayload } from "@mms/shared";
 import { listFacultyDepartments } from "../../db/repositories/facultyDepartmentRepository.js";
 import { listFacultyDesignations } from "../../db/repositories/facultyDesignationRepository.js";
 import {
@@ -67,6 +67,10 @@ export async function runFacultyMembersImportJob(
     rows.map((row) => row.employeeId ?? "").filter((value) => value.trim().length > 0),
   );
   const batch: FacultyBatchSideEffects = { contactIds: new Set<string>() };
+  // The queued job runs outside the request guard: carry the actor role's
+  // restore capability so an import cannot resurrect an archived profile
+  // without `faculty.delete`.
+  const canRestore = roleHasPermission(payload.viewerRole, "faculty.delete");
 
   for (let i = 0; i < total; i += 1) {
     const row = rows[i];
@@ -94,7 +98,10 @@ export async function runFacultyMembersImportJob(
       } else {
         const contactId = row.contactId?.trim();
         if (!contactId) throw new Error("contactId required to create faculty");
-        const created = await createFaculty({ id: randomUUID(), contactId, ...patch }, { batch });
+        const created = await createFaculty(
+          { id: randomUUID(), contactId, ...patch },
+          { batch, canRestore },
+        );
         savedId = String(created.record.id);
       }
       // Keep the in-memory map warm so duplicate rows in one file update the same

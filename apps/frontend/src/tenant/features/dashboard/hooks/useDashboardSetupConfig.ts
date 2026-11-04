@@ -71,13 +71,33 @@ export function useDashboardPreferencesMutation() {
   const queryClient = useQueryClient();
   const { t } = useTranslation();
   return tsrClient.dashboard.putPreferences.useMutation({
+    // Optimistic: two toggles inside one round-trip must not lose the first
+    // write (the prefs document is a full singleton).
+    onMutate: async (variables: { body: unknown }) => {
+      await queryClient.cancelQueries({ queryKey: DASHBOARD_PREFERENCES_QUERY_KEY });
+      const previous = queryClient.getQueryData(DASHBOARD_PREFERENCES_QUERY_KEY);
+      queryClient.setQueryData(DASHBOARD_PREFERENCES_QUERY_KEY, {
+        status: 200,
+        body: { success: true, preferences: variables.body },
+      });
+      return { previous };
+    },
+    onError: (
+      _error: unknown,
+      _variables: unknown,
+      context: { previous?: unknown } | undefined,
+    ) => {
+      if (context?.previous !== undefined) {
+        queryClient.setQueryData(DASHBOARD_PREFERENCES_QUERY_KEY, context.previous);
+      }
+      notify.error(t("dashboard.toast.prefSaveFailed"));
+    },
     onSuccess: (res: { status: number; body?: { preferences?: unknown } }) => {
       if (res.status === 200 && res.body?.preferences) {
         queryClient.setQueryData(DASHBOARD_PREFERENCES_QUERY_KEY, res);
         invalidateDashboardQueries(queryClient);
       }
     },
-    onError: () => notify.error(t("dashboard.toast.prefSaveFailed")),
   });
 }
 

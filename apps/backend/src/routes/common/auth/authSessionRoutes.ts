@@ -108,12 +108,12 @@ export const authSessionRoutes: FastifyPluginAsync = async (fastify) => {
         if (userRow?.deletedAt) {
           return sendUnauthorized(reply, "Session revoked");
         }
-        if (user.role === "faculty" || user.role === "teacher") {
-          // Tombstone probe only — a hydrated load returns null when the linked
-          // contact is unreadable, which would keep a deleted teacher signed in.
-          if (await facultyUseCases.isFacultyProfileDeleted(String(user.id))) {
-            return sendUnauthorized(reply, "Session revoked");
-          }
+        // Tombstone probe by linked user id: a hydrated faculty load returns
+        // null when the linked contact is unreadable, which would keep a deleted
+        // teacher signed in. Not gated on the role name — composite
+        // designation roles are not `faculty`/`teacher`.
+        if (await facultyUseCases.isFacultyProfileDeletedForUser(String(user.id))) {
+          return sendUnauthorized(reply, "Session revoked");
         }
       } catch {
         // Fall through for tests without DB context

@@ -107,6 +107,7 @@ export function useDashboardPageController() {
     customWidgets,
     dashboardRole,
     enabledModules,
+    can,
     data: dashboardData,
     t,
   });

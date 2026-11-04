@@ -27,8 +27,8 @@ export const contactGoogleSyncRoutes: FastifyPluginAsync = async (fastify) => {
     try {
       const config = await getContactGoogleSyncConfig(String(user.id));
       return reply.send({ config: redactGoogleSyncConfigForClient(config) });
-    } catch {
-      return sendDatabaseError(reply, "Failed to load Google sync config");
+    } catch (error) {
+      return sendDatabaseError(reply, "Failed to load Google sync config", error);
     }
   });
 
@@ -58,8 +58,8 @@ export const contactGoogleSyncRoutes: FastifyPluginAsync = async (fastify) => {
         "google-sync",
       );
       return reply.send({ config: redactGoogleSyncConfigForClient(saved) });
-    } catch {
-      return sendDatabaseError(reply, "Failed to save Google sync config");
+    } catch (error) {
+      return sendDatabaseError(reply, "Failed to save Google sync config", error);
     }
   });
 
@@ -75,8 +75,8 @@ export const contactGoogleSyncRoutes: FastifyPluginAsync = async (fastify) => {
         "google-sync",
       );
       return reply.send({ success: true });
-    } catch {
-      return sendDatabaseError(reply, "Failed to clear Google sync config");
+    } catch (error) {
+      return sendDatabaseError(reply, "Failed to clear Google sync config", error);
     }
   });
 
@@ -103,7 +103,7 @@ export const contactGoogleSyncRoutes: FastifyPluginAsync = async (fastify) => {
       if (error instanceof GoogleOAuthExchangeError) {
         return reply.status(400).send({ type: "oauth_error", message: error.message });
       }
-      return sendDatabaseError(reply, "Failed to exchange OAuth code");
+      return sendDatabaseError(reply, "Failed to exchange OAuth code", error);
     }
   });
 
@@ -126,7 +126,7 @@ export const contactGoogleSyncRoutes: FastifyPluginAsync = async (fastify) => {
         }
         return reply.status(400).send({ type: error.code, message: error.message });
       }
-      return sendDatabaseError(reply, "Failed to sync Google contacts");
+      return sendDatabaseError(reply, "Failed to sync Google contacts", error);
     }
   });
 

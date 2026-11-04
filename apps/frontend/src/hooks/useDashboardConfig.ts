@@ -9,6 +9,7 @@ import { getOrInitializeCustomWidgets } from "@/lib/reports/widgetDefaults";
 import type { CustomWidget } from "@/lib/reports/pinnedWidgetTypes";
 import { usePermissions } from "@/tenant/hooks/usePermissions";
 import {
+  DASHBOARD_PREFERENCES_QUERY_KEY,
   useDashboardPreferencesQuery,
   useDashboardPreferencesMutation,
   useDashboardWidgetsQuery,
@@ -75,9 +76,14 @@ export function useDashboardConfig() {
 
   const updatePref = useCallback(
     <K extends keyof DashboardPreferences>(key: K, value: DashboardPreferences[K]) => {
-      prefsMutation.mutate({ body: { ...prefs, [key]: value } });
+      // Read the latest document from the cache so a second toggle in the same
+      // tick builds on the optimistic value, not the render-time closure.
+      const cached = queryClient.getQueryData(DASHBOARD_PREFERENCES_QUERY_KEY) as
+        { body?: { preferences?: DashboardPreferences } } | undefined;
+      const latest = cached?.body?.preferences ?? prefs;
+      prefsMutation.mutate({ body: { ...latest, [key]: value } });
     },
-    [prefs, prefsMutation],
+    [prefs, prefsMutation, queryClient],
   );
 
   const toggleCardVisibility = (cardId: string) => {

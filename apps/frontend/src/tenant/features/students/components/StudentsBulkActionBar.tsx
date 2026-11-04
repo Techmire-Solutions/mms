@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { GraduationCap, BookOpen, IdCard } from "lucide-react";
 import {
+  ENROLLMENTS_MODULE_MANIFEST,
   STUDENTS_MODULE_MANIFEST,
   type Student,
   type StudentsBulkEnrollPlacement,
@@ -11,6 +12,7 @@ import { type StatusBadgeConfigItem } from "@/components/app/StatusBadge";
 import { useTranslation } from "@/hooks/useTranslation";
 import { StudentsBulkEnrollModal } from "@/tenant/features/students/components/StudentsBulkEnrollModal";
 import type { StudentsSelectionTargets } from "@/tenant/features/students/hooks/studentsSelectionTargets";
+import { usePermissions } from "@/tenant/hooks/usePermissions";
 
 export interface StudentsBulkActionBarProps {
   selectedCount: number;
@@ -61,6 +63,10 @@ export function StudentsBulkActionBar({
   onClearSelection,
   statusPending = false,
 }: StudentsBulkActionBarProps): React.JSX.Element {
+  // Enrollments are a separately gated module; writing them from the students
+  // surface requires the enrollment write permission (mirrors the server guard).
+  const { can } = usePermissions();
+  const canEnroll = can(ENROLLMENTS_MODULE_MANIFEST.permissions.write);
   const { t } = useTranslation();
   const [enrollModalOpen, setEnrollModalOpen] = useState(false);
 
@@ -90,7 +96,7 @@ export function StudentsBulkActionBar({
         extraActions={
           !viewingDeleted && (onBulkEnroll || onBulkPrintIdCards) ? (
             <div className="flex items-center gap-1.5 flex-wrap">
-              {canWrite && onBulkEnroll && (
+              {canWrite && canEnroll && onBulkEnroll && (
                 <Button
                   type="button"
                   variant="outline"
@@ -120,7 +126,7 @@ export function StudentsBulkActionBar({
         }
       />
 
-      {enrollModalOpen && onBulkEnroll && (
+      {enrollModalOpen && canEnroll && onBulkEnroll && (
         <StudentsBulkEnrollModal
           open={enrollModalOpen}
           onClose={() => setEnrollModalOpen(false)}

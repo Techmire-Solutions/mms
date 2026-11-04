@@ -32,6 +32,9 @@ import { TasksSetupTab } from "./components/TasksSetupTab";
 import { TaskFormModal } from "./components/TaskFormModal";
 import { TasksCsvImportDialog } from "./components/TasksCsvImportDialog";
 import { TasksPageHeaderActions } from "./components/TasksPageHeaderActions";
+import type { TaskServerFilters } from "./lib/tasksServerFilters";
+
+const PAGE_SIZE = 50;
 
 export default function TasksPage(): React.JSX.Element {
   const { t } = useTranslation();
@@ -40,6 +43,8 @@ export default function TasksPage(): React.JSX.Element {
   const [importOpen, setImportOpen] = useState(false);
   const [editingTask, setEditingTask] = useState<TaskRecord | null>(null);
   const [viewingDeleted, setViewingDeleted] = useDirectoryTrashState();
+  const [pageIndex, setPageIndex] = useState(0);
+  const [serverFilters, setServerFilters] = useState<TaskServerFilters>({});
   const { selectedIds, toggleSelected, toggleSelectAll, clearSelection } =
     useWorkSelection<string>();
 
@@ -57,7 +62,10 @@ export default function TasksPage(): React.JSX.Element {
   });
 
   const { data: tasksData, isLoading: tasksLoading } = useTasks({
+    ...serverFilters,
     includeDeleted: viewingDeleted,
+    limit: PAGE_SIZE,
+    offset: pageIndex * PAGE_SIZE,
   });
   const { data: metrics } = useTaskMetrics({ enabled: !viewingDeleted });
 
@@ -68,6 +76,7 @@ export default function TasksPage(): React.JSX.Element {
   const restoreTaskMutation = useRestoreTask();
 
   const tasks = tasksData?.tasks ?? [];
+  const totalTasks = tasksData?.total ?? 0;
 
   const handleOpenCreate = () => {
     if (!viewingDeleted) {
@@ -184,6 +193,14 @@ export default function TasksPage(): React.JSX.Element {
                 onDelete={handleDelete}
                 onRestore={handleRestore}
                 onUpdateStatus={handleUpdateStatus}
+                total={totalTasks}
+                pageIndex={pageIndex}
+                pageSize={PAGE_SIZE}
+                onPageChange={setPageIndex}
+                onServerFiltersChange={(filters) => {
+                  setServerFilters(filters);
+                  setPageIndex(0);
+                }}
               />
             )}
 

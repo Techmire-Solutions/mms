@@ -161,14 +161,15 @@ export async function authenticateTenant(
       if (userStatus.role) {
         user.role = userStatus.role;
       }
-      if (user.role === "faculty" || user.role === "teacher") {
-        const { facultyRepository } =
-          await import("../faculty/repository/facultyRepositoryAdapter.js");
-        const facultyRow = await facultyRepository.findById(tenant, String(user.id));
-        if (facultyRow?.deletedAt || (facultyRow as { deleted_at?: unknown })?.deleted_at) {
-          await sendUnauthorized(reply, "Session revoked");
-          return;
-        }
+      // A soft-deleted faculty profile must not retain access. Resolve through
+      // the linked tenant-user id (`faculty.user_id`) — the JWT id is never the
+      // faculty primary key — and do not gate on the role name, because
+      // designation-managed composite roles do not carry it.
+      const { facultyRepository } =
+        await import("../faculty/repository/facultyRepositoryAdapter.js");
+      if (await facultyRepository.isDeletedByUserId(tenant, String(user.id))) {
+        await sendUnauthorized(reply, "Session revoked");
+        return;
       }
     } catch (error) {
       if (process.env.NODE_ENV !== "test" && !process.env.VITEST) {

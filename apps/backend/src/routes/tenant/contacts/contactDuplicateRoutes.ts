@@ -34,8 +34,8 @@ export const contactDuplicateRoutes: FastifyPluginAsync = async (fastify) => {
       const prepared = await prepareContactRecord(parsed.data.contact as Contact);
       const matchCount = await countContactDuplicateMatches(prepared);
       return reply.send({ matchCount });
-    } catch {
-      return sendDatabaseError(reply, "Failed to check contact duplicates");
+    } catch (error) {
+      return sendDatabaseError(reply, "Failed to check contact duplicates", error);
     }
   });
 
@@ -56,7 +56,7 @@ export const contactDuplicateRoutes: FastifyPluginAsync = async (fastify) => {
       return reply.send({ ...page, pairs });
     } catch (err) {
       request.log.error(err, "Failed to load duplicate pairs");
-      return sendDatabaseError(reply, "Failed to load duplicate pairs");
+      return sendDatabaseError(reply, "Failed to load duplicate pairs", err);
     }
   });
 
