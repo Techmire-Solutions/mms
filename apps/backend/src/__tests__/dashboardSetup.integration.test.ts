@@ -40,10 +40,14 @@ const mockUpsertDashboardWidgets = vi.fn();
 const mockDeleteDashboardWidget = vi.fn();
 const mockReorderDashboardWidgets = vi.fn();
 const mockLoadDashboardSummary = vi.fn();
+const mockBroadcastDashboardWidgetsChanged = vi.fn();
+const mockEvictDashboardPreferencesCache = vi.fn();
 
 vi.mock("../services/dashboardPreferencesService.js", () => ({
   loadDashboardPreferences: (...args: unknown[]) => mockLoadDashboardPreferences(...args),
   saveDashboardPreferences: (...args: unknown[]) => mockSaveDashboardPreferences(...args),
+  evictDashboardPreferencesCache: (...args: unknown[]) =>
+    mockEvictDashboardPreferencesCache(...args),
 }));
 
 vi.mock("../lib/dashboardWidgetsService.js", () => ({
@@ -51,6 +55,8 @@ vi.mock("../lib/dashboardWidgetsService.js", () => ({
   upsertDashboardWidgets: (...args: unknown[]) => mockUpsertDashboardWidgets(...args),
   deleteDashboardWidget: (...args: unknown[]) => mockDeleteDashboardWidget(...args),
   reorderDashboardWidgets: (...args: unknown[]) => mockReorderDashboardWidgets(...args),
+  broadcastDashboardWidgetsChanged: (...args: unknown[]) =>
+    mockBroadcastDashboardWidgetsChanged(...args),
 }));
 
 vi.mock("../services/dashboardSummaryService.js", () => ({
@@ -230,6 +236,61 @@ describe("dashboard config routes", () => {
     });
     expect(allowed.statusCode).toBe(200);
     expect(mockReorderDashboardWidgets).toHaveBeenCalledWith([{ id: "custom-1", sortOrder: 0 }]);
+    // The live update is broadcast after the write transaction commits.
+    expect(mockBroadcastDashboardWidgetsChanged).toHaveBeenCalled();
+
+    await app.close();
+  });
+
+  it("rejects an oversized or non-integer reorder body with 400 instead of 500", async () => {
+    const app = await buildApp();
+    const tooMany = Array.from({ length: 501 }, (_, i) => ({ id: `w-${i}`, sortOrder: i }));
+
+    const oversized = await app.inject({
+      method: "PUT",
+      url: "/api/dashboard/widgets/reorder",
+      headers: { host: "demo.localhost", authorization: `Bearer ${adminToken(app)}` },
+      payload: { order: tooMany },
+    });
+    expect(oversized.statusCode).toBe(400);
+    expect(mockReorderDashboardWidgets).not.toHaveBeenCalled();
+
+    for (const sortOrder of [1.5, -1]) {
+      const invalid = await app.inject({
+        method: "PUT",
+        url: "/api/dashboard/widgets/reorder",
+        headers: { host: "demo.localhost", authorization: `Bearer ${adminToken(app)}` },
+        payload: { order: [{ id: "custom-1", sortOrder }] },
+      });
+      expect(invalid.statusCode, `sortOrder=${sortOrder}`).toBe(400);
+    }
+    expect(mockReorderDashboardWidgets).not.toHaveBeenCalled();
+
+    await app.close();
+  });
+
+  it("evicts the preferences cache only after the write commits", async () => {
+    const app = await buildApp();
+
+    const res = await app.inject({
+      method: "PUT",
+      url: "/api/dashboard/preferences",
+      headers: { host: "demo.localhost", authorization: `Bearer ${adminToken(app)}` },
+      payload: { gridMode: "compact" },
+    });
+
+    expect(res.statusCode).toBe(200);
+    expect(mockEvictDashboardPreferencesCache).toHaveBeenCalledTimes(1);
+    // Denied writes must not touch the cache.
+    mockEvictDashboardPreferencesCache.mockClear();
+    const denied = await app.inject({
+      method: "PUT",
+      url: "/api/dashboard/preferences",
+      headers: { host: "demo.localhost", authorization: `Bearer ${teacherToken(app)}` },
+      payload: { gridMode: "compact" },
+    });
+    expect(denied.statusCode).toBe(403);
+    expect(mockEvictDashboardPreferencesCache).not.toHaveBeenCalled();
 
     await app.close();
   });

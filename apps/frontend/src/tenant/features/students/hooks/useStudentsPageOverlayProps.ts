@@ -80,8 +80,9 @@ export function useStudentsPageOverlayProps({
     },
     onConfirmSingleDelete: async (reason) => {
       if (!overlays.deleteTarget) return;
-      await workActions.handleDelete(String(overlays.deleteTarget.id), reason);
-      overlays.setDeleteTarget(null);
+      const deleted = await workActions.handleDelete(String(overlays.deleteTarget.id), reason);
+      // Keep the confirm open on failure so the user can retry (bulk delete parity).
+      if (deleted) overlays.setDeleteTarget(null);
     },
     bulkRestoreOpen: overlays.confirmBulkRestoreOpen,
     onBulkRestoreOpenChange: overlays.setConfirmBulkRestoreOpen,

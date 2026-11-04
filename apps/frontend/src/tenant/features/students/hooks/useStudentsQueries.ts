@@ -55,6 +55,9 @@ export function useStudentsContractList(query: StudentsContractQueryParams, enab
   return studentsClient.list.useQuery({
     queryKey: studentsListQueryKey(query),
     queryData: { query },
+    // Keep the previous page visible while a new filter/page key loads — without this
+    // every keystroke swapped the directory for a skeleton (2026-11-04 review, n9).
+    placeholderData: (previous: unknown) => previous,
     staleTime: 15_000,
     enabled,
   });

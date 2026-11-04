@@ -8,6 +8,8 @@ import ContactsListCards from "@/tenant/features/contacts/components/ContactsLis
 import type { ContactsColumnConfig } from "@/tenant/features/contacts/lib/contactTableTypes";
 import type { ContactsWorkViewMode } from "@/tenant/features/contacts/lib/contactsWorkTierTypes";
 import { useTranslation } from "@/hooks/useTranslation";
+import { Button } from "@/components/ui/button";
+import { UserPlus, Upload } from "lucide-react";
 
 export interface ContactsListProps {
   isWorkError: boolean;
@@ -27,6 +29,8 @@ export interface ContactsListProps {
   useServerWork: boolean;
   workPageData?: { page: number; total: number; limit: number; hasMore: boolean } | null;
   onPageChange: (page: number) => void;
+  onCreate?: () => void;
+  onImport?: () => void;
 }
 
 export const ContactsList = React.memo(function ContactsList({
@@ -47,6 +51,8 @@ export const ContactsList = React.memo(function ContactsList({
   useServerWork,
   workPageData,
   onPageChange,
+  onCreate,
+  onImport,
 }: ContactsListProps): React.JSX.Element {
   const { t } = useTranslation();
 
@@ -92,6 +98,32 @@ export const ContactsList = React.memo(function ContactsList({
           onShowActive={onShowDeletedChange ? () => onShowDeletedChange(false) : undefined}
           clearFiltersLabel={t("contacts.clearFilters")}
           showActiveLabel={t("contacts.showActive")}
+          firstRunAction={
+            canWrite && onCreate && !hasActiveFilters && !viewingDeleted ? (
+              <div className="flex flex-wrap items-center justify-center gap-2">
+                <Button
+                  type="button"
+                  variant="primary"
+                  icon={UserPlus}
+                  onClick={onCreate}
+                  className="min-h-11 px-5 font-semibold"
+                >
+                  {t("contacts.addContact")}
+                </Button>
+                {onImport ? (
+                  <Button
+                    type="button"
+                    variant="outline"
+                    icon={Upload}
+                    onClick={onImport}
+                    className="min-h-11 px-4 font-medium"
+                  >
+                    {t("contacts.import")}
+                  </Button>
+                ) : null}
+              </div>
+            ) : undefined
+          }
         />
       ) : viewMode === "cards" ? (
         <ContactsListCards {...commonDirectoryProps} />

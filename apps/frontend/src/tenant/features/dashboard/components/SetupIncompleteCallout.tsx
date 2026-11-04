@@ -5,6 +5,8 @@ import { useNavigate } from "react-router-dom";
 import { type BrandingSettings } from "@mms/shared";
 import { Button } from "@/components/ui/button";
 import { useTranslation } from "@/hooks/useTranslation";
+import { useReducedMotion } from "@/hooks/useReducedMotion";
+import { getWorkspaceLocalStoragePrefix } from "@/lib/dbStorageCore";
 import { settingsTabPath } from "@/lib/config/settingsDeepLink";
 
 interface SetupIncompleteCalloutProps {
@@ -26,6 +28,11 @@ export function isInstitutionProfileComplete(branding: BrandingSettings): boolea
 
 const DISMISSED_KEY = "mms_setup_callout_dismissed";
 
+/** Dismissal is per workspace — a shared browser must not hide another madrasa's callout. */
+function dismissedStorageKey(): string {
+  return `${getWorkspaceLocalStoragePrefix()}${DISMISSED_KEY}`;
+}
+
 /**
  * One-time banner shown to tenant admins when institution branding fields
  * (logo, country, contact info) haven't been configured yet.
@@ -36,10 +43,12 @@ export function SetupIncompleteCallout({
   isAdmin,
 }: SetupIncompleteCalloutProps): React.JSX.Element | null {
   const { t } = useTranslation();
+  const reducedMotion = useReducedMotion();
   const navigate = useNavigate();
+  const storageKey = dismissedStorageKey();
   const [dismissed, setDismissed] = useState(() => {
     try {
-      return sessionStorage.getItem(DISMISSED_KEY) === "1";
+      return sessionStorage.getItem(storageKey) === "1";
     } catch {
       return false;
     }
@@ -49,7 +58,7 @@ export function SetupIncompleteCallout({
 
   const handleDismiss = () => {
     try {
-      sessionStorage.setItem(DISMISSED_KEY, "1");
+      sessionStorage.setItem(storageKey, "1");
     } catch {
       /* ignore */
     }
@@ -59,10 +68,10 @@ export function SetupIncompleteCallout({
   return (
     <AnimatePresence>
       <motion.div
-        initial={{ opacity: 0, y: -8 }}
+        initial={reducedMotion ? false : { opacity: 0, y: -8 }}
         animate={{ opacity: 1, y: 0 }}
-        exit={{ opacity: 0, y: -8 }}
-        transition={{ duration: 0.3, ease: "easeOut" }}
+        exit={reducedMotion ? undefined : { opacity: 0, y: -8 }}
+        transition={reducedMotion ? { duration: 0 } : { duration: 0.3, ease: "easeOut" }}
         role="status"
         aria-live="polite"
         className="relative flex items-start gap-4 rounded-2xl border border-warning/30 bg-warning/10 px-5 py-4 shadow-sm"

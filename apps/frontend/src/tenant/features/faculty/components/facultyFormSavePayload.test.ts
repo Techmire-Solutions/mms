@@ -31,6 +31,20 @@ describe("facultyFormSavePayload", () => {
       expect(payload.contactId).toBe("cnt-1");
     });
 
+    it("keeps the employment contract type so the control can persist", () => {
+      // The backend stores unknown wire keys in `custom_data`; the draft allowlist
+      // was the only reason this visible control never saved.
+      const payload = buildFacultySavePayload({
+        facultyDraft: {
+          contactId: "cnt-1",
+          employmentContractType: "salaried" as never,
+        },
+        autoGenerateId: false,
+      });
+
+      expect(payload.employmentContractType).toBe("salaried");
+    });
+
     it("uses nextEmployeeId when autoGenerateId is true and creating new faculty member", () => {
       const payload = buildFacultySavePayload({
         facultyDraft: {

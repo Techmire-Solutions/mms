@@ -195,12 +195,11 @@ export async function applyContactRelationshipInference(
     const original = contactsById.get(ownerId);
     if (!original) continue;
     const next = options?.actorId ? { ...update, updatedBy: options.actorId } : update;
-    let saved: boolean;
+    let saved: string | null;
     if (original.updatedAt && typeof repo.saveIfVersionMatches === "function") {
       saved = await repo.saveIfVersionMatches(tenant, next, String(original.updatedAt));
     } else if (typeof repo.save === "function") {
-      await repo.save(tenant, next);
-      saved = true;
+      saved = await repo.save(tenant, next);
     } else {
       // Minimal test doubles may only implement `bulkSave`; batch those below.
       fallbackUpdates.push(next);

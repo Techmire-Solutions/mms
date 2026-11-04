@@ -53,12 +53,15 @@ export function FacultyCardHeader({
           </Badge>
         ) : null}
         {faculty.designation ? (
-          <span
+          <Badge
+            as="span"
+            size="sm"
+            tone="primary"
+            className="mt-1 max-w-full px-1.5 py-0.5 rounded font-semibold truncate"
             title={faculty.designation}
-            className="mt-1 inline-flex items-center px-1.5 py-0.5 rounded text-3xs font-semibold bg-primary/10 text-primary border border-primary/20 truncate"
           >
             {faculty.designation}
-          </span>
+          </Badge>
         ) : null}
         <FacultyWorkloadPill faculty={faculty} className="mt-1" />
       </div>

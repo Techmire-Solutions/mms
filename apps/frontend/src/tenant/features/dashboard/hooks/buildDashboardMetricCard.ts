@@ -108,20 +108,22 @@ export function buildDashboardMetricCard({
     resolvedMetric = resolveServerMetricValue(widget, data);
   }
 
-  const value = resolvedMetric?.value ?? "0";
+  const unavailable = resolvedMetric === null;
+  const value = resolvedMetric?.value ?? "";
   const sub = resolvedMetric?.sub ?? resolveWidgetSubText(widget, t);
 
   const trendMetric = resolveDashboardTrendMetric(widget.id);
   const trendKey = trendMetric ? TREND_METRIC_KEY_MAP[trendMetric] : undefined;
-  const resolvedTrend =
-    customTrend ??
-    (trendKey && typeof trends[trendKey] === "number"
-      ? trends[trendKey]
-      : widget.trendType === "database"
-        ? 0
-        : typeof widget.trend === "number"
-          ? widget.trend
-          : 0);
+  const resolvedTrend = unavailable
+    ? 0
+    : (customTrend ??
+      (trendKey && typeof trends[trendKey] === "number"
+        ? trends[trendKey]
+        : widget.trendType === "database"
+          ? 0
+          : typeof widget.trend === "number"
+            ? widget.trend
+            : 0));
 
   const { icon, color } = resolveCardVisuals(widget);
 
@@ -133,5 +135,6 @@ export function buildDashboardMetricCard({
     icon,
     color,
     trend: resolvedTrend,
+    ...(unavailable ? { unavailable: true } : {}),
   };
 }

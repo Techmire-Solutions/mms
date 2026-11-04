@@ -163,9 +163,9 @@ export const ContactPhoneAction = function ContactPhoneAction({
               aria-hidden="true"
               className="w-3.5 h-3.5 text-primary/80 flex-shrink-0 group-hover/pill:text-primary transition-colors"
             />
-            <span className="font-semibold tracking-tight truncate select-all">
+            <bdi dir="ltr" className="font-semibold tracking-tight truncate select-all">
               {formattedPhone}
-            </span>
+            </bdi>
           </div>
           {actionsNode}
         </div>
@@ -176,11 +176,16 @@ export const ContactPhoneAction = function ContactPhoneAction({
   const valueDisplayNode = (
     <div className="flex items-center gap-1 px-2.5 py-1 rounded-lg bg-muted/40 border border-border/60 max-w-full">
       {countryCode ? (
-        <span className="text-xs font-semibold text-muted-foreground shrink-0">{countryCode}</span>
+        <bdi dir="ltr" className="text-xs font-semibold text-muted-foreground shrink-0">
+          {countryCode}
+        </bdi>
       ) : null}
-      <span className="text-sm font-mono text-foreground font-medium tracking-wide truncate select-all">
+      <bdi
+        dir="ltr"
+        className="text-sm font-mono text-foreground font-medium tracking-wide truncate select-all"
+      >
         {phoneDisplay}
-      </span>
+      </bdi>
     </div>
   );
 

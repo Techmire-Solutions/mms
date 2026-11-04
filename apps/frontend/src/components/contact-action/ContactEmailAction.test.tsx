@@ -1,4 +1,4 @@
-import React, { act } from "react";
+import { act } from "react";
 import { createRoot, type Root } from "react-dom/client";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { ContactEmailAction } from "./ContactEmailAction";
@@ -39,5 +39,24 @@ describe("ContactEmailAction", () => {
     expect(value?.getAttribute("title")).toBe("mansoor@example.com");
     expect(value?.className).toContain("truncate");
     expect(value?.className).toContain("block");
+  });
+});
+
+describe("ContactEmailAction BiDi isolation", () => {
+  it("isolates the address as LTR so RTL layout cannot reorder it", async () => {
+    const container = document.createElement("div");
+    document.body.appendChild(container);
+    const root = createRoot(container);
+
+    try {
+      await act(async () => {
+        root.render(<ContactEmailAction email="mansoor@example.com" name="Mansoor" />);
+      });
+
+      expect(container.querySelector('bdi[dir="ltr"]')?.textContent).toBe("mansoor@example.com");
+    } finally {
+      await act(async () => root.unmount());
+      container.remove();
+    }
   });
 });

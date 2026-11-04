@@ -1,6 +1,6 @@
 import React, { act } from "react";
 import { createRoot, type Root } from "react-dom/client";
-import { afterEach, beforeEach, describe, expect, it } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { FormErrorBanner } from "./FormErrorBanner";
 
 declare global {
@@ -60,6 +60,28 @@ describe("FormErrorBanner", () => {
     // Assert
     expect(document.activeElement).toBe(input);
     input.remove();
+  });
+
+  it("renders operable summary items when an onSelectError handler is provided", async () => {
+    const onSelectError = vi.fn();
+    await act(async () => {
+      root.render(
+        <FormErrorBanner
+          errors={["First name is required", "Phone is required"]}
+          onSelectError={onSelectError}
+        />,
+      );
+    });
+
+    const buttons = Array.from(container.querySelectorAll("button"));
+    expect(buttons).toHaveLength(2);
+    expect(buttons[0]?.className ?? "").toContain("min-h-11");
+
+    await act(async () => {
+      buttons[1]?.click();
+    });
+
+    expect(onSelectError).toHaveBeenCalledWith(1);
   });
 
   it("given no errors, should render nothing when an empty list is passed", async () => {

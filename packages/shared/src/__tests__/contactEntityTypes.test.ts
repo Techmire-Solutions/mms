@@ -36,6 +36,17 @@ describe("contactEntityTypes", () => {
   });
 
   describe("contactsBulkTagBodySchema", () => {
+    it("caps the request at the bulk-write ceiling instead of an unbounded id list", () => {
+      const tooMany = {
+        ids: Array.from({ length: 501 }, (_, index) => `contact-${index}`),
+        addTags: ["VIP"],
+      };
+      expect(contactsBulkTagBodySchema.safeParse(tooMany).success).toBe(false);
+
+      const atCeiling = { ...tooMany, ids: tooMany.ids.slice(0, 500) };
+      expect(contactsBulkTagBodySchema.safeParse(atCeiling).success).toBe(true);
+    });
+
     it("validates a valid payload with addTags only", () => {
       const valid = {
         ids: ["contact-1", "contact-2"],

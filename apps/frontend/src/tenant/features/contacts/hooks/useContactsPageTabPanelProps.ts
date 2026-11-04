@@ -34,6 +34,7 @@ export function useContactsPageTabPanelProps({
   tableProps,
   handleBulkExport,
   isExporting,
+  onOpenImport,
 }: {
   effectiveTab: string;
   directory: Directory;
@@ -41,8 +42,13 @@ export function useContactsPageTabPanelProps({
   messaging: Pick<Messaging, "canWriteMessaging" | "handleWhatsApp" | "handleSms" | "handleEmail">;
   actions: Pick<
     Actions,
-    "requestBulkDelete" | "requestBulkRestore" | "handleImport" | "handleBulkTag"
+    | "requestBulkDelete"
+    | "requestBulkRestore"
+    | "handleImport"
+    | "handleBulkTag"
+    | "handleCreateContact"
   >;
+  onOpenImport?: () => void;
   selectedTargets: SelectedTargets;
   viewingDeleted: boolean;
   bulkActions: readonly string[];
@@ -96,6 +102,7 @@ export function useContactsPageTabPanelProps({
         handleShowDeletedChange,
         handleClearSelection,
         handleRetryWork,
+        onOpenImport,
       }),
     [
       effectiveTab,
@@ -117,6 +124,7 @@ export function useContactsPageTabPanelProps({
       handleShowDeletedChange,
       handleClearSelection,
       handleRetryWork,
+      onOpenImport,
     ],
   );
 

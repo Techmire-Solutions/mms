@@ -1,4 +1,3 @@
-import { randomUUID } from "node:crypto";
 import type { FacultyImportJobPayload } from "@mms/shared";
 import { listFacultyDepartments } from "../../db/repositories/facultyDepartmentRepository.js";
 import { listFacultyDesignations } from "../../db/repositories/facultyDesignationRepository.js";
@@ -103,9 +102,11 @@ export async function runFacultyMembersImportJob(
       } else {
         const contactId = row.contactId?.trim();
         if (!contactId) throw new Error("contactId required to create faculty");
+        // The row resolver owns the id (`fac-<uuid>`); batch rows skip the stale-
+        // preview probe, which exists for interactive forms only.
         const created = await createFaculty(
-          { id: randomUUID(), contactId, ...patch },
-          { batch, canRestore },
+          { contactId, ...patch },
+          { batch, canRestore, skipEmployeeIdPreview: true },
         );
         savedId = String(created.record.id);
       }

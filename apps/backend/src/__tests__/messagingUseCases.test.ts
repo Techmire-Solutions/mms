@@ -77,15 +77,19 @@ describe("messaging use-cases (DI with fake repository)", () => {
     expect(repo.softDeleteActiveMessageLogs).toHaveBeenCalledWith("demo", "u-admin");
   });
 
-  it("recordMessageLogs delegates to the injected repository", async () => {
+  it("recordMessageLogs returns the count actually persisted", async () => {
     const repo = createFakeRepo();
+    (repo.insertMessageLogs as any).mockResolvedValue(1);
     const useCases = createMessagingUseCases(repo);
-    const log = { id: "m-1", channel: "sms" } as never;
+    const logA = { id: "m-1", channel: "sms" } as never;
+    const logB = { id: "m-2", channel: "sms" } as never;
 
-    const result = await useCases.recordMessageLogs("demo", [log]);
+    const recordResult = await useCases.recordMessageLogs("demo", [logA, logB]);
 
-    expect(result).toEqual([log]);
-    expect(repo.insertMessageLogs).toHaveBeenCalledWith("demo", [log]);
+    // `ON CONFLICT DO NOTHING` can skip an id, so the reported count must come
+    // from the repository rather than the submitted array length.
+    expect(recordResult).toBe(1);
+    expect(repo.insertMessageLogs).toHaveBeenCalledWith("demo", [logA, logB]);
   });
 
   it("restoreMessageLogs maps absent/empty ids to restore-all and broadcasts", async () => {

@@ -16,6 +16,7 @@ import {
   canReadFacultyCatalog,
   isCatalogConflict,
 } from "./facultyCatalogRouteAuth.js";
+import { catalogErrorResponse } from "./facultyCatalogErrorResponse.js";
 
 const DUPLICATE_NAME = "A department with this name already exists";
 
@@ -65,10 +66,12 @@ export async function handleRestoreDepartment({
     await broadcastCollection("faculty");
     return { status: 200 as const, body: { department } };
   } catch (error) {
-    const message = error instanceof Error ? error.message : "Could not restore department";
-    if (isCatalogConflict(error))
-      return { status: 409 as const, body: { type: "conflict", message } };
-    return { status: 400 as const, body: { type: "validation_error", message } };
+    return catalogErrorResponse(
+      error,
+      request,
+      "Failed to restore faculty department",
+      "Could not restore department",
+    );
   }
 }
 
@@ -94,8 +97,12 @@ export async function handleSaveDepartment({
   } catch (error) {
     if (isCatalogConflict(error))
       return { status: 409 as const, body: { type: "conflict", message: DUPLICATE_NAME } };
-    const message = error instanceof Error ? error.message : "Invalid department";
-    return { status: 400 as const, body: { type: "validation_error", message } };
+    return catalogErrorResponse(
+      error,
+      request,
+      "Failed to save faculty department",
+      "Invalid department",
+    );
   }
 }
 
@@ -125,13 +132,11 @@ export async function handleDeleteDepartment({
         },
       };
     }
-    request.log.error({ err: error }, "Failed to delete faculty department");
-    return {
-      status: 500 as const,
-      body: {
-        type: "server_error",
-        message: "Failed to delete department",
-      },
-    };
+    return catalogErrorResponse(
+      error,
+      request,
+      "Failed to delete faculty department",
+      "Failed to delete department",
+    );
   }
 }

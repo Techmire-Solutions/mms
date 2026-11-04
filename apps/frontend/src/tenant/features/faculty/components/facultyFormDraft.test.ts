@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { extractEmployeeId } from "../lib/facultyFormDraft";
+import { extractEmployeeId, resolveInitialUserAccountRole } from "../lib/facultyFormDraft";
 
 describe("extractEmployeeId", () => {
   it("returns trimmed string when input is a string", () => {
@@ -24,5 +24,22 @@ describe("extractEmployeeId", () => {
     expect(extractEmployeeId(undefined)).toBe("");
     expect(extractEmployeeId({})).toBe("");
     expect(extractEmployeeId(123)).toBe("");
+  });
+});
+
+describe("resolveInitialUserAccountRole", () => {
+  it("uses the linked account's role instead of the module default", () => {
+    // The draft starts on the default `staff`; an Admin account must open on Admin.
+    expect(resolveInitialUserAccountRole("staff", "admin")).toBe("admin");
+    expect(resolveInitialUserAccountRole(undefined, "principal")).toBe("principal");
+  });
+
+  it("preserves a role the user picked deliberately", () => {
+    expect(resolveInitialUserAccountRole("teacher", "admin")).toBe("teacher");
+  });
+
+  it("falls back to the module default when no account is linked", () => {
+    expect(resolveInitialUserAccountRole(undefined, undefined)).toBe("staff");
+    expect(resolveInitialUserAccountRole("", null)).toBe("staff");
   });
 });

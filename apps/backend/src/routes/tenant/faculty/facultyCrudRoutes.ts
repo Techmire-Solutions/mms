@@ -63,6 +63,13 @@ export async function handleListFaculty({
       body: { type: "forbidden", message: "Insufficient permissions" },
     };
   }
+  const tenantId = request.tenant?.id;
+  if (!tenantId) {
+    return {
+      status: 403 as const,
+      body: { type: "forbidden", message: "Tenant context required" },
+    };
+  }
   const includeDeleted = isQueryFlagTrue(query?.includeDeleted);
   const skipCount = isQueryFlagTrue(query?.skipCount);
   if (includeDeleted && !canDeleteCollection(user, "faculty")) {
@@ -76,7 +83,7 @@ export async function handleListFaculty({
   }
   try {
     const result = await withTenant(
-      String(request.tenant?.id),
+      String(tenantId),
       () => facultyUseCases.loadFacultyPage({ ...query, includeDeleted, skipCount }),
       { readOnly: true },
     );
@@ -115,6 +122,13 @@ export async function handleGetFaculty({
       body: { type: "forbidden", message: "Insufficient permissions" },
     };
   }
+  const tenantId = request.tenant?.id;
+  if (!tenantId) {
+    return {
+      status: 403 as const,
+      body: { type: "forbidden", message: "Tenant context required" },
+    };
+  }
   const includeDeleted = isQueryFlagTrue(query?.includeDeleted);
   if (includeDeleted && !canDeleteCollection(user, "faculty")) {
     return {
@@ -127,7 +141,7 @@ export async function handleGetFaculty({
   }
   try {
     const item = await withTenant(
-      String(request.tenant?.id),
+      String(tenantId),
       () => facultyUseCases.loadFacultyById(id, includeDeleted),
       { readOnly: true },
     );
@@ -187,9 +201,16 @@ export const facultyCrudRoutes: FastifyPluginAsync = async (fastify) => {
           body: { type: "forbidden", message: "Insufficient permissions" },
         };
       }
+      const tenantId = request.tenant?.id;
+      if (!tenantId) {
+        return {
+          status: 403 as const,
+          body: { type: "forbidden", message: "Tenant context required" },
+        };
+      }
       try {
         const result = await withTenant(
-          String(request.tenant?.id),
+          String(tenantId),
           () => facultyUseCases.loadFacultyHierarchyTree(),
           { readOnly: true },
         );

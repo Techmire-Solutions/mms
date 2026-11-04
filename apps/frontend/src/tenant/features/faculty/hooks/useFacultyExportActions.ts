@@ -15,8 +15,6 @@ import { buildFacultyDirectoryQuery } from "@/tenant/features/faculty/hooks/facu
 import { useTranslation } from "@/hooks/useTranslation";
 import { notify } from "@/lib/notify";
 
-type ExportAuditScope = "all" | "filtered" | "selection";
-
 export interface UseFacultyExportActionsOptions {
   tableColumns: FacultyExportColumn[];
   canExport: boolean;
@@ -34,9 +32,6 @@ export interface UseFacultyExportActionsOptions {
   /** Whether any directory filter is applied — selects the audit scope. */
   hasActiveFilters: boolean;
   selectedIds: string[];
-  logExportAudit: {
-    mutateAsync: (payload: { count: number; scope: ExportAuditScope }) => Promise<unknown>;
-  };
 }
 
 /** Server CSV export actions for Faculty Work directory. */
@@ -56,7 +51,6 @@ export function useFacultyExportActions({
   viewingDeleted,
   hasActiveFilters,
   selectedIds,
-  logExportAudit,
 }: UseFacultyExportActionsOptions) {
   const { t } = useTranslation();
 
@@ -94,7 +88,6 @@ export function useFacultyExportActions({
     hasActiveFilters,
     buildFilteredQuery,
     startExport: startServerFacultyCsvExport,
-    logExportAudit,
     onError,
   });
 }

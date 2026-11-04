@@ -13,13 +13,13 @@ export interface TasksBulkActionBarProps {
   selectedCount: number;
   viewingDeleted: boolean;
   canWrite?: boolean;
+  canComplete?: boolean;
   canDelete: boolean;
   onClearSelection: () => void;
   onRequestBulkDelete: () => void;
   onRequestBulkRestore: () => void;
   onBulkStatusChange?: (status: string) => void;
   statusPending?: boolean;
-  bulkActions?: readonly string[];
 }
 
 /** Tasks Work bulk bar — thin adapter delegating to shared BulkSelectionBar. */
@@ -27,20 +27,19 @@ export function TasksBulkActionBar({
   selectedCount,
   viewingDeleted,
   canWrite = true,
+  canComplete = false,
   canDelete,
   onClearSelection,
   onRequestBulkDelete,
   onRequestBulkRestore,
   onBulkStatusChange,
   statusPending = false,
-  bulkActions,
 }: TasksBulkActionBarProps): React.JSX.Element | null {
   const taskStatusConfig = useTaskStatusConfig();
   const effectiveBulkActions =
-    bulkActions ??
-    (onBulkStatusChange && canWrite
+    onBulkStatusChange && (canWrite || canComplete)
       ? (["delete", "status"] as const)
-      : TASKS_MODULE_MANIFEST.work.bulkActions);
+      : TASKS_MODULE_MANIFEST.work.bulkActions;
 
   return (
     <BulkSelectionBar

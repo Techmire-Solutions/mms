@@ -1,4 +1,4 @@
-import React, { act } from "react";
+import { act } from "react";
 import { createRoot, type Root } from "react-dom/client";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { MessagingSetupTemplateForm } from "./MessagingSetupTemplateForm";
@@ -100,5 +100,47 @@ describe("MessagingSetupTemplateForm Component", () => {
     expect(bodyTextarea.getAttribute("aria-invalid")).toBe("true");
     expect(document.body.textContent).toContain("Label is required");
     expect(document.body.textContent).toContain("Body is required");
+  });
+
+  it("saves on Cmd/Ctrl+Enter but never through an open confirmation dialog", async () => {
+    const onSave = vi.fn();
+    await act(async () => {
+      root.render(
+        <MessagingSetupTemplateForm
+          open
+          editingId={null}
+          label="Welcome"
+          body="Welcome {name}"
+          category="general"
+          channel="all"
+          templateCategorySelectOptions={[{ value: "general", label: "General" }]}
+          channelSelectOptions={[{ value: "all", label: "All" }]}
+          onReset={vi.fn()}
+          onSave={onSave}
+          onLabelChange={vi.fn()}
+          onBodyChange={vi.fn()}
+          onCategoryChange={vi.fn()}
+          onChannelChange={vi.fn()}
+        />,
+      );
+    });
+
+    const confirm = document.createElement("div");
+    confirm.setAttribute("role", "alertdialog");
+    document.body.appendChild(confirm);
+    await act(async () => {
+      window.dispatchEvent(
+        new KeyboardEvent("keydown", { key: "Enter", metaKey: true, bubbles: true }),
+      );
+    });
+    expect(onSave).not.toHaveBeenCalled();
+
+    confirm.remove();
+    await act(async () => {
+      window.dispatchEvent(
+        new KeyboardEvent("keydown", { key: "Enter", metaKey: true, bubbles: true }),
+      );
+    });
+    expect(onSave).toHaveBeenCalledTimes(1);
   });
 });

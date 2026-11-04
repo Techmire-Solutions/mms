@@ -66,9 +66,10 @@ describe("contactRestoreUseCases", () => {
 
   describe("restoreContactById", () => {
     it("restores contact and reconciles system tags without touchContacts option", async () => {
+      const persistedAt = "2026-03-01T09:00:00.000Z";
       const repo = {
         findById: vi.fn().mockResolvedValue(makeDeletedContact("c-1")),
-        save: vi.fn().mockImplementation((_t, contact) => Promise.resolve(contact)),
+        save: vi.fn().mockResolvedValue(persistedAt),
       } as unknown as ContactsRepository;
 
       const restored = await runWithTenant("demo", () =>
@@ -77,6 +78,7 @@ describe("contactRestoreUseCases", () => {
 
       expect(restored).not.toBeNull();
       expect(restored?.deletedAt).toBeUndefined();
+      expect(restored?.updatedAt).toBe(persistedAt);
       expect(mockReconcile).toHaveBeenCalledWith("demo", ["c-1"], { actorId: "user-admin" });
     });
   });

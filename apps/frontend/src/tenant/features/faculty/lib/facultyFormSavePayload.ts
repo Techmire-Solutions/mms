@@ -28,6 +28,9 @@ const FACULTY_PERSIST_KEYS = [
   "designationEndDate",
   "employmentStartDate",
   "employmentEndDate",
+  // Not a typed column: the server persists unknown wire keys in `faculty.custom_data`,
+  // so the allowlist is the only thing that decides whether the control can save.
+  "employmentContractType",
   "notes",
 ] as const;
 

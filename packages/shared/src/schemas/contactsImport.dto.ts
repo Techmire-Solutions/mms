@@ -16,6 +16,16 @@ const importContactRecordSchema = contactRecordSchema.extend({
  */
 export const CONTACTS_IMPORT_MAX_BATCH = 500;
 
+/**
+ * Client-side ingestion caps for a selected vCard/CSV file.
+ *
+ * The batch cap protects the API; these protect the browser from parsing a file
+ * that cannot be imported at all (full-text read + synchronous parse on the main
+ * thread) or from holding an unbounded preview list in memory.
+ */
+export const CONTACTS_IMPORT_MAX_FILE_BYTES = 10 * 1024 * 1024;
+export const CONTACTS_IMPORT_MAX_CONTACTS = 5_000;
+
 const importIdempotencyKeySchema = z
   .string()
   .min(8)

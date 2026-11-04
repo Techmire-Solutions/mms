@@ -30,7 +30,19 @@ describe("facultyPageWorkSubTabs", () => {
   it("resolves against visible ids and maps a legacy work sub-tab", () => {
     const visible = ["faculties", "departments", "designations", "reports"];
     expect(resolveFacultyPageTab("work", visible, "departments")).toBe("departments");
-    expect(resolveFacultyPageTab("setup", visible)).toBe("");
-    expect(resolveFacultyPageTab("", visible)).toBe("");
+  });
+
+  it("falls back to the first visible tab when the persisted tier is no longer visible", () => {
+    // A persisted `setup` tier whose permission was revoked must not blank the
+    // module body: resolve to a tab the user can actually see.
+    const visible = ["faculties", "departments", "designations", "reports"];
+    expect(resolveFacultyPageTab("setup", visible)).toBe("faculties");
+    expect(resolveFacultyPageTab("reports", ["designations", "setup"])).toBe("designations");
+    expect(resolveFacultyPageTab("", visible)).toBe("faculties");
+    expect(resolveFacultyPageTab("nonsense", ["reports"])).toBe("reports");
+  });
+
+  it("returns an empty tab only when the caller offers no visible tab", () => {
+    expect(resolveFacultyPageTab("setup", [])).toBe("");
   });
 });

@@ -37,6 +37,8 @@ export interface MessagingWorkTierControllerProps {
   /** Lets the page header use the single filtered export path owned by the work tier. */
   onExportLogsRegister?: (handler: (() => Promise<void>) | null) => void;
   onStartCampaign?: (channel: "whatsapp" | "sms" | "email") => void;
+  /** Restore selected archived logs (the archived directory's bulk action). */
+  onBulkRestore?: (ids: string[]) => Promise<void> | void;
 }
 
 export function useMessagingWorkTierController({
@@ -48,6 +50,7 @@ export function useMessagingWorkTierController({
   onChannelChange: controlledOnChannelChange,
   onExportLogsRegister,
   onStartCampaign,
+  onBulkRestore,
 }: MessagingWorkTierControllerProps) {
   const { t } = useTranslation();
   const [searchParams, setSearchParams] = useSearchParams();
@@ -138,9 +141,11 @@ export function useMessagingWorkTierController({
   });
 
   const selectedCountLabel = t("messaging.selectedCount", { count: selectedCount });
+  // A row is a message log, not a recipient — the table and cards must count the
+  // same noun (`messaging.log/logs`).
   const pageCountLabel = formatDirectoryPageCountLabel(logsQuery.logs.length, t, {
-    singular: "messaging.item.recipient",
-    plural: "messaging.item.recipients",
+    singular: "messaging.log",
+    plural: "messaging.logs",
   });
 
   const { focusedIndex } = useMessagingWorkTierKeyboardNav({
@@ -174,6 +179,12 @@ export function useMessagingWorkTierController({
   }, [onExportLogsRegister, handleExportLogs]);
 
   const failedLogs = logsQuery.logs.filter((l: Message) => l.status === "failed");
+
+  /** Archived selection → restore (the shared bulk bar requires a request callback). */
+  const handleBulkRestoreRequest = (): void => {
+    const ids = selectedList.map((log) => String(log.id));
+    if (ids.length > 0) void onBulkRestore?.(ids);
+  };
 
   const handleFilterContact = (contactName: string): void => {
     filters.setSearch(contactName);
@@ -259,6 +270,7 @@ export function useMessagingWorkTierController({
     handleCloseDetail,
     handleBulkResend,
     handleBulkResendLogs,
+    handleBulkRestoreRequest,
     handleExportLogs,
     focusedLogId,
     failedLogs,

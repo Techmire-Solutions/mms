@@ -21,3 +21,16 @@ export function isOverlayOpen(): boolean {
     document.querySelector("[role='dialog'],[data-modal-open='true'],[aria-modal='true']") !== null
   );
 }
+
+/**
+ * True while a confirmation dialog is asking the user to decide.
+ *
+ * A save/send shortcut registered on `window` must not fire *through* that
+ * confirmation — the user is answering "discard or keep", not "submit". Radix
+ * renders `AlertDialogContent` with `role='alertdialog'`, so this is narrower
+ * than {@link isOverlayOpen} and safe to use inside a dialog-based form.
+ */
+export function isConfirmDialogOpen(): boolean {
+  if (typeof document === "undefined") return false;
+  return document.querySelector("[role='alertdialog']") !== null;
+}

@@ -28,6 +28,7 @@ import {
 import { aggregateFacultyWidgetQueries } from "../../db/repositories/facultyRepositoryWidgets.js";
 import type { FacultyRepository } from "./facultyRepository.js";
 import { guardFacultyAssignmentDependents } from "../../db/repositories/facultyDeleteGuard.js";
+import { lockFacultyHierarchy } from "../../db/repositories/facultyAssignmentValidation.js";
 
 /**
  * Drizzle adapter for `FacultyRepository`.
@@ -47,10 +48,11 @@ function createFacultyRepository(): FacultyRepository {
     findSoftDeletedByContactId: (tenant, contactId) =>
       findSoftDeletedFacultyByContactIdSql(tenant, contactId),
     save: (tenant, member, options) => saveFaculty(tenant, member as Faculty, options),
-    saveIfVersionMatches: (tenant, member, expectedUpdatedAt) =>
-      saveFacultyIfVersionMatches(tenant, member as Faculty, expectedUpdatedAt),
+    saveIfVersionMatches: (tenant, member, expectedUpdatedAt, options) =>
+      saveFacultyIfVersionMatches(tenant, member as Faculty, expectedUpdatedAt, options),
     guardAssignmentDependents: guardFacultyAssignmentDependents,
-    bulkSave: (tenant, members) => bulkSaveFaculty(tenant, members as Faculty[]),
+    lockHierarchy: (tx, tenant) => lockFacultyHierarchy(tx, tenant),
+    bulkSave: (tenant, members, options) => bulkSaveFaculty(tenant, members as Faculty[], options),
     aggregateCommandMetrics: (tenant, periodDays) =>
       aggregateFacultyCommandMetrics(tenant, periodDays),
     aggregateWidgetQueries: (tenant, queries) => aggregateFacultyWidgetQueries(tenant, queries),

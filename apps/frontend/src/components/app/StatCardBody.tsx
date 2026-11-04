@@ -3,7 +3,7 @@ import { TrendingUp, TrendingDown } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
 import { useTranslation } from "@/hooks/useTranslation";
-import { formatPercent } from "@mms/shared";
+import { formatTrendDelta } from "./StatCardTrend";
 
 export interface StatCardBodyProps {
   /** COLOR_MAP theme: { bg, text, ring, glow }. */
@@ -18,6 +18,12 @@ export interface StatCardBodyProps {
   /** Edit-mode action cluster rendered right of the trend chip. */
   actions?: React.ReactNode;
   className?: string;
+  /**
+   * Heading level for the card title. Platform dashboards keep the default `4`;
+   * the tenant dashboard renders it under its own `h2` section heading, so it
+   * passes `3` to keep the document outline sequential (2026-11-04 UI review).
+   */
+  titleHeadingLevel?: 3 | 4;
 }
 
 /** Vertical stat-card body — SSOT for icon tile + glow orb + trend chip + value/title/footer chrome. */
@@ -31,10 +37,12 @@ export function StatCardBody({
   trendAriaLabel,
   actions,
   className,
+  titleHeadingLevel = 4,
 }: StatCardBodyProps): React.JSX.Element {
   const { t } = useTranslation();
   const hasTrend = trend !== undefined && trend !== 0;
   const isPositive = (trend ?? 0) >= 0;
+  const HeadingTag = titleHeadingLevel === 3 ? "h3" : "h4";
 
   return (
     <>
@@ -42,7 +50,11 @@ export function StatCardBody({
         className={`absolute -end-8 -top-8 w-24 h-24 rounded-full ${colorTheme.glow} transition-all duration-500`}
         aria-hidden="true"
       />
-      <header className={cn("flex items-start justify-between mb-3 select-none", className)}>
+      <header
+        // Content header: exempt from the global print rule that hides chrome headers.
+        data-print-header
+        className={cn("flex items-start justify-between mb-3 select-none", className)}
+      >
         <div
           className={`w-9 h-9 rounded-lg ${colorTheme.bg} ring-4 ${colorTheme.ring} flex items-center justify-center aspect-square flex-shrink-0 transition-transform group-hover:scale-105 duration-300`}
           aria-hidden="true"
@@ -59,8 +71,8 @@ export function StatCardBody({
                 aria-label={
                   trendAriaLabel ??
                   (isPositive
-                    ? `${t("ui.statCard.positiveTrend")} ${Math.abs(trend as number)}%`
-                    : `${t("ui.statCard.negativeTrend")} ${Math.abs(trend as number)}%`)
+                    ? `${t("ui.statCard.positiveTrend")} ${formatTrendDelta(trend as number)}`
+                    : `${t("ui.statCard.negativeTrend")} ${formatTrendDelta(trend as number)}`)
                 }
               >
                 {isPositive ? (
@@ -70,7 +82,9 @@ export function StatCardBody({
                 )}
                 <bdi dir="ltr" className="tabular-nums">
                   {isPositive ? "+" : "-"}
-                  {formatPercent(Math.abs(trend as number))}
+                  {/* Capped at 999 %+ and locale-formatted; a raw percent blew out
+                      the card for near-new workspaces (2026-10-31 UX-18). */}
+                  {formatTrendDelta(trend as number)}
                 </bdi>
               </Badge>
             )}
@@ -83,9 +97,9 @@ export function StatCardBody({
           <p className="text-xl sm:text-2xl font-black text-foreground tracking-tight leading-tight m-0 break-words tabular-nums">
             <bdi dir="ltr">{value}</bdi>
           </p>
-          <h4 className="text-sm font-bold text-foreground mt-1.5 m-0 break-words tracking-wide">
+          <HeadingTag className="text-sm font-bold text-foreground mt-1.5 m-0 break-words tracking-wide">
             {title}
-          </h4>
+          </HeadingTag>
         </div>
       </div>
       {footer && (

@@ -1,5 +1,5 @@
-import React, { useMemo } from "react";
-import { Users, Filter, Clock, AlertTriangle } from "lucide-react";
+import React, { useCallback, useMemo } from "react";
+import { Users, Filter, Clock, AlertTriangle, Copy } from "lucide-react";
 import { useTranslation } from "@/hooks/useTranslation";
 import { useContactsMetrics } from "@/tenant/features/contacts/hooks/useContacts";
 import { ModuleCommandMetricsGrid } from "@/components/app/ModuleCommandMetricsGrid";
@@ -11,6 +11,7 @@ export interface ContactsCommandMetricsProps {
   flushing: boolean;
   onFlushPending?: () => void;
   onReviewConflicts?: () => void;
+  onReviewDuplicates?: () => void;
 }
 
 /** Permission-scoped quick metrics for the Contacts module command centre (globle1 §2.1). */
@@ -21,9 +22,10 @@ export const ContactsCommandMetrics = React.memo(function ContactsCommandMetrics
   flushing,
   onFlushPending,
   onReviewConflicts,
+  onReviewDuplicates,
 }: ContactsCommandMetricsProps): React.JSX.Element {
   const { t } = useTranslation();
-  const { data: serverMetrics } = useContactsMetrics();
+  const { data: serverMetrics, isLoading: metricsLoading } = useContactsMetrics();
 
   const metrics = useMemo(
     () => ({
@@ -36,12 +38,19 @@ export const ContactsCommandMetrics = React.memo(function ContactsCommandMetrics
     [serverMetrics],
   );
 
+  // Server-backed counts render as "—" until the metrics query settles, so the
+  // command centre never flashes a false 0.
+  const serverValue = useCallback(
+    (value: number): number | string => (metricsLoading ? "—" : value),
+    [metricsLoading],
+  );
+
   const items = useMemo(
     () => [
       {
         icon: Users,
         label: t("contacts.metrics.total"),
-        value: metrics.total,
+        value: serverValue(metrics.total),
         accent: "primary" as const,
       },
       {
@@ -64,6 +73,14 @@ export const ContactsCommandMetrics = React.memo(function ContactsCommandMetrics
         accent: "destructive" as const,
         onClick: conflictCount > 0 ? onReviewConflicts : undefined,
       },
+      {
+        icon: Copy,
+        label: t("contacts.metrics.duplicates"),
+        value: serverValue(metrics.duplicatePairCount),
+        accent: "warning" as const,
+        onClick:
+          metrics.duplicatePairCount > 0 && onReviewDuplicates ? onReviewDuplicates : undefined,
+      },
     ],
     [
       t,
@@ -74,6 +91,9 @@ export const ContactsCommandMetrics = React.memo(function ContactsCommandMetrics
       onFlushPending,
       conflictCount,
       onReviewConflicts,
+      metrics.duplicatePairCount,
+      serverValue,
+      onReviewDuplicates,
     ],
   );
 

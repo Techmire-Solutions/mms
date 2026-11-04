@@ -16,6 +16,8 @@ export interface ReportChartCardProps {
   children: React.ReactNode;
   empty?: boolean;
   emptyNode?: React.ReactNode;
+  /** Text alternative for the inert chart (screen-reader-only). */
+  accessibleSummary?: React.ReactNode;
   "aria-label"?: string;
 }
 
@@ -34,6 +36,7 @@ export const ReportChartCard = function ReportChartCard({
   children,
   empty = false,
   emptyNode,
+  accessibleSummary,
   "aria-label": ariaLabel,
 }: ReportChartCardProps): React.JSX.Element {
   const headerAction = action ?? actions;
@@ -67,6 +70,8 @@ export const ReportChartCard = function ReportChartCard({
           </SafeResponsiveContainer>
         </div>
       )}
+
+      {accessibleSummary ? <div className="sr-only">{accessibleSummary}</div> : null}
     </Card>
   );
 };

@@ -78,7 +78,9 @@ export function StudentsList({
       pageData={workPageData}
       onPageChange={onPageChange}
       i18nNamespace="students"
-      showPagination={workStudents.length > 0}
+      // Keep the pager when the directory has rows elsewhere: gating on the current
+      // page's row count stranded the user on an emptied page (X-02/S-m8).
+      showPagination={(workPageData?.total ?? workStudents.length) > 0}
       loadingLabel={t("common.loading")}
     >
       {workStudents.length === 0 ? (

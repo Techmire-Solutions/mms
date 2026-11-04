@@ -57,11 +57,15 @@ export function getInitialStudentDraft(
     status: student?.status ?? "active",
     grNumber: student?.grNumber ?? "",
     registeredDate: student?.registeredDate ?? todayISO(),
-    notes: student?.notes ?? "",
+    // `notes` is omitted from the Work list projection on purpose; only materialise it
+    // when the row was hydrated. Forcing `""` here made every save from the directory
+    // overwrite the stored notes (2026-11-04 review, M2).
+    ...(student?.notes !== undefined ? { notes: student.notes } : {}),
   };
 
   if (student) {
     for (const [key, value] of Object.entries(student)) {
+      if (value === undefined) continue;
       if (STUDENT_FORM_VOLATILE_KEYS.has(key)) continue;
       if (key in draft) continue;
       (draft as Record<string, unknown>)[key] = value;

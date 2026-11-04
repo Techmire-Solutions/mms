@@ -76,3 +76,25 @@ describe("ContactsPageHeaderActions Component", () => {
     expect(html).not.toContain('aria-haspopup="menu"');
   });
 });
+
+describe("ContactsPageHeaderActions searching state", () => {
+  it("animates the duplicates spinner and marks the button busy while scanning", () => {
+    const html = renderToStaticMarkup(
+      <ContactsPageHeaderActions
+        canExport={false}
+        canRead={true}
+        canWrite={false}
+        viewingDeleted={false}
+        openingDuplicates={true}
+        onOpenDuplicates={vi.fn()}
+        onExport={vi.fn()}
+        onImport={vi.fn()}
+        onAddContact={vi.fn()}
+      />,
+    );
+
+    expect(html).toContain('aria-busy="true"');
+    expect(html).toContain("animate-spin");
+    expect(html).toContain("disabled");
+  });
+});

@@ -135,13 +135,8 @@ export function MessageComposerDispatchControls({
       {!opening && onUseServerGatewayChange && (
         <div className="flex items-center justify-between rounded-lg border border-border/40 bg-muted/20 p-2 text-xs">
           <span className="flex items-center gap-1.5 font-medium text-muted-foreground">
-            <Radio className="h-3.5 w-3.5 text-primary" />
-            {isSms
-              ? t("messaging.preferences.defaultSmsMode")
-              : isEmail
-                ? t("messaging.dispatchMode.serverEmail")
-                : t("messaging.dispatchMode.serverWhatsApp")}
-            :
+            <Radio className="h-3.5 w-3.5 text-primary" aria-hidden />
+            {t("messaging.sendVia")}
           </span>
           <CompactSegmentedControl
             options={

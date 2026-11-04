@@ -67,7 +67,10 @@ export const RELATIONAL_REPLACE_MAPPING_FINANCE_MESSAGING: Record<
   message_logs: {
     importPath: "./repositories/messagingRepository.js",
     fnName: "replaceMessageLogsForWorkspace",
-    snapshotFnName: "listMessageLogsByWorkspace",
+    // Archived rows are part of the workspace state: the restore hard-replaces
+    // the table, so an active-only snapshot would silently drop the archived
+    // window (`mms-soft-delete`).
+    snapshotFnName: "listAllMessageLogsByWorkspace",
   },
   saved_reports: {
     importPath: "./repositories/savedReportsRepository.js",

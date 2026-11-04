@@ -14,6 +14,7 @@ import { DUPLICATE_REASON_I18N } from "@/lib/contacts/contactI18n";
 import { notify } from "@/lib/notify";
 import { reportClientError } from "@/lib/clientErrorReporting";
 import type { DuplicatePair } from "@/tenant/features/contacts/lib/duplicateDetectionTypes";
+import { runBatchMerge } from "@/tenant/features/contacts/lib/duplicateBatchMerge";
 
 function mapPairToViewModel(
   pair: {
@@ -45,8 +46,11 @@ export function useDuplicateDetectionState({
     keepUpdatedAt?: string,
   ) => Promise<void>;
 }) {
-  const { prefs } = useContactConfig();
+  const { prefs, fieldConfigVersion } = useContactConfig();
   const { t } = useTranslation();
+  /** Merge writes carry the active blueprint version so a stale preview is rejected. */
+  const withBlueprintVersion = (contact: Contact): Contact =>
+    ({ ...contact, _blueprintId: String(fieldConfigVersion) }) as Contact;
   const [dupPage, setDupPage] = useState(1);
   const [searchQuery, setSearchQuery] = useState("");
   const [tierFilter, setTierFilter] = useState<DuplicateTierFilter>("all");
@@ -152,23 +156,37 @@ export function useDuplicateDetectionState({
   const handleBatchMergeHighConfidence = async (): Promise<void> => {
     if (batchMerging || highConfidencePairs.length === 0) return;
     setBatchMerging(true);
-    let successCount = 0;
     try {
-      for (const pair of highConfidencePairs) {
-        const selectedKeepIndex = keepIndex[pair.id] ?? 0;
-        const keep = pair.contacts[selectedKeepIndex];
-        const other = pair.contacts[1 - selectedKeepIndex];
-        const mergedRaw = mergeContacts(keep, other);
-        const mergedResult = applyTitleCaseToContact(mergedRaw);
-        await onMerge(keep.id, other.id, mergedResult, keep.updatedAt);
-        setMergedPairIds((prev) => new Set(prev).add(pair.id));
-        successCount++;
+      // Per-pair isolation: one conflict must not discard the pairs that already
+      // merged, and a contact appearing in two pairs is merged only once.
+      const result = await runBatchMerge(
+        highConfidencePairs,
+        keepIndex,
+        async (keep, other) => {
+          const mergedResult = withBlueprintVersion(
+            applyTitleCaseToContact(mergeContacts(keep, other)),
+          );
+          await onMerge(keep.id, other.id, mergedResult, keep.updatedAt);
+        },
+        (error) => reportClientError(error, { scope: "contacts.duplicate_batch_merge" }),
+      );
+
+      if (result.mergedPairIds.length > 0) {
+        setMergedPairIds((prev) => new Set([...prev, ...result.mergedPairIds]));
       }
-      notify.success(t("contacts.duplicates.batchMergeSuccess", { count: successCount }));
+
+      if (result.failed === 0) {
+        notify.success(t("contacts.duplicates.batchMergeSuccess", { count: result.merged }));
+      } else {
+        notify.warning(
+          t("contacts.duplicates.batchMergePartial", {
+            merged: result.merged,
+            total: highConfidencePairs.length,
+            failed: result.failed,
+          }),
+        );
+      }
       setBatchConfirmOpen(false);
-    } catch (err) {
-      notify.error(t("contacts.saveFailed"));
-      reportClientError(err, { scope: "contacts.duplicate_batch_merge" });
     } finally {
       setBatchMerging(false);
     }
@@ -182,7 +200,7 @@ export function useDuplicateDetectionState({
     const other = pair.contacts[1 - selectedKeepIndex];
 
     const mergedRaw = customMerged ?? mergeContacts(keep, other);
-    const mergedResult = applyTitleCaseToContact(mergedRaw);
+    const mergedResult = withBlueprintVersion(applyTitleCaseToContact(mergedRaw));
     setConfirming(true);
     try {
       await onMerge(keep.id, other.id, mergedResult, keep.updatedAt);

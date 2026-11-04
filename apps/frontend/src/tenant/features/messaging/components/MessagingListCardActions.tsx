@@ -36,7 +36,7 @@ export function MessagingListCardActions({
           className="min-h-11 px-2.5 text-xs text-muted-foreground hover:text-primary"
         >
           <Filter className="me-1 h-3.5 w-3.5" />
-          <span>{t("common.filters")}</span>
+          <span>{t("messaging.filterByContact", { name })}</span>
         </Button>
       )}
       {canWrite && (

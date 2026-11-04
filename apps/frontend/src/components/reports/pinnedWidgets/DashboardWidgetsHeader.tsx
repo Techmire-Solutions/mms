@@ -6,11 +6,14 @@ import { SectionLabel } from "@/components/app/SectionLabel";
 interface DashboardWidgetsHeaderProps {
   gridMode: "comfortable" | "compact";
   onToggleGridMode: (mode: "comfortable" | "compact") => void;
+  /** Density is a workspace preference — only writers may change it. */
+  canCustomize: boolean;
 }
 
 export function DashboardWidgetsHeader({
   gridMode,
   onToggleGridMode,
+  canCustomize,
 }: DashboardWidgetsHeaderProps): React.JSX.Element {
   const { t } = useTranslation();
 
@@ -23,18 +26,21 @@ export function DashboardWidgetsHeader({
         </SectionLabel>
       </div>
 
-      <CompactSegmentedControl
-        tone="card"
-        animated
-        ariaLabel={t("reports.widgets.pinnedPanels")}
-        className="shrink-0 bg-muted/20 shadow-inner backdrop-blur-xs"
-        value={gridMode}
-        onChange={onToggleGridMode}
-        options={[
-          { value: "comfortable", label: t("reports.widgets.comfortable") },
-          { value: "compact", label: t("reports.widgets.compact") },
-        ]}
-      />
+      {canCustomize ? (
+        <CompactSegmentedControl
+          tone="card"
+          animated
+          ariaLabel={t("reports.widgets.pinnedPanels")}
+          // Buttons are print-hidden globally; the tray itself must not print as an empty pill.
+          className="shrink-0 bg-muted/20 shadow-inner backdrop-blur-xs print:hidden"
+          value={gridMode}
+          onChange={onToggleGridMode}
+          options={[
+            { value: "comfortable", label: t("reports.widgets.comfortable") },
+            { value: "compact", label: t("reports.widgets.compact") },
+          ]}
+        />
+      ) : null}
     </div>
   );
 }

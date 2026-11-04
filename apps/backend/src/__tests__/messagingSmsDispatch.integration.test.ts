@@ -172,6 +172,42 @@ describe("POST /api/messaging/dispatch/sms", () => {
     expect(mockUpdateMessageLogDeliveryStatus).toHaveBeenCalledTimes(2);
   });
 
+  it("keys direct-dispatch claims in the queued job namespace", async () => {
+    const {
+      findAuthArtifactByLookupKey,
+      tryClaimAuthArtifactByLookupKey,
+      updateAuthArtifactPayload,
+    } = await import("../services/auth/authArtifactService.js");
+    vi.mocked(findAuthArtifactByLookupKey).mockReset().mockResolvedValue(null);
+    vi.mocked(tryClaimAuthArtifactByLookupKey)
+      .mockReset()
+      .mockResolvedValue({ claimed: true, id: "art-ns-sms" });
+    vi.mocked(updateAuthArtifactPayload).mockReset().mockResolvedValue(undefined);
+    const { buildBackgroundJobId } = await import("../lib/backgroundJobIds.js");
+    const { buildMessageLogClaimId } = await import("../lib/messageLogClaimId.js");
+    const { app, headers } = await authHeaders();
+
+    const res = await app.inject({
+      method: "POST",
+      url: "/api/messaging/dispatch/sms",
+      headers,
+      payload: { ...smsPayload(), idempotencyKey: "sms-claim-namespace-01" },
+    });
+
+    expect(res.statusCode).toBe(200);
+    const [, claim] = mockClaimMessageLogForDelivery.mock.calls[0] as [string, { id: string }];
+    // The queued runner claims with `ctx.jobId`; the direct path must derive the
+    // same id so a mode-flipped retry collides instead of re-sending everyone.
+    expect(claim.id).toBe(
+      buildMessageLogClaimId(
+        buildBackgroundJobId("demo", "u-admin", "sms-claim-namespace-01"),
+        "c-1",
+        "sms",
+      ),
+    );
+    await app.close();
+  });
+
   it("stays send-once when a recipient was already claimed by an earlier attempt", async () => {
     mockClaimMessageLogForDelivery
       .mockReset()

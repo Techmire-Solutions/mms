@@ -29,6 +29,9 @@ export function WidgetCardHeader({
   const HeadingTag = headingLevel === 2 ? "h2" : "h3";
   return (
     <header
+      // Content header: exempt from the global print rule that hides app chrome
+      // `<header>` elements (2026-11-04 UI review — printed dashboards lost every panel title).
+      data-print-header
       className={cn(
         "flex flex-wrap items-center justify-between gap-2 px-5 py-3.5 select-none",
         CARD_STRIPE_INSET,

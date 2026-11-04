@@ -9,6 +9,8 @@ interface MessagingChartDatum {
   name: string;
   value: number;
   fillColor?: string;
+  /** Stable channel id — the localized `name` cannot drive the a11y summary. */
+  channel?: "sms" | "whatsapp" | "email";
 }
 
 interface MessagingReportsVolumeChartProps {
@@ -19,6 +21,8 @@ export function MessagingReportsVolumeChart({
   chartData,
 }: MessagingReportsVolumeChartProps): React.JSX.Element {
   const { t } = useTranslation();
+  const countFor = (channel: MessagingChartDatum["channel"]): number =>
+    chartData.find((datum) => datum.channel === channel)?.value ?? 0;
 
   return (
     <ReportChartCard
@@ -26,6 +30,12 @@ export function MessagingReportsVolumeChart({
       subtitle={t("messaging.volumeBreakdownDesc")}
       accentColor="primary"
       heightClass="h-chart-lg"
+      // The chart body is `inert`; screen readers get this text instead.
+      accessibleSummary={t("messaging.volumeBreakdownSummary", {
+        sms: countFor("sms"),
+        whatsapp: countFor("whatsapp"),
+        email: countFor("email"),
+      })}
       empty={chartData.length === 0}
       emptyNode={
         <EmptyState

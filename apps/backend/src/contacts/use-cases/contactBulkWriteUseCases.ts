@@ -16,6 +16,7 @@ import {
   assertContactUniqueFields,
   mergeContactPatch,
   prepareContactRecord,
+  validateContactDynamic,
 } from "./contactValidationUseCases.js";
 import { stripUnreadableContactWriteKeys } from "./contactViewerWriteGuard.js";
 import { assertContactAttachmentUrls } from "./contactAttachmentUrls.js";
@@ -24,6 +25,7 @@ import { loadPreviousRelationshipTargets } from "./contactRelationshipIds.js";
 import { broadcastCollection } from "../../lib/livePush.js";
 import { invalidateMultiTierCache } from "../../lib/cache/index.js";
 import { ConflictError, NotFoundError, ValidationError } from "../../lib/httpErrors.js";
+import { auditContactBulkTagged, auditContactMerged } from "./contactWriteAudit.js";
 import type { ContactsRepository } from "../repository/contactsRepository.js";
 import { contactsRepository } from "../repository/contactsRepositoryAdapter.js";
 
@@ -74,6 +76,13 @@ export async function mergeContactsById(
     const mergedSource = viewerSafeInput
       ? mergeContactPatch(keep, { ...viewerSafeInput, id: keepId })
       : mergeContactRecords(keep, other);
+    // The survivor is a full-row write: enforce Setup's required fields/tabs and
+    // the optional blueprint version lock before it replaces the stored record.
+    await validateContactDynamic(tenant, mergedSource, {
+      language: "en",
+      viewerRole: options.viewerRole,
+      fieldConfig: context.fieldConfig,
+    });
     const prepared = await prepareContactRecord(mergedSource, keepId, context);
     assertContactAttachmentUrls(prepared, tenant, [
       ...(keep.attachments ?? []).map((attachment) => attachment.url),
@@ -113,10 +122,11 @@ export async function mergeContactsById(
 
     if (expectedKeepUpdatedAt) {
       // Same predicate-in-the-UPDATE guarantee as the interactive edit path.
-      const savedWithVersion = await repo.saveIfVersionMatches(tenant, next, expectedKeepUpdatedAt);
-      if (!savedWithVersion) throw new ConflictError(CONTACT_VERSION_CONFLICT);
+      const savedUpdatedAt = await repo.saveIfVersionMatches(tenant, next, expectedKeepUpdatedAt);
+      if (!savedUpdatedAt) throw new ConflictError(CONTACT_VERSION_CONFLICT);
+      next.updatedAt = savedUpdatedAt;
     } else {
-      await repo.save(tenant, next);
+      next.updatedAt = await repo.save(tenant, next);
     }
     await applyContactRelationshipInference(tenant, next, undefined, repo, {
       actorId: deletedBy,
@@ -131,6 +141,14 @@ export async function mergeContactsById(
       actorId: deletedBy,
     });
 
+    // The destructive half of a merge must be audited atomically with it: the
+    // route summary alone can be lost if the process dies after commit.
+    await auditContactMerged({
+      tenant,
+      keepId: String(keepId),
+      deleteId: String(deleteId),
+      actorId: deletedBy,
+    });
     await invalidateDuplicateScanCache();
     return next;
   });
@@ -220,6 +238,24 @@ export async function bulkTagContacts(
         toSave.map((contact) => ({ id: String(contact.id), tags: contact.tags ?? [] })),
         options.actorId,
       );
+      // Audit each changed record inside the write transaction (bulk delete/restore
+      // do the same); the route-level summary row is not the authoritative record.
+      const previousById = new Map(contactsToUpdate.map((c) => [String(c.id), c]));
+      for (const contact of toSave) {
+        const previousTags = filterManualContactTags(
+          getContactTags(previousById.get(String(contact.id)) ?? contact),
+        );
+        const previousLower = new Set(previousTags.map((tag) => tag.toLowerCase()));
+        const nextTags = filterManualContactTags(contact.tags ?? []);
+        const nextLower = new Set(nextTags.map((tag) => tag.toLowerCase()));
+        await auditContactBulkTagged({
+          tenant,
+          contactId: String(contact.id),
+          actorId: options.actorId,
+          addedTags: nextTags.filter((tag) => !previousLower.has(tag.toLowerCase())),
+          removedTags: previousTags.filter((tag) => !nextLower.has(tag.toLowerCase())),
+        });
+      }
     }
     return { updatedCount: toSave.length };
   });

@@ -12,6 +12,8 @@ import { broadcastCollection } from "../../lib/livePush.js";
 import type { FacultyRepository } from "../repository/facultyRepository.js";
 import { facultyRepository } from "../repository/facultyRepositoryAdapter.js";
 import { reconcileFacultyContactsByFacultyIds } from "../../contacts/systemTags/contactSystemTagUseCases.js";
+import { withTenant } from "../../db/tenant-context.js";
+import { appendCollectionAuditInTx } from "../../lib/collectionAuditInTx.js";
 
 /** Active duplicate probe (contact / employeeId) before save — server authoritative. */
 export async function checkFacultyRegistrationDuplicate(
@@ -141,27 +143,71 @@ export async function computeNextFacultyEmployeeIdForSettings(
   return candidateId;
 }
 
-/** One-shot backfill of missing employee ids for active faculty (Setup writers). */
+/**
+ * One-shot backfill of missing employee ids for active faculty (Setup writers).
+ *
+ * Runs as a single tenant transaction serialized by the faculty advisory lock so
+ * the batch is all-or-nothing and two concurrent admins cannot mint the same
+ * sequence; the batch records one authoritative audit row.
+ */
 export async function migrateFacultyMissingEmployeeIds(
   repo: FacultyRepository = facultyRepository,
+  actorId?: string,
 ): Promise<{ updated: number }> {
   const tenant = getRequestTenant();
   if (!tenant) return { updated: 0 };
 
   const settings = normalizeFacultyModulePreferences(await loadFacultyModulePreferences());
-  const missing = await repo.listActiveMissingEmployeeId(tenant);
-  if (missing.length === 0) return { updated: 0 };
+  const updated = await withTenant(tenant, async (tx) => {
+    await repo.lockHierarchy?.(tx, tenant);
+    const missing = await repo.listActiveMissingEmployeeId(tenant);
+    if (missing.length === 0) return 0;
 
-  let updated = 0;
-  for (const row of missing) {
-    const employeeId = await computeNextFacultyEmployeeIdForSettings(
-      { idPrefix: settings.idPrefix },
-      repo,
-    );
-    await repo.save(tenant, { ...row, employeeId });
-    updated += 1;
-  }
+    // One COUNT for the batch, then advance the sequence locally: the previous
+    // per-row helper re-read preferences, re-ran the COUNT and probed collisions
+    // for every record (~3-4 queries each).
+    const now = new Date();
+    const year = now.getFullYear();
+    const startSeq =
+      Number.isFinite(settings.idStartSeq) && Number(settings.idStartSeq) > 1
+        ? Math.floor(Number(settings.idStartSeq))
+        : 1;
+    const count = await repo.countNextEmployeeId(tenant, {
+      prefix: settings.idPrefix,
+      restartAnnually: settings.idRestartAnnually,
+      year,
+    });
+    let seq = Math.max(count + 1, startSeq);
 
-  await broadcastCollection("faculty");
+    for (const row of missing) {
+      let employeeId = formatFacultyEmployeeId(seq, settings, now);
+      let attempts = 0;
+      while (attempts < 10) {
+        const conflict = await repo.findRegistrationConflict(tenant, { employeeId });
+        if (conflict !== "employeeId") break;
+        seq += 1;
+        employeeId = formatFacultyEmployeeId(seq, settings, now);
+        attempts += 1;
+      }
+      if (attempts === 10) {
+        throw new Error(
+          `Cannot generate a unique employee ID after 10 attempts. Check the prefix ("${settings.idPrefix}") and starting sequence configuration.`,
+        );
+      }
+      await repo.save(tenant, { ...row, employeeId });
+      seq += 1;
+    }
+    await appendCollectionAuditInTx({
+      tenant,
+      tableName: "faculty",
+      recordId: "employee-id-backfill",
+      action: "faculty.employee_id_backfill",
+      summary: `Backfilled employee IDs for ${missing.length} faculty member(s)`,
+      realUserId: actorId ?? null,
+    });
+    return missing.length;
+  });
+
+  if (updated > 0) await broadcastCollection("faculty");
   return { updated };
 }

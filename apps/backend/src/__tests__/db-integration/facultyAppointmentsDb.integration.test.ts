@@ -6,6 +6,8 @@ import { withTenant } from "../../db/tenant-context.js";
 import {
   saveFacultyAssignment,
   closeAssignment,
+  findFacultyAssignmentById,
+  softDeleteFacultyAssignment,
 } from "../../db/repositories/facultyAssignmentRepository.js";
 import {
   saveFacultyDepartment,
@@ -94,12 +96,32 @@ describe("Faculty appointment integrity", () => {
     await expect(closeAssignment(tenant, "a0", "2025-01-01")).rejects.toThrow("overlaps");
   });
 
-  it("commits the audit record with the appointment", async () => {
-    await withTenant(tenant, async (tx) => {
-      const result = await tx.execute(sql`SELECT record_id FROM audit_trail_events
-        WHERE workspace_subdomain = ${tenant} AND table_name = 'faculty_assignments' AND record_id = 'secondary'`);
-      expect(result.rows).toHaveLength(1);
-    });
+  it("refuses to archive the period backing a current primary appointment, then allows it once ended", async () => {
+    // a2 is f2's only appointment: primary, open since 2020 — i.e. the row the
+    // Work projection/exports/contact tags currently resolve.
+    await expect(softDeleteFacultyAssignment(tenant, "a2", "actor")).rejects.toThrow(
+      /primary appointment/i,
+    );
+    expect((await findFacultyAssignmentById(tenant, "a2"))?.deletedAt ?? null).toBeNull();
+
+    await closeAssignment(tenant, "a2", "2024-12-31");
+    await expect(softDeleteFacultyAssignment(tenant, "a2", "actor")).resolves.toBeUndefined();
+    expect((await findFacultyAssignmentById(tenant, "a2"))?.deletedAt).not.toBeNull();
+  });
+
+  it("commits the audit record with the appointment and distinguishes create from update", async () => {
+    const actionTypes = () =>
+      withTenant(tenant, async (tx) => {
+        const result = await tx.execute(sql`SELECT action_type FROM audit_trail_events
+          WHERE workspace_subdomain = ${tenant} AND table_name = 'faculty_assignments' AND record_id = 'secondary'
+          ORDER BY created_at, action_type`);
+        return result.rows.map((row) => (row as { action_type: string }).action_type);
+      });
+
+    expect(await actionTypes()).toEqual(["CREATE"]);
+
+    await saveFacultyAssignment(tenant, appointment("secondary", { notes: "edited" }));
+    expect(await actionTypes()).toEqual(["CREATE", "UPDATE"]);
   });
 });
 

@@ -206,11 +206,14 @@ export async function deleteMessageTemplateById(tenant: string, id: string): Pro
   if (!cleanId) return false;
   const subdomain = tenant.trim().toLowerCase();
   return withTenant(subdomain, async (tx) => {
-    await tx
+    const deleted = await tx
       .delete(messageTemplates)
       .where(
         and(eq(messageTemplates.workspaceSubdomain, subdomain), eq(messageTemplates.id, cleanId)),
-      );
-    return true;
+      )
+      .returning({ id: messageTemplates.id });
+    // Report the real outcome: a concurrent delete between the handler's
+    // existence check and this call must not answer success.
+    return deleted.length > 0;
   });
 }

@@ -19,6 +19,7 @@ import {
   isContactDeleted,
   type ValidationError,
   formatSocialPlatformUrl,
+  uuidv7,
 } from "@mms/shared";
 
 export function useContactFormSave({
@@ -39,7 +40,7 @@ export function useContactFormSave({
   onBaselineReset?: (contact: Contact) => void;
 }) {
   const { t } = useTranslation();
-  const { fields } = useContactConfig();
+  const { fields, fieldConfigVersion } = useContactConfig();
   const { language } = useGlobalSettings();
   const validate = useContactValidation();
   const [saving, setSaving] = useState(false);
@@ -103,7 +104,7 @@ export function useContactFormSave({
 
         const contactRaw: Contact = {
           ...cleanedDraft,
-          id: cleanedDraft.id || contact?.id || crypto.randomUUID(),
+          id: cleanedDraft.id || contact?.id || uuidv7(),
           firstName,
           lastName,
           name: composeContactName(firstName, lastName),
@@ -125,9 +126,15 @@ export function useContactFormSave({
 
         const titleCased = applyTitleCaseToContact(withPresence) as Contact;
         const finalized = syncContactScalarFields(titleCased);
+        // Blueprint version lock: the server rejects a form saved against a field
+        // config that changed while it was open (`_blueprintId` = active version).
+        const withBlueprint = {
+          ...finalized,
+          _blueprintId: String(fieldConfigVersion),
+        } as Contact;
 
-        await onSave(finalized);
-        onBaselineReset?.(finalized);
+        await onSave(withBlueprint);
+        onBaselineReset?.(withBlueprint);
 
         if (!options?.keepOpen) {
           notify.success(
@@ -168,6 +175,7 @@ export function useContactFormSave({
       onValidationTab,
       onBaselineReset,
       fields,
+      fieldConfigVersion,
       language,
       validate,
       t,

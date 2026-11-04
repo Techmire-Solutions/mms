@@ -75,6 +75,8 @@ export const facultyContract = c.router({
       403: errorResponse,
       404: errorResponse,
       400: errorResponse,
+      /** Optimistic concurrency: stale `x-expected-updated-at` token. */
+      409: errorResponse,
       500: errorResponse,
     },
     summary: "Update a faculty member",
@@ -197,17 +199,6 @@ export const facultyContract = c.router({
     body: z.object({ ids: z.array(z.union([z.string(), z.number()])) }),
     responses: { 200: facultyBulkResultResponseSchema, 403: errorResponse, 500: errorResponse },
     summary: "Bulk restore faculty members",
-  },
-  exportAudit: {
-    method: "POST",
-    path: "/api/faculty/export-audit",
-    body: z.object({ count: z.number(), scope: z.enum(["all", "filtered", "selection"]) }),
-    responses: {
-      200: z.object({ success: z.literal(true) }),
-      403: errorResponse,
-      500: errorResponse,
-    },
-    summary: "Log export audit",
   },
   resolve: {
     method: "POST",

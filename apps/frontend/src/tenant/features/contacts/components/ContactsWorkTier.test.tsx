@@ -1,4 +1,3 @@
-import React from "react";
 import { describe, expect, it, vi } from "vitest";
 import { renderToStaticMarkup } from "react-dom/server";
 import type { Contact } from "@mms/shared";
@@ -68,6 +67,8 @@ const baseProps = {
   sortField: "name" as const,
   sortDir: "asc" as const,
   onSort: vi.fn(),
+  onSortDirChange: vi.fn(),
+  isSearching: false,
   hasActiveFilters: false,
   activeFilterCount: 0,
   onClearFilters: vi.fn(),

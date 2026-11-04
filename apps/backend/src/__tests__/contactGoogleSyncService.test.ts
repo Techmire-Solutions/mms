@@ -1,4 +1,5 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import type { Contact } from "@mms/shared";
 
 const mockFindCredentials = vi.fn();
 const mockUpsertCredentials = vi.fn();
@@ -8,6 +9,8 @@ const mockFindContactsMatchingUniqueValues = vi.fn();
 const mockLoadContactRuntimeDefaults = vi.fn();
 const mockBulkSaveContacts = vi.fn();
 const mockInvalidateDuplicateScanCache = vi.fn();
+const mockLoadContactWriteContext = vi.fn();
+const mockAssertContactUniqueFields = vi.fn();
 
 vi.mock("../lib/tenantContext.js", () => ({
   getRequestTenant: () => mockGetRequestTenant(),
@@ -42,7 +45,7 @@ vi.mock("../contacts/use-cases/contactConfigService.js", () => ({
 
 vi.mock("../contacts/use-cases/contactValidationUseCases.js", () => ({
   prepareContactRecord: async (contact: unknown) => contact,
-  assertContactUniqueFields: vi.fn().mockResolvedValue(undefined),
+  assertContactUniqueFields: (...args: unknown[]) => mockAssertContactUniqueFields(...args),
   ContactUniqueFieldError: class ContactUniqueFieldError extends Error {
     code = "unique_conflict";
     errors: unknown[] = [];
@@ -52,11 +55,7 @@ vi.mock("../contacts/use-cases/contactValidationUseCases.js", () => ({
 vi.mock("../contacts/use-cases/contactWriteContext.js", () => ({
   // Tenant config is not under test here; the sync loop must read it once and
   // pass it to every candidate.
-  loadContactWriteContext: vi.fn(async () => ({
-    runtimeDefaults: { defaultPhoneCountryCode: "+92", phoneLabel: "Mobile", emailLabel: "Email" },
-    countryCodes: [],
-    fieldConfig: null,
-  })),
+  loadContactWriteContext: (...args: unknown[]) => mockLoadContactWriteContext(...args),
 }));
 
 vi.mock("../db/repositories/contactRepository.js", () => ({
@@ -83,6 +82,7 @@ import {
   runGoogleContactsSync,
   setContactGoogleSyncConfig,
 } from "../contacts/use-cases/contactGoogleSyncUseCases.js";
+import { ContactUniqueFieldError as MockContactUniqueFieldError } from "../contacts/use-cases/contactValidationUseCases.js";
 
 describe("contactGoogleSyncService", () => {
   beforeEach(() => {
@@ -105,6 +105,16 @@ describe("contactGoogleSyncService", () => {
       phoneLabel: "Work",
       emailLabel: "Work",
     });
+    mockLoadContactWriteContext.mockReset().mockResolvedValue({
+      runtimeDefaults: {
+        defaultPhoneCountryCode: "+92",
+        phoneLabel: "Mobile",
+        emailLabel: "Email",
+      },
+      countryCodes: [],
+      fieldConfig: null,
+    });
+    mockAssertContactUniqueFields.mockReset().mockResolvedValue(undefined);
     vi.stubGlobal("fetch", vi.fn());
   });
 
@@ -270,5 +280,98 @@ describe("contactGoogleSyncService", () => {
 
   it("throws session_expired when not connected", async () => {
     await expect(runGoogleContactsSync("u1")).rejects.toBeInstanceOf(GoogleSyncError);
+  });
+
+  it("checks a pending update against previously accepted pending updates", async () => {
+    mockFindCredentials.mockResolvedValue({
+      clientId: "client-id",
+      clientSecret: "client-secret",
+      accessToken: "access-1",
+      refreshToken: "refresh-1",
+    });
+    await setContactGoogleSyncConfig("u1", {
+      clientId: "client-id",
+      clientSecret: "client-secret",
+      accessToken: "access-1",
+      refreshToken: "refresh-1",
+    });
+
+    // `dob` is Setup-unique; both Google people would write the same value onto
+    // two different existing contacts, and neither write is in the DB yet.
+    mockLoadContactWriteContext.mockResolvedValueOnce({
+      runtimeDefaults: {
+        defaultPhoneCountryCode: "+92",
+        phoneLabel: "Mobile",
+        emailLabel: "Email",
+      },
+      countryCodes: [],
+      fieldConfig: {
+        version: 1,
+        enabledTabs: ["basic"],
+        requiredTabs: [],
+        formTabs: [],
+        fields: {
+          basic: [
+            {
+              key: "dob",
+              label: "Date of birth",
+              type: "text",
+              enabled: true,
+              order: 1,
+              unique: true,
+            },
+          ],
+        },
+      },
+    } as never);
+    mockFindContactsMatchingUniqueValues.mockResolvedValue([
+      {
+        id: "c-1",
+        name: "Ali Khan",
+        phones: [],
+        emails: [{ label: "Work", address: "ali@example.com" }],
+        relationshipContacts: [],
+      },
+      {
+        id: "c-2",
+        name: "Sara Ahmed",
+        phones: [],
+        emails: [{ label: "Work", address: "sara@example.com" }],
+        relationshipContacts: [],
+      },
+    ]);
+    mockAssertContactUniqueFields.mockImplementation(async (_tenant, contact, options) => {
+      const peers = (options as { additionalPeers?: Contact[] } | undefined)?.additionalPeers ?? [];
+      if (peers.some((peer) => peer.dob && peer.dob === contact.dob)) {
+        throw new MockContactUniqueFieldError([
+          { fieldId: "dob", tabId: "basic", message: "Date of birth must be unique per contact" },
+        ]);
+      }
+    });
+
+    const birthday = { date: { year: 2012, month: 3, day: 4 } };
+    vi.mocked(fetch).mockResolvedValue({
+      status: 200,
+      json: async () => ({
+        connections: [
+          {
+            names: [{ displayName: "Ali Khan", givenName: "Ali", familyName: "Khan" }],
+            emailAddresses: [{ value: "ali@example.com" }],
+            birthdays: [birthday],
+          },
+          {
+            names: [{ displayName: "Sara Ahmed", givenName: "Sara", familyName: "Ahmed" }],
+            emailAddresses: [{ value: "sara@example.com" }],
+            birthdays: [birthday],
+          },
+        ],
+      }),
+    } as Response);
+
+    const result = await runGoogleContactsSync("u1");
+
+    expect(result.updated).toBe(1);
+    expect(result.skippedUnique).toBe(1);
+    expect(result.imported).toBe(0);
   });
 });

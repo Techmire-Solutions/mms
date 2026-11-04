@@ -87,6 +87,7 @@ import { facultyListQuerySchema } from "../faculty/facultyListQuery.js";
 import { sessionsListQuerySchema } from "../sessions/sessionsListQuery.js";
 import { enrollmentsListQuerySchema } from "../enrollments/enrollmentsListQuery.js";
 import { usersListQuerySchema } from "../auth/usersListQuery.js";
+import { taskListQuerySchema } from "../obligations/tasksModuleManifest.js";
 
 export const contactsCsvExportBodySchema = csvExportBodySchema(contactsListQuerySchema);
 export const studentsCsvExportBodySchema = csvExportBodySchema(studentsListQuerySchema);
@@ -106,4 +107,4 @@ export const attendanceCsvExportBodySchema = csvExportBodySchema(emptyListQueryS
 export const examinationsCsvExportBodySchema = csvExportBodySchema(emptyListQuerySchema);
 export const hasanatCsvExportBodySchema = csvExportBodySchema(emptyListQuerySchema);
 export const obligationsCsvExportBodySchema = csvExportBodySchema(emptyListQuerySchema);
-export const tasksCsvExportBodySchema = csvExportBodySchema(emptyListQuerySchema);
+export const tasksCsvExportBodySchema = csvExportBodySchema(taskListQuerySchema);

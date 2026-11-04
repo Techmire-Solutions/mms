@@ -1,5 +1,5 @@
 import type React from "react";
-import { useState, useMemo, useId } from "react";
+import { useCallback, useEffect, useRef, useState, useMemo, useId } from "react";
 import { User } from "lucide-react";
 import { FormModal } from "@/components/app/FormModal";
 import { useTranslation } from "@/hooks/useTranslation";
@@ -13,8 +13,9 @@ import { ContactFormFooterStart } from "@/tenant/features/contacts/components/Co
 import {
   computeContactTabErrorCounts,
   buildContactFormVisibleTabs,
-  buildContactValidationErrorSummary,
+  buildContactValidationErrorItems,
 } from "@/tenant/features/contacts/lib/contactFormTabUtils";
+import { focusContactField } from "@/lib/contacts/contactFormFocus";
 
 export interface ContactFormProps {
   open?: boolean;
@@ -62,6 +63,20 @@ export function ContactForm({
   const effectiveCity = defaultCity || branding.city || "";
   const effectiveProvince = defaultProvince || branding.region || "";
 
+  /** Set from the draft hook below; the focus callback is created before it. */
+  const formInstanceIdRef = useRef<string>("new");
+  const handleValidationTab = useCallback((tabId: string, fieldId?: string, index?: number) => {
+    setTab(tabId);
+    // The tab body mounts in this commit; the helper waits two frames plus a
+    // retry before focusing, so the control exists by then.
+    focusContactField({
+      formInstanceId: formInstanceIdRef.current,
+      tabId,
+      fieldId,
+      index,
+    });
+  }, []);
+
   const draft = useContactFormDraft({
     open,
     contact,
@@ -71,8 +86,12 @@ export function ContactForm({
     defaultProvince: effectiveProvince,
     onSave,
     onClose,
-    onValidationTab: (tabId) => setTab(tabId),
+    onValidationTab: handleValidationTab,
   });
+
+  useEffect(() => {
+    formInstanceIdRef.current = draft.formInstanceId;
+  }, [draft.formInstanceId]);
 
   const tabErrorCounts = useMemo(
     () => computeContactTabErrorCounts(draft.validationErrors),
@@ -94,10 +113,13 @@ export function ContactForm({
     ? tab
     : (visibleTabs[0]?.key ?? "basic");
 
-  const validationErrorSummary = useMemo(
-    () =>
-      buildContactValidationErrorSummary(Boolean(draft.lookupsError), draft.validationErrors, t),
+  const validationErrorItems = useMemo(
+    () => buildContactValidationErrorItems(Boolean(draft.lookupsError), draft.validationErrors, t),
     [draft.lookupsError, draft.validationErrors, t],
+  );
+  const validationErrorSummary = useMemo(
+    () => validationErrorItems?.map((item) => item.message),
+    [validationErrorItems],
   );
 
   return (
@@ -116,6 +138,15 @@ export function ContactForm({
       priority={Boolean(priority || nested)}
       saveOnTabChange={false}
       error={validationErrorSummary}
+      onSelectError={
+        draft.lookupsError
+          ? undefined
+          : (index) => {
+              const item = validationErrorItems?.[index];
+              if (!item?.tabId) return;
+              handleValidationTab(item.tabId, item.fieldId, item.index);
+            }
+      }
       tabs={visibleTabs}
       activeTab={activeTab}
       onTabChange={setTab}
@@ -140,6 +171,7 @@ export function ContactForm({
         <ContactFormFooterStart
           contactDraft={draft.contactDraft}
           collectionCounts={draft.collectionCounts}
+          noChanges={Boolean(contact) && !draft.isDirty}
           t={t}
         />
       }

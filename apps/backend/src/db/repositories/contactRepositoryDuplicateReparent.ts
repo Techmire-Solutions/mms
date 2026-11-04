@@ -7,6 +7,7 @@ import {
   financeInvoices,
   tenantUsers,
   messageLogs,
+  orphanProfiles,
 } from "../schema.js";
 import { withTenant } from "../tenant-context.js";
 
@@ -165,6 +166,15 @@ export async function reparentContactReferences(
       SET contact_id = ${keepId}
       WHERE workspace_subdomain = ${subdomain}
         AND contact_id = ${deleteId}
+    `);
+
+    // Orphan sponsorship is a contact FK too (`ON DELETE SET NULL`). Without this
+    // the merge silently detaches the sponsor and a later purge nulls the link.
+    await tx.execute(sql`
+      UPDATE ${orphanProfiles}
+      SET sponsor_contact_id = ${keepId}
+      WHERE workspace_subdomain = ${subdomain}
+        AND sponsor_contact_id = ${deleteId}
     `);
   });
 }

@@ -1,4 +1,3 @@
-import React from "react";
 import { act } from "react";
 import { createRoot, type Root } from "react-dom/client";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
@@ -134,6 +133,14 @@ describe("students contract query hooks", () => {
         enabled: true,
       }),
     );
+
+    // Keep the previous page's rows while the next key loads, so filter/search changes
+    // do not flash the directory into a skeleton (2026-11-04 review, n9).
+    const call = mocks.listUseQuery.mock.calls[0]?.[0] as {
+      placeholderData?: (previous: unknown) => unknown;
+    };
+    expect(typeof call.placeholderData).toBe("function");
+    expect(call.placeholderData?.("previous-page")).toBe("previous-page");
   });
 
   it.each([

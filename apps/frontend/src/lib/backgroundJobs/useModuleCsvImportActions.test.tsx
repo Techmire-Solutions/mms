@@ -211,7 +211,8 @@ describe("useModuleCsvImportActions", () => {
     expect(hookResult.progress).toEqual({ current: 1, total: 2 });
     expect(container.textContent).toContain("Imported 2 of 2 rows");
     expect(startServerModuleCsvImport).not.toHaveBeenCalled();
-    expect(notify.success).toHaveBeenCalledWith("Imported 2 of 2 rows");
+    // The completed panel is now the single outcome surface (S-01): no duplicate toast.
+    expect(notify.success).not.toHaveBeenCalled();
   });
 
   it("posts through the module starter when submitRows is not supplied", async () => {

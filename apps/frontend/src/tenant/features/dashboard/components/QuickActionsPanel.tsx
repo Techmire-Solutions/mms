@@ -4,34 +4,23 @@ import { Link } from "react-router-dom";
 import { motion } from "framer-motion";
 import { Sparkles } from "lucide-react";
 import { ROUTES } from "@/lib/config/routes";
-import { getQuickActionsForRole } from "@/lib/dashboardQuickActions";
+import type { DashboardQuickAction } from "@/lib/dashboardQuickActions";
 import { getQuickActionGlowClass, getQuickActionIconClasses } from "@/lib/ui/dashboardWidgetColors";
-import type { DashboardRole } from "@/lib/dashboardRole";
-import { useModuleAccess } from "@/tenant/hooks/useModuleAccess";
 import { useTranslation } from "@/hooks/useTranslation";
-import { usePermissions } from "@/tenant/hooks/usePermissions";
 import { useReducedMotion } from "@/hooks/useReducedMotion";
 
 interface QuickActionsPanelProps {
-  dashboardRole: DashboardRole;
+  /** Already filtered by role, module availability, and permission by the caller. */
+  actions: DashboardQuickAction[];
 }
 
 /**
- * Role-specific quick actions filtered by enabled modules and write permissions.
+ * Role-specific quick actions. Presentational: `DashboardRolePanel` resolves the
+ * permitted actions once so it can also decide the row layout.
  */
-export function QuickActionsPanel({
-  dashboardRole,
-}: QuickActionsPanelProps): React.JSX.Element | null {
-  const { evaluate } = useModuleAccess();
+export function QuickActionsPanel({ actions }: QuickActionsPanelProps): React.JSX.Element | null {
   const { t } = useTranslation();
-  const { can } = usePermissions();
   const reducedMotion = useReducedMotion();
-
-  const actions = (() =>
-    getQuickActionsForRole(dashboardRole).filter(
-      (quickAction) =>
-        evaluate(quickAction.moduleId, "availability").allowed && can(quickAction.permission),
-    ))();
 
   if (actions.length === 0) return null;
 

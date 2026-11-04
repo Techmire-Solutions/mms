@@ -24,6 +24,14 @@ export function resolveStudentsSortSelection(value: string): StudentsListContent
   return value === "none" ? null : (value as StudentsListContentSortField);
 }
 
+/**
+ * Radio value for the gender group: "no filter" is stored as `""` but the menu's first
+ * option is the `all` sentinel, so the default must render as selected (M1).
+ */
+export function resolveStudentsGenderSelection(gender: string): string {
+  return gender || "all";
+}
+
 export interface StudentsFiltersMenuButtonProps {
   studentFilterStatus: string[];
   studentFilterGender: string;
@@ -101,7 +109,7 @@ export function StudentsFiltersMenuButton({
           <ModuleFilterDivider />
           <ModuleFilterRadioGroup
             label={t("students.gender")}
-            value={studentFilterGender}
+            value={resolveStudentsGenderSelection(studentFilterGender)}
             options={[
               { value: "all", label: t("students.allGenders") },
               ...genderFilters.map((gender) => ({

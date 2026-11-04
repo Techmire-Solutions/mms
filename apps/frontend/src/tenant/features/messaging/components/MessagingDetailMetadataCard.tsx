@@ -59,6 +59,18 @@ export function MessagingDetailMetadataCard({
           <span className="font-mono text-muted-foreground">{formatDateTime(log.sentAt)}</span>
         }
       />
+      {log.status === "failed" ? (
+        <DetailAttributeRow
+          variant="inset"
+          icon={AlertCircle}
+          label={t("messaging.failureReason")}
+          value={
+            <span className="font-medium text-destructive break-words">
+              {log.errorMessage || t("messaging.failureReasonUnavailable")}
+            </span>
+          }
+        />
+      ) : null}
     </DetailSectionCard>
   );
 }

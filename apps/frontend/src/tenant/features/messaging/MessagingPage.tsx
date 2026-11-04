@@ -14,6 +14,7 @@ import { notify } from "@/lib/notify";
 import { useFilteredModuleTierTabs } from "@/tenant/hooks/useModuleTierTabs";
 import { useModulePermissions } from "@/tenant/hooks/usePermissions";
 import { useMessagingKeyboardShortcuts } from "./hooks/useMessagingKeyboardShortcuts";
+import { resolveActiveTab } from "./lib/resolveActiveTab";
 import {
   invalidateMessagingQueries,
   useMessageTemplates,
@@ -48,6 +49,17 @@ export default function MessagingPage(): React.JSX.Element {
     canViewSetup: canViewSetup || canEditSetup,
     workLabelKey: "nav.messaging",
   });
+  // A hidden tab must not render its tier: `?tab=setup` (or a persisted tab from
+  // before a role change) falls back to Work.
+  const resolvedTab = resolveActiveTab(activeTab, visibleTabs) as "work" | "reports" | "setup";
+
+  useEffect(() => {
+    if (activeTab === resolvedTab) return;
+    const next = new URLSearchParams(searchParams);
+    if (!next.has("tab")) return;
+    next.delete("tab");
+    setSearchParams(next, { replace: true });
+  }, [activeTab, resolvedTab, searchParams, setSearchParams]);
 
   const handleTabChange = (tab: "work" | "reports" | "setup"): void => {
     setActiveTab(tab);
@@ -184,6 +196,20 @@ export default function MessagingPage(): React.JSX.Element {
     [restoreLogs, t],
   );
 
+  /** Bulk restore from the archived directory's selection bar. */
+  const handleBulkRestore = useCallback(
+    async (ids: string[]): Promise<void> => {
+      if (ids.length === 0) return;
+      try {
+        await restoreLogs.mutateAsync(ids);
+        notify.success(t("messaging.bulkRestoreSuccess", { count: ids.length }));
+      } catch {
+        // Mutation hook reports the failure.
+      }
+    },
+    [restoreLogs, t],
+  );
+
   const handleDispatchSent = (): void => {
     void metricsQuery.refetch();
     invalidateMessagingQueries(queryClient);
@@ -202,7 +228,8 @@ export default function MessagingPage(): React.JSX.Element {
       canClearLogs={canClearLogs}
       canRestoreLogs={canRestoreLogs}
       onRestoreLog={handleRestoreLog}
-      activeTab={activeTab}
+      onBulkRestore={handleBulkRestore}
+      activeTab={resolvedTab}
       visibleTabs={visibleTabs}
       channelFilter={channelFilter}
       startingCampaign={startingCampaign}

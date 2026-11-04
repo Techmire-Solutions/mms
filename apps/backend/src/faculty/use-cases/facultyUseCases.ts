@@ -70,7 +70,8 @@ export function createFacultyUseCases(repo: FacultyRepository = facultyRepositor
   const computeNextFacultyEmployeeIdForSettings = (
     settings: Parameters<typeof operation.computeNextFacultyEmployeeIdForSettings>[0],
   ) => operation.computeNextFacultyEmployeeIdForSettings(settings, repo);
-  const migrateFacultyMissingEmployeeIds = () => operation.migrateFacultyMissingEmployeeIds(repo);
+  const migrateFacultyMissingEmployeeIds = (actorId?: string) =>
+    operation.migrateFacultyMissingEmployeeIds(repo, actorId);
   const checkFacultyRegistrationDuplicate = (
     input: Parameters<typeof operation.checkFacultyRegistrationDuplicate>[0],
   ) => operation.checkFacultyRegistrationDuplicate(input, repo);

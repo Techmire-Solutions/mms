@@ -33,6 +33,27 @@ import {
 } from "./facultyManagedRolesPrefs.js";
 
 /**
+ * Fields that decide the designation-derived linked role.
+ *
+ * Callers compare the stored record with the incoming one: an identical
+ * fingerprint means the role cannot change, so the sync (1–3 reads plus a
+ * possible RBAC invalidation) is skipped for ordinary edits.
+ */
+export function facultyRoleFingerprint(member: Record<string, unknown>): string {
+  const pick = (key: string): unknown => member[key] ?? null;
+  return JSON.stringify({
+    contactId: pick("contactId"),
+    designationId: pick("designationId"),
+    employDesignationId: pick("employDesignationId"),
+    designationStartDate: pick("designationStartDate"),
+    designationEndDate: pick("designationEndDate"),
+    employDesignationStatus: pick("employDesignationStatus"),
+    profileStatus: pick("profileStatus"),
+    employDesignations: pick("employDesignations"),
+  });
+}
+
+/**
  * A designation change that would rewrite the linked account's RBAC role is a
  * user-management operation: `faculty.write` alone must never grant it.
  */

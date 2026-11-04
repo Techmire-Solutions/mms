@@ -10,6 +10,7 @@ import { WorkBatchTable } from "@/components/common/work/WorkBatchTable";
 import { DataTableRowActions, resolveVisibleColumns } from "@/components/common/data-table";
 import { ModuleTableFooterCount } from "@/components/app/ModuleTableFooterCount";
 import { EmptyState } from "@/components/app/EmptyState";
+import { Button } from "@/components/ui/button";
 import { useTranslation } from "@/hooks/useTranslation";
 import { formatDirectoryPageCountLabel } from "@/lib/formatDirectoryPageCountLabel";
 import { getDirectoryPageSelection } from "@/lib/directorySelection";
@@ -21,6 +22,9 @@ export interface TasksListDesktopTableProps {
   viewingDeleted: boolean;
   canWrite: boolean;
   canComplete?: boolean;
+  statusPending?: boolean;
+  hasActiveFilters?: boolean;
+  onClearFilters?: () => void;
   canDelete: boolean;
   isLoading: boolean;
   columnRegistry?: ModuleColumnRegistryEntry[];
@@ -33,7 +37,7 @@ export interface TasksListDesktopTableProps {
   onEdit: (task: TaskRecord) => void;
   onDelete: (id: string) => void;
   onRestore?: (id: string) => void;
-  onUpdateStatus: (id: string, status: TaskStatus) => void;
+  onUpdateStatus: (task: TaskRecord, status: TaskStatus) => void;
   emptyAction?: React.ReactNode;
 }
 
@@ -43,6 +47,9 @@ export function TasksListDesktopTable({
   viewingDeleted,
   canWrite,
   canComplete,
+  statusPending = false,
+  hasActiveFilters = false,
+  onClearFilters,
   canDelete,
   isLoading,
   columnRegistry,
@@ -63,25 +70,30 @@ export function TasksListDesktopTable({
   const { allSelected, someSelected } = getDirectoryPageSelection(pageIds, selectedIds);
   const selectedSet = useMemo(() => new Set(selectedIds), [selectedIds]);
 
-  const handleChangeStatus = (task: TaskRecord, status: TaskRecord["status"]) => {
-    if (viewingDeleted) return;
-    onUpdateStatus(task.id, status);
-  };
-
   const baseColumns = useMemo(
     () =>
       buildTasksWorkBatchColumns(
         t,
         (canComplete ?? canWrite) && !viewingDeleted,
-        handleChangeStatus,
+        onUpdateStatus,
         onView,
+        statusPending,
         {
           isColumnVisible,
           getColumnWidth,
         },
       ),
-    // eslint-disable-next-line react-hooks/exhaustive-deps -- handleChangeStatus is derived from the already-listed `viewingDeleted`; adding it (or its unstable onUpdateStatus dep) would rebuild the columns on every render.
-    [t, canComplete, canWrite, viewingDeleted, onView, isColumnVisible, getColumnWidth],
+    [
+      t,
+      canComplete,
+      canWrite,
+      viewingDeleted,
+      onView,
+      onUpdateStatus,
+      statusPending,
+      isColumnVisible,
+      getColumnWidth,
+    ],
   );
 
   const columns = useMemo(() => {
@@ -145,13 +157,26 @@ export function TasksListDesktopTable({
           return actions.length > 0 ? <DataTableRowActions actions={actions} /> : null;
         }}
         emptyState={
-          <EmptyState
-            title={viewingDeleted ? t("tasks.trashEmptyTitle") : t("tasks.emptyTitle")}
-            description={
-              viewingDeleted ? t("tasks.trashEmptyDescription") : t("tasks.emptyDescription")
-            }
-            action={!viewingDeleted ? emptyAction : undefined}
-          />
+          hasActiveFilters ? (
+            <EmptyState
+              title={t("common.dataTable.noMatches")}
+              action={
+                onClearFilters ? (
+                  <Button variant="outline" onClick={onClearFilters}>
+                    {t("common.clearFilters")}
+                  </Button>
+                ) : undefined
+              }
+            />
+          ) : (
+            <EmptyState
+              title={viewingDeleted ? t("tasks.trashEmptyTitle") : t("tasks.emptyTitle")}
+              description={
+                viewingDeleted ? t("tasks.trashEmptyDescription") : t("tasks.emptyDescription")
+              }
+              action={!viewingDeleted ? emptyAction : undefined}
+            />
+          )
         }
       />
       <ModuleTableFooterCount

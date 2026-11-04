@@ -1,4 +1,3 @@
-import React from "react";
 import { act } from "react";
 import { createRoot, type Root } from "react-dom/client";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
@@ -96,6 +95,17 @@ describe("useStudentsDirectoryFilters", () => {
     renderFilters();
     act(() => filters.changeQuickFilter("not-a-preset"));
     expect(filters.quickFilter).toBe("all");
+  });
+
+  it("treats the All genders sentinel as no filter", () => {
+    // 2026-11-04 review (M1): the menu's "All genders" option used to write the
+    // literal "all", which the API applied as an equality filter and emptied the list.
+    renderFilters();
+
+    act(() => filters.setStudentFilterGender("all"));
+
+    expect(filters.studentFilterGender).toBe("");
+    expect(filters.hasActiveFilters).toBe(false);
   });
 
   it("counts and clears active filters", () => {

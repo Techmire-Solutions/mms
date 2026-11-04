@@ -4,20 +4,21 @@ import {
   type StandardMessagingRecipient as MessagingRecipient,
 } from "@mms/shared";
 import { useTranslation } from "@/hooks/useTranslation";
-import { notify } from "@/lib/notify";
+import { reportClientError } from "@/lib/clientErrorReporting";
 import { useMessagingMutations } from "@/hooks/useMessaging";
 import {
   buildSentDispatchRecord,
   executeRecipientSend,
   findUnknownTokens,
   saveDispatchHistory,
-  validateMessagingRecipients,
-  SPEED_DELAYS,
   type DispatchSpeed,
   type SentDispatchRecord,
   type ValidatedMessagingRecipient,
 } from "./messageComposerDispatchService";
-import { dispatchViaServerGateway } from "./messageComposerServerGateway";
+import { runDeviceDispatchBatch } from "./messageComposerDeviceDispatch";
+import { createGatewayDispatch } from "./messageComposerGatewayDispatch";
+import { sendSingleRecipient } from "./messageComposerSingleSend";
+import { useComposerRecipientValidation } from "./useComposerRecipientValidation";
 import { resolveSubmissionKey, type SubmissionKeyState } from "./messageComposerSubmissionKey";
 import { notifyUnknownTokenErrors } from "./messageComposerTokenErrors";
 
@@ -71,15 +72,17 @@ export function useMessageComposerDispatch({
   const auditSavedCountRef = useRef(0);
   const auditIdempotencyKeyRef = useRef<string | null>(null);
   const submissionKeyRef = useRef<SubmissionKeyState | null>(null);
+  // Synchronous in-flight latch: state only flips on the next render, so two
+  // activations in one frame could otherwise start two dispatches.
+  const inFlightRef = useRef(false);
 
   useEffect(() => {
     pausedRef.current = isPaused;
   }, [isPaused]);
 
   const personalizeOptions = { madrasaName: madrasaName || undefined };
-  const validatedRecipients = validateMessagingRecipients(recipients, channel);
-  const eligibleRecipients = validatedRecipients.filter((recipient) => recipient.isValid);
-  const skippedRecipients = validatedRecipients.filter((recipient) => !recipient.isValid);
+  const { validatedRecipients, eligibleRecipients, skippedRecipients } =
+    useComposerRecipientValidation(recipients, channel);
 
   const executeSend = (recipient: MessagingRecipient, text: string): boolean =>
     executeRecipientSend({
@@ -130,67 +133,56 @@ export function useMessageComposerDispatch({
       submissionKeyRef.current = { ...submissionKeyRef.current, completed: true };
     }
   };
+  const dispatchViaGateway = createGatewayDispatch({
+    channel,
+    activeTemplates,
+    templateId,
+    message,
+    subject,
+    personalizeOptions,
+    submissionKeyFor,
+    markSubmissionCompleted,
+    dispatchServerSms,
+    dispatchServerEmail,
+    dispatchServerWhatsApp,
+    onSent,
+    onClose,
+    t,
+  });
 
-  const dispatchViaGateway = async (
-    targetRecipients: ValidatedMessagingRecipient[],
-  ): Promise<void> => {
-    const activeTemplate = activeTemplates.find((template) => template.id === templateId);
-    await dispatchViaServerGateway({
-      channel,
-      eligibleRecipients: targetRecipients,
-      message,
-      subject,
-      category: activeTemplate?.category || "general",
-      idempotencyKey: submissionKeyFor(targetRecipients),
-      personalizeOptions,
-      dispatchServerSms,
-      dispatchServerEmail,
-      dispatchServerWhatsApp,
-      onSent,
-      onClose,
-      t,
-    });
-    markSubmissionCompleted();
-  };
-
-  /** Sends one recipient and persists its audit row (previously never recorded). */
-  const sendOne = async (recipient: MessagingRecipient): Promise<void> => {
-    if (opening || saving || !message.trim()) return;
-    const unknownTokens = findUnknownTokens(channel, subject, message);
-    if (unknownTokens.length > 0) {
-      notifyUnknownTokenErrors(unknownTokens, t);
-      return;
-    }
-    if (useServerGateway) {
-      const [validated] = validateMessagingRecipients([recipient], channel);
-      if (!validated?.isValid) return;
-      await dispatchViaGateway([validated]);
-      return;
-    }
-
-    const success = executeSend(recipient, message);
-    const record = buildSentDispatchRecord({
+  const sendOne = async (recipient: MessagingRecipient): Promise<void> =>
+    sendSingleRecipient({
       recipient,
       message,
       channel,
       subject,
-      defaultSubject: t("messaging.defaultSubject"),
+      useServerGateway: Boolean(useServerGateway),
       personalizeOptions,
-      success,
+      t,
+      isBlocked: () => opening || saving || inFlightRef.current,
+      begin: () => {
+        inFlightRef.current = true;
+        setSaving(true);
+      },
+      end: () => {
+        inFlightRef.current = false;
+        setSaving(false);
+      },
+      dispatchGateway: dispatchViaGateway,
+      executeSend,
+      resetAuditCounters: () => {
+        auditSavedCountRef.current = 0;
+        auditIdempotencyKeyRef.current = null;
+      },
+      saveHistory,
     });
-    // A single send is its own submission: reset the batch counters so the
-    // history offset starts at this row.
-    auditSavedCountRef.current = 0;
-    auditIdempotencyKeyRef.current = null;
-    if (!(await saveHistory([record]))) {
-      notify.error(t("messaging.singleSendAuditFailed"));
-    }
-  };
 
   const sendAll = async (): Promise<void> => {
-    if (opening || saving) return;
+    if (opening || saving || inFlightRef.current) return;
 
     if (pendingAudit) {
+      if (inFlightRef.current) return;
+      inFlightRef.current = true;
       setSaving(true);
       try {
         if (!(await saveHistory(pendingAudit))) return;
@@ -200,6 +192,7 @@ export function useMessageComposerDispatch({
         onSent?.(completed);
         onClose();
       } finally {
+        inFlightRef.current = false;
         setSaving(false);
       }
       return;
@@ -211,50 +204,55 @@ export function useMessageComposerDispatch({
       notifyUnknownTokenErrors(unknownTokens, t);
       return;
     }
-    const sentRecords: SentDispatchRecord[] = [];
-    const record = (recipient: MessagingRecipient, success: boolean): void => {
-      sentRecords.push(
-        buildSentDispatchRecord({
-          recipient,
-          message,
-          channel,
-          subject,
-          defaultSubject: t("messaging.defaultSubject"),
-          personalizeOptions,
-          success,
-        }),
-      );
-    };
 
+    inFlightRef.current = true;
     setSaving(true);
     auditSavedCountRef.current = 0;
     auditIdempotencyKeyRef.current = null;
     try {
       if (useServerGateway) {
         setOpening(true);
-        await dispatchViaGateway(eligibleRecipients);
+        try {
+          await dispatchViaGateway(eligibleRecipients);
+        } catch (error) {
+          // Mutation `onError` already notified the user; keep the composer
+          // open so the retry reuses the same submission key.
+          reportClientError(error, { context: "messaging.composer.sendAll" });
+        }
         return;
       }
 
+      let sentRecords: SentDispatchRecord[];
       if (eligibleRecipients.length === 1) {
-        record(eligibleRecipients[0], executeSend(eligibleRecipients[0], message));
+        const recipient = eligibleRecipients[0];
+        sentRecords = [
+          buildSentDispatchRecord({
+            recipient,
+            message,
+            channel,
+            subject,
+            defaultSubject: t("messaging.defaultSubject"),
+            personalizeOptions,
+            success: executeSend(recipient, message),
+          }),
+        ];
       } else {
         setOpening(true);
         setIsPaused(false);
         cancelRef.current = false;
-        for (let index = 0; index < eligibleRecipients.length; index += 1) {
-          if (cancelRef.current) break;
-          while (pausedRef.current && !cancelRef.current) {
-            await new Promise((resolve) => setTimeout(resolve, 200));
-          }
-          if (cancelRef.current) break;
-          const recipient = eligibleRecipients[index];
-          record(recipient, executeSend(recipient, message));
-          setDispatchProgress({ current: index + 1, total: eligibleRecipients.length });
-          if (index < eligibleRecipients.length - 1) {
-            await new Promise((resolve) => setTimeout(resolve, SPEED_DELAYS[dispatchSpeed]));
-          }
-        }
+        sentRecords = await runDeviceDispatchBatch({
+          recipients: eligibleRecipients,
+          message,
+          channel,
+          subject,
+          dispatchSpeed,
+          personalizeOptions,
+          defaultSubject: t("messaging.defaultSubject"),
+          executeSend,
+          isCancelled: () => cancelRef.current,
+          isPaused: () => pausedRef.current,
+          onProgress: (current, total) => setDispatchProgress({ current, total }),
+        });
         setOpening(false);
         setDispatchProgress(null);
       }
@@ -267,6 +265,7 @@ export function useMessageComposerDispatch({
       onSent?.(sentRecords);
       onClose();
     } finally {
+      inFlightRef.current = false;
       setOpening(false);
       setDispatchProgress(null);
       setSaving(false);

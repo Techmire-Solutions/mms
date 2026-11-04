@@ -1,7 +1,6 @@
 import React from "react";
-import { ArrowRight, Network, UserCheck, Users } from "lucide-react";
+import { ArrowRight, Network, Users } from "lucide-react";
 import type { Faculty } from "@mms/shared";
-import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { SectionCard } from "@/components/app/SectionCard";
 import { useTranslation } from "@/hooks/useTranslation";
@@ -40,15 +39,6 @@ export function FacultyReportingHierarchyCard({
               <span className="text-3xs font-semibold text-muted-foreground uppercase tracking-wider">
                 {t("faculty.field.reportingFacultyId")}
               </span>
-              <Badge
-                as="span"
-                size="sm"
-                tone="secondary"
-                className="px-1.5 py-0.2 rounded text-3xs font-medium"
-              >
-                <UserCheck className="w-3 h-3 me-1 text-primary" aria-hidden />
-                {t("faculty.status.active")}
-              </Badge>
             </div>
             <div className="flex items-center gap-2">
               <div className="w-7 h-7 rounded-full bg-primary/10 text-primary flex items-center justify-center font-bold text-xs shrink-0">

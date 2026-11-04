@@ -69,6 +69,23 @@ describe("useMessageComposerState", () => {
     act(() => root.unmount());
   });
 
+  it("dedupes repeated contacts before handing them to the composer", () => {
+    const root = renderHost();
+
+    act(() => {
+      api.openComposer("sms", [
+        { id: "c-1", name: "Guardian", phone: "+923001234567" },
+        { id: "c-1", name: "Guardian", phone: "+923001234567" },
+        { id: "c-2", name: "Zaid", phone: "+923001234568" },
+      ]);
+    });
+
+    // Resending two logs to the same guardian must not message them twice.
+    expect(api.target?.recipients.map((r) => r.id)).toEqual(["c-1", "c-2"]);
+    expect(notifyError).not.toHaveBeenCalled();
+    act(() => root.unmount());
+  });
+
   it("gates through the messaging module manifest and denies read-only roles", () => {
     permissions.canWrite = false;
     const root = renderHost();

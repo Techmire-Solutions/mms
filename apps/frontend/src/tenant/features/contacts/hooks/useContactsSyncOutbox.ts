@@ -14,6 +14,9 @@ import { queryClientInstance } from "@/lib/queryClient";
 import { notify } from "@/lib/notify";
 import { useTranslation } from "@/hooks/useTranslation";
 
+/** Backoff before an automatic retry after the server was unreachable/overloaded. */
+const CONTACTS_SYNC_RETRY_DELAY_MS = 30_000;
+
 export function useContactsSyncOutbox() {
   const { t } = useTranslation();
   const { upsertContact, updateContact, deleteContact } = useContactMutations();
@@ -21,10 +24,19 @@ export function useContactsSyncOutbox() {
   const [conflictCount, setConflictCount] = useState(() => getContactsSyncConflicts().length);
   const [flushing, setFlushing] = useState(false);
   const userInitiatedFlush = useRef(false);
+  const retryTimerRef = useRef<number | null>(null);
+  const flushRef = useRef<((options?: { notify?: boolean }) => Promise<unknown>) | null>(null);
 
   const refreshCounts = useCallback(() => {
     setPendingCount(getContactsOutbox().length);
     setConflictCount(getContactsSyncConflicts().length);
+  }, []);
+
+  const clearRetryTimer = useCallback(() => {
+    if (retryTimerRef.current != null) {
+      window.clearTimeout(retryTimerRef.current);
+      retryTimerRef.current = null;
+    }
   }, []);
 
   useEffect(() => {
@@ -50,7 +62,10 @@ export function useContactsSyncOutbox() {
 
   const flush = useCallback(
     async (options?: { notify?: boolean }) => {
-      if (flushing || getContactsOutbox().length === 0) return null;
+      if (flushing || getContactsOutbox().length === 0) {
+        userInitiatedFlush.current = false;
+        return null;
+      }
       setFlushing(true);
       try {
         const result = await flushContactsOutbox({
@@ -60,10 +75,27 @@ export function useContactsSyncOutbox() {
           delete: (contactId, deletionReason) =>
             deleteContact.mutateAsync({ id: contactId, deletionReason }).then(() => undefined),
         });
-        await queryClientInstance.invalidateQueries({ queryKey: CONTACTS_QUERY_KEY });
+        // Joined callers attached to the owner's flush; it already invalidated.
+        if (!result?.joined) {
+          await queryClientInstance.invalidateQueries({ queryKey: CONTACTS_QUERY_KEY });
+        }
         refreshCounts();
 
-        const shouldNotify = options?.notify ?? userInitiatedFlush.current;
+        if (!result?.joined) {
+          if (result?.retryable) {
+            // The server did not decide anything (offline/5xx); keep the queue and
+            // retry on a timer instead of asking the user to resolve "conflicts".
+            clearRetryTimer();
+            retryTimerRef.current = window.setTimeout(() => {
+              retryTimerRef.current = null;
+              void flushRef.current?.({ notify: false });
+            }, CONTACTS_SYNC_RETRY_DELAY_MS);
+          } else {
+            clearRetryTimer();
+          }
+        }
+
+        const shouldNotify = (options?.notify ?? userInitiatedFlush.current) && !result?.joined;
         userInitiatedFlush.current = false;
 
         if (shouldNotify && result) {
@@ -78,6 +110,8 @@ export function useContactsSyncOutbox() {
                 failed: result.failed,
               }),
             });
+          } else if (result.retryable > 0) {
+            notify.info(t("contacts.sync.retryScheduled", { count: result.retryable }));
           }
         }
 
@@ -86,8 +120,14 @@ export function useContactsSyncOutbox() {
         setFlushing(false);
       }
     },
-    [deleteContact, flushing, refreshCounts, t, updateContact, upsertContact],
+    [clearRetryTimer, deleteContact, flushing, refreshCounts, t, updateContact, upsertContact],
   );
+
+  useEffect(() => {
+    flushRef.current = flush;
+  }, [flush]);
+
+  useEffect(() => clearRetryTimer, [clearRetryTimer]);
 
   const flushManual = async () => {
     userInitiatedFlush.current = true;

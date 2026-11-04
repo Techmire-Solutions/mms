@@ -3,13 +3,15 @@ import { type TaskRecord, type TaskInsert, type TaskPriority, type TaskStatus } 
 import { useTranslation } from "@/hooks/useTranslation";
 import { useEligibleTaskAssignees, useTasks } from "@/tenant/hooks/collections/tasks";
 import type { SelectedAssignee } from "../components/TaskFormAssigneePicker";
-import { buildTaskFormPayload } from "../lib/taskFormPayload";
+import { buildTaskFormPayload, validateTaskDates } from "../lib/taskFormPayload";
 
 export interface UseTaskFormControllerProps {
   open: boolean;
   onClose: () => void;
   initialData?: TaskRecord | null;
   onSave: (data: TaskInsert) => Promise<void>;
+  /** Disables re-entry while a save is in flight. */
+  saving?: boolean;
 }
 
 function toDateOnly(value: string | Date | null | undefined): string | null {
@@ -23,6 +25,7 @@ export function useTaskFormController({
   onClose,
   initialData,
   onSave,
+  saving = false,
 }: UseTaskFormControllerProps) {
   const { t } = useTranslation();
   const [title, setTitle] = useState(() => initialData?.title ?? "");
@@ -119,9 +122,15 @@ export function useTaskFormController({
   };
 
   const handleSubmit = async () => {
+    if (saving) return;
     const trimmedTitle = title.trim();
     if (!trimmedTitle) {
       setError(t("tasks.titleRequired"));
+      return;
+    }
+    const dateError = validateTaskDates(startDate, dueAt);
+    if (dateError) {
+      setError(t(dateError));
       return;
     }
 

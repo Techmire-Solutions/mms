@@ -182,7 +182,8 @@ describe("contactRepositoryDuplicates (SQL)", () => {
     // 12. re-point finance_invoices.family_contact_id
     // 13. update tenant_users
     // 14. update message_logs
-    expect(statements).toHaveLength(14);
+    // 15. re-point orphan_profiles.sponsor_contact_id (ON DELETE SET NULL FK)
+    expect(statements).toHaveLength(15);
     expect(statements.some((statement) => statement.includes("inferred_from_contact_id"))).toBe(
       true,
     );
@@ -196,5 +197,6 @@ describe("contactRepositoryDuplicates (SQL)", () => {
     expect(tables.has("students")).toBe(true);
     expect(tables.has("tenant_users")).toBe(true);
     expect(tables.has("message_logs")).toBe(true);
+    expect(tables.has("orphan_profiles")).toBe(true);
   });
 });

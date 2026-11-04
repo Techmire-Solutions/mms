@@ -1,9 +1,10 @@
-import React, { useState } from "react";
+import React from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Settings, Printer } from "lucide-react";
 import { StatisticsGrid } from "@/tenant/features/dashboard/components/StatisticsGrid";
 import { DashboardRolePanel } from "@/tenant/features/dashboard/components/DashboardRolePanel";
 import { DashboardCustomizePanel } from "@/tenant/features/dashboard/components/DashboardCustomizePanel";
+import { DashboardMetricsAlert } from "@/tenant/features/dashboard/components/DashboardMetricsAlert";
 import { WelcomeBanner } from "@/tenant/features/dashboard/components/WelcomeBanner";
 import { SetupIncompleteCallout } from "@/tenant/features/dashboard/components/SetupIncompleteCallout";
 import { DashboardWidgets } from "@/tenant/components/reports/pinnedWidgetsFacade";
@@ -11,10 +12,13 @@ import { ErrorBoundary } from "@/components/app/ErrorBoundary";
 import { ModulePageShell } from "@/components/app/ModulePageShell";
 import { Button } from "@/components/ui/button";
 import { useDashboardPageController } from "@/tenant/features/dashboard/hooks/useDashboardPageController";
+import { useDashboardSnapshotPrintState } from "@/tenant/features/dashboard/hooks/useDashboardSnapshotPrintState";
 import { useBranding } from "@/tenant/hooks/useBranding";
 import { useMediaQuery } from "@/hooks/useMediaQuery";
+import { useReducedMotion } from "@/hooks/useReducedMotion";
 import { MEDIA_LG_UP } from "@/lib/breakpoints";
 import { splitDashboardWidgets } from "@/lib/reports/dashboardWidgetLayout";
+import { selectAggregateWidgets } from "@/lib/dashboardCollections";
 
 export function DashboardPage() {
   const {
@@ -26,11 +30,9 @@ export function DashboardPage() {
     setIsEditMode,
     customWidgets,
     disabledCardIds,
-    gridMode,
     lowAttendanceThreshold,
     urgentAttendanceThreshold,
     handleUpdateThreshold,
-    handleUpdateGridMode,
     handleReorderWidgets,
     toggleCardVisibility,
     handleResetCards,
@@ -55,20 +57,35 @@ export function DashboardPage() {
     notifications,
     activeSessionsCount,
     studentMetricsActive,
+    isConfigReady,
+    summaryError,
+    retrySummary,
   } = useDashboardPageController();
 
   const branding = useBranding();
   const isAdmin = can("settings.branding.write");
   const isDesktop = useMediaQuery(MEDIA_LG_UP);
-  const [showAllMetrics, setShowAllMetrics] = useState(false);
-  const [showInsights, setShowInsights] = useState(false);
+  const reducedMotion = useReducedMotion();
+  const { showAllMetrics, showInsights, setShowAllMetrics, setShowInsights, printSnapshot } =
+    useDashboardSnapshotPrintState();
   const mobileMetricLimit = 4;
-  const { primary: primaryWidgets, secondary: secondaryWidgets } =
-    splitDashboardWidgets(visiblePinnedWidgets);
-  const metricCards =
-    isDesktop || showAllMetrics
-      ? visibleDashboardMetricCards
-      : visibleDashboardMetricCards.slice(0, mobileMetricLimit);
+  const { primary: primaryWidgets, secondary: secondaryWidgets } = React.useMemo(
+    () => splitDashboardWidgets(visiblePinnedWidgets),
+    [visiblePinnedWidgets],
+  );
+  // One canonical aggregate list shared by every surface, so the content-keyed
+  // `/aggregates` queries dedupe instead of firing once per widget group.
+  const aggregateWidgets = React.useMemo(
+    () => selectAggregateWidgets(customWidgets),
+    [customWidgets],
+  );
+  const metricCards = React.useMemo(
+    () =>
+      isDesktop || showAllMetrics
+        ? visibleDashboardMetricCards
+        : visibleDashboardMetricCards.slice(0, mobileMetricLimit),
+    [isDesktop, showAllMetrics, visibleDashboardMetricCards],
+  );
 
   return (
     <ModulePageShell
@@ -82,7 +99,7 @@ export function DashboardPage() {
         actions={
           <>
             <Button
-              onClick={() => window.print()}
+              onClick={printSnapshot}
               variant="capsOutline"
               size="caps"
               className="flex items-center justify-center px-4 py-2 transition-all duration-300 cursor-pointer"
@@ -94,6 +111,14 @@ export function DashboardPage() {
             {canCustomize && (
               <Button
                 onClick={() => setIsEditMode(!isEditMode)}
+                disabled={!isConfigReady}
+                // Customization mutates the stored configuration document; it opens
+                // only after both documents loaded, so a save can never be built
+                // from the defaults.
+                title={isConfigReady ? undefined : t("common.loading")}
+                aria-expanded={isEditMode}
+                // Only reference the panel while it is mounted.
+                aria-controls={isEditMode ? "dashboard-customize-panel" : undefined}
                 variant={isEditMode ? "capsPrimary" : "capsOutline"}
                 size="caps"
                 className={`flex items-center justify-center px-4 py-2 transition-all duration-300 cursor-pointer ${
@@ -111,22 +136,21 @@ export function DashboardPage() {
       <SetupIncompleteCallout branding={branding} isAdmin={isAdmin} />
 
       <AnimatePresence>
-        {canCustomize && isEditMode && (
+        {canCustomize && isEditMode && isConfigReady && (
           <motion.div
-            initial={{ opacity: 0, height: 0, y: -20 }}
+            initial={reducedMotion ? false : { opacity: 0, height: 0, y: -20 }}
             animate={{ opacity: 1, height: "auto", y: 0 }}
-            exit={{ opacity: 0, height: 0, y: -20 }}
-            className="overflow-hidden mb-2"
+            exit={reducedMotion ? undefined : { opacity: 0, height: 0, y: -20 }}
+            transition={reducedMotion ? { duration: 0 } : undefined}
+            className="overflow-hidden mb-2 print:hidden"
           >
             <DashboardCustomizePanel
               can={can}
               customWidgets={customWidgets}
               disabledCardIds={disabledCardIds}
-              gridMode={gridMode}
               lowAttendanceThreshold={lowAttendanceThreshold}
               urgentAttendanceThreshold={urgentAttendanceThreshold}
               onUpdateThreshold={handleUpdateThreshold}
-              onUpdateGridMode={handleUpdateGridMode}
               toggleCardVisibility={toggleCardVisibility}
               dashboardMetricCards={dashboardMetricCards}
               selectedDashboardCardCount={selectedDashboardCardCount}
@@ -141,6 +165,7 @@ export function DashboardPage() {
               onToggleWidgetPin={toggleWidgetPin}
               onOpenWidgetBuilder={openWidgetBuilder}
               onReorderWidgets={handleReorderWidgets}
+              onDone={() => setIsEditMode(false)}
             />
           </motion.div>
         )}
@@ -149,11 +174,18 @@ export function DashboardPage() {
       <AnimatePresence mode="wait">
         <motion.div
           key={`metric-cards-${dashboardRole}`}
-          initial={{ opacity: 0 }}
+          initial={reducedMotion ? false : { opacity: 0 }}
           animate={{ opacity: 1 }}
-          exit={{ opacity: 0 }}
-          transition={{ duration: 0.25 }}
+          exit={reducedMotion ? undefined : { opacity: 0 }}
+          transition={reducedMotion ? { duration: 0 } : { duration: 0.25 }}
         >
+          {summaryError ? (
+            <DashboardMetricsAlert
+              message={t("dashboard.metricsUnavailable")}
+              retryLabel={t("common.retry")}
+              onRetry={retrySummary}
+            />
+          ) : null}
           <ErrorBoundary>
             <StatisticsGrid
               statItems={metricCards}
@@ -163,7 +195,9 @@ export function DashboardPage() {
               isEditMode={isEditMode}
               onAddCardClick={isEditMode ? () => openWidgetBuilder("card", null) : undefined}
               isLoading={isLoading}
-              onResetCards={handleResetCards}
+              // Restoring the default cards is a write: viewers must not see an
+              // action that would silently do nothing.
+              onResetCards={canCustomize ? handleResetCards : undefined}
             />
           </ErrorBoundary>
           {!isDesktop && visibleDashboardMetricCards.length > mobileMetricLimit ? (
@@ -190,6 +224,7 @@ export function DashboardPage() {
       <ErrorBoundary>
         <DashboardWidgets
           widgets={primaryWidgets}
+          aggregateWidgets={aggregateWidgets}
           onUnpin={handleUnpinWidget}
           isEditMode={isEditMode}
           onEditWidget={handleEditWidget}
@@ -218,6 +253,7 @@ export function DashboardPage() {
             {showInsights ? (
               <DashboardWidgets
                 widgets={secondaryWidgets}
+                aggregateWidgets={aggregateWidgets}
                 onUnpin={handleUnpinWidget}
                 isEditMode={isEditMode}
                 onEditWidget={handleEditWidget}
@@ -232,10 +268,10 @@ export function DashboardPage() {
       <AnimatePresence mode="wait">
         <motion.div
           key={`body-${dashboardRole}`}
-          initial={{ opacity: 0, y: 12 }}
+          initial={reducedMotion ? false : { opacity: 0, y: 12 }}
           animate={{ opacity: 1, y: 0 }}
-          exit={{ opacity: 0 }}
-          transition={{ duration: 0.3 }}
+          exit={reducedMotion ? undefined : { opacity: 0 }}
+          transition={reducedMotion ? { duration: 0 } : { duration: 0.3 }}
         >
           <ErrorBoundary>
             <DashboardRolePanel dashboardRole={dashboardRole} notifications={notifications} />

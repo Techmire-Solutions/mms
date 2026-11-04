@@ -1,7 +1,6 @@
 import type { FastifyPluginAsync } from "fastify";
 import type { User } from "@mms/shared";
 import { messagingWhatsAppDispatchSchema } from "@mms/shared";
-import { randomUUID } from "node:crypto";
 import { buildBackgroundJobId } from "../../../lib/backgroundJobIds.js";
 import { getRequestTenant } from "../../../lib/tenantContext.js";
 import { sendDatabaseError, sendForbidden } from "../../../lib/httpErrors.js";
@@ -56,18 +55,26 @@ export const messagingWhatsAppDispatchRoute: FastifyPluginAsync = async (fastify
       parsed.data.idempotencyKey,
       req.headers["idempotency-key"],
     );
-    const bodyDigest = messagingDispatchBodyDigest({ recipients, message, category });
+    const isQueued = recipients.length > 50 || parsed.data.queued === true;
+    // The execution mode is part of both the digest and the delivery-claim
+    // namespace (`dispatchId`): a retry that flips a campaign between the queued
+    // and direct paths must collide with the other path's per-recipient claim,
+    // not re-message everyone.
+    const bodyDigest = messagingDispatchBodyDigest({
+      recipients,
+      message,
+      category,
+      queued: isQueued,
+    });
+    const dispatchId = buildBackgroundJobId(tenantSubdomain, userId, idempotencyKey);
 
-    const isQueued =
-      recipients.length > 50 || Boolean((req.body as Record<string, unknown>)?.queued);
     if (isQueued) {
       // Queued path dedupe mirrors messagingExportRoutes: the client key (if
       // any) becomes the job id and a digest of the dispatch body is stored in
       // the payload so retries replay or 409 instead of double-dispatching.
-      const jobId = buildBackgroundJobId(tenantSubdomain, userId, idempotencyKey);
-      const existing = await getUserBackgroundJob(userId, jobId);
+      const existing = await getUserBackgroundJob(userId, dispatchId);
       if (existing) {
-        const payload = await getUserBackgroundJobPayload(userId, jobId);
+        const payload = await getUserBackgroundJobPayload(userId, dispatchId);
         const existingDigest =
           typeof payload?.bodyDigest === "string" ? payload.bodyDigest : undefined;
         if (!existingDigest || existingDigest !== bodyDigest) {
@@ -87,7 +94,7 @@ export const messagingWhatsAppDispatchRoute: FastifyPluginAsync = async (fastify
         tenantSubdomain,
         userId,
         {
-          id: jobId,
+          id: dispatchId,
           moduleId: "messaging",
           kind: "dispatch",
           status: "running",
@@ -114,7 +121,7 @@ export const messagingWhatsAppDispatchRoute: FastifyPluginAsync = async (fastify
       dispatchMessagingCampaignDirect({
         tenantSubdomain,
         userId,
-        dispatchId: idempotencyKey ?? randomUUID(),
+        dispatchId,
         channel: "whatsapp",
         recipients,
         message,

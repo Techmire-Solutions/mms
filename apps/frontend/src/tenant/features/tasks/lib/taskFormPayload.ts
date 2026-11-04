@@ -12,6 +12,18 @@ export interface TaskFormPayloadInput {
   initialData?: TaskRecord | null;
 }
 
+/** Start-of-day `startDate` must not be after the `dueAt` instant. */
+export function validateTaskDates(
+  startDate: string | null,
+  dueAt: string | null,
+): "tasks.dueBeforeStart" | null {
+  if (!startDate || !dueAt) return null;
+  const start = new Date(`${startDate}T00:00:00`);
+  const due = new Date(dueAt);
+  if (Number.isNaN(start.getTime()) || Number.isNaN(due.getTime())) return null;
+  return start.getTime() > due.getTime() ? "tasks.dueBeforeStart" : null;
+}
+
 /** True when the picker differs from the loaded record (always true on create). */
 export function assigneesChanged(input: TaskFormPayloadInput): boolean {
   if (!input.initialData) return true;

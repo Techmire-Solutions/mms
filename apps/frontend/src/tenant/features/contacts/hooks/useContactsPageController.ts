@@ -153,6 +153,7 @@ export function useContactsPageController() {
     tableProps,
     handleBulkExport,
     isExporting,
+    onOpenImport: handleOpenImport,
   });
 
   const overlayProps = useContactsPageOverlayProps({

@@ -73,10 +73,15 @@ describe("Faculty Bulk Soft-Delete Hierarchy Protection", () => {
 
   function createFakeSubordinateRepo(store: Map<string, Faculty>) {
     return {
+      findById: vi.fn(async (_t: string, id: string) => store.get(id) ?? null),
       findByIds: vi.fn(async (_t: string, ids: string[]) =>
         ids.map((id) => store.get(id)).filter((t): t is Faculty => Boolean(t)),
       ),
       guardAssignmentDependents: vi.fn().mockResolvedValue(undefined),
+      countSubordinates: vi.fn(
+        async (_t: string, id: string) =>
+          [...store.values()].filter((t) => t.reportingFacultyId === id && !t.deletedAt).length,
+      ),
       countSubordinatesBatch: vi.fn(async (_t: string, ids: string[]) => {
         const counts: Record<string, number> = {};
         ids.forEach((id) => {
@@ -89,11 +94,58 @@ describe("Faculty Bulk Soft-Delete Hierarchy Protection", () => {
       findSubordinates: vi.fn(async (_t: string, id: string) =>
         [...store.values()].filter((t) => t.reportingFacultyId === id && !t.deletedAt),
       ),
+      reassignSubordinates: vi.fn().mockResolvedValue(0),
       bulkSave: vi.fn(async (_t: string, facultyList: Faculty[]) => {
         facultyList.forEach((t) => store.set(t.id, t));
       }),
     };
   }
+
+  it("refuses a single soft-delete with reassignment instead of silently orphaning subordinates", async () => {
+    const store = new Map<string, Faculty>([
+      ["sup", makeFaculty("sup")],
+      ["sub-1", makeFaculty("sub-1", "sup")],
+      ["target", makeFaculty("target")],
+    ]);
+    const fakeRepo = createFakeSubordinateRepo(store);
+    const useCases = createFacultyUseCases(fakeRepo as never);
+
+    await expect(useCases.deleteFacultyById("sup", "admin", "Testing", "target")).rejects.toThrow(
+      /reassignment is unavailable/i,
+    );
+    expect(fakeRepo.bulkSave).not.toHaveBeenCalled();
+    expect(store.get("sup")?.deletedAt).toBeUndefined();
+  });
+
+  it("archives without re-deriving the linked account role", async () => {
+    // Archiving is not a role event: running the linked-role sync here mutates the
+    // account's RBAC role or 403s the delete for actors without users.manage.
+    const store = new Map<string, Faculty>([["plain", makeFaculty("plain")]]);
+    const fakeRepo = createFakeSubordinateRepo(store);
+    const useCases = createFacultyUseCases(fakeRepo as never);
+
+    await useCases.deleteFacultyById("plain", "admin", "Retired");
+
+    expect(fakeRepo.bulkSave).toHaveBeenCalledWith(
+      "demo",
+      [expect.objectContaining({ id: "plain" })],
+      { syncRole: false },
+    );
+  });
+
+  it("restores keep the default linked-role sync", async () => {
+    const store = new Map<string, Faculty>([
+      ["back", { ...makeFaculty("back"), deletedAt: "2026-01-01T00:00:00.000Z" }],
+    ]);
+    const fakeRepo = createFakeSubordinateRepo(store);
+    const useCases = createFacultyUseCases(fakeRepo as never);
+
+    await useCases.bulkRestoreFaculty(["back"], "admin");
+
+    expect(fakeRepo.bulkSave).toHaveBeenCalledWith("demo", [
+      expect.objectContaining({ id: "back" }),
+    ]);
+  });
 
   it("rejects bulk soft-delete if supervisor has active subordinates outside the deletion list", async () => {
     const store = new Map<string, Faculty>([

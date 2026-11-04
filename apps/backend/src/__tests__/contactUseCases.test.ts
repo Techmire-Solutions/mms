@@ -115,15 +115,19 @@ function createFakeRepo() {
       }),
       save: vi.fn(async (tenant: string, contact: Contact) => {
         void tenant;
-        store.set(String(contact.id), contact);
+        // Mirror the Drizzle adapter: the row's stored clock is the returned token.
+        const persistedAt = new Date().toISOString();
+        store.set(String(contact.id), { ...contact, updatedAt: persistedAt });
+        return persistedAt;
       }),
       saveIfVersionMatches: vi.fn(
         async (tenant: string, contact: Contact, expectedUpdatedAt: string) => {
           void tenant;
           const existing = store.get(String(contact.id));
-          if (!existing || existing.updatedAt !== expectedUpdatedAt) return false;
-          store.set(String(contact.id), contact);
-          return true;
+          if (!existing || existing.updatedAt !== expectedUpdatedAt) return null;
+          const persistedAt = new Date().toISOString();
+          store.set(String(contact.id), { ...contact, updatedAt: persistedAt });
+          return persistedAt;
         },
       ),
       replaceContactTags: vi.fn(
@@ -425,7 +429,7 @@ describe("createContactsUseCases (DI composition root)", () => {
   it("updateContactById returns 409 when the conditional save loses the version race", async () => {
     const { repo, store } = createFakeRepo();
     store.set("a", fakeContact("a", { updatedAt: "2026-01-01T00:00:00.000Z" }));
-    vi.mocked(repo.saveIfVersionMatches).mockResolvedValueOnce(false);
+    vi.mocked(repo.saveIfVersionMatches).mockResolvedValueOnce(null);
     const useCases = createContactsUseCases(repo);
 
     await expect(
@@ -460,6 +464,57 @@ describe("createContactsUseCases (DI composition root)", () => {
       { applyRelationshipInference: false },
     );
     expect(repo.bulkSave).not.toHaveBeenCalled();
+  });
+
+  it("upsertContact enforces a Setup-required tab server-side (400, nothing saved)", async () => {
+    const { repo } = createFakeRepo();
+    const useCases = createContactsUseCases(repo);
+    mockLoadContactFieldConfig.mockResolvedValueOnce({
+      version: 1,
+      enabledTabs: ["basic", "phones"],
+      requiredTabs: ["phones"],
+      fields: {
+        basic: [
+          { key: "name", label: "Name", type: "text", enabled: true, order: 1, required: true },
+        ],
+      },
+      formTabs: [
+        { key: "basic", label: "Basic", enabled: true, order: 1 },
+        { key: "phones", label: "Phones", enabled: true, order: 2 },
+      ],
+    } as unknown as FieldConfig);
+
+    await expect(
+      useCases.upsertContact(fakeContact("new-1", { firstName: "Aisha", name: "Aisha" })),
+    ).rejects.toMatchObject({
+      statusCode: 400,
+      errors: [expect.objectContaining({ tabId: "phones" })],
+    });
+    expect(repo.save).not.toHaveBeenCalled();
+  });
+
+  it("updateContactById rejects a stale _blueprintId with 400", async () => {
+    const { repo, store } = createFakeRepo();
+    store.set("a", fakeContact("a", { updatedAt: "2026-01-01T00:00:00.000Z" }));
+    const useCases = createContactsUseCases(repo);
+    mockLoadContactFieldConfig.mockResolvedValueOnce({
+      version: 4,
+      enabledTabs: ["basic"],
+      requiredTabs: [],
+      fields: {},
+      formTabs: [{ key: "basic", label: "Basic", enabled: true, order: 1 }],
+    } as unknown as FieldConfig);
+
+    await expect(
+      useCases.updateContactById("a", {
+        ...fakeContact("a", { firstName: "New" }),
+        _blueprintId: 3,
+      } as Contact),
+    ).rejects.toMatchObject({
+      statusCode: 400,
+      errors: [expect.objectContaining({ fieldId: "_blueprintId" })],
+    });
+    expect(repo.save).not.toHaveBeenCalled();
   });
 
   it("softDeleteContactById clears only active rows via the injected repo", async () => {

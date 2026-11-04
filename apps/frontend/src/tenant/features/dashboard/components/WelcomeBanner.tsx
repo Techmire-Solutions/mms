@@ -36,22 +36,23 @@ export function WelcomeBanner({
   const { user } = useAuth();
   const reducedMotion = useReducedMotion();
 
-  const now = (() => new Date())();
-  const dayName = (() => formatDayName(now))();
-  const gregDate = (() => formatLongDate(now))();
-  const hijriDate = (() => formatHijriDate(now))();
+  const now = new Date();
+  const dayName = formatDayName(now);
+  const gregDate = formatLongDate(now);
+  const hijriDate = formatHijriDate(now);
 
   const userName = user?.name ?? "";
 
-  const subtitle = (() =>
-    resolveDashboardWelcomeSubtitle(
-      dashboardRole,
-      { activeSessionsCount, activeStudentCount },
-      t,
-    ))();
+  const subtitle = resolveDashboardWelcomeSubtitle(
+    dashboardRole,
+    { activeSessionsCount, activeStudentCount },
+    t,
+  );
 
   return (
     <motion.header
+      // Content header: the global print rule only hides chrome headers.
+      data-print-header
       initial={reducedMotion ? false : { opacity: 0, y: -8 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.2, ease: "easeOut" }}

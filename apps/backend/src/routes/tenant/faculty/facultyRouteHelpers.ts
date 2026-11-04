@@ -44,9 +44,16 @@ export async function handleDuplicateCheck({
       body: { type: "forbidden", message: "Insufficient permissions" },
     };
   }
+  const tenantId = request.tenant?.id;
+  if (!tenantId) {
+    return {
+      status: 403 as const,
+      body: { type: "forbidden", message: "Tenant context required" },
+    };
+  }
   try {
     const result = await withTenant(
-      String(request.tenant?.id),
+      String(tenantId),
       () => facultyUseCases.checkFacultyRegistrationDuplicate(body),
       { readOnly: true },
     );
@@ -127,10 +134,17 @@ export async function handleMigrateEmployeeIds({
       body: { type: "forbidden", message: "Insufficient permissions" },
     };
   }
+  const tenantId = request.tenant?.id;
+  if (!tenantId) {
+    return {
+      status: 403 as const,
+      body: { type: "forbidden", message: "Tenant context required" },
+    };
+  }
   try {
     const result = await withTenant(
-      String(request.tenant?.id),
-      () => facultyUseCases.migrateFacultyMissingEmployeeIds(),
+      String(tenantId),
+      () => facultyUseCases.migrateFacultyMissingEmployeeIds(String(user.id)),
       { readOnly: false },
     );
     return { status: 200 as const, body: { success: true as const, ...result } };

@@ -8,8 +8,17 @@ import { CONTACT_TAB_COLLECTION_KEYS } from "./contactCollectionKeys.js";
  * the row (`created_by` / `updated_by`) and `createdAt` drives the Work metrics
  * and Reports month/year buckets. Accepting them from a client lets any writer
  * forge attribution and back-date a contact.
+ *
+ * `updatedAt` is the optimistic-concurrency token: it travels in
+ * `x-expected-updated-at` and is stamped by the database write, so a body value
+ * is never authoritative (it would let a client pick the version it wants).
  */
-export const CLIENT_AUDIT_OWNED_KEYS = ["createdAt", "createdBy", "updatedBy"] as const;
+export const CLIENT_AUDIT_OWNED_KEYS = [
+  "createdAt",
+  "createdBy",
+  "updatedBy",
+  "updatedAt",
+] as const;
 
 /** Strip client-supplied audit attribution from a contact write payload. */
 export function stripClientAuditFields<T>(record: T): T {

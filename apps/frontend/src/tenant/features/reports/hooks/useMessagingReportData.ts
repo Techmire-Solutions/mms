@@ -40,6 +40,8 @@ export function useMessagingReportData(t: TranslationFunction, canWrite: boolean
           name: t(getChannelLabelKey(config.id)),
           value,
           fillColor: `var(--color-${config.themeAccent})`,
+          // Stable id for the chart's screen-reader summary.
+          channel: config.id,
         };
       })
       .filter((item) => item.value > 0);

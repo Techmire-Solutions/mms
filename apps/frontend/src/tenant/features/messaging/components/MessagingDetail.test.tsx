@@ -1,4 +1,4 @@
-import React, { act } from "react";
+import { act } from "react";
 import { createRoot, type Root } from "react-dom/client";
 import { MemoryRouter } from "react-router-dom";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
@@ -25,6 +25,14 @@ vi.mock("@/lib/notify", () => ({
     success: vi.fn(),
     error: vi.fn(),
   },
+}));
+
+const { permissions } = vi.hoisted(() => ({
+  permissions: { contactsRead: true },
+}));
+
+vi.mock("@/tenant/hooks/usePermissions", () => ({
+  useModulePermissions: () => ({ canRead: permissions.contactsRead }),
 }));
 
 describe("MessagingDetail", () => {
@@ -56,6 +64,7 @@ describe("MessagingDetail", () => {
   };
 
   beforeEach(() => {
+    permissions.contactsRead = true;
     container = document.createElement("div");
     document.body.appendChild(container);
     root = createRoot(container);
@@ -109,12 +118,29 @@ describe("MessagingDetail", () => {
       "Assalamu alaikum, reminder for Quran class tomorrow",
     );
     expect(document.body.textContent).toContain("sms");
+
+    // The body must resolve its own direction for mixed-script content.
+    const body = Array.from(document.body.querySelectorAll('[dir="auto"]')).find((node) =>
+      node.textContent?.includes("Assalamu alaikum, reminder for Quran class tomorrow"),
+    );
+    expect(body).not.toBeUndefined();
+
+    // Interactive targets meet the 44×44 floor (the log-id copy used to be 24px).
+    const copyButtons = Array.from(document.body.querySelectorAll("button")).filter(
+      (button) => button.getAttribute("title") === "common.copy",
+    );
+    expect(copyButtons.length).toBeGreaterThan(0);
+    for (const button of copyButtons) {
+      expect(button.className).toContain("min-h-11");
+      expect(button.className).not.toContain("h-6");
+    }
   });
 
-  it("displays diagnostics warning for failed messages", async () => {
+  it("displays the gateway failure reason for failed messages", async () => {
     const failedLog: Message = {
       ...mockLog,
       status: "failed",
+      errorMessage: "Gateway rejected: invalid destination number",
     };
 
     await act(async () => {
@@ -133,7 +159,10 @@ describe("MessagingDetail", () => {
     });
 
     expect(document.body.textContent).toContain("messaging.status.failed");
-    expect(document.body.textContent).toContain("messaging.loadFailedHint");
+    // The gateway's own reason is the only useful diagnostic — never the
+    // generic list-load hint.
+    expect(document.body.textContent).toContain("Gateway rejected: invalid destination number");
+    expect(document.body.textContent).not.toContain("messaging.loadFailedHint");
   });
 
   it("triggers onResend and onClose when Resend button is clicked", async () => {
@@ -168,7 +197,7 @@ describe("MessagingDetail", () => {
     expect(onResend).toHaveBeenCalledWith(mockLog);
   });
 
-  it("renders inline retry button inside failure banner and triggers resend", async () => {
+  it("keeps a single Resend primary action for a failed log", async () => {
     const onResend = vi.fn();
     const onClose = vi.fn();
     const failedLog = { ...mockLog, status: "failed" as const };
@@ -191,13 +220,119 @@ describe("MessagingDetail", () => {
     const resendButtons = Array.from(document.body.querySelectorAll("button")).filter((b) =>
       b.textContent?.includes("messaging.resend"),
     );
-    expect(resendButtons.length).toBeGreaterThanOrEqual(2);
+    // The failed panel used to repeat the footer's primary action.
+    expect(resendButtons).toHaveLength(1);
 
     await act(async () => {
-      resendButtons[1]?.click();
+      resendButtons[0]?.click();
     });
 
     expect(onClose).toHaveBeenCalled();
     expect(onResend).toHaveBeenCalledWith(failedLog);
+  });
+
+  it("resends on Cmd/Ctrl+Enter from inside the drawer", async () => {
+    const onResend = vi.fn();
+    const onClose = vi.fn();
+
+    await act(async () => {
+      root.render(
+        <MemoryRouter>
+          <MessagingDetail
+            log={mockLog}
+            recipient={mockRecipient}
+            logStatusConfig={mockLogStatusConfig}
+            canWrite={true}
+            onClose={onClose}
+            onResend={onResend}
+          />
+        </MemoryRouter>,
+      );
+    });
+
+    // Focus lives inside the drawer's own role="dialog" — the shortcut used to
+    // be swallowed there, making the advertised (⌘+Enter) dead.
+    const dialog = document.body.querySelector("[role='dialog']") as HTMLElement;
+    expect(dialog).not.toBeNull();
+    await act(async () => {
+      dialog.dispatchEvent(
+        new KeyboardEvent("keydown", { key: "Enter", metaKey: true, bubbles: true }),
+      );
+    });
+
+    expect(onResend).toHaveBeenCalledWith(mockLog);
+  });
+
+  it("does not resend through an open confirmation dialog", async () => {
+    const onResend = vi.fn();
+
+    await act(async () => {
+      root.render(
+        <MemoryRouter>
+          <MessagingDetail
+            log={mockLog}
+            recipient={mockRecipient}
+            logStatusConfig={mockLogStatusConfig}
+            canWrite={true}
+            onClose={vi.fn()}
+            onResend={onResend}
+          />
+        </MemoryRouter>,
+      );
+    });
+
+    const confirm = document.createElement("div");
+    confirm.setAttribute("role", "alertdialog");
+    document.body.appendChild(confirm);
+
+    await act(async () => {
+      window.dispatchEvent(
+        new KeyboardEvent("keydown", { key: "Enter", metaKey: true, bubbles: true }),
+      );
+    });
+
+    expect(onResend).not.toHaveBeenCalled();
+    confirm.remove();
+  });
+
+  it("hides the contact profile link without contacts.read", async () => {
+    permissions.contactsRead = false;
+
+    await act(async () => {
+      root.render(
+        <MemoryRouter>
+          <MessagingDetail
+            log={mockLog}
+            recipient={mockRecipient}
+            logStatusConfig={mockLogStatusConfig}
+            canWrite={true}
+            onClose={vi.fn()}
+            onResend={vi.fn()}
+          />
+        </MemoryRouter>,
+      );
+    });
+
+    // A messaging-only role cannot open /contacts; the link would dead-end.
+    expect(document.body.textContent).not.toContain("contacts.table.viewProfile");
+  });
+
+  it("shows the contact profile link when contacts.read is granted", async () => {
+    await act(async () => {
+      root.render(
+        <MemoryRouter>
+          <MessagingDetail
+            log={mockLog}
+            recipient={mockRecipient}
+            logStatusConfig={mockLogStatusConfig}
+            canWrite={true}
+            onClose={vi.fn()}
+            onResend={vi.fn()}
+          />
+        </MemoryRouter>,
+      );
+    });
+
+    expect(document.body.textContent).toContain("contacts.table.viewProfile");
   });
 });

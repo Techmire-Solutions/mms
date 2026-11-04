@@ -116,7 +116,9 @@ export const ContactEmailAction = function ContactEmailAction({
               aria-hidden="true"
               className="w-3.5 h-3.5 text-primary/80 flex-shrink-0 group-hover/pill:text-primary transition-colors"
             />
-            <span className="font-semibold tracking-tight truncate select-all">{cleanEmail}</span>
+            <bdi dir="ltr" className="font-semibold tracking-tight truncate select-all">
+              {cleanEmail}
+            </bdi>
           </div>
           {actionsNode}
         </div>
@@ -136,7 +138,7 @@ export const ContactEmailAction = function ContactEmailAction({
       )}
       title={cleanEmail}
     >
-      {cleanEmail}
+      <bdi dir="ltr">{cleanEmail}</bdi>
     </span>
   );
 

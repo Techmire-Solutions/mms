@@ -8,12 +8,26 @@ export interface UseContactDuplicateCheckOptions {
   contactDraft: Partial<Contact>;
 }
 
+/** Identity of the fields the duplicate probe actually queries. */
+function contactCandidateSignature(draft: Partial<Contact>): string {
+  return JSON.stringify({
+    name: draft.name ?? "",
+    firstName: draft.firstName ?? "",
+    cnic: draft.cnic ?? "",
+    phones: (draft.phones ?? []).map((phone) => phone.number ?? "").join("|"),
+    emails: (draft.emails ?? []).map((email) => email.address ?? "").join("|"),
+  });
+}
+
 export function useContactDuplicateCheck({
   open,
   contactId,
   contactDraft,
 }: UseContactDuplicateCheckOptions): number {
-  const [duplicateCount, setDuplicateCount] = useState(0);
+  const [duplicateResult, setDuplicateResult] = useState<{
+    signature: string;
+    count: number;
+  } | null>(null);
   // Defer the draft so the check only re-runs once the urgent render settles,
   // rather than on every keystroke; the 600ms timeout below still debounces the
   // actual network request.
@@ -28,7 +42,13 @@ export function useContactDuplicateCheck({
       (deferredDraft.emails && deferredDraft.emails.some((e) => e.address?.trim())) ||
       deferredDraft.cnic?.trim()),
   );
-  const effectiveCount = hasCandidateKey ? duplicateCount : 0;
+  // A result only describes the candidate it was requested for: changing the name
+  // (or phone/email/cnic) immediately falls back to 0 instead of a stale count.
+  const candidateSignature = contactCandidateSignature(deferredDraft);
+  const effectiveCount =
+    hasCandidateKey && duplicateResult?.signature === candidateSignature
+      ? duplicateResult.count
+      : 0;
 
   useEffect(() => {
     if (!hasCandidateKey) {
@@ -36,6 +56,7 @@ export function useContactDuplicateCheck({
     }
 
     const abortController = new AbortController();
+    const signature = contactCandidateSignature(deferredDraft);
 
     const timer = setTimeout(async () => {
       try {
@@ -51,7 +72,7 @@ export function useContactDuplicateCheck({
         }
         if (res.status === 200) {
           const body = res.body as { matchCount?: number } | undefined;
-          setDuplicateCount(body?.matchCount ?? 0);
+          setDuplicateResult({ signature, count: body?.matchCount ?? 0 });
         }
       } catch (err: unknown) {
         if (err instanceof DOMException && err.name === "AbortError") {

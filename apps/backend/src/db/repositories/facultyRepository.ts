@@ -134,7 +134,7 @@ export async function findFacultyByIds(tenant: string, ids: string[]): Promise<F
 export async function saveFaculty(
   tenant: string,
   member: Faculty,
-  options?: { createOnly?: boolean },
+  options?: { createOnly?: boolean; syncRole?: boolean },
 ): Promise<void> {
   const subdomain = tenant.trim().toLowerCase();
   const { syncFacultyLinkedUserRole } =
@@ -143,7 +143,8 @@ export async function saveFaculty(
   // change (FacultyRoleSyncForbiddenError) rolls the faculty write back too.
   await withTenant(subdomain, async (tx) => {
     await persistFacultyTx(tx, subdomain, member, options);
-    await syncFacultyLinkedUserRole(subdomain, member);
+    // Unrelated edits (notes, specialization, …) cannot change the derived role.
+    if (options?.syncRole !== false) await syncFacultyLinkedUserRole(subdomain, member);
   });
 }
 
@@ -159,6 +160,7 @@ export async function saveFacultyIfVersionMatches(
   tenant: string,
   member: Faculty,
   expectedUpdatedAt: string,
+  options?: { syncRole?: boolean },
 ): Promise<boolean> {
   const subdomain = tenant.trim().toLowerCase();
   const expected = new Date(expectedUpdatedAt);
@@ -186,13 +188,17 @@ export async function saveFacultyIfVersionMatches(
       .limit(1);
     if (rows.length === 0) return;
     await persistFacultyTx(tx, subdomain, member);
-    await syncFacultyLinkedUserRole(subdomain, member);
+    if (options?.syncRole !== false) await syncFacultyLinkedUserRole(subdomain, member);
     saved = true;
   });
   return saved;
 }
 
-export async function bulkSaveFaculty(tenant: string, items: Faculty[]): Promise<void> {
+export async function bulkSaveFaculty(
+  tenant: string,
+  items: Faculty[],
+  options?: { syncRole?: boolean },
+): Promise<void> {
   const subdomain = tenant.trim().toLowerCase();
   if (items.length === 0) return;
   const { syncFacultyLinkedUserRole } =
@@ -200,7 +206,9 @@ export async function bulkSaveFaculty(tenant: string, items: Faculty[]): Promise
   await withTenant(subdomain, async (tx) => {
     for (const item of items) {
       await persistFacultyTx(tx, subdomain, item);
-      await syncFacultyLinkedUserRole(subdomain, item);
+      // Archiving must not re-derive the linked account's role: that either mutates
+      // an unrelated account or 403s a delete for an actor without `users.manage`.
+      if (options?.syncRole !== false) await syncFacultyLinkedUserRole(subdomain, item);
     }
   });
 }
@@ -213,23 +221,6 @@ export async function replaceFacultyForWorkspace(tenant: string, items: Faculty[
     for (const item of items) {
       await persistFacultyTx(tx, subdomain, item, { createOnly: true });
     }
-  });
-}
-
-export async function countFacultyByWorkspace(
-  tenant: string,
-  options?: ListFacultyOptions,
-): Promise<number> {
-  const subdomain = tenant.trim().toLowerCase();
-  const deletedFilter = options?.deleted ?? (options?.includeDeleted ? "all" : "active");
-  return withTenantRead(subdomain, async (tx) => {
-    const conditions = buildTenantSoftDeleteConditions(faculty, subdomain, deletedFilter);
-
-    const rows = await tx
-      .select({ count: sql<number>`count(*)::int` })
-      .from(faculty)
-      .where(and(...conditions));
-    return Number(rows[0]?.count ?? 0);
   });
 }
 

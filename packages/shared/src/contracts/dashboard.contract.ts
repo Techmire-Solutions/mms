@@ -4,6 +4,7 @@ import { dashboardPreferencesPutBodySchema } from "../dashboard/dashboardPrefere
 import {
   dashboardWidgetsPutBodySchema,
   customWidgetSchema,
+  DASHBOARD_WIDGETS_MAX,
 } from "../dashboard/dashboardWidgetSchema.js";
 
 const c = initContract();
@@ -92,12 +93,18 @@ export const dashboardContract = c.router({
     method: "PUT",
     path: "/api/dashboard/widgets/reorder",
     body: z.object({
-      order: z.array(
-        z.object({
-          id: z.string().min(1),
-          sortOrder: z.number(),
-        }),
-      ),
+      // Bounded like the PUT DTO: one UPDATE with N CASE arms + an IN list can
+      // otherwise exceed Postgres' bind-parameter ceiling and surface as a 500.
+      order: z
+        .array(
+          z.object({
+            id: z.string().min(1),
+            // Must fit the `integer` column and cannot be fractional — an
+            // out-of-range value would be a 500 (22003) instead of a 400.
+            sortOrder: z.number().int().min(0).max(1_000_000),
+          }),
+        )
+        .max(DASHBOARD_WIDGETS_MAX, "Too many widgets in one reorder request"),
     }),
     responses: {
       200: dashboardSuccessResponseSchema,

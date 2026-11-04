@@ -92,6 +92,10 @@ export function useContactsDirectoryFilters({
     });
   }, []);
 
+  const handleSortDir = useCallback((dir: "asc" | "desc") => {
+    setSortDir(dir);
+  }, []);
+
   const handleSelect = useCallback((id: string | number) => {
     setSelected((selectedIds) => toggleIdInSelection(selectedIds, id));
   }, []);
@@ -130,6 +134,7 @@ export function useContactsDirectoryFilters({
     hasActiveFilters,
     activeFilterCount,
     handleSort,
+    handleSortDir,
     handleSelect,
     handleSelectAll,
     clearFilters,

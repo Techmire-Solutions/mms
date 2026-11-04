@@ -11,6 +11,7 @@ const mockBulkRestore = vi.fn();
 const mockBulkUpdateStatus = vi.fn();
 
 vi.mock("@/tenant/hooks/collections/tasks", () => ({
+  useTask: () => ({ data: undefined }),
   useBulkDeleteTasks: () => ({
     mutate: mockBulkDelete,
     isPending: false,

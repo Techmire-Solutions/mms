@@ -12,6 +12,7 @@ import {
   mergeContactPatch,
   prepareContactRecord,
   stripClientSoftDeleteFields,
+  validateContactDynamic,
 } from "./contactValidationUseCases.js";
 import { broadcastCollection } from "../../lib/livePush.js";
 import { invalidateMultiTierCache } from "../../lib/cache/index.js";
@@ -19,7 +20,7 @@ import { loadContactWriteContext } from "./contactWriteContext.js";
 import { stripUnreadableContactWriteKeys } from "./contactViewerWriteGuard.js";
 import { collectRelatedContactIds } from "./contactRelationshipIds.js";
 import { reconcileContactSystemTags } from "../systemTags/contactSystemTagUseCases.js";
-import type { ContactWriteContext } from "./contactWriteContextTypes.js";
+import { type UpdateContactByIdOptions, type UpsertContactOptions } from "./contactWriteOptions.js";
 import type { ContactsRepository } from "../repository/contactsRepository.js";
 import { contactsRepository } from "../repository/contactsRepositoryAdapter.js";
 import { auditContactPersisted, auditContactUpdated } from "./contactWriteAudit.js";
@@ -27,20 +28,6 @@ const CONTACT_VERSION_CONFLICT =
   "This contact was changed by someone else. Reload it and try again.";
 const CONTACT_EXISTS_CONFLICT =
   "A contact with this id already exists. Reload it and retry the edit.";
-
-interface UpsertContactOptions {
-  user?: User;
-  canRestore?: boolean;
-  language?: string;
-  actorId?: string;
-  viewerRole?: string;
-  context?: ContactWriteContext;
-  /** HTTP create: existing id without expectedUpdatedAt conflicts. */
-  requireExpectedVersion?: boolean;
-  expectedUpdatedAt?: string;
-  /** Batch mode: caller invalidates cache/broadcasts after loop. */
-  batchMode?: boolean;
-}
 
 export async function upsertContact(
   contact: Contact,
@@ -102,6 +89,13 @@ export async function upsertContact(
       }
     }
     const mergedInput = existing ? mergeContactPatch(existing, patch) : patch;
+    // Setup is authoritative server-side: required tabs/fields, field types and the
+    // optional `_blueprintId` version lock are validated before anything is written.
+    await validateContactDynamic(tenant, mergedInput, {
+      language,
+      viewerRole,
+      fieldConfig: context.fieldConfig,
+    });
     const contactWithId = await prepareContactRecord(
       mergedInput,
       contact.id ?? existing?.id,
@@ -136,10 +130,13 @@ export async function upsertContact(
     if (existing && requiredToken) {
       // The version predicate lives in the UPDATE, so a writer that commits after
       // our read cannot be silently overwritten.
-      const savedWithVersion = await repo.saveIfVersionMatches(tenant, saved, requiredToken);
-      if (!savedWithVersion) throw new ConflictError(CONTACT_VERSION_CONFLICT);
+      const savedUpdatedAt = await repo.saveIfVersionMatches(tenant, saved, requiredToken);
+      if (!savedUpdatedAt) throw new ConflictError(CONTACT_VERSION_CONFLICT);
+      // The response must carry the persisted token, otherwise the client's next
+      // conditional save 409s on a version it just wrote.
+      saved.updatedAt = savedUpdatedAt;
     } else {
-      await repo.save(tenant, saved);
+      saved.updatedAt = await repo.save(tenant, saved);
     }
     await applyContactRelationshipInference(tenant, saved, undefined, repo, {
       actorId,
@@ -181,27 +178,6 @@ export async function upsertContact(
   return result;
 }
 
-interface UpdateContactByIdOptions {
-  language?: string;
-  /**
-   * When false, skip peer relationship graph writes.
-   * Required for self-service profile updates without `contacts.write`.
-   * @default true
-   */
-  applyRelationshipInference?: boolean;
-  /** Acting user — stamped into `updated_by`; never taken from the payload. */
-  actorId?: string;
-  /**
-   * Optimistic concurrency: the `updatedAt` the client based its edit on.
-   * A mismatch means another writer saved first → `ConflictError` (409).
-   */
-  expectedUpdatedAt?: string;
-  /** Acting role for the read/write field-permission guard. */
-  viewerRole?: string;
-  /** Preloaded tenant config (batch writers). */
-  context?: ContactWriteContext;
-}
-
 export async function updateContactById(
   id: string,
   contact: Contact,
@@ -237,11 +213,13 @@ export async function updateContactById(
       options.viewerRole,
       context.fieldConfig,
     );
-    const contactWithId = await prepareContactRecord(
-      mergeContactPatch(existing, patch),
-      id,
-      context,
-    );
+    const mergedInput = mergeContactPatch(existing, patch);
+    await validateContactDynamic(tenant, mergedInput, {
+      language,
+      viewerRole: options.viewerRole,
+      fieldConfig: context.fieldConfig,
+    });
+    const contactWithId = await prepareContactRecord(mergedInput, id, context);
     assertContactAttachmentUrls(
       contactWithId,
       tenant,
@@ -260,12 +238,13 @@ export async function updateContactById(
     if (expectedUpdatedAt) {
       // The version predicate lives in the UPDATE itself, so a writer that
       // commits after our read cannot be silently overwritten (C-01).
-      const savedWithVersion = await repo.saveIfVersionMatches(tenant, next, expectedUpdatedAt);
-      if (!savedWithVersion) {
+      const savedUpdatedAt = await repo.saveIfVersionMatches(tenant, next, expectedUpdatedAt);
+      if (!savedUpdatedAt) {
         throw new ConflictError(CONTACT_VERSION_CONFLICT);
       }
+      next.updatedAt = savedUpdatedAt;
     } else {
-      await repo.save(tenant, next);
+      next.updatedAt = await repo.save(tenant, next);
     }
     if (applyInference) {
       await applyContactRelationshipInference(tenant, next, undefined, repo, {

@@ -237,6 +237,26 @@ describe("applyTitleCaseRecursive", () => {
     expect(applyTitleCaseRecursive(input)).toEqual(expected);
   });
 
+  it("keeps dashboard widget field/collection identifiers intact on restore", () => {
+    const input = {
+      title: "active students",
+      xAxisField: "createdAt",
+      targetField: "finalFee",
+      filterField: "status",
+      switchCollection: "students",
+      switchField: "active",
+      nested: { chartType: "bar" },
+    };
+    const result = applyTitleCaseRecursive(input) as Record<string, unknown>;
+    // Identifiers must survive verbatim; display copy is still title-cased.
+    expect(result.xAxisField).toBe("createdAt");
+    expect(result.targetField).toBe("finalFee");
+    expect(result.filterField).toBe("status");
+    expect(result.switchCollection).toBe("students");
+    expect(result.switchField).toBe("active");
+    expect(result.title).toBe("Active Students");
+  });
+
   it("applyTitleCaseToContact ignores soft-delete audit keys", () => {
     const input = {
       name: "should be changed",

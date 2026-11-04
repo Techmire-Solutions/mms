@@ -3,6 +3,7 @@ import { slugifyFacultyCatalogCode } from "@mms/shared";
 import type { TenantTransaction } from "../tenant-context.js";
 import { lockFacultyHierarchy } from "./facultyAssignmentValidation.js";
 import { FacultyCatalogConflictError } from "../../faculty/errors.js";
+import { ValidationError } from "../../lib/httpErrors.js";
 
 /** Re-exported from the faculty domain so existing importers keep one class identity. */
 export { FacultyCatalogConflictError };
@@ -20,13 +21,13 @@ export async function validateFacultyDepartment(
   input: { id: string; name: string },
 ): Promise<void> {
   await lockFacultyHierarchy(tx, tenant);
-  if (!input.name.trim()) throw new Error("Department name is required");
+  if (!input.name.trim()) throw new ValidationError("Department name is required");
   const existing = await tx.execute<{ deleted_at: Date | null }>(sql`
     SELECT deleted_at FROM faculty_departments WHERE workspace_subdomain = ${tenant}
       AND id = ${input.id} FOR UPDATE
   `);
   if (existing.rows.some((row) => row.deleted_at !== null))
-    throw new Error("Department is archived");
+    throw new ValidationError("Department is archived");
   const duplicate = await tx.execute<{ id: string }>(sql`
     SELECT id FROM faculty_departments
     WHERE workspace_subdomain = ${tenant}

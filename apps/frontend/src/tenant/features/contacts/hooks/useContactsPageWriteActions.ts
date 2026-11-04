@@ -146,13 +146,17 @@ export function useContactsPageWriteActions({
   );
 
   const handleBulkTag = useCallback(
-    async (tags: string[]) => {
+    async (tags: string[], mode: "add" | "remove" = "add") => {
       if (!canWrite) {
         throw new Error(t("contacts.form.writeDenied"));
       }
       const ids = (selected ?? []).map(String);
       if (ids.length === 0 || tags.length === 0) return;
-      await bulkTagContacts(ids, tags);
+      await bulkTagContacts(
+        ids,
+        mode === "add" ? tags : undefined,
+        mode === "remove" ? tags : undefined,
+      );
       setSelected?.([]);
     },
     [canWrite, t, selected, bulkTagContacts, setSelected],

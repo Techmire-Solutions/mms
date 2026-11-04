@@ -14,6 +14,9 @@ export interface MessageComposerRecipientPickerProps {
   disabled?: boolean;
   onAdd: (recipient: StandardMessagingRecipient) => void;
   onRemove: (id: string | number) => void;
+  /** Batch variants used by select-all (one toast instead of one per row). */
+  onAddMany?: (recipients: StandardMessagingRecipient[]) => void;
+  onRemoveMany?: (ids: (string | number)[]) => void;
 }
 
 const DEBOUNCE_MS = 300;
@@ -24,6 +27,8 @@ export function TenantMessageComposerRecipientPicker({
   disabled,
   onAdd,
   onRemove,
+  onAddMany,
+  onRemoveMany,
 }: MessageComposerRecipientPickerProps): React.JSX.Element {
   const { t } = useTranslation();
 
@@ -65,13 +70,13 @@ export function TenantMessageComposerRecipientPicker({
   const handleToggleAll = () => {
     const allSelected =
       recipients.length > 0 && recipients.every((r) => existingIds.has(String(r.id)));
+    const remove = onRemoveMany ?? ((ids: (string | number)[]) => ids.forEach(onRemove));
+    const add = onAddMany ?? ((list: StandardMessagingRecipient[]) => list.forEach(onAdd));
     if (allSelected) {
-      recipients.forEach((r) => onRemove(r.id));
+      remove(recipients.map((r) => r.id));
       return;
     }
-    recipients.forEach((r) => {
-      if (!existingIds.has(String(r.id))) onAdd(r);
-    });
+    add(recipients.filter((r) => !existingIds.has(String(r.id))));
   };
 
   const allSelected =

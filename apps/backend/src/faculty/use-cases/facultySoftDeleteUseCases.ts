@@ -17,10 +17,11 @@ import {
   guardBulkSubordinatesOnDelete,
   guardSubordinatesOnDelete,
   SubordinateReassignmentError,
+  SubordinateReassignmentUnavailableError,
 } from "./facultySoftDeleteGuards.js";
 
 export { restoreFacultyById, bulkRestoreFaculty };
-export { SubordinateReassignmentError };
+export { SubordinateReassignmentError, SubordinateReassignmentUnavailableError };
 
 export async function softDeleteFacultyById(
   id: string,
@@ -51,7 +52,7 @@ export async function softDeleteFacultyById(
     }
 
     if (toSave.length === 0) return { succeeded: 0, failed: 1 };
-    await repo.bulkSave(tenant, toSave);
+    await repo.bulkSave(tenant, toSave, { syncRole: false });
     await cascadeFacultySoftDeleteSideEffects(tenant, toSave, deletedBy, trimmedReason, now);
     await reconcileFacultyContactsByFacultyIds(
       tenant,
@@ -117,7 +118,7 @@ export async function bulkSoftDeleteFaculty(
     }
 
     if (toSave.length > 0) {
-      await repo.bulkSave(tenant, toSave);
+      await repo.bulkSave(tenant, toSave, { syncRole: false });
       await cascadeFacultySoftDeleteSideEffects(tenant, toSave, deletedBy, trimmedReason, now);
       await reconcileFacultyContactsByFacultyIds(
         tenant,

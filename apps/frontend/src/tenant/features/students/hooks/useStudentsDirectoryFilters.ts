@@ -147,6 +147,16 @@ export function useStudentsDirectoryFilters({
     setViewingDeleted((previous) => !previous);
   }, [setViewingDeleted]);
 
+  /**
+   * The gender menu renders an "All genders" option whose value is the sentinel `all`.
+   * The API has no such value (it applies an equality filter), so the sentinel must be
+   * normalised to "no filter" here — writing it verbatim emptied the directory
+   * (2026-11-04 review, M1).
+   */
+  const handleGenderChange = useCallback((value: string) => {
+    setStudentFilterGender(value === "all" ? "" : value);
+  }, []);
+
   return {
     listPage,
     setListPage,
@@ -160,7 +170,7 @@ export function useStudentsDirectoryFilters({
     debouncedSearch,
     studentFilterStatus,
     studentFilterGender,
-    setStudentFilterGender,
+    setStudentFilterGender: handleGenderChange,
     quickFilter,
     changeQuickFilter,
     selectedIds,

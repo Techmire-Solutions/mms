@@ -48,16 +48,21 @@ export function TaskStatusMenu({
             type="button"
             variant="ghost"
             size="icon"
-            className="h-6 w-6"
+            className="h-11 w-11"
             disabled={pending}
-            aria-label={t("tasks.bulkStatus")}
+            onClick={(event) => event.stopPropagation()}
+            aria-label={t("tasks.changeStatusFor", { title: task.title })}
           >
             <ChevronDown className="h-3.5 w-3.5" aria-hidden="true" />
           </Button>
         </DropdownMenuTrigger>
         <DropdownMenuContent align="start">
           {options.map((status) => (
-            <DropdownMenuItem key={status} onSelect={() => onChangeStatus(task, status)}>
+            <DropdownMenuItem
+              key={status}
+              onClick={(event) => event.stopPropagation()}
+              onSelect={() => onChangeStatus(task, status)}
+            >
               {statusConfig[status]?.label ?? status}
             </DropdownMenuItem>
           ))}

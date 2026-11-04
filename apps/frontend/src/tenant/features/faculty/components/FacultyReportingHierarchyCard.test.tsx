@@ -65,6 +65,21 @@ describe("FacultyReportingHierarchyCard", () => {
     expect(container.textContent).toContain("faculty.field.reportingFacultyId");
   });
 
+  it("does not fabricate an Active status for the supervisor row", async () => {
+    // The card has no supervisor status data; the badge always said "Active".
+    const facultyWithSupervisor: Faculty = {
+      ...baseFaculty,
+      reportingFacultyId: "sup-1",
+      reportingFacultyName: "Dean Ahmad",
+    };
+
+    await act(async () => {
+      root.render(<FacultyReportingHierarchyCard faculty={facultyWithSupervisor} />);
+    });
+
+    expect(container.textContent).not.toContain("faculty.status.active");
+  });
+
   it("renders subordinate count and calls onFilterSubordinates when action clicked", async () => {
     const onFilterSubordinates = vi.fn();
     const facultyWithTeam: Faculty = {

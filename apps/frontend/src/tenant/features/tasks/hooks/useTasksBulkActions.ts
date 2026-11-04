@@ -22,7 +22,9 @@ export function useTasksBulkActions(selectedIds: string[], onClearSelection: () 
         onClearSelection();
         if (deletedIds.length > 0) {
           notify.archivedWithUndo(t("common.recordArchived"), () => {
-            void bulkRestoreMutation.mutateAsync(deletedIds);
+            void bulkRestoreMutation.mutateAsync(deletedIds).catch((err: unknown) => {
+              notify.error(err instanceof Error ? err.message : t("tasks.restoreFailed"));
+            });
           });
         }
         if (skipped.length > 0) {
@@ -42,7 +44,9 @@ export function useTasksBulkActions(selectedIds: string[], onClearSelection: () 
     bulkRestoreMutation.mutate([...selectedIds], {
       onSuccess: ({ restoredIds, skipped = [] }) => {
         onClearSelection();
-        notify.success(t("tasks.restored"));
+        if (restoredIds.length > 0) {
+          notify.success(t("tasks.restored"));
+        }
         if (skipped.length > 0) {
           notify.warning(
             t("tasks.bulkSkipped", { count: restoredIds.length, skipped: skipped.length }),

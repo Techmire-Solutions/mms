@@ -73,7 +73,8 @@ export function useStudentsCrudActions({
   );
 
   const handleDelete = useCallback(
-    async (studentId: string, deletionReason?: string): Promise<void> => {
+    /** Resolves `false` on failure so the confirm dialog stays open for a retry. */
+    async (studentId: string, deletionReason?: string): Promise<boolean> => {
       try {
         const result = await deleteStudent.mutateAsync({
           params: { id: String(studentId) },
@@ -81,8 +82,10 @@ export function useStudentsCrudActions({
         });
         assertContractOk(result, "Failed to archive student");
         notifyArchivedWithUndo(() => handleRestore(studentId));
+        return true;
       } catch (error) {
         handleError(error, "students.delete", "students.deleteFailed");
+        return false;
       }
     },
     [deleteStudent, handleRestore, notifyArchivedWithUndo, handleError],
@@ -135,7 +138,11 @@ export function useStudentsCrudActions({
   );
 
   const handleBulkStatusChange = useCallback(
-    async (studentIds: string[], status: string): Promise<void> => {
+    /** Returns the per-row result so failed rows can stay selected for a retry. */
+    async (
+      studentIds: string[],
+      status: string,
+    ): Promise<{ succeeded: number; failed: number }> => {
       try {
         const result = await bulkUpdateStudentStatus.mutateAsync({
           body: { ids: studentIds.map(String), status },
@@ -147,6 +154,7 @@ export function useStudentsCrudActions({
           "students.bulkStatusSuccess",
           "students.bulkStatusSuccessMany",
         );
+        return { succeeded: result.body.succeeded, failed: result.body.failed };
       } catch (error) {
         handleError(error, "students.bulk_status", "students.bulkStatusFailed");
         throw error;

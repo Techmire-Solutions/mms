@@ -107,6 +107,21 @@ describe("useStudentsCrudActions", () => {
     expect(messageKey).toBe("students.deleteFailed");
   });
 
+  it("resolves false for a failed single delete so the confirm can stay open", async () => {
+    // 2026-11-04 review (n4): the confirm dialog closed even when the delete failed.
+    deleteStudent.mutateAsync.mockResolvedValue(
+      response(409, { type: "conflict", message: "Student is referenced by an invoice" }),
+    );
+    renderHook();
+
+    let deleted = true;
+    await act(async () => {
+      deleted = await actions.handleDelete("std-1");
+    });
+
+    expect(deleted).toBe(false);
+  });
+
   it("keeps the archived/undo toast on a successful delete", async () => {
     deleteStudent.mutateAsync.mockResolvedValue(response(200, { success: true }));
     renderHook();
@@ -243,6 +258,21 @@ describe("useStudentsCrudActions", () => {
       "students.bulkStatusSuccess",
       "students.bulkStatusSuccessMany",
     );
+  });
+
+  it("returns the bulk-status result so failed rows can stay selected", async () => {
+    // 2026-11-04 review (n7): a partial bulk status cleared the selection for failed rows.
+    bulkUpdateStudentStatus.mutateAsync.mockResolvedValue(
+      response(200, { success: true, succeeded: 1, failed: 2 }),
+    );
+    renderHook();
+
+    let result: { succeeded: number; failed: number } | undefined;
+    await act(async () => {
+      result = await actions.handleBulkStatusChange(["std-1", "std-2", "std-3"], "inactive");
+    });
+
+    expect(result).toEqual({ succeeded: 1, failed: 2 });
   });
 
   it("resolves false for failed bulk delete/restore so the dialog stays open and selection survives", async () => {

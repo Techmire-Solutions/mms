@@ -13,7 +13,9 @@ import { useContactsMetrics } from "@/tenant/features/contacts/hooks/useContacts
 import { useContactMutations } from "@/tenant/features/contacts/hooks/useContactMutations";
 import {
   buildAppleImportIdentityCandidates,
+  dedupeAppleImportPreview,
   filterAppleImportFreshContacts,
+  matchAppleImportIdentity,
 } from "@/tenant/features/contacts/hooks/appleContactsIdentity";
 import { readAndParseAppleContactsFile } from "@/tenant/features/contacts/hooks/appleContactsFileParser";
 
@@ -41,6 +43,8 @@ export function useAppleContactsPanel({
   const [fileName, setFileName] = useState<string | null>(null);
   const [fileError, setFileError] = useState<string | null>(null);
   const [isWriting, setIsWriting] = useState(false);
+  /** A selected file is being read/parsed on the main thread. */
+  const [isParsing, setIsParsing] = useState(false);
   const [importProgress, setImportProgress] = useState<{ imported: number; total: number } | null>(
     null,
   );
@@ -49,7 +53,7 @@ export function useAppleContactsPanel({
    * running after the match resolves, and the CTA must stay disabled until it finishes or a
    * second click re-imports the same list.
    */
-  const importing = matchContactIdentity.isPending || isWriting;
+  const importing = matchContactIdentity.isPending || isWriting || isParsing;
   const [exporting, setExporting] = useState(false);
   const [result, setResult] = useState<{ imported: number; skipped: number } | null>(null);
   const [isDragging, setIsDragging] = useState(false);
@@ -58,16 +62,32 @@ export function useAppleContactsPanel({
   const processFile = (file: File): void => {
     setFileName(file.name);
     setFileError(null);
+    setIsParsing(true);
     readAndParseAppleContactsFile(
       file,
       { mobileLabel, personalLabel, defaultPhoneCountryCode },
-      ({ parsed, error }) => {
+      ({ parsed, error, limit }) => {
+        setIsParsing(false);
+        if (limit) {
+          const reason =
+            limit.kind === "file_too_large"
+              ? t("contacts.sync.fileTooLarge", { limit: limit.limitMb })
+              : t("contacts.sync.tooManyContacts", {
+                  count: limit.count,
+                  limit: limit.limit,
+                });
+          setPreviewList([]);
+          setResult(null);
+          setFileError(reason);
+          notify.error(reason);
+          return;
+        }
         if (parsed.length === 0) {
           const reason = error || t("contacts.sync.emptyOrInvalidFile", { filename: file.name });
           setFileError(reason);
           notify.error(reason);
         }
-        setPreviewList(parsed);
+        setPreviewList(dedupeAppleImportPreview(parsed));
         setResult(null);
       },
     );
@@ -92,7 +112,11 @@ export function useAppleContactsPanel({
     setImportProgress({ imported: 0, total: previewList.length });
     try {
       const candidates = buildAppleImportIdentityCandidates(previewList, defaultPhoneCountryCode);
-      const existing = await matchContactIdentity.mutateAsync(candidates);
+      // Identity lists are capped per request server-side (2,000); chunk them so a
+      // full 5,000-contact vCard does not fail the whole import on a 400.
+      const existing = await matchAppleImportIdentity(candidates, (body) =>
+        matchContactIdentity.mutateAsync(body),
+      );
       const fresh = filterAppleImportFreshContacts(previewList, existing);
       const importResult = await onImport(fresh, { onProgress: setImportProgress });
       const actuallyImported =
@@ -175,6 +199,7 @@ export function useAppleContactsPanel({
     fileName,
     fileError,
     importing,
+    isParsing,
     importProgress,
     exporting,
     exportCount,

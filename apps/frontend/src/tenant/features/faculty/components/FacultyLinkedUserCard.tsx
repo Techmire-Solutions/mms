@@ -7,6 +7,7 @@ import { SectionCard } from "@/components/app/SectionCard";
 import { useTranslation } from "@/hooks/useTranslation";
 import { resolveRoleDisplayName, workspaceRoleDescription, type WorkspaceRole } from "@mms/shared";
 import type { FacultyUserAccountDraft } from "@/tenant/features/faculty/components/FacultyUserAccountSection";
+import { resolveInitialUserAccountRole } from "@/tenant/features/faculty/lib/facultyFormDraft";
 
 export interface FacultyLinkedUserCardProps {
   linkedUser: { email?: string; role?: string };
@@ -53,7 +54,7 @@ export function FacultyLinkedUserCard({
           <FormSelect
             id="linked-user-role"
             name="linkedUserRole"
-            value={userAccountDraft.role || linkedUser.role || "teacher"}
+            value={resolveInitialUserAccountRole(userAccountDraft.role, linkedUser.role)}
             onChange={(role) =>
               onUserAccountDraftChange({ ...userAccountDraft, enabled: true, role })
             }

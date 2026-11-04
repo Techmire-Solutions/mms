@@ -357,6 +357,12 @@ const EXPECTED_MODULE_ROUTE_ACTIONS: Readonly<Record<string, ModuleAction>> = {
   "POST /api/tasks/bulk-restore": "delete",
   "PATCH /api/tasks/:id/status": "availability",
   "POST /api/tasks/bulk-status": "availability",
+  // Contacts archive/restore are `contacts.delete` operations; leave them on the
+  // HTTP-method default and a delete-only custom role is 403'd by the module gate.
+  "DELETE /api/contacts/:id": "delete",
+  "POST /api/contacts/:id/restore": "delete",
+  "POST /api/contacts/bulk-delete": "delete",
+  "POST /api/contacts/bulk-restore": "delete",
 };
 
 describe("module access coverage", () => {

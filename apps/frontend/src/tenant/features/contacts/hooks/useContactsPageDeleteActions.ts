@@ -126,8 +126,9 @@ export function useContactsPageDeleteActions({
             : t("contacts.restoreSuccessDescriptionDefault"),
         });
       } catch (err) {
+        // The toast is the UI contract here: row-action callers invoke this from a
+        // menu click without awaiting, so rethrowing produced unhandled rejections.
         handleError(err, "contacts.restore_single", "contacts.restoreFailed");
-        throw err;
       }
     },
     [canDelete, findContactById, restoreContactAction, t, handleError],

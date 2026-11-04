@@ -118,6 +118,53 @@ describe("DashedFileDropZone", () => {
     expect(onFiles).toHaveBeenCalled();
   });
 
+  it("names the dropzone with its visible copy (WCAG 2.5.3 label in name)", async () => {
+    await act(async () => {
+      root.render(
+        <DashedFileDropZone
+          isDragging={false}
+          onDraggingChange={vi.fn()}
+          onFiles={vi.fn()}
+          title="Drop CSV file here"
+          description="or click to browse from your device (.csv format)"
+          inputAriaLabel="Upload CSV file"
+          inputId="csv-input"
+          inputName="file"
+        />,
+      );
+    });
+
+    const zone = container.querySelector("button") as HTMLButtonElement;
+    const accessibleName = zone.getAttribute("aria-label") ?? "";
+    // The rendered review flagged a serious label-content-name-mismatch because the
+    // zone said "Upload CSV file" while its visible text said "Drop CSV file here".
+    expect(accessibleName).toContain("Drop CSV file here");
+    expect(accessibleName).toContain("or click to browse from your device (.csv format)");
+
+    const input = container.querySelector("input[type=file]") as HTMLInputElement;
+    expect(input.getAttribute("aria-label")).toBe("Upload CSV file");
+  });
+
+  it("names the browse control with its visible label", async () => {
+    await act(async () => {
+      root.render(
+        <DashedFileDropZone
+          isDragging={false}
+          onDraggingChange={vi.fn()}
+          onFiles={vi.fn()}
+          title="Upload Documents"
+          description="Drag and drop or browse"
+          inputAriaLabel="Attach file"
+          browseLabel="Select Document"
+          onOpenPicker={vi.fn()}
+        />,
+      );
+    });
+
+    const browseButton = container.querySelector("button") as HTMLButtonElement;
+    expect(browseButton.getAttribute("aria-label")).toBe("Select Document");
+  });
+
   it("respects disabled and isUploading state", async () => {
     const onDraggingChange = vi.fn();
     const onFiles = vi.fn();

@@ -8,7 +8,8 @@ import { facultyStatusMetricAccent } from "@/lib/faculty/facultyStatusUi";
 
 export interface FacultyCommandMetricsProps {
   total: number;
-  shown: number;
+  /** Filtered directory count — only the faculties tier has a filtered scope. */
+  shown?: number;
 }
 
 export const FacultyCommandMetrics = function FacultyCommandMetrics({
@@ -35,7 +36,16 @@ export const FacultyCommandMetrics = function FacultyCommandMetrics({
       value: metrics.total,
       accent: "primary" as const,
     },
-    { icon: Filter, label: t("faculty.metrics.filtered"), value: shown, accent: "info" as const },
+    ...(typeof shown === "number"
+      ? [
+          {
+            icon: Filter,
+            label: t("faculty.metrics.filtered"),
+            value: shown,
+            accent: "info" as const,
+          },
+        ]
+      : []),
     {
       icon: UserCheck,
       label: t("faculty.metrics.active"),

@@ -20,19 +20,23 @@ import { TaskStatusMenu } from "./TaskStatusMenu";
 
 export interface TaskDetailDrawerProps {
   task: TaskRecord | null;
+  parentTaskTitle?: string;
   canWrite: boolean;
   canComplete?: boolean;
+  pending?: boolean;
   canDelete: boolean;
   onClose: () => void;
   onEdit?: (task: TaskRecord) => void;
   onRestore?: (id: string) => void;
-  onUpdateStatus?: (id: string, status: TaskStatus) => void;
+  onUpdateStatus?: (task: TaskRecord, status: TaskStatus) => void;
 }
 
 export function TaskDetailDrawer({
   task,
+  parentTaskTitle,
   canWrite,
   canComplete,
+  pending = false,
   canDelete,
   onClose,
   onEdit,
@@ -80,17 +84,20 @@ export function TaskDetailDrawer({
             <TaskStatusMenu
               task={task}
               canChange={Boolean(onUpdateStatus) && Boolean(canWrite || canComplete) && !isArchived}
-              onChangeStatus={(changed, status) => onUpdateStatus?.(changed.id, status)}
+              pending={pending}
+              onChangeStatus={(changed, status) => onUpdateStatus?.(changed, status)}
             />
             <TaskPriorityBadge priority={task.priority} />
           </div>
           <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
             <span className="font-mono">{task.id.slice(0, 8)}</span>
-            <CopyBtn text={task.id} showToast className="h-6 w-6 rounded-md" />
+            <CopyBtn text={task.id} showToast className="h-11 w-11 rounded-md" />
           </div>
         </div>
         {task.description ? (
-          <p className="text-sm text-foreground text-wrap-pretty">{task.description}</p>
+          <p className="text-sm text-foreground text-wrap-pretty whitespace-pre-wrap break-words">
+            {task.description}
+          </p>
         ) : null}
 
         <div className="space-y-3 pt-1">
@@ -109,7 +116,7 @@ export function TaskDetailDrawer({
             <DetailAttributeRow
               variant="list"
               label={t("tasks.parentTask")}
-              value={task.parentTaskId ?? "—"}
+              value={parentTaskTitle ?? task.parentTaskId ?? "—"}
             />
             <DetailAttributeRow
               variant="list"

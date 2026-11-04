@@ -62,6 +62,10 @@ export function StudentCardTemplateEditor({
   const [activeSide, setActiveSide] = useState<CardSide>("front");
   // The editor reports dirtiness; only a *pristine* card adopts a late server layout.
   const dirtyRef = useRef(false);
+  // A side switch remounts the editor, which reports a pristine `false` even though the
+  // other side still holds unsaved edits — remember that the user edited at all so the
+  // parent guard cannot be cleared by the remount (2026-11-04 review, S-03).
+  const hasUserEditedRef = useRef(false);
 
   const defaultFullTemplate = useMemo<StudentCardTemplate>(
     () => getDefaultStudentCardTemplate(branding),
@@ -82,8 +86,9 @@ export function StudentCardTemplateEditor({
 
   const handleDirtyChange = useCallback(
     (dirty: boolean) => {
-      dirtyRef.current = dirty;
-      onDirtyChange?.(dirty);
+      const effective = dirty || hasUserEditedRef.current;
+      dirtyRef.current = effective;
+      onDirtyChange?.(effective);
     },
     [onDirtyChange],
   );
@@ -156,6 +161,7 @@ export function StudentCardTemplateEditor({
     const record = await conflict.reload();
     if (!record) return;
     dirtyRef.current = false;
+    hasUserEditedRef.current = false;
     setFullTemplate(record.template as StudentCardTemplate);
   }, [conflict]);
 
@@ -179,13 +185,16 @@ export function StudentCardTemplateEditor({
         throw err;
       }
       setFullTemplate(updatedFullTemplate);
+      hasUserEditedRef.current = false;
+      handleDirtyChange(false);
       notify.success(t("students.idCard.templateSaved"));
     },
-    [fullTemplate, activeSide, conflict, saveCardTemplate, t],
+    [fullTemplate, activeSide, conflict, saveCardTemplate, t, handleDirtyChange],
   );
 
   const handleSideTemplateChange = useCallback(
     (currentSideTmpl: StudentCardTemplate) => {
+      hasUserEditedRef.current = true;
       setFullTemplate((prev) => ({
         ...prev,
         pageSize: currentSideTmpl.pageSize,

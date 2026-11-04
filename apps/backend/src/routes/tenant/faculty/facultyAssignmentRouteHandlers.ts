@@ -230,10 +230,12 @@ export async function handleDeleteAssignment({
     });
     return { status: 200 as const, body: { success: true as const } };
   } catch (error: unknown) {
-    request.log.error({ err: error }, "Failed to delete faculty assignment");
-    return {
-      status: 500 as const,
-      body: { type: "server_error", message: "Failed to delete faculty assignment" },
-    };
+    const mapped = assignmentErrorResponse(error, "Failed to delete faculty assignment");
+    // Domain rejections (archived primary appointment, missing row) stay 4xx;
+    // only genuine infrastructure failures are logged as server errors.
+    if (mapped.status === 500) {
+      request.log.error({ err: error }, "Failed to delete faculty assignment");
+    }
+    return mapped;
   }
 }

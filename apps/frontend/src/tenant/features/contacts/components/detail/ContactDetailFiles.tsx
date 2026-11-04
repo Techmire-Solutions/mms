@@ -36,7 +36,7 @@ export function ContactDetailFiles({
   onFileChange,
   onRequestDelete,
 }: ContactDetailFilesProps): React.JSX.Element {
-  const { t } = useTranslation();
+  const { t, language } = useTranslation();
 
   return (
     <div className="space-y-6">
@@ -79,7 +79,7 @@ export function ContactDetailFiles({
                   <div className="min-w-0">
                     <h5 className="text-xs font-bold text-foreground truncate">{file.name}</h5>
                     <p className="text-xs text-muted-foreground mt-1">
-                      {new Intl.NumberFormat(undefined, {
+                      {new Intl.NumberFormat(language || undefined, {
                         minimumFractionDigits: 1,
                         maximumFractionDigits: 1,
                       }).format(file.size / 1024)}{" "}

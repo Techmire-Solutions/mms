@@ -1,85 +1,25 @@
-import { sql, type SQL } from "drizzle-orm";
 import {
   dedupeTrimmedIds,
   isQueryFlagTrue,
   type ContactsListPageResult,
   type ContactsListQuery,
 } from "@mms/shared";
-import { contacts, students, faculty, facultyEmployments, tenantUsers } from "../schema.js";
+import { contacts } from "../schema.js";
 import { withTenantRead } from "../tenant-context.js";
 import { enableIncludeDeleted } from "../../lib/softDeleteHelpers.js";
 import { runListPage } from "./listPageHelper.js";
 import { hydrateContactsList, hydrateContactsSummaryList } from "./contactRepositoryCore.js";
 import { hydrateContactsRecipientList } from "./contactRepositoryRecipientHydrate.js";
 import { buildListConditions, buildOrderBy } from "./contactRepositoryListFilter.js";
-
-export const FACULTY_USER_ROLES_SQL = sql`('faculty', 'teacher', 'assistant_teacher')`;
-
-export function existsActiveStudentLinkSql(subdomain: string): SQL {
-  return sql`EXISTS (
-    SELECT 1 FROM ${students}
-    WHERE ${students.workspaceSubdomain} = ${subdomain}
-      AND ${students.deletedAt} IS NULL
-      AND NULLIF(trim(${students.contactId}), '') = ${contacts.id}
-  )`;
-}
-
-export function existsActiveFacultyLinkSql(subdomain: string): SQL {
-  return sql`EXISTS (
-    SELECT 1 FROM ${faculty}
-    INNER JOIN ${facultyEmployments}
-      ON ${facultyEmployments.workspaceSubdomain} = ${faculty.workspaceSubdomain}
-      AND ${facultyEmployments.id} = ${faculty.employmentId}
-      AND ${facultyEmployments.deletedAt} IS NULL
-    WHERE ${faculty.workspaceSubdomain} = ${subdomain}
-      AND ${faculty.deletedAt} IS NULL
-      AND NULLIF(trim(${facultyEmployments.contactId}), '') = ${contacts.id}
-  )`;
-}
-
-export function existsActiveStaffLinkSql(subdomain: string): SQL {
-  return sql`EXISTS (
-    SELECT 1 FROM ${tenantUsers}
-    WHERE ${tenantUsers.workspaceSubdomain} = ${subdomain}
-      AND ${tenantUsers.deletedAt} IS NULL
-      AND NULLIF(trim(${tenantUsers.contactId}), '') = ${contacts.id}
-      AND lower(${tenantUsers.role}) NOT IN ${FACULTY_USER_ROLES_SQL}
-  )`;
-}
-
-export const CONTACT_LIST_COLUMNS = {
-  id: contacts.id,
-  workspaceSubdomain: contacts.workspaceSubdomain,
-  firstName: contacts.firstName,
-  lastName: contacts.lastName,
-  name: contacts.name,
-  gender: contacts.gender,
-  dob: contacts.dob,
-  cnic: contacts.cnic,
-  isSyed: contacts.isSyed,
-  avatar: contacts.avatar,
-  whatsappStatus: contacts.whatsappStatus,
-  lastCheckedAt: contacts.lastCheckedAt,
-  deletedAt: contacts.deletedAt,
-  deletedBy: contacts.deletedBy,
-  deletionReason: contacts.deletionReason,
-  // Restore provenance + text columns the list rows hydrate into the record;
-  // omitting them left `notes`/`aiSummary` undefined and lost trash restore
-  // evidence while the `$inferSelect` cast hid the drift from the compiler.
-  restoredAt: contacts.restoredAt,
-  restoredBy: contacts.restoredBy,
-  deletedWithCascade: contacts.deletedWithCascade,
-  notes: contacts.notes,
-  aiSummary: contacts.aiSummary,
-  createdAt: contacts.createdAt,
-  updatedAt: contacts.updatedAt,
-  createdBy: contacts.createdBy,
-  updatedBy: contacts.updatedBy,
-};
+import { contactSelectColumns } from "./contactRepositoryColumns.js";
 
 /**
  * SQL-filtered contacts Work list page (typed columns & relational search/joins).
  * Search approximates normalizeSearchString (NFD + Yeh/Kaf + harakat) via SQL.
+ *
+ * The projection is the single `contactSelectColumns` map: the list used to own a
+ * second column map and the two drifted (missing restore/notes columns silently
+ * hydrated as `undefined` under the `$inferSelect` cast).
  */
 export async function listContactsPage(
   tenant: string,
@@ -106,7 +46,7 @@ export async function listContactsPage(
     const result = await runListPage(tx, contacts, {
       conditions: buildListConditions(subdomain, query, excludeIds, includeIds),
       orderBy: buildOrderBy(query.sortField, query.sortDir),
-      columns: CONTACT_LIST_COLUMNS,
+      columns: contactSelectColumns,
       page: query.page,
       limit: query.limit,
       afterId: query.afterId,

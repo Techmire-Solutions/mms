@@ -108,7 +108,13 @@ export const StatCard = function StatCard({
               </div>
             )}
             <div className="min-w-0">
-              <SectionLabel as="p" weight="semibold" tracking="wide" className="truncate">
+              <SectionLabel
+                as="p"
+                weight="semibold"
+                tracking="wide"
+                title={label}
+                className="line-clamp-2 break-words text-balance"
+              >
                 {label}
               </SectionLabel>
               <p className="text-lg font-bold text-foreground leading-tight tabular-nums">

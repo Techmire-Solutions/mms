@@ -1293,10 +1293,16 @@
  * chrome in the twelve in-document `window.print()` flows, and none of them
  * print real form controls. It is the incidental-utility selectors that were
  * wrong, not the element ones.
+ *
+ * `header` is scoped to app chrome only. Content headers — the dashboard
+ * greeting, `WidgetCardHeader` panel titles, the stat-card icon/trend strip —
+ * are `<header>` elements too, and hiding every one of them printed the
+ * dashboard without a single title. Those opt out with `[data-print-header]`;
+ * the shell's own headers carry `role="banner"` and stay hidden.
  */
 @media print {
   aside,
-  header,
+  header:not([data-print-header]),
   .sidebar,
   nav,
   button,

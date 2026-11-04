@@ -41,7 +41,7 @@ describe("tasks export", () => {
       }),
     );
 
-    const result = await buildTasksCsvExport({}, { viewerRole: "admin" });
+    const result = await buildTasksCsvExport({}, {});
 
     expect(result.count).toBe(260);
     expect(result.csv.split("\n")).toHaveLength(261);
@@ -50,11 +50,40 @@ describe("tasks export", () => {
     expect(mockListTasks.mock.calls[1][1]).toMatchObject({ offset: 250 });
   });
 
+  it("forwards every directory filter and the selected ids into the page query", async () => {
+    mockListTasks.mockResolvedValue({ tasks: [], total: 0 });
+
+    await buildTasksCsvExport(
+      {
+        statuses: "todo,blocked",
+        priorities: "high,urgent",
+        overdue: true,
+        dueOn: "2026-11-04",
+        dueFrom: "2026-11-04T00:00:00.000Z",
+        dueTo: "2026-11-04T23:59:59.999Z",
+        includeIds: ["task-1", "task-2"],
+        includeDeleted: true,
+      },
+      { allowDeleted: true },
+    );
+
+    expect(mockListTasks.mock.calls[0]?.[1]).toMatchObject({
+      statuses: "todo,blocked",
+      priorities: "high,urgent",
+      overdue: true,
+      dueOn: "2026-11-04",
+      dueFrom: "2026-11-04T00:00:00.000Z",
+      dueTo: "2026-11-04T23:59:59.999Z",
+      ids: "task-1,task-2",
+      includeDeleted: true,
+    });
+  });
+
   it("streams the header once and every row", async () => {
     const all = Array.from({ length: 3 }, (_, i) => task(i + 1));
     mockListTasks.mockResolvedValue({ tasks: all, total: all.length });
 
-    const generator = generateTasksCsvStreamChunks({}, { viewerRole: "admin" });
+    const generator = generateTasksCsvStreamChunks({}, {});
     const chunks: string[] = [];
     let next = await generator.next();
     while (!next.done) {

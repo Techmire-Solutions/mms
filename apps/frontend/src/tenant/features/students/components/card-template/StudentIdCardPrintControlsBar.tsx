@@ -1,4 +1,4 @@
-import React, { type JSX, useMemo } from "react";
+import { type JSX, useMemo } from "react";
 import { RotateCw, Scissors } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {

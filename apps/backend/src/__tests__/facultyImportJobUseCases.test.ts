@@ -116,6 +116,19 @@ describe("runFacultyMembersImportJob (batch writer)", () => {
     );
   });
 
+  it("lets the row resolver own the faculty id and skips the id preview probe", async () => {
+    // The batch passed a bare `randomUUID()` (violating the `fac-<uuid>` scheme) and
+    // probed the employee-id preview per row, adding a read per imported record.
+    await runFacultyMembersImportJob(payload, context);
+
+    const [record, options] = mocks.createFaculty.mock.calls[0] as [
+      Record<string, unknown>,
+      { skipEmployeeIdPreview?: boolean },
+    ];
+    expect(record.id).toBeUndefined();
+    expect(options.skipEmployeeIdPreview).toBe(true);
+  });
+
   it("records row failures without aborting the batch", async () => {
     mocks.createFaculty.mockRejectedValueOnce(new Error("contactId required to create faculty"));
 

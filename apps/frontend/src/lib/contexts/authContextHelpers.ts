@@ -21,6 +21,9 @@ export function clearUserScopedCachesOnLogout(userId: string, prefix: string): v
     const contactsKeys = contactsOutboxStorageKeys(prefix, userId);
     localStorage.removeItem(contactsKeys.outbox);
     localStorage.removeItem(contactsKeys.conflicts);
+    // Dashboard notification dismissals are per user and per tab — do not hand
+    // them to the next account signed in on this device.
+    sessionStorage.removeItem(`${prefix}mms_dashboard_dismissed_notifs_u:${userId}`);
   } catch (cacheClearError) {
     reportClientError(cacheClearError, { context: "auth.clearUserScopedCaches" });
   }

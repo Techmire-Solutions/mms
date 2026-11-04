@@ -103,7 +103,12 @@ export function useContactsSyncConflictRow({
         });
         return;
       }
-      const rebased = local && fresh ? { ...local, updatedAt: fresh.updatedAt } : undefined;
+      // The blueprint version the user's form saw is stale by definition here; drop it
+      // so the server's current required-field rules decide instead of a reload error.
+      const { _blueprintId: _staleBlueprint, ...localFields } = (local ?? {}) as Contact & {
+        _blueprintId?: string;
+      };
+      const rebased = local && fresh ? { ...localFields, updatedAt: fresh.updatedAt } : undefined;
       requeueContactsSyncConflict(entry.id, rebased);
       onResolved();
       notify.info(t("contacts.sync.conflictKeepLocal"));

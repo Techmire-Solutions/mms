@@ -35,14 +35,20 @@ export function TasksPageHeaderActions({
           onClick={onExport}
           loading={isExporting}
           disabled={isExporting}
+          aria-label={t("common.export")}
         >
-          {t("common.export")}
+          <span className="hidden sm:inline">{t("common.export")}</span>
         </Button>
       ) : null}
       {canWrite ? (
         <>
-          <Button variant="outline" icon={Upload} onClick={onImport}>
-            {t("common.import")}
+          <Button
+            variant="outline"
+            icon={Upload}
+            onClick={onImport}
+            aria-label={t("common.import")}
+          >
+            <span className="hidden sm:inline">{t("common.import")}</span>
           </Button>
           <Button variant="primary" icon={Plus} onClick={onCreate}>
             {t("tasks.create")}

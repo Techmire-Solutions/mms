@@ -9,12 +9,15 @@ type FormDraft = ReturnType<typeof useContactFormDraft>;
 export interface ContactFormFooterStartProps {
   contactDraft: Partial<Contact>;
   collectionCounts: FormDraft["collectionCounts"];
+  /** Editing an unchanged contact: explain why Save is disabled. */
+  noChanges?: boolean;
   t: (key: AppTranslationKey, params?: Record<string, string | number>) => string;
 }
 
 export function ContactFormFooterStart({
   contactDraft,
   collectionCounts,
+  noChanges = false,
   t,
 }: ContactFormFooterStartProps): React.JSX.Element {
   if (!contactDraft.firstName?.trim()) {
@@ -24,6 +27,9 @@ export function ContactFormFooterStart({
   return (
     <div className="flex flex-wrap items-center gap-2.5 text-xs">
       <FormFooterEntityChip>{getDisplayName(contactDraft)}</FormFooterEntityChip>
+      {noChanges ? (
+        <span className="text-muted-foreground">{t("contacts.form.noChanges")}</span>
+      ) : null}
       <div className="flex flex-wrap items-center gap-1.5">
         {collectionCounts.filledPhones > 0 && (
           <Badge as="span" size="sm" tone="primary">

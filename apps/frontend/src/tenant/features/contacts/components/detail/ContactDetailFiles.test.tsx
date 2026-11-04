@@ -1,4 +1,3 @@
-import React from "react";
 import { describe, expect, it, vi } from "vitest";
 import { renderToStaticMarkup } from "react-dom/server";
 import type { Contact } from "@mms/shared";
@@ -8,9 +7,12 @@ vi.mock("@/components/app/DashedFileDropZone", () => ({
   DashedFileDropZone: ({ title }: { title: string }) => <div data-testid="drop-zone">{title}</div>,
 }));
 
+const translationState = vi.hoisted(() => ({ language: "en" }));
+
 vi.mock("@/hooks/useTranslation", () => ({
   useTranslation: () => ({
     t: (key: string) => key,
+    language: translationState.language,
   }),
 }));
 
@@ -54,5 +56,31 @@ describe("ContactDetailFiles Component", () => {
     expect(html).toContain("contacts.detail.cloudStorageRepository");
     expect(html).toContain("id_card.pdf");
     expect(html).toContain("200.0 contacts.detail.kbLabel");
+  });
+});
+
+describe("ContactDetailFiles locale-aware sizes", () => {
+  it("formats attachment sizes with the application language", () => {
+    translationState.language = "fa";
+    try {
+      const html = renderToStaticMarkup(
+        <ContactDetailFiles
+          contact={mockContact}
+          canPersistContact={false}
+          isDragging={false}
+          isUploading={false}
+          fileInputRef={{ current: null }}
+          onDraggingChange={vi.fn()}
+          onFiles={vi.fn()}
+          onFileChange={vi.fn()}
+          onRequestDelete={vi.fn()}
+        />,
+      );
+
+      expect(html).not.toContain("200.0");
+      expect(html).toContain("۲۰۰");
+    } finally {
+      translationState.language = "en";
+    }
   });
 });

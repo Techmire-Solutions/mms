@@ -18,7 +18,10 @@ export const ContactsWorkTier = React.memo(function ContactsWorkTier({
   quickFilter,
   onQuickFilterChange,
   sortField,
+  sortDir,
   onSort,
+  onSortDirChange,
+  isSearching,
   hasActiveFilters,
   activeFilterCount,
   onClearFilters,
@@ -44,6 +47,8 @@ export const ContactsWorkTier = React.memo(function ContactsWorkTier({
   onRequestBulkDelete,
   onRequestBulkRestore,
   onBulkTag,
+  onCreate,
+  onImport,
   isWorkError,
   isWorkLoading,
   isWorkFetching,
@@ -87,7 +92,10 @@ export const ContactsWorkTier = React.memo(function ContactsWorkTier({
           quickFilter={quickFilter}
           onQuickFilterChange={onQuickFilterChange}
           sortField={sortField}
+          sortDir={sortDir}
           onSort={onSort}
+          onSortDirChange={onSortDirChange}
+          isSearching={isSearching}
           hasActiveFilters={hasActiveFilters}
           activeFilterCount={activeFilterCount}
           onClearFilters={onClearFilters}
@@ -139,6 +147,8 @@ export const ContactsWorkTier = React.memo(function ContactsWorkTier({
         useServerWork={useServerWork}
         workPageData={workPageData}
         onPageChange={onPageChange}
+        onCreate={onCreate}
+        onImport={onImport}
       />
     </ModuleTierMotion>
   );

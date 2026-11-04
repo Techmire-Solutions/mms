@@ -1,5 +1,6 @@
 import type { Contact } from "@mms/shared";
 import {
+  MAX_CONTACTS_SYNC_CONFLICT_ATTEMPTS,
   currentContactsSyncKeys,
   getContactsOutbox,
   getContactsSyncConflicts,
@@ -47,12 +48,75 @@ export function requeueContactsSyncConflict(id: string, rebasedContact?: Contact
   dismissContactsSyncConflict(id);
 }
 
-export function requeueAllContactsSyncConflicts(): number {
+export interface RequeueAllResult {
+  requeued: number;
+  /** Entries at the attempt cap (or with no server record to rebase onto) left untouched. */
+  skipped: number;
+  /** Entries with newer server changes left for per-row review (never bulk-overwritten). */
+  needsReview: number;
+}
+
+export interface RequeueAllOptions {
+  /**
+   * Loads the current server contact so a stale-token conflict is rebased before
+   * replay. Without it, "Retry all" would replay the same 409 forever.
+   */
+  fetchFresh?: (contactId: string) => Promise<Contact | null | undefined>;
+  maxAttempts?: number;
+}
+
+/**
+ * Re-queues every resolvable conflict.
+ *
+ * Unlike the per-row action, this path must be safe to run on a mixed queue:
+ * entries that already exhausted their retry budget are skipped, and each
+ * stale-token entry is rebased onto the current server record before it is
+ * queued again.
+ */
+export async function requeueAllContactsSyncConflicts(
+  options: RequeueAllOptions = {},
+): Promise<RequeueAllResult> {
+  const maxAttempts = options.maxAttempts ?? MAX_CONTACTS_SYNC_CONFLICT_ATTEMPTS;
   const conflicts = [...getContactsSyncConflicts()];
+  let requeued = 0;
+  let skipped = 0;
+  let needsReview = 0;
+
   for (const entry of conflicts) {
-    requeueContactsSyncConflict(entry.id);
+    if ((entry.attempts ?? 0) >= maxAttempts) {
+      skipped += 1;
+      continue;
+    }
+
+    let rebasedContact: Contact | undefined;
+    if (options.fetchFresh && (entry.kind === "upsert" || entry.kind === "update")) {
+      const contactId = String(entry.contact.id);
+      const fresh = await options.fetchFresh(contactId).catch(() => null);
+      if (!fresh) {
+        // No fresh token: replaying the stale payload would 409 again and burn an
+        // attempt, so leave it in the conflict list.
+        skipped += 1;
+        continue;
+      }
+      // Any server edit bumps `updatedAt`. Comparing the version token catches
+      // changes to notes/attachments too, which the narrow sync-diff field list
+      // would miss; "Retry all" must never silently overwrite them.
+      const localUpdatedAt = entry.contact.updatedAt;
+      if (!localUpdatedAt || !fresh.updatedAt || fresh.updatedAt !== localUpdatedAt) {
+        needsReview += 1;
+        continue;
+      }
+      const { _blueprintId: _staleBlueprint, ...localFields } = entry.contact as Contact & {
+        _blueprintId?: string;
+      };
+      rebasedContact = { ...localFields, updatedAt: fresh.updatedAt } as Contact;
+    }
+
+    requeueContactsSyncConflict(entry.id, rebasedContact);
+    requeued += 1;
   }
-  return conflicts.length;
+
+  return { requeued, skipped, needsReview };
 }
 
 export function recordContactsSyncConflict(entry: ContactsOutboxEntry): void {

@@ -1,4 +1,4 @@
-import React, { useRef, useState, lazy, Suspense, type JSX } from "react";
+import { useRef, useState, lazy, Suspense, type JSX } from "react";
 import { Printer, IdCard, Paintbrush } from "lucide-react";
 import { STUDENTS_MODULE_MANIFEST, type Student } from "@mms/shared";
 import { Modal } from "@/components/app/Modal";

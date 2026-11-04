@@ -3,6 +3,7 @@ import { useVirtualizer } from "@tanstack/react-virtual";
 import { EmptyState } from "@/components/app/EmptyState";
 import { useTranslation } from "@/hooks/useTranslation";
 import { RecipientRow } from "./RecipientRow";
+import { getRecipientSendLabel } from "./messageComposerText";
 import type { ValidatedMessagingRecipient } from "./useMessageComposerDispatch";
 
 interface MessageComposerRecipientsListProps {
@@ -12,6 +13,7 @@ interface MessageComposerRecipientsListProps {
   message: string;
   isEmail: boolean;
   isSms: boolean;
+  isServerGateway: boolean;
   disabled?: boolean;
   onPreviewIndexChange: (index: number) => void;
   onSendOne: (recipient: ValidatedMessagingRecipient, message: string) => void;
@@ -27,6 +29,7 @@ export function MessageComposerRecipientsList({
   message,
   isEmail,
   isSms,
+  isServerGateway,
   disabled,
   onPreviewIndexChange,
   onSendOne,
@@ -46,12 +49,14 @@ export function MessageComposerRecipientsList({
     enabled: isListVirtualized,
   });
 
-  const getSendLabel = (recipient: ValidatedMessagingRecipient) => {
-    if (!recipient.isValid) return t("messaging.skippedStatus");
-    if (isEmail) return t("messaging.sendEmail");
-    if (isSms) return t("messaging.openSmsApp");
-    return t("messaging.openWhatsapp");
-  };
+  const channel = isEmail ? "email" : isSms ? "sms" : "whatsapp";
+  const getSendLabel = (recipient: ValidatedMessagingRecipient) =>
+    getRecipientSendLabel({
+      t,
+      channel,
+      isServerGateway,
+      isValid: recipient.isValid,
+    });
 
   const rowProps = (recipient: ValidatedMessagingRecipient) => ({
     recipient,

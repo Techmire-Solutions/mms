@@ -152,6 +152,8 @@ export const taskListQuerySchema = z
       .transform((v) => v === true || v === "true"),
     /** Due on this ISO day (inclusive UTC-day range). */
     dueOn: z.string().max(32).optional(),
+    /** Comma-separated task ids for selection-scoped exports. */
+    ids: z.string().max(20_000).optional(),
     includeDeleted: z
       .union([z.boolean(), z.literal("true"), z.literal("false")])
       .optional()

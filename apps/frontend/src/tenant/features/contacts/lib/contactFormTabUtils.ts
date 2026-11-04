@@ -80,21 +80,47 @@ export function buildContactFormVisibleTabs({
   });
 }
 
-export function buildContactValidationErrorSummary(
+export interface ContactValidationSummaryItem {
+  message: string;
+  tabId?: string;
+  fieldId?: string;
+  index?: number;
+}
+
+/**
+ * Deduped validation issues that can be focused: the summary banner renders these
+ * as buttons, so each entry keeps the tab/field/index needed to jump to its control.
+ */
+export function buildContactValidationErrorItems(
   lookupsError: boolean,
   validationErrors: ValidationError[] | undefined,
   t: TranslationFunction,
-): string[] | undefined {
-  if (lookupsError) return [t("contacts.form.lookupsLoadFailed")];
+): ContactValidationSummaryItem[] | undefined {
+  if (lookupsError) return [{ message: t("contacts.form.lookupsLoadFailed") }];
   if (!validationErrors || validationErrors.length === 0) return undefined;
   const seen = new Set<string>();
-  const messages: string[] = [];
+  const items: ContactValidationSummaryItem[] = [];
   for (const err of validationErrors) {
     if (!err.message) continue;
     const key = `${err.fieldId ?? ""}|${err.message}`;
     if (seen.has(key)) continue;
     seen.add(key);
-    messages.push(err.message);
+    items.push({
+      message: err.message,
+      tabId: err.tabId,
+      fieldId: err.fieldId,
+      index: err.index,
+    });
   }
-  return messages.length > 0 ? messages : undefined;
+  return items.length > 0 ? items : undefined;
+}
+
+export function buildContactValidationErrorSummary(
+  lookupsError: boolean,
+  validationErrors: ValidationError[] | undefined,
+  t: TranslationFunction,
+): string[] | undefined {
+  return buildContactValidationErrorItems(lookupsError, validationErrors, t)?.map(
+    (item) => item.message,
+  );
 }

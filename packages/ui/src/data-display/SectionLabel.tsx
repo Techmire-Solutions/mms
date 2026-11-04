@@ -15,6 +15,8 @@ export interface SectionLabelProps {
   style?: React.CSSProperties;
   /** Association target when rendered as a `<label>`. */
   htmlFor?: string;
+  /** Tooltip fallback when the label is clamped/truncated in tight layouts. */
+  title?: string;
   className?: string;
 }
 
@@ -35,12 +37,14 @@ export function SectionLabel({
   tracking = "widest",
   style,
   htmlFor,
+  title,
   className,
 }: SectionLabelProps): React.JSX.Element {
   const labelProps = Tag === "label" && htmlFor ? { htmlFor } : {};
   return (
     <Tag
       style={style}
+      title={title}
       {...labelProps}
       className={cn(
         "text-xs uppercase",
