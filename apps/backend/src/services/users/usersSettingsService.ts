@@ -9,9 +9,12 @@ import { getUserModulePreferencesByWorkspace } from "../../db/repositories/userM
 /**
  * Loads tenant users module settings used by auth (registration / verification policy).
  * Reads typed `user_module_preferences` (not document-store `users_settings`).
+ *
+ * @param tenantOverride explicit workspace subdomain (background jobs / role catalog);
+ *   defaults to the request-bound tenant.
  */
-export async function getTenantUsersSettings(): Promise<UsersSettings> {
-  const tenant = getRequestTenant()?.trim().toLowerCase();
+export async function getTenantUsersSettings(tenantOverride?: string): Promise<UsersSettings> {
+  const tenant = (tenantOverride ?? getRequestTenant())?.trim().toLowerCase();
   if (!tenant) {
     return { ...DEFAULT_USERS_SETTINGS };
   }
