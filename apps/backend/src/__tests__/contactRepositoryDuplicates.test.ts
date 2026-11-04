@@ -173,15 +173,19 @@ describe("contactRepositoryDuplicates (SQL)", () => {
     // 3. delete duplicate relationship tuples (contact_id)
     // 4. update related_contact_id
     // 5. update contact_id
-    // 6. update students (contact/parent/guardian)
-    // 7. archive the loser's conflicting faculty employment
-    // 8. re-point faculty_employments
-    // 9. de-duplicate workshop registrations
-    // 10. re-point workshop_participants
-    // 11. re-point finance_invoices.family_contact_id
-    // 12. update tenant_users
-    // 13. update message_logs
-    expect(statements).toHaveLength(13);
+    // 6. re-point inferred_from_contact_id provenance
+    // 7. update students (contact/parent/guardian)
+    // 8. archive the loser's conflicting faculty employment
+    // 9. re-point faculty_employments
+    // 10. de-duplicate workshop registrations
+    // 11. re-point workshop_participants
+    // 12. re-point finance_invoices.family_contact_id
+    // 13. update tenant_users
+    // 14. update message_logs
+    expect(statements).toHaveLength(14);
+    expect(statements.some((statement) => statement.includes("inferred_from_contact_id"))).toBe(
+      true,
+    );
 
     // `faculty.contact_id` was dropped by migration 0160 — referencing it makes
     // every merge fail with 42703 (R4-01).

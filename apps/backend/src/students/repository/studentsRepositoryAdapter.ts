@@ -71,7 +71,8 @@ function createStudentsRepository(): StudentsRepository {
       bulkUpdateStudentsStatusSql(tenant, ids, status, updatedBy),
     bulkSoftDelete: (tenant, ids, deletedBy, deletionReason) =>
       bulkSoftDeleteStudentsSql(tenant, ids, deletedBy, deletionReason),
-    bulkRestore: (tenant, ids, userId) => bulkRestoreStudentsSql(tenant, ids, userId),
+    bulkRestore: (tenant, ids, userId, restoredAt) =>
+      bulkRestoreStudentsSql(tenant, ids, userId, restoredAt),
     guardDeleteDependents: (tenant, ids) => guardStudentSoftDelete(tenant, ids),
   };
 }

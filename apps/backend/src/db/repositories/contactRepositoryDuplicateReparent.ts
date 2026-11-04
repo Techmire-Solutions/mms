@@ -80,6 +80,15 @@ export async function reparentContactReferences(
         AND contact_id = ${deleteId}
     `);
 
+    // Inferred-links provenance must follow the survivor too, or the merged
+    // contact's inferred relationships keep pointing at a soft-deleted identity.
+    await tx.execute(sql`
+      UPDATE ${contactRelationships}
+      SET inferred_from_contact_id = ${keepId}
+      WHERE workspace_subdomain = ${subdomain}
+        AND inferred_from_contact_id = ${deleteId}
+    `);
+
     await tx.execute(sql`
       UPDATE ${students}
       SET contact_id = CASE WHEN contact_id = ${deleteId} THEN ${keepId} ELSE contact_id END,

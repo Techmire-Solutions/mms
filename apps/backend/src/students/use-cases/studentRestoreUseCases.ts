@@ -214,18 +214,22 @@ export async function bulkRestoreStudents(
     }
 
     if (toSave.length > 0) {
-      let written = toSave.length;
+      let restoredIds = toSave.map((s) => String(s.id));
       try {
         if (repo.bulkRestore) {
           const writeResult = await repo.bulkRestore(
             tenant,
             toSave.map((s) => String(s.id)),
             userId,
+            new Date(batchRestoredAt),
           );
-          // Report what the database actually restored (a concurrent restore/soft-delete between
-          // the read and the UPDATE makes the pre-count optimistic).
+          // Report and cascade only what the database actually restored: a
+          // concurrent restore/soft-delete between the read and the UPDATE made
+          // the pre-count optimistic (and used to audit rows that never changed).
           if (writeResult && typeof writeResult.succeeded === "number") {
-            written = writeResult.succeeded;
+            restoredIds =
+              writeResult.restoredIds ??
+              toSave.slice(0, Math.max(0, writeResult.succeeded)).map((row) => String(row.id));
           }
         } else {
           await repo.bulkSave(tenant, toSave);
@@ -235,26 +239,28 @@ export async function bulkRestoreStudents(
         if (isPgUnique(err)) throw new StudentRestoreRaceError();
         throw err;
       }
-      succeeded = Math.min(succeeded, written);
+      const restoredIdSet = new Set(restoredIds);
+      const restoredRows = toSave.filter((row) => restoredIdSet.has(String(row.id)));
+      succeeded = restoredRows.length;
       failed = uniqueIds.length - succeeded;
 
       await restoreCascadedEnrollmentsForStudents(
         activeDb(),
         tenant,
-        toSave.map((s) => String(s.id)),
+        restoredRows.map((row) => String(row.id)),
         userId,
         new Date(batchRestoredAt),
       );
-      for (const s of toSave) {
-        await recordRestoreEvents(tenant, s, batchRestoredAt, userId);
+      for (const row of restoredRows) {
+        await recordRestoreEvents(tenant, row, batchRestoredAt, userId);
       }
       await reconcileContactSystemTags(
         tenant,
-        toSave.flatMap((s) => [
-          s.contactId,
-          s.fatherContactId,
-          s.motherContactId,
-          s.guardianContactId,
+        restoredRows.flatMap((row) => [
+          row.contactId,
+          row.fatherContactId,
+          row.motherContactId,
+          row.guardianContactId,
         ]),
         { actorId: userId },
       );
