@@ -21,7 +21,10 @@ vi.mock("../lib/softDeleteHelpers.js", () => ({
   enableIncludeDeleted: mocks.enable,
 }));
 
-import { bulkRestoreStudentsSql } from "../db/repositories/studentRepositorySoftDelete.js";
+import {
+  bulkRestoreStudentsSql,
+  bulkSoftDeleteStudentsSql,
+} from "../db/repositories/studentRepositorySoftDelete.js";
 
 describe("bulkRestoreStudentsSql", () => {
   beforeEach(() => {
@@ -41,6 +44,17 @@ describe("bulkRestoreStudentsSql", () => {
       expect.objectContaining({ restoredAt, restoredBy: "u-1" }),
     );
     expect(mocks.invalidate).toHaveBeenCalledWith({ tenantId: "demo", domain: "students" });
+  });
+
+  it("soft-deletes in one statement and reports the count", async () => {
+    mocks.returning.mockResolvedValue([{ id: "a" }, { id: "b" }]);
+
+    const result = await bulkSoftDeleteStudentsSql("Demo", ["a", "a", "b"], "u-1", "cleanup");
+
+    expect(result).toEqual({ succeeded: 2, failed: 0 });
+    expect(mocks.set).toHaveBeenCalledWith(
+      expect.objectContaining({ deletedBy: "u-1", deletionReason: "cleanup" }),
+    );
   });
 
   it("returns an empty result without touching the database", async () => {

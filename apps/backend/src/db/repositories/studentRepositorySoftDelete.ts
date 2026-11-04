@@ -39,7 +39,6 @@ export async function bulkSoftDeleteStudentsSql(
     return {
       succeeded: updated.length,
       failed: uniqueIds.length - updated.length,
-      restoredIds: updated.map((row) => String(row.id)),
     };
   });
   await invalidateMultiTierCache({ tenantId: subdomain, domain: "students" });
