@@ -597,3 +597,30 @@ landed with regression tests. Evidence: review report §11 (“P2 batch 2”); u
 - **B-22** Logic coverage 44 % (mocked unit run only); 54 use-cases without companion tests.
 - **B-23–B-36** Remaining hygiene/audit/jobs findings, recorded in the report with evidence and
   proposed tests.
+
+## 2026-11-04 module reviews — open items
+
+Tier 1 of the dashboard / contacts / students / faculty / tasks reviews landed with tests; the
+reports under `docs/*-module-review-2026-11-04*.md` hold the evidence and the per-finding status.
+
+- **S1 — CRITICAL, open: the module gate ignores tenant custom roles.** `checkModuleAccess` calls
+  `roleHasPermission(role, permission)` without the workspace's `workspaceRoles`, and the same
+  omission runs through `rbacCanCollectionHelpers` and the route helper checks. A designation-managed
+  composite role (`faculty_ed_*`, created by `syncFacultyLinkedUserRole`) therefore matches no
+  default role and every module route answers `403 PERMISSION_DENIED`. Reproduced by
+  `apps/backend/src/__tests__/customRoleModuleAccess.test.ts` (`it.fails`). Fix = load the tenant role
+  catalog once per request and thread it through the gate + `canRead/Write/DeleteCollection` (and the
+  setup-route helpers); this touches every module, so it is a dedicated security change.
+- **Tasks (Tier 2):** M1 delegation scope (no reporting hierarchy exists — remove the dead setting or
+  grant `assign_anywhere` by decision), M2 task ownership policy, M4 assignment notification delivery,
+  M6 status-transition table + badge menu, M8 batched bulk ops + bulk-status endpoint.
+- **Faculty (Tier 2):** M1 subordinate reassignment stub, M3 workspace-local appointment day,
+  M4 workload pill/column producer, M5 reporting-hierarchy model.
+- **Students (Tier 2):** M1 import idempotency under retry, M4 bulk-restore audit provenance.
+- **Contacts (Tier 2):** the minors in the round-5 report (contacts→students invalidation, inferred
+  relationship re-parent, merge `notes`, post-commit audit rows, …).
+- **Dashboard (Tier 2):** D1 per-user preferences/widgets (needs a migration + the shared-vs-personal
+  product decision), plus the minors in the dashboard report.
+- **Product decisions still needed:** dashboard prefs scope, tasks delegation model, tasks task
+  ownership/visibility, tasks notification delivery, and whether tenant custom roles authorize server
+  module access (S1).
