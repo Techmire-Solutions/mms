@@ -5913,6 +5913,8 @@ export const APP_TRANSLATIONS_UR: Record<AppTranslationKey, string> = {
   "tasks.restored": "ٹاسک بحال ہو گیا",
   "tasks.restoreFailed": "ٹاسک بحال نہیں ہو سکا",
   "tasks.deleteFailed": "ٹاسک آرکائیو نہیں ہو سکا",
+  "tasks.loadFailed": "ٹاسک لوڈ نہیں ہو سکے",
+  "tasks.loadFailedHint": "اپنا کنکشن چیک کریں اور دوبارہ کوشش کریں۔",
   "tasks.trashEmptyTitle": "ردی خالی ہے",
   "tasks.trashEmptyDescription": "آرکائیو شدہ ٹاسکس یہاں نظر آئیں گے جب تک بحال نہ کیے جائیں۔",
   "tasks.searchPlaceholder": "ٹاسکس تلاش کریں…",

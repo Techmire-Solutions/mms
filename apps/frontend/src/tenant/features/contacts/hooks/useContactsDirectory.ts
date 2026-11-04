@@ -4,6 +4,7 @@ import { CONTACTS_MODULE_MANIFEST } from "@mms/shared";
 import { useContactsContractList } from "@/tenant/features/contacts/hooks/useContactsQueries";
 import { useContactsDirectoryFilters } from "@/tenant/features/contacts/hooks/useContactsDirectoryFilters";
 import { useContactsDirectoryLinks } from "@/tenant/features/contacts/hooks/useContactsDirectoryLinks";
+import { contractBody, isContractQueryError } from "@/lib/contractQuery";
 
 interface UseContactsDirectoryOptions {
   effectiveTab: string;
@@ -54,8 +55,14 @@ export function useContactsDirectory({
   );
   const shownCount = workPageDataResponse?.body?.total ?? 0;
   const isWorkError =
-    isWorkErrorTsr || (workPageDataResponse != null && workPageDataResponse.status !== 200);
-  const workPageData = workPageDataResponse?.status === 200 ? workPageDataResponse.body : undefined;
+    isWorkErrorTsr ||
+    isContractQueryError({ isError: false, data: workPageDataResponse ?? undefined });
+  const workPageData =
+    contractBody<
+      typeof workPageDataResponse extends undefined
+        ? never
+        : NonNullable<typeof workPageDataResponse>["body"]
+    >(workPageDataResponse);
 
   const allContactsForLinks = useContactsDirectoryLinks({
     workContacts,

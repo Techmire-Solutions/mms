@@ -21,7 +21,7 @@ metadata:
 
 - **Scope Boundary**: Work tier contains directories, CRUD, drawers, filters, and bulk actions. Zero analytical charts (belong in Reports).
 - **PageHeader & Metrics**: Keep `PageHeader` visible; render command metrics using `ModuleCommandMetricsGrid`.
-- **Dual IO (header + panel)**: Keep Create/Import/Export on `PageHeader` actions. Mount `ModuleEntityIoToolbar` as a separate row above Work directory chrome on every operational Work/peer-entity tab. Omit on Reports/Setup; hide in trash. Do not also put Add in `ModuleWorkToolbar.primaryAction`.
+- **IO placement (single owner)**: Create/Import/Export live in the `PageHeader` action cluster via a module-owned `*PageHeaderActions` gated on capability and hidden in trash. A second per-tab IO row is retired — never re-add one. Do not put Add in `ModuleWorkToolbar.primaryAction`; an empty directory surfaces Create through its empty-state `emptyAction` instead.
 - **Filters SSOT**: Single filter menu via `ModuleFilterDropdown` / `ModuleFiltersMenuButton`. Active state indicated by count badge + Clear CTA; never duplicate active filters in a permanent pill bar.
 - **Selection SSOT**: Page controller owns row selection via `useWorkSelection`; list-local selection state is banned.
 - **Virtualization**: Mandatory `@tanstack/react-virtual` row virtualization whenever collection items > 30.
@@ -36,7 +36,6 @@ metadata:
 | Cards | `DirectoryEntityCard`, `DirectoryCardFooterActions`, `DirectoryCardMetaGrid` |
 | Card actions | `useWorkCardAction` |
 | Toolbar / trash | `ModuleWorkToolbar`, `ModuleTrashToggle` |
-| Panel IO row | `ModuleEntityIoToolbar` (Export / Import / Add; Faculty wraps via `FacultyTabIoToolbar`) |
 | Data Transfer / Import | `ModuleImportDialog`, `useModuleCsvImportActions`, `ModuleTransferSchema` (`@mms/shared`) |
 | Data Transfer / Export | `useModuleServerCsvExportActions`, `buildExportGrid`, `runGridCsvExportJob` |
 | Bulk | `ModuleUniversalBulkActionBar`, `ModuleWorkBulkActionBar`, `BulkSelectionDeleteAction`, `BulkSelectionRestoreAction` |

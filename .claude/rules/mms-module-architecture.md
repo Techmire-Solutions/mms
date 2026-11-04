@@ -26,7 +26,7 @@ paths:
 - **Internal id:** Standard single-ops modules keep persisted id `"work"` for URL/prefs compat; multi-ops modules use entity ids and migrate legacy `"work"` on read.
 - **Order:** operational tab(s) → Reports → Setup.
 - **Shell wiring:** `PageHeader` command centre + `useFilteredModuleTierTabs({ canViewSetup, canViewReports, workLabelKey })` for standard modules; multi-ops pages build peer tabs explicitly (Faculty pattern).
-- **Dual IO placement:** Keep Create/Import/Export on `PageHeader` actions. Also mount `ModuleEntityIoToolbar` (Export / Import / Add) as a **separate row** at the top of every **operational** Work or peer-entity tab panel. Omit the IO row on Reports and Setup. Hide the entire IO row in trash (`viewingDeleted`). Capability-shape buttons (`canExport`/`canWrite` + handlers). Do not put Create/Add in `ModuleWorkToolbar.primaryAction` when the IO row already owns Add.
+- **IO placement (single owner):** Create / Import / Export live in the `PageHeader` action cluster for every operational module — mounted through a module-owned `*PageHeaderActions` component gated on capability (`canWrite` / `canExport` + handler), and hidden in trash (`viewingDeleted`). A second per-tab IO row is banned: the converged gold-standard modules (Contacts, Students, Faculty) deliberately keep one owner so a page never renders duplicate Add/Import/Export chrome. Do not put Create/Add in `ModuleWorkToolbar.primaryAction` while the header owns it; when a directory renders empty and `canWrite`, surface Create through the empty state instead (`emptyAction`).
 - **Setup content:** Fields customizer, Preferences, and other `setupSubTabs` only — not day-to-day peer catalogs unless they are truly rare lookups.
 
 ## 3. Work Directory & Detail Drawer

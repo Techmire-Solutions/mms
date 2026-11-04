@@ -1,6 +1,7 @@
 import { STUDENTS_MODULE_MANIFEST, type Student, type StudentsQuickFilter } from "@mms/shared";
 import { useStudentsContractList } from "@/tenant/features/students/hooks/useStudentsQueries";
 import type { StudentsListContentSortField } from "@/tenant/features/students/lib/studentsListTypes";
+import { contractBody, isContractQueryError } from "@/lib/contractQuery";
 
 const SORT_FIELD_TO_API: Record<StudentsListContentSortField, string> = {
   name: "name",
@@ -56,14 +57,16 @@ export function useStudentsPageWorkQuery({
   const workStudents = (() => (workPageQuery.data?.body?.students ?? []) as Student[])();
   const shownCount = workPageQuery.data?.body?.total ?? 0;
 
-  const isWorkError =
-    workPageQuery.isError || (workPageQuery.data != null && workPageQuery.data.status !== 200);
+  const isWorkError = isContractQueryError(workPageQuery);
 
-  // Return a modified query object that patches .data to be the body and incorporates status checking into .isError
+  // The contract list returns a `{ status, body }` envelope; expose the body as
+  // `.data` so consumers see the same shape as a plain Query result.
   const workPageQueryPatched = {
     ...workPageQuery,
     isError: isWorkError,
-    data: workPageQuery.data?.status === 200 ? workPageQuery.data.body : undefined,
+    data: contractBody<NonNullable<typeof workPageQuery.data>["body"]>(
+      workPageQuery.data ?? undefined,
+    ),
   };
 
   return {

@@ -17,7 +17,7 @@ export function useDashboardPageController() {
   const { t } = useTranslation();
   const { formatCurrency } = useFinanceCurrency();
   const { can } = usePermissions();
-  const dashboardRole = (() => resolveDashboardRole(can))();
+  const dashboardRole = resolveDashboardRole(can);
   // Server-authoritative grant ∧ enablement; all false while loading, so no module widget fetches early.
   const { effectiveModules: enabledModules } = useModuleAccess();
 
@@ -101,7 +101,7 @@ export function useDashboardPageController() {
     updatePref("gridMode", mode);
   };
 
-  const activeCustomCardIds = (() => getActiveCustomCardIds(customWidgets, dashboardRole))();
+  const activeCustomCardIds = getActiveCustomCardIds(customWidgets, dashboardRole);
 
   const dashboardMetricCards = useDashboardMetricCards({
     customWidgets,
@@ -133,23 +133,20 @@ export function useDashboardPageController() {
 
   const pinnedDashboardWidgetCount = visiblePinnedWidgets.length;
 
-  const notifications = (() =>
-    buildDashboardNotifications(
-      dashboardRole,
-      {
-        outstandingInvoiceCount: financeMetrics?.outstanding ?? 0,
-        outstandingBalance: financeMetrics?.outstandingBalance ?? 0,
-        attendanceRate:
-          attendanceMetrics?.selectedDatePresentRate ??
-          attendanceMetrics?.overallPresentRate ??
-          null,
-        inactiveStudents: studentMetricsInactive,
-      },
-      t,
-      formatCurrency,
-      can,
-      { lowAttendanceThreshold, urgentAttendanceThreshold },
-    ))();
+  const notifications = buildDashboardNotifications(
+    dashboardRole,
+    {
+      outstandingInvoiceCount: financeMetrics?.outstanding ?? 0,
+      outstandingBalance: financeMetrics?.outstandingBalance ?? 0,
+      attendanceRate:
+        attendanceMetrics?.selectedDatePresentRate ?? attendanceMetrics?.overallPresentRate ?? null,
+      inactiveStudents: studentMetricsInactive,
+    },
+    t,
+    formatCurrency,
+    can,
+    { lowAttendanceThreshold, urgentAttendanceThreshold },
+  );
 
   const handleResetCards = () => {
     updatePref("disabledCardIds", []);

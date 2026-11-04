@@ -1,5 +1,5 @@
 import { useMemo } from "react";
-import { keepPreviousData, useQuery, useQueryClient } from "@tanstack/react-query";
+import { useQueryClient } from "@tanstack/react-query";
 import type { QueryClient } from "@tanstack/react-query";
 import { useAuth } from "@/lib/contexts/AuthContext";
 import { useTranslation } from "@/hooks/useTranslation";
@@ -8,13 +8,16 @@ import { DEFAULT_DASHBOARD_PREFERENCES, normalizeDashboardPreferences } from "@m
 import { buildDefaultCustomWidgets } from "@/lib/reports/widgetDefaults";
 import type { CustomWidget } from "@/lib/reports/pinnedWidgetTypes";
 import { tsrClient } from "@/lib/api";
-import { fetchDashboardSummaryAsync } from "./dashboardApi";
+import { DASHBOARD_SUMMARY_QUERY_KEY_ROOT } from "./useDashboardSummaryQuery";
+
+export {
+  DASHBOARD_SUMMARY_QUERY_KEY,
+  DASHBOARD_SUMMARY_QUERY_KEY_ROOT,
+  useDashboardSummaryQuery,
+} from "./useDashboardSummaryQuery";
 
 export const DASHBOARD_PREFERENCES_QUERY_KEY = ["dashboard", "preferences"] as const;
 export const DASHBOARD_WIDGETS_QUERY_KEY = ["dashboard", "widgets"] as const;
-export const DASHBOARD_SUMMARY_QUERY_KEY_ROOT = ["dashboard", "summary"] as const;
-export const DASHBOARD_SUMMARY_QUERY_KEY = (date?: string, role?: string) =>
-  [...DASHBOARD_SUMMARY_QUERY_KEY_ROOT, { date, role }] as const;
 
 /** Pure seeded default widgets, computed once — placeholder while the server query loads. */
 const DEFAULT_WIDGETS_PLACEHOLDER: CustomWidget[] = buildDefaultCustomWidgets();
@@ -23,28 +26,6 @@ export function invalidateDashboardQueries(queryClient: QueryClient): void {
   queryClient.invalidateQueries({ queryKey: DASHBOARD_PREFERENCES_QUERY_KEY });
   queryClient.invalidateQueries({ queryKey: DASHBOARD_WIDGETS_QUERY_KEY });
   queryClient.invalidateQueries({ queryKey: DASHBOARD_SUMMARY_QUERY_KEY_ROOT });
-}
-
-export function useDashboardSummaryQuery(
-  date?: string,
-  role?: string,
-  options?: { enabled?: boolean; refetchInterval?: number },
-) {
-  const { isAuthenticated } = useAuth();
-  const query = useQuery({
-    queryKey: DASHBOARD_SUMMARY_QUERY_KEY(date, role),
-    queryFn: ({ signal }) => fetchDashboardSummaryAsync(date, role, signal),
-    enabled: isAuthenticated && (options?.enabled ?? true),
-    staleTime: 30_000,
-    refetchOnWindowFocus: true,
-    refetchInterval: options?.refetchInterval ?? 60_000,
-    placeholderData: keepPreviousData,
-  });
-
-  return {
-    ...query,
-    summary: query.data,
-  };
 }
 
 export function useDashboardPreferencesQuery() {

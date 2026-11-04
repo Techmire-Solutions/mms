@@ -5976,6 +5976,8 @@ export const APP_TRANSLATIONS_EN = {
   "tasks.restored": "Task restored",
   "tasks.restoreFailed": "Could not restore task",
   "tasks.deleteFailed": "Could not archive task",
+  "tasks.loadFailed": "Failed to load tasks",
+  "tasks.loadFailedHint": "Check your connection and try again.",
   "tasks.trashEmptyTitle": "Trash is empty",
   "tasks.trashEmptyDescription": "Archived tasks will appear here until restored.",
   "tasks.searchPlaceholder": "Search tasks…",

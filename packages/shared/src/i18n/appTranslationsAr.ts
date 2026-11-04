@@ -5841,6 +5841,8 @@ export const APP_TRANSLATIONS_AR: Record<AppTranslationKey, string> = {
   "tasks.restored": "تمت استعادة المهمة",
   "tasks.restoreFailed": "تعذّرت استعادة المهمة",
   "tasks.deleteFailed": "تعذّرت أرشفة المهمة",
+  "tasks.loadFailed": "تعذّر تحميل المهام",
+  "tasks.loadFailedHint": "تحقق من الاتصال وحاول مرة أخرى.",
   "tasks.trashEmptyTitle": "سلة المهملات فارغة",
   "tasks.trashEmptyDescription": "ستظهر المهام المؤرشفة هنا حتى تتم استعادتها.",
   "tasks.searchPlaceholder": "بحث في المهام…",

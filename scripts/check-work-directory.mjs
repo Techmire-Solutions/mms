@@ -11,6 +11,8 @@
  *    reviewed allowlist — directories and catalogs use DataTable / WorkBatchTable.
  * 6. Zero outer `<EntityCard` shells in Work-directory card composites — use DirectoryCard
  *    (EntityCard remains the primitive under DirectoryCard / *CardHeader slots).
+ * 7. Zero imports of the retired ModuleEntityIoToolbar per-tab IO row — PageHeader owns
+ *    Create/Import/Export (single owner; no duplicate tab-level IO chrome).
  *
  * Spec: docs/superpowers/specs/2026-09-24-work-directory-convergence-design.md §5
  * Norms: mms-module-architecture.mdc §3/§7, mms-dry.mdc §1.
@@ -46,6 +48,7 @@ const files = walk(FE_SRC);
 
 const retiredBulkBarImports = [];
 const retiredShellImports = [];
+const retiredIoToolbarImports = [];
 const cssDualRenderSites = [];
 const stubShortcutSites = [];
 const rawTableSites = [];
@@ -124,6 +127,9 @@ for (const rel of files) {
     if (/ModuleWorkDirectoryShell|useWorkDirectoryController/.test(content)) {
       retiredShellImports.push(rel);
     }
+    if (/ModuleEntityIoToolbar/.test(content)) {
+      retiredIoToolbarImports.push(rel);
+    }
 
     const isController = /(PageController|PageState)\.ts$/.test(rel);
     if (isController) {
@@ -184,6 +190,12 @@ const checks = [
     count: retiredShellImports.length,
     violators: retiredShellImports,
     norm: "mms-module-architecture.mdc §3",
+  },
+  {
+    name: "Retired ModuleEntityIoToolbar imports (PageHeader owns module IO)",
+    count: retiredIoToolbarImports.length,
+    violators: retiredIoToolbarImports,
+    norm: "mms-module-architecture.mdc §2",
   },
   {
     name: "CSS dual-render in directory *List.tsx",
