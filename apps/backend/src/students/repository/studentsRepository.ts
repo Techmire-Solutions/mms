@@ -111,6 +111,7 @@ export interface StudentsRepository {
     tenant: string,
     ids: string[],
     userId?: string,
-  ): Promise<{ succeeded: number; failed: number }>;
+    restoredAt?: Date,
+  ): Promise<{ succeeded: number; failed: number; restoredIds?: string[] }>;
   guardDeleteDependents?(tenant: string, ids: string[]): Promise<void>;
 }

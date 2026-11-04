@@ -372,6 +372,23 @@ describe("createStudentsUseCases (DI composition root)", () => {
     }
   });
 
+  it("bulkRestoreStudents cascades only rows the database actually restored", async () => {
+    const { repo, store } = createFakeRepo();
+    store.set("a", fakeStudent("a", { deletedAt: "2026-07-27T00:00:00.000Z" }));
+    store.set("b", fakeStudent("b", { deletedAt: "2026-07-27T00:00:00.000Z", contactId: "c-b" }));
+    Object.assign(repo as unknown as Record<string, unknown>, {
+      bulkRestore: vi.fn(async () => ({ succeeded: 1, failed: 1, restoredIds: ["a"] })),
+    });
+    vi.mocked(restoreCascadedEnrollmentsForStudents).mockClear();
+    const useCases = createStudentsUseCases(repo);
+
+    const result = await useCases.bulkRestoreStudents(["a", "b"]);
+
+    expect(result).toMatchObject({ succeeded: 1, failed: 1 });
+    const cascadeIds = vi.mocked(restoreCascadedEnrollmentsForStudents).mock.calls[0]?.[2];
+    expect(cascadeIds).toEqual(["a"]);
+  });
+
   it("bulkRestoreStudents stamps the rows and the enrollment cascade with one restoredAt", async () => {
     vi.useFakeTimers();
     vi.setSystemTime(new Date("2026-08-01T00:00:00.000Z"));
