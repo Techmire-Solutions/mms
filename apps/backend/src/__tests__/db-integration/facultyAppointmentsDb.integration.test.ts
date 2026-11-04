@@ -114,7 +114,7 @@ describe("Faculty appointment integrity", () => {
       withTenant(tenant, async (tx) => {
         const result = await tx.execute(sql`SELECT action_type FROM audit_trail_events
           WHERE workspace_subdomain = ${tenant} AND table_name = 'faculty_assignments' AND record_id = 'secondary'
-          ORDER BY created_at, action_type`);
+          ORDER BY transaction_timestamp, id, action_type`);
         return result.rows.map((row) => (row as { action_type: string }).action_type);
       });
 
