@@ -187,7 +187,10 @@ export function useBulkDeleteTasks() {
     mutationFn: async (ids: string[]) => {
       const response = await apiContract.tasks.bulkDelete({ body: { ids } });
       assertContractOk(response, "Failed to bulk delete tasks");
-      return response.body as { deletedIds: string[] };
+      return response.body as {
+        deletedIds: string[];
+        skipped?: Array<{ id: string; reason: string }>;
+      };
     },
     onSuccess: () => {
       void invalidateTasksQueries(queryClient);
@@ -201,7 +204,10 @@ export function useBulkRestoreTasks() {
     mutationFn: async (ids: string[]) => {
       const response = await apiContract.tasks.bulkRestore({ body: { ids } });
       assertContractOk(response, "Failed to bulk restore tasks");
-      return response.body as { restoredIds: string[] };
+      return response.body as {
+        restoredIds: string[];
+        skipped?: Array<{ id: string; reason: string }>;
+      };
     },
     onSuccess: () => {
       void invalidateTasksQueries(queryClient);
@@ -213,19 +219,14 @@ export function useBulkUpdateTaskStatus() {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: async ({ ids, status }: { ids: string[]; status: TaskStatus }) => {
-      const results = await Promise.all(
-        ids.map(async (id) => {
-          const response = await apiContract.tasks.updateStatus({
-            params: { id },
-            body: { status },
-          });
-          assertContractOk(response, "Failed to update task status");
-          return response.body as TaskRecord;
-        }),
-      );
-      return results;
+      const response = await apiContract.tasks.bulkStatus({ body: { ids, status } });
+      assertContractOk(response, "Failed to update task status");
+      return response.body as {
+        updatedIds: string[];
+        skipped?: Array<{ id: string; reason: string }>;
+      };
     },
-    onSuccess: () => {
+    onSettled: () => {
       void invalidateTasksQueries(queryClient);
     },
   });

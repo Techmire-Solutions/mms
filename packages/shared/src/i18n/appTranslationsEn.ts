@@ -5992,6 +5992,7 @@ export const APP_TRANSLATIONS_EN = {
   "tasks.removeAssignee": "Remove {name}",
   "tasks.bulkStatus": "Change Status",
   "tasks.bulkStatusSuccess": "Updated status for {count} tasks",
+  "tasks.bulkSkipped": "Updated {count}; skipped {skipped}",
   "tasks.bulkStatusFailed": "Could not update task status",
   "tasks.dateFrom": "Due From",
   "tasks.dateTo": "Due To",

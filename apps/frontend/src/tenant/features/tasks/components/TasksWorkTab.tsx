@@ -262,6 +262,7 @@ export function TasksWorkTab({
       <TaskDetailDrawer
         task={viewingTask}
         canWrite={canWrite && !viewingDeleted}
+        canComplete={canComplete}
         canDelete={canDelete}
         onClose={() => setViewingTask(null)}
         onEdit={(task) => {
@@ -269,6 +270,7 @@ export function TasksWorkTab({
           onEdit(task);
         }}
         onRestore={onRestore}
+        onUpdateStatus={onUpdateStatus}
       />
     </div>
   );

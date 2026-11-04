@@ -18,11 +18,18 @@ export function useTasksBulkActions(selectedIds: string[], onClearSelection: () 
     if (!selectedIds.length) return;
     const targets = [...selectedIds];
     bulkDeleteMutation.mutate(targets, {
-      onSuccess: ({ deletedIds }) => {
+      onSuccess: ({ deletedIds, skipped = [] }) => {
         onClearSelection();
-        notify.archivedWithUndo(t("common.recordArchived"), () => {
-          void bulkRestoreMutation.mutateAsync(deletedIds);
-        });
+        if (deletedIds.length > 0) {
+          notify.archivedWithUndo(t("common.recordArchived"), () => {
+            void bulkRestoreMutation.mutateAsync(deletedIds);
+          });
+        }
+        if (skipped.length > 0) {
+          notify.warning(
+            t("tasks.bulkSkipped", { count: deletedIds.length, skipped: skipped.length }),
+          );
+        }
       },
       onError: (err) => {
         notify.error(err instanceof Error ? err.message : t("tasks.deleteFailed"));
@@ -33,9 +40,14 @@ export function useTasksBulkActions(selectedIds: string[], onClearSelection: () 
   const handleBulkRestore = () => {
     if (!selectedIds.length) return;
     bulkRestoreMutation.mutate([...selectedIds], {
-      onSuccess: () => {
+      onSuccess: ({ restoredIds, skipped = [] }) => {
         onClearSelection();
         notify.success(t("tasks.restored"));
+        if (skipped.length > 0) {
+          notify.warning(
+            t("tasks.bulkSkipped", { count: restoredIds.length, skipped: skipped.length }),
+          );
+        }
       },
       onError: (err) => {
         notify.error(err instanceof Error ? err.message : t("tasks.restoreFailed"));
@@ -49,9 +61,16 @@ export function useTasksBulkActions(selectedIds: string[], onClearSelection: () 
     bulkStatusMutation.mutate(
       { ids: targets, status: status as TaskStatus },
       {
-        onSuccess: () => {
+        onSuccess: ({ updatedIds, skipped = [] }) => {
           onClearSelection();
-          notify.success(t("tasks.bulkStatusSuccess", { count: targets.length }));
+          if (updatedIds.length > 0) {
+            notify.success(t("tasks.bulkStatusSuccess", { count: updatedIds.length }));
+          }
+          if (skipped.length > 0) {
+            notify.warning(
+              t("tasks.bulkSkipped", { count: updatedIds.length, skipped: skipped.length }),
+            );
+          }
         },
         onError: (err) => {
           notify.error(err instanceof Error ? err.message : t("tasks.bulkStatusFailed"));

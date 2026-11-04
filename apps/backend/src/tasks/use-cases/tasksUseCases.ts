@@ -17,6 +17,7 @@ export function createTasksUseCases(
     restoreTask: repo.restoreTask,
     bulkRestoreTasks: repo.bulkRestoreTasks,
     bulkDeleteTasks: repo.bulkDeleteTasks,
+    bulkUpdateTaskStatus: repo.bulkUpdateTaskStatus,
   };
 }
 
@@ -32,4 +33,5 @@ export const {
   restoreTask,
   bulkRestoreTasks,
   bulkDeleteTasks,
+  bulkUpdateTaskStatus,
 } = tasksUseCases;

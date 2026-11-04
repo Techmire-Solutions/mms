@@ -94,8 +94,8 @@ export const MODULE_ROUTE_ACTION_RULES: readonly ModuleRouteActionRule[] = [
     onlyModules: ["tasks"],
   },
   {
-    methods: ["PATCH"],
-    pattern: /^\/api\/tasks\/:id\/status$/,
+    methods: ["PATCH", "POST"],
+    pattern: /^\/api\/tasks\/:id\/status$|^\/api\/tasks\/bulk-status$/,
     action: "availability",
     onlyModules: ["tasks"],
   },

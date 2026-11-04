@@ -13,7 +13,7 @@ import { EmptyState } from "@/components/app/EmptyState";
 import { useTranslation } from "@/hooks/useTranslation";
 import { formatDirectoryPageCountLabel } from "@/lib/formatDirectoryPageCountLabel";
 import { getDirectoryPageSelection } from "@/lib/directorySelection";
-import { buildTasksWorkBatchColumns, TASK_NEXT_STATUS } from "./tasksWorkBatchColumns";
+import { buildTasksWorkBatchColumns } from "./tasksWorkBatchColumns";
 
 export interface TasksListDesktopTableProps {
   tasks: TaskRecord[];
@@ -63,9 +63,9 @@ export function TasksListDesktopTable({
   const { allSelected, someSelected } = getDirectoryPageSelection(pageIds, selectedIds);
   const selectedSet = useMemo(() => new Set(selectedIds), [selectedIds]);
 
-  const handleCycleStatus = (task: TaskRecord) => {
+  const handleChangeStatus = (task: TaskRecord, status: TaskRecord["status"]) => {
     if (viewingDeleted) return;
-    onUpdateStatus(task.id, TASK_NEXT_STATUS[task.status] || "todo");
+    onUpdateStatus(task.id, status);
   };
 
   const baseColumns = useMemo(
@@ -73,14 +73,14 @@ export function TasksListDesktopTable({
       buildTasksWorkBatchColumns(
         t,
         (canComplete ?? canWrite) && !viewingDeleted,
-        handleCycleStatus,
+        handleChangeStatus,
         onView,
         {
           isColumnVisible,
           getColumnWidth,
         },
       ),
-    // eslint-disable-next-line react-hooks/exhaustive-deps -- handleCycleStatus is derived from the already-listed `viewingDeleted`; adding it (or its unstable onUpdateStatus dep) would rebuild the columns on every render.
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- handleChangeStatus is derived from the already-listed `viewingDeleted`; adding it (or its unstable onUpdateStatus dep) would rebuild the columns on every render.
     [t, canComplete, canWrite, viewingDeleted, onView, isColumnVisible, getColumnWidth],
   );
 

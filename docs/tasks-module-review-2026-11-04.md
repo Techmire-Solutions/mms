@@ -382,4 +382,7 @@ Tier 1 landed in the same change set after this review:
 | M5 | **Fixed** | The edit form omits `assignees` unless the picker changed, so a non-admin can edit another user's assigned task | `taskFormPayload.test.ts` |
 | M7 | **Fixed** | Bulk selection clears on any filter/search/page change | `useTaskSelectionScope.test.tsx` |
 
-Still open (Tier 2): M1 delegation scope, M2 ownership policy, M4 notification delivery, M6 status transitions, M8 batched bulk ops, and the minors in §5. The three product decisions in §9 remain unanswered.
+| M6 | **Fixed** | `TASK_STATUS_TRANSITIONS` in `@mms/shared` is enforced by `updateTask` (400 via the status route); the badge is now a menu of legal transitions (explicit reopen for terminal states) and the edit form only offers reachable statuses | `tasksStatusTransitions.test.ts`, `tasksAssign.integration.test.ts` (illegal edge → 400), `TaskStatusMenu.test.tsx` |
+| M8 | **Fixed** | Bulk archive/restore are one `UPDATE … RETURNING` per batch with batched outbox events and per-row audit; >500 ids is a 400; skipped rows carry a reason. Bulk status is one route/one update (legal transitions only) and the client invalidates on settle | `tasksBulkRepository.test.ts`, bulk-status inject tests |
+
+Still open (Tier 2): M1 delegation scope, M2 ownership policy, M4 notification delivery, and the minors in §5. The three product decisions in §9 remain unanswered.

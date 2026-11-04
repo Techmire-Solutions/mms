@@ -6,7 +6,7 @@
  * `db/repositories/*`. The Drizzle-backed adapter is the only implementation.
  */
 type TasksModule = typeof import("../../db/repositories/tasksRepository.js");
-type TasksTrashModule = typeof import("../../db/repositories/tasksTrashRepository.js");
+type TasksBulkModule = typeof import("../../db/repositories/tasksBulkRepository.js");
 
 export interface TasksRepository {
   listTasks: TasksModule["listTasks"];
@@ -15,6 +15,7 @@ export interface TasksRepository {
   updateTaskStatus: TasksModule["updateTaskStatus"];
   deleteTask: TasksModule["deleteTask"];
   restoreTask: TasksModule["restoreTask"];
-  bulkRestoreTasks: TasksModule["bulkRestoreTasks"];
-  bulkDeleteTasks: TasksTrashModule["bulkDeleteTasks"];
+  bulkRestoreTasks: TasksBulkModule["bulkRestoreTasksBatch"];
+  bulkDeleteTasks: TasksBulkModule["bulkDeleteTasksBatch"];
+  bulkUpdateTaskStatus: TasksBulkModule["bulkUpdateTaskStatusBatch"];
 }

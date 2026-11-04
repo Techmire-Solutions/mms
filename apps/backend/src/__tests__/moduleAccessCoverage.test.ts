@@ -356,6 +356,7 @@ const EXPECTED_MODULE_ROUTE_ACTIONS: Readonly<Record<string, ModuleAction>> = {
   "POST /api/tasks/bulk-delete": "delete",
   "POST /api/tasks/bulk-restore": "delete",
   "PATCH /api/tasks/:id/status": "availability",
+  "POST /api/tasks/bulk-status": "availability",
 };
 
 describe("module access coverage", () => {

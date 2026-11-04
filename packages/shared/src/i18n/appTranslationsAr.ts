@@ -5857,6 +5857,7 @@ export const APP_TRANSLATIONS_AR: Record<AppTranslationKey, string> = {
   "tasks.removeAssignee": "إزالة {name}",
   "tasks.bulkStatus": "تغيير الحالة",
   "tasks.bulkStatusSuccess": "تم تحديث الحالة لـ {count} مهمة",
+  "tasks.bulkSkipped": "تم تحديث {count}؛ تم تخطي {skipped}",
   "tasks.bulkStatusFailed": "تعذر تحديث حالة المهمة",
   "tasks.dateFrom": "من تاريخ الاستحقاق",
   "tasks.dateTo": "إلى تاريخ الاستحقاق",
