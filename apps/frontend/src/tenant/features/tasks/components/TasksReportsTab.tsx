@@ -6,6 +6,7 @@
 import React from "react";
 import { CheckCircle2, Clock, AlertTriangle, RotateCcw, ListTodo, TrendingUp } from "lucide-react";
 import { useTaskMetrics } from "../hooks/useTasksApi";
+import { ErrorState } from "@/components/app/ErrorState";
 import { StatsSkeleton } from "@shared/ui";
 import { ModuleCommandMetricsGrid } from "@/components/app/ModuleCommandMetricsGrid";
 import { useTranslation } from "@/hooks/useTranslation";
@@ -13,10 +14,20 @@ import { TasksReportsCharts } from "./TasksReportsCharts";
 
 export function TasksReportsTab(): React.JSX.Element {
   const { t } = useTranslation();
-  const { data: metrics, isLoading } = useTaskMetrics();
+  const { data: metrics, isLoading, isError, refetch } = useTaskMetrics();
 
   if (isLoading) {
     return <StatsSkeleton count={6} />;
+  }
+
+  if (isError) {
+    return (
+      <ErrorState
+        title={t("tasks.loadFailed")}
+        description={t("tasks.loadFailedHint")}
+        onRetry={() => void refetch()}
+      />
+    );
   }
 
   const m = metrics ?? {
@@ -32,8 +43,16 @@ export function TasksReportsTab(): React.JSX.Element {
   };
 
   const completionRate = m.total > 0 ? Math.round((m.completed / m.total) * 100) : 0;
-  const onTimeRate =
+  // `overdue` is a live count, not completed-on-time history; label and compute
+  // this as "not currently overdue" rather than claiming punctuality.
+  const notOverdueRate =
     m.total > 0 ? Math.max(0, Math.round(((m.total - m.overdue) / m.total) * 100)) : 100;
+  const notOverdueTone =
+    notOverdueRate >= 90
+      ? "text-success"
+      : notOverdueRate >= 70
+        ? "text-warning"
+        : "text-destructive";
 
   return (
     <div className="space-y-6">
@@ -98,7 +117,7 @@ export function TasksReportsTab(): React.JSX.Element {
         <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
           <div className="flex items-center justify-between p-3 rounded-md bg-muted/40 border border-border/50">
             <span className="text-xs font-medium text-foreground">{t("tasks.reports.onTime")}</span>
-            <span className="text-sm font-bold text-success">{onTimeRate}%</span>
+            <span className={`text-sm font-bold ${notOverdueTone}`}>{notOverdueRate}%</span>
           </div>
           <div className="flex items-center justify-between p-3 rounded-md bg-muted/40 border border-border/50">
             <span className="text-xs font-medium text-foreground">

@@ -1,6 +1,6 @@
-import { useEffect } from "react";
 import { FormModal } from "@/components/app/FormModal";
 import { Alert } from "@/components/app/Alert";
+import { useCmdEnterShortcut } from "@/hooks/useCmdEnterShortcut";
 import { useTranslation } from "@/hooks/useTranslation";
 import type {
   MessageTemplate,
@@ -56,17 +56,15 @@ export function MessageComposer(props: MessageComposerProps): React.JSX.Element 
   const cancelLabel = canGoPrevious ? t("common.previous") : t("common.cancel");
   const { saveDisabled, handleSave } = model;
 
-  // Keyboard shortcut: Cmd/Ctrl + Enter to trigger save/send when valid
-  useEffect(() => {
-    const handleKeyDown = (event: KeyboardEvent): void => {
-      if (!(event.metaKey || event.ctrlKey) || event.key !== "Enter") return;
-      if (event.isComposing) return;
-      event.preventDefault();
+  // Cmd/Ctrl + Enter sends when valid — but never while the discard-confirmation
+  // dialog is open (the shared hook checks for an open alertdialog).
+  useCmdEnterShortcut({
+    enabled: true,
+    onTrigger: () => {
       if (!saveDisabled) handleSave();
-    };
-    window.addEventListener("keydown", handleKeyDown);
-    return () => window.removeEventListener("keydown", handleKeyDown);
-  }, [saveDisabled, handleSave]);
+    },
+    allowTyping: true,
+  });
 
   return (
     <FormModal
@@ -154,10 +152,13 @@ export function MessageComposer(props: MessageComposerProps): React.JSX.Element 
           onRecipientTabChange={model.setRecipientTab}
           onSearchChange={model.setRecipientSearch}
           onPreviewIndexChange={model.setPreviewIndex}
-          onSendOne={dispatch.executeSend}
+          onSendOne={(recipient) => void dispatch.sendOne(recipient)}
           onAdd={model.addRecipient}
           onRemove={model.removeRecipient}
+          onAddMany={model.addRecipients}
+          onRemoveMany={model.removeRecipients}
           isPickStep={step === "pick"}
+          isServerGateway={model.useServerGateway}
           renderRecipientPicker={props.renderRecipientPicker}
         />
       </form>

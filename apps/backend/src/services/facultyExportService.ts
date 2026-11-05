@@ -24,9 +24,6 @@ import { loadFacultyByIds, loadFacultyPage } from "./facultyService.js";
 export type FacultyExportQueryInput = ModuleExportQueryInput<FacultyListQuery>;
 export type FacultyExportOptions = ModuleExportOptions<FacultyExportColumn>;
 export type FacultyExportResult = ModuleExportResult;
-export type FacultyCsvExportOptions = FacultyExportOptions;
-export type FacultyCsvExportResult = FacultyExportResult;
-
 type FacultyExportContext = { settings: FacultySettings | null };
 
 async function prepareFacultyExport(

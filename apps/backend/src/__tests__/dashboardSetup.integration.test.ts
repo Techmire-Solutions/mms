@@ -1,6 +1,7 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { buildApp } from "../app.js";
 import { adminToken, teacherToken, viewerToken } from "./helpers/tokens.js";
+import { recordModernAuditEvent } from "../services/auditTrailService.js";
 
 vi.mock("../db/database.js", () => ({
   initDb: vi.fn().mockResolvedValue(undefined),
@@ -39,10 +40,14 @@ const mockUpsertDashboardWidgets = vi.fn();
 const mockDeleteDashboardWidget = vi.fn();
 const mockReorderDashboardWidgets = vi.fn();
 const mockLoadDashboardSummary = vi.fn();
+const mockBroadcastDashboardWidgetsChanged = vi.fn();
+const mockEvictDashboardPreferencesCache = vi.fn();
 
 vi.mock("../services/dashboardPreferencesService.js", () => ({
   loadDashboardPreferences: (...args: unknown[]) => mockLoadDashboardPreferences(...args),
   saveDashboardPreferences: (...args: unknown[]) => mockSaveDashboardPreferences(...args),
+  evictDashboardPreferencesCache: (...args: unknown[]) =>
+    mockEvictDashboardPreferencesCache(...args),
 }));
 
 vi.mock("../lib/dashboardWidgetsService.js", () => ({
@@ -50,6 +55,8 @@ vi.mock("../lib/dashboardWidgetsService.js", () => ({
   upsertDashboardWidgets: (...args: unknown[]) => mockUpsertDashboardWidgets(...args),
   deleteDashboardWidget: (...args: unknown[]) => mockDeleteDashboardWidget(...args),
   reorderDashboardWidgets: (...args: unknown[]) => mockReorderDashboardWidgets(...args),
+  broadcastDashboardWidgetsChanged: (...args: unknown[]) =>
+    mockBroadcastDashboardWidgetsChanged(...args),
 }));
 
 vi.mock("../services/dashboardSummaryService.js", () => ({
@@ -93,7 +100,7 @@ describe("dashboard config routes", () => {
     });
     mockLoadDashboardWidgets.mockResolvedValue([sampleWidget]);
     mockUpsertDashboardWidgets.mockResolvedValue([sampleWidget]);
-    mockDeleteDashboardWidget.mockResolvedValue(undefined);
+    mockDeleteDashboardWidget.mockResolvedValue(true);
   });
 
   it("GET preferences/widgets allowed for any authenticated tenant; PUT/DELETE gated on setupWrite", async () => {
@@ -134,6 +141,23 @@ describe("dashboard config routes", () => {
     expect(widgetsWriteOk.statusCode).toBe(200);
     expect(mockUpsertDashboardWidgets).toHaveBeenCalled();
 
+    // Partial PUT must merge over the stored document, not reset omitted keys.
+    mockLoadDashboardPreferences.mockResolvedValue({
+      disabledCardIds: ["keep-me"],
+      gridMode: "comfortable",
+      lowAttendanceThreshold: 80,
+      urgentAttendanceThreshold: 55,
+      enrollmentChartType: "area",
+      enrollmentChartColor: "#000000",
+      enrollmentChartPeriod: 6,
+      revenueChartType: "bar",
+      revenueChartColor: "#000000",
+      attendanceChartType: "line",
+      attendanceChartColor: "#000000",
+      hasanatChartType: "bar",
+      hasanatChartColor: "#000000",
+    });
+
     // PUT preferences — admin allowed.
     const prefsWriteOk = await app.inject({
       method: "PUT",
@@ -143,6 +167,12 @@ describe("dashboard config routes", () => {
     });
     expect(prefsWriteOk.statusCode).toBe(200);
     expect(mockSaveDashboardPreferences).toHaveBeenCalled();
+    expect(mockSaveDashboardPreferences.mock.calls.at(-1)?.[0]).toMatchObject({
+      gridMode: "compact",
+      disabledCardIds: ["keep-me"],
+      lowAttendanceThreshold: 80,
+      urgentAttendanceThreshold: 55,
+    });
 
     // DELETE widget — teacher denied.
     const deleteDenied = await app.inject({
@@ -206,6 +236,61 @@ describe("dashboard config routes", () => {
     });
     expect(allowed.statusCode).toBe(200);
     expect(mockReorderDashboardWidgets).toHaveBeenCalledWith([{ id: "custom-1", sortOrder: 0 }]);
+    // The live update is broadcast after the write transaction commits.
+    expect(mockBroadcastDashboardWidgetsChanged).toHaveBeenCalled();
+
+    await app.close();
+  });
+
+  it("rejects an oversized or non-integer reorder body with 400 instead of 500", async () => {
+    const app = await buildApp();
+    const tooMany = Array.from({ length: 501 }, (_, i) => ({ id: `w-${i}`, sortOrder: i }));
+
+    const oversized = await app.inject({
+      method: "PUT",
+      url: "/api/dashboard/widgets/reorder",
+      headers: { host: "demo.localhost", authorization: `Bearer ${adminToken(app)}` },
+      payload: { order: tooMany },
+    });
+    expect(oversized.statusCode).toBe(400);
+    expect(mockReorderDashboardWidgets).not.toHaveBeenCalled();
+
+    for (const sortOrder of [1.5, -1]) {
+      const invalid = await app.inject({
+        method: "PUT",
+        url: "/api/dashboard/widgets/reorder",
+        headers: { host: "demo.localhost", authorization: `Bearer ${adminToken(app)}` },
+        payload: { order: [{ id: "custom-1", sortOrder }] },
+      });
+      expect(invalid.statusCode, `sortOrder=${sortOrder}`).toBe(400);
+    }
+    expect(mockReorderDashboardWidgets).not.toHaveBeenCalled();
+
+    await app.close();
+  });
+
+  it("evicts the preferences cache only after the write commits", async () => {
+    const app = await buildApp();
+
+    const res = await app.inject({
+      method: "PUT",
+      url: "/api/dashboard/preferences",
+      headers: { host: "demo.localhost", authorization: `Bearer ${adminToken(app)}` },
+      payload: { gridMode: "compact" },
+    });
+
+    expect(res.statusCode).toBe(200);
+    expect(mockEvictDashboardPreferencesCache).toHaveBeenCalledTimes(1);
+    // Denied writes must not touch the cache.
+    mockEvictDashboardPreferencesCache.mockClear();
+    const denied = await app.inject({
+      method: "PUT",
+      url: "/api/dashboard/preferences",
+      headers: { host: "demo.localhost", authorization: `Bearer ${teacherToken(app)}` },
+      payload: { gridMode: "compact" },
+    });
+    expect(denied.statusCode).toBe(403);
+    expect(mockEvictDashboardPreferencesCache).not.toHaveBeenCalled();
 
     await app.close();
   });
@@ -247,6 +332,61 @@ describe("dashboard config routes", () => {
       message: "Failed to load dashboard summary",
     });
 
+    await app.close();
+  });
+
+  it("returns 404 when the widget to delete no longer exists", async () => {
+    const app = await buildApp();
+    mockDeleteDashboardWidget.mockResolvedValueOnce(false);
+
+    const res = await app.inject({
+      method: "DELETE",
+      url: "/api/dashboard/widgets/already-gone",
+      headers: { host: "demo.localhost", authorization: `Bearer ${adminToken(app)}` },
+    });
+
+    expect(res.statusCode).toBe(404);
+    expect(res.json()).toMatchObject({ type: "not_found" });
+    await app.close();
+  });
+
+  it("audits a widget reorder", async () => {
+    const app = await buildApp();
+    mockReorderDashboardWidgets.mockResolvedValueOnce([sampleWidget]);
+
+    const res = await app.inject({
+      method: "PUT",
+      url: "/api/dashboard/widgets/reorder",
+      headers: { host: "demo.localhost", authorization: `Bearer ${adminToken(app)}` },
+      payload: { order: [{ id: "custom-1", sortOrder: 3 }] },
+    });
+
+    expect(res.statusCode).toBe(200);
+    expect(vi.mocked(recordModernAuditEvent)).toHaveBeenCalledWith(
+      expect.objectContaining({
+        tableName: "dashboard",
+        recordId: "widgets",
+        newState: expect.objectContaining({ action: "dashboard.widgets.reorder" }),
+      }),
+    );
+    await app.close();
+  });
+
+  it("logs and answers 500 when a dashboard read fails", async () => {
+    const app = await buildApp();
+    mockLoadDashboardPreferences.mockRejectedValueOnce(new Error("db down"));
+
+    const res = await app.inject({
+      method: "GET",
+      url: "/api/dashboard/preferences",
+      headers: { host: "demo.localhost", authorization: `Bearer ${teacherToken(app)}` },
+    });
+
+    expect(res.statusCode).toBe(500);
+    expect(res.json()).toEqual({
+      type: "database_error",
+      message: "Failed to load dashboard preferences",
+    });
     await app.close();
   });
 });

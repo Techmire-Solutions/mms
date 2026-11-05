@@ -23,6 +23,9 @@ const WIDGET_TYPES = [
   "card",
 ] as const;
 
+/** Upper bound for one widget payload set — shared by the read cap, write and reorder DTOs. */
+export const DASHBOARD_WIDGETS_MAX = 500;
+
 const OPERATIONS = ["count", "sum", "avg", "percentage"] as const;
 const SUB_TEXT_TYPES = ["fixed", "dynamic"] as const;
 const TREND_TYPES = ["manual", "database"] as const;
@@ -36,18 +39,18 @@ const CHART_TYPES = ["bar", "line", "area", "pie", "radar", "kpi", "progress", "
 export const customWidgetSchema = z
   .object({
     id: z.string().min(1),
-    title: z.string(),
+    title: z.string().max(255),
     titleKey: z.string().optional(),
-    category: z.string(),
-    collection: z.string(),
+    category: z.string().max(64),
+    collection: z.string().max(64),
     widgetType: z.enum(WIDGET_TYPES).optional(),
-    icon: z.string().optional(),
+    icon: z.string().max(64).optional(),
     subTextType: z.enum(SUB_TEXT_TYPES).optional(),
     fixedSubText: z.string().optional(),
     fixedSubTextKey: z.string().optional(),
     trend: z.number().optional(),
     trendType: z.enum(TREND_TYPES).optional(),
-    role: z.string().optional(),
+    role: z.string().max(32).optional(),
     switchActionType: z.enum(SWITCH_ACTION_TYPES).optional(),
     switchStateKey: z.string().optional(),
     switchLabelOn: z.string().optional(),
@@ -68,12 +71,17 @@ export const customWidgetSchema = z
     filterField: z.string().optional(),
     filterOperator: z.enum(FILTER_OPERATORS).optional(),
     filterValue: z.string().optional(),
-    color: z.string(),
+    color: z.string().max(32),
     isPinnedToDashboard: z.boolean(),
     /** Stable pin order within the dashboard layout (BE defaults to array index). */
     sortOrder: z.number().optional(),
   })
-  .passthrough();
+  .passthrough()
+  // Mirrors the indexed varchar columns plus a bounded jsonb remainder, so an
+  // oversized payload is a 400 instead of Postgres 22001 surfaced as a 500.
+  .refine((widget) => JSON.stringify(widget).length <= 16_384, {
+    message: "Widget configuration is too large",
+  });
 
 export type DashboardWidgetDto = z.infer<typeof customWidgetSchema>;
 
@@ -239,7 +247,7 @@ export function normalizeDashboardWidgets(raw: unknown): DashboardWidgetDto[] {
 /** PUT /api/dashboard/widgets — bulk upsert (insert + update; no wipe). */
 export const dashboardWidgetsPutBodySchema = z.preprocess(
   (val) => normalizeDashboardWidgets(val),
-  z.array(customWidgetSchema).max(500, "Too many widgets in one request"),
+  z.array(customWidgetSchema).max(DASHBOARD_WIDGETS_MAX, "Too many widgets in one request"),
 );
 
 export type DashboardWidgetsPutBody = z.infer<typeof dashboardWidgetsPutBodySchema>;

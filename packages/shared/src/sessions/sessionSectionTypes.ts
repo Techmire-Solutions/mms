@@ -102,11 +102,3 @@ export function dayBeforeIsoDate(iso: string): string {
   date.setUTCDate(date.getUTCDate() - 1);
   return date.toISOString().slice(0, 10);
 }
-
-/** Whether an effective-dated row covers `onDate` (inclusive bounds; open-ended when endOn is null). */
-export function isAssignmentActiveOn(
-  row: { startOn: string; endOn: string | null },
-  onDate: string,
-): boolean {
-  return row.startOn <= onDate && (row.endOn === null || row.endOn >= onDate);
-}

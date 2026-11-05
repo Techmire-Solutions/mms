@@ -1,11 +1,12 @@
 import type { FastifyPluginAsync } from "fastify";
-import { auditAnomaliesQuerySchema, roleHasPermission, type User } from "@mms/shared";
+import { auditAnomaliesQuerySchema, type User } from "@mms/shared";
 import { getRequestTenant } from "../../../lib/tenantContext.js";
 import { sendForbidden } from "../../../lib/httpErrors.js";
 import { verifyTenantAuditChain } from "../../../services/auditVerificationService.js";
 import { detectAuditAnomalies } from "../../../services/auditAnomalyService.js";
 import { parseRequest, replyValidationError } from "../../../lib/zodRequest.js";
 import { listMerkleRoots } from "../../../audit/use-cases/auditQueryUseCases.js";
+import { userHasPermission } from "../../../lib/userPermissionContext.js";
 
 export const auditIntegrityRoutes: FastifyPluginAsync = async (fastify) => {
   /**
@@ -13,7 +14,7 @@ export const auditIntegrityRoutes: FastifyPluginAsync = async (fastify) => {
    */
   fastify.post("/api/audit/verify", async (request, reply) => {
     const user = request.user as User | undefined;
-    if (!roleHasPermission(user?.role ?? "", "audit.view")) {
+    if (!userHasPermission(user, "audit.view")) {
       return sendForbidden(reply);
     }
     const tenant = getRequestTenant();
@@ -31,7 +32,7 @@ export const auditIntegrityRoutes: FastifyPluginAsync = async (fastify) => {
    */
   fastify.get("/api/audit/merkle-roots", async (request, reply) => {
     const user = request.user as User | undefined;
-    if (!roleHasPermission(user?.role ?? "", "audit.view")) {
+    if (!userHasPermission(user, "audit.view")) {
       return sendForbidden(reply);
     }
     const tenant = getRequestTenant();
@@ -47,7 +48,7 @@ export const auditIntegrityRoutes: FastifyPluginAsync = async (fastify) => {
    */
   fastify.get("/api/audit/anomalies", async (request, reply) => {
     const user = request.user as User | undefined;
-    if (!roleHasPermission(user?.role ?? "", "audit.view")) {
+    if (!userHasPermission(user, "audit.view")) {
       return sendForbidden(reply);
     }
     const tenant = getRequestTenant();

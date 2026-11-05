@@ -1,4 +1,5 @@
 import { useEffect } from "react";
+import { isOverlayOpen, isTypingTarget } from "@/lib/ui/keyboardGuards";
 
 interface UseMessagingKeyboardShortcutsOptions {
   canWrite: boolean;
@@ -16,16 +17,9 @@ export function useMessagingKeyboardShortcuts({
 }: UseMessagingKeyboardShortcutsOptions): void {
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent): void => {
-      const target = e.target as HTMLElement | null;
-      if (
-        target &&
-        (target.tagName === "INPUT" ||
-          target.tagName === "TEXTAREA" ||
-          target.tagName === "SELECT" ||
-          target.isContentEditable)
-      ) {
-        return;
-      }
+      // Never fire while typing or while a modal/drawer owns the keyboard —
+      // `w`/`s`/`e` are bare letters and are otherwise triggered from dialogs.
+      if (isTypingTarget(e.target) || isOverlayOpen()) return;
 
       if (!canWrite || hasActiveComposer) return;
 

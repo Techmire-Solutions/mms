@@ -4,7 +4,10 @@ import { CONTACTS_MODULE_MANIFEST, type Contact } from "@mms/shared";
 import { BulkSelectionBar } from "@/components/app/BulkSelectionBar";
 import { Button } from "@/components/ui/button";
 import { useTranslation } from "@/hooks/useTranslation";
-import { ContactsBulkTagModal } from "@/tenant/features/contacts/components/ContactsBulkTagModal";
+import {
+  ContactsBulkTagModal,
+  type BulkTagMode,
+} from "@/tenant/features/contacts/components/ContactsBulkTagModal";
 
 export interface ContactsBulkActionBarProps {
   selectedCount: number;
@@ -28,7 +31,7 @@ export interface ContactsBulkActionBarProps {
   onRequestBulkDelete: () => void;
   onRequestBulkRestore: () => void;
   onClearSelection: () => void;
-  onBulkTag?: (tags: string[]) => Promise<void> | void;
+  onBulkTag?: (tags: string[], mode: BulkTagMode) => Promise<void> | void;
   isTagPending?: boolean;
 }
 

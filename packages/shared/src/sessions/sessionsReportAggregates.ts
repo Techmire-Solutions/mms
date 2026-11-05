@@ -38,6 +38,5 @@ export const sessionsReportAggregatesSchema = z.object({
 });
 
 export type SessionsReportCapacityItem = z.infer<typeof sessionsReportCapacityItemSchema>;
-export type SessionsReportEnrollmentTrend = z.infer<typeof sessionsReportEnrollmentTrendSchema>;
 export type SessionsReportTodaySession = z.infer<typeof sessionsReportTodaySessionSchema>;
 export type SessionsReportAggregates = z.infer<typeof sessionsReportAggregatesSchema>;

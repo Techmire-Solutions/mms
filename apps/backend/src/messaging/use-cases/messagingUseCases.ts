@@ -9,7 +9,6 @@ import {
   type Message,
   type MessagingMetricsDto,
   messageTemplateListSchema,
-  messageLogListSchema,
 } from "@mms/shared";
 import type {
   MessageLogsFilterQuery,
@@ -22,7 +21,6 @@ import {
 } from "./messagingRecipientUseCases.js";
 
 const templateListSchema = messageTemplateListSchema;
-const logListSchema = messageLogListSchema;
 
 /**
  * Messaging use-cases — composition root binding a {@link MessagingRepository}
@@ -38,15 +36,6 @@ export function createMessagingUseCases(repo: MessagingRepository = messagingRep
     },
     templateListSchema,
     "message_templates",
-  );
-
-  const logBulkService = defineTenantBulkCollectionService<Message>(
-    {
-      listByWorkspace: repo.listMessageLogsByWorkspace,
-      replaceForWorkspace: repo.replaceMessageLogsForWorkspace,
-    },
-    logListSchema,
-    "message_logs",
   );
 
   return {
@@ -106,16 +95,10 @@ export function createMessagingUseCases(repo: MessagingRepository = messagingRep
       await broadcastCollection("message_templates");
     },
 
-    loadMessageLogs: logBulkService.load,
-    loadMessageLogById: async (id: string, includeDeleted = false): Promise<Message | null> => {
+    loadMessageLogs: async (): Promise<Message[]> => {
       const tenant = getRequestTenant();
-      const cleanId = id?.trim();
-      if (!tenant || !cleanId) return null;
-      const log = await repo.findMessageLogById(tenant, cleanId);
-      if (!log) return null;
-      if (!includeDeleted && log.deletedAt) return null;
-      if (includeDeleted && !log.deletedAt) return null;
-      return log;
+      if (!tenant) return [];
+      return repo.listMessageLogsByWorkspace(tenant);
     },
     loadMessageLogsByIds: async (ids: string[], includeDeleted = false): Promise<Message[]> => {
       const tenant = getRequestTenant();
@@ -130,7 +113,6 @@ export function createMessagingUseCases(repo: MessagingRepository = messagingRep
       await repo.saveMessageLog(tenant, record);
       await broadcastCollection("message_logs");
     },
-    replaceMessageLogs: logBulkService.replace,
 
     loadFilteredMessageLogs: async (
       workspaceSubdomain?: string,
@@ -148,17 +130,21 @@ export function createMessagingUseCases(repo: MessagingRepository = messagingRep
       return repo.queryFilteredMessageLogs(workspaceSubdomain, query ?? {});
     },
 
-    /** Insert-only dispatch audit — never upsert/overwrite existing log rows. */
-    recordMessageLogs: async (workspaceSubdomain: string, logs: Message[]): Promise<Message[]> => {
-      if (!logs || logs.length === 0) return [];
-      await repo.insertMessageLogs(workspaceSubdomain, logs);
+    /**
+     * Insert-only dispatch audit — never upsert/overwrite existing log rows.
+     * Returns the number of rows actually persisted (`ON CONFLICT DO NOTHING`
+     * can skip an id that already exists).
+     */
+    recordMessageLogs: async (workspaceSubdomain: string, logs: Message[]): Promise<number> => {
+      if (!logs || logs.length === 0) return 0;
+      const inserted = await repo.insertMessageLogs(workspaceSubdomain, logs);
       await broadcastCollection("message_logs");
-      return logs;
+      return inserted;
     },
 
-    /** Soft-deletes all active message logs for the workspace (sets deletedAt). */
-    clearAllMessageLogs: async (workspaceSubdomain: string): Promise<void> => {
-      await repo.softDeleteActiveMessageLogs(workspaceSubdomain);
+    /** Soft-deletes all active message logs for the workspace (sets deletedAt + actor). */
+    clearAllMessageLogs: async (workspaceSubdomain: string, userId: string): Promise<void> => {
+      await repo.softDeleteActiveMessageLogs(workspaceSubdomain, userId);
       await broadcastCollection("message_logs");
     },
 
@@ -194,6 +180,14 @@ export function createMessagingUseCases(repo: MessagingRepository = messagingRep
       errorMessage?: string | null,
     ): Promise<void> => {
       await repo.updateMessageLogDeliveryStatus(workspaceSubdomain, id, status, errorMessage);
+    },
+
+    /** Persists a campaign's delivery outcomes in one batched write. */
+    saveMessageLogDeliveryOutcomes: async (
+      workspaceSubdomain: string,
+      outcomes: Parameters<MessagingRepository["saveMessageLogDeliveryOutcomes"]>[1],
+    ): Promise<void> => {
+      await repo.saveMessageLogDeliveryOutcomes(workspaceSubdomain, outcomes);
     },
 
     computeMessagingMetrics: async (

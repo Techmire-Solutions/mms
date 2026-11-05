@@ -62,8 +62,15 @@ export function useSessionRolloverForm(session: Session, initialMode: RolloverMo
     name,
     setName,
     dates,
-    setStartDate: (startDate: string) => setDates((current) => ({ ...current, startDate })),
-    setEndDate: (endDate: string) => setDates((current) => ({ ...current, endDate })),
+    setStartDate: (startDate: string) => {
+      setDates((current) => ({ ...current, startDate }));
+      // Eligibility/age checks depend on the new start date; force a fresh preview.
+      setPreview(null);
+    },
+    setEndDate: (endDate: string) => {
+      setDates((current) => ({ ...current, endDate }));
+      setPreview(null);
+    },
     datesValid,
     copy,
     toggleCopy: (key: RolloverCopyKey, checked: boolean) =>

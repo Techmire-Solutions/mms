@@ -175,8 +175,11 @@ export function SessionsListDesktopTable({
         kind: "longText",
         label: t("sessions.columns.description"),
         cellClassName: "text-xs text-muted-foreground max-w-cell-sm truncate",
-        render: (sessionItem) =>
-          renderSessionWorkColumnValue(sessionItem, "description", columnOptions),
+        render: (sessionItem) => {
+          const value = renderSessionWorkColumnValue(sessionItem, "description", columnOptions);
+          // Truncated cell: expose the full description to pointer users as a fallback.
+          return typeof value === "string" && value ? <span title={value}>{value}</span> : value;
+        },
       });
     }
 

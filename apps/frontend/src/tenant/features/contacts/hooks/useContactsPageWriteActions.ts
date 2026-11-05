@@ -121,33 +121,42 @@ export function useContactsPageWriteActions({
     async (
       list: Contact[],
       options?: { onProgress?: (progress: { imported: number; total: number }) => void },
-    ): Promise<void> => {
+    ): Promise<{ succeeded: number; failed: number }> => {
       if (!canWrite) {
         throw new Error(t("contacts.form.writeDenied"));
       }
-      await importContacts(list, options);
+      return importContacts(list, options);
     },
     [canWrite, t, importContacts],
   );
 
   const handleMerge = useCallback(
-    async (keepId: string | number, deleteId: string | number, mergedData: Contact) => {
+    async (
+      keepId: string | number,
+      deleteId: string | number,
+      mergedData: Contact,
+      keepUpdatedAt?: string,
+    ) => {
       if (!canWrite) {
         throw new Error(t("contacts.form.writeDenied"));
       }
-      await mergeContacts(keepId, deleteId, mergedData);
+      await mergeContacts(keepId, deleteId, mergedData, keepUpdatedAt);
     },
     [canWrite, t, mergeContacts],
   );
 
   const handleBulkTag = useCallback(
-    async (tags: string[]) => {
+    async (tags: string[], mode: "add" | "remove" = "add") => {
       if (!canWrite) {
         throw new Error(t("contacts.form.writeDenied"));
       }
       const ids = (selected ?? []).map(String);
       if (ids.length === 0 || tags.length === 0) return;
-      await bulkTagContacts(ids, tags);
+      await bulkTagContacts(
+        ids,
+        mode === "add" ? tags : undefined,
+        mode === "remove" ? tags : undefined,
+      );
       setSelected?.([]);
     },
     [canWrite, t, selected, bulkTagContacts, setSelected],

@@ -18,13 +18,6 @@ export type FacultyIoEntity = (typeof FACULTY_IO_ENTITY_IDS)[number];
 
 export const FACULTY_PAGE_TAB_DEFAULT: FacultyPageTabId = "faculties";
 
-/** @deprecated Use FACULTY_IO_ENTITY_IDS — kept for transitional imports. */
-export const FACULTY_WORK_SUB_TAB_IDS = FACULTY_IO_ENTITY_IDS;
-/** @deprecated Use FacultyIoEntity */
-export type FacultyWorkSubTabId = FacultyIoEntity;
-/** @deprecated Use FACULTY_PAGE_TAB_DEFAULT */
-export const FACULTY_WORK_SUB_TAB_DEFAULT: FacultyIoEntity = "faculties";
-
 export const FACULTY_PAGE_TAB_KEYS: Record<
   FacultyPageTabId,
   | "faculty.tabs.faculties"
@@ -59,18 +52,6 @@ export const FACULTY_PAGE_TAB_ICONS: Record<FacultyPageTabId, LucideIcon> = {
   setup: Settings,
 };
 
-/** @deprecated Use FACULTY_PAGE_TAB_KEYS */
-export const FACULTY_WORK_SUB_TAB_KEYS = {
-  faculties: FACULTY_PAGE_TAB_KEYS.faculties,
-  designations: FACULTY_PAGE_TAB_KEYS.designations,
-} as const;
-
-/** @deprecated Use FACULTY_PAGE_TAB_ICONS */
-export const FACULTY_WORK_SUB_TAB_ICONS = {
-  faculties: FACULTY_PAGE_TAB_ICONS.faculties,
-  designations: FACULTY_PAGE_TAB_ICONS.designations,
-} as const;
-
 export function isFacultyIoEntity(value: string): value is FacultyIoEntity {
   return (FACULTY_IO_ENTITY_IDS as readonly string[]).includes(value);
 }
@@ -93,17 +74,26 @@ export function migrateFacultyPageTab(
   return FACULTY_PAGE_TAB_DEFAULT;
 }
 
-/** @deprecated Use migrateFacultyPageTab / isFacultyIoEntity */
-export function resolveFacultyWorkSubTab(value: string): FacultyIoEntity {
-  return isFacultyIoEntity(value) ? value : FACULTY_WORK_SUB_TAB_DEFAULT;
+/** First tab the caller may show: the default tier when visible, else the first visible id. */
+function firstVisibleFacultyTab(visibleTabIds: readonly string[]): string {
+  if (visibleTabIds.includes(FACULTY_PAGE_TAB_DEFAULT)) return FACULTY_PAGE_TAB_DEFAULT;
+  return visibleTabIds[0] ?? "";
 }
 
+/**
+ * Resolves the persisted tier against the tabs the user may see.
+ *
+ * A persisted tier that is no longer visible (revoked Reports/Setup permission)
+ * must never blank the module body, so it repairs to the first visible tab —
+ * both the tab strip and the body read this value.
+ */
 export function resolveFacultyPageTab(
   value: string,
   visibleTabIds: readonly string[],
   legacyWorkSubTab: string = FACULTY_PAGE_TAB_DEFAULT,
 ): string {
-  if (value === "") return "";
+  const fallback = firstVisibleFacultyTab(visibleTabIds);
+  if (value === "") return fallback;
   const migrated = migrateFacultyPageTab(value, legacyWorkSubTab);
-  return visibleTabIds.includes(migrated) ? migrated : "";
+  return visibleTabIds.includes(migrated) ? migrated : fallback;
 }

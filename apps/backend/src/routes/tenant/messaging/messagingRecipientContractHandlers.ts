@@ -5,6 +5,7 @@ import {
   type messagingContract,
 } from "@mms/shared";
 import type { ContractRouteArgs, ContractRouteResponse } from "../../../lib/contractRouterTypes.js";
+import { logger } from "../../../lib/logger.js";
 import { canReadMessaging } from "../../../services/rbacService.js";
 import { withTenant } from "../../../db/tenant-context.js";
 import { getRequestTenant } from "../../../lib/tenantContext.js";
@@ -18,6 +19,13 @@ function getTenantInfo(request: { tenant?: { id?: string; subdomain?: string } }
   const subdomain = getRequestTenant() || request.tenant?.subdomain;
   if (!id || !subdomain) throw new Error("Tenant context required");
   return { id: String(id), subdomain: String(subdomain) };
+}
+
+function logHandlerFailure(operation: string, err: unknown): void {
+  logger.error(
+    { err: err instanceof Error ? err.message : String(err), operation },
+    "messaging recipient handler failed",
+  );
 }
 
 export async function messagingListRecipientsHandler({
@@ -41,7 +49,8 @@ export async function messagingListRecipientsHandler({
       { readOnly: true },
     );
     return { status: 200 as const, body: result };
-  } catch {
+  } catch (err) {
+    logHandlerFailure("listRecipients", err);
     return {
       status: 500 as const,
       body: { type: "database_error", message: "Failed to list recipients" },
@@ -85,7 +94,8 @@ export async function messagingMatchRecipientsHandler({
       { readOnly: true },
     );
     return { status: 200 as const, body: result };
-  } catch {
+  } catch (err) {
+    logHandlerFailure("matchRecipients", err);
     return {
       status: 500 as const,
       body: { type: "database_error", message: "Failed to match recipients" },
@@ -129,7 +139,8 @@ export async function messagingResolveContactsHandler({
       { readOnly: true },
     );
     return { status: 200 as const, body: { recipients } };
-  } catch {
+  } catch (err) {
+    logHandlerFailure("resolveContacts", err);
     return {
       status: 500 as const,
       body: { type: "database_error", message: "Failed to resolve contacts" },

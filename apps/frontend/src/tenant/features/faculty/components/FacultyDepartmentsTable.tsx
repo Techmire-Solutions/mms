@@ -1,6 +1,7 @@
 import React from "react";
 import { Building2, Pencil, RotateCcw, Trash2 } from "lucide-react";
 import type { FacultyDepartmentEntity } from "@mms/shared";
+import { EmptyCellDash } from "@/components/app/EmptyCellDash";
 import { EmptyState } from "@/components/app/EmptyState";
 import { StatusBadge, type StatusBadgeConfigItem } from "@/components/app/StatusBadge";
 import { SEMANTIC_BADGE } from "@/lib/ui/semanticTone";
@@ -23,8 +24,6 @@ export interface FacultyDepartmentsTableProps {
   onRestore?: (dept: FacultyDepartmentEntity) => void;
   primaryAction?: React.ReactNode;
 }
-
-const Dash = () => <span className="text-muted-foreground/50">—</span>;
 
 /** Departments directory — Faculty Management model: name, description, designation count, status. */
 export function FacultyDepartmentsTable({
@@ -60,7 +59,7 @@ export function FacultyDepartmentsTable({
       searchValue: (d) => d.description ?? "",
       render: (d) => (
         <span className="line-clamp-2 text-xs text-muted-foreground">
-          {d.description?.trim() ? d.description : <Dash />}
+          {d.description?.trim() ? d.description : <EmptyCellDash />}
         </span>
       ),
     },

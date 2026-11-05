@@ -14,5 +14,7 @@ export const COMMON_FACULTY_ROLES = [
 export interface FacultyManagementTabProps {
   session: Session;
   onUpdate: (updatedSession: Session) => void | Promise<void>;
-  canMutate: boolean;
+  /** Writable flag (detail passes both names; `canMutate` wins for older callers). */
+  canWrite?: boolean;
+  canMutate?: boolean;
 }

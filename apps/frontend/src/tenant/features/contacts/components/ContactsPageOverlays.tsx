@@ -34,10 +34,17 @@ export interface ContactsPageOverlaysProps {
     keepId: string | number,
     deleteId: string | number,
     mergedData: Contact,
+    keepUpdatedAt?: string,
   ) => Promise<void>;
   importOpen: boolean;
   onCloseImport: () => void;
-  onImportContacts: (contacts: Contact[]) => void | Promise<void>;
+  onImportContacts: (
+    contacts: Contact[],
+    options?: { onProgress?: (progress: { imported: number; total: number }) => void },
+  ) =>
+    | void
+    | { succeeded: number; failed: number }
+    | Promise<void | { succeeded: number; failed: number }>;
   csvImportOpen?: boolean;
   onCloseCsvImport?: () => void;
   messagingTarget: {

@@ -1,13 +1,18 @@
 import {
-  bulkRestoreTasks,
+  createTask,
   deleteTask,
   findTaskById,
   getTaskMetrics,
   listTasks,
   restoreTask,
+  updateTask,
   updateTaskStatus,
 } from "../../db/repositories/tasksRepository.js";
-import { bulkDeleteTasks } from "../../db/repositories/tasksTrashRepository.js";
+import {
+  bulkDeleteTasksBatch,
+  bulkRestoreTasksBatch,
+  bulkUpdateTaskStatusBatch,
+} from "../../db/repositories/tasksBulkRepository.js";
 import type { TasksRepository } from "./tasksRepository.js";
 
 /**
@@ -18,9 +23,12 @@ export const tasksRepositoryAdapter: TasksRepository = {
   listTasks,
   findTaskById,
   getTaskMetrics,
+  createTask,
+  updateTask,
   updateTaskStatus,
   deleteTask,
   restoreTask,
-  bulkRestoreTasks,
-  bulkDeleteTasks,
+  bulkRestoreTasks: bulkRestoreTasksBatch,
+  bulkDeleteTasks: bulkDeleteTasksBatch,
+  bulkUpdateTaskStatus: bulkUpdateTaskStatusBatch,
 };

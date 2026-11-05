@@ -103,12 +103,15 @@ export function DataTable<TData extends { id: string | number }>({
       aria-busy={isLoading || undefined}
     >
       <WorkTaskToolbar
+        surface="plain"
         regionLabel={label}
         shownCountLabel={t("common.dataTable.shownCount", { count: state.rows.length })}
         search={state.search}
         onSearchChange={state.setSearch}
         searchPlaceholder={searchPlaceholder ?? t("common.searchPlaceholder")}
         searchId={searchId}
+        // DataTable owns no focus shortcut; opt out instead of advertising a dead `/`.
+        searchShortcutHint={false}
         hasActiveFilters={state.hasActiveFilters}
         onClearFilters={state.clearFilters}
         clearFiltersLabel={t("common.clearFilters")}

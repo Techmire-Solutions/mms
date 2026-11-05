@@ -4,10 +4,22 @@ import { renderToStaticMarkup } from "react-dom/server";
 import { TenantMessageComposerLauncher } from "./TenantMessageComposerLauncher";
 
 vi.mock("@/tenant/components/messaging/TenantMessageComposer", () => ({
-  default: ({ channel, recipients }: { channel: string; recipients: { name: string }[] }) => (
+  default: ({
+    channel,
+    recipients,
+    initialMessage,
+    initialSubject,
+  }: {
+    channel: string;
+    recipients: { name: string }[];
+    initialMessage?: string;
+    initialSubject?: string;
+  }) => (
     <div data-testid="mock-tenant-composer">
       <span>Channel: {channel}</span>
       <span>Recipients: {recipients.map((r) => r.name).join(", ")}</span>
+      <span>Message: {initialMessage ?? ""}</span>
+      <span>Subject: {initialSubject ?? ""}</span>
     </div>
   ),
 }));
@@ -34,5 +46,23 @@ describe("TenantMessageComposerLauncher", () => {
       />,
     );
     expect(html).toBeDefined();
+  });
+
+  it("forwards the prefilled message and subject from the launch target", () => {
+    const target = {
+      channel: "sms" as const,
+      recipients: [{ id: "1", name: "Zaid Ali", phone: "+1234567890" }],
+      initialMessage: "Fee is due tomorrow",
+      initialSubject: "Fee reminder",
+    };
+
+    const html = renderToStaticMarkup(
+      <TenantMessageComposerLauncher messagingTarget={target} onClose={vi.fn()} />,
+    );
+
+    // Regression: dropping the prefill made every entity/dashboard launcher open
+    // an empty composer.
+    expect(html).toContain("Fee is due tomorrow");
+    expect(html).toContain("Fee reminder");
   });
 });

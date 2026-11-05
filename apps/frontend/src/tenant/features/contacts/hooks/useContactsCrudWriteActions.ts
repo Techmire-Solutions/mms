@@ -72,12 +72,14 @@ export function useContactsCrudWriteActions({
     keepId: string | number,
     deleteId: string | number,
     merged: Contact,
+    keepUpdatedAt?: string,
   ): Promise<void> => {
     try {
       await mergeContactsMutation.mutateAsync({
         keepId,
         deleteId,
         merged,
+        keepUpdatedAt,
       });
       notify.success(t("contacts.mergeSuccessTitle"), {
         description: t("contacts.mergeSuccessDesc"),
@@ -91,8 +93,8 @@ export function useContactsCrudWriteActions({
   const importContacts = async (
     list: Contact[],
     options?: { onProgress?: (progress: { imported: number; total: number }) => void },
-  ): Promise<void> => {
-    if (list.length === 0) return;
+  ): Promise<{ succeeded: number; failed: number }> => {
+    if (list.length === 0) return { succeeded: 0, failed: 0 };
     let succeeded = 0;
     let failed = 0;
     try {
@@ -122,6 +124,7 @@ export function useContactsCrudWriteActions({
       if (succeeded > 0) invalidateContacts();
     }
     notifyBulkResult(succeeded, failed, "contacts.importSuccessOne", "contacts.importSuccess");
+    return { succeeded, failed };
   };
 
   const bulkTagContacts = async (
@@ -131,7 +134,12 @@ export function useContactsCrudWriteActions({
   ): Promise<number> => {
     try {
       const res = await bulkTagMutation.mutateAsync({ ids, addTags, removeTags });
-      notify.success(t("contacts.bulkTagSuccess", { count: res.updatedCount }));
+      const removingOnly = Boolean(removeTags?.length) && !addTags?.length;
+      notify.success(
+        t(removingOnly ? "contacts.bulkTagRemoveSuccess" : "contacts.bulkTagSuccess", {
+          count: res.updatedCount,
+        }),
+      );
       return res.updatedCount;
     } catch (err) {
       handleError(err, "contacts.bulk_tag");

@@ -9,22 +9,6 @@ export type SessionFormDraft = Omit<Partial<Session>, "baseFee" | "minAttendance
   minAttendancePct?: string;
 };
 
-export function buildEmptySessionDraft(defaultCurrency: string): SessionFormDraft {
-  return {
-    name: "",
-    categoryId: "",
-    programId: "",
-    status: "draft",
-    startDate: todayISO(),
-    endDate: "",
-    baseFee: "",
-    currency: defaultCurrency,
-    description: "",
-    faculty: [],
-    classes: [],
-  };
-}
-
 export function buildSessionDraftFromRecord(
   session: Session | null | undefined,
   defaultCurrency: string,

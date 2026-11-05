@@ -86,16 +86,95 @@ describe("requeueContactsSyncConflict", () => {
     expect(getContactsSyncConflicts().map((c) => c.id)).toEqual(["b"]);
   });
 
+  it("rebases the local payload onto the fresh server version and counts the attempt", () => {
+    requeueContactsSyncConflict("a", {
+      id: 1,
+      updatedAt: "2026-02-02T00:00:00.000Z",
+    } as never);
+
+    const [entry] = getContactsOutbox();
+    expect(entry).toMatchObject({
+      id: "a",
+      kind: "upsert",
+      // Without the rebase the replay re-sends the stale token and 409s forever.
+      contact: { id: 1, updatedAt: "2026-02-02T00:00:00.000Z" },
+      attempts: 1,
+    });
+  });
+
   it("is a no-op for unknown ids", () => {
     requeueContactsSyncConflict("nope");
     expect(getContactsOutbox()).toEqual([]);
     expect(getContactsSyncConflicts()).toHaveLength(2);
   });
 
-  it("requeueAll returns the conflict count and empties conflicts", () => {
-    const count = requeueAllContactsSyncConflicts();
-    expect(count).toBe(2);
+  it("requeueAll re-queues resolvable conflicts and empties them", async () => {
+    const result = await requeueAllContactsSyncConflicts();
+    expect(result).toEqual({ requeued: 2, skipped: 0, needsReview: 0 });
     expect(getContactsOutbox()).toHaveLength(2);
     expect(getContactsSyncConflicts()).toEqual([]);
+  });
+
+  it("skips conflicts that already exhausted the retry budget", async () => {
+    writeJson(currentContactsSyncKeys().conflicts, [
+      { ...conflictFixture("a", "upsert"), attempts: 3 },
+    ]);
+
+    const result = await requeueAllContactsSyncConflicts();
+
+    expect(result).toEqual({ requeued: 0, skipped: 1, needsReview: 0 });
+    expect(getContactsOutbox()).toEqual([]);
+    expect(getContactsSyncConflicts().map((c) => c.id)).toEqual(["a"]);
+  });
+
+  it("rebases a clean contact (same server version) and drops the form's blueprint id", async () => {
+    const updatedAt = "2026-01-01T00:00:00.000Z";
+    writeJson(currentContactsSyncKeys().conflicts, [
+      {
+        ...conflictFixture("a", "upsert"),
+        contact: { id: 1, updatedAt, _blueprintId: "1" },
+      },
+    ]);
+
+    const result = await requeueAllContactsSyncConflicts({
+      fetchFresh: async () => ({ id: 1, updatedAt }) as never,
+    });
+
+    const [entry] = getContactsOutbox();
+    expect(result).toEqual({ requeued: 1, skipped: 0, needsReview: 0 });
+    expect(entry).toMatchObject({ kind: "upsert", contact: { id: 1, updatedAt } });
+    expect((entry as { contact: Record<string, unknown> }).contact).not.toHaveProperty(
+      "_blueprintId",
+    );
+  });
+
+  it("leaves a conflict with newer server data for individual review", async () => {
+    writeJson(currentContactsSyncKeys().conflicts, [
+      {
+        ...conflictFixture("a", "update"),
+        contact: { id: 1, updatedAt: "2026-01-01T00:00:00.000Z", notes: "local edit" },
+      },
+    ]);
+
+    const result = await requeueAllContactsSyncConflicts({
+      fetchFresh: async () =>
+        ({ id: 1, updatedAt: "2026-02-02T00:00:00.000Z", notes: "server edit" }) as never,
+    });
+
+    expect(result).toEqual({ requeued: 0, skipped: 0, needsReview: 1 });
+    expect(getContactsOutbox()).toEqual([]);
+    expect(getContactsSyncConflicts().map((conflict) => conflict.id)).toEqual(["a"]);
+  });
+
+  it("skips a conflict when the fresh server record cannot be loaded", async () => {
+    writeJson(currentContactsSyncKeys().conflicts, [{ ...conflictFixture("a", "update") }]);
+
+    const result = await requeueAllContactsSyncConflicts({
+      fetchFresh: async () => null,
+    });
+
+    expect(result).toEqual({ requeued: 0, skipped: 1, needsReview: 0 });
+    expect(getContactsOutbox()).toEqual([]);
+    expect(getContactsSyncConflicts()).toHaveLength(1);
   });
 });

@@ -113,18 +113,31 @@ export async function runFacultySaveFlow(input: FacultySaveFlowInput): Promise<b
       return false;
     }
 
-    const userOk = await syncUserAccount({
-      userAccountDraft: input.userAccountDraft,
-      linkedUser: input.linkedUser,
-      contactId: payload.contactId,
-      payload: payload as Record<string, unknown>,
-      t: input.t,
-      setErrors: input.setErrors,
-      onUserInvalidate: input.onUserInvalidate,
-    });
-    if (!userOk) return false;
-
+    // The faculty record is the source of truth; the linked account is a side
+    // effect. Saving the record first means a failed record write can never leave
+    // a created account (or an applied role) behind.
     await input.onSave(payload as FacultyMember);
+
+    let userOk = true;
+    try {
+      userOk = await syncUserAccount({
+        userAccountDraft: input.userAccountDraft,
+        linkedUser: input.linkedUser,
+        contactId: payload.contactId,
+        payload: payload as Record<string, unknown>,
+        t: input.t,
+        setErrors: input.setErrors,
+        onUserInvalidate: input.onUserInvalidate,
+      });
+    } catch {
+      userOk = false;
+    }
+    if (!userOk) {
+      // Record persisted, account sync failed: keep the form open and say so.
+      notify.warning(input.t("faculty.toast.savedAccountFailed"));
+      return false;
+    }
+
     input.onBaselineReset?.(payload);
     if (!input.keepOpen) input.onClose();
     return true;

@@ -10,6 +10,11 @@ vi.mock("../services/rbacService.js", () => ({
   getTenantRoleMatrix: (...args: unknown[]) => mockRoleMatrix(...args),
 }));
 
+const mockCatalog = vi.fn();
+vi.mock("../lib/tenantRoleCatalog.js", () => ({
+  getTenantRoleCatalog: (...args: unknown[]) => mockCatalog(...args),
+}));
+
 import { resolveModuleRouteAction } from "../lib/moduleRouteActions.js";
 import {
   ModuleAvailabilityUnavailableError,
@@ -26,7 +31,8 @@ describe("resolveModuleRouteAction", () => {
     expect(resolveModuleRouteAction("GET", "/api/students/:id", "students")).toBe("read");
     expect(resolveModuleRouteAction("HEAD", "/api/students", "students")).toBe("read");
     expect(resolveModuleRouteAction("POST", "/api/students", "students")).toBe("write");
-    expect(resolveModuleRouteAction("DELETE", "/api/students/:id", "students")).toBe("write");
+    expect(resolveModuleRouteAction("DELETE", "/api/sessions/:id", "sessions")).toBe("delete");
+    expect(resolveModuleRouteAction("DELETE", "/api/students/:id", "students")).toBe("delete");
     expect(resolveModuleRouteAction(["GET", "PUT"], "/api/students/bulk", "students")).toBe(
       "write",
     );
@@ -144,6 +150,7 @@ describe("background job module gate", () => {
     clearModuleAvailabilityCache();
     mockModuleRow.mockResolvedValue({ grantedModules: null, enabledModules: null });
     mockRoleMatrix.mockResolvedValue({ "u-1": { role: "teacher", deletedAt: null } });
+    mockCatalog.mockResolvedValue([]);
   });
 
   it("maps runner kinds to module actions", () => {
@@ -156,6 +163,40 @@ describe("background job module gate", () => {
 
   it("allows a job whose module and permission are still in place", async () => {
     expect(await getBackgroundJobModuleDenial("demo", "u-1", "students", "export")).toBeNull();
+  });
+
+  it("allows a job owned by a custom role when the catalog grants the action", async () => {
+    mockRoleMatrix.mockResolvedValue({ "u-1": { role: "faculty_ed_c1", deletedAt: null } });
+    mockCatalog.mockResolvedValue([
+      {
+        id: "faculty_ed_c1",
+        labelKey: "nav.tasks",
+        descriptionKey: "nav.tasks",
+        isSystem: false,
+        badgeVariant: "primary",
+        permissions: { students: ["read"] },
+      },
+    ]);
+
+    expect(await getBackgroundJobModuleDenial("demo", "u-1", "students", "export")).toBeNull();
+  });
+
+  it("denies a custom-role job when the catalog no longer grants the action", async () => {
+    mockRoleMatrix.mockResolvedValue({ "u-1": { role: "faculty_ed_c1", deletedAt: null } });
+    mockCatalog.mockResolvedValue([
+      {
+        id: "faculty_ed_c1",
+        labelKey: "nav.tasks",
+        descriptionKey: "nav.tasks",
+        isSystem: false,
+        badgeVariant: "primary",
+        permissions: {},
+      },
+    ]);
+
+    expect(await getBackgroundJobModuleDenial("demo", "u-1", "students", "export")).toBe(
+      "PERMISSION_DENIED",
+    );
   });
 
   it("denies a job when its module was disabled after enqueueing", async () => {

@@ -2,7 +2,6 @@ import {
   type Faculty,
   type User,
   FACULTY_MODULE_MANIFEST,
-  roleHasPermission,
   type facultyContract,
 } from "@mms/shared";
 import { createCollectionAuditHelper } from "../../../lib/createCollectionAuditHelper.js";
@@ -12,6 +11,7 @@ import { withTenant } from "../../../db/tenant-context.js";
 import { getRequestTenant } from "../../../lib/tenantContext.js";
 import { canReadCollection, canWriteCollection } from "../../../services/rbacService.js";
 import type { ContractRouteArgs, ContractRouteResponse } from "../../../lib/contractRouterTypes.js";
+import { userHasPermission } from "../../../lib/userPermissionContext.js";
 
 /** Thin Faculty audit helper — same shape as Contacts `auditContact`. */
 export const auditFaculty = createCollectionAuditHelper("faculty", { subjectScoped: true });
@@ -44,14 +44,22 @@ export async function handleDuplicateCheck({
       body: { type: "forbidden", message: "Insufficient permissions" },
     };
   }
+  const tenantId = request.tenant?.id;
+  if (!tenantId) {
+    return {
+      status: 403 as const,
+      body: { type: "forbidden", message: "Tenant context required" },
+    };
+  }
   try {
     const result = await withTenant(
-      String(request.tenant?.id),
+      String(tenantId),
       () => facultyUseCases.checkFacultyRegistrationDuplicate(body),
       { readOnly: true },
     );
     return { status: 200 as const, body: result };
-  } catch {
+  } catch (error: unknown) {
+    request.log.error({ err: error }, "Failed to check faculty duplicate");
     return {
       status: 500 as const,
       body: { type: "server_error", message: "Failed to check duplicate" },
@@ -119,21 +127,29 @@ export async function handleMigrateEmployeeIds({
   const user = request.user as User;
   if (
     !canWriteCollection(user, "faculty") ||
-    !roleHasPermission(user.role, FACULTY_MODULE_MANIFEST.permissions.setupWrite)
+    !userHasPermission(user, FACULTY_MODULE_MANIFEST.permissions.setupWrite)
   ) {
     return {
       status: 403 as const,
       body: { type: "forbidden", message: "Insufficient permissions" },
     };
   }
+  const tenantId = request.tenant?.id;
+  if (!tenantId) {
+    return {
+      status: 403 as const,
+      body: { type: "forbidden", message: "Tenant context required" },
+    };
+  }
   try {
     const result = await withTenant(
-      String(request.tenant?.id),
-      () => facultyUseCases.migrateFacultyMissingEmployeeIds(),
+      String(tenantId),
+      () => facultyUseCases.migrateFacultyMissingEmployeeIds(String(user.id)),
       { readOnly: false },
     );
     return { status: 200 as const, body: { success: true as const, ...result } };
-  } catch {
+  } catch (error: unknown) {
+    request.log.error({ err: error }, "Failed to migrate faculty employee IDs");
     return {
       status: 500 as const,
       body: { type: "server_error", message: "Failed to migrate employee IDs" },

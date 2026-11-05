@@ -7,22 +7,15 @@ import { User as UserIcon } from "lucide-react";
 import { formatDate, type TaskRecord, type TaskStatus, type AppTranslationKey } from "@mms/shared";
 import type { WorkBatchTableColumn } from "@/components/common/work/WorkBatchTable";
 import { TableCellLink } from "@shared/ui";
-import { TaskPriorityBadge, TaskStatusBadge } from "./TaskBadges";
-
-export const TASK_NEXT_STATUS: Record<TaskStatus, TaskStatus> = {
-  todo: "in_progress",
-  in_progress: "in_review",
-  in_review: "completed",
-  blocked: "in_progress",
-  completed: "todo",
-  cancelled: "todo",
-};
+import { TaskPriorityBadge } from "./TaskBadges";
+import { TaskStatusMenu } from "./TaskStatusMenu";
 
 export function buildTasksWorkBatchColumns(
   t: (key: AppTranslationKey) => string,
   canWrite: boolean,
-  onCycleStatus: (task: TaskRecord) => void,
+  onChangeStatus: (task: TaskRecord, status: TaskStatus) => void,
   onView: (task: TaskRecord) => void,
+  statusPending?: boolean,
   options?: {
     isColumnVisible?: (key: string) => boolean;
     getColumnWidth?: (key: string) => number | undefined;
@@ -50,7 +43,7 @@ export function buildTasksWorkBatchColumns(
         task.description ? (
           <div className="text-xs text-muted-foreground line-clamp-2">{task.description}</div>
         ) : (
-          <span className="text-muted-foreground/60 text-xs">—</span>
+          <span className="text-muted-foreground text-xs">—</span>
         ),
     },
     {
@@ -66,9 +59,11 @@ export function buildTasksWorkBatchColumns(
       width: widthOf?.("status") ?? 140,
       noWrap: true,
       render: (task) => (
-        <TaskStatusBadge
-          status={task.status}
-          onClick={canWrite ? () => onCycleStatus(task) : undefined}
+        <TaskStatusMenu
+          task={task}
+          canChange={canWrite}
+          pending={statusPending}
+          onChangeStatus={onChangeStatus}
         />
       ),
     },
@@ -86,7 +81,7 @@ export function buildTasksWorkBatchColumns(
             </span>
           </div>
         ) : (
-          <span className="text-muted-foreground/60 text-xs">{t("tasks.noAssignees")}</span>
+          <span className="text-muted-foreground text-xs">{t("tasks.noAssignees")}</span>
         ),
     },
     {
@@ -95,7 +90,7 @@ export function buildTasksWorkBatchColumns(
       width: widthOf?.("dueAt") ?? 120,
       noWrap: true,
       render: (task) => {
-        if (!task.dueAt) return <span className="text-muted-foreground/60 text-xs">—</span>;
+        if (!task.dueAt) return <span className="text-muted-foreground text-xs">—</span>;
         const isOverdue =
           task.status !== "completed" &&
           task.status !== "cancelled" &&

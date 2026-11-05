@@ -1,4 +1,5 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
+import { ValidationError } from "../lib/httpErrors.js";
 import type { User } from "@mms/shared";
 
 const mockListFacultyDepartments = vi.fn();
@@ -143,20 +144,38 @@ describe("facultyDepartmentRouteHandlers", () => {
       });
     });
 
-    it("given a repository validation error, should return 400", async () => {
+    it("given a typed domain validation error, should return 400", async () => {
       // Arrange
-      mockSaveFacultyDepartment.mockRejectedValueOnce(new Error("Department is archived"));
+      mockSaveFacultyDepartment.mockRejectedValueOnce(
+        new ValidationError("Department is archived"),
+      );
 
       // Act
       const res = await handleSaveDepartment({
         params: { id: "dept-1" },
         body: { name: "Hadith", status: "inactive" },
-        request: { user: adminUser, tenant: { id: "demo" } },
+        request: { user: adminUser, tenant: { id: "demo" }, log: { error: vi.fn() } },
       } as never);
 
       // Assert
       expect(res.status).toBe(400);
       expect(res.body).toEqual({ type: "validation_error", message: "Department is archived" });
+    });
+
+    it("given an untyped repository failure, should log and return 500", async () => {
+      // An infrastructure failure used to be reported as a 400 validation_error.
+      mockSaveFacultyDepartment.mockRejectedValueOnce(new Error("connection terminated"));
+      const log = { error: vi.fn() };
+
+      const res = await handleSaveDepartment({
+        params: { id: "dept-1" },
+        body: { name: "Hadith", status: "inactive" },
+        request: { user: adminUser, tenant: { id: "demo" }, log },
+      } as never);
+
+      expect(res.status).toBe(500);
+      expect(res.body).toMatchObject({ type: "server_error" });
+      expect(log.error).toHaveBeenCalledTimes(1);
     });
   });
 

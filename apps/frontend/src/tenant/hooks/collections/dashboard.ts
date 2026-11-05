@@ -7,7 +7,8 @@ export {
   DASHBOARD_WIDGETS_QUERY_KEY,
   DASHBOARD_SUMMARY_QUERY_KEY,
   DASHBOARD_SUMMARY_QUERY_KEY_ROOT,
-  invalidateDashboardQueries,
+  invalidateDashboardConfigQueries,
+  seedDashboardWidgets,
   useDashboardPreferencesQuery,
   useDashboardPreferencesMutation,
   useDashboardWidgetsQuery,
@@ -18,14 +19,3 @@ export {
 } from "@/tenant/features/dashboard/hooks/useDashboardSetupConfig";
 export { useDashboardData } from "@/tenant/features/dashboard/hooks/useDashboardData";
 export { percentChange } from "@/tenant/features/dashboard/hooks/dashboardMetricTrends";
-
-// Phase 7: contract-driven tsrClient hooks
-export {
-  useDashboardPreferencesQuery as useDashboardContractPreferencesQuery,
-  useDashboardPreferencesMutation as useDashboardContractPreferencesMutation,
-  useDashboardWidgetsQuery as useDashboardContractWidgetsQuery,
-  useDashboardWidgetsMutation as useDashboardContractWidgetsMutation,
-  useDashboardWidgetDeleteMutation as useDashboardContractWidgetDeleteMutation,
-  useDashboardWidgetsReorderMutation as useDashboardContractWidgetsReorderMutation,
-  useDashboardSummaryQuery as useDashboardContractSummaryQuery,
-} from "@/tenant/features/dashboard/hooks/useDashboardSetupConfig";

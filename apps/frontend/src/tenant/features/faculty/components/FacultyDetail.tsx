@@ -6,6 +6,7 @@ import { DetailDrawerRestoreOrEditAction } from "@/components/app/DetailDrawerAr
 import { DrawerUpdatedStamp } from "@/components/app/DrawerUpdatedStamp";
 import { Button } from "@/components/ui/button";
 import { useTranslation } from "@/hooks/useTranslation";
+import { assertContractOk } from "@/lib/apiContractError";
 import type { useMessageComposerState } from "@/hooks/useMessageComposerState";
 import { useFacultyConfig } from "@/hooks/useStandardModuleConfig";
 import { FacultyArchivedBanner } from "@/tenant/features/faculty/components/FacultyArchivedBanner";
@@ -33,6 +34,8 @@ export interface FacultyDetailProps {
   openComposer: ReturnType<typeof useMessageComposerState>["openComposer"];
   canWriteMessaging: boolean;
   onFilterSubordinates?: (facultyId: string) => void;
+  /** Lets the drawer refresh its own snapshot after a save it performed. */
+  onFacultyPatched?: (patch: Partial<FacultyMember>) => void;
 }
 
 export function FacultyDetail({
@@ -45,6 +48,7 @@ export function FacultyDetail({
   openComposer,
   canWriteMessaging,
   onFilterSubordinates,
+  onFacultyPatched,
 }: FacultyDetailProps): React.JSX.Element {
   const { t } = useTranslation();
   const { settings, isFieldEnabled } = useFacultyConfig();
@@ -72,10 +76,17 @@ export function FacultyDetail({
   const { updateFaculty } = useFacultyMutations();
 
   const handleSaveLeave = async (patch: Partial<FacultyMember>) => {
-    await updateFaculty.mutateAsync({
+    const expectedUpdatedAt = typeof faculty.updatedAt === "string" ? faculty.updatedAt : undefined;
+    const res = await updateFaculty.mutateAsync({
       params: { id: String(faculty.id) },
       body: patch,
+      ...(expectedUpdatedAt
+        ? { extraHeaders: { "x-expected-updated-at": expectedUpdatedAt } }
+        : {}),
     });
+    // 4xx/5xx resolve through the ts-rest fetcher; only 2xx is a saved leave.
+    assertContractOk(res, t("faculty.toast.saveFailed"));
+    onFacultyPatched?.(patch);
   };
 
   const headerActionsNode = (
@@ -241,5 +252,4 @@ export function FacultyDetail({
   );
 }
 
-export const FacultyDrawer = FacultyDetail;
 export default FacultyDetail;

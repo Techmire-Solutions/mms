@@ -25,15 +25,38 @@ export interface FacultyRepository {
   listPage(tenant: string, query: FacultyListQuery): Promise<FacultyListPageResult>;
   findById(tenant: string, id: string): Promise<Faculty | null>;
   findByIds(tenant: string, ids: string[]): Promise<Faculty[]>;
+  /** Session-guard tombstone probe keyed by the linked tenant user id. */
+  isDeletedByUserId(tenant: string, userId: string): Promise<boolean>;
+  /** Active faculty id lookup keyed by lowercased employee id (batch import matching). */
+  findIdsByEmployeeIds(tenant: string, employeeIds: string[]): Promise<Record<string, string>>;
   /** Soft-delete probe for restore-on-create re-registration (Contact SSOT). */
   findSoftDeletedByContactId(tenant: string, contactId: string): Promise<Faculty | null>;
   save(
     tenant: string,
     member: Faculty | FacultyRecord,
-    options?: { createOnly?: boolean },
+    options?: { createOnly?: boolean; syncRole?: boolean },
   ): Promise<void>;
+  /**
+   * Compare-and-set save keyed on the client's `updatedAt` token
+   * (`mms-api-interface` §6). Returns false on a stale token or removed row.
+   */
+  saveIfVersionMatches?(
+    tenant: string,
+    member: Faculty | FacultyRecord,
+    expectedUpdatedAt: string,
+    options?: { syncRole?: boolean },
+  ): Promise<boolean>;
   guardAssignmentDependents(tenant: string, ids: string[]): Promise<void>;
-  bulkSave(tenant: string, members: Array<Faculty | FacultyRecord>): Promise<void>;
+  /**
+   * Takes the faculty-hierarchy advisory lock on the caller's transaction so a
+   * multi-row domain batch is serialized against appointment writes.
+   */
+  lockHierarchy?(tx: Pick<TenantTransaction, "execute">, tenant: string): Promise<void>;
+  bulkSave(
+    tenant: string,
+    members: Array<Faculty | FacultyRecord>,
+    options?: { syncRole?: boolean },
+  ): Promise<void>;
   aggregateCommandMetrics(
     tenant: string,
     periodDays?: number,
@@ -55,7 +78,12 @@ export interface FacultyRepository {
     tenant: string,
     input: FacultyDuplicateCheckInput,
   ): Promise<FacultyDuplicateReason | null>;
-  bulkUpdateStatusSql(tenant: string, ids: string[], status: string): Promise<number>;
+  bulkUpdateStatusSql(
+    tenant: string,
+    ids: string[],
+    status: string,
+    updatedBy?: string,
+  ): Promise<number>;
   bulkUpdateSpecializationSql(
     tenant: string,
     ids: string[],

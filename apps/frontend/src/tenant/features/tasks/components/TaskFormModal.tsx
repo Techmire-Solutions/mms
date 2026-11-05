@@ -7,6 +7,7 @@ import {
   type AppTranslationKey,
   TASK_PRIORITIES,
   TASK_STATUSES,
+  taskStatusTransitionsFrom,
 } from "@mms/shared";
 import { FormModal } from "@/components/app/FormModal";
 import { Field } from "@/components/app/FormPrimitives";
@@ -57,7 +58,13 @@ export function TaskFormModal({
     handleAddAssignee,
     handleRemoveAssignee,
     handleSubmit,
-  } = useTaskFormController({ open, onClose, initialData, onSave });
+  } = useTaskFormController({ open, onClose, initialData, onSave, saving });
+
+  const statusOptions = initialData
+    ? [initialData.status, ...taskStatusTransitionsFrom(initialData.status)].filter(
+        (value, index, all) => all.indexOf(value) === index,
+      )
+    : TASK_STATUSES;
 
   return (
     <FormModal
@@ -111,7 +118,7 @@ export function TaskFormModal({
               name="status"
               value={status}
               onChange={(v) => setStatus(v as TaskStatus)}
-              options={TASK_STATUSES.map((s) => ({
+              options={statusOptions.map((s) => ({
                 value: s,
                 label: t(`tasks.status.${s}` as AppTranslationKey),
               }))}

@@ -9,6 +9,7 @@ import { isQueryFlagTrue, type User, type Student, studentCrudContract } from "@
 import { studentUseCases } from "../../../students/use-cases/studentUseCases.js";
 import { initServer, type RouterImplementation } from "@ts-rest/fastify";
 import type { ContractRouteArgs, ContractRouteResponse } from "../../../lib/contractRouterTypes.js";
+import { handleContractError } from "../../../lib/contractError.js";
 import { replyValidationError } from "../../../lib/zodRequest.js";
 import {
   auditStudent,
@@ -17,6 +18,7 @@ import {
   sanitizeStudentsForUser,
   withStudentTenantScope,
 } from "./studentRouteHelpers.js";
+import { validateStudentWrite } from "./studentWriteValidation.js";
 
 const s = initServer();
 
@@ -101,11 +103,11 @@ export const studentCrudRoutes: FastifyPluginAsync = async (fastify) => {
         }
         const response = await sanitizeOneStudentForUser(item as Student, user);
         return { status: 200 as const, body: { student: response } };
-      } catch {
-        return {
-          status: 500 as const,
+      } catch (error: unknown) {
+        return handleContractError(request, error, {
+          status: 500,
           body: { type: "database_error", message: "Failed to load student" },
-        };
+        });
       }
     },
 
@@ -123,26 +125,16 @@ export const studentCrudRoutes: FastifyPluginAsync = async (fastify) => {
         };
       }
       try {
+        // Audit is appended inside the write transaction by the use case
+        // (`mms-data-layer` §5.4), including the restore-on-re-registration path.
         const result = await withTenant(
           String(request.tenant?.id),
-          () => studentUseCases.createStudent(body, user),
+          async () => {
+            const validated = await validateStudentWrite(request, body);
+            return studentUseCases.createStudent(validated, user);
+          },
           { readOnly: false },
         );
-        if (result.restored) {
-          await auditStudent(
-            user,
-            "student.restore",
-            `Restored student ${result.record.id} via re-registration`,
-            String(result.record.id),
-          );
-        } else {
-          await auditStudent(
-            user,
-            "student.create",
-            `Created student ${result.record.id}`,
-            String(result.record.id),
-          );
-        }
         const response = await sanitizeOneStudentForUser(result.record as Student, user);
         return result.restored
           ? { status: 200 as const, body: { student: response } }
@@ -175,15 +167,20 @@ export const studentCrudRoutes: FastifyPluginAsync = async (fastify) => {
       try {
         const updated = await withTenant(
           String(request.tenant?.id),
-          () =>
-            studentUseCases.updateStudentById(
+          async () => {
+            const validated = await validateStudentWrite(request, body);
+            return studentUseCases.updateStudentById(
               id,
               {
-                ...body,
+                ...validated,
                 id,
               },
-              user,
-            ),
+              {
+                user,
+                expectedUpdatedAt: request.headers["x-expected-updated-at"] as string | undefined,
+              },
+            );
+          },
           { readOnly: false },
         );
         if (!updated) {
@@ -192,16 +189,16 @@ export const studentCrudRoutes: FastifyPluginAsync = async (fastify) => {
             body: { type: "not_found", message: "Student not found" },
           };
         }
-        await auditStudent(user, "student.update", `Updated student ${id}`, id);
+        // The use case appends the audit row inside the write transaction.
         const response = await sanitizeOneStudentForUser(updated as Student, user);
         return { status: 200 as const, body: { student: response } };
       } catch (error: unknown) {
         const mapped = mapStudentWriteHttpError(error);
         if (mapped) return { status: mapped.status as 400 | 403 | 409, body: mapped.body };
-        return {
-          status: 500 as const,
+        return handleContractError(request, error, {
+          status: 500,
           body: { type: "database_error", message: "Failed to update student" },
-        };
+        });
       }
     },
 
@@ -245,10 +242,10 @@ export const studentCrudRoutes: FastifyPluginAsync = async (fastify) => {
         if (mapped && mapped.status === 409) {
           return { status: 409 as const, body: mapped.body };
         }
-        return {
-          status: 500 as const,
+        return handleContractError(request, error, {
+          status: 500,
           body: { type: "database_error", message: "Failed to delete student" },
-        };
+        });
       }
     },
   } as unknown as RouterImplementation<typeof studentCrudContract>);

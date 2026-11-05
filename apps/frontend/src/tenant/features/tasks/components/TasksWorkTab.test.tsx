@@ -11,6 +11,7 @@ const mockBulkRestore = vi.fn();
 const mockBulkUpdateStatus = vi.fn();
 
 vi.mock("@/tenant/hooks/collections/tasks", () => ({
+  useTask: () => ({ data: undefined }),
   useBulkDeleteTasks: () => ({
     mutate: mockBulkDelete,
     isPending: false,
@@ -60,7 +61,15 @@ vi.mock("../hooks/useTasksColumnLayout", () => ({
 }));
 
 vi.mock("./TasksWorkDirectory", () => ({
-  TasksWorkDirectory: ({ viewMode, tasks }: { viewMode: string; tasks: TaskRecord[] }) => (
+  TasksWorkDirectory: ({
+    viewMode,
+    tasks,
+    emptyAction,
+  }: {
+    viewMode: string;
+    tasks: TaskRecord[];
+    emptyAction?: React.ReactNode;
+  }) => (
     <div data-testid={`tasks-directory-${viewMode}`}>
       {tasks.map((task) => (
         <div key={task.id}>
@@ -69,7 +78,12 @@ vi.mock("./TasksWorkDirectory", () => ({
           <span>{`tasks.status.${task.status}`}</span>
         </div>
       ))}
-      {tasks.length === 0 ? <div>tasks.emptyTitle</div> : null}
+      {tasks.length === 0 ? (
+        <div>
+          <span>tasks.emptyTitle</span>
+          {emptyAction}
+        </div>
+      ) : null}
     </div>
   ),
 }));
@@ -84,16 +98,19 @@ vi.mock("@/components/common/work/WorkTaskToolbar", () => ({
     regionLabel,
     viewModeToggle,
     columnCustomizer,
+    searchId,
   }: {
     primaryAction?: React.ReactNode;
     regionLabel: string;
     viewModeToggle?: { viewMode: string };
     columnCustomizer?: { registry?: unknown[] };
+    searchId?: string;
   }) => (
     <div>
       <span>{regionLabel}</span>
       <span>{`viewMode:${viewModeToggle?.viewMode ?? "none"}`}</span>
       <span>{columnCustomizer ? "columns:ready" : "columns:missing"}</span>
+      {searchId ? <span>{`searchId:${searchId}`}</span> : null}
       {primaryAction}
     </div>
   ),
@@ -129,6 +146,11 @@ const baseProps = {
   onEdit: vi.fn(),
   onDelete: vi.fn(),
   onUpdateStatus: vi.fn(),
+  total: 1,
+  pageIndex: 0,
+  pageSize: 50,
+  onPageChange: vi.fn(),
+  onServerFiltersChange: vi.fn(),
 };
 
 describe("TasksWorkTab", () => {
@@ -149,6 +171,26 @@ describe("TasksWorkTab", () => {
   it("renders empty directory when task list is empty", () => {
     const html = renderToStaticMarkup(<TasksWorkTab {...baseProps} tasks={[]} />);
     expect(html).toContain("tasks.emptyTitle");
+  });
+
+  it("offers an in-context create action when the directory is empty and writable", () => {
+    const html = renderToStaticMarkup(<TasksWorkTab {...baseProps} tasks={[]} />);
+    expect(html).toContain("tasks.create");
+  });
+
+  it("hides the create action for read-only users and in trash", () => {
+    const readOnly = renderToStaticMarkup(
+      <TasksWorkTab {...baseProps} tasks={[]} canWrite={false} />,
+    );
+    expect(readOnly).not.toContain("tasks.create");
+
+    const trash = renderToStaticMarkup(<TasksWorkTab {...baseProps} tasks={[]} viewingDeleted />);
+    expect(trash).not.toContain("tasks.create");
+  });
+
+  it("passes the stable search input id to the toolbar", () => {
+    const html = renderToStaticMarkup(<TasksWorkTab {...baseProps} />);
+    expect(html).toContain("searchId:tasks-work-search");
   });
 
   it("switches directory to cards when viewMode is cards", () => {

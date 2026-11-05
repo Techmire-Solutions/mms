@@ -21,6 +21,7 @@ export async function bulkUpdateFacultyStatusSql(
   workspaceSubdomain: string,
   ids: string[],
   status: string,
+  updatedBy?: string,
 ): Promise<number> {
   const subdomain = workspaceSubdomain.trim().toLowerCase();
   const uniqueIds = dedupeTrimmedIds(ids);
@@ -47,6 +48,7 @@ export async function bulkUpdateFacultyStatusSql(
       .set({
         status: normalizedStatus,
         updatedAt: new Date(),
+        ...(updatedBy ? { updatedBy } : {}),
       })
       .where(
         and(
@@ -57,6 +59,48 @@ export async function bulkUpdateFacultyStatusSql(
       )
       .returning({ id: facultyEmployments.id });
     return updated.length;
+  });
+}
+
+/**
+ * Map normalized employee id → active faculty id in one tenant-scoped query.
+ * Batch import uses it so upsert matching no longer costs one list query per row.
+ */
+export async function findFacultyIdsByEmployeeIdsSql(
+  workspaceSubdomain: string,
+  employeeIds: string[],
+): Promise<Record<string, string>> {
+  const subdomain = workspaceSubdomain.trim().toLowerCase();
+  const keys = [
+    ...new Set(employeeIds.map((id) => id.trim().toLowerCase()).filter((id) => id.length > 0)),
+  ];
+  if (!subdomain || keys.length === 0) return {};
+  return withTenantRead(subdomain, async (tx) => {
+    const rows = await tx
+      .select({ id: faculty.id, employeeId: facultyEmployments.employeeId })
+      .from(faculty)
+      .innerJoin(
+        facultyEmployments,
+        and(
+          eq(facultyEmployments.workspaceSubdomain, faculty.workspaceSubdomain),
+          eq(facultyEmployments.id, faculty.employmentId),
+          isNull(facultyEmployments.deletedAt),
+        ),
+      )
+      .where(
+        and(
+          eq(faculty.workspaceSubdomain, subdomain),
+          isNull(faculty.deletedAt),
+          inArray(sql`lower(btrim(${facultyEmployments.employeeId}))`, keys),
+        ),
+      );
+    const byEmployeeId: Record<string, string> = {};
+    for (const row of rows) {
+      const key = (row.employeeId ?? "").trim().toLowerCase();
+      if (!key || byEmployeeId[key]) continue;
+      byEmployeeId[key] = String(row.id);
+    }
+    return byEmployeeId;
   });
 }
 

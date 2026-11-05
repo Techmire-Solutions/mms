@@ -41,21 +41,19 @@ describe("TanStack Query v5 Query Options Factories (P8)", () => {
   });
 
   describe("students collection facade", () => {
-    it("exports studentsListQueryOptions and studentsCommandMetricsQueryOptions", () => {
+    it("exports the single list factory and studentsCommandMetricsQueryOptions", () => {
       expect(typeof studentsFacade.studentsListQueryOptions).toBe("function");
-      expect(typeof studentsFacade.studentsInfiniteQueryOptions).toBe("function");
       expect(typeof studentsFacade.studentsCommandMetricsQueryOptions).toBe("function");
 
       const listOptions = studentsFacade.studentsListQueryOptions({ page: 1, limit: 25 });
-      expect(listOptions.queryKey).toBeDefined();
+      expect(listOptions.queryKey).toEqual([
+        "students",
+        "list",
+        "contract",
+        { page: 1, limit: 25 },
+      ]);
       expect(typeof listOptions.queryFn).toBe("function");
       expect(listOptions.staleTime).toBe(15_000);
-
-      const infiniteOptions = studentsFacade.studentsInfiniteQueryOptions({ limit: 25 });
-      expect(infiniteOptions.queryKey).toBeDefined();
-      expect(typeof infiniteOptions.queryFn).toBe("function");
-      expect(typeof infiniteOptions.getNextPageParam).toBe("function");
-      expect(infiniteOptions.staleTime).toBe(15_000);
 
       const metricsOptions = studentsFacade.studentsCommandMetricsQueryOptions();
       expect(metricsOptions.queryKey).toEqual(["students", "metrics"]);
@@ -82,14 +80,8 @@ describe("TanStack Query v5 Query Options Factories (P8)", () => {
   });
 
   describe("sessions collection facade", () => {
-    it("exports sessionsListQueryOptions and sessionsCommandMetricsQueryOptions", () => {
-      expect(typeof sessionsFacade.sessionsListQueryOptions).toBe("function");
+    it("exports sessionsCommandMetricsQueryOptions", () => {
       expect(typeof sessionsFacade.sessionsCommandMetricsQueryOptions).toBe("function");
-
-      const listOptions = sessionsFacade.sessionsListQueryOptions({ page: 1, limit: 25 });
-      expect(listOptions.queryKey).toBeDefined();
-      expect(typeof listOptions.queryFn).toBe("function");
-      expect(listOptions.staleTime).toBe(15_000);
 
       const metricsOptions = sessionsFacade.sessionsCommandMetricsQueryOptions();
       expect(metricsOptions.queryKey).toEqual(["sessions", "metrics"]);

@@ -14,7 +14,13 @@ export interface ServerDispatchResult {
   failedCount?: number;
   total?: number;
   queued?: boolean;
+  /** Recipients already claimed by an earlier attempt of this submission. */
+  skippedCount?: number;
+  /** The server replayed a stored response instead of sending again. */
+  replayed?: boolean;
 }
+
+type DispatchChannel = "sms" | "whatsapp" | "email";
 
 export function toCompletedRecords(
   recipients: MessagingRecipient[],
@@ -31,7 +37,7 @@ export function toCompletedRecords(
 }
 
 export interface ServerDispatchOutcomeArgs {
-  channel: "sms" | "whatsapp" | "email";
+  channel: DispatchChannel;
   sentCount: number;
   failedCount?: number;
   t: TranslationFunction;
@@ -65,18 +71,82 @@ export function notifyServerDispatchOutcome({
   }
 }
 
+interface ApplyServerDispatchResultArgs {
+  channel: DispatchChannel;
+  result: ServerDispatchResult;
+  eligibleRecipients: ValidatedMessagingRecipient[];
+  message: string;
+  subject: string;
+  personalizeOptions: { madrasaName?: string };
+  onSent?: (sent: SentDispatchRecord[]) => void;
+  onClose: () => void;
+  t: TranslationFunction;
+}
+
+/**
+ * Shared post-response handling for every channel: queued campaign, replayed
+ * submission, success/partial success and close. Payload construction stays in
+ * the channel branch; this only decides what the user sees.
+ */
+function applyServerDispatchResult({
+  channel,
+  result,
+  eligibleRecipients,
+  message,
+  subject,
+  personalizeOptions,
+  onSent,
+  onClose,
+  t,
+}: ApplyServerDispatchResultArgs): void {
+  const alreadySentCount = result.skippedCount ?? result.sentCount;
+  if (result.queued) {
+    notify.info(t("messaging.campaignQueuedNotice", { count: String(eligibleRecipients.length) }));
+    onClose();
+    return;
+  }
+  if (result.replayed || (result.sentCount === 0 && (result.skippedCount ?? 0) > 0)) {
+    notify.info(t("messaging.dispatchAlreadySent", { count: String(alreadySentCount) }));
+    onClose();
+    return;
+  }
+  if (result.sentCount > 0) {
+    onSent?.(
+      toCompletedRecords(
+        eligibleRecipients,
+        message,
+        personalizeOptions,
+        channel === "email" ? subject : undefined,
+      ),
+    );
+  }
+  notifyServerDispatchOutcome({
+    channel,
+    sentCount: result.sentCount,
+    failedCount: result.failedCount,
+    t,
+  });
+  onClose();
+}
+
 export interface DispatchViaServerGatewayArgs {
-  channel: "sms" | "whatsapp" | "email";
+  channel: DispatchChannel;
   eligibleRecipients: ValidatedMessagingRecipient[];
   message: string;
   subject: string;
   category: string;
+  /**
+   * Per-submission key minted by the composer (retry-stable, never derived from
+   * the body). The server binds it to the canonical body digest.
+   */
+  idempotencyKey: string;
   personalizeOptions: { madrasaName?: string };
   dispatchServerSms: {
     mutateAsync: (args: {
       recipients: { id: string | number; phone: string; name: string }[];
       message: string;
       category?: string;
+      idempotencyKey: string;
     }) => Promise<ServerDispatchResult>;
   };
   dispatchServerEmail: {
@@ -85,6 +155,7 @@ export interface DispatchViaServerGatewayArgs {
       subject: string;
       message: string;
       category?: string;
+      idempotencyKey: string;
     }) => Promise<ServerDispatchResult>;
   };
   dispatchServerWhatsApp: {
@@ -92,6 +163,7 @@ export interface DispatchViaServerGatewayArgs {
       recipients: { id: string | number; phone: string; name: string }[];
       message: string;
       category?: string;
+      idempotencyKey: string;
     }) => Promise<ServerDispatchResult>;
   };
   onSent?: (sent: SentDispatchRecord[]) => void;
@@ -106,6 +178,7 @@ export async function dispatchViaServerGateway(args: DispatchViaServerGatewayArg
     message,
     subject,
     category,
+    idempotencyKey,
     personalizeOptions,
     dispatchServerSms,
     dispatchServerEmail,
@@ -115,8 +188,9 @@ export async function dispatchViaServerGateway(args: DispatchViaServerGatewayArg
     t,
   } = args;
 
+  let result: ServerDispatchResult;
   if (channel === "sms") {
-    const res = await dispatchServerSms.mutateAsync({
+    result = await dispatchServerSms.mutateAsync({
       recipients: eligibleRecipients.map((recipient) => ({
         id: recipient.id,
         phone: recipient.phone ?? "",
@@ -124,29 +198,10 @@ export async function dispatchViaServerGateway(args: DispatchViaServerGatewayArg
       })),
       message,
       category,
+      idempotencyKey,
     });
-    if (res.queued) {
-      notify.info(
-        t("messaging.campaignQueuedNotice", { count: String(eligibleRecipients.length) }),
-      );
-      onClose();
-      return;
-    }
-    if (res.sentCount > 0) {
-      onSent?.(toCompletedRecords(eligibleRecipients, message, personalizeOptions));
-    }
-    notifyServerDispatchOutcome({
-      channel: "sms",
-      sentCount: res.sentCount,
-      failedCount: res.failedCount,
-      t,
-    });
-    onClose();
-    return;
-  }
-
-  if (channel === "email") {
-    const res = await dispatchServerEmail.mutateAsync({
+  } else if (channel === "email") {
+    result = await dispatchServerEmail.mutateAsync({
       recipients: eligibleRecipients.map((recipient) => ({
         id: recipient.id,
         email: recipient.email ?? "",
@@ -155,36 +210,10 @@ export async function dispatchViaServerGateway(args: DispatchViaServerGatewayArg
       subject: subject || t("messaging.defaultSubject"),
       message,
       category,
+      idempotencyKey,
     });
-    if (res.queued) {
-      notify.info(
-        t("messaging.campaignQueuedNotice", { count: String(eligibleRecipients.length) }),
-      );
-      onClose();
-      return;
-    }
-    if (res.sentCount > 0) {
-      onSent?.(
-        toCompletedRecords(
-          eligibleRecipients,
-          message,
-          personalizeOptions,
-          subject || t("messaging.defaultSubject"),
-        ),
-      );
-    }
-    notifyServerDispatchOutcome({
-      channel: "email",
-      sentCount: res.sentCount,
-      failedCount: res.failedCount,
-      t,
-    });
-    onClose();
-    return;
-  }
-
-  if (channel === "whatsapp") {
-    const res = await dispatchServerWhatsApp.mutateAsync({
+  } else {
+    result = await dispatchServerWhatsApp.mutateAsync({
       recipients: eligibleRecipients.map((recipient) => ({
         id: recipient.id,
         phone: recipient.phone ?? "",
@@ -192,24 +221,20 @@ export async function dispatchViaServerGateway(args: DispatchViaServerGatewayArg
       })),
       message,
       category,
+      idempotencyKey,
     });
-    if (res.queued) {
-      notify.info(
-        t("messaging.campaignQueuedNotice", { count: String(eligibleRecipients.length) }),
-      );
-      onClose();
-      return;
-    }
-    if (res.sentCount > 0) {
-      onSent?.(toCompletedRecords(eligibleRecipients, message, personalizeOptions));
-    }
-    notifyServerDispatchOutcome({
-      channel: "whatsapp",
-      sentCount: res.sentCount,
-      failedCount: res.failedCount,
-      t,
-    });
-    onClose();
-    return;
   }
+
+  applyServerDispatchResult({
+    channel,
+    result,
+    eligibleRecipients,
+    message,
+    // Email completes its records with the subject actually sent.
+    subject: subject || t("messaging.defaultSubject"),
+    personalizeOptions,
+    onSent,
+    onClose,
+    t,
+  });
 }

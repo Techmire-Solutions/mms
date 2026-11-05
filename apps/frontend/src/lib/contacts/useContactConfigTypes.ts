@@ -16,6 +16,8 @@ export type ContactConfigExtras = {
   updatePrefs: (newPrefs: Partial<ContactPreferences>) => void;
   updatePrefsAsync: (newPrefs: Partial<ContactPreferences>) => Promise<void>;
   formTabsReady: boolean;
+  /** Active tenant field-config version — sent as `_blueprintId` so a stale form is rejected. */
+  fieldConfigVersion: number;
   enabledTabIds: Set<string>;
   requiredTabIds: Set<string>;
   fields: Record<string, FieldDefinition[]>;

@@ -153,6 +153,7 @@ describe("useContactDetailAttachments", () => {
     const file = new File(["data"], "new.pdf", { type: "application/pdf" });
     await act(async () => hook.handleFiles([file] as unknown as FileList));
 
+    expect(mockUploadAttachmentFile).toHaveBeenCalledWith(file);
     expect(onUpdateContact).toHaveBeenCalledWith(
       expect.objectContaining({
         attachments: [

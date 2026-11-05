@@ -17,6 +17,9 @@ import {
 } from "./facultyWriteHelpers.js";
 import { ConflictError } from "../../lib/httpErrors.js";
 import { reconcileContactSystemTags } from "../../contacts/systemTags/contactSystemTagUseCases.js";
+import { logger } from "../../lib/logger.js";
+import { appendCollectionAuditInTx } from "../../lib/collectionAuditInTx.js";
+import { facultyRoleFingerprint } from "./facultyLinkedUserRoleSync.js";
 
 export { HierarchyValidationError, HierarchyCycleError } from "./facultyHierarchyValidator.js";
 
@@ -36,11 +39,50 @@ export class FacultyPermissionError extends Error {
   }
 }
 
+/**
+ * Batch writers (CSV import) pass one collector so contact-tag reconciliation
+ * and the live-push broadcast run once after the loop instead of per row.
+ * See `mms-code-review.md` §8 (batch writers) and `mms-data-layer.md` §9.
+ */
+export interface FacultyBatchSideEffects {
+  contactIds: Set<string>;
+}
+
 export interface CreateFacultyOptions {
   /** False when the caller lacks `faculty.delete`; blocks implicit restore. */
   canRestore?: boolean;
+  /**
+   * Batch writers pass an intentional employee id per row; skipping the
+   * preview probe saves one read per record.
+   */
+  skipEmployeeIdPreview?: boolean;
   /** DI seam for the DB-backed link guards (unit tests pass fakes). */
   guards?: FacultyWriteGuards;
+  /** Present on batch writes: defers reconcile + broadcast to the caller. */
+  batch?: FacultyBatchSideEffects;
+}
+
+/** Options for the single-record update path (batch deferred side effects optional). */
+export interface UpdateFacultyOptions {
+  guards?: FacultyWriteGuards;
+  /** Present on batch writes: defers reconcile + broadcast to the caller. */
+  batch?: FacultyBatchSideEffects;
+  /** `updatedAt` the client read — enforces the 409 compare-and-set path. */
+  expectedUpdatedAt?: string;
+}
+
+const FACULTY_VERSION_CONFLICT =
+  "This faculty member was changed by someone else. Reload it and try again.";
+
+function collectFacultyBatchContacts(
+  batch: FacultyBatchSideEffects,
+  contactIds: Array<string | number | null | undefined>,
+): void {
+  for (const value of contactIds) {
+    if (value == null) continue;
+    const contactId = String(value).trim();
+    if (contactId) batch.contactIds.add(contactId);
+  }
 }
 
 /**
@@ -66,15 +108,19 @@ export async function createFaculty(
     if (!providedEmployeeId) {
       const generated = await generateNextFacultyEmployeeId(tenant);
       normalized.employeeId = generated.employeeId;
-    } else {
+    } else if (!options.skipEmployeeIdPreview) {
       try {
         const preview = await previewNextFacultyEmployeeId(tenant);
         if (providedEmployeeId === preview.nextEmployeeId) {
           const generated = await generateNextFacultyEmployeeId(tenant);
           normalized.employeeId = generated.employeeId;
         }
-      } catch {
+      } catch (error: unknown) {
         // Keep the client-provided ID when the sequence table is unavailable.
+        logger.warn(
+          { err: error, tenant, employeeId: providedEmployeeId },
+          "Faculty employee-id preview failed; keeping client-provided ID",
+        );
       }
     }
 
@@ -96,20 +142,52 @@ export async function createFaculty(
         repo.save.bind(repo),
       );
       await guards.syncPrimaryAppointment(tenant, merged, guarded.departmentId);
-      await reconcileContactSystemTags(tenant, [merged.contactId], {
-        actorId: merged.updatedBy ?? undefined,
-      });
+      if (options.batch) {
+        collectFacultyBatchContacts(options.batch, [merged.contactId]);
+      } else {
+        await reconcileContactSystemTags(tenant, [merged.contactId], {
+          actorId: merged.updatedBy ?? undefined,
+        });
+      }
+      // Authoritative audit row commits with the write (mms-data-layer §5.4).
+      // CSV import records one queue-level `faculty.import` aggregate row instead.
+      if (!options.batch) {
+        await appendCollectionAuditInTx({
+          tenant,
+          tableName: "faculty",
+          recordId: String(merged.id),
+          action: "faculty.restore",
+          summary: `Restored faculty member ${String(merged.id)} via re-registration`,
+          realUserId: merged.updatedBy ?? null,
+          subjectId: String(merged.id),
+        });
+      }
       return { record: merged, restored: true };
     }
 
     await repo.save(tenant, guarded.record, { createOnly: true });
     await guards.syncPrimaryAppointment(tenant, guarded.record, guarded.departmentId);
-    await reconcileContactSystemTags(tenant, [guarded.record.contactId], {
-      actorId: guarded.record.updatedBy ?? undefined,
-    });
+    if (options.batch) {
+      collectFacultyBatchContacts(options.batch, [guarded.record.contactId]);
+    } else {
+      await reconcileContactSystemTags(tenant, [guarded.record.contactId], {
+        actorId: guarded.record.updatedBy ?? undefined,
+      });
+      // Authoritative audit row commits with the write (mms-data-layer §5.4).
+      // CSV import records one queue-level `faculty.import` aggregate row instead.
+      await appendCollectionAuditInTx({
+        tenant,
+        tableName: "faculty",
+        recordId: String(guarded.record.id),
+        action: "faculty.create",
+        summary: `Created faculty member ${String(guarded.record.id)}`,
+        realUserId: guarded.record.updatedBy ?? null,
+        subjectId: String(guarded.record.id),
+      });
+    }
     return { record: guarded.record, restored: false };
   });
-  await broadcastCollection("faculty");
+  if (!options.batch) await broadcastCollection("faculty");
   return result;
 }
 
@@ -117,7 +195,7 @@ export async function updateFacultyById(
   id: string,
   record: FacultyRecord | FacultyWrite | Record<string, unknown>,
   repo: FacultyRepository = facultyRepository,
-  options: { guards?: FacultyWriteGuards } = {},
+  options: UpdateFacultyOptions = {},
 ): Promise<FacultyRecord | null> {
   const guards = options.guards ?? defaultFacultyWriteGuards;
   const saved = await runInTransaction(async () => {
@@ -135,15 +213,47 @@ export async function updateFacultyById(
       designationChanged: (normalized.designationId ?? null) !== (existing.designationId ?? null),
       contactChanged: String(normalized.contactId ?? "") !== String(existing.contactId ?? ""),
     });
+    // Only a changed contact/designation/tenure can change the linked role.
+    const syncRole =
+      facultyRoleFingerprint(existing as Record<string, unknown>) !==
+      facultyRoleFingerprint(normalized as Record<string, unknown>);
 
-    await repo.save(tenant, guarded.record);
+    const versionToken = options.expectedUpdatedAt?.trim();
+    if (versionToken) {
+      // Optimistic concurrency: the token the caller read must still match the
+      // stored `updated_at`, otherwise the edit is a 409 (mms-api-interface §6).
+      if (!repo.saveIfVersionMatches) throw new ConflictError(FACULTY_VERSION_CONFLICT);
+      const savedWithVersion = await repo.saveIfVersionMatches(
+        tenant,
+        guarded.record,
+        versionToken,
+        { syncRole },
+      );
+      if (!savedWithVersion) throw new ConflictError(FACULTY_VERSION_CONFLICT);
+    } else {
+      await repo.save(tenant, guarded.record, { syncRole });
+    }
     await guards.syncPrimaryAppointment(tenant, guarded.record, guarded.departmentId);
-    await reconcileContactSystemTags(tenant, [existing.contactId, guarded.record.contactId], {
-      actorId: guarded.record.updatedBy ?? undefined,
-    });
+    if (options.batch) {
+      collectFacultyBatchContacts(options.batch, [existing.contactId, guarded.record.contactId]);
+    } else {
+      await reconcileContactSystemTags(tenant, [existing.contactId, guarded.record.contactId], {
+        actorId: guarded.record.updatedBy ?? undefined,
+      });
+      // Authoritative audit row commits with the write (mms-data-layer §5.4).
+      await appendCollectionAuditInTx({
+        tenant,
+        tableName: "faculty",
+        recordId: id,
+        action: "faculty.update",
+        summary: `Updated faculty member ${id}`,
+        realUserId: guarded.record.updatedBy ?? null,
+        subjectId: id,
+      });
+    }
     return guarded.record;
   });
-  if (saved) {
+  if (saved && !options.batch) {
     await broadcastCollection("faculty");
   }
   return saved;

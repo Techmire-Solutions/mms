@@ -23,6 +23,12 @@ vi.mock("../db/tenant-context.js", () => ({
   withTenant: (...args: unknown[]) => withTenant(...args),
 }));
 
+// The delete guard resolves "today" from the workspace row; stub it so this spec
+// never loads the workspace repository cache.
+vi.mock("../lib/workspaceDay.js", () => ({
+  workspaceTodayIso: vi.fn().mockResolvedValue("2026-11-04"),
+}));
+
 vi.mock("../db/schema.js", () => ({
   facultyAssignments: {
     workspaceSubdomain: "workspace_subdomain",
@@ -48,7 +54,16 @@ describe("saveFacultyAssignment writes", () => {
   beforeEach(() => {
     vi.clearAllMocks();
     withTenant.mockImplementation(async (_tenant: string, fn: (tx: unknown) => Promise<void>) => {
+      // The save path pre-reads the row (CREATE vs UPDATE audit) before upserting.
+      const selectChain = {
+        from: vi.fn(() => ({
+          where: vi.fn(() => ({
+            limit: vi.fn().mockResolvedValue([]),
+          })),
+        })),
+      };
       const tx = {
+        select: vi.fn(() => selectChain),
         insert: vi.fn(() => ({
           values: vi.fn(() => ({
             onConflictDoUpdate: vi.fn().mockResolvedValue(undefined),

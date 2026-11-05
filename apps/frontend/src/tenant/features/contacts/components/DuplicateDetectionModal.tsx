@@ -1,3 +1,5 @@
+import { useRef } from "react";
+import { useVirtualizer } from "@tanstack/react-virtual";
 import { AlertTriangle, Check } from "lucide-react";
 import type { ContactPreferences } from "@mms/shared";
 import { Button } from "@/components/ui/button";
@@ -12,6 +14,8 @@ import { DuplicateDetectionToolbar } from "@/tenant/features/contacts/components
 import { ConfirmAlertDialog } from "@/components/app/ConfirmAlertDialog";
 import type { DuplicatePair } from "@/tenant/features/contacts/lib/duplicateDetectionTypes";
 import type { DuplicateTierFilter } from "@/tenant/features/contacts/hooks/useDuplicateDetectionState";
+
+const VIRTUALIZE_PAIR_THRESHOLD = 30;
 
 export interface DuplicateDetectionModalProps {
   prefs: ContactPreferences;
@@ -71,6 +75,34 @@ export function DuplicateDetectionModal({
   onRetry,
 }: DuplicateDetectionModalProps): React.JSX.Element {
   const { t } = useTranslation();
+  const listScrollRef = useRef<HTMLDivElement | null>(null);
+
+  // Rule: lists > 30 items are virtualized. "Load more" appends 50 pairs at a
+  // time, and each pair card is heavy — render only the visible window.
+  const isVirtualized = activePairs.length > VIRTUALIZE_PAIR_THRESHOLD;
+  const pairVirtualizer = useVirtualizer({
+    count: activePairs.length,
+    getScrollElement: () => listScrollRef.current,
+    estimateSize: () => 280,
+    overscan: 4,
+    enabled: isVirtualized,
+  });
+  const virtualPairs = isVirtualized ? pairVirtualizer.getVirtualItems() : [];
+
+  const renderPair = (pair: DuplicatePair) => (
+    <div key={pair.id} data-pair-id={pair.id}>
+      <DuplicatePairCard
+        pair={pair}
+        prefs={prefs}
+        selectedKeepIndex={keepIndex[pair.id] ?? 0}
+        canWrite={canWrite}
+        onMerge={() => onMergePair(pair)}
+        onDismiss={() => onDismiss(pair.id)}
+        onSelectKeep={(contactIndex) => onSelectKeep(pair.id, contactIndex)}
+        t={t}
+      />
+    </div>
+  );
 
   const filterTabs: Array<{ id: DuplicateTierFilter; label: string; count: number }> = [
     { id: "all", label: t("contacts.duplicates.filterAll"), count: tierCounts.all },
@@ -149,19 +181,38 @@ export function DuplicateDetectionModal({
               <p className="text-xs text-muted-foreground">
                 {t("contacts.duplicates.dismissSessionHint")}
               </p>
-              {activePairs.map((pair) => (
-                <DuplicatePairCard
-                  key={pair.id}
-                  pair={pair}
-                  prefs={prefs}
-                  selectedKeepIndex={keepIndex[pair.id] ?? 0}
-                  canWrite={canWrite}
-                  onMerge={() => onMergePair(pair)}
-                  onDismiss={() => onDismiss(pair.id)}
-                  onSelectKeep={(contactIndex) => onSelectKeep(pair.id, contactIndex)}
-                  t={t}
-                />
-              ))}
+              {isVirtualized ? (
+                <div ref={listScrollRef} className="max-h-[min(60vh,640px)] overflow-y-auto pe-1">
+                  <div
+                    style={{ height: pairVirtualizer.getTotalSize(), position: "relative" }}
+                    data-testid="duplicate-pairs-virtual-window"
+                  >
+                    {virtualPairs.map((virtualRow) => {
+                      const pair = activePairs[virtualRow.index];
+                      if (!pair) return null;
+                      return (
+                        <div
+                          key={pair.id}
+                          data-index={virtualRow.index}
+                          ref={pairVirtualizer.measureElement}
+                          style={{
+                            position: "absolute",
+                            top: 0,
+                            insetInlineStart: 0,
+                            width: "100%",
+                            transform: `translateY(${virtualRow.start}px)`,
+                            paddingBottom: 12,
+                          }}
+                        >
+                          {renderPair(pair)}
+                        </div>
+                      );
+                    })}
+                  </div>
+                </div>
+              ) : (
+                activePairs.map(renderPair)
+              )}
             </>
           )}
 

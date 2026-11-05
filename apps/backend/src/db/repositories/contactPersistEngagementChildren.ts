@@ -17,102 +17,112 @@ export async function syncContactEngagementChildrenTx(
   contactId: string,
   contact: Contact,
 ): Promise<void> {
-  await tx
-    .delete(contactRelationships)
-    .where(
-      and(
-        eq(contactRelationships.workspaceSubdomain, subdomain),
-        eq(contactRelationships.contactId, contactId),
-      ),
-    );
-  const relationships = contact.relationshipContacts ?? [];
-  if (relationships.length > 0) {
-    await tx.insert(contactRelationships).values(
-      relationships.map((r, idx) => ({
-        id: `rel-${idx + 1}`,
-        workspaceSubdomain: subdomain,
-        contactId,
-        relatedContactId: r.contactId ? String(r.contactId) : null,
-        name: r.name ?? null,
-        relationship: r.relationship ?? null,
-        phone: r.phone ?? null,
-        email: r.email ?? null,
-        gender: r.gender ?? null,
-        inferred: r.inferred ?? false,
-        inferredFromContactId: r.inferredFromContactId ? String(r.inferredFromContactId) : null,
-        inferenceDepth: r.inferenceDepth ?? 0,
-        sortOrder: idx,
-      })),
-    );
+  // `undefined` = not provided by this write: keep the stored rows (R4-02/R4-04).
+  if (contact.relationshipContacts !== undefined) {
+    await tx
+      .delete(contactRelationships)
+      .where(
+        and(
+          eq(contactRelationships.workspaceSubdomain, subdomain),
+          eq(contactRelationships.contactId, contactId),
+        ),
+      );
+    if (contact.relationshipContacts.length > 0) {
+      await tx.insert(contactRelationships).values(
+        contact.relationshipContacts.map((r, idx) => ({
+          id: `rel-${idx + 1}`,
+          workspaceSubdomain: subdomain,
+          contactId,
+          relatedContactId: r.contactId ? String(r.contactId) : null,
+          name: r.name ?? null,
+          relationship: r.relationship ?? null,
+          phone: r.phone ?? null,
+          email: r.email ?? null,
+          gender: r.gender ?? null,
+          inferred: r.inferred ?? false,
+          inferredFromContactId: r.inferredFromContactId ? String(r.inferredFromContactId) : null,
+          inferenceDepth: r.inferenceDepth ?? 0,
+          sortOrder: idx,
+        })),
+      );
+    }
   }
 
-  await tx
-    .delete(contactActivities)
-    .where(
-      and(
-        eq(contactActivities.workspaceSubdomain, subdomain),
-        eq(contactActivities.contactId, contactId),
-      ),
-    );
-  if (contact.activities && contact.activities.length > 0) {
-    await tx.insert(contactActivities).values(
-      contact.activities.map((act, idx) => ({
-        id: act.id || `act-${idx + 1}`,
-        workspaceSubdomain: subdomain,
-        contactId,
-        type: act.type,
-        content: act.content,
-        date: requireDbDateValue(act.date, "date"),
-        by: act.by ?? null,
-        sortOrder: idx,
-      })),
-    );
+  if (contact.activities !== undefined) {
+    await tx
+      .delete(contactActivities)
+      .where(
+        and(
+          eq(contactActivities.workspaceSubdomain, subdomain),
+          eq(contactActivities.contactId, contactId),
+        ),
+      );
+    if (contact.activities.length > 0) {
+      await tx.insert(contactActivities).values(
+        contact.activities.map((act, idx) => ({
+          id: act.id || `act-${idx + 1}`,
+          workspaceSubdomain: subdomain,
+          contactId,
+          type: act.type,
+          content: act.content,
+          date: requireDbDateValue(act.date, "date"),
+          by: act.by ?? null,
+          sortOrder: idx,
+        })),
+      );
+    }
   }
 
-  await tx
-    .delete(contactAttachments)
-    .where(
-      and(
-        eq(contactAttachments.workspaceSubdomain, subdomain),
-        eq(contactAttachments.contactId, contactId),
-      ),
-    );
-  if (contact.attachments && contact.attachments.length > 0) {
-    await tx.insert(contactAttachments).values(
-      contact.attachments.map((att, idx) => ({
-        id: att.id || `att-${idx + 1}`,
-        workspaceSubdomain: subdomain,
-        contactId,
-        name: att.name,
-        type: att.type,
-        size: att.size ?? 0,
-        url: att.url,
-        date: requireDbDateValue(att.date, "date"),
-        sortOrder: idx,
-      })),
-    );
+  if (contact.attachments !== undefined) {
+    await tx
+      .delete(contactAttachments)
+      .where(
+        and(
+          eq(contactAttachments.workspaceSubdomain, subdomain),
+          eq(contactAttachments.contactId, contactId),
+        ),
+      );
+    if (contact.attachments.length > 0) {
+      await tx.insert(contactAttachments).values(
+        contact.attachments.map((att, idx) => ({
+          id: att.id || `att-${idx + 1}`,
+          workspaceSubdomain: subdomain,
+          contactId,
+          // Client-provided metadata is bounded by the column widths; a long PDF
+          // filename must not turn a normal save into a 500.
+          name: String(att.name || "attachment").slice(0, 255),
+          type: String(att.type || "application/octet-stream").slice(0, 100),
+          size: Number.isFinite(att.size) ? Math.max(0, Math.trunc(att.size)) : 0,
+          url: att.url,
+          date: requireDbDateValue(att.date, "date"),
+          sortOrder: idx,
+        })),
+      );
+    }
   }
 
-  await tx
-    .delete(contactBankDetails)
-    .where(
-      and(
-        eq(contactBankDetails.workspaceSubdomain, subdomain),
-        eq(contactBankDetails.contactId, contactId),
-      ),
-    );
-  if (contact.bankDetails && contact.bankDetails.length > 0) {
-    await tx.insert(contactBankDetails).values(
-      contact.bankDetails.map((b, idx) => ({
-        id: b.id || `bnk-${idx + 1}`,
-        workspaceSubdomain: subdomain,
-        contactId,
-        bankName: b.bankName ?? null,
-        accountTitle: b.accountTitle ?? null,
-        accountNumber: b.accountNumber ?? null,
-        sortOrder: b.sortOrder ?? idx,
-      })),
-    );
+  if (contact.bankDetails !== undefined) {
+    await tx
+      .delete(contactBankDetails)
+      .where(
+        and(
+          eq(contactBankDetails.workspaceSubdomain, subdomain),
+          eq(contactBankDetails.contactId, contactId),
+        ),
+      );
+    if (contact.bankDetails.length > 0) {
+      await tx.insert(contactBankDetails).values(
+        contact.bankDetails.map((b, idx) => ({
+          id: b.id || `bnk-${idx + 1}`,
+          workspaceSubdomain: subdomain,
+          contactId,
+          bankName: b.bankName ?? null,
+          accountTitle: b.accountTitle ?? null,
+          accountNumber: b.accountNumber ?? null,
+          sortOrder: b.sortOrder ?? idx,
+        })),
+      );
+    }
   }
 }
 
@@ -162,9 +172,9 @@ export async function bulkInsertContactEngagementChildrenTx(
       id: att.id || `att-${contactId}-${idx + 1}`,
       workspaceSubdomain: subdomain,
       contactId,
-      name: att.name,
-      type: att.type,
-      size: att.size ?? 0,
+      name: String(att.name || "attachment").slice(0, 255),
+      type: String(att.type || "application/octet-stream").slice(0, 100),
+      size: Number.isFinite(att.size) ? Math.max(0, Math.trunc(att.size)) : 0,
       url: att.url,
       date: requireDbDateValue(att.date, "date"),
       sortOrder: idx,

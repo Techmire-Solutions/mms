@@ -29,6 +29,10 @@ vi.mock("@/components/app/FormModal", () => ({
     ) : null,
 }));
 
+vi.mock("@/lib/contexts/ContactConfigContext", () => ({
+  useContactConfig: () => ({ tags: ["VIP", "Donor"] }),
+}));
+
 vi.mock("@/lib/notify", () => ({
   notify: {
     success: vi.fn(),
@@ -101,7 +105,7 @@ describe("ContactsBulkTagModal Component", () => {
       const saveButton = Array.from(container.querySelectorAll("button")).find(
         (button) => button.textContent === "contacts.bulkTagAdd",
       );
-      expect(saveButton).toBeDefined();
+      expect(saveButton).toBeInstanceOf(HTMLButtonElement);
 
       await act(async () => {
         saveButton?.click();
@@ -111,6 +115,98 @@ describe("ContactsBulkTagModal Component", () => {
       expect(onConfirm).not.toHaveBeenCalled();
       expect(onClose).not.toHaveBeenCalled();
       expect(container.textContent).toContain("contacts.bulkTagTitle");
+    } finally {
+      await act(async () => root.unmount());
+      container.remove();
+    }
+  });
+});
+
+describe("ContactsBulkTagModal mode and reset behaviour", () => {
+  it("confirms remove mode so the parent can send removeTags", async () => {
+    const onConfirm = vi.fn();
+    const onClose = vi.fn();
+    const container = document.createElement("div");
+    document.body.appendChild(container);
+    const root = createRoot(container);
+
+    try {
+      await act(async () => {
+        root.render(
+          <ContactsBulkTagModal
+            open={true}
+            onClose={onClose}
+            selectedCount={2}
+            onConfirm={onConfirm}
+          />,
+        );
+      });
+
+      const removeMode = Array.from(container.querySelectorAll("button")).find(
+        (button) => button.textContent === "contacts.bulkTagModeRemove",
+      );
+      expect(removeMode).toBeInstanceOf(HTMLButtonElement);
+      await act(async () => {
+        removeMode?.click();
+      });
+
+      const input = container.querySelector<HTMLInputElement>("#bulk-tag-input");
+      if (!input) throw new Error("tag input missing");
+      const nativeSetter = Object.getOwnPropertyDescriptor(
+        HTMLInputElement.prototype,
+        "value",
+      )?.set;
+      await act(async () => {
+        nativeSetter?.call(input, "VIP");
+        input.dispatchEvent(new Event("input", { bubbles: true }));
+      });
+
+      const saveButton = Array.from(container.querySelectorAll("button")).find(
+        (button) => button.textContent === "contacts.bulkTagModeRemove" && button !== removeMode,
+      );
+      await act(async () => {
+        saveButton?.click();
+      });
+
+      expect(onConfirm).toHaveBeenCalledWith(["VIP"], "remove");
+    } finally {
+      await act(async () => root.unmount());
+      container.remove();
+    }
+  });
+
+  it("clears the previous input when the modal reopens after a cancel", async () => {
+    const container = document.createElement("div");
+    document.body.appendChild(container);
+    const root = createRoot(container);
+
+    const renderModal = (open: boolean) => (
+      <ContactsBulkTagModal open={open} onClose={vi.fn()} selectedCount={1} onConfirm={vi.fn()} />
+    );
+
+    try {
+      await act(async () => {
+        root.render(renderModal(true));
+      });
+      const input = container.querySelector<HTMLInputElement>("#bulk-tag-input");
+      if (!input) throw new Error("tag input missing");
+      const nativeSetter = Object.getOwnPropertyDescriptor(
+        HTMLInputElement.prototype,
+        "value",
+      )?.set;
+      await act(async () => {
+        nativeSetter?.call(input, "VIP");
+        input.dispatchEvent(new Event("input", { bubbles: true }));
+      });
+
+      await act(async () => {
+        root.render(renderModal(false));
+      });
+      await act(async () => {
+        root.render(renderModal(true));
+      });
+
+      expect(container.querySelector<HTMLInputElement>("#bulk-tag-input")?.value ?? "").toBe("");
     } finally {
       await act(async () => root.unmount());
       container.remove();

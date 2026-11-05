@@ -15,7 +15,13 @@ import {
 export interface ContactsImportDialogProps {
   open: boolean;
   onClose: () => void;
-  onImport: (contacts: Contact[]) => void | Promise<void>;
+  onImport: (
+    contacts: Contact[],
+    options?: { onProgress?: (progress: { imported: number; total: number }) => void },
+  ) =>
+    | void
+    | { succeeded: number; failed: number }
+    | Promise<void | { succeeded: number; failed: number }>;
   /** Import writes contacts — the CTA is hidden without `contacts.write`. */
   canWrite: boolean;
 }

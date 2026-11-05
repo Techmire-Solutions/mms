@@ -6,6 +6,7 @@ import {
   taskListQuerySchema,
   taskSettingsSchema,
   taskStatusUpdateSchema,
+  tasksBulkStatusBodySchema,
   taskUpdateSchema,
 } from "../obligations/tasksModuleManifest.js";
 
@@ -83,6 +84,13 @@ export const tasksContract = c.router({
     body: taskStatusUpdateSchema,
     responses: { 200: ok, 400: errorResponse, 403: errorResponse, 404: errorResponse },
     summary: "Update a task's status",
+  },
+  bulkStatus: {
+    method: "POST",
+    path: "/api/tasks/bulk-status",
+    body: tasksBulkStatusBodySchema,
+    responses: { 200: ok, 400: errorResponse, 403: errorResponse },
+    summary: "Bulk-update task status (illegal transitions are skipped)",
   },
   remove: {
     method: "DELETE",

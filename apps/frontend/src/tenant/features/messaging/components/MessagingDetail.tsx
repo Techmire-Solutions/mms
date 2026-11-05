@@ -1,5 +1,6 @@
-import React, { useCallback, useEffect, useState, type JSX } from "react";
+import { useCallback, useState, type JSX } from "react";
 import {
+  CONTACTS_MODULE_MANIFEST,
   formatDateTime,
   type Message,
   type StandardMessagingRecipient as MessagingRecipient,
@@ -8,7 +9,9 @@ import { ChannelBadge } from "@/components/app/ChannelBadge";
 import { DetailDrawerShell } from "@/components/app/DetailDrawerShell";
 import { StatusBadge, type StatusBadgeConfigItem } from "@/components/app/StatusBadge";
 import { Button } from "@/components/ui/button";
+import { useCmdEnterShortcut } from "@/hooks/useCmdEnterShortcut";
 import { useTranslation } from "@/hooks/useTranslation";
+import { useModulePermissions } from "@/tenant/hooks/usePermissions";
 import { SEMANTIC_TEXT, SEMANTIC_BG } from "@/lib/ui/semanticTone";
 import { AlertCircle, ArrowUpRight, MessageSquare, RotateCcw } from "lucide-react";
 import { Link } from "react-router-dom";
@@ -42,6 +45,7 @@ export const MessagingDetail = function MessagingDetail({
   onResend,
 }: MessagingDetailProps): JSX.Element | null {
   const { t } = useTranslation();
+  const { canRead: canViewContact } = useModulePermissions(CONTACTS_MODULE_MANIFEST);
   const [restoring, setRestoring] = useState(false);
 
   const handleRestore = useCallback(async (): Promise<void> => {
@@ -61,18 +65,16 @@ export const MessagingDetail = function MessagingDetail({
     onResend(log);
   }, [log, canWrite, onClose, onResend]);
 
-  // Keyboard shortcut: Cmd/Ctrl + Enter to trigger Resend
-  useEffect(() => {
-    if (!log || !canWrite) return;
-    const handleKeyDown = (e: KeyboardEvent): void => {
-      if ((e.metaKey || e.ctrlKey) && e.key === "Enter") {
-        e.preventDefault();
-        handleResend();
-      }
-    };
-    window.addEventListener("keydown", handleKeyDown);
-    return () => window.removeEventListener("keydown", handleKeyDown);
-  }, [log, canWrite, handleResend]);
+  // Keyboard shortcut: Cmd/Ctrl + Enter to trigger Resend.
+  //
+  // The drawer IS the focused `role="dialog"`, so the old "ignore events inside
+  // any dialog" guard made the advertised shortcut dead. The shared hook only
+  // blocks when a confirmation dialog is open and when a text field has focus.
+  useCmdEnterShortcut({
+    enabled: Boolean(log) && canWrite,
+    onTrigger: handleResend,
+    allowTyping: false,
+  });
 
   if (!log) return null;
 
@@ -100,7 +102,7 @@ export const MessagingDetail = function MessagingDetail({
               <CopyBtn
                 text={String(log.id)}
                 showToast
-                className="h-6 w-6 min-h-6 min-w-6 rounded-md shadow-none cursor-pointer"
+                className="min-h-11 min-w-11 rounded-md shadow-none cursor-pointer"
               />
             </div>
             <DrawerUpdatedStamp createdAt={log.sentAt} label={t("messaging.dateSent")} />
@@ -156,23 +158,15 @@ export const MessagingDetail = function MessagingDetail({
             </div>
             <p className={`text-xs ${SEMANTIC_TEXT.destructive} opacity-90`}>
               {isFailed
-                ? t("messaging.loadFailedHint")
-                : t("messaging.skippedNotice", { count: 1, type: t("messaging.phoneNumber") })}
+                ? log.errorMessage || t("messaging.failureReasonUnavailable")
+                : t("messaging.skippedNotice", {
+                    count: 1,
+                    type:
+                      log.channel === "email"
+                        ? t("messaging.emailAddress")
+                        : t("messaging.phoneNumber"),
+                  })}
             </p>
-            {canWrite && isFailed && (
-              <div className="pt-1.5">
-                <Button
-                  type="button"
-                  size="sm"
-                  variant="destructive"
-                  onClick={handleResend}
-                  className="gap-1.5 min-h-11 px-3 text-xs font-semibold"
-                >
-                  <RotateCcw className="h-3.5 w-3.5" />
-                  {t("messaging.resend")}
-                </Button>
-              </div>
-            )}
           </div>
         )}
 
@@ -193,7 +187,9 @@ export const MessagingDetail = function MessagingDetail({
                 recipient?.email ||
                 t("messaging.contactFallback", { id: log.contactId })}
             </span>
-            {log.contactId && (
+            {/* A messaging-only role cannot open the Contacts directory — the
+                link would land on a forbidden page. */}
+            {canViewContact && log.contactId && (
               <Link
                 to={`/contacts?contactId=${log.contactId}`}
                 className={`inline-flex items-center gap-1 ${SEMANTIC_TEXT.primary} hover:underline font-semibold shrink-0 text-xs w-max`}

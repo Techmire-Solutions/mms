@@ -30,11 +30,11 @@ const SERVICES_DIR = path.join(BACKEND_SRC, "services");
 const TENANT_ROUTES_DIR = path.join(BACKEND_SRC, "routes/tenant");
 
 const BASELINE = {
-  useCaseStorageImports: 48,
+  useCaseStorageImports: 47,
   servicesStorageImports: 66,
   servicesReexportShims: 0,
   routeAggregatorFiles: 17,
-  useCasesWithoutDirectTest: 55,
+  useCasesWithoutDirectTest: 53,
 };
 
 /** Route-aggregator files that are intentionally not `{module}` folders. */

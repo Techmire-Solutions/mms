@@ -40,6 +40,17 @@ export interface MessagingListCardItemProps {
   onCopyBody?: (e: React.MouseEvent, log: Message) => void;
 }
 
+/**
+ * Machine-readable timestamp for `<time dateTime>`.
+ *
+ * Legacy rows carry arbitrary `sentAt` strings; `new Date(x).toISOString()`
+ * throws on an invalid value and takes the whole card down with it.
+ */
+function machineDate(sentAt: string): string | undefined {
+  const date = new Date(sentAt);
+  return Number.isNaN(date.getTime()) ? undefined : date.toISOString();
+}
+
 /** Work directory card — DirectoryEntityCard SSOT (do not hand-compose EntityCard). */
 export function MessagingListCardItem({
   log,
@@ -73,6 +84,7 @@ export function MessagingListCardItem({
       className={cn(
         "transition-all group",
         isFailed && `border-destructive/30 ${SEMANTIC_TEXT.destructive}`,
+        log.deletedAt && "opacity-75",
         isKeyboardFocused && `ring-2 ring-primary/60 ${MESSAGING_KB_FOCUS_CLASS}`,
       )}
       header={{
@@ -81,7 +93,7 @@ export function MessagingListCardItem({
           <div className="flex items-center gap-1.5 flex-wrap mt-0.5">
             {isColumnVisible("dateSent") && (
               <time
-                dateTime={new Date(log.sentAt).toISOString()}
+                dateTime={machineDate(log.sentAt)}
                 className="text-xs font-mono text-muted-foreground"
               >
                 {formatDateTime(log.sentAt)}
@@ -124,11 +136,17 @@ export function MessagingListCardItem({
               <div className="flex items-start justify-between gap-2 mt-0.5">
                 <div className="min-w-0 flex-1">
                   {log.channel === "email" && log.subject && (
-                    <p title={log.subject} className="font-semibold text-foreground mb-1 truncate">
+                    <p
+                      title={log.subject}
+                      dir="auto"
+                      className="font-semibold text-foreground mb-1 truncate"
+                    >
                       {log.subject}
                     </p>
                   )}
-                  <p className="line-clamp-2 leading-relaxed whitespace-pre-wrap">{log.body}</p>
+                  <p dir="auto" className="line-clamp-2 leading-relaxed whitespace-pre-wrap">
+                    {log.body}
+                  </p>
                 </div>
                 <CopyBtn
                   text={log.body}
@@ -146,7 +164,9 @@ export function MessagingListCardItem({
             className={`flex items-center gap-1.5 text-3xs font-medium ${SEMANTIC_TEXT.destructive}`}
           >
             <AlertCircle className="h-3 w-3 shrink-0" />
-            <span className="truncate">{t("messaging.loadFailedHint")}</span>
+            <span className="truncate" title={log.errorMessage}>
+              {log.errorMessage || t("messaging.failureReasonUnavailable")}
+            </span>
           </div>
         ) : null
       }

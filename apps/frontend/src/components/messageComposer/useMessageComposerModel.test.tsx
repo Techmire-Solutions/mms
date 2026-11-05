@@ -1,6 +1,7 @@
-import React, { act } from "react";
+import { act } from "react";
 import { createRoot } from "react-dom/client";
 import { describe, expect, it, vi, afterEach } from "vitest";
+import { notify } from "@/lib/notify";
 import { useMessageComposerModel } from "./useMessageComposerModel";
 import { clearComposerDraft } from "./messageComposerDraft";
 import type { MessageTemplate } from "@mms/shared";
@@ -132,6 +133,54 @@ describe("useMessageComposerModel", () => {
       });
 
       expect(getResult().isDirty).toBe(true);
+    } finally {
+      cleanup();
+    }
+  });
+
+  it("adds a page of recipients with one summary toast", () => {
+    const { getResult, cleanup } = renderHookInDom((props) => useMessageComposerModel(props), {
+      channel: "whatsapp" as const,
+      recipients: [],
+      templates: [MOCK_TEMPLATE],
+      onClose: vi.fn(),
+      user: { id: "test-user" },
+    });
+
+    try {
+      vi.mocked(notify.success).mockClear();
+      act(() => {
+        getResult().addRecipients([
+          { id: "rec-1", name: "Ali", phone: "+1234567890" },
+          { id: "rec-2", name: "Hira", phone: "+1234567891" },
+          { id: "rec-1", name: "Ali", phone: "+1234567890" },
+        ]);
+      });
+
+      expect(getResult().localRecipients.map((r) => r.id)).toEqual(["rec-1", "rec-2"]);
+      // A 50-row select-all must not queue 50 toasts.
+      expect(notify.success).toHaveBeenCalledTimes(1);
+      expect(vi.mocked(notify.success).mock.calls[0]?.[0]).toBe("messaging.recipientsAdded");
+    } finally {
+      cleanup();
+    }
+  });
+
+  it("collapses duplicate recipients passed in by bulk callers", () => {
+    const { getResult, cleanup } = renderHookInDom((props) => useMessageComposerModel(props), {
+      channel: "whatsapp" as const,
+      recipients: [
+        { id: "rec-1", name: "Ali", phone: "+1234567890" },
+        { id: "rec-1", name: "Ali", phone: "+1234567890" },
+        { id: "rec-2", name: "Hira", phone: "+1234567891" },
+      ],
+      templates: [MOCK_TEMPLATE],
+      onClose: vi.fn(),
+      user: { id: "test-user" },
+    });
+
+    try {
+      expect(getResult().localRecipients.map((r) => r.id)).toEqual(["rec-1", "rec-2"]);
     } finally {
       cleanup();
     }

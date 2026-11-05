@@ -1,4 +1,4 @@
-import React, { useMemo } from "react";
+import React, { useEffect, useMemo } from "react";
 import { ShieldCheck } from "lucide-react";
 import { SectionCard } from "@/components/app/SectionCard";
 import { Switch } from "@/components/ui/switch";
@@ -72,6 +72,17 @@ export function FacultyUserAccountSection(
       ) ?? null
     );
   }, [linkedUserProp, existingUsers, facultyDraft.contactId, facultyDraft.userId]);
+
+  // Seed the draft from the account's real role. Without this, enabling the
+  // section and saving would write the untouched default (`staff`) over an
+  // existing Admin/Principal role.
+  useEffect(() => {
+    const accountRole = linkedUser?.role?.trim();
+    if (!accountRole) return;
+    if (userAccountDraft.role?.trim() === accountRole) return;
+    if (userAccountDraft.role?.trim() !== DEFAULT_FACULTY_USER_ROLE) return;
+    onUserAccountDraftChange({ ...userAccountDraft, role: accountRole });
+  }, [linkedUser?.role, userAccountDraft, onUserAccountDraftChange]);
 
   const roleOptions = useMemo(() => {
     const allowedRoles = facultyDraft.designationAssignableRoles;

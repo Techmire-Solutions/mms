@@ -10,6 +10,7 @@ interface UseMessagingWorkTierUrlSyncParams {
   debouncedSearch: string;
   startDate: string;
   endDate: string;
+  showArchived?: boolean;
 }
 
 export function useMessagingWorkTierUrlSync({
@@ -21,6 +22,7 @@ export function useMessagingWorkTierUrlSync({
   debouncedSearch,
   startDate,
   endDate,
+  showArchived = false,
 }: UseMessagingWorkTierUrlSyncParams): void {
   useEffect(() => {
     const next = new URLSearchParams(searchParams);
@@ -42,6 +44,9 @@ export function useMessagingWorkTierUrlSync({
     if (endDate.trim()) next.set("endDate", endDate.trim());
     else next.delete("endDate");
 
+    if (showArchived) next.set("archived", "1");
+    else next.delete("archived");
+
     if (next.toString() !== searchParams.toString()) {
       setSearchParams(next, { replace: true });
     }
@@ -52,6 +57,7 @@ export function useMessagingWorkTierUrlSync({
     debouncedSearch,
     startDate,
     endDate,
+    showArchived,
     searchParams,
     setSearchParams,
   ]);

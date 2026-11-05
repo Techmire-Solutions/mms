@@ -20,6 +20,20 @@ vi.mock("../services/auth/authArtifactService.js", () => ({
   authArtifactWorkspaceScopeKey: (subdomain: string) => `ws:${subdomain}`,
 }));
 
+vi.mock("../db/tenant-context.js", async (importOriginal) => {
+  const actual = await importOriginal<typeof import("../db/tenant-context.js")>();
+  return {
+    ...actual,
+    // Handler-owned transactions (clear/restore atomicity) run against a stub
+    // executor: this suite exercises the HTTP surface, not PostgreSQL.
+    withTenant: async (
+      _tenantId: string,
+      callback: (tx: unknown) => Promise<unknown>,
+      _options?: unknown,
+    ) => callback({}),
+  };
+});
+
 vi.mock("../services/workspaceService.js", async (importOriginal) => {
   const actual = await importOriginal<typeof import("../services/workspaceService.js")>();
   return {
@@ -69,8 +83,12 @@ vi.mock("../messaging/use-cases/messagingUseCases.js", () => ({
     matchMessagingRecipients: (...args: unknown[]) => mockMatchMessagingRecipients(...args),
     resolveMessagingRecipients: (...args: unknown[]) => mockResolveMessagingRecipients(...args),
     replaceMessageTemplates: vi.fn(),
-    replaceMessageLogs: vi.fn(),
   },
+}));
+
+vi.mock("../services/outboxEventService.js", () => ({
+  emitOutboxEvent: vi.fn().mockResolvedValue(undefined),
+  emitOutboxEvents: vi.fn().mockResolvedValue(undefined),
 }));
 
 vi.mock("../services/auditTrailService.js", () => ({
@@ -148,7 +166,7 @@ describe("messaging REST routes", () => {
     mockRemoveMessageTemplate.mockReset().mockResolvedValue(undefined);
     mockRecordMessageLogs
       .mockReset()
-      .mockImplementation(async (_tenant: string, logs: unknown[]) => logs);
+      .mockImplementation(async (_tenant: string, logs: unknown[]) => logs.length);
     mockComputeMessagingMetrics.mockReset().mockResolvedValue({
       total: 0,
       smsCount: 0,
@@ -360,7 +378,7 @@ describe("messaging REST routes", () => {
       },
     });
     expect(res.statusCode).toBe(200);
-    expect(mockClearAllMessageLogs).toHaveBeenCalledWith("demo");
+    expect(mockClearAllMessageLogs).toHaveBeenCalledWith("demo", "u-admin");
     expect(mockRecordAudit).toHaveBeenCalledWith(
       expect.objectContaining({
         action: "messaging.logs.clear",
@@ -508,6 +526,125 @@ describe("messaging REST routes", () => {
     await app.close();
   });
 
+  it("GET /api/messaging/history?includeDeleted archives view requires clearLogs", async () => {
+    const app = await buildApp();
+    const res = await app.inject({
+      method: "GET",
+      url: "/api/messaging/history?includeDeleted=true",
+      headers: {
+        host: "demo.localhost",
+        authorization: `Bearer ${signTenantToken(app, { role: "teacher", name: "teacher" })}`,
+      },
+    });
+    expect(res.statusCode).toBe(403);
+    expect(mockLoadFilteredMessageLogs).not.toHaveBeenCalled();
+    await app.close();
+  });
+
+  it("GET /api/messaging/history forwards includeDeleted as a boolean", async () => {
+    mockLoadFilteredMessageLogs.mockResolvedValueOnce({
+      logs: [
+        {
+          id: "archived-1",
+          channel: "sms",
+          status: "sent",
+          deletedAt: "2026-01-01T00:00:00.000Z",
+          deletedBy: "u-admin",
+          deletionReason: "messaging.logs.clear",
+        },
+      ],
+      total: 1,
+      page: 1,
+      pageSize: 50,
+      hasMore: false,
+    });
+    const app = await buildApp();
+    const res = await app.inject({
+      method: "GET",
+      url: "/api/messaging/history?includeDeleted=true",
+      headers: {
+        host: "demo.localhost",
+        authorization: `Bearer ${signTenantToken(app, { role: "admin", name: "admin" })}`,
+      },
+    });
+    expect(res.statusCode).toBe(200);
+    expect(res.json()).toEqual(
+      expect.objectContaining({
+        total: 1,
+        logs: [expect.objectContaining({ id: "archived-1", deletedBy: "u-admin" })],
+      }),
+    );
+    expect(mockLoadFilteredMessageLogs).toHaveBeenCalledWith(
+      "demo",
+      expect.objectContaining({ includeDeleted: true }),
+    );
+    await app.close();
+  });
+
+  it("GET /api/messaging/history defaults includeDeleted to false", async () => {
+    const app = await buildApp();
+    const res = await app.inject({
+      method: "GET",
+      url: "/api/messaging/history",
+      headers: {
+        host: "demo.localhost",
+        authorization: `Bearer ${signTenantToken(app, { role: "admin", name: "admin" })}`,
+      },
+    });
+    expect(res.statusCode).toBe(200);
+    expect(mockLoadFilteredMessageLogs).toHaveBeenCalledWith(
+      "demo",
+      expect.objectContaining({ includeDeleted: false }),
+    );
+    await app.close();
+  });
+
+  it("GET /api/messaging/history forwards the sort field and direction", async () => {
+    const app = await buildApp();
+    const res = await app.inject({
+      method: "GET",
+      url: "/api/messaging/history?sortField=channel&sortDir=asc",
+      headers: {
+        host: "demo.localhost",
+        authorization: `Bearer ${signTenantToken(app, { role: "admin", name: "admin" })}`,
+      },
+    });
+    expect(res.statusCode).toBe(200);
+    expect(mockLoadFilteredMessageLogs).toHaveBeenCalledWith(
+      "demo",
+      expect.objectContaining({ sortField: "channel", sortDir: "asc" }),
+    );
+    await app.close();
+  });
+
+  it("GET /api/messaging/history rejects an unknown sort field", async () => {
+    const app = await buildApp();
+    const res = await app.inject({
+      method: "GET",
+      url: "/api/messaging/history?sortField=body",
+      headers: {
+        host: "demo.localhost",
+        authorization: `Bearer ${signTenantToken(app, { role: "admin", name: "admin" })}`,
+      },
+    });
+    expect(res.statusCode).toBe(400);
+    await app.close();
+  });
+
+  it("GET /api/messaging/history rejects an out-of-range page size", async () => {
+    const app = await buildApp();
+    const res = await app.inject({
+      method: "GET",
+      url: "/api/messaging/history?pageSize=500",
+      headers: {
+        host: "demo.localhost",
+        authorization: `Bearer ${signTenantToken(app, { role: "admin", name: "admin" })}`,
+      },
+    });
+    expect(res.statusCode).toBe(400);
+    await app.close();
+  });
+
   it("GET /api/messaging/logs rejects invalid query", async () => {
     const app = await buildApp();
     const res = await app.inject({
@@ -549,6 +686,31 @@ describe("messaging REST routes", () => {
     expect(template.label).toBe("Fee Reminder");
     expect(template.category).toBe("financial");
     expect(res.json().template.id).toBe(template.id);
+    await app.close();
+  });
+
+  it("POST /api/messaging/templates audits the saved template", async () => {
+    const app = await buildApp();
+    const res = await app.inject({
+      method: "POST",
+      url: "/api/messaging/templates",
+      headers: {
+        host: "demo.localhost",
+        authorization: `Bearer ${signTenantToken(app, { role: "admin", name: "admin" })}`,
+      },
+      payload: { label: "Audit Me", body: "Hello {name}", category: "general", channel: "sms" },
+    });
+
+    expect(res.statusCode).toBe(200);
+    const savedId = (res.json() as { template: { id: string } }).template.id;
+    // Setup mutations are audited; save + audit share the handler transaction.
+    expect(mockRecordAudit).toHaveBeenCalledWith(
+      expect.objectContaining({
+        action: "messaging.templates.save",
+        entityId: savedId,
+        userId: "u-admin",
+      }),
+    );
     await app.close();
   });
 
@@ -602,6 +764,7 @@ describe("messaging REST routes", () => {
   });
 
   it("DELETE /api/messaging/templates/:id allows admin with messaging.write", async () => {
+    mockFindMessageTemplateById.mockResolvedValueOnce({ id: "custom_abc", label: "Fee Reminder" });
     const app = await buildApp();
     const res = await app.inject({
       method: "DELETE",
@@ -613,6 +776,9 @@ describe("messaging REST routes", () => {
     });
     expect(res.statusCode).toBe(200);
     expect(mockRemoveMessageTemplate).toHaveBeenCalledWith("demo", "custom_abc");
+    expect(mockRecordAudit).toHaveBeenCalledWith(
+      expect.objectContaining({ action: "messaging.templates.delete", entityId: "custom_abc" }),
+    );
     await app.close();
   });
 
@@ -1026,6 +1192,7 @@ describe("messaging REST routes", () => {
       expect.objectContaining({
         filename: "message_history.csv",
         label: "Message logs CSV",
+        viewerRole: "admin",
         query: {
           channel: "sms",
           status: "sent",
@@ -1040,6 +1207,44 @@ describe("messaging REST routes", () => {
         entityId: expect.any(String),
       }),
     );
+    await app.close();
+  });
+
+  it("POST /api/messaging/export/csv honours the Idempotency-Key header", async () => {
+    const app = await buildApp();
+    const res = await app.inject({
+      method: "POST",
+      url: "/api/messaging/export/csv",
+      headers: {
+        host: "demo.localhost",
+        "idempotency-key": "header-export-key-1",
+        authorization: `Bearer ${signTenantToken(app, { role: "admin", name: "admin" })}`,
+      },
+      payload: { filename: "message_history.csv" },
+    });
+    expect(res.statusCode).toBe(202);
+    expect(mockEnqueueBackgroundJob).toHaveBeenCalledWith(
+      "demo",
+      expect.any(String),
+      expect.objectContaining({ kind: "export" }),
+      expect.objectContaining({ viewerRole: "admin" }),
+    );
+    await app.close();
+  });
+
+  it("POST /api/messaging/logs/restore rejects more than 500 ids", async () => {
+    const app = await buildApp();
+    const res = await app.inject({
+      method: "POST",
+      url: "/api/messaging/logs/restore",
+      headers: {
+        host: "demo.localhost",
+        authorization: `Bearer ${signTenantToken(app, { role: "admin", name: "admin" })}`,
+      },
+      payload: { ids: Array.from({ length: 501 }, (_, i) => `log-${i}`) },
+    });
+    expect(res.statusCode).toBe(400);
+    expect(mockRestoreMessageLogs).not.toHaveBeenCalled();
     await app.close();
   });
 

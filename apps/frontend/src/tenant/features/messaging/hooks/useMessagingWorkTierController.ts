@@ -6,6 +6,8 @@ import {
   type StandardMessagingRecipient as MessagingRecipient,
 } from "@mms/shared";
 import { useDescriptorFilterChips } from "@/components/common/useDescriptorFilterChips";
+import { MESSAGING_WORK_SEARCH_INPUT_ID } from "../components/MessagingListFilters";
+import { useModuleShortcuts } from "@/hooks/useModuleShortcuts";
 import { useTranslation } from "@/hooks/useTranslation";
 import { useWorkDirectoryViewMode } from "@/hooks/useWorkDirectoryViewMode";
 import { formatDirectoryPageCountLabel } from "@/lib/formatDirectoryPageCountLabel";
@@ -21,6 +23,8 @@ import { useMessagingWorkTierDetail } from "./useMessagingWorkTierDetail";
 
 export interface MessagingWorkTierControllerProps {
   canWrite: boolean;
+  /** `messaging.clearLogs` — archived logs are a privileged view. */
+  canClearLogs?: boolean;
   onClearLogsRequest: () => void;
   onResend: (log: Message, recipient: MessagingRecipient) => void;
   onBulkResend?: (
@@ -32,15 +36,21 @@ export interface MessagingWorkTierControllerProps {
   onChannelChange?: (channel: "all" | "sms" | "whatsapp" | "email") => void;
   /** Lets the page header use the single filtered export path owned by the work tier. */
   onExportLogsRegister?: (handler: (() => Promise<void>) | null) => void;
+  onStartCampaign?: (channel: "whatsapp" | "sms" | "email") => void;
+  /** Restore selected archived logs (the archived directory's bulk action). */
+  onBulkRestore?: (ids: string[]) => Promise<void> | void;
 }
 
 export function useMessagingWorkTierController({
   canWrite,
+  canClearLogs = false,
   onResend,
   onBulkResend,
   channel: controlledChannel,
   onChannelChange: controlledOnChannelChange,
   onExportLogsRegister,
+  onStartCampaign,
+  onBulkRestore,
 }: MessagingWorkTierControllerProps) {
   const { t } = useTranslation();
   const [searchParams, setSearchParams] = useSearchParams();
@@ -48,14 +58,17 @@ export function useMessagingWorkTierController({
     useMessagingPageOptions();
   const { viewMode, setViewMode } = useWorkDirectoryViewMode();
 
+  const canViewArchived = canClearLogs;
   const filters = useMessagingWorkFilters({
     searchParams,
     setSearchParams,
     controlledChannel,
     controlledOnChannelChange,
+    canViewArchived,
   });
 
   const logsQuery = useMessageLogs({
+    includeDeleted: filters.showArchived,
     channel: filters.channel,
     category: filters.category,
     search: filters.debouncedSearch,
@@ -98,12 +111,41 @@ export function useMessagingWorkTierController({
     selectedCount,
     toggleLog,
     toggleAllVisible,
-  } = useMessagingWorkTierSelection({ logs: logsQuery.logs });
+  } = useMessagingWorkTierSelection({
+    logs: logsQuery.logs,
+    scopeKey: [
+      filters.channel,
+      filters.category,
+      filters.status,
+      filters.debouncedSearch,
+      filters.queryStartDate ?? "",
+      filters.endDate,
+      filters.logsPage,
+      filters.showArchived ? "archived" : "active",
+    ].join("|"),
+  });
+
+  // Real Work-tier shortcut state: `/` focuses search, Escape clears the
+  // selection then the filters, Cmd/Ctrl+N starts a campaign. The old page-level
+  // stub passed zeros and no-op handlers, so Escape did nothing.
+  useModuleShortcuts({
+    searchInputId: MESSAGING_WORK_SEARCH_INPUT_ID,
+    selectedCount,
+    hasActiveFilters: filters.hasActiveFilters,
+    clearFilters: filters.clearFilters,
+    clearSelection: () => setSelectedById({}),
+    canWrite,
+    showDeleted: false,
+    viewingDeleted: filters.showArchived,
+    onCreate: () => onStartCampaign?.("whatsapp"),
+  });
 
   const selectedCountLabel = t("messaging.selectedCount", { count: selectedCount });
+  // A row is a message log, not a recipient — the table and cards must count the
+  // same noun (`messaging.log/logs`).
   const pageCountLabel = formatDirectoryPageCountLabel(logsQuery.logs.length, t, {
-    singular: "messaging.item.recipient",
-    plural: "messaging.item.recipients",
+    singular: "messaging.log",
+    plural: "messaging.logs",
   });
 
   const { focusedIndex } = useMessagingWorkTierKeyboardNav({
@@ -137,6 +179,12 @@ export function useMessagingWorkTierController({
   }, [onExportLogsRegister, handleExportLogs]);
 
   const failedLogs = logsQuery.logs.filter((l: Message) => l.status === "failed");
+
+  /** Archived selection → restore (the shared bulk bar requires a request callback). */
+  const handleBulkRestoreRequest = (): void => {
+    const ids = selectedList.map((log) => String(log.id));
+    if (ids.length > 0) void onBulkRestore?.(ids);
+  };
 
   const handleFilterContact = (contactName: string): void => {
     filters.setSearch(contactName);
@@ -222,6 +270,7 @@ export function useMessagingWorkTierController({
     handleCloseDetail,
     handleBulkResend,
     handleBulkResendLogs,
+    handleBulkRestoreRequest,
     handleExportLogs,
     focusedLogId,
     failedLogs,

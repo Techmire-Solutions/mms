@@ -4,6 +4,7 @@ import {
   guardBulkSubordinatesOnDelete,
   guardSubordinatesOnDelete,
   SubordinateReassignmentError,
+  SubordinateReassignmentUnavailableError,
 } from "../faculty/use-cases/facultySoftDeleteGuards.js";
 import { ConflictError } from "../lib/httpErrors.js";
 import type { FacultyRepository } from "../faculty/repository/facultyRepository.js";
@@ -99,21 +100,25 @@ describe("facultySoftDeleteGuards", () => {
       });
     });
 
-    it("given valid active target supervisor, should reassign subordinates successfully", async () => {
-      // Arrange
+    it("refuses the reassignment request instead of reporting a no-op success", async () => {
+      // The organization-position model was removed, so `reassignSubordinates` is a
+      // no-op in production. Accepting the target archived the supervisor, returned
+      // 200 and left every subordinate pointing at a deleted chain.
       const mockRepo = {
         countSubordinates: vi.fn().mockResolvedValue(2),
         findById: vi
           .fn()
           .mockResolvedValue({ id: "fac-target", deletedAt: null } as unknown as Faculty),
-        reassignSubordinates: vi.fn().mockResolvedValue(2),
+        reassignSubordinates: vi.fn().mockResolvedValue(0),
       } as unknown as FacultyRepository;
 
-      // Act
-      await guardSubordinatesOnDelete(TENANT, "fac-1", "fac-target", mockRepo);
-
-      // Assert
-      expect(mockRepo.reassignSubordinates).toHaveBeenCalledWith(TENANT, "fac-1", "fac-target");
+      await expect(
+        guardSubordinatesOnDelete(TENANT, "fac-1", "fac-target", mockRepo),
+      ).rejects.toThrow(SubordinateReassignmentUnavailableError);
+      await expect(
+        guardSubordinatesOnDelete(TENANT, "fac-1", "fac-target", mockRepo),
+      ).rejects.toMatchObject({ statusCode: 409 });
+      expect(mockRepo.reassignSubordinates).not.toHaveBeenCalled();
     });
   });
 

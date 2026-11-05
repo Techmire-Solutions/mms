@@ -12,6 +12,8 @@ import { cascadeRestoreFacultyAssignments } from "../../db/repositories/facultyA
 import { cascadeRestoreFacultyEmployments } from "../../db/repositories/facultyEmploymentRepository.js";
 import { cascadeRestoreFacultyEmployDesignations } from "../../db/repositories/facultyEmployDesignationRepository.js";
 import { reconcileFacultyContactsByFacultyIds } from "../../contacts/systemTags/contactSystemTagUseCases.js";
+import { appendCollectionAuditInTx } from "../../lib/collectionAuditInTx.js";
+
 export async function restoreFacultyById(
   id: string,
   userId?: string,
@@ -67,6 +69,16 @@ export async function restoreFacultyById(
       version: Date.now(),
     });
     await reconcileFacultyContactsByFacultyIds(tenant, [String(id)], { actorId: userId });
+    // Authoritative audit row commits or rolls back with the restore.
+    await appendCollectionAuditInTx({
+      tenant,
+      tableName: "faculty",
+      recordId: String(id),
+      action: "faculty.restore",
+      summary: `Restored faculty member ${String(id)}`,
+      realUserId: userId ?? null,
+      subjectId: String(id),
+    });
 
     return next;
   });
@@ -152,6 +164,17 @@ export async function bulkRestoreFaculty(
         toSave.map((m) => String(m.id)),
         { actorId: userId },
       );
+      for (const member of toSave) {
+        await appendCollectionAuditInTx({
+          tenant,
+          tableName: "faculty",
+          recordId: String(member.id),
+          action: "faculty.restore",
+          summary: `Restored faculty member ${String(member.id)}`,
+          realUserId: userId ?? null,
+          subjectId: String(member.id),
+        });
+      }
     }
     return { succeeded, failed };
   });

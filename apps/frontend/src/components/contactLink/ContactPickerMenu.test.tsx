@@ -77,6 +77,8 @@ describe("ContactPickerMenu Component", () => {
 
     expect(html).toContain('role="listbox"');
     expect(html).toContain('id="test-picker-listbox"');
+    // A listbox may only contain options/groups: no status/empty chrome inside.
+    expect(html).not.toContain('role="status"');
     expect(html).toContain("Sayyida Fatima");
     expect(html).toContain("Najaf");
     expect(html).toContain('aria-selected="false"');
@@ -98,7 +100,12 @@ describe("ContactPickerMenu Component", () => {
       />,
     );
 
+    // The popup keeps its accessibility target id, but the non-option content
+    // must not be a listbox child (axe `aria-required-children`, critical).
     expect(html).toContain("common.loading");
+    expect(html).toContain('role="status"');
+    expect(html).not.toContain('role="listbox"');
+    expect(html).toContain('id="test-picker-listbox"');
   });
 
   it("renders empty state when not searching and matches are empty", () => {
@@ -119,5 +126,8 @@ describe("ContactPickerMenu Component", () => {
 
     expect(html).toContain("No contacts found");
     expect(html).toContain("Try another search term");
+    expect(html).toContain('role="status"');
+    expect(html).not.toContain('role="listbox"');
+    expect(html).toContain('id="test-picker-listbox"');
   });
 });

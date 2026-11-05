@@ -4,6 +4,7 @@ import {
   findStudentsByIds,
   resolveStudentsByIdentifiers,
   saveStudent,
+  saveStudentIfVersionMatches,
   bulkSaveStudents,
   bulkSoftDeleteStudentsSql,
   bulkRestoreStudentsSql,
@@ -47,12 +48,14 @@ function createStudentsRepository(): StudentsRepository {
     resolveByIdentifiers: (tenant, ids, options) =>
       resolveStudentsByIdentifiers(tenant, ids, options),
     save: (tenant, student) => saveStudent(tenant, student as Student),
+    saveIfVersionMatches: (tenant, student, expectedUpdatedAt) =>
+      saveStudentIfVersionMatches(tenant, student as Student, expectedUpdatedAt),
     bulkSave: (tenant, students) => bulkSaveStudents(tenant, students as Student[]),
     aggregateCommandMetrics: (tenant, periodDays) =>
       aggregateStudentsCommandMetrics(tenant, periodDays),
     aggregateWidgetQueries: (tenant, queries) => aggregateStudentsWidgetQueries(tenant, queries),
-    listLinkedContactIds: (tenant, excludeStudentId) =>
-      listStudentLinkedContactIdsSql(tenant, excludeStudentId),
+    listLinkedContactIds: (tenant, excludeStudentId, onlyContactIds) =>
+      listStudentLinkedContactIdsSql(tenant, excludeStudentId, onlyContactIds),
     countNextGrNumber: (tenant, input) =>
       countStudentsForNextGrNumber(tenant, input.regDate, input.restartAnnually),
     previewNextGrNumber: (tenant, input) => previewNextGrNumberSql(tenant, input),
@@ -67,10 +70,12 @@ function createStudentsRepository(): StudentsRepository {
       findSoftDeletedStudentByContactIdSql(tenant, contactId),
     listActiveMissingGrNumber: (tenant, options) =>
       listActiveStudentsMissingGrNumber(tenant, options),
-    bulkUpdateStatusSql: (tenant, ids, status) => bulkUpdateStudentsStatusSql(tenant, ids, status),
+    bulkUpdateStatusSql: (tenant, ids, status, updatedBy) =>
+      bulkUpdateStudentsStatusSql(tenant, ids, status, updatedBy),
     bulkSoftDelete: (tenant, ids, deletedBy, deletionReason) =>
       bulkSoftDeleteStudentsSql(tenant, ids, deletedBy, deletionReason),
-    bulkRestore: (tenant, ids, userId) => bulkRestoreStudentsSql(tenant, ids, userId),
+    bulkRestore: (tenant, ids, userId, restoredAt) =>
+      bulkRestoreStudentsSql(tenant, ids, userId, restoredAt),
     guardDeleteDependents: (tenant, ids) => guardStudentSoftDelete(tenant, ids),
   };
 }

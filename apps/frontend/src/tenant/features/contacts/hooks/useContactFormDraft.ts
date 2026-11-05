@@ -95,6 +95,7 @@ export function useContactFormDraft({
     getListItemError,
     updateDraft,
     handleAvatarChange,
+    handleAvatarFileSelect,
     handlePhoneBlur,
   } = useContactFormDraftHelpers({
     formInstanceId,
@@ -174,6 +175,7 @@ export function useContactFormDraft({
     getListItemError,
     updateDraft,
     handleAvatarChange,
+    handleAvatarFileSelect,
     handlePhoneBlur,
     addSubListItem,
     ensureSubListItem,

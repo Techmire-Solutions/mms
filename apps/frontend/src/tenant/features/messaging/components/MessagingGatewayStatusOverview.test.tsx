@@ -22,6 +22,8 @@ vi.mock("../hooks/useMessagingGatewaysStatus", () => ({
       isConnected: true,
       provider: "twilio",
       sender: "+14155552671",
+      lastTestOk: false,
+      lastError: "Authentication failed (401)",
       isLoading: false,
     },
     whatsapp: {
@@ -66,5 +68,15 @@ describe("MessagingGatewayStatusOverview Component", () => {
 
     // Links to settings
     expect(html).toContain('href="/settings?tab=global"');
+    // The configure row no longer pins a 28px height over the shared 44px floor.
+    expect(html).not.toContain("h-7 text-xs");
+  });
+
+  it("surfaces the last gateway error instead of implying the channel is healthy", () => {
+    const html = renderToStaticMarkup(<MessagingGatewayStatusOverview />);
+
+    // The card previously showed only "Connected" while the last test failed.
+    expect(html).toContain("messaging.gateways.lastError");
+    expect(html).toContain("Authentication failed (401)");
   });
 });

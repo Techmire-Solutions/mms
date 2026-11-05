@@ -92,7 +92,9 @@ export default defineConfig({
     },
     // CI `--shard` splits by recorded per-file time (src/test/shard-timings.json).
     sequence: { sequencer: DurationShardSequencer },
-    pool: "threads",
+    pool:
+      (process.env.VITEST_POOL as "threads" | "forks") ??
+      (process.platform === "darwin" && !process.env.CI ? "forks" : "threads"),
     maxWorkers: process.env.CI ? 4 : undefined,
     fileParallelism: true,
     clearMocks: true,

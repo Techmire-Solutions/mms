@@ -131,3 +131,19 @@ export const DEFAULT_USER_ACCOUNT_DRAFT = {
   password: "",
   forceReset: true,
 };
+
+/**
+ * Role the linked-account control should show/write.
+ *
+ * An existing account keeps its own role; the module default (`staff`) only
+ * applies when the draft has not been touched and there is no account yet.
+ */
+export function resolveInitialUserAccountRole(
+  draftRole: string | undefined,
+  linkedUserRole?: string | null,
+): string {
+  const draft = draftRole?.trim() ?? "";
+  const account = linkedUserRole?.trim() ?? "";
+  if (account && (!draft || draft === DEFAULT_FACULTY_USER_ROLE)) return account;
+  return draft || account || DEFAULT_FACULTY_USER_ROLE;
+}

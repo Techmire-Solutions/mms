@@ -30,17 +30,44 @@ import {
 
 type Progress = (current: number, total: number) => Promise<void>;
 
+/**
+ * Pairs rows by name in occurrence order. Multiple classes/sections may share a name, so a
+ * plain `find` can map a retry onto the wrong copy; pairing nth-with-nth is deterministic.
+ */
+function pairByName<T extends { id: string; name: string }>(
+  sourceRows: readonly T[],
+  targetRows: readonly T[],
+): Map<string, string> {
+  const byName = new Map<string, T[]>();
+  for (const row of targetRows) {
+    const key = row.name.trim().toLowerCase();
+    byName.set(key, [...(byName.get(key) ?? []), row]);
+  }
+  const used = new Map<string, number>();
+  const pairs = new Map<string, string>();
+  for (const row of sourceRows) {
+    const key = row.name.trim().toLowerCase();
+    const index = used.get(key) ?? 0;
+    const match = byName.get(key)?.[index];
+    if (!match) continue;
+    used.set(key, index + 1);
+    pairs.set(row.id, match.id);
+  }
+  return pairs;
+}
+
 /** Id maps of an earlier attempt's target, matched by class and section name. */
 function mapsByName(source: Session, target: Session): RolloverIdMaps {
   const ids: RolloverIdMaps = { classIds: new Map(), sectionIds: new Map() };
+  const classPairs = pairByName(source.classes, target.classes);
   for (const cls of source.classes) {
-    const copy = target.classes.find((candidate) => candidate.name === cls.name);
+    const copyId = classPairs.get(cls.id);
+    if (!copyId) continue;
+    const copy = target.classes.find((candidate) => candidate.id === copyId);
     if (!copy) continue;
     ids.classIds.set(cls.id, copy.id);
-    for (const section of cls.sections ?? []) {
-      const match = copy.sections?.find((candidate) => candidate.name === section.name);
-      if (match) ids.sectionIds.set(section.id, match.id);
-    }
+    const sectionPairs = pairByName(cls.sections ?? [], copy.sections ?? []);
+    for (const [sourceId, targetId] of sectionPairs) ids.sectionIds.set(sourceId, targetId);
   }
   return ids;
 }
@@ -147,15 +174,18 @@ export async function executeSessionRollover(
       for (const [index, row] of plan.entries()) {
         const candidate = byId.get(row.enrollmentId);
         if (!candidate) continue;
-        const status = PROMOTION_OUTCOME_STATUS[row.outcome];
-        await closeRolloverSourceEnrollment(tenant, {
-          enrollmentId: candidate.id,
-          studentId: candidate.studentId,
-          status,
-          lastDay,
-          actor,
-        });
-        counts[status] += 1;
+        // A retry must not close (or count) enrollments an earlier attempt already carried.
+        if (!done.has(row.enrollmentId)) {
+          const status = PROMOTION_OUTCOME_STATUS[row.outcome];
+          await closeRolloverSourceEnrollment(tenant, {
+            enrollmentId: candidate.id,
+            studentId: candidate.studentId,
+            status,
+            lastDay,
+            actor,
+          });
+          counts[status] += 1;
+        }
         await progress(index + 1, plan.length);
       }
     }

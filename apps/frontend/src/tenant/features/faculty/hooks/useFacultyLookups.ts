@@ -38,4 +38,3 @@ const lookupsHooks = createModuleLookupsHooks<FacultyLookupsMap, FacultyLookupKi
 });
 
 export const useFacultyLookupsQuery = lookupsHooks.useLookupsQuery;
-export const useFacultyLookupMutation = lookupsHooks.useLookupMutation;

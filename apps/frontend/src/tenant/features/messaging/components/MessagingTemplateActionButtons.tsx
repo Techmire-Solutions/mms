@@ -24,6 +24,9 @@ export function MessagingTemplateActionButtons({
   onDeleteRequest,
 }: MessagingTemplateActionButtonsProps): React.JSX.Element {
   const { t } = useTranslation();
+  // System presets are read-only: only custom templates get edit/delete. The
+  // "SYSTEM" tag follows the template, not the viewer's write permission.
+  const isCustom = template.id.startsWith("custom_");
 
   return (
     <div className="flex flex-wrap items-center justify-center gap-1.5">
@@ -45,29 +48,31 @@ export function MessagingTemplateActionButtons({
           <Files className="h-4 w-4" />
         </Button>
       )}
-      {canWrite && template.id.startsWith("custom_") ? (
-        <>
-          <Button
-            variant="outline"
-            size="icon"
-            onClick={() => onEdit(template)}
-            className={`min-h-11 min-w-11 rounded-xl border-info/30 ${SEMANTIC_BG.info} ${SEMANTIC_TEXT.info} hover:bg-info/15 hover:border-info/40 shadow-none`}
-            title={t("common.edit")}
-            aria-label={t("common.edit")}
-          >
-            <Edit3 className="h-4 w-4" />
-          </Button>
-          <Button
-            variant="outline"
-            size="icon"
-            onClick={() => onDeleteRequest(template.id)}
-            className={`min-h-11 min-w-11 rounded-xl border-destructive/30 ${SEMANTIC_BG.destructive} ${SEMANTIC_TEXT.destructive} hover:bg-destructive/15 hover:border-destructive/40 shadow-none`}
-            title={t("common.delete")}
-            aria-label={t("common.delete")}
-          >
-            <Trash2 className="h-4 w-4" />
-          </Button>
-        </>
+      {isCustom ? (
+        canWrite ? (
+          <>
+            <Button
+              variant="outline"
+              size="icon"
+              onClick={() => onEdit(template)}
+              className={`min-h-11 min-w-11 rounded-xl border-info/30 ${SEMANTIC_BG.info} ${SEMANTIC_TEXT.info} hover:bg-info/15 hover:border-info/40 shadow-none`}
+              title={t("common.edit")}
+              aria-label={t("common.edit")}
+            >
+              <Edit3 className="h-4 w-4" />
+            </Button>
+            <Button
+              variant="outline"
+              size="icon"
+              onClick={() => onDeleteRequest(template.id)}
+              className={`min-h-11 min-w-11 rounded-xl border-destructive/30 ${SEMANTIC_BG.destructive} ${SEMANTIC_TEXT.destructive} hover:bg-destructive/15 hover:border-destructive/40 shadow-none`}
+              title={t("common.delete")}
+              aria-label={t("common.delete")}
+            >
+              <Trash2 className="h-4 w-4" />
+            </Button>
+          </>
+        ) : null
       ) : (
         <span className="rounded border border-border/30 bg-muted/65 px-1.5 py-0.5 font-mono text-xs italic uppercase text-muted-foreground">
           {t("messaging.tagSystem")}

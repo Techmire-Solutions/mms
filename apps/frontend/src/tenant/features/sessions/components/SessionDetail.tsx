@@ -4,7 +4,7 @@
  */
 import React, { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { GraduationCap, Wallet, UserCheck, Link2, History, Award } from "lucide-react";
+import { GraduationCap, Wallet, UserCheck, Link2, History, Award, ArrowRight } from "lucide-react";
 import { DetailDrawerShell } from "@/components/app/DetailDrawerShell";
 import {
   DetailDrawerRestoreOrEditAction,
@@ -16,6 +16,7 @@ import {
   formatMoney,
   SESSIONS_MODULE_MANIFEST,
   formatDate,
+  isSessionReadOnly,
   sessionTypeI18nKey,
   type Session,
   type AppTranslationKey,
@@ -78,13 +79,15 @@ export const SessionDetail = function SessionDetail({
   canDelete = false,
   onRestore,
 }: SessionDetailProps): React.JSX.Element {
-  const { t } = useTranslation();
+  const { t, isRtl } = useTranslation();
   const terms = useAcademicTerms();
-  const { canWrite } = useModulePermissions(SESSIONS_MODULE_MANIFEST);
+  const { canWrite, canOverrideLock } = useModulePermissions(SESSIONS_MODULE_MANIFEST);
   const [tab, setTab] = useState<string>("classes");
   const TabContent = TAB_COMPONENTS[tab];
   const isArchived = Boolean(session.deletedAt);
-  const canMutate = canWrite && !isArchived;
+  // completed/cancelled are terminal: only an override-capable user may still edit them.
+  const readOnlyStatus = isSessionReadOnly(session.status);
+  const canMutate = canWrite && !isArchived && (!readOnlyStatus || canOverrideLock);
 
   const typeKey = sessionTypeI18nKey(session.type);
   const sessionTypeLabel = typeKey ? t(typeKey) : session.type;
@@ -97,9 +100,7 @@ export const SessionDetail = function SessionDetail({
       label:
         key === "classes"
           ? terms.class.plural
-          : key === "faculty"
-            ? "Faculty Management"
-            : t(`sessions.detail.tab.${key}` as AppTranslationKey),
+          : t(`sessions.detail.tab.${key}` as AppTranslationKey),
       icon: TAB_ICONS[key],
     })))();
 
@@ -109,7 +110,7 @@ export const SessionDetail = function SessionDetail({
     <DetailDrawerRestoreOrEditAction
       isArchived={isArchived}
       canRestore={canDelete}
-      canEdit={canWrite}
+      canEdit={canMutate}
       restoreLabel={t("sessions.restore")}
       editLabel={t("sessions.detail.editTitle")}
       onRestore={onRestore ? () => onRestore(String(session.id)) : undefined}
@@ -125,15 +126,24 @@ export const SessionDetail = function SessionDetail({
         isArchived ? (
           t("sessions.detail.archivedSubtitle")
         ) : (
-          <div className="flex items-center gap-3 mt-1 text-xs text-muted-foreground flex-wrap">
-            <span>
-              {formatSessionDate(session.startDate)} → {formatSessionDate(session.endDate)}
-            </span>
-            <span className="font-semibold text-foreground">
-              {t("sessions.form.perMonth", {
-                amount: formatMoney(session.baseFee, session.currency),
-              })}
-            </span>
+          <div className="mt-1 space-y-1">
+            <div className="flex items-center gap-3 text-xs text-muted-foreground flex-wrap">
+              <span className="inline-flex items-center gap-1">
+                {formatSessionDate(session.startDate)}
+                <ArrowRight className="size-3 rtl:rotate-180" aria-hidden="true" />
+                {formatSessionDate(session.endDate)}
+              </span>
+              <span className="font-semibold text-foreground">
+                {t("sessions.form.perMonth", {
+                  amount: formatMoney(session.baseFee, session.currency),
+                })}
+              </span>
+            </div>
+            {session.description ? (
+              <p className="line-clamp-2 text-pretty text-xs text-muted-foreground">
+                {session.description}
+              </p>
+            ) : null}
           </div>
         )
       }
@@ -147,10 +157,12 @@ export const SessionDetail = function SessionDetail({
           {!isArchived ? (
             <div className="flex items-center gap-2 flex-wrap">
               <StatusBadge status={session.status} config={statusConfig} />
-              <span className="text-xs text-muted-foreground">{sessionTypeLabel}</span>
+              {sessionTypeLabel ? (
+                <span className="text-xs text-muted-foreground">{sessionTypeLabel}</span>
+              ) : null}
             </div>
           ) : null}
-          {canMutate ? <SessionLifecycleBar session={session} /> : null}
+          {canWrite && !isArchived ? <SessionLifecycleBar session={session} /> : null}
         </>
       }
       footer={
@@ -177,23 +189,31 @@ export const SessionDetail = function SessionDetail({
       <div className="flex-1">
         {isArchived ? (
           <div className="space-y-3 text-sm text-muted-foreground">
-            <p>
-              {formatSessionDate(session.startDate)} → {formatSessionDate(session.endDate)}
+            <p className="inline-flex items-center gap-1">
+              {formatSessionDate(session.startDate)}
+              <ArrowRight className="size-3 rtl:rotate-180" aria-hidden="true" />
+              {formatSessionDate(session.endDate)}
             </p>
-            <p>{sessionTypeLabel}</p>
+            {sessionTypeLabel ? <p>{sessionTypeLabel}</p> : null}
             <StatusBadge status={session.status} config={statusConfig} />
           </div>
         ) : (
           <AnimatePresence mode="wait">
             <motion.section
               key={tab}
-              initial={{ opacity: 0, x: 8 }}
+              initial={{ opacity: 0, x: isRtl ? -8 : 8 }}
               animate={{ opacity: 1, x: 0 }}
-              exit={{ opacity: 0, x: -8 }}
+              exit={{ opacity: 0, x: isRtl ? 8 : -8 }}
               transition={{ duration: 0.18 }}
               aria-label={tabs.find((tabDefinition) => tabDefinition.key === tab)?.label}
             >
-              <TabContent session={session} onUpdate={onUpdate} canWrite={canMutate} />
+              <TabContent
+                session={session}
+                onUpdate={onUpdate}
+                canWrite={canMutate}
+                canMutate={canMutate}
+                onEdit={() => onEdit(session)}
+              />
             </motion.section>
           </AnimatePresence>
         )}
@@ -201,5 +221,3 @@ export const SessionDetail = function SessionDetail({
     </DetailDrawerShell>
   );
 };
-
-export const SessionDrawer = SessionDetail;

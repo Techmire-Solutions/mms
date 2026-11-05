@@ -105,6 +105,44 @@ describe("studentNormalizeUseCases", () => {
       expect(parsed).not.toHaveProperty("fatherContactId");
       expect(parsed).not.toHaveProperty("guardianName");
     });
+
+    it("preserves GR and Student-ID casing from literal-case templates", () => {
+      const parsed = prepareStudentRecord({
+        name: "Aisha",
+        grNumber: "  GR26001 ",
+        studentId: " ST-9X ",
+      } as never);
+      expect(parsed.grNumber).toBe("GR26001");
+      expect(parsed.studentId).toBe("ST-9X");
+    });
+
+    it("strips server-owned audit attribution and timestamps from the payload", () => {
+      // F-1: createdAt reached the insert through mapAuditToInsert, so a REST client could
+      // forge the row's creation time (and corrupt audit/metrics that bucket on it).
+      const parsed = prepareStudentRecord({
+        name: "Aisha",
+        createdAt: "1999-01-01T00:00:00.000Z",
+        updatedAt: "1999-01-01T00:00:00.000Z",
+        createdBy: "u-forged",
+        updatedBy: "u-forged",
+      } as never);
+      expect(parsed).not.toHaveProperty("createdAt");
+      expect(parsed).not.toHaveProperty("updatedAt");
+      expect(parsed).not.toHaveProperty("createdBy");
+      expect(parsed).not.toHaveProperty("updatedBy");
+    });
+
+    it("drops the nested customFields map but keeps the flattened custom keys", () => {
+      // m5: the read mapper emits both shapes; accepting the map must not become a second write
+      // surface that bypasses the strict allowlist.
+      const parsed = prepareStudentRecord({
+        name: "Aisha",
+        nickname: "Aisha K",
+        customFields: { nickname: "Aisha K", restricted: "leak" },
+      } as never);
+      expect(parsed).not.toHaveProperty("customFields");
+      expect(parsed.nickname).toBe("Aisha K");
+    });
   });
 
   describe("mergeStudentPatch", () => {

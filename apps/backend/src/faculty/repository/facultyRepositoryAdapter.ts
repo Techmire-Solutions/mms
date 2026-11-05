@@ -3,7 +3,9 @@ import {
   bulkSaveFaculty,
   findFacultyById,
   findFacultyByIds,
+  isFacultyDeletedByUserId,
   saveFaculty,
+  saveFacultyIfVersionMatches,
   countSubordinates,
   countSubordinatesBatch,
   findSubordinates,
@@ -18,6 +20,7 @@ import {
   countFacultyForNextEmployeeId,
   findSoftDeletedFacultyByContactIdSql,
   findFacultyRegistrationConflictSql,
+  findFacultyIdsByEmployeeIdsSql,
   listActiveFacultyMissingEmployeeId,
   listFacultyLinkedContactIdsSql,
   listFacultyPage,
@@ -25,6 +28,7 @@ import {
 import { aggregateFacultyWidgetQueries } from "../../db/repositories/facultyRepositoryWidgets.js";
 import type { FacultyRepository } from "./facultyRepository.js";
 import { guardFacultyAssignmentDependents } from "../../db/repositories/facultyDeleteGuard.js";
+import { lockFacultyHierarchy } from "../../db/repositories/facultyAssignmentValidation.js";
 
 /**
  * Drizzle adapter for `FacultyRepository`.
@@ -38,11 +42,17 @@ function createFacultyRepository(): FacultyRepository {
     listPage: (tenant, query) => listFacultyPage(tenant, query),
     findById: (tenant, id) => findFacultyById(tenant, id),
     findByIds: (tenant, ids) => findFacultyByIds(tenant, ids),
+    isDeletedByUserId: (tenant, userId) => isFacultyDeletedByUserId(tenant, userId),
+    findIdsByEmployeeIds: (tenant, employeeIds) =>
+      findFacultyIdsByEmployeeIdsSql(tenant, employeeIds),
     findSoftDeletedByContactId: (tenant, contactId) =>
       findSoftDeletedFacultyByContactIdSql(tenant, contactId),
     save: (tenant, member, options) => saveFaculty(tenant, member as Faculty, options),
+    saveIfVersionMatches: (tenant, member, expectedUpdatedAt, options) =>
+      saveFacultyIfVersionMatches(tenant, member as Faculty, expectedUpdatedAt, options),
     guardAssignmentDependents: guardFacultyAssignmentDependents,
-    bulkSave: (tenant, members) => bulkSaveFaculty(tenant, members as Faculty[]),
+    lockHierarchy: (tx, tenant) => lockFacultyHierarchy(tx, tenant),
+    bulkSave: (tenant, members, options) => bulkSaveFaculty(tenant, members as Faculty[], options),
     aggregateCommandMetrics: (tenant, periodDays) =>
       aggregateFacultyCommandMetrics(tenant, periodDays),
     aggregateWidgetQueries: (tenant, queries) => aggregateFacultyWidgetQueries(tenant, queries),
@@ -51,7 +61,8 @@ function createFacultyRepository(): FacultyRepository {
     countNextEmployeeId: (tenant, options) => countFacultyForNextEmployeeId(tenant, options),
     listActiveMissingEmployeeId: (tenant) => listActiveFacultyMissingEmployeeId(tenant),
     findRegistrationConflict: (tenant, input) => findFacultyRegistrationConflictSql(tenant, input),
-    bulkUpdateStatusSql: (tenant, ids, status) => bulkUpdateFacultyStatusSql(tenant, ids, status),
+    bulkUpdateStatusSql: (tenant, ids, status, updatedBy) =>
+      bulkUpdateFacultyStatusSql(tenant, ids, status, updatedBy),
     bulkUpdateSpecializationSql: (tenant, ids, specialization) =>
       bulkUpdateFacultySpecializationSql(tenant, ids, specialization),
     countSubordinates: (tenant, supervisorId) => countSubordinates(tenant, supervisorId),

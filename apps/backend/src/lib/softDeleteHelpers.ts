@@ -42,6 +42,39 @@ export async function enableIncludeDeleted(tx: IncludeDeletedTx): Promise<void> 
   }
 }
 
+/** Reads the current `app.include_deleted` GUC (transaction-local; `null` when unset). */
+export async function readIncludeDeletedSetting(tx: IncludeDeletedTx): Promise<string | null> {
+  if (typeof tx?.execute !== "function") return null;
+  const result = (await tx.execute(
+    sql`SELECT current_setting('app.include_deleted', true) AS value`,
+  )) as { rows?: Array<Record<string, unknown>> } | undefined;
+  const value = result?.rows?.[0]?.value;
+  return typeof value === "string" ? value : null;
+}
+
+/**
+ * Runs `work` with soft-deleted rows visible, then restores the previous GUC scope — including when
+ * `work` throws, and without downgrading a caller that had already opted in.
+ *
+ * Needed because `set_config(..., true)` is transaction-scoped: a helper that opts in for one
+ * internal count would otherwise leave the rest of the caller's transaction reading deleted rows.
+ */
+export async function withIncludeDeletedScope<T>(
+  tx: IncludeDeletedTx,
+  work: () => Promise<T>,
+): Promise<T> {
+  const previous = await readIncludeDeletedSetting(tx);
+  await enableIncludeDeleted(tx);
+  try {
+    return await work();
+  } finally {
+    if (typeof tx?.execute === "function") {
+      const restored = previous === "true" ? "true" : "false";
+      await tx.execute(sql`SELECT set_config('app.include_deleted', ${restored}, true)`);
+    }
+  }
+}
+
 /** Whether a soft-delete list filter needs the include_deleted GUC under FORCE RLS. */
 export function softDeleteFilterNeedsIncludeDeleted(
   deletedFilter: "active" | "deleted" | "all",

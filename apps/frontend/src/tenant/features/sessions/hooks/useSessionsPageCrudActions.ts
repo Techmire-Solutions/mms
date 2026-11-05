@@ -18,45 +18,28 @@ export interface UseSessionsPageCrudActionsParams {
   editSession: Session | null;
   detailSession: Session | null;
   setDetailSession: (session: Session | null) => void;
-  createSession: { mutateAsync: (session: Session) => Promise<{ session?: Session }> };
+  createSession: { mutateAsync: (session: Session) => Promise<Session> };
   updateSession: {
-    mutateAsync: (payload: { id: string; session: Session }) => Promise<{ session?: Session }>;
+    mutateAsync: (payload: { id: string; session: Session }) => Promise<Session>;
   };
   deleteSession: {
-    mutate: (
-      payload: { id: string; deletionReason?: string },
-      options: { onSuccess?: () => void; onError?: (err: unknown) => void },
-    ) => void;
+    mutateAsync: (payload: { id: string; deletionReason?: string }) => Promise<void>;
   };
-  restoreSession: {
-    mutate: (
-      id: string,
-      options: { onSuccess?: () => void; onError?: (err: unknown) => void },
-    ) => void;
-  };
+  restoreSession: { mutateAsync: (id: string) => Promise<void> };
   bulkDeleteSessions: {
-    mutate: (
-      payload: { ids: string[]; deletionReason?: string },
-      options: {
-        onSuccess?: (result: { succeeded: number; failed: number }) => void;
-        onError?: (error: unknown) => void;
-      },
-    ) => void;
+    mutateAsync: (payload: {
+      ids: string[];
+      deletionReason?: string;
+    }) => Promise<{ succeeded: number; failed: number }>;
   };
   bulkRestoreSessions: {
-    mutate: (
-      ids: string[],
-      options: {
-        onSuccess?: (result: { succeeded: number; failed: number }) => void;
-        onError?: (error: unknown) => void;
-      },
-    ) => void;
+    mutateAsync: (ids: string[]) => Promise<{ succeeded: number; failed: number }>;
   };
   bulkUpdateSessionStatus: {
     mutateAsync: (payload: {
       ids: string[];
       status: string;
-    }) => Promise<{ success: boolean; succeeded: number; failed: number }>;
+    }) => Promise<{ succeeded: number; failed: number }>;
   };
   selectedIds: string[];
   setSelectedIds: Dispatch<SetStateAction<string[]>>;

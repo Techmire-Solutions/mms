@@ -1,7 +1,10 @@
 import { describe, expect, it } from "vitest";
+import type { User } from "@mms/shared";
 import {
+  isContactAttachmentUploadPath,
   isCrossTenantRootUpload,
   isPublicUploadPath,
+  isUploadModuleAccessDenied,
   setStaticAssetHeaders,
   tenantSegmentOf,
   uploadPathFromUrl,
@@ -84,6 +87,37 @@ describe("root-level upload tenant isolation (B-01)", () => {
 
   it("leaves public branding public for every caller", () => {
     expect(isCrossTenantRootUpload("branding/logo.webp", "demo")).toBe(false);
+  });
+});
+
+describe("contact attachment module gate (R4-09)", () => {
+  const user = (role: string): User => ({ id: "u-1", role }) as User;
+
+  it("recognises contact attachments in both layouts", () => {
+    expect(isContactAttachmentUploadPath("tenants/demo/attachments/a.pdf")).toBe(true);
+    expect(isContactAttachmentUploadPath("attachments/legacy.pdf")).toBe(true);
+    expect(isContactAttachmentUploadPath("tenants/demo/exports/a.csv")).toBe(false);
+    expect(isContactAttachmentUploadPath("tenants/demo/avatars/u.webp")).toBe(false);
+    expect(isContactAttachmentUploadPath("branding")).toBe(false);
+  });
+
+  it("denies a session without contacts.read and allows one with it", () => {
+    const path = "tenants/demo/attachments/report.pdf";
+    // Attachments are rendered only inside the contacts drawer, which already
+    // requires contacts.read; the gate makes the file match that boundary.
+    expect(isUploadModuleAccessDenied(path, user("attendance_only"))).toBe(true);
+    // Teacher/assistant/librarian hold students/faculty/workshops but no contacts
+    // grant (they use the lean picker, which exposes no attachments).
+    expect(isUploadModuleAccessDenied(path, user("teacher"))).toBe(true);
+    expect(isUploadModuleAccessDenied(path, user("admin"))).toBe(false);
+    expect(isUploadModuleAccessDenied(path, undefined)).toBe(true);
+  });
+
+  it("does not gate non-contact uploads on the contacts module", () => {
+    expect(isUploadModuleAccessDenied("tenants/demo/exports/a.csv", user("librarian"))).toBe(false);
+    expect(isUploadModuleAccessDenied("tenants/demo/avatars/u.webp", user("librarian"))).toBe(
+      false,
+    );
   });
 });
 

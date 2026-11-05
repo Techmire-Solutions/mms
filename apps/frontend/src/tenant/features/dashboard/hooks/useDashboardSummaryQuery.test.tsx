@@ -14,11 +14,10 @@ vi.mock("@/lib/api", () => ({ tsrClient: {} }));
 
 import {
   DASHBOARD_PREFERENCES_QUERY_KEY,
-  DASHBOARD_SUMMARY_QUERY_KEY,
   DASHBOARD_WIDGETS_QUERY_KEY,
-  invalidateDashboardQueries,
-  useDashboardSummaryQuery,
+  invalidateDashboardConfigQueries,
 } from "./useDashboardSetupConfig";
+import { DASHBOARD_SUMMARY_QUERY_KEY, useDashboardSummaryQuery } from "./useDashboardSummaryQuery";
 
 declare global {
   var IS_REACT_ACT_ENVIRONMENT: boolean | undefined;
@@ -49,12 +48,16 @@ describe("useDashboardSummaryQuery & dashboard query helpers", () => {
     queryClient.clear();
   });
 
-  it("generates consistent query key tuples", () => {
-    expect(DASHBOARD_SUMMARY_QUERY_KEY("2026-08-31", "admin")).toEqual([
+  it("keys the summary by date only — the role is a presentation hint", () => {
+    expect(DASHBOARD_SUMMARY_QUERY_KEY("2026-08-31")).toEqual([
       "dashboard",
       "summary",
-      { date: "2026-08-31", role: "admin" },
+      { date: "2026-08-31" },
     ]);
+    // Same day, different role hint → same cache entry (no duplicate fetch).
+    expect(DASHBOARD_SUMMARY_QUERY_KEY("2026-08-31")).toEqual(
+      DASHBOARD_SUMMARY_QUERY_KEY("2026-08-31"),
+    );
   });
 
   it("fetches dashboard summary and sets summary data", async () => {
@@ -112,7 +115,7 @@ describe("useDashboardSummaryQuery & dashboard query helpers", () => {
 
   it("retains the last successful snapshot when a background refresh fails (placeholderData)", async () => {
     const firstSummary = { students: { total: 1441 } };
-    const queryKey = DASHBOARD_SUMMARY_QUERY_KEY("2026-08-31", "admin");
+    const queryKey = DASHBOARD_SUMMARY_QUERY_KEY("2026-08-31");
     queryClient.setQueryData(queryKey, firstSummary);
 
     let currentSummary: unknown;
@@ -154,12 +157,13 @@ describe("useDashboardSummaryQuery & dashboard query helpers", () => {
     });
   });
 
-  it("invalidates preferences, widgets, and summary queries on invalidateDashboardQueries", async () => {
+  it("invalidates only the configuration documents on a dashboard config change", () => {
     const invalidateSpy = vi.spyOn(queryClient, "invalidateQueries");
-    invalidateDashboardQueries(queryClient);
+    invalidateDashboardConfigQueries(queryClient);
 
     expect(invalidateSpy).toHaveBeenCalledWith({ queryKey: DASHBOARD_PREFERENCES_QUERY_KEY });
     expect(invalidateSpy).toHaveBeenCalledWith({ queryKey: DASHBOARD_WIDGETS_QUERY_KEY });
-    expect(invalidateSpy).toHaveBeenCalledWith({ queryKey: ["dashboard", "summary"] });
+    expect(invalidateSpy).toHaveBeenCalledTimes(2);
+    expect(invalidateSpy).not.toHaveBeenCalledWith({ queryKey: ["dashboard", "summary"] });
   });
 });

@@ -1,12 +1,9 @@
 import type { FastifyPluginAsync } from "fastify";
 import {
-  DASHBOARD_MODULE_MANIFEST,
-  roleHasPermission,
   dashboardContract,
   normalizeDashboardPreferences,
   type DashboardPreferences,
   type DashboardWidgetDto,
-  type User,
 } from "@mms/shared";
 import { initServer, type RouterImplementation } from "@ts-rest/fastify";
 import { standardRequestValidationErrorHandler } from "../../lib/contractRegistration.js";
@@ -16,84 +13,41 @@ import {
   pickReadableModuleSections,
   registerModuleAccess,
 } from "../../middleware/requireTenantModule.js";
-import { withTenant } from "../../db/tenant-context.js";
 import { requireTenant } from "../../lib/tenantContext.js";
 import { createCollectionAuditHelper } from "../../lib/createCollectionAuditHelper.js";
 import {
   loadDashboardPreferences,
   saveDashboardPreferences,
+  evictDashboardPreferencesCache,
 } from "../../services/dashboardPreferencesService.js";
 import {
   loadDashboardWidgets,
   upsertDashboardWidgets,
   deleteDashboardWidget,
   reorderDashboardWidgets,
+  broadcastDashboardWidgetsChanged,
 } from "../../lib/dashboardWidgetsService.js";
 import { loadDashboardSummary } from "../../services/dashboardSummaryService.js";
 import { logger } from "../../lib/logger.js";
+import { handleDashboardRead, handleDashboardWrite } from "./dashboard/dashboardRouteHelpers.js";
 
 const auditDashboard = createCollectionAuditHelper("dashboard");
 const s = initServer();
 
-function canWriteDashboard(user: User): boolean {
-  if (!user || !user.role) return false;
-  const role = String(user.role).toLowerCase();
-  return (
-    roleHasPermission(role, DASHBOARD_MODULE_MANIFEST.permissions.setupWrite) ||
-    roleHasPermission(role, DASHBOARD_MODULE_MANIFEST.permissions.customize)
-  );
-}
-
-async function handleDashboardRead<T>(
-  action: (tenant: string) => Promise<T>,
-  errorMessage: string,
-) {
-  try {
-    const tenant = requireTenant();
-    const result = await withTenant(tenant, () => action(tenant), {
-      readOnly: true,
-      statementTimeoutMs: 5000,
-    });
-    return { status: 200 as const, body: result };
-  } catch {
-    return {
-      status: 500 as const,
-      body: { type: "database_error", message: errorMessage },
-    };
-  }
-}
-
-type DashboardWriteResult<T> =
-  | { ok: true; data: T }
-  | { ok: false; error: { status: 403; body: { type: "forbidden"; message: string } } };
-
-async function handleDashboardWrite<T>(
-  request: { user?: User },
-  action: (user: User, tenant: string) => Promise<T>,
-): Promise<DashboardWriteResult<T>> {
-  const user = request.user as User;
-  if (!canWriteDashboard(user)) {
-    return {
-      ok: false,
-      error: {
-        status: 403 as const,
-        body: { type: "forbidden", message: "Insufficient permissions" },
-      },
-    };
-  }
-  const tenant = requireTenant();
-  const data = await withTenant(tenant, () => action(user, tenant), { readOnly: false });
-  return { ok: true, data };
-}
-
 const dashboardRouter = s.router(dashboardContract, {
-  getPreferences: async (): Promise<
+  getPreferences: async ({
+    request,
+  }: ContractRouteArgs<(typeof dashboardContract)["getPreferences"]>): Promise<
     ContractRouteResponse<(typeof dashboardContract)["getPreferences"]>
   > =>
-    handleDashboardRead(async () => {
-      const preferences = await loadDashboardPreferences();
-      return { preferences: preferences ?? normalizeDashboardPreferences(null) };
-    }, "Failed to load dashboard preferences"),
+    handleDashboardRead(
+      request,
+      async () => {
+        const preferences = await loadDashboardPreferences();
+        return { preferences: preferences ?? normalizeDashboardPreferences(null) };
+      },
+      "Failed to load dashboard preferences",
+    ),
 
   putPreferences: async ({
     body,
@@ -103,8 +57,15 @@ const dashboardRouter = s.router(dashboardContract, {
   > => {
     try {
       const result = await handleDashboardWrite(request, async (user) => {
+        // The write DTO declares every field optional, but the stored document
+        // is a full singleton: merge the body over the stored row so a partial
+        // PUT cannot reset every omitted preference to its default.
+        const stored = await loadDashboardPreferences();
         const saved = await saveDashboardPreferences(
-          normalizeDashboardPreferences(body as DashboardPreferences),
+          normalizeDashboardPreferences({
+            ...(stored ?? {}),
+            ...(body as Record<string, unknown>),
+          } as DashboardPreferences),
         );
         try {
           await auditDashboard(
@@ -119,8 +80,13 @@ const dashboardRouter = s.router(dashboardContract, {
         return saved;
       });
       if (!result.ok) return result.error;
+      // The write committed — re-evict now so a reader that repopulated the
+      // cache between the in-transaction eviction and the commit cannot pin
+      // the pre-commit document for the whole TTL.
+      await evictDashboardPreferencesCache();
       return { status: 200 as const, body: { success: true, preferences: result.data } };
-    } catch {
+    } catch (err) {
+      request.log.error({ err }, "Failed to save dashboard preferences");
       return {
         status: 500 as const,
         body: { type: "database_error", message: "Failed to save dashboard preferences" },
@@ -128,11 +94,19 @@ const dashboardRouter = s.router(dashboardContract, {
     }
   },
 
-  getWidgets: async (): Promise<ContractRouteResponse<(typeof dashboardContract)["getWidgets"]>> =>
-    handleDashboardRead(async () => {
-      const widgets = await loadDashboardWidgets();
-      return { widgets };
-    }, "Failed to load dashboard widgets"),
+  getWidgets: async ({
+    request,
+  }: ContractRouteArgs<(typeof dashboardContract)["getWidgets"]>): Promise<
+    ContractRouteResponse<(typeof dashboardContract)["getWidgets"]>
+  > =>
+    handleDashboardRead(
+      request,
+      async () => {
+        const widgets = await loadDashboardWidgets();
+        return { widgets };
+      },
+      "Failed to load dashboard widgets",
+    ),
 
   putWidgets: async ({
     body,
@@ -151,8 +125,10 @@ const dashboardRouter = s.router(dashboardContract, {
         return widgets;
       });
       if (!result.ok) return result.error;
+      await broadcastDashboardWidgetsChanged();
       return { status: 200 as const, body: { success: true, widgets: result.data } };
-    } catch {
+    } catch (err) {
+      request.log.error({ err }, "Failed to save dashboard widgets");
       return {
         status: 500 as const,
         body: { type: "database_error", message: "Failed to save dashboard widgets" },
@@ -173,8 +149,10 @@ const dashboardRouter = s.router(dashboardContract, {
       };
     }
     try {
+      let deleted = false;
       const result = await handleDashboardWrite(request, async (user) => {
-        await deleteDashboardWidget(id);
+        deleted = await deleteDashboardWidget(id);
+        if (!deleted) return;
         try {
           await auditDashboard(
             user,
@@ -187,8 +165,16 @@ const dashboardRouter = s.router(dashboardContract, {
         }
       });
       if (!result.ok) return result.error;
+      if (!deleted) {
+        return {
+          status: 404 as const,
+          body: { type: "not_found", message: "Dashboard widget not found" },
+        };
+      }
+      await broadcastDashboardWidgetsChanged();
       return { status: 200 as const, body: { success: true } };
-    } catch {
+    } catch (err) {
+      request.log.error({ err, widgetId: id }, "Failed to delete dashboard widget");
       return {
         status: 500 as const,
         body: { type: "database_error", message: "Failed to delete dashboard widget" },
@@ -203,12 +189,24 @@ const dashboardRouter = s.router(dashboardContract, {
     ContractRouteResponse<(typeof dashboardContract)["reorderWidgets"]>
   > => {
     try {
-      const result = await handleDashboardWrite(request, async () => {
+      const result = await handleDashboardWrite(request, async (user) => {
         await reorderDashboardWidgets(body.order);
+        try {
+          await auditDashboard(
+            user,
+            "dashboard.widgets.reorder",
+            `Reordered ${body.order.length} dashboard widget(s)`,
+            "widgets",
+          );
+        } catch {
+          /* non-critical */
+        }
       });
       if (!result.ok) return result.error;
+      await broadcastDashboardWidgetsChanged();
       return { status: 200 as const, body: { success: true } };
-    } catch {
+    } catch (err) {
+      request.log.error({ err }, "Failed to reorder dashboard widgets");
       return {
         status: 500 as const,
         body: { type: "database_error", message: "Failed to reorder dashboard widgets" },
@@ -224,9 +222,11 @@ const dashboardRouter = s.router(dashboardContract, {
   > => {
     try {
       requireTenant();
+      // `role` stays in the wire contract for the FE client but is intentionally
+      // ignored: sections are filtered by the caller's authoritative permissions.
       const summary = await pickReadableModuleSections(
         request,
-        await loadDashboardSummary(query?.date, query?.role),
+        await loadDashboardSummary(query?.date),
       );
       return { status: 200 as const, body: { summary: summary as Record<string, unknown> } };
     } catch (err) {
@@ -242,6 +242,12 @@ const dashboardRouter = s.router(dashboardContract, {
 /**
  * Server-authoritative dashboard layout/preferences + pinned widgets REST.
  * Migrated to @ts-rest contract router (Phase 3).
+ *
+ * Storage is **workspace-shared**, not per user: both tables are tenant
+ * singletons (`dashboard_preferences` PK = workspace, `dashboard_widgets` PK =
+ * workspace + id), so anyone holding `customize` (`configuration.view`, i.e.
+ * settings read — admin and principal) rewrites the layout for everyone. Reads
+ * are open to every authenticated member of the workspace.
  */
 const dashboardRoutes: FastifyPluginAsync = async (fastify) => {
   fastify.addHook("preHandler", authenticateTenant);

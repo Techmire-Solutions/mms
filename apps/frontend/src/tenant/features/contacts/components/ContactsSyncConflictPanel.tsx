@@ -9,6 +9,7 @@ import {
   requeueAllContactsSyncConflicts,
 } from "@/lib/contacts/contactsSyncOutbox";
 import { useTranslation } from "@/hooks/useTranslation";
+import { fetchContactById } from "@/tenant/features/contacts/hooks/useContacts";
 import { useContactsSyncOutbox } from "@/tenant/features/contacts/hooks/useContactsSyncOutbox";
 import { Modal } from "@/components/app/Modal";
 import { Button } from "@/components/ui/button";
@@ -61,9 +62,19 @@ export function ContactsSyncConflictPanel({
   const handleRetryAll = async () => {
     setRetryingId("__all__");
     try {
-      requeueAllContactsSyncConflicts();
+      // Rebase stale-token entries onto the current server record and skip entries
+      // that already exhausted the retry budget, then flush the rebuilt queue.
+      const { skipped, needsReview } = await requeueAllContactsSyncConflicts({
+        fetchFresh: (contactId) => fetchContactById(contactId).catch(() => null),
+      });
       await flush();
       refreshList();
+      if (skipped > 0) {
+        notify.warning(t("contacts.sync.conflictRetryLimit"));
+      }
+      if (needsReview > 0) {
+        notify.warning(t("contacts.sync.conflictRetryReview", { count: needsReview }));
+      }
     } finally {
       setRetryingId(null);
     }

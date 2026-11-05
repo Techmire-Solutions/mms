@@ -1,5 +1,5 @@
 import type { FastifyPluginAsync } from "fastify";
-import { documentTemplatesContract, type User, roleHasPermission } from "@mms/shared";
+import { documentTemplatesContract, type User } from "@mms/shared";
 import { initServer, type RouterImplementation } from "@ts-rest/fastify";
 import { handleContractError } from "../../../lib/contractError.js";
 import { standardRequestValidationErrorHandler } from "../../../lib/contractRegistration.js";
@@ -11,6 +11,7 @@ import {
   getDocumentTemplateUseCase,
   saveDocumentTemplateUseCase,
 } from "../../../documents/use-cases/documentTemplatesUseCases.js";
+import { userHasPermission } from "../../../lib/userPermissionContext.js";
 
 const s = initServer();
 
@@ -22,7 +23,7 @@ const s = initServer();
  */
 function canModifyDocumentTemplate(user: User | undefined): boolean {
   if (!user || !user.role) return false;
-  return roleHasPermission(user.role, "settings.global.write");
+  return userHasPermission(user, "settings.global.write");
 }
 
 export const documentTemplatesRouter = s.router(documentTemplatesContract, {

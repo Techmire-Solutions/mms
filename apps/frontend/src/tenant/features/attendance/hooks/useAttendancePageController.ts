@@ -8,6 +8,7 @@ import { useAttendanceRecords } from "@/tenant/features/attendance/hooks/useAtte
 import { useAttendancePageActions } from "@/tenant/features/attendance/hooks/useAttendancePageActions";
 import { useAttendanceColumnLayout } from "@/tenant/features/attendance/hooks/useAttendanceColumnLayout";
 import { useAttendancePageTabs } from "@/tenant/features/attendance/hooks/useAttendancePageTabs";
+import { ATTENDANCE_WORK_SEARCH_INPUT_ID } from "@/tenant/features/attendance/components/AttendanceListFilters";
 import { useViewerRole } from "@/tenant/hooks/useViewerRole";
 import { usePermissions, useModulePermissions } from "@/tenant/hooks/usePermissions";
 import { useWorkDrillDownListener } from "@/lib/query/useWorkDrillDownListener";
@@ -83,7 +84,7 @@ export function useAttendancePageController() {
       setActiveTab("work");
       setActiveOpsTab("mark");
     },
-    searchInputId: "attendance-search-input",
+    searchInputId: ATTENDANCE_WORK_SEARCH_INPUT_ID,
     clearSelection: () => {
       closeComposer();
     },

@@ -1,5 +1,6 @@
 import { useCallback, useState, useEffect } from "react";
 import { useModuleShortcuts } from "@/hooks/useModuleShortcuts";
+import { QUESTION_BANK_WORK_SEARCH_INPUT_ID } from "@/tenant/features/question-bank/components/QuestionsListFilters";
 import { useTranslation } from "@/hooks/useTranslation";
 import { useDirectoryTrashState } from "@/hooks/useDirectoryTrashState";
 import { useFilteredModuleTierTabs } from "@/tenant/hooks/useModuleTierTabs";
@@ -151,7 +152,7 @@ export function useQuestionBankPageController() {
   const filteredCount = isQuestionListTab ? reportedFilteredCount : questions.length;
 
   useModuleShortcuts({
-    searchInputId: "question-bank-search-input",
+    searchInputId: QUESTION_BANK_WORK_SEARCH_INPUT_ID,
     selectedCount: questionSelection.selectedIds.length,
     hasActiveFilters: false,
     clearFilters: () => {},

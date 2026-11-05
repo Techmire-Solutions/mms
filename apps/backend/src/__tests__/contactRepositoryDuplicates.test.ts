@@ -1,4 +1,5 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
+import { getTableName } from "drizzle-orm";
 
 const mockWithTenantTransaction = vi.fn();
 const mockTxExecute = vi.fn();
@@ -45,6 +46,23 @@ function collectSqlText(value: unknown, parts: string[] = []): string {
     return parts.join(" ");
   }
   return parts.join(" ");
+}
+
+/** SQL table names referenced by a Drizzle statement (via the drizzle table symbol). */
+function collectTableNames(value: unknown, names: string[] = []): string[] {
+  if (!value || typeof value !== "object") return names;
+  const record = value as Record<string, unknown>;
+  if (Array.isArray(record.queryChunks)) {
+    for (const chunk of record.queryChunks) collectTableNames(chunk, names);
+    return names;
+  }
+  try {
+    const name = getTableName(value as never);
+    if (typeof name === "string" && name) names.push(name);
+  } catch {
+    // Not a Drizzle table.
+  }
+  return names;
 }
 
 import {
@@ -138,23 +156,47 @@ describe("contactRepositoryDuplicates (SQL)", () => {
     expect(mockTxExecute).not.toHaveBeenCalled();
   });
 
-  it("reparentContactReferences executes SQL statements across relationships, students, faculty, users, and message logs", async () => {
+  it("reparentContactReferences covers the whole contact FK graph and never the dropped faculty mirror", async () => {
     mockWithTenantTransaction.mockImplementation(
       async (_tenant: unknown, fn: (tx: { execute: typeof mockTxExecute }) => Promise<unknown>) =>
         fn({ execute: mockTxExecute }),
     );
 
-    await reparentContactReferences("Demo", "c-keep", "c-delete");
+    await reparentContactReferences("Demo", "c-keep", "c-delete", "u-admin");
 
+    const statements = mockTxExecute.mock.calls.map(([statement]) => collectSqlText(statement));
+    const tables = new Set(
+      mockTxExecute.mock.calls.flatMap(([statement]) => collectTableNames(statement)),
+    );
     // 1. delete self-loops
-    // 2. delete duplicate tuples (related_contact_id)
-    // 2b. delete duplicate tuples (contact_id)
-    // 3. update related_contact_id
-    // 3b. update contact_id
-    // 4. update students
-    // 5. update faculty
-    // 6. update tenant_users
-    // 7. update message_logs
-    expect(mockTxExecute).toHaveBeenCalledTimes(9);
+    // 2. delete duplicate relationship tuples (related_contact_id)
+    // 3. delete duplicate relationship tuples (contact_id)
+    // 4. update related_contact_id
+    // 5. update contact_id
+    // 6. re-point inferred_from_contact_id provenance
+    // 7. update students (contact/parent/guardian)
+    // 8. archive the loser's conflicting faculty employment
+    // 9. re-point faculty_employments
+    // 10. de-duplicate workshop registrations
+    // 11. re-point workshop_participants
+    // 12. re-point finance_invoices.family_contact_id
+    // 13. update tenant_users
+    // 14. update message_logs
+    // 15. re-point orphan_profiles.sponsor_contact_id (ON DELETE SET NULL FK)
+    expect(statements).toHaveLength(15);
+    expect(statements.some((statement) => statement.includes("inferred_from_contact_id"))).toBe(
+      true,
+    );
+
+    // `faculty.contact_id` was dropped by migration 0160 — referencing it makes
+    // every merge fail with 42703 (R4-01).
+    expect(tables.has("faculty")).toBe(false);
+    expect(tables.has("faculty_employments")).toBe(true);
+    expect(tables.has("workshop_participants")).toBe(true);
+    expect(tables.has("finance_invoices")).toBe(true);
+    expect(tables.has("students")).toBe(true);
+    expect(tables.has("tenant_users")).toBe(true);
+    expect(tables.has("message_logs")).toBe(true);
+    expect(tables.has("orphan_profiles")).toBe(true);
   });
 });

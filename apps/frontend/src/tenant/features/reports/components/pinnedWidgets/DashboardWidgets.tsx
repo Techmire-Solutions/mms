@@ -27,6 +27,12 @@ import { DashboardWidgetsGrid } from "@/components/reports/pinnedWidgets/Dashboa
 
 interface DashboardWidgetsProps {
   widgets?: CustomWidget[];
+  /**
+   * Canonical aggregate prefetch list (see `selectAggregateWidgets`). The host
+   * passes the same list to every dashboard surface so the content-keyed
+   * `/aggregates` queries dedupe into one request per collection.
+   */
+  aggregateWidgets?: CustomWidget[];
   onUnpin?: (id: string) => void;
   isEditMode?: boolean;
   onEditWidget?: (widget: CustomWidget) => void;
@@ -41,6 +47,7 @@ interface DashboardWidgetsProps {
  */
 export function DashboardWidgets({
   widgets,
+  aggregateWidgets,
   onUnpin,
   isEditMode = false,
   onEditWidget,
@@ -48,7 +55,7 @@ export function DashboardWidgets({
   showHeader = true,
 }: DashboardWidgetsProps = {}): React.JSX.Element | null {
   const { t } = useTranslation();
-  const { gridMode, updatePref } = useDashboardConfig();
+  const { gridMode, updatePref, canPin } = useDashboardConfig();
   const [drilldownWidget, setDrilldownWidget] = useState<CustomWidget | null>(null);
 
   const activeWidgets = widgets ?? [];
@@ -64,11 +71,12 @@ export function DashboardWidgets({
     requiredCollections,
   });
 
-  useContactsWidgetAggregates(activeWidgets);
-  useStudentsWidgetAggregates(activeWidgets);
-  useFacultyWidgetAggregates(activeWidgets);
-  useSessionsWidgetAggregates(activeWidgets);
-  useEnrollmentsWidgetAggregates(activeWidgets);
+  const aggregateSource = aggregateWidgets ?? activeWidgets;
+  useContactsWidgetAggregates(aggregateSource);
+  useStudentsWidgetAggregates(aggregateSource);
+  useFacultyWidgetAggregates(aggregateSource);
+  useSessionsWidgetAggregates(aggregateSource);
+  useEnrollmentsWidgetAggregates(aggregateSource);
 
   const handleMetricClick = (widget: CustomWidget) => {
     if (applyContactsWidgetWorkDrillDown(widget)) return;
@@ -115,16 +123,14 @@ export function DashboardWidgets({
         <DashboardWidgetsHeader
           gridMode={gridMode}
           onToggleGridMode={(mode) => updatePref("gridMode", mode)}
+          canCustomize={canPin}
         />
       ) : null}
 
       <DashboardWidgetsGrid
         widgets={activeWidgets}
         gridMode={gridMode}
-        collections={collections}
         isEditMode={isEditMode}
-        onSwitchToggle={handleToggleSwitchState}
-        onMetricClick={handleMetricClick}
         onUnpin={handleLocalUnpin}
         onEditWidget={onEditWidget}
         onDeleteWidget={onDeleteWidget}

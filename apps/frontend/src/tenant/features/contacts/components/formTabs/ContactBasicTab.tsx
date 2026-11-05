@@ -20,6 +20,7 @@ export interface ContactBasicTabProps {
   onUpdateTags?: (tags: string[]) => void;
   lockGender: boolean;
   handleAvatarChange: (event: ChangeEvent<HTMLInputElement>) => void;
+  onAvatarFileSelect?: (file: File) => void;
 }
 
 /** Basic Info form tab: avatar upload/crop and core personal identity fields. */
@@ -38,6 +39,7 @@ export function ContactBasicTab({
   onUpdateTags,
   lockGender,
   handleAvatarChange,
+  onAvatarFileSelect,
 }: ContactBasicTabProps): React.JSX.Element {
   return (
     <SectionCard accentColor="primary" className="text-start">
@@ -50,6 +52,7 @@ export function ContactBasicTab({
             setCropSrc={setCropSrc}
             updateDraft={updateDraft}
             handleAvatarChange={handleAvatarChange}
+            onAvatarFileSelect={onAvatarFileSelect}
           />
         )}
 

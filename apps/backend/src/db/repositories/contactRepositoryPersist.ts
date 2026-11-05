@@ -33,22 +33,30 @@ export {
 
 type Transaction = TenantTransaction;
 
+/**
+ * Upserts the parent row + child graph and returns the row's stored `updated_at`.
+ *
+ * The returned token is the OCC version the client must send back; it comes from
+ * the database write, never from the pre-write record.
+ */
 export async function persistContactTx(
   tx: Transaction,
   subdomain: string,
   rawContact: Contact,
-): Promise<void> {
+): Promise<string> {
   const contact = hydrateContactRelationshipFields(rawContact);
 
-  await tx
+  const rows = await tx
     .insert(contacts)
     .values(contactWriteValues(subdomain, contact))
     .onConflictDoUpdate({
       target: [contacts.workspaceSubdomain, contacts.id],
       set: contactUpdateSetValues(subdomain, contact),
-    });
+    })
+    .returning({ updatedAt: contacts.updatedAt });
 
   await syncContactChildrenTx(tx, subdomain, String(contact.id), contact);
+  return rows[0]!.updatedAt.toISOString();
 }
 
 /** Latest contact write time (or null), used to detect writes during duplicate scans (C-02). */
@@ -63,16 +71,17 @@ export async function getLatestContactWriteAt(tenant: string): Promise<string | 
   });
 }
 
-export async function saveContact(tenant: string, contact: Contact): Promise<void> {
+export async function saveContact(tenant: string, contact: Contact): Promise<string> {
   const subdomain = tenant.trim().toLowerCase();
-  await withTenant(subdomain, async (tx) => {
-    await persistContactTx(tx, subdomain, contact);
-  });
+  const updatedAt = await withTenant(subdomain, async (tx) =>
+    persistContactTx(tx, subdomain, contact),
+  );
   await invalidateMultiTierCache({
     tenantId: subdomain,
     domain: "contacts",
     key: String(contact.id),
   });
+  return updatedAt;
 }
 
 /**
@@ -100,19 +109,20 @@ function toNaiveTimestamp(date: Date): string {
  * instant. Both are millisecond-truncated because the client token round-trips
  * through a JS `Date`.
  *
- * Returns `false` for both a stale version and a concurrently deleted row; the
- * caller maps that to 409 (the client's view is stale either way).
+ * Returns `null` for both a stale version and a concurrently deleted row, or the
+ * row's new `updated_at` on success; the caller maps `null` to 409 (the client's
+ * view is stale either way).
  */
 export async function saveContactIfVersionMatches(
   tenant: string,
   rawContact: Contact,
   expectedUpdatedAt: string,
-): Promise<boolean> {
+): Promise<string | null> {
   const subdomain = tenant.trim().toLowerCase();
   const contact = hydrateContactRelationshipFields(rawContact);
   const expected = new Date(expectedUpdatedAt);
   const naiveExpected = toNaiveTimestamp(expected);
-  const saved = await withTenant(subdomain, async (tx) => {
+  const savedUpdatedAt = await withTenant(subdomain, async (tx) => {
     const rows = await tx
       .update(contacts)
       .set(contactUpdateSetValues(subdomain, contact))
@@ -126,19 +136,19 @@ export async function saveContactIfVersionMatches(
           ),
         ),
       )
-      .returning({ id: contacts.id });
-    if (rows.length === 0) return false;
+      .returning({ updatedAt: contacts.updatedAt });
+    if (rows.length === 0) return null;
     await syncContactChildrenTx(tx, subdomain, String(contact.id), contact);
-    return true;
+    return rows[0]!.updatedAt.toISOString();
   });
-  if (saved) {
+  if (savedUpdatedAt) {
     await invalidateMultiTierCache({
       tenantId: subdomain,
       domain: "contacts",
       key: String(contact.id),
     });
   }
-  return saved;
+  return savedUpdatedAt;
 }
 
 /** True when any contact attachment row still stores this URL (or its relative form). */

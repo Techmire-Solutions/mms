@@ -34,6 +34,8 @@ export interface MessagingPageViewProps {
   canClearLogs: boolean;
   canRestoreLogs: boolean;
   onRestoreLog: (log: Message) => Promise<void>;
+  /** Bulk restore of the selected archived logs. */
+  onBulkRestore?: (ids: string[]) => Promise<void>;
   activeTab: "work" | "reports" | "setup";
   visibleTabs: { id: string; label: string; icon: LucideIcon }[];
   channelFilter: "all" | "sms" | "whatsapp" | "email";
@@ -116,6 +118,7 @@ export function MessagingPageView(p: MessagingPageViewProps): React.JSX.Element 
                 canClearLogs={p.canClearLogs}
                 canRestoreLogs={p.canRestoreLogs}
                 onRestoreLog={p.onRestoreLog}
+                onBulkRestore={p.onBulkRestore}
                 onClearLogsRequest={() => p.setConfirmClearLogsOpen(true)}
                 onResend={p.resend}
                 onBulkResend={p.handleBulkResend}

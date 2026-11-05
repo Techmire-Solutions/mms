@@ -11,6 +11,7 @@ import {
   isDashboardWidgetPermitted,
   isDashboardWidgetAllowed,
   getDashboardWidgetRequiredPermission,
+  selectAggregateWidgets,
 } from "@/lib/dashboardCollections";
 import type { CustomWidget } from "@/lib/reports/pinnedWidgetTypes";
 
@@ -216,5 +217,32 @@ describe("getPinnedDashboardWidgetCount", () => {
     expect(getPinnedDashboardWidgetCount(widgets, { hasanat: false })).toBe(1);
     expect(getPinnedDashboardWidgetCount(widgets, {}, (perm) => perm !== "hasanat.read")).toBe(1);
     expect(getPinnedDashboardWidgetCount(widgets, {}, () => true)).toBe(2);
+  });
+});
+
+describe("selectAggregateWidgets", () => {
+  it("excludes seeded KPI cards and keeps everything that needs an aggregate", () => {
+    const widgets = [
+      cardWidget({ id: "def-card-admin-students", widgetType: "card" }),
+      cardWidget({ id: "custom-card", widgetType: "card" }),
+      cardWidget({ id: "def-sessions-toggle", widgetType: "switch", isPinnedToDashboard: true }),
+      cardWidget({ id: "chart-1", widgetType: "chart", isPinnedToDashboard: true }),
+    ];
+
+    // Seeded KPI cards read the composite summary; custom cards and widgets need
+    // the per-widget `/aggregates` query, and every caller must pass this list.
+    expect(selectAggregateWidgets(widgets).map((widget) => widget.id)).toEqual([
+      "custom-card",
+      "def-sessions-toggle",
+      "chart-1",
+    ]);
+  });
+
+  it("preserves the input order", () => {
+    const widgets = [
+      cardWidget({ id: "b", widgetType: "chart" }),
+      cardWidget({ id: "a", widgetType: "chart" }),
+    ];
+    expect(selectAggregateWidgets(widgets).map((widget) => widget.id)).toEqual(["b", "a"]);
   });
 });

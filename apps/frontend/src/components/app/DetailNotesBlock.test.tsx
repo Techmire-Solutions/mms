@@ -9,6 +9,7 @@ describe("DetailNotesBlock", () => {
     );
     expect(html).toContain("Notes");
     expect(html).toContain("Remember class schedule.");
+    expect(html).toContain('dir="auto"');
     expect(html.split("Notes").length - 1).toBe(1);
   });
 });

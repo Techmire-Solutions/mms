@@ -138,6 +138,7 @@ export function DashedFileDropZone({
   if (browseLabel) {
     return (
       <div
+        role="presentation"
         onDragOver={handleDragOver}
         onDragLeave={handleDragLeave}
         onDrop={handleDrop}
@@ -156,7 +157,8 @@ export function DashedFileDropZone({
           onClick={openPicker}
           className="mt-2 min-h-11 rounded-xl bg-primary px-6 text-xs font-bold text-primary-foreground shadow-none transition-all hover:scale-105 active:scale-95 motion-reduce:transform-none cursor-pointer disabled:cursor-not-allowed"
           type="button"
-          aria-label={inputAriaLabel}
+          // WCAG 2.5.3: the accessible name must contain the visible label.
+          aria-label={browseLabel}
         >
           {browseLabel}
         </Button>
@@ -173,7 +175,9 @@ export function DashedFileDropZone({
       onDragOver={handleDragOver}
       onDragLeave={handleDragLeave}
       onDrop={handleDrop}
-      aria-label={inputAriaLabel}
+      // WCAG 2.5.3: the zone's name must contain the copy it displays (title +
+      // description). The hidden file input keeps `inputAriaLabel`.
+      aria-label={`${title} ${description}`}
       className={cn(
         "h-auto w-full cursor-pointer flex-col items-center justify-center gap-2 rounded-xl border-2 border-dashed py-7 text-muted-foreground shadow-none transition-all",
         draggingClass,

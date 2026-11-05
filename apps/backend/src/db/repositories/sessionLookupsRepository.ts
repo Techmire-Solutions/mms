@@ -8,7 +8,7 @@ import {
 
 export type { ModuleLookupDbRow as LookupDbRow };
 
-export interface SessionLookupRowInput extends Omit<ModuleLookupRowInput, "kind"> {
+interface SessionLookupRowInput extends Omit<ModuleLookupRowInput, "kind"> {
   kind: SessionLookupKind;
 }
 

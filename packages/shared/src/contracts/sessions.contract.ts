@@ -161,19 +161,6 @@ export const sessionContract = c.router({
     },
     summary: "Restore session",
   },
-  exportAudit: {
-    method: "POST",
-    path: "/api/sessions/export-audit",
-    body: z.object({}).optional(),
-    responses: {
-      200: z.object({ success: z.literal(true) }),
-      400: z.unknown(),
-      403: z.unknown(),
-      404: z.unknown(),
-      500: z.unknown(),
-    },
-    summary: "Export audit",
-  },
   widgetAggregates: {
     method: "POST",
     path: "/api/sessions/widget-aggregates",

@@ -10,6 +10,7 @@ import { facultyRepository } from "../repository/facultyRepositoryAdapter.js";
 import { hydrateFacultyFromContacts } from "./facultyHydrateUseCases.js";
 import { ValidationError } from "../../lib/httpErrors.js";
 import { findDirectSupervisorsBatch } from "../../db/repositories/facultyRepositorySubordinates.js";
+import { logger } from "../../lib/logger.js";
 
 /** Faculty count via SQL — avoids loading every row (active by default). */
 export async function countFaculty(
@@ -43,7 +44,11 @@ export async function loadFacultyPage(
       tenant,
       sourceList.map((member) => String(member.id)),
     );
-  } catch {
+  } catch (error: unknown) {
+    logger.warn(
+      { err: error, tenant, ids: sourceList.length },
+      "Faculty list supervisor hydration failed; falling back to stored values",
+    );
     supervisors = {};
   }
   const withSupervisors = sourceList.map((member) => ({
@@ -72,8 +77,12 @@ export async function loadFacultyById(
     try {
       const supervisors = await findDirectSupervisorsBatch(tenant, [id]);
       hydrated.reportingFacultyId = supervisors[id] ?? hydrated.reportingFacultyId ?? null;
-    } catch {
+    } catch (error: unknown) {
       // Position lookup unavailable in lightweight unit tests; keep hydrated value if any.
+      logger.warn(
+        { err: error, tenant, facultyId: id },
+        "Faculty supervisor lookup failed; keeping stored reporting value",
+      );
     }
     hydrated.subordinateCount = repo.countSubordinates
       ? await repo.countSubordinates(tenant, id)
@@ -99,6 +108,23 @@ export async function isFacultyProfileDeleted(
   return Boolean(found?.deletedAt);
 }
 
+/**
+ * Session-guard tombstone probe keyed by the linked **tenant user id**.
+ *
+ * `isFacultyProfileDeleted` above expects a faculty primary key, which is not
+ * what the JWT carries — the guard must resolve through `faculty.user_id`.
+ * The repository probe is un-hydrated, so an unreadable contact cannot mask a
+ * deleted profile.
+ */
+export async function isFacultyProfileDeletedForUser(
+  userId: string,
+  repo: FacultyRepository = facultyRepository,
+): Promise<boolean> {
+  const tenant = getRequestTenant();
+  if (!tenant) return false;
+  return repo.isDeletedByUserId(tenant, userId);
+}
+
 export async function loadFacultyByIds(
   ids: string[],
   repo: FacultyRepository = facultyRepository,
@@ -120,6 +146,16 @@ export async function loadFacultyLinkedContactIds(
   const tenant = getRequestTenant();
   if (!tenant) return [];
   return repo.listLinkedContactIds(tenant, excludeFacultyId);
+}
+
+/** Active faculty ids keyed by lowercased employee id — one query for batch writers. */
+export async function findFacultyIdsByEmployeeIds(
+  employeeIds: string[],
+  repo: FacultyRepository = facultyRepository,
+): Promise<Record<string, string>> {
+  const tenant = getRequestTenant();
+  if (!tenant || employeeIds.length === 0) return {};
+  return repo.findIdsByEmployeeIds(tenant, employeeIds);
 }
 
 export async function loadHierarchyTree(
@@ -150,7 +186,11 @@ export async function loadHierarchyTree(
       tenant,
       hydrated.map((f) => String(f.id)),
     );
-  } catch {
+  } catch (error: unknown) {
+    logger.warn(
+      { err: error, tenant, ids: hydrated.length },
+      "Faculty hierarchy supervisor hydration failed; falling back to stored values",
+    );
     supervisors = {};
   }
 

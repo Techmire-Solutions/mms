@@ -5,6 +5,7 @@ import {
 } from "../db/repositories/userModulePreferencesRepository.js";
 import { requireTenant } from "../lib/tenantContext.js";
 import { broadcastCollection } from "../lib/livePush.js";
+import { invalidateTenantRbac } from "./rbacService.js";
 import { mergeWorkspaceRolesForPrefsSave } from "../faculty/use-cases/facultyManagedRolesPrefs.js";
 
 export async function loadUserModulePreferences(): Promise<UserModulePreferences | null> {
@@ -30,6 +31,9 @@ export async function saveUserModulePreferences(
   );
   const normalized: UserModulePreferences = { ...incoming, workspaceRoles };
   await upsertUserModulePreferences(tenant, Object.assign({}, normalized));
+  // Role catalog edits must reach the module gate on the next request and on
+  // every node, so evict the whole RBAC domain (matrix + catalog).
+  await invalidateTenantRbac(tenant);
   await broadcastCollection("users");
   return normalized;
 }

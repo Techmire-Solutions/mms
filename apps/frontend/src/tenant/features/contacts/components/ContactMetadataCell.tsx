@@ -1,7 +1,8 @@
-import React from "react";
+import React, { useMemo } from "react";
 import type { Contact, ContactPreferences } from "@mms/shared";
 import { useTranslation } from "@/hooks/useTranslation";
 import { TableCell } from "@/components/ui/table";
+import { BiDiText } from "@/components/app/BiDiText";
 import { buildContactsMap } from "@/lib/contacts/contactI18n";
 import { renderContactMetadataCellValue } from "@/tenant/features/contacts/components/contactMetadataCellRenderer";
 
@@ -30,10 +31,12 @@ export function ContactMetadataCell({
 }: ContactMetadataCellProps): React.JSX.Element {
   const { t, language } = useTranslation();
 
-  const contactsMap = (() => {
-    if (externalContactsMap !== undefined) return externalContactsMap;
-    return buildContactsMap(allContacts);
-  })();
+  // Production callers pass the page-level map; the fallback is memoised so a
+  // caller that forgets cannot rebuild a directory-sized map on every render.
+  const contactsMap = useMemo(
+    () => (externalContactsMap !== undefined ? externalContactsMap : buildContactsMap(allContacts)),
+    [externalContactsMap, allContacts],
+  );
 
   const renderDash = (): React.ReactNode => (
     <span className="text-muted-foreground">{t("contacts.table.emptyDash")}</span>
@@ -47,9 +50,9 @@ export function ContactMetadataCell({
     if (valid.length === 0) return renderDash();
     const joined = valid.join(", ");
     return (
-      <span className="truncate" title={showTitle ? joined : undefined}>
+      <BiDiText as="span" className="truncate" titleFromContent={showTitle}>
         {joined}
-      </span>
+      </BiDiText>
     );
   };
 

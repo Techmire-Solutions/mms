@@ -1,13 +1,15 @@
 import React, { type JSX } from "react";
-import type { ModuleColumnRegistryEntry } from "@mms/shared";
+import { formatDateToIso, type ModuleColumnRegistryEntry } from "@mms/shared";
 import { AlertTriangle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { MessagingFiltersMenuButton } from "./MessagingFiltersMenuButton";
+import { ModuleTrashToggle } from "@/components/app/ModuleTrashToggle";
 import { WorkTaskToolbar } from "@/components/common/work";
 import type { WorkDirectoryViewMode } from "@/hooks/useWorkDirectoryViewMode";
 import { useTranslation } from "@/hooks/useTranslation";
 import { cn } from "@/lib/utils";
 import { type ModuleColumnCustomizerLabels } from "@/components/app/ModuleColumnCustomizer";
+import { formatShownMessagesLabel } from "../lib/messagingCounts";
 
 export const MESSAGING_WORK_SEARCH_INPUT_ID = "messaging-work-search";
 
@@ -37,7 +39,12 @@ export interface MessagingListFiltersProps {
   onResetColumnLayout?: () => void;
   columnCustomizerLabels?: ModuleColumnCustomizerLabels;
   shownCount?: number;
+  /** Total matching rows — makes the toolbar count read "N of M", not a page-only number. */
+  shownTotal?: number;
   filterChips?: React.ReactNode;
+  /** Archived (soft-deleted) logs view — only rendered for `messaging.clearLogs`. */
+  showArchived?: boolean;
+  onShowArchivedChange?: (value: boolean) => void;
 }
 
 export function MessagingListFilters({
@@ -67,21 +74,26 @@ export function MessagingListFilters({
   onResetColumnLayout,
   columnCustomizerLabels,
   shownCount,
+  shownTotal,
+  showArchived = false,
+  onShowArchivedChange,
 }: MessagingListFiltersProps): JSX.Element {
   const { t } = useTranslation();
 
+  // Local-calendar dates: `toISOString()` is UTC, so "today" would be yesterday
+  // for every user east of UTC (Asia/Karachi is UTC+5).
   const handlePresetDate = (days: number): void => {
     const end = new Date();
     const start = new Date();
     if (days === 0) {
-      const todayStr = end.toISOString().split("T")[0]!;
+      const todayStr = formatDateToIso(end);
       onStartDateChange(todayStr);
       onEndDateChange(todayStr);
       return;
     }
     start.setDate(end.getDate() - days);
-    onStartDateChange(start.toISOString().split("T")[0]!);
-    onEndDateChange(end.toISOString().split("T")[0]!);
+    onStartDateChange(formatDateToIso(start));
+    onEndDateChange(formatDateToIso(end));
   };
 
   const clearDates = (): void => {
@@ -94,13 +106,15 @@ export function MessagingListFilters({
   return (
     <WorkTaskToolbar
       shownCountLabel={
-        shownCount != null ? t("messaging.shownCount", { count: shownCount }) : undefined
+        shownCount != null
+          ? formatShownMessagesLabel(shownCount, shownTotal ?? shownCount, t)
+          : undefined
       }
       regionLabel={t("messaging.title")}
       search={search}
       onSearchChange={onSearchChange}
       searchPlaceholder={t("messaging.search.placeholder")}
-      searchId="messaging-work-search"
+      searchId={MESSAGING_WORK_SEARCH_INPUT_ID}
       hasActiveFilters={hasActiveFilters}
       onClearFilters={onClearFilters}
       clearFiltersLabel={t("common.clearFilters")}
@@ -157,7 +171,7 @@ export function MessagingListFilters({
         }
         onClick={() => onStatusChange(isFailedOnly ? "all" : "failed")}
         className={cn(
-          "gap-2 h-9",
+          "gap-2",
           isFailedOnly
             ? "bg-destructive text-destructive-foreground hover:bg-destructive/90 border-transparent shadow-sm"
             : "border-destructive/30 text-destructive hover:bg-destructive/10",
@@ -166,6 +180,15 @@ export function MessagingListFilters({
         <AlertTriangle className="w-4 h-4" aria-hidden="true" />
         <span>{t("messaging.status.failed")}</span>
       </Button>
+
+      {onShowArchivedChange ? (
+        <ModuleTrashToggle
+          viewingDeleted={showArchived}
+          onToggle={() => onShowArchivedChange(!showArchived)}
+          activeLabel={t("messaging.showActiveLogs")}
+          deletedLabel={t("messaging.showArchived")}
+        />
+      ) : null}
     </WorkTaskToolbar>
   );
 }

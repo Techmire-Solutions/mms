@@ -7,6 +7,7 @@ import {
   resolveComposerUserId,
   type MessageComposerDraftV1,
 } from "./messageComposerDraft";
+import { dedupeRecipientsById } from "./messageComposerRecipientsUtils";
 
 export function resolveComposerInitialState(args: {
   channel: "sms" | "whatsapp" | "email";
@@ -36,12 +37,15 @@ export function resolveComposerInitialState(args: {
     args.activeTemplates[0]?.body ||
     "";
   const subject = args.initialSubject ?? draft?.subject ?? "";
-  const localRecipients =
+  // Bulk callers (resend of several logs, notify-guardians for siblings that
+  // share one guardian) can repeat the same contact; collapse them here so the
+  // composer never messages a recipient twice.
+  const localRecipients = dedupeRecipientsById(
     args.recipients.length > 0
       ? args.recipients
-      : ((draft?.recipients ?? []) as MessagingRecipient[]);
-  const step: "pick" | "compose" =
-    args.recipients.length > 0 || localRecipients.length > 0 ? "compose" : "pick";
+      : ((draft?.recipients ?? []) as MessagingRecipient[]),
+  );
+  const step: "pick" | "compose" = localRecipients.length > 0 ? "compose" : "pick";
   return { draft, templateId, subject, message, localRecipients, step, userId };
 }
 

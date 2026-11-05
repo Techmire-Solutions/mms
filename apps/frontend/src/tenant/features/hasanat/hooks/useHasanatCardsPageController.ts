@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { usePersistedTabState } from "@/hooks/usePersistedTabState";
 import { useModuleShortcuts } from "@/hooks/useModuleShortcuts";
+import { HASANAT_WORK_SEARCH_INPUT_ID } from "@/tenant/features/hasanat/components/DistributionsListFilters";
 import { useTranslation } from "@/hooks/useTranslation";
 import { useDirectoryTrashState } from "@/hooks/useDirectoryTrashState";
 import { useFilteredModuleTierTabs } from "@/tenant/hooks/useModuleTierTabs";
@@ -135,7 +136,7 @@ export function useHasanatCardsPageController() {
   const filteredCount = isCountedListTab ? reportedFilteredCount : distributions.length;
 
   useModuleShortcuts({
-    searchInputId: "hasanat-search-input",
+    searchInputId: HASANAT_WORK_SEARCH_INPUT_ID,
     selectedCount: distributionSelection.selectedIds.length,
     hasActiveFilters: false,
     clearFilters: () => {},

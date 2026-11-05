@@ -1,4 +1,4 @@
-import { and, eq, gte, ilike, isNull, lte, or, sql, desc } from "drizzle-orm";
+import { and, eq, gte, ilike, isNull, lte, or, sql, asc, desc } from "drizzle-orm";
 import { messageLogs } from "../schema.js";
 import type { Message } from "@mms/shared";
 import { MESSAGE_LOGS_DEFAULT_PAGE_SIZE, toSqlSearchPattern } from "@mms/shared";
@@ -7,6 +7,27 @@ import { logRowToRecord } from "./messagingLogsRepository.js";
 
 /** Matches messagingLogsQuerySchema pageSize max — defensive for direct callers. */
 const MESSAGE_LOGS_MAX_PAGE_SIZE = 100;
+
+/**
+ * Sortable columns for the history directory. The contract accepts
+ * `sortField`/`sortDir`, so the repository must honour them — but only from this
+ * allowlist, never an arbitrary client string.
+ */
+const MESSAGE_LOG_SORT_COLUMNS = {
+  sentAt: messageLogs.sentAt,
+  channel: messageLogs.channel,
+  status: messageLogs.status,
+  category: messageLogs.category,
+  contactId: messageLogs.contactId,
+  createdAt: messageLogs.createdAt,
+} as const;
+
+function resolveSortColumn(sortField: string | undefined) {
+  if (sortField && sortField in MESSAGE_LOG_SORT_COLUMNS) {
+    return MESSAGE_LOG_SORT_COLUMNS[sortField as keyof typeof MESSAGE_LOG_SORT_COLUMNS];
+  }
+  return messageLogs.sentAt;
+}
 
 export interface MessageLogsFilterQuery {
   channel?: string;
@@ -129,12 +150,19 @@ export async function queryFilteredMessageLogs(
         deletedAt: messageLogs.deletedAt,
         deletedBy: messageLogs.deletedBy,
         deletionReason: messageLogs.deletionReason,
+        restoredAt: messageLogs.restoredAt,
+        restoredBy: messageLogs.restoredBy,
         createdAt: messageLogs.createdAt,
         updatedAt: messageLogs.updatedAt,
       })
       .from(messageLogs)
       .where(whereClause)
-      .orderBy(desc(messageLogs.sentAt), desc(messageLogs.id))
+      .orderBy(
+        query.sortDir === "asc"
+          ? asc(resolveSortColumn(query.sortField))
+          : desc(resolveSortColumn(query.sortField)),
+        desc(messageLogs.id),
+      )
       .limit(pageSize)
       .offset(offset);
 
@@ -208,7 +236,7 @@ export async function queryMessagingMetrics(
         COUNT(*) FILTER (WHERE status = 'delivered')::int AS delivered_count,
         COUNT(*) FILTER (WHERE status = 'failed')::int AS failed_count,
         COUNT(*) FILTER (WHERE status = 'skipped')::int AS skipped_count,
-        COUNT(*) FILTER (WHERE status = 'queued')::int AS queued_count,
+        COUNT(*) FILTER (WHERE status IN ('queued', 'sending'))::int AS queued_count,
         COUNT(*) FILTER (WHERE category = 'general')::int AS cat_general,
         COUNT(*) FILTER (WHERE category = 'academic')::int AS cat_academic,
         COUNT(*) FILTER (WHERE category = 'financial')::int AS cat_financial,
@@ -235,7 +263,11 @@ export async function queryMessagingMetrics(
     const total = num("total");
     const sentCount = num("sent_count");
     const deliveredCount = num("delivered_count");
+    const failedCount = num("failed_count");
     const successfulTotal = sentCount + deliveredCount;
+    // Attempted = rows that reached a delivery outcome (queued/sending/skipped
+    // are not attempts and must not dilute the rate).
+    const attemptedTotal = successfulTotal + failedCount;
 
     return {
       total,
@@ -244,10 +276,13 @@ export async function queryMessagingMetrics(
       emailCount: num("email_count"),
       sentCount,
       deliveredCount,
-      failedCount: num("failed_count"),
+      failedCount,
       skippedCount: num("skipped_count"),
       queuedCount: num("queued_count"),
-      successRate: total > 0 ? Math.round((successfulTotal / total) * 100) : 100,
+      // Rate over attempted rows only: a queued/sending or skipped row has no
+      // delivery outcome yet (skipped means no address on file), so counting it
+      // as a failure reported 0% for a campaign that simply had not started.
+      successRate: attemptedTotal > 0 ? Math.round((successfulTotal / attemptedTotal) * 100) : 100,
       categoryBreakdown: {
         general: num("cat_general"),
         academic: num("cat_academic"),

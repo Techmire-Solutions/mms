@@ -16,6 +16,29 @@ export const TASK_STATUSES = [
 ] as const;
 export type TaskStatus = (typeof TASK_STATUSES)[number];
 
+/**
+ * Legal workflow edges for a status change. The same status is a no-op and is
+ * not listed. `completed → in_progress` and `cancelled → todo` are explicit
+ * reopens (the UI asks for them through the status menu, never a one-click cycle).
+ */
+export const TASK_STATUS_TRANSITIONS: Readonly<Record<TaskStatus, readonly TaskStatus[]>> = {
+  todo: ["in_progress", "blocked", "cancelled"],
+  in_progress: ["in_review", "blocked", "completed", "cancelled"],
+  in_review: ["in_progress", "completed", "cancelled"],
+  blocked: ["todo", "in_progress", "cancelled"],
+  completed: ["in_progress"],
+  cancelled: ["todo"],
+};
+
+/** Statuses reachable from `status` (empty for an unknown value). */
+export function taskStatusTransitionsFrom(status: TaskStatus): readonly TaskStatus[] {
+  return TASK_STATUS_TRANSITIONS[status] ?? [];
+}
+
+export function isTaskStatusTransitionAllowed(from: TaskStatus, to: TaskStatus): boolean {
+  return from === to || taskStatusTransitionsFrom(from).includes(to);
+}
+
 export const TASK_PRIORITIES = ["low", "medium", "high", "urgent"] as const;
 export type TaskPriority = (typeof TASK_PRIORITIES)[number];
 
@@ -99,6 +122,15 @@ export const taskStatusUpdateSchema = z
 
 export type TaskStatusUpdate = z.infer<typeof taskStatusUpdateSchema>;
 
+export const tasksBulkStatusBodySchema = z
+  .object({
+    ids: z.array(z.string().min(1)).min(1).max(500),
+    status: z.enum(TASK_STATUSES),
+  })
+  .strict();
+
+export type TasksBulkStatusBody = z.infer<typeof tasksBulkStatusBodySchema>;
+
 export const taskListQuerySchema = z
   .object({
     status: z.enum(TASK_STATUSES).optional(),
@@ -109,6 +141,19 @@ export const taskListQuerySchema = z
     search: z.string().optional(),
     dueFrom: z.string().max(32).optional(),
     dueTo: z.string().max(32).optional(),
+    /** Comma-separated statuses for multi-select quick filters (`todo,in_progress`). */
+    statuses: z.string().max(200).optional(),
+    /** Comma-separated priorities for multi-select quick filters (`high,urgent`). */
+    priorities: z.string().max(200).optional(),
+    /** Only tasks past due and not completed/cancelled. */
+    overdue: z
+      .union([z.boolean(), z.literal("true"), z.literal("false")])
+      .optional()
+      .transform((v) => v === true || v === "true"),
+    /** Due on this ISO day (inclusive UTC-day range). */
+    dueOn: z.string().max(32).optional(),
+    /** Comma-separated task ids for selection-scoped exports. */
+    ids: z.string().max(20_000).optional(),
     includeDeleted: z
       .union([z.boolean(), z.literal("true"), z.literal("false")])
       .optional()
@@ -137,6 +182,29 @@ export const DEFAULT_TASK_SETTINGS: TaskSettings = {
   notifyOnAssignment: true,
   notifyOnStatusChange: true,
 };
+
+export const tasksCommandMetricsSnapshotSchema = z
+  .object({
+    total: z.number().int().min(0),
+    todo: z.number().int().min(0),
+    inProgress: z.number().int().min(0),
+    inReview: z.number().int().min(0),
+    blocked: z.number().int().min(0),
+    completed: z.number().int().min(0),
+    cancelled: z.number().int().min(0),
+    overdue: z.number().int().min(0),
+    byPriority: z
+      .object({
+        low: z.number().int().min(0),
+        medium: z.number().int().min(0),
+        high: z.number().int().min(0),
+        urgent: z.number().int().min(0),
+      })
+      .strict(),
+  })
+  .strict();
+
+export type TasksCommandMetricsSnapshot = z.infer<typeof tasksCommandMetricsSnapshotSchema>;
 
 export const TASKS_MODULE_MANIFEST = {
   moduleId: "tasks",

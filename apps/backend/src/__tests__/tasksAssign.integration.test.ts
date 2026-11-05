@@ -4,6 +4,7 @@
 import Fastify from "fastify";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import tasksRoutes from "../routes/tenant/tasksRoutes.js";
+import { ValidationError } from "../lib/httpErrors.js";
 
 const {
   canPerformTaskAction,
@@ -12,6 +13,7 @@ const {
   findTaskById,
   getTaskMetrics,
   updateTaskStatus,
+  bulkUpdateTaskStatus,
   getEligibleTaskAssignees,
   getTenantTaskSettings,
   updateTenantTaskSettings,
@@ -22,6 +24,7 @@ const {
   findTaskById: vi.fn(),
   getTaskMetrics: vi.fn(),
   updateTaskStatus: vi.fn(),
+  bulkUpdateTaskStatus: vi.fn(),
   getEligibleTaskAssignees: vi.fn(),
   getTenantTaskSettings: vi.fn(),
   updateTenantTaskSettings: vi.fn(),
@@ -40,13 +43,18 @@ vi.mock("../db/repositories/tasksRepository.js", () => ({
   listTasks: (...args: unknown[]) => listTasks(...args),
   findTaskById: (...args: unknown[]) => findTaskById(...args),
   getTaskMetrics: (...args: unknown[]) => getTaskMetrics(...args),
+  createTask: vi.fn(),
+  updateTask: vi.fn(),
   updateTaskStatus: (...args: unknown[]) => updateTaskStatus(...args),
   deleteTask: vi.fn(),
   restoreTask: vi.fn(),
   bulkRestoreTasks: vi.fn(),
 }));
-vi.mock("../db/repositories/tasksTrashRepository.js", () => ({
-  bulkDeleteTasks: vi.fn(),
+vi.mock("../db/repositories/tasksTrashRepository.js", () => ({}));
+vi.mock("../db/repositories/tasksBulkRepository.js", () => ({
+  bulkUpdateTaskStatusBatch: (...args: unknown[]) => bulkUpdateTaskStatus(...args),
+  bulkDeleteTasksBatch: vi.fn(),
+  bulkRestoreTasksBatch: vi.fn(),
 }));
 vi.mock("../services/taskEligibleAssigneesService.js", () => ({
   getEligibleTaskAssignees: (...args: unknown[]) => getEligibleTaskAssignees(...args),
@@ -194,6 +202,99 @@ describe("Tasks assign route gates (inject)", () => {
       });
       expect(response.statusCode).toBe(403);
       expect(mutateTask).not.toHaveBeenCalled();
+    } finally {
+      await app.close();
+    }
+  });
+
+  it("maps an illegal status transition to 400 instead of 500", async () => {
+    canPerformTaskAction.mockResolvedValue(true);
+    updateTaskStatus.mockRejectedValueOnce(
+      new ValidationError("Invalid status transition: completed → todo"),
+    );
+
+    const app = await buildTasksApp();
+    try {
+      const response = await app.inject({
+        method: "PATCH",
+        url: "/api/tasks/task-1/status",
+        headers: { host: "demo.localhost" },
+        payload: { status: "todo" },
+      });
+      expect(response.statusCode).toBe(400);
+      expect(response.json()).toMatchObject({
+        type: "validation_error",
+        message: "Invalid status transition: completed → todo",
+      });
+    } finally {
+      await app.close();
+    }
+  });
+
+  it("denies POST /api/tasks/bulk-status without tasks.write or tasks.complete", async () => {
+    canPerformTaskAction.mockResolvedValue(false);
+
+    const app = await buildTasksApp();
+    try {
+      const response = await app.inject({
+        method: "POST",
+        url: "/api/tasks/bulk-status",
+        headers: { host: "demo.localhost" },
+        payload: { ids: ["task-1"], status: "completed" },
+      });
+      expect(response.statusCode).toBe(403);
+      expect(bulkUpdateTaskStatus).not.toHaveBeenCalled();
+    } finally {
+      await app.close();
+    }
+  });
+
+  it("allows a complete-only role to bulk-complete and returns skipped rows", async () => {
+    canPerformTaskAction.mockImplementation(async (_req: unknown, permission: string) => {
+      return permission === "tasks.complete";
+    });
+    bulkUpdateTaskStatus.mockResolvedValue({
+      updatedIds: ["task-1"],
+      skipped: [{ id: "task-2", reason: "illegal_transition" }],
+      changes: [],
+    });
+
+    const app = await buildTasksApp();
+    try {
+      const response = await app.inject({
+        method: "POST",
+        url: "/api/tasks/bulk-status",
+        headers: { host: "demo.localhost" },
+        payload: { ids: ["task-1", "task-2"], status: "completed" },
+      });
+      expect(response.statusCode).toBe(200);
+      expect(bulkUpdateTaskStatus).toHaveBeenCalledWith(
+        "demo",
+        ["task-1", "task-2"],
+        "completed",
+        "u-actor",
+      );
+      expect(response.json()).toMatchObject({
+        updatedIds: ["task-1"],
+        skipped: [{ id: "task-2", reason: "illegal_transition" }],
+      });
+    } finally {
+      await app.close();
+    }
+  });
+
+  it("returns 400 for an invalid bulk-status payload", async () => {
+    canPerformTaskAction.mockResolvedValue(true);
+
+    const app = await buildTasksApp();
+    try {
+      const response = await app.inject({
+        method: "POST",
+        url: "/api/tasks/bulk-status",
+        headers: { host: "demo.localhost" },
+        payload: { ids: [], status: "todo" },
+      });
+      expect(response.statusCode).toBe(400);
     } finally {
       await app.close();
     }

@@ -10,9 +10,11 @@ import { sessionCompletionRepository as repo } from "../repository/sessionComple
 import type { CompletionFactRow } from "../repository/sessionCompletionRepository.js";
 import { broadcastCollection } from "../../lib/livePush.js";
 import { NotFoundError } from "../../lib/httpErrors.js";
+import { invalidateMultiTierCache } from "../../lib/cache/index.js";
+import { withTenant } from "../../db/tenant-context.js";
 
 /** Facts → evaluated row (percentages rounded to one decimal). */
-export function toCompletionRow(fact: CompletionFactRow, session: Session): SessionCompletionRow {
+function toCompletionRow(fact: CompletionFactRow, session: Session): SessionCompletionRow {
   const attendancePct =
     fact.countableDays > 0 ? Math.round((fact.presentDays / fact.countableDays) * 1000) / 10 : null;
   const examsPassed = fact.examsTotal > 0 ? fact.examsPassed === fact.examsTotal : null;
@@ -40,7 +42,7 @@ async function loadSession(tenant: string, sessionId: string): Promise<Session> 
   return session;
 }
 
-export function createSessionCompletionUseCases() {
+function createSessionCompletionUseCases() {
   const rows = async (tenant: string, session: Session) =>
     (await repo.loadSessionCompletionFacts(tenant, session.id)).map((fact) =>
       toCompletionRow(fact, session),
@@ -54,14 +56,18 @@ export function createSessionCompletionUseCases() {
 
     /** Evaluates and stores completion for every enrollment of the session. */
     async evaluate(tenant: string, sessionId: string): Promise<SessionCompletionRow[]> {
-      const session = await loadSession(tenant, sessionId);
-      const evaluated = await rows(tenant, session);
-      await repo.saveCompletionOutcomes(
-        tenant,
-        evaluated.map((row) => ({ enrollmentId: row.enrollmentId, status: row.status })),
-      );
-      await broadcastCollection("enrollments");
-      return rows(tenant, session);
+      return withTenant(tenant, async () => {
+        const session = await loadSession(tenant, sessionId);
+        const evaluated = await rows(tenant, session);
+        await repo.saveCompletionOutcomes(
+          tenant,
+          evaluated.map((row) => ({ enrollmentId: row.enrollmentId, status: row.status })),
+          sessionId,
+        );
+        await invalidateMultiTierCache({ tenantId: tenant, domain: "sessions" });
+        await broadcastCollection("enrollments");
+        return rows(tenant, session);
+      });
     },
 
     /** Marks certificates issued for completed enrollments (all of them when none are named). */
@@ -70,11 +76,16 @@ export function createSessionCompletionUseCases() {
       sessionId: string,
       input: SessionCertificatesBody,
     ): Promise<{ issued: string[]; rows: SessionCompletionRow[] }> {
-      const body = sessionCertificatesBodySchema.parse(input);
-      const session = await loadSession(tenant, sessionId);
-      const issued = await repo.markCertificatesIssued(tenant, session.id, body.enrollmentIds);
-      if (issued.length > 0) await broadcastCollection("enrollments");
-      return { issued, rows: await rows(tenant, session) };
+      return withTenant(tenant, async () => {
+        const body = sessionCertificatesBodySchema.parse(input);
+        const session = await loadSession(tenant, sessionId);
+        const issued = await repo.markCertificatesIssued(tenant, session.id, body.enrollmentIds);
+        if (issued.length > 0) {
+          await invalidateMultiTierCache({ tenantId: tenant, domain: "sessions" });
+          await broadcastCollection("enrollments");
+        }
+        return { issued, rows: await rows(tenant, session) };
+      });
     },
   };
 }

@@ -1,4 +1,4 @@
-import React, { act } from "react";
+import { act } from "react";
 import { createRoot } from "react-dom/client";
 import { describe, expect, it, vi } from "vitest";
 import { renderToStaticMarkup } from "react-dom/server";
@@ -39,11 +39,13 @@ describe("ContactsFiltersMenuButton Component", () => {
         genders={["male", "female"]}
         onGenderChange={vi.fn()}
         sortField="name"
+        sortDir="asc"
         sortOptions={[
           { field: "name", label: "Name" },
           { field: "createdAt", label: "Recently Added" },
         ]}
         onSort={vi.fn()}
+        onSortDirChange={vi.fn()}
         t={mockT}
       />,
     );
@@ -62,11 +64,13 @@ describe("ContactsFiltersMenuButton Component", () => {
         genders={["male", "female"]}
         onGenderChange={vi.fn()}
         sortField="createdAt"
+        sortDir="asc"
         sortOptions={[
           { field: "name", label: "Name" },
           { field: "createdAt", label: "Recently Added" },
         ]}
         onSort={vi.fn()}
+        onSortDirChange={vi.fn()}
         t={mockT}
       />,
     );
@@ -90,8 +94,10 @@ describe("ContactsFiltersMenuButton Component", () => {
           genders={["male", "female"]}
           onGenderChange={vi.fn()}
           sortField="name"
+          sortDir="asc"
           sortOptions={[{ field: "name", label: "Name" }]}
           onSort={vi.fn()}
+          onSortDirChange={vi.fn()}
           t={mockT}
         />,
       );

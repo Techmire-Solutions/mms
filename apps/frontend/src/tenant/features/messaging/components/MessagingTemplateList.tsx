@@ -83,7 +83,7 @@ export const MessagingTemplateList = function MessagingTemplateList({
       kind: "longText",
       label: t("messaging.templateCopy"),
       render: (template) => (
-        <span className="block truncate text-muted-foreground" title={template.body}>
+        <span dir="auto" className="block truncate text-muted-foreground" title={template.body}>
           {template.body}
         </span>
       ),
@@ -146,7 +146,9 @@ export const MessagingTemplateList = function MessagingTemplateList({
               <p className="text-xs font-semibold text-muted-foreground">
                 {t("messaging.templateCopy")}
               </p>
-              <p className="text-xs text-foreground mt-0.5 whitespace-pre-wrap">{template.body}</p>
+              <p dir="auto" className="text-xs text-foreground mt-0.5 whitespace-pre-wrap">
+                {template.body}
+              </p>
             </div>
           </DirectoryEntityCard>
         )}

@@ -68,7 +68,7 @@ function createFakeRepo(store: Map<string, Contact>) {
     findSummaryByIds: vi.fn(async (_tenant: string, ids: string[]) =>
       ids.map((id) => store.get(id)).filter((c): c is Contact => Boolean(c)),
     ),
-    save: vi.fn(async () => undefined),
+    save: vi.fn(async () => "2026-01-01T00:00:00.000Z"),
     bulkSave: vi.fn(async () => undefined),
     findExistingNormalizedContactNames: vi.fn(async () => new Set<string>()),
     findActiveContactsMatchingUniqueValues: vi.fn(async () => []),

@@ -37,6 +37,18 @@ vi.mock("../services/outboxEventService.js", () => ({
   emitOutboxEvent: vi.fn().mockResolvedValue(undefined),
 }));
 
+vi.mock("../services/auditTrailService.js", () => ({
+  recordModernAuditEvent: vi.fn().mockResolvedValue({ id: 1 }),
+  sanitizeAuditState: (value: unknown) => value,
+}));
+
+const mockReconcileContactSystemTags = vi.fn();
+vi.mock("../contacts/systemTags/contactSystemTagUseCases.js", () => ({
+  reconcileContactSystemTags: (...args: unknown[]) => mockReconcileContactSystemTags(...args),
+  reconcileFacultyContactsByFacultyIds: vi.fn().mockResolvedValue(undefined),
+  reconcileDesignationContacts: vi.fn().mockResolvedValue(undefined),
+}));
+
 // Link guards are DB-backed (contacts / designations); the DI composition root is under test here.
 vi.mock("../faculty/use-cases/facultyWriteGuards.js", () => ({
   validateFacultyContactLink: vi.fn().mockResolvedValue({ userId: null }),
@@ -62,6 +74,7 @@ vi.mock("../db/repositories/facultyEmployDesignationRepository.js", () => ({
 }));
 
 import { createFacultyUseCases } from "../faculty/use-cases/facultyUseCases.js";
+import { recordModernAuditEvent } from "../services/auditTrailService.js";
 
 function fakeFaculty(id: string, overrides: Partial<Faculty> = {}): Faculty {
   return {
@@ -218,6 +231,21 @@ describe("createFacultyUseCases (DI composition root)", () => {
     expect(mockBroadcastCollection).toHaveBeenCalledWith("faculty");
   });
 
+  it("createFaculty defers tag reconcile and broadcast when a batch collector is passed", async () => {
+    const { repo } = createFakeRepo();
+    const useCases = createFacultyUseCases(repo);
+    const batch = { contactIds: new Set<string>() };
+
+    await useCases.createFaculty(
+      { contactId: "c-batch", status: "active", designationId: "des-1" },
+      { batch },
+    );
+
+    expect([...batch.contactIds]).toEqual(["c-batch"]);
+    expect(mockReconcileContactSystemTags).not.toHaveBeenCalled();
+    expect(mockBroadcastCollection).not.toHaveBeenCalled();
+  });
+
   it("createFaculty strips contact-owned profile keys (Contacts SSOT)", async () => {
     const { repo } = createFakeRepo();
     const useCases = createFacultyUseCases(repo);
@@ -299,6 +327,7 @@ describe("createFacultyUseCases (DI composition root)", () => {
     expect(repo.save).toHaveBeenCalledWith(
       "demo",
       expect.objectContaining({ id: "a", qualification: "MA" }),
+      { syncRole: false },
     );
     expect(mockBroadcastCollection).toHaveBeenCalledWith("faculty");
   });
@@ -334,6 +363,7 @@ describe("createFacultyUseCases (DI composition root)", () => {
         qualification: "MA",
         employeeId: "EMP-01",
       }),
+      { syncRole: false },
     );
   });
 
@@ -367,7 +397,9 @@ describe("createFacultyUseCases (DI composition root)", () => {
     expect(result).toEqual({ succeeded: 1, failed: 1 });
     expect(store.get("a")?.deletedBy).toBe("u-admin");
     expect(store.get("a")?.deletionReason).toBe("Left faculty");
-    expect(repo.bulkSave).toHaveBeenCalledWith("demo", [expect.objectContaining({ id: "a" })]);
+    expect(repo.bulkSave).toHaveBeenCalledWith("demo", [expect.objectContaining({ id: "a" })], {
+      syncRole: false,
+    });
     expect(mockBroadcastCollection).toHaveBeenCalledWith("faculty");
   });
 
@@ -387,6 +419,68 @@ describe("createFacultyUseCases (DI composition root)", () => {
     expect(restored?.updatedAt).toMatch(/^\d{4}-\d{2}-\d{2}T/);
     expect(store.get("a")?.deletedAt).toBeUndefined();
     expect(store.get("a")?.updatedAt).toMatch(/^\d{4}-\d{2}-\d{2}T/);
+  });
+
+  it("skips the linked-role sync for edits that cannot change the role", async () => {
+    // Notes/specialization edits cannot change the designation-derived role, so the
+    // sync (1-3 extra reads + possible RBAC invalidation) is skipped.
+    const { repo, store } = createFakeRepo();
+    store.set("a", fakeFaculty("a"));
+    const useCases = createFacultyUseCases(repo);
+
+    await useCases.updateFacultyById("a", { notes: "Updated note" } as never);
+
+    expect(repo.save).toHaveBeenCalledWith("demo", expect.objectContaining({ id: "a" }), {
+      syncRole: false,
+    });
+  });
+
+  it("syncs the linked role when the designation changes", async () => {
+    const { repo, store } = createFakeRepo();
+    store.set("a", fakeFaculty("a"));
+    const useCases = createFacultyUseCases(repo);
+
+    await useCases.updateFacultyById("a", { designationId: "des-2" } as never);
+
+    expect(repo.save).toHaveBeenCalledWith("demo", expect.objectContaining({ id: "a" }), {
+      syncRole: true,
+    });
+  });
+
+  it("restoreFacultyById appends the restore audit row inside the write transaction", async () => {
+    // Restore used to be audited only by the route, after commit: a committed
+    // restore could exist with no audit row (mms-data-layer §5.4).
+    const { repo, store } = createFakeRepo();
+    store.set(
+      "a",
+      fakeFaculty("a", { deletedAt: "2026-07-27T00:00:00.000Z", deletedBy: "u-admin" }),
+    );
+    const useCases = createFacultyUseCases(repo);
+
+    await useCases.restoreFacultyById("a", "u-admin");
+
+    expect(vi.mocked(recordModernAuditEvent)).toHaveBeenCalledWith(
+      expect.objectContaining({
+        recordId: "a",
+        realUserId: "u-admin",
+        newState: expect.objectContaining({ action: "faculty.restore" }),
+      }),
+    );
+  });
+
+  it("bulkRestoreFaculty audits every restored member", async () => {
+    const { repo, store } = createFakeRepo();
+    store.set("a", fakeFaculty("a", { deletedAt: "2026-07-27T00:00:00.000Z" }));
+    store.set("b", fakeFaculty("b", { deletedAt: "2026-07-27T00:00:00.000Z" }));
+    const useCases = createFacultyUseCases(repo);
+
+    await useCases.bulkRestoreFaculty(["a", "b"], "u-admin");
+
+    const restoreRows = vi
+      .mocked(recordModernAuditEvent)
+      .mock.calls.map(([input]) => input as { recordId?: string; newState?: { action?: string } })
+      .filter((input) => input.newState?.action === "faculty.restore");
+    expect(restoreRows.map((row) => row.recordId).sort()).toEqual(["a", "b"]);
   });
 
   it("restoreFacultyById returns an active record unchanged without saving", async () => {

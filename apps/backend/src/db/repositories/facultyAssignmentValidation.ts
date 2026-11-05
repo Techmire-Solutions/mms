@@ -1,6 +1,35 @@
 import { sql } from "drizzle-orm";
 import type { TenantTransaction } from "../tenant-context.js";
 import type { InsertFacultyAssignmentRow } from "../schema/facultyAssignmentTables.js";
+import { ConflictError, ValidationError } from "../../lib/httpErrors.js";
+
+/** Minimal shape of the appointment row needed by the archive guard. */
+export interface FacultyAssignmentDeletability {
+  isPrimary: boolean;
+  startDate: string;
+  endDate: string | null;
+  deletedAt: Date | null;
+}
+
+/**
+ * A faculty's primary appointment is the SSOT behind the Work list projection,
+ * exports, sessions/task delegation and contact role tags. Archiving the period
+ * that currently backs it would silently strip designation/department from every
+ * one of those surfaces, so the supported path is closing it with an end date.
+ */
+export function assertFacultyAssignmentDeletable(
+  row: FacultyAssignmentDeletability,
+  onDate: string,
+): void {
+  if (row.deletedAt) return;
+  const coversToday =
+    row.isPrimary && row.startDate <= onDate && (row.endDate == null || row.endDate >= onDate);
+  if (coversToday) {
+    throw new ConflictError(
+      "The primary appointment cannot be deleted; close it with an end date instead",
+    );
+  }
+}
 
 export async function lockFacultyHierarchy(
   tx: Pick<TenantTransaction, "execute">,
@@ -20,7 +49,7 @@ export async function validateFacultyAssignment(
     WHERE workspace_subdomain = ${tenant} AND id = ${input.id} FOR UPDATE
   `);
   if (existing.rows.some((row) => row.faculty_id !== input.facultyId || row.deleted_at !== null)) {
-    throw new Error("Assignment is archived or belongs to another faculty member");
+    throw new ConflictError("Assignment is archived or belongs to another faculty member");
   }
   const member = await tx.execute(sql`
     SELECT id FROM faculty WHERE workspace_subdomain = ${tenant}
@@ -35,10 +64,12 @@ export async function validateFacultyAssignment(
       AND id = ${input.designationId} AND deleted_at IS NULL AND status = 'active' FOR SHARE
   `);
   if (!member.rows.length || !department.rows.length || !designation.rows.length) {
-    throw new Error("Faculty, department and designation must be active in this workspace");
+    throw new ValidationError(
+      "Faculty, department and designation must be active in this workspace",
+    );
   }
   if (input.endDate && input.endDate < input.startDate)
-    throw new Error("End date precedes start date");
+    throw new ValidationError("End date precedes start date");
   if (input.isPrimary) {
     const overlaps = await tx.execute(sql`
       SELECT id FROM faculty_assignments WHERE workspace_subdomain = ${tenant}
@@ -47,6 +78,6 @@ export async function validateFacultyAssignment(
         AND COALESCE(end_date, 'infinity'::date) >= ${input.startDate}::date LIMIT 1
     `);
     if (overlaps.rows.length)
-      throw new Error("Primary assignment overlaps an existing appointment");
+      throw new ConflictError("Primary assignment overlaps an existing appointment");
   }
 }

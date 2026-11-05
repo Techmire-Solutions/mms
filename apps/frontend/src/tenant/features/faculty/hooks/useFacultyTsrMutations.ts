@@ -77,16 +77,6 @@ export function useFacultyContractBulkSpecialization() {
   });
 }
 
-/** Contract-backed migrate employee IDs */
-export function useFacultyContractMigrateEmployeeIds() {
-  return facultyClient.migrateEmployeeIds.useMutation({});
-}
-
-/** Contract-backed log export audit */
-export function useFacultyContractLogExportAudit() {
-  return facultyClient.exportAudit.useMutation({});
-}
-
 /** Contract-backed log setup audit */
 export function useFacultyContractLogSetupAudit() {
   return facultyClient.setupAudit.useMutation({});

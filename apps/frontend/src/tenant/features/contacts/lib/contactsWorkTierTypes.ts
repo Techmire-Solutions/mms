@@ -19,6 +19,8 @@ export interface ContactsWorkTierProps {
   sortField: string;
   sortDir: "asc" | "desc";
   onSort: (field: string) => void;
+  onSortDirChange: (dir: "asc" | "desc") => void;
+  isSearching: boolean;
   hasActiveFilters: boolean;
   activeFilterCount: number;
   onClearFilters: () => void;
@@ -48,7 +50,11 @@ export interface ContactsWorkTierProps {
   isExporting: boolean;
   onRequestBulkDelete: () => void;
   onRequestBulkRestore: () => void;
-  onBulkTag?: (tags: string[]) => Promise<void> | void;
+  onBulkTag?: (tags: string[], mode: "add" | "remove") => Promise<void> | void;
+  /** First-run empty state: open the create form. */
+  onCreate?: () => void;
+  /** First-run empty state: open the import dialog. */
+  onImport?: () => void;
   isWorkError: boolean;
   isWorkLoading: boolean;
   isWorkFetching: boolean;

@@ -128,7 +128,7 @@ export async function reconcileContactSystemTags(
       ...rootIds,
       ...relatedRows.map((row) => row.relatedContactId).filter((id): id is string => Boolean(id)),
     ]),
-  );
+  ).sort();
 
   let changedContacts = 0;
   for (const batch of chunk(ids)) {

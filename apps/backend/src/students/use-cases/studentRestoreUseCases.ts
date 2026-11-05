@@ -4,13 +4,16 @@ import { activeDb, runInTransaction } from "../../db/database.js";
 import { broadcastCollection } from "../../lib/livePush.js";
 import type { StudentsRepository } from "../repository/studentsRepository.js";
 import { studentsRepository } from "../repository/studentsRepositoryAdapter.js";
-import { StudentRestoreConflictError } from "./studentNormalizeUseCases.js";
+import {
+  StudentRestoreConflictError,
+  StudentRestoreRaceError,
+} from "./studentNormalizeUseCases.js";
 import { isUniqueViolation } from "../../lib/pgErrors.js";
 import { recordRestoreEvents } from "./studentAuditEvents.js";
-import { invalidateMultiTierCache } from "../../lib/cache/index.js";
 import { buildRestoredRecord, enableIncludeDeleted } from "../../lib/softDeleteHelpers.js";
 import { restoreCascadedEnrollmentsForStudents } from "../../db/repositories/studentEnrollmentCascade.js";
 import { reconcileContactSystemTags } from "../../contacts/systemTags/contactSystemTagUseCases.js";
+import { invalidateStudentsCache } from "./studentCacheInvalidation.js";
 
 interface StudentBulkRestoreConflict {
   id: string;
@@ -40,7 +43,9 @@ export async function restoreStudentById(
     await enableIncludeDeleted(activeDb());
     const existing = await repo.findById(tenant, id, { includeDeleted: true });
     if (!existing) return null;
-    if (!existing.deletedAt) return existing;
+    // An already-active student is not a restore. Returning null makes the route answer 404 and
+    // skip the restore audit/outbox row (contacts C-07 parity) instead of reporting a false restore.
+    if (!existing.deletedAt) return null;
 
     const conflict = await repo.findRegistrationConflict(tenant, {
       excludeId: id,
@@ -73,14 +78,10 @@ export async function restoreStudentById(
       await repo.save(tenant, next);
     } catch (err: unknown) {
       if (isPgUnique(err)) {
+        // The pre-check above already answered 400 for a known conflict; reaching here means a
+        // concurrent writer won the race, which is a 409 (mms-data-layer §6.10), not a bad request.
         const msg = String((err as { message?: unknown })?.message ?? "").toLowerCase();
-        if (msg.includes("student_id")) {
-          throw new StudentRestoreConflictError(
-            "A student with this Student ID already exists",
-            "studentId",
-          );
-        }
-        throw new StudentRestoreConflictError();
+        throw new StudentRestoreRaceError(msg.includes("student_id") ? "studentId" : "grNumber");
       }
       throw err;
     }
@@ -100,12 +101,8 @@ export async function restoreStudentById(
       { actorId: userId },
     );
     return next;
-  });
-  if (restored) {
-    const tenant = getRequestTenant();
-    if (tenant) await invalidateMultiTierCache({ tenantId: tenant, domain: "students" });
-    await broadcastCollection("students");
-  }
+  }).finally(invalidateStudentsCache);
+  if (restored) await broadcastCollection("students");
   return restored;
 }
 
@@ -114,16 +111,20 @@ export async function bulkRestoreStudents(
   userId?: string,
   repo: StudentsRepository = studentsRepository,
 ): Promise<StudentBulkRestoreResult> {
+  // Dedupe first: a repeated id used to be counted twice (and, when it carried a contactId, the
+  // second pass was mis-reported as a contact conflict) while the SQL layer restored it once.
+  const uniqueIds = [...new Set(ids.map((id) => String(id).trim()).filter(Boolean))];
   const result = await runInTransaction(async () => {
     const tenant = getRequestTenant();
-    if (!tenant) return { succeeded: 0, failed: ids.length, conflicts: [] };
+    if (!tenant) return { succeeded: 0, failed: uniqueIds.length, conflicts: [] };
     await enableIncludeDeleted(activeDb());
     let succeeded = 0;
     let failed = 0;
     const conflicts: StudentBulkRestoreConflict[] = [];
     const toSave: Student[] = [];
+    const batchRestoredAt = new Date().toISOString();
 
-    const existingStudents = await repo.findByIds(tenant, ids, { includeDeleted: true });
+    const existingStudents = await repo.findByIds(tenant, uniqueIds, { includeDeleted: true });
     const existingMap = new Map(existingStudents.map((student) => [String(student.id), student]));
     const acceptedGrNumbers = new Set<string>();
     const acceptedContactIds = new Set<string>();
@@ -134,16 +135,28 @@ export async function bulkRestoreStudents(
     const candidateStudentIds = existingStudents
       .filter((s) => s.deletedAt && s.studentId?.trim())
       .map((s) => String(s.studentId));
+    // Bound the contact probe to the rows being restored: the previous call loaded every active
+    // student's contact id for the workspace on every bulk restore.
+    const candidateContactIds = [
+      ...new Set(
+        existingStudents
+          .filter((s) => s.deletedAt && s.contactId)
+          .map((s) => String(s.contactId).trim())
+          .filter(Boolean),
+      ),
+    ];
     const [activeGrOwners, activeContactsList, activeStudentIdOwners] = await Promise.all([
       repo.findActiveGrNumberOwners(tenant, candidateGrs),
-      repo.listLinkedContactIds ? repo.listLinkedContactIds(tenant) : Promise.resolve([]),
+      repo.listLinkedContactIds
+        ? repo.listLinkedContactIds(tenant, undefined, candidateContactIds)
+        : Promise.resolve([]),
       repo.findActiveStudentIdOwners
         ? repo.findActiveStudentIdOwners(tenant, candidateStudentIds)
         : Promise.resolve(new Map<string, string>()),
     ]);
     const activeContactIds = new Set(activeContactsList.map(String));
 
-    for (const id of ids) {
+    for (const id of uniqueIds) {
       const existing = existingMap.get(String(id));
       if (!existing || !existing.deletedAt) {
         failed += 1;
@@ -189,7 +202,11 @@ export async function bulkRestoreStudents(
         continue;
       }
 
-      toSave.push(buildRestoredRecord(existing, userId));
+      const restoredRow = buildRestoredRecord(existing, userId);
+      // One `restoredAt` for the whole batch so the restored rows and the enrollments they
+      // cascade-restore share the same timestamp.
+      restoredRow.restoredAt = batchRestoredAt;
+      toSave.push(restoredRow);
       if (contactId) acceptedContactIds.add(contactId);
       if (normalizedGr) acceptedGrNumbers.add(normalizedGr);
       if (normalizedSid) acceptedStudentIds.add(normalizedSid);
@@ -197,50 +214,60 @@ export async function bulkRestoreStudents(
     }
 
     if (toSave.length > 0) {
+      let restoredIds = toSave.map((s) => String(s.id));
       try {
         if (repo.bulkRestore) {
-          await repo.bulkRestore(
+          const writeResult = await repo.bulkRestore(
             tenant,
             toSave.map((s) => String(s.id)),
             userId,
+            new Date(batchRestoredAt),
           );
+          // Report and cascade only what the database actually restored: a
+          // concurrent restore/soft-delete between the read and the UPDATE made
+          // the pre-count optimistic (and used to audit rows that never changed).
+          if (writeResult && typeof writeResult.succeeded === "number") {
+            restoredIds =
+              writeResult.restoredIds ??
+              toSave.slice(0, Math.max(0, writeResult.succeeded)).map((row) => String(row.id));
+          }
         } else {
           await repo.bulkSave(tenant, toSave);
         }
       } catch (err: unknown) {
-        if (isPgUnique(err)) throw new StudentRestoreConflictError();
+        // Same race semantics as the single restore: a DB unique rejection is a 409.
+        if (isPgUnique(err)) throw new StudentRestoreRaceError();
         throw err;
       }
+      const restoredIdSet = new Set(restoredIds);
+      const restoredRows = toSave.filter((row) => restoredIdSet.has(String(row.id)));
+      succeeded = restoredRows.length;
+      failed = uniqueIds.length - succeeded;
 
-      const restoredAt = new Date().toISOString();
       await restoreCascadedEnrollmentsForStudents(
         activeDb(),
         tenant,
-        toSave.map((s) => String(s.id)),
+        restoredRows.map((row) => String(row.id)),
         userId,
-        new Date(restoredAt),
+        new Date(batchRestoredAt),
       );
-      for (const s of toSave) {
-        await recordRestoreEvents(tenant, s, restoredAt, userId);
+      for (const row of restoredRows) {
+        await recordRestoreEvents(tenant, row, batchRestoredAt, userId);
       }
       await reconcileContactSystemTags(
         tenant,
-        toSave.flatMap((s) => [
-          s.contactId,
-          s.fatherContactId,
-          s.motherContactId,
-          s.guardianContactId,
+        restoredRows.flatMap((row) => [
+          row.contactId,
+          row.fatherContactId,
+          row.motherContactId,
+          row.guardianContactId,
         ]),
         { actorId: userId },
       );
     }
     return { succeeded, failed, conflicts };
-  });
-  if (result.succeeded > 0) {
-    const tenant = getRequestTenant();
-    if (tenant) await invalidateMultiTierCache({ tenantId: tenant, domain: "students" });
-    await broadcastCollection("students");
-  }
+  }).finally(invalidateStudentsCache);
+  if (result.succeeded > 0) await broadcastCollection("students");
   return result;
 }
 

@@ -1,7 +1,10 @@
-import React from "react";
 import { describe, expect, it, vi } from "vitest";
 import { renderToStaticMarkup } from "react-dom/server";
-import { StudentsFiltersMenuButton } from "./StudentsFiltersMenuButton";
+import {
+  StudentsFiltersMenuButton,
+  resolveStudentsGenderSelection,
+  resolveStudentsSortSelection,
+} from "./StudentsFiltersMenuButton";
 
 vi.mock("@/hooks/useTranslation", () => ({
   useTranslation: () => ({
@@ -33,5 +36,16 @@ describe("StudentsFiltersMenuButton Component", () => {
 
     expect(html).toContain("students.filters");
     expect(html).toContain("2");
+  });
+
+  it("clears the sort when the None option is selected", () => {
+    expect(resolveStudentsSortSelection("none")).toBeNull();
+    expect(resolveStudentsSortSelection("grNumber")).toBe("grNumber");
+  });
+
+  it("renders the All genders sentinel as the selected default", () => {
+    // 2026-11-04 review (M1): with no gender filter the group had no checked option.
+    expect(resolveStudentsGenderSelection("")).toBe("all");
+    expect(resolveStudentsGenderSelection("male")).toBe("male");
   });
 });

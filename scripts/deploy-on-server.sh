@@ -343,6 +343,13 @@ if [ "$RUN_APACHE" = true ]; then
     CURRENT_APACHE_FP="$(compute_apache_fingerprint "$APP_DOMAIN_FOR_FP" "$PORT")"
     printf '%s\n' "$CURRENT_APACHE_FP" > "$APACHE_FP_FILE"
   fi
+else
+  # Config fingerprint unchanged, but gracefully reload Apache to recycle reverse-proxy worker connections
+  if command -v systemctl >/dev/null 2>&1 && systemctl is-active --quiet apache2 2>/dev/null; then
+    sudo systemctl reload apache2 2>/dev/null || true
+  elif command -v apache2ctl >/dev/null 2>&1; then
+    sudo apache2ctl graceful 2>/dev/null || true
+  fi
 fi
 
 # Local health gate. Public apex verify is owned by deploy.yml (set MMS_DEPLOY_SKIP_PUBLIC_VERIFY=1).

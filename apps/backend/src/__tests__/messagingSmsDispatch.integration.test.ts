@@ -33,10 +33,13 @@ vi.mock("../services/workspaceService.js", async (importOriginal) => {
   };
 });
 
-const mockRecordMessageLogs = vi.fn();
+const mockClaimMessageLogForDelivery = vi.fn();
+const mockUpdateMessageLogDeliveryStatus = vi.fn();
 vi.mock("../messaging/use-cases/messagingUseCases.js", () => ({
   messagingUseCases: {
-    recordMessageLogs: (...args: unknown[]) => mockRecordMessageLogs(...args),
+    claimMessageLogForDelivery: (...args: unknown[]) => mockClaimMessageLogForDelivery(...args),
+    updateMessageLogDeliveryStatus: (...args: unknown[]) =>
+      mockUpdateMessageLogDeliveryStatus(...args),
   },
 }));
 
@@ -48,7 +51,8 @@ vi.mock("../services/sms/smsService.js", () => ({
 describe("POST /api/messaging/dispatch/sms", () => {
   beforeEach(async () => {
     process.env.JWT_SECRET = "test-secret";
-    mockRecordMessageLogs.mockReset().mockResolvedValue(1);
+    mockClaimMessageLogForDelivery.mockReset().mockResolvedValue(true);
+    mockUpdateMessageLogDeliveryStatus.mockReset().mockResolvedValue(undefined);
     mockSendTenantSms.mockReset().mockResolvedValue({ sent: true });
   });
 
@@ -145,15 +149,87 @@ describe("POST /api/messaging/dispatch/sms", () => {
 
     expect(res.statusCode).toBe(200);
     const body = JSON.parse(res.payload);
-    expect(body).toEqual({ sentCount: 2, failedCount: 0, total: 2 });
+    expect(body).toEqual({ sentCount: 2, failedCount: 0, skippedCount: 0, total: 2 });
     expect(mockSendTenantSms).toHaveBeenCalledTimes(2);
-    expect(mockRecordMessageLogs).toHaveBeenCalledTimes(1);
-    const [tenant, logs] = mockRecordMessageLogs.mock.calls[0];
+    expect(mockClaimMessageLogForDelivery).toHaveBeenCalledTimes(2);
+    const [tenant, firstClaim] = mockClaimMessageLogForDelivery.mock.calls[0] as [
+      string,
+      {
+        id: string;
+        contactId: string;
+        channel: string;
+        category: string;
+        body: string;
+        userId: string;
+      },
+    ];
     expect(tenant).toBe("demo");
-    expect(logs).toHaveLength(2);
-    expect(logs[0].contactId).toBe("c-1");
-    expect(logs[0].category).toBe("attendance");
-    expect(logs[0].status).toBe("sent");
+    expect(firstClaim.id).toMatch(/^msg-[a-f0-9]{64}$/);
+    expect(firstClaim.contactId).toBe("c-1");
+    expect(firstClaim.channel).toBe("sms");
+    expect(firstClaim.category).toBe("attendance");
+    expect(firstClaim.userId).toBe("u-admin");
+    expect(mockUpdateMessageLogDeliveryStatus).toHaveBeenCalledTimes(2);
+  });
+
+  it("keys direct-dispatch claims in the queued job namespace", async () => {
+    const {
+      findAuthArtifactByLookupKey,
+      tryClaimAuthArtifactByLookupKey,
+      updateAuthArtifactPayload,
+    } = await import("../services/auth/authArtifactService.js");
+    vi.mocked(findAuthArtifactByLookupKey).mockReset().mockResolvedValue(null);
+    vi.mocked(tryClaimAuthArtifactByLookupKey)
+      .mockReset()
+      .mockResolvedValue({ claimed: true, id: "art-ns-sms" });
+    vi.mocked(updateAuthArtifactPayload).mockReset().mockResolvedValue(undefined);
+    const { buildBackgroundJobId } = await import("../lib/backgroundJobIds.js");
+    const { buildMessageLogClaimId } = await import("../lib/messageLogClaimId.js");
+    const { app, headers } = await authHeaders();
+
+    const res = await app.inject({
+      method: "POST",
+      url: "/api/messaging/dispatch/sms",
+      headers,
+      payload: { ...smsPayload(), idempotencyKey: "sms-claim-namespace-01" },
+    });
+
+    expect(res.statusCode).toBe(200);
+    const [, claim] = mockClaimMessageLogForDelivery.mock.calls[0] as [string, { id: string }];
+    // The queued runner claims with `ctx.jobId`; the direct path must derive the
+    // same id so a mode-flipped retry collides instead of re-sending everyone.
+    expect(claim.id).toBe(
+      buildMessageLogClaimId(
+        buildBackgroundJobId("demo", "u-admin", "sms-claim-namespace-01"),
+        "c-1",
+        "sms",
+      ),
+    );
+    await app.close();
+  });
+
+  it("stays send-once when a recipient was already claimed by an earlier attempt", async () => {
+    mockClaimMessageLogForDelivery
+      .mockReset()
+      .mockResolvedValueOnce(true)
+      .mockResolvedValueOnce(false);
+    const app = await buildApp();
+    const res = await app.inject({
+      method: "POST",
+      url: "/api/messaging/dispatch/sms",
+      headers: {
+        host: "demo.localhost",
+        authorization: `Bearer ${signTenantToken(app, { role: "admin", name: "admin" })}`,
+      },
+      payload: smsPayload(),
+    });
+
+    expect(res.statusCode).toBe(200);
+    expect(res.json()).toEqual({ sentCount: 1, failedCount: 0, skippedCount: 1, total: 2 });
+    // The already-claimed recipient is skipped instead of re-sent.
+    expect(mockSendTenantSms).toHaveBeenCalledTimes(1);
+    expect(mockUpdateMessageLogDeliveryStatus).toHaveBeenCalledTimes(1);
+    await app.close();
   });
 
   it("replays the first response without re-sending when the same idempotency key is reused", async () => {
@@ -178,14 +254,19 @@ describe("POST /api/messaging/dispatch/sms", () => {
       payload,
     });
     expect(first.statusCode).toBe(200);
-    expect(first.json()).toEqual({ sentCount: 2, failedCount: 0, total: 2 });
+    expect(first.json()).toEqual({ sentCount: 2, failedCount: 0, skippedCount: 0, total: 2 });
     expect(mockSendTenantSms).toHaveBeenCalledTimes(2);
     expect(tryClaimAuthArtifactByLookupKey).toHaveBeenCalledTimes(1);
     const finalizedPayload = vi.mocked(updateAuthArtifactPayload).mock.calls[0]?.[1] as {
-      response: { sentCount: number; failedCount: number; total: number };
+      response: { sentCount: number; failedCount: number; skippedCount?: number; total: number };
       bodyDigest: string;
     };
-    expect(finalizedPayload.response).toEqual({ sentCount: 2, failedCount: 0, total: 2 });
+    expect(finalizedPayload.response).toEqual({
+      sentCount: 2,
+      failedCount: 0,
+      skippedCount: 0,
+      total: 2,
+    });
     expect(finalizedPayload.bodyDigest).toMatch(/^[a-f0-9]{64}$/);
 
     const replayPayload = {
@@ -206,9 +287,11 @@ describe("POST /api/messaging/dispatch/sms", () => {
       payload,
     });
     expect(second.statusCode).toBe(200);
-    expect(second.json()).toEqual({ sentCount: 2, failedCount: 0, total: 2 });
+    expect(second.json()).toEqual({ sentCount: 2, failedCount: 0, skippedCount: 0, total: 2 });
+    // The replay is flagged for the client and must not re-send or re-claim.
+    expect(second.headers["idempotency-replay"]).toBe("true");
     expect(mockSendTenantSms).toHaveBeenCalledTimes(2);
-    expect(mockRecordMessageLogs).toHaveBeenCalledTimes(1);
+    expect(mockClaimMessageLogForDelivery).toHaveBeenCalledTimes(2);
     expect(tryClaimAuthArtifactByLookupKey).toHaveBeenCalledTimes(1);
     await app.close();
   });
@@ -221,7 +304,7 @@ describe("POST /api/messaging/dispatch/sms", () => {
         id: "art-mismatch",
         kind: "messaging_idempotency",
         payload: {
-          response: { sentCount: 1, failedCount: 0, total: 1 },
+          response: { sentCount: 1, failedCount: 0, skippedCount: 0, total: 1 },
           bodyDigest: "a".repeat(64),
         },
         expiresAt: new Date(Date.now() + 60_000),
@@ -240,7 +323,7 @@ describe("POST /api/messaging/dispatch/sms", () => {
       message: "Idempotency key reused with a different request body",
     });
     expect(mockSendTenantSms).not.toHaveBeenCalled();
-    expect(mockRecordMessageLogs).not.toHaveBeenCalled();
+    expect(mockClaimMessageLogForDelivery).not.toHaveBeenCalled();
     await app.close();
   });
 
@@ -257,7 +340,7 @@ describe("POST /api/messaging/dispatch/sms", () => {
       payload: smsPayload(),
     });
     expect(res.statusCode).toBe(200);
-    expect(res.json()).toEqual({ sentCount: 2, failedCount: 0, total: 2 });
+    expect(res.json()).toEqual({ sentCount: 2, failedCount: 0, skippedCount: 0, total: 2 });
     expect(mockSendTenantSms).toHaveBeenCalledTimes(2);
     expect(tryClaimAuthArtifactByLookupKey).not.toHaveBeenCalled();
     await app.close();

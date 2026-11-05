@@ -125,6 +125,32 @@ describe("facultyWriteSchema and soft-delete helpers", () => {
     }
   });
 
+  it("buildDynamicFacultySchema strips a client-supplied linked userId", () => {
+    const schema = buildDynamicFacultySchema(DEFAULT_FACULTY_SETTINGS, new Set(["basic"]), {
+      basic: [
+        {
+          key: "contactId",
+          label: "Contact",
+          type: "text",
+          enabled: true,
+          required: true,
+          order: 1,
+        },
+      ],
+    });
+
+    const parsed = schema.safeParse({
+      contactId: "c-1",
+      designationId: "designation-1",
+      userId: "u-admin",
+    });
+
+    expect(parsed.success).toBe(true);
+    if (parsed.success) {
+      expect(parsed.data as Record<string, unknown>).not.toHaveProperty("userId");
+    }
+  });
+
   it("buildDynamicFacultySchema strips soft-delete metadata and strictly validates fields", () => {
     const schema = buildDynamicFacultySchema(DEFAULT_FACULTY_SETTINGS, new Set(["basic"]), {
       basic: [

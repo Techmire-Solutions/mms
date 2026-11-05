@@ -31,6 +31,9 @@ export function StudentsPageView({
   visibleTabs,
   metricsTotal,
   metricsSnapshot,
+  metricsLoading,
+  metricsError,
+  metricsRetry,
   activeTab,
   setActiveTab,
   viewingDeleted,
@@ -65,6 +68,9 @@ export function StudentsPageView({
           total={metricsTotal ?? shownCount}
           shown={shownCount}
           serverMetrics={metricsSnapshot}
+          isLoading={metricsLoading}
+          isError={metricsError}
+          onRetry={metricsRetry}
         />
       }
       tiers={[

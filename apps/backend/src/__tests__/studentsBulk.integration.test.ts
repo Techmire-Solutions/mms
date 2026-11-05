@@ -216,13 +216,12 @@ describe("students trash / bulk / column-preferences routes", () => {
       payload: { ids: ["s-1"], status: "inactive" },
     });
     expect(res.statusCode).toBe(200);
-    expect(mockBulkUpdateStudentStatus).toHaveBeenCalledWith(["s-1"], "inactive");
-    expect(mockRecordAudit).toHaveBeenCalledWith(
-      expect.objectContaining({
-        action: "student.bulk_status",
-        summary: expect.stringContaining("Updated status to inactive"),
-      }),
+    expect(mockBulkUpdateStudentStatus).toHaveBeenCalledWith(
+      ["s-1"],
+      "inactive",
+      expect.objectContaining({ id: "u-teacher" }),
     );
+    expect(res.json()).toMatchObject({ success: true, succeeded: 1, failed: 0 });
     await app.close();
   });
 });

@@ -115,6 +115,7 @@ export const contactCrudRoutes: FastifyPluginAsync = async (fastify) => {
     },
     create: async ({
       body,
+      headers,
       request,
     }: ContractRouteArgs<(typeof contactsContract)["create"]>): Promise<
       ContractRouteResponse<(typeof contactsContract)["create"]>
@@ -129,25 +130,16 @@ export const contactCrudRoutes: FastifyPluginAsync = async (fastify) => {
       const lang = (request.headers?.["accept-language"] as string | undefined) || "en";
 
       try {
-        const { contact, created, restoredFromDelete } = await contactUseCases.upsertContact(
-          body as Contact,
-          { user, language: lang },
-        );
-        if (restoredFromDelete) {
-          await auditContact(
-            user,
-            "contact.restore",
-            `Restored contact ${String(contact.id)} via upsert`,
-            String(contact.id),
-          );
-        } else {
-          await auditContact(
-            user,
-            created ? "contact.create" : "contact.upsert",
-            `${created ? "Created" : "Updated"} contact ${String(contact.id)}`,
-            String(contact.id),
-          );
-        }
+        // Audit is appended inside the write transaction by the use case
+        // (`mms-data-layer` §5.4), so a committed contact is never unaudited.
+        const { contact, created } = await contactUseCases.upsertContact(body as Contact, {
+          user,
+          language: lang,
+          // `create` must not silently update: an existing id needs the version
+          // token, otherwise this is a conflict (R4-05).
+          requireExpectedVersion: true,
+          expectedUpdatedAt: headers?.["x-expected-updated-at"],
+        });
         return {
           status: created ? (201 as const) : (200 as const),
           body: { success: true, contact: await sanitizeOneForUser(contact, user) },
@@ -189,6 +181,7 @@ export const contactCrudRoutes: FastifyPluginAsync = async (fastify) => {
           language: lang,
           applyRelationshipInference: canWriteContacts(user),
           actorId: String(user.id),
+          viewerRole: user.role,
           expectedUpdatedAt: headers?.["x-expected-updated-at"],
         });
         if (!updated)
@@ -196,7 +189,7 @@ export const contactCrudRoutes: FastifyPluginAsync = async (fastify) => {
             status: 404 as const,
             body: { type: "not_found", message: "Contact not found" },
           };
-        await auditContact(user, "contact.update", `Updated contact ${id}`, id);
+        // The use case appends the audit row inside the write transaction.
         return {
           status: 200 as const,
           body: { success: true, contact: await sanitizeOneForUser(updated, user) },
@@ -245,10 +238,10 @@ export const contactCrudRoutes: FastifyPluginAsync = async (fastify) => {
         return { status: 200 as const, body: { success: true } };
       } catch (error) {
         request.log.error(error, "Failed to delete contact");
-        return {
-          status: 500 as const,
-          body: { type: "database_error", message: "Failed to delete contact" },
-        };
+        // A dependent-link guard throws ConflictError (active student/faculty/
+        // staff user); the shared formatter keeps that 409 actionable instead of
+        // collapsing it into an opaque 500.
+        return formatContactWriteError(error, "Failed to delete contact");
       }
     },
     reportAnalytics: async ({

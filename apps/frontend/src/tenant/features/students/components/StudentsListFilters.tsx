@@ -34,7 +34,7 @@ interface StudentsListFiltersProps {
   onSearchChange: (value: string) => void;
   onToggleStatus: (status: string) => void;
   onGenderChange: (value: string) => void;
-  onSortChange: (field: StudentsListContentSortField) => void;
+  onSortChange: (field: StudentsListContentSortField | null) => void;
   onToggleDeleted: () => void;
   onClearFilters: () => void;
   shownCount?: number;
@@ -89,7 +89,7 @@ export function StudentsListFilters({
       shownCountLabel={
         shownCount != null ? t("students.shownCount", { count: shownCount }) : undefined
       }
-      regionLabel={t("students.filters")}
+      regionLabel={t("nav.students")}
       search={studentSearch}
       onSearchChange={onSearchChange}
       searchPlaceholder={t("students.searchPlaceholder")}

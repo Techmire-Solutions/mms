@@ -86,15 +86,49 @@ describe("dashboard repositories", () => {
       expect(widgets[0].fixedSubText).toBe("Registered students");
     });
 
-    it("listAllDashboardWidgetsByWorkspace fetches raw rows for workspace backup snapshot", async () => {
-      const mockWhere = vi.fn().mockResolvedValue([{ id: "w1" }]);
+    it("listAllDashboardWidgetsByWorkspace snapshots canonical DTOs for backup", async () => {
+      const dbRow = {
+        id: "w1",
+        workspaceSubdomain: "demo",
+        widgetType: "chart",
+        category: "students",
+        collection: "students",
+        role: null,
+        isPinnedToDashboard: true,
+        title: "Enrollment trend",
+        icon: null,
+        color: "emerald",
+        operation: "count",
+        sortOrder: 0,
+        config: { chartType: "area", titleKey: "dashboard.enrollment" },
+        updatedAt: new Date(),
+      };
+      const mockWhere = vi.fn().mockResolvedValue([dbRow]);
       const mockFrom = vi.fn().mockReturnValue({ where: mockWhere });
       mockTx.select.mockReturnValue({ from: mockFrom });
 
       const rows = await listAllDashboardWidgetsByWorkspace("demo");
 
       expect(mockTx.select).toHaveBeenCalled();
-      expect(rows).toEqual([{ id: "w1" }]);
+      // The snapshot must be the same shape the write DTO accepts, so a restore
+      // round-trips instead of nesting `config` inside `config`.
+      expect(rows).toEqual([
+        {
+          id: "w1",
+          widgetType: "chart",
+          category: "students",
+          collection: "students",
+          isPinnedToDashboard: true,
+          title: "Enrollment trend",
+          color: "emerald",
+          operation: "count",
+          sortOrder: 0,
+          chartType: "area",
+          titleKey: "dashboard.enrollment",
+        },
+      ]);
+      expect(rows[0]).not.toHaveProperty("config");
+      expect(rows[0]).not.toHaveProperty("workspaceSubdomain");
     });
 
     it("upsertDashboardWidgetsForWorkspace invokes insert with onConflictDoUpdate on (workspaceSubdomain, id)", async () => {

@@ -77,6 +77,11 @@ export function useFacultyPageController() {
     visibleTabs.map((tab) => tab.id),
     legacyWorkSubTab,
   );
+  // Repair the persisted tier so a no-longer-visible value cannot resurface.
+  useEffect(() => {
+    if (effectiveTab && effectiveTab !== rawActiveTab) setActiveTab(effectiveTab);
+  }, [effectiveTab, rawActiveTab, setActiveTab]);
+
   const showDirectoryActions = effectiveTab === "faculties";
 
   useEmployeeIdMigration(effectiveTab, canEditSetup);
@@ -123,7 +128,6 @@ export function useFacultyPageController() {
     canExport,
     hasActiveFilters: filters.hasActiveFilters,
     selectedIds: filters.selectedIds,
-    logExportAudit: mutations.logExportAudit,
     t,
   });
 

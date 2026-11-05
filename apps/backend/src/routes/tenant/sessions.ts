@@ -11,6 +11,7 @@ import { sessionSectionsRouter } from "./sessions/sessionSectionsRouter.js";
 import { sessionLifecycleOpsRouter } from "./sessions/sessionLifecycleOpsRouter.js";
 import { sessionRolloverRouter } from "./sessions/sessionRolloverRouter.js";
 import { sessionCompletionRouter } from "./sessions/sessionCompletionRouter.js";
+import { sessionExportRoutes } from "./sessions/sessionExportRoutes.js";
 
 const COLLECTION = SESSIONS_MODULE_MANIFEST.collectionKey;
 
@@ -46,4 +47,6 @@ export default async function sessionsRoutes(
   await fastify.register(sessionLifecycleOpsRouter);
   await fastify.register(sessionRolloverRouter);
   await fastify.register(sessionCompletionRouter);
+  // Raw Fastify route (ts-rest contract carries no export/csv endpoint).
+  await fastify.register(sessionExportRoutes, { prefix: "/api/sessions" });
 }

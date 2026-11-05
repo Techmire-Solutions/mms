@@ -186,7 +186,7 @@ describe("applyContactRelationshipInference", () => {
   it("skips a target whose version changed concurrently instead of overwriting it", async () => {
     const store = new Map<string, Contact>();
     store.set("c2", fakeContact("c2", { updatedAt: "2026-01-01T00:00:00.000Z" }));
-    const saveIfVersionMatches = vi.fn(async () => false);
+    const saveIfVersionMatches = vi.fn(async () => null);
     const bulkSave = vi.fn(async () => undefined);
     const repo = {
       findByIds: vi.fn(async (_tenant: string, ids: string[]) =>

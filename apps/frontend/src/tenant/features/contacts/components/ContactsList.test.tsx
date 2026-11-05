@@ -1,4 +1,3 @@
-import React from "react";
 import { describe, expect, it, vi } from "vitest";
 import { renderToStaticMarkup } from "react-dom/server";
 import type { Contact } from "@mms/shared";
@@ -69,5 +68,31 @@ describe("ContactsList Component", () => {
     const html = renderToStaticMarkup(<ContactsList {...baseProps} workContacts={[]} />);
 
     expect(html).toContain("contacts.noContactsYet");
+  });
+});
+
+describe("ContactsList first-run empty state", () => {
+  it("offers Create and Import actions for a writable first-run directory", () => {
+    const html = renderToStaticMarkup(
+      <ContactsList {...baseProps} workContacts={[]} onCreate={vi.fn()} onImport={vi.fn()} />,
+    );
+
+    expect(html).toContain("contacts.addContact");
+    expect(html).toContain("contacts.import");
+  });
+
+  it("does not offer create actions to read-only users", () => {
+    const html = renderToStaticMarkup(
+      <ContactsList
+        {...baseProps}
+        workContacts={[]}
+        canWrite={false}
+        onCreate={vi.fn()}
+        onImport={vi.fn()}
+      />,
+    );
+
+    expect(html).not.toContain("contacts.addContact");
+    expect(html).toContain("contacts.emptyDirectoryReadOnly");
   });
 });

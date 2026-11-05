@@ -4,24 +4,21 @@
  */
 
 import React, { useState } from "react";
-import { TASK_STATUSES, TASK_PRIORITIES, type TaskRecord, type TaskStatus } from "@mms/shared";
-import {
-  ModuleFilterDropdown,
-  ModuleFilterCheckboxGroup,
-} from "@/components/app/ModuleFiltersMenuButton";
-import { FilterChips } from "@/components/app/FilterChips";
-import { CompactSegmentedControl } from "@/components/app/CompactSegmentedControl";
-import { useTasksWorkTabFilters, type TaskQuickFilter } from "../hooks/useTasksWorkTabFilters";
-import { WorkTaskToolbar } from "@/components/common/work/WorkTaskToolbar";
+import type { TaskRecord, TaskStatus } from "@mms/shared";
+import { useTasksWorkTabFilters } from "../hooks/useTasksWorkTabFilters";
+import { useTasksKeyboardShortcuts } from "../hooks/useTasksKeyboardShortcuts";
+import { useTaskSelectionScope } from "../hooks/useTaskSelectionScope";
+import { buildTaskFilterScopeKey } from "../lib/taskFilterScope";
+import type { TaskServerFilters } from "../lib/tasksServerFilters";
+import { useTaskServerFiltersSync } from "../hooks/useTaskServerFiltersSync";
+import { useTasksBulkActions } from "../hooks/useTasksBulkActions";
+import { TasksPaginationFooter } from "./TasksPaginationFooter";
+import { TasksEmptyCreateAction, TasksWorkToolbar } from "./TasksWorkToolbar";
 import { useWorkDirectoryViewMode } from "@/hooks/useWorkDirectoryViewMode";
 import { useTranslation } from "@/hooks/useTranslation";
-import { notify } from "@/lib/notify";
-import {
-  useBulkDeleteTasks,
-  useBulkRestoreTasks,
-  useBulkUpdateTaskStatus,
-} from "@/tenant/hooks/collections/tasks";
 import { useTasksColumnLayout } from "../hooks/useTasksColumnLayout";
+import { useTask } from "@/tenant/hooks/collections/tasks";
+import { useOptionalAuth } from "@/lib/contexts/AuthContext";
 import { TaskDetailDrawer } from "./TaskDetailDrawer";
 import { TasksBulkActionBar } from "./TasksBulkActionBar";
 import { TasksWorkDirectory } from "./TasksWorkDirectory";
@@ -29,8 +26,11 @@ import { TasksWorkDirectory } from "./TasksWorkDirectory";
 export interface TasksWorkTabProps {
   tasks: TaskRecord[];
   isLoading: boolean;
+  isError?: boolean;
+  onRetry?: () => void;
   canWrite: boolean;
   canComplete?: boolean;
+  statusPending?: boolean;
   canDelete: boolean;
   viewingDeleted?: boolean;
   selectedIds: string[];
@@ -42,14 +42,22 @@ export interface TasksWorkTabProps {
   onEdit: (task: TaskRecord) => void;
   onDelete: (id: string) => void;
   onRestore?: (id: string) => void;
-  onUpdateStatus: (id: string, status: TaskStatus) => void;
+  onUpdateStatus: (task: TaskRecord, status: TaskStatus) => void;
+  total: number;
+  pageIndex: number;
+  pageSize: number;
+  onPageChange: (pageIndex: number) => void;
+  onServerFiltersChange: (filters: TaskServerFilters) => void;
 }
 
 export function TasksWorkTab({
   tasks,
   isLoading,
+  isError = false,
+  onRetry,
   canWrite,
   canComplete,
+  statusPending = false,
   canDelete,
   viewingDeleted = false,
   selectedIds,
@@ -57,11 +65,16 @@ export function TasksWorkTab({
   onToggleSelectAll,
   onClearSelection,
   onToggleTrash,
-  onAddNew: _onAddNew,
+  onAddNew,
   onEdit,
   onDelete,
   onRestore,
   onUpdateStatus,
+  total,
+  pageIndex,
+  pageSize,
+  onPageChange,
+  onServerFiltersChange,
 }: TasksWorkTabProps): React.JSX.Element {
   const { t } = useTranslation();
   const {
@@ -69,7 +82,8 @@ export function TasksWorkTab({
     setQuickFilter,
     quickFilterOptions,
     search,
-    setSearch,
+    searchInput,
+    setSearchInput,
     statusFilter,
     setStatusFilter,
     priorityFilter,
@@ -78,11 +92,52 @@ export function TasksWorkTab({
     setDueFrom,
     dueTo,
     setDueTo,
-    filteredTasks,
     activeChips,
+    hasActiveFilters,
     handleClearFilters,
-  } = useTasksWorkTabFilters(tasks);
-  const [viewingTask, setViewingTask] = useState<TaskRecord | null>(null);
+  } = useTasksWorkTabFilters();
+  const auth = useOptionalAuth();
+  const currentUserId = auth?.user?.id ? String(auth.user.id) : undefined;
+
+  useTasksKeyboardShortcuts({
+    selectedCount: selectedIds.length,
+    hasActiveFilters,
+    clearFilters: handleClearFilters,
+    clearSelection: onClearSelection,
+    canWrite,
+    viewingDeleted,
+    onCreate: onAddNew,
+  });
+
+  useTaskServerFiltersSync(
+    { quickFilter, search, statusFilter, priorityFilter, dueFrom, dueTo, currentUserId },
+    onServerFiltersChange,
+  );
+
+  // Clearing on any filter/search change prevents a bulk archive from hitting
+  // rows the user can no longer see (`mms-module-architecture` §3).
+  useTaskSelectionScope(
+    buildTaskFilterScopeKey({
+      quickFilter,
+      search,
+      statusFilter,
+      priorityFilter,
+      dueFrom,
+      dueTo,
+      page: pageIndex,
+    }),
+    onClearSelection,
+  );
+  // Keep the drawer pointed at an id, not a snapshot: the detail query and the
+  // current list row both refresh after a status change or restore, so the
+  // drawer cannot show a stale badge or archived banner.
+  const [viewingTaskId, setViewingTaskId] = useState<string | null>(null);
+  const { data: fetchedTask } = useTask(viewingTaskId ?? "", {
+    enabled: Boolean(viewingTaskId),
+  });
+  const viewingTask = fetchedTask ?? tasks.find((task) => task.id === viewingTaskId) ?? null;
+  const parentTaskId = viewingTask?.parentTaskId ?? "";
+  const { data: parentTask } = useTask(parentTaskId, { enabled: Boolean(parentTaskId) });
   const { viewMode, setViewMode } = useWorkDirectoryViewMode();
   const {
     columnRegistry,
@@ -94,126 +149,43 @@ export function TasksWorkTab({
     customizerLabels,
   } = useTasksColumnLayout();
 
-  const bulkDeleteMutation = useBulkDeleteTasks();
-  const bulkRestoreMutation = useBulkRestoreTasks();
-  const bulkUpdateStatusMutation = useBulkUpdateTaskStatus();
+  const { handleBulkDelete, handleBulkRestore, handleBulkStatusChange, isStatusPending } =
+    useTasksBulkActions(selectedIds, onClearSelection);
 
-  const handleBulkDelete = () => {
-    if (!selectedIds.length) return;
-    const targets = [...selectedIds];
-    bulkDeleteMutation.mutate(targets, {
-      onSuccess: ({ deletedIds }) => {
-        onClearSelection();
-        notify.archivedWithUndo(t("common.recordArchived"), () => {
-          void bulkRestoreMutation.mutateAsync(deletedIds);
-        });
-      },
-      onError: (err) => {
-        notify.error(err instanceof Error ? err.message : t("tasks.deleteFailed"));
-      },
-    });
-  };
-
-  const handleBulkRestore = () => {
-    if (!selectedIds.length) return;
-    const targets = [...selectedIds];
-    bulkRestoreMutation.mutate(targets, {
-      onSuccess: () => {
-        onClearSelection();
-        notify.success(t("tasks.restored"));
-      },
-      onError: (err) => {
-        notify.error(err instanceof Error ? err.message : t("tasks.restoreFailed"));
-      },
-    });
-  };
-
-  const handleBulkStatusChange = (status: string) => {
-    if (!selectedIds.length) return;
-    const targets = [...selectedIds];
-    bulkUpdateStatusMutation.mutate(
-      { ids: targets, status: status as TaskStatus },
-      {
-        onSuccess: () => {
-          onClearSelection();
-          notify.success(t("tasks.bulkStatusSuccess", { count: targets.length }));
-        },
-        onError: (err) => {
-          notify.error(err instanceof Error ? err.message : t("tasks.bulkStatusFailed"));
-        },
-      },
-    );
-  };
-
-  const primaryAction = undefined;
+  // The page header owns Create/Import/Export, so the toolbar gets no primary
+  // action (a second Add button would duplicate chrome). The empty directory
+  // still needs an in-context create affordance.
+  const emptyAction = (
+    <TasksEmptyCreateAction
+      canWrite={canWrite}
+      viewingDeleted={viewingDeleted}
+      onAddNew={onAddNew}
+    />
+  );
 
   return (
     <div className="space-y-3">
-      <div className="overflow-x-auto pb-0.5">
-        <CompactSegmentedControl<TaskQuickFilter>
-          value={quickFilter}
-          onChange={setQuickFilter}
-          options={quickFilterOptions}
-        />
-      </div>
-
-      <WorkTaskToolbar
-        regionLabel={t("nav.tasks")}
-        shownCountLabel={t("tasks.shownCount", { count: filteredTasks.length })}
-        search={search}
-        onSearchChange={setSearch}
-        searchPlaceholder={t("tasks.searchPlaceholder")}
-        statusFilter={{
-          activeIds: statusFilter,
-          options: TASK_STATUSES.map((status) => ({
-            id: status,
-            label: t(`tasks.status.${status}`),
-          })),
-          onToggle: (id) =>
-            setStatusFilter((current) =>
-              current.includes(id) ? current.filter((s) => s !== id) : [...current, id],
-            ),
-          allLabel: t("common.all"),
-          onResetAll: () => setStatusFilter([]),
+      <TasksWorkToolbar
+        quickFilter={quickFilter}
+        quickFilterOptions={quickFilterOptions}
+        onQuickFilterChange={setQuickFilter}
+        searchInput={searchInput}
+        onSearchChange={setSearchInput}
+        shownCount={tasks.length}
+        statusFilter={statusFilter}
+        onStatusFilterChange={setStatusFilter}
+        priorityFilter={priorityFilter}
+        onPriorityFilterChange={setPriorityFilter}
+        onClearPriority={() => setPriorityFilter([])}
+        dueFrom={dueFrom}
+        dueTo={dueTo}
+        onDueRangeChange={({ start, end }) => {
+          setDueFrom(start);
+          setDueTo(end);
         }}
-        dateRange={{
-          startDate: dueFrom,
-          endDate: dueTo,
-          onDateRangeChange: ({ start, end }) => {
-            setDueFrom(start);
-            setDueTo(end);
-          },
-          startPlaceholder: t("tasks.dateFrom"),
-          endPlaceholder: t("tasks.dateTo"),
-        }}
-        filterButton={
-          <ModuleFilterDropdown
-            label={t("common.filters")}
-            activeCount={priorityFilter.length}
-            clearLabel={t("common.clearFilters")}
-            onClear={() => setPriorityFilter([])}
-          >
-            <ModuleFilterCheckboxGroup
-              label={t("tasks.priority")}
-              options={TASK_PRIORITIES.map((priority) => ({
-                value: priority,
-                label: t(`tasks.priority.${priority}` as Parameters<typeof t>[0]),
-              }))}
-              selected={priorityFilter}
-              onToggle={(value) =>
-                setPriorityFilter((current) =>
-                  current.includes(value)
-                    ? current.filter((p) => p !== value)
-                    : [...current, value],
-                )
-              }
-            />
-          </ModuleFilterDropdown>
-        }
-        hasActiveFilters={activeChips.length > 0}
+        hasActiveFilters={hasActiveFilters}
         onClearFilters={handleClearFilters}
-        clearFiltersLabel={t("common.clearFilters")}
-        filterChips={<FilterChips chips={activeChips} onClearAll={handleClearFilters} />}
+        activeChips={activeChips}
         trashToggle={
           onToggleTrash && canDelete
             ? {
@@ -225,61 +197,78 @@ export function TasksWorkTab({
               }
             : undefined
         }
-        viewModeToggle={{ viewMode, onViewModeChange: setViewMode }}
+        viewMode={viewMode}
+        onViewModeChange={setViewMode}
         columnCustomizer={{
           registry: columnRegistry,
           onUpdate: updateUserColumnLayout,
           onReset: resetColumnLayout,
           labels: customizerLabels,
         }}
-        primaryAction={primaryAction}
       />
 
       <TasksBulkActionBar
         selectedCount={selectedIds.length}
         viewingDeleted={viewingDeleted}
         canWrite={canWrite && !viewingDeleted}
+        canComplete={canComplete}
         canDelete={canDelete}
         onClearSelection={onClearSelection}
         onRequestBulkDelete={handleBulkDelete}
         onRequestBulkRestore={handleBulkRestore}
         onBulkStatusChange={handleBulkStatusChange}
-        statusPending={bulkUpdateStatusMutation.isPending}
+        statusPending={isStatusPending}
       />
 
       <TasksWorkDirectory
         viewMode={viewMode}
-        tasks={filteredTasks}
+        tasks={tasks}
         selectedIds={selectedIds}
         viewingDeleted={viewingDeleted}
         canWrite={canWrite}
         canComplete={canComplete ?? canWrite}
         canDelete={canDelete}
         isLoading={isLoading}
+        isError={isError}
+        onRetry={onRetry}
         columnRegistry={columnRegistry}
         isColumnVisible={isColumnVisible}
         getColumnWidth={getColumnWidth}
         onColumnResize={setColumnWidth}
         onToggleSelected={onToggleSelected}
         onToggleSelectAll={onToggleSelectAll}
-        onView={setViewingTask}
+        onView={(task) => setViewingTaskId(task.id)}
         onEdit={onEdit}
         onDelete={onDelete}
         onRestore={onRestore}
         onUpdateStatus={onUpdateStatus}
-        emptyAction={primaryAction}
+        statusPending={statusPending}
+        hasActiveFilters={hasActiveFilters}
+        onClearFilters={handleClearFilters}
+        emptyAction={emptyAction}
+      />
+
+      <TasksPaginationFooter
+        total={total}
+        pageIndex={pageIndex}
+        pageSize={pageSize}
+        onPageChange={onPageChange}
       />
 
       <TaskDetailDrawer
         task={viewingTask}
+        parentTaskTitle={parentTask?.title}
         canWrite={canWrite && !viewingDeleted}
+        canComplete={canComplete}
+        pending={statusPending}
         canDelete={canDelete}
-        onClose={() => setViewingTask(null)}
+        onClose={() => setViewingTaskId(null)}
         onEdit={(task) => {
-          setViewingTask(null);
+          setViewingTaskId(null);
           onEdit(task);
         }}
         onRestore={onRestore}
+        onUpdateStatus={onUpdateStatus}
       />
     </div>
   );

@@ -11,8 +11,8 @@ import { DirectoryCardMetaTile } from "@/components/app/DirectoryCardMetaTile";
 import { DirectoryCardMetaGrid } from "@/components/app/DirectoryCardMetaGrid";
 import { DirectoryEntityCard } from "@/components/app/DirectoryEntityCard";
 import { useTranslation } from "@/hooks/useTranslation";
-import { TaskPriorityBadge, TaskStatusBadge } from "./TaskBadges";
-import { TASK_NEXT_STATUS } from "./tasksWorkBatchColumns";
+import { TaskPriorityBadge } from "./TaskBadges";
+import { TaskStatusMenu } from "./TaskStatusMenu";
 
 export interface TaskCardItemProps {
   task: TaskRecord;
@@ -20,6 +20,7 @@ export interface TaskCardItemProps {
   viewingDeleted: boolean;
   canWrite: boolean;
   canComplete?: boolean;
+  statusPending?: boolean;
   canDelete: boolean;
   isColumnVisible: (key: string) => boolean;
   onToggleSelected: (id: string, checked: boolean) => void;
@@ -27,7 +28,7 @@ export interface TaskCardItemProps {
   onEdit: (task: TaskRecord) => void;
   onDelete: (id: string) => void;
   onRestore?: (id: string) => void;
-  onUpdateStatus: (id: string, status: TaskStatus) => void;
+  onUpdateStatus: (task: TaskRecord, status: TaskStatus) => void;
   reducedMotion?: boolean;
 }
 
@@ -38,6 +39,7 @@ export function TaskCardItem({
   viewingDeleted,
   canWrite,
   canComplete,
+  statusPending = false,
   canDelete,
   isColumnVisible,
   onToggleSelected,
@@ -86,7 +88,7 @@ export function TaskCardItem({
     <DirectoryEntityCard
       entity={task}
       selectedIds={selectedIds}
-      canSelect={canDelete}
+      canSelect={canWrite || canDelete}
       onToggleSelected={onToggleSelected}
       onView={onView}
       onEdit={onEdit}
@@ -103,13 +105,11 @@ export function TaskCardItem({
         <DirectoryCardMetaGrid>
           {isColumnVisible("status") ? (
             <DirectoryCardMetaTile label={t("tasks.status")}>
-              <TaskStatusBadge
-                status={task.status}
-                onClick={
-                  (canComplete ?? canWrite) && !viewingDeleted
-                    ? () => onUpdateStatus(task.id, TASK_NEXT_STATUS[task.status] || "todo")
-                    : undefined
-                }
+              <TaskStatusMenu
+                task={task}
+                canChange={Boolean(canComplete ?? canWrite) && !viewingDeleted}
+                pending={statusPending}
+                onChangeStatus={onUpdateStatus}
               />
             </DirectoryCardMetaTile>
           ) : null}

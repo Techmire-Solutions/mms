@@ -2,6 +2,7 @@ import { randomUUID } from "node:crypto";
 import {
   normalizeStoredFaculty,
   stripFacultyClientSoftDeleteFields,
+  stripFacultyServerOwnedAuditFields,
   type FacultyRecord,
 } from "@mms/shared";
 
@@ -48,5 +49,9 @@ export function prepareFacultyRecord(
     ...raw,
     id: resolveFacultyRowId(raw.id),
   };
-  return normalizeStoredFaculty(stripFacultyClientSoftDeleteFields(withId) as FacultyRecord);
+  return normalizeStoredFaculty(
+    stripFacultyServerOwnedAuditFields(
+      stripFacultyClientSoftDeleteFields(withId) as FacultyRecord,
+    ) as FacultyRecord,
+  );
 }

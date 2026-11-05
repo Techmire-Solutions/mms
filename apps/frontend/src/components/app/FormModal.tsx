@@ -38,6 +38,7 @@ export function FormModal<K extends string = string>({
   progressLabel,
   headerExtra,
   error,
+  onSelectError,
   tabs,
   activeTab,
   onTabChange,
@@ -54,6 +55,7 @@ export function FormModal<K extends string = string>({
   savedLabel,
   footerStart,
   hideFooter = false,
+  saveVariant = "primary",
   showBuilderToggle = false,
   builderMode = false,
   onBuilderModeChange,
@@ -118,6 +120,7 @@ export function FormModal<K extends string = string>({
         panelClassName={panelClassName}
         priority={priority}
         error={error}
+        onSelectError={onSelectError}
         tabs={tabs}
         activeTab={activeTab}
         onTabChange={handleTabChange}
@@ -132,6 +135,7 @@ export function FormModal<K extends string = string>({
         footerStart={footerStart}
         hideFooter={hideFooter || builderMode}
         formId={formId}
+        saveVariant={saveVariant}
       >
         {children}
       </Modal>

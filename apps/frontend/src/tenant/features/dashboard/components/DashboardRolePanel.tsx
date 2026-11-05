@@ -3,6 +3,7 @@ import QuickActionsPanel from "@/tenant/features/dashboard/components/QuickActio
 import NotificationsPanel from "@/tenant/features/dashboard/components/NotificationsPanel";
 import type { DashboardRole } from "@/lib/dashboardRole";
 import type { buildDashboardNotifications } from "@/lib/buildDashboardNotifications";
+import { useDashboardQuickActions } from "@/tenant/features/dashboard/hooks/useDashboardQuickActions";
 import { useOpenTenantNotification } from "@/tenant/hooks/notifications/useOpenTenantNotification";
 import { useNotificationReadState } from "@/tenant/hooks/notifications/useNotificationReadState";
 
@@ -18,12 +19,22 @@ export function DashboardRolePanel({
 }: DashboardRolePanelProps): React.JSX.Element {
   const openNotification = useOpenTenantNotification();
   const { markRead } = useNotificationReadState();
+  const quickActions = useDashboardQuickActions(dashboardRole);
+  // Keep the 2/1 split only when there is a quick-actions panel to fill it;
+  // otherwise notifications take the whole row instead of leaving a blank hole.
+  const hasQuickActions = quickActions.length > 0;
 
   return (
-    <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
-      <div className="lg:col-span-2">
-        <QuickActionsPanel dashboardRole={dashboardRole} />
-      </div>
+    <div
+      className={
+        hasQuickActions ? "grid grid-cols-1 lg:grid-cols-3 gap-4" : "grid grid-cols-1 gap-4"
+      }
+    >
+      {hasQuickActions ? (
+        <div className="lg:col-span-2">
+          <QuickActionsPanel actions={quickActions} />
+        </div>
+      ) : null}
       <div>
         <NotificationsPanel
           items={notifications}

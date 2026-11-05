@@ -33,7 +33,12 @@ export function useStudentsPageController() {
       storageKey: "students_active_tab",
     });
 
-  const { data: metrics } = useStudentsMetrics();
+  const {
+    data: metrics,
+    isLoading: metricsLoading,
+    isError: metricsError,
+    refetch: refetchMetrics,
+  } = useStudentsMetrics();
   const mutations = useStudentMutations();
   const {
     settings,
@@ -67,7 +72,10 @@ export function useStudentsPageController() {
 
   const useServerWork = effectiveTab === "work";
   const { workPageQuery, workStudents, shownCount } = useStudentsPageWorkQuery({
-    enabled: useServerWork,
+    // The command centre's "Filtered" KPI renders on every tier, so the filtered total must be
+    // available off the Work tab too; gating this on `useServerWork` made the KPI read 0 whenever
+    // the page opened on Reports/Setup (the tier UI itself stays gated by `useServerWork`).
+    enabled: true,
     listPage: directory.listPage,
     debouncedSearch: directory.debouncedSearch,
     studentFilterStatus: directory.studentFilterStatus,
@@ -83,6 +91,25 @@ export function useStudentsPageController() {
     selectedIds: directory.selectedIds,
   });
 
+  const { listPage: directoryPage, setListPage: setDirectoryPage } = directory;
+
+  // A delete/shrink can leave the pager past the last page. Clamp once the fetch has
+  // settled (never during the first paint or an in-flight page) so the user is never
+  // stranded on a page that no longer exists (X-02/S-m8).
+  useEffect(() => {
+    if (workPageQuery.isLoading || workPageQuery.isFetching) return;
+    if (workStudents.length > 0 || shownCount <= 0 || directoryPage <= 1) return;
+    const lastPage = Math.max(1, Math.ceil(shownCount / STUDENTS_MODULE_MANIFEST.defaultPageSize));
+    if (lastPage < directoryPage) setDirectoryPage(lastPage);
+  }, [
+    workPageQuery.isLoading,
+    workPageQuery.isFetching,
+    workStudents.length,
+    shownCount,
+    directoryPage,
+    setDirectoryPage,
+  ]);
+
   const selectedTargets = useStudentsSelectionTargets({
     selectedIds: directory.selectedIds,
     workStudents,
@@ -93,7 +120,7 @@ export function useStudentsPageController() {
     mutations,
   });
 
-  const overlays = useStudentsPageOverlayState();
+  const overlays = useStudentsPageOverlayState({ statuses: configuredStatuses });
 
   const exportColumns = useMemo(() => {
     const visible = columnLayout.columnRegistry.filter(
@@ -120,7 +147,6 @@ export function useStudentsPageController() {
     viewingDeleted: directory.viewingDeleted,
     hasActiveFilters: directory.hasActiveFilters,
     selectedIds: directory.selectedIds,
-    logExportAudit: mutations.logExportAudit,
   });
 
   const tabPanelProps = useStudentsPageTabPanelProps(
@@ -166,6 +192,11 @@ export function useStudentsPageController() {
     visibleTabs,
     metricsTotal: metrics?.total,
     metricsSnapshot: metrics ?? null,
+    metricsLoading,
+    metricsError,
+    metricsRetry: () => {
+      void refetchMetrics();
+    },
     activeTab: effectiveTab,
     setActiveTab,
     viewingDeleted: directory.viewingDeleted,

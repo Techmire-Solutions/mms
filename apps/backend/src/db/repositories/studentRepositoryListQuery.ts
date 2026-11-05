@@ -13,6 +13,7 @@ import {
   contacts,
   contactPhones,
   contactEmails,
+  contactRelationships,
 } from "../schema.js";
 
 export { buildOrderBy } from "./studentRepositoryListSort.js";
@@ -61,6 +62,7 @@ function buildSearchSql(search: string, useJoinedContacts = false): SQL | null {
         OR COALESCE(${contacts.cnic}, '') LIKE ${pattern}
         OR EXISTS (SELECT 1 FROM ${contactPhones} cp WHERE cp.workspace_subdomain = ${contacts.workspaceSubdomain} AND cp.contact_id = ${contacts.id} AND lower(cp.number) LIKE ${pattern})
         OR EXISTS (SELECT 1 FROM ${contactEmails} ce WHERE ce.workspace_subdomain = ${contacts.workspaceSubdomain} AND ce.contact_id = ${contacts.id} AND lower(ce.address) LIKE ${pattern})
+        OR EXISTS (SELECT 1 FROM ${contactRelationships} cr WHERE cr.workspace_subdomain = ${contacts.workspaceSubdomain} AND cr.contact_id = ${contacts.id} AND lower(trim(COALESCE(cr.name, ''))) LIKE ${pattern})
       ))`
     : sql`EXISTS (
         SELECT 1 FROM ${contacts} c
@@ -72,6 +74,7 @@ function buildSearchSql(search: string, useJoinedContacts = false): SQL | null {
             OR COALESCE(c.cnic, '') LIKE ${pattern}
             OR EXISTS (SELECT 1 FROM ${contactPhones} cp WHERE cp.workspace_subdomain = c.workspace_subdomain AND cp.contact_id = c.id AND lower(cp.number) LIKE ${pattern})
             OR EXISTS (SELECT 1 FROM ${contactEmails} ce WHERE ce.workspace_subdomain = c.workspace_subdomain AND ce.contact_id = c.id AND lower(ce.address) LIKE ${pattern})
+            OR EXISTS (SELECT 1 FROM ${contactRelationships} cr WHERE cr.workspace_subdomain = c.workspace_subdomain AND cr.contact_id = c.id AND lower(trim(COALESCE(cr.name, ''))) LIKE ${pattern})
           )
       )`;
   return sql`(
@@ -117,11 +120,17 @@ export function buildListConditions(
   const quickFilter = query.quickFilter;
   if (quickFilter && quickFilter !== "all") {
     if (quickFilter === "new") {
+      // Kept as two OR-ed comparisons instead of one COALESCE expression: the old
+      // `COALESCE(registered_on::timestamptz, created_at)` could not use an index — the
+      // `date -> timestamptz` cast depends on the session TimeZone, so it is not IMMUTABLE and
+      // cannot even be indexed — while this form is a BitmapOr over the existing
+      // `students_workspace_registered_on_idx` and `students_workspace_created_at_active_idx`.
+      // Day granularity matches the filter's meaning ("registered on or after <date>").
       const since = sql`now() - (${MODULE_METRICS_DEFAULT_PERIOD_DAYS} * interval '1 day')`;
-      conditions.push(sql`COALESCE(
-        ${students.registeredDate}::timestamptz,
-        ${students.createdAt}
-      ) >= ${since}`);
+      conditions.push(sql`(
+        ${students.registeredDate} >= (${since})::date
+        OR (${students.registeredDate} IS NULL AND ${students.createdAt} >= ${since})
+      )`);
     } else if (quickFilter === "missingGr") {
       conditions.push(sql`(${students.grNumber} is null or trim(${students.grNumber}) = '')`);
     } else {
@@ -166,10 +175,20 @@ export function buildListConditions(
       relatedContactIds.map((id) => sql`${id}`),
       sql`, `,
     );
+    // Guardian links live on the primary contact's relationship graph — the students
+    // `father/mother/guardian_contact_id` columns are never written (see `normalizeStoredStudent`),
+    // so matching only those columns made the Sibling section permanently empty. Keep the legacy
+    // column branch for rows written before that invariant, and match the relationship graph.
     relationshipConditions.push(
       sql`${students.fatherContactId} IN (${ids})`,
       sql`${students.motherContactId} IN (${ids})`,
       sql`${students.guardianContactId} IN (${ids})`,
+      sql`EXISTS (
+        SELECT 1 FROM ${contactRelationships} cr
+        WHERE cr.workspace_subdomain = ${students.workspaceSubdomain}
+          AND cr.contact_id = ${students.contactId}
+          AND cr.related_contact_id IN (${ids})
+      )`,
     );
   }
   if (fatherName) {
@@ -183,6 +202,13 @@ export function buildListConditions(
             lower(trim(COALESCE(fc.name, ''))) = ${fatherName}
             OR lower(trim(concat_ws(' ', fc.first_name, fc.last_name))) = ${fatherName}
           )
+      )
+      OR EXISTS (
+        SELECT 1 FROM ${contactRelationships} cr
+        WHERE cr.workspace_subdomain = ${students.workspaceSubdomain}
+          AND cr.contact_id = ${students.contactId}
+          AND lower(trim(COALESCE(cr.relationship, ''))) IN ('father', 'mother', 'guardian')
+          AND lower(trim(COALESCE(cr.name, ''))) = ${fatherName}
       )
     )`);
   }

@@ -5,6 +5,7 @@ import {
   contactIdentityMatchBodySchema,
   contactIdentityMatchResultSchema,
 } from "../contacts/contactIdentityMatch.js";
+import { contactValidationErrorSchema } from "../contacts/contactValidationErrors.js";
 import { includeDeletedQuerySchema, softDeleteBodySchema } from "../core/apiSchemas.js";
 import { contactsListQuerySchema } from "../contacts/contactsListQuery.js";
 import { contactWireWriteSchema } from "../schemas/contacts.dto.js";
@@ -25,7 +26,9 @@ const contactBulkRestoreResponseSchema = z.object({
   conflicts: z.array(
     z.object({
       id: z.string(),
-      errors: z.array(z.object({ field: z.string(), message: z.string() })),
+      // Server payloads carry `ValidationError` issues (`fieldId`/`tabId`/`message`);
+      // matching that shape here keeps the typed client honest.
+      errors: z.array(contactValidationErrorSchema),
     }),
   ),
 });
@@ -46,12 +49,19 @@ export const contactsCrudRoutes = {
   create: {
     method: "POST",
     path: "/api/contacts",
+    /**
+     * Create is create-shaped: posting an `id` that already exists is a 409
+     * conflict unless the caller supplies the `updatedAt` it edited from, which
+     * makes the request a versioned upsert (`mms-api-interface` §6).
+     */
+    headers: z.object({ "x-expected-updated-at": z.string().optional() }),
     body: contactWireWriteSchema,
     responses: {
       200: responseWrapper,
       201: responseWrapper,
       400: z.unknown(),
       403: z.unknown(),
+      409: z.object({ type: z.literal("conflict"), message: z.string() }),
       500: z.unknown(),
     },
     summary: "Create a new contact",
@@ -98,8 +108,10 @@ export const contactsCrudRoutes = {
     body: softDeleteBodySchema.optional(),
     responses: {
       200: z.object({ success: z.literal(true) }),
+      400: z.unknown(),
       403: z.unknown(),
       404: z.unknown(),
+      409: z.unknown(),
       500: z.unknown(),
     },
     summary: "Delete a contact",
@@ -108,21 +120,33 @@ export const contactsCrudRoutes = {
     method: "POST",
     path: "/api/contacts/:id/restore",
     body: z.unknown(),
-    responses: { 200: responseWrapper, 404: z.unknown(), 500: z.unknown() },
+    responses: {
+      200: responseWrapper,
+      400: z.unknown(),
+      403: z.unknown(),
+      404: z.unknown(),
+      409: z.unknown(),
+      500: z.unknown(),
+    },
     summary: "Restore a contact",
   },
   bulkDelete: {
     method: "POST",
     path: "/api/contacts/bulk-delete",
     body: z.object({ ids: z.array(z.string()), deletionReason: z.string().optional() }),
-    responses: { 200: bulkResult, 500: z.unknown() },
+    responses: { 200: bulkResult, 400: z.unknown(), 409: z.unknown(), 500: z.unknown() },
     summary: "Bulk delete contacts",
   },
   bulkRestore: {
     method: "POST",
     path: "/api/contacts/bulk-restore",
     body: z.object({ ids: z.array(z.string()) }),
-    responses: { 200: contactBulkRestoreResponseSchema, 500: z.unknown() },
+    responses: {
+      200: contactBulkRestoreResponseSchema,
+      400: z.unknown(),
+      409: z.unknown(),
+      500: z.unknown(),
+    },
     summary: "Bulk restore contacts",
   },
   resolve: {
@@ -147,7 +171,19 @@ export const contactsCrudRoutes = {
         merged: contactWireWriteSchema.optional(),
       })
       .strict(),
-    responses: { 200: responseWrapper, 400: z.unknown(), 500: z.unknown() },
+    /**
+     * `updatedAt` of the surviving contact the merge preview was computed from.
+     * A stale value rejects the merge with 409 instead of silently reverting an
+     * edit committed since the duplicate list was read (`mms-api-interface` §6).
+     */
+    headers: z.object({ "x-expected-updated-at": z.string().optional() }),
+    responses: {
+      200: responseWrapper,
+      400: z.unknown(),
+      403: z.unknown(),
+      409: z.object({ type: z.literal("conflict"), message: z.string() }),
+      500: z.unknown(),
+    },
     summary: "Merge contacts",
   },
   identityMatch: {

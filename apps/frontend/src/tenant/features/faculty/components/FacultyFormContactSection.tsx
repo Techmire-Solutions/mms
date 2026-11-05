@@ -73,7 +73,13 @@ export function FacultyContactSection(props: FacultyContactSectionProps): React.
             excludeIds={linkedFacultyContactIds.map(String)}
             searchPlaceholder={t("faculty.form.searchContact")}
             emptyTitle={t("faculty.form.noContacts")}
-            emptyHint={t("faculty.form.noContactsHint")}
+            // Contacts already linked to another faculty member are excluded
+            // from the search; say so instead of a bare "no contacts found".
+            emptyHint={
+              linkedFacultyContactIds.length > 0
+                ? t("faculty.form.contactExclusionHint")
+                : t("faculty.form.noContactsHint")
+            }
             required={isFieldRequired("contactId")}
             error={!!errors.contactId}
             errorMessage={errors.contactId}

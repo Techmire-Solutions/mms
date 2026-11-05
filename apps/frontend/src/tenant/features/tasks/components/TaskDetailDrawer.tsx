@@ -4,7 +4,7 @@
  */
 
 import React from "react";
-import { formatDate, formatDateTime, type TaskRecord } from "@mms/shared";
+import { formatDate, formatDateTime, type TaskRecord, type TaskStatus } from "@mms/shared";
 import { DetailDrawerShell } from "@/components/app/DetailDrawerShell";
 import {
   DetailDrawerArchivedBanner,
@@ -15,24 +15,33 @@ import { DetailAttributeRow } from "@/components/app/DetailAttributeRow";
 import { DrawerUpdatedStamp } from "@/components/app/DrawerUpdatedStamp";
 import { CopyBtn } from "@/components/app/CopyButton";
 import { useTranslation } from "@/hooks/useTranslation";
-import { TaskPriorityBadge, TaskStatusBadge } from "./TaskBadges";
+import { TaskPriorityBadge } from "./TaskBadges";
+import { TaskStatusMenu } from "./TaskStatusMenu";
 
 export interface TaskDetailDrawerProps {
   task: TaskRecord | null;
+  parentTaskTitle?: string;
   canWrite: boolean;
+  canComplete?: boolean;
+  pending?: boolean;
   canDelete: boolean;
   onClose: () => void;
   onEdit?: (task: TaskRecord) => void;
   onRestore?: (id: string) => void;
+  onUpdateStatus?: (task: TaskRecord, status: TaskStatus) => void;
 }
 
 export function TaskDetailDrawer({
   task,
+  parentTaskTitle,
   canWrite,
+  canComplete,
+  pending = false,
   canDelete,
   onClose,
   onEdit,
   onRestore,
+  onUpdateStatus,
 }: TaskDetailDrawerProps): React.JSX.Element | null {
   const { t } = useTranslation();
   if (!task) return null;
@@ -72,16 +81,23 @@ export function TaskDetailDrawer({
         ) : null}
         <div className="flex flex-wrap items-center justify-between gap-2">
           <div className="flex flex-wrap gap-2">
-            <TaskStatusBadge status={task.status} />
+            <TaskStatusMenu
+              task={task}
+              canChange={Boolean(onUpdateStatus) && Boolean(canWrite || canComplete) && !isArchived}
+              pending={pending}
+              onChangeStatus={(changed, status) => onUpdateStatus?.(changed, status)}
+            />
             <TaskPriorityBadge priority={task.priority} />
           </div>
           <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
             <span className="font-mono">{task.id.slice(0, 8)}</span>
-            <CopyBtn text={task.id} showToast className="h-6 w-6 rounded-md" />
+            <CopyBtn text={task.id} showToast className="h-11 w-11 rounded-md" />
           </div>
         </div>
         {task.description ? (
-          <p className="text-sm text-foreground text-wrap-pretty">{task.description}</p>
+          <p className="text-sm text-foreground text-wrap-pretty whitespace-pre-wrap break-words">
+            {task.description}
+          </p>
         ) : null}
 
         <div className="space-y-3 pt-1">
@@ -100,7 +116,7 @@ export function TaskDetailDrawer({
             <DetailAttributeRow
               variant="list"
               label={t("tasks.parentTask")}
-              value={task.parentTaskId ?? "—"}
+              value={parentTaskTitle ?? task.parentTaskId ?? "—"}
             />
             <DetailAttributeRow
               variant="list"

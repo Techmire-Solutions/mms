@@ -27,7 +27,7 @@ export interface FacultyPageHeaderActionsProps {
 
 /**
  * Module-dashboard IO: Import/Export choosers + Add Faculty / Add Department / Add Designation.
- * Matching scoped Add also lives on {@link FacultyTabIoToolbar}.
+ * The header is the single IO owner for this module — there is no per-tab IO row.
  */
 export function FacultyPageHeaderActions({
   canExport,

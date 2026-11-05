@@ -1,4 +1,7 @@
 import { describe, expect, it, vi } from "vitest";
+import { mkdtemp, rm } from "node:fs/promises";
+import { join } from "node:path";
+import { tmpdir } from "node:os";
 import fastify from "fastify";
 
 vi.mock("../middleware/authenticateUploader.js", () => ({
@@ -190,5 +193,86 @@ describe("attachment tenant scoping (F39)", () => {
       message: "Tenant context is required for attachments",
     });
     await app.close();
+  });
+});
+
+describe("image upload multipart route", () => {
+  const boundary = "----mms-image-test";
+
+  function multipartBody(bytes: Buffer, filename: string, mime: string): Buffer {
+    return Buffer.concat([
+      Buffer.from(
+        `--${boundary}\r\nContent-Disposition: form-data; name="image"; filename="${filename}"\r\nContent-Type: ${mime}\r\n\r\n`,
+      ),
+      bytes,
+      Buffer.from(`\r\n--${boundary}--\r\n`),
+    ]);
+  }
+
+  async function register() {
+    const app = fastify({ logger: false });
+    app.addHook("onRequest", async () => {
+      bindRequestTenant("demo");
+    });
+    await app.register(uploadRoutes, { prefix: "/api/uploads" });
+    return app;
+  }
+
+  it("accepts a WebP image part and stores it under the tenant avatar directory", async () => {
+    const temp = await mkdtemp(join(tmpdir(), "mms-image-route-"));
+    vi.stubEnv("MMS_UPLOADS_DIR", temp);
+    const app = await register();
+    try {
+      vi.mocked(authenticateUploader).mockResolvedValue(undefined);
+      const webp = Buffer.from("RIFF\x00\x00\x00\x00WEBPVP8 ", "latin1");
+      const body = multipartBody(webp, "avatar.webp", "image/webp");
+      const res = await app.inject({
+        method: "POST",
+        url: "/api/uploads/image?purpose=avatar",
+        headers: {
+          host: "demo.localhost",
+          "content-type": `multipart/form-data; boundary=${boundary}`,
+          "content-length": String(body.length),
+        },
+        payload: body,
+      });
+
+      expect(res.statusCode).toBe(200);
+      expect(res.json()).toMatchObject({
+        url: expect.stringMatching(/^\/uploads\/tenants\/demo\/avatars\/[0-9a-f-]+\.webp$/),
+      });
+    } finally {
+      await app.close();
+      vi.unstubAllEnvs();
+      await rm(temp, { recursive: true, force: true });
+    }
+  });
+
+  it("rejects a PNG part with the AVIF/WebP validation message", async () => {
+    const temp = await mkdtemp(join(tmpdir(), "mms-image-route-"));
+    vi.stubEnv("MMS_UPLOADS_DIR", temp);
+    const app = await register();
+    try {
+      vi.mocked(authenticateUploader).mockResolvedValue(undefined);
+      const png = Buffer.from("\x89PNG\r\n\x1a\n", "latin1");
+      const body = multipartBody(png, "avatar.png", "image/png");
+      const res = await app.inject({
+        method: "POST",
+        url: "/api/uploads/image?purpose=avatar",
+        headers: {
+          host: "demo.localhost",
+          "content-type": `multipart/form-data; boundary=${boundary}`,
+          "content-length": String(body.length),
+        },
+        payload: body,
+      });
+
+      expect(res.statusCode).toBe(400);
+      expect(res.json()).toMatchObject({ message: expect.stringContaining("AVIF or WebP") });
+    } finally {
+      await app.close();
+      vi.unstubAllEnvs();
+      await rm(temp, { recursive: true, force: true });
+    }
   });
 });

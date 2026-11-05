@@ -1,79 +1,8 @@
 import { and, asc, desc, eq, inArray, sql } from "drizzle-orm";
-import { DASHBOARD_WIDGET_INDEXED_KEYS, type DashboardWidgetDto } from "@mms/shared";
+import { DASHBOARD_WIDGETS_MAX, type DashboardWidgetDto } from "@mms/shared";
 import { dashboardWidgets } from "../schema.js";
 import { withTenant } from "../tenant-context.js";
-
-type DashboardWidgetRow = typeof dashboardWidgets.$inferSelect;
-
-/** Split a widget DTO into typed columns + the jsonb `config` remainder. */
-function toRow(
-  workspaceSubdomain: string,
-  widget: DashboardWidgetDto,
-  fallbackSortOrder: number,
-): {
-  id: string;
-  workspaceSubdomain: string;
-  widgetType: string | null;
-  category: string;
-  collection: string;
-  role: string | null;
-  isPinnedToDashboard: boolean;
-  title: string;
-  icon: string | null;
-  color: string;
-  operation: string;
-  sortOrder: number;
-  config: Record<string, unknown> | null;
-  updatedAt: Date;
-} {
-  const config: Record<string, unknown> = {};
-  for (const [key, value] of Object.entries(widget)) {
-    if (
-      !DASHBOARD_WIDGET_INDEXED_KEYS.includes(key as (typeof DASHBOARD_WIDGET_INDEXED_KEYS)[number])
-    ) {
-      config[key] = value;
-    }
-  }
-
-  return {
-    id: widget.id,
-    workspaceSubdomain,
-    widgetType: widget.widgetType ?? null,
-    category: widget.category,
-    collection: widget.collection,
-    role: widget.role ?? null,
-    isPinnedToDashboard: widget.isPinnedToDashboard,
-    title: widget.title,
-    icon: widget.icon ?? null,
-    color: widget.color,
-    operation: widget.operation,
-    sortOrder: widget.sortOrder ?? fallbackSortOrder,
-    config: Object.keys(config).length > 0 ? config : null,
-    updatedAt: new Date(),
-  };
-}
-
-/** Merge a stored row back into a widget DTO (typed columns win, then jsonb `config`). */
-function toDto(row: DashboardWidgetRow): DashboardWidgetDto {
-  const config = (row.config ?? {}) as Record<string, unknown>;
-  const dto: DashboardWidgetDto = {
-    ...config,
-    id: row.id,
-    category: row.category,
-    collection: row.collection,
-    isPinnedToDashboard: row.isPinnedToDashboard,
-    title: row.title,
-    color: row.color,
-    operation: row.operation as DashboardWidgetDto["operation"],
-    sortOrder: row.sortOrder,
-  } as DashboardWidgetDto;
-
-  if (row.widgetType) dto.widgetType = row.widgetType as DashboardWidgetDto["widgetType"];
-  if (row.role) dto.role = row.role as DashboardWidgetDto["role"];
-  if (row.icon) dto.icon = row.icon as DashboardWidgetDto["icon"];
-
-  return dto;
-}
+import { toDto, toRestoredDto, toRow } from "./dashboardWidgetMappers.js";
 
 /** List all dashboard widgets for a workspace, ordered by pin order. */
 export async function listDashboardWidgetsByWorkspace(
@@ -81,7 +10,10 @@ export async function listDashboardWidgetsByWorkspace(
   options?: { limit?: number; offset?: number },
 ): Promise<DashboardWidgetDto[]> {
   const subdomain = workspaceSubdomain.trim().toLowerCase();
-  const limit = Math.min(Math.max(1, options?.limit ?? 200), 500);
+  const limit = Math.min(
+    Math.max(1, options?.limit ?? DASHBOARD_WIDGETS_MAX),
+    DASHBOARD_WIDGETS_MAX,
+  );
   const offset = Math.max(0, options?.offset ?? 0);
   return withTenant(subdomain, async (tx) => {
     const rows = await tx
@@ -147,16 +79,17 @@ export async function upsertDashboardWidgetsForWorkspace(
   });
 }
 
-/** Delete a single dashboard widget by id within the workspace. */
+/** Delete a single dashboard widget by id within the workspace. Returns the deleted row count. */
 export async function deleteDashboardWidgetById(
   workspaceSubdomain: string,
   id: string,
-): Promise<void> {
+): Promise<number> {
   const subdomain = workspaceSubdomain.trim().toLowerCase();
-  await withTenant(subdomain, async (tx) => {
-    await tx
+  return withTenant(subdomain, async (tx) => {
+    const result = await tx
       .delete(dashboardWidgets)
       .where(and(eq(dashboardWidgets.workspaceSubdomain, subdomain), eq(dashboardWidgets.id, id)));
+    return result.rowCount ?? 0;
   });
 }
 
@@ -223,13 +156,13 @@ export async function findDashboardWidgetById(
   });
 }
 
-/** Backup/restore parity — full workspace widget rows. */
+/** Backup/restore parity — full workspace widgets, in the shape the write DTO accepts. */
 export async function listAllDashboardWidgetsByWorkspace(
   workspaceSubdomain: string,
-): Promise<DashboardWidgetRow[]> {
+): Promise<DashboardWidgetDto[]> {
   const subdomain = workspaceSubdomain.trim().toLowerCase();
   return withTenant(subdomain, async (tx) => {
-    return tx
+    const rows = await tx
       .select({
         id: dashboardWidgets.id,
         workspaceSubdomain: dashboardWidgets.workspaceSubdomain,
@@ -248,6 +181,7 @@ export async function listAllDashboardWidgetsByWorkspace(
       })
       .from(dashboardWidgets)
       .where(eq(dashboardWidgets.workspaceSubdomain, subdomain));
+    return rows.map(toDto);
   });
 }
 
@@ -257,22 +191,21 @@ export async function replaceDashboardWidgetsForWorkspace(
   records: Array<Record<string, unknown>>,
 ): Promise<void> {
   const subdomain = workspaceSubdomain.trim().toLowerCase();
+  // Last write wins for duplicate ids: a duplicate primary key aborts the whole
+  // restore, and a legacy snapshot can carry stale duplicates.
+  const deduped = Array.from(
+    new Map(
+      records
+        .map((record, index) => ({ dto: toRestoredDto(record, index), index }))
+        .filter((entry): entry is { dto: DashboardWidgetDto; index: number } => entry.dto !== null)
+        .map(({ dto, index }) => [dto.id, { dto, index }] as const),
+    ).values(),
+  );
   await withTenant(subdomain, async (tx) => {
     await tx.delete(dashboardWidgets).where(eq(dashboardWidgets.workspaceSubdomain, subdomain));
-    if (records.length === 0) return;
-    const widgets = records.map((record, index) => {
-      const dto = {
-        id: String(record.id ?? `restore-${index}`),
-        title: String(record.title ?? ""),
-        category: String(record.category ?? ""),
-        collection: String(record.collection ?? ""),
-        operation: String(record.operation ?? "count"),
-        color: String(record.color ?? ""),
-        isPinnedToDashboard: Boolean(record.isPinnedToDashboard),
-        ...record,
-      } as DashboardWidgetDto;
-      return toRow(subdomain, dto, index);
-    });
-    await tx.insert(dashboardWidgets).values(widgets);
+    if (deduped.length === 0) return;
+    await tx
+      .insert(dashboardWidgets)
+      .values(deduped.map(({ dto, index }) => toRow(subdomain, dto, index)));
   });
 }

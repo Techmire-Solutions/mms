@@ -71,6 +71,13 @@ const SYSTEM_EXCLUDED_KEYS = new Set([
   "sessiontoken",
   "signature",
   "checksum",
+  // Dashboard widget config: these carry column/collection identifiers, not
+  // display copy — title-casing them breaks the widget after a backup restore.
+  "xaxisfield",
+  "targetfield",
+  "filterfield",
+  "switchcollection",
+  "switchfield",
 ]);
 
 function isKeyIgnored(k?: string): boolean {

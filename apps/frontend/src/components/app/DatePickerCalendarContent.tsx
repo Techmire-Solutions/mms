@@ -59,7 +59,6 @@ export function DatePickerCalendarContent({
         captionLayout="dropdown"
         startMonth={startMonth}
         endMonth={endMonth}
-        autoFocus
       />
       <div className="flex items-center justify-between border-t border-border/60 px-3.5 py-2.5 bg-muted/20">
         <button

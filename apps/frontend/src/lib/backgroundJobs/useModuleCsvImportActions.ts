@@ -10,6 +10,7 @@ import {
 } from "@mms/shared";
 import { triggerFileDownload } from "@/lib/download";
 import { notify } from "@/lib/notify";
+import { useTranslation } from "@/hooks/useTranslation";
 import { startServerModuleCsvImport } from "@/lib/backgroundJobs/startServerModuleCsvImport";
 
 export interface ModuleCsvImportProgress {
@@ -37,6 +38,7 @@ export interface UseModuleCsvImportActionsOptions<TRow = Record<string, unknown>
 export function useModuleCsvImportActions<TRow = Record<string, unknown>>(
   options: UseModuleCsvImportActionsOptions<TRow>,
 ) {
+  const { t } = useTranslation();
   const { apiPath, schema, submitRows, onSuccess } = options;
   const effectiveModuleId = schema?.moduleId ?? options.moduleId ?? "module";
   const effectiveMappings = useMemo(
@@ -93,10 +95,10 @@ export function useModuleCsvImportActions<TRow = Record<string, unknown>>(
         setParsedRows(result.rows);
       } catch (err) {
         const msg = err instanceof Error ? err.message : String(err);
-        setRowErrors([{ row: 0, error: `Failed to read CSV: ${msg}` }]);
+        setRowErrors([{ row: 0, error: `${t("module.import.failed")}: ${msg}` }]);
       }
     },
-    [effectiveMappings, resetState, schema],
+    [effectiveMappings, resetState, schema, t],
   );
 
   const handleStartImport = useCallback(async () => {
@@ -120,16 +122,17 @@ export function useModuleCsvImportActions<TRow = Record<string, unknown>>(
             },
           });
 
+      // The completed panel owns the outcome feedback (label + counts); a success
+      // toast would duplicate it now that the dialog stays open (S-01).
       setCompletedJob(job);
-      notify.success(job.label || `Successfully imported ${effectiveModuleId}`);
       onSuccess?.();
     } catch (err) {
       const msg = err instanceof Error ? err.message : String(err);
-      notify.error(`Import failed: ${msg}`);
+      notify.error(t("module.import.failed"), msg ? { description: msg } : undefined);
     } finally {
       setIsImporting(false);
     }
-  }, [apiPath, defaultLabel, effectiveModuleId, isImporting, onSuccess, parsedRows, submitRows]);
+  }, [apiPath, defaultLabel, isImporting, onSuccess, parsedRows, submitRows, t]);
 
   return {
     isOpen,

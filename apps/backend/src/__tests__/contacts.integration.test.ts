@@ -1163,7 +1163,14 @@ describe("contacts REST routes", () => {
       success: true,
       contact: expect.objectContaining({ id: "c1", name: "Merged Person" }),
     });
-    expect(mockMergeContactsById).toHaveBeenCalledWith("c1", "c2", undefined, "u-admin");
+    expect(mockMergeContactsById).toHaveBeenCalledWith(
+      "c1",
+      "c2",
+      undefined,
+      "u-admin",
+      // The route now supplies the viewer role (write guard) and the OCC token.
+      expect.objectContaining({ viewerRole: "admin" }),
+    );
     expect(mockRecordAudit).toHaveBeenCalledWith(
       expect.objectContaining({
         action: "contact.merge",

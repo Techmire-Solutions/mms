@@ -75,19 +75,57 @@ export async function runGoogleContactsSync(userId: string): Promise<GoogleConta
   let skippedUnique = 0;
   const peerIndex = new PeerContactIndex(peerContacts);
 
-  // Running O(1) index of unique-field composites among inserts accepted so far,
-  // so each new insert is checked against only the handful of prior inserts that
-  // actually collide — not a full rescan of `acceptedInserts` (avoids O(n²) on
-  // large Google directories).
+  // Running O(1) index of unique-field composites among inserts AND updates accepted
+  // so far, so each new candidate is checked against only the handful of prior
+  // pending writes that actually collide — not a full rescan (avoids O(n²) on large
+  // Google directories) and not only the committed rows (which miss pending writes).
   const { defaultPhoneCountryCode } = defaults;
   const collectOptions = { defaultPhoneCountryCode };
-  // Lazily loaded on first insert (absent field config disables the in-run index).
+  // Lazily loaded on first accepted write (absent field config disables the in-run index).
   let syncUniqueFields: ReturnType<typeof listUniqueContactFieldRefs> | null = null;
   const acceptedComposites = new Map<string, string>(); // composite -> accepted contact id
   const acceptedById = new Map<string, Contact>(); // accepted contact id -> contact
 
   // One tenant-config read for the whole sync instead of two per candidate.
   const writeContext = await loadContactWriteContext();
+
+  const ensureSyncUniqueFields = () => {
+    if (syncUniqueFields === null) {
+      const syncFieldConfig = writeContext.fieldConfig;
+      syncUniqueFields = syncFieldConfig?.fields
+        ? listUniqueContactFieldRefs(syncFieldConfig.fields)
+        : [];
+    }
+    return syncUniqueFields;
+  };
+
+  /** Unique-value composites the pending record would occupy. */
+  const pendingCompositesFor = (record: Contact): string[] =>
+    collectUniqueContactFieldValues(record, ensureSyncUniqueFields(), collectOptions).map(
+      (value) => `${value.tabId}:${value.fieldKey}:${value.normalized}`,
+    );
+
+  /** Pending (accepted-but-unpersisted) records sharing one of these composites. */
+  const pendingPeersFor = (composites: string[], selfId?: string): Contact[] => {
+    const peers = new Map<string, Contact>();
+    for (const composite of composites) {
+      const ownerId = acceptedComposites.get(composite);
+      if (!ownerId || (selfId != null && ownerId === selfId)) continue;
+      const peer = acceptedById.get(ownerId);
+      if (peer) peers.set(ownerId, peer);
+    }
+    return [...peers.values()];
+  };
+
+  /** Records an accepted write in the in-run index so later candidates can collide with it. */
+  const registerPending = (record: Contact, composites: string[]): void => {
+    if (composites.length === 0) return;
+    const recordId = String(record.id);
+    acceptedById.set(recordId, record);
+    for (const composite of composites) {
+      if (!acceptedComposites.has(composite)) acceptedComposites.set(composite, recordId);
+    }
+  };
 
   await runInTransaction(async () => {
     for (const candidate of mapped) {
@@ -99,12 +137,17 @@ export async function runGoogleContactsSync(userId: string): Promise<GoogleConta
         if (hasMeaningfulChanges(match, merged)) {
           try {
             const prepared = await prepareContactRecord(merged, match.id, writeContext);
+            const candidateComposites = pendingCompositesFor(prepared);
             await assertContactUniqueFields(tenant, prepared, {
               language: "en",
               excludeContactIds: [match.id],
+              // A previously accepted update is not in the database yet; without its
+              // peer here two updates could both introduce the same unique value.
+              additionalPeers: pendingPeersFor(candidateComposites, String(match.id)),
               context: writeContext,
             });
             acceptedUpdates.push(prepared);
+            registerPending(prepared, candidateComposites);
             peerIndex.update(match, prepared);
           } catch (error) {
             if (error instanceof ContactUniqueFieldError) {
@@ -121,50 +164,19 @@ export async function runGoogleContactsSync(userId: string): Promise<GoogleConta
       } else {
         try {
           const prepared = await prepareContactRecord(candidate, candidate.id, writeContext);
-
-          // Load unique field refs once on first insert (absent config -> [] makes
-          // the in-run index a no-op, matching the pre-optimisation behaviour).
-          if (syncUniqueFields === null) {
-            const syncFieldConfig = writeContext.fieldConfig;
-            syncUniqueFields = syncFieldConfig?.fields
-              ? listUniqueContactFieldRefs(syncFieldConfig.fields)
-              : [];
-          }
-
-          // O(1) lookup of prior in-run inserts sharing a unique field value.
-          const candidateComposites = collectUniqueContactFieldValues(
-            prepared,
-            syncUniqueFields,
-            collectOptions,
-          ).map((value) => `${value.tabId}:${value.fieldKey}:${value.normalized}`);
-          const collidingContacts: Contact[] = [];
-          for (const composite of candidateComposites) {
-            const ownerId = acceptedComposites.get(composite);
-            if (ownerId) {
-              const existing = acceptedById.get(ownerId);
-              if (existing) collidingContacts.push(existing);
-            }
-          }
+          const candidateComposites = pendingCompositesFor(prepared);
 
           // Pass only the (tiny) colliding subset — not the whole accepted array —
           // so `assertContactUniqueFields` still reports the identical conflicts
-          // without rescanning every previously accepted insert.
+          // without rescanning every previously accepted write.
           await assertContactUniqueFields(tenant, prepared, {
             language: "en",
-            additionalPeers: collidingContacts,
+            additionalPeers: pendingPeersFor(candidateComposites),
             context: writeContext,
           });
 
           acceptedInserts.push(prepared);
-          if (candidateComposites.length > 0) {
-            const preparedId = String(prepared.id);
-            acceptedById.set(preparedId, prepared);
-            for (const composite of candidateComposites) {
-              if (!acceptedComposites.has(composite)) {
-                acceptedComposites.set(composite, preparedId);
-              }
-            }
-          }
+          registerPending(prepared, candidateComposites);
           peerIndex.add(prepared);
         } catch (error) {
           if (error instanceof ContactUniqueFieldError) {

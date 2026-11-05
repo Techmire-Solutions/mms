@@ -30,8 +30,12 @@ export function createFacultyUseCases(repo: FacultyRepository = facultyRepositor
     load.loadFacultyById(id, includeDeleted, repo);
   const loadFacultyByIds = (ids: string[]) => load.loadFacultyByIds(ids, repo);
   const isFacultyProfileDeleted = (id: string) => load.isFacultyProfileDeleted(id, repo);
+  const isFacultyProfileDeletedForUser = (userId: string) =>
+    load.isFacultyProfileDeletedForUser(userId, repo);
   const loadFacultyLinkedContactIds = (excludeFacultyId?: string) =>
     load.loadFacultyLinkedContactIds(excludeFacultyId, repo);
+  const findFacultyIdsByEmployeeIds = (employeeIds: string[]) =>
+    load.findFacultyIdsByEmployeeIds(employeeIds, repo);
   const loadFacultyCommandMetrics = () => load.loadFacultyCommandMetrics(repo);
   const loadFacultyWidgetAggregates = (
     queries: Parameters<typeof load.loadFacultyWidgetAggregates>[0],
@@ -41,8 +45,11 @@ export function createFacultyUseCases(repo: FacultyRepository = facultyRepositor
     record: Parameters<typeof write.createFaculty>[0],
     options?: Parameters<typeof write.createFaculty>[2],
   ) => write.createFaculty(record, repo, options);
-  const updateFacultyById = (id: string, record: Parameters<typeof write.updateFacultyById>[1]) =>
-    write.updateFacultyById(id, record, repo);
+  const updateFacultyById = (
+    id: string,
+    record: Parameters<typeof write.updateFacultyById>[1],
+    options?: Parameters<typeof write.updateFacultyById>[3],
+  ) => write.updateFacultyById(id, record, repo, options);
   const softDeleteFacultyById = (
     id: string,
     deletedBy: string,
@@ -56,14 +63,15 @@ export function createFacultyUseCases(repo: FacultyRepository = facultyRepositor
     softDelete.restoreFacultyById(id, userId, repo);
   const bulkRestoreFaculty = (ids: string[], userId?: string) =>
     softDelete.bulkRestoreFaculty(ids, userId, repo);
-  const bulkUpdateFacultyStatus = (ids: string[], status: string) =>
-    operation.bulkUpdateFacultyStatus(ids, status, repo);
+  const bulkUpdateFacultyStatus = (ids: string[], status: string, updatedBy?: string) =>
+    operation.bulkUpdateFacultyStatus(ids, status, repo, updatedBy);
   const bulkUpdateFacultySpecialization = (ids: string[], specialization: string) =>
     operation.bulkUpdateFacultySpecialization(ids, specialization, repo);
   const computeNextFacultyEmployeeIdForSettings = (
     settings: Parameters<typeof operation.computeNextFacultyEmployeeIdForSettings>[0],
   ) => operation.computeNextFacultyEmployeeIdForSettings(settings, repo);
-  const migrateFacultyMissingEmployeeIds = () => operation.migrateFacultyMissingEmployeeIds(repo);
+  const migrateFacultyMissingEmployeeIds = (actorId?: string) =>
+    operation.migrateFacultyMissingEmployeeIds(repo, actorId);
   const checkFacultyRegistrationDuplicate = (
     input: Parameters<typeof operation.checkFacultyRegistrationDuplicate>[0],
   ) => operation.checkFacultyRegistrationDuplicate(input, repo);
@@ -81,7 +89,9 @@ export function createFacultyUseCases(repo: FacultyRepository = facultyRepositor
     loadFacultyById,
     loadFacultyByIds,
     isFacultyProfileDeleted,
+    isFacultyProfileDeletedForUser,
     loadFacultyLinkedContactIds,
+    findFacultyIdsByEmployeeIds,
     loadFacultyCommandMetrics,
     loadFacultyWidgetAggregates,
     loadFacultyHierarchyTree,

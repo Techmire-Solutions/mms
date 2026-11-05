@@ -4,13 +4,7 @@ import { handleContractError } from "../../../lib/contractError.js";
 import { standardRequestValidationErrorHandler } from "../../../lib/contractRegistration.js";
 import type { ContractRouteArgs, ContractRouteResponse } from "../../../lib/contractRouterTypes.js";
 import { withTenant } from "../../../db/tenant-context.js";
-import {
-  sessionContract,
-  isQueryFlagTrue,
-  SESSIONS_MODULE_MANIFEST,
-  type User,
-  roleHasPermission,
-} from "@mms/shared";
+import { sessionContract, isQueryFlagTrue, SESSIONS_MODULE_MANIFEST, type User } from "@mms/shared";
 import {
   canDeleteCollection,
   canWriteCollection,
@@ -19,6 +13,7 @@ import {
 import { sessionsUseCases } from "../../../sessions/use-cases/sessionsUseCases.js";
 import { sessionBulkContractHandlers } from "./sessionBulkContractHandlers.js";
 import { sessionSetupContractHandlers } from "./sessionSetupContractHandlers.js";
+import { userHasPermission } from "../../../lib/userPermissionContext.js";
 
 const COLLECTION = SESSIONS_MODULE_MANIFEST.collectionKey;
 const OVERRIDE_LOCK_PERM = SESSIONS_MODULE_MANIFEST.permissions.overrideLock;
@@ -143,10 +138,14 @@ export const sessionContractRouter: FastifyPluginAsync = async (fastify) => {
         };
       try {
         // Locked changes after start need `sessions.override_lock` plus a reason (audited).
-        const lock = { canOverrideLock: roleHasPermission(user.role, OVERRIDE_LOCK_PERM) };
+        const lock = { canOverrideLock: userHasPermission(user, OVERRIDE_LOCK_PERM) };
+        const expectedHeader = request.headers["x-expected-updated-at"];
+        const expectedUpdatedAt = Array.isArray(expectedHeader)
+          ? expectedHeader[0]
+          : expectedHeader;
         const updated = await withTenant(
           String(request.tenant?.id),
-          () => sessionsUseCases.updateSessionById(id, body, lock),
+          () => sessionsUseCases.updateSessionById(id, body, lock, expectedUpdatedAt),
           { readOnly: false },
         );
         if (!updated)

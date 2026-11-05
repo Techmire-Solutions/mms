@@ -3,9 +3,13 @@ import {
   type Contact,
   type ContactIdentityMatchBody,
   type ContactIdentityMatchResult,
+  type ValidationError,
 } from "@mms/shared";
 import { tsrClient } from "@/lib/api";
-import { enqueueContactsOutbox } from "@/lib/contacts/contactsSyncOutbox";
+import {
+  enqueueContactsOutbox,
+  isRetryableContactsOutboxError,
+} from "@/lib/contacts/contactsSyncOutbox";
 import {
   useContactsContractRestore,
   useContactsContractBulkDelete,
@@ -18,9 +22,22 @@ type ContactSuccessResponse = { success: true };
 type ContactWrappedResponse = ContactSuccessResponse & { contact: Contact };
 type ContactBulkResult = ContactSuccessResponse & { succeeded: number; failed: number };
 type ContactBulkRestoreResult = ContactBulkResult & {
-  conflicts: Array<{ id: string; errors: Array<{ field: string; message: string }> }>;
+  /** Server field issues are `ValidationError` (`fieldId`/`tabId`/`message`), not `field`. */
+  conflicts: Array<{ id: string; errors: ValidationError[] }>;
 };
 type ContactBulkTagResult = ContactSuccessResponse & { updatedCount: number };
+
+/**
+ * Queue a write for replay when it may succeed later.
+ *
+ * `navigator.onLine` alone misses captive portals/VPN drops and 5xx deploys; those
+ * transport failures are exactly what the outbox exists for. Validation/conflict
+ * errors (4xx) are real failures and are never queued.
+ */
+export function shouldQueueContactWrite(error: unknown): boolean {
+  if (typeof navigator !== "undefined" && !navigator.onLine) return true;
+  return isRetryableContactsOutboxError(error);
+}
 
 export function useInvalidateContactsQueries() {
   const queryClient = useQueryClient();
@@ -66,10 +83,17 @@ export function useContactMutations() {
       ...upsertContactMutation,
       mutateAsync: async (contact: Contact) => {
         try {
-          const response = await upsertContactMutation.mutateAsync({ body: contact });
+          const response = await upsertContactMutation.mutateAsync({
+            body: contact,
+            // Versioned upsert: an offline replay of an existing contact must
+            // prove which version it is based on, or the server 409s every retry.
+            ...(contact.updatedAt
+              ? { headers: { "x-expected-updated-at": contact.updatedAt } }
+              : {}),
+          });
           return unwrapContactMutationBody<ContactWrappedResponse>(response);
         } catch (error) {
-          if (typeof navigator !== "undefined" && !navigator.onLine) {
+          if (shouldQueueContactWrite(error)) {
             enqueueContactsOutbox({ kind: "upsert", contact });
           }
           throw error;
@@ -92,7 +116,7 @@ export function useContactMutations() {
           });
           return unwrapContactMutationBody<ContactWrappedResponse>(response);
         } catch (error) {
-          if (typeof navigator !== "undefined" && !navigator.onLine) {
+          if (shouldQueueContactWrite(error)) {
             enqueueContactsOutbox({ kind: "update", contactId: id, contact });
           }
           throw error;
@@ -109,7 +133,7 @@ export function useContactMutations() {
           });
           return unwrapContactMutationBody<ContactSuccessResponse>(response);
         } catch (error) {
-          if (typeof navigator !== "undefined" && !navigator.onLine) {
+          if (shouldQueueContactWrite(error)) {
             enqueueContactsOutbox({ kind: "delete", contactId: id, deletionReason });
           }
           throw error;
@@ -143,8 +167,14 @@ export function useContactMutations() {
         keepId: string | number;
         deleteId: string | number;
         merged?: Contact;
+        /** `updatedAt` of the survivor the preview was computed from (409 guard). */
+        keepUpdatedAt?: string;
       }) => {
-        const response = await mergeContactsMutation.mutateAsync({ body: payload });
+        const { keepUpdatedAt, ...body } = payload;
+        const response = await mergeContactsMutation.mutateAsync({
+          body,
+          ...(keepUpdatedAt ? { headers: { "x-expected-updated-at": keepUpdatedAt } } : {}),
+        });
         return unwrapContactMutationBody<ContactWrappedResponse>(response);
       },
     },

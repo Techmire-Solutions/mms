@@ -80,7 +80,7 @@ export const StudentDetail = function StudentDetail({
       canDelete={canDelete}
       canEdit={Boolean(onEdit)}
       onPrintIdCard={onPrintIdCard}
-      onRestore={onRestore ? () => void onRestore(String(student.id)) : undefined}
+      onRestore={onRestore ? () => onRestore(String(student.id)) : undefined}
       onEdit={onEdit ? () => onEdit(student) : undefined}
       printLabel={t("students.detail.printIdCard")}
       restoreLabel={t("students.restore")}

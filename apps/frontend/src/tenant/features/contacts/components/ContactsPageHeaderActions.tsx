@@ -1,5 +1,5 @@
 import type React from "react";
-import { UserPlus, AlertTriangle, Download, Loader2, Upload, FileSpreadsheet } from "lucide-react";
+import { UserPlus, AlertTriangle, Download, Upload, FileSpreadsheet } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
@@ -46,9 +46,10 @@ export function ContactsPageHeaderActions({
       {canRead && !viewingDeleted && (
         <Button
           variant="ghost"
-          icon={openingDuplicates ? Loader2 : AlertTriangle}
+          icon={AlertTriangle}
           onClick={onOpenDuplicates}
-          disabled={openingDuplicates}
+          loading={openingDuplicates}
+          aria-busy={openingDuplicates}
         >
           {t("contacts.duplicates")}
         </Button>

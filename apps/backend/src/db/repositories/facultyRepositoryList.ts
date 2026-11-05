@@ -14,4 +14,5 @@ export {
   bulkUpdateFacultyStatusSql,
   bulkUpdateFacultySpecializationSql,
   aggregateFacultyCommandMetrics,
+  findFacultyIdsByEmployeeIdsSql,
 } from "./facultyRepositoryListOps.js";

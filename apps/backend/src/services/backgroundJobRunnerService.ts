@@ -49,12 +49,15 @@ import {
 } from "../contacts/use-cases/contactImportJobUseCases.js";
 import { registerBackgroundJobRunner } from "./backgroundJobWorkerService.js";
 import { registerSessionRolloverJobRunner } from "../sessions/use-cases/sessionRolloverJob.js";
+import { registerSessionImportJobRunner } from "../sessions/use-cases/sessionImportJob.js";
 import { registerModuleCsvExportJobRunner } from "../lib/registerModuleCsvExportJobRunner.js";
 import { registerModuleCsvImportJobRunner } from "../lib/registerModuleCsvImportJobRunner.js";
 import { registerContactsVcfExportJobRunner } from "../lib/registerContactsVcfExportJobRunner.js";
 import { messagingUseCases } from "../messaging/use-cases/messagingUseCases.js";
 import { registerMessagingCampaignJobRunner } from "./messagingCampaignJobRunner.js";
 import { registerFacultyBackgroundJobRunners } from "./backgroundJobFacultyRunners.js";
+import { registerTasksBackgroundJobRunners } from "./backgroundJobTasksRunners.js";
+import { registerStudentsImportJobRunner } from "../students/studentsImportService.js";
 import {
   registerDocumentAndFinanceJobRunners,
   MAX_EXCEL_PAYLOAD_ENTRIES,
@@ -77,6 +80,7 @@ export function registerDefaultBackgroundJobRunners(): void {
   const studentsModuleId = STUDENTS_MODULE_MANIFEST.moduleId;
   const sessionsModuleId = SESSIONS_MODULE_MANIFEST.moduleId;
   registerSessionRolloverJobRunner();
+  registerSessionImportJobRunner();
 
   registerModuleCsvExportJobRunner({
     moduleId: contactsModuleId,
@@ -142,6 +146,8 @@ export function registerDefaultBackgroundJobRunners(): void {
       }),
   });
 
+  registerStudentsImportJobRunner();
+
   registerModuleCsvExportJobRunner({
     moduleId: sessionsModuleId,
     entityNounPlural: "sessions",
@@ -163,6 +169,8 @@ export function registerDefaultBackgroundJobRunners(): void {
 
   // Modular faculty and catalog export/import runners
   registerFacultyBackgroundJobRunners();
+
+  registerTasksBackgroundJobRunners();
 
   registerModuleCsvExportJobRunner({
     moduleId: ENROLLMENTS_MODULE_MANIFEST.moduleId,
@@ -208,10 +216,12 @@ export function registerDefaultBackgroundJobRunners(): void {
     buildExport: (query, options, tenant) =>
       buildMessagingCsvExport(tenant || "", query as MessagingCsvExportQueryDto, {
         filename: options.filename,
+        viewerRole: options.viewerRole,
       }),
     generateStreamChunks: (query, options, tenant) =>
       generateMessagingCsvStreamChunks(tenant || "", query as MessagingCsvExportQueryDto, {
         filename: options.filename,
+        viewerRole: options.viewerRole,
       }),
   });
 

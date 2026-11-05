@@ -10,6 +10,7 @@ interface MessagingWorkTierProps {
   canClearLogs: boolean;
   canRestoreLogs?: boolean;
   onRestoreLog?: (log: Message) => Promise<void>;
+  onBulkRestore?: Parameters<typeof useMessagingWorkTierController>[0]["onBulkRestore"];
   onClearLogsRequest: () => void;
   onResend: Parameters<typeof useMessagingWorkTierController>[0]["onResend"];
   onBulkResend?: Parameters<typeof useMessagingWorkTierController>[0]["onBulkResend"];
@@ -29,6 +30,7 @@ export function MessagingWorkTier(props: MessagingWorkTierProps): React.JSX.Elem
       canClearLogs={props.canClearLogs}
       canRestoreLogs={props.canRestoreLogs}
       onRestoreLog={props.onRestoreLog}
+      onBulkRestore={props.onBulkRestore}
       onClearLogsRequest={props.onClearLogsRequest}
       onStartCampaign={props.onStartCampaign}
     />

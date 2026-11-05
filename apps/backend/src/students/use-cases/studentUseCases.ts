@@ -1,3 +1,4 @@
+import type { User } from "@mms/shared";
 import type { StudentsRepository } from "../repository/studentsRepository.js";
 import { studentsRepository } from "../repository/studentsRepositoryAdapter.js";
 import * as loadEntity from "./studentLoadEntityUseCases.js";
@@ -57,8 +58,8 @@ export function createStudentsUseCases(repo: StudentsRepository = studentsReposi
       restore.restoreStudentById(id, userId, repo),
     bulkRestoreStudents: (ids: string[], userId?: string) =>
       restore.bulkRestoreStudents(ids, userId, repo),
-    bulkUpdateStudentStatus: (ids: string[], status: string) =>
-      operation.bulkUpdateStudentStatus(ids, status, repo),
+    bulkUpdateStudentStatus: (ids: string[], status: string, user?: User) =>
+      operation.bulkUpdateStudentStatus(ids, status, repo, user),
     bulkEnrollStudents: (input: Parameters<typeof operation.bulkEnrollStudents>[0]) =>
       operation.bulkEnrollStudents(input),
     computeNextGrNumberForDate: (

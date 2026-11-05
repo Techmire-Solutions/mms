@@ -54,6 +54,10 @@ export function useTasks(query?: Partial<TaskListQuery>, options: { enabled?: bo
     ...(query?.search ? { search: query.search } : {}),
     ...(query?.dueFrom ? { dueFrom: query.dueFrom } : {}),
     ...(query?.dueTo ? { dueTo: query.dueTo } : {}),
+    ...(query?.statuses ? { statuses: query.statuses } : {}),
+    ...(query?.priorities ? { priorities: query.priorities } : {}),
+    ...(query?.overdue ? { overdue: true } : {}),
+    ...(query?.dueOn ? { dueOn: query.dueOn } : {}),
     ...(query?.includeDeleted ? { includeDeleted: true } : {}),
     ...(query?.limit ? { limit: query.limit } : {}),
     ...(query?.offset ? { offset: query.offset } : {}),
@@ -122,8 +126,14 @@ export function useCreateTask() {
 export function useUpdateTask() {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: async ({ id, data }: { id: string; data: TaskUpdate }) => {
-      const response = await apiContract.tasks.update({ params: { id }, body: data });
+    mutationFn: async (v: { id: string; data: TaskUpdate; expectedUpdatedAt?: string }) => {
+      const response = await apiContract.tasks.update({
+        params: { id: v.id },
+        body: v.data,
+        ...(v.expectedUpdatedAt
+          ? { extraHeaders: { "x-expected-updated-at": v.expectedUpdatedAt } }
+          : {}),
+      });
       assertContractOk(response, "Failed to update task");
       return response.body as TaskRecord;
     },
@@ -137,8 +147,14 @@ export function useUpdateTask() {
 export function useUpdateTaskStatus() {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: async ({ id, status }: { id: string; status: TaskStatus }) => {
-      const response = await apiContract.tasks.updateStatus({ params: { id }, body: { status } });
+    mutationFn: async (v: { id: string; status: TaskStatus; expectedUpdatedAt?: string }) => {
+      const response = await apiContract.tasks.updateStatus({
+        params: { id: v.id },
+        body: { status: v.status },
+        ...(v.expectedUpdatedAt
+          ? { extraHeaders: { "x-expected-updated-at": v.expectedUpdatedAt } }
+          : {}),
+      });
       assertContractOk(response, "Failed to update task status");
       return response.body as TaskRecord;
     },
@@ -183,7 +199,10 @@ export function useBulkDeleteTasks() {
     mutationFn: async (ids: string[]) => {
       const response = await apiContract.tasks.bulkDelete({ body: { ids } });
       assertContractOk(response, "Failed to bulk delete tasks");
-      return response.body as { deletedIds: string[] };
+      return response.body as {
+        deletedIds: string[];
+        skipped?: Array<{ id: string; reason: string }>;
+      };
     },
     onSuccess: () => {
       void invalidateTasksQueries(queryClient);
@@ -197,7 +216,10 @@ export function useBulkRestoreTasks() {
     mutationFn: async (ids: string[]) => {
       const response = await apiContract.tasks.bulkRestore({ body: { ids } });
       assertContractOk(response, "Failed to bulk restore tasks");
-      return response.body as { restoredIds: string[] };
+      return response.body as {
+        restoredIds: string[];
+        skipped?: Array<{ id: string; reason: string }>;
+      };
     },
     onSuccess: () => {
       void invalidateTasksQueries(queryClient);
@@ -209,19 +231,14 @@ export function useBulkUpdateTaskStatus() {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: async ({ ids, status }: { ids: string[]; status: TaskStatus }) => {
-      const results = await Promise.all(
-        ids.map(async (id) => {
-          const response = await apiContract.tasks.updateStatus({
-            params: { id },
-            body: { status },
-          });
-          assertContractOk(response, "Failed to update task status");
-          return response.body as TaskRecord;
-        }),
-      );
-      return results;
+      const response = await apiContract.tasks.bulkStatus({ body: { ids, status } });
+      assertContractOk(response, "Failed to update task status");
+      return response.body as {
+        updatedIds: string[];
+        skipped?: Array<{ id: string; reason: string }>;
+      };
     },
-    onSuccess: () => {
+    onSettled: () => {
       void invalidateTasksQueries(queryClient);
     },
   });

@@ -51,6 +51,17 @@ const optionalCalendarDate = z
 /** Server-computed keys silently dropped from client writes. */
 const FACULTY_WRITE_SERVER_OWNED_KEYS = ["performanceRating"] as const;
 
+/**
+ * Audit attribution/timestamps are stamped from the session and the DB clock
+ * (`repositoryMappers.mapAuditToInsert`), never chosen by the payload.
+ */
+const FACULTY_WRITE_CLIENT_AUDIT_KEYS = [
+  "createdAt",
+  "updatedAt",
+  "createdBy",
+  "updatedBy",
+] as const;
+
 const FACULTY_WRITE_SYSTEM_KEY_SET = new Set<string>(FACULTY_WRITE_SYSTEM_KEYS);
 
 /** Enabled Setup custom field keys beyond the system faculty model. */
@@ -206,7 +217,7 @@ export function buildDynamicFacultySchema(
   return z.preprocess((raw) => {
     if (!raw || typeof raw !== "object" || Array.isArray(raw)) return raw;
     const stripped = stripFacultyWriteNoise(raw as Record<string, unknown>);
-    for (const key of FACULTY_WRITE_SERVER_OWNED_KEYS) delete stripped[key];
+    for (const key of FACULTY_WRITE_STRIP_KEYS) delete stripped[key];
     return deepSanitizeStrings(stripped);
   }, objectSchema);
 }
@@ -235,6 +246,10 @@ const FACULTY_WRITE_STRIP_KEYS = [
   "departmentId",
   "designation",
   "parentDesignationId",
+  // The linked tenant user is a server-owned projection of `faculty.contact_id`;
+  // accepting it from a write payload would let `faculty.write` point a record
+  // at any tenant user (and have that account's sessions revoked on archive).
+  "userId",
   "reportingFacultyId",
   "reportingFacultyName",
   "reportingRole",
@@ -243,6 +258,7 @@ const FACULTY_WRITE_STRIP_KEYS = [
   "hierarchyRank",
   "subordinateCount",
   ...FACULTY_WRITE_SERVER_OWNED_KEYS,
+  ...FACULTY_WRITE_CLIENT_AUDIT_KEYS,
 ] as const;
 
 export const facultyWriteSchema = z.preprocess((raw) => {

@@ -1,4 +1,3 @@
-import React from "react";
 import { describe, expect, it, vi } from "vitest";
 import { renderToStaticMarkup } from "react-dom/server";
 import { StudentsCommandMetrics } from "./StudentsCommandMetrics";
@@ -37,12 +36,32 @@ describe("StudentsCommandMetrics Component", () => {
     expect(html).toContain("5");
   });
 
-  it("falls back to total prop when serverMetrics is not provided", () => {
+  it("shows the unknown sentinel instead of a filtered total when metrics are absent", () => {
+    // 2026-11-04 review (n1/X-05): it used to render the shown/filtered count as "Total"
+    // and hard zeros for the rest while the metrics query was loading or failed.
     const html = renderToStaticMarkup(<StudentsCommandMetrics total={50} shown={10} />);
 
     expect(html).toContain("students.metrics.total");
-    expect(html).toContain("50");
+    expect(html).toContain("—");
+    expect(html).not.toContain(">50<");
     expect(html).toContain("students.metrics.filtered");
     expect(html).toContain("10");
+  });
+
+  it("renders an inline retry instead of authoritative zeros when metrics fail", () => {
+    const onRetry = vi.fn();
+    const html = renderToStaticMarkup(
+      <StudentsCommandMetrics
+        total={0}
+        shown={0}
+        serverMetrics={null}
+        isError={true}
+        onRetry={onRetry}
+      />,
+    );
+
+    expect(html).toContain("students.loadFailed");
+    expect(html).toContain("common.retry");
+    expect(html).toContain("—");
   });
 });

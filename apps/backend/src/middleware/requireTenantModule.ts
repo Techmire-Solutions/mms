@@ -11,6 +11,7 @@ import {
   type User,
 } from "@mms/shared";
 import { getRequestTenant } from "../lib/tenantContext.js";
+import { getUserRoleCatalog } from "../lib/userPermissionContext.js";
 import { loadModuleAvailability } from "../lib/moduleAvailabilityService.js";
 import { resolveCurrentTenantRole } from "../lib/currentTenantRole.js";
 import { resolveModuleRouteAction } from "../lib/moduleRouteActions.js";
@@ -67,11 +68,14 @@ export async function checkModuleAccess(
     const role = user.id
       ? await resolveCurrentTenantRole(tenant, String(user.id), user.role)
       : user.role;
+    // Tenant-authored custom/composite roles live in the catalog attached at
+    // authentication; system roles fall back to the default map.
+    const roleCatalog = getUserRoleCatalog(user);
     return evaluateModuleAccess({
       moduleId,
       availability,
       action,
-      can: (permission) => role !== null && roleHasPermission(role, permission),
+      can: (permission) => role !== null && roleHasPermission(role, permission, roleCatalog),
     });
   } catch (err) {
     logger.error({ err, moduleId, tenant }, "Failed to load module availability; denying request");

@@ -112,7 +112,7 @@ export function FacultyListFilters({
       shownCountLabel={
         shownCount != null ? t("faculty.shownCount", { count: shownCount }) : undefined
       }
-      regionLabel={t("faculty.filters")}
+      regionLabel={t("nav.faculty")}
       search={search}
       onSearchChange={onSearchChange}
       searchPlaceholder={t("faculty.searchPlaceholder")}

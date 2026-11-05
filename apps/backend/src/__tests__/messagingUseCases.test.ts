@@ -15,7 +15,6 @@ function createFakeRepo(): MessagingRepository {
     deleteMessageTemplateById: vi.fn().mockResolvedValue(true),
 
     listMessageLogsByWorkspace: vi.fn().mockResolvedValue([]),
-    findMessageLogById: vi.fn().mockResolvedValue(null),
     findMessageLogsByIds: vi.fn().mockResolvedValue([]),
     saveMessageLog: vi.fn().mockResolvedValue(undefined),
     bulkSaveMessageLogs: vi.fn().mockResolvedValue(undefined),
@@ -51,6 +50,7 @@ function createFakeRepo(): MessagingRepository {
     restoreArchivedMessageLog: vi.fn().mockResolvedValue(0),
     claimMessageLogForDelivery: vi.fn().mockResolvedValue(true),
     updateMessageLogDeliveryStatus: vi.fn().mockResolvedValue(undefined),
+    saveMessageLogDeliveryOutcomes: vi.fn().mockResolvedValue(undefined),
     getWhatsappIntegrationRow: vi.fn().mockResolvedValue(null),
     upsertWhatsappIntegrationConfigRow: vi.fn().mockResolvedValue(undefined),
     upsertWhatsappIntegrationSecretsRow: vi.fn().mockResolvedValue(undefined),
@@ -68,15 +68,28 @@ describe("messaging use-cases (DI with fake repository)", () => {
     expect(repo.queryFilteredMessageLogs).toHaveBeenCalledWith("demo", { page: 1 });
   });
 
-  it("recordMessageLogs delegates to the injected repository", async () => {
+  it("clearAllMessageLogs forwards the acting user so the archive is attributed", async () => {
     const repo = createFakeRepo();
     const useCases = createMessagingUseCases(repo);
-    const log = { id: "m-1", channel: "sms" } as never;
 
-    const result = await useCases.recordMessageLogs("demo", [log]);
+    await useCases.clearAllMessageLogs("demo", "u-admin");
 
-    expect(result).toEqual([log]);
-    expect(repo.insertMessageLogs).toHaveBeenCalledWith("demo", [log]);
+    expect(repo.softDeleteActiveMessageLogs).toHaveBeenCalledWith("demo", "u-admin");
+  });
+
+  it("recordMessageLogs returns the count actually persisted", async () => {
+    const repo = createFakeRepo();
+    (repo.insertMessageLogs as any).mockResolvedValue(1);
+    const useCases = createMessagingUseCases(repo);
+    const logA = { id: "m-1", channel: "sms" } as never;
+    const logB = { id: "m-2", channel: "sms" } as never;
+
+    const recordResult = await useCases.recordMessageLogs("demo", [logA, logB]);
+
+    // `ON CONFLICT DO NOTHING` can skip an id, so the reported count must come
+    // from the repository rather than the submitted array length.
+    expect(recordResult).toBe(1);
+    expect(repo.insertMessageLogs).toHaveBeenCalledWith("demo", [logA, logB]);
   });
 
   it("restoreMessageLogs maps absent/empty ids to restore-all and broadcasts", async () => {
@@ -167,53 +180,6 @@ describe("messaging use-cases (DI with fake repository)", () => {
     expect(repo.saveMessageTemplate).toHaveBeenCalledWith("demo2", fakeTemplate);
   });
 
-  it("loadMessageLogById handles soft-deleted records correctly", async () => {
-    const repo = createFakeRepo();
-    const activeLog: Message = {
-      id: "msg-1",
-      userId: "u-1",
-      contactId: "c-1",
-      channel: "sms",
-      body: "Hello",
-      sentAt: "2026-09-01T00:00:00.000Z",
-      status: "sent",
-      category: "general",
-    };
-    const deletedLog: Message = {
-      ...activeLog,
-      id: "msg-2",
-      deletedAt: "2026-09-02T00:00:00.000Z",
-    };
-
-    (repo.findMessageLogById as any).mockImplementation((_tenant: string, id: string) => {
-      if (id === "msg-1") return Promise.resolve(activeLog);
-      if (id === "msg-2") return Promise.resolve(deletedLog);
-      return Promise.resolve(null);
-    });
-
-    const useCases = createMessagingUseCases(repo);
-
-    // Active lookup
-    const active = await runWithTenant("demo", () => useCases.loadMessageLogById("msg-1"));
-    expect(active).toEqual(activeLog);
-
-    // Active lookup against deleted record returns null
-    const hiddenDeleted = await runWithTenant("demo", () => useCases.loadMessageLogById("msg-2"));
-    expect(hiddenDeleted).toBeNull();
-
-    // Deleted lookup against active record returns null
-    const hiddenActive = await runWithTenant("demo", () =>
-      useCases.loadMessageLogById("msg-1", true),
-    );
-    expect(hiddenActive).toBeNull();
-
-    // Deleted lookup against deleted record returns deleted record
-    const foundDeleted = await runWithTenant("demo", () =>
-      useCases.loadMessageLogById("msg-2", true),
-    );
-    expect(foundDeleted).toEqual(deletedLog);
-  });
-
   it("loadMessageLogsByIds scopes soft-deleted records", async () => {
     const repo = createFakeRepo();
     const activeLog: Message = {
@@ -279,14 +245,12 @@ describe("messaging use-cases (DI with fake repository)", () => {
     const metrics = await useCases.computeMessagingMetrics();
     const singleTmpl = await useCases.loadMessageTemplateById("tmpl-1");
     const tmplList = await useCases.loadMessageTemplatesByIds(["tmpl-1"]);
-    const singleLog = await useCases.loadMessageLogById("msg-1");
     const logList = await useCases.loadMessageLogsByIds(["msg-1"]);
 
     expect(page).toEqual({ logs: [], total: 0, page: 1, pageSize: 50, hasMore: false });
     expect(metrics.total).toBe(0);
     expect(singleTmpl).toBeNull();
     expect(tmplList).toEqual([]);
-    expect(singleLog).toBeNull();
     expect(logList).toEqual([]);
     expect(repo.queryFilteredMessageLogs).not.toHaveBeenCalled();
     expect(repo.queryMessagingMetrics).not.toHaveBeenCalled();

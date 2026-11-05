@@ -4,7 +4,9 @@ export default defineConfig({
   test: {
     environment: "node",
     include: ["src/**/*.{test,spec}.ts"],
-    pool: "threads",
+    pool:
+      (process.env.VITEST_POOL as "threads" | "forks") ??
+      (process.platform === "darwin" && !process.env.CI ? "forks" : "threads"),
     maxWorkers: 4,
     fileParallelism: true,
     clearMocks: true,

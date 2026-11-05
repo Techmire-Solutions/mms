@@ -1,11 +1,12 @@
-import { roleHasPermission, type User } from "@mms/shared";
+import { type User } from "@mms/shared";
 import { sessionsAcademicRepository as repo } from "../repository/sessionsAcademicRepositoryAdapter.js";
 import { HttpDomainError } from "../../lib/httpErrors.js";
+import { userHasPermission } from "../../lib/userPermissionContext.js";
 
 /** Users with this permission (admins, coordinators) are never section-scoped. */
-export const SECTION_SCOPE_BYPASS_PERMISSION = "sessions.delete" as const;
+const SECTION_SCOPE_BYPASS_PERMISSION = "sessions.delete" as const;
 
-export interface ClassOnDate {
+interface ClassOnDate {
   classId: string;
   /** YYYY-MM-DD business date of the record (attendance day / exam date). */
   date: string;
@@ -22,7 +23,7 @@ async function findUntaughtPairs(
   tenant: string,
   entries: readonly ClassOnDate[],
 ): Promise<Set<string> | null> {
-  if (roleHasPermission(user.role, SECTION_SCOPE_BYPASS_PERMISSION)) return null;
+  if (userHasPermission(user, SECTION_SCOPE_BYPASS_PERMISSION)) return null;
   const pairs = [
     ...new Map(entries.filter((e) => e.classId && e.date).map((e) => [pairKey(e), e])).values(),
   ].map((e) => ({ classId: e.classId, onDate: e.date.slice(0, 10) }));

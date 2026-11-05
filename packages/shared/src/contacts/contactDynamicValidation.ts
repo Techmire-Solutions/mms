@@ -90,7 +90,12 @@ export function buildDynamicContactSchema(
       const message = translationKey
         ? translateApp(translationKey, language)
         : translateApp("contacts.form.atLeastOneEntryRequired", language);
-      schemaObject[propertyKey] = z.array(itemSchema).min(1, message);
+      // Normalize a missing tab to `[]` so the localized "at least one entry"
+      // message fires instead of zod's raw "expected array" invalid_type error.
+      schemaObject[propertyKey] = z.preprocess(
+        (value) => (value === null || value === undefined ? [] : value),
+        z.array(itemSchema).min(1, message),
+      );
     } else {
       schemaObject[propertyKey] = z.array(itemSchema).optional().nullable();
     }

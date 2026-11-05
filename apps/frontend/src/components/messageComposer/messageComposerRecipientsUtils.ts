@@ -35,3 +35,24 @@ export function withAddedRecipient(
     next: duplicate ? current : [...current, candidate],
   };
 }
+
+/**
+ * Collapses recipients that target the same contact, keeping the first.
+ *
+ * `addRecipient` dedupes one-by-one, but bulk paths (resend of several logs,
+ * "notify guardians" for siblings sharing a guardian) hand the composer a
+ * pre-built list — without this a guardian would receive the message twice.
+ */
+export function dedupeRecipientsById(
+  recipients: readonly MessagingRecipient[],
+): MessagingRecipient[] {
+  const seen = new Set<string>();
+  const next: MessagingRecipient[] = [];
+  for (const recipient of recipients) {
+    const key = String(recipient.id);
+    if (seen.has(key)) continue;
+    seen.add(key);
+    next.push(recipient);
+  }
+  return next;
+}

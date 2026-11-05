@@ -1,7 +1,6 @@
 import React, { act } from "react";
 import { createRoot, type Root } from "react-dom/client";
-import { describe, expect, it } from "vitest";
-import type { TaskRecord } from "@mms/shared";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { useTasksWorkTabFilters } from "./useTasksWorkTabFilters";
 
 declare global {
@@ -9,57 +8,10 @@ declare global {
 }
 globalThis.IS_REACT_ACT_ENVIRONMENT = true;
 
-const mockTasks: TaskRecord[] = [
-  {
-    id: "task-1",
-    workspaceSubdomain: "demo",
-    title: "Alpha Task",
-    description: "First task desc",
-    priority: "high",
-    status: "todo",
-    dueAt: "2026-10-30T10:00:00Z",
-    startDate: "2026-10-20",
-    parentTaskId: null,
-    assignees: [
-      {
-        id: "asg-1",
-        taskId: "task-1",
-        userId: "user-1",
-        facultyId: "fac-1",
-        facultyName: "Zaid Khan",
-      },
-    ],
-    createdAt: "2026-10-01T00:00:00Z",
-    updatedAt: "2026-10-01T00:00:00Z",
-  },
-  {
-    id: "task-2",
-    workspaceSubdomain: "demo",
-    title: "Beta Task",
-    description: "Second task desc",
-    priority: "low",
-    status: "completed",
-    dueAt: "2026-11-15T10:00:00Z",
-    startDate: "2026-11-01",
-    parentTaskId: null,
-    assignees: [
-      {
-        id: "asg-2",
-        taskId: "task-2",
-        userId: "user-2",
-        facultyId: "fac-2",
-        facultyName: "Fatima Ali",
-      },
-    ],
-    createdAt: "2026-10-01T00:00:00Z",
-    updatedAt: "2026-10-01T00:00:00Z",
-  },
-];
-
 let currentFiltersResult!: ReturnType<typeof useTasksWorkTabFilters>;
 
 function HookHost(): React.JSX.Element {
-  currentFiltersResult = useTasksWorkTabFilters(mockTasks);
+  currentFiltersResult = useTasksWorkTabFilters();
   return <div />;
 }
 
@@ -73,104 +25,129 @@ async function mount(): Promise<{ root: Root; container: HTMLElement }> {
   return { root, container };
 }
 
+async function unmount(root: Root, container: HTMLElement): Promise<void> {
+  await act(async () => {
+    root.unmount();
+  });
+  container.remove();
+}
+
+/** Advance past the leaf search debounce inside an act() flush. */
+async function settleSearch(): Promise<void> {
+  await act(async () => {
+    vi.advanceTimersByTime(250);
+  });
+}
+
 describe("useTasksWorkTabFilters", () => {
-  it("returns all tasks by default without active filters", async () => {
+  beforeEach(() => {
+    vi.useFakeTimers();
+  });
+
+  afterEach(() => {
+    vi.useRealTimers();
+  });
+
+  it("starts with no active filters", async () => {
     const { root, container } = await mount();
-    expect(currentFiltersResult.filteredTasks).toHaveLength(2);
     expect(currentFiltersResult.activeChips).toHaveLength(0);
-    await act(async () => {
-      root.unmount();
-    });
-    container.remove();
+    expect(currentFiltersResult.hasActiveFilters).toBe(false);
+    expect(currentFiltersResult.quickFilter).toBe("all");
+    await unmount(root, container);
   });
 
-  it("filters tasks by search string matching title, desc, or assignee", async () => {
+  it("debounces search before it reaches the directory query", async () => {
     const { root, container } = await mount();
     await act(async () => {
-      currentFiltersResult.setSearch("Beta");
+      currentFiltersResult.setSearchInput("Beta");
     });
-    expect(currentFiltersResult.filteredTasks).toHaveLength(1);
-    expect(currentFiltersResult.filteredTasks[0].id).toBe("task-2");
+    expect(currentFiltersResult.searchInput).toBe("Beta");
+    expect(currentFiltersResult.search).toBe("");
 
-    await act(async () => {
-      currentFiltersResult.setSearch("Zaid");
-    });
-    expect(currentFiltersResult.filteredTasks).toHaveLength(1);
-    expect(currentFiltersResult.filteredTasks[0].id).toBe("task-1");
-    await act(async () => {
-      root.unmount();
-    });
-    container.remove();
+    await settleSearch();
+    expect(currentFiltersResult.search).toBe("Beta");
+    expect(currentFiltersResult.hasActiveFilters).toBe(true);
+    await unmount(root, container);
   });
 
-  it("filters tasks by status and priority", async () => {
+  it("renders a removable chip for every selected status", async () => {
+    const { root, container } = await mount();
+    await act(async () => {
+      currentFiltersResult.setStatusFilter(["completed", "todo"]);
+    });
+    expect(currentFiltersResult.activeChips).toHaveLength(2);
+    expect(currentFiltersResult.activeChips.map((chip) => chip.key)).toEqual([
+      "status-completed",
+      "status-todo",
+    ]);
+    expect(currentFiltersResult.hasActiveFilters).toBe(true);
+
+    await act(async () => {
+      currentFiltersResult.activeChips[0]?.onRemove();
+    });
+    expect(currentFiltersResult.statusFilter).toEqual(["todo"]);
+    await unmount(root, container);
+  });
+
+  it("clears every dimension — including status and search — from clear filters", async () => {
     const { root, container } = await mount();
     await act(async () => {
       currentFiltersResult.setStatusFilter(["completed"]);
+      currentFiltersResult.setPriorityFilter(["low"]);
+      currentFiltersResult.setQuickFilter("overdue");
+      currentFiltersResult.setDueFrom("2026-11-01");
+      currentFiltersResult.setDueTo("2026-11-30");
+      currentFiltersResult.setSearchInput("Beta");
     });
-    expect(currentFiltersResult.filteredTasks).toHaveLength(1);
-    expect(currentFiltersResult.filteredTasks[0].id).toBe("task-2");
+    await settleSearch();
+    expect(currentFiltersResult.hasActiveFilters).toBe(true);
 
     await act(async () => {
-      currentFiltersResult.setStatusFilter([]);
-      currentFiltersResult.setPriorityFilter(["high"]);
+      currentFiltersResult.handleClearFilters();
     });
-    expect(currentFiltersResult.filteredTasks).toHaveLength(1);
-    expect(currentFiltersResult.filteredTasks[0].id).toBe("task-1");
-    expect(currentFiltersResult.activeChips).toHaveLength(1);
-    await act(async () => {
-      root.unmount();
-    });
-    container.remove();
+    await settleSearch();
+
+    expect(currentFiltersResult.statusFilter).toEqual([]);
+    expect(currentFiltersResult.priorityFilter).toEqual([]);
+    expect(currentFiltersResult.quickFilter).toBe("all");
+    expect(currentFiltersResult.dueFrom).toBeUndefined();
+    expect(currentFiltersResult.dueTo).toBeUndefined();
+    expect(currentFiltersResult.searchInput).toBe("");
+    expect(currentFiltersResult.search).toBe("");
+    expect(currentFiltersResult.activeChips).toHaveLength(0);
+    expect(currentFiltersResult.hasActiveFilters).toBe(false);
+    await unmount(root, container);
   });
 
-  it("filters tasks by quickFilter presets (open, urgent_high)", async () => {
+  it("offers the five quick-filter presets and renders one chip for the active preset", async () => {
     const { root, container } = await mount();
-    expect(currentFiltersResult.quickFilterOptions).toHaveLength(5);
+    expect(currentFiltersResult.quickFilterOptions).toHaveLength(6);
 
     await act(async () => {
       currentFiltersResult.setQuickFilter("open");
     });
-    expect(currentFiltersResult.filteredTasks).toHaveLength(1);
-    expect(currentFiltersResult.filteredTasks[0].id).toBe("task-1");
     expect(currentFiltersResult.activeChips).toHaveLength(1);
-
-    await act(async () => {
-      currentFiltersResult.setQuickFilter("urgent_high");
-    });
-    expect(currentFiltersResult.filteredTasks).toHaveLength(1);
-    expect(currentFiltersResult.filteredTasks[0].id).toBe("task-1");
+    expect(currentFiltersResult.activeChips[0]?.key).toBe("quickFilter");
 
     await act(async () => {
       currentFiltersResult.setQuickFilter("all");
     });
-    expect(currentFiltersResult.filteredTasks).toHaveLength(2);
     expect(currentFiltersResult.activeChips).toHaveLength(0);
-
-    await act(async () => {
-      root.unmount();
-    });
-    container.remove();
+    await unmount(root, container);
   });
 
-  it("filters tasks by due date range and clears all filters", async () => {
+  it("renders due-range chips and removes them individually", async () => {
     const { root, container } = await mount();
     await act(async () => {
       currentFiltersResult.setDueFrom("2026-11-01");
       currentFiltersResult.setDueTo("2026-11-30");
     });
-    expect(currentFiltersResult.filteredTasks).toHaveLength(1);
-    expect(currentFiltersResult.filteredTasks[0].id).toBe("task-2");
-    expect(currentFiltersResult.activeChips).toHaveLength(2);
-
+    expect(currentFiltersResult.activeChips.map((chip) => chip.key)).toEqual(["dueFrom", "dueTo"]);
     await act(async () => {
-      currentFiltersResult.handleClearFilters();
+      currentFiltersResult.activeChips[0]?.onRemove();
     });
-    expect(currentFiltersResult.filteredTasks).toHaveLength(2);
-    expect(currentFiltersResult.activeChips).toHaveLength(0);
-    await act(async () => {
-      root.unmount();
-    });
-    container.remove();
+    expect(currentFiltersResult.dueFrom).toBeUndefined();
+    expect(currentFiltersResult.dueTo).toBe("2026-11-30");
+    await unmount(root, container);
   });
 });

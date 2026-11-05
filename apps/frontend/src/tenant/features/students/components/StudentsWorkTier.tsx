@@ -140,15 +140,16 @@ export function StudentsWorkTier({
           canExport={canExport}
           bulkActions={bulkActions}
           selectedTargets={selectedTargets}
-          studentStatusOptions={studentStatusOptions}
           statusBadgeConfig={workOverlays.statusBadgeConfig}
           onWhatsApp={(targets) => workOverlays.openSelectionMessage("whatsapp", targets)}
           onSms={(targets) => workOverlays.openSelectionMessage("sms", targets)}
           onEmail={(targets) => workOverlays.openSelectionMessage("email", targets)}
           onBulkStatusChange={async (status) => {
             try {
-              await onBulkStatusChange(selectedIds, status);
-              onClearSelection();
+              const result = await onBulkStatusChange(selectedIds, status);
+              // Only drop the selection when every row changed; a partial failure keeps
+              // the failed rows selected so the user can retry them (n7).
+              if (!result || result.failed === 0) onClearSelection();
             } catch {
               // Toast already emitted by the crud action; keep selection for retry.
             }

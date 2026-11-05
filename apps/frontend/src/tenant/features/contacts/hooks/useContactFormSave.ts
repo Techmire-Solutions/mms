@@ -12,12 +12,14 @@ import {
   type Contact,
   todayISO,
   cleanContactDraft,
+  stripAbsentContactCollections,
   syncContactScalarFields,
   normalizeToE164,
   parsePhoneNumber,
   isContactDeleted,
   type ValidationError,
   formatSocialPlatformUrl,
+  uuidv7,
 } from "@mms/shared";
 
 export function useContactFormSave({
@@ -38,7 +40,7 @@ export function useContactFormSave({
   onBaselineReset?: (contact: Contact) => void;
 }) {
   const { t } = useTranslation();
-  const { fields } = useContactConfig();
+  const { fields, fieldConfigVersion } = useContactConfig();
   const { language } = useGlobalSettings();
   const validate = useContactValidation();
   const [saving, setSaving] = useState(false);
@@ -102,7 +104,7 @@ export function useContactFormSave({
 
         const contactRaw: Contact = {
           ...cleanedDraft,
-          id: cleanedDraft.id || contact?.id || crypto.randomUUID(),
+          id: cleanedDraft.id || contact?.id || uuidv7(),
           firstName,
           lastName,
           name: composeContactName(firstName, lastName),
@@ -114,11 +116,25 @@ export function useContactFormSave({
           createdAt: cleanedDraft.createdAt || todayISO(),
         } as Contact;
 
-        const titleCased = applyTitleCaseToContact(contactRaw) as Contact;
-        const finalized = syncContactScalarFields(titleCased);
+        // A tab the viewer cannot read is absent from the loaded record; the form
+        // still rendered blank rows for it. Never send those back — the server
+        // would read them as "clear the collection" (R4-03).
+        const withPresence = stripAbsentContactCollections(
+          contactRaw as unknown as Record<string, unknown>,
+          contact as unknown as Record<string, unknown> | undefined,
+        ) as unknown as Contact;
 
-        await onSave(finalized);
-        onBaselineReset?.(finalized);
+        const titleCased = applyTitleCaseToContact(withPresence) as Contact;
+        const finalized = syncContactScalarFields(titleCased);
+        // Blueprint version lock: the server rejects a form saved against a field
+        // config that changed while it was open (`_blueprintId` = active version).
+        const withBlueprint = {
+          ...finalized,
+          _blueprintId: String(fieldConfigVersion),
+        } as Contact;
+
+        await onSave(withBlueprint);
+        onBaselineReset?.(withBlueprint);
 
         if (!options?.keepOpen) {
           notify.success(
@@ -159,6 +175,7 @@ export function useContactFormSave({
       onValidationTab,
       onBaselineReset,
       fields,
+      fieldConfigVersion,
       language,
       validate,
       t,

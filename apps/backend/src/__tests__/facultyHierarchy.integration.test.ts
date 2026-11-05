@@ -7,7 +7,10 @@ import {
   HierarchyCycleError,
   validateReportingHierarchy,
 } from "../faculty/use-cases/facultyHierarchyValidator.js";
-import { SubordinateReassignmentError } from "../faculty/use-cases/facultySoftDeleteUseCases.js";
+import {
+  SubordinateReassignmentError,
+  SubordinateReassignmentUnavailableError,
+} from "../faculty/use-cases/facultySoftDeleteUseCases.js";
 import type { Faculty } from "@mms/shared";
 import type { FacultyRepository } from "../faculty/repository/facultyRepository.js";
 
@@ -29,6 +32,11 @@ vi.mock("../lib/tenantContext.js", async (importOriginal) => {
 
 vi.mock("../lib/livePush.js", () => ({
   broadcastCollection: vi.fn().mockResolvedValue(undefined),
+}));
+
+vi.mock("../services/auditTrailService.js", () => ({
+  recordModernAuditEvent: vi.fn().mockResolvedValue({ id: 1 }),
+  sanitizeAuditState: (value: unknown) => value,
 }));
 
 vi.mock("../faculty/use-cases/facultyHydrateUseCases.js", () => ({
@@ -212,7 +220,10 @@ describe("Faculty Hierarchy and Task Management Domain Logic", () => {
     ).rejects.toThrow(SubordinateReassignmentError);
   });
 
-  it("allows deletion of supervisor when subordinates are reassigned to another valid supervisor", async () => {
+  it("refuses a supervisor delete that asks for reassignment the server cannot perform", async () => {
+    // The production repository's `reassignSubordinates` is a no-op (the org-position
+    // model was removed); only the test fake implemented it. Accepting the target
+    // archived the supervisor and orphaned the subordinates while answering 200.
     const seed: Faculty[] = [
       { id: "f-old-sup", hierarchyRank: 2, status: "active", contactId: "c1" },
       { id: "f-new-sup", hierarchyRank: 2, status: "active", contactId: "c2" },
@@ -227,17 +238,12 @@ describe("Faculty Hierarchy and Task Management Domain Logic", () => {
     const { repo, store } = createMockFacultyRepo(seed);
     const useCases = createFacultyUseCases(repo);
 
-    const deleted = await useCases.deleteFacultyById(
-      "f-old-sup",
-      "admin-user",
-      "Retiring",
-      "f-new-sup",
-    );
+    await expect(
+      useCases.deleteFacultyById("f-old-sup", "admin-user", "Retiring", "f-new-sup"),
+    ).rejects.toThrow(SubordinateReassignmentUnavailableError);
 
-    expect(deleted).toBe(true);
-    expect(store.get("f-old-sup")?.deletedAt).toBeDefined();
-    // Subordinate reassigned to new supervisor
-    expect(store.get("f-subordinate")?.reportingFacultyId).toBe("f-new-sup");
+    expect(store.get("f-old-sup")?.deletedAt).toBeUndefined();
+    expect(store.get("f-subordinate")?.reportingFacultyId).toBe("f-old-sup");
   });
 
   it("constructs an organizational hierarchy tree with root nodes and subordinates", async () => {

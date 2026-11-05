@@ -38,7 +38,10 @@ export function StandardModuleCsvImportDialog<TRow = Record<string, unknown>>({
     apiPath,
     schema,
     submitRows,
-    onSuccess: onClose,
+    // Deliberately no `onSuccess: onClose`: closing on submit success unmounted the
+    // dialog before `ModuleImportDialog` could render `completedJob`, so imported /
+    // failed counts were never shown (2026-11-04 review, S-01). The dialog now stays
+    // open and the user closes it (or starts another import).
   });
 
   if (!open || !canWrite) return null;

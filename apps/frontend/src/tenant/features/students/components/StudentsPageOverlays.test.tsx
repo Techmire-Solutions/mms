@@ -1,10 +1,14 @@
-import React from "react";
 import { describe, expect, it, vi } from "vitest";
 import { renderToStaticMarkup } from "react-dom/server";
 import { StudentsPageOverlays } from "./StudentsPageOverlays";
 
 vi.mock("@/tenant/hooks/collections/sessions", () => ({
   useSessionsCollection: () => [],
+}));
+
+// Branding is routed (it reads `useLocation` for scoped settings); the overlay only needs the name.
+vi.mock("@/tenant/hooks/useBranding", () => ({
+  useBranding: () => ({ madrasaName: "Demo Madrasa" }),
 }));
 
 vi.mock("@/hooks/useTranslation", () => ({

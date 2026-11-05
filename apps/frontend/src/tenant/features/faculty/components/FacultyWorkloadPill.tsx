@@ -17,7 +17,7 @@ export interface FacultyWorkloadPillProps {
 export function FacultyWorkloadPill({
   faculty,
   className,
-}: FacultyWorkloadPillProps): React.JSX.Element {
+}: FacultyWorkloadPillProps): React.JSX.Element | null {
   const { t } = useTranslation();
 
   const classCount = Array.isArray(faculty.assignedClasses)
@@ -30,6 +30,11 @@ export function FacultyWorkloadPill({
   const tenureStatus = faculty.employDesignationStatus || faculty.profileStatus || faculty.status;
   const isInactive =
     tenureStatus === "inactive" || tenureStatus === "terminated" || tenureStatus === "retired";
+
+  // There is no class-count producer yet (backend workload M4). With no data the
+  // dot would claim "Available"/"Moderate" for everyone, so only render the pill
+  // when it reflects something the record actually says.
+  if (classCount === 0 && !isOnLeave && !isInactive) return null;
 
   let dotClassName = "bg-success";
   let label = t("faculty.workload.moderate");

@@ -1422,6 +1422,20 @@
       "when": 1793649458755,
       "tag": "0202_backfill_relationship_role_tags",
       "breakpoints": true
+    },
+    {
+      "idx": 203,
+      "version": "7",
+      "when": 1793653058755,
+      "tag": "0203_contacts_merge_reference_repair",
+      "breakpoints": true
+    },
+    {
+      "idx": 204,
+      "version": "7",
+      "when": 1793658000000,
+      "tag": "0204_contact_attachments_legacy_columns",
+      "breakpoints": true
     }
   ]
 }

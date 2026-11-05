@@ -26,6 +26,8 @@ export function TenantMessageComposerLauncher({
       <TenantMessageComposer
         channel={messagingTarget.channel}
         recipients={messagingTarget.recipients}
+        initialMessage={messagingTarget.initialMessage}
+        initialSubject={messagingTarget.initialSubject}
         onClose={onClose}
       />
     </Suspense>

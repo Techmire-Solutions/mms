@@ -1,15 +1,8 @@
-import {
-  Edit2,
-  MessageCircle,
-  MessageSquare,
-  Trash2,
-  Users,
-  DollarSign,
-  Clock,
-} from "lucide-react";
+import { MessageCircle, MessageSquare, Users, DollarSign, Clock } from "lucide-react";
 import type { FacultyMember } from "@mms/shared";
 
-import { Button } from "@/components/ui/button";
+import { ModuleRowActionsMenu } from "@/components/app/ModuleRowActionsMenu";
+import { DropdownMenuItem } from "@/components/ui/dropdown-menu";
 import { ProgressBar } from "@/components/app/ProgressBar";
 import { StatusBadge, type StatusBadgeConfigItem } from "@/components/app/StatusBadge";
 import { DirectoryEntityCard } from "@/components/app/DirectoryEntityCard";
@@ -95,53 +88,31 @@ export function ClassCard({
           </DirectoryCardMetaTile>
         </EntityCard.MetaGrid>
       }
-      actions={
+      overflowActions={
         canWrite ? (
-          <div className="flex shrink-0 items-center gap-1">
-            <Button
-              type="button"
-              variant="ghost"
-              size="icon"
-              aria-label={t("sessions.classes.messageWhatsApp", { name: sessionClass.name })}
-              onClick={() => onMessage?.("whatsapp", sessionClass)}
-              className="min-h-11 min-w-11 rounded-lg text-success transition-colors hover:bg-muted hover:text-success"
-              title={t("sessions.classes.messageWhatsApp", { name: sessionClass.name })}
-            >
-              <MessageCircle className="h-4 w-4" aria-hidden="true" />
-            </Button>
-            <Button
-              type="button"
-              variant="ghost"
-              size="icon"
-              aria-label={t("sessions.classes.messageSms", { name: sessionClass.name })}
-              onClick={() => onMessage?.("sms", sessionClass)}
-              className="min-h-11 min-w-11 rounded-lg text-info transition-colors hover:bg-muted hover:text-info"
-              title={t("sessions.classes.messageSms", { name: sessionClass.name })}
-            >
-              <MessageSquare className="h-4 w-4" aria-hidden="true" />
-            </Button>
-            <Button
-              type="button"
-              variant="ghost"
-              size="icon"
-              aria-label={t("sessions.classes.editNamed", { name: sessionClass.name })}
-              onClick={() => onEdit(sessionClass)}
-              className="min-h-11 min-w-11 rounded-lg text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
-            >
-              <Edit2 className="h-4 w-4" aria-hidden="true" />
-            </Button>
-            <Button
-              type="button"
-              variant="ghost"
-              size="icon"
-              aria-label={t("sessions.classes.deleteNamed", { name: sessionClass.name })}
-              onClick={() => onDelete(sessionClass.id)}
-              className="min-h-11 min-w-11 rounded-lg text-muted-foreground transition-colors hover:bg-destructive/10 hover:text-destructive"
-            >
-              <Trash2 className="h-4 w-4" aria-hidden="true" />
-            </Button>
-          </div>
-        ) : null
+          <ModuleRowActionsMenu
+            triggerLabel={t("sessions.classes.actionsFor", { name: sessionClass.name })}
+            archived={false}
+            canWrite
+            canDelete
+            editLabel={t("common.edit")}
+            deleteLabel={t("common.delete")}
+            onEdit={() => onEdit(sessionClass)}
+            onDelete={() => onDelete(sessionClass.id)}
+            extras={
+              <>
+                <DropdownMenuItem onClick={() => onMessage?.("whatsapp", sessionClass)}>
+                  <MessageCircle className="w-3.5 h-3.5 me-2" aria-hidden="true" />
+                  {t("sessions.classes.messageWhatsApp", { name: sessionClass.name })}
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={() => onMessage?.("sms", sessionClass)}>
+                  <MessageSquare className="w-3.5 h-3.5 me-2" aria-hidden="true" />
+                  {t("sessions.classes.messageSms", { name: sessionClass.name })}
+                </DropdownMenuItem>
+              </>
+            }
+          />
+        ) : undefined
       }
     >
       <div className="mb-3 flex items-center gap-2 text-sm text-muted-foreground">
@@ -154,15 +125,21 @@ export function ClassCard({
       <div className="mb-3 flex items-center gap-2 flex-wrap">
         <span className="inline-flex items-center gap-1 rounded-md bg-muted px-2 py-0.5 text-xs font-medium text-muted-foreground">
           <DollarSign className="h-3 w-3" />
-          {feeCount > 0 ? `${feeCount} Fees` : "No Fees set"}
+          {feeCount > 0
+            ? t("sessions.classes.feesCount", { count: feeCount })
+            : t("sessions.classes.noFees")}
         </span>
         <span className="inline-flex items-center gap-1 rounded-md bg-muted px-2 py-0.5 text-xs font-medium text-muted-foreground">
           <Clock className="h-3 w-3" />
-          {sessionClass.timetables?.[0]?.periods?.length ?? 0} Periods
+          {t("sessions.classes.periodsCount", {
+            count: sessionClass.timetables?.[0]?.periods?.length ?? 0,
+          })}
         </span>
         {sessionClass.scholarships && sessionClass.scholarships.length > 0 && (
           <span className="inline-flex items-center gap-1 rounded-md bg-secondary/10 text-secondary px-2 py-0.5 text-xs font-medium">
-            Scholarship: {sessionClass.scholarships[0]?.percentage}%
+            {t("sessions.classes.scholarshipPercent", {
+              percent: sessionClass.scholarships[0]?.percentage ?? 0,
+            })}
           </span>
         )}
       </div>

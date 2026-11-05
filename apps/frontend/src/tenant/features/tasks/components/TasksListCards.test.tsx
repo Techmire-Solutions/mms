@@ -76,6 +76,15 @@ describe("TasksListCards", () => {
     expect(html).toContain("tasks.trashEmptyTitle");
   });
 
+  it("offers clear filters instead of a create CTA when filters exclude everything", () => {
+    const html = renderToStaticMarkup(
+      <TasksListCards {...baseProps} tasks={[]} hasActiveFilters onClearFilters={vi.fn()} />,
+    );
+    expect(html).toContain("common.dataTable.noMatches");
+    expect(html).toContain("common.clearFilters");
+    expect(html).not.toContain("tasks.emptyTitle");
+  });
+
   it("shows loading label while waiting for first page", () => {
     const html = renderToStaticMarkup(
       <TasksListCards {...baseProps} tasks={[]} isLoading={true} />,

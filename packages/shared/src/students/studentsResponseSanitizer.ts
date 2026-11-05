@@ -63,6 +63,36 @@ export function resolveStudentKeysToStripForViewer(
 }
 
 /**
+ * Removes `keysToStrip` from a student record — both at the top level and inside the nested
+ * `customFields` map.
+ *
+ * Reads flatten `custom_fields` onto the record but keep the map
+ * (`studentRepositoryMappers.studentRowToRecord`), so deleting only the top-level key would still
+ * expose a restricted custom value through `customFields`.
+ */
+function stripStudentKeys(student: Student, keysToStrip: readonly string[]): Student {
+  const sanitized: Student = { ...student };
+  for (const key of keysToStrip) {
+    delete sanitized[key];
+  }
+  const customFields = (student as { customFields?: unknown }).customFields;
+  if (customFields && typeof customFields === "object" && !Array.isArray(customFields)) {
+    const nextCustomFields = { ...(customFields as Record<string, unknown>) };
+    let removed = false;
+    for (const key of keysToStrip) {
+      if (key in nextCustomFields) {
+        delete nextCustomFields[key];
+        removed = true;
+      }
+    }
+    if (removed) {
+      (sanitized as Record<string, unknown>).customFields = nextCustomFields;
+    }
+  }
+  return sanitized;
+}
+
+/**
  * Strips student properties the viewer role cannot read (API + restore guard).
  * Mirrors `sanitizeContactForViewer`: disabled or role-hidden Setup fields are
  * removed; always-visible identity keys and unregistered custom keys survive.
@@ -74,11 +104,7 @@ export function sanitizeStudentForViewer(
 ): Student {
   const keysToStrip = resolveStudentKeysToStripForViewer(viewerRole, config);
   if (keysToStrip.length === 0) return student;
-  const sanitized: Student = { ...student };
-  for (const key of keysToStrip) {
-    delete sanitized[key];
-  }
-  return sanitized;
+  return stripStudentKeys(student, keysToStrip);
 }
 
 export function sanitizeStudentsForViewer(
@@ -88,11 +114,5 @@ export function sanitizeStudentsForViewer(
 ): Student[] {
   const keysToStrip = resolveStudentKeysToStripForViewer(viewerRole, config);
   if (keysToStrip.length === 0) return students;
-  return students.map((student) => {
-    const sanitized: Student = { ...student };
-    for (const key of keysToStrip) {
-      delete sanitized[key];
-    }
-    return sanitized;
-  });
+  return students.map((student) => stripStudentKeys(student, keysToStrip));
 }

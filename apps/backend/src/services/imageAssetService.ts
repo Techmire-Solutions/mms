@@ -23,10 +23,16 @@ export function sniffImageFormat(buffer: Buffer): "avif" | "webp" | null {
   const ascii = (start: number, end: number) => buffer.toString("latin1", start, end);
   // WebP: "RIFF" .... "WEBP"
   if (ascii(0, 4) === "RIFF" && ascii(8, 12) === "WEBP") return "webp";
-  // AVIF: ISO-BMFF "ftyp" box with major brand avif/avis
+  // AVIF: ISO-BMFF "ftyp" box. Some encoders use a generic major brand
+  // (`mif1`/`msf1`) and list avif/avis among the compatible brands.
   if (ascii(4, 8) === "ftyp") {
-    const brand = ascii(8, 12);
-    if (brand === "avif" || brand === "avis") return "avif";
+    const boxSize = buffer.readUInt32BE(0);
+    const limit = Math.min(buffer.length, Math.max(16, Math.min(boxSize, 64)));
+    const brands = [ascii(8, 12)];
+    for (let offset = 16; offset + 4 <= limit; offset += 4) {
+      brands.push(ascii(offset, offset + 4));
+    }
+    if (brands.includes("avif") || brands.includes("avis")) return "avif";
   }
   return null;
 }
@@ -101,7 +107,7 @@ export async function saveUploadedImage(
 
       if (!verified) {
         headerBuffer = Buffer.concat([headerBuffer, chunk]);
-        if (headerBuffer.length >= 12) {
+        if (headerBuffer.length >= 32) {
           const sniffed = sniffImageFormat(headerBuffer);
           if (sniffed !== expected) {
             callback(

@@ -1,10 +1,15 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
-import type { FacultyRecord } from "@mms/shared";
+import { todayISO, type FacultyRecord } from "@mms/shared";
 
 const mocks = vi.hoisted(() => ({
   findPrimary: vi.fn(),
   save: vi.fn(),
   close: vi.fn(),
+  timezone: { value: Intl.DateTimeFormat().resolvedOptions().timeZone },
+}));
+
+vi.mock("../db/repositories/workspaceRepositoryCache.js", () => ({
+  loadWorkspaceRow: async () => ({ timezone: mocks.timezone.value }),
 }));
 
 vi.mock("../db/repositories/facultyAssignmentRepository.js", () => ({
@@ -24,7 +29,8 @@ import {
   type FacultyWriteGuards,
 } from "../faculty/use-cases/facultyWriteHelpers.js";
 
-const today = new Date().toISOString().slice(0, 10);
+// Appointment boundaries follow the calendar-local day, not UTC.
+const today = todayISO();
 const record: FacultyRecord = {
   id: "fac-1",
   contactId: "c-1",
@@ -118,6 +124,24 @@ describe("syncPrimaryAppointment (faculty_assignments compatibility bridge)", ()
     // Assert
     expect(mocks.save).not.toHaveBeenCalled();
     expect(mocks.close).not.toHaveBeenCalled();
+  });
+
+  it("uses the workspace timezone for the appointment day", async () => {
+    vi.useFakeTimers();
+    vi.setSystemTime(new Date("2026-11-04T23:30:00.000Z"));
+    mocks.timezone.value = "Asia/Karachi";
+    mocks.findPrimary.mockResolvedValue(null);
+    try {
+      await syncPrimaryAppointment("demo", { ...record, designationStartDate: "" }, "dept-1");
+
+      expect(mocks.save).toHaveBeenCalledWith(
+        "demo",
+        expect.objectContaining({ startDate: "2026-11-05" }),
+      );
+    } finally {
+      vi.useRealTimers();
+      mocks.timezone.value = Intl.DateTimeFormat().resolvedOptions().timeZone;
+    }
   });
 
   it("given no primary appointment yet, should create one starting at the designation start date", async () => {

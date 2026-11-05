@@ -52,11 +52,14 @@ export async function bulkRestoreStudentsSql(
   tenant: string,
   ids: string[],
   userId?: string,
-): Promise<{ succeeded: number; failed: number }> {
+  restoredAt?: Date,
+): Promise<{ succeeded: number; failed: number; restoredIds: string[] }> {
   const subdomain = tenant.trim().toLowerCase();
   const uniqueIds = dedupeTrimmedIds(ids);
-  if (uniqueIds.length === 0) return { succeeded: 0, failed: 0 };
-  const now = new Date();
+  if (uniqueIds.length === 0) return { succeeded: 0, failed: 0, restoredIds: [] };
+  // One caller-supplied instant for the whole batch: rows, cascade and audit
+  // must not carry three different `restoredAt` values.
+  const now = restoredAt ?? new Date();
   const res = await withTenant(subdomain, async (tx) => {
     await enableIncludeDeleted(tx);
     const updated = await tx
@@ -82,6 +85,7 @@ export async function bulkRestoreStudentsSql(
     return {
       succeeded: updated.length,
       failed: uniqueIds.length - updated.length,
+      restoredIds: updated.map((row) => String(row.id)),
     };
   });
   await invalidateMultiTierCache({ tenantId: subdomain, domain: "students" });

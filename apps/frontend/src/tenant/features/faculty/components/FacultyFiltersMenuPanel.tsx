@@ -3,6 +3,10 @@
  * @description Filter panel body for Faculty Work Filters menu.
  */
 import {
+  facultyFilterMenuValue,
+  normalizeFacultyFilterValue,
+} from "@/tenant/features/faculty/lib/facultyFilterValues";
+import {
   isFacultyQuickFilter,
   FACULTY_QUICK_FILTER_OPTIONS,
   FACULTY_SORT_FIELD_SET,
@@ -80,7 +84,7 @@ export function FacultyFiltersMenuPanel({
 
       <ModuleFilterRadioGroup
         label={t("faculty.filter.gender")}
-        value={filterGender}
+        value={facultyFilterMenuValue(filterGender)}
         options={[
           { value: "all", label: t("faculty.filter.allGenders") },
           ...genderFilters.map((gender) => ({
@@ -89,7 +93,7 @@ export function FacultyFiltersMenuPanel({
             icon: <GenderIcon gender={gender} className="w-3.5 h-3.5" aria-hidden="true" />,
           })),
         ]}
-        onValueChange={onGenderChange}
+        onValueChange={(value) => onGenderChange(normalizeFacultyFilterValue(value))}
       />
 
       {departmentFilterOptions.length > 0 && (
@@ -97,12 +101,12 @@ export function FacultyFiltersMenuPanel({
           <ModuleFilterDivider />
           <ModuleFilterRadioGroup
             label={t("faculty.filter.department")}
-            value={filterDepartment || "all"}
+            value={facultyFilterMenuValue(filterDepartment)}
             options={[
               { value: "all", label: t("faculty.filter.allDepartments") },
               ...departmentFilterOptions,
             ]}
-            onValueChange={(value) => onDepartmentChange(value === "all" ? "" : value)}
+            onValueChange={(value) => onDepartmentChange(normalizeFacultyFilterValue(value))}
           />
         </>
       )}
@@ -112,12 +116,12 @@ export function FacultyFiltersMenuPanel({
           <ModuleFilterDivider />
           <ModuleFilterRadioGroup
             label={t("faculty.filter.designation")}
-            value={filterDesignation || "all"}
+            value={facultyFilterMenuValue(filterDesignation)}
             options={[
               { value: "all", label: t("faculty.filter.allDesignations") },
               ...designationFilterOptions,
             ]}
-            onValueChange={(value) => onDesignationChange(value === "all" ? "" : value)}
+            onValueChange={(value) => onDesignationChange(normalizeFacultyFilterValue(value))}
           />
         </>
       )}
@@ -127,12 +131,12 @@ export function FacultyFiltersMenuPanel({
           <ModuleFilterDivider />
           <ModuleFilterRadioGroup
             label={t("faculty.filter.supervisor")}
-            value={filterReportingFacultyId || "all"}
+            value={facultyFilterMenuValue(filterReportingFacultyId)}
             options={[
               { value: "all", label: t("faculty.filter.allSupervisors") },
               ...supervisorFilterOptions,
             ]}
-            onValueChange={(value) => onReportingFacultyChange(value === "all" ? "" : value)}
+            onValueChange={(value) => onReportingFacultyChange(normalizeFacultyFilterValue(value))}
           />
         </>
       )}
@@ -142,7 +146,7 @@ export function FacultyFiltersMenuPanel({
           <ModuleFilterDivider />
           <ModuleFilterRadioGroup
             label={t("faculty.filter.specialization")}
-            value={filterSpecialization}
+            value={facultyFilterMenuValue(filterSpecialization)}
             options={[
               { value: "all", label: t("faculty.filter.allSpecializations") },
               ...specializationOptions.map((specialization) => ({
@@ -150,7 +154,7 @@ export function FacultyFiltersMenuPanel({
                 label: specialization,
               })),
             ]}
-            onValueChange={onSpecializationChange}
+            onValueChange={(value) => onSpecializationChange(normalizeFacultyFilterValue(value))}
           />
         </>
       )}

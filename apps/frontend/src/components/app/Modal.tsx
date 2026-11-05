@@ -28,6 +28,8 @@ export interface ModalProps<K extends string = string> {
   progress?: number;
   progressLabel?: React.ReactNode;
   error?: string | readonly string[];
+  /** Turns each banner message into a button that focuses the offending field. */
+  onSelectError?: (index: number) => void;
   tabs?: readonly SubTab<K>[];
   activeTab?: K;
   onTabChange?: (key: K) => void;
@@ -43,6 +45,8 @@ export interface ModalProps<K extends string = string> {
   footerStart?: React.ReactNode;
   hideFooter?: boolean;
   formId?: string;
+  /** Footer save-button treatment; destructive for irreversible confirmations. */
+  saveVariant?: "primary" | "destructive";
 }
 
 const SIZE = {
@@ -75,6 +79,7 @@ export function Modal<K extends string = string>({
   progress,
   progressLabel,
   error,
+  onSelectError,
   tabs,
   activeTab,
   onTabChange,
@@ -89,6 +94,7 @@ export function Modal<K extends string = string>({
   footerStart,
   hideFooter = false,
   formId,
+  saveVariant = "primary",
 }: ModalProps<K>): React.JSX.Element | null {
   const { t } = useTranslation();
   const reducedMotion = useReducedMotion();
@@ -119,6 +125,7 @@ export function Modal<K extends string = string>({
         saveDisabled={saveDisabled}
         saved={saved}
         form={formId}
+        saveVariant={saveVariant}
       />
     );
   })();
@@ -163,7 +170,7 @@ export function Modal<K extends string = string>({
             />
           ) : null}
 
-          {errors.length > 0 && <FormErrorBanner errors={errors} />}
+          {errors.length > 0 && <FormErrorBanner errors={errors} onSelectError={onSelectError} />}
 
           <div
             className={cn(

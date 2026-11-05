@@ -71,7 +71,14 @@ export function FacultyPageView({
           onAddDesignation={openCreateDesignation}
         />
       }
-      metrics={<FacultyCommandMetrics total={metricsTotal ?? shownCount} shown={shownCount} />}
+      metrics={
+        <FacultyCommandMetrics
+          total={metricsTotal ?? shownCount}
+          // The filtered count belongs to the faculties directory only; showing it
+          // on Departments/Designations/Reports/Setup reported the wrong scope.
+          shown={activeTab === "faculties" ? shownCount : undefined}
+        />
+      }
       tiers={[
         { id: "faculties", content: <FacultyWorkTier {...tabPanelProps.workTierProps} /> },
         {

@@ -17,6 +17,7 @@ import {
 import { formatTraceParent } from "../config/telemetry.js";
 import { getWorkspaceBySubdomain } from "../services/workspaceService.js";
 import { loadGlobalSettings } from "../services/globalSettingsService.js";
+import { attachTenantRoleCatalog } from "../lib/attachTenantRoleCatalog.js";
 import { sendForbidden, sendServiceUnavailable, sendUnauthorized } from "../lib/httpErrors.js";
 import { checkTenantAuthPipelineBatch } from "../services/authSessionService.js";
 import { RedisUnavailableError } from "../lib/redis.js";
@@ -161,14 +162,18 @@ export async function authenticateTenant(
       if (userStatus.role) {
         user.role = userStatus.role;
       }
-      if (user.role === "faculty" || user.role === "teacher") {
-        const { facultyRepository } =
-          await import("../faculty/repository/facultyRepositoryAdapter.js");
-        const facultyRow = await facultyRepository.findById(tenant, String(user.id));
-        if (facultyRow?.deletedAt || (facultyRow as { deleted_at?: unknown })?.deleted_at) {
-          await sendUnauthorized(reply, "Session revoked");
-          return;
-        }
+      // Custom/composite roles are defined by the workspace catalog; system
+      // roles skip the lookup. The catalog lives in a WeakMap on the user.
+      await attachTenantRoleCatalog(user, tenant);
+      // A soft-deleted faculty profile must not retain access. Resolve through
+      // the linked tenant-user id (`faculty.user_id`) — the JWT id is never the
+      // faculty primary key — and do not gate on the role name, because
+      // designation-managed composite roles do not carry it.
+      const { facultyRepository } =
+        await import("../faculty/repository/facultyRepositoryAdapter.js");
+      if (await facultyRepository.isDeletedByUserId(tenant, String(user.id))) {
+        await sendUnauthorized(reply, "Session revoked");
+        return;
       }
     } catch (error) {
       if (process.env.NODE_ENV !== "test" && !process.env.VITEST) {

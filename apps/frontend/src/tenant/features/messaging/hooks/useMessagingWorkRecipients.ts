@@ -2,7 +2,6 @@ import { keepPreviousData, useQuery } from "@tanstack/react-query";
 import type {
   MessagingRoleFilter,
   MessagingGenderFilter,
-  MessagingRecipientsMatchResponseDto,
   MessagingRecipientsPageResponse,
   StandardMessagingRecipient,
 } from "@mms/shared";
@@ -35,45 +34,6 @@ export interface MessagingWorkRecipientsResult {
   isPending: boolean;
   isFetching: boolean;
   refetch: () => void;
-}
-
-/**
- * Loads matching lean recipients for “Select All With Phone/Email” via one server call.
- */
-export async function loadMatchingRecipients(params: {
-  roleFilter?: MessagingRoleFilter;
-  genderFilter?: MessagingGenderFilter;
-  search?: string;
-  kind: "phone" | "email";
-  signal?: AbortSignal;
-}): Promise<{ recipients: StandardMessagingRecipient[]; truncated: boolean }> {
-  const search = (params.search || "").trim();
-  const response = await apiContract.messaging.matchRecipients({
-    query: {
-      kind: params.kind,
-      ...(params.roleFilter && params.roleFilter !== "all" ? { role: params.roleFilter } : {}),
-      ...(params.genderFilter && params.genderFilter !== "all"
-        ? { gender: params.genderFilter }
-        : {}),
-      ...(search ? { search } : {}),
-    },
-    signal: params.signal,
-    fetchOptions: { signal: params.signal },
-  });
-  if (response.status !== 200) {
-    const errorBody = response.body as { message?: string; type?: string } | undefined;
-    throw new ApiError(
-      response.status,
-      errorBody?.message ?? "Failed to load matching recipients",
-      errorBody?.type,
-    );
-  }
-
-  const data = response.body as MessagingRecipientsMatchResponseDto;
-  return {
-    recipients: data.recipients ?? [],
-    truncated: Boolean(data.truncated),
-  };
 }
 
 /**
@@ -134,7 +94,7 @@ export function useMessagingWorkRecipients(
 
   const data = query.data;
 
-  return (() => ({
+  return {
     recipients: data?.recipients ?? [],
     page: data?.page ?? page,
     total: data?.total ?? 0,
@@ -146,5 +106,5 @@ export function useMessagingWorkRecipients(
     refetch: () => {
       void query.refetch();
     },
-  }))();
+  };
 }

@@ -1,62 +1,31 @@
 import { useMemo, useState } from "react";
-import type { TaskRecord } from "@mms/shared";
 import type { FilterChip } from "@/components/app/FilterChips";
 import type { CompactSegmentedOption } from "@/components/app/CompactSegmentedControl";
+import { useDebounce } from "@/hooks/useDebounce";
 import { useTranslation } from "@/hooks/useTranslation";
 
-export type TaskQuickFilter = "all" | "open" | "due_today" | "urgent_high" | "overdue";
+/** Same leaf-debounce window the Contacts/Students/Faculty directories use. */
+const SEARCH_DEBOUNCE_MS = 250;
 
-export function useTasksWorkTabFilters(tasks: TaskRecord[]) {
+export type TaskQuickFilter = "all" | "mine" | "open" | "due_today" | "urgent_high" | "overdue";
+
+/**
+ * Owns the Work-tier filter model only. Filtering itself happens on the server
+ * (`buildTaskServerFilters` → `GET /api/tasks`); re-filtering the returned page
+ * here would apply a second, different predicate set over already-filtered rows
+ * and desynchronise the page from `total`.
+ */
+export function useTasksWorkTabFilters() {
   const { t } = useTranslation();
   const [quickFilter, setQuickFilter] = useState<TaskQuickFilter>("all");
-  const [search, setSearch] = useState("");
+  // Raw input stays in the leaf control; only the settled value reaches the
+  // directory query, so typing does not fire one request per keystroke.
+  const [searchInput, setSearchInput] = useState("");
+  const search = useDebounce(searchInput, SEARCH_DEBOUNCE_MS);
   const [statusFilter, setStatusFilter] = useState<string[]>([]);
   const [priorityFilter, setPriorityFilter] = useState<string[]>([]);
   const [dueFrom, setDueFrom] = useState<string | undefined>(undefined);
   const [dueTo, setDueTo] = useState<string | undefined>(undefined);
-
-  const filteredTasks = useMemo(() => {
-    const q = search.trim().toLowerCase();
-    const today = new Date().toISOString().slice(0, 10);
-
-    return tasks.filter((task) => {
-      if (quickFilter === "open") {
-        if (task.status === "completed" || task.status === "cancelled") return false;
-      } else if (quickFilter === "due_today") {
-        if (!task.dueAt) return false;
-        const taskDueDate = (
-          task.dueAt instanceof Date ? task.dueAt.toISOString() : String(task.dueAt)
-        ).slice(0, 10);
-        if (taskDueDate !== today) return false;
-      } else if (quickFilter === "urgent_high") {
-        if (task.priority !== "urgent" && task.priority !== "high") return false;
-      } else if (quickFilter === "overdue") {
-        if (!task.dueAt) return false;
-        const taskDueDate = (
-          task.dueAt instanceof Date ? task.dueAt.toISOString() : String(task.dueAt)
-        ).slice(0, 10);
-        if (taskDueDate >= today || task.status === "completed" || task.status === "cancelled") {
-          return false;
-        }
-      }
-
-      if (statusFilter.length > 0 && !statusFilter.includes(task.status)) return false;
-      if (priorityFilter.length > 0 && !priorityFilter.includes(task.priority)) return false;
-      if (dueFrom || dueTo) {
-        if (!task.dueAt) return false;
-        const taskDueDate = (
-          task.dueAt instanceof Date ? task.dueAt.toISOString() : String(task.dueAt)
-        ).slice(0, 10);
-        if (dueFrom && taskDueDate < dueFrom) return false;
-        if (dueTo && taskDueDate > dueTo) return false;
-      }
-      if (!q) return true;
-      const haystack = `${task.title} ${task.description ?? ""} ${
-        task.assignees?.map((a) => a.facultyName).join(" ") ?? ""
-      }`.toLowerCase();
-      return haystack.includes(q);
-    });
-  }, [tasks, search, quickFilter, statusFilter, priorityFilter, dueFrom, dueTo]);
 
   const activeChips = useMemo<FilterChip[]>(() => {
     const list: FilterChip[] = [];
@@ -64,6 +33,7 @@ export function useTasksWorkTabFilters(tasks: TaskRecord[]) {
     if (quickFilter !== "all") {
       const quickFilterLabels: Record<TaskQuickFilter, string> = {
         all: t("common.all"),
+        mine: t("tasks.quickFilter.mine"),
         open: t("tasks.quickFilter.open"),
         due_today: t("tasks.quickFilter.dueToday"),
         urgent_high: t("tasks.quickFilter.urgentHigh"),
@@ -76,6 +46,13 @@ export function useTasksWorkTabFilters(tasks: TaskRecord[]) {
       });
     }
 
+    for (const s of statusFilter) {
+      list.push({
+        key: `status-${s}`,
+        label: `${t("tasks.status")}: ${t(`tasks.status.${s}` as Parameters<typeof t>[0])}`,
+        onRemove: () => setStatusFilter((prev) => prev.filter((item) => item !== s)),
+      });
+    }
     for (const p of priorityFilter) {
       list.push({
         key: `priority-${p}`,
@@ -98,18 +75,25 @@ export function useTasksWorkTabFilters(tasks: TaskRecord[]) {
       });
     }
     return list;
-  }, [quickFilter, priorityFilter, dueFrom, dueTo, t]);
+  }, [quickFilter, statusFilter, priorityFilter, dueFrom, dueTo, t]);
+
+  // Every filter dimension the directory owns — including search, which has no
+  // removable chip but must still enable "clear filters" and the Escape reset.
+  const hasActiveFilters = activeChips.length > 0 || search.trim().length > 0;
 
   const handleClearFilters = () => {
     setQuickFilter("all");
+    setStatusFilter([]);
     setPriorityFilter([]);
     setDueFrom(undefined);
     setDueTo(undefined);
+    setSearchInput("");
   };
 
   const quickFilterOptions = useMemo<CompactSegmentedOption<TaskQuickFilter>[]>(
     () => [
       { value: "all", label: t("common.all") },
+      { value: "mine", label: t("tasks.quickFilter.mine") },
       { value: "open", label: t("tasks.quickFilter.open") },
       { value: "due_today", label: t("tasks.quickFilter.dueToday") },
       { value: "urgent_high", label: t("tasks.quickFilter.urgentHigh") },
@@ -123,7 +107,9 @@ export function useTasksWorkTabFilters(tasks: TaskRecord[]) {
     setQuickFilter,
     quickFilterOptions,
     search,
-    setSearch,
+    searchInput,
+    setSearchInput,
+    setSearch: setSearchInput,
     statusFilter,
     setStatusFilter,
     priorityFilter,
@@ -132,8 +118,8 @@ export function useTasksWorkTabFilters(tasks: TaskRecord[]) {
     setDueFrom,
     dueTo,
     setDueTo,
-    filteredTasks,
     activeChips,
+    hasActiveFilters,
     handleClearFilters,
   };
 }

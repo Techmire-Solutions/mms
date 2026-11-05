@@ -19,7 +19,21 @@ export interface SessionsRepository {
   listSessionsByWorkspace(tenant: string): Promise<Session[]>;
   findSessionById(tenant: string, id: string): Promise<Session | null>;
   findSessionsByIds(tenant: string, ids: string[]): Promise<Session[]>;
-  saveSession(tenant: string, record: Session): Promise<void>;
+  /** Stored status per id (one query) for bulk lifecycle transitions. */
+  findSessionStatusesByIds(tenant: string, ids: string[]): Promise<Map<string, string>>;
+  /** `expectedUpdatedAt` is the OCC token the caller read; a mismatch throws `ConflictError`. */
+  saveSession(
+    tenant: string,
+    record: Session,
+    options?: { expectedUpdatedAt?: string },
+  ): Promise<string>;
+  /** Targeted start/end update used by postpone (keeps the aggregate untouched). */
+  updateSessionDates(
+    tenant: string,
+    id: string,
+    dates: { startDate: string | null; endDate: string | null },
+    options?: { expectedUpdatedAt?: string },
+  ): Promise<boolean>;
   listSessionsPage(tenant: string, query: SessionsListQuery): Promise<SessionsListPageResult>;
   countSessionsActive(tenant: string): Promise<number>;
   aggregateSessionsCommandMetrics(tenant: string): Promise<SessionsCommandMetricsSnapshot>;

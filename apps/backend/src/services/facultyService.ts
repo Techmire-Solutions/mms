@@ -18,6 +18,7 @@ export const {
   bulkUpdateFacultySpecialization,
   loadFacultyById,
   loadFacultyByIds,
+  findFacultyIdsByEmployeeIds,
   loadFacultyWidgetAggregates,
   loadFacultyPage,
   countFaculty,

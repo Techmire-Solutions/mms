@@ -6,14 +6,17 @@ import {
   QUEUE_MESSAGING_BROADCAST,
   QUEUE_SETTINGS,
   DEFAULT_JOB_OPTIONS,
-  TENANT_PRIORITY_BANDS,
   getBullMQConnectionOptions,
   getQueuePrefix,
 } from "./queueConfig.js";
+import {
+  calculateTenantFairSharePriority,
+  incrementTenantInflightJobs,
+} from "./queueTenantInflight.js";
 import { markJobPermanentlyFailed } from "../../services/backgroundJobWorkerService.js";
 import { stripUndefinedFields } from "../../lib/payloadTrimmer.js";
 import { logger } from "../../lib/logger.js";
-import { redisGet, redisIncr, redisDecr } from "../../lib/redis.js";
+import { getRedisClient, checkIsRedisConnected } from "../../lib/redis.js";
 
 export const MAX_JOB_PAYLOAD_BYTES = 1024 * 1024; // 1 MB payload ceiling
 export const QUEUE_ADD_TIMEOUT_MS = 6000;
@@ -39,15 +42,23 @@ export async function reconcileTimedOutQueueAdd(
 ): Promise<boolean> {
   const deadline = Date.now() + timeoutMs;
   for (;;) {
-    try {
-      if (await queue.getJob(jobId)) return true;
-    } catch {
-      // Redis may still be reconnecting; keep polling until the deadline.
-    }
     const remaining = deadline - Date.now();
     if (remaining <= 0) return false;
-    await new Promise((resolve) =>
-      setTimeout(resolve, Math.min(QUEUE_ADD_RECONCILE_POLL_MS, remaining)),
+    try {
+      let timer: NodeJS.Timeout;
+      const poll = new Promise<null>((_, rej) => {
+        timer = setTimeout(() => rej(), Math.min(QUEUE_ADD_RECONCILE_POLL_MS, remaining));
+      });
+      const getJob = queue.getJob(jobId);
+      getJob.catch(() => {});
+      const job = await Promise.race([getJob, poll]).finally(() => clearTimeout(timer));
+      if (job) return true;
+    } catch {
+      // Redis may still be reconnecting or poll timed out; keep polling until deadline.
+    }
+    if (Date.now() >= deadline) return false;
+    await new Promise((r) =>
+      setTimeout(r, Math.min(QUEUE_ADD_RECONCILE_POLL_MS, Math.max(0, deadline - Date.now()))),
     );
   }
 }
@@ -109,45 +120,7 @@ export function resolveQueueNameForJob(moduleId: string, kind: string): string {
   return QUEUE_BULK_EXPORT;
 }
 
-/**
- * Inflight jobs tracking per tenant for fair-share background scheduling.
- */
-export async function getTenantInflightJobsCount(tenantId: string): Promise<number> {
-  const normTenant = tenantId.trim().toLowerCase();
-  const key = `mms:tenant:${normTenant}:inflight_jobs`;
-  const val = await redisGet(key);
-  return val ? Number.parseInt(val, 10) || 0 : 0;
-}
-
-export async function incrementTenantInflightJobs(tenantId: string): Promise<number> {
-  const normTenant = tenantId.trim().toLowerCase();
-  const key = `mms:tenant:${normTenant}:inflight_jobs`;
-  return redisIncr(key, 3600);
-}
-
-export async function decrementTenantInflightJobs(tenantId: string): Promise<number> {
-  const normTenant = tenantId.trim().toLowerCase();
-  const key = `mms:tenant:${normTenant}:inflight_jobs`;
-  return redisDecr(key, 3600);
-}
-
-/**
- * Calculates fair-share priority band for a tenant based on current inflight load.
- * Lower numerical priority value in BullMQ means higher execution precedence (1 = highest).
- */
-export async function calculateTenantFairSharePriority(
-  tenantId: string,
-  basePriority = 2,
-): Promise<number> {
-  const inflight = await getTenantInflightJobsCount(tenantId);
-  if (inflight <= 1) {
-    return Math.min(basePriority, TENANT_PRIORITY_BANDS.BAND_1_LOW_LOAD);
-  }
-  if (inflight <= 5) {
-    return Math.max(basePriority, TENANT_PRIORITY_BANDS.BAND_2_NORMAL_LOAD);
-  }
-  return TENANT_PRIORITY_BANDS.BAND_3_HIGH_LOAD;
-}
+export * from "./queueTenantInflight.js";
 
 /**
  * Dispatches a background job to the appropriate BullMQ queue with tenant fair-share scheduling.
@@ -160,6 +133,17 @@ export async function dispatchJobToQueue(
   payload: unknown,
 ): Promise<boolean> {
   const queueName = resolveQueueNameForJob(job.moduleId, job.kind);
+  if (process.env.MMS_ALLOW_IN_PROCESS_JOB_FALLBACK === "true") {
+    const client = getRedisClient();
+    if (!client || !checkIsRedisConnected()) {
+      logger.warn(
+        { jobId: job.id, queue: queueName },
+        "Redis is not connected; MMS_ALLOW_IN_PROCESS_JOB_FALLBACK is set — bypassing queue enqueue",
+      );
+      return false;
+    }
+  }
+
   const queue = getQueue(queueName);
 
   const sanitizedPayload = stripUndefinedFields(payload);

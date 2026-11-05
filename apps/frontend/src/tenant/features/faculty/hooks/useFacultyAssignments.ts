@@ -1,6 +1,7 @@
 import { type QueryClient, useQuery } from "@tanstack/react-query";
 import type { FacultyAssignmentEntity } from "@mms/shared";
 import { apiContract } from "@/lib/api";
+import { apiContractError } from "@/lib/apiContractError";
 import { useQueryClientOrFallback } from "@/lib/query/optionalQueryContext";
 import { FACULTY_QUERY_KEY } from "./facultyQueryKeys";
 
@@ -17,7 +18,11 @@ export function useFacultyAssignments(facultyId?: string | null, customClient?: 
           params: { facultyId },
           fetchOptions: { signal },
         });
-        if (response.status !== 200) return [];
+        if (response.status !== 200) {
+          // A failed read must surface as an error — mapping it to [] rendered a
+          // fabricated "primary appointment" in the drawer.
+          throw apiContractError(response, "Failed to load faculty assignments");
+        }
         return (response.body as { assignments?: FacultyAssignmentEntity[] }).assignments ?? [];
       },
       enabled: Boolean(facultyId),

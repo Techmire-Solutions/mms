@@ -1,21 +1,16 @@
 import React from "react";
 import type { ModuleColumnCustomizerProps } from "@/components/app/ModuleColumnCustomizer";
+import type {
+  WorkToolbarTrashToggle,
+  WorkToolbarViewModeToggle,
+} from "@/components/app/moduleWorkToolbarTypes";
 import { FilterChips } from "@/components/app/FilterChips";
 import { WorkTaskToolbar } from "./WorkTaskToolbar";
-import type { WorkDirectoryViewMode } from "@/hooks/useWorkDirectoryViewMode";
 
 export interface WorkListFilterChip {
   key: string;
   label: string;
   onRemove: () => void;
-}
-
-export interface WorkListTrashToggle {
-  canViewDeleted: boolean;
-  viewingDeleted: boolean;
-  onToggle: () => void;
-  activeLabel: string;
-  deletedLabel: string;
 }
 
 export interface WorkListFiltersScaffoldProps {
@@ -29,21 +24,19 @@ export interface WorkListFiltersScaffoldProps {
   onClearFilters: () => void;
   filterButton?: React.ReactNode;
   chips: WorkListFilterChip[];
-  trashToggle?: WorkListTrashToggle;
-  viewModeToggle?: {
-    viewMode: WorkDirectoryViewMode;
-    onViewModeChange: (mode: WorkDirectoryViewMode) => void;
-  };
+  trashToggle?: WorkToolbarTrashToggle;
+  viewModeToggle?: WorkToolbarViewModeToggle;
   /** Module-owned column layout plumbing, normalized onto the toolbar. */
   columnCustomizer?: ModuleColumnCustomizerProps;
   children?: React.ReactNode;
 }
 
 /**
- * Shared chassis for module Work-tier list filter bars: composes
- * `WorkTaskToolbar` + `FilterChips` and normalizes the column-customizer
- * shape. Module files stay responsible for filter option derivation, the
- * filter menu button, and translated labels.
+ * Adapter for chip-based module Work-tier filter bars: composes `WorkTaskToolbar`
+ * + `FilterChips` and normalizes the column-customizer shape. It intentionally
+ * exposes a narrower contract than `WorkTaskToolbar`; add a prop here only when a
+ * chip-based consumer needs it. Module files stay responsible for filter option
+ * derivation, the filter menu button, and translated labels.
  */
 export function WorkListFiltersScaffold({
   regionLabel,
@@ -73,7 +66,7 @@ export function WorkListFiltersScaffold({
       clearFiltersLabel={clearFiltersLabel}
       filterButton={filterButton}
       filterChips={<FilterChips chips={chips} onClearAll={onClearFilters} />}
-      trashToggle={trashToggle && trashToggle.canViewDeleted ? { ...trashToggle } : undefined}
+      trashToggle={trashToggle && trashToggle.canViewDeleted ? trashToggle : undefined}
       viewModeToggle={viewModeToggle}
       columnCustomizer={
         columnCustomizer

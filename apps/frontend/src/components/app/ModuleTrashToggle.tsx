@@ -9,13 +9,13 @@ import {
 import { cn } from "@/lib/utils";
 
 export interface ModuleTrashToggleProps {
-  showDeleted?: boolean;
-  viewingDeleted?: boolean;
+  /** True while the directory is showing soft-deleted records. */
+  viewingDeleted: boolean;
   onToggle: () => void;
-  showActiveLabel?: string;
-  showDeletedLabel?: string;
-  activeLabel?: string;
-  deletedLabel?: string;
+  /** Label shown while viewing deleted records (returns to the active view). */
+  activeLabel: string;
+  /** Label shown while viewing active records (enters the trash view). */
+  deletedLabel: string;
   className?: string;
   disabled?: boolean;
   title?: string;
@@ -23,23 +23,18 @@ export interface ModuleTrashToggleProps {
 
 /**
  * Work-tier trash/archive toggle used across soft-delete modules.
+ * Labels are mandatory and translated by the module (no English fallbacks).
  */
 export const ModuleTrashToggle = function ModuleTrashToggle({
-  showDeleted,
   viewingDeleted,
   onToggle,
-  showActiveLabel,
-  showDeletedLabel,
   activeLabel,
   deletedLabel,
   className,
   disabled = false,
   title,
 }: ModuleTrashToggleProps): React.JSX.Element {
-  const isDeleted = viewingDeleted ?? showDeleted ?? false;
-  const label = isDeleted
-    ? (showActiveLabel ?? activeLabel ?? "Show Active")
-    : (showDeletedLabel ?? deletedLabel ?? "Show Trash");
+  const label = viewingDeleted ? activeLabel : deletedLabel;
 
   return (
     <Button
@@ -48,11 +43,11 @@ export const ModuleTrashToggle = function ModuleTrashToggle({
       onClick={onToggle}
       disabled={disabled}
       title={title ?? label}
-      aria-pressed={isDeleted}
+      aria-pressed={viewingDeleted}
       aria-label={label}
       className={cn(
         WORK_TOOLBAR_TRIGGER,
-        isDeleted ? WORK_TOOLBAR_TRIGGER_ACTIVE : WORK_TOOLBAR_TRIGGER_IDLE,
+        viewingDeleted ? WORK_TOOLBAR_TRIGGER_ACTIVE : WORK_TOOLBAR_TRIGGER_IDLE,
         className,
       )}
     >

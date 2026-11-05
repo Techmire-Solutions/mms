@@ -1,5 +1,6 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import type { User } from "@mms/shared";
+import { ConflictError } from "../lib/httpErrors.js";
 
 const mockFindFacultyAssignmentById = vi.fn();
 const mockListFacultyAssignments = vi.fn();
@@ -185,6 +186,37 @@ describe("facultyAssignmentRouteHandlers", () => {
         "usr-admin",
         "User deleted",
       );
+    });
+
+    it("maps a domain conflict (primary appointment) to 409 instead of a 500", async () => {
+      mockFindFacultyAssignmentById.mockResolvedValueOnce({ id: "asgn-1", facultyId: "fac-1" });
+      mockSoftDeleteFacultyAssignment.mockRejectedValueOnce(
+        new ConflictError("The primary appointment cannot be deleted; close it with an end date"),
+      );
+      const log = { error: vi.fn() };
+
+      const res = await handleDeleteAssignment({
+        params: { facultyId: "fac-1", id: "asgn-1" },
+        request: { user: adminUser, tenant: { id: "demo" }, log },
+      } as never);
+
+      expect(res.status).toBe(409);
+      expect(res.body).toMatchObject({ type: "conflict" });
+      expect(log.error).not.toHaveBeenCalled();
+    });
+
+    it("logs unexpected infrastructure failures and answers 500", async () => {
+      mockFindFacultyAssignmentById.mockResolvedValueOnce({ id: "asgn-1", facultyId: "fac-1" });
+      mockSoftDeleteFacultyAssignment.mockRejectedValueOnce(new Error("connection terminated"));
+      const log = { error: vi.fn() };
+
+      const res = await handleDeleteAssignment({
+        params: { facultyId: "fac-1", id: "asgn-1" },
+        request: { user: adminUser, tenant: { id: "demo" }, log },
+      } as never);
+
+      expect(res.status).toBe(500);
+      expect(log.error).toHaveBeenCalledTimes(1);
     });
   });
 

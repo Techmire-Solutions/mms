@@ -155,28 +155,28 @@ function seed(subdomain) {
   }
 }
 
-async function postJson(page, origin, targetPath, body) {
+async function postJson(page, origin, targetPath, body, method = "POST") {
   if (!page.url().startsWith(origin)) {
     await page.goto(`${origin}/site.webmanifest`);
   }
   const result = await page.evaluate(
-    async ({ target, payload }) => {
+    async ({ target, payload, requestMethod }) => {
       const csrf = document.cookie.match(/(?:^|;\s*)csrf_token=([^;]*)/)?.[1];
       const res = await fetch(target, {
-        method: "POST",
+        method: requestMethod,
         credentials: "include",
         headers: {
-          "Content-Type": "application/json",
+          ...(payload === undefined ? {} : { "Content-Type": "application/json" }),
           ...(csrf ? { "X-CSRF-Token": decodeURIComponent(csrf) } : {}),
         },
-        body: JSON.stringify(payload),
+        body: payload === undefined ? undefined : JSON.stringify(payload),
       });
       return { status: res.status, text: res.ok ? "" : await res.text() };
     },
-    { target: targetPath, payload: body },
+    { target: targetPath, payload: body, requestMethod: method },
   );
   if (result.status >= 300) {
-    throw new Error(`POST ${origin}${targetPath} -> ${result.status}: ${result.text}`);
+    throw new Error(`${method} ${origin}${targetPath} -> ${result.status}: ${result.text}`);
   }
 }
 
@@ -295,6 +295,40 @@ const PLATFORM_SURFACES = [
   axe: false,
   platform: true,
 }));
+
+/** 2026-11-04 focused review: the five tenant modules. */
+const FIVE_MODULE_WORK = [
+  { name: "dashboard", path: "/", fullPage: true },
+  { name: "contacts", path: "/contacts", fullPage: false },
+  { name: "students", path: "/students", fullPage: false },
+  { name: "faculty", path: "/faculty", fullPage: false },
+  { name: "tasks", path: "/tasks", fullPage: false },
+];
+
+const FIVE_MODULE_CONTEXTS = [
+  { label: "1440-light", viewport: { width: 1440, height: 900 }, theme: "light" },
+  {
+    label: "1440-dark",
+    viewport: { width: 1440, height: 900 },
+    theme: "dark",
+    modules: ["dashboard", "contacts", "faculty"],
+  },
+  { label: "1024-light", viewport: { width: 1024, height: 768 }, theme: "light" },
+  { label: "768-light", viewport: { width: 768, height: 1024 }, theme: "light" },
+  { label: "375-light", viewport: { width: 375, height: 812 }, theme: "light" },
+  {
+    label: "375-dark",
+    viewport: { width: 375, height: 812 },
+    theme: "dark",
+    modules: ["dashboard", "contacts", "faculty"],
+  },
+];
+
+const FIVE_MODULE_LOCALES = [
+  { locale: "ar", label: "1440-light", viewport: { width: 1440, height: 900 } },
+  { locale: "ur", label: "375-light", viewport: { width: 375, height: 812 } },
+  { locale: "fa", label: "1024-light", viewport: { width: 1024, height: 768 } },
+];
 
 function loadState() {
   return JSON.parse(readFileSync(statePath, "utf8"));
@@ -577,7 +611,13 @@ async function prepareSessions(browser, state) {
   });
   const setupPage = await setupContext.newPage();
   const needsSetup = await loginTenantPage(setupPage, state);
-  if (needsSetup) {
+  // An already-authenticated browser lands directly on the setup screen, so
+  // `loginTenantPage` returns false; detect the screen itself rather than the login.
+  const onSetupPage = await setupPage
+    .getByRole("heading", { name: /Complete Institution/i })
+    .isVisible()
+    .catch(() => false);
+  if (needsSetup || onSetupPage) {
     await settle(setupPage, { main: false });
     await capture(
       setupPage,
@@ -946,6 +986,655 @@ async function captureStates(browser, state) {
   await platform.close();
 }
 
+async function readJson(page, targetPath) {
+  return page.evaluate(async (target) => {
+    const res = await fetch(target, { credentials: "include" });
+    return { status: res.status, body: res.ok ? await res.json() : null };
+  }, targetPath);
+}
+
+/**
+ * The five-module review needs a populated Tasks directory. There is no task seed
+ * script, so create a deterministic set through the real API after the faculty seed.
+ * Idempotent per review tenant: skip when the list already has rows.
+ */
+async function seedReviewTasks(page, state) {
+  if (!page.url().startsWith(state.tenantOrigin)) {
+    await page.goto(`${state.tenantOrigin}/site.webmanifest`).catch(() => undefined);
+  }
+  const existing = await readJson(page, "/api/tasks?limit=1");
+  if (existing.status !== 200) {
+    throw new Error(`Task list preflight failed: ${existing.status}`);
+  }
+  const existingTotal = existing.body?.total ?? 0;
+  const target = 60;
+  if (existingTotal >= target) {
+    console.log(`[tasks] already populated (${existingTotal}); skipping seed`);
+    return;
+  }
+
+  const faculty = await readJson(page, "/api/faculty?limit=100");
+  const facultyIds = (faculty.body?.faculty ?? [])
+    .map((member) => String(member.id))
+    .filter(Boolean)
+    .slice(0, 6);
+  const titles = [
+    "Follow up on new admissions",
+    "Review Hifz attendance for this week",
+    "Prepare the monthly fee reminder",
+    "Update faculty workload records",
+    "Organise the parent-teacher meeting",
+    "Verify contact details for new students",
+    "Review the exam grading rubric",
+    "Schedule the Quran competition rehearsal",
+    "Audit library book returns",
+    "Draft the Ramadan timetable",
+  ];
+  const statuses = ["todo", "in_progress", "in_review", "blocked", "completed", "cancelled"];
+  const priorities = ["low", "medium", "high", "urgent"];
+  const now = Date.now();
+  let created = 0;
+
+  for (let index = existingTotal; index < target; index += 1) {
+    const base = {
+      title: `${titles[index % titles.length]} ${String(index + 1).padStart(2, "0")}`,
+      description: "Seeded for the rendered UI/UX review.",
+      status: statuses[index % statuses.length],
+      priority: priorities[index % priorities.length],
+      startDate: new Date(now - (index % 9) * 86_400_000).toISOString().slice(0, 10),
+      dueAt: new Date(now + ((index % 14) - 5) * 86_400_000 + 9 * 3_600_000).toISOString(),
+    };
+    const bodies =
+      facultyIds.length > 0 && index % 2 === 0
+        ? [{ ...base, assignees: [{ facultyId: facultyIds[index % facultyIds.length] }] }, base]
+        : [base];
+    let lastError;
+    for (const body of bodies) {
+      try {
+        await postJson(page, state.tenantOrigin, "/api/tasks", body);
+        created += 1;
+        lastError = undefined;
+        break;
+      } catch (error) {
+        lastError = error;
+      }
+    }
+    if (lastError) console.warn(`[tasks] seed ${index + 1} failed: ${lastError.message}`);
+  }
+
+  let archived = [];
+  if (existingTotal === 0) {
+    const list = await readJson(page, "/api/tasks?limit=100");
+    archived = (list.body?.tasks ?? []).slice(-2);
+    for (const task of archived) {
+      await postJson(page, state.tenantOrigin, `/api/tasks/${task.id}`, undefined, "DELETE").catch(
+        (error) => console.warn(`[tasks] archive failed: ${error.message}`),
+      );
+    }
+  }
+  console.log(`[tasks] seeded ${created}, archived ${archived.length}`);
+}
+
+async function persistReviewLocale(page, state, locale) {
+  try {
+    await postJson(
+      page,
+      state.tenantOrigin,
+      "/api/db/objects/global_settings",
+      localeSettings(locale),
+    );
+  } catch (error) {
+    if (!String(error).includes("401")) throw error;
+    await loginTenantPage(page, state);
+    await postJson(
+      page,
+      state.tenantOrigin,
+      "/api/db/objects/global_settings",
+      localeSettings(locale),
+    );
+  }
+}
+
+async function captureFiveModules(browser, state) {
+  if (!existsSync(tenantStoragePath)) await prepareSessions(browser, state);
+
+  const seedContext = await newContext(browser, {
+    viewport: { width: 1440, height: 900 },
+    storageState: tenantStoragePath,
+  });
+  const seedPage = await seedContext.newPage();
+  await loginTenantPage(seedPage, state);
+  await settle(seedPage);
+  await seedReviewTasks(seedPage, state);
+  await seedContext.storageState({ path: tenantStoragePath });
+  await seedContext.close();
+
+  for (const ctx of FIVE_MODULE_CONTEXTS) {
+    const context = await newContext(browser, {
+      viewport: ctx.viewport,
+      theme: ctx.theme,
+      storageState: tenantStoragePath,
+      locale: "en",
+    });
+    const page = await context.newPage();
+    for (const module of FIVE_MODULE_WORK) {
+      if (ctx.modules && !ctx.modules.includes(module.name)) continue;
+      await page.goto(`${state.tenantOrigin}${module.path}`, { waitUntil: "domcontentloaded" });
+      await settle(page);
+      await capture(page, module, `${ctx.label}-en`, { axe: true });
+    }
+    await context.close();
+  }
+}
+
+async function captureFiveModuleLocales(browser, state) {
+  const context = await newContext(browser, {
+    viewport: FIVE_MODULE_LOCALES[0].viewport,
+    theme: "light",
+    storageState: tenantStoragePath,
+  });
+  const page = await context.newPage();
+  await loginTenantPage(page, state);
+  await settle(page);
+
+  for (const item of FIVE_MODULE_LOCALES) {
+    await page.setViewportSize(item.viewport);
+    await persistReviewLocale(page, state, item.locale);
+    for (const module of FIVE_MODULE_WORK) {
+      await page.goto(`${state.tenantOrigin}${module.path}`, { waitUntil: "domcontentloaded" });
+      await settle(page);
+      await page
+        .waitForFunction((expected) => document.documentElement.lang === expected, item.locale, {
+          timeout: 12_000,
+        })
+        .catch(() => undefined);
+      await page
+        .waitForFunction(
+          (label) => document.body.innerText.includes(label),
+          { ar: "لوحة التحكم", ur: "ڈیش بورڈ", fa: "داشبورد" }[item.locale],
+          { timeout: 20_000 },
+        )
+        .catch(() => undefined);
+      await capture(page, module, `${item.label}-${item.locale}`, { axe: false });
+    }
+  }
+
+  await persistReviewLocale(page, state, "en").catch(() => undefined);
+  await context.close();
+}
+
+async function captureFiveModuleStates(browser, state) {
+  const skipped = [];
+  const probes = {};
+  const label = "1440-light-en";
+  const context = await newContext(browser, {
+    viewport: { width: 1440, height: 900 },
+    theme: "light",
+    storageState: tenantStoragePath,
+    locale: "en",
+  });
+  const page = await context.newPage();
+  console.log("[states] opening session");
+  await page.goto(`${state.tenantOrigin}/`, { waitUntil: "domcontentloaded" });
+  await page.waitForTimeout(1_500);
+  if (
+    await page
+      .locator('input[name="email"]')
+      .isVisible({ timeout: 5_000 })
+      .catch(() => false)
+  ) {
+    await loginTenantPage(page, state);
+  }
+  await settle(page);
+  console.log("[states] session ready; seeding tasks");
+  await seedReviewTasks(page, state);
+  console.log("[states] seed done");
+  await settle(page);
+
+  const shot = (name, options = {}) =>
+    capture(page, { name, path: new URL(page.url()).pathname, fullPage: false }, label, {
+      axe: true,
+      ...options,
+    });
+  const go = async (targetPath) => {
+    await page.goto(`${state.tenantOrigin}${targetPath}`, { waitUntil: "domcontentloaded" });
+    await settle(page);
+  };
+  const click = (locator, timeout = 6_000) => locator.first().click({ timeout });
+  const firstDialog = () => page.locator('[role="dialog"], [role="alertdialog"]').first();
+  const waitDialog = () => firstDialog().waitFor({ state: "visible", timeout: 8_000 });
+  const escapeAll = async () => {
+    for (let index = 0; index < 3; index += 1) {
+      await page.keyboard.press("Escape").catch(() => undefined);
+      await page.waitForTimeout(250);
+    }
+  };
+  /** Persisted tier state survives reloads; every Work-only step must reset it. */
+  const openWork = async (label) => {
+    const tab = page.getByRole("tab", { name: new RegExp(`^${label}$`) });
+    if (
+      await tab
+        .first()
+        .isVisible()
+        .catch(() => false)
+    ) {
+      await tab
+        .first()
+        .click({ timeout: 6_000 })
+        .catch(() => undefined);
+      await page.waitForTimeout(700);
+    }
+  };
+  const step = async (name, action) => {
+    try {
+      await action();
+      return true;
+    } catch (error) {
+      skipped.push({ name, error: String(error).slice(0, 220) });
+      console.warn(`[skip] ${name}: ${String(error).slice(0, 140)}`);
+      return false;
+    }
+  };
+  const dialogFocus = () =>
+    page.evaluate(() => {
+      const dialog = document.querySelector('[role="dialog"], [role="alertdialog"]');
+      return {
+        activeTag: document.activeElement?.tagName ?? null,
+        insideDialog: dialog ? dialog.contains(document.activeElement) : null,
+      };
+    });
+
+  // Dashboard
+  await go("/");
+  await step("dashboard-customize", async () => {
+    await click(page.getByRole("button", { name: /^Customize$/ }));
+    await page.waitForTimeout(600);
+    await shot("dashboard-customize");
+  });
+  await step("dashboard-widget-builder", async () => {
+    const add = page.getByRole("button", { name: /Add (Card|Widget)|New Widget/i });
+    await click(add);
+    await page.waitForTimeout(600);
+    await shot("dashboard-widget-builder");
+    await escapeAll();
+  });
+  await step("dashboard-insights", async () => {
+    await go("/");
+    await click(page.getByRole("button", { name: /Show insights/i }));
+    await page.waitForTimeout(600);
+    await shot("dashboard-insights");
+  });
+  await step("dashboard-print", async () => {
+    await go("/");
+    await page.emulateMedia({ media: "print" });
+    await page.waitForTimeout(500);
+    await page.screenshot({
+      path: path.join(screensDir, `dashboard-print-${label}.png`),
+      fullPage: true,
+    });
+    await page.emulateMedia({ media: "screen" });
+  });
+  await step("dashboard-error", async () => {
+    await page.route("**/api/dashboard/summary**", (route) =>
+      route.fulfill({
+        status: 500,
+        contentType: "application/json",
+        body: JSON.stringify({ type: "server_error", message: "Review-injected failure" }),
+      }),
+    );
+    await page.reload({ waitUntil: "domcontentloaded" });
+    await page.waitForTimeout(1_500);
+    await shot("dashboard-error");
+    await page.unroute("**/api/dashboard/summary**");
+  });
+
+  // Contacts
+  await go("/contacts");
+  await openWork("Contacts");
+  await step("contacts-filters", async () => {
+    await click(page.getByRole("button", { name: /^Filters$/ }));
+    await page.waitForTimeout(400);
+    await shot("contacts-filters");
+    await escapeAll();
+  });
+  await step("contacts-bulk-bar", async () => {
+    const selectAll = page
+      .getByRole("checkbox", { name: /Select All/i })
+      .or(page.getByRole("button", { name: /Select All/i }))
+      .first();
+    await selectAll.click({ timeout: 8_000 });
+    await page.waitForTimeout(500);
+    await shot("contacts-bulk-bar");
+  });
+  await step("contacts-drawer", async () => {
+    await click(page.getByRole("button", { name: "Abdullah Al-Mansoor", exact: true }));
+    await waitDialog();
+    await shot("contacts-drawer");
+    probes.contactsDrawerFocus = await dialogFocus();
+    await escapeAll();
+    probes.contactsDrawerFocusReturn = await page.evaluate(() => ({
+      activeTag: document.activeElement?.tagName ?? null,
+      activeLabel: document.activeElement?.getAttribute("aria-label") ?? null,
+    }));
+  });
+  await step("contacts-form", async () => {
+    await click(page.getByRole("button", { name: "Contact", exact: true }));
+    await waitDialog();
+    await shot("contacts-form");
+    await escapeAll();
+  });
+  await step("contacts-import", async () => {
+    await click(page.getByRole("button", { name: /^Import$/ }));
+    await page.waitForTimeout(600);
+    await shot("contacts-import");
+    await escapeAll();
+  });
+  await step("contacts-duplicates", async () => {
+    await click(page.getByRole("button", { name: /^Duplicates$/ }));
+    await page.waitForTimeout(1_200);
+    await shot("contacts-duplicates");
+    await escapeAll();
+  });
+  await step("contacts-reports", async () => {
+    await click(page.getByRole("tab", { name: /^Reports$/ }));
+    await page.waitForTimeout(1_200);
+    await shot("contacts-reports");
+  });
+  await step("contacts-setup", async () => {
+    await click(page.getByRole("tab", { name: /^Setup$/ }));
+    await page.waitForTimeout(1_200);
+    await shot("contacts-setup");
+  });
+  await step("contacts-trash", async () => {
+    await go("/contacts");
+    await openWork("Contacts");
+    await click(page.getByRole("button", { name: /Show Deleted/i }));
+    await page.waitForTimeout(1_000);
+    await shot("contacts-trash");
+  });
+  await step("contacts-empty", async () => {
+    await go("/contacts");
+    await openWork("Contacts");
+    const search = page
+      .locator('#main-content input[type="search"], #main-content input[placeholder*="earch"]')
+      .first();
+    await search.fill("zzzz-no-match");
+    await page.waitForTimeout(900);
+    await shot("contacts-empty");
+  });
+
+  // Students
+  await go("/students");
+  await openWork("Students");
+  await step("students-bulk-bar", async () => {
+    await click(page.getByRole("button", { name: /Select All/i }));
+    await page.waitForTimeout(400);
+    await shot("students-bulk-bar");
+  });
+  await step("students-drawer", async () => {
+    await click(page.getByRole("button", { name: "Rabia Basri", exact: true }));
+    await waitDialog();
+    await shot("students-drawer");
+    probes.studentsDrawerFocus = await dialogFocus();
+    await escapeAll();
+  });
+  await step("students-form", async () => {
+    await click(page.getByRole("button", { name: "Student", exact: true }));
+    await waitDialog();
+    await shot("students-form");
+    await escapeAll();
+  });
+  await step("students-setup", async () => {
+    await click(page.getByRole("tab", { name: /^Setup$/ }));
+    await page.waitForTimeout(1_200);
+    await shot("students-setup");
+    const templateTab = page.getByRole("tab", { name: /Card Template|ID Card/i });
+    if (
+      await templateTab
+        .first()
+        .isVisible()
+        .catch(() => false)
+    ) {
+      await click(templateTab);
+      await page.waitForTimeout(1_500);
+      await shot("students-card-template");
+    }
+  });
+  await step("students-reports", async () => {
+    await click(page.getByRole("tab", { name: /^Reports$/ }));
+    await page.waitForTimeout(1_200);
+    await shot("students-reports");
+  });
+  await step("students-import", async () => {
+    await go("/students");
+    await openWork("Students");
+    await click(page.getByRole("button", { name: /^Import$/ }));
+    await waitDialog();
+    await shot("students-import");
+    await escapeAll();
+  });
+
+  // Faculty
+  await go("/faculty");
+  await openWork("Faculties");
+  await step("faculty-departments", async () => {
+    await click(page.getByRole("tab", { name: /^Departments$/ }));
+    await page.waitForTimeout(1_000);
+    await shot("faculty-departments");
+  });
+  await step("faculty-designations", async () => {
+    await click(page.getByRole("tab", { name: /^Designations$/ }));
+    await page.waitForTimeout(1_000);
+    await shot("faculty-designations");
+  });
+  await step("faculty-reports", async () => {
+    await click(page.getByRole("tab", { name: /^Reports$/ }));
+    await page.waitForTimeout(1_200);
+    await shot("faculty-reports");
+  });
+  await step("faculty-setup", async () => {
+    await click(page.getByRole("tab", { name: /^Setup$/ }));
+    await page.waitForTimeout(1_000);
+    await shot("faculty-setup");
+  });
+  await step("faculty-drawer", async () => {
+    await click(page.getByRole("tab", { name: /^Faculties$/ }));
+    await page.waitForTimeout(600);
+    await click(page.getByRole("button", { name: "Abdullah Al-Mansoor", exact: true }));
+    await waitDialog();
+    await shot("faculty-drawer");
+    const leave = page.getByRole("button", { name: /Manage Leave|Leave & Substitute/i });
+    if (
+      await leave
+        .first()
+        .isVisible()
+        .catch(() => false)
+    ) {
+      await click(leave);
+      await page.waitForTimeout(500);
+      await shot("faculty-leave-modal");
+    }
+    await escapeAll();
+  });
+  await step("faculty-form", async () => {
+    await go("/faculty");
+    await openWork("Faculties");
+    await click(page.getByRole("button", { name: "Faculty", exact: true }));
+    await waitDialog();
+    await shot("faculty-form");
+    await escapeAll();
+  });
+  await step("faculty-designation-modal", async () => {
+    await click(page.getByRole("button", { name: "Designation", exact: true }));
+    await waitDialog();
+    await shot("faculty-designation-modal");
+    await escapeAll();
+  });
+  await step("faculty-all-gender-probe", async () => {
+    await go("/faculty");
+    await openWork("Faculties");
+    const rows = () => page.locator("#main-content tbody tr").count();
+    await click(page.getByRole("button", { name: /^Filters$/ }));
+    await click(page.getByRole("menuitemradio", { name: /^Male$/ }));
+    await page.waitForTimeout(1_000);
+    const maleRows = await rows();
+    await click(page.getByRole("button", { name: /^Filters$/ }));
+    await click(page.getByRole("menuitemradio", { name: /^All genders$/ }));
+    await page.waitForTimeout(1_200);
+    const allRows = await rows();
+    probes.facultyAllGenderFilter = { maleRows, allRows };
+    await shot("faculty-all-gender-filter");
+  });
+
+  // Tasks
+  await go("/tasks");
+  await openWork("Tasks");
+  await step("tasks-status-menu", async () => {
+    const before = await page.locator('[role="dialog"]').count();
+    await click(page.getByRole("button", { name: /Change Status/i }));
+    await page.waitForTimeout(600);
+    const after = await page.locator('[role="dialog"]').count();
+    probes.tasksStatusMenu = { dialogsBefore: before, dialogsAfter: after };
+    await shot("tasks-status-menu");
+    await escapeAll();
+  });
+  await step("tasks-drawer", async () => {
+    await page.locator("#main-content tbody tr").first().click();
+    await waitDialog();
+    await shot("tasks-drawer");
+    await escapeAll();
+  });
+  await step("tasks-form-discard", async () => {
+    await click(page.getByRole("button", { name: /^Create Task$/ }));
+    await waitDialog();
+    await shot("tasks-form");
+    await page.locator('[role="dialog"] input[name="title"]').first().fill("Draft review task");
+    await page.keyboard.press("Escape");
+    await page.waitForTimeout(700);
+    probes.tasksDirtyCloseConfirm = await page
+      .locator('[role="alertdialog"]')
+      .first()
+      .isVisible()
+      .catch(() => false);
+    await shot("tasks-form-discard");
+    await escapeAll();
+  });
+  await step("tasks-import", async () => {
+    await click(page.getByRole("button", { name: /^Import$/ }));
+    await waitDialog();
+    await shot("tasks-import");
+    await escapeAll();
+  });
+  await step("tasks-reports", async () => {
+    await click(page.getByRole("tab", { name: /^Reports$/ }));
+    await page.waitForTimeout(1_200);
+    await shot("tasks-reports");
+  });
+  await step("tasks-reports-error", async () => {
+    await page.route("**/api/tasks/metrics**", (route) =>
+      route.fulfill({
+        status: 500,
+        contentType: "application/json",
+        body: JSON.stringify({ type: "server_error", message: "Review-injected failure" }),
+      }),
+    );
+    await page.reload({ waitUntil: "domcontentloaded" });
+    await page.waitForTimeout(1_200);
+    await click(page.getByRole("tab", { name: /^Reports$/ }));
+    await page.waitForTimeout(1_500);
+    await shot("tasks-reports-error");
+    await page.unroute("**/api/tasks/metrics**");
+  });
+  await step("tasks-setup", async () => {
+    await go("/tasks");
+    await click(page.getByRole("tab", { name: /^Setup$/ }));
+    await page.waitForTimeout(1_000);
+    await shot("tasks-setup");
+  });
+  await step("tasks-pagination", async () => {
+    await go("/tasks");
+    await openWork("Tasks");
+    const next = page.getByRole("button", { name: /^Next$/ });
+    if (await next.isEnabled().catch(() => false)) {
+      await click(next);
+      await page.waitForTimeout(1_000);
+      await shot("tasks-page-2");
+    }
+  });
+  await step("tasks-trash", async () => {
+    await go("/tasks");
+    await openWork("Tasks");
+    await click(page.getByRole("button", { name: /Show Archived/i }));
+    await page.waitForTimeout(1_000);
+    await shot("tasks-trash");
+  });
+  await step("tasks-empty", async () => {
+    await go("/tasks");
+    await openWork("Tasks");
+    const search = page
+      .locator('#main-content input[type="search"], #main-content input[placeholder*="earch"]')
+      .first();
+    await search.fill("zzzz-no-match");
+    await page.waitForTimeout(900);
+    await shot("tasks-empty");
+  });
+
+  await context.close();
+
+  // Mobile card/drawer states
+  const mobile = await newContext(browser, {
+    viewport: { width: 375, height: 812 },
+    theme: "light",
+    storageState: tenantStoragePath,
+    locale: "en",
+  });
+  const mobilePage = await mobile.newPage();
+  await loginTenantPage(mobilePage, state);
+  await settle(mobilePage);
+  const mobileShot = async (name) => {
+    await mobilePage.waitForTimeout(400);
+    await capture(
+      mobilePage,
+      { name, path: new URL(mobilePage.url()).pathname, fullPage: false },
+      "375-light-en",
+      { axe: true },
+    );
+  };
+  await step("mobile-contacts-cards", async () => {
+    await mobilePage.goto(`${state.tenantOrigin}/contacts`, { waitUntil: "domcontentloaded" });
+    await settle(mobilePage);
+    await mobilePage.getByRole("button", { name: /Cards view/i }).click();
+    await mobilePage.waitForTimeout(600);
+    await mobileShot("contacts-cards");
+    await mobilePage.getByRole("button", { name: "Abdullah Al-Mansoor", exact: true }).click();
+    await mobilePage.waitForTimeout(800);
+    await mobileShot("contacts-drawer-mobile");
+    await mobilePage.keyboard.press("Escape");
+  });
+  await step("mobile-students-cards", async () => {
+    await mobilePage.goto(`${state.tenantOrigin}/students`, { waitUntil: "domcontentloaded" });
+    await settle(mobilePage);
+    await mobilePage.getByRole("button", { name: /Cards view/i }).click();
+    await mobilePage.waitForTimeout(600);
+    await mobileShot("students-cards");
+  });
+  await step("mobile-tasks-cards", async () => {
+    await mobilePage.goto(`${state.tenantOrigin}/tasks`, { waitUntil: "domcontentloaded" });
+    await settle(mobilePage);
+    await mobilePage.getByRole("button", { name: /Cards view/i }).click();
+    await mobilePage.waitForTimeout(600);
+    await mobileShot("tasks-cards");
+  });
+  await mobile.close();
+
+  writeFileSync(
+    path.join(outDir, "module-state-probes.json"),
+    `${JSON.stringify({ probes, skipped }, null, 2)}\n`,
+    "utf8",
+  );
+  console.log(`[states] probes=${JSON.stringify(probes)} skipped=${skipped.length}`);
+}
+
 async function runCapture(mode) {
   assertLocal();
   ensureDirs();
@@ -973,6 +1662,18 @@ async function runCapture(mode) {
     }
     if (mode === "--capture-states") {
       await captureStates(browser, state);
+      return;
+    }
+    if (mode === "--capture-five-modules") {
+      await captureFiveModules(browser, state);
+      return;
+    }
+    if (mode === "--capture-five-module-locales") {
+      await captureFiveModuleLocales(browser, state);
+      return;
+    }
+    if (mode === "--capture-five-module-states") {
+      await captureFiveModuleStates(browser, state);
       return;
     }
     throw new Error(`Unknown capture mode: ${mode}`);
@@ -1248,14 +1949,17 @@ async function main() {
     mode === "--capture-core" ||
     mode === "--capture-locales" ||
     mode === "--capture-breadth" ||
-    mode === "--capture-states"
+    mode === "--capture-states" ||
+    mode === "--capture-five-modules" ||
+    mode === "--capture-five-module-locales" ||
+    mode === "--capture-five-module-states"
   ) {
     await runCapture(mode);
     return;
   }
   if (mode === "--help" || !mode) {
     console.log(
-      "Usage: --provision | --session | --capture-core | --capture-locales | --capture-breadth | --capture-states | --verify",
+      "Usage: --provision | --session | --capture-core | --capture-locales | --capture-breadth | --capture-states | --capture-five-modules | --capture-five-module-locales | --capture-five-module-states | --verify",
     );
     console.log(`Corpus: ${outDir} (override with UIUX_REVIEW_RUN=<date>)`);
     return;

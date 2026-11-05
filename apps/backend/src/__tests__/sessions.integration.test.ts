@@ -201,6 +201,78 @@ describe("sessions REST routes integration", () => {
     await app.close();
   });
 
+  it("POST /api/sessions/import is registered (401 without a token, not 404)", async () => {
+    const app = await buildApp();
+    const res = await app.inject({
+      method: "POST",
+      url: "/api/sessions/import",
+      headers: { host: "demo.localhost", "content-type": "application/json" },
+      payload: { rows: [{ name: "Imported" }] },
+    });
+    expect(res.statusCode).toBe(401);
+    await app.close();
+  });
+
+  it("POST /api/sessions/export/csv is registered (401 without a token, not 404)", async () => {
+    const app = await buildApp();
+    const res = await app.inject({
+      method: "POST",
+      url: "/api/sessions/export/csv",
+      headers: { host: "demo.localhost", "content-type": "application/json" },
+      payload: { query: {} },
+    });
+    expect(res.statusCode).toBe(401);
+    await app.close();
+  });
+
+  it("POST /api/sessions/export-audit is not served (queue path owns export audit)", async () => {
+    const app = await buildApp();
+    const res = await app.inject({
+      method: "POST",
+      url: "/api/sessions/export-audit",
+      headers: {
+        host: "demo.localhost",
+        authorization: `Bearer ${adminToken(app)}`,
+        "content-type": "application/json",
+      },
+      payload: { count: 3, scope: "filtered" },
+    });
+    expect(res.statusCode).toBe(404);
+    await app.close();
+  });
+
+  it("POST /api/sessions/bulk-status rejects an unknown status", async () => {
+    const app = await buildApp();
+    const res = await app.inject({
+      method: "POST",
+      url: "/api/sessions/bulk-status",
+      headers: {
+        host: "demo.localhost",
+        authorization: `Bearer ${adminToken(app)}`,
+        "content-type": "application/json",
+      },
+      payload: { ids: ["s1"], status: "not_a_lifecycle_state" },
+    });
+    expect(res.statusCode).toBe(400);
+    await app.close();
+  });
+
+  it("POST /api/sessions/bulk-status rejects more than 500 ids", async () => {
+    const app = await buildApp();
+    const res = await app.inject({
+      method: "POST",
+      url: "/api/sessions/bulk-status",
+      headers: {
+        host: "demo.localhost",
+        authorization: `Bearer ${adminToken(app)}`,
+        "content-type": "application/json",
+      },
+      payload: { ids: Array.from({ length: 501 }, (_, i) => `s${i}`), status: "open" },
+    });
+    expect(res.statusCode).toBe(400);
+    await app.close();
+  });
+
   it("GET /api/sessions/report-aggregates returns 403 for roles without read access", async () => {
     const app = await buildApp();
     const res = await app.inject({

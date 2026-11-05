@@ -20,6 +20,7 @@ import { SEMANTIC_BADGE } from "@/lib/ui/semanticTone";
 import { printHtmlDocument } from "@/lib/ui/printHtmlDocument";
 import { useBrandPalette } from "@/lib/contexts/BrandingPaletteContext";
 import { useTranslation } from "@/hooks/useTranslation";
+import { Badge } from "@/components/ui/badge";
 import {
   useSessionCompletion,
   useSessionCompletionActions,
@@ -39,9 +40,11 @@ const SHORTFALL_LABEL: Record<CompletionShortfall, AppTranslationKey> = {
 export function SessionCompletionTab({
   session,
   canWrite,
+  onEdit,
 }: {
   session: Session;
   canWrite: boolean;
+  onEdit?: () => void;
 }): React.JSX.Element {
   const { t } = useTranslation();
   const { primary } = useBrandPalette();
@@ -51,7 +54,10 @@ export function SessionCompletionTab({
     ...row,
     id: row.enrollmentId,
   }));
-  const completed = rows.filter((row) => row.status === "completed");
+  const hasCriteria = Boolean(session.minAttendancePct || session.requiresExamPass);
+  // Only stored completions may be certified; the table also shows read-time standing.
+  const storedCompleted = rows.filter((row) => row.status === "completed" && row.completedAt);
+  const pendingCertificates = storedCompleted.filter((row) => !row.certificateIssuedAt);
 
   const statusConfig: Record<string, StatusBadgeConfigItem> = {
     completed: { label: t("sessions.completion.status.completed"), cls: SEMANTIC_BADGE.success },
@@ -85,7 +91,11 @@ export function SessionCompletionTab({
     const pending = targets
       .filter((row) => !row.certificateIssuedAt)
       .map((row) => row.enrollmentId);
-    if (pending.length > 0) await actions.issueCertificates(pending);
+    if (pending.length > 0) {
+      const issued = await actions.issueCertificates(pending);
+      // The action already toasted the failure; never print a certificate that was not issued.
+      if (issued.length === 0) return;
+    }
     print(targets);
   };
 
@@ -125,7 +135,18 @@ export function SessionCompletionTab({
       id: "shortfalls",
       label: t("sessions.completion.shortfalls"),
       width: 220,
-      render: (row) => row.shortfalls.map((code) => t(SHORTFALL_LABEL[code])).join(" ") || "—",
+      render: (row) =>
+        row.shortfalls.length > 0 ? (
+          <span className="flex flex-wrap gap-1">
+            {row.shortfalls.map((code) => (
+              <Badge key={code} as="span" tone="warning" size="sm">
+                {t(SHORTFALL_LABEL[code])}
+              </Badge>
+            ))}
+          </span>
+        ) : (
+          "—"
+        ),
     },
     {
       id: "certificate",
@@ -145,20 +166,40 @@ export function SessionCompletionTab({
 
   return (
     <div className="space-y-3">
-      <p className="text-pretty text-sm text-muted-foreground">
-        {session.minAttendancePct || session.requiresExamPass
-          ? t("sessions.completion.criteriaSummary", {
+      {hasCriteria ? (
+        <div className="space-y-1">
+          <p className="text-pretty text-sm text-muted-foreground">
+            {t("sessions.completion.criteriaSummary", {
               attendance: session.minAttendancePct ? `${session.minAttendancePct}%` : "—",
               exam: session.requiresExamPass ? t("common.yes") : t("common.no"),
-            })
-          : t("sessions.completion.noCriteria")}
-      </p>
+            })}
+          </p>
+          {storedCompleted.length === 0 ? (
+            <p className="text-xs text-muted-foreground">
+              {t("sessions.completion.evaluateFirst")}
+            </p>
+          ) : null}
+        </div>
+      ) : (
+        <div className="flex flex-wrap items-center justify-between gap-2 rounded-lg border border-warning/40 bg-warning/10 px-3 py-2">
+          <p className="text-pretty text-sm text-muted-foreground">
+            {t("sessions.completion.noCriteria")}
+          </p>
+          {canWrite && onEdit ? (
+            <Button type="button" size="sm" variant="outline" className="min-h-11" onClick={onEdit}>
+              {t("common.edit")}
+            </Button>
+          ) : null}
+        </div>
+      )}
       <DataTable
         tableId="sessions.detail.completion"
         label={t("sessions.completion.tableLabel")}
         data={rows}
         columns={columns}
         isLoading={query.isLoading}
+        // Seven columns never fit the drawer; cards are the right default, table stays available.
+        defaultViewMode="cards"
         card={{ title: (row) => row.studentName, badge }}
         primaryAction={
           canWrite ? (
@@ -168,7 +209,7 @@ export function SessionCompletionTab({
                 size="sm"
                 variant="outline"
                 className="min-h-11 gap-1.5"
-                disabled={actions.isPending}
+                disabled={actions.isPending || !hasCriteria}
                 onClick={() => void actions.evaluate()}
               >
                 <RefreshCw className="size-4" aria-hidden />
@@ -178,24 +219,28 @@ export function SessionCompletionTab({
                 type="button"
                 size="sm"
                 className="min-h-11 gap-1.5"
-                disabled={actions.isPending || completed.length === 0}
-                onClick={() => void issueAndPrint(completed)}
+                disabled={actions.isPending || pendingCertificates.length === 0}
+                onClick={() => void issueAndPrint(storedCompleted)}
               >
                 <Award className="size-4" aria-hidden />
-                {t("sessions.completion.issueAll", { count: completed.length })}
+                {t("sessions.completion.issueAll", { count: pendingCertificates.length })}
               </Button>
             </div>
           ) : undefined
         }
         renderRowActions={(row) =>
-          row.status === "completed" && (canWrite || row.certificateIssuedAt) ? (
+          row.status === "completed" &&
+          (row.certificateIssuedAt || (canWrite && hasCriteria && Boolean(row.completedAt))) ? (
             <DataTableRowActions
               actions={[
                 {
                   id: "print",
                   label: `${t("sessions.completion.printCertificate")} ${row.studentName}`,
                   icon: Printer,
-                  onClick: () => void (canWrite ? issueAndPrint([row]) : print([row])),
+                  onClick: () =>
+                    void (canWrite && hasCriteria && row.completedAt
+                      ? issueAndPrint([row])
+                      : print([row])),
                   disabled: actions.isPending,
                 },
               ]}

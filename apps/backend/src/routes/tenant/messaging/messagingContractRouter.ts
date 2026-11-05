@@ -2,6 +2,8 @@ import type { FastifyPluginAsync } from "fastify";
 import { messagingContract } from "@mms/shared";
 import { initServer, type RouterImplementation } from "@ts-rest/fastify";
 import { standardRequestValidationErrorHandler } from "../../../lib/contractRegistration.js";
+import { MESSAGING_LOG_RATE_LIMIT } from "../../../lib/rateLimitConfig.js";
+import { createStrictRateLimitGuard } from "../../../lib/rateLimitGuard.js";
 import {
   messagingListLogsHandler,
   messagingGetMetricsHandler,
@@ -43,7 +45,19 @@ export const messagingContractRouter: FastifyPluginAsync = async (fastify) => {
     updatePreferences: messagingUpdatePreferencesHandler,
   } as unknown as RouterImplementation<typeof messagingContract>);
 
-  await fastify.register(s.plugin(router), {
-    requestValidationErrorHandler: standardRequestValidationErrorHandler,
+  await fastify.register(async (scoped) => {
+    const strictGuard = createStrictRateLimitGuard(scoped, MESSAGING_LOG_RATE_LIMIT);
+    // Destructive contract writes (clear/restore/record) carry the same strict
+    // limiter as the dispatch routes; reads keep the global limiter so the Work
+    // directory's polling is unaffected (`mms-auth-security` §4).
+    scoped.addHook("preHandler", async (request, reply) => {
+      if (request.method === "GET" || request.method === "HEAD") return;
+      await strictGuard(request, reply);
+      return reply.sent ? reply : undefined;
+    });
+
+    await scoped.register(s.plugin(router), {
+      requestValidationErrorHandler: standardRequestValidationErrorHandler,
+    });
   });
 };

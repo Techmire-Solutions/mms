@@ -1,5 +1,5 @@
 import { and, eq, inArray, isNull, isNotNull, sql } from "drizzle-orm";
-import { messageTemplates, messageLogs } from "../schema.js";
+import { messageLogs } from "../schema.js";
 import { dedupeTrimmedIds, type Message, type RepositoryListOptions } from "@mms/shared";
 import { withTenant } from "../tenant-context.js";
 import { mapAuditToInsert } from "./repositoryMappers.js";
@@ -38,6 +38,8 @@ export async function listMessageLogsByWorkspace(
         deletedAt: messageLogs.deletedAt,
         deletedBy: messageLogs.deletedBy,
         deletionReason: messageLogs.deletionReason,
+        restoredAt: messageLogs.restoredAt,
+        restoredBy: messageLogs.restoredBy,
       })
       .from(messageLogs)
       .where(and(eq(messageLogs.workspaceSubdomain, subdomain), isNull(messageLogs.deletedAt)))
@@ -48,10 +50,22 @@ export async function listMessageLogsByWorkspace(
   });
 }
 
-export async function findMessageLogById(tenant: string, id: string): Promise<Message | null> {
-  const cleanId = id?.trim();
-  if (!cleanId) return null;
+/**
+ * Backup snapshot loader — every log row, including soft-archived ones.
+ *
+ * A workspace backup restores by hard-replacing this table
+ * (`replaceMessageLogsForWorkspace` under `app.allow_hard_purge`), so an
+ * active-only snapshot would silently destroy the 365-day archived window the
+ * Reports tier offers to restore (`docs/soft-delete.md` §13.4). Ordered by `id`
+ * so the streamed snapshot can page without gaps or duplicates.
+ */
+export async function listAllMessageLogsByWorkspace(
+  tenant: string,
+  options?: ListMessageLogsOptions,
+): Promise<Message[]> {
   const subdomain = tenant.trim().toLowerCase();
+  const limit = Math.min(Math.max(1, options?.limit ?? 250), 1000);
+  const offset = Math.max(0, options?.offset ?? 0);
   return withTenant(subdomain, async (tx) => {
     const rows = await tx
       .select({
@@ -69,14 +83,17 @@ export async function findMessageLogById(tenant: string, id: string): Promise<Me
         deletedAt: messageLogs.deletedAt,
         deletedBy: messageLogs.deletedBy,
         deletionReason: messageLogs.deletionReason,
+        restoredAt: messageLogs.restoredAt,
+        restoredBy: messageLogs.restoredBy,
         createdAt: messageLogs.createdAt,
         updatedAt: messageLogs.updatedAt,
       })
       .from(messageLogs)
-      .where(and(eq(messageLogs.workspaceSubdomain, subdomain), eq(messageLogs.id, cleanId)))
-      .limit(1);
-    const row = rows[0];
-    return row ? logRowToRecord(row as LogRow) : null;
+      .where(eq(messageLogs.workspaceSubdomain, subdomain))
+      .orderBy(messageLogs.id)
+      .limit(limit)
+      .offset(offset);
+    return rows.map((r) => logRowToRecord(r as LogRow));
   });
 }
 
@@ -119,6 +136,8 @@ export async function findMessageLogsByIds(
         deletedAt: messageLogs.deletedAt,
         deletedBy: messageLogs.deletedBy,
         deletionReason: messageLogs.deletionReason,
+        restoredAt: messageLogs.restoredAt,
+        restoredBy: messageLogs.restoredBy,
         createdAt: messageLogs.createdAt,
         updatedAt: messageLogs.updatedAt,
       })
@@ -171,9 +190,9 @@ export async function saveMessageLog(tenant: string, record: Message): Promise<v
           subject: sql`excluded.subject`,
           category: sql`excluded.category`,
           errorMessage: sql`excluded.error_message`,
-          deletedAt: sql`excluded.deleted_at`,
-          deletedBy: sql`excluded.deleted_by`,
-          deletionReason: sql`excluded.deletion_reason`,
+          // Soft-delete columns are intentionally NOT copied here: archive and
+          // restore own that lifecycle (with attribution + audit). Copying them
+          // made a content save able to resurrect a row unattributed.
           updatedAt: new Date(),
         },
       });
@@ -228,29 +247,24 @@ export async function bulkSaveMessageLogs(tenant: string, records: Message[]): P
           subject: sql`excluded.subject`,
           category: sql`excluded.category`,
           errorMessage: sql`excluded.error_message`,
-          deletedAt: sql`excluded.deleted_at`,
-          deletedBy: sql`excluded.deleted_by`,
-          deletionReason: sql`excluded.deletion_reason`,
+          // Soft-delete columns are intentionally NOT copied here: archive and
+          // restore own that lifecycle (with attribution + audit). Copying them
+          // made a content save able to resurrect a row unattributed.
           updatedAt: new Date(),
         },
       });
   });
 }
 
-export async function deleteMessageLogsByWorkspace(workspaceSubdomain: string): Promise<void> {
-  const subdomain = workspaceSubdomain.trim().toLowerCase();
-  await withTenant(subdomain, async (tx) => {
-    await tx.delete(messageLogs).where(eq(messageLogs.workspaceSubdomain, subdomain));
-    await tx.delete(messageTemplates).where(eq(messageTemplates.workspaceSubdomain, subdomain));
-  });
-}
-
-/** Insert-only log write — never overwrite an existing dispatch audit row. */
+/**
+ * Insert-only log write — never overwrite an existing dispatch audit row.
+ * Returns the number of rows actually persisted.
+ */
 export async function insertMessageLogs(
   workspaceSubdomain: string,
   logs: Message[],
-): Promise<void> {
-  if (logs.length === 0) return;
+): Promise<number> {
+  if (logs.length === 0) return 0;
   const subdomain = workspaceSubdomain.trim().toLowerCase();
 
   const dedupedMap = new Map<string, Message>();
@@ -261,12 +275,14 @@ export async function insertMessageLogs(
 
   const values = uniqueLogs.map((record) => mapMessageToInsertRow(record, subdomain));
 
-  await withTenant(subdomain, async (tx) => {
-    await tx
+  return withTenant(subdomain, async (tx) => {
+    const inserted = await tx
       .insert(messageLogs)
       .values(values)
       .onConflictDoNothing({
         target: [messageLogs.workspaceSubdomain, messageLogs.id],
-      });
+      })
+      .returning({ id: messageLogs.id });
+    return inserted.length;
   });
 }

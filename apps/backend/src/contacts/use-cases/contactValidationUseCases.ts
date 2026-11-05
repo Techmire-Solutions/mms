@@ -73,7 +73,10 @@ async function normalizeContactPhones(
   }
 
   if (!phones?.length) {
-    return { ...contact, phones: phones || [] };
+    // `undefined` means "the caller did not provide phones": keep them out of the
+    // record so the persist layer leaves the stored rows untouched. An explicit
+    // `[]` still clears them (R4-02/R4-04).
+    return phones === undefined ? contact : { ...contact, phones: [] };
   }
 
   const countryCodes: ReadonlyArray<ContactCountryCodeRow> =
@@ -128,7 +131,12 @@ export async function prepareContactRecord(
     rawId ??
     `temp-${typeof crypto !== "undefined" && crypto.randomUUID ? crypto.randomUUID() : `${Date.now()}-${Math.random().toString(36).slice(2, 9)}`}`;
   const titled = applyTitleCaseToContact({ ...withScalars, id: resolvedId });
+  // `_blueprintId` is concurrency metadata verified by `validateContactDynamic`,
+  // not a contact column: never persist or echo it back.
+  const { _blueprintId: _blueprintId, ...withoutBlueprint } = titled as Contact & {
+    _blueprintId?: unknown;
+  };
   // Audit attribution is server-owned; the acting user is stamped by the write
   // use cases *after* this step (`upsertContact` / `updateContactById`).
-  return stripClientAuditFields(stripContactRetiredClassificationFields({ ...titled }));
+  return stripClientAuditFields(stripContactRetiredClassificationFields({ ...withoutBlueprint }));
 }

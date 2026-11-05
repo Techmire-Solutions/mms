@@ -1,4 +1,4 @@
-import React, { useMemo } from "react";
+import { useMemo } from "react";
 import { AlertCircle, Filter } from "lucide-react";
 import {
   calculateSmsSegments,
@@ -65,8 +65,9 @@ export function useMessagingTableColumns({
                     e.stopPropagation();
                     onFilterContact(name);
                   }}
-                  className="h-6 w-6 min-h-6 min-w-6 opacity-0 group-hover:opacity-100 transition-opacity text-muted-foreground hover:text-primary cursor-pointer"
-                  title={t("messaging.selectRecipientsDesc")}
+                  className="h-11 w-11 min-h-11 min-w-11 opacity-0 group-hover:opacity-100 group-focus-within:opacity-100 focus-visible:opacity-100 transition-opacity text-muted-foreground hover:text-primary cursor-pointer"
+                  title={t("messaging.filterByContact", { name })}
+                  aria-label={t("messaging.filterByContact", { name })}
                 >
                   <Filter className="h-3 w-3" />
                 </Button>
@@ -101,10 +102,12 @@ export function useMessagingTableColumns({
               )}
               <StatusBadge status={log.status || "sent"} size="sm" config={logStatusConfig} />
               {isFailed && (
-                <AlertCircle
-                  className={`h-3.5 w-3.5 ${SEMANTIC_TEXT.destructive} shrink-0`}
-                  aria-hidden="true"
-                />
+                <span title={log.errorMessage} className="shrink-0">
+                  <AlertCircle
+                    className={`h-3.5 w-3.5 ${SEMANTIC_TEXT.destructive}`}
+                    aria-hidden="true"
+                  />
+                </span>
               )}
             </div>
           );
@@ -121,7 +124,7 @@ export function useMessagingTableColumns({
         render: (log) => {
           return (
             <div className="flex items-center justify-between gap-2" title={log.body}>
-              <span className="truncate">
+              <span dir="auto" className="truncate">
                 {log.channel === "email" && log.subject && (
                   <strong className="text-foreground font-semibold me-1.5">{log.subject}:</strong>
                 )}
@@ -130,7 +133,7 @@ export function useMessagingTableColumns({
               <CopyBtn
                 text={log.body}
                 showToast
-                className="h-6 w-6 min-h-6 min-w-6 shrink-0 opacity-0 group-hover:opacity-100 transition-opacity text-muted-foreground hover:text-primary shadow-none cursor-pointer"
+                className="h-11 w-11 min-h-11 min-w-11 shrink-0 opacity-0 group-hover:opacity-100 group-focus-within:opacity-100 focus-visible:opacity-100 transition-opacity text-muted-foreground hover:text-primary shadow-none cursor-pointer"
               />
             </div>
           );

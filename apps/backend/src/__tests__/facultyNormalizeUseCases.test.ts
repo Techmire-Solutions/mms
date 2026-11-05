@@ -96,6 +96,20 @@ describe("facultyNormalizeUseCases", () => {
       expect(parsed).not.toHaveProperty("dob");
     });
 
+    it("strips client-supplied audit attribution and timestamps", () => {
+      const parsed = prepareFacultyRecord({
+        status: "active",
+        createdAt: "2020-01-01T00:00:00.000Z",
+        updatedAt: "2020-01-02T00:00:00.000Z",
+        createdBy: "victim",
+        updatedBy: "victim",
+      } as never);
+      expect(parsed).not.toHaveProperty("createdAt");
+      expect(parsed).not.toHaveProperty("updatedAt");
+      expect(parsed).not.toHaveProperty("createdBy");
+      expect(parsed).not.toHaveProperty("updatedBy");
+    });
+
     it("drops an absent contactId but keeps employee-only fields", () => {
       const parsed = prepareFacultyRecord({ employeeId: "T-1", status: "active" });
       expect(parsed).not.toHaveProperty("contactId");

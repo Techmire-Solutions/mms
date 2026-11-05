@@ -66,6 +66,13 @@ export function TasksReportsCharts({ metrics }: TasksReportsChartsProps): React.
         heightClass="h-chart-md"
         empty={!hasChartValues(statusData)}
         emptyNode={emptyNode}
+        accessibleSummary={
+          <ul>
+            {statusData.map((row) => (
+              <li key={row.name}>{`${row.name}: ${row.value}`}</li>
+            ))}
+          </ul>
+        }
       >
         <PieChart>
           <Pie
@@ -92,6 +99,13 @@ export function TasksReportsCharts({ metrics }: TasksReportsChartsProps): React.
         heightClass="h-chart-md"
         empty={!hasChartValues(priorityData)}
         emptyNode={emptyNode}
+        accessibleSummary={
+          <ul>
+            {priorityData.map((row) => (
+              <li key={row.name}>{`${row.name}: ${row.value}`}</li>
+            ))}
+          </ul>
+        }
       >
         <BarChart data={priorityData} barSize={20}>
           <XAxis dataKey="name" tick={chartAxisTick(10)} tickLine={false} />
@@ -111,6 +125,13 @@ export function TasksReportsCharts({ metrics }: TasksReportsChartsProps): React.
         heightClass="h-chart-md"
         empty={!hasChartValues(overdueData)}
         emptyNode={emptyNode}
+        accessibleSummary={
+          <ul>
+            {overdueData.map((row) => (
+              <li key={row.name}>{`${row.name}: ${row.value}`}</li>
+            ))}
+          </ul>
+        }
       >
         <BarChart data={overdueData} barSize={28}>
           <XAxis dataKey="name" tick={chartAxisTick(10)} tickLine={false} />

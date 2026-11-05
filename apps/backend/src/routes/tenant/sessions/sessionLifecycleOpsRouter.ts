@@ -38,9 +38,21 @@ export const sessionLifecycleOpsRouter: FastifyPluginAsync = async (fastify) => 
       const user = request.user as User;
       if (!canWriteCollection(user, COLLECTION)) return forbidden;
       try {
+        const expectedHeader = request.headers["x-expected-updated-at"];
+        const expectedUpdatedAt = Array.isArray(expectedHeader)
+          ? expectedHeader[0]
+          : expectedHeader;
         return {
           status: 200 as const,
-          body: { session: await ops.postpone(tenantOf(request), params.id, body, user) },
+          body: {
+            session: await ops.postpone(
+              tenantOf(request),
+              params.id,
+              body,
+              user,
+              expectedUpdatedAt,
+            ),
+          },
         };
       } catch (error) {
         return fail(request, error, "Failed to postpone the session");

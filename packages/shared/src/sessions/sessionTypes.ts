@@ -206,7 +206,6 @@ export type SessionUpdate = z.infer<typeof SessionUpdateSchema>;
 
 /** Canonical record schema standard */
 export const sessionRecordSchema = SessionSchema;
-export const sessionListSchema = z.array(sessionRecordSchema);
 export type SessionRecord = Session;
 
 /** Whether a session record is soft-deleted. */

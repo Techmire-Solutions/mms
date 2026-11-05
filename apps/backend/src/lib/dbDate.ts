@@ -44,3 +44,16 @@ export function requireDbDateValue(value: string | null | undefined, field: stri
   if (!day) throw new ValidationError(`${field} is required`);
   return day;
 }
+
+/**
+ * Naive `YYYY-MM-DD HH:mm:ss.SSS` render used by the optimistic-concurrency predicate:
+ * `date_trunc('milliseconds', updated_at) = ${naive}::timestamp`. Clients echo the
+ * JSON `updatedAt` (UTC ISO) while the column is `timestamptz`; comparing the
+ * millisecond-truncated value on both sides keeps the check exact.
+ */
+export function naiveTimestamp(date: Date): string {
+  const pad = (value: number, width = 2): string => String(value).padStart(width, "0");
+  return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())} ${pad(
+    date.getHours(),
+  )}:${pad(date.getMinutes())}:${pad(date.getSeconds())}.${pad(date.getMilliseconds(), 3)}`;
+}

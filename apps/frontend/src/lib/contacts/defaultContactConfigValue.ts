@@ -52,6 +52,7 @@ export function getDefaultContactConfigContextValue(): ContactConfigContextType 
 
   cachedDefault = {
     formTabsReady: true,
+    fieldConfigVersion: 1,
     enabledTabIds: resolveContactEnabledTabIds(
       { formTabs: DEFAULT_FORM_TABS, enabledTabs: [] },
       "admin",

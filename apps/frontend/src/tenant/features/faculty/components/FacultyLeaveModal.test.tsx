@@ -79,6 +79,17 @@ describe("FacultyLeaveModal", () => {
     expect(html).toContain("Ustadh Badl (Quran Teacher)");
   });
 
+  it("gives the staff-status switch an accessible name", () => {
+    // 2026-11-04 UI review UX-03: the switch was the modal's only control and had
+    // no accessible name (axe `button-name`, critical).
+    const html = renderToStaticMarkup(
+      <FacultyLeaveModal open={true} onClose={vi.fn()} faculty={mockFaculty} onSave={vi.fn()} />,
+    );
+
+    expect(html).toContain('aria-labelledby="leave-status-label"');
+    expect(html).toContain('id="leave-status-label"');
+  });
+
   it("renders null when open is false", () => {
     const html = renderToStaticMarkup(
       <FacultyLeaveModal open={false} onClose={vi.fn()} faculty={mockFaculty} onSave={vi.fn()} />,

@@ -8,6 +8,7 @@ import type {
   HasanatCommandMetricsSnapshot,
   QuestionBankCommandMetricsSnapshot,
   AccountingCommandMetricsSnapshot,
+  TasksCommandMetricsSnapshot,
 } from "@mms/shared";
 import { getRequestTenant } from "../lib/tenantContext.js";
 import { withTenant } from "../db/tenant-context.js";
@@ -21,6 +22,7 @@ import { loadFinanceCommandMetrics } from "./financeService.js";
 import { loadHasanatCommandMetrics } from "./hasanatService.js";
 import { loadAccountingCommandMetrics } from "./accountingService.js";
 import { loadQuestionBankCommandMetrics } from "./questionBankMetricsService.js";
+import { tasksUseCases } from "../tasks/use-cases/tasksUseCases.js";
 
 export interface DashboardSummaryResponse {
   students?: StudentsCommandMetricsSnapshot;
@@ -32,6 +34,7 @@ export interface DashboardSummaryResponse {
   hasanat?: HasanatCommandMetricsSnapshot;
   questionBank?: QuestionBankCommandMetricsSnapshot;
   accounting?: AccountingCommandMetricsSnapshot;
+  tasks?: TasksCommandMetricsSnapshot;
 }
 
 /**
@@ -44,10 +47,15 @@ export interface DashboardSummaryResponse {
  */
 const DASHBOARD_SUMMARY_CACHE_TTL_SECONDS = 30;
 
-export async function loadDashboardSummary(
-  date?: string,
-  _role?: string,
-): Promise<DashboardSummaryResponse> {
+/**
+ * In-process single-flight for cold loads: concurrent requests for the same
+ * tenant+date share one 10-way aggregation instead of each firing its own.
+ * Entries are removed as soon as the computation settles, so failures are never
+ * cached (the caller sees the real error and the next request retries).
+ */
+const inFlightSummaries = new Map<string, Promise<DashboardSummaryResponse>>();
+
+export async function loadDashboardSummary(date?: string): Promise<DashboardSummaryResponse> {
   const tenant = getRequestTenant();
   if (!tenant) return {};
 
@@ -63,6 +71,23 @@ export async function loadDashboardSummary(
     }
   }
 
+  const inFlight = inFlightSummaries.get(cacheKey);
+  if (inFlight) return inFlight;
+
+  const computation = computeDashboardSummary(cleanTenant, date, cacheKey);
+  inFlightSummaries.set(cacheKey, computation);
+  try {
+    return await computation;
+  } finally {
+    inFlightSummaries.delete(cacheKey);
+  }
+}
+
+async function computeDashboardSummary(
+  cleanTenant: string,
+  date: string | undefined,
+  cacheKey: string,
+): Promise<DashboardSummaryResponse> {
   const result = await withTenant(
     cleanTenant,
     async () => {
@@ -77,6 +102,7 @@ export async function loadDashboardSummary(
       const hasanat = await loadHasanatCommandMetrics();
       const questionBank = await loadQuestionBankCommandMetrics();
       const accounting = await loadAccountingCommandMetrics();
+      const tasks = await tasksUseCases.getTaskMetrics(cleanTenant);
 
       return {
         students,
@@ -88,6 +114,7 @@ export async function loadDashboardSummary(
         hasanat,
         questionBank,
         accounting,
+        tasks,
       };
     },
     { readOnly: true, statementTimeoutMs: 10000 },

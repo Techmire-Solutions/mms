@@ -166,4 +166,46 @@ describe("useContactDuplicateCheck", () => {
 
     expect(capturedSignal?.aborted).toBe(true);
   });
+
+  it("clears the previous match count immediately when the candidate changes", async () => {
+    vi.mocked(apiContract.contacts.duplicateCheck)
+      .mockResolvedValueOnce({
+        status: 200,
+        body: { matchCount: 3 },
+        headers: new Headers(),
+      } as unknown as Awaited<ReturnType<typeof apiContract.contacts.duplicateCheck>>)
+      .mockResolvedValueOnce({
+        status: 200,
+        body: { matchCount: 1 },
+        headers: new Headers(),
+      } as unknown as Awaited<ReturnType<typeof apiContract.contacts.duplicateCheck>>);
+
+    let observedCount = -1;
+    const onValue = (val: number) => {
+      observedCount = val;
+    };
+
+    await act(async () => {
+      root.render(
+        <TestHarness open={true} contactDraft={{ name: "Ali Raza" }} onValue={onValue} />,
+      );
+    });
+    await act(async () => {
+      vi.advanceTimersByTime(650);
+    });
+    expect(observedCount).toBe(3);
+
+    await act(async () => {
+      root.render(
+        <TestHarness open={true} contactDraft={{ name: "Different Person" }} onValue={onValue} />,
+      );
+    });
+    // Stale "3 matches" must not describe the new name while the check is pending.
+    expect(observedCount).toBe(0);
+
+    await act(async () => {
+      vi.advanceTimersByTime(650);
+    });
+    expect(observedCount).toBe(1);
+  });
 });

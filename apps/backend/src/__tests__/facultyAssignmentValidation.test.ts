@@ -1,5 +1,8 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
-import { validateFacultyAssignment } from "../db/repositories/facultyAssignmentValidation.js";
+import {
+  assertFacultyAssignmentDeletable,
+  validateFacultyAssignment,
+} from "../db/repositories/facultyAssignmentValidation.js";
 import {
   FacultyCatalogConflictError,
   validateFacultyDepartment,
@@ -141,5 +144,54 @@ describe("Faculty department production validation", () => {
 
   it.each([0, -1, 21, NaN, Infinity, 1.1])("rejects unsafe depth %s", (depth) => {
     expect(() => validateHierarchyDepth(depth)).toThrow("Hierarchy depth");
+  });
+});
+
+describe("Faculty assignment delete guard", () => {
+  const onDate = "2026-11-04";
+
+  it("rejects archiving the appointment that currently backs the primary SSOT", () => {
+    expect(() =>
+      assertFacultyAssignmentDeletable(
+        { isPrimary: true, startDate: "2025-01-01", endDate: null, deletedAt: null },
+        onDate,
+      ),
+    ).toThrow(/primary appointment/i);
+  });
+
+  it("allows archiving a historical (ended) primary period", () => {
+    expect(() =>
+      assertFacultyAssignmentDeletable(
+        { isPrimary: true, startDate: "2024-01-01", endDate: "2024-12-31", deletedAt: null },
+        onDate,
+      ),
+    ).not.toThrow();
+  });
+
+  it("allows archiving a future-dated primary period", () => {
+    expect(() =>
+      assertFacultyAssignmentDeletable(
+        { isPrimary: true, startDate: "2027-01-01", endDate: null, deletedAt: null },
+        onDate,
+      ),
+    ).not.toThrow();
+  });
+
+  it("allows archiving a secondary appointment of any period", () => {
+    expect(() =>
+      assertFacultyAssignmentDeletable(
+        { isPrimary: false, startDate: "2025-01-01", endDate: null, deletedAt: null },
+        onDate,
+      ),
+    ).not.toThrow();
+  });
+
+  it("is idempotent for an already-archived row", () => {
+    expect(() =>
+      assertFacultyAssignmentDeletable(
+        { isPrimary: true, startDate: "2025-01-01", endDate: null, deletedAt: new Date() },
+        onDate,
+      ),
+    ).not.toThrow();
   });
 });

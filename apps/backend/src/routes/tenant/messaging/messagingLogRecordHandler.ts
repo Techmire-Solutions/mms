@@ -1,7 +1,6 @@
-import type { FastifyReply, FastifyRequest } from "fastify";
 import type { Message, MessageLogCreateDto, User } from "@mms/shared";
 import { randomUUID } from "node:crypto";
-import { getRequestTenant } from "../../../lib/tenantContext.js";
+import { logger } from "../../../lib/logger.js";
 import { canWriteMessaging } from "../../../services/rbacService.js";
 import { messagingUseCases } from "../../../messaging/use-cases/messagingUseCases.js";
 import {
@@ -42,11 +41,11 @@ export function findUnknownLogTokensError(logs: MessageLogCreateDto[]): string |
 }
 
 /** Records one log batch against the use-case (shared by all idempotency paths). */
-async function runRecordMessageLogs(
+function runRecordMessageLogs(
   user: User,
   tenantSubdomain: string,
   logs: MessageLogCreateDto[],
-): Promise<Message[]> {
+): Promise<number> {
   const normalized = normalizeDispatchLogs(user, logs);
   return messagingUseCases.recordMessageLogs(tenantSubdomain, normalized);
 }
@@ -71,14 +70,14 @@ export async function processRecordMessageLogs(
   try {
     if (idempotencyKey) {
       const bodyDigest = messagingDispatchBodyDigest(data.logs);
-      const result = await withMessagingIdempotency<MessagingRecordLogsPayload, Message[]>({
+      const result = await withMessagingIdempotency<MessagingRecordLogsPayload, number>({
         tenantId: tenantSubdomain,
         userId: String(user.id),
         clientKey: idempotencyKey,
         bodyDigest,
         flow: {
           claim: { recorded: null, bodyDigest },
-          complete: (recorded) => ({ recorded: recorded.length, bodyDigest }),
+          complete: (recorded) => ({ recorded, bodyDigest }),
           completedBody: (payload) =>
             payload.recorded === null ? null : { recorded: payload.recorded },
           run: () => runRecordMessageLogs(user, tenantSubdomain, data.logs),
@@ -88,31 +87,15 @@ export async function processRecordMessageLogs(
     }
 
     const recorded = await runRecordMessageLogs(user, tenantSubdomain, data.logs);
-    return { status: 200, body: { recorded: recorded.length } };
-  } catch {
+    return { status: 200, body: { recorded } };
+  } catch (err) {
+    logger.error(
+      { err: err instanceof Error ? err.message : String(err) },
+      "messaging record-logs handler failed",
+    );
     return {
       status: 500,
       body: { type: "database_error", message: "Failed to record message logs" },
     };
   }
-}
-
-/** Records dispatch audit logs with optional idempotency claim. */
-export async function handleRecordMessageLogs(
-  req: FastifyRequest,
-  reply: FastifyReply,
-  data: { logs: MessageLogCreateDto[]; idempotencyKey?: string },
-): Promise<unknown> {
-  const user = req.user as User;
-  const tenantSubdomain = getRequestTenant();
-  if (!tenantSubdomain) {
-    return reply.status(400).send({ type: "validation_error", message: "Tenant context required" });
-  }
-  const result = await processRecordMessageLogs(
-    user,
-    tenantSubdomain,
-    data,
-    req.headers["idempotency-key"] as string | undefined,
-  );
-  return reply.status(result.status).send(result.body);
 }

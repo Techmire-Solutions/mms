@@ -6,6 +6,8 @@ import { notify } from "@/lib/notify";
 import { Button } from "@/components/ui/button";
 import { Slider } from "@/components/ui/slider";
 import { Modal } from "@/components/app/Modal";
+import { Alert } from "@/components/app/Alert";
+import { imageUploadErrorDetail, imageUploadErrorKey } from "@/lib/imageUploadErrors";
 import { useAvatarCropperCanvas } from "@/components/app/useAvatarCropperCanvas";
 
 interface AvatarCropperProps {
@@ -33,10 +35,12 @@ export function AvatarCropper({ src, onCrop, onCancel }: AvatarCropperProps): Re
     adjustScaleFromWheel,
     renderCroppedCanvas,
     previewSize,
+    isReady,
+    loadError,
   } = useAvatarCropperCanvas(src);
 
   const handleCrop = (): void => {
-    if (saving) return;
+    if (saving || !isReady) return;
     const out = renderCroppedCanvas();
     if (!out) return;
 
@@ -45,8 +49,9 @@ export function AvatarCropper({ src, onCrop, onCancel }: AvatarCropperProps): Re
       .then((url) => {
         onCrop(url);
       })
-      .catch(() => {
-        notify.error(t("account.photoUploadFailed"));
+      .catch((error: unknown) => {
+        const detail = imageUploadErrorDetail(error);
+        notify.error(t(imageUploadErrorKey(error)), detail ? { description: detail } : undefined);
       })
       .finally(() => {
         setSaving(false);
@@ -63,31 +68,40 @@ export function AvatarCropper({ src, onCrop, onCancel }: AvatarCropperProps): Re
       size="sm"
     >
       <div className="space-y-4">
-        <div className="flex items-center justify-center bg-sidebar/90 py-6 rounded-xl overflow-hidden">
-          <canvas
-            ref={canvasRef}
-            width={previewSize}
-            height={previewSize}
-            aria-label={t("contacts.form.cropProfilePhoto")}
-            style={{
-              width: previewSize,
-              height: previewSize,
-              cursor: dragging ? "grabbing" : "grab",
-              borderRadius: "50%",
-            }}
-            onMouseDown={onMouseDown}
-            onMouseMove={onMouseMove}
-            onMouseUp={onMouseUp}
-            onMouseLeave={onMouseUp}
-            onTouchStart={onTouchStart}
-            onTouchMove={onTouchMove}
-            onTouchEnd={onMouseUp}
-            onWheel={(event) => {
-              event.preventDefault();
-              adjustScaleFromWheel(event.deltaY);
-            }}
+        {loadError ? (
+          <Alert
+            tone="destructive"
+            density="compact"
+            title={t("image.upload.decodeFailed")}
+            description={t("image.upload.decodeFailedHint")}
           />
-        </div>
+        ) : (
+          <div className="flex items-center justify-center bg-sidebar/90 py-6 rounded-xl overflow-hidden">
+            <canvas
+              ref={canvasRef}
+              width={previewSize}
+              height={previewSize}
+              aria-label={t("contacts.form.cropProfilePhoto")}
+              style={{
+                width: previewSize,
+                height: previewSize,
+                cursor: dragging ? "grabbing" : "grab",
+                borderRadius: "50%",
+              }}
+              onMouseDown={onMouseDown}
+              onMouseMove={onMouseMove}
+              onMouseUp={onMouseUp}
+              onMouseLeave={onMouseUp}
+              onTouchStart={onTouchStart}
+              onTouchMove={onTouchMove}
+              onTouchEnd={onMouseUp}
+              onWheel={(event) => {
+                event.preventDefault();
+                adjustScaleFromWheel(event.deltaY);
+              }}
+            />
+          </div>
+        )}
 
         <div className="space-y-3">
           <div className="flex items-center gap-3">
@@ -128,7 +142,7 @@ export function AvatarCropper({ src, onCrop, onCancel }: AvatarCropperProps): Re
             <Button
               type="button"
               onClick={handleCrop}
-              disabled={saving}
+              disabled={saving || !isReady || loadError}
               className="flex-1 flex items-center justify-center gap-1.5 min-h-11 rounded-lg bg-primary text-primary-foreground text-xs font-semibold hover:bg-primary/90 transition-colors shadow-none disabled:opacity-60"
             >
               <Check className="w-4 h-4" />

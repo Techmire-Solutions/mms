@@ -135,6 +135,7 @@ export async function saveAcademicCatalogItem(
   return withTenant(subdomain, async (tx) => {
     await tx.execute(sql`SELECT pg_advisory_xact_lock(hashtext(${`${subdomain}:${tableName}`}))`);
     await assertNameAvailable(tx, kind, subdomain, input.id, input.name);
+    const existed = await selectById(tx, kind, subdomain, input.id);
     const fields = {
       name: input.name,
       code: input.code,
@@ -167,7 +168,7 @@ export async function saveAcademicCatalogItem(
       workspaceSubdomain: subdomain,
       tableName,
       recordId: input.id,
-      actionType: "UPDATE",
+      actionType: existed ? "UPDATE" : "CREATE",
       realUserId: input.actorUserId,
       newState: fields,
     });

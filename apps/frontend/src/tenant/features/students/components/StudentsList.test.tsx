@@ -1,4 +1,3 @@
-import React from "react";
 import { describe, expect, it, vi } from "vitest";
 import { renderToStaticMarkup } from "react-dom/server";
 import { DEFAULT_STUDENT_COLUMN_REGISTRY, type Student } from "@mms/shared";
@@ -94,5 +93,20 @@ describe("StudentsList Component", () => {
     const html = renderToStaticMarkup(<StudentsList {...baseProps} workStudents={[]} />);
 
     expect(html).toContain("students.noStudentsYet");
+  });
+
+  it("keeps pagination on an empty page so the user can navigate back", () => {
+    // 2026-11-04 review (X-02/S-m8): pagination was gated on the row count, so deleting
+    // the last rows of page 2 hid the only control that could return to page 1.
+    const html = renderToStaticMarkup(
+      <StudentsList
+        {...baseProps}
+        workStudents={[]}
+        useServerWork={true}
+        workPageData={{ students: [], total: 10, page: 2, limit: 10, hasMore: false }}
+      />,
+    );
+
+    expect(html).toContain("Pagination");
   });
 });

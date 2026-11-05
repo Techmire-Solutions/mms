@@ -25,7 +25,7 @@ type Transaction = TenantTransaction;
 type SessionFacultyRow = typeof sessionFaculty.$inferSelect;
 type ClassRow = typeof sessionClasses.$inferSelect;
 
-export const SESSION_HYDRATION_BATCH_SIZE = 250;
+const SESSION_HYDRATION_BATCH_SIZE = 250;
 
 export async function hydrateSessionsList(
   tx: Transaction,

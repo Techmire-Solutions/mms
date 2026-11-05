@@ -1,7 +1,10 @@
-import React from "react";
 import { describe, expect, it, vi } from "vitest";
 import { renderToStaticMarkup } from "react-dom/server";
 import { StudentsBulkActionBar } from "./StudentsBulkActionBar";
+
+vi.mock("@/tenant/hooks/usePermissions", () => ({
+  usePermissions: () => ({ can: () => true }),
+}));
 
 vi.mock("@/hooks/useTranslation", () => ({
   useTranslation: () => ({

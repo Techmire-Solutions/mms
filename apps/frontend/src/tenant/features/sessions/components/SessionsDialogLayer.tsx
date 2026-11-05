@@ -2,7 +2,12 @@ import React, { Suspense, lazy } from "react";
 import { AnimatePresence } from "framer-motion";
 import type { Session } from "@/lib/data/sessionsData";
 import { SessionsListConfirmDialogs } from "@/tenant/features/sessions/components/SessionsListConfirmDialogs";
-import { useSessionDetail } from "@/tenant/features/sessions/hooks/useSessions";
+import { useSessionDetailState } from "@/tenant/features/sessions/hooks/useSessions";
+import { DetailDrawerShell } from "@/components/app/DetailDrawerShell";
+import { ErrorState } from "@/components/app/ErrorState";
+import { Modal } from "@/components/app/Modal";
+import { Skeleton } from "@/components/ui/skeleton";
+import { useTranslation } from "@/hooks/useTranslation";
 
 const SessionDetail = lazy(() =>
   import("@/tenant/features/sessions/components/SessionDetail").then((m) => ({
@@ -43,6 +48,78 @@ interface SessionsDialogLayerProps {
   onConfirmBulkRestore: () => void;
 }
 
+/** Busy surface shown while a summary is being resolved into the full session record. */
+function SessionEditingSkeleton({
+  title,
+  onClose,
+  isError,
+  onRetry,
+}: {
+  title: string;
+  onClose: () => void;
+  isError: boolean;
+  onRetry: () => void;
+}): React.JSX.Element {
+  const { t } = useTranslation();
+  return (
+    <Modal open onClose={onClose} title={title} size="lg" hideFooter>
+      {isError ? (
+        <ErrorState
+          title={t("sessions.loadFailed")}
+          description={t("sessions.loadFailedHint")}
+          onRetry={onRetry}
+        />
+      ) : (
+        <div className="space-y-3" aria-busy="true" role="status" aria-live="polite">
+          <span className="sr-only">{t("common.loading")}</span>
+          <Skeleton className="h-6 w-2/3" />
+          <Skeleton className="h-11 w-full" />
+          <Skeleton className="h-11 w-full" />
+          <Skeleton className="h-24 w-full" />
+        </div>
+      )}
+    </Modal>
+  );
+}
+
+function SessionDetailSkeleton({
+  summary,
+  onClose,
+  isError,
+  onRetry,
+}: {
+  summary: Session;
+  onClose: () => void;
+  isError: boolean;
+  onRetry: () => void;
+}): React.JSX.Element {
+  const { t } = useTranslation();
+  return (
+    <DetailDrawerShell
+      onClose={onClose}
+      title={summary.name}
+      ariaLabel={t("sessions.detail.ariaLabel")}
+      size="2xl"
+    >
+      {isError ? (
+        <ErrorState
+          title={t("sessions.loadFailed")}
+          description={t("sessions.loadFailedHint")}
+          onRetry={onRetry}
+        />
+      ) : (
+        <div className="space-y-3 p-1" aria-busy="true" role="status" aria-live="polite">
+          <span className="sr-only">{t("common.loading")}</span>
+          <Skeleton className="h-5 w-1/2" />
+          <Skeleton className="h-24 w-full" />
+          <Skeleton className="h-11 w-full" />
+          <Skeleton className="h-11 w-full" />
+        </div>
+      )}
+    </DetailDrawerShell>
+  );
+}
+
 export function SessionsDialogLayer({
   showForm,
   editSession,
@@ -68,15 +145,39 @@ export function SessionsDialogLayer({
   onBulkRestoreOpenChange,
   onConfirmBulkRestore,
 }: SessionsDialogLayerProps): React.JSX.Element {
-  // List rows are summary-shaped; detail and edit must only render once the full session is loaded.
-  const fullDetailSession = useSessionDetail(detailSession);
-  const fullEditSession = useSessionDetail(editSession);
-  const formReady = !editSession || fullEditSession !== null;
+  const { t } = useTranslation();
+  // List rows are summary-shaped; detail and edit must only render the full record. Loading/error
+  // states stay visible so a slow fetch never looks like a dead click.
+  const detailState = useSessionDetailState(detailSession);
+  const editState = useSessionDetailState(editSession);
+  const fullDetailSession = detailState.session;
+  const fullEditSession = editState.session;
+  const isCreating = showForm && !editSession;
+  const isEditing = showForm && Boolean(editSession);
+  const editResolved = Boolean(fullEditSession);
+
   return (
     <>
       <AnimatePresence>
-        {showForm && formReady && (
-          <Suspense fallback={null}>
+        {isEditing && !editResolved ? (
+          <SessionEditingSkeleton
+            title={t("sessions.form.editTitle")}
+            onClose={onCloseForm}
+            isError={editState.isError}
+            onRetry={editState.refetch}
+          />
+        ) : null}
+        {isCreating || (isEditing && editResolved) ? (
+          <Suspense
+            fallback={
+              <SessionEditingSkeleton
+                title={isCreating ? t("sessions.form.addTitle") : t("sessions.form.editTitle")}
+                onClose={onCloseForm}
+                isError={false}
+                onRetry={() => undefined}
+              />
+            }
+          >
             <SessionForm
               open={showForm}
               session={fullEditSession}
@@ -84,9 +185,26 @@ export function SessionsDialogLayer({
               onSave={onSave}
             />
           </Suspense>
-        )}
+        ) : null}
+        {detailSession && !fullDetailSession ? (
+          <SessionDetailSkeleton
+            summary={detailSession}
+            onClose={onCloseDetail}
+            isError={detailState.isError}
+            onRetry={detailState.refetch}
+          />
+        ) : null}
         {fullDetailSession ? (
-          <Suspense fallback={null}>
+          <Suspense
+            fallback={
+              <SessionDetailSkeleton
+                summary={fullDetailSession}
+                onClose={onCloseDetail}
+                isError={false}
+                onRetry={() => undefined}
+              />
+            }
+          >
             <SessionDetail
               session={fullDetailSession}
               onClose={onCloseDetail}

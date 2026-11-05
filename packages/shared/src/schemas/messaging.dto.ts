@@ -2,7 +2,15 @@ import { z } from "zod";
 import { messageCategorySchema } from "../messaging/messagingCategorySchemas.js";
 import { deepSanitizeStrings } from "./sanitize.js";
 
-export const messageStatusSchema = z.enum(["queued", "sent", "delivered", "failed", "skipped"]);
+/** Read-side status; `sending` is the worker's in-flight claim (not client-writable). */
+export const messageStatusSchema = z.enum([
+  "queued",
+  "sending",
+  "sent",
+  "delivered",
+  "failed",
+  "skipped",
+]);
 
 /** Max logs accepted in a single POST /api/messaging/logs body. */
 export const MESSAGE_LOG_RECORD_BATCH_MAX = 500;
@@ -43,6 +51,9 @@ export const messageRecordSchema = z
     deletedAt: z.string().optional(),
     deletedBy: z.string().optional(),
     deletionReason: z.string().optional(),
+    /** Soft-archive undo attribution (`mms-data-layer` §6). */
+    restoredAt: z.string().optional(),
+    restoredBy: z.string().optional(),
     createdAt: z.string().optional(),
     updatedAt: z.string().optional(),
   })
@@ -93,6 +104,16 @@ export const recordMessageLogsSchema = z.preprocess((raw) => {
   return deepSanitizeStrings(raw);
 }, recordMessageLogsBaseSchema);
 
+/** Columns the history directory may sort on (repository enforces the same allowlist). */
+export const MESSAGING_LOG_SORT_FIELDS = [
+  "sentAt",
+  "channel",
+  "status",
+  "category",
+  "contactId",
+  "createdAt",
+] as const;
+
 export const messagingLogsQuerySchema = z
   .object({
     channel: z.string().optional(),
@@ -109,6 +130,8 @@ export const messagingLogsQuerySchema = z
       .max(100)
       .optional()
       .default(MESSAGE_LOGS_DEFAULT_PAGE_SIZE),
+    sortField: z.enum(MESSAGING_LOG_SORT_FIELDS).optional(),
+    sortDir: z.union([z.enum(["asc", "desc"]), z.literal("")]).optional(),
     includeDeleted: z
       .union([z.boolean(), z.enum(["true", "false"])])
       .optional()

@@ -39,10 +39,17 @@ export function useStudentsDirectoryFilters({
     }
   }
 
-  const [prevViewingDeleted, setPrevViewingDeleted] = useState(viewingDeleted);
-  if (prevViewingDeleted !== viewingDeleted) {
-    setPrevViewingDeleted(viewingDeleted);
-    setSelectedIds([]);
+  // Bulk delete/status/export/ID-card bind to what the directory shows, so a selection must not
+  // outlive the filter/search/sort/page/trash view that produced it — the actions would hit rows
+  // the user can no longer see (contacts R4-06 parity). Adjusted during render, not in an effect.
+  // `filterKey` already carries the trash flag, so this subsumes the previous trash-only reset.
+  const selectionScopeKey = `${filterKey}|${listPage}`;
+  const [prevSelectionScopeKey, setPrevSelectionScopeKey] = useState(selectionScopeKey);
+  if (prevSelectionScopeKey !== selectionScopeKey) {
+    setPrevSelectionScopeKey(selectionScopeKey);
+    if (selectedIds.length > 0) {
+      setSelectedIds([]);
+    }
   }
 
   const applyDrillDown = useCallback(
@@ -98,7 +105,12 @@ export function useStudentsDirectoryFilters({
     (quickFilter !== "all" ? 1 : 0);
 
   const handleServerSort = useCallback(
-    (field: StudentsListContentSortField) => {
+    (field: StudentsListContentSortField | null) => {
+      // `null` is the Filters menu's "None": clear the column sort and let the server default apply.
+      if (field === null) {
+        setSortField(null);
+        return;
+      }
       if (sortField === field) {
         setSortDir((currentDir) => (currentDir === "asc" ? "desc" : "asc"));
       } else {
@@ -135,6 +147,16 @@ export function useStudentsDirectoryFilters({
     setViewingDeleted((previous) => !previous);
   }, [setViewingDeleted]);
 
+  /**
+   * The gender menu renders an "All genders" option whose value is the sentinel `all`.
+   * The API has no such value (it applies an equality filter), so the sentinel must be
+   * normalised to "no filter" here — writing it verbatim emptied the directory
+   * (2026-11-04 review, M1).
+   */
+  const handleGenderChange = useCallback((value: string) => {
+    setStudentFilterGender(value === "all" ? "" : value);
+  }, []);
+
   return {
     listPage,
     setListPage,
@@ -148,7 +170,7 @@ export function useStudentsDirectoryFilters({
     debouncedSearch,
     studentFilterStatus,
     studentFilterGender,
-    setStudentFilterGender,
+    setStudentFilterGender: handleGenderChange,
     quickFilter,
     changeQuickFilter,
     selectedIds,

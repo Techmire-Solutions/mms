@@ -1,10 +1,10 @@
-import { eq, sql } from "drizzle-orm";
+import { and, eq, or, sql } from "drizzle-orm";
 import { type Student } from "@mms/shared";
 import { students, studentEnrolledSessionsLegacy } from "../schema.js";
 import { withTenant, type AppDb } from "../tenant-context.js";
 import { mapAuditToInsert } from "./repositoryMappers.js";
 import { invalidateMultiTierCache } from "../../lib/cache/index.js";
-import { requireDbDate } from "../../lib/dbDate.js";
+import { naiveTimestamp, requireDbDate } from "../../lib/dbDate.js";
 
 export type StudentInsert = typeof students.$inferInsert;
 
@@ -68,8 +68,10 @@ export function studentWriteValues(subdomain: string, student: Student): Student
   const fatherContactId = student.fatherContactId ? String(student.fatherContactId) : null;
   const motherContactId = student.motherContactId ? String(student.motherContactId) : null;
   const guardianContactId = student.guardianContactId ? String(student.guardianContactId) : null;
-  const grNumber = student.grNumber?.trim() ? student.grNumber.trim().toLowerCase() : null;
-  const studentId = student.studentId?.trim() ? student.studentId.trim().toLowerCase() : null;
+  // Store the operator's casing; the partial unique indexes use `lower(btrim(...))`, so
+  // uniqueness stays case-insensitive while `GR{yy}{seq}` templates keep their literal case.
+  const grNumber = student.grNumber?.trim() ? student.grNumber.trim() : null;
+  const studentId = student.studentId?.trim() ? student.studentId.trim() : null;
   return {
     id: String(student.id),
     workspaceSubdomain: subdomain,
@@ -132,6 +134,49 @@ export async function saveStudent(tenant: string, student: Student): Promise<voi
     domain: "students",
     key: String(student.id),
   });
+}
+
+/**
+ * Conditional save for optimistic concurrency (`mms-api-interface` §6).
+ *
+ * The `updated_at` predicate lives in the UPDATE, so a writer that committed
+ * after the caller's read cannot be silently overwritten. A zero-row result
+ * means a stale token (or a concurrently removed row) → caller maps it to 409.
+ */
+export async function saveStudentIfVersionMatches(
+  tenant: string,
+  student: Student,
+  expectedUpdatedAt: string,
+): Promise<boolean> {
+  const subdomain = tenant.trim().toLowerCase();
+  const expected = new Date(expectedUpdatedAt);
+  if (Number.isNaN(expected.getTime())) return false;
+  const naiveExpected = naiveTimestamp(expected);
+  const saved = await withTenant(subdomain, async (tx) => {
+    const rows = await tx
+      .update(students)
+      .set(studentUpdateSetValues(subdomain, student))
+      .where(
+        and(
+          eq(students.workspaceSubdomain, subdomain),
+          eq(students.id, String(student.id)),
+          or(
+            sql`date_trunc('milliseconds', ${students.updatedAt}) = ${naiveExpected}::timestamp`,
+            sql`date_trunc('milliseconds', ${students.updatedAt}) = ${expected}::timestamptz`,
+          ),
+        ),
+      )
+      .returning({ id: students.id });
+    return rows.length > 0;
+  });
+  if (saved) {
+    await invalidateMultiTierCache({
+      tenantId: subdomain,
+      domain: "students",
+      key: String(student.id),
+    });
+  }
+  return saved;
 }
 
 export async function bulkSaveStudents(tenant: string, items: Student[]): Promise<void> {

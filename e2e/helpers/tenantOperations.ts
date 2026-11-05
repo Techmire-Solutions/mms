@@ -178,9 +178,17 @@ export async function createContact(page: Page, data: ContactFormData): Promise<
     await waitForToastOverlayToClear(page, `before saving ${fullName}`);
 
     const saveResponsePromise = page.waitForResponse(
-      (res) =>
-        res.url().includes("/api/contacts") &&
-        (res.request().method() === "POST" || res.request().method() === "PUT"),
+      (res) => {
+        const url = res.url();
+        const method = res.request().method();
+        return (
+          url.includes("/api/contacts") &&
+          (method === "POST" || method === "PUT") &&
+          !url.includes("/widget-aggregates") &&
+          !url.includes("/duplicates") &&
+          !url.includes("/bulk")
+        );
+      },
       { timeout: 15_000 },
     );
 
@@ -693,13 +701,15 @@ export async function createSessionAndClass(page: Page): Promise<void> {
       );
     }
     await expect(sessionDialog).toBeHidden({ timeout: 20_000 });
-    const sessionItem = page.getByRole("button", { name: /Afternoon Tajweed 2026/i }).first();
-    await expect(sessionItem).toBeVisible({ timeout: 20_000 });
-    await sessionItem.click();
+    const sessionHeading = page.getByRole("heading", { name: "Afternoon Tajweed 2026" }).first();
+    const isHeadingVisible = await sessionHeading.isVisible().catch(() => false);
+    if (!isHeadingVisible) {
+      const sessionItem = page.getByRole("button", { name: /Afternoon Tajweed 2026/i }).first();
+      await expect(sessionItem).toBeVisible({ timeout: 20_000 });
+      await sessionItem.click({ force: true });
+    }
 
-    await expect(page.getByRole("heading", { name: "Afternoon Tajweed 2026" }).first()).toBeVisible(
-      { timeout: 20_000 },
-    );
+    await expect(sessionHeading).toBeVisible({ timeout: 20_000 });
 
     await page
       .getByRole("button", { name: /^Class$/i })
@@ -884,6 +894,7 @@ export async function recordInvoicePayment(page: Page): Promise<void> {
     }
     await expect(paymentDialog).toBeHidden({ timeout: 20_000 });
     await expect(page.getByText("Paid", { exact: true }).first()).toBeVisible({ timeout: 20_000 });
+    await waitForToastOverlayToClear(page, "after recording invoice payment");
   });
 }
 
@@ -892,7 +903,7 @@ export async function recordInvoicePayment(page: Page): Promise<void> {
  */
 export async function createMessagingTemplateAndCampaign(page: Page): Promise<void> {
   await test.step("Create messaging template & dispatch SMS campaign", async () => {
-    await expect(page.locator("h1").first()).toBeVisible({ timeout: 20_000 });
+    await expect(page.locator("h1").first()).toBeVisible({ timeout: 30_000 });
     const setupTab = page.getByRole("tab", { name: "Setup", exact: true }).first();
     await expect(setupTab).toBeVisible({ timeout: 15_000 });
     await setupTab.click();

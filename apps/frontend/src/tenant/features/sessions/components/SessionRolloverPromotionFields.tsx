@@ -5,6 +5,7 @@ import {
   type AppTranslationKey,
   type Session,
 } from "@mms/shared";
+import { ArrowRight } from "lucide-react";
 import { Field, FormSelect } from "@/components/app/FormPrimitives";
 import { Alert } from "@/components/app/Alert";
 import { Button } from "@/components/ui/button";
@@ -98,8 +99,10 @@ export function SessionRolloverPromotionFields({
               >
                 <div className="min-w-0 text-start">
                   <p className="truncate text-sm font-medium">{row.studentName}</p>
-                  <p className="text-xs text-muted-foreground">
-                    {classNameOf(row.fromClassId)} → {classNameOf(row.toClassId)}
+                  <p className="flex flex-wrap items-center gap-1 text-xs text-muted-foreground">
+                    <span>{classNameOf(row.fromClassId)}</span>
+                    <ArrowRight className="size-3 rtl:rotate-180" aria-hidden="true" />
+                    <span>{classNameOf(row.toClassId)}</span>
                     {row.problems.length > 0
                       ? ` · ${row.problems.map(problemLabel).join(" ")}`
                       : ""}

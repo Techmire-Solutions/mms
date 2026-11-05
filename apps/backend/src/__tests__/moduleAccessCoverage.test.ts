@@ -1,6 +1,6 @@
 import { describe, expect, it, vi } from "vitest";
 import type { FastifyInstance, RouteOptions } from "fastify";
-import { ACCESS_CONTROLLED_MODULE_IDS } from "@mms/shared";
+import { ACCESS_CONTROLLED_MODULE_IDS, type ModuleAction } from "@mms/shared";
 
 const collected: RouteOptions[] = [];
 
@@ -313,6 +313,64 @@ function preHandlersByRoute(tree: string): Map<string, string> {
   return out;
 }
 
+/**
+ * Routes whose required module action differs from the HTTP-method default.
+ *
+ * The coverage assertion below only proved that *an* action was stamped, so a destructive or
+ * setup-mutating route could silently resolve to `write`/`read` and the suite stayed green.
+ * Extended per module as its route table gains stricter actions.
+ */
+const EXPECTED_MODULE_ROUTE_ACTIONS: Readonly<Record<string, ModuleAction>> = {
+  "DELETE /api/students/:id": "delete",
+  "POST /api/students/:id/restore": "delete",
+  "POST /api/students/bulk-delete": "delete",
+  "POST /api/students/bulk-restore": "delete",
+  "POST /api/students/migrate-gr-numbers": "setupWrite",
+  "POST /api/students/duplicate-check": "read",
+  // Messaging: clear/restore are handler-owned capabilities (grant + enablement
+  // still gated); CSV export requires messaging.write.
+  "DELETE /api/messaging/logs": "availability",
+  "POST /api/messaging/logs/restore": "availability",
+  "POST /api/messaging/export/csv": "write",
+  // Faculty archive/restore are `faculty.delete` operations (handlers already
+  // re-check `canDeleteCollection("faculty")`); the three prefixes are real.
+  "DELETE /api/faculty/:id": "delete",
+  "POST /api/faculty/:id/restore": "delete",
+  "POST /api/faculty/bulk-delete": "delete",
+  "POST /api/faculty/bulk-restore": "delete",
+  "POST /api/tenant/faculty/:id/restore": "delete",
+  "POST /api/tenant/faculty/bulk-delete": "delete",
+  "POST /api/tenant/faculty/bulk-restore": "delete",
+  "POST /api/v1/tenant/faculty/:id/restore": "delete",
+  "POST /api/v1/tenant/faculty/bulk-delete": "delete",
+  "POST /api/v1/tenant/faculty/bulk-restore": "delete",
+  "DELETE /api/faculty/designations/:id": "delete",
+  "POST /api/faculty/designations/:id/restore": "delete",
+  "DELETE /api/faculty/departments/:id": "delete",
+  "POST /api/faculty/departments/:id/restore": "delete",
+  "DELETE /api/faculty/:facultyId/assignments/:id": "delete",
+  // Tasks archive/restore require `tasks.delete`; the status route is
+  // handler-owned (`tasks.write` OR `tasks.complete`).
+  "DELETE /api/tasks/:id": "delete",
+  "POST /api/tasks/:id/restore": "delete",
+  "POST /api/tasks/bulk-delete": "delete",
+  "POST /api/tasks/bulk-restore": "delete",
+  "PATCH /api/tasks/:id/status": "availability",
+  "POST /api/tasks/bulk-status": "availability",
+  // Contacts archive/restore are `contacts.delete` operations; leave them on the
+  // HTTP-method default and a delete-only custom role is 403'd by the module gate.
+  "DELETE /api/contacts/:id": "delete",
+  "POST /api/contacts/:id/restore": "delete",
+  "POST /api/contacts/bulk-delete": "delete",
+  "POST /api/contacts/bulk-restore": "delete",
+  // Sessions archive/restore require `sessions.delete`; the method default would let an
+  // enrollment-writer role archive a session.
+  "DELETE /api/sessions/:id": "delete",
+  "POST /api/sessions/:id/restore": "delete",
+  "POST /api/sessions/bulk-delete": "delete",
+  "POST /api/sessions/bulk-restore": "delete",
+};
+
 describe("module access coverage", () => {
   it("classifies every route and gates every module-owned route", async () => {
     const app = await buildApp();
@@ -322,6 +380,8 @@ describe("module access coverage", () => {
 
     const unclassified: string[] = [];
     const ungated: string[] = [];
+    const wrongAction: string[] = [];
+    const seenActions = new Set<string>();
     const modulesSeen = new Set<string>();
 
     for (const route of collected) {
@@ -336,6 +396,13 @@ describe("module access coverage", () => {
           if (access?.moduleId !== expected || !access.action || !guarded) {
             ungated.push(`${key} → stamped ${access?.moduleId ?? "none"}, guard ${guarded}`);
           }
+          const expectedAction = EXPECTED_MODULE_ROUTE_ACTIONS[key];
+          if (expectedAction) {
+            seenActions.add(key);
+            if (access?.action !== expectedAction) {
+              wrongAction.push(`${key} → ${access?.action ?? "none"}, expected ${expectedAction}`);
+            }
+          }
         } else {
           const entry = NON_MODULE_ROUTES.find((c) => matchesPrefix(url, c.prefix));
           if (access || !entry || !entry.paths.includes(url)) {
@@ -349,11 +416,17 @@ describe("module access coverage", () => {
     const liveNonModuleUrls = new Set(collected.map((r) => r.url).filter((url) => !moduleFor(url)));
     const listedPaths = NON_MODULE_ROUTES.flatMap((c) => c.paths).filter((p) => p !== "*");
     const stale = [...new Set(listedPaths)].filter((p) => !liveNonModuleUrls.has(p));
+    // A pinned action for a route that no longer exists would silently stop protecting anything.
+    const staleActions = Object.keys(EXPECTED_MODULE_ROUTE_ACTIONS).filter(
+      (key) => !seenActions.has(key),
+    );
 
     expect(collected.length).toBeGreaterThan(500);
     expect(ungated).toEqual([]);
     expect(unclassified).toEqual([]);
+    expect(wrongAction).toEqual([]);
     expect(stale).toEqual([]);
+    expect(staleActions).toEqual([]);
     expect([...modulesSeen].sort()).toEqual([...ACCESS_CONTROLLED_MODULE_IDS].sort());
   }, 60_000);
 });

@@ -47,10 +47,13 @@ export interface StudentsWorkTierProps {
   onPageChange: (page: number) => void;
   onEdit: (student: Student) => void;
   onRestore: (studentId: string) => void | Promise<void>;
-  onBulkStatusChange: (studentIds: string[], status: string) => void | Promise<void>;
+  onBulkStatusChange: (
+    studentIds: string[],
+    status: string,
+  ) => void | Promise<{ succeeded: number; failed: number }>;
   onBulkEnroll?: (
     payload: import("@mms/shared").StudentsBulkEnrollPlacement,
-  ) => void | Promise<void>;
+  ) => void | Promise<void | boolean>;
   bulkEnrollPending?: boolean;
   onBulkPrintIdCards?: () => void;
   onBulkExport: () => void | Promise<void>;
@@ -58,6 +61,6 @@ export interface StudentsWorkTierProps {
   bulkStatusPending?: boolean;
   sortField: StudentsListContentSortField | null;
   sortDir: "asc" | "desc";
-  onServerSort: (field: StudentsListContentSortField) => void;
+  onServerSort: (field: StudentsListContentSortField | null) => void;
   workOverlays: StudentsWorkOverlayInteractions;
 }

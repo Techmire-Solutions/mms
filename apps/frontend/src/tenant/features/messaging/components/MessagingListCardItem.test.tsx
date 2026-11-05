@@ -1,4 +1,4 @@
-import React, { act } from "react";
+import { act } from "react";
 import { createRoot, type Root } from "react-dom/client";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { MessagingListCardItem, getMessagingChannelAccentBarClass } from "./MessagingListCardItem";
@@ -79,6 +79,40 @@ describe("MessagingListCardItem", () => {
     expect(container.textContent).toContain("Fatima Zahra");
     expect(container.textContent).toContain("Meeting reminder for tomorrow");
     expect(container.textContent).toContain("messaging.resend");
+    // Mixed-script message bodies must resolve their own direction.
+    const body = Array.from(container.querySelectorAll('[dir="auto"]')).find((node) =>
+      node.textContent?.includes("Meeting reminder for tomorrow"),
+    );
+    expect(body).not.toBeUndefined();
+  });
+
+  it("renders the gateway failure reason on a failed log", async () => {
+    const failedLog: Message = {
+      ...mockLog,
+      status: "failed",
+      errorMessage: "Insufficient gateway balance",
+    };
+
+    await act(async () => {
+      root.render(
+        <MessagingListCardItem
+          log={failedLog}
+          isSelected={false}
+          name="Fatima Zahra"
+          isCopied={false}
+          canWrite={false}
+          reducedMotion={true}
+          logStatusConfig={mockStatusConfig}
+          isColumnVisible={() => true}
+          onToggleLog={vi.fn()}
+          onResendLog={vi.fn()}
+          onCopyBody={vi.fn()}
+        />,
+      );
+    });
+
+    expect(container.textContent).toContain("Insufficient gateway balance");
+    expect(container.textContent).not.toContain("messaging.loadFailedHint");
   });
 
   it("triggers onResendLog on button click", async () => {
@@ -112,5 +146,26 @@ describe("MessagingListCardItem", () => {
     });
 
     expect(onResendLog).toHaveBeenCalledWith(mockLog);
+  });
+
+  it("renders a legacy log with a malformed sentAt instead of crashing", async () => {
+    await act(async () => {
+      root.render(
+        <MessagingListCardItem
+          log={{ ...mockLog, sentAt: "not-a-date" }}
+          isSelected={false}
+          name="Fatima Zahra"
+          canWrite={false}
+          reducedMotion={true}
+          logStatusConfig={mockStatusConfig}
+          isColumnVisible={() => true}
+          onToggleLog={vi.fn()}
+          onResendLog={vi.fn()}
+        />,
+      );
+    });
+
+    expect(container.textContent).toContain("Fatima Zahra");
+    expect(container.querySelector("time")?.getAttribute("dateTime")).not.toBe("Invalid Date");
   });
 });

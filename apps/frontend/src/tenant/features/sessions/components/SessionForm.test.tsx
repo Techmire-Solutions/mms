@@ -121,6 +121,14 @@ describe("SessionForm Component", () => {
     expect(feeInput.getAttribute("inputmode")).toBe("decimal");
   });
 
+  it("does not show the archived-status hint for a new draft form", async () => {
+    await act(async () => {
+      root.render(<SessionForm open={true} onClose={vi.fn()} onSave={vi.fn()} />);
+    });
+
+    expect(container.textContent).not.toContain("sessions.form.statusHint");
+  });
+
   it("fails validation if required fields are missing", async () => {
     const onSave = vi.fn();
 
@@ -174,6 +182,49 @@ describe("SessionForm Component", () => {
         // Category/program are catalog ids; the server fills defaults and the `type` snapshot.
         categoryId: "",
         programId: "",
+      }),
+    );
+  });
+
+  it("preserves updatedAt in the edit payload for optimistic concurrency", async () => {
+    const onSave = vi.fn();
+    const existing = {
+      id: "sess-1",
+      name: "Existing Session",
+      type: "Hifz",
+      status: "draft",
+      startDate: "2026-01-01",
+      endDate: "2026-06-30",
+      baseFee: 100,
+      currency: "USD",
+      classes: [],
+      faculty: [],
+      updatedAt: "2026-01-01T00:00:00.000Z",
+    };
+
+    await act(async () => {
+      root.render(
+        <SessionForm open={true} session={existing as never} onClose={vi.fn()} onSave={onSave} />,
+      );
+    });
+
+    const nameInput = container.querySelector("input[class*='ps-10']") as HTMLInputElement;
+    const saveBtn = container.querySelector(
+      "[data-testid='save-session-btn']",
+    ) as HTMLButtonElement;
+
+    await act(async () => {
+      setInputValue(nameInput, "Renamed Session");
+    });
+    await act(async () => {
+      saveBtn.click();
+    });
+
+    expect(onSave).toHaveBeenCalledWith(
+      expect.objectContaining({
+        id: "sess-1",
+        name: "Renamed Session",
+        updatedAt: "2026-01-01T00:00:00.000Z",
       }),
     );
   });

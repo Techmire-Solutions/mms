@@ -5,7 +5,9 @@
 
 import React from "react";
 import type { ModuleColumnRegistryEntry, TaskRecord, TaskStatus } from "@mms/shared";
+import { ErrorState } from "@/components/app/ErrorState";
 import type { WorkDirectoryViewMode } from "@/hooks/useWorkDirectoryViewMode";
+import { useTranslation } from "@/hooks/useTranslation";
 import { TasksListDesktopTable } from "./TasksListDesktopTable";
 import { TasksListCards } from "./TasksListCards";
 
@@ -16,8 +18,13 @@ export interface TasksWorkDirectoryProps {
   viewingDeleted: boolean;
   canWrite: boolean;
   canComplete?: boolean;
+  statusPending?: boolean;
+  hasActiveFilters?: boolean;
+  onClearFilters?: () => void;
   canDelete: boolean;
   isLoading: boolean;
+  isError?: boolean;
+  onRetry?: () => void;
   columnRegistry?: ModuleColumnRegistryEntry[];
   isColumnVisible: (key: string) => boolean;
   getColumnWidth: (key: string) => number | undefined;
@@ -28,7 +35,7 @@ export interface TasksWorkDirectoryProps {
   onEdit: (task: TaskRecord) => void;
   onDelete: (id: string) => void;
   onRestore?: (id: string) => void;
-  onUpdateStatus: (id: string, status: TaskStatus) => void;
+  onUpdateStatus: (task: TaskRecord, status: TaskStatus) => void;
   emptyAction?: React.ReactNode;
 }
 
@@ -39,8 +46,13 @@ export function TasksWorkDirectory({
   viewingDeleted,
   canWrite,
   canComplete,
+  statusPending = false,
+  hasActiveFilters = false,
+  onClearFilters,
   canDelete,
   isLoading,
+  isError,
+  onRetry,
   columnRegistry,
   isColumnVisible,
   getColumnWidth,
@@ -54,7 +66,20 @@ export function TasksWorkDirectory({
   onUpdateStatus,
   emptyAction,
 }: TasksWorkDirectoryProps): React.JSX.Element {
+  const { t } = useTranslation();
   const resolvedCanComplete = canComplete ?? canWrite;
+
+  // A failed list must never masquerade as an empty directory: show the reason
+  // and a retry instead of the empty state.
+  if (isError) {
+    return (
+      <ErrorState
+        title={t("tasks.loadFailed")}
+        description={t("tasks.loadFailedHint")}
+        onRetry={onRetry}
+      />
+    );
+  }
 
   if (viewMode === "cards") {
     return (
@@ -74,6 +99,9 @@ export function TasksWorkDirectory({
         onDelete={onDelete}
         onRestore={onRestore}
         onUpdateStatus={onUpdateStatus}
+        statusPending={statusPending}
+        hasActiveFilters={hasActiveFilters}
+        onClearFilters={onClearFilters}
         emptyAction={emptyAction}
       />
     );
@@ -99,6 +127,9 @@ export function TasksWorkDirectory({
       onDelete={onDelete}
       onRestore={onRestore}
       onUpdateStatus={onUpdateStatus}
+      statusPending={statusPending}
+      hasActiveFilters={hasActiveFilters}
+      onClearFilters={onClearFilters}
       emptyAction={emptyAction}
     />
   );

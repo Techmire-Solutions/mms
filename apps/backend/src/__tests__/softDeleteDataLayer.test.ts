@@ -19,7 +19,7 @@ import {
   restoreStudentById,
   bulkRestoreStudents,
 } from "../students/use-cases/studentRestoreUseCases.js";
-import { StudentRestoreConflictError } from "../students/use-cases/studentNormalizeUseCases.js";
+import { StudentRestoreRaceError } from "../students/use-cases/studentNormalizeUseCases.js";
 import { createEnrollmentsUseCases } from "../enrollments/use-cases/enrollmentsUseCases.js";
 import { createFinanceUseCases } from "../finance/use-cases/financeUseCases.js";
 import { createAttendanceUseCases } from "../attendance/use-cases/attendanceUseCases.js";
@@ -88,6 +88,7 @@ vi.mock("../lib/livePush.js", () => ({
 
 vi.mock("../services/outboxEventService.js", () => ({
   emitOutboxEvent: vi.fn().mockResolvedValue(undefined),
+  emitOutboxEvents: vi.fn().mockResolvedValue(undefined),
 }));
 
 vi.mock("../services/auditTrailService.js", () => ({
@@ -926,7 +927,7 @@ describe("Soft-Delete Data Layer & Relational Guardrails", () => {
   });
 
   describe("9. Student Uniqueness-on-Restore 23505 Trap (restoreStudentById)", () => {
-    it("traps PostgreSQL 23505 unique violation error during save and throws StudentRestoreConflictError", async () => {
+    it("traps PostgreSQL 23505 unique violation error during save and throws StudentRestoreRaceError", async () => {
       const pgError = Object.assign(new Error("duplicate key value"), { code: "23505" });
       const fakeRepo = {
         findById: vi.fn().mockResolvedValue({
@@ -940,10 +941,10 @@ describe("Soft-Delete Data Layer & Relational Guardrails", () => {
 
       await expect(
         runWithTenant("demo", () => restoreStudentById("st-archived", "u-admin", fakeRepo)),
-      ).rejects.toThrow(StudentRestoreConflictError);
+      ).rejects.toThrow(StudentRestoreRaceError);
     });
 
-    it("traps PostgreSQL 23505 unique violation error during bulkSave and throws StudentRestoreConflictError", async () => {
+    it("traps PostgreSQL 23505 unique violation error during bulkSave and throws StudentRestoreRaceError", async () => {
       const pgError = Object.assign(new Error("duplicate key value"), { code: "23505" });
       const fakeRepo = {
         findByIds: vi.fn().mockResolvedValue([
@@ -959,7 +960,7 @@ describe("Soft-Delete Data Layer & Relational Guardrails", () => {
 
       await expect(
         runWithTenant("demo", () => bulkRestoreStudents(["st-archived"], "u-admin", fakeRepo)),
-      ).rejects.toThrow(StudentRestoreConflictError);
+      ).rejects.toThrow(StudentRestoreRaceError);
     });
   });
 

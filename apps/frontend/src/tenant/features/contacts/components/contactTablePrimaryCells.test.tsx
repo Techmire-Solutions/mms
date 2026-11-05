@@ -1,4 +1,3 @@
-import React from "react";
 import { describe, expect, it, vi } from "vitest";
 import { renderToStaticMarkup } from "react-dom/server";
 import type { Contact, ContactPreferences } from "@mms/shared";
@@ -153,5 +152,30 @@ describe("contactTablePrimaryCells", () => {
 
       expect(html).toContain("—");
     });
+  });
+});
+
+describe("contactTablePrimaryCells BiDi isolation", () => {
+  it("sets dir=auto on the table name so mixed-script names keep their base direction", () => {
+    const html = renderToStaticMarkup(
+      <table>
+        <tbody>
+          <tr>
+            {renderContactNameCell({
+              contact: { ...mockContact, name: "محمد Ali", firstName: "محمد" },
+              displayName: "محمد Ali",
+              widthStyle: undefined,
+              showArchived: false,
+              isSelected: false,
+              t: mockTranslate,
+              onView: vi.fn(),
+            })}
+          </tr>
+        </tbody>
+      </table>,
+    );
+
+    expect(html).toContain('dir="auto"');
+    expect(html).toContain("محمد Ali");
   });
 });

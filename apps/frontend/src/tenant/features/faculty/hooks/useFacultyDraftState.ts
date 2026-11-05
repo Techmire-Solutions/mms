@@ -1,4 +1,4 @@
-import { useCallback, useState } from "react";
+import { useCallback, useMemo, useState } from "react";
 import { useContactById } from "@/tenant/hooks/collections/contacts";
 import {
   useFacultyLinkedContactIds,
@@ -58,8 +58,11 @@ export function useFacultyDraftState({
     setFacultyDraft((prev) => ({ ...prev, ...patch }));
   }, []);
 
-  const isDirty =
-    facultyDraftSnapshot(facultyDraft) !== baselineSnapshot || userAccountDraft.enabled;
+  // Memoised: the draft only changes on edit, but the form re-renders for other
+  // reasons too (query ticks, linked-contact hydration) and stringifying the whole
+  // draft on every render is wasted work.
+  const draftSnapshot = useMemo(() => facultyDraftSnapshot(facultyDraft), [facultyDraft]);
+  const isDirty = draftSnapshot !== baselineSnapshot || userAccountDraft.enabled;
 
   const { data: linkedContact } = useContactById(
     facultyDraft.contactId ? String(facultyDraft.contactId) : undefined,

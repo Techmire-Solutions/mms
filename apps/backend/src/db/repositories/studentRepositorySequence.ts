@@ -2,11 +2,24 @@ import { and, eq, sql } from "drizzle-orm";
 import { formatTemplateSequence, type StudentGrNumberSettings } from "@mms/shared";
 import { students, studentSequenceConfig } from "../schema.js";
 import { withTenant, type TenantTransaction } from "../tenant-context.js";
-import { enableIncludeDeleted } from "../../lib/softDeleteHelpers.js";
+import { withIncludeDeletedScope } from "../../lib/softDeleteHelpers.js";
 
 export interface GenerateGrNumberInput {
   regDate: string;
   settings: StudentGrNumberSettings;
+}
+
+/**
+ * Calendar year of a `YYYY-MM-DD` registration date.
+ *
+ * Parsed from the ISO text, not `new Date(iso).getFullYear()`: a date-only string is UTC midnight,
+ * so a server west of UTC read 1 January as the previous year — rolling the `{year}` token and
+ * defeating the annual-restart gate. Only an absent/malformed date falls back to the server year.
+ */
+export function resolveGrYear(regDate: string | null | undefined): number {
+  const prefix = typeof regDate === "string" ? regDate.trim().slice(0, 4) : "";
+  const year = /^\d{4}$/.test(prefix) ? Number(prefix) : Number.NaN;
+  return Number.isFinite(year) ? year : new Date().getFullYear();
 }
 
 /**
@@ -22,8 +35,7 @@ export async function generateNextGrNumberBatchSql(
 ): Promise<string[]> {
   if (count <= 0) return [];
   const subdomain = tenant.trim().toLowerCase();
-  const parsedYear = input.regDate ? new Date(input.regDate).getFullYear() : NaN;
-  const year = Number.isFinite(parsedYear) ? parsedYear : new Date().getFullYear();
+  const year = resolveGrYear(input.regDate);
   const template = input.settings.grNumberTemplate || "{seq}-{year}";
   const digits = input.settings.grNumberDigits || 4;
   const restartAnnually = input.settings.grNumberRestartAnnually !== false;
@@ -39,20 +51,24 @@ export async function generateNextGrNumberBatchSql(
       .for("update");
 
     if (!row) {
-      await enableIncludeDeleted(tx);
       const base = eq(students.workspaceSubdomain, subdomain);
       const yearStr = String(year);
-      const countRows = await tx
-        .select({ count: sql<number>`count(*)::int` })
-        .from(students)
-        .where(
-          restartAnnually
-            ? and(
-                base,
-                sql`(COALESCE(${students.registeredDate}::text, '') LIKE ${`${yearStr}%`} OR COALESCE(${students.grNumber}, '') LIKE ${`%${yearStr}%`})`,
-              )
-            : base,
-        );
+      // Scope deleted-row visibility to this seed count: `set_config(..., true)` is
+      // transaction-scoped, and the caller's create transaction must not keep reading
+      // soft-deleted rows after the sequence row exists.
+      const countRows = await withIncludeDeletedScope(tx, () =>
+        tx
+          .select({ count: sql<number>`count(*)::int` })
+          .from(students)
+          .where(
+            restartAnnually
+              ? and(
+                  base,
+                  sql`(COALESCE(${students.registeredDate}::text, '') LIKE ${`${yearStr}%`} OR COALESCE(${students.grNumber}, '') LIKE ${`%${yearStr}%`})`,
+                )
+              : base,
+          ),
+      );
       const initialCount = Number(countRows[0]?.count ?? 0);
 
       await tx
@@ -122,8 +138,7 @@ export async function previewNextGrNumberSql(
   txClient?: TenantTransaction,
 ): Promise<string> {
   const subdomain = tenant.trim().toLowerCase();
-  const parsedYear = input.regDate ? new Date(input.regDate).getFullYear() : NaN;
-  const year = Number.isFinite(parsedYear) ? parsedYear : new Date().getFullYear();
+  const year = resolveGrYear(input.regDate);
   const template = input.settings.grNumberTemplate || "{seq}-{year}";
   const digits = input.settings.grNumberDigits || 4;
   const restartAnnually = input.settings.grNumberRestartAnnually !== false;
@@ -139,20 +154,24 @@ export async function previewNextGrNumberSql(
 
     let nextSeq: number;
     if (!row) {
-      await enableIncludeDeleted(tx);
       const base = eq(students.workspaceSubdomain, subdomain);
       const yearStr = String(year);
-      const countRows = await tx
-        .select({ count: sql<number>`count(*)::int` })
-        .from(students)
-        .where(
-          restartAnnually
-            ? and(
-                base,
-                sql`(COALESCE(${students.registeredDate}::text, '') LIKE ${`${yearStr}%`} OR COALESCE(${students.grNumber}, '') LIKE ${`%${yearStr}%`})`,
-              )
-            : base,
-        );
+      // Scope deleted-row visibility to this seed count: `set_config(..., true)` is
+      // transaction-scoped, and the caller's create transaction must not keep reading
+      // soft-deleted rows after the sequence row exists.
+      const countRows = await withIncludeDeletedScope(tx, () =>
+        tx
+          .select({ count: sql<number>`count(*)::int` })
+          .from(students)
+          .where(
+            restartAnnually
+              ? and(
+                  base,
+                  sql`(COALESCE(${students.registeredDate}::text, '') LIKE ${`${yearStr}%`} OR COALESCE(${students.grNumber}, '') LIKE ${`%${yearStr}%`})`,
+                )
+              : base,
+          ),
+      );
       const initialCount = Number(countRows[0]?.count ?? 0);
       nextSeq = initialCount + 1;
     } else {

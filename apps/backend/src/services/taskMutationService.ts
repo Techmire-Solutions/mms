@@ -1,18 +1,27 @@
 import type { TaskInsert, TaskUpdate } from "@mms/shared";
 import { withTenant } from "../db/tenant-context.js";
 import { lockFacultyHierarchy } from "../db/repositories/facultyAssignmentValidation.js";
-import { createTask, findTaskById, updateTask } from "../db/repositories/tasksRepository.js";
+import { createTask, findTaskById, updateTask } from "../tasks/use-cases/tasksUseCases.js";
 import { validateTaskDelegation } from "./taskDelegationService.js";
 import { getTenantTaskSettings } from "./taskSettingsService.js";
 import { emitTaskNotificationIntents } from "./taskNotificationService.js";
+import { HttpDomainError } from "../lib/httpErrors.js";
 
-export class TaskDelegationError extends Error {}
+/** Delegation eligibility failure → 403 via the shared Tasks error mapper. */
+export class TaskDelegationError extends HttpDomainError {
+  constructor(message = "Recipient is not eligible for this assignment") {
+    super(403, "forbidden", message);
+    this.name = "TaskDelegationError";
+  }
+}
 
 export async function mutateTask(
   tenant: string,
   actorId: string,
   canAssignAnywhere: boolean,
-  mutation: { kind: "create"; data: TaskInsert } | { kind: "update"; id: string; data: TaskUpdate },
+  mutation:
+    | { kind: "create"; data: TaskInsert }
+    | { kind: "update"; id: string; data: TaskUpdate; expectedUpdatedAt?: string },
 ) {
   const previous = mutation.kind === "update" ? await findTaskById(tenant, mutation.id) : null;
 
@@ -35,6 +44,7 @@ export async function mutateTask(
       mutation.data,
       mutation.data.assignees === undefined ? undefined : delegation.resolvedAssignees,
       actorId,
+      mutation.expectedUpdatedAt,
     );
   });
 

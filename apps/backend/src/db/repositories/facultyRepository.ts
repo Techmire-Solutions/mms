@@ -1,7 +1,8 @@
-import { and, eq, inArray, isNull, sql } from "drizzle-orm";
+import { and, eq, inArray, isNull, or, sql } from "drizzle-orm";
 import { type Faculty, type RepositoryListOptions } from "@mms/shared";
 import { faculty, facultyEmployments } from "../schema.js";
 import { withTenant, withTenantRead } from "../tenant-context.js";
+import { naiveTimestamp } from "../../lib/dbDate.js";
 import { buildTenantSoftDeleteConditions } from "../../services/genericRelationalService.js";
 import {
   type FacultyInsert,
@@ -67,6 +68,25 @@ export async function findFacultyById(tenant: string, id: string): Promise<Facul
   });
 }
 
+/**
+ * Tombstone probe for the session guard. Looks the faculty profile up by its
+ * linked **tenant user id** (`faculty.user_id`), not by the faculty primary
+ * key, and skips hydration so an unreadable contact cannot hide a deleted
+ * profile. Backed by `faculty_workspace_user_idx`.
+ */
+export async function isFacultyDeletedByUserId(tenant: string, userId: string): Promise<boolean> {
+  const subdomain = tenant.trim().toLowerCase();
+  if (!subdomain || !userId) return false;
+  return withTenantRead(subdomain, async (tx) => {
+    const rows = await tx
+      .select({ deletedAt: faculty.deletedAt })
+      .from(faculty)
+      .where(and(eq(faculty.workspaceSubdomain, subdomain), eq(faculty.userId, userId)))
+      .limit(1);
+    return Boolean(rows[0]?.deletedAt);
+  });
+}
+
 /** Finds the active faculty record linked to a contact, if one exists. */
 export async function findFacultyByContactId(
   tenant: string,
@@ -114,30 +134,83 @@ export async function findFacultyByIds(tenant: string, ids: string[]): Promise<F
 export async function saveFaculty(
   tenant: string,
   member: Faculty,
-  options?: { createOnly?: boolean },
+  options?: { createOnly?: boolean; syncRole?: boolean },
 ): Promise<void> {
   const subdomain = tenant.trim().toLowerCase();
-  await withTenant(subdomain, async (tx) => {
-    await persistFacultyTx(tx, subdomain, member, options);
-  });
   const { syncFacultyLinkedUserRole } =
     await import("../../faculty/use-cases/facultyLinkedUserRoleSync.js");
-  await syncFacultyLinkedUserRole(subdomain, member);
+  // Role sync runs inside the faculty transaction so a rejected privilege
+  // change (FacultyRoleSyncForbiddenError) rolls the faculty write back too.
+  await withTenant(subdomain, async (tx) => {
+    await persistFacultyTx(tx, subdomain, member, options);
+    // Unrelated edits (notes, specialization, …) cannot change the derived role.
+    if (options?.syncRole !== false) await syncFacultyLinkedUserRole(subdomain, member);
+  });
 }
 
-export async function bulkSaveFaculty(tenant: string, items: Faculty[]): Promise<void> {
+/**
+ * Conditional save for optimistic concurrency (`mms-api-interface` §6).
+ *
+ * The `updated_at` predicate is checked under `FOR UPDATE` inside the same
+ * transaction that persists the row, so a writer that committed after the
+ * caller's read cannot be silently overwritten. A stale token returns false
+ * (caller maps it to 409).
+ */
+export async function saveFacultyIfVersionMatches(
+  tenant: string,
+  member: Faculty,
+  expectedUpdatedAt: string,
+  options?: { syncRole?: boolean },
+): Promise<boolean> {
+  const subdomain = tenant.trim().toLowerCase();
+  const expected = new Date(expectedUpdatedAt);
+  if (Number.isNaN(expected.getTime())) return false;
+  const naiveExpected = naiveTimestamp(expected);
+  const { syncFacultyLinkedUserRole } =
+    await import("../../faculty/use-cases/facultyLinkedUserRoleSync.js");
+  let saved = false;
+  await withTenant(subdomain, async (tx) => {
+    const rows = await tx
+      .select({ id: faculty.id })
+      .from(faculty)
+      .where(
+        and(
+          eq(faculty.workspaceSubdomain, subdomain),
+          eq(faculty.id, String(member.id)),
+          isNull(faculty.deletedAt),
+          or(
+            sql`date_trunc('milliseconds', ${faculty.updatedAt}) = ${naiveExpected}::timestamp`,
+            sql`date_trunc('milliseconds', ${faculty.updatedAt}) = ${expected}::timestamptz`,
+          ),
+        ),
+      )
+      .for("update")
+      .limit(1);
+    if (rows.length === 0) return;
+    await persistFacultyTx(tx, subdomain, member);
+    if (options?.syncRole !== false) await syncFacultyLinkedUserRole(subdomain, member);
+    saved = true;
+  });
+  return saved;
+}
+
+export async function bulkSaveFaculty(
+  tenant: string,
+  items: Faculty[],
+  options?: { syncRole?: boolean },
+): Promise<void> {
   const subdomain = tenant.trim().toLowerCase();
   if (items.length === 0) return;
+  const { syncFacultyLinkedUserRole } =
+    await import("../../faculty/use-cases/facultyLinkedUserRoleSync.js");
   await withTenant(subdomain, async (tx) => {
     for (const item of items) {
       await persistFacultyTx(tx, subdomain, item);
+      // Archiving must not re-derive the linked account's role: that either mutates
+      // an unrelated account or 403s a delete for an actor without `users.manage`.
+      if (options?.syncRole !== false) await syncFacultyLinkedUserRole(subdomain, item);
     }
   });
-  const { syncFacultyLinkedUserRole } =
-    await import("../../faculty/use-cases/facultyLinkedUserRoleSync.js");
-  for (const item of items) {
-    await syncFacultyLinkedUserRole(subdomain, item);
-  }
 }
 
 export async function replaceFacultyForWorkspace(tenant: string, items: Faculty[]): Promise<void> {
@@ -148,23 +221,6 @@ export async function replaceFacultyForWorkspace(tenant: string, items: Faculty[
     for (const item of items) {
       await persistFacultyTx(tx, subdomain, item, { createOnly: true });
     }
-  });
-}
-
-export async function countFacultyByWorkspace(
-  tenant: string,
-  options?: ListFacultyOptions,
-): Promise<number> {
-  const subdomain = tenant.trim().toLowerCase();
-  const deletedFilter = options?.deleted ?? (options?.includeDeleted ? "all" : "active");
-  return withTenantRead(subdomain, async (tx) => {
-    const conditions = buildTenantSoftDeleteConditions(faculty, subdomain, deletedFilter);
-
-    const rows = await tx
-      .select({ count: sql<number>`count(*)::int` })
-      .from(faculty)
-      .where(and(...conditions));
-    return Number(rows[0]?.count ?? 0);
   });
 }
 

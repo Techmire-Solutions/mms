@@ -1,5 +1,6 @@
 import { useEffect } from "react";
 import { useModuleCreateHotkey } from "@/hooks/useModuleCreateHotkey";
+import { overlayLayerCount } from "@/lib/overlayStack";
 
 export interface UseModuleWorkKeyboardShortcutsOptions {
   /** Stable DOM id of the Work SearchBar input. */
@@ -45,6 +46,9 @@ export function useModuleWorkKeyboardShortcuts({
     if (!enabled) return;
 
     const handleKeyDown = (event: KeyboardEvent) => {
+      // An open dialog/drawer owns the keyboard: Escape there must close the overlay, not
+      // silently clear the directory selection or filters behind it (n3).
+      if (overlayLayerCount() > 0) return;
       const activeTag = (document.activeElement?.tagName || "").toLowerCase();
       const isInputActive =
         activeTag === "input" ||

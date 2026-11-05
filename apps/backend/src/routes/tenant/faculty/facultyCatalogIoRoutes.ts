@@ -5,61 +5,28 @@ import {
   facultyDesignationsCsvExportBodySchema,
   facultyDepartmentImportBodySchema,
   facultyDesignationImportBodySchema,
-  roleHasPermission,
   type User,
 } from "@mms/shared";
 import { registerModuleCsvExportRoutes } from "../../../lib/registerModuleCsvExportRoutes.js";
+import { registerModuleCsvImportRoutes } from "../../../lib/registerModuleCsvImportRoutes.js";
 import {
   canDeleteCollection,
   canReadCollection,
   canWriteCollection,
 } from "../../../services/rbacService.js";
-import { getRequestTenant } from "../../../lib/tenantContext.js";
-import { parseRequest, replyValidationError } from "../../../lib/zodRequest.js";
-import { sendForbidden, sendServiceUnavailable } from "../../../lib/httpErrors.js";
-import {
-  enqueueBackgroundJob,
-  getUserBackgroundJob,
-  QueueUnavailableError,
-} from "../../../services/backgroundJobWorkerService.js";
-import { buildBackgroundJobId } from "../../../lib/backgroundJobIds.js";
+import { userHasPermission } from "../../../lib/userPermissionContext.js";
 
 const setupWrite = FACULTY_MODULE_MANIFEST.permissions.setupWrite;
 
 function canSetupWrite(user: User): boolean {
-  return canWriteCollection(user, "faculty") && roleHasPermission(user.role, setupWrite);
+  return canWriteCollection(user, "faculty") && userHasPermission(user, setupWrite);
 }
 
-async function enqueueImportJob(options: {
-  user: User;
-  moduleId: string;
-  kind: string;
-  label: string;
-  payload: Record<string, unknown>;
-  idempotencyKey?: string;
-}) {
-  const tenant = getRequestTenant();
-  if (!tenant) throw new Error("Tenant context required");
-  const userId = String(options.user.id);
-  const jobId = buildBackgroundJobId(tenant, userId, options.idempotencyKey);
-  const existing = await getUserBackgroundJob(userId, jobId);
-  if (existing) return existing;
-  return enqueueBackgroundJob(
-    tenant,
-    userId,
-    {
-      id: jobId,
-      moduleId: options.moduleId,
-      kind: options.kind,
-      status: "running",
-      label: options.label,
-      createdAt: new Date().toISOString(),
-    },
-    options.payload,
-  );
-}
-
-/** Department/designation CSV export + import under /departments and /designations. */
+/**
+ * Department/designation CSV export + import under `/departments` and
+ * `/designations`. Imports go through the shared registration so each queue
+ * appends its own authoritative audit row.
+ */
 export const facultyCatalogIoRoutes: FastifyPluginAsync = async (fastify) => {
   await fastify.register(
     async (dept) => {
@@ -74,32 +41,13 @@ export const facultyCatalogIoRoutes: FastifyPluginAsync = async (fastify) => {
         queueAuditAction: "faculty.departments.export.queue",
       });
 
-      dept.post("/import", { bodyLimit: 2 * 1024 * 1024 }, async (request, reply) => {
-        const user = request.user as User;
-        if (!canSetupWrite(user)) return sendForbidden(reply);
-        const parsed = parseRequest(facultyDepartmentImportBodySchema, request.body);
-        if (!parsed.ok) return replyValidationError(reply, parsed.message);
-        const label = parsed.data.label?.trim() || "Importing departments…";
-        try {
-          const job = await enqueueImportJob({
-            user,
-            moduleId: "faculty-departments",
-            kind: "import",
-            label,
-            payload: {
-              rows: parsed.data.rows,
-              label,
-              viewerRole: user.role,
-            },
-            idempotencyKey: parsed.data.idempotencyKey,
-          });
-          return reply.status(202).send({ job });
-        } catch (err) {
-          if (err instanceof QueueUnavailableError) {
-            return sendServiceUnavailable(reply, err.message);
-          }
-          throw err;
-        }
+      registerModuleCsvImportRoutes(dept, {
+        canWrite: canSetupWrite,
+        bodySchema: facultyDepartmentImportBodySchema,
+        moduleId: "faculty-departments",
+        defaultLabel: "Importing departments…",
+        entityNoun: "department",
+        queueAuditAction: "faculty.departments.import",
       });
     },
     { prefix: "/departments" },
@@ -118,32 +66,13 @@ export const facultyCatalogIoRoutes: FastifyPluginAsync = async (fastify) => {
         queueAuditAction: "faculty.designations.export.queue",
       });
 
-      desig.post("/import", { bodyLimit: 2 * 1024 * 1024 }, async (request, reply) => {
-        const user = request.user as User;
-        if (!canSetupWrite(user)) return sendForbidden(reply);
-        const parsed = parseRequest(facultyDesignationImportBodySchema, request.body);
-        if (!parsed.ok) return replyValidationError(reply, parsed.message);
-        const label = parsed.data.label?.trim() || "Importing designations…";
-        try {
-          const job = await enqueueImportJob({
-            user,
-            moduleId: "faculty-designations",
-            kind: "import",
-            label,
-            payload: {
-              rows: parsed.data.rows,
-              label,
-              viewerRole: user.role,
-            },
-            idempotencyKey: parsed.data.idempotencyKey,
-          });
-          return reply.status(202).send({ job });
-        } catch (err) {
-          if (err instanceof QueueUnavailableError) {
-            return sendServiceUnavailable(reply, err.message);
-          }
-          throw err;
-        }
+      registerModuleCsvImportRoutes(desig, {
+        canWrite: canSetupWrite,
+        bodySchema: facultyDesignationImportBodySchema,
+        moduleId: "faculty-designations",
+        defaultLabel: "Importing designations…",
+        entityNoun: "designation",
+        queueAuditAction: "faculty.designations.import",
       });
     },
     { prefix: "/designations" },

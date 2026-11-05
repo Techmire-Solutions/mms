@@ -1,8 +1,8 @@
 import { matchesWidgetFilter } from "../core/utils.js";
 import type { WidgetQuery, WidgetAggregateResult } from "../dashboard/widgetAggregateTypes.js";
 
-export type SessionsWidgetOperation = "count" | "sum" | "avg" | "percentage";
-export type SessionsWidgetFilterOperator = "equals" | "contains" | "startsWith" | "gt" | "lt";
+type SessionsWidgetOperation = "count" | "sum" | "avg" | "percentage";
+type SessionsWidgetFilterOperator = "equals" | "contains" | "startsWith" | "gt" | "lt";
 
 export type SessionsWidgetQuery = WidgetQuery;
 export type SessionsWidgetAggregateResult = WidgetAggregateResult;
@@ -106,17 +106,6 @@ export function computeSessionsWidgetAggregate(
     totalCount,
     chartData: buildChartData(filtered, query),
   };
-}
-
-export function computeSessionsWidgetAggregates(
-  sessions: SessionRow[],
-  queries: SessionsWidgetQuery[],
-): Record<string, SessionsWidgetAggregateResult> {
-  const results: Record<string, SessionsWidgetAggregateResult> = {};
-  for (const query of queries) {
-    results[query.id] = computeSessionsWidgetAggregate(sessions, query);
-  }
-  return results;
 }
 
 export function sessionsWidgetQueryFromWidget(widget: {

@@ -1,4 +1,4 @@
-import { useState, useCallback } from "react";
+import { useState, useCallback, useMemo } from "react";
 import { DASHBOARD_MODULE_MANIFEST } from "@mms/shared";
 import { resolveDashboardRole } from "@/lib/dashboardRole";
 import { getActiveCustomCardIds, isDashboardWidgetAllowed } from "@/lib/dashboardCollections";
@@ -11,20 +11,18 @@ import { useTranslation } from "@/hooks/useTranslation";
 import { useDashboardConfig } from "@/hooks/useDashboardConfig";
 import { buildDashboardNotifications } from "@/lib/buildDashboardNotifications";
 import { useFinanceCurrency } from "@/hooks/useCurrency";
-import { scrollDocumentToTop } from "@/lib/routing/scrollDocumentToTop";
 
 export function useDashboardPageController() {
   const { t } = useTranslation();
   const { formatCurrency } = useFinanceCurrency();
   const { can } = usePermissions();
-  const dashboardRole = (() => resolveDashboardRole(can))();
+  const dashboardRole = resolveDashboardRole(can);
   // Server-authoritative grant ∧ enablement; all false while loading, so no module widget fetches early.
   const { effectiveModules: enabledModules } = useModuleAccess();
 
   const {
     disabledCardIds,
     customWidgets,
-    gridMode,
     lowAttendanceThreshold,
     urgentAttendanceThreshold,
     toggleCardVisibility,
@@ -34,6 +32,7 @@ export function useDashboardPageController() {
     saveWidget,
     updatePref,
     reorderCustomWidgets,
+    isConfigReady,
   } = useDashboardConfig();
 
   const [isEditMode, setIsEditMode] = useState(false);
@@ -64,7 +63,6 @@ export function useDashboardPageController() {
       setEditingWidget(widget);
       setWidgetBuilderType(type);
       setIsWidgetBuilderOpen(true);
-      scrollDocumentToTop({ behavior: "smooth" });
     },
     [canCustomize, isEditMode],
   );
@@ -97,16 +95,16 @@ export function useDashboardPageController() {
     updatePref(key, value);
   };
 
-  const handleUpdateGridMode = (mode: "comfortable" | "compact") => {
-    updatePref("gridMode", mode);
-  };
-
-  const activeCustomCardIds = (() => getActiveCustomCardIds(customWidgets, dashboardRole))();
+  const activeCustomCardIds = useMemo(
+    () => getActiveCustomCardIds(customWidgets, dashboardRole),
+    [customWidgets, dashboardRole],
+  );
 
   const dashboardMetricCards = useDashboardMetricCards({
     customWidgets,
     dashboardRole,
     enabledModules,
+    can,
     data: dashboardData,
     t,
   });
@@ -116,39 +114,56 @@ export function useDashboardPageController() {
     if (widget) handleEditWidget(widget);
   };
 
-  const disabledSet = new Set(disabledCardIds);
-  const visibleDashboardMetricCards = dashboardMetricCards.filter(
-    (dashboardCard) => !disabledSet.has(dashboardCard.id),
-  );
+  const visibleDashboardMetricCards = useMemo(() => {
+    const disabledSet = new Set(disabledCardIds);
+    return dashboardMetricCards.filter((dashboardCard) => !disabledSet.has(dashboardCard.id));
+  }, [dashboardMetricCards, disabledCardIds]);
 
   const selectedDashboardCardCount = visibleDashboardMetricCards.length;
 
-  const visiblePinnedWidgets = customWidgets.filter(
-    (widget) =>
-      widget.isPinnedToDashboard &&
-      widget.widgetType !== "card" &&
-      isDashboardWidgetAllowed(widget, enabledModules, can),
+  const visiblePinnedWidgets = useMemo(
+    () =>
+      customWidgets.filter(
+        (widget) =>
+          widget.isPinnedToDashboard &&
+          widget.widgetType !== "card" &&
+          isDashboardWidgetAllowed(widget, enabledModules, can),
+      ),
+    [customWidgets, enabledModules, can],
   );
 
   const pinnedDashboardWidgetCount = visiblePinnedWidgets.length;
 
-  const notifications = (() =>
-    buildDashboardNotifications(
+  const notifications = useMemo(
+    () =>
+      buildDashboardNotifications(
+        dashboardRole,
+        {
+          outstandingInvoiceCount: financeMetrics?.outstanding ?? 0,
+          outstandingBalance: financeMetrics?.outstandingBalance ?? 0,
+          attendanceRate:
+            attendanceMetrics?.selectedDatePresentRate ??
+            attendanceMetrics?.overallPresentRate ??
+            null,
+          inactiveStudents: studentMetricsInactive,
+        },
+        t,
+        formatCurrency,
+        can,
+        { lowAttendanceThreshold, urgentAttendanceThreshold },
+      ),
+    [
       dashboardRole,
-      {
-        outstandingInvoiceCount: financeMetrics?.outstanding ?? 0,
-        outstandingBalance: financeMetrics?.outstandingBalance ?? 0,
-        attendanceRate:
-          attendanceMetrics?.selectedDatePresentRate ??
-          attendanceMetrics?.overallPresentRate ??
-          null,
-        inactiveStudents: studentMetricsInactive,
-      },
+      financeMetrics,
+      attendanceMetrics,
+      studentMetricsInactive,
       t,
       formatCurrency,
       can,
-      { lowAttendanceThreshold, urgentAttendanceThreshold },
-    ))();
+      lowAttendanceThreshold,
+      urgentAttendanceThreshold,
+    ],
+  );
 
   const handleResetCards = () => {
     updatePref("disabledCardIds", []);
@@ -163,11 +178,9 @@ export function useDashboardPageController() {
     setIsEditMode,
     customWidgets,
     disabledCardIds,
-    gridMode,
     lowAttendanceThreshold,
     urgentAttendanceThreshold,
     handleUpdateThreshold,
-    handleUpdateGridMode,
     handleReorderWidgets,
     toggleCardVisibility,
     handleResetCards,
@@ -192,5 +205,8 @@ export function useDashboardPageController() {
     notifications,
     activeSessionsCount: sessionsMetrics?.active ?? 0,
     studentMetricsActive,
+    isConfigReady,
+    summaryError: dashboardData.summaryError,
+    retrySummary: dashboardData.retrySummary,
   };
 }

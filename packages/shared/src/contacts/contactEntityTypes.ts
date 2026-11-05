@@ -230,9 +230,14 @@ export function getContactTags(
 /** Payload schema for bulk tagging contact records. */
 export const contactsBulkTagBodySchema = z
   .object({
-    ids: z.array(z.string().min(1)).min(1, "At least one contact ID is required"),
-    addTags: z.array(z.string().trim().min(1)).optional(),
-    removeTags: z.array(z.string().trim().min(1)).optional(),
+    // Same ceiling as `bulkIdsBodySchema`: one request may not force an unbounded
+    // `IN (...)` write (PostgreSQL caps bind parameters at 65 535).
+    ids: z
+      .array(z.string().min(1))
+      .min(1, "At least one contact ID is required")
+      .max(500, "At most 500 contacts can be tagged at once"),
+    addTags: z.array(z.string().trim().min(1)).max(100).optional(),
+    removeTags: z.array(z.string().trim().min(1)).max(100).optional(),
   })
   .strict()
   .refine((data) => (data.addTags?.length ?? 0) > 0 || (data.removeTags?.length ?? 0) > 0, {

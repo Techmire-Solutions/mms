@@ -125,14 +125,6 @@ export async function hydrateFacultyList(
   return withEmployment.map(preferEmployDesignationPrimary);
 }
 
-export async function attachPrimaryAppointmentToFacultyList(
-  tx: AppDb,
-  subdomain: string,
-  rows: FacultyMember[],
-): Promise<FacultyMember[]> {
-  return attachPrimaryAppointmentFields(tx, subdomain, rows);
-}
-
 export function facultyUpdateSetValues(
   subdomain: string,
   facultyMember: FacultyMember,

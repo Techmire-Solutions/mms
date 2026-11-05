@@ -12,12 +12,11 @@ export {
 export {
   logRowToRecord,
   listMessageLogsByWorkspace,
-  findMessageLogById,
+  listAllMessageLogsByWorkspace,
   findMessageLogsByIds,
   saveMessageLog,
   replaceMessageLogsForWorkspace,
   bulkSaveMessageLogs,
-  deleteMessageLogsByWorkspace,
   insertMessageLogs,
 } from "./messagingLogsRepository.js";
 export type {
@@ -32,6 +31,10 @@ export {
   buildMessageLogClaimId,
   claimMessageLogForDelivery,
   updateMessageLogDeliveryStatus,
+  saveMessageLogDeliveryOutcomes,
   STALE_MESSAGE_LOG_CLAIM_MS,
 } from "./messagingLogsMutationRepository.js";
-export type { MessageLogClaim } from "./messagingLogsMutationRepository.js";
+export type {
+  MessageLogClaim,
+  MessageLogDeliveryOutcome,
+} from "./messagingLogsMutationRepository.js";

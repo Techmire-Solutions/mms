@@ -8,14 +8,13 @@ import {
   type StandardMessagingRecipient as MessagingRecipient,
 } from "@mms/shared";
 import { useMessageComposerState } from "@/hooks/useMessageComposerState";
-import { useModuleShortcuts } from "@/hooks/useModuleShortcuts";
 import { usePersistedTabState } from "@/hooks/usePersistedTabState";
 import { useTranslation } from "@/hooks/useTranslation";
 import { notify } from "@/lib/notify";
 import { useFilteredModuleTierTabs } from "@/tenant/hooks/useModuleTierTabs";
 import { useModulePermissions } from "@/tenant/hooks/usePermissions";
-import { MESSAGING_WORK_SEARCH_INPUT_ID } from "./components/MessagingListFilters";
 import { useMessagingKeyboardShortcuts } from "./hooks/useMessagingKeyboardShortcuts";
+import { resolveActiveTab } from "./lib/resolveActiveTab";
 import {
   invalidateMessagingQueries,
   useMessageTemplates,
@@ -50,6 +49,17 @@ export default function MessagingPage(): React.JSX.Element {
     canViewSetup: canViewSetup || canEditSetup,
     workLabelKey: "nav.messaging",
   });
+  // A hidden tab must not render its tier: `?tab=setup` (or a persisted tab from
+  // before a role change) falls back to Work.
+  const resolvedTab = resolveActiveTab(activeTab, visibleTabs) as "work" | "reports" | "setup";
+
+  useEffect(() => {
+    if (activeTab === resolvedTab) return;
+    const next = new URLSearchParams(searchParams);
+    if (!next.has("tab")) return;
+    next.delete("tab");
+    setSearchParams(next, { replace: true });
+  }, [activeTab, resolvedTab, searchParams, setSearchParams]);
 
   const handleTabChange = (tab: "work" | "reports" | "setup"): void => {
     setActiveTab(tab);
@@ -59,13 +69,13 @@ export default function MessagingPage(): React.JSX.Element {
     setSearchParams(next, { replace: true });
   };
 
-  const templates = (() => mergeMessageTemplates(templatesQuery.templates))();
-  const stats = (() => ({
+  const templates = mergeMessageTemplates(templatesQuery.templates);
+  const stats = {
     total: metricsQuery.data?.total ?? 0,
     sms: metricsQuery.data?.smsCount ?? 0,
     whatsapp: metricsQuery.data?.whatsappCount ?? 0,
     email: metricsQuery.data?.emailCount ?? 0,
-  }))();
+  };
 
   const triggerCompose = useCallback(
     (
@@ -134,17 +144,8 @@ export default function MessagingPage(): React.JSX.Element {
     startCampaign,
   });
 
-  useModuleShortcuts({
-    searchInputId: MESSAGING_WORK_SEARCH_INPUT_ID,
-    selectedCount: 0,
-    hasActiveFilters: false,
-    clearFilters: () => {},
-    clearSelection: () => {},
-    canWrite,
-    showDeleted: false,
-    onCreate: () => void startCampaign("whatsapp"),
-    enabled: activeTab === "work",
-  });
+  // Search/Escape/create shortcuts live in the Work-tier controller, where the
+  // real selection and filter state are (a page-level stub passed zeros).
 
   const resend = (log: Message, recipient: MessagingRecipient): void => {
     triggerCompose(log.channel, [recipient], log.body, log.subject);
@@ -167,7 +168,7 @@ export default function MessagingPage(): React.JSX.Element {
     try {
       await deleteTemplate.mutateAsync(deleteTemplateId);
       setDeleteTemplateId(null);
-      notify.success(t("common.delete"));
+      notify.success(t("messaging.templateDeleted"));
     } catch {
       // Mutation hook reports the failure.
     }
@@ -177,7 +178,7 @@ export default function MessagingPage(): React.JSX.Element {
     try {
       await clearLogs.mutateAsync();
       setConfirmClearLogsOpen(false);
-      notify.success(t("messaging.clearLogs"));
+      notify.success(t("messaging.logsArchived"));
     } catch {
       // Mutation hook reports the failure.
     }
@@ -188,6 +189,20 @@ export default function MessagingPage(): React.JSX.Element {
       try {
         await restoreLogs.mutateAsync([String(log.id)]);
         notify.success(t("messaging.restoredToast"));
+      } catch {
+        // Mutation hook reports the failure.
+      }
+    },
+    [restoreLogs, t],
+  );
+
+  /** Bulk restore from the archived directory's selection bar. */
+  const handleBulkRestore = useCallback(
+    async (ids: string[]): Promise<void> => {
+      if (ids.length === 0) return;
+      try {
+        await restoreLogs.mutateAsync(ids);
+        notify.success(t("messaging.bulkRestoreSuccess", { count: ids.length }));
       } catch {
         // Mutation hook reports the failure.
       }
@@ -213,7 +228,8 @@ export default function MessagingPage(): React.JSX.Element {
       canClearLogs={canClearLogs}
       canRestoreLogs={canRestoreLogs}
       onRestoreLog={handleRestoreLog}
-      activeTab={activeTab}
+      onBulkRestore={handleBulkRestore}
+      activeTab={resolvedTab}
       visibleTabs={visibleTabs}
       channelFilter={channelFilter}
       startingCampaign={startingCampaign}

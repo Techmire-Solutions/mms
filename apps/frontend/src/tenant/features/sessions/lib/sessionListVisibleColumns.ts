@@ -1,7 +1,7 @@
 import { getVisibleWorkColumns, type ModuleColumnRegistryEntry } from "@mms/shared";
 
 /** Card-face Work columns for Sessions (rendered outside the metadata grid). */
-export const SESSION_CARD_FACE_COLUMN_IDS = new Set(["name"]);
+const SESSION_CARD_FACE_COLUMN_IDS = new Set(["name"]);
 
 /** Visible Work columns in registry order (checkbox / actions stay outside). */
 export function getSessionVisibleWorkColumns(

@@ -5,27 +5,28 @@
 
 import type { FastifyInstance, FastifyPluginOptions } from "fastify";
 import {
-  taskListQuerySchema,
   taskInsertSchema,
   taskStatusUpdateSchema,
+  tasksBulkStatusBodySchema,
   taskUpdateSchema,
   type User,
 } from "@mms/shared";
 import { authenticateTenant } from "../../middleware/authenticate.js";
 import { registerModuleAccess } from "../../middleware/requireTenantModule.js";
 import { canPerformTaskAction } from "../../services/taskPermissionService.js";
-import { mutateTask, TaskDelegationError } from "../../services/taskMutationService.js";
+import { mutateTask } from "../../services/taskMutationService.js";
 import {
   findTaskById,
-  getTaskMetrics,
-  listTasks,
   updateTaskStatus,
+  bulkUpdateTaskStatus,
 } from "../../tasks/use-cases/tasksUseCases.js";
 import { getEligibleTaskAssignees } from "../../services/taskEligibleAssigneesService.js";
 import {
   getTenantTaskSettings,
   updateTenantTaskSettings,
 } from "../../services/taskSettingsService.js";
+import { mapTaskRouteError } from "../../lib/taskRouteErrors.js";
+import { registerTasksReadRoutes } from "./tasksReadRoutes.js";
 import { registerTasksSoftDeleteRoutes } from "./tasksSoftDeleteRoutes.js";
 import { tasksExportRoutes } from "./tasksExportRoutes.js";
 
@@ -36,23 +37,7 @@ export default async function tasksRoutes(
   fastify.addHook("preHandler", authenticateTenant);
   registerModuleAccess(fastify, "tasks");
 
-  // ── List & Metrics ────────────────────────────────────────────────────────
-  fastify.get("/api/tasks", async (request, reply) => {
-    if (!(await canPerformTaskAction(request, "tasks.read"))) {
-      return reply.status(403).send({ type: "forbidden", message: "Forbidden" });
-    }
-    const query = taskListQuerySchema.parse(request.query);
-    const result = await listTasks(String(request.tenant?.id), query);
-    return reply.status(200).send(result);
-  });
-
-  fastify.get("/api/tasks/metrics", async (request, reply) => {
-    if (!(await canPerformTaskAction(request, "tasks.read"))) {
-      return reply.status(403).send({ type: "forbidden", message: "Forbidden" });
-    }
-    const metrics = await getTaskMetrics(String(request.tenant?.id));
-    return reply.status(200).send(metrics);
-  });
+  await registerTasksReadRoutes(fastify);
 
   fastify.get("/api/tasks/eligible-assignees", async (request, reply) => {
     const user = request.user as User;
@@ -137,10 +122,10 @@ export default async function tasksRoutes(
       );
       return reply.status(201).send(task);
     } catch (error) {
-      if (error instanceof TaskDelegationError) {
-        return reply.status(403).send({ type: "forbidden", message: error.message });
-      }
-      throw error;
+      const mapped = mapTaskRouteError(error);
+      if (mapped) return reply.status(mapped.status).send(mapped.body);
+      request.log.error({ err: error }, "Failed to create task");
+      return reply.status(500).send({ type: "server_error", message: "Failed to create task" });
     }
   });
 
@@ -171,15 +156,20 @@ export default async function tasksRoutes(
         String(request.tenant?.id),
         user.id,
         await canPerformTaskAction(request, "tasks.assign_anywhere"),
-        { kind: "update", id: request.params.id, data: parsed.data },
+        {
+          kind: "update",
+          id: request.params.id,
+          data: parsed.data,
+          expectedUpdatedAt: request.headers["x-expected-updated-at"] as string | undefined,
+        },
       );
       if (!updated) return reply.status(404).send({ type: "not_found", message: "Task not found" });
       return reply.status(200).send(updated);
     } catch (error) {
-      if (error instanceof TaskDelegationError) {
-        return reply.status(403).send({ type: "forbidden", message: error.message });
-      }
-      throw error;
+      const mapped = mapTaskRouteError(error);
+      if (mapped) return reply.status(mapped.status).send(mapped.body);
+      request.log.error({ err: error }, "Failed to update task");
+      return reply.status(500).send({ type: "server_error", message: "Failed to update task" });
     }
   });
 
@@ -201,7 +191,23 @@ export default async function tasksRoutes(
     }
     const tenant = String(request.tenant?.id);
     const previous = await findTaskById(tenant, request.params.id);
-    const updated = await updateTaskStatus(tenant, request.params.id, parsed.data.status, user.id);
+    let updated;
+    try {
+      updated = await updateTaskStatus(
+        tenant,
+        request.params.id,
+        parsed.data.status,
+        user.id,
+        request.headers["x-expected-updated-at"] as string | undefined,
+      );
+    } catch (error) {
+      const mapped = mapTaskRouteError(error);
+      if (mapped) return reply.status(mapped.status).send(mapped.body);
+      request.log.error({ err: error }, "Failed to update task status");
+      return reply
+        .status(500)
+        .send({ type: "server_error", message: "Failed to update task status" });
+    }
     if (!updated) {
       return reply.status(404).send({ type: "not_found", message: "Task not found" });
     }
@@ -216,6 +222,48 @@ export default async function tasksRoutes(
       next: updated,
     });
     return reply.status(200).send(updated);
+  });
+
+  fastify.post("/api/tasks/bulk-status", async (request, reply) => {
+    const user = request.user as User;
+    if (
+      !(await canPerformTaskAction(request, "tasks.write")) &&
+      !(await canPerformTaskAction(request, "tasks.complete"))
+    ) {
+      return reply.status(403).send({ type: "forbidden", message: "Forbidden" });
+    }
+    const parsed = tasksBulkStatusBodySchema.safeParse(request.body);
+    if (!parsed.success) {
+      return reply.status(400).send({ type: "validation_error", message: "Invalid payload" });
+    }
+    const tenant = String(request.tenant?.id);
+    let result;
+    try {
+      result = await bulkUpdateTaskStatus(tenant, parsed.data.ids, parsed.data.status, user.id);
+    } catch (error) {
+      const mapped = mapTaskRouteError(error);
+      if (mapped) return reply.status(mapped.status).send(mapped.body);
+      request.log.error({ err: error }, "Failed to bulk update task status");
+      return reply
+        .status(500)
+        .send({ type: "server_error", message: "Failed to bulk update task status" });
+    }
+    if (result.changes.length > 0) {
+      const settings = await getTenantTaskSettings();
+      const { emitTaskBulkStatusNotifications } =
+        await import("../../services/taskNotificationService.js");
+      await emitTaskBulkStatusNotifications({
+        tenant,
+        settings,
+        actorUserId: user.id,
+        changes: result.changes,
+      });
+    }
+    return reply.status(200).send({
+      success: true,
+      updatedIds: result.updatedIds,
+      skipped: result.skipped,
+    });
   });
 
   await registerTasksSoftDeleteRoutes(fastify);

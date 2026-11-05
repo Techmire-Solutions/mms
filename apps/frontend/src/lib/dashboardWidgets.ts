@@ -26,6 +26,12 @@ export interface StatItem {
   icon: string;
   color: string;
   trend: number;
+  /**
+   * True when the card's source metric snapshot is absent (loading, failed, or
+   * filtered out). The grid renders this as "unavailable" instead of a `0` that
+   * would otherwise look like a real measurement.
+   */
+  unavailable?: boolean;
 }
 
 /** Per-widget metadata for a seeded dashboard widget. SSOT for title/subtitle

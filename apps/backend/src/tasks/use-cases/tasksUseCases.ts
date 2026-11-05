@@ -12,11 +12,14 @@ export function createTasksUseCases(
     listTasks: repo.listTasks,
     findTaskById: repo.findTaskById,
     getTaskMetrics: repo.getTaskMetrics,
+    createTask: repo.createTask,
+    updateTask: repo.updateTask,
     updateTaskStatus: repo.updateTaskStatus,
     deleteTask: repo.deleteTask,
     restoreTask: repo.restoreTask,
     bulkRestoreTasks: repo.bulkRestoreTasks,
     bulkDeleteTasks: repo.bulkDeleteTasks,
+    bulkUpdateTaskStatus: repo.bulkUpdateTaskStatus,
   };
 }
 
@@ -27,9 +30,12 @@ export const {
   listTasks,
   findTaskById,
   getTaskMetrics,
+  createTask,
+  updateTask,
   updateTaskStatus,
   deleteTask,
   restoreTask,
   bulkRestoreTasks,
   bulkDeleteTasks,
+  bulkUpdateTaskStatus,
 } = tasksUseCases;

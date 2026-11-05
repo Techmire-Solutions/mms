@@ -32,9 +32,11 @@ export async function getTenantRoleMatrix(tenantId: string): Promise<TenantRoleM
 }
 
 /**
- * Invalidates the cached role matrix for a tenant.
- * Should be called when a user's role is updated or a user is soft-deleted/restored.
+ * Invalidates every cached RBAC entry for a tenant: the role matrix and the
+ * tenant role catalog. Called when a user's role is updated or soft-deleted,
+ * and when the workspace role catalog is edited.
  */
 export async function invalidateTenantRbac(tenantId: string): Promise<void> {
-  await invalidateMultiTierCache({ tenantId, domain: "rbac", key: "matrix" });
+  // Domain-wide (no key): evicts matrix + catalog from L1/L2 and broadcasts.
+  await invalidateMultiTierCache({ tenantId, domain: "rbac" });
 }

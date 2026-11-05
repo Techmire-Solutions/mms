@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect } from "react";
+import React, { useCallback } from "react";
 import { Edit3, Plus } from "lucide-react";
 import type { MessageCategory } from "@mms/shared";
 import { FormSelect } from "@/components/app/FormSelect";
@@ -7,6 +7,7 @@ import { FORM_INPUT_ERROR } from "@/components/ui/formStyles";
 import { FormModal } from "@/components/app/FormModal";
 import { Input } from "@/components/ui/input";
 import { MessagingMessageBodyField } from "@/components/app/MessagingMessageBodyField";
+import { useCmdEnterShortcut } from "@/hooks/useCmdEnterShortcut";
 import { cn } from "@/lib/utils";
 import { useTranslation } from "@/hooks/useTranslation";
 
@@ -62,18 +63,9 @@ export function MessagingSetupTemplateForm({
     void onSave();
   }, [saveDisabled, onSave]);
 
-  // Keyboard shortcut: Cmd/Ctrl + Enter to trigger save
-  useEffect(() => {
-    if (!open) return;
-    const handleKeyDown = (event: KeyboardEvent): void => {
-      if (!(event.metaKey || event.ctrlKey) || event.key !== "Enter") return;
-      if (event.isComposing) return;
-      event.preventDefault();
-      trySave();
-    };
-    window.addEventListener("keydown", handleKeyDown);
-    return () => window.removeEventListener("keydown", handleKeyDown);
-  }, [open, trySave]);
+  // Keyboard shortcut: Cmd/Ctrl + Enter to save — suppressed while the
+  // discard-confirmation dialog is open.
+  useCmdEnterShortcut({ enabled: open, onTrigger: trySave, allowTyping: true });
 
   return (
     <FormModal

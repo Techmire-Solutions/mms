@@ -1,10 +1,5 @@
 import type { FastifyPluginAsync } from "fastify";
-import {
-  executeErasureBodySchema,
-  retentionEvaluateBodySchema,
-  roleHasPermission,
-  type User,
-} from "@mms/shared";
+import { executeErasureBodySchema, retentionEvaluateBodySchema, type User } from "@mms/shared";
 import { getRequestTenant } from "../../../lib/tenantContext.js";
 import { sendBadRequest, sendForbidden } from "../../../lib/httpErrors.js";
 import {
@@ -13,6 +8,7 @@ import {
 } from "../../../services/auditRetentionService.js";
 import { executeSubjectErasure } from "../../../services/cryptoShreddingService.js";
 import { parseRequest, replyValidationError } from "../../../lib/zodRequest.js";
+import { userHasPermission } from "../../../lib/userPermissionContext.js";
 
 export const auditPrivacyRoutes: FastifyPluginAsync = async (fastify) => {
   /**
@@ -21,7 +17,7 @@ export const auditPrivacyRoutes: FastifyPluginAsync = async (fastify) => {
    */
   fastify.post("/api/audit/erasure", async (request, reply) => {
     const user = request.user as User | undefined;
-    if (!roleHasPermission(user?.role ?? "", "audit.manage")) {
+    if (!userHasPermission(user, "audit.manage")) {
       return sendForbidden(reply);
     }
     const tenant = getRequestTenant();
@@ -69,7 +65,7 @@ export const auditPrivacyRoutes: FastifyPluginAsync = async (fastify) => {
    */
   fastify.post("/api/audit/retention/evaluate", async (request, reply) => {
     const user = request.user as User | undefined;
-    if (!roleHasPermission(user?.role ?? "", "audit.manage")) {
+    if (!userHasPermission(user, "audit.manage")) {
       return sendForbidden(reply);
     }
     const tenant = getRequestTenant();

@@ -51,6 +51,15 @@ export interface StudentsRepository {
     options?: { includeDeleted?: boolean },
   ): Promise<Student[]>;
   save(tenant: string, student: Student | StudentRecord): Promise<void>;
+  /**
+   * Compare-and-set save keyed on the client's `updatedAt` token
+   * (`mms-api-interface` §6). Returns false on a stale token or removed row.
+   */
+  saveIfVersionMatches?(
+    tenant: string,
+    student: Student | StudentRecord,
+    expectedUpdatedAt: string,
+  ): Promise<boolean>;
   bulkSave(tenant: string, students: Array<Student | StudentRecord>): Promise<void>;
   aggregateCommandMetrics(
     tenant: string,
@@ -60,7 +69,15 @@ export interface StudentsRepository {
     tenant: string,
     queries: StudentsWidgetQuery[],
   ): Promise<Record<string, StudentsWidgetAggregateResult>>;
-  listLinkedContactIds(tenant: string, excludeStudentId?: string): Promise<Array<string | number>>;
+  /**
+   * Contact ids linked to active students. `onlyContactIds` bounds the probe to a candidate set
+   * (bulk restore) instead of materialising every active student's contact id for the workspace.
+   */
+  listLinkedContactIds(
+    tenant: string,
+    excludeStudentId?: string,
+    onlyContactIds?: string[],
+  ): Promise<Array<string | number>>;
 
   countNextGrNumber(tenant: string, input: StudentGrSequenceInput): Promise<number>;
   previewNextGrNumber?(
@@ -87,7 +104,12 @@ export interface StudentsRepository {
   /** Soft-deleted student sharing `contactId` (restore-on-create probe). */
   findSoftDeletedByContactId(tenant: string, contactId: string): Promise<Student | null>;
   listActiveMissingGrNumber(tenant: string, options?: { limit?: number }): Promise<Student[]>;
-  bulkUpdateStatusSql(tenant: string, ids: string[], status: string): Promise<number>;
+  bulkUpdateStatusSql(
+    tenant: string,
+    ids: string[],
+    status: string,
+    updatedBy?: string,
+  ): Promise<number>;
   bulkSoftDelete?(
     tenant: string,
     ids: string[],
@@ -98,6 +120,7 @@ export interface StudentsRepository {
     tenant: string,
     ids: string[],
     userId?: string,
-  ): Promise<{ succeeded: number; failed: number }>;
+    restoredAt?: Date,
+  ): Promise<{ succeeded: number; failed: number; restoredIds?: string[] }>;
   guardDeleteDependents?(tenant: string, ids: string[]): Promise<void>;
 }

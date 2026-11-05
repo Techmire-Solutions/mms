@@ -6,7 +6,6 @@ import { WorkViewModeToggle } from "@/components/app/WorkViewModeToggle";
 import { ModuleColumnCustomizer } from "@/components/app/ModuleColumnCustomizer";
 import { WORK_SURFACE } from "@/components/ui/formStyles";
 import { cn } from "@/lib/utils";
-import { useTranslation } from "@/hooks/useTranslation";
 import type { ModuleWorkToolbarProps } from "@/components/app/moduleWorkToolbarTypes";
 
 export type { ModuleWorkToolbarProps };
@@ -19,6 +18,7 @@ export const ModuleWorkToolbar = function ModuleWorkToolbar({
   searchPlaceholder,
   searchId,
   isSearching,
+  searchShortcutHint = true,
   filterButton,
   hasActiveFilters,
   onClearFilters,
@@ -28,12 +28,10 @@ export const ModuleWorkToolbar = function ModuleWorkToolbar({
   trashToggle,
   viewModeToggle,
   columnCustomizer,
-  densityToggle: _densityToggle,
-  aiSuggestions,
+  surface = "card",
   children,
   showExportInTrash = true,
 }: ModuleWorkToolbarProps): JSX.Element {
-  const { t } = useTranslation();
   const showChildren = Boolean(
     children && (!trashToggle?.viewingDeleted || showExportInTrash !== false),
   );
@@ -60,39 +58,30 @@ export const ModuleWorkToolbar = function ModuleWorkToolbar({
         </div>
       ) : null}
 
-      {aiSuggestions && (
-        <div
-          className="flex items-center gap-2 flex-wrap px-3 pt-2.5 pb-0"
-          aria-description={t("module.work.aiSuggestionsDescription")}
-          aria-label={t("module.work.aiSuggestionsAria")}
-        >
-          {aiSuggestions}
-        </div>
-      )}
-
       <div
         role="region"
         aria-label={regionLabel}
         className={cn(
-          WORK_SURFACE,
-          // `lg:gap-7` (28px), not the 2.5px-scaled base gap: when the actions group sits
-          // BESIDE the search at lg widths, axe measures the gap to the nearest control
-          // (the active tab) and WCAG 2.2 `target-size` (2.5.8) requires 24px of clear
-          // space. At 10px it measured 16px — under the floor — with the wide tablist
-          // (`All (118)`) leaving `#<searchId>` only 86px of room.
-          "flex flex-col lg:flex-row items-stretch lg:items-center justify-between gap-2.5 lg:gap-7 p-2.5 sm:p-3",
+          surface === "card" && WORK_SURFACE,
+          // Below `xl` the toolbar stacks: the search field must stay usable (the
+          // 1024–1279 single-row layout crushed it to ~118 px and clipped the
+          // placeholder). At `xl` the 28 px neighbour gap replaces the scaled base gap
+          // so WCAG 2.2 `target-size` (2.5.8) still measures 24 px+ of clear space.
+          "flex flex-col xl:flex-row items-stretch xl:items-center justify-between gap-2.5 xl:gap-7",
+          surface === "card" && "p-2.5 sm:p-3",
         )}
       >
-        <div className="relative min-w-0 flex-1 w-full lg:max-w-md xl:max-w-lg">
+        <div className="relative min-w-0 w-full flex-1 xl:min-w-80 xl:max-w-lg">
           <SearchBar
             id={searchId}
             value={search}
             onChange={onSearchChange}
             placeholder={searchPlaceholder}
             isSearching={isSearching}
+            keyshortcuts={searchId && searchShortcutHint ? "/" : null}
             className="w-full min-w-0"
           />
-          {!search && (
+          {!search && searchShortcutHint && searchId && (
             // Decorative hint — `aria-hidden` and non-interactive, so it is not a control
             // and not a touch target. (Not a fix for the toolbar's `target-size` failure:
             // axe attributes that to the active tab crowding the input on wide counts.)
@@ -111,7 +100,7 @@ export const ModuleWorkToolbar = function ModuleWorkToolbar({
           `min-w-0`, not `shrink-0`: the group declares `flex-wrap`, so forbidding it from
           ever shrinking was self-contradictory. NOTE: this alone did NOT clear the
           `target-size` failure — it was measured at 0/5 before and after. The actual fix
-          is the `lg:gap-7` on the region above (the criterion is spacing to the neighbour).
+          is the `xl:gap-7` on the region above (the criterion is spacing to the neighbour).
         */}
         <div className="flex flex-wrap items-center justify-start sm:justify-end gap-2 min-w-0">
           {showChildren && children}
@@ -126,10 +115,10 @@ export const ModuleWorkToolbar = function ModuleWorkToolbar({
 
           {trashToggle?.canViewDeleted && (
             <ModuleTrashToggle
-              showDeleted={trashToggle.viewingDeleted}
+              viewingDeleted={trashToggle.viewingDeleted}
               onToggle={() => trashToggle.onToggle(!trashToggle.viewingDeleted)}
-              showActiveLabel={trashToggle.activeLabel}
-              showDeletedLabel={trashToggle.deletedLabel}
+              activeLabel={trashToggle.activeLabel}
+              deletedLabel={trashToggle.deletedLabel}
             />
           )}
 

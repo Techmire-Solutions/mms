@@ -12,32 +12,22 @@ import {
   mergeContactPatch,
   prepareContactRecord,
   stripClientSoftDeleteFields,
+  validateContactDynamic,
 } from "./contactValidationUseCases.js";
 import { broadcastCollection } from "../../lib/livePush.js";
 import { invalidateMultiTierCache } from "../../lib/cache/index.js";
 import { loadContactWriteContext } from "./contactWriteContext.js";
+import { stripUnreadableContactWriteKeys } from "./contactViewerWriteGuard.js";
 import { collectRelatedContactIds } from "./contactRelationshipIds.js";
 import { reconcileContactSystemTags } from "../systemTags/contactSystemTagUseCases.js";
-import type { ContactWriteContext } from "./contactWriteContextTypes.js";
+import { type UpdateContactByIdOptions, type UpsertContactOptions } from "./contactWriteOptions.js";
 import type { ContactsRepository } from "../repository/contactsRepository.js";
 import { contactsRepository } from "../repository/contactsRepositoryAdapter.js";
-
-interface UpsertContactOptions {
-  user?: User;
-  canRestore?: boolean;
-  /** Accept-Language for unique-field conflict messages. */
-  language?: string;
-  /** Acting user when no full `User` is available (queued import worker). */
-  actorId?: string;
-  /** Preloaded tenant config (batch writers) — avoids re-reading it per contact. */
-  context?: ContactWriteContext;
-  /**
-   * Batch mode: skip per-record live-update broadcast, multi-tier cache
-   * invalidation and duplicate-scan invalidation. The caller must run each
-   * exactly once after the batch.
-   */
-  batchMode?: boolean;
-}
+import { auditContactPersisted, auditContactUpdated } from "./contactWriteAudit.js";
+const CONTACT_VERSION_CONFLICT =
+  "This contact was changed by someone else. Reload it and try again.";
+const CONTACT_EXISTS_CONFLICT =
+  "A contact with this id already exists. Reload it and retry the edit.";
 
 export async function upsertContact(
   contact: Contact,
@@ -82,7 +72,30 @@ export async function upsertContact(
     }
 
     const stripped = stripClientSoftDeleteFields(contact);
-    const mergedInput = existing ? mergeContactPatch(existing, stripped) : stripped;
+    const viewerRole = opts?.viewerRole ?? user?.role;
+    // Never write a key the acting role cannot read: a hidden tab's collection is
+    // indistinguishable from an empty one on the wire (R4-03).
+    const patch = stripUnreadableContactWriteKeys(stripped, viewerRole, context.fieldConfig);
+    // `POST` is create-shaped, so an existing id is either a versioned upsert or a
+    // conflict. Without the token the write would bypass the PUT 409 contract and
+    // silently overwrite a concurrent edit (R4-05).
+    const requiredToken = opts?.requireExpectedVersion
+      ? opts?.expectedUpdatedAt?.trim()
+      : undefined;
+    if (existing && opts?.requireExpectedVersion) {
+      if (!requiredToken) throw new ConflictError(CONTACT_EXISTS_CONFLICT);
+      if (existing.updatedAt && existing.updatedAt !== requiredToken) {
+        throw new ConflictError(CONTACT_VERSION_CONFLICT);
+      }
+    }
+    const mergedInput = existing ? mergeContactPatch(existing, patch) : patch;
+    // Setup is authoritative server-side: required tabs/fields, field types and the
+    // optional `_blueprintId` version lock are validated before anything is written.
+    await validateContactDynamic(tenant, mergedInput, {
+      language,
+      viewerRole,
+      fieldConfig: context.fieldConfig,
+    });
     const contactWithId = await prepareContactRecord(
       mergedInput,
       contact.id ?? existing?.id,
@@ -114,7 +127,17 @@ export async function upsertContact(
       saved.restoredBy = actorId ?? existing?.restoredBy;
     }
 
-    await repo.save(tenant, saved);
+    if (existing && requiredToken) {
+      // The version predicate lives in the UPDATE, so a writer that commits after
+      // our read cannot be silently overwritten.
+      const savedUpdatedAt = await repo.saveIfVersionMatches(tenant, saved, requiredToken);
+      if (!savedUpdatedAt) throw new ConflictError(CONTACT_VERSION_CONFLICT);
+      // The response must carry the persisted token, otherwise the client's next
+      // conditional save 409s on a version it just wrote.
+      saved.updatedAt = savedUpdatedAt;
+    } else {
+      saved.updatedAt = await repo.save(tenant, saved);
+    }
     await applyContactRelationshipInference(tenant, saved, undefined, repo, {
       actorId,
       previousSource: existing ?? undefined,
@@ -133,6 +156,16 @@ export async function upsertContact(
     if (!opts?.batchMode) {
       await invalidateDuplicateScanCache();
     }
+    // Authoritative audit row commits with the write (mms-data-layer §5.4).
+    if (!opts?.batchMode) {
+      await auditContactPersisted({
+        tenant,
+        contactId: String(saved.id),
+        actorId,
+        created,
+        restored: Boolean(restoredFromDelete),
+      });
+    }
     return { contact: saved, created, restoredFromDelete: restoredFromDelete || undefined };
   });
   const tenant = getRequestTenant();
@@ -143,25 +176,6 @@ export async function upsertContact(
     await broadcastCollection("contacts");
   }
   return result;
-}
-
-interface UpdateContactByIdOptions {
-  language?: string;
-  /**
-   * When false, skip peer relationship graph writes.
-   * Required for self-service profile updates without `contacts.write`.
-   * @default true
-   */
-  applyRelationshipInference?: boolean;
-  /** Acting user — stamped into `updated_by`; never taken from the payload. */
-  actorId?: string;
-  /**
-   * Optimistic concurrency: the `updatedAt` the client based its edit on.
-   * A mismatch means another writer saved first → `ConflictError` (409).
-   */
-  expectedUpdatedAt?: string;
-  /** Preloaded tenant config (batch writers). */
-  context?: ContactWriteContext;
 }
 
 export async function updateContactById(
@@ -189,14 +203,23 @@ export async function updateContactById(
       return null;
     }
     if (expectedUpdatedAt && existing.updatedAt && existing.updatedAt !== expectedUpdatedAt) {
-      throw new ConflictError("This contact was changed by someone else. Reload it and try again.");
+      throw new ConflictError(CONTACT_VERSION_CONFLICT);
     }
     const stripped = stripClientSoftDeleteFields({ ...contact, id });
-    const contactWithId = await prepareContactRecord(
-      mergeContactPatch(existing, stripped),
-      id,
-      context,
+    // A role that cannot read a tab receives the contact without it; its save must
+    // not clear the rows it never saw (R4-03).
+    const patch = stripUnreadableContactWriteKeys(
+      stripped,
+      options.viewerRole,
+      context.fieldConfig,
     );
+    const mergedInput = mergeContactPatch(existing, patch);
+    await validateContactDynamic(tenant, mergedInput, {
+      language,
+      viewerRole: options.viewerRole,
+      fieldConfig: context.fieldConfig,
+    });
+    const contactWithId = await prepareContactRecord(mergedInput, id, context);
     assertContactAttachmentUrls(
       contactWithId,
       tenant,
@@ -215,14 +238,13 @@ export async function updateContactById(
     if (expectedUpdatedAt) {
       // The version predicate lives in the UPDATE itself, so a writer that
       // commits after our read cannot be silently overwritten (C-01).
-      const savedWithVersion = await repo.saveIfVersionMatches(tenant, next, expectedUpdatedAt);
-      if (!savedWithVersion) {
-        throw new ConflictError(
-          "This contact was changed by someone else. Reload it and try again.",
-        );
+      const savedUpdatedAt = await repo.saveIfVersionMatches(tenant, next, expectedUpdatedAt);
+      if (!savedUpdatedAt) {
+        throw new ConflictError(CONTACT_VERSION_CONFLICT);
       }
+      next.updatedAt = savedUpdatedAt;
     } else {
-      await repo.save(tenant, next);
+      next.updatedAt = await repo.save(tenant, next);
     }
     if (applyInference) {
       await applyContactRelationshipInference(tenant, next, undefined, repo, {
@@ -236,6 +258,7 @@ export async function updateContactById(
       { actorId },
     );
     await invalidateDuplicateScanCache();
+    await auditContactUpdated({ tenant, contactId: id, actorId });
     return next;
   });
   if (saved) {

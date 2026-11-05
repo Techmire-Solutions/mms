@@ -207,6 +207,30 @@ describe("Soft-Delete DTO Validation, Write Guards & Query Coercion", () => {
       expect(parsed.deletionReason).toBeUndefined();
     });
 
+    it("sessionUpdateBodySchema and sessionCreateBodySchema strip server-owned audit attribution fields", () => {
+      const payload = {
+        name: "Winter Session 2026",
+        createdAt: "2026-01-01T00:00:00.000Z",
+        updatedAt: "2026-01-02T00:00:00.000Z",
+        createdBy: "attacker",
+        updatedBy: "attacker",
+      };
+
+      const parsedUpdate = sessionUpdateBodySchema.parse(payload) as Record<string, unknown>;
+      expect(parsedUpdate.name).toBe("Winter Session 2026");
+      expect(parsedUpdate.createdAt).toBeUndefined();
+      expect(parsedUpdate.updatedAt).toBeUndefined();
+      expect(parsedUpdate.createdBy).toBeUndefined();
+      expect(parsedUpdate.updatedBy).toBeUndefined();
+
+      const parsedCreate = sessionCreateBodySchema.parse(payload) as Record<string, unknown>;
+      expect(parsedCreate.name).toBe("Winter Session 2026");
+      expect(parsedCreate.createdAt).toBeUndefined();
+      expect(parsedCreate.updatedAt).toBeUndefined();
+      expect(parsedCreate.createdBy).toBeUndefined();
+      expect(parsedCreate.updatedBy).toBeUndefined();
+    });
+
     it("enrollmentRecordInsertSchema and enrollmentRecordUpdateSchema strictly reject soft-delete fields", () => {
       const insertPayload = {
         studentId: "std-1",

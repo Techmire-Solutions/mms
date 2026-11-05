@@ -8,11 +8,11 @@ import {
   getLlmProviderModelsUrl,
   aiModelsBodySchema as modelsBodySchema,
   aiTestBodySchema as testBodySchema,
-  roleHasPermission,
   type User,
   type LlmTestResult,
 } from "@mms/shared";
 import { fetchSafeExternal, safeOptionalExternalHttpUrl } from "../../lib/outboundUrl.js";
+import { userHasPermission } from "../../lib/userPermissionContext.js";
 
 interface GeminiModelsResponse {
   models?: Array<{ name: string }>;
@@ -38,7 +38,7 @@ export default async function aiRoutes(
     if (reply.sent) return;
 
     const user = request.user as User | undefined;
-    if (!user || !roleHasPermission(user.role, "settings.global.write")) {
+    if (!user || !userHasPermission(user, "settings.global.write")) {
       return sendForbidden(reply, "Admin privilege required to access AI configuration API");
     }
   });

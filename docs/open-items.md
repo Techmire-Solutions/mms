@@ -597,3 +597,60 @@ landed with regression tests. Evidence: review report §11 (“P2 batch 2”); u
 - **B-22** Logic coverage 44 % (mocked unit run only); 54 use-cases without companion tests.
 - **B-23–B-36** Remaining hygiene/audit/jobs findings, recorded in the report with evidence and
   proposed tests.
+
+## 2026-11-04 module reviews — open items
+
+Tier 1 of the dashboard / contacts / students / faculty / tasks reviews landed with tests; the
+reports under `docs/*-module-review-2026-11-04*.md` hold the evidence and the per-finding status.
+
+- **S1 — RESOLVED 2026-11-04: tenant custom roles authorize server module access.** Authentication
+  attaches the tenant role catalog (cached per tenant under the `rbac` domain) to the request user in a
+  WeakMap; `userHasPermission` is the single evaluation used by the module gate, collection/object
+  helpers, setup and route guards, and queued-job permission checks. Role edits invalidate the whole
+  RBAC domain, process-local permission caches were removed, and system-role ids can no longer be
+  shadowed by a stored custom role. Covered by `customRoleAuthorization.integration.test.ts`,
+  `customRoleModuleAccess.test.ts`, `tenantRoleCatalog.test.ts` and `rbacCustomRoleHelpers.test.ts`.
+- **Tasks (Tier 2):** M1 delegation scope (no reporting hierarchy exists — remove the dead setting or
+  grant `assign_anywhere` by decision), M2 task ownership policy, M4 assignment notification delivery.
+  M6 status transitions and M8 batched bulk operations landed 2026-11-04.
+- **Faculty dead code (2026-11-05 audit):** removed 8 zero-reference code items (backend repo helpers,
+  export type aliases, hierarchy stub; frontend aliases, unused hooks, write-only field-config cache).
+  Confirm-first candidates remain in `faculty-dead-code-audit-2026-11-05.md`: 3 files, 21 unused
+  `@mms/shared` exports (+4 self-only), 4 client-less endpoints, 22 unconsumed barrel re-exports, and the
+  backend `@ts-rest/core` dependency. No orphaned assets; 0 unused `faculty.*` i18n keys.
+- **Faculty cleanup (2026-11-05):** whole-module pass closed the archive role-sync bug (no more 403 on
+  delete / silent role rewrite), restore audit atomicity, the O(N) employee-ID backfill reads, the import
+  `fac-` id scheme and the per-row preview probe; role sync now skips non-role edits. Dead-code register
+  (3 files, 11 backend symbols, 25 shared exports, 4 client-less endpoints, 22 barrel re-exports) awaits
+  confirmation — see `faculty-module-review-2026-11-05-cleanup.md` §3. Deferred refactors: employee-ID module
+  consolidation, catalog use-case passthrough collapse, route guard helper, widget pre-aggregation, frontend
+  prop-drilling consolidation.
+- **Faculty UI/UX (2026-11-04):** leave-switch label, picker listbox semantics, exclusion copy, workload
+  pill truthfulness, drawer post-save snapshot, empty-cell contrast, reduced-motion and the designation chip
+  are closed in `faculty-ui-ux-review-2026-11-04.md`. Open programme items needing a rendered pass or a
+  product decision: default Work column set (14 columns, duplicate status/date pairs), wide-table affordance,
+  mobile tier switcher, drawer section navigation, "Filtered" KPI semantics, row density, backend workload
+  producer (M4), and a faculty Playwright axe spec.
+- **Faculty frontend (2026-11-04):** F-01…F-05 and F-m3/F-m5/F-m9 are closed by
+  `faculty-frontend-review-2026-11-04.md` (write-envelope guards incl. the OCC 409, neutral-filter
+  normalisation, tier fallback, contract-type persistence, linked-account role seeding, record-before-account
+  save order, Setup config status guards, honest assignments section). Still open: leave-drawer staleness,
+  catalog quick-create remount, supervisor roster cap, eager peer-tier imports, sessions copy, Ijazah
+  half-entry persistence, dead `FacultyFormAllSections` fallback, and the shared empty-page pagination
+  behaviour.
+- **Faculty (Tier 2):** M4 workload pill/column producer and M5 reporting-hierarchy model remain product
+  decisions. M3 workspace-local appointment day landed 2026-11-04. Round 3 (2026-11-04,
+  `faculty-module-review-2026-11-04-round3.md`) closed M1 by refusing the requested reassignment with a
+  typed 409 instead of a silent no-op — the org model itself is still absent — and closed the round-3 P1/P2s
+  (import audit trail, primary-appointment delete guard, export-audit removal, atomic audited employee-ID
+  backfill, catalog error mapping, `GET /lookups/:kind`). Open P3s from round 3: bulk specialization
+  `updated_by`, per-record bulk audit rows, employee-ID rollover on the workspace year, and session
+  revocation failure visibility.
+- **Students (Tier 2):** M1 import idempotency under retry. M4 bulk-restore audit provenance landed
+  2026-11-04.
+- **Contacts (Tier 2):** merge `notes`, post-commit audit rows, and the remaining round-5 minors
+  (contacts→students invalidation and inferred-relationship re-parent landed 2026-11-04).
+- **Dashboard (Tier 2):** D1 per-user preferences/widgets (needs a migration + the shared-vs-personal
+  product decision), plus the minors in the dashboard report.
+- **Product decisions still needed:** dashboard prefs scope, tasks delegation model, tasks task
+  ownership/visibility, and tasks notification delivery.

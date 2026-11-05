@@ -31,6 +31,12 @@ export const WorkViewModeToggle = function WorkViewModeToggle({
 }: WorkViewModeToggleProps): React.JSX.Element {
   const { t } = useTranslation();
   const reducedMotion = useReducedMotion();
+  // Every mounted toggle needs a distinct layout id: several directories (and several
+  // DataTables on one page) can render this control simultaneously, and Framer Motion
+  // treats a shared `layoutId` as one animating element — the pill would fly between
+  // unrelated toolbars.
+  const instanceId = React.useId();
+  const activePillLayoutId = `workViewModeActivePill-${instanceId}`;
 
   return (
     <div
@@ -64,7 +70,7 @@ export const WorkViewModeToggle = function WorkViewModeToggle({
           >
             {isSelected && (
               <motion.div
-                layoutId="workViewModeActivePill"
+                layoutId={reducedMotion ? undefined : activePillLayoutId}
                 className="absolute inset-0 rounded-lg bg-primary shadow-xs -z-elevated"
                 transition={
                   reducedMotion ? { duration: 0 } : { type: "spring", stiffness: 500, damping: 35 }

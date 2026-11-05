@@ -229,12 +229,8 @@ describe("students routes", () => {
     expect(created.deletedBy).toBeUndefined();
     expect(created.deletionReason).toBeUndefined();
     expect(created.contactId).toBe("c-1");
-    expect(mockRecordAudit).toHaveBeenCalledWith(
-      expect.objectContaining({
-        action: "student.create",
-        summary: expect.stringContaining("Created student"),
-      }),
-    );
+    // The authoritative create audit is appended inside the use case transaction
+    // (see auditAtomicityDb.integration.test.ts), not by the route.
     await app.close();
   });
 
@@ -305,12 +301,8 @@ describe("students routes", () => {
       payload: { contactId: "c-1", status: "active", grNumber: "GR-1" },
     });
     expect(res.statusCode).toBe(200);
-    expect(mockRecordAudit).toHaveBeenCalledWith(
-      expect.objectContaining({
-        action: "student.restore",
-        summary: expect.stringContaining("Restored student s-archived via re-registration"),
-      }),
-    );
+    // Restore-on-re-registration audits inside the use case transaction.
+    expect(mockCreateStudent).toHaveBeenCalled();
     await app.close();
   });
 
@@ -329,13 +321,7 @@ describe("students routes", () => {
     });
     expect(res.statusCode).toBe(200);
     expect(mockUpdateStudentById).toHaveBeenCalled();
-    expect(mockRecordAudit).toHaveBeenCalledWith(
-      expect.objectContaining({
-        action: "student.update",
-        entityId: "s1",
-        summary: expect.stringContaining("Updated student s1"),
-      }),
-    );
+    // The authoritative update audit is appended inside the use case transaction.
     await app.close();
   });
 
@@ -543,43 +529,20 @@ describe("students routes", () => {
     await app.close();
   });
 
-  it("POST /api/students/export-audit records export audit for read roles", async () => {
+  it("POST /api/students/export-audit is not registered (queue path owns export audit)", async () => {
     const app = await buildApp();
     const res = await app.inject({
       method: "POST",
       url: "/api/students/export-audit",
       headers: {
         host: "demo.localhost",
-        authorization: `Bearer ${teacherToken(app)}`,
+        authorization: `Bearer ${adminToken(app)}`,
         "content-type": "application/json",
       },
       payload: { count: 12, scope: "filtered" },
     });
-    expect(res.statusCode).toBe(200);
-    expect(res.json()).toEqual({ success: true });
-    expect(mockRecordAudit).toHaveBeenCalledWith(
-      expect.objectContaining({
-        action: "student.export",
-        summary: "Exported 12 student(s) (filtered)",
-      }),
-    );
-    await app.close();
-  });
-
-  it("POST /api/students/export-audit returns 403 for viewer", async () => {
-    const app = await buildApp();
-    const res = await app.inject({
-      method: "POST",
-      url: "/api/students/export-audit",
-      headers: {
-        host: "demo.localhost",
-        authorization: `Bearer ${viewerToken(app)}`,
-        "content-type": "application/json",
-      },
-      payload: { count: 1, scope: "selection" },
-    });
-    expect(res.statusCode).toBe(403);
-    expect(mockRecordAudit).not.toHaveBeenCalled();
+    // A client-supplied count must never be persisted as audit truth (contacts C-09 parity).
+    expect(res.statusCode).toBe(404);
     await app.close();
   });
 

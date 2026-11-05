@@ -1,4 +1,4 @@
-import React, { act } from "react";
+import { act } from "react";
 import { createRoot } from "react-dom/client";
 import { describe, expect, it, vi } from "vitest";
 import { parseMessagingWorkFilters } from "./useMessagingWorkFilters";
@@ -18,6 +18,7 @@ describe("parseMessagingWorkFilters", () => {
       search: "ali",
       startDate: "2026-10-01",
       endDate: "2026-10-31",
+      showArchived: false,
     });
   });
 

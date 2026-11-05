@@ -4,7 +4,9 @@ import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import { DetailSectionTitle } from "@/components/app/DetailSectionTitle";
+import { Button } from "@/components/ui/button";
 import { useTranslation } from "@/hooks/useTranslation";
+import type { FacultyAssignmentEntity } from "@mms/shared";
 import { useFacultyAssignments } from "../hooks/useFacultyAssignments";
 
 export interface FacultyDetailAssignmentsSectionProps {
@@ -23,7 +25,7 @@ export function FacultyDetailAssignmentsSection({
   primaryDepartment,
 }: FacultyDetailAssignmentsSectionProps): React.JSX.Element | null {
   const { t } = useTranslation();
-  const { data: assignments = [], isLoading } = useFacultyAssignments(facultyId);
+  const { data: assignments, isLoading, isError, refetch } = useFacultyAssignments(facultyId);
 
   const title = t("faculty.tabs.designations");
 
@@ -36,14 +38,30 @@ export function FacultyDetailAssignmentsSection({
     );
   }
 
-  // Display assignments from DB, or fallback to the primary designation/department if none returned
-  const displayItems =
-    assignments.length > 0
-      ? assignments
+  if (isError) {
+    return (
+      <div className="space-y-2.5">
+        <DetailSectionTitle>{title}</DetailSectionTitle>
+        <p className="text-sm text-muted-foreground">{t("faculty.errors.loadAssignments")}</p>
+        <Button type="button" variant="outline" size="sm" onClick={() => void refetch()}>
+          {t("common.retry")}
+        </Button>
+      </div>
+    );
+  }
+
+  type DisplayItem = FacultyAssignmentEntity & { derived?: boolean };
+
+  // The history comes from the assignments API. Only when that request succeeded
+  // and returned nothing do we show the faculty row's primary designation/
+  // department — clearly marked as derived from the profile, not an appointment.
+  const displayItems: DisplayItem[] =
+    (assignments ?? []).length > 0
+      ? (assignments ?? [])
       : primaryDesignation || primaryDepartment
         ? [
             {
-              id: "primary-fallback",
+              id: "primary-derived",
               facultyId,
               departmentId: "",
               departmentName: primaryDepartment ?? undefined,
@@ -53,6 +71,7 @@ export function FacultyDetailAssignmentsSection({
               status: "active" as const,
               startDate: "",
               endDate: null,
+              derived: true,
             },
           ]
         : [];
@@ -90,14 +109,16 @@ export function FacultyDetailAssignmentsSection({
                       {t("faculty.assignments.primaryBadge")}
                     </Badge>
                   ) : null}
-                  <Badge
-                    as="span"
-                    size="sm"
-                    tone={isActive ? "success" : "muted"}
-                    className="px-2 py-0.5 rounded-full text-2xs font-bold uppercase tracking-wider"
-                  >
-                    {isActive ? t("faculty.status.active") : t("faculty.status.inactive")}
-                  </Badge>
+                  {item.derived ? null : (
+                    <Badge
+                      as="span"
+                      size="sm"
+                      tone={isActive ? "success" : "muted"}
+                      className="px-2 py-0.5 rounded-full text-2xs font-bold uppercase tracking-wider"
+                    >
+                      {isActive ? t("faculty.status.active") : t("faculty.status.inactive")}
+                    </Badge>
+                  )}
                 </div>
               </div>
 
@@ -106,6 +127,12 @@ export function FacultyDetailAssignmentsSection({
                   <Briefcase className="w-3.5 h-3.5 text-muted-foreground shrink-0" aria-hidden />
                   <span className="truncate">{item.departmentName}</span>
                 </div>
+              ) : null}
+
+              {item.derived ? (
+                <p className="text-2xs text-muted-foreground">
+                  {t("faculty.assignments.derivedFromProfile")}
+                </p>
               ) : null}
 
               {item.startDate ? (

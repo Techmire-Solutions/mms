@@ -16,6 +16,22 @@ import { studentStatusLabel } from "@/lib/students/studentStatusUi";
 import { useTranslation } from "@/hooks/useTranslation";
 import type { StudentsListContentSortField } from "@/tenant/features/students/lib/studentsListTypes";
 
+/**
+ * Maps the sort radio value onto the directory sort field.
+ * `"none"` clears the sort (`null`) instead of silently switching to name ordering.
+ */
+export function resolveStudentsSortSelection(value: string): StudentsListContentSortField | null {
+  return value === "none" ? null : (value as StudentsListContentSortField);
+}
+
+/**
+ * Radio value for the gender group: "no filter" is stored as `""` but the menu's first
+ * option is the `all` sentinel, so the default must render as selected (M1).
+ */
+export function resolveStudentsGenderSelection(gender: string): string {
+  return gender || "all";
+}
+
 export interface StudentsFiltersMenuButtonProps {
   studentFilterStatus: string[];
   studentFilterGender: string;
@@ -30,7 +46,7 @@ export interface StudentsFiltersMenuButtonProps {
   sortOptions: Array<{ field: StudentsListContentSortField; label: string }>;
   onToggleStatus: (status: string) => void;
   onGenderChange: (value: string) => void;
-  onSortChange: (field: StudentsListContentSortField) => void;
+  onSortChange: (field: StudentsListContentSortField | null) => void;
   onClearFilters: () => void;
 }
 
@@ -93,7 +109,7 @@ export function StudentsFiltersMenuButton({
           <ModuleFilterDivider />
           <ModuleFilterRadioGroup
             label={t("students.gender")}
-            value={studentFilterGender}
+            value={resolveStudentsGenderSelection(studentFilterGender)}
             options={[
               { value: "all", label: t("students.allGenders") },
               ...genderFilters.map((gender) => ({
@@ -121,11 +137,7 @@ export function StudentsFiltersMenuButton({
               })),
             ]}
             onValueChange={(val: string) => {
-              if (val === "none") {
-                onSortChange("name");
-              } else {
-                onSortChange(val as StudentsListContentSortField);
-              }
+              onSortChange(resolveStudentsSortSelection(val));
             }}
           />
         </>

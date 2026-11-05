@@ -15,6 +15,9 @@ export interface RecipientPickerSlotProps {
   disabled?: boolean;
   onAdd: (recipient: StandardMessagingRecipient) => void;
   onRemove: (id: string | number) => void;
+  /** Batch variants: select-all must not fire one toast per recipient. */
+  onAddMany: (recipients: StandardMessagingRecipient[]) => void;
+  onRemoveMany: (ids: (string | number)[]) => void;
 }
 
 const MIN_RECIPIENTS_FOR_SEARCH = 3;
@@ -37,7 +40,11 @@ export interface MessageComposerRecipientsProps {
   onSendOne: (recipient: ValidatedMessagingRecipient, message: string) => void;
   onAdd: (recipient: StandardMessagingRecipient) => void;
   onRemove: (id: string | number) => void;
+  onAddMany?: (recipients: StandardMessagingRecipient[]) => void;
+  onRemoveMany?: (ids: (string | number)[]) => void;
   isPickStep: boolean;
+  /** Server gateway vs device app — drives the per-recipient send copy. */
+  isServerGateway?: boolean;
   renderRecipientPicker?: (props: RecipientPickerSlotProps) => React.ReactNode;
 }
 
@@ -59,7 +66,10 @@ export function MessageComposerRecipients({
   onSendOne,
   onAdd,
   onRemove,
+  onAddMany,
+  onRemoveMany,
   isPickStep,
+  isServerGateway = false,
   renderRecipientPicker,
 }: MessageComposerRecipientsProps): React.JSX.Element {
   const { t } = useTranslation();
@@ -123,6 +133,8 @@ export function MessageComposerRecipients({
               disabled,
               onAdd,
               onRemove,
+              onAddMany: onAddMany ?? ((list) => list.forEach(onAdd)),
+              onRemoveMany: onRemoveMany ?? ((ids) => ids.forEach(onRemove)),
             })
           : null}
 
@@ -144,6 +156,7 @@ export function MessageComposerRecipients({
               message={message}
               isEmail={isEmail}
               isSms={isSms}
+              isServerGateway={isServerGateway}
               disabled={disabled}
               onPreviewIndexChange={onPreviewIndexChange}
               onSendOne={onSendOne}

@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { isOverlayOpen } from "@/lib/ui/keyboardGuards";
 import type { Message } from "@mms/shared";
 
 /** Class used to locate the keyboard-focused row/card for scroll-into-view. */
@@ -45,7 +46,7 @@ export function useMessagingWorkTierKeyboardNav({
         return;
       }
       // Ignore navigation while a dialog/modal (composer, confirms) owns the keyboard.
-      if (document.querySelector("[role='dialog'],[data-modal-open='true']")) return;
+      if (isOverlayOpen()) return;
 
       if (logs.length === 0) return;
 

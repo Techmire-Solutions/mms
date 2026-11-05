@@ -2,6 +2,8 @@ import { and, eq, inArray, isNull, sql } from "drizzle-orm";
 import type { EnrollmentCompletionStatus } from "@mms/shared";
 import { enrollments } from "../schema.js";
 import { withTenant, withTenantRead } from "../tenant-context.js";
+import { getRequestUserId } from "../../lib/tenantContext.js";
+import { recordModernAuditEvent } from "../../services/auditTrailService.js";
 import { loadCountableAttendanceSql } from "./attendanceCountableSql.js";
 import { isPresentOrLateSql } from "./attendanceReportOverview.js";
 
@@ -86,14 +88,16 @@ export async function loadSessionCompletionFacts(
 export async function saveCompletionOutcomes(
   tenant: string,
   outcomes: readonly { enrollmentId: string; status: EnrollmentCompletionStatus }[],
+  sessionId?: string,
 ): Promise<void> {
   if (outcomes.length === 0) return;
   const subdomain = tenant.trim().toLowerCase();
   await withTenant(subdomain, async (tx) => {
+    let changed = 0;
     for (const status of ["completed", "not_completed"] as const) {
       const ids = outcomes.filter((row) => row.status === status).map((row) => row.enrollmentId);
       if (ids.length === 0) continue;
-      await tx
+      const updated = await tx
         .update(enrollments)
         .set({
           completionStatus: status,
@@ -107,7 +111,24 @@ export async function saveCompletionOutcomes(
             inArray(enrollments.id, ids),
             isNull(enrollments.certificateIssuedAt),
           ),
-        );
+        )
+        .returning({ id: enrollments.id });
+      changed += updated.length;
+    }
+    if (sessionId) {
+      await recordModernAuditEvent(tx, {
+        workspaceSubdomain: subdomain,
+        tableName: "sessions",
+        recordId: sessionId,
+        actionType: "UPDATE",
+        realUserId: getRequestUserId() ?? undefined,
+        newState: {
+          operation: "completion_evaluated",
+          completed: outcomes.filter((row) => row.status === "completed").length,
+          notCompleted: outcomes.filter((row) => row.status === "not_completed").length,
+          changed,
+        },
+      });
     }
   });
 }
@@ -133,6 +154,19 @@ export async function markCertificatesIssued(
       .set({ certificateIssuedAt: new Date(), updatedAt: new Date() })
       .where(and(...filters))
       .returning({ id: enrollments.id });
+    if (rows.length > 0) {
+      await recordModernAuditEvent(tx, {
+        workspaceSubdomain: subdomain,
+        tableName: "sessions",
+        recordId: sessionId,
+        actionType: "UPDATE",
+        realUserId: getRequestUserId() ?? undefined,
+        newState: {
+          operation: "certificates_issued",
+          enrollmentIds: rows.map((row) => row.id),
+        },
+      });
+    }
     return rows.map((row) => row.id);
   });
 }

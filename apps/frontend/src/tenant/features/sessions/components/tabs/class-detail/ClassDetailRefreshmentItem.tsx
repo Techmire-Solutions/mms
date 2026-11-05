@@ -2,6 +2,7 @@ import React from "react";
 import { Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { DatePicker } from "@/components/app/DatePicker";
 import { useTranslation } from "@/hooks/useTranslation";
 import type { SessionClassRefreshment } from "@/lib/data/sessionsData";
 
@@ -23,12 +24,11 @@ export function ClassDetailRefreshmentItem({
 
   return (
     <div className="flex items-center gap-2 flex-wrap sm:flex-nowrap">
-      <Input
+      <DatePicker
         id={`refreshment-date-${r.id}`}
         name={`refreshment-date-${r.id}`}
-        type="date"
         value={r.date.slice(0, 10)}
-        onChange={(e) => onUpdate(r.id, { date: e.target.value })}
+        onChange={(value) => onUpdate(r.id, { date: value })}
         aria-label={t("sessions.tabarruk.form.date")}
         className="w-32 text-xs"
       />

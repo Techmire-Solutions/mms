@@ -14,6 +14,24 @@ export class SubordinateReassignmentError extends ConflictError {
   }
 }
 
+/**
+ * Refuses a delete that cannot honour the requested reassignment.
+ *
+ * The organization-position model was removed, so `reassignSubordinates` is a
+ * no-op: accepting a target used to archive the supervisor, report 200 and leave
+ * every subordinate pointing at a deleted chain. Until the model returns, the
+ * delete is refused with an actionable 409 instead of a silent success.
+ */
+export class SubordinateReassignmentUnavailableError extends ConflictError {
+  constructor(
+    count: number,
+    message = `Cannot delete faculty member with ${count} active subordinate(s): automatic reassignment is unavailable. Reassign them manually before deletion.`,
+  ) {
+    super(message);
+    this.name = "SubordinateReassignmentUnavailableError";
+  }
+}
+
 export async function guardSubordinatesOnDelete(
   tenant: string,
   id: string,
@@ -34,12 +52,11 @@ export async function guardSubordinatesOnDelete(
         "Target supervisor for reassignment does not exist or has been deleted",
       );
     }
-    await repo.reassignSubordinates(tenant, id, targetId);
-  } else {
-    throw new SubordinateReassignmentError(
-      `Cannot delete faculty member with ${subordinateCount} active subordinate(s). Please reassign subordinates before deletion.`,
-    );
+    throw new SubordinateReassignmentUnavailableError(subordinateCount);
   }
+  throw new SubordinateReassignmentError(
+    `Cannot delete faculty member with ${subordinateCount} active subordinate(s). Please reassign subordinates before deletion.`,
+  );
 }
 
 /** Bulk delete: ensure no active subordinates remain outside the deleted set. */

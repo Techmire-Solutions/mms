@@ -1,9 +1,10 @@
 import type { FastifyInstance } from "fastify";
 import type { ZodTypeAny } from "zod";
 import type { Permission, User } from "@mms/shared";
-import { roleHasPermission } from "@mms/shared";
+import {} from "@mms/shared";
 import { sendDatabaseError, sendForbidden } from "./httpErrors.js";
 import { parseRequest, replyValidationError } from "./zodRequest.js";
+import { userHasPermission } from ".//userPermissionContext.js";
 
 export type RegisterModuleLookupRoutesOptions<TKind extends string = string, TItems = unknown> = {
   canRead: (user: User) => boolean;
@@ -29,7 +30,7 @@ export type RegisterModuleLookupRoutesOptions<TKind extends string = string, TIt
 };
 
 /**
- * Register GET `/lookups` + PUT `/lookups/:kind` for module Setup.
+ * Register GET `/lookups`, GET `/lookups/:kind` and PUT `/lookups/:kind` for module Setup.
  */
 export function registerModuleLookupRoutes<TKind extends string = string, TItems = unknown>(
   fastify: FastifyInstance,
@@ -46,9 +47,35 @@ export function registerModuleLookupRoutes<TKind extends string = string, TItems
     }
   });
 
+  // The module contracts declare GET `/lookups/:kind` (the per-kind read the typed
+  // client uses); without it the declared endpoint 404s.
+  fastify.get("/lookups/:kind", async (request, reply) => {
+    const user = request.user as User;
+    if (!options.canRead(user)) return sendForbidden(reply);
+
+    const params = parseRequest(options.kindParamsSchema, request.params);
+    if (!params.ok) return replyValidationError(reply, params.message);
+    const kind = String((params.data as { kind: string }).kind);
+
+    try {
+      const lookups = await options.loadMap();
+      const map =
+        lookups && typeof lookups === "object" ? (lookups as Record<string, unknown>) : null;
+      const items = map?.[kind];
+      if (items === undefined) {
+        return reply
+          .status(404)
+          .send({ type: "not_found", message: `Unknown lookup kind "${kind}"` });
+      }
+      return reply.send({ kind, items });
+    } catch (error: unknown) {
+      return sendDatabaseError(reply, options.loadError, error);
+    }
+  });
+
   fastify.put("/lookups/:kind", async (request, reply) => {
     const user = request.user as User;
-    if (!roleHasPermission(user.role, options.setupWritePermission)) {
+    if (!userHasPermission(user, options.setupWritePermission)) {
       return sendForbidden(reply);
     }
 

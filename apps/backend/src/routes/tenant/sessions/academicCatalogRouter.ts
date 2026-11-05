@@ -3,7 +3,6 @@ import { initServer, type RouterImplementation } from "@ts-rest/fastify";
 import {
   academicCatalogContract,
   isQueryFlagTrue,
-  roleHasPermission,
   SESSIONS_MODULE_MANIFEST,
   type User,
 } from "@mms/shared";
@@ -13,6 +12,7 @@ import type { ContractRouteArgs } from "../../../lib/contractRouterTypes.js";
 import { HttpDomainError } from "../../../lib/httpErrors.js";
 import { canDeleteCollection, canReadCollection } from "../../../services/rbacService.js";
 import { academicCatalogUseCases } from "../../../sessions/use-cases/academicCatalogUseCases.js";
+import { userHasPermission } from "../../../lib/userPermissionContext.js";
 
 type Contract = typeof academicCatalogContract;
 const COLLECTION = SESSIONS_MODULE_MANIFEST.collectionKey;
@@ -27,7 +27,7 @@ function tenantOf(request: ContractRouteArgs<Contract["list"]>["request"]): stri
 }
 
 function canWriteSetup(user: User): boolean {
-  return roleHasPermission(user.role, SESSIONS_MODULE_MANIFEST.permissions.setupWrite);
+  return userHasPermission(user, SESSIONS_MODULE_MANIFEST.permissions.setupWrite);
 }
 
 function domainError(

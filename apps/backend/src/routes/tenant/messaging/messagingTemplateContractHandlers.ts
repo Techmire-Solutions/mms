@@ -5,7 +5,9 @@ import type { ContractRouteArgs, ContractRouteResponse } from "../../../lib/cont
 import { canReadMessaging, canWriteMessaging } from "../../../services/rbacService.js";
 import { withTenant } from "../../../db/tenant-context.js";
 import { getRequestTenant } from "../../../lib/tenantContext.js";
+import { logger } from "../../../lib/logger.js";
 import { messagingUseCases } from "../../../messaging/use-cases/messagingUseCases.js";
+import { recordModernAuditEvent } from "../../../services/auditTrailService.js";
 import {
   collectUnknownPersonalizationTokens,
   formatUnknownTokensMessage,
@@ -15,6 +17,13 @@ function getTenantSubdomain(request: { tenant?: { id?: string; subdomain?: strin
   const subdomain = getRequestTenant() || request.tenant?.subdomain;
   if (!subdomain) throw new Error("Tenant context required");
   return String(subdomain);
+}
+
+function logHandlerFailure(operation: string, err: unknown): void {
+  logger.error(
+    { err: err instanceof Error ? err.message : String(err), operation },
+    "messaging template handler failed",
+  );
 }
 
 export async function messagingListTemplatesHandler({
@@ -36,7 +45,8 @@ export async function messagingListTemplatesHandler({
       { readOnly: true },
     );
     return { status: 200 as const, body: { templates } };
-  } catch {
+  } catch (err) {
+    logHandlerFailure("listTemplates", err);
     return {
       status: 500 as const,
       body: { type: "database_error", message: "Failed to list templates" },
@@ -87,6 +97,7 @@ export async function messagingSaveTemplateHandler({
 
   const requestedId = parsed.data.id?.trim();
   let templateId: string;
+  let isUpdate = false;
   if (!requestedId) {
     templateId = `custom_${randomUUID()}`;
   } else if (!requestedId.startsWith("custom_")) {
@@ -100,13 +111,15 @@ export async function messagingSaveTemplateHandler({
       if (!existing) {
         return { status: 400 as const, body: { type: "not_found", message: "Template not found" } };
       }
-    } catch {
+    } catch (err) {
+      logHandlerFailure("getTemplate", err);
       return {
         status: 500 as const,
         body: { type: "database_error", message: "Failed to load message template" },
       };
     }
     templateId = requestedId;
+    isUpdate = true;
   }
 
   const template: MessageTemplate = {
@@ -119,9 +132,26 @@ export async function messagingSaveTemplateHandler({
   };
 
   try {
-    const saved = await messagingUseCases.saveMessageTemplate(tenantSubdomain, template);
+    // Setup mutations are audited (`mms-module-setup`); save + audit share one
+    // tenant transaction so a committed template can never lose its event.
+    const saved = await withTenant(tenantSubdomain, async () => {
+      const record = await messagingUseCases.saveMessageTemplate(tenantSubdomain, template);
+      await recordModernAuditEvent({
+        workspaceSubdomain: tenantSubdomain,
+        tableName: "message_templates",
+        recordId: record.id,
+        actionType: isUpdate ? "UPDATE" : "CREATE",
+        realUserId: String(user.id),
+        newState: {
+          summary: `${isUpdate ? "Updated" : "Created"} message template "${record.label}"`,
+          action: "messaging.templates.save",
+        },
+      });
+      return record;
+    });
     return { status: 200 as const, body: { template: saved } };
-  } catch {
+  } catch (err) {
+    logHandlerFailure("saveTemplate", err);
     return {
       status: 500 as const,
       body: { type: "database_error", message: "Failed to save message template" },
@@ -161,9 +191,29 @@ export async function messagingDeleteTemplateHandler({
   }
 
   try {
-    await messagingUseCases.removeMessageTemplate(tenantSubdomain, id);
+    const existing = await messagingUseCases.getMessageTemplateById(tenantSubdomain, id);
+    if (!existing) {
+      return { status: 400 as const, body: { type: "not_found", message: "Template not found" } };
+    }
+    // Templates hard-delete, so the audit row is the only record of the removal —
+    // delete and audit commit together (`mms-data-layer` §5.4).
+    await withTenant(tenantSubdomain, async () => {
+      await messagingUseCases.removeMessageTemplate(tenantSubdomain, id);
+      await recordModernAuditEvent({
+        workspaceSubdomain: tenantSubdomain,
+        tableName: "message_templates",
+        recordId: id,
+        actionType: "DELETE",
+        realUserId: String(user.id),
+        newState: {
+          summary: `Deleted message template "${existing.label}"`,
+          action: "messaging.templates.delete",
+        },
+      });
+    });
     return { status: 200 as const, body: { success: true as const } };
-  } catch {
+  } catch (err) {
+    logHandlerFailure("deleteTemplate", err);
     return {
       status: 500 as const,
       body: { type: "database_error", message: "Failed to delete message template" },

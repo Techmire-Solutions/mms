@@ -18,6 +18,7 @@ export interface MessagingWorkFilterParams {
   search: string;
   startDate: string;
   endDate: string;
+  showArchived: boolean;
 }
 
 /**
@@ -39,6 +40,7 @@ export function parseMessagingWorkFilters(
     search: searchParams.get("search") || "",
     startDate: isValidIsoDate(rawStart) ? rawStart : "",
     endDate: isValidIsoDate(rawEnd) ? rawEnd : "",
+    showArchived: searchParams.get("archived") === "1",
   };
 }
 
@@ -47,6 +49,8 @@ export interface UseMessagingWorkFiltersProps {
   setSearchParams: SetURLSearchParams;
   controlledChannel?: MessagingChannelFilter;
   controlledOnChannelChange?: (channel: MessagingChannelFilter) => void;
+  /** Archived logs are only reachable with `messaging.clearLogs`. */
+  canViewArchived?: boolean;
 }
 
 export function useMessagingWorkFilters({
@@ -54,8 +58,11 @@ export function useMessagingWorkFilters({
   setSearchParams,
   controlledChannel,
   controlledOnChannelChange,
+  canViewArchived = false,
 }: UseMessagingWorkFiltersProps) {
-  const initial = parseMessagingWorkFilters(searchParams);
+  // Parse the initial URL exactly once per mount: the parse only seeds state,
+  // so doing it every render was wasted work in the hottest directory hook.
+  const [initial] = useState(() => parseMessagingWorkFilters(searchParams));
 
   const [search, setSearch] = useState(initial.search);
   const [logsPage, setLogsPage] = useState(1);
@@ -67,6 +74,7 @@ export function useMessagingWorkFilters({
   const [status, setStatus] = useState<MessagingStatusFilter>(initial.status);
   const [startDate, setStartDate] = useState(initial.startDate);
   const [endDate, setEndDate] = useState(initial.endDate);
+  const [showArchived, setShowArchivedState] = useState(canViewArchived && initial.showArchived);
 
   const debouncedSearch = useDebounce(search, 250);
   const queryStartDate = startDate.trim() || undefined;
@@ -81,7 +89,41 @@ export function useMessagingWorkFilters({
     debouncedSearch,
     startDate,
     endDate,
+    showArchived,
   });
+
+  /**
+   * Any filter change starts a new result set, so the page must return to 1 —
+   * otherwise the directory shows an empty page for the narrowed filters.
+   */
+  const setSearchFilter = (value: string): void => {
+    setSearch(value);
+    setLogsPage(1);
+  };
+  const setChannelFilter = (value: MessagingChannelFilter): void => {
+    setChannel(value);
+    setLogsPage(1);
+  };
+  const setCategoryFilter = (value: string): void => {
+    setCategory(value);
+    setLogsPage(1);
+  };
+  const setStatusFilter = (value: MessagingStatusFilter): void => {
+    setStatus(value);
+    setLogsPage(1);
+  };
+  const setStartDateFilter = (value: string): void => {
+    setStartDate(value);
+    setLogsPage(1);
+  };
+  const setEndDateFilter = (value: string): void => {
+    setEndDate(value);
+    setLogsPage(1);
+  };
+  const setShowArchived = (value: boolean): void => {
+    setShowArchivedState(canViewArchived && value);
+    setLogsPage(1);
+  };
 
   const hasActiveFilters =
     channel !== "all" ||
@@ -89,14 +131,16 @@ export function useMessagingWorkFilters({
     status !== "all" ||
     Boolean(startDate) ||
     Boolean(endDate) ||
-    Boolean(debouncedSearch.trim());
+    Boolean(debouncedSearch.trim()) ||
+    (canViewArchived && showArchived);
 
   const activeFilterCount =
     (channel !== "all" ? 1 : 0) +
     (category !== "all" ? 1 : 0) +
     (status !== "all" ? 1 : 0) +
     (startDate ? 1 : 0) +
-    (endDate ? 1 : 0);
+    (endDate ? 1 : 0) +
+    (canViewArchived && showArchived ? 1 : 0);
 
   const clearFilters = (): void => {
     setChannel("all");
@@ -105,25 +149,29 @@ export function useMessagingWorkFilters({
     setStartDate("");
     setEndDate("");
     setSearch("");
+    setShowArchivedState(false);
     setLogsPage(1);
   };
 
   return {
     search,
-    setSearch,
+    setSearch: setSearchFilter,
     debouncedSearch,
     logsPage,
     setLogsPage,
     channel,
-    setChannel,
+    setChannel: setChannelFilter,
     category,
-    setCategory,
+    setCategory: setCategoryFilter,
     status,
-    setStatus,
+    setStatus: setStatusFilter,
     startDate,
-    setStartDate,
+    setStartDate: setStartDateFilter,
     endDate,
-    setEndDate,
+    setEndDate: setEndDateFilter,
+    showArchived: canViewArchived && showArchived,
+    setShowArchived,
+    canViewArchived,
     queryStartDate,
     queryEndDate,
     hasActiveFilters,

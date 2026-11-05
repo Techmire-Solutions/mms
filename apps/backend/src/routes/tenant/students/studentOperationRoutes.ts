@@ -2,19 +2,16 @@ import type { FastifyPluginAsync } from "fastify";
 import { withTenant } from "../../../db/tenant-context.js";
 import { getRequestTenant } from "../../../lib/tenantContext.js";
 import { canWriteCollection, canReadCollection } from "../../../services/rbacService.js";
-import {
-  STUDENTS_MODULE_MANIFEST,
-  roleHasPermission,
-  type User,
-  studentOperationsContract,
-} from "@mms/shared";
+import { STUDENTS_MODULE_MANIFEST, type User, studentOperationsContract } from "@mms/shared";
 import { studentUseCases } from "../../../students/use-cases/studentUseCases.js";
 import { initServer, type RouterImplementation } from "@ts-rest/fastify";
 import type { ContractRouteArgs, ContractRouteResponse } from "../../../lib/contractRouterTypes.js";
 import { replyValidationError } from "../../../lib/zodRequest.js";
 import { auditStudent } from "./studentRouteHelpers.js";
+import { getModuleAccessDenial } from "../../../middleware/requireTenantModule.js";
 
 import { handleContractError } from "../../../lib/contractError.js";
+import { userHasPermission } from "../../../lib/userPermissionContext.js";
 const s = initServer();
 
 /** Students operations — bulk status, bulk enroll, next GR, duplicate check, migrate GR. */
@@ -34,15 +31,17 @@ export const studentOperationRoutes: FastifyPluginAsync = async (fastify) => {
         };
       }
       try {
+        // Per-student subject-scoped audit rows are written by the transition pipeline itself;
+        // a collection summary here would duplicate them under the bogus "students" subject.
         const result = await withTenant(
           String(request.tenant?.id),
-          () => studentUseCases.bulkUpdateStudentStatus(body.ids.map(String), body.status),
+          () =>
+            studentUseCases.bulkUpdateStudentStatus(
+              body.ids.map(String),
+              body.status,
+              request.user as User,
+            ),
           { readOnly: false },
-        );
-        await auditStudent(
-          user,
-          "student.bulk_status",
-          `Updated status to ${body.status} for ${result.succeeded} student(s); ${result.failed} failed`,
         );
         return { status: 200 as const, body: { success: true, ...result } };
       } catch (err: unknown) {
@@ -53,10 +52,10 @@ export const studentOperationRoutes: FastifyPluginAsync = async (fastify) => {
         ) {
           return { status: 400 as const, body: { type: "validation_error", message: err.message } };
         }
-        return {
-          status: 500 as const,
+        return handleContractError(request, err, {
+          status: 500,
           body: { type: "database_error", message: "Failed to bulk update student status" },
-        };
+        });
       }
     },
 
@@ -71,6 +70,20 @@ export const studentOperationRoutes: FastifyPluginAsync = async (fastify) => {
         return {
           status: 403 as const,
           body: { type: "forbidden", message: "Insufficient permissions" },
+        };
+      }
+      // Enrollment rows belong to the enrollments module: writing them from the
+      // students surface still requires `enrollments.write` and an enabled
+      // enrollments module for the workspace (module access gates are enforced
+      // server-side, not by frontend visibility).
+      const enrollmentDenial = await getModuleAccessDenial(request, "enrollment", "write");
+      if (enrollmentDenial) {
+        return { status: 403 as const, body: enrollmentDenial };
+      }
+      if (!canWriteCollection(user, "enrollments")) {
+        return {
+          status: 403 as const,
+          body: { type: "forbidden", message: "Enrollment write permission required" },
         };
       }
       try {
@@ -180,7 +193,7 @@ export const studentOperationRoutes: FastifyPluginAsync = async (fastify) => {
       ContractRouteResponse<(typeof studentOperationsContract)["migrateGrNumbers"]>
     > => {
       const user = request.user as User;
-      if (!roleHasPermission(user.role, STUDENTS_MODULE_MANIFEST.permissions.setupWrite)) {
+      if (!userHasPermission(user, STUDENTS_MODULE_MANIFEST.permissions.setupWrite)) {
         return {
           status: 403 as const,
           body: { type: "forbidden", message: "Insufficient permissions" },
@@ -194,11 +207,11 @@ export const studentOperationRoutes: FastifyPluginAsync = async (fastify) => {
           { readOnly: false },
         );
         return { status: 200 as const, body: { success: true, ...result } };
-      } catch {
-        return {
-          status: 500 as const,
+      } catch (error: unknown) {
+        return handleContractError(request, error, {
+          status: 500,
           body: { type: "database_error", message: "Failed to migrate GR numbers" },
-        };
+        });
       }
     },
   } as unknown as RouterImplementation<typeof studentOperationsContract>);

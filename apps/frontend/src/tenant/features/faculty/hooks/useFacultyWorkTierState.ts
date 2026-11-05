@@ -5,6 +5,7 @@ import {
   type FacultySortField,
   type FacultyQuickFilter,
 } from "@mms/shared";
+import { contractBody, isContractQueryError } from "@/lib/contractQuery";
 import type { TranslationFunction } from "@/lib/contexts/TranslationContext";
 import { useFacultyContractList } from "@/tenant/features/faculty/hooks/useFacultyTsrQueries";
 import { buildFacultyDirectoryQuery } from "@/tenant/features/faculty/hooks/facultyQueryShared";
@@ -12,7 +13,6 @@ import type { useFacultyColumnLayout } from "@/tenant/features/faculty/hooks/use
 import {
   resolveFacultyExportColumns,
   useFacultyExportActions,
-  type UseFacultyExportActionsOptions,
 } from "@/tenant/features/faculty/hooks/useFacultyExportActions";
 
 export interface UseFacultyWorkTierStateInput {
@@ -33,7 +33,6 @@ export interface UseFacultyWorkTierStateInput {
   canExport: boolean;
   hasActiveFilters: boolean;
   selectedIds: string[];
-  logExportAudit: UseFacultyExportActionsOptions["logExportAudit"];
   t: TranslationFunction;
 }
 
@@ -55,7 +54,6 @@ export function useFacultyWorkTierState({
   canExport,
   hasActiveFilters,
   selectedIds,
-  logExportAudit,
   t,
 }: UseFacultyWorkTierStateInput) {
   const exportColumns = useMemo(
@@ -79,7 +77,6 @@ export function useFacultyWorkTierState({
     viewingDeleted: showDeleted,
     hasActiveFilters,
     selectedIds,
-    logExportAudit,
   });
 
   const useServerWork = effectiveTab === "faculties";
@@ -106,9 +103,10 @@ export function useFacultyWorkTierState({
 
   const workFaculty = (workPageQuery.data?.body?.faculty ?? []) as FacultyMember[];
   const shownCount = workPageQuery.data?.body?.total ?? workFaculty.length;
-  const isWorkError =
-    workPageQuery.isError || (workPageQuery.data != null && workPageQuery.data.status !== 200);
-  const workPageData = workPageQuery.data?.status === 200 ? workPageQuery.data.body : undefined;
+  const isWorkError = isContractQueryError(workPageQuery);
+  const workPageData = contractBody<NonNullable<typeof workPageQuery.data>["body"]>(
+    workPageQuery.data ?? undefined,
+  );
 
   return {
     useServerWork,

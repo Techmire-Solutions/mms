@@ -1,5 +1,6 @@
 import type { Faculty } from "@mms/shared";
 import type { FacultyPageOverlaysProps } from "@/tenant/features/faculty/hooks/facultyPageOverlaysTypes";
+import { patchViewFaculty } from "@/tenant/features/faculty/lib/facultyOverlayPatch";
 import type { useFacultyPageFormState } from "@/tenant/features/faculty/hooks/useFacultyPageFormState";
 import type { useFacultyPageOverlayState } from "@/tenant/features/faculty/hooks/useFacultyPageOverlayState";
 import type { useFacultyPageActions } from "@/tenant/features/faculty/hooks/useFacultyPageActions";
@@ -50,6 +51,8 @@ export function useFacultyPageOverlayProps({
     },
     viewFaculty: currentView,
     onCloseView: () => overlays.setViewFaculty(null),
+    onFacultyPatched: (facultyId, patch) =>
+      overlays.setViewFaculty((prev) => patchViewFaculty(prev, facultyId, patch)),
     onFilterSubordinates: (facultyId: string) => {
       overlays.setViewFaculty(null);
       workActions.onReportingFacultyChange?.(facultyId);

@@ -1,7 +1,8 @@
 import { useState, useCallback } from "react";
 import type { StandardMessagingRecipient as MessagingRecipient } from "@mms/shared";
-import { validateRecipientAddress } from "@mms/shared";
-import { usePermissions } from "@/tenant/hooks/usePermissions";
+import { MESSAGING_MODULE_MANIFEST, validateRecipientAddress } from "@mms/shared";
+import { dedupeRecipientsById } from "@/components/messageComposer/messageComposerRecipientsUtils";
+import { useModulePermissions } from "@/tenant/hooks/usePermissions";
 import { notify } from "@/lib/notify";
 import { useTranslation } from "@/hooks/useTranslation";
 
@@ -39,9 +40,8 @@ export interface UseMessageComposerStateResult {
  */
 export function useMessageComposerState(): UseMessageComposerStateResult {
   const [messagingTarget, setMessagingTarget] = useState<MessagingTarget | null>(null);
-  const { can } = usePermissions();
+  const { canWrite: canWriteMessaging } = useModulePermissions(MESSAGING_MODULE_MANIFEST);
   const { t } = useTranslation();
-  const canWriteMessaging = can("messaging.write");
 
   const openComposer = useCallback(
     (channel: Channel, recipients: MessagingRecipient[] = [], options?: OpenComposerOptions) => {
@@ -51,7 +51,8 @@ export function useMessageComposerState(): UseMessageComposerStateResult {
       }
 
       if (recipients.length > 0) {
-        const eligible = recipients.filter(
+        const deduped = dedupeRecipientsById(recipients);
+        const eligible = deduped.filter(
           (recipient) => validateRecipientAddress(recipient, channel).isValid,
         );
 
@@ -60,7 +61,7 @@ export function useMessageComposerState(): UseMessageComposerStateResult {
           return;
         }
 
-        const skipped = recipients.length - eligible.length;
+        const skipped = deduped.length - eligible.length;
         if (skipped > 0) {
           notify.warning(t("messaging.someRecipientsSkipped"));
         }

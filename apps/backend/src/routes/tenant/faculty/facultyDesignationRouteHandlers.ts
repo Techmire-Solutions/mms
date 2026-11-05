@@ -16,8 +16,8 @@ import {
   canArchiveFacultySetup,
   canManageFacultySetup,
   canReadFacultyCatalog,
-  isCatalogConflict,
 } from "./facultyCatalogRouteAuth.js";
+import { catalogErrorResponse } from "./facultyCatalogErrorResponse.js";
 
 export async function handleListDesignations({
   query,
@@ -37,7 +37,8 @@ export async function handleListDesignations({
   try {
     const designations = await listFacultyDesignations(auth.tenantId, { includeDeleted });
     return { status: 200 as const, body: { designations } };
-  } catch {
+  } catch (error: unknown) {
+    request.log.error({ err: error }, "Failed to list Faculty designations");
     return {
       status: 500 as const,
       body: { type: "server_error", message: "Failed to list Faculty designations" },
@@ -67,10 +68,12 @@ export async function handleRestoreDesignation({
     await broadcastCollection("faculty");
     return { status: 200 as const, body: { designation } };
   } catch (error) {
-    const message = error instanceof Error ? error.message : "Could not restore designation";
-    if (isCatalogConflict(error))
-      return { status: 409 as const, body: { type: "conflict", message } };
-    return { status: 400 as const, body: { type: "validation_error", message } };
+    return catalogErrorResponse(
+      error,
+      request,
+      "Failed to restore Faculty designation",
+      "Could not restore designation",
+    );
   }
 }
 
@@ -101,10 +104,12 @@ export async function handleSaveDesignation({
     await broadcastCollection("faculty");
     return { status: 200 as const, body: { designation } };
   } catch (error) {
-    const message = error instanceof Error ? error.message : "Invalid designation";
-    if (isCatalogConflict(error))
-      return { status: 409 as const, body: { type: "conflict", message } };
-    return { status: 400 as const, body: { type: "validation_error", message } };
+    return catalogErrorResponse(
+      error,
+      request,
+      "Failed to save Faculty designation",
+      "Invalid designation",
+    );
   }
 }
 
@@ -119,7 +124,8 @@ export async function handleListDesignationHistory({
   try {
     const assignments = await listFacultyDesignationAssignments(auth.tenantId, facultyId);
     return { status: 200 as const, body: { assignments } };
-  } catch {
+  } catch (error: unknown) {
+    request.log.error({ err: error }, "Failed to load designation history");
     return {
       status: 500 as const,
       body: { type: "server_error", message: "Failed to load designation history" },
@@ -147,11 +153,11 @@ export async function handleDeleteDesignation({
     await broadcastCollection("faculty");
     return { status: 200 as const, body: { success: true as const } };
   } catch (error: unknown) {
-    const message = error instanceof Error ? error.message : "Failed to delete designation";
-    if (isCatalogConflict(error))
-      return { status: 409 as const, body: { type: "conflict", message } };
-    if (message.includes("not found"))
-      return { status: 404 as const, body: { type: "not_found", message } };
-    return { status: 400 as const, body: { type: "validation_error", message } };
+    return catalogErrorResponse(
+      error,
+      request,
+      "Failed to delete Faculty designation",
+      "Failed to delete designation",
+    );
   }
 }

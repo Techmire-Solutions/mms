@@ -75,6 +75,15 @@ function GatewayChannelCard({
               {item.sender || "—"}
             </span>
           </div>
+          {item.lastError ? (
+            <div
+              className="truncate font-medium text-destructive"
+              title={item.lastError}
+              data-testid={`messaging-gateway-last-error-${item.provider ?? name}`}
+            >
+              {t("messaging.gateways.lastError")}: {item.lastError}
+            </div>
+          ) : null}
         </div>
       </div>
 
@@ -82,7 +91,7 @@ function GatewayChannelCard({
         asChild
         variant="ghost"
         size="sm"
-        className="w-full h-7 text-xs text-muted-foreground hover:text-foreground justify-between px-2 cursor-pointer"
+        className="w-full min-h-11 text-xs text-muted-foreground hover:text-foreground justify-between px-2 cursor-pointer"
       >
         {/* SMS / WhatsApp / Email panels live under Settings → Global. */}
         <Link to={settingsTabPath("global")}>

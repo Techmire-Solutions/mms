@@ -6,6 +6,7 @@ import {
   getComposerSaveLabel,
   getComposerSubtitle,
   getComposerTitle,
+  getRecipientSendLabel,
 } from "./messageComposerText";
 
 describe("messageComposerText", () => {
@@ -69,7 +70,7 @@ describe("messageComposerText", () => {
         localRecipients: mockRecipients,
         eligibleCount: 2,
       }),
-    ).toBe("2 messaging.of 2 messaging.contactsHaveWhatsapp");
+    ).toBe('messaging.composerSummaryWhatsapp:{"eligible":"2","total":"2"}');
 
     expect(
       getComposerSubtitle({
@@ -82,10 +83,15 @@ describe("messageComposerText", () => {
     ).toBeUndefined();
   });
 
-  it("returns note based on channel", () => {
-    expect(getComposerNote(dummyT, "email")).toBe("messaging.bulkEmailDesc");
-    expect(getComposerNote(dummyT, "sms")).toBe("messaging.smsManualSendNote");
-    expect(getComposerNote(dummyT, "whatsapp")).toBe("messaging.whatsappBulkManualNote");
+  it("returns the note for the mode that will actually dispatch", () => {
+    expect(getComposerNote(dummyT, "email", false)).toBe("messaging.bulkEmailDesc");
+    expect(getComposerNote(dummyT, "sms", false)).toBe("messaging.smsManualSendNote");
+    expect(getComposerNote(dummyT, "whatsapp", false)).toBe("messaging.whatsappBulkManualNote");
+
+    // Server gateway is the default mode: the copy must not promise a device app.
+    expect(getComposerNote(dummyT, "email", true)).toBe("messaging.gatewayNoteEmail");
+    expect(getComposerNote(dummyT, "sms", true)).toBe("messaging.gatewayNoteSms");
+    expect(getComposerNote(dummyT, "whatsapp", true)).toBe("messaging.gatewayNoteWhatsapp");
   });
 
   it("generates saveLabel appropriately", () => {
@@ -98,6 +104,7 @@ describe("messageComposerText", () => {
         eligibleCount: 2,
         pendingAudit: false,
         opening: false,
+        useServerGateway: true,
       }),
     ).toBe("common.next");
 
@@ -110,6 +117,7 @@ describe("messageComposerText", () => {
         eligibleCount: 1,
         pendingAudit: false,
         opening: false,
+        useServerGateway: false,
       }),
     ).toBe("messaging.openSmsApp");
 
@@ -122,7 +130,73 @@ describe("messageComposerText", () => {
         eligibleCount: 2,
         pendingAudit: false,
         opening: false,
+        useServerGateway: false,
       }),
     ).toBe("messaging.openAllWhatsapp (2)");
+  });
+
+  it("labels the primary action for the server gateway", () => {
+    expect(
+      getComposerSaveLabel({
+        t: dummyT,
+        step: "compose",
+        channel: "sms",
+        localRecipients: [mockRecipients[0]],
+        eligibleCount: 1,
+        pendingAudit: false,
+        opening: false,
+        useServerGateway: true,
+      }),
+    ).toBe("messaging.gatewaySendSms");
+
+    expect(
+      getComposerSaveLabel({
+        t: dummyT,
+        step: "compose",
+        channel: "whatsapp",
+        localRecipients: mockRecipients,
+        eligibleCount: 2,
+        pendingAudit: false,
+        opening: false,
+        useServerGateway: true,
+      }),
+    ).toBe('messaging.gatewaySendAll:{"count":"2"}');
+
+    expect(
+      getComposerSaveLabel({
+        t: dummyT,
+        step: "compose",
+        channel: "email",
+        localRecipients: [mockRecipients[0]],
+        eligibleCount: 1,
+        pendingAudit: false,
+        opening: false,
+        useServerGateway: true,
+      }),
+    ).toBe("messaging.gatewaySendEmail");
+  });
+
+  it("labels per-recipient send actions for the active mode", () => {
+    expect(
+      getRecipientSendLabel({ t: dummyT, channel: "sms", isServerGateway: true, isValid: true }),
+    ).toBe("messaging.gatewaySendSms");
+    expect(
+      getRecipientSendLabel({ t: dummyT, channel: "email", isServerGateway: true, isValid: true }),
+    ).toBe("messaging.gatewaySendEmail");
+    expect(
+      getRecipientSendLabel({
+        t: dummyT,
+        channel: "whatsapp",
+        isServerGateway: true,
+        isValid: true,
+      }),
+    ).toBe("messaging.gatewaySendWhatsapp");
+
+    expect(
+      getRecipientSendLabel({ t: dummyT, channel: "sms", isServerGateway: false, isValid: true }),
+    ).toBe("messaging.openSmsApp");
+    expect(
+      getRecipientSendLabel({ t: dummyT, channel: "sms", isServerGateway: true, isValid: false }),
+    ).toBe("messaging.skippedStatus");
   });
 });
