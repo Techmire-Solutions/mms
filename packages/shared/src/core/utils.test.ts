@@ -1091,4 +1091,34 @@ describe("cleanContactDraft", () => {
     } as Partial<Contact>);
     expect(cleaned.custom_work).toEqual([{ title: "Teacher", notes: "" }]);
   });
+
+  it("strips blank education rows with default degree before save", () => {
+    const cleaned = cleanContactDraft({
+      education: [
+        {
+          degree: "Matric / Secondary",
+          institution: "",
+          fieldOfStudy: "",
+          year: "",
+          grade: "",
+        },
+        {
+          degree: "BSc Computer Science",
+          institution: "University of Karachi",
+          fieldOfStudy: "CS",
+          year: "2020",
+          grade: "A",
+        },
+      ],
+    });
+    expect(cleaned.education).toEqual([
+      {
+        degree: "BSc Computer Science",
+        institution: "University of Karachi",
+        fieldOfStudy: "CS",
+        year: "2020",
+        grade: "A",
+      },
+    ]);
+  });
 });

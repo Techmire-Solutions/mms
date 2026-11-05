@@ -178,9 +178,17 @@ export async function createContact(page: Page, data: ContactFormData): Promise<
     await waitForToastOverlayToClear(page, `before saving ${fullName}`);
 
     const saveResponsePromise = page.waitForResponse(
-      (res) =>
-        res.url().includes("/api/contacts") &&
-        (res.request().method() === "POST" || res.request().method() === "PUT"),
+      (res) => {
+        const url = res.url();
+        const method = res.request().method();
+        return (
+          url.includes("/api/contacts") &&
+          (method === "POST" || method === "PUT") &&
+          !url.includes("/widget-aggregates") &&
+          !url.includes("/duplicates") &&
+          !url.includes("/bulk")
+        );
+      },
       { timeout: 15_000 },
     );
 
