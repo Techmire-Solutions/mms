@@ -58,6 +58,8 @@ export function ChartOfAccountsListFilters({
       onSearchChange={setSearch}
       searchPlaceholder={t("accounting.coa.searchAccounts")}
       searchId="coa-search"
+      // No `/` handler targets this surface (the accounting shortcut owns the journals search).
+      searchShortcutHint={false}
       hasActiveFilters={hasActiveFilters}
       onClearFilters={handleClearFilters}
       clearFiltersLabel={t("accounting.clearFilters")}

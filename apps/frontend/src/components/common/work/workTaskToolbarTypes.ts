@@ -1,8 +1,4 @@
-import type React from "react";
-import type { ModuleColumnRegistryEntry } from "@mms/shared";
-import type { ModuleColumnCustomizerLabels } from "@/components/app/ModuleColumnCustomizer";
-import type { WorkDirectoryViewMode } from "@/hooks/useWorkDirectoryViewMode";
-import type { EntityDescriptor } from "@/components/common/entityRegistryTypes";
+import type { ModuleWorkToolbarProps } from "@/components/app/moduleWorkToolbarTypes";
 
 export interface WorkTaskStatusOption {
   id: string;
@@ -11,19 +7,13 @@ export interface WorkTaskStatusOption {
   badgeCls?: string;
 }
 
-export interface WorkTaskToolbarProps {
-  // Accessibility & Regions
-  regionLabel: string;
-  shownCountLabel?: string;
-
-  // Search
-  search: string;
-  onSearchChange: (val: string) => void;
-  searchPlaceholder: string;
-  searchId?: string;
-  isSearching?: boolean;
-
-  // Status Filter Pills (optional quick filters)
+/**
+ * Full Work-toolbar composition: the base contract plus the optional status-pill and
+ * date-range rows. Control shapes are inherited from `ModuleWorkToolbarProps` so the
+ * two layers cannot drift.
+ */
+export interface WorkTaskToolbarProps extends ModuleWorkToolbarProps {
+  /** Status quick-filter pills rendered below the base toolbar. */
   statusFilter?: {
     activeIds: string[];
     options: WorkTaskStatusOption[];
@@ -32,7 +22,7 @@ export interface WorkTaskToolbarProps {
     onResetAll?: () => void;
   };
 
-  // Date Range Controls (optional)
+  /** Due-date range controls rendered beside the status pills. */
   dateRange?: {
     startDate?: string;
     endDate?: string;
@@ -40,41 +30,4 @@ export interface WorkTaskToolbarProps {
     startPlaceholder?: string;
     endPlaceholder?: string;
   };
-
-  // Custom filter menu/button slot
-  filterButton?: React.ReactNode;
-  hasActiveFilters?: boolean;
-  onClearFilters?: () => void;
-  clearFiltersLabel?: string;
-  filterChips?: React.ReactNode;
-
-  // Layout & directory toggles
-  trashToggle?: {
-    canViewDeleted: boolean;
-    viewingDeleted: boolean;
-    onToggle: (v: boolean) => void;
-    activeLabel: string;
-    deletedLabel: string;
-  };
-
-  viewModeToggle?: {
-    viewMode: WorkDirectoryViewMode;
-    onViewModeChange: (m: WorkDirectoryViewMode) => void;
-  };
-
-  columnCustomizer?: {
-    registry?: ModuleColumnRegistryEntry[];
-    entityType?: string;
-    descriptor?: EntityDescriptor<unknown>;
-    onUpdate: (layout: ModuleColumnRegistryEntry[]) => void;
-    onReset?: () => void;
-    labels?: Partial<ModuleColumnCustomizerLabels>;
-    disabled?: boolean;
-    className?: string;
-  };
-
-  // Action slots
-  primaryAction?: React.ReactNode;
-  children?: React.ReactNode;
-  className?: string;
 }

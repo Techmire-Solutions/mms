@@ -106,6 +106,12 @@ describe("DataTable", () => {
     expect(container.textContent).toContain("Status");
   });
 
+  it("owns a single card surface and renders the toolbar chrome-less", async () => {
+    await renderTable();
+    const surfaces = (container.innerHTML.match(/border-foreground\/10/g) ?? []).length;
+    expect(surfaces).toBe(1);
+  });
+
   it("renders the provided empty state when there is no data", async () => {
     await renderTable({ data: [], emptyState: <p>nothing yet</p> });
     expect(container.textContent).toContain("nothing yet");

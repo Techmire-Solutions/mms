@@ -52,6 +52,8 @@ export function PlatformAdminsToolbar({
       onSearchChange={onSearchChange}
       searchPlaceholder={t("platform.searchAdminsPlaceholder")}
       searchId="platform-admins-search"
+      // The platform console wires no `/` focus shortcut.
+      searchShortcutHint={false}
       isSearching={isSearching}
       hasActiveFilters={hasActiveFilters}
       onClearFilters={onClearFilters}

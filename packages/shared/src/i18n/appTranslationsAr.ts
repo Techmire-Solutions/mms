@@ -5450,8 +5450,6 @@ export const APP_TRANSLATIONS_AR: Record<AppTranslationKey, string> = {
   "module.system.saving": "جارٍ الحفظ…",
   "module.system.stats": "{enabled} من {total} وحدات مفعّلة",
   "module.work": "العمل",
-  "module.work.aiSuggestionsAria": "اقتراحات الترشيح الذكية",
-  "module.work.aiSuggestionsDescription": "مُنشأة بالذكاء الاصطناعي",
   "module.workHint": "المهام اليومية والسجلات",
   "nav.academics": "الأكاديميات",
   "nav.accounting": "المحاسبة",

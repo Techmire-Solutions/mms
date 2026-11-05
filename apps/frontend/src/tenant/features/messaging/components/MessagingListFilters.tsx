@@ -1,8 +1,9 @@
 import React, { type JSX } from "react";
 import { formatDateToIso, type ModuleColumnRegistryEntry } from "@mms/shared";
-import { AlertTriangle, Archive } from "lucide-react";
+import { AlertTriangle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { MessagingFiltersMenuButton } from "./MessagingFiltersMenuButton";
+import { ModuleTrashToggle } from "@/components/app/ModuleTrashToggle";
 import { WorkTaskToolbar } from "@/components/common/work";
 import type { WorkDirectoryViewMode } from "@/hooks/useWorkDirectoryViewMode";
 import { useTranslation } from "@/hooks/useTranslation";
@@ -113,7 +114,7 @@ export function MessagingListFilters({
       search={search}
       onSearchChange={onSearchChange}
       searchPlaceholder={t("messaging.search.placeholder")}
-      searchId="messaging-work-search"
+      searchId={MESSAGING_WORK_SEARCH_INPUT_ID}
       hasActiveFilters={hasActiveFilters}
       onClearFilters={onClearFilters}
       clearFiltersLabel={t("common.clearFilters")}
@@ -170,7 +171,7 @@ export function MessagingListFilters({
         }
         onClick={() => onStatusChange(isFailedOnly ? "all" : "failed")}
         className={cn(
-          "gap-2 h-9",
+          "gap-2",
           isFailedOnly
             ? "bg-destructive text-destructive-foreground hover:bg-destructive/90 border-transparent shadow-sm"
             : "border-destructive/30 text-destructive hover:bg-destructive/10",
@@ -181,17 +182,12 @@ export function MessagingListFilters({
       </Button>
 
       {onShowArchivedChange ? (
-        <Button
-          variant={showArchived ? "default" : "outline"}
-          size="sm"
-          aria-pressed={showArchived}
-          aria-label={t("messaging.showArchived")}
-          onClick={() => onShowArchivedChange(!showArchived)}
-          className="gap-2 h-9"
-        >
-          <Archive className="w-4 h-4" aria-hidden="true" />
-          <span>{t("messaging.showArchived")}</span>
-        </Button>
+        <ModuleTrashToggle
+          viewingDeleted={showArchived}
+          onToggle={() => onShowArchivedChange(!showArchived)}
+          activeLabel={t("messaging.showActiveLogs")}
+          deletedLabel={t("messaging.showArchived")}
+        />
       ) : null}
     </WorkTaskToolbar>
   );

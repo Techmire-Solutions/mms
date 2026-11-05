@@ -70,6 +70,8 @@ export function PlatformWorkspaceToolbar({
       onSearchChange={onSearchChange}
       searchPlaceholder={t("common.search")}
       searchId="platform-workspaces-search"
+      // The platform console wires no `/` focus shortcut.
+      searchShortcutHint={false}
       isSearching={isSearching}
       hasActiveFilters={hasActiveFilters}
       onClearFilters={onClearFilters}

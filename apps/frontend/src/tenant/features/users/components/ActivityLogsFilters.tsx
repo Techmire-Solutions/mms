@@ -98,6 +98,8 @@ export function ActivityLogsFilters({
       onSearchChange={onSearchChange}
       searchPlaceholder={t("users.activitySearch")}
       searchId="users-activity-search"
+      // The users shortcut targets the directory search, not this log surface.
+      searchShortcutHint={false}
       hasActiveFilters={activeFilterCount > 0 || search.length > 0}
       onClearFilters={clearFilters}
       clearFiltersLabel={t("common.clearFilters")}

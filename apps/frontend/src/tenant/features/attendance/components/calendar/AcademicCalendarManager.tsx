@@ -10,7 +10,6 @@ import { Button } from "@/components/ui/button";
 import { ConfirmAlertDialog } from "@/components/app/ConfirmAlertDialog";
 import { EmptyState } from "@/components/app/EmptyState";
 import { ErrorState } from "@/components/app/ErrorState";
-import { ModuleTrashToggle } from "@/components/app/ModuleTrashToggle";
 import { CompactSegmentedControl } from "@/components/app/CompactSegmentedControl";
 import { useTranslation } from "@/hooks/useTranslation";
 import { useAttendanceConfig } from "@/hooks/useStandardModuleConfig";
@@ -158,15 +157,16 @@ export function AcademicCalendarManager({
               </div>
             ) : undefined
           }
-          toolbarExtras={
-            canDelete ? (
-              <ModuleTrashToggle
-                showDeleted={showDeleted}
-                onToggle={() => setShowDeleted((value) => !value)}
-                showDeletedLabel={t("attendance.calendar.showDeleted")}
-                showActiveLabel={t("attendance.calendar.showActive")}
-              />
-            ) : undefined
+          trashToggle={
+            canDelete
+              ? {
+                  canViewDeleted: true,
+                  viewingDeleted: showDeleted,
+                  onToggle: (viewing) => setShowDeleted(viewing),
+                  activeLabel: t("attendance.calendar.showActive"),
+                  deletedLabel: t("attendance.calendar.showDeleted"),
+                }
+              : undefined
           }
           renderRowActions={
             canWrite

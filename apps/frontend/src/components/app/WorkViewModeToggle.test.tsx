@@ -10,6 +10,24 @@ declare global {
 }
 globalThis.IS_REACT_ACT_ENVIRONMENT = true;
 
+vi.mock("framer-motion", () => ({
+  motion: {
+    div: ({
+      layoutId,
+      className,
+      children,
+    }: {
+      layoutId?: string;
+      className?: string;
+      children?: React.ReactNode;
+    }) => (
+      <div data-layout-id={layoutId} className={className}>
+        {children}
+      </div>
+    ),
+  },
+}));
+
 vi.mock("@/hooks/useTranslation", () => ({
   useTranslation: () => ({
     t: (key: AppTranslationKey) => {
@@ -85,6 +103,21 @@ describe("WorkViewModeToggle Component", () => {
       tableButton?.dispatchEvent(new MouseEvent("click", { bubbles: true }));
     });
     expect(onViewModeChange).toHaveBeenCalledWith("table");
+  });
+
+  it("gives every mounted toggle its own layout id", () => {
+    const html = renderToStaticMarkup(
+      <>
+        <WorkViewModeToggle viewMode="table" onViewModeChange={vi.fn()} />
+        <WorkViewModeToggle viewMode="cards" onViewModeChange={vi.fn()} />
+      </>,
+    );
+
+    const ids = [...html.matchAll(/data-layout-id="([^"]+)"/g)].map((match) => match[1]);
+    expect(ids).toHaveLength(2);
+    expect(ids[0]).toBeTruthy();
+    expect(ids[1]).toBeTruthy();
+    expect(ids[0]).not.toBe(ids[1]);
   });
 
   it("renders disabled state and custom className when provided", () => {

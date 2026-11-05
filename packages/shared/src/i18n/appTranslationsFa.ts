@@ -5540,8 +5540,6 @@ export const APP_TRANSLATIONS_FA: Partial<Record<AppTranslationKey, string>> = {
   "module.system.saving": "در حال ذخیره…",
   "module.system.stats": "{enabled} از {total} ماژول فعال است",
   "module.work": "کار",
-  "module.work.aiSuggestionsAria": "پیشنهادهای فیلتر هوشمند",
-  "module.work.aiSuggestionsDescription": "تولیدشده توسط هوش مصنوعی",
   "module.workHint": "کارهای روزانه و سوابق",
   "nav.academics": "آموزش",
   "nav.accounting": "حسابداری",

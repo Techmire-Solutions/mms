@@ -279,10 +279,10 @@ describe("Soft-Delete UX Architecture Integration", () => {
       act(() => {
         root.render(
           <ModuleTrashToggle
-            showDeleted={false}
+            viewingDeleted={false}
             onToggle={onToggle}
-            showActiveLabel="Show Active"
-            showDeletedLabel="Show Trash"
+            activeLabel="Show Active"
+            deletedLabel="Show Trash"
           />,
         );
       });

@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { usePersistedTabState } from "@/hooks/usePersistedTabState";
 import { useModuleShortcuts } from "@/hooks/useModuleShortcuts";
+import { EXAMINATIONS_WORK_SEARCH_INPUT_ID } from "@/tenant/features/examinations/components/ExaminationsListFilters";
 import { useTranslation } from "@/hooks/useTranslation";
 import { useDirectoryTrashState } from "@/hooks/useDirectoryTrashState";
 import { useFilteredModuleTierTabs } from "@/tenant/hooks/useModuleTierTabs";
@@ -103,7 +104,7 @@ export function useExaminationsPageController() {
     : "exams";
 
   useModuleShortcuts({
-    searchInputId: "examinations-search-input",
+    searchInputId: EXAMINATIONS_WORK_SEARCH_INPUT_ID,
     selectedCount: 0,
     hasActiveFilters: false,
     clearFilters: () => {},

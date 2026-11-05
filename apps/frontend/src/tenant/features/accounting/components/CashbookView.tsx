@@ -129,6 +129,7 @@ export function CashbookView({
         onSearchChange={setSearch}
         searchPlaceholder={t("reports.widgets.searchRecords")}
         searchId="cashbook-search"
+        searchShortcutHint={false}
         hasActiveFilters={search.length > 0 || filterType !== "all"}
         onClearFilters={() => {
           setSearch("");

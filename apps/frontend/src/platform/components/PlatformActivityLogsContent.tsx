@@ -56,6 +56,8 @@ export function PlatformActivityLogsContent(): React.JSX.Element {
         onSearchChange={setFilterQuery}
         searchPlaceholder={t("platform.filterLogsPlaceholder")}
         searchId="platform-logs-search"
+        // No focus shortcut is wired on the platform console, so do not advertise one.
+        searchShortcutHint={false}
         isSearching={isFetching}
         hasActiveFilters={isFiltered}
         onClearFilters={handleClearFilters}

@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { usePersistedTabState } from "@/hooks/usePersistedTabState";
 import { useModuleShortcuts } from "@/hooks/useModuleShortcuts";
+import { ENROLLMENTS_WORK_SEARCH_INPUT_ID } from "@/tenant/features/enrollments/components/EnrollmentsListFilters";
 import { useTranslation } from "@/hooks/useTranslation";
 import { useFilteredModuleTierTabs } from "@/tenant/hooks/useModuleTierTabs";
 import { ClipboardList, UserCheck, Inbox } from "lucide-react";
@@ -133,7 +134,7 @@ export function useEnrollmentsPageState() {
   }
 
   useModuleShortcuts({
-    searchInputId: "enrollments-search-input",
+    searchInputId: ENROLLMENTS_WORK_SEARCH_INPUT_ID,
     selectedCount: selection.selectedIds.length,
     hasActiveFilters,
     clearFilters: () => {

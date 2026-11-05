@@ -22,6 +22,9 @@ export function WorkTaskToolbar({
   searchPlaceholder,
   searchId,
   isSearching,
+  searchShortcutHint,
+  surface,
+  showExportInTrash,
   statusFilter,
   dateRange,
   filterButton,
@@ -48,6 +51,9 @@ export function WorkTaskToolbar({
         searchPlaceholder={searchPlaceholder}
         searchId={searchId}
         isSearching={isSearching}
+        searchShortcutHint={searchShortcutHint}
+        surface={surface}
+        showExportInTrash={showExportInTrash}
         filterButton={filterButton}
         hasActiveFilters={hasActiveFilters}
         onClearFilters={onClearFilters}

@@ -88,4 +88,24 @@ describe("WorkTaskToolbar", () => {
     expect(html).toContain('placeholder="From"');
     expect(html).toContain('placeholder="To"');
   });
+
+  it("forwards the base toolbar contract (plain surface and shortcut opt-out)", () => {
+    const html = renderToStaticMarkup(
+      <TestWrapper>
+        <WorkTaskToolbar
+          regionLabel="Records toolbar"
+          search=""
+          onSearchChange={vi.fn()}
+          searchPlaceholder="Search..."
+          searchId="records-work-search"
+          surface="plain"
+          searchShortcutHint={false}
+        />
+      </TestWrapper>,
+    );
+
+    expect(html).not.toContain("rounded-2xl");
+    expect(html).not.toContain("<kbd");
+    expect(html).not.toContain("aria-keyshortcuts");
+  });
 });

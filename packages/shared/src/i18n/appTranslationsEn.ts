@@ -5573,8 +5573,6 @@ export const APP_TRANSLATIONS_EN = {
   "module.system.saving": "Saving…",
   "module.system.stats": "{enabled} of {total} modules enabled",
   "module.work": "Work",
-  "module.work.aiSuggestionsAria": "Smart filter suggestions",
-  "module.work.aiSuggestionsDescription": "AI-generated",
   "module.workHint": "Daily tasks and records",
   "nav.academics": "Academics",
   "nav.accounting": "Accounting",
