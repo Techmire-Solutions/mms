@@ -172,23 +172,7 @@ async function decodeViaObjectUrl(blob: Blob): Promise<DecodedImage> {
   }
 }
 
-async function decodeHeic(file: File): Promise<DecodedImage> {
-  try {
-    const { default: heic2any } = await import("heic2any");
-    const converted = await heic2any({ blob: file, toType: "image/png" });
-    const blob = Array.isArray(converted) ? converted[0] : converted;
-    if (!blob) throw new Error("HEIC decoder returned no image");
-    return await decodeViaObjectUrl(blob);
-  } catch (error) {
-    throw new ImageUploadError("heic_failed", "HEIC image could not be decoded", {
-      cause: error,
-    });
-  }
-}
-
 async function decodeImageFile(file: File): Promise<DecodedImage> {
-  if (isHeicImageFile(file)) return decodeHeic(file);
-
   if (typeof createImageBitmap === "function") {
     try {
       const bitmap = await createImageBitmap(file, { imageOrientation: "from-image" });
