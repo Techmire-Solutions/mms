@@ -26,13 +26,13 @@ describe("ModuleTrashToggle Component", () => {
     document.body.removeChild(container);
   });
 
-  it('renders idle state with showDeletedLabel and aria-pressed="false"', () => {
+  it('renders idle state with the deleted label and aria-pressed="false"', () => {
     const html = renderToStaticMarkup(
       <ModuleTrashToggle
-        showDeleted={false}
+        viewingDeleted={false}
         onToggle={vi.fn()}
-        showActiveLabel="View Active"
-        showDeletedLabel="Trash"
+        activeLabel="View Active"
+        deletedLabel="Trash"
       />,
     );
 
@@ -41,13 +41,13 @@ describe("ModuleTrashToggle Component", () => {
     expect(html).toContain('aria-pressed="false"');
   });
 
-  it('renders active state with showActiveLabel and aria-pressed="true"', () => {
+  it('renders active state with the active label and aria-pressed="true"', () => {
     const html = renderToStaticMarkup(
       <ModuleTrashToggle
-        showDeleted={true}
+        viewingDeleted={true}
         onToggle={vi.fn()}
-        showActiveLabel="View Active"
-        showDeletedLabel="Trash"
+        activeLabel="View Active"
+        deletedLabel="Trash"
       />,
     );
 
@@ -62,10 +62,10 @@ describe("ModuleTrashToggle Component", () => {
     await act(async () => {
       root.render(
         <ModuleTrashToggle
-          showDeleted={false}
+          viewingDeleted={false}
           onToggle={onToggle}
-          showActiveLabel="View Active"
-          showDeletedLabel="Trash"
+          activeLabel="View Active"
+          deletedLabel="Trash"
         />,
       );
     });
@@ -83,10 +83,10 @@ describe("ModuleTrashToggle Component", () => {
   it("renders disabled state and title attribute when provided", () => {
     const html = renderToStaticMarkup(
       <ModuleTrashToggle
-        showDeleted={false}
+        viewingDeleted={false}
         onToggle={vi.fn()}
-        showActiveLabel="View Active"
-        showDeletedLabel="Trash"
+        activeLabel="View Active"
+        deletedLabel="Trash"
         disabled={true}
         title="Archived records"
       />,

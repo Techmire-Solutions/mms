@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { usePersistedTabState } from "@/hooks/usePersistedTabState";
 import { useModuleShortcuts } from "@/hooks/useModuleShortcuts";
+import { OBLIGATIONS_WORK_SEARCH_INPUT_ID } from "@/tenant/features/obligations/components/ObligationCollectionsListFilters";
 import { useTranslation } from "@/hooks/useTranslation";
 import { useDirectoryTrashState } from "@/hooks/useDirectoryTrashState";
 import { useFilteredModuleTierTabs } from "@/tenant/hooks/useModuleTierTabs";
@@ -121,7 +122,7 @@ export function useObligationsPageController() {
   const filteredCount = reportedFilteredCount ?? collections.length;
 
   useModuleShortcuts({
-    searchInputId: "obligations-search-input",
+    searchInputId: OBLIGATIONS_WORK_SEARCH_INPUT_ID,
     selectedCount: collectionSelection.selectedIds.length,
     hasActiveFilters: false,
     clearFilters: () => {},

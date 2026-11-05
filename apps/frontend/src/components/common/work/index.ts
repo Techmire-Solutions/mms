@@ -8,7 +8,6 @@ export {
   WorkListFiltersScaffold,
   type WorkListFiltersScaffoldProps,
   type WorkListFilterChip,
-  type WorkListTrashToggle,
 } from "./WorkListFiltersScaffold";
 
 export {

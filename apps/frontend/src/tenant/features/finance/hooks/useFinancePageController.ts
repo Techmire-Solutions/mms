@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { ReceiptText, CreditCard } from "lucide-react";
 import { usePersistedTabState } from "@/hooks/usePersistedTabState";
 import { useModuleShortcuts } from "@/hooks/useModuleShortcuts";
+import { FINANCE_INVOICES_WORK_SEARCH_INPUT_ID } from "@/tenant/features/finance/components/InvoicesListFilters";
 import { useFilteredModuleTierTabs } from "@/tenant/hooks/useModuleTierTabs";
 import { useModulePermissions } from "@/tenant/hooks/usePermissions";
 import { useTranslation } from "@/hooks/useTranslation";
@@ -99,7 +100,7 @@ export function useFinancePageController() {
       setActiveSubTab("invoices");
       modalState.setCreatingInvoice(true);
     },
-    searchInputId: "finance-search-input",
+    searchInputId: FINANCE_INVOICES_WORK_SEARCH_INPUT_ID,
     selectedCount: invoiceSelection.selectedIds.length + paymentSelection.selectedIds.length,
     clearSelection: () => {
       modalState.setViewInvoice(null);

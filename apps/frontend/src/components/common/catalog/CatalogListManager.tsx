@@ -11,7 +11,6 @@ import { ConfirmAlertDialog } from "@/components/app/ConfirmAlertDialog";
 import { EmptyState } from "@/components/app/EmptyState";
 import { ErrorState } from "@/components/app/ErrorState";
 import { StatusBadge, type StatusBadgeConfigItem } from "@/components/app/StatusBadge";
-import { ModuleTrashToggle } from "@/components/app/ModuleTrashToggle";
 import { SEMANTIC_BADGE } from "@/lib/ui/semanticTone";
 import { useTranslation } from "@/hooks/useTranslation";
 import { useAcademicCatalogActions, useAcademicCatalogItems } from "@/hooks/useAcademicCatalog";
@@ -123,15 +122,16 @@ export function CatalogListManager({
             </Button>
           ) : undefined
         }
-        toolbarExtras={
-          canDelete ? (
-            <ModuleTrashToggle
-              showDeleted={showDeleted}
-              onToggle={() => setShowDeleted((value) => !value)}
-              showDeletedLabel={t("academicCatalog.showDeleted")}
-              showActiveLabel={t("academicCatalog.status.active")}
-            />
-          ) : undefined
+        trashToggle={
+          canDelete
+            ? {
+                canViewDeleted: true,
+                viewingDeleted: showDeleted,
+                onToggle: (viewing) => setShowDeleted(viewing),
+                activeLabel: t("academicCatalog.status.active"),
+                deletedLabel: t("academicCatalog.showDeleted"),
+              }
+            : undefined
         }
         renderRowActions={
           canWrite

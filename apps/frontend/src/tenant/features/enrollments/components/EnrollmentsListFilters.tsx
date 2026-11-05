@@ -78,7 +78,7 @@ export function EnrollmentsListFilters({
 
   return (
     <WorkListFiltersScaffold
-      regionLabel={t("enrollments.filters")}
+      regionLabel={t("nav.enrollments")}
       search={search}
       onSearchChange={onSearchChange}
       searchPlaceholder={t("enrollments.searchPlaceholder")}
@@ -104,7 +104,7 @@ export function EnrollmentsListFilters({
           ? {
               canViewDeleted: canDelete,
               viewingDeleted: showDeleted,
-              onToggle: () => onShowDeletedChange(!showDeleted),
+              onToggle: (viewing) => onShowDeletedChange(viewing),
               activeLabel: t("enrollments.showActive"),
               deletedLabel: t("enrollments.showDeleted"),
             }

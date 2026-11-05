@@ -28,6 +28,7 @@ vi.mock("@/tenant/features/contacts/hooks/useContactsToolbarModel", () => ({
         "contacts.shownCount": `Showing ${params?.count ?? 0} contacts`,
         "contacts.searchPlaceholder": "Search contacts by name, phone, email...",
         "contacts.filters": "Filters",
+        "nav.contacts": "Contacts",
         "contacts.clearFilters": "Clear filters",
         "contacts.showActive": "Show Active",
         "contacts.showDeleted": "Show Deleted",
@@ -79,7 +80,7 @@ describe("ContactsListFilters Component", () => {
     expect(html).toContain("/");
     expect(html).toContain(`id="${CONTACTS_WORK_SEARCH_INPUT_ID}"`);
     expect(html).toContain('role="region"');
-    expect(html).toContain('aria-label="Filters"');
+    expect(html).toContain('aria-label="Contacts"');
   });
 
   it("renders clear search button when search query is non-empty", () => {

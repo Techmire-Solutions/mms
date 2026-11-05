@@ -89,7 +89,7 @@ export function StudentsListFilters({
       shownCountLabel={
         shownCount != null ? t("students.shownCount", { count: shownCount }) : undefined
       }
-      regionLabel={t("students.filters")}
+      regionLabel={t("nav.students")}
       search={studentSearch}
       onSearchChange={onSearchChange}
       searchPlaceholder={t("students.searchPlaceholder")}

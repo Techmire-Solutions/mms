@@ -101,7 +101,7 @@ export const ContactsListFilters = React.memo(function ContactsListFilters({
         shownCountLabel={
           shownCount != null ? t("contacts.shownCount", { count: shownCount }) : undefined
         }
-        regionLabel={t("contacts.filters")}
+        regionLabel={t("nav.contacts")}
         search={searchInput}
         onSearchChange={setSearchInput}
         searchPlaceholder={t("contacts.searchPlaceholder")}

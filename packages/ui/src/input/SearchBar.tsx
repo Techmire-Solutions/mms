@@ -18,6 +18,11 @@ export interface SearchBarProps {
   ariaLabel?: string;
   /** When true, replaces the search icon with a subtle spinning loader */
   isSearching?: boolean;
+  /**
+   * `aria-keyshortcuts` advertised by the input. Defaults to `/`; pass `null` when the
+   * consumer does not wire a focus shortcut so assistive tech is not told a lie.
+   */
+  keyshortcuts?: string | null;
   ref?: React.Ref<HTMLInputElement>;
 }
 
@@ -38,6 +43,7 @@ export function SearchBar({
   autoFocus = false,
   ariaLabel,
   isSearching = false,
+  keyshortcuts = "/",
   ref,
 }: SearchBarProps): React.JSX.Element {
   const fallbackId = React.useId();
@@ -102,7 +108,7 @@ export function SearchBar({
         autoComplete="off"
         autoCorrect="off"
         spellCheck={false}
-        aria-keyshortcuts="/"
+        aria-keyshortcuts={keyshortcuts ?? undefined}
         aria-label={ariaLabel ?? placeholder}
         className={cn(
           "rounded-xl bg-card ps-10 pe-11 [&::-webkit-search-cancel-button]:hidden",

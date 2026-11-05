@@ -5520,8 +5520,6 @@ export const APP_TRANSLATIONS_UR: Record<AppTranslationKey, string> = {
   "module.system.saving": "محفوظ ہو رہا ہے…",
   "module.system.stats": "{total} میں سے {enabled} ماڈیولز فعال",
   "module.work": "کام",
-  "module.work.aiSuggestionsAria": "اسمارٹ فلٹر تجاویز",
-  "module.work.aiSuggestionsDescription": "AI سے تیار کردہ",
   "module.workHint": "روزانہ کے کام اور ریکارڈ",
   "nav.academics": "تعلیمات",
   "nav.accounting": "اکاؤنٹنگ",
