@@ -67,7 +67,7 @@ export const WORK_STICKY_HEAD = "bg-card/95 border-b border-border/80";
 
 /** Work toolbar filter / trash / clear trigger base. */
 export const WORK_TOOLBAR_TRIGGER =
-  "flex items-center gap-1.5 px-3 min-h-11 rounded-xl border text-sm font-medium transition-colors hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background motion-reduce:transition-none touch-manipulation cursor-pointer";
+  "flex items-center gap-1.5 px-3 min-h-11 rounded-xl border text-sm font-medium transition-colors hover:bg-muted hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background motion-reduce:transition-none touch-manipulation cursor-pointer";
 
 /** Active state for Work toolbar triggers (filters with count, trash on). */
 export const WORK_TOOLBAR_TRIGGER_ACTIVE =
@@ -82,7 +82,8 @@ export const WORK_TOOLBAR_TRIGGER_FILTER_ACTIVE =
   "border-primary/30 bg-primary/5 text-primary hover:text-primary hover:bg-primary/5";
 
 /** Filter-menu idle (foreground text, not muted). */
-export const WORK_TOOLBAR_TRIGGER_FILTER_IDLE = "border-border bg-card text-foreground";
+export const WORK_TOOLBAR_TRIGGER_FILTER_IDLE =
+  "border-border bg-card text-foreground hover:text-foreground";
 
 /** Detail drawer / profile section headings. */
 export const DETAIL_SECTION_TITLE =

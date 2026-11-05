@@ -36,6 +36,28 @@ describe("Button component", () => {
     expect(button.textContent).toContain("Click me");
   });
 
+  it("applies accessible muted hover classes for ghost and outline variants", async () => {
+    await act(async () => {
+      root.render(
+        <div>
+          <Button variant="ghost">Ghost Button</Button>
+          <Button variant="outline">Outline Button</Button>
+        </div>,
+      );
+    });
+    const buttons = container.querySelectorAll("button");
+    const ghost = buttons[0];
+    const outline = buttons[1];
+
+    expect(ghost.className).toContain("hover:bg-muted");
+    expect(ghost.className).toContain("hover:text-foreground");
+    expect(ghost.className).not.toContain("hover:text-accent-foreground");
+
+    expect(outline.className).toContain("hover:bg-muted");
+    expect(outline.className).toContain("hover:text-foreground");
+    expect(outline.className).not.toContain("hover:text-accent-foreground");
+  });
+
   it("handles click events", async () => {
     const handleClick = vi.fn();
     await act(async () => {
