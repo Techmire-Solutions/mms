@@ -3,6 +3,7 @@ import { BarChart2 } from "lucide-react";
 import { Cell, Legend, Pie, PieChart, Tooltip } from "recharts";
 import { EmptyState } from "@/components/app/EmptyState";
 import { ReportChartCard } from "@/tenant/components/moduleReports";
+import { chartTooltipStyle } from "@/components/app/ChartGrid";
 import { useTranslation } from "@/hooks/useTranslation";
 
 interface MessagingChartDatum {
@@ -60,7 +61,7 @@ export function MessagingReportsVolumeChart({
             <Cell key={entry.name} fill={entry.fillColor || "var(--color-primary)"} />
           ))}
         </Pie>
-        <Tooltip />
+        <Tooltip contentStyle={chartTooltipStyle()} />
         <Legend />
       </PieChart>
     </ReportChartCard>

@@ -16,6 +16,7 @@ vi.mock("@/components/app/SafeResponsiveContainer", () => {
 vi.mock("@/components/app/ChartGrid", () => ({
   ChartGrid: () => <div data-testid="chart-grid" />,
   chartAxisTick: () => ({}),
+  chartTooltipStyle: () => ({}),
 }));
 
 vi.mock("recharts", () => ({

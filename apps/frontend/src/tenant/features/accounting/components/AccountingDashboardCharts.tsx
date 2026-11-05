@@ -1,7 +1,7 @@
 import React from "react";
 import { BarChart, Bar, XAxis, YAxis, Tooltip, PieChart, Pie, Cell } from "recharts";
 import { SafeResponsiveContainer } from "@/components/app/SafeResponsiveContainer";
-import { ChartGrid, chartAxisTick } from "@/components/app/ChartGrid";
+import { ChartGrid, chartAxisTick, chartTooltipStyle } from "@/components/app/ChartGrid";
 import { Card } from "@/components/ui/card";
 import { EmptyState } from "@/components/app/EmptyState";
 import { CARD_STRIPE_INSET } from "@/lib/ui/semanticTone";
@@ -60,6 +60,7 @@ export function AccountingDashboardCharts({
                   />
                   <Tooltip
                     formatter={(val) => (val !== undefined ? formatCurrency(Number(val)) : "")}
+                    contentStyle={chartTooltipStyle()}
                   />
                   <Bar
                     dataKey="revenue"
@@ -133,6 +134,7 @@ export function AccountingDashboardCharts({
                   </Pie>
                   <Tooltip
                     formatter={(val) => (val !== undefined ? formatCurrency(Number(val)) : "")}
+                    contentStyle={chartTooltipStyle()}
                   />
                 </PieChart>
               </SafeResponsiveContainer>

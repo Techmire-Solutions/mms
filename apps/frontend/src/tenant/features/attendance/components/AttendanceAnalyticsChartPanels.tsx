@@ -13,7 +13,7 @@ import {
   YAxis,
   Tooltip,
 } from "recharts";
-import { ChartGrid, chartAxisTick } from "@/components/app/ChartGrid";
+import { ChartGrid, chartAxisTick, chartTooltipStyle } from "@/components/app/ChartGrid";
 import type { AttendanceStatus } from "@/lib/data/attendanceData";
 import { attendanceStatusLabel } from "@/lib/ui/attendanceStatusUi";
 import type { TranslationFunction } from "@/lib/contexts/TranslationContext";
@@ -59,7 +59,7 @@ export function AttendanceAnalyticsChartPanels({
             <ChartGrid />
             <XAxis dataKey="name" tick={chartAxisTick(11)} />
             <YAxis domain={[0, 100]} tick={chartAxisTick(11)} unit="%" />
-            <Tooltip formatter={(value) => `${value}%`} />
+            <Tooltip formatter={(value) => `${value}%`} contentStyle={chartTooltipStyle()} />
             <Bar
               dataKey="rate"
               name={t("attendance.analytics.attendanceLabel")}
@@ -96,7 +96,7 @@ export function AttendanceAnalyticsChartPanels({
             <ChartGrid />
             <XAxis dataKey="month" tick={chartAxisTick(11)} />
             <YAxis domain={[0, 100]} tick={chartAxisTick(11)} unit="%" />
-            <Tooltip formatter={(value) => `${value}%`} />
+            <Tooltip formatter={(value) => `${value}%`} contentStyle={chartTooltipStyle()} />
             <Area
               type="monotone"
               dataKey="rate"
@@ -123,7 +123,7 @@ export function AttendanceAnalyticsChartPanels({
           <BarChart data={studentRates} layout="vertical" barSize={12}>
             <XAxis type="number" domain={[0, 100]} tick={chartAxisTick(10)} unit="%" />
             <YAxis dataKey="name" type="category" tick={chartAxisTick(10)} width={80} />
-            <Tooltip formatter={(value) => `${value}%`} />
+            <Tooltip formatter={(value) => `${value}%`} contentStyle={chartTooltipStyle()} />
             <Bar
               dataKey="rate"
               name={t("attendance.analytics.rateLabel")}
@@ -173,7 +173,7 @@ export function AttendanceAnalyticsChartPanels({
                 <Cell key={entry.name} fill={colors[index % colors.length]} />
               ))}
             </Pie>
-            <Tooltip />
+            <Tooltip contentStyle={chartTooltipStyle()} />
           </PieChart>
         </ReportChartCard>
       </motion.div>

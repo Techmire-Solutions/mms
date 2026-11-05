@@ -6,7 +6,7 @@
 import React from "react";
 import { BarChart2 } from "lucide-react";
 import { Bar, BarChart, Cell, Legend, Pie, PieChart, Tooltip, XAxis, YAxis } from "recharts";
-import { chartAxisTick } from "@/components/app/ChartGrid";
+import { chartAxisTick, chartTooltipStyle } from "@/components/app/ChartGrid";
 import { EmptyState } from "@/components/app/EmptyState";
 import { ReportChartCard } from "@/tenant/components/moduleReports";
 import { useBrandPalette } from "@/lib/contexts/BrandingPaletteContext";
@@ -88,7 +88,7 @@ export function TasksReportsCharts({ metrics }: TasksReportsChartsProps): React.
               <Cell key={row.name} fill={colors[index % colors.length]} />
             ))}
           </Pie>
-          <Tooltip />
+          <Tooltip contentStyle={chartTooltipStyle()} />
           <Legend iconType="circle" iconSize={8} wrapperStyle={{ fontSize: "11px" }} />
         </PieChart>
       </ReportChartCard>
@@ -110,7 +110,7 @@ export function TasksReportsCharts({ metrics }: TasksReportsChartsProps): React.
         <BarChart data={priorityData} barSize={20}>
           <XAxis dataKey="name" tick={chartAxisTick(10)} tickLine={false} />
           <YAxis allowDecimals={false} tick={chartAxisTick(10)} tickLine={false} axisLine={false} />
-          <Tooltip />
+          <Tooltip contentStyle={chartTooltipStyle()} />
           <Bar dataKey="value" radius={[4, 4, 0, 0]}>
             {priorityData.map((row, index) => (
               <Cell key={row.name} fill={colors[index % colors.length]} />
@@ -136,7 +136,7 @@ export function TasksReportsCharts({ metrics }: TasksReportsChartsProps): React.
         <BarChart data={overdueData} barSize={28}>
           <XAxis dataKey="name" tick={chartAxisTick(10)} tickLine={false} />
           <YAxis allowDecimals={false} tick={chartAxisTick(10)} tickLine={false} axisLine={false} />
-          <Tooltip />
+          <Tooltip contentStyle={chartTooltipStyle()} />
           <Bar dataKey="value" radius={[4, 4, 0, 0]}>
             <Cell fill="hsl(var(--destructive))" />
             <Cell fill="hsl(var(--success))" />
