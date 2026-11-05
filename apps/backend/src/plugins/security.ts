@@ -51,6 +51,9 @@ function buildCspDirectives(isProd?: boolean, nonce?: string) {
   }
   // Allow the theme bootstrap script even if older index.html is cached in user browsers
   scriptSources.push("'sha256-gk4Z7QZVEdEVHj4eZeOlFNEC2ZefOM9Ohn11Fh6G3Vo='");
+  // The client-side AVIF/WebP/HEIC encoders use WebAssembly. `wasm-unsafe-eval`
+  // permits wasm compilation without re-enabling general eval/JIT for JS.
+  scriptSources.push("'wasm-unsafe-eval'");
 
   return {
     "default-src": ["'self'"],

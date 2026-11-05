@@ -18,6 +18,25 @@ describe("apiClient", () => {
     globalThis.fetch = original;
   });
 
+  it("passes FormData bodies through without forcing a JSON content-type", async () => {
+    const original = globalThis.fetch;
+    let seenInit: RequestInit | undefined;
+    globalThis.fetch = async (_input, init) => {
+      seenInit = init;
+      return new Response(JSON.stringify({ url: "/uploads/a.avif" }), { status: 200 });
+    };
+    const form = new FormData();
+    form.append("image", new File(["x"], "a.avif", { type: "image/avif" }));
+
+    const { apiFetch } = await import("@/lib/apiClient");
+    await apiFetch("/api/uploads/image?purpose=avatar", { method: "POST", body: form });
+
+    const headers = new Headers(seenInit?.headers);
+    expect(headers.has("Content-Type")).toBe(false);
+    expect(seenInit?.body).toBe(form);
+    globalThis.fetch = original;
+  });
+
   it("throws ApiError with stable type on failed JSON response", async () => {
     const original = globalThis.fetch;
     globalThis.fetch = async () =>

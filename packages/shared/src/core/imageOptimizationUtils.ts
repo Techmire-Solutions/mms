@@ -9,8 +9,11 @@ const IMAGE_EXT_BY_TYPE: Record<string, string> = {
   "image/webp": ".webp",
 };
 
-/** Max raw picker file size before client-side AVIF encode (bytes). */
-export const IMAGE_UPLOAD_MAX_INPUT_BYTES = 2 * 1024 * 1024;
+/** Max raw picker file size before client-side AVIF/WebP encode (bytes). */
+export const IMAGE_UPLOAD_MAX_INPUT_BYTES = 10 * 1024 * 1024;
+
+/** Max encoded image payload accepted by the upload API (bytes). */
+export const IMAGE_UPLOAD_MAX_OUTPUT_BYTES = 512 * 1024;
 
 /** Resize/encode presets — AVIF first, WebP fallback; used by every image uploader. */
 export const IMAGE_UPLOAD_PRESETS = {

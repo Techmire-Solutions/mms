@@ -16,15 +16,36 @@ export function useAvatarCropperCanvas(src: string) {
   const [dragging, setDragging] = useState<boolean>(false);
   const [dragStart, setDragStart] = useState<DragCoordinate | null>(null);
   const [imgEl, setImgEl] = useState<HTMLImageElement | null>(null);
+  const [loadError, setLoadError] = useState(false);
+  const [loadedSrc, setLoadedSrc] = useState(src);
+  if (loadedSrc !== src) {
+    // Reset during render (React's recommended pattern) so the effect only
+    // subscribes to the new image instead of cascading a second render.
+    setLoadedSrc(src);
+    setImgEl(null);
+    setLoadError(false);
+  }
 
   useEffect(() => {
     const img = new Image();
+    let active = true;
     img.onload = () => {
+      if (!active) return;
       setImgEl(img);
       const fit = Math.max(SIZE / img.naturalWidth, SIZE / img.naturalHeight);
       setScale(fit);
     };
+    img.onerror = () => {
+      if (!active) return;
+      setImgEl(null);
+      setLoadError(true);
+    };
     img.src = src;
+    return () => {
+      active = false;
+      img.onload = null;
+      img.onerror = null;
+    };
   }, [src]);
 
   useEffect(() => {
@@ -137,5 +158,7 @@ export function useAvatarCropperCanvas(src: string) {
     adjustScaleFromWheel,
     renderCroppedCanvas,
     previewSize: SIZE,
+    isReady: Boolean(imgEl),
+    loadError,
   };
 }

@@ -168,4 +168,43 @@ describe("ContactBasicAvatarSection Component", () => {
     });
     container.remove();
   });
+
+  it("routes a large drop through the shared avatar file handler", async () => {
+    const onAvatarFileSelect = vi.fn();
+    const container = document.createElement("div");
+    document.body.appendChild(container);
+    const root = createRoot(container);
+
+    await act(async () => {
+      root.render(
+        <ContactBasicAvatarSection
+          contactDraft={{ firstName: "Ali" }}
+          formInstanceId="inst-large"
+          cropSrc={null}
+          setCropSrc={vi.fn()}
+          updateDraft={vi.fn()}
+          handleAvatarChange={vi.fn()}
+          onAvatarFileSelect={onAvatarFileSelect}
+        />,
+      );
+    });
+
+    const dropZone = container.querySelector(".group");
+    const largeFile = new File(["x"], "photo.jpg", { type: "image/jpeg" });
+    Object.defineProperty(largeFile, "size", { value: 5 * 1024 * 1024 });
+    const dropEvent = new Event("drop", { bubbles: true }) as unknown as DragEvent;
+    Object.defineProperty(dropEvent, "dataTransfer", { value: { files: [largeFile] } });
+
+    await act(async () => {
+      dropZone?.dispatchEvent(dropEvent);
+    });
+
+    expect(onAvatarFileSelect).toHaveBeenCalledWith(largeFile);
+    expect(notify.error).not.toHaveBeenCalled();
+
+    await act(async () => {
+      root.unmount();
+    });
+    container.remove();
+  });
 });

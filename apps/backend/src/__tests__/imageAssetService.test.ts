@@ -8,6 +8,8 @@ import { Readable } from "node:stream";
 // Minimal valid container headers (magic bytes only).
 const AVIF_BYTES = Buffer.from("\x00\x00\x00\x1cftypavif\x00\x00\x00\x00avifmif1", "latin1");
 const WEBP_BYTES = Buffer.from("RIFF\x00\x00\x00\x00WEBPVP8 ", "latin1");
+// ISO-BMFF with a generic major brand and avif among the compatible brands.
+const MIF1_AVIF_BYTES = Buffer.from("\x00\x00\x00\x20ftypmif1\x00\x00\x00\x00mif1avif", "latin1");
 
 describe("saveUploadedImage", () => {
   let tempDir = "";
@@ -66,8 +68,15 @@ describe("saveUploadedImage", () => {
     });
   });
 
+  it("accepts AVIF declared through compatible brands (ftypmif1 + avif)", async () => {
+    const url = await saveUploadedImage(MIF1_AVIF_BYTES, "image/avif", "avatar");
+    expect(url).toMatch(/^\/uploads\/avatars\/[0-9a-f-]+\.avif$/);
+    expect(sniffImageFormat(MIF1_AVIF_BYTES)).toBe("avif");
+  });
+
   it("sniffs AVIF and WebP magic bytes", () => {
     expect(sniffImageFormat(AVIF_BYTES)).toBe("avif");
+    expect(sniffImageFormat(MIF1_AVIF_BYTES)).toBe("avif");
     expect(sniffImageFormat(WEBP_BYTES)).toBe("webp");
     expect(sniffImageFormat(Buffer.from("not an image"))).toBeNull();
   });

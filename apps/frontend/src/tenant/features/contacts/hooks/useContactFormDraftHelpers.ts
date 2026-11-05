@@ -1,20 +1,19 @@
 import {
   useCallback,
+  useEffect,
   useMemo,
+  useRef,
   useState,
   type ChangeEvent,
   type Dispatch,
   type SetStateAction,
 } from "react";
 import { formatContactPhoneDisplay } from "@/lib/contacts/contactI18n";
+import { prepareAvatarPreview } from "@/lib/contacts/avatarPreview";
 import { notify } from "@/lib/notify";
 import { useTranslation } from "@/hooks/useTranslation";
-import {
-  IMAGE_UPLOAD_MAX_INPUT_BYTES,
-  REMOVED_FORM_FIELD_KEYS,
-  type Contact,
-  type ValidationError,
-} from "@mms/shared";
+import { imageUploadErrorDetail, imageUploadErrorKey } from "@/lib/imageUploadErrors";
+import { REMOVED_FORM_FIELD_KEYS, type Contact, type ValidationError } from "@mms/shared";
 
 export function useContactFormDraftHelpers({
   formInstanceId,
@@ -34,7 +33,25 @@ export function useContactFormDraftHelpers({
   isTabFieldRequired?: (tabId: string, fieldId: string) => boolean;
 }) {
   const { t } = useTranslation();
-  const [cropSrc, setCropSrc] = useState<string | null>(null);
+  const [cropSrc, setCropSrcState] = useState<string | null>(null);
+  const cropPreviewCleanupRef = useRef<(() => void) | null>(null);
+
+  /** Revokes the cropper object URL when replaced or when the draft unmounts. */
+  const setCropSrc = useCallback((next: string | null) => {
+    if (next === null) {
+      cropPreviewCleanupRef.current?.();
+      cropPreviewCleanupRef.current = null;
+    }
+    setCropSrcState(next);
+  }, []);
+
+  useEffect(
+    () => () => {
+      cropPreviewCleanupRef.current?.();
+      cropPreviewCleanupRef.current = null;
+    },
+    [],
+  );
 
   const getLocalId = useCallback(
     (tabName: string, idx: number): string => `${formInstanceId}-${tabName}-${idx}`,
@@ -135,30 +152,30 @@ export function useContactFormDraftHelpers({
     [setContactDraft],
   );
 
+  const handleAvatarFileSelect = useCallback(
+    (file: File) => {
+      void (async () => {
+        try {
+          const prepared = await prepareAvatarPreview(file);
+          cropPreviewCleanupRef.current?.();
+          cropPreviewCleanupRef.current = prepared.cleanup;
+          setCropSrcState(prepared.url);
+        } catch (error) {
+          const detail = imageUploadErrorDetail(error);
+          notify.error(t(imageUploadErrorKey(error)), detail ? { description: detail } : undefined);
+        }
+      })();
+    },
+    [t],
+  );
+
   const handleAvatarChange = useCallback(
     (event: ChangeEvent<HTMLInputElement>) => {
       const file = event.target.files?.[0];
-      if (!file) return;
-      if (!file.type.startsWith("image/")) {
-        notify.error(t("account.photoUploadFailed"));
-        event.target.value = "";
-        return;
-      }
-      if (file.size > IMAGE_UPLOAD_MAX_INPUT_BYTES) {
-        notify.error(t("contacts.form.avatarTooLarge"));
-        event.target.value = "";
-        return;
-      }
-      const reader = new FileReader();
-      reader.onload = (readerEvent) => {
-        if (typeof readerEvent.target?.result === "string") {
-          setCropSrc(readerEvent.target.result);
-        }
-      };
-      reader.readAsDataURL(file);
+      if (file) handleAvatarFileSelect(file);
       event.target.value = "";
     },
-    [t],
+    [handleAvatarFileSelect],
   );
 
   const handlePhoneBlur = useCallback(
@@ -197,6 +214,7 @@ export function useContactFormDraftHelpers({
     getListItemError,
     updateDraft,
     handleAvatarChange,
+    handleAvatarFileSelect,
     handlePhoneBlur,
   };
 }

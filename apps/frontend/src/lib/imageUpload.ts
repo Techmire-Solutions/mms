@@ -1,19 +1,37 @@
 import {
   IMAGE_UPLOAD_MAX_INPUT_BYTES,
+  IMAGE_UPLOAD_MAX_OUTPUT_BYTES,
   IMAGE_UPLOAD_PRESETS,
   imageExtensionForMime,
   type ImageUploadPurpose,
   type ImageUploadResponse,
 } from "@mms/shared";
-import { canvasToOptimizedBlob, prepareImageForUpload } from "@/lib/imageOptimization";
+import {
+  blobHasImageSignature,
+  canvasToOptimizedBlob,
+  isSupportedImageSource,
+  prepareImageForUpload,
+} from "@/lib/imageOptimization";
+import { ImageUploadError } from "@/lib/imageUploadErrors";
 import { apiJson, resolveApiUrl } from "@/lib/apiClient";
 
+const ACCEPTED_IMAGE_TYPES = new Set(["image/avif", "image/webp"]);
+
+function assertUploadableImage(file: File): void {
+  if (!ACCEPTED_IMAGE_TYPES.has(file.type)) {
+    throw new ImageUploadError(
+      "unsupported_format",
+      `Unsupported upload type ${file.type || "(unknown)"}`,
+    );
+  }
+}
+
 function assertImageFile(file: File): void {
-  if (!file.type.startsWith("image/")) {
-    throw new Error("invalid_image_type");
+  if (!isSupportedImageSource(file)) {
+    throw new ImageUploadError("unsupported_format", "Unsupported image format");
   }
   if (file.size > IMAGE_UPLOAD_MAX_INPUT_BYTES) {
-    throw new Error("image_too_large");
+    throw new ImageUploadError("too_large", "Image is larger than the upload limit");
   }
 }
 
@@ -22,18 +40,26 @@ export async function uploadImageFile(
   file: File,
   purpose: ImageUploadPurpose = "general",
 ): Promise<string> {
+  assertUploadableImage(file);
+  if (!(await blobHasImageSignature(file, file.type))) {
+    throw new ImageUploadError("encode_failed", "Image content does not match its format");
+  }
+
   const form = new FormData();
   form.append("image", file, file.name);
 
-  const { url } = await apiJson<ImageUploadResponse>(
-    `/api/uploads/image?purpose=${encodeURIComponent(purpose)}`,
-    {
-      method: "POST",
-      body: form,
-    },
-  );
-
-  return resolveApiUrl(url);
+  try {
+    const { url } = await apiJson<ImageUploadResponse>(
+      `/api/uploads/image?purpose=${encodeURIComponent(purpose)}`,
+      {
+        method: "POST",
+        body: form,
+      },
+    );
+    return resolveApiUrl(url);
+  } catch (error) {
+    throw ImageUploadError.fromApi(error, "server_rejected");
+  }
 }
 
 /**
@@ -57,7 +83,10 @@ export async function uploadCanvasImage(
   const preset = IMAGE_UPLOAD_PRESETS[purpose];
   const encoded = await canvasToOptimizedBlob(canvas, preset.quality, preset.formats);
   if (!encoded) {
-    throw new Error("image_encode_failed");
+    throw new ImageUploadError("encode_failed", "Image could not be encoded");
+  }
+  if (encoded.blob.size > IMAGE_UPLOAD_MAX_OUTPUT_BYTES) {
+    throw new ImageUploadError("too_large", "Encoded image is larger than the upload limit");
   }
 
   const ext = imageExtensionForMime(encoded.type);
