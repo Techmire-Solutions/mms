@@ -73,6 +73,7 @@ export const ContactsListDesktopTable = React.memo(function ContactsListDesktopT
       label: col.label,
       sortField: col.id,
       width: col.width,
+      kind: col.kind,
       render: (row, _idx) => {
         const isSelected = selected.includes(row.id) || selected.includes(String(row.id));
         return renderContactTableCell({

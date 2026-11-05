@@ -39,17 +39,20 @@ export function AccountingIas29Panel({
   const indexColumns: DataTableColumn<IndexRow>[] = [
     {
       id: "date",
+      kind: "date",
       label: t("accounting.settings.ias29.indexDate"),
       fixed: true,
       render: (row) => formatDate(row.indexDate),
     },
     {
       id: "value",
+      kind: "number",
       label: t("accounting.settings.ias29.indexValue"),
       render: (row) => <span className="font-mono">{row.value}</span>,
     },
     {
       id: "source",
+      kind: "shortText",
       label: t("accounting.settings.ias29.indexSource"),
       hideInCard: true,
       render: (row) => row.source,

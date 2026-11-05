@@ -1,4 +1,5 @@
 import { describe, expect, it } from "vitest";
+import { MODULE_COLUMN_KIND_WIDTHS } from "@mms/shared";
 import type { DataTableColumn, DataTableFilter } from "./dataTableTypes";
 import {
   buildDataTableRegistry,
@@ -64,6 +65,27 @@ describe("buildDataTableRegistry / resolveVisibleColumns", () => {
       "status",
       "name",
       "code",
+    ]);
+  });
+});
+
+describe("buildDataTableRegistry widths", () => {
+  it("given a column kind, should tag the kind and seed or floor its width", () => {
+    // Arrange
+    const sized: DataTableColumn<Row>[] = [
+      { id: "amount", label: "Amount", kind: "money", render: () => null },
+      { id: "date", label: "Date", kind: "date", width: 40, render: () => null },
+      { id: "free", label: "Free", render: () => null },
+    ];
+
+    // Act
+    const registry = buildDataTableRegistry(sized);
+
+    // Assert
+    expect(registry.map((e) => [e.key, e.kind, e.width])).toEqual([
+      ["amount", "money", MODULE_COLUMN_KIND_WIDTHS.money.width],
+      ["date", "date", MODULE_COLUMN_KIND_WIDTHS.date.minWidth],
+      ["free", undefined, undefined],
     ]);
   });
 });

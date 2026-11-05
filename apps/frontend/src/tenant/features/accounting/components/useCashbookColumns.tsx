@@ -58,6 +58,7 @@ export function useCashbookColumns(
     () => [
       {
         id: "date",
+        kind: "date",
         label: t("accounting.columns.journal.date"),
         noWrap: true,
         cellClassName: "text-xs text-muted-foreground",
@@ -65,6 +66,7 @@ export function useCashbookColumns(
       },
       {
         id: "type",
+        kind: "status",
         label: t("accounting.columns.journal.type"),
         noWrap: true,
         render: (row) => (
@@ -76,6 +78,7 @@ export function useCashbookColumns(
       },
       {
         id: "description",
+        kind: "longText",
         label: t("accounting.columns.journal.description"),
         truncate: true,
         cellClassName: "text-foreground max-w-cell-trunc",
@@ -88,6 +91,7 @@ export function useCashbookColumns(
       },
       {
         id: "moneyIn",
+        kind: "money",
         label: t("accounting.cashbook.moneyIn"),
         headerClassName: "text-end text-success",
         noWrap: true,
@@ -103,6 +107,7 @@ export function useCashbookColumns(
       },
       {
         id: "moneyOut",
+        kind: "money",
         label: t("accounting.cashbook.moneyOut"),
         headerClassName: "text-end text-destructive",
         noWrap: true,
@@ -120,6 +125,7 @@ export function useCashbookColumns(
         ? [
             {
               id: "voucher",
+              kind: "reference" as const,
               label: t("accounting.journal.voucher.title"),
               headerClassName: "text-end",
               noWrap: true,

@@ -1,5 +1,6 @@
 export { Avatar, AvatarImage, AvatarFallback, avatarVariants, type AvatarProps } from "./Avatar";
 export { SectionLabel, type SectionLabelProps } from "./SectionLabel";
+export { ChipOverflowList, type ChipOverflowListProps } from "./ChipOverflowList";
 export { StatusBadge, type StatusBadgeProps, type StatusBadgeConfigItem } from "./StatusBadge";
 export {
   ReviewList,

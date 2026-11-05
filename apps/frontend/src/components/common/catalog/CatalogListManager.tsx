@@ -53,6 +53,7 @@ export function CatalogListManager({
   const columns: DataTableColumn<AcademicCatalogItem>[] = [
     {
       id: "name",
+      kind: "title",
       label: t("academicCatalog.name"),
       fixed: true,
       render: (row) => (

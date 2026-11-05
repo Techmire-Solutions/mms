@@ -33,23 +33,27 @@ export function AccountingIas29RunsPanel({
   const lineColumns: DataTableColumn<LineRow>[] = [
     {
       id: "account",
+      kind: "title",
       label: t("accounting.settings.fxReval.account"),
       fixed: true,
       render: (row) => `${row.accountCode} – ${row.accountName}`,
     },
     {
       id: "carrying",
+      kind: "money",
       label: t("accounting.settings.ias29.historical"),
       hideInCard: true,
       render: (row) => <span className="font-mono">{money(row.carrying)}</span>,
     },
     {
       id: "restated",
+      kind: "money",
       label: t("accounting.settings.ias29.restated"),
       render: (row) => <span className="font-mono">{money(row.restated)}</span>,
     },
     {
       id: "adjustment",
+      kind: "money",
       label: t("accounting.settings.ias29.adjustment"),
       render: (row) => <span className="font-mono">{money(row.adjustment)}</span>,
     },
@@ -58,17 +62,20 @@ export function AccountingIas29RunsPanel({
   const runColumns: DataTableColumn<Ias29Run>[] = [
     {
       id: "date",
+      kind: "date",
       label: t("accounting.settings.ias29.date"),
       fixed: true,
       render: (run) => formatDate(run.restatementDate),
     },
     {
       id: "index",
+      kind: "number",
       label: t("accounting.settings.ias29.closingIndex"),
       render: (run) => run.closingIndex,
     },
     {
       id: "result",
+      kind: "status",
       label: t("accounting.settings.ias29.monetaryResult"),
       render: (run) => signed(run.netMonetaryResult),
     },

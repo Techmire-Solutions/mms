@@ -68,6 +68,7 @@ export function PlatformAdminsTableView({
       if (col.id === "name") {
         return {
           id: "name",
+          kind: "identity",
           label: col.label,
           sortField: "name",
           headerClassName: "min-w-64 flex-1",
@@ -91,6 +92,7 @@ export function PlatformAdminsTableView({
       if (col.id === "status") {
         return {
           id: "status",
+          kind: "status",
           label: col.label,
           headerClassName: "w-40 min-w-40",
           cellClassName: "px-4 py-3 align-top w-40 min-w-40",

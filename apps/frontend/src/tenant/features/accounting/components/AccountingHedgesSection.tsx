@@ -48,12 +48,14 @@ export function AccountingHedgesSection({
   const columns: DataTableColumn<HedgeRelationship>[] = [
     {
       id: "name",
+      kind: "title",
       label: t("accounting.settings.hedges.name"),
       fixed: true,
       render: (hedge) => hedge.name,
     },
     {
       id: "type",
+      kind: "status",
       label: t("accounting.settings.hedges.type"),
       render: (hedge) =>
         t(
@@ -64,6 +66,7 @@ export function AccountingHedgesSection({
     },
     {
       id: "terms",
+      kind: "longText",
       label: t("accounting.settings.hedges.notional"),
       render: (hedge) => (
         <span className="font-mono">
@@ -79,12 +82,14 @@ export function AccountingHedgesSection({
     },
     {
       id: "maturity",
+      kind: "date",
       label: t("accounting.settings.hedges.maturityDate"),
       hideInCard: true,
       render: (hedge) => formatDate(hedge.maturityDate),
     },
     {
       id: "value",
+      kind: "money",
       label: t("accounting.settings.hedges.fairValueColumn"),
       render: (hedge) => (
         <span className="font-mono">
@@ -94,11 +99,13 @@ export function AccountingHedgesSection({
     },
     {
       id: "status",
+      kind: "status",
       label: t("accounting.settings.hedges.status"),
       render: (hedge) => t(STATUS_KEYS[hedge.status]),
     },
     {
       id: "actions",
+      kind: "shortText",
       label: t("accounting.settings.hedges.actions"),
       render: (hedge) =>
         canEdit ? (

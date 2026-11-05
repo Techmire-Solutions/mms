@@ -8,7 +8,9 @@ import {
   facultyWorkColumnLabelsFrom,
 } from "./facultyDirectoryColumns.js";
 import {
+  applyModuleColumnKinds,
   customFieldKeyFromColumnKey,
+  type ModuleColumnKind,
   type ModuleColumnRegistryEntry,
 } from "../settings/moduleColumnCore.js";
 import { syncModuleColumnRegistryWithFields } from "../settings/moduleColumnRegistrySync.js";
@@ -50,6 +52,27 @@ export function syncFacultyColumnRegistryWithFields(
   });
 }
 
+/** Content kind per built-in Work column; custom (`custom:*`) columns size as short text. */
+const FACULTY_COLUMN_KINDS: Readonly<Record<string, ModuleColumnKind>> = {
+  name: "identity",
+  employeeId: "reference",
+  designation: "shortText",
+  department: "shortText",
+  reportingFacultyName: "person",
+  employDesignationStatus: "status",
+  designationStartDate: "date",
+  designationEndDate: "date",
+  status: "status",
+  employmentStartDate: "date",
+  employmentEndDate: "date",
+  specialization: "shortText",
+  qualification: "shortText",
+  notes: "longText",
+  performanceRating: "number",
+  profileStatus: "status",
+  updatedAt: "dateTime",
+};
+
 /** Builds tenant-default Work column registry for Faculty (before per-user overlay). */
 export function buildFacultyWorkColumnRegistry(
   settings: FacultySettings,
@@ -76,7 +99,7 @@ export function buildFacultyWorkColumnRegistry(
     listEnabledCustomFacultyFormFields(fields).map((field) => [field.key, field]),
   );
 
-  return synced.map((col) => {
+  const entries: ModuleColumnRegistryEntry[] = synced.map((col) => {
     const customFieldKey = customFieldKeyFromColumnKey(col.key);
     if (customFieldKey !== null) {
       const field = customByKey.get(customFieldKey);
@@ -98,4 +121,9 @@ export function buildFacultyWorkColumnRegistry(
       fixed: col.fixed || col.key === "name",
     };
   });
+  const kinds: Record<string, ModuleColumnKind> = { ...FACULTY_COLUMN_KINDS };
+  for (const entry of entries) {
+    if (customFieldKeyFromColumnKey(entry.key) !== null) kinds[entry.key] = "shortText";
+  }
+  return applyModuleColumnKinds(entries, kinds);
 }

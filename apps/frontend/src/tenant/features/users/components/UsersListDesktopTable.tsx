@@ -55,6 +55,7 @@ export function UsersListDesktopTable({
     const cols: WorkBatchTableColumn<SystemUser>[] = [
       {
         id: "user",
+        kind: "identity",
         label: t("users.colUser"),
         headerClassName: "px-3 py-2.5",
         noWrap: true,
@@ -73,6 +74,7 @@ export function UsersListDesktopTable({
     if (visible("email")) {
       cols.push({
         id: "email",
+        kind: "email",
         label: t("users.fieldContactEmail"),
         headerClassName: "px-3 py-2.5",
         cellClassName: "px-3 py-2.5 text-xs text-muted-foreground",
@@ -83,6 +85,7 @@ export function UsersListDesktopTable({
     if (visible("role")) {
       cols.push({
         id: "role",
+        kind: "status",
         label: t("users.colRole"),
         headerClassName: "px-3 py-2.5",
         cellClassName: "px-3 py-2.5",
@@ -93,6 +96,7 @@ export function UsersListDesktopTable({
     if (visible("status")) {
       cols.push({
         id: "status",
+        kind: "status",
         label: t("users.colStatus"),
         headerClassName: "px-3 py-2.5",
         cellClassName: "px-3 py-2.5",
@@ -103,6 +107,7 @@ export function UsersListDesktopTable({
     if (visible("lastLogin")) {
       cols.push({
         id: "lastLogin",
+        kind: "dateTime",
         label: t("users.colLastLogin"),
         headerClassName: "px-3 py-2.5",
         noWrap: true,
@@ -114,6 +119,7 @@ export function UsersListDesktopTable({
     if (visible("created")) {
       cols.push({
         id: "created",
+        kind: "date",
         label: t("users.colCreated"),
         headerClassName: "px-3 py-2.5",
         noWrap: true,
@@ -125,6 +131,7 @@ export function UsersListDesktopTable({
     if (visible("twoFactor")) {
       cols.push({
         id: "twoFactor",
+        kind: "boolean",
         label: t("users.col2fa"),
         headerClassName: "px-3 py-2.5",
         cellClassName: "px-3 py-2.5",

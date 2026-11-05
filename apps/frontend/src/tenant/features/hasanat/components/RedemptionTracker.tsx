@@ -69,6 +69,7 @@ export function RedemptionTracker({
   const columns: DataTableColumn<Redemption>[] = [
     {
       id: "student",
+      kind: "person",
       label: t("hasanat.columns.redemption.student"),
       fixed: true,
       noWrap: true,
@@ -77,9 +78,15 @@ export function RedemptionTracker({
         <span className="text-sm font-semibold text-foreground">{r.studentName || "—"}</span>
       ),
     },
-    { id: "reward", label: t("hasanat.columns.redemption.reward"), render: (r) => r.reward },
+    {
+      id: "reward",
+      kind: "shortText",
+      label: t("hasanat.columns.redemption.reward"),
+      render: (r) => r.reward,
+    },
     {
       id: "pointsUsed",
+      kind: "number",
       label: t("hasanat.columns.redemption.pointsUsed"),
       noWrap: true,
       render: (r) => (
@@ -91,6 +98,7 @@ export function RedemptionTracker({
     },
     {
       id: "date",
+      kind: "date",
       label: t("hasanat.columns.redemption.date"),
       noWrap: true,
       searchValue: (r) => formatDate(r.date),
@@ -98,6 +106,7 @@ export function RedemptionTracker({
     },
     {
       id: "approvedBy",
+      kind: "person",
       label: t("hasanat.columns.redemption.approvedBy"),
       render: (r) => <span className="text-muted-foreground">{r.approvedBy || "—"}</span>,
     },

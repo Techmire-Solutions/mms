@@ -45,6 +45,7 @@ export function ExaminationsListDesktopTable(
     if (isColumnVisible("name")) {
       cols.push({
         id: "name",
+        kind: "title",
         label: t("examinations.columns.exam.name"),
         noWrap: true,
         cellClassName: "font-semibold text-foreground",
@@ -55,6 +56,7 @@ export function ExaminationsListDesktopTable(
     if (isColumnVisible("subject")) {
       cols.push({
         id: "subject",
+        kind: "shortText",
         label: t("examinations.columns.exam.subject"),
         cellClassName: "text-muted-foreground",
         render: (exam) => exam.subject,
@@ -64,6 +66,7 @@ export function ExaminationsListDesktopTable(
     if (isColumnVisible("date")) {
       cols.push({
         id: "date",
+        kind: "date",
         label: t("examinations.columns.exam.date"),
         noWrap: true,
         cellClassName: "text-muted-foreground",
@@ -74,6 +77,7 @@ export function ExaminationsListDesktopTable(
     if (isColumnVisible("duration")) {
       cols.push({
         id: "duration",
+        kind: "number",
         label: t("examinations.columns.exam.duration"),
         noWrap: true,
         cellClassName: "text-muted-foreground",
@@ -84,6 +88,7 @@ export function ExaminationsListDesktopTable(
     if (isColumnVisible("status")) {
       cols.push({
         id: "status",
+        kind: "status",
         label: t("examinations.columns.exam.status"),
         noWrap: true,
         render: (exam) => <StatusBadge status={exam.status} config={statusConfig} size="sm" />,
@@ -93,6 +98,7 @@ export function ExaminationsListDesktopTable(
     if (isColumnVisible("totalMarks")) {
       cols.push({
         id: "totalMarks",
+        kind: "number",
         label: t("examinations.columns.exam.totalMarks"),
         noWrap: true,
         cellClassName: "font-bold text-foreground",
@@ -103,6 +109,7 @@ export function ExaminationsListDesktopTable(
     if (isColumnVisible("passingMarks")) {
       cols.push({
         id: "passingMarks",
+        kind: "number",
         label: t("examinations.columns.exam.passingMarks"),
         noWrap: true,
         cellClassName: "text-foreground",
@@ -113,6 +120,7 @@ export function ExaminationsListDesktopTable(
     if (isColumnVisible("classes")) {
       cols.push({
         id: "classes",
+        kind: "chips",
         label: t("examinations.columns.exam.classes"),
         truncate: true,
         cellClassName: "text-xs text-muted-foreground max-w-cell-sm",
@@ -126,6 +134,7 @@ export function ExaminationsListDesktopTable(
     if (isColumnVisible("description")) {
       cols.push({
         id: "description",
+        kind: "longText",
         label: t("examinations.columns.exam.description"),
         truncate: true,
         cellClassName: "text-xs text-muted-foreground max-w-cell-sm",

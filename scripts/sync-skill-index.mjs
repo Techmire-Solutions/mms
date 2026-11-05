@@ -62,7 +62,8 @@ fs.writeFileSync(MANIFEST, `${JSON.stringify(manifest, null, 2)}\n`);
 
 // 2. skills README index
 const readmePath = path.join(SKILLS_DIR, "README.md");
-let readme = fs.readFileSync(readmePath, "utf8");
+// Normalize CRLF (Windows checkouts) so INDEX_RE matches; otherwise every run re-inserts the table.
+let readme = fs.readFileSync(readmePath, "utf8").replace(/\r\n/g, "\n");
 const rows = skills
   .map((skill) => {
     const { description } = readFrontmatter(skill);
@@ -71,11 +72,12 @@ const rows = skills
   .join("\n");
 
 const indexSection = `## Skills index (${skills.length})\n\n| Skill | Use when |\n|-------|----------|\n${rows}\n\n`;
+// One or more stacked index tables under the header: also collapses duplicates left by older runs.
 const INDEX_RE =
-  /## Skills index \(\d+\)\n\n\| Skill \| Use when \|\n\|[-|]+\|\n[\s\S]*?(?=\n## |$)/;
+  /## Skills index \(\d+\)\n\n(?:(?:## Skills index \(\d+\)\n\n)?\| Skill \| Use when \|\n\|[-|]+\|\n(?:\|.*\|\n)*\n*)+/;
 
 if (INDEX_RE.test(readme)) {
-  readme = readme.replace(INDEX_RE, indexSection.trimEnd());
+  readme = readme.replace(INDEX_RE, `${indexSection.trimEnd()}\n`);
 } else if (readme.includes("## Rules vs skills")) {
   // Header/table missing (or never existed) — insert the whole section.
   readme = readme.replace("## Rules vs skills", `${indexSection}## Rules vs skills`);

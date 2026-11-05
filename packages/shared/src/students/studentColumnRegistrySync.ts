@@ -11,7 +11,9 @@ import {
 import { resolveStudentEnabledTabIds } from "./studentSetupConfigTypes.js";
 import { syncModuleColumnRegistryWithFields } from "../settings/moduleColumnRegistrySync.js";
 import {
+  applyModuleColumnKinds,
   customFieldKeyFromColumnKey,
+  type ModuleColumnKind,
   type ModuleColumnRegistryEntry,
 } from "../settings/moduleColumnCore.js";
 
@@ -53,6 +55,21 @@ export interface StudentWorkColumnLabels {
   notes: string;
 }
 
+/** Content kind per built-in Work column; custom (`custom:*`) columns size as short text. */
+const STUDENT_COLUMN_KINDS: Readonly<Record<string, ModuleColumnKind>> = {
+  name: "identity",
+  grNumber: "reference",
+  gender: "boolean",
+  phone: "phone",
+  email: "email",
+  dob: "date",
+  parents: "chips",
+  status: "status",
+  registeredDate: "date",
+  notes: "longText",
+  updatedAt: "dateTime",
+};
+
 /** Builds tenant-default Work column registry for Students (before per-user overlay). */
 export function buildStudentWorkColumnRegistry(
   settings: StudentsSettings,
@@ -86,7 +103,7 @@ export function buildStudentWorkColumnRegistry(
     listEnabledCustomStudentFormFields(fields).map((field) => [field.key, field]),
   );
 
-  return synced.map((col) => {
+  const entries: ModuleColumnRegistryEntry[] = synced.map((col) => {
     const customFieldKey = customFieldKeyFromColumnKey(col.key);
     if (customFieldKey !== null) {
       const field = customByKey.get(customFieldKey);
@@ -108,4 +125,9 @@ export function buildStudentWorkColumnRegistry(
       fixed: col.fixed || col.key === "name",
     };
   });
+  const kinds: Record<string, ModuleColumnKind> = { ...STUDENT_COLUMN_KINDS };
+  for (const entry of entries) {
+    if (customFieldKeyFromColumnKey(entry.key) !== null) kinds[entry.key] = "shortText";
+  }
+  return applyModuleColumnKinds(entries, kinds);
 }

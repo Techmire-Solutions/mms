@@ -41,6 +41,7 @@ export function useMessagingTableColumns({
     if (showRecipient) {
       cols.push({
         id: "recipient",
+        kind: "person",
         label: t("messaging.recipient"),
         cellClassName: "font-semibold text-foreground",
         render: (log) => {
@@ -80,6 +81,7 @@ export function useMessagingTableColumns({
     if (showChannel) {
       cols.push({
         id: "channel",
+        kind: "status",
         label: t("messaging.channel"),
         render: (log) => {
           const isFailed = log.status === "failed";
@@ -116,6 +118,7 @@ export function useMessagingTableColumns({
     if (showBody) {
       cols.push({
         id: "body",
+        kind: "longText",
         label: t("messaging.messageBody"),
         cellClassName: "max-w-xs truncate text-muted-foreground",
         render: (log) => {
@@ -141,6 +144,7 @@ export function useMessagingTableColumns({
     if (showDateSent) {
       cols.push({
         id: "dateSent",
+        kind: "dateTime",
         label: t("messaging.dateSent"),
         cellClassName: "font-mono text-xs text-muted-foreground",
         render: (log) => formatDateTime(log.sentAt),

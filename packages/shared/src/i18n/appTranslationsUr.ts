@@ -2955,6 +2955,8 @@ export const APP_TRANSLATIONS_UR: Record<AppTranslationKey, string> = {
   "contacts.tags.reserved": "یہ ٹیگ خودکار طور پر منظم ہوتا ہے اور اس میں ترمیم نہیں کی جا سکتی",
   "contacts.tags.systemHint": "کردار کے ٹیگز طلبہ اور فیکلٹی ماڈیولز کے زیرِ انتظام ہیں",
   "contacts.tags.systemManaged": "خودکار طور پر منظم",
+  "contacts.tags.moreCount": "+{count}",
+  "contacts.tags.showMore": "مزید {count} ٹیگز دکھائیں",
   "contacts.tryAdjustingFilters": "تلاش یا فلٹرز ایڈجسٹ کر کے دیکھیں۔",
   "contacts.validation.invalidDate": "{label} درست تاریخ ہونی چاہیے",
   "contacts.validation.invalidDateTime": "{label} درست تاریخ اور وقت ہونا چاہیے",

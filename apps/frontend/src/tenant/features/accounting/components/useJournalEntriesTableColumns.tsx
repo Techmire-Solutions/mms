@@ -29,6 +29,7 @@ export function useJournalEntriesTableColumns({
     if (isColumnVisible("ref")) {
       cols.push({
         id: "ref",
+        kind: "reference",
         label: t("accounting.columns.journal.ref"),
         noWrap: true,
         render: (entry) => (
@@ -52,6 +53,7 @@ export function useJournalEntriesTableColumns({
     if (isColumnVisible("date")) {
       cols.push({
         id: "date",
+        kind: "date",
         label: t("accounting.columns.journal.date"),
         noWrap: true,
         cellClassName: "text-xs text-muted-foreground",
@@ -62,6 +64,7 @@ export function useJournalEntriesTableColumns({
     if (isColumnVisible("description")) {
       cols.push({
         id: "description",
+        kind: "longText",
         label: t("accounting.columns.journal.description"),
         truncate: true,
         cellClassName: "max-w-cell-trunc",
@@ -72,6 +75,7 @@ export function useJournalEntriesTableColumns({
     if (isColumnVisible("tags")) {
       cols.push({
         id: "tags",
+        kind: "chips",
         label: t("accounting.columns.journal.tags"),
         headerClassName: "hidden lg:table-cell",
         cellClassName: "hidden lg:table-cell",
@@ -93,6 +97,7 @@ export function useJournalEntriesTableColumns({
     if (isColumnVisible("debit")) {
       cols.push({
         id: "debit",
+        kind: "money",
         label: t("accounting.columns.journal.debit"),
         headerClassName: "text-end",
         noWrap: true,
@@ -107,6 +112,7 @@ export function useJournalEntriesTableColumns({
     if (isColumnVisible("credit")) {
       cols.push({
         id: "credit",
+        kind: "money",
         label: t("accounting.columns.journal.credit"),
         headerClassName: "text-end",
         noWrap: true,
@@ -121,6 +127,7 @@ export function useJournalEntriesTableColumns({
     if (isColumnVisible("status")) {
       cols.push({
         id: "status",
+        kind: "status",
         label: t("accounting.columns.journal.status"),
         noWrap: true,
         render: (entry) => (

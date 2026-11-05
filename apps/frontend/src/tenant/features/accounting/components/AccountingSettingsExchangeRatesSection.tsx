@@ -45,6 +45,7 @@ export function AccountingSettingsExchangeRatesSection({
   const columns: DataTableColumn<ExchangeRateRecord>[] = [
     {
       id: "rateDate",
+      kind: "date",
       label: t("accounting.settings.fx.rates.date"),
       fixed: true,
       searchValue: (row) => formatDate(row.rateDate),
@@ -52,6 +53,7 @@ export function AccountingSettingsExchangeRatesSection({
     },
     {
       id: "pair",
+      kind: "code",
       label: t("accounting.settings.fx.rates.pair"),
       searchValue: (row) => `${row.fromCurrency} ${row.toCurrency}`,
       render: (row) => (
@@ -67,11 +69,13 @@ export function AccountingSettingsExchangeRatesSection({
     },
     {
       id: "rateType",
+      kind: "status",
       label: t("accounting.settings.fx.rates.type"),
       render: (row) => t(`accounting.settings.fx.rateType.${row.rateType}`),
     },
     {
       id: "reason",
+      kind: "longText",
       label: t("accounting.settings.fx.rates.reason"),
       hideInCard: true,
       render: (row) => <span className="text-muted-foreground">{row.overrideReason || "—"}</span>,

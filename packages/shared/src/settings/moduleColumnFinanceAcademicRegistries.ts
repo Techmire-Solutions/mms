@@ -1,4 +1,8 @@
-import { createColumnRegistry, type ModuleColumnRegistryEntry } from "./moduleColumnCore.js";
+import {
+  createColumnRegistry,
+  type ModuleColumnKind,
+  type ModuleColumnRegistryEntry,
+} from "./moduleColumnCore.js";
 
 export interface FinanceInvoiceWorkColumnLabels {
   invoice: string;
@@ -11,6 +15,17 @@ export interface FinanceInvoiceWorkColumnLabels {
   dueDate: string;
 }
 
+const FINANCE_INVOICE_COLUMN_KINDS: Readonly<Record<string, ModuleColumnKind>> = {
+  invoice: "reference",
+  student: "person",
+  sessionClass: "shortText",
+  baseFee: "money",
+  discount: "money",
+  final: "money",
+  status: "status",
+  dueDate: "date",
+};
+
 /** Builds tenant-default Work column registry for Finance invoices (before per-user overlay). */
 export function buildFinanceInvoiceWorkColumnRegistry(
   labels: FinanceInvoiceWorkColumnLabels,
@@ -18,6 +33,8 @@ export function buildFinanceInvoiceWorkColumnRegistry(
   return createColumnRegistry(
     ["invoice", "student", "sessionClass", "baseFee", "discount", "final", "status", "dueDate"],
     labels,
+    true,
+    FINANCE_INVOICE_COLUMN_KINDS,
   );
 }
 
@@ -31,6 +48,16 @@ export interface FinancePaymentWorkColumnLabels {
   note: string;
 }
 
+const FINANCE_PAYMENT_COLUMN_KINDS: Readonly<Record<string, ModuleColumnKind>> = {
+  date: "date",
+  student: "person",
+  invoice: "reference",
+  amount: "money",
+  method: "status",
+  receivedBy: "person",
+  note: "longText",
+};
+
 /** Builds tenant-default Work column registry for Finance payments (before per-user overlay). */
 export function buildFinancePaymentWorkColumnRegistry(
   labels: FinancePaymentWorkColumnLabels,
@@ -38,6 +65,8 @@ export function buildFinancePaymentWorkColumnRegistry(
   return createColumnRegistry(
     ["date", "student", "invoice", "amount", "method", "receivedBy", "note"],
     labels,
+    true,
+    FINANCE_PAYMENT_COLUMN_KINDS,
   );
 }
 
@@ -52,6 +81,17 @@ export interface AttendanceWorkColumnLabels {
   notes: string;
 }
 
+const ATTENDANCE_COLUMN_KINDS: Readonly<Record<string, ModuleColumnKind>> = {
+  date: "date",
+  class: "shortText",
+  session: "shortText",
+  student: "person",
+  status: "status",
+  timeIn: "code",
+  timeOut: "code",
+  notes: "longText",
+};
+
 /** Builds tenant-default Work column registry for Attendance records (before per-user overlay). */
 export function buildAttendanceWorkColumnRegistry(
   labels: AttendanceWorkColumnLabels,
@@ -59,6 +99,8 @@ export function buildAttendanceWorkColumnRegistry(
   return createColumnRegistry(
     ["date", "class", "session", "student", "status", "timeIn", "timeOut", "notes"],
     labels,
+    true,
+    ATTENDANCE_COLUMN_KINDS,
   );
 }
 
@@ -74,6 +116,19 @@ export interface SessionWorkColumnLabels {
   status: string;
   description: string;
 }
+
+const SESSION_COLUMN_KINDS: Readonly<Record<string, ModuleColumnKind>> = {
+  name: "title",
+  type: "status",
+  startDate: "date",
+  endDate: "date",
+  duration: "number",
+  fee: "money",
+  currency: "code",
+  enrolled: "number",
+  status: "status",
+  description: "longText",
+};
 
 /** Builds tenant-default Work column registry for Sessions list view (before per-user overlay). */
 export function buildSessionWorkColumnRegistry(
@@ -93,6 +148,8 @@ export function buildSessionWorkColumnRegistry(
       "description",
     ],
     labels,
+    true,
+    SESSION_COLUMN_KINDS,
   );
 }
 
@@ -107,6 +164,17 @@ export interface EnrollmentWorkColumnLabels {
   notes: string;
 }
 
+const ENROLLMENT_COLUMN_KINDS: Readonly<Record<string, ModuleColumnKind>> = {
+  student: "person",
+  session: "shortText",
+  class: "shortText",
+  enrolledDate: "date",
+  finalFee: "money",
+  status: "status",
+  payment: "status",
+  notes: "longText",
+};
+
 /** Builds tenant-default Work column registry for Enrollments (before per-user overlay). */
 export function buildEnrollmentWorkColumnRegistry(
   labels: EnrollmentWorkColumnLabels,
@@ -114,5 +182,7 @@ export function buildEnrollmentWorkColumnRegistry(
   return createColumnRegistry(
     ["student", "session", "class", "enrolledDate", "finalFee", "status", "payment", "notes"],
     labels,
+    true,
+    ENROLLMENT_COLUMN_KINDS,
   );
 }

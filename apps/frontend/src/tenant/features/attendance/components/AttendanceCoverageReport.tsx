@@ -62,6 +62,7 @@ export function AttendanceCoverageReport({
   const columns: DataTableColumn<UnmarkedRow>[] = [
     {
       id: "date",
+      kind: "date",
       label: t("attendance.coverage.date"),
       fixed: true,
       render: (row) => <span className="font-medium">{formatDate(row.date)}</span>,

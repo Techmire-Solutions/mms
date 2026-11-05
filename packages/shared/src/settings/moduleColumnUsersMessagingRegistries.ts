@@ -1,4 +1,8 @@
-import { createColumnRegistry, type ModuleColumnRegistryEntry } from "./moduleColumnCore.js";
+import {
+  createColumnRegistry,
+  type ModuleColumnKind,
+  type ModuleColumnRegistryEntry,
+} from "./moduleColumnCore.js";
 
 export interface UsersWorkColumnLabels {
   user: string;
@@ -10,6 +14,16 @@ export interface UsersWorkColumnLabels {
   twoFactor: string;
 }
 
+const USERS_COLUMN_KINDS: Readonly<Record<string, ModuleColumnKind>> = {
+  user: "identity",
+  email: "email",
+  role: "status",
+  status: "status",
+  lastLogin: "dateTime",
+  created: "date",
+  twoFactor: "boolean",
+};
+
 /** Builds tenant-default Work column registry for Users directory. */
 export function buildUsersWorkColumnRegistry(
   labels: UsersWorkColumnLabels,
@@ -17,6 +31,8 @@ export function buildUsersWorkColumnRegistry(
   return createColumnRegistry(
     ["user", "email", "role", "status", "lastLogin", "created", "twoFactor"],
     labels,
+    true,
+    USERS_COLUMN_KINDS,
   );
 }
 
@@ -28,11 +44,24 @@ export interface UsersActivityWorkColumnLabels {
   ip: string;
 }
 
+const USERS_ACTIVITY_COLUMN_KINDS: Readonly<Record<string, ModuleColumnKind>> = {
+  time: "dateTime",
+  user: "person",
+  action: "shortText",
+  detail: "longText",
+  ip: "reference",
+};
+
 /** Builds tenant-default Work column registry for Users activity log. */
 export function buildUsersActivityWorkColumnRegistry(
   labels: UsersActivityWorkColumnLabels,
 ): ModuleColumnRegistryEntry[] {
-  return createColumnRegistry(["time", "user", "action", "detail", "ip"], labels);
+  return createColumnRegistry(
+    ["time", "user", "action", "detail", "ip"],
+    labels,
+    true,
+    USERS_ACTIVITY_COLUMN_KINDS,
+  );
 }
 
 export interface MessagingRecipientsWorkColumnLabels {
@@ -41,11 +70,22 @@ export interface MessagingRecipientsWorkColumnLabels {
   email: string;
 }
 
+const MESSAGING_RECIPIENTS_COLUMN_KINDS: Readonly<Record<string, ModuleColumnKind>> = {
+  recipient: "person",
+  phone: "shortText",
+  email: "email",
+};
+
 /** Builds tenant-default Work column registry for Messaging compose recipient picker. */
 export function buildMessagingRecipientsWorkColumnRegistry(
   labels: MessagingRecipientsWorkColumnLabels,
 ): ModuleColumnRegistryEntry[] {
-  return createColumnRegistry(["recipient", "phone", "email"], labels);
+  return createColumnRegistry(
+    ["recipient", "phone", "email"],
+    labels,
+    true,
+    MESSAGING_RECIPIENTS_COLUMN_KINDS,
+  );
 }
 
 export interface MessagingHistoryWorkColumnLabels {
@@ -55,11 +95,23 @@ export interface MessagingHistoryWorkColumnLabels {
   dateSent: string;
 }
 
+const MESSAGING_HISTORY_COLUMN_KINDS: Readonly<Record<string, ModuleColumnKind>> = {
+  recipient: "person",
+  channel: "status",
+  body: "longText",
+  dateSent: "dateTime",
+};
+
 /** Builds tenant-default Work column registry for Messaging sent history. */
 export function buildMessagingHistoryWorkColumnRegistry(
   labels: MessagingHistoryWorkColumnLabels,
 ): ModuleColumnRegistryEntry[] {
-  return createColumnRegistry(["recipient", "channel", "body", "dateSent"], labels);
+  return createColumnRegistry(
+    ["recipient", "channel", "body", "dateSent"],
+    labels,
+    true,
+    MESSAGING_HISTORY_COLUMN_KINDS,
+  );
 }
 
 export interface MessagingTemplatesWorkColumnLabels {
@@ -69,9 +121,21 @@ export interface MessagingTemplatesWorkColumnLabels {
   body: string;
 }
 
+const MESSAGING_TEMPLATES_COLUMN_KINDS: Readonly<Record<string, ModuleColumnKind>> = {
+  label: "title",
+  category: "shortText",
+  channel: "status",
+  body: "longText",
+};
+
 /** Builds tenant-default Work column registry for Messaging templates setup table. */
 export function buildMessagingTemplatesWorkColumnRegistry(
   labels: MessagingTemplatesWorkColumnLabels,
 ): ModuleColumnRegistryEntry[] {
-  return createColumnRegistry(["label", "category", "channel", "body"], labels);
+  return createColumnRegistry(
+    ["label", "category", "channel", "body"],
+    labels,
+    true,
+    MESSAGING_TEMPLATES_COLUMN_KINDS,
+  );
 }

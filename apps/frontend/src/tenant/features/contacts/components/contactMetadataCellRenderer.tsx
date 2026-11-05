@@ -33,6 +33,9 @@ import {
   renderWhatsAppMetadata,
 } from "@/tenant/features/contacts/components/contactMetadataIdentity";
 
+/** Tags shown inline in directory cells; the rest open from the "+N" chip. */
+const CONTACT_TABLE_VISIBLE_TAGS = 3;
+
 export interface RenderContactMetadataCellValueArgs {
   colId: string;
   contact: Contact;
@@ -111,7 +114,13 @@ export function renderContactMetadataCellValue({
     case "tags": {
       const hasTags = getContactTags(contact).length > 0 || (contact.systemTags?.length ?? 0) > 0;
       if (!hasTags) return renderDash();
-      return <ContactTagList contact={contact} className="gap-1" />;
+      return (
+        <ContactTagList
+          contact={contact}
+          className="gap-1"
+          maxVisible={CONTACT_TABLE_VISIBLE_TAGS}
+        />
+      );
     }
     case "notes": {
       if (!contact.notes) return renderDash();

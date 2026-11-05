@@ -47,6 +47,7 @@ export function FacultyDesignationsTable({
   const columns: DataTableColumn<FacultyDesignationDefinition>[] = [
     {
       id: "name",
+      kind: "title",
       label: t("faculty.designations.name"),
       fixed: true,
       render: (d) => (
@@ -60,6 +61,7 @@ export function FacultyDesignationsTable({
     },
     {
       id: "department",
+      kind: "shortText",
       label: t("faculty.designations.department"),
       searchValue: (d) => d.departmentName ?? "",
       render: (d) => (
@@ -70,6 +72,7 @@ export function FacultyDesignationsTable({
     },
     {
       id: "parent",
+      kind: "shortText",
       label: t("faculty.designations.parentDesignation"),
       searchValue: (d) => d.parentDesignationName ?? "",
       render: (d) => (

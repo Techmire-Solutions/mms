@@ -241,6 +241,6 @@ export const DEFAULT_SETTINGS_SUB_TABS: TabDefinition[] = [
   },
 ];
 
-export { DEFAULT_COLUMN_REGISTRY } from "./contactColumnRegistry.js";
+export { DEFAULT_COLUMN_REGISTRY, getContactColumnKind } from "./contactColumnRegistry.js";
 
 export { COLUMN_FIELD_MAPPING } from "./contactColumnFieldMapping.js";

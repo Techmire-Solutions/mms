@@ -163,6 +163,7 @@ Update this table in the same change that adds or removes a check.
 | Standards mirrors regenerated and staged with their source before commit | `.githooks/pre-commit` (`sync-all.sh` + `scripts/check-standards-staged.mjs` + verifier when standards paths are staged) + CI drift diff over `.agent .cursor .claude .dsh` | hook + CI |
 | Work directory convergence (selection SSOT, two-layer bulk chrome, no dead adapters) | `pnpm run check:work-directory` | ratchet |
 | Data tables use `DataTable` / `WorkBatchTable` (no hand-rolled `<Table>` outside the report/ledger allowlist) | `pnpm run check:work-directory` | ratchet |
+| Every table column is sized by a content `kind` (`MODULE_COLUMN_KIND_WIDTHS`) or explicit `width`; stale stored widths floor at the kind minimum | `pnpm run check:work-directory` (column literals) + `packages/shared/src/__tests__/moduleColumnRegistryKinds.test.ts` (Work registries) | ratchet + test |
 | Shared UI component governance (zero duplicate components across consoles, `@shared/ui` SSOT, zero orphaned imports) | `mms-shared-ui.md` (norm) + `pnpm run check:shared-ui` (CI + pre-PR gate) | rule + ratchet |
 | Reuse-first / consumer-compatible shared changes (`mms-dry` §1) | none — **advisory** (review discipline) | advisory |
 | Test-first ordering (Red before Green) | none can prove ordering — **advisory**; `pnpm run check:tdd-pairing` warns when a changed backend domain file has no changed spec (pre-PR gate, never fails) | advisory |

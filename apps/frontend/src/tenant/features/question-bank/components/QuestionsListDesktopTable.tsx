@@ -71,6 +71,7 @@ export function QuestionsListDesktopTable({
     if (isColumnVisible("text")) {
       cols.push({
         id: "text",
+        kind: "longText",
         label: t("questionBank.columns.text"),
         cellClassName: "max-w-sidebar-mobile font-semibold",
         render: (question) => <p className="m-0 line-clamp-2">{question.text}</p>,
@@ -80,6 +81,7 @@ export function QuestionsListDesktopTable({
     if (isColumnVisible("category")) {
       cols.push({
         id: "category",
+        kind: "shortText",
         label: t("questionBank.columns.category"),
         render: (question) => (
           <div className="flex flex-wrap gap-1">
@@ -103,6 +105,7 @@ export function QuestionsListDesktopTable({
     if (isColumnVisible("language")) {
       cols.push({
         id: "language",
+        kind: "shortText",
         label: t("questionBank.columns.language"),
         noWrap: true,
         cellClassName: "text-muted-foreground",
@@ -113,6 +116,7 @@ export function QuestionsListDesktopTable({
     if (isColumnVisible("type")) {
       cols.push({
         id: "type",
+        kind: "status",
         label: t("questionBank.columns.type"),
         noWrap: true,
         render: (question) => <StatusBadge status={question.type} config={typeConfig} size="sm" />,
@@ -122,6 +126,7 @@ export function QuestionsListDesktopTable({
     if (isColumnVisible("difficulty")) {
       cols.push({
         id: "difficulty",
+        kind: "status",
         label: t("questionBank.columns.difficulty"),
         noWrap: true,
         render: (question) => (
@@ -133,6 +138,7 @@ export function QuestionsListDesktopTable({
     if (isColumnVisible("source")) {
       cols.push({
         id: "source",
+        kind: "shortText",
         label: t("questionBank.columns.source"),
         truncate: true,
         cellClassName: "max-w-cell-lg text-xs text-muted-foreground",

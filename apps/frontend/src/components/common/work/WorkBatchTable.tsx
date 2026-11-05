@@ -7,6 +7,11 @@ import { ModuleTableFooterCount } from "@/components/app/ModuleTableFooterCount"
 import { WorkBatchTableRow } from "./WorkBatchTableRow";
 import { WorkBatchTableVirtualizedRows } from "./WorkBatchTableVirtualizedRows";
 import { WorkBatchTableFooter } from "./WorkBatchTableFooter";
+import {
+  computeWorkTableMinWidth,
+  resolveWorkColumnMinWidth,
+  resolveWorkColumnWidth,
+} from "./workBatchTableWidths";
 import type { WorkBatchTableColumn, WorkBatchTableProps } from "./workBatchTableTypes";
 import { useListRowMotion } from "@/hooks/useListRowMotion";
 import { useWorkBatchTableInternalState } from "./useWorkBatchTableInternalState";
@@ -75,6 +80,19 @@ export function WorkBatchTable<TData extends { id: string | number }>({
     return sortedData.filter((row) => !optimisticDeletedIds.has(row.id));
   }, [sortedData, optimisticDeletedIds]);
 
+  const getStoredColumnWidth = columnResizeConfig.getColumnWidth;
+  const resolvedWidths = React.useMemo(
+    () =>
+      new Map(
+        columns.map((col) => [col.id, resolveWorkColumnWidth(col, getStoredColumnWidth(col.id))]),
+      ),
+    [columns, getStoredColumnWidth],
+  );
+  const tableMinWidth = computeWorkTableMinWidth([...resolvedWidths.values()], {
+    selection: Boolean(selection),
+    actions: Boolean(renderRowActions),
+  });
+
   const isVirtualized = Boolean(virtualize ?? activeRows.length > 30);
 
   const rowVirtualizer = useVirtualizer({
@@ -96,7 +114,8 @@ export function WorkBatchTable<TData extends { id: string | number }>({
     id: col.id,
     label: col.label,
     sortField: col.sortField,
-    width: col.width,
+    width: resolvedWidths.get(col.id),
+    minWidth: resolveWorkColumnMinWidth(col),
     headerClassName: col.headerClassName,
     noWrap: col.noWrap,
     truncate: col.truncate,
@@ -114,14 +133,14 @@ export function WorkBatchTable<TData extends { id: string | number }>({
           bordered && WORK_SURFACE,
         )}
       >
-        <Table className={cn("table-fixed w-full", className)}>
+        <Table className={cn("table-fixed w-full", className)} style={{ minWidth: tableMinWidth }}>
           {caption ? <caption className="sr-only">{caption}</caption> : null}
           <ModuleWorkTableHeader
             columns={headerColumns}
             sortField={sortConfig.field}
             sortDir={sortConfig.dir}
             onSort={sortConfig.onSort}
-            getColumnWidth={(key) => columnResizeConfig.getColumnWidth(key)}
+            getColumnWidth={(key) => resolvedWidths.get(key)}
             setColumnWidth={(key, width) => columnResizeConfig.onColumnResize(key, width)}
             selection={
               selection

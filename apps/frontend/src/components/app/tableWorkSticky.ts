@@ -15,9 +15,14 @@ export const WORK_TABLE_ROW_TINT = {
   idle: "hover:bg-muted/40",
 } as const;
 
-/** Sticky checkbox/name cell background aligned with the selected/hover row tint. */
+/**
+ * Sticky checkbox/name cell background aligned with the selected/hover row tint.
+ * Opaque (pre-blended over the card) so scrolled cells never show through the pinned cell.
+ */
 export function workTableStickyCellBg(isSelected: boolean): string {
-  return isSelected ? "bg-primary/5 group-hover:bg-primary/10" : "bg-card group-hover:bg-muted/40";
+  return isSelected
+    ? "bg-surface-sticky-selected group-hover:bg-surface-sticky-selected-hover"
+    : "bg-card group-hover:bg-surface-sticky-hover";
 }
 
 /** Row-level selection tint shared with {@link workTableStickyCellBg}. */

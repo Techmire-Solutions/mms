@@ -41,7 +41,8 @@ describe("ModuleTableSelectionCell", () => {
       </Table>,
     );
 
-    expect(html).toContain("bg-primary/5");
+    // Opaque pre-blended tint (was translucent `bg-primary/5`, which let scrolled cells show through).
+    expect(html).toContain("bg-surface-sticky-selected");
   });
 
   it("renders checkbox with standard 16px (h-4 w-4) sizing matching table header", () => {

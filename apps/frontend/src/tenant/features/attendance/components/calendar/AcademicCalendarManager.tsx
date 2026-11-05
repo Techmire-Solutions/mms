@@ -63,6 +63,7 @@ export function AcademicCalendarManager({
   const columns: DataTableColumn<AcademicCalendarEvent>[] = [
     {
       id: "title",
+      kind: "title",
       label: t("attendance.calendar.title"),
       fixed: true,
       render: (row) => <span className="font-medium">{row.title}</span>,

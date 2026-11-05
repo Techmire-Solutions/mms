@@ -33,24 +33,28 @@ export function AccountingFiscalYearsTable({
   const columns: DataTableColumn<FiscalYear>[] = [
     {
       id: "label",
+      kind: "title",
       label: t("accounting.settings.fy.label"),
       fixed: true,
       render: (fy) => <span className="font-semibold text-foreground">{fy.label}</span>,
     },
     {
       id: "startDate",
+      kind: "date",
       label: t("accounting.settings.fy.startDateField"),
       searchValue: (fy) => formatDate(fy.startDate),
       render: (fy) => <span className="text-muted-foreground">{formatDate(fy.startDate)}</span>,
     },
     {
       id: "endDate",
+      kind: "date",
       label: t("accounting.settings.fy.endDateField"),
       searchValue: (fy) => formatDate(fy.endDate),
       render: (fy) => <span className="text-muted-foreground">{formatDate(fy.endDate)}</span>,
     },
     {
       id: "status",
+      kind: "status",
       label: t("accounting.settings.fy.status"),
       searchValue: statusLabel,
       hideInCard: true,

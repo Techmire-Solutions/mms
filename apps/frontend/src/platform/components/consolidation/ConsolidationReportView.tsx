@@ -30,23 +30,32 @@ export function ConsolidationReportView({
   const consolidatedColumns: DataTableColumn<ConsolidatedRowWithId>[] = [
     {
       id: "code",
+      kind: "code",
       label: t("platform.consolidation.account"),
       fixed: true,
       render: (row) => `${row.code} – ${row.name}`,
     },
-    { id: "type", label: t("platform.consolidation.type"), render: (row) => row.type },
+    {
+      id: "type",
+      kind: "status",
+      label: t("platform.consolidation.type"),
+      render: (row) => row.type,
+    },
     {
       id: "combined",
+      kind: "money",
       label: t("platform.consolidation.combined"),
       render: (row) => amountCell(row.combined),
     },
     {
       id: "elimination",
+      kind: "money",
       label: t("platform.consolidation.elimination"),
       render: (row) => amountCell(row.elimination),
     },
     {
       id: "balance",
+      kind: "money",
       label: t("platform.consolidation.groupBalance"),
       render: (row) => amountCell(row.balance),
     },
@@ -55,22 +64,26 @@ export function ConsolidationReportView({
   const memberColumns = (functionalCurrency: string): DataTableColumn<TranslatedRowWithId>[] => [
     {
       id: "code",
+      kind: "code",
       label: t("platform.consolidation.account"),
       fixed: true,
       render: (row) => `${row.code} – ${row.name}`,
     },
     {
       id: "functional",
+      kind: "money",
       label: t("platform.consolidation.functionalBalance"),
       render: (row) => amountCell(row.functionalBalance, functionalCurrency),
     },
     {
       id: "rate",
+      kind: "number",
       label: t("platform.consolidation.rate"),
       render: (row) => <span className="font-mono">{row.rate}</span>,
     },
     {
       id: "translated",
+      kind: "money",
       label: t("platform.consolidation.translated"),
       render: (row) => amountCell(row.balance),
     },

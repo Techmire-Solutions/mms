@@ -1,4 +1,8 @@
-import { createColumnRegistry, type ModuleColumnRegistryEntry } from "./moduleColumnCore.js";
+import {
+  createColumnRegistry,
+  type ModuleColumnKind,
+  type ModuleColumnRegistryEntry,
+} from "./moduleColumnCore.js";
 
 export interface ObligationCollectionWorkColumnLabels {
   receiptNo: string;
@@ -12,6 +16,19 @@ export interface ObligationCollectionWorkColumnLabels {
   currency: string;
   receivedBy: string;
 }
+
+const OBLIGATION_COLLECTION_COLUMN_KINDS: Readonly<Record<string, ModuleColumnKind>> = {
+  receiptNo: "reference",
+  receivedDate: "date",
+  sender: "person",
+  obligationType: "shortText",
+  repMujtahid: "person",
+  amount: "money",
+  paymentMode: "status",
+  reference: "reference",
+  currency: "code",
+  receivedBy: "person",
+};
 
 /** Builds tenant-default Work column registry for Obligation collections (before per-user overlay). */
 export function buildObligationCollectionWorkColumnRegistry(
@@ -31,6 +48,8 @@ export function buildObligationCollectionWorkColumnRegistry(
       "receivedBy",
     ],
     labels,
+    true,
+    OBLIGATION_COLLECTION_COLUMN_KINDS,
   );
 }
 
@@ -44,6 +63,16 @@ export interface AccountingJournalWorkColumnLabels {
   status: string;
 }
 
+const ACCOUNTING_JOURNAL_COLUMN_KINDS: Readonly<Record<string, ModuleColumnKind>> = {
+  ref: "reference",
+  date: "date",
+  description: "longText",
+  tags: "chips",
+  debit: "money",
+  credit: "money",
+  status: "status",
+};
+
 /** Builds tenant-default Work column registry for Accounting journal entries. */
 export function buildAccountingJournalWorkColumnRegistry(
   labels: AccountingJournalWorkColumnLabels,
@@ -51,6 +80,8 @@ export function buildAccountingJournalWorkColumnRegistry(
   return createColumnRegistry(
     ["ref", "date", "description", "tags", "debit", "credit", "status"],
     labels,
+    true,
+    ACCOUNTING_JOURNAL_COLUMN_KINDS,
   );
 }
 
@@ -63,6 +94,15 @@ export interface AccountingAccountWorkColumnLabels {
   normalBalance: string;
 }
 
+const ACCOUNTING_ACCOUNT_COLUMN_KINDS: Readonly<Record<string, ModuleColumnKind>> = {
+  code: "code",
+  name: "title",
+  type: "status",
+  subtype: "shortText",
+  description: "longText",
+  normalBalance: "status",
+};
+
 /** Builds tenant-default Work column registry for Chart of Accounts. */
 export function buildAccountingAccountWorkColumnRegistry(
   labels: AccountingAccountWorkColumnLabels,
@@ -70,6 +110,8 @@ export function buildAccountingAccountWorkColumnRegistry(
   return createColumnRegistry(
     ["code", "name", "type", "subtype", "description", "normalBalance"],
     labels,
+    true,
+    ACCOUNTING_ACCOUNT_COLUMN_KINDS,
   );
 }
 
@@ -84,6 +126,18 @@ export interface HasanatDistributionWorkColumnLabels {
   issuedBy: string;
   status: string;
 }
+
+const HASANAT_DISTRIBUTION_COLUMN_KINDS: Readonly<Record<string, ModuleColumnKind>> = {
+  card: "reference",
+  recipient: "person",
+  recipientType: "status",
+  recipientClass: "shortText",
+  quantity: "number",
+  reason: "longText",
+  issuedDate: "date",
+  issuedBy: "person",
+  status: "status",
+};
 
 /** Builds tenant-default Work column registry for Hasanat distributions. */
 export function buildHasanatDistributionWorkColumnRegistry(
@@ -102,6 +156,8 @@ export function buildHasanatDistributionWorkColumnRegistry(
       "status",
     ],
     labels,
+    true,
+    HASANAT_DISTRIBUTION_COLUMN_KINDS,
   );
 }
 
@@ -113,9 +169,22 @@ export interface HasanatRedemptionWorkColumnLabels {
   approvedBy: string;
 }
 
+const HASANAT_REDEMPTION_COLUMN_KINDS: Readonly<Record<string, ModuleColumnKind>> = {
+  student: "person",
+  reward: "shortText",
+  pointsUsed: "number",
+  date: "date",
+  approvedBy: "person",
+};
+
 /** Builds tenant-default Work column registry for Hasanat redemptions. */
 export function buildHasanatRedemptionWorkColumnRegistry(
   labels: HasanatRedemptionWorkColumnLabels,
 ): ModuleColumnRegistryEntry[] {
-  return createColumnRegistry(["student", "reward", "pointsUsed", "date", "approvedBy"], labels);
+  return createColumnRegistry(
+    ["student", "reward", "pointsUsed", "date", "approvedBy"],
+    labels,
+    true,
+    HASANAT_REDEMPTION_COLUMN_KINDS,
+  );
 }

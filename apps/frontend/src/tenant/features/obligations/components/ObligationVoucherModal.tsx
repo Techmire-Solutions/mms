@@ -91,6 +91,7 @@ export function ObligationVoucherModal({ collection, onClose }: ObligationVouche
   const columns: WorkBatchTableColumn<VoucherTableLine>[] = [
     {
       id: "account",
+      kind: "title",
       label: t("accounting.journal.voucher.account"),
       cellClassName: "px-3 py-2.5",
       render: (line) => {
@@ -107,12 +108,14 @@ export function ObligationVoucherModal({ collection, onClose }: ObligationVouche
     },
     {
       id: "description",
+      kind: "longText",
       label: t("accounting.columns.journal.description"),
       cellClassName: "px-3 py-2.5 text-xs text-muted-foreground",
       render: (line) => line.description || "—",
     },
     {
       id: "debit",
+      kind: "money",
       label: t("accounting.columns.journal.debit"),
       variant: "currency",
       headerClassName: "w-28 text-end",
@@ -121,6 +124,7 @@ export function ObligationVoucherModal({ collection, onClose }: ObligationVouche
     },
     {
       id: "credit",
+      kind: "money",
       label: t("accounting.columns.journal.credit"),
       variant: "currency",
       headerClassName: "w-28 text-end",

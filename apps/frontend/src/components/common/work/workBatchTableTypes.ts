@@ -1,4 +1,5 @@
 import type React from "react";
+import type { ModuleColumnKind } from "@mms/shared";
 import type { TableCellAlign, TableCellVariant } from "@/components/ui/table";
 
 /**
@@ -33,6 +34,8 @@ export interface WorkBatchTableColumn<TData> {
   label: string;
   sortField?: string;
   width?: number;
+  /** Content kind: seeds the default width and floors stale stored widths (`MODULE_COLUMN_KIND_WIDTHS`). */
+  kind?: ModuleColumnKind;
   headerClassName?: string;
   cellClassName?: string | ((row: TData) => string | undefined);
   render: (row: TData, index: number) => React.ReactNode;

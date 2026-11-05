@@ -1,6 +1,7 @@
 /** Contact field/tab/column schema types and preference contracts. */
 import type { AppTranslationKey } from "../i18n/appTranslations.js";
 import type { RelationshipPair } from "./contactEntityTypes.js";
+import type { ModuleColumnKind } from "../settings/moduleColumnWidthPresets.js";
 
 /** Schema metadata for dynamic custom and standard contact fields. */
 export interface FieldDefinition {
@@ -73,6 +74,8 @@ export interface ColumnRegistryEntry {
   width?: number; // px, 0 = auto
   sortField?: string; // field key to sort by
   fixed?: boolean;
+  /** Content kind; seeds the default width and floors stale stored widths. */
+  kind?: ModuleColumnKind;
 }
 
 /** Complete field configuration envelope governing standard and custom field definitions. */

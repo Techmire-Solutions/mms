@@ -51,6 +51,7 @@ export function useObligationCollectionTableColumns(
     if (isColumnVisible("receiptNo")) {
       cols.push({
         id: "receiptNo",
+        kind: "reference",
         label: t("obligations.columns.receiptNo"),
         noWrap: true,
         render: (collection) => (
@@ -76,6 +77,7 @@ export function useObligationCollectionTableColumns(
     if (isColumnVisible("receivedDate")) {
       cols.push({
         id: "receivedDate",
+        kind: "date",
         label: t("obligations.columns.receivedDate"),
         noWrap: true,
         cellClassName: "text-xs text-muted-foreground",
@@ -86,6 +88,7 @@ export function useObligationCollectionTableColumns(
     if (isColumnVisible("sender")) {
       cols.push({
         id: "sender",
+        kind: "person",
         label: t("obligations.columns.sender"),
         cellClassName: "font-semibold text-foreground",
         render: (collection) => {
@@ -98,6 +101,7 @@ export function useObligationCollectionTableColumns(
     if (isColumnVisible("obligationType")) {
       cols.push({
         id: "obligationType",
+        kind: "shortText",
         label: t("obligations.columns.obligationType"),
         noWrap: true,
         render: (collection) => {
@@ -114,6 +118,7 @@ export function useObligationCollectionTableColumns(
     if (isColumnVisible("repMujtahid")) {
       cols.push({
         id: "repMujtahid",
+        kind: "person",
         label: t("obligations.columns.repMujtahid"),
         cellClassName: "text-xs text-muted-foreground",
         render: (collection) => {
@@ -133,6 +138,7 @@ export function useObligationCollectionTableColumns(
     if (isColumnVisible("amount")) {
       cols.push({
         id: "amount",
+        kind: "money",
         label: t("obligations.columns.amount"),
         noWrap: true,
         cellClassName: "font-semibold text-foreground",
@@ -143,6 +149,7 @@ export function useObligationCollectionTableColumns(
     if (isColumnVisible("paymentMode")) {
       cols.push({
         id: "paymentMode",
+        kind: "status",
         label: t("obligations.columns.paymentMode"),
         noWrap: true,
         render: (collection) => (
@@ -154,6 +161,7 @@ export function useObligationCollectionTableColumns(
     if (isColumnVisible("reference")) {
       cols.push({
         id: "reference",
+        kind: "reference",
         label: t("obligations.columns.reference"),
         noWrap: true,
         cellClassName: "text-sm text-muted-foreground",
@@ -164,6 +172,7 @@ export function useObligationCollectionTableColumns(
     if (isColumnVisible("currency")) {
       cols.push({
         id: "currency",
+        kind: "code",
         label: t("obligations.columns.currency"),
         noWrap: true,
         cellClassName: "text-xs text-muted-foreground",
@@ -179,6 +188,7 @@ export function useObligationCollectionTableColumns(
     if (isColumnVisible("receivedBy")) {
       cols.push({
         id: "receivedBy",
+        kind: "person",
         label: t("obligations.columns.receivedBy"),
         noWrap: true,
         cellClassName: "text-xs text-muted-foreground",
