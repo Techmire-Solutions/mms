@@ -1,4 +1,4 @@
-import type { ModuleColumnRegistryEntry } from "@mms/shared";
+import { resolveModuleColumnWidth, type ModuleColumnRegistryEntry } from "@mms/shared";
 import type {
   DataTableColumn,
   DataTableFilter,
@@ -39,7 +39,8 @@ export function buildDataTableRegistry<TData>(
     enabled: column.fixed ? true : !column.defaultHidden,
     order,
     fixed: column.fixed,
-    width: column.width,
+    width: resolveModuleColumnWidth(column.width, column.kind),
+    ...(column.kind ? { kind: column.kind } : {}),
   }));
 }
 

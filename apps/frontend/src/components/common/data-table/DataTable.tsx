@@ -65,6 +65,7 @@ export function DataTable<TData extends { id: string | number }>({
         id: column.id,
         label: column.label,
         width: column.width,
+        kind: column.kind,
         headerClassName: column.headerClassName,
         cellClassName: column.cellClassName,
         render: column.render,

@@ -1,4 +1,5 @@
 import { createContext } from "react";
+import type { ModuleColumnKind } from "@mms/shared";
 import type { ContactConfigExtras } from "./useContactConfigTypes";
 import { getDefaultContactConfigContextValue } from "./defaultContactConfigValue";
 
@@ -8,6 +9,7 @@ export interface ContactsColumnConfig {
   label: string;
   sortField?: string;
   width?: number;
+  kind?: ModuleColumnKind;
 }
 
 /** Complete Contact Configuration Context shape consumed by tenant views and forms. */

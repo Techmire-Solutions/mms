@@ -6,7 +6,9 @@
 import { useMemo } from "react";
 import {
   TASKS_MODULE_MANIFEST,
+  resolveModuleColumnWidth,
   type AppTranslationKey,
+  type ModuleColumnKind,
   type ModuleColumnRegistryEntry,
 } from "@mms/shared";
 import { useTranslation } from "@/hooks/useTranslation";
@@ -21,15 +23,14 @@ const TASK_WORK_COLUMN_KEYS = [
   "dueAt",
 ] as const;
 
-const TASK_WORK_COLUMN_WIDTHS: Record<(typeof TASK_WORK_COLUMN_KEYS)[number], number | undefined> =
-  {
-    title: undefined,
-    description: 220,
-    priority: 120,
-    status: 140,
-    assignees: undefined,
-    dueAt: 120,
-  };
+const TASK_WORK_COLUMN_KINDS: Record<(typeof TASK_WORK_COLUMN_KEYS)[number], ModuleColumnKind> = {
+  title: "title",
+  description: "longText",
+  priority: "status",
+  status: "status",
+  assignees: "chips",
+  dueAt: "date",
+};
 
 const TASK_WORK_COLUMN_LABEL_KEYS: Record<
   (typeof TASK_WORK_COLUMN_KEYS)[number],
@@ -53,7 +54,8 @@ export function useTasksColumnLayout() {
         label: t(TASK_WORK_COLUMN_LABEL_KEYS[key]),
         enabled: true,
         order,
-        width: TASK_WORK_COLUMN_WIDTHS[key],
+        kind: TASK_WORK_COLUMN_KINDS[key],
+        width: resolveModuleColumnWidth(undefined, TASK_WORK_COLUMN_KINDS[key]),
         fixed: key === "title",
       })),
     [t],

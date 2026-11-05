@@ -84,6 +84,7 @@ export function StudentsListDesktopTable({
       label: col.label,
       sortField: col.key,
       width: getColumnWidth?.(col.key) ?? col.width,
+      kind: col.kind,
       render: (studentRow) => {
         return renderStudentsListDesktopTableCell({
           studentRow,

@@ -2938,6 +2938,8 @@ export const APP_TRANSLATIONS_FA: Partial<Record<AppTranslationKey, string>> = {
   "contacts.tags.reserved": "این برچسب به‌صورت خودکار مدیریت می‌شود و قابل ویرایش نیست",
   "contacts.tags.systemHint": "برچسب‌های نقش توسط ماژول‌های دانشجو و هیئت علمی مدیریت می‌شوند",
   "contacts.tags.systemManaged": "به‌صورت خودکار مدیریت می‌شود",
+  "contacts.tags.moreCount": "+{count}",
+  "contacts.tags.showMore": "نمایش {count} برچسب دیگر",
   "contacts.tryAdjustingFilters": "جستجو یا فیلترهای خود را تغییر دهید.",
   "contacts.validation.invalidDate": "{label} باید یک تاریخ معتبر باشد",
   "contacts.validation.invalidDateTime": "{label} باید تاریخ و زمان معتبر باشد",

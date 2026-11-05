@@ -36,6 +36,7 @@ export function useDistributionsTableColumns({
     if (isColumnVisible("card")) {
       cols.push({
         id: "card",
+        kind: "reference",
         label: t("hasanat.columns.distribution.card"),
         noWrap: true,
         render: (distribution) => {
@@ -64,6 +65,7 @@ export function useDistributionsTableColumns({
     if (isColumnVisible("recipient")) {
       cols.push({
         id: "recipient",
+        kind: "person",
         label: t("hasanat.columns.distribution.recipient"),
         noWrap: true,
         render: (distribution) => (
@@ -77,6 +79,7 @@ export function useDistributionsTableColumns({
     if (isColumnVisible("recipientType")) {
       cols.push({
         id: "recipientType",
+        kind: "status",
         label: t("hasanat.columns.distribution.recipientType"),
         noWrap: true,
         render: (distribution) => (
@@ -99,6 +102,7 @@ export function useDistributionsTableColumns({
     if (isColumnVisible("recipientClass")) {
       cols.push({
         id: "recipientClass",
+        kind: "shortText",
         label: t("hasanat.columns.distribution.recipientClass"),
         cellClassName: "text-sm text-muted-foreground",
         render: (distribution) => distribution.recipientClass || "—",
@@ -108,6 +112,7 @@ export function useDistributionsTableColumns({
     if (isColumnVisible("quantity")) {
       cols.push({
         id: "quantity",
+        kind: "number",
         label: t("hasanat.columns.distribution.quantity"),
         noWrap: true,
         render: (distribution) => (
@@ -119,6 +124,7 @@ export function useDistributionsTableColumns({
     if (isColumnVisible("reason")) {
       cols.push({
         id: "reason",
+        kind: "longText",
         label: t("hasanat.columns.distribution.reason"),
         truncate: true,
         cellClassName: "max-w-cell-sm",
@@ -131,6 +137,7 @@ export function useDistributionsTableColumns({
     if (isColumnVisible("issuedDate")) {
       cols.push({
         id: "issuedDate",
+        kind: "date",
         label: t("hasanat.columns.distribution.issuedDate"),
         noWrap: true,
         cellClassName: "text-xs text-muted-foreground",
@@ -141,6 +148,7 @@ export function useDistributionsTableColumns({
     if (isColumnVisible("issuedBy")) {
       cols.push({
         id: "issuedBy",
+        kind: "person",
         label: t("hasanat.columns.distribution.issuedBy"),
         noWrap: true,
         cellClassName: "text-sm text-muted-foreground",
@@ -151,6 +159,7 @@ export function useDistributionsTableColumns({
     if (isColumnVisible("status")) {
       cols.push({
         id: "status",
+        kind: "status",
         label: t("hasanat.columns.distribution.status"),
         render: (distribution) => (
           <StatusBadge status={distribution.status} config={statusConfig} size="sm" />

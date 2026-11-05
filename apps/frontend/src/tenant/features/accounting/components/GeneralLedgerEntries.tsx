@@ -51,6 +51,7 @@ export function GeneralLedgerEntries({
     () => [
       {
         id: "date",
+        kind: "date",
         label: t("accounting.ledger.columns.date"),
         noWrap: true,
         cellClassName: "px-3 py-2.5 text-xs text-muted-foreground",
@@ -58,6 +59,7 @@ export function GeneralLedgerEntries({
       },
       {
         id: "ref",
+        kind: "reference",
         label: t("accounting.ledger.columns.ref"),
         noWrap: true,
         cellClassName: "px-3 py-2.5 font-mono text-xs font-bold text-primary",
@@ -65,6 +67,7 @@ export function GeneralLedgerEntries({
       },
       {
         id: "description",
+        kind: "longText",
         label: t("accounting.ledger.columns.description"),
         truncate: true,
         cellClassName: "px-3 py-2.5 text-foreground max-w-cell-md",
@@ -72,6 +75,7 @@ export function GeneralLedgerEntries({
       },
       {
         id: "lineNote",
+        kind: "longText",
         label: t("accounting.ledger.columns.lineNote"),
         headerClassName: "hidden lg:table-cell",
         cellClassName: "px-3 py-2.5 text-xs text-muted-foreground hidden lg:table-cell",
@@ -79,6 +83,7 @@ export function GeneralLedgerEntries({
       },
       {
         id: "debit",
+        kind: "money",
         label: t("accounting.ledger.columns.debit"),
         headerClassName: "text-end",
         noWrap: true,
@@ -87,6 +92,7 @@ export function GeneralLedgerEntries({
       },
       {
         id: "credit",
+        kind: "money",
         label: t("accounting.ledger.columns.credit"),
         headerClassName: "text-end",
         noWrap: true,
@@ -95,6 +101,7 @@ export function GeneralLedgerEntries({
       },
       {
         id: "balance",
+        kind: "money",
         label: t("accounting.ledger.columns.balance"),
         headerClassName: "text-end",
         noWrap: true,

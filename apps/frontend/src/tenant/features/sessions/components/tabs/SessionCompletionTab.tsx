@@ -92,6 +92,7 @@ export function SessionCompletionTab({
   const columns: DataTableColumn<CompletionTableRow>[] = [
     {
       id: "student",
+      kind: "person",
       label: t("sessions.completion.student"),
       fixed: true,
       render: (row) => <span className="font-medium">{row.studentName}</span>,

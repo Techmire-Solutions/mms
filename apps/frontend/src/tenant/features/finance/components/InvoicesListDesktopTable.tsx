@@ -46,6 +46,7 @@ export function InvoicesListDesktopTable(props: InvoicesListDesktopTableProps): 
     if (isColumnVisible("invoice")) {
       cols.push({
         id: "invoice",
+        kind: "reference",
         label: t("finance.columns.invoice"),
         render: (invoice: Invoice) =>
           renderInvoiceWorkColumnValue(invoice, "invoice", columnContext),
@@ -55,6 +56,7 @@ export function InvoicesListDesktopTable(props: InvoicesListDesktopTableProps): 
     if (isColumnVisible("student")) {
       cols.push({
         id: "student",
+        kind: "person",
         label: t("finance.columns.student"),
         render: (invoice: Invoice) =>
           renderInvoiceWorkColumnValue(invoice, "student", columnContext),
@@ -64,6 +66,7 @@ export function InvoicesListDesktopTable(props: InvoicesListDesktopTableProps): 
     if (isColumnVisible("sessionClass")) {
       cols.push({
         id: "sessionClass",
+        kind: "shortText",
         label: t("finance.columns.sessionClass"),
         render: (invoice: Invoice) =>
           renderInvoiceWorkColumnValue(invoice, "sessionClass", columnContext),
@@ -73,6 +76,7 @@ export function InvoicesListDesktopTable(props: InvoicesListDesktopTableProps): 
     if (isColumnVisible("baseFee")) {
       cols.push({
         id: "baseFee",
+        kind: "money",
         label: t("finance.columns.baseFee"),
         noWrap: true,
         render: (invoice: Invoice) =>
@@ -83,6 +87,7 @@ export function InvoicesListDesktopTable(props: InvoicesListDesktopTableProps): 
     if (isColumnVisible("discount")) {
       cols.push({
         id: "discount",
+        kind: "money",
         label: t("finance.columns.discount"),
         noWrap: true,
         render: (invoice: Invoice) =>
@@ -93,6 +98,7 @@ export function InvoicesListDesktopTable(props: InvoicesListDesktopTableProps): 
     if (isColumnVisible("final")) {
       cols.push({
         id: "final",
+        kind: "money",
         label: t("finance.columns.final"),
         noWrap: true,
         render: (invoice: Invoice) => renderInvoiceWorkColumnValue(invoice, "final", columnContext),
@@ -102,6 +108,7 @@ export function InvoicesListDesktopTable(props: InvoicesListDesktopTableProps): 
     if (isColumnVisible("status")) {
       cols.push({
         id: "status",
+        kind: "status",
         label: t("finance.columns.status"),
         noWrap: true,
         render: (invoice: Invoice) =>
@@ -112,6 +119,7 @@ export function InvoicesListDesktopTable(props: InvoicesListDesktopTableProps): 
     if (isColumnVisible("dueDate")) {
       cols.push({
         id: "dueDate",
+        kind: "date",
         label: t("finance.columns.dueDate"),
         noWrap: true,
         render: (invoice: Invoice) =>

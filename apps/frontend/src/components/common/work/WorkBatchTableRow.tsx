@@ -100,7 +100,8 @@ function WorkBatchTableRowComponent<TData extends { id: string | number }>(
             align={col.align}
             variant={col.variant}
             className={cn(
-              "px-4 py-3 text-sm text-foreground transition-colors text-wrap break-words",
+              // overflow-hidden: a cell never paints over its neighbours when content outgrows the column.
+              "px-4 py-3 text-sm text-foreground transition-colors text-wrap break-words overflow-hidden",
               isSticky && "sticky start-12 z-elevated border-e border-border/30",
               isSticky ? workTableStickyCellBg(isSelected) : undefined,
               customCellClass,

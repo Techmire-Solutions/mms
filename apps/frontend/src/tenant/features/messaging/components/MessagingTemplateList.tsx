@@ -55,6 +55,7 @@ export const MessagingTemplateList = function MessagingTemplateList({
   const columns: DataTableColumn<MessageTemplate>[] = [
     {
       id: "label",
+      kind: "title",
       label: t("messaging.templateLabel"),
       fixed: true,
       searchValue: templateLabel,
@@ -69,6 +70,7 @@ export const MessagingTemplateList = function MessagingTemplateList({
     },
     {
       id: "category",
+      kind: "shortText",
       label: t("messaging.category"),
       searchValue: (template) =>
         categoryBadgeConfig[categoryOf(template)]?.label ?? categoryOf(template),
@@ -78,6 +80,7 @@ export const MessagingTemplateList = function MessagingTemplateList({
     },
     {
       id: "body",
+      kind: "longText",
       label: t("messaging.templateCopy"),
       render: (template) => (
         <span className="block truncate text-muted-foreground" title={template.body}>

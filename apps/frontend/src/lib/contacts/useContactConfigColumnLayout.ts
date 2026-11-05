@@ -3,6 +3,8 @@ import {
   DEFAULT_COLUMN_REGISTRY,
   DEFAULT_FORM_TABS,
   syncContactColumnRegistryWithFields,
+  getContactColumnKind,
+  resolveModuleColumnWidth,
   CONTACTS_MODULE_MANIFEST,
   type ColumnRegistryEntry,
   type FieldDefinition,
@@ -34,13 +36,19 @@ export function useContactConfigColumnLayout({
   }, [userOverlayRaw, baseColumnRegistry]);
 
   const syncedColumnRegistry = React.useMemo(() => {
-    return syncContactColumnRegistryWithFields(
+    const synced = syncContactColumnRegistryWithFields(
       columnRegistry,
       resolvedFields,
       enabledTabs.length > 0
         ? enabledTabs
         : DEFAULT_FORM_TABS.filter((t) => t.enabled).map((t) => t.key),
     );
+    // Stored overlays predate column kinds: recover the kind by key and floor stale widths.
+    return synced.map((entry) => {
+      const kind = entry.kind ?? getContactColumnKind(entry.key);
+      if (!kind) return entry;
+      return { ...entry, kind, width: resolveModuleColumnWidth(entry.width, kind) };
+    });
   }, [columnRegistry, resolvedFields, enabledTabs]);
 
   const updateUserColumnLayout = React.useCallback(
@@ -79,6 +87,7 @@ export function useContactConfigColumnLayout({
       label: entry.label,
       sortField: entry.sortField,
       width: entry.width,
+      kind: entry.kind,
     }));
   }, [syncedColumnRegistry]);
 

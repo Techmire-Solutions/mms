@@ -54,6 +54,7 @@ export function PlatformPermissionMatrix(): React.JSX.Element {
   const columns: WorkBatchTableColumn<PlatformUserProfile>[] = [
     {
       id: "name",
+      kind: "title",
       label: t("platform.descriptor.user.name"),
       render: (admin) => (
         <div>
@@ -64,6 +65,7 @@ export function PlatformPermissionMatrix(): React.JSX.Element {
     },
     {
       id: "role",
+      kind: "status",
       label: t("platform.descriptor.user.role"),
       render: (admin) => (
         <Badge variant={admin.role === "super_user" ? "default" : "secondary"}>

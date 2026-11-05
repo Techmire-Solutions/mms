@@ -44,34 +44,40 @@ export function FxReportPanel({ dateFrom, dateTo }: FxReportPanelProps): React.J
   const exposureColumns: DataTableColumn<ExposureRow>[] = [
     {
       id: "currency",
+      kind: "code",
       label: t("accounting.reports.fx.currency"),
       fixed: true,
       render: (row) => row.currency,
     },
     {
       id: "open",
+      kind: "money",
       label: t("accounting.reports.fx.openBalance"),
       render: (row) => <span className="font-mono">{money(row.openTxn, row.currency)}</span>,
     },
     {
       id: "rate",
+      kind: "number",
       label: t("accounting.reports.fx.closingRate"),
       render: (row) => row.closingRate ?? t("accounting.reports.fx.noRate"),
     },
     {
       id: "carrying",
+      kind: "money",
       label: t("accounting.reports.fx.carrying"),
       hideInCard: true,
       render: (row) => <span className="font-mono">{money(row.carryingFunc)}</span>,
     },
     {
       id: "revalued",
+      kind: "money",
       label: t("accounting.reports.fx.revalued"),
       hideInCard: true,
       render: (row) => <span className="font-mono">{money(row.revaluedFunc)}</span>,
     },
     {
       id: "unrealized",
+      kind: "money",
       label: t("accounting.reports.fx.unrealized"),
       render: (row) => <span className={signedClass(row.unrealized)}>{money(row.unrealized)}</span>,
     },
@@ -80,17 +86,20 @@ export function FxReportPanel({ dateFrom, dateTo }: FxReportPanelProps): React.J
   const realizedColumns: DataTableColumn<RealizedRow>[] = [
     {
       id: "currency",
+      kind: "code",
       label: t("accounting.reports.fx.currency"),
       fixed: true,
       render: (row) => row.currency,
     },
     {
       id: "payments",
+      kind: "money",
       label: t("accounting.reports.fx.payments"),
       render: (row) => String(row.payments),
     },
     {
       id: "realized",
+      kind: "money",
       label: t("accounting.reports.fx.realized"),
       render: (row) => <span className={signedClass(row.realized)}>{money(row.realized)}</span>,
     },
@@ -99,12 +108,14 @@ export function FxReportPanel({ dateFrom, dateTo }: FxReportPanelProps): React.J
   const revaluationColumns: DataTableColumn<RevaluationRow>[] = [
     {
       id: "date",
+      kind: "date",
       label: t("accounting.reports.fx.revaluationDate"),
       fixed: true,
       render: (row) => formatDate(row.revaluationDate),
     },
     {
       id: "unrealized",
+      kind: "money",
       label: t("accounting.reports.fx.unrealized"),
       render: (row) => (
         <span className={signedClass(row.totalUnrealized)}>{money(row.totalUnrealized)}</span>

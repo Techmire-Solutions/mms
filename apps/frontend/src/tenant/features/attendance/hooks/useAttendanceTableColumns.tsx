@@ -29,6 +29,7 @@ export function useAttendanceTableColumns({
     if (isColumnVisible("date")) {
       cols.push({
         id: "date",
+        kind: "date",
         label: t("attendance.columns.date"),
         noWrap: true,
         render: (r: AttendanceRecord) => (
@@ -40,6 +41,7 @@ export function useAttendanceTableColumns({
     if (isColumnVisible("class")) {
       cols.push({
         id: "class",
+        kind: "shortText",
         label: t("attendance.columns.class"),
         noWrap: true,
         render: (r: AttendanceRecord) => (
@@ -51,6 +53,7 @@ export function useAttendanceTableColumns({
     if (isColumnVisible("session")) {
       cols.push({
         id: "session",
+        kind: "shortText",
         label: t("attendance.columns.session"),
         noWrap: true,
         render: (r: AttendanceRecord) => (
@@ -62,6 +65,7 @@ export function useAttendanceTableColumns({
     if (isColumnVisible("student")) {
       cols.push({
         id: "student",
+        kind: "person",
         label: t("attendance.columns.student"),
         noWrap: true,
         render: (r: AttendanceRecord) => (
@@ -73,6 +77,7 @@ export function useAttendanceTableColumns({
     if (isColumnVisible("status")) {
       cols.push({
         id: "status",
+        kind: "status",
         label: t("attendance.columns.status"),
         noWrap: true,
         render: (r: AttendanceRecord) => (
@@ -89,6 +94,7 @@ export function useAttendanceTableColumns({
     if (isColumnVisible("timeIn")) {
       cols.push({
         id: "timeIn",
+        kind: "code",
         label: t("attendance.columns.timeIn"),
         noWrap: true,
         render: (r: AttendanceRecord) =>
@@ -110,6 +116,7 @@ export function useAttendanceTableColumns({
     if (isColumnVisible("timeOut")) {
       cols.push({
         id: "timeOut",
+        kind: "code",
         label: t("attendance.columns.timeOut"),
         noWrap: true,
         render: (r: AttendanceRecord) =>
@@ -131,6 +138,7 @@ export function useAttendanceTableColumns({
     if (isColumnVisible("notes")) {
       cols.push({
         id: "notes",
+        kind: "longText",
         label: t("attendance.columns.notes"),
         truncate: true,
         cellClassName: "max-w-cell-sm text-xs text-muted-foreground",

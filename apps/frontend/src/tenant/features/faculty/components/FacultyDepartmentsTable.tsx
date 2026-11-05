@@ -48,12 +48,14 @@ export function FacultyDepartmentsTable({
   const columns: DataTableColumn<FacultyDepartmentEntity>[] = [
     {
       id: "name",
+      kind: "title",
       label: t("faculty.setup.departmentName"),
       fixed: true,
       render: (d) => <span className="truncate font-medium">{d.name}</span>,
     },
     {
       id: "description",
+      kind: "longText",
       label: t("faculty.setup.departmentDescription"),
       searchValue: (d) => d.description ?? "",
       render: (d) => (

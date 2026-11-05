@@ -39,6 +39,7 @@ function useActivityLogColumns(
     () => [
       {
         id: "time",
+        kind: "dateTime",
         label: t("users.activityColTime"),
         noWrap: true,
         cellClassName: "px-3 py-2.5 text-xs text-muted-foreground",
@@ -46,24 +47,28 @@ function useActivityLogColumns(
       },
       {
         id: "user",
+        kind: "person",
         label: t("users.activityColUser"),
         cellClassName: "px-3 py-2.5 text-xs font-semibold text-foreground",
         render: (log) => userNameFor(log),
       },
       {
         id: "action",
+        kind: "shortText",
         label: t("users.activityColAction"),
         cellClassName: "px-3 py-2.5",
         render: (log) => <ActivityActionBadge action={log.action} />,
       },
       {
         id: "detail",
+        kind: "longText",
         label: t("users.activityColDetail"),
         cellClassName: "px-3 py-2.5 text-xs text-muted-foreground",
         render: (log) => log.detail,
       },
       {
         id: "ip",
+        kind: "reference",
         label: t("users.activityColIp"),
         noWrap: true,
         cellClassName: "px-3 py-2.5 font-mono text-xs text-muted-foreground",

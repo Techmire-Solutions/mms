@@ -17,6 +17,7 @@ export interface ModuleWorkTableHeaderProps<
     label: string;
     sortField?: string;
     width?: number;
+    minWidth?: number;
     headerClassName?: string;
     noWrap?: boolean;
     truncate?: boolean;
@@ -52,6 +53,7 @@ export function ModuleWorkTableHeader<
     label: string;
     sortField?: string;
     width?: number;
+    minWidth?: number;
     headerClassName?: string;
     noWrap?: boolean;
     truncate?: boolean;
@@ -127,6 +129,7 @@ export function ModuleWorkTableHeader<
               sortDir={sortDir}
               onSort={onSort}
               width={width}
+              minWidth={col.minWidth}
               onResize={setColumnWidth}
               noWrap={col.noWrap}
               truncate={col.truncate}

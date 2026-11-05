@@ -7,6 +7,7 @@ import {
   type ContactSystemTag,
 } from "@mms/shared";
 import { useTranslation } from "@/hooks/useTranslation";
+import { ChipOverflowList } from "@shared/ui";
 import { Badge, type BadgeProps } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
 
@@ -67,6 +68,8 @@ export interface ContactTagListProps {
   contact: Pick<Contact, "tag" | "tags" | "systemTags"> | null | undefined;
   size?: BadgeProps["size"];
   className?: string;
+  /** When set, shows this many tags inline and the rest behind a "+N" popover (dense table cells). */
+  maxVisible?: number;
 }
 
 /** Renders every tag on a contact, resolving system metadata by normalized name. */
@@ -74,7 +77,9 @@ export function ContactTagList({
   contact,
   size = "sm",
   className,
+  maxVisible,
 }: ContactTagListProps): React.JSX.Element | null {
+  const { t } = useTranslation();
   const tags = useMemo(() => {
     const names = getContactTags(contact);
     const seen = new Set(names.map(normalizeContactTagName));
@@ -96,6 +101,26 @@ export function ContactTagList({
   }, [contact]);
 
   if (tags.length === 0) return null;
+
+  if (maxVisible !== undefined) {
+    return (
+      <ChipOverflowList
+        items={tags}
+        getKey={(tag) => tag}
+        renderItem={(tag) => (
+          <ContactTagBadge
+            tag={tag}
+            system={systemByName.get(normalizeContactTagName(tag)) ?? null}
+            size={size}
+          />
+        )}
+        maxVisible={maxVisible}
+        moreLabel={(count) => t("contacts.tags.moreCount", { count })}
+        moreAriaLabel={(count) => t("contacts.tags.showMore", { count })}
+        className={className}
+      />
+    );
+  }
 
   return (
     <div className={cn("flex flex-wrap gap-1", className)}>

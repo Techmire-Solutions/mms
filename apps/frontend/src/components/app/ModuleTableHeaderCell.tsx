@@ -11,6 +11,8 @@ export const MODULE_TABLE_HEAD_CLASS =
 export interface ModuleTableHeaderCellProps {
   columnKey: string;
   width?: number;
+  /** Narrowest width the resize handle allows (defaults to the global minimum). */
+  minWidth?: number;
   onResize?: (columnKey: string, width: number) => void;
   className?: string;
   children: React.ReactNode;
@@ -29,6 +31,7 @@ export interface ModuleTableHeaderCellProps {
 export const ModuleTableHeaderCell = function ModuleTableHeaderCell({
   columnKey,
   width,
+  minWidth,
   onResize,
   className,
   children,
@@ -52,6 +55,7 @@ export const ModuleTableHeaderCell = function ModuleTableHeaderCell({
     <ResizableTableHead
       columnKey={columnKey}
       width={width}
+      minWidth={minWidth}
       onResize={onResize}
       aria-sort={ariaSort}
       noWrap={noWrap}

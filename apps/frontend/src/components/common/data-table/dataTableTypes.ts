@@ -1,3 +1,4 @@
+import type { ModuleColumnKind } from "@mms/shared";
 import type React from "react";
 import type { WorkBatchTableProps, WorkTaskToolbarProps } from "@/components/common/work";
 import type { WorkDirectoryViewMode } from "@/hooks/useWorkDirectoryViewMode";
@@ -26,8 +27,10 @@ export interface DataTableColumn<TData> {
   defaultHidden?: boolean;
   /** Always visible; cannot be hidden by the user. */
   fixed?: boolean;
-  /** Initial pixel width; users can resize afterwards. */
+  /** Initial pixel width; users can resize afterwards. Prefer `kind` for standard content. */
   width?: number;
+  /** Content kind: seeds the default width and floors stale stored widths (`MODULE_COLUMN_KIND_WIDTHS`). */
+  kind?: ModuleColumnKind;
   headerClassName?: string;
   cellClassName?: string | ((row: TData) => string | undefined);
   /** Omit from the generated card body (e.g. the title column). */

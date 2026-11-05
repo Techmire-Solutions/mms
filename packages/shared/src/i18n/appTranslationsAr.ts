@@ -2894,6 +2894,8 @@ export const APP_TRANSLATIONS_AR: Record<AppTranslationKey, string> = {
   "contacts.tags.reserved": "يُدار هذا الوسم تلقائيًا ولا يمكن تعديله",
   "contacts.tags.systemHint": "تُدار وسوم الأدوار بواسطة وحدتي الطلاب وأعضاء هيئة التدريس",
   "contacts.tags.systemManaged": "يُدار تلقائيًا",
+  "contacts.tags.moreCount": "+{count}",
+  "contacts.tags.showMore": "عرض {count} وسوم أخرى",
   "contacts.tryAdjustingFilters": "جرّب تعديل البحث أو عوامل التصفية.",
   "contacts.validation.invalidDate": "يجب أن يكون {label} تاريخاً صالحاً",
   "contacts.validation.invalidDateTime": "يجب أن يكون {label} تاريخاً ووقتاً صالحين",

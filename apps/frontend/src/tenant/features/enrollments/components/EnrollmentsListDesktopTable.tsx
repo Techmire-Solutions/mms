@@ -63,6 +63,7 @@ export function EnrollmentsListDesktopTable(
     if (isColumnVisible("student")) {
       cols.push({
         id: "student",
+        kind: "person",
         label: t("enrollments.columns.student"),
         noWrap: true,
         cellClassName: "px-3 py-2.5",
@@ -74,6 +75,7 @@ export function EnrollmentsListDesktopTable(
     if (isColumnVisible("session")) {
       cols.push({
         id: "session",
+        kind: "shortText",
         label: t("enrollments.columns.session"),
         truncate: true,
         cellClassName: "px-3 py-2.5 text-xs text-foreground max-w-cell-sm",
@@ -85,6 +87,7 @@ export function EnrollmentsListDesktopTable(
     if (isColumnVisible("class")) {
       cols.push({
         id: "class",
+        kind: "shortText",
         label: t("enrollments.columns.class"),
         noWrap: true,
         cellClassName: "px-3 py-2.5 text-xs text-muted-foreground",
@@ -96,6 +99,7 @@ export function EnrollmentsListDesktopTable(
     if (isColumnVisible("enrolledDate")) {
       cols.push({
         id: "enrolledDate",
+        kind: "date",
         label: t("enrollments.columns.enrolledDate"),
         noWrap: true,
         cellClassName: "px-3 py-2.5 font-mono text-xs text-muted-foreground",
@@ -107,6 +111,7 @@ export function EnrollmentsListDesktopTable(
     if (isColumnVisible("finalFee")) {
       cols.push({
         id: "finalFee",
+        kind: "money",
         label: t("enrollments.columns.finalFee"),
         headerClassName: "text-end",
         noWrap: true,
@@ -119,6 +124,7 @@ export function EnrollmentsListDesktopTable(
     if (isColumnVisible("status")) {
       cols.push({
         id: "status",
+        kind: "status",
         label: t("enrollments.columns.status"),
         cellClassName: "px-3 py-2.5",
         render: (enrollment: Enrollment) =>
@@ -129,6 +135,7 @@ export function EnrollmentsListDesktopTable(
     if (isColumnVisible("payment")) {
       cols.push({
         id: "payment",
+        kind: "status",
         label: t("enrollments.columns.payment"),
         cellClassName: "px-3 py-2.5",
         render: (enrollment: Enrollment) =>
@@ -139,6 +146,7 @@ export function EnrollmentsListDesktopTable(
     if (isColumnVisible("notes")) {
       cols.push({
         id: "notes",
+        kind: "longText",
         label: t("enrollments.columns.notes"),
         truncate: true,
         cellClassName: "px-3 py-2.5 text-xs text-muted-foreground max-w-cell-sm",

@@ -2945,6 +2945,8 @@ export const APP_TRANSLATIONS_EN = {
   "contacts.tags.reserved": "This tag is managed automatically and cannot be edited",
   "contacts.tags.systemHint": "Role tags are managed by the Student and Faculty modules",
   "contacts.tags.systemManaged": "Managed automatically",
+  "contacts.tags.moreCount": "+{count}",
+  "contacts.tags.showMore": "Show {count} more tags",
   "contacts.tryAdjustingFilters": "Try adjusting your search or filters.",
   "contacts.validation.invalidDate": "{label} must be a valid date",
   "contacts.validation.invalidDateTime": "{label} must be a valid date and time",

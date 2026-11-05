@@ -53,6 +53,7 @@ export function RegistrationLinksTab({
   const columns: DataTableColumn<RegistrationLink>[] = [
     {
       id: "title",
+      kind: "title",
       label: t("sessions.registration.title"),
       fixed: true,
       render: (row) => <span className="font-medium">{row.title || session.name}</span>,

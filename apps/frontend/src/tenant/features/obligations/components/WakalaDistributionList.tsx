@@ -41,18 +41,21 @@ export function WakalaDistributionList({
   const columns: DataTableColumn<ObligationDistribution>[] = [
     {
       id: "name",
+      kind: "title",
       label: t("obligations.wakala.colName"),
       fixed: true,
       render: (d) => <span className="font-medium text-foreground">{d.name}</span>,
     },
     {
       id: "type",
+      kind: "status",
       label: t("obligations.wakala.colType"),
       searchValue: (d) => distributionTypeConfig[d.type]?.label ?? d.type,
       render: (d) => <StatusBadge status={d.type} config={distributionTypeConfig} size="sm" />,
     },
     {
       id: "account",
+      kind: "title",
       label: t("obligations.wakala.colAccount"),
       render: (d) => {
         if (!d.account_id) {
@@ -72,6 +75,7 @@ export function WakalaDistributionList({
     },
     {
       id: "percentage",
+      kind: "number",
       label: t("obligations.wakala.colPct"),
       render: (d) => (
         <span className="font-mono font-semibold text-foreground">{d.percentage}%</span>

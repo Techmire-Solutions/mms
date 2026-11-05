@@ -65,6 +65,7 @@ export function AdmissionsPanel({ canWrite }: { canWrite: boolean }): React.JSX.
   const columns: DataTableColumn<RegistrationApplication>[] = [
     {
       id: "name",
+      kind: "identity",
       label: t("enrollments.admissions.applicant"),
       fixed: true,
       render: (row) => (

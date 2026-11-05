@@ -70,6 +70,7 @@ export function FacultyListDesktopTable(props: FacultyListDesktopTableProps): Re
       label: col.label,
       sortField: col.key,
       width: getColumnWidth?.(col.key) ?? col.width,
+      kind: col.kind,
       headerClassName: col.key !== "name" ? facultyWorkColumnHeadClass(col.key) : undefined,
       cellClassName: col.key !== "name" ? facultyWorkColumnCellClass(col.key) : undefined,
       render: (member) => {

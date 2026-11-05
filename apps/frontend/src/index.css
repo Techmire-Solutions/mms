@@ -119,6 +119,18 @@
   --color-surface-credit-row: hsl(var(--success) / 0.1);
   --color-surface-table-footer: hsl(var(--muted) / 0.3);
 
+  /*
+   * Opaque Work-table sticky-cell tints: the same row tints pre-blended over the card,
+   * so horizontally scrolled cells never show through a pinned checkbox/name cell.
+   */
+  --color-surface-sticky-hover: color-mix(in srgb, var(--color-muted) 40%, var(--color-card));
+  --color-surface-sticky-selected: color-mix(in srgb, var(--color-primary) 5%, var(--color-card));
+  --color-surface-sticky-selected-hover: color-mix(
+    in srgb,
+    var(--color-primary) 10%,
+    var(--color-card)
+  );
+
   /* 8pt grid macro-spacing scale (32px-64px) to reduce visual density */
   --spacing-macro-sm: 2rem;
   --spacing-macro-md: 2.5rem;

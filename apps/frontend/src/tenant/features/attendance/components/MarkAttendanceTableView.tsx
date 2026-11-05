@@ -26,6 +26,7 @@ export function MarkAttendanceTableView({
   const columns: WorkBatchTableColumn<AttendanceRow & { id: string }>[] = [
     {
       id: "rollNo",
+      kind: "code",
       label: "#",
       headerClassName: "w-8 text-start uppercase",
       cellClassName: "text-xs text-muted-foreground font-mono",
@@ -34,6 +35,7 @@ export function MarkAttendanceTableView({
     },
     {
       id: "name",
+      kind: "identity",
       label: t("attendance.columns.student"),
       headerClassName: "text-start uppercase",
       cellClassName: "font-semibold text-foreground",

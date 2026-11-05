@@ -1,4 +1,8 @@
-import { createColumnRegistry, type ModuleColumnRegistryEntry } from "./moduleColumnCore.js";
+import {
+  createColumnRegistry,
+  type ModuleColumnKind,
+  type ModuleColumnRegistryEntry,
+} from "./moduleColumnCore.js";
 
 export interface ExaminationExamWorkColumnLabels {
   name: string;
@@ -11,6 +15,18 @@ export interface ExaminationExamWorkColumnLabels {
   classes: string;
   description: string;
 }
+
+const EXAMINATION_EXAM_COLUMN_KINDS: Readonly<Record<string, ModuleColumnKind>> = {
+  name: "title",
+  subject: "shortText",
+  date: "date",
+  duration: "number",
+  status: "status",
+  totalMarks: "number",
+  passingMarks: "number",
+  classes: "chips",
+  description: "longText",
+};
 
 /** Builds tenant-default Work column registry for Examinations exam directory (list view). */
 export function buildExaminationExamWorkColumnRegistry(
@@ -29,6 +45,8 @@ export function buildExaminationExamWorkColumnRegistry(
       "description",
     ],
     labels,
+    true,
+    EXAMINATION_EXAM_COLUMN_KINDS,
   );
 }
 
@@ -42,6 +60,16 @@ export interface ExaminationResultsWorkColumnLabels {
   passFail: string;
 }
 
+const EXAMINATION_RESULTS_COLUMN_KINDS: Readonly<Record<string, ModuleColumnKind>> = {
+  rank: "code",
+  student: "person",
+  classRoll: "reference",
+  marks: "number",
+  percentage: "number",
+  grade: "status",
+  passFail: "status",
+};
+
 /** Builds tenant-default Work column registry for Examinations results rankings. */
 export function buildExaminationResultsWorkColumnRegistry(
   labels: ExaminationResultsWorkColumnLabels,
@@ -49,6 +77,8 @@ export function buildExaminationResultsWorkColumnRegistry(
   return createColumnRegistry(
     ["rank", "student", "classRoll", "marks", "percentage", "grade", "passFail"],
     labels,
+    true,
+    EXAMINATION_RESULTS_COLUMN_KINDS,
   );
 }
 
@@ -61,6 +91,15 @@ export interface QuestionBankWorkColumnLabels {
   source: string;
 }
 
+const QUESTION_BANK_COLUMN_KINDS: Readonly<Record<string, ModuleColumnKind>> = {
+  text: "longText",
+  category: "shortText",
+  language: "shortText",
+  type: "status",
+  difficulty: "status",
+  source: "shortText",
+};
+
 /** Builds tenant-default Work column registry for Question Bank directory (list view). */
 export function buildQuestionBankWorkColumnRegistry(
   labels: QuestionBankWorkColumnLabels,
@@ -68,5 +107,7 @@ export function buildQuestionBankWorkColumnRegistry(
   return createColumnRegistry(
     ["text", "category", "language", "type", "difficulty", "source"],
     labels,
+    true,
+    QUESTION_BANK_COLUMN_KINDS,
   );
 }

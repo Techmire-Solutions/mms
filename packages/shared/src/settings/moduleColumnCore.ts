@@ -11,6 +11,14 @@ import {
   type FacultyWorkColumnLabels,
 } from "../faculty/facultyColumnRegistrySync.js";
 
+import {
+  clampModuleColumnWidth,
+  resolveModuleColumnWidth,
+  type ModuleColumnKind,
+} from "./moduleColumnWidthPresets.js";
+
+export * from "./moduleColumnWidthPresets.js";
+
 export {
   buildStudentWorkColumnRegistry,
   type StudentWorkColumnLabels,
@@ -32,23 +40,16 @@ export type ModuleColumnPref = ModuleColumnPreference;
 export interface ModuleColumnRegistryEntry extends ModuleColumnPreference {
   label: string;
   fixed?: boolean;
+  /** Content kind; seeds the default width and floors stored widths (`MODULE_COLUMN_KIND_WIDTHS`). */
+  kind?: ModuleColumnKind;
 }
 
 export type UserModuleColumnPreferencesMap = Record<string, ModuleColumnPreference[]>;
-
-export const MODULE_COLUMN_WIDTH_MIN = 80;
-export const MODULE_COLUMN_WIDTH_MAX = 640;
 
 /** Custom-field key when a Work column key is prefixed with `custom:`, else `null`. */
 export function customFieldKeyFromColumnKey(columnKey: string): string | null {
   if (!columnKey.startsWith("custom:")) return null;
   return columnKey.slice("custom:".length);
-}
-
-/** Clamp a user-resized column width to the supported range. */
-export function clampModuleColumnWidth(width: number): number {
-  if (!Number.isFinite(width)) return MODULE_COLUMN_WIDTH_MIN;
-  return Math.min(MODULE_COLUMN_WIDTH_MAX, Math.max(MODULE_COLUMN_WIDTH_MIN, Math.round(width)));
 }
 
 export function applyModuleColumnOverlay(
@@ -64,7 +65,7 @@ export function applyModuleColumnOverlay(
       ...column,
       enabled: column.fixed ? column.enabled : preference.enabled,
       order: preference.order,
-      width: preference.width ?? column.width,
+      width: resolveModuleColumnWidth(preference.width ?? column.width, column.kind),
     };
   });
 }
@@ -148,17 +149,25 @@ export function getVisibleWorkColumns(
     .sort((a, b) => a.order - b.order);
 }
 
-/** Helper to build a standard module column registry array from an ordered list of keys and labels. */
+/**
+ * Helper to build a standard module column registry array from an ordered list of keys and labels.
+ * `kinds` tags columns with a content kind, which seeds their default width.
+ */
 export function createColumnRegistry<T extends object>(
   keys: (keyof T & string)[],
   labels: T,
   fixedFirst = true,
+  kinds: Partial<Record<keyof T & string, ModuleColumnKind>> = {},
 ): ModuleColumnRegistryEntry[] {
-  return keys.map((key, index) => ({
-    key,
-    label: String(labels[key as keyof T] ?? ""),
-    enabled: true,
-    order: index,
-    ...(index === 0 && fixedFirst ? { fixed: true } : {}),
-  }));
+  return keys.map((key, index) => {
+    const kind = kinds[key];
+    return {
+      key,
+      label: String(labels[key as keyof T] ?? ""),
+      enabled: true,
+      order: index,
+      ...(index === 0 && fixedFirst ? { fixed: true } : {}),
+      ...(kind ? { kind, width: resolveModuleColumnWidth(undefined, kind) } : {}),
+    };
+  });
 }

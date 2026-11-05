@@ -66,6 +66,7 @@ export function SessionsListDesktopTable({
     if (isColumnVisible("name")) {
       cols.push({
         id: "name",
+        kind: "title",
         label: t("sessions.columns.name"),
         sortField: "name",
         render: (sessionItem) => (
@@ -85,6 +86,7 @@ export function SessionsListDesktopTable({
     if (isColumnVisible("type")) {
       cols.push({
         id: "type",
+        kind: "status",
         label: t("sessions.columns.type"),
         sortField: "type",
         render: (sessionItem) => renderSessionWorkColumnValue(sessionItem, "type", columnOptions),
@@ -94,6 +96,7 @@ export function SessionsListDesktopTable({
     if (isColumnVisible("startDate")) {
       cols.push({
         id: "startDate",
+        kind: "date",
         label: t("sessions.columns.startDate"),
         cellClassName: "text-xs text-muted-foreground",
         render: (sessionItem) =>
@@ -104,6 +107,7 @@ export function SessionsListDesktopTable({
     if (isColumnVisible("endDate")) {
       cols.push({
         id: "endDate",
+        kind: "date",
         label: t("sessions.columns.endDate"),
         cellClassName: "text-xs text-muted-foreground",
         render: (sessionItem) =>
@@ -114,6 +118,7 @@ export function SessionsListDesktopTable({
     if (isColumnVisible("duration")) {
       cols.push({
         id: "duration",
+        kind: "number",
         label: t("sessions.columns.duration"),
         cellClassName: "text-xs text-muted-foreground",
         render: (sessionItem) =>
@@ -124,6 +129,7 @@ export function SessionsListDesktopTable({
     if (isColumnVisible("fee")) {
       cols.push({
         id: "fee",
+        kind: "money",
         label: t("sessions.columns.fee"),
         sortField: "baseFee",
         cellClassName: "text-xs font-medium",
@@ -134,6 +140,7 @@ export function SessionsListDesktopTable({
     if (isColumnVisible("currency")) {
       cols.push({
         id: "currency",
+        kind: "code",
         label: t("sessions.columns.currency"),
         cellClassName: "text-xs text-muted-foreground",
         render: (sessionItem) =>
@@ -144,6 +151,7 @@ export function SessionsListDesktopTable({
     if (isColumnVisible("enrolled")) {
       cols.push({
         id: "enrolled",
+        kind: "number",
         label: t("sessions.columns.enrolled"),
         cellClassName: "text-xs text-muted-foreground",
         render: (sessionItem) =>
@@ -154,6 +162,7 @@ export function SessionsListDesktopTable({
     if (isColumnVisible("status")) {
       cols.push({
         id: "status",
+        kind: "status",
         label: t("sessions.columns.status"),
         sortField: "status",
         render: (sessionItem) => renderSessionWorkColumnValue(sessionItem, "status", columnOptions),
@@ -163,6 +172,7 @@ export function SessionsListDesktopTable({
     if (isColumnVisible("description")) {
       cols.push({
         id: "description",
+        kind: "longText",
         label: t("sessions.columns.description"),
         cellClassName: "text-xs text-muted-foreground max-w-cell-sm truncate",
         render: (sessionItem) =>

@@ -37,28 +37,33 @@ export function AccountingFxRevaluationSection({
   const lineColumns: DataTableColumn<LineRow>[] = [
     {
       id: "account",
+      kind: "title",
       label: t("accounting.settings.fxReval.account"),
       fixed: true,
       render: (row) => `${row.accountCode} – ${row.accountName}`,
     },
     {
       id: "open",
+      kind: "money",
       label: t("accounting.settings.fxReval.openBalance"),
       render: (row) => <span className="font-mono">{money(row.openTxn, row.currency)}</span>,
     },
     {
       id: "rate",
+      kind: "number",
       label: t("accounting.settings.fxReval.closingRate"),
       render: (row) => <span className="font-mono">{row.closingRate}</span>,
     },
     {
       id: "carrying",
+      kind: "money",
       label: t("accounting.settings.fxReval.carrying"),
       hideInCard: true,
       render: (row) => <span className="font-mono">{money(row.carryingFunc, functional)}</span>,
     },
     {
       id: "unrealized",
+      kind: "money",
       label: t("accounting.settings.fxReval.unrealized"),
       render: (row) => (
         <span
@@ -73,17 +78,20 @@ export function AccountingFxRevaluationSection({
   const runColumns: DataTableColumn<FxRevaluationRun>[] = [
     {
       id: "date",
+      kind: "date",
       label: t("accounting.settings.fxReval.date"),
       fixed: true,
       render: (run) => formatDate(run.revaluationDate),
     },
     {
       id: "lines",
+      kind: "number",
       label: t("accounting.settings.fxReval.balances"),
       render: (run) => String(run.lines.length),
     },
     {
       id: "total",
+      kind: "money",
       label: t("accounting.settings.fxReval.unrealized"),
       render: (run) => (
         <span className="font-mono">{money(run.totalUnrealized, run.functionalCurrency)}</span>

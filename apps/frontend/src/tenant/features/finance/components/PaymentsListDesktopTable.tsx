@@ -53,6 +53,7 @@ export function PaymentsListDesktopTable({
     if (isColumnVisible("date")) {
       cols.push({
         id: "date",
+        kind: "date",
         label: t("finance.columns.paymentDate"),
         noWrap: true,
         cellClassName: "text-muted-foreground",
@@ -63,6 +64,7 @@ export function PaymentsListDesktopTable({
     if (isColumnVisible("student")) {
       cols.push({
         id: "student",
+        kind: "person",
         label: t("finance.columns.student"),
         noWrap: true,
         cellClassName: "font-semibold text-foreground",
@@ -73,6 +75,7 @@ export function PaymentsListDesktopTable({
     if (isColumnVisible("invoice")) {
       cols.push({
         id: "invoice",
+        kind: "reference",
         label: t("finance.columns.invoice"),
         noWrap: true,
         cellClassName: "font-mono text-xs text-muted-foreground",
@@ -83,6 +86,7 @@ export function PaymentsListDesktopTable({
     if (isColumnVisible("amount")) {
       cols.push({
         id: "amount",
+        kind: "money",
         label: t("finance.columns.amount"),
         noWrap: true,
         cellClassName: "font-bold text-success",
@@ -93,6 +97,7 @@ export function PaymentsListDesktopTable({
     if (isColumnVisible("method")) {
       cols.push({
         id: "method",
+        kind: "status",
         label: t("finance.columns.method"),
         noWrap: true,
         render: (payment: Payment) => (
@@ -104,6 +109,7 @@ export function PaymentsListDesktopTable({
     if (isColumnVisible("receivedBy")) {
       cols.push({
         id: "receivedBy",
+        kind: "person",
         label: t("finance.columns.receivedBy"),
         cellClassName: "text-muted-foreground",
         render: (payment: Payment) => payment.receivedBy || "—",
@@ -113,6 +119,7 @@ export function PaymentsListDesktopTable({
     if (isColumnVisible("note")) {
       cols.push({
         id: "note",
+        kind: "longText",
         label: t("finance.columns.note"),
         truncate: true,
         cellClassName: "max-w-cell-sm text-muted-foreground",

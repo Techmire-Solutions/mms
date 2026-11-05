@@ -51,6 +51,7 @@ export function PlatformDashboardFleetTable({
     () => [
       {
         id: "name",
+        kind: "identity",
         label: t("platform.sort.name"),
         sortField: "name",
         render: (row) => (
@@ -62,6 +63,7 @@ export function PlatformDashboardFleetTable({
       },
       {
         id: "status",
+        kind: "status",
         label: t("platform.workspaceActive"),
         render: (row) => <WorkspaceStatusBadge enabled={row.enabled} />,
       },

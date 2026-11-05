@@ -121,6 +121,7 @@ export function AuditLog({ filters, viewMode }: AuditLogProps): React.JSX.Elemen
     },
     {
       id: "action",
+      kind: "shortText",
       label: t("attendance.audit.colAction"),
       noWrap: true,
       searchValue: actionLabel,
@@ -129,6 +130,7 @@ export function AuditLog({ filters, viewMode }: AuditLogProps): React.JSX.Elemen
     },
     {
       id: "details",
+      kind: "longText",
       label: t("attendance.audit.colDetails"),
       fixed: true,
       hideInCard: true,
@@ -141,6 +143,7 @@ export function AuditLog({ filters, viewMode }: AuditLogProps): React.JSX.Elemen
     },
     {
       id: "by",
+      kind: "person",
       label: t("attendance.audit.colBy"),
       noWrap: true,
       searchValue: (row) => row.entry.by,

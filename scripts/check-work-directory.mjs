@@ -11,6 +11,10 @@
  *    reviewed allowlist — directories and catalogs use DataTable / WorkBatchTable.
  * 6. Zero outer `<EntityCard` shells in Work-directory card composites — use DirectoryCard
  *    (EntityCard remains the primitive under DirectoryCard / *CardHeader slots).
+ * 7. Zero unsized table columns: every `DataTableColumn` / `WorkBatchTableColumn` literal
+ *    (`{ id: "…", …, render }`) declares a `kind` (preferred) or a `width`, so no column
+ *    collapses to an equal share of the table. Registry-built columns are covered by
+ *    `packages/shared/src/__tests__/moduleColumnRegistryKinds.test.ts`.
  *
  * Spec: docs/superpowers/specs/2026-09-24-work-directory-convergence-design.md §5
  * Norms: mms-module-architecture.mdc §3/§7, mms-dry.mdc §1.
@@ -50,6 +54,38 @@ const cssDualRenderSites = [];
 const stubShortcutSites = [];
 const rawTableSites = [];
 const entityCardOuterSites = [];
+const unsizedColumnSites = [];
+
+const COLUMN_TYPE = /\b(DataTableColumn|WorkBatchTableColumn)\b/;
+const COLUMN_LITERAL_OPEN = /\{\s*id:\s*["'`]([^"'`]+)["'`]/g;
+
+/** Index of the `}` closing the object literal opened at `start`, or -1. */
+function objectLiteralEnd(source, start) {
+  let depth = 0;
+  for (let i = start; i < source.length; i++) {
+    const ch = source[i];
+    if (ch === "{") depth++;
+    else if (ch === "}") {
+      depth--;
+      if (depth === 0) return i;
+    }
+  }
+  return -1;
+}
+
+/** Column literal ids (objects with `id` + `render`) that declare neither `kind` nor `width`. */
+function findUnsizedColumns(source) {
+  const unsized = [];
+  for (const match of source.matchAll(COLUMN_LITERAL_OPEN)) {
+    const end = objectLiteralEnd(source, match.index);
+    if (end < 0) continue;
+    const body = source.slice(match.index, end);
+    if (!/\brender\s*[:(]/.test(body)) continue;
+    if (/\b(kind|width)\s*:/.test(body)) continue;
+    unsized.push(match[1]);
+  }
+  return unsized;
+}
 
 /**
  * Structured report, ledger, editor, matrix, and print tables: rows are not a filterable
@@ -145,6 +181,13 @@ for (const rel of files) {
     rawTableSites.push(rel);
   }
 
+  // Every table column literal is sized (kind preferred, width allowed)
+  if (!TEST_FILE.test(rel) && COLUMN_TYPE.test(content)) {
+    for (const id of findUnsizedColumns(content)) {
+      unsizedColumnSites.push(`${rel} (column "${id}")`);
+    }
+  }
+
   // Work-directory card composites must use DirectoryCard, not outer <EntityCard>
   if (
     isFeatureSource &&
@@ -208,6 +251,12 @@ const checks = [
     count: entityCardOuterSites.length,
     violators: entityCardOuterSites,
     norm: "mms-module-architecture.mdc §7 (DirectoryCard SSOT)",
+  },
+  {
+    name: "Table columns without a kind or width (add `kind` from MODULE_COLUMN_KINDS)",
+    count: unsizedColumnSites.length,
+    violators: unsizedColumnSites,
+    norm: "mms-module-architecture.mdc §3 (Column Layout SSOT)",
   },
 ];
 
