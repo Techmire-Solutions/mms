@@ -1,5 +1,6 @@
 import React from "react";
 import { Cell, Pie, PieChart, Tooltip } from "recharts";
+import { chartTooltipStyle } from "@/components/app/ChartGrid";
 
 export interface ContactReportChartItem {
   name: string;
@@ -27,14 +28,7 @@ export function ContactReportCharts({ chartData }: ContactReportChartsProps): Re
           <Cell key={entry.name} fill={entry.color} />
         ))}
       </Pie>
-      <Tooltip
-        contentStyle={{
-          backgroundColor: "var(--card)",
-          borderColor: "var(--border)",
-          borderRadius: "0.75rem",
-          color: "var(--foreground)",
-        }}
-      />
+      <Tooltip contentStyle={chartTooltipStyle()} />
     </PieChart>
   );
 }

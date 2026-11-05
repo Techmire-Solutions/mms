@@ -100,6 +100,21 @@ describe("ModuleWorkToolbar", () => {
     expect([...order].sort((left, right) => left - right)).toEqual(order);
   });
 
+  it("exposes the layout controls as a labelled roving toolbar", () => {
+    const html = renderToStaticMarkup(
+      <ModuleWorkToolbar
+        {...baseProps}
+        viewModeToggle={{ viewMode: "table", onViewModeChange: vi.fn() }}
+        columnCustomizer={{
+          registry: [{ key: "name", label: "Name", enabled: true, order: 0, fixed: true }],
+          onUpdate: vi.fn(),
+        }}
+      />,
+    );
+    expect(html).toContain('role="toolbar"');
+    expect(html).toContain('aria-label="common.layoutTools"');
+  });
+
   it("renders the divider only when both the filter and layout groups exist", () => {
     const layoutOnly = renderToStaticMarkup(
       <ModuleWorkToolbar

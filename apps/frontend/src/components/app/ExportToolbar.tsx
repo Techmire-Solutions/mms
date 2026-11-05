@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import { FileSpreadsheet, FileText, Printer, Settings as SettingsIcon } from "lucide-react";
 import { useTranslation } from "@/hooks/useTranslation";
 import { Button } from "@/components/ui/button";
+import { useRovingToolbar } from "@/hooks/useRovingToolbar";
 import { ExportPdfSettingsPopover } from "@/components/app/ExportPdfSettingsPopover";
 import { exportExcel, exportPdf, type ExportColumn } from "@/components/app/exportToolbarUtils";
 import { ExportToolbarCompact } from "@/components/app/ExportToolbarCompact";
@@ -37,6 +38,8 @@ export function ExportToolbar({
   resolveRows,
 }: ExportToolbarProps): React.JSX.Element {
   const { t } = useTranslation();
+  const toolbarRef = useRovingToolbar<HTMLDivElement>();
+  const settingsIdPrefix = `export-${React.useId().replace(/:/g, "")}`;
   const [orientation, setOrientation] = useState<"p" | "l">("p");
   const [formatSize, setFormatSize] = useState<string>("a4");
   const [showPdfSettings, setShowPdfSettings] = useState<boolean>(false);
@@ -127,7 +130,12 @@ export function ExportToolbar({
         {titleSuffix}
       </p>
 
-      <div className="flex items-center gap-2 flex-wrap">
+      <div
+        ref={toolbarRef}
+        role="toolbar"
+        aria-label={t("reports.export.tools")}
+        className="flex items-center gap-2 flex-wrap"
+      >
         <ExportPdfSettingsPopover
           open={showPdfSettings}
           orientation={orientation}
@@ -135,13 +143,14 @@ export function ExportToolbar({
           pageSize={formatSize}
           onPageSizeChange={setFormatSize}
           placement="top"
-          idPrefix="export"
+          idPrefix={settingsIdPrefix}
         />
 
         <Button
           onClick={handlePrint}
           variant="outline"
-          className="flex min-h-11 items-center gap-1.5 px-3 py-2 text-sm font-medium text-muted-foreground hover:text-foreground hover:bg-muted transition-colors cursor-pointer"
+          data-toolbar-item
+          className="flex min-h-11 items-center gap-1.5 px-3 py-2 text-sm font-medium text-muted-foreground hover:text-foreground hover:bg-muted transition-colors cursor-pointer focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background"
           type="button"
         >
           <Printer className="w-3.5 h-3.5" aria-hidden="true" />
@@ -153,32 +162,37 @@ export function ExportToolbar({
           }}
           disabled={!canExport || exporting}
           variant="outline"
-          className="flex min-h-11 items-center gap-1.5 px-3 py-2 text-sm font-medium text-muted-foreground hover:text-foreground hover:bg-muted transition-colors disabled:opacity-50 cursor-pointer disabled:cursor-not-allowed"
+          data-toolbar-item
+          className="flex min-h-11 items-center gap-1.5 px-3 py-2 text-sm font-medium text-muted-foreground hover:text-foreground hover:bg-muted transition-colors disabled:opacity-50 cursor-pointer disabled:cursor-not-allowed focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background"
           type="button"
           aria-busy={exporting}
         >
-          <FileSpreadsheet className="w-3.5 h-3.5 text-success" aria-hidden="true" />
+          <FileSpreadsheet className="w-3.5 h-3.5" aria-hidden="true" />
           {t("reports.export.excel")}
         </Button>
 
-        <div className="flex min-h-11 overflow-x-auto rounded-lg border border-border bg-card">
+        <div className="flex min-h-11 rounded-lg border border-border bg-card">
           <Button
             onClick={() => {
               void handlePdfExport();
             }}
             disabled={!canExport || exporting}
             variant="ghost"
-            className="flex min-h-11 items-center gap-1.5 px-3 py-2 border-e border-border text-sm font-medium text-muted-foreground hover:text-foreground hover:bg-muted transition-colors disabled:opacity-50 rounded-none cursor-pointer disabled:cursor-not-allowed"
+            data-toolbar-item
+            className="flex min-h-11 items-center gap-1.5 px-3 py-2 border-e border-border text-sm font-medium text-muted-foreground hover:text-foreground hover:bg-muted transition-colors disabled:opacity-50 rounded-s-lg cursor-pointer disabled:cursor-not-allowed focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background"
             type="button"
             aria-busy={exporting}
           >
-            <FileText className="w-3.5 h-3.5 text-destructive" aria-hidden="true" />
+            <FileText className="w-3.5 h-3.5" aria-hidden="true" />
             {t("reports.export.pdf")}
           </Button>
           <Button
             onClick={() => setShowPdfSettings(!showPdfSettings)}
             variant="ghost"
-            className={`min-h-11 min-w-11 px-2 py-2 hover:bg-muted transition-colors rounded-none cursor-pointer ${showPdfSettings ? "text-primary bg-primary/5" : "text-muted-foreground"}`}
+            data-toolbar-item
+            aria-expanded={showPdfSettings}
+            aria-controls={showPdfSettings ? `${settingsIdPrefix}-pdf-settings` : undefined}
+            className={`min-h-11 min-w-11 px-2 py-2 hover:bg-muted transition-colors rounded-e-lg cursor-pointer focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background ${showPdfSettings ? "text-primary bg-primary/5" : "text-muted-foreground"}`}
             title={t("reports.export.settings")}
             type="button"
           >

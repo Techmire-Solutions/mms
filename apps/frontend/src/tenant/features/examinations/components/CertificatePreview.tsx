@@ -214,7 +214,7 @@ export function CertificatePreview({
               gap: "12px",
               background: result.grade.bg,
               border: `2px solid ${result.grade.border}`,
-              borderRadius: "12px",
+              borderRadius: "var(--radius-xl, 12px)",
               padding: "8px 24px",
               marginBottom: "24px",
             }}

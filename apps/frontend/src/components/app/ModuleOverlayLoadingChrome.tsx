@@ -1,5 +1,7 @@
 import { Loader2 } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
+import { OVERLAY_BACKDROP } from "@/components/ui/formStyles";
+import { cn } from "@/lib/utils";
 import { useTranslation } from "@/hooks/useTranslation";
 
 /** Full-screen Suspense fallback for lazy FormModal / MessageComposer overlays. */
@@ -8,7 +10,7 @@ export function ModuleOverlayLoadingFallback(): React.JSX.Element {
   return (
     <div
       data-overlay-backdrop
-      className="fixed inset-0 z-modal flex items-center justify-center bg-black/20"
+      className={cn("fixed inset-0 z-modal flex items-center justify-center", OVERLAY_BACKDROP)}
       role="status"
       aria-live="polite"
     >
@@ -24,7 +26,7 @@ export function ModuleDrawerLoadingSkeleton(): React.JSX.Element {
   return (
     <div
       data-overlay-backdrop
-      className="fixed inset-0 z-modal flex items-center justify-end bg-black/20"
+      className={cn("fixed inset-0 z-modal flex items-center justify-end", OVERLAY_BACKDROP)}
     >
       <div
         className="flex h-full w-full max-w-full flex-col gap-3 border-s border-border bg-card p-5 sm:max-w-sm"

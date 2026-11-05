@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { CHART_TEXT_MIN_PX, chartAxisTick } from "./ChartGrid";
+import { CHART_TEXT_MIN_PX, chartAxisTick, chartTooltipStyle } from "./ChartGrid";
 
 describe("chartAxisTick", () => {
   it("clamps every requested size to the 12px typography floor", () => {
@@ -18,5 +18,23 @@ describe("chartAxisTick", () => {
       fill: "hsl(var(--muted-foreground))",
     });
     expect(chartAxisTick(13, false)).toEqual({ fontSize: 13 });
+  });
+});
+
+describe("chartTooltipStyle", () => {
+  it("consumes centralized theme tokens for card background, border, and radius", () => {
+    const style = chartTooltipStyle();
+    expect(style.backgroundColor).toBe("hsl(var(--card))");
+    expect(style.borderColor).toBe("hsl(var(--border))");
+    expect(style.borderRadius).toBe("var(--radius)");
+    expect(style.color).toBe("hsl(var(--card-foreground))");
+    expect(style.fontSize).toBe("12px");
+  });
+
+  it("allows custom overrides while preserving defaults", () => {
+    const style = chartTooltipStyle({ padding: "8px", fontSize: "14px" });
+    expect(style.padding).toBe("8px");
+    expect(style.fontSize).toBe("14px");
+    expect(style.borderRadius).toBe("var(--radius)");
   });
 });

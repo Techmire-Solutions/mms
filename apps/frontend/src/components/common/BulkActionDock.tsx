@@ -1,9 +1,11 @@
-import React, { useEffect } from "react";
+import React, { useEffect, useRef } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { useTranslation } from "@/hooks/useTranslation";
 import { useReducedMotion } from "@/hooks/useReducedMotion";
+import { useRovingToolbar } from "@/hooks/useRovingToolbar";
+import { isAnotherLayerFocused, overlayLayerCount } from "@/lib/overlayStack";
 import {
   BulkSelectionClearAction,
   BulkSelectionDeleteAction,
@@ -57,7 +59,10 @@ function DockAction({
       type="button"
       variant={variant}
       size="sm"
-      className={cn("min-h-11 px-3 text-xs font-semibold gap-1.5", className)}
+      className={cn(
+        "min-h-11 px-3 text-xs font-semibold gap-1.5 focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background",
+        className,
+      )}
       {...props}
     >
       {Icon && <Icon className="w-3.5 h-3.5 shrink-0" aria-hidden="true" />}
@@ -111,11 +116,16 @@ export function BulkActionDock({
 }: BulkActionDockProps): React.JSX.Element {
   const { t } = useTranslation();
   const reducedMotion = useReducedMotion();
+  const dockRef = useRef<HTMLDivElement>(null);
+  const actionsRef = useRovingToolbar<HTMLDivElement>({ selector: "button" });
 
   useEffect(() => {
     if (!enableEscapeKey || selectedCount === 0) return;
     const handleKeyDown = (event: KeyboardEvent) => {
-      if (event.key === "Escape") onClearSelection();
+      if (event.key !== "Escape") return;
+      if (overlayLayerCount() > 0) return;
+      if (isAnotherLayerFocused(dockRef.current)) return;
+      onClearSelection();
     };
     window.addEventListener("keydown", handleKeyDown);
     return () => window.removeEventListener("keydown", handleKeyDown);
@@ -138,6 +148,7 @@ export function BulkActionDock({
     <AnimatePresence>
       {selectedCount > 0 && (
         <motion.div
+          ref={dockRef}
           role="region"
           aria-label={ariaLabel ?? t("common.bulkActionsToolbar")}
           initial={reducedMotion ? false : { opacity: 0, y: enterY }}
@@ -165,7 +176,7 @@ export function BulkActionDock({
                 variant="ghost"
                 size="sm"
                 onClick={onSelectAllToggle}
-                className="text-xs h-7 px-2 min-h-7 touch-target-coarse text-primary hover:text-primary cursor-pointer"
+                className="relative text-xs h-7 px-2 min-h-7 touch-target-coarse text-primary hover:text-primary cursor-pointer focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background after:absolute after:start-1/2 after:top-1/2 after:h-11 after:min-w-11 after:w-full after:-translate-x-1/2 rtl:after:translate-x-1/2 after:-translate-y-1/2 after:content-['']"
               >
                 {isAllSelected ? t("common.deselectAll") : t("common.selectAll")}
               </Button>
@@ -174,7 +185,12 @@ export function BulkActionDock({
           </div>
 
           {(children || resolvedTrailing) && (
-            <div className="flex min-w-0 flex-wrap items-center gap-2 sm:gap-3">
+            <div
+              ref={actionsRef}
+              role="toolbar"
+              aria-label={t("common.actions")}
+              className="flex min-w-0 flex-wrap items-center gap-2 sm:gap-3"
+            >
               {children}
               {resolvedTrailing}
             </div>

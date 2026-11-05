@@ -1908,6 +1908,7 @@ export const APP_TRANSLATIONS_EN = {
   "common.unnamedStudent": "Unnamed student",
   "common.viewMode.cards": "Cards view",
   "common.viewMode.group": "View Mode",
+  "common.layoutTools": "Layout and columns",
   "common.viewMode.table": "Table view",
   "common.yes": "Yes",
   "contacts.actionViewShort": "View",

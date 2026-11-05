@@ -1902,6 +1902,7 @@ export const APP_TRANSLATIONS_UR: Record<AppTranslationKey, string> = {
   "common.unnamedStudent": "بلا نام طالب علم",
   "common.viewMode.cards": "کارڈز منظر",
   "common.viewMode.group": "منظر کا موڈ",
+  "common.layoutTools": "ترتیب اور کالم",
   "common.viewMode.table": "جدول منظر",
   "common.yes": "ہاں",
   "contacts.actionViewShort": "دیکھیں",

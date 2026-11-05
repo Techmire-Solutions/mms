@@ -35,6 +35,22 @@ export function ChartPolarGrid({
  */
 export const CHART_TEXT_MIN_PX = 12;
 
+/**
+ * Standard Recharts tooltip container styling consuming centralized theme tokens:
+ * --card background, --border boundary, --radius curvature, and --card-foreground text.
+ */
+export function chartTooltipStyle(overrides?: React.CSSProperties): React.CSSProperties {
+  return {
+    backgroundColor: "hsl(var(--card))",
+    borderColor: "hsl(var(--border))",
+    borderRadius: "var(--radius)",
+    color: "hsl(var(--card-foreground))",
+    boxShadow: "var(--shadow-surface)",
+    fontSize: `${CHART_TEXT_MIN_PX}px`,
+    ...overrides,
+  };
+}
+
 export function chartAxisTick(
   fontSize = CHART_TEXT_MIN_PX,
   muted = false,

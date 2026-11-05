@@ -21,7 +21,12 @@ import {
   YAxis,
 } from "recharts";
 import { SafeResponsiveContainer } from "@/components/app/SafeResponsiveContainer";
-import { ChartGrid, ChartPolarGrid, chartAxisTick } from "@/components/app/ChartGrid";
+import {
+  ChartGrid,
+  ChartPolarGrid,
+  chartAxisTick,
+  chartTooltipStyle,
+} from "@/components/app/ChartGrid";
 import { capitalize, type AppTranslationKey } from "@mms/shared";
 import { getBrandingChartPalette } from "@/lib/ui/brandingChartPalette";
 import type {
@@ -79,13 +84,7 @@ export function DynamicChartVisualizerChart({
 
   const firstColor = currentColors[0] || getBrandingChartPalette().primary;
   const seriesName = t(operationLabelKey(operation));
-  const tooltipStyle = {
-    background: "hsl(var(--card))",
-    border: "1px solid hsl(var(--border))",
-    borderRadius: "12px",
-    boxShadow: "var(--shadow-surface)",
-    fontSize: `${axisFontSize}px`,
-  };
+  const tooltipStyle = chartTooltipStyle({ fontSize: `${axisFontSize}px` });
   const axisTick = chartAxisTick(axisFontSize, true);
 
   switch (chartType) {

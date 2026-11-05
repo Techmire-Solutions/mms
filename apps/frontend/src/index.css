@@ -46,6 +46,8 @@
   --text-2xs: 0.75rem;
   --text-2xs--line-height: 1rem;
 
+  --radius: var(--radius);
+  --radius-xs: calc(var(--radius) - 6px);
   --radius-sm: calc(var(--radius) - 4px);
   --radius-md: calc(var(--radius) - 2px);
   --radius-lg: var(--radius);
