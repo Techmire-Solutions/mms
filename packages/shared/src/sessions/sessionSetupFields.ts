@@ -1,28 +1,15 @@
 /** Sessions Setup field-registry resolution (seed clone + tabbed/flat normalization). */
 import type { FieldDefinition } from "../contacts/contactTypes.js";
-import {
-  SESSIONS_TAB_REGISTRY,
-  INITIAL_SESSIONS_FIELD_SEED,
-} from "../settings/moduleFieldSetupAcademic.js";
+import { INITIAL_SESSIONS_FIELD_SEED } from "../settings/moduleFieldSetupAcademic.js";
 import { getFlatFieldsConfig } from "../settings/moduleFieldConfigUtils.js";
 
 /** Deep clone {@link INITIAL_SESSIONS_FIELD_SEED} for default and Setup states. */
-export function cloneSessionFieldSeed(): Record<string, FieldDefinition[]> {
+function cloneSessionFieldSeed(): Record<string, FieldDefinition[]> {
   const next: Record<string, FieldDefinition[]> = {};
   for (const [tabId, fields] of Object.entries(INITIAL_SESSIONS_FIELD_SEED)) {
     next[tabId] = fields.map((field) => ({ ...field }));
   }
   return next;
-}
-
-/** True when `tabKey` is a seed/system form tab for Sessions. */
-export function isSessionSeedFormTab(tabKey: string): boolean {
-  return SESSIONS_TAB_REGISTRY.some((tab) => tab.key === tabKey);
-}
-
-/** True when `tabKey` is locked as enabled (Basic Info tab). */
-export function isSessionLockedEnabledTab(tabKey: string): boolean {
-  return tabKey.toLowerCase() === "basic";
 }
 
 /**

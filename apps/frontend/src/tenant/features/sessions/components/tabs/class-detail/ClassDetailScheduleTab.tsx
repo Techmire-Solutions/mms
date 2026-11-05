@@ -1,6 +1,7 @@
 import React from "react";
 import { Clock } from "lucide-react";
-import { Input } from "@/components/ui/input";
+import { DatePicker } from "@/components/app/DatePicker";
+import { TimePicker } from "@/components/app/TimePicker";
 import {
   FormCardTypeSelect,
   FormCollectionShell,
@@ -82,20 +83,19 @@ export function ClassDetailScheduleTab({
             onRemove={() => onRemoveSchedule(sch.id)}
           >
             <div className="flex flex-wrap items-center gap-2">
-              <Input
-                type="date"
+              <DatePicker
                 value={sch.startDate}
-                onChange={(e) => onUpdateSchedule(sch.id, { startDate: e.target.value })}
+                onChange={(value) => onUpdateSchedule(sch.id, { startDate: value })}
                 aria-label={t("common.startDate")}
                 className="text-xs"
               />
               <span className="text-xs text-muted-foreground">
                 {t("sessions.classes.detail.to")}
               </span>
-              <Input
-                type="date"
+              <DatePicker
                 value={sch.endDate}
-                onChange={(e) => onUpdateSchedule(sch.id, { endDate: e.target.value })}
+                min={sch.startDate || undefined}
+                onChange={(value) => onUpdateSchedule(sch.id, { endDate: value })}
                 aria-label={t("common.endDate")}
                 className="text-xs"
               />
@@ -122,18 +122,16 @@ export function ClassDetailScheduleTab({
             onRemove={() => onRemovePeriod(period.id)}
           >
             <div className="flex flex-wrap items-center gap-2">
-              <Input
-                type="time"
+              <TimePicker
                 value={period.startTime}
-                onChange={(e) => onUpdatePeriod(period.id, { startTime: e.target.value })}
+                onChange={(value) => onUpdatePeriod(period.id, { startTime: value })}
                 aria-label={t("sessions.timetable.form.startTime")}
                 className="w-28 text-xs"
               />
               <span className="text-xs text-muted-foreground">–</span>
-              <Input
-                type="time"
+              <TimePicker
                 value={period.endTime}
-                onChange={(e) => onUpdatePeriod(period.id, { endTime: e.target.value })}
+                onChange={(value) => onUpdatePeriod(period.id, { endTime: value })}
                 aria-label={t("sessions.timetable.form.endTime")}
                 className="w-28 text-xs"
               />

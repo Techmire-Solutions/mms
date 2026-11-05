@@ -10,7 +10,6 @@ import {
   SessionSchema,
   isSessionStructureLocked,
   normalizeSessionStatus,
-  toTitleCase,
   type AppTranslationKey,
   type SessionLifecycleState,
 } from "@mms/shared";
@@ -62,7 +61,9 @@ export function useSessionFormController({
     schema: SessionSchema,
     toRecord: (draft): Session => ({
       id: session?.id || crypto.randomUUID(),
-      name: toTitleCase(draft.name || ""),
+      // OCC token: without it the server cannot reject a stale edit (silent overwrite).
+      updatedAt: session?.updatedAt,
+      name: (draft.name || "").trim(),
       // Category/program are catalog ids; the server resolves defaults and the `type` snapshot.
       type: session?.type ?? "",
       categoryId: draft.categoryId || defaultCategoryId,

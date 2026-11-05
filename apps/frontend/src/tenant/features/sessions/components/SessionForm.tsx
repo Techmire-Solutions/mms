@@ -41,6 +41,18 @@ export const SessionForm = function SessionForm({
     currencyOptions,
   } = useSessionFormController({ session, onClose, onSave });
 
+  const errorEntries = Object.entries(errors);
+  const fieldIdForError = (key: string): string => {
+    const ids: Record<string, string> = {
+      name: "session-name",
+      startDate: "session-start-date",
+      endDate: "session-end-date",
+      baseFee: "session-baseFee",
+      minAttendancePct: "session-minAttendancePct",
+    };
+    return ids[key] ?? `session-${key}`;
+  };
+
   return (
     <FormModal
       open={open}
@@ -54,7 +66,14 @@ export const SessionForm = function SessionForm({
       onSave={handleSave}
       isDirty={isDirty}
       saving={saving}
-      error={Object.values(errors)[0]}
+      error={errorEntries.map(([, message]) => message)}
+      onSelectError={(index) => {
+        const entry = errorEntries[index];
+        if (!entry) return;
+        const field = document.getElementById(fieldIdForError(entry[0]));
+        field?.scrollIntoView({ block: "center" });
+        (field as HTMLElement | null)?.focus();
+      }}
       saveDisabled={
         !sessionDraft.name?.trim() ||
         !sessionDraft.startDate ||
@@ -66,7 +85,8 @@ export const SessionForm = function SessionForm({
           sessionName={sessionDraft.name}
           sessionType={sessionDraft.type}
           sessionStatus={sessionDraft.status}
-          nameRequiredLabel={t("sessions.form.nameRequired")}
+          startDate={sessionDraft.startDate}
+          endDate={sessionDraft.endDate}
         />
       }
       formId="session-form"

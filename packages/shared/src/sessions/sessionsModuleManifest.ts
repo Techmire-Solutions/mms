@@ -1,11 +1,14 @@
 import { z } from "zod";
 import type { Permission } from "../auth/permissions.js";
+import { SESSION_LIFECYCLE_STATES } from "./sessionLifecycle.js";
 
 /** Bulk status update payload schema for Sessions. */
 export const sessionsBulkStatusSchema = z
   .object({
-    ids: z.array(z.string().min(1)).min(1),
-    status: z.string().min(1),
+    // Bounded like every other bulk endpoint: unbounded ids fan out one read transaction each.
+    ids: z.array(z.string().min(1)).min(1).max(500),
+    // Only real lifecycle states: a free-form value silently normalizes to `draft`.
+    status: z.enum(SESSION_LIFECYCLE_STATES),
   })
   .strict();
 
@@ -26,14 +29,16 @@ export const SESSIONS_MODULE_MANIFEST = {
   tiers: ["work", "reports", "setup"] as const,
   setupSubTabs: ["categories", "programs", "subjects", "terminology", "preferences"] as const,
   permissions: {
-    read: "enrollments.read",
-    write: "enrollments.write",
-    delete: "enrollments.write",
+    // Sessions owns its own permission family. Mapping these to `enrollments.*` let an
+    // enrollment-only writer create/archive sessions while a `sessions.read` role was denied.
+    read: "sessions.read",
+    write: "sessions.write",
+    delete: "sessions.delete",
     setupView: "configuration.view",
     setupWrite: "settings.global.write",
     overrideLock: "sessions.override_lock",
-    export: "enrollments.read",
-    reports: "enrollments.read",
+    export: "sessions.read",
+    reports: "sessions.read",
   } satisfies Record<string, Permission>,
   work: {
     directoryViews: ["table", "cards"] as const,
@@ -52,5 +57,3 @@ export const SESSIONS_MODULE_MANIFEST = {
   defaultPageSize: 12,
   maxPageSize: 100,
 } as const;
-
-export type SessionsModuleTier = (typeof SESSIONS_MODULE_MANIFEST.tiers)[number];

@@ -65,7 +65,7 @@ export function SessionsListFilters({
       onSearchChange={onSearchChange}
       searchPlaceholder={t("sessions.searchPlaceholder")}
       searchId={SESSIONS_WORK_SEARCH_INPUT_ID}
-      hasActiveFilters={activeFilterCount > 0}
+      hasActiveFilters={activeFilterCount > 0 || search.trim().length > 0}
       onClearFilters={onClearFilters}
       clearFiltersLabel={t("sessions.clearFilters")}
       filterButton={

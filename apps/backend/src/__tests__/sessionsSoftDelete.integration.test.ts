@@ -1,6 +1,6 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { buildApp } from "../app.js";
-import { adminToken } from "./helpers/tokens.js";
+import { adminToken, teacherToken } from "./helpers/tokens.js";
 
 vi.mock("../db/database.js", () => ({
   initDb: vi.fn().mockResolvedValue(undefined),
@@ -79,6 +79,22 @@ describe("sessions soft delete routes", () => {
     });
     expect(res.statusCode).toBe(200);
     expect(mockDeleteSessionById).toHaveBeenCalledWith("s1", "u-admin", "Ended early");
+    await app.close();
+  });
+
+  it("DELETE /api/sessions/:id denies a teacher without sessions.delete", async () => {
+    const app = await buildApp();
+    const res = await app.inject({
+      method: "DELETE",
+      url: "/api/sessions/s1",
+      headers: {
+        host: "demo.localhost",
+        authorization: `Bearer ${teacherToken(app)}`,
+      },
+      payload: { deletionReason: "Should not be allowed" },
+    });
+    expect(res.statusCode).toBe(403);
+    expect(mockDeleteSessionById).not.toHaveBeenCalled();
     await app.close();
   });
 

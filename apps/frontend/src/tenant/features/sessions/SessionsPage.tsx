@@ -21,6 +21,7 @@ const SessionsSetupTier = lazy(() =>
 export default function Sessions(): React.JSX.Element {
   const c = useSessionsPageController();
   const terms = useAcademicTerms();
+  const visibleTier = (id: string) => c.PAGE_TABS.some((tab) => tab.id === id);
   const [importOpen, setImportOpen] = useState(false);
 
   return (
@@ -67,7 +68,7 @@ export default function Sessions(): React.JSX.Element {
           ]}
         />
       }
-      metrics={<SessionsCommandMetrics total={c.shownCount} shown={c.sessions.length} />}
+      metrics={<SessionsCommandMetrics total={c.shownCount} filteredTotal={c.shownCount} />}
       tiers={[
         {
           id: "work",
@@ -128,8 +129,12 @@ export default function Sessions(): React.JSX.Element {
             />
           ),
         },
-        { id: "reports", content: <SessionsReportsTier category="sessions" />, lazy: true },
-        { id: "setup", content: <SessionsSetupTier />, lazy: true },
+        ...(visibleTier("reports")
+          ? [{ id: "reports", content: <SessionsReportsTier category="sessions" />, lazy: true }]
+          : []),
+        ...(visibleTier("setup")
+          ? [{ id: "setup", content: <SessionsSetupTier />, lazy: true }]
+          : []),
       ]}
       overlays={
         <SessionsDialogLayer

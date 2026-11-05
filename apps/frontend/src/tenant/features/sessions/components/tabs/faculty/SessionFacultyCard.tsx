@@ -39,7 +39,13 @@ export function SessionFacultyCard({
               ) : (
                 <XCircle className="h-3 w-3 text-muted-foreground" />
               )}
-              <span className="capitalize">{item.status}</span>
+              <span>
+                {t(
+                  item.status === "active"
+                    ? "sessions.faculty.status.active"
+                    : "sessions.faculty.status.inactive",
+                )}
+              </span>
             </span>
           </div>
         </div>

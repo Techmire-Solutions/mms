@@ -133,6 +133,7 @@ export function SessionLifecycleBar({ session }: { session: Session }): React.JS
         discardUnsavedDescription={t("enrollments.ops.discardDescription")}
         discardConfirmLabel={t("common.yes")}
         discardCancelLabel={t("common.cancel")}
+        saveVariant={action === "cancel" ? "destructive" : "primary"}
         onSave={() => void submit()}
       >
         <div className="space-y-4 py-1 text-start">

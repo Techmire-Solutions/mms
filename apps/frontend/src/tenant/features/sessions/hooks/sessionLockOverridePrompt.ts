@@ -12,7 +12,7 @@ const listeners = new Set<() => void>();
 const emit = () => listeners.forEach((listener) => listener());
 
 /** Violation codes from a `409 session_locked` response ("…: startDate, category"). */
-export function sessionLockViolations(error: unknown): SessionEditViolation[] | null {
+function sessionLockViolations(error: unknown): SessionEditViolation[] | null {
   if (!isApiError(error) || error.status !== 409 || error.type !== "session_locked") return null;
   const list = error.message.split(":").pop() ?? "";
   return list
@@ -22,9 +22,7 @@ export function sessionLockViolations(error: unknown): SessionEditViolation[] | 
 }
 
 /** Opens the override dialog; resolves with the reason, or null when cancelled. */
-export function requestSessionLockOverride(
-  violations: SessionEditViolation[],
-): Promise<string | null> {
+function requestSessionLockOverride(violations: SessionEditViolation[]): Promise<string | null> {
   current?.resolve(null);
   return new Promise((resolve) => {
     current = { violations, resolve };

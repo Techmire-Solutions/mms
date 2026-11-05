@@ -57,6 +57,7 @@ export function PageHelpCallout({
 }: PageHelpCalloutProps): React.JSX.Element | null {
   const { t } = useTranslation();
   const [dismissed, setDismissed] = useState(() => readDismissed(id));
+  const [stepsOpen, setStepsOpen] = useState(false);
 
   const handleDismiss = useCallback(() => {
     persistDismissed(id);
@@ -81,11 +82,28 @@ export function PageHelpCallout({
           {title}
         </h2>
         {description ? <p className="text-sm text-muted-foreground">{description}</p> : null}
-        <ol className="ms-4 list-decimal space-y-1 text-sm text-muted-foreground marker:text-info">
+        <ol
+          id={`${headingId}-steps`}
+          className={cn(
+            "ms-4 list-decimal space-y-1 text-sm text-muted-foreground marker:text-info",
+            !stepsOpen && "hidden sm:block",
+          )}
+        >
           {steps.map((step, index) => (
             <li key={`${id}-step-${index}`}>{step}</li>
           ))}
         </ol>
+        <Button
+          type="button"
+          variant="ghost"
+          size="sm"
+          className="min-h-11 -ms-2 px-2 sm:hidden"
+          aria-expanded={stepsOpen}
+          aria-controls={`${headingId}-steps`}
+          onClick={() => setStepsOpen((open) => !open)}
+        >
+          {stepsOpen ? t("common.showLess") : t("common.showMore")}
+        </Button>
       </div>
       <Button
         type="button"

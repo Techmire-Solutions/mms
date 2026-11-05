@@ -16,7 +16,7 @@ import {
 import { type TenantTransaction } from "../tenant-context.js";
 import { toDbDate } from "../../lib/dbDate.js";
 
-export interface ClassChildRows {
+interface ClassChildRows {
   fees: Array<typeof sessionClassFees.$inferInsert>;
   schedules: Array<typeof sessionClassSchedules.$inferInsert>;
   budgets: Array<typeof sessionClassBudgets.$inferInsert>;

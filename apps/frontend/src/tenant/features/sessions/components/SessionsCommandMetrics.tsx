@@ -5,16 +5,19 @@ import { useSessionsMetrics } from "@/tenant/features/sessions/hooks/useSessions
 import { ModuleCommandMetricsGrid } from "@/components/app/ModuleCommandMetricsGrid";
 
 interface SessionsCommandMetricsProps {
+  /** All-session fallback when the metrics endpoint has not supplied a total. */
   total: number;
-  shown: number;
+  /** Total matching the active directory filters (not the current page size). */
+  filteredTotal: number;
 }
 
 export const SessionsCommandMetrics = function SessionsCommandMetrics({
   total,
-  shown,
+  filteredTotal,
 }: SessionsCommandMetricsProps): React.JSX.Element {
   const { t } = useTranslation();
-  const { data: serverMetrics } = useSessionsMetrics();
+  const { data: serverMetrics, isLoading } = useSessionsMetrics();
+  const value = (next: number) => (isLoading ? "—" : next);
 
   const metrics = (() => ({
     total: serverMetrics?.total ?? total,
@@ -30,20 +33,25 @@ export const SessionsCommandMetrics = function SessionsCommandMetrics({
     {
       icon: Calendar,
       label: t("sessions.metrics.total"),
-      value: metrics.total,
+      value: value(metrics.total),
       accent: "primary" as const,
     },
-    { icon: Filter, label: t("sessions.metrics.filtered"), value: shown, accent: "info" as const },
+    {
+      icon: Filter,
+      label: t("sessions.metrics.filtered"),
+      value: value(filteredTotal),
+      accent: "info" as const,
+    },
     {
       icon: CheckCircle2,
       label: t("sessions.metrics.active"),
-      value: metrics.active,
+      value: value(metrics.active),
       accent: "success" as const,
     },
     {
       icon: Clock,
       label: t("sessions.metrics.upcoming"),
-      value: metrics.upcoming,
+      value: value(metrics.upcoming),
       accent: "warning" as const,
     },
   ])();

@@ -134,7 +134,7 @@ export function SessionsList({
         pageData={workPageData}
         onPageChange={onPageChange}
         i18nNamespace="sessions"
-        showPagination={sessions.length > 0}
+        showPagination={(workPageData?.total ?? 0) > 0}
         loadingLabel={t("common.loading")}
       >
         {sessions.length === 0 ? (

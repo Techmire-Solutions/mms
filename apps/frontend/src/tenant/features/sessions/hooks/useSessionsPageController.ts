@@ -1,8 +1,7 @@
 import { useEffect, useRef } from "react";
 import { useWorkDirectoryViewMode } from "@/hooks/useWorkDirectoryViewMode";
-import { usePersistedTabState } from "@/hooks/usePersistedTabState";
 import { useTranslation } from "@/hooks/useTranslation";
-import { useFilteredModuleTierTabs } from "@/tenant/hooks/useModuleTierTabs";
+import { useModuleTierPageNav } from "@/tenant/hooks/useModuleTierPageNav";
 import type { SessionSortField } from "@/tenant/features/sessions/lib/sessionPageTypes";
 import type { Session } from "@/lib/data/sessionsData";
 import {
@@ -15,7 +14,6 @@ import { useSessionsDirectoryFilters } from "@/tenant/features/sessions/hooks/us
 import { useSessionsKeyboardShortcuts } from "@/tenant/features/sessions/hooks/useSessionsKeyboardShortcuts";
 import { useSessionsDialogs } from "@/tenant/features/sessions/hooks/useSessionsDialogs";
 import { useSessionConfig } from "@/hooks/useStandardModuleConfig";
-import { useModulePermissions } from "@/tenant/hooks/usePermissions";
 import { SESSIONS_MODULE_MANIFEST, type SessionsListPageResult } from "@mms/shared";
 import { useSessionsPageCrudActions } from "@/tenant/features/sessions/hooks/useSessionsPageCrudActions";
 import {
@@ -30,13 +28,13 @@ export function useSessionsPageController() {
     canWrite,
     canDelete,
     canExport,
-    canReports: canViewReports,
-    canViewSetup,
-  } = useModulePermissions(SESSIONS_MODULE_MANIFEST);
-  const PAGE_TABS = useFilteredModuleTierTabs({
-    canViewSetup,
-    canViewReports,
+    visibleTabs: PAGE_TABS,
+    effectiveTab,
+    setActiveTab,
+  } = useModuleTierPageNav({
+    manifest: SESSIONS_MODULE_MANIFEST,
     workLabelKey: "nav.sessions",
+    storageKey: "sessions_active_tab",
   });
   const { t } = useTranslation();
   const {
@@ -47,7 +45,6 @@ export function useSessionsPageController() {
     bulkDeleteSessions,
     bulkRestoreSessions,
     bulkUpdateSessionStatus,
-    logExportAudit,
   } = useSessionMutations();
   const { types } = useSessionConfig();
   const { statusOptions, typeOptions, statusLabels, typeLabels, statusConfig, typeConfig } =
@@ -58,7 +55,7 @@ export function useSessionsPageController() {
   const directory = useSessionsDirectoryFilters();
   const handleDeleteRef = useRef<(id: string, reason?: string) => void>(() => {});
   const dialogs = useSessionsDialogs((id, reason) => handleDeleteRef.current(id, reason));
-  const [activeTab, setActiveTab] = usePersistedTabState<string>("sessions_active_tab", "work");
+  const activeTab = effectiveTab;
 
   const useServerWork = activeTab === "work";
   const {
@@ -83,6 +80,15 @@ export function useSessionsPageController() {
   const pageData =
     workPageData?.status === 200 ? (workPageData.body as SessionsListPageResult) : undefined;
   const sessions = (pageData?.sessions ?? []) as Session[];
+
+  const { listPage, setListPage } = directory;
+
+  // Deleting the last row of the last page leaves an empty page; clamp back to the real end.
+  useEffect(() => {
+    if (!pageData) return;
+    const lastPage = Math.max(1, Math.ceil(pageData.total / Math.max(1, pageData.limit)));
+    if (listPage > lastPage) setListPage(lastPage);
+  }, [pageData, listPage, setListPage]);
 
   const {
     selectedIds,
@@ -148,7 +154,6 @@ export function useSessionsPageController() {
     sortDir: directory.sortDir,
     viewingDeleted: directory.showDeleted,
     selectedIds,
-    logExportAudit,
   });
 
   const handleSort = (nextSortField: SessionSortField) => {

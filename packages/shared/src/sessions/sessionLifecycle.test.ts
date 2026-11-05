@@ -123,9 +123,82 @@ describe("findSessionEditViolations", () => {
     expect(renamed).toEqual(["readOnly"]);
   });
 
+  it("given a completed session, should ignore derived names but flag faculty, class-teacher and timetable edits", () => {
+    // Arrange
+    const base = session({ status: "completed" });
+    const period = {
+      id: "p1",
+      startTime: "08:00",
+      endTime: "09:00",
+      subject: "Quran",
+      facultyId: "",
+      facultyName: "",
+    };
+    const before = SessionSchema.parse({
+      ...base,
+      faculty: [{ id: "sf-1", sessionId: "ses-1", facultyId: "f-1", role: "coordinator" }],
+      classes: base.classes.map((cls) => ({
+        ...cls,
+        facultyId: "f-1",
+        timetables: [{ id: "tt-1", date: "2026-03-01", periods: [period] }],
+      })),
+    });
+
+    // Act — derived-only changes stay allowed.
+    const derivedOnly = findSessionEditViolations(before, {
+      ...before,
+      faculty: before.faculty.map((member) => ({ ...member, facultyName: "Renamed" })),
+      classes: before.classes.map((cls) => ({
+        ...cls,
+        facultyName: "Renamed",
+        timetables: cls.timetables.map((timetable) => ({
+          ...timetable,
+          periods: timetable.periods.map((p) => ({ ...p, facultyName: "Renamed" })),
+        })),
+      })),
+    });
+    // Structural changes are not.
+    const facultyChanged = findSessionEditViolations(before, {
+      ...before,
+      faculty: [{ ...before.faculty[0], role: "supervisor" }],
+    });
+    const teacherChanged = findSessionEditViolations(before, {
+      ...before,
+      classes: before.classes.map((cls) => ({ ...cls, facultyId: "f-2" })),
+    });
+    const timetableChanged = findSessionEditViolations(before, {
+      ...before,
+      classes: before.classes.map((cls) => ({
+        ...cls,
+        timetables: cls.timetables.map((timetable) => ({
+          ...timetable,
+          periods: [{ ...period, startTime: "09:00" }],
+        })),
+      })),
+    });
+    const thresholdChanged = findSessionEditViolations(before, {
+      ...before,
+      minAttendancePct: 80,
+    });
+
+    // Assert
+    expect(derivedOnly).toEqual([]);
+    expect(facultyChanged).toEqual(["readOnly"]);
+    expect(teacherChanged).toEqual(["readOnly"]);
+    expect(timetableChanged).toEqual(["readOnly"]);
+    expect(thresholdChanged).toEqual(["readOnly"]);
+  });
+
   it("given an in-progress session and today, should lock past timetables but not today or later", () => {
     // Arrange
-    const period = { id: "p1", startTime: "08:00", endTime: "09:00", subject: "Quran" };
+    const period = {
+      id: "p1",
+      startTime: "08:00",
+      endTime: "09:00",
+      subject: "Quran",
+      facultyId: "",
+      facultyName: "",
+    };
     const timetables = [
       { id: "tt-past", date: "2026-03-01", periods: [period] },
       { id: "tt-today", date: "2026-03-10", periods: [period] },

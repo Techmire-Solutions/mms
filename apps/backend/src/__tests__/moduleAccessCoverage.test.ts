@@ -363,6 +363,12 @@ const EXPECTED_MODULE_ROUTE_ACTIONS: Readonly<Record<string, ModuleAction>> = {
   "POST /api/contacts/:id/restore": "delete",
   "POST /api/contacts/bulk-delete": "delete",
   "POST /api/contacts/bulk-restore": "delete",
+  // Sessions archive/restore require `sessions.delete`; the method default would let an
+  // enrollment-writer role archive a session.
+  "DELETE /api/sessions/:id": "delete",
+  "POST /api/sessions/:id/restore": "delete",
+  "POST /api/sessions/bulk-delete": "delete",
+  "POST /api/sessions/bulk-restore": "delete",
 };
 
 describe("module access coverage", () => {

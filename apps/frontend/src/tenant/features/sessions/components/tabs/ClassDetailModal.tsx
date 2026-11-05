@@ -20,7 +20,7 @@ interface ClassDetailModalProps {
   open: boolean;
   sessionClass: Class | null;
   onClose: () => void;
-  onSave: (updatedClass: Class) => void | Promise<void>;
+  onSave: (updatedClass: Class) => boolean | void | Promise<boolean | void>;
   saving?: boolean;
 }
 
@@ -130,7 +130,7 @@ export function ClassDetailModal({
     }
     if (Object.keys(newErrors).length > 0) {
       setErrors(newErrors);
-      return;
+      return false;
     }
 
     const activeFacultyId = classDraft.facultyId;
@@ -144,11 +144,17 @@ export function ClassDetailModal({
       }
     }
 
-    await onSave({
-      ...classDraft,
-      facultyId: activeFacultyId,
-      facultyName: resolvedFacultyName,
-    });
+    try {
+      const saved = await onSave({
+        ...classDraft,
+        facultyId: activeFacultyId,
+        facultyName: resolvedFacultyName,
+      });
+      return saved !== false;
+    } catch {
+      // The session update handler already surfaced the failure; leave the modal open.
+      return false;
+    }
   };
 
   return (
@@ -166,10 +172,10 @@ export function ClassDetailModal({
       tabs={formTabs}
       activeTab={activeTab}
       onTabChange={setActiveTab}
-      saveOnTabChange={false}
       cancelLabel={t("common.cancel")}
       saveLabel={t("common.save")}
       onSave={handleSave}
+      saveOnTabChange={false}
       saving={saving}
       saveDisabled={saving || !classDraft.name?.trim()}
       error={Object.values(errors)[0]}

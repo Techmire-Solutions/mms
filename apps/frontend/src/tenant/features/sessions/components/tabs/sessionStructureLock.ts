@@ -1,6 +1,6 @@
 import { createContext, useContext } from "react";
 
-export interface SessionStructureLock {
+interface SessionStructureLock {
   /** Parent session has started: structural edits to saved classes/sections are locked. */
   locked: boolean;
   /** Classes already persisted on the session (new classes stay fully editable). */

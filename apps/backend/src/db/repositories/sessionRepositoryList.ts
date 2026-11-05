@@ -26,7 +26,7 @@ import { findSessionsSummaryByIds } from "./sessionRepository.js";
 import { enrollmentHoldsSeatSql } from "./enrollmentSeatSql.js";
 import { sessionTypeSql } from "./academicCatalogNameSql.js";
 
-const SESSION_SORT_FIELDS = new Set([
+export const SESSION_SORT_FIELDS = new Set([
   "name",
   "type",
   "status",
@@ -34,6 +34,7 @@ const SESSION_SORT_FIELDS = new Set([
   "startDate",
   "endDate",
   "updatedAt",
+  "createdAt",
 ]);
 
 function buildSearchSql(search: string): SQL | null {
@@ -78,6 +79,9 @@ function buildOrderBy(
   }
   if (field === "endDate") {
     return dir === "desc" ? desc(sessions.endDate) : asc(sessions.endDate);
+  }
+  if (field === "createdAt") {
+    return dir === "desc" ? desc(sessions.createdAt) : asc(sessions.createdAt);
   }
   return sql`${sessions.id} asc`;
 }

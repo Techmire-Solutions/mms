@@ -4,9 +4,9 @@ import { HttpDomainError } from "../../lib/httpErrors.js";
 import { userHasPermission } from "../../lib/userPermissionContext.js";
 
 /** Users with this permission (admins, coordinators) are never section-scoped. */
-export const SECTION_SCOPE_BYPASS_PERMISSION = "sessions.delete" as const;
+const SECTION_SCOPE_BYPASS_PERMISSION = "sessions.delete" as const;
 
-export interface ClassOnDate {
+interface ClassOnDate {
   classId: string;
   /** YYYY-MM-DD business date of the record (attendance day / exam date). */
   date: string;

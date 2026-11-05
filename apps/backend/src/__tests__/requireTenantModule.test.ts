@@ -31,7 +31,7 @@ describe("resolveModuleRouteAction", () => {
     expect(resolveModuleRouteAction("GET", "/api/students/:id", "students")).toBe("read");
     expect(resolveModuleRouteAction("HEAD", "/api/students", "students")).toBe("read");
     expect(resolveModuleRouteAction("POST", "/api/students", "students")).toBe("write");
-    expect(resolveModuleRouteAction("DELETE", "/api/sessions/:id", "sessions")).toBe("write");
+    expect(resolveModuleRouteAction("DELETE", "/api/sessions/:id", "sessions")).toBe("delete");
     expect(resolveModuleRouteAction("DELETE", "/api/students/:id", "students")).toBe("delete");
     expect(resolveModuleRouteAction(["GET", "PUT"], "/api/students/bulk", "students")).toBe(
       "write",

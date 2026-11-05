@@ -45,5 +45,7 @@ describe("SessionsSettings Component", () => {
     const html = renderToStaticMarkup(<SessionsSettings />);
     expect(html).toContain("sessions.settings.title");
     expect(html).toContain("academicYear");
+    // One page-level save action; the old in-card footer duplicated it.
+    expect(html.match(/settings\.savedBadge/g)).toHaveLength(1);
   });
 });

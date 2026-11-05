@@ -5,10 +5,11 @@ import {
 } from "@mms/shared";
 import { sessionsAcademicRepository as repo } from "../repository/sessionsAcademicRepositoryAdapter.js";
 import { broadcastCollection } from "../../lib/livePush.js";
+import { invalidateMultiTierCache } from "../../lib/cache/index.js";
 import { NotFoundError, ValidationError } from "../../lib/httpErrors.js";
 
 /** Live-push key: Sessions detail + Enrollments admissions refetch link lists. */
-export const REGISTRATION_LINKS_BROADCAST_KEY = "registration_links";
+const REGISTRATION_LINKS_BROADCAST_KEY = "registration_links";
 
 async function requireSession(tenant: string, sessionId: string) {
   const session = await repo.findSessionById(tenant, sessionId);
@@ -16,7 +17,7 @@ async function requireSession(tenant: string, sessionId: string) {
   return session;
 }
 
-export function createRegistrationLinkUseCases() {
+function createRegistrationLinkUseCases() {
   return {
     async list(tenant: string, sessionId: string): Promise<RegistrationLink[]> {
       await requireSession(tenant, sessionId);
@@ -31,6 +32,10 @@ export function createRegistrationLinkUseCases() {
       actorUserId: string,
     ): Promise<RegistrationLink> {
       const parsed = registrationLinkWriteSchema.parse(body);
+      if (parsed.opensAt && parsed.closesAt && parsed.closesAt <= parsed.opensAt)
+        throw new ValidationError("The registration link must close after it opens");
+      if (parsed.maxSubmissions !== null && parsed.maxSubmissions < 1)
+        throw new ValidationError("Maximum submissions must be at least 1");
       const session = await requireSession(tenant, sessionId);
       const sessionClassIds = new Set(session.classes.map((cls) => cls.id));
       const foreign = parsed.classIds.filter((classId) => !sessionClassIds.has(classId));
@@ -42,6 +47,7 @@ export function createRegistrationLinkUseCases() {
         ...parsed,
         actorUserId,
       });
+      await invalidateMultiTierCache({ tenantId: tenant, domain: "sessions" });
       await broadcastCollection(REGISTRATION_LINKS_BROADCAST_KEY);
       return link;
     },
@@ -53,7 +59,10 @@ export function createRegistrationLinkUseCases() {
       actorUserId: string,
     ): Promise<boolean> {
       const removed = await repo.softDeleteRegistrationLink(tenant, sessionId, id, actorUserId);
-      if (removed) await broadcastCollection(REGISTRATION_LINKS_BROADCAST_KEY);
+      if (removed) {
+        await invalidateMultiTierCache({ tenantId: tenant, domain: "sessions" });
+        await broadcastCollection(REGISTRATION_LINKS_BROADCAST_KEY);
+      }
       return removed;
     },
   };

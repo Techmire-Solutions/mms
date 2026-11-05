@@ -139,9 +139,13 @@ export const sessionContractRouter: FastifyPluginAsync = async (fastify) => {
       try {
         // Locked changes after start need `sessions.override_lock` plus a reason (audited).
         const lock = { canOverrideLock: userHasPermission(user, OVERRIDE_LOCK_PERM) };
+        const expectedHeader = request.headers["x-expected-updated-at"];
+        const expectedUpdatedAt = Array.isArray(expectedHeader)
+          ? expectedHeader[0]
+          : expectedHeader;
         const updated = await withTenant(
           String(request.tenant?.id),
-          () => sessionsUseCases.updateSessionById(id, body, lock),
+          () => sessionsUseCases.updateSessionById(id, body, lock, expectedUpdatedAt),
           { readOnly: false },
         );
         if (!updated)

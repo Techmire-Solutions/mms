@@ -21,7 +21,12 @@ export const sessionLookupContractEndpoints = {
     method: "GET" as const,
     path: "/api/sessions/lookups/:kind",
     pathParams: z.object({ kind: z.string() }),
-    responses: { 200: z.array(z.string()), 403: errorResponse, 500: errorResponse },
+    responses: {
+      200: z.array(z.string()),
+      400: errorResponse,
+      403: errorResponse,
+      500: errorResponse,
+    },
     summary: "Get a specific lookup kind",
   },
   updateLookupKind: {

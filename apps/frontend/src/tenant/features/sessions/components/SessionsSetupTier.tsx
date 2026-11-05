@@ -39,7 +39,7 @@ export const SessionsSetupTier = function SessionsSetupTier({
   onPrefsDirtyChange,
 }: SessionsSetupTierProps = {}): React.JSX.Element {
   const { t } = useTranslation();
-  const { canEditSetup, canDelete } = useModulePermissions(SESSIONS_MODULE_MANIFEST);
+  const { canEditSetup } = useModulePermissions(SESSIONS_MODULE_MANIFEST);
   const prefsDirtyRef = useRef(false);
 
   const subTabs = useModuleSetupSubTabs({
@@ -77,7 +77,7 @@ export const SessionsSetupTier = function SessionsSetupTier({
                 key={catalog}
                 kind={catalog}
                 canWrite={canEditSetup}
-                canDelete={canEditSetup && canDelete}
+                canDelete={canEditSetup}
               />
             ) : null}
             {subTabs.sub === "terminology" && canEditSetup ? (

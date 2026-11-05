@@ -4,6 +4,38 @@ import { createRoot } from "react-dom/client";
 import { ClassCard } from "./ClassCard";
 import { ClassSchema, type FacultyMember } from "@mms/shared";
 
+vi.mock("@/components/app/ModuleRowActionsMenu", () => ({
+  ModuleRowActionsMenu: ({
+    editLabel,
+    deleteLabel,
+    onEdit,
+    onDelete,
+    extras,
+  }: {
+    editLabel: string;
+    deleteLabel: string;
+    onEdit: () => void;
+    onDelete: () => void;
+    extras?: React.ReactNode;
+  }) => (
+    <div>
+      <button aria-label={editLabel} onClick={onEdit} />
+      <button aria-label={deleteLabel} onClick={onDelete} />
+      <div>{extras}</div>
+    </div>
+  ),
+}));
+
+vi.mock("@/components/ui/dropdown-menu", () => ({
+  DropdownMenuItem: ({
+    children,
+    onClick,
+  }: {
+    children: React.ReactNode;
+    onClick?: () => void;
+  }) => <button onClick={onClick}>{children}</button>,
+}));
+
 (globalThis as unknown as { IS_REACT_ACT_ENVIRONMENT: boolean }).IS_REACT_ACT_ENVIRONMENT = true;
 
 vi.mock("@/hooks/useTranslation", () => ({
@@ -80,7 +112,7 @@ describe("ClassCard", () => {
     });
 
     const buttons = Array.from(container.querySelectorAll("button"));
-    const editBtn = buttons.find((btn) => btn.getAttribute("aria-label")?.includes("editNamed"));
+    const editBtn = buttons.find((btn) => btn.getAttribute("aria-label") === "common.edit");
     expect(editBtn).toBeDefined();
 
     await act(async () => {
@@ -111,8 +143,8 @@ describe("ClassCard", () => {
     expect(footer).not.toBeNull();
 
     // Action buttons inside footer should not be rendered
-    const editBtn = Array.from(container.querySelectorAll("button")).find((btn) =>
-      btn.getAttribute("aria-label")?.includes("editNamed"),
+    const editBtn = Array.from(container.querySelectorAll("button")).find(
+      (btn) => btn.getAttribute("aria-label") === "common.edit",
     );
     expect(editBtn).toBeUndefined();
   });
