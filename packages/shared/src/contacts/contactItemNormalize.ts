@@ -130,7 +130,7 @@ export function cleanContactDraft(draft: Partial<Contact>): Partial<Contact> {
       (edu) =>
         !isBlankContactListRow(
           edu,
-          ["institution", "degree", "fieldOfStudy"],
+          ["institution", "fieldOfStudy", "year", "grade"],
           EDUCATION_SYSTEM_KEYS,
         ),
     );

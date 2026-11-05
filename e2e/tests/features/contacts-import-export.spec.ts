@@ -99,7 +99,7 @@ test.describe.serial("Contacts import + export E2E", { tag: "@local-only" }, () 
     await page.waitForLoadState("domcontentloaded");
 
     // ── Import: header CTA → dialog → vCard → preview → queued batch ──────────────
-    await page.getByRole("button", { name: "Import", exact: true }).click();
+    await page.getByRole("button", { name: "Import", exact: true }).first().click();
     const vcardItem = page.getByRole("menuitem", { name: /vCard/i });
     if (await vcardItem.isVisible({ timeout: 2000 }).catch(() => false)) {
       await vcardItem.click();
