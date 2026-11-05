@@ -2,6 +2,7 @@ import { z } from "zod";
 import { deepSanitizeStrings } from "./sanitize.js";
 import { SessionSchema } from "../sessions/sessionTypes.js";
 import { stripSessionClientSoftDeleteFields } from "../sessions/sessionUtils.js";
+import { stripClientAuditFields } from "../contacts/contactWriteSanitize.js";
 import { bulkIdsBodySchema, type BulkIdsBody } from "./api.dto.js";
 
 const sessionCreateBodyBaseSchema = SessionSchema.omit({
@@ -22,7 +23,9 @@ const sessionCreateBodyBaseSchema = SessionSchema.omit({
 
 export const sessionCreateBodySchema = z.preprocess((raw) => {
   if (!raw || typeof raw !== "object" || Array.isArray(raw)) return raw;
-  const stripped = stripSessionClientSoftDeleteFields(raw as Record<string, unknown>);
+  const stripped = stripClientAuditFields(
+    stripSessionClientSoftDeleteFields(raw as Record<string, unknown>),
+  );
   return deepSanitizeStrings(stripped);
 }, sessionCreateBodyBaseSchema);
 
@@ -36,7 +39,9 @@ const sessionUpdateBodyBaseSchema = sessionCreateBodyBaseSchema
 
 export const sessionUpdateBodySchema = z.preprocess((raw) => {
   if (!raw || typeof raw !== "object" || Array.isArray(raw)) return raw;
-  const stripped = stripSessionClientSoftDeleteFields(raw as Record<string, unknown>);
+  const stripped = stripClientAuditFields(
+    stripSessionClientSoftDeleteFields(raw as Record<string, unknown>),
+  );
   return deepSanitizeStrings(stripped);
 }, sessionUpdateBodyBaseSchema);
 
