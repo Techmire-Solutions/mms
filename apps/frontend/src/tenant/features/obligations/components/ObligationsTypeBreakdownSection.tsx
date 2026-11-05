@@ -80,7 +80,7 @@ export function ObligationsTypeBreakdownSection({
                 <Badge
                   pill
                   variant="outline"
-                  className="shrink-0 px-1.5 font-bold text-white border-transparent"
+                  className="shrink-0 px-1.5 font-bold text-primary-foreground border-transparent"
                   style={{ background: colors[index % colors.length] }}
                 >
                   {typeBreakdownItem.count}

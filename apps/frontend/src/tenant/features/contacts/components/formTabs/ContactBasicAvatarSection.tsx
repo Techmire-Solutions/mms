@@ -141,7 +141,7 @@ export function ContactBasicAvatarSection({
           ) : (
             <div
               className={cn(
-                "w-full h-full flex items-center justify-center font-extrabold text-2xl text-white bg-gradient-to-br select-none",
+                "w-full h-full flex items-center justify-center font-extrabold text-2xl text-primary-foreground bg-gradient-to-br select-none",
                 avatarGradient,
               )}
             >
@@ -151,7 +151,7 @@ export function ContactBasicAvatarSection({
 
           <label
             htmlFor={avatarInputId}
-            className="absolute inset-0 flex cursor-pointer items-center justify-center rounded-2xl bg-foreground/40 text-white opacity-0 group-hover:opacity-100 focus-within:opacity-100 backdrop-blur-subtle transition-opacity duration-300"
+            className="absolute inset-0 flex cursor-pointer items-center justify-center rounded-2xl bg-foreground/40 text-background opacity-0 group-hover:opacity-100 focus-within:opacity-100 backdrop-blur-subtle transition-opacity duration-300"
           >
             <Camera
               className="h-6 w-6 scale-90 transition-transform duration-300 group-hover:scale-100"

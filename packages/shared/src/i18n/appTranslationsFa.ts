@@ -1911,6 +1911,7 @@ export const APP_TRANSLATIONS_FA: Partial<Record<AppTranslationKey, string>> = {
   "common.unnamedStudent": "دانش‌آموز بدون نام",
   "common.viewMode.cards": "نمای کارت‌ها",
   "common.viewMode.group": "حالت نمایش",
+  "common.layoutTools": "چیدمان و ستون‌ها",
   "common.viewMode.table": "نمای جدولی",
   "common.yes": "بله",
   "contacts.actionViewShort": "مشاهده",

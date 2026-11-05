@@ -62,11 +62,11 @@ export function ThemeSettingsPaletteSection({
                 notify.success(t("theme.copiedHex", { hex }));
               }}
               title={t("theme.copiedHex", { hex })}
-              className="h-7 w-7 touch-target-coarse rounded-md border border-white/20 shadow-2xs shrink-0 cursor-pointer hover:scale-110 active:scale-95 transition-transform flex items-center justify-center group relative"
+              className="h-7 w-7 touch-target-coarse rounded-md border border-foreground/20 shadow-2xs shrink-0 cursor-pointer hover:scale-110 active:scale-95 transition-transform flex items-center justify-center group relative"
               style={{ backgroundColor: hex }}
               aria-label={hex}
             >
-              <Copy className="h-3 w-3 text-white/0 group-hover:text-white/90 drop-shadow-sm transition-colors" />
+              <Copy className="h-3 w-3 text-primary-foreground/0 group-hover:text-primary-foreground/90 drop-shadow-sm transition-colors" />
             </button>
             <span className="font-mono text-2xs text-muted-foreground font-semibold px-0.5">
               {hex}

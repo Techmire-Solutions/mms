@@ -30,7 +30,7 @@ const variantClasses: Record<SpinnerVariant, string> = {
   primary: "text-primary border-primary/20 border-t-primary",
   current: "text-current border-current/20 border-t-current",
   muted: "text-muted-foreground border-muted-foreground/20 border-t-muted-foreground",
-  white: "text-white border-white/30 border-t-white",
+  white: "text-primary-foreground border-primary-foreground/30 border-t-primary-foreground",
 };
 
 /**

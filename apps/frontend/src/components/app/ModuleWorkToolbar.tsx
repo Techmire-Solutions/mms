@@ -5,6 +5,8 @@ import { ModuleTrashToggle } from "@/components/app/ModuleTrashToggle";
 import { WorkViewModeToggle } from "@/components/app/WorkViewModeToggle";
 import { ModuleColumnCustomizer } from "@/components/app/ModuleColumnCustomizer";
 import { WORK_SURFACE } from "@/components/ui/formStyles";
+import { useRovingToolbar } from "@/hooks/useRovingToolbar";
+import { useTranslation } from "@/hooks/useTranslation";
 import { cn } from "@/lib/utils";
 import type { ModuleWorkToolbarProps } from "@/components/app/moduleWorkToolbarTypes";
 
@@ -32,6 +34,8 @@ export const ModuleWorkToolbar = function ModuleWorkToolbar({
   children,
   showExportInTrash = true,
 }: ModuleWorkToolbarProps): JSX.Element {
+  const { t } = useTranslation();
+  const layoutToolbarRef = useRovingToolbar<HTMLDivElement>({ selector: "button" });
   const showChildren = Boolean(
     children && (!trashToggle?.viewingDeleted || showExportInTrash !== false),
   );
@@ -127,7 +131,12 @@ export const ModuleWorkToolbar = function ModuleWorkToolbar({
           )}
 
           {hasLayoutControls && (
-            <div className="inline-flex items-center gap-2">
+            <div
+              ref={layoutToolbarRef}
+              role="toolbar"
+              aria-label={t("common.layoutTools")}
+              className="inline-flex items-center gap-2"
+            >
               {viewModeToggle && (
                 <WorkViewModeToggle
                   viewMode={viewModeToggle.viewMode}

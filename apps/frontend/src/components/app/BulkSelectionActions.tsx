@@ -179,7 +179,7 @@ export function BulkSelectionClearAction({
       variant="ghost"
       size="sm"
       onClick={onClick}
-      className="text-muted-foreground hover:text-foreground font-medium cursor-pointer"
+      className="text-muted-foreground hover:text-foreground font-medium cursor-pointer focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background"
     >
       {label}
     </Button>

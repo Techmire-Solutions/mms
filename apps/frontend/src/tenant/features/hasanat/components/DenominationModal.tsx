@@ -113,7 +113,7 @@ export function DenominationModal({ open, denom, onClose, onSave }: Denomination
       >
         <div className="flex items-center justify-center" aria-hidden="true">
           <div
-            className="w-24 h-14 rounded-xl flex items-center justify-center shadow-md text-white text-2xl"
+            className="w-24 h-14 rounded-xl flex items-center justify-center shadow-md text-primary-foreground text-2xl"
             style={{ background: `linear-gradient(135deg, ${data.color}, ${data.color}99)` }}
           >
             {data.icon}

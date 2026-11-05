@@ -97,6 +97,8 @@ describe("formStyles Design Token Contract", () => {
     expect(FORM_CARD).toContain("rounded-2xl");
 
     expect(WORK_TOOLBAR_TRIGGER).toContain("rounded-xl");
+    expect(WORK_TOOLBAR_TRIGGER).toContain("focus-visible:ring-offset-2");
+    expect(WORK_TOOLBAR_TRIGGER).toContain("focus-visible:ring-offset-background");
     expect(WORK_TOOLBAR_TRIGGER_ACTIVE).toContain("border-primary");
     expect(WORK_TOOLBAR_TRIGGER_IDLE).toContain("border-border");
     expect(WORK_TOOLBAR_TRIGGER_FILTER_ACTIVE).toContain("bg-primary/5");

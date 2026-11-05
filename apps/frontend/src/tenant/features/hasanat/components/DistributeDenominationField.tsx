@@ -54,7 +54,7 @@ export function DistributeDenominationField({
       {selectedDenomination && (
         <div className="mt-2 flex items-center gap-2">
           <div
-            className="flex h-8 flex-1 items-center gap-2 rounded-lg px-3 text-xs font-semibold text-white"
+            className="flex h-8 flex-1 items-center gap-2 rounded-lg px-3 text-xs font-semibold text-primary-foreground"
             style={{ background: selectedDenomination.color }}
           >
             <span>{selectedDenomination.icon}</span>

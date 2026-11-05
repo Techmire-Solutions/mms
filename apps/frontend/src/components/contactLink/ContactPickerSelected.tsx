@@ -77,8 +77,8 @@ export function ContactPickerSelected({
             className="w-full h-full text-sm"
           />
           {onAvatarChange && (
-            <div className="absolute inset-0 bg-black/40 rounded-xl opacity-0 group-hover/avatar:opacity-100 flex items-center justify-center transition-opacity duration-150">
-              <Camera className="w-4 h-4 text-white" aria-hidden />
+            <div className="absolute inset-0 bg-foreground/40 rounded-xl opacity-0 group-hover/avatar:opacity-100 flex items-center justify-center transition-opacity duration-150">
+              <Camera className="w-4 h-4 text-background" aria-hidden />
             </div>
           )}
           <input

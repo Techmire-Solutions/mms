@@ -152,7 +152,7 @@ export function StockAddBatchModal({
         </Field>
         {selectedDenomination && (
           <div
-            className="h-10 rounded-xl flex items-center gap-2 px-3 text-white text-sm font-semibold"
+            className="h-10 rounded-xl flex items-center gap-2 px-3 text-primary-foreground text-sm font-semibold"
             style={{ background: selectedDenomination.color }}
           >
             <span aria-hidden="true">{selectedDenomination.icon}</span>

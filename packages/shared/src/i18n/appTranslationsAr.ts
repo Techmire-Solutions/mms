@@ -1882,6 +1882,7 @@ export const APP_TRANSLATIONS_AR: Record<AppTranslationKey, string> = {
   "common.unnamedStudent": "طالب بدون اسم",
   "common.viewMode.cards": "عرض البطاقات",
   "common.viewMode.group": "وضع العرض",
+  "common.layoutTools": "التخطيط والأعمدة",
   "common.viewMode.table": "عرض الجدول",
   "common.yes": "نعم",
   "contacts.actionViewShort": "عرض",

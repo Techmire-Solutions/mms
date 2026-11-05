@@ -55,6 +55,9 @@ export function ExportPdfSettingsPopover({
 
   return (
     <div
+      id={`${idPrefix}-pdf-settings`}
+      role="group"
+      aria-label={t("reports.export.settings")}
       className={cn(
         "absolute end-0 surface-overlay rounded-xl p-3 z-popover flex flex-col gap-3 min-w-popover-md max-w-full text-start",
         positionClass,

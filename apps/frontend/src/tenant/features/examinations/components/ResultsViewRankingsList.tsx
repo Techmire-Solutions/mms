@@ -89,7 +89,7 @@ export function ResultsViewRankingsList({
               {showStudent && (
                 <>
                   <div
-                    className="w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0 text-xs font-bold text-white"
+                    className="w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0 text-xs font-bold text-primary-foreground"
                     style={{ background: rankedResult.grade.color }}
                     aria-hidden="true"
                   >
