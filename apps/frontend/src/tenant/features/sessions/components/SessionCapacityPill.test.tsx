@@ -20,6 +20,7 @@ describe("SessionCapacityPill Component", () => {
     expect(html).toContain("15/20");
     expect(html).toContain("75%");
     expect(html).toContain("bg-success");
+    expect(html).toContain('aria-label="15/20 (75%) — 75% capacity used"');
   });
 
   it("renders warning dot class when capacity usage is between 81% and 99%", () => {

@@ -11,8 +11,6 @@ import type { SessionSortField } from "@/tenant/features/sessions/lib/sessionPag
 import { useTranslation } from "@/hooks/useTranslation";
 import { notify } from "@/lib/notify";
 
-type ExportAuditScope = "all" | "filtered" | "selection";
-
 export interface UseSessionsExportActionsOptions {
   tableColumns: SessionExportColumn[];
   canExport: boolean;
@@ -23,9 +21,6 @@ export interface UseSessionsExportActionsOptions {
   sortDir: "asc" | "desc";
   viewingDeleted: boolean;
   selectedIds: string[];
-  logExportAudit: {
-    mutateAsync: (payload: { count: number; scope: ExportAuditScope }) => Promise<unknown>;
-  };
 }
 
 /** Server CSV export actions for Sessions Work (Students-shaped shared factory). */
@@ -39,7 +34,6 @@ export function useSessionsExportActions({
   sortDir,
   viewingDeleted,
   selectedIds,
-  logExportAudit,
 }: UseSessionsExportActionsOptions) {
   const { t } = useTranslation();
 
@@ -68,7 +62,6 @@ export function useSessionsExportActions({
     selectionErrorScope: "sessions.server_export_csv_selection",
     buildFilteredQuery,
     startExport: startServerSessionsCsvExport,
-    logExportAudit,
     onError,
   });
 }

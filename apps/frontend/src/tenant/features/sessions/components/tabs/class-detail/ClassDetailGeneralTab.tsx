@@ -1,5 +1,6 @@
 import React from "react";
 import { Input } from "@/components/ui/input";
+import { DatePicker } from "@/components/app/DatePicker";
 import { FormSelect } from "@/components/app/FormSelect";
 import { FORM_INPUT_ERROR } from "@/components/ui/formStyles";
 import { Field } from "@/components/app/FormField";
@@ -103,12 +104,11 @@ export function ClassDetailGeneralTab({
         </Field>
 
         <Field id="class-calc-date" label={t("sessions.classes.detail.ageCalculationDate")}>
-          <Input
+          <DatePicker
             id="class-calc-date"
             name="ageCalculationDate"
-            type="date"
             value={classDraft.ageCalculationDate}
-            onChange={(e) => updateDraft("ageCalculationDate", e.target.value)}
+            onChange={(value) => updateDraft("ageCalculationDate", value)}
           />
         </Field>
       </div>
@@ -126,12 +126,11 @@ export function ClassDetailGeneralTab({
         </Field>
 
         <Field id="class-deadline" label={t("sessions.classes.detail.enrollmentDeadline")}>
-          <Input
+          <DatePicker
             id="class-deadline"
             name="enrollmentDeadline"
-            type="date"
             value={classDraft.enrollmentDeadline}
-            onChange={(e) => updateDraft("enrollmentDeadline", e.target.value)}
+            onChange={(value) => updateDraft("enrollmentDeadline", value)}
           />
         </Field>
 

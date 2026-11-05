@@ -14,6 +14,7 @@ export interface FormModalFooterProps {
   saveDisabled: boolean;
   saved: boolean;
   form?: string;
+  saveVariant?: "primary" | "destructive";
 }
 
 export const FormModalFooter = function FormModalFooter({
@@ -27,6 +28,7 @@ export const FormModalFooter = function FormModalFooter({
   saveDisabled,
   saved,
   form,
+  saveVariant = "primary",
 }: FormModalFooterProps): React.JSX.Element {
   return (
     <div
@@ -42,6 +44,7 @@ export const FormModalFooter = function FormModalFooter({
         </Button>
         <Button
           type={form ? "submit" : "button"}
+          variant={saveVariant}
           form={form}
           onClick={
             form

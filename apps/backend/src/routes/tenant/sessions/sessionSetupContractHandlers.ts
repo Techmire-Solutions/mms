@@ -28,20 +28,6 @@ const COLLECTION = SESSIONS_MODULE_MANIFEST.collectionKey;
 const SETUP_WRITE_PERM = SESSIONS_MODULE_MANIFEST.permissions.setupWrite;
 
 export const sessionSetupContractHandlers = {
-  exportAudit: async ({
-    request,
-  }: ContractRouteArgs<(typeof sessionContract)["exportAudit"]>): Promise<
-    ContractRouteResponse<(typeof sessionContract)["exportAudit"]>
-  > => {
-    const user = request.user as User;
-    if (!canReadCollection(user, COLLECTION))
-      return {
-        status: 403 as const,
-        body: { type: "forbidden", message: "Insufficient permissions" },
-      };
-    return { status: 200 as const, body: { success: true } };
-  },
-
   widgetAggregates: async ({
     body,
     request,
@@ -237,7 +223,7 @@ export const sessionSetupContractHandlers = {
       };
     if (!SESSION_LOOKUP_KINDS.includes(kind as SessionLookupKind))
       return {
-        status: 403 as const,
+        status: 400 as const,
         body: { type: "validation_error", message: `Unknown lookup kind: ${kind}` },
       };
     try {

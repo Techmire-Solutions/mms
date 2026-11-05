@@ -17,6 +17,7 @@ import { invalidateMultiTierCache } from "../../lib/cache/index.js";
 import { broadcastCollection } from "../../lib/livePush.js";
 import { recordModernAuditEvent } from "../../services/auditTrailService.js";
 import { workspaceToday } from "./sessionLockGuard.js";
+import { withTenant } from "../../db/tenant-context.js";
 
 async function loadOpenSection(tenant: string, sectionId: string, effectiveOn: string) {
   const roster = await repo.loadSectionRoster(tenant, sectionId);
@@ -60,38 +61,42 @@ export const sectionOperationsUseCases = {
     body: SectionMergeBody,
     user: User,
   ): Promise<SectionOperationResult> {
-    const input = sectionMergeBodySchema.parse(body);
-    if (input.targetSectionId === sectionId)
-      throw new ValidationError("Choose a different section to merge into");
-    const {
-      section: source,
-      enrollmentIds,
-      session,
-    } = await loadOpenSection(tenant, sectionId, input.effectiveOn);
-    const target = await repo.loadSectionRoster(tenant, input.targetSectionId);
-    if (!target || target.section.classId !== source.classId)
-      throw new ValidationError("The target must be another section of the same class");
-    if (target.section.status !== "active") throw new ConflictError("The target section is closed");
-    const enrolled = session.classes
-      .find((cls) => cls.id === source.classId)
-      ?.sections?.find((row) => row.id === target.section.id)?.enrolled;
-    const missing = sectionMergeShortfall(enrollmentIds.length, {
-      capacity: target.section.capacity,
-      enrolled: enrolled ?? target.enrollmentIds.length,
+    // One transaction: the pre-checks, dated moves, section close and audit land together.
+    return withTenant(tenant, async () => {
+      const input = sectionMergeBodySchema.parse(body);
+      if (input.targetSectionId === sectionId)
+        throw new ValidationError("Choose a different section to merge into");
+      const {
+        section: source,
+        enrollmentIds,
+        session,
+      } = await loadOpenSection(tenant, sectionId, input.effectiveOn);
+      const target = await repo.loadSectionRoster(tenant, input.targetSectionId);
+      if (!target || target.section.classId !== source.classId)
+        throw new ValidationError("The target must be another section of the same class");
+      if (target.section.status !== "active")
+        throw new ConflictError("The target section is closed");
+      const enrolled = session.classes
+        .find((cls) => cls.id === source.classId)
+        ?.sections?.find((row) => row.id === target.section.id)?.enrolled;
+      const missing = sectionMergeShortfall(enrollmentIds.length, {
+        capacity: target.section.capacity,
+        enrolled: enrolled ?? target.enrollmentIds.length,
+      });
+      if (missing > 0)
+        throw new ConflictError(
+          `${target.section.name} needs ${missing} more seat(s); raise its capacity first`,
+        );
+      const moved = await repo.applySectionMerge(tenant, {
+        source,
+        target: target.section,
+        effectiveOn: input.effectiveOn,
+        reason: input.reason,
+        actor: actorOf(user),
+      });
+      await afterChange(tenant, user, sectionId, { operation: "merge", ...input, moved });
+      return { sectionId: target.section.id, moved };
     });
-    if (missing > 0)
-      throw new ConflictError(
-        `${target.section.name} needs ${missing} more seat(s); raise its capacity first`,
-      );
-    const moved = await repo.applySectionMerge(tenant, {
-      source,
-      target: target.section,
-      effectiveOn: input.effectiveOn,
-      reason: input.reason,
-      actor: actorOf(user),
-    });
-    await afterChange(tenant, user, sectionId, { operation: "merge", ...input, moved });
-    return { sectionId: target.section.id, moved };
   },
 
   async split(
@@ -100,41 +105,43 @@ export const sectionOperationsUseCases = {
     body: SectionSplitBody,
     user: User,
   ): Promise<SectionOperationResult> {
-    const input = sectionSplitBodySchema.parse(body);
-    const { section: source, enrollmentIds } = await loadOpenSection(
-      tenant,
-      sectionId,
-      input.effectiveOn,
-    );
-    const live = new Set(enrollmentIds);
-    const chosen = [...new Set(input.enrollmentIds)];
-    if (chosen.some((id) => !live.has(id)))
-      throw new ValidationError("Only students currently in this section can be moved");
-    if (chosen.length > input.capacity)
-      throw new ValidationError("The new section's capacity is smaller than the students moved");
-    try {
-      const newSectionId = await repo.applySectionSplit(tenant, {
-        source,
-        name: input.name,
-        capacity: input.capacity,
-        enrollmentIds: chosen,
-        effectiveOn: input.effectiveOn,
-        reason: input.reason,
-        actor: actorOf(user),
-      });
-      await afterChange(tenant, user, sectionId, {
-        operation: "split",
-        newSectionId,
-        moved: chosen.length,
-        effectiveOn: input.effectiveOn,
-        reason: input.reason,
-      });
-      return { sectionId: newSectionId, moved: chosen.length };
-    } catch (error) {
-      if (isUniqueViolation(error))
-        throw new ConflictError(`A section named ${input.name} already exists in this class`);
-      throw error;
-    }
+    return withTenant(tenant, async () => {
+      const input = sectionSplitBodySchema.parse(body);
+      const { section: source, enrollmentIds } = await loadOpenSection(
+        tenant,
+        sectionId,
+        input.effectiveOn,
+      );
+      const live = new Set(enrollmentIds);
+      const chosen = [...new Set(input.enrollmentIds)];
+      if (chosen.some((id) => !live.has(id)))
+        throw new ValidationError("Only students currently in this section can be moved");
+      if (chosen.length > input.capacity)
+        throw new ValidationError("The new section's capacity is smaller than the students moved");
+      try {
+        const newSectionId = await repo.applySectionSplit(tenant, {
+          source,
+          name: input.name,
+          capacity: input.capacity,
+          enrollmentIds: chosen,
+          effectiveOn: input.effectiveOn,
+          reason: input.reason,
+          actor: actorOf(user),
+        });
+        await afterChange(tenant, user, sectionId, {
+          operation: "split",
+          newSectionId,
+          moved: chosen.length,
+          effectiveOn: input.effectiveOn,
+          reason: input.reason,
+        });
+        return { sectionId: newSectionId, moved: chosen.length };
+      } catch (error) {
+        if (isUniqueViolation(error))
+          throw new ConflictError(`A section named ${input.name} already exists in this class`);
+        throw error;
+      }
+    });
   },
 
   async close(
@@ -143,18 +150,20 @@ export const sectionOperationsUseCases = {
     body: SectionCloseBody,
     user: User,
   ): Promise<SectionOperationResult> {
-    const input = sectionCloseBodySchema.parse(body);
-    await loadOpenSection(tenant, sectionId, input.effectiveOn);
-    const stillEnrolled = await repo.applySectionClose(tenant, {
-      sectionId,
-      effectiveOn: input.effectiveOn,
-      reason: input.reason,
+    return withTenant(tenant, async () => {
+      const input = sectionCloseBodySchema.parse(body);
+      await loadOpenSection(tenant, sectionId, input.effectiveOn);
+      const stillEnrolled = await repo.applySectionClose(tenant, {
+        sectionId,
+        effectiveOn: input.effectiveOn,
+        reason: input.reason,
+      });
+      if (stillEnrolled > 0)
+        throw new ConflictError(
+          `${stillEnrolled} student(s) are still in this section; merge or move them first`,
+        );
+      await afterChange(tenant, user, sectionId, { operation: "close", ...input });
+      return { sectionId, moved: 0 };
     });
-    if (stillEnrolled > 0)
-      throw new ConflictError(
-        `${stillEnrolled} student(s) are still in this section; merge or move them first`,
-      );
-    await afterChange(tenant, user, sectionId, { operation: "close", ...input });
-    return { sectionId, moved: 0 };
   },
 };

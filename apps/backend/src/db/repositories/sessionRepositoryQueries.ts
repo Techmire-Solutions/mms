@@ -20,7 +20,7 @@ async function attachSessionChildrenTx(
   );
 }
 
-export const sessionSelectColumns = {
+const sessionSelectColumns = {
   id: sessions.id,
   workspaceSubdomain: sessions.workspaceSubdomain,
   name: sessions.name,
@@ -111,6 +111,22 @@ export async function findSessionsByIds(tenant: string, ids: string[]): Promise<
       .from(sessions)
       .where(and(eq(sessions.workspaceSubdomain, subdomain), inArray(sessions.id, ids)));
     return attachSessionChildrenTx(tx, subdomain, await hydrateSessionsList(tx, subdomain, rows));
+  });
+}
+
+/** Stored lifecycle status per id for a bulk transition (one query, no per-id transaction). */
+export async function findSessionStatusesByIds(
+  tenant: string,
+  ids: string[],
+): Promise<Map<string, string>> {
+  if (ids.length === 0) return new Map();
+  const subdomain = tenant.trim().toLowerCase();
+  return withTenantRead(subdomain, async (tx) => {
+    const rows = await tx
+      .select({ id: sessions.id, status: sessions.status })
+      .from(sessions)
+      .where(and(eq(sessions.workspaceSubdomain, subdomain), inArray(sessions.id, ids)));
+    return new Map(rows.map((row) => [row.id, row.status]));
   });
 }
 

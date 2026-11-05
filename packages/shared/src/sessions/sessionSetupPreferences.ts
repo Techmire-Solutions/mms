@@ -1,29 +1,7 @@
 /** Sessions module preferences: schema, type, defaults, and normalization. */
-import { z } from "zod";
 import { DEFAULT_SESSIONS_SETTINGS, type SessionsSettings } from "./sessionsModuleSettings.js";
 import { normalizeSessionsViewLayout } from "./sessionsExportUtils.js";
-import {
-  academicTerminologySchema,
-  normalizeAcademicTerminology,
-  type AcademicTerminology,
-} from "./academicTerminology.js";
-
-/** PUT /api/sessions/preferences — academic/session prefs only. */
-export const sessionPreferencesPutBodySchema = z
-  .object({
-    defaultDuration: z.string().optional(),
-    defaultSessionType: z.string().optional(),
-    allowOverlap: z.boolean().optional(),
-    archiveOldSessions: z.boolean().optional(),
-    requireBudget: z.boolean().optional(),
-    timetableConflictCheck: z.boolean().optional(),
-    notifyOnSessionStart: z.boolean().optional(),
-    academicYear: z.string().optional(),
-    sessionStart: z.string().optional(),
-    defaultViewLayout: z.string().optional(),
-    terminology: academicTerminologySchema.optional(),
-  })
-  .passthrough();
+import { normalizeAcademicTerminology, type AcademicTerminology } from "./academicTerminology.js";
 
 export type SessionModulePreferences = { terminology: AcademicTerminology } & Pick<
   SessionsSettings,

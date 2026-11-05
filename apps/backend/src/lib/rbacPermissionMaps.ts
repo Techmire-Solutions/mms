@@ -153,6 +153,7 @@ export const COLLECTION_WRITE_PERMISSION: Record<string, Permission> = {
 /** Distinct delete permission when the module manifest defines one; else write. */
 export const COLLECTION_DELETE_PERMISSION: Record<string, Permission> = {
   tasks: TASKS_MODULE_MANIFEST.permissions.delete,
+  sessions: SESSIONS_MODULE_MANIFEST.permissions.delete,
   contacts: CONTACTS_MODULE_MANIFEST.permissions.delete,
   students: STUDENTS_MODULE_MANIFEST.permissions.delete,
   faculty: FACULTY_MODULE_MANIFEST.permissions.delete,

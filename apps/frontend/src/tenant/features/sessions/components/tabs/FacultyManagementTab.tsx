@@ -17,9 +17,12 @@ export type { FacultyManagementTabProps };
 export function FacultyManagementTab({
   session,
   onUpdate,
+  canWrite,
   canMutate,
 }: FacultyManagementTabProps): React.JSX.Element {
   const { t } = useTranslation();
+  // `SessionDetail` forwards both names; older callers only pass `canMutate`.
+  const writable = canMutate ?? canWrite ?? false;
   const {
     modalOpen,
     setModalOpen,
@@ -49,7 +52,7 @@ export function FacultyManagementTab({
           <h3 className="text-sm font-semibold text-foreground">{t("sessions.faculty.title")}</h3>
           <p className="text-xs text-muted-foreground">{t("sessions.faculty.subtitle")}</p>
         </div>
-        {canMutate && (
+        {writable && (
           <Button size="sm" onClick={handleOpenAdd} className="gap-1.5">
             <Plus className="h-4 w-4" />
             {t("sessions.faculty.add")}
@@ -63,7 +66,7 @@ export function FacultyManagementTab({
           title={t("sessions.faculty.emptyTitle")}
           description={t("sessions.faculty.emptyDescription")}
           action={
-            canMutate ? (
+            writable ? (
               <Button size="sm" onClick={handleOpenAdd} className="gap-1.5">
                 <Plus className="h-4 w-4" />
                 {t("sessions.faculty.add")}
@@ -77,7 +80,7 @@ export function FacultyManagementTab({
             <SessionFacultyCard
               key={item.id}
               item={item}
-              canMutate={canMutate}
+              canMutate={writable}
               onEdit={handleOpenEdit}
               onDelete={handleDelete}
             />

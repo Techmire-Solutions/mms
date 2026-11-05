@@ -84,6 +84,69 @@ describe("assertSessionEditable", () => {
     expect(act).toThrow(expect.objectContaining({ statusCode: 400 }));
   });
 
+  it("given a completed session, should lock faculty, class-teacher and timetable edits", () => {
+    // Arrange
+    const period = {
+      id: "p1",
+      startTime: "08:00",
+      endTime: "09:00",
+      subject: "Quran",
+      facultyId: "",
+      facultyName: "",
+    };
+    const before = SessionSchema.parse({
+      id: "ses-1",
+      name: "Hifz 2026",
+      startDate: "2026-01-01",
+      status: "completed",
+      faculty: [{ id: "sf-1", sessionId: "ses-1", facultyId: "f-1", role: "coordinator" }],
+      classes: [
+        {
+          id: "cls-1",
+          name: "Darja 1",
+          gender: "male",
+          minAge: 6,
+          maxAge: 12,
+          enrolled: 4,
+          facultyId: "f-1",
+          timetables: [{ id: "tt-1", date: "2026-03-01", periods: [period] }],
+        },
+      ],
+    });
+
+    // Act / Assert
+    expect(() =>
+      assertSessionEditable(
+        before,
+        { ...before, faculty: [{ ...before.faculty[0], role: "supervisor" }] },
+        { canOverrideLock: false },
+      ),
+    ).toThrow(SessionLockedError);
+    expect(() =>
+      assertSessionEditable(
+        before,
+        {
+          ...before,
+          classes: before.classes.map((cls) => ({ ...cls, facultyId: "f-2" })),
+        },
+        { canOverrideLock: false },
+      ),
+    ).toThrow(SessionLockedError);
+    expect(() =>
+      assertSessionEditable(
+        before,
+        {
+          ...before,
+          classes: before.classes.map((cls) => ({
+            ...cls,
+            timetables: [{ ...cls.timetables[0], periods: [{ ...period, startTime: "09:00" }] }],
+          })),
+        },
+        { canOverrideLock: false },
+      ),
+    ).toThrow(SessionLockedError);
+  });
+
   it("given an open session, should allow structural edits", () => {
     // Arrange
     const before = session("open");

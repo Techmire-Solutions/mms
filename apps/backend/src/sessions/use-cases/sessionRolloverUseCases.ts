@@ -41,7 +41,7 @@ function assertClassMap(source: Session, body: SessionRolloverBody): void {
   if (unknown) throw new ValidationError("The class map names a class outside this session");
 }
 
-export function createSessionRolloverUseCases() {
+function createSessionRolloverUseCases() {
   return {
     /** Outcome per live student with eligibility problems, before anything is written. */
     async preview(
@@ -72,13 +72,14 @@ export function createSessionRolloverUseCases() {
       if (body.mode === "promote" && !PROMOTABLE_STATES.has(normalizeSessionStatus(source.status)))
         throw new ConflictError("Only a session in progress or completed can be promoted");
       const runId = randomUUID();
-      await runs.createPromotionRun(tenant, {
+      const created = await runs.createPromotionRun(tenant, {
         id: runId,
         sourceSessionId: sessionId,
         mode: body.mode,
         classMap: body.classMap,
         createdBy: actorUserId,
       });
+      if (!created) throw new ConflictError("A rollover for this session is already running");
       const payload: SessionRolloverJobPayload = { runId, sourceSessionId: sessionId, body };
       const job = await enqueueBackgroundJob(
         tenant,

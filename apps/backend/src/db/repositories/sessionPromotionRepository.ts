@@ -1,4 +1,4 @@
-import { and, desc, eq, inArray, isNotNull, isNull } from "drizzle-orm";
+import { and, desc, eq, inArray, isNotNull, isNull, sql } from "drizzle-orm";
 import type { SessionRolloverRun } from "@mms/shared";
 import { enrollments, sessionPromotionClassMap, sessionPromotionRuns } from "../schema.js";
 import { withTenant, withTenantRead } from "../tenant-context.js";
@@ -21,6 +21,11 @@ const toRun = (
   row: { mode: string; status: string } & Omit<SessionRolloverRun, "mode" | "status">,
 ) => row as SessionRolloverRun;
 
+/**
+ * Creates a run unless one is already queued/running for the same source. The advisory lock
+ * serialises concurrent starts so two clicks cannot create two target sessions and promote the
+ * same students twice.
+ */
 export async function createPromotionRun(
   tenant: string,
   run: {
@@ -30,9 +35,24 @@ export async function createPromotionRun(
     classMap: readonly { sourceClassId: string; nextClassId: string | null }[];
     createdBy: string;
   },
-): Promise<void> {
+): Promise<boolean> {
   const subdomain = tenant.trim().toLowerCase();
-  await withTenant(subdomain, async (tx) => {
+  return withTenant(subdomain, async (tx) => {
+    await tx.execute(
+      sql`SELECT pg_advisory_xact_lock(hashtext(${`${subdomain}:rollover:${run.sourceSessionId}`}))`,
+    );
+    const [active] = await tx
+      .select({ id: sessionPromotionRuns.id })
+      .from(sessionPromotionRuns)
+      .where(
+        and(
+          eq(sessionPromotionRuns.workspaceSubdomain, subdomain),
+          eq(sessionPromotionRuns.sourceSessionId, run.sourceSessionId),
+          inArray(sessionPromotionRuns.status, ["queued", "running"]),
+        ),
+      )
+      .limit(1);
+    if (active) return false;
     await tx.insert(sessionPromotionRuns).values({
       id: run.id,
       workspaceSubdomain: subdomain,
@@ -49,6 +69,7 @@ export async function createPromotionRun(
           nextClassId: row.nextClassId,
         })),
       );
+    return true;
   });
 }
 

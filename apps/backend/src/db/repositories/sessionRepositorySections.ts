@@ -106,6 +106,25 @@ export async function persistClassSectionsTx(
     throw new ValidationError("Section names must be unique within a class");
 
   const keptIds = payload.map((section) => section.id);
+  // The upsert target is (workspace, id), so a foreign id would be re-parented into this class —
+  // carrying its enrollments, staff history and attendance. Reject mismatched ownership.
+  const owned = await tx
+    .select({
+      id: sessionClassSections.id,
+      classId: sessionClassSections.classId,
+      sessionId: sessionClassSections.sessionId,
+    })
+    .from(sessionClassSections)
+    .where(
+      and(
+        eq(sessionClassSections.workspaceSubdomain, subdomain),
+        inArray(sessionClassSections.id, keptIds),
+      ),
+    );
+  if (owned.some((row) => row.classId !== classId || row.sessionId !== sessionId))
+    throw new ValidationError(
+      "A section cannot be moved between classes; create a new section instead",
+    );
   const removed = await tx
     .select({ id: sessionClassSections.id })
     .from(sessionClassSections)

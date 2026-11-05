@@ -187,7 +187,8 @@ function computeCanDeleteCollection(user: User, collectionName: string): boolean
   }
   // Typed sessions table is REST-only (not document-store allowlisted).
   if (collectionName === "sessions") {
-    return canWriteCollection(user, collectionName);
+    const mapped = COLLECTION_DELETE_PERMISSION.sessions;
+    return mapped ? userHasPermission(user, mapped) : canWriteCollection(user, collectionName);
   }
   // Typed enrollments table is REST-only (not document-store allowlisted).
   if (collectionName === "enrollments") {

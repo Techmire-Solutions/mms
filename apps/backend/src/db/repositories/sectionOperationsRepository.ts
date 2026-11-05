@@ -1,16 +1,18 @@
 import { randomUUID } from "node:crypto";
 import { and, eq, inArray, isNull, sql } from "drizzle-orm";
-import { enrollments, sessionClassSections } from "../schema.js";
+import { enrollments, sessionClassSections, sessions } from "../schema.js";
+import { isSessionReadOnly } from "@mms/shared";
 import { withTenant, withTenantRead, type TenantTransaction } from "../tenant-context.js";
 import { insertTypedTimelineEventTx, movePlacementTx } from "./enrollmentHistoryWrite.js";
 import { enrollmentHoldsSeatWhere } from "./enrollmentSeatSql.js";
+import { ConflictError, NotFoundError, ValidationError } from "../../lib/httpErrors.js";
 
-export interface SectionActor {
+interface SectionActor {
   userId: string | null;
   label: string;
 }
 
-export interface SectionRef {
+interface SectionRef {
   id: string;
   sessionId: string;
   classId: string;
@@ -131,6 +133,43 @@ const lockSections = (tx: TenantTransaction, subdomain: string, ids: readonly st
       sql`, `,
     )}) FOR UPDATE`);
 
+/**
+ * Re-reads the section and its session *after* the row lock. The use case checked these before
+ * opening the transaction, but a concurrent close/start between then and the lock must not be
+ * allowed to move students into a closed section.
+ */
+async function assertSectionWritableTx(
+  tx: TenantTransaction,
+  subdomain: string,
+  sectionId: string,
+  expectedClassId?: string,
+) {
+  const [row] = await tx
+    .select({
+      id: sessionClassSections.id,
+      classId: sessionClassSections.classId,
+      status: sessionClassSections.status,
+      capacity: sessionClassSections.capacity,
+      sessionStatus: sessions.status,
+    })
+    .from(sessionClassSections)
+    .innerJoin(
+      sessions,
+      and(
+        eq(sessions.workspaceSubdomain, sessionClassSections.workspaceSubdomain),
+        eq(sessions.id, sessionClassSections.sessionId),
+      ),
+    )
+    .where(sectionKey(subdomain, sectionId));
+  if (!row) throw new NotFoundError("Section not found");
+  if (expectedClassId && row.classId !== expectedClassId)
+    throw new ConflictError("The target must be another section of the same class");
+  if (row.status !== "active") throw new ConflictError("The section is already closed");
+  if (isSessionReadOnly(row.sessionStatus))
+    throw new ConflictError("The session is closed; its sections are read-only");
+  return row;
+}
+
 /** Moves every live student of `source` into `target` on a date and closes `source`. */
 export async function applySectionMerge(
   tenant: string,
@@ -145,7 +184,19 @@ export async function applySectionMerge(
   const subdomain = tenant.trim().toLowerCase();
   return withTenant(subdomain, async (tx) => {
     await lockSections(tx, subdomain, [input.source.id, input.target.id]);
+    const targetRow = await assertSectionWritableTx(
+      tx,
+      subdomain,
+      input.target.id,
+      input.source.classId,
+    );
+    await assertSectionWritableTx(tx, subdomain, input.source.id, input.source.classId);
     const enrollmentIds = await liveEnrollmentIdsTx(tx, subdomain, input.source.id);
+    const targetLive = await liveEnrollmentIdsTx(tx, subdomain, input.target.id);
+    if (targetRow.capacity > 0 && targetLive.length + enrollmentIds.length > targetRow.capacity)
+      throw new ConflictError(
+        `${input.target.name} does not have enough seats left; raise its capacity first`,
+      );
     await moveToSectionTx(tx, subdomain, {
       ...input,
       enrollmentIds,
@@ -173,6 +224,12 @@ export async function applySectionSplit(
   const subdomain = tenant.trim().toLowerCase();
   return withTenant(subdomain, async (tx) => {
     await lockSections(tx, subdomain, [input.source.id]);
+    await assertSectionWritableTx(tx, subdomain, input.source.id, input.source.classId);
+    const live = new Set(await liveEnrollmentIdsTx(tx, subdomain, input.source.id));
+    if (input.enrollmentIds.some((id) => !live.has(id)))
+      throw new ConflictError("A selected student is no longer in this section");
+    if (input.enrollmentIds.length > input.capacity)
+      throw new ValidationError("The new section's capacity is smaller than the students moved");
     const [{ next }] = (
       await tx.execute<{ next: number }>(sql`
         SELECT COALESCE(MAX(sort_order), 0) + 1 AS next FROM session_class_sections
@@ -206,6 +263,7 @@ export async function applySectionClose(
   const subdomain = tenant.trim().toLowerCase();
   return withTenant(subdomain, async (tx) => {
     await lockSections(tx, subdomain, [input.sectionId]);
+    await assertSectionWritableTx(tx, subdomain, input.sectionId);
     const live = await liveEnrollmentIdsTx(tx, subdomain, input.sectionId);
     if (live.length > 0) return live.length;
     await closeSectionTx(tx, subdomain, input.sectionId, input.effectiveOn, input.reason);

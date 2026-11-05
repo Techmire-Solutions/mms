@@ -2,14 +2,17 @@ import { describe, expect, it, vi } from "vitest";
 import { createSessionsUseCases } from "../sessions/use-cases/sessionsUseCases.js";
 import type { SessionsRepository } from "../sessions/repository/sessionsRepository.js";
 import { runWithTenant } from "../lib/tenantContext.js";
-import { NotFoundError } from "../lib/httpErrors.js";
+import { ConflictError, NotFoundError } from "../lib/httpErrors.js";
+import { SessionSchema } from "@mms/shared";
 
 function createFakeRepo(): SessionsRepository {
   return {
     listSessionsByWorkspace: vi.fn().mockResolvedValue([]),
     findSessionById: vi.fn().mockResolvedValue(null),
     findSessionsByIds: vi.fn().mockResolvedValue([]),
-    saveSession: vi.fn().mockResolvedValue(undefined),
+    findSessionStatusesByIds: vi.fn().mockResolvedValue(new Map()),
+    saveSession: vi.fn().mockResolvedValue("2026-01-02T00:00:00.000Z"),
+    updateSessionDates: vi.fn().mockResolvedValue(true),
     listSessionsPage: vi.fn().mockResolvedValue({
       sessions: [],
       total: 0,
@@ -70,9 +73,11 @@ describe("sessions use-cases (DI with fake repository)", () => {
   it("given mixed lifecycle states, should apply only allowed transitions (normalized) and count the rest as failed", async () => {
     // Arrange
     const repo = createFakeRepo();
-    vi.mocked(repo.findSessionById).mockImplementation(
-      async (_tenant: string, id: string) =>
-        ({ id, status: id === "s1" ? "open" : "completed" }) as never,
+    vi.mocked(repo.findSessionStatusesByIds).mockResolvedValue(
+      new Map([
+        ["s1", "open"],
+        ["s2", "completed"],
+      ]),
     );
     vi.mocked(repo.bulkUpdateSessionsStatus).mockResolvedValue({ succeeded: 1, failed: 0 });
     const useCases = createSessionsUseCases(repo);
@@ -85,6 +90,82 @@ describe("sessions use-cases (DI with fake repository)", () => {
     // Assert
     expect(result).toEqual({ succeeded: 1, failed: 1 });
     expect(repo.bulkUpdateSessionsStatus).toHaveBeenCalledWith("demo", ["s1"], "in_progress");
+  });
+
+  it("createSession rejects a client id that already exists (active or archived)", async () => {
+    // Arrange
+    const repo = createFakeRepo();
+    vi.mocked(repo.findSessionById).mockResolvedValue(
+      SessionSchema.parse({ id: "sess-existing", name: "Existing", status: "completed" }) as never,
+    );
+    const useCases = createSessionsUseCases(repo);
+
+    // Act
+    const act = () =>
+      runWithTenant("demo", () =>
+        useCases.createSession({
+          id: "sess-existing",
+          name: "Overwrite attempt",
+          status: "draft",
+        } as never),
+      );
+
+    // Assert
+    await expect(act()).rejects.toThrow(ConflictError);
+    expect(repo.saveSession).not.toHaveBeenCalled();
+  });
+
+  it("updateSessionById forwards the OCC token to the repository", async () => {
+    // Arrange
+    const repo = createFakeRepo();
+    const before = SessionSchema.parse({
+      id: "s1",
+      name: "Hifz 2026",
+      status: "draft",
+      updatedAt: "2026-01-01T00:00:00.000Z",
+    });
+    vi.mocked(repo.findSessionById).mockResolvedValue(before as never);
+    const useCases = createSessionsUseCases(repo);
+
+    // Act
+    const result = await runWithTenant("demo", () =>
+      useCases.updateSessionById(
+        "s1",
+        { name: "Renamed" },
+        { canOverrideLock: false, today: "2026-01-01" },
+        "2026-01-01T00:00:00.000Z",
+      ),
+    );
+
+    // Assert
+    expect(result?.name).toBe("Renamed");
+    expect(result?.updatedAt).toBe("2026-01-02T00:00:00.000Z");
+    expect(repo.saveSession).toHaveBeenCalledWith(
+      "demo",
+      expect.objectContaining({ id: "s1", name: "Renamed" }),
+      { expectedUpdatedAt: "2026-01-01T00:00:00.000Z" },
+    );
+  });
+
+  it("updateSessionById rejects a malformed OCC header before touching the repository", async () => {
+    // Arrange
+    const repo = createFakeRepo();
+    const useCases = createSessionsUseCases(repo);
+
+    // Act
+    const act = () =>
+      runWithTenant("demo", () =>
+        useCases.updateSessionById(
+          "s1",
+          { name: "Renamed" },
+          { canOverrideLock: false, today: "2026-01-01" },
+          "not-a-date",
+        ),
+      );
+
+    // Assert
+    await expect(act()).rejects.toThrow("Invalid x-expected-updated-at header");
+    expect(repo.findSessionById).not.toHaveBeenCalled();
   });
 
   it("loadSessionsByIds filters out soft-deleted sessions", async () => {

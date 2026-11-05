@@ -1,8 +1,23 @@
 import { useQueryClient } from "@tanstack/react-query";
-import type { MutateOptions } from "@tanstack/react-query";
 import { tsrClient } from "@/lib/api";
+import { assertContractOk } from "@/lib/apiContractError";
 import type { Session } from "@/lib/data/sessionsData";
+import type { SessionsBulkStatusBody } from "@mms/shared";
 import { invalidateSessionsQueries } from "@/tenant/features/sessions/hooks/invalidateSessionsQueries";
+
+type ContractEnvelope<T> = { status: number; body: T };
+
+/**
+ * ts-rest resolves the `{ status, body, headers }` envelope for every status except 401/403.
+ * Without an explicit status check a 400/409 would be treated as a successful save — the
+ * source of false "saved"/"archived" toasts and the reason the lock-override dialog never
+ * opened. Every sessions mutation goes through here.
+ */
+async function unwrap<T>(request: Promise<unknown>, context: string): Promise<T> {
+  const response = (await request) as ContractEnvelope<T>;
+  assertContractOk(response, context);
+  return response.body;
+}
 
 export function useSessionMutations() {
   const queryClient = useQueryClient();
@@ -11,108 +26,108 @@ export function useSessionMutations() {
     invalidateSessionsQueries(queryClient);
   };
 
-  const createSession = tsrClient.sessions.create.useMutation({
-    onSuccess: invalidate,
-  });
-
-  const updateSession = tsrClient.sessions.update.useMutation({
-    onSuccess: invalidate,
-  });
-
-  const deleteSession = tsrClient.sessions.delete.useMutation({
-    onSuccess: invalidate,
-  });
-
-  const restoreSession = tsrClient.sessions.restore.useMutation({
-    onSuccess: invalidate,
-  });
-
-  const bulkDeleteSessions = tsrClient.sessions.bulkDelete.useMutation({
-    onSuccess: invalidate,
-  });
-
-  const bulkRestoreSessions = tsrClient.sessions.bulkRestore.useMutation({
-    onSuccess: invalidate,
-  });
-
-  const bulkUpdateSessionStatus = tsrClient.sessions.bulkStatus.useMutation({
-    onSuccess: invalidate,
-  });
-
-  const logExportAudit = tsrClient.sessions.exportAudit.useMutation({});
+  const create = tsrClient.sessions.create.useMutation({ onSuccess: invalidate });
+  const update = tsrClient.sessions.update.useMutation({ onSuccess: invalidate });
+  const remove = tsrClient.sessions.delete.useMutation({ onSuccess: invalidate });
+  const restore = tsrClient.sessions.restore.useMutation({ onSuccess: invalidate });
+  const bulkDelete = tsrClient.sessions.bulkDelete.useMutation({ onSuccess: invalidate });
+  const bulkRestore = tsrClient.sessions.bulkRestore.useMutation({ onSuccess: invalidate });
+  const bulkStatus = tsrClient.sessions.bulkStatus.useMutation({ onSuccess: invalidate });
 
   return {
     createSession: {
-      ...createSession,
-      mutate: (session: Session, opts?: MutateOptions) =>
-        createSession.mutate({ body: session }, opts),
-      mutateAsync: (session: Session) => createSession.mutateAsync({ body: session }),
+      isPending: create.isPending,
+      mutateAsync: async (session: Session): Promise<Session> => {
+        const body = await unwrap<{ session: Session }>(
+          create.mutateAsync({ body: session }),
+          "Failed to create session",
+        );
+        return body.session;
+      },
     },
     updateSession: {
-      ...updateSession,
-      mutate: ({ id, session }: { id: string; session: Session }, opts?: MutateOptions) =>
-        updateSession.mutate({ params: { id }, body: session }, opts),
-      mutateAsync: ({ id, session }: { id: string; session: Session }) =>
-        updateSession.mutateAsync({ params: { id }, body: session }),
+      isPending: update.isPending,
+      mutateAsync: async ({ id, session }: { id: string; session: Session }): Promise<Session> => {
+        const body = await unwrap<{ session: Session }>(
+          update.mutateAsync({
+            params: { id },
+            body: session,
+            // OCC: the server 409s instead of silently overwriting a concurrent edit.
+            ...(session.updatedAt
+              ? { headers: { "x-expected-updated-at": session.updatedAt } }
+              : {}),
+          }),
+          "Failed to update session",
+        );
+        return body.session;
+      },
     },
     deleteSession: {
-      ...deleteSession,
-      mutate: (
-        { id, deletionReason }: { id: string; deletionReason?: string },
-        opts?: MutateOptions,
-      ) =>
-        deleteSession.mutate(
-          { params: { id }, body: deletionReason ? { deletionReason } : {} },
-          opts,
-        ),
-      mutateAsync: ({ id, deletionReason }: { id: string; deletionReason?: string }) =>
-        deleteSession.mutateAsync({
-          params: { id },
-          body: deletionReason ? { deletionReason } : {},
-        }),
+      isPending: remove.isPending,
+      mutateAsync: async ({
+        id,
+        deletionReason,
+      }: {
+        id: string;
+        deletionReason?: string;
+      }): Promise<void> => {
+        await unwrap<{ success: true }>(
+          remove.mutateAsync({
+            params: { id },
+            body: deletionReason ? { deletionReason } : {},
+          }),
+          "Failed to archive session",
+        );
+      },
     },
     restoreSession: {
-      ...restoreSession,
-      mutate: (id: string, opts?: MutateOptions) =>
-        restoreSession.mutate({ params: { id }, body: {} }, opts),
-      mutateAsync: (id: string) => restoreSession.mutateAsync({ params: { id }, body: {} }),
+      isPending: restore.isPending,
+      mutateAsync: async (id: string): Promise<void> => {
+        await unwrap<{ success: true }>(
+          restore.mutateAsync({ params: { id }, body: {} }),
+          "Failed to restore session",
+        );
+      },
     },
     bulkDeleteSessions: {
-      ...bulkDeleteSessions,
-      mutate: (
-        { ids, deletionReason }: { ids: string[]; deletionReason?: string },
-        opts?: MutateOptions,
-      ) =>
-        bulkDeleteSessions.mutate(
-          { body: { ids, ...(deletionReason ? { deletionReason } : {}) } },
-          opts,
+      isPending: bulkDelete.isPending,
+      mutateAsync: async ({
+        ids,
+        deletionReason,
+      }: {
+        ids: string[];
+        deletionReason?: string;
+      }): Promise<{ succeeded: number; failed: number }> =>
+        unwrap<{ succeeded: number; failed: number }>(
+          bulkDelete.mutateAsync({
+            body: { ids, ...(deletionReason ? { deletionReason } : {}) },
+          }),
+          "Failed to archive sessions",
         ),
-      mutateAsync: ({ ids, deletionReason }: { ids: string[]; deletionReason?: string }) =>
-        bulkDeleteSessions.mutateAsync({
-          body: { ids, ...(deletionReason ? { deletionReason } : {}) },
-        }),
     },
     bulkRestoreSessions: {
-      ...bulkRestoreSessions,
-      mutate: (ids: string[], opts?: MutateOptions) =>
-        bulkRestoreSessions.mutate({ body: { ids } }, opts),
-      mutateAsync: (ids: string[]) => bulkRestoreSessions.mutateAsync({ body: { ids } }),
+      isPending: bulkRestore.isPending,
+      mutateAsync: async (ids: string[]): Promise<{ succeeded: number; failed: number }> =>
+        unwrap<{ succeeded: number; failed: number }>(
+          bulkRestore.mutateAsync({ body: { ids } }),
+          "Failed to restore sessions",
+        ),
     },
     bulkUpdateSessionStatus: {
-      ...bulkUpdateSessionStatus,
-      mutate: ({ ids, status }: { ids: string[]; status: string }, opts?: MutateOptions) =>
-        bulkUpdateSessionStatus.mutate({ body: { ids, status } }, opts),
-      mutateAsync: ({ ids, status }: { ids: string[]; status: string }) =>
-        bulkUpdateSessionStatus.mutateAsync({ body: { ids, status } }),
-    },
-    logExportAudit: {
-      ...logExportAudit,
-      mutate: (
-        payload: { count: number; scope: "all" | "filtered" | "selection" },
-        opts?: MutateOptions,
-      ) => logExportAudit.mutate({ body: payload }, opts),
-      mutateAsync: (payload: { count: number; scope: "all" | "filtered" | "selection" }) =>
-        logExportAudit.mutateAsync({ body: payload }),
+      isPending: bulkStatus.isPending,
+      mutateAsync: async ({
+        ids,
+        status,
+      }: {
+        ids: string[];
+        status: string;
+      }): Promise<{ succeeded: number; failed: number }> =>
+        unwrap<{ succeeded: number; failed: number }>(
+          bulkStatus.mutateAsync({
+            body: { ids, status: status as SessionsBulkStatusBody["status"] },
+          }),
+          "Failed to update session status",
+        ),
     },
   };
 }

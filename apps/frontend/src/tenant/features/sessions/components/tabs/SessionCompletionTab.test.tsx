@@ -29,6 +29,20 @@ const rows: SessionCompletionRow[] = [
     completedAt: null,
     certificateIssuedAt: null,
   },
+  // Stale completedAt after a criteria change: computed status is not_completed, so it must not
+  // count toward the issue-all total.
+  {
+    enrollmentId: "e3",
+    studentId: "s3",
+    studentName: "Hamza",
+    className: "Batch A",
+    attendancePct: 40,
+    examsPassed: true,
+    status: "not_completed",
+    shortfalls: ["attendance_below"],
+    completedAt: "2026-03-31T10:00:00Z",
+    certificateIssuedAt: null,
+  },
 ];
 
 vi.mock("@/hooks/useTranslation", () => ({
@@ -75,6 +89,20 @@ describe("SessionCompletionTab", () => {
     // Assert
     expect(html).toContain("sessions.completion.evaluate");
     expect(html).toContain("sessions.completion.issueAll:1");
+  });
+
+  it("given no completion criteria, should explain why evaluation is blocked", () => {
+    // Arrange
+    const noCriteria = SessionSchema.parse({ id: "course", name: "Tajweed" });
+
+    // Act
+    const html = renderToStaticMarkup(
+      <SessionCompletionTab session={noCriteria} canWrite onEdit={vi.fn()} />,
+    );
+
+    // Assert
+    expect(html).toContain("sessions.completion.noCriteria");
+    expect(html).toContain("common.edit");
   });
 
   it("given a reader, should hide the evaluation actions", () => {

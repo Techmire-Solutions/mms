@@ -79,6 +79,10 @@ export function ClassesTab({ session, onUpdate, canWrite }: ClassesTabProps) {
       await onUpdate({ ...session, classes: updatedClasses });
       setShowModal(false);
       setClassBeingEdited(null);
+      return true;
+    } catch {
+      // The update handler already surfaced the error; keep the editor open to retry.
+      return false;
     } finally {
       setSaving(false);
     }
@@ -93,6 +97,8 @@ export function ClassesTab({ session, onUpdate, canWrite }: ClassesTabProps) {
         classes: session.classes.filter((classItem) => classItem.id !== deleteTarget.id),
       });
       setDeleteTarget(null);
+    } catch {
+      // Keep the confirmation open; the update handler toasted the failure.
     } finally {
       deletePendingRef.current = false;
     }

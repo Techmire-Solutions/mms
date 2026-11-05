@@ -7,7 +7,7 @@ import {
   type SessionRolloverBody,
 } from "@mms/shared";
 
-export interface RolloverPlanCandidate {
+interface RolloverPlanCandidate {
   id: string;
   studentName: string;
   classId: string;
@@ -15,7 +15,7 @@ export interface RolloverPlanCandidate {
   student: { dob?: string; gender?: string } | null;
 }
 
-export interface RolloverPlanRow extends PromotionPreviewRow {
+interface RolloverPlanRow extends PromotionPreviewRow {
   /** Source section the student sat in (retained students keep its copy). */
   fromSectionId: string | null;
 }

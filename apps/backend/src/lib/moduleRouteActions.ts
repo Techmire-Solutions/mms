@@ -99,6 +99,21 @@ export const MODULE_ROUTE_ACTION_RULES: readonly ModuleRouteActionRule[] = [
     action: "availability",
     onlyModules: ["tasks"],
   },
+  // Sessions archive/restore are `sessions.delete` operations (the handlers already require
+  // `canDeleteCollection`). Without these the method default resolved DELETE/POST to `write`,
+  // so an enrollment-writer role could archive sessions.
+  {
+    methods: ["DELETE"],
+    pattern: /^\/api\/sessions\/:id$/,
+    action: "delete",
+    onlyModules: ["sessions"],
+  },
+  {
+    methods: ["POST"],
+    pattern: /^\/api\/sessions\/(bulk-delete|bulk-restore)$|^\/api\/sessions\/:id\/restore$/,
+    action: "delete",
+    onlyModules: ["sessions"],
+  },
   // Handler-owned permissions (grant + enablement still enforced here):
   // workspace-shared dashboard prefs/widgets (setupWrite|customize; the summary
   // is filtered per module by the caller's permissions), the staff activity log

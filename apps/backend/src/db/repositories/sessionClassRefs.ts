@@ -4,7 +4,7 @@ import type { TenantTransaction } from "../tenant-context.js";
 import { ValidationError } from "../../lib/httpErrors.js";
 
 /** A class reference with the display names other modules snapshot. */
-export interface SessionClassRef {
+interface SessionClassRef {
   classId: string;
   className: string;
   sessionId: string;

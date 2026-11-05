@@ -56,8 +56,16 @@ export function SessionCapacityPill({
         })
       : `${enrolled} ${t("sessions.columns.enrolled")}`;
 
+  // `role="img"` replaces the visible text for assistive tech, so include the raw numbers too.
+  const accessibleLabel = capacity > 0 ? `${label} (${percent}%) — ${tooltip}` : tooltip;
+
   return (
-    <div title={tooltip} className={cn("inline-flex items-center", className)}>
+    <div
+      title={tooltip}
+      role="img"
+      aria-label={accessibleLabel}
+      className={cn("inline-flex items-center", className)}
+    >
       <LegendChip
         dotClassName={dotClassName}
         dotSize="sm"

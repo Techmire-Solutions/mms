@@ -11,6 +11,9 @@ const sessionCreateBodyBaseSchema = SessionSchema.omit({
   restoredAt: true,
   restoredBy: true,
   deletedWithCascade: true,
+  // Server-owned audit timestamps: never accepted from a client.
+  createdAt: true,
+  updatedAt: true,
 })
   .extend({
     id: z.string().optional(),

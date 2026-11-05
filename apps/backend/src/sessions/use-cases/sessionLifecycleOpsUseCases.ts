@@ -21,7 +21,8 @@ import {
   endLiveEnrollments,
   SYSTEM_ACTOR,
 } from "../../enrollments/use-cases/enrollmentEndUseCases.js";
-import { workspaceToday } from "./sessionLockGuard.js";
+import { assertSessionDateRange, workspaceToday } from "./sessionLockGuard.js";
+import { withTenant } from "../../db/tenant-context.js";
 
 const actorOf = (user: User | undefined) =>
   user ? { userId: user.id, label: user.name || user.email } : SYSTEM_ACTOR;
@@ -58,33 +59,36 @@ export const sessionLifecycleOpsUseCases = {
     body: SessionCancelBody,
     user: User,
   ): Promise<SessionCancelResult> {
-    const input = sessionCancelBodySchema.parse(body);
-    const session = await loadSession(tenant, id);
-    if (normalizeSessionStatus(session.status) === "cancelled")
-      throw new ConflictError("The session is already cancelled");
-    if (!canTransitionSession(session.status, "cancelled"))
-      throw new ConflictError(
-        `A ${normalizeSessionStatus(session.status)} session cannot be cancelled`,
-      );
-    await sessionsRepository.bulkUpdateSessionsStatus(tenant, [id], "cancelled");
-    const result = await onSessionsCancelled(tenant, [id], input.reason, user);
-    await recordModernAuditEvent({
-      workspaceSubdomain: tenant,
-      tableName: "sessions",
-      recordId: id,
-      actionType: "UPDATE",
-      realUserId: user.id,
-      newState: {
-        operation: "cancel",
-        reason: input.reason,
-        enrollmentsEnded: result.ended,
-        cancelledInvoiceIds: result.billing.cancelled.map((invoice) => invoice.id),
-        invoicesForReview: result.billing.review.map((invoice) => invoice.id),
-      },
+    // One transaction: the status change and the enrollment/invoice effects must land together.
+    return withTenant(tenant, async () => {
+      const input = sessionCancelBodySchema.parse(body);
+      const session = await loadSession(tenant, id);
+      if (normalizeSessionStatus(session.status) === "cancelled")
+        throw new ConflictError("The session is already cancelled");
+      if (!canTransitionSession(session.status, "cancelled"))
+        throw new ConflictError(
+          `A ${normalizeSessionStatus(session.status)} session cannot be cancelled`,
+        );
+      await sessionsRepository.bulkUpdateSessionsStatus(tenant, [id], "cancelled");
+      const result = await onSessionsCancelled(tenant, [id], input.reason, user);
+      await recordModernAuditEvent({
+        workspaceSubdomain: tenant,
+        tableName: "sessions",
+        recordId: id,
+        actionType: "UPDATE",
+        realUserId: user.id,
+        newState: {
+          operation: "cancel",
+          reason: input.reason,
+          enrollmentsEnded: result.ended,
+          cancelledInvoiceIds: result.billing.cancelled.map((invoice) => invoice.id),
+          invoicesForReview: result.billing.review.map((invoice) => invoice.id),
+        },
+      });
+      await invalidateMultiTierCache({ tenantId: tenant, domain: "sessions" });
+      await broadcastCollection("sessions");
+      return result;
     });
-    await invalidateMultiTierCache({ tenantId: tenant, domain: "sessions" });
-    await broadcastCollection("sessions");
-    return result;
   },
 
   /** Only sessions that have not started (draft / open) move; started ones extend the end date. */
@@ -93,38 +97,50 @@ export const sessionLifecycleOpsUseCases = {
     id: string,
     body: SessionPostponeBody,
     user: User,
+    expectedUpdatedAt?: string,
   ): Promise<Session> {
-    const input = sessionPostponeBodySchema.parse(body);
-    const session = await loadSession(tenant, id);
-    const state = normalizeSessionStatus(session.status);
-    if (state !== "draft" && state !== "open")
-      throw new ConflictError(
-        "Only a session that has not started can be postponed; extend its end date instead",
+    const expected = expectedUpdatedAt?.trim();
+    if (expected && Number.isNaN(Date.parse(expected)))
+      throw new ValidationError("Invalid x-expected-updated-at header");
+    return withTenant(tenant, async () => {
+      const input = sessionPostponeBodySchema.parse(body);
+      const session = await loadSession(tenant, id);
+      const state = normalizeSessionStatus(session.status);
+      if (state !== "draft" && state !== "open")
+        throw new ConflictError(
+          "Only a session that has not started can be postponed; extend its end date instead",
+        );
+      if (input.startDate < (await workspaceToday(tenant)))
+        throw new ValidationError("The new start date cannot be in the past");
+      const dates = postponedSessionDates(session, input.startDate);
+      assertSessionDateRange({
+        startDate: dates.startDate,
+        endDate: dates.endDate ?? session.endDate,
+      });
+      const updated = await sessionsRepository.updateSessionDates(
+        tenant,
+        id,
+        { startDate: dates.startDate, endDate: dates.endDate ?? session.endDate },
+        expected ? { expectedUpdatedAt: expected } : undefined,
       );
-    if (input.startDate < (await workspaceToday(tenant)))
-      throw new ValidationError("The new start date cannot be in the past");
-    const dates = postponedSessionDates(session, input.startDate);
-    await sessionsRepository.saveSession(tenant, {
-      ...session,
-      startDate: dates.startDate,
-      endDate: dates.endDate ?? session.endDate,
+      if (!updated) throw new NotFoundError("Session not found");
+      await recordModernAuditEvent({
+        workspaceSubdomain: tenant,
+        tableName: "sessions",
+        recordId: id,
+        actionType: "UPDATE",
+        realUserId: user.id,
+        newState: {
+          operation: "postpone",
+          from: { startDate: session.startDate, endDate: session.endDate },
+          to: dates,
+          reason: input.reason,
+        },
+      });
+      await invalidateMultiTierCache({ tenantId: tenant, domain: "sessions" });
+      await broadcastCollection("sessions");
+      return loadSession(tenant, id);
     });
-    await recordModernAuditEvent({
-      workspaceSubdomain: tenant,
-      tableName: "sessions",
-      recordId: id,
-      actionType: "UPDATE",
-      realUserId: user.id,
-      newState: {
-        operation: "postpone",
-        from: { startDate: session.startDate, endDate: session.endDate },
-        to: dates,
-        reason: input.reason,
-      },
-    });
-    await invalidateMultiTierCache({ tenantId: tenant, domain: "sessions" });
-    await broadcastCollection("sessions");
-    return loadSession(tenant, id);
   },
 
   async activity(tenant: string, id: string): Promise<SessionActivityItem[]> {

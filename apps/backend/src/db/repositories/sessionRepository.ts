@@ -4,9 +4,11 @@ export {
   findSessionById,
   findSessionsByIds,
   findSessionsSummaryByIds,
+  findSessionStatusesByIds,
 } from "./sessionRepositoryQueries.js";
 export {
   saveSession,
+  updateSessionDates,
   bulkSaveSessions,
   replaceSessionsForWorkspace,
   softDeleteSessionWithCascade,

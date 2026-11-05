@@ -1,11 +1,11 @@
-import { useQuery, queryOptions, useQueryClient } from "@tanstack/react-query";
+import { useQuery, queryOptions } from "@tanstack/react-query";
 import type { SessionsCommandMetricsSnapshot } from "@mms/shared";
 import { SESSIONS_MODULE_MANIFEST, sessionsWidgetQueryFromWidget } from "@mms/shared";
 import { serverMetricsQueryOptions, useServerMetrics } from "@/hooks/useServerMetrics";
 import { useAuth } from "@/lib/contexts/AuthContext";
 import { tsrClient, apiContract } from "@/lib/api";
+import { assertContractOk } from "@/lib/apiContractError";
 import type { Session } from "@/lib/data/sessionsData";
-import { invalidateSessionsQueries } from "@/tenant/features/sessions/hooks/invalidateSessionsQueries";
 
 export function sessionsCommandMetricsQueryOptions() {
   return serverMetricsQueryOptions<SessionsCommandMetricsSnapshot>({
@@ -20,7 +20,6 @@ import {
   SESSIONS_REPORT_AGGREGATES_QUERY_KEY,
   SESSIONS_WIDGET_AGGREGATES_QUERY_KEY,
 } from "./sessionsQueryKeys.js";
-import { assertContractOk } from "@/lib/apiContractError";
 
 export {
   SESSIONS_METRICS_QUERY_KEY,
@@ -91,7 +90,15 @@ export { useSessionMutations } from "./useSessionMutations";
  * Full session (classes with fees, timetables, …) for detail/edit surfaces.
  * List rows are summary-shaped; saving them would replace class children with empty arrays.
  */
-export function useSessionDetail(summary: Session | null): Session | null {
+export interface SessionDetailState {
+  session: Session | null;
+  /** True while a summary has been selected but the full record is still loading. */
+  isLoading: boolean;
+  isError: boolean;
+  refetch: () => void;
+}
+
+function useSessionDetailResolver(summary: Session | null): SessionDetailState {
   const { isAuthenticated } = useAuth();
   const id = summary ? String(summary.id) : "";
   const includeDeleted = summary?.deletedAt ? "true" : undefined;
@@ -101,9 +108,30 @@ export function useSessionDetail(summary: Session | null): Session | null {
     enabled: isAuthenticated && Boolean(id),
     staleTime: 15_000,
   });
-  if (!id || !query.data || query.data.status !== 200) return null;
-  const session = (query.data.body as { session?: Session } | null)?.session;
-  return session && String(session.id) === id ? session : null;
+  const session =
+    id && query.data?.status === 200
+      ? ((query.data.body as { session?: Session } | null)?.session ?? null)
+      : null;
+  const resolved = session && String(session.id) === id ? session : null;
+  return {
+    session: resolved,
+    isLoading: Boolean(id) && query.isLoading,
+    // A settled non-200 (404/403) must surface as an error, not an endless skeleton.
+    isError: Boolean(id) && (query.isError || (query.isFetched && !resolved)),
+    refetch: () => {
+      void query.refetch();
+    },
+  };
+}
+
+/** Full session (classes with fees, timetables, …) for detail/edit surfaces. */
+export function useSessionDetail(summary: Session | null): Session | null {
+  return useSessionDetailResolver(summary).session;
+}
+
+/** Detail/addressing state including loading/error so overlays can show feedback. */
+export function useSessionDetailState(summary: Session | null): SessionDetailState {
+  return useSessionDetailResolver(summary);
 }
 
 export function useSessionsCollection(options?: { enabled?: boolean }): Session[] {
@@ -177,8 +205,7 @@ export function useSessionsReportAggregates(options?: { enabled?: boolean }) {
   });
 }
 
-// --- Contract-driven list queryOptions & mutation hooks ----------------------
-
+/** Shared contract-driven list factory (facade invariant: one `*ListQueryOptions` per module). */
 export function sessionsListQueryOptions(query: Record<string, unknown> = {}) {
   return queryOptions({
     queryKey: [...SESSIONS_QUERY_KEY, query] as const,
@@ -193,42 +220,5 @@ export function sessionsListQueryOptions(query: Record<string, unknown> = {}) {
     },
     placeholderData: (prev) => prev,
     staleTime: 15_000,
-  });
-}
-
-export function useSessionsContractList(query: Record<string, unknown>, enabled = true) {
-  return tsrClient.sessions.list.useQuery({
-    queryKey: [...SESSIONS_QUERY_KEY, query],
-    queryData: { query },
-    staleTime: 15_000,
-    enabled,
-  });
-}
-
-export function useSessionsContractCreate() {
-  const queryClient = useQueryClient();
-  return tsrClient.sessions.create.useMutation({
-    onSuccess: () => invalidateSessionsQueries(queryClient),
-  });
-}
-
-export function useSessionsContractBulkDelete() {
-  const queryClient = useQueryClient();
-  return tsrClient.sessions.bulkDelete.useMutation({
-    onSuccess: () => invalidateSessionsQueries(queryClient),
-  });
-}
-
-export function useSessionsContractBulkStatus() {
-  const queryClient = useQueryClient();
-  return tsrClient.sessions.bulkStatus.useMutation({
-    onSuccess: () => invalidateSessionsQueries(queryClient),
-  });
-}
-
-export function useSessionsContractBulkRestore() {
-  const queryClient = useQueryClient();
-  return tsrClient.sessions.bulkRestore.useMutation({
-    onSuccess: () => invalidateSessionsQueries(queryClient),
   });
 }

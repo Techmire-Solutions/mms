@@ -1,6 +1,7 @@
 import React from "react";
 import { Award, Users } from "lucide-react";
 import { Input } from "@/components/ui/input";
+import { DatePicker } from "@/components/app/DatePicker";
 import { FormSelect } from "@/components/app/FormSelect";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Field } from "@/components/app/FormField";
@@ -55,12 +56,11 @@ export function ClassDetailScholarshipTab({
           </Field>
 
           <Field id="sch-expiry" label={t("sessions.classes.detail.scholarship.expiry")}>
-            <Input
+            <DatePicker
               id="sch-expiry"
               name="expiryDate"
-              type="date"
               value={scholarship.expiryDate || ""}
-              onChange={(e) => onUpdateScholarship({ expiryDate: e.target.value })}
+              onChange={(value) => onUpdateScholarship({ expiryDate: value })}
             />
           </Field>
         </div>

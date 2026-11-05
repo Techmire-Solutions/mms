@@ -152,17 +152,35 @@ function pastTimetablesChanged(
   });
 }
 
-/** User-editable content only (derived counters, teacher names and timestamps excluded). */
+const byId = <T extends { id: string }>(rows: readonly T[] | undefined): T[] =>
+  [...(rows ?? [])].sort((left, right) => left.id.localeCompare(right.id));
+
+/**
+ * User-editable content only. Derived values (`enrolled`, `facultyName`, catalog-refreshed
+ * subject names) are excluded so a read-only session is not flagged by hydration alone, while
+ * every field a user can actually change is included — otherwise a completed/cancelled session
+ * could still be rewritten through the fields that were missed.
+ */
 function editableProjection(session: Session) {
   return {
     name: session.name,
+    type: session.type ?? "",
     startDate: session.startDate ?? "",
     endDate: session.endDate ?? "",
     categoryId: session.categoryId ?? "",
     programId: session.programId ?? "",
     baseFee: Number(session.baseFee ?? 0),
+    currency: session.currency ?? "",
     description: session.description ?? "",
+    minAttendancePct: session.minAttendancePct ?? null,
+    requiresExamPass: Boolean(session.requiresExamPass),
     workingDays: [...(session.workingDays ?? [])].sort(),
+    faculty: byId(session.faculty).map((member) => [
+      member.id,
+      member.facultyId,
+      member.role,
+      member.status,
+    ]),
     classes: (session.classes ?? []).map((cls) => ({
       id: cls.id,
       name: cls.name,
@@ -170,7 +188,52 @@ function editableProjection(session: Session) {
       minAge: cls.minAge,
       maxAge: cls.maxAge,
       programId: cls.programId ?? "",
-      fees: (cls.fees ?? []).map((fee) => [fee.id, fee.feeType, Number(fee.amount)]),
+      facultyId: cls.facultyId ?? "",
+      room: cls.room ?? "",
+      status: cls.status,
+      enrollmentDeadline: cls.enrollmentDeadline ?? "",
+      maxStudents: cls.maxStudents ?? 0,
+      fees: byId(cls.fees).map((fee) => [fee.id, fee.feeType, Number(fee.amount)]),
+      schedules: byId(cls.schedules).map((schedule) => [
+        schedule.id,
+        schedule.scheduleType,
+        schedule.startDate,
+        schedule.endDate,
+      ]),
+      budgets: byId(cls.budgets).map((budget) => [
+        budget.id,
+        budget.budgetType,
+        budget.detail,
+        Number(budget.amount),
+      ]),
+      discounts: byId(cls.discounts).map((discount) => [
+        discount.id,
+        discount.discountType,
+        Number(discount.percentage),
+        discount.startDate,
+        discount.endDate,
+        discount.status,
+      ]),
+      timetables: byId(cls.timetables).map((timetable) => [
+        timetable.id,
+        timetable.date.slice(0, 10),
+        timetableKey(timetable),
+      ]),
+      refreshments: byId(cls.refreshments).map((refreshment) => [
+        refreshment.id,
+        refreshment.date,
+        refreshment.item,
+        refreshment.quantity,
+        Number(refreshment.pricePerUnit),
+        Number(refreshment.paidAmount),
+      ]),
+      scholarships: byId(cls.scholarships).map((scholarship) => [
+        scholarship.id,
+        Number(scholarship.percentage),
+        scholarship.expiryDate,
+        scholarship.scholarshipEligibilityId ?? "",
+        scholarship.eligibility?.id ?? "",
+      ]),
       sections: (cls.sections ?? []).map((section) => [
         section.id,
         section.name,
