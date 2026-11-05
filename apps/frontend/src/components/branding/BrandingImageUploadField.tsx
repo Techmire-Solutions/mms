@@ -9,6 +9,7 @@ import { prepareImageForUpload } from "@/lib/imageOptimization";
 import { useTranslation } from "@/hooks/useTranslation";
 import { extractLogoBrandColors } from "@/lib/ui/extractLogoBrandColors";
 import { uploadImageFile } from "@/lib/imageUpload";
+import { imageUploadErrorDetail, imageUploadErrorKey } from "@/lib/imageUploadErrors";
 import { cn } from "@/lib/utils";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
@@ -79,8 +80,9 @@ export function ImageUploadField({
 
       const url = await uploadImageFile(optimized, resolvedPurpose);
       onChange(url);
-    } catch {
-      setError(t("branding.imageErrorUpload"));
+    } catch (err) {
+      const detail = imageUploadErrorDetail(err);
+      setError(detail ? `${t(imageUploadErrorKey(err))} ${detail}` : t(imageUploadErrorKey(err)));
     } finally {
       setUploading(false);
       if (inputRef.current) inputRef.current.value = "";

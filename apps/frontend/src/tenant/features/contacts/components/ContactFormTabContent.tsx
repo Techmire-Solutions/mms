@@ -85,6 +85,7 @@ export function ContactFormTabContent({
           onUpdateTags={draft.updateTags}
           lockGender={lockGender}
           handleAvatarChange={draft.handleAvatarChange}
+          onAvatarFileSelect={draft.handleAvatarFileSelect}
         />
       );
     }

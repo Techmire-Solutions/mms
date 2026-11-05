@@ -1716,9 +1716,19 @@ export const APP_TRANSLATIONS_EN = {
   "branding.identityTitle": "Identity",
   "branding.imageDropBrowse": "Drop image here or browse",
   "branding.imageErrorProcess": "Could not process that image. Try another file.",
-  "branding.imageErrorSize": "Image must be 2 MB or smaller.",
+  "branding.imageErrorSize": "Image must be 10 MB or smaller.",
   "branding.imageErrorType": "Choose a PNG, JPG, SVG, or WebP image.",
   "branding.imageErrorUpload": "Could not upload that logo. Try again.",
+  "image.upload.unsupportedFormat":
+    "That file type isn't supported. Choose a JPG, PNG, WebP, or HEIC image.",
+  "image.upload.decodeFailed": "We couldn't read that image.",
+  "image.upload.decodeFailedHint":
+    "Try another file. HEIC photos may need converting to JPG first.",
+  "image.upload.heicFailed": "This HEIC photo couldn't be converted. Try exporting it as JPG.",
+  "image.upload.encodeFailed":
+    "We couldn't prepare that image for upload. Try another file.",
+  "image.upload.tooLarge": "Image is too large. Choose a file under 10 MB.",
+  "image.upload.serverRejected": "The server rejected that image. Try another file.",
   "branding.imageRemoveAria": "Remove {label}",
   "branding.imageReplace": "Replace image",
   "branding.legalName": "Registered legal name",

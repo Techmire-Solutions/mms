@@ -1715,6 +1715,15 @@ export const APP_TRANSLATIONS_UR: Record<AppTranslationKey, string> = {
   "branding.imageErrorSize": "تصویر 2 MB سے چھوٹی ہونی چاہیے۔",
   "branding.imageErrorType": "PNG، JPG، SVG یا WebP تصویر منتخب کریں۔",
   "branding.imageErrorUpload": "لوگو اپ لوڈ نہیں ہو سکا۔ دوبارہ کوشش کریں۔",
+  "image.upload.unsupportedFormat":
+    "یہ فائل قسم معاون نہیں۔ JPG، PNG، WebP یا HEIC تصویر منتخب کریں۔",
+  "image.upload.decodeFailed": "تصویر پڑھی نہیں جا سکی۔",
+  "image.upload.decodeFailedHint":
+    "کوئی دوسری فائل آزمائیں۔ HEIC تصاویر کو پہلے JPG میں تبدیل کرنا پڑ سکتا ہے۔",
+  "image.upload.heicFailed": "HEIC تصویر تبدیل نہیں ہو سکی۔ اسے JPG میں برآمد کریں۔",
+  "image.upload.encodeFailed": "تصویر اپ لوڈ کے لیے تیار نہیں ہو سکی۔ دوسری فائل آزمائیں۔",
+  "image.upload.tooLarge": "تصویر بہت بڑی ہے۔ 10 MB سے کم فائل منتخب کریں۔",
+  "image.upload.serverRejected": "سرور نے یہ تصویر مسترد کر دی۔ دوسری فائل آزمائیں۔",
   "branding.imageRemoveAria": "{label} ہٹائیں",
   "branding.imageReplace": "تصویر بدلیں",
   "branding.legalName": "رجسٹرڈ قانونی نام",

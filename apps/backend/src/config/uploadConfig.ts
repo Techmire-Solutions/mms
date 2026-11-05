@@ -1,9 +1,10 @@
 import { mkdir } from "node:fs/promises";
 import { join } from "node:path";
+import { IMAGE_UPLOAD_MAX_OUTPUT_BYTES } from "@mms/shared";
 import { resolveBackendRoot } from "./loadEnv.js";
 
 /** Max optimized image payload accepted by the upload API (bytes). */
-export const IMAGE_UPLOAD_MAX_BYTES = 512 * 1024;
+export const IMAGE_UPLOAD_MAX_BYTES = IMAGE_UPLOAD_MAX_OUTPUT_BYTES;
 
 export const IMAGE_UPLOAD_PURPOSES = ["avatar", "logo", "favicon", "general"] as const;
 export type ImageUploadPurpose = (typeof IMAGE_UPLOAD_PURPOSES)[number];

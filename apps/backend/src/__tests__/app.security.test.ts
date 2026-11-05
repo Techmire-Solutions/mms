@@ -326,6 +326,8 @@ describe("tenant JWT binding", () => {
     // Per-request nonce replaces 'unsafe-inline' for inline scripts.
     const scriptSrc = csp.match(/script-src [^;]+/)?.[0] ?? "";
     expect(scriptSrc).toMatch(/script-src 'self' 'nonce-[A-Za-z0-9+/=]+'/);
+    // Client-side AVIF/WebP/HEIC encoders use WebAssembly.
+    expect(scriptSrc).toContain("'wasm-unsafe-eval'");
     expect(scriptSrc).not.toContain("'unsafe-inline'");
     expect(typeof res.headers["x-request-id"]).toBe("string");
     expect(res.headers["x-request-id"]).toMatch(/^[0-9a-zA-Z_-]+$/);

@@ -1695,6 +1695,15 @@ export const APP_TRANSLATIONS_AR: Record<AppTranslationKey, string> = {
   "branding.imageErrorSize": "يجب ألا يتجاوز حجم الصورة ٢ ميغابايت.",
   "branding.imageErrorType": "اختر صورة PNG أو JPG أو SVG أو WebP.",
   "branding.imageErrorUpload": "تعذّر رفع الشعار. حاول مرة أخرى.",
+  "image.upload.unsupportedFormat":
+    "نوع الملف غير مدعوم. اختر صورة JPG أو PNG أو WebP أو HEIC.",
+  "image.upload.decodeFailed": "تعذّر قراءة الصورة.",
+  "image.upload.decodeFailedHint":
+    "جرّب ملفًا آخر. قد تحتاج صور HEIC إلى تحويلها إلى JPG أولًا.",
+  "image.upload.heicFailed": "تعذّر تحويل صورة HEIC. جرّب تصديرها بصيغة JPG.",
+  "image.upload.encodeFailed": "تعذّر تجهيز الصورة للتحميل. جرّب ملفًا آخر.",
+  "image.upload.tooLarge": "الصورة كبيرة جدًا. اختر ملفًا أقل من 10 ميغابايت.",
+  "image.upload.serverRejected": "رفض الخادم هذه الصورة. جرّب ملفًا آخر.",
   "branding.imageRemoveAria": "إزالة {label}",
   "branding.imageReplace": "استبدال الصورة",
   "branding.legalName": "الاسم القانوني المسجّل",

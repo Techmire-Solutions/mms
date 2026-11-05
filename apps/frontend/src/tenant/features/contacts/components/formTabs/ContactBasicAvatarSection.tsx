@@ -32,6 +32,8 @@ export interface ContactBasicAvatarSectionProps {
   setCropSrc: (src: string | null) => void;
   updateDraft: (patch: Partial<Contact>) => void;
   handleAvatarChange: (event: ChangeEvent<HTMLInputElement>) => void;
+  /** Centralised picker/drop handling (HEIC normalisation + typed errors). */
+  onAvatarFileSelect?: (file: File) => void;
 }
 
 export function ContactBasicAvatarSection({
@@ -41,6 +43,7 @@ export function ContactBasicAvatarSection({
   setCropSrc,
   updateDraft,
   handleAvatarChange,
+  onAvatarFileSelect,
 }: ContactBasicAvatarSectionProps): React.JSX.Element {
   const { t } = useTranslation();
   const [isDragging, setIsDragging] = useState(false);
@@ -58,6 +61,11 @@ export function ContactBasicAvatarSection({
       setIsDragging(false);
       const file = e.dataTransfer.files?.[0];
       if (!file) return;
+
+      if (onAvatarFileSelect) {
+        onAvatarFileSelect(file);
+        return;
+      }
 
       if (!file.type.startsWith("image/")) {
         notify.error(t("account.photoUploadFailed"));
@@ -80,7 +88,7 @@ export function ContactBasicAvatarSection({
       };
       reader.readAsDataURL(file);
     },
-    [setCropSrc, t],
+    [onAvatarFileSelect, setCropSrc, t],
   );
 
   return (

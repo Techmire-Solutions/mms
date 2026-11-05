@@ -15,6 +15,7 @@ import {
   filterContactsForQuery,
 } from "@mms/shared";
 import { uploadUserImage } from "@/lib/imageUpload";
+import { imageUploadErrorDetail, imageUploadErrorKey } from "@/lib/imageUploadErrors";
 import type { ContactCreateDefaults } from "./ContactCreateModal";
 import { useDebounce } from "@/hooks/useDebounce";
 import { useTranslation } from "@/hooks/useTranslation";
@@ -180,7 +181,8 @@ export function useContactPickerState({
       const url = await uploadUserImage(file, "avatar");
       onAvatarChange?.(url);
     } catch (err) {
-      notify.error(t("account.photoUploadFailed"));
+      const detail = imageUploadErrorDetail(err);
+      notify.error(t(imageUploadErrorKey(err)), detail ? { description: detail } : undefined);
       reportClientError(err, { scope: "ContactPicker.avatar_upload" });
     }
     event.target.value = "";

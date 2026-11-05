@@ -1723,6 +1723,15 @@ export const APP_TRANSLATIONS_FA: Partial<Record<AppTranslationKey, string>> = {
   "branding.imageErrorSize": "حجم تصویر باید ۲ مگابایت یا کمتر باشد.",
   "branding.imageErrorType": "یک تصویر با فرمت PNG، JPG، SVG یا WebP انتخاب کنید.",
   "branding.imageErrorUpload": "آپلود لوگو انجام نشد. دوباره تلاش کنید.",
+  "image.upload.unsupportedFormat":
+    "این نوع فایل پشتیبانی نمی‌شود. تصویر JPG، PNG، WebP یا HEIC انتخاب کنید.",
+  "image.upload.decodeFailed": "خواندن این تصویر ممکن نشد.",
+  "image.upload.decodeFailedHint":
+    "فایل دیگری را امتحان کنید. ممکن است تصاویر HEIC نیاز به تبدیل به JPG داشته باشند.",
+  "image.upload.heicFailed": "تبدیل این تصویر HEIC ممکن نشد. آن را به JPG صادر کنید.",
+  "image.upload.encodeFailed": "آماده‌سازی تصویر برای بارگذاری ممکن نشد. فایل دیگری امتحان کنید.",
+  "image.upload.tooLarge": "تصویر بسیار بزرگ است. فایلی کمتر از 10 مگابایت انتخاب کنید.",
+  "image.upload.serverRejected": "سرور این تصویر را رد کرد. فایل دیگری امتحان کنید.",
   "branding.imageRemoveAria": "حذف {label}",
   "branding.imageReplace": "جایگزینی تصویر",
   "branding.legalName": "نام حقوقی ثبت شده",
