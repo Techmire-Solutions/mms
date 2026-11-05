@@ -1,7 +1,7 @@
 import { ReportChartCard } from "@/tenant/components/moduleReports";
 import { useTranslation } from "@/hooks/useTranslation";
 import { Bar, BarChart, Cell, Pie, PieChart, Tooltip, XAxis, YAxis } from "recharts";
-import { chartAxisTick } from "@/components/app/ChartGrid";
+import { chartAxisTick, chartTooltipStyle } from "@/components/app/ChartGrid";
 
 export interface TypeBreakdownEntry {
   name: string;
@@ -58,6 +58,7 @@ export function ObligationsSummaryChartsSection({
           />
           <Tooltip
             formatter={(value) => (value !== undefined ? formatCurrency(Number(value)) : "")}
+            contentStyle={chartTooltipStyle()}
           />
           <Bar dataKey="total" radius={[6, 6, 0, 0]}>
             {typeBreakdown.map((_, index) => (
@@ -84,6 +85,7 @@ export function ObligationsSummaryChartsSection({
             />
             <Tooltip
               formatter={(value) => (value !== undefined ? formatCurrency(Number(value)) : "")}
+              contentStyle={chartTooltipStyle()}
             />
             <Bar dataKey="total" fill={primary} radius={[6, 6, 0, 0]} />
           </BarChart>
@@ -112,6 +114,7 @@ export function ObligationsSummaryChartsSection({
             </Pie>
             <Tooltip
               formatter={(value) => (value !== undefined ? formatCurrency(Number(value)) : "")}
+              contentStyle={chartTooltipStyle()}
             />
           </PieChart>
         </ReportChartCard>

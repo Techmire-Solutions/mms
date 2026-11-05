@@ -1,3 +1,5 @@
+import fs from "node:fs";
+import path from "node:path";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { DEFAULT_BRANDING_SETTINGS, resolveBrandingCornerRadius } from "@mms/shared";
 import { applyBrandingTheme } from "@/lib/brandingTheme";
@@ -118,5 +120,48 @@ describe("Centralised Theme Enforcement", () => {
       await import("@/components/app/ModuleOverlayLoadingChrome");
     expect(typeof ModuleOverlayLoadingFallback).toBe("function");
     expect(typeof ModuleDrawerLoadingSkeleton).toBe("function");
+  });
+
+  it("verifies zero unstyled Recharts Tooltip tags exist across frontend components", () => {
+    const srcDir = path.resolve(__dirname, "..");
+    const unstyled: string[] = [];
+
+    function scanDir(dir: string): void {
+      for (const entry of fs.readdirSync(dir, { withFileTypes: true })) {
+        if (entry.isDirectory()) {
+          if (!["node_modules", "dist", "coverage", "__tests__"].includes(entry.name)) {
+            scanDir(path.join(dir, entry.name));
+          }
+        } else if (/\.(tsx|jsx)$/.test(entry.name) && !entry.name.includes(".test.")) {
+          const filePath = path.join(dir, entry.name);
+          const content = fs.readFileSync(filePath, "utf8");
+          if (!content.includes('from "recharts"') && !content.includes("from 'recharts'"))
+            continue;
+
+          let idx = 0;
+          while ((idx = content.indexOf("<Tooltip", idx)) !== -1) {
+            const tagEnd = content.indexOf("/>", idx);
+            const closeTag = content.indexOf("</Tooltip>", idx);
+            let end = tagEnd;
+            if (closeTag !== -1 && (tagEnd === -1 || closeTag < tagEnd)) {
+              end = closeTag;
+            }
+            const tag = content.substring(idx, end !== -1 ? end + 2 : idx + 200);
+            if (
+              !tag.startsWith("<TooltipContentProps") &&
+              !tag.includes("contentStyle") &&
+              !tag.includes("content=")
+            ) {
+              const line = content.substring(0, idx).split("\n").length;
+              unstyled.push(`${path.relative(srcDir, filePath)}:${line}`);
+            }
+            idx += 8;
+          }
+        }
+      }
+    }
+
+    scanDir(srcDir);
+    expect(unstyled).toEqual([]);
   });
 });

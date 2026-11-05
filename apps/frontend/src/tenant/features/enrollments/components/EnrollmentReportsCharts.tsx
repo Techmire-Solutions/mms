@@ -1,6 +1,6 @@
 import React from "react";
 import { BarChart, Bar, XAxis, YAxis, Tooltip, PieChart, Pie, Cell, Legend } from "recharts";
-import { chartAxisTick } from "@/components/app/ChartGrid";
+import { chartAxisTick, chartTooltipStyle } from "@/components/app/ChartGrid";
 import { ReportChartCard } from "@/tenant/components/moduleReports";
 import { EmptyState } from "@/components/app/EmptyState";
 import { useBrandPalette } from "@/lib/contexts/BrandingPaletteContext";
@@ -66,7 +66,10 @@ export function EnrollmentReportsCharts({
               <Cell key={status.name} fill={COLORS[index % COLORS.length]} />
             ))}
           </Pie>
-          <Tooltip formatter={(value) => [`${value}`, t("enrollments.metrics.total")]} />
+          <Tooltip
+            formatter={(value) => [`${value}`, t("enrollments.metrics.total")]}
+            contentStyle={chartTooltipStyle()}
+          />
           <Legend iconType="circle" iconSize={8} wrapperStyle={{ fontSize: "11px" }} />
         </PieChart>
       </ReportChartCard>
@@ -88,7 +91,10 @@ export function EnrollmentReportsCharts({
         <BarChart data={bySession} barSize={20}>
           <XAxis dataKey="name" tick={chartAxisTick(10)} tickLine={false} />
           <YAxis tick={chartAxisTick(10)} tickLine={false} axisLine={false} />
-          <Tooltip formatter={(value) => [`${value}`, t("enrollments.reports.bySession")]} />
+          <Tooltip
+            formatter={(value) => [`${value}`, t("enrollments.reports.bySession")]}
+            contentStyle={chartTooltipStyle()}
+          />
           <Bar
             dataKey="count"
             fill={COLORS[0]}
