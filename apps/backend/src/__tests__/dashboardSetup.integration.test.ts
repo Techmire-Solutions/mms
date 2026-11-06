@@ -189,7 +189,7 @@ describe("dashboard config routes", () => {
       headers: { host: "demo.localhost", authorization: `Bearer ${adminToken(app)}` },
     });
     expect(deleteOk.statusCode).toBe(200);
-    expect(mockDeleteDashboardWidget).toHaveBeenCalledWith("custom-1");
+    expect(mockDeleteDashboardWidget).toHaveBeenCalledWith("custom-1", "u-admin");
 
     await app.close();
   });

@@ -1,10 +1,10 @@
-import { and, asc, desc, eq, inArray, sql } from "drizzle-orm";
+import { and, asc, eq, inArray, isNull, sql } from "drizzle-orm";
 import { DASHBOARD_WIDGETS_MAX, type DashboardWidgetDto } from "@mms/shared";
 import { dashboardWidgets } from "../schema.js";
 import { withTenant } from "../tenant-context.js";
 import { toDto, toRestoredDto, toRow } from "./dashboardWidgetMappers.js";
 
-/** List all dashboard widgets for a workspace, ordered by pin order. */
+/** List all active dashboard widgets for a workspace, ordered by pin order. */
 export async function listDashboardWidgetsByWorkspace(
   workspaceSubdomain: string,
   options?: { limit?: number; offset?: number },
@@ -34,7 +34,9 @@ export async function listDashboardWidgetsByWorkspace(
         updatedAt: dashboardWidgets.updatedAt,
       })
       .from(dashboardWidgets)
-      .where(eq(dashboardWidgets.workspaceSubdomain, subdomain))
+      .where(
+        and(eq(dashboardWidgets.workspaceSubdomain, subdomain), isNull(dashboardWidgets.deletedAt)),
+      )
       .orderBy(asc(dashboardWidgets.sortOrder), asc(dashboardWidgets.id))
       .limit(limit)
       .offset(offset);
@@ -74,21 +76,36 @@ export async function upsertDashboardWidgetsForWorkspace(
           sortOrder: sql`excluded.sort_order`,
           config: sql`excluded.config`,
           updatedAt: new Date(),
+          deletedAt: null,
+          deletedBy: null,
+          restoredAt: new Date(),
         },
       });
   });
 }
 
-/** Delete a single dashboard widget by id within the workspace. Returns the deleted row count. */
+/** Soft-delete a single dashboard widget by id within the workspace. Returns the updated row count. */
 export async function deleteDashboardWidgetById(
   workspaceSubdomain: string,
   id: string,
+  deletedBy?: string,
 ): Promise<number> {
   const subdomain = workspaceSubdomain.trim().toLowerCase();
   return withTenant(subdomain, async (tx) => {
     const result = await tx
-      .delete(dashboardWidgets)
-      .where(and(eq(dashboardWidgets.workspaceSubdomain, subdomain), eq(dashboardWidgets.id, id)));
+      .update(dashboardWidgets)
+      .set({
+        deletedAt: new Date(),
+        deletedBy: deletedBy ?? null,
+        updatedAt: new Date(),
+      })
+      .where(
+        and(
+          eq(dashboardWidgets.workspaceSubdomain, subdomain),
+          eq(dashboardWidgets.id, id),
+          isNull(dashboardWidgets.deletedAt),
+        ),
+      );
     return result.rowCount ?? 0;
   });
 }
@@ -115,12 +132,16 @@ export async function reorderDashboardWidgetsForWorkspace(
         updatedAt: now,
       })
       .where(
-        and(eq(dashboardWidgets.workspaceSubdomain, subdomain), inArray(dashboardWidgets.id, ids)),
+        and(
+          eq(dashboardWidgets.workspaceSubdomain, subdomain),
+          inArray(dashboardWidgets.id, ids),
+          isNull(dashboardWidgets.deletedAt),
+        ),
       );
   });
 }
 
-/** Find a single dashboard widget by id within the workspace. */
+/** Find a single active dashboard widget by id within the workspace. */
 export async function findDashboardWidgetById(
   workspaceSubdomain: string,
   id: string,
@@ -148,15 +169,40 @@ export async function findDashboardWidgetById(
       })
       .from(dashboardWidgets)
       .where(
-        and(eq(dashboardWidgets.workspaceSubdomain, subdomain), eq(dashboardWidgets.id, cleanId)),
+        and(
+          eq(dashboardWidgets.workspaceSubdomain, subdomain),
+          eq(dashboardWidgets.id, cleanId),
+          isNull(dashboardWidgets.deletedAt),
+        ),
       )
-      .orderBy(desc(dashboardWidgets.updatedAt))
       .limit(1);
     return rows[0] ? toDto(rows[0]) : null;
   });
 }
 
-/** Backup/restore parity — full workspace widgets, in the shape the write DTO accepts. */
+/** Restore a previously soft-deleted dashboard widget by id. */
+export async function restoreDashboardWidgetById(
+  workspaceSubdomain: string,
+  id: string,
+  restoredBy?: string,
+): Promise<number> {
+  const subdomain = workspaceSubdomain.trim().toLowerCase();
+  return withTenant(subdomain, async (tx) => {
+    const result = await tx
+      .update(dashboardWidgets)
+      .set({
+        deletedAt: null,
+        deletedBy: null,
+        restoredAt: new Date(),
+        restoredBy: restoredBy ?? null,
+        updatedAt: new Date(),
+      })
+      .where(and(eq(dashboardWidgets.workspaceSubdomain, subdomain), eq(dashboardWidgets.id, id)));
+    return result.rowCount ?? 0;
+  });
+}
+
+/** Backup/restore parity — full active workspace widgets, in the shape the write DTO accepts. */
 export async function listAllDashboardWidgetsByWorkspace(
   workspaceSubdomain: string,
 ): Promise<DashboardWidgetDto[]> {
@@ -180,7 +226,9 @@ export async function listAllDashboardWidgetsByWorkspace(
         updatedAt: dashboardWidgets.updatedAt,
       })
       .from(dashboardWidgets)
-      .where(eq(dashboardWidgets.workspaceSubdomain, subdomain));
+      .where(
+        and(eq(dashboardWidgets.workspaceSubdomain, subdomain), isNull(dashboardWidgets.deletedAt)),
+      );
     return rows.map(toDto);
   });
 }
@@ -202,10 +250,35 @@ export async function replaceDashboardWidgetsForWorkspace(
     ).values(),
   );
   await withTenant(subdomain, async (tx) => {
-    await tx.delete(dashboardWidgets).where(eq(dashboardWidgets.workspaceSubdomain, subdomain));
+    await tx
+      .update(dashboardWidgets)
+      .set({ deletedAt: new Date(), updatedAt: new Date() })
+      .where(
+        and(eq(dashboardWidgets.workspaceSubdomain, subdomain), isNull(dashboardWidgets.deletedAt)),
+      );
     if (deduped.length === 0) return;
     await tx
       .insert(dashboardWidgets)
-      .values(deduped.map(({ dto, index }) => toRow(subdomain, dto, index)));
+      .values(deduped.map(({ dto, index }) => toRow(subdomain, dto, index)))
+      .onConflictDoUpdate({
+        target: [dashboardWidgets.workspaceSubdomain, dashboardWidgets.id],
+        set: {
+          widgetType: sql`excluded.widget_type`,
+          category: sql`excluded.category`,
+          collection: sql`excluded.collection`,
+          role: sql`excluded.role`,
+          isPinnedToDashboard: sql`excluded.is_pinned_to_dashboard`,
+          title: sql`excluded.title`,
+          icon: sql`excluded.icon`,
+          color: sql`excluded.color`,
+          operation: sql`excluded.operation`,
+          sortOrder: sql`excluded.sort_order`,
+          config: sql`excluded.config`,
+          updatedAt: new Date(),
+          deletedAt: null,
+          deletedBy: null,
+          restoredAt: new Date(),
+        },
+      });
   });
 }

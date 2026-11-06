@@ -7,7 +7,8 @@
  * - academics (students, faculty, sessions, attendance, enrollments): ./relations/academicRelations.js
  * - finance, accounting, hasanat & obligations: ./relations/financeRelations.js
  * - examinations & question bank: ./relations/assessmentRelations.js
- * - messaging & dashboard: ./relations/messagingRelations.js
+ * - messaging: ./relations/messagingRelations.js
+ * - dashboard: ./relations/dashboardRelations.js
  */
 
 export * from "./relations/platformRelations.js";
@@ -16,5 +17,6 @@ export * from "./relations/academicRelations.js";
 export * from "./relations/financeRelations.js";
 export * from "./relations/assessmentRelations.js";
 export * from "./relations/messagingRelations.js";
+export * from "./relations/dashboardRelations.js";
 
 export * from "./relations/facultyRelations.js";
