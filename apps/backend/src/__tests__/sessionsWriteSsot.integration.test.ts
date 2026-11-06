@@ -129,6 +129,10 @@ describe("sessions API & bulk status write integration tests", () => {
     expect(response.statusCode).toBe(200);
     const body = JSON.parse(response.body);
     expect(body).toEqual({ success: true, succeeded: 2, failed: 0 });
-    expect(mockBulkUpdateSessionsStatus).toHaveBeenCalledWith(["sess-1", "sess-2"], "completed");
+    expect(mockBulkUpdateSessionsStatus).toHaveBeenCalledWith(
+      ["sess-1", "sess-2"],
+      "completed",
+      undefined,
+    );
   });
 });

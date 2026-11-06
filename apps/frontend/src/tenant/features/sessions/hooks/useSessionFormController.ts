@@ -41,9 +41,11 @@ export function useSessionFormController({
   const defaultCurrency = activeCurrency.code;
 
   // Lifecycle: new sessions start as draft/open; existing ones offer only allowed transitions.
+  // Cancelling stays on the dedicated action (it records a reason and ends enrollments), so the
+  // form never offers `cancelled` as a plain status change.
   const currentStatus = normalizeSessionStatus(session?.status ?? "draft");
   const statusValues: SessionLifecycleState[] = session
-    ? [currentStatus, ...SESSION_TRANSITIONS[currentStatus]]
+    ? [currentStatus, ...SESSION_TRANSITIONS[currentStatus].filter((state) => state !== "cancelled")]
     : ["draft", "open"];
   const structureLocked = Boolean(session) && isSessionStructureLocked(currentStatus);
   const { canEditSetup } = useModulePermissions(SESSIONS_MODULE_MANIFEST);

@@ -19,6 +19,25 @@ const tenantOf = (request: Request) => String(request.tenant?.id ?? "");
 const fail = (request: Request, error: unknown, message: string) =>
   handleContractError(request, error, { status: 500, body: { type: "server_error", message } });
 
+/** OCC token from the request headers (`x-expected-version`, else `x-expected-updated-at`). */
+function operationToken(request: Request): {
+  expectedVersion?: number;
+  expectedUpdatedAt?: string;
+} {
+  const versionHeader = request.headers["x-expected-version"];
+  const rawVersion = Array.isArray(versionHeader) ? versionHeader[0] : versionHeader;
+  const expectedVersion =
+    rawVersion === undefined || rawVersion === "" ? undefined : Number(rawVersion);
+  const updatedHeader = request.headers["x-expected-updated-at"];
+  const expectedUpdatedAt = Array.isArray(updatedHeader) ? updatedHeader[0] : updatedHeader;
+  return {
+    ...(expectedVersion !== undefined && Number.isInteger(expectedVersion)
+      ? { expectedVersion }
+      : {}),
+    ...(expectedUpdatedAt ? { expectedUpdatedAt } : {}),
+  };
+}
+
 /** `/api/sessions/:id/{cancel,postpone,activity}` — session lifecycle actions (Phase 9e). */
 export const sessionLifecycleOpsRouter: FastifyPluginAsync = async (fastify) => {
   const router = s.router(sessionLifecycleOpsContract, {
@@ -28,7 +47,7 @@ export const sessionLifecycleOpsRouter: FastifyPluginAsync = async (fastify) => 
       try {
         return {
           status: 200 as const,
-          body: await ops.cancel(tenantOf(request), params.id, body, user),
+          body: await ops.cancel(tenantOf(request), params.id, body, user, operationToken(request)),
         };
       } catch (error) {
         return fail(request, error, "Failed to cancel the session");
@@ -38,10 +57,6 @@ export const sessionLifecycleOpsRouter: FastifyPluginAsync = async (fastify) => 
       const user = request.user as User;
       if (!canWriteCollection(user, COLLECTION)) return forbidden;
       try {
-        const expectedHeader = request.headers["x-expected-updated-at"];
-        const expectedUpdatedAt = Array.isArray(expectedHeader)
-          ? expectedHeader[0]
-          : expectedHeader;
         return {
           status: 200 as const,
           body: {
@@ -50,7 +65,7 @@ export const sessionLifecycleOpsRouter: FastifyPluginAsync = async (fastify) => 
               params.id,
               body,
               user,
-              expectedUpdatedAt,
+              operationToken(request),
             ),
           },
         };

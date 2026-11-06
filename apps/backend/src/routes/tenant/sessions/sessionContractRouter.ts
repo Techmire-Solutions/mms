@@ -195,7 +195,15 @@ export const sessionContractRouter: FastifyPluginAsync = async (fastify) => {
       try {
         await withTenant(
           String(request.tenant?.id),
-          () => sessionsUseCases.deleteSessionById(id, String(user.id), body?.deletionReason),
+          () =>
+            sessionsUseCases.deleteSessionById(
+              id,
+              String(user.id),
+              body?.deletionReason,
+              // Trashing a session that has not reached a terminal state is destructive: it needs
+              // the lock-override permission plus a recorded reason.
+              { allowNonTerminal: userHasPermission(user, OVERRIDE_LOCK_PERM) },
+            ),
           { readOnly: false },
         );
         return { status: 200 as const, body: { success: true } };

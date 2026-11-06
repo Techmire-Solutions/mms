@@ -9638,6 +9638,8 @@ export const APP_TRANSLATIONS_AR: Record<AppTranslationKey, string> = {
   "sessions.lock.field.sectionRemoved": "حذف شعبة",
   "sessions.lock.field.eligibility": "أهلية العمر/الجنس",
   "sessions.lock.field.capacityBelowEnrolled": "سعة أقل من المسجلين",
+  "sessions.lock.field.endDate": "تقليص تاريخ الانتهاء",
+  "sessions.lock.field.criteria": "الرسوم أو معايير الإكمال",
   "attendance.setup.calendar": "التقويم",
   "attendance.calendar.add": "إضافة حدث",
   "attendance.calendar.edit": "تعديل الحدث",

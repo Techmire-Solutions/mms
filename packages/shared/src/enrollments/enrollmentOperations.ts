@@ -9,6 +9,7 @@ export const ENROLLMENT_EVENT_TYPES = [
   "readmitted",
   "suspended",
   "cancelled",
+  "completed",
   "promoted",
   "retained",
   "graduated",

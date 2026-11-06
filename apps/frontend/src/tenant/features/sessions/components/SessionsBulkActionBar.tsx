@@ -38,6 +38,15 @@ export function SessionsBulkActionBar({
   bulkActions = SESSIONS_MODULE_MANIFEST.work.bulkActions,
 }: SessionsBulkActionBarProps): ReactElement {
   const { t } = useTranslation();
+  // Cancelling and completing are per-session actions: they need a reason / completion window and
+  // end enrollments or billing, so they stay out of the generic bulk-status menu.
+  const bulkStatusConfig = statusConfig
+    ? Object.fromEntries(
+        Object.entries(statusConfig).filter(
+          ([status]) => status !== "cancelled" && status !== "completed",
+        ),
+      )
+    : undefined;
 
   return (
     <BulkSelectionBar
@@ -53,7 +62,7 @@ export function SessionsBulkActionBar({
       onRequestBulkDelete={onRequestBulkDelete}
       onRequestBulkRestore={onRequestBulkRestore}
       onBulkExport={onBulkExport}
-      statusConfig={statusConfig}
+      statusConfig={bulkStatusConfig}
       onBulkStatusChange={onBulkStatusChange}
       statusPending={statusPending}
       deleteLabel={t("sessions.archive")}

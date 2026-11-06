@@ -50,8 +50,39 @@ export async function endLiveEnrollments(
   return { ended: live.length, billing };
 }
 
-/** A student left (inactive / transferred / graduated): withdraw their live enrollments today. */
-export async function withdrawEnrollmentsForStudentStatus(
+/**
+ * Ends every live enrollment of a session that is being marked `completed`, on the session's last
+ * day, with the `completed` status. Completion outcomes are evaluated separately; this only stops
+ * the seat from being held forever by a terminal session (which also made the enrollment
+ * unmanageable, because enrollment operations refuse read-only sessions).
+ */
+export async function completeLiveEnrollments(
+  tenant: string,
+  sessionId: string,
+  lastDay: string,
+  actor: OperationActor = SYSTEM_ACTOR,
+): Promise<{ ended: number }> {
+  const live = await repo.listLiveEnrollments(tenant, { sessionIds: [sessionId] });
+  for (const enrollment of live) {
+    await repo.applyEnrollmentWithdrawal(tenant, {
+      enrollmentId: enrollment.id,
+      studentId: enrollment.studentId,
+      effectiveOn: lastDay,
+      reason: "Session completed",
+      actor,
+      status: "completed",
+    });
+  }
+  if (live.length > 0) {
+    await invalidateMultiTierCache({ tenantId: tenant, domain: "students" });
+    await invalidateMultiTierCache({ tenantId: tenant, domain: "sessions" });
+    await broadcastCollection("enrollments");
+    await broadcastCollection("sessions");
+  }
+  return { ended: live.length };
+}
+
+/** A student left (inactive / transferred / graduated): withdraw their live enrollments today. */export async function withdrawEnrollmentsForStudentStatus(
   tenant: string,
   studentId: string,
   status: string,

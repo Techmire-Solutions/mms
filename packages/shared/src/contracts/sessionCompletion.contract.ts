@@ -9,7 +9,14 @@ const c = initContract();
 const errorResponse = z.object({ type: z.string(), message: z.string() }).passthrough();
 const sessionParams = z.object({ id: z.string().min(1).max(64) });
 const rowsResponse = z.object({ rows: z.array(sessionCompletionRowSchema) });
-const errors = { 400: errorResponse, 403: errorResponse, 404: errorResponse, 500: errorResponse };
+const errors = {
+  400: errorResponse,
+  403: errorResponse,
+  404: errorResponse,
+  /** Completion/certificates outside the session window. */
+  409: errorResponse,
+  500: errorResponse,
+};
 
 /** Short-course completion (Phase 11): standing, evaluation and certificates. */
 export const sessionCompletionContract = c.router({

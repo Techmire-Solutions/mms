@@ -1,6 +1,6 @@
 import type { SessionsRepository } from "../repository/sessionsRepository.js";
 import { sessionsRepository } from "../repository/sessionsRepositoryAdapter.js";
-import { getRequestTenant } from "../../lib/tenantContext.js";
+import { getRequestTenant, getRequestUserId } from "../../lib/tenantContext.js";
 import { broadcastCollection } from "../../lib/livePush.js";
 import { createGenericRelationalService } from "../../services/genericRelationalService.js";
 import { ConflictError, HttpDomainError, NotFoundError, ValidationError } from "../../lib/httpErrors.js";
@@ -12,7 +12,12 @@ import {
   type SessionLockContext,
   assertSessionDateRange,
 } from "./sessionLockGuard.js";
-import { onSessionsCancelled } from "./sessionLifecycleOpsUseCases.js";
+import { transitionSession } from "./sessionTransitionService.js";
+import { withTenant } from "../../db/tenant-context.js";
+import { hasActiveTransaction } from "../../db/dbTransactions.js";
+import { runAfterCommit } from "../../db/commitScope.js";
+import { withSavepoint } from "../../db/transactionSideEffects.js";
+import { sessionDateBoundsTx } from "../../db/repositories/sessionTransitionRepository.js";
 import { createSessionReadUseCases } from "./sessionReadUseCases.js";
 import {
   assertSessionOverlapFree,
@@ -20,6 +25,7 @@ import {
   type OverlapGuardDependencies,
 } from "./sessionOverlapGuard.js";
 import {
+  endDateBoundViolations,
   sessionRecordSchema,
   type SessionRecord,
   type SessionCreateBody,
@@ -30,6 +36,7 @@ import {
   dedupeTrimmedIds,
   normalizeSessionStatus,
   normalizeStoredSession,
+  parseSessionStatus,
   type Session,
 } from "@mms/shared";
 
@@ -106,13 +113,20 @@ export function createSessionsUseCases(
       }
       await validateActiveFacultyForeignKeys(tenant, record);
       assertSessionDateRange(record);
+      // A session is born as a draft or an open intake; every later state must be reached through
+      // `transitionSession`, otherwise the lifecycle machine is bypassed at creation time.
+      const birthStatus = normalizeSessionStatus(record.status);
+      if (birthStatus !== "draft" && birthStatus !== "open")
+        throw new ValidationError(
+          `A session starts as draft or open, not ${birthStatus}; move it through the lifecycle instead`,
+        );
       // `allowOverlap` is materialised per row; when it is off, overlapping live sessions are refused.
       const allowOverlap = await loadSessionOverlapExemption(tenant, deps);
       await assertSessionOverlapFree(repo, tenant, { ...record, overlapExempt: allowOverlap }, allowOverlap);
       return crud.create({
         ...record,
         overlapExempt: allowOverlap,
-        status: normalizeSessionStatus(record.status),
+        status: birthStatus,
       } as SessionRecord);
     },
     updateSessionById: async (
@@ -129,7 +143,7 @@ export function createSessionsUseCases(
         throw new ValidationError("Invalid x-expected-updated-at header");
       if (expectedVersion !== undefined && !Number.isInteger(expectedVersion))
         throw new ValidationError("Invalid x-expected-version header");
-      const { lockOverrideReason, ...record } = body as SessionUpdateBody;
+      const { lockOverrideReason, cancellationReason, ...record } = body as SessionUpdateBody;
       const next = {
         ...record,
         ...(record.status !== undefined ? { status: normalizeSessionStatus(record.status) } : {}),
@@ -137,11 +151,31 @@ export function createSessionsUseCases(
       await validateActiveFacultyForeignKeys(tenant, next);
       const before = await repo.findSessionById(tenant, id);
       if (!before || before.deletedAt) return null;
-      const overridden = assertSessionEditable(before, { ...before, ...next } as Session, {
-        ...lock,
-        today: lock.today ?? (await workspaceToday(tenant)),
-        lockOverrideReason: lockOverrideReason ?? lock.lockOverrideReason,
-      });
+      const today = lock.today ?? (await workspaceToday(tenant));
+      // The end date may only shrink when no recorded teaching/enrollment falls after the new day.
+      const endDateBounds =
+        next.endDate !== undefined && (next.endDate ?? "") < (before.endDate ?? "")
+          ? await withTenant(tenant, (tx) => sessionDateBoundsTx(tx, tenant, id))
+          : null;
+      const extraViolations = endDateBounds
+        ? endDateBoundViolations({
+            previousEndDate: before.endDate,
+            nextEndDate: next.endDate,
+            lastAttendanceDate: endDateBounds.lastAttendanceDate,
+            lastEnrollmentEnd: endDateBounds.lastEnrollmentDate,
+            today,
+          })
+        : [];
+      const overridden = assertSessionEditable(
+        before,
+        { ...before, ...next } as Session,
+        {
+          ...lock,
+          today,
+          lockOverrideReason: lockOverrideReason ?? lock.lockOverrideReason,
+        },
+        extraViolations,
+      );
       assertSessionDateRange({ ...before, ...next });
       // A PUT without a concurrency token is an unconditional overwrite — refuse it instead of
       // silently losing a concurrent edit (mms-api-interface §6). Checked after payload validation
@@ -168,6 +202,12 @@ export function createSessionsUseCases(
       const normalized = normalizeStoredSession(
         sessionRecordSchema.parse({ ...merged, id }),
       ) as SessionRecord;
+      const currentStatus = normalizeSessionStatus(before.status);
+      const targetStatus =
+        next.status !== undefined && next.status !== currentStatus ? next.status : undefined;
+      // Content is persisted in the current state; the transition below applies the new state with
+      // its guards/side effects, so a rejected transition rolls the whole request back.
+      normalized.status = currentStatus;
       // The version predicate lives in the repository's row-locked write (OCC 409).
       const occOptions = {
         ...(expected ? { expectedUpdatedAt: expected } : {}),
@@ -178,13 +218,20 @@ export function createSessionsUseCases(
         normalized,
         Object.keys(occOptions).length > 0 ? occOptions : undefined,
       );
-      // Return the version the DB actually wrote so the next save can use it as its OCC token.
       normalized.updatedAt = savedUpdatedAt;
       normalized.version = Number(before.version ?? 1) + 1;
-      await broadcastCollection("sessions");
-      await invalidateMultiTierCache({ tenantId: tenant, domain: "sessions", key: id });
-      if (next.status === "cancelled" && before.status !== "cancelled")
-        await onSessionsCancelled(tenant, [id]);
+      runAfterCommit(() => broadcastCollection("sessions"));
+      runAfterCommit(() => invalidateMultiTierCache({ tenantId: tenant, domain: "sessions", key: id }));
+      let result: SessionRecord = normalized;
+      if (targetStatus) {
+        const transition = await transitionSession(tenant, id, {
+          to: targetStatus,
+          reason: cancellationReason ?? lockOverrideReason ?? lock.lockOverrideReason,
+          actor: { userId: getRequestUserId() ?? null },
+          canOverride: lock.canOverrideLock,
+        });
+        result = transition.session;
+      }
       if (overridden.length > 0) {
         await recordModernAuditEvent({
           workspaceSubdomain: tenant,
@@ -197,26 +244,35 @@ export function createSessionsUseCases(
           },
         });
       }
-      return normalized;
+      return result;
     },
     deleteSessionById: async (
       id: string,
       deletedBy?: string,
       deletionReason?: string,
+      options?: { allowNonTerminal?: boolean },
     ): Promise<boolean> => {
       const tenant = getRequestTenant();
       if (!tenant) return false;
-      const ok = await repo.softDeleteSessionWithCascade(tenant, id, deletedBy, deletionReason);
-      if (!ok) {
-        const existing = await repo.findSessionById(tenant, id);
-        if (existing?.deletedAt) {
-          throw new NotFoundError("Session is already archived");
-        }
-        throw new NotFoundError("Session not found");
+      const existing = await repo.findSessionById(tenant, id);
+      if (!existing) throw new NotFoundError("Session not found");
+      if (existing.deletedAt) throw new NotFoundError("Session is already archived");
+      const state = normalizeSessionStatus(existing.status);
+      const terminal = state === "completed" || state === "cancelled" || state === "archived";
+      // A live session still owns seats/billing: trashing it leaves its lifecycle unfinished and
+      // hides the fact that enrollments were cascaded.
+      if (!terminal) {
+        const reason = (deletionReason ?? "").trim();
+        if (!options?.allowNonTerminal || reason.length < 3)
+          throw new ConflictError(
+            `A ${state} session cannot be archived — complete or cancel it first (or override with a reason)`,
+          );
       }
-      await broadcastCollection("sessions");
-      await broadcastCollection("enrollments");
-      await invalidateMultiTierCache({ tenantId: tenant, domain: "sessions" });
+      const ok = await repo.softDeleteSessionWithCascade(tenant, id, deletedBy, deletionReason);
+      if (!ok) throw new NotFoundError("Session not found");
+      runAfterCommit(() => broadcastCollection("sessions"));
+      runAfterCommit(() => broadcastCollection("enrollments"));
+      runAfterCommit(() => invalidateMultiTierCache({ tenantId: tenant, domain: "sessions" }));
       return true;
     },
     restoreSessionById: async (id: string, userId?: string): Promise<boolean> => {
@@ -275,28 +331,43 @@ export function createSessionsUseCases(
     bulkUpdateSessionsStatus: async (
       ids: string[],
       status: string,
+      reason?: string,
     ): Promise<{ succeeded: number; failed: number }> => {
       const tenant = getRequestTenant();
       const uniqueIds = dedupeTrimmedIds(ids);
       if (!tenant || uniqueIds.length === 0) return { succeeded: 0, failed: uniqueIds.length };
-      const target = normalizeSessionStatus(status);
-      // One status query for the whole batch: a per-id read fans out one transaction each.
+      const target = parseSessionStatus(status);
+      // One status query for the whole batch; each item then goes through the same transition
+      // service as a single edit (guards + CAS + audit + effects), inside a per-item savepoint so one
+      // refusal cannot abort the batch.
       const stored = await repo.findSessionStatusesByIds(tenant, uniqueIds);
-      const allowed = uniqueIds.filter((sessionId) => {
+      let succeeded = 0;
+      let failed = 0;
+      for (const sessionId of uniqueIds) {
         const current = stored.get(sessionId);
-        return Boolean(current) && canTransitionSession(String(current), target);
-      });
-      const result =
-        allowed.length > 0
-          ? await repo.bulkUpdateSessionsStatus(tenant, allowed, target)
-          : { succeeded: 0, failed: 0 };
-      result.failed += uniqueIds.length - allowed.length;
-      if (target === "cancelled" && result.succeeded) await onSessionsCancelled(tenant, allowed);
-      if (result.succeeded > 0) {
-        await invalidateMultiTierCache({ tenantId: tenant, domain: "sessions" });
-        await broadcastCollection("sessions");
+        if (!current || !canTransitionSession(String(current), target)) {
+          failed += 1;
+          continue;
+        }
+        const run = () =>
+          transitionSession(tenant, sessionId, {
+            to: target,
+            reason,
+            actor: { userId: getRequestUserId() ?? null },
+          });
+        try {
+          if (hasActiveTransaction()) await withSavepoint(run);
+          else await run();
+          succeeded += 1;
+        } catch {
+          failed += 1;
+        }
       }
-      return result;
+      if (succeeded > 0) {
+        runAfterCommit(() => invalidateMultiTierCache({ tenantId: tenant, domain: "sessions" }));
+        runAfterCommit(() => broadcastCollection("sessions"));
+      }
+      return { succeeded, failed };
     },
   };
 }

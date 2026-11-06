@@ -17,7 +17,7 @@ export async function runSessionAutoStart(): Promise<Array<{ workspace: string; 
   const started = await withGlobalTenant(async (tx) => {
     const result = await tx.execute<{ workspace: string; id: string }>(sql`
       UPDATE sessions s
-         SET status = 'in_progress', updated_at = now()
+         SET status = 'in_progress', updated_at = now(), version = s.version + 1
         FROM workspaces w
        WHERE w.subdomain = s.workspace_subdomain
          AND s.status = 'open' AND s.deleted_at IS NULL
@@ -26,12 +26,14 @@ export async function runSessionAutoStart(): Promise<Array<{ workspace: string; 
       RETURNING s.workspace_subdomain AS workspace, s.id
     `);
     for (const row of result.rows) {
+      // The transition is legal by the matrix (open → in_progress); the audit row records both ends
+      // so the sweep is attributable like any user-driven transition.
       await recordModernAuditEvent(tx, {
         workspaceSubdomain: row.workspace,
         tableName: "sessions",
         recordId: row.id,
         actionType: "UPDATE",
-        newState: { status: "in_progress", reason: "Auto-start on start date" },
+        newState: { operation: "transition", from: "open", to: "in_progress", reason: "Auto-start on start date" },
       });
     }
     return result.rows;

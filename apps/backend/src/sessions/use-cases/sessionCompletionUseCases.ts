@@ -1,4 +1,6 @@
 import {
+  canEvaluateSessionCompletion,
+  canIssueSessionCertificates,
   evaluateCompletion,
   sessionCertificatesBodySchema,
   type Session,
@@ -9,9 +11,10 @@ import { sessionsRepository } from "../repository/sessionsRepositoryAdapter.js";
 import { sessionCompletionRepository as repo } from "../repository/sessionCompletionRepositoryAdapter.js";
 import type { CompletionFactRow } from "../repository/sessionCompletionRepository.js";
 import { broadcastCollection } from "../../lib/livePush.js";
-import { NotFoundError } from "../../lib/httpErrors.js";
+import { ConflictError, NotFoundError } from "../../lib/httpErrors.js";
 import { invalidateMultiTierCache } from "../../lib/cache/index.js";
 import { withTenant } from "../../db/tenant-context.js";
+import { workspaceToday } from "./sessionLockGuard.js";
 
 /** Facts → evaluated row (percentages rounded to one decimal). */
 function toCompletionRow(fact: CompletionFactRow, session: Session): SessionCompletionRow {
@@ -58,6 +61,7 @@ function createSessionCompletionUseCases() {
     async evaluate(tenant: string, sessionId: string): Promise<SessionCompletionRow[]> {
       return withTenant(tenant, async () => {
         const session = await loadSession(tenant, sessionId);
+        assertCompletionWindow(session, await workspaceToday(tenant), "evaluate");
         const evaluated = await rows(tenant, session);
         await repo.saveCompletionOutcomes(
           tenant,
@@ -79,6 +83,7 @@ function createSessionCompletionUseCases() {
       return withTenant(tenant, async () => {
         const body = sessionCertificatesBodySchema.parse(input);
         const session = await loadSession(tenant, sessionId);
+        assertCompletionWindow(session, await workspaceToday(tenant), "certificates");
         const issued = await repo.markCertificatesIssued(tenant, session.id, body.enrollmentIds);
         if (issued.length > 0) {
           await invalidateMultiTierCache({ tenantId: tenant, domain: "sessions" });
@@ -88,6 +93,27 @@ function createSessionCompletionUseCases() {
       });
     },
   };
+}
+
+/**
+ * Completion writes are final for a student's record, so they are held to the session window:
+ * evaluation only on/after the last day (or once completed), certificates only for a completed,
+ * ended session.
+ */
+function assertCompletionWindow(
+  session: Session,
+  today: string,
+  action: "evaluate" | "certificates",
+): void {
+  const window = { status: session.status, endDate: session.endDate, today };
+  if (action === "evaluate" && !canEvaluateSessionCompletion(window))
+    throw new ConflictError(
+      "Completion can only be evaluated on or after the session's last day (or once it is completed)",
+    );
+  if (action === "certificates" && !canIssueSessionCertificates(window))
+    throw new ConflictError(
+      "Certificates can only be issued after a completed session has reached its end date",
+    );
 }
 
 export const sessionCompletionUseCases = createSessionCompletionUseCases();

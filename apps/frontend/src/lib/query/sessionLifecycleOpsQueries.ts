@@ -15,7 +15,34 @@ import { apiJson } from "@/lib/apiClient";
 export const SESSION_ACTIVITY_QUERY_KEY = ["sessions", "activity"] as const;
 
 const base = (id: string) => `/api/sessions/${encodeURIComponent(id)}`;
-const json = (body: unknown): RequestInit => ({ method: "POST", body: JSON.stringify(body) });
+
+/** OCC token headers: the state the caller read, echoed so a concurrent change is refused. */
+function tokenHeaders(token?: {
+  expectedVersion?: number;
+  expectedUpdatedAt?: string;
+}): Record<string, string> {
+  if (!token) return {};
+  return {
+    ...(token.expectedVersion !== undefined
+      ? { "x-expected-version": String(token.expectedVersion) }
+      : {}),
+    ...(token.expectedUpdatedAt ? { "x-expected-updated-at": token.expectedUpdatedAt } : {}),
+  };
+}
+
+const json = (
+  body: unknown,
+  token?: { expectedVersion?: number; expectedUpdatedAt?: string },
+): RequestInit => ({
+  method: "POST",
+  body: JSON.stringify(body),
+  headers: { "content-type": "application/json", ...tokenHeaders(token) },
+});
+
+export interface SessionOperationToken {
+  expectedVersion?: number;
+  expectedUpdatedAt?: string;
+}
 
 /** Dated activity of one session (newest first). */
 export function sessionActivityQueryOptions(sessionId: string, enabled: boolean) {
@@ -36,20 +63,32 @@ export function cancelSessionMutationOptions() {
     mutationFn: async ({
       id,
       body,
+      token,
     }: {
       id: string;
       body: SessionCancelBody;
+      token?: SessionOperationToken;
     }): Promise<SessionCancelResult> =>
-      sessionCancelResultSchema.parse(await apiJson<unknown>(`${base(id)}/cancel`, json(body))),
+      sessionCancelResultSchema.parse(
+        await apiJson<unknown>(`${base(id)}/cancel`, json(body, token)),
+      ),
   });
 }
 
 export function postponeSessionMutationOptions() {
   return mutationOptions({
     mutationKey: ["sessions", "postpone"] as const,
-    mutationFn: async ({ id, body }: { id: string; body: SessionPostponeBody }): Promise<Session> =>
+    mutationFn: async ({
+      id,
+      body,
+      token,
+    }: {
+      id: string;
+      body: SessionPostponeBody;
+      token?: SessionOperationToken;
+    }): Promise<Session> =>
       z
         .object({ session: SessionSchema })
-        .parse(await apiJson<unknown>(`${base(id)}/postpone`, json(body))).session,
+        .parse(await apiJson<unknown>(`${base(id)}/postpone`, json(body, token))).session,
   });
 }

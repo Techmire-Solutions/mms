@@ -1,78 +1,57 @@
 import type { Session } from "./sessionTypes.js";
+import { isSessionReadOnly, isSessionStructureLocked } from "./sessionTransitions.js";
 
-/** Session lifecycle: draft → open (registration) → in progress → completed; cancelled / archived are terminal. */
-export const SESSION_LIFECYCLE_STATES = [
-  "draft",
-  "open",
-  "in_progress",
-  "completed",
-  "cancelled",
-  "archived",
-] as const;
-export type SessionLifecycleState = (typeof SESSION_LIFECYCLE_STATES)[number];
+/**
+ * Session lifecycle rules that operate on a full session aggregate (the edit lock). The state
+ * machine itself lives in `sessionTransitions.ts`; these exports are kept here so existing
+ * `@mms/shared` consumers (`isSessionStructureLocked`, `jump` guards) do not change imports.
+ */
+export {
+  SESSION_ENROLLABLE_STATES,
+  SESSION_LIFECYCLE_STATES,
+  SESSION_PHASES,
+  SESSION_TRANSITIONS,
+  SESSION_TRANSITION_VIOLATIONS,
+  canTransitionSession,
+  deriveSessionPhase,
+  evaluateSessionTransition,
+  InvalidSessionStatusError,
+  isSessionEnrollable,
+  isSessionReadOnly,
+  isSessionStructureLocked,
+  isTransitionFullyOverridable,
+  normalizeSessionStatus,
+  parseSessionStatus,
+  sessionStatusSchema,
+  type SessionLifecycleState,
+  type SessionPhase,
+  type SessionPhaseEvent,
+  type SessionTransitionContext,
+  type SessionTransitionEvaluation,
+  type SessionTransitionViolation,
+} from "./sessionTransitions.js";
 
-/** Allowed explicit transitions (auto-start `open → in_progress` runs daily on the start date). */
-export const SESSION_TRANSITIONS: Readonly<
-  Record<SessionLifecycleState, readonly SessionLifecycleState[]>
-> = {
-  draft: ["open", "in_progress", "cancelled"],
-  open: ["draft", "in_progress", "cancelled"],
-  in_progress: ["completed", "cancelled"],
-  completed: ["archived"],
-  cancelled: ["archived"],
-  archived: [],
-};
-
-/** States in which students may be enrolled. */
-export const SESSION_ENROLLABLE_STATES: readonly SessionLifecycleState[] = ["open", "in_progress"];
-
-const LEGACY_STATUS: Record<string, SessionLifecycleState> = {
-  active: "in_progress",
-  upcoming: "open",
-  inactive: "archived",
-};
-
-/** Maps any stored/legacy status onto the lifecycle (unknown → draft). */
-export function normalizeSessionStatus(raw: string | null | undefined): SessionLifecycleState {
-  const value = (raw ?? "").trim().toLowerCase();
-  if ((SESSION_LIFECYCLE_STATES as readonly string[]).includes(value))
-    return value as SessionLifecycleState;
-  return LEGACY_STATUS[value] ?? "draft";
-}
-
-export function canTransitionSession(from: string, to: string): boolean {
-  const source = normalizeSessionStatus(from);
-  const target = normalizeSessionStatus(to);
-  return source === target || SESSION_TRANSITIONS[source].includes(target);
-}
-
-/** Once started, structural edits are restricted; terminal states are read-only. */
-export function isSessionStructureLocked(status: string): boolean {
-  return normalizeSessionStatus(status) !== "draft" && normalizeSessionStatus(status) !== "open";
-}
-
-export function isSessionReadOnly(status: string): boolean {
-  const state = normalizeSessionStatus(status);
-  return state === "completed" || state === "cancelled" || state === "archived";
-}
-
-/** Edit-policy violation codes (translated by the UI as `sessions.lock.{code}`). */
+/** Edit-policy violation codes (translated by the UI as `sessions.lock.field.{code}`). */
 export type SessionEditViolation =
   | "readOnly"
   | "startDate"
+  | "endDate"
   | "category"
   | "program"
   | "classRemoved"
   | "sectionRemoved"
   | "eligibility"
   | "capacityBelowEnrolled"
+  | "criteria"
   | "pastTimetable";
 
 /**
  * Edit policy for a started session (same rules on client and server):
  * - completed / cancelled / archived: read-only;
  * - in progress: no change to start date, category or program; no removing classes or sections;
- *   no changing a class's age/gender eligibility; no capacity below current enrollment.
+ *   no changing a class's age/gender eligibility; no capacity below current enrollment; no shrinking
+ *   the end date below the current day or below a recorded timetable; no changing completion
+ *   criteria or the session fee (they alter historical results/metrics).
  * - in progress, with `today`: no editing or removing a timetable dated before today (history of
  *   who taught what), today and later stay editable.
  * Adding classes/sections, extending the end date, raising capacity and staff edits stay allowed.
@@ -93,6 +72,8 @@ export function findSessionEditViolations(
   if ((before.startDate ?? "") !== (after.startDate ?? "")) violations.add("startDate");
   if ((before.categoryId ?? "") !== (after.categoryId ?? "")) violations.add("category");
   if ((before.programId ?? "") !== (after.programId ?? "")) violations.add("program");
+  if (completionCriteriaChanged(before, after)) violations.add("criteria");
+  if (endDateShrinks(before, after, today)) violations.add("endDate");
 
   const afterClasses = new Map((after.classes ?? []).map((cls) => [cls.id, cls]));
   for (const cls of before.classes ?? []) {
@@ -118,6 +99,56 @@ export function findSessionEditViolations(
     }
   }
   return [...violations];
+}
+
+/**
+ * End-date rule for a started session: extending is always allowed; shrinking below the current
+ * business day or below a date that already carries recorded teaching is not. The caller adds the
+ * attendance / enrollment bounds it can read from the store ({@link endDateBoundViolations}).
+ */
+function endDateShrinks(before: Session, after: Session, today?: string): boolean {
+  const previous = (before.endDate ?? "").slice(0, 10);
+  const next = (after.endDate ?? "").slice(0, 10);
+  if (!previous || !next || next >= previous) return false;
+  const day = (today ?? "").slice(0, 10);
+  if (day && next < day) return true;
+  return (before.classes ?? []).some((cls) =>
+    (cls.timetables ?? []).some((timetable) => {
+      const date = (timetable.date ?? "").slice(0, 10);
+      return Boolean(date) && next < date;
+    }),
+  );
+}
+
+/** Fee + grading policy are historical inputs: changing them after start needs an override. */
+function completionCriteriaChanged(before: Session, after: Session): boolean {
+  if ((before.minAttendancePct ?? null) !== (after.minAttendancePct ?? null)) return true;
+  if (Boolean(before.requiresExamPass) !== Boolean(after.requiresExamPass)) return true;
+  if (Number(before.baseFee ?? 0) !== Number(after.baseFee ?? 0)) return true;
+  const days = (session: Session) => [...(session.workingDays ?? [])].sort().join(",");
+  return days(before) !== days(after);
+}
+
+/**
+ * Store-backed end-date bounds: recorded attendance and live enrollments may not end up outside the
+ * session after a shrink. Returns the violation codes for the edit-lock error.
+ */
+export function endDateBoundViolations(input: {
+  previousEndDate?: string | null;
+  nextEndDate?: string | null;
+  lastAttendanceDate?: string | null;
+  lastEnrollmentEnd?: string | null;
+  today?: string;
+}): SessionEditViolation[] {
+  const previous = (input.previousEndDate ?? "").slice(0, 10);
+  const next = (input.nextEndDate ?? "").slice(0, 10);
+  if (!previous || !next || next >= previous) return [];
+  const bounds = [
+    (input.today ?? "").slice(0, 10),
+    (input.lastAttendanceDate ?? "").slice(0, 10),
+    (input.lastEnrollmentEnd ?? "").slice(0, 10),
+  ].filter(Boolean);
+  return bounds.some((bound) => next < bound) ? ["endDate"] : [];
 }
 
 type Timetable = NonNullable<Session["classes"]>[number]["timetables"][number];

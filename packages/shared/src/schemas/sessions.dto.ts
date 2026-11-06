@@ -1,6 +1,7 @@
 import { z } from "zod";
 import { deepSanitizeStrings } from "./sanitize.js";
 import { SessionSchema } from "../sessions/sessionTypes.js";
+import { sessionStatusSchema } from "../sessions/sessionTransitions.js";
 import { stripSessionClientSoftDeleteFields } from "../sessions/sessionUtils.js";
 import { stripClientAuditFields } from "../contacts/contactWriteSanitize.js";
 import { bulkIdsBodySchema, type BulkIdsBody } from "./api.dto.js";
@@ -21,6 +22,11 @@ const sessionCreateBodyBaseSchema = SessionSchema.omit({
 })
   .extend({
     id: z.string().optional(),
+    /**
+     * Lifecycle state: lifecycle values plus the legacy aliases (`active`/`upcoming`/`inactive`)
+     * are accepted; any other string is a 400 instead of silently resetting to `draft`.
+     */
+    status: sessionStatusSchema.default("draft"),
   })
   .strict();
 
@@ -51,6 +57,11 @@ const sessionUpdateBodyBaseSchema = sessionCreateBodyBaseSchema
   .extend({
     /** Required (with Sessions setup rights) to make locked changes to a started session; audited. */
     lockOverrideReason: z.string().trim().min(3).max(500).optional(),
+    /**
+     * Why the session is being cancelled. Required by the server whenever `status` becomes
+     * `cancelled`, on every path (this form and the dedicated cancel action alike).
+     */
+    cancellationReason: z.string().trim().min(3).max(500).optional(),
   })
   .strict();
 

@@ -9782,6 +9782,8 @@ export const APP_TRANSLATIONS_FA: Partial<Record<AppTranslationKey, string>> = {
   "sessions.lock.field.sectionRemoved": "حذف بخش",
   "sessions.lock.field.eligibility": "شرایط سن/جنسیت",
   "sessions.lock.field.capacityBelowEnrolled": "ظرفیت کمتر از ثبت‌نام‌شدگان",
+  "sessions.lock.field.endDate": "کوتاه کردن تاریخ پایان",
+  "sessions.lock.field.criteria": "شهریه یا معیارهای تکمیل",
   "attendance.setup.calendar": "تقویم",
   "attendance.calendar.add": "افزودن رویداد",
   "attendance.calendar.edit": "ویرایش رویداد",

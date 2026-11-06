@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { normalizeSessionStatus } from "./sessionTransitions.js";
 
 /** Outcome stored on an enrollment once completion is evaluated. */
 export const ENROLLMENT_COMPLETION_STATUSES = ["completed", "not_completed"] as const;
@@ -45,6 +46,35 @@ export function evaluateCompletion(
     else if (!facts.examsPassed) shortfalls.push("exam_not_passed");
   }
   return { status: shortfalls.length === 0 ? "completed" : "not_completed", shortfalls };
+}
+
+export interface CompletionWindowInput {
+  status: string;
+  endDate?: string | null;
+  /** Workspace business day (`YYYY-MM-DD`). */
+  today: string;
+}
+
+const sessionEnded = (input: CompletionWindowInput): boolean => {
+  const end = (input.endDate ?? "").slice(0, 10);
+  return Boolean(end) && end <= input.today;
+};
+
+/**
+ * Completion may be evaluated once the session is `completed`, or on its last day/after it while
+ * still `in_progress`. Evaluating a live session marks every enrollment with the current (partial)
+ * attendance/exam facts, so an early run must not be possible.
+ */
+export function canEvaluateSessionCompletion(input: CompletionWindowInput): boolean {
+  const state = normalizeSessionStatus(input.status);
+  if (state === "completed") return true;
+  if (state === "in_progress") return sessionEnded(input);
+  return false;
+}
+
+/** Certificates are final: the session must be completed and its end date must have passed. */
+export function canIssueSessionCertificates(input: CompletionWindowInput): boolean {
+  return normalizeSessionStatus(input.status) === "completed" && sessionEnded(input);
 }
 
 export const sessionCompletionRowSchema = z

@@ -1,9 +1,14 @@
-import { describe, expect, it, vi } from "vitest";
+import { beforeEach, describe, expect, it, vi } from "vitest";
 import { createSessionsUseCases } from "../sessions/use-cases/sessionsUseCases.js";
+import { transitionSession } from "../sessions/use-cases/sessionTransitionService.js";
 import type { SessionsRepository } from "../sessions/repository/sessionsRepository.js";
 import { runWithTenant } from "../lib/tenantContext.js";
 import { ConflictError, NotFoundError } from "../lib/httpErrors.js";
 import { SessionSchema } from "@mms/shared";
+
+vi.mock("../sessions/use-cases/sessionTransitionService.js", () => ({
+  transitionSession: vi.fn(),
+}));
 
 function createFakeRepo(): SessionsRepository {
   return {
@@ -77,7 +82,7 @@ describe("sessions use-cases (DI with fake repository)", () => {
     expect(repo.listSessionsPage).toHaveBeenCalledWith("demo", { page: 2, limit: 12 });
   });
 
-  it("given mixed lifecycle states, should apply only allowed transitions (normalized) and count the rest as failed", async () => {
+  it("given mixed lifecycle states, should transition only the legal ones through the transition service", async () => {
     // Arrange
     const repo = createFakeRepo();
     vi.mocked(repo.findSessionStatusesByIds).mockResolvedValue(
@@ -86,7 +91,13 @@ describe("sessions use-cases (DI with fake repository)", () => {
         ["s2", "completed"],
       ]),
     );
-    vi.mocked(repo.bulkUpdateSessionsStatus).mockResolvedValue({ succeeded: 1, failed: 0 });
+    vi.mocked(transitionSession).mockResolvedValue({
+      session: SessionSchema.parse({ id: "s1", name: "One", status: "in_progress" }),
+      ended: 0,
+      billing: null,
+      overridden: [],
+      noop: false,
+    });
     const useCases = createTestUseCases(repo);
 
     // Act
@@ -96,7 +107,11 @@ describe("sessions use-cases (DI with fake repository)", () => {
 
     // Assert
     expect(result).toEqual({ succeeded: 1, failed: 1 });
-    expect(repo.bulkUpdateSessionsStatus).toHaveBeenCalledWith("demo", ["s1"], "in_progress");
+    expect(transitionSession).toHaveBeenCalledWith(
+      "demo",
+      "s1",
+      expect.objectContaining({ to: "in_progress" }),
+    );
   });
 
   it("createSession rejects a client id that already exists (active or archived)", async () => {
@@ -201,12 +216,15 @@ describe("sessions use-cases (DI with fake repository)", () => {
     expect(repo.listSessionsPage).not.toHaveBeenCalled();
   });
 
-  it("deleteSessionById delegates cascade soft-delete to the repository", async () => {
+  it("deleteSessionById delegates cascade soft-delete for a terminal session", async () => {
     const repo = createFakeRepo();
+    vi.mocked(repo.findSessionById).mockResolvedValue(
+      SessionSchema.parse({ id: "s1", name: "Done", status: "completed" }) as never,
+    );
     const useCases = createTestUseCases(repo);
 
     const ok = await runWithTenant("demo", () =>
-      useCases.deleteSessionById("s1", "u-admin", "Cancelled session"),
+      useCases.deleteSessionById("s1", "u-admin", "Session finished"),
     );
 
     expect(ok).toBe(true);
@@ -214,7 +232,7 @@ describe("sessions use-cases (DI with fake repository)", () => {
       "demo",
       "s1",
       "u-admin",
-      "Cancelled session",
+      "Session finished",
     );
   });
 

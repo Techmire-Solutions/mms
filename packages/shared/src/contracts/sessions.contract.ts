@@ -150,6 +150,8 @@ export const sessionContract = c.router({
       400: z.unknown(),
       403: z.unknown(),
       404: z.unknown(),
+      /** The session is not in a terminal state (complete/cancel it first, or override). */
+      409: errorResponse,
       500: z.unknown(),
     },
     summary: "Delete session",

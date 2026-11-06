@@ -12,6 +12,7 @@ import {
   incrementTenantTx,
 } from "./dbPoolMetrics.js";
 import { getActivePoolRole, getActiveMaxPoolSize, getPool, getRootDb } from "./dbConnection.js";
+import { runCommitScopedTransaction } from "./commitScope.js";
 
 export type DbClient = NodePgDatabase<typeof schema>;
 
@@ -239,11 +240,13 @@ async function runTransaction<T>(
     },
   };
 
-  return await getDb().transaction(
-    async (tx) => {
-      await applyTenantTransactionGuards(tx, tenant, options);
-      return await txStorage.run(tx, cb);
-    },
-    readSnapshot ? { isolationLevel: "repeatable read" } : undefined,
+  return await runCommitScopedTransaction(() =>
+    getDb().transaction(
+      async (tx) => {
+        await applyTenantTransactionGuards(tx, tenant, options);
+        return await txStorage.run(tx, cb);
+      },
+      readSnapshot ? { isolationLevel: "repeatable read" } : undefined,
+    ),
   );
 }

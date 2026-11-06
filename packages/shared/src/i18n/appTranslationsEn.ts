@@ -9834,6 +9834,8 @@ export const APP_TRANSLATIONS_EN = {
   "sessions.lock.field.sectionRemoved": "removing a section",
   "sessions.lock.field.eligibility": "age/gender eligibility",
   "sessions.lock.field.capacityBelowEnrolled": "capacity below enrolled",
+  "sessions.lock.field.endDate": "shrinking the end date",
+  "sessions.lock.field.criteria": "fee or completion criteria",
   "attendance.setup.calendar": "Calendar",
   "attendance.calendar.add": "Add Calendar Event",
   "attendance.calendar.edit": "Edit Calendar Event",
