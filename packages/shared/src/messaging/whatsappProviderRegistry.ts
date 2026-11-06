@@ -27,6 +27,15 @@ export const WHATSAPP_PROVIDER_PRESETS: readonly WhatsappProviderPreset[] = [
     baseUrlPlaceholder: "xxxxx.api.infobip.com",
     senderPlaceholder: "447860099299",
   },
+  {
+    id: "custom",
+    labelKey: "whatsapp.providerCustom",
+    hintKey: "whatsapp.providerCustomHint",
+    requiresBaseUrl: true,
+    requiresPhoneNumberId: false,
+    baseUrlPlaceholder: "https://logiqueues.com/gateway/v1/messages/smart",
+    senderPlaceholder: "+923001234567",
+  },
 ] as const;
 
 const PRESET_BY_ID = new Map<WhatsappProviderId, WhatsappProviderPreset>(

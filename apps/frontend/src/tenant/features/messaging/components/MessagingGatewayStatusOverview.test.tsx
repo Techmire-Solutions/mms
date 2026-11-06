@@ -9,10 +9,33 @@ vi.mock("@/hooks/useTranslation", () => ({
   }),
 }));
 
-vi.mock("react-router-dom", () => ({
-  Link: ({ children, to }: { children: React.ReactNode; to: string }) => (
-    <a href={to}>{children}</a>
-  ),
+vi.mock("@/tenant/hooks/useGlobalSettings", () => ({
+  useGlobalSettings: () => ({
+    emailNotifications: true,
+    smsNotifications: true,
+    whatsAppNotifications: false,
+  }),
+}));
+
+vi.mock("@/lib/db", () => ({
+  getGlobalSettings: () => ({
+    emailNotifications: true,
+    smsNotifications: true,
+    whatsAppNotifications: false,
+  }),
+  saveGlobalSettingsAsync: vi.fn().mockResolvedValue({ ok: true }),
+}));
+
+vi.mock("./SmsIntegrationPanel", () => ({
+  default: () => <div data-testid="sms-integration-panel">SMS Panel</div>,
+}));
+
+vi.mock("./WhatsAppIntegrationPanel", () => ({
+  default: () => <div data-testid="whatsapp-integration-panel">WhatsApp Panel</div>,
+}));
+
+vi.mock("./EmailIntegrationPanel", () => ({
+  default: () => <div data-testid="email-integration-panel">Email Panel</div>,
 }));
 
 vi.mock("../hooks/useMessagingGatewaysStatus", () => ({
@@ -46,8 +69,8 @@ vi.mock("../hooks/useMessagingGatewaysStatus", () => ({
 }));
 
 describe("MessagingGatewayStatusOverview Component", () => {
-  it("renders 3 gateway cards with respective statuses and provider names", () => {
-    const html = renderToStaticMarkup(<MessagingGatewayStatusOverview />);
+  it("renders 3 gateway cards with respective statuses, provider names, and inline configuration", () => {
+    const html = renderToStaticMarkup(<MessagingGatewayStatusOverview canWrite={true} />);
     expect(html).toContain("messaging.gateways.title");
     expect(html).toContain("messaging.channel.sms");
     expect(html).toContain("messaging.channel.whatsapp");
@@ -66,16 +89,21 @@ describe("MessagingGatewayStatusOverview Component", () => {
     expect(html).toContain("sendgrid");
     expect(html).toContain("no-reply@madrasa.org");
 
-    // Links to settings
-    expect(html).toContain('href="/settings?tab=global"');
-    // The configure row no longer pins a 28px height over the shared 44px floor.
-    expect(html).not.toContain("h-7 text-xs");
+    // Verify inline configure gateway buttons exist
+    expect(html).toContain("messaging.gateways.configureGateway");
+
+    // No longer links out to settings
+    expect(html).not.toContain('href="/settings?tab=global"');
+
+    // Inline integration panel for default selected channel (sms) is mounted
+    expect(html).toContain('data-testid="sms-integration-panel"');
+    expect(html).toContain("global.smsNotifications");
   });
 
   it("surfaces the last gateway error instead of implying the channel is healthy", () => {
-    const html = renderToStaticMarkup(<MessagingGatewayStatusOverview />);
+    const html = renderToStaticMarkup(<MessagingGatewayStatusOverview canWrite={true} />);
 
-    // The card previously showed only "Connected" while the last test failed.
+    // The card surfaces error detail
     expect(html).toContain("messaging.gateways.lastError");
     expect(html).toContain("Authentication failed (401)");
   });

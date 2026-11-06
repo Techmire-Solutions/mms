@@ -7,7 +7,14 @@ export const SMS_PROVIDER_PRESETS: readonly SmsProviderPreset[] = [
     labelKey: "sms.providerLogiqueues",
     hintKey: "sms.providerLogiqueuesHint",
     requiresBaseUrl: true,
-    baseUrlPlaceholder: "https://logiqueues.com/gateway/v1 (blank = default)",
+    baseUrlPlaceholder: "https://logiqueues.com/gateway/v1/messages/sms",
+  },
+  {
+    id: "custom",
+    labelKey: "sms.providerCustom",
+    hintKey: "sms.providerCustomHint",
+    requiresBaseUrl: true,
+    baseUrlPlaceholder: "https://logiqueues.com/gateway/v1/messages/sms",
   },
   {
     id: "twilio",

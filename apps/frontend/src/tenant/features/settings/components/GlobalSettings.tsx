@@ -1,10 +1,9 @@
 import React from "react";
-import { Bell, Languages } from "lucide-react";
+import { Languages } from "lucide-react";
 import {
   APP_LANGUAGES,
   DEFAULT_GLOBAL_SETTINGS,
   formatLanguageSelectLabel,
-  getActiveNotificationChannels,
   isRtlLanguage,
   normalizeDateFormat,
   normalizeTimezone,
@@ -18,23 +17,15 @@ import { Label } from "@/components/ui/label";
 import { SectionCard } from "@/components/app/SectionCard";
 import { SettingsFormActions } from "@/components/app/SettingsFormActions";
 import DateFormatSelect from "@/tenant/features/settings/components/DateFormatSelect";
-import EmailIntegrationPanel from "@/tenant/features/settings/components/EmailIntegrationPanel";
-import SmsIntegrationPanel from "@/tenant/features/settings/components/SmsIntegrationPanel";
-import WhatsAppIntegrationPanel from "@/tenant/features/settings/components/WhatsAppIntegrationPanel";
 import TimezoneSelect from "@/tenant/features/settings/components/TimezoneSelect";
 import { GlobalSettingsSecuritySection } from "@/tenant/features/settings/components/GlobalSettingsSecuritySection";
 import { SettingsAdminOnlyNotice } from "@/tenant/features/settings/components/SettingsAdminOnlyNotice";
 import { usePermissions } from "@/tenant/hooks/usePermissions";
-import { Badge } from "@/components/ui/badge";
-import {
-  SettingsCallout,
-  SettingsFieldGroup,
-  SettingsPanel,
-  SettingsToggleRow,
-} from "@/components/app/SettingsShell";
+import { SettingsCallout, SettingsFieldGroup, SettingsPanel } from "@/components/app/SettingsShell";
 
 /**
- * Regional preferences (everyone), notifications and security (admin only).
+ * Regional preferences (everyone) and security (admin only).
+ * Notification delivery gateways live under Messaging → Setup → Preferences.
  * Visual theming lives in ThemeSettings (`/settings/theme`).
  */
 export default function GlobalSettings(): React.JSX.Element {
@@ -121,68 +112,7 @@ export default function GlobalSettings(): React.JSX.Element {
       </SectionCard>
 
       {canWriteGlobal ? (
-        <>
-          <SectionCard
-            title={t("global.notifications")}
-            subtitle={t("global.notificationsDesc")}
-            icon={Bell}
-          >
-            <div className="space-y-3">
-              <SettingsCallout>{t("global.notificationsNote")}</SettingsCallout>
-              <div
-                className="flex flex-wrap items-center gap-2 text-xs font-medium"
-                aria-live="polite"
-              >
-                <span className="text-muted-foreground">
-                  {t("global.notificationsActiveChannel")}:
-                </span>
-                {(() => {
-                  const activeChannels = getActiveNotificationChannels(data);
-                  if (activeChannels.length === 0) {
-                    return (
-                      <Badge as="span" tone="warning" size="sm">
-                        {t("global.notificationsChannelNone")}
-                      </Badge>
-                    );
-                  }
-                  return activeChannels.map((ch) => (
-                    <Badge key={ch} as="span" tone="primary" size="sm">
-                      {ch === "email" && t("global.notificationsChannelEmail")}
-                      {ch === "sms" && t("global.notificationsChannelSms")}
-                      {ch === "whatsapp" && t("global.notificationsChannelWhatsApp")}
-                    </Badge>
-                  ));
-                })()}
-              </div>
-              <SettingsToggleRow
-                id="emailNotifications"
-                label={t("global.emailNotifications")}
-                description={t("global.emailNotificationsDesc")}
-                checked={Boolean(data.emailNotifications)}
-                onCheckedChange={(v) => upd("emailNotifications", v)}
-              />
-              {data.emailNotifications ? <EmailIntegrationPanel /> : null}
-              <SettingsToggleRow
-                id="smsNotifications"
-                label={t("global.smsNotifications")}
-                description={t("global.smsNotificationsDesc")}
-                checked={Boolean(data.smsNotifications)}
-                onCheckedChange={(v) => upd("smsNotifications", v)}
-              />
-              {data.smsNotifications ? <SmsIntegrationPanel /> : null}
-              <SettingsToggleRow
-                id="whatsAppNotifications"
-                label={t("global.whatsAppNotifications")}
-                description={t("global.whatsAppNotificationsDesc")}
-                checked={Boolean(data.whatsAppNotifications)}
-                onCheckedChange={(v) => upd("whatsAppNotifications", v)}
-              />
-              {data.whatsAppNotifications ? <WhatsAppIntegrationPanel /> : null}
-            </div>
-          </SectionCard>
-
-          <GlobalSettingsSecuritySection data={data} upd={upd} />
-        </>
+        <GlobalSettingsSecuritySection data={data} upd={upd} />
       ) : (
         <SettingsAdminOnlyNotice
           titleKey="global.notificationsSecurityAdminOnlyTitle"

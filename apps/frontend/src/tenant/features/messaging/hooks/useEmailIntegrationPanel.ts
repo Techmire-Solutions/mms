@@ -1,31 +1,32 @@
 import { useCallback, useEffect, useState } from "react";
+import { useQueryClient } from "@tanstack/react-query";
 import {
-  DEFAULT_SMS_INTEGRATION,
-  listSmsProviderPresets,
-  type SmsIntegrationConfig,
+  DEFAULT_EMAIL_INTEGRATION,
+  listEmailProviderPresets,
+  type EmailIntegrationConfig,
 } from "@mms/shared";
 import { useTranslation } from "@/hooks/useTranslation";
 import { notify } from "@/lib/notify";
 import {
-  fetchSmsIntegration,
-  saveSmsIntegration,
-  testSmsIntegration,
-} from "@/lib/smsIntegrationApi";
+  fetchEmailIntegration,
+  saveEmailIntegration,
+  testEmailIntegration,
+} from "@/lib/emailIntegrationApi";
 
-export function useSmsIntegrationPanel() {
+export function useEmailIntegrationPanel() {
   const { t } = useTranslation();
-  const providers = (() => listSmsProviderPresets())();
+  const queryClient = useQueryClient();
+  const providers = (() => listEmailProviderPresets())();
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [testing, setTesting] = useState(false);
-  const [form, setForm] = useState<SmsIntegrationConfig>(DEFAULT_SMS_INTEGRATION);
-  const [accountSecret, setAccountSecret] = useState("");
-  const [testPhone, setTestPhone] = useState("");
+  const [form, setForm] = useState<EmailIntegrationConfig>(DEFAULT_EMAIL_INTEGRATION);
+  const [smtpPassword, setSmtpPassword] = useState("");
 
   // `loading` already starts true, so the mount fetch only has to clear it when it settles.
   const load = useCallback(async (): Promise<void> => {
     try {
-      const config = await fetchSmsIntegration();
+      const config = await fetchEmailIntegration();
       if (config) setForm(config);
     } finally {
       setLoading(false);
@@ -37,10 +38,11 @@ export function useSmsIntegrationPanel() {
   }, [load]);
 
   const selectedPreset = providers.find((p) => p.id === form.providerId) ?? providers[0];
+  const isCustom = form.providerId === "custom_smtp";
 
-  const setField = <K extends keyof SmsIntegrationConfig>(
+  const setField = <K extends keyof EmailIntegrationConfig>(
     key: K,
-    value: SmsIntegrationConfig[K],
+    value: EmailIntegrationConfig[K],
   ): void => {
     setForm((prev) => ({ ...prev, [key]: value }));
   };
@@ -48,15 +50,16 @@ export function useSmsIntegrationPanel() {
   const handleSave = async (): Promise<void> => {
     setSaving(true);
     try {
-      const saved = await saveSmsIntegration({
+      const saved = await saveEmailIntegration({
         ...form,
-        accountSecret: accountSecret.trim() || undefined,
+        smtpPassword: smtpPassword.trim() || undefined,
       });
       setForm(saved);
-      setAccountSecret("");
-      notify.success(t("sms.saveSuccess"), { description: t("sms.saveSuccessDesc") });
+      setSmtpPassword("");
+      void queryClient.invalidateQueries({ queryKey: ["email-integration"] });
+      notify.success(t("email.saveSuccess"), { description: t("email.saveSuccessDesc") });
     } catch (error) {
-      notify.error(t("sms.saveFailed"), {
+      notify.error(t("email.saveFailed"), {
         description: error instanceof Error ? error.message : undefined,
       });
     } finally {
@@ -65,19 +68,19 @@ export function useSmsIntegrationPanel() {
   };
 
   const handleTest = async (): Promise<void> => {
-    if (!testPhone.trim()) return;
     setTesting(true);
     try {
-      if (accountSecret.trim()) {
-        const saved = await saveSmsIntegration({ ...form, accountSecret: accountSecret.trim() });
+      if (smtpPassword.trim()) {
+        const saved = await saveEmailIntegration({ ...form, smtpPassword: smtpPassword.trim() });
         setForm(saved);
-        setAccountSecret("");
+        setSmtpPassword("");
       }
-      const config = await testSmsIntegration(testPhone.trim());
+      const config = await testEmailIntegration();
       setForm(config);
-      notify.success(t("sms.testSuccess"), { description: t("sms.testSuccessDesc") });
+      void queryClient.invalidateQueries({ queryKey: ["email-integration"] });
+      notify.success(t("email.testSuccess"), { description: t("email.testSuccessDesc") });
     } catch (error) {
-      notify.error(t("sms.testFailed"), {
+      notify.error(t("email.testFailed"), {
         description: error instanceof Error ? error.message : undefined,
       });
     } finally {
@@ -92,11 +95,10 @@ export function useSmsIntegrationPanel() {
     saving,
     testing,
     form,
-    accountSecret,
-    setAccountSecret,
-    testPhone,
-    setTestPhone,
+    smtpPassword,
+    setSmtpPassword,
     selectedPreset,
+    isCustom,
     setField,
     handleSave,
     handleTest,

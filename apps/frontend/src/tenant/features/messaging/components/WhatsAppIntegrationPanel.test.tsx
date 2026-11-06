@@ -14,6 +14,12 @@ vi.mock("@/hooks/useTranslation", () => ({
   }),
 }));
 
+vi.mock("@tanstack/react-query", () => ({
+  useQueryClient: () => ({
+    invalidateQueries: vi.fn(),
+  }),
+}));
+
 vi.mock("@/lib/whatsappIntegrationApi", () => ({
   fetchWhatsappIntegration: vi.fn().mockResolvedValue({
     providerId: "meta",

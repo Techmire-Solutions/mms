@@ -1,135 +1,175 @@
-import React from "react";
-import { Link } from "react-router-dom";
-import { ExternalLink, Mail, MessageCircle, MessageSquare } from "lucide-react";
+import React, { useState } from "react";
+import { Mail, MessageCircle, MessageSquare } from "lucide-react";
+import { getActiveNotificationChannels } from "@mms/shared";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
-import { WidgetCard } from "@/components/app/WidgetCard";
+import { ToggleRow } from "@shared/ui";
 import { SEMANTIC_BADGE } from "@/lib/ui/semanticTone";
 import { useTranslation } from "@/hooks/useTranslation";
-import { settingsTabPath } from "@/lib/config/settingsDeepLink";
-import {
-  useMessagingGatewaysStatus,
-  type GatewayStatusItem,
-} from "../hooks/useMessagingGatewaysStatus";
+import { useGlobalSettings } from "@/tenant/hooks/useGlobalSettings";
+import { getGlobalSettings, saveGlobalSettingsAsync } from "@/lib/db";
+import { notify } from "@/lib/notify";
+import { useMessagingGatewaysStatus } from "../hooks/useMessagingGatewaysStatus";
+import { MessagingGatewayChannelCard } from "./MessagingGatewayChannelCard";
+import SmsIntegrationPanel from "./SmsIntegrationPanel";
+import WhatsAppIntegrationPanel from "./WhatsAppIntegrationPanel";
+import EmailIntegrationPanel from "./EmailIntegrationPanel";
 
-interface GatewayChannelCardProps {
-  name: string;
-  icon: React.ComponentType<{ className?: string }>;
-  item: GatewayStatusItem;
+export type GatewayChannelType = "sms" | "whatsapp" | "email";
+
+export interface MessagingGatewayStatusOverviewProps {
+  canWrite?: boolean;
 }
 
-function GatewayChannelCard({
-  name,
-  icon: Icon,
-  item,
-}: GatewayChannelCardProps): React.JSX.Element {
-  const { t } = useTranslation();
-
-  const getStatusBadge = () => {
-    if (item.isConnected) {
-      return (
-        <Badge variant="outline" className={`text-3xs font-medium ${SEMANTIC_BADGE.success}`}>
-          {t("messaging.gateways.connected")}
-        </Badge>
-      );
-    }
-    if (item.isConfigured) {
-      return (
-        <Badge variant="outline" className={`text-3xs font-medium ${SEMANTIC_BADGE.warning}`}>
-          {t("messaging.gateways.configured")}
-        </Badge>
-      );
-    }
-    return (
-      <Badge variant="outline" className={`text-3xs font-medium ${SEMANTIC_BADGE.muted}`}>
-        {t("messaging.gateways.notConfigured")}
-      </Badge>
-    );
-  };
-
-  return (
-    <WidgetCard
-      className="flex flex-col justify-between space-y-3"
-      accentColor={item.isConnected ? "success" : item.isConfigured ? "warning" : undefined}
-    >
-      <div className="p-3.5 space-y-2">
-        <div className="flex items-center justify-between gap-2">
-          <div className="flex items-center gap-2">
-            <div className="flex h-7 w-7 items-center justify-center rounded-md bg-muted text-muted-foreground">
-              <Icon className="h-4 w-4" />
-            </div>
-            <span className="text-xs font-semibold">{name}</span>
-          </div>
-          {getStatusBadge()}
-        </div>
-
-        <div className="text-2xs text-muted-foreground space-y-0.5">
-          <div className="flex justify-between">
-            <span className="opacity-70">{t("messaging.gateways.provider")}:</span>
-            <span className="font-medium text-foreground capitalize">{item.provider || "—"}</span>
-          </div>
-          <div className="flex justify-between">
-            <span className="opacity-70">{t("messaging.gateways.sender")}:</span>
-            <span className="font-mono text-foreground truncate max-w-36">
-              {item.sender || "—"}
-            </span>
-          </div>
-          {item.lastError ? (
-            <div
-              className="truncate font-medium text-destructive"
-              title={item.lastError}
-              data-testid={`messaging-gateway-last-error-${item.provider ?? name}`}
-            >
-              {t("messaging.gateways.lastError")}: {item.lastError}
-            </div>
-          ) : null}
-        </div>
-      </div>
-
-      <Button
-        asChild
-        variant="ghost"
-        size="sm"
-        className="w-full min-h-11 text-xs text-muted-foreground hover:text-foreground justify-between px-2 cursor-pointer"
-      >
-        {/* SMS / WhatsApp / Email panels live under Settings → Global. */}
-        <Link to={settingsTabPath("global")}>
-          <span>{t("messaging.gateways.configureInSettings")}</span>
-          <ExternalLink className="h-3 w-3 ms-1 opacity-70" />
-        </Link>
-      </Button>
-    </WidgetCard>
-  );
-}
-
-export function MessagingGatewayStatusOverview(): React.JSX.Element {
+export function MessagingGatewayStatusOverview({
+  canWrite = true,
+}: MessagingGatewayStatusOverviewProps): React.JSX.Element {
   const { t } = useTranslation();
   const gateways = useMessagingGatewaysStatus();
+  const globalSettings = useGlobalSettings();
+
+  const [selectedChannel, setSelectedChannel] = useState<GatewayChannelType>("sms");
+  const [toggling, setToggling] = useState<string | null>(null);
+
+  const emailEnabled = Boolean(globalSettings.emailNotifications);
+  const smsEnabled = Boolean(globalSettings.smsNotifications);
+  const whatsappEnabled = Boolean(globalSettings.whatsAppNotifications);
+
+  const activeChannels = getActiveNotificationChannels(globalSettings);
+
+  const handleToggleChannel = async (
+    field: "emailNotifications" | "smsNotifications" | "whatsAppNotifications",
+    val: boolean,
+  ): Promise<void> => {
+    if (!canWrite) return;
+    setToggling(field);
+    try {
+      const current = getGlobalSettings();
+      const updated = { ...current, [field]: val };
+      const res = await saveGlobalSettingsAsync(updated);
+      if (res.ok) {
+        notify.success(t("settings.savedBadge"));
+      } else {
+        notify.error(t("messaging.preferences.saveFailed"));
+      }
+    } catch {
+      notify.error(t("messaging.preferences.saveFailed"));
+    } finally {
+      setToggling(null);
+    }
+  };
 
   return (
     <Card>
       <CardHeader className="pb-3">
-        <CardTitle className="text-base font-semibold">{t("messaging.gateways.title")}</CardTitle>
-        <CardDescription className="text-xs">{t("messaging.gateways.desc")}</CardDescription>
+        <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+          <div>
+            <CardTitle className="text-base font-semibold">
+              {t("messaging.gateways.title")}
+            </CardTitle>
+            <CardDescription className="text-xs">{t("messaging.gateways.desc")}</CardDescription>
+          </div>
+          <div className="flex flex-wrap items-center gap-2 text-xs font-medium" aria-live="polite">
+            <span className="text-muted-foreground">{t("global.notificationsActiveChannel")}:</span>
+            {activeChannels.length === 0 ? (
+              <Badge variant="outline" className={`text-3xs font-medium ${SEMANTIC_BADGE.muted}`}>
+                {t("global.notificationsChannelNone")}
+              </Badge>
+            ) : (
+              activeChannels.map((ch) => (
+                <Badge
+                  key={ch}
+                  variant="outline"
+                  className={`text-3xs font-medium ${SEMANTIC_BADGE.primary}`}
+                >
+                  {ch === "email" && t("global.notificationsChannelEmail")}
+                  {ch === "sms" && t("global.notificationsChannelSms")}
+                  {ch === "whatsapp" && t("global.notificationsChannelWhatsApp")}
+                </Badge>
+              ))
+            )}
+          </div>
+        </div>
       </CardHeader>
-      <CardContent>
+      <CardContent className="space-y-4">
         <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
-          <GatewayChannelCard
+          <MessagingGatewayChannelCard
+            id="sms"
             name={t("messaging.channel.sms")}
             icon={MessageSquare}
             item={gateways.sms}
+            isEnabled={smsEnabled}
+            isSelected={selectedChannel === "sms"}
+            canWrite={canWrite && toggling !== "smsNotifications"}
+            onSelect={() => setSelectedChannel("sms")}
+            onToggleDelivery={(val) => void handleToggleChannel("smsNotifications", val)}
           />
-          <GatewayChannelCard
+          <MessagingGatewayChannelCard
+            id="whatsapp"
             name={t("messaging.channel.whatsapp")}
             icon={MessageCircle}
             item={gateways.whatsapp}
+            isEnabled={whatsappEnabled}
+            isSelected={selectedChannel === "whatsapp"}
+            canWrite={canWrite && toggling !== "whatsAppNotifications"}
+            onSelect={() => setSelectedChannel("whatsapp")}
+            onToggleDelivery={(val) => void handleToggleChannel("whatsAppNotifications", val)}
           />
-          <GatewayChannelCard
+          <MessagingGatewayChannelCard
+            id="email"
             name={t("messaging.channel.email")}
             icon={Mail}
             item={gateways.email}
+            isEnabled={emailEnabled}
+            isSelected={selectedChannel === "email"}
+            canWrite={canWrite && toggling !== "emailNotifications"}
+            onSelect={() => setSelectedChannel("email")}
+            onToggleDelivery={(val) => void handleToggleChannel("emailNotifications", val)}
           />
+        </div>
+
+        <div className="mt-4 pt-4 border-t border-border space-y-3">
+          {selectedChannel === "sms" && (
+            <div className="space-y-3">
+              <ToggleRow
+                id="smsNotifications"
+                label={t("global.smsNotifications")}
+                description={t("global.smsNotificationsDesc")}
+                checked={smsEnabled}
+                onCheckedChange={(val) => void handleToggleChannel("smsNotifications", val)}
+                disabled={!canWrite || toggling === "smsNotifications"}
+              />
+              <SmsIntegrationPanel />
+            </div>
+          )}
+
+          {selectedChannel === "whatsapp" && (
+            <div className="space-y-3">
+              <ToggleRow
+                id="whatsAppNotifications"
+                label={t("global.whatsAppNotifications")}
+                description={t("global.whatsAppNotificationsDesc")}
+                checked={whatsappEnabled}
+                onCheckedChange={(val) => void handleToggleChannel("whatsAppNotifications", val)}
+                disabled={!canWrite || toggling === "whatsAppNotifications"}
+              />
+              <WhatsAppIntegrationPanel />
+            </div>
+          )}
+
+          {selectedChannel === "email" && (
+            <div className="space-y-3">
+              <ToggleRow
+                id="emailNotifications"
+                label={t("global.emailNotifications")}
+                description={t("global.emailNotificationsDesc")}
+                checked={emailEnabled}
+                onCheckedChange={(val) => void handleToggleChannel("emailNotifications", val)}
+                disabled={!canWrite || toggling === "emailNotifications"}
+              />
+              <EmailIntegrationPanel />
+            </div>
+          )}
         </div>
       </CardContent>
     </Card>

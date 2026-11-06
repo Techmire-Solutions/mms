@@ -6,7 +6,15 @@ export const SMS_INTEGRATION_OBJECT_KEY = "sms_integration" as const;
 /** Backend-only — never synced to the browser. */
 export const SMS_INTEGRATION_SECRETS_KEY = "sms_integration_secrets" as const;
 
-const SMS_PROVIDERS = ["twilio", "vonage", "msg91", "infobip", "telesign", "logiqueues"] as const;
+const SMS_PROVIDERS = [
+  "twilio",
+  "vonage",
+  "msg91",
+  "infobip",
+  "telesign",
+  "logiqueues",
+  "custom",
+] as const;
 
 export type SmsProviderId = (typeof SMS_PROVIDERS)[number];
 

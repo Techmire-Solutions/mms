@@ -6,7 +6,7 @@ const whatsappIntegrationBodyBaseSchema = z
     providerId: z.string().min(1),
     accountId: z.string().optional(),
     phoneNumberId: z.string().optional(),
-    senderId: z.string().min(1),
+    senderId: z.string().default(""),
     apiBaseUrl: z.string().optional(),
     accountSecret: z.string().optional(),
   })

@@ -1,16 +1,16 @@
 import React from "react";
-import { MessageSquare } from "lucide-react";
-import { type AppTranslationKey, type SmsProviderId } from "@mms/shared";
+import { MessageCircle } from "lucide-react";
+import { type AppTranslationKey, type WhatsappProviderId } from "@mms/shared";
 import { FormSelect } from "@/components/app/FormSelect";
 import { Input, IntegrationPanelChrome, Label } from "@shared/ui";
 import { PasswordInput } from "@/components/app/PasswordInput";
-import { useSmsIntegrationPanel } from "@/tenant/features/settings/hooks/useSmsIntegrationPanel";
+import { useWhatsAppIntegrationPanel } from "../hooks/useWhatsAppIntegrationPanel";
 
 /**
- * One active provider at a time — Twilio, Vonage, MSG91, Infobip, or Telesign.
- * Only mounted by the parent while SMS Notifications is enabled.
+ * Multi-provider WhatsApp Business setup (Meta Cloud API, Twilio, Infobip).
+ * Only mounted by parent while WhatsApp Notifications is enabled.
  */
-export default function SmsIntegrationPanel(): React.JSX.Element {
+export default function WhatsAppIntegrationPanel(): React.JSX.Element {
   const {
     t,
     providers,
@@ -26,31 +26,31 @@ export default function SmsIntegrationPanel(): React.JSX.Element {
     setField,
     handleSave,
     handleTest,
-  } = useSmsIntegrationPanel();
+  } = useWhatsAppIntegrationPanel();
 
   return (
     <IntegrationPanelChrome
-      icon={MessageSquare}
-      title={t("sms.integrationTitle")}
-      description={t("sms.integrationDesc")}
-      calloutText={t("sms.separateSaveNote")}
+      icon={MessageCircle}
+      title={t("whatsapp.integrationTitle")}
+      description={t("whatsapp.integrationDesc")}
+      calloutText={t("whatsapp.separateSaveNote")}
       connected={form.connected}
       lastTestOk={form.lastTestOk}
-      statusConnectedText={t("sms.statusConnected")}
-      statusNotConnectedText={t("sms.statusNotConnected")}
+      statusConnectedText={t("whatsapp.statusConnected")}
+      statusNotConnectedText={t("whatsapp.statusNotConnected")}
       loading={loading}
       lastError={form.lastError}
       saving={saving}
       testing={testing}
-      saveLabel={t("sms.saveConnection")}
-      testLabel={t("sms.sendTest")}
+      saveLabel={t("whatsapp.saveConnection")}
+      testLabel={t("whatsapp.sendTest")}
       onSave={() => void handleSave()}
       onTest={() => void handleTest()}
       footerContent={
         <div className="space-y-2">
-          <Label htmlFor="sms-test-phone">{t("sms.testPhonePlaceholder")}</Label>
+          <Label htmlFor="whatsapp-test-phone">{t("whatsapp.testPhonePlaceholder")}</Label>
           <Input
-            id="sms-test-phone"
+            id="whatsapp-test-phone"
             name="testPhone"
             type="tel"
             value={testPhone}
@@ -61,12 +61,12 @@ export default function SmsIntegrationPanel(): React.JSX.Element {
       }
     >
       <div className="space-y-2 sm:col-span-2">
-        <Label htmlFor="sms-provider">{t("sms.provider")}</Label>
+        <Label htmlFor="whatsapp-provider">{t("whatsapp.provider")}</Label>
         <FormSelect
-          id="sms-provider"
+          id="whatsapp-provider"
           name="providerId"
           value={form.providerId}
-          onChange={(v) => setField("providerId", v as SmsProviderId)}
+          onChange={(v) => setField("providerId", v as WhatsappProviderId)}
           options={providers.map((preset) => ({
             value: preset.id,
             label: t(preset.labelKey as AppTranslationKey),
@@ -78,35 +78,51 @@ export default function SmsIntegrationPanel(): React.JSX.Element {
       </div>
 
       <div className="space-y-2">
-        <Label htmlFor="sms-account-id">{t("sms.accountId")}</Label>
+        <Label htmlFor="whatsapp-account-id">{t("whatsapp.accountId")}</Label>
         <Input
-          id="sms-account-id"
+          id="whatsapp-account-id"
           name="accountId"
           value={form.accountId}
           onChange={(event) => setField("accountId", event.target.value)}
-        />
-      </div>
-      <div className="space-y-2">
-        <Label htmlFor="sms-sender-id">{t("sms.senderId")}</Label>
-        <Input
-          id="sms-sender-id"
-          name="senderId"
-          value={form.senderId}
-          onChange={(event) => setField("senderId", event.target.value)}
+          placeholder={t("whatsapp.accountIdPlaceholder")}
         />
       </div>
 
+      <div className="space-y-2">
+        <Label htmlFor="whatsapp-sender-id">{t("whatsapp.senderId")}</Label>
+        <Input
+          id="whatsapp-sender-id"
+          name="senderId"
+          value={form.senderId}
+          onChange={(event) => setField("senderId", event.target.value)}
+          placeholder={selectedPreset.senderPlaceholder}
+        />
+      </div>
+
+      {selectedPreset.requiresPhoneNumberId && (
+        <div className="space-y-2 sm:col-span-2">
+          <Label htmlFor="whatsapp-phone-number-id">{t("whatsapp.phoneNumberId")}</Label>
+          <Input
+            id="whatsapp-phone-number-id"
+            name="phoneNumberId"
+            value={form.phoneNumberId ?? ""}
+            onChange={(event) => setField("phoneNumberId", event.target.value)}
+            placeholder={t("whatsapp.phoneNumberIdPlaceholder")}
+          />
+        </div>
+      )}
+
       <div className="space-y-2 sm:col-span-2">
-        <Label htmlFor="sms-account-secret">{t("sms.accountSecret")}</Label>
+        <Label htmlFor="whatsapp-account-secret">{t("whatsapp.accountSecret")}</Label>
         <PasswordInput
-          id="sms-account-secret"
-          name="smsAccountSecret"
+          id="whatsapp-account-secret"
+          name="whatsappAccountSecret"
           value={accountSecret}
           onChange={(event) => setAccountSecret(event.target.value)}
           placeholder={
             form.hasCredentials
-              ? t("sms.accountSecretPlaceholderSaved")
-              : t("sms.accountSecretPlaceholder")
+              ? t("whatsapp.accountSecretPlaceholderSaved")
+              : t("whatsapp.accountSecretPlaceholder")
           }
           autoComplete="new-password"
         />
@@ -114,9 +130,9 @@ export default function SmsIntegrationPanel(): React.JSX.Element {
 
       {selectedPreset.requiresBaseUrl && (
         <div className="space-y-2 sm:col-span-2">
-          <Label htmlFor="sms-api-base-url">{t("sms.apiBaseUrl")}</Label>
+          <Label htmlFor="whatsapp-api-base-url">{t("whatsapp.apiBaseUrl")}</Label>
           <Input
-            id="sms-api-base-url"
+            id="whatsapp-api-base-url"
             name="apiBaseUrl"
             value={form.apiBaseUrl ?? ""}
             onChange={(event) => setField("apiBaseUrl", event.target.value)}

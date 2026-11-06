@@ -7,6 +7,7 @@ import { loadGlobalSettings as loadTenantGlobalSettings } from "../globalSetting
 import { sendMetaWhatsApp } from "./providers/metaProvider.js";
 import { sendTwilioWhatsApp } from "./providers/twilioWhatsAppProvider.js";
 import { sendInfobipWhatsApp } from "./providers/infobipWhatsAppProvider.js";
+import { sendGenericOutboundMessage } from "../messagingOutboundProvider.js";
 import type { WhatsappProviderSender } from "./providers/types.js";
 
 export interface SendWhatsappInput {
@@ -25,6 +26,7 @@ const PROVIDER_SENDERS: Record<string, WhatsappProviderSender> = {
   meta: sendMetaWhatsApp,
   twilio: sendTwilioWhatsApp,
   infobip: sendInfobipWhatsApp,
+  custom: sendGenericOutboundMessage,
 };
 
 function sanitizeDispatchPhone(raw: string): string {
@@ -39,7 +41,8 @@ async function dispatchViaActiveProvider(to: string, body: string): Promise<Send
   const secrets = await loadWhatsappIntegrationSecrets();
   const accountSecret = secrets.accountSecret ?? "";
 
-  if (!accountSecret || !config.senderId) {
+  const requiresSenderId = config.providerId !== "custom";
+  if (!accountSecret || (requiresSenderId && !config.senderId)) {
     return { sent: false, reason: "not_configured" };
   }
 

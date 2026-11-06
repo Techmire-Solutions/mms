@@ -8,6 +8,7 @@ import { sendMsg91Sms } from "../sms/providers/msg91Provider.js";
 import { sendInfobipSms } from "../sms/providers/infobipProvider.js";
 import { sendTelesignSms } from "../sms/providers/telesignProvider.js";
 import { sendLogiqueuesSms } from "../sms/providers/logiqueuesProvider.js";
+import { sendGenericOutboundMessage } from "../messagingOutboundProvider.js";
 import type { SmsProviderSender } from "../sms/providers/types.js";
 
 export interface SendPlatformSmsInput {
@@ -28,6 +29,7 @@ const PROVIDER_SENDERS: Record<string, SmsProviderSender> = {
   infobip: sendInfobipSms,
   telesign: sendTelesignSms,
   logiqueues: sendLogiqueuesSms,
+  custom: sendGenericOutboundMessage,
 };
 
 async function dispatchViaActiveProvider(to: string, body: string): Promise<SendPlatformSmsResult> {
@@ -35,7 +37,8 @@ async function dispatchViaActiveProvider(to: string, body: string): Promise<Send
   const secrets = await loadPlatformSmsIntegrationSecrets();
   const accountSecret = secrets.accountSecret ?? "";
 
-  if (!accountSecret || !config.senderId) {
+  const requiresSenderId = config.providerId !== "custom" && config.providerId !== "logiqueues";
+  if (!accountSecret || (requiresSenderId && !config.senderId)) {
     return { sent: false, reason: "not_configured" };
   }
 

@@ -13,12 +13,19 @@ export async function sendLogiqueuesSms(
   body: string,
   creds: SmsProviderCredentials,
 ): Promise<SmsSendResult> {
-  let baseUrl: string;
+  let targetUrl: string;
   try {
-    baseUrl = safeExternalHttpUrl(
-      creds.apiBaseUrl?.trim() || DEFAULT_BASE_URL,
-      "Logiqueues API base URL",
-    );
+    const rawUrl = creds.apiBaseUrl?.trim() || DEFAULT_BASE_URL;
+    const validated = safeExternalHttpUrl(rawUrl, "Logiqueues API base URL");
+    // If the user already provided an endpoint path (e.g. /messages, /messages/sms, /sms, /smart),
+    // use it directly without appending duplicate /messages.
+    targetUrl =
+      validated.endsWith("/messages") ||
+      validated.includes("/messages/") ||
+      validated.endsWith("/sms") ||
+      validated.endsWith("/smart")
+        ? validated
+        : `${validated}/messages`;
   } catch (error) {
     return {
       success: false,
@@ -26,7 +33,7 @@ export async function sendLogiqueuesSms(
     };
   }
 
-  const response = await fetchSafeExternal(`${baseUrl}/messages`, {
+  const response = await fetchSafeExternal(targetUrl, {
     method: "POST",
     headers: {
       Authorization: `Bearer ${creds.accountSecret}`,

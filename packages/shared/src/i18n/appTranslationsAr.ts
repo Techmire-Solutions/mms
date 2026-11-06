@@ -3202,6 +3202,9 @@ export const APP_TRANSLATIONS_AR: Record<AppTranslationKey, string> = {
   "sms.provider": "مزود الرسائل النصية",
   "sms.providerInfobip": "Infobip",
   "sms.providerInfobipHint": "استخدم مفتاح API كسر واجهة البرمجة ورابط حسابك الأساسي أدناه.",
+  "sms.providerCustom": "بوابة مخصصة / عامة (رابط مباشر)",
+  "sms.providerCustomHint":
+    "طلب HTTP POST مباشر إلى أي نقطة نهاية بوابة مع مصادقة Bearer وحمولة JSON قياسية.",
   "sms.providerLogiqueues": "Logiqueues",
   "sms.providerLogiqueuesHint":
     "استخدم مفتاح API الذي يبدأ بـ sgw_live_ كسر واجهة البرمجة؛ اترك رابط القاعدة فارغاً إلا إذا كنت تستضيف خادم البوابة بنفسك.",
@@ -3243,6 +3246,9 @@ export const APP_TRANSLATIONS_AR: Record<AppTranslationKey, string> = {
   "whatsapp.providerInfobip": "إنفوبيب واتساب",
   "whatsapp.providerInfobipHint":
     "واجهة برمجة تطبيقات Infobip لواتساب للأعمال. أدخل عنوان URL ورقم المرسل والمفتاح السري.",
+  "whatsapp.providerCustom": "بوابة مخصصة / عامة (رابط مباشر)",
+  "whatsapp.providerCustomHint":
+    "طلب HTTP POST مباشر إلى أي نقطة نهاية بوابة (مثل LogiQueues أو Webhook) مع مصادقة Bearer.",
   "whatsapp.providerMeta": "واجهة ميتا واتساب السحابية",
   "whatsapp.providerMetaHint":
     "واجهة برمجة تطبيقات Meta Cloud المباشرة. أدخل معرّف حساب واتساب ومعرّف رقم الهاتف ورمز الوصول الدائم.",
@@ -5133,6 +5139,10 @@ export const APP_TRANSLATIONS_AR: Record<AppTranslationKey, string> = {
   "messaging.gateways.connected": "متصل",
   "messaging.gateways.configured": "مهيأ",
   "messaging.gateways.notConfigured": "غير مهيأ",
+  "messaging.gateways.configureGateway": "تهيئة البوابة",
+  "messaging.gateways.deliveryStatus": "تسليم القناة",
+  "messaging.gateways.deliveryDisabled": "التسليم عبر هذه القناة معطل حالياً. قم بالتبديل للتفعيل.",
+  "messaging.gateways.manageGateway": "إدارة بوابة {channel}",
   "messaging.gateways.smsUnconfiguredWarning": "تم اختيار وضع البوابة للرسائل القصيرة ولكن البوابة غير مهيأة. ستفشل الرسائل حتى يتم ضبطها.",
   "messaging.gateways.whatsappUnconfiguredWarning": "تم اختيار واتساب كقناة افتراضية ولكن بوابة واتساب غير مهيأة.",
   "messaging.gateways.emailUnconfiguredWarning": "تم اختيار البريد الإلكتروني كقناة افتراضية ولكن بوابة البريد غير مهيأة.",

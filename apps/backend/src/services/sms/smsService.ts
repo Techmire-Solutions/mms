@@ -7,6 +7,7 @@ import { sendMsg91Sms } from "./providers/msg91Provider.js";
 import { sendInfobipSms } from "./providers/infobipProvider.js";
 import { sendTelesignSms } from "./providers/telesignProvider.js";
 import { sendLogiqueuesSms } from "./providers/logiqueuesProvider.js";
+import { sendGenericOutboundMessage } from "../messagingOutboundProvider.js";
 import type { SmsProviderSender } from "./providers/types.js";
 
 export interface SendSmsInput {
@@ -27,6 +28,7 @@ const PROVIDER_SENDERS: Record<string, SmsProviderSender> = {
   infobip: sendInfobipSms,
   telesign: sendTelesignSms,
   logiqueues: sendLogiqueuesSms,
+  custom: sendGenericOutboundMessage,
 };
 
 function sanitizeDispatchPhone(raw: string): string {
@@ -41,7 +43,8 @@ async function dispatchViaActiveProvider(to: string, body: string): Promise<Send
   const secrets = await loadSmsIntegrationSecrets();
   const accountSecret = secrets.accountSecret ?? "";
 
-  if (!accountSecret || !config.senderId) {
+  const requiresSenderId = config.providerId !== "custom" && config.providerId !== "logiqueues";
+  if (!accountSecret || (requiresSenderId && !config.senderId)) {
     return { sent: false, reason: "not_configured" };
   }
 
