@@ -151,7 +151,7 @@ const dashboardRouter = s.router(dashboardContract, {
     try {
       let deleted = false;
       const result = await handleDashboardWrite(request, async (user) => {
-        deleted = await deleteDashboardWidget(id);
+        deleted = await deleteDashboardWidget(id, user.id);
         if (!deleted) return;
         try {
           await auditDashboard(

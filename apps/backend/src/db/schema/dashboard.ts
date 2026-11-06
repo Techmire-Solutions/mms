@@ -9,7 +9,9 @@ import {
   primaryKey,
   varchar,
 } from "drizzle-orm/pg-core";
+import { sql } from "drizzle-orm";
 import { workspaces } from "./platform.js";
+import { softDeleteColumns } from "./softDeleteSchema.js";
 
 /** Dashboard layout/chart preferences — workspace singleton (was document-store `mms_dashboard_preferences`). */
 export const dashboardPreferences = pgTable(
@@ -45,18 +47,16 @@ export const dashboardWidgets = pgTable(
     /** Remaining widget fields (i18n keys, switch/threshold/chart-render settings). */
     config: jsonb("config").$type<Record<string, unknown> | null>(),
     updatedAt: timestamp("updated_at", { withTimezone: true, mode: "date" }).notNull().defaultNow(),
+    ...softDeleteColumns,
   },
   (table) => [
     primaryKey({ columns: [table.workspaceSubdomain, table.id] }),
-    index("dashboard_widgets_workspace_pinned_idx").on(
-      table.workspaceSubdomain,
-      table.isPinnedToDashboard,
-    ),
-    index("dashboard_widgets_workspace_sort_idx").on(
-      table.workspaceSubdomain,
-      table.sortOrder,
-      table.id,
-    ),
+    index("dashboard_widgets_workspace_pinned_sort_idx")
+      .on(table.workspaceSubdomain, table.sortOrder, table.id)
+      .where(sql`${table.deletedAt} IS NULL AND ${table.isPinnedToDashboard} = true`),
+    index("dashboard_widgets_workspace_active_sort_idx")
+      .on(table.workspaceSubdomain, table.sortOrder, table.id)
+      .where(sql`${table.deletedAt} IS NULL`),
   ],
 );
 

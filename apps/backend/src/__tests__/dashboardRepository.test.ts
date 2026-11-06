@@ -8,6 +8,7 @@ import {
   listAllDashboardWidgetsByWorkspace,
   replaceDashboardWidgetsForWorkspace,
   findDashboardWidgetById,
+  restoreDashboardWidgetById,
 } from "../db/repositories/dashboardWidgetsRepository.js";
 import {
   getDashboardPreferencesByWorkspace,
@@ -143,13 +144,28 @@ describe("dashboard repositories", () => {
       expect(mockOnConflictDoUpdate).toHaveBeenCalled();
     });
 
-    it("deleteDashboardWidgetById executes transaction delete", async () => {
-      const mockWhere = vi.fn().mockResolvedValue([]);
-      mockTx.delete.mockReturnValue({ where: mockWhere });
+    it("deleteDashboardWidgetById executes transaction soft delete", async () => {
+      const mockWhere = vi.fn().mockResolvedValue({ rowCount: 1 });
+      const mockSet = vi.fn().mockReturnValue({ where: mockWhere });
+      mockTx.update.mockReturnValue({ set: mockSet });
 
-      await deleteDashboardWidgetById("demo", "custom-1");
+      await deleteDashboardWidgetById("demo", "custom-1", "u-admin");
 
-      expect(mockTx.delete).toHaveBeenCalled();
+      expect(mockTx.update).toHaveBeenCalled();
+      expect(mockSet).toHaveBeenCalled();
+      expect(mockWhere).toHaveBeenCalled();
+    });
+
+    it("restoreDashboardWidgetById restores a soft-deleted widget", async () => {
+      const mockWhere = vi.fn().mockResolvedValue({ rowCount: 1 });
+      const mockSet = vi.fn().mockReturnValue({ where: mockWhere });
+      mockTx.update.mockReturnValue({ set: mockSet });
+
+      const count = await restoreDashboardWidgetById("demo", "custom-1", "u-admin");
+
+      expect(count).toBe(1);
+      expect(mockTx.update).toHaveBeenCalled();
+      expect(mockSet).toHaveBeenCalled();
       expect(mockWhere).toHaveBeenCalled();
     });
 
@@ -167,17 +183,19 @@ describe("dashboard repositories", () => {
       expect(mockSet).toHaveBeenCalledTimes(1);
     });
 
-    it("replaceDashboardWidgetsForWorkspace deletes old rows and inserts new rows during restore", async () => {
-      const mockDeleteWhere = vi.fn().mockResolvedValue([]);
-      mockTx.delete.mockReturnValue({ where: mockDeleteWhere });
-      const mockValues = vi.fn().mockResolvedValue([]);
+    it("replaceDashboardWidgetsForWorkspace soft-deletes old rows and inserts new rows during restore", async () => {
+      const mockUpdateWhere = vi.fn().mockResolvedValue([]);
+      const mockSet = vi.fn().mockReturnValue({ where: mockUpdateWhere });
+      mockTx.update.mockReturnValue({ set: mockSet });
+      const mockOnConflictDoUpdate = vi.fn().mockResolvedValue([]);
+      const mockValues = vi.fn().mockReturnValue({ onConflictDoUpdate: mockOnConflictDoUpdate });
       mockTx.insert.mockReturnValue({ values: mockValues });
 
       await replaceDashboardWidgetsForWorkspace("demo", [
         sampleWidget as unknown as Record<string, unknown>,
       ]);
 
-      expect(mockTx.delete).toHaveBeenCalled();
+      expect(mockTx.update).toHaveBeenCalled();
       expect(mockTx.insert).toHaveBeenCalled();
     });
     it("upsertDashboardWidgetsForWorkspace deduplicates widgets with duplicate IDs (last wins)", async () => {
@@ -238,8 +256,7 @@ describe("dashboard repositories", () => {
         updatedAt: new Date(),
       };
       const mockLimit = vi.fn().mockResolvedValue([dbRow]);
-      const mockOrderBy = vi.fn().mockReturnValue({ limit: mockLimit });
-      const mockWhere = vi.fn().mockReturnValue({ orderBy: mockOrderBy });
+      const mockWhere = vi.fn().mockReturnValue({ limit: mockLimit });
       const mockFrom = vi.fn().mockReturnValue({ where: mockWhere });
       mockTx.select.mockReturnValue({ from: mockFrom });
 
@@ -250,8 +267,7 @@ describe("dashboard repositories", () => {
 
     it("findDashboardWidgetById returns null when no row found", async () => {
       const mockLimit = vi.fn().mockResolvedValue([]);
-      const mockOrderBy = vi.fn().mockReturnValue({ limit: mockLimit });
-      const mockWhere = vi.fn().mockReturnValue({ orderBy: mockOrderBy });
+      const mockWhere = vi.fn().mockReturnValue({ limit: mockLimit });
       const mockFrom = vi.fn().mockReturnValue({ where: mockWhere });
       mockTx.select.mockReturnValue({ from: mockFrom });
 

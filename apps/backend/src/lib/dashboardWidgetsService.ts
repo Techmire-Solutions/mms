@@ -6,6 +6,7 @@ import {
   listDashboardWidgetsByWorkspace,
   upsertDashboardWidgetsForWorkspace,
   deleteDashboardWidgetById,
+  restoreDashboardWidgetById,
   reorderDashboardWidgetsForWorkspace,
 } from "../db/repositories/dashboardWidgetsRepository.js";
 
@@ -35,10 +36,16 @@ export async function reorderDashboardWidgets(
   await reorderDashboardWidgetsForWorkspace(requireTenant(), order);
 }
 
-/** Delete a single widget by id; false when it did not exist. Caller broadcasts after commit. */
-export async function deleteDashboardWidget(id: string): Promise<boolean> {
-  const deleted = await deleteDashboardWidgetById(requireTenant(), id);
+/** Soft-delete a single widget by id; false when it did not exist. Caller broadcasts after commit. */
+export async function deleteDashboardWidget(id: string, deletedBy?: string): Promise<boolean> {
+  const deleted = await deleteDashboardWidgetById(requireTenant(), id, deletedBy);
   return deleted > 0;
+}
+
+/** Restore a previously soft-deleted widget by id. Caller broadcasts after commit. */
+export async function restoreDashboardWidget(id: string, restoredBy?: string): Promise<boolean> {
+  const restored = await restoreDashboardWidgetById(requireTenant(), id, restoredBy);
+  return restored > 0;
 }
 
 /** Post-commit live-update broadcast for dashboard widget config changes. */

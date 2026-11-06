@@ -17,9 +17,15 @@ const state: { rows: Array<Record<string, unknown>> } = { rows: [] };
 
 const mockTx = {
   delete: vi.fn(() => ({ where: vi.fn().mockResolvedValue([]) })),
+  update: vi.fn(() => ({
+    set: vi.fn(() => ({ where: vi.fn().mockResolvedValue([]) })),
+  })),
   insert: vi.fn(() => ({
-    values: vi.fn(async (rows: Array<Record<string, unknown>>) => {
+    values: vi.fn((rows: Array<Record<string, unknown>>) => {
       state.rows = rows;
+      return {
+        onConflictDoUpdate: vi.fn().mockResolvedValue([]),
+      };
     }),
   })),
   select: vi.fn(() => ({
