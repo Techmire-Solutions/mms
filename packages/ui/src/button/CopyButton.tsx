@@ -6,7 +6,8 @@ import { cn } from "../utils";
 export interface CopyButtonProps {
   text: string;
   className?: string;
-  variant?: "ghost" | "outline" | "default";
+  /** Secondary-action styling only: a solid primary fill makes the muted icon unreadable. */
+  variant?: "ghost" | "outline";
   /** When set, render a visible labeled button (icon + this text) instead of icon-only. */
   label?: string;
   /** Copied-state label shown when `label` is provided. */
@@ -20,9 +21,6 @@ export interface CopyButtonProps {
 }
 
 export type CopyBtnProps = CopyButtonProps;
-
-const DEFAULT_ICON_BTN_CLASS =
-  "min-h-11 min-w-11 rounded-xl border border-muted-foreground/30 bg-muted-foreground/5 text-muted-foreground hover:text-foreground hover:bg-muted-foreground/15 hover:border-muted-foreground/40 shadow-none transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-1 touch-manipulation cursor-pointer";
 
 /**
  * Reusable copy-to-clipboard control with feedback icon.
@@ -65,7 +63,7 @@ export function CopyButton({
         onClick={handleCopy}
         aria-label={copied ? (labelCopied ?? label) : label}
         aria-live="polite"
-        className={cn("gap-1.5 text-xs font-semibold rounded-xl cursor-pointer", className)}
+        className={cn("gap-1.5 text-xs font-semibold cursor-pointer", className)}
       >
         {copied ? (
           <Check className="w-3.5 h-3.5 text-success" aria-hidden="true" />
@@ -82,12 +80,13 @@ export function CopyButton({
       type="button"
       data-copy={text}
       onClick={handleCopy}
-      variant={variant}
+      variant={variant ?? "outline"}
+      size="icon"
       title={copied ? titleCopied : title}
       aria-label={copied ? titleCopied : title}
       aria-live="polite"
       className={cn(
-        DEFAULT_ICON_BTN_CLASS,
+        "text-muted-foreground",
         "opacity-100 md:opacity-0 md:group-hover:opacity-100 md:focus-within:opacity-100 transition-opacity",
         className,
       )}

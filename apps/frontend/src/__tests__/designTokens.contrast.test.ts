@@ -1,7 +1,13 @@
 import { describe, expect, it } from "vitest";
 import { readFileSync, readdirSync } from "node:fs";
 import path from "node:path";
-import { getContrastRatio, MAX_RESTING_TINT_BY_MODE } from "@mms/shared";
+import {
+  buildBrandingCssVariables,
+  getContrastRatio,
+  hslColorToHex,
+  MAX_RESTING_TINT_BY_MODE,
+} from "@mms/shared";
+import { buttonVariants } from "@shared/ui";
 
 /**
  * The tint-contract case reads every source file synchronously. It takes well under a second on
@@ -298,5 +304,268 @@ describe("design tokens — locale typography", () => {
   it("scopes the Amiri display stack to the locales that load it", () => {
     expect(css).toMatch(/\[lang="ar"\][^{]*\{[^}]*--font-display:[^;]*Amiri/);
     expect(css).toMatch(/\[lang="ur"\][^{]*\{[^}]*--font-display:[^;]*Amiri/);
+  });
+});
+
+/**
+ * Button state contract (2026-11-06 audit).
+ *
+ * `--button-<role>-hover/active` are the only sanctioned solid-fill hover/active
+ * colours. They derive from the role's fill token with a mode-matched anchor
+ * (black in light mode, white in dark), so a hover/active step always moves away
+ * from the label and can never reduce contrast. The old `hover:bg-primary/90`
+ * composited against whatever surface sat behind the button; on the dark card it
+ * dropped `success` to 4.34:1.
+ */
+type ButtonStateDeclaration = {
+  role: string;
+  state: "hover" | "active";
+  strength: number;
+  anchor: "black" | "white";
+};
+
+function readButtonStateDeclarations(selector: string): ButtonStateDeclaration[] {
+  const escaped = selector.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+  const located = new RegExp(`^\\s*${escaped}\\s*\\{`, "m").exec(css);
+  if (!located) throw new Error(`Selector ${selector} not found in index.css`);
+  const open = css.indexOf("{", located.index);
+  const close = css.indexOf("}", open);
+  const block = css.slice(open + 1, close);
+
+  const declarations: ButtonStateDeclaration[] = [];
+  const pattern =
+    /--button-([a-z]+)-(hover|active):\s*color-mix\(\s*in srgb,\s*hsl\(var\(--([a-z]+)\)\)\s+(\d+)%,\s*(black|white)\s*\)/g;
+  for (const match of block.matchAll(pattern)) {
+    const [, role, state, source, strength, anchor] = match;
+    expect(source, `--button-${role}-${state} must derive from --${role}`).toBe(role);
+    declarations.push({
+      role,
+      state: state as ButtonStateDeclaration["state"],
+      strength: Number(strength) / 100,
+      anchor: anchor as ButtonStateDeclaration["anchor"],
+    });
+  }
+  return declarations;
+}
+
+/** Solid variants and the role token pair their fill/label come from. */
+const BUTTON_SOLID_BY_VARIANT: Record<string, string> = {
+  default: "primary",
+  primary: "primary",
+  destructive: "destructive",
+  danger: "destructive",
+  secondary: "secondary",
+  success: "success",
+  capsPrimary: "primary",
+};
+
+/** Tinted "caps" variants: `bg-<role>/10 text-<role>`, hover `/15`. */
+const BUTTON_TINTED_BY_VARIANT: Record<string, string> = {
+  capsSuccess: "success",
+  capsDestructive: "destructive",
+  capsAccent: "primary",
+};
+
+const BUTTON_SOLID_ROLES = ["primary", "secondary", "destructive", "success"] as const;
+
+describe.each([
+  ["light", light, ":root", "black"],
+  ["dark", dark, ".dark", "white"],
+] as const)("button variants — %s theme", (themeName, tokens, selector, expectedAnchor) => {
+  const declarations = readButtonStateDeclarations(selector);
+
+  it("declares hover and active state tokens for every solid role", () => {
+    for (const role of BUTTON_SOLID_ROLES) {
+      for (const state of ["hover", "active"] as const) {
+        const declaration = declarations.find((d) => d.role === role && d.state === state);
+        if (!declaration) {
+          throw new Error(`missing --button-${role}-${state} in ${selector}`);
+        }
+        expect(declaration.anchor).toBe(expectedAnchor);
+        expect(declaration.strength).toBeGreaterThan(0);
+        expect(declaration.strength).toBeLessThan(1);
+      }
+    }
+  });
+
+  it("keeps every solid variant at AA in default, hover and active", () => {
+    for (const [variant, role] of Object.entries(BUTTON_SOLID_BY_VARIANT)) {
+      const baseFill = hex(tokens, role);
+      const foreground = hex(tokens, `${role}-foreground`);
+      const variantClass = buttonVariants({ variant: variant as never });
+
+      assertAtLeast(
+        getContrastRatio(foreground, baseFill),
+        AA_TEXT,
+        `${themeName} ${variant} default`,
+      );
+
+      for (const state of ["hover", "active"] as const) {
+        const declaration = declarations.find((d) => d.role === role && d.state === state)!;
+        const anchor = declaration.anchor === "black" ? "#000000" : "#ffffff";
+        const stateFill = tintOver(baseFill, anchor, declaration.strength);
+        assertAtLeast(
+          getContrastRatio(foreground, stateFill),
+          AA_TEXT,
+          `${themeName} ${variant} ${state}`,
+        );
+
+        expect(variantClass, `${variant} must use the ${state} token`).toContain(
+          `bg-button-${role}-${state}`,
+        );
+      }
+
+      expect(variantClass, `${variant} must reset its fill while disabled`).toContain(
+        `disabled:bg-${role}`,
+      );
+    }
+  });
+
+  it("keeps tinted caps variants at AA at rest and on their /15 hover tint", () => {
+    for (const [variant, role] of Object.entries(BUTTON_TINTED_BY_VARIANT)) {
+      const roleHex = hex(tokens, role);
+      const variantClass = buttonVariants({ variant: variant as never });
+
+      for (const surface of ["card", "background"] as const) {
+        const surfaceHex = hex(tokens, surface);
+        for (const alpha of [0.1, MAX_RESTING_TINT_BY_MODE[themeName]]) {
+          const tinted = tintOver(roleHex, surfaceHex, alpha);
+          assertAtLeast(
+            getContrastRatio(roleHex, tinted),
+            AA_TEXT,
+            `${themeName} ${variant} on ${Math.round(alpha * 100)}% tint over --${surface}`,
+          );
+        }
+      }
+
+      expect(variantClass).toContain(`bg-${role}/10`);
+      expect(variantClass).toContain(`hover:bg-${role}/15`);
+      expect(variantClass).toContain(`disabled:bg-${role}/10`);
+    }
+  });
+
+  it("keeps outline, ghost and link labels legible on every surface and hover fill", () => {
+    const foreground = hex(tokens, "foreground");
+    const primary = hex(tokens, "primary");
+    const muted = hex(tokens, "muted");
+
+    for (const surface of ["card", "background"] as const) {
+      const surfaceHex = hex(tokens, surface);
+      assertAtLeast(
+        getContrastRatio(foreground, surfaceHex),
+        AA_TEXT,
+        `${themeName} outline/ghost label on --${surface}`,
+      );
+      assertAtLeast(
+        getContrastRatio(primary, surfaceHex),
+        AA_TEXT,
+        `${themeName} link label on --${surface}`,
+      );
+    }
+    assertAtLeast(getContrastRatio(foreground, muted), AA_TEXT, `${themeName} ghost/outline hover`);
+
+    for (const variant of ["outline", "ghost"] as const) {
+      const variantClass = buttonVariants({ variant });
+      expect(variantClass).toContain("hover:bg-muted");
+      expect(variantClass).toContain("disabled:bg-transparent");
+    }
+    const linkClass = buttonVariants({ variant: "link" });
+    expect(linkClass).toContain("hover:underline");
+    expect(linkClass).toContain("disabled:no-underline");
+  });
+
+  it("keeps the focus ring visible against both page surfaces", () => {
+    for (const surface of ["card", "background"] as const) {
+      assertAtLeast(
+        getContrastRatio(hex(tokens, "ring"), hex(tokens, surface)),
+        AA_NON_TEXT,
+        `${themeName} --ring on --${surface}`,
+      );
+    }
+  });
+});
+
+describe("button variants — shared contract", () => {
+  const base = buttonVariants({});
+
+  it("resolves shape and focus from the centralized tokens", () => {
+    expect(base).toContain("rounded-lg");
+    expect(base).not.toContain("rounded-xl");
+    expect(base).toContain("focus-visible:ring-2");
+    expect(base).toContain("focus-visible:ring-ring");
+    expect(base).toContain("focus-visible:ring-offset-2");
+    // Without this the offset falls back to Tailwind's #fff, which is 1.95:1
+    // against the dark ring.
+    expect(base).toContain("focus-visible:ring-offset-background");
+  });
+
+  it("defines pressed, disabled and busy feedback in the base", () => {
+    expect(base).toContain("active:scale-tap");
+    expect(base).toContain("disabled:scale-100");
+    expect(base).toContain("disabled:cursor-not-allowed");
+    expect(base).toContain("disabled:opacity-50");
+    expect(base).toContain("transition");
+    expect(base).toContain("duration-fast");
+    expect(base).toContain("ease-calm");
+    expect(base).toContain("motion-reduce:transition-none");
+  });
+
+  it("gives every variant hover, active and disabled feedback", () => {
+    for (const variant of [
+      "default",
+      "primary",
+      "destructive",
+      "danger",
+      "secondary",
+      "outline",
+      "ghost",
+      "link",
+      "success",
+      "capsPrimary",
+      "capsOutline",
+      "capsGhost",
+      "capsSuccess",
+      "capsDestructive",
+      "capsAccent",
+    ] as const) {
+      const variantClass = buttonVariants({ variant });
+      expect(variantClass, `${variant} has no hover state`).toMatch(/\bhover:/);
+      expect(variantClass, `${variant} has no active state`).toMatch(/\bactive:/);
+      expect(variantClass, `${variant} has no disabled reset`).toMatch(/\bdisabled:/);
+    }
+  });
+});
+
+describe("branding — button state anchor invariant", () => {
+  /**
+   * The CSS hover/active tokens use a fixed anchor: black in light mode, white in
+   * dark. That is only safe while the branding pipeline keeps the same ink
+   * polarity (light = white label, dark = dark label). Sample the real pipeline
+   * rather than assuming it.
+   */
+  it("always emits white labels in light mode and dark labels in dark mode", () => {
+    for (const hue of [0, 42, 158, 217]) {
+      for (const lightness of [15, 30, 45, 60, 75]) {
+        for (const saturation of [20, 60, 95]) {
+          const primary = hslColorToHex({ h: hue, s: saturation, l: lightness });
+          const secondary = hslColorToHex({
+            h: (hue + 40) % 360,
+            s: saturation,
+            l: Math.max(10, lightness - 15),
+          });
+          for (const mode of ["light", "dark"] as const) {
+            const vars = buildBrandingCssVariables(primary, secondary, mode);
+            for (const role of BUTTON_SOLID_ROLES) {
+              const label = vars[`--${role}-foreground`];
+              const labelLightness = parseFloat(label.split(/\s+/)[2]);
+              expect(
+                labelLightness,
+                `${mode} ${role} label for h${hue} s${saturation} l${lightness} is ${label}`,
+              ).toBe(mode === "light" ? 100 : 12);
+            }
+          }
+        }
+      }
+    }
   });
 });
