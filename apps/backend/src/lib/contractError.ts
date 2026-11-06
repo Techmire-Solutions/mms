@@ -25,7 +25,7 @@ interface ContractErrorBody {
  *     });
  *   }
  */
-const CLIENT_ERROR_STATUSES = new Set([400, 401, 403, 404, 409, 422, 429]);
+const CLIENT_ERROR_STATUSES = new Set([400, 401, 403, 404, 409, 422, 428, 429]);
 
 export function handleContractError(
   request: FastifyRequest,

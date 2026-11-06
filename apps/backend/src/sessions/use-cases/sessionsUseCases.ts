@@ -3,7 +3,7 @@ import { sessionsRepository } from "../repository/sessionsRepositoryAdapter.js";
 import { getRequestTenant } from "../../lib/tenantContext.js";
 import { broadcastCollection } from "../../lib/livePush.js";
 import { createGenericRelationalService } from "../../services/genericRelationalService.js";
-import { ConflictError, NotFoundError, ValidationError } from "../../lib/httpErrors.js";
+import { ConflictError, HttpDomainError, NotFoundError, ValidationError } from "../../lib/httpErrors.js";
 import { invalidateMultiTierCache } from "../../lib/cache/index.js";
 import { recordModernAuditEvent } from "../../services/auditTrailService.js";
 import {
@@ -14,6 +14,11 @@ import {
 } from "./sessionLockGuard.js";
 import { onSessionsCancelled } from "./sessionLifecycleOpsUseCases.js";
 import { createSessionReadUseCases } from "./sessionReadUseCases.js";
+import {
+  assertSessionOverlapFree,
+  loadSessionOverlapExemption,
+  type OverlapGuardDependencies,
+} from "./sessionOverlapGuard.js";
 import {
   sessionRecordSchema,
   type SessionRecord,
@@ -28,7 +33,7 @@ import {
   type Session,
 } from "@mms/shared";
 
-interface SessionsUseCasesDependencies {
+interface SessionsUseCasesDependencies extends OverlapGuardDependencies {
   findFacultyByIds?: (
     tenant: string,
     ids: string[],
@@ -101,8 +106,12 @@ export function createSessionsUseCases(
       }
       await validateActiveFacultyForeignKeys(tenant, record);
       assertSessionDateRange(record);
+      // `allowOverlap` is materialised per row; when it is off, overlapping live sessions are refused.
+      const allowOverlap = await loadSessionOverlapExemption(tenant, deps);
+      await assertSessionOverlapFree(repo, tenant, { ...record, overlapExempt: allowOverlap }, allowOverlap);
       return crud.create({
         ...record,
+        overlapExempt: allowOverlap,
         status: normalizeSessionStatus(record.status),
       } as SessionRecord);
     },
@@ -111,12 +120,15 @@ export function createSessionsUseCases(
       body: SessionUpdateBody | Partial<SessionRecord>,
       lock: SessionLockContext = { canOverrideLock: false },
       expectedUpdatedAt?: string,
+      expectedVersion?: number,
     ): Promise<SessionRecord | null> => {
       const tenant = getRequestTenant();
       if (!tenant) throw new Error("Tenant context required");
       const expected = expectedUpdatedAt?.trim();
       if (expected && Number.isNaN(Date.parse(expected)))
         throw new ValidationError("Invalid x-expected-updated-at header");
+      if (expectedVersion !== undefined && !Number.isInteger(expectedVersion))
+        throw new ValidationError("Invalid x-expected-version header");
       const { lockOverrideReason, ...record } = body as SessionUpdateBody;
       const next = {
         ...record,
@@ -131,22 +143,44 @@ export function createSessionsUseCases(
         lockOverrideReason: lockOverrideReason ?? lock.lockOverrideReason,
       });
       assertSessionDateRange({ ...before, ...next });
+      // A PUT without a concurrency token is an unconditional overwrite — refuse it instead of
+      // silently losing a concurrent edit (mms-api-interface §6). Checked after payload validation
+      // so an invalid body still reports its own 400 rather than a precondition error.
+      if (!expected && expectedVersion === undefined)
+        throw new HttpDomainError(
+          428,
+          "precondition_required",
+          "Send x-expected-version (or x-expected-updated-at) with the value you read before saving",
+        );
+      const allowOverlap = await loadSessionOverlapExemption(tenant, deps);
+      await assertSessionOverlapFree(
+        repo,
+        tenant,
+        { ...before, ...next, overlapExempt: allowOverlap },
+        allowOverlap,
+      );
 
       const merged: Record<string, unknown> = { ...before };
       for (const [key, value] of Object.entries(next)) {
         if (value !== undefined) merged[key] = value;
       }
+      merged.overlapExempt = allowOverlap;
       const normalized = normalizeStoredSession(
         sessionRecordSchema.parse({ ...merged, id }),
       ) as SessionRecord;
       // The version predicate lives in the repository's row-locked write (OCC 409).
+      const occOptions = {
+        ...(expected ? { expectedUpdatedAt: expected } : {}),
+        ...(expectedVersion !== undefined ? { expectedVersion } : {}),
+      };
       const savedUpdatedAt = await repo.saveSession(
         tenant,
         normalized,
-        expected ? { expectedUpdatedAt: expected } : undefined,
+        Object.keys(occOptions).length > 0 ? occOptions : undefined,
       );
       // Return the version the DB actually wrote so the next save can use it as its OCC token.
       normalized.updatedAt = savedUpdatedAt;
+      normalized.version = Number(before.version ?? 1) + 1;
       await broadcastCollection("sessions");
       await invalidateMultiTierCache({ tenantId: tenant, domain: "sessions", key: id });
       if (next.status === "cancelled" && before.status !== "cancelled")

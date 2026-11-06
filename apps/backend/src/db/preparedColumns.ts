@@ -69,6 +69,8 @@ export const preparedSessionColumns = {
   description: sessions.description,
   minAttendancePct: sessions.minAttendancePct,
   requiresExamPass: sessions.requiresExamPass,
+  version: sessions.version,
+  overlapExempt: sessions.overlapExempt,
   deletedAt: sessions.deletedAt,
   deletedBy: sessions.deletedBy,
   deletionReason: sessions.deletionReason,

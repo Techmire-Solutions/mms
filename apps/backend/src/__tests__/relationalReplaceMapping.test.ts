@@ -98,6 +98,23 @@ describe("RELATIONAL_REPLACE_MAPPING backup coverage", () => {
     ).toEqual(["contacts", "students", "message_logs", "users"]);
   });
 
+  it("restores sessions before every collection that references them", () => {
+    // sessions replaces by archiving stale rows, so it must run before the modules whose rows
+    // point at sessions/session_classes (attendance, enrollments, exams, hasanat, finance).
+    expect(
+      sortCollectionNamesForRestore([
+        "enrollments",
+        "attendance_records",
+        "exams",
+        "sessions",
+      ]),
+    ).toEqual(["sessions", "attendance_records", "enrollments", "exams"]);
+    expect(RELATIONAL_REPLACE_MAPPING.sessions?.priority).toBeLessThan(
+      RELATIONAL_REPLACE_MAPPING.attendance_lookups?.priority ??
+        Number.POSITIVE_INFINITY,
+    );
+  });
+
   it("expands missing snapshotted collections to [] when users mark a full restore", () => {
     const expanded = withCompleteRelationalRestoreCollections({
       users: [{ id: "u-1" }],

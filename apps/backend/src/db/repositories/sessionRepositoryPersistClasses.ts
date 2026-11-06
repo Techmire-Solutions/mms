@@ -90,6 +90,7 @@ export async function persistSessionClassesTx(
   }
 
   const childRows = emptyClassChildRows();
+  const now = new Date();
   for (let idx = 0; idx < payload.length; idx++) {
     const c = payload[idx];
     const values = {
@@ -102,7 +103,7 @@ export async function persistSessionClassesTx(
       // Class capacity is the sum of its sections when sections are sent.
       capacity: c.sections?.length
         ? c.sections.reduce((total, section) => total + Math.max(0, section.capacity ?? 0), 0)
-        : (c.maxStudents ?? 30),
+        : Math.max(0, c.maxStudents ?? 30),
       enrollmentDeadline: c.enrollmentDeadline || "",
       status: c.status || "active",
       facultyId: c.facultyId?.trim() ? c.facultyId.trim() : null,
@@ -110,6 +111,7 @@ export async function persistSessionClassesTx(
       room: c.room || "",
       programId: c.programId || null,
       sortOrder: idx,
+      updatedAt: now,
     };
     // `enrolled` is derived from enrollments on read; never trusted from the client.
     await tx
@@ -117,7 +119,8 @@ export async function persistSessionClassesTx(
       .values({ id: c.id, workspaceSubdomain: subdomain, enrolled: 0, ...values })
       .onConflictDoUpdate({
         target: [sessionClasses.workspaceSubdomain, sessionClasses.sessionId, sessionClasses.id],
-        set: values,
+        // `version` advances on every class write so class-only readers get a real OCC token.
+        set: { ...values, version: sql`${sessionClasses.version} + 1` },
       });
     await persistClassSectionsTx(
       tx,

@@ -5,6 +5,7 @@ export {
   findSessionsByIds,
   findSessionsSummaryByIds,
   findSessionStatusesByIds,
+  findOverlappingSessions,
 } from "./sessionRepositoryQueries.js";
 export {
   saveSession,

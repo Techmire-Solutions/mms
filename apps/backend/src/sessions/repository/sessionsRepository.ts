@@ -15,24 +15,46 @@ import type {
  * interface (never on Drizzle directly), and the Drizzle-backed adapter is the
  * only implementation. Tests can inject a fake repository at the seam.
  */
+export interface SessionOverlapQuery {
+  startDate?: string | null;
+  endDate?: string | null;
+  excludeId?: string;
+}
+
+export interface OverlappingSession {
+  id: string;
+  name: string;
+  startDate: string | null;
+  endDate: string | null;
+  status: string;
+}
+
 export interface SessionsRepository {
   listSessionsByWorkspace(tenant: string): Promise<Session[]>;
   findSessionById(tenant: string, id: string): Promise<Session | null>;
   findSessionsByIds(tenant: string, ids: string[]): Promise<Session[]>;
   /** Stored status per id (one query) for bulk lifecycle transitions. */
   findSessionStatusesByIds(tenant: string, ids: string[]): Promise<Map<string, string>>;
-  /** `expectedUpdatedAt` is the OCC token the caller read; a mismatch throws `ConflictError`. */
+  /** Live sessions whose inclusive date range intersects the requested one (overlap guard). */
+  findOverlappingSessions(
+    tenant: string,
+    input: SessionOverlapQuery,
+  ): Promise<OverlappingSession[]>;
+  /**
+   * `expectedVersion` is the monotonic OCC token the caller read; `expectedUpdatedAt` is the
+   * legacy token, still accepted for one release. A mismatch throws `ConflictError`.
+   */
   saveSession(
     tenant: string,
     record: Session,
-    options?: { expectedUpdatedAt?: string },
+    options?: { expectedUpdatedAt?: string; expectedVersion?: number },
   ): Promise<string>;
   /** Targeted start/end update used by postpone (keeps the aggregate untouched). */
   updateSessionDates(
     tenant: string,
     id: string,
     dates: { startDate: string | null; endDate: string | null },
-    options?: { expectedUpdatedAt?: string },
+    options?: { expectedUpdatedAt?: string; expectedVersion?: number },
   ): Promise<boolean>;
   listSessionsPage(tenant: string, query: SessionsListQuery): Promise<SessionsListPageResult>;
   countSessionsActive(tenant: string): Promise<number>;

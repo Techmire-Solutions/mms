@@ -27,6 +27,10 @@ export const RELATIONAL_REPLACE_MAPPING_PERSON: Record<string, RelationalCollect
     snapshotFnName: "listFacultyByWorkspace",
   },
   sessions: {
+    // Must run before its dependants (attendance, enrollments, exams, hasanat, finance): a session
+    // replace archives stale sessions instead of hard-deleting them (migration 0206 review), and
+    // its class rewrite is guarded by those modules' FKs.
+    priority: 31,
     importPath: "./repositories/sessionRepository.js",
     fnName: "replaceSessionsForWorkspace",
     snapshotFnName: "listSessionsByWorkspace",

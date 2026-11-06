@@ -70,7 +70,9 @@ export const enrollments = pgTable(
     foreignKey({
       columns: [table.workspaceSubdomain, table.sessionId],
       foreignColumns: [sessions.workspaceSubdomain, sessions.id],
-    }).onDelete("cascade"),
+      // Deferrable NO ACTION (migration 0206): a hard delete must not vaporise enrollment history,
+      // but whole-workspace cascades and ordered purges still resolve within one transaction.
+    }).onDelete("no action"),
     foreignKey({
       name: "enrollments_session_class_fk",
       columns: [table.workspaceSubdomain, table.sessionId, table.classId],

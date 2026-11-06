@@ -66,7 +66,9 @@ export async function hydrateSessionsListBatched(
         room: sessionClasses.room,
         programId: sessionClasses.programId,
         sortOrder: sessionClasses.sortOrder,
+        version: sessionClasses.version,
         createdAt: sessionClasses.createdAt,
+        updatedAt: sessionClasses.updatedAt,
       })
       .from(sessionClasses)
       .where(

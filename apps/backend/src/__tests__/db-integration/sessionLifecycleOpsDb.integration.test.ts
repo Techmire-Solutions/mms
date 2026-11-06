@@ -77,6 +77,9 @@ beforeAll(async () => {
         startDate,
         endDate: id === "ses-new" ? inDays(40) : "2026-12-31",
         baseFee: 1000,
+        // This fixture deliberately runs two live sessions in parallel (postpone/close targets),
+        // which is exactly what the `allowOverlap` exemption exists for (migration 0206).
+        overlapExempt: true,
         classes: [
           {
             id: `${id}-cls`,

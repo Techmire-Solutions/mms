@@ -1,4 +1,5 @@
 import {
+  check,
   date,
   foreignKey,
   index,
@@ -39,6 +40,24 @@ export const academicCalendarEvents = pgTable(
   },
   (table) => [
     primaryKey({ columns: [table.workspaceSubdomain, table.id] }),
+    // Mirrors of the DB constraints created by migration 0170 (mms-schema-migrate §1).
+    check(
+      "academic_calendar_events_kind_check",
+      sql`${table.kind} IN ('holiday', 'makeup_day', 'exam_period', 'event')`,
+    ),
+    check(
+      "academic_calendar_events_scope_check",
+      sql`${table.scope} IN ('workspace', 'session', 'class', 'section')`,
+    ),
+    check("academic_calendar_events_period_check", sql`${table.endOn} >= ${table.startOn}`),
+    check("academic_calendar_events_title_not_blank_check", sql`btrim(${table.title}) <> ''`),
+    check(
+      "academic_calendar_events_scope_refs_check",
+      sql`(${table.scope} = 'workspace' AND ${table.sessionId} IS NULL AND ${table.classId} IS NULL AND ${table.sectionId} IS NULL)
+        OR (${table.scope} = 'session' AND ${table.sessionId} IS NOT NULL AND ${table.classId} IS NULL AND ${table.sectionId} IS NULL)
+        OR (${table.scope} = 'class' AND ${table.sessionId} IS NOT NULL AND ${table.classId} IS NOT NULL AND ${table.sectionId} IS NULL)
+        OR (${table.scope} = 'section' AND ${table.sessionId} IS NOT NULL AND ${table.classId} IS NOT NULL AND ${table.sectionId} IS NOT NULL)`,
+    ),
     foreignKey({
       name: "academic_calendar_events_session_fk",
       columns: [table.workspaceSubdomain, table.sessionId],

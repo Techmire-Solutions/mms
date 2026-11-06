@@ -1,5 +1,6 @@
 import {
   boolean,
+  check,
   index,
   integer,
   pgTable,
@@ -43,6 +44,9 @@ function academicCatalogTable<TName extends string>(name: TName) {
     },
     (table) => [
       primaryKey({ columns: [table.workspaceSubdomain, table.id] }),
+      // Mirrors of the DB constraints created by migration 0166 (mms-schema-migrate §1).
+      check(`${name}_status_check`, sql`${table.status} IN ('active', 'archived')`),
+      check(`${name}_name_not_blank_check`, sql`btrim(${table.name}) <> ''`),
       index(`${name}_workspace_deleted_idx`).on(table.workspaceSubdomain, table.deletedAt),
       index(`${name}_workspace_active_idx`)
         .on(table.workspaceSubdomain, table.status, table.sortOrder)
@@ -53,6 +57,11 @@ function academicCatalogTable<TName extends string>(name: TName) {
       uniqueIndex(`${name}_workspace_name_active_uidx`)
         .on(table.workspaceSubdomain, sql`lower(btrim(${table.name}))`)
         .where(sql`${table.deletedAt} is null`),
+      uniqueIndex(`${name}_workspace_code_active_uidx`)
+        .on(table.workspaceSubdomain, sql`lower(btrim(${table.code}))`)
+        .where(
+          sql`${table.deletedAt} is null AND ${table.code} IS NOT NULL AND btrim(${table.code}) <> ''`,
+        ),
     ],
   );
 }
