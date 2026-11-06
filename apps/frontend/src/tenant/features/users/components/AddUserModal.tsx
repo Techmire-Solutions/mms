@@ -90,7 +90,7 @@ export function AddUserModal({
               {ADD_USER_MODAL_STEP_DEFS.map((stepDefinition) => (
                 <div
                   key={stepDefinition.id}
-                  className={`h-1.5 rounded-full transition-all ${
+                  className={`h-1.5 rounded-xs transition-all ${
                     step === stepDefinition.id
                       ? "w-3 bg-primary"
                       : step > stepDefinition.id

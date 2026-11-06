@@ -69,12 +69,12 @@ export function BrandSaveCustomPresetModal({
         <div className="flex items-center gap-3 p-3 rounded-xl border border-border/80 bg-muted/30">
           <div className="flex items-center -space-x-2 rtl:space-x-reverse">
             <span
-              className="h-8 w-8 rounded-full border-2 border-background shadow-xs shrink-0"
+              className="h-8 w-8 rounded-md border-2 border-background shadow-xs shrink-0"
               style={{ backgroundColor: primaryColor }}
               aria-label={primaryColor}
             />
             <span
-              className="h-8 w-8 rounded-full border-2 border-background shadow-xs shrink-0"
+              className="h-8 w-8 rounded-md border-2 border-background shadow-xs shrink-0"
               style={{ backgroundColor: secondaryColor }}
               aria-label={secondaryColor}
             />

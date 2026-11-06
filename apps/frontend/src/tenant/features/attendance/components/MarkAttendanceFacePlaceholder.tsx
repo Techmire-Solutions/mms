@@ -23,7 +23,7 @@ export function MarkAttendanceFacePlaceholder({
       accentColor="primary"
       className="p-6 text-center space-y-4 shadow-sm"
     >
-      <div className="w-16 h-16 rounded-full bg-primary/10 flex items-center justify-center mx-auto">
+      <div className="w-16 h-16 rounded-2xl bg-primary/10 flex items-center justify-center mx-auto">
         <Scan className="w-8 h-8 text-primary" aria-hidden="true" />
       </div>
       <div>

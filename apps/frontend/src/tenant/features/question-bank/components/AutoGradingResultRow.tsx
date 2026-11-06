@@ -54,7 +54,7 @@ export function AutoGradingResultRow({
         className="flex w-full items-center justify-between gap-3 h-auto px-4 py-3 text-start transition-colors hover:bg-muted/20 shadow-none rounded-none"
       >
         <div className="flex min-w-0 flex-1 items-center gap-3">
-          <div className="flex h-7 w-7 flex-shrink-0 items-center justify-center rounded-full bg-muted text-xs font-bold text-foreground">
+          <div className="flex h-7 w-7 flex-shrink-0 items-center justify-center rounded-xs bg-muted text-xs font-bold text-foreground">
             {getInitials(result.studentName)}
           </div>
           <p className="m-0 min-w-0 truncate text-sm font-semibold text-foreground">

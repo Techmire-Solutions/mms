@@ -58,7 +58,7 @@ export function PlatformAiPromptBar({
               size="sm"
               disabled={isAnalyzing}
               onClick={() => handleChipClick(suggestion)}
-              className="shrink-0 h-9 min-h-9 px-3 rounded-full text-xs font-medium border-border/80 bg-background hover:bg-muted/80 text-muted-foreground hover:text-foreground cursor-pointer transition-colors"
+              className="shrink-0 h-9 min-h-9 px-3 rounded-md text-xs font-medium border-border/80 bg-background hover:bg-muted/80 text-muted-foreground hover:text-foreground cursor-pointer transition-colors"
             >
               <Sparkles className="h-3 w-3 me-1.5 text-primary shrink-0" aria-hidden />
               <span>{suggestion}</span>

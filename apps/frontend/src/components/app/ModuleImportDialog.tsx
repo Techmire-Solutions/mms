@@ -166,7 +166,7 @@ export function ModuleImportDialog<TRow = Record<string, unknown>>({
                     </span>
                   )}
                 </div>
-                <div className="w-full bg-muted rounded-full h-2 overflow-hidden">
+                <div className="w-full bg-muted rounded-md h-2 overflow-hidden">
                   <div
                     className="bg-primary h-2 transition-all duration-300"
                     style={{

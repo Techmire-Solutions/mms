@@ -38,7 +38,7 @@ export function TemplateEditorTypographySwatches({
             >
               <span
                 style={{ backgroundColor: swatch.color }}
-                className={`w-6 h-6 rounded-full border transition-all shadow-xs ${
+                className={`w-6 h-6 rounded-md border transition-all shadow-xs ${
                   isSelected
                     ? "ring-2 ring-primary ring-offset-2 ring-offset-background scale-110 border-transparent"
                     : "border-border/80 hover:scale-110"

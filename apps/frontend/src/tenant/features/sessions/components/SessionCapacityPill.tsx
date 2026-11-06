@@ -73,7 +73,7 @@ export function SessionCapacityPill({
         value={value}
         labelClassName="text-3xs font-medium text-foreground whitespace-nowrap"
         valueClassName="text-3xs font-bold text-muted-foreground whitespace-nowrap"
-        className="px-2 py-0.5 rounded-full bg-muted/40 border border-border/50"
+        className="px-2 py-0.5 rounded-md bg-muted/40 border border-border/50"
       />
     </div>
   );

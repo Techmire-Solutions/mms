@@ -56,7 +56,7 @@ export function PermissionMatrixRow({
         <div className="flex items-center justify-between gap-2 pe-1">
           <span className="truncate">{t(mod.labelKey)}</span>
           <span
-            className={`inline-flex items-center px-1.5 py-0.5 rounded-full text-2xs font-semibold ${
+            className={`inline-flex items-center px-1.5 py-0.5 rounded-md text-2xs font-semibold ${
               allChecked
                 ? "bg-primary/15 text-primary"
                 : hasAny

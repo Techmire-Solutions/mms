@@ -147,7 +147,7 @@ export function CategorySelector({
                 role="option"
                 aria-selected={selected}
                 onClick={() => toggleCategory(cat.id)}
-                className={`flex items-center gap-1.5 rounded-full border px-3 py-1.5 h-auto text-xs font-semibold shadow-none transition-colors ${
+                className={`flex items-center gap-1.5 rounded-md border px-3 py-1.5 h-auto text-xs font-semibold shadow-none transition-colors ${
                   selected
                     ? "border-transparent"
                     : "border-border bg-card text-foreground hover:bg-muted"

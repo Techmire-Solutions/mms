@@ -52,7 +52,7 @@ export const RecipientRow = memo(function RecipientRow({
       }`}
       role="listitem"
     >
-      <span className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-primary/15 text-xs font-extrabold text-primary">
+      <span className="flex h-5 w-5 shrink-0 items-center justify-center rounded-xs bg-primary/15 text-xs font-extrabold text-primary">
         {getInitials(recipient.name)}
       </span>
       <div className="min-w-0 flex-1">

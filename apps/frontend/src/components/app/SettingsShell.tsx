@@ -96,13 +96,13 @@ export function SettingsStatusBadges({
     >
       {isDirty ? (
         <span className="inline-flex items-center gap-1.5 text-xs font-semibold text-warning">
-          <span className="h-1.5 w-1.5 shrink-0 rounded-full bg-warning" aria-hidden="true" />
+          <span className="h-1.5 w-1.5 shrink-0 rounded-xs bg-warning" aria-hidden="true" />
           {t("settings.unsavedChanges")}
         </span>
       ) : null}
       {saved && !isDirty ? (
         <span className="inline-flex items-center gap-1.5 text-xs font-semibold text-muted-foreground">
-          <span className="h-1.5 w-1.5 shrink-0 rounded-full bg-success" aria-hidden="true" />
+          <span className="h-1.5 w-1.5 shrink-0 rounded-xs bg-success" aria-hidden="true" />
           {t("settings.savedBadge")}
         </span>
       ) : null}

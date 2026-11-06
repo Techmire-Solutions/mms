@@ -91,7 +91,7 @@ export function WizardStepIndicator({
                   type="button"
                   onClick={() => onStepClick?.(step, index)}
                   className={cn(
-                    "flex h-11 w-11 min-h-11 min-w-11 items-center justify-center rounded-full border-2 transition-all cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2",
+                    "flex h-11 w-11 min-h-11 min-w-11 items-center justify-center rounded-lg border-2 transition-all cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2",
                     isDone
                       ? "border-primary bg-primary text-primary-foreground hover:opacity-90"
                       : isActive
@@ -106,7 +106,7 @@ export function WizardStepIndicator({
                 <div
                   role="img"
                   className={cn(
-                    "flex h-11 w-11 min-h-11 min-w-11 items-center justify-center rounded-full border-2 transition-all",
+                    "flex h-11 w-11 min-h-11 min-w-11 items-center justify-center rounded-lg border-2 transition-all",
                     isDone
                       ? "border-primary bg-primary text-primary-foreground"
                       : isActive

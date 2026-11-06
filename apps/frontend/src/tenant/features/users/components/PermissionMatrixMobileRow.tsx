@@ -36,7 +36,7 @@ export function PermissionMatrixMobileRow({
             {t(mod.labelKey)}
           </h4>
           <span
-            className={`inline-flex items-center px-1.5 py-0.5 rounded-full text-2xs font-semibold ${
+            className={`inline-flex items-center px-1.5 py-0.5 rounded-md text-2xs font-semibold ${
               allChecked
                 ? "bg-primary/15 text-primary"
                 : hasAny

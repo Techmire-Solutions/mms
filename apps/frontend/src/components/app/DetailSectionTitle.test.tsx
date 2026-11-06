@@ -15,6 +15,7 @@ describe("DetailSectionTitle", () => {
     );
     expect(html).toContain("Appointments");
     expect(html).toContain(">3<");
-    expect(html).toContain("rounded-full");
+    expect(html).toContain("rounded-md");
+    expect(html).not.toContain("rounded-full");
   });
 });

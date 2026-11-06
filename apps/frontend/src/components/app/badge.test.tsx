@@ -21,7 +21,8 @@ describe("Badge Component", () => {
   it("renders pill shape when pill=true", () => {
     const html = renderToStaticMarkup(<Badge pill>Pill Badge</Badge>);
     expect(html).toContain("Pill Badge");
-    expect(html).toContain("rounded-full");
+    expect(html).toContain("rounded-md");
+    expect(html).not.toContain("rounded-full");
   });
 
   it("renders semantic tone styles", () => {
@@ -54,7 +55,7 @@ describe("Badge Component", () => {
       </Badge>,
     );
     expect(html).toContain("animate-pulse");
-    expect(html).toContain("rounded-full bg-current");
+    expect(html).toContain("rounded-xs bg-current");
   });
 
   it("renders remove button with accessible label", () => {

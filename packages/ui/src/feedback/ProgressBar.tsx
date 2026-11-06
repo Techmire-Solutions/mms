@@ -70,14 +70,14 @@ export function ProgressBar({
     <>
       <div
         className={cn(
-          "overflow-hidden rounded-full bg-muted flex-1",
+          "overflow-hidden rounded-md bg-muted flex-1",
           size === "md" ? "h-2" : "h-1.5",
           trackClassName,
         )}
       >
         <div
           className={cn(
-            "h-full rounded-full",
+            "h-full rounded-xs",
             animated ? "transition-all duration-300 ease-out" : "transition-all",
             fillClassName,
           )}

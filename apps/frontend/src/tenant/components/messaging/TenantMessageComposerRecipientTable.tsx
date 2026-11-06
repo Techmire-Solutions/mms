@@ -91,7 +91,7 @@ export function TenantMessageComposerRecipientTable({
                 <TableCell className="px-3 py-2 font-medium text-foreground">
                   <div className="flex items-center gap-2">
                     <span
-                      className={`flex h-6 w-6 shrink-0 items-center justify-center rounded-full ${SEMANTIC_BG.primary} text-3xs font-black ${SEMANTIC_TEXT.primary}`}
+                      className={`flex h-6 w-6 shrink-0 items-center justify-center rounded-xs ${SEMANTIC_BG.primary} text-3xs font-black ${SEMANTIC_TEXT.primary}`}
                     >
                       {getInitials(recipient.name)}
                     </span>

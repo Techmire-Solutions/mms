@@ -50,7 +50,7 @@ export function useMessagingTableColumns({
             <div className="flex items-center justify-between gap-2">
               <div className="flex items-center gap-2 min-w-0">
                 <span
-                  className={`flex h-6 w-6 shrink-0 items-center justify-center rounded-full ${SEMANTIC_BG.primary} text-xs font-black ${SEMANTIC_TEXT.primary}`}
+                  className={`flex h-6 w-6 shrink-0 items-center justify-center rounded-xs ${SEMANTIC_BG.primary} text-xs font-black ${SEMANTIC_TEXT.primary}`}
                 >
                   {getInitials(name)}
                 </span>

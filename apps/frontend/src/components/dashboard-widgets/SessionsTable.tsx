@@ -136,11 +136,11 @@ export default function SessionsTable({ title, items }: SessionsTableProps) {
                     className="gap-1.5 font-black uppercase tracking-wider select-none"
                     aria-label={t("dashboard.widgets.sessionLiveAria")}
                   >
-                    <span className="w-1.5 h-1.5 rounded-full bg-success shrink-0" />
+                    <span className="w-1.5 h-1.5 rounded-xs bg-success shrink-0" />
                     <span>{t("dashboard.widgets.live")}</span>
                   </Badge>
                 ) : (
-                  <div className="w-2 h-2 rounded-full bg-border/80 ms-2" aria-hidden="true" />
+                  <div className="w-2 h-2 rounded-xs bg-border/80 ms-2" aria-hidden="true" />
                 )}
               </div>
 

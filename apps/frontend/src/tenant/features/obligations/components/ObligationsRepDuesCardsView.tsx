@@ -33,7 +33,7 @@ export function ObligationsRepDuesCardsView({
           header={
             <div className="flex items-center gap-2.5">
               <div
-                className="w-7 h-7 rounded-full bg-primary/10 flex items-center justify-center shrink-0"
+                className="w-7 h-7 rounded-md bg-primary/10 flex items-center justify-center shrink-0"
                 aria-hidden="true"
               >
                 <span className="text-xs font-bold text-primary">

@@ -55,7 +55,7 @@ export function SimpleTransactionTagSelector({
                 variant={tags.includes(typeTag) ? "default" : "outline"}
                 onClick={() => toggleTag(typeTag)}
                 aria-pressed={tags.includes(typeTag)}
-                className="min-h-11 px-3 py-1 rounded-full text-xs font-semibold"
+                className="min-h-11 px-3 py-1 rounded-md text-xs font-semibold"
               >
                 {typeTag}
               </Button>
@@ -69,7 +69,7 @@ export function SimpleTransactionTagSelector({
                   variant={tags.includes(tag) ? "default" : "outline"}
                   onClick={() => toggleTag(tag)}
                   aria-pressed={tags.includes(tag)}
-                  className="min-h-11 px-3 py-1 rounded-full text-xs font-semibold"
+                  className="min-h-11 px-3 py-1 rounded-md text-xs font-semibold"
                 >
                   {tag}
                 </Button>

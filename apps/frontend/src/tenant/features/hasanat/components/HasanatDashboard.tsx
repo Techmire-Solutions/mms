@@ -175,7 +175,7 @@ export function HasanatDashboard({
               {pieData.map((entry) => (
                 <div key={entry.name} className="flex min-w-0 items-center gap-2.5">
                   <div
-                    className="h-2.5 w-2.5 shrink-0 rounded-full"
+                    className="h-2.5 w-2.5 shrink-0 rounded-xs"
                     style={{ background: entry.color }}
                     aria-hidden="true"
                   />

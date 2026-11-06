@@ -56,7 +56,7 @@ export function NotificationsPageRow({
             </Badge>
           )}
           {!notification.read && (
-            <span className="h-2 w-2 rounded-full bg-primary" aria-hidden="true" />
+            <span className="h-2 w-2 rounded-xs bg-primary" aria-hidden="true" />
           )}
         </span>
         <span className="mt-0.5 block text-sm text-muted-foreground text-pretty">

@@ -41,7 +41,7 @@ export function FacultyReportingHierarchyCard({
               </span>
             </div>
             <div className="flex items-center gap-2">
-              <div className="w-7 h-7 rounded-full bg-primary/10 text-primary flex items-center justify-center font-bold text-xs shrink-0">
+              <div className="w-7 h-7 rounded-md bg-primary/10 text-primary flex items-center justify-center font-bold text-xs shrink-0">
                 {supervisorDisplayName.charAt(0).toUpperCase()}
               </div>
               <span className="font-semibold text-sm text-foreground truncate">
@@ -54,7 +54,7 @@ export function FacultyReportingHierarchyCard({
         {hasSubordinates ? (
           <div className="p-3 rounded-lg border border-border/70 bg-card/60 flex flex-wrap items-center justify-between gap-2">
             <div className="flex items-center gap-2">
-              <div className="w-7 h-7 rounded-full bg-info/10 text-info flex items-center justify-center shrink-0">
+              <div className="w-7 h-7 rounded-md bg-info/10 text-info flex items-center justify-center shrink-0">
                 <Users className="w-3.5 h-3.5" aria-hidden />
               </div>
               <div>

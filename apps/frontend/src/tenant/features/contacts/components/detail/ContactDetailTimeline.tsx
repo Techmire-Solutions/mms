@@ -44,7 +44,7 @@ function ActivityItem({
       }}
       className="relative ps-6 group"
     >
-      <div className="absolute -start-3 top-1.5 w-6 h-6 -translate-x-1/2 rtl:translate-x-1/2 rounded-full bg-card border-2 border-border flex items-center justify-center z-elevated group-hover:border-primary transition-colors">
+      <div className="absolute -start-3 top-1.5 w-6 h-6 -translate-x-1/2 rtl:translate-x-1/2 rounded-xs bg-card border-2 border-border flex items-center justify-center z-elevated group-hover:border-primary transition-colors">
         <Icon className="w-2.5 h-2.5 text-muted-foreground group-hover:text-primary" />
       </div>
       <div

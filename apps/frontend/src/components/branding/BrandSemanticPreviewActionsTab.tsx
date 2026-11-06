@@ -48,7 +48,7 @@ export function BrandSemanticPreviewActionsTab({
             }}
           >
             <span
-              className="w-1.5 h-1.5 rounded-full shrink-0 shadow-2xs"
+              className="w-1.5 h-1.5 rounded-xs shrink-0 shadow-2xs"
               style={{ backgroundColor: activeOnPrimaryBg }}
               aria-hidden="true"
             />
@@ -63,7 +63,7 @@ export function BrandSemanticPreviewActionsTab({
             }}
           >
             <span
-              className="w-1.5 h-1.5 rounded-full shrink-0 shadow-2xs"
+              className="w-1.5 h-1.5 rounded-xs shrink-0 shadow-2xs"
               style={{ backgroundColor: activeOnSecondaryBg }}
               aria-hidden="true"
             />
@@ -103,7 +103,7 @@ export function BrandSemanticPreviewActionsTab({
             {t("theme.previewSidebar")}
           </span>
           <span
-            className="h-2.5 w-2.5 rounded-full ring-2 ring-background"
+            className="h-2.5 w-2.5 rounded-xs ring-2 ring-background"
             style={{ backgroundColor: brandingTokenToCss(activeTokens["--sidebar-primary"]!) }}
             aria-hidden
           />

@@ -46,7 +46,8 @@ describe("Badge component - Modern Web Guidance: precise-text-alignment", () => 
     });
 
     const badge = container.querySelector("div");
-    expect(badge?.className).toContain("rounded-full");
+    expect(badge?.className).toContain("rounded-md");
+    expect(badge?.className).not.toContain("rounded-full");
     expect(badge?.className).toContain("text-success");
   });
 

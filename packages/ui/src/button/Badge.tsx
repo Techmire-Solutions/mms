@@ -90,7 +90,7 @@ export function Badge({
       className={cn(
         badgeVariants({ variant, size }),
         tone && BADGE_TONES[tone],
-        pill && "rounded-full",
+        pill && "rounded-md",
         isInteractive &&
           "cursor-pointer select-none active:scale-95 hover:opacity-90 transition-transform touch-target-coarse",
         className,
@@ -100,7 +100,7 @@ export function Badge({
       {dot && (
         <span
           className={cn(
-            "h-1.5 w-1.5 rounded-full bg-current shrink-0",
+            "h-1.5 w-1.5 rounded-xs bg-current shrink-0",
             pulse && "animate-pulse motion-reduce:animate-none",
           )}
           aria-hidden="true"
@@ -114,7 +114,7 @@ export function Badge({
             e.stopPropagation();
             onRemove();
           }}
-          className="relative ms-0.5 -me-1 inline-flex h-5 w-5 items-center justify-center rounded-full hover:bg-foreground/15 transition-colors cursor-pointer before:absolute before:-inset-3 before:content-['']"
+          className="relative ms-0.5 -me-1 inline-flex h-5 w-5 items-center justify-center rounded-xs hover:bg-foreground/15 transition-colors cursor-pointer before:absolute before:-inset-3 before:content-['']"
           aria-label={removeAriaLabel}
         >
           <X className="h-2.5 w-2.5" aria-hidden="true" />

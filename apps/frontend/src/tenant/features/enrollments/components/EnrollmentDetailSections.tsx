@@ -166,7 +166,7 @@ export function EnrollmentDetailSections({
               >
                 <div className="flex flex-col items-center">
                   <div
-                    className="w-2 h-2 rounded-full bg-primary mt-1 flex-shrink-0"
+                    className="w-2 h-2 rounded-xs bg-primary mt-1 flex-shrink-0"
                     aria-hidden="true"
                   />
                   {enrollment.timeline && index < enrollment.timeline.length - 1 && (

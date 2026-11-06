@@ -65,7 +65,7 @@ export function IntegrationPanelChrome({
             <Skeleton className="h-4 w-32" />
             <Skeleton className="h-3 w-48" />
           </div>
-          <Skeleton className="h-5 w-20 rounded-full" />
+          <Skeleton className="h-5 w-20 rounded-md" />
         </div>
         <Skeleton className="h-10 w-full rounded-lg" />
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">

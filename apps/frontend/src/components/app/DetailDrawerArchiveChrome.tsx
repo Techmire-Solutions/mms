@@ -143,7 +143,7 @@ export function DrawerSyncStatusFooter({
   return (
     <div className="flex items-center gap-1.5">
       <div
-        className={`w-1.5 h-1.5 rounded-full ${isArchived ? "bg-warning" : "bg-success"}`}
+        className={`w-1.5 h-1.5 rounded-xs ${isArchived ? "bg-warning" : "bg-success"}`}
         aria-hidden="true"
       />
       <span

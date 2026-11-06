@@ -71,7 +71,7 @@ export const ModuleColumnCustomizer = function ModuleColumnCustomizer({
               and never overridden with aria-label. */}
           <span>{resolvedLabels.trigger}</span>
           {hiddenCount > 0 && (
-            <span className="ms-0.5 px-1.5 py-0.2 rounded-full text-2xs font-semibold bg-primary/10 text-primary border border-primary/20">
+            <span className="ms-0.5 px-1.5 py-0.2 rounded-md text-2xs font-semibold bg-primary/10 text-primary border border-primary/20">
               {registry.length - hiddenCount}/{registry.length}
             </span>
           )}

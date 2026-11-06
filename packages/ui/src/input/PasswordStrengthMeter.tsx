@@ -116,7 +116,7 @@ export function PasswordStrengthMeter({
       </div>
 
       <div
-        className="grid grid-cols-5 gap-1.5 h-1.5 rounded-full overflow-hidden bg-muted"
+        className="grid grid-cols-5 gap-1.5 h-1.5 rounded-xs overflow-hidden bg-muted"
         role="meter"
         aria-valuenow={score}
         aria-valuemin={0}

@@ -107,7 +107,7 @@ export function renderStudentsListDesktopTableCell({
       );
     case "gender":
       return studentRow.gender ? (
-        <PersonIdentityMeta gender={studentRow.gender} size="sm" pill />
+        <PersonIdentityMeta gender={studentRow.gender} size="sm" />
       ) : (
         <span className="text-sm text-muted-foreground">{emptyDash}</span>
       );

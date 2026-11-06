@@ -101,7 +101,7 @@ export default function InstitutionSetup(): React.JSX.Element {
                   <h1 className="text-xl font-bold tracking-tight text-foreground sm:text-2xl">
                     {t("institutionSetup.title")}
                   </h1>
-                  <span className="inline-flex items-center gap-1 rounded-full bg-primary/15 px-2.5 py-0.5 text-xs font-semibold text-primary">
+                  <span className="inline-flex items-center gap-1 rounded-md bg-primary/15 px-2.5 py-0.5 text-xs font-semibold text-primary">
                     <Sparkles className="h-3 w-3" />
                     {t("common.required")}
                   </span>

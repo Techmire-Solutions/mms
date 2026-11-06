@@ -16,14 +16,14 @@ export function SettingsColoursBadge({
       aria-label={ariaLabel}
     >
       <span
-        className="h-3 w-3 shrink-0 rounded-full border border-border"
+        className="h-3 w-3 shrink-0 rounded-xs border border-border"
         style={{ backgroundColor: primaryColor }}
         aria-hidden
       />
       <span>{primaryColor}</span>
       <span aria-hidden>·</span>
       <span
-        className="h-3 w-3 shrink-0 rounded-full border border-border"
+        className="h-3 w-3 shrink-0 rounded-xs border border-border"
         style={{ backgroundColor: secondaryColor }}
         aria-hidden
       />

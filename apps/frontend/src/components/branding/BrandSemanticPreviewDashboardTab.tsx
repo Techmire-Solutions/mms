@@ -43,9 +43,9 @@ export function BrandSemanticPreviewDashboardTab({
             </span>
           </div>
           {/* Visual Progress Bar */}
-          <div className="w-full h-2.5 bg-muted/60 rounded-full overflow-hidden">
+          <div className="w-full h-2.5 bg-muted/60 rounded-md overflow-hidden">
             <div
-              className="h-full rounded-full transition-all duration-300"
+              className="h-full rounded-xs transition-all duration-300"
               style={{ width: "94.2%", backgroundColor: activeOnPrimaryBg }}
             />
           </div>
@@ -58,9 +58,9 @@ export function BrandSemanticPreviewDashboardTab({
               88.6%
             </span>
           </div>
-          <div className="w-full h-2.5 bg-muted/60 rounded-full overflow-hidden">
+          <div className="w-full h-2.5 bg-muted/60 rounded-md overflow-hidden">
             <div
-              className="h-full rounded-full transition-all duration-300"
+              className="h-full rounded-xs transition-all duration-300"
               style={{ width: "88.6%", backgroundColor: activeOnSecondaryBg }}
             />
           </div>
@@ -73,15 +73,12 @@ export function BrandSemanticPreviewDashboardTab({
           <p className="text-xs font-semibold text-foreground">{t("theme.previewChartTitle")}</p>
           <div className="flex items-center gap-2">
             <span className="flex items-center gap-1 text-3xs font-medium text-muted-foreground">
-              <span
-                className="h-2 w-2 rounded-full"
-                style={{ backgroundColor: activeOnPrimaryBg }}
-              />
+              <span className="h-2 w-2 rounded-xs" style={{ backgroundColor: activeOnPrimaryBg }} />
               {t("theme.previewPrimaryAction")}
             </span>
             <span className="flex items-center gap-1 text-3xs font-medium text-muted-foreground">
               <span
-                className="h-2 w-2 rounded-full"
+                className="h-2 w-2 rounded-xs"
                 style={{ backgroundColor: activeOnSecondaryBg }}
               />
               {t("theme.previewAccentAction")}

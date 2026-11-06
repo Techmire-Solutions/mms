@@ -53,8 +53,8 @@ export function ErdExplorer(): React.JSX.Element {
       <div className="flex items-center justify-between text-sm text-muted-foreground">
         <p>{t("platform.erdTableCount", { count: visible.tables.length })}</p>
         {isLive && (
-          <span className="inline-flex items-center gap-1.5 rounded-full bg-success/10 px-2.5 py-0.5 text-xs font-medium text-success">
-            <span className="h-1.5 w-1.5 rounded-full bg-success" />
+          <span className="inline-flex items-center gap-1.5 rounded-md bg-success/10 px-2.5 py-0.5 text-xs font-medium text-success">
+            <span className="h-1.5 w-1.5 rounded-xs bg-success" />
             {t("platform.liveSchema")}
           </span>
         )}

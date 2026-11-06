@@ -19,7 +19,7 @@ export function SubTabBarBadge({
   return (
     <span
       className={cn(
-        "inline-flex h-4 min-w-4 items-center justify-center rounded-full px-1.5 text-2xs font-bold transition-colors",
+        "inline-flex h-4 min-w-4 items-center justify-center rounded-xs px-1.5 text-2xs font-bold transition-colors",
         active
           ? "bg-primary/15 text-primary"
           : cn(

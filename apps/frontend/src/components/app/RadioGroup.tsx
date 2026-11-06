@@ -93,14 +93,14 @@ function RadioGroupItem({
         }
       }}
       className={cn(
-        "relative flex h-11 w-11 min-h-11 min-w-11 shrink-0 cursor-pointer items-center justify-center rounded-full text-primary transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-1 disabled:cursor-not-allowed disabled:opacity-50 touch-manipulation",
+        "relative flex h-11 w-11 min-h-11 min-w-11 shrink-0 cursor-pointer items-center justify-center rounded-md text-primary transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-1 disabled:cursor-not-allowed disabled:opacity-50 touch-manipulation",
         className,
       )}
       {...props}
     >
       <span
         className={cn(
-          "flex h-4 w-4 shrink-0 items-center justify-center rounded-full border border-primary shadow transition-colors",
+          "flex h-4 w-4 shrink-0 items-center justify-center rounded-xs border border-primary shadow transition-colors",
           checked
             ? "border-primary bg-primary text-primary-foreground"
             : "border-muted-foreground/40 bg-background",

@@ -78,7 +78,7 @@ export function BrandColorContrastMatrix({
               title={primaryBothPass ? t("theme.contrastBothPass") : t("theme.contrastBothFail")}
             >
               <span
-                className="h-2.5 w-2.5 rounded-full shrink-0 border border-white/20 shadow-2xs"
+                className="h-2.5 w-2.5 rounded-xs shrink-0 border border-white/20 shadow-2xs"
                 style={{ backgroundColor: primaryColor }}
                 aria-hidden="true"
               />
@@ -117,7 +117,7 @@ export function BrandColorContrastMatrix({
               title={secondaryBothPass ? t("theme.contrastBothPass") : t("theme.contrastBothFail")}
             >
               <span
-                className="h-2.5 w-2.5 rounded-full shrink-0 border border-white/20 shadow-2xs"
+                className="h-2.5 w-2.5 rounded-xs shrink-0 border border-white/20 shadow-2xs"
                 style={{ backgroundColor: secondaryColor }}
                 aria-hidden="true"
               />

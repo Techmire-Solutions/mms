@@ -80,23 +80,20 @@ export function WelcomeBanner({
 
         <div className="flex flex-wrap items-center gap-3 self-start lg:max-w-[58%] lg:justify-end">
           <div className={DATE_CHIP_CLASS}>
-            <span className="w-1.5 h-1.5 rounded-full bg-primary print:hidden" aria-hidden="true" />
+            <span className="w-1.5 h-1.5 rounded-xs bg-primary print:hidden" aria-hidden="true" />
             <span className="text-sm font-semibold text-foreground whitespace-nowrap tracking-wide">
               {dayName}
             </span>
           </div>
           <div className={DATE_CHIP_CLASS}>
-            <span className="w-1.5 h-1.5 rounded-full bg-info print:hidden" aria-hidden="true" />
+            <span className="w-1.5 h-1.5 rounded-xs bg-info print:hidden" aria-hidden="true" />
             <span className="text-sm font-semibold text-foreground whitespace-nowrap tracking-wide">
               {gregDate}
             </span>
           </div>
           {hijriDate ? (
             <div className={DATE_CHIP_CLASS}>
-              <span
-                className="w-1.5 h-1.5 rounded-full bg-success print:hidden"
-                aria-hidden="true"
-              />
+              <span className="w-1.5 h-1.5 rounded-xs bg-success print:hidden" aria-hidden="true" />
               <span className="text-sm font-semibold text-foreground whitespace-nowrap tracking-wide">
                 {hijriDate}
               </span>

@@ -60,7 +60,7 @@ export function MessagingReportSummaryTable({
               <TableRow key={row.id}>
                 <TableCell className="px-4 py-2.5 font-medium">
                   <div className="flex items-center gap-2">
-                    <span className={`h-2 w-2 rounded-full ${getSolidBgClass(row.accent)}`} />
+                    <span className={`h-2 w-2 rounded-xs ${getSolidBgClass(row.accent)}`} />
                     {row.channel}
                   </div>
                 </TableCell>
@@ -83,7 +83,7 @@ export function MessagingReportSummaryTable({
             role="listitem"
           >
             <div className="flex items-center gap-2 min-w-0">
-              <span className={`h-2 w-2 rounded-full shrink-0 ${getSolidBgClass(row.accent)}`} />
+              <span className={`h-2 w-2 rounded-xs shrink-0 ${getSolidBgClass(row.accent)}`} />
               <span className="truncate text-sm font-medium text-foreground">{row.channel}</span>
             </div>
             <div className="flex items-center gap-3 shrink-0">

@@ -54,7 +54,7 @@ export function PlatformThemeSettingsPanel(): React.JSX.Element {
             <p className="text-xs font-medium">{t("theme.swatchesTitle")}</p>
             <dl className="grid gap-3 sm:grid-cols-2">
               <div className="flex items-center gap-3">
-                <span aria-hidden="true" className="h-11 w-11 shrink-0 rounded-full bg-primary" />
+                <span aria-hidden="true" className="h-11 w-11 shrink-0 rounded-xl bg-primary" />
                 <div>
                   <dt className="text-xs">{t("theme.primaryColourLabel")}</dt>
                   <dd className="text-xs font-mono text-muted-foreground">
@@ -63,7 +63,7 @@ export function PlatformThemeSettingsPanel(): React.JSX.Element {
                 </div>
               </div>
               <div className="flex items-center gap-3">
-                <span aria-hidden="true" className="h-11 w-11 shrink-0 rounded-full bg-secondary" />
+                <span aria-hidden="true" className="h-11 w-11 shrink-0 rounded-xl bg-secondary" />
                 <div>
                   <dt className="text-xs">{t("theme.accentColourLabel")}</dt>
                   <dd className="text-xs font-mono text-muted-foreground">

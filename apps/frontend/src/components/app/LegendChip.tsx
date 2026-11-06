@@ -43,7 +43,7 @@ export function LegendChip({
     <div className={cn("flex items-center", gap === "md" ? "gap-2" : "gap-1.5", className)}>
       <span
         className={cn(
-          "shrink-0 rounded-full",
+          "shrink-0 rounded-xs",
           dotSize === "sm" ? "h-2 w-2" : "h-2.5 w-2.5",
           dotClassName,
         )}

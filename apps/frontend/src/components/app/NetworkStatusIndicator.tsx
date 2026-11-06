@@ -80,7 +80,7 @@ export function NetworkStatusIndicator({
     >
       <div
         className={cn(
-          "pointer-events-auto inline-flex items-center gap-2 rounded-full px-4 py-2 text-xs font-medium shadow-md backdrop-blur-md transition-colors",
+          "pointer-events-auto inline-flex items-center gap-2 rounded-md px-4 py-2 text-xs font-medium shadow-md backdrop-blur-md transition-colors",
           networkState === "offline" &&
             "bg-destructive/15 text-destructive border border-destructive/25 dark:bg-destructive/15",
           networkState === "reconnecting" &&

@@ -37,7 +37,7 @@ export const AcademicReportClassRankings = function AcademicReportClassRankings(
                 >
                   {classRanking.class}
                 </TableCellLink>
-                <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-primary/10 text-xs font-bold text-primary">
+                <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-md bg-primary/10 text-xs font-bold text-primary">
                   #{index + 1}
                 </span>
               </div>

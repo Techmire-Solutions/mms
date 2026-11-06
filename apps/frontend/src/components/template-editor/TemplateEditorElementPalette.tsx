@@ -106,7 +106,7 @@ export function TemplateEditorElementPalette<TPayload = Record<string, unknown>>
             <Plus className="w-3.5 h-3.5 text-primary" aria-hidden="true" />
             <span>{t("templateEditor.addElements")}</span>
           </p>
-          <span className="text-3xs font-semibold px-2 py-0.5 rounded-full bg-muted text-muted-foreground uppercase tracking-wider">
+          <span className="text-3xs font-semibold px-2 py-0.5 rounded-md bg-muted text-muted-foreground uppercase tracking-wider">
             {t("templateEditor.primitives")}
           </span>
         </div>
@@ -127,7 +127,7 @@ export function TemplateEditorElementPalette<TPayload = Record<string, unknown>>
               <Database className="w-3.5 h-3.5 text-primary" aria-hidden="true" />
               <span>{t("templateEditor.addFields")}</span>
             </p>
-            <span className="text-3xs bg-primary/10 text-primary font-bold px-2 py-0.5 rounded-full">
+            <span className="text-3xs bg-primary/10 text-primary font-bold px-2 py-0.5 rounded-md">
               {searchQuery
                 ? `${filteredFields.length} / ${availableFields.length}`
                 : availableFields.length}
