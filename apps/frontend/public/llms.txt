@@ -1,0 +1,23 @@
+# Madrasa Management System (MMS) — LLM Information File
+> https://llmstxt.org/ specification compliance
+
+## Overview
+Madrasa Management System (MMS) is a dedicated multi-tenant enterprise resource planning (ERP) platform designed for Islamic educational institutions, madrasas, and schools.
+
+## Public Interface & Access Model
+- **Product Classification:** Multi-Tenant Administrative ERP & Management Portal.
+- **Access Policy:** All application modules (including Contacts, Students, Staff, Attendance, Examinations, and Financial Ledgers) require strict authentication and tenant-scoped session authorization.
+- **Search & Crawling Policy:** Crawlers and automated indexers are restricted via `robots.txt` (`Disallow: /`) and `<meta name="robots" content="noindex, nofollow">` to protect student and staff privacy in accordance with GDPR and FERPA regulations.
+
+## Key Capabilities
+- **Student Information System (SIS):** Admissions, enrollment, guardian tracking, and progress reporting.
+- **Directory & Contacts:** Institutional directory, role management, and verified contact points.
+- **Academic Lifecycle:** Examination scheduling, grade calculations, and attendance tracking grids.
+- **Financial Accounting:** Fee structures, payment processing, double-entry ledgers, and automated invoicing.
+- **Communication Gateway:** Integrated notifications and templated messaging channels.
+
+## System Architecture & Security
+- **Authentication:** Multi-tenant session cookies and cryptographically signed JWTs.
+- **Data Protection:** PostgreSQL Row-Level Security (RLS) ensuring strict tenant isolation.
+- **Integrity:** RFC 8785 canonical JSON audit trails with cryptographic hash chaining.
+- **API Standards:** REST endpoints governed by strict Zod schema contracts with zero public unauthenticated surface.

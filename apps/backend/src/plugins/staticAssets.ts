@@ -47,9 +47,9 @@ export function setStaticAssetHeaders(reply: HeaderTarget, filePath: string): vo
     return;
   }
 
-  // 1. Brand & Root Assets (/favicon.ico, /favicon.svg, /platform-logo.*, /icon-*.png, etc.)
+  // 1. Brand & Root Assets (/favicon.ico, /favicon.svg, /robots.txt, /llms.txt, /platform-logo.*, /icon-*.png, etc.)
   if (
-    /(?:^|[\\/])(?:favicon\.(?:ico|svg|png)|platform-logo\.[a-z0-9]+|icon-[a-z0-9_-]+\.png|apple-touch-icon.*\.png)$/i.test(
+    /(?:^|[\\/])(?:favicon\.(?:ico|svg|png)|robots\.txt|llms\.txt|platform-logo\.[a-z0-9]+|icon-[a-z0-9_-]+\.png|apple-touch-icon.*\.png)$/i.test(
       cleanPath,
     )
   ) {

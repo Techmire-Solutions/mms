@@ -1,0 +1,6 @@
+# MMS Robots.txt (TMS Workspace)
+# This application is an authenticated multi-tenant management portal.
+# All tenant workspaces, pupil records, contacts, and financial data are private.
+
+User-agent: *
+Disallow: /

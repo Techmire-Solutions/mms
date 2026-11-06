@@ -19,6 +19,8 @@ export interface RenderContactNameCellParams {
   isSelected: boolean;
   t: ContactCellTranslate;
   onView?: (contact: Contact) => void;
+  /** Index in the rendered page; top 3 rows get high priority for LCP */
+  rowIndex?: number;
 }
 
 export function renderContactNameCell({
@@ -28,7 +30,10 @@ export function renderContactNameCell({
   isSelected: _isSelected,
   t,
   onView,
+  rowIndex,
 }: RenderContactNameCellParams): React.JSX.Element {
+  const isAboveFold = typeof rowIndex === "number" && rowIndex < 3;
+
   return (
     <div className="flex min-w-0 items-center gap-3">
       <UserAvatar
@@ -38,6 +43,7 @@ export function renderContactNameCell({
         gender={contact.gender}
         size="md"
         className="shrink-0"
+        fetchPriority={isAboveFold ? "high" : "low"}
       />
       <div className="min-w-0">
         <Button
