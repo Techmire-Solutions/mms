@@ -15,4 +15,3 @@ export const dashboardWidgetsRelations = relations(dashboardWidgets, ({ one }) =
     references: [workspaces.subdomain],
   }),
 }));
-
