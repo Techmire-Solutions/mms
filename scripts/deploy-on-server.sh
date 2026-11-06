@@ -119,6 +119,18 @@ if [ -f "$TARBALL" ]; then
     done
   fi
 
+  # Check available disk space before extraction
+  if command -v df >/dev/null 2>&1; then
+    AVAIL_KB="$(df -k "$ROOT_DIR" 2>/dev/null | awk 'NR==2 {print $4}' || echo 9999999)"
+    if [ -n "$AVAIL_KB" ] && [ "$AVAIL_KB" -lt 2097152 ] 2>/dev/null; then
+      echo "Notice: low disk space (${AVAIL_KB}KB free on ${ROOT_DIR}) — pruning older releases and caches..."
+      ls -1t "$RELEASES_DIR"/*.tar.gz 2>/dev/null | tail -n "+3" | while read -r old; do
+        rm -f "$old" "${old}.sha256" "${old%.tar.gz}.env" 2>/dev/null || true
+      done
+      rm -rf /tmp/mms-* /tmp/*.sql* 2>/dev/null || true
+    fi
+  fi
+
   echo "Extracting production dist..."
   rm -rf "${ROOT_DIR}/apps/frontend/dist" "${ROOT_DIR}/apps/backend/dist"
   tar xzf "$TARBALL" -C "$ROOT_DIR"
@@ -204,19 +216,28 @@ if [ -z "$DATABASE_URL" ]; then
   echo "FATAL: DATABASE_URL is missing from ${ENV_FILE} — cannot verify RLS."
   fail_preflight
 fi
+if command -v pg_isready >/dev/null 2>&1; then
+  for i in $(seq 1 15); do
+    if pg_isready -d "$DATABASE_URL" >/dev/null 2>&1; then
+      break
+    fi
+    echo "Waiting for database to accept connections (attempt ${i}/15)..."
+    sleep 2
+  done
+fi
 if [ -f "$ROOT_DIR/apps/backend/dist/scripts/checkRlsRole.js" ]; then
   echo "Checking database role for RLS enforcement (mode=${MMS_DB_ROLE_ENFORCEMENT})..."
   if ! (cd "$ROOT_DIR/apps/backend" && node dist/scripts/checkRlsRole.js); then
-    echo "ERROR: RLS preflight failed — the database role bypasses row-level security."
-    echo "       Provision mms_app and point DATABASE_URL at it (docs/rls-operations.md),"
+    echo "ERROR: RLS preflight failed — database role check exited with error."
+    echo "       Ensure PostgreSQL is running, provision mms_app and point DATABASE_URL at it (docs/rls-operations.md),"
     echo "       then redeploy. The running release has NOT been replaced."
     fail_preflight
   fi
 elif [ -f "$ROOT_DIR/apps/backend/src/scripts/checkRlsRole.ts" ]; then
   echo "Checking database role for RLS enforcement (tsx fallback)..."
   if ! (cd "$ROOT_DIR/apps/backend" && node --experimental-strip-types src/scripts/checkRlsRole.ts); then
-    echo "ERROR: RLS preflight failed — the database role bypasses row-level security."
-    echo "       Provision mms_app and point DATABASE_URL at it (docs/rls-operations.md),"
+    echo "ERROR: RLS preflight failed — database role check exited with error."
+    echo "       Ensure PostgreSQL is running, provision mms_app and point DATABASE_URL at it (docs/rls-operations.md),"
     echo "       then redeploy. The running release has NOT been replaced."
     fail_preflight
   fi
