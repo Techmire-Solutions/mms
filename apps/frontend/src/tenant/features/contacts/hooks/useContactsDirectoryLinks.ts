@@ -31,14 +31,25 @@ export function useContactsDirectoryLinks({
     [linkSourceContacts],
   );
 
-  const { data: resolvedLinkContacts = [] } = useContactsByIds(linkedContactIds);
+  // Only resolve deep secondary/sibling links when a contact drawer or form is active.
+  // The directory table only requires the direct contact summary rows.
+  const hasActiveOverlay = Boolean(editContact || viewContact);
+
+  const { data: resolvedLinkContacts = [] } = useContactsByIds(
+    hasActiveOverlay ? linkedContactIds : [],
+    hasActiveOverlay,
+  );
 
   const partialDirectory = useMemo(
-    () => mergeContactLinkDirectory(linkSourceContacts, resolvedLinkContacts),
-    [linkSourceContacts, resolvedLinkContacts],
+    () =>
+      hasActiveOverlay
+        ? mergeContactLinkDirectory(linkSourceContacts, resolvedLinkContacts)
+        : linkSourceContacts,
+    [hasActiveOverlay, linkSourceContacts, resolvedLinkContacts],
   );
 
   const siblingContactIds = useMemo(() => {
+    if (!hasActiveOverlay) return [];
     const knownIds = new Set(
       partialDirectory
         .map((contact) => (contact.id == null ? "" : String(contact.id).trim()))
@@ -51,12 +62,18 @@ export function useContactsDirectoryLinks({
       }
     }
     return [...ids];
-  }, [partialDirectory, siblingSubjects]);
+  }, [hasActiveOverlay, partialDirectory, siblingSubjects]);
 
-  const { data: resolvedSiblingContacts = [] } = useContactsByIds(siblingContactIds);
+  const { data: resolvedSiblingContacts = [] } = useContactsByIds(
+    hasActiveOverlay ? siblingContactIds : [],
+    hasActiveOverlay,
+  );
 
   return useMemo(
-    () => mergeContactLinkDirectory(partialDirectory, resolvedSiblingContacts),
-    [partialDirectory, resolvedSiblingContacts],
+    () =>
+      hasActiveOverlay
+        ? mergeContactLinkDirectory(partialDirectory, resolvedSiblingContacts)
+        : linkSourceContacts,
+    [hasActiveOverlay, partialDirectory, resolvedSiblingContacts, linkSourceContacts],
   );
 }

@@ -27,7 +27,7 @@ export function useContactById(contactId: string | undefined, enabled = true) {
 }
 
 /** Batch-resolve contact labels by id (pickers & cross-module links). */
-export function useContactsByIds(ids: (string | number | null | undefined)[]) {
+export function useContactsByIds(ids: (string | number | null | undefined)[], enabled = true) {
   const { isAuthenticated } = useAuth();
   const normalized = uniqueRegistryIds(ids);
   return useQuery({
@@ -53,7 +53,7 @@ export function useContactsByIds(ids: (string | number | null | undefined)[]) {
 
       return hydrated;
     },
-    enabled: isAuthenticated && normalized.length > 0,
-    staleTime: 30_000,
+    enabled: isAuthenticated && enabled && normalized.length > 0,
+    staleTime: 60_000,
   });
 }

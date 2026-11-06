@@ -74,8 +74,7 @@ export const ContactsListDesktopTable = React.memo(function ContactsListDesktopT
       sortField: col.id,
       width: col.width,
       kind: col.kind,
-      render: (row, _idx) => {
-        const isSelected = selected.includes(row.id) || selected.includes(String(row.id));
+      render: (row, idx) => {
         return renderContactTableCell({
           col,
           contact: row,
@@ -87,10 +86,11 @@ export const ContactsListDesktopTable = React.memo(function ContactsListDesktopT
           contactsMap,
           allContacts,
           showArchived,
-          isSelected,
+          isSelected: false,
           t,
           onView,
           onWhatsApp,
+          rowIndex: idx,
         });
       },
     }));
@@ -106,7 +106,6 @@ export const ContactsListDesktopTable = React.memo(function ContactsListDesktopT
     t,
     onView,
     onWhatsApp,
-    selected,
   ]);
 
   return (

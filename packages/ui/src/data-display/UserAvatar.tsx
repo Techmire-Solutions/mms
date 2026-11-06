@@ -36,6 +36,8 @@ export interface UserAvatarProps {
   isLoading?: boolean;
   className?: string;
   fallbackClassName?: string;
+  /** Optional fetchPriority for critical above-the-fold avatars (LCP optimization) */
+  fetchPriority?: "high" | "low" | "auto";
   /** Optional theme or domain-specific fallback color resolver (e.g. gender or deterministic palette). */
   fallbackColorResolver?: (gender?: string | null, id?: string | number | null) => string;
 }
@@ -53,6 +55,7 @@ export function UserAvatar({
   isLoading = false,
   className,
   fallbackClassName,
+  fetchPriority,
   fallbackColorResolver,
 }: UserAvatarProps): React.JSX.Element {
   if (isLoading) {
@@ -83,7 +86,9 @@ export function UserAvatar({
   return (
     <div className="relative inline-flex shrink-0" title={tooltipText}>
       <Avatar size={size} className={className}>
-        {avatar && <AvatarImage src={avatar} alt={name || "Avatar"} />}
+        {avatar && (
+          <AvatarImage src={avatar} alt={name || "Avatar"} fetchPriority={fetchPriority} />
+        )}
         <AvatarFallback className={cn(colorClass, fallbackClassName)}>
           {initials && initials !== "?" ? (
             initials
