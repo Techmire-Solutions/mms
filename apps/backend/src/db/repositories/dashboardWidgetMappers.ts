@@ -13,7 +13,31 @@ import {
 } from "@mms/shared";
 import type { dashboardWidgets } from "../schema.js";
 
-type DashboardWidgetRow = typeof dashboardWidgets.$inferSelect;
+export type DashboardWidgetRow = typeof dashboardWidgets.$inferSelect;
+
+export type DashboardWidgetSelectRow = {
+  id: string;
+  workspaceSubdomain: string;
+  widgetType: string | null;
+  category: string;
+  collection: string;
+  role: string | null;
+  isPinnedToDashboard: boolean;
+  title: string;
+  icon: string | null;
+  color: string;
+  operation: string;
+  sortOrder: number;
+  config: Record<string, unknown> | null;
+  updatedAt: Date;
+  deletedAt?: Date | null;
+  deletedBy?: string | null;
+  deletionReason?: string | null;
+  restoredAt?: Date | null;
+  restoredBy?: string | null;
+  deletedWithCascade?: boolean | null;
+  version?: number;
+};
 
 export type DashboardWidgetInsertRow = {
   id: string;
@@ -66,7 +90,7 @@ export function toRow(
 }
 
 /** Merge a stored row back into a widget DTO (typed columns win, then jsonb `config`). */
-export function toDto(row: DashboardWidgetRow): DashboardWidgetDto {
+export function toDto(row: DashboardWidgetSelectRow): DashboardWidgetDto {
   const config = (row.config ?? {}) as Record<string, unknown>;
   const dto: DashboardWidgetDto = {
     ...config,
