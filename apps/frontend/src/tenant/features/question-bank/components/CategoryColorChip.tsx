@@ -23,7 +23,7 @@ export function CategoryColorChip({
   return (
     <span
       className={cn(
-        "inline-flex items-center gap-1 rounded-full border font-bold",
+        "inline-flex items-center gap-1 rounded-md border font-bold",
         sizeClass,
         className,
       )}

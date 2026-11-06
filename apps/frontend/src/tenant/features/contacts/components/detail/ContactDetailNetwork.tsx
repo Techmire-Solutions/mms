@@ -61,7 +61,7 @@ export function ContactDetailNetwork({
         className={`p-4 rounded-2xl border flex items-center gap-3 ${DETAIL_STYLES.networkHeader}`}
       >
         <div
-          className={`w-10 h-10 rounded-full flex items-center justify-center shadow-xs ${DETAIL_STYLES.networkIcon}`}
+          className={`w-10 h-10 rounded-xl flex items-center justify-center shadow-xs ${DETAIL_STYLES.networkIcon}`}
         >
           <UsersIcon className="w-5 h-5" aria-hidden />
         </div>

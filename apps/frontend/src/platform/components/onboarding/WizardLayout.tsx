@@ -77,7 +77,7 @@ export default function WizardLayout({
         aria-valuetext={stepLabel}
       >
         <motion.div
-          className="h-full rounded-full bg-gradient-to-r from-primary to-secondary"
+          className="h-full rounded-xs bg-gradient-to-r from-primary to-secondary"
           initial={false}
           animate={{ width: `${(currentStep / steps.length) * 100}%` }}
           transition={reducedMotion ? { duration: 0 } : { duration: 0.45, ease: "easeOut" }}

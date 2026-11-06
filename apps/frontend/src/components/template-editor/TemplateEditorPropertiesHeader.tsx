@@ -20,7 +20,7 @@ export function TemplateEditorPropertiesHeader<TPayload = Record<string, unknown
   return (
     <div className="pb-2 border-b border-border/80 flex items-center justify-between">
       <div className="flex items-center gap-2">
-        <span className="text-2xs font-bold uppercase tracking-wider bg-primary/10 text-primary px-2 py-0.5 rounded-full">
+        <span className="text-2xs font-bold uppercase tracking-wider bg-primary/10 text-primary px-2 py-0.5 rounded-md">
           {selectedElement.type}
         </span>
         <span className="text-xs font-semibold text-foreground truncate max-w-32">

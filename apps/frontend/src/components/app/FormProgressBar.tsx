@@ -36,7 +36,7 @@ export function FormProgressBar({
         </span>
       </div>
       <div
-        className="h-1.5 overflow-hidden rounded-full bg-muted"
+        className="h-1.5 overflow-hidden rounded-md bg-muted"
         role="progressbar"
         aria-valuenow={Math.round(clamped)}
         aria-valuemin={0}
@@ -45,7 +45,7 @@ export function FormProgressBar({
       >
         <div
           className={cn(
-            "h-full rounded-full transition-all duration-500",
+            "h-full rounded-xs transition-all duration-500",
             complete ? "bg-primary" : "bg-primary/70",
           )}
           style={{ width: `${clamped}%` }}

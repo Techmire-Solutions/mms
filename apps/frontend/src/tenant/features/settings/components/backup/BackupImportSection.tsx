@@ -62,7 +62,7 @@ const BackupImportSection = function BackupImportSection({
       >
         <div
           className={cn(
-            "mb-3 p-3 rounded-full transition-colors duration-200",
+            "mb-3 p-3 rounded-xl transition-colors duration-200",
             dragActive ? "bg-primary/10" : "bg-muted group-hover:bg-primary/10",
           )}
         >

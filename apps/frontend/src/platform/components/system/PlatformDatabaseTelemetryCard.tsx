@@ -66,11 +66,11 @@ export function PlatformDatabaseTelemetryCard({
               </h3>
             </div>
             <div className="flex items-center gap-1.5">
-              <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-3xs font-medium bg-primary/10 text-primary border border-primary/20">
+              <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-3xs font-medium bg-primary/10 text-primary border border-primary/20">
                 <Server className="w-2.5 h-2.5" />
                 {platformDb?.engine ?? "PostgreSQL 16"}
               </span>
-              <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-3xs font-medium bg-muted text-muted-foreground border border-border/50">
+              <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-3xs font-medium bg-muted text-muted-foreground border border-border/50">
                 {hasReplica ? "Replica Active" : "Primary Node"}
               </span>
             </div>
@@ -85,9 +85,9 @@ export function PlatformDatabaseTelemetryCard({
               {isLoading ? "…" : `${utilRate}%`}
             </span>
           </div>
-          <div className="w-full bg-muted/60 rounded-full h-2 overflow-hidden">
+          <div className="w-full bg-muted/60 rounded-md h-2 overflow-hidden">
             <div
-              className={`h-full transition-all duration-500 rounded-full ${
+              className={`h-full transition-all duration-500 rounded-xs ${
                 utilRate > 85 ? "bg-destructive" : utilRate > 65 ? "bg-warning" : "bg-primary"
               }`}
               style={{ width: `${Math.min(100, utilRate)}%` }}
@@ -122,7 +122,7 @@ export function PlatformDatabaseTelemetryCard({
                 {t("platform.db.tenantTitle")}
               </h3>
             </div>
-            <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-3xs font-semibold bg-success/15 text-success border border-success/30">
+            <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-md text-3xs font-semibold bg-success/15 text-success border border-success/30">
               <CheckCircle2 className="w-2.5 h-2.5" />
               RLS 100% Enforced
             </span>

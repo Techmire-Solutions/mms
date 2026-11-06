@@ -110,7 +110,7 @@ export function Step1SelectStudent({
                   : "border-border bg-card hover:border-primary/40 hover:bg-muted/30 text-foreground hover:text-foreground"
               }`}
             >
-              <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0">
+              <div className="w-10 h-10 rounded-md bg-primary/10 flex items-center justify-center flex-shrink-0">
                 <User className="w-5 h-5 text-primary" aria-hidden="true" />
               </div>
               <div className="flex-1 min-w-0">
@@ -150,8 +150,8 @@ export function Step1SelectStudent({
                 )}
               </div>
               {selected && (
-                <div className="w-5 h-5 rounded-full bg-primary flex items-center justify-center flex-shrink-0 mt-0.5">
-                  <div className={`h-2 w-2 rounded-full ${WIZARD_SELECTION_DOT}`} />
+                <div className="w-5 h-5 rounded-xs bg-primary flex items-center justify-center flex-shrink-0 mt-0.5">
+                  <div className={`h-2 w-2 rounded-xs ${WIZARD_SELECTION_DOT}`} />
                 </div>
               )}
             </Button>

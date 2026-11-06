@@ -30,7 +30,7 @@ export function MessagingReportChannelStats({
 
         {total > 0 && (
           <div className="mb-4 space-y-1.5">
-            <div className="flex h-2.5 w-full overflow-hidden rounded-full bg-muted/60">
+            <div className="flex h-2.5 w-full overflow-hidden rounded-md bg-muted/60">
               {(Object.values(MESSAGING_CHANNEL_CONFIG) as MessagingChannelConfig[]).map(
                 (config) => {
                   const count = (stats?.[`${config.id}Count` as keyof typeof stats] as number) ?? 0;
@@ -64,7 +64,7 @@ export function MessagingReportChannelStats({
                 className={`${WORK_SURFACE_INNER} p-3 flex items-center justify-between`}
               >
                 <div className="flex items-center gap-2">
-                  <span className={`h-2 w-2 rounded-full ${getSolidBgClass(config.themeAccent)}`} />
+                  <span className={`h-2 w-2 rounded-xs ${getSolidBgClass(config.themeAccent)}`} />
                   <span className="text-xs font-medium text-foreground">
                     {t(getChannelLabelKey(config.id))}
                   </span>

@@ -94,7 +94,7 @@ export const FormModalTabs = function FormModalTabs<K extends string = string>({
                 <span
                   aria-hidden="true"
                   className={cn(
-                    "inline-flex h-4 min-w-4 items-center justify-center rounded-full px-1 text-2xs font-extrabold transition-colors ms-auto",
+                    "inline-flex h-4 min-w-4 items-center justify-center rounded-xs px-1 text-2xs font-extrabold transition-colors ms-auto",
                     "md:static md:ms-auto md:h-auto md:min-w-0 md:px-1.5 md:py-0.5",
                     "@md:static @md:ms-auto @md:h-auto @md:min-w-0 @md:px-1.5 @md:py-0.5",
                     tab.tone === "destructive"

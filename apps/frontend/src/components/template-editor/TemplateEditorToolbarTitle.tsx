@@ -28,7 +28,7 @@ export function TemplateEditorToolbarTitle({
         <span
           role="status"
           aria-live="polite"
-          className="px-1.5 py-0.5 rounded-full text-3xs font-bold border border-warning/30 bg-warning/10 text-warning whitespace-nowrap animate-pulse"
+          className="px-1.5 py-0.5 rounded-md text-3xs font-bold border border-warning/30 bg-warning/10 text-warning whitespace-nowrap animate-pulse"
           title={t("templateEditor.dirtyNotice")}
         >
           {t("templateEditor.dirtyNotice")}

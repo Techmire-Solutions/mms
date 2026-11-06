@@ -1,7 +1,12 @@
 import fs from "node:fs";
 import path from "node:path";
+import React from "react";
+import { renderToStaticMarkup } from "react-dom/server";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { DEFAULT_BRANDING_SETTINGS, resolveBrandingCornerRadius } from "@mms/shared";
+import { Badge } from "@shared/ui";
+import { PersonIdentityMeta } from "@/components/app/PersonIdentityMeta";
+import { DirectoryCardsSelectAllBar } from "@/components/app/DirectoryCardsSelectAllBar";
 import { applyBrandingTheme } from "@/lib/brandingTheme";
 import { applyDocumentTheme } from "@/lib/brandingThemeCore";
 import {
@@ -163,5 +168,37 @@ describe("Centralised Theme Enforcement", () => {
 
     scanDir(srcDir);
     expect(unstyled).toEqual([]);
+  });
+
+  it("enforces centralized theme radius on Badge and DirectoryCardsSelectAllBar", () => {
+    const badgeHtml = renderToStaticMarkup(React.createElement(Badge, { pill: true }, "+58%"));
+    expect(badgeHtml).toContain("rounded-md");
+    expect(badgeHtml).not.toContain("rounded-full");
+
+    const barHtml = renderToStaticMarkup(
+      React.createElement(DirectoryCardsSelectAllBar, {
+        checkboxId: "test-id",
+        allSelected: false,
+        someSelected: false,
+        onSelectAll: () => {},
+        selectLabel: "Select all",
+        deselectLabel: "Deselect all",
+        selectedCount: 12,
+        selectedCountLabel: "12 SELECTED",
+        pageCountLabel: "12 STUDENTS",
+      }),
+    );
+    expect(barHtml).toContain("12 STUDENTS");
+    expect(barHtml).toContain("rounded-md");
+    expect(barHtml).not.toContain("rounded-full");
+  });
+
+  it("enforces centralized theme radius on PersonIdentityMeta (zero rounded-full)", () => {
+    const metaHtml = renderToStaticMarkup(
+      React.createElement(PersonIdentityMeta, { gender: "male", pill: true }),
+    );
+    expect(metaHtml).toContain("Male");
+    expect(metaHtml).toContain("rounded-md");
+    expect(metaHtml).not.toContain("rounded-full");
   });
 });

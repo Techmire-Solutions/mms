@@ -153,7 +153,7 @@ export default function FeeCollectionSummary({ title }: { title?: string }) {
       <section className="p-5 space-y-4">
         {/* Stacked progress bar */}
         <div
-          className="h-3 rounded-full overflow-hidden bg-muted flex mb-4.5 shadow-inner"
+          className="h-3 rounded-md overflow-hidden bg-muted flex mb-4.5 shadow-inner"
           aria-hidden="true"
         >
           <div

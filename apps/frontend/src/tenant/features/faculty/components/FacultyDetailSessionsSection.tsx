@@ -125,7 +125,7 @@ export function FacultyDetailSessionsSection({
                     as="span"
                     size="sm"
                     tone="primary"
-                    className="px-2 py-0.5 rounded-full text-2xs font-bold uppercase tracking-wider shrink-0"
+                    className="px-2 py-0.5 rounded-md text-2xs font-bold uppercase tracking-wider shrink-0"
                   >
                     {typeLabel}
                   </Badge>

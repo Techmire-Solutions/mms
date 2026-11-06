@@ -16,7 +16,7 @@ export function AddUserSuccessView({ form, t }: AddUserSuccessViewProps): React.
       animate={{ opacity: 1, scale: 1 }}
       className="flex flex-col items-center justify-center gap-4 py-10 text-center"
     >
-      <div className="flex h-16 w-16 items-center justify-center rounded-full bg-primary/10">
+      <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-primary/10">
         <Check className="h-8 w-8 text-primary" />
       </div>
       <div>

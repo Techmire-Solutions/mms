@@ -144,7 +144,7 @@ export function AuthCheckEmailSuccess({
     <div className="space-y-5">
       <div className="flex justify-center">
         <div
-          className="flex h-16 w-16 items-center justify-center rounded-full bg-primary/10"
+          className="flex h-16 w-16 items-center justify-center rounded-2xl bg-primary/10"
           aria-hidden
         >
           <CheckCircle2 className="h-8 w-8 text-primary" />

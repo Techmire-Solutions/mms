@@ -65,7 +65,7 @@ export function FacultyWorkloadPill({
         value={value}
         labelClassName="text-3xs font-medium text-muted-foreground whitespace-nowrap"
         valueClassName="text-3xs font-semibold text-foreground whitespace-nowrap"
-        className="px-1.5 py-0.5 rounded-full bg-muted/40 border border-border/50"
+        className="px-1.5 py-0.5 rounded-md bg-muted/40 border border-border/50"
       />
     </div>
   );

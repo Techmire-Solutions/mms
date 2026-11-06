@@ -88,7 +88,7 @@ export function EligibilityCheck(): React.JSX.Element {
           className="flex items-center gap-3 px-4 py-3 rounded-xl bg-muted border border-border"
           aria-label={t("enrollments.eligibility.studentPreview")}
         >
-          <div className="w-9 h-9 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0">
+          <div className="w-9 h-9 rounded-md bg-primary/10 flex items-center justify-center flex-shrink-0">
             <span className="text-sm font-bold text-primary">{getInitials(student.name)}</span>
           </div>
           <div>

@@ -43,7 +43,7 @@ export function QuestionBankTaxonomySection({
               aria-pressed={entry.enabled}
               onClick={() => onToggleQuestionType(entry.id)}
               className={cn(
-                "rounded-full border px-3 text-xs font-semibold transition-colors min-h-11",
+                "rounded-md border px-3 text-xs font-semibold transition-colors min-h-11",
                 entry.enabled
                   ? "border-primary bg-primary/10 text-primary hover:bg-primary/15 hover:text-primary"
                   : "border-border text-muted-foreground hover:bg-muted",
@@ -72,7 +72,7 @@ export function QuestionBankTaxonomySection({
               aria-pressed={entry.enabled}
               onClick={() => onToggleDifficulty(entry.id)}
               className={cn(
-                "rounded-full border px-3 text-xs font-semibold transition-colors min-h-11",
+                "rounded-md border px-3 text-xs font-semibold transition-colors min-h-11",
                 entry.enabled
                   ? "border-primary bg-primary/10 text-primary hover:bg-primary/15 hover:text-primary"
                   : "border-border text-muted-foreground hover:bg-muted",

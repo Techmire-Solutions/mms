@@ -192,7 +192,7 @@ export function DenominationModal({ open, denom, onClose, onSave }: Denomination
                 aria-label={t("hasanat.denominations.selectColor", { color })}
                 key={color}
                 onClick={() => updateField("color", color)}
-                className={`min-h-11 min-w-11 rounded-full border-2 transition-all ${data.color === color ? "border-foreground scale-110" : "border-transparent"}`}
+                className={`min-h-11 min-w-11 rounded-md border-2 transition-all ${data.color === color ? "border-foreground scale-110" : "border-transparent"}`}
                 style={{ background: color }}
               />
             ))}

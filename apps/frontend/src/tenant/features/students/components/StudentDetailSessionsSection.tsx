@@ -72,7 +72,7 @@ export function StudentDetailSessionsSection({
                 as="span"
                 size="sm"
                 tone="primary"
-                className="px-1.5 py-0.5 rounded-full font-bold uppercase"
+                className="px-1.5 py-0.5 rounded-md font-bold uppercase"
               >
                 {typeLabel}
               </Badge>

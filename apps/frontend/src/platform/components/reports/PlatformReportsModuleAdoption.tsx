@@ -51,7 +51,7 @@ export function PlatformReportsModuleAdoption(): React.JSX.Element {
                     <span>{mod.label}</span>
                     {mod.required ? (
                       <span
-                        className="w-1.5 h-1.5 rounded-full bg-primary"
+                        className="w-1.5 h-1.5 rounded-xs bg-primary"
                         aria-label={t("common.required")}
                       />
                     ) : null}

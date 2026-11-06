@@ -61,7 +61,7 @@ export function StudentDetailSiblingsSection({
                     id={sibling.id}
                     name={sibling.name}
                     gender={sibling.gender}
-                    className="w-8 h-8 rounded-full text-xs font-bold shrink-0"
+                    className="w-8 h-8 text-xs font-bold shrink-0"
                   />
                   <div className="min-w-0">
                     <div className="flex items-center gap-1.5 flex-wrap">

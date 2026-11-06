@@ -24,7 +24,7 @@ export function EnrollmentWizardSuccess({
       role="status"
       aria-live="polite"
     >
-      <div className="w-16 h-16 rounded-full bg-success/15 flex items-center justify-center mb-4">
+      <div className="w-16 h-16 rounded-2xl bg-success/15 flex items-center justify-center mb-4">
         <CheckCircle2 className="w-8 h-8 text-success" aria-hidden="true" />
       </div>
       <p className="text-lg font-bold text-foreground">{t("enrollments.wizard.submittedTitle")}</p>

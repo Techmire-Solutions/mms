@@ -87,7 +87,7 @@ export function ModalHeader({
               <span>{Math.round(progress)}%</span>
             </div>
           )}
-          <div className="h-1.5 w-full overflow-hidden rounded-full bg-muted">
+          <div className="h-1.5 w-full overflow-hidden rounded-xs bg-muted">
             <div
               className="h-full bg-primary transition-all duration-300 ease-out"
               style={{ width: `${Math.min(100, Math.max(0, progress))}%` }}

@@ -133,7 +133,7 @@ export default function CornerStyleSelector({
       <div className="space-y-4 px-1.5">
         <div className="flex justify-between items-center text-xs font-semibold">
           <span className="text-muted-foreground">{t("theme.cornerPreviewRadius")}</span>
-          <span className="text-primary font-mono bg-primary/10 px-2.5 py-0.5 rounded-full border border-primary/20 font-bold">
+          <span className="text-primary font-mono bg-primary/10 px-2.5 py-0.5 rounded-md border border-primary/20 font-bold">
             {resolvedRadius}
           </span>
         </div>

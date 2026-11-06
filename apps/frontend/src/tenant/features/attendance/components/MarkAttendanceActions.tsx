@@ -32,7 +32,7 @@ export function MarkAttendanceActions({
           {t("attendance.mark.summary", { total: totalRows, shown: visibleRows })}
         </p>
         {markedCount != null && (
-          <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-semibold bg-muted text-muted-foreground border border-border">
+          <span className="inline-flex items-center px-2 py-0.5 rounded-md text-xs font-semibold bg-muted text-muted-foreground border border-border">
             {t("attendance.mark.markedProgress", { marked: markedCount, total: totalRows })}
           </span>
         )}

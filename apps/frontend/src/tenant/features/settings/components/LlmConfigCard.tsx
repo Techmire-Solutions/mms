@@ -74,17 +74,17 @@ export function LlmConfigCard({
                 <Loader2 className="h-3.5 w-3.5 animate-spin text-primary shrink-0" aria-hidden />
               ) : status === "verified" ? (
                 <span
-                  className="h-2.5 w-2.5 rounded-full bg-success ring-2 ring-success/20 shrink-0"
+                  className="h-2.5 w-2.5 rounded-xs bg-success ring-2 ring-success/20 shrink-0"
                   title={t("settings.llmTestSuccess")}
                 />
               ) : status === "failed" ? (
                 <span
-                  className="h-2.5 w-2.5 rounded-full bg-destructive ring-2 ring-destructive/20 shrink-0"
+                  className="h-2.5 w-2.5 rounded-xs bg-destructive ring-2 ring-destructive/20 shrink-0"
                   title={t("settings.llmTestFailed")}
                 />
               ) : (
                 <span
-                  className="h-2.5 w-2.5 rounded-full bg-warning ring-2 ring-warning/20 shrink-0"
+                  className="h-2.5 w-2.5 rounded-xs bg-warning ring-2 ring-warning/20 shrink-0"
                   title={t("settings.llmTestResultDesc")}
                 />
               )}

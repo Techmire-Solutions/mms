@@ -61,7 +61,7 @@ export function AttendanceAnalyticsInsights({
             {topStudents.map((studentRate, index) => (
               <div key={studentRate.id} className="flex items-center gap-3">
                 <span
-                  className={`w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold ${index === 0 ? "bg-warning/15 text-warning" : index === 1 ? "bg-muted text-muted-foreground" : "bg-warning/10 text-warning"}`}
+                  className={`w-6 h-6 rounded-xs flex items-center justify-center text-xs font-bold ${index === 0 ? "bg-warning/15 text-warning" : index === 1 ? "bg-muted text-muted-foreground" : "bg-warning/10 text-warning"}`}
                 >
                   {index + 1}
                 </span>

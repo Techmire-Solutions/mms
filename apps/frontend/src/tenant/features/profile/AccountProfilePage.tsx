@@ -26,13 +26,13 @@ export default function AccountProfile(): JSX.Element {
         <div className="space-y-6 animate-pulse" role="status" aria-live="polite" aria-busy="true">
           <div className="rounded-2xl border border-border bg-card p-6 space-y-4">
             <div className="flex items-center gap-4">
-              <Skeleton className="h-16 w-16 rounded-full" />
+              <Skeleton className="h-16 w-16 rounded-xl" />
               <div className="space-y-2 flex-1">
                 <Skeleton className="h-5 w-48 rounded" />
                 <Skeleton className="h-4 w-32 rounded" />
               </div>
             </div>
-            <Skeleton className="h-2 w-full rounded-full" />
+            <Skeleton className="h-2 w-full rounded-xs" />
           </div>
           <div className="rounded-2xl border border-border bg-card p-6 space-y-4">
             <div className="flex gap-2 border-b border-border pb-3">

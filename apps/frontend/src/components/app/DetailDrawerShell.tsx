@@ -137,7 +137,7 @@ export function DetailDrawerShell({
                 if (!isDesktop) dragControls.start(e);
               }}
             >
-              <div className="h-1.5 w-12 rounded-full bg-muted-foreground/20" />
+              <div className="h-1.5 w-12 rounded-xs bg-muted-foreground/20" />
             </div>
           )}
 

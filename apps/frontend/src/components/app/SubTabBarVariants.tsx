@@ -58,7 +58,7 @@ export function SubTabBarUnderlineVariant<K extends string>({
               {active && (
                 <motion.div
                   layoutId={`${panelIdPrefix}-underline`}
-                  className="absolute -bottom-px inset-x-0 h-0.5 bg-primary rounded-full"
+                  className="absolute -bottom-px inset-x-0 h-0.5 bg-primary rounded-xs"
                   transition={{ type: "spring", stiffness: 450, damping: 35 }}
                 />
               )}

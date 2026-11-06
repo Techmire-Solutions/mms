@@ -85,7 +85,7 @@ export function JournalEntryFormTagsSection({
               variant={activeTags.includes(tag) ? "default" : "outline"}
               onClick={() => toggleTag(tag)}
               aria-pressed={activeTags.includes(tag)}
-              className="min-h-11 px-2.5 py-1 rounded-full text-xs font-semibold"
+              className="min-h-11 px-2.5 py-1 rounded-md text-xs font-semibold"
             >
               {getJournalTagLabel(tag, t)}
             </Button>

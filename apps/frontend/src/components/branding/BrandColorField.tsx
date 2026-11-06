@@ -104,7 +104,7 @@ export function BrandColorField({
           />
           {isValidHex && (
             <span
-              className="absolute end-2.5 top-3.5 h-4 w-4 rounded-full border border-white/20 shadow-2xs transition-transform hover:scale-110"
+              className="absolute end-2.5 top-3.5 h-4 w-4 rounded-xs border border-white/20 shadow-2xs transition-transform hover:scale-110"
               style={{ backgroundColor: hexDraft.startsWith("#") ? hexDraft : `#${hexDraft}` }}
               aria-hidden="true"
             />

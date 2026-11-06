@@ -104,7 +104,7 @@ export function FacultyDetailAssignmentsSection({
                       as="span"
                       size="sm"
                       tone="primary"
-                      className="px-2 py-0.5 rounded-full text-2xs font-bold uppercase tracking-wider"
+                      className="px-2 py-0.5 rounded-md text-2xs font-bold uppercase tracking-wider"
                     >
                       {t("faculty.assignments.primaryBadge")}
                     </Badge>
@@ -114,7 +114,7 @@ export function FacultyDetailAssignmentsSection({
                       as="span"
                       size="sm"
                       tone={isActive ? "success" : "muted"}
-                      className="px-2 py-0.5 rounded-full text-2xs font-bold uppercase tracking-wider"
+                      className="px-2 py-0.5 rounded-md text-2xs font-bold uppercase tracking-wider"
                     >
                       {isActive ? t("faculty.status.active") : t("faculty.status.inactive")}
                     </Badge>

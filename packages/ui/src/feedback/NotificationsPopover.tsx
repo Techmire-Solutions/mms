@@ -87,7 +87,7 @@ export function NotificationsPopover({
           <Bell className="h-4.5 w-4.5 text-muted-foreground" aria-hidden="true" />
           {unreadCount > 0 && (
             <span
-              className="absolute top-1.5 end-1.5 h-2 w-2 rounded-full bg-destructive animate-pulse"
+              className="absolute top-1.5 end-1.5 h-2 w-2 rounded-xs bg-destructive animate-pulse"
               aria-hidden="true"
             />
           )}
@@ -150,7 +150,7 @@ export function NotificationsPopover({
                       <div className="flex items-start gap-3">
                         <div
                           className={cn(
-                            "mt-1.5 h-2 w-2 shrink-0 rounded-full",
+                            "mt-1.5 h-2 w-2 shrink-0 rounded-xs",
                             notification.read
                               ? "bg-muted-foreground/30"
                               : notification.urgent

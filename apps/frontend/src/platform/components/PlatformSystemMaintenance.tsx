@@ -130,7 +130,7 @@ export function PlatformSystemMaintenance(): React.JSX.Element {
       <motion.div variants={cardVariants} className="space-y-6">
         <div className="p-4 rounded-xl border border-border/60 bg-muted/30 flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs">
           <div className="flex items-center gap-2 flex-wrap">
-            <span className="flex h-2.5 w-2.5 rounded-full bg-success animate-pulse shrink-0" />
+            <span className="flex h-2.5 w-2.5 rounded-xs bg-success animate-pulse shrink-0" />
             <span className="font-bold text-foreground">
               {t("platform.maintenance.preflightCheck")}
             </span>

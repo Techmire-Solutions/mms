@@ -33,10 +33,11 @@ describe("PersonIdentityMeta Component", () => {
     expect(html).not.toContain("rounded-full");
   });
 
-  it("renders pill shape when pill=true is explicitly set", () => {
+  it("renders centralized theme radius when pill=true is set", () => {
     const html = renderToStaticMarkup(<PersonIdentityMeta gender="female" pill={true} />);
     expect(html).toContain("Female");
-    expect(html).toContain("rounded-full");
+    expect(html).toContain("rounded-md");
+    expect(html).not.toContain("rounded-full");
   });
 
   it('applies medium size padding when size="md" is passed', () => {

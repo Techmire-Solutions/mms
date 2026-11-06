@@ -106,9 +106,9 @@ export default function ThemeModeSelector({
                 <div className="w-full h-full flex flex-col justify-between p-1 bg-zinc-50 rounded-lg">
                   <div className="flex items-center justify-between border-b border-zinc-200 pb-0.5">
                     <div className="flex gap-0.5">
-                      <span className="h-1 w-1 rounded-full bg-zinc-300" />
-                      <span className="h-1 w-1 rounded-full bg-zinc-300" />
-                      <span className="h-1 w-1 rounded-full bg-zinc-300" />
+                      <span className="h-1 w-1 rounded-xs bg-zinc-300" />
+                      <span className="h-1 w-1 rounded-xs bg-zinc-300" />
+                      <span className="h-1 w-1 rounded-xs bg-zinc-300" />
                     </div>
                     <Sun className="h-2.5 w-2.5 text-amber-500" />
                   </div>
@@ -123,9 +123,9 @@ export default function ThemeModeSelector({
                 <div className="w-full h-full flex flex-col justify-between p-1 bg-zinc-900 rounded-lg">
                   <div className="flex items-center justify-between border-b border-zinc-800 pb-0.5">
                     <div className="flex gap-0.5">
-                      <span className="h-1 w-1 rounded-full bg-zinc-700" />
-                      <span className="h-1 w-1 rounded-full bg-zinc-700" />
-                      <span className="h-1 w-1 rounded-full bg-zinc-700" />
+                      <span className="h-1 w-1 rounded-xs bg-zinc-700" />
+                      <span className="h-1 w-1 rounded-xs bg-zinc-700" />
+                      <span className="h-1 w-1 rounded-xs bg-zinc-700" />
                     </div>
                     <Moon className="h-2.5 w-2.5 text-sky-400" />
                   </div>

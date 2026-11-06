@@ -46,7 +46,7 @@ export function renderStudentSessionsCell({
             size="sm"
             key={`${sessionName}-${idx}`}
             tone="primary"
-            className="px-1.5 py-0.5 rounded-full font-medium"
+            className="px-1.5 py-0.5 rounded-md font-medium"
           >
             {sessionName}
           </Badge>

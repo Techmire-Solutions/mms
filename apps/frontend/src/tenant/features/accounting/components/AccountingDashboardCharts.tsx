@@ -147,7 +147,7 @@ export function AccountingDashboardCharts({
                   aria-label={`${item.name}: ${formatCurrency(item.value)}`}
                 >
                   <span
-                    className="h-2.5 w-2.5 shrink-0 rounded-full"
+                    className="h-2.5 w-2.5 shrink-0 rounded-xs"
                     style={{ background: pieColors[index % pieColors.length] }}
                     aria-hidden="true"
                   />

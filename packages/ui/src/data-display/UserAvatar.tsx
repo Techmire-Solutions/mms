@@ -97,7 +97,7 @@ export function UserAvatar({
         <>
           <span
             className={cn(
-              "absolute -bottom-0.5 -end-0.5 rounded-full ring-2 ring-card shrink-0",
+              "absolute -bottom-0.5 -end-0.5 rounded-xs ring-2 ring-card shrink-0",
               USER_STATUS_COLORS[status],
               size === "sm" ? "h-2 w-2" : "h-2.5 w-2.5",
             )}

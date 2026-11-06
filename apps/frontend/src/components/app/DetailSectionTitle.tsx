@@ -31,7 +31,7 @@ export function DetailSectionTitle({
       <SectionLabel as="h4" className="ps-1">
         {children}
       </SectionLabel>
-      <span className="text-xs font-semibold text-muted-foreground px-2 py-0.5 rounded-full bg-muted/60">
+      <span className="text-xs font-semibold text-muted-foreground px-2 py-0.5 rounded-md bg-muted/60">
         {count}
       </span>
     </div>

@@ -52,11 +52,11 @@ export function BrandCustomPresetsGrid({
             >
               <div className="flex items-center gap-2 min-w-0">
                 <span
-                  className="relative h-8 w-8 shrink-0 rounded-full border border-white/20 shadow-xs"
+                  className="relative h-8 w-8 shrink-0 rounded-md border border-white/20 shadow-xs"
                   style={{ backgroundColor: preset.primaryColor }}
                 >
                   <span
-                    className="absolute -bottom-0.5 -end-0.5 h-3.5 w-3.5 rounded-full border-2 border-background"
+                    className="absolute -bottom-0.5 -end-0.5 h-3.5 w-3.5 rounded-xs border-2 border-background"
                     style={{ backgroundColor: preset.secondaryColor }}
                     aria-hidden
                   />
