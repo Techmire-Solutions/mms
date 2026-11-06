@@ -6,7 +6,7 @@ export const WHATSAPP_INTEGRATION_OBJECT_KEY = "whatsapp_integration" as const;
 /** Backend-only — never synced to the browser. */
 export const WHATSAPP_INTEGRATION_SECRETS_KEY = "whatsapp_integration_secrets" as const;
 
-const WHATSAPP_PROVIDERS = ["meta", "twilio", "infobip"] as const;
+const WHATSAPP_PROVIDERS = ["meta", "twilio", "infobip", "custom"] as const;
 
 export type WhatsappProviderId = (typeof WHATSAPP_PROVIDERS)[number];
 

@@ -3263,6 +3263,9 @@ export const APP_TRANSLATIONS_EN = {
   "sms.providerInfobip": "Infobip",
   "sms.providerInfobipHint":
     "Use your API Key as the API secret and your account's base URL below.",
+  "sms.providerCustom": "Custom / Generic Gateway (URL)",
+  "sms.providerCustomHint":
+    "Direct HTTP POST to any gateway endpoint. Sends standard { to, body } with Bearer auth.",
   "sms.providerLogiqueues": "Logiqueues",
   "sms.providerLogiqueuesHint":
     "Use your sgw_live_ API key as the API secret; leave the base URL blank unless self-hosting the gateway server.",
@@ -3306,6 +3309,9 @@ export const APP_TRANSLATIONS_EN = {
   "whatsapp.providerInfobip": "Infobip WhatsApp",
   "whatsapp.providerInfobipHint":
     "Infobip WhatsApp Business API. Enter your base URL, sender number, and API key.",
+  "whatsapp.providerCustom": "Custom / Generic Gateway (URL)",
+  "whatsapp.providerCustomHint":
+    "Direct HTTP POST to any gateway endpoint (e.g. LogiQueues, Webhooks). Sends standard { to, body } with Bearer auth.",
   "whatsapp.providerMeta": "Meta WhatsApp Cloud API",
   "whatsapp.providerMetaHint":
     "Direct Meta Cloud API. Enter your WhatsApp Business Account ID, Phone Number ID, and Permanent Access Token.",
@@ -5251,6 +5257,10 @@ export const APP_TRANSLATIONS_EN = {
   "messaging.gateways.connected": "Connected",
   "messaging.gateways.configured": "Configured",
   "messaging.gateways.notConfigured": "Not Configured",
+  "messaging.gateways.configureGateway": "Configure Gateway",
+  "messaging.gateways.deliveryStatus": "Channel Delivery",
+  "messaging.gateways.deliveryDisabled": "Delivery through this channel is currently disabled. Toggle to enable.",
+  "messaging.gateways.manageGateway": "Manage {channel} Gateway",
   "messaging.gateways.smsUnconfiguredWarning": "SMS gateway mode is selected, but SMS gateway is not configured. Gateway messages will fail until configured.",
   "messaging.gateways.whatsappUnconfiguredWarning": "WhatsApp is selected as default, but WhatsApp gateway is not configured.",
   "messaging.gateways.emailUnconfiguredWarning": "Email is selected as default, but Email gateway is not configured.",

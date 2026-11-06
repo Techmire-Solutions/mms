@@ -4,7 +4,7 @@ import { type AppTranslationKey, type EmailProviderId } from "@mms/shared";
 import { FormSelect } from "@/components/app/FormSelect";
 import { Input, IntegrationPanelChrome, Label } from "@shared/ui";
 import { PasswordInput } from "@/components/app/PasswordInput";
-import { useEmailIntegrationPanel } from "@/tenant/features/settings/hooks/useEmailIntegrationPanel";
+import { useEmailIntegrationPanel } from "../hooks/useEmailIntegrationPanel";
 
 /**
  * Multi-provider SMTP setup (Gmail, Microsoft 365, Outlook, Yahoo, iCloud, Zoho, custom).

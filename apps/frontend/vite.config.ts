@@ -23,8 +23,10 @@ function readBuildManifest() {
 }
 
 // Backend origin the dev proxy forwards `/api`, `/health`, `/uploads` to.
-// Override with MMS_BACKEND_PROXY when the backend runs on a non-default port.
-const backendProxyTarget = process.env.MMS_BACKEND_PROXY ?? "http://127.0.0.1:3000";
+// Override with MMS_BACKEND_PROXY or MMS_BACKEND_PORT when the backend runs on a non-default port.
+const backendProxyTarget =
+  process.env.MMS_BACKEND_PROXY ??
+  `http://127.0.0.1:${process.env.MMS_BACKEND_PORT ?? (process.env.PORT || "3000")}`;
 
 // React Compiler is opt-in and experimental (`@vitejs/plugin-react` v6 `compiler`
 // option, powered by oxc-transform-react). Default-off keeps production builds

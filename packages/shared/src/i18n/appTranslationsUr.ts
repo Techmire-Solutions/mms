@@ -3239,6 +3239,9 @@ export const APP_TRANSLATIONS_UR: Record<AppTranslationKey, string> = {
   "sms.providerInfobip": "Infobip",
   "sms.providerInfobipHint":
     "API کلید کو API سیکرٹ کے طور پر اور نیچے اپنے اکاؤنٹ کا بیس یو آر ایل استعمال کریں۔",
+  "sms.providerCustom": "کسٹم / عمومی گیٹ وے (URL)",
+  "sms.providerCustomHint":
+    "کسی بھی گیٹ وے اینڈ پوائنٹ پر براہ راست HTTP POST بمع بیئرر توثیق۔",
   "sms.providerLogiqueues": "Logiqueues",
   "sms.providerLogiqueuesHint":
     "اپنی sgw_live_ API کلید کو API سیکرٹ کے طور پر استعمال کریں؛ بیس یو آر ایل خالی چھوڑیں جب تک کہ آپ خود گیٹ وے سرور ہوسٹ نہ کر رہے ہوں۔",
@@ -3284,6 +3287,9 @@ export const APP_TRANSLATIONS_UR: Record<AppTranslationKey, string> = {
   "whatsapp.providerInfobip": "انفوبپ واٹس ایپ",
   "whatsapp.providerInfobipHint":
     "انفوبپ واٹس ایپ بزنس API۔ اپنا بیس URL، بھیجنے والے کا نمبر اور API کلید درج کریں۔",
+  "whatsapp.providerCustom": "کسٹم / عمومی گیٹ وے (URL)",
+  "whatsapp.providerCustomHint":
+    "کسی بھی گیٹ وے اینڈ پوائنٹ (جیسے LogiQueues یا ویب ہک) پر براہ راست HTTP POST بمع بیئرر توثیق۔",
   "whatsapp.providerMeta": "میٹا واٹس ایپ کلاؤڈ API",
   "whatsapp.providerMetaHint":
     "براہ راست میٹا کلاؤڈ API۔ اپنا واٹس ایپ بزنس اکاؤنٹ، فون نمبر آئی ڈی اور مستقل ایکسس ٹوکن درج کریں۔",
@@ -5202,6 +5208,10 @@ export const APP_TRANSLATIONS_UR: Record<AppTranslationKey, string> = {
   "messaging.gateways.connected": "منسلک",
   "messaging.gateways.configured": "ترتیب شدہ",
   "messaging.gateways.notConfigured": "غیر ترتیب شدہ",
+  "messaging.gateways.configureGateway": "گیٹ وے تشکیل دیں",
+  "messaging.gateways.deliveryStatus": "چینل ترسیل",
+  "messaging.gateways.deliveryDisabled": "اس چینل کے ذریعے ترسیل فی الحال غیر فعال ہے۔ فعال کرنے کے لیے آن کریں۔",
+  "messaging.gateways.manageGateway": "{channel} گیٹ وے کا انتظام کریں",
   "messaging.gateways.smsUnconfiguredWarning": "ایس ایم ایس گیٹ وے موڈ منتخب ہے مگر گیٹ وے ترتیب نہیں دیا گیا۔ ترتیب دینے تک پیغامات ناکام رہیں گے۔",
   "messaging.gateways.whatsappUnconfiguredWarning": "واٹس ایپ بطور ڈیفالٹ منتخب ہے مگر واٹس ایپ گیٹ وے تشکیل شدہ نہیں ہے۔",
   "messaging.gateways.emailUnconfiguredWarning": "ای میل بطور ڈیفالٹ منتخب ہے مگر ای میل گیٹ وے تشکیل شدہ نہیں ہے۔",

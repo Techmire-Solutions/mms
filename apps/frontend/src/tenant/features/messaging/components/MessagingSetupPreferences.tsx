@@ -167,7 +167,7 @@ export function MessagingSetupPreferences({
         </CardContent>
       </Card>
 
-      <MessagingGatewayStatusOverview />
+      <MessagingGatewayStatusOverview canWrite={canWrite} />
 
       {canWrite && (
         <ModuleSetupSaveFooter

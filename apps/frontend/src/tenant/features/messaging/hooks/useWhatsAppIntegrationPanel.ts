@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useState } from "react";
+import { useQueryClient } from "@tanstack/react-query";
 import {
   DEFAULT_WHATSAPP_INTEGRATION,
   listWhatsappProviderPresets,
@@ -14,6 +15,7 @@ import {
 
 export function useWhatsAppIntegrationPanel() {
   const { t } = useTranslation();
+  const queryClient = useQueryClient();
   const providers = (() => listWhatsappProviderPresets())();
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
@@ -26,7 +28,12 @@ export function useWhatsAppIntegrationPanel() {
   const load = useCallback(async (): Promise<void> => {
     try {
       const config = await fetchWhatsappIntegration();
-      if (config) setForm(config);
+      if (config) {
+        setForm(config);
+        if (config.senderId) {
+          setTestPhone((prev) => prev || config.senderId);
+        }
+      }
     } finally {
       setLoading(false);
     }
@@ -48,12 +55,16 @@ export function useWhatsAppIntegrationPanel() {
   const handleSave = async (): Promise<void> => {
     setSaving(true);
     try {
+      const effectiveBaseUrl =
+        form.apiBaseUrl?.trim() || selectedPreset.baseUrlPlaceholder || undefined;
       const saved = await saveWhatsappIntegration({
         ...form,
+        apiBaseUrl: effectiveBaseUrl,
         accountSecret: accountSecret.trim() || undefined,
       });
       setForm(saved);
       setAccountSecret("");
+      void queryClient.invalidateQueries({ queryKey: ["whatsapp-integration"] });
       notify.success(t("whatsapp.saveSuccess"), { description: t("whatsapp.saveSuccessDesc") });
     } catch (error) {
       notify.error(t("whatsapp.saveFailed"), {
@@ -65,19 +76,26 @@ export function useWhatsAppIntegrationPanel() {
   };
 
   const handleTest = async (): Promise<void> => {
-    if (!testPhone.trim()) return;
+    const targetPhone = testPhone.trim() || form.senderId.trim();
+    if (!targetPhone) {
+      notify.error(t("whatsapp.testPhonePlaceholder"));
+      return;
+    }
     setTesting(true);
     try {
-      if (accountSecret.trim()) {
-        const saved = await saveWhatsappIntegration({
-          ...form,
-          accountSecret: accountSecret.trim(),
-        });
-        setForm(saved);
-        setAccountSecret("");
-      }
-      const config = await testWhatsappIntegration(testPhone.trim());
+      const effectiveBaseUrl =
+        form.apiBaseUrl?.trim() || selectedPreset.baseUrlPlaceholder || undefined;
+      const saved = await saveWhatsappIntegration({
+        ...form,
+        apiBaseUrl: effectiveBaseUrl,
+        accountSecret: accountSecret.trim() || undefined,
+      });
+      setForm(saved);
+      if (accountSecret.trim()) setAccountSecret("");
+
+      const config = await testWhatsappIntegration(targetPhone);
       setForm(config);
+      void queryClient.invalidateQueries({ queryKey: ["whatsapp-integration"] });
       notify.success(t("whatsapp.testSuccess"), { description: t("whatsapp.testSuccessDesc") });
     } catch (error) {
       notify.error(t("whatsapp.testFailed"), {

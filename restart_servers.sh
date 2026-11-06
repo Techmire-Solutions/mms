@@ -42,7 +42,7 @@ Options:
 
 URLs:
   Frontend  http://localhost:5173
-  Backend   http://localhost:3000/health
+  Backend   http://localhost:${BACKEND_PORT}/health
 
 Screen (default):
   Attach    screen -r ${SCREEN_SESSION}

@@ -3259,6 +3259,9 @@ export const APP_TRANSLATIONS_FA: Partial<Record<AppTranslationKey, string>> = {
   "sms.providerInfobip": "Infobip",
   "sms.providerInfobipHint":
     "از API Key به عنوان کلید مخفی و آدرس پایه حساب خود در زیر استفاده کنید.",
+  "sms.providerCustom": "درگاه سفارشی / عمومی (URL)",
+  "sms.providerCustomHint":
+    "درخواست مستقیم HTTP POST به هر آدرس وب‌سرویس یا گیت‌وی به همراه احراز هویت Bearer.",
   "sms.providerLogiqueues": "Logiqueues",
   "sms.providerLogiqueuesHint":
     "از کلید API خود که با sgw_live_ شروع می‌شود به عنوان کلید مخفی استفاده کنید؛ آدرس پایه را خالی بگذارید مگر اینکه سرور گیت‌وی را خودتان میزبانی کنید.",
@@ -3304,6 +3307,9 @@ export const APP_TRANSLATIONS_FA: Partial<Record<AppTranslationKey, string>> = {
   "whatsapp.providerInfobip": "اینفوبیپ واتساپ",
   "whatsapp.providerInfobipHint":
     "API تجاری واتساپ اینفوبیپ. آدرس پایه، شماره فرستنده و کلید API را وارد کنید.",
+  "whatsapp.providerCustom": "درگاه سفارشی / عمومی (URL)",
+  "whatsapp.providerCustomHint":
+    "درخواست مستقیم HTTP POST به هر آدرس گیت‌وی (مانند LogiQueues یا وب‌هوک) با احراز هویت Bearer.",
   "whatsapp.providerMeta": "متا واتساپ کلود API",
   "whatsapp.providerMetaHint":
     "API مستقیم کلود متا. شناسه حساب، شناسه شماره تلفن و توکن دسترسی دائمی را وارد کنید.",
@@ -5224,6 +5230,10 @@ export const APP_TRANSLATIONS_FA: Partial<Record<AppTranslationKey, string>> = {
   "messaging.gateways.connected": "متصل",
   "messaging.gateways.configured": "پیکربندی‌شده",
   "messaging.gateways.notConfigured": "پیکربندی‌نشده",
+  "messaging.gateways.configureGateway": "پیکربندی درگاه",
+  "messaging.gateways.deliveryStatus": "تحویل کانال",
+  "messaging.gateways.deliveryDisabled": "تحویل از طریق این کانال در حال حاضر غیرفعال است. برای فعال‌سازی کلیک کنید.",
+  "messaging.gateways.manageGateway": "مدیریت درگاه {channel}",
   "messaging.gateways.smsUnconfiguredWarning": "حالت درگاه پیامک انتخاب شده است اما درگاه پیامک پیکربندی نشده است. تا زمان پیکربندی، پیام‌ها ناموفق خواهند بود.",
   "messaging.gateways.whatsappUnconfiguredWarning": "واتس‌اپ به عنوان پیش‌فرض انتخاب شده است اما درگاه واتس‌اپ پیکربندی نشده است.",
   "messaging.gateways.emailUnconfiguredWarning": "ایمیل به عنوان پیش‌فرض انتخاب شده است اما درگاه ایمیل پیکربندی نشده است.",
