@@ -71,14 +71,12 @@ describe("session trash use-cases", () => {
   it("routes each bulk status item through the transition service and counts failures", async () => {
     // Arrange
     const repo = fakeRepo({
-      findSessionStatusesByIds: vi
-        .fn()
-        .mockResolvedValue(
-          new Map([
-            ["s1", "open"],
-            ["s2", "archived"],
-          ]),
-        ),
+      findSessionStatusesByIds: vi.fn().mockResolvedValue(
+        new Map([
+          ["s1", "open"],
+          ["s2", "archived"],
+        ]),
+      ),
     });
     vi.mocked(transitionSession).mockResolvedValue({
       session: SessionSchema.parse({ id: "s1", name: "One", status: "in_progress" }),

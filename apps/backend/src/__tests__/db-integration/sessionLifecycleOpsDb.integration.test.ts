@@ -132,13 +132,9 @@ describe("session cancel / postpone, student status cascade, activity (real Post
   it("given an in-progress session, should refuse postponing it", async () => {
     // Act
     const attempt = await run(() =>
-      ops.postpone(
-        TENANT,
-        "ses-run",
-        { startDate: inDays(5), reason: "Late start" },
-        admin,
-        { expectedVersion: 1 },
-      ),
+      ops.postpone(TENANT, "ses-run", { startDate: inDays(5), reason: "Late start" }, admin, {
+        expectedVersion: 1,
+      }),
     ).catch((error: unknown) => error);
 
     // Assert

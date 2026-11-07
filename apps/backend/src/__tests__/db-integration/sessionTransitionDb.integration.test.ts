@@ -80,9 +80,8 @@ beforeAll(async () => {
     ]);
   });
   today = await run(async () => {
-    const { sessionsAcademicRepository } = await import(
-      "../../sessions/repository/sessionsAcademicRepositoryAdapter.js"
-    );
+    const { sessionsAcademicRepository } =
+      await import("../../sessions/repository/sessionsAcademicRepositoryAdapter.js");
     const tz = await sessionsAcademicRepository.findWorkspaceTimezone(TENANT);
     return todayInTimeZone(tz);
   });

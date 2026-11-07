@@ -12,10 +12,18 @@ import {
 } from "@mms/shared";
 import { sessionsRepository } from "../repository/sessionsRepositoryAdapter.js";
 import { sessionsAcademicRepository } from "../repository/sessionsAcademicRepositoryAdapter.js";
-import { ConflictError, HttpDomainError, NotFoundError, ValidationError } from "../../lib/httpErrors.js";
+import {
+  ConflictError,
+  HttpDomainError,
+  NotFoundError,
+  ValidationError,
+} from "../../lib/httpErrors.js";
 import { broadcastCollection } from "../../lib/livePush.js";
 import { recordModernAuditEvent } from "../../services/auditTrailService.js";
-import { endLiveEnrollments, SYSTEM_ACTOR } from "../../enrollments/use-cases/enrollmentEndUseCases.js";
+import {
+  endLiveEnrollments,
+  SYSTEM_ACTOR,
+} from "../../enrollments/use-cases/enrollmentEndUseCases.js";
 import { assertSessionDateRange, workspaceToday } from "./sessionLockGuard.js";
 import { transitionSession } from "./sessionTransitionService.js";
 import { withTenant } from "../../db/tenant-context.js";

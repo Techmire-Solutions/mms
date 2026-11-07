@@ -38,9 +38,7 @@ export async function countAcademicCatalogReferencesTx(
       tx
         .select({ n })
         .from(sessions)
-        .where(
-          and(eq(sessions.workspaceSubdomain, subdomain), eq(sessions.categoryId, id)),
-        ),
+        .where(and(eq(sessions.workspaceSubdomain, subdomain), eq(sessions.categoryId, id))),
     );
   }
   if (kind === "programs") {

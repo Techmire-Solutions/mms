@@ -337,10 +337,14 @@ describe("sessions use-cases (DI with fake repository)", () => {
     // Act
     const act = () =>
       runWithTenant("demo", () =>
-        useCases.updateSessionById("s1", { name: "Renamed" }, {
-          canOverrideLock: false,
-          today: "2026-01-01",
-        }),
+        useCases.updateSessionById(
+          "s1",
+          { name: "Renamed" },
+          {
+            canOverrideLock: false,
+            today: "2026-01-01",
+          },
+        ),
       );
 
     // Assert

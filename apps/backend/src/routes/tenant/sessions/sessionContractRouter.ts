@@ -148,7 +148,11 @@ export const sessionContractRouter: FastifyPluginAsync = async (fastify) => {
         const parsedVersion =
           rawVersion === undefined || rawVersion === "" ? undefined : Number(rawVersion);
         const expectedVersion = Number.isFinite(parsedVersion) ? parsedVersion : undefined;
-        if (rawVersion !== undefined && parsedVersion !== undefined && !Number.isInteger(parsedVersion))
+        if (
+          rawVersion !== undefined &&
+          parsedVersion !== undefined &&
+          !Number.isInteger(parsedVersion)
+        )
           return {
             status: 400 as const,
             body: { type: "validation_error", message: "Invalid x-expected-version header" },
@@ -156,13 +160,7 @@ export const sessionContractRouter: FastifyPluginAsync = async (fastify) => {
         const updated = await withTenant(
           String(request.tenant?.id),
           () =>
-            sessionsUseCases.updateSessionById(
-              id,
-              body,
-              lock,
-              expectedUpdatedAt,
-              expectedVersion,
-            ),
+            sessionsUseCases.updateSessionById(id, body, lock, expectedUpdatedAt, expectedVersion),
           { readOnly: false },
         );
         if (!updated)

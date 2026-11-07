@@ -73,7 +73,6 @@ function softDeleteWriteValues(record: Session) {
   };
 }
 
-
 async function persistSessionTx(
   tx: Transaction,
   subdomain: string,
@@ -248,9 +247,13 @@ export async function replaceSessionsForWorkspace(
     }
     for (const record of records) {
       const overlapExempt = await overlapExemptForRestoreTx(tx, subdomain, record);
-      await persistSessionTx(tx, subdomain, { ...record, overlapExempt }, { softDelete: "payload", restoredBy });
+      await persistSessionTx(
+        tx,
+        subdomain,
+        { ...record, overlapExempt },
+        { softDelete: "payload", restoredBy },
+      );
     }
   });
   await invalidateMultiTierCache({ tenantId: subdomain, domain: "sessions" });
 }
-

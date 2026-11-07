@@ -29,7 +29,8 @@ export async function overlapExemptForRestoreTx(
   record: Session,
 ): Promise<boolean> {
   if (record.overlapExempt) return true;
-  if (!["draft", "open", "in_progress"].includes(normalizeSessionStatus(record.status))) return false;
+  if (!["draft", "open", "in_progress"].includes(normalizeSessionStatus(record.status)))
+    return false;
   const start = toDbDate(record.startDate);
   const end = toDbDate(record.endDate);
   if (!start || !end) return false;

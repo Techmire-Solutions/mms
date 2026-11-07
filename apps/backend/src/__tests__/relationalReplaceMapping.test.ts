@@ -102,16 +102,10 @@ describe("RELATIONAL_REPLACE_MAPPING backup coverage", () => {
     // sessions replaces by archiving stale rows, so it must run before the modules whose rows
     // point at sessions/session_classes (attendance, enrollments, exams, hasanat, finance).
     expect(
-      sortCollectionNamesForRestore([
-        "enrollments",
-        "attendance_records",
-        "exams",
-        "sessions",
-      ]),
+      sortCollectionNamesForRestore(["enrollments", "attendance_records", "exams", "sessions"]),
     ).toEqual(["sessions", "attendance_records", "enrollments", "exams"]);
     expect(RELATIONAL_REPLACE_MAPPING.sessions?.priority).toBeLessThan(
-      RELATIONAL_REPLACE_MAPPING.attendance_lookups?.priority ??
-        Number.POSITIVE_INFINITY,
+      RELATIONAL_REPLACE_MAPPING.attendance_lookups?.priority ?? Number.POSITIVE_INFINITY,
     );
   });
 

@@ -111,9 +111,7 @@ export async function transitionSession(
     if (!row) throw new NotFoundError("Session not found");
     if (options.expectedVersion !== undefined) {
       if (Number(row.version) !== Number(options.expectedVersion))
-        throw new ConflictError(
-          "This session was modified by another user — reload and try again",
-        );
+        throw new ConflictError("This session was modified by another user — reload and try again");
     } else if (expected && row.updatedAt.toISOString() !== new Date(expected).toISOString()) {
       throw new ConflictError("This session was modified by another user — reload and try again");
     }

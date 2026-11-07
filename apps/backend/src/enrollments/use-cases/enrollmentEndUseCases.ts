@@ -82,7 +82,7 @@ export async function completeLiveEnrollments(
   return { ended: live.length };
 }
 
-/** A student left (inactive / transferred / graduated): withdraw their live enrollments today. */export async function withdrawEnrollmentsForStudentStatus(
+/** A student left (inactive / transferred / graduated): withdraw their live enrollments today. */ export async function withdrawEnrollmentsForStudentStatus(
   tenant: string,
   studentId: string,
   status: string,

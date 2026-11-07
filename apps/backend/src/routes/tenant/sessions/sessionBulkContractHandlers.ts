@@ -66,11 +66,7 @@ export const sessionBulkContractHandlers = {
       const result = await withTenant(
         String(request.tenant?.id),
         () =>
-          sessionsUseCases.bulkUpdateSessionsStatus(
-            body.ids.map(String),
-            body.status,
-            body.reason,
-          ),
+          sessionsUseCases.bulkUpdateSessionsStatus(body.ids.map(String), body.status, body.reason),
         { readOnly: false },
       );
       return { status: 200 as const, body: { success: true, ...result } };

@@ -119,7 +119,12 @@ export function createSessionsUseCases(
         );
       // `allowOverlap` is materialised per row; when it is off, overlapping live sessions are refused.
       const allowOverlap = await loadSessionOverlapExemption(tenant, deps);
-      await assertSessionOverlapFree(repo, tenant, { ...record, overlapExempt: allowOverlap }, allowOverlap);
+      await assertSessionOverlapFree(
+        repo,
+        tenant,
+        { ...record, overlapExempt: allowOverlap },
+        allowOverlap,
+      );
       return crud.create({
         ...record,
         overlapExempt: allowOverlap,
@@ -218,7 +223,9 @@ export function createSessionsUseCases(
       normalized.updatedAt = savedUpdatedAt;
       normalized.version = Number(before.version ?? 1) + 1;
       runAfterCommit(() => broadcastCollection("sessions"));
-      runAfterCommit(() => invalidateMultiTierCache({ tenantId: tenant, domain: "sessions", key: id }));
+      runAfterCommit(() =>
+        invalidateMultiTierCache({ tenantId: tenant, domain: "sessions", key: id }),
+      );
       let result: SessionRecord = normalized;
       if (targetStatus) {
         const transition = await transitionSession(tenant, id, {

@@ -33,7 +33,9 @@ export async function bulkUpdateSessionsStatusSql(
       )
       .for("update");
 
-    const allowed = stored.filter((row) => canTransitionSession(String(row.status), normalizedStatus));
+    const allowed = stored.filter((row) =>
+      canTransitionSession(String(row.status), normalizedStatus),
+    );
     if (allowed.length === 0) return { succeeded: 0, failed: uniqueIds.length };
     // Rows that had a live transition at read time; a concurrent writer changing status again will
     // no longer match this predicate (READ COMMITTED re-checks the row after the lock is granted).

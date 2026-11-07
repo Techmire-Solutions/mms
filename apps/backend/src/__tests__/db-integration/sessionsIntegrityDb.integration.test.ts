@@ -4,13 +4,7 @@ import { SessionSchema } from "@mms/shared";
 import { closeDatabase } from "../../db/dbConnection.js";
 import { applyDrizzleMigrations } from "../../db/dbInit.js";
 import { withTenant } from "../../db/tenant-context.js";
-import {
-  enrollments,
-  sessionClasses,
-  sessions,
-  students,
-  workspaces,
-} from "../../db/schema.js";
+import { enrollments, sessionClasses, sessions, students, workspaces } from "../../db/schema.js";
 import {
   replaceSessionsForWorkspace,
   saveSession,
@@ -161,7 +155,10 @@ describe("sessions OCC token (migration 0206)", () => {
 
   it("does not resurrect an archived session through a normal upsert", async () => {
     // Arrange
-    await saveSession(TENANT, record("keep-archived", { startDate: "2026-07-01", endDate: "2026-08-31" }));
+    await saveSession(
+      TENANT,
+      record("keep-archived", { startDate: "2026-07-01", endDate: "2026-08-31" }),
+    );
     await softDeleteSessionWithCascade(TENANT, "keep-archived", "u-test", "test archive");
 
     // Act — the repository path used by imports/bulk sync, without the use-case guard.
@@ -184,7 +181,10 @@ describe("sessions OCC token (migration 0206)", () => {
 describe("session_classes domain checks (migration 0206)", () => {
   it("rejects a negative capacity", async () => {
     // Arrange
-    await saveSession(TENANT, record("cls-neg", { startDate: "2035-01-01", endDate: "2035-02-28" }));
+    await saveSession(
+      TENANT,
+      record("cls-neg", { startDate: "2035-01-01", endDate: "2035-02-28" }),
+    );
 
     // Act
     const act = withTenant(TENANT, async (tx) => {
@@ -286,7 +286,10 @@ describe("replaceSessionsForWorkspace (backup restore)", () => {
     const archived = await findSessionById(TENANT, "restore-old");
     expect(archived?.deletedAt).toBeTruthy();
     const kept = await withTenant(TENANT, async (tx) =>
-      tx.select({ id: enrollments.id }).from(enrollments).where(eq(enrollments.id, "restore-old-enrollment")),
+      tx
+        .select({ id: enrollments.id })
+        .from(enrollments)
+        .where(eq(enrollments.id, "restore-old-enrollment")),
     );
     expect(kept).toHaveLength(1);
     expect(await findSessionById(TENANT, "restore-new")).toBeTruthy();

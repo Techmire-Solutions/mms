@@ -7,9 +7,7 @@ import type { TenantTransaction } from "./tenant-context.js";
  * transitions, invoice cancellation during a session cancel — record a failure and continue.
  * Requires an active transaction: there is nothing to save to otherwise.
  */
-export async function withSavepoint<T>(
-  cb: (tx: TenantTransaction) => Promise<T>,
-): Promise<T> {
+export async function withSavepoint<T>(cb: (tx: TenantTransaction) => Promise<T>): Promise<T> {
   if (!hasActiveTransaction()) {
     throw new Error("[withSavepoint] no active transaction — wrap the operation in withTenant()");
   }

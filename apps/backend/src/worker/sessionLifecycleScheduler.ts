@@ -33,7 +33,12 @@ export async function runSessionAutoStart(): Promise<Array<{ workspace: string; 
         tableName: "sessions",
         recordId: row.id,
         actionType: "UPDATE",
-        newState: { operation: "transition", from: "open", to: "in_progress", reason: "Auto-start on start date" },
+        newState: {
+          operation: "transition",
+          from: "open",
+          to: "in_progress",
+          reason: "Auto-start on start date",
+        },
       });
     }
     return result.rows;

@@ -56,21 +56,19 @@ describe("deriveSessionPhase", () => {
 
   it("maps the requested eight phases onto the six persisted states", () => {
     expect(deriveSessionPhase({ status: "draft" }, { today })).toBe("planning");
-    expect(
-      deriveSessionPhase({ status: "open", startDate: "2026-07-01" }, { today }),
-    ).toBe("planning");
-    expect(
-      deriveSessionPhase({ status: "open", startDate: "2026-06-01" }, { today }),
-    ).toBe("enrollment");
+    expect(deriveSessionPhase({ status: "open", startDate: "2026-07-01" }, { today })).toBe(
+      "planning",
+    );
+    expect(deriveSessionPhase({ status: "open", startDate: "2026-06-01" }, { today })).toBe(
+      "enrollment",
+    );
     expect(deriveSessionPhase({ status: "in_progress" }, { today })).toBe("teaching");
     expect(
       deriveSessionPhase(
         { status: "in_progress", startDate: "2026-06-01", endDate: "2026-06-30" },
         {
           today,
-          events: [
-            { kind: "exam_period", startOn: "2026-06-10", endOn: "2026-06-20" },
-          ],
+          events: [{ kind: "exam_period", startOn: "2026-06-10", endOn: "2026-06-20" }],
         },
       ),
     ).toBe("exams");
@@ -192,7 +190,9 @@ describe("endDateBoundViolations", () => {
 
 describe("completion window", () => {
   it("allows evaluation only once the session has ended", () => {
-    expect(canEvaluateSessionCompletion({ status: "open", endDate: "2026-01-01", today: "2026-06-01" })).toBe(false);
+    expect(
+      canEvaluateSessionCompletion({ status: "open", endDate: "2026-01-01", today: "2026-06-01" }),
+    ).toBe(false);
     expect(
       canEvaluateSessionCompletion({
         status: "in_progress",

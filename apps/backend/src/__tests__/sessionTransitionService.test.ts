@@ -135,7 +135,11 @@ describe("transitionSession guards", () => {
   it("rejects a stale version, and a row that changed between lock and write", async () => {
     // Act
     const stale = () =>
-      transitionSession("demo", "s1", { to: "cancelled", reason: "Teacher left", expectedVersion: 2 });
+      transitionSession("demo", "s1", {
+        to: "cancelled",
+        reason: "Teacher left",
+        expectedVersion: 2,
+      });
 
     // Assert
     await expect(stale()).rejects.toBeInstanceOf(ConflictError);
@@ -186,7 +190,11 @@ describe("transitionSession guards", () => {
 
     // Arrange: blocked again without an override permission
     const noPermission = () =>
-      transitionSession("demo", "s1", { to: "completed", reason: "Ends early", canOverride: false });
+      transitionSession("demo", "s1", {
+        to: "completed",
+        reason: "Ends early",
+        canOverride: false,
+      });
     await expect(noPermission()).rejects.toBeInstanceOf(SessionTransitionBlockedError);
 
     // Act: authorized override waives the violation and records it
@@ -219,7 +227,12 @@ describe("transitionSession guards", () => {
     const result = await transitionSession("demo", "s1", { to: "completed" });
 
     // Assert
-    expect(completeLiveEnrollments).toHaveBeenCalledWith("demo", "s1", "2026-06-01", expect.anything());
+    expect(completeLiveEnrollments).toHaveBeenCalledWith(
+      "demo",
+      "s1",
+      "2026-06-01",
+      expect.anything(),
+    );
     expect(result.ended).toBe(2);
     expect(endLiveEnrollments).not.toHaveBeenCalled();
   });
@@ -236,13 +249,13 @@ describe("transitionSession guards", () => {
 
   it("maps an unknown target status to a 400 and a missing session to 404", async () => {
     // Act / Assert
-    await expect(
-      transitionSession("demo", "s1", { to: "planning" }),
-    ).rejects.toBeInstanceOf(ValidationError);
+    await expect(transitionSession("demo", "s1", { to: "planning" })).rejects.toBeInstanceOf(
+      ValidationError,
+    );
 
     vi.mocked(lockSessionForTransitionTx).mockResolvedValue(null);
-    await expect(transitionSession("demo", "s1", { to: "cancelled", reason: "x y" })).rejects.toBeInstanceOf(
-      NotFoundError,
-    );
+    await expect(
+      transitionSession("demo", "s1", { to: "cancelled", reason: "x y" }),
+    ).rejects.toBeInstanceOf(NotFoundError);
   });
 });

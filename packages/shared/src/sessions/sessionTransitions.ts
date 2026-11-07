@@ -79,7 +79,10 @@ export function parseSessionStatus(raw: unknown): SessionLifecycleState {
 
 /** Zod write-path schema: accepts the legacy aliases, rejects every other string. */
 export const sessionStatusSchema = z.preprocess(
-  (raw) => (typeof raw === "string" ? (LEGACY_STATUS[raw.trim().toLowerCase()] ?? raw.trim().toLowerCase()) : raw),
+  (raw) =>
+    typeof raw === "string"
+      ? (LEGACY_STATUS[raw.trim().toLowerCase()] ?? raw.trim().toLowerCase())
+      : raw,
   z.enum(SESSION_LIFECYCLE_STATES),
 );
 
