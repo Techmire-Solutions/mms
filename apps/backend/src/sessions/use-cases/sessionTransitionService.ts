@@ -10,15 +10,15 @@ import {
   type WithdrawalBillingOutcome,
 } from "@mms/shared";
 import { sessionsRepository } from "../repository/sessionsRepositoryAdapter.js";
-import { getSessionModulePreferencesByWorkspace } from "../../db/repositories/sessionModulePreferencesRepository.js";
 import {
   countLiveEnrollmentsTx,
   countSessionAttendanceTx,
   countSessionExamResultsTx,
+  getSessionModulePreferencesByWorkspace,
   lockSessionForTransitionTx,
   sessionHasBudgetTx,
   updateSessionStatusIfTx,
-} from "../../db/repositories/sessionTransitionRepository.js";
+} from "../repository/sessionTransitionRepositoryAdapter.js";
 import { withTenant } from "../../db/tenant-context.js";
 import { runAfterCommit } from "../../db/commitScope.js";
 import { ConflictError, NotFoundError, ValidationError } from "../../lib/httpErrors.js";

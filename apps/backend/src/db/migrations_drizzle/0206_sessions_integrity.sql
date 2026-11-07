@@ -125,7 +125,7 @@ END $$;
 --> statement-breakpoint
 
 -- ───────────────────────── 4. session_classes: OCC columns + domain guards ─────────────────────────
-ALTER TABLE "session_classes" ADD COLUMN IF NOT EXISTS "updated_at" timestamptz NOT NULL DEFAULT now();
+ALTER TABLE "session_classes" ADD COLUMN IF NOT EXISTS "updated_at" timestamp with time zone NOT NULL DEFAULT now();
 --> statement-breakpoint
 ALTER TABLE "session_classes" ADD COLUMN IF NOT EXISTS "version" integer NOT NULL DEFAULT 1;
 --> statement-breakpoint

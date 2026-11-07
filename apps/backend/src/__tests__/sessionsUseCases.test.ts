@@ -1,4 +1,4 @@
-import { beforeEach, describe, expect, it, vi } from "vitest";
+import { describe, expect, it, vi } from "vitest";
 import { createSessionsUseCases } from "../sessions/use-cases/sessionsUseCases.js";
 import { transitionSession } from "../sessions/use-cases/sessionTransitionService.js";
 import type { SessionsRepository } from "../sessions/repository/sessionsRepository.js";

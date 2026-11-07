@@ -27,7 +27,7 @@ export async function loadSessionOverlapExemption(
 ): Promise<boolean> {
   const load =
     deps?.loadSessionPreferences ??
-    (await import("../../db/repositories/sessionModulePreferencesRepository.js"))
+    (await import("../repository/sessionTransitionRepositoryAdapter.js"))
       .getSessionModulePreferencesByWorkspace;
   const raw = await load(tenant);
   return normalizeSessionModulePreferences(raw).allowOverlap;

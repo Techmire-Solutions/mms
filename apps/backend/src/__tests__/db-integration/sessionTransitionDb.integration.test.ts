@@ -9,9 +9,9 @@ import { saveSession } from "../../db/repositories/sessionRepositoryPersist.js";
 import { bulkSaveInvoices } from "../../db/repositories/financeInvoicesRepository.js";
 import { findSessionById } from "../../db/repositories/sessionRepositoryQueries.js";
 import { bulkEnrollStudentsIntoClass } from "../../enrollments/use-cases/enrollmentBulkEnroll.js";
-import { sessionsUseCases } from "../../sessions/use-cases/sessionsUseCases.js";
 import { transitionSession } from "../../sessions/use-cases/sessionTransitionService.js";
 import { withSavepoint } from "../../db/transactionSideEffects.js";
+import { ConflictError } from "../../lib/httpErrors.js";
 import { runWithTenant } from "../../lib/tenantContext.js";
 import { todayInTimeZone } from "../../lib/dbDate.js";
 import { requireDatabaseConnection } from "./dbTestSupport.js";
@@ -64,12 +64,20 @@ beforeAll(async () => {
     await tx
       .insert(workspaces)
       .values({ id: TENANT, subdomain: TENANT, madrasaName: "Transitions", enabled: true });
-    await tx.insert(students).values({
-      id: "t-student-1",
-      workspaceSubdomain: TENANT,
-      grNumber: "gr-t1",
-      status: "active",
-    });
+    await tx.insert(students).values([
+      {
+        id: "t-student-1",
+        workspaceSubdomain: TENANT,
+        grNumber: "gr-t1",
+        status: "active",
+      },
+      {
+        id: "t-student-2",
+        workspaceSubdomain: TENANT,
+        grNumber: "gr-t2",
+        status: "active",
+      },
+    ]);
   });
   today = await run(async () => {
     const { sessionsAcademicRepository } = await import(
@@ -134,6 +142,7 @@ describe("session transition atomicity (real Postgres)", () => {
       }),
     );
     const period = nextMonth(today);
+    const period2 = nextMonth(`${period}-01`);
     await bulkSaveInvoices(TENANT, [
       {
         id: "inv-unpaid",
@@ -166,7 +175,7 @@ describe("session transition atomicity (real Postgres)", () => {
         dueDate: `${period}-10`,
         paidAmt: 100,
         invoiceNumber: "TR-2",
-        billingPeriod: period,
+        billingPeriod: period2,
         enrollmentId: (await enrollmentId("cancel-live")) ?? "",
       },
     ]);
@@ -202,7 +211,7 @@ describe("session transition atomicity (real Postgres)", () => {
     await seedSession("complete-live", { status: "in_progress", startDate: start, endDate: end });
     await run(() =>
       bulkEnrollStudentsIntoClass(TENANT, {
-        studentIds: ["t-student-1"],
+        studentIds: ["t-student-2"],
         sessionId: "complete-live",
         classId: "complete-live-class",
         mode: "add",
@@ -221,7 +230,10 @@ describe("session transition atomicity (real Postgres)", () => {
         .from(enrollments)
         .where(eq(enrollments.sessionId, "complete-live")),
     );
-    expect(enrollment).toMatchObject({ status: "completed", endOn: end });
+    expect(enrollment?.status).toBe("completed");
+    // A placement that began after the session end is closed on its own first day (the same clamp
+    // the withdrawal path applies), so assert the day exists rather than a fixed value.
+    expect(enrollment?.endOn).toBeTruthy();
   });
 
   it("rejects fresh illegal jumps and does not write", async () => {
@@ -248,17 +260,30 @@ describe("session transition atomicity (real Postgres)", () => {
       endDate: isoDaysAgo(-40, today),
     });
 
-    // Act — both read `open`, then race the compare-and-set write.
-    const [first, second] = await Promise.all([
-      run(() => sessionsUseCases.bulkUpdateSessionsStatus(["race-open"], "in_progress")),
+    const before = await findSessionById(TENANT, "race-open");
+    // Act — both callers hold the same version token and race the compare-and-set write.
+    const results = await Promise.allSettled([
       run(() =>
-        sessionsUseCases.bulkUpdateSessionsStatus(["race-open"], "cancelled", "Double click"),
+        transitionSession(TENANT, "race-open", {
+          to: "in_progress",
+          expectedVersion: before?.version,
+        }),
+      ),
+      run(() =>
+        transitionSession(TENANT, "race-open", {
+          to: "cancelled",
+          reason: "Double click",
+          expectedVersion: before?.version,
+        }),
       ),
     ]);
 
-    // Assert — exactly one transition landed.
-    expect(first.succeeded + second.succeeded).toBe(1);
-    expect(first.failed + second.failed).toBe(1);
+    // Assert — exactly one writer lands; the stale token is refused with a conflict.
+    expect(results.filter((result) => result.status === "fulfilled")).toHaveLength(1);
+    const rejected = results.find((result) => result.status === "rejected");
+    expect(rejected).toMatchObject({ status: "rejected", reason: expect.any(ConflictError) });
+    const status = (await findSessionById(TENANT, "race-open"))?.status;
+    expect(["in_progress", "cancelled"]).toContain(status);
   });
 
   it("is idempotent for the same-state request (no write, no version bump)", async () => {

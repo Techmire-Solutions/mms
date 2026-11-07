@@ -23,7 +23,7 @@ import { runAfterCommit } from "../../db/commitScope.js";
 import {
   countLiveEnrollmentsTx,
   shiftSessionDependentDatesTx,
-} from "../../db/repositories/sessionTransitionRepository.js";
+} from "../repository/sessionTransitionRepositoryAdapter.js";
 
 const actorOf = (user: User | undefined) =>
   user ? { userId: user.id, label: user.name || user.email } : SYSTEM_ACTOR;
