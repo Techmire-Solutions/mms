@@ -308,4 +308,16 @@ describe("SessionForm Component", () => {
       "Second session",
     );
   });
+
+  it("renders compact horizontal weekday labels with full accessible names", async () => {
+    await act(async () => {
+      root.render(<SessionForm open={true} onClose={vi.fn()} onSave={vi.fn()} />);
+    });
+    const schedule = container.querySelector("fieldset");
+    expect(schedule?.textContent).toContain("Sun");
+    expect(schedule?.textContent).toContain("Sat");
+    expect(schedule?.textContent).not.toContain("Sunday");
+    expect(schedule?.innerHTML).toContain('aria-label="Sunday"');
+    expect(schedule?.innerHTML).toContain("lg:grid-cols-7");
+  });
 });

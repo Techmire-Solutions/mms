@@ -102,4 +102,23 @@ describe("FormCheckboxCard", () => {
     const box = container.querySelector<HTMLButtonElement>('button[role="checkbox"]');
     expect(box?.getAttribute("aria-checked")).toBe("true");
   });
+
+  it("uses ariaLabel as the accessible name while the visible label can be abbreviated", async () => {
+    await act(async () => {
+      root.render(
+        <FormCheckboxCard
+          id="weekday-check"
+          checked={false}
+          onCheckedChange={() => undefined}
+          label="Sun"
+          ariaLabel="Sunday"
+          labelClassName="text-center"
+        />,
+      );
+    });
+    const box = container.querySelector('button[role="checkbox"]');
+    expect(box?.getAttribute("aria-label")).toBe("Sunday");
+    const label = container.querySelector("label");
+    expect(label?.className).toContain("text-center");
+  });
 });

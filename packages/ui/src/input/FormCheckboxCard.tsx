@@ -10,6 +10,8 @@ export interface FormCheckboxCardProps {
   checked: boolean;
   onCheckedChange: (checked: boolean) => void;
   label: React.ReactNode;
+  /** Full accessible name when the visible label is abbreviated (e.g. weekday tiles). */
+  ariaLabel?: string;
   description?: React.ReactNode;
   error?: string;
   disabled?: boolean;
@@ -30,6 +32,7 @@ export function FormCheckboxCard({
   checked,
   onCheckedChange,
   label,
+  ariaLabel,
   description,
   error,
   disabled = false,
@@ -50,12 +53,13 @@ export function FormCheckboxCard({
   };
 
   return (
-    <div className={cn("flex flex-col justify-end pt-0.5", className)}>
+    <div className={cn("flex h-full min-w-0 flex-col justify-end pt-0.5", className)}>
       <div
         role="presentation"
+        title={ariaLabel}
         onClick={handleCardClick}
         className={cn(
-          "relative overflow-hidden group/card flex min-h-11 items-center gap-3 rounded-xl border p-3 transition-all select-none",
+          "relative flex min-h-11 min-w-0 items-center gap-3 overflow-hidden rounded-xl border p-3 transition-all select-none",
           CARD_STRIPE_INSET,
           disabled
             ? "cursor-not-allowed opacity-60 bg-muted/20 border-border/50"
@@ -64,7 +68,6 @@ export function FormCheckboxCard({
             ? "bg-primary/10 border-primary/40 text-primary font-bold shadow-xs"
             : "bg-muted/30 border-border/70 hover:bg-muted/50 text-muted-foreground",
           error && "border-destructive/60",
-          labelClassName,
         )}
       >
         <div
@@ -81,10 +84,14 @@ export function FormCheckboxCard({
           checked={checked}
           disabled={disabled}
           error={Boolean(error)}
+          aria-label={ariaLabel}
           onCheckedChange={onCheckedChange}
           className="data-[state=checked]:bg-primary data-[state=checked]:border-primary"
         />
-        <label htmlFor={id} className="flex flex-col min-w-0 flex-1 cursor-pointer">
+        <label
+          htmlFor={id}
+          className={cn("flex min-w-0 flex-1 cursor-pointer flex-col", labelClassName)}
+        >
           <span className="text-xs font-semibold leading-tight">{label}</span>
           {description && (
             <span className="mt-0.5 text-3xs text-muted-foreground font-normal leading-tight">

@@ -24,9 +24,13 @@ export function WorkingDaysPicker({
   const baseId = useId();
   const selected = new Set(value.map((day) => day.toLowerCase()));
   const labels = useMemo(() => {
-    const format = new Intl.DateTimeFormat(language, { weekday: "long", timeZone: "UTC" });
+    const full = new Intl.DateTimeFormat(language, { weekday: "long", timeZone: "UTC" });
+    const short = new Intl.DateTimeFormat(language, { weekday: "short", timeZone: "UTC" });
     // 2023-01-01 was a Sunday, matching WEEKDAY_NAMES index 0.
-    return WEEKDAY_NAMES.map((_, index) => format.format(Date.UTC(2023, 0, 1 + index)));
+    return WEEKDAY_NAMES.map((_, index) => ({
+      full: full.format(Date.UTC(2023, 0, 1 + index)),
+      short: short.format(Date.UTC(2023, 0, 1 + index)),
+    }));
   }, [language]);
 
   const toggle = (day: WeekdayName, checked: boolean) => {
@@ -47,7 +51,7 @@ export function WorkingDaysPicker({
           {description}
         </p>
       ) : null}
-      <div className="grid grid-cols-2 gap-2 sm:grid-cols-4 lg:grid-cols-7">
+      <div className="grid auto-rows-fr grid-cols-2 gap-2 sm:grid-cols-4 lg:grid-cols-7">
         {WEEKDAY_NAMES.map((day, index) => (
           <FormCheckboxCard
             key={day}
@@ -55,7 +59,10 @@ export function WorkingDaysPicker({
             name="workingDays"
             checked={selected.has(day)}
             onCheckedChange={(checked) => toggle(day, checked)}
-            label={labels[index]}
+            label={labels[index].short}
+            ariaLabel={labels[index].full}
+            labelClassName="whitespace-nowrap text-center"
+            className="h-full"
             disabled={disabled}
           />
         ))}
