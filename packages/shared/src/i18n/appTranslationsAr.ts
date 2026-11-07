@@ -9942,6 +9942,7 @@ export const APP_TRANSLATIONS_AR: Record<AppTranslationKey, string> = {
   "sessions.rollover.copy.workingDays": "أيام العمل",
   "sessions.rollover.copy.staff": "معلمو الشعب (من تاريخ البدء الجديد)",
   "sessions.rollover.copy.calendar": "أحداث تقويم الدورة (مُزاحة)",
+  "sessions.rollover.copy.schedules": "جداول الحصص (مُزاحة)",
   "sessions.rollover.classMap": "إلى أين ينتقل كل صف",
   "sessions.rollover.nextClassFor": "بعد {class}",
   "sessions.rollover.graduate": "تخرّج",

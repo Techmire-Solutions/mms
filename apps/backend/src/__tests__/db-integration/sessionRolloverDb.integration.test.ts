@@ -192,4 +192,76 @@ describe("session rollover (real Postgres)", () => {
     expect(count).toBe(0);
     expect(target?.classes.map((cls) => cls.fees.length)).toEqual([0, 0]);
   });
+
+  it("given a target with fewer seats than students, should refuse the carry and close nothing", async () => {
+    // Arrange — one-seat target for two live source students.
+    await saveSession(
+      TENANT,
+      SessionSchema.parse({
+        id: "tight",
+        name: "Tight Year",
+        status: "in_progress",
+        startDate: "2026-01-01",
+        endDate: "2026-12-31",
+        overlapExempt: true,
+        classes: [
+          {
+            id: "tight-class",
+            name: "Tight",
+            maxStudents: 1,
+            sections: [{ id: "tight-a", name: "A", capacity: 1 }],
+          },
+        ],
+      }),
+    );
+    for (const studentId of ["s1", "s2"]) {
+      await run(() =>
+        bulkEnrollStudentsIntoClass(TENANT, {
+          studentIds: [studentId],
+          sessionId: "tight",
+          classId: "tight-class",
+          mode: "add",
+        }),
+      );
+    }
+    await createPromotionRun(TENANT, {
+      id: "run-tight",
+      sourceSessionId: "tight",
+      mode: "promote",
+      classMap: [{ sourceClassId: "tight-class", nextClassId: "tight-class" }],
+      createdBy: "u-admin",
+    });
+
+    // Act / Assert — the whole carry is rejected and the source stays untouched.
+    await expect(
+      run(() =>
+        executeSessionRollover(
+          TENANT,
+          "u-admin",
+          {
+            runId: "run-tight",
+            sourceSessionId: "tight",
+            body: sessionRolloverBodySchema.parse({
+              mode: "promote",
+              target: { name: "Tight Next", startDate: "2028-01-01", endDate: "2028-12-31" },
+              copy: { staff: false, calendar: false },
+              classMap: [{ sourceClassId: "tight-class", nextClassId: "tight-class" }],
+            }),
+          },
+          noProgress,
+        ),
+      ),
+    ).rejects.toMatchObject({ statusCode: 409, type: "rollover_blocked" });
+    const [{ live }] = await query<{ live: number }>(sql`
+      SELECT count(*)::int AS live FROM enrollments
+       WHERE workspace_subdomain = ${TENANT} AND session_id = 'tight'
+         AND status NOT IN ('promoted', 'retained', 'graduated', 'left')`);
+    const tightTarget = (await findPromotionRun(TENANT, "run-tight"))?.targetSessionId ?? "";
+    const [{ carried }] = await query<{ carried: number }>(sql`
+      SELECT count(*)::int AS carried FROM enrollments
+       WHERE workspace_subdomain = ${TENANT} AND promoted_from_enrollment_id IS NOT NULL
+         AND session_id = ${tightTarget}`);
+    expect(live).toBe(2);
+    expect(carried).toBe(0);
+  });
 });

@@ -10054,6 +10054,7 @@ export const APP_TRANSLATIONS_UR: Record<AppTranslationKey, string> = {
   "sessions.rollover.copy.workingDays": "تدریسی دن",
   "sessions.rollover.copy.staff": "سیکشن اساتذہ (نئی تاریخ آغاز سے)",
   "sessions.rollover.copy.calendar": "سیشن کیلنڈر کے واقعات (منتقل شدہ)",
+  "sessions.rollover.copy.schedules": "کلاس شیڈول (تاریخیں تبدیل شدہ)",
   "sessions.rollover.classMap": "ہر کلاس آگے کہاں جائے گی",
   "sessions.rollover.nextClassFor": "{class} کے بعد",
   "sessions.rollover.graduate": "فارغ التحصیل",

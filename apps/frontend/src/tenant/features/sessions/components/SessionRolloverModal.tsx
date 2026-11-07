@@ -24,6 +24,7 @@ const COPY_LABEL: Record<RolloverCopyKey, AppTranslationKey> = {
   workingDays: "sessions.rollover.copy.workingDays",
   staff: "sessions.rollover.copy.staff",
   calendar: "sessions.rollover.copy.calendar",
+  schedules: "sessions.rollover.copy.schedules",
 };
 
 /**

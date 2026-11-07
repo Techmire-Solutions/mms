@@ -20,6 +20,7 @@ const DEFAULT_COPY: RolloverCopy = {
   workingDays: true,
   staff: true,
   calendar: false,
+  schedules: true,
 };
 
 /** Next session dates: starts the day after this one ends and lasts as long. */

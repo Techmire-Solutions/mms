@@ -108,6 +108,7 @@ export async function loadCompletionGates(
            AND x.deleted_at IS NULL
          WHERE ec.workspace_subdomain = e.workspace_subdomain
            AND ec.class_id = e.class_id
+           AND x.status <> 'cancelled'
            AND (x.status <> 'completed' OR x.results_finalized_at IS NULL)
       ) unfinalized ON true
       LEFT JOIN LATERAL (

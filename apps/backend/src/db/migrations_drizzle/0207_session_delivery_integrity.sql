@@ -172,23 +172,57 @@ CREATE INDEX IF NOT EXISTS "exams_workspace_unfinalized_idx"
 ALTER TABLE "sessions" ADD COLUMN IF NOT EXISTS "completion_evaluated_at" timestamp with time zone;
 --> statement-breakpoint
 
--- ───────────────────────── 6. live-enrollment uniqueness (conditional) ─────────────────────────
--- Deterministic carry ids are the primary guard; this index is the database backstop. It is skipped
--- (with a warning) when legacy duplicates exist so a deploy is never blocked by old data.
-DO $$
+
+-- ───────────────────────── 7. certified evidence freeze ─────────────────────────
+-- A certificate is issued on attendance/exam evidence; after that the evidence must not change
+-- silently (review finding C4). Corrections remain possible for an authorised maintenance job that
+-- sets `app.allow_certified_evidence_edit = 'on'` for its transaction.
+CREATE OR REPLACE FUNCTION forbid_certified_evidence_change() RETURNS trigger AS $$
+DECLARE
+  locked boolean;
 BEGIN
-  IF EXISTS (
-    SELECT 1 FROM "enrollments"
-     WHERE "deleted_at" IS NULL
-       AND "status" NOT IN ('cancelled', 'withdrawn', 'promoted', 'retained', 'graduated', 'left')
-     GROUP BY "workspace_subdomain", "session_id", "student_id"
-    HAVING count(*) > 1
-  ) THEN
-    RAISE WARNING 'enrollments_live_student_session_uidx skipped: duplicate live (student, session) rows exist; dedupe and re-run';
-  ELSE
-    CREATE UNIQUE INDEX IF NOT EXISTS "enrollments_live_student_session_uidx"
-      ON "enrollments" ("workspace_subdomain", "session_id", "student_id")
-      WHERE "deleted_at" IS NULL
-        AND "status" NOT IN ('cancelled', 'withdrawn', 'promoted', 'retained', 'graduated', 'left');
+  IF current_setting('app.allow_certified_evidence_edit', true) = 'on' THEN
+    RETURN COALESCE(NEW, OLD);
   END IF;
-END $$;
+  IF TG_TABLE_NAME = 'attendance' THEN
+    SELECT EXISTS (
+      SELECT 1 FROM enrollments e
+       WHERE e.workspace_subdomain = COALESCE(NEW.workspace_subdomain, OLD.workspace_subdomain)
+         AND e.student_id = COALESCE(NEW.student_id, OLD.student_id)
+         AND e.class_id = COALESCE(NEW.class_id, OLD.class_id)
+         AND e.certificate_issued_at IS NOT NULL
+    ) INTO locked;
+  ELSE
+    SELECT EXISTS (
+      SELECT 1 FROM exam_results r
+        JOIN exam_classes ec
+          ON ec.workspace_subdomain = r.workspace_subdomain AND ec.exam_id = r.exam_id
+        JOIN enrollments e
+          ON e.workspace_subdomain = r.workspace_subdomain
+         AND e.student_id = r.student_id
+         AND e.class_id = ec.class_id
+       WHERE r.workspace_subdomain = COALESCE(NEW.workspace_subdomain, OLD.workspace_subdomain)
+         AND r.exam_id = COALESCE(NEW.exam_id, OLD.exam_id)
+         AND r.student_id = COALESCE(NEW.student_id, OLD.student_id)
+         AND e.certificate_issued_at IS NOT NULL
+    ) INTO locked;
+  END IF;
+  IF locked THEN
+    RAISE EXCEPTION 'certified_evidence_locked: a certificate was already issued on this evidence'
+      USING ERRCODE = 'check_violation';
+  END IF;
+  RETURN COALESCE(NEW, OLD);
+END;
+$$ LANGUAGE plpgsql;
+--> statement-breakpoint
+DROP TRIGGER IF EXISTS attendance_certified_evidence_guard ON "attendance";
+--> statement-breakpoint
+CREATE TRIGGER attendance_certified_evidence_guard
+  BEFORE INSERT OR UPDATE OR DELETE ON "attendance"
+  FOR EACH ROW EXECUTE FUNCTION forbid_certified_evidence_change();
+--> statement-breakpoint
+DROP TRIGGER IF EXISTS exam_results_certified_evidence_guard ON "exam_results";
+--> statement-breakpoint
+CREATE TRIGGER exam_results_certified_evidence_guard
+  BEFORE INSERT OR UPDATE OR DELETE ON "exam_results"
+  FOR EACH ROW EXECUTE FUNCTION forbid_certified_evidence_change();
