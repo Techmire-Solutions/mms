@@ -17,9 +17,14 @@ export const contactsReportAnalyticsQuerySchema = z.object({
   lang: z.string().max(16).optional(),
 });
 
+export const contactResponseRecordSchema = contactRecordSchema.extend({
+  id: z.union([z.string(), z.number()]),
+  name: z.string(),
+});
+
 /** Envelope for paginated contact list responses (`ContactsListPageResult`). */
 export const contactListPageResponseSchema = z.object({
-  contacts: z.array(contactRecordSchema),
+  contacts: z.array(contactResponseRecordSchema),
   total: z.number(),
   page: z.number(),
   limit: z.number(),
@@ -30,7 +35,7 @@ export const contactListPageResponseSchema = z.object({
 /** `{ success: true, contact }` envelope returned by create/update/merge/restore. */
 export const contactWrappedResponseSchema = z.object({
   success: z.literal(true),
-  contact: contactRecordSchema,
+  contact: contactResponseRecordSchema,
 });
 
 /** `{ success: true, succeeded, failed }` bulk-operation envelope. */
@@ -54,6 +59,7 @@ export const contactLookupsMapResponseSchema = z.object({
   skillCategories: z.array(z.string()),
   skillProficiencies: z.array(z.string()),
   tags: z.array(z.string()),
+  bankNames: z.array(z.string()).optional(),
 });
 
 /** Redacted Google Contacts sync config sent to the client. */

@@ -15,6 +15,11 @@ const c = initContract();
 /** Nested so the routes keep their `search` / `get` names without shadowing CRUD `get`. */
 export const contactsPickerContract = c.router(contactsPickerRoutes);
 
+export const contactsCrudContract = c.router(contactsCrudRoutes);
+export const contactsReportsContract = c.router(contactsReportsRoutes);
+export const contactsSetupContract = c.router(contactsSetupRoutes);
+export const contactsGoogleSyncContract = c.router(contactsGoogleSyncRoutes);
+
 export const contactsContract = c.router({
   ...contactsCrudRoutes,
   ...contactsReportsRoutes,

@@ -2,6 +2,10 @@ import { z } from "zod";
 import { contactRecordSchema } from "../contacts/contactsModuleManifest.js";
 import { baseListQuerySchema } from "../core/apiSchemas.js";
 import { contactSavedReportSchema } from "./contacts.contract.schemas.js";
+import { contactsSavedReportCreateSchema } from "../schemas/contacts.dto.js";
+import { contactsDuplicateScanBodySchema } from "../schemas/contactsOperations.dto.js";
+
+const errorResponse = z.object({ type: z.string(), message: z.string() }).passthrough();
 
 export const contactsReportAnalyticsQuerySchema = z.object({
   years: z
@@ -77,27 +81,50 @@ export const contactsReportsRoutes = {
     method: "GET",
     path: "/api/contacts/duplicates",
     query: baseListQuerySchema,
-    responses: { 200: contactDuplicatePairsPageResponseSchema, 403: z.unknown(), 500: z.unknown() },
+    responses: {
+      200: contactDuplicatePairsPageResponseSchema,
+      403: errorResponse,
+      500: errorResponse,
+    },
     summary: "Get contact duplicates",
+  },
+  scanDuplicates: {
+    method: "POST",
+    path: "/api/contacts/duplicates/scan",
+    body: contactsDuplicateScanBodySchema,
+    responses: {
+      202: z.object({
+        job: z
+          .object({
+            id: z.string(),
+            status: z.string().optional(),
+          })
+          .passthrough(),
+      }),
+      400: errorResponse,
+      403: errorResponse,
+      500: errorResponse,
+    },
+    summary: "Queue background duplicate scan",
   },
   getSavedReports: {
     method: "GET",
     path: "/api/contacts/saved-reports",
     responses: {
       200: z.object({ reports: z.array(contactSavedReportSchema) }),
-      403: z.unknown(),
-      500: z.unknown(),
+      403: errorResponse,
+      500: errorResponse,
     },
     summary: "Get contact saved reports",
   },
   createSavedReport: {
     method: "POST",
     path: "/api/contacts/saved-reports",
-    body: z.unknown(),
+    body: contactsSavedReportCreateSchema,
     responses: {
       200: z.object({ report: contactSavedReportSchema }),
-      400: z.unknown(),
-      500: z.unknown(),
+      400: errorResponse,
+      500: errorResponse,
     },
     summary: "Create contact saved report",
   },
@@ -106,7 +133,11 @@ export const contactsReportsRoutes = {
     path: "/api/contacts/saved-reports/:id",
     pathParams: z.object({ id: z.string() }),
     body: z.unknown(),
-    responses: { 200: z.object({ success: z.literal(true) }), 404: z.unknown(), 500: z.unknown() },
+    responses: {
+      200: z.object({ success: z.literal(true) }),
+      404: errorResponse,
+      500: errorResponse,
+    },
     summary: "Delete contact saved report",
   },
   runSavedReport: {
@@ -116,8 +147,8 @@ export const contactsReportsRoutes = {
     body: z.unknown(),
     responses: {
       200: z.object({ report: contactSavedReportSchema }),
-      404: z.unknown(),
-      500: z.unknown(),
+      404: errorResponse,
+      500: errorResponse,
     },
     summary: "Run contact saved report",
   },

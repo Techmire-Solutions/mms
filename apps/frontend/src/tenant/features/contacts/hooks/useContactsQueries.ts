@@ -11,7 +11,11 @@ import {
   useInfiniteQuery,
   useQueryClient,
 } from "@tanstack/react-query";
-import type { ContactsListPageResult, ContactPickerSearchQuery } from "@mms/shared";
+import type {
+  ContactsListPageResult,
+  ContactsListQuery,
+  ContactPickerSearchQuery,
+} from "@mms/shared";
 import {
   CONTACTS_FIELD_CONFIG_QUERY_KEY,
   CONTACTS_QUERY_KEY,
@@ -51,39 +55,43 @@ export {
   useContactColumnPrefsMutation,
   useContactsSavedReportsSource,
 } from "@/tenant/features/contacts/hooks/useContactPrefsQueries";
-import { assertContractOk } from "@/lib/apiContractError";
+import { apiContractError } from "@/lib/apiContractError";
 
 // --- Phase 7: contract-driven tsrClient hooks & query factories -------------
 
-export function contactsListQueryOptions(query: Record<string, unknown> = {}) {
+export function contactsListQueryOptions(query: Partial<ContactsListQuery> = {}) {
   return queryOptions({
     queryKey: [...CONTACTS_QUERY_KEY, "contract-list", query] as const,
     queryFn: async ({ signal }) => {
       const response = await apiContract.contacts.list({
-        query: query as Record<string, string>,
+        query: query as never,
         signal,
         fetchOptions: { signal },
       });
-      assertContractOk(response, "Failed to fetch contacts");
-      return response.body;
+      if (response.status === 200) {
+        return response.body as ContactsListPageResult;
+      }
+      throw apiContractError(response, "Failed to fetch contacts");
     },
     placeholderData: (prev) => prev,
     staleTime: 15_000,
   });
 }
 
-export function contactsInfiniteQueryOptions(query: Record<string, unknown> = {}) {
+export function contactsInfiniteQueryOptions(query: Partial<ContactsListQuery> = {}) {
   return infiniteQueryOptions({
     queryKey: [...CONTACTS_QUERY_KEY, "contract-infinite-list", query] as const,
     queryFn: async ({ pageParam, signal }) => {
       const effectiveQuery = { ...query, page: pageParam };
       const response = await apiContract.contacts.list({
-        query: effectiveQuery as unknown as Record<string, string>,
+        query: effectiveQuery as never,
         signal,
         fetchOptions: { signal },
       });
-      assertContractOk(response, "Failed to fetch contacts");
-      return response.body as ContactsListPageResult;
+      if (response.status === 200) {
+        return response.body as ContactsListPageResult;
+      }
+      throw apiContractError(response, "Failed to fetch contacts");
     },
     initialPageParam: 1,
     getNextPageParam: (lastPage) => (lastPage.hasMore ? lastPage.page + 1 : undefined),
@@ -91,17 +99,17 @@ export function contactsInfiniteQueryOptions(query: Record<string, unknown> = {}
   });
 }
 
-export function useContactsInfiniteList(query: Record<string, unknown> = {}, enabled = true) {
+export function useContactsInfiniteList(query: Partial<ContactsListQuery> = {}, enabled = true) {
   return useInfiniteQuery({
     ...contactsInfiniteQueryOptions(query),
     enabled,
   });
 }
 
-export function useContactsContractList(query: Record<string, unknown>, enabled = true) {
+export function useContactsContractList(query: Partial<ContactsListQuery>, enabled = true) {
   return tsrClient.contacts.list.useQuery({
     queryKey: [...CONTACTS_QUERY_KEY, "contract-list", query],
-    queryData: { query: query as Record<string, unknown> },
+    queryData: { query: query as never },
     placeholderData: (prev: unknown) => prev,
     staleTime: 15_000,
     enabled,
