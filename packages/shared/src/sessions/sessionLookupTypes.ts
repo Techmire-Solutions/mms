@@ -39,9 +39,11 @@ export const sessionLookupKindParamsSchema = z.object({
   kind: sessionLookupKindSchema,
 });
 
-export const sessionLookupPutBodySchema = z.object({
-  items: sessionLookupStringItemsSchema,
-});
+export const sessionLookupPutBodySchema = z
+  .object({
+    items: sessionLookupStringItemsSchema,
+  })
+  .strict();
 
 export function isSessionLookupLegacyCollectionKey(
   value: string,

@@ -3,6 +3,7 @@
  * @description Child sub-entity Zod schemas and types for Academic Sessions (Model 6).
  */
 import { z } from "zod";
+import { isoDateOrEmptySchema } from "../core/isoDateSchema.js";
 import { isoDateSchema } from "../core/isoDateSchema.js";
 
 // ============================================================================
@@ -119,8 +120,8 @@ export const SessionClassDiscountSchema = z
     classId: z.string().optional(),
     discountType: z.string().min(1, "Discount type is required"), // sibling, date_based, academic_achievement, etc.
     percentage: z.coerce.number().min(0).max(100, "Percentage must be 0-100").default(0),
-    startDate: z.string().optional().default(""),
-    endDate: z.string().optional().default(""),
+    startDate: isoDateOrEmptySchema.optional().default(""),
+    endDate: isoDateOrEmptySchema.optional().default(""),
     eligibilityCriteria: z.record(z.string(), z.unknown()).optional().default({}),
     status: z.enum(["active", "expired", "inactive"]).default("active"),
   })
@@ -132,8 +133,8 @@ export const SessionClassDiscountInsertSchema = z
     classId: z.string().optional(),
     discountType: z.string().min(1, "Discount type is required"),
     percentage: z.coerce.number().min(0).max(100, "Percentage must be 0-100").default(0),
-    startDate: z.string().optional().default(""),
-    endDate: z.string().optional().default(""),
+    startDate: isoDateOrEmptySchema.optional().default(""),
+    endDate: isoDateOrEmptySchema.optional().default(""),
     eligibilityCriteria: z.record(z.string(), z.unknown()).optional().default({}),
     status: z.enum(["active", "expired", "inactive"]).default("active"),
   })
@@ -276,7 +277,7 @@ export const SessionClassScholarshipSchema = z
     scholarshipEligibilityId: z.string().optional(),
     eligibility: ScholarshipEligibilitySchema.optional(),
     percentage: z.coerce.number().min(0).max(100, "Percentage must be 0-100").default(0),
-    expiryDate: z.string().optional().default(""),
+    expiryDate: isoDateOrEmptySchema.optional().default(""),
   })
   .strict();
 
@@ -287,7 +288,7 @@ export const SessionClassScholarshipInsertSchema = z
     scholarshipEligibilityId: z.string().optional(),
     eligibility: ScholarshipEligibilityInsertSchema.optional(),
     percentage: z.coerce.number().min(0).max(100, "Percentage must be 0-100").default(0),
-    expiryDate: z.string().optional().default(""),
+    expiryDate: isoDateOrEmptySchema.optional().default(""),
   })
   .strict();
 

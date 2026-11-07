@@ -5,12 +5,14 @@ import {
   sessionRolloverBodySchema,
   sessionRolloverRunSchema,
 } from "../sessions/sessionRollover.js";
+import { sessionErrorResponseSchema, sessionIdParamsSchema } from "./sessionContractShared.js";
 
 const c = initContract();
-const errorResponse = z.object({ type: z.string(), message: z.string() }).passthrough();
-const sessionParams = z.object({ id: z.string().min(1).max(64) });
+const errorResponse = sessionErrorResponseSchema;
+const sessionParams = sessionIdParamsSchema;
 const writeErrors = {
   400: errorResponse,
+  401: errorResponse,
   403: errorResponse,
   404: errorResponse,
   409: errorResponse,
@@ -41,6 +43,7 @@ export const sessionRolloverContract = c.router({
     pathParams: sessionParams,
     responses: {
       200: z.object({ runs: z.array(sessionRolloverRunSchema) }),
+      401: errorResponse,
       403: errorResponse,
       404: errorResponse,
       500: errorResponse,
