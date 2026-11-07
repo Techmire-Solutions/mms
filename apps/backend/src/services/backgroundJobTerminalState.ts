@@ -17,6 +17,7 @@ export async function markJobPermanentlyFailed(
     status: "failed",
     error,
     completedAt: new Date().toISOString(),
+    deadLetteredAt: new Date(),
   });
 
   await publishJobEvent({

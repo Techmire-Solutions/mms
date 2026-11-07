@@ -15,7 +15,7 @@ import { createDatabaseBackgroundJob } from "./backgroundJobService.js";
 import { patchJob } from "./backgroundJobPatch.js";
 import { markJobPermanentlyFailed } from "./backgroundJobTerminalState.js";
 import { createJobDeadline, runWithJobDeadline } from "./backgroundJobDeadline.js";
-import { dispatchJobToQueue } from "../worker/queues/index.js";
+import { dispatchJobToQueue, QueuePayloadTooLargeError } from "../worker/queues/index.js";
 import { publishJobEvent } from "../worker/pubsub/jobPubSub.js";
 
 export { markJobPermanentlyFailed };
@@ -25,6 +25,10 @@ export interface BackgroundJobRunContext {
   userId: string;
   jobId: string;
   signal?: AbortSignal;
+  /** 1-based attempt number for this execution (BullMQ `attemptsMade + 1`). */
+  attempt?: number;
+  /** Configured attempt ceiling (BullMQ `opts.attempts`). */
+  maxAttempts?: number;
   updateProgress: (current: number, total: number) => Promise<void>;
   complete: (patch?: Partial<BackgroundJobRecord>) => Promise<void>;
   fail: (error: string) => Promise<void>;
@@ -49,6 +53,7 @@ export async function executeJob(
   kind: string,
   payload: unknown,
   signal?: AbortSignal,
+  attemptInfo?: { attempt?: number; maxAttempts?: number },
 ): Promise<void> {
   if (signal?.aborted) {
     throw new Error(`Background job ${jobId} aborted before execution`);
@@ -63,6 +68,8 @@ export async function executeJob(
     userId,
     jobId,
     signal: deadline.signal,
+    attempt: attemptInfo?.attempt,
+    maxAttempts: attemptInfo?.maxAttempts,
     updateProgress: async (current, total) => {
       await patchJob(tenant, userId, jobId, { progress: { current, total } });
       const percent = total > 0 ? Math.round((current / total) * 100) : 0;
@@ -182,7 +189,23 @@ export async function enqueueBackgroundJob(
   );
 
   // Dispatch to BullMQ Queue
-  const enqueued = await dispatchJobToQueue(tenant, userId, pendingJob, payload);
+  let enqueued: boolean;
+  try {
+    enqueued = await dispatchJobToQueue(tenant, userId, pendingJob, payload);
+  } catch (error) {
+    if (error instanceof QueuePayloadTooLargeError) {
+      await markJobPermanentlyFailed(
+        tenant,
+        userId,
+        pendingJob.id,
+        pendingJob.moduleId,
+        pendingJob.kind,
+        "Background job payload is too large.",
+      );
+      throw new QueueUnavailableError("Background job payload is too large.");
+    }
+    throw error;
+  }
 
   if (!enqueued) {
     // Heavy export/PDF jobs must not run on the API event loop: the sandboxed

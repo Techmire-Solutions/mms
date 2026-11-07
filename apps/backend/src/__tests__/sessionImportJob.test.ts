@@ -2,6 +2,7 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 
 const h = vi.hoisted(() => ({
   create: vi.fn(),
+  load: vi.fn(),
   registered: undefined as
     | {
         importBatch: (
@@ -28,7 +29,10 @@ vi.mock("../lib/registerModuleCsvImportJobRunner.js", () => ({
   },
 }));
 vi.mock("../sessions/use-cases/sessionsUseCases.js", () => ({
-  sessionsUseCases: { createSession: h.create },
+  sessionsUseCases: {
+    createSession: h.create,
+    loadSessionById: (...args: unknown[]) => h.load(...args),
+  },
 }));
 vi.mock("../lib/tenantContext.js", () => ({
   runWithTenant: (_tenant: string, fn: () => unknown) => fn(),
@@ -39,6 +43,7 @@ import { registerSessionImportJobRunner } from "../sessions/use-cases/sessionImp
 describe("sessions CSV import runner", () => {
   beforeEach(() => {
     h.create.mockReset().mockResolvedValue(undefined);
+    h.load.mockReset().mockResolvedValue(null);
   });
 
   it("creates a session per valid row and reports invalid rows", async () => {
@@ -83,5 +88,36 @@ describe("sessions CSV import runner", () => {
       }),
     );
     expect(updateProgress).toHaveBeenCalledTimes(2);
+  });
+
+  it("re-running the same job after a retry does not create duplicate sessions", async () => {
+    // Arrange — model the persisted rows created by the first attempt.
+    registerSessionImportJobRunner();
+    const runner = h.registered!;
+    const createdIds: string[] = [];
+    h.create.mockImplementation(async (record: { id?: string }) => {
+      if (record.id) createdIds.push(record.id);
+      return undefined;
+    });
+    h.load.mockImplementation(async (id: string) =>
+      createdIds.includes(id) ? { id, deletedAt: null } : null,
+    );
+    const ctx = {
+      tenant: "demo",
+      userId: "u1",
+      jobId: "job-retry",
+      viewerRole: "admin",
+      updateProgress: vi.fn().mockResolvedValue(undefined),
+    };
+    const rows = [{ name: "Hifz 2027", status: "draft" }];
+
+    // Act — the same BullMQ job is replayed after a timeout.
+    await runner.importBatch(rows, ctx);
+    const second = await runner.importBatch(rows, ctx);
+
+    // Assert — deterministic row id + existing-row skip keep the retry idempotent.
+    expect(h.create).toHaveBeenCalledTimes(1);
+    expect(second.imported).toBe(1);
+    expect(new Set(createdIds).size).toBe(1);
   });
 });

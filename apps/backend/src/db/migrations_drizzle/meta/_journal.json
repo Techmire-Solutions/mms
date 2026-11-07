@@ -1457,6 +1457,13 @@
       "when": 1794211200000,
       "tag": "0207_session_delivery_integrity",
       "breakpoints": true
+    },
+    {
+      "idx": 208,
+      "version": "7",
+      "when": 1794211200000,
+      "tag": "0208_background_job_dead_letters",
+      "breakpoints": true
     }
   ]
 }

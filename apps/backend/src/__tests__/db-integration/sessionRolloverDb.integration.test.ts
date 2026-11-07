@@ -281,4 +281,86 @@ describe("session rollover (real Postgres)", () => {
     expect(live).toBe(2);
     expect(carried).toBe(0);
   });
+
+  it("given an aborted attempt, should queue the run and resume without a second target", async () => {
+    // Arrange — an isolated source session for the resume flow.
+    await saveSession(
+      TENANT,
+      SessionSchema.parse({
+        id: "resume-src",
+        name: "Resume Source",
+        status: "in_progress",
+        startDate: "2026-01-01",
+        endDate: "2026-12-31",
+        overlapExempt: true,
+        classes: [
+          {
+            id: "resume-class",
+            name: "Resume",
+            sections: [{ id: "resume-a", name: "A", capacity: 10 }],
+          },
+        ],
+      }),
+    );
+    await run(() =>
+      bulkEnrollStudentsIntoClass(TENANT, {
+        studentIds: ["s1"],
+        sessionId: "resume-src",
+        classId: "resume-class",
+        mode: "add",
+      }),
+    );
+    await createPromotionRun(TENANT, {
+      id: "run-resume",
+      sourceSessionId: "resume-src",
+      mode: "promote",
+      classMap: [{ sourceClassId: "resume-class", nextClassId: "resume-class" }],
+      createdBy: "u-admin",
+    });
+    const payload = {
+      runId: "run-resume",
+      sourceSessionId: "resume-src",
+      body: sessionRolloverBodySchema.parse({
+        mode: "promote",
+        target: { name: "Resume Next", startDate: "2029-01-01", endDate: "2029-12-31" },
+        copy: { staff: false, calendar: false },
+        classMap: [{ sourceClassId: "resume-class", nextClassId: "resume-class" }],
+      }),
+    };
+
+    // Act — first attempt is interrupted, then the retry resumes the same run.
+    await expect(
+      run(() =>
+        executeSessionRollover(TENANT, "u-admin", payload, noProgress, {
+          signal: AbortSignal.abort(),
+          attempt: 1,
+          maxAttempts: 3,
+        }),
+      ),
+    ).rejects.toThrow();
+    const interrupted = await findPromotionRun(TENANT, "run-resume");
+    expect(interrupted).toMatchObject({ status: "queued" });
+    const resumed = await run(() =>
+      executeSessionRollover(TENANT, "u-admin", payload, noProgress, {
+        attempt: 2,
+        maxAttempts: 3,
+      }),
+    );
+    const again = await run(() =>
+      executeSessionRollover(TENANT, "u-admin", payload, noProgress, {
+        attempt: 3,
+        maxAttempts: 3,
+      }),
+    );
+
+    // Assert — exactly one target and one carried enrollment, run completed idempotently.
+    expect(resumed.targetSessionId).toBeTruthy();
+    expect(again.targetSessionId).toBe(resumed.targetSessionId);
+    expect(await findPromotionRun(TENANT, "run-resume")).toMatchObject({ status: "completed" });
+    const [{ count }] = await query<{ count: number }>(sql`
+      SELECT count(*)::int AS count FROM enrollments
+       WHERE workspace_subdomain = ${TENANT} AND session_id = ${resumed.targetSessionId}
+         AND promoted_from_enrollment_id IS NOT NULL`);
+    expect(count).toBe(1);
+  });
 });

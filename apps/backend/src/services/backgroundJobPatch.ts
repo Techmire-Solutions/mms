@@ -9,7 +9,11 @@ export async function patchJob(
   tenantId: string,
   _userId: string,
   jobId: string,
-  patch: Partial<BackgroundJobRecord>,
+  patch: Omit<Partial<BackgroundJobRecord>, "completedAt" | "error"> & {
+    completedAt?: string | null;
+    error?: string | null;
+    deadLetteredAt?: Date | null;
+  },
 ): Promise<BackgroundJobRecord> {
   if (!tenantId) throw new Error("Tenant context is required to patch background job");
 
@@ -21,6 +25,7 @@ export async function patchJob(
     error?: string | null;
     hasDownload?: boolean;
     completedAt?: Date | null;
+    deadLetteredAt?: Date | null;
     updatedAt: Date;
   } = {
     updatedAt: new Date(),
@@ -36,6 +41,9 @@ export async function patchJob(
   if (patch.hasDownload !== undefined) updateValues.hasDownload = patch.hasDownload;
   if (patch.completedAt !== undefined) {
     updateValues.completedAt = patch.completedAt ? new Date(patch.completedAt) : null;
+  }
+  if (patch.deadLetteredAt !== undefined) {
+    updateValues.deadLetteredAt = patch.deadLetteredAt;
   }
 
   const [updated] = await withTenant(tenantId, async (tx) => {
