@@ -1,6 +1,28 @@
+import { z } from "zod";
 import { MODULE_METRICS_DEFAULT_PERIOD_DAYS } from "./moduleCommandMetricsCore.js";
 
 type StatusRecord = { status?: string };
+
+/** Wire schema for `GET /api/sessions/metrics`. */
+/** Envelope for `GET /api/sessions/metrics` (the route returns `{ metrics }`). */
+export const sessionsCommandMetricsResponseSchema = z
+  .object({ metrics: z.lazy(() => sessionsCommandMetricsSnapshotSchema) })
+  .strict();
+
+export const sessionsCommandMetricsSnapshotSchema = z
+  .object({
+    total: z.number().int().nonnegative(),
+    active: z.number().int().nonnegative(),
+    upcoming: z.number().int().nonnegative(),
+    completed: z.number().int().nonnegative(),
+    cancelled: z.number().int().nonnegative(),
+    totalEnrolled: z.number().int().nonnegative(),
+    totalCapacity: z.number().int().nonnegative(),
+    totalClasses: z.number().int().nonnegative(),
+    sessionsThisWeek: z.number().int().nonnegative(),
+    sessionsLastWeek: z.number().int().nonnegative(),
+  })
+  .strict();
 
 export interface SessionsCommandMetricsSnapshot {
   total: number;

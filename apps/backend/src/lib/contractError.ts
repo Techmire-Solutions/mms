@@ -60,6 +60,17 @@ export function handleContractError(
     };
   }
 
+  // A response that does not match its declared contract is a server bug, not a client error.
+  if ((error as { type?: unknown } | null)?.type === "contract_violation") {
+    return {
+      status: 500,
+      body: {
+        type: "contract_violation",
+        message: error instanceof Error ? error.message : "Response contract violation",
+      },
+    };
+  }
+
   // Preserve intentional domain statuses (HttpDomainError and friends) instead
   // of flattening every failure to the caller's 500 fallback.
   const statusCode = (error as { statusCode?: unknown } | null)?.statusCode;

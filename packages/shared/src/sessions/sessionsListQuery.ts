@@ -25,4 +25,6 @@ export interface SessionsListPageResult {
   page: number;
   limit: number;
   hasMore: boolean;
+  /** Present when the caller paged with `afterId` (id-keyset pagination). */
+  nextCursor?: string;
 }

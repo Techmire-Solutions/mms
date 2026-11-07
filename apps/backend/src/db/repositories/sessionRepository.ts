@@ -4,6 +4,7 @@ export {
   findSessionById,
   findSessionByIdPrimary,
   findSessionsByIds,
+  findSessionsPageSummariesByIds,
   findSessionsSummaryByIds,
   findSessionStatusesByIds,
   findOverlappingSessions,

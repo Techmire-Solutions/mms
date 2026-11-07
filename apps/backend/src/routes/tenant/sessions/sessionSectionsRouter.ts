@@ -4,6 +4,7 @@ import { SESSIONS_MODULE_MANIFEST, sessionSectionsContract, type User } from "@m
 import { sectionOperationsUseCases as sectionOps } from "../../../sessions/use-cases/sectionOperationsUseCases.js";
 import { handleContractError } from "../../../lib/contractError.js";
 import { standardRequestValidationErrorHandler } from "../../../lib/contractRegistration.js";
+import { enforceSessionResponses } from "../../../lib/sessionContractResponses.js";
 import type { ContractRouteArgs } from "../../../lib/contractRouterTypes.js";
 import { canReadCollection, canWriteCollection } from "../../../services/rbacService.js";
 import {
@@ -30,152 +31,160 @@ const fail = (request: Request, error: unknown, message: string) =>
 
 /** `/api/sessions/sections/:sectionId/{staff,student-roles}` — effective-dated section staff and student roles. */
 export const sessionSectionsRouter: FastifyPluginAsync = async (fastify) => {
-  const router = s.router(sessionSectionsContract, {
-    listStaff: async ({ params, request }: ContractRouteArgs<Contract["listStaff"]>) => {
-      if (!canReadCollection(request.user as User, COLLECTION)) return forbidden;
-      try {
-        return {
-          status: 200 as const,
-          body: { assignments: await listSectionStaff(tenantOf(request), params.sectionId) },
-        };
-      } catch (error) {
-        return fail(request, error, "Failed to load section staff");
-      }
-    },
-    assignStaff: async ({ params, body, request }: ContractRouteArgs<Contract["assignStaff"]>) => {
-      const user = request.user as User;
-      if (!canWriteCollection(user, COLLECTION)) return forbidden;
-      try {
-        return {
-          status: 201 as const,
-          body: {
-            assignment: await assignSectionStaff(
-              tenantOf(request),
-              params.sectionId,
-              body,
-              user.id,
-            ),
-          },
-        };
-      } catch (error) {
-        return fail(request, error, "Failed to assign section staff");
-      }
-    },
-    endStaff: async ({ params, body, request }: ContractRouteArgs<Contract["endStaff"]>) => {
-      const user = request.user as User;
-      if (!canWriteCollection(user, COLLECTION)) return forbidden;
-      try {
-        return {
-          status: 200 as const,
-          body: {
-            assignment: await endSectionStaff(
-              tenantOf(request),
-              params.sectionId,
-              params.assignmentId,
-              body,
-              user.id,
-            ),
-          },
-        };
-      } catch (error) {
-        return fail(request, error, "Failed to end staff assignment");
-      }
-    },
-    listStudentRoles: async ({
-      params,
-      request,
-    }: ContractRouteArgs<Contract["listStudentRoles"]>) => {
-      if (!canReadCollection(request.user as User, COLLECTION)) return forbidden;
-      try {
-        return {
-          status: 200 as const,
-          body: { roles: await listSectionStudentRoles(tenantOf(request), params.sectionId) },
-        };
-      } catch (error) {
-        return fail(request, error, "Failed to load student roles");
-      }
-    },
-    addStudentRole: async ({
-      params,
-      body,
-      request,
-    }: ContractRouteArgs<Contract["addStudentRole"]>) => {
-      const user = request.user as User;
-      if (!canWriteCollection(user, COLLECTION)) return forbidden;
-      try {
-        return {
-          status: 201 as const,
-          body: {
-            role: await addSectionStudentRole(tenantOf(request), params.sectionId, body, user.id),
-          },
-        };
-      } catch (error) {
-        return fail(request, error, "Failed to add student role");
-      }
-    },
-    endStudentRole: async ({
-      params,
-      body,
-      request,
-    }: ContractRouteArgs<Contract["endStudentRole"]>) => {
-      const user = request.user as User;
-      if (!canWriteCollection(user, COLLECTION)) return forbidden;
-      try {
-        return {
-          status: 200 as const,
-          body: {
-            role: await endSectionStudentRole(
-              tenantOf(request),
-              params.sectionId,
-              params.roleId,
-              body,
-              user.id,
-            ),
-          },
-        };
-      } catch (error) {
-        return fail(request, error, "Failed to end student role");
-      }
-    },
-    merge: async ({ params, body, request }: ContractRouteArgs<Contract["merge"]>) => {
-      const user = request.user as User;
-      if (!canWriteCollection(user, COLLECTION)) return forbidden;
-      try {
-        return {
-          status: 200 as const,
-          body: await sectionOps.merge(tenantOf(request), params.sectionId, body, user),
-        };
-      } catch (error) {
-        return fail(request, error, "Failed to merge the section");
-      }
-    },
-    split: async ({ params, body, request }: ContractRouteArgs<Contract["split"]>) => {
-      const user = request.user as User;
-      if (!canWriteCollection(user, COLLECTION)) return forbidden;
-      try {
-        return {
-          status: 200 as const,
-          body: await sectionOps.split(tenantOf(request), params.sectionId, body, user),
-        };
-      } catch (error) {
-        return fail(request, error, "Failed to split the section");
-      }
-    },
-    close: async ({ params, body, request }: ContractRouteArgs<Contract["close"]>) => {
-      const user = request.user as User;
-      if (!canWriteCollection(user, COLLECTION)) return forbidden;
-      try {
-        return {
-          status: 200 as const,
-          body: await sectionOps.close(tenantOf(request), params.sectionId, body, user),
-        };
-      } catch (error) {
-        return fail(request, error, "Failed to close the section");
-      }
-    },
-  } as unknown as RouterImplementation<Contract>);
+  const router = s.router(
+    sessionSectionsContract,
+    enforceSessionResponses(sessionSectionsContract, {
+      listStaff: async ({ params, request }: ContractRouteArgs<Contract["listStaff"]>) => {
+        if (!canReadCollection(request.user as User, COLLECTION)) return forbidden;
+        try {
+          return {
+            status: 200 as const,
+            body: { assignments: await listSectionStaff(tenantOf(request), params.sectionId) },
+          };
+        } catch (error) {
+          return fail(request, error, "Failed to load section staff");
+        }
+      },
+      assignStaff: async ({
+        params,
+        body,
+        request,
+      }: ContractRouteArgs<Contract["assignStaff"]>) => {
+        const user = request.user as User;
+        if (!canWriteCollection(user, COLLECTION)) return forbidden;
+        try {
+          return {
+            status: 201 as const,
+            body: {
+              assignment: await assignSectionStaff(
+                tenantOf(request),
+                params.sectionId,
+                body,
+                user.id,
+              ),
+            },
+          };
+        } catch (error) {
+          return fail(request, error, "Failed to assign section staff");
+        }
+      },
+      endStaff: async ({ params, body, request }: ContractRouteArgs<Contract["endStaff"]>) => {
+        const user = request.user as User;
+        if (!canWriteCollection(user, COLLECTION)) return forbidden;
+        try {
+          return {
+            status: 200 as const,
+            body: {
+              assignment: await endSectionStaff(
+                tenantOf(request),
+                params.sectionId,
+                params.assignmentId,
+                body,
+                user.id,
+              ),
+            },
+          };
+        } catch (error) {
+          return fail(request, error, "Failed to end staff assignment");
+        }
+      },
+      listStudentRoles: async ({
+        params,
+        request,
+      }: ContractRouteArgs<Contract["listStudentRoles"]>) => {
+        if (!canReadCollection(request.user as User, COLLECTION)) return forbidden;
+        try {
+          return {
+            status: 200 as const,
+            body: { roles: await listSectionStudentRoles(tenantOf(request), params.sectionId) },
+          };
+        } catch (error) {
+          return fail(request, error, "Failed to load student roles");
+        }
+      },
+      addStudentRole: async ({
+        params,
+        body,
+        request,
+      }: ContractRouteArgs<Contract["addStudentRole"]>) => {
+        const user = request.user as User;
+        if (!canWriteCollection(user, COLLECTION)) return forbidden;
+        try {
+          return {
+            status: 201 as const,
+            body: {
+              role: await addSectionStudentRole(tenantOf(request), params.sectionId, body, user.id),
+            },
+          };
+        } catch (error) {
+          return fail(request, error, "Failed to add student role");
+        }
+      },
+      endStudentRole: async ({
+        params,
+        body,
+        request,
+      }: ContractRouteArgs<Contract["endStudentRole"]>) => {
+        const user = request.user as User;
+        if (!canWriteCollection(user, COLLECTION)) return forbidden;
+        try {
+          return {
+            status: 200 as const,
+            body: {
+              role: await endSectionStudentRole(
+                tenantOf(request),
+                params.sectionId,
+                params.roleId,
+                body,
+                user.id,
+              ),
+            },
+          };
+        } catch (error) {
+          return fail(request, error, "Failed to end student role");
+        }
+      },
+      merge: async ({ params, body, request }: ContractRouteArgs<Contract["merge"]>) => {
+        const user = request.user as User;
+        if (!canWriteCollection(user, COLLECTION)) return forbidden;
+        try {
+          return {
+            status: 200 as const,
+            body: await sectionOps.merge(tenantOf(request), params.sectionId, body, user),
+          };
+        } catch (error) {
+          return fail(request, error, "Failed to merge the section");
+        }
+      },
+      split: async ({ params, body, request }: ContractRouteArgs<Contract["split"]>) => {
+        const user = request.user as User;
+        if (!canWriteCollection(user, COLLECTION)) return forbidden;
+        try {
+          return {
+            status: 200 as const,
+            body: await sectionOps.split(tenantOf(request), params.sectionId, body, user),
+          };
+        } catch (error) {
+          return fail(request, error, "Failed to split the section");
+        }
+      },
+      close: async ({ params, body, request }: ContractRouteArgs<Contract["close"]>) => {
+        const user = request.user as User;
+        if (!canWriteCollection(user, COLLECTION)) return forbidden;
+        try {
+          return {
+            status: 200 as const,
+            body: await sectionOps.close(tenantOf(request), params.sectionId, body, user),
+          };
+        } catch (error) {
+          return fail(request, error, "Failed to close the section");
+        }
+      },
+    } as unknown as RouterImplementation<Contract>),
+  );
 
   await fastify.register(s.plugin(router), {
     requestValidationErrorHandler: standardRequestValidationErrorHandler,
+    responseValidation: true,
   });
 };

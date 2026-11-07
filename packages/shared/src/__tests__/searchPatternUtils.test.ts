@@ -1,5 +1,9 @@
 import { describe, expect, it } from "vitest";
-import { matchesWildcardSearch, toSqlSearchPattern } from "../core/searchPatternUtils.js";
+import {
+  matchesWildcardSearch,
+  toEscapedSqlSearchPattern,
+  toSqlSearchPattern,
+} from "../core/searchPatternUtils.js";
 
 describe("searchPatternUtils", () => {
   describe("toSqlSearchPattern", () => {
@@ -49,6 +53,25 @@ describe("searchPatternUtils", () => {
       expect(matchesWildcardSearch("Ahmid", "ahm?d")).toBe(true);
       expect(matchesWildcardSearch("Ahmxd", "ahm?d")).toBe(true);
       expect(matchesWildcardSearch("Ahmedd", "ahm?d")).toBe(false);
+    });
+  });
+
+  describe("toEscapedSqlSearchPattern", () => {
+    it("escapes literal LIKE wildcards instead of broadening the search", () => {
+      expect(toEscapedSqlSearchPattern("100%")).toBe(String.raw`%100\%%`);
+      expect(toEscapedSqlSearchPattern("a_b")).toBe(String.raw`%a\_b%`);
+      expect(toEscapedSqlSearchPattern("50%_off")).toBe(String.raw`%50\%\_off%`);
+    });
+
+    it("still supports the explicit * and ? wildcards", () => {
+      expect(toEscapedSqlSearchPattern("term*")).toBe("term%");
+      expect(toEscapedSqlSearchPattern("t?rm")).toBe("t_rm");
+      expect(toEscapedSqlSearchPattern("100%*")).toBe(String.raw`100\%%`);
+    });
+
+    it("treats empty input as match-all", () => {
+      expect(toEscapedSqlSearchPattern("")).toBe("%");
+      expect(toEscapedSqlSearchPattern(undefined)).toBe("%");
     });
   });
 });

@@ -1,5 +1,5 @@
 import type { FastifyInstance, FastifyPluginOptions } from "fastify";
-import { SESSIONS_MODULE_MANIFEST } from "@mms/shared";
+import { SESSIONS_MODULE_MANIFEST, sessionsCommandMetricsResponseSchema } from "@mms/shared";
 import { authenticateTenant } from "../../middleware/authenticate.js";
 import { registerModuleAccess } from "../../middleware/requireTenantModule.js";
 import { sessionsUseCases } from "../../sessions/use-cases/sessionsUseCases.js";
@@ -35,6 +35,7 @@ export default async function sessionsRoutes(
         nameSingular: "session",
         loadCountFn: sessionsUseCases.countSessions,
         loadMetricsFn: sessionsUseCases.loadSessionsCommandMetrics,
+        metricsSchema: sessionsCommandMetricsResponseSchema,
       });
     },
     { prefix: "/api/sessions" },

@@ -66,6 +66,8 @@ export function useSessionsPaginated(params: SessionsPaginatedParams) {
         sortField: params.sortField?.trim(),
         sortDir: params.sortDir,
         includeDeleted: params.includeDeleted ? "true" : undefined,
+        // Work rows only need metadata + class counts; details fetch the full record.
+        view: "summary",
       },
     },
     enabled: isAuthenticated && enabled,
@@ -79,7 +81,9 @@ export function useSessions(options?: { enabled?: boolean }) {
   const enabled = options?.enabled ?? true;
   return tsrClient.sessions.list.useQuery({
     queryKey: SESSIONS_QUERY_KEY,
-    queryData: { query: { page: 1, limit: 100, sortField: "createdAt", sortDir: "desc" } },
+    queryData: {
+      query: { page: 1, limit: 100, sortField: "createdAt", sortDir: "desc", view: "summary" },
+    },
     enabled: isAuthenticated && enabled,
     staleTime: 15_000,
   });

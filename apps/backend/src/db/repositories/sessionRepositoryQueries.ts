@@ -216,6 +216,27 @@ export async function findSessionsSummaryByIds(tenant: string, ids: string[]): P
   });
 }
 
+/**
+ * Work-list summary hydration: session metadata, faculty and per-class counts, working days.
+ * Unlike `findSessionsSummaryByIds` this skips `attachClassSectionsTx`, keeping the list payload
+ * small for `view=summary` (sections are only needed by the detail/edit surfaces).
+ */
+export async function findSessionsPageSummariesByIds(
+  tenant: string,
+  ids: string[],
+): Promise<Session[]> {
+  if (ids.length === 0) return [];
+  const subdomain = tenant.trim().toLowerCase();
+  return withTenantRead(subdomain, async (tx) => {
+    const rows = await tx
+      .select(sessionSelectColumns)
+      .from(sessions)
+      .where(and(eq(sessions.workspaceSubdomain, subdomain), inArray(sessions.id, ids)));
+    const hydrated = await hydrateSessionsListSummary(tx, subdomain, rows);
+    return attachSessionWorkingDaysTx(tx, subdomain, hydrated);
+  });
+}
+
 /** Session classes by id (archived when their session is archived). Session ids are not accepted. */
 export async function findClassesByIds(
   tenant: string,

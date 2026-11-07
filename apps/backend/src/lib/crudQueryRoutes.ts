@@ -25,45 +25,61 @@ export interface MetricsRouteOptions {
   collection: string;
   loadMetricsFn: (request: FastifyRequest) => Promise<unknown>;
   errorMessagePrefix: string;
+  /** Optional Zod response schema (compiled by fastify-type-provider-zod). */
+  metricsSchema?: ZodType;
 }
 
 /**
  * Registers a standard metrics endpoint with RBAC checks, Redis caching, and error handling.
  */
 export function registerMetricsRoute(fastify: FastifyInstance, options: MetricsRouteOptions): void {
-  const { path = "/metrics", collection, loadMetricsFn, errorMessagePrefix } = options;
+  const {
+    path = "/metrics",
+    collection,
+    loadMetricsFn,
+    errorMessagePrefix,
+    metricsSchema,
+  } = options;
 
-  fastify.get(path, async (request, reply) => {
-    const user = request.user as User;
-    if (!canReadCollection(user, collection)) return sendForbidden(reply);
+  fastify.get(
+    path,
+    metricsSchema ? { schema: { response: { 200: metricsSchema } } } : {},
+    async (request, reply) => {
+      const user = request.user as User;
+      if (!canReadCollection(user, collection)) return sendForbidden(reply);
 
-    const tenant = getRequestTenant()?.trim().toLowerCase();
-    // Role is part of the key: metrics are RBAC-filtered per caller, so a
-    // shared tenant+collection key could serve one role's numbers to another.
-    const cacheKey = tenant
-      ? redisKeys.metrics(tenant, `${collection}:${user.role ?? "user"}`)
-      : null;
-    if (cacheKey) {
-      const cached = await redisGet(cacheKey);
-      if (cached) {
-        try {
-          return reply.send({ metrics: JSON.parse(cached) });
-        } catch {
-          // Recompute on JSON parse failure
+      const tenant = getRequestTenant()?.trim().toLowerCase();
+      // Role is part of the key: metrics are RBAC-filtered per caller, so a
+      // shared tenant+collection key could serve one role's numbers to another.
+      const cacheKey = tenant
+        ? redisKeys.metrics(tenant, `${collection}:${user.role ?? "user"}`)
+        : null;
+      if (cacheKey) {
+        const cached = await redisGet(cacheKey);
+        if (cached) {
+          try {
+            return reply.send({ metrics: JSON.parse(cached) });
+          } catch {
+            // Recompute on JSON parse failure
+          }
         }
       }
-    }
 
-    try {
-      const metrics = await loadMetricsFn(request);
-      if (cacheKey && metrics) {
-        await redisSet(cacheKey, JSON.stringify(metrics), METRICS_CACHE_TTL_SECONDS);
+      try {
+        const metrics = await loadMetricsFn(request);
+        if (cacheKey && metrics) {
+          await redisSet(cacheKey, JSON.stringify(metrics), METRICS_CACHE_TTL_SECONDS);
+        }
+        return reply.send({ metrics });
+      } catch (error) {
+        request.log.error(
+          { err: error, url: request.url },
+          `Failed to load ${errorMessagePrefix} metrics`,
+        );
+        return sendDatabaseError(reply, `Failed to load ${errorMessagePrefix} metrics`);
       }
-      return reply.send({ metrics });
-    } catch {
-      return sendDatabaseError(reply, `Failed to load ${errorMessagePrefix} metrics`);
-    }
-  });
+    },
+  );
 }
 
 export interface CountRouteOptions {
@@ -95,7 +111,11 @@ export function registerCountRoute(fastify: FastifyInstance, options: CountRoute
       try {
         const count = await loadCountFn();
         return reply.send({ count });
-      } catch {
+      } catch (error) {
+        request.log.error(
+          { err: error, url: request.url },
+          `Failed to count ${errorMessagePrefix}`,
+        );
         return sendDatabaseError(reply, `Failed to count ${errorMessagePrefix}`);
       }
     },

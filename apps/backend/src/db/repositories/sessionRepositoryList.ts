@@ -14,7 +14,7 @@ import {
 import {
   dedupeTrimmedIds,
   isQueryFlagTrue,
-  toSqlSearchPattern,
+  toEscapedSqlSearchPattern,
   type SessionsCommandMetricsSnapshot,
   type SessionsListPageResult,
   type SessionsListQuery,
@@ -22,7 +22,7 @@ import {
 import { sessions } from "../schema.js";
 import { withTenantRead } from "../tenant-context.js";
 import { runListPage } from "./listPageHelper.js";
-import { findSessionsSummaryByIds } from "./sessionRepository.js";
+import { findSessionsPageSummariesByIds, findSessionsSummaryByIds } from "./sessionRepository.js";
 import { enrollmentHoldsSeatSql } from "./enrollmentSeatSql.js";
 import { sessionTypeSql } from "./academicCatalogNameSql.js";
 
@@ -40,7 +40,7 @@ export const SESSION_SORT_FIELDS = new Set([
 function buildSearchSql(search: string): SQL | null {
   const normalized = search.trim();
   if (!normalized) return null;
-  const pattern = toSqlSearchPattern(normalized);
+  const pattern = toEscapedSqlSearchPattern(normalized);
   return or(
     ilike(sessions.name, pattern),
     ilike(sessionTypeSql, pattern),
@@ -150,7 +150,12 @@ export async function listSessionsPage(
     }
 
     const ids = result.items.map((r) => r.id);
-    const hydratedSessions = await findSessionsSummaryByIds(subdomain, ids);
+    // `summary` keeps session metadata + class counts but skips section hydration (the Work table
+    // never renders sections; the detail endpoint loads the full record).
+    const hydratedSessions =
+      query.view === "summary"
+        ? await findSessionsPageSummariesByIds(subdomain, ids)
+        : await findSessionsSummaryByIds(subdomain, ids);
 
     // Preserve order from pagination query
     const sessionMap = new Map(hydratedSessions.map((s) => [s.id, s]));

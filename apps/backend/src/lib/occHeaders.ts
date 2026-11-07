@@ -5,6 +5,11 @@ const VERSION_SHAPE = /^\d+$/;
 /** UTC ISO-8601 timestamps only: an offset-less value would be parsed in the server's timezone. */
 const ISO_UTC_SHAPE = /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(?:\.\d{1,3})?Z$/;
 
+/** Shared predicate so routes and use-cases agree on what a valid OCC timestamp is. */
+export function isIsoUtcTimestamp(value: string): boolean {
+  return ISO_UTC_SHAPE.test(value.trim());
+}
+
 export interface OccToken {
   expectedVersion?: number;
   expectedUpdatedAt?: string;
@@ -30,7 +35,7 @@ export function parseOccHeaders(request: FastifyRequest): OccToken {
   }
 
   const expectedUpdatedAt = rawUpdated?.trim();
-  if (expectedUpdatedAt && !ISO_UTC_SHAPE.test(expectedUpdatedAt))
+  if (expectedUpdatedAt && !isIsoUtcTimestamp(expectedUpdatedAt))
     throw new ValidationError(
       "x-expected-updated-at must be an ISO-8601 UTC timestamp (for example 2026-03-01T10:00:00.000Z)",
     );

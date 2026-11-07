@@ -22,6 +22,22 @@ export function toSqlSearchPattern(search?: string | null): string {
 }
 
 /**
+ * Like {@link toSqlSearchPattern}, but escapes LIKE metacharacters (`\`, `%`, `_`) in the user
+ * term so only the explicit `*`/`?` wildcards remain. Use for ILIKE filters where a user-supplied
+ * `%` must not turn into an unbounded scan.
+ */
+export function toEscapedSqlSearchPattern(search?: string | null): string {
+  if (!search) return "%";
+  const trimmed = search.trim();
+  if (!trimmed) return "%";
+  // Escape the escape character first, then the LIKE wildcards the user typed literally.
+  const escaped = trimmed.replace(/\\/g, "\\\\").replace(/%/g, "\\%").replace(/_/g, "\\_");
+  if (escaped.includes("*") || escaped.includes("?"))
+    return escaped.replace(/\*/g, "%").replace(/\?/g, "_");
+  return `%${escaped}%`;
+}
+
+/**
  * Tests whether a haystack matches a user search term supporting wildcards:
  * - '*' matches zero or more characters
  * - '?' matches any single character

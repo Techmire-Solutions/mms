@@ -187,7 +187,7 @@ describe("sessions use-cases (DI with fake repository)", () => {
       );
 
     // Assert
-    await expect(act()).rejects.toThrow("Invalid x-expected-updated-at header");
+    await expect(act()).rejects.toThrow("x-expected-updated-at must be an ISO-8601 UTC timestamp");
     expect(repo.findSessionById).not.toHaveBeenCalled();
   });
 

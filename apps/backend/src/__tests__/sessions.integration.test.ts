@@ -29,6 +29,7 @@ vi.mock("../services/workspaceService.js", async (importOriginal) => {
 
 const mockLoadSessions = vi.fn();
 const mockLoadSessionsPage = vi.fn();
+const mockUpdateSession = vi.fn();
 const mockLoadSessionsWidgetAggregates = vi.fn();
 const mockLoadSessionsReportAggregates = vi.fn();
 
@@ -40,7 +41,7 @@ vi.mock("../sessions/use-cases/sessionsUseCases.js", () => ({
     loadSessionsReportAggregates: (...args: unknown[]) => mockLoadSessionsReportAggregates(...args),
     countSessions: vi.fn().mockResolvedValue(0),
     loadSessionsCommandMetrics: vi.fn().mockResolvedValue({}),
-    updateSessionById: vi.fn(),
+    updateSessionById: (...args: unknown[]) => mockUpdateSession(...args),
     deleteSessionById: vi.fn(),
     restoreSessionById: vi.fn(),
     createSession: vi.fn(),
@@ -61,6 +62,7 @@ describe("sessions REST routes integration", () => {
       limit: 20,
       hasMore: false,
     });
+    mockUpdateSession.mockReset();
     mockLoadSessionsWidgetAggregates.mockReset().mockResolvedValue({
       w1: { value: 5, totalCount: 5, chartData: [{ name: "active", value: 3 }] },
     });
@@ -286,6 +288,145 @@ describe("sessions REST routes integration", () => {
     expect(res.statusCode).toBe(403);
     expect(res.json()).toMatchObject({ type: "forbidden" });
     expect(mockLoadSessionsReportAggregates).not.toHaveBeenCalled();
+    await app.close();
+  });
+
+  it("rejects unknown session list query parameters", async () => {
+    const app = await buildApp();
+    const res = await app.inject({
+      method: "GET",
+      url: "/api/sessions?bogus=1",
+      headers: {
+        host: "demo.localhost",
+        authorization: `Bearer ${adminToken(app)}`,
+      },
+    });
+    expect(res.statusCode).toBe(400);
+    expect(res.json()).toMatchObject({ type: "validation_error" });
+    await app.close();
+  });
+
+  it("rejects a cursor combined with a custom sort", async () => {
+    const app = await buildApp();
+    const res = await app.inject({
+      method: "GET",
+      url: "/api/sessions?afterId=s-9&sortField=name",
+      headers: {
+        host: "demo.localhost",
+        authorization: `Bearer ${adminToken(app)}`,
+      },
+    });
+    expect(res.statusCode).toBe(400);
+    expect(res.json().message).toContain("Cursor paging is id-ordered");
+    await app.close();
+  });
+
+  it("normalizes skipCount and view before the list use case", async () => {
+    const app = await buildApp();
+    const res = await app.inject({
+      method: "GET",
+      url: "/api/sessions?skipCount=false&view=summary",
+      headers: {
+        host: "demo.localhost",
+        authorization: `Bearer ${adminToken(app)}`,
+      },
+    });
+    expect(res.statusCode).toBe(200);
+    expect(mockLoadSessionsPage).toHaveBeenCalledWith(
+      expect.objectContaining({ skipCount: false, view: "summary", includeDeleted: false }),
+    );
+    await app.close();
+  });
+
+  it("returns the nextCursor of a cursor page", async () => {
+    mockLoadSessionsPage.mockResolvedValueOnce({
+      sessions: [],
+      total: 0,
+      page: 1,
+      limit: 20,
+      hasMore: true,
+      nextCursor: "s-9",
+    });
+    const app = await buildApp();
+    const res = await app.inject({
+      method: "GET",
+      url: "/api/sessions?afterId=s-1",
+      headers: {
+        host: "demo.localhost",
+        authorization: `Bearer ${adminToken(app)}`,
+      },
+    });
+    expect(res.statusCode).toBe(200);
+    expect(res.json().nextCursor).toBe("s-9");
+    await app.close();
+  });
+
+  it("rejects malformed OCC headers at the boundary", async () => {
+    const app = await buildApp();
+    const res = await app.inject({
+      method: "PUT",
+      url: "/api/sessions/s1",
+      headers: {
+        host: "demo.localhost",
+        authorization: `Bearer ${adminToken(app)}`,
+        "content-type": "application/json",
+        "x-expected-version": "abc",
+      },
+      payload: {},
+    });
+    expect(res.statusCode).toBe(400);
+    await app.close();
+  });
+
+  it("returns 428 when a conditional update has no token", async () => {
+    mockUpdateSession.mockRejectedValueOnce(
+      Object.assign(new Error("Send x-expected-version"), {
+        statusCode: 428,
+        type: "precondition_required",
+      }),
+    );
+    const app = await buildApp();
+    const res = await app.inject({
+      method: "PUT",
+      url: "/api/sessions/s1",
+      headers: {
+        host: "demo.localhost",
+        authorization: `Bearer ${adminToken(app)}`,
+        "content-type": "application/json",
+        "x-expected-version": "1",
+      },
+      payload: {},
+    });
+    expect(res.statusCode).toBe(428);
+    expect(res.json()).toMatchObject({ type: "precondition_required" });
+    await app.close();
+  });
+
+  it("returns 409 with transition violations", async () => {
+    mockUpdateSession.mockRejectedValueOnce(
+      Object.assign(new Error("Illegal transition"), {
+        statusCode: 409,
+        type: "session_transition_blocked",
+        violations: ["illegal_transition"],
+      }),
+    );
+    const app = await buildApp();
+    const res = await app.inject({
+      method: "PUT",
+      url: "/api/sessions/s1",
+      headers: {
+        host: "demo.localhost",
+        authorization: `Bearer ${adminToken(app)}`,
+        "content-type": "application/json",
+        "x-expected-version": "1",
+      },
+      payload: { status: "archived" },
+    });
+    expect(res.statusCode).toBe(409);
+    expect(res.json()).toMatchObject({
+      type: "session_transition_blocked",
+      violations: ["illegal_transition"],
+    });
     await app.close();
   });
 });

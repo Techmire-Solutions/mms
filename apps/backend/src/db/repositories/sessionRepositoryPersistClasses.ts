@@ -12,7 +12,7 @@ import {
   emptyClassChildRows,
   insertClassChildRowsTx,
 } from "./sessionRepositoryClassChildren.js";
-import { toDbDate } from "../../lib/dbDate.js";
+import { requireDbDate } from "../../lib/dbDate.js";
 
 type Transaction = TenantTransaction;
 
@@ -124,7 +124,7 @@ export async function persistSessionClassesTx(
       sessionId,
       name: c.name,
       gender: c.gender || "mixed",
-      ageCalculationDate: toDbDate(c.ageCalculationDate),
+      ageCalculationDate: requireDbDate(c.ageCalculationDate, "ageCalculationDate"),
       ageMin: c.minAge ?? 4,
       ageMax: c.maxAge ?? 25,
       // Class capacity is the sum of its sections when sections are sent.
