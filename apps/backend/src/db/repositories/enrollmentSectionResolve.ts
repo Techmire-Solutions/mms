@@ -52,12 +52,16 @@ export async function resolveEnrollmentSectionsTx(
         throw new ValidationError("Section does not belong to the selected class");
       return { ...record, sectionId: requested, rollNo: record.rollNo?.trim() || undefined };
     }
-    // Seat-aware: the first active section that still has a free seat. A full class leaves the
-    // enrollment unassigned rather than silently overfilling section A (review finding P3).
+    // Seat-aware first: the first active section that still has a free seat. When every section
+    // is at/over capacity the legacy fallback keeps the first active section (bulk imports must
+    // not silently leave students unassigned; rollover carry validates quota before saving).
     const active = classSections.filter((section) => section.status === "active");
-    const fallback = active.find(
-      (section) => Number(section.enrolled ?? 0) < Math.max(0, section.capacity ?? 0),
-    );
+    const fallback =
+      active.find(
+        (section) => Number(section.enrolled ?? 0) < Math.max(0, section.capacity ?? 0),
+      ) ??
+      active[0] ??
+      classSections[0];
     return { ...record, sectionId: fallback?.id, rollNo: record.rollNo?.trim() || undefined };
   });
 
