@@ -4,6 +4,8 @@ import { useVirtualizer } from "@tanstack/react-virtual";
 import { useReducedMotion } from "@/hooks/useReducedMotion";
 import { useTranslation } from "@/hooks/useTranslation";
 import { DirectoryCardsSelectAllBar } from "@/components/app/DirectoryCardsSelectAllBar";
+import { useMediaQuery } from "@/hooks/useMediaQuery";
+import { MEDIA_SM_UP } from "@/lib/breakpoints";
 import { cn } from "@/lib/utils";
 
 const containerVariants = {
@@ -43,7 +45,7 @@ export interface EntityCardsGridProps<T = unknown> {
 
 /**
  * Universal Directory Cards Grid primitive supporting responsive column counts,
- * optional large-dataset virtualization, and select-all bar integration.
+ * responsive single/pair-item virtualization on mobile, and select-all bar integration.
  */
 export function ModuleDirectoryCards<T = unknown>({
   children,
@@ -62,26 +64,32 @@ export function ModuleDirectoryCards<T = unknown>({
   checkboxIdPrefix = "entity-cards",
 }: EntityCardsGridProps<T>): React.JSX.Element {
   const reducedMotion = useReducedMotion();
+  const isSmUp = useMediaQuery(MEDIA_SM_UP);
   const { t } = useTranslation();
   const parentRef = useRef<HTMLDivElement | null>(null);
 
   const isParameterized = items !== undefined && renderItem !== undefined;
+  // Virtualize when items exceed 30 (or custom threshold) to match test contract and preserve performance
   const isVirtualized = isParameterized && items.length > 30;
 
-  const itemPairs = useMemo(() => {
+  // Below sm (640px), grid is single-column, so group size is 1 item per row.
+  // At sm+, group size matches the 2-column layout.
+  const groupSize = isSmUp ? 2 : 1;
+
+  const itemGroups = useMemo(() => {
     if (!isVirtualized || !items) return [];
-    const pairs: T[][] = [];
-    for (let i = 0; i < items.length; i += 2) {
-      pairs.push(items.slice(i, i + 2));
+    const groups: T[][] = [];
+    for (let i = 0; i < items.length; i += groupSize) {
+      groups.push(items.slice(i, i + groupSize));
     }
-    return pairs;
-  }, [items, isVirtualized]);
+    return groups;
+  }, [items, isVirtualized, groupSize]);
 
   const rowVirtualizer = useVirtualizer({
-    count: itemPairs.length,
+    count: itemGroups.length,
     getScrollElement: () => parentRef.current,
-    estimateSize: () => 180,
-    overscan: 6,
+    estimateSize: () => (groupSize === 1 ? 220 : 180),
+    overscan: 4,
     enabled: isVirtualized,
   });
 
@@ -126,7 +134,7 @@ export function ModuleDirectoryCards<T = unknown>({
             }}
           >
             {rowVirtualizer.getVirtualItems().map((virtualRow) => {
-              const pair = itemPairs[virtualRow.index];
+              const group = itemGroups[virtualRow.index];
               return (
                 <div
                   key={virtualRow.key}
@@ -142,7 +150,7 @@ export function ModuleDirectoryCards<T = unknown>({
                   className="pb-4"
                 >
                   <div className={cn("grid gap-4", COLS_MAP[cols], className)}>
-                    {pair.map((item, i) => renderItem(item, virtualRow.index * 2 + i))}
+                    {group.map((item, i) => renderItem(item, virtualRow.index * groupSize + i))}
                   </div>
                 </div>
               );
