@@ -366,4 +366,140 @@ describe("session rollover (real Postgres)", () => {
          AND promoted_from_enrollment_id IS NOT NULL`);
     expect(count).toBe(1);
   });
+
+  it("should complete an empty promote run without carried rows", async () => {
+    await saveSession(
+      TENANT,
+      SessionSchema.parse({
+        id: "empty-src",
+        name: "Empty Source",
+        status: "in_progress",
+        startDate: "2026-01-01",
+        endDate: "2026-12-31",
+        overlapExempt: true,
+        classes: [{ id: "empty-class", name: "Empty", sections: [{ id: "empty-a", name: "A" }] }],
+      }),
+    );
+    await createPromotionRun(TENANT, {
+      id: "run-empty",
+      sourceSessionId: "empty-src",
+      mode: "promote",
+      classMap: [{ sourceClassId: "empty-class", nextClassId: "empty-class" }],
+      createdBy: "u-admin",
+    });
+    const result = await run(() =>
+      executeSessionRollover(
+        TENANT,
+        "u-admin",
+        {
+          runId: "run-empty",
+          sourceSessionId: "empty-src",
+          body: sessionRolloverBodySchema.parse({
+            mode: "promote",
+            target: { name: "Empty Next", startDate: "2030-01-01", endDate: "2030-12-31" },
+            copy: { staff: false, calendar: false },
+            classMap: [{ sourceClassId: "empty-class", nextClassId: "empty-class" }],
+          }),
+        },
+        noProgress,
+      ),
+    );
+    expect(result.carried).toBe(0);
+    expect(await findPromotionRun(TENANT, "run-empty")).toMatchObject({
+      status: "completed",
+      promoted: 0,
+      retained: 0,
+      graduated: 0,
+      left: 0,
+    });
+  });
+
+  it("should preserve leap-day target dates through rollover", async () => {
+    await saveSession(
+      TENANT,
+      SessionSchema.parse({
+        id: "leap-src",
+        name: "Leap Source",
+        status: "in_progress",
+        startDate: "2031-03-01",
+        endDate: "2032-02-28",
+        overlapExempt: true,
+        classes: [{ id: "leap-class", name: "Leap", sections: [{ id: "leap-a", name: "A" }] }],
+      }),
+    );
+    await createPromotionRun(TENANT, {
+      id: "run-leap",
+      sourceSessionId: "leap-src",
+      mode: "promote",
+      classMap: [{ sourceClassId: "leap-class", nextClassId: "leap-class" }],
+      createdBy: "u-admin",
+    });
+    const result = await run(() =>
+      executeSessionRollover(
+        TENANT,
+        "u-admin",
+        {
+          runId: "run-leap",
+          sourceSessionId: "leap-src",
+          body: sessionRolloverBodySchema.parse({
+            mode: "promote",
+            target: { name: "Leap Next", startDate: "2032-02-29", endDate: "2033-02-28" },
+            copy: { staff: false, calendar: false },
+            classMap: [{ sourceClassId: "leap-class", nextClassId: "leap-class" }],
+          }),
+        },
+        noProgress,
+      ),
+    );
+    const target = await findSessionById(TENANT, result.targetSessionId);
+    expect(target).toMatchObject({ startDate: "2032-02-29", endDate: "2033-02-28" });
+  });
+
+  it("should let only one concurrent claim of the same run create a target", async () => {
+    await saveSession(
+      TENANT,
+      SessionSchema.parse({
+        id: "race-src",
+        name: "Race Source",
+        status: "in_progress",
+        startDate: "2026-01-01",
+        endDate: "2026-12-31",
+        overlapExempt: true,
+        classes: [{ id: "race-class", name: "Race", sections: [{ id: "race-a", name: "A" }] }],
+      }),
+    );
+    await createPromotionRun(TENANT, {
+      id: "run-race",
+      sourceSessionId: "race-src",
+      mode: "promote",
+      classMap: [{ sourceClassId: "race-class", nextClassId: "race-class" }],
+      createdBy: "u-admin",
+    });
+    const payload = {
+      runId: "run-race",
+      sourceSessionId: "race-src",
+      body: sessionRolloverBodySchema.parse({
+        mode: "promote",
+        target: { name: "Race Next", startDate: "2031-01-01", endDate: "2031-12-31" },
+        copy: { staff: false, calendar: false },
+        classMap: [{ sourceClassId: "race-class", nextClassId: "race-class" }],
+      }),
+    };
+    const results = await Promise.allSettled([
+      run(() => executeSessionRollover(TENANT, "u-admin", payload, noProgress)),
+      run(() => executeSessionRollover(TENANT, "u-admin", payload, noProgress)),
+    ]);
+    expect(results.filter((result) => result.status === "fulfilled")).toHaveLength(1);
+    const winner = results.find(
+      (result) => result.status === "fulfilled",
+    ) as PromiseFulfilledResult<{
+      targetSessionId: string;
+    }>;
+    expect(winner.value.targetSessionId).toBeTruthy();
+    const [{ targets }] = await query<{ targets: number }>(sql`
+      SELECT count(*)::int AS targets FROM sessions
+       WHERE workspace_subdomain = ${TENANT} AND name = 'Race Next'`);
+    expect(targets).toBe(1);
+    expect(await findPromotionRun(TENANT, "run-race")).toMatchObject({ status: "completed" });
+  });
 });

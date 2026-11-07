@@ -294,4 +294,29 @@ describe("replaceSessionsForWorkspace (backup restore)", () => {
     expect(kept).toHaveLength(1);
     expect(await findSessionById(TENANT, "restore-new")).toBeTruthy();
   });
+
+  it("lets only one of two concurrent overlapping creates commit", async () => {
+    const results = await Promise.allSettled([
+      saveSession(
+        TENANT,
+        record("race-create-a", { startDate: "2033-01-01", endDate: "2033-06-30" }),
+      ),
+      saveSession(
+        TENANT,
+        record("race-create-b", { startDate: "2033-03-01", endDate: "2033-08-31" }),
+      ),
+    ]);
+    expect(results.filter((result) => result.status === "fulfilled")).toHaveLength(1);
+    const fulfilled = results.filter(
+      (result): result is PromiseFulfilledResult<string> => result.status === "fulfilled",
+    );
+    expect(fulfilled).toHaveLength(1);
+    const [{ count }] = await withTenant(TENANT, (tx) =>
+      tx.execute<{ count: number }>(sql`
+        SELECT count(*)::int AS count FROM sessions
+         WHERE workspace_subdomain = ${TENANT}
+           AND id IN ('race-create-a', 'race-create-b')`),
+    ).then((result) => result.rows);
+    expect(count).toBe(1);
+  });
 });

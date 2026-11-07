@@ -88,6 +88,35 @@ describe("sessions REST routes integration", () => {
     await app.close();
   });
 
+  it("rejects a tenant token sent to another tenant's host before session data is read", async () => {
+    const app = await buildApp();
+    const res = await app.inject({
+      method: "GET",
+      url: "/api/sessions",
+      headers: {
+        host: "other.localhost",
+        authorization: `Bearer ${adminToken(app)}`,
+      },
+    });
+    expect(res.statusCode).toBe(403);
+    expect(mockLoadSessionsPage).not.toHaveBeenCalled();
+    await app.close();
+  });
+
+  it("does not expose another tenant's session detail through an injected route", async () => {
+    const app = await buildApp();
+    const res = await app.inject({
+      method: "GET",
+      url: "/api/sessions/other-tenant-session",
+      headers: {
+        host: "other.localhost",
+        authorization: `Bearer ${adminToken(app)}`,
+      },
+    });
+    expect(res.statusCode).toBe(403);
+    await app.close();
+  });
+
   it("GET /api/sessions returns sessions list for authorized admin", async () => {
     const app = await buildApp();
     const res = await app.inject({
