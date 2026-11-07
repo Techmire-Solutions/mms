@@ -52,10 +52,21 @@ export const sessionBulkContractHandlers = {
         status: 403 as const,
         body: { type: "forbidden", message: "Insufficient permissions" },
       };
+    // Cancelling is destructive (ends enrollments, voids invoices): it must carry a reason on every
+    // path, including the bulk one.
+    if (body.status === "cancelled" && (body.reason ?? "").trim().length < 3)
+      return {
+        status: 400 as const,
+        body: {
+          type: "validation_error",
+          message: "A cancellation reason (at least 3 characters) is required",
+        },
+      };
     try {
       const result = await withTenant(
         String(request.tenant?.id),
-        () => sessionsUseCases.bulkUpdateSessionsStatus(body.ids.map(String), body.status),
+        () =>
+          sessionsUseCases.bulkUpdateSessionsStatus(body.ids.map(String), body.status, body.reason),
         { readOnly: false },
       );
       return { status: 200 as const, body: { success: true, ...result } };

@@ -163,6 +163,16 @@ export const SessionSchema = z
     // Model 6 components
     faculty: z.array(SessionFacultySchema).default([]),
     classes: z.array(ClassSchema).default([]),
+    /**
+     * Optimistic-concurrency token (migration 0206). Every write increments it; a caller sends the
+     * value it read as `x-expected-version` and the write fails with 409 when another writer won.
+     */
+    version: z.coerce.number().int().nonnegative().optional(),
+    /**
+     * Mirrors the Sessions `allowOverlap` preference at write time: exempts this row from the
+     * `sessions_no_overlap_excl` database exclusion constraint.
+     */
+    overlapExempt: z.boolean().optional(),
     // Soft-delete metadata
     deletedAt: z.string().nullable().optional(),
     deletedBy: z.string().nullable().optional(),

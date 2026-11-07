@@ -9,6 +9,7 @@ import {
   cancelSessionMutationOptions,
   postponeSessionMutationOptions,
   sessionActivityQueryOptions,
+  type SessionOperationToken,
 } from "@/lib/query/sessionLifecycleOpsQueries";
 import { invalidateEnrollmentsQueries } from "@/tenant/hooks/collections/enrollments";
 import { invalidateSessionsQueries } from "./invalidateSessionsQueries";
@@ -33,9 +34,13 @@ export function useSessionLifecycleActions() {
   const cancelMutation = useMutation({ ...cancelSessionMutationOptions(), onSettled });
   const postponeMutation = useMutation({ ...postponeSessionMutationOptions(), onSettled });
 
-  const cancel = async (id: string, body: SessionCancelBody): Promise<boolean> => {
+  const cancel = async (
+    id: string,
+    body: SessionCancelBody,
+    token?: SessionOperationToken,
+  ): Promise<boolean> => {
     try {
-      const { ended, billing } = await cancelMutation.mutateAsync({ id, body });
+      const { ended, billing } = await cancelMutation.mutateAsync({ id, body, token });
       notify.success(t("sessions.lifecycleOps.cancelled", { count: ended }), {
         description:
           billing.cancelled.length > 0
@@ -55,9 +60,13 @@ export function useSessionLifecycleActions() {
     }
   };
 
-  const postpone = async (id: string, body: SessionPostponeBody): Promise<boolean> => {
+  const postpone = async (
+    id: string,
+    body: SessionPostponeBody,
+    token?: SessionOperationToken,
+  ): Promise<boolean> => {
     try {
-      await postponeMutation.mutateAsync({ id, body });
+      await postponeMutation.mutateAsync({ id, body, token });
       notify.success(t("sessions.lifecycleOps.postponed"));
       return true;
     } catch (error) {

@@ -12,11 +12,12 @@ describe("enrollmentHoldsSeat", () => {
     // Assert
     expect(enrollmentHoldsSeat("pending")).toBe(true);
     expect(enrollmentHoldsSeat("confirmed")).toBe(true);
+    // `completed` stays seat-holding on purpose: the seat-release change would silently move
+    // completion revenue out of the finance/enrollment report aggregates.
     expect(enrollmentHoldsSeat("completed")).toBe(true);
   });
 
-  it("given a cancelled or withdrawn enrollment, should release the seat", () => {
-    // Assert
+  it("given a terminal enrollment, should release the seat", () => {
     expect(enrollmentHoldsSeat("cancelled")).toBe(false);
     expect(enrollmentHoldsSeat("withdrawn")).toBe(false);
   });

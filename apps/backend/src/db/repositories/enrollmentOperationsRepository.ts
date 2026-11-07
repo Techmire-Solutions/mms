@@ -29,11 +29,12 @@ const feeColumns = (fee: EnrollmentFeeColumns) => ({
 });
 
 export type EndedEnrollmentStatus =
-  "withdrawn" | "cancelled" | "promoted" | "retained" | "graduated" | "left";
+  "withdrawn" | "cancelled" | "completed" | "promoted" | "retained" | "graduated" | "left";
 
 const ENDED_EVENT_LABEL: Record<EndedEnrollmentStatus, string> = {
   withdrawn: "Withdrawn",
   cancelled: "Cancelled with the session",
+  completed: "Completed with the session",
   promoted: "Promoted to the next session",
   retained: "Retained for the next session",
   graduated: "Graduated",

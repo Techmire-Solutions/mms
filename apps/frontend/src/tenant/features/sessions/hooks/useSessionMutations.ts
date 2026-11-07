@@ -48,14 +48,19 @@ export function useSessionMutations() {
     updateSession: {
       isPending: update.isPending,
       mutateAsync: async ({ id, session }: { id: string; session: Session }): Promise<Session> => {
+        if (session.version === undefined && !session.updatedAt)
+          throw new Error("Reload this session before saving — it has no concurrency token");
         const body = await unwrap<{ session: Session }>(
           update.mutateAsync({
             params: { id },
             body: session,
             // OCC: the server 409s instead of silently overwriting a concurrent edit.
-            ...(session.updatedAt
-              ? { headers: { "x-expected-updated-at": session.updatedAt } }
-              : {}),
+            headers: {
+              ...(session.version !== undefined
+                ? { "x-expected-version": String(session.version) }
+                : {}),
+              ...(session.updatedAt ? { "x-expected-updated-at": session.updatedAt } : {}),
+            },
           }),
           "Failed to update session",
         );

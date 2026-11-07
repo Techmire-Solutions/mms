@@ -78,7 +78,12 @@ describe("sessions soft delete routes", () => {
       payload: { deletionReason: "Ended early" },
     });
     expect(res.statusCode).toBe(200);
-    expect(mockDeleteSessionById).toHaveBeenCalledWith("s1", "u-admin", "Ended early");
+    expect(mockDeleteSessionById).toHaveBeenCalledWith(
+      "s1",
+      "u-admin",
+      "Ended early",
+      expect.objectContaining({ allowNonTerminal: expect.any(Boolean) }),
+    );
     await app.close();
   });
 

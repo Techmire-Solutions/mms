@@ -15,6 +15,7 @@ import {
 import { saveSession } from "../../db/repositories/sessionRepositoryPersist.js";
 import { bulkEnrollStudentsIntoClass } from "../../enrollments/use-cases/enrollmentBulkEnroll.js";
 import { sessionCompletionUseCases as completion } from "../../sessions/use-cases/sessionCompletionUseCases.js";
+import { transitionSession } from "../../sessions/use-cases/sessionTransitionService.js";
 import { runWithTenant } from "../../lib/tenantContext.js";
 import { requireDatabaseConnection } from "./dbTestSupport.js";
 
@@ -133,6 +134,9 @@ describe("short-course completion (real Postgres)", () => {
   });
 
   it("given completed enrollments, should issue each certificate once", async () => {
+    // Arrange — certificates are only issued for a session that has been completed.
+    await run(() => transitionSession(TENANT, "course", { to: "completed" }));
+
     // Act
     const first = await run(() =>
       completion.issueCertificates(TENANT, "course", { enrollmentIds: [] }),

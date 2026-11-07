@@ -5,10 +5,10 @@ export {
   findSessionsByIds,
   findSessionsSummaryByIds,
   findSessionStatusesByIds,
+  findOverlappingSessions,
 } from "./sessionRepositoryQueries.js";
 export {
   saveSession,
-  updateSessionDates,
   bulkSaveSessions,
   replaceSessionsForWorkspace,
   softDeleteSessionWithCascade,
@@ -16,3 +16,4 @@ export {
   bulkSoftDeleteSessionsWithCascade,
   bulkRestoreSessionsWithCascade,
 } from "./sessionRepositoryPersist.js";
+export { updateSessionDates } from "./sessionRepositoryDates.js";

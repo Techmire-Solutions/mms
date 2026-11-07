@@ -2,6 +2,8 @@ import { withdrawalInvoicePlan, type WithdrawalBillingOutcome } from "@mms/share
 import { financeRepository as repo } from "../repository/financeRepositoryAdapter.js";
 import { requireTenant } from "../../lib/tenantContext.js";
 import { logger } from "../../lib/logger.js";
+import { hasActiveTransaction } from "../../db/dbTransactions.js";
+import { withSavepoint } from "../../db/transactionSideEffects.js";
 import { cancelInvoice } from "./financeCollectUseCases.js";
 
 const ref = (invoice: { id: string; invoiceNumber?: string | null }) => ({
@@ -27,7 +29,14 @@ export async function settleEnrollmentWithdrawal(
   const review: WithdrawalBillingOutcome["review"] = plan.review.map(ref);
   for (const invoice of plan.cancel) {
     try {
-      await cancelInvoice(invoice.id);
+      // Inside a session-cancel transaction a failed statement aborts the whole transaction, so a
+      // plain try/catch cannot "continue with the next invoice". The savepoint contains the failure
+      // and keeps the outer transaction usable.
+      if (hasActiveTransaction()) {
+        await withSavepoint(() => cancelInvoice(invoice.id));
+      } else {
+        await cancelInvoice(invoice.id);
+      }
       cancelled.push(ref(invoice));
     } catch (error) {
       logger.warn({ err: error, invoiceId: invoice.id }, "withdrawal invoice cancel failed");

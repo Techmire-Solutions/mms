@@ -1,9 +1,14 @@
 import { describe, expect, it, vi } from "vitest";
 import { createSessionsUseCases } from "../sessions/use-cases/sessionsUseCases.js";
+import { transitionSession } from "../sessions/use-cases/sessionTransitionService.js";
 import type { SessionsRepository } from "../sessions/repository/sessionsRepository.js";
 import { runWithTenant } from "../lib/tenantContext.js";
 import { ConflictError, NotFoundError } from "../lib/httpErrors.js";
 import { SessionSchema } from "@mms/shared";
+
+vi.mock("../sessions/use-cases/sessionTransitionService.js", () => ({
+  transitionSession: vi.fn(),
+}));
 
 function createFakeRepo(): SessionsRepository {
   return {
@@ -11,6 +16,7 @@ function createFakeRepo(): SessionsRepository {
     findSessionById: vi.fn().mockResolvedValue(null),
     findSessionsByIds: vi.fn().mockResolvedValue([]),
     findSessionStatusesByIds: vi.fn().mockResolvedValue(new Map()),
+    findOverlappingSessions: vi.fn().mockResolvedValue([]),
     saveSession: vi.fn().mockResolvedValue("2026-01-02T00:00:00.000Z"),
     updateSessionDates: vi.fn().mockResolvedValue(true),
     listSessionsPage: vi.fn().mockResolvedValue({
@@ -47,10 +53,16 @@ function createFakeRepo(): SessionsRepository {
   };
 }
 
+/** Preferences are injected so the use-cases never reach the database in a unit test. */
+const createTestUseCases = (repo: SessionsRepository) =>
+  createSessionsUseCases(repo, {
+    loadSessionPreferences: () => ({ allowOverlap: false }),
+  });
+
 describe("sessions use-cases (DI with fake repository)", () => {
   it("countSessions delegates to the injected repository with the active tenant", async () => {
     const repo = createFakeRepo();
-    const useCases = createSessionsUseCases(repo);
+    const useCases = createTestUseCases(repo);
 
     const result = await runWithTenant("demo", () => useCases.countSessions());
 
@@ -60,7 +72,7 @@ describe("sessions use-cases (DI with fake repository)", () => {
 
   it("loadSessionsPage delegates to the injected repository", async () => {
     const repo = createFakeRepo();
-    const useCases = createSessionsUseCases(repo);
+    const useCases = createTestUseCases(repo);
 
     const result = await runWithTenant("demo", () =>
       useCases.loadSessionsPage({ page: 2, limit: 12 }),
@@ -70,7 +82,7 @@ describe("sessions use-cases (DI with fake repository)", () => {
     expect(repo.listSessionsPage).toHaveBeenCalledWith("demo", { page: 2, limit: 12 });
   });
 
-  it("given mixed lifecycle states, should apply only allowed transitions (normalized) and count the rest as failed", async () => {
+  it("given mixed lifecycle states, should transition only the legal ones through the transition service", async () => {
     // Arrange
     const repo = createFakeRepo();
     vi.mocked(repo.findSessionStatusesByIds).mockResolvedValue(
@@ -79,8 +91,14 @@ describe("sessions use-cases (DI with fake repository)", () => {
         ["s2", "completed"],
       ]),
     );
-    vi.mocked(repo.bulkUpdateSessionsStatus).mockResolvedValue({ succeeded: 1, failed: 0 });
-    const useCases = createSessionsUseCases(repo);
+    vi.mocked(transitionSession).mockResolvedValue({
+      session: SessionSchema.parse({ id: "s1", name: "One", status: "in_progress" }),
+      ended: 0,
+      billing: null,
+      overridden: [],
+      noop: false,
+    });
+    const useCases = createTestUseCases(repo);
 
     // Act
     const result = await runWithTenant("demo", () =>
@@ -89,7 +107,11 @@ describe("sessions use-cases (DI with fake repository)", () => {
 
     // Assert
     expect(result).toEqual({ succeeded: 1, failed: 1 });
-    expect(repo.bulkUpdateSessionsStatus).toHaveBeenCalledWith("demo", ["s1"], "in_progress");
+    expect(transitionSession).toHaveBeenCalledWith(
+      "demo",
+      "s1",
+      expect.objectContaining({ to: "in_progress" }),
+    );
   });
 
   it("createSession rejects a client id that already exists (active or archived)", async () => {
@@ -98,7 +120,7 @@ describe("sessions use-cases (DI with fake repository)", () => {
     vi.mocked(repo.findSessionById).mockResolvedValue(
       SessionSchema.parse({ id: "sess-existing", name: "Existing", status: "completed" }) as never,
     );
-    const useCases = createSessionsUseCases(repo);
+    const useCases = createTestUseCases(repo);
 
     // Act
     const act = () =>
@@ -125,7 +147,7 @@ describe("sessions use-cases (DI with fake repository)", () => {
       updatedAt: "2026-01-01T00:00:00.000Z",
     });
     vi.mocked(repo.findSessionById).mockResolvedValue(before as never);
-    const useCases = createSessionsUseCases(repo);
+    const useCases = createTestUseCases(repo);
 
     // Act
     const result = await runWithTenant("demo", () =>
@@ -150,7 +172,7 @@ describe("sessions use-cases (DI with fake repository)", () => {
   it("updateSessionById rejects a malformed OCC header before touching the repository", async () => {
     // Arrange
     const repo = createFakeRepo();
-    const useCases = createSessionsUseCases(repo);
+    const useCases = createTestUseCases(repo);
 
     // Act
     const act = () =>
@@ -174,7 +196,7 @@ describe("sessions use-cases (DI with fake repository)", () => {
       { id: "s1", name: "Active Session" } as never,
       { id: "s2", name: "Deleted Session", deletedAt: "2026-07-27T00:00:00.000Z" } as never,
     ]);
-    const useCases = createSessionsUseCases(repo);
+    const useCases = createTestUseCases(repo);
 
     const result = await runWithTenant("demo", () => useCases.loadSessionsByIds(["s1", "s2"]));
 
@@ -183,7 +205,7 @@ describe("sessions use-cases (DI with fake repository)", () => {
 
   it("returns empty defaults when no tenant context is bound", async () => {
     const repo = createFakeRepo();
-    const useCases = createSessionsUseCases(repo);
+    const useCases = createTestUseCases(repo);
 
     const count = await useCases.countSessions();
     const page = await useCases.loadSessionsPage({ page: 1, limit: 12 });
@@ -194,12 +216,15 @@ describe("sessions use-cases (DI with fake repository)", () => {
     expect(repo.listSessionsPage).not.toHaveBeenCalled();
   });
 
-  it("deleteSessionById delegates cascade soft-delete to the repository", async () => {
+  it("deleteSessionById delegates cascade soft-delete for a terminal session", async () => {
     const repo = createFakeRepo();
-    const useCases = createSessionsUseCases(repo);
+    vi.mocked(repo.findSessionById).mockResolvedValue(
+      SessionSchema.parse({ id: "s1", name: "Done", status: "completed" }) as never,
+    );
+    const useCases = createTestUseCases(repo);
 
     const ok = await runWithTenant("demo", () =>
-      useCases.deleteSessionById("s1", "u-admin", "Cancelled session"),
+      useCases.deleteSessionById("s1", "u-admin", "Session finished"),
     );
 
     expect(ok).toBe(true);
@@ -207,13 +232,13 @@ describe("sessions use-cases (DI with fake repository)", () => {
       "demo",
       "s1",
       "u-admin",
-      "Cancelled session",
+      "Session finished",
     );
   });
 
   it("restoreSessionById delegates cascade restore to the repository", async () => {
     const repo = createFakeRepo();
-    const useCases = createSessionsUseCases(repo);
+    const useCases = createTestUseCases(repo);
 
     const ok = await runWithTenant("demo", () => useCases.restoreSessionById("s1", "u-admin"));
 
@@ -228,7 +253,7 @@ describe("sessions use-cases (DI with fake repository)", () => {
       id: "s1",
       deletedAt: "2026-08-01T00:00:00.000Z",
     } as never);
-    const useCases = createSessionsUseCases(repo);
+    const useCases = createTestUseCases(repo);
 
     await expect(runWithTenant("demo", () => useCases.deleteSessionById("s1"))).rejects.toThrow(
       new NotFoundError("Session is already archived"),
@@ -239,7 +264,7 @@ describe("sessions use-cases (DI with fake repository)", () => {
     const repo = createFakeRepo();
     vi.mocked(repo.softDeleteSessionWithCascade).mockResolvedValue(false);
     vi.mocked(repo.findSessionById).mockResolvedValue(null);
-    const useCases = createSessionsUseCases(repo);
+    const useCases = createTestUseCases(repo);
 
     await expect(runWithTenant("demo", () => useCases.deleteSessionById("s1"))).rejects.toThrow(
       new NotFoundError("Session not found"),
@@ -250,7 +275,7 @@ describe("sessions use-cases (DI with fake repository)", () => {
     const repo = createFakeRepo();
     vi.mocked(repo.restoreSessionWithCascade).mockResolvedValue(false);
     vi.mocked(repo.findSessionById).mockResolvedValue({ id: "s1", deletedAt: null } as never);
-    const useCases = createSessionsUseCases(repo);
+    const useCases = createTestUseCases(repo);
 
     await expect(runWithTenant("demo", () => useCases.restoreSessionById("s1"))).rejects.toThrow(
       new NotFoundError("Session is already active"),
@@ -261,7 +286,7 @@ describe("sessions use-cases (DI with fake repository)", () => {
     const repo = createFakeRepo();
     vi.mocked(repo.restoreSessionWithCascade).mockResolvedValue(false);
     vi.mocked(repo.findSessionById).mockResolvedValue(null);
-    const useCases = createSessionsUseCases(repo);
+    const useCases = createTestUseCases(repo);
 
     await expect(runWithTenant("demo", () => useCases.restoreSessionById("s1"))).rejects.toThrow(
       new NotFoundError("Session not found"),
@@ -270,7 +295,7 @@ describe("sessions use-cases (DI with fake repository)", () => {
 
   it("bulkSoftDeleteSessions delegates to bulkSoftDeleteSessionsWithCascade", async () => {
     const repo = createFakeRepo();
-    const useCases = createSessionsUseCases(repo);
+    const useCases = createTestUseCases(repo);
 
     const res = await runWithTenant("demo", () =>
       useCases.bulkSoftDeleteSessions(["s1", "s2"], "u-admin", "Batch archive"),
@@ -287,7 +312,7 @@ describe("sessions use-cases (DI with fake repository)", () => {
 
   it("bulkRestoreSessions delegates to bulkRestoreSessionsWithCascade", async () => {
     const repo = createFakeRepo();
-    const useCases = createSessionsUseCases(repo);
+    const useCases = createTestUseCases(repo);
 
     const res = await runWithTenant("demo", () =>
       useCases.bulkRestoreSessions(["s1", "s2"], "u-admin"),
@@ -299,5 +324,92 @@ describe("sessions use-cases (DI with fake repository)", () => {
       ["s1", "s2"],
       "u-admin",
     );
+  });
+
+  it("updateSessionById refuses an unconditional overwrite (no concurrency token)", async () => {
+    // Arrange
+    const repo = createFakeRepo();
+    vi.mocked(repo.findSessionById).mockResolvedValue(
+      SessionSchema.parse({ id: "s1", name: "Hifz 2026", status: "draft", version: 4 }) as never,
+    );
+    const useCases = createTestUseCases(repo);
+
+    // Act
+    const act = () =>
+      runWithTenant("demo", () =>
+        useCases.updateSessionById(
+          "s1",
+          { name: "Renamed" },
+          {
+            canOverrideLock: false,
+            today: "2026-01-01",
+          },
+        ),
+      );
+
+    // Assert
+    await expect(act()).rejects.toMatchObject({
+      statusCode: 428,
+      type: "precondition_required",
+    });
+    expect(repo.saveSession).not.toHaveBeenCalled();
+  });
+
+  it("updateSessionById forwards the monotonic version token to the repository", async () => {
+    // Arrange
+    const repo = createFakeRepo();
+    vi.mocked(repo.findSessionById).mockResolvedValue(
+      SessionSchema.parse({ id: "s1", name: "Hifz 2026", status: "draft", version: 4 }) as never,
+    );
+    const useCases = createTestUseCases(repo);
+
+    // Act
+    const result = await runWithTenant("demo", () =>
+      useCases.updateSessionById(
+        "s1",
+        { name: "Renamed" },
+        { canOverrideLock: false, today: "2026-01-01" },
+        undefined,
+        4,
+      ),
+    );
+
+    // Assert
+    expect(repo.saveSession).toHaveBeenCalledWith("demo", expect.objectContaining({ id: "s1" }), {
+      expectedVersion: 4,
+    });
+    // The next save can use the returned token without re-reading.
+    expect(result?.version).toBe(5);
+  });
+
+  it("createSession refuses an overlapping live session", async () => {
+    // Arrange
+    const repo = createFakeRepo();
+    vi.mocked(repo.findOverlappingSessions).mockResolvedValue([
+      {
+        id: "sess-old",
+        name: "Hifz 2026",
+        startDate: "2026-01-01",
+        endDate: "2026-06-30",
+        status: "in_progress",
+      },
+    ]);
+    const useCases = createTestUseCases(repo);
+
+    // Act
+    const act = () =>
+      runWithTenant("demo", () =>
+        useCases.createSession({
+          id: "sess-new",
+          name: "Summer 2026",
+          status: "draft",
+          startDate: "2026-03-01",
+          endDate: "2026-09-30",
+        } as never),
+      );
+
+    // Assert
+    await expect(act()).rejects.toThrow(ConflictError);
+    expect(repo.saveSession).not.toHaveBeenCalled();
   });
 });

@@ -9750,6 +9750,8 @@ export const APP_TRANSLATIONS_UR: Record<AppTranslationKey, string> = {
   "sessions.lock.field.sectionRemoved": "سیکشن ہٹانا",
   "sessions.lock.field.eligibility": "عمر/جنس کی اہلیت",
   "sessions.lock.field.capacityBelowEnrolled": "داخل شدگان سے کم گنجائش",
+  "sessions.lock.field.endDate": "اختتامی تاریخ کم کرنا",
+  "sessions.lock.field.criteria": "فیس یا تکمیل کے معیار",
   "attendance.setup.calendar": "کیلنڈر",
   "attendance.calendar.add": "ایونٹ شامل کریں",
   "attendance.calendar.edit": "ایونٹ میں ترمیم",

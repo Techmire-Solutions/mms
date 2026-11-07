@@ -9,6 +9,8 @@ export const sessionsBulkStatusSchema = z
     ids: z.array(z.string().min(1)).min(1).max(500),
     // Only real lifecycle states: a free-form value silently normalizes to `draft`.
     status: z.enum(SESSION_LIFECYCLE_STATES),
+    /** Required when `status` is `cancelled` (the same reason rule as the single cancel action). */
+    reason: z.string().trim().min(3).max(500).optional(),
   })
   .strict();
 

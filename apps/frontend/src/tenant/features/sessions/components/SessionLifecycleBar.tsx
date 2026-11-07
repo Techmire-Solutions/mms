@@ -47,10 +47,15 @@ export function SessionLifecycleBar({ session }: { session: Session }): React.JS
   const reasonValid = reason.trim().length >= 3;
   const submit = async () => {
     const id = String(session.id);
+    // OCC: cancel/postpone are refused when the session changed since this panel read it.
+    const token = {
+      ...(session.version !== undefined ? { expectedVersion: session.version } : {}),
+      ...(session.updatedAt ? { expectedUpdatedAt: session.updatedAt } : {}),
+    };
     const saved =
       action === "cancel"
-        ? await cancel(id, { reason: reason.trim() })
-        : await postpone(id, { startDate: day, reason: reason.trim() });
+        ? await cancel(id, { reason: reason.trim() }, token)
+        : await postpone(id, { startDate: day, reason: reason.trim() }, token);
     if (saved) setAction(null);
   };
 

@@ -12,6 +12,8 @@ import {
   date,
   boolean,
   smallint,
+  bigint,
+  check,
 } from "drizzle-orm/pg-core";
 import { sql } from "drizzle-orm";
 import { workspaces } from "./platform.js";
@@ -44,12 +46,28 @@ export const sessions = pgTable(
     /** Short-course completion criteria (migration 0178). */
     minAttendancePct: smallint("min_attendance_pct"),
     requiresExamPass: boolean("requires_exam_pass").notNull().default(false),
+    /** Optimistic-concurrency token, incremented by every write (migration 0206). */
+    version: bigint("version", { mode: "number" }).notNull().default(1),
+    /**
+     * Set from the Sessions `allowOverlap` preference on write (migration 0206). When true the row is
+     * exempt from `sessions_no_overlap_excl`, the tenant-wide no-overlap guarantee.
+     */
+    overlapExempt: boolean("overlap_exempt").notNull().default(false),
     ...softDeleteColumns,
     createdAt: timestamp("created_at", { withTimezone: true, mode: "date" }).notNull().defaultNow(),
     updatedAt: timestamp("updated_at", { withTimezone: true, mode: "date" }).notNull().defaultNow(),
   },
   (table) => [
     primaryKey({ columns: [table.workspaceSubdomain, table.id] }),
+    // Mirrors of the DB constraints added by migrations 0169/0172 (mms-schema-migrate §1).
+    check(
+      "sessions_status_lifecycle_check",
+      sql`${table.status} IN ('draft', 'open', 'in_progress', 'completed', 'cancelled', 'archived')`,
+    ),
+    check(
+      "sessions_date_range_check",
+      sql`${table.startDate} IS NULL OR ${table.endDate} IS NULL OR ${table.endDate} >= ${table.startDate}`,
+    ),
     foreignKey({
       name: "sessions_category_fk",
       columns: [table.workspaceSubdomain, table.categoryId],
@@ -65,6 +83,14 @@ export const sessions = pgTable(
     index("sessions_workspace_name_idx").on(table.workspaceSubdomain, table.name),
     index("sessions_workspace_status_idx").on(table.workspaceSubdomain, table.status),
     index("sessions_workspace_start_date_idx").on(table.workspaceSubdomain, table.startDate),
+    // Work list: status equality + start_date sort, and end_date sort, active rows only.
+    // Built concurrently by scripts/sessions_concurrent_indexes.sql (mms-schema-migrate §7).
+    index("sessions_ws_status_start_active_idx")
+      .on(table.workspaceSubdomain, table.status, table.startDate)
+      .where(sql`${table.deletedAt} is null`),
+    index("sessions_ws_start_end_active_idx")
+      .on(table.workspaceSubdomain, table.startDate, table.endDate)
+      .where(sql`${table.deletedAt} is null`),
     index("sessions_workspace_deleted_idx").on(table.workspaceSubdomain, table.deletedAt),
     index("sessions_workspace_active_idx")
       .on(table.workspaceSubdomain)
@@ -132,10 +158,19 @@ export const sessionClasses = pgTable(
     room: varchar("room", { length: 100 }).default(""),
     sortOrder: integer("sort_order").notNull().default(0),
     programId: text("program_id"),
+    /** Optimistic-concurrency token for class-only writers (migration 0206). */
+    version: integer("version").notNull().default(1),
     createdAt: timestamp("created_at", { withTimezone: true, mode: "date" }).notNull().defaultNow(),
+    updatedAt: timestamp("updated_at", { withTimezone: true, mode: "date" }).notNull().defaultNow(),
   },
   (table) => [
     primaryKey({ columns: [table.workspaceSubdomain, table.sessionId, table.id] }),
+    // Range/domain guards (migration 0206, added NOT VALID so legacy rows are not rewritten).
+    // `gender` is intentionally unconstrained: legacy rows carry "all"/"any"/"1" as well as the
+    // shared enum values, so a CHECK here would break existing data instead of protecting it.
+    check("session_classes_age_range_check", sql`${table.ageMin} <= ${table.ageMax}`),
+    check("session_classes_capacity_check", sql`${table.capacity} >= 0`),
+    check("session_classes_status_check", sql`${table.status} IN ('active', 'inactive')`),
     foreignKey({
       name: "session_classes_program_fk",
       columns: [table.workspaceSubdomain, table.programId],

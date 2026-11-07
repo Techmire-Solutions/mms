@@ -77,6 +77,9 @@ beforeAll(async () => {
         startDate,
         endDate: id === "ses-new" ? inDays(40) : "2026-12-31",
         baseFee: 1000,
+        // This fixture deliberately runs two live sessions in parallel (postpone/close targets),
+        // which is exactly what the `allowOverlap` exemption exists for (migration 0206).
+        overlapExempt: true,
         classes: [
           {
             id: `${id}-cls`,
@@ -129,7 +132,9 @@ describe("session cancel / postpone, student status cascade, activity (real Post
   it("given an in-progress session, should refuse postponing it", async () => {
     // Act
     const attempt = await run(() =>
-      ops.postpone(TENANT, "ses-run", { startDate: inDays(5), reason: "Late start" }, admin),
+      ops.postpone(TENANT, "ses-run", { startDate: inDays(5), reason: "Late start" }, admin, {
+        expectedVersion: 1,
+      }),
     ).catch((error: unknown) => error);
 
     // Assert
@@ -144,6 +149,7 @@ describe("session cancel / postpone, student status cascade, activity (real Post
         "ses-new",
         { startDate: inDays(17), reason: "Building not ready" },
         admin,
+        { expectedVersion: 1 },
       ),
     );
 
@@ -177,7 +183,9 @@ describe("session cancel / postpone, student status cascade, activity (real Post
 
     // Act
     const result = await run(() =>
-      ops.cancel(TENANT, "ses-run", { reason: "Teacher unavailable" }, admin),
+      ops.cancel(TENANT, "ses-run", { reason: "Teacher unavailable" }, admin, {
+        expectedVersion: 1,
+      }),
     );
 
     // Assert
@@ -191,7 +199,7 @@ describe("session cancel / postpone, student status cascade, activity (real Post
       SELECT status FROM sessions WHERE workspace_subdomain = ${TENANT} AND id = 'ses-run'`);
     expect(session.status).toBe("cancelled");
     const again = await run(() =>
-      ops.cancel(TENANT, "ses-run", { reason: "Cancel twice" }, admin),
+      ops.cancel(TENANT, "ses-run", { reason: "Cancel twice" }, admin, { expectedVersion: 2 }),
     ).catch((error: unknown) => error);
     expect(again).toMatchObject({ statusCode: 409 });
   });

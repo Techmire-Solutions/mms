@@ -5,6 +5,8 @@ import { isForeignKeyViolation } from "./pgErrors.js";
 interface ContractErrorBody {
   type: string;
   message: string;
+  /** Machine-readable reasons carried by domain errors (e.g. blocked session transitions). */
+  violations?: string[];
 }
 
 /**
@@ -25,7 +27,7 @@ interface ContractErrorBody {
  *     });
  *   }
  */
-const CLIENT_ERROR_STATUSES = new Set([400, 401, 403, 404, 409, 422, 429]);
+const CLIENT_ERROR_STATUSES = new Set([400, 401, 403, 404, 409, 422, 428, 429]);
 
 export function handleContractError(
   request: FastifyRequest,
@@ -63,11 +65,15 @@ export function handleContractError(
   const statusCode = (error as { statusCode?: unknown } | null)?.statusCode;
   if (typeof statusCode === "number" && CLIENT_ERROR_STATUSES.has(statusCode)) {
     const type = (error as { type?: unknown }).type;
+    const violations = (error as { violations?: unknown }).violations;
     return {
       status: statusCode,
       body: {
         type: typeof type === "string" && type ? type : "error",
         message: error instanceof Error ? error.message : fallback.body.message,
+        ...(Array.isArray(violations)
+          ? { violations: violations.map((value) => String(value)) }
+          : {}),
       },
     };
   }

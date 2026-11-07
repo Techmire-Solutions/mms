@@ -1,5 +1,5 @@
 import { randomUUID } from "node:crypto";
-import { normalizeSessionStatus, type SessionTransferEntity } from "@mms/shared";
+import { parseSessionStatus, type SessionTransferEntity } from "@mms/shared";
 import { registerModuleCsvImportJobRunner } from "../../lib/registerModuleCsvImportJobRunner.js";
 import { runWithTenant } from "../../lib/tenantContext.js";
 import { sessionsUseCases } from "./sessionsUseCases.js";
@@ -21,7 +21,24 @@ export function registerSessionImportJobRunner(): void {
       for (let index = 0; index < rows.length; index += 1) {
         const row = rows[index];
         const name = row.name?.trim();
-        if (!name) {
+        // A CSV row may only create a draft/intake session; later states must go through the
+        // lifecycle so their guards and side effects run (imported history stays explicit).
+        let status = "draft";
+        try {
+          status = parseSessionStatus(row.status ?? "draft");
+        } catch {
+          failed += 1;
+          errors.push({ row: index + 1, reason: `Unknown session status: ${String(row.status)}` });
+          await ctx.updateProgress(index + 1, Math.max(rows.length, 1));
+          continue;
+        }
+        if (status !== "draft" && status !== "open") {
+          failed += 1;
+          errors.push({
+            row: index + 1,
+            reason: `Imported sessions start as draft or open, not ${status}`,
+          });
+        } else if (!name) {
           failed += 1;
           errors.push({ row: index + 1, reason: "Session name is required" });
         } else {
@@ -31,7 +48,7 @@ export function registerSessionImportJobRunner(): void {
                 id: randomUUID(),
                 name,
                 type: row.type?.trim() ?? "",
-                status: normalizeSessionStatus(row.status),
+                status,
                 startDate: row.startDate?.trim().slice(0, 10) ?? "",
                 endDate: row.endDate?.trim().slice(0, 10) ?? "",
                 baseFee: Number(row.baseFee ?? 0) || 0,

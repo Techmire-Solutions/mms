@@ -10,6 +10,12 @@ import type { DbClient } from "./dbConnection.js";
 import { tracer } from "../config/telemetry.js";
 import { applyTenantTransactionGuards } from "./tenantTransactionGuards.js";
 import { resolveTenantScope } from "./tenantScopeGuard.js";
+import {
+  createCommitScope,
+  discardCommitScope,
+  flushCommitScope,
+  runInCommitScope,
+} from "./commitScope.js";
 import { logger } from "../lib/logger.js";
 
 export type TenantTransaction = Parameters<Parameters<DbClient["transaction"]>[0]>[0];
@@ -146,6 +152,10 @@ export async function withTenant<T>(
     );
   }
 
+  // Post-commit effects (live broadcasts, cache invalidation) are queued inside the transaction and
+  // only run once it commits; a rollback discards them so the UI never announces a state the
+  // database refused to store.
+  const commitScope = createCommitScope();
   return tracer.withSpan(
     "drizzle.transaction",
     {
@@ -154,22 +164,32 @@ export async function withTenant<T>(
       "db.read_only": options.readOnly ?? false,
     },
     async () => {
-      return pool.transaction(
-        async (tx) => {
-          // Single source of truth for tenant RLS GUCs + statement/idle budgets.
-          await applyTenantTransactionGuards(tx as unknown as AppDb, resolvedTenantId, {
-            statementTimeoutMs: options.statementTimeoutMs,
-          });
+      let result: T;
+      try {
+        result = await pool.transaction(
+          async (tx) => {
+            // Single source of truth for tenant RLS GUCs + statement/idle budgets.
+            await applyTenantTransactionGuards(tx as unknown as AppDb, resolvedTenantId, {
+              statementTimeoutMs: options.statementTimeoutMs,
+            });
 
-          // Register this transaction as the active one for the callback's async
-          // scope so nested runInTransaction()/activeDb() consumers join it rather
-          // than opening a second pool client and a second transaction.
-          return withActiveTransaction(tx as unknown as DbClient, () =>
-            callback(tx as unknown as TenantTransaction),
-          );
-        },
-        options.readOnly ? { accessMode: "read only" } : undefined,
-      );
+            // Register this transaction as the active one for the callback's async
+            // scope so nested runInTransaction()/activeDb() consumers join it rather
+            // than opening a second pool client and a second transaction.
+            return runInCommitScope(commitScope, () =>
+              withActiveTransaction(tx as unknown as DbClient, () =>
+                callback(tx as unknown as TenantTransaction),
+              ),
+            );
+          },
+          options.readOnly ? { accessMode: "read only" } : undefined,
+        );
+      } catch (error) {
+        discardCommitScope(commitScope);
+        throw error;
+      }
+      await flushCommitScope(commitScope);
+      return result;
     },
   );
 }

@@ -18,3 +18,12 @@ export function isForeignKeyViolation(error: unknown): boolean {
   const cause = "cause" in error ? (error as { cause?: unknown }).cause : undefined;
   return isForeignKeyViolation(cause);
 }
+
+/** True for `23P01` (exclusion_violation), including wrapped driver errors. */
+export function isExclusionViolation(error: unknown): boolean {
+  if (!error || typeof error !== "object") return false;
+  const code = "code" in error ? String((error as { code?: unknown }).code ?? "") : "";
+  if (code === "23P01") return true;
+  const cause = "cause" in error ? (error as { cause?: unknown }).cause : undefined;
+  return isExclusionViolation(cause);
+}

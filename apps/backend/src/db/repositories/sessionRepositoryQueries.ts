@@ -1,4 +1,4 @@
-import { and, eq, inArray, isNull } from "drizzle-orm";
+import { and, eq, inArray, isNotNull, isNull, ne, sql } from "drizzle-orm";
 import { type Session } from "@mms/shared";
 import { sessions, sessionClasses, type SessionReadRow } from "../schema.js";
 import { withTenantRead, type TenantTransaction } from "../tenant-context.js";
@@ -7,6 +7,7 @@ import { getPreparedSessionById } from "../preparedStatements.js";
 import { attachClassSectionsTx } from "./sessionSectionsHydrate.js";
 import { attachSessionWorkingDaysTx } from "./sessionWorkingDays.js";
 import { sessionTypeSql } from "./academicCatalogNameSql.js";
+import { toDbDate } from "../../lib/dbDate.js";
 
 async function attachSessionChildrenTx(
   tx: TenantTransaction,
@@ -35,6 +36,8 @@ const sessionSelectColumns = {
   description: sessions.description,
   minAttendancePct: sessions.minAttendancePct,
   requiresExamPass: sessions.requiresExamPass,
+  version: sessions.version,
+  overlapExempt: sessions.overlapExempt,
   deletedAt: sessions.deletedAt,
   deletedBy: sessions.deletedBy,
   deletionReason: sessions.deletionReason,
@@ -127,6 +130,51 @@ export async function findSessionStatusesByIds(
       .from(sessions)
       .where(and(eq(sessions.workspaceSubdomain, subdomain), inArray(sessions.id, ids)));
     return new Map(rows.map((row) => [row.id, row.status]));
+  });
+}
+
+export interface OverlappingSessionSummary {
+  id: string;
+  name: string;
+  startDate: string | null;
+  endDate: string | null;
+  status: string;
+}
+
+/**
+ * Live sessions of the tenant whose inclusive range intersects `[startDate, endDate]`.
+ * Backs the friendly 409 in the use-cases; the authoritative guarantee is the
+ * `sessions_no_overlap_excl` exclusion constraint (migration 0206).
+ */
+export async function findOverlappingSessions(
+  tenant: string,
+  input: { startDate?: string | null; endDate?: string | null; excludeId?: string },
+): Promise<OverlappingSessionSummary[]> {
+  const subdomain = tenant.trim().toLowerCase();
+  const start = toDbDate(input.startDate);
+  const end = toDbDate(input.endDate);
+  if (!start || !end) return [];
+  return withTenantRead(subdomain, async (tx) => {
+    const conditions = [
+      eq(sessions.workspaceSubdomain, subdomain),
+      isNull(sessions.deletedAt),
+      eq(sessions.overlapExempt, false),
+      inArray(sessions.status, ["draft", "open", "in_progress"]),
+      isNotNull(sessions.startDate),
+      isNotNull(sessions.endDate),
+      sql`daterange(${sessions.startDate}, ${sessions.endDate}, '[]') && daterange(${start}::date, ${end}::date, '[]')`,
+    ];
+    if (input.excludeId) conditions.push(ne(sessions.id, input.excludeId));
+    return tx
+      .select({
+        id: sessions.id,
+        name: sessions.name,
+        startDate: sessions.startDate,
+        endDate: sessions.endDate,
+        status: sessions.status,
+      })
+      .from(sessions)
+      .where(and(...conditions));
   });
 }
 

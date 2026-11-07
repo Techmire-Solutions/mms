@@ -20,7 +20,7 @@ import {
   type SessionsListQuery,
 } from "@mms/shared";
 import { sessions } from "../schema.js";
-import { withTenant, withTenantRead } from "../tenant-context.js";
+import { withTenantRead } from "../tenant-context.js";
 import { runListPage } from "./listPageHelper.js";
 import { findSessionsSummaryByIds } from "./sessionRepository.js";
 import { enrollmentHoldsSeatSql } from "./enrollmentSeatSql.js";
@@ -247,38 +247,4 @@ export async function aggregateSessionsCommandMetrics(
   });
 }
 
-/**
- * Set typed `status` for active sessions in one UPDATE.
- * Returns { succeeded, failed }.
- */
-export async function bulkUpdateSessionsStatusSql(
-  workspaceSubdomain: string,
-  ids: string[],
-  status: string,
-): Promise<{ succeeded: number; failed: number }> {
-  const subdomain = workspaceSubdomain.trim().toLowerCase();
-  const uniqueIds = dedupeTrimmedIds(ids);
-  if (!subdomain || uniqueIds.length === 0) return { succeeded: 0, failed: 0 };
-  const normalizedStatus = status.trim().toLowerCase() || "active";
-
-  return withTenant(subdomain, async (tx) => {
-    const updated = await tx
-      .update(sessions)
-      .set({
-        status: normalizedStatus,
-        updatedAt: new Date(),
-      })
-      .where(
-        and(
-          eq(sessions.workspaceSubdomain, subdomain),
-          inArray(sessions.id, uniqueIds),
-          isNull(sessions.deletedAt),
-        ),
-      )
-      .returning({ id: sessions.id });
-
-    const succeeded = updated.length;
-    const failed = Math.max(0, uniqueIds.length - succeeded);
-    return { succeeded, failed };
-  });
-}
+export { bulkUpdateSessionsStatusSql } from "./sessionRepositoryBulkStatus.js";

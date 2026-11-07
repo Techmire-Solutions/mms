@@ -243,6 +243,8 @@ export function sessionRowToRecord(
     description: rowNorm.description || undefined,
     minAttendancePct: row.minAttendancePct ?? null,
     requiresExamPass: row.requiresExamPass ?? false,
+    version: Number(row.version ?? 1),
+    overlapExempt: Boolean(row.overlapExempt),
     faculty: mappedFaculty,
     classes: mappedClasses,
     ...mapAuditTimestamps(row),

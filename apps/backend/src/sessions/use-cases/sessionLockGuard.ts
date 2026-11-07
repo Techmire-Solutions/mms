@@ -35,19 +35,24 @@ export class SessionLockedError extends HttpDomainError {
 /**
  * Applies the shared lifecycle rules to an update: status changes must be allowed transitions;
  * structural changes after start need an authorized override with a reason.
+ * `extraViolations` carries store-backed checks the pure policy cannot see (end-date bounds against
+ * recorded attendance/enrollments) so they run through the same override/audit path.
  * Returns the violations that were overridden (for the audit trail).
  */
 export function assertSessionEditable(
   before: Session,
   after: Session,
   ctx: SessionLockContext,
+  extraViolations: readonly SessionEditViolation[] = [],
 ): SessionEditViolation[] {
   if (after.status !== undefined && !canTransitionSession(before.status, after.status)) {
     throw new ValidationError(
       `Cannot move a session from ${normalizeSessionStatus(before.status)} to ${normalizeSessionStatus(after.status)}`,
     );
   }
-  const violations = findSessionEditViolations(before, after, ctx.today);
+  const violations = [
+    ...new Set([...findSessionEditViolations(before, after, ctx.today), ...extraViolations]),
+  ];
   if (violations.length === 0) return [];
   const reason = ctx.lockOverrideReason?.trim();
   if (!ctx.canOverrideLock || !reason || reason.length < 3)

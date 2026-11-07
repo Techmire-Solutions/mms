@@ -118,6 +118,9 @@ async function ensureTarget(
     : null;
   if (existing) return { target: existing, ids: mapsByName(source, existing) };
   const built = buildRolloverSession(source, payload.body, randomUUID);
+  // A `duplicate` run copies the structure for the *same* period on purpose (a parallel cohort),
+  // so its target is exempt from the tenant-wide no-overlap guarantee (migration 0206).
+  if (payload.body.mode === "duplicate") built.session.overlapExempt = true;
   await sessionsRepository.saveSession(tenant, built.session);
   await runs.updatePromotionRun(tenant, runId, { targetSessionId: built.session.id });
   const { startDate, endDate } = payload.body.target;

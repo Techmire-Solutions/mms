@@ -147,6 +147,8 @@ export async function persistClassSectionsTx(
       room: section.room?.trim() || null,
       status: section.status ?? "active",
       sortOrder: index,
+      // `updated_at` is the section's optimistic-concurrency signal; a stale default lies.
+      updatedAt: new Date(),
     };
     await tx
       .insert(sessionClassSections)

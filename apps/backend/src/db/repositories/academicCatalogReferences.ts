@@ -23,7 +23,7 @@ async function firstCount(query: PromiseLike<Array<{ n: number }>>): Promise<num
   return Number(row?.n ?? 0);
 }
 
-/** Live rows (sessions, classes, timetable periods, exams) that point at a catalog entry. */
+/** Rows (sessions, classes, timetable periods, exams) that point at a catalog entry. */
 export async function countAcademicCatalogReferencesTx(
   tx: TenantTransaction,
   kind: AcademicCatalogKind,
@@ -31,18 +31,14 @@ export async function countAcademicCatalogReferencesTx(
   id: string,
 ): Promise<number> {
   const n = sql<number>`count(*)::int`;
+  // Archived sessions/classes still hold the FK, so they count too: counting only live rows let
+  // the UI offer a delete that then failed on FK RESTRICT (review finding P2-1).
   if (kind === "categories") {
     return firstCount(
       tx
         .select({ n })
         .from(sessions)
-        .where(
-          and(
-            eq(sessions.workspaceSubdomain, subdomain),
-            eq(sessions.categoryId, id),
-            isNull(sessions.deletedAt),
-          ),
-        ),
+        .where(and(eq(sessions.workspaceSubdomain, subdomain), eq(sessions.categoryId, id))),
     );
   }
   if (kind === "programs") {
@@ -50,13 +46,7 @@ export async function countAcademicCatalogReferencesTx(
       tx
         .select({ n })
         .from(sessions)
-        .where(
-          and(
-            eq(sessions.workspaceSubdomain, subdomain),
-            eq(sessions.programId, id),
-            isNull(sessions.deletedAt),
-          ),
-        ),
+        .where(and(eq(sessions.workspaceSubdomain, subdomain), eq(sessions.programId, id))),
     );
     const inClasses = await firstCount(
       tx

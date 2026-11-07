@@ -69,6 +69,8 @@ export const sessionContract = c.router({
       201: z.object({ session: SessionSchema }),
       400: errorResponse,
       403: errorResponse,
+      /** Overlaps a live session (no-overlap guarantee, migration 0206). */
+      409: errorResponse,
       500: errorResponse,
     },
     summary: "Create a session",
@@ -131,6 +133,10 @@ export const sessionContract = c.router({
       400: z.unknown(),
       403: z.unknown(),
       404: z.unknown(),
+      /** Stale OCC token or an overlapping date range. */
+      409: errorResponse,
+      /** No `x-expected-version` / `x-expected-updated-at` token: conditional update required. */
+      428: errorResponse,
       500: z.unknown(),
     },
     summary: "Update session",
@@ -144,6 +150,8 @@ export const sessionContract = c.router({
       400: z.unknown(),
       403: z.unknown(),
       404: z.unknown(),
+      /** The session is not in a terminal state (complete/cancel it first, or override). */
+      409: errorResponse,
       500: z.unknown(),
     },
     summary: "Delete session",

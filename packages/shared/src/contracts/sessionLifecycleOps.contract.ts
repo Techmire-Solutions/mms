@@ -15,7 +15,10 @@ const writeErrors = {
   400: errorResponse,
   403: errorResponse,
   404: errorResponse,
+  /** Lifecycle guard refused the transition (violations in the body). */
   409: errorResponse,
+  /** No concurrency token supplied: a conditional action is required. */
+  428: errorResponse,
   500: errorResponse,
 };
 
