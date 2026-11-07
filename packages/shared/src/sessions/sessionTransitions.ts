@@ -17,6 +17,10 @@ export const SESSION_LIFECYCLE_STATES = [
   "archived",
 ] as const;
 export type SessionLifecycleState = (typeof SESSION_LIFECYCLE_STATES)[number];
+/** Canonical public name for a session's lifecycle state. */
+export type SessionStatus = SessionLifecycleState;
+/** Lifecycle states that may overlap another live session's date range. */
+export const SESSION_OVERLAP_STATES: readonly SessionStatus[] = ["draft", "open", "in_progress"];
 
 /**
  * Allowed explicit transitions. There is no jump: a session must pass through `open` before it can

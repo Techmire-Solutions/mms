@@ -20,6 +20,8 @@ export const sessionIdParamsSchema = z.object({ id: z.string().trim().min(1).max
 export const sessionResponseSchema = z.object(
   SessionSchema.omit({ overlapExempt: true, deletedBy: true, restoredBy: true }).shape,
 );
+/** Public wire shape; distinct from the internal `Session` aggregate (which carries server fields). */
+export type SessionResponse = z.infer<typeof sessionResponseSchema>;
 
 const error = sessionErrorResponseSchema;
 

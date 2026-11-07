@@ -12,8 +12,10 @@ import {
   type SQL,
 } from "drizzle-orm";
 import {
+  SESSION_SORT_FIELDS as SHARED_SESSION_SORT_FIELDS,
   dedupeTrimmedIds,
   isQueryFlagTrue,
+  normalizeSessionStatusFilter,
   toEscapedSqlSearchPattern,
   type SessionsCommandMetricsSnapshot,
   type SessionsListPageResult,
@@ -27,16 +29,7 @@ import { enrollmentHoldsSeatSql } from "./enrollmentSeatSql.js";
 import { workspaceTodayIso } from "../../lib/workspaceDay.js";
 import { sessionTypeSql } from "./academicCatalogNameSql.js";
 
-export const SESSION_SORT_FIELDS = new Set([
-  "name",
-  "type",
-  "status",
-  "baseFee",
-  "startDate",
-  "endDate",
-  "updatedAt",
-  "createdAt",
-]);
+export const SESSION_SORT_FIELDS = new Set<string>(SHARED_SESSION_SORT_FIELDS);
 
 function buildSearchSql(search: string): SQL | null {
   const normalized = search.trim();
@@ -96,10 +89,9 @@ function buildListConditions(subdomain: string, query: SessionsListQuery): SQL[]
     conditions.push(isNull(sessions.deletedAt));
   }
 
-  const rawStatuses = dedupeTrimmedIds(query.status);
-  if (rawStatuses.length > 0) {
-    const statuses = rawStatuses.map((status) => status.toLowerCase());
-    conditions.push(inArray(sql`lower(${sessions.status})`, statuses));
+  const statuses = normalizeSessionStatusFilter(query.status);
+  if (statuses.length > 0) {
+    conditions.push(inArray(sessions.status, statuses));
   }
 
   const rawTypes = dedupeTrimmedIds(query.type);

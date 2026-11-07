@@ -1,5 +1,7 @@
 import { z } from "zod";
 import { csvImportBodySchema } from "./csvImport.dto.js";
+import { isoDateOrEmptySchema } from "../core/isoDateSchema.js";
+import { sessionStatusSchema } from "../sessions/sessionTransitions.js";
 
 export const studentImportRowSchema = z
   .object({
@@ -31,13 +33,13 @@ export const sessionImportRowSchema = z
   .object({
     name: z.string().trim().max(200).optional(),
     type: z.string().trim().max(100).optional(),
-    status: z.string().trim().max(50).optional(),
-    startDate: z.string().trim().max(50).optional(),
-    endDate: z.string().trim().max(50).optional(),
+    status: sessionStatusSchema.optional(),
+    startDate: isoDateOrEmptySchema.optional(),
+    endDate: isoDateOrEmptySchema.optional(),
     duration: z.string().trim().max(100).optional(),
     baseFee: z.union([z.string(), z.number()]).optional(),
     currency: z.string().trim().max(10).optional(),
-    capacity: z.number().optional(),
+    capacity: z.union([z.number(), z.string()]).optional(),
     description: z.string().trim().max(2000).optional(),
     notes: z.string().trim().max(2000).optional(),
   })

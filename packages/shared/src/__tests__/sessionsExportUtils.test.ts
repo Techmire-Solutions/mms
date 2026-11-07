@@ -13,7 +13,7 @@ describe("sessionsExportUtils", () => {
     id: "sess-1",
     name: "Summer Camp 2026",
     type: "summer",
-    status: "active",
+    status: "in_progress",
     startDate: "2026-06-01",
     endDate: "2026-07-31",
     baseFee: 5000,

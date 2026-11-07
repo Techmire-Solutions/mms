@@ -9,6 +9,7 @@ import { isSessionReadOnly, isSessionStructureLocked } from "./sessionTransition
 export {
   SESSION_ENROLLABLE_STATES,
   SESSION_LIFECYCLE_STATES,
+  SESSION_OVERLAP_STATES,
   SESSION_PHASES,
   SESSION_TRANSITIONS,
   SESSION_TRANSITION_VIOLATIONS,
@@ -24,12 +25,15 @@ export {
   parseSessionStatus,
   sessionStatusSchema,
   type SessionLifecycleState,
+  type SessionStatus,
   type SessionPhase,
   type SessionPhaseEvent,
   type SessionTransitionContext,
   type SessionTransitionEvaluation,
   type SessionTransitionViolation,
 } from "./sessionTransitions.js";
+
+export { normalizeSessionStatusFilter, sessionStatusFilterSchema } from "./sessionStatusFilter.js";
 
 /** Edit-policy violation codes (translated by the UI as `sessions.lock.field.{code}`). */
 export type SessionEditViolation =

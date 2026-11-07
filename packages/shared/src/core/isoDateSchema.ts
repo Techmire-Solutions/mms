@@ -88,6 +88,9 @@ export const isoDateOrEmptySchema = z
   .string()
   .refine((value) => value === "" || isValidIsoDate(value), MESSAGE);
 
+/** A strict ISO-8601 instant with an explicit offset (UTC `Z` or `±HH:MM`). */
+export const isoDateTimeSchema = z.string().datetime({ offset: true });
+
 /**
  * Compares two `YYYY-MM-DD` strings chronologically.
  *

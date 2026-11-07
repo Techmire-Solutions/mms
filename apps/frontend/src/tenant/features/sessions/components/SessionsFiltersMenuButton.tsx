@@ -5,16 +5,18 @@ import {
   ModuleFilterDropdown,
 } from "@/components/app/ModuleFiltersMenuButton";
 import { useTranslation } from "@/hooks/useTranslation";
+import { parseSessionStatus } from "@mms/shared";
+import type { SessionStatus } from "@/tenant/features/sessions/lib/sessionPageTypes";
 
 export interface SessionsFiltersMenuButtonProps {
-  filterStatus: string[];
+  filterStatus: SessionStatus[];
   filterType: string[];
-  statusOptions: string[];
+  statusOptions: SessionStatus[];
   typeOptions: string[];
   statusLabels: Record<string, string>;
   typeLabels: Record<string, string>;
   activeFilterCount: number;
-  onStatusFilterToggle: (status: string) => void;
+  onStatusFilterToggle: (status: SessionStatus) => void;
   onTypeFilterToggle: (type: string) => void;
   onClearFilters: () => void;
 }
@@ -49,7 +51,13 @@ export function SessionsFiltersMenuButton({
           label: statusLabels[statusOption] ?? statusOption,
         }))}
         selected={filterStatus}
-        onToggle={onStatusFilterToggle}
+        onToggle={(value) => {
+          try {
+            onStatusFilterToggle(parseSessionStatus(value));
+          } catch {
+            // Ignore an unknown option; the contract rejects it if it reaches the server.
+          }
+        }}
       />
 
       <ModuleFilterDivider />

@@ -5,7 +5,8 @@
 import { z } from "zod";
 import { SessionClassSectionSchema } from "./sessionSectionTypes.js";
 import { WEEKDAY_NAMES } from "../attendance/academicCalendar.js";
-import { isoDateOrEmptySchema } from "../core/isoDateSchema.js";
+import { isoDateOrEmptySchema, isoDateTimeSchema } from "../core/isoDateSchema.js";
+import { sessionStatusSchema } from "./sessionTransitions.js";
 import {
   SessionClassBudgetInsertSchema,
   SessionClassBudgetSchema,
@@ -21,7 +22,6 @@ import {
   SessionClassScholarshipSchema,
   SessionClassTimetableInsertSchema,
   SessionClassTimetableSchema,
-  SessionFacultyInsertSchema,
   SessionFacultySchema,
 } from "./sessionSubEntityTypes.js";
 
@@ -141,8 +141,8 @@ export const SessionSchema = z
   .object({
     id: z.string(),
     name: z.string().min(1, "Session name is required"),
-    // Lifecycle state (see sessionLifecycle); legacy values are normalized server-side.
-    status: z.string().trim().min(1).max(50).default("draft"),
+    // Lifecycle state (see sessionLifecycle); legacy writes normalize to the six stored states.
+    status: sessionStatusSchema.default("draft"),
     /** Legacy display snapshot; superseded by `categoryId` / `programId`. */
     type: z.string().optional().default("academic"),
     /** `session_categories.id` (Academic Year, Term, Short Course, …). */
@@ -174,42 +174,34 @@ export const SessionSchema = z
      */
     overlapExempt: z.boolean().optional(),
     // Soft-delete metadata
-    deletedAt: z.string().nullable().optional(),
+    deletedAt: isoDateTimeSchema.nullable().optional(),
     deletedBy: z.string().nullable().optional(),
     deletionReason: z.string().nullable().optional(),
-    restoredAt: z.string().nullable().optional(),
+    restoredAt: isoDateTimeSchema.nullable().optional(),
     restoredBy: z.string().nullable().optional(),
     deletedWithCascade: z.boolean().nullable().optional(),
-    createdAt: z.string().optional(),
-    updatedAt: z.string().optional(),
-  })
-  .strict();
-
-export const SessionInsertSchema = z
-  .object({
-    id: z.string().optional(),
-    name: z.string().min(1, "Session name is required"),
-    // Lifecycle state (see sessionLifecycle); legacy values are normalized server-side.
-    status: z.string().trim().min(1).max(50).default("draft"),
-    /** Legacy display snapshot; superseded by `categoryId` / `programId`. */
-    type: z.string().optional().default("academic"),
-    /** `session_categories.id` (Academic Year, Term, Short Course, …). */
-    categoryId: z.string().optional(),
-    /** `programs.id` — default program for the session's classes. */
-    programId: z.string().optional(),
-    startDate: isoDateOrEmptySchema.optional().default(""),
-    endDate: isoDateOrEmptySchema.optional().default(""),
-    description: z.string().optional(),
-    currency: z.string().optional().default("PKR"),
-    baseFee: z.coerce.number().nonnegative().default(0),
-    faculty: z.array(SessionFacultyInsertSchema).default([]),
-    classes: z.array(ClassInsertSchema).default([]),
-    createdAt: z.string().optional(),
-    updatedAt: z.string().optional(),
+    createdAt: isoDateTimeSchema.optional(),
+    updatedAt: isoDateTimeSchema.optional(),
   })
   .strict();
 
 export type Session = z.infer<typeof SessionSchema>;
+
+export const SessionInsertSchema = SessionSchema.omit({
+  // Server-owned audit/soft-delete/OCC/overlap controls.
+  deletedAt: true,
+  deletedBy: true,
+  deletionReason: true,
+  restoredAt: true,
+  restoredBy: true,
+  deletedWithCascade: true,
+  version: true,
+  overlapExempt: true,
+  createdAt: true,
+  updatedAt: true,
+})
+  .extend({ id: z.string().optional(), status: sessionStatusSchema.default("draft") })
+  .strict();
 export type SessionInsert = z.infer<typeof SessionInsertSchema>;
 export const SessionUpdateSchema = SessionInsertSchema.partial();
 export type SessionUpdate = z.infer<typeof SessionUpdateSchema>;

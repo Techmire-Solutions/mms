@@ -52,7 +52,7 @@ describe("sessionContractShared", () => {
         startDate: "2026-03-01",
         endDate: "2026-12-31",
         workingDays: ["monday", "tuesday", "wednesday", "thursday", "friday"],
-        status: "planning",
+        status: "open",
         overlapExempt: true,
         deletedBy: "user-1",
         restoredBy: "user-2",
@@ -60,6 +60,15 @@ describe("sessionContractShared", () => {
       expect(parsed).not.toHaveProperty("overlapExempt");
       expect(parsed).not.toHaveProperty("deletedBy");
       expect(parsed).not.toHaveProperty("restoredBy");
+    });
+
+    it("rejects a status outside the lifecycle and accepts legacy aliases on read", () => {
+      expect(() =>
+        sessionResponseSchema.parse({ id: "s1", name: "Bad", status: "planning" }),
+      ).toThrow();
+      expect(
+        sessionResponseSchema.parse({ id: "s2", name: "Legacy", status: "active" }).status,
+      ).toBe("in_progress");
     });
   });
 

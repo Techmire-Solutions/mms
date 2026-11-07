@@ -18,7 +18,7 @@ const mockSession: Session = {
   id: "ses-detail-1",
   name: "Quran Hifz Morning 2024",
   type: "academic",
-  status: "active",
+  status: "in_progress",
   startDate: "2024-01-01",
   endDate: "2024-12-31",
   baseFee: 100,
