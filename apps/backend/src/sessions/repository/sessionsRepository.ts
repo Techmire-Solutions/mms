@@ -6,6 +6,7 @@ import type {
   SessionsWidgetQuery,
   SessionsWidgetAggregateResult,
   SessionsReportAggregates,
+  SessionsReportQuery,
 } from "@mms/shared";
 
 /**
@@ -78,7 +79,10 @@ export interface SessionsRepository {
     tenant: string,
     queries: SessionsWidgetQuery[],
   ): Promise<Record<string, SessionsWidgetAggregateResult>>;
-  loadSessionsReportAggregates(tenant: string): Promise<SessionsReportAggregates>;
+  loadSessionsReportAggregates(
+    tenant: string,
+    options?: SessionsReportQuery,
+  ): Promise<SessionsReportAggregates>;
   softDeleteSessionWithCascade(
     tenant: string,
     sessionId: string,

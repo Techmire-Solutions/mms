@@ -1,5 +1,6 @@
 import { z } from "zod";
 import { isoDateSchema as isoDate } from "../core/isoDateSchema.js";
+import { deepSanitizeStrings } from "../schemas/sanitize.js";
 
 /** Academic calendar exceptions (Attendance → Setup → Calendar). */
 export const ACADEMIC_CALENDAR_EVENT_KINDS = [
@@ -86,5 +87,34 @@ export const academicCalendarListQuerySchema = z
   .strict();
 export type AcademicCalendarListQuery = z.infer<typeof academicCalendarListQuerySchema>;
 
+/** Export requires a bounded range; the route rejects spans longer than 366 days. */
+export const academicCalendarExportQuerySchema = z
+  .object({
+    from: isoDate,
+    to: isoDate,
+    scope: z.enum(ACADEMIC_CALENDAR_SCOPES).optional(),
+    sessionId: z.string().trim().max(64).optional(),
+    classId: z.string().trim().max(64).optional(),
+    sectionId: z.string().trim().max(64).optional(),
+  })
+  .strict();
+export type AcademicCalendarExportQuery = z.infer<typeof academicCalendarExportQuerySchema>;
+
 /** Error type returned (409) when attendance is marked on a non-instructional day. */
 export const NON_INSTRUCTIONAL_DAY_ERROR_TYPE = "non_instructional_day";
+
+/** One row of a bulk academic-calendar import (same write shape as the PUT body). */
+export const academicCalendarImportRowSchema = academicCalendarEventWriteSchema
+  .extend({ id: z.string().trim().min(1).max(64).optional() })
+  .strict();
+
+export const academicCalendarImportBodySchema = z.preprocess(
+  deepSanitizeStrings,
+  z
+    .object({
+      rows: z.array(academicCalendarImportRowSchema).min(1).max(500),
+      dryRun: z.boolean().optional(),
+    })
+    .strict(),
+);
+export type AcademicCalendarImportBody = z.infer<typeof academicCalendarImportBodySchema>;

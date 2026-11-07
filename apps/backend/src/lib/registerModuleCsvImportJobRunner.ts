@@ -66,6 +66,7 @@ export function registerModuleCsvImportJobRunner<TRow = unknown>(
         current: importedCount,
         total: Math.max(finalTotal, 1),
       },
+      ...(result.errors && result.errors.length > 0 ? { errors: result.errors.slice(0, 500) } : {}),
     });
   });
 }

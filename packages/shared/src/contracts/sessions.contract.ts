@@ -8,7 +8,10 @@ import {
 } from "../schemas/sessions.dto.js";
 import { widgetAggregatesBodySchema } from "../schemas/common.dto.js";
 import { sessionsBulkStatusSchema } from "../sessions/sessionsModuleManifest.js";
-import { sessionsReportAggregatesSchema } from "../sessions/sessionsReportAggregates.js";
+import {
+  sessionsReportAggregatesSchema,
+  sessionsReportQuerySchema,
+} from "../sessions/sessionsReportAggregates.js";
 import { academicTerminologySchema } from "../sessions/academicTerminology.js";
 import { sessionsListQuerySchema } from "../sessions/sessionsListQuery.js";
 import {
@@ -228,6 +231,7 @@ export const sessionContract = c.router({
   reportAggregates: {
     method: "GET",
     path: "/api/sessions/report-aggregates",
+    query: sessionsReportQuerySchema.optional(),
     responses: {
       200: sessionsReportAggregatesSchema,
       401: errorResponse,

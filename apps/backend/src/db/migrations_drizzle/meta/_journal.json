@@ -1464,6 +1464,13 @@
       "when": 1794211200000,
       "tag": "0208_background_job_dead_letters",
       "breakpoints": true
+    },
+    {
+      "idx": 209,
+      "version": "7",
+      "when": 1794214800000,
+      "tag": "0209_report_indexes_and_job_errors",
+      "breakpoints": true
     }
   ]
 }

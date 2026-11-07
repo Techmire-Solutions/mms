@@ -209,4 +209,5 @@ export * from "../sessions/sessionsListQuery.js";
 export * from "../sessions/sessionsModuleManifest.js";
 export * from "../sessions/sessionsModuleSettings.js";
 export * from "../sessions/sessionsReportAggregates.js";
+export * from "../sessions/sessionTimetableImport.js";
 export * from "../sessions/sessionsWidgetAggregate.js";

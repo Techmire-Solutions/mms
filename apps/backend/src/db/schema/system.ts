@@ -69,6 +69,8 @@ export const backgroundJobs = pgTable(
     artifactId: text("artifact_id"),
     hasDownload: boolean("has_download").notNull().default(false),
     error: text("error"),
+    /** Row-level errors for CSV/bulk imports (bounded, sanitized by the runner). */
+    errors: jsonb("errors").$type<Array<{ row: number; reason: string }>>(),
     /** Set when a job exhausted its BullMQ retries and entered the dead-letter state. */
     deadLetteredAt: timestamp("dead_lettered_at", { withTimezone: true, mode: "date" }),
     completedAt: timestamp("completed_at", { withTimezone: true, mode: "date" }),

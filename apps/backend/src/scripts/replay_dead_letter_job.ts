@@ -37,6 +37,7 @@ async function main(): Promise<void> {
         artifactId: backgroundJobs.artifactId,
         hasDownload: backgroundJobs.hasDownload,
         error: backgroundJobs.error,
+        errors: backgroundJobs.errors,
         deadLetteredAt: backgroundJobs.deadLetteredAt,
         completedAt: backgroundJobs.completedAt,
         createdAt: backgroundJobs.createdAt,

@@ -56,6 +56,7 @@ export const sessionSetupContractHandlers = {
   },
 
   reportAggregates: async ({
+    query,
     request,
   }: ContractRouteArgs<(typeof sessionContract)["reportAggregates"]>): Promise<
     ContractRouteResponse<(typeof sessionContract)["reportAggregates"]>
@@ -67,7 +68,7 @@ export const sessionSetupContractHandlers = {
         body: { type: "forbidden", message: "Insufficient permissions" },
       };
     try {
-      const aggregates = await sessionsUseCases.loadSessionsReportAggregates();
+      const aggregates = await sessionsUseCases.loadSessionsReportAggregates(query ?? {});
       return { status: 200 as const, body: aggregates };
     } catch (error) {
       return handleContractError(request, error, {

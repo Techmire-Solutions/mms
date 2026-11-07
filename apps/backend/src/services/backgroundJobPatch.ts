@@ -12,6 +12,7 @@ export async function patchJob(
   patch: Omit<Partial<BackgroundJobRecord>, "completedAt" | "error"> & {
     completedAt?: string | null;
     error?: string | null;
+    errors?: Array<{ row: number; reason: string }> | null;
     deadLetteredAt?: Date | null;
   },
 ): Promise<BackgroundJobRecord> {
@@ -23,6 +24,7 @@ export async function patchJob(
     progressCurrent?: number | null;
     progressTotal?: number | null;
     error?: string | null;
+    errors?: Array<{ row: number; reason: string }> | null;
     hasDownload?: boolean;
     completedAt?: Date | null;
     deadLetteredAt?: Date | null;
@@ -38,6 +40,7 @@ export async function patchJob(
     updateValues.progressTotal = patch.progress.total;
   }
   if (patch.error !== undefined) updateValues.error = patch.error;
+  if (patch.errors !== undefined) updateValues.errors = patch.errors;
   if (patch.hasDownload !== undefined) updateValues.hasDownload = patch.hasDownload;
   if (patch.completedAt !== undefined) {
     updateValues.completedAt = patch.completedAt ? new Date(patch.completedAt) : null;

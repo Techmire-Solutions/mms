@@ -5,6 +5,7 @@ import type {
   SessionsListQuery,
   SessionsWidgetQuery,
   SessionsReportAggregates,
+  SessionsReportQuery,
 } from "@mms/shared";
 
 /**
@@ -68,12 +69,14 @@ export function createSessionReadUseCases(repo: SessionsRepository) {
       return repo.aggregateSessionsWidgetQueries(tenant, queries);
     },
 
-    loadSessionsReportAggregates: async (): Promise<SessionsReportAggregates> => {
+    loadSessionsReportAggregates: async (
+      query: SessionsReportQuery = {},
+    ): Promise<SessionsReportAggregates> => {
       const tenant = getRequestTenant();
       if (!tenant) {
-        return { capacity: [], enrollmentTrends: [], todaysSessions: [] };
+        return { capacity: [], enrollmentTrends: [], todaysSessions: [], completion: [] };
       }
-      return repo.loadSessionsReportAggregates(tenant);
+      return repo.loadSessionsReportAggregates(tenant, query);
     },
   };
 }

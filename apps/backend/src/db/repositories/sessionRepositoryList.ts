@@ -24,6 +24,7 @@ import { withTenantRead } from "../tenant-context.js";
 import { runListPage } from "./listPageHelper.js";
 import { findSessionsPageSummariesByIds, findSessionsSummaryByIds } from "./sessionRepository.js";
 import { enrollmentHoldsSeatSql } from "./enrollmentSeatSql.js";
+import { workspaceTodayIso } from "../../lib/workspaceDay.js";
 import { sessionTypeSql } from "./academicCatalogNameSql.js";
 
 export const SESSION_SORT_FIELDS = new Set([
@@ -192,6 +193,7 @@ export async function aggregateSessionsCommandMetrics(
   tenant: string,
 ): Promise<SessionsCommandMetricsSnapshot> {
   const subdomain = tenant.trim().toLowerCase();
+  const todayIso = await workspaceTodayIso(subdomain);
   return withTenantRead(subdomain, async (tx) => {
     const result = await tx.execute(sql`
       SELECT
@@ -205,12 +207,12 @@ export async function aggregateSessionsCommandMetrics(
         COALESCE(SUM(cls.total_capacity), 0)::int AS total_capacity,
         COALESCE(SUM(cls.class_count), 0)::int AS total_classes,
         COUNT(*) FILTER (WHERE
-          s.start_date >= (CURRENT_DATE - INTERVAL '6 days')
-          AND s.start_date <= CURRENT_DATE
+          s.start_date >= (${todayIso}::date - INTERVAL '6 days')
+          AND s.start_date <= ${todayIso}::date
         )::int AS sessions_this_week,
         COUNT(*) FILTER (WHERE
-          s.start_date >= (CURRENT_DATE - INTERVAL '13 days')
-          AND s.start_date <= (CURRENT_DATE - INTERVAL '7 days')
+          s.start_date >= (${todayIso}::date - INTERVAL '13 days')
+          AND s.start_date <= (${todayIso}::date - INTERVAL '7 days')
         )::int AS sessions_last_week
       FROM sessions s
       LEFT JOIN LATERAL (

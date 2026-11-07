@@ -20,6 +20,10 @@ export const backgroundJobUpsertSchema = z.preprocess(
       label: z.string().min(1).max(500),
       progress: progressSchema.optional(),
       error: z.string().max(500).optional(),
+      errors: z
+        .array(z.object({ row: z.number().int().nonnegative(), reason: z.string().max(500) }))
+        .max(500)
+        .optional(),
       hasDownload: z.boolean().optional(),
       createdAt: z.string().min(1),
       completedAt: z.string().optional(),
