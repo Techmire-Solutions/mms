@@ -26,6 +26,7 @@ const DAYS = ["2026-03-02", "2026-03-03", "2026-03-04", "2026-03-05"];
 async function purgeTenant(): Promise<void> {
   await withTenant(TENANT, async (tx) => {
     await tx.execute(sql`SET LOCAL app.allow_hard_purge = 'true'`);
+    await tx.execute(sql`SET LOCAL app.allow_certified_evidence_edit = 'on'`);
     await tx.delete(workspaces).where(eq(workspaces.subdomain, TENANT));
   });
 }

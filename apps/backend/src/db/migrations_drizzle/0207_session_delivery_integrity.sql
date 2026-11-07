@@ -181,7 +181,8 @@ CREATE OR REPLACE FUNCTION forbid_certified_evidence_change() RETURNS trigger AS
 DECLARE
   locked boolean;
 BEGIN
-  IF current_setting('app.allow_certified_evidence_edit', true) = 'on' THEN
+  IF current_setting('app.allow_certified_evidence_edit', true) = 'on'
+     OR current_setting('app.allow_hard_purge', true) = 'true' THEN
     RETURN COALESCE(NEW, OLD);
   END IF;
   IF TG_TABLE_NAME = 'attendance' THEN
