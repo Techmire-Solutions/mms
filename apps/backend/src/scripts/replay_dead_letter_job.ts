@@ -14,6 +14,7 @@ import { eq } from "drizzle-orm";
 import { patchJob } from "../services/backgroundJobPatch.js";
 import { rowToJobRecord } from "../services/backgroundJobService.js";
 import { dispatchJobToQueue } from "../worker/queues/index.js";
+import { resumePromotionRunForReplay } from "../services/sessionRolloverFinalizer.js";
 
 async function main(): Promise<void> {
   loadBackendEnv();
@@ -30,6 +31,11 @@ async function main(): Promise<void> {
   });
   if (!row) throw new Error(`Background job ${jobId} not found for tenant ${tenant}`);
   if (!row.deadLetteredAt) throw new Error(`Background job ${jobId} is not dead-lettered`);
+  if (row.moduleId === "sessions" && row.kind === "promote") {
+    const resumed = await resumePromotionRunForReplay(tenant, jobId, row.userId);
+    if (!resumed)
+      throw new Error(`Rollover run ${jobId} is not in a failed state; refusing to replay`);
+  }
   await patchJob(tenant, row.userId, jobId, {
     status: "pending",
     error: null,

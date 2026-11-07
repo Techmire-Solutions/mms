@@ -174,3 +174,27 @@ export async function findPromotedSourceIds(
   );
   return new Set(rows.map((row) => String(row.from)));
 }
+
+/** Accumulates outcome counters on the run so resumed attempts report complete totals. */
+export async function incrementPromotionRunCounts(
+  tenant: string,
+  id: string,
+  delta: Partial<Record<"promoted" | "retained" | "graduated" | "left", number>>,
+): Promise<void> {
+  const subdomain = tenant.trim().toLowerCase();
+  const set: Record<string, unknown> = { updatedAt: new Date() };
+  for (const key of ["promoted", "retained", "graduated", "left"] as const) {
+    if (delta[key]) set[key] = sql`${sessionPromotionRuns[key]} + ${Math.trunc(delta[key] ?? 0)}`;
+  }
+  await withTenant(subdomain, (tx) =>
+    tx
+      .update(sessionPromotionRuns)
+      .set(set)
+      .where(
+        and(
+          eq(sessionPromotionRuns.workspaceSubdomain, subdomain),
+          eq(sessionPromotionRuns.id, id),
+        ),
+      ),
+  );
+}

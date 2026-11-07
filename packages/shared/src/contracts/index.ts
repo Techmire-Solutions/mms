@@ -22,6 +22,11 @@ import { userContract } from "./users.contract.js";
 import { messagingContract } from "./messaging.contract.js";
 import { sessionContract } from "./sessions.contract.js";
 import {
+  sessionBulkJobContractEndpoints,
+  sessionsBulkArchiveJobBodySchema,
+  sessionsBulkStatusJobBodySchema,
+} from "./sessions.contract.bulk.js";
+import {
   academicCatalogContract,
   examinationSubjectsContract,
 } from "./academicCatalog.contract.js";
@@ -236,4 +241,9 @@ export type DomainContracts = {
   financeOps: typeof financeOpsContract;
   platform: typeof platformContract;
   templates: typeof documentTemplatesContract;
+};
+export {
+  sessionBulkJobContractEndpoints,
+  sessionsBulkArchiveJobBodySchema,
+  sessionsBulkStatusJobBodySchema,
 };

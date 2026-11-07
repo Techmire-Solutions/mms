@@ -154,6 +154,9 @@ export async function executeSessionRollover(
             lastDay,
             actor,
           });
+          // Persist the counter immediately so an interrupted attempt does not lose outcomes that
+          // are already closed (resumed runs report complete totals).
+          await runs.incrementPromotionRunCounts(tenant, runId, { [status]: 1 });
         }
         counts[status] += 1;
         await reportProgress(index + 1, plan.length);
@@ -176,7 +179,8 @@ export async function executeSessionRollover(
       }
     }
 
-    await runs.updatePromotionRun(tenant, runId, { status: "completed", ...counts, error: null });
+    await runs.updatePromotionRun(tenant, runId, { status: "completed", error: null });
+    const finalCounts = (await runs.readPromotionRunCounts(tenant, runId)) ?? counts;
     await recordModernAuditEvent({
       workspaceSubdomain: tenant,
       tableName: "session_promotion_runs",
@@ -189,7 +193,7 @@ export async function executeSessionRollover(
         operation: "rollover_completed",
         targetSessionId: target.id,
         carried,
-        ...counts,
+        ...finalCounts,
         warnings: warningList,
         reason: payload.body.reason ?? null,
       },

@@ -19,6 +19,7 @@ import {
   sessionWriteErrors,
 } from "./sessionContractShared.js";
 import { sessionLookupContractEndpoints } from "./sessions.contract.lookups.js";
+import { sessionBulkJobContractEndpoints } from "./sessions.contract.bulk.js";
 
 const c = initContract();
 const errorResponse = sessionErrorResponseSchema;
@@ -284,5 +285,6 @@ export const sessionContract = c.router({
     },
     summary: "Update preferences",
   },
+  ...sessionBulkJobContractEndpoints,
   ...sessionLookupContractEndpoints,
 });

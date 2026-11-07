@@ -356,7 +356,10 @@ describe("session rollover (real Postgres)", () => {
     // Assert — exactly one target and one carried enrollment, run completed idempotently.
     expect(resumed.targetSessionId).toBeTruthy();
     expect(again.targetSessionId).toBe(resumed.targetSessionId);
-    expect(await findPromotionRun(TENANT, "run-resume")).toMatchObject({ status: "completed" });
+    expect(await findPromotionRun(TENANT, "run-resume")).toMatchObject({
+      status: "completed",
+      promoted: 1,
+    });
     const [{ count }] = await query<{ count: number }>(sql`
       SELECT count(*)::int AS count FROM enrollments
        WHERE workspace_subdomain = ${TENANT} AND session_id = ${resumed.targetSessionId}

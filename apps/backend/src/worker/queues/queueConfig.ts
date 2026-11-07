@@ -74,6 +74,8 @@ export function resolveJobExecutionTimeoutMs(moduleId: string, kind: string): nu
     "sessions:promote": SESSIONS_ROLLOVER_TIMEOUT_MS,
     "sessions:import": SESSIONS_IMPORT_TIMEOUT_MS,
     "sessions:export": SESSIONS_EXPORT_TIMEOUT_MS,
+    "sessions:bulk-status": SESSIONS_IMPORT_TIMEOUT_MS,
+    "sessions:bulk-archive": SESSIONS_IMPORT_TIMEOUT_MS,
   };
   if (budgets[key] !== undefined) return budgets[key];
   return normalizedModule === "messaging" ? MESSAGING_JOB_TIMEOUT_MS : JOB_EXECUTION_TIMEOUT_MS;

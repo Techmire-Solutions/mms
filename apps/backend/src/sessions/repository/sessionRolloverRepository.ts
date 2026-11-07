@@ -6,6 +6,7 @@ type PromotionExecutionStore =
 export interface SessionRolloverRepository {
   createPromotionRun: PromotionStore["createPromotionRun"];
   updatePromotionRun: PromotionStore["updatePromotionRun"];
+  incrementPromotionRunCounts: PromotionStore["incrementPromotionRunCounts"];
   findPromotionRun: PromotionStore["findPromotionRun"];
   listPromotionRuns: PromotionStore["listPromotionRuns"];
   findPromotedSourceIds: PromotionStore["findPromotedSourceIds"];
@@ -14,5 +15,6 @@ export interface SessionRolloverRepository {
   failStaleRuns: PromotionExecutionStore["failStaleRuns"];
   findPromotionRunForUpdate: PromotionExecutionStore["findPromotionRunForUpdate"];
   recordRunWarning: PromotionExecutionStore["recordRunWarning"];
+  readPromotionRunCounts: PromotionExecutionStore["readPromotionRunCounts"];
   listRunWarnings: PromotionExecutionStore["listRunWarnings"];
 }
