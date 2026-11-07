@@ -23,7 +23,25 @@ async function main(): Promise<void> {
   await initDb();
   const row = await withTenant(tenant, async (tx) => {
     const [found] = await tx
-      .select()
+      .select({
+        id: backgroundJobs.id,
+        tenantId: backgroundJobs.tenantId,
+        userId: backgroundJobs.userId,
+        moduleId: backgroundJobs.moduleId,
+        kind: backgroundJobs.kind,
+        status: backgroundJobs.status,
+        label: backgroundJobs.label,
+        payload: backgroundJobs.payload,
+        progressCurrent: backgroundJobs.progressCurrent,
+        progressTotal: backgroundJobs.progressTotal,
+        artifactId: backgroundJobs.artifactId,
+        hasDownload: backgroundJobs.hasDownload,
+        error: backgroundJobs.error,
+        deadLetteredAt: backgroundJobs.deadLetteredAt,
+        completedAt: backgroundJobs.completedAt,
+        createdAt: backgroundJobs.createdAt,
+        updatedAt: backgroundJobs.updatedAt,
+      })
       .from(backgroundJobs)
       .where(eq(backgroundJobs.id, jobId))
       .limit(1);

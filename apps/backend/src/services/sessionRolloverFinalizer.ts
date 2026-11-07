@@ -1,7 +1,4 @@
-import {
-  findPromotionRun,
-  updatePromotionRun,
-} from "../db/repositories/sessionPromotionRepository.js";
+import { sessionRolloverRepository } from "../sessions/repository/sessionRolloverRepositoryAdapter.js";
 import { recordModernAuditEvent } from "./auditTrailService.js";
 
 /**
@@ -15,7 +12,7 @@ export async function failPromotionRunFromDlq(
   runId: string,
   error: string,
 ): Promise<void> {
-  const run = await findPromotionRun(tenant, runId);
+  const run = await sessionRolloverRepository.findPromotionRun(tenant, runId);
   if (!run || run.status === "completed" || run.status === "failed") return;
   await recordModernAuditEvent({
     workspaceSubdomain: tenant,
@@ -29,7 +26,10 @@ export async function failPromotionRunFromDlq(
       error: error.slice(0, 1000),
     },
   });
-  await updatePromotionRun(tenant, runId, { status: "failed", error: error.slice(0, 1000) });
+  await sessionRolloverRepository.updatePromotionRun(tenant, runId, {
+    status: "failed",
+    error: error.slice(0, 1000),
+  });
 }
 
 /**
@@ -42,7 +42,7 @@ export async function resumePromotionRunForReplay(
   actorId?: string | null,
   reason = "Dead-letter replay",
 ): Promise<boolean> {
-  const run = await findPromotionRun(tenant, runId);
+  const run = await sessionRolloverRepository.findPromotionRun(tenant, runId);
   if (!run || run.status !== "failed") return false;
   await recordModernAuditEvent({
     workspaceSubdomain: tenant,
@@ -53,6 +53,9 @@ export async function resumePromotionRunForReplay(
     oldState: { status: "failed", error: run.error ?? null },
     newState: { status: "queued", operation: "rollover_replay", reason },
   });
-  await updatePromotionRun(tenant, runId, { status: "queued", error: null });
+  await sessionRolloverRepository.updatePromotionRun(tenant, runId, {
+    status: "queued",
+    error: null,
+  });
   return true;
 }
