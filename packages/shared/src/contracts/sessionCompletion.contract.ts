@@ -5,13 +5,15 @@ import {
   sessionCompletionActionBodySchema,
   sessionCompletionRowSchema,
 } from "../sessions/sessionCompletion.js";
+import { sessionErrorResponseSchema, sessionIdParamsSchema } from "./sessionContractShared.js";
 
 const c = initContract();
-const errorResponse = z.object({ type: z.string(), message: z.string() }).passthrough();
-const sessionParams = z.object({ id: z.string().min(1).max(64) });
+const errorResponse = sessionErrorResponseSchema;
+const sessionParams = sessionIdParamsSchema;
 const rowsResponse = z.object({ rows: z.array(sessionCompletionRowSchema) });
 const errors = {
   400: errorResponse,
+  401: errorResponse,
   403: errorResponse,
   404: errorResponse,
   /** Completion/certificates outside the session window. */

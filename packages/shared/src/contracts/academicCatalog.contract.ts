@@ -6,9 +6,10 @@ import {
   academicCatalogListQuerySchema,
   academicCatalogWriteSchema,
 } from "../sessions/academicCatalogTypes.js";
+import { sessionErrorResponseSchema } from "./sessionContractShared.js";
 
 const c = initContract();
-const errorResponse = z.unknown();
+const errorResponse = sessionErrorResponseSchema;
 const catalogParams = z.object({ catalog: academicCatalogKindSchema });
 const itemParams = catalogParams.extend({ id: z.string().min(1).max(64) });
 
@@ -22,6 +23,7 @@ export const academicCatalogContract = c.router({
     responses: {
       200: z.object({ items: z.array(academicCatalogItemSchema) }),
       400: errorResponse,
+      401: errorResponse,
       403: errorResponse,
       500: errorResponse,
     },
@@ -35,6 +37,7 @@ export const academicCatalogContract = c.router({
     responses: {
       200: z.object({ item: academicCatalogItemSchema }),
       400: errorResponse,
+      401: errorResponse,
       403: errorResponse,
       409: errorResponse,
       500: errorResponse,
@@ -48,6 +51,7 @@ export const academicCatalogContract = c.router({
     body: z.object({}).optional(),
     responses: {
       200: z.object({ success: z.literal(true) }),
+      401: errorResponse,
       403: errorResponse,
       404: errorResponse,
       409: errorResponse,
@@ -63,6 +67,7 @@ export const academicCatalogContract = c.router({
     body: z.object({}).optional(),
     responses: {
       200: z.object({ item: academicCatalogItemSchema }),
+      401: errorResponse,
       403: errorResponse,
       404: errorResponse,
       409: errorResponse,
@@ -79,6 +84,7 @@ export const examinationSubjectsContract = c.router({
     path: "/api/examinations/subjects",
     responses: {
       200: z.object({ items: z.array(academicCatalogItemSchema) }),
+      401: errorResponse,
       403: errorResponse,
       500: errorResponse,
     },

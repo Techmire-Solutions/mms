@@ -13,12 +13,14 @@ import {
   sectionOperationResultSchema,
   sectionSplitBodySchema,
 } from "../sessions/sectionOperations.js";
+import { sessionErrorResponseSchema } from "./sessionContractShared.js";
 
 const c = initContract();
-const errorResponse = z.object({ type: z.string(), message: z.string() }).passthrough();
+const errorResponse = sessionErrorResponseSchema;
 const sectionParams = z.object({ sectionId: z.string().min(1).max(64) });
 const writeErrors = {
   400: errorResponse,
+  401: errorResponse,
   403: errorResponse,
   404: errorResponse,
   409: errorResponse,
@@ -33,6 +35,7 @@ export const sessionSectionsContract = c.router({
     pathParams: sectionParams,
     responses: {
       200: z.object({ assignments: z.array(SectionStaffAssignmentSchema) }),
+      401: errorResponse,
       403: errorResponse,
       500: errorResponse,
     },
@@ -61,6 +64,7 @@ export const sessionSectionsContract = c.router({
     pathParams: sectionParams,
     responses: {
       200: z.object({ roles: z.array(SectionStudentRoleSchema) }),
+      401: errorResponse,
       403: errorResponse,
       500: errorResponse,
     },

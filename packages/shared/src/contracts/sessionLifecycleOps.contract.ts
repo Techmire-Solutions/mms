@@ -1,6 +1,11 @@
 import { initContract } from "@ts-rest/core";
 import { z } from "zod";
-import { SessionSchema } from "../sessions/sessionTypes.js";
+import {
+  sessionErrorResponseSchema,
+  sessionIdParamsSchema,
+  sessionResponseSchema,
+} from "./sessionContractShared.js";
+import { sessionOccHeadersSchema } from "./sessions.contract.js";
 import {
   sessionActivityItemSchema,
   sessionCancelBodySchema,
@@ -9,10 +14,11 @@ import {
 } from "../sessions/sessionLifecycleOps.js";
 
 const c = initContract();
-const errorResponse = z.object({ type: z.string(), message: z.string() }).passthrough();
-const sessionParams = z.object({ id: z.string().min(1).max(64) });
+const errorResponse = sessionErrorResponseSchema;
+const sessionParams = sessionIdParamsSchema;
 const writeErrors = {
   400: errorResponse,
+  401: errorResponse,
   403: errorResponse,
   404: errorResponse,
   /** Lifecycle guard refused the transition (violations in the body). */
@@ -28,6 +34,7 @@ export const sessionLifecycleOpsContract = c.router({
     method: "POST",
     path: "/api/sessions/:id/cancel",
     pathParams: sessionParams,
+    headers: sessionOccHeadersSchema,
     body: sessionCancelBodySchema,
     responses: { 200: sessionCancelResultSchema, ...writeErrors },
     summary:
@@ -37,8 +44,9 @@ export const sessionLifecycleOpsContract = c.router({
     method: "POST",
     path: "/api/sessions/:id/postpone",
     pathParams: sessionParams,
+    headers: sessionOccHeadersSchema,
     body: sessionPostponeBodySchema,
-    responses: { 200: z.object({ session: SessionSchema }), ...writeErrors },
+    responses: { 200: z.object({ session: sessionResponseSchema }), ...writeErrors },
     summary: "Move a not-yet-started session to a new start date (end shifts by the same days)",
   },
   activity: {
@@ -47,6 +55,7 @@ export const sessionLifecycleOpsContract = c.router({
     pathParams: sessionParams,
     responses: {
       200: z.object({ items: z.array(sessionActivityItemSchema) }),
+      401: errorResponse,
       403: errorResponse,
       404: errorResponse,
       500: errorResponse,

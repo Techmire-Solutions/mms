@@ -1,5 +1,6 @@
 import { initContract } from "@ts-rest/core";
 import { z } from "zod";
+import { sessionErrorResponseSchema } from "./sessionContractShared.js";
 import {
   admissionsMetricsSchema,
   publicRegistrationViewSchema,
@@ -14,7 +15,7 @@ import {
 } from "../enrollments/registrationTypes.js";
 
 const c = initContract();
-const errorResponse = z.unknown();
+const errorResponse = sessionErrorResponseSchema;
 const linkParams = z.object({
   sessionId: z.string().min(1).max(64),
   id: z.string().min(1).max(64),
@@ -28,6 +29,7 @@ export const registrationLinksContract = c.router({
     pathParams: z.object({ sessionId: z.string().min(1).max(64) }),
     responses: {
       200: z.object({ items: z.array(registrationLinkSchema) }),
+      401: errorResponse,
       403: errorResponse,
       404: errorResponse,
       500: errorResponse,
@@ -42,6 +44,7 @@ export const registrationLinksContract = c.router({
     responses: {
       200: z.object({ item: registrationLinkSchema }),
       400: errorResponse,
+      401: errorResponse,
       403: errorResponse,
       404: errorResponse,
       500: errorResponse,
@@ -55,6 +58,7 @@ export const registrationLinksContract = c.router({
     body: z.object({}).optional(),
     responses: {
       200: z.object({ success: z.literal(true) }),
+      401: errorResponse,
       403: errorResponse,
       404: errorResponse,
       500: errorResponse,
@@ -77,6 +81,7 @@ export const admissionsContract = c.router({
         limit: z.number().int(),
       }),
       400: errorResponse,
+      401: errorResponse,
       403: errorResponse,
       500: errorResponse,
     },
@@ -99,6 +104,7 @@ export const admissionsContract = c.router({
     responses: {
       200: registrationReviewResultSchema,
       400: errorResponse,
+      401: errorResponse,
       403: errorResponse,
       500: errorResponse,
     },

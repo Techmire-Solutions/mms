@@ -9,28 +9,50 @@ import {
 import { widgetAggregatesBodySchema } from "../schemas/common.dto.js";
 import { sessionsBulkStatusSchema } from "../sessions/sessionsModuleManifest.js";
 import { sessionsReportAggregatesSchema } from "../sessions/sessionsReportAggregates.js";
-import { SessionSchema } from "../sessions/sessionTypes.js";
 import { academicTerminologySchema } from "../sessions/academicTerminology.js";
 import { sessionsListQuerySchema } from "../sessions/sessionsListQuery.js";
+import {
+  sessionErrorResponseSchema,
+  sessionIdParamsSchema,
+  sessionReadErrors,
+  sessionResponseSchema,
+  sessionWriteErrors,
+} from "./sessionContractShared.js";
 import { sessionLookupContractEndpoints } from "./sessions.contract.lookups.js";
 
 const c = initContract();
-const errorResponse = z.object({ type: z.string(), message: z.string() }).passthrough();
+const errorResponse = sessionErrorResponseSchema;
+
+/** `x-expected-*` optimistic-concurrency tokens, validated at the HTTP boundary. */
+export const sessionOccHeadersSchema = z
+  .object({
+    "x-expected-version": z
+      .string()
+      .regex(/^\d+$/, "x-expected-version must be a positive integer")
+      .optional(),
+    "x-expected-updated-at": z
+      .string()
+      .datetime({ offset: true, message: "x-expected-updated-at must be an ISO-8601 timestamp" })
+      .optional(),
+  })
+  .passthrough();
 
 /** Envelope for paginated session list responses (`SessionsListPageResult`). */
 export const sessionListPageResponseSchema = z.object({
-  sessions: z.array(SessionSchema),
-  total: z.number(),
-  page: z.number(),
-  limit: z.number(),
+  sessions: z.array(sessionResponseSchema),
+  total: z.number().int().nonnegative(),
+  page: z.number().int().min(1),
+  limit: z.number().int().min(1),
   hasMore: z.boolean(),
+  /** Present when the caller paged with `afterId`; feed it back as the next `afterId`. */
+  nextCursor: z.string().optional(),
 });
 
 /** `{ success: true, succeeded, failed }` bulk-operation envelope. */
 const sessionBulkResultResponseSchema = z.object({
   success: z.literal(true),
-  succeeded: z.number(),
-  failed: z.number(),
+  succeeded: z.number().int().nonnegative(),
+  failed: z.number().int().nonnegative(),
 });
 
 /** Normalized Sessions Setup preferences (`SessionModulePreferences`). */
@@ -48,6 +70,14 @@ export const sessionPreferencesResponseSchema = z.object({
   terminology: academicTerminologySchema,
 });
 
+/** Bounded field-config body (up to 200 keys, each ≤100 chars). */
+export const sessionFieldConfigBodySchema = z
+  .record(z.string().max(100), z.unknown())
+  .refine((value) => Object.keys(value).length <= 200, "At most 200 field-config keys");
+
+/** Preferences patch; unknown keys are stripped and the service normalizes defaults. */
+export const sessionPreferencesBodySchema = sessionPreferencesResponseSchema.partial();
+
 export const sessionContract = c.router({
   list: {
     method: "GET",
@@ -55,19 +85,18 @@ export const sessionContract = c.router({
     query: sessionsListQuerySchema,
     responses: {
       200: sessionListPageResponseSchema,
-      400: errorResponse,
-      403: errorResponse,
-      500: errorResponse,
+      ...sessionReadErrors,
     },
-    summary: "List sessions",
+    summary: "List sessions (summary or full rows; offset or id-keyset paging)",
   },
   create: {
     method: "POST",
     path: "/api/sessions",
     body: sessionCreateBodySchema,
     responses: {
-      201: z.object({ session: SessionSchema }),
+      201: z.object({ session: sessionResponseSchema }),
       400: errorResponse,
+      401: errorResponse,
       403: errorResponse,
       /** Overlaps a live session (no-overlap guarantee, migration 0206). */
       409: errorResponse,
@@ -82,6 +111,7 @@ export const sessionContract = c.router({
     responses: {
       200: sessionBulkResultResponseSchema,
       400: errorResponse,
+      401: errorResponse,
       403: errorResponse,
       500: errorResponse,
     },
@@ -94,6 +124,7 @@ export const sessionContract = c.router({
     responses: {
       200: sessionBulkResultResponseSchema,
       400: errorResponse,
+      401: errorResponse,
       403: errorResponse,
       500: errorResponse,
     },
@@ -106,6 +137,7 @@ export const sessionContract = c.router({
     responses: {
       200: sessionBulkResultResponseSchema,
       400: errorResponse,
+      401: errorResponse,
       403: errorResponse,
       500: errorResponse,
     },
@@ -114,58 +146,59 @@ export const sessionContract = c.router({
   get: {
     method: "GET",
     path: "/api/sessions/:id",
-    pathParams: z.object({ id: z.string() }),
+    pathParams: sessionIdParamsSchema,
     query: includeDeletedQuerySchema.optional(),
     responses: {
-      200: z.object({ session: SessionSchema }),
-      403: errorResponse,
-      404: errorResponse,
-      500: errorResponse,
+      200: z.object({ session: sessionResponseSchema }),
+      ...sessionReadErrors,
     },
     summary: "Get a single session",
   },
   update: {
     method: "PUT",
     path: "/api/sessions/:id",
+    pathParams: sessionIdParamsSchema,
+    headers: sessionOccHeadersSchema,
     body: sessionUpdateBodySchema,
     responses: {
-      200: z.object({ session: SessionSchema }),
-      400: z.unknown(),
-      403: z.unknown(),
-      404: z.unknown(),
+      200: z.object({ session: sessionResponseSchema }),
+      ...sessionWriteErrors,
       /** Stale OCC token or an overlapping date range. */
       409: errorResponse,
       /** No `x-expected-version` / `x-expected-updated-at` token: conditional update required. */
       428: errorResponse,
-      500: z.unknown(),
     },
     summary: "Update session",
   },
   delete: {
     method: "DELETE",
     path: "/api/sessions/:id",
+    pathParams: sessionIdParamsSchema,
     body: softDeleteBodySchema.optional(),
     responses: {
       200: z.object({ success: z.literal(true) }),
-      400: z.unknown(),
-      403: z.unknown(),
-      404: z.unknown(),
+      400: errorResponse,
+      401: errorResponse,
+      403: errorResponse,
+      404: errorResponse,
       /** The session is not in a terminal state (complete/cancel it first, or override). */
       409: errorResponse,
-      500: z.unknown(),
+      500: errorResponse,
     },
     summary: "Delete session",
   },
   restore: {
     method: "POST",
     path: "/api/sessions/:id/restore",
+    pathParams: sessionIdParamsSchema,
     body: z.object({}).optional(),
     responses: {
       200: z.object({ success: z.literal(true) }),
-      400: z.unknown(),
-      403: z.unknown(),
-      404: z.unknown(),
-      500: z.unknown(),
+      400: errorResponse,
+      401: errorResponse,
+      403: errorResponse,
+      404: errorResponse,
+      500: errorResponse,
     },
     summary: "Restore session",
   },
@@ -184,10 +217,10 @@ export const sessionContract = c.router({
           }),
         ),
       }),
-      400: z.unknown(),
-      403: z.unknown(),
-      404: z.unknown(),
-      500: z.unknown(),
+      400: errorResponse,
+      401: errorResponse,
+      403: errorResponse,
+      500: errorResponse,
     },
     summary: "Widget aggregates",
   },
@@ -196,10 +229,9 @@ export const sessionContract = c.router({
     path: "/api/sessions/report-aggregates",
     responses: {
       200: sessionsReportAggregatesSchema,
-      400: z.unknown(),
-      403: z.unknown(),
-      404: z.unknown(),
-      500: z.unknown(),
+      401: errorResponse,
+      403: errorResponse,
+      500: errorResponse,
     },
     summary: "Report aggregates",
   },
@@ -209,6 +241,7 @@ export const sessionContract = c.router({
     path: "/api/sessions/field-config",
     responses: {
       200: z.object({ config: z.record(z.string(), z.unknown()).nullable() }),
+      401: errorResponse,
       403: errorResponse,
       500: errorResponse,
     },
@@ -217,9 +250,11 @@ export const sessionContract = c.router({
   updateFieldConfig: {
     method: "PUT",
     path: "/api/sessions/field-config",
-    body: z.record(z.string(), z.unknown()),
+    body: sessionFieldConfigBodySchema,
     responses: {
       200: z.object({ success: z.literal(true), config: z.record(z.string(), z.unknown()) }),
+      400: errorResponse,
+      401: errorResponse,
       403: errorResponse,
       500: errorResponse,
     },
@@ -230,6 +265,7 @@ export const sessionContract = c.router({
     path: "/api/sessions/preferences",
     responses: {
       200: z.object({ preferences: sessionPreferencesResponseSchema }),
+      401: errorResponse,
       403: errorResponse,
       500: errorResponse,
     },
@@ -238,9 +274,11 @@ export const sessionContract = c.router({
   updatePreferences: {
     method: "PUT",
     path: "/api/sessions/preferences",
-    body: z.record(z.string(), z.unknown()),
+    body: sessionPreferencesBodySchema,
     responses: {
       200: z.object({ success: z.literal(true), preferences: sessionPreferencesResponseSchema }),
+      400: errorResponse,
+      401: errorResponse,
       403: errorResponse,
       500: errorResponse,
     },
