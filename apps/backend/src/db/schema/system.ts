@@ -69,6 +69,10 @@ export const backgroundJobs = pgTable(
     artifactId: text("artifact_id"),
     hasDownload: boolean("has_download").notNull().default(false),
     error: text("error"),
+    /** Row-level errors for CSV/bulk imports (bounded, sanitized by the runner). */
+    errors: jsonb("errors").$type<Array<{ row: number; reason: string }>>(),
+    /** Set when a job exhausted its BullMQ retries and entered the dead-letter state. */
+    deadLetteredAt: timestamp("dead_lettered_at", { withTimezone: true, mode: "date" }),
     completedAt: timestamp("completed_at", { withTimezone: true, mode: "date" }),
     createdAt: timestamp("created_at", { withTimezone: true, mode: "date" }).notNull().defaultNow(),
     updatedAt: timestamp("updated_at", { withTimezone: true, mode: "date" }).notNull().defaultNow(),
@@ -85,6 +89,9 @@ export const backgroundJobs = pgTable(
       desc(table.createdAt),
     ),
     index("background_jobs_status_idx").on(table.status),
+    index("background_jobs_dead_letter_idx")
+      .on(table.deadLetteredAt)
+      .where(sql`${table.deadLetteredAt} is not null`),
   ],
 );
 

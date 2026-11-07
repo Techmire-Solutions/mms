@@ -20,7 +20,7 @@ export interface SessionsListFiltersProps {
   onSearchChange: (search: string) => void;
   filterStatus: SessionStatus[];
   filterType: SessionType[];
-  statusOptions: string[];
+  statusOptions: SessionStatus[];
   typeOptions: string[];
   statusLabels: Record<string, string>;
   typeLabels: Record<string, string>;

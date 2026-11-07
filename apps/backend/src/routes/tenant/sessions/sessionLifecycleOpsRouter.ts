@@ -3,8 +3,11 @@ import { initServer, type RouterImplementation } from "@ts-rest/fastify";
 import { SESSIONS_MODULE_MANIFEST, sessionLifecycleOpsContract, type User } from "@mms/shared";
 import { handleContractError } from "../../../lib/contractError.js";
 import { standardRequestValidationErrorHandler } from "../../../lib/contractRegistration.js";
+import { enforceSessionResponses } from "../../../lib/sessionContractResponses.js";
+import { parseOccHeaders } from "../../../lib/occHeaders.js";
 import type { ContractRouteArgs } from "../../../lib/contractRouterTypes.js";
 import { canReadCollection, canWriteCollection } from "../../../services/rbacService.js";
+import { userHasPermission } from "../../../lib/userPermissionContext.js";
 import { sessionLifecycleOpsUseCases as ops } from "../../../sessions/use-cases/sessionLifecycleOpsUseCases.js";
 
 type Contract = typeof sessionLifecycleOpsContract;
@@ -19,74 +22,72 @@ const tenantOf = (request: Request) => String(request.tenant?.id ?? "");
 const fail = (request: Request, error: unknown, message: string) =>
   handleContractError(request, error, { status: 500, body: { type: "server_error", message } });
 
-/** OCC token from the request headers (`x-expected-version`, else `x-expected-updated-at`). */
-function operationToken(request: Request): {
-  expectedVersion?: number;
-  expectedUpdatedAt?: string;
-} {
-  const versionHeader = request.headers["x-expected-version"];
-  const rawVersion = Array.isArray(versionHeader) ? versionHeader[0] : versionHeader;
-  const expectedVersion =
-    rawVersion === undefined || rawVersion === "" ? undefined : Number(rawVersion);
-  const updatedHeader = request.headers["x-expected-updated-at"];
-  const expectedUpdatedAt = Array.isArray(updatedHeader) ? updatedHeader[0] : updatedHeader;
-  return {
-    ...(expectedVersion !== undefined && Number.isInteger(expectedVersion)
-      ? { expectedVersion }
-      : {}),
-    ...(expectedUpdatedAt ? { expectedUpdatedAt } : {}),
-  };
+/** OCC token from the request headers; malformed values are rejected with 400. */
+function operationToken(request: Request) {
+  return parseOccHeaders(request);
 }
 
 /** `/api/sessions/:id/{cancel,postpone,activity}` — session lifecycle actions (Phase 9e). */
 export const sessionLifecycleOpsRouter: FastifyPluginAsync = async (fastify) => {
-  const router = s.router(sessionLifecycleOpsContract, {
-    cancel: async ({ params, body, request }: ContractRouteArgs<Contract["cancel"]>) => {
-      const user = request.user as User;
-      if (!canWriteCollection(user, COLLECTION)) return forbidden;
-      try {
-        return {
-          status: 200 as const,
-          body: await ops.cancel(tenantOf(request), params.id, body, user, operationToken(request)),
-        };
-      } catch (error) {
-        return fail(request, error, "Failed to cancel the session");
-      }
-    },
-    postpone: async ({ params, body, request }: ContractRouteArgs<Contract["postpone"]>) => {
-      const user = request.user as User;
-      if (!canWriteCollection(user, COLLECTION)) return forbidden;
-      try {
-        return {
-          status: 200 as const,
-          body: {
-            session: await ops.postpone(
+  const router = s.router(
+    sessionLifecycleOpsContract,
+    enforceSessionResponses(sessionLifecycleOpsContract, {
+      cancel: async ({ params, body, request }: ContractRouteArgs<Contract["cancel"]>) => {
+        const user = request.user as User;
+        if (!canWriteCollection(user, COLLECTION)) return forbidden;
+        if (!userHasPermission(user, SESSIONS_MODULE_MANIFEST.permissions.manage)) return forbidden;
+        try {
+          return {
+            status: 200 as const,
+            body: await ops.cancel(
               tenantOf(request),
               params.id,
               body,
               user,
               operationToken(request),
             ),
-          },
-        };
-      } catch (error) {
-        return fail(request, error, "Failed to postpone the session");
-      }
-    },
-    activity: async ({ params, request }: ContractRouteArgs<Contract["activity"]>) => {
-      if (!canReadCollection(request.user as User, COLLECTION)) return forbidden;
-      try {
-        return {
-          status: 200 as const,
-          body: { items: await ops.activity(tenantOf(request), params.id) },
-        };
-      } catch (error) {
-        return fail(request, error, "Failed to load session activity");
-      }
-    },
-  } as unknown as RouterImplementation<Contract>);
+          };
+        } catch (error) {
+          return fail(request, error, "Failed to cancel the session");
+        }
+      },
+      postpone: async ({ params, body, request }: ContractRouteArgs<Contract["postpone"]>) => {
+        const user = request.user as User;
+        if (!canWriteCollection(user, COLLECTION)) return forbidden;
+        if (!userHasPermission(user, SESSIONS_MODULE_MANIFEST.permissions.manage)) return forbidden;
+        try {
+          return {
+            status: 200 as const,
+            body: {
+              session: await ops.postpone(
+                tenantOf(request),
+                params.id,
+                body,
+                user,
+                operationToken(request),
+              ),
+            },
+          };
+        } catch (error) {
+          return fail(request, error, "Failed to postpone the session");
+        }
+      },
+      activity: async ({ params, request }: ContractRouteArgs<Contract["activity"]>) => {
+        if (!canReadCollection(request.user as User, COLLECTION)) return forbidden;
+        try {
+          return {
+            status: 200 as const,
+            body: { items: await ops.activity(tenantOf(request), params.id) },
+          };
+        } catch (error) {
+          return fail(request, error, "Failed to load session activity");
+        }
+      },
+    } as unknown as RouterImplementation<Contract>),
+  );
 
   await fastify.register(s.plugin(router), {
     requestValidationErrorHandler: standardRequestValidationErrorHandler,
+    responseValidation: true,
   });
 };

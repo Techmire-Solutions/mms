@@ -7,7 +7,8 @@ import {
 } from "@mms/shared";
 import { apiJson } from "@/lib/apiClient";
 
-export const SESSION_COMPLETION_QUERY_KEY = ["sessions", "completion"] as const;
+export { SESSION_COMPLETION_QUERY_KEY } from "./sessionQueryKeys.js";
+import { SESSION_COMPLETION_QUERY_KEY } from "./sessionQueryKeys.js";
 
 const base = (id: string) => `/api/sessions/${encodeURIComponent(id)}/completion`;
 const json = (body: unknown): RequestInit => ({ method: "POST", body: JSON.stringify(body) });

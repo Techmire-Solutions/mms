@@ -16,7 +16,7 @@ export const SessionsCommandMetrics = function SessionsCommandMetrics({
   filteredTotal,
 }: SessionsCommandMetricsProps): React.JSX.Element {
   const { t } = useTranslation();
-  const { data: serverMetrics, isLoading } = useSessionsMetrics();
+  const { data: serverMetrics, isLoading, isError } = useSessionsMetrics();
   const value = (next: number) => (isLoading ? "—" : next);
 
   const metrics = (() => ({
@@ -34,6 +34,7 @@ export const SessionsCommandMetrics = function SessionsCommandMetrics({
       icon: Calendar,
       label: t("sessions.metrics.total"),
       value: value(metrics.total),
+      sub: isError ? t("sessions.loadFailed") : undefined,
       accent: "primary" as const,
     },
     {

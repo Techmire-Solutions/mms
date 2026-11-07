@@ -8,22 +8,12 @@ import {
   registerModuleTransferSchema,
   type ModuleTransferSchema,
 } from "../index.js";
+import type { z } from "zod";
+import type { sessionImportRowSchema, SessionsImportBody } from "../../schemas/moduleImport.dto.js";
 
-export interface SessionTransferEntity {
-  name: string;
-  type: string;
-  status?: string;
-  startDate?: string;
-  endDate?: string;
-  duration?: string;
-  baseFee?: string | number;
-  currency?: string;
-  description?: string;
-  capacity?: number;
-  classesCount?: number;
-  facultyCount?: number;
-  notes?: string;
-}
+/** Import row SSOT: the CSV entity is inferred from the validated import schema. */
+export type SessionTransferEntity = z.infer<typeof sessionImportRowSchema>;
+export type SessionTransferBody = SessionsImportBody;
 
 export const sessionsTransferSchema: ModuleTransferSchema<SessionTransferEntity> =
   createModuleTransferSchema<SessionTransferEntity>({
@@ -94,7 +84,7 @@ export const sessionsTransferSchema: ModuleTransferSchema<SessionTransferEntity>
         label: "Capacity",
         aliases: ["max_students", "Seats"],
         sample: 120,
-        extract: (s) => (s.capacity != null ? String(s.capacity) : ""),
+        extract: (s) => (s.capacity != null ? s.capacity : ""),
         parse: (raw) => (raw ? Number(raw) : undefined),
       },
       {

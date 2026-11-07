@@ -1,3 +1,4 @@
+import { sql } from "drizzle-orm";
 import {
   pgTable,
   text,
@@ -162,6 +163,9 @@ export const sessionClassTimetables = pgTable(
       table.workspaceSubdomain,
       table.sessionClassId,
     ),
+    index("session_class_timetables_workspace_date_idx")
+      .on(table.workspaceSubdomain, table.date)
+      .where(sql`${table.date} is not null`),
     foreignKey({
       name: "session_class_timetables_class_fk",
       columns: [table.workspaceSubdomain, table.sessionClassId],

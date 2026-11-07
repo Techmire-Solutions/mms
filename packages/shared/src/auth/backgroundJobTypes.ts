@@ -11,6 +11,8 @@ export interface BackgroundJobRecord {
   label: string;
   progress?: { current: number; total: number };
   error?: string;
+  /** Row-level failures for import jobs; absent for jobs that do not report them. */
+  errors?: Array<{ row: number; reason: string }>;
   /** When true, GET /api/background-jobs/:id/download serves a server-generated file. */
   hasDownload?: boolean;
   createdAt: string;

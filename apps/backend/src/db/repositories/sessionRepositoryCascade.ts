@@ -3,6 +3,7 @@ import { sessions, enrollments } from "../schema.js";
 import { withTenant } from "../tenant-context.js";
 import { syncEnrolledSessionsTx } from "./enrollmentSessionSync.js";
 import { recordCascadeEvents, returningEnrollmentIds } from "./sessionCascadeEvents.js";
+import { sessionAuditStateTx } from "./sessionAuditState.js";
 
 export {
   bulkDeleteSessions,
@@ -20,6 +21,7 @@ export async function softDeleteSessionWithCascade(
   const subdomain = tenant.trim().toLowerCase();
   const now = new Date();
   return withTenant(subdomain, async (tx) => {
+    const oldState = await sessionAuditStateTx(tx, subdomain, sessionId);
     await tx
       .select({ id: sessions.id })
       .from(sessions)
@@ -81,6 +83,7 @@ export async function softDeleteSessionWithCascade(
       now,
       actorId: deletedBy,
       deletionReason,
+      ...(oldState ? { oldStates: { [sessionId]: oldState } } : {}),
     });
     await syncEnrolledSessionsTx(tx, subdomain, { sessionIds: [sessionId] });
 
@@ -96,6 +99,7 @@ export async function restoreSessionWithCascade(
   const subdomain = tenant.trim().toLowerCase();
   const now = new Date();
   return withTenant(subdomain, async (tx) => {
+    const oldState = await sessionAuditStateTx(tx, subdomain, sessionId);
     await tx
       .select({ id: sessions.id })
       .from(sessions)
@@ -159,6 +163,7 @@ export async function restoreSessionWithCascade(
       enrollmentIds: cascaded,
       now,
       actorId: restoredBy,
+      ...(oldState ? { oldStates: { [sessionId]: oldState } } : {}),
     });
     await syncEnrolledSessionsTx(tx, subdomain, { sessionIds: [sessionId] });
 

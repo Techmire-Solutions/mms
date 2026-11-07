@@ -255,4 +255,57 @@ describe("SessionForm Component", () => {
     expect(onSave).not.toHaveBeenCalled();
     expect(container.textContent).toContain("sessions.form.endDateAfterStartDate");
   });
+
+  it("preserves a dirty draft when the same session is refetched with a new object", async () => {
+    const existing = {
+      id: "sess-1",
+      name: "Original Session",
+      type: "Hifz",
+      status: "draft",
+      startDate: "2026-01-01",
+      endDate: "2026-06-30",
+      baseFee: 100,
+      currency: "USD",
+      classes: [],
+      faculty: [],
+      updatedAt: "2026-01-01T00:00:00.000Z",
+    };
+    await act(async () => {
+      root.render(
+        <SessionForm open={true} session={existing as never} onClose={vi.fn()} onSave={vi.fn()} />,
+      );
+    });
+    const nameInput = container.querySelector("input[class*='ps-10']") as HTMLInputElement;
+    await act(async () => setInputValue(nameInput, "User edit in progress"));
+
+    // A detail refetch/live push creates a fresh object with the same id.
+    await act(async () => {
+      root.render(
+        <SessionForm
+          open={true}
+          session={{ ...existing, name: "Server refetch" } as never}
+          onClose={vi.fn()}
+          onSave={vi.fn()}
+        />,
+      );
+    });
+    expect((container.querySelector("input[class*='ps-10']") as HTMLInputElement).value).toBe(
+      "User edit in progress",
+    );
+
+    // Switching to a different session id is an explicit new form and does reset.
+    await act(async () => {
+      root.render(
+        <SessionForm
+          open={true}
+          session={{ ...existing, id: "sess-2", name: "Second session" } as never}
+          onClose={vi.fn()}
+          onSave={vi.fn()}
+        />,
+      );
+    });
+    expect((container.querySelector("input[class*='ps-10']") as HTMLInputElement).value).toBe(
+      "Second session",
+    );
+  });
 });

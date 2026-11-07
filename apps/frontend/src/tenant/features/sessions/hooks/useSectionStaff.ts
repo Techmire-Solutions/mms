@@ -12,7 +12,7 @@ import {
   sectionStudentRolesQueryKey,
   sectionStudentRolesQueryOptions,
 } from "@/lib/query/sectionStaffQueries";
-import { SESSIONS_QUERY_KEY } from "@/tenant/features/sessions/hooks/useSessions";
+import { invalidateSessionDependents } from "./invalidateSessionDependents";
 
 /** Current + historical staff of a section (effective-dated). */
 export function useSectionStaff(sectionId: string | null) {
@@ -31,7 +31,7 @@ export function useSectionStaffMutations(sectionId: string) {
   const onSuccess = () => {
     void queryClient.invalidateQueries({ queryKey: sectionStaffQueryKey(sectionId) });
     void queryClient.invalidateQueries({ queryKey: sectionStudentRolesQueryKey(sectionId) });
-    void queryClient.invalidateQueries({ queryKey: SESSIONS_QUERY_KEY });
+    invalidateSessionDependents(queryClient);
   };
 
   return {

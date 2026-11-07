@@ -1,4 +1,8 @@
-import { normalizeSessionModulePreferences, normalizeSessionStatus } from "@mms/shared";
+import {
+  SESSION_OVERLAP_STATES,
+  normalizeSessionModulePreferences,
+  normalizeSessionStatus,
+} from "@mms/shared";
 import { ConflictError } from "../../lib/httpErrors.js";
 import { toDbDate } from "../../lib/dbDate.js";
 import type { SessionsRepository } from "../repository/sessionsRepository.js";
@@ -7,7 +11,7 @@ import type { SessionsRepository } from "../repository/sessionsRepository.js";
  * Statuses the `sessions_no_overlap_excl` exclusion constraint covers (migration 0206). Keeping the
  * application guard on the same set means the friendly 409 and the database guarantee agree.
  */
-const OVERLAP_STATUSES = new Set(["draft", "open", "in_progress"]);
+const OVERLAP_STATUSES = new Set<string>(SESSION_OVERLAP_STATES);
 
 /** Injectable so unit tests can exercise the use-cases without the preferences table. */
 export interface OverlapGuardDependencies {

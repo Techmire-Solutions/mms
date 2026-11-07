@@ -3,6 +3,8 @@ import type { JobsOptions } from "bullmq";
 export const QUEUE_PDF_RENDERING = "pdf-rendering";
 export const QUEUE_BULK_EXPORT = "bulk-export";
 export const QUEUE_MESSAGING_BROADCAST = "messaging-broadcast";
+/** Long-running session rollover jobs get their own queue so CSV exports/imports cannot starve. */
+export const QUEUE_SESSIONS_ROLLOVER = "sessions-rollover";
 
 export interface QueueConcurrencyAndPriority {
   concurrency: number;
@@ -22,6 +24,10 @@ export const QUEUE_SETTINGS: Record<string, QueueConcurrencyAndPriority> = {
     concurrency: 6,
     priority: 3,
   },
+  [QUEUE_SESSIONS_ROLLOVER]: {
+    concurrency: 1,
+    priority: 1,
+  },
 };
 
 export { getBullMQConnectionOptions } from "../../lib/redis.js";
@@ -32,6 +38,15 @@ export const WORKER_HEAP_LIMIT_BYTES =
 
 export const WORKER_SUBPROCESS_MEMORY_LIMIT_MB = 512;
 export const JOB_EXECUTION_TIMEOUT_MS = 60_000;
+
+/** Session rollover walks up to 5,000 students, one transaction per student. */
+export const SESSIONS_ROLLOVER_TIMEOUT_MS =
+  Number(process.env.SESSIONS_ROLLOVER_TIMEOUT_MS) || 15 * 60_000;
+/** 500-row imports / large CSV exports need more than the sandboxed 60s ceiling. */
+export const SESSIONS_IMPORT_TIMEOUT_MS =
+  Number(process.env.SESSIONS_IMPORT_TIMEOUT_MS) || 10 * 60_000;
+export const SESSIONS_EXPORT_TIMEOUT_MS =
+  Number(process.env.SESSIONS_EXPORT_TIMEOUT_MS) || 10 * 60_000;
 
 /**
  * A broadcast is `recipients × gateway latency`; bounding one attempt and
@@ -52,10 +67,18 @@ export const WORKER_FORCE_EXIT_MS = JOB_EXECUTION_TIMEOUT_MS + 15_000;
  * Per-job wall clock. Messaging batches get the longer budget; every other
  * queue keeps the 60s sandboxed-processor ceiling.
  */
-export function resolveJobExecutionTimeoutMs(moduleId: string, _kind: string): number {
-  return moduleId.trim().toLowerCase() === "messaging"
-    ? MESSAGING_JOB_TIMEOUT_MS
-    : JOB_EXECUTION_TIMEOUT_MS;
+export function resolveJobExecutionTimeoutMs(moduleId: string, kind: string): number {
+  const normalizedModule = moduleId.trim().toLowerCase();
+  const key = `${normalizedModule}:${kind.trim().toLowerCase()}`;
+  const budgets: Record<string, number> = {
+    "sessions:promote": SESSIONS_ROLLOVER_TIMEOUT_MS,
+    "sessions:import": SESSIONS_IMPORT_TIMEOUT_MS,
+    "sessions:export": SESSIONS_EXPORT_TIMEOUT_MS,
+    "sessions:bulk-status": SESSIONS_IMPORT_TIMEOUT_MS,
+    "sessions:bulk-archive": SESSIONS_IMPORT_TIMEOUT_MS,
+  };
+  if (budgets[key] !== undefined) return budgets[key];
+  return normalizedModule === "messaging" ? MESSAGING_JOB_TIMEOUT_MS : JOB_EXECUTION_TIMEOUT_MS;
 }
 
 import { fileURLToPath } from "node:url";

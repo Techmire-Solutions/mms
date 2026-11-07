@@ -186,6 +186,12 @@ export async function transitionSession(
       recordId: id,
       actionType: "UPDATE",
       realUserId: options.actor?.userId ?? undefined,
+      oldState: {
+        status: from,
+        startDate: row.startDate,
+        endDate: row.endDate,
+        version: Number(row.version),
+      },
       newState: {
         operation: "transition",
         from,

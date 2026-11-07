@@ -16,17 +16,20 @@ import { saveSession } from "../../db/repositories/sessionRepositoryPersist.js";
 import { bulkEnrollStudentsIntoClass } from "../../enrollments/use-cases/enrollmentBulkEnroll.js";
 import { sessionCompletionUseCases as completion } from "../../sessions/use-cases/sessionCompletionUseCases.js";
 import { transitionSession } from "../../sessions/use-cases/sessionTransitionService.js";
-import { runWithTenant } from "../../lib/tenantContext.js";
+import { bindRequestUserId, runWithTenant } from "../../lib/tenantContext.js";
 import { requireDatabaseConnection } from "./dbTestSupport.js";
 
 const TENANT = "session-completion-test";
 const run = <T>(fn: () => Promise<T>) => runWithTenant(TENANT, fn);
+const query = <T extends Record<string, unknown>>(statement: ReturnType<typeof sql>) =>
+  withTenant(TENANT, async (tx) => (await tx.execute<T>(statement)).rows);
 const DAYS = ["2026-03-02", "2026-03-03", "2026-03-04", "2026-03-05"];
 
 async function purgeTenant(): Promise<void> {
   await withTenant(TENANT, async (tx) => {
     await tx.execute(sql`SET LOCAL app.allow_hard_purge = 'true'`);
     await tx.execute(sql`SET LOCAL app.allow_certified_evidence_edit = 'on'`);
+    await tx.execute(sql`DELETE FROM audit_trail_events WHERE workspace_subdomain = ${TENANT}`);
     await tx.delete(workspaces).where(eq(workspaces.subdomain, TENANT));
   });
 }
@@ -120,6 +123,7 @@ afterAll(async () => {
 describe("short-course completion (real Postgres)", () => {
   it("given attendance and exam results, should evaluate completion against the criteria", async () => {
     // Act
+    bindRequestUserId("u-completion");
     const rows = await run(() =>
       completion.evaluate(
         TENANT,
@@ -146,6 +150,23 @@ describe("short-course completion (real Postgres)", () => {
       status: "not_completed",
       shortfalls: ["attendance_below", "exam_not_passed"],
       completedAt: null,
+    });
+    const [audit] = await query<{
+      realUserId: string;
+      oldState: string;
+      newState: string;
+    }>(sql`
+      SELECT real_user_id AS "realUserId", old_state AS "oldState", new_state AS "newState"
+        FROM audit_trail_events
+       WHERE workspace_subdomain = ${TENANT} AND table_name = 'sessions'
+         AND record_id = 'course' AND new_state LIKE '%completion_evaluated%'
+       ORDER BY id DESC LIMIT 1`);
+    expect(audit?.realUserId).toBe("u-completion");
+    expect(JSON.parse(audit?.oldState ?? "{}").enrollments).toHaveLength(2);
+    expect(JSON.parse(audit?.newState ?? "{}")).toMatchObject({
+      operation: "completion_evaluated",
+      reason: "Test fixture marks only four days",
+      acknowledged: ["attendance_unfinalized"],
     });
   });
 

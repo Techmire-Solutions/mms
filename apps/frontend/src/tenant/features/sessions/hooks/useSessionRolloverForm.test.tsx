@@ -75,4 +75,38 @@ describe("useSessionRolloverForm", () => {
     await act(async () => form.setEndDate("2027-08-01"));
     expect(form.preview).toBeNull();
   });
+
+  it("clears preview and reports dirty state for copy/name changes", async () => {
+    await act(async () => {
+      form.setPreview([
+        {
+          enrollmentId: "e1",
+          studentName: "Ali",
+          fromClassId: "",
+          toClassId: "",
+          outcome: "promote",
+          problems: [],
+        },
+      ]);
+    });
+    await act(async () => form.setName("Next Session"));
+    expect(form.preview).toBeNull();
+    expect(form.isDirty).toBe(true);
+
+    await act(async () => {
+      form.setPreview([
+        {
+          enrollmentId: "e1",
+          studentName: "Ali",
+          fromClassId: "",
+          toClassId: "",
+          outcome: "promote",
+          problems: [],
+        },
+      ]);
+      form.toggleCopy("fees", false);
+    });
+    expect(form.preview).toBeNull();
+    expect(form.isDirty).toBe(true);
+  });
 });

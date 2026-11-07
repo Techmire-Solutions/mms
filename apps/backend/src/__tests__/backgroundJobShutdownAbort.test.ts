@@ -37,6 +37,7 @@ vi.mock("../db/tenant-context.js", () => ({
 }));
 vi.mock("../lib/tenantContext.js", () => ({
   runWithTenant: (_tenant: string, callback: () => Promise<unknown>) => callback(),
+  bindRequestUserId: () => undefined,
 }));
 vi.mock("../lib/backgroundJobModuleAccess.js", () => ({
   getBackgroundJobModuleDenial: vi.fn().mockResolvedValue(null),

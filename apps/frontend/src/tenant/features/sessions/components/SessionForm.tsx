@@ -33,6 +33,7 @@ export const SessionForm = function SessionForm({
     sessionDraft,
     updateDraft,
     isDirty,
+    serverError,
     handleSave,
     statusOptions,
     structureLocked,
@@ -66,7 +67,7 @@ export const SessionForm = function SessionForm({
       onSave={handleSave}
       isDirty={isDirty}
       saving={saving}
-      error={errorEntries.map(([, message]) => message)}
+      error={[...errorEntries.map(([, message]) => message), ...(serverError ? [serverError] : [])]}
       onSelectError={(index) => {
         const entry = errorEntries[index];
         if (!entry) return;

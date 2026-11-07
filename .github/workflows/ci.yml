@@ -736,8 +736,11 @@ jobs:
       - name: Run DB Migrations
         run: pnpm --filter mms-backend run db:migrate
 
-      - name: Run Backend DB Integration Tests
-        run: pnpm --filter mms-backend run test:db
+      - name: Run Backend DB Integration Tests (with Sessions coverage)
+        run: pnpm --filter mms-backend run test:db:coverage
+
+      - name: Sessions integration coverage ratchet
+        run: node scripts/ci/check-session-coverage.mjs --coverage apps/backend/coverage-sessions-db
 
   # Proves tenant isolation under the role production is supposed to use: a
   # NOSUPERUSER NOBYPASSRLS owner, with FORCE RLS active. The normal DB job runs

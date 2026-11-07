@@ -24,7 +24,7 @@ const mockSession: Session = {
   type: "Hifz",
   startDate: "2026-01-10",
   endDate: "2026-05-30",
-  status: "active",
+  status: "in_progress",
   currency: "USD",
   baseFee: 100,
   faculty: [],

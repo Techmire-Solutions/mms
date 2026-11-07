@@ -25,6 +25,8 @@ interface CascadeEventInput {
   now: Date;
   actorId?: string;
   deletionReason?: string;
+  /** Compact pre-images keyed by session id (captured before the soft-delete/restore update). */
+  oldStates?: Record<string, unknown>;
 }
 
 /**
@@ -35,7 +37,8 @@ export async function recordCascadeEvents(
   tx: TenantTransaction,
   input: CascadeEventInput,
 ): Promise<void> {
-  const { subdomain, action, sessionIds, enrollmentIds, now, actorId, deletionReason } = input;
+  const { subdomain, action, sessionIds, enrollmentIds, now, actorId, deletionReason, oldStates } =
+    input;
   const time = now.toISOString();
   const version = now.getTime();
 
@@ -46,6 +49,7 @@ export async function recordCascadeEvents(
       recordId: sessionId,
       actionType: action === "delete" ? "DELETE" : "RESTORE",
       realUserId: actorId,
+      oldState: oldStates?.[sessionId],
       newState:
         action === "delete"
           ? { deletedAt: time, deletionReason: deletionReason ?? null }

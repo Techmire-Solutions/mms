@@ -22,7 +22,7 @@ export interface CollectionAuditExtraOptions {
  */
 export function createCollectionAuditHelper(
   defaultEntityId: string,
-  helperOptions?: { subjectScoped?: boolean },
+  helperOptions?: { subjectScoped?: boolean; strict?: boolean },
 ) {
   return async function auditCollectionAction(
     user: User,
@@ -62,6 +62,13 @@ export function createCollectionAuditHelper(
     const auditPromise = options?.tx
       ? recordModernAuditEvent(options.tx, auditInput)
       : recordModernAuditEvent(auditInput);
+
+    // Mutations must fail when their audit row cannot be written; read-side/setup helpers may opt
+    // into best-effort logging instead.
+    if (helperOptions?.strict) {
+      await auditPromise;
+      return;
+    }
 
     await auditPromise.catch((err: unknown) =>
       logger.error(

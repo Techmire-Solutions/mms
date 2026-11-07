@@ -8,6 +8,8 @@ import {
 import {
   MESSAGING_JOB_TIMEOUT_MS,
   JOB_EXECUTION_TIMEOUT_MS,
+  SESSIONS_IMPORT_TIMEOUT_MS,
+  SESSIONS_ROLLOVER_TIMEOUT_MS,
   resolveJobExecutionTimeoutMs,
 } from "../worker/queues/queueConfig.js";
 
@@ -24,6 +26,8 @@ describe("background job deadline", () => {
   it("uses a longer budget for messaging and the sandboxed ceiling elsewhere", () => {
     expect(resolveJobExecutionTimeoutMs("messaging", "dispatch")).toBe(MESSAGING_JOB_TIMEOUT_MS);
     expect(resolveJobExecutionTimeoutMs("contacts", "export")).toBe(JOB_EXECUTION_TIMEOUT_MS);
+    expect(resolveJobExecutionTimeoutMs("sessions", "promote")).toBe(SESSIONS_ROLLOVER_TIMEOUT_MS);
+    expect(resolveJobExecutionTimeoutMs("sessions", "import")).toBe(SESSIONS_IMPORT_TIMEOUT_MS);
   });
 
   it("aborts the runner signal when its wall clock expires", async () => {

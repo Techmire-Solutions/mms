@@ -12,9 +12,11 @@ import {
   type SQL,
 } from "drizzle-orm";
 import {
+  SESSION_SORT_FIELDS as SHARED_SESSION_SORT_FIELDS,
   dedupeTrimmedIds,
   isQueryFlagTrue,
-  toSqlSearchPattern,
+  normalizeSessionStatusFilter,
+  toEscapedSqlSearchPattern,
   type SessionsCommandMetricsSnapshot,
   type SessionsListPageResult,
   type SessionsListQuery,
@@ -22,25 +24,17 @@ import {
 import { sessions } from "../schema.js";
 import { withTenantRead } from "../tenant-context.js";
 import { runListPage } from "./listPageHelper.js";
-import { findSessionsSummaryByIds } from "./sessionRepository.js";
+import { findSessionsPageSummariesByIds, findSessionsSummaryByIds } from "./sessionRepository.js";
 import { enrollmentHoldsSeatSql } from "./enrollmentSeatSql.js";
+import { workspaceTodayIso } from "../../lib/workspaceDay.js";
 import { sessionTypeSql } from "./academicCatalogNameSql.js";
 
-export const SESSION_SORT_FIELDS = new Set([
-  "name",
-  "type",
-  "status",
-  "baseFee",
-  "startDate",
-  "endDate",
-  "updatedAt",
-  "createdAt",
-]);
+export const SESSION_SORT_FIELDS = new Set<string>(SHARED_SESSION_SORT_FIELDS);
 
 function buildSearchSql(search: string): SQL | null {
   const normalized = search.trim();
   if (!normalized) return null;
-  const pattern = toSqlSearchPattern(normalized);
+  const pattern = toEscapedSqlSearchPattern(normalized);
   return or(
     ilike(sessions.name, pattern),
     ilike(sessionTypeSql, pattern),
@@ -95,10 +89,9 @@ function buildListConditions(subdomain: string, query: SessionsListQuery): SQL[]
     conditions.push(isNull(sessions.deletedAt));
   }
 
-  const rawStatuses = dedupeTrimmedIds(query.status);
-  if (rawStatuses.length > 0) {
-    const statuses = rawStatuses.map((status) => status.toLowerCase());
-    conditions.push(inArray(sql`lower(${sessions.status})`, statuses));
+  const statuses = normalizeSessionStatusFilter(query.status);
+  if (statuses.length > 0) {
+    conditions.push(inArray(sessions.status, statuses));
   }
 
   const rawTypes = dedupeTrimmedIds(query.type);
@@ -150,7 +143,12 @@ export async function listSessionsPage(
     }
 
     const ids = result.items.map((r) => r.id);
-    const hydratedSessions = await findSessionsSummaryByIds(subdomain, ids);
+    // `summary` keeps session metadata + class counts but skips section hydration (the Work table
+    // never renders sections; the detail endpoint loads the full record).
+    const hydratedSessions =
+      query.view === "summary"
+        ? await findSessionsPageSummariesByIds(subdomain, ids)
+        : await findSessionsSummaryByIds(subdomain, ids);
 
     // Preserve order from pagination query
     const sessionMap = new Map(hydratedSessions.map((s) => [s.id, s]));
@@ -187,6 +185,7 @@ export async function aggregateSessionsCommandMetrics(
   tenant: string,
 ): Promise<SessionsCommandMetricsSnapshot> {
   const subdomain = tenant.trim().toLowerCase();
+  const todayIso = await workspaceTodayIso(subdomain);
   return withTenantRead(subdomain, async (tx) => {
     const result = await tx.execute(sql`
       SELECT
@@ -200,12 +199,12 @@ export async function aggregateSessionsCommandMetrics(
         COALESCE(SUM(cls.total_capacity), 0)::int AS total_capacity,
         COALESCE(SUM(cls.class_count), 0)::int AS total_classes,
         COUNT(*) FILTER (WHERE
-          s.start_date >= (CURRENT_DATE - INTERVAL '6 days')
-          AND s.start_date <= CURRENT_DATE
+          s.start_date >= (${todayIso}::date - INTERVAL '6 days')
+          AND s.start_date <= ${todayIso}::date
         )::int AS sessions_this_week,
         COUNT(*) FILTER (WHERE
-          s.start_date >= (CURRENT_DATE - INTERVAL '13 days')
-          AND s.start_date <= (CURRENT_DATE - INTERVAL '7 days')
+          s.start_date >= (${todayIso}::date - INTERVAL '13 days')
+          AND s.start_date <= (${todayIso}::date - INTERVAL '7 days')
         )::int AS sessions_last_week
       FROM sessions s
       LEFT JOIN LATERAL (

@@ -65,6 +65,10 @@ export async function processBackgroundJob(job: Job<EnqueuedJobData>): Promise<v
         kind,
         payload,
         backgroundJobShutdownSignal(),
+        {
+          attempt: job.attemptsMade + 1,
+          maxAttempts: job.opts.attempts ?? 1,
+        },
       );
     },
   );

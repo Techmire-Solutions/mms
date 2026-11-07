@@ -1,5 +1,5 @@
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
-import { and, eq, sql } from "drizzle-orm";
+import { and, eq, inArray, sql } from "drizzle-orm";
 import { SessionSchema, type Session } from "@mms/shared";
 import { closeDatabase } from "../../db/dbConnection.js";
 import { applyDrizzleMigrations } from "../../db/dbInit.js";
@@ -137,5 +137,91 @@ describe("persistSessionClassesTx (real Postgres)", () => {
     expect(remaining.classes.map((c) => c.id)).toEqual(["cls-A"]);
     expect(remaining.fees.map((f) => f.id)).toEqual(["fee-A"]);
     expect(remaining.periods.map((p) => p.id)).toEqual(["per-A"]);
+  });
+
+  it("lets only one concurrent class save win the OCC race and does not duplicate children", async () => {
+    const base = SessionSchema.parse({
+      id: "race-class-session",
+      name: "Race class persistence",
+      status: "draft",
+      startDate: "2040-01-01",
+      endDate: "2040-12-31",
+      overlapExempt: true,
+      classes: [
+        {
+          id: "race-class",
+          name: "Race",
+          fees: [{ id: "race-fee", feeType: "monthly", amount: 100 }],
+        },
+      ],
+    });
+    await saveSession(TENANT, base);
+    const before = await findSessionById(TENANT, "race-class-session");
+    const results = await Promise.allSettled([
+      saveSession(TENANT, { ...base, name: "Winner A" }, { expectedVersion: before?.version }),
+      saveSession(TENANT, { ...base, name: "Winner B" }, { expectedVersion: before?.version }),
+    ]);
+    expect(results.filter((result) => result.status === "fulfilled")).toHaveLength(1);
+    const after = await findSessionById(TENANT, "race-class-session");
+    expect(after?.version).toBe(Number(before?.version) + 1);
+    const childCounts = await withTenant(TENANT, async (tx) => ({
+      classes: await tx
+        .select({ id: sessionClasses.id })
+        .from(sessionClasses)
+        .where(eq(sessionClasses.sessionId, "race-class-session")),
+      fees: await tx
+        .select({ id: sessionClassFees.id })
+        .from(sessionClassFees)
+        .where(eq(sessionClassFees.workspaceSubdomain, TENANT)),
+    }));
+    expect(childCounts.classes.map((row) => row.id)).toEqual(["race-class"]);
+    expect(childCounts.fees.filter((row) => row.id.startsWith("race-fee"))).toHaveLength(1);
+  });
+
+  it("removes all class children when a session is re-saved with no classes", async () => {
+    const emptyId = "empty-class-session";
+    const base = SessionSchema.parse({
+      id: emptyId,
+      name: "Empty classes",
+      status: "draft",
+      startDate: "2041-01-01",
+      endDate: "2041-12-31",
+      overlapExempt: true,
+      classes: [
+        {
+          id: "empty-class",
+          name: "Empty",
+          fees: [{ id: "empty-fee", feeType: "monthly", amount: 10 }],
+          timetables: [
+            {
+              id: "empty-tt",
+              date: "2041-01-01",
+              periods: [
+                { id: "empty-period", startTime: "08:00", endTime: "09:00", subject: "Fiqh" },
+              ],
+            },
+          ],
+        },
+      ],
+    });
+    await saveSession(TENANT, base);
+    await saveSession(TENANT, { ...base, classes: [] });
+    const remaining = await withTenant(TENANT, async (tx) => ({
+      classes: await tx
+        .select({ id: sessionClasses.id })
+        .from(sessionClasses)
+        .where(eq(sessionClasses.sessionId, emptyId)),
+      fees: await tx
+        .select({ id: sessionClassFees.id })
+        .from(sessionClassFees)
+        .where(inArray(sessionClassFees.id, ["empty-fee"])),
+      periods: await tx
+        .select({ id: sessionClassTimetablePeriods.id })
+        .from(sessionClassTimetablePeriods)
+        .where(inArray(sessionClassTimetablePeriods.id, ["empty-period"])),
+    }));
+    expect(remaining.classes).toEqual([]);
+    expect(remaining.fees).toEqual([]);
+    expect(remaining.periods).toEqual([]);
   });
 });

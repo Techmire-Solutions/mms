@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect, useRef } from "react";
 import { CopyPlus } from "lucide-react";
 import type { AppTranslationKey, Session } from "@mms/shared";
 import { Field, FormSelect } from "@/components/app/FormPrimitives";
@@ -10,6 +10,7 @@ import { Input } from "@/components/ui/input";
 import { FORM_INPUT } from "@/components/ui/formStyles";
 import { useTranslation } from "@/hooks/useTranslation";
 import { useSessionRolloverActions } from "@/tenant/features/sessions/hooks/useSessionRollover";
+import { addIsoDays } from "@mms/shared";
 import {
   useSessionRolloverForm,
   type RolloverCopyKey,
@@ -44,12 +45,27 @@ export function SessionRolloverModal({
 }): React.JSX.Element {
   const { t } = useTranslation();
   const form = useSessionRolloverForm(session, canPromote ? "promote" : "duplicate");
-  const { preview, start, isPending } = useSessionRolloverActions();
+  const { preview, start, previewError, startError, isPending } = useSessionRolloverActions();
 
   const id = String(session.id);
+  // Latest-request-wins: a preview that resolves after the body changed must not replace the
+  // current state (or leak into a reopened wizard).
+  const previewRequestRef = useRef(0);
+  const bodySignatureRef = useRef(form.bodySignature);
+  bodySignatureRef.current = form.bodySignature;
+  useEffect(
+    () => () => {
+      previewRequestRef.current += 1;
+    },
+    [],
+  );
   const runPreview = async () => {
+    const requestId = ++previewRequestRef.current;
+    const signature = form.bodySignature;
     const rows = await preview(id, form.body);
-    if (rows) form.setPreview(rows);
+    if (rows && requestId === previewRequestRef.current && signature === bodySignatureRef.current) {
+      form.setPreview(rows);
+    }
   };
   const submit = async () => {
     if (await start(id, form.body)) onClose();
@@ -68,6 +84,7 @@ export function SessionRolloverModal({
         promote ? t("sessions.rollover.startPromote") : t("sessions.rollover.startDuplicate")
       }
       saving={isPending}
+      error={[previewError, startError].filter((value): value is string => Boolean(value))}
       saveDisabled={isPending || !form.valid || (promote && form.preview === null)}
       isDirty={form.isDirty}
       discardUnsavedTitle={t("settings.unsavedChanges")}
@@ -112,6 +129,7 @@ export function SessionRolloverModal({
               id="rollover-start"
               name="startDate"
               value={form.dates.startDate}
+              min={session.endDate ? addIsoDays(session.endDate.slice(0, 10), 1) : undefined}
               disabled={isPending}
               onChange={form.setStartDate}
             />

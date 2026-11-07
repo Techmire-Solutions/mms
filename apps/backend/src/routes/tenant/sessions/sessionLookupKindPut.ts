@@ -6,10 +6,11 @@ import {
 } from "@mms/shared";
 import { createLookupKindPutHandler } from "../../../lib/createLookupKindPutHandler.js";
 import { replaceSessionLookupKind } from "../../../services/sessionLookupsService.js";
+import { withTenant } from "../../../db/tenant-context.js";
+import { getRequestTenant } from "../../../lib/tenantContext.js";
 import { auditSession } from "./sessionRouteHelpers.js";
 
-/** `PUT /api/sessions/lookups/:kind` contract handler. */
-export const putSessionLookupKind = createLookupKindPutHandler<SessionLookupKind, string[]>({
+const handler = createLookupKindPutHandler<SessionLookupKind, string[]>({
   kinds: SESSION_LOOKUP_KINDS,
   setupWritePermission: SESSIONS_MODULE_MANIFEST.permissions.setupWrite,
   putBodySchema: sessionLookupPutBodySchema,
@@ -18,3 +19,10 @@ export const putSessionLookupKind = createLookupKindPutHandler<SessionLookupKind
   auditAction: "session.lookups",
   saveError: "Failed to save session lookups",
 });
+
+/** `PUT /api/sessions/lookups/:kind` — replace + audit in one transaction. */
+export const putSessionLookupKind: typeof handler = async (args) => {
+  const tenant = getRequestTenant();
+  if (!tenant) return handler(args);
+  return withTenant(tenant, () => handler(args));
+};

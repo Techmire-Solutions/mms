@@ -30,6 +30,7 @@ export function rowToJobRecord(row: typeof backgroundJobs.$inferSelect): Backgro
     record.progress = { current: row.progressCurrent, total: row.progressTotal };
   }
   if (row.error) record.error = row.error;
+  if (row.errors) record.errors = row.errors;
   if (row.completedAt) record.completedAt = row.completedAt.toISOString();
 
   return record;
@@ -56,6 +57,8 @@ export async function listUserBackgroundJobs(userId: string): Promise<Background
         artifactId: backgroundJobs.artifactId,
         hasDownload: backgroundJobs.hasDownload,
         error: backgroundJobs.error,
+        errors: backgroundJobs.errors,
+        deadLetteredAt: backgroundJobs.deadLetteredAt,
         completedAt: backgroundJobs.completedAt,
         createdAt: backgroundJobs.createdAt,
         updatedAt: backgroundJobs.updatedAt,
@@ -202,6 +205,8 @@ export async function getUserBackgroundJob(
         artifactId: backgroundJobs.artifactId,
         hasDownload: backgroundJobs.hasDownload,
         error: backgroundJobs.error,
+        errors: backgroundJobs.errors,
+        deadLetteredAt: backgroundJobs.deadLetteredAt,
         completedAt: backgroundJobs.completedAt,
         createdAt: backgroundJobs.createdAt,
         updatedAt: backgroundJobs.updatedAt,

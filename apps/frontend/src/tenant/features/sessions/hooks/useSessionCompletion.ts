@@ -9,7 +9,7 @@ import {
   issueCertificatesMutationOptions,
   sessionCompletionQueryOptions,
 } from "@/lib/query/sessionCompletionQueries";
-import { invalidateEnrollmentsQueries } from "@/tenant/hooks/collections/enrollments";
+import { invalidateSessionDependents } from "./invalidateSessionDependents";
 
 export function useSessionCompletion(sessionId: string) {
   const { isAuthenticated } = useAuth();
@@ -24,8 +24,8 @@ export function useSessionCompletionActions(sessionId: string) {
   const { t } = useTranslation();
   const queryClient = useQueryClient();
   const onSettled = () => {
+    invalidateSessionDependents(queryClient, { enrollments: true });
     void queryClient.invalidateQueries({ queryKey: SESSION_COMPLETION_QUERY_KEY });
-    invalidateEnrollmentsQueries(queryClient);
   };
   const evaluateMutation = useMutation({ ...evaluateCompletionMutationOptions(), onSettled });
   const certificatesMutation = useMutation({ ...issueCertificatesMutationOptions(), onSettled });

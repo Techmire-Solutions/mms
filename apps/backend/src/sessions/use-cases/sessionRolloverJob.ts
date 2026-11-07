@@ -12,8 +12,10 @@ import {
   listRolloverCandidates,
 } from "../../enrollments/use-cases/enrollmentRolloverUseCases.js";
 import { invalidateMultiTierCache } from "../../lib/cache/index.js";
+import { recordModernAuditEvent } from "../../services/auditTrailService.js";
 import { broadcastCollection } from "../../lib/livePush.js";
 import { HttpDomainError, NotFoundError } from "../../lib/httpErrors.js";
+import { throwIfBackgroundJobAborted } from "../../lib/backgroundJobAbort.js";
 import { planRollover, rolloverTargetSection } from "./sessionRolloverPlan.js";
 import { workspaceToday } from "./sessionLockGuard.js";
 import { registerBackgroundJobRunner } from "../../services/backgroundJobWorkerService.js";
@@ -39,11 +41,19 @@ type PromotionCounts = Record<"promoted" | "retained" | "graduated" | "left", nu
  * A retry takes over a stale run and resumes at the first unfinished phase; deterministic ids make
  * every write idempotent (`sessionRolloverTarget.ts`).
  */
+export interface RolloverRunOptions {
+  signal?: AbortSignal;
+  /** 1-based attempt number (BullMQ `attemptsMade + 1`). */
+  attempt?: number;
+  maxAttempts?: number;
+}
+
 export async function executeSessionRollover(
   tenant: string,
   actorUserId: string,
   payload: SessionRolloverJobPayload,
   progress: Progress,
+  options: RolloverRunOptions = {},
 ): Promise<{ targetSessionId: string; carried: number }> {
   const { runId } = payload;
   const claimed = await runs.claimPromotionRun(tenant, runId);
@@ -51,15 +61,38 @@ export async function executeSessionRollover(
     // Another worker owns the run, or it already completed. Never start a second target.
     const run = await runs.findPromotionRun(tenant, runId);
     if (!run) throw new NotFoundError("Rollover run not found");
-    return { targetSessionId: run.targetSessionId ?? "", carried: 0 };
+    if (run.status === "completed")
+      return { targetSessionId: run.targetSessionId ?? "", carried: 0 };
+    // A retry that arrives while the previous attempt is still running must NOT report success;
+    // it has to retry until the run is queued again (interruption finalizer) or terminal.
+    if (run.status === "running")
+      throw new Error("Rollover is already running; retrying after the interruption finalizer");
+    throw new Error(run.error || "Rollover run cannot be resumed");
   }
+  const warningList: Array<{ kind: string; detail: string }> = [];
   const warnings: RolloverWarn = async (warning) => {
+    warningList.push({ kind: warning.kind, detail: warning.detail });
     await runs.recordRunWarning(tenant, runId, warning.kind, warning.detail);
   };
 
+  // Bound progress writes: one DB patch + pub/sub event per student times 5,000 is a bottleneck.
+  let lastReportAt = 0;
+  let lastCount = 0;
+  const reportProgress = async (current: number, total: number): Promise<void> => {
+    const now = Date.now();
+    const step = Math.max(1, Math.ceil(total * 0.02));
+    if (current >= total || now - lastReportAt >= 1000 || current - lastCount >= step) {
+      lastReportAt = now;
+      lastCount = current;
+      await progress(current, Math.max(total, 1));
+    }
+  };
+
   try {
+    throwIfBackgroundJobAborted(options.signal);
     const source = await sessionsRepository.findSessionByIdPrimary(tenant, payload.sourceSessionId);
     if (!source) throw new NotFoundError("Session not found");
+    throwIfBackgroundJobAborted(options.signal);
     const { target, ids } = await ensureTarget(
       tenant,
       runId,
@@ -88,6 +121,7 @@ export async function executeSessionRollover(
         const sectionId = rolloverTargetSection(row, source, target, targetClassId, ids.sectionIds);
         return [{ candidate, targetClassId, targetSectionId: sectionId }];
       });
+      throwIfBackgroundJobAborted(options.signal);
       const carry = await carryRolloverEnrollments(tenant, target, placements, {
         idFor: (sourceEnrollmentId) =>
           deterministicRolloverId(runId, "enrollment", sourceEnrollmentId),
@@ -99,6 +133,7 @@ export async function executeSessionRollover(
       for (const [index, row] of plan.entries()) {
         const candidate = byId.get(row.enrollmentId);
         if (!candidate) continue;
+        throwIfBackgroundJobAborted(options.signal);
         const status = PROMOTION_OUTCOME_STATUS[row.outcome] as keyof PromotionCounts;
         const alreadyCarried = done.has(row.enrollmentId);
         const carryOutcome = row.outcome === "promote" || row.outcome === "retain";
@@ -119,9 +154,12 @@ export async function executeSessionRollover(
             lastDay,
             actor,
           });
+          // Persist the counter immediately so an interrupted attempt does not lose outcomes that
+          // are already closed (resumed runs report complete totals).
+          await runs.incrementPromotionRunCounts(tenant, runId, { [status]: 1 });
         }
         counts[status] += 1;
-        await progress(index + 1, plan.length);
+        await reportProgress(index + 1, plan.length);
       }
 
       if (payload.body.closeSource !== false) {
@@ -141,14 +179,56 @@ export async function executeSessionRollover(
       }
     }
 
-    await runs.updatePromotionRun(tenant, runId, { status: "completed", ...counts, error: null });
+    await runs.updatePromotionRun(tenant, runId, { status: "completed", error: null });
+    const finalCounts = (await runs.readPromotionRunCounts(tenant, runId)) ?? counts;
+    await recordModernAuditEvent({
+      workspaceSubdomain: tenant,
+      tableName: "session_promotion_runs",
+      recordId: runId,
+      actionType: "UPDATE",
+      realUserId: actorUserId,
+      oldState: { status: "running", targetSessionId: target.id },
+      newState: {
+        status: "completed",
+        operation: "rollover_completed",
+        targetSessionId: target.id,
+        carried,
+        ...finalCounts,
+        warnings: warningList,
+        reason: payload.body.reason ?? null,
+      },
+    });
     await invalidateMultiTierCache({ tenantId: tenant, domain: "sessions" });
     await broadcastCollection("sessions");
     return { targetSessionId: target.id, carried };
   } catch (error) {
     const message = error instanceof Error ? error.message : "Rollover failed";
+    const interrupted =
+      options.signal?.aborted === true || /(exceeded its|shutting down|aborted)/i.test(message);
+    const attemptsUsed = options.attempt ?? 1;
+    const maxAttempts = options.maxAttempts ?? 1;
+    // Retryable interruptions go back to `queued` so the next BullMQ attempt resumes the same
+    // run (deterministic ids + carried/closed markers keep it idempotent). Terminal validation or
+    // final-attempt failures are marked failed.
+    const retryable = interrupted && attemptsUsed < maxAttempts;
+    const nextStatus = retryable ? "queued" : "failed";
+    await recordModernAuditEvent({
+      workspaceSubdomain: tenant,
+      tableName: "session_promotion_runs",
+      recordId: runId,
+      actionType: "UPDATE",
+      realUserId: actorUserId,
+      oldState: { status: "running" },
+      newState: {
+        status: nextStatus,
+        operation: retryable ? "rollover_interrupted" : "rollover_failed",
+        attempt: attemptsUsed,
+        maxAttempts,
+        error: message.slice(0, 1000),
+      },
+    });
     await runs.updatePromotionRun(tenant, runId, {
-      status: "failed",
+      status: nextStatus,
       error: message.slice(0, 1000),
     });
     throw error;
@@ -167,8 +247,12 @@ const jobPayloadSchema = z
 export function registerSessionRolloverJobRunner(): void {
   registerBackgroundJobRunner(`sessions:${SESSION_ROLLOVER_JOB_KIND}`, async (payload, ctx) => {
     const parsed = jobPayloadSchema.parse(payload);
-    const result = await executeSessionRollover(ctx.tenant, ctx.userId, parsed, (current, total) =>
-      ctx.updateProgress(current, Math.max(total, 1)),
+    const result = await executeSessionRollover(
+      ctx.tenant,
+      ctx.userId,
+      parsed,
+      (current, total) => ctx.updateProgress(current, Math.max(total, 1)),
+      { signal: ctx.signal, attempt: ctx.attempt, maxAttempts: ctx.maxAttempts },
     );
     await ctx.complete({
       label: `Rollover complete — ${result.carried} students carried`,

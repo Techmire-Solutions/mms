@@ -26,6 +26,8 @@ export interface StandardExtendedRoutesOptions<TQuery, TRecord> {
   loadCountFn?: () => Promise<number>;
   /** Prefer SQL aggregates — avoids hydrate-all for `/metrics`. */
   loadMetricsFn?: (request: FastifyRequest) => Promise<unknown>;
+  /** Optional Zod response schema for `/metrics`. */
+  metricsSchema?: import("zod").ZodType;
   loadWidgetAggregatesFn?: (queries: unknown[], request?: unknown) => Promise<unknown>;
   loadByIdsFn?: (ids: string[], request: FastifyRequest) => Promise<TRecord[]>;
   loadLinkedContactIdsFn?: (excludeId?: string) => Promise<(string | number)[]>;
@@ -54,6 +56,7 @@ export function registerStandardExtendedRoutes<
     loadPageFn,
     loadCountFn,
     loadMetricsFn,
+    metricsSchema,
     loadWidgetAggregatesFn,
     loadByIdsFn,
     loadLinkedContactIdsFn,
@@ -88,6 +91,7 @@ export function registerStandardExtendedRoutes<
       path: prefix ? `${prefix}/metrics` : "/metrics",
       collection,
       loadMetricsFn,
+      metricsSchema,
       errorMessagePrefix: nameSingular,
     });
   }
@@ -170,6 +174,7 @@ export function registerStandardTenantRoutes<
     loadPageFn,
     loadCountFn,
     loadMetricsFn,
+    metricsSchema,
     loadWidgetAggregatesFn,
     loadByIdsFn,
     loadLinkedContactIdsFn,
@@ -204,6 +209,7 @@ export function registerStandardTenantRoutes<
     loadPageFn,
     loadCountFn,
     loadMetricsFn,
+    metricsSchema,
     loadWidgetAggregatesFn,
     loadByIdsFn,
     loadLinkedContactIdsFn,

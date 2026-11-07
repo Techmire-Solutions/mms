@@ -3,6 +3,7 @@ import { initServer, type RouterImplementation } from "@ts-rest/fastify";
 import { SESSIONS_MODULE_MANIFEST, sessionCompletionContract, type User } from "@mms/shared";
 import { handleContractError } from "../../../lib/contractError.js";
 import { standardRequestValidationErrorHandler } from "../../../lib/contractRegistration.js";
+import { enforceSessionResponses } from "../../../lib/sessionContractResponses.js";
 import type { ContractRouteArgs } from "../../../lib/contractRouterTypes.js";
 import { canReadCollection, canWriteCollection } from "../../../services/rbacService.js";
 import { userHasPermission } from "../../../lib/userPermissionContext.js";
@@ -23,55 +24,61 @@ const fail = (request: Request, error: unknown, message: string) =>
 
 /** `/api/sessions/:id/completion{,/evaluate,/certificates}` — short-course completion (Phase 11). */
 export const sessionCompletionRouter: FastifyPluginAsync = async (fastify) => {
-  const router = s.router(sessionCompletionContract, {
-    list: async ({ params, request }: ContractRouteArgs<Contract["list"]>) => {
-      if (!canReadCollection(request.user as User, COLLECTION)) return forbidden;
-      try {
-        return {
-          status: 200 as const,
-          body: { rows: await completion.list(tenantOf(request), params.id) },
-        };
-      } catch (error) {
-        return fail(request, error, "Failed to load completion");
-      }
-    },
-    evaluate: async ({ params, body, request }: ContractRouteArgs<Contract["evaluate"]>) => {
-      const user = request.user as User;
-      if (!canWriteCollection(user, COLLECTION)) return forbidden;
-      try {
-        return {
-          status: 200 as const,
-          body: {
-            rows: await completion.evaluate(tenantOf(request), params.id, body, {
+  const router = s.router(
+    sessionCompletionContract,
+    enforceSessionResponses(sessionCompletionContract, {
+      list: async ({ params, request }: ContractRouteArgs<Contract["list"]>) => {
+        if (!canReadCollection(request.user as User, COLLECTION)) return forbidden;
+        try {
+          return {
+            status: 200 as const,
+            body: { rows: await completion.list(tenantOf(request), params.id) },
+          };
+        } catch (error) {
+          return fail(request, error, "Failed to load completion");
+        }
+      },
+      evaluate: async ({ params, body, request }: ContractRouteArgs<Contract["evaluate"]>) => {
+        const user = request.user as User;
+        if (!canWriteCollection(user, COLLECTION)) return forbidden;
+        if (!userHasPermission(user, SESSIONS_MODULE_MANIFEST.permissions.manage)) return forbidden;
+        try {
+          return {
+            status: 200 as const,
+            body: {
+              rows: await completion.evaluate(tenantOf(request), params.id, body, {
+                canOverride: userHasPermission(user, OVERRIDE_LOCK_PERM),
+              }),
+            },
+          };
+        } catch (error) {
+          return fail(request, error, "Failed to evaluate completion");
+        }
+      },
+      certificates: async ({
+        params,
+        body,
+        request,
+      }: ContractRouteArgs<Contract["certificates"]>) => {
+        const user = request.user as User;
+        if (!canWriteCollection(user, COLLECTION)) return forbidden;
+        if (!userHasPermission(user, SESSIONS_MODULE_MANIFEST.permissions.manage)) return forbidden;
+        try {
+          return {
+            status: 200 as const,
+            body: await completion.issueCertificates(tenantOf(request), params.id, body, {
               canOverride: userHasPermission(user, OVERRIDE_LOCK_PERM),
             }),
-          },
-        };
-      } catch (error) {
-        return fail(request, error, "Failed to evaluate completion");
-      }
-    },
-    certificates: async ({
-      params,
-      body,
-      request,
-    }: ContractRouteArgs<Contract["certificates"]>) => {
-      const user = request.user as User;
-      if (!canWriteCollection(user, COLLECTION)) return forbidden;
-      try {
-        return {
-          status: 200 as const,
-          body: await completion.issueCertificates(tenantOf(request), params.id, body, {
-            canOverride: userHasPermission(user, OVERRIDE_LOCK_PERM),
-          }),
-        };
-      } catch (error) {
-        return fail(request, error, "Failed to issue certificates");
-      }
-    },
-  } as unknown as RouterImplementation<Contract>);
+          };
+        } catch (error) {
+          return fail(request, error, "Failed to issue certificates");
+        }
+      },
+    } as unknown as RouterImplementation<Contract>),
+  );
 
   await fastify.register(s.plugin(router), {
     requestValidationErrorHandler: standardRequestValidationErrorHandler,
+    responseValidation: true,
   });
 };

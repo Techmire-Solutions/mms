@@ -4,6 +4,7 @@ import {
   QUEUE_PDF_RENDERING,
   QUEUE_BULK_EXPORT,
   QUEUE_MESSAGING_BROADCAST,
+  QUEUE_SESSIONS_ROLLOVER,
   QUEUE_SETTINGS,
   DEFAULT_JOB_OPTIONS,
   WORKER_HEAP_LIMIT_BYTES,
@@ -27,6 +28,10 @@ describe("BullMQ Queue Architecture (Phase 5)", () => {
     expect(QUEUE_SETTINGS[QUEUE_MESSAGING_BROADCAST]).toEqual({
       concurrency: 6,
       priority: 3,
+    });
+    expect(QUEUE_SETTINGS[QUEUE_SESSIONS_ROLLOVER]).toEqual({
+      concurrency: 1,
+      priority: 1,
     });
   });
 
@@ -67,6 +72,8 @@ describe("BullMQ Queue Architecture (Phase 5)", () => {
     expect(resolveQueueNameForJob("contacts", "export-vcf")).toBe(QUEUE_BULK_EXPORT);
     expect(resolveQueueNameForJob("contacts", "duplicate-scan")).toBe(QUEUE_BULK_EXPORT);
     expect(resolveQueueNameForJob("users", "export-csv")).toBe(QUEUE_BULK_EXPORT);
+    // Long-running session rollover gets its own queue so exports/imports are not starved.
+    expect(resolveQueueNameForJob("sessions", "promote")).toBe(QUEUE_SESSIONS_ROLLOVER);
   });
 
   it("handles dead-letter queue permanently failed jobs gracefully", async () => {

@@ -5,6 +5,7 @@ import {
   QUEUE_BULK_EXPORT,
   QUEUE_MESSAGING_BROADCAST,
   QUEUE_SETTINGS,
+  QUEUE_SESSIONS_ROLLOVER,
   DEFAULT_JOB_OPTIONS,
   getBullMQConnectionOptions,
   getQueuePrefix,
@@ -13,7 +14,6 @@ import {
   calculateTenantFairSharePriority,
   incrementTenantInflightJobs,
 } from "./queueTenantInflight.js";
-import { markJobPermanentlyFailed } from "../../services/backgroundJobWorkerService.js";
 import { stripUndefinedFields } from "../../lib/payloadTrimmer.js";
 import { logger } from "../../lib/logger.js";
 import { getRedisClient, checkIsRedisConnected } from "../../lib/redis.js";
@@ -24,6 +24,17 @@ export const QUEUE_ADD_RECONCILE_TIMEOUT_MS = 2000;
 const QUEUE_ADD_RECONCILE_POLL_MS = 100;
 
 /** Distinguishes our own add deadline from a real Redis error. */
+/** Thrown before the job is handed to Redis when its payload exceeds the size ceiling. */
+export class QueuePayloadTooLargeError extends Error {
+  constructor(
+    readonly payloadSize: number,
+    readonly maxBytes: number,
+  ) {
+    super(`Background job payload is ${payloadSize} bytes (maximum ${maxBytes})`);
+    this.name = "QueuePayloadTooLargeError";
+  }
+}
+
 export class QueueAddTimeoutError extends Error {
   constructor() {
     super("BullMQ queue.add timeout (Redis unreachable)");
@@ -108,6 +119,10 @@ export function resolveQueueNameForJob(moduleId: string, kind: string): string {
     return QUEUE_PDF_RENDERING;
   }
 
+  if (normalizedModule === "sessions" && normalizedKind === "promote") {
+    return QUEUE_SESSIONS_ROLLOVER;
+  }
+
   if (
     normalizedModule === "messaging" ||
     normalizedKind.includes("broadcast") ||
@@ -153,10 +168,12 @@ export async function dispatchJobToQueue(
       if (payloadSize > MAX_JOB_PAYLOAD_BYTES) {
         logger.warn(
           { jobId: job.id, queue: queueName, payloadSize, max: MAX_JOB_PAYLOAD_BYTES },
-          "Job payload exceeds 1MB limit; consider offloading to external storage artifact",
+          "Job payload exceeds the 1MB ceiling; rejecting the enqueue",
         );
+        throw new QueuePayloadTooLargeError(payloadSize, MAX_JOB_PAYLOAD_BYTES);
       }
-    } catch {
+    } catch (error) {
+      if (error instanceof QueuePayloadTooLargeError) throw error;
       // ignore serialization check failures
     }
   }
@@ -178,9 +195,17 @@ export async function dispatchJobToQueue(
   );
 
   try {
+    // Long-running rollover retries resume the same run; the longer backoff avoids
+    // overlapping an attempt that is still unwinding after a timeout.
+    const longRunningRollover =
+      job.moduleId.trim().toLowerCase() === "sessions" &&
+      job.kind.trim().toLowerCase() === "promote";
     const addPromise = queue.add(`${job.moduleId}:${job.kind}`, jobData, {
       jobId: job.id,
       priority: fairSharePriority,
+      ...(longRunningRollover
+        ? { attempts: 3, backoff: { type: "exponential" as const, delay: 30_000 } }
+        : {}),
     });
     // Guard against unhandled rejections if timeoutPromise wins the race
     addPromise.catch(() => {});
@@ -218,37 +243,6 @@ export async function dispatchJobToQueue(
 }
 
 /**
- * Record a Dead-Letter Queue (DLQ) event when a job exhausts all retries.
- */
-export async function handleDeadLetterJob(
-  queueName: string,
-  jobData: EnqueuedJobData,
-  failedReason: string,
-): Promise<void> {
-  logger.error(
-    {
-      jobId: jobData.jobId,
-      moduleId: jobData.moduleId,
-      kind: jobData.kind,
-      queue: queueName,
-      reason: failedReason,
-    },
-    "Job permanently failed in queue",
-  );
-
-  await markJobPermanentlyFailed(
-    jobData.tenantId,
-    jobData.userId,
-    jobData.jobId,
-    jobData.moduleId,
-    jobData.kind,
-    `Job failed permanently in queue: ${failedReason}`,
-  ).catch((err) => {
-    logger.error({ jobId: jobData.jobId, err }, "Failed to record dead-letter job in DB");
-  });
-}
-
-/**
  * Gracefully close all BullMQ queue instances.
  */
 export async function closeAllQueues(): Promise<void> {
@@ -264,3 +258,4 @@ export async function closeAllQueues(): Promise<void> {
 }
 
 export * from "./queueConfig.js";
+export { handleDeadLetterJob } from "./deadLetter.js";

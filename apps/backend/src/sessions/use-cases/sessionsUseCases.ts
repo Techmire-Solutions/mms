@@ -4,6 +4,7 @@ import { getRequestTenant, getRequestUserId } from "../../lib/tenantContext.js";
 import { broadcastCollection } from "../../lib/livePush.js";
 import { createGenericRelationalService } from "../../services/genericRelationalService.js";
 import { ConflictError, HttpDomainError, ValidationError } from "../../lib/httpErrors.js";
+import { isIsoUtcTimestamp } from "../../lib/occHeaders.js";
 import { invalidateMultiTierCache } from "../../lib/cache/index.js";
 import { recordModernAuditEvent } from "../../services/auditTrailService.js";
 import {
@@ -141,8 +142,12 @@ export function createSessionsUseCases(
       const tenant = getRequestTenant();
       if (!tenant) throw new Error("Tenant context required");
       const expected = expectedUpdatedAt?.trim();
-      if (expected && Number.isNaN(Date.parse(expected)))
-        throw new ValidationError("Invalid x-expected-updated-at header");
+      // Strict ISO-8601 UTC: `Date.parse` would also accept offset-less values and parse them in
+      // the server's timezone, turning a client timestamp into a different instant.
+      if (expected && !isIsoUtcTimestamp(expected))
+        throw new ValidationError(
+          "x-expected-updated-at must be an ISO-8601 UTC timestamp (for example 2026-03-01T10:00:00.000Z)",
+        );
       if (expectedVersion !== undefined && !Number.isInteger(expectedVersion))
         throw new ValidationError("Invalid x-expected-version header");
       const { lockOverrideReason, cancellationReason, ...record } = body as SessionUpdateBody;
@@ -215,11 +220,11 @@ export function createSessionsUseCases(
         ...(expected ? { expectedUpdatedAt: expected } : {}),
         ...(expectedVersion !== undefined ? { expectedVersion } : {}),
       };
-      const savedUpdatedAt = await repo.saveSession(
-        tenant,
-        normalized,
-        Object.keys(occOptions).length > 0 ? occOptions : undefined,
-      );
+      const savedUpdatedAt = await repo.saveSession(tenant, normalized, {
+        ...occOptions,
+        // The audit row must prove what changed, not only what the row became.
+        auditOldState: before,
+      });
       normalized.updatedAt = savedUpdatedAt;
       normalized.version = Number(before.version ?? 1) + 1;
       runAfterCommit(() => broadcastCollection("sessions"));
@@ -242,8 +247,11 @@ export function createSessionsUseCases(
           tableName: "sessions",
           recordId: id,
           actionType: "UPDATE",
+          realUserId: getRequestUserId() ?? undefined,
+          oldState: before,
           newState: {
-            lockOverride: overridden,
+            operation: "lock_override",
+            changed: overridden,
             reason: lockOverrideReason ?? lock.lockOverrideReason,
           },
         });

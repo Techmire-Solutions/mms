@@ -2,6 +2,7 @@ import { and, eq, lt } from "drizzle-orm";
 import { withGlobalTenant } from "../db/tenant-context.js";
 import { backgroundJobs } from "../db/schema.js";
 import { logger } from "../lib/logger.js";
+import { failPromotionRunFromDlq } from "../services/sessionRolloverFinalizer.js";
 
 /** A 'pending' job older than this is assumed to have never been dispatched. */
 const STALE_PENDING_MS = 10 * 60 * 1000;
@@ -31,10 +32,29 @@ export async function cleanupOrphanedJobs(): Promise<void> {
         .where(
           and(eq(backgroundJobs.status, "running"), lt(backgroundJobs.updatedAt, runningCutoff)),
         )
-        .returning({ id: backgroundJobs.id });
+        .returning({
+          id: backgroundJobs.id,
+          tenantId: backgroundJobs.tenantId,
+          moduleId: backgroundJobs.moduleId,
+          kind: backgroundJobs.kind,
+        });
 
       if (running.length > 0) {
         logger.info({ count: running.length }, "Cleaned up orphaned running jobs");
+        for (const row of running) {
+          if (row.moduleId === "sessions" && row.kind === "promote") {
+            await failPromotionRunFromDlq(
+              row.tenantId,
+              row.id,
+              "Worker heartbeat lost while the rollover job was running",
+            ).catch((err) => {
+              logger.error(
+                { tenant: row.tenantId, runId: row.id, err },
+                "Failed to reconcile an orphaned rollover run",
+              );
+            });
+          }
+        }
       }
 
       // Jobs stuck in 'pending' for a long time were likely inserted but never

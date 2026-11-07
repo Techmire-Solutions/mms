@@ -9,6 +9,7 @@ import {
   QUEUE_PDF_RENDERING,
   QUEUE_BULK_EXPORT,
   QUEUE_MESSAGING_BROADCAST,
+  QUEUE_SESSIONS_ROLLOVER,
   QUEUE_SETTINGS,
   getBullMQConnectionOptions,
   getQueuePrefix,
@@ -97,9 +98,14 @@ export function createWorkerForQueue(queueName: string): Worker<EnqueuedJobData>
         prefix,
         concurrency,
         lockDuration: 60000,
+        maxStalledCount: 2,
       },
     );
   }
+
+  worker.on("stalled", (jobId) => {
+    logger.warn({ jobId, queue: queueName }, "Job stalled; lock renewal missed");
+  });
 
   worker.on("completed", (job) => {
     logger.info({ jobId: job.id, queue: queueName }, "Job completed");
@@ -145,7 +151,12 @@ export async function startWorkerDaemon(): Promise<void> {
   registerDefaultBackgroundJobRunners();
 
   // Instantiate workers for all 3 queues
-  const queueNames = [QUEUE_PDF_RENDERING, QUEUE_BULK_EXPORT, QUEUE_MESSAGING_BROADCAST];
+  const queueNames = [
+    QUEUE_PDF_RENDERING,
+    QUEUE_BULK_EXPORT,
+    QUEUE_MESSAGING_BROADCAST,
+    QUEUE_SESSIONS_ROLLOVER,
+  ];
   for (const queueName of queueNames) {
     try {
       const worker = createWorkerForQueue(queueName);

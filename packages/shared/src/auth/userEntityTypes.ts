@@ -10,12 +10,13 @@ export const USER_STATUS_VALUES = [
 ] as const satisfies readonly UserStatus[];
 
 /** CRUD actions granted per module in the roles matrix. */
-export type PermissionAction = "create" | "read" | "update" | "delete";
+export type PermissionAction = "create" | "read" | "update" | "manage" | "delete";
 
 export const PERMISSION_ACTIONS: readonly PermissionAction[] = [
   "create",
   "read",
   "update",
+  "manage",
   "delete",
 ] as const;
 

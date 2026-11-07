@@ -8,7 +8,10 @@ import {
 } from "../schemas/sessions.dto.js";
 import { widgetAggregatesBodySchema } from "../schemas/common.dto.js";
 import { sessionsBulkStatusSchema } from "../sessions/sessionsModuleManifest.js";
-import { sessionsReportAggregatesSchema } from "../sessions/sessionsReportAggregates.js";
+import {
+  sessionsReportAggregatesSchema,
+  sessionsReportQuerySchema,
+} from "../sessions/sessionsReportAggregates.js";
 import { academicTerminologySchema } from "../sessions/academicTerminology.js";
 import { sessionsListQuerySchema } from "../sessions/sessionsListQuery.js";
 import {
@@ -19,6 +22,7 @@ import {
   sessionWriteErrors,
 } from "./sessionContractShared.js";
 import { sessionLookupContractEndpoints } from "./sessions.contract.lookups.js";
+import { sessionBulkJobContractEndpoints } from "./sessions.contract.bulk.js";
 
 const c = initContract();
 const errorResponse = sessionErrorResponseSchema;
@@ -227,6 +231,7 @@ export const sessionContract = c.router({
   reportAggregates: {
     method: "GET",
     path: "/api/sessions/report-aggregates",
+    query: sessionsReportQuerySchema.optional(),
     responses: {
       200: sessionsReportAggregatesSchema,
       401: errorResponse,
@@ -284,5 +289,6 @@ export const sessionContract = c.router({
     },
     summary: "Update preferences",
   },
+  ...sessionBulkJobContractEndpoints,
   ...sessionLookupContractEndpoints,
 });

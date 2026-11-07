@@ -14,11 +14,29 @@ const emit = () => listeners.forEach((listener) => listener());
 /** Violation codes from a `409 session_locked` response ("…: startDate, category"). */
 function sessionLockViolations(error: unknown): SessionEditViolation[] | null {
   if (!isApiError(error) || error.status !== 409 || error.type !== "session_locked") return null;
-  const list = error.message.split(":").pop() ?? "";
-  return list
-    .split(",")
-    .map((code) => code.trim())
-    .filter(Boolean) as SessionEditViolation[];
+  const raw = error.errors;
+  const structured = Array.isArray(raw)
+    ? raw
+        .map((item) =>
+          typeof item === "string"
+            ? item
+            : item && typeof item === "object"
+              ? String(
+                  (item as { code?: unknown; field?: unknown }).code ??
+                    (item as { field?: unknown }).field ??
+                    "",
+                )
+              : "",
+        )
+        .filter(Boolean)
+    : raw && typeof raw === "object"
+      ? ((raw as { violations?: unknown }).violations ?? [])
+      : [];
+  const values = Array.isArray(structured) ? structured.map(String) : [];
+  const list = (values.length > 0 ? values : (error.message.split(":").pop() ?? "").split(","))
+    .map((value) => value.trim())
+    .filter(Boolean);
+  return list.length > 0 ? (list as SessionEditViolation[]) : null;
 }
 
 /** Opens the override dialog; resolves with the reason, or null when cancelled. */

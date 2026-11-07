@@ -18,6 +18,7 @@ export type RegisterModuleCsvImportJobRunnerOptions<TRow = unknown> = {
       userId: string;
       jobId: string;
       viewerRole: string;
+      signal?: AbortSignal;
       updateProgress: (current: number, total: number) => Promise<void>;
     },
   ) => Promise<{
@@ -48,6 +49,7 @@ export function registerModuleCsvImportJobRunner<TRow = unknown>(
       userId: ctx.userId,
       jobId: ctx.jobId,
       viewerRole: importPayload.viewerRole,
+      signal: ctx.signal,
       updateProgress: (current, tot) => ctx.updateProgress(current, tot),
     });
 
@@ -64,6 +66,7 @@ export function registerModuleCsvImportJobRunner<TRow = unknown>(
         current: importedCount,
         total: Math.max(finalTotal, 1),
       },
+      ...(result.errors && result.errors.length > 0 ? { errors: result.errors.slice(0, 500) } : {}),
     });
   });
 }

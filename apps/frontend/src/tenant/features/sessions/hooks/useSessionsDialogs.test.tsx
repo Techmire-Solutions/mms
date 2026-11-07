@@ -13,7 +13,7 @@ const mockSession: Session = {
   id: "ses-1",
   name: "Spring 2026",
   type: "Hifz",
-  status: "active",
+  status: "in_progress",
   startDate: "2026-01-01",
   endDate: "2026-06-30",
   baseFee: 200,

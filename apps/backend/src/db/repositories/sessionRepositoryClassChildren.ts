@@ -14,7 +14,7 @@ import {
   sessionClassTimetablePeriodStaff,
 } from "../schema.js";
 import { type TenantTransaction } from "../tenant-context.js";
-import { toDbDate } from "../../lib/dbDate.js";
+import { requireDbDate } from "../../lib/dbDate.js";
 
 interface ClassChildRows {
   fees: Array<typeof sessionClassFees.$inferInsert>;
@@ -65,8 +65,8 @@ export function collectClassChildRows(
       ...base,
       id: s.id || randomUUID(),
       scheduleType: s.scheduleType,
-      startDate: toDbDate(s.startDate),
-      endDate: toDbDate(s.endDate),
+      startDate: requireDbDate(s.startDate, "startDate"),
+      endDate: requireDbDate(s.endDate, "endDate"),
     });
   }
   for (const b of c.budgets || []) {
@@ -84,8 +84,8 @@ export function collectClassChildRows(
       id: d.id || randomUUID(),
       discountType: d.discountType,
       percentage: String(d.percentage ?? 0),
-      startDate: toDbDate(d.startDate),
-      endDate: toDbDate(d.endDate),
+      startDate: requireDbDate(d.startDate, "startDate"),
+      endDate: requireDbDate(d.endDate, "endDate"),
       eligibilityCriteria: d.eligibilityCriteria || {},
       status: d.status || "active",
     });
@@ -94,7 +94,7 @@ export function collectClassChildRows(
     rows.refreshments.push({
       ...base,
       id: r.id || randomUUID(),
-      date: toDbDate(r.date),
+      date: requireDbDate(r.date, "date"),
       item: r.item,
       quantity: r.quantity ?? 1,
       pricePerUnit: String(r.pricePerUnit ?? 0),
@@ -103,7 +103,7 @@ export function collectClassChildRows(
   }
   for (const t of c.timetables || []) {
     const timetableId = t.id || randomUUID();
-    rows.timetables.push({ ...base, id: timetableId, date: toDbDate(t.date) });
+    rows.timetables.push({ ...base, id: timetableId, date: requireDbDate(t.date, "date") });
     for (const p of t.periods || []) {
       const periodId = p.id || randomUUID();
       for (const facultyId of new Set(
@@ -152,7 +152,7 @@ export function collectClassChildRows(
       id: sc.id || randomUUID(),
       scholarshipEligibilityId: eligibilityId || null,
       percentage: String(sc.percentage ?? 0),
-      expiryDate: toDbDate(sc.expiryDate),
+      expiryDate: requireDbDate(sc.expiryDate, "expiryDate"),
     });
   }
 }

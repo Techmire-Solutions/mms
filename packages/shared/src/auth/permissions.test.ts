@@ -11,6 +11,7 @@ import {
   roleObjectHasPermission,
 } from "./permissions.js";
 import type { WorkspaceRole } from "./userEntityTypes.js";
+import { DEFAULT_WORKSPACE_ROLES_MAP } from "./userRbacDefaultRoles.js";
 
 describe("roleHasPermission", () => {
   it("grants admin and super_admin full settings write and management", () => {
@@ -303,5 +304,27 @@ describe("sessions.override_lock", () => {
     expect(ALL_PERMISSIONS).toContain("sessions.override_lock");
 
     expect(isValidPermission("sessions.override_lock")).toBe(true);
+  });
+});
+
+describe("sessions.manage", () => {
+  it("is granted to admin/super_admin/principal and denied to editors", () => {
+    expect(roleHasPermission("super_admin", "sessions.manage")).toBe(true);
+    expect(roleHasPermission("admin", "sessions.manage")).toBe(true);
+    expect(roleHasPermission("principal", "sessions.manage")).toBe(true);
+    expect(roleHasPermission("registrar", "sessions.manage")).toBe(false);
+    expect(roleHasPermission("teacher", "sessions.manage")).toBe(false);
+    expect(roleHasPermission("assistant_teacher", "sessions.manage")).toBe(false);
+  });
+
+  it("is part of the canonical permission set", () => {
+    expect(ALL_PERMISSIONS).toContain("sessions.manage");
+    expect(isValidPermission("sessions.manage")).toBe(true);
+  });
+
+  it("keeps the instructor default role read-only for sessions", () => {
+    expect(DEFAULT_WORKSPACE_ROLES_MAP.teacher.permissions.sessions).toEqual(["read"]);
+    expect(roleHasPermission("teacher", "sessions.write")).toBe(false);
+    expect(roleHasPermission("teacher", "sessions.read")).toBe(true);
   });
 });

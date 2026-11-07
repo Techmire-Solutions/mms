@@ -214,6 +214,7 @@ export async function saveRegistrationLink(
       recordId: input.id,
       actionType: existing ? "UPDATE" : "CREATE",
       realUserId: input.actorUserId,
+      oldState: existing ?? undefined,
       newState: { ...fields, classIds: input.classIds },
     });
     const rows = await tx
@@ -261,6 +262,8 @@ export async function softDeleteRegistrationLink(
       recordId: id,
       actionType: "DELETE",
       realUserId: actorUserId,
+      oldState: { sessionId, deletedAt: null },
+      newState: { deletedAt: new Date().toISOString() },
     });
     return true;
   });

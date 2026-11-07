@@ -56,6 +56,7 @@ export const sessionSetupContractHandlers = {
   },
 
   reportAggregates: async ({
+    query,
     request,
   }: ContractRouteArgs<(typeof sessionContract)["reportAggregates"]>): Promise<
     ContractRouteResponse<(typeof sessionContract)["reportAggregates"]>
@@ -67,7 +68,7 @@ export const sessionSetupContractHandlers = {
         body: { type: "forbidden", message: "Insufficient permissions" },
       };
     try {
-      const aggregates = await sessionsUseCases.loadSessionsReportAggregates();
+      const aggregates = await sessionsUseCases.loadSessionsReportAggregates(query ?? {});
       return { status: 200 as const, body: aggregates };
     } catch (error) {
       return handleContractError(request, error, {
@@ -115,13 +116,19 @@ export const sessionSetupContractHandlers = {
         body: { type: "forbidden", message: "Insufficient permissions" },
       };
     try {
-      const saved = await saveSessionFieldConfig(body);
-      await auditSession(
-        user,
-        "session.field-config",
-        "Updated session field configuration",
-        "field-config",
-      );
+      const saved = await withTenant(String(request.tenant?.id ?? ""), async () => {
+        const before = await loadSessionFieldConfig();
+        const next = await saveSessionFieldConfig(body);
+        // Audit in the same transaction: a mutation must never commit without its trail row.
+        await auditSession(
+          user,
+          "session.field-config",
+          "Updated session field configuration",
+          "field-config",
+          { oldState: before ?? null, newState: next },
+        );
+        return next;
+      });
       return { status: 200 as const, body: { success: true, config: Object.assign({}, saved) } };
     } catch (error) {
       return handleContractError(request, error, {
@@ -167,14 +174,19 @@ export const sessionSetupContractHandlers = {
         body: { type: "forbidden", message: "Insufficient permissions" },
       };
     try {
-      const normalized = normalizeSessionModulePreferences(body);
-      await saveSessionModulePreferences(normalized);
-      await auditSession(
-        user,
-        "session.preferences",
-        "Updated session module preferences",
-        "preferences",
-      );
+      const normalized = await withTenant(String(request.tenant?.id ?? ""), async () => {
+        const before = await loadSessionModulePreferences();
+        const next = normalizeSessionModulePreferences(body);
+        await saveSessionModulePreferences(next);
+        await auditSession(
+          user,
+          "session.preferences",
+          "Updated session module preferences",
+          "preferences",
+          { oldState: before ?? null, newState: next },
+        );
+        return next;
+      });
       return { status: 200 as const, body: { success: true, preferences: normalized } };
     } catch (error) {
       return handleContractError(request, error, {

@@ -147,3 +147,35 @@ export async function listRunWarnings(
     createdAt: row.createdAt.toISOString(),
   }));
 }
+
+/** Primary read of the persisted outcome counters (resume-safe audit totals). */
+export async function readPromotionRunCounts(
+  tenant: string,
+  id: string,
+): Promise<{ promoted: number; retained: number; graduated: number; left: number } | null> {
+  const subdomain = tenant.trim().toLowerCase();
+  const [row] = await withTenant(subdomain, (tx) =>
+    tx
+      .select({
+        promoted: sessionPromotionRuns.promoted,
+        retained: sessionPromotionRuns.retained,
+        graduated: sessionPromotionRuns.graduated,
+        left: sessionPromotionRuns.left,
+      })
+      .from(sessionPromotionRuns)
+      .where(
+        and(
+          eq(sessionPromotionRuns.workspaceSubdomain, subdomain),
+          eq(sessionPromotionRuns.id, id),
+        ),
+      ),
+  );
+  return row
+    ? {
+        promoted: Number(row.promoted),
+        retained: Number(row.retained),
+        graduated: Number(row.graduated),
+        left: Number(row.left),
+      }
+    : null;
+}

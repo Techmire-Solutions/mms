@@ -105,11 +105,29 @@ export async function saveCompletionOutcomes(
   tenant: string,
   outcomes: readonly { enrollmentId: string; status: EnrollmentCompletionStatus }[],
   sessionId?: string,
+  audit?: { reason?: string | null; acknowledged?: readonly string[] },
 ): Promise<void> {
   if (outcomes.length === 0) return;
   const subdomain = tenant.trim().toLowerCase();
   await withTenant(subdomain, async (tx) => {
     let changed = 0;
+    const before = sessionId
+      ? await tx
+          .select({
+            id: enrollments.id,
+            completionStatus: enrollments.completionStatus,
+            completedAt: enrollments.completedAt,
+            certificateIssuedAt: enrollments.certificateIssuedAt,
+          })
+          .from(enrollments)
+          .where(
+            and(
+              eq(enrollments.workspaceSubdomain, subdomain),
+              eq(enrollments.sessionId, sessionId),
+              isNull(enrollments.deletedAt),
+            ),
+          )
+      : [];
     for (const status of ["completed", "not_completed"] as const) {
       const ids = outcomes.filter((row) => row.status === status).map((row) => row.enrollmentId);
       if (ids.length === 0) continue;
@@ -138,11 +156,23 @@ export async function saveCompletionOutcomes(
         recordId: sessionId,
         actionType: "UPDATE",
         realUserId: getRequestUserId() ?? undefined,
+        oldState: {
+          enrollments: before.map((row) => ({
+            enrollmentId: row.id,
+            completionStatus: row.completionStatus,
+            completedAt: row.completedAt ? row.completedAt.toISOString() : null,
+            certificateIssuedAt: row.certificateIssuedAt
+              ? row.certificateIssuedAt.toISOString()
+              : null,
+          })),
+        },
         newState: {
           operation: "completion_evaluated",
           completed: outcomes.filter((row) => row.status === "completed").length,
           notCompleted: outcomes.filter((row) => row.status === "not_completed").length,
           changed,
+          acknowledged: audit?.acknowledged ?? [],
+          reason: audit?.reason ?? null,
         },
       });
     }
@@ -165,6 +195,7 @@ export async function markCertificatesIssued(
   tenant: string,
   sessionId: string,
   enrollmentIds: readonly string[],
+  audit?: { reason?: string | null; acknowledged?: readonly string[] },
 ): Promise<string[]> {
   const subdomain = tenant.trim().toLowerCase();
   return withTenant(subdomain, async (tx) => {
@@ -188,9 +219,12 @@ export async function markCertificatesIssued(
         recordId: sessionId,
         actionType: "UPDATE",
         realUserId: getRequestUserId() ?? undefined,
+        oldState: { certificatesIssued: [] },
         newState: {
           operation: "certificates_issued",
           enrollmentIds: rows.map((row) => row.id),
+          acknowledged: audit?.acknowledged ?? [],
+          reason: audit?.reason ?? null,
         },
       });
     }

@@ -24,7 +24,7 @@ export type SessionCancelResult = z.infer<typeof sessionCancelResultSchema>;
 export const sessionActivityItemSchema = z
   .object({
     /** Business date (YYYY-MM-DD) the change took effect. */
-    on: z.string(),
+    on: isoDateSchema,
     kind: z.string(),
     title: z.string(),
     detail: z.string().nullable(),

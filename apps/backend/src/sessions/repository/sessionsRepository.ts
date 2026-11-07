@@ -6,6 +6,7 @@ import type {
   SessionsWidgetQuery,
   SessionsWidgetAggregateResult,
   SessionsReportAggregates,
+  SessionsReportQuery,
 } from "@mms/shared";
 
 /**
@@ -49,14 +50,22 @@ export interface SessionsRepository {
   saveSession(
     tenant: string,
     record: Session,
-    options?: { expectedUpdatedAt?: string; expectedVersion?: number },
+    options?: {
+      expectedUpdatedAt?: string;
+      expectedVersion?: number;
+      auditOldState?: unknown;
+    },
   ): Promise<string>;
   /** Targeted start/end update used by postpone (keeps the aggregate untouched). */
   updateSessionDates(
     tenant: string,
     id: string,
     dates: { startDate: string | null; endDate: string | null },
-    options?: { expectedUpdatedAt?: string; expectedVersion?: number },
+    options?: {
+      expectedUpdatedAt?: string;
+      expectedVersion?: number;
+      auditOldState?: unknown;
+    },
   ): Promise<boolean>;
   listSessionsPage(tenant: string, query: SessionsListQuery): Promise<SessionsListPageResult>;
   countSessionsActive(tenant: string): Promise<number>;
@@ -70,7 +79,10 @@ export interface SessionsRepository {
     tenant: string,
     queries: SessionsWidgetQuery[],
   ): Promise<Record<string, SessionsWidgetAggregateResult>>;
-  loadSessionsReportAggregates(tenant: string): Promise<SessionsReportAggregates>;
+  loadSessionsReportAggregates(
+    tenant: string,
+    options?: SessionsReportQuery,
+  ): Promise<SessionsReportAggregates>;
   softDeleteSessionWithCascade(
     tenant: string,
     sessionId: string,

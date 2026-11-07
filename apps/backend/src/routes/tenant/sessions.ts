@@ -1,5 +1,5 @@
 import type { FastifyInstance, FastifyPluginOptions } from "fastify";
-import { SESSIONS_MODULE_MANIFEST } from "@mms/shared";
+import { SESSIONS_MODULE_MANIFEST, sessionsCommandMetricsResponseSchema } from "@mms/shared";
 import { authenticateTenant } from "../../middleware/authenticate.js";
 import { registerModuleAccess } from "../../middleware/requireTenantModule.js";
 import { sessionsUseCases } from "../../sessions/use-cases/sessionsUseCases.js";
@@ -12,6 +12,8 @@ import { sessionLifecycleOpsRouter } from "./sessions/sessionLifecycleOpsRouter.
 import { sessionRolloverRouter } from "./sessions/sessionRolloverRouter.js";
 import { sessionCompletionRouter } from "./sessions/sessionCompletionRouter.js";
 import { sessionExportRoutes } from "./sessions/sessionExportRoutes.js";
+import { sessionCalendarExportRoutes } from "./sessions/sessionCalendarExportRoutes.js";
+import { sessionTimetableImportRoutes } from "./sessions/sessionTimetableImportRoutes.js";
 
 const COLLECTION = SESSIONS_MODULE_MANIFEST.collectionKey;
 
@@ -35,6 +37,7 @@ export default async function sessionsRoutes(
         nameSingular: "session",
         loadCountFn: sessionsUseCases.countSessions,
         loadMetricsFn: sessionsUseCases.loadSessionsCommandMetrics,
+        metricsSchema: sessionsCommandMetricsResponseSchema,
       });
     },
     { prefix: "/api/sessions" },
@@ -49,4 +52,6 @@ export default async function sessionsRoutes(
   await fastify.register(sessionCompletionRouter);
   // Raw Fastify route (ts-rest contract carries no export/csv endpoint).
   await fastify.register(sessionExportRoutes, { prefix: "/api/sessions" });
+  await fastify.register(sessionCalendarExportRoutes, { prefix: "/api/sessions" });
+  await fastify.register(sessionTimetableImportRoutes, { prefix: "/api/sessions" });
 }

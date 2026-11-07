@@ -4,6 +4,7 @@ import type { Session } from "@/lib/data/sessionsData";
 import { SessionsListConfirmDialogs } from "@/tenant/features/sessions/components/SessionsListConfirmDialogs";
 import { useSessionDetailState } from "@/tenant/features/sessions/hooks/useSessions";
 import { DetailDrawerShell } from "@/components/app/DetailDrawerShell";
+import { ErrorBoundary } from "@/components/app/ErrorBoundary";
 import { ErrorState } from "@/components/app/ErrorState";
 import { Modal } from "@/components/app/Modal";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -120,6 +121,43 @@ function SessionDetailSkeleton({
   );
 }
 
+function DialogFormErrorFallback({ onClose }: { onClose: () => void }): React.JSX.Element {
+  const { t } = useTranslation();
+  return (
+    <Modal open onClose={onClose} title={t("errors.boundary.title")} size="lg" hideFooter>
+      <ErrorState
+        title={t("errors.boundary.title")}
+        description={t("errors.boundary.description")}
+        onRetry={() => window.location.reload()}
+      />
+    </Modal>
+  );
+}
+
+function DialogDetailErrorFallback({
+  title,
+  onClose,
+}: {
+  title: string;
+  onClose: () => void;
+}): React.JSX.Element {
+  const { t } = useTranslation();
+  return (
+    <DetailDrawerShell
+      onClose={onClose}
+      title={title}
+      ariaLabel={t("sessions.detail.ariaLabel")}
+      size="2xl"
+    >
+      <ErrorState
+        title={t("errors.boundary.title")}
+        description={t("errors.boundary.description")}
+        onRetry={() => window.location.reload()}
+      />
+    </DetailDrawerShell>
+  );
+}
+
 export function SessionsDialogLayer({
   showForm,
   editSession,
@@ -168,23 +206,25 @@ export function SessionsDialogLayer({
           />
         ) : null}
         {isCreating || (isEditing && editResolved) ? (
-          <Suspense
-            fallback={
-              <SessionEditingSkeleton
-                title={isCreating ? t("sessions.form.addTitle") : t("sessions.form.editTitle")}
+          <ErrorBoundary fallback={<DialogFormErrorFallback onClose={onCloseForm} />}>
+            <Suspense
+              fallback={
+                <SessionEditingSkeleton
+                  title={isCreating ? t("sessions.form.addTitle") : t("sessions.form.editTitle")}
+                  onClose={onCloseForm}
+                  isError={false}
+                  onRetry={() => undefined}
+                />
+              }
+            >
+              <SessionForm
+                open={showForm}
+                session={fullEditSession}
                 onClose={onCloseForm}
-                isError={false}
-                onRetry={() => undefined}
+                onSave={onSave}
               />
-            }
-          >
-            <SessionForm
-              open={showForm}
-              session={fullEditSession}
-              onClose={onCloseForm}
-              onSave={onSave}
-            />
-          </Suspense>
+            </Suspense>
+          </ErrorBoundary>
         ) : null}
         {detailSession && !fullDetailSession ? (
           <SessionDetailSkeleton
@@ -195,25 +235,31 @@ export function SessionsDialogLayer({
           />
         ) : null}
         {fullDetailSession ? (
-          <Suspense
+          <ErrorBoundary
             fallback={
-              <SessionDetailSkeleton
-                summary={fullDetailSession}
-                onClose={onCloseDetail}
-                isError={false}
-                onRetry={() => undefined}
-              />
+              <DialogDetailErrorFallback title={fullDetailSession.name} onClose={onCloseDetail} />
             }
           >
-            <SessionDetail
-              session={fullDetailSession}
-              onClose={onCloseDetail}
-              onUpdate={onUpdate}
-              onEdit={onEdit}
-              canDelete={canDelete}
-              onRestore={onRestore}
-            />
-          </Suspense>
+            <Suspense
+              fallback={
+                <SessionDetailSkeleton
+                  summary={fullDetailSession}
+                  onClose={onCloseDetail}
+                  isError={false}
+                  onRetry={() => undefined}
+                />
+              }
+            >
+              <SessionDetail
+                session={fullDetailSession}
+                onClose={onCloseDetail}
+                onUpdate={onUpdate}
+                onEdit={onEdit}
+                canDelete={canDelete}
+                onRestore={onRestore}
+              />
+            </Suspense>
+          </ErrorBoundary>
         ) : null}
       </AnimatePresence>
 

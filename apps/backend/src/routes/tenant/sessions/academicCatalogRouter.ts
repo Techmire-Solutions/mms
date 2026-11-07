@@ -8,6 +8,7 @@ import {
 } from "@mms/shared";
 import { handleContractError } from "../../../lib/contractError.js";
 import { standardRequestValidationErrorHandler } from "../../../lib/contractRegistration.js";
+import { enforceSessionResponses } from "../../../lib/sessionContractResponses.js";
 import type { ContractRouteArgs } from "../../../lib/contractRouterTypes.js";
 import { HttpDomainError } from "../../../lib/httpErrors.js";
 import { canDeleteCollection, canReadCollection } from "../../../services/rbacService.js";
@@ -46,83 +47,90 @@ function domainError(
 
 /** `/api/sessions/catalogs/:catalog` — session categories, programs, subjects (Sessions → Setup). */
 export const academicCatalogRouter: FastifyPluginAsync = async (fastify) => {
-  const router = s.router(academicCatalogContract, {
-    list: async ({ params, query, request }: ContractRouteArgs<Contract["list"]>) => {
-      const user = request.user as User;
-      if (!canReadCollection(user, COLLECTION)) return forbidden;
-      const includeDeleted = isQueryFlagTrue(query?.includeDeleted);
-      if (includeDeleted && !canDeleteCollection(user, COLLECTION)) return forbidden;
-      try {
-        return {
-          status: 200 as const,
-          body: {
-            items: await academicCatalogUseCases.list(
-              tenantOf(request),
-              params.catalog,
-              includeDeleted,
-            ),
-          },
-        };
-      } catch (error) {
-        return domainError(request, error, "Failed to load catalog");
-      }
-    },
-    save: async ({ params, body, request }: ContractRouteArgs<Contract["save"]>) => {
-      const user = request.user as User;
-      if (!canWriteSetup(user)) return forbidden;
-      try {
-        const item = await academicCatalogUseCases.save(
-          tenantOf(request),
-          params.catalog,
-          params.id,
-          body,
-          user.id,
-        );
-        return { status: 200 as const, body: { item } };
-      } catch (error) {
-        return domainError(request, error, "Failed to save catalog entry");
-      }
-    },
-    remove: async ({ params, request }: ContractRouteArgs<Contract["remove"]>) => {
-      const user = request.user as User;
-      if (!canWriteSetup(user)) return forbidden;
-      try {
-        const removed = await academicCatalogUseCases.remove(
-          tenantOf(request),
-          params.catalog,
-          params.id,
-          user.id,
-        );
-        if (!removed)
-          return { status: 404 as const, body: { type: "not_found", message: "Entry not found" } };
-        return { status: 200 as const, body: { success: true as const } };
-      } catch (error) {
-        return domainError(request, error, "Failed to delete catalog entry");
-      }
-    },
-    restore: async ({ params, request }: ContractRouteArgs<Contract["restore"]>) => {
-      const user = request.user as User;
-      if (!canWriteSetup(user)) return forbidden;
-      try {
-        const item = await academicCatalogUseCases.restore(
-          tenantOf(request),
-          params.catalog,
-          params.id,
-          user.id,
-        );
-        if (!item)
+  const router = s.router(
+    academicCatalogContract,
+    enforceSessionResponses(academicCatalogContract, {
+      list: async ({ params, query, request }: ContractRouteArgs<Contract["list"]>) => {
+        const user = request.user as User;
+        if (!canReadCollection(user, COLLECTION)) return forbidden;
+        const includeDeleted = isQueryFlagTrue(query?.includeDeleted);
+        if (includeDeleted && !canDeleteCollection(user, COLLECTION)) return forbidden;
+        try {
           return {
-            status: 404 as const,
-            body: { type: "not_found", message: "Entry not found in trash" },
+            status: 200 as const,
+            body: {
+              items: await academicCatalogUseCases.list(
+                tenantOf(request),
+                params.catalog,
+                includeDeleted,
+              ),
+            },
           };
-        return { status: 200 as const, body: { item } };
-      } catch (error) {
-        return domainError(request, error, "Failed to restore catalog entry");
-      }
-    },
-  } as unknown as RouterImplementation<Contract>);
+        } catch (error) {
+          return domainError(request, error, "Failed to load catalog");
+        }
+      },
+      save: async ({ params, body, request }: ContractRouteArgs<Contract["save"]>) => {
+        const user = request.user as User;
+        if (!canWriteSetup(user)) return forbidden;
+        try {
+          const item = await academicCatalogUseCases.save(
+            tenantOf(request),
+            params.catalog,
+            params.id,
+            body,
+            user.id,
+          );
+          return { status: 200 as const, body: { item } };
+        } catch (error) {
+          return domainError(request, error, "Failed to save catalog entry");
+        }
+      },
+      remove: async ({ params, request }: ContractRouteArgs<Contract["remove"]>) => {
+        const user = request.user as User;
+        if (!canWriteSetup(user)) return forbidden;
+        try {
+          const removed = await academicCatalogUseCases.remove(
+            tenantOf(request),
+            params.catalog,
+            params.id,
+            user.id,
+          );
+          if (!removed)
+            return {
+              status: 404 as const,
+              body: { type: "not_found", message: "Entry not found" },
+            };
+          return { status: 200 as const, body: { success: true as const } };
+        } catch (error) {
+          return domainError(request, error, "Failed to delete catalog entry");
+        }
+      },
+      restore: async ({ params, request }: ContractRouteArgs<Contract["restore"]>) => {
+        const user = request.user as User;
+        if (!canWriteSetup(user)) return forbidden;
+        try {
+          const item = await academicCatalogUseCases.restore(
+            tenantOf(request),
+            params.catalog,
+            params.id,
+            user.id,
+          );
+          if (!item)
+            return {
+              status: 404 as const,
+              body: { type: "not_found", message: "Entry not found in trash" },
+            };
+          return { status: 200 as const, body: { item } };
+        } catch (error) {
+          return domainError(request, error, "Failed to restore catalog entry");
+        }
+      },
+    } as unknown as RouterImplementation<Contract>),
+  );
 
   await fastify.register(s.plugin(router), {
     requestValidationErrorHandler: standardRequestValidationErrorHandler,
+    responseValidation: true,
   });
 };

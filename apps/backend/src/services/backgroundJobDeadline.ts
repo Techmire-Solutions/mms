@@ -29,6 +29,8 @@ export function resetBackgroundJobShutdownForTests(): void {
 export interface JobDeadline {
   readonly signal: AbortSignal;
   readonly timeoutMs: number;
+  /** Time to let the runner observe the abort/finalize before the worker closes. */
+  readonly settleMs: number;
   /** Message to persist when the deadline/shutdown fired, or null for a real failure. */
   reasonMessage(): string | null;
   dispose(): void;
@@ -54,12 +56,16 @@ export function createJobDeadline(
   }, timeoutMs);
   timer.unref?.();
 
+  // A sessions rollover finalizer needs a little longer than sandboxed processors to write the
+  // run status/audit row after the abort.
+  const settleMs = moduleId.trim().toLowerCase() === "sessions" ? 10_000 : 5_000;
   const signals = [timeoutController.signal, shutdownController.signal];
   if (externalSignal) signals.push(externalSignal);
 
   return {
     signal: AbortSignal.any(signals),
     timeoutMs,
+    settleMs,
     reasonMessage: () => {
       if (timedOut) return new JobDeadlineExceededError(timeoutMs).message;
       if (shutdownController.signal.aborted) return "Worker is shutting down";
@@ -100,7 +106,7 @@ export async function runWithJobDeadline<T>(
     }
     return result;
   } catch (error) {
-    if (deadline.signal.aborted) await settleInFlight(workPromise, 5_000);
+    if (deadline.signal.aborted) await settleInFlight(workPromise, deadline.settleMs);
     throw error;
   } finally {
     if (onAbort) deadline.signal.removeEventListener("abort", onAbort);

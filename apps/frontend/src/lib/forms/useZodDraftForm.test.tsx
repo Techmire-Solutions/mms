@@ -9,6 +9,7 @@ import {
 } from "./useZodDraftForm";
 import type { ValidationError } from "./validationErrors";
 import { notify } from "@/lib/notify";
+import { ApiError } from "@/lib/apiError";
 
 vi.mock("@/lib/notify", () => ({
   notify: {
@@ -159,6 +160,30 @@ describe("useZodDraftForm", () => {
     });
     expect(re.result.errors).toEqual({});
     expect(notify.error).toHaveBeenCalledWith("msg:sessions.toast.saveFailed");
+  });
+
+  it("maps structured API validation errors into the form instead of a generic toast", async () => {
+    mount = mountHook();
+    act(() => mount!.result.updateDraft({ name: "Ali" }));
+    const re = await refresh(mount);
+    const onSave = vi.fn().mockRejectedValue(
+      new ApiError(400, "Validation failed", "validation_error", undefined, {
+        fieldErrors: { name: ["Session name is invalid"] },
+      }),
+    );
+
+    await act(async () => {
+      expect(await re.result.save(onSave)).toBe(false);
+    });
+    const fin = await refresh(mount);
+
+    expect(fin.result.errors.name).toBe("Session name is invalid");
+    expect(fin.result.serverError).toBe("Validation failed");
+    expect(fin.result.validationErrors).toEqual(
+      expect.arrayContaining([expect.objectContaining({ fieldId: "name" })]),
+    );
+    // API errors are rendered inline; no duplicate generic toast.
+    expect(notify.error).not.toHaveBeenCalled();
   });
 
   it("resetDraft replaces the draft and clears dirty state", async () => {

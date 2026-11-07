@@ -147,6 +147,7 @@ function createSessionCompletionUseCases() {
           tenant,
           rows.map((row) => ({ enrollmentId: row.enrollmentId, status: row.status })),
           sessionId,
+          { reason: body.reason ?? null, acknowledged: body.acknowledge ?? [] },
         );
         await repo.markCompletionEvaluated(tenant, sessionId);
         await invalidateMultiTierCache({ tenantId: tenant, domain: "sessions" });
@@ -172,7 +173,10 @@ function createSessionCompletionUseCases() {
           acknowledge: body.acknowledge ?? [],
           reason: body.reason,
         });
-        const issued = await repo.markCertificatesIssued(tenant, session.id, body.enrollmentIds);
+        const issued = await repo.markCertificatesIssued(tenant, session.id, body.enrollmentIds, {
+          reason: body.reason ?? null,
+          acknowledged: body.acknowledge ?? [],
+        });
         if (issued.length > 0) {
           await invalidateMultiTierCache({ tenantId: tenant, domain: "sessions" });
           await broadcastCollection("enrollments");

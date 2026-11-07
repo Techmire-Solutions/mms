@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useRef, useState } from "react";
 import {
   addIsoDays,
   defaultPromotionClassMap,
@@ -53,6 +53,11 @@ export function useSessionRolloverForm(session: Session, initialMode: RolloverMo
   };
   const datesValid = Boolean(dates.startDate && dates.endDate && dates.endDate >= dates.startDate);
   const valid = name.trim().length > 0 && datesValid;
+  // Dirty tracking covers everything the server sees, not only the target name.
+  const initialBodyRef = useRef<string | null>(null);
+  const bodySignature = JSON.stringify(body);
+  if (initialBodyRef.current === null) initialBodyRef.current = bodySignature;
+  const isDirty = bodySignature !== initialBodyRef.current;
 
   return {
     mode,
@@ -61,7 +66,10 @@ export function useSessionRolloverForm(session: Session, initialMode: RolloverMo
       setPreview(null);
     },
     name,
-    setName,
+    setName: (nextName: string) => {
+      setName(nextName);
+      setPreview(null);
+    },
     dates,
     setStartDate: (startDate: string) => {
       setDates((current) => ({ ...current, startDate }));
@@ -74,8 +82,10 @@ export function useSessionRolloverForm(session: Session, initialMode: RolloverMo
     },
     datesValid,
     copy,
-    toggleCopy: (key: RolloverCopyKey, checked: boolean) =>
-      setCopy((current) => ({ ...current, [key]: checked })),
+    toggleCopy: (key: RolloverCopyKey, checked: boolean) => {
+      setCopy((current) => ({ ...current, [key]: checked }));
+      setPreview(null);
+    },
     classMap,
     setNextClass: (sourceClassId: string, nextClassId: string | null) => {
       setClassMap((current) =>
@@ -95,8 +105,9 @@ export function useSessionRolloverForm(session: Session, initialMode: RolloverMo
     preview,
     setPreview,
     body,
+    bodySignature,
     valid,
-    isDirty: name.trim().length > 0,
+    isDirty,
   };
 }
 
