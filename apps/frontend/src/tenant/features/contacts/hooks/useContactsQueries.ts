@@ -55,7 +55,7 @@ export {
   useContactColumnPrefsMutation,
   useContactsSavedReportsSource,
 } from "@/tenant/features/contacts/hooks/useContactPrefsQueries";
-import { apiContractError, assertContractOk } from "@/lib/apiContractError";
+import { apiContractError } from "@/lib/apiContractError";
 
 // --- Phase 7: contract-driven tsrClient hooks & query factories -------------
 
