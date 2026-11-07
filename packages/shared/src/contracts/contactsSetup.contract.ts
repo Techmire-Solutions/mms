@@ -68,14 +68,22 @@ export const contactsSetupRoutes = {
   getColumnPreferences: {
     method: "GET",
     path: "/api/contacts/column-preferences",
-    responses: { 200: moduleColumnPreferencesResponseSchema, 403: errorResponse, 500: errorResponse },
+    responses: {
+      200: moduleColumnPreferencesResponseSchema,
+      403: errorResponse,
+      500: errorResponse,
+    },
     summary: "Get contact column preferences",
   },
   updateColumnPreferences: {
     method: "PUT",
     path: "/api/contacts/column-preferences",
     body: moduleColumnPreferencesBodySchema,
-    responses: { 200: moduleColumnPreferencesResponseSchema, 403: errorResponse, 500: errorResponse },
+    responses: {
+      200: moduleColumnPreferencesResponseSchema,
+      403: errorResponse,
+      500: errorResponse,
+    },
     summary: "Update contact column preferences",
   },
   getLookups: {
@@ -117,7 +125,11 @@ export const contactsSetupRoutes = {
     method: "POST",
     path: "/api/contacts/field-usage",
     body: contactFieldUsageBatchBodySchema,
-    responses: { 200: z.object({ counts: z.record(z.string(), z.number()) }), 403: errorResponse, 500: errorResponse },
+    responses: {
+      200: z.object({ counts: z.record(z.string(), z.number()) }),
+      403: errorResponse,
+      500: errorResponse,
+    },
     summary: "Get multiple fields usage counts",
   },
 } as const;

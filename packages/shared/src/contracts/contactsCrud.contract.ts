@@ -154,7 +154,11 @@ export const contactsCrudRoutes = {
     method: "POST",
     path: "/api/contacts/resolve",
     body: z.object({ ids: z.array(z.string()) }),
-    responses: { 200: z.object({ contacts: z.array(contactResponseRecordSchema) }), 403: errorResponse, 500: errorResponse },
+    responses: {
+      200: z.object({ contacts: z.array(contactResponseRecordSchema) }),
+      403: errorResponse,
+      500: errorResponse,
+    },
     summary: "Resolve contacts by IDs",
   },
   merge: {
@@ -226,7 +230,12 @@ export const contactsCrudRoutes = {
      * envelope, because custom fields and a partially filled draft are valid.
      */
     body: z.object({ contact: z.record(z.string(), z.unknown()) }).strict(),
-    responses: { 200: z.object({ matchCount: z.number() }), 400: errorResponse, 403: errorResponse, 500: errorResponse },
+    responses: {
+      200: z.object({ matchCount: z.number() }),
+      400: errorResponse,
+      403: errorResponse,
+      500: errorResponse,
+    },
     summary: "Check for duplicate contacts",
   },
 } as const;

@@ -81,7 +81,11 @@ export const contactsReportsRoutes = {
     method: "GET",
     path: "/api/contacts/duplicates",
     query: baseListQuerySchema,
-    responses: { 200: contactDuplicatePairsPageResponseSchema, 403: errorResponse, 500: errorResponse },
+    responses: {
+      200: contactDuplicatePairsPageResponseSchema,
+      403: errorResponse,
+      500: errorResponse,
+    },
     summary: "Get contact duplicates",
   },
   scanDuplicates: {
@@ -90,10 +94,12 @@ export const contactsReportsRoutes = {
     body: contactsDuplicateScanBodySchema,
     responses: {
       202: z.object({
-        job: z.object({
-          id: z.string(),
-          status: z.string().optional(),
-        }).passthrough(),
+        job: z
+          .object({
+            id: z.string(),
+            status: z.string().optional(),
+          })
+          .passthrough(),
       }),
       400: errorResponse,
       403: errorResponse,
@@ -127,7 +133,11 @@ export const contactsReportsRoutes = {
     path: "/api/contacts/saved-reports/:id",
     pathParams: z.object({ id: z.string() }),
     body: z.unknown(),
-    responses: { 200: z.object({ success: z.literal(true) }), 404: errorResponse, 500: errorResponse },
+    responses: {
+      200: z.object({ success: z.literal(true) }),
+      404: errorResponse,
+      500: errorResponse,
+    },
     summary: "Delete contact saved report",
   },
   runSavedReport: {
