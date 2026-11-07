@@ -1,10 +1,10 @@
 import { createContext } from "react";
-import type { ModuleColumnKind } from "@mms/shared";
+import type { ColumnRegistryEntry, ModuleColumnKind } from "@mms/shared";
 import type { ContactConfigExtras } from "./useContactConfigTypes";
 import { getDefaultContactConfigContextValue } from "./defaultContactConfigValue";
 
-/** Column descriptor for Contacts tables and grid views. */
-export interface ContactsColumnConfig {
+/** Column descriptor for Contacts tables and grid views (aligned with shared ColumnRegistryEntry). */
+export interface ContactsColumnConfig extends Partial<Omit<ColumnRegistryEntry, "key">> {
   id: string;
   label: string;
   sortField?: string;

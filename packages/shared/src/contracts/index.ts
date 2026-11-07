@@ -10,6 +10,10 @@ import { financeContract } from "./finance.contract.js";
 import { attendanceContract } from "./attendance.contract.js";
 import {
   contactsContract,
+  contactsCrudContract,
+  contactsReportsContract,
+  contactsSetupContract,
+  contactsGoogleSyncContract,
   contactsPickerContract,
   contactsPickerRoutes,
 } from "./contacts.contract.js";
@@ -133,6 +137,10 @@ export {
   financeContract,
   attendanceContract,
   contactsContract,
+  contactsCrudContract,
+  contactsReportsContract,
+  contactsSetupContract,
+  contactsGoogleSyncContract,
   contactsPickerContract,
   contactsPickerRoutes,
   facultyContract,

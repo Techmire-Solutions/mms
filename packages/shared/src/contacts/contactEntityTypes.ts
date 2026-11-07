@@ -119,6 +119,23 @@ export interface ContactRelationship {
   notes?: string;
 }
 
+/** Canonical system relationship pair roles. */
+export const DEFAULT_RELATIONSHIP_TYPES = [
+  "Parent",
+  "Child",
+  "Husband",
+  "Wife",
+  "Guardian",
+  "Dependent",
+] as const;
+
+export type DefaultRelationshipType = (typeof DEFAULT_RELATIONSHIP_TYPES)[number];
+
+/** Standard genders supported by contact forms and directory filters. */
+export const STANDARD_GENDERS = ["Male", "Female"] as const;
+
+export type StandardGender = (typeof STANDARD_GENDERS)[number];
+
 /** Definition for a 2-sided reciprocal relationship pair. */
 export interface RelationshipPair {
   id?: string;
@@ -163,12 +180,12 @@ export interface ContactAttachment {
 }
 
 /** Primary domain model representing a Contact entity across the monorepo. */
-export interface Contact extends SerializedEntityAuditFields {
+export interface Contact<TCustom = Record<string, unknown>> extends SerializedEntityAuditFields {
   id: string | number;
   name: string;
   firstName: string;
   lastName?: string;
-  gender?: string;
+  gender?: StandardGender | string;
   dob?: string;
   cnic?: string;
   isSyed?: boolean;
@@ -203,6 +220,7 @@ export interface Contact extends SerializedEntityAuditFields {
   activities?: ContactActivity[];
   attachments?: ContactAttachment[];
   aiSummary?: string;
+  customFields?: TCustom;
   [key: string]: unknown;
 }
 

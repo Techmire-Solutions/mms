@@ -1,5 +1,4 @@
 import { z } from "zod";
-import { contactRecordSchema } from "../contacts/contactsModuleManifest.js";
 import { contactsBulkTagBodySchema } from "../contacts/contactEntityTypes.js";
 import {
   contactIdentityMatchBodySchema,
@@ -14,10 +13,12 @@ import {
   contactListPageResponseSchema,
   contactBulkResultResponseSchema,
   contactWrappedResponseSchema,
+  contactResponseRecordSchema,
 } from "./contacts.contract.schemas.js";
 
 const responseWrapper = contactWrappedResponseSchema;
 const bulkResult = contactBulkResultResponseSchema;
+const errorResponse = z.object({ type: z.string(), message: z.string() }).passthrough();
 
 const contactBulkRestoreResponseSchema = z.object({
   success: z.literal(true),
@@ -41,8 +42,8 @@ export const contactsCrudRoutes = {
     query: contactsListQuerySchema,
     responses: {
       200: contactListPageResponseSchema,
-      403: z.unknown(),
-      500: z.unknown(),
+      403: errorResponse,
+      500: errorResponse,
     },
     summary: "List contacts",
   },
@@ -59,10 +60,10 @@ export const contactsCrudRoutes = {
     responses: {
       200: responseWrapper,
       201: responseWrapper,
-      400: z.unknown(),
-      403: z.unknown(),
+      400: errorResponse,
+      403: errorResponse,
       409: z.object({ type: z.literal("conflict"), message: z.string() }),
-      500: z.unknown(),
+      500: errorResponse,
     },
     summary: "Create a new contact",
   },
@@ -72,10 +73,10 @@ export const contactsCrudRoutes = {
     pathParams: z.object({ id: z.string() }),
     query: includeDeletedQuerySchema.optional(),
     responses: {
-      200: z.object({ contact: contactRecordSchema }),
-      403: z.unknown(),
-      404: z.unknown(),
-      500: z.unknown(),
+      200: z.object({ contact: contactResponseRecordSchema }),
+      403: errorResponse,
+      404: errorResponse,
+      500: errorResponse,
     },
     summary: "Get a contact by ID",
   },
@@ -92,11 +93,11 @@ export const contactsCrudRoutes = {
     body: contactWireWriteSchema,
     responses: {
       200: responseWrapper,
-      400: z.unknown(),
-      403: z.unknown(),
-      404: z.unknown(),
+      400: errorResponse,
+      403: errorResponse,
+      404: errorResponse,
       409: z.object({ type: z.literal("conflict"), message: z.string() }),
-      500: z.unknown(),
+      500: errorResponse,
     },
     summary: "Update a contact",
   },
@@ -108,11 +109,11 @@ export const contactsCrudRoutes = {
     body: softDeleteBodySchema.optional(),
     responses: {
       200: z.object({ success: z.literal(true) }),
-      400: z.unknown(),
-      403: z.unknown(),
-      404: z.unknown(),
-      409: z.unknown(),
-      500: z.unknown(),
+      400: errorResponse,
+      403: errorResponse,
+      404: errorResponse,
+      409: errorResponse,
+      500: errorResponse,
     },
     summary: "Delete a contact",
   },
@@ -122,11 +123,11 @@ export const contactsCrudRoutes = {
     body: z.unknown(),
     responses: {
       200: responseWrapper,
-      400: z.unknown(),
-      403: z.unknown(),
-      404: z.unknown(),
-      409: z.unknown(),
-      500: z.unknown(),
+      400: errorResponse,
+      403: errorResponse,
+      404: errorResponse,
+      409: errorResponse,
+      500: errorResponse,
     },
     summary: "Restore a contact",
   },
@@ -134,7 +135,7 @@ export const contactsCrudRoutes = {
     method: "POST",
     path: "/api/contacts/bulk-delete",
     body: z.object({ ids: z.array(z.string()), deletionReason: z.string().optional() }),
-    responses: { 200: bulkResult, 400: z.unknown(), 409: z.unknown(), 500: z.unknown() },
+    responses: { 200: bulkResult, 400: errorResponse, 409: errorResponse, 500: errorResponse },
     summary: "Bulk delete contacts",
   },
   bulkRestore: {
@@ -143,9 +144,9 @@ export const contactsCrudRoutes = {
     body: z.object({ ids: z.array(z.string()) }),
     responses: {
       200: contactBulkRestoreResponseSchema,
-      400: z.unknown(),
-      409: z.unknown(),
-      500: z.unknown(),
+      400: errorResponse,
+      409: errorResponse,
+      500: errorResponse,
     },
     summary: "Bulk restore contacts",
   },
@@ -153,7 +154,7 @@ export const contactsCrudRoutes = {
     method: "POST",
     path: "/api/contacts/resolve",
     body: z.object({ ids: z.array(z.string()) }),
-    responses: { 200: z.object({ contacts: z.array(contactRecordSchema) }), 500: z.unknown() },
+    responses: { 200: z.object({ contacts: z.array(contactResponseRecordSchema) }), 403: errorResponse, 500: errorResponse },
     summary: "Resolve contacts by IDs",
   },
   merge: {
@@ -179,10 +180,10 @@ export const contactsCrudRoutes = {
     headers: z.object({ "x-expected-updated-at": z.string().optional() }),
     responses: {
       200: responseWrapper,
-      400: z.unknown(),
-      403: z.unknown(),
+      400: errorResponse,
+      403: errorResponse,
       409: z.object({ type: z.literal("conflict"), message: z.string() }),
-      500: z.unknown(),
+      500: errorResponse,
     },
     summary: "Merge contacts",
   },
@@ -190,7 +191,7 @@ export const contactsCrudRoutes = {
     method: "POST",
     path: "/api/contacts/identity-match",
     body: contactIdentityMatchBodySchema,
-    responses: { 200: contactIdentityMatchResultSchema, 400: z.unknown(), 500: z.unknown() },
+    responses: { 200: contactIdentityMatchResultSchema, 400: errorResponse, 500: errorResponse },
     summary: "Match contact identity",
   },
   bulkTag: {
@@ -199,7 +200,9 @@ export const contactsCrudRoutes = {
     body: contactsBulkTagBodySchema,
     responses: {
       200: z.object({ success: z.literal(true), updatedCount: z.number() }),
-      500: z.unknown(),
+      400: errorResponse,
+      403: errorResponse,
+      500: errorResponse,
     },
     summary: "Bulk tag contacts",
   },
@@ -209,8 +212,8 @@ export const contactsCrudRoutes = {
     body: z.object({ widgets: z.array(z.unknown()) }),
     responses: {
       200: z.object({ results: z.record(z.string(), widgetAggregateResultSchema) }),
-      403: z.unknown(),
-      500: z.unknown(),
+      403: errorResponse,
+      500: errorResponse,
     },
     summary: "Get widget aggregates",
   },
@@ -223,7 +226,7 @@ export const contactsCrudRoutes = {
      * envelope, because custom fields and a partially filled draft are valid.
      */
     body: z.object({ contact: z.record(z.string(), z.unknown()) }).strict(),
-    responses: { 200: z.object({ matchCount: z.number() }), 500: z.unknown() },
+    responses: { 200: z.object({ matchCount: z.number() }), 400: errorResponse, 403: errorResponse, 500: errorResponse },
     summary: "Check for duplicate contacts",
   },
 } as const;
