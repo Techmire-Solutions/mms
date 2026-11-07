@@ -21,6 +21,7 @@ export const ALL_PERMISSIONS = [
   "sessions.read",
   "sessions.write",
   "sessions.delete",
+  "sessions.manage",
   "sessions.override_lock",
   "attendance.read",
   "attendance.write",

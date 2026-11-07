@@ -41,6 +41,7 @@ export const sessionCompletionRouter: FastifyPluginAsync = async (fastify) => {
       evaluate: async ({ params, body, request }: ContractRouteArgs<Contract["evaluate"]>) => {
         const user = request.user as User;
         if (!canWriteCollection(user, COLLECTION)) return forbidden;
+        if (!userHasPermission(user, SESSIONS_MODULE_MANIFEST.permissions.manage)) return forbidden;
         try {
           return {
             status: 200 as const,
@@ -61,6 +62,7 @@ export const sessionCompletionRouter: FastifyPluginAsync = async (fastify) => {
       }: ContractRouteArgs<Contract["certificates"]>) => {
         const user = request.user as User;
         if (!canWriteCollection(user, COLLECTION)) return forbidden;
+        if (!userHasPermission(user, SESSIONS_MODULE_MANIFEST.permissions.manage)) return forbidden;
         try {
           return {
             status: 200 as const,

@@ -9129,6 +9129,7 @@ export const APP_TRANSLATIONS_FA: Partial<Record<AppTranslationKey, string>> = {
   "users.pagination.range": "{from}–{to} از {total}",
   "users.permission.create": "ایجاد",
   "users.permission.delete": "حذف",
+  "users.permission.manage": "مدیریت",
   "users.permission.read": "خواندن / مشاهده",
   "users.permission.update": "ویرایش / به‌روزرسانی",
   "users.permissions": "مجوزها",

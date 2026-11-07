@@ -9190,6 +9190,7 @@ export const APP_TRANSLATIONS_EN = {
   "users.pagination.range": "{from}–{to} of {total}",
   "users.permission.create": "Create",
   "users.permission.delete": "Delete",
+  "users.permission.manage": "Manage",
   "users.permission.read": "Read",
   "users.permission.update": "Update",
   "users.permissions": "Permissions",

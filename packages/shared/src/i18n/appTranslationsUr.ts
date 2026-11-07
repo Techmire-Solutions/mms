@@ -9086,6 +9086,7 @@ export const APP_TRANSLATIONS_UR: Record<AppTranslationKey, string> = {
   "users.pagination.range": "{total} میں سے {from}–{to}",
   "users.permission.create": "بنائیں",
   "users.permission.delete": "حذف",
+  "users.permission.manage": "انتظام",
   "users.permission.read": "پڑھیں",
   "users.permission.update": "اپ ڈیٹ",
   "users.permissions": "اجازتیں",

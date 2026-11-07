@@ -29,7 +29,10 @@ export const sessionRolloverRouter: FastifyPluginAsync = async (fastify) => {
     sessionRolloverContract,
     enforceSessionResponses(sessionRolloverContract, {
       preview: async ({ params, body, request }: ContractRouteArgs<Contract["preview"]>) => {
-        if (!canWriteCollection(request.user as User, COLLECTION)) return forbidden;
+        const user = request.user as User;
+        if (!canWriteCollection(user, COLLECTION)) return forbidden;
+        // Rollover exposes rosters and plans structural moves: Academic Admin authority.
+        if (!userHasPermission(user, MANIFEST.permissions.manage)) return forbidden;
         try {
           return {
             status: 200 as const,
@@ -42,6 +45,7 @@ export const sessionRolloverRouter: FastifyPluginAsync = async (fastify) => {
       start: async ({ params, body, request }: ContractRouteArgs<Contract["start"]>) => {
         const user = request.user as User;
         if (!canWriteCollection(user, COLLECTION)) return forbidden;
+        if (!userHasPermission(user, MANIFEST.permissions.manage)) return forbidden;
         try {
           const run = await rollover.start(tenantOf(request), params.id, body, String(user.id), {
             canOverride: userHasPermission(user, OVERRIDE_LOCK_PERM),

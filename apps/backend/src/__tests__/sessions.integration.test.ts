@@ -1,6 +1,6 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { buildApp } from "../app.js";
-import { adminToken, viewerToken } from "./helpers/tokens.js";
+import { adminToken, signTenantToken, teacherToken, viewerToken } from "./helpers/tokens.js";
 
 vi.mock("../db/database.js", () => ({
   initDb: vi.fn().mockResolvedValue(undefined),
@@ -427,6 +427,62 @@ describe("sessions REST routes integration", () => {
       type: "session_transition_blocked",
       violations: ["illegal_transition"],
     });
+    await app.close();
+  });
+
+  it("denies destructive lifecycle actions to instructors", async () => {
+    const app = await buildApp();
+    for (const [method, url, payload] of [
+      ["POST", "/api/sessions/s1/cancel", { reason: "Test cancellation" }],
+      ["POST", "/api/sessions/s1/postpone", { startDate: "2026-02-01", reason: "Test postpone" }],
+      [
+        "POST",
+        "/api/sessions/bulk-status",
+        { ids: ["s1"], status: "cancelled", reason: "Bulk test" },
+      ],
+    ] as const) {
+      const res = await app.inject({
+        method,
+        url,
+        headers: {
+          host: "demo.localhost",
+          authorization: `Bearer ${teacherToken(app)}`,
+          "content-type": "application/json",
+        },
+        payload,
+      });
+      expect(res.statusCode, `${method} ${url}`).toBe(403);
+    }
+    await app.close();
+  });
+
+  it("denies a registrar (write but not manage) the lifecycle actions", async () => {
+    const app = await buildApp();
+    const res = await app.inject({
+      method: "POST",
+      url: "/api/sessions/s1/cancel",
+      headers: {
+        host: "demo.localhost",
+        authorization: `Bearer ${signTenantToken(app, { role: "registrar" as never })}`,
+        "content-type": "application/json",
+      },
+      payload: { reason: "Registrar cancellation" },
+    });
+    expect(res.statusCode).toBe(403);
+    await app.close();
+  });
+
+  it("still allows instructors to read the session list", async () => {
+    const app = await buildApp();
+    const res = await app.inject({
+      method: "GET",
+      url: "/api/sessions",
+      headers: {
+        host: "demo.localhost",
+        authorization: `Bearer ${teacherToken(app)}`,
+      },
+    });
+    expect(res.statusCode).toBe(200);
     await app.close();
   });
 });

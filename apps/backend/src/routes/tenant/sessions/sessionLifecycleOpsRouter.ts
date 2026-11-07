@@ -7,6 +7,7 @@ import { enforceSessionResponses } from "../../../lib/sessionContractResponses.j
 import { parseOccHeaders } from "../../../lib/occHeaders.js";
 import type { ContractRouteArgs } from "../../../lib/contractRouterTypes.js";
 import { canReadCollection, canWriteCollection } from "../../../services/rbacService.js";
+import { userHasPermission } from "../../../lib/userPermissionContext.js";
 import { sessionLifecycleOpsUseCases as ops } from "../../../sessions/use-cases/sessionLifecycleOpsUseCases.js";
 
 type Contract = typeof sessionLifecycleOpsContract;
@@ -34,6 +35,7 @@ export const sessionLifecycleOpsRouter: FastifyPluginAsync = async (fastify) => 
       cancel: async ({ params, body, request }: ContractRouteArgs<Contract["cancel"]>) => {
         const user = request.user as User;
         if (!canWriteCollection(user, COLLECTION)) return forbidden;
+        if (!userHasPermission(user, SESSIONS_MODULE_MANIFEST.permissions.manage)) return forbidden;
         try {
           return {
             status: 200 as const,
@@ -52,6 +54,7 @@ export const sessionLifecycleOpsRouter: FastifyPluginAsync = async (fastify) => 
       postpone: async ({ params, body, request }: ContractRouteArgs<Contract["postpone"]>) => {
         const user = request.user as User;
         if (!canWriteCollection(user, COLLECTION)) return forbidden;
+        if (!userHasPermission(user, SESSIONS_MODULE_MANIFEST.permissions.manage)) return forbidden;
         try {
           return {
             status: 200 as const,

@@ -38,6 +38,7 @@ export const SESSIONS_MODULE_MANIFEST = {
     delete: "sessions.delete",
     setupView: "configuration.view",
     setupWrite: "settings.global.write",
+    manage: "sessions.manage",
     overrideLock: "sessions.override_lock",
     export: "sessions.read",
     reports: "sessions.read",

@@ -8983,6 +8983,7 @@ export const APP_TRANSLATIONS_AR: Record<AppTranslationKey, string> = {
   "users.pagination.range": "{from}–{to} من {total}",
   "users.permission.create": "إنشاء",
   "users.permission.delete": "حذف",
+  "users.permission.manage": "إدارة",
   "users.permission.read": "قراءة",
   "users.permission.update": "تحديث",
   "users.permissions": "الصلاحيات",

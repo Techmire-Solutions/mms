@@ -103,7 +103,7 @@ export function countGrantedActions(map?: PermissionMap | ReadonlyPermissionMap 
   );
 }
 
-/** Returns true if the map grants all 4 permissions across all specified modules. */
+/** Returns true if the map grants every permission action across all specified modules. */
 export function isFullPermissionMap(
   map?: PermissionMap | ReadonlyPermissionMap | null,
   moduleIds: readonly (string | RbacModuleId)[] = ALL_RBAC_MODULE_IDS,
@@ -113,7 +113,7 @@ export function isFullPermissionMap(
     const actions = map[mod];
     return (
       Array.isArray(actions) &&
-      actions.length >= 4 &&
+      actions.length >= PERMISSION_ACTIONS.length &&
       PERMISSION_ACTIONS.every((act) => actions.includes(act))
     );
   });

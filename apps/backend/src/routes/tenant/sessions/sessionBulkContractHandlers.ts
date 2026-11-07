@@ -1,5 +1,6 @@
 import { type sessionContract, SESSIONS_MODULE_MANIFEST, type User } from "@mms/shared";
 import { canDeleteCollection, canWriteCollection } from "../../../services/rbacService.js";
+import { userHasPermission } from "../../../lib/userPermissionContext.js";
 import { sessionsUseCases } from "../../../sessions/use-cases/sessionsUseCases.js";
 import { handleContractError } from "../../../lib/contractError.js";
 import type { ContractRouteArgs, ContractRouteResponse } from "../../../lib/contractRouterTypes.js";
@@ -48,6 +49,12 @@ export const sessionBulkContractHandlers = {
   > => {
     const user = request.user as User;
     if (!canWriteCollection(user, COLLECTION))
+      return {
+        status: 403 as const,
+        body: { type: "forbidden", message: "Insufficient permissions" },
+      };
+    // Lifecycle shifts (cancel/complete/archive) are Academic Admin authority, not ordinary edit.
+    if (!userHasPermission(user, SESSIONS_MODULE_MANIFEST.permissions.manage))
       return {
         status: 403 as const,
         body: { type: "forbidden", message: "Insufficient permissions" },

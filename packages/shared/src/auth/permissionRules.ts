@@ -30,6 +30,9 @@ export const PERMISSION_RULES: Readonly<Record<Permission, PermissionRule>> = Ob
   "sessions.delete": { module: "sessions", requiredActions: ["delete"] },
   // Overriding the lifecycle edit lock is full structural authority over a session,
   // so it tracks `delete` rather than ordinary `update` (mms-auth-security.md).
+  // Closing/rollover/finalising a session is structural academic authority, not ordinary edit
+  // rights: held by Academic Admins (admin/super_admin/principal) via the explicit `manage` action.
+  "sessions.manage": { module: "sessions", requiredActions: ["manage"] },
   "sessions.override_lock": { module: "sessions", requiredActions: ["delete"] },
 
   // Attendance
