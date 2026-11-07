@@ -12,7 +12,8 @@ import {
 } from "@mms/shared";
 import { apiJson } from "@/lib/apiClient";
 
-export const SESSION_ACTIVITY_QUERY_KEY = ["sessions", "activity"] as const;
+export { SESSION_ACTIVITY_QUERY_KEY } from "./sessionQueryKeys.js";
+import { SESSION_ACTIVITY_QUERY_KEY } from "./sessionQueryKeys.js";
 
 const base = (id: string) => `/api/sessions/${encodeURIComponent(id)}`;
 

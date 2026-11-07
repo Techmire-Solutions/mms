@@ -102,6 +102,7 @@ export function SessionLifecycleBar({ session }: { session: Session }): React.JS
       ) : null}
       {rolloverOpen ? (
         <SessionRolloverModal
+          key={session.id}
           session={session}
           open
           canPromote={canPromote}

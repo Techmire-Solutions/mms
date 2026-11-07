@@ -15,6 +15,7 @@ export function sessionsCommandMetricsQueryOptions() {
 }
 
 import {
+  SESSION_DETAIL_QUERY_KEY,
   SESSIONS_METRICS_QUERY_KEY,
   SESSIONS_QUERY_KEY,
   SESSIONS_REPORT_AGGREGATES_QUERY_KEY,
@@ -72,7 +73,6 @@ export function useSessionsPaginated(params: SessionsPaginatedParams) {
     },
     enabled: isAuthenticated && enabled,
     staleTime: 15_000,
-    placeholderData: (previousData: unknown) => previousData,
   });
 }
 
@@ -107,7 +107,7 @@ function useSessionDetailResolver(summary: Session | null): SessionDetailState {
   const id = summary ? String(summary.id) : "";
   const includeDeleted = summary?.deletedAt ? "true" : undefined;
   const query = tsrClient.sessions.get.useQuery({
-    queryKey: [...SESSIONS_QUERY_KEY, "detail", id, includeDeleted ?? "active"],
+    queryKey: [...SESSION_DETAIL_QUERY_KEY, id, includeDeleted ?? "active"],
     queryData: { params: { id }, query: includeDeleted ? { includeDeleted } : {} },
     enabled: isAuthenticated && Boolean(id),
     staleTime: 15_000,
@@ -222,7 +222,6 @@ export function sessionsListQueryOptions(query: Record<string, unknown> = {}) {
       assertContractOk(response, "Failed to fetch sessions");
       return response.body;
     },
-    placeholderData: (prev) => prev,
     staleTime: 15_000,
   });
 }

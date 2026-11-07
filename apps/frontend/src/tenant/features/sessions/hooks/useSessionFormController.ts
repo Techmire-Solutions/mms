@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo } from "react";
+import { useCallback, useEffect, useMemo, useRef } from "react";
 import { useTranslation } from "@/hooks/useTranslation";
 import { useGlobalSettings } from "@/tenant/hooks/useGlobalSettings";
 import { useFinanceCurrency } from "@/hooks/useCurrency";
@@ -110,11 +110,36 @@ export function useSessionFormController({
     },
     saveFailedMessage: "sessions.toast.saveFailed",
   });
-  const { draft: sessionDraft, updateDraft, resetDraft, isDirty, isSaving, errors, save } = form;
+  const {
+    draft: sessionDraft,
+    updateDraft,
+    resetDraft,
+    isDirty,
+    isSaving,
+    errors,
+    serverError,
+    save,
+  } = form;
 
+  // Reset only when the edited session identity changes, or when async defaults arrive while the
+  // form is pristine. A detail refetch/live push creates a new object with the same id and must not
+  // wipe a dirty draft.
+  const lastSessionIdRef = useRef(session?.id ?? null);
+  const lastDefaultsRef = useRef(`${defaultCategoryId}|${defaultCurrency}`);
   useEffect(() => {
-    resetDraft(buildDraft());
-  }, [buildDraft, resetDraft]);
+    const nextId = session?.id ?? null;
+    const nextDefaults = `${defaultCategoryId}|${defaultCurrency}`;
+    if (lastSessionIdRef.current !== nextId) {
+      lastSessionIdRef.current = nextId;
+      lastDefaultsRef.current = nextDefaults;
+      resetDraft(buildDraft());
+      return;
+    }
+    if (lastDefaultsRef.current !== nextDefaults) {
+      lastDefaultsRef.current = nextDefaults;
+      if (!isDirty && !isSaving) resetDraft(buildDraft());
+    }
+  }, [session?.id, defaultCategoryId, defaultCurrency, isDirty, isSaving, buildDraft, resetDraft]);
 
   const handleSave = useCallback(
     async (options?: { keepOpen?: boolean }): Promise<boolean> => {
@@ -139,6 +164,7 @@ export function useSessionFormController({
     defaultCurrency,
     saving: isSaving,
     errors,
+    serverError,
     sessionDraft,
     updateDraft,
     isDirty,

@@ -9,7 +9,8 @@ import {
 } from "@mms/shared";
 import { apiJson } from "@/lib/apiClient";
 
-export const SESSION_ROLLOVER_RUNS_QUERY_KEY = ["sessions", "rollover-runs"] as const;
+export { SESSION_ROLLOVER_RUNS_QUERY_KEY } from "./sessionQueryKeys.js";
+import { SESSION_ROLLOVER_RUNS_QUERY_KEY } from "./sessionQueryKeys.js";
 
 const base = (id: string) => `/api/sessions/${encodeURIComponent(id)}/rollover`;
 const json = (body: unknown): RequestInit => ({ method: "POST", body: JSON.stringify(body) });

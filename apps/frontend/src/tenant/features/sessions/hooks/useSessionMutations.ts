@@ -3,7 +3,8 @@ import { tsrClient } from "@/lib/api";
 import { assertContractOk } from "@/lib/apiContractError";
 import type { Session } from "@/lib/data/sessionsData";
 import type { SessionsBulkStatusBody } from "@mms/shared";
-import { invalidateSessionsQueries } from "@/tenant/features/sessions/hooks/invalidateSessionsQueries";
+import { SESSION_DETAIL_QUERY_KEY } from "@/lib/query/sessionQueryKeys";
+import { invalidateSessionDependents } from "@/tenant/features/sessions/hooks/invalidateSessionDependents";
 
 type ContractEnvelope<T> = { status: number; body: T };
 
@@ -22,17 +23,25 @@ async function unwrap<T>(request: Promise<unknown>, context: string): Promise<T>
 export function useSessionMutations() {
   const queryClient = useQueryClient();
 
-  const invalidate = () => {
-    invalidateSessionsQueries(queryClient);
+  const invalidate = (options: { enrollments?: boolean; calendar?: boolean } = {}) => {
+    invalidateSessionDependents(queryClient, options);
   };
 
-  const create = tsrClient.sessions.create.useMutation({ onSuccess: invalidate });
-  const update = tsrClient.sessions.update.useMutation({ onSuccess: invalidate });
-  const remove = tsrClient.sessions.delete.useMutation({ onSuccess: invalidate });
-  const restore = tsrClient.sessions.restore.useMutation({ onSuccess: invalidate });
-  const bulkDelete = tsrClient.sessions.bulkDelete.useMutation({ onSuccess: invalidate });
-  const bulkRestore = tsrClient.sessions.bulkRestore.useMutation({ onSuccess: invalidate });
-  const bulkStatus = tsrClient.sessions.bulkStatus.useMutation({ onSuccess: invalidate });
+  const create = tsrClient.sessions.create.useMutation({ onSuccess: () => invalidate() });
+  const update = tsrClient.sessions.update.useMutation({ onSuccess: () => invalidate() });
+  const remove = tsrClient.sessions.delete.useMutation({
+    onSuccess: () => invalidate({ calendar: true }),
+  });
+  const restore = tsrClient.sessions.restore.useMutation({
+    onSuccess: () => invalidate({ calendar: true }),
+  });
+  const bulkDelete = tsrClient.sessions.bulkDelete.useMutation({
+    onSuccess: () => invalidate({ calendar: true }),
+  });
+  const bulkRestore = tsrClient.sessions.bulkRestore.useMutation({
+    onSuccess: () => invalidate({ calendar: true }),
+  });
+  const bulkStatus = tsrClient.sessions.bulkStatus.useMutation({ onSuccess: () => invalidate() });
 
   return {
     createSession: {
@@ -64,6 +73,10 @@ export function useSessionMutations() {
           }),
           "Failed to update session",
         );
+        // Inline tab edits (classes/faculty/fees) must not wait for a detail refetch.
+        queryClient.setQueryData([...SESSION_DETAIL_QUERY_KEY, id, "active"], {
+          session: body.session,
+        });
         return body.session;
       },
     },

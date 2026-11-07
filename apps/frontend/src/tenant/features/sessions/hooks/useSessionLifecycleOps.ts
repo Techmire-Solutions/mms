@@ -11,8 +11,7 @@ import {
   sessionActivityQueryOptions,
   type SessionOperationToken,
 } from "@/lib/query/sessionLifecycleOpsQueries";
-import { invalidateEnrollmentsQueries } from "@/tenant/hooks/collections/enrollments";
-import { invalidateSessionsQueries } from "./invalidateSessionsQueries";
+import { invalidateSessionDependents } from "./invalidateSessionDependents";
 
 export function useSessionActivity(sessionId: string) {
   const { isAuthenticated } = useAuth();
@@ -27,8 +26,7 @@ export function useSessionLifecycleActions() {
   const { t } = useTranslation();
   const queryClient = useQueryClient();
   const onSettled = () => {
-    invalidateSessionsQueries(queryClient);
-    invalidateEnrollmentsQueries(queryClient);
+    invalidateSessionDependents(queryClient, { enrollments: true });
     void queryClient.invalidateQueries({ queryKey: SESSION_ACTIVITY_QUERY_KEY });
   };
   const cancelMutation = useMutation({ ...cancelSessionMutationOptions(), onSettled });
