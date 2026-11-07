@@ -16,6 +16,8 @@ export interface SaveSessionOptions {
   softDelete?: "preserve" | "payload";
   /** Actor stamped on `restored_at`/`restored_by` when a `payload` write clears `deleted_at`. */
   restoredBy?: string;
+  /** Optional hydrated pre-image for the audit `old_state` (otherwise a compact snapshot is read). */
+  auditOldState?: unknown;
 }
 
 /**

@@ -10,6 +10,7 @@ import {
 } from "@mms/shared";
 import { sessionsRepository } from "../repository/sessionsRepositoryAdapter.js";
 import { withTenant } from "../../db/tenant-context.js";
+import { recordModernAuditEvent } from "../../services/auditTrailService.js";
 import { sessionRolloverRepository as runs } from "../repository/sessionRolloverRepositoryAdapter.js";
 import { listRolloverCandidates } from "../../enrollments/use-cases/enrollmentRolloverUseCases.js";
 import { enqueueBackgroundJob } from "../../services/backgroundJobWorkerService.js";
@@ -117,6 +118,24 @@ function createSessionRolloverUseCases() {
         );
         jobId = job.id;
         await runs.updatePromotionRun(tenant, runId, { jobId });
+        // The run itself is the durable record of a structural academic action; audit its inputs.
+        await recordModernAuditEvent({
+          workspaceSubdomain: tenant,
+          tableName: "session_promotion_runs",
+          recordId: runId,
+          actionType: "CREATE",
+          realUserId: actorUserId,
+          oldState: null,
+          newState: {
+            sourceSessionId: sessionId,
+            mode: body.mode,
+            target: body.target,
+            classMap: body.classMap,
+            outcomes: body.outcomes,
+            closeSource: body.closeSource,
+            reason: body.reason ?? null,
+          },
+        });
       });
       return {
         id: runId,

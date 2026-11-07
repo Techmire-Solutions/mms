@@ -48,6 +48,8 @@ export const sessionRolloverBodySchema = z
       .array(z.object({ sourceClassId: idSchema, nextClassId: idSchema.nullable() }).strict())
       .max(200)
       .default([]),
+    /** Why the rollover is being run (audited). */
+    reason: z.string().trim().min(3).max(500).optional(),
     /** Finalise (complete) the source session once every outcome has been applied. */
     closeSource: z.boolean().default(true),
     /** Per-student overrides of the outcome the class map implies. */

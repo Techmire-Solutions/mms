@@ -37,6 +37,7 @@ async function afterChange(
   user: User,
   sectionId: string,
   detail: Record<string, unknown>,
+  oldState?: unknown,
 ): Promise<void> {
   await recordModernAuditEvent({
     workspaceSubdomain: tenant,
@@ -44,6 +45,7 @@ async function afterChange(
     recordId: sectionId,
     actionType: "UPDATE",
     realUserId: user.id,
+    oldState: oldState ?? { sectionId, status: "active" },
     newState: detail,
   });
   await invalidateMultiTierCache({ tenantId: tenant, domain: "sessions" });
@@ -94,7 +96,13 @@ export const sectionOperationsUseCases = {
         reason: input.reason,
         actor: actorOf(user),
       });
-      await afterChange(tenant, user, sectionId, { operation: "merge", ...input, moved });
+      await afterChange(
+        tenant,
+        user,
+        sectionId,
+        { operation: "merge", ...input, moved },
+        { status: "active" },
+      );
       return { sectionId: target.section.id, moved };
     });
   },
@@ -162,7 +170,13 @@ export const sectionOperationsUseCases = {
         throw new ConflictError(
           `${stillEnrolled} student(s) are still in this section; merge or move them first`,
         );
-      await afterChange(tenant, user, sectionId, { operation: "close", ...input });
+      await afterChange(
+        tenant,
+        user,
+        sectionId,
+        { operation: "close", ...input },
+        { status: "active" },
+      );
       return { sectionId, moved: 0 };
     });
   },

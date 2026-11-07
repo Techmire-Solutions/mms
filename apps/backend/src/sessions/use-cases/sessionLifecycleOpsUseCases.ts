@@ -161,6 +161,12 @@ export const sessionLifecycleOpsUseCases = {
         recordId: id,
         actionType: "UPDATE",
         realUserId: user.id,
+        oldState: {
+          status: session.status,
+          startDate: session.startDate,
+          endDate: session.endDate,
+          version: Number(session.version ?? 0),
+        },
         newState: {
           operation: "postpone",
           from: { startDate: session.startDate, endDate: session.endDate },

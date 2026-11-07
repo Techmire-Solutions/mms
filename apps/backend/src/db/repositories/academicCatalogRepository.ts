@@ -170,6 +170,7 @@ export async function saveAcademicCatalogItem(
       recordId: input.id,
       actionType: existed ? "UPDATE" : "CREATE",
       realUserId: input.actorUserId,
+      oldState: existed ?? undefined,
       newState: fields,
     });
     return saved;
@@ -201,6 +202,7 @@ export async function softDeleteAcademicCatalogItem(
     const references = await countAcademicCatalogReferencesTx(tx, kind, subdomain, id);
     if (references > 0)
       throw new ConflictError(`In use by ${references} record(s); archive it instead`);
+    const previous = await selectById(tx, kind, subdomain, id);
     const deletedAt = new Date();
     const changed = await tx
       .update(table)
@@ -222,6 +224,8 @@ export async function softDeleteAcademicCatalogItem(
       recordId: id,
       actionType: "DELETE",
       realUserId: actorUserId,
+      oldState: previous ?? { id, deletedAt: null },
+      newState: { deletedAt: deletedAt.toISOString(), deletionReason: "User deleted" },
     });
     await emitOutboxEvent(tx, "entity.soft_deleted", {
       entityType: tableName,
@@ -273,6 +277,8 @@ export async function restoreAcademicCatalogItem(
       recordId: id,
       actionType: "RESTORE",
       realUserId: actorUserId,
+      oldState: { deletedAt: true, name: current.name },
+      newState: { restoredAt: now.toISOString() },
     });
     await emitOutboxEvent(tx, "entity.restored", {
       entityType: tableName,

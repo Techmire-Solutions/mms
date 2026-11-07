@@ -12,6 +12,7 @@ import {
   listRolloverCandidates,
 } from "../../enrollments/use-cases/enrollmentRolloverUseCases.js";
 import { invalidateMultiTierCache } from "../../lib/cache/index.js";
+import { recordModernAuditEvent } from "../../services/auditTrailService.js";
 import { broadcastCollection } from "../../lib/livePush.js";
 import { HttpDomainError, NotFoundError } from "../../lib/httpErrors.js";
 import { planRollover, rolloverTargetSection } from "./sessionRolloverPlan.js";
@@ -53,7 +54,9 @@ export async function executeSessionRollover(
     if (!run) throw new NotFoundError("Rollover run not found");
     return { targetSessionId: run.targetSessionId ?? "", carried: 0 };
   }
+  const warningList: Array<{ kind: string; detail: string }> = [];
   const warnings: RolloverWarn = async (warning) => {
+    warningList.push({ kind: warning.kind, detail: warning.detail });
     await runs.recordRunWarning(tenant, runId, warning.kind, warning.detail);
   };
 
@@ -142,11 +145,37 @@ export async function executeSessionRollover(
     }
 
     await runs.updatePromotionRun(tenant, runId, { status: "completed", ...counts, error: null });
+    await recordModernAuditEvent({
+      workspaceSubdomain: tenant,
+      tableName: "session_promotion_runs",
+      recordId: runId,
+      actionType: "UPDATE",
+      realUserId: actorUserId,
+      oldState: { status: "running", targetSessionId: target.id },
+      newState: {
+        status: "completed",
+        operation: "rollover_completed",
+        targetSessionId: target.id,
+        carried,
+        ...counts,
+        warnings: warningList,
+        reason: payload.body.reason ?? null,
+      },
+    });
     await invalidateMultiTierCache({ tenantId: tenant, domain: "sessions" });
     await broadcastCollection("sessions");
     return { targetSessionId: target.id, carried };
   } catch (error) {
     const message = error instanceof Error ? error.message : "Rollover failed";
+    await recordModernAuditEvent({
+      workspaceSubdomain: tenant,
+      tableName: "session_promotion_runs",
+      recordId: runId,
+      actionType: "UPDATE",
+      realUserId: actorUserId,
+      oldState: { status: "running" },
+      newState: { status: "failed", operation: "rollover_failed", error: message.slice(0, 1000) },
+    });
     await runs.updatePromotionRun(tenant, runId, {
       status: "failed",
       error: message.slice(0, 1000),

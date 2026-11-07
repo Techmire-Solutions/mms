@@ -11,6 +11,7 @@ import { toDbDate } from "../../lib/dbDate.js";
 import { getRequestUserId } from "../../lib/tenantContext.js";
 import { ConflictError } from "../../lib/httpErrors.js";
 import { throwOverlapConflict } from "./sessionPersistErrors.js";
+import { sessionAuditStateTx } from "./sessionAuditState.js";
 import { overlapExemptForRestoreTx, type SaveSessionOptions } from "./sessionRepositoryDates.js";
 import { recordModernAuditEvent } from "../../services/auditTrailService.js";
 
@@ -96,6 +97,9 @@ async function persistSessionTx(
     .where(and(eq(sessions.workspaceSubdomain, subdomain), eq(sessions.id, sessionId)))
     .for("update");
 
+  // Pre-image for the audit trail (the row lock above already guarantees a stable snapshot).
+  const auditOldState = existing ? await sessionAuditStateTx(tx, subdomain, sessionId) : undefined;
+
   const expectedVersion = options?.expectedVersion;
   const expected = options?.expectedUpdatedAt?.trim();
   if (expectedVersion !== undefined) {
@@ -176,6 +180,7 @@ async function persistSessionTx(
     recordId: sessionId,
     actionType: existing ? "UPDATE" : "CREATE",
     realUserId: getRequestUserId() ?? undefined,
+    oldState: options?.auditOldState ?? auditOldState,
     newState: record,
   });
   return now.toISOString();
@@ -230,20 +235,39 @@ export async function replaceSessionsForWorkspace(
       ...(keepIds.length > 0 ? [notInArray(sessions.id, keepIds)] : []),
     ];
     const stale = await tx
-      .select({ id: sessions.id })
+      .select({
+        id: sessions.id,
+        status: sessions.status,
+        startDate: sessions.startDate,
+        endDate: sessions.endDate,
+        version: sessions.version,
+        deletedAt: sessions.deletedAt,
+      })
       .from(sessions)
       .where(and(...staleScope));
+    const archiveReason = "Archived by backup restore (not present in the backup)";
     if (stale.length > 0) {
       await tx
         .update(sessions)
         .set({
           deletedAt: now,
           deletedBy: restoredBy ?? null,
-          deletionReason: "Archived by backup restore (not present in the backup)",
+          deletionReason: archiveReason,
           updatedAt: now,
           version: sql`${sessions.version} + 1`,
         })
         .where(and(...staleScope));
+      for (const row of stale) {
+        await recordModernAuditEvent(tx, {
+          workspaceSubdomain: subdomain,
+          tableName: "sessions",
+          recordId: row.id,
+          actionType: "DELETE",
+          realUserId: restoredBy,
+          oldState: { ...row, version: Number(row.version) },
+          newState: { deletedAt: now.toISOString(), deletionReason: archiveReason },
+        });
+      }
     }
     for (const record of records) {
       const overlapExempt = await overlapExemptForRestoreTx(tx, subdomain, record);

@@ -14,6 +14,26 @@ export async function bulkDeleteSessions(
   const subdomain = tenant.trim().toLowerCase();
   const now = new Date();
   return withTenant(subdomain, async (tx) => {
+    const before = await tx
+      .select({
+        id: sessions.id,
+        status: sessions.status,
+        startDate: sessions.startDate,
+        endDate: sessions.endDate,
+        version: sessions.version,
+        deletedAt: sessions.deletedAt,
+      })
+      .from(sessions)
+      .where(
+        and(
+          eq(sessions.workspaceSubdomain, subdomain),
+          inArray(sessions.id, sessionIds),
+          isNull(sessions.deletedAt),
+        ),
+      );
+    const oldStates = Object.fromEntries(
+      before.map((row) => [row.id, { ...row, version: Number(row.version) }]),
+    );
     const res = await tx
       .update(sessions)
       .set({
@@ -61,6 +81,7 @@ export async function bulkDeleteSessions(
         now,
         actorId: deletedBy,
         deletionReason,
+        oldStates,
       });
       await syncEnrolledSessionsTx(tx, subdomain, { sessionIds: deletedIds });
     }
@@ -81,6 +102,26 @@ export async function bulkRestoreSessions(
   const subdomain = tenant.trim().toLowerCase();
   const now = new Date();
   return withTenant(subdomain, async (tx) => {
+    const before = await tx
+      .select({
+        id: sessions.id,
+        status: sessions.status,
+        startDate: sessions.startDate,
+        endDate: sessions.endDate,
+        version: sessions.version,
+        deletedAt: sessions.deletedAt,
+      })
+      .from(sessions)
+      .where(
+        and(
+          eq(sessions.workspaceSubdomain, subdomain),
+          inArray(sessions.id, sessionIds),
+          isNotNull(sessions.deletedAt),
+        ),
+      );
+    const oldStates = Object.fromEntries(
+      before.map((row) => [row.id, { ...row, version: Number(row.version) }]),
+    );
     const res = await tx
       .update(sessions)
       .set({
@@ -130,6 +171,7 @@ export async function bulkRestoreSessions(
         enrollmentIds: cascaded,
         now,
         actorId: userId,
+        oldStates,
       });
       await syncEnrolledSessionsTx(tx, subdomain, { sessionIds: restoredIds });
     }

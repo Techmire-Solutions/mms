@@ -9,7 +9,7 @@ export class QueueUnavailableError extends Error {
   }
 }
 import type { BackgroundJobRecord } from "@mms/shared";
-import { runWithTenant } from "../lib/tenantContext.js";
+import { bindRequestUserId, runWithTenant } from "../lib/tenantContext.js";
 import { getBackgroundJobModuleDenial } from "../lib/backgroundJobModuleAccess.js";
 import { createDatabaseBackgroundJob } from "./backgroundJobService.js";
 import { patchJob } from "./backgroundJobPatch.js";
@@ -144,6 +144,8 @@ export async function executeJob(
   try {
     await runWithJobDeadline(deadline, () =>
       runWithTenant(tenant, async () => {
+        // Audit rows / `app.current_user_id` must attribute the job to its initiator, not "system".
+        bindRequestUserId(userId);
         await runner(payload, runContext);
       }),
     );

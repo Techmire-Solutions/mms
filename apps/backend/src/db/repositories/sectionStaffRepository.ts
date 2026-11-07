@@ -153,6 +153,9 @@ export async function assignSectionStaff(
       recordId: id,
       actionType: "CREATE",
       realUserId: actorUserId,
+      oldState: {
+        open: open.map((row) => ({ id: row.id, facultyId: row.facultyId, startOn: row.startOn })),
+      },
       newState: { sectionId, ...body, closed: open.map((row) => row.id) },
     });
     const [created] = await selectAssignmentsTx(tx, subdomain, sectionId, id);
@@ -178,7 +181,12 @@ export async function endSectionStaff(
       isNull(sectionStaffAssignments.deletedAt),
     );
     const [row] = await tx
-      .select({ startOn: sectionStaffAssignments.startOn })
+      .select({
+        startOn: sectionStaffAssignments.startOn,
+        endOn: sectionStaffAssignments.endOn,
+        role: sectionStaffAssignments.role,
+        facultyId: sectionStaffAssignments.facultyId,
+      })
       .from(sectionStaffAssignments)
       .where(scope)
       .limit(1);
@@ -195,6 +203,7 @@ export async function endSectionStaff(
       recordId: assignmentId,
       actionType: "UPDATE",
       realUserId: actorUserId,
+      oldState: row,
       newState: { endOn: body.endOn, reason: body.reason ?? null },
     });
     const [updated] = await selectAssignmentsTx(tx, subdomain, sectionId, assignmentId);

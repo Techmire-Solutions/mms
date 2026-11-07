@@ -220,11 +220,11 @@ export function createSessionsUseCases(
         ...(expected ? { expectedUpdatedAt: expected } : {}),
         ...(expectedVersion !== undefined ? { expectedVersion } : {}),
       };
-      const savedUpdatedAt = await repo.saveSession(
-        tenant,
-        normalized,
-        Object.keys(occOptions).length > 0 ? occOptions : undefined,
-      );
+      const savedUpdatedAt = await repo.saveSession(tenant, normalized, {
+        ...occOptions,
+        // The audit row must prove what changed, not only what the row became.
+        auditOldState: before,
+      });
       normalized.updatedAt = savedUpdatedAt;
       normalized.version = Number(before.version ?? 1) + 1;
       runAfterCommit(() => broadcastCollection("sessions"));
@@ -247,8 +247,11 @@ export function createSessionsUseCases(
           tableName: "sessions",
           recordId: id,
           actionType: "UPDATE",
+          realUserId: getRequestUserId() ?? undefined,
+          oldState: before,
           newState: {
-            lockOverride: overridden,
+            operation: "lock_override",
+            changed: overridden,
             reason: lockOverrideReason ?? lock.lockOverrideReason,
           },
         });

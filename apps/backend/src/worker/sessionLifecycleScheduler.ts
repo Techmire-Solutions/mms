@@ -33,6 +33,7 @@ export async function runSessionAutoStart(): Promise<Array<{ workspace: string; 
         tableName: "sessions",
         recordId: row.id,
         actionType: "UPDATE",
+        oldState: { status: "open" },
         newState: {
           operation: "transition",
           from: "open",

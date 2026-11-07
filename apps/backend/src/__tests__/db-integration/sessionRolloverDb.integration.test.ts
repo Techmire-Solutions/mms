@@ -36,6 +36,7 @@ const body = sessionRolloverBodySchema.parse({
 async function purgeTenant(): Promise<void> {
   await withTenant(TENANT, async (tx) => {
     await tx.execute(sql`SET LOCAL app.allow_hard_purge = 'true'`);
+    await tx.execute(sql`DELETE FROM audit_trail_events WHERE workspace_subdomain = ${TENANT}`);
     await tx.delete(workspaces).where(eq(workspaces.subdomain, TENANT));
   });
 }
@@ -157,6 +158,22 @@ describe("session rollover (real Postgres)", () => {
       { studentId: "s3", status: "retained", endOn: "2026-12-31" },
     ]);
     expect(await findPromotionRun(TENANT, "run-1")).toMatchObject({ status: "completed" });
+    const auditRows = await query<{
+      actionType: string;
+      realUserId: string;
+      newState: string;
+    }>(sql`
+      SELECT action_type AS "actionType", real_user_id AS "realUserId", new_state AS "newState"
+        FROM audit_trail_events
+       WHERE workspace_subdomain = ${TENANT} AND table_name = 'session_promotion_runs'
+         AND record_id = 'run-1' ORDER BY id`);
+    expect(auditRows).toHaveLength(1);
+    expect(auditRows[0]?.actionType).toBe("UPDATE");
+    expect(auditRows[0]?.realUserId).toBe("u-admin");
+    expect(JSON.parse(auditRows[0]?.newState ?? "{}")).toMatchObject({
+      status: "completed",
+      operation: "rollover_completed",
+    });
   });
 
   it("given a duplicate run, should copy the structure without students", async () => {

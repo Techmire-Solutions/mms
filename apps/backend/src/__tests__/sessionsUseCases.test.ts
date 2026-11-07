@@ -166,7 +166,7 @@ describe("sessions use-cases (DI with fake repository)", () => {
     expect(repo.saveSession).toHaveBeenCalledWith(
       "demo",
       expect.objectContaining({ id: "s1", name: "Renamed" }),
-      { expectedUpdatedAt: "2026-01-01T00:00:00.000Z" },
+      expect.objectContaining({ expectedUpdatedAt: "2026-01-01T00:00:00.000Z" }),
     );
   });
 
@@ -376,9 +376,11 @@ describe("sessions use-cases (DI with fake repository)", () => {
     );
 
     // Assert
-    expect(repo.saveSession).toHaveBeenCalledWith("demo", expect.objectContaining({ id: "s1" }), {
-      expectedVersion: 4,
-    });
+    expect(repo.saveSession).toHaveBeenCalledWith(
+      "demo",
+      expect.objectContaining({ id: "s1" }),
+      expect.objectContaining({ expectedVersion: 4 }),
+    );
     // The next save can use the returned token without re-reading.
     expect(result?.version).toBe(5);
   });
