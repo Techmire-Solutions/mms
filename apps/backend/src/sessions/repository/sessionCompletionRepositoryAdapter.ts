@@ -2,11 +2,15 @@ import type { SessionCompletionRepository } from "./sessionCompletionRepository.
 import {
   loadSessionCompletionFacts,
   markCertificatesIssued,
+  markCompletionEvaluated,
   saveCompletionOutcomes,
 } from "../../db/repositories/sessionCompletionRepository.js";
+import { loadCompletionGates } from "../../db/repositories/sessionCompletionGateRepository.js";
 
 export const sessionCompletionRepository: SessionCompletionRepository = {
   loadSessionCompletionFacts,
   saveCompletionOutcomes,
   markCertificatesIssued,
+  markCompletionEvaluated,
+  loadCompletionGates,
 };

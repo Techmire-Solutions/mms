@@ -32,6 +32,8 @@ export interface OverlappingSession {
 export interface SessionsRepository {
   listSessionsByWorkspace(tenant: string): Promise<Session[]>;
   findSessionById(tenant: string, id: string): Promise<Session | null>;
+  /** Primary read for control flow that must see its own writes (rollover retries). */
+  findSessionByIdPrimary(tenant: string, id: string): Promise<Session | null>;
   findSessionsByIds(tenant: string, ids: string[]): Promise<Session[]>;
   /** Stored status per id (one query) for bulk lifecycle transitions. */
   findSessionStatusesByIds(tenant: string, ids: string[]): Promise<Map<string, string>>;

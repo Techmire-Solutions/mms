@@ -1,5 +1,5 @@
-import { and, eq, inArray, notInArray, sql } from "drizzle-orm";
-import { type Class } from "@mms/shared";
+import { and, eq, inArray, isNull, notInArray, sql } from "drizzle-orm";
+import { SEAT_RELEASED_ENROLLMENT_STATUSES, type Class } from "@mms/shared";
 import { randomUUID } from "node:crypto";
 import { sessionClasses, enrollments, examClasses } from "../schema.js";
 import { type TenantTransaction } from "../tenant-context.js";
@@ -56,6 +56,33 @@ async function assertClassesRemovableTx(
  * child collections, and deletes only classes missing from the payload (guarded against dependants).
  * `classes === undefined` leaves existing classes untouched.
  */
+/** Refuses a class quota below its live enrollment count (sections or no sections). */
+async function assertClassCapacityTx(
+  tx: Transaction,
+  subdomain: string,
+  sessionId: string,
+  classId: string,
+  capacity: number,
+): Promise<void> {
+  const [row] = await tx
+    .select({ count: sql<number>`count(*)::int` })
+    .from(enrollments)
+    .where(
+      and(
+        eq(enrollments.workspaceSubdomain, subdomain),
+        eq(enrollments.sessionId, sessionId),
+        eq(enrollments.classId, classId),
+        isNull(enrollments.deletedAt),
+        notInArray(enrollments.status, [...SEAT_RELEASED_ENROLLMENT_STATUSES]),
+      ),
+    );
+  const occupied = Number(row?.count ?? 0);
+  if (occupied > Math.max(0, capacity))
+    throw new ConflictError(
+      `The class quota (${Math.max(0, capacity)}) cannot be below its ${occupied} enrolled student(s)`,
+    );
+}
+
 export async function persistSessionClassesTx(
   tx: Transaction,
   subdomain: string,
@@ -122,11 +149,26 @@ export async function persistSessionClassesTx(
         // `version` advances on every class write so class-only readers get a real OCC token.
         set: { ...values, version: sql`${sessionClasses.version} + 1` },
       });
-    await persistClassSectionsTx(
+    const derivedCapacity = await persistClassSectionsTx(
       tx,
       { subdomain, sessionId, classId: c.id, capacity: values.capacity, room: values.room },
       c.sections,
     );
+    // One source of truth: the class quota is the stored active-section sum, and it may never drop
+    // below the students already holding a seat (review findings P1/P2).
+    await assertClassCapacityTx(tx, subdomain, sessionId, c.id, derivedCapacity);
+    if (derivedCapacity !== values.capacity) {
+      await tx
+        .update(sessionClasses)
+        .set({ capacity: derivedCapacity, updatedAt: now })
+        .where(
+          and(
+            eq(sessionClasses.workspaceSubdomain, subdomain),
+            eq(sessionClasses.sessionId, sessionId),
+            eq(sessionClasses.id, c.id),
+          ),
+        );
+    }
     collectClassChildRows(childRows, subdomain, c.id, c);
   }
 

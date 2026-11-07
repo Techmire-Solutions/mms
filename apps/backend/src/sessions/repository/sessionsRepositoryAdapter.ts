@@ -2,6 +2,7 @@ import type { SessionsRepository } from "./sessionsRepository.js";
 import {
   listSessionsByWorkspace,
   findSessionById,
+  findSessionByIdPrimary,
   findSessionsByIds,
   findSessionStatusesByIds,
   findOverlappingSessions,
@@ -28,6 +29,7 @@ import { loadSessionsReportAggregatesSql } from "../../db/repositories/sessionRe
 export const sessionsRepository: SessionsRepository = {
   listSessionsByWorkspace,
   findSessionById,
+  findSessionByIdPrimary,
   findSessionsByIds,
   findSessionStatusesByIds,
   findOverlappingSessions,

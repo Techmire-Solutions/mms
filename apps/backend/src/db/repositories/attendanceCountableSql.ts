@@ -50,12 +50,17 @@ export function countableAttendanceSql(
   };
 }
 
+/** Workspace working days as `Date.getDay()` indexes (Sunday = 0). */
+export async function loadWorkspaceWeekdays(subdomain: string): Promise<number[]> {
+  const prefs = normalizeAttendanceModulePreferences(
+    await getAttendanceModulePreferences(subdomain),
+  );
+  return weekdayIndexes(prefs.workingDays);
+}
+
 /** Loads the workspace working days and returns the countable predicate builder. */
 export async function loadCountableAttendanceSql(
   subdomain: string,
 ): Promise<CountableAttendanceSql> {
-  const prefs = normalizeAttendanceModulePreferences(
-    await getAttendanceModulePreferences(subdomain),
-  );
-  return countableAttendanceSql(subdomain, weekdayIndexes(prefs.workingDays));
+  return countableAttendanceSql(subdomain, await loadWorkspaceWeekdays(subdomain));
 }

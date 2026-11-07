@@ -20,6 +20,12 @@ function shift(value: string | undefined, days: number): string {
   return day && /^\d{4}-\d{2}-\d{2}$/.test(day) ? addIsoDays(day, days) : (value ?? "");
 }
 
+/**
+ * Deterministic id factory used by the job: `(kind, sourceId) => stable id`. A retried rollover
+ * re-uses the same ids, so `saveSession`/`bulkSaveEnrollments` upserts instead of duplicating.
+ */
+export type RolloverIdFactory = (kind: string, sourceId: string) => string;
+
 export interface RolloverIdMaps {
   /** Source class id → copied class id. */
   classIds: Map<string, string>;
@@ -36,27 +42,30 @@ export function buildRolloverSession(
   source: Session,
   body: Pick<SessionRolloverBody, "target" | "copy">,
   newId: () => string,
+  deterministicId?: RolloverIdFactory,
 ): { session: Session; ids: RolloverIdMaps; offsetDays: number } {
+  const idFor = (kind: string, sourceId?: string) =>
+    deterministicId && sourceId ? deterministicId(kind, sourceId) : newId();
   const offsetDays = isoDayOffset(source.startDate, body.target.startDate);
   const ids: RolloverIdMaps = { classIds: new Map(), sectionIds: new Map() };
-  const sessionId = newId();
+  const sessionId = idFor("session", source.id);
   const classes = source.classes.map((cls) => {
-    const classId = newId();
+    const classId = idFor("class", cls.id);
     ids.classIds.set(cls.id, classId);
-    const sections = (cls.sections ?? [])
-      .filter((section) => section.status === "active")
-      .map((section) => {
-        const sectionId = newId();
-        ids.sectionIds.set(section.id, sectionId);
-        return {
-          id: sectionId,
-          classId,
-          name: section.name,
-          capacity: section.capacity,
-          room: section.room,
-          status: "active" as const,
-        };
-      });
+    // Every section is copied with its status preserved: dropping closed sections silently
+    // shrinks the inherited quota (review finding R8).
+    const sections = (cls.sections ?? []).map((section) => {
+      const sectionId = idFor("section", section.id);
+      ids.sectionIds.set(section.id, sectionId);
+      return {
+        id: sectionId,
+        classId,
+        name: section.name,
+        capacity: section.capacity,
+        room: section.room,
+        status: section.status ?? "active",
+      };
+    });
     return {
       ...cls,
       id: classId,
@@ -65,25 +74,48 @@ export function buildRolloverSession(
       ageCalculationDate: shift(cls.ageCalculationDate, offsetDays),
       enrollmentDeadline: shift(cls.enrollmentDeadline, offsetDays),
       sections,
-      fees: body.copy.fees ? cls.fees.map((fee) => ({ ...fee, id: newId(), classId })) : [],
+      fees: body.copy.fees
+        ? cls.fees.map((fee) => ({ ...fee, id: idFor("fee", fee.id), classId }))
+        : [],
       discounts: body.copy.discounts
         ? cls.discounts.map((discount) => ({
             ...discount,
-            id: newId(),
+            id: idFor("discount", discount.id),
             classId,
             startDate: shift(discount.startDate, offsetDays),
             endDate: shift(discount.endDate, offsetDays),
           }))
         : [],
       scholarships: body.copy.scholarships
-        ? cls.scholarships.map((scholarship) => ({
-            ...scholarship,
-            id: newId(),
+        ? cls.scholarships.map((scholarship) => {
+            // A copied scholarship gets its own eligibility row; sharing the source row let an
+            // edit in the new session rewrite the previous session's eligibility (finding R12).
+            const eligibilityId = scholarship.eligibility
+              ? idFor("eligibility", scholarship.eligibility.id)
+              : undefined;
+            return {
+              ...scholarship,
+              id: idFor("scholarship", scholarship.id),
+              classId,
+              expiryDate: shift(scholarship.expiryDate, offsetDays),
+              ...(eligibilityId
+                ? {
+                    scholarshipEligibilityId: eligibilityId,
+                    eligibility: { ...scholarship.eligibility!, id: eligibilityId },
+                  }
+                : {}),
+            };
+          })
+        : [],
+      schedules: body.copy.schedules
+        ? cls.schedules.map((schedule) => ({
+            ...schedule,
+            id: idFor("schedule", schedule.id),
             classId,
-            expiryDate: shift(scholarship.expiryDate, offsetDays),
+            startDate: shift(schedule.startDate, offsetDays),
+            endDate: shift(schedule.endDate, offsetDays),
           }))
         : [],
-      schedules: [],
       budgets: [],
       timetables: [],
       refreshments: [],

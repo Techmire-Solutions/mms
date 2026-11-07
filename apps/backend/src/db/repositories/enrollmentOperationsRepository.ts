@@ -10,6 +10,10 @@ import {
 import { syncEnrolledSessionsTx } from "./enrollmentSessionSync.js";
 import { enrollmentHoldsSeatWhere } from "./enrollmentSeatSql.js";
 
+/** Live seat counts and rollover carry locks (split out to keep this module under 300 lines). */
+export { countLiveSeatsByClassTx, lockRolloverCarryTx } from "./enrollmentSeatCountRepository.js";
+export type { LiveSeatCount } from "./enrollmentSeatCountRepository.js";
+
 export interface EnrollmentFeeColumns {
   baseFee: number;
   discountType: string;

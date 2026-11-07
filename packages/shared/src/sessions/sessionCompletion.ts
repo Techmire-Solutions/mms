@@ -48,6 +48,41 @@ export function evaluateCompletion(
   return { status: shortfalls.length === 0 ? "completed" : "not_completed", shortfalls };
 }
 
+/** Reasons a completion workflow may not finalise yet (completion gates). */
+export const COMPLETION_GATE_VIOLATIONS = [
+  "attendance_unfinalized",
+  "exams_unfinalized",
+  "no_criteria",
+  "outstanding_dues",
+  "evaluation_stale",
+  "session_not_ended",
+] as const;
+export type CompletionGateViolation = (typeof COMPLETION_GATE_VIOLATIONS)[number];
+
+export interface CompletionGateInput {
+  /** Instructional days before the session end that have no attendance row. */
+  unmarkedDays?: number;
+  /** Exams of the session's classes that are not completed/finalised. */
+  unfinalizedExams?: number;
+  /** Whether the session has at least one completion criterion. */
+  criteriaConfigured?: boolean;
+  /** Outstanding amount across the enrolled invoices (minor units handled by callers). */
+  outstandingDues?: number;
+  /** Evidence changed after the last evaluation. */
+  evaluationStale?: boolean;
+}
+
+/** Gate table used by the use-case before evaluating completion or issuing certificates. */
+export function completionGateViolations(input: CompletionGateInput): CompletionGateViolation[] {
+  const violations: CompletionGateViolation[] = [];
+  if ((input.unmarkedDays ?? 0) > 0) violations.push("attendance_unfinalized");
+  if ((input.unfinalizedExams ?? 0) > 0) violations.push("exams_unfinalized");
+  if (input.criteriaConfigured === false) violations.push("no_criteria");
+  if ((input.outstandingDues ?? 0) > 0) violations.push("outstanding_dues");
+  if (input.evaluationStale) violations.push("evaluation_stale");
+  return violations;
+}
+
 export interface CompletionWindowInput {
   status: string;
   endDate?: string | null;
@@ -89,12 +124,42 @@ export const sessionCompletionRowSchema = z
     shortfalls: z.array(z.enum(COMPLETION_SHORTFALLS)),
     completedAt: z.string().nullable(),
     certificateIssuedAt: z.string().nullable(),
+    /** Instructional days without a marked attendance row (completion gate). */
+    unmarkedDays: z.number().int().nonnegative().default(0),
+    /** Exams of this enrollment's class that are not completed/finalised. */
+    unfinalizedExams: z.number().int().nonnegative().default(0),
+    /** Outstanding amount on this enrollment's invoices. */
+    outstandingDues: z.number().nonnegative().default(0),
+    /** Evidence changed after the last evaluation. */
+    stale: z.boolean().default(false),
   })
   .strict();
 export type SessionCompletionRow = z.infer<typeof sessionCompletionRowSchema>;
 
+/** Optional acknowledgements for a completion gate (server still requires the override permission). */
+const completionAcknowledgements = {
+  acknowledge: z
+    .array(z.enum(COMPLETION_GATE_VIOLATIONS))
+    .max(COMPLETION_GATE_VIOLATIONS.length)
+    .optional(),
+  reason: z.string().trim().min(3).max(500).optional(),
+};
+
+/** Evaluate request: acknowledge finalisation gaps explicitly (audited). */
+export const sessionCompletionActionBodySchema = z
+  .object({
+    ...completionAcknowledgements,
+    /** Sessions without criteria complete everyone; this acknowledges that policy explicitly. */
+    allowNoCriteria: z.boolean().optional(),
+  })
+  .strict();
+export type SessionCompletionActionBody = z.infer<typeof sessionCompletionActionBodySchema>;
+
 /** Issue certificates to completed enrollments (all completed ones when the list is empty). */
 export const sessionCertificatesBodySchema = z
-  .object({ enrollmentIds: z.array(z.string().trim().min(1).max(64)).max(5000).default([]) })
+  .object({
+    enrollmentIds: z.array(z.string().trim().min(1).max(64)).max(5000).default([]),
+    ...completionAcknowledgements,
+  })
   .strict();
 export type SessionCertificatesBody = z.infer<typeof sessionCertificatesBodySchema>;

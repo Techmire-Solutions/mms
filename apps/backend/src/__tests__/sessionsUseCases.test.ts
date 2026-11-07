@@ -14,6 +14,7 @@ function createFakeRepo(): SessionsRepository {
   return {
     listSessionsByWorkspace: vi.fn().mockResolvedValue([]),
     findSessionById: vi.fn().mockResolvedValue(null),
+    findSessionByIdPrimary: vi.fn().mockResolvedValue(null),
     findSessionsByIds: vi.fn().mockResolvedValue([]),
     findSessionStatusesByIds: vi.fn().mockResolvedValue(new Map()),
     findOverlappingSessions: vi.fn().mockResolvedValue([]),

@@ -30,6 +30,11 @@ export const exams = pgTable(
     date: date("date", { mode: "string" }),
     duration: integer("duration").notNull().default(60),
     status: varchar("status", { length: 20 }).notNull().default("upcoming"),
+    /** Set when the exam is finalised; completion may only count finalized results (migration 0207). */
+    resultsFinalizedAt: timestamp("results_finalized_at", {
+      withTimezone: true,
+      mode: "date",
+    }),
     description: text("description").notNull().default(""),
     ...softDeleteColumns,
     createdAt: timestamp("created_at", { withTimezone: true, mode: "date" }).notNull().defaultNow(),

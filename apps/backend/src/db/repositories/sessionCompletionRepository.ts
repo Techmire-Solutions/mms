@@ -19,6 +19,14 @@ export interface CompletionFactRow {
   examsPassed: number;
   completedAt: string | null;
   certificateIssuedAt: string | null;
+  /** Instructional days before the session end with no attendance row (completion gate). */
+  unmarkedDays: number;
+  /** Exams of the class that are not completed + results-finalized (completion gate). */
+  unfinalizedExams: number;
+  /** Outstanding amount on the enrollment's invoices (certificate gate). */
+  outstandingDues: number;
+  /** Evidence changed after the last evaluation. */
+  stale: boolean;
 }
 
 /**
@@ -58,12 +66,15 @@ export async function loadSessionCompletionFacts(
             FROM exam_classes ec
             JOIN exams x ON x.workspace_subdomain = ec.workspace_subdomain AND x.id = ec.exam_id
              AND x.deleted_at IS NULL
+             -- Grade finalisation gate: only completed, finalized exams count toward completion.
+             AND x.status = 'completed' AND x.results_finalized_at IS NOT NULL
             LEFT JOIN exam_results r ON r.workspace_subdomain = x.workspace_subdomain
              AND r.exam_id = x.id AND r.student_id = e.student_id
            WHERE ec.workspace_subdomain = e.workspace_subdomain AND ec.class_id = e.class_id
         ) ex ON true
        WHERE e.workspace_subdomain = ${subdomain} AND e.session_id = ${sessionId}
-         AND e.deleted_at IS NULL AND e.status NOT IN ('cancelled', 'withdrawn')
+         AND e.deleted_at IS NULL
+         AND e.status NOT IN ('cancelled', 'withdrawn', 'promoted', 'retained', 'graduated', 'left')
        ORDER BY e.class_name, e.student_name`);
     return result.rows.map((row) => ({
       enrollmentId: String(row.enrollmentId),
@@ -77,6 +88,11 @@ export async function loadSessionCompletionFacts(
       examsPassed: Number(row.examsPassed ?? 0),
       completedAt: row.completedAt ? String(row.completedAt) : null,
       certificateIssuedAt: row.certificateIssuedAt ? String(row.certificateIssuedAt) : null,
+      // Gate facts come from `loadCompletionGates`; keep the row type total here.
+      unmarkedDays: 0,
+      unfinalizedExams: 0,
+      outstandingDues: 0,
+      stale: false,
     }));
   });
 }
@@ -131,6 +147,17 @@ export async function saveCompletionOutcomes(
       });
     }
   });
+}
+
+/** Records when completion was last evaluated (staleness detection for certificates). */
+export async function markCompletionEvaluated(tenant: string, sessionId: string): Promise<void> {
+  const subdomain = tenant.trim().toLowerCase();
+  await withTenant(subdomain, (tx) =>
+    tx.execute(sql`
+      UPDATE sessions SET completion_evaluated_at = now(), updated_at = now()
+       WHERE workspace_subdomain = ${subdomain} AND id = ${sessionId} AND deleted_at IS NULL
+    `),
+  );
 }
 
 /** Stamps `certificate_issued_at` on completed enrollments that have none; returns their ids. */

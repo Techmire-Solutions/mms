@@ -11,7 +11,7 @@ export const SessionClassSectionSchema = z
     id: z.string().min(1),
     classId: z.string().optional(),
     name: z.string().trim().min(1, "Section name is required").max(50),
-    capacity: z.coerce.number().int().min(0).default(30),
+    capacity: z.coerce.number().int().min(0).max(100000).default(30),
     room: z.string().max(100).optional().default(""),
     status: z.enum(SECTION_STATUSES).default("active"),
     /** Read-only: current class teacher resolved from staff assignments. */

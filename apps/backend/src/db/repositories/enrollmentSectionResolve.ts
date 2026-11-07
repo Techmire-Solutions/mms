@@ -10,6 +10,8 @@ type SectionRow = {
   classId: string;
   status: string;
   sortOrder: number;
+  capacity: number;
+  enrolled: number;
 };
 
 /**
@@ -27,13 +29,17 @@ export async function resolveEnrollmentSectionsTx(
   ];
   if (classIds.length === 0) return records;
   const sections = await tx.execute<SectionRow>(sql`
-    SELECT id, session_id AS "sessionId", class_id AS "classId", status, sort_order AS "sortOrder"
-      FROM session_class_sections
-     WHERE workspace_subdomain = ${subdomain} AND class_id IN (${sql.join(
+    SELECT s.id, s.session_id AS "sessionId", s.class_id AS "classId", s.status,
+           s.sort_order AS "sortOrder", s.capacity,
+           (SELECT count(*)::int FROM enrollments en
+             WHERE en.workspace_subdomain = s.workspace_subdomain AND en.section_id = s.id
+               AND en.deleted_at IS NULL AND ${enrollmentHoldsSeatSql("en")}) AS enrolled
+      FROM session_class_sections s
+     WHERE s.workspace_subdomain = ${subdomain} AND s.class_id IN (${sql.join(
        classIds.map((id) => sql`${id}`),
        sql`, `,
      )})
-     ORDER BY sort_order, name
+     ORDER BY s.sort_order, s.name
   `);
 
   const resolved = records.map((record) => {
@@ -46,7 +52,12 @@ export async function resolveEnrollmentSectionsTx(
         throw new ValidationError("Section does not belong to the selected class");
       return { ...record, sectionId: requested, rollNo: record.rollNo?.trim() || undefined };
     }
-    const fallback = classSections.find((s) => s.status === "active") ?? classSections[0];
+    // Seat-aware: the first active section that still has a free seat. A full class leaves the
+    // enrollment unassigned rather than silently overfilling section A (review finding P3).
+    const active = classSections.filter((section) => section.status === "active");
+    const fallback = active.find(
+      (section) => Number(section.enrolled ?? 0) < Math.max(0, section.capacity ?? 0),
+    );
     return { ...record, sectionId: fallback?.id, rollNo: record.rollNo?.trim() || undefined };
   });
 

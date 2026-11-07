@@ -2,6 +2,7 @@ export { sessionRowToRecord } from "./sessionRepositoryMappers.js";
 export {
   listSessionsByWorkspace,
   findSessionById,
+  findSessionByIdPrimary,
   findSessionsByIds,
   findSessionsSummaryByIds,
   findSessionStatusesByIds,
