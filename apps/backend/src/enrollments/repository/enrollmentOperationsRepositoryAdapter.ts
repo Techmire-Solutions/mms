@@ -4,7 +4,9 @@ import {
   applyEnrollmentReadmission,
   applyEnrollmentWithdrawal,
   listEnrollmentPlacements,
+  countLiveSeatsByClassTx,
   listLiveEnrollments,
+  lockRolloverCarryTx,
   recordEnrollmentSuspension,
 } from "../../db/repositories/enrollmentOperationsRepository.js";
 import { findEnrollmentById } from "../../db/repositories/enrollmentRepositoryHydrate.js";
@@ -24,6 +26,8 @@ export const enrollmentOperationsRepository: EnrollmentOperationsRepository = {
   applyEnrollmentTransfer,
   applyEnrollmentWithdrawal,
   listLiveEnrollments,
+  countLiveSeatsByClassTx,
+  lockRolloverCarryTx,
   applyEnrollmentReadmission,
   recordEnrollmentSuspension,
 };

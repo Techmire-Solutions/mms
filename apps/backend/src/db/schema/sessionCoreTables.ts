@@ -48,6 +48,11 @@ export const sessions = pgTable(
     requiresExamPass: boolean("requires_exam_pass").notNull().default(false),
     /** Optimistic-concurrency token, incremented by every write (migration 0206). */
     version: bigint("version", { mode: "number" }).notNull().default(1),
+    /** When completion was last evaluated; newer attendance/exam evidence makes it stale (0207). */
+    completionEvaluatedAt: timestamp("completion_evaluated_at", {
+      withTimezone: true,
+      mode: "date",
+    }),
     /**
      * Set from the Sessions `allowOverlap` preference on write (migration 0206). When true the row is
      * exempt from `sessions_no_overlap_excl`, the tenant-wide no-overlap guarantee.

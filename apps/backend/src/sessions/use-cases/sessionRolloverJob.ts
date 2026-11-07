@@ -1,28 +1,28 @@
-import { randomUUID } from "node:crypto";
 import {
   PROMOTION_OUTCOME_STATUS,
-  buildRolloverSession,
-  isoDayOffset,
   sessionRolloverBodySchema,
-  type RolloverIdMaps,
-  type Session,
+  type SessionRolloverBody,
 } from "@mms/shared";
 import { z } from "zod";
 import { sessionsRepository } from "../repository/sessionsRepositoryAdapter.js";
-import { sessionsAcademicRepository as academic } from "../repository/sessionsAcademicRepositoryAdapter.js";
 import { sessionRolloverRepository as runs } from "../repository/sessionRolloverRepositoryAdapter.js";
 import {
   carryRolloverEnrollments,
   closeRolloverSourceEnrollment,
   listRolloverCandidates,
 } from "../../enrollments/use-cases/enrollmentRolloverUseCases.js";
-import { copySessionCalendarEvents } from "../../attendance/use-cases/academicCalendarCopyUseCases.js";
 import { invalidateMultiTierCache } from "../../lib/cache/index.js";
 import { broadcastCollection } from "../../lib/livePush.js";
-import { ConflictError, NotFoundError, ValidationError } from "../../lib/httpErrors.js";
+import { HttpDomainError, NotFoundError } from "../../lib/httpErrors.js";
 import { planRollover, rolloverTargetSection } from "./sessionRolloverPlan.js";
 import { workspaceToday } from "./sessionLockGuard.js";
 import { registerBackgroundJobRunner } from "../../services/backgroundJobWorkerService.js";
+import { transitionSession } from "./sessionTransitionService.js";
+import {
+  deterministicRolloverId,
+  ensureTarget,
+  type RolloverWarn,
+} from "./sessionRolloverTarget.js";
 import {
   SESSION_ROLLOVER_JOB_KIND,
   type SessionRolloverJobPayload,
@@ -30,117 +30,15 @@ import {
 
 type Progress = (current: number, total: number) => Promise<void>;
 
+/** Outcome counts the run records, keyed by the source-enrollment status they produce. */
+type PromotionCounts = Record<"promoted" | "retained" | "graduated" | "left", number>;
+
 /**
- * Pairs rows by name in occurrence order. Multiple classes/sections may share a name, so a
- * plain `find` can map a retry onto the wrong copy; pairing nth-with-nth is deterministic.
+ * Runs one rollover with durable phase markers:
+ * claim → structure → staff → calendar → carry → close sources → finalise source → completed.
+ * A retry takes over a stale run and resumes at the first unfinished phase; deterministic ids make
+ * every write idempotent (`sessionRolloverTarget.ts`).
  */
-function pairByName<T extends { id: string; name: string }>(
-  sourceRows: readonly T[],
-  targetRows: readonly T[],
-): Map<string, string> {
-  const byName = new Map<string, T[]>();
-  for (const row of targetRows) {
-    const key = row.name.trim().toLowerCase();
-    byName.set(key, [...(byName.get(key) ?? []), row]);
-  }
-  const used = new Map<string, number>();
-  const pairs = new Map<string, string>();
-  for (const row of sourceRows) {
-    const key = row.name.trim().toLowerCase();
-    const index = used.get(key) ?? 0;
-    const match = byName.get(key)?.[index];
-    if (!match) continue;
-    used.set(key, index + 1);
-    pairs.set(row.id, match.id);
-  }
-  return pairs;
-}
-
-/** Id maps of an earlier attempt's target, matched by class and section name. */
-function mapsByName(source: Session, target: Session): RolloverIdMaps {
-  const ids: RolloverIdMaps = { classIds: new Map(), sectionIds: new Map() };
-  const classPairs = pairByName(source.classes, target.classes);
-  for (const cls of source.classes) {
-    const copyId = classPairs.get(cls.id);
-    if (!copyId) continue;
-    const copy = target.classes.find((candidate) => candidate.id === copyId);
-    if (!copy) continue;
-    ids.classIds.set(cls.id, copy.id);
-    const sectionPairs = pairByName(cls.sections ?? [], copy.sections ?? []);
-    for (const [sourceId, targetId] of sectionPairs) ids.sectionIds.set(sourceId, targetId);
-  }
-  return ids;
-}
-
-async function copySectionStaff(
-  tenant: string,
-  sectionIds: ReadonlyMap<string, string>,
-  startOn: string,
-  actorUserId: string,
-): Promise<void> {
-  for (const [sourceSectionId, targetSectionId] of sectionIds) {
-    const current = (await academic.listSectionStaff(tenant, sourceSectionId)).filter(
-      (row) => row.endOn === null,
-    );
-    for (const row of current) {
-      try {
-        await academic.assignSectionStaff(
-          tenant,
-          targetSectionId,
-          {
-            facultyId: row.facultyId,
-            role: row.role,
-            subjectId: row.subjectId,
-            startOn,
-            reason: "Copied in a session rollover",
-          },
-          actorUserId,
-        );
-      } catch (error) {
-        // A teacher who has since left (or a clash) is skipped; staff can assign one later.
-        if (!(error instanceof ValidationError || error instanceof ConflictError)) throw error;
-      }
-    }
-  }
-}
-
-/** Creates (or, on a retry, reuses) the draft target session with its staff and calendar. */
-async function ensureTarget(
-  tenant: string,
-  runId: string,
-  source: Session,
-  payload: SessionRolloverJobPayload,
-  actorUserId: string,
-): Promise<{ target: Session; ids: RolloverIdMaps }> {
-  const run = await runs.findPromotionRun(tenant, runId);
-  const existing = run?.targetSessionId
-    ? await sessionsRepository.findSessionById(tenant, run.targetSessionId)
-    : null;
-  if (existing) return { target: existing, ids: mapsByName(source, existing) };
-  const built = buildRolloverSession(source, payload.body, randomUUID);
-  // A `duplicate` run copies the structure for the *same* period on purpose (a parallel cohort),
-  // so its target is exempt from the tenant-wide no-overlap guarantee (migration 0206).
-  if (payload.body.mode === "duplicate") built.session.overlapExempt = true;
-  await sessionsRepository.saveSession(tenant, built.session);
-  await runs.updatePromotionRun(tenant, runId, { targetSessionId: built.session.id });
-  const { startDate, endDate } = payload.body.target;
-  if (payload.body.copy.staff)
-    await copySectionStaff(tenant, built.ids.sectionIds, startDate, actorUserId);
-  if (payload.body.copy.calendar && source.startDate)
-    await copySessionCalendarEvents(tenant, {
-      sourceSessionId: source.id,
-      targetSessionId: built.session.id,
-      range: { from: source.startDate, to: source.endDate || endDate },
-      offsetDays: isoDayOffset(source.startDate, startDate),
-      classIds: built.ids.classIds,
-      sectionIds: built.ids.sectionIds,
-      actorUserId,
-    });
-  // The built copy carries every id the promotion needs; no read-back (replica lag).
-  return { target: built.session, ids: built.ids };
-}
-
-/** Runs one rollover: draft session, then (promote) carried enrollments and source outcomes. */
 export async function executeSessionRollover(
   tenant: string,
   actorUserId: string,
@@ -148,16 +46,35 @@ export async function executeSessionRollover(
   progress: Progress,
 ): Promise<{ targetSessionId: string; carried: number }> {
   const { runId } = payload;
-  await runs.updatePromotionRun(tenant, runId, { status: "running", error: null });
+  const claimed = await runs.claimPromotionRun(tenant, runId);
+  if (!claimed) {
+    // Another worker owns the run, or it already completed. Never start a second target.
+    const run = await runs.findPromotionRun(tenant, runId);
+    if (!run) throw new NotFoundError("Rollover run not found");
+    return { targetSessionId: run.targetSessionId ?? "", carried: 0 };
+  }
+  const warnings: RolloverWarn = async (warning) => {
+    await runs.recordRunWarning(tenant, runId, warning.kind, warning.detail);
+  };
+
   try {
-    const source = await sessionsRepository.findSessionById(tenant, payload.sourceSessionId);
+    const source = await sessionsRepository.findSessionByIdPrimary(tenant, payload.sourceSessionId);
     if (!source) throw new NotFoundError("Session not found");
-    const { target, ids } = await ensureTarget(tenant, runId, source, payload, actorUserId);
-    const counts = { promoted: 0, retained: 0, graduated: 0, left: 0 };
+    const { target, ids } = await ensureTarget(
+      tenant,
+      runId,
+      source,
+      payload,
+      actorUserId,
+      warnings,
+    );
+    const counts: PromotionCounts = { promoted: 0, retained: 0, graduated: 0, left: 0 };
     let carried = 0;
+
     if (payload.body.mode === "promote") {
       const candidates = await listRolloverCandidates(tenant, source.id);
       const plan = planRollover(source, payload.body, candidates);
+      // PRIMARY read: a retry must see the rows this run already wrote (finding R2).
       const done = await runs.findPromotedSourceIds(
         tenant,
         target.id,
@@ -171,28 +88,60 @@ export async function executeSessionRollover(
         const sectionId = rolloverTargetSection(row, source, target, targetClassId, ids.sectionIds);
         return [{ candidate, targetClassId, targetSectionId: sectionId }];
       });
-      carried = await carryRolloverEnrollments(tenant, target, placements);
+      const carry = await carryRolloverEnrollments(tenant, target, placements, {
+        idFor: (sourceEnrollmentId) =>
+          deterministicRolloverId(runId, "enrollment", sourceEnrollmentId),
+      });
+      carried = carry.created;
+
       const lastDay = source.endDate || (await workspaceToday(tenant));
       const actor = { userId: actorUserId, label: "Session rollover" };
       for (const [index, row] of plan.entries()) {
         const candidate = byId.get(row.enrollmentId);
         if (!candidate) continue;
-        // A retry must not close (or count) enrollments an earlier attempt already carried.
-        if (!done.has(row.enrollmentId)) {
-          const status = PROMOTION_OUTCOME_STATUS[row.outcome];
+        const status = PROMOTION_OUTCOME_STATUS[row.outcome] as keyof PromotionCounts;
+        const alreadyCarried = done.has(row.enrollmentId);
+        const carryOutcome = row.outcome === "promote" || row.outcome === "retain";
+        if (carryOutcome && !alreadyCarried && !carry.carriedSourceIds.has(row.enrollmentId)) {
+          // Never close a student who has no target enrollment (finding R3).
+          await warnings({
+            kind: "carry_skipped",
+            detail: `${candidate.studentName} was not carried (no target class/section)`,
+          });
+          continue;
+        }
+        if (!alreadyCarried) {
           await closeRolloverSourceEnrollment(tenant, {
             enrollmentId: candidate.id,
             studentId: candidate.studentId,
-            status,
+            status: PROMOTION_OUTCOME_STATUS[row.outcome] as
+              "promoted" | "retained" | "graduated" | "left",
             lastDay,
             actor,
           });
-          counts[status] += 1;
         }
+        counts[status] += 1;
         await progress(index + 1, plan.length);
       }
+
+      if (payload.body.closeSource !== false) {
+        try {
+          await transitionSession(tenant, source.id, {
+            to: "completed",
+            reason: "Rollover completed",
+            actor: { userId: actorUserId, label: "Session rollover" },
+          });
+        } catch (error) {
+          if (error instanceof HttpDomainError) {
+            await warnings({ kind: "source_not_finalised", detail: error.message });
+          } else {
+            throw error;
+          }
+        }
+      }
     }
-    await runs.updatePromotionRun(tenant, runId, { status: "completed", ...counts });
+
+    await runs.updatePromotionRun(tenant, runId, { status: "completed", ...counts, error: null });
     await invalidateMultiTierCache({ tenantId: tenant, domain: "sessions" });
     await broadcastCollection("sessions");
     return { targetSessionId: target.id, carried };
@@ -227,3 +176,6 @@ export function registerSessionRolloverJobRunner(): void {
     });
   });
 }
+
+// Keep the serialised body type in the module surface for the router/contract.
+export type { SessionRolloverBody };

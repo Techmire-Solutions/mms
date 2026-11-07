@@ -5,11 +5,14 @@ import { handleContractError } from "../../../lib/contractError.js";
 import { standardRequestValidationErrorHandler } from "../../../lib/contractRegistration.js";
 import type { ContractRouteArgs } from "../../../lib/contractRouterTypes.js";
 import { canReadCollection, canWriteCollection } from "../../../services/rbacService.js";
+import { userHasPermission } from "../../../lib/userPermissionContext.js";
+import { SESSIONS_MODULE_MANIFEST as MANIFEST } from "@mms/shared";
 import { sessionRolloverUseCases as rollover } from "../../../sessions/use-cases/sessionRolloverUseCases.js";
 
 type Contract = typeof sessionRolloverContract;
 type Request = Parameters<typeof handleContractError>[0];
 const COLLECTION = SESSIONS_MODULE_MANIFEST.collectionKey;
+const OVERRIDE_LOCK_PERM = MANIFEST.permissions.overrideLock;
 const forbidden = {
   status: 403 as const,
   body: { type: "forbidden", message: "Insufficient permissions" },
@@ -37,7 +40,9 @@ export const sessionRolloverRouter: FastifyPluginAsync = async (fastify) => {
       const user = request.user as User;
       if (!canWriteCollection(user, COLLECTION)) return forbidden;
       try {
-        const run = await rollover.start(tenantOf(request), params.id, body, String(user.id));
+        const run = await rollover.start(tenantOf(request), params.id, body, String(user.id), {
+          canOverride: userHasPermission(user, OVERRIDE_LOCK_PERM),
+        });
         return { status: 202 as const, body: { run } };
       } catch (error) {
         return fail(request, error, "Failed to start the rollover");

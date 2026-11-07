@@ -10138,6 +10138,7 @@ export const APP_TRANSLATIONS_EN = {
   "sessions.rollover.copy.workingDays": "Working days",
   "sessions.rollover.copy.staff": "Section teachers (from the new start date)",
   "sessions.rollover.copy.calendar": "Session calendar events (shifted)",
+  "sessions.rollover.copy.schedules": "Class schedules (shifted)",
   "sessions.rollover.classMap": "Where each class goes next",
   "sessions.rollover.nextClassFor": "After {class}",
   "sessions.rollover.graduate": "Graduate",

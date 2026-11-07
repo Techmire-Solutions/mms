@@ -9,6 +9,7 @@ import {
   type SessionRolloverRun,
 } from "@mms/shared";
 import { sessionsRepository } from "../repository/sessionsRepositoryAdapter.js";
+import { withTenant } from "../../db/tenant-context.js";
 import { sessionRolloverRepository as runs } from "../repository/sessionRolloverRepositoryAdapter.js";
 import { listRolloverCandidates } from "../../enrollments/use-cases/enrollmentRolloverUseCases.js";
 import { enqueueBackgroundJob } from "../../services/backgroundJobWorkerService.js";
@@ -39,6 +40,13 @@ function assertClassMap(source: Session, body: SessionRolloverBody): void {
     (row) => !ids.has(row.sourceClassId) || (row.nextClassId !== null && !ids.has(row.nextClassId)),
   );
   if (unknown) throw new ValidationError("The class map names a class outside this session");
+  // Duplicate source classes would hit the class-map primary key (500); reject them as a 400.
+  const seen = new Set<string>();
+  for (const row of body.classMap) {
+    if (seen.has(row.sourceClassId))
+      throw new ValidationError(`The class map names ${row.sourceClassId} twice`);
+    seen.add(row.sourceClassId);
+  }
 }
 
 function createSessionRolloverUseCases() {
@@ -65,36 +73,51 @@ function createSessionRolloverUseCases() {
       sessionId: string,
       input: SessionRolloverInput,
       actorUserId: string,
+      options: { canOverride?: boolean } = {},
     ): Promise<SessionRolloverRun> {
       const body = sessionRolloverBodySchema.parse(input);
       const source = await loadSource(tenant, sessionId);
       assertClassMap(source, body);
-      if (body.mode === "promote" && !PROMOTABLE_STATES.has(normalizeSessionStatus(source.status)))
+      const sourceState = normalizeSessionStatus(source.status);
+      if (body.mode === "promote" && !PROMOTABLE_STATES.has(sourceState))
         throw new ConflictError("Only a session in progress or completed can be promoted");
+      // Promote closes every source enrollment: completing the source is routine, but doing it
+      // from an in-progress session is a destructive override (review finding R9).
+      if (body.mode === "promote" && sourceState !== "completed" && !options.canOverride)
+        throw new ConflictError(
+          "Promoting an in-progress session closes its enrollments; complete the session first or use the override permission",
+        );
+      // Abandoned queued/running runs would block every future rollover; recover them first.
+      await runs.failStaleRuns(tenant);
       const runId = randomUUID();
-      const created = await runs.createPromotionRun(tenant, {
-        id: runId,
-        sourceSessionId: sessionId,
-        mode: body.mode,
-        classMap: body.classMap,
-        createdBy: actorUserId,
-      });
-      if (!created) throw new ConflictError("A rollover for this session is already running");
-      const payload: SessionRolloverJobPayload = { runId, sourceSessionId: sessionId, body };
-      const job = await enqueueBackgroundJob(
-        tenant,
-        actorUserId,
-        {
+      let jobId = "";
+      // One transaction for run + job + job id: an enqueue failure must not leave a stuck run.
+      await withTenant(tenant, async () => {
+        const created = await runs.createPromotionRun(tenant, {
           id: runId,
-          moduleId: "sessions",
-          kind: SESSION_ROLLOVER_JOB_KIND,
-          status: "running",
-          label: `${body.mode === "promote" ? "Promote" : "Duplicate"} ${source.name} → ${body.target.name}`,
-          createdAt: new Date().toISOString(),
-        },
-        payload,
-      );
-      await runs.updatePromotionRun(tenant, runId, { jobId: job.id });
+          sourceSessionId: sessionId,
+          mode: body.mode,
+          classMap: body.classMap,
+          createdBy: actorUserId,
+        });
+        if (!created) throw new ConflictError("A rollover for this session is already running");
+        const payload: SessionRolloverJobPayload = { runId, sourceSessionId: sessionId, body };
+        const job = await enqueueBackgroundJob(
+          tenant,
+          actorUserId,
+          {
+            id: runId,
+            moduleId: "sessions",
+            kind: SESSION_ROLLOVER_JOB_KIND,
+            status: "running",
+            label: `${body.mode === "promote" ? "Promote" : "Duplicate"} ${source.name} → ${body.target.name}`,
+            createdAt: new Date().toISOString(),
+          },
+          payload,
+        );
+        jobId = job.id;
+        await runs.updatePromotionRun(tenant, runId, { jobId });
+      });
       return {
         id: runId,
         sourceSessionId: sessionId,
@@ -106,7 +129,7 @@ function createSessionRolloverUseCases() {
         graduated: 0,
         left: 0,
         error: null,
-        jobId: job.id,
+        jobId,
       };
     },
 

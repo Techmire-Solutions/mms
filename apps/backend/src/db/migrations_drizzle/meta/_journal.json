@@ -1450,6 +1450,13 @@
       "when": 1794038400000,
       "tag": "0206_sessions_integrity",
       "breakpoints": true
+    },
+    {
+      "idx": 207,
+      "version": "7",
+      "when": 1794211200000,
+      "tag": "0207_session_delivery_integrity",
+      "breakpoints": true
     }
   ]
 }

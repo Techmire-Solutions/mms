@@ -6,6 +6,13 @@ import {
   listPromotionRuns,
   updatePromotionRun,
 } from "../../db/repositories/sessionPromotionRepository.js";
+import {
+  claimPromotionRun,
+  failStaleRuns,
+  findPromotionRunForUpdate,
+  listRunWarnings,
+  recordRunWarning,
+} from "../../db/repositories/sessionPromotionRunExecutionRepository.js";
 
 export const sessionRolloverRepository: SessionRolloverRepository = {
   createPromotionRun,
@@ -13,4 +20,9 @@ export const sessionRolloverRepository: SessionRolloverRepository = {
   findPromotionRun,
   listPromotionRuns,
   findPromotedSourceIds,
+  claimPromotionRun,
+  failStaleRuns,
+  findPromotionRunForUpdate,
+  recordRunWarning,
+  listRunWarnings,
 };

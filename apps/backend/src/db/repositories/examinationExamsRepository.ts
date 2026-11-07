@@ -13,7 +13,11 @@ export {
   bulkRestoreExams,
 } from "./examinationExamsPersist.js";
 
-type ExamRow = typeof exams.$inferSelect & { subject: string };
+type ExamRow = Omit<typeof exams.$inferSelect, "resultsFinalizedAt"> & {
+  subject: string;
+  /** Selected by the completion/finalisation queries; not part of every exam projection. */
+  resultsFinalizedAt?: Date | null;
+};
 
 export function examRowToRecord(row: ExamRow, classIds: string[] = []): Exam {
   const exam: Exam = {

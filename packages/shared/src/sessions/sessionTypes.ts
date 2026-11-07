@@ -81,7 +81,7 @@ export const ClassSchema = z
     ageCalculationDate: z.string().optional().default(""),
     minAge: z.coerce.number().int().min(0).max(120).default(0),
     maxAge: z.coerce.number().int().min(0).max(120).default(0),
-    maxStudents: z.coerce.number().int().min(0).default(0), // Maximum Student Count / Capacity
+    maxStudents: z.coerce.number().int().min(0).max(100000).default(0), // Maximum Student Count / Capacity
     enrolled: z.coerce.number().int().nonnegative().default(0),
     enrollmentDeadline: z.string().optional().default(""),
     status: z.enum(["active", "inactive"]).default("active"),
@@ -112,7 +112,7 @@ export const ClassInsertSchema = z
     ageCalculationDate: z.string().optional().default(""),
     minAge: z.coerce.number().int().min(0).max(120).default(0),
     maxAge: z.coerce.number().int().min(0).max(120).default(0),
-    maxStudents: z.coerce.number().int().min(0).default(0),
+    maxStudents: z.coerce.number().int().min(0).max(100000).default(0),
     enrolled: z.coerce.number().int().nonnegative().default(0),
     enrollmentDeadline: z.string().optional().default(""),
     status: z.enum(["active", "inactive"]).default("active"),

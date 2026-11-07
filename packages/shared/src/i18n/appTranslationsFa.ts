@@ -10086,6 +10086,7 @@ export const APP_TRANSLATIONS_FA: Partial<Record<AppTranslationKey, string>> = {
   "sessions.rollover.copy.workingDays": "روزهای کاری",
   "sessions.rollover.copy.staff": "معلمان بخش (از تاریخ شروع جدید)",
   "sessions.rollover.copy.calendar": "رویدادهای تقویم دوره (جابه‌جاشده)",
+  "sessions.rollover.copy.schedules": "برنامه‌های کلاسی (با جابه‌جایی تاریخ‌ها)",
   "sessions.rollover.classMap": "مقصد بعدی هر کلاس",
   "sessions.rollover.nextClassFor": "پس از {class}",
   "sessions.rollover.graduate": "فارغ‌التحصیلی",

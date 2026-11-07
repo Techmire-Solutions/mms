@@ -16,6 +16,10 @@ const rows: SessionCompletionRow[] = [
     shortfalls: [],
     completedAt: "2026-03-31T10:00:00Z",
     certificateIssuedAt: null,
+    unmarkedDays: 0,
+    unfinalizedExams: 0,
+    outstandingDues: 0,
+    stale: false,
   },
   {
     enrollmentId: "e2",
@@ -28,6 +32,10 @@ const rows: SessionCompletionRow[] = [
     shortfalls: ["attendance_below", "exam_not_passed"],
     completedAt: null,
     certificateIssuedAt: null,
+    unmarkedDays: 0,
+    unfinalizedExams: 0,
+    outstandingDues: 0,
+    stale: false,
   },
   // Stale completedAt after a criteria change: computed status is not_completed, so it must not
   // count toward the issue-all total.
@@ -42,6 +50,10 @@ const rows: SessionCompletionRow[] = [
     shortfalls: ["attendance_below"],
     completedAt: "2026-03-31T10:00:00Z",
     certificateIssuedAt: null,
+    unmarkedDays: 0,
+    unfinalizedExams: 0,
+    outstandingDues: 0,
+    stale: false,
   },
 ];
 

@@ -2,6 +2,7 @@ import { initContract } from "@ts-rest/core";
 import { z } from "zod";
 import {
   sessionCertificatesBodySchema,
+  sessionCompletionActionBodySchema,
   sessionCompletionRowSchema,
 } from "../sessions/sessionCompletion.js";
 
@@ -31,7 +32,7 @@ export const sessionCompletionContract = c.router({
     method: "POST",
     path: "/api/sessions/:id/completion/evaluate",
     pathParams: sessionParams,
-    body: z.object({}).strict(),
+    body: sessionCompletionActionBodySchema,
     responses: { 200: rowsResponse, ...errors },
     summary: "Evaluate and store completion for every enrollment of the session",
   },

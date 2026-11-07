@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { evaluateCompletion } from "./sessionCompletion.js";
+import { completionGateViolations, evaluateCompletion } from "./sessionCompletion.js";
 
 const facts = { attendancePct: 90, examsPassed: true, examsComplete: true };
 
@@ -36,6 +36,37 @@ describe("evaluateCompletion", () => {
     expect(failed.shortfalls).toEqual(["exam_not_passed"]);
     expect(missing.shortfalls).toEqual(["exam_missing"]);
     expect(none.shortfalls).toEqual(["exam_missing"]);
+  });
+
+  describe("completionGateViolations", () => {
+    it("given unmarked days and unfinalized exams, should name both finalisation gates", () => {
+      expect(completionGateViolations({ unmarkedDays: 3, unfinalizedExams: 2 })).toEqual([
+        "attendance_unfinalized",
+        "exams_unfinalized",
+      ]);
+    });
+
+    it("given no criteria, outstanding dues and stale evidence, should name each gate", () => {
+      expect(
+        completionGateViolations({
+          criteriaConfigured: false,
+          outstandingDues: 1500,
+          evaluationStale: true,
+        }),
+      ).toEqual(["no_criteria", "outstanding_dues", "evaluation_stale"]);
+    });
+
+    it("given a fully finalised session, should report no violations", () => {
+      expect(
+        completionGateViolations({
+          unmarkedDays: 0,
+          unfinalizedExams: 0,
+          criteriaConfigured: true,
+          outstandingDues: 0,
+          evaluationStale: false,
+        }),
+      ).toEqual([]);
+    });
   });
 
   it("given every criterion met, should complete", () => {

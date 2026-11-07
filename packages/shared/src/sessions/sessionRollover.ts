@@ -39,6 +39,8 @@ export const sessionRolloverBodySchema = z
         workingDays: z.boolean().default(true),
         staff: z.boolean().default(true),
         calendar: z.boolean().default(false),
+        /** Dated class schedule windows, shifted by the rollover offset. */
+        schedules: z.boolean().default(true),
       })
       .strict(),
     /** Source class → source class whose copy the students move into next (null = graduate). */
@@ -46,6 +48,8 @@ export const sessionRolloverBodySchema = z
       .array(z.object({ sourceClassId: idSchema, nextClassId: idSchema.nullable() }).strict())
       .max(200)
       .default([]),
+    /** Finalise (complete) the source session once every outcome has been applied. */
+    closeSource: z.boolean().default(true),
     /** Per-student overrides of the outcome the class map implies. */
     outcomes: z
       .array(z.object({ enrollmentId: idSchema, outcome: z.enum(PROMOTION_OUTCOMES) }).strict())

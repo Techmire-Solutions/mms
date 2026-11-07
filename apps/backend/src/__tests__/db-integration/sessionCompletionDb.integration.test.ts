@@ -26,6 +26,7 @@ const DAYS = ["2026-03-02", "2026-03-03", "2026-03-04", "2026-03-05"];
 async function purgeTenant(): Promise<void> {
   await withTenant(TENANT, async (tx) => {
     await tx.execute(sql`SET LOCAL app.allow_hard_purge = 'true'`);
+    await tx.execute(sql`SET LOCAL app.allow_certified_evidence_edit = 'on'`);
     await tx.delete(workspaces).where(eq(workspaces.subdomain, TENANT));
   });
 }
@@ -89,9 +90,15 @@ beforeAll(async () => {
         },
       ]),
     );
-    await tx
-      .insert(exams)
-      .values({ id: "final", workspaceSubdomain: TENANT, name: "Final", passingMarks: 50 });
+    await tx.insert(exams).values({
+      id: "final",
+      workspaceSubdomain: TENANT,
+      name: "Final",
+      passingMarks: 50,
+      // Grade finalisation gate: only completed, finalized exams count toward completion.
+      status: "completed",
+      resultsFinalizedAt: new Date("2026-03-30T00:00:00Z"),
+    });
     await tx
       .insert(examClasses)
       .values({ workspaceSubdomain: TENANT, examId: "final", classId: "batch" });
@@ -113,7 +120,16 @@ afterAll(async () => {
 describe("short-course completion (real Postgres)", () => {
   it("given attendance and exam results, should evaluate completion against the criteria", async () => {
     // Act
-    const rows = await run(() => completion.evaluate(TENANT, "course"));
+    const rows = await run(() =>
+      completion.evaluate(
+        TENANT,
+        "course",
+        // Attendance is marked for 4 of the month's instructional days; acknowledge the rest and
+        // exercise the audited override path (the gate is asserted in its own test).
+        { acknowledge: ["attendance_unfinalized"], reason: "Test fixture marks only four days" },
+        { canOverride: true },
+      ),
+    );
 
     // Assert
     const byStudent = Object.fromEntries(rows.map((row) => [row.studentId, row]));
@@ -139,10 +155,28 @@ describe("short-course completion (real Postgres)", () => {
 
     // Act
     const first = await run(() =>
-      completion.issueCertificates(TENANT, "course", { enrollmentIds: [] }),
+      completion.issueCertificates(
+        TENANT,
+        "course",
+        {
+          enrollmentIds: [],
+          acknowledge: ["attendance_unfinalized"],
+          reason: "Test fixture marks only four days",
+        },
+        { canOverride: true },
+      ),
     );
     const second = await run(() =>
-      completion.issueCertificates(TENANT, "course", { enrollmentIds: [] }),
+      completion.issueCertificates(
+        TENANT,
+        "course",
+        {
+          enrollmentIds: [],
+          acknowledge: ["attendance_unfinalized"],
+          reason: "Test fixture marks only four days",
+        },
+        { canOverride: true },
+      ),
     );
 
     // Assert
@@ -152,5 +186,57 @@ describe("short-course completion (real Postgres)", () => {
     expect(first.issued).toHaveLength(1);
     expect(issuedTo).toEqual(["s1"]);
     expect(second.issued).toEqual([]);
+  });
+
+  it("should refuse completion while attendance is unmarked and exams are unfinalized", async () => {
+    // Arrange — a session whose only marked day is one of many instructional days, with an
+    // exam that has not been finalized.
+    await saveSession(
+      TENANT,
+      SessionSchema.parse({
+        id: "gated",
+        name: "Gated Course",
+        status: "in_progress",
+        startDate: "2026-03-01",
+        endDate: "2026-03-31",
+        workingDays: [...WEEKDAY_NAMES],
+        minAttendancePct: 75,
+        requiresExamPass: true,
+        classes: [{ id: "gated-class", name: "Gated", sections: [{ id: "gated-a", name: "A" }] }],
+      }),
+    );
+    await run(() =>
+      bulkEnrollStudentsIntoClass(TENANT, {
+        studentIds: ["s1"],
+        sessionId: "gated",
+        classId: "gated-class",
+        mode: "add",
+      }),
+    );
+    await withTenant(TENANT, async (tx) => {
+      await tx.insert(attendance).values({
+        id: "gated-a1",
+        workspaceSubdomain: TENANT,
+        classId: "gated-class",
+        studentId: "s1",
+        date: "2026-03-02",
+        status: "present",
+      });
+      await tx.insert(exams).values({
+        id: "gated-final",
+        workspaceSubdomain: TENANT,
+        name: "Gated Final",
+        passingMarks: 50,
+        status: "ongoing",
+      });
+      await tx
+        .insert(examClasses)
+        .values({ workspaceSubdomain: TENANT, examId: "gated-final", classId: "gated-class" });
+    });
+
+    // Act / Assert — no acknowledgement, no override: both gates block.
+    await expect(run(() => completion.evaluate(TENANT, "gated"))).rejects.toMatchObject({
+      violations: expect.arrayContaining(["attendance_unfinalized", "exams_unfinalized"]),
+    });
   });
 });

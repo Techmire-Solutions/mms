@@ -5,11 +5,13 @@ import { handleContractError } from "../../../lib/contractError.js";
 import { standardRequestValidationErrorHandler } from "../../../lib/contractRegistration.js";
 import type { ContractRouteArgs } from "../../../lib/contractRouterTypes.js";
 import { canReadCollection, canWriteCollection } from "../../../services/rbacService.js";
+import { userHasPermission } from "../../../lib/userPermissionContext.js";
 import { sessionCompletionUseCases as completion } from "../../../sessions/use-cases/sessionCompletionUseCases.js";
 
 type Contract = typeof sessionCompletionContract;
 type Request = Parameters<typeof handleContractError>[0];
 const COLLECTION = SESSIONS_MODULE_MANIFEST.collectionKey;
+const OVERRIDE_LOCK_PERM = SESSIONS_MODULE_MANIFEST.permissions.overrideLock;
 const forbidden = {
   status: 403 as const,
   body: { type: "forbidden", message: "Insufficient permissions" },
@@ -33,12 +35,17 @@ export const sessionCompletionRouter: FastifyPluginAsync = async (fastify) => {
         return fail(request, error, "Failed to load completion");
       }
     },
-    evaluate: async ({ params, request }: ContractRouteArgs<Contract["evaluate"]>) => {
-      if (!canWriteCollection(request.user as User, COLLECTION)) return forbidden;
+    evaluate: async ({ params, body, request }: ContractRouteArgs<Contract["evaluate"]>) => {
+      const user = request.user as User;
+      if (!canWriteCollection(user, COLLECTION)) return forbidden;
       try {
         return {
           status: 200 as const,
-          body: { rows: await completion.evaluate(tenantOf(request), params.id) },
+          body: {
+            rows: await completion.evaluate(tenantOf(request), params.id, body, {
+              canOverride: userHasPermission(user, OVERRIDE_LOCK_PERM),
+            }),
+          },
         };
       } catch (error) {
         return fail(request, error, "Failed to evaluate completion");
@@ -49,11 +56,14 @@ export const sessionCompletionRouter: FastifyPluginAsync = async (fastify) => {
       body,
       request,
     }: ContractRouteArgs<Contract["certificates"]>) => {
-      if (!canWriteCollection(request.user as User, COLLECTION)) return forbidden;
+      const user = request.user as User;
+      if (!canWriteCollection(user, COLLECTION)) return forbidden;
       try {
         return {
           status: 200 as const,
-          body: await completion.issueCertificates(tenantOf(request), params.id, body),
+          body: await completion.issueCertificates(tenantOf(request), params.id, body, {
+            canOverride: userHasPermission(user, OVERRIDE_LOCK_PERM),
+          }),
         };
       } catch (error) {
         return fail(request, error, "Failed to issue certificates");

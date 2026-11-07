@@ -2,6 +2,17 @@ import { and, desc, eq, inArray, isNotNull, isNull, sql } from "drizzle-orm";
 import type { SessionRolloverRun } from "@mms/shared";
 import { enrollments, sessionPromotionClassMap, sessionPromotionRuns } from "../schema.js";
 import { withTenant, withTenantRead } from "../tenant-context.js";
+import { isUniqueViolation } from "../../lib/pgErrors.js";
+
+/** Patch shape for a run, including the execution phases (migration 0207). */
+export type PromotionRunPatch = Partial<
+  Omit<SessionRolloverRun, "id" | "sourceSessionId" | "mode"> & {
+    claimedAt: Date | null;
+    structureCopiedAt: Date | null;
+    staffCopiedAt: Date | null;
+    calendarCopiedAt: Date | null;
+  }
+>;
 
 const RUN_COLUMNS = {
   id: sessionPromotionRuns.id,
@@ -53,22 +64,28 @@ export async function createPromotionRun(
       )
       .limit(1);
     if (active) return false;
-    await tx.insert(sessionPromotionRuns).values({
-      id: run.id,
-      workspaceSubdomain: subdomain,
-      sourceSessionId: run.sourceSessionId,
-      mode: run.mode,
-      createdBy: run.createdBy,
-    });
-    if (run.classMap.length > 0)
-      await tx.insert(sessionPromotionClassMap).values(
-        run.classMap.map((row) => ({
-          workspaceSubdomain: subdomain,
-          runId: run.id,
-          sourceClassId: row.sourceClassId,
-          nextClassId: row.nextClassId,
-        })),
-      );
+    try {
+      await tx.insert(sessionPromotionRuns).values({
+        id: run.id,
+        workspaceSubdomain: subdomain,
+        sourceSessionId: run.sourceSessionId,
+        mode: run.mode,
+        createdBy: run.createdBy,
+      });
+      if (run.classMap.length > 0)
+        await tx.insert(sessionPromotionClassMap).values(
+          run.classMap.map((row) => ({
+            workspaceSubdomain: subdomain,
+            runId: run.id,
+            sourceClassId: row.sourceClassId,
+            nextClassId: row.nextClassId,
+          })),
+        );
+    } catch (error) {
+      // The partial unique index (migration 0207) is the database backstop for concurrent starts.
+      if (isUniqueViolation(error)) return false;
+      throw error;
+    }
     return true;
   });
 }
@@ -76,7 +93,7 @@ export async function createPromotionRun(
 export async function updatePromotionRun(
   tenant: string,
   id: string,
-  patch: Partial<Omit<SessionRolloverRun, "id" | "sourceSessionId" | "mode">>,
+  patch: PromotionRunPatch,
 ): Promise<void> {
   const subdomain = tenant.trim().toLowerCase();
   await withTenant(subdomain, (tx) =>
@@ -140,7 +157,8 @@ export async function findPromotedSourceIds(
 ): Promise<Set<string>> {
   if (sourceEnrollmentIds.length === 0) return new Set();
   const subdomain = tenant.trim().toLowerCase();
-  const rows = await withTenantRead(subdomain, (tx) =>
+  // PRIMARY read: a retry must see the rows this run just wrote, not a lagging replica.
+  const rows = await withTenant(subdomain, (tx) =>
     tx
       .select({ from: enrollments.promotedFromEnrollmentId })
       .from(enrollments)

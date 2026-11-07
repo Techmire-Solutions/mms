@@ -1,7 +1,7 @@
 import { and, eq, inArray, isNotNull, isNull, ne, sql } from "drizzle-orm";
 import { type Session } from "@mms/shared";
 import { sessions, sessionClasses, type SessionReadRow } from "../schema.js";
-import { withTenantRead, type TenantTransaction } from "../tenant-context.js";
+import { withTenant, withTenantRead, type TenantTransaction } from "../tenant-context.js";
 import { hydrateSessionsList, hydrateSessionsListSummary } from "./sessionRepositoryHydrate.js";
 import { getPreparedSessionById } from "../preparedStatements.js";
 import { attachClassSectionsTx } from "./sessionSectionsHydrate.js";
@@ -95,6 +95,28 @@ export async function findSessionById(tenant: string, id: string): Promise<Sessi
     }
     const row = rows[0];
     if (!row) return null;
+    const [result] = await attachSessionChildrenTx(
+      tx,
+      subdomain,
+      await hydrateSessionsList(tx, subdomain, rows),
+    );
+    return result ?? null;
+  });
+}
+
+/**
+ * `findSessionById` on the PRIMARY. Rollover control flow must never depend on a lagging replica:
+ * a retry that cannot see the just-written target would create a second session (review finding R2).
+ */
+export async function findSessionByIdPrimary(tenant: string, id: string): Promise<Session | null> {
+  const subdomain = tenant.trim().toLowerCase();
+  return withTenant(subdomain, async (tx) => {
+    if (!tx || typeof (tx as { select?: unknown }).select !== "function") return null;
+    const rows = await tx
+      .select(sessionSelectColumns)
+      .from(sessions)
+      .where(and(eq(sessions.workspaceSubdomain, subdomain), eq(sessions.id, id)));
+    if (rows.length === 0) return null;
     const [result] = await attachSessionChildrenTx(
       tx,
       subdomain,
