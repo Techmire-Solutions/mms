@@ -25,7 +25,13 @@ describe("WorkingDaysPicker", () => {
     expect(html).toContain("<legend");
     expect(html).toContain("Weekly working days");
     expect(html.match(/name="workingDays"/g)?.length ?? 0).toBeGreaterThanOrEqual(7);
-    for (const day of ["Sunday", "Monday", "Saturday"]) expect(html).toContain(day);
+    // Compact visible labels with the full localized weekday kept as the accessible name.
+    for (const day of ["Sun", "Mon", "Sat"]) expect(html).toContain(`>${day}<`);
+    for (const day of ["Sunday", "Monday", "Saturday"])
+      expect(html).toContain(`aria-label="${day}"`);
+    expect(html).toContain("lg:grid-cols-7");
+    expect(html).toContain("auto-rows-fr");
+    expect(html).not.toContain(">Wednesday<");
   });
 
   it("adds a day exactly once when its checkbox is clicked", async () => {
