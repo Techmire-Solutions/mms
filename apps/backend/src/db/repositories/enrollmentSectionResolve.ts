@@ -1,7 +1,11 @@
 import { sql } from "drizzle-orm";
 import { enrollmentHoldsSeat, type Enrollment } from "@mms/shared";
 import type { TenantTransaction } from "../tenant-context.js";
-import { ConflictError, SeatCapacityError, ValidationError } from "../../lib/httpErrors.js";
+import {
+  RollNumberConflictError,
+  SeatCapacityError,
+  ValidationError,
+} from "../../lib/httpErrors.js";
 import { enrollmentHoldsSeatSql } from "./enrollmentSeatSql.js";
 import {
   countLiveSeatsBySectionTx,
@@ -172,7 +176,9 @@ export async function resolveEnrollmentSectionsTx(
   for (const record of withRoll) {
     const key = `${record.sectionId}|${record.rollNo!.toLowerCase()}`;
     if (seen.has(key))
-      throw new ConflictError(`Roll number ${record.rollNo} is used twice in this section`);
+      throw new RollNumberConflictError(
+        `Roll number ${record.rollNo} is used twice in this section`,
+      );
     seen.add(key);
   }
   if (withRoll.length > 0) {
@@ -190,7 +196,7 @@ export async function resolveEnrollmentSectionsTx(
        LIMIT 1
     `);
     if (clash.rows[0])
-      throw new ConflictError(
+      throw new RollNumberConflictError(
         `Roll number ${clash.rows[0].rollNo} is already used in this section`,
       );
   }

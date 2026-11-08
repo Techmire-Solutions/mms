@@ -1,14 +1,6 @@
 import { describe, it, expect, beforeAll, afterAll } from "vitest";
 import { and, eq, isNull, sql } from "drizzle-orm";
-import { readFileSync } from "node:fs";
-import { resolve, dirname, join } from "node:path";
-import { fileURLToPath } from "node:url";
-import {
-  initializeDatabaseConnection,
-  pingDatabase,
-  closeDatabase,
-  beginLongLivedTenantTransaction,
-} from "../../db/dbConnection.js";
+import { closeDatabase, beginLongLivedTenantTransaction } from "../../db/dbConnection.js";
 import { applyDrizzleMigrations } from "../../db/dbInit.js";
 import { withTenant } from "../../db/tenant-context.js";
 import {
@@ -31,26 +23,13 @@ import {
 } from "../../db/repositories/studentEnrollmentCascade.js";
 import { restoreSessionWithCascade } from "../../db/repositories/sessionRepositoryCascade.js";
 import { SeatCapacityError } from "../../lib/httpErrors.js";
+import { requireDatabaseConnection } from "./dbTestSupport.js";
 
 const TENANT = "enr-integrity-test";
 const SESSION = "ses-integrity";
 const CLASS = "cls-integrity";
 const SECTION_FULL = "sec-full";
 const SECTION_OPEN = "sec-open";
-const backendRoot = resolve(dirname(fileURLToPath(import.meta.url)), "..", "..", "..");
-
-function applyDatabaseUrlFromEnvFile(): void {
-  if (process.env.DATABASE_URL) return;
-  try {
-    const content = readFileSync(join(backendRoot, ".env"), "utf-8");
-    const match = content.match(/^DATABASE_URL\s*=\s*"?([^"\n]+)"?$/m);
-    if (match) process.env.DATABASE_URL = match[1].trim();
-  } catch {
-    // fallback to environment defaults
-  }
-}
-
-let dbAvailable = false;
 
 /** Reads one enrollment including its trashed state (FORCE RLS needs the opt-in). */
 async function readEnrollmentRow(id: string) {
@@ -173,16 +152,13 @@ function enrollmentRecord(id: string, studentId: string, sectionId: string | nul
 }
 
 beforeAll(async () => {
-  applyDatabaseUrlFromEnvFile();
-  initializeDatabaseConnection();
-  dbAvailable = await pingDatabase();
-  if (!dbAvailable) return;
+  await requireDatabaseConnection();
   await applyDrizzleMigrations();
   await seedFixtures();
 });
 
 afterAll(async () => {
-  if (dbAvailable) {
+  {
     const cleanup = await beginLongLivedTenantTransaction(null, { allowGlobal: true });
     try {
       await cleanup.tx.execute(sql`SET LOCAL app.allow_hard_purge = 'true'`);
@@ -203,8 +179,7 @@ afterAll(async () => {
 });
 
 describe("enrollment integrity indexes (real Postgres)", () => {
-  it("provisions every integrity index as valid on a migrated database", async (ctx) => {
-    if (!dbAvailable) return ctx.skip();
+  it("provisions every integrity index as valid on a migrated database", async () => {
     const expected = [
       "enrollments_live_student_session_uidx",
       "enrollments_section_roll_no_active_uidx",
@@ -232,8 +207,7 @@ describe("enrollment integrity indexes (real Postgres)", () => {
     expect(found.get("enrollments_live_student_session_uidx")?.unique).toBe(true);
   });
 
-  it("rejects a second live enrollment for the same student and session", async (ctx) => {
-    if (!dbAvailable) return ctx.skip();
+  it("rejects a second live enrollment for the same student and session", async () => {
     await saveEnrollment(TENANT, enrollmentRecord("enr-dup-1", "stu-a", SECTION_OPEN));
 
     await expect(
@@ -264,8 +238,7 @@ describe("enrollment integrity indexes (real Postgres)", () => {
     await saveEnrollment(TENANT, enrollmentRecord("enr-dup-3", "stu-a", SECTION_OPEN));
   });
 
-  it("serializes seat allocation so two concurrent writes cannot take the last seat", async (ctx) => {
-    if (!dbAvailable) return ctx.skip();
+  it("serializes seat allocation so two concurrent writes cannot take the last seat", async () => {
     // A dedicated one-seat section keeps the race deterministic.
     await withTenant(TENANT, async (tx) =>
       tx.insert(sessionClassSections).values({
@@ -304,8 +277,7 @@ describe("enrollment integrity indexes (real Postgres)", () => {
     expect(Number(count)).toBe(1);
   });
 
-  it("refuses a transfer into a full section and writes no placement", async (ctx) => {
-    if (!dbAvailable) return ctx.skip();
+  it("refuses a transfer into a full section and writes no placement", async () => {
     const placementsBefore = await withTenant(TENANT, async (tx) =>
       tx
         .select({ id: enrollmentPlacements.id })
@@ -343,8 +315,7 @@ describe("enrollment integrity indexes (real Postgres)", () => {
 });
 
 describe("enrollment restore guards (real Postgres)", () => {
-  it("bulk restore leaves cascade-archived rows trashed", async (ctx) => {
-    if (!dbAvailable) return ctx.skip();
+  it("bulk restore leaves cascade-archived rows trashed", async () => {
     const tx = await beginLongLivedTenantTransaction(null, { allowGlobal: true });
     try {
       await tx.tx.insert(enrollments).values([
@@ -398,8 +369,7 @@ describe("enrollment restore guards (real Postgres)", () => {
     expect((await readEnrollmentRow("enr-trash-cascade"))?.deletedAt).not.toBeNull();
   });
 
-  it("does not resurrect an enrollment whose session is still archived", async (ctx) => {
-    if (!dbAvailable) return ctx.skip();
+  it("does not resurrect an enrollment whose session is still archived", async () => {
     const tx = await beginLongLivedTenantTransaction(null, { allowGlobal: true });
     try {
       await tx.tx.insert(enrollments).values({
@@ -467,8 +437,7 @@ describe("enrollment restore guards (real Postgres)", () => {
     expect((await readEnrollmentRow("enr-orphan-a"))?.deletedAt).not.toBeNull();
   });
 
-  it("does not resurrect an enrollment whose student is still archived", async (ctx) => {
-    if (!dbAvailable) return ctx.skip();
+  it("does not resurrect an enrollment whose student is still archived", async () => {
     const tx = await beginLongLivedTenantTransaction(null, { allowGlobal: true });
     try {
       await tx.tx.insert(enrollments).values({

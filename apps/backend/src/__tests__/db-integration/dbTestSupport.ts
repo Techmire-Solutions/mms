@@ -1,3 +1,4 @@
+import { randomUUID } from "node:crypto";
 import { readFileSync } from "node:fs";
 import { dirname, join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
@@ -51,4 +52,21 @@ export async function requireDatabaseConnection(): Promise<void> {
         "  src/__tests__/db-integration/** entirely.",
     );
   }
+}
+
+/** Random per-run tenant subdomain so a reused database cannot collide with stale rows. */
+export function uniqueTenant(prefix: string): string {
+  return `${prefix}-${randomUUID().slice(0, 8)}`;
+}
+
+/** UTC today as YYYY-MM-DD; computed at call time (never at module import). */
+export function todayIso(now = new Date()): string {
+  return now.toISOString().slice(0, 10);
+}
+
+/** A date N days from today (negative = past), for rules that depend on "today". */
+export function daysFromToday(days: number): string {
+  const date = new Date();
+  date.setUTCDate(date.getUTCDate() + days);
+  return date.toISOString().slice(0, 10);
 }

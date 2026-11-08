@@ -180,6 +180,9 @@ if [[ "$WITH_DB" -eq 1 && "$NEED_BE_DB" -eq 1 ]]; then
     echo "Phase E: backend DB (--with-db)"
     pnpm --filter mms-backend run db:migrate
     pnpm --filter mms-backend run test:db
+    node scripts/ci/check-db-test-hygiene.mjs
+    node scripts/ci/check-db-test-manifest.mjs
+    pnpm --filter mms-backend run test:db:concurrency
     note_ran "backend-db"
   else
     echo "SKIP backend-db: Postgres not ready (pg_isready)."
