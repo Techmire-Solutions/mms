@@ -1,8 +1,6 @@
-import { and, eq, inArray, isNull } from "drizzle-orm";
-
 import { attendance } from "../schema.js";
-import { dedupeTrimmedIds, type AttendanceRecord } from "@mms/shared";
-import { withTenant, withTenantRead } from "../tenant-context.js";
+import type { AttendanceRecord } from "@mms/shared";
+import { withTenant } from "../tenant-context.js";
 import { ConflictError } from "../../lib/httpErrors.js";
 import { isUniqueViolation } from "../../lib/pgErrors.js";
 import {
@@ -18,88 +16,16 @@ import {
   attendanceStaleWriteError,
   planAttendanceUpsert,
 } from "./attendanceUpsert.js";
+import { ATTENDANCE_RECORD_COLUMNS } from "./attendanceRowReads.js";
 
-const ATTENDANCE_RECORD_COLUMNS = {
-  id: attendance.id,
-  workspaceSubdomain: attendance.workspaceSubdomain,
-  classId: attendance.classId,
-  studentId: attendance.studentId,
-  studentName: attendance.studentName,
-  rollNo: attendance.rollNo,
-  date: attendance.date,
-  status: attendance.status,
-  timeIn: attendance.timeIn,
-  timeOut: attendance.timeOut,
-  notes: attendance.notes,
-  markedBy: attendance.markedBy,
-  sectionId: attendance.sectionId,
-  version: attendance.version,
-  deletedAt: attendance.deletedAt,
-  deletedBy: attendance.deletedBy,
-  deletionReason: attendance.deletionReason,
-  restoredAt: attendance.restoredAt,
-  restoredBy: attendance.restoredBy,
-  deletedWithCascade: attendance.deletedWithCascade,
-  createdAt: attendance.createdAt,
-  updatedAt: attendance.updatedAt,
-};
-
-export async function listAttendanceRecordsByWorkspace(
-  tenant: string,
-  options?: { limit?: number; offset?: number; includeDeleted?: boolean },
-): Promise<AttendanceRecord[]> {
-  const subdomain = tenant.trim().toLowerCase();
-  const limit = Math.min(Math.max(options?.limit ?? 500, 1), 5000);
-  const offset = Math.max(options?.offset ?? 0, 0);
-  return withTenantRead(subdomain, async (tx) => {
-    const conditions = [eq(attendance.workspaceSubdomain, subdomain)];
-    if (!options?.includeDeleted) {
-      conditions.push(isNull(attendance.deletedAt));
-    }
-    const rows = await tx
-      .select(ATTENDANCE_RECORD_COLUMNS)
-      .from(attendance)
-      .where(and(...conditions))
-      .orderBy(attendance.id)
-      .limit(limit)
-      .offset(offset);
-    return rows.map(rowToRecord);
-  });
-}
-
-export async function findAttendanceRecordById(
-  tenant: string,
-  id: string,
-): Promise<AttendanceRecord | null> {
-  const trimmedId = id?.trim();
-  if (!trimmedId) return null;
-  const subdomain = tenant.trim().toLowerCase();
-  return withTenantRead(subdomain, async (tx) => {
-    const rows = await tx
-      .select(ATTENDANCE_RECORD_COLUMNS)
-      .from(attendance)
-      .where(and(eq(attendance.workspaceSubdomain, subdomain), eq(attendance.id, trimmedId)))
-      .limit(1);
-    const row = rows[0];
-    return row ? rowToRecord(row) : null;
-  });
-}
-
-export async function findAttendanceRecordsByIds(
-  tenant: string,
-  ids: string[],
-): Promise<AttendanceRecord[]> {
-  const cleanIds = dedupeTrimmedIds(ids);
-  if (cleanIds.length === 0) return [];
-  const subdomain = tenant.trim().toLowerCase();
-  return withTenantRead(subdomain, async (tx) => {
-    const rows = await tx
-      .select(ATTENDANCE_RECORD_COLUMNS)
-      .from(attendance)
-      .where(and(eq(attendance.workspaceSubdomain, subdomain), inArray(attendance.id, cleanIds)));
-    return rows.map(rowToRecord);
-  });
-}
+/** Re-exported so `attendanceRepository.js` stays the single import surface for the module. */
+export {
+  findAttendanceRecordById,
+  findAttendanceRecordsByIds,
+  findAttendanceRecordsForStudentsOnDates,
+  listAttendanceRecordsByWorkspace,
+  saveAttendanceRecordById,
+} from "./attendanceRowReads.js";
 
 export async function saveAttendanceRecord(
   tenant: string,

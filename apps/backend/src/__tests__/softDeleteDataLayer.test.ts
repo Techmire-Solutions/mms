@@ -1,4 +1,5 @@
 import { describe, expect, it, vi, beforeEach } from "vitest";
+import type { User } from "@mms/shared";
 import { wrapDbWithRelationalGuardrails } from "../db/dbClient.js";
 import {
   buildTenantSoftDeleteConditions,
@@ -23,6 +24,8 @@ import { StudentRestoreRaceError } from "../students/use-cases/studentNormalizeU
 import { createEnrollmentsUseCases } from "../enrollments/use-cases/enrollmentsUseCases.js";
 import { createFinanceUseCases } from "../finance/use-cases/financeUseCases.js";
 import { createAttendanceUseCases } from "../attendance/use-cases/attendanceUseCases.js";
+
+const ACTOR = { id: "user-test", role: "admin" } as unknown as User;
 import { createSessionsUseCases } from "../sessions/use-cases/sessionsUseCases.js";
 import type { ContactsRepository } from "../contacts/repository/contactsRepository.js";
 import type { FacultyRepository } from "../faculty/repository/facultyRepository.js";
@@ -1077,13 +1080,16 @@ describe("Soft-Delete Data Layer & Relational Guardrails", () => {
       });
       await expect(
         runWithTenant("demo", () =>
-          cases.createAttendanceRecord({
-            id: "att-1",
-            studentId: "st-1",
-            classId: "sess-1",
-            date: "2026-05-01",
-            status: "present",
-          } as any),
+          cases.createAttendanceRecord(
+            {
+              id: "att-1",
+              studentId: "st-1",
+              classId: "sess-1",
+              date: "2026-05-01",
+              status: "present",
+            } as any,
+            ACTOR,
+          ),
         ),
       ).rejects.toMatchObject({
         statusCode: 400,
@@ -1098,13 +1104,16 @@ describe("Soft-Delete Data Layer & Relational Guardrails", () => {
       });
       await expect(
         runWithTenant("demo", () =>
-          cases.createAttendanceRecord({
-            id: "att-1",
-            studentId: "st-missing",
-            classId: "sess-1",
-            date: "2026-05-01",
-            status: "present",
-          } as any),
+          cases.createAttendanceRecord(
+            {
+              id: "att-1",
+              studentId: "st-missing",
+              classId: "sess-1",
+              date: "2026-05-01",
+              status: "present",
+            } as any,
+            ACTOR,
+          ),
         ),
       ).rejects.toMatchObject({
         statusCode: 400,
@@ -1121,13 +1130,16 @@ describe("Soft-Delete Data Layer & Relational Guardrails", () => {
       });
       await expect(
         runWithTenant("demo", () =>
-          cases.createAttendanceRecord({
-            id: "att-1",
-            studentId: "st-1",
-            classId: "sess-archived",
-            date: "2026-05-01",
-            status: "present",
-          } as any),
+          cases.createAttendanceRecord(
+            {
+              id: "att-1",
+              studentId: "st-1",
+              classId: "sess-archived",
+              date: "2026-05-01",
+              status: "present",
+            } as any,
+            ACTOR,
+          ),
         ),
       ).rejects.toMatchObject({
         statusCode: 400,
@@ -1145,22 +1157,25 @@ describe("Soft-Delete Data Layer & Relational Guardrails", () => {
       });
       await expect(
         runWithTenant("demo", () =>
-          cases.upsertAttendanceRecords([
-            {
-              id: "att-1",
-              studentId: "st-1",
-              classId: "sess-1",
-              date: "2026-05-01",
-              status: "present",
-            },
-            {
-              id: "att-2",
-              studentId: "st-2",
-              classId: "sess-1",
-              date: "2026-05-01",
-              status: "present",
-            },
-          ] as any),
+          cases.upsertAttendanceRecords(
+            [
+              {
+                id: "att-1",
+                studentId: "st-1",
+                classId: "sess-1",
+                date: "2026-05-01",
+                status: "present",
+              },
+              {
+                id: "att-2",
+                studentId: "st-2",
+                classId: "sess-1",
+                date: "2026-05-01",
+                status: "present",
+              },
+            ] as any,
+            ACTOR,
+          ),
         ),
       ).rejects.toMatchObject({
         statusCode: 400,

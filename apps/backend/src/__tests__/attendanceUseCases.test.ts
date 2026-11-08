@@ -1,4 +1,5 @@
 import { describe, expect, it, vi } from "vitest";
+import type { User } from "@mms/shared";
 import { createAttendanceUseCases } from "../attendance/use-cases/attendanceUseCases.js";
 import type { AttendanceRepository } from "../attendance/repository/attendanceRepository.js";
 import { runWithTenant } from "../lib/tenantContext.js";
@@ -8,13 +9,37 @@ vi.mock("../attendance/use-cases/attendanceSectionStamp.js", () => ({
     rejected: [],
   })),
 }));
+vi.mock("../attendance/use-cases/instructionalDayGuard.js", () => ({
+  assertInstructionalDays: vi.fn().mockResolvedValue(undefined),
+  findNonInstructionalRows: vi.fn().mockResolvedValue([]),
+}));
+vi.mock("../sessions/use-cases/teacherSectionScope.js", () => ({
+  assertTeacherClassScope: vi.fn().mockResolvedValue(undefined),
+  assertTeacherAnyClassScope: vi.fn().mockResolvedValue(undefined),
+}));
+vi.mock("../attendance/use-cases/attendanceAudit.js", () => ({
+  auditAttendanceMutation: vi.fn().mockResolvedValue(undefined),
+}));
+vi.mock("../attendance/use-cases/attendancePolicyGuard.js", async (importOriginal) => {
+  const actual =
+    await importOriginal<typeof import("../attendance/use-cases/attendancePolicyGuard.js")>();
+  return {
+    ...actual,
+    assertAttendanceWriteAllowed: vi.fn().mockResolvedValue(undefined),
+    assertAttendanceDayEditable: vi.fn().mockResolvedValue(undefined),
+  };
+});
+
+const ACTOR = { id: "user-test", role: "admin" } as unknown as User;
 
 function createFakeRepo(): AttendanceRepository {
   return {
     listAttendanceRecordsByWorkspace: vi.fn().mockResolvedValue([]),
     findAttendanceRecordById: vi.fn().mockResolvedValue(null),
     findAttendanceRecordsByIds: vi.fn().mockResolvedValue([]),
+    findAttendanceRecordsForStudentsOnDates: vi.fn().mockResolvedValue([]),
     saveAttendanceRecord: vi.fn().mockResolvedValue(undefined),
+    saveAttendanceRecordById: vi.fn().mockResolvedValue(null),
     bulkSaveAttendanceRecords: vi.fn().mockResolvedValue([]),
     replaceAttendanceRecordsForWorkspace: vi.fn().mockResolvedValue(undefined),
     listAttendancePage: vi.fn().mockResolvedValue({
@@ -101,7 +126,9 @@ describe("attendance use-cases (DI with fake repository)", () => {
     const persisted = { ...record, id: "att-existing", version: 9 };
     vi.mocked(repo.bulkSaveAttendanceRecords).mockResolvedValue([persisted]);
 
-    const result = await runWithTenant("demo", () => useCases.upsertAttendanceRecords([record]));
+    const result = await runWithTenant("demo", () =>
+      useCases.upsertAttendanceRecords([record], ACTOR),
+    );
 
     expect(result).toEqual([persisted]);
     expect(result[0]).not.toEqual(record);
@@ -195,29 +222,26 @@ describe("attendance use-cases (DI with fake repository)", () => {
     expect(noTenant).toEqual([]);
   });
 
-  it("loadAttendanceCommandMetrics handles missing or invalid request query gracefully", async () => {
+  it("loadAttendanceCommandMetrics takes an already-parsed day, not a Fastify request", async () => {
     const repo = createFakeRepo();
     const useCases = createAttendanceUseCases(repo);
 
     await runWithTenant("demo", async () => {
-      const metricsNoReq = await useCases.loadAttendanceCommandMetrics();
-      expect(metricsNoReq.total).toBe(7);
+      const metricsNoDay = await useCases.loadAttendanceCommandMetrics();
+      expect(metricsNoDay.total).toBe(7);
       expect(repo.aggregateAttendanceCommandMetrics).toHaveBeenCalledWith("demo", {
         selectedDate: undefined,
       });
 
-      const metricsInvalidDate = await useCases.loadAttendanceCommandMetrics({
-        query: { date: "not-a-date" },
-      } as any);
-      expect(metricsInvalidDate.total).toBe(7);
+      // Query parsing belongs to the transport layer: anything that is not an ISO day is ignored.
+      const metricsInvalidDay = await useCases.loadAttendanceCommandMetrics("not-a-date");
+      expect(metricsInvalidDay.total).toBe(7);
       expect(repo.aggregateAttendanceCommandMetrics).toHaveBeenCalledWith("demo", {
         selectedDate: undefined,
       });
 
-      const metricsValidDate = await useCases.loadAttendanceCommandMetrics({
-        query: { date: "2026-09-01" },
-      } as any);
-      expect(metricsValidDate.total).toBe(7);
+      const metricsValidDay = await useCases.loadAttendanceCommandMetrics("2026-09-01");
+      expect(metricsValidDay.total).toBe(7);
       expect(repo.aggregateAttendanceCommandMetrics).toHaveBeenCalledWith("demo", {
         selectedDate: "2026-09-01",
       });
@@ -231,13 +255,16 @@ describe("attendance use-cases (DI with fake repository)", () => {
 
     await expect(
       runWithTenant("demo", () =>
-        useCases.createAttendanceRecord({
-          id: "att-1",
-          classId: "c1",
-          studentId: "s1",
-          date: "2026-09-01",
-          status: "present",
-        } as any),
+        useCases.createAttendanceRecord(
+          {
+            id: "att-1",
+            classId: "c1",
+            studentId: "s1",
+            date: "2026-09-01",
+            status: "present",
+          } as any,
+          ACTOR,
+        ),
       ),
     ).rejects.toThrow("Referenced student is archived or does not exist");
   });
@@ -250,13 +277,16 @@ describe("attendance use-cases (DI with fake repository)", () => {
 
     await expect(
       runWithTenant("demo", () =>
-        useCases.createAttendanceRecord({
-          id: "att-1",
-          classId: "c1",
-          studentId: "s1",
-          date: "2026-09-01",
-          status: "present",
-        } as any),
+        useCases.createAttendanceRecord(
+          {
+            id: "att-1",
+            classId: "c1",
+            studentId: "s1",
+            date: "2026-09-01",
+            status: "present",
+          } as any,
+          ACTOR,
+        ),
       ),
     ).rejects.toThrow("Referenced class is archived or does not exist");
   });
@@ -268,16 +298,77 @@ describe("attendance use-cases (DI with fake repository)", () => {
 
     await expect(
       runWithTenant("demo", () =>
-        useCases.upsertAttendanceRecords([
-          {
-            id: "att-1",
-            classId: "c1",
-            studentId: "s1",
-            date: "2026-09-01",
-            status: "present",
-          } as any,
-        ]),
+        useCases.upsertAttendanceRecords(
+          [
+            {
+              id: "att-1",
+              classId: "c1",
+              studentId: "s1",
+              date: "2026-09-01",
+              status: "present",
+            } as any,
+          ],
+          ACTOR,
+        ),
       ),
     ).rejects.toThrow("Referenced student is archived or does not exist");
+  });
+  it("updateAttendanceRecordById moves a mark through the by-id update, not the natural-key upsert", async () => {
+    const repo = createFakeRepo();
+    const existing = {
+      id: "att-1",
+      classId: "class-a",
+      studentId: "student-1",
+      studentName: "Student",
+      rollNo: "",
+      date: "2026-07-27",
+      status: "present" as const,
+      timeIn: "07:00",
+      timeOut: "08:30",
+      notes: "",
+      version: 3,
+      deletedAt: null,
+    };
+    vi.mocked(repo.findAttendanceRecordById).mockResolvedValue(existing as never);
+    vi.mocked(repo.saveAttendanceRecordById).mockResolvedValue({
+      ...existing,
+      date: "2026-07-28",
+      version: 4,
+    } as never);
+    const useCases = createAttendanceUseCases(repo, {
+      findStudentById: vi.fn().mockResolvedValue({ id: "student-1", deletedAt: null }),
+      findSessionById: vi.fn().mockResolvedValue({ id: "class-a", deletedAt: null }),
+    });
+
+    const result = await runWithTenant("demo", () =>
+      useCases.updateAttendanceRecordById("att-1", { date: "2026-07-28" } as never, ACTOR),
+    );
+
+    // Moving a mark changes the business key, which the upsert cannot express (same id, new key →
+    // primary-key collision). The by-id update is the correct primitive.
+    expect(repo.saveAttendanceRecordById).toHaveBeenCalledTimes(1);
+    expect(repo.saveAttendanceRecord).not.toHaveBeenCalled();
+    expect(vi.mocked(repo.saveAttendanceRecordById).mock.calls[0]?.[1]).toMatchObject({
+      id: "att-1",
+      date: "2026-07-28",
+      classId: "class-a",
+    });
+    expect(result).toMatchObject({ id: "att-1", date: "2026-07-28", version: 4 });
+  });
+
+  it("updateAttendanceRecordById returns null for a missing or archived row", async () => {
+    const repo = createFakeRepo();
+    vi.mocked(repo.findAttendanceRecordById).mockResolvedValue({
+      id: "att-1",
+      deletedAt: "2026-07-01T00:00:00.000Z",
+    } as never);
+    const useCases = createAttendanceUseCases(repo);
+
+    const result = await runWithTenant("demo", () =>
+      useCases.updateAttendanceRecordById("att-1", { notes: "x" } as never, ACTOR),
+    );
+
+    expect(result).toBeNull();
+    expect(repo.saveAttendanceRecordById).not.toHaveBeenCalled();
   });
 });

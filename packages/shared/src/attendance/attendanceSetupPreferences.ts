@@ -2,15 +2,30 @@
 import { z } from "zod";
 import { DEFAULT_ATTENDANCE_SETTINGS } from "./attendanceModuleSettings.js";
 
-/** PUT /api/attendance/preferences — attendance prefs only. */
+/** 24-hour `HH:mm` — the only shape the cut-off / late-grace rules can compare. */
+export const ATTENDANCE_CLOCK_SCHEMA = z
+  .string()
+  .trim()
+  .regex(/^([01]\d|2[0-3]):[0-5]\d$/, "Use a 24-hour HH:mm time");
+
+/** A policy minute budget: whole minutes, bounded so one typo cannot make every student late. */
+export const ATTENDANCE_MINUTES_SCHEMA = z.number().int().min(0).max(240);
+
+/**
+ * PUT /api/attendance/preferences — attendance prefs only.
+ *
+ * The minute/time fields are validated here because the domain rules read them directly: an
+ * unparseable cut-off makes the cut-off rule silently inert, and `lateThresholdMins` greater than
+ * `autoAbsentAfterMins` means "absent" can never follow "late".
+ */
 export const attendancePreferencesPutBodySchema = z
   .object({
     workingDays: z.array(z.string()).optional(),
-    cutoffTime: z.string().optional(),
-    lateThresholdMins: z.number().optional(),
-    autoAbsentAfterMins: z.number().optional(),
+    cutoffTime: ATTENDANCE_CLOCK_SCHEMA.optional(),
+    lateThresholdMins: ATTENDANCE_MINUTES_SCHEMA.optional(),
+    autoAbsentAfterMins: ATTENDANCE_MINUTES_SCHEMA.optional(),
     qrEnabled: z.boolean().optional(),
-    lowAttendanceThreshold: z.number().optional(),
+    lowAttendanceThreshold: z.number().min(0).max(100).optional(),
     notifyParents: z.boolean().optional(),
     requireNoteForAbsent: z.boolean().optional(),
     lockAfterSubmit: z.boolean().optional(),
@@ -23,7 +38,17 @@ export const attendancePreferencesPutBodySchema = z
     allowExtraClassOnHolidays: z.boolean().optional(),
     defaultViewLayout: z.string().optional(),
   })
-  .passthrough();
+  .passthrough()
+  .refine(
+    (prefs) =>
+      prefs.lateThresholdMins === undefined ||
+      prefs.autoAbsentAfterMins === undefined ||
+      prefs.lateThresholdMins <= prefs.autoAbsentAfterMins,
+    {
+      message: "The late threshold cannot exceed the auto-absent threshold",
+      path: ["lateThresholdMins"],
+    },
+  );
 
 /** Typed preference state extracted from legacy AttendanceSettings. */
 export interface AttendanceModulePreferences {
@@ -44,6 +69,18 @@ export interface AttendanceModulePreferences {
   geoTagging: boolean;
   allowExtraClassOnHolidays: boolean;
   defaultViewLayout: string;
+}
+
+/** A stored clock value that no longer parses falls back to the school default, never to inert JSON. */
+function sanitizeClock(value: unknown, fallback: string): string {
+  const parsed = ATTENDANCE_CLOCK_SCHEMA.safeParse(value);
+  return parsed.success ? parsed.data : fallback;
+}
+
+/** Same for a stored minute budget: out-of-range values are clamped, not trusted. */
+function sanitizeMinutes(value: unknown, fallback: number): number {
+  if (typeof value !== "number" || !Number.isFinite(value)) return fallback;
+  return Math.min(Math.max(Math.round(value), 0), 240);
 }
 
 /** Extracts preferences slice from a raw composed settings blob. */
@@ -71,22 +108,24 @@ export function normalizeAttendanceModulePreferences(raw: unknown): AttendanceMo
   }
 
   const prefs = raw as Partial<AttendanceModulePreferences>;
+  const cutoffTime = sanitizeClock(prefs.cutoffTime, DEFAULT_ATTENDANCE_SETTINGS.cutoffTime);
+  const lateThresholdMins = sanitizeMinutes(
+    prefs.lateThresholdMins,
+    DEFAULT_ATTENDANCE_SETTINGS.lateThresholdMins,
+  );
+  const autoAbsentAfterMins = sanitizeMinutes(
+    prefs.autoAbsentAfterMins,
+    DEFAULT_ATTENDANCE_SETTINGS.autoAbsentAfterMins,
+  );
   return {
     workingDays: Array.isArray(prefs.workingDays)
       ? prefs.workingDays
       : DEFAULT_ATTENDANCE_SETTINGS.workingDays,
-    cutoffTime:
-      typeof prefs.cutoffTime === "string"
-        ? prefs.cutoffTime
-        : DEFAULT_ATTENDANCE_SETTINGS.cutoffTime,
-    lateThresholdMins:
-      typeof prefs.lateThresholdMins === "number"
-        ? prefs.lateThresholdMins
-        : DEFAULT_ATTENDANCE_SETTINGS.lateThresholdMins,
-    autoAbsentAfterMins:
-      typeof prefs.autoAbsentAfterMins === "number"
-        ? prefs.autoAbsentAfterMins
-        : DEFAULT_ATTENDANCE_SETTINGS.autoAbsentAfterMins,
+    cutoffTime,
+    // The grace window can never exceed the auto-absent window; clamp rather than leave the
+    // domain with "absent can never follow late".
+    lateThresholdMins: Math.min(lateThresholdMins, autoAbsentAfterMins),
+    autoAbsentAfterMins,
     qrEnabled:
       typeof prefs.qrEnabled === "boolean"
         ? prefs.qrEnabled

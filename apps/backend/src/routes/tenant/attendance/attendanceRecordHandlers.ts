@@ -14,8 +14,6 @@ import {
 import { withTenant } from "../../../db/tenant-context.js";
 import { getRequestTenant } from "../../../lib/tenantContext.js";
 import { attendanceUseCases } from "../../../attendance/use-cases/attendanceUseCases.js";
-import { assertTeacherClassScope } from "../../../sessions/use-cases/teacherSectionScope.js";
-import { assertInstructionalDays } from "../../../attendance/use-cases/instructionalDayGuard.js";
 
 const COLLECTION = ATTENDANCE_MODULE_MANIFEST.collectionKey;
 
@@ -96,16 +94,11 @@ export async function attendanceCreateHandler({
   }
 
   try {
-    await assertTeacherClassScope(user, tenantId, [{ classId: body.classId, date: body.date }]);
-    await assertInstructionalDays(
-      tenantId,
-      [{ classId: body.classId, studentId: body.studentId, date: body.date }],
-      user.id,
-    );
-    const item = await withTenant(
-      tenantId,
-      () => attendanceUseCases.createAttendanceRecord({ ...body, markedBy: user.id }),
-      { readOnly: false },
+    // Teacher row-scope, instructional-day and write-policy checks all run inside the use case's
+    // transaction, so this handler only authorises and delegates.
+    const item = await attendanceUseCases.createAttendanceRecord(
+      { ...body, markedBy: user.id },
+      user,
     );
     return { status: 201 as const, body: item };
   } catch (error) {
@@ -148,45 +141,19 @@ export async function attendanceUpdateHandler({
   }
 
   try {
-    const updated = await withTenant(
-      tenantId,
-      async () => {
-        const existing = await attendanceUseCases.loadAttendanceRecordById(id);
-        const classId = String(bodyRecord.classId ?? existing?.classId ?? "");
-        const date = String(bodyRecord.date ?? existing?.date ?? "");
-        await assertTeacherClassScope(user, tenantId, [{ classId, date }]);
-        if (classId !== existing?.classId || date !== existing?.date) {
-          await assertInstructionalDays(
-            tenantId,
-            [
-              {
-                classId,
-                studentId: String(bodyRecord.studentId ?? existing?.studentId ?? ""),
-                date,
-              },
-            ],
-            user.id,
-          );
-        }
-        // Optional OCC token (mms-api-interface §6): echo the `version` you read. Sessions use the
-        // same header convention; attendance keeps it optional so a grid without tokens still
-        // saves (last writer wins) instead of returning 428 to every legacy client.
-        const expectedVersionHeader = request.headers["x-expected-version"];
-        const expectedVersion =
-          typeof expectedVersionHeader === "string" && expectedVersionHeader.trim() !== ""
-            ? Number(expectedVersionHeader)
-            : undefined;
-        return attendanceUseCases.updateAttendanceRecordById(
-          id,
-          {
-            ...bodyRecord,
-            id,
-            markedBy: user.id,
-          },
-          expectedVersion,
-        );
-      },
-      { readOnly: false },
+    // Optional OCC token (mms-api-interface §6): echo the `version` you read. Sessions use the same
+    // header convention; attendance keeps it optional so a grid without tokens still saves (last
+    // writer wins) instead of returning 428 to every legacy client.
+    const expectedVersionHeader = request.headers["x-expected-version"];
+    const expectedVersion =
+      typeof expectedVersionHeader === "string" && expectedVersionHeader.trim() !== ""
+        ? Number(expectedVersionHeader)
+        : undefined;
+    const updated = await attendanceUseCases.updateAttendanceRecordById(
+      id,
+      { ...bodyRecord, id, markedBy: user.id },
+      user,
+      expectedVersion,
     );
     if (!updated) {
       return {
@@ -231,11 +198,7 @@ export async function attendanceDeleteHandler({
       body && typeof body === "object" && "deletionReason" in body
         ? (body as { deletionReason?: string }).deletionReason
         : undefined;
-    const deleted = await withTenant(
-      tenantId,
-      () => attendanceUseCases.deleteAttendanceRecordById(id, String(user.id), deletionReason),
-      { readOnly: false },
-    );
+    const deleted = await attendanceUseCases.deleteAttendanceRecordById(id, user, deletionReason);
     if (!deleted) {
       return {
         status: 404 as const,
@@ -274,11 +237,7 @@ export async function attendanceRestoreHandler({
   }
 
   try {
-    const restored = await withTenant(
-      tenantId,
-      () => attendanceUseCases.restoreAttendanceRecordById(id, String(user.id)),
-      { readOnly: false },
-    );
+    const restored = await attendanceUseCases.restoreAttendanceRecordById(id, user);
     if (!restored) {
       return {
         status: 404 as const,

@@ -66,9 +66,16 @@ export const attendanceRecordUpdateSchema = attendanceRecordInsertSchema.partial
 
 export const attendanceListSchema = z.array(attendanceRecordSchema);
 
+/**
+ * Hard cap on one roster save. A class roster is bounded by capacity; an unbounded array let a
+ * client push tens of thousands of rows into a single transaction (and a single audit batch).
+ * Matches the 500-id cap the soft-delete bulk routes use.
+ */
+export const ATTENDANCE_BULK_MAX_RECORDS = 500;
+
 export const attendanceBulkSchema = z
   .object({
-    records: attendanceListSchema,
+    records: attendanceListSchema.max(ATTENDANCE_BULK_MAX_RECORDS),
   })
   .strict();
 

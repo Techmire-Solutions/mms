@@ -27,6 +27,12 @@ export interface MetricsRouteOptions {
   errorMessagePrefix: string;
   /** Optional Zod response schema (compiled by fastify-type-provider-zod). */
   metricsSchema?: ZodType;
+  /**
+   * Query values the payload depends on, when the module's metrics vary by more than collection and
+   * role. Appended to the cache key: without it, `?date=A` and `?date=B` share one cached payload
+   * and one caller sees the other's numbers for the TTL.
+   */
+  cacheVary?: (request: FastifyRequest) => string;
 }
 
 /**
@@ -39,6 +45,7 @@ export function registerMetricsRoute(fastify: FastifyInstance, options: MetricsR
     loadMetricsFn,
     errorMessagePrefix,
     metricsSchema,
+    cacheVary,
   } = options;
 
   fastify.get(
@@ -51,8 +58,9 @@ export function registerMetricsRoute(fastify: FastifyInstance, options: MetricsR
       const tenant = getRequestTenant()?.trim().toLowerCase();
       // Role is part of the key: metrics are RBAC-filtered per caller, so a
       // shared tenant+collection key could serve one role's numbers to another.
+      const vary = cacheVary?.(request) ?? "";
       const cacheKey = tenant
-        ? redisKeys.metrics(tenant, `${collection}:${user.role ?? "user"}`)
+        ? redisKeys.metrics(tenant, `${collection}:${user.role ?? "user"}${vary ? `:${vary}` : ""}`)
         : null;
       if (cacheKey) {
         const cached = await redisGet(cacheKey);
