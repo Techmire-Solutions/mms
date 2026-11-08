@@ -26,6 +26,8 @@ export interface StandardExtendedRoutesOptions<TQuery, TRecord> {
   loadCountFn?: () => Promise<number>;
   /** Prefer SQL aggregates — avoids hydrate-all for `/metrics`. */
   loadMetricsFn?: (request: FastifyRequest) => Promise<unknown>;
+  /** Query values the metrics payload depends on (appended to the metrics cache key). */
+  cacheVary?: (request: FastifyRequest) => string;
   /** Optional Zod response schema for `/metrics`. */
   metricsSchema?: import("zod").ZodType;
   loadWidgetAggregatesFn?: (queries: unknown[], request?: unknown) => Promise<unknown>;
@@ -57,6 +59,7 @@ export function registerStandardExtendedRoutes<
     loadCountFn,
     loadMetricsFn,
     metricsSchema,
+    cacheVary,
     loadWidgetAggregatesFn,
     loadByIdsFn,
     loadLinkedContactIdsFn,
@@ -92,6 +95,7 @@ export function registerStandardExtendedRoutes<
       collection,
       loadMetricsFn,
       metricsSchema,
+      cacheVary,
       errorMessagePrefix: nameSingular,
     });
   }

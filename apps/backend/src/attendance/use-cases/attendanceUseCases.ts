@@ -1,22 +1,14 @@
-import type { FastifyRequest } from "fastify";
 import type { AttendanceRepository } from "../repository/attendanceRepository.js";
 import { attendanceRepository } from "../repository/attendanceRepositoryAdapter.js";
 import { getRequestTenant } from "../../lib/tenantContext.js";
 import { createGenericRelationalService } from "../../services/genericRelationalService.js";
-import { defineTenantBulkCollectionService } from "../../services/tenantBulkService.js";
-import { broadcastCollection } from "../../lib/livePush.js";
-import { stampAttendanceSections } from "./attendanceSectionStamp.js";
-import { HttpDomainError } from "../../lib/httpErrors.js";
 import {
   attendanceRecordSchema,
-  attendanceListSchema,
   dedupeTrimmedIds,
   EMPTY_ATTENDANCE_REPORT_AGGREGATES,
   normalizeAttendanceReportComparisonQuery,
   type AttendanceCommandMetricsSnapshot,
   type AttendanceRecord,
-  type AttendanceRecordInsert,
-  type AttendanceRecordUpdate,
   type AttendanceMarkedDatesQuery,
   type AttendanceReportAggregatesQuery,
   type AttendanceListQuery,
@@ -25,29 +17,21 @@ import {
 import {
   createAttendanceForeignKeyValidators,
   type AttendanceUseCasesDependencies,
+  type AttendanceReferenceLookups,
 } from "./attendanceForeignKeyValidation.js";
+import * as attendanceReferences from "../repository/attendanceReferenceRepository.js";
 import { EMPTY_ATTENDANCE_METRICS } from "./attendanceMetricsDefaults.js";
+import { createAttendanceMutationUseCases } from "./attendanceMutationUseCases.js";
 
 export type { AttendanceUseCasesDependencies };
 
-/** A stale roster must not be able to record attendance for a non-enrolled student. */
-function attendanceNotEnrolled(rejected: {
-  studentId: string;
-  classId: string;
-  date: string;
-}): HttpDomainError {
-  return new HttpDomainError(
-    422,
-    "attendance_not_enrolled",
-    `Student ${rejected.studentId} has no enrollment in this class on ${rejected.date} — refresh the roster`,
-  );
-}
-
 /**
  * Attendance use-cases — composition root binding an {@link AttendanceRepository}
- * to every operation. Production uses the default Drizzle-backed
- * `attendanceUseCases`; tests can pass a fake repository to exercise
- * orchestration in isolation.
+ * to every operation.
+ *
+ * Writes own their transaction and run **all** domain rules inside it (teacher row-scope,
+ * instructional days, write policy, audit), so an HTTP route, a queued import job and a script get
+ * identical decisions. Reads stay on the request tenant like every other module.
  */
 export function createAttendanceUseCases(
   repo: AttendanceRepository = attendanceRepository,
@@ -66,75 +50,28 @@ export function createAttendanceUseCases(
     idPrefix: "att",
   });
 
-  const bulkService = defineTenantBulkCollectionService<AttendanceRecord>(
-    {
-      listByWorkspace: repo.listAttendanceRecordsByWorkspace,
-      replaceForWorkspace: repo.replaceAttendanceRecordsForWorkspace,
-    },
-    attendanceListSchema,
-    "attendance_records",
-  );
-
+  // Composition root: bind the Drizzle-backed lookups here, override with test doubles.
+  const references: AttendanceReferenceLookups = {
+    findStudentById: deps?.findStudentById ?? attendanceReferences.findStudentById,
+    findSessionById: deps?.findSessionById ?? attendanceReferences.findSessionById,
+    findStudentsByIds: deps?.findStudentsByIds ?? attendanceReferences.findStudentsByIds,
+    findSessionsByIds: deps?.findSessionsByIds ?? attendanceReferences.findSessionsByIds,
+  };
   const { validateActiveForeignKeys, validateBatchActiveForeignKeys } =
-    createAttendanceForeignKeyValidators(deps);
+    createAttendanceForeignKeyValidators(references);
+
+  const mutations = createAttendanceMutationUseCases({
+    repo,
+    crud,
+    policyStore: deps?.policyStore,
+    validateActiveForeignKeys,
+    validateBatchActiveForeignKeys,
+  });
 
   return {
     loadAttendanceRecords: crud.loadAll,
-    createAttendanceRecord: async (
-      record: AttendanceRecordInsert | AttendanceRecord,
-    ): Promise<AttendanceRecord> => {
-      const tenant = getRequestTenant();
-      if (!tenant) throw new Error("Tenant context required");
-      await validateActiveForeignKeys(tenant, record);
-      const stamped = await stampAttendanceSections(tenant, [record]);
-      if (stamped.rejected.length > 0) throw attendanceNotEnrolled(stamped.rejected[0]!);
-      return crud.create(stamped.records[0] as AttendanceRecord);
-    },
-    updateAttendanceRecordById: async (
-      id: string,
-      record: AttendanceRecordUpdate | Partial<AttendanceRecord>,
-      expectedVersion?: number,
-    ): Promise<AttendanceRecord | null> => {
-      const tenant = getRequestTenant();
-      if (!tenant) throw new Error("Tenant context required");
-      await validateActiveForeignKeys(tenant, record);
-      // Section is server-owned: re-stamped only when the row's class/student are known.
-      const { sectionId: _clientSection, ...rest } = record as Partial<AttendanceRecord>;
-      if (expectedVersion !== undefined && !Number.isInteger(expectedVersion)) {
-        throw new HttpDomainError(400, "validation_error", "Invalid x-expected-version header");
-      }
-      const next = expectedVersion !== undefined ? { ...rest, version: expectedVersion } : rest;
-      const stamped =
-        next.classId && next.studentId
-          ? await stampAttendanceSections(tenant, [next])
-          : { records: [next], rejected: [] };
-      if (stamped.rejected.length > 0) throw attendanceNotEnrolled(stamped.rejected[0]!);
-      return crud.updateById(id, stamped.records[0] as AttendanceRecord);
-    },
-    deleteAttendanceRecordById: crud.deleteById,
-    restoreAttendanceRecordById: crud.restoreById,
-    bulkSoftDeleteAttendance: crud.bulkDeleteByIds,
-    bulkRestoreAttendance: crud.bulkRestoreByIds,
 
-    /** Replace full attendance collection (mark-attendance batch save). */
-    replaceAttendanceRecords: bulkService.replace,
-
-    /** Upserts only the supplied attendance records without removing unrelated rows. */
-    upsertAttendanceRecords: async (
-      records: (AttendanceRecordInsert | AttendanceRecord)[],
-    ): Promise<AttendanceRecord[]> => {
-      const tenant = getRequestTenant();
-      if (!tenant) throw new Error("Tenant context required");
-      const validated = attendanceListSchema.parse(records);
-      await validateBatchActiveForeignKeys(tenant, validated);
-      const stamped = await stampAttendanceSections(tenant, validated);
-      if (stamped.rejected.length > 0) throw attendanceNotEnrolled(stamped.rejected[0]!);
-      // The repository returns the rows as persisted (natural-key upsert may reuse an existing
-      // row's id and advance its `version`); a stale OCC token surfaces as 409 from there.
-      const persisted = await repo.bulkSaveAttendanceRecords(tenant, stamped.records);
-      await broadcastCollection("attendance_records");
-      return persisted;
-    },
+    ...mutations,
 
     loadAttendanceRecordById: async (
       id: string,
@@ -160,7 +97,7 @@ export function createAttendanceUseCases(
       if (cleanIds.length === 0) return [];
       const records = await repo.findAttendanceRecordsByIds(tenant, cleanIds);
       if (includeDeleted) return records;
-      return records.filter((r) => !r.deletedAt);
+      return records.filter((record) => !record.deletedAt);
     },
 
     loadAttendancePage: async (query: AttendanceListQuery & { includeDeleted?: boolean }) => {
@@ -185,9 +122,7 @@ export function createAttendanceUseCases(
 
     loadAttendanceReportAggregates: async (query?: AttendanceReportAggregatesQuery) => {
       const tenant = getRequestTenant();
-      if (!tenant) {
-        return EMPTY_ATTENDANCE_REPORT_AGGREGATES;
-      }
+      if (!tenant) return EMPTY_ATTENDANCE_REPORT_AGGREGATES;
       const comparison = normalizeAttendanceReportComparisonQuery(query);
       const classId = query?.classId?.trim();
       return repo.loadAttendanceReportAggregates(tenant, {
@@ -202,17 +137,23 @@ export function createAttendanceUseCases(
       return repo.listMarkedAttendanceDates(tenant, query);
     },
 
+    /**
+     * Command-centre metrics for a selected day.
+     *
+     * Takes the already-parsed day, not a Fastify request: the transport layer owns query parsing,
+     * and the metrics cache key can therefore include the date (it previously served another day's
+     * numbers for the cache TTL).
+     */
     loadAttendanceCommandMetrics: async (
-      request?: FastifyRequest,
+      selectedDate?: string,
     ): Promise<AttendanceCommandMetricsSnapshot> => {
       const tenant = getRequestTenant();
       if (!tenant) return EMPTY_ATTENDANCE_METRICS;
-      const dateParam = (request?.query as { date?: string } | undefined)?.date;
-      const selectedDate =
-        typeof dateParam === "string" && /^\d{4}-\d{2}-\d{2}$/.test(dateParam)
-          ? dateParam
+      const day =
+        typeof selectedDate === "string" && /^\d{4}-\d{2}-\d{2}$/.test(selectedDate)
+          ? selectedDate
           : undefined;
-      return repo.aggregateAttendanceCommandMetrics(tenant, { selectedDate });
+      return repo.aggregateAttendanceCommandMetrics(tenant, { selectedDate: day });
     },
 
     loadAttendanceWidgetAggregates: async (

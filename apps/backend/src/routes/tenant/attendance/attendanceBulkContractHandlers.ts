@@ -2,10 +2,7 @@ import { type User, ATTENDANCE_MODULE_MANIFEST, type attendanceContract } from "
 import { handleContractError } from "../../../lib/contractError.js";
 import type { ContractRouteArgs, ContractRouteResponse } from "../../../lib/contractRouterTypes.js";
 import { canDeleteCollection, canWriteCollection } from "../../../services/rbacService.js";
-import { withTenant } from "../../../db/tenant-context.js";
 import { attendanceUseCases } from "../../../attendance/use-cases/attendanceUseCases.js";
-import { assertTeacherClassScope } from "../../../sessions/use-cases/teacherSectionScope.js";
-import { assertInstructionalDays } from "../../../attendance/use-cases/instructionalDayGuard.js";
 import { getTenantId } from "./attendanceRecordHandlers.js";
 
 const COLLECTION = ATTENDANCE_MODULE_MANIFEST.collectionKey;
@@ -33,23 +30,11 @@ export async function attendanceBulkHandler({
   }
 
   try {
-    await assertTeacherClassScope(
+    // One atomic transaction inside the use case: enrolment, teacher row-scope, instructional-day
+    // and write-policy checks, the upsert, and the per-row audit all commit or roll back together.
+    const records = await attendanceUseCases.upsertAttendanceRecords(
+      body.records.map((r) => ({ ...r, markedBy: user.id })),
       user,
-      tenantId,
-      body.records.map((r) => ({ classId: r.classId, date: r.date })),
-    );
-    await assertInstructionalDays(
-      tenantId,
-      body.records.map((r) => ({ classId: r.classId, studentId: r.studentId, date: r.date })),
-      user.id,
-    );
-    const records = await withTenant(
-      tenantId,
-      () =>
-        attendanceUseCases.upsertAttendanceRecords(
-          body.records.map((r) => ({ ...r, markedBy: user.id })),
-        ),
-      { readOnly: false },
     );
     return { status: 200 as const, body: { records } };
   } catch (error) {
@@ -83,15 +68,10 @@ export async function attendanceBulkDeleteHandler({
   }
 
   try {
-    const result = await withTenant(
-      tenantId,
-      () =>
-        attendanceUseCases.bulkSoftDeleteAttendance(
-          body.ids.map(String),
-          String(user.id),
-          body.deletionReason,
-        ),
-      { readOnly: false },
+    const result = await attendanceUseCases.bulkSoftDeleteAttendance(
+      body.ids.map(String),
+      user,
+      body.deletionReason,
     );
     return { status: 200 as const, body: { success: true, ...result } };
   } catch (error) {
@@ -125,11 +105,7 @@ export async function attendanceBulkRestoreHandler({
   }
 
   try {
-    const result = await withTenant(
-      tenantId,
-      () => attendanceUseCases.bulkRestoreAttendance(body.ids.map(String), String(user.id)),
-      { readOnly: false },
-    );
+    const result = await attendanceUseCases.bulkRestoreAttendance(body.ids.map(String), user);
     return { status: 200 as const, body: { success: true, ...result } };
   } catch (error) {
     return handleContractError(request, error, {

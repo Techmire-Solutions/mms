@@ -284,7 +284,11 @@ describe("soft deletion and restore integrations", () => {
       payload: { deletionReason: "Error input" },
     });
     expect(res.statusCode).toBe(200);
-    expect(mockDeleteAttendanceRecordById).toHaveBeenCalledWith("a1", "u-admin", "Error input");
+    expect(mockDeleteAttendanceRecordById).toHaveBeenCalledWith(
+      "a1",
+      expect.objectContaining({ id: "u-admin" }),
+      "Error input",
+    );
     await app.close();
   });
 
@@ -300,7 +304,10 @@ describe("soft deletion and restore integrations", () => {
       },
     });
     expect(res.statusCode).toBe(200);
-    expect(mockRestoreAttendanceRecordById).toHaveBeenCalledWith("a1", "u-admin");
+    expect(mockRestoreAttendanceRecordById).toHaveBeenCalledWith(
+      "a1",
+      expect.objectContaining({ id: "u-admin" }),
+    );
     await app.close();
   });
 

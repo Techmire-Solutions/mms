@@ -2,10 +2,12 @@ type CalendarStore = typeof import("../../db/repositories/academicCalendarReposi
 type DayContextStore = typeof import("../../db/repositories/instructionalDayContext.js");
 type PlacementStore = typeof import("../../db/repositories/enrollmentPlacementLookup.js");
 type LeaveStore = typeof import("../../db/repositories/attendanceLeaveRepository.js");
+type SubmissionStore = typeof import("../../db/repositories/attendanceDaySubmissionRepository.js");
 type PreferencesStore =
   typeof import("../../db/repositories/attendanceModulePreferencesRepository.js");
 
 export type { AcademicCalendarRange } from "../../db/repositories/academicCalendarRepository.js";
+export type { AttendanceDaySubmissionRow as AttendanceDaySubmission } from "../../db/repositories/attendanceDaySubmissionRepository.js";
 
 /**
  * Storage gateway for the Attendance academic calendar and teaching-day rules
@@ -23,4 +25,10 @@ export interface AttendanceCalendarRepository {
   getAttendanceModulePreferences: PreferencesStore["getAttendanceModulePreferences"];
   findOverlappingApprovedLeaves: LeaveStore["findOverlappingApprovedLeaves"];
   insertApprovedLeave: LeaveStore["insertApprovedLeave"];
+  insertApprovedLeaveIfFree: LeaveStore["insertApprovedLeaveIfFree"];
+  listApprovedLeavesFor: LeaveStore["listApprovedLeavesFor"];
+  listLockedAttendanceDayKeys: SubmissionStore["listLockedAttendanceDayKeys"];
+  getAttendanceDaySubmission: SubmissionStore["getAttendanceDaySubmission"];
+  upsertAttendanceDaySubmission: SubmissionStore["upsertAttendanceDaySubmission"];
+  reopenAttendanceDay: SubmissionStore["reopenAttendanceDay"];
 }

@@ -1365,7 +1365,11 @@ export const APP_TRANSLATIONS_EN = {
   "attendance.settings.autoAbsentMinutes": "Auto-absent minutes",
   "attendance.settings.cardGrid": "Card Grid",
   "attendance.settings.comingSoon": "Coming Soon",
-  "attendance.settings.dailyAutoLock": "Daily Auto-Lock",
+    "attendance.settings.cutoffTime": "Daily Cut-off Time",
+  "attendance.settings.cutoffTimeDesc": "Attendance can be marked until this time. Later corrections need an override.",
+  "attendance.settings.allowManualOverride": "Allow Manual Override",
+  "attendance.settings.allowManualOverrideDesc": "Let teachers correct attendance after the cut-off or after a roster is submitted.",
+"attendance.settings.dailyAutoLock": "Daily Auto-Lock",
   "attendance.settings.dailyAutoLockDesc":
     "Automatically lock attendance after end-of-day submission.",
   "attendance.settings.defaultLayout": "Default View Layout",

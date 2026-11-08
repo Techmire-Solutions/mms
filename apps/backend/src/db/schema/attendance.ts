@@ -125,6 +125,52 @@ export const attendance = pgTable(
   ],
 );
 
+/**
+ * One row per class and teaching day: the roster's submission state (migration 0219).
+ *
+ * `lockAfterSubmit` was a configurable preference with nothing to enforce it — the grid kept the
+ * "submitted" flag in React state only. This table is that missing state: a day is locked while
+ * `submitted_at` is newer than `reopened_at` (see `isAttendanceDayLocked`).
+ */
+export const attendanceDaySubmissions = pgTable(
+  "attendance_day_submissions",
+  {
+    workspaceSubdomain: text("workspace_subdomain")
+      .notNull()
+      .references(() => workspaces.subdomain, { onDelete: "cascade" }),
+    classId: text("class_id").notNull(),
+    date: date("date_on", { mode: "string" }).notNull(),
+    submittedAt: timestamp("submitted_at", { withTimezone: true, mode: "date" })
+      .notNull()
+      .defaultNow(),
+    submittedBy: text("submitted_by"),
+    reopenedAt: timestamp("reopened_at", { withTimezone: true, mode: "date" }),
+    reopenedBy: text("reopened_by"),
+    reopenReason: varchar("reopen_reason", { length: 500 }),
+    createdAt: timestamp("created_at", { withTimezone: true, mode: "date" }).notNull().defaultNow(),
+    updatedAt: timestamp("updated_at", { withTimezone: true, mode: "date" }).notNull().defaultNow(),
+  },
+  (table) => [
+    primaryKey({ columns: [table.workspaceSubdomain, table.classId, table.date] }),
+    foreignKey({
+      name: "attendance_day_submissions_class_fk",
+      columns: [table.workspaceSubdomain, table.classId],
+      foreignColumns: [sessionClasses.workspaceSubdomain, sessionClasses.id],
+    }).onDelete("restrict"),
+    index("attendance_day_submissions_workspace_date_idx").on(table.workspaceSubdomain, table.date),
+  ],
+);
+
+/** A submission locks the day until it is explicitly reopened. */
+export function isAttendanceDayLocked(row: {
+  submittedAt?: Date | string | null;
+  reopenedAt?: Date | string | null;
+}): boolean {
+  if (!row.submittedAt) return false;
+  if (!row.reopenedAt) return true;
+  return new Date(row.submittedAt).getTime() > new Date(row.reopenedAt).getTime();
+}
+
 export const attendanceLeaves = pgTable(
   "attendance_leaves",
   {

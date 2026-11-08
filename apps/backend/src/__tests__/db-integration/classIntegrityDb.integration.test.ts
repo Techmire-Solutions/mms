@@ -1,6 +1,6 @@
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import { eq, sql } from "drizzle-orm";
-import { SessionSchema } from "@mms/shared";
+import { SessionSchema, type User } from "@mms/shared";
 import { closeDatabase } from "../../db/dbConnection.js";
 import { applyDrizzleMigrations } from "../../db/dbInit.js";
 import { withTenant } from "../../db/tenant-context.js";
@@ -67,25 +67,30 @@ afterAll(async () => {
   }
 });
 
+const ACTOR = { id: "u-test", role: "admin" } as unknown as User;
+
 describe("class / section reference integrity (real Postgres)", () => {
   it("given attendance for an enrolled student, should stamp the section of record and ignore the client value", async () => {
     // Act
     const [saved] = await runWithTenant(TENANT, () =>
-      attendanceUseCases.upsertAttendanceRecords([
-        {
-          id: "att-1",
-          classId: "ci-cls",
-          studentId: "s1",
-          studentName: "S1",
-          rollNo: "",
-          date: "2026-03-02",
-          status: "present",
-          timeIn: "",
-          timeOut: "",
-          notes: "",
-          sectionId: "forged",
-        },
-      ]),
+      attendanceUseCases.upsertAttendanceRecords(
+        [
+          {
+            id: "att-1",
+            classId: "ci-cls",
+            studentId: "s1",
+            studentName: "S1",
+            rollNo: "",
+            date: "2026-03-02",
+            status: "present",
+            timeIn: "",
+            timeOut: "",
+            notes: "",
+            sectionId: "forged",
+          },
+        ],
+        ACTOR,
+      ),
     );
     const session = await findSessionById(TENANT, "ci-ses");
 

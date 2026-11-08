@@ -37,6 +37,23 @@ export function AttendanceTimingRulesSection({
       className={SETUP_SECTION_CARD_CLASS}
     >
       <div className="space-y-4">
+        <Field
+          id="setting-cutoff-time"
+          label={t("attendance.settings.cutoffTime")}
+          hint={t("attendance.settings.cutoffTimeDesc")}
+        >
+          <div className="flex items-center gap-2">
+            <Input
+              id="setting-cutoff-time"
+              name="cutoffTime"
+              type="time"
+              value={settingsDraft.cutoffTime || ""}
+              onChange={(event) => upd("cutoffTime", event.target.value)}
+              className={cn(FORM_INPUT, "w-32 text-center")}
+            />
+          </div>
+        </Field>
+
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
           <Field
             id="setting-late-threshold"
@@ -47,10 +64,10 @@ export function AttendanceTimingRulesSection({
               <Input
                 id="setting-late-threshold"
                 name="lateThresholdMins"
-                type="text"
+                type="number"
                 inputMode="numeric"
-                min={1}
-                max={60}
+                min={0}
+                max={240}
                 value={settingsDraft.lateThresholdMins || ""}
                 onChange={(event) => upd("lateThresholdMins", Number(event.target.value))}
                 className={cn(FORM_INPUT, "w-24 text-center")}
@@ -70,10 +87,10 @@ export function AttendanceTimingRulesSection({
               <Input
                 id="setting-auto-absent"
                 name="autoAbsentAfterMins"
-                type="text"
+                type="number"
                 inputMode="numeric"
-                min={10}
-                max={120}
+                min={0}
+                max={240}
                 value={settingsDraft.autoAbsentAfterMins || ""}
                 onChange={(event) => upd("autoAbsentAfterMins", Number(event.target.value))}
                 className={cn(FORM_INPUT, "w-24 text-center")}
@@ -85,12 +102,19 @@ export function AttendanceTimingRulesSection({
           </Field>
         </div>
 
-        <div className="pt-1 border-t border-border/60">
+        <div className="pt-1 border-t border-border/60 space-y-3">
           <ToggleRow
             label={t("attendance.settings.lockAfterSubmit")}
             description={t("attendance.settings.lockAfterSubmitDesc")}
             value={Boolean(settingsDraft.lockAfterSubmit)}
             onChange={(value) => upd("lockAfterSubmit", value)}
+          />
+          {/* Both rules are enforced server-side; the toggles that drive them must be reachable. */}
+          <ToggleRow
+            label={t("attendance.settings.allowManualOverride")}
+            description={t("attendance.settings.allowManualOverrideDesc")}
+            value={Boolean(settingsDraft.allowManualOverride)}
+            onChange={(value) => upd("allowManualOverride", value)}
           />
         </div>
       </div>

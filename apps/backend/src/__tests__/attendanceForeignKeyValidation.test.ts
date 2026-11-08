@@ -2,8 +2,24 @@ import { describe, expect, it, vi } from "vitest";
 import type { AttendanceRecord } from "@mms/shared";
 import {
   createAttendanceForeignKeyValidators,
+  type AttendanceReferenceLookups,
   type AttendanceUseCasesDependencies,
 } from "../attendance/use-cases/attendanceForeignKeyValidation.js";
+
+/**
+ * The validator now *requires* the lookups it uses (no ORM fallback inside the domain). These cases
+ * exercise the single-record path, which touches two of the four; the unused pair is stubbed so the
+ * cast stays a test-double accommodation rather than a silent production fallback.
+ */
+function withLookups(deps: AttendanceUseCasesDependencies): AttendanceReferenceLookups {
+  return {
+    findStudentById: vi.fn().mockResolvedValue(null),
+    findSessionById: vi.fn().mockResolvedValue(null),
+    findStudentsByIds: vi.fn().mockResolvedValue([]),
+    findSessionsByIds: vi.fn().mockResolvedValue([]),
+    ...deps,
+  } as AttendanceReferenceLookups;
+}
 
 const TENANT = "tenant-test";
 
@@ -14,7 +30,7 @@ describe("attendanceForeignKeyValidation", () => {
       findStudentById: vi.fn().mockResolvedValue({ id: "student-1", deletedAt: null }),
       findSessionById: vi.fn().mockResolvedValue({ id: "class-1", deletedAt: null }),
     };
-    const { validateActiveForeignKeys } = createAttendanceForeignKeyValidators(deps);
+    const { validateActiveForeignKeys } = createAttendanceForeignKeyValidators(withLookups(deps));
     const record: Partial<AttendanceRecord> = {
       studentId: "student-1",
       classId: "class-1",
@@ -32,7 +48,7 @@ describe("attendanceForeignKeyValidation", () => {
       findStudentById: vi.fn(),
       findSessionById: vi.fn(),
     };
-    const { validateActiveForeignKeys } = createAttendanceForeignKeyValidators(deps);
+    const { validateActiveForeignKeys } = createAttendanceForeignKeyValidators(withLookups(deps));
 
     // Act
     await validateActiveForeignKeys(TENANT, {});
@@ -47,7 +63,7 @@ describe("attendanceForeignKeyValidation", () => {
     const deps: AttendanceUseCasesDependencies = {
       findStudentById: vi.fn().mockResolvedValue(null),
     };
-    const { validateActiveForeignKeys } = createAttendanceForeignKeyValidators(deps);
+    const { validateActiveForeignKeys } = createAttendanceForeignKeyValidators(withLookups(deps));
     const record: Partial<AttendanceRecord> = { studentId: "missing-student" };
 
     // Act & Assert
@@ -62,7 +78,7 @@ describe("attendanceForeignKeyValidation", () => {
     const deps: AttendanceUseCasesDependencies = {
       findStudentById: vi.fn().mockResolvedValue({ id: "student-1", deletedAt: new Date() }),
     };
-    const { validateActiveForeignKeys } = createAttendanceForeignKeyValidators(deps);
+    const { validateActiveForeignKeys } = createAttendanceForeignKeyValidators(withLookups(deps));
     const record: Partial<AttendanceRecord> = { studentId: "student-1" };
 
     // Act & Assert
@@ -77,7 +93,7 @@ describe("attendanceForeignKeyValidation", () => {
     const deps: AttendanceUseCasesDependencies = {
       findSessionById: vi.fn().mockResolvedValue(null),
     };
-    const { validateActiveForeignKeys } = createAttendanceForeignKeyValidators(deps);
+    const { validateActiveForeignKeys } = createAttendanceForeignKeyValidators(withLookups(deps));
     const record: Partial<AttendanceRecord> = { classId: "missing-class" };
 
     // Act & Assert
@@ -92,7 +108,7 @@ describe("attendanceForeignKeyValidation", () => {
     const deps: AttendanceUseCasesDependencies = {
       findSessionById: vi.fn().mockResolvedValue({ id: "class-1", deletedAt: new Date() }),
     };
-    const { validateActiveForeignKeys } = createAttendanceForeignKeyValidators(deps);
+    const { validateActiveForeignKeys } = createAttendanceForeignKeyValidators(withLookups(deps));
     const record: Partial<AttendanceRecord> = { classId: "class-1" };
 
     // Act & Assert
@@ -111,7 +127,9 @@ describe("attendanceForeignKeyValidation", () => {
       ]),
       findSessionsByIds: vi.fn().mockResolvedValue([{ id: "class-1", deletedAt: null }]),
     };
-    const { validateBatchActiveForeignKeys } = createAttendanceForeignKeyValidators(deps);
+    const { validateBatchActiveForeignKeys } = createAttendanceForeignKeyValidators(
+      withLookups(deps),
+    );
     const records: AttendanceRecord[] = [
       {
         id: "a1",
@@ -148,7 +166,9 @@ describe("attendanceForeignKeyValidation", () => {
       findStudentsByIds: vi.fn(),
       findSessionsByIds: vi.fn(),
     };
-    const { validateBatchActiveForeignKeys } = createAttendanceForeignKeyValidators(deps);
+    const { validateBatchActiveForeignKeys } = createAttendanceForeignKeyValidators(
+      withLookups(deps),
+    );
 
     // Act
     await validateBatchActiveForeignKeys(TENANT, []);
@@ -167,7 +187,9 @@ describe("attendanceForeignKeyValidation", () => {
       ]),
       findSessionsByIds: vi.fn().mockResolvedValue([{ id: "class-1", deletedAt: null }]),
     };
-    const { validateBatchActiveForeignKeys } = createAttendanceForeignKeyValidators(deps);
+    const { validateBatchActiveForeignKeys } = createAttendanceForeignKeyValidators(
+      withLookups(deps),
+    );
     const records: AttendanceRecord[] = [
       {
         id: "a1",
@@ -198,7 +220,9 @@ describe("attendanceForeignKeyValidation", () => {
       findStudentsByIds: vi.fn().mockResolvedValue([{ id: "student-1", deletedAt: null }]),
       findSessionsByIds: vi.fn().mockResolvedValue([{ id: "class-1", deletedAt: new Date() }]),
     };
-    const { validateBatchActiveForeignKeys } = createAttendanceForeignKeyValidators(deps);
+    const { validateBatchActiveForeignKeys } = createAttendanceForeignKeyValidators(
+      withLookups(deps),
+    );
     const records: AttendanceRecord[] = [
       {
         id: "a1",

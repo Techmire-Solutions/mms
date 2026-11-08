@@ -37,6 +37,8 @@ export * from "../attendance/attendanceListQuery.js";
 export * from "../attendance/attendanceLookupTypes.js";
 export * from "../attendance/attendanceModuleManifest.js";
 export * from "../attendance/attendanceModuleSettings.js";
+export * from "../attendance/attendancePolicy.js";
+export * from "../attendance/attendanceTransitions.js";
 export * from "../attendance/attendanceReportAggregates.js";
 export * from "../attendance/attendanceSetupConfigTypes.js";
 export * from "../finance/financeBilling.js";

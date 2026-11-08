@@ -1,4 +1,4 @@
-import { type FastifyInstance, type FastifyPluginOptions } from "fastify";
+import { type FastifyInstance, type FastifyPluginOptions, type FastifyRequest } from "fastify";
 import { authenticateTenant } from "../../middleware/authenticate.js";
 import { registerModuleAccess } from "../../middleware/requireTenantModule.js";
 import { attendanceUseCases } from "../../attendance/use-cases/attendanceUseCases.js";
@@ -11,6 +11,12 @@ import { academicCalendarImportRoutes } from "./attendance/academicCalendarImpor
 import { attendanceExportRoutes } from "./attendance/attendanceExportRoutes.js";
 
 const COLLECTION = ATTENDANCE_MODULE_MANIFEST.collectionKey;
+
+/** `?date=YYYY-MM-DD` of a metrics request, or `""`. Query parsing belongs to the transport layer. */
+function readMetricsDate(request: FastifyRequest): string {
+  const raw = (request.query as { date?: unknown } | undefined)?.date;
+  return typeof raw === "string" && /^\d{4}-\d{2}-\d{2}$/.test(raw) ? raw : "";
+}
 
 /**
  * Attendance routes — CRUD, bulk, metrics, setup config, lookups, and reports
@@ -32,7 +38,12 @@ export default async function attendanceRoutes(
         collection: COLLECTION,
         errorMessagePrefix: "attendance",
         loadCountFn: attendanceUseCases.countAttendanceRecords,
-        loadMetricsFn: attendanceUseCases.loadAttendanceCommandMetrics,
+        // The transport layer parses the query; the use case takes a plain day. The same day is
+        // declared as the metrics cache variant, otherwise `?date=A` and `?date=B` share one
+        // cached payload for the TTL and one of them shows the other day's numbers.
+        loadMetricsFn: (request) =>
+          attendanceUseCases.loadAttendanceCommandMetrics(readMetricsDate(request)),
+        cacheVary: readMetricsDate,
         nameSingular: "record",
       });
     },

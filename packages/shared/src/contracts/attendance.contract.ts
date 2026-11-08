@@ -27,38 +27,20 @@ import {
   attendanceMarkedDatesQuerySchema,
   attendanceMarkedDatesSchema,
 } from "../attendance/attendanceCoverage.js";
+import {
+  attendanceDaySubmissionResponseSchema,
+  attendanceListPageResponseSchema,
+  attendancePreferencesResponseSchema,
+  errorResponse,
+} from "./attendance.contractSchemas.js";
+
+export {
+  attendanceDaySubmissionResponseSchema,
+  attendanceListPageResponseSchema,
+  attendancePreferencesResponseSchema,
+} from "./attendance.contractSchemas.js";
 
 const c = initContract();
-const errorResponse = z.object({ type: z.string(), message: z.string() }).passthrough();
-
-/** Normalized Attendance Setup preferences (`AttendanceModulePreferences`). */
-export const attendancePreferencesResponseSchema = z.object({
-  workingDays: z.array(z.string()),
-  cutoffTime: z.string(),
-  lateThresholdMins: z.number(),
-  autoAbsentAfterMins: z.number(),
-  qrEnabled: z.boolean(),
-  lowAttendanceThreshold: z.number(),
-  notifyParents: z.boolean(),
-  requireNoteForAbsent: z.boolean(),
-  lockAfterSubmit: z.boolean(),
-  trackHalfDay: z.boolean(),
-  weeklyReport: z.boolean(),
-  attendanceAlerts: z.boolean(),
-  allowManualOverride: z.boolean(),
-  offlineEnabled: z.boolean(),
-  geoTagging: z.boolean(),
-  defaultViewLayout: z.string(),
-});
-
-/** Envelope for paginated attendance list responses (`AttendanceListPageResult`). */
-export const attendanceListPageResponseSchema = z.object({
-  records: z.array(attendanceRecordSchema),
-  total: z.number(),
-  page: z.number(),
-  limit: z.number(),
-  hasMore: z.boolean(),
-});
 
 const bulkResultResponseSchema = z.object({
   success: z.literal(true),
@@ -170,6 +152,34 @@ export const attendanceContract = c.router({
       500: errorResponse,
     },
     summary: "Restore a soft-deleted attendance record by ID",
+  },
+  submitDay: {
+    method: "POST",
+    path: "/api/attendance/days/:classId/:date/submit",
+    body: z.object({}).optional(),
+    responses: {
+      200: attendanceDaySubmissionResponseSchema,
+      400: errorResponse,
+      403: errorResponse,
+      404: errorResponse,
+      409: errorResponse,
+      500: errorResponse,
+    },
+    summary: "Submit (lock) a class roster for one day",
+  },
+  reopenDay: {
+    method: "POST",
+    path: "/api/attendance/days/:classId/:date/reopen",
+    body: z.object({ reason: z.string().max(500).optional() }).optional(),
+    responses: {
+      200: attendanceDaySubmissionResponseSchema,
+      400: errorResponse,
+      403: errorResponse,
+      404: errorResponse,
+      409: errorResponse,
+      500: errorResponse,
+    },
+    summary: "Reopen a submitted class roster day",
   },
   widgetAggregates: {
     method: "POST",

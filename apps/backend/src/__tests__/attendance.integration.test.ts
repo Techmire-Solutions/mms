@@ -230,14 +230,13 @@ describe("attendance REST routes integration", () => {
       },
     });
     expect(res.statusCode).toBe(200);
-    expect(mockUpsertAttendanceRecords).toHaveBeenCalledWith([
-      { ...attendanceRecord, markedBy: expect.any(String) },
-    ]);
-    expect(mockAssertTeacherClassScope).toHaveBeenCalledWith(
+    // Guards moved into the use case: the handler now only authorises and delegates, passing the
+    // acting user so the domain can run the row-scope check inside its own transaction.
+    expect(mockUpsertAttendanceRecords).toHaveBeenCalledWith(
+      [{ ...attendanceRecord, markedBy: expect.any(String) }],
       expect.objectContaining({ role: "teacher" }),
-      "demo",
-      [{ classId: attendanceRecord.classId, date: attendanceRecord.date }],
     );
+    expect(mockAssertTeacherClassScope).not.toHaveBeenCalled();
     expect(res.json()).toEqual({ records: [attendanceRecord] });
     await app.close();
   });
@@ -272,7 +271,7 @@ describe("attendance REST routes integration", () => {
     expect(res.statusCode).toBe(200);
     expect(mockBulkSoftDeleteAttendance).toHaveBeenCalledWith(
       [attendanceRecord.id],
-      "u-admin",
+      expect.objectContaining({ id: "u-admin" }),
       undefined,
     );
     await app.close();
@@ -290,7 +289,10 @@ describe("attendance REST routes integration", () => {
       },
     });
     expect(res.statusCode).toBe(200);
-    expect(mockRestoreAttendanceRecordById).toHaveBeenCalledWith(attendanceRecord.id, "u-admin");
+    expect(mockRestoreAttendanceRecordById).toHaveBeenCalledWith(
+      attendanceRecord.id,
+      expect.objectContaining({ id: "u-admin" }),
+    );
     await app.close();
   });
 

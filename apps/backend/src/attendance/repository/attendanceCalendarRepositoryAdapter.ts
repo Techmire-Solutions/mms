@@ -13,7 +13,15 @@ import {
 import {
   findOverlappingApprovedLeaves,
   insertApprovedLeave,
+  insertApprovedLeaveIfFree,
+  listApprovedLeavesFor,
 } from "../../db/repositories/attendanceLeaveRepository.js";
+import {
+  getAttendanceDaySubmission,
+  listLockedAttendanceDayKeys,
+  reopenAttendanceDay,
+  upsertAttendanceDaySubmission,
+} from "../../db/repositories/attendanceDaySubmissionRepository.js";
 import { getAttendanceModulePreferences } from "../../db/repositories/attendanceModulePreferencesRepository.js";
 import { findWorkspaceTimezone } from "../../db/repositories/workspaceRepository.js";
 
@@ -30,4 +38,10 @@ export const attendanceCalendarRepository: AttendanceCalendarRepository = {
   getAttendanceModulePreferences,
   findOverlappingApprovedLeaves,
   insertApprovedLeave,
+  insertApprovedLeaveIfFree,
+  listApprovedLeavesFor,
+  listLockedAttendanceDayKeys,
+  getAttendanceDaySubmission,
+  upsertAttendanceDaySubmission,
+  reopenAttendanceDay,
 };
