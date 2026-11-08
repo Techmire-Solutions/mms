@@ -39,6 +39,7 @@ export interface ApplicationJoinedRow {
   enrollmentId: string | null;
   reviewReason: string | null;
   reviewedAt: Date | null;
+  waitlistOfferExpiresAt: Date | null;
   createdAt: Date;
 }
 
@@ -81,6 +82,7 @@ const joinedColumns = {
   enrollmentId: a.enrollmentId,
   reviewReason: a.reviewReason,
   reviewedAt: a.reviewedAt,
+  waitlistOfferExpiresAt: a.waitlistOfferExpiresAt,
   createdAt: a.createdAt,
 };
 

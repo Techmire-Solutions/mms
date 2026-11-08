@@ -41,7 +41,9 @@
     "backfill:date-columns": "tsx src/scripts/backfill-date-columns.ts",
     "purge:selected-modules": "tsx src/scripts/purgeSelectedModules.ts",
     "purge:orphaned-attachments": "tsx src/scripts/sweepOrphanedAttachments.ts",
-    "test:db:coverage": "vitest run --config vitest.db.config.ts --coverage --coverage.include='src/sessions/**' --coverage.include='src/db/repositories/session*.ts' --coverage.include='src/routes/tenant/sessions/**' --coverage.include='src/worker/sessionLifecycleScheduler.ts' --coverage.reportsDirectory=coverage-sessions-db --coverage.reporter=json"
+    "test:db:coverage": "vitest run --config vitest.db.config.ts --coverage --coverage.include='src/sessions/**' --coverage.include='src/db/repositories/session*.ts' --coverage.include='src/routes/tenant/sessions/**' --coverage.include='src/worker/sessionLifecycleScheduler.ts' --coverage.reportsDirectory=coverage-sessions-db --coverage.reporter=json",
+    "test:db:coverage:enrollments": "vitest run --config vitest.db.config.ts --coverage --coverage.include='src/enrollments/**' --coverage.include='src/db/repositories/enrollment*' --coverage.include='src/db/repositories/registration*' --coverage.include='src/routes/tenant/enrollments/**' --coverage.reportsDirectory=coverage-enrollments-db --coverage.reporter=json",
+    "test:db:concurrency": "node ../../scripts/ci/run-concurrency-suite.mjs"
   },
   "dependencies": {
     "@aws-sdk/client-s3": "^3.1161.0",

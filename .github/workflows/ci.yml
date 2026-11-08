@@ -742,6 +742,27 @@ jobs:
       - name: Sessions integration coverage ratchet
         run: node scripts/ci/check-session-coverage.mjs --coverage apps/backend/coverage-sessions-db
 
+      - name: Enrollments DB coverage
+        run: pnpm --filter mms-backend run test:db:coverage:enrollments
+
+      - name: Enrollments integration coverage ratchet
+        run: node scripts/ci/check-enrollment-coverage.mjs --coverage apps/backend/coverage-enrollments-db
+
+      - name: Enrollments DB test hygiene and manifest
+        run: |
+          node scripts/ci/check-db-test-hygiene.mjs
+          node scripts/ci/check-db-test-manifest.mjs
+
+      - name: Repeat enrollment concurrency suite
+        run: pnpm --filter mms-backend run test:db:concurrency
+
+      - name: Shuffle enrollment DB files before execution
+        run: >
+          pnpm --filter mms-backend exec vitest run --config vitest.db.config.ts
+          src/__tests__/db-integration/enrollment
+          src/__tests__/db-integration/registration
+          --sequence.shuffle.files --sequence.seed=20261108
+
   # Proves tenant isolation under the role production is supposed to use: a
   # NOSUPERUSER NOBYPASSRLS owner, with FORCE RLS active. The normal DB job runs
   # as `postgres`, where every policy is inert, so it cannot catch this class.

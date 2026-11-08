@@ -2,6 +2,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { admissionsContract, enrollmentContract, enrollmentOperationsContract } from "@mms/shared";
 import { buildApp } from "../app.js";
 import { accountantToken, adminToken, teacherToken, viewerToken } from "./helpers/tokens.js";
+import { enrollmentsUseCases } from "../enrollments/use-cases/enrollmentsUseCases.js";
 
 const contractEnrollment = vi.hoisted(() => ({
   id: "enr-1",
@@ -742,6 +743,117 @@ describe("enrollments REST routes integration", () => {
       }),
     );
     await app.close();
+  });
+
+  it("creates, updates and deletes an enrollment through the contract routes", async () => {
+    vi.mocked(enrollmentsUseCases.createEnrollment).mockResolvedValue(contractEnrollment as never);
+    vi.mocked(enrollmentsUseCases.updateEnrollmentById).mockResolvedValue(
+      contractEnrollment as never,
+    );
+    vi.mocked(enrollmentsUseCases.deleteEnrollmentById).mockResolvedValue(true as never);
+    const app = await buildApp();
+    try {
+      const headers = {
+        host: "demo.localhost",
+        authorization: `Bearer ${adminToken(app, { name: "Admin" })}`,
+      };
+      const create = await app.inject({
+        method: "POST",
+        url: "/api/enrollments",
+        headers,
+        payload: {
+          studentId: "stu-1",
+          sessionId: "ses-1",
+          classId: "cls-1",
+          enrolledDate: "2026-01-01",
+        },
+      });
+      expect(create.statusCode).toBe(201);
+      expect(create.json()).toMatchObject({ id: "enr-1" });
+
+      const update = await app.inject({
+        method: "PUT",
+        url: "/api/enrollments/enr-1",
+        headers,
+        payload: { notes: "Updated through the contract" },
+      });
+      expect(update.statusCode).toBe(200);
+      expect(update.json()).toMatchObject({ id: "enr-1" });
+
+      const remove = await app.inject({
+        method: "DELETE",
+        url: "/api/enrollments/enr-1",
+        headers,
+        payload: { deletionReason: "Route coverage" },
+      });
+      expect(remove.statusCode).toBe(200);
+      expect(remove.json()).toEqual({ success: true });
+    } finally {
+      await app.close();
+    }
+  });
+
+  it("serves every mid-session operation contract route", async () => {
+    const app = await buildApp();
+    try {
+      const headers = {
+        host: "demo.localhost",
+        authorization: `Bearer ${adminToken(app, { name: "Admin" })}`,
+      };
+      const transfer = await app.inject({
+        method: "POST",
+        url: "/api/enrollments/enr-1/transfer",
+        headers,
+        payload: { classId: "cls-2", effectiveOn: "2026-02-01", reason: "Route coverage" },
+      });
+      expect(transfer.statusCode).toBe(200);
+      expect(transfer.json()).toMatchObject({ enrollment: { id: "enr-1" } });
+
+      const readmit = await app.inject({
+        method: "POST",
+        url: "/api/enrollments/enr-1/readmit",
+        headers,
+        payload: { effectiveOn: "2026-02-01", reason: "Route coverage" },
+      });
+      expect(readmit.statusCode).toBe(200);
+
+      const suspend = await app.inject({
+        method: "POST",
+        url: "/api/enrollments/enr-1/suspend",
+        headers,
+        payload: { fromOn: "2026-02-01", toOn: "2026-02-03", reason: "Route coverage" },
+      });
+      expect(suspend.statusCode).toBe(200);
+
+      const bulkEnd = await app.inject({
+        method: "POST",
+        url: "/api/enrollments/bulk-end",
+        headers,
+        payload: { ids: ["enr-1", "enr-2"], reason: "Route coverage" },
+      });
+      expect(bulkEnd.statusCode).toBe(200);
+      expect(bulkEnd.json()).toMatchObject({ succeeded: 0, failed: 0, failures: [] });
+    } finally {
+      await app.close();
+    }
+  });
+
+  it("rejects an invalid import pre-flight body before touching the database", async () => {
+    const app = await buildApp();
+    try {
+      const res = await app.inject({
+        method: "POST",
+        url: "/api/enrollments/import/preflight",
+        headers: {
+          host: "demo.localhost",
+          authorization: `Bearer ${adminToken(app, { name: "Admin" })}`,
+        },
+        payload: { rows: [{}] },
+      });
+      expect(res.statusCode).toBe(400);
+    } finally {
+      await app.close();
+    }
   });
 
   it("denies administrative drops and fee edits to a write-only role", async () => {

@@ -254,6 +254,10 @@ describe("enrollment domain subsystems (real Postgres)", () => {
   });
 
   it("offers freed seats FIFO with a window, then reverts expired offers", async () => {
+    // Isolate from any offer state left by another test/source order.
+    await query(sql`UPDATE registration_applications
+      SET status = 'waitlisted', waitlist_offer_expires_at = NULL
+      WHERE workspace_subdomain = ${TENANT} AND status = 'under_review'`);
     await insertApplication("app-1", "2026-01-01T00:00:00Z");
     await insertApplication("app-2", "2026-01-02T00:00:00Z");
 
@@ -280,12 +284,15 @@ describe("enrollment domain subsystems (real Postgres)", () => {
   });
 
   it("reverts unconsumed offers when the class no longer has a free seat", async () => {
-    // s2 was trashed earlier: s1 occupies sec-1, sec-2 is empty → a free seat.
-    expect(await classHasFreeSeat(TENANT, CLASS)).toBe(true);
-    // Clear the still-open offer from the previous test so only this fixture's offer is reverted.
+    // Make the fixture self-contained: release s2's seat (never s1/s4, which later tests count)
+    // and clear every open offer from an earlier test/source order.
+    await query(sql`UPDATE enrollments SET status = 'withdrawn'
+      WHERE workspace_subdomain = ${TENANT} AND student_id = 's2' AND deleted_at IS NULL
+        AND status NOT IN ('cancelled','withdrawn','promoted','retained','graduated','left')`);
     await query(sql`UPDATE registration_applications
       SET status = 'waitlisted', waitlist_offer_expires_at = NULL
-      WHERE workspace_subdomain = ${TENANT} AND id = 'app-2'`);
+      WHERE workspace_subdomain = ${TENANT} AND status = 'under_review'`);
+    expect(await classHasFreeSeat(TENANT, CLASS)).toBe(true);
     await withTenant(TENANT, (tx) =>
       tx.insert(registrationApplications).values({
         id: "app-late",

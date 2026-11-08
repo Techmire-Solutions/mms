@@ -13,9 +13,10 @@ import {
 } from "../../enrollments/use-cases/registrationPublicUseCases.js";
 import { admissionsUseCases } from "../../enrollments/use-cases/admissionsUseCases.js";
 import { runWithTenant } from "../../lib/tenantContext.js";
-import { requireDatabaseConnection } from "./dbTestSupport.js";
+import { daysFromToday, requireDatabaseConnection } from "./dbTestSupport.js";
 
 const TENANT = "registration-test";
+const SESSION_START = daysFromToday(180);
 const ADMIN = {
   id: "admin-1",
   role: "admin",
@@ -61,7 +62,7 @@ beforeAll(async () => {
       id: "rg-ses",
       name: "Hifz 2027",
       status: "open",
-      startDate: "2027-04-01",
+      startDate: SESSION_START,
       baseFee: 500,
       classes: [
         {
@@ -114,7 +115,7 @@ describe("public registration → admissions (real Postgres)", () => {
         gender: "male",
         minAge: 6,
         maxAge: 12,
-        ageCalculationDate: "2027-04-01",
+        ageCalculationDate: SESSION_START,
         seatsLeft: 30,
       },
     ]);

@@ -82,6 +82,15 @@ export async function approveApplications(
     repo.findApplicationsByIdsTx(tx, subdomain, ids),
   );
   for (const app of apps) {
+    // An offer that outlived its window must not be approved: the seat was re-offered by the
+    // sweep and approving would silently take it from the next applicant.
+    if (app.waitlistOfferExpiresAt && app.waitlistOfferExpiresAt.getTime() <= Date.now()) {
+      outcome.failures.push({
+        id: app.id,
+        message: "The waitlist offer expired — refresh the application before approving",
+      });
+      continue;
+    }
     if (!canTransitionApplication(app.status, "approved")) {
       outcome.failures.push({
         id: app.id,

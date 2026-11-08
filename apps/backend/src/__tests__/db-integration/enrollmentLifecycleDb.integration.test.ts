@@ -10,8 +10,7 @@ import { bulkEnrollStudentsIntoClass } from "../../enrollments/use-cases/enrollm
 import { enrollmentOperationsUseCases as ops } from "../../enrollments/use-cases/enrollmentOperationsUseCases.js";
 import { enrollmentLifecycleUseCases as lifecycle } from "../../enrollments/use-cases/enrollmentLifecycleUseCases.js";
 import { runWithTenant } from "../../lib/tenantContext.js";
-import { todayInTimeZone } from "../../lib/dbDate.js";
-import { requireDatabaseConnection } from "./dbTestSupport.js";
+import { daysFromToday, requireDatabaseConnection, todayIso } from "./dbTestSupport.js";
 
 const TENANT = "enrollment-lifecycle-test";
 const admin: User = {
@@ -21,10 +20,6 @@ const admin: User = {
   role: "admin",
   workspaceSubdomain: TENANT,
 };
-const today = todayInTimeZone(null);
-const yesterday = new Date(Date.parse(`${today}T00:00:00Z`) - 86_400_000)
-  .toISOString()
-  .slice(0, 10);
 
 const query = <T extends Record<string, unknown>>(statement: ReturnType<typeof sql>) =>
   withTenant(TENANT, async (tx) => (await tx.execute<T>(statement)).rows);
@@ -107,24 +102,35 @@ describe("enrollment suspension, withdrawal waitlist offer and re-admission (rea
   it("given a suspension, should record approved leave and refuse an overlapping one", async () => {
     // Arrange
     const id = await enrollmentIdOf("s1");
-    const body = { fromOn: "2026-02-01", toOn: "2026-02-10", reason: "Family travel abroad" };
+    const body = {
+      fromOn: daysFromToday(-60),
+      toOn: daysFromToday(-50),
+      reason: "Family travel abroad",
+    };
 
     // Act
     const suspended = await runWithTenant(TENANT, () => lifecycle.suspend(TENANT, id, body, admin));
     const overlap = runWithTenant(TENANT, () =>
-      lifecycle.suspend(TENANT, id, { ...body, fromOn: "2026-02-05", toOn: "2026-02-20" }, admin),
+      lifecycle.suspend(
+        TENANT,
+        id,
+        { ...body, fromOn: daysFromToday(-55), toOn: daysFromToday(-40) },
+        admin,
+      ),
     );
 
     // Assert
     await expect(overlap).rejects.toMatchObject({ statusCode: 409 });
     expect(suspended.timeline.at(-1)).toMatchObject({
       eventType: "suspended",
-      effectiveOn: "2026-02-01",
+      effectiveOn: daysFromToday(-60),
     });
     const leaves = await query<{ status: string; from: string; to: string }>(sql`
       SELECT status, from_date::text AS "from", to_date::text AS "to"
         FROM attendance_leaves WHERE workspace_subdomain = ${TENANT} AND student_id = 's1'`);
-    expect(leaves).toEqual([{ status: "approved", from: "2026-02-01", to: "2026-02-10" }]);
+    expect(leaves).toEqual([
+      { status: "approved", from: daysFromToday(-60), to: daysFromToday(-50) },
+    ]);
   });
 
   it("given a withdrawal from a full class, should flag the oldest waitlisted application for review", async () => {
@@ -133,7 +139,12 @@ describe("enrollment suspension, withdrawal waitlist offer and re-admission (rea
 
     // Act
     await runWithTenant(TENANT, () =>
-      ops.withdraw(TENANT, id, { effectiveOn: yesterday, reason: "Moved to another city" }, admin),
+      ops.withdraw(
+        TENANT,
+        id,
+        { effectiveOn: daysFromToday(-1), reason: "Moved to another city" },
+        admin,
+      ),
     );
 
     // Assert
@@ -144,8 +155,23 @@ describe("enrollment suspension, withdrawal waitlist offer and re-admission (rea
   });
 
   it("given re-admission after the last day, should confirm again with a new open placement", async () => {
-    // Arrange
+    // Arrange: this test must not depend on the withdrawal test's source order.
     const id = await enrollmentIdOf("s1");
+    const [current] = await query<{ status: string }>(
+      sql`SELECT status FROM enrollments WHERE workspace_subdomain = ${TENANT} AND id = ${id}`,
+    );
+    if (current?.status !== "withdrawn") {
+      await runWithTenant(TENANT, () =>
+        ops.withdraw(
+          TENANT,
+          id,
+          { effectiveOn: daysFromToday(-1), reason: "Test setup withdrawal" },
+          admin,
+        ),
+      );
+    }
+    const today = todayIso();
+    const yesterday = daysFromToday(-1);
 
     // Act
     const tooEarly = await runWithTenant(TENANT, () =>
