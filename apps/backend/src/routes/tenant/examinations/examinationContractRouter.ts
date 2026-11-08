@@ -7,11 +7,13 @@ import type { ContractRouteArgs, ContractRouteResponse } from "../../../lib/cont
 import { canReadCollection, canDeleteCollection } from "../../../services/rbacService.js";
 import { withTenant } from "../../../db/tenant-context.js";
 import { examinationsUseCases } from "../../../examinations/use-cases/examinationsUseCases.js";
+import { gateHandlers } from "./examinationGateHandlers.js";
 
 const s = initServer();
 
 export const examinationContractRouter: FastifyPluginAsync = async (fastify) => {
   const router = s.router(examinationContract, {
+    ...gateHandlers(),
     listExams: async ({
       query,
       request,

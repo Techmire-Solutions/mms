@@ -26,6 +26,7 @@ export const attendancePreferencesPutBodySchema = z
     autoAbsentAfterMins: ATTENDANCE_MINUTES_SCHEMA.optional(),
     qrEnabled: z.boolean().optional(),
     lowAttendanceThreshold: z.number().min(0).max(100).optional(),
+    absenceStreakThreshold: z.number().int().min(1).max(30).optional(),
     notifyParents: z.boolean().optional(),
     requireNoteForAbsent: z.boolean().optional(),
     lockAfterSubmit: z.boolean().optional(),
@@ -58,6 +59,7 @@ export interface AttendanceModulePreferences {
   autoAbsentAfterMins: number;
   qrEnabled: boolean;
   lowAttendanceThreshold: number;
+  absenceStreakThreshold: number;
   notifyParents: boolean;
   requireNoteForAbsent: boolean;
   lockAfterSubmit: boolean;
@@ -77,6 +79,13 @@ function sanitizeClock(value: unknown, fallback: string): string {
   return parsed.success ? parsed.data : fallback;
 }
 
+/** A stored streak threshold: whole absences, 1–30, defaulting to the school default. */
+function sanitizeStreakThreshold(value: unknown): number {
+  const fallback = DEFAULT_ATTENDANCE_SETTINGS.absenceStreakThreshold;
+  if (typeof value !== "number" || !Number.isFinite(value)) return fallback;
+  return Math.min(Math.max(Math.round(value), 1), 30);
+}
+
 /** Same for a stored minute budget: out-of-range values are clamped, not trusted. */
 function sanitizeMinutes(value: unknown, fallback: number): number {
   if (typeof value !== "number" || !Number.isFinite(value)) return fallback;
@@ -93,6 +102,7 @@ export function normalizeAttendanceModulePreferences(raw: unknown): AttendanceMo
       autoAbsentAfterMins: DEFAULT_ATTENDANCE_SETTINGS.autoAbsentAfterMins,
       qrEnabled: DEFAULT_ATTENDANCE_SETTINGS.qrEnabled,
       lowAttendanceThreshold: DEFAULT_ATTENDANCE_SETTINGS.lowAttendanceThreshold,
+      absenceStreakThreshold: DEFAULT_ATTENDANCE_SETTINGS.absenceStreakThreshold,
       notifyParents: DEFAULT_ATTENDANCE_SETTINGS.notifyParents,
       requireNoteForAbsent: DEFAULT_ATTENDANCE_SETTINGS.requireNoteForAbsent,
       lockAfterSubmit: DEFAULT_ATTENDANCE_SETTINGS.lockAfterSubmit,
@@ -134,6 +144,7 @@ export function normalizeAttendanceModulePreferences(raw: unknown): AttendanceMo
       typeof prefs.lowAttendanceThreshold === "number"
         ? prefs.lowAttendanceThreshold
         : DEFAULT_ATTENDANCE_SETTINGS.lowAttendanceThreshold,
+    absenceStreakThreshold: sanitizeStreakThreshold(prefs.absenceStreakThreshold),
     notifyParents:
       typeof prefs.notifyParents === "boolean"
         ? prefs.notifyParents

@@ -33,6 +33,10 @@ import { purgeExpiredArchivedRecords } from "./purgeArchivedRecordsJob.js";
 import { purgeExpiredPlatformActivityLogs } from "./purgePlatformActivityLogsJob.js";
 import { clearRetentionPurgeScheduler, scheduleNextDailyPurge } from "./retentionPurgeScheduler.js";
 import {
+  clearAttendanceAbsenceScheduler,
+  scheduleAttendanceAbsence,
+} from "./attendanceAbsenceScheduler.js";
+import {
   clearSessionLifecycleScheduler,
   scheduleSessionLifecycle,
 } from "./sessionLifecycleScheduler.js";
@@ -182,6 +186,7 @@ export async function startWorkerDaemon(): Promise<void> {
   scheduleNextDailyPurge(() => isRunning, activeDb(), 2);
   // Hourly: open sessions auto-start on their start date (workspace timezone).
   scheduleSessionLifecycle(() => isRunning);
+  scheduleAttendanceAbsence(() => isRunning);
   // Daily IAS 21 reference rates (no-op unless FX_RATE_FEED_PROVIDERS is set)
   scheduleFxRateFeed(() => isRunning);
   // Hourly: archive role tags whose employment/assignment end date has passed.
@@ -214,6 +219,7 @@ export async function startWorkerDaemon(): Promise<void> {
       }
       clearRetentionPurgeScheduler();
       clearSessionLifecycleScheduler();
+      clearAttendanceAbsenceScheduler();
       clearFxRateFeedScheduler();
       clearContactSystemTagSweep();
       clearWaitlistOfferScheduler();

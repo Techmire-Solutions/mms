@@ -7,6 +7,7 @@ import { AttendanceFilters } from "@/tenant/features/attendance/components/Atten
 import { AttendanceRecords } from "@/tenant/features/attendance/components/AttendanceRecords";
 import { AuditLog } from "@/tenant/features/attendance/components/AuditLog";
 import { MarkAttendance } from "@/tenant/features/attendance/components/MarkAttendance";
+import { AttendanceLifecyclePanel } from "@/tenant/features/attendance/components/AttendanceLifecyclePanel";
 import type { AttendanceRecord } from "@/lib/data/attendanceData";
 
 export type AttendanceWorkTab = {
@@ -112,6 +113,8 @@ export function AttendanceWorkTier({
           persistBatch={onPersistRecords}
         />
       )}
+
+      {activeOpsTab === "lifecycle" && <AttendanceLifecyclePanel />}
 
       {activeOpsTab === "records" && (
         <AttendanceRecords

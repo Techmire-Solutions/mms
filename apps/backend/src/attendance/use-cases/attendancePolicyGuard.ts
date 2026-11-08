@@ -37,6 +37,7 @@ export type AttendancePolicyStore = Pick<
   | "findWorkspaceTimezone"
   | "listApprovedLeavesFor"
   | "listLockedAttendanceDayKeys"
+  | "lockAttendanceStudents"
 >;
 
 const defaultPolicyStore: AttendancePolicyStore = attendanceCalendarRepository;
@@ -167,6 +168,10 @@ export async function assertAttendanceWriteAllowed(input: AttendancePolicyInput)
   const nowTime = currentTimeInTimeZone(timeZone, now);
 
   const studentIds = [...new Set(input.rows.map((row) => row.studentId).filter(Boolean))];
+  // Serialise against a concurrent leave decision before reading whether these students are on
+  // leave: without the lock, an approval committing right after this read would leave a `present`
+  // mark on an approved-leave day (F5). The decision path takes the same per-student lock.
+  await store.lockAttendanceStudents(tenant, studentIds);
   const days = input.rows
     .map((row) => row.date.slice(0, 10))
     .filter(Boolean)

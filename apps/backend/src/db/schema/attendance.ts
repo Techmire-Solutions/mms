@@ -125,52 +125,6 @@ export const attendance = pgTable(
   ],
 );
 
-/**
- * One row per class and teaching day: the roster's submission state (migration 0219).
- *
- * `lockAfterSubmit` was a configurable preference with nothing to enforce it — the grid kept the
- * "submitted" flag in React state only. This table is that missing state: a day is locked while
- * `submitted_at` is newer than `reopened_at` (see `isAttendanceDayLocked`).
- */
-export const attendanceDaySubmissions = pgTable(
-  "attendance_day_submissions",
-  {
-    workspaceSubdomain: text("workspace_subdomain")
-      .notNull()
-      .references(() => workspaces.subdomain, { onDelete: "cascade" }),
-    classId: text("class_id").notNull(),
-    date: date("date_on", { mode: "string" }).notNull(),
-    submittedAt: timestamp("submitted_at", { withTimezone: true, mode: "date" })
-      .notNull()
-      .defaultNow(),
-    submittedBy: text("submitted_by"),
-    reopenedAt: timestamp("reopened_at", { withTimezone: true, mode: "date" }),
-    reopenedBy: text("reopened_by"),
-    reopenReason: varchar("reopen_reason", { length: 500 }),
-    createdAt: timestamp("created_at", { withTimezone: true, mode: "date" }).notNull().defaultNow(),
-    updatedAt: timestamp("updated_at", { withTimezone: true, mode: "date" }).notNull().defaultNow(),
-  },
-  (table) => [
-    primaryKey({ columns: [table.workspaceSubdomain, table.classId, table.date] }),
-    foreignKey({
-      name: "attendance_day_submissions_class_fk",
-      columns: [table.workspaceSubdomain, table.classId],
-      foreignColumns: [sessionClasses.workspaceSubdomain, sessionClasses.id],
-    }).onDelete("restrict"),
-    index("attendance_day_submissions_workspace_date_idx").on(table.workspaceSubdomain, table.date),
-  ],
-);
-
-/** A submission locks the day until it is explicitly reopened. */
-export function isAttendanceDayLocked(row: {
-  submittedAt?: Date | string | null;
-  reopenedAt?: Date | string | null;
-}): boolean {
-  if (!row.submittedAt) return false;
-  if (!row.reopenedAt) return true;
-  return new Date(row.submittedAt).getTime() > new Date(row.reopenedAt).getTime();
-}
-
 export const attendanceLeaves = pgTable(
   "attendance_leaves",
   {
@@ -183,6 +137,18 @@ export const attendanceLeaves = pgTable(
     toDate: date("to_date", { mode: "string" }),
     reason: text("reason").notNull(),
     status: varchar("status", { length: 20 }).notNull().default("pending"),
+    /** medical | personal | family | other (migration 0220). */
+    leaveType: varchar("leave_type", { length: 20 }).notNull().default("other"),
+    submittedBy: text("submitted_by"),
+    submittedAt: timestamp("submitted_at", { withTimezone: true, mode: "date" }),
+    /** The reviewer's decision record — authoritative over the legacy `approved*` pair. */
+    reviewedBy: text("reviewed_by"),
+    reviewedAt: timestamp("reviewed_at", { withTimezone: true, mode: "date" }),
+    reviewNote: varchar("review_note", { length: 500 }),
+    cancelledBy: text("cancelled_by"),
+    cancelledAt: timestamp("cancelled_at", { withTimezone: true, mode: "date" }),
+    /** Free-form reference to a medical certificate held by the documents module. */
+    documentRef: text("document_ref"),
     approvedBy: text("approved_by"),
     approvedAt: timestamp("approved_at", { withTimezone: true, mode: "date" }),
     notes: text("notes"),
@@ -195,11 +161,30 @@ export const attendanceLeaves = pgTable(
       columns: [table.workspaceSubdomain, table.studentId],
       foreignColumns: [students.workspaceSubdomain, students.id],
     }).onDelete("cascade"),
+    check(
+      "attendance_leaves_status_check",
+      sql`${table.status} IN ('pending', 'approved', 'rejected', 'cancelled')`,
+    ),
+    check(
+      "attendance_leaves_type_check",
+      sql`${table.leaveType} IN ('medical', 'personal', 'family', 'other')`,
+    ),
+    // An approval without a decision record is unattributable evidence (migration 0220 backfills
+    // the legacy `approved_by/at` pair before this is validated).
+    check(
+      "attendance_leaves_approved_reviewed_check",
+      sql`${table.status} <> 'approved' OR ${table.reviewedAt} IS NOT NULL`,
+    ),
     index("attendance_leaves_workspace_student_idx").on(table.workspaceSubdomain, table.studentId),
     index("attendance_leaves_workspace_date_idx").on(
       table.workspaceSubdomain,
       table.fromDate,
       table.toDate,
+    ),
+    index("attendance_leaves_workspace_status_date_idx").on(
+      table.workspaceSubdomain,
+      table.status,
+      table.fromDate,
     ),
   ],
 );
@@ -255,6 +240,9 @@ export const attendanceModulePreferences = pgTable(
 );
 
 /** Per-user Attendance Work column layout (was document-store `attendance_user_column_preferences`). */
+/** Roster-day submission (0219) and chronic-absence alerts (0221) live in their own module. */
+export * from "./attendanceLifecycleTables.js";
+
 /* ========================================================================= */
 /*                         ROW INFER TYPES                                   */
 /* ========================================================================= */

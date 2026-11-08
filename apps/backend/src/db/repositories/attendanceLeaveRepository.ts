@@ -72,8 +72,9 @@ export async function insertApprovedLeaveIfFree(
 ): Promise<InsertApprovedLeaveResult> {
   const subdomain = tenant.trim().toLowerCase();
   return withTenant(subdomain, async (tx) => {
+    // Same per-student lock the marking path takes, so an approval can never race a mark write.
     await tx.execute(
-      sql`SELECT pg_advisory_xact_lock(hashtext(${`attendance:leave:${subdomain}:${leave.studentId}`}))`,
+      sql`SELECT pg_advisory_xact_lock(hashtext(${`attendance:student:${subdomain}:${leave.studentId}`}))`,
     );
 
     const [overlapping] = await tx
@@ -102,6 +103,7 @@ export async function insertApprovedLeaveIfFree(
     }
 
     const id = randomUUID();
+    const now = new Date();
     await tx.insert(attendanceLeaves).values({
       id,
       workspaceSubdomain: subdomain,
@@ -111,7 +113,11 @@ export async function insertApprovedLeaveIfFree(
       reason: leave.reason,
       status: "approved",
       approvedBy: leave.approvedBy,
-      approvedAt: new Date(),
+      approvedAt: now,
+      reviewedBy: leave.approvedBy,
+      reviewedAt: now,
+      submittedBy: leave.approvedBy,
+      submittedAt: now,
     });
     return { ok: true as const, id };
   });

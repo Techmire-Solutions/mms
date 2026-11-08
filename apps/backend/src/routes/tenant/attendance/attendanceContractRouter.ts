@@ -20,6 +20,17 @@ import {
   attendanceSubmitDayHandler,
 } from "./attendanceDaySubmissionHandlers.js";
 import {
+  attendanceCancelExcuseHandler,
+  attendanceListExcusesHandler,
+  attendanceReviewExcuseHandler,
+  attendanceSubmitExcuseHandler,
+} from "./attendanceLeaveHandlers.js";
+import {
+  attendanceListAbsenceAlertsHandler,
+  attendanceResolveAbsenceAlertHandler,
+  attendanceScanAbsenceStreaksHandler,
+} from "./attendanceEscalationHandlers.js";
+import {
   attendanceWidgetAggregatesHandler,
   attendanceMarkedDatesHandler,
   attendanceReportAggregatesHandler,
@@ -42,6 +53,13 @@ export const attendanceContractRouter: FastifyPluginAsync = async (fastify) => {
     bulkRestore: attendanceBulkRestoreHandler,
     submitDay: attendanceSubmitDayHandler,
     reopenDay: attendanceReopenDayHandler,
+    listLeaves: attendanceListExcusesHandler,
+    submitLeave: attendanceSubmitExcuseHandler,
+    reviewLeave: attendanceReviewExcuseHandler,
+    cancelLeave: attendanceCancelExcuseHandler,
+    listAbsenceAlerts: attendanceListAbsenceAlertsHandler,
+    scanAbsenceStreaks: attendanceScanAbsenceStreaksHandler,
+    resolveAbsenceAlert: attendanceResolveAbsenceAlertHandler,
     update: attendanceUpdateHandler,
     delete: attendanceDeleteHandler,
     restore: attendanceRestoreHandler,

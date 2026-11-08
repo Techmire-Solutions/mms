@@ -14,6 +14,8 @@ import { getQueryRows } from "../documentStoreKeys.js";
 import { withTenantRead } from "../tenant-context.js";
 import { loadCountableAttendanceSql } from "./attendanceCountableSql.js";
 import { isPresentOrLateSql, loadAttendanceOverview } from "./attendanceReportOverview.js";
+import { getAttendanceModulePreferences } from "./attendanceModulePreferencesRepository.js";
+import { normalizeAttendanceModulePreferences } from "@mms/shared";
 
 function activeAttendanceWhere(subdomain: string, alias = "a"): ReturnType<typeof sql> {
   return sql`
@@ -30,9 +32,20 @@ export async function loadAttendanceReportAggregatesSql(
   if (!subdomain) return { ...EMPTY_ATTENDANCE_REPORT_AGGREGATES };
 
   const countable = await loadCountableAttendanceSql(subdomain);
+  // The module preference now drives the low-attendance count; the dashboard keeps its own,
+  // separate threshold for its derived alerts.
+  const preferences = normalizeAttendanceModulePreferences(
+    await getAttendanceModulePreferences(subdomain),
+  );
   return withTenantRead(subdomain, async (tx) => {
     const aggregates: AttendanceReportAggregates = {
-      overview: await loadAttendanceOverview(tx, subdomain, countable, query?.classId),
+      overview: await loadAttendanceOverview(
+        tx,
+        subdomain,
+        countable,
+        query?.classId,
+        preferences.lowAttendanceThreshold,
+      ),
     };
     if (!attendanceReportComparisonQueryActive(query) || !query) {
       return aggregates;

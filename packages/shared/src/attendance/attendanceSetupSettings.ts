@@ -40,6 +40,7 @@ export function normalizeAttendanceSettings(raw: unknown): AttendanceSettings {
     autoAbsentAfterMins: DEFAULT_ATTENDANCE_SETTINGS.autoAbsentAfterMins, // managed by preferences
     qrEnabled: DEFAULT_ATTENDANCE_SETTINGS.qrEnabled, // managed by preferences
     lowAttendanceThreshold: DEFAULT_ATTENDANCE_SETTINGS.lowAttendanceThreshold, // managed by preferences
+    absenceStreakThreshold: DEFAULT_ATTENDANCE_SETTINGS.absenceStreakThreshold, // managed by preferences
     notifyParents: DEFAULT_ATTENDANCE_SETTINGS.notifyParents, // managed by preferences
     requireNoteForAbsent: DEFAULT_ATTENDANCE_SETTINGS.requireNoteForAbsent, // managed by preferences
     lockAfterSubmit: DEFAULT_ATTENDANCE_SETTINGS.lockAfterSubmit, // managed by preferences

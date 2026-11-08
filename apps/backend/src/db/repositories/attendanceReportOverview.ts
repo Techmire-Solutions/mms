@@ -33,6 +33,8 @@ export async function loadAttendanceOverview(
   subdomain: string,
   countable: CountableAttendanceSql,
   classId?: string,
+  /** The tenant's configured low-attendance threshold (was hardcoded to 75). */
+  lowAttendanceThreshold = 75,
 ): Promise<AttendanceReportOverview> {
   const attendanceClassFilter = classId ? sql`AND a.class_id = ${classId}` : sql``;
   const sessionClassFilter = classId ? sql`AND sc.id = ${classId}` : sql``;
@@ -135,7 +137,7 @@ export async function loadAttendanceOverview(
       "presentCount",
       total,
       rate,
-      COUNT(*) FILTER (WHERE rate < 75) OVER ()::int AS "lowAttendanceCount"
+      COUNT(*) FILTER (WHERE rate < ${lowAttendanceThreshold}) OVER ()::int AS "lowAttendanceCount"
     FROM tmp_attendance_student_rates
     ORDER BY rate ASC, name ASC, "studentId" ASC
     LIMIT ${STUDENT_RATE_LIMIT}
