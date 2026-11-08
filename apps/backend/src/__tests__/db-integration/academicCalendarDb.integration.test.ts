@@ -105,6 +105,8 @@ beforeAll(async () => {
       toDate: "2026-03-05",
       reason: "Ill",
       status: "approved",
+      reviewedAt: new Date("2026-03-04T08:00:00Z"),
+      reviewedBy: ACTOR,
     });
   });
 });
