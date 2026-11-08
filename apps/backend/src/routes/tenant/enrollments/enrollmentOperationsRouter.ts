@@ -3,7 +3,7 @@ import { initServer, type RouterImplementation } from "@ts-rest/fastify";
 import { enrollmentOperationsContract, ENROLLMENTS_MODULE_MANIFEST, type User } from "@mms/shared";
 import { handleContractError } from "../../../lib/contractError.js";
 import { standardRequestValidationErrorHandler } from "../../../lib/contractRegistration.js";
-import type { ContractRouteArgs } from "../../../lib/contractRouterTypes.js";
+import type { ContractRouteArgs, ContractRouteHandler } from "../../../lib/contractRouterTypes.js";
 import { canReadCollection, canWriteCollection } from "../../../services/rbacService.js";
 import { userHasPermission } from "../../../lib/userPermissionContext.js";
 import { enrollmentOperationsUseCases as ops } from "../../../enrollments/use-cases/enrollmentOperationsUseCases.js";
@@ -27,7 +27,11 @@ const tenantOf = (request: { tenant?: { id?: unknown } }) => String(request.tena
 
 /** `/api/enrollments/:id/{placements,transfer,withdraw}` — dated mid-session operations. */
 export const enrollmentOperationsRouter: FastifyPluginAsync = async (fastify) => {
-  const router = s.router(enrollmentOperationsContract, {
+  const handlers: {
+    [K in keyof typeof enrollmentOperationsContract]: ContractRouteHandler<
+      (typeof enrollmentOperationsContract)[K]
+    >;
+  } = {
     placements: async ({ params, request }: ContractRouteArgs<Contract["placements"]>) => {
       if (!canReadCollection(request.user as User, COLLECTION)) return forbidden;
       try {
@@ -122,7 +126,12 @@ export const enrollmentOperationsRouter: FastifyPluginAsync = async (fastify) =>
         });
       }
     },
-  } as unknown as RouterImplementation<Contract>);
+  };
+
+  const router = s.router(
+    enrollmentOperationsContract,
+    handlers as unknown as RouterImplementation<Contract>,
+  );
 
   await fastify.register(s.plugin(router), {
     requestValidationErrorHandler: standardRequestValidationErrorHandler,

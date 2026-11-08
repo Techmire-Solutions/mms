@@ -117,12 +117,14 @@ describe("enrollmentWriteConflict", () => {
     });
     expect(mapped).toBeInstanceOf(ConflictError);
     expect(mapped?.message).toMatch(/already has an active enrollment/);
+    expect((mapped as { type?: string }).type).toBe("already_enrolled");
   });
 
   it("maps the section roll-number unique index to a roll-number conflict", () => {
     const mapped = enrollmentWriteConflict({
       cause: { code: "23505", constraint: "enrollments_section_roll_no_active_uidx" },
     });
+    expect((mapped as { type?: string }).type).toBe("roll_no_taken");
     expect(mapped?.message).toMatch(/roll number/i);
   });
 

@@ -1,3 +1,4 @@
+import { ENROLLMENT_ERROR_CODES } from "@mms/shared";
 import {
   addDeadlineError,
   describeEligibilityReasons,
@@ -128,7 +129,7 @@ export async function validateNewEnrollmentRules(
   const today = todayInTimeZone(timezone);
   const deadlineError = addDeadlineError(cls.enrollmentDeadline, today);
   if (deadlineError) {
-    throw new HttpDomainError(409, "add_deadline_passed", deadlineError);
+    throw new HttpDomainError(409, ENROLLMENT_ERROR_CODES[3], deadlineError);
   }
   if (!student) return;
   const reasons = staffEligibilityReasons({

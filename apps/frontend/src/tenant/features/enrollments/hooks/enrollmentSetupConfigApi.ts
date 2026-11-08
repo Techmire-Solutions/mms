@@ -1,7 +1,10 @@
 import { apiContract } from "@/lib/api";
 import { createModuleSetupConfigApi } from "@/lib/query/createModuleSetupConfigApi";
 import type { EnrollmentModulePreferences } from "@mms/shared";
-import { normalizeEnrollmentModulePreferences } from "@mms/shared";
+import {
+  enrollmentPreferencesResponseSchema,
+  normalizeEnrollmentModulePreferences,
+} from "@mms/shared";
 
 const api = createModuleSetupConfigApi<EnrollmentModulePreferences>({
   fetchPreferencesFn: async (_signal) => {
@@ -9,11 +12,13 @@ const api = createModuleSetupConfigApi<EnrollmentModulePreferences>({
       query: undefined,
       extraHeaders: {},
     });
-    return (res.body as { preferences: EnrollmentModulePreferences }).preferences;
+    const body = res.body as { preferences?: unknown } | null;
+    return enrollmentPreferencesResponseSchema.parse(body?.preferences);
   },
   savePreferencesFn: async (prefs) => {
     const res = await apiContract.enrollments.updatePreferences({ body: prefs });
-    return (res.body as { preferences: EnrollmentModulePreferences }).preferences;
+    const body = res.body as { preferences?: unknown } | null;
+    return enrollmentPreferencesResponseSchema.parse(body?.preferences);
   },
   normalizePrefs: normalizeEnrollmentModulePreferences as (
     prefs: unknown,

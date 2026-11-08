@@ -1,5 +1,6 @@
 import { z } from "zod";
 import { isoDateSchema } from "../core/isoDateSchema.js";
+import { ENROLLMENT_DROP_REASON_CODES } from "./enrollmentDropReasons.js";
 
 /** Typed timeline events written by the server for mid-session operations. */
 export const ENROLLMENT_EVENT_TYPES = [
@@ -58,6 +59,8 @@ export const enrollmentWithdrawBodySchema = z
   .object({
     effectiveOn: isoDateSchema.optional(),
     reason: reasonSchema,
+    /** Optional structured cause, audited as `newState.dropReasonCode`. */
+    reasonCode: z.enum(ENROLLMENT_DROP_REASON_CODES).optional(),
     endAs: z.enum(["withdrawn", "cancelled"]).optional(),
     /** Admin late-withdrawal override; refusals and overrides are audited. */
     overrideDropDeadline: z.boolean().optional(),
@@ -71,6 +74,7 @@ export const enrollmentBulkEndBodySchema = z
     ids: z.array(z.string().min(1).max(64)).min(1).max(100),
     effectiveOn: isoDateSchema.optional(),
     reason: reasonSchema,
+    reasonCode: z.enum(ENROLLMENT_DROP_REASON_CODES).optional(),
     endAs: z.enum(["withdrawn", "cancelled"]).optional(),
     overrideDropDeadline: z.boolean().optional(),
   })

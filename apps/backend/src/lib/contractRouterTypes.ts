@@ -57,3 +57,8 @@ export type ContractRouteResponse<T> = T extends { responses: infer R }
 export type ContractRouteHandler<T> = (
   args: ContractRouteArgs<T>,
 ) => Promise<ContractRouteResponse<T>>;
+
+/** Handler map requiring every contract route (compile-time coverage, no unowned routes). */
+export type ContractHandlerMap<C> = {
+  [K in keyof C]: ContractRouteHandler<C[K]>;
+};

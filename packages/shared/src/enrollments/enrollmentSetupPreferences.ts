@@ -21,6 +21,23 @@ export const enrollmentPreferencesPutBodySchema = z
   })
   .passthrough();
 
+/** Wire schema for normalized preferences (GET/PUT /api/enrollments/preferences). */
+export const enrollmentPreferencesResponseSchema = z
+  .object({
+    maxStudentsPerClass: z.string(),
+    waitlistEnabled: z.boolean(),
+    waitlistOfferHours: z.string(),
+    requireEligibilityCheck: z.boolean(),
+    autoAssignClass: z.boolean(),
+    enrollmentApproval: z.boolean(),
+    allowTransfers: z.boolean(),
+    dropDeadlineDays: z.string(),
+    reenrollmentReminder: z.boolean(),
+    defaultViewLayout: z.string(),
+  })
+  .strict();
+export type EnrollmentPreferencesResponse = z.infer<typeof enrollmentPreferencesResponseSchema>;
+
 export type EnrollmentModulePreferences = Pick<
   EnrollmentsSettings,
   | "maxStudentsPerClass"

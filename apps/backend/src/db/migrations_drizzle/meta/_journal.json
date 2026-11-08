@@ -1520,6 +1520,13 @@
       "when": 1794733200000,
       "tag": "0216_enrollment_name_snapshot_sync",
       "breakpoints": true
+    },
+    {
+      "idx": 217,
+      "version": "7",
+      "when": 1762617600000,
+      "tag": "0217_enrollment_payment_status_check",
+      "breakpoints": true
     }
   ]
 }

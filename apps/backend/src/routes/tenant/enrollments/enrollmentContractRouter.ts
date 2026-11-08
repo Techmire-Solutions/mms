@@ -8,7 +8,11 @@ import {
 } from "@mms/shared";
 import { handleContractError } from "../../../lib/contractError.js";
 import { standardRequestValidationErrorHandler } from "../../../lib/contractRegistration.js";
-import type { ContractRouteArgs, ContractRouteResponse } from "../../../lib/contractRouterTypes.js";
+import type {
+  ContractRouteArgs,
+  ContractHandlerMap,
+  ContractRouteResponse,
+} from "../../../lib/contractRouterTypes.js";
 import { withTenant } from "../../../db/tenant-context.js";
 import {
   canReadCollection,
@@ -17,6 +21,7 @@ import {
 } from "../../../services/rbacService.js";
 import { enrollmentsUseCases } from "../../../enrollments/use-cases/enrollmentsUseCases.js";
 import { userHasPermission } from "../../../lib/userPermissionContext.js";
+import { enrollmentContractAdminHandlers } from "./enrollmentContractAdminHandlers.js";
 
 const ENROLLMENTS_COLLECTION = ENROLLMENTS_MODULE_MANIFEST.collectionKey;
 /** Fee fields are financial adjustments: they require the administrative capability. */
@@ -38,7 +43,8 @@ const tenantOf = (request: { tenant?: { id?: unknown } }): string =>
   String(request.tenant?.id ?? "").trim();
 
 export const enrollmentContractRouter: FastifyPluginAsync = async (fastify) => {
-  const router = s.router(enrollmentContract, {
+  const handlers: ContractHandlerMap<typeof enrollmentContract> = {
+    ...enrollmentContractAdminHandlers,
     list: async ({
       query,
       request,
@@ -279,12 +285,15 @@ export const enrollmentContractRouter: FastifyPluginAsync = async (fastify) => {
         });
       }
     },
-  } as unknown as RouterImplementation<typeof enrollmentContract>);
+  };
+  const router = s.router(
+    enrollmentContract,
+    handlers as unknown as RouterImplementation<typeof enrollmentContract>,
+  );
 
   await fastify.register(s.plugin(router), {
     requestValidationErrorHandler: standardRequestValidationErrorHandler,
-    // The declared response schemas are the wire contract: validate them at runtime so a
-    // handler that returns a drifted shape fails fast instead of silently shipping it.
+    // Declared response schemas are the wire contract — validate them at runtime.
     responseValidation: true,
   });
 };

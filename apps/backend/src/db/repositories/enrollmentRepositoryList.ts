@@ -183,7 +183,7 @@ export async function listEnrollmentsPage(
       page: query.page,
       limit: query.limit,
       afterId: query.afterId,
-      skipCount: query.skipCount,
+      skipCount: isQueryFlagTrue(query.skipCount),
       defaultPageSize: 12,
       rowMapper: (row) => row as EnrollmentHydrateRow,
     });
@@ -201,7 +201,7 @@ export async function listEnrollmentsPage(
     // The Work list stays lean: timeline events are detail-only (`get`), so a page of
     // 100 rows does not drag every historical event into the response.
     return {
-      enrollments: result.items.map((row) => enrollmentRowToRecord(row)),
+      enrollments: result.items.map((row) => enrollmentRowToRecord(row as EnrollmentHydrateRow)),
       total: result.total,
       page: result.page,
       limit: result.limit,

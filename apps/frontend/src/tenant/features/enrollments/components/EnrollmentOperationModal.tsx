@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { ArrowRightLeft, LogOut, PauseCircle, RotateCcw, type LucideIcon } from "lucide-react";
 import {
+  ENROLLMENT_DROP_REASON_CODES,
   todayISO,
   type AppTranslationKey,
   type Enrollment,
@@ -98,6 +99,7 @@ export function EnrollmentOperationModal(props: EnrollmentOperationModalProps): 
   const [day, setDay] = useState(today);
   const [toDay, setToDay] = useState(today);
   const [reason, setReason] = useState("");
+  const [reasonCode, setReasonCode] = useState("");
 
   // Fresh operation draft whenever the operation or the enrollment being changed changes.
   const operationKey = `${kind}|${sessionId}|${currentClassId}|${currentSectionId}|${today}`;
@@ -132,7 +134,13 @@ export function EnrollmentOperationModal(props: EnrollmentOperationModalProps): 
     if (kind === "transfer")
       saved = await props.onTransfer({ ...destination, effectiveOn: day, reason: trimmed });
     else if (kind === "withdraw")
-      saved = await props.onWithdraw({ effectiveOn: day, reason: trimmed });
+      saved = await props.onWithdraw({
+        effectiveOn: day,
+        reason: trimmed,
+        ...(reasonCode
+          ? { reasonCode: reasonCode as (typeof ENROLLMENT_DROP_REASON_CODES)[number] }
+          : {}),
+      });
     else if (kind === "readmit")
       saved = await props.onReadmit({ ...destination, effectiveOn: day, reason: trimmed });
     else if (kind === "suspend")
@@ -204,6 +212,24 @@ export function EnrollmentOperationModal(props: EnrollmentOperationModalProps): 
             </Field>
           ) : null}
         </div>
+        {kind === "withdraw" ? (
+          <Field id="enrollment-op-drop-reason" label={t("enrollments.ops.dropReason")}>
+            <select
+              id="enrollment-op-drop-reason"
+              name="dropReasonCode"
+              className={FORM_INPUT}
+              value={reasonCode}
+              onChange={(event) => setReasonCode(event.target.value)}
+            >
+              <option value="">{t("common.none")}</option>
+              {ENROLLMENT_DROP_REASON_CODES.map((code) => (
+                <option key={code} value={code}>
+                  {t(`enrollments.ops.dropReason.${code}` as AppTranslationKey)}
+                </option>
+              ))}
+            </select>
+          </Field>
+        ) : null}
         <Field
           id="enrollment-op-reason"
           label={t("enrollments.ops.reason")}

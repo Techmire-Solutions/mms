@@ -1,37 +1,8 @@
-import type { User } from "@mms/shared";
+import type { EnrollmentAuditReasonCode, User } from "@mms/shared";
 import type { TenantTransaction } from "../../db/tenant-context.js";
 import { recordModernAuditEvent } from "../../services/auditTrailService.js";
 
-/**
- * Machine-readable reason codes stored in `newState.reasonCode` of every enrollment audit row.
- * They are server-derived (never client-supplied) so reports can filter by cause without
- * parsing free text.
- */
-export const ENROLLMENT_AUDIT_REASON_CODES = [
-  "create",
-  "status_change",
-  "fee_adjustment",
-  "payment_status",
-  "details_edit",
-  "withdraw",
-  "transfer",
-  "readmit",
-  "suspend",
-  "override_deadline",
-  "override_eligibility",
-  "trash",
-  "restore",
-  "session_completed",
-  "session_cancelled",
-  "student_status",
-  "rollover",
-  "bulk_enroll",
-  "waitlist_offer",
-  "waitlist_offer_expired",
-  "waitlist_offer_revoked",
-] as const;
-
-export type EnrollmentAuditReasonCode = (typeof ENROLLMENT_AUDIT_REASON_CODES)[number];
+export { ENROLLMENT_AUDIT_REASON_CODES, type EnrollmentAuditReasonCode } from "@mms/shared";
 
 export interface EnrollmentAuditInput {
   recordId: string;

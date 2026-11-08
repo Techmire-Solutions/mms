@@ -1,5 +1,10 @@
 import { and, asc, eq, inArray } from "drizzle-orm";
-import type { Enrollment, EnrollmentTimelineItem } from "@mms/shared";
+import {
+  normalizeEnrollmentPaymentStatus,
+  parseEnrollmentStatus,
+  type Enrollment,
+  type EnrollmentTimelineItem,
+} from "@mms/shared";
 import { enrollments, enrollmentTimelineEvents } from "../schema.js";
 import type { TenantTransaction } from "../tenant-context.js";
 import { mapAuditTimestamps } from "./repositoryMappers.js";
@@ -148,9 +153,9 @@ export function enrollmentRowToRecord(
     discountPct: Number(row.discountPct ?? 0),
     discountAmt: Number(row.discountAmt ?? 0),
     finalFee: Number(row.finalFee ?? 0),
-    status: row.status as Enrollment["status"],
+    status: parseEnrollmentStatus(row.status),
     invoiceId: row.invoiceId ?? null,
-    paymentStatus: row.paymentStatus as Enrollment["paymentStatus"],
+    paymentStatus: normalizeEnrollmentPaymentStatus(row.paymentStatus),
     notes: row.notes ?? "",
     timeline,
     ...mapAuditTimestamps(row),

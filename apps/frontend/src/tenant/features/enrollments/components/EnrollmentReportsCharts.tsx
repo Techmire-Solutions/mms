@@ -4,7 +4,7 @@ import { chartAxisTick, chartTooltipStyle } from "@/components/app/ChartGrid";
 import { ReportChartCard } from "@/tenant/components/moduleReports";
 import { EmptyState } from "@/components/app/EmptyState";
 import { useBrandPalette } from "@/lib/contexts/BrandingPaletteContext";
-import { ENROLLMENT_STATUSES } from "@/lib/data/enrollmentData";
+import { ENROLLMENT_STATUSES } from "@mms/shared";
 import { useFinanceCurrency } from "@/hooks/useCurrency";
 import { useTranslation } from "@/hooks/useTranslation";
 import type { EnrollmentsReportAggregates } from "@mms/shared";
@@ -32,15 +32,15 @@ export function EnrollmentReportsCharts({
   const statusLabels: Record<string, string> = enrollmentStatusLabels(t);
 
   const statusData = ENROLLMENT_STATUSES.map((status) => ({
-    name: statusLabels[status.id as keyof typeof statusLabels] ?? status.id,
+    name: statusLabels[status] ?? status,
     value:
-      status.id === "pending"
+      status === "pending"
         ? statusCounts.pending
-        : status.id === "confirmed"
+        : status === "confirmed"
           ? statusCounts.confirmed
-          : status.id === "cancelled"
+          : status === "cancelled"
             ? statusCounts.cancelled
-            : status.id === "completed"
+            : status === "completed"
               ? statusCounts.completed
               : 0,
   }));
