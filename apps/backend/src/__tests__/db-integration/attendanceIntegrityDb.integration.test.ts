@@ -21,7 +21,7 @@ import {
   bulkSoftDeleteAttendanceRecords,
 } from "../../db/repositories/attendanceRepositoryTrash.js";
 import { ConflictError } from "../../lib/httpErrors.js";
-import { requireDatabaseConnection } from "./dbTestSupport.js";
+import { extractPgErrorCode, requireDatabaseConnection } from "./dbTestSupport.js";
 
 /**
  * Real-Postgres regression suite for the Attendance persistence invariants
@@ -175,8 +175,9 @@ describe("attendance schema invariants (real Postgres)", () => {
     );
     expect(constraint.rows[0]?.conname).toBe("attendance_status_check");
 
-    await expect(
-      withTenant(TENANT, async (tx) => {
+    let rejectedError: unknown;
+    try {
+      await withTenant(TENANT, async (tx) => {
         await tx.insert(attendance).values({
           id: "att-bad-status",
           workspaceSubdomain: TENANT,
@@ -185,8 +186,11 @@ describe("attendance schema invariants (real Postgres)", () => {
           date: OTHER_DAY,
           status: "Present",
         });
-      }),
-    ).rejects.toMatchObject({ code: "23514" });
+      });
+    } catch (error) {
+      rejectedError = error;
+    }
+    expect(extractPgErrorCode(rejectedError)).toBe("23514");
   });
 
   it("requires version and defaults it to 1", async () => {
