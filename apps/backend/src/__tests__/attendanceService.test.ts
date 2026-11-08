@@ -2,7 +2,10 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 import { runWithTenant } from "../lib/tenantContext.js";
 import { upsertAttendanceRecords } from "../services/attendanceService.js";
 vi.mock("../attendance/use-cases/attendanceSectionStamp.js", () => ({
-  stampAttendanceSections: vi.fn(async (_tenant: string, records: unknown[]) => records),
+  stampAttendanceSections: vi.fn(async (_tenant: string, records: unknown[]) => ({
+    records,
+    rejected: [],
+  })),
 }));
 
 const { bulkSaveAttendanceRecords, replaceAttendanceRecordsForWorkspace } = vi.hoisted(() => ({

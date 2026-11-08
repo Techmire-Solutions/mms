@@ -115,6 +115,13 @@ export const registrationApplications = pgTable(
     reviewedBy: text("reviewed_by"),
     reviewReason: varchar("review_reason", { length: 500 }),
     reviewedAt: timestamp("reviewed_at", { withTimezone: true, mode: "date" }),
+    /** Migration 0215: when a freed seat flagged this application for review. */
+    waitlistOfferedAt: timestamp("waitlist_offered_at", { withTimezone: true, mode: "date" }),
+    /** Migration 0215: the offer lapses then (the worker re-waitlists expired offers). */
+    waitlistOfferExpiresAt: timestamp("waitlist_offer_expires_at", {
+      withTimezone: true,
+      mode: "date",
+    }),
     submittedIpHash: varchar("submitted_ip_hash", { length: 64 }),
     ...softDeleteColumns,
     createdAt: timestamp("created_at", { withTimezone: true, mode: "date" }).notNull().defaultNow(),

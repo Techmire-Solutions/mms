@@ -13,6 +13,8 @@ export interface EnrollmentsSettings {
   maxStudentsPerClass: string;
   /** Whether a waitlist is available when a class is full. */
   waitlistEnabled: boolean;
+  /** How long a seat offer stays open before it lapses back to the waitlist (hours). */
+  waitlistOfferHours: string;
   /** Whether eligibility rules run before confirming enrollment. */
   requireEligibilityCheck: boolean;
   /** Whether the system auto-assigns students to the best available class. */
@@ -38,6 +40,7 @@ export interface EnrollmentsSettings {
 export const DEFAULT_ENROLLMENTS_SETTINGS: EnrollmentsSettings = {
   maxStudentsPerClass: "30",
   waitlistEnabled: true,
+  waitlistOfferHours: "72",
   requireEligibilityCheck: true,
   autoAssignClass: false,
   enrollmentApproval: true,

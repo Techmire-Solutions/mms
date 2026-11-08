@@ -7,6 +7,8 @@ type EnrollmentPersist = typeof import("../../db/repositories/enrollmentReposito
 type EnrollmentBulkOps = typeof import("../../db/repositories/enrollmentBulkOps.js");
 type WaitlistStore = typeof import("../../db/repositories/registrationWaitlistRepository.js");
 type PlacementStore = typeof import("../../db/repositories/enrollmentPlacementLookup.js");
+type PreferencesStore =
+  typeof import("../../db/repositories/enrollmentModulePreferencesRepository.js");
 
 export type { ApplicationJoinedRow } from "../../db/repositories/registrationApplicationRepository.js";
 
@@ -32,4 +34,8 @@ export interface AdmissionsRepository {
   findActivelyEnrolledStudentIds: EnrollmentBulkOps["findActivelyEnrolledStudentIds"];
   findLatestEnrollmentId: PlacementStore["findLatestEnrollmentId"];
   flagOldestWaitlistedApplication: WaitlistStore["flagOldestWaitlistedApplication"];
+  revertExpiredWaitlistOffers: WaitlistStore["revertExpiredWaitlistOffers"];
+  revertSeatOffersForClass: WaitlistStore["revertSeatOffersForClass"];
+  classHasFreeSeat: WaitlistStore["classHasFreeSeat"];
+  getEnrollmentModulePreferencesByWorkspace: PreferencesStore["getEnrollmentModulePreferencesByWorkspace"];
 }

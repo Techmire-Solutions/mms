@@ -68,8 +68,10 @@ export async function afterChange(tenant: string, before: Enrollment): Promise<E
   await invalidateMultiTierCache({ tenantId: tenant, domain: "sessions" });
   await broadcastCollection("enrollments");
   await broadcastCollection("sessions");
-  const after = await repo.findEnrollmentById(tenant, before.id);
-  if (!after) throw new NotFoundError("Enrollment not found");
+  // The mutation has already committed: a failed refetch must not surface as an error (the
+  // client would retry an operation that succeeded). Fall back to the pre-change snapshot.
+  const after = await repo.findEnrollmentById(tenant, before.id).catch(() => null);
+  if (!after) return before;
   return after;
 }
 

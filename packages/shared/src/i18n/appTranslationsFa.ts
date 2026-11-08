@@ -3479,6 +3479,8 @@ export const APP_TRANSLATIONS_FA: Partial<Record<AppTranslationKey, string>> = {
   "enrollments.settings.saved": "تنظیمات ثبت‌نام‌ها ذخیره شد",
   "enrollments.settings.title": "پیکربندی ثبت‌نام‌ها",
   "enrollments.settings.waitlistEnabled": "فعال‌سازی لیست انتظار",
+  "enrollments.settings.waitlistOfferHours": "مدت پیشنهاد صندلی (ساعت)",
+  "enrollments.settings.waitlistOfferHoursHint": "مدتی که متقاضی در لیست انتظار پیشنهاد صندلی را نگه می‌دارد تا دوباره به لیست انتظار بازگردد.",
   "enrollments.settings.waitlistEnabledHint": "اجازه پیوستن به لیست انتظار وقتی کلاس پر است",
   "enrollments.setup.discardUnsavedFieldsConfirm":
     "تغییرات ذخیره‌نشده در فیلدها دارید. آیا می‌خواهید این زبانه را ترک کرده و آن‌ها را لغو کنید؟",

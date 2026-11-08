@@ -6,6 +6,7 @@ import { createGenericRelationalService } from "../../services/genericRelational
 import { defineTenantBulkCollectionService } from "../../services/tenantBulkService.js";
 import { broadcastCollection } from "../../lib/livePush.js";
 import { stampAttendanceSections } from "./attendanceSectionStamp.js";
+import { HttpDomainError } from "../../lib/httpErrors.js";
 import {
   attendanceRecordSchema,
   attendanceListSchema,
@@ -28,6 +29,19 @@ import {
 import { EMPTY_ATTENDANCE_METRICS } from "./attendanceMetricsDefaults.js";
 
 export type { AttendanceUseCasesDependencies };
+
+/** A stale roster must not be able to record attendance for a non-enrolled student. */
+function attendanceNotEnrolled(rejected: {
+  studentId: string;
+  classId: string;
+  date: string;
+}): HttpDomainError {
+  return new HttpDomainError(
+    422,
+    "attendance_not_enrolled",
+    `Student ${rejected.studentId} has no enrollment in this class on ${rejected.date} — refresh the roster`,
+  );
+}
 
 /**
  * Attendance use-cases — composition root binding an {@link AttendanceRepository}
@@ -72,8 +86,9 @@ export function createAttendanceUseCases(
       const tenant = getRequestTenant();
       if (!tenant) throw new Error("Tenant context required");
       await validateActiveForeignKeys(tenant, record);
-      const [stamped] = await stampAttendanceSections(tenant, [record]);
-      return crud.create(stamped as AttendanceRecord);
+      const stamped = await stampAttendanceSections(tenant, [record]);
+      if (stamped.rejected.length > 0) throw attendanceNotEnrolled(stamped.rejected[0]!);
+      return crud.create(stamped.records[0] as AttendanceRecord);
     },
     updateAttendanceRecordById: async (
       id: string,
@@ -84,9 +99,12 @@ export function createAttendanceUseCases(
       await validateActiveForeignKeys(tenant, record);
       // Section is server-owned: re-stamped only when the row's class/student are known.
       const { sectionId: _clientSection, ...rest } = record as Partial<AttendanceRecord>;
-      const next =
-        rest.classId && rest.studentId ? (await stampAttendanceSections(tenant, [rest]))[0] : rest;
-      return crud.updateById(id, next as AttendanceRecord);
+      const stamped =
+        rest.classId && rest.studentId
+          ? await stampAttendanceSections(tenant, [rest])
+          : { records: [rest], rejected: [] };
+      if (stamped.rejected.length > 0) throw attendanceNotEnrolled(stamped.rejected[0]!);
+      return crud.updateById(id, stamped.records[0] as AttendanceRecord);
     },
     deleteAttendanceRecordById: crud.deleteById,
     restoreAttendanceRecordById: crud.restoreById,
@@ -104,10 +122,11 @@ export function createAttendanceUseCases(
       if (!tenant) throw new Error("Tenant context required");
       const validated = attendanceListSchema.parse(records);
       await validateBatchActiveForeignKeys(tenant, validated);
-      const parsed = await stampAttendanceSections(tenant, validated);
-      await repo.bulkSaveAttendanceRecords(tenant, parsed);
+      const stamped = await stampAttendanceSections(tenant, validated);
+      if (stamped.rejected.length > 0) throw attendanceNotEnrolled(stamped.rejected[0]!);
+      await repo.bulkSaveAttendanceRecords(tenant, stamped.records);
       await broadcastCollection("attendance_records");
-      return parsed;
+      return stamped.records;
     },
 
     loadAttendanceRecordById: async (

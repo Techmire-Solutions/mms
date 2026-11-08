@@ -198,6 +198,10 @@ export async function updateApplicationTx(
     .update(a)
     .set({
       ...decision,
+      // An offer is consumed by any decision: clear its window so it cannot expire/revert later.
+      ...(decision.status !== "under_review"
+        ? { waitlistOfferedAt: null, waitlistOfferExpiresAt: null }
+        : {}),
       reviewedAt: decision.reviewedBy ? new Date() : undefined,
       updatedAt: new Date(),
     })

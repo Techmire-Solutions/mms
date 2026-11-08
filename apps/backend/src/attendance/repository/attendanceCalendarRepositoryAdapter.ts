@@ -6,12 +6,16 @@ import {
   softDeleteAcademicCalendarEvent,
 } from "../../db/repositories/academicCalendarRepository.js";
 import { loadInstructionalDayContext } from "../../db/repositories/instructionalDayContext.js";
-import { listEnrollmentPlacements } from "../../db/repositories/enrollmentPlacementLookup.js";
+import {
+  listEnrollmentPlacements,
+  listEnrollmentPlacementsAsOf,
+} from "../../db/repositories/enrollmentPlacementLookup.js";
 import {
   findOverlappingApprovedLeaves,
   insertApprovedLeave,
 } from "../../db/repositories/attendanceLeaveRepository.js";
 import { getAttendanceModulePreferences } from "../../db/repositories/attendanceModulePreferencesRepository.js";
+import { findWorkspaceTimezone } from "../../db/repositories/workspaceRepository.js";
 
 /** Drizzle-backed adapter for {@link AttendanceCalendarRepository}. */
 export const attendanceCalendarRepository: AttendanceCalendarRepository = {
@@ -21,6 +25,8 @@ export const attendanceCalendarRepository: AttendanceCalendarRepository = {
   restoreAcademicCalendarEvent,
   loadInstructionalDayContext,
   listEnrollmentPlacements,
+  listEnrollmentPlacementsAsOf,
+  findWorkspaceTimezone,
   getAttendanceModulePreferences,
   findOverlappingApprovedLeaves,
   insertApprovedLeave,

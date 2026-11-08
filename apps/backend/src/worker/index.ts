@@ -37,6 +37,7 @@ import {
   scheduleSessionLifecycle,
 } from "./sessionLifecycleScheduler.js";
 import { clearFxRateFeedScheduler, scheduleFxRateFeed } from "./fxRates/fxRateFeedScheduler.js";
+import { clearWaitlistOfferScheduler, scheduleWaitlistOffers } from "./waitlistOfferScheduler.js";
 import {
   clearContactSystemTagSweep,
   scheduleContactSystemTagSweep,
@@ -185,6 +186,8 @@ export async function startWorkerDaemon(): Promise<void> {
   scheduleFxRateFeed(() => isRunning);
   // Hourly: archive role tags whose employment/assignment end date has passed.
   scheduleContactSystemTagSweep(() => isRunning);
+  // Every 15 min: waitlist seat offers that lapsed revert to the waitlist.
+  scheduleWaitlistOffers(() => isRunning);
 
   const shutdown = async (signal: string) => {
     if (!isRunning) return;
@@ -213,6 +216,7 @@ export async function startWorkerDaemon(): Promise<void> {
       clearSessionLifecycleScheduler();
       clearFxRateFeedScheduler();
       clearContactSystemTagSweep();
+      clearWaitlistOfferScheduler();
 
       abortBackgroundJobsOnShutdown("SIGTERM");
       // Stop accepting new jobs without waiting for the now-aborting active ones.

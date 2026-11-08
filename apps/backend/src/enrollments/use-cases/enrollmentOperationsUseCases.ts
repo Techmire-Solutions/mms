@@ -28,7 +28,7 @@ import {
 } from "../../lib/httpErrors.js";
 import { settleEnrollmentWithdrawal } from "../../finance/use-cases/financeEnrollmentBillingUseCases.js";
 import { findTransferTarget, operationWindowError } from "./enrollmentOperationRules.js";
-import { offerFreedSeat } from "./admissionsWaitlistUseCases.js";
+import { offerFreedSeatPostCommit } from "./admissionsWaitlistUseCases.js";
 import { assertNoStudentScheduleCollision } from "./enrollmentTimetableGuard.js";
 
 export const enrollmentOperationsUseCases = {
@@ -72,12 +72,7 @@ export const enrollmentOperationsUseCases = {
         reason: input.reason,
         actor: actorOf(user),
       });
-      const waitlistOffer =
-        target.cls.id !== enrollment.classId
-          ? await offerFreedSeat(tenant, enrollment.classId)
-          : null;
       await recordOperationAudit(tx, tenant, user, enrollment, "transfer", {
-        waitlistOfferApplicationId: waitlistOffer?.id ?? null,
         fromClassId: enrollment.classId,
         toClassId: target.cls.id,
         toSectionId: target.sectionId,
@@ -118,19 +113,19 @@ export const enrollmentOperationsUseCases = {
       });
       // Last month is charged in full; later untouched invoices are cancelled (decision 2026-10-19).
       const settled = await settleEnrollmentWithdrawal(enrollment.id, effectiveOn);
-      // A cancellation is a removal (no seat offer); a withdrawal frees the seat for the waitlist.
-      const waitlistOffer =
-        endAs === "withdrawn" ? await offerFreedSeat(tenant, enrollment.classId) : null;
       await recordOperationAudit(tx, tenant, user, enrollment, endAs, {
         effectiveOn,
         reason: input.reason,
         endAs,
         cancelledInvoiceIds: settled.cancelled.map((invoice) => invoice.id),
         invoicesForReview: settled.review.map((invoice) => invoice.id),
-        waitlistOfferApplicationId: waitlistOffer?.id ?? null,
       });
       return settled;
     });
+    // A cancellation is a removal (no seat offer); a withdrawal frees the seat for the waitlist.
+    if (endAs === "withdrawn") {
+      await offerFreedSeatPostCommit(tenant, enrollment.classId);
+    }
     const after = await afterChange(tenant, enrollment);
     return { enrollment: after, billing };
   },

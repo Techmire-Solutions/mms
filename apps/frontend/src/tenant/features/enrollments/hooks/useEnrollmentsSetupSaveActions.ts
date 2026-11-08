@@ -6,6 +6,7 @@ import { notify } from "@/lib/notify";
 const PREF_KEYS = [
   "maxStudentsPerClass",
   "waitlistEnabled",
+  "waitlistOfferHours",
   "requireEligibilityCheck",
   "autoAssignClass",
   "enrollmentApproval",
