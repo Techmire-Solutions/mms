@@ -46,12 +46,41 @@ export const enrollmentsReportComparisonSchema = z.object({
   }),
 });
 
+export const enrollmentsClassFillRateSchema = z.object({
+  sessionId: z.string(),
+  classId: z.string(),
+  className: z.string(),
+  /** Active-section capacity when the class has sections; otherwise the class capacity. 0 = unlimited. */
+  capacity: z.number().int(),
+  enrolled: z.number().int(),
+  /** Null when capacity is 0 (unlimited). */
+  fillPct: z.number().nullable(),
+  seatsLeft: z.number().int().nullable(),
+  /** Waitlisted applications for this class. */
+  waitlisted: z.number().int(),
+  /** Unmet demand: waitlisted applicants beyond the free seats (>= 0). */
+  demand: z.number().int(),
+});
+
+export const enrollmentsRetentionSchema = z.object({
+  /** Enrollments started in the trailing 12 months. */
+  started: z.number().int(),
+  dropped: z.number().int(),
+  completed: z.number().int(),
+  dropPct: z.number(),
+  retentionPct: z.number(),
+});
+
 export const enrollmentsReportAggregatesSchema = z.object({
   cumulativeTrends: z.array(enrollmentsCumulativeTrendSchema),
   statusCounts: enrollmentsReportStatusCountsSchema,
   fees: enrollmentsReportFeesSchema,
   bySession: z.array(enrollmentsReportBySessionItemSchema),
   comparison: enrollmentsReportComparisonSchema.optional(),
+  /** Per-class occupancy/seat demand (top 100 classes). */
+  classFillRates: z.array(enrollmentsClassFillRateSchema).optional(),
+  /** Trailing-12-month retention/drop summary. */
+  retention: enrollmentsRetentionSchema.optional(),
 });
 
 export type EnrollmentsCumulativeTrend = z.infer<typeof enrollmentsCumulativeTrendSchema>;
@@ -96,6 +125,8 @@ export const EMPTY_ENROLLMENTS_REPORT_AGGREGATES: EnrollmentsReportAggregates = 
   statusCounts: { pending: 0, confirmed: 0, cancelled: 0, completed: 0, total: 0 },
   fees: { due: 0, paid: 0 },
   bySession: [],
+  classFillRates: [],
+  retention: { started: 0, dropped: 0, completed: 0, dropPct: 0, retentionPct: 0 },
 };
 
 /**

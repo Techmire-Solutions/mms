@@ -32,6 +32,7 @@ export interface UseModuleCsvImportActionsOptions<TRow = Record<string, unknown>
   templateColumns?: CsvTemplateColumn[];
   defaultLabel?: string;
   submitRows?: ModuleCsvImportSubmitRows<TRow>;
+  maxRows?: number;
   onSuccess?: () => void;
 }
 
@@ -39,7 +40,7 @@ export function useModuleCsvImportActions<TRow = Record<string, unknown>>(
   options: UseModuleCsvImportActionsOptions<TRow>,
 ) {
   const { t } = useTranslation();
-  const { apiPath, schema, submitRows, onSuccess } = options;
+  const { apiPath, schema, submitRows, onSuccess, maxRows } = options;
   const effectiveModuleId = schema?.moduleId ?? options.moduleId ?? "module";
   const effectiveMappings = useMemo(
     () => schema?.importMappings ?? options.mappings ?? [],
@@ -84,6 +85,14 @@ export function useModuleCsvImportActions<TRow = Record<string, unknown>>(
     async (file: File) => {
       resetState();
       setFileName(file.name);
+      // Guard before reading: a multi-MB/100k-row CSV is parsed synchronously on the main
+      // thread and would freeze the tab, only to be rejected by the 500-row server cap.
+      const MAX_IMPORT_FILE_BYTES = 10 * 1024 * 1024;
+      const effectiveMaxRows = maxRows ?? (submitRows ? 10_000 : 500);
+      if (file.size > MAX_IMPORT_FILE_BYTES) {
+        setRowErrors([{ row: 0, error: t("module.import.fileTooLarge") }]);
+        return;
+      }
       try {
         const text = await file.text();
         const result = schema
@@ -91,6 +100,11 @@ export function useModuleCsvImportActions<TRow = Record<string, unknown>>(
           : mapCsvGridToObjects<TRow>(parseCsvRows(text), effectiveMappings);
 
         setMissingHeaders(result.missingHeaders);
+        if (result.rows.length > effectiveMaxRows) {
+          setRowErrors([{ row: 0, error: t("module.import.tooManyRows") }]);
+          setParsedRows([]);
+          return;
+        }
         setRowErrors(result.rowErrors);
         setParsedRows(result.rows);
       } catch (err) {
@@ -98,7 +112,7 @@ export function useModuleCsvImportActions<TRow = Record<string, unknown>>(
         setRowErrors([{ row: 0, error: `${t("module.import.failed")}: ${msg}` }]);
       }
     },
-    [effectiveMappings, resetState, schema, t],
+    [effectiveMappings, maxRows, resetState, schema, submitRows, t],
   );
 
   const handleStartImport = useCallback(async () => {

@@ -5506,6 +5506,8 @@ export const APP_TRANSLATIONS_UR: Record<AppTranslationKey, string> = {
   "module.import.dropHere": "CSV فائل یہاں چھوڑیں",
   "module.import.downloadTemplateButton": "CSV ٹیمپلیٹ ڈاؤن لوڈ کریں",
   "module.import.downloadTemplateHint": "سٹینڈرڈ ٹیمپلیٹ ڈاؤن لوڈ کریں:",
+  "module.import.fileTooLarge": "یہ فائل 10 MB سے بڑی ہے۔ اسے چھوٹی فائلوں میں تقسیم کریں (زیادہ سے زیادہ 500 قطاریں)۔",
+  "module.import.tooManyRows": "اس فائل میں 500 سے زیادہ قطاریں ہیں۔ اسے 500 یا اس سے کم قطاروں والی فائلوں میں تقسیم کریں۔",
   "module.import.failed": "درآمد ناکام",
   "module.import.failedRows": "{count} قطاریں ناکام",
   "module.import.formattingWarnings": "فارمیٹنگ انتباہات ({count})",

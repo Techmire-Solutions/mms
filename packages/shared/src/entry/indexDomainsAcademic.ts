@@ -184,6 +184,7 @@ export * from "../enrollments/enrollmentsWidgetAggregate.js";
 export * from "../enrollments/enrollmentFees.js";
 export * from "../enrollments/enrollmentEligibility.js";
 export * from "../enrollments/enrollmentRules.js";
+export * from "../enrollments/enrollmentImportPreflight.js";
 export * from "../enrollments/registrationTypes.js";
 export * from "../enrollments/enrollmentOperations.js";
 export * from "../enrollments/enrollmentStateMachine.js";

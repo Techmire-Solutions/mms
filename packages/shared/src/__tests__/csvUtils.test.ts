@@ -24,6 +24,19 @@ describe("csvUtils", () => {
       expect(escapeCsvCell(null)).toBe('""');
       expect(escapeCsvCell(undefined)).toBe('""');
     });
+
+    it("neutralizes tab, carriage-return and whitespace-prefixed formulas", () => {
+      expect(escapeCsvCell("\t=cmd")).toBe('"\'\t=cmd"');
+      expect(escapeCsvCell("\r=cmd")).toBe('"\'\r=cmd"');
+      expect(escapeCsvCell("  =cmd")).toBe('"\'  =cmd"');
+      expect(escapeCsvCell("\u00a0=cmd")).toBe('"\'\u00a0=cmd"');
+    });
+
+    it("does not corrupt quoted or multiline legitimate text", () => {
+      expect(escapeCsvCell('a "quoted" note')).toBe('"a ""quoted"" note"');
+      expect(escapeCsvCell("line1\nline2")).toBe('"line1\nline2"');
+      expect(escapeCsvCell("plain text")).toBe('"plain text"');
+    });
   });
 
   describe("buildCsvContent", () => {

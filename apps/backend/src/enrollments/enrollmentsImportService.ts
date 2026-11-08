@@ -16,7 +16,9 @@ import {
 export const enrollmentsImportService = createModuleImportService<EnrollmentImportRow>({
   moduleId: "enrollments",
   entityNounPlural: "enrollments",
-  spec: { rowSchema: enrollmentImportRowSchema, maxBatch: 100 },
+  // One persist call per body (max 500 rows) so in-file duplicates are detected across the
+  // whole import, not only inside a chunk.
+  spec: { rowSchema: enrollmentImportRowSchema, maxBatch: 500 },
   persist: importEnrollmentRows,
 });
 

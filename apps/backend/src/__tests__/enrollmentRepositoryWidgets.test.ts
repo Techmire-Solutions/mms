@@ -70,8 +70,9 @@ describe("enrollmentRepositoryWidgets", () => {
       filterValue: "invalid-not-a-number",
     };
 
-    const res = await aggregateEnrollmentsWidgetQueries("demo", [query]);
-    expect(res["w-invalid"]).toBeDefined();
-    expect(res["w-invalid"]?.value).toBe(10);
+    await expect(aggregateEnrollmentsWidgetQueries("demo", [query])).rejects.toMatchObject({
+      statusCode: 400,
+      type: "invalid_widget_value",
+    });
   });
 });

@@ -5526,6 +5526,8 @@ export const APP_TRANSLATIONS_FA: Partial<Record<AppTranslationKey, string>> = {
   "module.import.dropHere": "فایل CSV را اینجا رها کنید",
   "module.import.downloadTemplateButton": "دانلود قالب CSV",
   "module.import.downloadTemplateHint": "دانلود قالب استاندارد:",
+  "module.import.fileTooLarge": "این فایل بزرگ‌تر از ۱۰ مگابایت است. آن را به فایل‌های کوچک‌تر (حداکثر ۵۰۰ ردیف) تقسیم کنید.",
+  "module.import.tooManyRows": "این فایل بیش از ۵۰۰ ردیف دارد. آن را به فایل‌های حداکثر ۵۰۰ ردیفی تقسیم کنید.",
   "module.import.failed": "وارد کردن ناموفق بود",
   "module.import.failedRows": "{count} ردیف ناموفق",
   "module.import.formattingWarnings": "هشدارهای قالب‌بندی ({count})",
