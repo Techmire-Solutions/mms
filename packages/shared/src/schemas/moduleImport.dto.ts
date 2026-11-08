@@ -66,7 +66,38 @@ export const enrollmentImportRowSchema = z
     paymentStatus: z.string().trim().max(50).optional(),
     notes: z.string().trim().max(2000).optional(),
   })
-  .passthrough();
+  .passthrough()
+  // Blueprint sanity: every row must identify a student, a session and a class by id or name.
+  .superRefine((row, ctx) => {
+    if (!row.studentId?.trim() && !row.studentName?.trim()) {
+      ctx.addIssue({
+        code: "custom",
+        message: "studentId or studentName is required",
+        path: ["studentId"],
+      });
+    }
+    if (!row.sessionId?.trim() && !row.sessionName?.trim()) {
+      ctx.addIssue({
+        code: "custom",
+        message: "sessionId or sessionName is required",
+        path: ["sessionId"],
+      });
+    }
+    if (!row.classId?.trim() && !row.className?.trim()) {
+      ctx.addIssue({
+        code: "custom",
+        message: "classId or className is required",
+        path: ["classId"],
+      });
+    }
+    if (row.enrolledDate?.trim() && !/^\d{4}-\d{2}-\d{2}$/.test(row.enrolledDate.trim())) {
+      ctx.addIssue({
+        code: "custom",
+        message: "enrolledDate must be YYYY-MM-DD",
+        path: ["enrolledDate"],
+      });
+    }
+  });
 
 export const enrollmentsImportBodySchema = csvImportBodySchema(enrollmentImportRowSchema);
 export type EnrollmentsImportBody = z.infer<typeof enrollmentsImportBodySchema>;

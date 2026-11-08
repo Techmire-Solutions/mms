@@ -5437,6 +5437,8 @@ export const APP_TRANSLATIONS_AR: Record<AppTranslationKey, string> = {
   "module.import.dropHere": "أفلت ملف CSV هنا",
   "module.import.downloadTemplateButton": "تنزيل قالب CSV",
   "module.import.downloadTemplateHint": "تنزيل القالب القياسي:",
+  "module.import.fileTooLarge": "الملف أكبر من 10 ميغابايت. قسّمه إلى ملفات أصغر (بحد أقصى 500 صف لكل ملف).",
+  "module.import.tooManyRows": "يحتوي هذا الملف على أكثر من 500 صف. قسّمه إلى ملفات لا تزيد على 500 صف.",
   "module.import.failed": "فشل الاستيراد",
   "module.import.failedRows": "فشل {count} صف",
   "module.import.formattingWarnings": "تحذيرات التنسيق ({count})",

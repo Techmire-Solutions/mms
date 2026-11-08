@@ -5559,6 +5559,8 @@ export const APP_TRANSLATIONS_EN = {
   "module.import.dropHere": "Drop CSV file here",
   "module.import.downloadTemplateButton": "Download CSV Template",
   "module.import.downloadTemplateHint": "Download standard template:",
+  "module.import.fileTooLarge": "This file is larger than 10 MB. Split it into smaller files (max 500 rows each).",
+  "module.import.tooManyRows": "This file has more than 500 rows. Split it into files of 500 rows or fewer.",
   "module.import.failed": "Import failed",
   "module.import.failedRows": "{count} row(s) failed",
   "module.import.formattingWarnings": "Formatting warnings ({count})",

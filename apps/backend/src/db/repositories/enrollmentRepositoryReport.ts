@@ -15,6 +15,7 @@ import {
 import { getQueryRows } from "../documentStoreKeys.js";
 import { withTenantRead } from "../tenant-context.js";
 import { enrollmentHoldsSeatSql } from "./enrollmentSeatSql.js";
+import { loadEnrollmentReportExtras } from "./enrollmentRepositoryReportExtras.js";
 
 /**
  * SQL report aggregates for EnrollmentChart + EnrollmentReports
@@ -31,49 +32,42 @@ export async function loadEnrollmentsReportAggregatesSql(
       WITH months AS (
         SELECT
           to_char(d, 'YYYY-MM') AS "monthKey",
-          to_char(
-            (date_trunc('month', d) + interval '1 month' - interval '1 day')::date,
-            'YYYY-MM-DD'
-          ) AS month_end
+          date_trunc('month', d) AS month_start
         FROM generate_series(
           date_trunc('month', CURRENT_DATE) - interval '11 months',
           date_trunc('month', CURRENT_DATE),
           interval '1 month'
         ) AS d
       ),
-      active AS (
-        SELECT e.enrolled_on AS enrolled_on
+      counts AS (
+        SELECT date_trunc('month', e.enrolled_on) AS month_start, count(*)::int AS count
         FROM enrollments e
         WHERE e.workspace_subdomain = ${subdomain}
           AND e.deleted_at IS NULL
           AND e.enrolled_on IS NOT NULL
+          AND e.enrolled_on >= (date_trunc('month', CURRENT_DATE) - interval '11 months')::date
+          AND e.enrolled_on <= CURRENT_DATE
+        GROUP BY 1
       )
-      SELECT
-        m."monthKey",
-        (
-          SELECT count(*)::int
-          FROM active a
-          WHERE a.enrolled_on::text <= m.month_end
-        ) AS students
+      SELECT m."monthKey", COALESCE(c.count, 0)::int AS count
       FROM months m
+      LEFT JOIN counts c ON c.month_start = m.month_start
       ORDER BY m."monthKey" ASC
     `);
 
     const trendRows = getQueryRows<Record<string, unknown>>(trendsResult);
     const cumulativeTrends: Array<{ monthKey: string; students: number }> = [];
+    let cumulative = 0;
     for (let i = 0; i < trendRows.length; i++) {
       const row = trendRows[i];
-      if (typeof row?.monthKey === "string" && /^\d{4}-\d{2}$/.test(row.monthKey)) {
-        cumulativeTrends.push({
-          monthKey: row.monthKey,
-          students: Number(row.students ?? 0),
-        });
-      }
+      if (typeof row?.monthKey !== "string" || !/^\d{4}-\d{2}$/.test(row.monthKey)) continue;
+      cumulative += Number(row.count ?? 0);
+      cumulativeTrends.push({ monthKey: row.monthKey, students: cumulative });
     }
 
     const statusResult = await tx.execute(sql`
       SELECT
-        lower(trim(e.status)) AS status,
+        e.status AS status,
         count(*)::int AS count
       FROM enrollments e
       WHERE e.workspace_subdomain = ${subdomain}
@@ -91,7 +85,9 @@ export async function loadEnrollmentsReportAggregatesSql(
     for (const row of getQueryRows<Record<string, unknown>>(statusResult)) {
       const count = Number(row.count ?? 0);
       statusCounts.total += count;
-      const status = String(row.status ?? "");
+      const status = String(row.status ?? "")
+        .trim()
+        .toLowerCase();
       if (status === "pending") statusCounts.pending += count;
       else if (status === "confirmed") statusCounts.confirmed += count;
       else if (status === "cancelled") statusCounts.cancelled += count;
@@ -113,7 +109,7 @@ export async function loadEnrollmentsReportAggregatesSql(
         COALESCE(
           sum(
             CASE
-              WHEN lower(trim(e.payment_status)) = 'paid'
+              WHEN e.payment_status = 'paid'
               THEN e.final_fee::numeric
               ELSE 0
             END
@@ -162,11 +158,15 @@ export async function loadEnrollmentsReportAggregatesSql(
       revenue: Number(row.revenue ?? 0),
     }));
 
+    const { classFillRates, retention } = await loadEnrollmentReportExtras(tx, subdomain);
+
     const aggregates: EnrollmentsReportAggregates = {
       cumulativeTrends,
       statusCounts,
       fees,
       bySession,
+      classFillRates,
+      retention,
     };
 
     if (enrollmentsReportComparisonQueryActive(comparisonQuery) && comparisonQuery) {
@@ -231,8 +231,8 @@ export async function loadEnrollmentsReportAggregatesSql(
           WHERE e.workspace_subdomain = ${subdomain}
             AND e.deleted_at IS NULL
             AND e.enrolled_on IS NOT NULL
-            AND e.enrolled_on::text >= ${from}
-            AND e.enrolled_on::text <= ${to}
+            AND e.enrolled_on >= ${from}::date
+            AND e.enrolled_on <= ${to}::date
           GROUP BY 1
           ORDER BY 1 ASC
         `);

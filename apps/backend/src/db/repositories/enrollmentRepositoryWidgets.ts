@@ -2,6 +2,24 @@ import { and, eq, isNull, sql, type SQL } from "drizzle-orm";
 import type { EnrollmentsWidgetAggregateResult, EnrollmentsWidgetQuery } from "@mms/shared";
 import { enrollments } from "../schema.js";
 import { withTenantRead } from "../tenant-context.js";
+import { HttpDomainError } from "../../lib/httpErrors.js";
+
+/** Columns whose values are canonical lowercase ids/statuses: equality can use the index. */
+const EXACT_INDEXED_FIELDS = new Set([
+  "status",
+  "paymentStatus",
+  "sessionId",
+  "classId",
+  "studentId",
+  "invoiceId",
+]);
+/** Numeric/date columns usable with gt/lt. */
+const RANGE_FIELDS = new Set(["baseFee", "discountPct", "discountAmt", "finalFee", "enrolledDate"]);
+const DATE_FIELDS = new Set(["enrolledDate"]);
+
+function escapeLikePattern(value: string): string {
+  return value.replace(/[\\%_]/g, "\\$&");
+}
 
 function activeWorkspaceWhere(subdomain: string): SQL {
   return and(eq(enrollments.workspaceSubdomain, subdomain), isNull(enrollments.deletedAt))!;
@@ -28,7 +46,10 @@ const FIELD_TO_SQL_COLUMN: Record<string, string> = {
 };
 
 function resolveSqlColumn(field: string): SQL {
-  const col = FIELD_TO_SQL_COLUMN[field] ?? "status";
+  const col = FIELD_TO_SQL_COLUMN[field];
+  if (!col) {
+    throw new HttpDomainError(400, "invalid_widget_field", `Unknown widget field "${field}"`);
+  }
   return sql.raw(`"enrollments"."${col}"`);
 }
 
@@ -42,26 +63,56 @@ function singleFilterSql(
   const colSql = resolveSqlColumn(trimmedField);
   const op = operator ?? "equals";
   if (op === "equals") {
-    return sql`lower(trim(${colSql}::text)) = ${value.trim().toLowerCase()}`;
+    // Canonical id/status columns use the plain equality so (workspace, status/session/class)
+    // indexes remain usable; free-text names keep a case-insensitive comparison.
+    if (EXACT_INDEXED_FIELDS.has(trimmedField)) {
+      const normalized = DATE_FIELDS.has(trimmedField) ? value.trim() : value.trim().toLowerCase();
+      return sql`${colSql} = ${normalized}`;
+    }
+    if (DATE_FIELDS.has(trimmedField)) {
+      return sql`${colSql}::date = ${value.trim()}::date`;
+    }
+    return sql`lower(btrim(${colSql}::text)) = ${value.trim().toLowerCase()}`;
   }
   if (op === "contains") {
-    return sql`lower(${colSql}::text) LIKE ${`%${value.trim().toLowerCase()}%`}`;
+    const pattern = `%${escapeLikePattern(value.trim().toLowerCase())}%`;
+    return sql`lower(${colSql}::text) LIKE ${pattern}`;
   }
-  if (op === "gt") {
-    const num = Number(value);
-    if (!Number.isFinite(num)) return null;
-    return sql`${colSql}::numeric > ${num}`;
+  if (op === "startsWith") {
+    const pattern = `${escapeLikePattern(value.trim().toLowerCase())}%`;
+    return sql`lower(${colSql}::text) LIKE ${pattern}`;
   }
-  if (op === "lt") {
+  if (op === "gt" || op === "lt") {
+    if (!RANGE_FIELDS.has(trimmedField)) {
+      throw new HttpDomainError(
+        400,
+        "invalid_widget_operator",
+        `Operator "${op}" is not supported for "${trimmedField}"`,
+      );
+    }
+    if (DATE_FIELDS.has(trimmedField)) {
+      return op === "gt"
+        ? sql`${colSql}::date > ${value.trim()}::date`
+        : sql`${colSql}::date < ${value.trim()}::date`;
+    }
     const num = Number(value);
-    if (!Number.isFinite(num)) return null;
-    return sql`${colSql}::numeric < ${num}`;
+    if (!Number.isFinite(num)) {
+      throw new HttpDomainError(400, "invalid_widget_value", `"${value}" is not a number`);
+    }
+    return op === "gt" ? sql`${colSql}::numeric > ${num}` : sql`${colSql}::numeric < ${num}`;
   }
   return null;
 }
 
 function widgetFilterSql(query: EnrollmentsWidgetQuery): SQL | null {
-  return singleFilterSql(query.filterField, query.filterOperator, query.filterValue);
+  const conditions = [
+    singleFilterSql(query.filterField, query.filterOperator, query.filterValue),
+    ...(query.filters ?? []).map((filter) =>
+      singleFilterSql(filter.field, filter.operator, filter.value),
+    ),
+  ].filter((condition): condition is SQL => condition !== null);
+  if (conditions.length === 0) return null;
+  return and(...conditions) ?? null;
 }
 
 /** SQL widget aggregates for enrollments (Sessions/Teachers parity — no full-collection dump). */
@@ -74,11 +125,18 @@ export async function aggregateEnrollmentsWidgetQueries(
   if (queries.length === 0) return results;
 
   return withTenantRead(subdomain, async (tx) => {
-    const totalRows = await tx
-      .select({ count: sql<number>`count(*)::int` })
-      .from(enrollments)
-      .where(activeWorkspaceWhere(subdomain));
-    const totalCount = Number(totalRows[0]?.count ?? 0);
+    // The workspace total is only needed to turn a filtered count into a percentage.
+    const needsTotal = queries.some((query) => query.operation === "percentage");
+    const totalCount = needsTotal
+      ? Number(
+          (
+            await tx
+              .select({ count: sql<number>`count(*)::int` })
+              .from(enrollments)
+              .where(activeWorkspaceWhere(subdomain))
+          )[0]?.count ?? 0,
+        )
+      : 0;
 
     const queryResults = await Promise.all(
       queries.map(async (query) => {

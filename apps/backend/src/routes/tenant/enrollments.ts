@@ -11,6 +11,7 @@ import {
 
 import { enrollmentsUseCases } from "../../enrollments/use-cases/enrollmentsUseCases.js";
 import { enrollmentExportRoutes } from "./enrollments/enrollmentExportRoutes.js";
+import { enrollmentImportPreflightRoutes } from "./enrollments/enrollmentImportPreflightRoutes.js";
 import { enrollmentReportRoutes } from "./enrollments/enrollmentReportRoutes.js";
 import { enrollmentSetupConfigRoutes } from "./enrollments/enrollmentSetupConfigRoutes.js";
 import { admissionsRouter } from "./enrollments/admissionsRouter.js";
@@ -35,6 +36,7 @@ export default async function enrollmentsRoutes(
     async (sub) => {
       await sub.register(enrollmentSetupConfigRoutes);
       await sub.register(enrollmentExportRoutes);
+      await sub.register(enrollmentImportPreflightRoutes);
       await sub.register(enrollmentReportRoutes);
 
       registerCountRoute(sub, {

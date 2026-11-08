@@ -27,7 +27,10 @@ import { stampAttendanceSections } from "../../attendance/use-cases/attendanceSe
 import { runWithTenant } from "../../lib/tenantContext.js";
 import { todayInTimeZone } from "../../lib/dbDate.js";
 import { enrollmentsUseCases } from "../../enrollments/use-cases/enrollmentsUseCases.js";
+import { aggregateEnrollmentsWidgetQueries } from "../../db/repositories/enrollmentRepositoryWidgets.js";
+import { loadEnrollmentsReportAggregatesSql } from "../../db/repositories/enrollmentRepositoryReport.js";
 import { importEnrollmentRows } from "../../enrollments/use-cases/enrollmentImportUseCases.js";
+import { preflightEnrollmentImport } from "../../enrollments/use-cases/enrollmentImportUseCases.js";
 import { requireDatabaseConnection } from "./dbTestSupport.js";
 
 const TENANT = "enrollments-subsystems-test";
@@ -505,14 +508,23 @@ describe("enrollment domain subsystems (real Postgres)", () => {
       updateProgress: async () => undefined,
     } as const;
 
-    const first = await runWithTenant(TENANT, () => importEnrollmentRows(rows as never, ctx));
-    expect(first.imported).toBe(2);
-    expect(first.errors).toHaveLength(2);
-    expect(first.errors?.map((error) => error.row).sort()).toEqual([3, 4]);
+    // Pre-flight writes nothing and reports the duplicate + the two invalid rows.
+    const preflight = await preflightEnrollmentImport(TENANT, rows as never);
+    expect(preflight).toMatchObject({ total: 4, valid: 1, invalid: 3, duplicates: 1 });
+    expect(preflight.errors.map((error: { row: number }) => error.row).sort()).toEqual([2, 3, 4]);
+    const before = await query<{ count: number }>(sql`
+      SELECT count(*)::int AS count FROM enrollments
+       WHERE workspace_subdomain = ${TENANT} AND student_id = 's5' AND session_id = 'ses-import'`);
+    expect(Number(before[0]?.count ?? 0)).toBe(0);
 
+    const first = await runWithTenant(TENANT, () => importEnrollmentRows(rows as never, ctx));
+    expect(first.imported).toBe(1);
+    expect(first.errors?.map((error) => error.row).sort()).toEqual([2, 3, 4]);
+
+    // A retry imports nothing new: the pair already exists and the rest are row errors.
     const second = await runWithTenant(TENANT, () => importEnrollmentRows(rows as never, ctx));
-    expect(second.imported).toBe(2);
-    expect(second.errors).toHaveLength(2);
+    expect(second.imported).toBe(0);
+    expect(second.errors?.map((error) => error.row).sort()).toEqual([2, 3, 4]);
 
     const live = await query<{ count: number }>(sql`
       SELECT count(*)::int AS count FROM enrollments
@@ -528,5 +540,43 @@ describe("enrollment domain subsystems (real Postgres)", () => {
                             WHERE workspace_subdomain = ${TENANT} AND student_id = 's5'
                               AND session_id = 'ses-import')`);
     expect(Number(audited[0]?.count ?? 0)).toBe(1);
+  });
+
+  it("honors widget filters and rejects unknown fields", async () => {
+    const results = await aggregateEnrollmentsWidgetQueries(TENANT, [
+      {
+        id: "confirmed",
+        operation: "count",
+        filterField: "status",
+        filterOperator: "equals",
+        filterValue: "confirmed",
+      },
+      {
+        id: "multi",
+        operation: "count",
+        filters: [
+          { field: "status", operator: "equals", value: "confirmed" },
+          { field: "studentId", operator: "equals", value: "s1" },
+        ],
+      },
+    ] as never);
+    expect(results.confirmed?.value).toBeGreaterThan(0);
+    expect(results.multi?.value).toBe(1);
+
+    await expect(
+      aggregateEnrollmentsWidgetQueries(TENANT, [
+        { id: "bad", operation: "count", filterField: "not_a_field", filterValue: "x" },
+      ] as never),
+    ).rejects.toMatchObject({ statusCode: 400 });
+  });
+
+  it("computes class fill, seat demand and trailing retention", async () => {
+    const report = await loadEnrollmentsReportAggregatesSql(TENANT);
+    const importClass = report.classFillRates?.find((row) => row.classId === "cls-import");
+    expect(importClass).toMatchObject({ capacity: 10, enrolled: 1, fillPct: 10, seatsLeft: 9 });
+    expect(importClass?.demand).toBeGreaterThanOrEqual(0);
+    expect(report.retention?.started).toBeGreaterThan(0);
+    expect(report.retention?.retentionPct).toBeGreaterThanOrEqual(0);
+    expect(report.retention?.retentionPct).toBeLessThanOrEqual(100);
   });
 });
