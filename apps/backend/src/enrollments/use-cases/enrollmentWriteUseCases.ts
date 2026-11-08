@@ -1,3 +1,4 @@
+import { ENROLLMENT_ERROR_CODES } from "@mms/shared";
 import {
   allowedEnrollmentTransitions,
   canTransitionEnrollment,
@@ -110,7 +111,7 @@ export function createEnrollmentWriteUseCases({
       ) {
         throw new HttpDomainError(
           409,
-          "invalid_status_transition",
+          ENROLLMENT_ERROR_CODES[5],
           `Cannot change the status from "${existing.status}" to "${nextStatus}". ` +
             `Allowed here: ${allowedEnrollmentTransitions(existing.status, { channel: "manual" }).join(", ") || "none"}. ` +
             "Use the withdraw, cancel, readmission or session-completion action for the other outcomes.",

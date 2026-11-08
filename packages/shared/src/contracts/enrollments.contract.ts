@@ -5,48 +5,30 @@ import {
   enrollmentRecordInsertSchema,
   enrollmentRecordUpdateSchema,
 } from "../enrollments/enrollmentsModuleManifest.js";
-import { enrollmentsListQuerySchema } from "../enrollments/enrollmentsListQuery.js";
+import {
+  enrollmentsListQuerySchema,
+  enrollmentsListPageResponseSchema,
+} from "../enrollments/enrollmentsListQuery.js";
 import { enrollmentsReportAggregatesSchema } from "../enrollments/enrollmentsReportAggregates.js";
 import { reportComparisonQuerySchema } from "../reports/reportComparisonQuery.js";
 import { bulkStringIdsBodySchema } from "../core/apiSchemas.js";
 import { widgetAggregatesBodySchema } from "../schemas/common.dto.js";
 import { apiErrorResponseSchema } from "../schemas/api.dto.js";
-import { enrollmentPreferencesPutBodySchema } from "../enrollments/enrollmentSetupPreferences.js";
+import {
+  enrollmentPreferencesPutBodySchema,
+  enrollmentPreferencesResponseSchema,
+} from "../enrollments/enrollmentSetupPreferences.js";
 import { enrollmentFieldConfigPutBodySchema } from "../enrollments/enrollmentSetupSettings.js";
 
 const c = initContract();
 const errorResponse = apiErrorResponseSchema;
 const enrollmentParams = z.object({ id: z.string().min(1).max(64) });
 
-/** Envelope for paginated enrollment list responses (`EnrollmentsListPageResult`). */
-export const enrollmentListPageResponseSchema = z.object({
-  enrollments: z.array(enrollmentRecordSchema),
-  total: z.number(),
-  page: z.number(),
-  limit: z.number(),
-  hasMore: z.boolean(),
-  /** Keyset cursor for the next page (only present in `afterId` mode). */
-  nextCursor: z.string().optional(),
-});
-
 /** `{ success: true, succeeded, failed }` bulk-operation envelope. */
 const enrollmentBulkResultResponseSchema = z.object({
   success: z.literal(true),
   succeeded: z.number(),
   failed: z.number(),
-});
-
-/** Normalized Enrollments Setup preferences (`EnrollmentModulePreferences`). */
-export const enrollmentPreferencesResponseSchema = z.object({
-  maxStudentsPerClass: z.string(),
-  waitlistEnabled: z.boolean(),
-  requireEligibilityCheck: z.boolean(),
-  autoAssignClass: z.boolean(),
-  enrollmentApproval: z.boolean(),
-  allowTransfers: z.boolean(),
-  dropDeadlineDays: z.string(),
-  reenrollmentReminder: z.boolean(),
-  defaultViewLayout: z.string(),
 });
 
 const enrollmentWidgetAggregateResultSchema = z.object({
@@ -60,7 +42,7 @@ export const enrollmentContract = c.router({
     method: "GET",
     path: "/api/enrollments",
     query: enrollmentsListQuerySchema,
-    responses: { 200: enrollmentListPageResponseSchema, 403: errorResponse, 500: errorResponse },
+    responses: { 200: enrollmentsListPageResponseSchema, 403: errorResponse, 500: errorResponse },
     summary: "List enrollments",
   },
   get: {

@@ -1,7 +1,10 @@
-import type { Enrollment } from "./enrollmentsModuleManifest.js";
-import { ENROLLMENT_STATUSES } from "./enrollmentsModuleManifest.js";
-import { paginateArray } from "../core/utils.js";
+import {
+  ENROLLMENT_STATUSES,
+  enrollmentRecordSchema,
+  type Enrollment,
+} from "./enrollmentsModuleManifest.js";
 import { LIST_PAGE_MAX_LIMIT } from "../core/apiSchemas.js";
+import { paginateArray } from "../core/utils.js";
 import { z } from "zod";
 
 /**
@@ -52,32 +55,21 @@ export const enrollmentsListQuerySchema = z
   })
   .strict();
 
-export interface EnrollmentsListQuery {
-  page?: number;
-  limit?: number;
-  search?: string;
-  status?: string;
-  sessionId?: string;
-  classId?: string;
-  sectionId?: string;
-  studentId?: string;
-  sortField?: string;
-  sortDir?: "asc" | "desc" | "";
-  includeDeleted?: boolean;
-  /** Keyset cursor (id > afterId). */
-  afterId?: string;
-  skipCount?: boolean;
-}
+export type EnrollmentsListQuery = z.infer<typeof enrollmentsListQuerySchema>;
+/** Caller-side shape: accepts booleans or their query-string forms. */
+export type EnrollmentsListQueryInput = z.input<typeof enrollmentsListQuerySchema>;
 
-export interface EnrollmentsListPageResult {
-  enrollments: Enrollment[];
-  total: number;
-  page: number;
-  limit: number;
-  hasMore: boolean;
-  /** Present only when the request used `afterId` (keyset mode). */
-  nextCursor?: string;
-}
+/** Envelope for paginated enrollment list responses; also the ts-rest wire contract. */
+export const enrollmentsListPageResponseSchema = z.object({
+  enrollments: z.array(enrollmentRecordSchema),
+  total: z.number(),
+  page: z.number(),
+  limit: z.number(),
+  hasMore: z.boolean(),
+  /** Keyset cursor for the next page (only present in `afterId` mode). */
+  nextCursor: z.string().optional(),
+});
+export type EnrollmentsListPageResult = z.infer<typeof enrollmentsListPageResponseSchema>;
 
 export function filterEnrollmentsForQuery(
   enrollments: Enrollment[],

@@ -77,6 +77,7 @@ describe("enrollments Setup routes", () => {
     mockLoadEnrollmentModulePreferences.mockResolvedValue({
       maxStudentsPerClass: "30",
       waitlistEnabled: true,
+      waitlistOfferHours: "72",
       requireEligibilityCheck: true,
       autoAssignClass: false,
       enrollmentApproval: true,
@@ -88,6 +89,7 @@ describe("enrollments Setup routes", () => {
     mockSaveEnrollmentModulePreferences.mockResolvedValue({
       maxStudentsPerClass: "25",
       waitlistEnabled: true,
+      waitlistOfferHours: "72",
       requireEligibilityCheck: true,
       autoAssignClass: false,
       enrollmentApproval: true,
@@ -153,6 +155,19 @@ describe("enrollments Setup routes", () => {
     });
     expect(prefsWriteOk.statusCode).toBe(200);
     expect(mockSaveEnrollmentModulePreferences).toHaveBeenCalled();
+    // The contract response is validated: the offer-window field must be on the wire.
+    expect(prefsWriteOk.json().preferences.waitlistOfferHours).toBe("72");
+
+    const prefsReadOk = await app.inject({
+      method: "GET",
+      url: "/api/enrollments/preferences",
+      headers: {
+        host: "demo.localhost",
+        authorization: `Bearer ${teacherToken(app)}`,
+      },
+    });
+    expect(prefsReadOk.statusCode).toBe(200);
+    expect(prefsReadOk.json().preferences.waitlistOfferHours).toBe("72");
     await app.close();
   });
 });

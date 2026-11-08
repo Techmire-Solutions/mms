@@ -3,7 +3,7 @@ import { initServer, type RouterImplementation } from "@ts-rest/fastify";
 import { admissionsContract, ENROLLMENTS_MODULE_MANIFEST, type User } from "@mms/shared";
 import { handleContractError } from "../../../lib/contractError.js";
 import { standardRequestValidationErrorHandler } from "../../../lib/contractRegistration.js";
-import type { ContractRouteArgs } from "../../../lib/contractRouterTypes.js";
+import type { ContractRouteArgs, ContractRouteHandler } from "../../../lib/contractRouterTypes.js";
 import { canReadCollection, canWriteCollection } from "../../../services/rbacService.js";
 import { admissionsUseCases } from "../../../enrollments/use-cases/admissionsUseCases.js";
 
@@ -17,7 +17,9 @@ const s = initServer();
 
 /** `/api/enrollments/applications` — admissions queue (review public registrations). */
 export const admissionsRouter: FastifyPluginAsync = async (fastify) => {
-  const router = s.router(admissionsContract, {
+  const handlers: {
+    [K in keyof typeof admissionsContract]: ContractRouteHandler<(typeof admissionsContract)[K]>;
+  } = {
     list: async ({ query, request }: ContractRouteArgs<Contract["list"]>) => {
       const user = request.user as User;
       if (!canReadCollection(user, COLLECTION)) return forbidden;
@@ -66,7 +68,12 @@ export const admissionsRouter: FastifyPluginAsync = async (fastify) => {
         });
       }
     },
-  } as unknown as RouterImplementation<Contract>);
+  };
+
+  const router = s.router(
+    admissionsContract,
+    handlers as unknown as RouterImplementation<Contract>,
+  );
 
   await fastify.register(s.plugin(router), {
     requestValidationErrorHandler: standardRequestValidationErrorHandler,

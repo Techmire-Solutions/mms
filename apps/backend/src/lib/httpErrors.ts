@@ -97,8 +97,8 @@ export class HttpDomainError extends Error {
 }
 
 export class ConflictError extends HttpDomainError {
-  constructor(message = "Conflict") {
-    super(409, "conflict", message);
+  constructor(message = "Conflict", type: string = "conflict") {
+    super(409, type, message);
   }
 }
 
@@ -108,13 +108,34 @@ export class ConflictError extends HttpDomainError {
  * Separate from a generic conflict so the UI and the bulk-enroll path can tell
  * "the class is full" (retry later / waitlist) apart from "already enrolled".
  */
+import { ENROLLMENT_ERROR_CODES } from "@mms/shared";
+
+/** Codes the enrollments domain can emit (frontend branches on the union, not messages). */
+export const ENROLLMENT_CLASS_FULL = ENROLLMENT_ERROR_CODES[0];
+export const ENROLLMENT_ALREADY_ENROLLED = ENROLLMENT_ERROR_CODES[1];
+export const ENROLLMENT_ROLL_NO_TAKEN = ENROLLMENT_ERROR_CODES[2];
+
 export class SeatCapacityError extends HttpDomainError {
   constructor(
     message = "The class is full",
     readonly sectionId?: string,
     readonly seatsLeft?: number,
   ) {
-    super(409, "class_full", message);
+    super(409, ENROLLMENT_CLASS_FULL, message);
+  }
+}
+
+/** The student already holds a live enrollment in the target session. */
+export class AlreadyEnrolledError extends ConflictError {
+  constructor(message = "This student already has an active enrollment in this session") {
+    super(message, ENROLLMENT_ALREADY_ENROLLED);
+  }
+}
+
+/** The roll number is already taken inside the target section. */
+export class RollNumberConflictError extends ConflictError {
+  constructor(message = "This roll number is already used in the section") {
+    super(message, ENROLLMENT_ROLL_NO_TAKEN);
   }
 }
 

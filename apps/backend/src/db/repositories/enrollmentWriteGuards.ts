@@ -2,7 +2,11 @@ import { and, eq, inArray, isNull, notInArray, sql } from "drizzle-orm";
 import { SEAT_RELEASED_ENROLLMENT_STATUSES, type Enrollment } from "@mms/shared";
 import { enrollments } from "../schema.js";
 import { withTenant, type TenantTransaction } from "../tenant-context.js";
-import { ConflictError } from "../../lib/httpErrors.js";
+import {
+  AlreadyEnrolledError,
+  ConflictError,
+  RollNumberConflictError,
+} from "../../lib/httpErrors.js";
 import { isUniqueViolation, uniqueViolationConstraint } from "../../lib/pgErrors.js";
 
 /**
@@ -20,10 +24,8 @@ const SECTION_ROLL_NO_UIDX = "enrollments_section_roll_no_active_uidx";
 export function enrollmentWriteConflict(error: unknown): Error | null {
   if (!isUniqueViolation(error)) return null;
   const constraint = uniqueViolationConstraint(error);
-  if (constraint === LIVE_STUDENT_SESSION_UIDX)
-    return new ConflictError("This student already has an active enrollment in this session");
-  if (constraint === SECTION_ROLL_NO_UIDX)
-    return new ConflictError("This roll number is already used in the section");
+  if (constraint === LIVE_STUDENT_SESSION_UIDX) return new AlreadyEnrolledError();
+  if (constraint === SECTION_ROLL_NO_UIDX) return new RollNumberConflictError();
   return null;
 }
 

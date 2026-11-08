@@ -13,10 +13,15 @@ import {
   check,
 } from "drizzle-orm/pg-core";
 import { sql } from "drizzle-orm";
+import { ENROLLMENT_PAYMENT_STATUSES, ENROLLMENT_STATUSES } from "@mms/shared";
 import { workspaces } from "./platform.js";
 import { students } from "./students.js";
 import { sessions, sessionClasses } from "./sessions.js";
 import { softDeleteColumns } from "./softDeleteSchema.js";
+
+/** Literal SQL list for CHECK constraints (bind params are not allowed in CHECK). */
+const sqlStringList = (values: readonly string[]): string =>
+  values.map((value) => `'${value.replace(/'/g, "''")}'`).join(", ");
 
 export const enrollments = pgTable(
   "enrollments",
@@ -103,7 +108,11 @@ export const enrollments = pgTable(
     // `NOT IN (released…)` list rather than a whitelist.
     check(
       "enrollments_status_check",
-      sql`${table.status} IN ('pending', 'confirmed', 'cancelled', 'completed', 'withdrawn', 'promoted', 'retained', 'graduated', 'left')`,
+      sql`${table.status} IN (${sql.raw(sqlStringList(ENROLLMENT_STATUSES))})`,
+    ),
+    check(
+      "enrollments_payment_status_check",
+      sql`${table.paymentStatus} IN (${sql.raw(sqlStringList(ENROLLMENT_PAYMENT_STATUSES))})`,
     ),
     check(
       "enrollments_discount_pct_range_check",

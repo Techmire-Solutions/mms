@@ -34,6 +34,14 @@ export function enrollmentHoldsSeat(status: string): boolean {
 export const ENROLLMENT_PAYMENT_STATUSES = ["paid", "pending", "none"] as const;
 export type EnrollmentPaymentStatus = (typeof ENROLLMENT_PAYMENT_STATUSES)[number];
 
+/** Read-path guard: unknown legacy values degrade to `none` instead of being cast. */
+export function normalizeEnrollmentPaymentStatus(raw: unknown): EnrollmentPaymentStatus {
+  const value = typeof raw === "string" ? raw.trim().toLowerCase() : "";
+  return (ENROLLMENT_PAYMENT_STATUSES as readonly string[]).includes(value)
+    ? (value as EnrollmentPaymentStatus)
+    : "none";
+}
+
 export const enrollmentTimelineItemSchema = z
   .object({
     id: z.number().optional(),
