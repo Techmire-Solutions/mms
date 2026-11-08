@@ -72,12 +72,19 @@ export function ageOnDate(dateOfBirth: string, onDate: string): number | null {
   return years < 0 ? null : years;
 }
 
-/** Seats left across active sections, or the class cap; null when unlimited. */
+/**
+ * Seats left across active sections, or the class cap; null when unlimited.
+ *
+ * A capacity of `0` means "no cap" — the same convention as a class's `maxStudents`
+ * (the session UI leaves it at its 0 default) — so a section without an explicit quota
+ * never reports the class as full.
+ */
 export function remainingSeats(cls: EligibilityClass): number | null {
   const sections = (cls.sections ?? []).filter(
     (section) => (section.status ?? "active") === "active",
   );
   if (sections.length > 0) {
+    if (sections.some((section) => !((section.capacity ?? 0) > 0))) return null;
     return sections.reduce(
       (sum, section) => sum + Math.max(0, (section.capacity ?? 0) - (section.enrolled ?? 0)),
       0,

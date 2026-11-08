@@ -77,7 +77,8 @@ async function assertClassCapacityTx(
       ),
     );
   const occupied = Number(row?.count ?? 0);
-  if (occupied > Math.max(0, capacity))
+  // 0 = no cap (the `maxStudents` default), so the quota check only applies above it.
+  if (capacity > 0 && occupied > capacity)
     throw new ConflictError(
       `The class quota (${Math.max(0, capacity)}) cannot be below its ${occupied} enrolled student(s)`,
     );
@@ -140,10 +141,11 @@ export async function persistSessionClassesTx(
       sortOrder: idx,
       updatedAt: now,
     };
-    // `enrolled` is derived from enrollments on read; never trusted from the client.
+    // `enrolled` is gone (migration 0211): seat counts are derived from `enrollments`
+    // on every read, never stored on the class.
     await tx
       .insert(sessionClasses)
-      .values({ id: c.id, workspaceSubdomain: subdomain, enrolled: 0, ...values })
+      .values({ id: c.id, workspaceSubdomain: subdomain, ...values })
       .onConflictDoUpdate({
         target: [sessionClasses.workspaceSubdomain, sessionClasses.sessionId, sessionClasses.id],
         // `version` advances on every class write so class-only readers get a real OCC token.

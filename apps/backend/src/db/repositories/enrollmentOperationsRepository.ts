@@ -1,7 +1,6 @@
-import { and, asc, eq, inArray, isNull } from "drizzle-orm";
-import type { EnrollmentPlacement } from "@mms/shared";
+import { and, eq, inArray, isNull } from "drizzle-orm";
 import { enrollmentPlacements, enrollments } from "../schema.js";
-import { withTenant, withTenantRead } from "../tenant-context.js";
+import { withTenant, withTenantRead, type TenantTransaction } from "../tenant-context.js";
 import {
   closePlacementTx,
   insertTypedTimelineEventTx,
@@ -9,6 +8,10 @@ import {
 } from "./enrollmentHistoryWrite.js";
 import { syncEnrolledSessionsTx } from "./enrollmentSessionSync.js";
 import { enrollmentHoldsSeatWhere } from "./enrollmentSeatSql.js";
+import { assertSeatCapacityTx, lockSectionsForSeatsTx } from "./enrollmentSeatCountRepository.js";
+import { NotFoundError } from "../../lib/httpErrors.js";
+
+export { listEnrollmentPlacements } from "./enrollmentPlacementHistory.js";
 
 /** Live seat counts and rollover carry locks (split out to keep this module under 300 lines). */
 export { countLiveSeatsByClassTx, lockRolloverCarryTx } from "./enrollmentSeatCountRepository.js";
@@ -50,31 +53,17 @@ export interface OperationActor {
   label: string;
 }
 
-export async function listEnrollmentPlacements(
-  tenant: string,
+/** Row-locks the target section and refuses the write when it has no free seat. */
+async function lockAndAssertSeatTx(
+  tx: TenantTransaction,
+  subdomain: string,
+  sectionId: string,
   enrollmentId: string,
-): Promise<EnrollmentPlacement[]> {
-  const subdomain = tenant.trim().toLowerCase();
-  return withTenantRead(subdomain, (tx) =>
-    tx
-      .select({
-        id: enrollmentPlacements.id,
-        enrollmentId: enrollmentPlacements.enrollmentId,
-        classId: enrollmentPlacements.classId,
-        sectionId: enrollmentPlacements.sectionId,
-        startOn: enrollmentPlacements.startOn,
-        endOn: enrollmentPlacements.endOn,
-        reason: enrollmentPlacements.reason,
-      })
-      .from(enrollmentPlacements)
-      .where(
-        and(
-          eq(enrollmentPlacements.workspaceSubdomain, subdomain),
-          eq(enrollmentPlacements.enrollmentId, enrollmentId),
-        ),
-      )
-      .orderBy(asc(enrollmentPlacements.startOn)),
-  );
+): Promise<void> {
+  const sections = await lockSectionsForSeatsTx(tx, subdomain, [sectionId]);
+  const section = sections.get(sectionId);
+  if (!section) throw new NotFoundError("Section not found");
+  await assertSeatCapacityTx(tx, subdomain, { section, excludeEnrollmentIds: [enrollmentId] });
 }
 
 const enrollmentKey = (subdomain: string, id: string) =>
@@ -100,6 +89,11 @@ export async function applyEnrollmentTransfer(
 ): Promise<void> {
   const subdomain = tenant.trim().toLowerCase();
   await withTenant(subdomain, async (tx) => {
+    // The use case's seat pre-check happens before this transaction; a concurrent writer
+    // can take the last seat in between, so the seat is re-asserted under the section lock.
+    if (input.to.sectionId && input.to.sectionId !== input.from.sectionId) {
+      await lockAndAssertSeatTx(tx, subdomain, input.to.sectionId, input.enrollmentId);
+    }
     await tx
       .update(enrollments)
       .set({
@@ -235,6 +229,10 @@ export async function applyEnrollmentReadmission(
 ): Promise<void> {
   const subdomain = tenant.trim().toLowerCase();
   await withTenant(subdomain, async (tx) => {
+    // A withdrawn row holds no seat; readmission takes one again, under the section lock.
+    if (input.to.sectionId) {
+      await lockAndAssertSeatTx(tx, subdomain, input.to.sectionId, input.enrollmentId);
+    }
     await tx
       .update(enrollments)
       .set({
@@ -273,26 +271,4 @@ export async function applyEnrollmentReadmission(
 }
 
 /** Timeline entry for a suspension (the leave range itself is owned by Attendance). */
-export async function recordEnrollmentSuspension(
-  tenant: string,
-  input: {
-    enrollmentId: string;
-    fromOn: string;
-    toOn: string;
-    reason: string;
-    actor: OperationActor;
-  },
-): Promise<void> {
-  const subdomain = tenant.trim().toLowerCase();
-  await withTenant(subdomain, (tx) =>
-    insertTypedTimelineEventTx(tx, subdomain, {
-      enrollmentId: input.enrollmentId,
-      eventType: "suspended",
-      event: `Suspended ${input.fromOn} – ${input.toOn}`,
-      actorUserId: input.actor.userId,
-      actorLabel: input.actor.label,
-      effectiveOn: input.fromOn,
-      reason: input.reason,
-    }),
-  );
-}
+export { recordEnrollmentSuspension } from "./enrollmentHistoryWrite.js";

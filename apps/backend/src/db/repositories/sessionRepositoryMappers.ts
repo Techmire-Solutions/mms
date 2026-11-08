@@ -31,7 +31,9 @@ import { mapAuditTimestamps, nullsToUndefined } from "./repositoryMappers.js";
 
 type SessionRow = SessionReadRow;
 type SessionFacultyRow = typeof sessionFaculty.$inferSelect;
-type ClassRow = typeof sessionClasses.$inferSelect;
+// `session_classes.enrolled` was dropped (migration 0211). Hydrate queries still project
+// a computed `enrolled` alias (live seat-holding count) into these rows.
+type ClassRow = typeof sessionClasses.$inferSelect & { enrolled?: number | null };
 type FeeRow = typeof sessionClassFees.$inferSelect;
 type ScheduleRow = typeof sessionClassSchedules.$inferSelect;
 type BudgetRow = typeof sessionClassBudgets.$inferSelect;

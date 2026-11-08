@@ -1,6 +1,6 @@
 import { and, eq, inArray, isNull } from "drizzle-orm";
 import { enrollments } from "../schema.js";
-import { withTenant, withTenantRead } from "../tenant-context.js";
+import { withTenant } from "../tenant-context.js";
 import { syncEnrolledSessionsTx } from "./enrollmentSessionSync.js";
 import { enrollmentHoldsSeatWhere } from "./enrollmentSeatSql.js";
 
@@ -12,7 +12,10 @@ export async function findActivelyEnrolledStudentIds(
 ): Promise<Set<string>> {
   const subdomain = tenant.trim().toLowerCase();
   if (studentIds.length === 0) return new Set();
-  return withTenantRead(subdomain, async (tx) => {
+  // Primary, not the read replica: this is the fast duplicate pre-check immediately
+  // before a write, and replica lag would let a just-created enrollment through. The
+  // partial unique index on `enrollments` is still the authority under concurrency.
+  return withTenant(subdomain, async (tx) => {
     const rows = await tx
       .select({ studentId: enrollments.studentId })
       .from(enrollments)

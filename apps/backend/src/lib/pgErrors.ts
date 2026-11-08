@@ -10,6 +10,27 @@ export function isUniqueViolation(error: unknown): boolean {
   return isUniqueViolation(cause);
 }
 
+/**
+ * The constraint/index name behind a `23505`, or null.
+ *
+ * Needed because a table can have several unique indexes and the caller must
+ * answer differently ("already enrolled" vs "roll number already used"). Walks
+ * the `cause` chain for the same reason as {@link isUniqueViolation}.
+ */
+export function uniqueViolationConstraint(error: unknown): string | null {
+  if (!error || typeof error !== "object") return null;
+  if (
+    "code" in error &&
+    String((error as { code?: unknown }).code ?? "") === "23505" &&
+    "constraint" in error &&
+    typeof (error as { constraint?: unknown }).constraint === "string"
+  ) {
+    return (error as { constraint: string }).constraint;
+  }
+  const cause = "cause" in error ? (error as { cause?: unknown }).cause : undefined;
+  return uniqueViolationConstraint(cause);
+}
+
 /** True for `23503` (foreign_key_violation), including wrapped driver errors. */
 export function isForeignKeyViolation(error: unknown): boolean {
   if (!error || typeof error !== "object") return false;

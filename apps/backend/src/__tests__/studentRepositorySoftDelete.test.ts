@@ -5,7 +5,16 @@ const mocks = vi.hoisted(() => {
   const where = vi.fn(() => ({ returning }));
   const set = vi.fn(() => ({ where }));
   const update = vi.fn(() => ({ set }));
-  return { returning, where, set, update, invalidate: vi.fn(), enable: vi.fn() };
+  return {
+    returning,
+    where,
+    set,
+    update,
+    invalidate: vi.fn(),
+    enable: vi.fn(),
+    cascadeDelete: vi.fn(),
+    cascadeRestore: vi.fn(),
+  };
 });
 
 vi.mock("../db/tenant-context.js", () => ({
@@ -19,6 +28,12 @@ vi.mock("../lib/cache/index.js", () => ({
 
 vi.mock("../lib/softDeleteHelpers.js", () => ({
   enableIncludeDeleted: mocks.enable,
+  withIncludeDeletedScope: (_tx: unknown, work: () => Promise<unknown>) => work(),
+}));
+
+vi.mock("../db/repositories/studentEnrollmentCascade.js", () => ({
+  cascadeSoftDeleteEnrollmentsForStudents: mocks.cascadeDelete,
+  restoreCascadedEnrollmentsForStudents: mocks.cascadeRestore,
 }));
 
 import {
@@ -31,6 +46,8 @@ describe("bulkRestoreStudentsSql", () => {
     vi.clearAllMocks();
     mocks.enable.mockResolvedValue(undefined);
     mocks.invalidate.mockResolvedValue(undefined);
+    mocks.cascadeDelete.mockResolvedValue(undefined);
+    mocks.cascadeRestore.mockResolvedValue(undefined);
     mocks.returning.mockResolvedValue([{ id: "a" }]);
   });
 
@@ -46,6 +63,20 @@ describe("bulkRestoreStudentsSql", () => {
     expect(mocks.invalidate).toHaveBeenCalledWith({ tenantId: "demo", domain: "students" });
   });
 
+  it("restores the cascade-archived enrollments inside the same parent write", async () => {
+    const restoredAt = new Date("2026-08-01T00:00:00.000Z");
+
+    await bulkRestoreStudentsSql("Demo", ["a"], "u-1", restoredAt);
+
+    expect(mocks.cascadeRestore).toHaveBeenCalledWith(
+      expect.anything(),
+      "demo",
+      ["a"],
+      "u-1",
+      restoredAt,
+    );
+  });
+
   it("soft-deletes in one statement and reports the count", async () => {
     mocks.returning.mockResolvedValue([{ id: "a" }, { id: "b" }]);
 
@@ -55,6 +86,23 @@ describe("bulkRestoreStudentsSql", () => {
     expect(mocks.set).toHaveBeenCalledWith(
       expect.objectContaining({ deletedBy: "u-1", deletionReason: "cleanup" }),
     );
+  });
+
+  it("archives the dependent enrollments with the student", async () => {
+    mocks.returning.mockResolvedValue([{ id: "a" }, { id: "b" }]);
+    const before = Date.now();
+
+    await bulkSoftDeleteStudentsSql("Demo", ["a", "b"], "u-1", "cleanup");
+
+    expect(mocks.cascadeDelete).toHaveBeenCalledTimes(1);
+    const [tx, tenant, ids, deletedBy, reason, deletedAt] = mocks.cascadeDelete.mock.calls[0]!;
+    expect(tx).toEqual({ update: mocks.update });
+    expect(tenant).toBe("demo");
+    expect(ids).toEqual(["a", "b"]);
+    expect(deletedBy).toBe("u-1");
+    expect(reason).toBe("cleanup");
+    expect(deletedAt).toBeInstanceOf(Date);
+    expect((deletedAt as Date).getTime()).toBeGreaterThanOrEqual(before);
   });
 
   it("returns an empty result without touching the database", async () => {

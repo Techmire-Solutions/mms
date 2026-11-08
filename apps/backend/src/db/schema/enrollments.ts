@@ -10,6 +10,7 @@ import {
   numeric,
   foreignKey,
   date,
+  check,
 } from "drizzle-orm/pg-core";
 import { sql } from "drizzle-orm";
 import { workspaces } from "./platform.js";
@@ -97,6 +98,27 @@ export const enrollments = pgTable(
     index("enrollments_workspace_deleted_records_idx")
       .on(table.workspaceSubdomain, table.deletedAt)
       .where(sql`${table.deletedAt} is not null`),
+    // Range/integrity guards (migration 0210). `status` drives seat accounting: an
+    // unknown value would silently hold a seat because the queries filter by a
+    // `NOT IN (released…)` list rather than a whitelist.
+    check(
+      "enrollments_status_check",
+      sql`${table.status} IN ('pending', 'confirmed', 'cancelled', 'completed', 'withdrawn', 'promoted', 'retained', 'graduated', 'left')`,
+    ),
+    check(
+      "enrollments_discount_pct_range_check",
+      sql`${table.discountPct} >= 0 AND ${table.discountPct} <= 100`,
+    ),
+    check(
+      "enrollments_fee_non_negative_check",
+      sql`${table.baseFee} >= 0 AND ${table.discountAmt} >= 0 AND ${table.finalFee} >= 0`,
+    ),
+    // NOTE (deliberate drift): `enrollments_section_fk` (RESTRICT DEFERRABLE) lives only
+    // in migration 0167 and the session FK's deferrability only in 0206 — drizzle-orm
+    // 0.45 has no `deferrable()` builder, so declaring them here would be a lie.
+    // The five integrity/seat indexes are provisioned CONCURRENTLY at boot by
+    // db/migrations/enrollmentIntegrityIndexes.ts, not by a migration (a plain build on
+    // a populated table is a write outage) — do not declare them here either.
   ],
 );
 

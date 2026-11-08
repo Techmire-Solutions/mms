@@ -1,4 +1,5 @@
 import { sql, type SQL } from "drizzle-orm";
+import { withIncludeDeletedScope } from "../../lib/softDeleteHelpers.js";
 
 export interface EnrolledSessionSyncScope {
   studentIds?: readonly string[];
@@ -32,14 +33,17 @@ export async function syncEnrolledSessionsTx(
   if (scope.enrollmentIds?.length) filters.push(sql`e.id IN (${list(scope.enrollmentIds)})`);
   if (filters.length === 0) return;
 
-  // History includes archived enrollments, which FORCE RLS hides by default.
-  await tx.execute(sql`SELECT set_config('app.include_deleted', 'true', true)`);
-  await tx.execute(sql`
-    DELETE FROM student_enrolled_sessions_legacy s
-     USING enrollments e
-     WHERE s.workspace_subdomain = ${subdomain}
-       AND e.workspace_subdomain = s.workspace_subdomain
-       AND e.student_id = s.student_id AND e.session_id = s.session_id
-       AND (${sql.join(filters, sql` OR `)})
-  `);
+  // History includes archived enrollments, which FORCE RLS hides by default. Scope the
+  // GUC: a leaked `include_deleted = true` would make every later statement in the
+  // caller's transaction see trashed rows.
+  await withIncludeDeletedScope(tx, async () => {
+    await tx.execute(sql`
+      DELETE FROM student_enrolled_sessions_legacy s
+       USING enrollments e
+       WHERE s.workspace_subdomain = ${subdomain}
+         AND e.workspace_subdomain = s.workspace_subdomain
+         AND e.student_id = s.student_id AND e.session_id = s.session_id
+         AND (${sql.join(filters, sql` OR `)})
+    `);
+  });
 }

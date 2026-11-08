@@ -4,7 +4,7 @@ import { SessionSchema, sessionRolloverBodySchema } from "@mms/shared";
 import { closeDatabase } from "../../db/dbConnection.js";
 import { applyDrizzleMigrations } from "../../db/dbInit.js";
 import { withTenant } from "../../db/tenant-context.js";
-import { students, workspaces } from "../../db/schema.js";
+import { enrollments, students, workspaces } from "../../db/schema.js";
 import { saveSession } from "../../db/repositories/sessionRepositoryPersist.js";
 import { findSessionById } from "../../db/repositories/sessionRepositoryQueries.js";
 import {
@@ -231,16 +231,26 @@ describe("session rollover (real Postgres)", () => {
         ],
       }),
     );
-    for (const studentId of ["s1", "s2"]) {
-      await run(() =>
-        bulkEnrollStudentsIntoClass(TENANT, {
-          studentIds: [studentId],
+    // Legacy over-subscribed source: seeded directly because the enrollment write path
+    // now (correctly) refuses to put two students into a one-seat section. The carry guard
+    // must not depend on how the source got over its quota.
+    await withTenant(TENANT, (tx) =>
+      tx.insert(enrollments).values(
+        ["s1", "s2"].map((studentId) => ({
+          id: `enr-tight-${studentId}`,
+          workspaceSubdomain: TENANT,
+          studentId,
+          studentName: studentId,
           sessionId: "tight",
+          sessionName: "Tight Year",
           classId: "tight-class",
-          mode: "add",
-        }),
-      );
-    }
+          className: "Tight",
+          sectionId: "tight-a",
+          enrolledDate: "2026-01-01",
+          status: "confirmed" as const,
+        })),
+      ),
+    );
     await createPromotionRun(TENANT, {
       id: "run-tight",
       sourceSessionId: "tight",

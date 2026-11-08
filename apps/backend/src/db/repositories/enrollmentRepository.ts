@@ -3,6 +3,7 @@ export {
   listEnrollmentsByWorkspace,
   findEnrollmentById,
   findEnrollmentsByIds,
+  findActiveEnrollmentInSession,
 } from "./enrollmentRepositoryHydrate.js";
 export {
   saveEnrollment,

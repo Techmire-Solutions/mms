@@ -1471,6 +1471,20 @@
       "when": 1794214800000,
       "tag": "0209_report_indexes_and_job_errors",
       "breakpoints": true
+    },
+    {
+      "idx": 210,
+      "version": "7",
+      "when": 1794301200000,
+      "tag": "0210_enrollments_integrity",
+      "breakpoints": true
+    },
+    {
+      "idx": 211,
+      "version": "7",
+      "when": 1794304800000,
+      "tag": "0211_drop_session_classes_enrolled",
+      "breakpoints": true
     }
   ]
 }

@@ -6,7 +6,12 @@ import {
   type StudentsBulkEnrollBody,
 } from "@mms/shared";
 import { admissionsRepository as repo } from "../repository/admissionsRepositoryAdapter.js";
-import { NotFoundError, ValidationError } from "../../lib/httpErrors.js";
+import {
+  ConflictError,
+  NotFoundError,
+  SeatCapacityError,
+  ValidationError,
+} from "../../lib/httpErrors.js";
 import { broadcastCollection } from "../../lib/livePush.js";
 import { invalidateMultiTierCache } from "../../lib/cache/index.js";
 
@@ -69,9 +74,35 @@ export async function bulkEnrollStudentsIntoClass(
       } as Enrollment;
     });
 
-  await repo.bulkSaveEnrollments(tenant, records);
+  let inserted: string[];
+  try {
+    ({ inserted } = await repo.bulkSaveEnrollments(tenant, records));
+  } catch (error) {
+    // A full section or a concurrent duplicate rejects the whole batch before anything
+    // is written; retry one row at a time so the rest of the roster still lands.
+    if (!isRowRejection(error)) throw error;
+    inserted = await saveIndividually(tenant, records);
+  }
   await afterChange(tenant);
-  return { succeeded: records.length, failed: studentIds.length - records.length };
+  return { succeeded: inserted.length, failed: studentIds.length - inserted.length };
+}
+
+/** A per-record rejection (no seat left / already enrolled), not an infrastructure failure. */
+function isRowRejection(error: unknown): boolean {
+  return error instanceof SeatCapacityError || error instanceof ConflictError;
+}
+
+async function saveIndividually(tenant: string, records: readonly Enrollment[]): Promise<string[]> {
+  const inserted: string[] = [];
+  for (const record of records) {
+    try {
+      const result = await repo.bulkSaveEnrollments(tenant, [record]);
+      inserted.push(...result.inserted);
+    } catch (error) {
+      if (!isRowRejection(error)) throw error;
+    }
+  }
+  return inserted;
 }
 
 async function afterChange(tenant: string): Promise<void> {

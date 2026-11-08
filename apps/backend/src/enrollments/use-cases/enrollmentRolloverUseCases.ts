@@ -14,7 +14,7 @@ import type {
 } from "../repository/enrollmentOperationsRepository.js";
 import { broadcastCollection } from "../../lib/livePush.js";
 import { invalidateMultiTierCache } from "../../lib/cache/index.js";
-import { HttpDomainError } from "../../lib/httpErrors.js";
+import { HttpDomainError, SeatCapacityError } from "../../lib/httpErrors.js";
 import { withTenant } from "../../db/tenant-context.js";
 
 export interface RolloverCandidate extends LiveEnrollmentRow {
@@ -96,7 +96,8 @@ export async function carryRolloverEnrollments(
         // Deterministic fallback that respects capacity instead of "first section wins".
         section = sections.find((candidateSection) => {
           const key = `${cls.id}|${candidateSection.id}`;
-          return (used.get(key) ?? 0) < Math.max(0, candidateSection.capacity ?? 0);
+          const cap = Math.max(0, candidateSection.capacity ?? 0);
+          return cap === 0 || (used.get(key) ?? 0) < cap;
         });
       }
       const seatKey = `${cls.id}|${section?.id ?? ""}`;
@@ -105,7 +106,7 @@ export async function carryRolloverEnrollments(
         problems.push(`${candidate.studentName}: no free seat in ${cls.name}`);
         continue;
       }
-      if (capacity !== null) {
+      if (capacity !== null && capacity > 0) {
         const occupied = (used.get(seatKey) ?? 0) + 1;
         if (occupied > capacity) {
           problems.push(
@@ -136,13 +137,28 @@ export async function carryRolloverEnrollments(
       });
     }
     if (problems.length > 0) throw new RolloverSeatError(problems);
-    await admissions.bulkSaveEnrollments(tenant, records);
+    let inserted: string[];
+    try {
+      ({ inserted } = await admissions.bulkSaveEnrollments(tenant, records));
+    } catch (error) {
+      // The advisory lock serializes rollovers against each other, not against a single
+      // enrollment that grabbed the last seat between the pre-check and this write.
+      if (error instanceof SeatCapacityError) throw new RolloverSeatError([error.message]);
+      throw error;
+    }
     await invalidateMultiTierCache({ tenantId: tenant, domain: "sessions" });
     await broadcastCollection("enrollments");
     await broadcastCollection("sessions");
+    // Only rows that actually landed may close their source enrollment; a student another
+    // writer already enrolled in the target keeps the source open for a human decision.
+    const createdIds = new Set(inserted);
     return {
-      created: records.length,
-      carriedSourceIds: new Set(placements.map(({ candidate }) => candidate.id)),
+      created: inserted.length,
+      carriedSourceIds: new Set(
+        records
+          .filter((record) => createdIds.has(String(record.id)))
+          .map((record) => String(record.promotedFromEnrollmentId)),
+      ),
     };
   });
 }

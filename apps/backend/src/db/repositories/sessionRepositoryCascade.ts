@@ -4,6 +4,7 @@ import { withTenant } from "../tenant-context.js";
 import { syncEnrolledSessionsTx } from "./enrollmentSessionSync.js";
 import { recordCascadeEvents, returningEnrollmentIds } from "./sessionCascadeEvents.js";
 import { sessionAuditStateTx } from "./sessionAuditState.js";
+import { enableIncludeDeleted } from "../../lib/softDeleteHelpers.js";
 
 export {
   bulkDeleteSessions,
@@ -21,6 +22,9 @@ export async function softDeleteSessionWithCascade(
   const subdomain = tenant.trim().toLowerCase();
   const now = new Date();
   return withTenant(subdomain, async (tx) => {
+    // `deleted_at` is part of the RLS policy's USING clause and PostgreSQL re-checks the
+    // new row, so the soft-delete only works when archived rows are visible.
+    await enableIncludeDeleted(tx);
     const oldState = await sessionAuditStateTx(tx, subdomain, sessionId);
     await tx
       .select({ id: sessions.id })
@@ -61,9 +65,10 @@ export async function softDeleteSessionWithCascade(
         .set({
           deletedAt: now,
           deletedBy: deletedBy || null,
-          deletionReason: deletionReason
+          deletionReason: (deletionReason
             ? `Cascade: parent session deleted (${deletionReason})`
-            : "Cascade: parent session deleted",
+            : "Cascade: parent session deleted"
+          ).slice(0, 500),
           deletedWithCascade: true,
           updatedAt: now,
         })
@@ -99,6 +104,9 @@ export async function restoreSessionWithCascade(
   const subdomain = tenant.trim().toLowerCase();
   const now = new Date();
   return withTenant(subdomain, async (tx) => {
+    // Archived sessions are hidden by `tenant_soft_delete_isolation` (FORCE RLS) unless
+    // the transaction opts in; without this the restore silently matched zero rows.
+    await enableIncludeDeleted(tx);
     const oldState = await sessionAuditStateTx(tx, subdomain, sessionId);
     await tx
       .select({ id: sessions.id })
@@ -153,6 +161,26 @@ export async function restoreSessionWithCascade(
             eq(enrollments.sessionId, sessionId),
             isNotNull(enrollments.deletedAt),
             eq(enrollments.deletedWithCascade, true),
+            // A student archived after this session was trashed keeps its enrollment
+            // trashed; restoring it here would resurrect a link to a deleted student.
+            // The student restore re-evaluates this predicate and brings it back then.
+            sql`EXISTS (
+              SELECT 1 FROM students st
+               WHERE st.workspace_subdomain = ${enrollments.workspaceSubdomain}
+                 AND st.id = ${enrollments.studentId}
+                 AND st.deleted_at IS NULL
+            )`,
+            // Never create a second live row for the same student/session: the student
+            // may have been re-enrolled while this row was trashed.
+            sql`NOT EXISTS (
+              SELECT 1 FROM enrollments live
+               WHERE live.workspace_subdomain = ${enrollments.workspaceSubdomain}
+                 AND live.student_id = ${enrollments.studentId}
+                 AND live.session_id = ${enrollments.sessionId}
+                 AND live.id <> ${enrollments.id}
+                 AND live.deleted_at IS NULL
+                 AND live.status NOT IN ('cancelled', 'withdrawn', 'promoted', 'retained', 'graduated', 'left')
+            )`,
           ),
         ),
     );

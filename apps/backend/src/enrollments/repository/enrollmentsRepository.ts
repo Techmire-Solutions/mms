@@ -18,12 +18,22 @@ import type {
  */
 export interface EnrollmentsRepository {
   listEnrollmentsByWorkspace(tenant: string): Promise<Enrollment[]>;
-  findEnrollmentById(tenant: string, id: string): Promise<Enrollment | null>;
+  findEnrollmentById(
+    tenant: string,
+    id: string,
+    options?: { includeDeleted?: boolean },
+  ): Promise<Enrollment | null>;
   findEnrollmentsByIds(
     tenant: string,
     ids: string[],
     options?: { includeDeleted?: boolean },
   ): Promise<Enrollment[]>;
+  /** Live (seat-holding) enrollment of a student in a session, if any. */
+  findActiveEnrollmentInSession?(
+    tenant: string,
+    sessionId: string,
+    studentId: string,
+  ): Promise<Enrollment | null>;
   saveEnrollment(tenant: string, record: Enrollment): Promise<void>;
   listEnrollmentsPage(
     tenant: string,

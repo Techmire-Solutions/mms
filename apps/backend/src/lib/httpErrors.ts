@@ -102,6 +102,22 @@ export class ConflictError extends HttpDomainError {
   }
 }
 
+/**
+ * A section/class has no free seat for the requested enrollment write.
+ *
+ * Separate from a generic conflict so the UI and the bulk-enroll path can tell
+ * "the class is full" (retry later / waitlist) apart from "already enrolled".
+ */
+export class SeatCapacityError extends HttpDomainError {
+  constructor(
+    message = "The class is full",
+    readonly sectionId?: string,
+    readonly seatsLeft?: number,
+  ) {
+    super(409, "class_full", message);
+  }
+}
+
 export class ValidationError extends HttpDomainError {
   constructor(message = "Validation error") {
     super(400, "validation_error", message);
