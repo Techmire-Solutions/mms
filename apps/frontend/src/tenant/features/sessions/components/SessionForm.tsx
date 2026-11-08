@@ -58,6 +58,7 @@ export const SessionForm = function SessionForm({
     <FormModal
       open={open}
       onClose={onClose}
+      priority
       title={session ? t("sessions.form.editTitle") : t("sessions.form.addTitle")}
       subtitle={t("sessions.form.subtitle")}
       icon={Calendar}

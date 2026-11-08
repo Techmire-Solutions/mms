@@ -73,16 +73,20 @@ describe("useSessionsDialogs Hook", () => {
     await render();
 
     await act(async () => {
+      getCurrent().setDetailSession(mockSession);
       getCurrent().openCreateForm();
     });
     expect(getCurrent().showForm).toBe(true);
     expect(getCurrent().editSession).toBeNull();
+    expect(getCurrent().detailSession).toBeNull();
 
     await act(async () => {
+      getCurrent().setDetailSession(mockSession);
       getCurrent().openEditForm(mockSession);
     });
     expect(getCurrent().showForm).toBe(true);
     expect(getCurrent().editSession).toBe(mockSession);
+    expect(getCurrent().detailSession).toBeNull();
 
     await act(async () => {
       getCurrent().closeForm();
