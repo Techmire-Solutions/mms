@@ -4,6 +4,7 @@ import { isImeSafeEnter } from "../utils";
 export interface FormSelectSearchOption {
   value: string;
   label: string;
+  disabled?: boolean;
 }
 
 /** Selects with at least this many choices open the searchable popover. */

@@ -34,6 +34,7 @@ export interface ApplicationJoinedRow {
   address: string | null;
   previousMadrasa: string | null;
   status: string;
+  waitlistPosition: number | null;
   studentId: string | null;
   enrollmentId: string | null;
   reviewReason: string | null;
@@ -65,6 +66,17 @@ const joinedColumns = {
   address: a.address,
   previousMadrasa: a.previousMadrasa,
   status: a.status,
+  // FIFO rank inside the class (oldest waitlisted = 1); null unless this row is waitlisted.
+  waitlistPosition: sql<number | null>`CASE WHEN ${a.status} = 'waitlisted' THEN (
+    SELECT count(*)::int + 1
+    FROM registration_applications w
+    WHERE w.workspace_subdomain = ${a.workspaceSubdomain}
+      AND w.session_id = ${a.sessionId}
+      AND w.class_id = ${a.classId}
+      AND w.status = 'waitlisted'
+      AND w.deleted_at IS NULL
+      AND (w.created_at < ${a.createdAt} OR (w.created_at = ${a.createdAt} AND w.id < ${a.id}))
+  ) END`,
   studentId: a.studentId,
   enrollmentId: a.enrollmentId,
   reviewReason: a.reviewReason,

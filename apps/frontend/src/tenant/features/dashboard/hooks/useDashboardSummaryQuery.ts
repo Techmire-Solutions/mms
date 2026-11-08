@@ -12,7 +12,8 @@ import { useAuth } from "@/lib/contexts/AuthContext";
 import type { DashboardRole } from "@/lib/dashboardRole";
 import { fetchDashboardSummaryAsync } from "./dashboardApi";
 
-export const DASHBOARD_SUMMARY_QUERY_KEY_ROOT = ["dashboard", "summary"] as const;
+import { DASHBOARD_SUMMARY_QUERY_KEY_ROOT } from "@/lib/query/dashboardQueryKeys";
+export { DASHBOARD_SUMMARY_QUERY_KEY_ROOT };
 /**
  * The server filters sections by the caller's authoritative permissions, so the
  * dashboard role is a presentation hint only — it is sent with the request but

@@ -1,12 +1,12 @@
 import { useQueryClient } from "@tanstack/react-query";
 import type { MutateOptions } from "@tanstack/react-query";
-import type { Enrollment } from "@mms/shared";
+import type { Enrollment, EnrollmentInsert } from "@mms/shared";
 import { tsrClient } from "@/lib/api";
-import { invalidateEnrollmentsQueries } from "./invalidateEnrollmentsQueries";
+import { invalidateEnrollmentImpacts } from "@/lib/query/enrollmentImpactInvalidation";
 
 export function useEnrollmentMutations() {
   const queryClient = useQueryClient();
-  const invalidate = () => invalidateEnrollmentsQueries(queryClient);
+  const invalidate = () => invalidateEnrollmentImpacts(queryClient);
 
   const createEnrollment = tsrClient.enrollments.create.useMutation({ onSuccess: invalidate });
   const updateEnrollment = tsrClient.enrollments.update.useMutation({ onSuccess: invalidate });
@@ -22,9 +22,10 @@ export function useEnrollmentMutations() {
   return {
     createEnrollment: {
       ...createEnrollment,
-      mutate: (enrollment: Enrollment, opts?: MutateOptions) =>
+      mutate: (enrollment: EnrollmentInsert, opts?: MutateOptions) =>
         createEnrollment.mutate({ body: enrollment }, opts),
-      mutateAsync: (enrollment: Enrollment) => createEnrollment.mutateAsync({ body: enrollment }),
+      mutateAsync: (enrollment: EnrollmentInsert) =>
+        createEnrollment.mutateAsync({ body: enrollment }),
     },
     updateEnrollment: {
       ...updateEnrollment,

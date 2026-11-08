@@ -4,6 +4,7 @@ import { Field, FormSelect } from "@/components/app/FormPrimitives";
 import { Input } from "@/components/ui/input";
 import { useTranslation } from "@/hooks/useTranslation";
 import { useAcademicTerms } from "@/hooks/useAcademicTerms";
+import { capacityLabel, isCapacityFull } from "../../lib/enrollmentCapacity";
 
 export interface SectionPlacement {
   sectionId: string;
@@ -19,7 +20,7 @@ export interface Step4SectionPlacementProps {
 /** First active section with free seats — the default placement for a newly selected class. */
 export function defaultSectionId(sessionClass: Class | null | undefined): string {
   const sections = (sessionClass?.sections ?? []).filter((section) => section.status !== "closed");
-  const open = sections.find((section) => (section.enrolled ?? 0) < (section.capacity ?? 0));
+  const open = sections.find((section) => !isCapacityFull(section.enrolled, section.capacity));
   return (open ?? sections[0])?.id ?? "";
 }
 
@@ -43,9 +44,11 @@ export function Step4SectionPlacement({
           onChange={(sectionId) => onChange({ ...value, sectionId })}
           options={sections.map((section) => {
             const enrolled = section.enrolled ?? 0;
+            const full = isCapacityFull(enrolled, section.capacity);
             return {
               value: section.id,
-              label: `${section.name} (${enrolled}/${section.capacity})`,
+              label: `${section.name} (${enrolled}/${capacityLabel(section.capacity)})${full ? ` · ${t("enrollment.session.full")}` : ""}`,
+              disabled: full,
             };
           })}
         />

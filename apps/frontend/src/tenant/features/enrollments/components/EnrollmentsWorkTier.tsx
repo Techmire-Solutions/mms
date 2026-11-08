@@ -1,4 +1,4 @@
-import type React from "react";
+import React from "react";
 import { ErrorBoundary } from "@/components/app/ErrorBoundary";
 import { ErrorState } from "@/components/app/ErrorState";
 import { SubTabBar } from "@/components/app/SubTabBar";
@@ -61,7 +61,7 @@ export interface EnrollmentsWorkTierProps {
   columnProps: EnrollmentColumnProps;
 }
 
-export function EnrollmentsWorkTier({
+export const EnrollmentsWorkTier = React.memo(function EnrollmentsWorkTier({
   activeSubTab,
   subTabs,
   enrollments,
@@ -183,4 +183,4 @@ export function EnrollmentsWorkTier({
       )}
     </>
   );
-}
+});

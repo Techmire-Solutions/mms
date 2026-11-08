@@ -9,7 +9,21 @@ describe("invalidateEnrollmentsQueries", () => {
     } as unknown as QueryClient;
 
     invalidateEnrollmentsQueries(mockQueryClient);
+    const mockedCalls = () =>
+      (mockQueryClient.invalidateQueries as ReturnType<typeof vi.fn>).mock.calls.map(
+        (call) => (call[0] as { queryKey: unknown[] }).queryKey,
+      );
 
-    expect(mockQueryClient.invalidateQueries).toHaveBeenCalledTimes(4);
+    const keys = mockedCalls();
+    expect(keys).toEqual(
+      expect.arrayContaining([
+        ["enrollments", "list"],
+        ["enrollments", "metrics"],
+        ["enrollments", "widget-aggregates"],
+        ["enrollments", "report-aggregates"],
+        ["enrollments", "placements"],
+        ["enrollments", "admissions"],
+      ]),
+    );
   });
 });

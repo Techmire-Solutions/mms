@@ -1,14 +1,18 @@
 import { useMemo, useState } from "react";
-import { useMutation } from "@tanstack/react-query";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 import {
   evaluateEligibility,
   REGISTRATION_INELIGIBLE_ERROR_TYPE,
+  registrationSubmitSchema,
   todayISO,
   type EligibilityReason,
   type PublicRegistrationView,
 } from "@mms/shared";
 import { isApiError } from "@/lib/apiError";
-import { submitRegistrationMutationOptions } from "@/lib/query/registrationQueries";
+import {
+  PUBLIC_REGISTRATION_QUERY_KEY,
+  submitRegistrationMutationOptions,
+} from "@/lib/query/registrationQueries";
 
 export interface RegistrationFormDraft {
   classId: string;
@@ -46,7 +50,13 @@ export type SubmitOutcome =
 export function useRegistrationForm(slug: string, view: PublicRegistrationView | undefined) {
   const [draft, setDraft] = useState<RegistrationFormDraft>(EMPTY);
   const [outcome, setOutcome] = useState<SubmitOutcome>({ kind: "idle" });
-  const mutation = useMutation(submitRegistrationMutationOptions(slug));
+  const queryClient = useQueryClient();
+  const mutation = useMutation({
+    ...submitRegistrationMutationOptions(slug),
+    onSuccess: () => {
+      void queryClient.invalidateQueries({ queryKey: PUBLIC_REGISTRATION_QUERY_KEY });
+    },
+  });
   const selectedClass = view?.classes.find((cls) => cls.id === draft.classId);
 
   const eligibility = useMemo(() => {
@@ -75,7 +85,9 @@ export function useRegistrationForm(slug: string, view: PublicRegistrationView |
   const submit = async () => {
     if (!canSubmit || !draft.gender) return;
     try {
-      const result = await mutation.mutateAsync({
+      // Validate with the same shared schema the server uses so field-format errors are
+      // inline instead of a post-submit 400.
+      const parsed = registrationSubmitSchema.safeParse({
         classId: draft.classId,
         fullName: draft.fullName,
         guardianName: draft.guardianName,
@@ -87,6 +99,16 @@ export function useRegistrationForm(slug: string, view: PublicRegistrationView |
         previousMadrasa: draft.previousMadrasa || null,
         ...(draft.website ? { website: draft.website } : {}),
       });
+      if (!parsed.success) {
+        setOutcome({
+          kind: "error",
+          reasons: [],
+          message: parsed.error.issues[0]?.message ?? "",
+          type: "validation_error",
+        });
+        return;
+      }
+      const result = await mutation.mutateAsync(parsed.data);
       setOutcome({ kind: "success", reference: result.reference, status: result.status });
     } catch (error) {
       const ineligible = isApiError(error) && error.type === REGISTRATION_INELIGIBLE_ERROR_TYPE;

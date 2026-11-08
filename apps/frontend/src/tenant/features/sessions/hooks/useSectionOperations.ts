@@ -14,20 +14,16 @@ import {
   mergeSectionMutationOptions,
   splitSectionMutationOptions,
 } from "@/lib/query/sectionOperationsQueries";
-import { invalidateEnrollmentsQueries } from "@/tenant/hooks/collections/enrollments";
-import { invalidateSessionsQueries } from "./invalidateSessionsQueries";
+import { invalidateEnrollmentImpacts } from "@/lib/query/enrollmentImpactInvalidation";
 
 /** Merge / split / close with call-site toasts; each resolves the result, or null on failure. */
 export function useSectionOperations() {
   const { t } = useTranslation();
   const queryClient = useQueryClient();
-  const onSettled = () => {
-    invalidateSessionsQueries(queryClient);
-    invalidateEnrollmentsQueries(queryClient);
-  };
-  const mergeMutation = useMutation({ ...mergeSectionMutationOptions(), onSettled });
-  const splitMutation = useMutation({ ...splitSectionMutationOptions(), onSettled });
-  const closeMutation = useMutation({ ...closeSectionMutationOptions(), onSettled });
+  const onSuccess = () => invalidateEnrollmentImpacts(queryClient);
+  const mergeMutation = useMutation({ ...mergeSectionMutationOptions(), onSuccess });
+  const splitMutation = useMutation({ ...splitSectionMutationOptions(), onSuccess });
+  const closeMutation = useMutation({ ...closeSectionMutationOptions(), onSuccess });
 
   const run = async <B>(
     mutate: (input: { sectionId: string; body: B }) => Promise<SectionOperationResult>,

@@ -149,6 +149,8 @@ export const registrationApplicationSchema = z
     address: z.string().nullable(),
     previousMadrasa: z.string().nullable(),
     status: z.enum(REGISTRATION_APPLICATION_STATUSES),
+    /** FIFO position among waitlisted applications of the same session + class (1 = next). */
+    waitlistPosition: z.number().int().nullable(),
     eligibilityReasons: z.array(z.enum(ELIGIBILITY_REASONS)),
     matchedStudentId: z.string().nullable(),
     studentId: z.string().nullable(),

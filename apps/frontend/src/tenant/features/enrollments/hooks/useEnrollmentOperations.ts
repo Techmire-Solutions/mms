@@ -12,7 +12,6 @@ import { notify } from "@/lib/notify";
 import { useTranslation } from "@/hooks/useTranslation";
 import { useFinanceCurrency } from "@/hooks/useCurrency";
 import {
-  ENROLLMENT_PLACEMENTS_QUERY_KEY,
   enrollmentPlacementsQueryOptions,
   bulkEndEnrollmentMutationOptions,
   readmitEnrollmentMutationOptions,
@@ -20,8 +19,12 @@ import {
   transferEnrollmentMutationOptions,
   withdrawEnrollmentMutationOptions,
 } from "@/lib/query/enrollmentOperationsQueries";
-import { invalidateSessionsQueries } from "@/tenant/hooks/collections/sessions";
-import { invalidateEnrollmentsQueries } from "./invalidateEnrollmentsQueries";
+import { invalidateEnrollmentImpacts } from "@/lib/query/enrollmentImpactInvalidation";
+import {
+  optimisticEndEnrollments,
+  rollbackEnrollmentSnapshots,
+  type OptimisticEndContext,
+} from "./optimisticEnrollmentCache";
 
 export function useEnrollmentPlacements(enrollmentId: string) {
   const { isAuthenticated } = useAuth();
@@ -36,16 +39,36 @@ export function useEnrollmentOperations() {
   const { t } = useTranslation();
   const { formatCurrency } = useFinanceCurrency();
   const queryClient = useQueryClient();
-  const onSettled = () => {
-    invalidateEnrollmentsQueries(queryClient);
-    invalidateSessionsQueries(queryClient);
-    void queryClient.invalidateQueries({ queryKey: ENROLLMENT_PLACEMENTS_QUERY_KEY });
-  };
-  const transferMutation = useMutation({ ...transferEnrollmentMutationOptions(), onSettled });
-  const withdrawMutation = useMutation({ ...withdrawEnrollmentMutationOptions(), onSettled });
-  const readmitMutation = useMutation({ ...readmitEnrollmentMutationOptions(), onSettled });
-  const suspendMutation = useMutation({ ...suspendEnrollmentMutationOptions(), onSettled });
-  const bulkEndMutation = useMutation({ ...bulkEndEnrollmentMutationOptions(), onSettled });
+  const moved = () =>
+    invalidateEnrollmentImpacts(queryClient, { placements: true, dashboard: true });
+  const ended = () =>
+    invalidateEnrollmentImpacts(queryClient, {
+      placements: true,
+      finance: true,
+      admissions: true,
+      dashboard: true,
+    });
+  const transferMutation = useMutation({
+    ...transferEnrollmentMutationOptions(),
+    onSuccess: moved,
+  });
+  const withdrawMutation = useMutation({
+    ...withdrawEnrollmentMutationOptions(),
+    onMutate: (vars) =>
+      optimisticEndEnrollments(queryClient, [vars.id], vars.body.endAs ?? "withdrawn"),
+    onError: (_error, _vars, context) =>
+      rollbackEnrollmentSnapshots(queryClient, context as OptimisticEndContext | undefined),
+    onSuccess: ended,
+  });
+  const readmitMutation = useMutation({ ...readmitEnrollmentMutationOptions(), onSuccess: moved });
+  const suspendMutation = useMutation({ ...suspendEnrollmentMutationOptions(), onSuccess: moved });
+  const bulkEndMutation = useMutation({
+    ...bulkEndEnrollmentMutationOptions(),
+    onMutate: (vars) => optimisticEndEnrollments(queryClient, vars.ids, vars.endAs ?? "withdrawn"),
+    onError: (_error, _vars, context) =>
+      rollbackEnrollmentSnapshots(queryClient, context as OptimisticEndContext | undefined),
+    onSuccess: ended,
+  });
 
   const simple = async <B>(
     run: (input: { id: string; body: B }) => Promise<unknown>,
