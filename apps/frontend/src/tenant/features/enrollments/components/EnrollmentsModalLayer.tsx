@@ -5,7 +5,7 @@ import { FormModal } from "@/components/app/FormModal";
 import { EnrollmentDetail } from "@/tenant/features/enrollments/components/EnrollmentDetail";
 import { EnrollmentsListConfirmDialogs } from "@/tenant/features/enrollments/components/EnrollmentsListConfirmDialogs";
 import { EnrollmentWizard } from "@/tenant/features/enrollments/components/EnrollmentWizard";
-import type { Enrollment } from "@/lib/data/enrollmentData";
+import type { Enrollment, EnrollmentInsert } from "@mms/shared";
 
 export interface EnrollmentsModalLayerProps {
   viewing: Enrollment | null;
@@ -19,7 +19,7 @@ export interface EnrollmentsModalLayerProps {
   onStatusChange: (id: string, newStatus: Enrollment["status"]) => void;
   onPaymentStatusChange: (id: string, newStatus: Enrollment["paymentStatus"]) => void;
   onCloseWizard: () => void;
-  onCompleteWizard: (enrollment: Enrollment) => Promise<void>;
+  onCompleteWizard: (enrollment: EnrollmentInsert) => Promise<void>;
   onPendingDeleteChange: (id: string | null) => void;
   onConfirmDelete: (reason?: string) => void;
   bulkDeleteCount: number;

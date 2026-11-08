@@ -20,6 +20,7 @@ import { Input } from "@/components/ui/input";
 import { FORM_INPUT } from "@/components/ui/formStyles";
 import { ListPagination } from "@/components/app/ListPagination";
 import { StatusBadge } from "@/components/app/StatusBadge";
+import { Badge } from "@/components/ui/badge";
 import { useTranslation } from "@/hooks/useTranslation";
 import { useAcademicTerms } from "@/hooks/useAcademicTerms";
 import { useSessionsCollection } from "@/tenant/hooks/collections/sessions";
@@ -55,6 +56,20 @@ export function AdmissionsPanel({ canWrite }: { canWrite: boolean }): React.JSX.
   });
   const { review, isPending } = useAdmissionsReview();
   const statusConfig = admissionsStatusConfig(t);
+  const statusCell = (row: RegistrationApplication) => (
+    <span className="inline-flex items-center gap-1.5">
+      <StatusBadge status={row.status} config={statusConfig} size="sm" />
+      {row.status === "waitlisted" && row.waitlistPosition != null ? (
+        <Badge
+          pill
+          tone="info"
+          aria-label={t("enrollments.admissions.position", { position: row.waitlistPosition })}
+        >
+          #{row.waitlistPosition}
+        </Badge>
+      ) : null}
+    </span>
+  );
   const rows = list.data?.items ?? [];
   const approvable = rows.filter(
     (row) =>
@@ -118,7 +133,7 @@ export function AdmissionsPanel({ canWrite }: { canWrite: boolean }): React.JSX.
       id: "status",
       label: t("common.status"),
       width: 130,
-      render: (row) => <StatusBadge status={row.status} config={statusConfig} size="sm" />,
+      render: statusCell,
     },
   ];
 
@@ -189,7 +204,7 @@ export function AdmissionsPanel({ canWrite }: { canWrite: boolean }): React.JSX.
         isLoading={list.isLoading}
         card={{
           title: (row) => row.fullName,
-          badge: (row) => <StatusBadge status={row.status} config={statusConfig} size="sm" />,
+          badge: statusCell,
         }}
         primaryAction={
           canWrite && approvable.length > 0 ? (

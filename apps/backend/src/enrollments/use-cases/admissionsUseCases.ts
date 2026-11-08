@@ -63,6 +63,7 @@ function toApplication(
     address: row.address,
     previousMadrasa: row.previousMadrasa,
     status: row.status as RegistrationApplicationStatus,
+    waitlistPosition: row.waitlistPosition ?? null,
     eligibilityReasons: eligibility.reasons,
     matchedStudentId: row.studentId ? null : matchedStudentId,
     studentId: row.studentId,

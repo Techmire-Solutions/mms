@@ -8,6 +8,12 @@ import { ProgressBar } from "@/components/app/ProgressBar";
 import { EmptyState } from "@/components/app/EmptyState";
 import { Alert } from "@/components/app/Alert";
 import { useTranslation } from "@/hooks/useTranslation";
+import {
+  capacityLabel,
+  effectiveCapacity,
+  isCapacityFull,
+  spotsLeft as computeSpotsLeft,
+} from "@/tenant/features/enrollments/lib/enrollmentCapacity";
 import { Step4SectionPlacement, type SectionPlacement } from "./Step4SectionPlacement";
 
 export interface Step4ClassAssignmentProps {
@@ -115,10 +121,10 @@ export function Step4ClassAssignment({
             ageMin?: number;
             ageMax?: number;
           };
-          const maxCapacity = sessionClass.maxStudents || legacyClass.capacity || 30;
+          const maxCapacity = effectiveCapacity(sessionClass.maxStudents ?? legacyClass.capacity);
           const enrolled = sessionClass.enrolled ?? 0;
-          const spotsLeft = maxCapacity - enrolled;
-          const full = spotsLeft <= 0;
+          const spotsLeft = computeSpotsLeft(enrolled, maxCapacity);
+          const full = isCapacityFull(enrolled, maxCapacity);
           const minAge = sessionClass.minAge || legacyClass.ageMin || 5;
           const maxAge = sessionClass.maxAge || legacyClass.ageMax || 18;
 
@@ -182,12 +188,16 @@ export function Step4ClassAssignment({
                   <div className="flex items-center gap-1 text-xs text-muted-foreground">
                     <Users className="w-3.5 h-3.5" />
                     <span>
-                      {enrolled}/{maxCapacity}
+                      {enrolled}/{capacityLabel(maxCapacity)}
                     </span>
                   </div>
                   <ProgressBar
                     className="mt-1"
-                    value={(enrolled / maxCapacity) * 100}
+                    value={
+                      Number.isFinite(maxCapacity)
+                        ? Math.min(100, (enrolled / maxCapacity) * 100)
+                        : 0
+                    }
                     fillClassName={
                       spotsLeft <= 3
                         ? "bg-destructive"

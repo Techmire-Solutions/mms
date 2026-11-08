@@ -9,6 +9,8 @@ import { FORM_SELECT_SEARCH_MIN_OPTIONS, useFormSelectSearch } from "./useFormSe
 export interface FormSelectOption {
   value: string;
   label: string;
+  /** Shown but not selectable (e.g. a full section). */
+  disabled?: boolean;
 }
 
 export interface FormSelectSearchLabels {
@@ -79,7 +81,13 @@ export function FormSelect({
   );
   const isSearchable =
     !disabled && (searchable ?? normalized.length >= FORM_SELECT_SEARCH_MIN_OPTIONS);
-  const search = useFormSelectSearch({ options: listOptions, value, onPick: onChange });
+  // The searchable popover must not offer disabled choices; the native select keeps them
+  // visible but unselectable.
+  const searchOptions = React.useMemo(
+    () => listOptions.filter((option) => !option.disabled),
+    [listOptions],
+  );
+  const search = useFormSelectSearch({ options: searchOptions, value, onPick: onChange });
 
   const handleSelectKeyDown = (event: React.KeyboardEvent<HTMLSelectElement>): void => {
     if (event.ctrlKey || event.metaKey) return;
@@ -120,7 +128,11 @@ export function FormSelect({
             )}
           >
             {listOptions.map((option, index) => (
-              <option key={`${option.value}-${index}`} value={option.value}>
+              <option
+                key={`${option.value}-${index}`}
+                value={option.value}
+                disabled={option.disabled}
+              >
                 {option.label}
               </option>
             ))}

@@ -7,6 +7,11 @@ import { useTranslation } from "@/hooks/useTranslation";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { EmptyState } from "@/components/app/EmptyState";
+import {
+  capacityLabel,
+  effectiveCapacity,
+  spotsLeft as computeSpotsLeft,
+} from "@/tenant/features/enrollments/lib/enrollmentCapacity";
 
 /**
  * Format a date string to a localized PK date.
@@ -69,21 +74,21 @@ export function Step2SelectSession({
           const selected = value?.id === session.id;
           const totalSpots =
             session.classes && session.classes.length > 0
-              ? session.classes.reduce((total, sessionClass) => {
-                  const cap =
-                    sessionClass.maxStudents ||
-                    (sessionClass as { capacity?: number }).capacity ||
-                    30;
-                  return total + cap;
-                }, 0)
-              : 30;
+              ? session.classes.reduce(
+                  (total, sessionClass) =>
+                    total +
+                    effectiveCapacity(
+                      sessionClass.maxStudents ?? (sessionClass as { capacity?: number }).capacity,
+                    ),
+                  0,
+                )
+              : Number.POSITIVE_INFINITY;
           const totalEnrolled = (session.classes || []).reduce(
             (total, sessionClass) => total + (sessionClass.enrolled ?? 0),
             0,
           );
-
-          const spotsLeft = Math.max(0, totalSpots - totalEnrolled);
-          const isFull = spotsLeft <= 0;
+          const spotsLeft = computeSpotsLeft(totalEnrolled, totalSpots);
+          const isFull = spotsLeft === 0;
 
           return (
             <Button
@@ -124,7 +129,11 @@ export function Step2SelectSession({
                     </div>
                     <div className="flex items-center gap-1 text-xs text-muted-foreground">
                       <Users className="w-3.5 h-3.5" aria-hidden="true" />
-                      <span>{t("enrollments.wizard.step2SpotsLeft", { count: spotsLeft })}</span>
+                      <span>
+                        {Number.isFinite(spotsLeft)
+                          ? t("enrollments.wizard.step2SpotsLeft", { count: spotsLeft })
+                          : t("enrollments.unlimited")}
+                      </span>
                     </div>
                     <div className="flex items-center gap-1 text-xs font-bold text-foreground">
                       <DollarSign className="w-3.5 h-3.5 text-primary" aria-hidden="true" />
@@ -135,13 +144,21 @@ export function Step2SelectSession({
                     <div className="mt-2 flex flex-wrap gap-1">
                       {session.classes.map((sessionClass) => (
                         <Badge key={sessionClass.id} pill tone="muted" className="px-2 font-medium">
-                          {t("enrollments.wizard.step2ClassSpots", {
-                            name: sessionClass.name,
-                            count:
-                              (sessionClass.maxStudents ??
-                                (sessionClass as { capacity?: number }).capacity ??
-                                30) - (sessionClass.enrolled ?? 0),
-                          })}
+                          {(() => {
+                            const classSpots = computeSpotsLeft(
+                              sessionClass.enrolled,
+                              effectiveCapacity(
+                                sessionClass.maxStudents ??
+                                  (sessionClass as { capacity?: number }).capacity,
+                              ),
+                            );
+                            return t("enrollments.wizard.step2ClassSpots", {
+                              name: sessionClass.name,
+                              count: Number.isFinite(classSpots)
+                                ? classSpots
+                                : capacityLabel(Number.POSITIVE_INFINITY),
+                            });
+                          })()}
                         </Badge>
                       ))}
                     </div>

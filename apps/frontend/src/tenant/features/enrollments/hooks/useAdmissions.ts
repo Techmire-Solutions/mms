@@ -10,7 +10,7 @@ import {
   invalidateRegistrationQueries,
   reviewApplicationsMutationOptions,
 } from "@/lib/query/registrationQueries";
-import { invalidateEnrollmentsQueries } from "./invalidateEnrollmentsQueries";
+import { invalidateEnrollmentImpacts } from "@/lib/query/enrollmentImpactInvalidation";
 
 export function useAdmissionsList(query: RegistrationApplicationListQuery) {
   const { isAuthenticated } = useAuth();
@@ -28,9 +28,9 @@ export function useAdmissionsReview() {
   const queryClient = useQueryClient();
   const mutation = useMutation({
     ...reviewApplicationsMutationOptions(),
-    onSettled: () => {
+    onSuccess: () => {
       invalidateRegistrationQueries(queryClient);
-      invalidateEnrollmentsQueries(queryClient);
+      invalidateEnrollmentImpacts(queryClient);
     },
   });
 

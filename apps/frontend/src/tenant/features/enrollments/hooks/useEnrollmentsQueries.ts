@@ -15,7 +15,7 @@ import {
 import { serverMetricsQueryOptions, useServerMetrics } from "@/hooks/useServerMetrics";
 import { useAuth } from "@/lib/contexts/AuthContext";
 import { tsrClient, apiContract } from "@/lib/api";
-import { invalidateEnrollmentsQueries } from "@/tenant/features/enrollments/hooks/invalidateEnrollmentsQueries";
+import { invalidateEnrollmentImpacts } from "@/lib/query/enrollmentImpactInvalidation";
 import {
   ENROLLMENTS_QUERY_KEY,
   ENROLLMENTS_METRICS_QUERY_KEY,
@@ -23,6 +23,7 @@ import {
   ENROLLMENTS_WIDGET_AGGREGATES_QUERY_KEY,
 } from "./enrollmentsQueryKeys.js";
 import { assertContractOk } from "@/lib/apiContractError";
+import { enrollmentsKeys } from "./enrollmentsQueryKeys.js";
 
 export {
   ENROLLMENTS_QUERY_KEY,
@@ -88,8 +89,11 @@ export function enrollmentsCommandMetricsQueryOptions() {
 export function useEnrollmentsPaginated(params: EnrollmentsPaginatedParams) {
   const { isAuthenticated } = useAuth();
   const enabled = params.enabled ?? true;
+  // `enabled` is a hook control, not data: including it created a duplicate cache entry per
+  // tab switch and forced a refetch instead of reusing the cached page.
+  const { enabled: _enabled, ...pageKeyParams } = params;
   return tsrClient.enrollments.list.useQuery({
-    queryKey: [...ENROLLMENTS_QUERY_KEY, "page", params],
+    queryKey: [...ENROLLMENTS_QUERY_KEY, "page", pageKeyParams],
     queryData: {
       query: {
         page: params.page,
@@ -180,13 +184,14 @@ export function useEnrollmentsWidgetAggregates(
   const enrollmentQueries = widgets
     .filter((widget) => widget.collection === "enrollments")
     .map((widget) => enrollmentsWidgetQueryFromWidget(widget));
-  const querySignature = enrollmentQueries
-    .map((q) => q.id)
-    .sort()
-    .join(",");
+  // Include the full widget definition: changing a filter/target with the same id must
+  // not reuse another configuration's cached aggregate.
+  const querySignature = JSON.stringify(
+    [...enrollmentQueries].sort((a, b) => a.id.localeCompare(b.id)),
+  );
 
   const query = useQuery({
-    queryKey: [...ENROLLMENTS_WIDGET_AGGREGATES_QUERY_KEY, querySignature] as const,
+    queryKey: enrollmentsKeys.widgets(querySignature),
     queryFn: async () => {
       const res = await apiContract.enrollments.widgetAggregates({
         body: { widgets: enrollmentQueries },
@@ -246,34 +251,34 @@ export function useEnrollmentsContractGet(id: string, enabled = true) {
 export function useEnrollmentsContractCreate() {
   const queryClient = useQueryClient();
   return tsrClient.enrollments.create.useMutation({
-    onSuccess: () => invalidateEnrollmentsQueries(queryClient),
+    onSuccess: () => invalidateEnrollmentImpacts(queryClient),
   });
 }
 
 export function useEnrollmentsContractUpdate() {
   const queryClient = useQueryClient();
   return tsrClient.enrollments.update.useMutation({
-    onSuccess: () => invalidateEnrollmentsQueries(queryClient),
+    onSuccess: () => invalidateEnrollmentImpacts(queryClient),
   });
 }
 
 export function useEnrollmentsContractDelete() {
   const queryClient = useQueryClient();
   return tsrClient.enrollments.delete.useMutation({
-    onSuccess: () => invalidateEnrollmentsQueries(queryClient),
+    onSuccess: () => invalidateEnrollmentImpacts(queryClient),
   });
 }
 
 export function useEnrollmentsContractBulkDelete() {
   const queryClient = useQueryClient();
   return tsrClient.enrollments.bulkDelete.useMutation({
-    onSuccess: () => invalidateEnrollmentsQueries(queryClient),
+    onSuccess: () => invalidateEnrollmentImpacts(queryClient),
   });
 }
 
 export function useEnrollmentsContractBulkRestore() {
   const queryClient = useQueryClient();
   return tsrClient.enrollments.bulkRestore.useMutation({
-    onSuccess: () => invalidateEnrollmentsQueries(queryClient),
+    onSuccess: () => invalidateEnrollmentImpacts(queryClient),
   });
 }

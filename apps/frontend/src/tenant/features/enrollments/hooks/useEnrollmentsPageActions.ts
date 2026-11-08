@@ -1,6 +1,6 @@
 import { useTranslation } from "@/hooks/useTranslation";
 import { notify } from "@/lib/notify";
-import type { Enrollment } from "@/lib/data/enrollmentData";
+import type { Enrollment, EnrollmentInsert } from "@mms/shared";
 import { useEnrollmentViewerRole } from "@/tenant/hooks/useViewerRole";
 import { useEnrollmentMutations } from "@/tenant/features/enrollments/hooks/useEnrollmentsApi";
 import { useEnrollmentsBulkActions } from "@/tenant/features/enrollments/hooks/useEnrollmentsBulkActions";
@@ -34,7 +34,7 @@ export function useEnrollmentsPageActions({
   } = useEnrollmentMutations();
   const { withdraw, bulkEnd } = useEnrollmentOperations();
 
-  const handleComplete = async (enrollment: Enrollment) => {
+  const handleComplete = async (enrollment: EnrollmentInsert) => {
     try {
       // The server keeps the student's session membership in sync with enrollments.
       await createEnrollment.mutateAsync(enrollment);

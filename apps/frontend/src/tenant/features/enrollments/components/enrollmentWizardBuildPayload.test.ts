@@ -34,7 +34,6 @@ describe("buildEnrollmentPayload", () => {
       feeResult,
       notes: "Test notes",
       customFieldValues: { custom1: "val1" },
-      t: ((k: string) => k) as unknown as never,
     });
 
     expect(payload.studentId).toBe("std-1");
@@ -44,5 +43,8 @@ describe("buildEnrollmentPayload", () => {
     expect(payload.finalFee).toBe(150);
     expect(payload.notes).toBe("Test notes");
     expect(payload.status).toBe("pending");
+    // Server-owned fields: the client must not invent an id or timeline entries.
+    expect(payload).not.toHaveProperty("id");
+    expect(payload.timeline).toEqual([]);
   });
 });

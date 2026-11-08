@@ -1,4 +1,4 @@
-import React, { Suspense, lazy, useState } from "react";
+import React, { Suspense, lazy, useCallback, useState } from "react";
 import { AnimatePresence } from "framer-motion";
 import { ClipboardList } from "lucide-react";
 import { ModulePageShell } from "@/components/app/ModulePageShell";
@@ -80,6 +80,16 @@ export default function EnrollmentsPage() {
 
   const { handleExportCSV, handleBulkExport } = exportActions;
   const { handleCancel, handleRestore, handleBulkCancel } = pageActions;
+  const handleOpenWizard = useCallback(() => {
+    setTab("work");
+    setShowWizard(true);
+  }, [setShowWizard, setTab]);
+  const handleOpenImport = useCallback(() => setImportOpen(true), []);
+  const handleClearFilters = useCallback(() => {
+    setStatusFilter("all");
+    setSessionFilter("all");
+    setSearch("");
+  }, [setSearch, setSessionFilter, setStatusFilter]);
 
   return (
     <ModulePageShell
@@ -95,11 +105,8 @@ export default function EnrollmentsPage() {
           showDeleted={showDeleted}
           t={t}
           onExport={() => void handleExportCSV()}
-          onImport={() => setImportOpen(true)}
-          onNew={() => {
-            setTab("work");
-            setShowWizard(true);
-          }}
+          onImport={handleOpenImport}
+          onNew={handleOpenWizard}
         />
       }
       metricsStrip={<EnrollmentsCommandMetrics total={filteredCount} shown={filteredCount} />}
@@ -151,11 +158,7 @@ export default function EnrollmentsPage() {
                   onSearchChange={setSearch}
                   onStatusFilterChange={setStatusFilter}
                   onSessionFilterChange={setSessionFilter}
-                  onClearFilters={() => {
-                    setStatusFilter("all");
-                    setSessionFilter("all");
-                    setSearch("");
-                  }}
+                  onClearFilters={handleClearFilters}
                   onPageChange={setListPage}
                   onView={setViewing}
                   onCancel={handleCancel}

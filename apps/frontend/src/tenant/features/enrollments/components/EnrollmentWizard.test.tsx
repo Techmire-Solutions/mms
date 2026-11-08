@@ -10,6 +10,12 @@ vi.mock("@/hooks/useTranslation", () => ({
 }));
 
 vi.mock("@/tenant/hooks/collections/sessions", () => ({
+  useSessions: () => ({
+    data: { status: 200, body: { sessions: [] } },
+    isLoading: false,
+    isError: false,
+    refetch: vi.fn(),
+  }),
   useSessionsCollection: () => [],
 }));
 

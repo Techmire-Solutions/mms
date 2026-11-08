@@ -187,4 +187,38 @@ describe("public registration → admissions (real Postgres)", () => {
     expect(enrolled).toEqual([{ sectionId: "rg-sec" }]);
     expect(created).toEqual([{ contactId: expect.any(String) }]);
   });
+  it("reports FIFO waitlist positions for waitlisted applications of a class", async () => {
+    const older = await submitPublicRegistration(
+      TENANT,
+      slug,
+      applicant({ fullName: "Wait Older", phone: "+92 300 7654321" }),
+      null,
+    );
+    const newer = await submitPublicRegistration(
+      TENANT,
+      slug,
+      applicant({ fullName: "Wait Newer", phone: "+92 300 1112233" }),
+      null,
+    );
+    await withTenant(TENANT, async (tx) => {
+      await tx.execute(sql`
+        UPDATE registration_applications
+           SET status = 'waitlisted', created_at = now() - interval '2 minutes'
+         WHERE workspace_subdomain = ${TENANT} AND reference = ${older.reference}`);
+      await tx.execute(sql`
+        UPDATE registration_applications
+           SET status = 'waitlisted', created_at = now() - interval '1 minute'
+         WHERE workspace_subdomain = ${TENANT} AND reference = ${newer.reference}`);
+    });
+
+    const { items } = await admissionsUseCases.list(TENANT, {
+      sessionId: "rg-ses",
+      status: "waitlisted",
+      limit: 100,
+    });
+    const byReference = new Map(items.map((item) => [item.reference, item]));
+    expect(byReference.get(older.reference)?.waitlistPosition).toBe(1);
+    expect(byReference.get(newer.reference)?.waitlistPosition).toBe(2);
+    expect(items.every((item) => item.status === "waitlisted")).toBe(true);
+  });
 });

@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { usePersistedTabState } from "@/hooks/usePersistedTabState";
 import { useModuleShortcuts } from "@/hooks/useModuleShortcuts";
 import { ENROLLMENTS_WORK_SEARCH_INPUT_ID } from "@/tenant/features/enrollments/components/EnrollmentsListFilters";
@@ -26,11 +26,14 @@ import { useWorkSelection } from "@/hooks/useWorkSelection";
 
 export function useEnrollmentsPageState() {
   const { t } = useTranslation();
-  const SUB_TABS = (() => [
-    { id: "directory", label: t("enrollments.list"), icon: ClipboardList },
-    { id: "eligibility", label: t("enrollments.eligibility"), icon: UserCheck },
-    { id: "admissions", label: t("enrollments.admissions.title"), icon: Inbox },
-  ])();
+  const SUB_TABS = useMemo(
+    () => [
+      { id: "directory", label: t("enrollments.list"), icon: ClipboardList },
+      { id: "eligibility", label: t("enrollments.eligibility"), icon: UserCheck },
+      { id: "admissions", label: t("enrollments.admissions.title"), icon: Inbox },
+    ],
+    [t],
+  );
   const permissions = useModulePermissions(ENROLLMENTS_MODULE_MANIFEST);
   const {
     canWrite: canWriteEnrollments,
@@ -106,7 +109,7 @@ export function useEnrollmentsPageState() {
     // eslint-disable-next-line react-hooks/exhaustive-deps -- selection.setSelectedIds is a stable useState setter; depending on the whole `selection` object would re-run this clear on every render.
   }, [debouncedSearch, statusFilter, sessionFilter, showDeleted, selection.setSelectedIds]);
 
-  const exportColumns = (() => defaultEnrollmentsExportColumns(t))();
+  const exportColumns = useMemo(() => defaultEnrollmentsExportColumns(t), [t]);
   const exportActions = useEnrollmentsExportActions({
     tableColumns: exportColumns,
     canExport,
