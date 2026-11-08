@@ -155,7 +155,8 @@ export const sessionClasses = pgTable(
     ageMin: integer("age_min").notNull().default(4),
     ageMax: integer("age_max").notNull().default(25),
     capacity: integer("capacity").notNull().default(30), // Max Student Count
-    enrolled: integer("enrolled").notNull().default(0),
+    // Historical denormalised seat counter, dropped by migration 0211: it was written
+    // as 0 on insert and never maintained, while every reader counts live enrollments.
     enrollmentDeadline: varchar("enrollment_deadline", { length: 35 }).notNull().default(""),
     status: varchar("status", { length: 50 }).notNull().default("active"),
     facultyId: text("faculty_id"),

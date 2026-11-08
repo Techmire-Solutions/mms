@@ -30,6 +30,7 @@ import {
   type EnrollmentHydrateRow,
 } from "./enrollmentProjection.js";
 import { enrollmentHoldsSeatWhere } from "./enrollmentSeatSql.js";
+import { enableIncludeDeleted } from "../../lib/softDeleteHelpers.js";
 
 const ENROLLMENT_SORT_FIELDS = new Set([
   "studentName",
@@ -160,6 +161,9 @@ export async function listEnrollmentsPage(
   const subdomain = tenant.trim().toLowerCase();
 
   return withTenantRead(subdomain, async (tx) => {
+    // Trash view: `tenant_soft_delete_isolation` hides archived rows unless the
+    // transaction opts in, so `?includeDeleted=true` returned an empty page before.
+    if (isQueryFlagTrue(query.includeDeleted)) await enableIncludeDeleted(tx);
     const result = await runListPage(tx, enrollments, {
       conditions: buildListConditions(subdomain, query),
       orderBy: buildOrderBy(query.sortField, query.sortDir),

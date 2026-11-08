@@ -114,7 +114,6 @@ async function main() {
       facultyId: null,
       facultyName: "Unassigned",
       capacity: 20,
-      enrolled: 1,
     })
     .onConflictDoUpdate({
       target: [sessionClasses.workspaceSubdomain, sessionClasses.sessionId, sessionClasses.id],
@@ -126,7 +125,6 @@ async function main() {
         facultyId: null,
         facultyName: "Unassigned",
         capacity: 20,
-        enrolled: 1,
       },
     });
 

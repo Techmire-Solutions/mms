@@ -2,6 +2,7 @@ import type { EnrollmentsRepository } from "../repository/enrollmentsRepository.
 import { enrollmentsRepository } from "../repository/enrollmentsRepositoryAdapter.js";
 import { getRequestTenant } from "../../lib/tenantContext.js";
 import { createGenericRelationalService } from "../../services/genericRelationalService.js";
+import { ConflictError } from "../../lib/httpErrors.js";
 import {
   enrollmentRecordSchema,
   type EnrollmentRecord,
@@ -26,6 +27,22 @@ export interface EnrollmentsUseCasesDependencies {
     tenant: string,
     id: string,
   ) => Promise<{ id: string; deletedAt?: unknown } | null>;
+}
+
+/** Deletion lifecycle columns a client may never set on an enrollment write. */
+const SERVER_OWNED_SOFT_DELETE_FIELDS = [
+  "deletedAt",
+  "deletedBy",
+  "deletionReason",
+  "deletedWithCascade",
+  "restoredAt",
+  "restoredBy",
+] as const;
+
+function withoutSoftDeleteFields<T>(record: T): T {
+  const clean = { ...(record as Record<string, unknown>) };
+  for (const field of SERVER_OWNED_SOFT_DELETE_FIELDS) delete clean[field];
+  return clean as T;
 }
 
 /**
@@ -85,7 +102,22 @@ export function createEnrollmentsUseCases(
       // Active Foreign Key Guarding (§1.8)
       await validateActiveForeignKeys(tenant, record);
 
-      const created = await crud.create(record as EnrollmentRecord);
+      // Soft-delete provenance is server-owned (`mms-soft-delete` §5): a client must not
+      // be able to create a hidden row, clear a deletion reason, or flip the cascade flag.
+      const sanitized = withoutSoftDeleteFields(record as EnrollmentRecord);
+      const id = String(sanitized.id ?? "").trim();
+      if (id) {
+        const existing = await repo.findEnrollmentById(tenant, id, { includeDeleted: true });
+        if (existing?.deletedAt) {
+          // Re-POSTing an archived id used to resurrect it through the upsert with no
+          // `restored_at`/`restored_by`, bypassing the trash rules.
+          throw new ConflictError(
+            "An archived enrollment already uses this id; restore it instead of re-creating it",
+          );
+        }
+      }
+
+      const created = await crud.create(sanitized);
       const { maybeGenerateInvoiceForEnrollment } =
         await import("../../finance/use-cases/financeInvoiceGenerationUseCases.js");
       return maybeGenerateInvoiceForEnrollment(created);
@@ -100,13 +132,15 @@ export function createEnrollmentsUseCases(
       // Active Foreign Key Guarding (§1.8)
       await validateActiveForeignKeys(tenant, record);
 
-      return crud.updateById(id, record as EnrollmentRecord);
+      // A PUT may edit the enrollment; it may not edit its deletion lifecycle.
+      return crud.updateById(id, withoutSoftDeleteFields(record as EnrollmentRecord));
     },
     deleteEnrollmentById: crud.deleteById,
     restoreEnrollmentById: async (id: string, userId?: string) => {
       const tenant = getRequestTenant();
       if (!tenant) throw new Error("Tenant context required");
-      const existing = await repo.findEnrollmentById(tenant, id);
+      // Archived rows are invisible under FORCE RLS unless the read opts in.
+      const existing = await repo.findEnrollmentById(tenant, id, { includeDeleted: true });
       if (!existing || !existing.deletedAt) return false;
       if (existing.deletedWithCascade) {
         const err = new Error(
@@ -126,6 +160,33 @@ export function createEnrollmentsUseCases(
           );
           (err as Error & { statusCode: number }).statusCode = 400;
           throw err;
+        }
+      }
+      if (existing.studentId) {
+        const getStudent =
+          deps?.findStudentById ??
+          (await import("../../db/repositories/studentRepositoryHydrate.js")).findStudentById;
+        const student = await getStudent(tenant, existing.studentId);
+        if (student?.deletedAt) {
+          const err = new Error(
+            "Cannot restore enrollment because its student is archived. Restore the student instead.",
+          );
+          (err as Error & { statusCode: number }).statusCode = 400;
+          throw err;
+        }
+      }
+      if (existing.sessionId && existing.studentId && repo.findActiveEnrollmentInSession) {
+        // The student may have been re-enrolled while this row sat in the trash; restoring
+        // it would create a second live enrollment for the same session.
+        const active = await repo.findActiveEnrollmentInSession(
+          tenant,
+          existing.sessionId,
+          existing.studentId,
+        );
+        if (active && String(active.id) !== String(id)) {
+          throw new ConflictError(
+            "This student is already actively enrolled in this session; cancel that enrollment before restoring this one",
+          );
         }
       }
       return crud.restoreById(id, userId);
@@ -166,7 +227,7 @@ export function createEnrollmentsUseCases(
     ): Promise<EnrollmentRecord | null> => {
       const tenant = getRequestTenant();
       if (!tenant || !id.trim()) return null;
-      const enrollment = await repo.findEnrollmentById(tenant, id.trim());
+      const enrollment = await repo.findEnrollmentById(tenant, id.trim(), { includeDeleted });
       if (!enrollment) return null;
       if (!includeDeleted && enrollment.deletedAt) return null;
       return enrollment;

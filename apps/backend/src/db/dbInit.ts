@@ -1,4 +1,5 @@
 import { ensureFacultyContactIndex } from "./migrations/facultyContactIndex.js";
+import { ensureEnrollmentIntegrityIndexes } from "./migrations/enrollmentIntegrityIndexes.js";
 import { prepareContactSystemTagsPreMigration } from "./contactSystemTagsPreMigration.js";
 import { dataMigrationsToRun } from "./dataMigrationRegistry.js";
 import { existsSync } from "node:fs";
@@ -76,6 +77,10 @@ export async function applyDrizzleMigrations(): Promise<{ migrationsFolder: stri
   await migrate(migrateDb, { migrationsFolder });
   await migrateClient.query(`SET lock_timeout = 0`);
   await ensureFacultyContactIndex(migrateClient);
+  // Enrollments' unique/seat indexes are CONCURRENTLY-only (populated table) and were
+  // previously manual scripts; provisioning them here is what makes a fresh database
+  // and every existing deployment actually enforce them.
+  await ensureEnrollmentIntegrityIndexes(migrateClient);
 
   return { migrationsFolder };
 }

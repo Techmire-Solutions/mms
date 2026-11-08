@@ -29,7 +29,9 @@ export function buildRestoredRecord<T extends Record<string, unknown>>(
 }
 
 type IncludeDeletedTx = {
-  execute?: (query: string | SQLWrapper) => Promise<unknown> | unknown;
+  // Method syntax (not a property) keeps the type bivariant, so the narrower
+  // `{ execute(query: SQL) }` shape used by the cascade helpers is assignable.
+  execute?(query: string | SQLWrapper): unknown;
 };
 
 /**

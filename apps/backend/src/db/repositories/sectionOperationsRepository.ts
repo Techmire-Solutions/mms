@@ -131,7 +131,9 @@ const lockSections = (tx: TenantTransaction, subdomain: string, ids: readonly st
     WHERE workspace_subdomain = ${subdomain} AND id IN (${sql.join(
       ids.map((id) => sql`${id}`),
       sql`, `,
-    )}) FOR UPDATE`);
+    )})
+    ORDER BY id
+    FOR UPDATE`);
 
 /**
  * Re-reads the section and its session *after* the row lock. The use case checked these before
@@ -193,6 +195,7 @@ export async function applySectionMerge(
     await assertSectionWritableTx(tx, subdomain, input.source.id, input.source.classId);
     const enrollmentIds = await liveEnrollmentIdsTx(tx, subdomain, input.source.id);
     const targetLive = await liveEnrollmentIdsTx(tx, subdomain, input.target.id);
+    // `capacity = 0` means "no cap" (same convention as maxStudents/remainingSeats).
     if (targetRow.capacity > 0 && targetLive.length + enrollmentIds.length > targetRow.capacity)
       throw new ConflictError(
         `${input.target.name} does not have enough seats left; raise its capacity first`,
@@ -228,7 +231,7 @@ export async function applySectionSplit(
     const live = new Set(await liveEnrollmentIdsTx(tx, subdomain, input.source.id));
     if (input.enrollmentIds.some((id) => !live.has(id)))
       throw new ConflictError("A selected student is no longer in this section");
-    if (input.enrollmentIds.length > input.capacity)
+    if (input.capacity > 0 && input.enrollmentIds.length > input.capacity)
       throw new ValidationError("The new section's capacity is smaller than the students moved");
     const [{ next }] = (
       await tx.execute<{ next: number }>(sql`

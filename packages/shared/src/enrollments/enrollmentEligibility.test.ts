@@ -90,4 +90,21 @@ describe("evaluateEligibility", () => {
     expect(remainingSeats({ maxStudents: 0, enrolled: 50 })).toBeNull();
     expect(remainingSeats({ maxStudents: 30, enrolled: 31 })).toBe(0);
   });
+
+  it("given a section with capacity 0, should treat the class as unlimited", () => {
+    // 0 is the `maxStudents` default the session UI leaves in place, so it must not be
+    // read as "no seats" — otherwise every default session is permanently full.
+    expect(
+      remainingSeats({
+        maxStudents: 0,
+        sections: [{ capacity: 0, enrolled: 12 }],
+      }),
+    ).toBeNull();
+    expect(
+      remainingSeats({
+        maxStudents: 0,
+        sections: [{ capacity: 10, enrolled: 12 }],
+      }),
+    ).toBe(0);
+  });
 });

@@ -11,6 +11,7 @@ import {
 import type { TenantTransaction } from "../tenant-context.js";
 import { ConflictError, ValidationError } from "../../lib/httpErrors.js";
 import { hasSectionAttendanceTx } from "./sessionClassReferenceGuard.js";
+import { lockSectionsForSeatsTx } from "./enrollmentSeatCountRepository.js";
 
 interface ClassSectionContext {
   subdomain: string;
@@ -196,6 +197,9 @@ async function assertSectionSeatsTx(
 ): Promise<void> {
   const ids = sections.map((section) => section.id);
   if (ids.length === 0) return;
+  // Serialize with enrollment writes: the count is only meaningful once concurrent
+  // seat allocations into these sections are blocked (same lock order as the writer).
+  await lockSectionsForSeatsTx(tx, subdomain, ids);
   const live = await tx
     .select({ sectionId: enrollments.sectionId, count: sql<number>`count(*)::int` })
     .from(enrollments)
@@ -211,7 +215,9 @@ async function assertSectionSeatsTx(
   const liveBySection = new Map(live.map((row) => [String(row.sectionId), Number(row.count)]));
   for (const section of sections) {
     const occupied = liveBySection.get(section.id) ?? 0;
-    if (occupied > Math.max(0, section.capacity ?? 0))
+    const capacity = section.capacity ?? 0;
+    // 0 = no cap, so only a real quota can be violated.
+    if (capacity > 0 && occupied > capacity)
       throw new ConflictError(
         `Section quota cannot drop below its ${occupied} enrolled student(s)`,
       );

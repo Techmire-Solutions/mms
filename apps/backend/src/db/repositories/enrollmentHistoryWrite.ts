@@ -2,7 +2,7 @@ import { randomUUID } from "node:crypto";
 import { addIsoDays, type Enrollment, type EnrollmentEventType } from "@mms/shared";
 import { and, eq, inArray, isNull } from "drizzle-orm";
 import { enrollmentPlacements, enrollmentTimelineEvents } from "../schema.js";
-import type { TenantTransaction } from "../tenant-context.js";
+import { withTenant, type TenantTransaction } from "../tenant-context.js";
 
 type Placeable = Pick<
   Enrollment,
@@ -192,4 +192,34 @@ export async function syncPlacementsTx(
       actorUserId,
     });
   }
+}
+
+/**
+ * Timeline entry for a suspension (the leave range itself is owned by Attendance).
+ *
+ * Lives with the other timeline writers; `enrollmentOperationsRepository` re-exports it so
+ * the operations module keeps a single public surface (and stays under the 300-line ceiling).
+ */
+export async function recordEnrollmentSuspension(
+  tenant: string,
+  input: {
+    enrollmentId: string;
+    fromOn: string;
+    toOn: string;
+    reason: string;
+    actor: { userId: string | null; label: string };
+  },
+): Promise<void> {
+  const subdomain = tenant.trim().toLowerCase();
+  await withTenant(subdomain, (tx) =>
+    insertTypedTimelineEventTx(tx, subdomain, {
+      enrollmentId: input.enrollmentId,
+      eventType: "suspended",
+      event: `Suspended ${input.fromOn} – ${input.toOn}`,
+      actorUserId: input.actor.userId,
+      actorLabel: input.actor.label,
+      effectiveOn: input.fromOn,
+      reason: input.reason,
+    }),
+  );
 }

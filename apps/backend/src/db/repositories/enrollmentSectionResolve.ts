@@ -1,23 +1,41 @@
 import { sql } from "drizzle-orm";
-import type { Enrollment } from "@mms/shared";
+import { enrollmentHoldsSeat, type Enrollment } from "@mms/shared";
 import type { TenantTransaction } from "../tenant-context.js";
-import { ConflictError, ValidationError } from "../../lib/httpErrors.js";
+import { ConflictError, SeatCapacityError, ValidationError } from "../../lib/httpErrors.js";
 import { enrollmentHoldsSeatSql } from "./enrollmentSeatSql.js";
+import {
+  countLiveSeatsBySectionTx,
+  loadEnrollmentSeatHoldersTx,
+  lockSectionsForSeatsTx,
+  type LockedSeatSection,
+} from "./enrollmentSeatCountRepository.js";
 
 type SectionRow = {
   id: string;
   sessionId: string;
   classId: string;
+  name: string;
   status: string;
   sortOrder: number;
   capacity: number;
-  enrolled: number;
 };
 
+/** Whether this record will occupy a seat once written. */
+function recordHoldsSeat(record: Enrollment): boolean {
+  return !record.deletedAt && enrollmentHoldsSeat(String(record.status || "pending"));
+}
+
 /**
- * Server-side section placement for enrollment writes: a given section must belong to the
- * enrollment's class; otherwise the class's first active section is used. Roll numbers are
- * unique per section among live, non-cancelled enrollments.
+ * Server-side section placement for enrollment writes.
+ *
+ * Seat accounting is the important part: the candidate sections are row-locked (in id
+ * order) **before** the live counts are taken, so two concurrent writes cannot both
+ * take the last free seat. The pre-lock query below is only used to validate the
+ * requested section and to know which classes/sections to lock — never to grant a seat.
+ *
+ * A record that already occupies its current section allocates nothing (that is what
+ * makes editing notes/fees of a student in a full section possible); a move or a new
+ * row must find a free seat or the write is refused with `SeatCapacityError`.
  */
 export async function resolveEnrollmentSectionsTx(
   tx: TenantTransaction,
@@ -28,41 +46,123 @@ export async function resolveEnrollmentSectionsTx(
     ...new Set(records.map((record) => String(record.classId || "")).filter(Boolean)),
   ];
   if (classIds.length === 0) return records;
+
   const sections = await tx.execute<SectionRow>(sql`
-    SELECT s.id, s.session_id AS "sessionId", s.class_id AS "classId", s.status,
-           s.sort_order AS "sortOrder", s.capacity,
-           (SELECT count(*)::int FROM enrollments en
-             WHERE en.workspace_subdomain = s.workspace_subdomain AND en.section_id = s.id
-               AND en.deleted_at IS NULL AND ${enrollmentHoldsSeatSql("en")}) AS enrolled
+    SELECT s.id, s.session_id AS "sessionId", s.class_id AS "classId", s.name, s.status,
+           s.sort_order AS "sortOrder", s.capacity
       FROM session_class_sections s
-     WHERE s.workspace_subdomain = ${subdomain} AND s.class_id IN (${sql.join(
-       classIds.map((id) => sql`${id}`),
-       sql`, `,
-     )})
+     WHERE s.workspace_subdomain = ${subdomain}
+       AND s.class_id IN (${sql.join(
+         classIds.map((id) => sql`${id}`),
+         sql`, `,
+       )})
      ORDER BY s.sort_order, s.name
   `);
+  const byClassAndSession = (record: Enrollment): SectionRow[] =>
+    sections.rows.filter(
+      (section) => section.classId === record.classId && section.sessionId === record.sessionId,
+    );
+
+  // Every section a record names, plus every active section of the classes involved
+  // (auto-placement must be able to fall through to another section under the lock).
+  const candidateIds = new Set<string>();
+  for (const record of records) {
+    const classSections = byClassAndSession(record);
+    for (const section of classSections)
+      if (section.status === "active") candidateIds.add(section.id);
+    const requested = record.sectionId?.trim();
+    if (requested) candidateIds.add(requested);
+  }
+  const locked = await lockSectionsForSeatsTx(tx, subdomain, [...candidateIds]);
+  const holders = await loadEnrollmentSeatHoldersTx(
+    tx,
+    subdomain,
+    records.map((record) => String(record.id)),
+  );
+  // Count once under the lock; the map is then incremented as seats are granted, so a
+  // batch cannot hand the same seat to two of its own records. Nothing is excluded: a
+  // record that keeps its current seat bypasses the check below, and a moving/new record
+  // is not counted in its target section anyway (its own row still points at the old one).
+  const occupied = await countLiveSeatsBySectionTx(tx, subdomain, [...candidateIds]);
+
+  const liveSections = (record: Enrollment): LockedSeatSection[] =>
+    byClassAndSession(record)
+      .map((section) => locked.get(section.id))
+      .filter((section): section is LockedSeatSection => Boolean(section))
+      .sort((a, b) => a.id.localeCompare(b.id));
+
+  const takeSeat = (section: LockedSeatSection): void => {
+    const capacity = Math.max(0, section.capacity ?? 0);
+    const used = occupied.get(section.id) ?? 0;
+    // 0 = no cap: the seat is granted and simply not counted against the section.
+    if (capacity > 0 && used >= capacity) {
+      throw new SeatCapacityError(
+        `${section.name || "The section"} is full`,
+        section.id,
+        Math.max(0, Math.max(0, section.capacity ?? 0) - used),
+      );
+    }
+    occupied.set(section.id, used + 1);
+  };
 
   const resolved = records.map((record) => {
-    const classSections = sections.rows.filter(
-      (s) => s.classId === record.classId && s.sessionId === record.sessionId,
-    );
+    const classSections = byClassAndSession(record);
     const requested = record.sectionId?.trim();
+    const holder = holders.get(String(record.id));
+    // A row that already occupied this section does not allocate a second seat; a row
+    // that was withdrawn/cancelled (or is new) does, even when the section is unchanged.
+    const previouslyHeldSeat = Boolean(
+      holder && !holder.deleted && enrollmentHoldsSeat(String(holder.status)),
+    );
+
     if (requested) {
-      if (!classSections.some((s) => s.id === requested))
-        throw new ValidationError("Section does not belong to the selected class");
+      const section = classSections.find((candidate) => candidate.id === requested);
+      if (!section) throw new ValidationError("Section does not belong to the selected class");
+      if (section.status !== "active")
+        throw new ValidationError("A closed section cannot take enrollments");
+      const keepsSeat = previouslyHeldSeat && holder?.sectionId === requested;
+      if (recordHoldsSeat(record) && !keepsSeat) {
+        const lockedSection = locked.get(requested);
+        if (!lockedSection)
+          throw new SeatCapacityError("The section is no longer available", requested);
+        takeSeat(lockedSection);
+      }
       return { ...record, sectionId: requested, rollNo: record.rollNo?.trim() || undefined };
     }
-    // Seat-aware first: the first active section that still has a free seat. When every section
-    // is at/over capacity the legacy fallback keeps the first active section (bulk imports must
-    // not silently leave students unassigned; rollover carry validates quota before saving).
-    const active = classSections.filter((section) => section.status === "active");
-    const fallback =
-      active.find(
-        (section) => Number(section.enrolled ?? 0) < Math.max(0, section.capacity ?? 0),
-      ) ??
-      active[0] ??
-      classSections[0];
-    return { ...record, sectionId: fallback?.id, rollNo: record.rollNo?.trim() || undefined };
+
+    // A class with no sections is still valid legacy data (pre-0167 rows): there is no
+    // section to place into and capacity is the class-level `maxStudents`, which the
+    // callers already check. Leave the record exactly as supplied.
+    if (classSections.length === 0) {
+      return { ...record, sectionId: undefined, rollNo: record.rollNo?.trim() || undefined };
+    }
+
+    const active = liveSections(record).filter((section) => section.status === "active");
+    const keepsCurrent = active.find((section) => section.id === holder?.sectionId);
+    if (keepsCurrent && previouslyHeldSeat) {
+      return { ...record, sectionId: keepsCurrent.id, rollNo: record.rollNo?.trim() || undefined };
+    }
+    // A released/archived row holds no seat: place it for the record's own sake but do
+    // not let a full class block a status change.
+    if (!recordHoldsSeat(record)) {
+      const fallback = keepsCurrent ?? active[0] ?? liveSections(record)[0];
+      return {
+        ...record,
+        sectionId: fallback?.id,
+        rollNo: record.rollNo?.trim() || undefined,
+      };
+    }
+    const hasRoom = (section: LockedSeatSection): boolean => {
+      const capacity = Math.max(0, section.capacity ?? 0);
+      return capacity === 0 || (occupied.get(section.id) ?? 0) < capacity;
+    };
+    const free = keepsCurrent && hasRoom(keepsCurrent) ? keepsCurrent : active.find(hasRoom);
+    if (!free) {
+      const className = record.className || "The class";
+      throw new SeatCapacityError(`${className} is full`, undefined, 0);
+    }
+    takeSeat(free);
+    return { ...record, sectionId: free.id, rollNo: record.rollNo?.trim() || undefined };
   });
 
   const withRoll = resolved.filter(
