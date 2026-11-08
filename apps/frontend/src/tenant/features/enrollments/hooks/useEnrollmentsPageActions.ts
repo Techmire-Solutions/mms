@@ -118,8 +118,16 @@ export function useEnrollmentsPageActions({
       ...patch,
       timeline: [...(enrollment.timeline || []), { ts: new Date().toISOString(), event, by: role }],
     };
+    // Send only what changed plus the new timeline event (the server appends entries without
+    // an id). Sending the full row would carry the list projection's empty `notes` back.
     updateEnrollment.mutate(
-      { id: enrollment.id, enrollment: updated },
+      {
+        id: enrollment.id,
+        enrollment: {
+          ...patch,
+          timeline: [{ ts: new Date().toISOString(), event, by: role }],
+        },
+      },
       {
         onSuccess: () => {
           if (viewing?.id === enrollment.id) onViewingChange(updated);

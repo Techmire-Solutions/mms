@@ -7,6 +7,8 @@ interface ContractErrorBody {
   message: string;
   /** Machine-readable reasons carried by domain errors (e.g. blocked session transitions). */
   violations?: string[];
+  /** Structured context (e.g. `{ sectionId, seatsLeft }` for a full section). */
+  details?: Record<string, unknown>;
 }
 
 /**
@@ -34,10 +36,19 @@ export function handleContractError(
   error: unknown,
   fallback: { status: number; body: ContractErrorBody },
 ): { status: number; body: ContractErrorBody } {
-  request.log.error(
-    { err: error, url: request.url },
-    fallback.body?.message ?? "Contract route failed",
-  );
+  const requestedStatus = (error as { statusCode?: unknown } | null)?.statusCode;
+  if (typeof requestedStatus === "number" && CLIENT_ERROR_STATUSES.has(requestedStatus)) {
+    // Expected rejections are not server faults: keep them out of the error budget.
+    request.log.warn(
+      { err: error, url: request.url, statusCode: requestedStatus },
+      fallback.body?.message ?? "Contract route rejected",
+    );
+  } else {
+    request.log.error(
+      { err: error, url: request.url },
+      fallback.body?.message ?? "Contract route failed",
+    );
+  }
 
   if (error instanceof ZodError) {
     return {
@@ -77,6 +88,14 @@ export function handleContractError(
   if (typeof statusCode === "number" && CLIENT_ERROR_STATUSES.has(statusCode)) {
     const type = (error as { type?: unknown }).type;
     const violations = (error as { violations?: unknown }).violations;
+    // `SeatCapacityError` carries the failing section/remaining seats; surface them so the
+    // client can act instead of parsing the message.
+    const sectionId = (error as { sectionId?: unknown }).sectionId;
+    const seatsLeft = (error as { seatsLeft?: unknown }).seatsLeft;
+    const details = {
+      ...(typeof sectionId === "string" ? { sectionId } : {}),
+      ...(typeof seatsLeft === "number" ? { seatsLeft } : {}),
+    };
     return {
       status: statusCode,
       body: {
@@ -85,6 +104,7 @@ export function handleContractError(
         ...(Array.isArray(violations)
           ? { violations: violations.map((value) => String(value)) }
           : {}),
+        ...(Object.keys(details).length > 0 ? { details } : {}),
       },
     };
   }

@@ -9,8 +9,6 @@ import { useModuleServerCsvExportActions } from "@/lib/backgroundJobs/useModuleS
 import { useTranslation } from "@/hooks/useTranslation";
 import { notify } from "@/lib/notify";
 
-type ExportAuditScope = "all" | "filtered" | "selection";
-
 export interface UseEnrollmentsExportActionsOptions {
   tableColumns: EnrollmentExportColumn[];
   canExport: boolean;
@@ -21,9 +19,6 @@ export interface UseEnrollmentsExportActionsOptions {
   /** Whether any directory filter is applied — selects the audit scope. */
   hasActiveFilters: boolean;
   selectedIds: string[];
-  logExportAudit: {
-    mutateAsync: (payload: { count: number; scope: ExportAuditScope }) => Promise<unknown>;
-  };
 }
 
 /** Server CSV export actions for Enrollments Work (Sessions-shaped shared factory). */
@@ -36,7 +31,6 @@ export function useEnrollmentsExportActions({
   viewingDeleted,
   hasActiveFilters,
   selectedIds,
-  logExportAudit,
 }: UseEnrollmentsExportActionsOptions) {
   const { t } = useTranslation();
 
@@ -66,7 +60,6 @@ export function useEnrollmentsExportActions({
     hasActiveFilters,
     buildFilteredQuery,
     startExport: startServerEnrollmentsCsvExport,
-    logExportAudit,
     onError,
   });
 }

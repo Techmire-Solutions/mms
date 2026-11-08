@@ -10,9 +10,13 @@ import { enrollmentsReportAggregatesSchema } from "../enrollments/enrollmentsRep
 import { reportComparisonQuerySchema } from "../reports/reportComparisonQuery.js";
 import { bulkStringIdsBodySchema } from "../core/apiSchemas.js";
 import { widgetAggregatesBodySchema } from "../schemas/common.dto.js";
+import { apiErrorResponseSchema } from "../schemas/api.dto.js";
+import { enrollmentPreferencesPutBodySchema } from "../enrollments/enrollmentSetupPreferences.js";
+import { enrollmentFieldConfigPutBodySchema } from "../enrollments/enrollmentSetupSettings.js";
 
 const c = initContract();
-const errorResponse = z.object({ type: z.string(), message: z.string() }).passthrough();
+const errorResponse = apiErrorResponseSchema;
+const enrollmentParams = z.object({ id: z.string().min(1).max(64) });
 
 /** Envelope for paginated enrollment list responses (`EnrollmentsListPageResult`). */
 export const enrollmentListPageResponseSchema = z.object({
@@ -21,6 +25,8 @@ export const enrollmentListPageResponseSchema = z.object({
   page: z.number(),
   limit: z.number(),
   hasMore: z.boolean(),
+  /** Keyset cursor for the next page (only present in `afterId` mode). */
+  nextCursor: z.string().optional(),
 });
 
 /** `{ success: true, succeeded, failed }` bulk-operation envelope. */
@@ -60,6 +66,7 @@ export const enrollmentContract = c.router({
   get: {
     method: "GET",
     path: "/api/enrollments/:id",
+    pathParams: enrollmentParams,
     query: z
       .object({
         includeDeleted: z.union([z.boolean(), z.literal("true"), z.literal("false")]).optional(),
@@ -81,6 +88,8 @@ export const enrollmentContract = c.router({
       201: enrollmentRecordSchema,
       400: errorResponse,
       403: errorResponse,
+      409: errorResponse,
+      422: errorResponse,
       500: errorResponse,
     },
     summary: "Create an enrollment",
@@ -91,8 +100,10 @@ export const enrollmentContract = c.router({
     body: enrollmentRecordUpdateSchema,
     responses: {
       200: enrollmentRecordSchema,
+      400: errorResponse,
       403: errorResponse,
       404: errorResponse,
+      409: errorResponse,
       500: errorResponse,
     },
     summary: "Update an enrollment",
@@ -100,11 +111,16 @@ export const enrollmentContract = c.router({
   delete: {
     method: "DELETE",
     path: "/api/enrollments/:id",
-    body: z.object({ deletionReason: z.string().optional() }).optional(),
+    pathParams: enrollmentParams,
+    body: z
+      .object({ deletionReason: z.string().max(500).optional() })
+      .strict()
+      .optional(),
     responses: {
       200: z.object({ success: z.literal(true) }),
       403: errorResponse,
       404: errorResponse,
+      409: errorResponse,
       500: errorResponse,
     },
     summary: "Soft delete an enrollment",
@@ -113,39 +129,41 @@ export const enrollmentContract = c.router({
     method: "POST",
     path: "/api/enrollments/bulk-delete",
     body: bulkStringIdsBodySchema,
-    responses: { 200: enrollmentBulkResultResponseSchema, 403: errorResponse, 500: errorResponse },
+    responses: {
+      200: enrollmentBulkResultResponseSchema,
+      400: errorResponse,
+      403: errorResponse,
+      409: errorResponse,
+      500: errorResponse,
+    },
     summary: "Bulk soft-delete enrollments",
   },
   bulkRestore: {
     method: "POST",
     path: "/api/enrollments/bulk-restore",
     body: bulkStringIdsBodySchema,
-    responses: { 200: enrollmentBulkResultResponseSchema, 403: errorResponse, 500: errorResponse },
+    responses: {
+      200: enrollmentBulkResultResponseSchema,
+      400: errorResponse,
+      403: errorResponse,
+      409: errorResponse,
+      500: errorResponse,
+    },
     summary: "Bulk restore enrollments",
   },
   restore: {
     method: "POST",
     path: "/api/enrollments/:id/restore",
-    body: z.object({}).optional(),
+    pathParams: enrollmentParams,
+    body: z.object({}).strict().optional(),
     responses: {
       200: z.object({ success: z.literal(true) }),
       403: errorResponse,
       404: errorResponse,
+      409: errorResponse,
       500: errorResponse,
     },
     summary: "Restore an enrollment",
-  },
-  exportAudit: {
-    method: "POST",
-    path: "/api/enrollments/export-audit",
-    body: z.object({}).optional(),
-    responses: {
-      200: z.object({ success: z.literal(true) }),
-      403: errorResponse,
-      404: errorResponse,
-      500: errorResponse,
-    },
-    summary: "Export audit log",
   },
   widgetAggregates: {
     method: "POST",
@@ -185,7 +203,7 @@ export const enrollmentContract = c.router({
   updateFieldConfig: {
     method: "PUT",
     path: "/api/enrollments/field-config",
-    body: z.unknown(),
+    body: enrollmentFieldConfigPutBodySchema,
     responses: {
       200: z.object({ success: z.literal(true), config: z.record(z.string(), z.unknown()) }),
       403: errorResponse,
@@ -206,24 +224,12 @@ export const enrollmentContract = c.router({
   updatePreferences: {
     method: "PUT",
     path: "/api/enrollments/preferences",
-    body: z.unknown(),
+    body: enrollmentPreferencesPutBodySchema,
     responses: {
       200: z.object({ success: z.literal(true), preferences: enrollmentPreferencesResponseSchema }),
       403: errorResponse,
       500: errorResponse,
     },
     summary: "Update preferences",
-  },
-  getLookups: {
-    method: "GET",
-    path: "/api/enrollments/lookups",
-    responses: { 200: z.unknown(), 403: errorResponse, 500: errorResponse },
-    summary: "Get all lookups",
-  },
-  getLookupKind: {
-    method: "GET",
-    path: "/api/enrollments/lookups/:kind",
-    responses: { 200: z.unknown(), 403: errorResponse, 500: errorResponse },
-    summary: "Get a specific lookup kind",
   },
 });

@@ -1,4 +1,5 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import { admissionsContract, enrollmentContract, enrollmentOperationsContract } from "@mms/shared";
 import { buildApp } from "../app.js";
 import { accountantToken, adminToken, viewerToken } from "./helpers/tokens.js";
 
@@ -93,6 +94,26 @@ vi.mock("../services/backgroundJobWorkerService.js", async (importOriginal) => {
 });
 
 describe("enrollments REST routes integration", () => {
+  it("serves every route declared in the enrollment contracts", async () => {
+    const app = await buildApp();
+    try {
+      const contracts = [enrollmentContract, enrollmentOperationsContract, admissionsContract];
+      for (const router of contracts) {
+        for (const [key, route] of Object.entries(router)) {
+          if (!route || typeof route !== "object" || !("path" in route) || !("method" in route)) {
+            continue;
+          }
+          expect(
+            app.hasRoute({ method: route.method as never, url: route.path as string }),
+            `${route.method} ${route.path} (${key})`,
+          ).toBe(true);
+        }
+      }
+    } finally {
+      await app.close();
+    }
+  });
+
   beforeEach(() => {
     process.env.JWT_SECRET = "test-secret";
     mockLoadEnrollmentById.mockReset().mockResolvedValue(null);
@@ -174,7 +195,20 @@ describe("enrollments REST routes integration", () => {
       studentName: "Ali",
       sessionId: "ses-1",
       sessionName: "Hifz",
+      classId: "cls-1",
+      className: "Hifz A",
+      enrolledDate: "2026-01-01",
+      baseFee: 0,
+      discountType: "none",
+      discountLabel: "",
+      discountPct: 0,
+      discountAmt: 0,
+      finalFee: 0,
       status: "confirmed",
+      invoiceId: null,
+      paymentStatus: "none",
+      notes: "",
+      timeline: [],
       createdAt: "2026-01-01T00:00:00.000Z",
       updatedAt: "2026-01-01T00:00:00.000Z",
     };
@@ -194,6 +228,109 @@ describe("enrollments REST routes integration", () => {
     expect(res.json()).toEqual(mockEnrollment);
     expect(mockLoadEnrollmentById).toHaveBeenCalledWith("enr-1", false);
     await app.close();
+  });
+
+  it("rejects unknown or invalid list query parameters with 400", async () => {
+    const app = await buildApp();
+    try {
+      const headers = {
+        host: "demo.localhost",
+        authorization: `Bearer ${adminToken(app, { name: "Admin User" })}`,
+      };
+      const unknown = await app.inject({ method: "GET", url: "/api/enrollments?bogus=1", headers });
+      expect(unknown.statusCode).toBe(400);
+      expect(unknown.json()).toMatchObject({ type: "validation_error" });
+
+      const badStatus = await app.inject({
+        method: "GET",
+        url: "/api/enrollments?status=not-a-status",
+        headers,
+      });
+      expect(badStatus.statusCode).toBe(400);
+    } finally {
+      await app.close();
+    }
+  });
+
+  it("rejects an oversized enrollment id", async () => {
+    const app = await buildApp();
+    try {
+      const res = await app.inject({
+        method: "GET",
+        url: `/api/enrollments/${"x".repeat(65)}`,
+        headers: {
+          host: "demo.localhost",
+          authorization: `Bearer ${adminToken(app, { name: "Admin User" })}`,
+        },
+      });
+      expect(res.statusCode).toBe(400);
+    } finally {
+      await app.close();
+    }
+  });
+
+  it("maps a domain conflict to 409 with the typed envelope", async () => {
+    const useCases = (await import("../enrollments/use-cases/enrollmentsUseCases.js"))
+      .enrollmentsUseCases;
+    vi.mocked(useCases.createEnrollment).mockRejectedValueOnce(
+      Object.assign(new Error('Cannot change the status from "completed" to "confirmed"'), {
+        statusCode: 409,
+        type: "invalid_status_transition",
+      }),
+    );
+
+    const app = await buildApp();
+    try {
+      const res = await app.inject({
+        method: "POST",
+        url: "/api/enrollments",
+        headers: {
+          host: "demo.localhost",
+          authorization: `Bearer ${adminToken(app, { name: "Admin User" })}`,
+          "content-type": "application/json",
+        },
+        payload: {
+          studentId: "stu-1",
+          sessionId: "ses-1",
+          classId: "cls-1",
+          enrolledDate: "2026-01-01",
+        },
+      });
+      expect(res.statusCode).toBe(409);
+      expect(res.json()).toMatchObject({
+        type: "invalid_status_transition",
+        message: expect.stringContaining("completed"),
+      });
+    } finally {
+      await app.close();
+    }
+  });
+
+  it("returns the keyset cursor on a cursor-paged list", async () => {
+    mockLoadEnrollmentsPage.mockResolvedValue({
+      enrollments: [],
+      total: 0,
+      page: 1,
+      limit: 12,
+      hasMore: true,
+      nextCursor: "enr-9",
+    });
+
+    const app = await buildApp();
+    try {
+      const res = await app.inject({
+        method: "GET",
+        url: "/api/enrollments?afterId=enr-1",
+        headers: {
+          host: "demo.localhost",
+          authorization: `Bearer ${adminToken(app, { name: "Admin User" })}`,
+        },
+      });
+      expect(res.statusCode).toBe(200);
+      expect(res.json()).toMatchObject({ nextCursor: "enr-9" });
+    } finally {
+      await app.close();
+    }
   });
 
   it("GET /api/enrollments/:id returns 404 when enrollment does not exist", async () => {

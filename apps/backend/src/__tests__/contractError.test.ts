@@ -5,7 +5,7 @@ import { handleContractError } from "../lib/contractError.js";
 type FakeRequest = Parameters<typeof handleContractError>[0];
 
 function fakeRequest() {
-  const log = { error: vi.fn() };
+  const log = { error: vi.fn(), warn: vi.fn() };
   return { request: { url: "/api/students/x", log } as unknown as FakeRequest, log };
 }
 
@@ -41,7 +41,7 @@ describe("handleContractError", () => {
   });
 
   it("preserves an intentional domain status over the caller's fallback", () => {
-    const { request } = fakeRequest();
+    const { request, log } = fakeRequest();
     const error = Object.assign(new Error("Restoring deleted students requires delete"), {
       statusCode: 403,
       type: "forbidden",
@@ -51,5 +51,26 @@ describe("handleContractError", () => {
 
     expect(result.status).toBe(403);
     expect(result.body.type).toBe("forbidden");
+    // Expected rejections are logged as warnings, not errors.
+    expect(log.warn).toHaveBeenCalled();
+    expect(log.error).not.toHaveBeenCalled();
+  });
+
+  it("surfaces the full-section details in the envelope", () => {
+    const { request } = fakeRequest();
+    const error = Object.assign(new Error("The class is full"), {
+      statusCode: 409,
+      type: "class_full",
+      sectionId: "sec-1",
+      seatsLeft: 0,
+    });
+
+    const result = handleContractError(request, error, fallback);
+
+    expect(result.status).toBe(409);
+    expect(result.body).toMatchObject({
+      type: "class_full",
+      details: { sectionId: "sec-1", seatsLeft: 0 },
+    });
   });
 });

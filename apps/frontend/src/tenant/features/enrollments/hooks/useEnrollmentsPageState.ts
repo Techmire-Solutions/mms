@@ -7,10 +7,7 @@ import { useFilteredModuleTierTabs } from "@/tenant/hooks/useModuleTierTabs";
 import { ClipboardList, UserCheck, Inbox } from "lucide-react";
 import { useModulePermissions } from "@/tenant/hooks/usePermissions";
 import { type Enrollment } from "@/lib/data/enrollmentData";
-import {
-  useEnrollmentMutations,
-  useEnrollmentsPaginated,
-} from "@/tenant/features/enrollments/hooks/useEnrollmentsApi";
+import { useEnrollmentsPaginated } from "@/tenant/features/enrollments/hooks/useEnrollmentsApi";
 import { useEnrollmentsDirectoryFilters } from "@/tenant/features/enrollments/hooks/useEnrollmentsDirectoryFilters";
 import { ENROLLMENTS_MODULE_MANIFEST } from "@mms/shared";
 import { useWorkDrillDownListener } from "@/lib/query/useWorkDrillDownListener";
@@ -108,7 +105,6 @@ export function useEnrollmentsPageState() {
     // eslint-disable-next-line react-hooks/exhaustive-deps -- selection.setSelectedIds is a stable useState setter; depending on the whole `selection` object would re-run this clear on every render.
   }, [debouncedSearch, statusFilter, sessionFilter, showDeleted, selection.setSelectedIds]);
 
-  const { logExportAudit } = useEnrollmentMutations();
   const exportColumns = (() => defaultEnrollmentsExportColumns(t))();
   const exportActions = useEnrollmentsExportActions({
     tableColumns: exportColumns,
@@ -120,7 +116,6 @@ export function useEnrollmentsPageState() {
     viewingDeleted: showDeleted,
     hasActiveFilters,
     selectedIds: selection.selectedIds,
-    logExportAudit,
   });
 
   // No write access → the eligibility sub-tab is not available (render-phase reset, no effect).

@@ -16,7 +16,7 @@ import {
   dedupeTrimmedIds,
   isQueryFlagTrue,
   MODULE_METRICS_DEFAULT_PERIOD_DAYS,
-  toSqlSearchPattern,
+  toEscapedSqlSearchPattern,
   type EnrollmentsCommandMetricsSnapshot,
   type EnrollmentsListPageResult,
   type EnrollmentsListQuery,
@@ -24,11 +24,7 @@ import {
 import { enrollments } from "../schema.js";
 import { withTenantRead } from "../tenant-context.js";
 import { runListPage } from "./listPageHelper.js";
-import {
-  enrollmentRowToRecord,
-  loadTimelineMapTx,
-  type EnrollmentHydrateRow,
-} from "./enrollmentProjection.js";
+import { enrollmentRowToRecord, type EnrollmentHydrateRow } from "./enrollmentProjection.js";
 import { enrollmentHoldsSeatWhere } from "./enrollmentSeatSql.js";
 import { enableIncludeDeleted } from "../../lib/softDeleteHelpers.js";
 
@@ -104,9 +100,17 @@ function buildListConditions(subdomain: string, query: EnrollmentsListQuery): SQ
     conditions.push(eq(enrollments.classId, query.classId.trim()));
   }
 
+  if (query.sectionId?.trim() && query.sectionId !== "all") {
+    conditions.push(eq(enrollments.sectionId, query.sectionId.trim()));
+  }
+
+  if (query.studentId?.trim()) {
+    conditions.push(eq(enrollments.studentId, query.studentId.trim()));
+  }
+
   const search = query.search?.trim();
   if (search) {
-    const pattern = toSqlSearchPattern(search);
+    const pattern = toEscapedSqlSearchPattern(search);
     conditions.push(
       or(
         ilike(enrollments.studentName, pattern),
@@ -128,10 +132,16 @@ const ENROLLMENT_LIST_COLUMNS = {
   sessionName: enrollments.sessionName,
   classId: enrollments.classId,
   className: enrollments.className,
+  sectionId: enrollments.sectionId,
+  rollNo: enrollments.rollNo,
   enrolledDate: enrollments.enrolledDate,
   startOn: enrollments.startOn,
   endOn: enrollments.endOn,
   endReason: enrollments.endReason,
+  promotedFromEnrollmentId: enrollments.promotedFromEnrollmentId,
+  completionStatus: enrollments.completionStatus,
+  completedAt: enrollments.completedAt,
+  certificateIssuedAt: enrollments.certificateIssuedAt,
   baseFee: enrollments.baseFee,
   discountType: enrollments.discountType,
   discountLabel: enrollments.discountLabel,
@@ -141,11 +151,13 @@ const ENROLLMENT_LIST_COLUMNS = {
   status: enrollments.status,
   invoiceId: enrollments.invoiceId,
   paymentStatus: enrollments.paymentStatus,
-  notes: sql<string | null>`NULL`.as("notes"),
+  notes: enrollments.notes,
   deletedAt: enrollments.deletedAt,
   deletedBy: enrollments.deletedBy,
   deletionReason: enrollments.deletionReason,
   deletedWithCascade: enrollments.deletedWithCascade,
+  restoredAt: enrollments.restoredAt,
+  restoredBy: enrollments.restoredBy,
   createdAt: enrollments.createdAt,
   updatedAt: enrollments.updatedAt,
 };
@@ -156,8 +168,8 @@ const ENROLLMENT_LIST_COLUMNS = {
  */
 export async function listEnrollmentsPage(
   tenant: string,
-  query: EnrollmentsListQuery & { afterId?: string; skipCount?: boolean },
-): Promise<EnrollmentsListPageResult & { nextCursor?: string }> {
+  query: EnrollmentsListQuery,
+): Promise<EnrollmentsListPageResult> {
   const subdomain = tenant.trim().toLowerCase();
 
   return withTenantRead(subdomain, async (tx) => {
@@ -186,14 +198,10 @@ export async function listEnrollmentsPage(
       };
     }
 
-    const timeline = await loadTimelineMapTx(
-      tx,
-      subdomain,
-      result.items.map((row) => row.id),
-    );
-
+    // The Work list stays lean: timeline events are detail-only (`get`), so a page of
+    // 100 rows does not drag every historical event into the response.
     return {
-      enrollments: result.items.map((row) => enrollmentRowToRecord(row, timeline.get(row.id))),
+      enrollments: result.items.map((row) => enrollmentRowToRecord(row)),
       total: result.total,
       page: result.page,
       limit: result.limit,

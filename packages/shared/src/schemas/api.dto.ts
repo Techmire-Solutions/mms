@@ -23,6 +23,21 @@ const bulkIdsBodyBaseSchema = z
   })
   .strict();
 
+/**
+ * Canonical error envelope for every API error (`type` + `message`, plus machine-readable
+ * `violations` and `details`). Contracts declare it for every non-2xx response.
+ */
+export const apiErrorResponseSchema = z
+  .object({
+    type: z.string(),
+    message: z.string(),
+    violations: z.array(z.string()).optional(),
+    details: z.record(z.string(), z.unknown()).optional(),
+  })
+  .passthrough();
+
+export type ApiErrorResponse = z.infer<typeof apiErrorResponseSchema>;
+
 /** Bulk soft-delete / restore body with capped id list. */
 export const bulkIdsBodySchema = z.preprocess((raw) => {
   if (!raw || typeof raw !== "object" || Array.isArray(raw)) return raw;
