@@ -29,6 +29,7 @@ export const ALL_PERMISSIONS = [
   "enrollments.read",
   "enrollments.write",
   "enrollments.delete",
+  "enrollments.manage",
   "hasanat.read",
   "hasanat.write",
   "hasanat.delete",

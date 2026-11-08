@@ -113,13 +113,24 @@ export const enrollmentOperationsUseCases = {
       });
       // Last month is charged in full; later untouched invoices are cancelled (decision 2026-10-19).
       const settled = await settleEnrollmentWithdrawal(enrollment.id, effectiveOn);
-      await recordOperationAudit(tx, tenant, user, enrollment, endAs, {
-        effectiveOn,
-        reason: input.reason,
+      await recordOperationAudit(
+        tx,
+        tenant,
+        user,
+        enrollment,
         endAs,
-        cancelledInvoiceIds: settled.cancelled.map((invoice) => invoice.id),
-        invoicesForReview: settled.review.map((invoice) => invoice.id),
-      });
+        {
+          effectiveOn,
+          reason: input.reason,
+          endAs,
+          cancelledInvoiceIds: settled.cancelled.map((invoice) => invoice.id),
+          invoicesForReview: settled.review.map((invoice) => invoice.id),
+        },
+        {
+          reasonCode: input.overrideDropDeadline ? "override_deadline" : "withdraw",
+          oldState: { status: enrollment.status, classId: enrollment.classId },
+        },
+      );
       return settled;
     });
     // A cancellation is a removal (no seat offer); a withdrawal frees the seat for the waitlist.

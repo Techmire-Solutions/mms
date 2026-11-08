@@ -5,6 +5,7 @@ import { handleContractError } from "../../../lib/contractError.js";
 import { standardRequestValidationErrorHandler } from "../../../lib/contractRegistration.js";
 import type { ContractRouteArgs } from "../../../lib/contractRouterTypes.js";
 import { canReadCollection, canWriteCollection } from "../../../services/rbacService.js";
+import { userHasPermission } from "../../../lib/userPermissionContext.js";
 import { enrollmentOperationsUseCases as ops } from "../../../enrollments/use-cases/enrollmentOperationsUseCases.js";
 import { enrollmentLifecycleUseCases as lifecycle } from "../../../enrollments/use-cases/enrollmentLifecycleUseCases.js";
 
@@ -13,6 +14,13 @@ const COLLECTION = ENROLLMENTS_MODULE_MANIFEST.collectionKey;
 const forbidden = {
   status: 403 as const,
   body: { type: "forbidden", message: "Insufficient permissions" },
+};
+const manageForbidden = {
+  status: 403 as const,
+  body: {
+    type: "forbidden",
+    message: "Administrative enrollment permission required (drops, transfers, overrides)",
+  },
 };
 const s = initServer();
 const tenantOf = (request: { tenant?: { id?: unknown } }) => String(request.tenant?.id ?? "");
@@ -37,6 +45,7 @@ export const enrollmentOperationsRouter: FastifyPluginAsync = async (fastify) =>
     bulkEnd: async ({ body, request }: ContractRouteArgs<Contract["bulkEnd"]>) => {
       const user = request.user as User;
       if (!canWriteCollection(user, COLLECTION)) return forbidden;
+      if (!userHasPermission(user, "enrollments.manage")) return manageForbidden;
       try {
         return {
           status: 200 as const,
@@ -52,6 +61,7 @@ export const enrollmentOperationsRouter: FastifyPluginAsync = async (fastify) =>
     transfer: async ({ params, body, request }: ContractRouteArgs<Contract["transfer"]>) => {
       const user = request.user as User;
       if (!canWriteCollection(user, COLLECTION)) return forbidden;
+      if (!userHasPermission(user, "enrollments.manage")) return manageForbidden;
       try {
         return {
           status: 200 as const,
@@ -67,6 +77,7 @@ export const enrollmentOperationsRouter: FastifyPluginAsync = async (fastify) =>
     withdraw: async ({ params, body, request }: ContractRouteArgs<Contract["withdraw"]>) => {
       const user = request.user as User;
       if (!canWriteCollection(user, COLLECTION)) return forbidden;
+      if (!userHasPermission(user, "enrollments.manage")) return manageForbidden;
       try {
         return {
           status: 200 as const,
@@ -82,6 +93,7 @@ export const enrollmentOperationsRouter: FastifyPluginAsync = async (fastify) =>
     readmit: async ({ params, body, request }: ContractRouteArgs<Contract["readmit"]>) => {
       const user = request.user as User;
       if (!canWriteCollection(user, COLLECTION)) return forbidden;
+      if (!userHasPermission(user, "enrollments.manage")) return manageForbidden;
       try {
         return {
           status: 200 as const,
@@ -97,6 +109,7 @@ export const enrollmentOperationsRouter: FastifyPluginAsync = async (fastify) =>
     suspend: async ({ params, body, request }: ContractRouteArgs<Contract["suspend"]>) => {
       const user = request.user as User;
       if (!canWriteCollection(user, COLLECTION)) return forbidden;
+      if (!userHasPermission(user, "enrollments.manage")) return manageForbidden;
       try {
         return {
           status: 200 as const,

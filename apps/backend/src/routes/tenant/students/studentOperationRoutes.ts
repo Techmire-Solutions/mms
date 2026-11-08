@@ -86,6 +86,21 @@ export const studentOperationRoutes: FastifyPluginAsync = async (fastify) => {
           body: { type: "forbidden", message: "Enrollment write permission required" },
         };
       }
+      // Eligibility/deadline overrides are administrative: only roles with the manage
+      // capability may bypass a business rule (and the override is audited per enrollment).
+      if (
+        (body.allowAfterDeadline || body.ignoreEligibility) &&
+        !userHasPermission(user, "enrollments.manage")
+      ) {
+        return {
+          status: 403 as const,
+          body: {
+            type: "forbidden",
+            message:
+              "Administrative enrollment permission required to override eligibility/deadlines",
+          },
+        };
+      }
       try {
         const result = await withTenant(
           String(request.tenant?.id),

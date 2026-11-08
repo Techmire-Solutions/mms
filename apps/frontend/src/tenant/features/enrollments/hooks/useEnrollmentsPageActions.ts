@@ -9,6 +9,8 @@ import { useEnrollmentOperations } from "@/tenant/features/enrollments/hooks/use
 export interface UseEnrollmentsPageActionsParams {
   enrollments: Enrollment[];
   viewing: Enrollment | null;
+  /** Administrative capability (drops/transfers/completions); the server enforces it too. */
+  canManage?: boolean;
   onViewingChange: (enrollment: Enrollment | null) => void;
   onActiveSubTabChange: (subTab: string) => void;
 }
@@ -16,6 +18,7 @@ export interface UseEnrollmentsPageActionsParams {
 export function useEnrollmentsPageActions({
   enrollments,
   viewing,
+  canManage = false,
   onViewingChange,
   onActiveSubTabChange,
 }: UseEnrollmentsPageActionsParams) {
@@ -101,11 +104,18 @@ export function useEnrollmentsPageActions({
   const { handleBulkDelete, handleBulkRestore, handleBulkCancel } = useEnrollmentsBulkActions({
     bulkDeleteEnrollments,
     bulkRestoreEnrollments,
-    onBulkCancel: (ids) =>
+    onBulkCancel: (ids) => {
+      if (!canManage) {
+        notify.error(t("errors.route.forbiddenTitle"), {
+          description: t("errors.route.forbidden"),
+        });
+        return;
+      }
       void bulkEnd(ids, {
         reason: t("enrollments.timeline.cancelled"),
         endAs: "cancelled",
-      }),
+      });
+    },
   });
 
   const updateEnrollmentWithTimeline = (

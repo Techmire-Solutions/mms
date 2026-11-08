@@ -3,6 +3,10 @@ import { createEnrollmentsUseCases } from "../enrollments/use-cases/enrollmentsU
 import type { EnrollmentsRepository } from "../enrollments/repository/enrollmentsRepository.js";
 import { runWithTenant } from "../lib/tenantContext.js";
 
+vi.mock("../services/auditTrailService.js", () => ({
+  recordModernAuditEvent: vi.fn().mockResolvedValue(undefined),
+}));
+
 function createFakeRepo(): EnrollmentsRepository {
   return {
     listEnrollmentsByWorkspace: vi.fn().mockResolvedValue([]),

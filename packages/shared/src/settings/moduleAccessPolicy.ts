@@ -19,7 +19,8 @@ import { TASKS_MODULE_MANIFEST } from "../obligations/tasksModuleManifest.js";
 import { USERS_MODULE_MANIFEST } from "../auth/usersModuleManifest.js";
 
 /** Action a request or UI entry point performs inside a module. */
-export type ModulePermissionAction = "read" | "write" | "delete" | "export" | "setupWrite";
+export type ModulePermissionAction =
+  "read" | "write" | "manage" | "delete" | "export" | "setupWrite";
 /**
  * `availability` checks grant + enablement only, for routes whose handler owns a
  * finer permission rule (self-service edits, personal preferences).
@@ -64,6 +65,7 @@ interface ModulePermissionSource {
     readonly read: Permission;
     readonly write?: Permission;
     readonly delete?: Permission;
+    readonly manage?: Permission;
     readonly export?: Permission;
     readonly setupWrite: Permission;
   };
@@ -123,6 +125,8 @@ export function getModuleActionPermission(
       return p.read;
     case "write":
       return write;
+    case "manage":
+      return p.manage ?? write;
     case "delete":
       return p.delete ?? write;
     case "export":

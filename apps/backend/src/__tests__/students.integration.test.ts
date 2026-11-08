@@ -732,4 +732,58 @@ describe("students routes", () => {
     expect(mockBulkEnrollStudents).not.toHaveBeenCalled();
     await app.close();
   });
+
+  it("denies eligibility/deadline overrides to a write-only role", async () => {
+    const app = await buildApp();
+    try {
+      const headers = {
+        host: "demo.localhost",
+        authorization: `Bearer ${teacherToken(app)}`,
+        "content-type": "application/json",
+      };
+      const denied = await app.inject({
+        method: "POST",
+        url: "/api/students/bulk-enroll",
+        headers,
+        payload: {
+          studentIds: ["s1"],
+          sessionId: "ses-1",
+          classId: "cls-1",
+          mode: "add",
+          ignoreEligibility: true,
+        },
+      });
+      expect(denied.statusCode).toBe(403);
+      expect(mockBulkEnrollStudents).not.toHaveBeenCalled();
+    } finally {
+      await app.close();
+    }
+  });
+
+  it("allows an administrator to use the eligibility override", async () => {
+    mockBulkEnrollStudents.mockResolvedValue({ succeeded: 1, failed: 0 });
+    const app = await buildApp();
+    try {
+      const res = await app.inject({
+        method: "POST",
+        url: "/api/students/bulk-enroll",
+        headers: {
+          host: "demo.localhost",
+          authorization: `Bearer ${adminToken(app)}`,
+          "content-type": "application/json",
+        },
+        payload: {
+          studentIds: ["s1"],
+          sessionId: "ses-1",
+          classId: "cls-1",
+          mode: "add",
+          ignoreEligibility: true,
+        },
+      });
+      expect(res.statusCode).toBe(200);
+      expect(mockBulkEnrollStudents).toHaveBeenCalled();
+    } finally {
+      await app.close();
+    }
+  });
 });

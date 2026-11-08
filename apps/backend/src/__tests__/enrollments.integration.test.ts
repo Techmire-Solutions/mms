@@ -1,7 +1,50 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { admissionsContract, enrollmentContract, enrollmentOperationsContract } from "@mms/shared";
 import { buildApp } from "../app.js";
-import { accountantToken, adminToken, viewerToken } from "./helpers/tokens.js";
+import { accountantToken, adminToken, teacherToken, viewerToken } from "./helpers/tokens.js";
+
+const contractEnrollment = vi.hoisted(() => ({
+  id: "enr-1",
+  studentId: "stu-1",
+  studentName: "Ali",
+  sessionId: "ses-1",
+  sessionName: "Hifz",
+  classId: "cls-1",
+  className: "Hifz A",
+  enrolledDate: "2026-01-01",
+  baseFee: 0,
+  discountType: "none",
+  discountLabel: "",
+  discountPct: 0,
+  discountAmt: 0,
+  finalFee: 0,
+  status: "confirmed",
+  invoiceId: null,
+  paymentStatus: "none",
+  notes: "",
+  timeline: [],
+  createdAt: "2026-01-01T00:00:00.000Z",
+  updatedAt: "2026-01-01T00:00:00.000Z",
+}));
+
+vi.mock("../enrollments/use-cases/enrollmentOperationsUseCases.js", () => ({
+  enrollmentOperationsUseCases: {
+    placements: vi.fn().mockResolvedValue([]),
+    bulkEnd: vi.fn().mockResolvedValue({ succeeded: 0, failed: 0, failures: [] }),
+    transfer: vi.fn().mockResolvedValue(contractEnrollment),
+    withdraw: vi.fn().mockResolvedValue({
+      enrollment: contractEnrollment,
+      billing: { cancelled: [], review: [] },
+    }),
+  },
+}));
+
+vi.mock("../enrollments/use-cases/enrollmentLifecycleUseCases.js", () => ({
+  enrollmentLifecycleUseCases: {
+    readmit: vi.fn().mockResolvedValue(contractEnrollment),
+    suspend: vi.fn().mockResolvedValue(contractEnrollment),
+  },
+}));
 
 vi.mock("../db/database.js", () => ({
   initDb: vi.fn().mockResolvedValue(undefined),
@@ -699,5 +742,73 @@ describe("enrollments REST routes integration", () => {
       }),
     );
     await app.close();
+  });
+
+  it("denies administrative drops and fee edits to a write-only role", async () => {
+    const app = await buildApp();
+    try {
+      const headers = {
+        host: "demo.localhost",
+        authorization: `Bearer ${teacherToken(app, { name: "Teacher" })}`,
+      };
+
+      const withdraw = await app.inject({
+        method: "POST",
+        url: "/api/enrollments/enr-1/withdraw",
+        headers,
+        payload: { reason: "Family moved" },
+      });
+      expect(withdraw.statusCode).toBe(403);
+
+      const bulkEnd = await app.inject({
+        method: "POST",
+        url: "/api/enrollments/bulk-end",
+        headers,
+        payload: { ids: ["enr-1"], reason: "Family moved" },
+      });
+      expect(bulkEnd.statusCode).toBe(403);
+
+      const feeEdit = await app.inject({
+        method: "PUT",
+        url: "/api/enrollments/enr-1",
+        headers,
+        payload: { finalFee: 0 },
+      });
+      expect(feeEdit.statusCode).toBe(403);
+
+      const trash = await app.inject({
+        method: "DELETE",
+        url: "/api/enrollments/enr-1",
+        headers,
+      });
+      expect(trash.statusCode).toBe(403);
+
+      const deletedView = await app.inject({
+        method: "GET",
+        url: "/api/enrollments?includeDeleted=true",
+        headers,
+      });
+      expect(deletedView.statusCode).toBe(403);
+    } finally {
+      await app.close();
+    }
+  });
+
+  it("allows an administrator to run an administrative drop", async () => {
+    const app = await buildApp();
+    try {
+      const res = await app.inject({
+        method: "POST",
+        url: "/api/enrollments/enr-1/withdraw",
+        headers: {
+          host: "demo.localhost",
+          authorization: `Bearer ${adminToken(app, { name: "Admin" })}`,
+        },
+        payload: { reason: "Family moved" },
+      });
+      expect(res.statusCode).toBe(200);
+    } finally {
+      await app.close();
+    }
   });
 });

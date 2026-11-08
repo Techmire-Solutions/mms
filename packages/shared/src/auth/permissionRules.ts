@@ -44,6 +44,7 @@ export const PERMISSION_RULES: Readonly<Record<Permission, PermissionRule>> = Ob
   "enrollments.read": { module: "enrollments", requiredActions: ["read"] },
   "enrollments.write": { module: "enrollments", requiredActions: ["create", "update"] },
   "enrollments.delete": { module: "enrollments", requiredActions: ["delete"] },
+  "enrollments.manage": { module: "enrollments", requiredActions: ["manage"] },
 
   // Hasanat Cards
   "hasanat.read": { module: "hasanat", requiredActions: ["read"] },

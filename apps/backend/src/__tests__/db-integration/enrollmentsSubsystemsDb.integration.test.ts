@@ -26,6 +26,7 @@ import { expireWaitlistOffers } from "../../enrollments/use-cases/admissionsWait
 import { stampAttendanceSections } from "../../attendance/use-cases/attendanceSectionStamp.js";
 import { runWithTenant } from "../../lib/tenantContext.js";
 import { todayInTimeZone } from "../../lib/dbDate.js";
+import { enrollmentsUseCases } from "../../enrollments/use-cases/enrollmentsUseCases.js";
 import { requireDatabaseConnection } from "./dbTestSupport.js";
 
 const TENANT = "enrollments-subsystems-test";
@@ -391,5 +392,68 @@ describe("enrollment domain subsystems (real Postgres)", () => {
     expect(cursorPage.nextCursor).toBe(
       cursorPage.hasMore ? cursorPage.enrollments[0]!.id : undefined,
     );
+  });
+
+  it("writes immutable before/after audit rows for create, update, delete and restore", async () => {
+    const id = await enrollmentIdOf("s1");
+
+    await runWithTenant(TENANT, () =>
+      enrollmentsUseCases.updateEnrollmentById(id, { status: "confirmed" } as never),
+    );
+    await runWithTenant(TENANT, () =>
+      enrollmentsUseCases.updateEnrollmentById(id, { notes: "audited note" } as never),
+    );
+    await runWithTenant(TENANT, () => enrollmentsUseCases.deleteEnrollmentById(id, "admin"));
+    await runWithTenant(TENANT, () => enrollmentsUseCases.bulkRestoreEnrollments([id], "admin"));
+
+    const rows = await query<{
+      actionType: string;
+      oldState: string | null;
+      newState: string;
+      realUserId: string;
+    }>(sql`
+      SELECT action_type AS "actionType", old_state AS "oldState", new_state AS "newState",
+             real_user_id AS "realUserId"
+        FROM audit_trail_events
+       WHERE workspace_subdomain = ${TENANT} AND table_name = 'enrollments' AND record_id = ${id}
+       ORDER BY transaction_timestamp, id`);
+    expect(rows.length).toBeGreaterThanOrEqual(4);
+
+    const parsed = rows.map((row) => ({
+      actionType: row.actionType,
+      oldState: row.oldState ? (JSON.parse(row.oldState) as Record<string, unknown>) : null,
+      newState: JSON.parse(row.newState) as Record<string, unknown>,
+    }));
+    const statusChange = parsed.find(
+      (row) => row.actionType === "UPDATE" && row.newState.reasonCode === "status_change",
+    );
+    expect(statusChange?.oldState).toMatchObject({ status: "pending" });
+    expect(statusChange?.newState).toMatchObject({ status: "confirmed" });
+    expect(
+      parsed.some(
+        (row) =>
+          row.actionType === "UPDATE" &&
+          row.newState.reasonCode === "details_edit" &&
+          row.newState.notesChanged === true,
+      ),
+    ).toBe(true);
+    expect(parsed.some((row) => row.actionType === "DELETE")).toBe(true);
+    expect(parsed.some((row) => row.actionType === "RESTORE")).toBe(true);
+
+    // Bulk/approval-created enrollments carry one CREATE row each.
+    const created = await query<{ count: number }>(sql`
+      SELECT count(*)::int AS count FROM audit_trail_events
+       WHERE workspace_subdomain = ${TENANT} AND table_name = 'enrollments'
+         AND action_type = 'CREATE'`);
+    expect(Number(created[0]?.count ?? 0)).toBeGreaterThan(0);
+  });
+
+  it("keeps tenant scoping on the enrollment tables", async () => {
+    const id = await enrollmentIdOf("s3");
+    const foreign = await withTenant("another-workspace", (tx) =>
+      tx.execute<{ id: string }>(sql`
+        SELECT id FROM enrollments WHERE workspace_subdomain = 'another-workspace' AND id = ${id}`),
+    );
+    expect(foreign.rows).toEqual([]);
   });
 });

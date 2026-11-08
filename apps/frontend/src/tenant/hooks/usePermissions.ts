@@ -99,6 +99,7 @@ export interface ModulePermissionsManifest {
   permissions: {
     read?: Permission;
     write?: Permission;
+    manage?: Permission;
     delete?: Permission;
     export?: Permission;
     reports?: Permission;
@@ -113,6 +114,7 @@ export interface ModulePermissionsManifest {
 export interface UseModulePermissionsResult {
   canRead: boolean;
   canWrite: boolean;
+  canManage: boolean;
   canDelete: boolean;
   canExport: boolean;
   canReports: boolean;
@@ -133,6 +135,7 @@ export function useModulePermissions(
   return {
     canRead: p.read ? can(p.read) : false,
     canWrite: p.write ? can(p.write) : false,
+    canManage: p.manage ? can(p.manage) : false,
     canDelete: p.delete ? can(p.delete) : false,
     canExport: p.export ? can(p.export) : false,
     canReports: p.reports ? can(p.reports) : false,

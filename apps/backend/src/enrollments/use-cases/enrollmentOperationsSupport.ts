@@ -51,6 +51,7 @@ export async function recordOperationAudit(
   before: Enrollment,
   action: string,
   detail: Record<string, unknown>,
+  options?: { oldState?: Record<string, unknown>; reasonCode?: string },
 ): Promise<void> {
   await recordModernAuditEvent(tx, {
     workspaceSubdomain: tenant,
@@ -58,7 +59,12 @@ export async function recordOperationAudit(
     recordId: before.id,
     actionType: "UPDATE",
     realUserId: user.id,
-    newState: { operation: action, ...detail },
+    oldState: options?.oldState,
+    newState: {
+      operation: action,
+      ...(options?.reasonCode ? { reasonCode: options.reasonCode } : {}),
+      ...detail,
+    },
   });
 }
 

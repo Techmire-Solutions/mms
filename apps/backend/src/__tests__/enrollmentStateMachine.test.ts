@@ -3,6 +3,10 @@ import { runWithTenant } from "../lib/tenantContext.js";
 import { createEnrollmentsUseCases } from "../enrollments/use-cases/enrollmentsUseCases.js";
 import type { EnrollmentsRepository } from "../enrollments/repository/enrollmentsRepository.js";
 
+vi.mock("../services/auditTrailService.js", () => ({
+  recordModernAuditEvent: vi.fn().mockResolvedValue(undefined),
+}));
+
 vi.mock("../lib/livePush.js", () => ({
   broadcastTenantUpdate: vi.fn(),
   broadcastCollection: vi.fn(),

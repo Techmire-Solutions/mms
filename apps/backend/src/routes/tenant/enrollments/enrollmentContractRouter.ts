@@ -16,9 +16,26 @@ import {
   canDeleteCollection,
 } from "../../../services/rbacService.js";
 import { enrollmentsUseCases } from "../../../enrollments/use-cases/enrollmentsUseCases.js";
+import { userHasPermission } from "../../../lib/userPermissionContext.js";
 
 const ENROLLMENTS_COLLECTION = ENROLLMENTS_MODULE_MANIFEST.collectionKey;
+/** Fee fields are financial adjustments: they require the administrative capability. */
+const ENROLLMENT_FEE_FIELDS = [
+  "baseFee",
+  "discountType",
+  "discountLabel",
+  "discountPct",
+  "discountAmt",
+  "finalFee",
+] as const;
 const s = initServer();
+/**
+ * Verified tenant id from `authenticateTenant`. Missing here means the auth pipeline did not
+ * run: fail closed with an empty scope (the tenant guard rejects it) instead of binding the
+ * literal string "undefined" as a workspace.
+ */
+const tenantOf = (request: { tenant?: { id?: unknown } }): string =>
+  String(request.tenant?.id ?? "").trim();
 
 export const enrollmentContractRouter: FastifyPluginAsync = async (fastify) => {
   const router = s.router(enrollmentContract, {
@@ -46,7 +63,7 @@ export const enrollmentContractRouter: FastifyPluginAsync = async (fastify) => {
       }
       try {
         const result = await withTenant(
-          String(request.tenant?.id),
+          tenantOf(request),
           () =>
             enrollmentsUseCases.loadEnrollmentsPage({ ...query, includeDeleted } as Parameters<
               typeof enrollmentsUseCases.loadEnrollmentsPage
@@ -86,7 +103,7 @@ export const enrollmentContractRouter: FastifyPluginAsync = async (fastify) => {
       }
       try {
         const item = await withTenant(
-          String(request.tenant?.id),
+          tenantOf(request),
           () => enrollmentsUseCases.loadEnrollmentById(id, includeDeleted),
           { readOnly: true },
         );
@@ -117,7 +134,7 @@ export const enrollmentContractRouter: FastifyPluginAsync = async (fastify) => {
         };
       try {
         const item = await withTenant(
-          String(request.tenant?.id),
+          tenantOf(request),
           () => enrollmentsUseCases.createEnrollment(body),
           { readOnly: false },
         );
@@ -142,9 +159,21 @@ export const enrollmentContractRouter: FastifyPluginAsync = async (fastify) => {
           status: 403 as const,
           body: { type: "forbidden", message: "Insufficient permissions" },
         };
+      const touchesFees = ENROLLMENT_FEE_FIELDS.some(
+        (field) => (body as Record<string, unknown>)[field] !== undefined,
+      );
+      if (touchesFees && !userHasPermission(user, "enrollments.manage")) {
+        return {
+          status: 403 as const,
+          body: {
+            type: "forbidden",
+            message: "Administrative enrollment permission required to adjust fees",
+          },
+        };
+      }
       try {
         const updated = await withTenant(
-          String(request.tenant?.id),
+          tenantOf(request),
           () => enrollmentsUseCases.updateEnrollmentById(id, body),
           { readOnly: false },
         );
@@ -176,7 +205,7 @@ export const enrollmentContractRouter: FastifyPluginAsync = async (fastify) => {
         };
       try {
         const deleted = await withTenant(
-          String(request.tenant?.id),
+          tenantOf(request),
           () => enrollmentsUseCases.deleteEnrollmentById(id, String(user.id), body?.deletionReason),
           { readOnly: false },
         );
@@ -207,7 +236,7 @@ export const enrollmentContractRouter: FastifyPluginAsync = async (fastify) => {
         };
       try {
         const result = await withTenant(
-          String(request.tenant?.id),
+          tenantOf(request),
           () =>
             enrollmentsUseCases.bulkSoftDeleteEnrollments(
               body.ids.map(String),
@@ -238,7 +267,7 @@ export const enrollmentContractRouter: FastifyPluginAsync = async (fastify) => {
         };
       try {
         const result = await withTenant(
-          String(request.tenant?.id),
+          tenantOf(request),
           () => enrollmentsUseCases.bulkRestoreEnrollments(body.ids.map(String), String(user.id)),
           { readOnly: false },
         );

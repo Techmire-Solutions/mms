@@ -16,6 +16,7 @@ import { broadcastCollection } from "../../lib/livePush.js";
 import { invalidateMultiTierCache } from "../../lib/cache/index.js";
 import { HttpDomainError, SeatCapacityError } from "../../lib/httpErrors.js";
 import { withTenant } from "../../db/tenant-context.js";
+import { recordEnrollmentAudit } from "./enrollmentAudit.js";
 
 export interface RolloverCandidate extends LiveEnrollmentRow {
   student: Student | null;
@@ -71,7 +72,7 @@ export async function carryRolloverEnrollments(
 ): Promise<RolloverCarryResult> {
   if (placements.length === 0) return { created: 0, carriedSourceIds: new Set() };
   const classes = new Map(target.classes.map((cls) => [cls.id, cls]));
-  return withTenant(tenant, async () => {
+  return withTenant(tenant, async (tx) => {
     await ops.lockRolloverCarryTx(tenant, target.id);
     const used = new Map<string, number>();
     for (const row of await ops.countLiveSeatsByClassTx(tenant, target.id)) {
@@ -140,6 +141,22 @@ export async function carryRolloverEnrollments(
     let inserted: string[];
     try {
       ({ inserted } = await admissions.bulkSaveEnrollments(tenant, records));
+      for (const record of records) {
+        if (!inserted.includes(record.id)) continue;
+        await recordEnrollmentAudit(tx, tenant, {
+          recordId: record.id,
+          actionType: "CREATE",
+          reasonCode: "rollover",
+          newState: {
+            studentId: record.studentId,
+            sessionId: record.sessionId,
+            classId: record.classId,
+            sectionId: record.sectionId ?? null,
+            promotedFromEnrollmentId: record.promotedFromEnrollmentId ?? null,
+            status: record.status,
+          },
+        });
+      }
     } catch (error) {
       // The advisory lock serializes rollovers against each other, not against a single
       // enrollment that grabbed the last seat between the pre-check and this write.

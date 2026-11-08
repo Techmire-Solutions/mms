@@ -17,6 +17,7 @@ export function EnrollmentsPageModals({
   const {
     t,
     canWriteEnrollments,
+    canManageEnrollments,
     canDelete,
     directoryFilters,
     viewing,
@@ -50,6 +51,7 @@ export function EnrollmentsPageModals({
       <EnrollmentsModalLayer
         viewing={viewing}
         canWrite={canWriteEnrollments}
+        canManage={canManageEnrollments}
         canDelete={canDelete}
         onRestore={handleRestore}
         showDeleted={showDeleted}

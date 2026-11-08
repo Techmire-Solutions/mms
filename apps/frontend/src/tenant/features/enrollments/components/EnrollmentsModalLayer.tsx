@@ -10,6 +10,7 @@ import type { Enrollment } from "@/lib/data/enrollmentData";
 export interface EnrollmentsModalLayerProps {
   viewing: Enrollment | null;
   canWrite: boolean;
+  canManage?: boolean;
   showDeleted: boolean;
   showWizard: boolean;
   pendingDeleteId: string | null;
@@ -35,6 +36,7 @@ export interface EnrollmentsModalLayerProps {
 export function EnrollmentsModalLayer({
   viewing,
   canWrite,
+  canManage = false,
   showDeleted,
   showWizard,
   pendingDeleteId,
@@ -64,6 +66,7 @@ export function EnrollmentsModalLayer({
             <EnrollmentDetail
               enrollment={viewing}
               canWrite={canWrite && !showDeleted}
+              canManage={canManage && !showDeleted}
               canDelete={canDelete}
               onRestore={onRestore}
               onClose={onCloseViewing}
