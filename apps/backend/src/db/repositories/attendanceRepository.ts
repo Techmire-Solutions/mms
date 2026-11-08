@@ -1,13 +1,23 @@
-import { randomUUID } from "node:crypto";
-import { and, eq, inArray, isNotNull, isNull, sql } from "drizzle-orm";
+import { and, eq, inArray, isNull } from "drizzle-orm";
 
-import { attendance, attendanceLeaves } from "../schema.js";
+import { attendance } from "../schema.js";
 import { dedupeTrimmedIds, type AttendanceRecord } from "@mms/shared";
 import { withTenant, withTenantRead } from "../tenant-context.js";
+import { ConflictError } from "../../lib/httpErrors.js";
+import { isUniqueViolation } from "../../lib/pgErrors.js";
 import {
   attendanceRowToRecord as rowToRecord,
   attendanceRecordToInsert as recordToInsert,
 } from "./attendanceRepositoryMappers.js";
+import {
+  ATTENDANCE_LIVE_ONLY,
+  ATTENDANCE_NATURAL_KEY_TARGET,
+  ATTENDANCE_UPSERT_SET,
+  ATTENDANCE_VERSION_MATCH,
+  attendanceNaturalKey,
+  attendanceStaleWriteError,
+  planAttendanceUpsert,
+} from "./attendanceUpsert.js";
 
 const ATTENDANCE_RECORD_COLUMNS = {
   id: attendance.id,
@@ -23,9 +33,13 @@ const ATTENDANCE_RECORD_COLUMNS = {
   notes: attendance.notes,
   markedBy: attendance.markedBy,
   sectionId: attendance.sectionId,
+  version: attendance.version,
   deletedAt: attendance.deletedAt,
   deletedBy: attendance.deletedBy,
   deletionReason: attendance.deletionReason,
+  restoredAt: attendance.restoredAt,
+  restoredBy: attendance.restoredBy,
+  deletedWithCascade: attendance.deletedWithCascade,
   createdAt: attendance.createdAt,
   updatedAt: attendance.updatedAt,
 };
@@ -94,178 +108,121 @@ export async function saveAttendanceRecord(
   const subdomain = tenant.trim().toLowerCase();
   await withTenant(subdomain, async (tx) => {
     const values = recordToInsert(subdomain, record);
-    await tx
-      .insert(attendance)
-      .values(values)
-      .onConflictDoUpdate({
-        target: [attendance.workspaceSubdomain, attendance.id],
-        set: {
-          classId: values.classId,
-          studentId: values.studentId,
-          studentName: values.studentName,
-          rollNo: values.rollNo,
-          date: values.date,
-          status: values.status,
-          timeIn: values.timeIn,
-          timeOut: values.timeOut,
-          notes: values.notes,
-          markedBy: values.markedBy,
-          sectionId: values.sectionId,
-          deletedAt: values.deletedAt,
-          deletedBy: values.deletedBy,
-          deletionReason: values.deletionReason,
-          updatedAt: new Date(),
-        },
-      });
-  });
-}
-
-export async function bulkSaveAttendanceRecords(
-  tenant: string,
-  records: AttendanceRecord[],
-): Promise<void> {
-  if (records.length === 0) return;
-  const subdomain = tenant.trim().toLowerCase();
-  const recordMap = new Map<string, AttendanceRecord>();
-  for (const r of records) {
-    const id = typeof r.id === "string" && r.id.trim() !== "" ? r.id.trim() : `att-${randomUUID()}`;
-    recordMap.set(id, { ...r, id });
-  }
-  const uniqueRecords = Array.from(recordMap.values());
-
-  await withTenant(subdomain, async (tx) => {
-    await tx
-      .insert(attendance)
-      .values(uniqueRecords.map((record) => recordToInsert(subdomain, record)))
-      .onConflictDoUpdate({
-        target: [attendance.workspaceSubdomain, attendance.id],
-        set: {
-          classId: sql`excluded.class_id`,
-          studentId: sql`excluded.student_id`,
-          studentName: sql`excluded.student_name`,
-          rollNo: sql`excluded.roll_no`,
-          date: sql`excluded.date_on`,
-          status: sql`excluded.status`,
-          timeIn: sql`excluded.time_in`,
-          timeOut: sql`excluded.time_out`,
-          notes: sql`excluded.notes`,
-          markedBy: sql`excluded.marked_by`,
-          sectionId: sql`excluded.section_id`,
-          deletedAt: sql`excluded.deleted_at`,
-          deletedBy: sql`excluded.deleted_by`,
-          deletionReason: sql`excluded.deletion_reason`,
-          updatedAt: new Date(),
-        },
-      });
-  });
-}
-
-export async function deleteAttendanceRecord(tenant: string, id: string): Promise<boolean> {
-  const subdomain = tenant.trim().toLowerCase();
-  return withTenant(subdomain, async (tx) => {
-    const result = await tx
-      .delete(attendance)
-      .where(and(eq(attendance.workspaceSubdomain, subdomain), eq(attendance.id, id)));
-    return Boolean(result.rowCount && result.rowCount > 0);
-  });
-}
-
-export async function replaceAttendanceRecordsForWorkspace(
-  tenant: string,
-  records: AttendanceRecord[],
-): Promise<void> {
-  const subdomain = tenant.trim().toLowerCase();
-  const recordMap = new Map<string, AttendanceRecord>();
-  for (const r of records) {
-    const id = typeof r.id === "string" && r.id.trim() !== "" ? r.id.trim() : `att-${randomUUID()}`;
-    recordMap.set(id, { ...r, id });
-  }
-  const uniqueRecords = Array.from(recordMap.values());
-
-  await withTenant(subdomain, async (tx) => {
-    await tx.delete(attendanceLeaves).where(eq(attendanceLeaves.workspaceSubdomain, subdomain));
-    await tx.delete(attendance).where(eq(attendance.workspaceSubdomain, subdomain));
-    if (uniqueRecords.length > 0) {
-      await tx
+    const expectedVersion = typeof record.version === "number" ? record.version : undefined;
+    try {
+      const rows = await tx
         .insert(attendance)
-        .values(uniqueRecords.map((record) => recordToInsert(subdomain, record)));
+        .values(values)
+        .onConflictDoUpdate({
+          target: ATTENDANCE_NATURAL_KEY_TARGET,
+          targetWhere: ATTENDANCE_LIVE_ONLY,
+          set: ATTENDANCE_UPSERT_SET,
+          // Per-row OCC: `excluded.version` carries the token the caller read. A row whose
+          // token moved on is left untouched, so the write either applies or 409s.
+          setWhere: expectedVersion !== undefined ? ATTENDANCE_VERSION_MATCH : ATTENDANCE_LIVE_ONLY,
+        })
+        .returning({ id: attendance.id });
+
+      if (rows.length === 0) throw attendanceStaleWriteError(record);
+    } catch (error) {
+      if (isUniqueViolation(error)) {
+        throw new ConflictError(
+          `Attendance for student ${record.studentId} on ${record.date} already exists`,
+          "attendance_duplicate",
+        );
+      }
+      throw error;
     }
   });
 }
 
-export async function deleteAttendanceRecordsByWorkspace(tenant: string): Promise<void> {
-  const subdomain = tenant.trim().toLowerCase();
-  await withTenant(subdomain, async (tx) => {
-    await tx.delete(attendanceLeaves).where(eq(attendanceLeaves.workspaceSubdomain, subdomain));
-    await tx.delete(attendance).where(eq(attendance.workspaceSubdomain, subdomain));
-  });
-}
-
-export async function bulkSoftDeleteAttendanceRecords(
+/**
+ * Upserts a marked roster atomically.
+ *
+ * Two statements at most: one for rows that carry an OCC token, one for legacy rows without one.
+ * Dedupe, locking order and OCC semantics live in {@link planAttendanceUpsert} so they are unit
+ * tested without a database.
+ */
+export async function bulkSaveAttendanceRecords(
   tenant: string,
-  ids: string[],
-  deletedBy?: string,
-  deletionReason?: string,
-): Promise<{ succeeded: number; failed: number }> {
+  records: AttendanceRecord[],
+): Promise<AttendanceRecord[]> {
+  if (records.length === 0) return [];
   const subdomain = tenant.trim().toLowerCase();
-  const uniqueIds = dedupeTrimmedIds(ids);
-  if (uniqueIds.length === 0) return { succeeded: 0, failed: 0 };
-  const now = new Date();
-  return withTenant(subdomain, async (tx) => {
-    const updated = await tx
-      .update(attendance)
-      .set({
-        deletedAt: now,
-        deletedBy: deletedBy || null,
-        deletionReason: deletionReason || null,
-        updatedAt: now,
-      })
-      .where(
-        and(
-          eq(attendance.workspaceSubdomain, subdomain),
-          inArray(attendance.id, uniqueIds),
-          isNull(attendance.deletedAt),
-        ),
-      )
-      .returning({ id: attendance.id });
+  const { withToken, withoutToken } = planAttendanceUpsert(records);
 
-    return {
-      succeeded: updated.length,
-      failed: uniqueIds.length - updated.length,
+  return withTenant(subdomain, async (tx) => {
+    const persisted: AttendanceRecord[] = [];
+
+    /**
+     * `ON CONFLICT DO UPDATE … WHERE` silently skips a row whose predicate fails (archived, or a
+     * stale OCC token). Compare `RETURNING` against the input and refuse the batch: a save that
+     * wrote nothing must not report success, and the transaction rollback keeps it all-or-nothing.
+     */
+    const assertEveryRowWritten = (
+      rows: Array<{ classId: string; studentId: string; date: string }>,
+      expected: AttendanceRecord[],
+    ): void => {
+      if (rows.length === expected.length) return;
+      const returned = new Set(rows.map((row) => attendanceNaturalKey(row)));
+      const lost = expected.find((record) => !returned.has(attendanceNaturalKey(record)));
+      throw attendanceStaleWriteError(lost ?? {});
     };
+
+    try {
+      if (withoutToken.length > 0) {
+        const rows = await tx
+          .insert(attendance)
+          .values(withoutToken.map((record) => recordToInsert(subdomain, record)))
+          .onConflictDoUpdate({
+            target: ATTENDANCE_NATURAL_KEY_TARGET,
+            targetWhere: ATTENDANCE_LIVE_ONLY,
+            set: ATTENDANCE_UPSERT_SET,
+            setWhere: ATTENDANCE_LIVE_ONLY,
+          })
+          .returning(ATTENDANCE_RECORD_COLUMNS);
+
+        assertEveryRowWritten(rows, withoutToken);
+        persisted.push(...rows.map(rowToRecord));
+      }
+
+      if (withToken.length > 0) {
+        const rows = await tx
+          .insert(attendance)
+          .values(withToken.map((record) => recordToInsert(subdomain, record)))
+          .onConflictDoUpdate({
+            target: ATTENDANCE_NATURAL_KEY_TARGET,
+            targetWhere: ATTENDANCE_LIVE_ONLY,
+            set: ATTENDANCE_UPSERT_SET,
+            setWhere: ATTENDANCE_VERSION_MATCH,
+          })
+          .returning(ATTENDANCE_RECORD_COLUMNS);
+
+        assertEveryRowWritten(rows, withToken);
+        persisted.push(...rows.map(rowToRecord));
+      }
+    } catch (error) {
+      if (isUniqueViolation(error)) {
+        throw new ConflictError(
+          "Attendance already exists for this student and day — reload the roster and retry",
+          "attendance_duplicate",
+        );
+      }
+      throw error;
+    }
+
+    return persisted;
   });
 }
 
-export async function bulkRestoreAttendanceRecords(
-  tenant: string,
-  ids: string[],
-  _userId?: string,
-): Promise<{ succeeded: number; failed: number }> {
-  const subdomain = tenant.trim().toLowerCase();
-  const uniqueIds = dedupeTrimmedIds(ids);
-  if (uniqueIds.length === 0) return { succeeded: 0, failed: 0 };
-  const now = new Date();
-  return withTenant(subdomain, async (tx) => {
-    const updated = await tx
-      .update(attendance)
-      .set({
-        deletedAt: null,
-        deletedBy: null,
-        deletionReason: null,
-        updatedAt: now,
-      })
-      .where(
-        and(
-          eq(attendance.workspaceSubdomain, subdomain),
-          inArray(attendance.id, uniqueIds),
-          isNotNull(attendance.deletedAt),
-        ),
-      )
-      .returning({ id: attendance.id });
-
-    return {
-      succeeded: updated.length,
-      failed: uniqueIds.length - updated.length,
-    };
-  });
-}
+/**
+ * Trash lifecycle (soft delete, restore, restore-mirror replacement) lives in
+ * `attendanceRepositoryTrash.ts`; re-exported here so adapters, the backup/restore mapping and the
+ * service layer keep one import surface.
+ */
+export {
+  bulkRestoreAttendanceRecords,
+  bulkSoftDeleteAttendanceRecords,
+  deleteAttendanceRecordsByWorkspace,
+  replaceAttendanceRecordsForWorkspace,
+} from "./attendanceRepositoryTrash.js";

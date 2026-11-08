@@ -17,6 +17,7 @@ import {
   sessionClassScholarships,
 } from "../sessions.js";
 import { attendance, attendanceLeaves } from "../attendance.js";
+import { sessionClassSections } from "../sessionSections.js";
 import { enrollments, enrollmentTimelineEvents } from "../enrollments.js";
 import { financeInvoices } from "../finance.js";
 import { examResults } from "../examinations.js";
@@ -29,6 +30,16 @@ export const attendanceRelations = relations(attendance, ({ one }) => ({
   student: one(students, {
     fields: [attendance.workspaceSubdomain, attendance.studentId],
     references: [students.workspaceSubdomain, students.id],
+  }),
+  // Matches `attendance_class_fk` (workspace + class) and `attendance_section_fk`
+  // (workspace + section). Without these the FK graph was only half-modelled.
+  sessionClass: one(sessionClasses, {
+    fields: [attendance.workspaceSubdomain, attendance.classId],
+    references: [sessionClasses.workspaceSubdomain, sessionClasses.id],
+  }),
+  section: one(sessionClassSections, {
+    fields: [attendance.workspaceSubdomain, attendance.sectionId],
+    references: [sessionClassSections.workspaceSubdomain, sessionClassSections.id],
   }),
 }));
 export const attendanceLeavesRelations = relations(attendanceLeaves, ({ one }) => ({

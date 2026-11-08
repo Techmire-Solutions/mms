@@ -49,9 +49,38 @@ const LARGE_TABLES = [
   "tenant_users",
   "user_activity_logs",
   "audit_trail_events",
+  // Rows = students x teaching days x classes, i.e. the highest-row-count academic table. Every
+  // historical attendance index on a populated database was built out of band
+  // (scripts/date_columns_concurrent_indexes.sql, academic_contract_concurrent_indexes.sql,
+  // class_integrity_concurrent_indexes.sql), so the ratchet has to cover it too — see
+  // docs/attendance-schema-persistence-audit-2026-11-08.md (F8).
+  "attendance",
 ];
 
-/** Measured 2026-10-08. Baseline raised to 174 for migration 0165: empty-string hardened unique indexes for gr_number/student_id, functional status coalesce index, and partial contact index on soft-deleted students for re-registration. */
+/**
+ * Tables covered from a specific migration forward.
+ *
+ * A table whose historical plain indexes predate this ratchet is grandfathered by migration index,
+ * so coverage can be widened without raising {@link BASELINE} (the anti-padding guard in
+ * `scripts/ci/check-ratchet-baselines.mjs` forbids that — and raising it would also hide new
+ * violations on the tables that were already covered). `attendance` joined on 2026-11-08 with 19
+ * plain statements across 0000–0182, all applied before it was covered.
+ */
+const LARGE_TABLES_SINCE = {
+  attendance: 218,
+};
+
+/** Numeric prefix of a Drizzle migration filename (`0218_…` → 218). */
+function migrationIndex(file) {
+  const match = /^(\d+)_/.exec(file);
+  return match ? Number.parseInt(match[1], 10) : 0;
+}
+
+/**
+ * Measured 2026-10-08. Baseline raised to 174 for migration 0165: empty-string hardened unique
+ * indexes for gr_number/student_id, functional status coalesce index, and partial contact index on
+ * soft-deleted students for re-registration.
+ */
 const BASELINE = 174;
 
 function fail(message) {
@@ -81,6 +110,8 @@ for (const file of files) {
     if (!match) continue;
     const table = match[1].toLowerCase();
     if (!LARGE_TABLES.includes(table)) continue;
+    const since = LARGE_TABLES_SINCE[table];
+    if (since !== undefined && migrationIndex(file) < since) continue;
     perTable[table] = (perTable[table] ?? 0) + 1;
     offenders.push({ file, table });
   }
