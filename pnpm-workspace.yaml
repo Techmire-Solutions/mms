@@ -20,9 +20,9 @@ catalog:
   react: "^19.3.1"
   react-dom: "^19.3.1"
   vite: "^8.3.5"
-  "@tanstack/react-query": "^5.104.5"
+  "@tanstack/react-query": "^5.105.0"
   "@ts-rest/react-query": "3.52.1"
-  react-router-dom: "^7.18.4"
+  react-router-dom: "^7.18.5"
 
 # Supply-chain cooldown: package versions must be at least one day old before
 # pnpm resolves them. `minimumReleaseAgeExclude` records the reviewed exceptions
