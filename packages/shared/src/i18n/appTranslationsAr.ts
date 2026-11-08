@@ -3415,6 +3415,8 @@ export const APP_TRANSLATIONS_AR: Record<AppTranslationKey, string> = {
   "enrollments.settings.saved": "تم حفظ إعدادات التسجيلات",
   "enrollments.settings.title": "إعدادات وحدة التسجيلات",
   "enrollments.settings.waitlistEnabled": "تفعيل قائمة الانتظار",
+  "enrollments.settings.waitlistOfferHours": "مدة عرض المقعد (ساعات)",
+  "enrollments.settings.waitlistOfferHoursHint": "المدة التي يحتفظ فيها المتقدم في قائمة الانتظار بعرض المقعد قبل عودته إلى القائمة.",
   "enrollments.settings.waitlistEnabledHint":
     "السماح للطلاب بالانضمام لقائمة الانتظار عند امتلاء الصف",
   "enrollments.setup.discardUnsavedFieldsConfirm":

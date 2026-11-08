@@ -7,6 +7,7 @@ export type EnrollmentModulePreferences = Pick<
   EnrollmentsSettings,
   | "maxStudentsPerClass"
   | "waitlistEnabled"
+  | "waitlistOfferHours"
   | "requireEligibilityCheck"
   | "autoAssignClass"
   | "enrollmentApproval"
@@ -19,6 +20,7 @@ export type EnrollmentModulePreferences = Pick<
 const PREF_KEYS = [
   "maxStudentsPerClass",
   "waitlistEnabled",
+  "waitlistOfferHours",
   "requireEligibilityCheck",
   "autoAssignClass",
   "enrollmentApproval",
@@ -27,6 +29,16 @@ const PREF_KEYS = [
   "reenrollmentReminder",
   "defaultViewLayout",
 ] as const;
+
+const MIN_OFFER_HOURS = 1;
+const MAX_OFFER_HOURS = 720;
+
+/** Whole hours, clamped to 1–720; anything unparseable falls back to the default (72). */
+function normalizeOfferHours(value: string | undefined): string {
+  const parsed = Number.parseInt(value ?? "", 10);
+  if (!Number.isFinite(parsed)) return DEFAULT_ENROLLMENTS_SETTINGS.waitlistOfferHours;
+  return String(Math.min(MAX_OFFER_HOURS, Math.max(MIN_OFFER_HOURS, parsed)));
+}
 
 function normalizeViewLayout(value: string | undefined): string {
   const trimmed = value?.trim();
@@ -41,6 +53,7 @@ export function normalizeEnrollmentModulePreferences(
   const defaults: EnrollmentModulePreferences = {
     maxStudentsPerClass: DEFAULT_ENROLLMENTS_SETTINGS.maxStudentsPerClass,
     waitlistEnabled: DEFAULT_ENROLLMENTS_SETTINGS.waitlistEnabled,
+    waitlistOfferHours: DEFAULT_ENROLLMENTS_SETTINGS.waitlistOfferHours,
     requireEligibilityCheck: DEFAULT_ENROLLMENTS_SETTINGS.requireEligibilityCheck,
     autoAssignClass: DEFAULT_ENROLLMENTS_SETTINGS.autoAssignClass,
     enrollmentApproval: DEFAULT_ENROLLMENTS_SETTINGS.enrollmentApproval,
@@ -60,6 +73,9 @@ export function normalizeEnrollmentModulePreferences(
       typeof partial.waitlistEnabled === "boolean"
         ? partial.waitlistEnabled
         : defaults.waitlistEnabled,
+    waitlistOfferHours: normalizeOfferHours(
+      typeof partial.waitlistOfferHours === "string" ? partial.waitlistOfferHours : undefined,
+    ),
     requireEligibilityCheck:
       typeof partial.requireEligibilityCheck === "boolean"
         ? partial.requireEligibilityCheck

@@ -3481,6 +3481,8 @@ export const APP_TRANSLATIONS_EN = {
   "enrollments.settings.saved": "Enrollments settings saved",
   "enrollments.settings.title": "Enrollments configuration",
   "enrollments.settings.waitlistEnabled": "Enable waitlist",
+  "enrollments.settings.waitlistOfferHours": "Seat offer window (hours)",
+  "enrollments.settings.waitlistOfferHoursHint": "How long a waitlisted applicant keeps a seat offer before it returns to the waitlist.",
   "enrollments.settings.waitlistEnabledHint":
     "Allow students to join a waitlist when class is full",
   "enrollments.setup.discardUnsavedFieldsConfirm":

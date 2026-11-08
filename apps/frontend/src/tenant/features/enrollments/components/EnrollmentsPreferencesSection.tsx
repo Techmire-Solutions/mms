@@ -51,6 +51,21 @@ export function EnrollmentsPreferencesSection({
           value={settingsDraft.waitlistEnabled}
           onChange={(value) => upd("waitlistEnabled", value)}
         />
+        <Field
+          id="waitlistOfferHours"
+          label={t("enrollments.settings.waitlistOfferHours")}
+          hint={t("enrollments.settings.waitlistOfferHoursHint")}
+        >
+          <Input
+            id="waitlistOfferHours"
+            name="waitlistOfferHours"
+            type="text"
+            inputMode="numeric"
+            className={FORM_INPUT}
+            value={settingsDraft.waitlistOfferHours || ""}
+            onChange={(event) => upd("waitlistOfferHours", event.target.value)}
+          />
+        </Field>
         <ToggleRow
           label={t("enrollments.settings.requireEligibilityCheck")}
           description={t("enrollments.settings.requireEligibilityCheckHint")}

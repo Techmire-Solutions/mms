@@ -3457,6 +3457,8 @@ export const APP_TRANSLATIONS_UR: Record<AppTranslationKey, string> = {
   "enrollments.settings.saved": "داخلوں کی ترتیبات محفوظ ہو گئیں",
   "enrollments.settings.title": "داخلوں کی ترتیبات",
   "enrollments.settings.waitlistEnabled": "ویٹ لسٹ فعال کریں",
+  "enrollments.settings.waitlistOfferHours": "سیٹ پیشکش کی مدت (گھنٹے)",
+  "enrollments.settings.waitlistOfferHoursHint": "ویٹ لسٹ میں موجود درخواست دہندہ کتنی دیر تک سیٹ کی پیشکش رکھتا ہے، اس سے پہلے کہ وہ دوبارہ ویٹ لسٹ میں چلا جائے۔",
   "enrollments.settings.waitlistEnabledHint": "کلاس بھری ہونے پر طلبہ کو ویٹ لسٹ میں شامل ہونے دیں",
   "enrollments.setup.discardUnsavedFieldsConfirm":
     "آپ کے پاس فیلڈز کی غیر محفوظ تبدیلیاں ہیں۔ کیا آپ اس ٹیب کو چھوڑ کر انہیں منسوخ کرنا چاہتے ہیں؟",

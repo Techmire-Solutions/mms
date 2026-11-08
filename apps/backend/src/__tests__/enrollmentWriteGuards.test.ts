@@ -21,6 +21,12 @@ const findSession = vi.hoisted(() => vi.fn());
 const findStudents = vi.hoisted(() => vi.fn());
 const findTimezone = vi.hoisted(() => vi.fn());
 
+vi.mock("../enrollments/use-cases/admissionsWaitlistExpiry.js", () => ({
+  releaseOffersIfClassFull: vi.fn().mockResolvedValue(0),
+  releaseOffersIfClassFullPostCommit: vi.fn().mockResolvedValue(undefined),
+  expireWaitlistOffers: vi.fn().mockResolvedValue({ reverted: 0, workspaces: [] }),
+}));
+
 vi.mock("../enrollments/use-cases/enrollmentTimetableGuard.js", () => ({
   assertNoStudentScheduleCollision: vi.fn().mockResolvedValue(undefined),
 }));

@@ -2,6 +2,7 @@ import { randomBytes, randomUUID } from "node:crypto";
 import {
   evaluateEligibility,
   isWorkspaceEnabled,
+  normalizeEnrollmentModulePreferences,
   registrationSubmitSchema,
   REGISTRATION_INELIGIBLE_ERROR_TYPE,
   type PublicRegistrationView,
@@ -110,6 +111,16 @@ export async function submitPublicRegistration(
         REGISTRATION_INELIGIBLE_ERROR_TYPE,
         eligibility.reasons.join(","),
       );
+    // A waitlist only exists when the module enables it; otherwise a full class is a hard stop
+    // (the old code created waitlisted applications regardless of the preference).
+    if (eligibility.waitlist) {
+      const preferences = normalizeEnrollmentModulePreferences(
+        await repo.getEnrollmentModulePreferencesByWorkspace(subdomain),
+      );
+      if (!preferences.waitlistEnabled) {
+        throw new ConflictError("This class is full and the waitlist is disabled");
+      }
+    }
     const id = randomUUID();
     const reference = newReference();
     const status: RegistrationApplicationStatus = eligibility.waitlist ? "waitlisted" : "submitted";

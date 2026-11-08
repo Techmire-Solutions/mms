@@ -1492,6 +1492,34 @@
       "when": 1794387600000,
       "tag": "0212_session_class_drop_deadline",
       "breakpoints": true
+    },
+    {
+      "idx": 213,
+      "version": "7",
+      "when": 1794474000000,
+      "tag": "0213_enrollment_membership_archive_guard",
+      "breakpoints": true
+    },
+    {
+      "idx": 214,
+      "version": "7",
+      "when": 1794560400000,
+      "tag": "0214_finance_invoice_enrollment_fk",
+      "breakpoints": true
+    },
+    {
+      "idx": 215,
+      "version": "7",
+      "when": 1794646800000,
+      "tag": "0215_waitlist_offer_window",
+      "breakpoints": true
+    },
+    {
+      "idx": 216,
+      "version": "7",
+      "when": 1794733200000,
+      "tag": "0216_enrollment_name_snapshot_sync",
+      "breakpoints": true
     }
   ]
 }

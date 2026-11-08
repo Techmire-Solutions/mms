@@ -29,3 +29,31 @@ export const NOT_OPERABLE =
 export function assertChanged(count: number, message: string): void {
   if (count === 0) throw new ConflictError(message);
 }
+
+export interface OperationActor {
+  userId: string | null;
+  label: string;
+}
+
+export interface LiveEnrollmentRow {
+  id: string;
+  studentId: string;
+  studentName: string;
+  sessionId: string;
+  classId: string;
+  sectionId: string | null;
+  status: string;
+}
+
+export type EndedEnrollmentStatus =
+  "withdrawn" | "cancelled" | "completed" | "promoted" | "retained" | "graduated" | "left";
+
+export const ENDED_EVENT_LABEL: Record<EndedEnrollmentStatus, string> = {
+  withdrawn: "Withdrawn",
+  cancelled: "Cancelled with the session",
+  completed: "Completed with the session",
+  promoted: "Promoted to the next session",
+  retained: "Retained for the next session",
+  graduated: "Graduated",
+  left: "Left at year end",
+};

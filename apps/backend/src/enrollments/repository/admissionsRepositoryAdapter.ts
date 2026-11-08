@@ -19,7 +19,13 @@ import { findStudentsByIds } from "../../db/repositories/studentRepositoryHydrat
 import { bulkSaveEnrollments } from "../../db/repositories/enrollmentRepositoryPersist.js";
 import { findActivelyEnrolledStudentIds } from "../../db/repositories/enrollmentBulkOps.js";
 import { findLatestEnrollmentId } from "../../db/repositories/enrollmentPlacementLookup.js";
-import { flagOldestWaitlistedApplication } from "../../db/repositories/registrationWaitlistRepository.js";
+import {
+  classHasFreeSeat,
+  flagOldestWaitlistedApplication,
+  revertExpiredWaitlistOffers,
+  revertSeatOffersForClass,
+} from "../../db/repositories/registrationWaitlistRepository.js";
+import { getEnrollmentModulePreferencesByWorkspace } from "../../db/repositories/enrollmentModulePreferencesRepository.js";
 
 /** Drizzle-backed adapter for {@link AdmissionsRepository}. */
 export const admissionsRepository: AdmissionsRepository = {
@@ -40,4 +46,8 @@ export const admissionsRepository: AdmissionsRepository = {
   findActivelyEnrolledStudentIds,
   findLatestEnrollmentId,
   flagOldestWaitlistedApplication,
+  revertExpiredWaitlistOffers,
+  revertSeatOffersForClass,
+  classHasFreeSeat,
+  getEnrollmentModulePreferencesByWorkspace,
 };

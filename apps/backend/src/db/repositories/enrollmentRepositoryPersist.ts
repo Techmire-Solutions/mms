@@ -1,6 +1,6 @@
 import { and, eq, inArray, isNotNull, isNull, sql } from "drizzle-orm";
-import { dedupeTrimmedIds, type Enrollment } from "@mms/shared";
-import { enrollments, enrollmentTimelineEvents } from "../schema.js";
+import { OPEN_INVOICE_STATUSES, dedupeTrimmedIds, type Enrollment } from "@mms/shared";
+import { enrollments, enrollmentTimelineEvents, financeInvoices } from "../schema.js";
 import { withTenant } from "../tenant-context.js";
 import { recordToInsert } from "./enrollmentRecordToInsert.js";
 import { resolveEnrollmentSectionsTx } from "./enrollmentSectionResolve.js";
@@ -11,6 +11,7 @@ import { findWorkspaceTimezone } from "./workspaceRepository.js";
 import { todayInTimeZone } from "../../lib/dbDate.js";
 import { enableIncludeDeleted } from "../../lib/softDeleteHelpers.js";
 import { enrollmentWriteConflict, findLiveEnrollmentPairsTx } from "./enrollmentWriteGuards.js";
+import { ConflictError } from "../../lib/httpErrors.js";
 
 export {
   enrollmentWriteConflict,
@@ -166,6 +167,11 @@ export async function replaceEnrollmentsForWorkspace(
         .values(placed.map((record) => recordToInsert(subdomain, record)));
       await appendClientTimelineTx(tx, subdomain, records);
       await syncPlacementsTx(tx, subdomain, placed, today);
+      // A restore replaces the whole table: legacy class-less pairs for students who now have
+      // enrollments must be consumed here too, or membership would keep a phantom session.
+      await syncEnrolledSessionsTx(tx, subdomain, {
+        enrollmentIds: placed.map((record) => record.id),
+      });
     }
   });
 }
@@ -181,6 +187,26 @@ export async function bulkSoftDeleteEnrollments(
   if (uniqueIds.length === 0) return { succeeded: 0, failed: 0 };
   const now = new Date();
   return withTenant(subdomain, async (tx) => {
+    // Trashing an enrollment frees its seat but is not a withdrawal: it settles nothing.
+    // Block it while the enrollment still has open invoices so a student never disappears
+    // from the roster while remaining billable (use the withdrawal path to settle).
+    const openInvoices = await tx
+      .select({ enrollmentId: financeInvoices.enrollmentId })
+      .from(financeInvoices)
+      .where(
+        and(
+          eq(financeInvoices.workspaceSubdomain, subdomain),
+          inArray(financeInvoices.enrollmentId, uniqueIds),
+          isNull(financeInvoices.deletedAt),
+          inArray(financeInvoices.status, [...OPEN_INVOICE_STATUSES]),
+        ),
+      )
+      .limit(1);
+    if (openInvoices.length > 0) {
+      throw new ConflictError(
+        "This enrollment still has open invoices — settle or cancel them first, or withdraw the enrollment instead of deleting it",
+      );
+    }
     // PostgreSQL re-checks the UPDATE's new row against the policy's USING expression,
     // and `deleted_at` is part of it: without this opt-in the soft-delete is rejected
     // as an RLS violation under the production (non-bypass) role.

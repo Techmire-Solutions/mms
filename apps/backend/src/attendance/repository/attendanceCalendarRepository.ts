@@ -18,6 +18,8 @@ export interface AttendanceCalendarRepository {
   restoreAcademicCalendarEvent: CalendarStore["restoreAcademicCalendarEvent"];
   loadInstructionalDayContext: DayContextStore["loadInstructionalDayContext"];
   listEnrollmentPlacements: PlacementStore["listEnrollmentPlacements"];
+  listEnrollmentPlacementsAsOf: PlacementStore["listEnrollmentPlacementsAsOf"];
+  findWorkspaceTimezone: (tenant: string) => Promise<string | null>;
   getAttendanceModulePreferences: PreferencesStore["getAttendanceModulePreferences"];
   findOverlappingApprovedLeaves: LeaveStore["findOverlappingApprovedLeaves"];
   insertApprovedLeave: LeaveStore["insertApprovedLeave"];

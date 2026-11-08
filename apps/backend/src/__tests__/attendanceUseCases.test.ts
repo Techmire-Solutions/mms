@@ -3,7 +3,10 @@ import { createAttendanceUseCases } from "../attendance/use-cases/attendanceUseC
 import type { AttendanceRepository } from "../attendance/repository/attendanceRepository.js";
 import { runWithTenant } from "../lib/tenantContext.js";
 vi.mock("../attendance/use-cases/attendanceSectionStamp.js", () => ({
-  stampAttendanceSections: vi.fn(async (_tenant: string, records: unknown[]) => records),
+  stampAttendanceSections: vi.fn(async (_tenant: string, records: unknown[]) => ({
+    records,
+    rejected: [],
+  })),
 }));
 
 function createFakeRepo(): AttendanceRepository {

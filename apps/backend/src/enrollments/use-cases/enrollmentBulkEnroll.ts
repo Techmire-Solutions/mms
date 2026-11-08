@@ -20,6 +20,7 @@ import { broadcastCollection } from "../../lib/livePush.js";
 import { invalidateMultiTierCache } from "../../lib/cache/index.js";
 import { endLiveEnrollments } from "./enrollmentEndUseCases.js";
 import { assertNoStudentScheduleCollision } from "./enrollmentTimetableGuard.js";
+import { releaseOffersIfClassFullPostCommit } from "./admissionsWaitlistExpiry.js";
 import { todayInTimeZone } from "../../lib/dbDate.js";
 import { hasActiveTransaction } from "../../db/dbTransactions.js";
 import { withSavepoint } from "../../db/transactionSideEffects.js";
@@ -137,6 +138,10 @@ export async function bulkEnrollStudentsIntoClass(
     // is written; retry one row at a time so the rest of the roster still lands.
     if (!isRowRejection(error)) throw error;
     inserted = await saveIndividually(tenant, records);
+  }
+  if (inserted.length > 0) {
+    // The batch can take the last free seat; an offer for this class is then stale.
+    await releaseOffersIfClassFullPostCommit(tenant, sessionClass.id);
   }
   await afterChange(tenant);
   return { succeeded: inserted.length, failed: studentIds.length - inserted.length };

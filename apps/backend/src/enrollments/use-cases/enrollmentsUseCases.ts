@@ -4,6 +4,7 @@ import { getRequestTenant } from "../../lib/tenantContext.js";
 import { createGenericRelationalService } from "../../services/genericRelationalService.js";
 import { ConflictError, HttpDomainError, ValidationError } from "../../lib/httpErrors.js";
 import { withTenant } from "../../db/tenant-context.js";
+import { offerFreedSeatPostCommit } from "./admissionsWaitlistUseCases.js";
 import {
   validateActiveForeignKeys,
   validateNewEnrollmentRules,
@@ -48,7 +49,23 @@ export function createEnrollmentsUseCases(
       listByWorkspace: repo.listEnrollmentsByWorkspace,
       findById: repo.findEnrollmentById,
       save: repo.saveEnrollment,
-      bulkDelete: repo.bulkSoftDeleteEnrollments,
+      // Trash frees seats: read the classes first, then offer each freed seat after the delete
+      // commits (a waitlist failure must not turn a successful trash into an error).
+      bulkDelete: async (
+        tenant: string,
+        ids: string[],
+        deletedBy?: string,
+        deletionReason?: string,
+      ) => {
+        const before = await repo.findEnrollmentsByIds(tenant, ids);
+        if (!repo.bulkSoftDeleteEnrollments) return { succeeded: 0, failed: ids.length };
+        const result = await repo.bulkSoftDeleteEnrollments(tenant, ids, deletedBy, deletionReason);
+        if (result.succeeded > 0) {
+          const classIds = [...new Set(before.map((record) => record.classId))];
+          for (const classId of classIds) await offerFreedSeatPostCommit(tenant, classId);
+        }
+        return result;
+      },
       bulkRestore: repo.bulkRestoreEnrollments,
     },
     schema: enrollmentRecordSchema,

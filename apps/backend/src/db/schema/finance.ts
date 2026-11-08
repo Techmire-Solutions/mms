@@ -40,6 +40,7 @@ export const financeInvoices = pgTable(
     invoiceNumber: varchar("invoice_number", { length: 40 }),
     feeStructureId: text("fee_structure_id"),
     billingPeriod: varchar("billing_period", { length: 7 }),
+    /** FK `finance_invoices_enrollment_fk` (migration 0214); column-list SET NULL is not expressible here. */
     enrollmentId: varchar("enrollment_id", { length: 64 }),
     familyContactId: varchar("family_contact_id", { length: 64 }),
     lateFeeAmt: numeric("late_fee_amt", { precision: 12, scale: 2 }).notNull().default("0"),

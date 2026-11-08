@@ -4,7 +4,7 @@ import type { OperationActor } from "../repository/enrollmentOperationsRepositor
 import { settleEnrollmentWithdrawal } from "../../finance/use-cases/financeEnrollmentBillingUseCases.js";
 import { invalidateMultiTierCache } from "../../lib/cache/index.js";
 import { broadcastCollection } from "../../lib/livePush.js";
-import { offerFreedSeat } from "./admissionsWaitlistUseCases.js";
+import { offerFreedSeatPostCommit } from "./admissionsWaitlistUseCases.js";
 import { todayInTimeZone } from "../../lib/dbDate.js";
 
 /** Actor for changes triggered by the system (e.g. a student status change without a user). */
@@ -39,7 +39,9 @@ export async function endLiveEnrollments(
     const settled = await settleEnrollmentWithdrawal(enrollment.id, options.lastDay);
     billing.cancelled.push(...settled.cancelled);
     billing.review.push(...settled.review);
-    if (options.status === "withdrawn") await offerFreedSeat(tenant, enrollment.classId);
+    if (options.status === "withdrawn") {
+      await offerFreedSeatPostCommit(tenant, enrollment.classId);
+    }
   }
   if (live.length > 0) {
     await invalidateMultiTierCache({ tenantId: tenant, domain: "students" });

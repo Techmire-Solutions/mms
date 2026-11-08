@@ -43,7 +43,10 @@ import {
 import { findPaymentsByIds } from "../db/repositories/financePaymentsRepository.js";
 import { findEnrollmentsByIds } from "../db/repositories/enrollmentRepositoryHydrate.js";
 vi.mock("../attendance/use-cases/attendanceSectionStamp.js", () => ({
-  stampAttendanceSections: vi.fn(async (_tenant: string, records: unknown[]) => records),
+  stampAttendanceSections: vi.fn(async (_tenant: string, records: unknown[]) => ({
+    records,
+    rejected: [],
+  })),
 }));
 
 vi.mock("../db/database.js", () => ({

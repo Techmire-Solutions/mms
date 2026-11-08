@@ -8,6 +8,19 @@ import {
 } from "./enrollmentHistoryWrite.js";
 import { syncEnrolledSessionsTx } from "./enrollmentSessionSync.js";
 import { ENROLLMENT_OPERABLE_STATUSES } from "@mms/shared";
+import { ConflictError } from "../../lib/httpErrors.js";
+export {
+  ENDED_EVENT_LABEL,
+  type EndedEnrollmentStatus,
+  type LiveEnrollmentRow,
+  type OperationActor,
+} from "./enrollmentTransitionGuards.js";
+import type {
+  EndedEnrollmentStatus,
+  LiveEnrollmentRow,
+  OperationActor,
+} from "./enrollmentTransitionGuards.js";
+import { ENDED_EVENT_LABEL } from "./enrollmentTransitionGuards.js";
 import { lockAndAssertTargetSectionTx } from "./enrollmentSeatCountRepository.js";
 import {
   NOT_OPERABLE,
@@ -38,24 +51,6 @@ const feeColumns = (fee: EnrollmentFeeColumns) => ({
   discountAmt: String(fee.discountAmt),
   finalFee: String(fee.finalFee),
 });
-
-export type EndedEnrollmentStatus =
-  "withdrawn" | "cancelled" | "completed" | "promoted" | "retained" | "graduated" | "left";
-
-const ENDED_EVENT_LABEL: Record<EndedEnrollmentStatus, string> = {
-  withdrawn: "Withdrawn",
-  cancelled: "Cancelled with the session",
-  completed: "Completed with the session",
-  promoted: "Promoted to the next session",
-  retained: "Retained for the next session",
-  graduated: "Graduated",
-  left: "Left at year end",
-};
-
-export interface OperationActor {
-  userId: string | null;
-  label: string;
-}
 
 const enrollmentKey = (subdomain: string, id: string) =>
   and(
@@ -96,9 +91,34 @@ export async function applyEnrollmentTransfer(
         ...feeColumns(input.fee),
         updatedAt: new Date(),
       })
-      .where(operableEnrollmentKey(subdomain, input.enrollmentId))
+      .where(
+        and(
+          operableEnrollmentKey(subdomain, input.enrollmentId),
+          // Compare-and-set on the *current* placement: two concurrent transfers of the same
+          // enrollment must not last-write-wins with a bogus timeline transition.
+          eq(enrollments.classId, input.from.classId),
+          input.from.sectionId === null
+            ? isNull(enrollments.sectionId)
+            : eq(enrollments.sectionId, input.from.sectionId),
+        ),
+      )
       .returning({ id: enrollments.id });
-    assertChanged(changed.length, NOT_OPERABLE);
+    if (changed.length === 0) {
+      const [current] = await tx
+        .select({ classId: enrollments.classId, sectionId: enrollments.sectionId })
+        .from(enrollments)
+        .where(enrollmentKey(subdomain, input.enrollmentId))
+        .limit(1);
+      const moved =
+        current !== undefined &&
+        (current.classId !== input.from.classId ||
+          (current.sectionId ?? null) !== (input.from.sectionId ?? null));
+      throw new ConflictError(
+        moved
+          ? "This enrollment changed while the action was running — reload and try again"
+          : NOT_OPERABLE,
+      );
+    }
     await movePlacementTx(tx, subdomain, {
       enrollmentId: input.enrollmentId,
       classId: input.to.classId,
@@ -170,16 +190,6 @@ export async function applyEnrollmentWithdrawal(
     });
     await syncEnrolledSessionsTx(tx, subdomain, { studentIds: [input.studentId] });
   });
-}
-
-export interface LiveEnrollmentRow {
-  id: string;
-  studentId: string;
-  studentName: string;
-  sessionId: string;
-  classId: string;
-  sectionId: string | null;
-  status: string;
 }
 
 /**
