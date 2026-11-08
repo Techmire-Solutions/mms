@@ -73,6 +73,7 @@ export function buildRolloverSession(
       enrolled: 0,
       ageCalculationDate: shift(cls.ageCalculationDate, offsetDays),
       enrollmentDeadline: shift(cls.enrollmentDeadline, offsetDays),
+      dropDeadline: shift(cls.dropDeadline, offsetDays),
       sections,
       fees: body.copy.fees
         ? cls.fees.map((fee) => ({ ...fee, id: idFor("fee", fee.id), classId }))

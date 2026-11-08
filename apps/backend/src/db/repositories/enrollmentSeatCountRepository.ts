@@ -2,7 +2,7 @@ import { and, eq, inArray, isNull, notInArray, sql } from "drizzle-orm";
 import { SEAT_RELEASED_ENROLLMENT_STATUSES } from "@mms/shared";
 import { enrollments } from "../schema.js";
 import { withTenant, type TenantTransaction } from "../tenant-context.js";
-import { SeatCapacityError } from "../../lib/httpErrors.js";
+import { NotFoundError, SeatCapacityError } from "../../lib/httpErrors.js";
 
 /** Advisory lock for a rollover carry on one target session (released with the ambient tx). */
 export async function lockRolloverCarryTx(tenant: string, targetSessionId: string): Promise<void> {
@@ -212,4 +212,20 @@ export async function loadEnrollmentSeatHoldersTx(
       },
     ]),
   );
+}
+
+/**
+ * Row-locks a target section and refuses the write when it has no free seat.
+ * `excludeEnrollmentIds` keeps the moved row's own seat out of the count.
+ */
+export async function lockAndAssertTargetSectionTx(
+  tx: TenantTransaction,
+  subdomain: string,
+  sectionId: string,
+  excludeEnrollmentIds: readonly string[] = [],
+): Promise<void> {
+  const sections = await lockSectionsForSeatsTx(tx, subdomain, [sectionId]);
+  const section = sections.get(sectionId);
+  if (!section) throw new NotFoundError("Section not found");
+  await assertSeatCapacityTx(tx, subdomain, { section, excludeEnrollmentIds });
 }

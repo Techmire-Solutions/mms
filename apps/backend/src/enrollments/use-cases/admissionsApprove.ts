@@ -10,6 +10,7 @@ import { createGuardianContact, guardianRelationships } from "./admissionsGuardi
 import { createStudent } from "../../students/use-cases/studentWriteUseCases.js";
 import { recordModernAuditEvent } from "../../services/auditTrailService.js";
 import { ConflictError } from "../../lib/httpErrors.js";
+import { canTransitionApplication } from "@mms/shared";
 import { bulkEnrollStudentsIntoClass } from "./enrollmentBulkEnroll.js";
 
 export interface ApproveOptions {
@@ -81,37 +82,53 @@ export async function approveApplications(
     repo.findApplicationsByIdsTx(tx, subdomain, ids),
   );
   for (const app of apps) {
-    if (app.status === "approved") continue;
+    if (!canTransitionApplication(app.status, "approved")) {
+      outcome.failures.push({
+        id: app.id,
+        message:
+          app.status === "approved"
+            ? "This application is already approved"
+            : `An application in "${app.status}" cannot be approved`,
+      });
+      continue;
+    }
     try {
+      // One transaction per application: student/contact creation, enrollment, application
+      // link and audit either all commit or all roll back. The nested use cases join this
+      // transaction (withTenant is re-entrant), so a failure leaves no half-approved state.
       await runWithTenant(subdomain, async () => {
-        const studentId =
-          options.existingStudentId ??
-          app.studentId ??
-          (await createStudentFromApplication(app, today, options.user));
-        // Already enrolled in the target session: link the existing row instead of asking
-        // the bulk path for a seat it cannot grant (that would look like "class full").
-        const alreadyEnrolled = await repo.findActivelyEnrolledStudentIds(
-          subdomain,
-          app.sessionId,
-          [studentId],
-        );
-        if (alreadyEnrolled.size === 0) {
-          const result = await bulkEnrollStudentsIntoClass(subdomain, {
-            studentIds: [studentId],
-            sessionId: app.sessionId,
-            classId: app.classId,
-            sectionId: options.sectionId ?? app.preferredSectionId ?? undefined,
-            mode: "add",
-          });
-          // Zero enrolled = the class/section is full. Marking the application approved
-          // would show a place the student does not have; leave it reviewable instead.
-          if (result.succeeded === 0)
-            throw new ConflictError(
-              "The class is full — raise its capacity or waitlist the applicant before approving",
-            );
-        }
-        const enrollmentId = await repo.findLatestEnrollmentId(subdomain, studentId, app.classId);
         await withTenant(subdomain, async (tx) => {
+          const studentId =
+            options.existingStudentId ??
+            app.studentId ??
+            (await createStudentFromApplication(app, today, options.user));
+          // Already enrolled in the target session: link the existing row instead of asking
+          // the bulk path for a seat it cannot grant (that would look like "class full").
+          const alreadyEnrolled = await repo.findActivelyEnrolledStudentIds(
+            subdomain,
+            app.sessionId,
+            [studentId],
+          );
+          if (alreadyEnrolled.size === 0) {
+            const result = await bulkEnrollStudentsIntoClass(subdomain, {
+              studentIds: [studentId],
+              sessionId: app.sessionId,
+              classId: app.classId,
+              sectionId: options.sectionId ?? app.preferredSectionId ?? undefined,
+              mode: "add",
+              // The reviewer has made the decision and the public submission already passed
+              // the eligibility rule; re-blocking here would strand an approved applicant
+              // when the class's age/gender was edited after submission.
+              ignoreEligibility: true,
+            });
+            // Zero enrolled = the class/section is full. Marking the application approved
+            // would show a place the student does not have; leave it reviewable instead.
+            if (result.succeeded === 0)
+              throw new ConflictError(
+                "The class is full — raise its capacity or waitlist the applicant before approving",
+              );
+          }
+          const enrollmentId = await repo.findLatestEnrollmentId(subdomain, studentId, app.classId);
           await repo.updateApplicationTx(tx, subdomain, app.id, {
             status: "approved",
             studentId,

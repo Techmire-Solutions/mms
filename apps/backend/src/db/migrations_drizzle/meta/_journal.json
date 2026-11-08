@@ -1485,6 +1485,13 @@
       "when": 1794304800000,
       "tag": "0211_drop_session_classes_enrolled",
       "breakpoints": true
+    },
+    {
+      "idx": 212,
+      "version": "7",
+      "when": 1794387600000,
+      "tag": "0212_session_class_drop_deadline",
+      "breakpoints": true
     }
   ]
 }

@@ -75,7 +75,7 @@ beforeEach(() => {
     ended: 2,
     billing: { cancelled: [{ id: "inv-1", invoiceNumber: "INV-1" }], review: [] },
   });
-  vi.mocked(completeLiveEnrollments).mockResolvedValue({ ended: 2 });
+  vi.mocked(completeLiveEnrollments).mockResolvedValue({ ended: 2, completed: 2, cancelled: 0 });
 });
 
 describe("transitionSession guards", () => {

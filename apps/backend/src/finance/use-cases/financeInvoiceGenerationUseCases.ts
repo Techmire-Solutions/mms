@@ -178,7 +178,13 @@ export async function maybeGenerateInvoiceForEnrollment(
     const { findEnrollmentById } = await import("../../db/repositories/enrollmentRepository.js");
     return (await findEnrollmentById(tenant, enrollment.id)) ?? enrollment;
   } catch (error) {
-    logger.warn({ err: error }, "Enrollment invoice generation skipped");
+    // Cross-aggregate boundary: the enrollment has committed and Finance can regenerate the
+    // invoice for the period from its own screen. It must never fail silently, though — the
+    // old warning made a missing invoice indistinguishable from "invoicing disabled".
+    logger.error(
+      { err: error, enrollmentId: enrollment.id },
+      "Enrollment committed but invoice generation failed — regenerate it from Finance → Invoices",
+    );
     return enrollment;
   }
 }

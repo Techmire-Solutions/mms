@@ -11,6 +11,7 @@ import { todayInTimeZone } from "../../lib/dbDate.js";
 import { invalidateMultiTierCache } from "../../lib/cache/index.js";
 import { broadcastCollection } from "../../lib/livePush.js";
 import { recordModernAuditEvent } from "../../services/auditTrailService.js";
+import type { TenantTransaction } from "../../db/tenant-context.js";
 
 /** Enrollment + its session when the session still accepts changes; 404/409 otherwise. */
 export async function loadEnrollmentInOpenSession(
@@ -37,15 +38,21 @@ export async function loadOperable(tenant: string, id: string) {
   return { ...loaded, placements };
 }
 
-/** Audit + cache/broadcast after an operation; returns the refreshed enrollment. */
-export async function afterChange(
+/**
+ * Appends the operation's audit row **inside the mutation transaction**.
+ *
+ * The old helper wrote it in a separate transaction after the change had committed, so an
+ * audit failure left a committed operation with no trail entry.
+ */
+export async function recordOperationAudit(
+  tx: TenantTransaction,
   tenant: string,
   user: User,
   before: Enrollment,
   action: string,
   detail: Record<string, unknown>,
-): Promise<Enrollment> {
-  await recordModernAuditEvent({
+): Promise<void> {
+  await recordModernAuditEvent(tx, {
     workspaceSubdomain: tenant,
     tableName: "enrollments",
     recordId: before.id,
@@ -53,6 +60,10 @@ export async function afterChange(
     realUserId: user.id,
     newState: { operation: action, ...detail },
   });
+}
+
+/** Cache + live-push after the transaction commits; returns the refreshed enrollment. */
+export async function afterChange(tenant: string, before: Enrollment): Promise<Enrollment> {
   await invalidateMultiTierCache({ tenantId: tenant, domain: "students" });
   await invalidateMultiTierCache({ tenantId: tenant, domain: "sessions" });
   await broadcastCollection("enrollments");

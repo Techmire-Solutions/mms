@@ -1,7 +1,7 @@
-import { and, eq, inArray, isNull, notInArray } from "drizzle-orm";
+import { and, eq, inArray, isNull, notInArray, sql } from "drizzle-orm";
 import { SEAT_RELEASED_ENROLLMENT_STATUSES, type Enrollment } from "@mms/shared";
 import { enrollments } from "../schema.js";
-import type { TenantTransaction } from "../tenant-context.js";
+import { withTenant, type TenantTransaction } from "../tenant-context.js";
 import { ConflictError } from "../../lib/httpErrors.js";
 import { isUniqueViolation, uniqueViolationConstraint } from "../../lib/pgErrors.js";
 
@@ -59,4 +59,63 @@ export async function findLiveEnrollmentPairsTx(
       ),
     );
   return new Map(rows.map((row) => [`${row.sessionId}|${row.studentId}`, row.id]));
+}
+
+/**
+ * Guarded status transition for the generic CRUD channel.
+ *
+ * The status predicate is inside the UPDATE, so a concurrent operation that already moved
+ * the row (e.g. a cancellation) makes this a 409 instead of a silent regression. Callers
+ * must run it in the same transaction as the rest of the record write.
+ */
+export async function transitionEnrollmentStatusTx(
+  tx: TenantTransaction,
+  subdomain: string,
+  input: { id: string; from: string; to: string },
+): Promise<void> {
+  const changed = await tx
+    .update(enrollments)
+    .set({ status: input.to, updatedAt: new Date() })
+    .where(
+      and(
+        eq(enrollments.workspaceSubdomain, subdomain),
+        eq(enrollments.id, input.id),
+        eq(enrollments.status, input.from),
+        isNull(enrollments.deletedAt),
+      ),
+    )
+    .returning({ id: enrollments.id });
+  if (changed.length === 0) {
+    throw new ConflictError(
+      "This enrollment changed while the action was running — reload and try again",
+    );
+  }
+}
+
+/** Sets `invoice_id` only when the enrollment does not already have one. */
+export async function linkEnrollmentInvoiceIds(
+  tenant: string,
+  links: readonly { enrollmentId: string; invoiceId: string }[],
+): Promise<void> {
+  if (links.length === 0) return;
+  const subdomain = tenant.trim().toLowerCase();
+  await withTenant(subdomain, async (tx) => {
+    await tx.execute(sql`
+      UPDATE ${enrollments}
+      SET invoice_id = CASE ${sql.join(
+        links.map(
+          (link) => sql`WHEN ${enrollments.id} = ${link.enrollmentId} THEN ${link.invoiceId}`,
+        ),
+        sql` `,
+      )} END,
+      updated_at = now()
+      WHERE ${enrollments.workspaceSubdomain} = ${subdomain}
+        AND ${enrollments.id} IN (${sql.join(
+          links.map((link) => sql`${link.enrollmentId}`),
+          sql`, `,
+        )})
+        AND ${enrollments.invoiceId} IS NULL
+        AND ${enrollments.deletedAt} IS NULL
+    `);
+  });
 }

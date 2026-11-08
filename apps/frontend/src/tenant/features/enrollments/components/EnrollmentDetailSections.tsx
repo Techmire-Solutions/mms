@@ -12,7 +12,13 @@ import type { Student } from "@mms/shared";
 import { type Enrollment } from "@/lib/data/enrollmentData";
 import { Button } from "@/components/ui/button";
 import { StatusBadge, type StatusBadgeConfigItem } from "@/components/app/StatusBadge";
-import { ENROLLMENT_PAYMENT_STATUSES, formatDate, formatDateTime } from "@mms/shared";
+import {
+  ENROLLMENT_PAYMENT_STATUSES,
+  allowedEnrollmentTransitions,
+  enrollmentAllowsOperations,
+  formatDate,
+  formatDateTime,
+} from "@mms/shared";
 import { useTranslation } from "@/hooks/useTranslation";
 import { DetailSectionCard } from "@/components/app/DetailSectionCard";
 import { DetailAttributeRow } from "@/components/app/DetailAttributeRow";
@@ -44,13 +50,14 @@ export function EnrollmentDetailSections({
 }: EnrollmentDetailSectionsProps): React.JSX.Element {
   const { t } = useTranslation();
 
-  const nextStatuses = (
-    enrollment.status === "pending"
-      ? ["confirmed", "cancelled"]
-      : enrollment.status === "confirmed"
-        ? ["completed", "cancelled"]
-        : []
-  ) as Enrollment["status"][];
+  // Only the manual edge (pending → confirmed) is a plain status update; "cancel" is an
+  // operation with side effects (placement close, invoice settlement). Completion is owned
+  // by session completion, so it is not offered here.
+  const manualNext = allowedEnrollmentTransitions(enrollment.status, { channel: "manual" });
+  const nextStatuses = [
+    ...manualNext,
+    ...(enrollmentAllowsOperations(enrollment.status) ? (["cancelled"] as const) : []),
+  ] as Enrollment["status"][];
   const nextPaymentStatuses = ENROLLMENT_PAYMENT_STATUSES.filter(
     (paymentStatus) => paymentStatus !== enrollment.paymentStatus,
   );

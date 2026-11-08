@@ -134,6 +134,15 @@ export function ClassDetailGeneralTab({
           />
         </Field>
 
+        <Field id="class-drop-deadline" label={t("sessions.classes.detail.dropDeadline")}>
+          <DatePicker
+            id="class-drop-deadline"
+            name="dropDeadline"
+            value={classDraft.dropDeadline}
+            onChange={(value) => updateDraft("dropDeadline", value)}
+          />
+        </Field>
+
         <Field id="class-status" label={t("common.status")}>
           <FormSelect
             id="class-status"

@@ -1,9 +1,15 @@
 import { and, eq, inArray, isNull, notInArray, sql } from "drizzle-orm";
-import { SEAT_RELEASED_ENROLLMENT_STATUSES, type Class } from "@mms/shared";
+import {
+  SEAT_RELEASED_ENROLLMENT_STATUSES,
+  findTimetableCollisions,
+  periodTimeErrors,
+  type Class,
+} from "@mms/shared";
 import { randomUUID } from "node:crypto";
 import { sessionClasses, enrollments, examClasses } from "../schema.js";
 import { type TenantTransaction } from "../tenant-context.js";
-import { ConflictError } from "../../lib/httpErrors.js";
+import { ConflictError, ValidationError } from "../../lib/httpErrors.js";
+import { getSessionModulePreferencesByWorkspace } from "./sessionModulePreferencesRepository.js";
 import { persistClassSectionsTx } from "./sessionRepositorySections.js";
 import { hasClassReferencesTx } from "./sessionClassReferenceGuard.js";
 import {
@@ -84,6 +90,52 @@ async function assertClassCapacityTx(
     );
 }
 
+/**
+ * Timetable payload validation (migration 0167 gave timetables a date and free-form
+ * `start_time`/`end_time`, but nothing ever validated them).
+ *
+ *  - format/order is always enforced (an invalid or reversed time is never legitimate);
+ *  - same-class period overlaps are always refused (a class cannot be in two places);
+ *  - teacher double-booking is refused when Sessions → `timetableConflictCheck` is on.
+ */
+async function assertTimetablePaylodValid(
+  classes: readonly Class[],
+  subdomain: string,
+): Promise<void> {
+  for (const cls of classes) {
+    for (const timetable of cls.timetables ?? []) {
+      const errors = periodTimeErrors(timetable.periods ?? []);
+      if (errors.length > 0) {
+        const first = errors[0]!;
+        throw new ValidationError(
+          `${cls.name}: period ${first.index + 1} has an invalid time ` +
+            `(use HH:MM, and the end must be after the start)`,
+        );
+      }
+    }
+  }
+  const preferences = await getSessionModulePreferencesByWorkspace(subdomain);
+  const conflictCheck = preferences?.timetableConflictCheck ?? true;
+  if (!conflictCheck) return;
+  const collisions = findTimetableCollisions(
+    classes.map((cls) => ({
+      id: cls.id,
+      name: cls.name,
+      timetables: (cls.timetables ?? []).map((timetable) => ({
+        date: timetable.date ?? null,
+        periods: timetable.periods ?? [],
+      })),
+    })),
+  );
+  if (collisions.length > 0) {
+    throw new ConflictError(
+      collisions[0]!.kind === "faculty_double_booked"
+        ? `A teacher is booked in two overlapping periods on ${collisions[0]!.date}`
+        : `${collisions[0]!.detail}. Fix the timetable before saving.`,
+    );
+  }
+}
+
 export async function persistSessionClassesTx(
   tx: Transaction,
   subdomain: string,
@@ -91,6 +143,8 @@ export async function persistSessionClassesTx(
   classes?: Class[],
 ): Promise<void> {
   if (classes === undefined) return;
+
+  await assertTimetablePaylodValid(classes, subdomain);
 
   const payload = classes.map((c) => ({ ...c, id: c.id || randomUUID() }));
   const keptIds = payload.map((c) => c.id);
@@ -133,6 +187,7 @@ export async function persistSessionClassesTx(
         ? c.sections.reduce((total, section) => total + Math.max(0, section.capacity ?? 0), 0)
         : Math.max(0, c.maxStudents ?? 30),
       enrollmentDeadline: c.enrollmentDeadline || "",
+      dropDeadline: c.dropDeadline?.trim() ? c.dropDeadline.trim() : null,
       status: c.status || "active",
       facultyId: c.facultyId?.trim() ? c.facultyId.trim() : null,
       facultyName: c.facultyName || "",

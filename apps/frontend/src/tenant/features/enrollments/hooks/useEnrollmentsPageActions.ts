@@ -4,6 +4,7 @@ import type { Enrollment } from "@/lib/data/enrollmentData";
 import { useEnrollmentViewerRole } from "@/tenant/hooks/useViewerRole";
 import { useEnrollmentMutations } from "@/tenant/features/enrollments/hooks/useEnrollmentsApi";
 import { useEnrollmentsBulkActions } from "@/tenant/features/enrollments/hooks/useEnrollmentsBulkActions";
+import { useEnrollmentOperations } from "@/tenant/features/enrollments/hooks/useEnrollmentOperations";
 
 export interface UseEnrollmentsPageActionsParams {
   enrollments: Enrollment[];
@@ -28,6 +29,7 @@ export function useEnrollmentsPageActions({
     bulkDeleteEnrollments,
     bulkRestoreEnrollments,
   } = useEnrollmentMutations();
+  const { withdraw, bulkEnd } = useEnrollmentOperations();
 
   const handleComplete = async (enrollment: Enrollment) => {
     try {
@@ -43,29 +45,19 @@ export function useEnrollmentsPageActions({
     }
   };
 
-  const handleCancel = (id: string) => {
+  /**
+   * Cancelling is an *operation*, not a status edit: the shared end path closes the
+   * placement, ends the window and settles later invoices. The previous implementation
+   * only rewrote `status` through PUT and silently skipped all of that.
+   */
+  const handleCancel = async (id: string) => {
     const enrollment = enrollments.find((candidate) => candidate.id === id);
     if (!enrollment) return;
-    updateEnrollment.mutate(
-      {
-        id,
-        enrollment: {
-          ...enrollment,
-          status: "cancelled" as const,
-          timeline: [
-            ...(enrollment.timeline || []),
-            { ts: new Date().toISOString(), event: t("enrollments.timeline.cancelled"), by: role },
-          ],
-        },
-      },
-      {
-        onSuccess: () => notify.info(t("enrollments.toast.cancelled")),
-        onError: (err: unknown) =>
-          notify.error(t("enrollments.toast.saveFailed"), {
-            description: err instanceof Error ? err.message : String(err),
-          }),
-      },
-    );
+    const ok = await withdraw(id, {
+      reason: t("enrollments.timeline.cancelled"),
+      endAs: "cancelled",
+    });
+    if (ok && viewing?.id === id) onViewingChange(null);
   };
 
   const handleDelete = (id: string, deletionReason?: string) => {
@@ -109,7 +101,11 @@ export function useEnrollmentsPageActions({
   const { handleBulkDelete, handleBulkRestore, handleBulkCancel } = useEnrollmentsBulkActions({
     bulkDeleteEnrollments,
     bulkRestoreEnrollments,
-    handleCancel,
+    onBulkCancel: (ids) =>
+      void bulkEnd(ids, {
+        reason: t("enrollments.timeline.cancelled"),
+        endAs: "cancelled",
+      }),
   });
 
   const updateEnrollmentWithTimeline = (
@@ -140,6 +136,12 @@ export function useEnrollmentsPageActions({
   const handleStatusChange = (id: string, newStatus: Enrollment["status"]) => {
     const enrollment = enrollments.find((candidate) => candidate.id === id);
     if (!enrollment) return;
+    // Terminal outcomes go through their operation (side effects included). Only the
+    // manual edge (pending → confirmed) is a plain update.
+    if (newStatus === "cancelled" || newStatus === "withdrawn") {
+      void handleCancel(id);
+      return;
+    }
     updateEnrollmentWithTimeline(
       enrollment,
       t("enrollments.timeline.statusChange", { status: newStatus }),

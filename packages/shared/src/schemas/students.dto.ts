@@ -107,6 +107,10 @@ export const studentsBulkEnrollBodySchema = z
     classId: z.string().min(1).optional(),
     sectionId: z.string().min(1).optional(),
     mode: z.enum(["add", "remove"]).default("add"),
+    /** Import/legacy escape hatch: add despite the class add deadline (audited). */
+    allowAfterDeadline: z.boolean().optional(),
+    /** Import/legacy escape hatch: add despite age/gender eligibility (audited). */
+    ignoreEligibility: z.boolean().optional(),
   })
   .strict()
   .refine((body) => body.mode === "remove" || Boolean(body.classId), {

@@ -60,6 +60,7 @@ export async function hydrateSessionsListBatched(
         capacity: sessionClasses.capacity,
         enrolled: sql<number>`(SELECT count(*)::int FROM enrollments e WHERE e.workspace_subdomain = ${sessionClasses.workspaceSubdomain} AND e.session_id = ${sessionClasses.sessionId} AND e.class_id = ${sessionClasses.id} AND e.deleted_at IS NULL AND ${enrollmentHoldsSeatSql("e")})`,
         enrollmentDeadline: sessionClasses.enrollmentDeadline,
+        dropDeadline: sessionClasses.dropDeadline,
         status: sessionClasses.status,
         facultyId: sessionClasses.facultyId,
         facultyName: sessionClasses.facultyName,

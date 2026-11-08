@@ -10,13 +10,16 @@ import {
 import { enrollmentOperationsRepository as repo } from "../repository/enrollmentOperationsRepositoryAdapter.js";
 import { ConflictError, ValidationError } from "../../lib/httpErrors.js";
 import { recordApprovedLeave } from "../../attendance/use-cases/attendanceLeaveUseCases.js";
+import { assertNoStudentScheduleCollision } from "./enrollmentTimetableGuard.js";
 import { findTransferTarget, readmitWindowError } from "./enrollmentOperationRules.js";
 import {
   actorOf,
   afterChange,
   loadEnrollmentInOpenSession,
   loadOperable,
+  recordOperationAudit,
 } from "./enrollmentOperationsSupport.js";
+import { withTenant } from "../../db/tenant-context.js";
 
 const ISO_DATE = /^\d{4}-\d{2}-\d{2}/;
 
@@ -49,24 +52,28 @@ export const enrollmentLifecycleUseCases = {
     if (target.seatsLeft !== null && target.seatsLeft <= 0)
       throw new ConflictError(`${target.cls.name} has no free seats`);
     const [student] = await repo.findStudentsByIds(tenant, [enrollment.studentId]);
+    await assertNoStudentScheduleCollision(tenant, session, target.cls.id, [enrollment.studentId]);
     const fee = enrollmentFeeForClass(session.baseFee, target.cls, student ?? {});
 
-    await repo.applyEnrollmentReadmission(tenant, {
-      enrollmentId: enrollment.id,
-      studentId: enrollment.studentId,
-      to: { classId: target.cls.id, className: target.cls.name, sectionId: target.sectionId },
-      fee,
-      effectiveOn: input.effectiveOn,
-      reason: input.reason,
-      actor: actorOf(user),
+    await withTenant(tenant, async (tx) => {
+      await repo.applyEnrollmentReadmission(tenant, {
+        enrollmentId: enrollment.id,
+        studentId: enrollment.studentId,
+        to: { classId: target.cls.id, className: target.cls.name, sectionId: target.sectionId },
+        fee,
+        effectiveOn: input.effectiveOn,
+        reason: input.reason,
+        actor: actorOf(user),
+      });
+      await recordOperationAudit(tx, tenant, user, enrollment, "readmit", {
+        toClassId: target.cls.id,
+        toSectionId: target.sectionId,
+        finalFee: fee.finalFee,
+        effectiveOn: input.effectiveOn,
+        reason: input.reason,
+      });
     });
-    return afterChange(tenant, user, enrollment, "readmit", {
-      toClassId: target.cls.id,
-      toSectionId: target.sectionId,
-      finalFee: fee.finalFee,
-      effectiveOn: input.effectiveOn,
-      reason: input.reason,
-    });
+    return afterChange(tenant, enrollment);
   },
 
   /** Approved leave range (Attendance) + timeline entry; billing is unchanged by policy. */
@@ -82,24 +89,29 @@ export const enrollmentLifecycleUseCases = {
     if (start && ISO_DATE.test(start) && input.fromOn < start.slice(0, 10))
       throw new ValidationError(`The leave cannot start before the enrollment (${start})`);
 
-    await recordApprovedLeave(tenant, {
-      studentId: enrollment.studentId,
-      fromOn: input.fromOn,
-      toOn: input.toOn,
-      reason: input.reason,
-      approvedBy: user.id,
+    await withTenant(tenant, async (tx) => {
+      // One transaction: the approved leave, the timeline entry and the audit row either
+      // all land or none do (previously three independent transactions).
+      await recordApprovedLeave(tenant, {
+        studentId: enrollment.studentId,
+        fromOn: input.fromOn,
+        toOn: input.toOn,
+        reason: input.reason,
+        approvedBy: user.id,
+      });
+      await repo.recordEnrollmentSuspension(tenant, {
+        enrollmentId: enrollment.id,
+        fromOn: input.fromOn,
+        toOn: input.toOn,
+        reason: input.reason,
+        actor: actorOf(user),
+      });
+      await recordOperationAudit(tx, tenant, user, enrollment, "suspend", {
+        fromOn: input.fromOn,
+        toOn: input.toOn,
+        reason: input.reason,
+      });
     });
-    await repo.recordEnrollmentSuspension(tenant, {
-      enrollmentId: enrollment.id,
-      fromOn: input.fromOn,
-      toOn: input.toOn,
-      reason: input.reason,
-      actor: actorOf(user),
-    });
-    return afterChange(tenant, user, enrollment, "suspend", {
-      fromOn: input.fromOn,
-      toOn: input.toOn,
-      reason: input.reason,
-    });
+    return afterChange(tenant, enrollment);
   },
 };

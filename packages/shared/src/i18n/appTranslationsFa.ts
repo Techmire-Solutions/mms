@@ -7860,6 +7860,7 @@ export const APP_TRANSLATIONS_FA: Partial<Record<AppTranslationKey, string>> = {
   "sessions.classes.detail.discounts.namePlaceholder": "نام تخفیف (مثلاً تخفیف خواهر و برادر ۱۵٪)",
   "sessions.classes.detail.discounts.title": "تخفیف‌ها و معافیت‌های کلاس",
   "sessions.classes.detail.enrollmentDeadline": "مهلت ثبت‌نام",
+  "sessions.classes.detail.dropDeadline": "مهلت انصراف",
   "sessions.classes.detail.fees.add": "قلم هزینه",
   "sessions.classes.detail.fees.empty":
     "هیچ شهریه جداگانه‌ای تعیین نشده است. برای تعیین شهریه تحصیل، ثبت‌نام، آزمون و غیره روی «افزودن ردیف شهریه» کلیک کنید.",

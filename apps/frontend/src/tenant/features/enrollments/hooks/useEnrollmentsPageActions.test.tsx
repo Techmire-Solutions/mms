@@ -15,6 +15,8 @@ const mocks = vi.hoisted(() => ({
   bulkDeleteEnrollments: { mutate: vi.fn() },
   bulkRestoreEnrollments: { mutate: vi.fn() },
   updateStudent: { mutate: vi.fn() },
+  withdraw: vi.fn().mockResolvedValue(true),
+  bulkEnd: vi.fn().mockResolvedValue({ succeeded: 0, failed: 0, failures: [] }),
 }));
 
 vi.mock("@/hooks/useTranslation", () => ({
@@ -29,6 +31,10 @@ vi.mock("@/tenant/hooks/useViewerRole", () => ({
 
 vi.mock("@/tenant/features/enrollments/hooks/useEnrollmentsApi", () => ({
   useEnrollmentMutations: () => mocks,
+}));
+
+vi.mock("@/tenant/features/enrollments/hooks/useEnrollmentOperations", () => ({
+  useEnrollmentOperations: () => ({ withdraw: mocks.withdraw, bulkEnd: mocks.bulkEnd }),
 }));
 
 vi.mock("@/tenant/hooks/collections/students", () => ({
@@ -118,6 +124,29 @@ describe("useEnrollmentsPageActions", () => {
     act(() => options.onSuccess());
     expect(onViewingChange).toHaveBeenCalledWith(input.enrollment);
     expect(notify.success).toHaveBeenCalledWith("enrollments.toast.updated");
+
+    unmount();
+  });
+
+  it("cancels through the side-effecting operation instead of a raw status write", async () => {
+    const { result, unmount } = renderTestHook(() =>
+      useEnrollmentsPageActions({
+        enrollments: [enrollment],
+        viewing: enrollment,
+        onViewingChange: vi.fn(),
+        onActiveSubTabChange: vi.fn(),
+      }),
+    );
+
+    await act(async () => {
+      await result.current?.handleCancel("enr-1");
+    });
+
+    expect(mocks.withdraw).toHaveBeenCalledWith("enr-1", {
+      reason: "enrollments.timeline.cancelled",
+      endAs: "cancelled",
+    });
+    expect(mocks.updateEnrollment.mutate).not.toHaveBeenCalled();
 
     unmount();
   });

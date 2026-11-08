@@ -84,6 +84,8 @@ export const ClassSchema = z
     maxStudents: z.coerce.number().int().min(0).max(100000).default(0), // Maximum Student Count / Capacity
     enrolled: z.coerce.number().int().nonnegative().default(0),
     enrollmentDeadline: isoDateOrEmptySchema.optional().default(""),
+    /** Last day a student may be withdrawn from the class; empty = no limit. */
+    dropDeadline: isoDateOrEmptySchema.optional().default(""),
     status: z.enum(["active", "inactive"]).default("active"),
     facultyId: z.string().optional().default(""),
     facultyName: z.string().optional().default(""),
@@ -115,6 +117,8 @@ export const ClassInsertSchema = z
     maxStudents: z.coerce.number().int().min(0).max(100000).default(0),
     enrolled: z.coerce.number().int().nonnegative().default(0),
     enrollmentDeadline: isoDateOrEmptySchema.optional().default(""),
+    /** Last day a student may be withdrawn from the class; empty = no limit. */
+    dropDeadline: isoDateOrEmptySchema.optional().default(""),
     status: z.enum(["active", "inactive"]).default("active"),
     facultyId: z.string().optional().default(""),
     facultyName: z.string().optional().default(""),

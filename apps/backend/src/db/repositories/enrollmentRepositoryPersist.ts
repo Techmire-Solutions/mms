@@ -12,7 +12,11 @@ import { todayInTimeZone } from "../../lib/dbDate.js";
 import { enableIncludeDeleted } from "../../lib/softDeleteHelpers.js";
 import { enrollmentWriteConflict, findLiveEnrollmentPairsTx } from "./enrollmentWriteGuards.js";
 
-export { enrollmentWriteConflict } from "./enrollmentWriteGuards.js";
+export {
+  enrollmentWriteConflict,
+  transitionEnrollmentStatusTx,
+  linkEnrollmentInvoiceIds,
+} from "./enrollmentWriteGuards.js";
 
 async function workspaceToday(subdomain: string): Promise<string> {
   return todayInTimeZone(await findWorkspaceTimezone(subdomain));
@@ -142,34 +146,6 @@ export async function bulkSaveEnrollments(
   } catch (error) {
     throw enrollmentWriteConflict(error) ?? error;
   }
-}
-
-/** Sets `invoice_id` only when the enrollment does not already have one. */
-export async function linkEnrollmentInvoiceIds(
-  tenant: string,
-  links: readonly { enrollmentId: string; invoiceId: string }[],
-): Promise<void> {
-  if (links.length === 0) return;
-  const subdomain = tenant.trim().toLowerCase();
-  await withTenant(subdomain, async (tx) => {
-    await tx.execute(sql`
-      UPDATE ${enrollments}
-      SET invoice_id = CASE ${sql.join(
-        links.map(
-          (link) => sql`WHEN ${enrollments.id} = ${link.enrollmentId} THEN ${link.invoiceId}`,
-        ),
-        sql` `,
-      )} END,
-      updated_at = now()
-      WHERE ${enrollments.workspaceSubdomain} = ${subdomain}
-        AND ${enrollments.id} IN (${sql.join(
-          links.map((link) => sql`${link.enrollmentId}`),
-          sql`, `,
-        )})
-        AND ${enrollments.invoiceId} IS NULL
-        AND ${enrollments.deletedAt} IS NULL
-    `);
-  });
 }
 
 export async function replaceEnrollmentsForWorkspace(
