@@ -47,7 +47,6 @@ export async function stampAttendanceSections<T extends SectionStampable>(
     tenant,
     classIds,
     studentIds,
-    { sectionedOnly: true },
   );
   const liveByKey = new Map(live.map((row) => [keyOf(row), row.sectionId]));
 

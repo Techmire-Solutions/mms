@@ -10,6 +10,7 @@ export function useSessionsDialogs(onDeleteConfirm?: (id: string, reason?: strin
   const [pendingDeleteId, setPendingDeleteId] = useState<string | null>(null);
 
   const openCreateForm = () => {
+    setDetailSession(null);
     setEditSession(null);
     setShowForm(true);
   };
@@ -20,6 +21,7 @@ export function useSessionsDialogs(onDeleteConfirm?: (id: string, reason?: strin
   };
 
   const openEditForm = (sessionToEdit: Session) => {
+    setDetailSession(null);
     setEditSession(sessionToEdit);
     setShowForm(true);
   };
