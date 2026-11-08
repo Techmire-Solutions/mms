@@ -1,4 +1,4 @@
-import { randomUUID } from "node:crypto";
+import { createHash, randomUUID } from "node:crypto";
 
 /**
  * Background-job ids are used as the `background_jobs.id` primary key and as the
@@ -61,4 +61,32 @@ export function buildBackgroundJobId(
     );
   }
   return jobId;
+}
+
+/**
+ * Stable content hash used as the default idempotency key when the client sends none.
+ * A double submit or HTTP retry of the same import/export body therefore reuses the
+ * existing job instead of enqueuing a second one.
+ */
+export function buildDeterministicJobKey(input: {
+  moduleId: string;
+  kind: string;
+  payload: unknown;
+}): string {
+  return createHash("sha256")
+    .update(`${input.moduleId}:${input.kind}:${stableJson(input.payload)}`)
+    .digest("hex")
+    .slice(0, 40);
+}
+
+/** JSON with sorted object keys, so equivalent payloads hash identically. */
+function stableJson(value: unknown): string {
+  if (Array.isArray(value)) return `[${value.map(stableJson).join(",")}]`;
+  if (value && typeof value === "object") {
+    const entries = Object.entries(value as Record<string, unknown>)
+      .filter(([, entry]) => entry !== undefined)
+      .sort(([a], [b]) => a.localeCompare(b));
+    return `{${entries.map(([key, entry]) => `${JSON.stringify(key)}:${stableJson(entry)}`).join(",")}}`;
+  }
+  return JSON.stringify(value);
 }

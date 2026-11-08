@@ -107,6 +107,8 @@ describe("Purge Archived Records Worker & GDPR Article 17 Erasure", () => {
     };
 
     const mockDb = {
+      // Terminal background-job retention sweep runs outside the per-table transactions.
+      delete: deleteMock,
       transaction: vi
         .fn()
         .mockImplementation(async (cb: (tx: typeof txMock) => Promise<unknown>) => {

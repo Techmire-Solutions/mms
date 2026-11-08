@@ -45,6 +45,11 @@ export function registerBackgroundJobRunner(key: string, runner: BackgroundJobRu
   runners.set(key, runner);
 }
 
+/** Test/ops probe: whether a `${moduleId}:${kind}` runner is registered in this process. */
+export function hasBackgroundJobRunner(key: string): boolean {
+  return runners.has(key);
+}
+
 export async function executeJob(
   tenant: string,
   userId: string,
@@ -123,7 +128,9 @@ export async function executeJob(
   if (!runner) {
     await runContext.fail(`No runner registered for ${key}`);
     deadline.dispose();
-    return;
+    // A missing runner is an operator bug and must not look like a completed job: throwing
+    // makes BullMQ retry, then dead-letter and surface the failure in logs/DLQ.
+    throw new Error(`No background job runner registered for ${key}`);
   }
 
   // Permanent denial: fail without throwing so BullMQ does not retry.

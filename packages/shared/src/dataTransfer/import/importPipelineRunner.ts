@@ -22,6 +22,8 @@ export interface ImportPipelineContext {
   userId: string;
   jobId: string;
   viewerRole: string;
+  /** Worker shutdown/deadline signal; the pipeline stops between rows and chunks. */
+  signal?: AbortSignal;
   /**
    * 0-based position of this chunk in the original file. `persist` receives one chunk at a time, so
    * a module that reports row-level errors must add this to its local index or every chunk after
@@ -73,6 +75,14 @@ export async function runImportPipeline<TRow>(
   const allErrors: ImportRowError[] = [];
   const maxBatch = spec.maxBatch ?? 500;
 
+  const throwIfAborted = () => {
+    if (!ctx.signal?.aborted) return;
+    const error = new Error("Background job aborted");
+    error.name = "AbortError";
+    throw error;
+  };
+
+  throwIfAborted();
   await ctx.updateProgress(0, Math.max(total, 1));
 
   // Step 1 — Validate
@@ -83,6 +93,7 @@ export async function runImportPipeline<TRow>(
   const transformed: TRow[] = [];
   if (spec.transform) {
     for (let i = 0; i < valid.length; i++) {
+      throwIfAborted();
       try {
         transformed.push(await spec.transform(valid[i], i));
       } catch (err) {
@@ -99,10 +110,13 @@ export async function runImportPipeline<TRow>(
   // Step 3 — Batch-persist in chunks
   let imported = 0;
   for (let offset = 0; offset < transformed.length; offset += maxBatch) {
+    throwIfAborted();
     const chunk = transformed.slice(offset, offset + maxBatch);
     // Hand the chunk's absolute position to `persist` so its row-level errors can be reported
     // against the original file instead of restarting at 1 for every chunk.
+    throwIfAborted();
     const result = await persist(chunk, { ...ctx, offset });
+    throwIfAborted();
     imported += result.imported;
     if (result.errors) allErrors.push(...result.errors);
     await ctx.updateProgress(imported, Math.max(total, 1));

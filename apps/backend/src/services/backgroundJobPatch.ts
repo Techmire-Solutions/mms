@@ -26,6 +26,7 @@ export async function patchJob(
     error?: string | null;
     errors?: Array<{ row: number; reason: string }> | null;
     hasDownload?: boolean;
+    payload?: Record<string, unknown>;
     completedAt?: Date | null;
     deadLetteredAt?: Date | null;
     updatedAt: Date;
@@ -34,6 +35,9 @@ export async function patchJob(
   };
 
   if (patch.status !== undefined) updateValues.status = patch.status;
+  // Terminal jobs keep their counts/labels/errors; the row payload (CSV import rows = PII) is
+  // dropped so it cannot linger in `background_jobs` until the user dismisses the job.
+  if (patch.status === "completed" || patch.status === "failed") updateValues.payload = {};
   if (patch.label !== undefined) updateValues.label = patch.label;
   if (patch.progress !== undefined) {
     updateValues.progressCurrent = patch.progress.current;

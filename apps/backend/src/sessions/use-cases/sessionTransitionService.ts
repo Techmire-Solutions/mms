@@ -106,110 +106,118 @@ export async function transitionSession(
   if (options.expectedVersion !== undefined && !Number.isInteger(options.expectedVersion))
     throw new ValidationError("Invalid x-expected-version header");
 
-  const result = await withTenant(subdomain, async (tx) => {
-    const row = await lockSessionForTransitionTx(tx, subdomain, id);
-    if (!row) throw new NotFoundError("Session not found");
-    if (options.expectedVersion !== undefined) {
-      if (Number(row.version) !== Number(options.expectedVersion))
+  // Completion/cancellation finalizes every live enrollment in one transaction. Bound it so a
+  // pathological session fails fast (rollback, no half-finalized term) instead of hanging a request.
+  const result = await withTenant(
+    subdomain,
+    async (tx) => {
+      const row = await lockSessionForTransitionTx(tx, subdomain, id);
+      if (!row) throw new NotFoundError("Session not found");
+      if (options.expectedVersion !== undefined) {
+        if (Number(row.version) !== Number(options.expectedVersion))
+          throw new ConflictError(
+            "This session was modified by another user — reload and try again",
+          );
+      } else if (expected && row.updatedAt.toISOString() !== new Date(expected).toISOString()) {
         throw new ConflictError("This session was modified by another user — reload and try again");
-    } else if (expected && row.updatedAt.toISOString() !== new Date(expected).toISOString()) {
-      throw new ConflictError("This session was modified by another user — reload and try again");
-    }
+      }
 
-    const today = await workspaceToday(subdomain);
-    const from = normalizeSessionStatus(row.status);
-    if (from === normalizeSessionStatus(target)) {
+      const today = await workspaceToday(subdomain);
+      const from = normalizeSessionStatus(row.status);
+      if (from === normalizeSessionStatus(target)) {
+        const session = await sessionsRepository.findSessionById(subdomain, id);
+        if (!session) throw new NotFoundError("Session not found");
+        return { session, ended: 0, billing: null, overridden: [], noop: true } as TransitionResult;
+      }
+
+      const preferences = normalizeSessionModulePreferences(
+        await getSessionModulePreferencesByWorkspace(subdomain),
+      );
+      const evaluation = evaluateSessionTransition(from, target, {
+        today,
+        endDate: row.endDate,
+        reason: options.reason,
+        requireBudget: preferences.requireBudget,
+        liveEnrollments: await countLiveEnrollmentsTx(tx, subdomain, id),
+        attendanceRows: await countSessionAttendanceTx(tx, subdomain, id),
+        examResults: await countSessionExamResultsTx(tx, subdomain, id),
+        hasBudget: await sessionHasBudgetTx(tx, subdomain, id),
+      });
+      let overridden: SessionTransitionViolation[] = [];
+      if (!evaluation.allowed) {
+        const overrideReason = (options.reason ?? "").trim();
+        const mayOverride =
+          options.canOverride === true &&
+          overrideReason.length >= 3 &&
+          isTransitionFullyOverridable(evaluation);
+        if (!mayOverride) throw new SessionTransitionBlockedError(evaluation.violations);
+        overridden = evaluation.violations;
+      }
+
+      const wrote = await updateSessionStatusIfTx(tx, subdomain, id, row.status, target);
+      if (!wrote)
+        throw new ConflictError(
+          "This session changed while the action was running — reload and try again",
+        );
+
+      const actor = toOperationActor(options.actor);
+      let ended = 0;
+      let billing: WithdrawalBillingOutcome | null = null;
+      if (target === "cancelled") {
+        const outcome = await endLiveEnrollments(
+          subdomain,
+          { sessionIds: [id] },
+          {
+            status: "cancelled",
+            lastDay: cancelLastDay(today, row.endDate),
+            reason: (options.reason ?? "").trim() || "Session cancelled",
+            actor,
+          },
+        );
+        ended = outcome.ended;
+        billing = outcome.billing;
+      } else if (target === "completed") {
+        const completion = await completeLiveEnrollments(
+          subdomain,
+          id,
+          (row.endDate ?? today).slice(0, 10),
+          actor,
+        );
+        ended = completion.ended;
+      }
+
+      await recordModernAuditEvent(tx, {
+        workspaceSubdomain: subdomain,
+        tableName: "sessions",
+        recordId: id,
+        actionType: "UPDATE",
+        realUserId: options.actor?.userId ?? undefined,
+        oldState: {
+          status: from,
+          startDate: row.startDate,
+          endDate: row.endDate,
+          version: Number(row.version),
+        },
+        newState: {
+          operation: "transition",
+          from,
+          to: target,
+          reason: options.reason ?? null,
+          overridden,
+          enrollmentsEnded: ended,
+          cancelledInvoiceIds: billing?.cancelled.map((invoice) => invoice.id) ?? [],
+          invoicesForReview: billing?.review.map((invoice) => invoice.id) ?? [],
+        },
+      });
+
       const session = await sessionsRepository.findSessionById(subdomain, id);
       if (!session) throw new NotFoundError("Session not found");
-      return { session, ended: 0, billing: null, overridden: [], noop: true } as TransitionResult;
-    }
-
-    const preferences = normalizeSessionModulePreferences(
-      await getSessionModulePreferencesByWorkspace(subdomain),
-    );
-    const evaluation = evaluateSessionTransition(from, target, {
-      today,
-      endDate: row.endDate,
-      reason: options.reason,
-      requireBudget: preferences.requireBudget,
-      liveEnrollments: await countLiveEnrollmentsTx(tx, subdomain, id),
-      attendanceRows: await countSessionAttendanceTx(tx, subdomain, id),
-      examResults: await countSessionExamResultsTx(tx, subdomain, id),
-      hasBudget: await sessionHasBudgetTx(tx, subdomain, id),
-    });
-    let overridden: SessionTransitionViolation[] = [];
-    if (!evaluation.allowed) {
-      const overrideReason = (options.reason ?? "").trim();
-      const mayOverride =
-        options.canOverride === true &&
-        overrideReason.length >= 3 &&
-        isTransitionFullyOverridable(evaluation);
-      if (!mayOverride) throw new SessionTransitionBlockedError(evaluation.violations);
-      overridden = evaluation.violations;
-    }
-
-    const wrote = await updateSessionStatusIfTx(tx, subdomain, id, row.status, target);
-    if (!wrote)
-      throw new ConflictError(
-        "This session changed while the action was running — reload and try again",
-      );
-
-    const actor = toOperationActor(options.actor);
-    let ended = 0;
-    let billing: WithdrawalBillingOutcome | null = null;
-    if (target === "cancelled") {
-      const outcome = await endLiveEnrollments(
-        subdomain,
-        { sessionIds: [id] },
-        {
-          status: "cancelled",
-          lastDay: cancelLastDay(today, row.endDate),
-          reason: (options.reason ?? "").trim() || "Session cancelled",
-          actor,
-        },
-      );
-      ended = outcome.ended;
-      billing = outcome.billing;
-    } else if (target === "completed") {
-      const completion = await completeLiveEnrollments(
-        subdomain,
-        id,
-        (row.endDate ?? today).slice(0, 10),
-        actor,
-      );
-      ended = completion.ended;
-    }
-
-    await recordModernAuditEvent(tx, {
-      workspaceSubdomain: subdomain,
-      tableName: "sessions",
-      recordId: id,
-      actionType: "UPDATE",
-      realUserId: options.actor?.userId ?? undefined,
-      oldState: {
-        status: from,
-        startDate: row.startDate,
-        endDate: row.endDate,
-        version: Number(row.version),
-      },
-      newState: {
-        operation: "transition",
-        from,
-        to: target,
-        reason: options.reason ?? null,
-        overridden,
-        enrollmentsEnded: ended,
-        cancelledInvoiceIds: billing?.cancelled.map((invoice) => invoice.id) ?? [],
-        invoicesForReview: billing?.review.map((invoice) => invoice.id) ?? [],
-      },
-    });
-
-    const session = await sessionsRepository.findSessionById(subdomain, id);
-    if (!session) throw new NotFoundError("Session not found");
-    if (ended > 0) runAfterCommit(() => broadcastCollection("enrollments"));
-    runAfterCommit(() => broadcastCollection("sessions"));
-    return { session, ended, billing, overridden, noop: false } as TransitionResult;
-  });
+      if (ended > 0) runAfterCommit(() => broadcastCollection("enrollments"));
+      runAfterCommit(() => broadcastCollection("sessions"));
+      return { session, ended, billing, overridden, noop: false } as TransitionResult;
+    },
+    { statementTimeoutMs: 5 * 60_000 },
+  );
 
   await invalidateMultiTierCache({ tenantId: subdomain, domain: "sessions" });
   return result;

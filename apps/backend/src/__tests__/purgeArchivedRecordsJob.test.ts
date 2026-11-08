@@ -23,6 +23,8 @@ describe("purgeExpiredArchivedRecords background job", () => {
     };
 
     const mockDb = {
+      // Terminal background-job retention sweep (retention purge also trims old job rows).
+      delete: vi.fn().mockReturnValue({ where: vi.fn().mockResolvedValue(undefined) }),
       transaction: vi
         .fn()
         .mockImplementation(async (cb: (tx: typeof txMock) => Promise<unknown>) => cb(txMock)),
@@ -60,6 +62,8 @@ describe("purgeExpiredArchivedRecords background job", () => {
     };
 
     const mockDb = {
+      // Terminal background-job retention sweep (retention purge also trims old job rows).
+      delete: vi.fn().mockReturnValue({ where: vi.fn().mockResolvedValue(undefined) }),
       transaction: vi
         .fn()
         .mockImplementation(async (cb: (tx: typeof txMock) => Promise<unknown>) => {

@@ -8,6 +8,7 @@ import {
   type ImportRowError,
 } from "@mms/shared";
 import { runWithTenant } from "../../lib/tenantContext.js";
+import { throwIfBackgroundJobAborted } from "../../lib/backgroundJobAbort.js";
 import { broadcastCollection } from "../../lib/livePush.js";
 import { withTenant } from "../../db/tenant-context.js";
 import { upsertContact } from "../../contacts/use-cases/contactWriteUseCases.js";
@@ -101,6 +102,7 @@ export const importStudentRows: ImportBatchFn<StudentImportRow> = async (rows, c
   let imported = 0;
 
   for (let index = 0; index < rows.length; index += 1) {
+    throwIfBackgroundJobAborted(ctx.signal);
     const row = rows[index]!;
     // `ctx.offset` is the chunk's position in the original file: one persist call per 200 rows
     // would otherwise report every later chunk's errors as rows 1..200.
