@@ -1527,6 +1527,13 @@
       "when": 1762617600000,
       "tag": "0217_enrollment_payment_status_check",
       "breakpoints": true
+    },
+    {
+      "idx": 218,
+      "version": "7",
+      "when": 1794819600000,
+      "tag": "0218_attendance_integrity",
+      "breakpoints": true
     }
   ]
 }

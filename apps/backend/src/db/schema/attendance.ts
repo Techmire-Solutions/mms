@@ -10,12 +10,14 @@ import {
   foreignKey,
   varchar,
   date,
+  check,
 } from "drizzle-orm/pg-core";
 import { sql } from "drizzle-orm";
 import { workspaces } from "./platform.js";
 import { students } from "./students.js";
 import { sessionClasses } from "./sessions.js";
 import { sessionClassSections } from "./sessionSections.js";
+import { softDeleteColumns } from "./softDeleteSchema.js";
 
 export const attendance = pgTable(
   "attendance",
@@ -41,18 +43,35 @@ export const attendance = pgTable(
     notes: text("notes").notNull().default(""),
     /** User who last marked this row (teacher of record is resolved from section staff by date). */
     markedBy: text("marked_by"),
-    deletedAt: timestamp("deleted_at", { withTimezone: true, mode: "date" }),
-    deletedBy: text("deleted_by"),
-    deletionReason: varchar("deletion_reason", { length: 500 }),
+    /**
+     * Soft-delete sextuple. Migration 0108 added every column, but this table hand-rolled only
+     * three of them until now, so `restored_at` / `restored_by` / `deleted_with_cascade` were
+     * invisible to the ORM and absent from every Drizzle snapshot (migration 0218 reconciles it).
+     */
+    ...softDeleteColumns,
     /** Generated column: TTL sentinel = deleted_at + 10 years (retentionDays = null/indefinite per §13.4; future-proofs purge worker). */
     purgeAfter: timestamp("purge_after", { withTimezone: true, mode: "date" }).generatedAlwaysAs(
       sql`deleted_at + INTERVAL '3650 days'`,
     ),
+    /**
+     * Optimistic-concurrency token, incremented by every write (migration 0218; mirrors
+     * `sessions.version` / `session_classes.version` from 0206). Two instructors editing the same
+     * roster therefore get a 409 instead of a silent last-write-wins overwrite.
+     */
+    version: integer("version").notNull().default(1),
     createdAt: timestamp("created_at", { withTimezone: true, mode: "date" }).notNull().defaultNow(),
     updatedAt: timestamp("updated_at", { withTimezone: true, mode: "date" }).notNull().defaultNow(),
   },
   (table) => [
     primaryKey({ columns: [table.workspaceSubdomain, table.id] }),
+    /**
+     * Business key for one mark per student, class and day.
+     *
+     * `section_id` is deliberately NOT part of this key: it is a server-stamped record of the
+     * student's section *on the attendance date*, so a mid-term section transfer must not permit a
+     * second mark for the same day. Adding it here re-opens duplicate daily attendance after a
+     * transfer — see docs/attendance-schema-persistence-audit-2026-11-08.md.
+     */
     uniqueIndex("attendance_workspace_class_student_date_on_uidx")
       .on(table.workspaceSubdomain, table.classId, table.studentId, table.date)
       .where(sql`${table.deletedAt} is null`),
@@ -87,6 +106,15 @@ export const attendance = pgTable(
     index("attendance_workspace_updated_at_active_idx")
       .on(table.workspaceSubdomain, table.updatedAt)
       .where(sql`${table.deletedAt} is null`),
+    /**
+     * Status domain (migration 0218). Mirrors `ATTENDANCE_RECORD_STATUSES` in @mms/shared; before
+     * this a typo'd or differently-cased status silently dropped the row out of every present /
+     * absent rate, which is why the reports defensively `lower(trim(...))` the column.
+     */
+    check(
+      "attendance_status_check",
+      sql`${table.status} IN ('present', 'absent', 'late', 'excused')`,
+    ),
     index("attendance_workspace_deleted_records_idx")
       .on(table.workspaceSubdomain, table.deletedAt)
       .where(sql`${table.deletedAt} is not null`),

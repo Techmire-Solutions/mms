@@ -93,16 +93,21 @@ export function createAttendanceUseCases(
     updateAttendanceRecordById: async (
       id: string,
       record: AttendanceRecordUpdate | Partial<AttendanceRecord>,
+      expectedVersion?: number,
     ): Promise<AttendanceRecord | null> => {
       const tenant = getRequestTenant();
       if (!tenant) throw new Error("Tenant context required");
       await validateActiveForeignKeys(tenant, record);
       // Section is server-owned: re-stamped only when the row's class/student are known.
       const { sectionId: _clientSection, ...rest } = record as Partial<AttendanceRecord>;
+      if (expectedVersion !== undefined && !Number.isInteger(expectedVersion)) {
+        throw new HttpDomainError(400, "validation_error", "Invalid x-expected-version header");
+      }
+      const next = expectedVersion !== undefined ? { ...rest, version: expectedVersion } : rest;
       const stamped =
-        rest.classId && rest.studentId
-          ? await stampAttendanceSections(tenant, [rest])
-          : { records: [rest], rejected: [] };
+        next.classId && next.studentId
+          ? await stampAttendanceSections(tenant, [next])
+          : { records: [next], rejected: [] };
       if (stamped.rejected.length > 0) throw attendanceNotEnrolled(stamped.rejected[0]!);
       return crud.updateById(id, stamped.records[0] as AttendanceRecord);
     },
@@ -124,9 +129,11 @@ export function createAttendanceUseCases(
       await validateBatchActiveForeignKeys(tenant, validated);
       const stamped = await stampAttendanceSections(tenant, validated);
       if (stamped.rejected.length > 0) throw attendanceNotEnrolled(stamped.rejected[0]!);
-      await repo.bulkSaveAttendanceRecords(tenant, stamped.records);
+      // The repository returns the rows as persisted (natural-key upsert may reuse an existing
+      // row's id and advance its `version`); a stale OCC token surfaces as 409 from there.
+      const persisted = await repo.bulkSaveAttendanceRecords(tenant, stamped.records);
       await broadcastCollection("attendance_records");
-      return stamped.records;
+      return persisted;
     },
 
     loadAttendanceRecordById: async (

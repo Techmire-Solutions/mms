@@ -29,9 +29,18 @@ export const attendanceRecordSchema = z
     customFields: z.record(z.string(), z.unknown()).optional(),
     createdAt: z.string().optional(),
     updatedAt: z.string().optional(),
+    /**
+     * Optimistic-concurrency token (`attendance.version`). Echo the value you read; a write whose
+     * token is stale is refused with 409 instead of silently overwriting another instructor's save.
+     */
+    version: z.number().int().optional(),
     deletedAt: z.string().nullable().optional(),
     deletedBy: z.string().nullable().optional(),
     deletionReason: z.string().nullable().optional(),
+    /** Restore provenance — trash rows must carry who/when they came back (mms-soft-delete §6). */
+    restoredAt: z.string().nullable().optional(),
+    restoredBy: z.string().nullable().optional(),
+    deletedWithCascade: z.boolean().optional(),
   })
   .strict();
 
@@ -48,6 +57,8 @@ export const attendanceRecordInsertSchema = z
     timeOut: z.string().optional().default(""),
     notes: z.string().optional().default(""),
     customFields: z.record(z.string(), z.unknown()).optional(),
+    /** Optional OCC token for create-or-update; omitted means "last writer wins" (legacy clients). */
+    version: z.number().int().optional(),
   })
   .strict();
 

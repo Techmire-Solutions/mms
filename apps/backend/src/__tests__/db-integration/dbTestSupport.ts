@@ -70,3 +70,15 @@ export function daysFromToday(days: number): string {
   date.setUTCDate(date.getUTCDate() + days);
   return date.toISOString().slice(0, 10);
 }
+
+/** Extracts the underlying PostgreSQL error code, unwrapping Drizzle/driver wrappers if present. */
+export function extractPgErrorCode(error: unknown): string | undefined {
+  if (!error || typeof error !== "object") return undefined;
+  if ("code" in error && typeof (error as { code?: unknown }).code === "string") {
+    return (error as { code: string }).code;
+  }
+  if ("cause" in error) {
+    return extractPgErrorCode((error as { cause?: unknown }).cause);
+  }
+  return undefined;
+}

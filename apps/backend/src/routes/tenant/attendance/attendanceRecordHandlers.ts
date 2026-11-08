@@ -168,11 +168,23 @@ export async function attendanceUpdateHandler({
             user.id,
           );
         }
-        return attendanceUseCases.updateAttendanceRecordById(id, {
-          ...bodyRecord,
+        // Optional OCC token (mms-api-interface §6): echo the `version` you read. Sessions use the
+        // same header convention; attendance keeps it optional so a grid without tokens still
+        // saves (last writer wins) instead of returning 428 to every legacy client.
+        const expectedVersionHeader = request.headers["x-expected-version"];
+        const expectedVersion =
+          typeof expectedVersionHeader === "string" && expectedVersionHeader.trim() !== ""
+            ? Number(expectedVersionHeader)
+            : undefined;
+        return attendanceUseCases.updateAttendanceRecordById(
           id,
-          markedBy: user.id,
-        });
+          {
+            ...bodyRecord,
+            id,
+            markedBy: user.id,
+          },
+          expectedVersion,
+        );
       },
       { readOnly: false },
     );

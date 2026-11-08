@@ -36,6 +36,7 @@ export function attendanceRowToRecord(row: AttendanceSelectRow | AttendanceRow):
     notes: row.notes,
     markedBy: row.markedBy ?? null,
     sectionId: row.sectionId ?? null,
+    version: Number(row.version ?? 1),
     ...mapAuditTimestamps(row),
   } satisfies AttendanceRecord;
 }
@@ -73,9 +74,15 @@ export function attendanceRecordToInsert(
     notes: String(record.notes || ""),
     markedBy: record.markedBy ?? null,
     sectionId: record.sectionId ?? null,
+    ...(typeof record.version === "number" && Number.isFinite(record.version)
+      ? { version: record.version }
+      : {}),
     deletedAt: audit.deletedAt,
     deletedBy: audit.deletedBy,
     deletionReason: audit.deletionReason,
+    restoredAt: audit.restoredAt,
+    restoredBy: audit.restoredBy,
+    deletedWithCascade: audit.deletedWithCascade,
     updatedAt: audit.updatedAt,
     ...(audit.createdAt ? { createdAt: audit.createdAt } : {}),
   };

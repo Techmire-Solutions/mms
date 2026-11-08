@@ -60,9 +60,13 @@ describe("attendanceService bulk upsert", () => {
       notes: "",
     };
 
+    const persisted = { ...record, id: "att-existing", version: 4 };
+    bulkSaveAttendanceRecords.mockResolvedValue([persisted]);
+
     const result = await runWithTenant("demo", () => upsertAttendanceRecords([record]));
 
-    expect(result).toEqual([record]);
+    // The repository decides the persisted identity/version, so exactly its rows come back.
+    expect(result).toEqual([persisted]);
     expect(bulkSaveAttendanceRecords).toHaveBeenCalledWith("demo", [record]);
     expect(replaceAttendanceRecordsForWorkspace).not.toHaveBeenCalled();
   });

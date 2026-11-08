@@ -15,7 +15,7 @@ function createFakeRepo(): AttendanceRepository {
     findAttendanceRecordById: vi.fn().mockResolvedValue(null),
     findAttendanceRecordsByIds: vi.fn().mockResolvedValue([]),
     saveAttendanceRecord: vi.fn().mockResolvedValue(undefined),
-    bulkSaveAttendanceRecords: vi.fn().mockResolvedValue(undefined),
+    bulkSaveAttendanceRecords: vi.fn().mockResolvedValue([]),
     replaceAttendanceRecordsForWorkspace: vi.fn().mockResolvedValue(undefined),
     listAttendancePage: vi.fn().mockResolvedValue({
       records: [],
@@ -77,7 +77,7 @@ describe("attendance use-cases (DI with fake repository)", () => {
     expect(repo.listAttendancePage).toHaveBeenCalledWith("demo", { page: 2, limit: 15 });
   });
 
-  it("upsertAttendanceRecords delegates to the injected repository", async () => {
+  it("upsertAttendanceRecords returns the rows as persisted, not the request body", async () => {
     const repo = createFakeRepo();
     const useCases = createAttendanceUseCases(repo, {
       findStudentsByIds: vi.fn().mockResolvedValue([{ id: "student-1", deletedAt: null }]),
@@ -95,10 +95,16 @@ describe("attendance use-cases (DI with fake repository)", () => {
       timeOut: "08:30",
       notes: "",
     };
+    // The natural-key upsert may reuse an existing row's id and advance its `version`, so the
+    // caller must receive what the database stored — echoing the body would hand the grid a
+    // stale OCC token.
+    const persisted = { ...record, id: "att-existing", version: 9 };
+    vi.mocked(repo.bulkSaveAttendanceRecords).mockResolvedValue([persisted]);
 
     const result = await runWithTenant("demo", () => useCases.upsertAttendanceRecords([record]));
 
-    expect(result).toEqual([record]);
+    expect(result).toEqual([persisted]);
+    expect(result[0]).not.toEqual(record);
     expect(repo.bulkSaveAttendanceRecords).toHaveBeenCalledWith("demo", [record]);
   });
 

@@ -23,7 +23,17 @@ export interface AttendanceRepository {
   findAttendanceRecordById(tenant: string, id: string): Promise<AttendanceRecord | null>;
   findAttendanceRecordsByIds(tenant: string, ids: string[]): Promise<AttendanceRecord[]>;
   saveAttendanceRecord(tenant: string, record: AttendanceRecord): Promise<void>;
-  bulkSaveAttendanceRecords(tenant: string, records: AttendanceRecord[]): Promise<void>;
+  /**
+   * Upserts a marked roster and returns the rows as persisted.
+   *
+   * The persisted shape matters: the natural-key upsert may update an existing row (keeping its
+   * `id` and advancing its `version`), so echoing the request body would hand the client stale ids
+   * and OCC tokens.
+   */
+  bulkSaveAttendanceRecords(
+    tenant: string,
+    records: AttendanceRecord[],
+  ): Promise<AttendanceRecord[]>;
   replaceAttendanceRecordsForWorkspace(tenant: string, records: AttendanceRecord[]): Promise<void>;
   listAttendancePage(tenant: string, query: AttendanceListQuery): Promise<AttendanceListPageResult>;
   countAttendanceActiveByWorkspace(tenant: string): Promise<number>;
