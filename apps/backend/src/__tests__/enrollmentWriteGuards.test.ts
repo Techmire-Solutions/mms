@@ -47,6 +47,10 @@ import type { EnrollmentsRepository } from "../enrollments/repository/enrollment
 import { bulkEnrollStudentsIntoClass } from "../enrollments/use-cases/enrollmentBulkEnroll.js";
 import { enrollmentWriteConflict } from "../db/repositories/enrollmentRepositoryPersist.js";
 
+vi.mock("../services/auditTrailService.js", () => ({
+  recordModernAuditEvent: vi.fn().mockResolvedValue(undefined),
+}));
+
 function createFakeRepo(): EnrollmentsRepository {
   return {
     listEnrollmentsByWorkspace: vi.fn().mockResolvedValue([]),

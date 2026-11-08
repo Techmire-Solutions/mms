@@ -157,6 +157,7 @@ export const COLLECTION_DELETE_PERMISSION: Record<string, Permission> = {
   contacts: CONTACTS_MODULE_MANIFEST.permissions.delete,
   students: STUDENTS_MODULE_MANIFEST.permissions.delete,
   faculty: FACULTY_MODULE_MANIFEST.permissions.delete,
+  enrollments: ENROLLMENTS_MODULE_MANIFEST.permissions.delete,
   attendance: ATTENDANCE_MODULE_MANIFEST.permissions.delete,
   attendance_records: ATTENDANCE_MODULE_MANIFEST.permissions.delete,
   obligation_collections: OBLIGATIONS_MODULE_MANIFEST.permissions.delete,

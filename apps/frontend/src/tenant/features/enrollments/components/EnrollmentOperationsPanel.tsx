@@ -35,6 +35,8 @@ const NOTICE_KEYS: Record<string, AppTranslationKey> = {
 export interface EnrollmentOperationsPanelProps {
   enrollment: Enrollment;
   canWrite: boolean;
+  /** Administrative capability for transfer/withdraw/readmit/suspend. */
+  canManage?: boolean;
   isArchived: boolean;
 }
 
@@ -42,6 +44,7 @@ export interface EnrollmentOperationsPanelProps {
 export function EnrollmentOperationsPanel({
   enrollment,
   canWrite,
+  canManage = false,
   isArchived,
 }: EnrollmentOperationsPanelProps): React.JSX.Element | null {
   const { t } = useTranslation();
@@ -54,10 +57,11 @@ export function EnrollmentOperationsPanel({
 
   const canOperate =
     canWrite &&
+    canManage &&
     !isArchived &&
     enrollmentHoldsSeat(enrollment.status) &&
     enrollment.status !== "completed";
-  const canReadmit = canWrite && !isArchived && enrollment.status === "withdrawn";
+  const canReadmit = canWrite && canManage && !isArchived && enrollment.status === "withdrawn";
   const actions: {
     kind: EnrollmentOperationKind;
     label: string;

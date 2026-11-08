@@ -34,6 +34,7 @@ export function useEnrollmentsPageState() {
   const permissions = useModulePermissions(ENROLLMENTS_MODULE_MANIFEST);
   const {
     canWrite: canWriteEnrollments,
+    canManage: canManageEnrollments,
     canDelete,
     canExport,
     canReports: canViewReports,
@@ -150,6 +151,7 @@ export function useEnrollmentsPageState() {
   const pageActions = useEnrollmentsPageActions({
     enrollments,
     viewing,
+    canManage: canManageEnrollments,
     onViewingChange: setViewing,
     onActiveSubTabChange: setActiveSubTab,
   });
@@ -165,6 +167,7 @@ export function useEnrollmentsPageState() {
     activeSubTab,
     setActiveSubTab,
     canWriteEnrollments,
+    canManageEnrollments,
     canDelete,
     canExport,
     canSelectEnrollments,

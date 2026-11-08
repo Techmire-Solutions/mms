@@ -5,7 +5,7 @@ import { publicRegistrationContract } from "@mms/shared";
 import { handleContractError } from "../../lib/contractError.js";
 import { standardRequestValidationErrorHandler } from "../../lib/contractRegistration.js";
 import type { ContractRouteArgs } from "../../lib/contractRouterTypes.js";
-import { resolveSubdomainFromRequest } from "../../lib/tenantContext.js";
+import { bindRequestAuditContext, resolveSubdomainFromRequest } from "../../lib/tenantContext.js";
 import { createStrictRateLimitGuard } from "../../lib/rateLimitGuard.js";
 import { PUBLIC_REGISTRATION_RATE_LIMIT } from "../../lib/rateLimitConfig.js";
 import { loadServerConfig } from "../../config/serverConfig.js";
@@ -39,6 +39,17 @@ function hashIp(ip: string): string {
 export const publicRegistrationRoutes: FastifyPluginAsync = async (fastify) => {
   const submitGuard = createStrictRateLimitGuard(fastify, PUBLIC_REGISTRATION_RATE_LIMIT);
   fastify.addHook("preHandler", async (request, reply) => {
+    // Public routes have no auth middleware, so bind the request audit context here: the
+    // submission audit row then carries IP/endpoint/method like authenticated writes do.
+    bindRequestAuditContext({
+      ipAddress: request.ip,
+      clientApp:
+        typeof request.headers["user-agent"] === "string"
+          ? request.headers["user-agent"].slice(0, 64)
+          : undefined,
+      apiEndpoint: request.url,
+      httpMethod: request.method,
+    });
     if (request.method === "POST") await submitGuard(request, reply);
   });
 

@@ -190,9 +190,12 @@ function computeCanDeleteCollection(user: User, collectionName: string): boolean
     const mapped = COLLECTION_DELETE_PERMISSION.sessions;
     return mapped ? userHasPermission(user, mapped) : canWriteCollection(user, collectionName);
   }
-  // Typed enrollments table is REST-only (not document-store allowlisted).
+  // Typed enrollments table is REST-only (not document-store allowlisted). Delete is a
+  // distinct capability from write: trash/restore/deleted-view belong to the registrar, not
+  // to every enrollment writer.
   if (collectionName === "enrollments") {
-    return canWriteCollection(user, collectionName);
+    const mapped = COLLECTION_DELETE_PERMISSION.enrollments;
+    return mapped ? userHasPermission(user, mapped) : false;
   }
   // Typed users table is REST-only (not document-store allowlisted).
   if (collectionName === "users") {

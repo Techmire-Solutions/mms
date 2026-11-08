@@ -21,6 +21,7 @@ export interface EnrollmentDetailProps {
   onStatusChange: (id: string, newStatus: Enrollment["status"]) => void;
   onPaymentStatusChange: (id: string, newStatus: Enrollment["paymentStatus"]) => void;
   canWrite: boolean;
+  canManage?: boolean;
   canDelete?: boolean;
   onRestore?: (id: string) => void;
 }
@@ -31,6 +32,7 @@ export const EnrollmentDetail = function EnrollmentDetail({
   onStatusChange,
   onPaymentStatusChange,
   canWrite,
+  canManage = false,
   canDelete,
   onRestore,
 }: EnrollmentDetailProps): React.JSX.Element | null {
@@ -91,6 +93,7 @@ export const EnrollmentDetail = function EnrollmentDetail({
         statusConfig={statusConfig}
         paymentConfig={paymentConfig}
         canWrite={canWrite}
+        canManage={canManage}
         isArchived={isArchived}
         onStatusChange={onStatusChange}
         onPaymentStatusChange={onPaymentStatusChange}
@@ -98,6 +101,7 @@ export const EnrollmentDetail = function EnrollmentDetail({
       <EnrollmentOperationsPanel
         enrollment={enrollment}
         canWrite={canWrite}
+        canManage={canManage}
         isArchived={isArchived}
       />
     </DetailDrawerShell>

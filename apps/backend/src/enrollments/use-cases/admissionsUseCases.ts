@@ -138,7 +138,8 @@ export function createAdmissionsUseCases() {
               recordId: app.id,
               actionType: "UPDATE",
               realUserId: String(user.id),
-              newState: { status, reason: input.reason },
+              oldState: { status: app.status },
+              newState: { status, reason: input.reason, reasonCode: "application_review" },
             });
             result.updated += 1;
           }

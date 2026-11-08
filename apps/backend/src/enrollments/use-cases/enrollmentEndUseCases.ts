@@ -6,6 +6,8 @@ import { invalidateMultiTierCache } from "../../lib/cache/index.js";
 import { broadcastCollection } from "../../lib/livePush.js";
 import { offerFreedSeatPostCommit } from "./admissionsWaitlistUseCases.js";
 import { todayInTimeZone } from "../../lib/dbDate.js";
+import { withTenant } from "../../db/tenant-context.js";
+import { recordEnrollmentAudit } from "./enrollmentAudit.js";
 
 /** Actor for changes triggered by the system (e.g. a student status change without a user). */
 export const SYSTEM_ACTOR: OperationActor = { userId: null, label: "System" };
@@ -28,15 +30,34 @@ export async function endLiveEnrollments(
   const live = await repo.listOperableEnrollments(tenant, filter);
   const billing: WithdrawalBillingOutcome = { cancelled: [], review: [] };
   for (const enrollment of live) {
-    await repo.applyEnrollmentWithdrawal(tenant, {
-      enrollmentId: enrollment.id,
-      studentId: enrollment.studentId,
-      effectiveOn: options.lastDay,
-      reason: options.reason,
-      actor: options.actor,
-      status: options.status,
+    const settled = await withTenant(tenant, async (tx) => {
+      await repo.applyEnrollmentWithdrawal(tenant, {
+        enrollmentId: enrollment.id,
+        studentId: enrollment.studentId,
+        effectiveOn: options.lastDay,
+        reason: options.reason,
+        actor: options.actor,
+        status: options.status,
+      });
+      const outcome = await settleEnrollmentWithdrawal(enrollment.id, options.lastDay);
+      await recordEnrollmentAudit(tx, tenant, {
+        recordId: enrollment.id,
+        actionType: "UPDATE",
+        reasonCode:
+          options.status === "cancelled"
+            ? "session_cancelled"
+            : options.reason === "Session completed"
+              ? "session_completed"
+              : "withdraw",
+        oldState: { status: enrollment.status },
+        newState: {
+          status: options.status,
+          effectiveOn: options.lastDay,
+          reason: options.reason,
+        },
+      });
+      return outcome;
     });
-    const settled = await settleEnrollmentWithdrawal(enrollment.id, options.lastDay);
     billing.cancelled.push(...settled.cancelled);
     billing.review.push(...settled.review);
     if (options.status === "withdrawn") {
@@ -67,13 +88,22 @@ export async function completeLiveEnrollments(
   const live = await repo.listOperableEnrollments(tenant, { sessionIds: [sessionId] });
   let completed = 0;
   for (const enrollment of live) {
-    await repo.applyEnrollmentWithdrawal(tenant, {
-      enrollmentId: enrollment.id,
-      studentId: enrollment.studentId,
-      effectiveOn: lastDay,
-      reason: "Session completed",
-      actor,
-      status: "completed",
+    await withTenant(tenant, async (tx) => {
+      await repo.applyEnrollmentWithdrawal(tenant, {
+        enrollmentId: enrollment.id,
+        studentId: enrollment.studentId,
+        effectiveOn: lastDay,
+        reason: "Session completed",
+        actor,
+        status: "completed",
+      });
+      await recordEnrollmentAudit(tx, tenant, {
+        recordId: enrollment.id,
+        actionType: "UPDATE",
+        reasonCode: "session_completed",
+        oldState: { status: enrollment.status },
+        newState: { status: "completed", effectiveOn: lastDay },
+      });
     });
     completed += 1;
   }

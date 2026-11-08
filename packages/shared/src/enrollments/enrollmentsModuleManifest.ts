@@ -164,7 +164,9 @@ export const ENROLLMENTS_MODULE_MANIFEST = {
   permissions: {
     read: "enrollments.read",
     write: "enrollments.write",
-    delete: "enrollments.write",
+    delete: "enrollments.delete",
+    /** Administrative state changes: drops, transfers, re-admissions, suspensions, overrides. */
+    manage: "enrollments.manage",
     setupView: "configuration.view",
     setupWrite: "settings.global.write",
     export: "enrollments.read",

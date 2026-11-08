@@ -30,6 +30,8 @@ export interface EnrollmentDetailSectionsProps {
   statusConfig: Record<string, StatusBadgeConfigItem>;
   paymentConfig: Record<string, StatusBadgeConfigItem>;
   canWrite: boolean;
+  /** Administrative capability: without it, drop/cancel is not offered. */
+  canManage?: boolean;
   isArchived: boolean;
   onStatusChange: (id: string, newStatus: Enrollment["status"]) => void;
   onPaymentStatusChange: (id: string, newStatus: Enrollment["paymentStatus"]) => void;
@@ -44,6 +46,7 @@ export function EnrollmentDetailSections({
   statusConfig,
   paymentConfig,
   canWrite,
+  canManage = false,
   isArchived,
   onStatusChange,
   onPaymentStatusChange,
@@ -56,7 +59,8 @@ export function EnrollmentDetailSections({
   const manualNext = allowedEnrollmentTransitions(enrollment.status, { channel: "manual" });
   const nextStatuses = [
     ...manualNext,
-    ...(enrollmentAllowsOperations(enrollment.status) ? (["cancelled"] as const) : []),
+    // Dropping/cancelling is an administrative action: only manage-capable roles see it.
+    ...(canManage && enrollmentAllowsOperations(enrollment.status) ? (["cancelled"] as const) : []),
   ] as Enrollment["status"][];
   const nextPaymentStatuses = ENROLLMENT_PAYMENT_STATUSES.filter(
     (paymentStatus) => paymentStatus !== enrollment.paymentStatus,

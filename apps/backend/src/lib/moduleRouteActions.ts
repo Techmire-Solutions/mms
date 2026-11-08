@@ -41,6 +41,30 @@ export const MODULE_ROUTE_ACTION_RULES: readonly ModuleRouteActionRule[] = [
     action: "setupWrite",
     onlyModules: ["students"],
   },
+  // Enrollments: trash/restore is `enrollments.delete` (not write), and the administrative
+  // operations (drops/transfers/re-admissions/suspensions/bulk-end) are `enrollments.manage`.
+  // Left to the HTTP-method default they resolved to `write`, so a registrar-only role was
+  // blocked at the module gate while a teacher could drop a student.
+  {
+    methods: ["DELETE"],
+    pattern: /^\/api\/enrollments\/[^/]+$/,
+    action: "delete",
+    onlyModules: ["enrollment"],
+  },
+  {
+    methods: ["POST"],
+    pattern:
+      /^\/api\/enrollments\/(bulk-delete|bulk-restore)$|^\/api\/enrollments\/[^/]+\/restore$/,
+    action: "delete",
+    onlyModules: ["enrollment"],
+  },
+  {
+    methods: ["POST"],
+    pattern:
+      /^\/api\/enrollments\/(bulk-end)$|^\/api\/enrollments\/[^/]+\/(transfer|withdraw|readmit|suspend)$/,
+    action: "manage",
+    onlyModules: ["enrollment"],
+  },
   // Faculty: archive/restore are `faculty.delete` operations. The handlers
   // already require `canDeleteCollection("faculty")`, so the method default
   // (`write`) wrongly 403'd a delete-only role. Registered on the canonical,

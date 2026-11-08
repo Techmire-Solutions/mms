@@ -153,7 +153,15 @@ export async function submitPublicRegistration(
       tableName: "registration_applications",
       recordId: id,
       actionType: "CREATE",
-      newState: { reference, status, linkId: link.id, classId: cls.id },
+      newState: {
+        reference,
+        status,
+        linkId: link.id,
+        classId: cls.id,
+        reasonCode: "public_registration",
+        // Hashed client IP only: the immutable trail needs abuse signal, not the address.
+        ipHash: submittedIpHash,
+      },
     });
     return { id, reference, status, autoApprove: !link.requiresReview && status === "submitted" };
   });

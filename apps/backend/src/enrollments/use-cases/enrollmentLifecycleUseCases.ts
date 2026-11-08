@@ -65,13 +65,24 @@ export const enrollmentLifecycleUseCases = {
         reason: input.reason,
         actor: actorOf(user),
       });
-      await recordOperationAudit(tx, tenant, user, enrollment, "readmit", {
-        toClassId: target.cls.id,
-        toSectionId: target.sectionId,
-        finalFee: fee.finalFee,
-        effectiveOn: input.effectiveOn,
-        reason: input.reason,
-      });
+      await recordOperationAudit(
+        tx,
+        tenant,
+        user,
+        enrollment,
+        "readmit",
+        {
+          toClassId: target.cls.id,
+          toSectionId: target.sectionId,
+          finalFee: fee.finalFee,
+          effectiveOn: input.effectiveOn,
+          reason: input.reason,
+        },
+        {
+          reasonCode: "readmit",
+          oldState: { status: enrollment.status, classId: enrollment.classId },
+        },
+      );
     });
     return afterChange(tenant, enrollment);
   },
@@ -106,11 +117,19 @@ export const enrollmentLifecycleUseCases = {
         reason: input.reason,
         actor: actorOf(user),
       });
-      await recordOperationAudit(tx, tenant, user, enrollment, "suspend", {
-        fromOn: input.fromOn,
-        toOn: input.toOn,
-        reason: input.reason,
-      });
+      await recordOperationAudit(
+        tx,
+        tenant,
+        user,
+        enrollment,
+        "suspend",
+        {
+          fromOn: input.fromOn,
+          toOn: input.toOn,
+          reason: input.reason,
+        },
+        { reasonCode: "suspend", oldState: { status: enrollment.status } },
+      );
     });
     return afterChange(tenant, enrollment);
   },
