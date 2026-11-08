@@ -34,6 +34,21 @@ export const enrollmentOperationsRouter: FastifyPluginAsync = async (fastify) =>
         });
       }
     },
+    bulkEnd: async ({ body, request }: ContractRouteArgs<Contract["bulkEnd"]>) => {
+      const user = request.user as User;
+      if (!canWriteCollection(user, COLLECTION)) return forbidden;
+      try {
+        return {
+          status: 200 as const,
+          body: await ops.bulkEnd(tenantOf(request), body, user),
+        };
+      } catch (error) {
+        return handleContractError(request, error, {
+          status: 500,
+          body: { type: "server_error", message: "Failed to end the enrollments" },
+        });
+      }
+    },
     transfer: async ({ params, body, request }: ContractRouteArgs<Contract["transfer"]>) => {
       const user = request.user as User;
       if (!canWriteCollection(user, COLLECTION)) return forbidden;

@@ -1,15 +1,19 @@
 import { and, eq, inArray, isNull } from "drizzle-orm";
 import { enrollmentPlacements, enrollments } from "../schema.js";
-import { withTenant, withTenantRead, type TenantTransaction } from "../tenant-context.js";
+import { withTenant, withTenantRead } from "../tenant-context.js";
 import {
   closePlacementTx,
   insertTypedTimelineEventTx,
   movePlacementTx,
 } from "./enrollmentHistoryWrite.js";
 import { syncEnrolledSessionsTx } from "./enrollmentSessionSync.js";
-import { enrollmentHoldsSeatWhere } from "./enrollmentSeatSql.js";
-import { assertSeatCapacityTx, lockSectionsForSeatsTx } from "./enrollmentSeatCountRepository.js";
-import { NotFoundError } from "../../lib/httpErrors.js";
+import { ENROLLMENT_OPERABLE_STATUSES } from "@mms/shared";
+import { lockAndAssertTargetSectionTx } from "./enrollmentSeatCountRepository.js";
+import {
+  NOT_OPERABLE,
+  assertChanged,
+  operableEnrollmentKey,
+} from "./enrollmentTransitionGuards.js";
 
 export { listEnrollmentPlacements } from "./enrollmentPlacementHistory.js";
 
@@ -53,19 +57,6 @@ export interface OperationActor {
   label: string;
 }
 
-/** Row-locks the target section and refuses the write when it has no free seat. */
-async function lockAndAssertSeatTx(
-  tx: TenantTransaction,
-  subdomain: string,
-  sectionId: string,
-  enrollmentId: string,
-): Promise<void> {
-  const sections = await lockSectionsForSeatsTx(tx, subdomain, [sectionId]);
-  const section = sections.get(sectionId);
-  if (!section) throw new NotFoundError("Section not found");
-  await assertSeatCapacityTx(tx, subdomain, { section, excludeEnrollmentIds: [enrollmentId] });
-}
-
 const enrollmentKey = (subdomain: string, id: string) =>
   and(
     eq(enrollments.workspaceSubdomain, subdomain),
@@ -92,9 +83,9 @@ export async function applyEnrollmentTransfer(
     // The use case's seat pre-check happens before this transaction; a concurrent writer
     // can take the last seat in between, so the seat is re-asserted under the section lock.
     if (input.to.sectionId && input.to.sectionId !== input.from.sectionId) {
-      await lockAndAssertSeatTx(tx, subdomain, input.to.sectionId, input.enrollmentId);
+      await lockAndAssertTargetSectionTx(tx, subdomain, input.to.sectionId, [input.enrollmentId]);
     }
-    await tx
+    const changed = await tx
       .update(enrollments)
       .set({
         classId: input.to.classId,
@@ -105,7 +96,9 @@ export async function applyEnrollmentTransfer(
         ...feeColumns(input.fee),
         updatedAt: new Date(),
       })
-      .where(enrollmentKey(subdomain, input.enrollmentId));
+      .where(operableEnrollmentKey(subdomain, input.enrollmentId))
+      .returning({ id: enrollments.id });
+    assertChanged(changed.length, NOT_OPERABLE);
     await movePlacementTx(tx, subdomain, {
       enrollmentId: input.enrollmentId,
       classId: input.to.classId,
@@ -159,10 +152,12 @@ export async function applyEnrollmentWithdrawal(
       .for("update");
     // A placement that has not started yet (session cancelled before start) ends on its first day.
     const endOn = open && open.startOn > input.effectiveOn ? open.startOn : input.effectiveOn;
-    await tx
+    const changed = await tx
       .update(enrollments)
       .set({ status, endOn, endReason: input.reason, updatedAt: new Date() })
-      .where(enrollmentKey(subdomain, input.enrollmentId));
+      .where(operableEnrollmentKey(subdomain, input.enrollmentId))
+      .returning({ id: enrollments.id });
+    assertChanged(changed.length, NOT_OPERABLE);
     if (open) await closePlacementTx(tx, subdomain, open.id, endOn);
     await insertTypedTimelineEventTx(tx, subdomain, {
       enrollmentId: input.enrollmentId,
@@ -181,24 +176,38 @@ export interface LiveEnrollmentRow {
   id: string;
   studentId: string;
   studentName: string;
+  sessionId: string;
   classId: string;
   sectionId: string | null;
+  status: string;
 }
 
-/** Live (seat-holding) enrollments of the given sessions or student. */
-export async function listLiveEnrollments(
+/**
+ * Enrollments a staff operation may act on (pending/confirmed), for the given sessions
+ * and/or students.
+ *
+ * Deliberately **not** "seat-holding": `completed` counts as a seat for capacity and
+ * revenue reporting, but it is history and must never be withdrawn, cancelled or
+ * re-promoted by a batch path.
+ */
+export async function listOperableEnrollments(
   tenant: string,
-  filter: { sessionIds?: readonly string[]; studentId?: string },
+  filter: { sessionIds?: readonly string[]; studentId?: string; studentIds?: readonly string[] },
 ): Promise<LiveEnrollmentRow[]> {
   const subdomain = tenant.trim().toLowerCase();
   const conditions = [
     eq(enrollments.workspaceSubdomain, subdomain),
     isNull(enrollments.deletedAt),
-    enrollmentHoldsSeatWhere(),
+    inArray(enrollments.status, [...ENROLLMENT_OPERABLE_STATUSES]),
   ];
   if (filter.sessionIds) conditions.push(inArray(enrollments.sessionId, [...filter.sessionIds]));
   if (filter.studentId) conditions.push(eq(enrollments.studentId, filter.studentId));
-  if (!filter.sessionIds && !filter.studentId) return [];
+  if (filter.studentIds) {
+    const ids = [...new Set(filter.studentIds)];
+    if (ids.length === 0) return [];
+    conditions.push(inArray(enrollments.studentId, ids));
+  }
+  if (!filter.sessionIds && !filter.studentId && !filter.studentIds) return [];
   if (filter.sessionIds && filter.sessionIds.length === 0) return [];
   return withTenantRead(subdomain, (tx) =>
     tx
@@ -206,8 +215,10 @@ export async function listLiveEnrollments(
         id: enrollments.id,
         studentId: enrollments.studentId,
         studentName: enrollments.studentName,
+        sessionId: enrollments.sessionId,
         classId: enrollments.classId,
         sectionId: enrollments.sectionId,
+        status: enrollments.status,
       })
       .from(enrollments)
       .where(and(...conditions)),
@@ -231,9 +242,9 @@ export async function applyEnrollmentReadmission(
   await withTenant(subdomain, async (tx) => {
     // A withdrawn row holds no seat; readmission takes one again, under the section lock.
     if (input.to.sectionId) {
-      await lockAndAssertSeatTx(tx, subdomain, input.to.sectionId, input.enrollmentId);
+      await lockAndAssertTargetSectionTx(tx, subdomain, input.to.sectionId, [input.enrollmentId]);
     }
-    await tx
+    const changedReadmit = await tx
       .update(enrollments)
       .set({
         status: "confirmed",
@@ -246,7 +257,9 @@ export async function applyEnrollmentReadmission(
         ...feeColumns(input.fee),
         updatedAt: new Date(),
       })
-      .where(enrollmentKey(subdomain, input.enrollmentId));
+      .where(and(enrollmentKey(subdomain, input.enrollmentId), eq(enrollments.status, "withdrawn")))
+      .returning({ id: enrollments.id });
+    assertChanged(changedReadmit.length, "Only a withdrawn enrollment can be re-admitted");
     await movePlacementTx(tx, subdomain, {
       enrollmentId: input.enrollmentId,
       classId: input.to.classId,

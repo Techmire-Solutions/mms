@@ -14,6 +14,7 @@ import { useFinanceCurrency } from "@/hooks/useCurrency";
 import {
   ENROLLMENT_PLACEMENTS_QUERY_KEY,
   enrollmentPlacementsQueryOptions,
+  bulkEndEnrollmentMutationOptions,
   readmitEnrollmentMutationOptions,
   suspendEnrollmentMutationOptions,
   transferEnrollmentMutationOptions,
@@ -44,6 +45,7 @@ export function useEnrollmentOperations() {
   const withdrawMutation = useMutation({ ...withdrawEnrollmentMutationOptions(), onSettled });
   const readmitMutation = useMutation({ ...readmitEnrollmentMutationOptions(), onSettled });
   const suspendMutation = useMutation({ ...suspendEnrollmentMutationOptions(), onSettled });
+  const bulkEndMutation = useMutation({ ...bulkEndEnrollmentMutationOptions(), onSettled });
 
   const simple = async <B>(
     run: (input: { id: string; body: B }) => Promise<unknown>,
@@ -109,14 +111,41 @@ export function useEnrollmentOperations() {
     }
   };
 
+  /**
+   * Bulk cancellation. Each row goes through the same side-effecting end path as a single
+   * withdrawal; partial success is reported per row instead of the previous N raw status
+   * writes.
+   */
+  const bulkEnd = async (
+    ids: string[],
+    body: { reason: string; endAs?: "withdrawn" | "cancelled"; effectiveOn?: string },
+  ) => {
+    try {
+      const result = await bulkEndMutation.mutateAsync({ ids, ...body });
+      if (result.failed > 0) {
+        notify.warning(t("enrollments.ops.withdrawFailed"), {
+          description: result.failures.map((failure) => failure.message).join("; "),
+        });
+      } else {
+        notify.success(t("enrollments.toast.cancelled"));
+      }
+      return result;
+    } catch (error) {
+      notify.error(t("enrollments.ops.withdrawFailed"), { description: detail(error) });
+      return null;
+    }
+  };
+
   return {
     transfer,
     withdraw,
+    bulkEnd,
     readmit,
     suspend,
     isPending:
       transferMutation.isPending ||
       withdrawMutation.isPending ||
+      bulkEndMutation.isPending ||
       readmitMutation.isPending ||
       suspendMutation.isPending,
   };

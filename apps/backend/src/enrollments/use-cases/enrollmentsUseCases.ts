@@ -2,7 +2,22 @@ import type { EnrollmentsRepository } from "../repository/enrollmentsRepository.
 import { enrollmentsRepository } from "../repository/enrollmentsRepositoryAdapter.js";
 import { getRequestTenant } from "../../lib/tenantContext.js";
 import { createGenericRelationalService } from "../../services/genericRelationalService.js";
-import { ConflictError } from "../../lib/httpErrors.js";
+import { ConflictError, HttpDomainError, ValidationError } from "../../lib/httpErrors.js";
+import { withTenant } from "../../db/tenant-context.js";
+import {
+  validateActiveForeignKeys,
+  validateNewEnrollmentRules,
+  withoutSoftDeleteFields,
+  type EnrollmentsUseCasesDependencies,
+} from "./enrollmentAdmissionRules.js";
+
+export type { EnrollmentsUseCasesDependencies } from "./enrollmentAdmissionRules.js";
+import {
+  allowedEnrollmentTransitions,
+  canTransitionEnrollment,
+  isEnrollmentTerminal,
+  parseEnrollmentStatus,
+} from "@mms/shared";
 import {
   enrollmentRecordSchema,
   type EnrollmentRecord,
@@ -17,33 +32,6 @@ import {
   type EnrollmentsReportComparisonQuery,
   type EnrollmentsWidgetQuery,
 } from "@mms/shared";
-
-export interface EnrollmentsUseCasesDependencies {
-  findStudentById?: (
-    tenant: string,
-    id: string,
-  ) => Promise<{ id: string; deletedAt?: unknown } | null>;
-  findSessionById?: (
-    tenant: string,
-    id: string,
-  ) => Promise<{ id: string; deletedAt?: unknown } | null>;
-}
-
-/** Deletion lifecycle columns a client may never set on an enrollment write. */
-const SERVER_OWNED_SOFT_DELETE_FIELDS = [
-  "deletedAt",
-  "deletedBy",
-  "deletionReason",
-  "deletedWithCascade",
-  "restoredAt",
-  "restoredBy",
-] as const;
-
-function withoutSoftDeleteFields<T>(record: T): T {
-  const clean = { ...(record as Record<string, unknown>) };
-  for (const field of SERVER_OWNED_SOFT_DELETE_FIELDS) delete clean[field];
-  return clean as T;
-}
 
 /**
  * Enrollments use-cases — composition root binding an {@link EnrollmentsRepository}
@@ -68,39 +56,14 @@ export function createEnrollmentsUseCases(
     idPrefix: "enr",
   });
 
-  const validateActiveForeignKeys = async (tenant: string, record: Partial<EnrollmentRecord>) => {
-    if (record.studentId) {
-      const getStudent =
-        deps?.findStudentById ??
-        (await import("../../db/repositories/studentRepositoryHydrate.js")).findStudentById;
-      const student = await getStudent(tenant, record.studentId);
-      if (!student || student.deletedAt) {
-        const err = new Error("Referenced student is archived or does not exist");
-        (err as Error & { statusCode: number }).statusCode = 400;
-        throw err;
-      }
-    }
-
-    if (record.sessionId) {
-      const getSession =
-        deps?.findSessionById ??
-        (await import("../../db/repositories/sessionRepositoryHydrate.js")).findSessionById;
-      const session = await getSession(tenant, record.sessionId);
-      if (!session || session.deletedAt) {
-        const err = new Error("Referenced session is archived or does not exist");
-        (err as Error & { statusCode: number }).statusCode = 400;
-        throw err;
-      }
-    }
-  };
-
   return {
     createEnrollment: async (record: EnrollmentInsert | EnrollmentRecord) => {
       const tenant = getRequestTenant();
       if (!tenant) throw new Error("Tenant context required");
 
       // Active Foreign Key Guarding (§1.8)
-      await validateActiveForeignKeys(tenant, record);
+      await validateActiveForeignKeys(tenant, record, deps);
+      await validateNewEnrollmentRules(tenant, record as Partial<EnrollmentRecord>, deps);
 
       // Soft-delete provenance is server-owned (`mms-soft-delete` §5): a client must not
       // be able to create a hidden row, clear a deletion reason, or flip the cascade flag.
@@ -117,7 +80,14 @@ export function createEnrollmentsUseCases(
         }
       }
 
-      const created = await crud.create(sanitized);
+      // A new enrollment starts pending (or already confirmed); terminal states are
+      // produced by the operation that owns them, never by a create payload.
+      const status =
+        sanitized.status === undefined ? "pending" : parseEnrollmentStatus(sanitized.status);
+      if (isEnrollmentTerminal(status)) {
+        throw new ValidationError(`An enrollment cannot be created as "${status}"`);
+      }
+      const created = await crud.create({ ...sanitized, status } as EnrollmentRecord);
       const { maybeGenerateInvoiceForEnrollment } =
         await import("../../finance/use-cases/financeInvoiceGenerationUseCases.js");
       return maybeGenerateInvoiceForEnrollment(created);
@@ -130,10 +100,41 @@ export function createEnrollmentsUseCases(
       if (!tenant) throw new Error("Tenant context required");
 
       // Active Foreign Key Guarding (§1.8)
-      await validateActiveForeignKeys(tenant, record);
+      await validateActiveForeignKeys(tenant, record, deps);
 
       // A PUT may edit the enrollment; it may not edit its deletion lifecycle.
-      return crud.updateById(id, withoutSoftDeleteFields(record as EnrollmentRecord));
+      const sanitized = withoutSoftDeleteFields(record as EnrollmentRecord);
+      if (sanitized.status === undefined) return crud.updateById(id, sanitized);
+
+      const existing = await repo.findEnrollmentById(tenant, id);
+      if (!existing || existing.deletedAt) return null;
+      const nextStatus = parseEnrollmentStatus(sanitized.status);
+      if (nextStatus === existing.status) return crud.updateById(id, sanitized);
+      if (!canTransitionEnrollment(existing.status, nextStatus, { channel: "manual" })) {
+        throw new HttpDomainError(
+          409,
+          "invalid_status_transition",
+          `Cannot change the status from "${existing.status}" to "${nextStatus}". ` +
+            `Allowed here: ${allowedEnrollmentTransitions(existing.status, { channel: "manual" }).join(", ") || "none"}. ` +
+            "Use the withdraw, cancel, readmission or session-completion action for the other outcomes.",
+        );
+      }
+
+      // The status predicate runs in the same transaction as the rest of the record write,
+      // so a concurrent operation that moved the row first wins with a 409.
+      return withTenant(tenant, async (tx) => {
+        if (!repo.transitionEnrollmentStatusTx) {
+          throw new Error("Enrollment repository cannot guard status transitions");
+        }
+        // The nested repository calls join this transaction, so the guard and the rest
+        // of the record write commit or roll back together.
+        await repo.transitionEnrollmentStatusTx(tx, tenant.trim().toLowerCase(), {
+          id,
+          from: existing.status,
+          to: nextStatus,
+        });
+        return crud.updateById(id, sanitized);
+      });
     },
     deleteEnrollmentById: crud.deleteById,
     restoreEnrollmentById: async (id: string, userId?: string) => {

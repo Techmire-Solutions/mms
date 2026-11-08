@@ -40,6 +40,7 @@ const mockSession: Session = {
       enrolled: 15,
       ageCalculationDate: "2026-01-01",
       enrollmentDeadline: "2026-02-01",
+      dropDeadline: "",
       status: "active",
       facultyId: "t-1",
       facultyName: "Sheikh Ahmad",

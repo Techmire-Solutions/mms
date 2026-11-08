@@ -17,10 +17,7 @@ import { findSessionById } from "../../db/repositories/sessionRepositoryQueries.
 import { findWorkspaceTimezone } from "../../db/repositories/workspaceRepository.js";
 import { findStudentsByIds } from "../../db/repositories/studentRepositoryHydrate.js";
 import { bulkSaveEnrollments } from "../../db/repositories/enrollmentRepositoryPersist.js";
-import {
-  cancelStudentEnrollmentsInSession,
-  findActivelyEnrolledStudentIds,
-} from "../../db/repositories/enrollmentBulkOps.js";
+import { findActivelyEnrolledStudentIds } from "../../db/repositories/enrollmentBulkOps.js";
 import { findLatestEnrollmentId } from "../../db/repositories/enrollmentPlacementLookup.js";
 import { flagOldestWaitlistedApplication } from "../../db/repositories/registrationWaitlistRepository.js";
 
@@ -41,7 +38,6 @@ export const admissionsRepository: AdmissionsRepository = {
   findStudentsByIds,
   bulkSaveEnrollments,
   findActivelyEnrolledStudentIds,
-  cancelStudentEnrollmentsInSession,
   findLatestEnrollmentId,
   flagOldestWaitlistedApplication,
 };

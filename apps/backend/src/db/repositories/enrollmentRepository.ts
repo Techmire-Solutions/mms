@@ -7,6 +7,7 @@ export {
 } from "./enrollmentRepositoryHydrate.js";
 export {
   saveEnrollment,
+  transitionEnrollmentStatusTx,
   bulkSaveEnrollments,
   replaceEnrollmentsForWorkspace,
   linkEnrollmentInvoiceIds,

@@ -1,4 +1,5 @@
 import {
+  canTransitionApplication,
   evaluateEligibility,
   registrationApplicationListQuerySchema,
   registrationReviewSchema,
@@ -116,10 +117,13 @@ export function createAdmissionsUseCases() {
           const apps = await repo.findApplicationsByIdsTx(tx, subdomain, input.ids);
           const result: ApproveOutcome = { updated: 0, failures: [] };
           for (const app of apps) {
-            if (app.status === "approved") {
+            if (!canTransitionApplication(app.status, status)) {
               result.failures.push({
                 id: app.id,
-                message: "Approved applications cannot be changed; withdraw the enrollment instead",
+                message:
+                  app.status === "approved"
+                    ? "Approved applications cannot be changed; withdraw the enrollment instead"
+                    : `An application in "${app.status}" cannot move to "${status}"`,
               });
               continue;
             }

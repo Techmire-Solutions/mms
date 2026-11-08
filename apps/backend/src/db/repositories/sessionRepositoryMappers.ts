@@ -215,6 +215,7 @@ export function sessionRowToRecord(
       maxStudents: raw.capacity ?? 30,
       enrolled: raw.enrolled ?? 0,
       enrollmentDeadline: raw.enrollmentDeadline || "",
+      dropDeadline: raw.dropDeadline || "",
       status: (raw.status === "inactive" ? "inactive" : "active") as "active" | "inactive",
       facultyId: raw.facultyId || "",
       facultyName: raw.facultyName || "",

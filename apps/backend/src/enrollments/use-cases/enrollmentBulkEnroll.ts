@@ -1,19 +1,28 @@
 import { randomUUID } from "node:crypto";
 import {
+  addDeadlineError,
+  describeEligibilityReasons,
   enrollmentFeeForClass,
-  todayISO,
+  isSessionReadOnly,
+  staffEligibilityReasons,
   type Enrollment,
   type StudentsBulkEnrollBody,
 } from "@mms/shared";
 import { admissionsRepository as repo } from "../repository/admissionsRepositoryAdapter.js";
 import {
   ConflictError,
+  HttpDomainError,
   NotFoundError,
   SeatCapacityError,
   ValidationError,
 } from "../../lib/httpErrors.js";
 import { broadcastCollection } from "../../lib/livePush.js";
 import { invalidateMultiTierCache } from "../../lib/cache/index.js";
+import { endLiveEnrollments } from "./enrollmentEndUseCases.js";
+import { assertNoStudentScheduleCollision } from "./enrollmentTimetableGuard.js";
+import { todayInTimeZone } from "../../lib/dbDate.js";
+import { hasActiveTransaction } from "../../db/dbTransactions.js";
+import { withSavepoint } from "../../db/transactionSideEffects.js";
 
 export type BulkEnrollInput = Omit<StudentsBulkEnrollBody, "studentIds"> & { studentIds: string[] };
 
@@ -21,7 +30,8 @@ export type BulkEnrollInput = Omit<StudentsBulkEnrollBody, "studentIds"> & { stu
  * Bulk enrollment through `enrollments` (the source of truth):
  * - `add` creates pending enrollments in the class (section resolved server-side) with the shared
  *   fee rule; students already actively enrolled in the session are skipped (counted as failed);
- * - `remove` cancels the students' active enrollments in the session (history kept).
+ * - `remove` cancels the students' operable enrollments in the session through the shared
+ *   end path (window end, placement close, invoice settlement; history kept).
  * Membership (`student_session_memberships`) follows automatically (enrollmentSessionSync).
  */
 export async function bulkEnrollStudentsIntoClass(
@@ -32,25 +42,70 @@ export async function bulkEnrollStudentsIntoClass(
   if (studentIds.length === 0) return { succeeded: 0, failed: 0 };
 
   if (input.mode === "remove") {
-    const cancelled = await repo.cancelStudentEnrollmentsInSession(
+    // Same side effects as a staff cancellation: window end, placement close, invoice
+    // settlement. The previous path only flipped the status, leaving the placement open
+    // and later invoices billable for a student who had been removed.
+    const outcome = await endLiveEnrollments(
       tenant,
-      input.sessionId,
-      studentIds,
+      { sessionIds: [input.sessionId], studentIds },
+      {
+        status: "cancelled",
+        lastDay: todayInTimeZone(await repo.findWorkspaceTimezone(tenant)),
+        reason: "Removed from the class",
+        actor: { userId: null, label: "Bulk remove" },
+      },
     );
-    await afterChange(tenant);
-    return { succeeded: cancelled, failed: studentIds.length - cancelled };
+    return { succeeded: outcome.ended, failed: studentIds.length - outcome.ended };
   }
 
   const session = await repo.findSessionById(tenant, input.sessionId);
   if (!session || session.deletedAt) throw new NotFoundError("Session not found");
+  // Staff may prepare a draft/open/in_progress roster; only a terminal session is read-only.
+  if (isSessionReadOnly(session.status)) {
+    throw new ConflictError(
+      `This session is "${session.status}" and no longer accepts enrollments`,
+    );
+  }
   const sessionClass = session.classes.find((cls) => cls.id === input.classId);
   if (!sessionClass) throw new ValidationError("Class does not belong to the selected session");
+  const today = todayInTimeZone(await repo.findWorkspaceTimezone(tenant));
+  const deadlineError = addDeadlineError(sessionClass.enrollmentDeadline, today);
+  if (deadlineError && !input.allowAfterDeadline) throw new ConflictError(deadlineError);
 
   const [students, already] = await Promise.all([
     repo.findStudentsByIds(tenant, studentIds),
     repo.findActivelyEnrolledStudentIds(tenant, session.id, studentIds),
   ]);
-  const enrolledDate = todayISO();
+  const enrolledDate = today;
+  const ineligible = students
+    .map((student) => ({
+      student,
+      reasons: staffEligibilityReasons({
+        student: { dob: student.dob ?? null, gender: student.gender ?? null },
+        cls: {
+          gender: sessionClass.gender,
+          minAge: sessionClass.minAge,
+          maxAge: sessionClass.maxAge,
+          ageCalculationDate: sessionClass.ageCalculationDate,
+        },
+        session: { status: session.status, startDate: session.startDate },
+        asOf: today,
+      }),
+    }))
+    .filter((row) => row.reasons.length > 0);
+  if (ineligible.length > 0 && !input.ignoreEligibility) {
+    const [first] = ineligible;
+    throw new HttpDomainError(
+      422,
+      "ineligible",
+      `${first.student.name || String(first.student.id)} is not eligible for ${sessionClass.name}: ${describeEligibilityReasons(first.reasons)}`,
+    );
+  }
+
+  const eligible = students
+    .filter((student) => !student.deletedAt && !already.has(String(student.id)))
+    .map((student) => String(student.id));
+  await assertNoStudentScheduleCollision(tenant, session, sessionClass.id, eligible);
 
   const records: Enrollment[] = students
     .filter((student) => !student.deletedAt && !already.has(String(student.id)))
@@ -95,8 +150,13 @@ function isRowRejection(error: unknown): boolean {
 async function saveIndividually(tenant: string, records: readonly Enrollment[]): Promise<string[]> {
   const inserted: string[] = [];
   for (const record of records) {
+    const attempt = () => repo.bulkSaveEnrollments(tenant, [record]);
     try {
-      const result = await repo.bulkSaveEnrollments(tenant, [record]);
+      // Inside an ambient transaction (e.g. admissions approval) a rejected row must not
+      // poison the outer transaction, so each attempt gets its own savepoint.
+      const result = hasActiveTransaction()
+        ? await withSavepoint(() => attempt())
+        : await attempt();
       inserted.push(...result.inserted);
     } catch (error) {
       if (!isRowRejection(error)) throw error;

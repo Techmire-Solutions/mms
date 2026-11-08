@@ -30,7 +30,6 @@ export interface AdmissionsRepository {
   findStudentsByIds: StudentHydrate["findStudentsByIds"];
   bulkSaveEnrollments: EnrollmentPersist["bulkSaveEnrollments"];
   findActivelyEnrolledStudentIds: EnrollmentBulkOps["findActivelyEnrolledStudentIds"];
-  cancelStudentEnrollmentsInSession: EnrollmentBulkOps["cancelStudentEnrollmentsInSession"];
   findLatestEnrollmentId: PlacementStore["findLatestEnrollmentId"];
   flagOldestWaitlistedApplication: WaitlistStore["flagOldestWaitlistedApplication"];
 }

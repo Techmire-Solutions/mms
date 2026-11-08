@@ -47,6 +47,7 @@ describe("sessionRepositoryHydrate", () => {
       capacity: 30,
       enrolled: 15,
       enrollmentDeadline: null,
+      dropDeadline: null,
       status: "active",
       facultyId: "f1",
       facultyName: "Teacher A",

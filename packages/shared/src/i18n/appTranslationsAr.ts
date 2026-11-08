@@ -7743,6 +7743,7 @@ export const APP_TRANSLATIONS_AR: Record<AppTranslationKey, string> = {
   "sessions.classes.detail.discounts.namePlaceholder": "اسم الخصم (مثال: خصم الأشقاء 15%)",
   "sessions.classes.detail.discounts.title": "خصومات وإعفاءات الصف",
   "sessions.classes.detail.enrollmentDeadline": "الموعد النهائي للتسجيل",
+  "sessions.classes.detail.dropDeadline": "الموعد النهائي للانسحاب",
   "sessions.classes.detail.fees.add": "بند رسوم",
   "sessions.classes.detail.fees.empty":
     'لم تُحدَّد رسوم فردية. انقر على "إضافة بند رسوم" لتحديد رسوم الدراسة والقبول والاختبارات وغيرها.',

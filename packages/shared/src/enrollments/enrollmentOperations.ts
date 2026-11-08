@@ -47,14 +47,44 @@ export const enrollmentTransferBodySchema = z
   .strict();
 export type EnrollmentTransferBody = z.infer<typeof enrollmentTransferBodySchema>;
 
-/** End an enrollment from a date (drop-out, transfer out); the seat is released. */
+/**
+ * End an enrollment (drop-out, transfer out, cancellation): the seat is released and the
+ * placement is closed by the shared end path.
+ *
+ * `effectiveOn` defaults to the workspace's today (the server owns the business date);
+ * `endAs` chooses the outcome — `withdrawn` (student left) or `cancelled` (dropped/removed).
+ */
 export const enrollmentWithdrawBodySchema = z
   .object({
-    effectiveOn: isoDateSchema,
+    effectiveOn: isoDateSchema.optional(),
     reason: reasonSchema,
+    endAs: z.enum(["withdrawn", "cancelled"]).optional(),
+    /** Admin late-withdrawal override; refusals and overrides are audited. */
+    overrideDropDeadline: z.boolean().optional(),
   })
   .strict();
 export type EnrollmentWithdrawBody = z.infer<typeof enrollmentWithdrawBodySchema>;
+
+/** Bounded batch form of the same operation; each row keeps its own side effects. */
+export const enrollmentBulkEndBodySchema = z
+  .object({
+    ids: z.array(z.string().min(1).max(64)).min(1).max(100),
+    effectiveOn: isoDateSchema.optional(),
+    reason: reasonSchema,
+    endAs: z.enum(["withdrawn", "cancelled"]).optional(),
+    overrideDropDeadline: z.boolean().optional(),
+  })
+  .strict();
+export type EnrollmentBulkEndBody = z.infer<typeof enrollmentBulkEndBodySchema>;
+
+export const enrollmentBulkEndResultSchema = z
+  .object({
+    succeeded: z.number().int(),
+    failed: z.number().int(),
+    failures: z.array(z.object({ id: z.string(), message: z.string() }).strict()),
+  })
+  .strict();
+export type EnrollmentBulkEndResult = z.infer<typeof enrollmentBulkEndResultSchema>;
 
 /** Bring a withdrawn student back from a date (optionally into another class/section). */
 export const enrollmentReadmitBodySchema = z

@@ -158,6 +158,8 @@ export const sessionClasses = pgTable(
     // Historical denormalised seat counter, dropped by migration 0211: it was written
     // as 0 on insert and never maintained, while every reader counts live enrollments.
     enrollmentDeadline: varchar("enrollment_deadline", { length: 35 }).notNull().default(""),
+    /** Last day a student may be withdrawn from this class (migration 0212); null = no limit. */
+    dropDeadline: date("drop_deadline", { mode: "string" }),
     status: varchar("status", { length: 50 }).notNull().default("active"),
     facultyId: text("faculty_id"),
     facultyName: varchar("faculty_name", { length: 255 }).default(""),

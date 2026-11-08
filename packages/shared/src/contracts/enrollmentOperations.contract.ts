@@ -2,6 +2,8 @@ import { initContract } from "@ts-rest/core";
 import { z } from "zod";
 import { enrollmentRecordSchema } from "../enrollments/enrollmentsModuleManifest.js";
 import {
+  enrollmentBulkEndBodySchema,
+  enrollmentBulkEndResultSchema,
   enrollmentPlacementSchema,
   enrollmentReadmitBodySchema,
   enrollmentSuspendBodySchema,
@@ -57,6 +59,19 @@ export const enrollmentOperationsContract = c.router({
       }),
     },
     summary: "Withdraw an enrollment from a date and release its seat",
+  },
+  bulkEnd: {
+    method: "POST",
+    path: "/api/enrollments/bulk-end",
+    body: enrollmentBulkEndBodySchema,
+    responses: {
+      200: enrollmentBulkEndResultSchema,
+      400: errorResponse,
+      403: errorResponse,
+      409: errorResponse,
+      500: errorResponse,
+    },
+    summary: "Withdraw or cancel a bounded set of enrollments (per-row results)",
   },
   readmit: {
     method: "POST",

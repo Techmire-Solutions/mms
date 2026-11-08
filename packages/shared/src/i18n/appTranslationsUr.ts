@@ -7827,6 +7827,7 @@ export const APP_TRANSLATIONS_UR: Record<AppTranslationKey, string> = {
   "sessions.classes.detail.discounts.namePlaceholder": "رعایت کا نام (مثلاً بہن بھائی رعایت 15%)",
   "sessions.classes.detail.discounts.title": "کلاس رعایات و چھوٹ",
   "sessions.classes.detail.enrollmentDeadline": "داخلہ کی آخری تاریخ",
+  "sessions.classes.detail.dropDeadline": "واپسی کی آخری تاریخ",
   "sessions.classes.detail.fees.add": "فیس آئٹم",
   "sessions.classes.detail.fees.empty":
     'کوئی انفرادی فیس متعین نہیں۔ ٹیوشن، داخلہ، امتحان فیس وغیرہ متعین کرنے کے لیے "فیس آئٹم شامل کریں" پر کلک کریں۔',

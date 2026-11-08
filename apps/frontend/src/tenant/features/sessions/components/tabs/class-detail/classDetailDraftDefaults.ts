@@ -15,6 +15,7 @@ export const EMPTY_CLASS: Class = {
   maxStudents: 0,
   enrolled: 0,
   enrollmentDeadline: "",
+  dropDeadline: "",
   status: "active",
   facultyId: "",
   facultyName: "",

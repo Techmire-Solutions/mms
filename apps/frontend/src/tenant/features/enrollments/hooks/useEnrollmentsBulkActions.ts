@@ -5,13 +5,14 @@ import type { useEnrollmentMutations } from "@/tenant/features/enrollments/hooks
 export interface UseEnrollmentsBulkActionsParams {
   bulkDeleteEnrollments: ReturnType<typeof useEnrollmentMutations>["bulkDeleteEnrollments"];
   bulkRestoreEnrollments: ReturnType<typeof useEnrollmentMutations>["bulkRestoreEnrollments"];
-  handleCancel: (id: string) => void;
+  /** Ends every selected enrollment through the side-effecting bulk operation. */
+  onBulkCancel: (ids: string[]) => void;
 }
 
 export function useEnrollmentsBulkActions({
   bulkDeleteEnrollments,
   bulkRestoreEnrollments,
-  handleCancel,
+  onBulkCancel,
 }: UseEnrollmentsBulkActionsParams) {
   const { t } = useTranslation();
 
@@ -59,7 +60,8 @@ export function useEnrollmentsBulkActions({
   };
 
   const handleBulkCancel = (ids: string[]) => {
-    ids.forEach((id) => handleCancel(id));
+    if (ids.length === 0) return;
+    onBulkCancel(ids);
   };
 
   return {

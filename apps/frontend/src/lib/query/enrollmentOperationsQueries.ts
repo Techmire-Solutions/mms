@@ -1,6 +1,7 @@
 import { mutationOptions, queryOptions } from "@tanstack/react-query";
 import { z } from "zod";
 import {
+  enrollmentBulkEndResultSchema,
   enrollmentPlacementSchema,
   enrollmentRecordSchema,
   type Enrollment,
@@ -62,6 +63,29 @@ export function withdrawEnrollmentMutationOptions() {
             body: JSON.stringify(body),
           }),
         ),
+  });
+}
+
+export function bulkEndEnrollmentMutationOptions() {
+  return mutationOptions({
+    mutationKey: ["enrollments", "bulk-end"] as const,
+    mutationFn: async ({
+      ids,
+      reason,
+      endAs,
+      effectiveOn,
+    }: {
+      ids: string[];
+      reason: string;
+      endAs?: "withdrawn" | "cancelled";
+      effectiveOn?: string;
+    }) =>
+      enrollmentBulkEndResultSchema.parse(
+        await apiJson<unknown>("/api/enrollments/bulk-end", {
+          method: "POST",
+          body: JSON.stringify({ ids, reason, endAs, effectiveOn }),
+        }),
+      ),
   });
 }
 

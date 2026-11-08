@@ -7913,6 +7913,7 @@ export const APP_TRANSLATIONS_EN = {
   "sessions.classes.detail.discounts.namePlaceholder": "Discount Name (e.g. Sibling 15%)",
   "sessions.classes.detail.discounts.title": "Class Discounts & Waivers",
   "sessions.classes.detail.enrollmentDeadline": "Enrollment Deadline",
+  "sessions.classes.detail.dropDeadline": "Drop Deadline",
   "sessions.classes.detail.fees.add": "Fee Item",
   "sessions.classes.detail.fees.empty":
     'No individual fees specified. Click "Add Fee Item" to define Tuition, Admission, Exam fees, etc.',

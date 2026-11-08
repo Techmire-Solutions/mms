@@ -49,7 +49,7 @@ export async function listRolloverCandidates(
   tenant: string,
   sessionId: string,
 ): Promise<RolloverCandidate[]> {
-  const live = await ops.listLiveEnrollments(tenant, { sessionIds: [sessionId] });
+  const live = await ops.listOperableEnrollments(tenant, { sessionIds: [sessionId] });
   const students = await admissions.findStudentsByIds(tenant, [
     ...new Set(live.map((row) => row.studentId)),
   ]);

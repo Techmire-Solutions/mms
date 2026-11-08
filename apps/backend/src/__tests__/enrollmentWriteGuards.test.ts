@@ -19,6 +19,11 @@ const bulkSave = vi.hoisted(() => vi.fn());
 const findActivelyEnrolled = vi.hoisted(() => vi.fn());
 const findSession = vi.hoisted(() => vi.fn());
 const findStudents = vi.hoisted(() => vi.fn());
+const findTimezone = vi.hoisted(() => vi.fn());
+
+vi.mock("../enrollments/use-cases/enrollmentTimetableGuard.js", () => ({
+  assertNoStudentScheduleCollision: vi.fn().mockResolvedValue(undefined),
+}));
 
 vi.mock("../enrollments/repository/admissionsRepositoryAdapter.js", () => ({
   admissionsRepository: {
@@ -26,6 +31,7 @@ vi.mock("../enrollments/repository/admissionsRepositoryAdapter.js", () => ({
     findActivelyEnrolledStudentIds: findActivelyEnrolled,
     findSessionById: findSession,
     findStudentsByIds: findStudents,
+    findWorkspaceTimezone: findTimezone,
     cancelStudentEnrollmentsInSession: vi.fn(),
   },
 }));
@@ -224,9 +230,12 @@ describe("bulkEnrollStudentsIntoClass capacity handling", () => {
   beforeEach(() => {
     vi.clearAllMocks();
     findActivelyEnrolled.mockResolvedValue(new Set());
+    findTimezone.mockResolvedValue("UTC");
     findSession.mockResolvedValue({
       id: "sess1",
       name: "Session",
+      status: "in_progress",
+      startDate: "2026-01-01",
       deletedAt: null,
       baseFee: 0,
       classes: [{ id: "c1", name: "Class", fees: [], discounts: [] }],

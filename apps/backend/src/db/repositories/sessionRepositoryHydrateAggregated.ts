@@ -70,6 +70,7 @@ export async function hydrateSessionsListAggregated(
           'capacity', c.capacity,
           'enrolled', (SELECT count(*)::int FROM enrollments e WHERE e.workspace_subdomain = c.workspace_subdomain AND e.session_id = c.session_id AND e.class_id = c.id AND e.deleted_at IS NULL AND ${enrollmentHoldsSeatSql("e")}),
           'enrollmentDeadline', c.enrollment_deadline,
+          'dropDeadline', c.drop_deadline,
           'status', c.status,
           'facultyId', c.faculty_id,
           'facultyName', c.faculty_name,

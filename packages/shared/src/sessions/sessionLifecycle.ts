@@ -227,6 +227,7 @@ function editableProjection(session: Session) {
       room: cls.room ?? "",
       status: cls.status,
       enrollmentDeadline: cls.enrollmentDeadline ?? "",
+      dropDeadline: cls.dropDeadline ?? "",
       maxStudents: cls.maxStudents ?? 0,
       fees: byId(cls.fees).map((fee) => [fee.id, fee.feeType, Number(fee.amount)]),
       schedules: byId(cls.schedules).map((schedule) => [
