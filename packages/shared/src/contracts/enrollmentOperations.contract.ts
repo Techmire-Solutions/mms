@@ -1,6 +1,7 @@
 import { initContract } from "@ts-rest/core";
 import { z } from "zod";
 import { enrollmentRecordSchema } from "../enrollments/enrollmentsModuleManifest.js";
+import { apiErrorResponseSchema } from "../schemas/api.dto.js";
 import {
   enrollmentBulkEndBodySchema,
   enrollmentBulkEndResultSchema,
@@ -13,7 +14,7 @@ import {
 } from "../enrollments/enrollmentOperations.js";
 
 const c = initContract();
-const errorResponse = z.object({ type: z.string(), message: z.string() }).passthrough();
+const errorResponse = apiErrorResponseSchema;
 const enrollmentParams = z.object({ id: z.string().min(1).max(64) });
 const operationResponses = {
   200: z.object({ enrollment: enrollmentRecordSchema }),

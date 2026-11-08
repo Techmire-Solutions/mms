@@ -14,6 +14,7 @@ import {
 } from "../../db/schema.js";
 import { saveSession } from "../../db/repositories/sessionRepositoryPersist.js";
 import { bulkSoftDeleteEnrollments } from "../../db/repositories/enrollmentRepositoryPersist.js";
+import { listEnrollmentsPage } from "../../db/repositories/enrollmentRepositoryList.js";
 import { applyEnrollmentTransfer } from "../../db/repositories/enrollmentOperationsRepository.js";
 import {
   classHasFreeSeat,
@@ -349,5 +350,46 @@ describe("enrollment domain subsystems (real Postgres)", () => {
       SELECT section_id AS "sectionId" FROM enrollments
        WHERE workspace_subdomain = ${TENANT} AND id = ${id}`);
     expect(row?.sectionId).toBe("sec-2");
+  });
+
+  it("filters the list by student/section and returns the full list projection", async () => {
+    await query(sql`UPDATE enrollments SET notes = 'Needs a Quran folder'
+      WHERE workspace_subdomain = ${TENANT} AND student_id = 's1'`);
+
+    const s3Rows = await listEnrollmentsPage(TENANT, { studentId: "s3", page: 1, limit: 10 });
+    expect(s3Rows.enrollments.map((row) => row.studentId)).toEqual(["s3"]);
+    expect(s3Rows.enrollments[0]?.sectionId).toBe("sec-2");
+
+    const secOneRows = await listEnrollmentsPage(TENANT, {
+      sectionId: "sec-1",
+      page: 1,
+      limit: 10,
+    });
+    expect(secOneRows.enrollments.map((row) => row.studentId).sort()).toEqual(["s1", "s4"]);
+
+    const withNotes = await listEnrollmentsPage(TENANT, { studentId: "s1", page: 1, limit: 10 });
+    expect(withNotes.enrollments[0]?.notes).toBe("Needs a Quran folder");
+    expect(withNotes.enrollments[0]?.timeline).toEqual([]);
+
+    // A literal '%' is escaped, not treated as an unbounded wildcard.
+    const wildcard = await listEnrollmentsPage(TENANT, { search: "%", page: 1, limit: 10 });
+    expect(wildcard.enrollments).toEqual([]);
+  });
+
+  it("pages with a keyset cursor and returns the next cursor", async () => {
+    const first = await listEnrollmentsPage(TENANT, { page: 1, limit: 1 });
+    expect(first.enrollments).toHaveLength(1);
+    expect(first.nextCursor).toBeUndefined();
+
+    const cursorPage = await listEnrollmentsPage(TENANT, {
+      page: 1,
+      limit: 1,
+      afterId: first.enrollments[0]!.id,
+    });
+    expect(cursorPage.enrollments).toHaveLength(1);
+    expect(cursorPage.enrollments[0]!.id > first.enrollments[0]!.id).toBe(true);
+    expect(cursorPage.nextCursor).toBe(
+      cursorPage.hasMore ? cursorPage.enrollments[0]!.id : undefined,
+    );
   });
 });

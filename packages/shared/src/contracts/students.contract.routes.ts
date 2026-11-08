@@ -1,5 +1,6 @@
 import { initContract } from "@ts-rest/core";
 import { z } from "zod";
+import { apiErrorResponseSchema } from "../schemas/api.dto.js";
 import {
   studentWireWriteSchema,
   studentsBulkEnrollBodySchema,
@@ -15,7 +16,7 @@ import { includeDeletedQuerySchema } from "../core/apiSchemas.js";
 
 const c = initContract();
 
-const errorResponse = z.unknown();
+const errorResponse = apiErrorResponseSchema;
 
 /** Envelope for paginated student list responses (`StudentsListPageResult`). */
 export const studentListPageResponseSchema = z.object({
@@ -142,6 +143,8 @@ export const studentOperationRoutes = {
       200: studentBulkResultResponseSchema,
       400: errorResponse,
       403: errorResponse,
+      409: errorResponse,
+      422: errorResponse,
       500: errorResponse,
     },
     summary: "Bulk enroll students",

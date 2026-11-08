@@ -116,13 +116,17 @@ describe("useEnrollmentsPageActions", () => {
     ];
     expect(input.id).toBe("enr-1");
     expect(input.enrollment.paymentStatus).toBe("paid");
+    // Partial patch: the list projection's empty `notes` must never travel back and erase it.
+    expect(input.enrollment).not.toHaveProperty("notes");
     expect(input.enrollment.timeline?.[0]).toMatchObject({
       event: "enrollments.timeline.paymentStatusChange:paid",
       by: "Admin",
     });
 
     act(() => options.onSuccess());
-    expect(onViewingChange).toHaveBeenCalledWith(input.enrollment);
+    expect(onViewingChange).toHaveBeenCalledWith(
+      expect.objectContaining({ id: "enr-1", paymentStatus: "paid" }),
+    );
     expect(notify.success).toHaveBeenCalledWith("enrollments.toast.updated");
 
     unmount();

@@ -113,5 +113,8 @@ export const enrollmentOperationsRouter: FastifyPluginAsync = async (fastify) =>
 
   await fastify.register(s.plugin(router), {
     requestValidationErrorHandler: standardRequestValidationErrorHandler,
+    // The declared response schemas are the wire contract: validate them at runtime so a
+    // handler that returns a drifted shape fails fast instead of silently shipping it.
+    responseValidation: true,
   });
 };

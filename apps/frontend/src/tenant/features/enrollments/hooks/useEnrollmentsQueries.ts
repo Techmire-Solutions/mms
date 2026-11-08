@@ -49,6 +49,8 @@ export interface EnrollmentsPaginatedParams {
   status?: string;
   sessionId?: string;
   classId?: string;
+  sectionId?: string;
+  studentId?: string;
   includeDeleted?: boolean;
   enabled?: boolean;
 }
@@ -100,6 +102,8 @@ export function useEnrollmentsPaginated(params: EnrollmentsPaginatedParams) {
             : undefined,
         classId:
           params.classId?.trim() && params.classId !== "all" ? params.classId.trim() : undefined,
+        sectionId: params.sectionId?.trim() || undefined,
+        studentId: params.studentId?.trim() || undefined,
         includeDeleted: params.includeDeleted ? "true" : undefined,
       },
     },

@@ -18,7 +18,6 @@ export function useEnrollmentMutations() {
   const bulkRestoreEnrollments = tsrClient.enrollments.bulkRestore.useMutation({
     onSuccess: invalidate,
   });
-  const logExportAudit = tsrClient.enrollments.exportAudit.useMutation({});
 
   return {
     createEnrollment: {
@@ -29,9 +28,13 @@ export function useEnrollmentMutations() {
     },
     updateEnrollment: {
       ...updateEnrollment,
-      mutate: ({ id, enrollment }: { id: string; enrollment: Enrollment }, opts?: MutateOptions) =>
-        updateEnrollment.mutate({ params: { id }, body: enrollment }, opts),
-      mutateAsync: ({ id, enrollment }: { id: string; enrollment: Enrollment }) =>
+      // A partial patch only: sending the whole list row used to overwrite `notes` with the
+      // list projection's empty value and would replace fields the list does not load.
+      mutate: (
+        { id, enrollment }: { id: string; enrollment: Partial<Enrollment> },
+        opts?: MutateOptions,
+      ) => updateEnrollment.mutate({ params: { id }, body: enrollment }, opts),
+      mutateAsync: ({ id, enrollment }: { id: string; enrollment: Partial<Enrollment> }) =>
         updateEnrollment.mutateAsync({ params: { id }, body: enrollment }),
     },
     deleteEnrollment: {
@@ -76,15 +79,6 @@ export function useEnrollmentMutations() {
       mutate: (ids: string[], opts?: MutateOptions) =>
         bulkRestoreEnrollments.mutate({ body: { ids } }, opts),
       mutateAsync: (ids: string[]) => bulkRestoreEnrollments.mutateAsync({ body: { ids } }),
-    },
-    logExportAudit: {
-      ...logExportAudit,
-      mutate: (
-        payload: { count: number; scope: "all" | "filtered" | "selection" },
-        opts?: MutateOptions,
-      ) => logExportAudit.mutate({ body: payload }, opts),
-      mutateAsync: (payload: { count: number; scope: "all" | "filtered" | "selection" }) =>
-        logExportAudit.mutateAsync({ body: payload }),
     },
   };
 }

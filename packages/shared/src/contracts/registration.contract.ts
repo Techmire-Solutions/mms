@@ -1,6 +1,6 @@
 import { initContract } from "@ts-rest/core";
 import { z } from "zod";
-import { sessionErrorResponseSchema } from "./sessionContractShared.js";
+import { apiErrorResponseSchema } from "../schemas/api.dto.js";
 import {
   admissionsMetricsSchema,
   publicRegistrationViewSchema,
@@ -15,7 +15,7 @@ import {
 } from "../enrollments/registrationTypes.js";
 
 const c = initContract();
-const errorResponse = sessionErrorResponseSchema;
+const errorResponse = apiErrorResponseSchema;
 const linkParams = z.object({
   sessionId: z.string().min(1).max(64),
   id: z.string().min(1).max(64),
@@ -106,6 +106,8 @@ export const admissionsContract = c.router({
       400: errorResponse,
       401: errorResponse,
       403: errorResponse,
+      409: errorResponse,
+      422: errorResponse,
       500: errorResponse,
     },
     summary:
