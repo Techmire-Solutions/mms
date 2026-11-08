@@ -5,7 +5,7 @@ import { initDb } from "../../db/database.js";
 import { registerDefaultBackgroundJobRunners } from "../../services/backgroundJobRunnerService.js";
 import { executeJob } from "../../services/backgroundJobWorkerService.js";
 import { logger } from "../../lib/logger.js";
-import { JOB_EXECUTION_TIMEOUT_MS } from "../queues/queueConfig.js";
+import { resolveJobExecutionTimeoutMs } from "../queues/queueConfig.js";
 import { settleInFlight } from "../../lib/backgroundJobAbort.js";
 
 let initialized = false;
@@ -49,6 +49,9 @@ export default async function sandboxedExportProcessor(
     "[SandboxedExportProcessor] Starting child export job",
   );
 
+  // Honour the per-module/per-kind budget: a fixed 60s ceiling silently overrode the
+  // 10-minute sessions/enrollments import budgets and killed valid large imports.
+  const timeoutMs = resolveJobExecutionTimeoutMs(moduleId, kind);
   const abortController = new AbortController();
   let timeoutHandle: NodeJS.Timeout | undefined;
   let timedOut = false;
@@ -67,10 +70,10 @@ export default async function sandboxedExportProcessor(
       abortController.abort();
       reject(
         new Error(
-          `Bulk export job ${moduleId}:${kind} (${jobId}) exceeded ${JOB_EXECUTION_TIMEOUT_MS / 1000}s hard execution timeout`,
+          `Bulk export job ${moduleId}:${kind} (${jobId}) exceeded ${timeoutMs / 1000}s hard execution timeout`,
         ),
       );
-    }, JOB_EXECUTION_TIMEOUT_MS);
+    }, timeoutMs);
   });
 
   try {
@@ -84,7 +87,7 @@ export default async function sandboxedExportProcessor(
     // A timed-out runner may still be uploading. Wait for it to observe the
     // abort (up to five seconds) so BullMQ's retry cannot overlap it.
     if (timedOut || abortController.signal.aborted) {
-      await settleInFlight(executionPromise, 5_000);
+      await settleInFlight(executionPromise, moduleId === "sessions" ? 10_000 : 5_000);
     }
     logger.error(
       { jobId, moduleId, kind, pid: process.pid, err: error },

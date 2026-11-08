@@ -11,9 +11,10 @@ import {
 import {
   enqueueBackgroundJob,
   getUserBackgroundJob,
+  getUserBackgroundJobPayload,
   QueueUnavailableError,
 } from "../services/backgroundJobWorkerService.js";
-import { buildBackgroundJobId } from "./backgroundJobIds.js";
+import { buildBackgroundJobId, buildDeterministicJobKey } from "./backgroundJobIds.js";
 
 export type RegisterModuleCsvImportRoutesOptions = {
   canWrite: (user: User) => boolean;
@@ -54,10 +55,30 @@ export function registerModuleCsvImportRoutes(
 
     const label = data.label?.trim() || options.defaultLabel;
     const userId = String(user.id);
-    const jobId = buildBackgroundJobId(tenant, userId, data.idempotencyKey);
+    const idempotencyKey =
+      data.idempotencyKey ??
+      buildDeterministicJobKey({
+        moduleId: options.moduleId,
+        kind: "import",
+        payload: { rows: data.rows },
+      });
+    const jobId = buildBackgroundJobId(tenant, userId, idempotencyKey);
 
     const existing = await getUserBackgroundJob(userId, jobId);
-    if (existing) return reply.status(202).send({ job: existing });
+    if (existing) {
+      // Same key, different body: never silently ignore the new rows.
+      const stored = await getUserBackgroundJobPayload(userId, jobId);
+      if (stored && Array.isArray(stored.rows)) {
+        if (JSON.stringify(stored.rows) !== JSON.stringify(data.rows)) {
+          return reply.status(409).send({
+            type: "conflict",
+            message:
+              "This idempotency key was already used for a different row set — start a new import",
+          });
+        }
+      }
+      return reply.status(202).send({ job: existing });
+    }
 
     let job;
     try {

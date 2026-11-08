@@ -49,6 +49,7 @@ import {
 } from "../contacts/use-cases/contactImportJobUseCases.js";
 import { registerBackgroundJobRunner } from "./backgroundJobWorkerService.js";
 import { registerSessionRolloverJobRunner } from "../sessions/use-cases/sessionRolloverJob.js";
+import { registerEnrollmentsImportJobRunner } from "../enrollments/enrollmentsImportService.js";
 import { registerSessionImportJobRunner } from "../sessions/use-cases/sessionImportJob.js";
 import { registerSessionsBulkJobRunners } from "./backgroundJobSessionsBulkRunners.js";
 import { registerModuleCsvExportJobRunner } from "../lib/registerModuleCsvExportJobRunner.js";
@@ -83,6 +84,7 @@ export function registerDefaultBackgroundJobRunners(): void {
   registerSessionRolloverJobRunner();
   registerSessionImportJobRunner();
   registerSessionsBulkJobRunners();
+  registerEnrollmentsImportJobRunner();
 
   registerModuleCsvExportJobRunner({
     moduleId: contactsModuleId,

@@ -1,6 +1,6 @@
-import { and, eq, inArray, isNotNull, lte, sql } from "drizzle-orm";
+import { and, eq, inArray, isNotNull, lt, lte, sql } from "drizzle-orm";
 import type { DbClient } from "../db/dbConnection.js";
-import { messageLogs, attendance } from "../db/schema.js";
+import { messageLogs, attendance, backgroundJobs } from "../db/schema.js";
 import { recordModernAuditEvent } from "../services/auditTrailService.js";
 import { emitOutboxEvent } from "../services/outboxEventService.js";
 import { logger } from "../lib/logger.js";
@@ -64,6 +64,22 @@ export async function purgeExpiredArchivedRecords(
   ];
 
   const now = new Date();
+
+  // Terminal background-job rows are operational history, not archives: drop them after 30
+  // days (their payload is already cleared on completion/failure).
+  if (!dryRun) {
+    const jobsCutoff = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
+    await db
+      .delete(backgroundJobs)
+      .where(
+        and(
+          eq(backgroundJobs.tenantId, normalizedTenant),
+          inArray(backgroundJobs.status, ["completed", "failed"]),
+          isNotNull(backgroundJobs.completedAt),
+          lt(backgroundJobs.completedAt, jobsCutoff),
+        ),
+      );
+  }
 
   for (const { table, name } of targets) {
     let totalPurged = 0;

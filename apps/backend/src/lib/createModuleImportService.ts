@@ -91,6 +91,7 @@ export function createModuleImportService<TRow>(
           userId: ctx.userId,
           jobId: ctx.jobId,
           viewerRole: ctx.viewerRole,
+          signal: ctx.signal,
           updateProgress: (current, total) => ctx.updateProgress(current, total),
         }),
     });

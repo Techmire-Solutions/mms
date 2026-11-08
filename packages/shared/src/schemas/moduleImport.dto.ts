@@ -55,6 +55,8 @@ export const enrollmentImportRowSchema = z
     sessionName: z.string().trim().max(200).optional(),
     sessionId: z.string().trim().max(100).optional(),
     className: z.string().trim().max(200).optional(),
+    classId: z.string().trim().max(100).optional(),
+    sectionId: z.string().trim().max(100).optional(),
     enrolledDate: z.string().trim().max(50).optional(),
     baseFee: z.union([z.string(), z.number()]).optional(),
     discountType: z.string().trim().max(100).optional(),

@@ -27,6 +27,7 @@ import { stampAttendanceSections } from "../../attendance/use-cases/attendanceSe
 import { runWithTenant } from "../../lib/tenantContext.js";
 import { todayInTimeZone } from "../../lib/dbDate.js";
 import { enrollmentsUseCases } from "../../enrollments/use-cases/enrollmentsUseCases.js";
+import { importEnrollmentRows } from "../../enrollments/use-cases/enrollmentImportUseCases.js";
 import { requireDatabaseConnection } from "./dbTestSupport.js";
 
 const TENANT = "enrollments-subsystems-test";
@@ -455,5 +456,77 @@ describe("enrollment domain subsystems (real Postgres)", () => {
         SELECT id FROM enrollments WHERE workspace_subdomain = 'another-workspace' AND id = ${id}`),
     );
     expect(foreign.rows).toEqual([]);
+  });
+
+  it("imports enrollments idempotently and reports row errors", async () => {
+    await withTenant(TENANT, (tx) =>
+      tx.insert(students).values({
+        id: "s5",
+        workspaceSubdomain: TENANT,
+        grNumber: "gr-s5",
+        status: "active",
+      }),
+    );
+    // A dedicated session/class with free seats: the fixture class is full after the earlier tests.
+    await saveSession(
+      TENANT,
+      SessionSchema.parse({
+        id: "ses-import",
+        name: "Import session",
+        status: "in_progress",
+        startDate: "2026-01-01",
+        classes: [
+          {
+            id: "cls-import",
+            name: "Import class",
+            sections: [{ id: "sec-import", name: "A", capacity: 10 }],
+          },
+        ],
+      }),
+    );
+    const rows = [
+      {
+        studentId: "gr-s5",
+        sessionId: "ses-import",
+        classId: "cls-import",
+        status: "confirmed",
+        baseFee: 100,
+        finalFee: 100,
+      },
+      { studentId: "gr-s5", sessionId: "ses-import", classId: "cls-import", status: "confirmed" },
+      { studentId: "gr-s5", sessionId: "ses-import", classId: "missing-class" },
+      { studentId: "gr-s5", sessionId: "ses-import", classId: "cls-import", status: "withdrawn" },
+    ];
+    const ctx = {
+      tenant: TENANT,
+      userId: "u-admin",
+      jobId: "job-import-1",
+      viewerRole: "admin",
+      updateProgress: async () => undefined,
+    } as const;
+
+    const first = await runWithTenant(TENANT, () => importEnrollmentRows(rows as never, ctx));
+    expect(first.imported).toBe(2);
+    expect(first.errors).toHaveLength(2);
+    expect(first.errors?.map((error) => error.row).sort()).toEqual([3, 4]);
+
+    const second = await runWithTenant(TENANT, () => importEnrollmentRows(rows as never, ctx));
+    expect(second.imported).toBe(2);
+    expect(second.errors).toHaveLength(2);
+
+    const live = await query<{ count: number }>(sql`
+      SELECT count(*)::int AS count FROM enrollments
+       WHERE workspace_subdomain = ${TENANT} AND student_id = 's5'
+         AND session_id = 'ses-import' AND deleted_at IS NULL`);
+    expect(Number(live[0]?.count ?? 0)).toBe(1);
+
+    const audited = await query<{ count: number }>(sql`
+      SELECT count(*)::int AS count FROM audit_trail_events
+       WHERE workspace_subdomain = ${TENANT} AND table_name = 'enrollments'
+         AND action_type = 'CREATE'
+         AND record_id IN (SELECT id FROM enrollments
+                            WHERE workspace_subdomain = ${TENANT} AND student_id = 's5'
+                              AND session_id = 'ses-import')`);
+    expect(Number(audited[0]?.count ?? 0)).toBe(1);
   });
 });

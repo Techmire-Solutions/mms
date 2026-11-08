@@ -43,6 +43,24 @@ describe("validateImportRows", () => {
 describe("runImportPipeline", () => {
   const schema = z.object({ code: z.string() });
 
+  it("stops before persisting when the job signal is already aborted", async () => {
+    const persist = vi.fn();
+    const controller = new AbortController();
+    controller.abort();
+
+    await expect(
+      runImportPipeline([{ code: "alpha" }], { rowSchema: schema }, persist, {
+        tenant: "demo",
+        userId: "u1",
+        jobId: "j1",
+        viewerRole: "admin",
+        signal: controller.signal,
+        updateProgress: vi.fn(),
+      }),
+    ).rejects.toMatchObject({ name: "AbortError" });
+    expect(persist).not.toHaveBeenCalled();
+  });
+
   it("coordinates validate, transform, chunking, and progress updates", async () => {
     const raw = [{ code: "alpha" }, { code: "beta" }, { code: "bad-syntax" }];
     const updateProgress = vi.fn();

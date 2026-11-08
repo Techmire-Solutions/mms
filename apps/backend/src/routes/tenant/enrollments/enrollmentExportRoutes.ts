@@ -28,6 +28,9 @@ export const enrollmentExportRoutes: FastifyPluginAsync = async (fastify) => {
   registerModuleCsvImportRoutes(fastify, {
     canWrite: (user) => canWriteCollection(user, ENROLLMENTS_MODULE_MANIFEST.collectionKey),
     bodySchema: enrollmentsImportBodySchema,
+    // Matches the 1MB BullMQ payload ceiling so an oversized import fails with 413 here
+    // instead of being accepted and rejected later as "queue unavailable".
+    bodyLimit: 1024 * 1024,
     moduleId: ENROLLMENTS_MODULE_MANIFEST.moduleId,
     defaultLabel: "Importing enrollments…",
     entityNoun: "enrollment",

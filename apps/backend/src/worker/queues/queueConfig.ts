@@ -47,6 +47,9 @@ export const SESSIONS_IMPORT_TIMEOUT_MS =
   Number(process.env.SESSIONS_IMPORT_TIMEOUT_MS) || 10 * 60_000;
 export const SESSIONS_EXPORT_TIMEOUT_MS =
   Number(process.env.SESSIONS_EXPORT_TIMEOUT_MS) || 10 * 60_000;
+/** Enrollment imports resolve + write one row at a time (500-row body cap). */
+export const ENROLLMENTS_IMPORT_TIMEOUT_MS =
+  Number(process.env.ENROLLMENTS_IMPORT_TIMEOUT_MS) || 10 * 60_000;
 
 /**
  * A broadcast is `recipients × gateway latency`; bounding one attempt and
@@ -76,6 +79,8 @@ export function resolveJobExecutionTimeoutMs(moduleId: string, kind: string): nu
     "sessions:export": SESSIONS_EXPORT_TIMEOUT_MS,
     "sessions:bulk-status": SESSIONS_IMPORT_TIMEOUT_MS,
     "sessions:bulk-archive": SESSIONS_IMPORT_TIMEOUT_MS,
+    "enrollments:import": ENROLLMENTS_IMPORT_TIMEOUT_MS,
+    "enrollments:export": SESSIONS_EXPORT_TIMEOUT_MS,
   };
   if (budgets[key] !== undefined) return budgets[key];
   return normalizedModule === "messaging" ? MESSAGING_JOB_TIMEOUT_MS : JOB_EXECUTION_TIMEOUT_MS;

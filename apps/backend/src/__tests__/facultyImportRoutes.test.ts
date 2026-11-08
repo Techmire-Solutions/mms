@@ -18,6 +18,7 @@ const mocks = vi.hoisted(() => ({
 vi.mock("../services/backgroundJobWorkerService.js", () => ({
   enqueueBackgroundJob: mocks.enqueueBackgroundJob,
   getUserBackgroundJob: mocks.getUserBackgroundJob,
+  getUserBackgroundJobPayload: vi.fn().mockResolvedValue(null),
   registerBackgroundJobRunner: vi.fn(),
   QueueUnavailableError: class QueueUnavailableError extends Error {},
 }));
