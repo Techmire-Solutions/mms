@@ -44,7 +44,7 @@ export const DEFAULT_ATTENDANCE_SETTINGS: AttendanceSettings = {
   trackHalfDay: true,
   weeklyReport: true,
   attendanceAlerts: true,
-  allowManualOverride: true,
+  allowManualOverride: false,
   offlineEnabled: false,
   geoTagging: false,
   allowExtraClassOnHolidays: false,

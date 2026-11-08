@@ -4,6 +4,7 @@ import { closeDatabase, beginLongLivedTenantTransaction } from "../../db/dbConne
 import { applyDrizzleMigrations } from "../../db/dbInit.js";
 import {
   attendance,
+  attendanceModulePreferences,
   workspaces,
   students,
   sessions,
@@ -79,6 +80,9 @@ async function seedFixtures(): Promise<void> {
     await tx.tx.execute(
       sql`DELETE FROM attendance_day_submissions WHERE workspace_subdomain = ${TENANT}`,
     );
+    await tx.tx
+      .delete(attendanceModulePreferences)
+      .where(eq(attendanceModulePreferences.workspaceSubdomain, TENANT));
 
     await tx.tx
       .insert(workspaces)
@@ -125,6 +129,9 @@ afterAll(async () => {
     await cleanup.tx.execute(
       sql`DELETE FROM attendance_day_submissions WHERE workspace_subdomain = ${TENANT}`,
     );
+    await cleanup.tx
+      .delete(attendanceModulePreferences)
+      .where(eq(attendanceModulePreferences.workspaceSubdomain, TENANT));
     await cleanup.tx
       .delete(sessionClassSections)
       .where(eq(sessionClassSections.workspaceSubdomain, TENANT));
