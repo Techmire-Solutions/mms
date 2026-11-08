@@ -80,7 +80,15 @@ export async function getAttendanceDaySubmission(
   const subdomain = tenant.trim().toLowerCase();
   const [row] = await withTenantRead(subdomain, (tx) =>
     tx
-      .select()
+      .select({
+        classId: attendanceDaySubmissions.classId,
+        date: attendanceDaySubmissions.date,
+        submittedAt: attendanceDaySubmissions.submittedAt,
+        submittedBy: attendanceDaySubmissions.submittedBy,
+        reopenedAt: attendanceDaySubmissions.reopenedAt,
+        reopenedBy: attendanceDaySubmissions.reopenedBy,
+        reopenReason: attendanceDaySubmissions.reopenReason,
+      })
       .from(attendanceDaySubmissions)
       .where(
         and(
