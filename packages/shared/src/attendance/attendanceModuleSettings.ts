@@ -11,6 +11,8 @@ export interface AttendanceSettings {
   autoAbsentAfterMins: number;
   qrEnabled: boolean;
   lowAttendanceThreshold: number;
+  /** Consecutive unexcused absences that raise a defaulter alert (migration 0221). */
+  absenceStreakThreshold: number;
   notifyParents: boolean;
   requireNoteForAbsent: boolean;
   lockAfterSubmit: boolean;
@@ -38,6 +40,7 @@ export const DEFAULT_ATTENDANCE_SETTINGS: AttendanceSettings = {
   autoAbsentAfterMins: 30,
   qrEnabled: false,
   lowAttendanceThreshold: 75,
+  absenceStreakThreshold: 3,
   notifyParents: true,
   requireNoteForAbsent: true,
   lockAfterSubmit: true,

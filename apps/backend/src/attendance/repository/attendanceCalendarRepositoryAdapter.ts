@@ -16,6 +16,7 @@ import {
   insertApprovedLeaveIfFree,
   listApprovedLeavesFor,
 } from "../../db/repositories/attendanceLeaveRepository.js";
+import { lockAttendanceStudents as lockWorkflowStudents } from "../../db/repositories/attendanceLeaveSyncRepository.js";
 import {
   getAttendanceDaySubmission,
   listLockedAttendanceDayKeys,
@@ -40,6 +41,7 @@ export const attendanceCalendarRepository: AttendanceCalendarRepository = {
   insertApprovedLeave,
   insertApprovedLeaveIfFree,
   listApprovedLeavesFor,
+  lockAttendanceStudents: lockWorkflowStudents,
   listLockedAttendanceDayKeys,
   getAttendanceDaySubmission,
   upsertAttendanceDaySubmission,

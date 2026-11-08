@@ -79,8 +79,12 @@ export const attendanceBulkSchema = z
   })
   .strict();
 
-export const ATTENDANCE_LEAVE_STATUSES = ["pending", "approved", "rejected"] as const;
+export const ATTENDANCE_LEAVE_STATUSES = ["pending", "approved", "rejected", "cancelled"] as const;
 export type AttendanceLeaveStatus = (typeof ATTENDANCE_LEAVE_STATUSES)[number];
+
+/** What an excuse is for; drives reporting and the notification copy. */
+export const ATTENDANCE_LEAVE_TYPES = ["medical", "personal", "family", "other"] as const;
+export type AttendanceLeaveType = (typeof ATTENDANCE_LEAVE_TYPES)[number];
 
 export const attendanceLeaveSchema = z
   .object({
@@ -90,6 +94,19 @@ export const attendanceLeaveSchema = z
     toDate: isoDateSchema,
     reason: z.string().min(1),
     status: z.enum(ATTENDANCE_LEAVE_STATUSES).default("pending"),
+    leaveType: z.enum(ATTENDANCE_LEAVE_TYPES).default("other"),
+    /** Who filed the request and when (parent, teacher, guardian…). */
+    submittedBy: z.string().nullable().optional(),
+    submittedAt: z.string().nullable().optional(),
+    /** The reviewer's decision record — authoritative over the legacy `approved*` pair. */
+    reviewedBy: z.string().nullable().optional(),
+    reviewedAt: z.string().nullable().optional(),
+    reviewNote: z.string().nullable().optional(),
+    cancelledBy: z.string().nullable().optional(),
+    cancelledAt: z.string().nullable().optional(),
+    /** Free-form reference to a medical certificate (file name/id) held by the documents module. */
+    documentRef: z.string().nullable().optional(),
+    /** Legacy approval pair, still written by enrollment suspension. */
     approvedBy: z.string().nullable().optional(),
     approvedAt: z.string().nullable().optional(),
     notes: z.string().nullable().optional(),
@@ -105,7 +122,35 @@ export const attendanceLeaveInsertSchema = z
     fromDate: isoDateSchema,
     toDate: isoDateSchema,
     reason: z.string().min(1, "Reason is required"),
+    leaveType: z.enum(ATTENDANCE_LEAVE_TYPES).default("other"),
+    documentRef: z.string().trim().max(200).optional(),
     notes: z.string().optional().default(""),
+  })
+  .strict()
+  .refine((value) => value.toDate >= value.fromDate, {
+    message: "The leave end date cannot be before its start date",
+    path: ["toDate"],
+  });
+
+/** Reviewer decision on a pending excuse. */
+export const attendanceLeaveReviewSchema = z
+  .object({
+    decision: z.enum(["approve", "reject"]),
+    note: z.string().trim().max(500).optional(),
+  })
+  .strict();
+
+/** Revoking an approved excuse (or withdrawing one's own pending request). */
+export const attendanceLeaveCancelSchema = z
+  .object({ reason: z.string().trim().max(500).optional() })
+  .strict();
+
+export const attendanceLeaveListQuerySchema = z
+  .object({
+    status: z.enum(ATTENDANCE_LEAVE_STATUSES).optional(),
+    studentId: z.string().trim().max(64).optional(),
+    fromDate: isoDateSchema.optional(),
+    toDate: isoDateSchema.optional(),
   })
   .strict();
 
@@ -114,6 +159,9 @@ export type AttendanceRecordInsert = z.infer<typeof attendanceRecordInsertSchema
 export type AttendanceRecordUpdate = z.infer<typeof attendanceRecordUpdateSchema>;
 export type AttendanceLeave = z.infer<typeof attendanceLeaveSchema>;
 export type AttendanceLeaveInsert = z.infer<typeof attendanceLeaveInsertSchema>;
+export type AttendanceLeaveReview = z.infer<typeof attendanceLeaveReviewSchema>;
+export type AttendanceLeaveCancel = z.infer<typeof attendanceLeaveCancelSchema>;
+export type AttendanceLeaveListQuery = z.infer<typeof attendanceLeaveListQuerySchema>;
 
 /** Attendance module manifest — aligns with globle1 universal module architecture. */
 export const ATTENDANCE_MODULE_MANIFEST = {

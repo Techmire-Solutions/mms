@@ -2,7 +2,14 @@ import { useTranslation } from "@/hooks/useTranslation";
 import { usePermissions, useModulePermissions } from "@/tenant/hooks/usePermissions";
 import { useFilteredModuleTierTabs } from "@/tenant/hooks/useModuleTierTabs";
 import { resolveModuleTierTab, ATTENDANCE_MODULE_MANIFEST } from "@mms/shared";
-import { ClipboardEdit, BookOpen, ClipboardList, BarChart2, CalendarX } from "lucide-react";
+import {
+  ClipboardEdit,
+  BookOpen,
+  ClipboardList,
+  BarChart2,
+  CalendarX,
+  FileCheck2,
+} from "lucide-react";
 
 export function useAttendancePageTabs(
   activeTab: string,
@@ -50,6 +57,13 @@ export function useAttendancePageTabs(
         label: t("attendance.tabs.audit"),
         icon: ClipboardList,
         visible: canDeleteAttendance,
+      },
+      {
+        // Excuses (review queue) + chronic-absence alerts: attendance lifecycle, not marking.
+        id: "lifecycle",
+        label: t("attendance.tabs.lifecycle"),
+        icon: FileCheck2,
+        visible: canWriteAttendance || canDeleteAttendance,
       },
     ].filter((tab) => tab.visible))();
 

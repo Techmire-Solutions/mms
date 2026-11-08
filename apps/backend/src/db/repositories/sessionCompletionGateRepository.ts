@@ -122,13 +122,24 @@ export async function loadCompletionGates(
       ) dues ON true
       LEFT JOIN LATERAL (
         SELECT s.completion_evaluated_at IS NOT NULL AND (
+          -- Deliberately includes soft-deleted rows: deleting a mark changes the numerator and
+          -- denominator, so it must flag the evaluation stale (previously it did not).
           EXISTS (
             SELECT 1 FROM attendance a2
              WHERE a2.workspace_subdomain = e.workspace_subdomain
                AND a2.student_id = e.student_id
                AND a2.class_id = e.class_id
-               AND a2.deleted_at IS NULL
                AND a2.updated_at > s.completion_evaluated_at
+          )
+          -- Approved leave changes the denominator too (leave days are not countable), and it was
+          -- never part of the staleness probe at all.
+          OR EXISTS (
+            SELECT 1 FROM attendance_leaves lv2
+             WHERE lv2.workspace_subdomain = e.workspace_subdomain
+               AND lv2.student_id = e.student_id
+               AND lv2.updated_at > s.completion_evaluated_at
+               AND (e.start_on IS NULL OR COALESCE(lv2.to_date, lv2.from_date) >= e.start_on)
+               AND (e.end_on IS NULL OR COALESCE(lv2.from_date, lv2.to_date) <= e.end_on)
           )
           OR EXISTS (
             SELECT 1 FROM exam_results r2

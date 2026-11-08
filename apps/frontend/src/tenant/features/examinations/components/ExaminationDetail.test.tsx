@@ -25,6 +25,10 @@ vi.mock("@/components/app/DetailDrawerShell", () => ({
   ),
 }));
 
+vi.mock("@/tenant/features/examinations/components/ExamEligibilitySection", () => ({
+  ExamEligibilitySection: () => <div data-testid="exam-eligibility" />,
+}));
+
 vi.mock("@/components/app/DetailDrawerArchiveChrome", () => ({
   DetailDrawerArchivedBanner: () => <div data-testid="archived-banner" />,
   DetailDrawerRestoreOrEditAction: () => <div data-testid="drawer-actions" />,

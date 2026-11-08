@@ -25,6 +25,7 @@ function preferences(
     autoAbsentAfterMins: 30,
     qrEnabled: false,
     lowAttendanceThreshold: 75,
+    absenceStreakThreshold: 3,
     notifyParents: false,
     requireNoteForAbsent: true,
     lockAfterSubmit: true,

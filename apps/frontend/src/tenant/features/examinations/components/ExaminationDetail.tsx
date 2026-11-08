@@ -9,6 +9,7 @@ import {
 } from "@/components/app/DetailDrawerArchiveChrome";
 import { DetailSectionCard } from "@/components/app/DetailSectionCard";
 import { DetailAttributeRow } from "@/components/app/DetailAttributeRow";
+import { ExamEligibilitySection } from "@/tenant/features/examinations/components/ExamEligibilitySection";
 import { formatDate } from "@mms/shared";
 
 export interface ExaminationDetailProps {
@@ -70,6 +71,8 @@ export const ExaminationDetail = function ExaminationDetail({
             <p className="whitespace-pre-wrap text-sm text-foreground m-0">{exam.description}</p>
           </DetailSectionCard>
         )}
+
+        {!isArchived && <ExamEligibilitySection examId={exam.id} canManage={canDelete} />}
       </div>
     </DetailDrawerShell>
   );

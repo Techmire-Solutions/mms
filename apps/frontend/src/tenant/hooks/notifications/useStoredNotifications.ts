@@ -17,22 +17,66 @@ export interface StoredNotificationItem extends DashboardNotificationItem {
 
 type Translate = ReturnType<typeof useTranslation>["t"];
 
+/**
+ * Per-kind copy, icon type and navigation target.
+ *
+ * Every stored notification used to render the waitlist sentence regardless of its kind, so a new
+ * kind silently displayed the wrong copy (F6). Each kind now owns its sentence, and an unknown kind
+ * falls back to the subject/context labels instead of inventing a meaning.
+ */
+const STORED_NOTIFICATION_COPY: Record<
+  TenantNotificationRecord["kind"],
+  {
+    titleKey: Parameters<Translate>[0];
+    descKey: Parameters<Translate>[0];
+    type: DashboardNotificationItem["type"];
+    target?: DashboardNotificationItem["target"];
+  }
+> = {
+  waitlist_seat_offered: {
+    titleKey: "notifications.waitlistSeatOfferedTitle",
+    descKey: "notifications.waitlistSeatOfferedDesc",
+    type: "admission",
+    target: { kind: "admissions" },
+  },
+  attendance_leave_decided: {
+    titleKey: "notifications.attendanceLeaveDecidedTitle",
+    descKey: "notifications.attendanceLeaveDecidedDesc",
+    type: "attendance",
+  },
+  attendance_chronic_absence: {
+    titleKey: "notifications.attendanceChronicAbsenceTitle",
+    descKey: "notifications.attendanceChronicAbsenceDesc",
+    type: "attendance",
+    target: { kind: "students", status: "active" },
+  },
+};
+
 export function toStoredNotificationItem(
   record: TenantNotificationRecord,
   t: Translate,
   language: string,
 ): StoredNotificationItem {
+  const copy = STORED_NOTIFICATION_COPY[record.kind];
+  if (!copy) {
+    return {
+      id: `stored:${record.id}`,
+      storedId: record.id,
+      type: "student",
+      title: record.subjectLabel,
+      desc: record.contextLabel,
+      time: formatRelativeTime(record.createdAt, language),
+      read: record.read,
+    };
+  }
   return {
     id: `stored:${record.id}`,
     storedId: record.id,
-    type: "admission",
-    title: t("notifications.waitlistSeatOfferedTitle"),
-    desc: t("notifications.waitlistSeatOfferedDesc", {
-      applicant: record.subjectLabel,
-      class: record.contextLabel,
-    }),
+    type: copy.type,
+    title: t(copy.titleKey),
+    desc: t(copy.descKey, { subject: record.subjectLabel, context: record.contextLabel }),
     time: formatRelativeTime(record.createdAt, language),
-    target: { kind: "admissions" },
+    target: copy.target,
     read: record.read,
   };
 }

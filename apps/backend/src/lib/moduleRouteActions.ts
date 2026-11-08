@@ -223,6 +223,21 @@ export const MODULE_ROUTE_ACTION_RULES: readonly ModuleRouteActionRule[] = [
     action: "setupWrite",
     onlyModules: ["sessions"],
   },
+  // Deciding an excuse rewrites historical attendance evidence: require the module's delete-level
+  // permission, not merely write (the handler re-checks the same permission).
+  {
+    methods: ["POST"],
+    pattern: /^\/api\/attendance\/leaves\/:id\/review$/,
+    action: "delete",
+    onlyModules: ["attendance"],
+  },
+  // Reopening a submitted roster day is likewise an override of the day lock.
+  {
+    methods: ["POST"],
+    pattern: /^\/api\/attendance\/days\/:classId\/:date\/reopen$/,
+    action: "delete",
+    onlyModules: ["attendance"],
+  },
   // Academic calendar (holidays / make-up days) is Attendance setup data.
   {
     methods: ["PUT", "DELETE", "POST"],

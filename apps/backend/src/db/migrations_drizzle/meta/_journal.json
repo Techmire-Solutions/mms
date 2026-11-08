@@ -1541,6 +1541,27 @@
       "when": 1794906000000,
       "tag": "0219_attendance_day_submissions",
       "breakpoints": true
+    },
+    {
+      "idx": 220,
+      "version": "7",
+      "when": 1794992400000,
+      "tag": "0220_attendance_leave_lifecycle",
+      "breakpoints": true
+    },
+    {
+      "idx": 221,
+      "version": "7",
+      "when": 1795078800000,
+      "tag": "0221_attendance_absence_alerts",
+      "breakpoints": true
+    },
+    {
+      "idx": 222,
+      "version": "7",
+      "when": 1795165200000,
+      "tag": "0222_exam_attendance_gate",
+      "breakpoints": true
     }
   ]
 }

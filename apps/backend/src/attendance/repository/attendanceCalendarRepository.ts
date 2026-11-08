@@ -3,6 +3,7 @@ type DayContextStore = typeof import("../../db/repositories/instructionalDayCont
 type PlacementStore = typeof import("../../db/repositories/enrollmentPlacementLookup.js");
 type LeaveStore = typeof import("../../db/repositories/attendanceLeaveRepository.js");
 type SubmissionStore = typeof import("../../db/repositories/attendanceDaySubmissionRepository.js");
+type LeaveWorkflowStore = typeof import("../../db/repositories/attendanceLeaveSyncRepository.js");
 type PreferencesStore =
   typeof import("../../db/repositories/attendanceModulePreferencesRepository.js");
 
@@ -27,6 +28,7 @@ export interface AttendanceCalendarRepository {
   insertApprovedLeave: LeaveStore["insertApprovedLeave"];
   insertApprovedLeaveIfFree: LeaveStore["insertApprovedLeaveIfFree"];
   listApprovedLeavesFor: LeaveStore["listApprovedLeavesFor"];
+  lockAttendanceStudents: LeaveWorkflowStore["lockAttendanceStudents"];
   listLockedAttendanceDayKeys: SubmissionStore["listLockedAttendanceDayKeys"];
   getAttendanceDaySubmission: SubmissionStore["getAttendanceDaySubmission"];
   upsertAttendanceDaySubmission: SubmissionStore["upsertAttendanceDaySubmission"];

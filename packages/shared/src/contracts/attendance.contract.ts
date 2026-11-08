@@ -28,11 +28,12 @@ import {
   attendanceMarkedDatesSchema,
 } from "../attendance/attendanceCoverage.js";
 import {
-  attendanceDaySubmissionResponseSchema,
   attendanceListPageResponseSchema,
   attendancePreferencesResponseSchema,
   errorResponse,
 } from "./attendance.contractSchemas.js";
+import { attendanceLifecycleRoutes } from "./attendance.contractLeaves.js";
+import { attendanceEscalationRoutes } from "./attendance.contractEscalation.js";
 
 export {
   attendanceDaySubmissionResponseSchema,
@@ -49,6 +50,9 @@ const bulkResultResponseSchema = z.object({
 });
 
 export const attendanceContract = c.router({
+  // Roster-day submission, excuse lifecycle and absence escalation (own modules for the 300-line band).
+  ...attendanceLifecycleRoutes,
+  ...attendanceEscalationRoutes,
   list: {
     method: "GET",
     path: "/api/attendance",
@@ -152,34 +156,6 @@ export const attendanceContract = c.router({
       500: errorResponse,
     },
     summary: "Restore a soft-deleted attendance record by ID",
-  },
-  submitDay: {
-    method: "POST",
-    path: "/api/attendance/days/:classId/:date/submit",
-    body: z.object({}).optional(),
-    responses: {
-      200: attendanceDaySubmissionResponseSchema,
-      400: errorResponse,
-      403: errorResponse,
-      404: errorResponse,
-      409: errorResponse,
-      500: errorResponse,
-    },
-    summary: "Submit (lock) a class roster for one day",
-  },
-  reopenDay: {
-    method: "POST",
-    path: "/api/attendance/days/:classId/:date/reopen",
-    body: z.object({ reason: z.string().max(500).optional() }).optional(),
-    responses: {
-      200: attendanceDaySubmissionResponseSchema,
-      400: errorResponse,
-      403: errorResponse,
-      404: errorResponse,
-      409: errorResponse,
-      500: errorResponse,
-    },
-    summary: "Reopen a submitted class roster day",
   },
   widgetAggregates: {
     method: "POST",

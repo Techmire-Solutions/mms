@@ -45,6 +45,7 @@ function store(overrides: Partial<Record<string, unknown>> = {}): AttendancePoli
     findWorkspaceTimezone: vi.fn().mockResolvedValue("UTC"),
     listApprovedLeavesFor: vi.fn().mockResolvedValue([]),
     listLockedAttendanceDayKeys: vi.fn().mockResolvedValue(new Set<string>()),
+    lockAttendanceStudents: vi.fn().mockResolvedValue(undefined),
     ...overrides,
   } as unknown as AttendancePolicyStore;
 }

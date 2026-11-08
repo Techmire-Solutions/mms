@@ -2,12 +2,18 @@ import type { ExamResult, User } from "@mms/shared";
 import { examinationsUseCases } from "../../../examinations/use-cases/examinationsUseCases.js";
 import { getRequestTenant } from "../../../lib/tenantContext.js";
 import { assertTeacherAnyClassScope } from "../../../sessions/use-cases/teacherSectionScope.js";
+import { assertExamResultsEligible } from "../../../examinations/use-cases/examEligibilityGate.js";
 
-/** Bulk marks entry guard: teacher must teach one of each exam's classes on the exam date; stamps `markedBy`. */
+/**
+ * Bulk marks entry guard: attendance eligibility first (a result may not be recorded for a student
+ * below the exam's threshold without an audited override), then the teacher row-scope, then the
+ * `markedBy` stamp.
+ */
 export async function scopeAndStampExamResults(
   user: User,
   results: ExamResult[],
 ): Promise<ExamResult[]> {
+  await assertExamResultsEligible(user, results);
   const tenant = getRequestTenant();
   if (tenant) {
     const examIds = [...new Set(results.map((result) => result.examId).filter(Boolean))];

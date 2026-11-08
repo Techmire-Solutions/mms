@@ -13,7 +13,7 @@ export {
   bulkRestoreExams,
 } from "./examinationExamsPersist.js";
 
-type ExamRow = Omit<typeof exams.$inferSelect, "resultsFinalizedAt"> & {
+type ExamRow = Omit<typeof exams.$inferSelect, "resultsFinalizedAt" | "minAttendancePct"> & {
   subject: string;
   /** Selected by the completion/finalisation queries; not part of every exam projection. */
   resultsFinalizedAt?: Date | null;

@@ -1,7 +1,11 @@
 import { z } from "zod";
 
 /** Stored notification kinds; each one has its own translated sentence in the UI. */
-export const TENANT_NOTIFICATION_KINDS = ["waitlist_seat_offered"] as const;
+export const TENANT_NOTIFICATION_KINDS = [
+  "waitlist_seat_offered",
+  "attendance_leave_decided",
+  "attendance_chronic_absence",
+] as const;
 export type TenantNotificationKind = (typeof TENANT_NOTIFICATION_KINDS)[number];
 
 /** Newest notifications shown to a user, and how far back they reach. */

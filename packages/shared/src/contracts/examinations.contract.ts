@@ -58,7 +58,11 @@ const examinationsWidgetAggregateResultSchema = z.object({
   chartData: z.array(z.object({ name: z.string(), value: z.number() })),
 });
 
+import { examinationEligibilityRoutes } from "./examinations.contractEligibility.js";
+
 export const examinationContract = c.router({
+  // Attendance gate, audited overrides and results finalisation (own module, 300-line band).
+  ...examinationEligibilityRoutes,
   listExams: {
     method: "GET",
     path: "/api/examinations/exams",

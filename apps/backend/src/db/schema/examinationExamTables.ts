@@ -8,6 +8,9 @@ import {
   foreignKey,
   varchar,
   date,
+  smallint,
+  uniqueIndex,
+  check,
 } from "drizzle-orm/pg-core";
 import { sql } from "drizzle-orm";
 import { workspaces } from "./platform.js";
@@ -36,6 +39,11 @@ export const exams = pgTable(
       mode: "date",
     }),
     description: text("description").notNull().default(""),
+    /**
+     * Minimum attendance (one-decimal %) a student needs to sit this exam (migration 0222).
+     * `null` inherits `sessions.min_attendance_pct`; 0 disables the gate.
+     */
+    minAttendancePct: smallint("min_attendance_pct"),
     ...softDeleteColumns,
     createdAt: timestamp("created_at", { withTimezone: true, mode: "date" }).notNull().defaultNow(),
     updatedAt: timestamp("updated_at", { withTimezone: true, mode: "date" }).notNull().defaultNow(),
@@ -115,5 +123,49 @@ export const examResults = pgTable(
     }).onDelete("cascade"),
     index("exam_results_workspace_exam_idx").on(table.workspaceSubdomain, table.examId),
     index("exam_results_workspace_student_idx").on(table.workspaceSubdomain, table.studentId),
+    // One result per student per exam (migration 0222): the surrogate-id upsert allowed duplicates.
+    uniqueIndex("exam_results_workspace_exam_student_uidx").on(
+      table.workspaceSubdomain,
+      table.examId,
+      table.studentId,
+    ),
+    check("exam_results_marks_non_negative_check", sql`${table.marksObtained} >= 0`),
+  ],
+);
+
+/**
+ * Audited attendance override that lets one student sit one exam despite the threshold
+ * (migration 0222). Cancelling revokes it without deleting the evidence.
+ */
+export const examEligibilityOverrides = pgTable(
+  "exam_eligibility_overrides",
+  {
+    workspaceSubdomain: text("workspace_subdomain")
+      .notNull()
+      .references(() => workspaces.subdomain, { onDelete: "cascade" }),
+    examId: text("exam_id").notNull(),
+    studentId: varchar("student_id", { length: 64 }).notNull(),
+    reason: varchar("reason", { length: 500 }).notNull(),
+    grantedBy: text("granted_by"),
+    grantedAt: timestamp("granted_at", { withTimezone: true, mode: "date" }).notNull().defaultNow(),
+    revokedAt: timestamp("revoked_at", { withTimezone: true, mode: "date" }),
+    revokedBy: text("revoked_by"),
+  },
+  (table) => [
+    primaryKey({ columns: [table.workspaceSubdomain, table.examId, table.studentId] }),
+    foreignKey({
+      name: "exam_eligibility_overrides_exam_fk",
+      columns: [table.workspaceSubdomain, table.examId],
+      foreignColumns: [exams.workspaceSubdomain, exams.id],
+    }).onDelete("cascade"),
+    foreignKey({
+      name: "exam_eligibility_overrides_student_fk",
+      columns: [table.workspaceSubdomain, table.studentId],
+      foreignColumns: [students.workspaceSubdomain, students.id],
+    }).onDelete("cascade"),
+    index("exam_eligibility_overrides_workspace_student_idx").on(
+      table.workspaceSubdomain,
+      table.studentId,
+    ),
   ],
 );
