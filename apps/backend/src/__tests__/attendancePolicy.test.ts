@@ -129,6 +129,15 @@ describe("evaluateAttendanceWrite — late grace", () => {
   it("does not constrain a present mark without a time", () => {
     expect(at("")).toEqual([]);
   });
+
+  it("does not flag same-day arrival as late when cutoff plus grace exceeds midnight", () => {
+    const errors = evaluateAttendanceWrite(
+      row({ status: "present", timeIn: "07:00", timeOut: "" }),
+      preferences({ cutoffTime: "23:59", lateThresholdMins: 15 }),
+      { ...CONTEXT, nowTime: "08:00" },
+    );
+    expect(errors).toEqual([]);
+  });
 });
 
 describe("evaluateAttendanceWrite — evidence preconditions", () => {

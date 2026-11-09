@@ -1,7 +1,14 @@
 import { loadBackendEnv } from "../config/loadEnv.js";
 import { initDb } from "../db/database.js";
 import { getDb } from "../db/dbClient.js";
-import { sessions, sessionClasses, enrollments, students, contacts } from "../db/schema.js";
+import {
+  sessions,
+  sessionClasses,
+  enrollments,
+  students,
+  contacts,
+  attendanceModulePreferences,
+} from "../db/schema.js";
 import { eq } from "drizzle-orm";
 
 loadBackendEnv();
@@ -158,6 +165,31 @@ async function main() {
         sessionName: "Quran Hifz Session 2026",
         status: "confirmed",
         enrolledDate: new Date().toISOString().split("T")[0] ?? "",
+        updatedAt: new Date(),
+      },
+    });
+
+  // 5. Seed attendance preferences for the test tenant to allow submissions at any time / day in CI
+  const attendancePrefs = {
+    workingDays: ["monday", "tuesday", "wednesday", "thursday", "friday", "saturday", "sunday"],
+    allowExtraClassOnHolidays: true,
+    cutoffTime: "23:59",
+    lateThresholdMins: 60,
+    autoAbsentAfterMins: 120,
+    allowManualOverride: true,
+  };
+
+  await db
+    .insert(attendanceModulePreferences)
+    .values({
+      workspaceSubdomain: subdomain,
+      preferences: attendancePrefs,
+      updatedAt: new Date(),
+    })
+    .onConflictDoUpdate({
+      target: [attendanceModulePreferences.workspaceSubdomain],
+      set: {
+        preferences: attendancePrefs,
         updatedAt: new Date(),
       },
     });

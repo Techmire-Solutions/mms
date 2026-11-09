@@ -50,41 +50,10 @@ test.describe.serial("Tenant Academic Flow E2E", { tag: "@local-only" }, () => {
     await page.waitForLoadState("domcontentloaded");
     await registerStudentJaneDoe(page);
 
-    // 3. Seed class & enrollment via backend script
+    // 3. Seed class & enrollment via backend script (including instructional days & cutoff prefs)
     seedTestClassAndEnrollment(subdomain);
 
     // 4. Attendance marking & submission
-    // Ensure all days of the week are instructional and disable cutoff for the test tenant so CI runs at any time/day can submit attendance
-    await page.evaluate(async () => {
-      const csrf = document.cookie.match(/(?:^|;\s*)csrf_token=([^;]*)/)?.[1];
-      const res = await fetch("/api/attendance/preferences", {
-        method: "PUT",
-        headers: {
-          "Content-Type": "application/json",
-          ...(csrf ? { "X-CSRF-Token": decodeURIComponent(csrf) } : {}),
-        },
-        body: JSON.stringify({
-          workingDays: [
-            "monday",
-            "tuesday",
-            "wednesday",
-            "thursday",
-            "friday",
-            "saturday",
-            "sunday",
-          ],
-          allowExtraClassOnHolidays: true,
-          cutoffTime: "23:59",
-          allowManualOverride: true,
-        }),
-      });
-      if (!res.ok) {
-        throw new Error(
-          `Failed to configure attendance preferences: HTTP ${res.status} ${await res.text()}`,
-        );
-      }
-    });
-
     await page.goto(`${credentials.tenantOrigin}/attendance`);
     await page.waitForLoadState("domcontentloaded");
     await page.waitForSelector("#filter-class >> visible=true");
