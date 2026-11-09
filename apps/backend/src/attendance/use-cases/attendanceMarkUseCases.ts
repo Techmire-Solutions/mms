@@ -1,6 +1,6 @@
 import {
   attendanceListSchema,
-  attendanceStatusChanged,
+  attendanceRecordChanged,
   type AttendanceRecord,
   type AttendanceRecordInsert,
   type AttendanceRecordUpdate,
@@ -8,7 +8,7 @@ import {
 } from "@mms/shared";
 import { withTenant } from "../../db/tenant-context.js";
 import { broadcastCollection } from "../../lib/livePush.js";
-import { assertTeacherClassScope } from "../../sessions/use-cases/teacherSectionScope.js";
+import { assertTeacherSectionScope } from "../../sessions/use-cases/teacherSectionScope.js";
 import { HttpDomainError } from "../../lib/httpErrors.js";
 import { stampAttendanceSections } from "./attendanceSectionStamp.js";
 import { assertInstructionalDays } from "./instructionalDayGuard.js";
@@ -68,6 +68,7 @@ export function createAttendanceMarkUseCases({
     createAttendanceRecord: async (
       record: AttendanceRecordInsert | AttendanceRecord,
       actor: User,
+      overrideReason?: string | null,
     ): Promise<AttendanceRecord> => {
       const tenant = requireTenant();
       return withTenant(
@@ -78,18 +79,32 @@ export function createAttendanceMarkUseCases({
           if (stamped.rejected.length > 0) throw notEnrolled(stamped.rejected[0]!);
           const prepared = stamped.records[0] as AttendanceRecord;
 
-          await assertTeacherClassScope(actor, tenant, [
-            { classId: prepared.classId, date: prepared.date },
+          // Section-level: a teacher staffed on Section A may not mark Section B of the same class.
+          await assertTeacherSectionScope(actor, tenant, [
+            {
+              classId: prepared.classId,
+              sectionId: prepared.sectionId ?? null,
+              onDate: prepared.date,
+            },
           ]);
           await assertInstructionalDays(
             tenant,
-            [{ classId: prepared.classId, studentId: prepared.studentId, date: prepared.date }],
+            [
+              {
+                classId: prepared.classId,
+                studentId: prepared.studentId,
+                date: prepared.date,
+                id: prepared.id,
+              },
+            ],
             String(actor.id),
+            tx,
           );
-          await assertAttendanceWriteAllowed({
+          const override = await assertAttendanceWriteAllowed({
             tenant,
             actor,
             rows: [prepared],
+            overrideReason,
             store: policyStore,
           });
 
@@ -99,6 +114,9 @@ export function createAttendanceMarkUseCases({
             actor,
             action: "CREATE",
             record: created,
+            ...(override.overridden
+              ? { reason: overrideReason ?? null, tag: "attendance.override" }
+              : {}),
           });
           return created;
         },
@@ -111,6 +129,7 @@ export function createAttendanceMarkUseCases({
       patch: AttendanceRecordUpdate | Partial<AttendanceRecord>,
       actor: User,
       expectedVersion?: number,
+      overrideReason?: string | null,
     ): Promise<AttendanceRecord | null> => {
       const tenant = requireTenant();
       if (expectedVersion !== undefined && !Number.isInteger(expectedVersion)) {
@@ -125,14 +144,22 @@ export function createAttendanceMarkUseCases({
           const merged = mergeAttendancePatch(existing, patch);
           const movedDay = merged.classId !== existing.classId || merged.date !== existing.date;
 
-          await assertTeacherClassScope(actor, tenant, [
-            { classId: merged.classId, date: merged.date },
+          await assertTeacherSectionScope(actor, tenant, [
+            { classId: merged.classId, sectionId: merged.sectionId ?? null, onDate: merged.date },
           ]);
           if (movedDay) {
             await assertInstructionalDays(
               tenant,
-              [{ classId: merged.classId, studentId: merged.studentId, date: merged.date }],
+              [
+                {
+                  classId: merged.classId,
+                  studentId: merged.studentId,
+                  date: merged.date,
+                  id: merged.id,
+                },
+              ],
               String(actor.id),
+              tx,
             );
           }
           await validateActiveForeignKeys(tenant, merged);
@@ -141,11 +168,12 @@ export function createAttendanceMarkUseCases({
           if (stamped.rejected.length > 0) throw notEnrolled(stamped.rejected[0]!);
           const prepared = stamped.records[0] as AttendanceRecord;
 
-          await assertAttendanceWriteAllowed({
+          const override = await assertAttendanceWriteAllowed({
             tenant,
             actor,
             rows: [prepared],
             existing: new Map([[attendancePolicyKey(existing), existing]]),
+            overrideReason,
             store: policyStore,
           });
 
@@ -161,7 +189,11 @@ export function createAttendanceMarkUseCases({
             action: "UPDATE",
             record: persisted,
             before: existing,
-            tag: movedDay ? "attendance.moved" : undefined,
+            ...(override.overridden
+              ? { reason: overrideReason ?? null, tag: "attendance.override" }
+              : movedDay
+                ? { tag: "attendance.moved" }
+                : {}),
           });
           await broadcastCollection("attendance_records");
           return persisted;
@@ -174,6 +206,7 @@ export function createAttendanceMarkUseCases({
     upsertAttendanceRecords: async (
       records: (AttendanceRecordInsert | AttendanceRecord)[],
       actor: User,
+      overrideReason?: string | null,
     ): Promise<AttendanceRecord[]> => {
       const tenant = requireTenant();
       const validated = attendanceListSchema.parse(records);
@@ -185,10 +218,14 @@ export function createAttendanceMarkUseCases({
           if (stamped.rejected.length > 0) throw notEnrolled(stamped.rejected[0]!);
           const rows = stamped.records;
 
-          await assertTeacherClassScope(
+          await assertTeacherSectionScope(
             actor,
             tenant,
-            rows.map((row) => ({ classId: row.classId, date: row.date })),
+            rows.map((row) => ({
+              classId: row.classId,
+              sectionId: row.sectionId ?? null,
+              onDate: row.date,
+            })),
           );
           await assertInstructionalDays(
             tenant,
@@ -196,8 +233,10 @@ export function createAttendanceMarkUseCases({
               classId: row.classId,
               studentId: row.studentId,
               date: row.date,
+              id: row.id,
             })),
             String(actor.id),
+            tx,
           );
 
           const existing = await repo.findAttendanceRecordsForStudentsOnDates(
@@ -208,27 +247,32 @@ export function createAttendanceMarkUseCases({
           const existingByKey = new Map(
             existing.map((record) => [attendancePolicyKey(record), record]),
           );
-          await assertAttendanceWriteAllowed({
+          const override = await assertAttendanceWriteAllowed({
             tenant,
             actor,
             rows,
             existing: existingByKey,
+            overrideReason,
             store: policyStore,
           });
 
           const persisted = await repo.bulkSaveAttendanceRecords(tenant, rows);
 
-          // One audit row per mark whose status actually changed (soft-delete norm: per record), so
-          // a 500-row roster does not write 500 rows that say nothing.
+          // One audit row per mark that actually changed (soft-delete norm: per record), so a
+          // 500-row roster does not write 500 rows that say nothing. The comparison covers every
+          // client-mutable field — the old status-only check silently dropped time/note corrections.
           for (const record of persisted) {
             const before = existingByKey.get(attendancePolicyKey(record)) ?? null;
-            if (before && !attendanceStatusChanged(before, record)) continue;
+            if (before && !attendanceRecordChanged(before, record)) continue;
             await auditAttendanceMutation(tx, {
               tenant,
               actor,
               action: before ? "UPDATE" : "CREATE",
               record,
               before,
+              ...(override.overridden
+                ? { reason: overrideReason ?? null, tag: "attendance.override" }
+                : {}),
             });
           }
 

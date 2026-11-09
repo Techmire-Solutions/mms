@@ -1,4 +1,4 @@
-import { useMemo } from "react";
+import { useMemo, useState } from "react";
 import { AnimatePresence } from "framer-motion";
 import { Users } from "lucide-react";
 import { EmptyState } from "@/components/app/EmptyState";
@@ -15,6 +15,9 @@ import { MarkAttendanceStatsStrip } from "@/tenant/features/attendance/component
 import { getAuditLog } from "@/tenant/features/attendance/lib/markAttendanceQueue";
 import type { MarkAttendanceProps } from "@/tenant/features/attendance/lib/markAttendanceTypes";
 import { useMarkAttendanceController } from "@/tenant/features/attendance/hooks/useMarkAttendanceController";
+import { ConfirmAlertDialog } from "@/components/app/ConfirmAlertDialog";
+import { notify } from "@/lib/notify";
+import type { AttendanceRecord } from "@/lib/data/attendanceData";
 
 export type {
   AuditEntry,
@@ -25,7 +28,16 @@ export type {
 export { getAuditLog };
 
 export function MarkAttendance(props: MarkAttendanceProps): React.JSX.Element {
-  const controller = useMarkAttendanceController(props);
+  // A save that would override a lock or the cut-off needs a recorded justification: the API
+  // refuses it once, this dialog collects the reason and retries the same save.
+  const [override, setOverride] = useState<{
+    records: AttendanceRecord[];
+    retry: (reason: string) => Promise<void>;
+  } | null>(null);
+  const controller = useMarkAttendanceController({
+    ...props,
+    onOverrideRequired: (records, retry) => setOverride({ records, retry }),
+  });
   const dayStatus = useInstructionalDayStatus({
     date: controller.filters.date,
     sessionId: controller.sessionInfo?.id,
@@ -46,6 +58,18 @@ export function MarkAttendance(props: MarkAttendanceProps): React.JSX.Element {
     onSaveDraft: () => void controller.handleSaveDraft(),
     onSubmit: () => void controller.handleSubmit(),
   });
+
+  const confirmOverride = async (reason?: string): Promise<boolean> => {
+    const trimmed = (reason ?? "").trim();
+    if (trimmed.length < 3) {
+      notify.error(controller.t("attendance.override.required"));
+      return false;
+    }
+    const pending = override;
+    setOverride(null);
+    if (pending) await pending.retry(trimmed);
+    return true;
+  };
 
   if (!controller.filters.classId) {
     return (
@@ -119,6 +143,22 @@ export function MarkAttendance(props: MarkAttendanceProps): React.JSX.Element {
         canWriteAttendance={controller.canWriteAttendance && dayAllowsMarking}
         onSaveDraft={() => void controller.handleSaveDraft()}
         onSubmit={() => void controller.handleSubmit()}
+      />
+
+      <ConfirmAlertDialog
+        open={override !== null}
+        onOpenChange={(open) => {
+          if (!open) setOverride(null);
+        }}
+        title={controller.t("attendance.override.title")}
+        description={controller.t("attendance.override.description")}
+        confirmLabel={controller.t("attendance.override.confirm")}
+        cancelLabel={controller.t("common.cancel")}
+        onConfirm={confirmOverride}
+        optionalReason={{
+          label: controller.t("attendance.override.reasonLabel"),
+          placeholder: controller.t("attendance.override.reasonPlaceholder"),
+        }}
       />
     </section>
   );

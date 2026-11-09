@@ -84,6 +84,11 @@ export const ATTENDANCE_BULK_MAX_BYTES = 512 * 1024;
 export const attendanceBulkSchema = z
   .object({
     records: attendanceListSchema.max(ATTENDANCE_BULK_MAX_RECORDS),
+    /**
+     * Justification for a batch that overrides a lock or the marking cut-off. Required only when
+     * the write would otherwise be refused; persisted in the audit row, never on the marks.
+     */
+    overrideReason: z.string().trim().min(3).max(500).optional(),
   })
   .strict();
 

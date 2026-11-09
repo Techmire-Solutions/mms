@@ -18,9 +18,9 @@ export const ATTENDANCE_SEARCH_DEBOUNCE_MS = 300;
 export interface AttendanceRecordsProps {
   filters: AttendanceFilterState;
   onUpdateRecord: (record: AttendanceRecord) => Promise<void>;
-  onDeleteRecord: (id: string) => Promise<void>;
+  onDeleteRecord: (id: string, reason?: string) => Promise<void>;
   onRestoreRecord: (id: string) => Promise<void>;
-  onBulkDeleteRecords: (ids: string[]) => Promise<void>;
+  onBulkDeleteRecords: (ids: string[], reason?: string) => Promise<void>;
   onBulkRestoreRecords: (ids: string[]) => Promise<void>;
   showDeleted?: boolean;
   onToggleDeleted?: () => void;

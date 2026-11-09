@@ -20,8 +20,9 @@ import {
   ValidationError,
 } from "../../lib/httpErrors.js";
 import { withTenant } from "../../db/tenant-context.js";
-import { recordModernAuditEvent, type DbOrTransaction } from "../../services/auditTrailService.js";
-import { notificationsUseCases } from "../../notifications/use-cases/notificationsUseCases.js";
+import { recordModernAuditEvent } from "../../services/auditTrailService.js";
+import { sessionsAcademicRepository } from "../../sessions/repository/sessionsAcademicRepositoryAdapter.js";
+import { auditLeave, notifyLeaveDecision, syncExcusedMarks } from "./attendanceExcuseAudit.js";
 
 /**
  * Excuse / medical-leave lifecycle.
@@ -31,8 +32,6 @@ import { notificationsUseCases } from "../../notifications/use-cases/notificatio
  * serialised against attendance writes by a per-student advisory lock so "is the student on leave?"
  * cannot be answered differently by the two writers.
  */
-
-const EXCUSE_NOTE = "Excused by approved leave";
 
 function requireTenant(): string {
   const tenant = getRequestTenant();
@@ -57,102 +56,43 @@ async function loadLeave(tenant: string, id: string): Promise<AttendanceLeaveRec
   return leave;
 }
 
-async function notifyLeaveDecision(
-  tenant: string,
-  leave: AttendanceLeaveRecord,
-  decision: "approved" | "rejected",
-): Promise<void> {
-  await notificationsUseCases.notify(tenant, {
-    kind: "attendance_leave_decided",
-    audiencePermission: "attendance.write",
-    entityType: "attendance_leave",
-    entityId: leave.id,
-    subjectLabel: leave.studentName || leave.studentId,
-    contextLabel: `${leave.fromDate ?? "?"} → ${leave.toDate ?? "?"} · ${decision}`,
-  });
-}
-
-/**
- * Converts the covered unexcused absences to `excused`, in the decision's transaction.
- *
- * Only `absent` rows are touched — a `present`/`late` mark is evidence the student *was* there, and
- * rewriting it would destroy the record the leave is meant to explain.
- */
-async function syncExcusedMarks(
-  tx: DbOrTransaction,
-  tenant: string,
-  leave: AttendanceLeaveRecord,
-  actor: User,
-): Promise<void> {
-  if (!leave.fromDate || !leave.toDate) return;
-  const changed = await repo.excuseAbsencesInRange(tenant, {
-    studentId: leave.studentId,
-    fromDate: leave.fromDate,
-    toDate: leave.toDate,
-    note: EXCUSE_NOTE,
-  });
-  for (const row of changed) {
-    await recordModernAuditEvent(tx, {
-      workspaceSubdomain: tenant.trim().toLowerCase(),
-      tableName: "attendance",
-      recordId: row.id,
-      actionType: "UPDATE",
-      realUserId: actor.id ? String(actor.id) : null,
-      oldState: {
-        status: "absent",
-        notes: row.previousNotes,
-        studentId: row.studentId,
-        classId: row.classId,
-        date: row.date,
-      },
-      newState: {
-        status: "excused",
-        notes: EXCUSE_NOTE,
-        studentId: row.studentId,
-        classId: row.classId,
-        date: row.date,
-        tag: "attendance.leave_sync",
-        leaveId: leave.id,
-      },
-      minimizeDelta: true,
-    });
-  }
-}
-
-async function auditLeave(
-  tx: DbOrTransaction,
-  tenant: string,
-  actor: User,
-  leave: AttendanceLeaveRecord,
-  from: AttendanceLeaveStatus,
-  to: AttendanceLeaveStatus,
-  note: string | null,
-): Promise<void> {
-  await recordModernAuditEvent(tx, {
-    workspaceSubdomain: tenant.trim().toLowerCase(),
-    tableName: "attendance_leaves",
-    recordId: leave.id,
-    actionType: "UPDATE",
-    realUserId: actor.id ? String(actor.id) : null,
-    oldState: { status: from },
-    newState: {
-      status: to,
-      studentId: leave.studentId,
-      fromDate: leave.fromDate,
-      toDate: leave.toDate,
-      leaveType: leave.leaveType,
-      reviewedBy: leave.reviewedBy,
-      note,
-    },
-    minimizeDelta: true,
-  });
-}
-
 export function createAttendanceExcuseUseCases() {
   return {
-    listExcuses: (query: AttendanceLeaveListQuery): Promise<AttendanceLeaveRecord[]> => {
+    /**
+     * Review queue.
+     *
+     * A section-scoped teacher sees only excuses for students they teach across the requested range:
+     * a leave carries the reason and the medical-certificate reference, so the tenant-wide list was
+     * leaking another section's sensitive data to every attendance reader.
+     */
+    listExcuses: async (
+      query: AttendanceLeaveListQuery,
+      actor?: User,
+    ): Promise<AttendanceLeaveRecord[]> => {
       const tenant = requireTenant();
-      return repo.listAttendanceLeaves(tenant, query);
+      const rows = await repo.listAttendanceLeaves(tenant, query);
+      if (!actor) return rows;
+      const fromDate =
+        query.fromDate ??
+        rows.reduce(
+          (min, row) => (row.fromDate && row.fromDate < min ? row.fromDate : min),
+          rows[0]?.fromDate ?? "",
+        );
+      const toDate =
+        query.toDate ??
+        rows.reduce(
+          (max, row) => (row.toDate && row.toDate > max ? row.toDate : max),
+          rows[0]?.toDate ?? "",
+        );
+      if (!fromDate || !toDate) return rows;
+      const taught = await sessionsAcademicRepository.listTaughtStudentIds(
+        tenant,
+        String(actor.id),
+        fromDate,
+        toDate,
+      );
+      if (!taught) return rows;
+      return rows.filter((row) => taught.has(row.studentId));
     },
 
     /** Files a pending excuse. Overlap with an existing approved leave is rejected up front. */
@@ -174,7 +114,22 @@ export function createAttendanceExcuseUseCases() {
       }
       return withTenant(
         tenant,
-        async () => {
+        async (tx) => {
+          // A teacher may only file an excuse for a student they actually teach; office staff with
+          // no faculty record (null) stay unscoped.
+          const taught = await sessionsAcademicRepository.listTaughtStudentIds(
+            tenant,
+            String(actor.id),
+            input.fromDate,
+            input.toDate,
+          );
+          if (taught && !taught.has(input.studentId)) {
+            throw new HttpDomainError(
+              403,
+              "attendance_excuse_out_of_scope",
+              "You can only file an excuse for a student you teach in that period",
+            );
+          }
           await repo.lockAttendanceStudents(tenant, [input.studentId]);
           const overlapping = await repo.listAttendanceLeaves(tenant, {
             studentId: input.studentId,
@@ -198,6 +153,26 @@ export function createAttendanceExcuseUseCases() {
             submittedBy: String(actor.id),
           });
           const created = await loadLeave(tenant, id);
+          // The originating excuse event used to leave no trace at all: only the decision did.
+          await recordModernAuditEvent(tx, {
+            workspaceSubdomain: tenant.trim().toLowerCase(),
+            tableName: "attendance_leaves",
+            recordId: created.id,
+            actionType: "CREATE",
+            realUserId: actor.id ? String(actor.id) : null,
+            newState: {
+              status: "pending",
+              studentId: created.studentId,
+              fromDate: created.fromDate,
+              toDate: created.toDate,
+              leaveType: created.leaveType,
+              reason: created.reason,
+              documentRef: created.documentRef,
+              submittedBy: created.submittedBy,
+              tag: "attendance.excuse.submitted",
+            },
+            minimizeDelta: true,
+          });
           await broadcastCollection("attendance");
           return created;
         },

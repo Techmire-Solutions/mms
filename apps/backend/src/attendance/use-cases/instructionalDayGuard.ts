@@ -6,12 +6,14 @@ import {
 } from "@mms/shared";
 import { attendanceCalendarRepository as repo } from "../repository/attendanceCalendarRepositoryAdapter.js";
 import { HttpDomainError } from "../../lib/httpErrors.js";
-import { recordModernAuditEvent } from "../../services/auditTrailService.js";
+import { recordModernAuditEvent, type DbOrTransaction } from "../../services/auditTrailService.js";
 
 export interface AttendanceDayRow {
   classId: string;
   studentId: string;
   date: string;
+  /** Row id when the caller already has one (create/update); batch rows carry their client ids. */
+  id?: string;
 }
 
 export interface NonInstructionalRow extends AttendanceDayRow {
@@ -63,6 +65,11 @@ export async function assertInstructionalDays(
   tenant: string,
   rows: readonly AttendanceDayRow[],
   actorUserId: string,
+  /**
+   * The caller's transaction. Without it the override audit committed on its own connection, so a
+   * later policy rejection rolled the marks back but left an "override granted" row behind.
+   */
+  tx?: DbOrTransaction,
 ): Promise<void> {
   const subdomain = tenant.trim().toLowerCase();
   const prefs = normalizeAttendanceModulePreferences(
@@ -79,12 +86,25 @@ export async function assertInstructionalDays(
     );
   }
   const days = [...new Set(blocked.map((row) => `${row.classId}:${row.date}`))];
-  await recordModernAuditEvent({
+  const first = blocked.find((row) => row.id) ?? null;
+  const input = {
     workspaceSubdomain: subdomain,
     tableName: "attendance",
-    recordId: days[0],
-    actionType: "UPDATE",
+    // A real attendance row id when the caller has one; the class/day key only as a last resort so
+    // the row is not attributed to a non-existent record.
+    recordId: first?.id ?? `${days[0] ?? "unknown"}:override`,
+    actionType: "UPDATE" as const,
     realUserId: actorUserId,
-    newState: { extraClass: days, reason: "Attendance marked on a non-instructional day" },
-  });
+    newState: {
+      extraClass: days,
+      reason: "Attendance marked on a non-instructional day",
+      tag: "attendance.holiday_override",
+    },
+    minimizeDelta: true,
+  };
+  if (tx) {
+    await recordModernAuditEvent(tx, input);
+    return;
+  }
+  await recordModernAuditEvent(input);
 }

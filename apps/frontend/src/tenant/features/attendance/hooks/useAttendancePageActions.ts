@@ -40,17 +40,29 @@ export function useAttendancePageActions() {
     );
   };
 
-  const persistRecords = async (recordsForClassDate: AttendanceRecord[]) => {
-    await bulkUpsert.mutateAsync({ body: { records: recordsForClassDate } });
+  const persistRecords = async (
+    recordsForClassDate: AttendanceRecord[],
+    overrideReason?: string,
+  ) => {
+    await bulkUpsert.mutateAsync({
+      body: {
+        records: recordsForClassDate,
+        ...(overrideReason ? { overrideReason } : {}),
+      },
+    });
   };
 
   const handleUpdateRecord = async (record: AttendanceRecord) => {
     await updateRecord.mutateAsync({ params: { id: record.id }, body: record });
   };
 
-  const handleDeleteRecord = async (id: string) => {
+  const handleDeleteRecord = async (id: string, reason?: string) => {
     try {
-      await deleteRecord.mutateAsync({ params: { id } });
+      await deleteRecord.mutateAsync({
+        params: { id },
+        // The API requires a justification for archiving attendance evidence.
+        body: { deletionReason: reason?.trim() || t("attendance.trash.defaultReason") },
+      });
       notify.success(t("attendance.toast.archived"));
     } catch (error) {
       notify.error(t("attendance.toast.saveFailed"), {
@@ -70,9 +82,14 @@ export function useAttendancePageActions() {
     }
   };
 
-  const handleBulkDeleteRecords = async (ids: string[]) => {
+  const handleBulkDeleteRecords = async (ids: string[], reason?: string) => {
     try {
-      const result = await bulkDeleteRecords.mutateAsync({ body: { ids } });
+      const result = await bulkDeleteRecords.mutateAsync({
+        body: {
+          ids,
+          deletionReason: reason?.trim() || t("attendance.trash.defaultReason"),
+        },
+      });
       const body = (result.body ?? result) as { succeeded?: number };
       const succeeded = body.succeeded ?? ids.length;
       notify.success(

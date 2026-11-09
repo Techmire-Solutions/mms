@@ -15,6 +15,7 @@ vi.mock("../attendance/use-cases/instructionalDayGuard.js", () => ({
 }));
 vi.mock("../sessions/use-cases/teacherSectionScope.js", () => ({
   assertTeacherClassScope: vi.fn().mockResolvedValue(undefined),
+  assertTeacherSectionScope: vi.fn().mockResolvedValue(undefined),
   assertTeacherAnyClassScope: vi.fn().mockResolvedValue(undefined),
 }));
 vi.mock("../attendance/use-cases/attendanceAudit.js", () => ({
@@ -25,8 +26,8 @@ vi.mock("../attendance/use-cases/attendancePolicyGuard.js", async (importOrigina
     await importOriginal<typeof import("../attendance/use-cases/attendancePolicyGuard.js")>();
   return {
     ...actual,
-    assertAttendanceWriteAllowed: vi.fn().mockResolvedValue(undefined),
-    assertAttendanceDayEditable: vi.fn().mockResolvedValue(undefined),
+    assertAttendanceWriteAllowed: vi.fn().mockResolvedValue({ overridden: false, codes: [] }),
+    assertAttendanceDayEditable: vi.fn().mockResolvedValue({ overridden: false, codes: [] }),
   };
 });
 

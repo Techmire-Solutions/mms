@@ -50,6 +50,25 @@ function store(overrides: Partial<Record<string, unknown>> = {}): AttendancePoli
   } as unknown as AttendancePolicyStore;
 }
 
+/** The same store with the tenant's manual-override switch enabled. */
+function permissiveStore(overrides: Partial<Record<string, unknown>> = {}): AttendancePolicyStore {
+  return {
+    getAttendanceModulePreferences: vi.fn().mockResolvedValue({
+      cutoffTime: "09:30",
+      lateThresholdMins: 15,
+      autoAbsentAfterMins: 30,
+      requireNoteForAbsent: false,
+      lockAfterSubmit: true,
+      allowManualOverride: true,
+    }),
+    findWorkspaceTimezone: vi.fn().mockResolvedValue("UTC"),
+    listApprovedLeavesFor: vi.fn().mockResolvedValue([]),
+    listLockedAttendanceDayKeys: vi.fn().mockResolvedValue(new Set<string>()),
+    lockAttendanceStudents: vi.fn().mockResolvedValue(undefined),
+    ...overrides,
+  } as unknown as AttendancePolicyStore;
+}
+
 /** 2026-03-02T11:00Z — after the 09:30 cut-off on the same day. */
 const LATE_IN_DAY = new Date("2026-03-02T11:00:00.000Z");
 /** 2026-03-02T08:00Z — before the cut-off. */
@@ -73,7 +92,7 @@ describe("assertAttendanceWriteAllowed", () => {
         now: EARLY_IN_DAY,
         store: store(),
       }),
-    ).resolves.toBeUndefined();
+    ).resolves.toMatchObject({ overridden: false, codes: [] });
   });
 
   it("rejects a teacher write after the cut-off when override is not allowed", async () => {
@@ -88,38 +107,55 @@ describe("assertAttendanceWriteAllowed", () => {
     ).rejects.toMatchObject({ statusCode: 409, type: "attendance_cutoff_passed" });
   });
 
-  it("lets an administrator override the cut-off", async () => {
+  it("lets an administrator override the cut-off when the tenant enables it, with a reason", async () => {
+    await expect(
+      assertAttendanceWriteAllowed({
+        tenant: "demo",
+        actor: ADMIN,
+        rows: [record()],
+        overrideReason: "Guardian produced a medical note",
+        now: LATE_IN_DAY,
+        store: permissiveStore(),
+      }),
+    ).resolves.toEqual({ overridden: true, codes: ["attendance_cutoff_passed"] });
+  });
+
+  it("refuses an administrator override without a justification", async () => {
     await expect(
       assertAttendanceWriteAllowed({
         tenant: "demo",
         actor: ADMIN,
         rows: [record()],
         now: LATE_IN_DAY,
-        store: store(),
+        store: permissiveStore(),
       }),
-    ).resolves.toBeUndefined();
+    ).rejects.toMatchObject({ statusCode: 422, type: "attendance_override_reason_required" });
   });
 
-  it("lets a teacher override when the school sets allowManualOverride", async () => {
-    const permissive = store({
-      getAttendanceModulePreferences: vi.fn().mockResolvedValue({
-        cutoffTime: "09:30",
-        lateThresholdMins: 15,
-        autoAbsentAfterMins: 30,
-        requireNoteForAbsent: false,
-        lockAfterSubmit: true,
-        allowManualOverride: true,
+  it("refuses the override when the tenant switch is off, even for an administrator", async () => {
+    await expect(
+      assertAttendanceWriteAllowed({
+        tenant: "demo",
+        actor: ADMIN,
+        rows: [record()],
+        overrideReason: "Trying anyway",
+        now: LATE_IN_DAY,
+        store: store(),
       }),
-    });
+    ).rejects.toMatchObject({ statusCode: 409, type: "attendance_cutoff_passed" });
+  });
+
+  it("does not let a teacher override just because the school set allowManualOverride", async () => {
     await expect(
       assertAttendanceWriteAllowed({
         tenant: "demo",
         actor: TEACHER,
         rows: [record()],
+        overrideReason: "Teacher tries to override",
         now: LATE_IN_DAY,
-        store: permissive,
+        store: permissiveStore(),
       }),
-    ).resolves.toBeUndefined();
+    ).rejects.toMatchObject({ statusCode: 409, type: "attendance_cutoff_passed" });
   });
 
   it("refuses a present mark when an approved leave covers the day", async () => {
@@ -157,7 +193,7 @@ describe("assertAttendanceWriteAllowed", () => {
         now: EARLY_IN_DAY,
         store: onLeave,
       }),
-    ).resolves.toBeUndefined();
+    ).resolves.toMatchObject({ overridden: false });
   });
 
   it("refuses a write on a submitted day", async () => {
@@ -230,8 +266,24 @@ describe("assertAttendanceDayEditable (delete / restore)", () => {
     ).rejects.toMatchObject({ statusCode: 409, type: "attendance_cutoff_passed" });
   });
 
-  it("allows an administrator to reopen the same edit", async () => {
-    const submitted = store({
+  it("lets an administrator delete a submitted mark with the switch on and a reason", async () => {
+    const submitted = permissiveStore({
+      listLockedAttendanceDayKeys: vi.fn().mockResolvedValue(new Set(["class-a|2026-03-02"])),
+    });
+    await expect(
+      assertAttendanceDayEditable({
+        tenant: "demo",
+        actor: ADMIN,
+        records: [record()],
+        overrideReason: "Duplicate mark created by an import",
+        now: LATE_IN_DAY,
+        store: submitted,
+      }),
+    ).resolves.toMatchObject({ overridden: true });
+  });
+
+  it("refuses an administrator delete of a locked mark without a reason", async () => {
+    const submitted = permissiveStore({
       listLockedAttendanceDayKeys: vi.fn().mockResolvedValue(new Set(["class-a|2026-03-02"])),
     });
     await expect(
@@ -242,6 +294,6 @@ describe("assertAttendanceDayEditable (delete / restore)", () => {
         now: LATE_IN_DAY,
         store: submitted,
       }),
-    ).resolves.toBeUndefined();
+    ).rejects.toMatchObject({ statusCode: 422, type: "attendance_override_reason_required" });
   });
 });

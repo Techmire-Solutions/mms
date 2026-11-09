@@ -128,12 +128,12 @@ export function AttendanceRecords(props: AttendanceRecordsProps): React.JSX.Elem
       <AttendanceRecordsConfirmDialogs
         pendingDeleteId={state.pendingDeleteId}
         onPendingDeleteChange={state.setPendingDeleteId}
-        onConfirmDelete={(id) => void onDeleteRecord(id)}
+        onConfirmDelete={(id, reason) => void onDeleteRecord(id, reason)}
         confirmBulkOpen={state.confirmBulkOpen}
         onConfirmBulkOpenChange={state.setConfirmBulkOpen}
         showDeleted={showDeleted}
         selectedIdsCount={state.selectedIds.length}
-        onConfirmBulkTrash={state.confirmBulkTrash}
+        onConfirmBulkTrash={(reason) => state.confirmBulkTrash(reason)}
         t={state.t}
       />
     </section>

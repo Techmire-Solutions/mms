@@ -13,23 +13,12 @@ import type { ContractRouteArgs, ContractRouteResponse } from "../../../lib/cont
 import { canReadCollection } from "../../../services/rbacService.js";
 import { withTenant } from "../../../db/tenant-context.js";
 import { attendanceUseCases } from "../../../attendance/use-cases/attendanceUseCases.js";
-import {
-  getAttendanceFieldConfigService,
-  updateAttendanceFieldConfigService,
-} from "../../../services/attendanceConfigService.js";
-import {
-  getAttendancePreferencesService,
-  updateAttendancePreferencesService,
-} from "../../../services/attendancePreferencesService.js";
+import { getAttendanceFieldConfigService } from "../../../services/attendanceConfigService.js";
+import { getAttendancePreferencesService } from "../../../services/attendancePreferencesService.js";
 import { loadAttendanceLookupsMap } from "../../../services/attendanceLookupsService.js";
-import { createCollectionAuditHelper } from "../../../lib/createCollectionAuditHelper.js";
 import { getTenantId } from "./attendanceRecordHandlers.js";
-import { userHasPermission } from "../../../lib/userPermissionContext.js";
 
 const COLLECTION = ATTENDANCE_MODULE_MANIFEST.collectionKey;
-const SETUP_WRITE_PERM = ATTENDANCE_MODULE_MANIFEST.permissions.setupWrite;
-const auditAttendance = createCollectionAuditHelper("attendance_records");
-
 export async function attendanceWidgetAggregatesHandler({
   body,
   request,
@@ -148,36 +137,6 @@ export async function attendanceGetFieldConfigHandler({
   }
 }
 
-export async function attendanceUpdateFieldConfigHandler({
-  body,
-  request,
-}: ContractRouteArgs<(typeof attendanceContract)["updateFieldConfig"]>): Promise<
-  ContractRouteResponse<(typeof attendanceContract)["updateFieldConfig"]>
-> {
-  const user = request.user as User;
-  if (!userHasPermission(user, SETUP_WRITE_PERM)) {
-    return {
-      status: 403 as const,
-      body: { type: "forbidden", message: "Insufficient permissions" },
-    };
-  }
-  try {
-    const saved = await updateAttendanceFieldConfigService(body);
-    await auditAttendance(
-      user,
-      "UPDATE_ATTENDANCE_CONFIG",
-      "Updated attendance field configuration",
-      "field-config",
-    );
-    return { status: 200 as const, body: { success: true, config: Object.assign({}, saved) } };
-  } catch (error) {
-    return handleContractError(request, error, {
-      status: 500,
-      body: { type: "database_error", message: "Failed to save attendance field config" },
-    });
-  }
-}
-
 export async function attendanceGetPreferencesHandler({
   request,
 }: ContractRouteArgs<(typeof attendanceContract)["getPreferences"]>): Promise<
@@ -198,37 +157,6 @@ export async function attendanceGetPreferencesHandler({
     return handleContractError(request, error, {
       status: 500,
       body: { type: "database_error", message: "Failed to load attendance preferences" },
-    });
-  }
-}
-
-export async function attendanceUpdatePreferencesHandler({
-  body,
-  request,
-}: ContractRouteArgs<(typeof attendanceContract)["updatePreferences"]>): Promise<
-  ContractRouteResponse<(typeof attendanceContract)["updatePreferences"]>
-> {
-  const user = request.user as User;
-  if (!userHasPermission(user, SETUP_WRITE_PERM)) {
-    return {
-      status: 403 as const,
-      body: { type: "forbidden", message: "Insufficient permissions" },
-    };
-  }
-  try {
-    const normalized = normalizeAttendanceModulePreferences(body);
-    await updateAttendancePreferencesService(normalized);
-    await auditAttendance(
-      user,
-      "UPDATE_ATTENDANCE_PREFERENCES",
-      "Updated attendance module preferences",
-      "preferences",
-    );
-    return { status: 200 as const, body: { success: true, preferences: normalized } };
-  } catch (error) {
-    return handleContractError(request, error, {
-      status: 500,
-      body: { type: "database_error", message: "Failed to save attendance preferences" },
     });
   }
 }
@@ -285,3 +213,9 @@ export async function attendanceGetLookupKindHandler({
     });
   }
 }
+
+// Setup writes live in their own module (300-line band) and are re-exported here.
+export {
+  attendanceUpdateFieldConfigHandler,
+  attendanceUpdatePreferencesHandler,
+} from "./attendanceSetupWriteHandlers.js";

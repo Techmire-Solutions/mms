@@ -235,6 +235,7 @@ describe("attendance REST routes integration", () => {
     expect(mockUpsertAttendanceRecords).toHaveBeenCalledWith(
       [{ ...attendanceRecord, markedBy: expect.any(String) }],
       expect.objectContaining({ role: "teacher" }),
+      undefined,
     );
     expect(mockAssertTeacherClassScope).not.toHaveBeenCalled();
     expect(res.json()).toEqual({ records: [attendanceRecord] });
@@ -250,6 +251,7 @@ describe("attendance REST routes integration", () => {
         host: "demo.localhost",
         authorization: `Bearer ${teacherToken(app)}`,
       },
+      payload: { deletionReason: "Duplicate mark" },
     });
     expect(res.statusCode).toBe(403);
     expect(mockDeleteAttendanceRecordById).not.toHaveBeenCalled();
@@ -266,13 +268,13 @@ describe("attendance REST routes integration", () => {
         host: "demo.localhost",
         authorization: `Bearer ${adminToken(app)}`,
       },
-      payload: { ids: [attendanceRecord.id] },
+      payload: { ids: [attendanceRecord.id], deletionReason: "Duplicate mark from an import" },
     });
     expect(res.statusCode).toBe(200);
     expect(mockBulkSoftDeleteAttendance).toHaveBeenCalledWith(
       [attendanceRecord.id],
       expect.objectContaining({ id: "u-admin" }),
-      undefined,
+      "Duplicate mark from an import",
     );
     await app.close();
   });

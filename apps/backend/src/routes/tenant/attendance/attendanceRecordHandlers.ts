@@ -17,6 +17,19 @@ import { attendanceUseCases } from "../../../attendance/use-cases/attendanceUseC
 
 const COLLECTION = ATTENDANCE_MODULE_MANIFEST.collectionKey;
 
+/**
+ * Override justification header, forwarded to the policy gate.
+ *
+ * Only the delete-level override path needs it, so ordinary marking stays header-free; a write that
+ * overrides a lock or the cut-off without one is refused with 422.
+ */
+export function readAttendanceReason(request: {
+  headers: Record<string, unknown>;
+}): string | undefined {
+  const raw = request.headers["x-attendance-reason"];
+  return typeof raw === "string" && raw.trim() !== "" ? raw.trim() : undefined;
+}
+
 export function getTenantId(request: { tenant?: { id: string } }): string | null {
   return request.tenant?.id || getRequestTenant() || null;
 }
@@ -99,6 +112,7 @@ export async function attendanceCreateHandler({
     const item = await attendanceUseCases.createAttendanceRecord(
       { ...body, markedBy: user.id },
       user,
+      readAttendanceReason(request),
     );
     return { status: 201 as const, body: item };
   } catch (error) {
@@ -154,6 +168,7 @@ export async function attendanceUpdateHandler({
       { ...bodyRecord, id, markedBy: user.id },
       user,
       expectedVersion,
+      readAttendanceReason(request),
     );
     if (!updated) {
       return {

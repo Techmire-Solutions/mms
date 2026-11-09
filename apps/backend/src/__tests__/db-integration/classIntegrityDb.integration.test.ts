@@ -4,7 +4,7 @@ import { SessionSchema, type User } from "@mms/shared";
 import { closeDatabase } from "../../db/dbConnection.js";
 import { applyDrizzleMigrations } from "../../db/dbInit.js";
 import { withTenant } from "../../db/tenant-context.js";
-import { attendance, students, workspaces } from "../../db/schema.js";
+import { attendance, attendanceModulePreferences, students, workspaces } from "../../db/schema.js";
 import { saveSession } from "../../db/repositories/sessionRepositoryPersist.js";
 import { findSessionById } from "../../db/repositories/sessionRepositoryQueries.js";
 import {
@@ -36,6 +36,9 @@ beforeAll(async () => {
     await tx
       .insert(students)
       .values({ id: "s1", workspaceSubdomain: TENANT, grNumber: "gr-s1", status: "active" });
+    await tx
+      .insert(attendanceModulePreferences)
+      .values({ workspaceSubdomain: TENANT, preferences: { allowManualOverride: true } });
   });
   await saveSession(
     TENANT,
@@ -90,6 +93,7 @@ describe("class / section reference integrity (real Postgres)", () => {
           },
         ],
         ACTOR,
+        "Admin override for section integrity test",
       ),
     );
     const session = await findSessionById(TENANT, "ci-ses");
