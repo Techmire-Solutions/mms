@@ -174,10 +174,11 @@ export function evaluateAttendanceWrite(
 
   // ── P2 late grace ─────────────────────────────────────────────────────────────────────────
   // A "present" mark later than cutoff + grace is a late arrival the policy wants recorded as late.
-  const lateBoundary = addMinutesToHhmm(preferences.cutoffTime, preferences.lateThresholdMins);
-  if (status === "present" && inMinutes !== null && lateBoundary !== null) {
-    const boundary = hhmmToMinutes(lateBoundary);
-    if (boundary !== null && inMinutes > boundary) {
+  const cutoffMinutes = hhmmToMinutes(preferences.cutoffTime);
+  if (status === "present" && inMinutes !== null && cutoffMinutes !== null) {
+    const boundaryMinutes = cutoffMinutes + preferences.lateThresholdMins;
+    if (boundaryMinutes < 1440 && inMinutes > boundaryMinutes) {
+      const lateBoundary = minutesToHhmm(boundaryMinutes);
       errors.push({
         ...base,
         code: "attendance_late_threshold",
