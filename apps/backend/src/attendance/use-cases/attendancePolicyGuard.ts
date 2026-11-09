@@ -46,6 +46,11 @@ export interface AttendancePolicyInput {
    * would otherwise be refused; stored in the audit row.
    */
   overrideReason?: string | null;
+  /**
+   * Device-originated evidence (RFID/biometric check-in): the cut-off is waived because the reader
+   * may have queued offline. The roster lock still applies.
+   */
+  source?: "manual" | "device";
   /** Wall clock override for tests. */
   now?: Date;
   /** Policy lookups; defaults to the Drizzle-backed calendar adapter. */
@@ -159,6 +164,7 @@ export async function assertAttendanceWriteAllowed(
       existing: existingRecord ? toPolicyRow(existingRecord) : null,
       isApprovedLeave: () => onLeave.has(key),
       isDaySubmitted: () => lockedDays.has(`${row.classId}|${row.date.slice(0, 10)}`),
+      deviceEvidence: input.source === "device",
     });
     // Which refusals are override-able? Only the lock and the cut-off. Evaluating the row again
     // with the override enabled tells us whether an approved override actually clears it.
@@ -172,6 +178,7 @@ export async function assertAttendanceWriteAllowed(
         existing: existingRecord ? toPolicyRow(existingRecord) : null,
         isApprovedLeave: () => onLeave.has(key),
         isDaySubmitted: () => lockedDays.has(`${row.classId}|${row.date.slice(0, 10)}`),
+        deviceEvidence: input.source === "device",
       });
       const remaining = withOverride[0];
       if (!remaining) continue;

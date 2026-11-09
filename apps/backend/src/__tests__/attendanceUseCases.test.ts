@@ -44,6 +44,9 @@ function createFakeRepo(): AttendanceRepository {
     bulkSaveAttendanceRecords: vi.fn().mockResolvedValue([]),
     replaceAttendanceRecordsForWorkspace: vi.fn().mockResolvedValue(undefined),
     listAttendanceRoster: vi.fn().mockResolvedValue([]),
+    listMatrixStudentsPage: vi.fn().mockResolvedValue({ students: [], hasMore: false }),
+    listMatrixMarks: vi.fn().mockResolvedValue([]),
+    countMatrixStudents: vi.fn().mockResolvedValue(0),
     listAttendancePage: vi.fn().mockResolvedValue({
       records: [],
       total: 0,
@@ -372,5 +375,21 @@ describe("attendance use-cases (DI with fake repository)", () => {
 
     expect(result).toBeNull();
     expect(repo.saveAttendanceRecordById).not.toHaveBeenCalled();
+  });
+
+  it("countMatrixStudents queries the repository with tenant and input filter", async () => {
+    const repo = createFakeRepo();
+    vi.mocked(repo.countMatrixStudents).mockResolvedValue(42);
+    const useCases = createAttendanceUseCases(repo);
+
+    const result = await runWithTenant("demo", () =>
+      useCases.countMatrixStudents({ classId: "class-1", sectionId: "sec-1" }),
+    );
+
+    expect(repo.countMatrixStudents).toHaveBeenCalledWith("demo", {
+      classId: "class-1",
+      sectionId: "sec-1",
+    });
+    expect(result).toBe(42);
   });
 });

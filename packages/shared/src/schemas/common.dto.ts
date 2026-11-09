@@ -1,3 +1,4 @@
+import { isoDateSchema } from "../core/isoDateSchema.js";
 import { z } from "zod";
 import { deepSanitizeStrings } from "./sanitize.js";
 
@@ -39,6 +40,9 @@ export const widgetQuerySchema = z
       .optional(),
     /** Chart GROUP BY series cap (default 8; visualizer may request up to 50). */
     chartLimit: z.number().int().min(1).max(50).optional(),
+    /** Inclusive day range; omitted means the dashboard default (last 30 days). */
+    dateFrom: isoDateSchema.optional(),
+    dateTo: isoDateSchema.optional(),
   })
   .strict();
 

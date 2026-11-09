@@ -35,8 +35,15 @@ export async function loadAttendanceOverview(
   classId?: string,
   /** The tenant's configured low-attendance threshold (was hardcoded to 75). */
   lowAttendanceThreshold = 75,
+  /** Optional inclusive day range. Omitted = all time, which keeps the dashboard numbers stable. */
+  range?: { dateFrom?: string; dateTo?: string },
 ): Promise<AttendanceReportOverview> {
   const attendanceClassFilter = classId ? sql`AND a.class_id = ${classId}` : sql``;
+  // Range predicates are separate from the class filter so the planner can use the
+  // (workspace, date_on) covering index even when a class is also selected.
+  const dateRangeFilter = sql`${
+    range?.dateFrom ? sql`AND a.date_on >= ${range.dateFrom}` : sql``
+  } ${range?.dateTo ? sql`AND a.date_on <= ${range.dateTo}` : sql``}`;
   const sessionClassFilter = classId ? sql`AND sc.id = ${classId}` : sql``;
   const presentOrLate = isPresentOrLateSql("a");
 
@@ -80,13 +87,14 @@ export async function loadAttendanceOverview(
       AND a.deleted_at IS NULL
       AND ${countable("a")}
       ${attendanceClassFilter}
+      ${dateRangeFilter}
     GROUP BY 1
     ORDER BY 1
   `);
 
   const monthlyResult = await tx.execute(sql`
     SELECT
-      to_char(a.date_on, 'YYYY-MM') AS "monthKey",
+      date_trunc('month', a.date_on)::date AS "monthKey",
       COUNT(*) FILTER (WHERE ${presentOrLate})::int AS "presentCount",
       COUNT(*)::int AS total,
       COALESCE(
@@ -101,6 +109,7 @@ export async function loadAttendanceOverview(
       AND a.deleted_at IS NULL
       AND ${countable("a")}
       ${attendanceClassFilter}
+      ${dateRangeFilter}
     GROUP BY 1
     ORDER BY 1 ASC
   `);
@@ -127,6 +136,7 @@ export async function loadAttendanceOverview(
       AND a.deleted_at IS NULL
       AND ${countable("a")}
       ${attendanceClassFilter}
+      ${dateRangeFilter}
     GROUP BY a.student_id
   `);
 
@@ -163,7 +173,8 @@ export async function loadAttendanceOverview(
     count: Number(row.count ?? 0),
   }));
   const monthlyTrend = getQueryRows<Record<string, unknown>>(monthlyResult).map((row) => ({
-    monthKey: String(row.monthKey ?? ""),
+    // `date_trunc` returns a timestamptz/date; the wire type is a `YYYY-MM` key.
+    monthKey: String(row.monthKey ?? "").slice(0, 7),
     presentCount: Number(row.presentCount ?? 0),
     total: Number(row.total ?? 0),
     rate: Number(row.rate ?? 0),

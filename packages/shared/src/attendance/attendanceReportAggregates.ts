@@ -85,16 +85,27 @@ export type AttendanceReportComparisonQuery = BaseReportComparisonQuery;
 
 export type AttendanceReportAggregatesQuery = AttendanceReportComparisonQuery & {
   classId?: string;
+  /** Inclusive business-day range for the overview; omitted means all time (current behaviour). */
+  dateFrom?: string;
+  dateTo?: string;
 };
 
-export const attendanceReportAggregatesHttpQuerySchema = z.object({
-  classId: z.string().max(100).optional(),
-  sessionIds: z.string().max(200).optional(),
-  rangeAFrom: z.string().max(32).optional(),
-  rangeATo: z.string().max(32).optional(),
-  rangeBFrom: z.string().max(32).optional(),
-  rangeBTo: z.string().max(32).optional(),
-});
+export const attendanceReportAggregatesHttpQuerySchema = z
+  .object({
+    classId: z.string().max(100).optional(),
+    sessionIds: z.string().max(200).optional(),
+    rangeAFrom: z.string().max(32).optional(),
+    rangeATo: z.string().max(32).optional(),
+    rangeBFrom: z.string().max(32).optional(),
+    rangeBTo: z.string().max(32).optional(),
+    /** Optional overview range; omitted keeps the all-time dashboard numbers. */
+    dateFrom: z.string().max(32).optional(),
+    dateTo: z.string().max(32).optional(),
+  })
+  .refine((query) => !query.dateFrom || !query.dateTo || query.dateFrom <= query.dateTo, {
+    message: "dateFrom must not be after dateTo",
+    path: ["dateTo"],
+  });
 
 export const EMPTY_ATTENDANCE_REPORT_COMPARISON: AttendanceReportComparison = {
   sessions: [],

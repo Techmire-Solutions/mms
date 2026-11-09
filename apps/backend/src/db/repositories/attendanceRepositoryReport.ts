@@ -45,6 +45,7 @@ export async function loadAttendanceReportAggregatesSql(
         countable,
         query?.classId,
         preferences.lowAttendanceThreshold,
+        { dateFrom: query?.dateFrom, dateTo: query?.dateTo },
       ),
     };
     if (!attendanceReportComparisonQueryActive(query) || !query) {

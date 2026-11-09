@@ -59,6 +59,14 @@ export interface AttendancePolicyContext {
   isApprovedLeave?: (row: AttendancePolicyRow) => boolean;
   /** True when the roster for (classId, date) has been submitted. */
   isDaySubmitted?: (row: AttendancePolicyRow) => boolean;
+  /**
+   * True for device-originated evidence (RFID/biometric check-in).
+   *
+   * A reader queues while offline, so a late upload must not be refused by the marking cut-off. The
+   * roster lock still applies — a submitted day needs an admin reopen — and every other rule
+   * (approved leave, notes, time validity) is unchanged.
+   */
+  deviceEvidence?: boolean;
 }
 
 const HHMM = /^([01]\d|2[0-3]):[0-5]\d$/;
@@ -202,6 +210,7 @@ export function evaluateAttendanceWrite(
   // ── P1 cut-off ────────────────────────────────────────────────────────────────────────────
   if (
     !context.canOverride &&
+    !context.deviceEvidence &&
     isPastAttendanceCutoff(row.date, context.today, context.nowTime, preferences.cutoffTime)
   ) {
     errors.push({

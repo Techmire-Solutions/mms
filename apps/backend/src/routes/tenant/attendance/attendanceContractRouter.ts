@@ -26,6 +26,8 @@ import {
   attendanceSubmitExcuseHandler,
 } from "./attendanceLeaveHandlers.js";
 import { attendanceRosterHandler } from "./attendanceRosterHandler.js";
+import { attendanceMatrixExportHandler } from "./attendanceMatrixExportHandler.js";
+import { attendanceCheckInHandler } from "./attendanceCheckInHandler.js";
 import {
   attendanceListAbsenceAlertsHandler,
   attendanceResolveAbsenceAlertHandler,
@@ -67,6 +69,8 @@ export const attendanceContractRouter: FastifyPluginAsync = async (fastify) => {
   const router = s.router(attendanceContract, {
     list: attendanceListHandler,
     getRoster: attendanceRosterHandler,
+    exportMatrix: attendanceMatrixExportHandler,
+    ingestCheckIns: attendanceCheckInHandler,
     create: attendanceCreateHandler,
     bulk: attendanceBulkHandler,
     bulkDelete: attendanceBulkDeleteHandler,

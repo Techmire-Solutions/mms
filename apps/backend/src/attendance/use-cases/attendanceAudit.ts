@@ -21,6 +21,8 @@ export interface AttendanceAuditInput {
   reason?: string | null;
   /** Semantic sub-label stored in `newState.tag` (e.g. `attendance.override`). */
   tag?: string;
+  /** Extra provenance merged into `newState` (e.g. device id, receivedAt, lateUpload). */
+  extra?: Record<string, unknown>;
 }
 
 function snapshot(record: AttendanceRecord): Record<string, unknown> {
@@ -53,6 +55,7 @@ export async function auditAttendanceMutation(
       ...snapshot(input.record),
       ...(input.reason ? { reason: input.reason } : {}),
       ...(input.tag ? { tag: input.tag } : {}),
+      ...(input.extra ?? {}),
     },
     minimizeDelta: true,
   });
