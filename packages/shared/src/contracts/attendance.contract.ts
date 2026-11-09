@@ -16,19 +16,10 @@ import {
   attendanceLookupPutBodySchema,
   attendanceStatusSchema,
 } from "../attendance/attendanceLookupTypes.js";
-import { widgetAggregateResultSchema, widgetAggregatesBodySchema } from "../schemas/common.dto.js";
 import {
   attendanceFieldConfigPutBodySchema,
   attendancePreferencesPutBodySchema,
 } from "../attendance/attendanceSetupConfigTypes.js";
-import {
-  attendanceReportAggregatesHttpQuerySchema,
-  attendanceReportAggregatesSchema,
-} from "../attendance/attendanceReportAggregates.js";
-import {
-  attendanceMarkedDatesQuerySchema,
-  attendanceMarkedDatesSchema,
-} from "../attendance/attendanceCoverage.js";
 import {
   attendanceListPageResponseSchema,
   attendancePreferencesResponseSchema,
@@ -36,6 +27,9 @@ import {
 } from "./attendance.contractSchemas.js";
 import { attendanceLifecycleRoutes } from "./attendance.contractLeaves.js";
 import { attendanceMatrixRoutes } from "./attendance.contractMatrix.js";
+import { attendanceMatrixExportRoutes } from "./attendance.contractExport.js";
+import { attendanceCheckInRoutes } from "./attendance.contractCheckIns.js";
+import { attendanceAnalyticsRoutes } from "./attendance.contractAnalytics.js";
 import {
   attendanceBatchRejectionSchema,
   attendanceIdPathParamsSchema,
@@ -64,6 +58,9 @@ export const attendanceContract = c.router({
   ...attendanceLifecycleRoutes,
   ...attendanceEscalationRoutes,
   ...attendanceMatrixRoutes,
+  ...attendanceMatrixExportRoutes,
+  ...attendanceCheckInRoutes,
+  ...attendanceAnalyticsRoutes,
   list: {
     method: "GET",
     path: "/api/attendance",
@@ -180,40 +177,6 @@ export const attendanceContract = c.router({
     },
     summary: "Restore a soft-deleted attendance record by ID",
   },
-  widgetAggregates: {
-    method: "POST",
-    path: "/api/attendance/widget-aggregates",
-    body: widgetAggregatesBodySchema,
-    responses: {
-      200: z.record(z.string(), widgetAggregateResultSchema),
-      403: errorResponse,
-      500: errorResponse,
-    },
-    summary: "Get widget aggregates",
-  },
-  reportAggregates: {
-    method: "GET",
-    path: "/api/attendance/report-aggregates",
-    query: attendanceReportAggregatesHttpQuerySchema,
-    responses: {
-      200: attendanceReportAggregatesSchema,
-      403: errorResponse,
-      500: errorResponse,
-    },
-    summary: "Get attendance report aggregates",
-  },
-  markedDates: {
-    method: "GET",
-    path: "/api/attendance/marked-dates",
-    query: attendanceMarkedDatesQuerySchema,
-    responses: {
-      200: attendanceMarkedDatesSchema,
-      403: errorResponse,
-      500: errorResponse,
-    },
-    summary: "Get the days that already have attendance marked",
-  },
-
   getFieldConfig: {
     method: "GET",
     path: "/api/attendance/field-config",

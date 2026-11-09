@@ -118,6 +118,9 @@ export const attendance = pgTable(
     index("attendance_workspace_deleted_records_idx")
       .on(table.workspaceSubdomain, table.deletedAt)
       .where(sql`${table.deletedAt} is not null`),
+    // Analytics covering indexes are NOT declared here on purpose: like the enrollment integrity
+    // indexes, they are provisioned CONCURRENTLY at boot (`db/migrations/attendanceAnalyticsIndexes.ts`)
+    // and the model intentionally does not claim a shape it cannot build in a migration.
     /** Planner-efficient index for purge worker candidate selection (§13.2). */
     index("attendance_purge_after_idx")
       .on(table.workspaceSubdomain, table.purgeAfter)

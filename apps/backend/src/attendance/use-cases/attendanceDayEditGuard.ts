@@ -47,6 +47,8 @@ export async function assertAttendanceDayEditable(input: {
   actor: User;
   records: ReadonlyArray<Pick<AttendanceRecord, "classId" | "date" | "status">>;
   overrideReason?: string | null;
+  /** Device evidence is exempt from the cut-off (never from the roster lock). */
+  source?: "manual" | "device";
   now?: Date;
   store?: AttendancePolicyStore;
 }): Promise<AttendanceOverrideSummary> {
@@ -77,7 +79,10 @@ export async function assertAttendanceDayEditable(input: {
     if (lockedDays.has(`${record.classId}|${day}`) && preferences.lockAfterSubmit) {
       blockingCodes.push("attendance_day_locked");
     }
-    if (isPastAttendanceCutoff(day, today, nowTime, preferences.cutoffTime)) {
+    if (
+      input.source !== "device" &&
+      isPastAttendanceCutoff(day, today, nowTime, preferences.cutoffTime)
+    ) {
       blockingCodes.push("attendance_cutoff_passed");
     }
   }

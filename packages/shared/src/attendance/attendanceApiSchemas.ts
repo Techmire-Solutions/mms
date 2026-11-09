@@ -120,6 +120,41 @@ export const attendanceReasonHeaderSchema = z
   .object({ "x-attendance-reason": z.string().trim().min(3).max(500).optional() })
   .passthrough();
 
+/** Late-upload window for device check-ins (a device may queue while offline). */
+export const ATTENDANCE_CHECKIN_LATE_WINDOW_DAYS = 7;
+/** Batch ceiling for one device check-in post. */
+export const ATTENDANCE_CHECKIN_MAX_ROWS = 2000;
+
+export const attendanceCheckInRowSchema = z
+  .object({
+    studentId: z.string().trim().min(1).max(64),
+    classId: z.string().trim().min(1).max(64),
+    /** Optional for a full ISO timestamp; otherwise required alongside `timeIn`. */
+    date: isoDateSchema.optional(),
+    /** `HH:mm`, `HH:mm:ss`, ISO-8601 with offset, or epoch milliseconds (as a string). */
+    timeIn: z.string().trim().min(1).max(40),
+    externalId: z.string().trim().max(120).optional(),
+  })
+  .strict();
+
+export const attendanceCheckInBodySchema = z
+  .object({
+    deviceId: z.string().trim().max(64).optional(),
+    rows: z.array(attendanceCheckInRowSchema).min(1).max(ATTENDANCE_CHECKIN_MAX_ROWS),
+  })
+  .strict();
+
+export type AttendanceCheckInRow = z.infer<typeof attendanceCheckInRowSchema>;
+export type AttendanceCheckInBody = z.infer<typeof attendanceCheckInBodySchema>;
+
+export const attendanceCheckInRejectionSchema = z
+  .object({
+    row: z.number().int().min(0),
+    code: z.string(),
+    message: z.string(),
+  })
+  .strict();
+
 /** Optional tenant attachment reference for an excuse (medical certificate). */
 export const attendanceAttachmentUrlSchema = z
   .string()

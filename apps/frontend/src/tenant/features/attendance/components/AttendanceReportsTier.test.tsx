@@ -3,6 +3,10 @@ import { describe, expect, it, vi } from "vitest";
 import { renderToStaticMarkup } from "react-dom/server";
 import { AttendanceReportsTier } from "./AttendanceReportsTier";
 
+vi.mock("@/tenant/features/attendance/components/AttendanceRegisterExport", () => ({
+  AttendanceRegisterExport: () => <div data-testid="register-export" />,
+}));
+
 vi.mock("@/tenant/components/moduleReports", () => ({
   KPISummary: ({ category }: { category: string }) => (
     <div data-testid="kpi-summary">KPI Summary: {category}</div>

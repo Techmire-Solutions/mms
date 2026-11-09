@@ -54,6 +54,25 @@ export interface AttendanceRepository {
   ): Promise<AttendanceRecord[]>;
   replaceAttendanceRecordsForWorkspace(tenant: string, records: AttendanceRecord[]): Promise<void>;
   listAttendancePage(tenant: string, query: AttendanceListQuery): Promise<AttendanceListPageResult>;
+  /** Roster page for a register export (keyset by student id). */
+  listMatrixStudentsPage: (
+    tenant: string,
+    input: { classId: string; sectionId?: string; afterStudentId?: string; limit: number },
+  ) => Promise<{
+    students: Array<{ studentId: string; studentName: string; rollNo: string }>;
+    hasMore: boolean;
+    nextCursor?: string;
+  }>;
+  /** Live marks for those students in a range (register export). */
+  listMatrixMarks: (
+    tenant: string,
+    input: { classId: string; studentIds: readonly string[]; dateFrom: string; dateTo: string },
+  ) => Promise<Array<{ studentId: string; date: string; status: string }>>;
+  /** Roster size, for the XLSX cell budget. */
+  countMatrixStudents: (
+    tenant: string,
+    input: { classId: string; sectionId?: string },
+  ) => Promise<number>;
   /** Every live mark for one class/section on one day (marking matrix, no paging). */
   listAttendanceRoster(
     tenant: string,

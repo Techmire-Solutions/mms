@@ -5,6 +5,7 @@ import { SubTabBar } from "@/components/app/SubTabBar";
 import { AttendanceAnalytics } from "@/tenant/features/attendance/components/AttendanceAnalytics";
 import { AttendanceCoverageReport } from "@/tenant/features/attendance/components/AttendanceCoverageReport";
 import { KPISummary, ModuleReports } from "@/tenant/components/moduleReports";
+import { AttendanceRegisterExport } from "@/tenant/features/attendance/components/AttendanceRegisterExport";
 
 export type AttendanceReportTab = {
   id: string;
@@ -30,6 +31,7 @@ export function AttendanceReportsTier({
     <ModuleTierMotion tier="reports" className="space-y-4">
       <ErrorBoundary>
         <KPISummary category="attendance" role={role} />
+        <AttendanceRegisterExport classId={filters.classId} />
         <SubTabBar
           tabs={analyticsTabs.map((tab) => ({ key: tab.id, label: tab.label }))}
           value={activeAnalyticsTab}

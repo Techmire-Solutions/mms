@@ -101,6 +101,8 @@ export async function attendanceReportAggregatesHandler({
     const aggregates = await attendanceUseCases.loadAttendanceReportAggregates({
       ...comparisonQuery,
       ...(query.classId?.trim() ? { classId: query.classId.trim() } : {}),
+      ...(query.dateFrom?.trim() ? { dateFrom: query.dateFrom.trim() } : {}),
+      ...(query.dateTo?.trim() ? { dateTo: query.dateTo.trim() } : {}),
     });
     return { status: 200 as const, body: aggregates };
   } catch (error) {

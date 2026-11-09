@@ -1,5 +1,6 @@
 import { ensureFacultyContactIndex } from "./migrations/facultyContactIndex.js";
 import { ensureEnrollmentIntegrityIndexes } from "./migrations/enrollmentIntegrityIndexes.js";
+import { ensureAttendanceAnalyticsIndexes } from "./migrations/attendanceAnalyticsIndexes.js";
 import { prepareContactSystemTagsPreMigration } from "./contactSystemTagsPreMigration.js";
 import { dataMigrationsToRun } from "./dataMigrationRegistry.js";
 import { existsSync } from "node:fs";
@@ -81,6 +82,9 @@ export async function applyDrizzleMigrations(): Promise<{ migrationsFolder: stri
   // previously manual scripts; provisioning them here is what makes a fresh database
   // and every existing deployment actually enforce them.
   await ensureEnrollmentIntegrityIndexes(migrateClient);
+  // Attendance's analytics covering indexes are CONCURRENTLY-only for the same reason (populated
+  // table, migrator transaction); provisioning them here is what makes them exist at all.
+  await ensureAttendanceAnalyticsIndexes(migrateClient);
 
   return { migrationsFolder };
 }

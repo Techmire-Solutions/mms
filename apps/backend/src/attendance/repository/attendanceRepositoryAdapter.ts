@@ -12,6 +12,11 @@ import {
   bulkRestoreAttendanceRecords,
 } from "../../db/repositories/attendanceRepository.js";
 import {
+  countMatrixStudents,
+  listMatrixMarks,
+  listMatrixStudentsPage,
+} from "../../db/repositories/attendanceMatrixRepository.js";
+import {
   listAttendancePage,
   listAttendanceRoster,
   countAttendanceActiveByWorkspace,
@@ -43,4 +48,7 @@ export const attendanceRepository: AttendanceRepository = {
   listMarkedAttendanceDates: listMarkedAttendanceDatesSql,
   bulkSoftDeleteAttendanceRecords,
   bulkRestoreAttendanceRecords,
+  listMatrixStudentsPage,
+  listMatrixMarks,
+  countMatrixStudents,
 };
