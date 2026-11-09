@@ -1,84 +1,41 @@
 import {
   type AttendanceSettings,
   type AttendanceRecord,
+  type AttendanceStatus,
   DEFAULT_ATTENDANCE_SETTINGS as DEFAULT_ATT_SETTINGS,
+  DEFAULT_ATTENDANCE_STATUSES,
   toTitleCase,
 } from "@mms/shared";
 
-export type { AttendanceSettings, AttendanceRecord };
+export type { AttendanceSettings, AttendanceRecord, AttendanceStatus };
 export { DEFAULT_ATT_SETTINGS };
+/**
+ * The status display model is **shared** (`packages/shared/attendanceLookupTypes`). This module used
+ * to re-declare an identical array plus its own `AttendanceStatus` type and a positional `STATUS_MAP`
+ * — three ways for the same mapping to drift from the enum.
+ */
+export const ATTENDANCE_STATUSES: readonly AttendanceStatus[] = DEFAULT_ATTENDANCE_STATUSES;
 
-export const ATTENDANCE_STATUSES = [
-  {
-    id: "present",
-    label: "Present",
-    short: "P",
-    color: "emerald",
-    bg: "bg-success/10",
-    text: "text-success",
-    border: "border-success/30",
-    dot: "bg-success",
-  },
-  {
-    id: "absent",
-    label: "Absent",
-    short: "A",
-    color: "red",
-    bg: "bg-destructive/10",
-    text: "text-destructive",
-    border: "border-destructive/30",
-    dot: "bg-destructive",
-  },
-  {
-    id: "late",
-    label: "Late",
-    short: "L",
-    color: "amber",
-    bg: "bg-warning/10",
-    text: "text-warning",
-    border: "border-warning/30",
-    dot: "bg-warning",
-  },
-  {
-    id: "excused",
-    label: "Excused",
-    short: "E",
-    color: "blue",
-    bg: "bg-info/10",
-    text: "text-info",
-    border: "border-info/30",
-    dot: "bg-info",
-  },
-];
-
+/** Roster entry the marking grid consumes (a student projected into one class). */
 export interface ClassStudent {
   id: string;
   name: string;
-  gender: "male" | "female";
   rollNo: string;
+  gender?: string;
+  sectionId?: string | null;
 }
-
-export type AttendanceStatus = {
-  id: string;
-  label: string;
-  short: string;
-  color: string;
-  bg: string;
-  text: string;
-  border: string;
-  dot: string;
-};
 
 export function getAttendanceStatusInfo(
   status: string,
   customStatuses?: AttendanceStatus[],
 ): AttendanceStatus {
-  const statusList =
-    customStatuses && customStatuses.length > 0 ? customStatuses : ATTENDANCE_STATUSES;
+  const statusList: readonly AttendanceStatus[] =
+    customStatuses && customStatuses.length > 0 ? customStatuses : DEFAULT_ATTENDANCE_STATUSES;
   const found = statusList.find((statusOption) => statusOption.id === status);
   if (found) return found;
   return {
-    id: status,
+    // Unknown ids still render (legacy rows); the shared model governs known statuses.
+    id: status as AttendanceStatus["id"],
     label: toTitleCase(status),
     short: status.charAt(0).toUpperCase(),
     color: "muted",
@@ -89,13 +46,6 @@ export function getAttendanceStatusInfo(
   };
 }
 
-export const STATUS_MAP: Record<string, AttendanceStatus> = {
-  present: ATTENDANCE_STATUSES[0] as AttendanceStatus,
-  absent: ATTENDANCE_STATUSES[1] as AttendanceStatus,
-  late: ATTENDANCE_STATUSES[2] as AttendanceStatus,
-  excused: ATTENDANCE_STATUSES[3] as AttendanceStatus,
-};
-
 export const CLASS_STUDENTS: Record<string, ClassStudent[]> = {};
 
 export function calcClassStats(classId: string, records: AttendanceRecord[]) {
@@ -105,9 +55,11 @@ export function calcClassStats(classId: string, records: AttendanceRecord[]) {
     counts[record.status] = (counts[record.status] || 0) + 1;
   });
   const total = classRecords.length;
+  // `half_day` credits attendance once, same as late (shared `ATTENDANCE_ATTENDED_STATUSES`).
   const present = counts.present || 0;
   const late = counts.late || 0;
-  const rate = total ? Math.round(((present + late) / total) * 100) : 0;
+  const halfDay = counts.half_day || 0;
+  const rate = total ? Math.round(((present + late + halfDay) / total) * 100) : 0;
   return { ...counts, rate };
 }
 

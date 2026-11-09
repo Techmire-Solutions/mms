@@ -1,4 +1,5 @@
 import { sql } from "drizzle-orm";
+import { ATTENDANCE_ATTENDED_STATUSES } from "@mms/shared";
 import { type AttendanceReportOverview } from "@mms/shared";
 import { getQueryRows } from "../documentStoreKeys.js";
 import type { TenantTransaction } from "../tenant-context.js";
@@ -11,9 +12,22 @@ import type { CountableAttendanceSql } from "./attendanceCountableSql.js";
  * `isPresentOrLateSql` from here, so the dependency stays one-directional.
  */
 
-export function isPresentOrLateSql(alias = "a"): ReturnType<typeof sql> {
-  return sql`lower(trim(${sql.raw(`${alias}.status`)})) IN ('present', 'late')`;
+/**
+ * The single "counts as attendance" predicate (present, late, half day).
+ *
+ * Built from `ATTENDANCE_ATTENDED_STATUSES` so the SQL set can never drift from the shared enum;
+ * completion, eligibility, reports and metrics all use this helper.
+ */
+export function isAttendedSql(alias = "a"): ReturnType<typeof sql> {
+  const values = sql.join(
+    ATTENDANCE_ATTENDED_STATUSES.map((status) => sql`${status}`),
+    sql`, `,
+  );
+  return sql`lower(trim(${sql.raw(`${alias}.status`)})) IN (${values})`;
 }
+
+/** @deprecated Use {@link isAttendedSql}; kept for callers that predate `half_day`. */
+export const isPresentOrLateSql = isAttendedSql;
 
 const STUDENT_RATE_LIMIT = 12;
 
@@ -45,7 +59,7 @@ export async function loadAttendanceOverview(
     range?.dateFrom ? sql`AND a.date_on >= ${range.dateFrom}` : sql``
   } ${range?.dateTo ? sql`AND a.date_on <= ${range.dateTo}` : sql``}`;
   const sessionClassFilter = classId ? sql`AND sc.id = ${classId}` : sql``;
-  const presentOrLate = isPresentOrLateSql("a");
+  const presentOrLate = isAttendedSql("a");
 
   const classResult = await tx.execute(sql`
     SELECT

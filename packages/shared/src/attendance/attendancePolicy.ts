@@ -1,5 +1,6 @@
 import {
   ATTENDANCE_RECORD_STATUSES,
+  isAttendedStatus,
   type AttendanceRecordStatus,
 } from "./attendanceModuleManifest.js";
 import type { AttendanceModulePreferences } from "./attendanceSetupPreferences.js";
@@ -127,7 +128,7 @@ export function evaluateAttendanceWrite(
   // A `late` mark without a time is meaningless. `present` deliberately does not require one:
   // `attendanceRecordInsertSchema` defaults `timeIn` to "" and schools use present as a one-tap mark,
   // so requiring a time there would reject the module's own documented minimal create.
-  if (status === "late" && inMinutes === null) {
+  if ((status === "late" || status === "half_day") && inMinutes === null) {
     errors.push({
       ...base,
       code: "attendance_time_invalid",
@@ -171,7 +172,7 @@ export function evaluateAttendanceWrite(
 
   // ── P4 approved leave wins over attendance ────────────────────────────────────────────────
   const onLeave = context.isApprovedLeave?.(row) === true;
-  if (onLeave && (status === "present" || status === "late") && !context.canOverride) {
+  if (onLeave && isAttendedStatus(status) && !context.canOverride) {
     errors.push({
       ...base,
       code: "attendance_on_approved_leave",

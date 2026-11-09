@@ -43,6 +43,9 @@ export * from "../attendance/attendanceCommandMetrics.js";
 export * from "../attendance/attendanceExportUtils.js";
 export * from "../attendance/attendanceMatrix.js";
 export * from "../attendance/checkInTime.js";
+// Contract response schemas (page envelope, day-submission, preferences) are part of the public DTO
+// surface: the list page type is inferred from the page schema.
+export * from "../contracts/attendance.contractSchemas.js";
 export * from "../attendance/examEligibility.js";
 export * from "../attendance/attendanceLeaveTransitions.js";
 export * from "../attendance/attendancePolicy.js";

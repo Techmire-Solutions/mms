@@ -80,7 +80,7 @@ describe("generateAttendanceMatrixCsv", () => {
 
     expect(step.value).toEqual({
       students: 1,
-      totals: { present: 0, late: 1, absent: 0, excused: 0, marked: 1 },
+      totals: { present: 0, late: 1, halfDay: 0, absent: 0, excused: 0, marked: 1 },
     });
   });
 

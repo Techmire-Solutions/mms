@@ -113,7 +113,7 @@ export const attendance = pgTable(
      */
     check(
       "attendance_status_check",
-      sql`${table.status} IN ('present', 'absent', 'late', 'excused')`,
+      sql`${table.status} IN ('present', 'absent', 'late', 'half_day', 'excused')`,
     ),
     index("attendance_workspace_deleted_records_idx")
       .on(table.workspaceSubdomain, table.deletedAt)
