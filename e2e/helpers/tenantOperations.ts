@@ -416,6 +416,49 @@ export function seedTestClassAndEnrollment(subdomain: string): void {
   }
 }
 
+/**
+ * Configures attendance preferences (working days, cutoff time, late thresholds)
+ * via the authenticated tenant API so the backend web server's in-process L1 cache
+ * is explicitly updated and synchronized with the database.
+ */
+export async function configureAttendancePreferences(page: Page): Promise<void> {
+  await test.step("Configure attendance preferences via API", async () => {
+    const result = await page.evaluate(async () => {
+      const csrf = document.cookie.match(/(?:^|;\s*)csrf_token=([^;]*)/)?.[1];
+      const res = await fetch("/api/attendance/preferences", {
+        method: "PUT",
+        credentials: "include",
+        headers: {
+          "Content-Type": "application/json",
+          ...(csrf ? { "X-CSRF-Token": decodeURIComponent(csrf) } : {}),
+        },
+        body: JSON.stringify({
+          workingDays: [
+            "monday",
+            "tuesday",
+            "wednesday",
+            "thursday",
+            "friday",
+            "saturday",
+            "sunday",
+          ],
+          allowExtraClassOnHolidays: true,
+          cutoffTime: "23:59",
+          lateThresholdMins: 60,
+          autoAbsentAfterMins: 120,
+          allowManualOverride: true,
+        }),
+      });
+      return { ok: res.ok, status: res.status, text: res.ok ? "" : await res.text() };
+    });
+    if (!result.ok) {
+      throw new Error(
+        `Failed to configure attendance preferences: HTTP ${result.status} ${result.text}`,
+      );
+    }
+  });
+}
+
 /** Derives the tenant subdomain from the current page origin (e.g. http://acad123.localhost:5173). */
 function resolveSubdomainFromPage(page: Page): string {
   const host = new URL(page.url()).hostname;
