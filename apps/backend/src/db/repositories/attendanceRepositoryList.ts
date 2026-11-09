@@ -1,5 +1,9 @@
 import { and, asc, eq, isNull, sql, type SQL } from "drizzle-orm";
-import { type AttendanceListQuery, type AttendanceListPageResult } from "@mms/shared";
+import {
+  type AttendanceListPageResult,
+  type AttendanceListQuery,
+  type AttendanceRecord,
+} from "@mms/shared";
 import { attendance, sessionClasses, sessions } from "../schema.js";
 import { withTenantRead } from "../tenant-context.js";
 import {
@@ -110,6 +114,59 @@ export async function listAttendancePage(
         ? { nextCursor: rows[rows.length - 1].attendance.id }
         : {}),
     };
+  });
+}
+
+/**
+ * Every live mark for one class/section on one day — the marking matrix.
+ *
+ * One indexed query (`attendance_workspace_class_date_on_active_idx`), no count, no paging: the grid
+ * must see the whole roster, otherwise it renders unmarked defaults over recorded absences. The cap
+ * is a sanity bound, not a page size.
+ */
+export async function listAttendanceRoster(
+  tenant: string,
+  input: { classId: string; date: string; sectionId?: string },
+  limit = 1000,
+): Promise<AttendanceRecord[]> {
+  const subdomain = tenant.trim().toLowerCase();
+  const bounded = Math.min(Math.max(limit, 1), 1000);
+  return withTenantRead(subdomain, async (tx) => {
+    const conditions = [
+      eq(attendance.workspaceSubdomain, subdomain),
+      eq(attendance.classId, input.classId.trim()),
+      eq(attendance.date, input.date.slice(0, 10)),
+      isNull(attendance.deletedAt),
+    ];
+    if (input.sectionId?.trim()) {
+      conditions.push(eq(attendance.sectionId, input.sectionId.trim()));
+    }
+    const rows = await tx
+      .select({
+        id: attendance.id,
+        classId: attendance.classId,
+        studentId: attendance.studentId,
+        studentName: attendance.studentName,
+        rollNo: attendance.rollNo,
+        date: attendance.date,
+        status: attendance.status,
+        timeIn: attendance.timeIn,
+        timeOut: attendance.timeOut,
+        notes: attendance.notes,
+        markedBy: attendance.markedBy,
+        sectionId: attendance.sectionId,
+        version: attendance.version,
+        deletedAt: attendance.deletedAt,
+        deletedBy: attendance.deletedBy,
+        deletionReason: attendance.deletionReason,
+        createdAt: attendance.createdAt,
+        updatedAt: attendance.updatedAt,
+      })
+      .from(attendance)
+      .where(and(...conditions))
+      .orderBy(asc(attendance.rollNo), asc(attendance.studentId))
+      .limit(bounded);
+    return rows.map((row) => rowToRecord(row as AttendanceRow));
   });
 }
 

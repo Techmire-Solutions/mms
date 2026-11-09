@@ -69,6 +69,7 @@ export function useAttendanceRecordsState({
     search: deferredSearch,
     sessionId: filters.sessionId,
     classId: filters.classId,
+    sectionId: "sectionId" in filters ? String(filters.sectionId ?? "") : undefined,
     facultyId: filters.facultyId,
     date: filters.date,
     status: statusFilter !== "all" ? statusFilter : undefined,

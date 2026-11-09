@@ -2,7 +2,7 @@ import { type FastifyInstance, type FastifyPluginOptions, type FastifyRequest } 
 import { authenticateTenant } from "../../middleware/authenticate.js";
 import { registerModuleAccess } from "../../middleware/requireTenantModule.js";
 import { attendanceUseCases } from "../../attendance/use-cases/attendanceUseCases.js";
-import { ATTENDANCE_MODULE_MANIFEST } from "@mms/shared";
+import { ATTENDANCE_MODULE_MANIFEST, attendanceCommandMetricsResponseSchema } from "@mms/shared";
 import { registerStandardExtendedRoutes } from "../../lib/crudRouter.js";
 import { attendanceContractRouter } from "./attendance/attendanceContractRouter.js";
 import { academicCalendarRouter } from "./attendance/academicCalendarRouter.js";
@@ -44,6 +44,8 @@ export default async function attendanceRoutes(
         loadMetricsFn: (request) =>
           attendanceUseCases.loadAttendanceCommandMetrics(readMetricsDate(request)),
         cacheVary: readMetricsDate,
+        // Without this the metrics payload was the only attendance response with no wire schema.
+        metricsSchema: attendanceCommandMetricsResponseSchema,
         nameSingular: "record",
       });
     },

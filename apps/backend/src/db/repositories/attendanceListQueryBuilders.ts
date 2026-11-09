@@ -12,6 +12,7 @@ import {
   type SQL,
 } from "drizzle-orm";
 import {
+  ATTENDANCE_LIST_SORT_FIELDS,
   dedupeTrimmedIds,
   isQueryFlagTrue,
   toSqlSearchPattern,
@@ -91,13 +92,8 @@ export function buildAttendanceListConditions(
   return conditions;
 }
 
-export const ATTENDANCE_SORT_FIELDS = new Set([
-  "date",
-  "studentName",
-  "rollNo",
-  "status",
-  "updatedAt",
-]);
+/** The wire enum and the SQL whitelist must be the same list — see `ATTENDANCE_LIST_SORT_FIELDS`. */
+export const ATTENDANCE_SORT_FIELDS = new Set<string>(ATTENDANCE_LIST_SORT_FIELDS);
 
 export function buildAttendanceOrderBy(sortField?: string, sortDir?: "asc" | "desc" | ""): SQL {
   const field = sortField?.trim();

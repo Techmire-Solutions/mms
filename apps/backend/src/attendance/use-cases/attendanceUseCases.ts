@@ -114,6 +114,22 @@ export function createAttendanceUseCases(
       return repo.listAttendancePage(tenant, query);
     },
 
+    /**
+     * Marking matrix: every live mark for one class/section on one day.
+     *
+     * Separate from `loadAttendancePage` because the grid must not page: a truncated view would be
+     * rendered as unmarked defaults and saved back over real absences.
+     */
+    loadAttendanceRoster: async (query: {
+      classId: string;
+      date: string;
+      sectionId?: string;
+    }): Promise<AttendanceRecord[]> => {
+      const tenant = getRequestTenant();
+      if (!tenant) return [];
+      return repo.listAttendanceRoster(tenant, query);
+    },
+
     countAttendanceRecords: async (): Promise<number> => {
       const tenant = getRequestTenant();
       if (!tenant) return 0;

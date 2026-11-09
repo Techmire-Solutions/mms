@@ -22,6 +22,8 @@ export interface AttendanceCalendarRepository {
   loadInstructionalDayContext: DayContextStore["loadInstructionalDayContext"];
   listEnrollmentPlacements: PlacementStore["listEnrollmentPlacements"];
   listEnrollmentPlacementsAsOf: PlacementStore["listEnrollmentPlacementsAsOf"];
+  /** Every distinct attendance date at once — replaces the per-date loop in the stamping path. */
+  listEnrollmentPlacementsForDates: PlacementStore["listEnrollmentPlacementsForDates"];
   findWorkspaceTimezone: (tenant: string) => Promise<string | null>;
   getAttendanceModulePreferences: PreferencesStore["getAttendanceModulePreferences"];
   findOverlappingApprovedLeaves: LeaveStore["findOverlappingApprovedLeaves"];

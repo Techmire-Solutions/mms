@@ -5,6 +5,14 @@ import { isForeignKeyViolation } from "./pgErrors.js";
 interface ContractErrorBody {
   type: string;
   message: string;
+  /** Per-row failures for a rejected batch (`attendance_batch_rejected`). */
+  errors?: Array<{
+    index: number;
+    studentId: string;
+    date: string;
+    code: string;
+    message: string;
+  }>;
   /** Machine-readable reasons carried by domain errors (e.g. blocked session transitions). */
   violations?: string[];
   /** Structured context (e.g. `{ sectionId, seatsLeft }` for a full section). */
@@ -92,7 +100,13 @@ export function handleContractError(
     // client can act instead of parsing the message.
     const sectionId = (error as { sectionId?: unknown }).sectionId;
     const seatsLeft = (error as { seatsLeft?: unknown }).seatsLeft;
+    // Structured context carried by the error itself (e.g. per-row batch failures) plus the
+    // seat-capacity pair, so the client can act without parsing the message.
+    const carried = (error as { details?: unknown }).details;
     const details = {
+      ...(typeof carried === "object" && carried !== null
+        ? (carried as Record<string, unknown>)
+        : {}),
       ...(typeof sectionId === "string" ? { sectionId } : {}),
       ...(typeof seatsLeft === "number" ? { seatsLeft } : {}),
     };

@@ -87,12 +87,26 @@ export function sendServiceUnavailable(
 export class HttpDomainError extends Error {
   readonly statusCode: number;
   readonly type: string;
+  /**
+   * Structured context forwarded by `handleContractError`.
+   *
+   * `violations` is deliberately NOT declared here: several domain subclasses already expose a
+   * readonly `violations` of their own, and redeclaring it on the base would force `override` on all
+   * of them. The error handler reads both structurally, which is all the contract needs.
+   */
+  readonly details?: Record<string, unknown>;
 
-  constructor(statusCode: number, type: string, message: string) {
+  constructor(
+    statusCode: number,
+    type: string,
+    message: string,
+    extras?: { details?: Record<string, unknown> },
+  ) {
     super(message);
     this.name = this.constructor.name;
     this.statusCode = statusCode;
     this.type = type;
+    if (extras?.details) this.details = extras.details;
   }
 }
 

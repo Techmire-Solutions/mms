@@ -36,6 +36,8 @@ export const attendanceListPageResponseSchema = z.object({
   page: z.number(),
   limit: z.number(),
   hasMore: z.boolean(),
+  /** Keyset cursor returned when `afterId` paging is used. */
+  nextCursor: z.string().optional(),
 });
 
 /** Roster-day submission state (`lockAfterSubmit`). */

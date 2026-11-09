@@ -13,6 +13,7 @@ import type { AttendanceCalendarRepository } from "../repository/attendanceCalen
 import { canDeleteCollection } from "../../services/rbacService.js";
 import { ATTENDANCE_MODULE_MANIFEST } from "@mms/shared";
 import { HttpDomainError } from "../../lib/httpErrors.js";
+import { AttendanceBatchRejectedError } from "./attendanceBatchErrors.js";
 import { todayInTimeZone } from "../../lib/dbDate.js";
 
 /**
@@ -200,7 +201,21 @@ export async function assertAttendanceWriteAllowed(input: AttendancePolicyInput)
 
   const canOverride = preferences.allowManualOverride || canDeleteCollection(actor, COLLECTION);
 
-  for (const row of input.rows) {
+  /**
+   * Evaluate every row before failing so a batch reports **all** of its invalid rows, not just the
+   * first. A single bad row still throws the ordinary single-error shape; two or more throw the
+   * batch envelope (the write itself remains all-or-nothing).
+   */
+  const failures: Array<{
+    index: number;
+    studentId: string;
+    date: string;
+    code: string;
+    message: string;
+    status: number;
+  }> = [];
+
+  for (const [index, row] of input.rows.entries()) {
     const key = attendancePolicyKey(row);
     const existingRecord = input.existing?.get(key) ?? null;
     const errors = evaluateAttendanceWrite(toPolicyRow(row), preferences, {
@@ -211,7 +226,21 @@ export async function assertAttendanceWriteAllowed(input: AttendancePolicyInput)
       isApprovedLeave: () => onLeave.has(key),
       isDaySubmitted: () => lockedDays.has(`${row.classId}|${row.date.slice(0, 10)}`),
     });
-    const [first] = errors;
-    if (first) throw toDomainError(first);
+    const first = errors[0];
+    if (!first) continue;
+    failures.push({
+      index,
+      studentId: row.studentId,
+      date: row.date.slice(0, 10),
+      code: first.code,
+      message: first.message,
+      status: first.status,
+    });
   }
+
+  if (failures.length === 1) {
+    const [only] = failures;
+    throw new HttpDomainError(only!.status, only!.code, only!.message);
+  }
+  if (failures.length > 1) throw new AttendanceBatchRejectedError(failures);
 }

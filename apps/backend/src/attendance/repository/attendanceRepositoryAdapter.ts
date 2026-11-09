@@ -13,6 +13,7 @@ import {
 } from "../../db/repositories/attendanceRepository.js";
 import {
   listAttendancePage,
+  listAttendanceRoster,
   countAttendanceActiveByWorkspace,
   aggregateAttendanceCommandMetrics,
 } from "../../db/repositories/attendanceRepositoryList.js";
@@ -34,6 +35,7 @@ export const attendanceRepository: AttendanceRepository = {
   bulkSaveAttendanceRecords,
   replaceAttendanceRecordsForWorkspace,
   listAttendancePage,
+  listAttendanceRoster,
   countAttendanceActiveByWorkspace,
   aggregateAttendanceCommandMetrics,
   aggregateAttendanceWidgetQueries,

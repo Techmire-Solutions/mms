@@ -4,7 +4,7 @@ import { useModuleShortcuts } from "@/hooks/useModuleShortcuts";
 import { useTranslation } from "@/hooks/useTranslation";
 import { useDirectoryTrashState } from "@/hooks/useDirectoryTrashState";
 import { todayISO, ATTENDANCE_MODULE_MANIFEST } from "@mms/shared";
-import { useAttendanceRecords } from "@/tenant/features/attendance/hooks/useAttendance";
+import { useAttendanceRoster } from "@/tenant/features/attendance/hooks/useAttendance";
 import { useAttendancePageActions } from "@/tenant/features/attendance/hooks/useAttendancePageActions";
 import { useAttendanceColumnLayout } from "@/tenant/features/attendance/hooks/useAttendanceColumnLayout";
 import { useAttendancePageTabs } from "@/tenant/features/attendance/hooks/useAttendancePageTabs";
@@ -46,11 +46,18 @@ export function useAttendancePageController() {
       if (drillDown.date) setFilters((prev) => ({ ...prev, date: drillDown.date ?? prev.date }));
     },
   );
-  const attendanceCollectionQuery = useAttendanceRecords();
-  const activeAttendanceRecords = attendanceCollectionQuery.data ?? [];
+  // Mark consumes the roster for the class/day in view (not a capped workspace-wide collection:
+  // a truncated view would render unmarked defaults over recorded absences and save them back).
+  const attendanceRosterQuery = useAttendanceRoster({
+    classId: filters.classId,
+    date: filters.date,
+    sectionId: "sectionId" in filters ? String(filters.sectionId ?? "") : undefined,
+  });
+  const attendanceCollectionQuery = attendanceRosterQuery;
+  const activeAttendanceRecords = attendanceRosterQuery.data;
   // Work records list is server-paged inside `AttendanceRecords` (filters colocated
   // with the toolbar). `shownCount` is reported back via `onTotalChange` for the
-  // metrics strip; Mark consumes the capped collection while Reports use SQL aggregates.
+  // metrics strip; Mark consumes the roster while Reports use SQL aggregates.
   const columnLayout = useAttendanceColumnLayout();
   const {
     messagingTarget,

@@ -42,6 +42,7 @@ function createFakeRepo(): AttendanceRepository {
     saveAttendanceRecordById: vi.fn().mockResolvedValue(null),
     bulkSaveAttendanceRecords: vi.fn().mockResolvedValue([]),
     replaceAttendanceRecordsForWorkspace: vi.fn().mockResolvedValue(undefined),
+    listAttendanceRoster: vi.fn().mockResolvedValue([]),
     listAttendancePage: vi.fn().mockResolvedValue({
       records: [],
       total: 0,

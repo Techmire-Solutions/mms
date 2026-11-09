@@ -9,6 +9,7 @@ import { loadInstructionalDayContext } from "../../db/repositories/instructional
 import {
   listEnrollmentPlacements,
   listEnrollmentPlacementsAsOf,
+  listEnrollmentPlacementsForDates,
 } from "../../db/repositories/enrollmentPlacementLookup.js";
 import {
   findOverlappingApprovedLeaves,
@@ -35,6 +36,7 @@ export const attendanceCalendarRepository: AttendanceCalendarRepository = {
   loadInstructionalDayContext,
   listEnrollmentPlacements,
   listEnrollmentPlacementsAsOf,
+  listEnrollmentPlacementsForDates,
   findWorkspaceTimezone,
   getAttendanceModulePreferences,
   findOverlappingApprovedLeaves,

@@ -38,7 +38,9 @@ import { requireDatabaseConnection } from "./dbTestSupport.js";
 const TENANT = "att-specialized-test";
 const SESSION = "ses-spec";
 const CLASS = "cls-spec";
+const CLASS_OTHER = "cls-other";
 const SECTION = "sec-spec";
+const SECTION_OTHER = "sec-other";
 const STUDENT = "stu-spec-1";
 const STUDENT_2 = "stu-spec-2";
 const EXAM = "exam-spec";
@@ -107,17 +109,28 @@ async function seedFixtures(): Promise<void> {
       // 75 % completion threshold also acts as the exam's fallback gate.
       minAttendancePct: 75,
     });
-    await tx.tx
-      .insert(sessionClasses)
-      .values({ id: CLASS, workspaceSubdomain: TENANT, sessionId: SESSION, name: "Class" });
-    await tx.tx.insert(sessionClassSections).values({
-      id: SECTION,
-      workspaceSubdomain: TENANT,
-      sessionId: SESSION,
-      classId: CLASS,
-      name: "A",
-      capacity: 30,
-    });
+    await tx.tx.insert(sessionClasses).values([
+      { id: CLASS, workspaceSubdomain: TENANT, sessionId: SESSION, name: "Class" },
+      { id: CLASS_OTHER, workspaceSubdomain: TENANT, sessionId: SESSION, name: "Other Class" },
+    ]);
+    await tx.tx.insert(sessionClassSections).values([
+      {
+        id: SECTION,
+        workspaceSubdomain: TENANT,
+        sessionId: SESSION,
+        classId: CLASS,
+        name: "A",
+        capacity: 30,
+      },
+      {
+        id: SECTION_OTHER,
+        workspaceSubdomain: TENANT,
+        sessionId: SESSION,
+        classId: CLASS_OTHER,
+        name: "B",
+        capacity: 30,
+      },
+    ]);
     await tx.tx.insert(enrollments).values([
       {
         id: "enr-spec-1",
@@ -410,5 +423,74 @@ describe("exam attendance gate (real Postgres)", () => {
     expect(view.requiredPct).toBe(90);
     const byStudent = new Map(view.rows.map((row) => [row.studentId, row]));
     expect(byStudent.get(STUDENT)?.state).toBe("blocked");
+  });
+});
+
+describe("marking matrix roster (real Postgres)", () => {
+  it("returns every mark for the class/day and ignores other classes", async () => {
+    const { listAttendanceRoster } =
+      await import("../../db/repositories/attendanceRepositoryList.js");
+    await seedMarks([
+      markRow(STUDENT, "2026-03-02", "absent"),
+      markRow(STUDENT_2, "2026-03-02", "present"),
+      // A different class on the same day must not leak into the roster.
+      {
+        ...markRow(STUDENT, "2026-03-02", "late"),
+        id: "att-other-class",
+        classId: CLASS_OTHER,
+        sectionId: SECTION_OTHER,
+      },
+    ]);
+
+    const roster = await listAttendanceRoster(TENANT, {
+      classId: CLASS,
+      date: "2026-03-02",
+    });
+    expect(roster).toHaveLength(2);
+    expect(roster.map((row) => row.studentId).sort()).toEqual([STUDENT, STUDENT_2]);
+    // The grid needs the OCC token to echo on save.
+    expect(roster.every((row) => typeof row.version === "number")).toBe(true);
+  });
+
+  it("does not depend on how many rows exist elsewhere in the tenant", async () => {
+    const { listAttendanceRoster } =
+      await import("../../db/repositories/attendanceRepositoryList.js");
+    // 300 unrelated rows in another class would have pushed this day out of a capped collection.
+    const noise = Array.from({ length: 300 }, (_, index) => {
+      const day = new Date(Date.UTC(2025, 0, 1 + index)).toISOString().slice(0, 10);
+      return {
+        ...markRow(STUDENT, day, "present"),
+        id: `att-noise-${index}`,
+        classId: CLASS_OTHER,
+        sectionId: SECTION_OTHER,
+        date: day,
+      };
+    });
+    await seedMarks([...noise, markRow(STUDENT, "2026-03-02", "absent")]);
+
+    const roster = await listAttendanceRoster(TENANT, { classId: CLASS, date: "2026-03-02" });
+    expect(roster).toHaveLength(1);
+    expect(roster[0]?.status).toBe("absent");
+  });
+
+  it("rejects a batch with several invalid rows and writes nothing", async () => {
+    const { assertAttendanceWriteAllowed } =
+      await import("../../attendance/use-cases/attendancePolicyGuard.js");
+    const before = await readMarks(STUDENT);
+
+    await expect(
+      runWithTenant(TENANT, () =>
+        assertAttendanceWriteAllowed({
+          tenant: TENANT,
+          actor: ADMIN,
+          rows: [
+            markRow(STUDENT, "2026-03-02", "absent"),
+            { ...markRow(STUDENT_2, "2026-03-02", "absent"), notes: "" },
+          ].map((row) => ({ ...row, status: "late", timeIn: "", timeOut: "" })),
+        }),
+      ),
+    ).rejects.toMatchObject({ type: "attendance_batch_rejected" });
+
+    expect(await readMarks(STUDENT)).toEqual(before);
   });
 });

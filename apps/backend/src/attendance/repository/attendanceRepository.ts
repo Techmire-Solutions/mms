@@ -54,6 +54,11 @@ export interface AttendanceRepository {
   ): Promise<AttendanceRecord[]>;
   replaceAttendanceRecordsForWorkspace(tenant: string, records: AttendanceRecord[]): Promise<void>;
   listAttendancePage(tenant: string, query: AttendanceListQuery): Promise<AttendanceListPageResult>;
+  /** Every live mark for one class/section on one day (marking matrix, no paging). */
+  listAttendanceRoster(
+    tenant: string,
+    input: { classId: string; date: string; sectionId?: string },
+  ): Promise<AttendanceRecord[]>;
   countAttendanceActiveByWorkspace(tenant: string): Promise<number>;
   aggregateAttendanceCommandMetrics(
     tenant: string,
