@@ -1397,7 +1397,7 @@ export const APP_TRANSLATIONS_EN = {
   "attendance.settings.minutesShort": "min",
   "attendance.settings.notifyParents": "Notify Parents",
   "attendance.settings.notifyParentsDesc":
-    "Send an SMS or WhatsApp message to a parent when a student is absent.",
+    "In-app alerts only for now: admins are notified in the notification centre when a student's absences need follow-up. No SMS/WhatsApp is sent yet.",
   "attendance.settings.offlineMode": "Offline Mode",
   "attendance.settings.offlineModeDesc":
     "Allow teachers to mark attendance offline and sync after reconnecting.",
@@ -1470,7 +1470,7 @@ export const APP_TRANSLATIONS_EN = {
   "attendance.alerts.title": "Chronic absence",
   "attendance.alerts.desc": "Students with a run of unexcused absences.",
   "attendance.alerts.scan": "Scan now",
-  "attendance.alerts.scanned": "Absence scan completed.",
+  "attendance.alerts.scanned": "Absence scan queued — it will run in the background.",
   "attendance.alerts.empty": "No open absence alerts.",
   "attendance.alerts.loadFailed": "Could not load absence alerts.",
   "attendance.alerts.resolve": "Resolve",

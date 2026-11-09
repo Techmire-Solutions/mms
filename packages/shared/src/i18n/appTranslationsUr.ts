@@ -1399,7 +1399,7 @@ export const APP_TRANSLATIONS_UR: Record<AppTranslationKey, string> = {
   "attendance.settings.minutesShort": "منٹ",
   "attendance.settings.notifyParents": "والدین کو مطلع کریں",
   "attendance.settings.notifyParentsDesc":
-    "طالب علم کی غیر حاضری پر ایس ایم ایس یا واٹس ایپ بھیجیں۔",
+    "فی الحال صرف ایپ کے اندر انتباہ: جب طالب علم کی غیر حاضری پر توجہ درکار ہو تو منتظمین کو اطلاعاتی مرکز میں مطلع کیا جاتا ہے۔ ابھی SMS/واٹس ایپ نہیں بھیجا جاتا۔",
   "attendance.settings.offlineMode": "آف لائن موڈ",
   "attendance.settings.offlineModeDesc":
     "بغیر انٹرنیٹ حاضری لگائیں اور دوبارہ منسلک ہو کر ہم وقت کریں۔",
@@ -1471,7 +1471,7 @@ export const APP_TRANSLATIONS_UR: Record<AppTranslationKey, string> = {
   "attendance.alerts.title": "مسلسل غیر حاضری",
   "attendance.alerts.desc": "وہ طلبہ جن کی مسلسل غیر حاضری ہے۔",
   "attendance.alerts.scan": "ابھی اسکین کریں",
-  "attendance.alerts.scanned": "غیر حاضری کا اسکین مکمل ہو گیا۔",
+  "attendance.alerts.scanned": "غیر حاضری کا اسکین قطار میں ہے — یہ پس منظر میں چلے گا۔",
   "attendance.alerts.empty": "کوئی کھلا غیر حاضری انتباہ نہیں۔",
   "attendance.alerts.loadFailed": "غیر حاضری کے انتباہات لوڈ نہیں ہو سکے۔",
   "attendance.alerts.resolve": "حل کریں",

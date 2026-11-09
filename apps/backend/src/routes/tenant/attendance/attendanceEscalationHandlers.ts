@@ -5,6 +5,13 @@ import { canDeleteCollection, canReadCollection } from "../../../services/rbacSe
 import { withTenant } from "../../../db/tenant-context.js";
 import { attendanceEscalationUseCases } from "../../../attendance/use-cases/attendanceEscalationUseCases.js";
 import { getTenantId } from "./attendanceRecordHandlers.js";
+import {
+  enqueueBackgroundJob,
+  getUserBackgroundJob,
+  QueueUnavailableError,
+} from "../../../services/backgroundJobWorkerService.js";
+import { buildBackgroundJobId, buildDeterministicJobKey } from "../../../lib/backgroundJobIds.js";
+import { recordModernAuditEvent } from "../../../services/auditTrailService.js";
 
 /** Chronic-absence escalation routes: read the alert queue, re-scan, resolve. */
 
@@ -55,12 +62,54 @@ export async function attendanceScanAbsenceStreaksHandler({
   if (!tenantId) return missingTenant();
 
   try {
-    const result = await attendanceEscalationUseCases.scan();
-    return { status: 200 as const, body: result };
+    // Queue the scan instead of walking every workspace inside the request: the job gets a deadline,
+    // BullMQ retries, the DLQ record and a tray entry. One job per workspace per hour bucket, so a
+    // double-submit collapses onto the same job id.
+    const bucket = new Date().toISOString().slice(0, 13);
+    const idempotencyKey = buildDeterministicJobKey({
+      moduleId: "attendance",
+      kind: "absence-scan",
+      payload: { tenant: tenantId, bucket },
+    });
+    const jobId = buildBackgroundJobId(tenantId, String(user.id), idempotencyKey);
+
+    const existing = await getUserBackgroundJob(String(user.id), jobId);
+    if (existing) return { status: 202 as const, body: { job: existing } };
+
+    const job = await enqueueBackgroundJob(
+      tenantId,
+      String(user.id),
+      {
+        id: jobId,
+        moduleId: "attendance",
+        kind: "absence-scan",
+        status: "running",
+        label: "Scanning for chronic absence…",
+        createdAt: new Date().toISOString(),
+      },
+      { requestedBy: String(user.id) },
+    );
+
+    await recordModernAuditEvent({
+      workspaceSubdomain: tenantId,
+      tableName: "attendance_absence_alerts",
+      recordId: job.id,
+      actionType: "CREATE",
+      realUserId: String(user.id),
+      newState: { action: "attendance.scan.queue", jobId: job.id },
+    });
+
+    return { status: 202 as const, body: { job } };
   } catch (error) {
+    if (error instanceof QueueUnavailableError) {
+      return {
+        status: 503 as const,
+        body: { type: "service_unavailable", message: error.message },
+      };
+    }
     return handleContractError(request, error, {
       status: 500,
-      body: { type: "database_error", message: "Failed to scan for chronic absence" },
+      body: { type: "database_error", message: "Failed to queue the chronic-absence scan" },
     });
   }
 }

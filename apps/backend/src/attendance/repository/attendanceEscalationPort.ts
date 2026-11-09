@@ -16,6 +16,8 @@ export interface AttendanceEscalationRepository {
   listCountableMarks: EscalationStore["listCountableMarks"];
   upsertAbsenceAlert: EscalationStore["upsertAbsenceAlert"];
   markAbsenceAlertNotified: EscalationStore["markAbsenceAlertNotified"];
+  claimAbsenceAlertNotification: EscalationStore["claimAbsenceAlertNotification"];
+  releaseAbsenceAlertNotification: EscalationStore["releaseAbsenceAlertNotification"];
   listAbsenceAlerts: EscalationStore["listAbsenceAlerts"];
   resolveAbsenceAlert: EscalationStore["resolveAbsenceAlert"];
 }

@@ -77,8 +77,8 @@ describe("attendance contract — responses", () => {
   it("never declares a success response as unconstrained `unknown`", () => {
     for (const [key, route] of Object.entries(attendanceContractRoutes)) {
       const responses = route.responses as Record<string, { _def?: { typeName?: string } }>;
-      // `submitLeave` answers 201, the rest 200; both must be typed.
-      const okKey = Object.keys(responses).find((status) => /^20[01]$/.test(status));
+      // `submitLeave` answers 201, the scan answers 202; every success code must be typed.
+      const okKey = Object.keys(responses).find((status) => /^20[0-2]$/.test(status));
       expect(okKey, `${key} has no success schema`).toBeDefined();
       // `ZodUnknown` is what `getLookupKind` used to return.
       expect(responses[okKey!]?._def?.typeName, `${key} returns an unconstrained success`).not.toBe(

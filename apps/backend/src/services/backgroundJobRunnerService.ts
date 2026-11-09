@@ -1,3 +1,4 @@
+import { registerAttendanceJobRunners } from "./backgroundJobAttendanceRunners.js";
 import { randomUUID } from "node:crypto";
 import {
   CONTACTS_MODULE_MANIFEST,
@@ -81,6 +82,7 @@ export function registerDefaultBackgroundJobRunners(): void {
   const messagingModuleId = MESSAGING_MODULE_MANIFEST.moduleId;
   const studentsModuleId = STUDENTS_MODULE_MANIFEST.moduleId;
   const sessionsModuleId = SESSIONS_MODULE_MANIFEST.moduleId;
+  registerAttendanceJobRunners();
   registerSessionRolloverJobRunner();
   registerSessionImportJobRunner();
   registerSessionsBulkJobRunners();

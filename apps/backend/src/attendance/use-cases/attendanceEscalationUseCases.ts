@@ -29,6 +29,16 @@ import { attendanceCalendarRepository } from "../repository/attendanceCalendarRe
 /** How far back a streak is measured. Long enough to catch a term-start run without scanning a year. */
 export const ABSENCE_STREAK_WINDOW_DAYS = 45;
 
+/**
+ * Per-scan notification ceiling.
+ *
+ * A mass-absence day (exam week, a storm, a data import) can flag hundreds of students in one run.
+ * Beyond this many per-student notifications the scan stores **one summary** instead, so the
+ * notification centre cannot be flooded; every alert row is still created (the queue is the source
+ * of truth).
+ */
+export const ABSENCE_NOTIFY_MAX_PER_SCAN = 100;
+
 function requireTenant(): string {
   const tenant = getRequestTenant();
   if (!tenant) throw new Error("Tenant context required");
@@ -44,6 +54,10 @@ export interface AbsenceScanResult {
   streaksFound: number;
   alertsRaised: number;
   alertsUpdated: number;
+  /** Per-student notifications stored (or already present) in this run. */
+  notified: number;
+  /** True when the per-scan ceiling was hit and a summary notification replaced the rest. */
+  notificationsCapped: boolean;
 }
 
 /**
@@ -91,6 +105,8 @@ export async function scanAbsenceStreaks(
   let streaksFound = 0;
   let alertsRaised = 0;
   let alertsUpdated = 0;
+  let notified = 0;
+  let notificationsCapped = false;
 
   for (const [key, byDay] of statusByStudentDay) {
     const [classId, studentId] = key.split("|");
@@ -117,12 +133,29 @@ export async function scanAbsenceStreaks(
             studentId,
             streak,
             threshold,
+            notifyBudgetRemaining: Math.max(0, ABSENCE_NOTIFY_MAX_PER_SCAN - notified),
           }),
         { readOnly: false },
       );
       if (outcome.created) alertsRaised += 1;
       else alertsUpdated += 1;
+      if (outcome.notified) notified += 1;
+      if (outcome.capped) notificationsCapped = true;
     }
+  }
+
+  if (notificationsCapped) {
+    // One summary replaces the per-student notifications beyond the ceiling (dedupe-keyed per day so
+    // repeated scans in the same day collapse).
+    await notificationsUseCases.notify(subdomain, {
+      kind: "attendance_chronic_absence",
+      audiencePermission: "students.write",
+      entityType: "attendance_absence_scan",
+      entityId: `scan-${now.toISOString().slice(0, 10)}`,
+      subjectLabel: `${notified} students flagged`,
+      contextLabel: `Chronic-absence scan capped at ${ABSENCE_NOTIFY_MAX_PER_SCAN} per-student alerts`,
+      dedupeKey: `absence-scan-summary:${subdomain}:${now.toISOString().slice(0, 10)}`,
+    });
   }
 
   return {
@@ -130,6 +163,8 @@ export async function scanAbsenceStreaks(
     streaksFound,
     alertsRaised,
     alertsUpdated,
+    notified,
+    notificationsCapped,
   };
 }
 
@@ -141,8 +176,10 @@ async function recordAlert(
     studentId: string;
     streak: { startDate: string; endDate: string; length: number };
     threshold: number;
+    /** 0 means the per-scan ceiling is reached: stamp the alert without a per-student notification. */
+    notifyBudgetRemaining: number;
   },
-): Promise<{ created: boolean }> {
+): Promise<{ created: boolean; notified: boolean; capped: boolean }> {
   const alert = await repo.upsertAbsenceAlert(tenant, {
     classId: input.classId,
     studentId: input.studentId,
@@ -171,19 +208,36 @@ async function recordAlert(
   }
 
   if (!alert.id || !shouldNotifyAbsenceAlert(alert.status) || alert.notifiedAt) {
-    return { created: alert.created };
+    return { created: alert.created, notified: false, capped: false };
   }
 
-  await notificationsUseCases.notify(tenant, {
+  if (input.notifyBudgetRemaining <= 0) {
+    // Ceiling reached: stamp the alert so it does not retry forever, but send no per-student row.
+    // The summary notification is emitted once at the end of the scan.
+    await repo.claimAbsenceAlertNotification(tenant, alert.id);
+    return { created: alert.created, notified: false, capped: true };
+  }
+
+  // Claim first: the atomic UPDATE is what stops a concurrent scan (manual job + hourly sweep) from
+  // sending the same notification twice. The dedupe key covers the crash window after the claim.
+  const claimed = await repo.claimAbsenceAlertNotification(tenant, alert.id);
+  if (!claimed) return { created: alert.created, notified: false, capped: false };
+
+  const stored = await notificationsUseCases.notify(tenant, {
     kind: "attendance_chronic_absence",
     audiencePermission: "students.write",
     entityType: "attendance_absence_alert",
     entityId: alert.id,
     subjectLabel: input.studentId,
     contextLabel: `${input.streak.length} consecutive absences (${input.streak.startDate} → ${input.streak.endDate})`,
+    dedupeKey: `absence-alert:${alert.id}`,
   });
-  await repo.markAbsenceAlertNotified(tenant, alert.id);
-  return { created: alert.created };
+  if (!stored) {
+    // Release so the next sweep retries instead of leaving the alert silently un-notified.
+    await repo.releaseAbsenceAlertNotification(tenant, alert.id);
+    return { created: alert.created, notified: false, capped: false };
+  }
+  return { created: alert.created, notified: true, capped: false };
 }
 
 export function createAttendanceEscalationUseCases() {

@@ -212,6 +212,9 @@ export const ATTENDANCE_MODULE_MANIFEST = {
   },
   defaultPageSize: 15,
   maxPageSize: 100,
+  /** CSV export defaults (job runner + route). */
+  defaultExportFilename: "attendance.csv",
+  exportChunkSize: 500,
 } as const;
 
 export type AttendanceModuleTier = (typeof ATTENDANCE_MODULE_MANIFEST.tiers)[number];

@@ -5,7 +5,8 @@ export type { NewTenantNotification };
 
 /** Storage port for stored in-app notifications; the Drizzle adapter is the only implementation. */
 export interface NotificationsRepository {
-  insertTenantNotification(tenant: string, notification: NewTenantNotification): Promise<void>;
+  /** Returns false when the row already existed for its `dedupeKey`. */
+  insertTenantNotification(tenant: string, notification: NewTenantNotification): Promise<boolean>;
   listTenantNotifications(
     tenant: string,
     userId: string,

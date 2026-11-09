@@ -12,6 +12,7 @@ import {
   enqueueBackgroundJob,
   getUserBackgroundJob,
   getUserBackgroundJobPayload,
+  hasBackgroundJobRunner,
   QueueUnavailableError,
 } from "../services/backgroundJobWorkerService.js";
 import { buildBackgroundJobId, buildDeterministicJobKey } from "./backgroundJobIds.js";
@@ -40,6 +41,15 @@ export function registerModuleCsvImportRoutes(
   fastify.post("/import", { bodyLimit }, async (request, reply) => {
     const user = request.user as User;
     if (!options.canWrite(user)) return sendForbidden(reply);
+
+    // Never accept rows we cannot process: the attendance import contract is still the legacy
+    // name-based shape with no runner, so this route answers 503 instead of enqueueing a doomed job.
+    if (!hasBackgroundJobRunner(`${options.moduleId}:import`)) {
+      return sendServiceUnavailable(
+        reply,
+        "CSV import is not available for this module on this deployment",
+      );
+    }
 
     const parsed = parseRequest(options.bodySchema, request.body);
     if (!parsed.ok) return replyValidationError(reply, parsed.message);
