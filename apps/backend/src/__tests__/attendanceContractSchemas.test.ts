@@ -160,6 +160,42 @@ describe("attendance contract — request strictness", () => {
     expect(query.safeParse({ classId: "cls-1", date: "2026-03-02", page: 2 }).success).toBe(false);
   });
 
+  it("requires a justification to archive a mark but not to restore one", () => {
+    const del = attendanceContractRoutes.delete!.body as unknown as {
+      safeParse: (value: unknown) => { success: boolean };
+    };
+    const restore = attendanceContractRoutes.restore!.body as unknown as {
+      safeParse: (value: unknown) => { success: boolean };
+    };
+    expect(del.safeParse({}).success).toBe(false);
+    expect(del.safeParse({ deletionReason: "x" }).success).toBe(false);
+    expect(del.safeParse({ deletionReason: "Duplicate mark from an import" }).success).toBe(true);
+    // Restore is not a destructive act; it must not demand a reason.
+    expect(restore.safeParse({}).success).toBe(true);
+  });
+
+  it("accepts one batch justification and rejects a too-short one", () => {
+    const body = attendanceContract.bulk.body as unknown as {
+      safeParse: (value: unknown) => { success: boolean };
+    };
+    const row = {
+      id: "att-1",
+      classId: "cls-1",
+      studentId: "std-1",
+      studentName: "Amina",
+      rollNo: "1",
+      date: "2026-03-02",
+      status: "present",
+      timeIn: "07:00",
+      timeOut: "08:30",
+      notes: "",
+    };
+    expect(body.safeParse({ records: [row], overrideReason: "Late medical note" }).success).toBe(
+      true,
+    );
+    expect(body.safeParse({ records: [row], overrideReason: "ab" }).success).toBe(false);
+  });
+
   it("rejects an attachment reference that is not a tenant attachment path", () => {
     const submit = attendanceContract.submitLeave.body as unknown as {
       safeParse: (value: unknown) => { success: boolean };

@@ -1,8 +1,9 @@
 import { initContract } from "@ts-rest/core";
 import { z } from "zod";
-import { softDeleteBodySchema } from "../core/apiSchemas.js";
+import { attendanceDeletionReasonSchema } from "../schemas/attendance.dto.js";
 import {
   attendanceBulkIdsSchema,
+  attendanceBulkRestoreIdsSchema,
   attendanceCreateSchema,
   attendanceUpdateSchema,
 } from "../schemas/attendance.dto.js";
@@ -40,6 +41,7 @@ import {
   attendanceIdPathParamsSchema,
   attendanceKindPathParamsSchema,
   attendanceListQuerySchema,
+  attendanceReasonHeaderSchema,
 } from "../attendance/attendanceApiSchemas.js";
 import { attendanceEscalationRoutes } from "./attendance.contractEscalation.js";
 
@@ -78,6 +80,7 @@ export const attendanceContract = c.router({
     method: "POST",
     path: "/api/attendance",
     body: attendanceCreateSchema,
+    headers: attendanceReasonHeaderSchema,
     responses: {
       200: attendanceRecordSchema,
       201: attendanceRecordSchema,
@@ -93,6 +96,7 @@ export const attendanceContract = c.router({
     method: "PUT",
     path: "/api/attendance/bulk",
     body: attendanceBulkSchema,
+    headers: attendanceReasonHeaderSchema,
     responses: {
       200: z.object({ records: z.array(attendanceRecordSchema) }),
       400: errorResponse,
@@ -108,8 +112,10 @@ export const attendanceContract = c.router({
     method: "POST",
     path: "/api/attendance/bulk-delete",
     body: attendanceBulkIdsSchema,
+    headers: attendanceReasonHeaderSchema,
     responses: {
       200: bulkResultResponseSchema,
+      400: errorResponse,
       403: errorResponse,
       500: errorResponse,
     },
@@ -118,7 +124,7 @@ export const attendanceContract = c.router({
   bulkRestore: {
     method: "POST",
     path: "/api/attendance/bulk-restore",
-    body: attendanceBulkIdsSchema,
+    body: attendanceBulkRestoreIdsSchema,
     responses: {
       200: bulkResultResponseSchema,
       403: errorResponse,
@@ -131,6 +137,7 @@ export const attendanceContract = c.router({
     path: "/api/attendance/:id",
     pathParams: attendanceIdPathParamsSchema,
     body: attendanceUpdateSchema,
+    headers: attendanceReasonHeaderSchema,
     responses: {
       200: z.object({ record: attendanceRecordSchema }),
       400: errorResponse,
@@ -146,7 +153,8 @@ export const attendanceContract = c.router({
     method: "DELETE",
     path: "/api/attendance/:id",
     pathParams: attendanceIdPathParamsSchema,
-    body: softDeleteBodySchema.optional(),
+    body: z.object({ deletionReason: attendanceDeletionReasonSchema }).strict(),
+    headers: attendanceReasonHeaderSchema,
     responses: {
       200: z.object({ success: z.literal(true) }),
       400: errorResponse,

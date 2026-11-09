@@ -1,5 +1,6 @@
 import { type User } from "@mms/shared";
 import { sessionsAcademicRepository as repo } from "../repository/sessionsAcademicRepositoryAdapter.js";
+import type { ClassSectionDate } from "../repository/sessionsAcademicRepository.js";
 import { HttpDomainError } from "../../lib/httpErrors.js";
 import { userHasPermission } from "../../lib/userPermissionContext.js";
 
@@ -54,6 +55,38 @@ export async function assertTeacherClassScope(
   if (entries.length === 0) return;
   const untaught = await findUntaughtPairs(user, tenant, entries);
   if (untaught && untaught.size > 0) throw forbidden();
+}
+
+/**
+ * Section-level row-scope for attendance marks.
+ *
+ * A teacher is staffed on a **section**, not a whole class. The class-level check is still applied
+ * (it also covers unsectioned classes and timetable-only assignments are not evidence for a specific
+ * section), then every sectioned row must be an active assignment for that exact section on that
+ * date. A mark whose section is null keeps the class-level rule.
+ */
+export async function assertTeacherSectionScope(
+  user: User,
+  tenant: string,
+  entries: readonly ClassSectionDate[],
+): Promise<void> {
+  if (entries.length === 0) return;
+  if (userHasPermission(user, SECTION_SCOPE_BYPASS_PERMISSION)) return;
+  await assertTeacherClassScope(
+    user,
+    tenant,
+    entries.map((entry) => ({ classId: entry.classId, date: entry.onDate })),
+  );
+  const sectioned = entries.filter((entry) => entry.sectionId);
+  if (sectioned.length === 0) return;
+  const unstaffed = await repo.findUnstaffedSectionDates(tenant, user.id, sectioned);
+  if (unstaffed && unstaffed.length > 0) {
+    throw new HttpDomainError(
+      403,
+      "forbidden",
+      "You can only record attendance for the sections you are assigned to on that date",
+    );
+  }
 }
 
 /** Each group passes when the user teaches at least one of its classes (e.g. an exam held for several classes). */

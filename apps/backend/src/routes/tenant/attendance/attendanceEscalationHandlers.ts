@@ -1,11 +1,7 @@
 import { type attendanceContract, type User } from "@mms/shared";
 import { handleContractError } from "../../../lib/contractError.js";
 import type { ContractRouteArgs, ContractRouteResponse } from "../../../lib/contractRouterTypes.js";
-import {
-  canDeleteCollection,
-  canReadCollection,
-  canWriteCollection,
-} from "../../../services/rbacService.js";
+import { canDeleteCollection, canReadCollection } from "../../../services/rbacService.js";
 import { withTenant } from "../../../db/tenant-context.js";
 import { attendanceEscalationUseCases } from "../../../attendance/use-cases/attendanceEscalationUseCases.js";
 import { getTenantId } from "./attendanceRecordHandlers.js";
@@ -52,7 +48,9 @@ export async function attendanceScanAbsenceStreaksHandler({
   ContractRouteResponse<(typeof attendanceContract)["scanAbsenceStreaks"]>
 > {
   const user = request.user as User;
-  if (!canWriteCollection(user, "attendance_records")) return forbid();
+  // A manual scan recomputes the whole tenant and can raise alerts for every student: an
+  // administrative action, not something any attendance writer should trigger.
+  if (!canDeleteCollection(user, "attendance_records")) return forbid();
   const tenantId = getTenantId(request);
   if (!tenantId) return missingTenant();
 

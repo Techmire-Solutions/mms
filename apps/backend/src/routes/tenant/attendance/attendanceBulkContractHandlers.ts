@@ -35,6 +35,8 @@ export async function attendanceBulkHandler({
     const records = await attendanceUseCases.upsertAttendanceRecords(
       body.records.map((r) => ({ ...r, markedBy: user.id })),
       user,
+      // One justification for the batch; required only if the save overrides a lock or cut-off.
+      body.overrideReason,
     );
     return { status: 200 as const, body: { records } };
   } catch (error) {

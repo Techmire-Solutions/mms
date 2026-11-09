@@ -49,6 +49,7 @@ vi.mock("../attendance/use-cases/instructionalDayGuard.js", () => ({
 }));
 vi.mock("../sessions/use-cases/teacherSectionScope.js", () => ({
   assertTeacherClassScope: mocks.assertTeacherClassScope,
+  assertTeacherSectionScope: mocks.assertTeacherClassScope,
   assertTeacherAnyClassScope: vi.fn().mockResolvedValue(undefined),
 }));
 vi.mock("../lib/livePush.js", () => ({
@@ -102,8 +103,11 @@ function createDeps(overrides: Partial<AttendanceMutationDeps> = {}): Attendance
 beforeEach(() => {
   vi.clearAllMocks();
   // Re-arm the defaults: a rejection installed by one case must not leak into the next.
-  mocks.assertAttendanceWriteAllowed.mockReset().mockResolvedValue(undefined);
-  mocks.assertAttendanceDayEditable.mockReset().mockResolvedValue(undefined);
+  // The gate reports whether it had to override a lock/cut-off (undefined would mean "no summary").
+  mocks.assertAttendanceWriteAllowed
+    .mockReset()
+    .mockResolvedValue({ overridden: false, codes: [] });
+  mocks.assertAttendanceDayEditable.mockReset().mockResolvedValue({ overridden: false, codes: [] });
   mocks.assertTeacherClassScope.mockReset().mockResolvedValue(undefined);
   mocks.assertInstructionalDays.mockReset().mockResolvedValue(undefined);
   mocks.auditAttendanceMutation.mockReset().mockResolvedValue(undefined);
@@ -141,6 +145,7 @@ describe("createAttendanceMarkUseCases", () => {
     });
     mocks.assertAttendanceWriteAllowed.mockImplementation(async () => {
       callOrder.push("policy");
+      return { overridden: false, codes: [] };
     });
     vi.mocked(deps.crud.create).mockImplementation(async (input: AttendanceRecord) => {
       callOrder.push("write");
@@ -209,6 +214,61 @@ describe("createAttendanceMarkUseCases", () => {
       expect.objectContaining({
         action: "UPDATE",
         record: expect.objectContaining({ id: "att-changed" }),
+      }),
+    );
+  });
+
+  it("audits a time-only correction even when the status is unchanged", async () => {
+    const deps = createDeps();
+    const useCases = createAttendanceMarkUseCases(deps);
+    // Same status, different time-in: previously this produced no audit row at all.
+    const before = record({
+      id: "att-time",
+      studentId: "student-time",
+      status: "late",
+      timeIn: "08:00",
+      timeOut: "08:30",
+    });
+    const corrected = { ...before, timeIn: "07:10" };
+    vi.mocked(deps.repo.findAttendanceRecordsForStudentsOnDates).mockResolvedValue([before]);
+    vi.mocked(deps.repo.bulkSaveAttendanceRecords).mockImplementation(
+      async (_tenant, rows) => rows,
+    );
+
+    await runWithTenant("demo", () => useCases.upsertAttendanceRecords([corrected], ACTOR));
+
+    expect(mocks.auditAttendanceMutation).toHaveBeenCalledTimes(1);
+    expect(mocks.auditAttendanceMutation).toHaveBeenCalledWith(
+      expect.anything(),
+      expect.objectContaining({
+        action: "UPDATE",
+        before: expect.objectContaining({ timeIn: "08:00" }),
+        record: expect.objectContaining({ timeIn: "07:10", status: "late" }),
+      }),
+    );
+  });
+
+  it("tags an approved override in the audit row with its justification", async () => {
+    const deps = createDeps();
+    const useCases = createAttendanceMarkUseCases(deps);
+    mocks.assertAttendanceWriteAllowed.mockResolvedValueOnce({
+      overridden: true,
+      codes: ["attendance_cutoff_passed"],
+    });
+    vi.mocked(deps.repo.findAttendanceRecordsForStudentsOnDates).mockResolvedValue([]);
+    vi.mocked(deps.repo.bulkSaveAttendanceRecords).mockImplementation(
+      async (_tenant, rows) => rows,
+    );
+
+    await runWithTenant("demo", () =>
+      useCases.upsertAttendanceRecords([record()], ACTOR, "Guardian produced a note"),
+    );
+
+    expect(mocks.auditAttendanceMutation).toHaveBeenCalledWith(
+      expect.anything(),
+      expect.objectContaining({
+        tag: "attendance.override",
+        reason: "Guardian produced a note",
       }),
     );
   });

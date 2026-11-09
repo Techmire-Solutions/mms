@@ -110,6 +110,16 @@ export const attendanceBatchRejectionSchema = z
   })
   .passthrough();
 
+/**
+ * Justification header for a write that overrides a lock or the marking cut-off.
+ *
+ * Required only when the write would otherwise be refused, so ordinary marking stays header-free.
+ * The bulk route additionally accepts `overrideReason` in its body (one reason for the batch).
+ */
+export const attendanceReasonHeaderSchema = z
+  .object({ "x-attendance-reason": z.string().trim().min(3).max(500).optional() })
+  .passthrough();
+
 /** Optional tenant attachment reference for an excuse (medical certificate). */
 export const attendanceAttachmentUrlSchema = z
   .string()

@@ -19,6 +19,7 @@ const mocks = vi.hoisted(() => ({
   lockStudents: vi.fn(),
   audit: vi.fn(),
   notify: vi.fn(),
+  listTaughtStudentIds: vi.fn(),
 }));
 
 vi.mock("../attendance/repository/attendanceLeaveAdapter.js", () => ({
@@ -34,6 +35,14 @@ vi.mock("../attendance/repository/attendanceLeaveAdapter.js", () => ({
 }));
 vi.mock("../services/auditTrailService.js", () => ({
   recordModernAuditEvent: mocks.audit,
+}));
+vi.mock("../sessions/repository/sessionsAcademicRepositoryAdapter.js", () => ({
+  sessionsAcademicRepository: {
+    // `null` = staff without a faculty link (office/admin), i.e. unscoped.
+    listTaughtStudentIds: mocks.listTaughtStudentIds,
+    findUntaughtClassDates: vi.fn().mockResolvedValue(null),
+    findUnstaffedSectionDates: vi.fn().mockResolvedValue(null),
+  },
 }));
 vi.mock("../notifications/use-cases/notificationsUseCases.js", () => ({
   notificationsUseCases: { notify: mocks.notify },
@@ -80,6 +89,7 @@ beforeEach(() => {
   mocks.excuseAbsences.mockResolvedValue([]);
   mocks.audit.mockResolvedValue(undefined);
   mocks.notify.mockResolvedValue(undefined);
+  mocks.listTaughtStudentIds.mockResolvedValue(null);
 });
 
 describe("submitExcuse", () => {
@@ -120,6 +130,57 @@ describe("submitExcuse", () => {
       ),
     ).rejects.toMatchObject({ statusCode: 409 });
     expect(mocks.insertPending).not.toHaveBeenCalled();
+  });
+
+  it("refuses a teacher filing an excuse for a student they do not teach", async () => {
+    mocks.listTaughtStudentIds.mockResolvedValue(new Set(["student-2"]));
+    await expect(
+      runWithTenant("demo", () =>
+        attendanceExcuseUseCases.submitExcuse(
+          {
+            studentId: "student-1",
+            fromDate: "2026-03-02",
+            toDate: "2026-03-04",
+            reason: "Fever",
+            leaveType: "medical",
+            notes: "",
+          } as never,
+          ADMIN,
+        ),
+      ),
+    ).rejects.toMatchObject({ statusCode: 403, type: "attendance_excuse_out_of_scope" });
+    expect(mocks.insertPending).not.toHaveBeenCalled();
+  });
+
+  it("audits the pending request it files", async () => {
+    mocks.insertPending.mockResolvedValue("leave-new");
+    mocks.findById.mockResolvedValue(leave({ id: "leave-new" }));
+
+    await runWithTenant("demo", () =>
+      attendanceExcuseUseCases.submitExcuse(
+        {
+          studentId: "student-1",
+          fromDate: "2026-03-02",
+          toDate: "2026-03-04",
+          reason: "Fever",
+          leaveType: "medical",
+          notes: "",
+        } as never,
+        ADMIN,
+      ),
+    );
+
+    expect(mocks.audit).toHaveBeenCalledWith(
+      expect.anything(),
+      expect.objectContaining({
+        tableName: "attendance_leaves",
+        actionType: "CREATE",
+        newState: expect.objectContaining({
+          status: "pending",
+          tag: "attendance.excuse.submitted",
+        }),
+      }),
+    );
   });
 
   it("refuses an attachment path that belongs to another workspace", async () => {

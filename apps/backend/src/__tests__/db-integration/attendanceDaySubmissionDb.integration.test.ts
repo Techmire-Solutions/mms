@@ -55,11 +55,16 @@ function mark(overrides: Partial<AttendanceRecord> = {}): AttendanceRecord {
 }
 
 /** Day-scoped write attempt through the real policy guard (cut-off disabled by an early clock). */
-async function writeAttempt(actor: User, rows: AttendanceRecord[] = [mark()]) {
+async function writeAttempt(
+  actor: User,
+  rows: AttendanceRecord[] = [mark()],
+  overrideReason?: string,
+) {
   return assertAttendanceWriteAllowed({
     tenant: TENANT,
     actor,
     rows,
+    overrideReason,
     // 06:00 on the attendance day: inside the 09:30 cut-off, so only the submitted-day lock can
     // reject this write.
     now: new Date(`${DAY}T06:00:00.000Z`),
@@ -108,6 +113,10 @@ async function seedFixtures(): Promise<void> {
       name: "A",
       capacity: 30,
     });
+    await tx.tx.insert(attendanceModulePreferences).values({
+      workspaceSubdomain: TENANT,
+      preferences: { allowManualOverride: true },
+    });
     await tx.commit();
   } catch (error) {
     await tx.rollback().catch(() => undefined);
@@ -149,7 +158,7 @@ afterAll(async () => {
 describe("attendance day submission (real Postgres)", () => {
   it("lets a teacher write before the day is submitted", async () => {
     await bulkSaveAttendanceRecords(TENANT, [mark({ id: "att-sub-before" })]);
-    await expect(writeAttempt(TEACHER)).resolves.toBeUndefined();
+    await expect(writeAttempt(TEACHER)).resolves.toMatchObject({ overridden: false });
   });
 
   it("locks the day on submit and refuses teacher writes afterwards", async () => {
@@ -169,7 +178,9 @@ describe("attendance day submission (real Postgres)", () => {
   });
 
   it("still lets an administrator write after submit (override)", async () => {
-    await expect(writeAttempt(ADMIN)).resolves.toBeUndefined();
+    await expect(
+      writeAttempt(ADMIN, [mark()], "Admin correction after lock"),
+    ).resolves.toMatchObject({ overridden: true });
   });
 
   it("is idempotent on a second submit", async () => {
@@ -191,7 +202,7 @@ describe("attendance day submission (real Postgres)", () => {
     expect(reopened.locked).toBe(false);
     expect(reopened.reopenReason).toBe("Wrong student marked absent");
 
-    await expect(writeAttempt(TEACHER)).resolves.toBeUndefined();
+    await expect(writeAttempt(TEACHER)).resolves.toMatchObject({ overridden: false });
   });
 
   it("locks again on re-submit after a reopen", async () => {
@@ -208,7 +219,9 @@ describe("attendance day submission (real Postgres)", () => {
   });
 
   it("leaves another day of the same class editable", async () => {
-    await expect(writeAttempt(TEACHER, [mark({ date: "2026-06-03" })])).resolves.toBeUndefined();
+    await expect(writeAttempt(TEACHER, [mark({ date: "2026-06-03" })])).resolves.toMatchObject({
+      overridden: false,
+    });
   });
 
   it("reports a never-submitted day as a 404 when reopening", async () => {

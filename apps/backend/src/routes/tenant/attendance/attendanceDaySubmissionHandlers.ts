@@ -61,11 +61,15 @@ export async function attendanceSubmitDayHandler({
     const { submission, alreadySubmitted } = await withTenant(
       tenantId,
       () =>
-        submitAttendanceDay(tenantId, {
-          classId: params.classId,
-          date: params.date,
-          submittedBy: String(user.id),
-        }),
+        submitAttendanceDay(
+          tenantId,
+          {
+            classId: params.classId,
+            date: params.date,
+            submittedBy: String(user.id),
+          },
+          user,
+        ),
       { readOnly: false },
     );
     return {

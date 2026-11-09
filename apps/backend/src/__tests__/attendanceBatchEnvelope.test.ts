@@ -72,6 +72,7 @@ describe("assertAttendanceWriteAllowed batch envelope", () => {
     const failure = await assertAttendanceWriteAllowed({
       tenant: "demo",
       actor: ADMIN,
+      now: new Date("2026-03-02T09:00:00.000Z"),
       rows: [row("std-1", "2026-03-02"), row("std-2", "2026-03-02"), row("std-3", "2026-03-03")],
       store,
     }).catch(
@@ -104,6 +105,7 @@ describe("assertAttendanceWriteAllowed batch envelope", () => {
     const failure = await assertAttendanceWriteAllowed({
       tenant: "demo",
       actor: ADMIN,
+      now: new Date("2026-03-02T09:00:00.000Z"),
       rows: [row("std-1", "2026-03-02", { status: "present", timeIn: "08:00", timeOut: "07:00" })],
       store: fakeStore(),
     }).catch((error: Error & { statusCode: number; type: string }) => error);
@@ -133,17 +135,19 @@ describe("assertAttendanceWriteAllowed batch envelope", () => {
     expect(typed.lockAttendanceStudents.mock.calls).toHaveLength(1);
   });
 
-  it("accepts a fully valid batch", async () => {
+  it("accepts a fully valid batch on the same day", async () => {
     await expect(
       assertAttendanceWriteAllowed({
         tenant: "demo",
         actor: ADMIN,
+        // Marking today, inside the 18:00 cut-off, so no override is involved.
+        now: new Date("2026-03-02T09:00:00.000Z"),
         rows: [
           row("std-1", "2026-03-02", { status: "present", timeIn: "07:00", timeOut: "08:30" }),
           row("std-2", "2026-03-02", { status: "absent" }),
         ],
         store: fakeStore(),
       }),
-    ).resolves.toBeUndefined();
+    ).resolves.toMatchObject({ overridden: false });
   });
 });

@@ -152,9 +152,9 @@ export function useAttendanceRecordsState({
 
   const classLabel = (classId: string) => classMap.get(classId) || classId;
 
-  const confirmBulkTrash = (): void => {
+  const confirmBulkTrash = (reason?: string): void => {
     if (showDeleted) void onBulkRestoreRecords(selectedIds);
-    else void onBulkDeleteRecords(selectedIds);
+    else void onBulkDeleteRecords(selectedIds, reason);
     setSelectedIds([]);
     setConfirmBulkOpen(false);
   };

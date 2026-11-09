@@ -31,7 +31,22 @@ export interface UseMarkAttendancePersistenceOptions {
   setSubmitted: (submitted: boolean) => void;
   setSyncedMsg: (synced: boolean) => void;
   customFields: ModuleCustomField[];
-  persistBatch: (records: AttendanceRecord[]) => Promise<void>;
+  persistBatch: (records: AttendanceRecord[], overrideReason?: string) => Promise<void>;
+  onOverrideRequired?: (
+    records: AttendanceRecord[],
+    retry: (reason: string) => Promise<void>,
+  ) => void;
+}
+
+/** True when the API refused the save because it needs an override justification. */
+function isOverrideReasonRequired(error: unknown): boolean {
+  const candidate = error as { body?: { type?: string }; type?: string; message?: string };
+  return (
+    candidate?.body?.type === "attendance_override_reason_required" ||
+    candidate?.type === "attendance_override_reason_required" ||
+    (typeof candidate?.message === "string" &&
+      candidate.message.includes("attendance_override_reason_required"))
+  );
 }
 
 export function useMarkAttendancePersistence({
@@ -47,6 +62,7 @@ export function useMarkAttendancePersistence({
   setSyncedMsg,
   customFields,
   persistBatch,
+  onOverrideRequired,
 }: UseMarkAttendancePersistenceOptions) {
   const { t } = useTranslation();
 
@@ -93,12 +109,41 @@ export function useMarkAttendancePersistence({
       return;
     }
 
+    await saveWithIntent("draft");
+  };
+
+  /**
+   * Saves with an optional override justification, then applies the action's success effects.
+   *
+   * When the API refuses the save because it needs a justification, the page is asked to collect one
+   * and the same intent is retried — so a locked/past day is not a dead end.
+   */
+  const saveWithIntent = async (
+    intent: "draft" | "submit",
+    overrideReason?: string,
+  ): Promise<void> => {
+    const payload = currentOfflinePayload();
     try {
-      await persistBatch(buildRecords(rows));
-      setIsDraft(true);
-      addAuditEntry(filters.classId, filters.date, { action: "draft_saved", by: role });
-      notify.success(t("attendance.toast.draftSaved"));
+      await persistBatch(buildRecords(rows), overrideReason);
+      if (intent === "draft") {
+        setIsDraft(true);
+        addAuditEntry(filters.classId, filters.date, { action: "draft_saved", by: role });
+        notify.success(t("attendance.toast.draftSaved"));
+        return;
+      }
+      setSubmitted(true);
+      addAuditEntry(filters.classId, filters.date, {
+        action: "submitted",
+        count: rows.length,
+        by: role,
+        geo: payload.geo,
+      });
+      notify.success(t("attendance.toast.submitted"));
     } catch (error) {
+      if (!overrideReason && isOverrideReasonRequired(error) && onOverrideRequired) {
+        onOverrideRequired(buildRecords(rows), (reason) => saveWithIntent(intent, reason));
+        return;
+      }
       notify.error(t("attendance.toast.saveFailed"), {
         description: error instanceof Error ? error.message : String(error),
       });
@@ -119,21 +164,7 @@ export function useMarkAttendancePersistence({
       return;
     }
 
-    try {
-      await persistBatch(buildRecords(rows));
-      setSubmitted(true);
-      addAuditEntry(filters.classId, filters.date, {
-        action: "submitted",
-        count: rows.length,
-        by: role,
-        geo: payload.geo,
-      });
-      notify.success(t("attendance.toast.submitted"));
-    } catch (error) {
-      notify.error(t("attendance.toast.saveFailed"), {
-        description: error instanceof Error ? error.message : String(error),
-      });
-    }
+    await saveWithIntent("submit");
   };
 
   const handleSync = async () => {

@@ -32,6 +32,7 @@ export function useMarkAttendanceController({
   role,
   records,
   persistBatch,
+  onOverrideRequired,
 }: MarkAttendanceProps) {
   const { t } = useTranslation();
   const { statuses, customFields, orderedFields, isFieldEnabled } = useAttendanceConfig();
@@ -185,6 +186,7 @@ export function useMarkAttendanceController({
     setSyncedMsg,
     customFields,
     persistBatch,
+    onOverrideRequired,
   });
 
   return {

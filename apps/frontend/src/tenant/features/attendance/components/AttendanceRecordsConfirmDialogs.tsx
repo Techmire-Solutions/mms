@@ -5,12 +5,12 @@ import type { TranslationFunction } from "@/lib/contexts/TranslationContext";
 export interface AttendanceRecordsConfirmDialogsProps {
   pendingDeleteId: string | null;
   onPendingDeleteChange: (id: string | null) => void;
-  onConfirmDelete: (id: string) => void;
+  onConfirmDelete: (id: string, reason?: string) => void;
   confirmBulkOpen: boolean;
   onConfirmBulkOpenChange: (open: boolean) => void;
   showDeleted: boolean;
   selectedIdsCount: number;
-  onConfirmBulkTrash: () => void;
+  onConfirmBulkTrash: (reason?: string) => void;
   t: TranslationFunction;
 }
 
@@ -34,10 +34,13 @@ export function AttendanceRecordsConfirmDialogs({
       showDeleted={showDeleted}
       selectedCount={selectedIdsCount}
       i18nNamespace="attendance"
-      onConfirmRowTrash={() => {
+      // Attendance marks are evidence: the archive reason is mandatory and reaches the audit row.
+      deletionReasonLabel={t("attendance.trash.reasonLabel")}
+      deletionReasonPlaceholder={t("attendance.trash.reasonPlaceholder")}
+      onConfirmRowTrash={(reason?: string) => {
         const id = pendingDeleteId;
         onPendingDeleteChange(null);
-        if (id) onConfirmDelete(id);
+        if (id) onConfirmDelete(id, typeof reason === "string" ? reason : undefined);
       }}
       onConfirmBulkTrash={onConfirmBulkTrash}
       labels={{

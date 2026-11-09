@@ -23,6 +23,10 @@ export interface SessionsAcademicRepository {
   findSessionById: SessionQueries["findSessionById"];
   findWorkspaceTimezone: WorkspaceStore["findWorkspaceTimezone"];
   findUntaughtClassDates: ScopeStore["findUntaughtClassDates"];
+  /** Exact-section staffing check for attendance marks. */
+  findUnstaffedSectionDates: ScopeStore["findUnstaffedSectionDates"];
+  /** Students the user teaches in a period (excuse privacy scoping); `null` = unscoped staff. */
+  listTaughtStudentIds: ScopeStore["listTaughtStudentIds"];
   loadSectionRoster: SectionOpsStore["loadSectionRoster"];
   listSessionActivity: ActivityStore["listSessionActivity"];
   applySectionMerge: SectionOpsStore["applySectionMerge"];
@@ -35,3 +39,6 @@ export interface SessionsAcademicRepository {
   addSectionStudentRole: StudentRoleStore["addSectionStudentRole"];
   endSectionStudentRole: StudentRoleStore["endSectionStudentRole"];
 }
+
+/** A mark's exact placement: the section is what a teacher is actually staffed on. */
+export type { ClassSectionDate } from "../../db/repositories/teacherSectionScopeRepository.js";

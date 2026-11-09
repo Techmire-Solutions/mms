@@ -12,7 +12,11 @@ import {
 } from "../../db/repositories/registrationLinkRepository.js";
 import { findSessionById } from "../../db/repositories/sessionRepositoryQueries.js";
 import { findWorkspaceTimezone } from "../../db/repositories/workspaceRepository.js";
-import { findUntaughtClassDates } from "../../db/repositories/teacherSectionScopeRepository.js";
+import {
+  findUntaughtClassDates,
+  findUnstaffedSectionDates,
+  listTaughtStudentIds,
+} from "../../db/repositories/teacherSectionScopeRepository.js";
 import {
   applySectionClose,
   applySectionMerge,
@@ -43,6 +47,8 @@ export const sessionsAcademicRepository: SessionsAcademicRepository = {
   findSessionById,
   findWorkspaceTimezone,
   findUntaughtClassDates,
+  findUnstaffedSectionDates,
+  listTaughtStudentIds,
   loadSectionRoster,
   listSessionActivity,
   applySectionMerge,

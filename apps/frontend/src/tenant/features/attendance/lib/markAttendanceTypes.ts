@@ -46,7 +46,14 @@ export interface MarkAttendanceProps {
   filters: AttendanceFilterState;
   role: string;
   records: AttendanceRecord[];
-  persistBatch: (records: AttendanceRecord[]) => Promise<void>;
+  /** Saves the roster; `overrideReason` is required when the save overrides a lock/cut-off. */
+  persistBatch: (records: AttendanceRecord[], overrideReason?: string) => Promise<void>;
+  /** Called instead of the error toast when the API demands a justification for an override. */
+  /** Called instead of the error toast when the API demands a justification for an override. */
+  onOverrideRequired?: (
+    records: AttendanceRecord[],
+    retry: (reason: string) => Promise<void>,
+  ) => void;
 }
 
 export type AttendanceFieldControlRenderer = (

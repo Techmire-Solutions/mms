@@ -40,7 +40,7 @@ export async function attendanceListExcusesHandler({
   try {
     const leaves = await withTenant(
       tenantId,
-      () => attendanceExcuseUseCases.listExcuses(query ?? {}),
+      () => attendanceExcuseUseCases.listExcuses(query ?? {}, user),
       { readOnly: true },
     );
     return { status: 200 as const, body: { leaves } };
