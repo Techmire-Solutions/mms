@@ -69,7 +69,7 @@ afterAll(async () => {
   await closeDatabase();
 });
 
-function mark(status: string, suffix: string, day = 1) {
+function mark(status: string, suffix: string, day = 2) {
   return {
     id: `att-${suffix}`,
     workspaceSubdomain: TENANT,
@@ -93,7 +93,7 @@ describe("attendance_status_check parity", () => {
         (tx) =>
           tx
             .insert(attendance)
-            .values(mark(status, String(index), index + 1))
+            .values(mark(status, String(index), index + 2))
             .returning({ id: attendance.id }),
         { readOnly: false },
       );
@@ -102,11 +102,20 @@ describe("attendance_status_check parity", () => {
   });
 
   it("rejects a status outside the shared enum", async () => {
-    await expect(
-      withTenant(TENANT, (tx) => tx.insert(attendance).values(mark("holiday", "bogus", 28)), {
+    let captured: unknown;
+    try {
+      await withTenant(TENANT, (tx) => tx.insert(attendance).values(mark("holiday", "bogus", 20)), {
         readOnly: false,
-      }),
-    ).rejects.toThrow(/attendance_status_check/);
+      });
+    } catch (error) {
+      captured = error;
+    }
+    expect(captured).toBeDefined();
+    const details =
+      captured instanceof Error
+        ? `${captured.message} ${String((captured as { cause?: { message?: string; constraint?: string } }).cause?.message ?? "")} ${(captured as { cause?: { constraint?: string } }).cause?.constraint ?? ""}`
+        : String(captured);
+    expect(details).toContain("attendance_status_check");
   });
 
   it("declares the constraint with exactly the shared values", async () => {
