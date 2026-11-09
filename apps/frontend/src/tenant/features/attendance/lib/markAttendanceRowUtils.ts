@@ -39,22 +39,23 @@ export function attendanceRowsFromRecords(records: AttendanceRecord[]): Attendan
     timeIn: attendanceRecord.timeIn || "07:00",
     timeOut: attendanceRecord.timeOut || "08:30",
     notes: attendanceRecord.notes || "",
-    ...(attendanceRecord.customFields || {}),
   }));
 }
 
+/**
+ * Rows → the bulk-save payload.
+ *
+ * Custom-field values stay on the row for the grid's own rendering but are **not** sent: attendance
+ * has no storage for them (no column, never returned), and the strict wire schema now rejects the
+ * key instead of silently discarding the data. A real custom-field column is the follow-up.
+ */
 export function attendanceRecordsFromRows(
   rows: AttendanceRow[],
-  customFields: ModuleCustomField[],
+  _customFields: ModuleCustomField[],
   classId: string,
   date: string,
 ): AttendanceRecord[] {
   return rows.map((row): AttendanceRecord => {
-    const customFieldValues: Record<string, unknown> = {};
-    customFields.forEach((customField) => {
-      customFieldValues[customField.id] = row[customField.id];
-    });
-
     return {
       id: `${classId}-${date}-${row.studentId}`,
       classId,
@@ -66,7 +67,6 @@ export function attendanceRecordsFromRows(
       timeIn: row.status !== "absent" ? row.timeIn : "",
       timeOut: row.status !== "absent" ? row.timeOut : "",
       notes: row.notes || "",
-      customFields: customFieldValues,
     };
   });
 }

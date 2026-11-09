@@ -38,6 +38,8 @@ export * from "../attendance/attendanceLookupTypes.js";
 export * from "../attendance/attendanceModuleManifest.js";
 export * from "../attendance/attendanceModuleSettings.js";
 export * from "../attendance/absenceStreaks.js";
+export * from "../attendance/attendanceApiSchemas.js";
+export * from "../attendance/attendanceCommandMetrics.js";
 export * from "../attendance/examEligibility.js";
 export * from "../attendance/attendanceLeaveTransitions.js";
 export * from "../attendance/attendancePolicy.js";

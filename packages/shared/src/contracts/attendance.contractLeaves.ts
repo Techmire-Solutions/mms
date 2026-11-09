@@ -10,6 +10,10 @@ import {
   attendanceDaySubmissionResponseSchema,
   errorResponse,
 } from "./attendance.contractSchemas.js";
+import {
+  attendanceDayPathParamsSchema,
+  attendanceIdPathParamsSchema,
+} from "../attendance/attendanceApiSchemas.js";
 
 /**
  * Attendance lifecycle routes: roster-day submission and the excuse/leave workflow.
@@ -26,6 +30,7 @@ export const attendanceLifecycleRoutes = {
   submitDay: {
     method: "POST",
     path: "/api/attendance/days/:classId/:date/submit",
+    pathParams: attendanceDayPathParamsSchema,
     body: z.object({}).optional(),
     responses: {
       200: attendanceDaySubmissionResponseSchema,
@@ -40,6 +45,7 @@ export const attendanceLifecycleRoutes = {
   reopenDay: {
     method: "POST",
     path: "/api/attendance/days/:classId/:date/reopen",
+    pathParams: attendanceDayPathParamsSchema,
     body: z.object({ reason: z.string().max(500).optional() }).optional(),
     responses: {
       200: attendanceDaySubmissionResponseSchema,
@@ -78,6 +84,7 @@ export const attendanceLifecycleRoutes = {
   reviewLeave: {
     method: "POST",
     path: "/api/attendance/leaves/:id/review",
+    pathParams: attendanceIdPathParamsSchema,
     body: attendanceLeaveReviewSchema,
     responses: {
       200: attendanceLeaveSchema,
@@ -92,6 +99,7 @@ export const attendanceLifecycleRoutes = {
   cancelLeave: {
     method: "POST",
     path: "/api/attendance/leaves/:id/cancel",
+    pathParams: attendanceIdPathParamsSchema,
     body: attendanceLeaveCancelSchema,
     responses: {
       200: attendanceLeaveSchema,

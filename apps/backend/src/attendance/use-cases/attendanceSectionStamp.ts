@@ -50,19 +50,20 @@ export async function stampAttendanceSections<T extends SectionStampable>(
   );
   const liveByKey = new Map(live.map((row) => [keyOf(row), row.sectionId]));
 
-  // Dated placements: one lookup per distinct attendance date.
+  // Dated placements: ONE range query for every distinct attendance date. This used to be a query
+  // per date, so a 30-day backfill issued 30 round-trips before writing anything.
   const dates = [...new Set(keyed.map((record) => (record.date ?? "").slice(0, 10)))].filter(
     Boolean,
   );
+  const datedRows = await attendanceCalendarRepository.listEnrollmentPlacementsForDates(
+    tenant,
+    classIds,
+    studentIds,
+    dates,
+  );
   const sectionByDate = new Map<string, string | null>();
-  for (const date of dates) {
-    const rows = await attendanceCalendarRepository.listEnrollmentPlacementsAsOf(
-      tenant,
-      classIds,
-      studentIds,
-      date,
-    );
-    for (const row of rows) sectionByDate.set(`${date}:${keyOf(row)}`, row.sectionId);
+  for (const row of datedRows) {
+    sectionByDate.set(`${row.date}:${keyOf(row)}`, row.sectionId);
   }
 
   const today = todayInTimeZone(await attendanceCalendarRepository.findWorkspaceTimezone(tenant));

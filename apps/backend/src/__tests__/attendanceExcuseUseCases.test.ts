@@ -122,6 +122,26 @@ describe("submitExcuse", () => {
     expect(mocks.insertPending).not.toHaveBeenCalled();
   });
 
+  it("refuses an attachment path that belongs to another workspace", async () => {
+    await expect(
+      runWithTenant("demo", () =>
+        attendanceExcuseUseCases.submitExcuse(
+          {
+            studentId: "student-1",
+            fromDate: "2026-03-02",
+            toDate: "2026-03-04",
+            reason: "Fever",
+            leaveType: "medical",
+            notes: "",
+            documentRef: "/uploads/tenants/other-school/attachments/cert.pdf",
+          } as never,
+          ADMIN,
+        ),
+      ),
+    ).rejects.toThrow(/does not belong to this workspace/);
+    expect(mocks.insertPending).not.toHaveBeenCalled();
+  });
+
   it("files a pending request under the acting user", async () => {
     mocks.insertPending.mockResolvedValue("leave-new");
     mocks.findById.mockResolvedValue(leave({ id: "leave-new" }));

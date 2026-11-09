@@ -1,6 +1,6 @@
 import { initContract } from "@ts-rest/core";
 import { z } from "zod";
-import { baseListQuerySchema, softDeleteBodySchema } from "../core/apiSchemas.js";
+import { softDeleteBodySchema } from "../core/apiSchemas.js";
 import {
   attendanceBulkIdsSchema,
   attendanceCreateSchema,
@@ -13,6 +13,7 @@ import {
 import {
   attendanceLookupsMapSchema,
   attendanceLookupPutBodySchema,
+  attendanceStatusSchema,
 } from "../attendance/attendanceLookupTypes.js";
 import { widgetAggregateResultSchema, widgetAggregatesBodySchema } from "../schemas/common.dto.js";
 import {
@@ -33,6 +34,13 @@ import {
   errorResponse,
 } from "./attendance.contractSchemas.js";
 import { attendanceLifecycleRoutes } from "./attendance.contractLeaves.js";
+import { attendanceMatrixRoutes } from "./attendance.contractMatrix.js";
+import {
+  attendanceBatchRejectionSchema,
+  attendanceIdPathParamsSchema,
+  attendanceKindPathParamsSchema,
+  attendanceListQuerySchema,
+} from "../attendance/attendanceApiSchemas.js";
 import { attendanceEscalationRoutes } from "./attendance.contractEscalation.js";
 
 export {
@@ -53,20 +61,14 @@ export const attendanceContract = c.router({
   // Roster-day submission, excuse lifecycle and absence escalation (own modules for the 300-line band).
   ...attendanceLifecycleRoutes,
   ...attendanceEscalationRoutes,
+  ...attendanceMatrixRoutes,
   list: {
     method: "GET",
     path: "/api/attendance",
-    query: baseListQuerySchema.extend({
-      sessionId: z.string().max(100).optional(),
-      classId: z.string().max(100).optional(),
-      facultyId: z.string().max(100).optional(),
-      date: z.string().max(30).optional(),
-      dateFrom: z.string().max(30).optional(),
-      dateTo: z.string().max(30).optional(),
-      status: z.string().max(200).optional(),
-    }),
+    query: attendanceListQuerySchema,
     responses: {
       200: attendanceListPageResponseSchema,
+      400: errorResponse,
       403: errorResponse,
       500: errorResponse,
     },
@@ -81,6 +83,8 @@ export const attendanceContract = c.router({
       201: attendanceRecordSchema,
       400: errorResponse,
       403: errorResponse,
+      409: errorResponse,
+      422: errorResponse,
       500: errorResponse,
     },
     summary: "Create a new attendance record",
@@ -91,7 +95,11 @@ export const attendanceContract = c.router({
     body: attendanceBulkSchema,
     responses: {
       200: z.object({ records: z.array(attendanceRecordSchema) }),
+      400: errorResponse,
       403: errorResponse,
+      409: attendanceBatchRejectionSchema,
+      413: errorResponse,
+      422: attendanceBatchRejectionSchema,
       500: errorResponse,
     },
     summary: "Bulk upsert attendance records",
@@ -121,12 +129,15 @@ export const attendanceContract = c.router({
   update: {
     method: "PUT",
     path: "/api/attendance/:id",
+    pathParams: attendanceIdPathParamsSchema,
     body: attendanceUpdateSchema,
     responses: {
       200: z.object({ record: attendanceRecordSchema }),
       400: errorResponse,
       403: errorResponse,
       404: errorResponse,
+      409: errorResponse,
+      422: errorResponse,
       500: errorResponse,
     },
     summary: "Update an attendance record by ID",
@@ -134,12 +145,14 @@ export const attendanceContract = c.router({
   delete: {
     method: "DELETE",
     path: "/api/attendance/:id",
+    pathParams: attendanceIdPathParamsSchema,
     body: softDeleteBodySchema.optional(),
     responses: {
       200: z.object({ success: z.literal(true) }),
       400: errorResponse,
       403: errorResponse,
       404: errorResponse,
+      409: errorResponse,
       500: errorResponse,
     },
     summary: "Soft delete an attendance record by ID",
@@ -147,12 +160,14 @@ export const attendanceContract = c.router({
   restore: {
     method: "POST",
     path: "/api/attendance/:id/restore",
+    pathParams: attendanceIdPathParamsSchema,
     body: z.object({}).optional(),
     responses: {
       200: z.object({ success: z.literal(true) }),
       400: errorResponse,
       403: errorResponse,
       404: errorResponse,
+      409: errorResponse,
       500: errorResponse,
     },
     summary: "Restore a soft-deleted attendance record by ID",
@@ -246,13 +261,19 @@ export const attendanceContract = c.router({
   getLookupKind: {
     method: "GET",
     path: "/api/attendance/lookups/:kind",
-    responses: { 200: z.unknown(), 403: errorResponse, 500: errorResponse },
+    pathParams: attendanceKindPathParamsSchema,
+    responses: {
+      200: z.array(attendanceStatusSchema),
+      400: errorResponse,
+      403: errorResponse,
+      500: errorResponse,
+    },
     summary: "Get a specific lookup kind",
   },
   updateLookupKind: {
     method: "PUT",
     path: "/api/attendance/lookups/:kind",
-    pathParams: z.object({ kind: z.string() }),
+    pathParams: attendanceKindPathParamsSchema,
     body: attendanceLookupPutBodySchema,
     responses: {
       200: z.object({

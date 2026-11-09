@@ -10,6 +10,7 @@ import {
   useAttendanceAbsenceAlerts,
   useAttendanceExcuses,
 } from "@/tenant/features/attendance/hooks/useAttendanceLifecycle";
+import { AttendanceExcuseForm } from "@/tenant/features/attendance/components/AttendanceExcuseForm";
 
 /**
  * Attendance lifecycle surfaces: the excuse review queue and the chronic-absence alerts.
@@ -21,6 +22,7 @@ export function AttendanceLifecyclePanel(): React.JSX.Element {
   const { t } = useTranslation();
   const excuses = useAttendanceExcuses();
   const absence = useAttendanceAbsenceAlerts();
+  const [showForm, setShowForm] = React.useState(false);
 
   const pending = excuses.leaves.filter((leave: AttendanceLeave) => leave.status === "pending");
   const decided = excuses.leaves.filter((leave: AttendanceLeave) => leave.status !== "pending");
@@ -33,7 +35,17 @@ export function AttendanceLifecyclePanel(): React.JSX.Element {
         icon={CalendarCheck2}
         title={t("attendance.excuses.queueTitle")}
         subtitle={t("attendance.excuses.queueDesc")}
+        actions={
+          <Button type="button" size="sm" variant="outline" onClick={() => setShowForm((v) => !v)}>
+            {t("attendance.excuses.new")}
+          </Button>
+        }
       >
+        {showForm && (
+          <div className="mb-3">
+            <AttendanceExcuseForm onDone={() => setShowForm(false)} />
+          </div>
+        )}
         {excuses.isLoading ? (
           <p className="text-sm text-muted-foreground">{t("common.loading")}</p>
         ) : excuses.isError ? (

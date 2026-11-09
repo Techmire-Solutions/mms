@@ -43,6 +43,7 @@ export interface AttendancePaginatedParams {
   search?: string;
   sessionId?: string;
   classId?: string;
+  sectionId?: string;
   facultyId?: string;
   date?: string;
   dateFrom?: string;
@@ -66,6 +67,7 @@ export function useAttendancePaginated(params: AttendancePaginatedParams) {
         search: params.search?.trim(),
         sessionId: params.sessionId?.trim(),
         classId: params.classId?.trim(),
+        sectionId: params.sectionId?.trim(),
         facultyId: params.facultyId?.trim(),
         date: params.date?.trim(),
         dateFrom: params.dateFrom?.trim(),
@@ -82,6 +84,40 @@ export function useAttendancePaginated(params: AttendancePaginatedParams) {
   });
 
   return { ...query, data: query.data?.body as AttendanceListPageResult | undefined };
+}
+
+/**
+ * Marking matrix: every live mark for one class/section on one day.
+ *
+ * The grid used to derive existing marks from a workspace-wide collection capped at 100 rows, so on
+ * any real tenant the day's marks fell outside the window, the grid rendered unmarked defaults, and
+ * saving overwrote recorded absences. This asks the server for exactly the roster in view.
+ */
+export function useAttendanceRoster(params: {
+  classId?: string;
+  date?: string;
+  sectionId?: string;
+  enabled?: boolean;
+}) {
+  const { isAuthenticated } = useAuth();
+  const classId = params.classId?.trim() ?? "";
+  const date = params.date?.trim() ?? "";
+  const sectionId = params.sectionId?.trim() ?? "";
+  const query = tsrClient.attendance.getRoster.useQuery({
+    queryKey: ["attendance", "roster", classId, date, sectionId] as const,
+    queryData: {
+      query: {
+        classId,
+        date,
+        ...(sectionId ? { sectionId } : {}),
+      },
+    },
+    enabled: isAuthenticated && Boolean(classId && date) && (params.enabled ?? true),
+    staleTime: 10_000,
+  });
+
+  const records = (query.data?.body as { records?: AttendanceRecord[] } | null)?.records ?? [];
+  return { ...query, data: records };
 }
 
 export function useAttendanceRecords(options?: { enabled?: boolean }) {

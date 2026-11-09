@@ -1,14 +1,27 @@
 import { type AttachmentUploadResponse } from "@mms/shared";
 import { apiJson } from "@/lib/apiClient";
 
+/** Purpose-scoped uploads: the server authorises and content-type-filters per purpose. */
+export type AttachmentUploadPurpose = "contact" | "attendance_excuse";
+
 /**
  * Uploads an attachment file to the MMS backend.
+ *
+ * `purpose` is explicit: a teacher holding `attendance.write` (but not `contacts.write`) may attach
+ * an excuse certificate, and that purpose only accepts PDF/JPEG/PNG/WebP.
  */
-export async function uploadAttachmentFile(file: File): Promise<AttachmentUploadResponse> {
+export async function uploadAttachmentFile(
+  file: File,
+  purpose: AttachmentUploadPurpose = "contact",
+): Promise<AttachmentUploadResponse> {
   const form = new FormData();
   form.append("file", file, file.name);
 
-  const response = await apiJson<AttachmentUploadResponse>("/api/uploads/attachment", {
+  const path =
+    purpose === "contact"
+      ? "/api/uploads/attachment"
+      : `/api/uploads/attachment?purpose=${encodeURIComponent(purpose)}`;
+  const response = await apiJson<AttachmentUploadResponse>(path, {
     method: "POST",
     body: form,
   });

@@ -118,9 +118,11 @@ export async function listAttendanceLeaves(
     studentId?: string;
     fromDate?: string;
     toDate?: string;
+    limit?: number;
   } = {},
 ): Promise<AttendanceLeaveWorkflowRow[]> {
   const subdomain = tenant.trim().toLowerCase();
+  const bounded = Math.min(Math.max(query.limit ?? 200, 1), 200);
   return withTenantRead(subdomain, async (tx) => {
     const conditions = [eq(attendanceLeaves.workspaceSubdomain, subdomain)];
     if (query.status) conditions.push(eq(attendanceLeaves.status, query.status));
@@ -130,7 +132,7 @@ export async function listAttendanceLeaves(
     const rows = await baseQuery(tx)
       .where(and(...conditions))
       .orderBy(asc(attendanceLeaves.fromDate), asc(attendanceLeaves.id))
-      .limit(500);
+      .limit(bounded);
     return rows.map((row) => toRow(row as Record<string, unknown>));
   });
 }

@@ -95,6 +95,66 @@ export async function listEnrollmentPlacementsAsOf(
   );
 }
 
+/**
+ * Placement sections **as of each attendance date** in one query.
+ *
+ * `stampAttendanceSections` used to call {@link listEnrollmentPlacementsAsOf} once per distinct date,
+ * which made a 30-day backfill issue 30 queries. This returns the same rows (date → student/class →
+ * section) in a single `DISTINCT ON (date, student, class)` scan of the date range.
+ */
+export async function listEnrollmentPlacementsForDates(
+  tenant: string,
+  classIds: readonly string[],
+  studentIds: readonly string[],
+  dates: readonly string[],
+): Promise<Array<{ date: string; studentId: string; classId: string; sectionId: string | null }>> {
+  const subdomain = tenant.trim().toLowerCase();
+  const uniqueDates = [...new Set(dates.map((day) => day.slice(0, 10)).filter(Boolean))].sort();
+  if (classIds.length === 0 || studentIds.length === 0 || uniqueDates.length === 0) return [];
+  const classList = sql.join(
+    classIds.map((id) => sql`${id}`),
+    sql`, `,
+  );
+  const studentList = sql.join(
+    studentIds.map((id) => sql`${id}`),
+    sql`, `,
+  );
+  const dateList = sql.join(
+    uniqueDates.map((day) => sql`${day}::date`),
+    sql`, `,
+  );
+  return withTenantRead(subdomain, async (tx) => {
+    const result = await tx.execute<{
+      date: string;
+      studentId: string;
+      classId: string;
+      sectionId: string | null;
+    }>(sql`
+      SELECT DISTINCT ON (d.day, e.student_id, p.class_id)
+             to_char(d.day, 'YYYY-MM-DD') AS "date",
+             e.student_id AS "studentId",
+             p.class_id AS "classId",
+             p.section_id AS "sectionId"
+        FROM unnest(ARRAY[${dateList}]::date[]) AS d(day)
+        JOIN enrollment_placements p
+          ON p.workspace_subdomain = ${subdomain}
+         AND p.start_on <= d.day
+         AND (p.end_on IS NULL OR p.end_on >= d.day)
+         AND p.class_id IN (${classList})
+        JOIN enrollments e
+          ON e.workspace_subdomain = p.workspace_subdomain AND e.id = p.enrollment_id
+       WHERE e.student_id IN (${studentList})
+       ORDER BY d.day, e.student_id, p.class_id, p.start_on DESC
+    `);
+    return (result.rows ?? []).map((row) => ({
+      date: String(row.date),
+      studentId: String(row.studentId),
+      classId: String(row.classId),
+      sectionId: row.sectionId ? String(row.sectionId) : null,
+    }));
+  });
+}
+
 /** Most recent live enrollment of a student in a class, if any. */
 export async function findLatestEnrollmentId(
   tenant: string,

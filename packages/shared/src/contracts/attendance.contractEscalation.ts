@@ -1,6 +1,7 @@
 import { z } from "zod";
 import { isoDateSchema } from "../core/isoDateSchema.js";
 import { errorResponse } from "./attendance.contractSchemas.js";
+import { attendanceIdPathParamsSchema } from "../attendance/attendanceApiSchemas.js";
 
 /**
  * Chronic-absence escalation routes (migration 0221).
@@ -76,6 +77,7 @@ export const attendanceEscalationRoutes = {
   resolveAbsenceAlert: {
     method: "POST",
     path: "/api/attendance/absence-alerts/:id/resolve",
+    pathParams: attendanceIdPathParamsSchema,
     body: absenceAlertResolveSchema,
     responses: {
       200: absenceAlertSchema,

@@ -31,6 +31,7 @@ vi.mock("@/hooks/usePersistedTabState", () => ({
 }));
 
 vi.mock("@/tenant/features/attendance/hooks/useAttendance", () => ({
+  useAttendanceRoster: () => ({ data: [], isLoading: false, isError: false, refetch: vi.fn() }),
   useAttendanceRecords: () => ({ data: [] }),
 }));
 

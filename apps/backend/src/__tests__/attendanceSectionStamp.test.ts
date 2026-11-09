@@ -6,6 +6,7 @@ vi.mock("../attendance/repository/attendanceCalendarRepositoryAdapter.js", () =>
   attendanceCalendarRepository: {
     listEnrollmentPlacements: vi.fn(),
     listEnrollmentPlacementsAsOf: vi.fn(),
+    listEnrollmentPlacementsForDates: vi.fn().mockResolvedValue([]),
     findWorkspaceTimezone: vi.fn(),
   },
 }));
@@ -67,6 +68,45 @@ describe("stampAttendanceSections", () => {
         date: "2099-06-01",
         reason: "not_enrolled",
       },
+    ]);
+  });
+
+  it("looks up every distinct date in ONE range query (no per-date round-trips)", async () => {
+    vi.mocked(attendanceCalendarRepository.listEnrollmentPlacements).mockResolvedValue([
+      { studentId: "std-1", classId: "cls-1", sectionId: "sec-live" },
+    ]);
+    vi.mocked(attendanceCalendarRepository.listEnrollmentPlacementsForDates).mockResolvedValue([
+      { date: "2026-03-01", studentId: "std-1", classId: "cls-1", sectionId: "sec-march" },
+    ]);
+
+    const records: Array<{
+      studentId: string;
+      classId: string;
+      date: string;
+      sectionId?: string | null;
+    }> = [
+      { studentId: "std-1", classId: "cls-1", date: "2026-03-01" },
+      { studentId: "std-1", classId: "cls-1", date: "2026-03-02" },
+      { studentId: "std-1", classId: "cls-1", date: "2026-03-03" },
+    ];
+
+    const result = await stampAttendanceSections("test-tenant", records);
+
+    // One query for the whole range …
+    expect(attendanceCalendarRepository.listEnrollmentPlacementsForDates).toHaveBeenCalledTimes(1);
+    expect(attendanceCalendarRepository.listEnrollmentPlacementsForDates).toHaveBeenCalledWith(
+      "test-tenant",
+      ["cls-1"],
+      ["std-1"],
+      ["2026-03-01", "2026-03-02", "2026-03-03"],
+    );
+    // … instead of one per date.
+    expect(attendanceCalendarRepository.listEnrollmentPlacementsAsOf).not.toHaveBeenCalled();
+    // The dated placement wins where it exists; the live placement is the fallback.
+    expect(result.records.map((record) => record.sectionId)).toEqual([
+      "sec-march",
+      "sec-live",
+      "sec-live",
     ]);
   });
 

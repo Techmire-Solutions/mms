@@ -164,6 +164,14 @@ export function createAttendanceExcuseUseCases() {
       if (input.toDate < input.fromDate) {
         throw new ValidationError("The leave end date cannot be before its start date");
       }
+      // The schema guarantees the URL *shape*; this guarantees the file is this tenant's. Otherwise a
+      // workspace could attach another workspace's path and probe whether it exists.
+      if (
+        input.documentRef &&
+        !input.documentRef.startsWith(`/uploads/tenants/${tenant}/attachments/`)
+      ) {
+        throw new ValidationError("The attachment does not belong to this workspace");
+      }
       return withTenant(
         tenant,
         async () => {

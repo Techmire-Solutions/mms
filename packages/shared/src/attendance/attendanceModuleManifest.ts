@@ -1,6 +1,7 @@
 import type { Permission } from "../auth/permissions.js";
 import { z } from "zod";
 import { isoDateSchema } from "../core/isoDateSchema.js";
+import { attendanceAttachmentUrlSchema } from "./attendanceApiSchemas.js";
 
 export const ATTENDANCE_RECORD_STATUSES = ["present", "absent", "late", "excused"] as const;
 export type AttendanceRecordStatus = (typeof ATTENDANCE_RECORD_STATUSES)[number];
@@ -26,7 +27,6 @@ export const attendanceRecordSchema = z
     markedBy: z.string().nullable().optional(),
     /** Section at marking time (server-stamped from the student's enrollment). */
     sectionId: z.string().nullable().optional(),
-    customFields: z.record(z.string(), z.unknown()).optional(),
     createdAt: z.string().optional(),
     updatedAt: z.string().optional(),
     /**
@@ -56,7 +56,6 @@ export const attendanceRecordInsertSchema = z
     timeIn: z.string().optional().default(""),
     timeOut: z.string().optional().default(""),
     notes: z.string().optional().default(""),
-    customFields: z.record(z.string(), z.unknown()).optional(),
     /** Optional OCC token for create-or-update; omitted means "last writer wins" (legacy clients). */
     version: z.number().int().optional(),
   })
@@ -72,6 +71,15 @@ export const attendanceListSchema = z.array(attendanceRecordSchema);
  * Matches the 500-id cap the soft-delete bulk routes use.
  */
 export const ATTENDANCE_BULK_MAX_RECORDS = 500;
+
+/**
+ * Byte ceiling for the bulk roster save.
+ *
+ * 500 records of this shape serialise well under 256 KB; the cap exists so an oversized/malicious
+ * body is refused with a 413 before it is parsed, instead of relying on the process-wide body limit
+ * and Zod's row count alone.
+ */
+export const ATTENDANCE_BULK_MAX_BYTES = 512 * 1024;
 
 export const attendanceBulkSchema = z
   .object({
@@ -123,7 +131,8 @@ export const attendanceLeaveInsertSchema = z
     toDate: isoDateSchema,
     reason: z.string().min(1, "Reason is required"),
     leaveType: z.enum(ATTENDANCE_LEAVE_TYPES).default("other"),
-    documentRef: z.string().trim().max(200).optional(),
+    /** Must be a real tenant attachment URL (medical certificate); the use case re-checks the tenant. */
+    documentRef: attendanceAttachmentUrlSchema.optional(),
     notes: z.string().optional().default(""),
   })
   .strict()
@@ -151,6 +160,8 @@ export const attendanceLeaveListQuerySchema = z
     studentId: z.string().trim().max(64).optional(),
     fromDate: isoDateSchema.optional(),
     toDate: isoDateSchema.optional(),
+    /** Bounded page size for the review queue; the repository caps at the same value. */
+    limit: z.coerce.number().int().min(1).max(200).optional(),
   })
   .strict();
 

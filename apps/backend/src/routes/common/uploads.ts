@@ -21,12 +21,54 @@ import { canWriteCollection } from "../../lib/rbacCanHelpers.js";
 import type { User } from "@mms/shared";
 
 /**
- * Attachment uploads are contact documents (currently the only consumer of
- * `/api/uploads/attachment`), so they require contacts.write (B-02). Image
- * uploads stay session-gated for avatars/branding.
+ * Attachment uploads are contact documents by default, so they require contacts.write (B-02).
+ *
+ * Attendance excuse certificates are the second consumer and are authorised by `attendance.write`
+ * instead — a teacher who may record an excuse must be able to attach the certificate without
+ * holding contacts.write. The purpose is explicit (`?purpose=`), never inferred.
  */
 export function canUploadAttachments(user: User): boolean {
   return canWriteCollection(user, "contacts");
+}
+
+/** Supported attachment purposes; anything else keeps the contacts-only behaviour. */
+export const ATTACHMENT_PURPOSES = ["contact", "attendance_excuse"] as const;
+export type AttachmentPurpose = (typeof ATTACHMENT_PURPOSES)[number];
+
+/**
+ * MIME allowlist for purpose-scoped attachments.
+ *
+ * Images have been validated since the image pipeline; attachments accepted any content type. An
+ * excuse certificate is a document or a photo of one, so the attendance purpose is restricted to
+ * those types and everything else keeps the previous (unrestricted) behaviour.
+ */
+export const ATTENDANCE_EXCUSE_MIME_ALLOWLIST = [
+  "application/pdf",
+  "image/jpeg",
+  "image/png",
+  "image/webp",
+] as const;
+
+export function resolveAttachmentPurpose(raw: unknown): AttachmentPurpose {
+  return raw === "attendance_excuse" ? "attendance_excuse" : "contact";
+}
+
+/** Whether the caller may upload for this purpose. */
+export function canUploadAttachmentForPurpose(user: User, purpose: AttachmentPurpose): boolean {
+  if (purpose === "attendance_excuse") return canWriteCollection(user, "attendance_records");
+  return canUploadAttachments(user);
+}
+
+/** `null` when the MIME is acceptable for the purpose (or the purpose has no allowlist). */
+export function attachmentMimeRejection(
+  purpose: AttachmentPurpose,
+  mimetype: string,
+): string | null {
+  if (purpose !== "attendance_excuse") return null;
+  const normalised = mimetype.trim().toLowerCase();
+  return (ATTENDANCE_EXCUSE_MIME_ALLOWLIST as readonly string[]).includes(normalised)
+    ? null
+    : `Unsupported file type: ${mimetype}. Allowed: PDF, JPEG, PNG, WebP`;
 }
 
 interface UploadLogContext {
@@ -146,14 +188,22 @@ export default async function uploadRoutes(
       if (!tenant) {
         return sendForbidden(reply, "Tenant context is required for attachments");
       }
+      const purpose = resolveAttachmentPurpose(
+        (request.query as { purpose?: unknown } | undefined)?.purpose,
+      );
       const user = request.user as User | undefined;
-      if (!user || !canUploadAttachments(user)) {
+      if (!user || !canUploadAttachmentForPurpose(user, purpose)) {
         return sendForbidden(reply, "Insufficient permissions");
       }
 
       const file = await request.file();
       if (!file) {
         return replyValidationError(reply, "File is required");
+      }
+      // Reject the type before consuming the stream, so an unsupported file is never written.
+      const mimeRejection = attachmentMimeRejection(purpose, file.mimetype ?? "");
+      if (mimeRejection) {
+        return replyValidationError(reply, mimeRejection);
       }
 
       const MAX_ATTACHMENT_SIZE = 10 * 1024 * 1024; // 10 MB
@@ -205,6 +255,7 @@ export default async function uploadRoutes(
         name: file.filename,
         type: file.mimetype,
         size: bytesWritten,
+        purpose,
       });
     } catch (error: unknown) {
       if (filepath) {
