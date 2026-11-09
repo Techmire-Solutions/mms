@@ -284,3 +284,10 @@ export async function resolveAbsenceAlert(
     };
   });
 }
+
+// Notification claims live in their own module (300-line band); re-exported here so the escalation
+// repository stays the single import surface for the scan.
+export {
+  claimAbsenceAlertNotification,
+  releaseAbsenceAlertNotification,
+} from "./attendanceAlertNotificationRepository.js";

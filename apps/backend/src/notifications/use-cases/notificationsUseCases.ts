@@ -23,14 +23,26 @@ export function createNotificationsUseCases(
   return {
     /**
      * Stores a notification for everyone holding `audiencePermission` and pushes a refresh.
-     * Never throws: notifying is a side effect of an operation that has already succeeded.
+     *
+     * Never throws (notifying is a side effect of an operation that already succeeded) but reports
+     * whether the row is now stored: `true` when inserted **or already present for its dedupe key**,
+     * `false` when the insert failed. Callers that stamp a "notified" marker must only do so on
+     * `true`, otherwise a transient failure would silence the alert forever.
      */
-    notify: async (tenant: string, notification: Omit<NewTenantNotification, "id">) => {
+    notify: async (
+      tenant: string,
+      notification: Omit<NewTenantNotification, "id">,
+    ): Promise<boolean> => {
       try {
-        await repo.insertTenantNotification(tenant, { id: crypto.randomUUID(), ...notification });
-        broadcastTenantUpdate(tenant, "collection", NOTIFICATIONS_BROADCAST_KEY);
+        const stored = await repo.insertTenantNotification(tenant, {
+          id: crypto.randomUUID(),
+          ...notification,
+        });
+        if (stored) broadcastTenantUpdate(tenant, "collection", NOTIFICATIONS_BROADCAST_KEY);
+        return true;
       } catch (error) {
         logger.warn({ err: error, kind: notification.kind }, "storing a notification failed");
+        return false;
       }
     },
 

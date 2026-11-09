@@ -51,6 +51,21 @@ export const absenceScanResultSchema = z
   })
   .strict();
 
+/** Queued-job envelope shared with the CSV routes. */
+export const attendanceJobEnvelopeSchema = z
+  .object({
+    job: z
+      .object({
+        id: z.string(),
+        moduleId: z.string(),
+        kind: z.string(),
+        status: z.string(),
+        label: z.string(),
+      })
+      .passthrough(),
+  })
+  .strict();
+
 export const attendanceEscalationRoutes = {
   listAbsenceAlerts: {
     method: "GET",
@@ -68,11 +83,13 @@ export const attendanceEscalationRoutes = {
     path: "/api/attendance/absence-alerts/scan",
     body: z.object({}).optional(),
     responses: {
-      200: absenceScanResultSchema,
+      /** The scan runs as a background job: 202 + the queued job record. */
+      202: attendanceJobEnvelopeSchema,
       403: errorResponse,
+      503: errorResponse,
       500: errorResponse,
     },
-    summary: "Recompute chronic-absence alerts now",
+    summary: "Queue a chronic-absence scan for this workspace",
   },
   resolveAbsenceAlert: {
     method: "POST",

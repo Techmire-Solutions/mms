@@ -16,6 +16,11 @@ export interface NewTenantNotification {
   entityId: string;
   subjectLabel: string;
   contextLabel: string;
+  /**
+   * Producer idempotency key. Two inserts with the same key in a workspace store one row; the second
+   * is a no-op (used by the absence scan, which can retry after a crash).
+   */
+  dedupeKey?: string | null;
 }
 
 const since = () => new Date(Date.now() - TENANT_NOTIFICATION_RETENTION_DAYS * 86_400_000);
@@ -39,11 +44,21 @@ const readJoin = (userId: string) =>
 export async function insertTenantNotification(
   tenant: string,
   notification: NewTenantNotification,
-): Promise<void> {
+): Promise<boolean> {
   const subdomain = tenant.trim().toLowerCase();
-  await withTenant(subdomain, (tx) =>
-    tx.insert(tenantNotifications).values({ ...notification, workspaceSubdomain: subdomain }),
-  );
+  return withTenant(subdomain, async (tx) => {
+    const inserted = await tx
+      .insert(tenantNotifications)
+      .values({
+        ...notification,
+        dedupeKey: notification.dedupeKey ?? null,
+        workspaceSubdomain: subdomain,
+      })
+      // Any unique violation (dedupe key) means "already delivered"; the PK is a random UUID.
+      .onConflictDoNothing()
+      .returning({ id: tenantNotifications.id });
+    return inserted.length > 0;
+  });
 }
 
 export async function listTenantNotifications(

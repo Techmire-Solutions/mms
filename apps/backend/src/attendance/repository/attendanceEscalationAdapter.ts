@@ -6,6 +6,8 @@ import {
   listClassMarkedDays,
   listCountableMarks,
   markAbsenceAlertNotified,
+  claimAbsenceAlertNotification,
+  releaseAbsenceAlertNotification,
   resolveAbsenceAlert,
   upsertAbsenceAlert,
 } from "../../db/repositories/attendanceEscalationRepository.js";
@@ -16,6 +18,8 @@ export const attendanceEscalationRepository: AttendanceEscalationRepository = {
   listCountableMarks,
   upsertAbsenceAlert,
   markAbsenceAlertNotified,
+  claimAbsenceAlertNotification,
+  releaseAbsenceAlertNotification,
   listAbsenceAlerts,
   resolveAbsenceAlert,
 };

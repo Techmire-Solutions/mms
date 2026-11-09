@@ -10,6 +10,9 @@ vi.mock("../services/backgroundJobWorkerService.js", () => ({
   enqueueBackgroundJob: vi.fn(),
   getUserBackgroundJob: vi.fn(),
   registerBackgroundJobRunner: vi.fn(),
+  // The route helpers refuse to enqueue for a module without a runner; these suites test the
+  // queue/audit happy path, so the capability check is stubbed as "runner present".
+  hasBackgroundJobRunner: () => true,
   QueueUnavailableError: class QueueUnavailableError extends Error {},
 }));
 

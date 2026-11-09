@@ -10,7 +10,10 @@ import {
   recordModernAuditEvent,
   mapActionStringToAuditType,
 } from "../services/auditTrailService.js";
-import { QueueUnavailableError } from "../services/backgroundJobWorkerService.js";
+import {
+  QueueUnavailableError,
+  hasBackgroundJobRunner,
+} from "../services/backgroundJobWorkerService.js";
 
 export type RegisterModuleCsvExportRoutesOptions = {
   canRead: (user: User) => boolean;
@@ -69,6 +72,15 @@ export function registerModuleCsvExportRoutes(
     const safeColumns = data.columns
       ? data.columns.filter((c) => !isSystemMetadataKey(c.id) && !isSystemMetadataKey(c.label))
       : undefined;
+
+    // A route must never accept a job the worker cannot run: without this the request answered 202
+    // and the job dead-lettered three attempts later (attendance had no export runner at all).
+    if (!hasBackgroundJobRunner(`${options.moduleId}:export`)) {
+      return sendServiceUnavailable(
+        reply,
+        "CSV export is not available for this module on this deployment",
+      );
+    }
 
     const label = data.label?.trim() || options.defaultLabel;
     let job;
