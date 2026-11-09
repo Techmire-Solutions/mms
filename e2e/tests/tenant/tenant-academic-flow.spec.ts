@@ -54,7 +54,7 @@ test.describe.serial("Tenant Academic Flow E2E", { tag: "@local-only" }, () => {
     seedTestClassAndEnrollment(subdomain);
 
     // 4. Attendance marking & submission
-    // Ensure all days of the week are instructional for the test tenant so weekend CI runs can submit attendance
+    // Ensure all days of the week are instructional and disable cutoff for the test tenant so CI runs at any time/day can submit attendance
     await page.evaluate(async () => {
       const csrf = document.cookie.match(/(?:^|;\s*)csrf_token=([^;]*)/)?.[1];
       const res = await fetch("/api/attendance/preferences", {
@@ -74,6 +74,8 @@ test.describe.serial("Tenant Academic Flow E2E", { tag: "@local-only" }, () => {
             "sunday",
           ],
           allowExtraClassOnHolidays: true,
+          cutoffTime: "23:59",
+          allowManualOverride: true,
         }),
       });
       if (!res.ok) {
