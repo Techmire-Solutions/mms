@@ -5,6 +5,7 @@ import {
   type TenantBootstrapCredentials,
 } from "../../helpers/tenantBootstrap.js";
 import {
+  configureAttendancePreferences,
   createTestContactJaneDoe,
   createTestContactJohnDoe,
   registerStudentJaneDoe,
@@ -52,6 +53,7 @@ test.describe.serial("Tenant Academic Flow E2E", { tag: "@local-only" }, () => {
 
     // 3. Seed class & enrollment via backend script (including instructional days & cutoff prefs)
     seedTestClassAndEnrollment(subdomain);
+    await configureAttendancePreferences(page);
 
     // 4. Attendance marking & submission
     await page.goto(`${credentials.tenantOrigin}/attendance`);
