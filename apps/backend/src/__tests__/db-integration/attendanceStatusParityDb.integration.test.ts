@@ -2,8 +2,8 @@ import { describe, it, expect, beforeAll, afterAll } from "vitest";
 import { eq, sql } from "drizzle-orm";
 import { closeDatabase, beginLongLivedTenantTransaction } from "../../db/dbConnection.js";
 import { applyDrizzleMigrations } from "../../db/dbInit.js";
-import { withTenant, withTenantRead } from "../../db/tenant-context.js";
-import { attendance, workspaces } from "../../db/schema.js";
+import { withTenant } from "../../db/tenant-context.js";
+import { attendance, sessionClasses, sessions, students, workspaces } from "../../db/schema.js";
 import { ATTENDANCE_RECORD_STATUSES } from "@mms/shared";
 import { requireDatabaseConnection } from "./dbTestSupport.js";
 
@@ -21,6 +21,9 @@ async function purge(): Promise<void> {
   try {
     await tx.tx.execute(sql`SET LOCAL app.allow_hard_purge = 'true'`);
     await tx.tx.delete(attendance).where(eq(attendance.workspaceSubdomain, TENANT));
+    await tx.tx.delete(sessionClasses).where(eq(sessionClasses.workspaceSubdomain, TENANT));
+    await tx.tx.delete(sessions).where(eq(sessions.workspaceSubdomain, TENANT));
+    await tx.tx.delete(students).where(eq(students.workspaceSubdomain, TENANT));
     await tx.tx.delete(workspaces).where(eq(workspaces.subdomain, TENANT));
     await tx.commit();
   } catch (error) {
@@ -35,11 +38,28 @@ beforeAll(async () => {
   await purge();
   await withTenant(
     TENANT,
-    (tx) =>
-      tx
+    async (tx) => {
+      await tx
         .insert(workspaces)
         .values({ id: `ws-${TENANT}`, subdomain: TENANT, madrasaName: "Status parity" })
-        .onConflictDoNothing(),
+        .onConflictDoNothing();
+      await tx
+        .insert(students)
+        .values([
+          { id: "std-1", workspaceSubdomain: TENANT, grNumber: "gr-parity-1", status: "active" },
+        ]);
+      await tx.insert(sessions).values({
+        id: "ses-1",
+        workspaceSubdomain: TENANT,
+        name: "Parity Session",
+        minAttendancePct: 75,
+      });
+      await tx
+        .insert(sessionClasses)
+        .values([
+          { id: "cls-1", workspaceSubdomain: TENANT, sessionId: "ses-1", name: "Parity Class" },
+        ]);
+    },
     { readOnly: false },
   );
 }, 120_000);
@@ -49,7 +69,7 @@ afterAll(async () => {
   await closeDatabase();
 });
 
-function mark(status: string, suffix: string) {
+function mark(status: string, suffix: string, day = 1) {
   return {
     id: `att-${suffix}`,
     workspaceSubdomain: TENANT,
@@ -57,7 +77,7 @@ function mark(status: string, suffix: string) {
     studentId: "std-1",
     studentName: "Student",
     rollNo: "1",
-    date: "2026-03-02",
+    date: `2026-03-${String(day).padStart(2, "0")}`,
     status,
     timeIn: "",
     timeOut: "",
@@ -73,7 +93,7 @@ describe("attendance_status_check parity", () => {
         (tx) =>
           tx
             .insert(attendance)
-            .values(mark(status, String(index)))
+            .values(mark(status, String(index), index + 1))
             .returning({ id: attendance.id }),
         { readOnly: false },
       );
@@ -83,7 +103,7 @@ describe("attendance_status_check parity", () => {
 
   it("rejects a status outside the shared enum", async () => {
     await expect(
-      withTenant(TENANT, (tx) => tx.insert(attendance).values(mark("holiday", "bogus")), {
+      withTenant(TENANT, (tx) => tx.insert(attendance).values(mark("holiday", "bogus", 28)), {
         readOnly: false,
       }),
     ).rejects.toThrow(/attendance_status_check/);
@@ -107,14 +127,16 @@ describe("attendance_status_check parity", () => {
   });
 
   it("counts half_day as attended in the report overview", async () => {
-    // The four accepted rows above are present/absent/late/half_day/excused in enum order.
+    // The five accepted rows above are present/absent/late/half_day/excused in enum order.
     const { loadCountableAttendanceSql } =
       await import("../../db/repositories/attendanceCountableSql.js");
     const countable = await loadCountableAttendanceSql(TENANT);
     const { loadAttendanceOverview } =
       await import("../../db/repositories/attendanceReportOverview.js");
-    const overview = await withTenantRead(TENANT, (tx) =>
-      loadAttendanceOverview(tx, TENANT, countable, undefined, 75),
+    const overview = await withTenant(
+      TENANT,
+      (tx) => loadAttendanceOverview(tx, TENANT, countable, undefined, 75),
+      { readOnly: false },
     );
     const attended = overview.statusCounts
       .filter((row) => ["present", "late", "half_day"].includes(row.status))
