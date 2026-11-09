@@ -1,16 +1,13 @@
 import { describe, expect, it, vi } from "vitest";
 import type { QueryClient } from "@tanstack/react-query";
 import { invalidateAttendanceQueries } from "./invalidateAttendanceQueries";
-import {
-  ATTENDANCE_METRICS_QUERY_KEY,
-  ATTENDANCE_QUERY_KEY,
-  ATTENDANCE_REPORT_AGGREGATES_QUERY_KEY,
-} from "./useAttendance";
-import { ATTENDANCE_LOOKUPS_QUERY_KEY } from "./useAttendanceLookups";
-import { ATTENDANCE_PREFERENCES_QUERY_KEY } from "./useAttendanceSetupConfig";
+import {} from "./useAttendance";
+import { attendanceQueryKeys } from "./attendanceQueryKeys";
+import { DYNAMIC_WIDGET_AGGREGATES_QUERY_KEY } from "@/lib/query/dynamicWidgetAggregatesQueryKey";
+import { DASHBOARD_SUMMARY_QUERY_KEY_ROOT } from "@/lib/query/dashboardQueryKeys";
 
 describe("invalidateAttendanceQueries utility", () => {
-  it("invalidates the list, metrics, report aggregates, setup and lookups keys", () => {
+  it("invalidates the attendance root plus the cross-module widget/dashboard roots", () => {
     const queryClient = {
       invalidateQueries: vi.fn(),
     } as unknown as QueryClient;
@@ -20,12 +17,12 @@ describe("invalidateAttendanceQueries utility", () => {
     const invalidatedKeys = vi
       .mocked(queryClient.invalidateQueries)
       .mock.calls.map(([options]) => options?.queryKey);
+    // The root covers every attendance key by prefix (list, roster, metrics, reports, lifecycle,
+    // lookups, preferences); the other two are the cross-module dashboard surfaces.
     expect(invalidatedKeys).toEqual([
-      ATTENDANCE_QUERY_KEY,
-      ATTENDANCE_REPORT_AGGREGATES_QUERY_KEY,
-      ATTENDANCE_METRICS_QUERY_KEY,
-      ATTENDANCE_PREFERENCES_QUERY_KEY,
-      ATTENDANCE_LOOKUPS_QUERY_KEY,
+      attendanceQueryKeys.all,
+      DYNAMIC_WIDGET_AGGREGATES_QUERY_KEY,
+      DASHBOARD_SUMMARY_QUERY_KEY_ROOT,
     ]);
   });
 });

@@ -94,3 +94,33 @@ describe("markAttendanceRowUtils utilities", () => {
     expect(list.map((student) => student.id)).not.toContain("std-3");
   });
 });
+
+describe("attendance row OCC round-trip", () => {
+  it("keeps the server id and version when seeding rows from records", () => {
+    const rows = attendanceRowsFromRecords([
+      {
+        id: "att-1",
+        classId: "cls-1",
+        date: "2026-03-02",
+        studentId: "std-1",
+        studentName: "Amina",
+        rollNo: "1",
+        status: "present",
+        timeIn: "08:00",
+        timeOut: "10:00",
+        notes: "",
+        version: 7,
+      },
+    ]);
+    expect(rows[0]).toMatchObject({ recordId: "att-1", version: 7 });
+
+    const [record] = attendanceRecordsFromRows(rows, [], "cls-1", "2026-03-02");
+    expect(record).toMatchObject({ id: "att-1", version: 7 });
+  });
+
+  it("sends no token for a brand-new mark", () => {
+    const rows = buildDefaultRows([{ id: "std-2", name: "Bilal", rollNo: "2" }]);
+    const [record] = attendanceRecordsFromRows(rows, [], "cls-1", "2026-03-02");
+    expect(record?.version).toBeUndefined();
+  });
+});

@@ -4,9 +4,11 @@ import type { ContractRouteArgs, ContractRouteResponse } from "../../../lib/cont
 import { canDeleteCollection, canWriteCollection } from "../../../services/rbacService.js";
 import { withTenant } from "../../../db/tenant-context.js";
 import {
+  readSubmittedAttendanceDay,
   reopenSubmittedAttendanceDay,
   submitAttendanceDay,
 } from "../../../attendance/use-cases/attendanceLeaveUseCases.js";
+import { canReadCollection } from "../../../services/rbacService.js";
 import { getTenantId } from "./attendanceRecordHandlers.js";
 
 const COLLECTION = ATTENDANCE_MODULE_MANIFEST.collectionKey;
@@ -31,6 +33,47 @@ function serialise(row: {
     reopenReason: row.reopenReason,
     locked: row.locked,
   };
+}
+
+/**
+ * Read a roster day's submission state.
+ *
+ * The marking grid seeds its *Submitted* badge from this, so the badge reflects the server rather than
+ * component state that vanishes on reload.
+ */
+export async function attendanceGetDaySubmissionHandler({
+  params,
+  request,
+}: ContractRouteArgs<(typeof attendanceContract)["getDaySubmission"]>): Promise<
+  ContractRouteResponse<(typeof attendanceContract)["getDaySubmission"]>
+> {
+  const user = request.user as User;
+  if (!canReadCollection(user, COLLECTION)) {
+    return {
+      status: 403 as const,
+      body: { type: "forbidden", message: "Insufficient permissions" },
+    };
+  }
+  const tenantId = getTenantId(request);
+  if (!tenantId) {
+    return { status: 403 as const, body: { type: "forbidden", message: "Missing tenant context" } };
+  }
+  try {
+    const submission = await withTenant(
+      tenantId,
+      () => readSubmittedAttendanceDay(tenantId, params.classId, params.date),
+      { readOnly: true },
+    );
+    return {
+      status: 200 as const,
+      body: { submission: serialise(submission), alreadySubmitted: submission.locked },
+    };
+  } catch (error) {
+    return handleContractError(request, error, {
+      status: 500,
+      body: { type: "database_error", message: "Failed to read attendance day submission" },
+    });
+  }
 }
 
 /**

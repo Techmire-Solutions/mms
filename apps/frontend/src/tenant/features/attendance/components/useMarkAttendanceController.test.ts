@@ -30,6 +30,14 @@ vi.mock("@/tenant/hooks/usePermissions", () => ({
   }),
 }));
 
+vi.mock("../hooks/useAttendanceDaySubmission", () => ({
+  useAttendanceDaySubmission: () => ({
+    submission: { locked: false, submittedAt: "", submittedBy: null },
+    isLoading: false,
+    refetch: vi.fn(),
+  }),
+}));
+
 vi.mock("@/tenant/hooks/collections/sessions", () => ({
   useSessionsCollection: () => [],
 }));

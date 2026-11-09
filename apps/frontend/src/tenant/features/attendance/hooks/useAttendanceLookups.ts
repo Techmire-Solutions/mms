@@ -1,5 +1,4 @@
 import {
-  ATTENDANCE_MODULE_MANIFEST,
   emptyAttendanceLookupsMap,
   type AttendanceLookupKind,
   type AttendanceLookupsMap,
@@ -7,11 +6,9 @@ import {
 } from "@mms/shared";
 import { apiContract } from "@/lib/api";
 import { createModuleLookupsHooks } from "@/lib/query/createModuleLookupsHooks";
+import { attendanceQueryKeys } from "./attendanceQueryKeys.js";
 
-export const ATTENDANCE_LOOKUPS_QUERY_KEY = [
-  ATTENDANCE_MODULE_MANIFEST.collectionKey,
-  "lookups",
-] as const;
+export const ATTENDANCE_LOOKUPS_QUERY_KEY = attendanceQueryKeys.lookups;
 
 export async function fetchAttendanceLookups(_signal?: AbortSignal): Promise<AttendanceLookupsMap> {
   const res = await apiContract.attendance.getLookups({ query: undefined, extraHeaders: {} });

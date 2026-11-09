@@ -1,19 +1,12 @@
 import { useMemo } from "react";
-import {
-  ATTENDANCE_MODULE_MANIFEST,
-  listInstructionalDays,
-  unmarkedInstructionalDays,
-  weekdayIndexes,
-} from "@mms/shared";
+import { listInstructionalDays, unmarkedInstructionalDays, weekdayIndexes } from "@mms/shared";
 import { tsrClient } from "@/lib/api";
 import { useAuth } from "@/lib/contexts/AuthContext";
 import { useAttendanceConfig } from "@/hooks/useStandardModuleConfig";
 import { useAcademicCalendarEvents } from "./useAcademicCalendar";
+import { attendanceQueryKeys } from "./attendanceQueryKeys.js";
 
-export const ATTENDANCE_MARKED_DATES_QUERY_KEY = [
-  ATTENDANCE_MODULE_MANIFEST.collectionKey,
-  "marked-dates",
-] as const;
+export const ATTENDANCE_MARKED_DATES_QUERY_KEY = attendanceQueryKeys.markedDates;
 
 export interface AttendanceCoverageInput {
   from: string;

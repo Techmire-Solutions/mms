@@ -32,6 +32,15 @@ vi.mock("../hooks/useMarkAttendanceController", () => ({
     canWriteAttendance: true,
     handleSaveDraft: vi.fn(),
     handleSubmit: vi.fn(),
+    setStatus: vi.fn(),
+    isDirty: false,
+    conflictCount: 0,
+    dismissConflicts: vi.fn(),
+    resetToServer: vi.fn(),
+    rowErrors: [],
+    dismissRowErrors: vi.fn(),
+    canReopenDay: false,
+    daySubmission: { submission: null, isLoading: false, refetch: vi.fn() },
   }),
 }));
 

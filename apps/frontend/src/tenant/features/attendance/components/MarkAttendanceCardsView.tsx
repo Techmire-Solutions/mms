@@ -14,6 +14,8 @@ export interface MarkAttendanceCardsViewProps {
   statuses: AttendanceStatus[];
   onFieldChange: (studentId: string, key: string, value: unknown) => void;
   rowMotion: () => HTMLMotionProps<"div">;
+  /** Keyboard-navigation cursor (highlighted card). */
+  activeStudentId?: string | null;
 }
 
 export function MarkAttendanceCardsView({
@@ -22,6 +24,7 @@ export function MarkAttendanceCardsView({
   statuses,
   onFieldChange,
   rowMotion,
+  activeStudentId = null,
 }: MarkAttendanceCardsViewProps): React.JSX.Element {
   const { t } = useTranslation();
   const mobileParentRef = useRef<HTMLDivElement>(null);
@@ -63,7 +66,11 @@ export function MarkAttendanceCardsView({
                   width: "100%",
                   transform: `translateY(${virtualRow.start}px)`,
                 }}
-                className="pb-3"
+                className={
+                  row.studentId === activeStudentId
+                    ? "pb-3 rounded-xl outline outline-2 outline-primary/60"
+                    : "pb-3"
+                }
               >
                 <MarkAttendanceStudentCard
                   row={row}

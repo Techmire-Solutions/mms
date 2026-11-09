@@ -14,6 +14,8 @@ export function useAttendancePageActions() {
     restoreRecord,
     bulkDeleteRecords,
     bulkRestoreRecords,
+    submitDay,
+    reopenDay,
   } = useAttendanceMutations();
   const { messagingTarget, openComposer, closeComposer } = useMessageComposerState();
 
@@ -40,20 +42,53 @@ export function useAttendancePageActions() {
     );
   };
 
+  /**
+   * Saves the roster and **returns the persisted rows**.
+   *
+   * The grid must adopt the server ids/versions it just received; otherwise its next save carries a
+   * stale token (or none at all) and the optimistic-concurrency guard can never fire.
+   */
   const persistRecords = async (
     recordsForClassDate: AttendanceRecord[],
     overrideReason?: string,
-  ) => {
-    await bulkUpsert.mutateAsync({
+  ): Promise<AttendanceRecord[]> => {
+    const result = await bulkUpsert.mutateAsync({
       body: {
         records: recordsForClassDate,
         ...(overrideReason ? { overrideReason } : {}),
       },
     });
+    const body = (result?.body ?? result) as { records?: AttendanceRecord[] };
+    return body.records ?? [];
   };
 
+  /** Single-record update; echoes the OCC token when the caller has one. */
   const handleUpdateRecord = async (record: AttendanceRecord) => {
-    await updateRecord.mutateAsync({ params: { id: record.id }, body: record });
+    await updateRecord.mutateAsync({
+      params: { id: record.id },
+      body: record,
+      ...(typeof record.version === "number"
+        ? { headers: { "x-expected-version": String(record.version) } }
+        : {}),
+    });
+  };
+
+  /** Locks the roster day (the server rejects later writes until an admin reopens it). */
+  const submitRosterDay = async (classId: string, date: string) => {
+    const result = await submitDay.mutateAsync({
+      params: { classId, date },
+      body: {},
+    });
+    return result.body;
+  };
+
+  /** Admin reopen of a submitted day; the reason is mandatory in the UI. */
+  const reopenRosterDay = async (classId: string, date: string, reason?: string) => {
+    const result = await reopenDay.mutateAsync({
+      params: { classId, date },
+      body: reason?.trim() ? { reason: reason.trim() } : {},
+    });
+    return result.body;
   };
 
   const handleDeleteRecord = async (id: string, reason?: string) => {
@@ -131,5 +166,7 @@ export function useAttendancePageActions() {
     handleRestoreRecord,
     handleBulkDeleteRecords,
     handleBulkRestoreRecords,
+    submitRosterDay,
+    reopenRosterDay,
   };
 }

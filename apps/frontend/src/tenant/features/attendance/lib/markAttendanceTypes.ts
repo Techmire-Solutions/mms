@@ -16,6 +16,10 @@ export interface AttendanceRow {
   timeIn: string;
   timeOut: string;
   notes: string;
+  /** Server row id, when this row already exists (drives the upsert + OCC token). */
+  recordId?: string;
+  /** Optimistic-concurrency token echoed back on save; absent for a brand-new mark. */
+  version?: number;
   [key: string]: unknown;
 }
 
@@ -46,14 +50,24 @@ export interface MarkAttendanceProps {
   filters: AttendanceFilterState;
   role: string;
   records: AttendanceRecord[];
-  /** Saves the roster; `overrideReason` is required when the save overrides a lock/cut-off. */
-  persistBatch: (records: AttendanceRecord[], overrideReason?: string) => Promise<void>;
-  /** Called instead of the error toast when the API demands a justification for an override. */
+  /** Saves the roster; resolves with the persisted rows (server ids + OCC versions). */
+  persistBatch: (
+    records: AttendanceRecord[],
+    overrideReason?: string,
+  ) => Promise<AttendanceRecord[]>;
   /** Called instead of the error toast when the API demands a justification for an override. */
   onOverrideRequired?: (
     records: AttendanceRecord[],
     retry: (reason: string) => Promise<void>,
   ) => void;
+  /** Reports whether the roster has unsaved edits (drives the navigation guards). */
+  onDirtyChange?: (dirty: boolean) => void;
+  /** Locks the roster day after a successful submit (server-side day submission). */
+  onSubmitDay?: (classId: string, date: string) => Promise<unknown>;
+  /** Delete-level reopen of a submitted day. */
+  onReopenDay?: (classId: string, date: string, reason?: string) => Promise<unknown>;
+  /** True when the user may reopen a locked day. */
+  canReopenDay?: boolean;
 }
 
 export type AttendanceFieldControlRenderer = (

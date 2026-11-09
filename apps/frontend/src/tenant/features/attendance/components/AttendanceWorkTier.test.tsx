@@ -56,6 +56,9 @@ describe("AttendanceWorkTier Component", () => {
         onBulkDeleteRecords={vi.fn()}
         onBulkRestoreRecords={vi.fn()}
         onMessage={vi.fn()}
+        onSubmitDay={vi.fn()}
+        onReopenDay={vi.fn()}
+        canReopenDay={false}
       />,
     );
 

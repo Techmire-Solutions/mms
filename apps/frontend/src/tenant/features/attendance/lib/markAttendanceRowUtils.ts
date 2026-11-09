@@ -39,6 +39,9 @@ export function attendanceRowsFromRecords(records: AttendanceRecord[]): Attendan
     timeIn: attendanceRecord.timeIn || "07:00",
     timeOut: attendanceRecord.timeOut || "08:30",
     notes: attendanceRecord.notes || "",
+    // Identity + OCC token: without these the grid can never trigger `stale_write`.
+    ...(attendanceRecord.id ? { recordId: attendanceRecord.id } : {}),
+    ...(typeof attendanceRecord.version === "number" ? { version: attendanceRecord.version } : {}),
   }));
 }
 
@@ -57,7 +60,7 @@ export function attendanceRecordsFromRows(
 ): AttendanceRecord[] {
   return rows.map((row): AttendanceRecord => {
     return {
-      id: `${classId}-${date}-${row.studentId}`,
+      id: row.recordId ?? `${classId}-${date}-${row.studentId}`,
       classId,
       date,
       studentId: row.studentId,
@@ -67,6 +70,8 @@ export function attendanceRecordsFromRows(
       timeIn: row.status !== "absent" ? row.timeIn : "",
       timeOut: row.status !== "absent" ? row.timeOut : "",
       notes: row.notes || "",
+      // Echo the token only when the row came from the server; a new mark has none.
+      ...(typeof row.version === "number" ? { version: row.version } : {}),
     };
   });
 }

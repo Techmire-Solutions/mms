@@ -36,6 +36,10 @@ export function useAttendancePageController() {
   const [filters, setFilters] = useState(DEFAULT_FILTERS);
   const [showDeleted, setShowDeleted] = useDirectoryTrashState();
   const [shownCount, setShownCount] = useState(0);
+  /** Set by the marking grid: unsaved roster edits block class/date/tier switches. */
+  const [rosterDirty, setRosterDirty] = useState(false);
+  const [pendingFilters, setPendingFilters] = useState<typeof DEFAULT_FILTERS | null>(null);
+  const [pendingTab, setPendingTab] = useState<string | null>(null);
   useWorkDrillDownListener<AttendanceWorkDrillDown>(
     ATTENDANCE_WORK_DRILLDOWN_EVENT,
     consumeAttendanceWorkDrillDown,
@@ -53,6 +57,46 @@ export function useAttendancePageController() {
     date: filters.date,
     sectionId: "sectionId" in filters ? String(filters.sectionId ?? "") : undefined,
   });
+  /**
+   * Filter changes that would discard unsaved marks are routed through a confirmation instead of
+   * being applied immediately. Class/date/section are the roster-defining fields; a faculty-only
+   * change does not lose edits.
+   */
+  const requestFiltersChange = (next: typeof DEFAULT_FILTERS): void => {
+    const current = filters as typeof DEFAULT_FILTERS & { sectionId?: string };
+    const target = next as typeof DEFAULT_FILTERS & { sectionId?: string };
+    const losesRoster =
+      target.classId !== current.classId ||
+      target.date !== current.date ||
+      (target.sectionId ?? "") !== (current.sectionId ?? "");
+    if (rosterDirty && losesRoster) {
+      setPendingFilters(next);
+      return;
+    }
+    setFilters(next);
+  };
+
+  const requestOpsTabChange = (next: string): void => {
+    if (rosterDirty && next !== "mark") {
+      setPendingTab(next);
+      return;
+    }
+    setActiveOpsTab(next);
+  };
+
+  const confirmDiscardRoster = (): void => {
+    if (pendingFilters) setFilters(pendingFilters);
+    if (pendingTab) setActiveOpsTab(pendingTab);
+    setPendingFilters(null);
+    setPendingTab(null);
+    setRosterDirty(false);
+  };
+
+  const cancelDiscardRoster = (): void => {
+    setPendingFilters(null);
+    setPendingTab(null);
+  };
+
   const attendanceCollectionQuery = attendanceRosterQuery;
   const activeAttendanceRecords = attendanceRosterQuery.data;
   // Work records list is server-paged inside `AttendanceRecords` (filters colocated
@@ -69,6 +113,8 @@ export function useAttendancePageController() {
     handleRestoreRecord,
     handleBulkDeleteRecords,
     handleBulkRestoreRecords,
+    submitRosterDay,
+    reopenRosterDay,
   } = useAttendancePageActions();
 
   const {
@@ -125,8 +171,19 @@ export function useAttendancePageController() {
     handleRestoreRecord,
     handleBulkDeleteRecords,
     handleBulkRestoreRecords,
+    submitRosterDay,
+    reopenRosterDay,
     canWriteAttendance,
     canDeleteAttendance,
+    /** Reopen a submitted day (delete-level). */
+    canReopenAttendance: canDeleteAttendance,
+    rosterDirty,
+    setRosterDirty,
+    pendingRosterDiscard: pendingFilters !== null || pendingTab !== null,
+    requestFiltersChange,
+    requestOpsTabChange,
+    confirmDiscardRoster,
+    cancelDiscardRoster,
     canAnalyticsView,
     visibleTopTabs,
     visibleOperationsTabs,

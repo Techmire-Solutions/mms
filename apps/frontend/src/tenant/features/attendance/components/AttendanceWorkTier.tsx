@@ -38,13 +38,24 @@ export interface AttendanceWorkTierProps {
   showDeletedLabel: string;
   onOpsTabChange: (tab: string) => void;
   activeRecords: AttendanceRecord[];
-  onPersistRecords: (batch: AttendanceRecord[]) => Promise<void>;
+  /** Saves the roster and resolves with the persisted rows (server ids + OCC versions). */
+  onPersistRecords: (
+    batch: AttendanceRecord[],
+    overrideReason?: string,
+  ) => Promise<AttendanceRecord[]>;
   onUpdateRecord: (record: AttendanceRecord) => Promise<void>;
   onDeleteRecord: (id: string) => Promise<void>;
   onRestoreRecord: (id: string) => Promise<void>;
   onBulkDeleteRecords: (ids: string[]) => Promise<void>;
   onBulkRestoreRecords: (ids: string[]) => Promise<void>;
   onMessage: (channel: "sms" | "whatsapp" | "email", records: AttendanceRecord[]) => void;
+  /** Locks the roster day after a successful save. */
+  onSubmitDay: (classId: string, date: string) => Promise<unknown>;
+  /** Admin reopen of a submitted day. */
+  onReopenDay: (classId: string, date: string, reason?: string) => Promise<unknown>;
+  /** True when the user may reopen a locked day (delete-level permission). */
+  canReopenDay: boolean;
+  onRosterDirtyChange?: (dirty: boolean) => void;
   onTotalChange?: (total: number) => void;
   columnProps?: AttendanceColumnProps;
 }
@@ -73,6 +84,10 @@ export function AttendanceWorkTier({
   onBulkDeleteRecords,
   onBulkRestoreRecords,
   onMessage,
+  onSubmitDay,
+  onReopenDay,
+  canReopenDay,
+  onRosterDirtyChange,
   onTotalChange,
   columnProps,
 }: AttendanceWorkTierProps): React.JSX.Element {
@@ -111,6 +126,10 @@ export function AttendanceWorkTier({
           role={role}
           records={activeRecords}
           persistBatch={onPersistRecords}
+          onSubmitDay={onSubmitDay}
+          onReopenDay={onReopenDay}
+          canReopenDay={canReopenDay}
+          onDirtyChange={onRosterDirtyChange}
         />
       )}
 

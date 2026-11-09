@@ -26,6 +26,9 @@ export interface MarkAttendanceClassBarProps {
   onRequestGeo: () => void;
   onToggleFaceAI: () => void;
   onMarkAll: (status: AttendanceRecord["status"]) => void;
+  /** A submitted day can be reopened by delete-level staff. */
+  canReopen?: boolean;
+  onReopen?: () => void;
 }
 
 export function MarkAttendanceClassBar({
@@ -39,6 +42,8 @@ export function MarkAttendanceClassBar({
   onRequestGeo,
   onToggleFaceAI,
   onMarkAll,
+  canReopen = false,
+  onReopen,
 }: MarkAttendanceClassBarProps): React.JSX.Element {
   const { t } = useTranslation();
 
@@ -52,6 +57,17 @@ export function MarkAttendanceClassBar({
               <CheckCircle2 className="w-2.5 h-2.5" aria-hidden="true" />{" "}
               {t("attendance.mark.submitted")}
             </Badge>
+          )}
+          {submitted && canReopen && onReopen && (
+            <Button
+              type="button"
+              size="sm"
+              variant="outline"
+              onClick={onReopen}
+              className="min-h-9 px-2 text-xs"
+            >
+              {t("attendance.mark.reopenTitle")}
+            </Button>
           )}
           {isOffline && (
             <Badge pill tone="warning" className="gap-1 px-2 font-bold bg-warning/15">

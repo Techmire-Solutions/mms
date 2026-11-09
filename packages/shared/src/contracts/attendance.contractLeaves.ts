@@ -27,6 +27,18 @@ export const attendanceLeaveListResponseSchema = z.object({
 });
 
 export const attendanceLifecycleRoutes = {
+  getDaySubmission: {
+    method: "GET",
+    path: "/api/attendance/days/:classId/:date",
+    pathParams: attendanceDayPathParamsSchema,
+    responses: {
+      200: attendanceDaySubmissionResponseSchema,
+      400: errorResponse,
+      403: errorResponse,
+      500: errorResponse,
+    },
+    summary: "Read a class roster day's submission state",
+  },
   submitDay: {
     method: "POST",
     path: "/api/attendance/days/:classId/:date/submit",
