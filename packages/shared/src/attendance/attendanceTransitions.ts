@@ -1,4 +1,7 @@
-import type { AttendanceRecordStatus } from "./attendanceModuleManifest.js";
+import {
+  ATTENDANCE_RECORD_STATUSES,
+  type AttendanceRecordStatus,
+} from "./attendanceModuleManifest.js";
 
 /**
  * Attendance status transitions.
@@ -11,15 +14,16 @@ import type { AttendanceRecordStatus } from "./attendanceModuleManifest.js";
  * The table exists so a future policy that does restrict an edge has exactly one place to change,
  * and so the review has an explicit statement of intent instead of an absence of code.
  */
+/**
+ * Built from the canonical status list, so a new status automatically gains its edges instead of
+ * breaking the `Record` (which is what caught the missing `half_day`).
+ */
 export const ATTENDANCE_STATUS_TRANSITIONS: Record<
   AttendanceRecordStatus,
   readonly AttendanceRecordStatus[]
-> = {
-  present: ["present", "late", "absent", "excused"],
-  late: ["present", "late", "absent", "excused"],
-  absent: ["present", "late", "absent", "excused"],
-  excused: ["present", "late", "absent", "excused"],
-};
+> = Object.fromEntries(
+  ATTENDANCE_RECORD_STATUSES.map((status) => [status, [...ATTENDANCE_RECORD_STATUSES]]),
+) as unknown as Record<AttendanceRecordStatus, readonly AttendanceRecordStatus[]>;
 
 /** True when `to` may replace `from` for this record. */
 export function isAttendanceStatusTransitionAllowed(

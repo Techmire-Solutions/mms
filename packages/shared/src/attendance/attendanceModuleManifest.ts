@@ -3,10 +3,22 @@ import { z } from "zod";
 import { isoDateSchema } from "../core/isoDateSchema.js";
 import { attendanceAttachmentUrlSchema } from "./attendanceApiSchemas.js";
 
-export const ATTENDANCE_RECORD_STATUSES = ["present", "absent", "late", "excused"] as const;
-export type AttendanceRecordStatus = (typeof ATTENDANCE_RECORD_STATUSES)[number];
-
-export const attendanceRecordStatusSchema = z.enum(ATTENDANCE_RECORD_STATUSES);
+/**
+ * The status domain lives in its own leaf module (no imports) to keep the manifest, the API schemas
+ * and the lookup model acyclic. Re-exported here so existing imports keep working.
+ */
+export {
+  ATTENDANCE_ATTENDED_STATUSES,
+  ATTENDANCE_RECORD_STATUSES,
+  attendanceAttendedStatusSchema,
+  attendanceRecordStatusSchema,
+  isAttendedStatus,
+  isPresentStatus,
+  type AttendanceAttendedStatus,
+  type AttendanceRecordStatus,
+} from "./attendanceStatusDomain.js";
+// Also imported for local use (the record schemas below reference the status enum).
+import { attendanceRecordStatusSchema } from "./attendanceStatusDomain.js";
 
 export const attendanceRecordSchema = z
   .object({

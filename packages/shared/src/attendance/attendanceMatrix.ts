@@ -1,4 +1,5 @@
 import { buildCsvContent } from "../core/csvUtils.js";
+import type { AttendanceRecordStatus } from "./attendanceStatusDomain.js";
 
 /**
  * Attendance register / monthly matrix.
@@ -14,7 +15,8 @@ export const ATTENDANCE_MATRIX_MAX_DAYS = 92;
 /** Cell ceiling for materialised formats (XLSX). CSV streams and is only day-bounded. */
 export const ATTENDANCE_MATRIX_MAX_CELLS = 200_000;
 
-export type AttendanceMatrixStatus = "present" | "late" | "absent" | "excused";
+/** The matrix renders the canonical status domain — no private union to drift. */
+export type AttendanceMatrixStatus = AttendanceRecordStatus;
 
 /** One student's row inputs: the marks that exist for the range, keyed by ISO day. */
 export interface AttendanceMatrixStudent {
@@ -27,17 +29,26 @@ export interface AttendanceMatrixStudent {
 export interface AttendanceMatrixTotals {
   present: number;
   late: number;
+  halfDay: number;
   absent: number;
   excused: number;
   /** Days with a mark at all (not the range length). */
   marked: number;
 }
 
+const TOTALS_KEYS = ["present", "late", "halfDay", "absent", "excused"] as const;
+
+/** Totals key for a status value (`half_day` → `halfDay`). */
+function totalsKey(status: AttendanceMatrixStatus): (typeof TOTALS_KEYS)[number] {
+  return status === "half_day" ? "halfDay" : status;
+}
+
 /** Single-letter code used in the grid; `—` for a day with no mark. */
 const STATUS_CODE: Record<AttendanceMatrixStatus, string> = {
   present: "P",
-  late: "L",
   absent: "A",
+  late: "L",
+  half_day: "H",
   excused: "E",
 };
 
@@ -53,6 +64,7 @@ export function buildAttendanceMatrixHeader(dates: readonly string[]): string[] 
     ...dates.map((date) => date.slice(5)),
     "Present",
     "Late",
+    "Half day",
     "Absent",
     "Excused",
     "Marked",
@@ -73,6 +85,7 @@ export function buildAttendanceMatrixRow(
   const totals: AttendanceMatrixTotals = {
     present: 0,
     late: 0,
+    halfDay: 0,
     absent: 0,
     excused: 0,
     marked: 0,
@@ -80,7 +93,7 @@ export function buildAttendanceMatrixRow(
   for (const date of dates) {
     const status = student.marks.get(date);
     if (status) {
-      totals[status] += 1;
+      totals[totalsKey(status)] += 1;
       totals.marked += 1;
     }
   }
@@ -90,10 +103,12 @@ export function buildAttendanceMatrixRow(
     ...dates.map((date) => attendanceMatrixCellCode(student.marks.get(date))),
     String(totals.present),
     String(totals.late),
+    String(totals.halfDay),
     String(totals.absent),
     String(totals.excused),
     String(totals.marked),
-    percentage(totals.present, totals.late, totals.marked),
+    // Half days count as attended for the percentage (same rule as every other rate).
+    percentage(totals.present, totals.late + totals.halfDay, totals.marked),
   ];
   return { cells, totals };
 }
@@ -104,7 +119,13 @@ export interface AttendanceMatrixChunk {
   /** Grid for materialised formats, header row first. */
   grid: string[][];
   /** Per-day totals of this chunk, for the footer. */
-  daily: Array<{ present: number; late: number; absent: number; excused: number }>;
+  daily: Array<{
+    present: number;
+    late: number;
+    halfDay: number;
+    absent: number;
+    excused: number;
+  }>;
   totals: AttendanceMatrixTotals;
 }
 
@@ -117,10 +138,11 @@ export function buildAttendanceMatrixChunk(
   dates: readonly string[],
   options: { withHeader: boolean },
 ): AttendanceMatrixChunk {
-  const daily = dates.map(() => ({ present: 0, late: 0, absent: 0, excused: 0 }));
+  const daily = dates.map(() => ({ present: 0, late: 0, halfDay: 0, absent: 0, excused: 0 }));
   const totals: AttendanceMatrixTotals = {
     present: 0,
     late: 0,
+    halfDay: 0,
     absent: 0,
     excused: 0,
     marked: 0,
@@ -129,13 +151,13 @@ export function buildAttendanceMatrixChunk(
   for (const student of students) {
     const { cells, totals: studentTotals } = buildAttendanceMatrixRow(student, dates);
     rows.push(cells);
-    for (const key of ["present", "late", "absent", "excused"] as const) {
+    for (const key of TOTALS_KEYS) {
       totals[key] += studentTotals[key];
     }
     totals.marked += studentTotals.marked;
     dates.forEach((date, index) => {
       const status = student.marks.get(date);
-      if (status) daily[index]![status] += 1;
+      if (status) daily[index]![totalsKey(status)] += 1;
     });
   }
   const grid = options.withHeader ? [buildAttendanceMatrixHeader(dates), ...rows] : rows;
@@ -146,7 +168,13 @@ export function buildAttendanceMatrixChunk(
 /** Footer with the range's daily totals and the overall counts. */
 export function buildAttendanceMatrixFooter(
   dates: readonly string[],
-  daily: ReadonlyArray<{ present: number; late: number; absent: number; excused: number }>,
+  daily: ReadonlyArray<{
+    present: number;
+    late: number;
+    halfDay: number;
+    absent: number;
+    excused: number;
+  }>,
   totals: AttendanceMatrixTotals,
 ): string[][] {
   return [
@@ -155,14 +183,15 @@ export function buildAttendanceMatrixFooter(
       "Daily totals",
       ...dates.map((_date, index) => {
         const day = daily[index];
-        return day ? String(day.present + day.late) : "";
+        return day ? String(day.present + day.late + day.halfDay) : "";
       }),
       String(totals.present),
       String(totals.late),
+      String(totals.halfDay),
       String(totals.absent),
       String(totals.excused),
       String(totals.marked),
-      percentage(totals.present, totals.late, totals.marked),
+      percentage(totals.present, totals.late + totals.halfDay, totals.marked),
     ],
   ];
 }

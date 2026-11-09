@@ -1,9 +1,12 @@
 import {
   ATTENDANCE_LOOKUP_KINDS,
+  ATTENDANCE_RECORD_STATUSES,
   defaultAttendanceLookupItems,
   emptyAttendanceLookupsMap,
+  normalizeAttendanceModulePreferences,
   type AttendanceLookupKind,
   type AttendanceLookupsMap,
+  type AttendanceRecordStatus,
   type AttendanceStatus,
 } from "@mms/shared";
 import { getRequestTenant } from "../lib/tenantContext.js";
@@ -12,6 +15,25 @@ import {
   listAttendanceLookupsByWorkspace,
   replaceAttendanceLookupsForKind,
 } from "../db/repositories/attendanceLookupsRepository.js";
+import { getAttendanceModulePreferences } from "../db/repositories/attendanceModulePreferencesRepository.js";
+import { logger } from "../lib/logger.js";
+import { HttpDomainError } from "../lib/httpErrors.js";
+
+/**
+ * A lookup row may only carry a status id from the canonical domain; a legacy/custom id would be
+ * rejected by `attendance_status_check` the first time a mark used it. Unknown ids are dropped on
+ * read (logged) so one bad row cannot break the grid.
+ */
+function canonicalStatusId(id: string): AttendanceRecordStatus | null {
+  return (ATTENDANCE_RECORD_STATUSES as readonly string[]).includes(id)
+    ? (id as AttendanceRecordStatus)
+    : null;
+}
+
+/** `half_day` is offered only when the tenant enables half-day tracking. */
+function includeHalfDay(trackHalfDay: boolean, statusId: AttendanceRecordStatus): boolean {
+  return statusId !== "half_day" || trackHalfDay;
+}
 
 type LookupDbRow = {
   id: string;
@@ -21,11 +43,23 @@ type LookupDbRow = {
   sortOrder: number;
 };
 
-function rowsToAttendanceStatuses(rows: LookupDbRow[]): AttendanceStatus[] {
-  return rows.map((row) => {
+function rowsToAttendanceStatuses(
+  rows: LookupDbRow[],
+  options: { trackHalfDay: boolean },
+): AttendanceStatus[] {
+  const seen = new Set<string>();
+  const statuses: AttendanceStatus[] = [];
+  for (const row of rows) {
     const lastColon = row.id.lastIndexOf(":");
-    const id = lastColon >= 0 ? row.id.slice(lastColon + 1) : row.id;
-    return {
+    const raw = lastColon >= 0 ? row.id.slice(lastColon + 1) : row.id;
+    const id = canonicalStatusId(raw);
+    if (!id) {
+      logger.warn({ id: raw, kind: row.kind }, "Dropping attendance status lookup with unknown id");
+      continue;
+    }
+    if (!includeHalfDay(options.trackHalfDay, id) || seen.has(id)) continue;
+    seen.add(id);
+    statuses.push({
       id,
       label: row.label,
       short:
@@ -35,8 +69,9 @@ function rowsToAttendanceStatuses(rows: LookupDbRow[]): AttendanceStatus[] {
       text: typeof row.meta?.text === "string" ? row.meta.text : "text-muted-foreground",
       border: typeof row.meta?.border === "string" ? row.meta.border : "border-border",
       dot: typeof row.meta?.dot === "string" ? row.meta.dot : "bg-muted-foreground",
-    };
-  });
+    });
+  }
+  return statuses;
 }
 
 export async function loadAttendanceLookupsMap(
@@ -57,14 +92,18 @@ export async function loadAttendanceLookupsMap(
     list.push(row);
   }
 
+  const preferences = normalizeAttendanceModulePreferences(
+    await getAttendanceModulePreferences(tenant),
+  );
+  const options = { trackHalfDay: preferences.trackHalfDay === true };
   const result = { ...empty };
   for (const kind of ATTENDANCE_LOOKUP_KINDS) {
     const kindRows = byKind.get(kind) ?? [];
-    if (kindRows.length === 0) {
-      result[kind] = defaultAttendanceLookupItems[kind];
-      continue;
-    }
-    result[kind] = rowsToAttendanceStatuses(kindRows);
+    const source =
+      kindRows.length === 0
+        ? defaultAttendanceLookupItems[kind]
+        : rowsToAttendanceStatuses(kindRows, options);
+    result[kind] = source.filter((status) => includeHalfDay(options.trackHalfDay, status.id));
   }
   return result;
 }
@@ -75,6 +114,18 @@ export async function replaceAttendanceLookupKind(
   tenant = getRequestTenant(),
 ): Promise<AttendanceStatus[]> {
   if (!tenant) throw new Error("Tenant context required");
+
+  const preferences = normalizeAttendanceModulePreferences(
+    await getAttendanceModulePreferences(tenant),
+  );
+  const halfDayRequested = items.some((item) => item.id === "half_day");
+  if (halfDayRequested && preferences.trackHalfDay !== true) {
+    throw new HttpDomainError(
+      422,
+      "attendance_half_day_disabled",
+      "Half-day tracking is disabled for this school — enable it in Setup before adding a half-day status",
+    );
+  }
 
   await replaceAttendanceLookupsForKind(
     tenant,

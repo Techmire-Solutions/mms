@@ -11,7 +11,7 @@ import {
   type AttendanceReportComparisonSession,
 } from "@mms/shared";
 import { getQueryRows } from "../documentStoreKeys.js";
-import { withTenantRead } from "../tenant-context.js";
+import { withTenant } from "../tenant-context.js";
 import { loadCountableAttendanceSql } from "./attendanceCountableSql.js";
 import { isPresentOrLateSql, loadAttendanceOverview } from "./attendanceReportOverview.js";
 import { getAttendanceModulePreferences } from "./attendanceModulePreferencesRepository.js";
@@ -37,7 +37,7 @@ export async function loadAttendanceReportAggregatesSql(
   const preferences = normalizeAttendanceModulePreferences(
     await getAttendanceModulePreferences(subdomain),
   );
-  return withTenantRead(subdomain, async (tx) => {
+  return withTenant(subdomain, async (tx) => {
     const aggregates: AttendanceReportAggregates = {
       overview: await loadAttendanceOverview(
         tx,

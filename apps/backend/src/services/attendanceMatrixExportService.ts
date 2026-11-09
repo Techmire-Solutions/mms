@@ -1,5 +1,6 @@
 import {
   ATTENDANCE_MATRIX_MAX_CELLS,
+  ATTENDANCE_RECORD_STATUSES,
   attendanceMatrixDates,
   buildCsvContent,
   buildAttendanceMatrixChunk,
@@ -38,7 +39,7 @@ export interface MatrixExportMeta {
 }
 
 const STUDENT_CHUNK_SIZE = 100;
-const VALID_STATUSES = new Set<AttendanceMatrixStatus>(["present", "late", "absent", "excused"]);
+const VALID_STATUSES = new Set<AttendanceMatrixStatus>(ATTENDANCE_RECORD_STATUSES);
 
 function requireTenant(): string {
   const tenant = getRequestTenant()?.trim().toLowerCase();
@@ -118,11 +119,12 @@ export async function* generateAttendanceMatrixCsv(
   const totals: AttendanceMatrixTotals = {
     present: 0,
     late: 0,
+    halfDay: 0,
     absent: 0,
     excused: 0,
     marked: 0,
   };
-  const daily = dates.map(() => ({ present: 0, late: 0, absent: 0, excused: 0 }));
+  const daily = dates.map(() => ({ present: 0, late: 0, halfDay: 0, absent: 0, excused: 0 }));
   let studentsExported = 0;
   let cursor: string | undefined;
   let withHeader = true;
@@ -150,7 +152,7 @@ export async function* generateAttendanceMatrixCsv(
     );
     withHeader = false;
     studentsExported += page.students.length;
-    for (const key of ["present", "late", "absent", "excused"] as const) {
+    for (const key of ["present", "late", "halfDay", "absent", "excused"] as const) {
       totals[key] += chunk.totals[key];
     }
     totals.marked += chunk.totals.marked;
@@ -158,6 +160,7 @@ export async function* generateAttendanceMatrixCsv(
       const target = daily[index]!;
       target.present += day.present;
       target.late += day.late;
+      target.halfDay += day.halfDay;
       target.absent += day.absent;
       target.excused += day.excused;
     });
@@ -187,8 +190,15 @@ export async function buildAttendanceMatrixGrid(
   }
   const { dates } = resolved;
   const grid: unknown[][] = [];
-  const totals: AttendanceMatrixTotals = { present: 0, late: 0, absent: 0, excused: 0, marked: 0 };
-  const daily = dates.map(() => ({ present: 0, late: 0, absent: 0, excused: 0 }));
+  const totals: AttendanceMatrixTotals = {
+    present: 0,
+    late: 0,
+    halfDay: 0,
+    absent: 0,
+    excused: 0,
+    marked: 0,
+  };
+  const daily = dates.map(() => ({ present: 0, late: 0, halfDay: 0, absent: 0, excused: 0 }));
   let cursor: string | undefined;
   let rosterSize = 0;
 
@@ -215,7 +225,7 @@ export async function buildAttendanceMatrixGrid(
       { withHeader: grid.length === 0 },
     );
     grid.push(...chunk.grid);
-    for (const key of ["present", "late", "absent", "excused"] as const) {
+    for (const key of ["present", "late", "halfDay", "absent", "excused"] as const) {
       totals[key] += chunk.totals[key];
     }
     totals.marked += chunk.totals.marked;
@@ -223,6 +233,7 @@ export async function buildAttendanceMatrixGrid(
       const target = daily[index]!;
       target.present += day.present;
       target.late += day.late;
+      target.halfDay += day.halfDay;
       target.absent += day.absent;
       target.excused += day.excused;
     });

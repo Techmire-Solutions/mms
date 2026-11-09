@@ -68,16 +68,24 @@ describe("buildAttendanceMatrixChunk", () => {
       "03-05",
       "Present",
       "Late",
+      "Half day",
       "Absent",
       "Excused",
       "Marked",
       "Attendance %",
     ]);
     expect(chunk.grid[1]?.slice(2, 6)).toEqual(["P", "L", "A", "—"]);
-    expect(chunk.grid[1]?.slice(6)).toEqual(["1", "1", "1", "0", "3", "67"]);
+    expect(chunk.grid[1]?.slice(6)).toEqual(["1", "1", "0", "1", "0", "3", "67"]);
     expect(chunk.grid[2]?.slice(2, 6)).toEqual(["P", "—", "—", "E"]);
-    expect(chunk.daily[0]).toEqual({ present: 2, late: 0, absent: 0, excused: 0 });
-    expect(chunk.totals).toEqual({ present: 2, late: 1, absent: 1, excused: 1, marked: 5 });
+    expect(chunk.daily[0]).toEqual({ present: 2, late: 0, halfDay: 0, absent: 0, excused: 0 });
+    expect(chunk.totals).toEqual({
+      present: 2,
+      late: 1,
+      halfDay: 0,
+      absent: 1,
+      excused: 1,
+      marked: 5,
+    });
   });
 
   it("omits the header on subsequent chunks", () => {
@@ -98,6 +106,18 @@ describe("buildAttendanceMatrixChunk", () => {
     expect(csv).not.toMatch(/(^|,)"?=HYPERLINK/m);
   });
 
+  it("gives half_day its own code and counts it as attended", () => {
+    const chunk = buildAttendanceMatrixChunk(
+      [student("s1", "Amina", { "2026-03-02": "half_day", "2026-03-03": "present" })],
+      DAYS.slice(0, 2),
+      { withHeader: true },
+    );
+    expect(chunk.grid[1]?.slice(2, 4)).toEqual(["H", "P"]);
+    expect(chunk.totals).toMatchObject({ present: 1, halfDay: 1, marked: 2 });
+    // 2 attended of 2 marked.
+    expect(chunk.grid[1]?.at(-1)).toBe("100");
+  });
+
   it("preserves negative numerics and renders an unknown status as a dash", () => {
     expect(attendanceMatrixCellCode(undefined)).toBe("—");
     expect(buildCsvContent([[-5]])).toBe('"-5"');
@@ -107,15 +127,15 @@ describe("buildAttendanceMatrixChunk", () => {
     const footer = buildAttendanceMatrixFooter(
       DAYS,
       [
-        { present: 2, late: 1, absent: 0, excused: 0 },
-        { present: 1, late: 0, absent: 1, excused: 0 },
-        { present: 0, late: 0, absent: 0, excused: 0 },
-        { present: 0, late: 0, absent: 0, excused: 0 },
+        { present: 2, late: 1, halfDay: 0, absent: 0, excused: 0 },
+        { present: 1, late: 0, halfDay: 0, absent: 1, excused: 0 },
+        { present: 0, late: 0, halfDay: 0, absent: 0, excused: 0 },
+        { present: 0, late: 0, halfDay: 0, absent: 0, excused: 0 },
       ],
-      { present: 3, late: 1, absent: 1, excused: 0, marked: 5 },
+      { present: 3, late: 1, halfDay: 0, absent: 1, excused: 0, marked: 5 },
     );
     expect(footer[0]?.slice(2, 6)).toEqual(["3", "1", "0", "0"]);
-    expect(footer[0]?.slice(-6)).toEqual(["3", "1", "1", "0", "5", "80"]);
+    expect(footer[0]?.slice(-7)).toEqual(["3", "1", "0", "1", "0", "5", "80"]);
   });
 
   it("keeps the cell budget message actionable", () => {

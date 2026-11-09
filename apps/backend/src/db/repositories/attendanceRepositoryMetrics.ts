@@ -1,5 +1,6 @@
 import { and, eq, isNull, sql } from "drizzle-orm";
 import {
+  ATTENDANCE_ATTENDED_STATUSES,
   MODULE_METRICS_DEFAULT_PERIOD_DAYS,
   type AttendanceCommandMetricsSnapshot,
 } from "@mms/shared";
@@ -27,6 +28,11 @@ export async function aggregateAttendanceCommandMetrics(
   const periodStart = new Date(Date.now() - periodDays * 86_400_000).toISOString().slice(0, 10);
 
   const countable = (await loadCountableAttendanceSql(subdomain))('"attendance"');
+  // One placeholder list for every "attended" filter (present, late, half day).
+  const attendedIn = sql.join(
+    ATTENDANCE_ATTENDED_STATUSES.map((status) => sql`${status}`),
+    sql`, `,
+  );
   return withTenantRead(subdomain, async (tx) => {
     const active = and(eq(attendance.workspaceSubdomain, subdomain), isNull(attendance.deletedAt));
 
@@ -38,8 +44,8 @@ export async function aggregateAttendanceCommandMetrics(
         selectedDateLate: sql<number>`count(*) FILTER (WHERE ${attendance.date} = ${selectedDate} AND ${attendance.status} = 'late')::int`,
         selectedDateExcused: sql<number>`count(*) FILTER (WHERE ${attendance.date} = ${selectedDate} AND ${attendance.status} = 'excused')::int`,
         periodTotal: sql<number>`count(*) FILTER (WHERE ${attendance.date} >= ${periodStart})::int`,
-        selectedDatePresentRate: sql<number>`coalesce(round(count(*) FILTER (WHERE ${countable} AND ${attendance.date} = ${selectedDate} AND ${attendance.status} IN ('present','late')) * 100.0 / nullif(count(*) FILTER (WHERE ${countable} AND ${attendance.date} = ${selectedDate}), 0)), 0)::int`,
-        overallPresentRate: sql<number>`coalesce(round(count(*) FILTER (WHERE ${countable} AND ${attendance.status} IN ('present','late')) * 100.0 / nullif(count(*) FILTER (WHERE ${countable}), 0)), 0)::int`,
+        selectedDatePresentRate: sql<number>`coalesce(round(count(*) FILTER (WHERE ${countable} AND ${attendance.date} = ${selectedDate} AND ${attendance.status} IN (${attendedIn})) * 100.0 / nullif(count(*) FILTER (WHERE ${countable} AND ${attendance.date} = ${selectedDate}), 0)), 0)::int`,
+        overallPresentRate: sql<number>`coalesce(round(count(*) FILTER (WHERE ${countable} AND ${attendance.status} IN (${attendedIn})) * 100.0 / nullif(count(*) FILTER (WHERE ${countable}), 0)), 0)::int`,
         priorDate: sql<string | null>`coalesce(
           (select max(${attendance.date})::text from ${attendance} where ${attendance.workspaceSubdomain} = ${subdomain} and ${attendance.deletedAt} is null and ${attendance.date} < ${selectedDate}),
           (select max(${attendance.date})::text from ${attendance} where ${attendance.workspaceSubdomain} = ${subdomain} and ${attendance.deletedAt} is null and ${attendance.date} <> ${selectedDate})
@@ -53,7 +59,7 @@ export async function aggregateAttendanceCommandMetrics(
     if (priorDate) {
       const [priorRow] = await tx
         .select({
-          rate: sql<number>`coalesce(round(count(*) FILTER (WHERE ${countable} AND ${attendance.status} IN ('present','late')) * 100.0 / nullif(count(*) FILTER (WHERE ${countable}), 0)), 0)::int`,
+          rate: sql<number>`coalesce(round(count(*) FILTER (WHERE ${countable} AND ${attendance.status} IN (${attendedIn})) * 100.0 / nullif(count(*) FILTER (WHERE ${countable}), 0)), 0)::int`,
         })
         .from(attendance)
         .where(and(active, eq(attendance.date, priorDate)));

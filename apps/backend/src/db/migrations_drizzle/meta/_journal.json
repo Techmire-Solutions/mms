@@ -1569,6 +1569,13 @@
       "when": 1795168800000,
       "tag": "0223_attendance_notification_idempotency",
       "breakpoints": true
+    },
+    {
+      "idx": 224,
+      "version": "7",
+      "when": 1795172400000,
+      "tag": "0224_attendance_half_day",
+      "breakpoints": true
     }
   ]
 }

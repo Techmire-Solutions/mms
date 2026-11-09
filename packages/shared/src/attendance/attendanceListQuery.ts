@@ -1,32 +1,21 @@
+import type { z } from "zod";
 import type { AttendanceRecord } from "./attendanceModuleManifest.js";
+import type { attendanceListQuerySchema } from "./attendanceApiSchemas.js";
+import type { attendanceListPageResponseSchema } from "../contracts/attendance.contractSchemas.js";
 import { LIST_PAGE_MAX_LIMIT } from "../core/apiSchemas.js";
 import { compareByField, paginateArray } from "../core/utils.js";
 
-/** Supported attendance list filters and pagination options. */
-export interface AttendanceListQuery {
-  page?: number;
-  limit?: number;
-  search?: string;
-  sessionId?: string;
-  classId?: string;
-  facultyId?: string;
-  date?: string;
-  dateFrom?: string;
-  dateTo?: string;
-  status?: string;
-  sortField?: string;
-  sortDir?: "asc" | "desc" | "";
-  includeDeleted?: boolean;
-}
+/**
+ * Supported attendance list filters and pagination options.
+ *
+ * **Inferred from the wire schema** — the hand-written interface used to lag behind it (missing
+ * `sectionId`, `afterId`, `skipCount`, and accepting any `sortField` string). One definition now
+ * serves the route, the client and the in-memory filter helper.
+ */
+export type AttendanceListQuery = z.infer<typeof attendanceListQuerySchema>;
 
-/** Paginated attendance list response. */
-export interface AttendanceListPageResult {
-  records: AttendanceRecord[];
-  total: number;
-  page: number;
-  limit: number;
-  hasMore: boolean;
-}
+/** Paginated attendance list response, inferred from the contract response schema (incl. `nextCursor`). */
+export type AttendanceListPageResult = z.infer<typeof attendanceListPageResponseSchema>;
 
 /** Filters attendance rows using server-supported Work directory fields. */
 export function filterAttendanceForQuery(

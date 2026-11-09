@@ -212,6 +212,31 @@ describe("evaluateAttendanceWrite — time sanity", () => {
     expect(errors.map((error) => error.code)).toEqual(["attendance_time_invalid"]);
   });
 
+  it("requires a time-in for a half-day mark", () => {
+    const missing = evaluateAttendanceWrite(
+      row({ status: "half_day", timeIn: "", timeOut: "" }),
+      preferences(),
+      CONTEXT,
+    );
+    expect(missing.map((error) => error.code)).toContain("attendance_time_invalid");
+
+    const valid = evaluateAttendanceWrite(
+      row({ status: "half_day", timeIn: "08:00", timeOut: "10:00" }),
+      preferences(),
+      CONTEXT,
+    );
+    expect(valid).toEqual([]);
+  });
+
+  it("treats a half day as attendance on an approved-leave day", () => {
+    const errors = evaluateAttendanceWrite(
+      row({ status: "half_day", timeIn: "08:00", timeOut: "10:00" }),
+      preferences(),
+      { ...CONTEXT, isApprovedLeave: () => true },
+    );
+    expect(errors.map((error) => error.code)).toContain("attendance_on_approved_leave");
+  });
+
   it("rejects arrival times on an absent mark", () => {
     const errors = evaluateAttendanceWrite(
       row({ status: "absent", timeIn: "07:00", timeOut: "", notes: "sick" }),

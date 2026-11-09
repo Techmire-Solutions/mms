@@ -1,7 +1,18 @@
 import { z } from "zod";
+import {
+  attendanceRecordStatusSchema,
+  type AttendanceRecordStatus,
+} from "./attendanceStatusDomain.js";
 
+/**
+ * Display metadata for one attendance status.
+ *
+ * `id` is bounded to {@link attendanceRecordStatusSchema}: a tenant may relabel or recolour a status,
+ * but it cannot invent one the database CHECK would reject. (`AttendanceRecordStatus` is the value
+ * type; this is the presentation model.)
+ */
 export type AttendanceStatus = {
-  id: string;
+  id: AttendanceRecordStatus;
   label: string;
   short: string;
   color: string;
@@ -43,6 +54,16 @@ export const DEFAULT_ATTENDANCE_STATUSES: AttendanceStatus[] = [
     dot: "bg-warning",
   },
   {
+    id: "half_day",
+    label: "Half day",
+    short: "H",
+    color: "violet",
+    bg: "bg-info/10",
+    text: "text-info",
+    border: "border-info/30",
+    dot: "bg-info",
+  },
+  {
     id: "excused",
     label: "Excused",
     short: "E",
@@ -80,7 +101,7 @@ export const emptyAttendanceLookupsMap: AttendanceLookupsMap = {
 export const attendanceLookupKindSchema = z.enum(ATTENDANCE_LOOKUP_KINDS);
 
 export const attendanceStatusSchema = z.object({
-  id: z.string().min(1),
+  id: attendanceRecordStatusSchema,
   label: z.string().min(1),
   short: z.string().min(1),
   color: z.string(),

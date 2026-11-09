@@ -1,5 +1,6 @@
 import { and, eq, inArray, isNull, sql } from "drizzle-orm";
 import {
+  ATTENDANCE_ATTENDED_STATUSES,
   attendancePctFromCounts,
   evaluateExamEligibility,
   type ExamEligibilityResult,
@@ -70,6 +71,10 @@ export async function loadExamEligibility(
 ): Promise<ExamEligibilityView> {
   const subdomain = tenant.trim().toLowerCase();
   const countable = await loadCountableAttendanceSql(subdomain);
+  const attendedIn = sql.join(
+    ATTENDANCE_ATTENDED_STATUSES.map((status) => sql`${status}`),
+    sql`, `,
+  );
   const requiredPct = await loadEffectiveThreshold(subdomain, examId);
 
   const rows = await withTenantRead(subdomain, async (tx) => {
@@ -99,7 +104,7 @@ export async function loadExamEligibility(
           ON c.workspace_subdomain = st.workspace_subdomain AND c.id = st.contact_id
         LEFT JOIN LATERAL (
           SELECT count(*) AS countable,
-                 count(*) FILTER (WHERE lower(trim(a.status)) IN ('present','late')) AS present
+                 count(*) FILTER (WHERE lower(trim(a.status)) IN (${attendedIn})) AS present
             FROM attendance a
            WHERE a.workspace_subdomain = e.workspace_subdomain
              AND a.deleted_at IS NULL
