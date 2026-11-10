@@ -16,6 +16,14 @@ const state = vi.hoisted(() => ({
   revokedIds: [] as string[],
 }));
 
+vi.mock("../services/auditTrailService.js", () => ({
+  recordModernAuditEvent: vi.fn(async () => ({ sequence: 1, hashCurrent: "h", hashPrevious: "g" })),
+}));
+vi.mock("../services/outboxEventService.js", () => ({
+  emitOutboxEvents: vi.fn(async () => undefined),
+  emitOutboxEvent: vi.fn(async () => undefined),
+}));
+
 vi.mock("../lib/workspaceDay.js", () => ({
   workspaceTodayIso: vi.fn(async () => "2026-11-10"),
 }));
@@ -129,6 +137,11 @@ const { batchCardRequestId } = await import("@mms/shared");
 
 function fakeRepo() {
   return {
+    findFacultyIdForUser: vi.fn(async () => null),
+    listClassIdsTaughtByFaculty: vi.fn(async () => []),
+    filterStudentsInFacultyClasses: vi.fn(async () => []),
+    findTenantUserRole: vi.fn(async () => "admin"),
+    findDistributionsByIds: vi.fn(async () => []),
     findDenomById: vi.fn(async () => ({
       id: "den1",
       name: "Gold",
@@ -287,7 +300,14 @@ describe("hasanatCardWriteFacade", () => {
       crud,
       requireTenant: () => "demo",
       requireActorUserId: () => "u1",
-      loadQuotaLimit: async () => 10,
+      loadPreferences: async () => ({
+        pointsPerUnit: 1,
+        autoApprovePayouts: true,
+        defaultViewLayout: "list",
+        dailyAwardLimitPerInstructor: 10,
+        awardScope: "tenant" as const,
+        tierLadder: [],
+      }),
     });
     expect(facade).toBeDefined();
     await expect(facade.deleteDistributionById("c1", "user1", "reason")).resolves.toBe(true);

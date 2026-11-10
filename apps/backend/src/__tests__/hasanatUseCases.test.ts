@@ -18,7 +18,28 @@ vi.mock("../db/repositories/hasanatModulePreferencesRepository.js", () => ({
   getHasanatModulePreferences: vi.fn(async () => ({ ...prefsState })),
 }));
 
-vi.mock("../lib/livePush.js", () => ({ broadcastCollection: vi.fn(async () => undefined) }));
+vi.mock("../lib/livePush.js", () => ({
+  broadcastCollection: vi.fn(async () => undefined),
+  broadcastTenantUpdate: vi.fn(),
+}));
+
+const auditCalls = vi.hoisted(() => [] as Array<Record<string, unknown>>);
+vi.mock("../services/auditTrailService.js", () => ({
+  recordModernAuditEvent: vi.fn(async (first: unknown, second?: unknown) => {
+    auditCalls.push((second ?? first) as Record<string, unknown>);
+    return { sequence: 1, hashCurrent: "hash", hashPrevious: "genesis" };
+  }),
+}));
+
+const outboxCalls = vi.hoisted(() => [] as unknown[]);
+vi.mock("../services/outboxEventService.js", () => ({
+  emitOutboxEvents: vi.fn(async (events: unknown[]) => {
+    outboxCalls.push(...events);
+  }),
+  emitOutboxEvent: vi.fn(async (event: unknown) => {
+    outboxCalls.push(event);
+  }),
+}));
 
 // Tier reconciliation is exercised in `hasanatTierAndBatch.test.ts`; here it must stay out of the DB.
 vi.mock("../hasanat/use-cases/hasanatTierUseCases.js", () => ({
@@ -85,6 +106,10 @@ function asActor<T>(tenant: string, fn: () => Promise<T>, userId = "u1"): Promis
 
 function createFakeRepo(): HasanatRepository {
   return {
+    findFacultyIdForUser: vi.fn().mockResolvedValue(null),
+    listClassIdsTaughtByFaculty: vi.fn().mockResolvedValue([]),
+    filterStudentsInFacultyClasses: vi.fn().mockResolvedValue([]),
+    findTenantUserRole: vi.fn().mockResolvedValue("admin"),
     listDenomsByWorkspace: vi.fn().mockResolvedValue([DENOM]),
     countDenomsByWorkspace: vi.fn().mockResolvedValue(1),
     findDenomById: vi.fn().mockResolvedValue(DENOM),
@@ -453,6 +478,91 @@ describe("hasanat use-cases (DI with fake repository)", () => {
       expect(typeof hasanatQueryUseCases.createHasanatQueryUseCases).toBe("function");
       expect(typeof hasanatRedemptionUseCases.redeemHasanatCard).toBe("function");
       expect(typeof hasanatRedemptionUseCases.voidHasanatRedemption).toBe("function");
+    });
+  });
+
+  describe("audit trail", () => {
+    it("records issuance as a CREATE with the actor and stamped value", async () => {
+      auditCalls.length = 0;
+      const repo = createFakeRepo();
+      const useCases = createHasanatUseCases(repo);
+
+      await asActor("demo", () => useCases.createDistribution(ISSUE_BODY));
+
+      const event = auditCalls.find((row) => row.actionType === "CREATE");
+      expect(event).toMatchObject({
+        workspaceSubdomain: "demo",
+        tableName: "hasanat_distributions",
+        actionType: "CREATE",
+        realUserId: "u1",
+        newState: expect.objectContaining({ pointsSnapshot: 50, tag: "hasanat.issue" }),
+      });
+    });
+
+    it("records a redemption and the card status flip", async () => {
+      auditCalls.length = 0;
+      const repo = createFakeRepo();
+      const useCases = createHasanatUseCases(repo);
+
+      await asActor("demo", () =>
+        useCases.redeemCard("hd1", {
+          reward: "Book",
+          pointsUsed: 50,
+          date: "2026-11-10",
+        }),
+      );
+
+      const ledger = auditCalls.find((row) => row.tableName === "hasanat_redemptions");
+      expect(ledger).toMatchObject({
+        actionType: "CREATE",
+        realUserId: "u1",
+        newState: expect.objectContaining({ pointsUsed: 50, tag: "hasanat.redeem" }),
+      });
+      const card = auditCalls.find(
+        (row) =>
+          row.tableName === "hasanat_distributions" &&
+          (row.newState as { tag?: string })?.tag === "hasanat.status.active.redeemed",
+      );
+      expect(card).toBeDefined();
+    });
+
+    it("records the archive with a before/after pair and emits CDC", async () => {
+      auditCalls.length = 0;
+      outboxCalls.length = 0;
+      const repo = createFakeRepo();
+      (repo.findDistributionsByIds as ReturnType<typeof vi.fn>).mockResolvedValue([ACTIVE_CARD]);
+      const useCases = createHasanatUseCases(repo);
+
+      await asActor("demo", () => useCases.deleteDistributionById("hd1", "u1", "wrong student"));
+
+      const event = auditCalls.find((row) => row.actionType === "DELETE");
+      expect(event).toMatchObject({
+        tableName: "hasanat_distributions",
+        realUserId: "u1",
+        oldState: expect.objectContaining({ status: "active", deletedAt: null }),
+        newState: expect.objectContaining({ tag: "hasanat.archive", reason: "wrong student" }),
+      });
+      expect(outboxCalls).toHaveLength(1);
+      expect(outboxCalls[0]).toMatchObject({
+        type: "entity.soft_deleted",
+        payload: expect.objectContaining({ entityType: "hasanat_distributions", entityId: "hd1" }),
+      });
+    });
+
+    it("records a point-catalogue change with before and after values", async () => {
+      auditCalls.length = 0;
+      const repo = createFakeRepo();
+      const useCases = createHasanatUseCases(repo);
+
+      await asActor("demo", () => useCases.replaceDenoms([{ ...DENOM, points: 75 }]));
+
+      const event = auditCalls.find((row) => row.tableName === "hasanat_denoms");
+      expect(event).toMatchObject({
+        actionType: "UPDATE",
+        realUserId: "u1",
+        oldState: expect.objectContaining({ points: 50 }),
+        newState: expect.objectContaining({ points: 75, tag: "hasanat.denom.points" }),
+      });
     });
   });
 });

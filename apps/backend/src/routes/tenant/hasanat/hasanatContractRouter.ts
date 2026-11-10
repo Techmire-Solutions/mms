@@ -15,6 +15,7 @@ import {
   canReadCollection,
   canWriteCollection,
 } from "../../../services/rbacService.js";
+import { userHasPermission } from "../../../lib/userPermissionContext.js";
 import { withTenant } from "../../../db/tenant-context.js";
 import { hasanatUseCases } from "../../../hasanat/use-cases/hasanatUseCases.js";
 import {
@@ -190,7 +191,10 @@ const implementation = {
     ContractRouteResponse<(typeof hasanatContract)["replaceDenoms"]>
   > => {
     const user = request.user as User;
+    // Denominations are the module's point catalogue (configuration): editing them can change the
+    // value of every future award, so it needs the setup-write permission, not daily write.
     if (!canWriteCollection(user, "hasanat_denoms")) return forbidden;
+    if (!userHasPermission(user, "settings.global.write")) return forbidden;
     try {
       const denoms = await withTenant(
         String(request.tenant?.id),

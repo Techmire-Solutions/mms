@@ -5216,6 +5216,11 @@ export const APP_TRANSLATIONS_FA: Partial<Record<AppTranslationKey, string>> = {
     "بازخرید جوایز را بدون بررسی دستی به‌طور خودکار تأیید کنید",
   "hasanat.settings.btnSave": "ذخیره تنظیمات",
   "hasanat.settings.btnSaved": "ذخیره شد!",
+  "hasanat.settings.awardScope": "دامنه اعطا",
+  "hasanat.settings.awardScopeHint":
+    "مدرسین فقط در کلاس‌هایی که تدریس می‌کنند کارت اعطا کنند. مدیران همیشه در همه‌جا می‌توانند اعطا کنند.",
+  "hasanat.settings.awardScopeTenant": "کل فضای کاری",
+  "hasanat.settings.awardScopeAssignedClasses": "فقط کلاس‌های خودشان",
   "hasanat.settings.pointsPerUnit": "امتیاز به ازای کارت/واحد",
   "hasanat.settings.saved": "تنظیمات حسنات ذخیره شد",
   "hasanat.settings.saveFailed": "ذخیره تنظیمات حسنات ممکن نشد",

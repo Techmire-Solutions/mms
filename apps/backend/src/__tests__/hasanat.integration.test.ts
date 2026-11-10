@@ -1,6 +1,6 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { buildApp } from "../app.js";
-import { adminToken, assistantTeacherToken, viewerToken } from "./helpers/tokens.js";
+import { adminToken, assistantTeacherToken, teacherToken, viewerToken } from "./helpers/tokens.js";
 import { ConflictError, PolicyViolationError } from "../lib/httpErrors.js";
 
 vi.mock("../db/database.js", () => ({
@@ -56,11 +56,11 @@ vi.mock("../hasanat/use-cases/hasanatUseCases.js", () => ({
     loadHasanatReportAggregates: (...args: unknown[]) => mockLoadHasanatReportAggregates(...args),
     loadHasanatCommandMetrics: (...args: unknown[]) => mockLoadHasanatCommandMetrics(...args),
     loadHasanatWidgetAggregates: vi.fn().mockResolvedValue({}),
-    replaceDenoms: vi.fn(),
-    replaceBatches: vi.fn(),
-    changeDistributionStatus: vi.fn(),
+    replaceDenoms: vi.fn(async (rows: unknown[]) => rows),
+    replaceBatches: vi.fn(async (rows: unknown[]) => rows),
+    changeDistributionStatus: vi.fn(async () => ({ id: "hd1", status: "returned" })),
     redeemCard: (...args: unknown[]) => mockRedeemCard(...args),
-    voidRedemption: vi.fn(),
+    voidRedemption: vi.fn(async () => ({ redemption: { id: "red2", kind: "reversal" } })),
     batchAward: (...args: unknown[]) => mockBatchAward(...args),
     batchRecipients: vi.fn().mockResolvedValue({
       recipients: [],
@@ -71,7 +71,7 @@ vi.mock("../hasanat/use-cases/hasanatUseCases.js", () => ({
     }),
     getStudentSummary: vi.fn(),
     getStudentReport: vi.fn().mockResolvedValue({ rows: [], tiers: [] }),
-    reconcileTiers: vi.fn(),
+    reconcileTiers: vi.fn(async () => ({ students: 3, awarded: 1, revoked: 0 })),
   },
 }));
 
@@ -262,6 +262,7 @@ describe("hasanat distributions pagination", () => {
     expect(created.statusCode).toBe(201);
     expect(mockCreateDistribution).toHaveBeenCalledWith(
       expect.objectContaining({ batchId: "batch-1", quantity: 1 }),
+      expect.objectContaining({ bypassAwardScope: true }),
     );
 
     const updated = await app.inject({
@@ -482,6 +483,156 @@ describe("hasanat route hardening", () => {
     });
     expect(response.statusCode).toBe(404);
     expect(response.json()).toMatchObject({ type: "not_found" });
+    await app.close();
+  });
+});
+
+describe("hasanat authorization", () => {
+  beforeEach(() => {
+    process.env.JWT_SECRET = "test-secret";
+    vi.clearAllMocks();
+  });
+
+  const headers = (token: string) => ({
+    host: "demo.localhost",
+    authorization: `Bearer ${token}`,
+  });
+
+  it("denies a teacher the destructive and award-reversal actions", async () => {
+    const app = await buildApp();
+    const teacher = headers(teacherToken(app));
+
+    const del = await app.inject({
+      method: "DELETE",
+      url: "/api/hasanat/distributions/hd1",
+      headers: teacher,
+    });
+    expect(del.statusCode).toBe(403);
+
+    const restore = await app.inject({
+      method: "POST",
+      url: "/api/hasanat/distributions/hd1/restore",
+      headers: teacher,
+    });
+    expect(restore.statusCode).toBe(403);
+
+    const voidRedemption = await app.inject({
+      method: "POST",
+      url: "/api/hasanat/redemptions/red1/reverse",
+      headers: teacher,
+      payload: { reason: "keyed the wrong card" },
+    });
+    expect(voidRedemption.statusCode).toBe(403);
+
+    const reconcile = await app.inject({
+      method: "POST",
+      url: "/api/hasanat/tiers/reconcile",
+      headers: teacher,
+    });
+    expect(reconcile.statusCode).toBe(403);
+
+    const returned = await app.inject({
+      method: "POST",
+      url: "/api/hasanat/distributions/hd1/status",
+      headers: teacher,
+      payload: { status: "returned", expectedVersion: 3 },
+    });
+    expect(returned.statusCode).toBe(403);
+    await app.close();
+  });
+
+  it("keeps daily awarding open to teachers", async () => {
+    const app = await buildApp();
+    mockCreateDistribution.mockResolvedValueOnce({ id: "hd9", status: "active" });
+
+    const response = await app.inject({
+      method: "POST",
+      url: "/api/hasanat/distributions",
+      headers: headers(teacherToken(app)),
+      payload: {
+        batchId: "b1",
+        denominationId: "d1",
+        recipientStudentId: "s1",
+        quantity: 1,
+        issuedDate: "2026-11-10",
+      },
+    });
+    expect(response.statusCode).toBe(201);
+    // A teacher never bypasses the instructor award scope.
+    expect(mockCreateDistribution).toHaveBeenCalledWith(
+      expect.anything(),
+      expect.objectContaining({ bypassAwardScope: false }),
+    );
+    await app.close();
+  });
+
+  it("lets an admin delete, void, reconcile and bypass the award scope", async () => {
+    const app = await buildApp();
+    const admin = headers(adminToken(app));
+    mockDeleteDistribution.mockResolvedValueOnce(true);
+    mockCreateDistribution.mockResolvedValueOnce({ id: "hd9", status: "active" });
+
+    const del = await app.inject({
+      method: "DELETE",
+      url: "/api/hasanat/distributions/hd1",
+      headers: admin,
+    });
+    expect(del.statusCode).toBe(200);
+
+    const voidRedemption = await app.inject({
+      method: "POST",
+      url: "/api/hasanat/redemptions/red1/reverse",
+      headers: admin,
+      payload: { reason: "duplicate entry" },
+    });
+    expect(voidRedemption.statusCode).toBe(200);
+
+    const reconcile = await app.inject({
+      method: "POST",
+      url: "/api/hasanat/tiers/reconcile",
+      headers: admin,
+    });
+    expect(reconcile.statusCode).toBe(200);
+
+    const created = await app.inject({
+      method: "POST",
+      url: "/api/hasanat/distributions",
+      headers: admin,
+      payload: {
+        batchId: "b1",
+        denominationId: "d1",
+        recipientStudentId: "s1",
+        quantity: 1,
+        issuedDate: "2026-11-10",
+      },
+    });
+    expect(created.statusCode).toBe(201);
+    expect(mockCreateDistribution).toHaveBeenCalledWith(
+      expect.anything(),
+      expect.objectContaining({ bypassAwardScope: true }),
+    );
+    await app.close();
+  });
+
+  it("reserves the point catalogue for setup writers", async () => {
+    const app = await buildApp();
+    const payload = [{ id: "den1", name: "Gold", points: 50 }];
+
+    const teacher = await app.inject({
+      method: "PUT",
+      url: "/api/hasanat/denoms/bulk",
+      headers: headers(teacherToken(app)),
+      payload,
+    });
+    expect(teacher.statusCode).toBe(403);
+
+    const admin = await app.inject({
+      method: "PUT",
+      url: "/api/hasanat/denoms/bulk",
+      headers: headers(adminToken(app)),
+      payload,
+    });
+    expect(admin.statusCode).toBe(200);
     await app.close();
   });
 });

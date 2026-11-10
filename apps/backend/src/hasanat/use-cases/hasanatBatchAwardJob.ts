@@ -10,6 +10,7 @@ import {
   HASANAT_BATCH_INLINE_MAX,
   HASANAT_BATCH_JOB_CHUNK,
   batchCardRequestId,
+  type HasanatAwardScope,
   type HasanatBatchAwardBody,
   type HasanatBatchRecipient,
 } from "@mms/shared";
@@ -31,6 +32,9 @@ export interface HasanatBulkAwardPayload {
   actorUserId: string;
   actorName?: string | null;
   quotaLimit?: number | null;
+  /** Award-scope preference resolved by the API at enqueue time (server-owned). */
+  awardScope?: HasanatAwardScope;
+  bypassAwardScope?: boolean;
   recipients?: HasanatBatchRecipient[];
 }
 
@@ -71,6 +75,8 @@ export function registerHasanatBulkAwardRunner(): void {
               userId: job.actorUserId,
               displayName: job.actorName ?? null,
               quotaLimit: job.quotaLimit,
+              awardScope: job.awardScope,
+              bypassAwardScope: job.bypassAwardScope === true,
             },
             hasanatRepository,
             { recipients: chunk, enforceInlineCap: false },

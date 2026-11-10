@@ -83,6 +83,16 @@ export interface HasanatRepository {
     query: HasanatListQuery,
   ): Promise<HasanatDistributionsListPageResult>;
 
+  // Award scope (instructor → classes) — who an instructor may award.
+  findFacultyIdForUser(tenant: string, userId: string): Promise<string | null>;
+  listClassIdsTaughtByFaculty(tenant: string, facultyId: string): Promise<string[]>;
+  filterStudentsInFacultyClasses(
+    tenant: string,
+    facultyId: string,
+    studentIds: readonly string[],
+  ): Promise<string[]>;
+  findTenantUserRole(tenant: string, userId: string): Promise<string | null>;
+
   // Card write primitives (rules live in `hasanat/use-cases/*`)
   lockDistributionForUpdate(tenant: string, id: string): Promise<Distribution | null>;
   /** Plain insert of an already-validated card; `pointsSnapshot` is stamped by the use case. */

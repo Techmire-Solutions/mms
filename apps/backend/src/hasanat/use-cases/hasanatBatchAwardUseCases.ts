@@ -15,6 +15,7 @@ import {
   validateBatchIssuance,
   type Distribution,
   type HasanatBatchAwardBody,
+  type HasanatAwardScope,
   type HasanatBatchAwardResult,
   type HasanatBatchRecipient,
   type HasanatBatchTarget,
@@ -31,11 +32,17 @@ import {
 } from "../repository/hasanatRepositoryAdapter.js";
 import { reconcileTiersForStudents } from "./hasanatTierUseCases.js";
 import { assertSessionsWritable } from "./hasanatSessionGuard.js";
+import { assertAwardScope } from "./hasanatAwardScope.js";
+import { auditCardState } from "./hasanatAudit.js";
 
 export interface BatchAwardActor {
   userId: string;
   displayName?: string | null;
   quotaLimit?: number | null;
+  /** Workspace award-scope preference, loaded by the caller. */
+  awardScope?: HasanatAwardScope;
+  /** Admins (holders of `hasanat.delete`) award outside their classes. */
+  bypassAwardScope?: boolean;
 }
 
 export async function resolveBatchAwardRecipients(
@@ -105,6 +112,17 @@ export async function issueHasanatCardsBatch(
     };
   }
 
+  // Scope first: an instructor may only award inside the classes they teach (when enabled).
+  await assertAwardScope({
+    tenant: subdomain,
+    repo,
+    actorUserId: actor.userId,
+    bypass: actor.bypassAwardScope === true,
+    awardScope: actor.awardScope ?? "tenant",
+    classIds: body.target.kind === "class" ? [body.target.classId] : [],
+    studentIds: pending.map((recipient) => recipient.studentId),
+  });
+
   // One query for the whole group: a single closed session blocks the award.
   await assertSessionsWritable(
     subdomain,
@@ -152,10 +170,35 @@ export async function issueHasanatCardsBatch(
 
   const distributionIds = await insertBatchDistributions(subdomain, cards);
 
+  // Audit stays per record (the chain is per record); the CDC outbox is what gets batched.
+  for (const card of cards) {
+    await auditCardState({
+      tenant: subdomain,
+      actorUserId: actor.userId,
+      action: "CREATE",
+      cardId: card.id,
+      after: {
+        studentId: card.studentId,
+        classId: card.classId ?? null,
+        sessionId: card.sessionId ?? null,
+        batchId: card.batchId,
+        denominationId: card.denominationId,
+        quantity: card.quantity,
+        pointsSnapshot: card.pointsSnapshot ?? null,
+        status: "active",
+        issuedDate: card.issuedDate,
+        expiresOn: card.expiresOn ?? null,
+      },
+      reason: body.reason ?? null,
+      tag: "hasanat.batch.issue",
+    });
+  }
+
   // One state query for the whole group — not one reconcile per student.
   await reconcileTiersForStudents(
     subdomain,
     cards.map((card) => card.studentId),
+    { actorUserId: actor.userId },
   );
 
   return {

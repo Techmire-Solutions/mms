@@ -6,6 +6,7 @@
 import {
   HASANAT_BATCH_INLINE_MAX,
   type HasanatBatchAwardBody,
+  type HasanatModulePreferences,
   type HasanatBatchRecipientsResponse,
   type HasanatBatchTarget,
 } from "@mms/shared";
@@ -18,7 +19,9 @@ import {
   registerHasanatBulkAwardRunner,
 } from "./hasanatBatchAwardJob.js";
 import { reconcileTiersForCards } from "./hasanatTierUseCases.js";
+import { assertAwardScope } from "./hasanatAwardScope.js";
 import { withTenant } from "../../db/tenant-context.js";
+import { archiveCardEvidence, restoreCardEvidence } from "./hasanatCardArchive.js";
 import { ConflictError } from "../../lib/httpErrors.js";
 import { enqueueBackgroundJob } from "../../services/backgroundJobWorkerService.js";
 import { buildBackgroundJobId } from "../../lib/backgroundJobIds.js";
@@ -44,9 +47,9 @@ export function createHasanatCardWriteFacade(options: {
   crud: CardCrud;
   requireTenant: () => string;
   requireActorUserId: () => string;
-  loadQuotaLimit: () => Promise<number>;
+  loadPreferences: () => Promise<HasanatModulePreferences>;
 }) {
-  const { repo, crud, requireTenant, requireActorUserId, loadQuotaLimit } = options;
+  const { repo, crud, requireTenant, requireActorUserId, loadPreferences } = options;
 
   return {
     /**
@@ -60,17 +63,35 @@ export function createHasanatCardWriteFacade(options: {
     ): Promise<boolean> => {
       const tenant = requireTenant();
       return withTenant(tenant, async () => {
+        const [before] = await repo.findDistributionsByIds(tenant, [id], { deleted: "all" });
         const ok = await crud.deleteById(id, deletedBy, reason);
-        if (ok) await reconcileTiersForCards(tenant, [id]);
-        return ok;
+        if (!ok) return false;
+        const after = before
+          ? {
+              ...before,
+              deletedAt: new Date().toISOString(),
+              deletedBy,
+              deletionReason: reason ?? null,
+            }
+          : null;
+        if (before && after) {
+          await archiveCardEvidence({ tenant, cards: [before], deletedBy, reason });
+        }
+        await reconcileTiersForCards(tenant, [id], { actorUserId: deletedBy });
+        return true;
       });
     },
     restoreDistributionById: async (id: string, userId?: string): Promise<boolean> => {
       const tenant = requireTenant();
       return withTenant(tenant, async () => {
+        const [before] = await repo.findDistributionsByIds(tenant, [id], { deleted: "all" });
         const ok = await crud.restoreById(id, userId);
-        if (ok) await reconcileTiersForCards(tenant, [id]);
-        return ok;
+        if (!ok) return false;
+        if (before) {
+          await restoreCardEvidence({ tenant, cards: [before], restoredBy: userId ?? null });
+        }
+        await reconcileTiersForCards(tenant, [id], { actorUserId: userId ?? null });
+        return true;
       });
     },
     bulkSoftDeleteDistributions: async (
@@ -80,8 +101,12 @@ export function createHasanatCardWriteFacade(options: {
     ): Promise<{ succeeded: number; failed: number }> => {
       const tenant = requireTenant();
       return withTenant(tenant, async () => {
+        const beforeRows = await repo.findDistributionsByIds(tenant, ids, { deleted: "all" });
         const result = await crud.bulkDeleteByIds(ids, deletedBy, reason);
-        if (result.succeeded > 0) await reconcileTiersForCards(tenant, ids);
+        if (result.succeeded > 0) {
+          await archiveCardEvidence({ tenant, cards: beforeRows, deletedBy, reason });
+          await reconcileTiersForCards(tenant, ids, { actorUserId: deletedBy });
+        }
         return result;
       });
     },
@@ -91,18 +116,33 @@ export function createHasanatCardWriteFacade(options: {
     ): Promise<{ succeeded: number; failed: number }> => {
       const tenant = requireTenant();
       return withTenant(tenant, async () => {
+        const beforeRows = await repo.findDistributionsByIds(tenant, ids, { deleted: "all" });
         const result = await crud.bulkRestoreByIds(ids, userId);
-        if (result.succeeded > 0) await reconcileTiersForCards(tenant, ids);
+        if (result.succeeded > 0) {
+          await restoreCardEvidence({ tenant, cards: beforeRows, restoredBy: userId ?? null });
+          await reconcileTiersForCards(tenant, ids, { actorUserId: userId ?? null });
+        }
         return result;
       });
     },
 
     /** Preview a batch award target (count, stock and quota headroom). */
-    batchRecipients: async (input: {
-      target: HasanatBatchTarget;
-    }): Promise<HasanatBatchRecipientsResponse> => {
+    batchRecipients: async (
+      input: { target: HasanatBatchTarget },
+      options?: { bypassAwardScope?: boolean },
+    ): Promise<HasanatBatchRecipientsResponse> => {
       const tenant = requireTenant();
       const recipients = await resolveBatchAwardRecipients(tenant, input.target);
+      const preferences = await loadPreferences();
+      await assertAwardScope({
+        tenant,
+        repo,
+        actorUserId: requireActorUserId(),
+        bypass: options?.bypassAwardScope === true,
+        awardScope: preferences.awardScope,
+        classIds: input.target.kind === "class" ? [input.target.classId] : [],
+        studentIds: recipients.map((recipient) => recipient.studentId),
+      });
       return {
         recipients,
         count: recipients.length,
@@ -116,7 +156,7 @@ export function createHasanatCardWriteFacade(options: {
      * Award one card per recipient. Up to `HASANAT_BATCH_INLINE_MAX` runs inline (one transaction);
      * larger groups are queued as `hasanat:bulk-award` and chunked by the worker.
      */
-    batchAward: async (body: HasanatBatchAwardBody) => {
+    batchAward: async (body: HasanatBatchAwardBody, options?: { bypassAwardScope?: boolean }) => {
       const tenant = requireTenant();
       const actorUserId = requireActorUserId();
       const recipients = await resolveBatchAwardRecipients(tenant, body.target);
@@ -126,6 +166,13 @@ export function createHasanatCardWriteFacade(options: {
           "empty_batch_target",
         );
       }
+      const preferences = await loadPreferences();
+      const actor = {
+        userId: actorUserId,
+        quotaLimit: preferences.dailyAwardLimitPerInstructor,
+        awardScope: preferences.awardScope,
+        bypassAwardScope: options?.bypassAwardScope === true,
+      };
 
       if (recipients.length > HASANAT_BATCH_INLINE_MAX) {
         registerHasanatBulkAwardRunner();
@@ -143,7 +190,9 @@ export function createHasanatCardWriteFacade(options: {
           {
             body,
             actorUserId,
-            quotaLimit: await loadQuotaLimit(),
+            quotaLimit: preferences.dailyAwardLimitPerInstructor,
+            awardScope: preferences.awardScope,
+            bypassAwardScope: actor.bypassAwardScope,
             recipients,
           },
         );
@@ -156,13 +205,7 @@ export function createHasanatCardWriteFacade(options: {
         };
       }
 
-      const result = await issueHasanatCardsBatch(
-        tenant,
-        body,
-        { userId: actorUserId, quotaLimit: await loadQuotaLimit() },
-        repo,
-        { recipients },
-      );
+      const result = await issueHasanatCardsBatch(tenant, body, actor, repo, { recipients });
       await broadcastCollection("hasanat_distributions");
       return result;
     },

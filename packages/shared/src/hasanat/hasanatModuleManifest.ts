@@ -252,7 +252,7 @@ export const HASANAT_MODULE_MANIFEST = {
   permissions: {
     read: "hasanat.read",
     write: "hasanat.write",
-    delete: "hasanat.write",
+    delete: "hasanat.delete",
     setupView: "configuration.view",
     setupWrite: "settings.global.write",
     export: "hasanat.read",

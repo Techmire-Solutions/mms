@@ -15,6 +15,7 @@ import {
 import { withTenant } from "../../db/tenant-context.js";
 import { ConflictError, NotFoundError } from "../../lib/httpErrors.js";
 import { throwRuleViolation } from "./hasanatRuleErrors.js";
+import { auditCardMutation } from "./hasanatAudit.js";
 import type { HasanatRepository } from "../repository/hasanatRepository.js";
 import { assertSessionWritable } from "./hasanatSessionGuard.js";
 
@@ -24,6 +25,7 @@ export async function changeHasanatCardStatus(
   distributionId: string,
   input: DistributionStatusChange,
   repo: HasanatRepository,
+  actor?: { userId?: string | null },
 ): Promise<Distribution> {
   const subdomain = tenant.trim().toLowerCase();
 
@@ -50,6 +52,15 @@ export async function changeHasanatCardStatus(
     if (!updated) {
       throw new NotFoundError("Hasanat card not found");
     }
+    await auditCardMutation({
+      tenant: subdomain,
+      actorUserId: actor?.userId ?? null,
+      action: "UPDATE",
+      card: updated,
+      before: card,
+      tag: `hasanat.status.${card.status}.${updated.status}`,
+      reason: input.reason ?? null,
+    });
     return updated;
   });
 }
@@ -60,6 +71,7 @@ export async function updateHasanatCard(
   distributionId: string,
   input: DistributionUpdate,
   repo: HasanatRepository,
+  actor?: { userId?: string | null },
 ): Promise<Distribution> {
   const subdomain = tenant.trim().toLowerCase();
   const { expectedVersion, ...patch } = input;
@@ -109,6 +121,15 @@ export async function updateHasanatCard(
     if (!updated) {
       throw new ConflictError("This card changed since you loaded it. Reload and try again.");
     }
+    await auditCardMutation({
+      tenant: subdomain,
+      actorUserId: actor?.userId ?? null,
+      action: "UPDATE",
+      card: updated,
+      before: card,
+      tag: "hasanat.card.edit",
+      reason: input.reason ?? null,
+    });
     return updated;
   });
 }

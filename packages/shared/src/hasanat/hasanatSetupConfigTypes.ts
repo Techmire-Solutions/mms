@@ -102,6 +102,11 @@ export const hasanatFieldConfigPutBodySchema = z.preprocess((raw) => {
   return deepSanitizeStrings(raw);
 }, hasanatFieldConfigPutBodyBaseSchema);
 
+/** Who an instructor may award: the whole tenant, or only the classes they teach. */
+export const HASANAT_AWARD_SCOPES = ["tenant", "assigned_classes"] as const;
+export const hasanatAwardScopeSchema = z.enum(HASANAT_AWARD_SCOPES);
+export type HasanatAwardScope = z.infer<typeof hasanatAwardScopeSchema>;
+
 /** PUT /api/hasanat/preferences — hasanat prefs only. */
 export const hasanatPreferencesPutBodySchema = z
   .object({
@@ -110,6 +115,8 @@ export const hasanatPreferencesPutBodySchema = z
     defaultViewLayout: z.string().optional(),
     /** Instructor daily awarding cap; `0` disables the quota. */
     dailyAwardLimitPerInstructor: z.number().int().min(0).max(10_000).optional(),
+    /** Recipient scope for instructors with `hasanat.write`; admins always bypass it. */
+    awardScope: hasanatAwardScopeSchema.optional(),
     /** Tier ladder (validated by `validateTierLadder`); omitted = keep the stored ladder. */
     tierLadder: z
       .array(
@@ -134,6 +141,8 @@ export interface HasanatModulePreferences {
   defaultViewLayout: string;
   /** Instructor daily awarding cap enforced at issuance; `0` = unlimited. */
   dailyAwardLimitPerInstructor: number;
+  /** Recipient scope for instructors; `tenant` (default) keeps the historical behaviour. */
+  awardScope: HasanatAwardScope;
   /** Workspace tier ladder; defaults to `DEFAULT_HASANAT_TIER_LADDER`. */
   tierLadder: HasanatTier[];
 }
@@ -146,6 +155,7 @@ export function normalizeHasanatModulePreferences(raw: unknown): HasanatModulePr
       autoApprovePayouts: DEFAULT_HASANAT_SETTINGS.autoApprovePayouts,
       defaultViewLayout: DEFAULT_HASANAT_SETTINGS.defaultViewLayout || "list",
       dailyAwardLimitPerInstructor: 0,
+      awardScope: "tenant",
       tierLadder: [...DEFAULT_HASANAT_TIER_LADDER],
     };
   }
@@ -169,6 +179,10 @@ export function normalizeHasanatModulePreferences(raw: unknown): HasanatModulePr
       Number.isFinite(prefs.dailyAwardLimitPerInstructor)
         ? Math.max(0, Math.trunc(prefs.dailyAwardLimitPerInstructor))
         : 0,
+    awardScope:
+      prefs.awardScope === "assigned_classes" || prefs.awardScope === "tenant"
+        ? prefs.awardScope
+        : "tenant",
     tierLadder: resolveTierLadder(prefs.tierLadder),
   };
 }

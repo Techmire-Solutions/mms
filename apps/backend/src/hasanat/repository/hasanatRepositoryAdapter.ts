@@ -40,6 +40,12 @@ import {
 } from "../../db/repositories/hasanatCardOps.js";
 import { getHasanatModulePreferences } from "../../db/repositories/hasanatModulePreferencesRepository.js";
 import {
+  findFacultyIdForUser,
+  findTenantUserRole,
+  filterStudentsInFacultyClasses,
+  listClassIdsTaughtByFaculty,
+} from "../../db/repositories/hasanatAwardScopeRepository.js";
+import {
   appendRedemption,
   findRedemptionByClientRequestId,
   findLiveRedemptionForCard,
@@ -87,6 +93,10 @@ export {
  * existing concrete repository functions (no SQL rewrite in this pass).
  */
 export const hasanatRepository: HasanatRepository = {
+  findFacultyIdForUser,
+  listClassIdsTaughtByFaculty,
+  filterStudentsInFacultyClasses,
+  findTenantUserRole,
   listDenomsByWorkspace,
   countDenomsByWorkspace,
   findDenomById,
