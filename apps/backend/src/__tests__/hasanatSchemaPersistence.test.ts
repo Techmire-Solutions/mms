@@ -428,4 +428,29 @@ describe("Hasanat schema & persistence invariants (0225–0232)", () => {
     expect(importJob).toMatch(/findDistributionsByClientRequestIds/);
     expect(importJob).toMatch(/throwIfBackgroundJobAborted/);
   });
+
+  it("streams the hasanat export and escapes every cell", async () => {
+    const service = await readFile(
+      join(process.cwd(), "src/services/hasanatExportService.ts"),
+      "utf-8",
+    );
+    expect(service).toMatch(/generateStreamChunks/);
+    expect(service).toMatch(/buildCsvContent/);
+
+    const runners = await readFile(
+      join(process.cwd(), "src/services/backgroundJobHasanatRunners.ts"),
+      "utf-8",
+    );
+    expect(runners).toMatch(/moduleId: "hasanat"/);
+    expect(runners).toMatch(/generateStreamChunks/);
+  });
+
+  it("validates imported points and dates per row", async () => {
+    const resolver = await readFile(
+      join(process.cwd(), "src/hasanat/use-cases/hasanatImportResolve.ts"),
+      "utf-8",
+    );
+    expect(resolver).toMatch(/defined by the denomination/);
+    expect(resolver).toMatch(/Invalid date/);
+  });
 });

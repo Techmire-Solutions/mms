@@ -122,10 +122,12 @@ const BULK_PAYLOAD = {
 };
 
 describe("hasanat job runner registration", () => {
-  it("registers both job keys in the shared registry", () => {
+  it("registers the award, import and export keys in the shared registry", () => {
     registerHasanatJobRunners();
     expect(hasBackgroundJobRunner("hasanat:bulk-award")).toBe(true);
     expect(hasBackgroundJobRunner("hasanat:import")).toBe(true);
+    // Without this the export route answers 503 for the whole module.
+    expect(hasBackgroundJobRunner("hasanat:export")).toBe(true);
   });
 
   it("routes award pipelines onto the dedicated queue with a 10-minute budget", () => {

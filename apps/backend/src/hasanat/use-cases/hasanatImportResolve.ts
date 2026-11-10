@@ -21,6 +21,14 @@ export interface ImportResolution {
  * Resolves every row up front; rows that cannot be resolved unambiguously are reported and skipped.
  * Batch availability is tracked locally so one import cannot over-allocate a batch.
  */
+/** `YYYY-MM-DD` that also round-trips as a real calendar day. */
+function isIsoCalendarDate(value: string): boolean {
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(value)) return false;
+  const parsed = new Date(`${value}T00:00:00Z`);
+  if (Number.isNaN(parsed.getTime())) return false;
+  return parsed.toISOString().slice(0, 10) === value;
+}
+
 export function resolveImportRows(
   rows: readonly HasanatTransferEntity[],
   denominations: readonly Denomination[],
@@ -100,6 +108,33 @@ export function resolveImportRows(
       });
       return;
     }
+    // A `points` cell is advisory: the stamped value always comes from the denomination. Silently
+    // ignoring a contradicting value made a "points import" look like it set points when it did not.
+    const rawPoints = row.points == null ? "" : String(row.points).trim();
+    const declaredPoints = rawPoints === "" ? null : Number(rawPoints);
+    if (declaredPoints !== null && !Number.isFinite(declaredPoints)) {
+      errors.push({ row: rowNumber, reason: `Invalid points value "${rawPoints}"` });
+      return;
+    }
+    if (declaredPoints !== null && declaredPoints !== denomination.points) {
+      errors.push({
+        row: rowNumber,
+        reason: `Points are defined by the denomination "${denomination.name}" (${denomination.points}); remove the points column or use a matching deed`,
+      });
+      return;
+    }
+
+    // Dates must be real ISO dates: a bad value would otherwise reach the insert and fail the
+    // entire import instead of rejecting this row.
+    const declaredDate = row.date?.trim() ?? "";
+    if (declaredDate && !isIsoCalendarDate(declaredDate)) {
+      errors.push({
+        row: rowNumber,
+        reason: `Invalid date "${declaredDate}" (expected YYYY-MM-DD)`,
+      });
+      return;
+    }
+
     available.set(denomination.id, (available.get(denomination.id) ?? 0) - 1);
 
     resolved.push({
@@ -109,7 +144,7 @@ export function resolveImportRows(
         studentId: students[0].studentId,
         studentName: students[0].studentName,
         batchId: batch.id,
-        issuedDate: row.date?.trim() || fallbackDate,
+        issuedDate: declaredDate || fallbackDate,
         reason:
           [row.title, row.description].filter(Boolean).join(" — ").slice(0, 1000) || "Imported",
       },

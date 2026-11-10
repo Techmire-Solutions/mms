@@ -9692,6 +9692,7 @@ export const APP_TRANSLATIONS_EN = {
   "examinations.templatePreset.report_card_typst": "Typst BiDi Report Card (A4)",
   "examinations.templatePreset.certificate_a4_landscape": "Honor Certificate (A4 Landscape)",
   "hasanat.templateField.receiptNo": "Voucher / Slip No",
+  "hasanat.templateField.qrPayload": "QR payload (verify)",
   "hasanat.templateField.donorName": "Donor / Sponsor",
   "hasanat.templateField.recipientName": "Recipient Name",
   "hasanat.templateField.denomination": "Denomination Unit",

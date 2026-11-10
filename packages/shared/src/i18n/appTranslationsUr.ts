@@ -9588,6 +9588,7 @@ export const APP_TRANSLATIONS_UR: Record<AppTranslationKey, string> = {
   "examinations.templatePreset.report_card_typst": "ٹائپسٹ دو طرفہ رپورٹ کارڈ (A4)",
   "examinations.templatePreset.certificate_a4_landscape": "اعزازی سند (A4 افقی)",
   "hasanat.templateField.receiptNo": "واؤچر / پرچی نمبر",
+  "hasanat.templateField.qrPayload": "کیو آر پے لوڈ (تصدیق)",
   "hasanat.templateField.donorName": "عطیہ دہندہ / اسپانسر",
   "hasanat.templateField.recipientName": "وصول کنندہ کا نام",
   "hasanat.templateField.denomination": "واؤچر کی قسم",

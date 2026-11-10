@@ -9479,6 +9479,7 @@ export const APP_TRANSLATIONS_AR: Record<AppTranslationKey, string> = {
   "examinations.templatePreset.report_card_typst": "بطاقة تقرير Typst ثنائية الاتجاه (A4)",
   "examinations.templatePreset.certificate_a4_landscape": "شهادة تكريم (A4 أفقي)",
   "hasanat.templateField.receiptNo": "رقم القسيمة / الإيصال",
+  "hasanat.templateField.qrPayload": "حمولة رمز QR (للتحقق)",
   "hasanat.templateField.donorName": "المتبرع / الراعي",
   "hasanat.templateField.recipientName": "اسم المستفيد",
   "hasanat.templateField.denomination": "فئة القسيمة",

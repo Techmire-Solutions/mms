@@ -19,6 +19,8 @@ import {
 } from "@/lib/ui/printTemplateStyles";
 
 export interface HasanatPayload {
+  /** Compact, printable verification payload: `<cardId>|<points>|<issuedDate>`. */
+  qrPayload: string;
   receiptNo: string;
   donorName: string;
   recipientName: string;
@@ -35,7 +37,11 @@ export const HASANAT_TEMPLATE_STORAGE_KEY = "mms_hasanat_voucher_template";
 
 export const HASANAT_AVAILABLE_FIELDS: TemplateFieldDefinition<HasanatPayload>[] = [
   { field: "receiptNo", label: "Voucher / Slip No", sampleValue: "HAS-2026-904" },
-  { field: "donorName", label: "Donor / Sponsor", sampleValue: "Hajj Ahmad" },
+  {
+    field: "qrPayload",
+    label: "QR payload (verify)",
+    sampleValue: "hd-123|50 Hasanat|2026-09-12",
+  },
   { field: "recipientName", label: "Recipient Name", sampleValue: "Zaid bin Harith" },
   { field: "denomination", label: "Denomination Unit", sampleValue: "Silver Deed (10 Pts)" },
   { field: "totalPoints", label: "Total Points / Value", sampleValue: "50 Hasanat" },
@@ -137,7 +143,18 @@ export const DEFAULT_HASANAT_TEMPLATE: DocumentTemplate<HasanatPayload> = {
         textAlign: "center",
       },
     },
-    { id: "h_qr", type: "qrcode", label: "QR Verify", x: 20, y: 130, w: 54, h: 54 },
+    {
+      id: "h_qr",
+      type: "qrcode",
+      // Bound to the card payload: an unbound QR fell back to the element label and printed the
+      // same "QR Verify" code on every slip.
+      field: "qrPayload",
+      label: "QR Verify",
+      x: 20,
+      y: 130,
+      w: 54,
+      h: 54,
+    },
     {
       id: "h_by",
       type: "field",

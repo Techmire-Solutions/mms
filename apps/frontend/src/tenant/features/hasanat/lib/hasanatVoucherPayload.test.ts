@@ -29,6 +29,7 @@ describe("buildHasanatVoucherPayload", () => {
 
     expect(payload).toEqual({
       institution: "Madrasa Al-Huda",
+      qrPayload: "dist-1|20 Hasanat|2026-09-12",
       receiptNo: "dist-1",
       donorName: "",
       recipientName: "Zaid bin Harith",
@@ -49,5 +50,23 @@ describe("buildHasanatVoucherPayload", () => {
 
     // A printed voucher must never show a value the backend did not compute.
     expect(payload.totalPoints).toBe("0 Hasanat");
+  });
+
+  it("encodes a per-card QR payload so two slips never share a code", () => {
+    const first = buildHasanatVoucherPayload({ distribution, institution: "Madrasa" });
+    const second = buildHasanatVoucherPayload({
+      distribution: { ...distribution, id: "dist-2", pointsSnapshot: 30 },
+      institution: "Madrasa",
+    });
+
+    expect(first.qrPayload).toContain("dist-1");
+    expect(second.qrPayload).toContain("dist-2");
+    expect(first.qrPayload).not.toBe(second.qrPayload);
+  });
+
+  it("binds the default template QR element to the payload field", async () => {
+    const { DEFAULT_HASANAT_TEMPLATE } = await import("./hasanatTemplateData");
+    const qr = DEFAULT_HASANAT_TEMPLATE.elements.find((element) => element.type === "qrcode");
+    expect(qr?.field).toBe("qrPayload");
   });
 });

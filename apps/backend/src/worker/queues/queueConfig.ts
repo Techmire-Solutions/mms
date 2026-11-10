@@ -95,6 +95,7 @@ export function resolveJobExecutionTimeoutMs(moduleId: string, kind: string): nu
     // Batched Hasanat awards/imports write hundreds of cards; the 60s sandbox ceiling is too tight.
     "hasanat:bulk-award": ENROLLMENTS_IMPORT_TIMEOUT_MS,
     "hasanat:import": ENROLLMENTS_IMPORT_TIMEOUT_MS,
+    "hasanat:export": SESSIONS_EXPORT_TIMEOUT_MS,
     "students:import": STUDENTS_IMPORT_TIMEOUT_MS,
     "students:export": STUDENTS_EXPORT_TIMEOUT_MS,
     "students:bulk-status": STUDENTS_IMPORT_TIMEOUT_MS,

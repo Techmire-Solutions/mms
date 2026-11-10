@@ -264,6 +264,9 @@ export const HASANAT_MODULE_MANIFEST = {
   },
   defaultPageSize: 15,
   maxPageSize: 100,
+  /** Background CSV export (`createModuleExportService` manifest bits). */
+  defaultExportFilename: "hasanat.csv",
+  exportChunkSize: 250,
 } as const;
 
 export type HasanatModuleTier = (typeof HASANAT_MODULE_MANIFEST.tiers)[number];
