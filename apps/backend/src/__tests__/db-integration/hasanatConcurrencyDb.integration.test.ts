@@ -90,7 +90,12 @@ function issueInput(
   batchId: string,
   denominationId: string,
   studentId: string,
-  overrides: { id?: string; clientRequestId?: string; quotaLimit?: number } = {},
+  overrides: {
+    id?: string;
+    clientRequestId?: string;
+    quotaLimit?: number;
+    actorUserId?: string;
+  } = {},
 ) {
   return {
     body: distributionCreateSchema.parse({
@@ -104,7 +109,7 @@ function issueInput(
       reason: "Concurrency probe",
       ...(overrides.clientRequestId ? { clientRequestId: overrides.clientRequestId } : {}),
     }),
-    actorUserId: ACTOR.userId,
+    actorUserId: overrides.actorUserId ?? ACTOR.userId,
     actorName: ACTOR.displayName,
     quotaLimit: overrides.quotaLimit ?? 0,
   };
@@ -230,16 +235,23 @@ describe("hasanat issuance concurrency", () => {
 
   it("enforces the instructor daily quota under a concurrent double issue", async () => {
     const { denominationId, batchId } = await seedStock(5);
+    const quotaInstructorId = `u-quota-${randomUUID().slice(0, 8)}`;
 
     const results = await Promise.allSettled([
       issueHasanatCard(
         TENANT,
-        issueInput(batchId, denominationId, await freshStudent(), { quotaLimit: 1 }),
+        issueInput(batchId, denominationId, await freshStudent(), {
+          quotaLimit: 1,
+          actorUserId: quotaInstructorId,
+        }),
         hasanatRepository,
       ),
       issueHasanatCard(
         TENANT,
-        issueInput(batchId, denominationId, await freshStudent(), { quotaLimit: 1 }),
+        issueInput(batchId, denominationId, await freshStudent(), {
+          quotaLimit: 1,
+          actorUserId: quotaInstructorId,
+        }),
         hasanatRepository,
       ),
     ]);
