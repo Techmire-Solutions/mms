@@ -1,6 +1,8 @@
-import { and, eq, inArray, sql } from "drizzle-orm";
+import { and, count, eq, inArray, sql } from "drizzle-orm";
 import { dedupeTrimmedIds, type Denomination } from "@mms/shared";
 import { hasanatDenoms } from "../schema.js";
+import { hasanatDistributions } from "../schema.js";
+import { ConflictError } from "../../lib/httpErrors.js";
 import { withTenant, withTenantRead } from "../tenant-context.js";
 
 type DenomRow = typeof hasanatDenoms.$inferSelect;
@@ -16,8 +18,13 @@ export function denomRowToRecord(row: DenomRow): Denomination {
   };
 }
 
-export async function listDenomsByWorkspace(tenant: string): Promise<Denomination[]> {
+export async function listDenomsByWorkspace(
+  tenant: string,
+  options?: { limit?: number; offset?: number },
+): Promise<Denomination[]> {
   const subdomain = tenant.trim().toLowerCase();
+  const limit = Math.min(Math.max(options?.limit ?? 500, 1), 1000);
+  const offset = Math.max(options?.offset ?? 0, 0);
   return withTenantRead(subdomain, async (tx) => {
     const rows = await tx
       .select({
@@ -33,8 +40,22 @@ export async function listDenomsByWorkspace(tenant: string): Promise<Denominatio
         createdAt: hasanatDenoms.createdAt,
       })
       .from(hasanatDenoms)
-      .where(eq(hasanatDenoms.workspaceSubdomain, subdomain));
+      .where(eq(hasanatDenoms.workspaceSubdomain, subdomain))
+      .orderBy(hasanatDenoms.id)
+      .limit(limit)
+      .offset(offset);
     return rows.map(denomRowToRecord);
+  });
+}
+
+export async function countDenomsByWorkspace(tenant: string): Promise<number> {
+  const subdomain = tenant.trim().toLowerCase();
+  return withTenantRead(subdomain, async (tx) => {
+    const [row] = await tx
+      .select({ total: count() })
+      .from(hasanatDenoms)
+      .where(eq(hasanatDenoms.workspaceSubdomain, subdomain));
+    return Number(row?.total ?? 0);
   });
 }
 
@@ -163,10 +184,16 @@ export async function bulkSaveDenoms(tenant: string, records: Denomination[]): P
   });
 }
 
+/**
+ * Reconcile the denomination list: upsert the rows in the payload and delete the rows it omits.
+ *
+ * Deletion is refused when a denomination still has issued cards — silently keeping it (the old
+ * upsert-only behaviour) made the UI's delete action a no-op, and cascading would destroy history.
+ * The caller (use case) is expected to present this as a 409.
+ */
 export async function replaceDenomsForWorkspace(
   tenant: string,
   records: Denomination[],
-  options: { allowHardPurge?: boolean } = {},
 ): Promise<void> {
   const subdomain = tenant.trim().toLowerCase();
   const uniqueMap = new Map<string, Denomination>();
@@ -177,24 +204,66 @@ export async function replaceDenomsForWorkspace(
   const uniqueRecords = Array.from(uniqueMap.values());
 
   await withTenant(subdomain, async (tx) => {
-    if (options.allowHardPurge) {
-      await tx.execute(sql`SELECT set_config('app.allow_hard_purge', 'true', true)`);
-    }
-    await tx.delete(hasanatDenoms).where(eq(hasanatDenoms.workspaceSubdomain, subdomain));
     if (uniqueRecords.length > 0) {
-      await tx.insert(hasanatDenoms).values(
-        uniqueRecords.map((r) => ({
-          id: r.id,
-          workspaceSubdomain: subdomain,
-          name: r.name,
-          points: r.points,
-          color: r.color ?? "emerald",
-          description: r.description ?? "",
-          icon: r.icon ?? "Star",
-          active: r.active ?? true,
-          updatedAt: new Date(),
-        })),
+      await tx
+        .insert(hasanatDenoms)
+        .values(
+          uniqueRecords.map((r) => ({
+            id: r.id,
+            workspaceSubdomain: subdomain,
+            name: r.name,
+            points: r.points,
+            color: r.color ?? "emerald",
+            description: r.description ?? "",
+            icon: r.icon ?? "Star",
+            active: r.active ?? true,
+            updatedAt: new Date(),
+          })),
+        )
+        .onConflictDoUpdate({
+          target: [hasanatDenoms.workspaceSubdomain, hasanatDenoms.id],
+          set: {
+            name: sql`excluded.name`,
+            points: sql`excluded.points`,
+            color: sql`excluded.color`,
+            description: sql`excluded.description`,
+            icon: sql`excluded.icon`,
+            active: sql`excluded.active`,
+            updatedAt: new Date(),
+          },
+        });
+    }
+
+    const existing = await tx
+      .select({ id: hasanatDenoms.id })
+      .from(hasanatDenoms)
+      .where(eq(hasanatDenoms.workspaceSubdomain, subdomain));
+    const incoming = new Set(uniqueRecords.map((row) => row.id));
+    const missing = existing.map((row) => row.id).filter((id) => !incoming.has(id));
+    if (missing.length === 0) return;
+
+    const referenced = await tx
+      .select({ id: hasanatDistributions.denominationId })
+      .from(hasanatDistributions)
+      .where(
+        and(
+          eq(hasanatDistributions.workspaceSubdomain, subdomain),
+          inArray(hasanatDistributions.denominationId, missing),
+        ),
+      )
+      .groupBy(hasanatDistributions.denominationId);
+    if (referenced.length > 0) {
+      throw new ConflictError(
+        "Some denominations still have issued cards; deactivate them instead of deleting.",
+        "denomination_in_use",
+        { ids: referenced.map((row) => row.id) },
       );
     }
+
+    await tx
+      .delete(hasanatDenoms)
+      .where(
+        and(eq(hasanatDenoms.workspaceSubdomain, subdomain), inArray(hasanatDenoms.id, missing)),
+      );
   });
 }

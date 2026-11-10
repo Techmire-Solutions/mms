@@ -29,6 +29,9 @@ export {
 };
 export const HASANAT_API = HASANAT_MODULE_MANIFEST.restBasePath;
 
+/** Maximum ledger page the tracker requests (server cap is 200). */
+const LEDGER_TRACKER_PAGE_SIZE = 200;
+
 export function hasanatCommandMetricsQueryOptions() {
   return serverMetricsQueryOptions<HasanatCommandMetricsSnapshot>({
     moduleId: HASANAT_MODULE_MANIFEST.moduleId,
@@ -166,7 +169,10 @@ export function useHasanatRedemptions(options?: { enabled?: boolean }) {
   const { can } = usePermissions();
   const canRead = can("hasanat.read");
   return tsrClient.hasanat.listRedemptions.useQuery({
-    queryKey: HASANAT_REDEMPTIONS_QUERY_KEY,
+    queryKey: [...HASANAT_REDEMPTIONS_QUERY_KEY, { limit: LEDGER_TRACKER_PAGE_SIZE }],
+    // The ledger endpoint is paginated; the tracker renders one bounded page (max 200) and the
+    // drawer links to the full history per card.
+    queryData: { query: { limit: LEDGER_TRACKER_PAGE_SIZE } },
     enabled: isAuthenticated && canRead && (options?.enabled ?? true),
     staleTime: 30_000,
   });

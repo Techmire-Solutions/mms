@@ -1,6 +1,8 @@
-import { and, eq, inArray, sql } from "drizzle-orm";
+import { and, count, eq, inArray, sql } from "drizzle-orm";
 import { dedupeTrimmedIds, type StockBatch } from "@mms/shared";
 import { hasanatBatches } from "../schema.js";
+import { hasanatDistributions } from "../schema.js";
+import { ConflictError } from "../../lib/httpErrors.js";
 import { withTenant, withTenantRead } from "../tenant-context.js";
 import { requireDbDateValue } from "../../lib/dbDate.js";
 
@@ -52,6 +54,17 @@ export async function listBatchesByWorkspace(
       .limit(limit)
       .offset(offset);
     return rows.map(batchRowToRecord);
+  });
+}
+
+export async function countBatchesByWorkspace(tenant: string): Promise<number> {
+  const subdomain = tenant.trim().toLowerCase();
+  return withTenantRead(subdomain, async (tx) => {
+    const [row] = await tx
+      .select({ total: count() })
+      .from(hasanatBatches)
+      .where(eq(hasanatBatches.workspaceSubdomain, subdomain));
+    return Number(row?.total ?? 0);
   });
 }
 
@@ -191,10 +204,16 @@ export async function bulkSaveBatches(tenant: string, records: StockBatch[]): Pr
   });
 }
 
+/**
+ * Reconcile the batch list: upsert the rows in the payload and delete the rows it omits.
+ *
+ * Deletion is refused when the batch still has issued cards (the card rows are history). The old
+ * delete-all-and-reinsert could never run once the distribution guard existed, and the upsert-only
+ * variant silently ignored removals; this is the honest middle.
+ */
 export async function replaceBatchesForWorkspace(
   tenant: string,
   records: StockBatch[],
-  options: { allowHardPurge?: boolean } = {},
 ): Promise<void> {
   const subdomain = tenant.trim().toLowerCase();
   const uniqueMap = new Map<string, StockBatch>();
@@ -205,25 +224,68 @@ export async function replaceBatchesForWorkspace(
   const uniqueRecords = Array.from(uniqueMap.values());
 
   await withTenant(subdomain, async (tx) => {
-    if (options.allowHardPurge) {
-      await tx.execute(sql`SELECT set_config('app.allow_hard_purge', 'true', true)`);
-    }
-    await tx.delete(hasanatBatches).where(eq(hasanatBatches.workspaceSubdomain, subdomain));
     if (uniqueRecords.length > 0) {
-      await tx.insert(hasanatBatches).values(
-        uniqueRecords.map((r) => ({
-          id: r.id,
-          workspaceSubdomain: subdomain,
-          denominationId: r.denominationId,
-          denominationName: r.denominationName ?? "",
-          quantity: r.quantity,
-          addedDate: requireDbDateValue(r.addedDate, "addedDate"),
-          addedByUserId: r.addedByUserId ?? null,
-          addedBy: r.addedBy ?? null,
-          note: r.note ?? "",
-          updatedAt: new Date(),
-        })),
+      await tx
+        .insert(hasanatBatches)
+        .values(
+          uniqueRecords.map((r) => ({
+            id: r.id,
+            workspaceSubdomain: subdomain,
+            denominationId: r.denominationId,
+            denominationName: r.denominationName ?? "",
+            quantity: r.quantity,
+            addedDate: requireDbDateValue(r.addedDate, "addedDate"),
+            addedByUserId: r.addedByUserId ?? null,
+            addedBy: r.addedBy ?? null,
+            note: r.note ?? "",
+            updatedAt: new Date(),
+          })),
+        )
+        .onConflictDoUpdate({
+          target: [hasanatBatches.workspaceSubdomain, hasanatBatches.id],
+          set: {
+            denominationId: sql`excluded.denomination_id`,
+            denominationName: sql`excluded.denomination_name`,
+            quantity: sql`excluded.quantity`,
+            addedDate: sql`excluded.added_date`,
+            addedByUserId: sql`excluded.added_by_user_id`,
+            addedBy: sql`excluded.added_by`,
+            note: sql`excluded.note`,
+            updatedAt: new Date(),
+          },
+        });
+    }
+
+    const existing = await tx
+      .select({ id: hasanatBatches.id })
+      .from(hasanatBatches)
+      .where(eq(hasanatBatches.workspaceSubdomain, subdomain));
+    const incoming = new Set(uniqueRecords.map((row) => row.id));
+    const missing = existing.map((row) => row.id).filter((id) => !incoming.has(id));
+    if (missing.length === 0) return;
+
+    const referenced = await tx
+      .select({ id: hasanatDistributions.batchId })
+      .from(hasanatDistributions)
+      .where(
+        and(
+          eq(hasanatDistributions.workspaceSubdomain, subdomain),
+          inArray(hasanatDistributions.batchId, missing),
+        ),
+      )
+      .groupBy(hasanatDistributions.batchId);
+    if (referenced.length > 0) {
+      throw new ConflictError(
+        "Some batches still have issued cards and cannot be deleted.",
+        "batch_in_use",
+        { ids: referenced.map((row) => row.id) },
       );
     }
+
+    await tx
+      .delete(hasanatBatches)
+      .where(
+        and(eq(hasanatBatches.workspaceSubdomain, subdomain), inArray(hasanatBatches.id, missing)),
+      );
   });
 }

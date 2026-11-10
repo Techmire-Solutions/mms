@@ -7,10 +7,6 @@ import {
 } from "../core/apiSchemas.js";
 import { widgetAggregatesBodySchema } from "../schemas/common.dto.js";
 import {
-  hasanatFieldConfigPutBodySchema,
-  hasanatPreferencesPutBodySchema,
-} from "../hasanat/hasanatSetupConfigTypes.js";
-import {
   denomRecordSchema,
   batchRecordSchema,
   distributionRecordSchema,
@@ -22,7 +18,11 @@ import {
   distributionStatusSchema,
   denomListSchema,
   batchListSchema,
-  distributionListSchema,
+  hasanatBatchesResponseSchema,
+  hasanatDenomsResponseSchema,
+  hasanatLedgerListQuerySchema,
+  hasanatListLimitQuerySchema,
+  hasanatRedemptionsPageResponseSchema,
 } from "../hasanat/hasanatModuleManifest.js";
 import { hasanatReportAggregatesSchema } from "../hasanat/hasanatReportAggregates.js";
 import { hasanatTierBatchContractRoutes } from "./hasanatTierBatch.contract.js";
@@ -86,6 +86,7 @@ export const hasanatContract = c.router({
     method: "PUT",
     path: "/api/hasanat/distributions/:id",
     body: distributionUpdateSchema,
+    pathParams: z.object({ id: z.string().trim().min(1).max(64) }),
     responses: {
       200: z.object({ distribution: distributionRecordSchema }),
       403: ok,
@@ -98,6 +99,7 @@ export const hasanatContract = c.router({
     method: "POST",
     path: "/api/hasanat/distributions/:id/redeem",
     body: redeemCardBodySchema,
+    pathParams: z.object({ id: z.string().trim().min(1).max(64) }),
     responses: {
       200: z.object({ redemption: redemptionRecordSchema }),
       403: ok,
@@ -111,6 +113,7 @@ export const hasanatContract = c.router({
     method: "POST",
     path: "/api/hasanat/distributions/:id/status",
     body: distributionStatusSchema,
+    pathParams: z.object({ id: z.string().trim().min(1).max(64) }),
     responses: {
       200: z.object({ distribution: distributionRecordSchema }),
       403: ok,
@@ -124,6 +127,7 @@ export const hasanatContract = c.router({
     method: "POST",
     path: "/api/hasanat/redemptions/:id/reverse",
     body: reverseRedemptionBodySchema,
+    pathParams: z.object({ id: z.string().trim().min(1).max(64) }),
     responses: {
       200: z.object({ redemption: redemptionRecordSchema }),
       403: ok,
@@ -150,23 +154,28 @@ export const hasanatContract = c.router({
   listDenoms: {
     method: "GET",
     path: "/api/hasanat/denoms",
-    query: z.object({}).optional(),
-    responses: { 200: z.array(denomRecordSchema), 403: ok, 500: ok },
-    summary: "List hasanat denominations",
+    query: hasanatListLimitQuerySchema.optional(),
+    responses: { 200: hasanatDenomsResponseSchema, 400: ok, 403: ok, 500: ok },
+    summary: "List hasanat denominations (bounded)",
   },
   listBatches: {
     method: "GET",
     path: "/api/hasanat/batches",
-    query: z.object({}).optional(),
-    responses: { 200: z.array(batchRecordSchema), 403: ok, 500: ok },
-    summary: "List hasanat batches",
+    query: hasanatListLimitQuerySchema.optional(),
+    responses: { 200: hasanatBatchesResponseSchema, 400: ok, 403: ok, 500: ok },
+    summary: "List hasanat batches (bounded)",
   },
   listRedemptions: {
     method: "GET",
     path: "/api/hasanat/redemptions",
-    query: z.object({}).optional(),
-    responses: { 200: z.array(redemptionRecordSchema), 403: ok, 500: ok },
-    summary: "List hasanat redemptions",
+    query: hasanatLedgerListQuerySchema.optional(),
+    responses: {
+      200: hasanatRedemptionsPageResponseSchema,
+      400: ok,
+      403: ok,
+      500: ok,
+    },
+    summary: "Ledger history (paginated, newest first)",
   },
   reportAggregates: {
     method: "GET",
@@ -189,21 +198,11 @@ export const hasanatContract = c.router({
     responses: { 200: z.object({ batches: z.array(batchRecordSchema) }), 403: ok, 500: ok },
     summary: "Replace batches",
   },
-  replaceDistributions: {
-    method: "PUT",
-    path: "/api/hasanat/distributions/bulk",
-    body: distributionListSchema,
-    responses: {
-      200: z.object({ distributions: z.array(distributionRecordSchema) }),
-      403: ok,
-      500: ok,
-    },
-    summary: "Replace distributions",
-  },
   deleteDistribution: {
     method: "DELETE",
     path: "/api/hasanat/distributions/:id",
     body: softDeleteBodySchema.optional(),
+    pathParams: z.object({ id: z.string().trim().min(1).max(64) }),
     responses: { 200: z.object({ success: z.literal(true) }), 403: ok, 404: ok, 500: ok },
     summary: "Delete distribution",
   },
@@ -211,6 +210,7 @@ export const hasanatContract = c.router({
     method: "POST",
     path: "/api/hasanat/distributions/:id/restore",
     body: z.object({}).optional(),
+    pathParams: z.object({ id: z.string().trim().min(1).max(64) }),
     responses: { 200: z.object({ success: z.literal(true) }), 403: ok, 404: ok, 500: ok },
     summary: "Restore distribution",
   },
@@ -224,60 +224,5 @@ export const hasanatContract = c.router({
       500: errorResponse,
     },
     summary: "Get widget aggregates",
-  },
-
-  getFieldConfig: {
-    method: "GET",
-    path: "/api/hasanat/field-config",
-    responses: {
-      200: z.object({ config: z.record(z.string(), z.unknown()).nullable() }),
-      403: errorResponse,
-      500: errorResponse,
-    },
-    summary: "Get field config",
-  },
-  updateFieldConfig: {
-    method: "PUT",
-    path: "/api/hasanat/field-config",
-    body: hasanatFieldConfigPutBodySchema,
-    responses: {
-      200: z.object({ success: z.literal(true), config: z.record(z.string(), z.unknown()) }),
-      403: errorResponse,
-      500: errorResponse,
-    },
-    summary: "Update field config",
-  },
-  getPreferences: {
-    method: "GET",
-    path: "/api/hasanat/preferences",
-    responses: {
-      200: z.object({ preferences: hasanatPreferencesResponseSchema }),
-      403: errorResponse,
-      500: errorResponse,
-    },
-    summary: "Get preferences",
-  },
-  updatePreferences: {
-    method: "PUT",
-    path: "/api/hasanat/preferences",
-    body: hasanatPreferencesPutBodySchema,
-    responses: {
-      200: z.object({ success: z.literal(true), preferences: hasanatPreferencesResponseSchema }),
-      403: errorResponse,
-      500: errorResponse,
-    },
-    summary: "Update preferences",
-  },
-  getLookups: {
-    method: "GET",
-    path: "/api/hasanat/lookups",
-    responses: { 200: z.unknown(), 403: errorResponse, 500: errorResponse },
-    summary: "Get all lookups",
-  },
-  getLookupKind: {
-    method: "GET",
-    path: "/api/hasanat/lookups/:kind",
-    responses: { 200: z.unknown(), 403: errorResponse, 500: errorResponse },
-    summary: "Get a specific lookup kind",
   },
 });

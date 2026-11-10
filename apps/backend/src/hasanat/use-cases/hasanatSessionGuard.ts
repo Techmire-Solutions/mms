@@ -19,7 +19,10 @@ export async function assertSessionWritable(
   const statuses = await findSessionStatuses(tenant, [sessionId]);
   const status = statuses.get(sessionId) ?? null;
   if (status && cardWriteBlockedBySessionStatus(status)) {
-    throw new ConflictError(cardWriteBlockedMessage(status));
+    throw new ConflictError(cardWriteBlockedMessage(status), "session_locked", {
+      sessionId,
+      sessionStatus: status,
+    });
   }
 }
 
@@ -34,7 +37,10 @@ export async function assertSessionsWritable(
   for (const id of ids) {
     const status = statuses.get(id) ?? null;
     if (status && cardWriteBlockedBySessionStatus(status)) {
-      throw new ConflictError(cardWriteBlockedMessage(status));
+      throw new ConflictError(cardWriteBlockedMessage(status), "session_locked", {
+        sessionId: id,
+        sessionStatus: status,
+      });
     }
   }
 }

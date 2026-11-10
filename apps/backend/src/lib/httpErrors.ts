@@ -111,8 +111,18 @@ export class HttpDomainError extends Error {
 }
 
 export class ConflictError extends HttpDomainError {
-  constructor(message = "Conflict", type: string = "conflict") {
-    super(409, type, message);
+  constructor(message = "Conflict", type: string = "conflict", details?: Record<string, unknown>) {
+    super(409, type, message, details ? { details } : undefined);
+  }
+}
+
+/**
+ * 422 — the request is well-formed but the domain policy refuses it (partial redemption, expired
+ * card, value mismatch). State conflicts stay 409; payload shape problems stay 400.
+ */
+export class PolicyViolationError extends HttpDomainError {
+  constructor(message: string, type = "policy_violation", details?: Record<string, unknown>) {
+    super(422, type, message, details ? { details } : undefined);
   }
 }
 

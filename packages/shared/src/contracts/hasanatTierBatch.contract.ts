@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { isoDateSchema } from "../core/isoDateSchema.js";
 import {
   hasanatBatchAwardBodySchema,
   hasanatBatchAwardResultSchema,
@@ -34,11 +35,17 @@ export const hasanatTierBatchContractRoutes = {
     path: "/api/hasanat/distributions/batch/recipients",
     query: z
       .object({
-        sessionId: z.string().optional(),
-        classId: z.string().optional(),
-        sectionId: z.string().optional(),
-        studentIds: z.string().optional(),
+        sessionId: z.string().trim().min(1).max(64).optional(),
+        classId: z.string().trim().min(1).max(64).optional(),
+        sectionId: z.string().trim().min(1).max(64).optional(),
+        /** Comma-separated student ids, capped at the batch maximum (1000 × 65 chars). */
+        studentIds: z.string().max(65_000).optional(),
       })
+      .strict()
+      .refine(
+        (value) => Boolean(value.studentIds?.trim()) || Boolean(value.sessionId && value.classId),
+        { message: "Provide studentIds, or both sessionId and classId" },
+      )
       .optional(),
     responses: { 200: hasanatBatchRecipientsResponseSchema, 400: ok, 403: ok, 500: ok },
     summary: "Preview the recipients of a batch award",
@@ -46,7 +53,11 @@ export const hasanatTierBatchContractRoutes = {
   studentSummary: {
     method: "GET",
     path: "/api/hasanat/students/:id/summary",
-    query: z.object({ sessionId: z.string().optional() }).optional(),
+    pathParams: z.object({ id: z.string().trim().min(1).max(64) }),
+    query: z
+      .object({ sessionId: z.string().trim().min(1).max(64).optional() })
+      .strict()
+      .optional(),
     responses: { 200: hasanatStudentSummarySchema, 403: ok, 404: ok, 500: ok },
     summary: "Student progression: earned/balance, tier and award history",
   },
@@ -55,11 +66,12 @@ export const hasanatTierBatchContractRoutes = {
     path: "/api/hasanat/reports/students",
     query: z
       .object({
-        sessionId: z.string().optional(),
-        classId: z.string().optional(),
-        from: z.string().optional(),
-        to: z.string().optional(),
+        sessionId: z.string().trim().min(1).max(64).optional(),
+        classId: z.string().trim().min(1).max(64).optional(),
+        from: isoDateSchema.optional(),
+        to: isoDateSchema.optional(),
       })
+      .strict()
       .optional(),
     responses: { 200: hasanatStudentReportResponseSchema, 403: ok, 500: ok },
     summary: "Per-student Hasanat report (earned/balance/redeemed + derived tier)",

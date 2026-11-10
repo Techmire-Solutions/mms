@@ -1,6 +1,7 @@
 /** Hasanat repository public surface — denoms, batches, distributions, redemptions. */
 export {
   listDenomsByWorkspace,
+  countDenomsByWorkspace,
   findDenomById,
   findDenomsByIds,
   saveDenom,
@@ -9,6 +10,7 @@ export {
 } from "./hasanatDenomsRepository.js";
 export {
   listBatchesByWorkspace,
+  countBatchesByWorkspace,
   findBatchById,
   findBatchesByIds,
   saveBatch,
@@ -33,3 +35,4 @@ export {
   replaceRedemptionsForWorkspace,
   deleteHasanatByWorkspace,
 } from "./hasanatRedemptionsRepository.js";
+export { listRedemptionsPage } from "./hasanatRedemptionsPage.js";

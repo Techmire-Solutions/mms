@@ -1,22 +1,20 @@
 import { type FastifyInstance, type FastifyPluginOptions } from "fastify";
 import { authenticateTenant } from "../../middleware/authenticate.js";
 import { registerModuleAccess } from "../../middleware/requireTenantModule.js";
-import { HASANAT_MODULE_MANIFEST, denomListSchema, batchListSchema } from "@mms/shared";
-import { registerBulkRoutes, registerMetricsRoute } from "../../lib/crudRouter.js";
+import { HASANAT_MODULE_MANIFEST, hasanatCommandMetricsResponseSchema } from "@mms/shared";
+import { registerMetricsRoute } from "../../lib/crudRouter.js";
 import { hasanatUseCases } from "../../hasanat/use-cases/hasanatUseCases.js";
 import { registerHasanatBulkAwardRunner } from "../../hasanat/use-cases/hasanatBatchAwardJob.js";
 import { registerHasanatImportRunner } from "../../hasanat/use-cases/hasanatImportJob.js";
-import { hasanatReportRoutes } from "./hasanat/hasanatReportRoutes.js";
 import { hasanatSetupConfigRoutes } from "./hasanatSetupConfigRoutes.js";
 import { hasanatContractRouter } from "./hasanat/hasanatContractRouter.js";
 import { hasanatExportRoutes } from "./hasanat/hasanatExportRoutes.js";
 
 const HASANAT_DISTRIBUTIONS_COLLECTION = HASANAT_MODULE_MANIFEST.collectionKey;
-const HASANAT_DENOMS_COLLECTION = HASANAT_MODULE_MANIFEST.denomCollectionKey;
-const HASANAT_BATCHES_COLLECTION = HASANAT_MODULE_MANIFEST.batchCollectionKey;
 
 /**
- * Hasanat module routes — setup bulk upserts (denoms/batches) plus the card contract router.
+ * Hasanat module routes — contract router (cards, setup lists, reports) plus the setup-config,
+ * CSV export/import and metrics endpoints that are shared infrastructure.
  */
 export default async function hasanatRoutes(
   fastify: FastifyInstance,
@@ -30,7 +28,6 @@ export default async function hasanatRoutes(
 
   await fastify.register(
     async (sub) => {
-      await sub.register(hasanatReportRoutes);
       await sub.register(hasanatSetupConfigRoutes);
       await sub.register(hasanatExportRoutes);
 
@@ -38,26 +35,7 @@ export default async function hasanatRoutes(
         collection: HASANAT_DISTRIBUTIONS_COLLECTION,
         loadMetricsFn: hasanatUseCases.loadHasanatCommandMetrics,
         errorMessagePrefix: "hasanat",
-      });
-
-      registerBulkRoutes(sub, {
-        path: "/denoms",
-        collection: HASANAT_DENOMS_COLLECTION,
-        schema: denomListSchema,
-        saveFn: hasanatUseCases.upsertDenoms,
-        responseKey: "denoms",
-        errorMessagePrefix: "denominations",
-        customGetRoute: true,
-      });
-
-      registerBulkRoutes(sub, {
-        path: "/batches",
-        collection: HASANAT_BATCHES_COLLECTION,
-        schema: batchListSchema,
-        saveFn: hasanatUseCases.upsertBatches,
-        responseKey: "batches",
-        errorMessagePrefix: "batches",
-        customGetRoute: true,
+        metricsSchema: hasanatCommandMetricsResponseSchema,
       });
     },
     { prefix: "/api/hasanat" },

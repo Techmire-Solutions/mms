@@ -40,9 +40,17 @@ const EMPTY_HASANAT_METRICS: HasanatCommandMetricsSnapshot = {
 
 export function createHasanatQueryUseCases(repo: HasanatRepository) {
   return {
-    loadDenoms: async (): Promise<Denomination[]> => {
+    loadDenoms: async (options?: {
+      limit?: number;
+      offset?: number;
+    }): Promise<{ denoms: Denomination[]; total: number }> => {
       const tenant = getRequestTenant();
-      return tenant ? repo.listDenomsByWorkspace(tenant) : [];
+      if (!tenant) return { denoms: [], total: 0 };
+      const [denoms, total] = await Promise.all([
+        repo.listDenomsByWorkspace(tenant, options),
+        repo.countDenomsByWorkspace(tenant),
+      ]);
+      return { denoms, total };
     },
     loadDenomById: async (id: string): Promise<Denomination | null> => {
       const tenant = getRequestTenant();
@@ -58,9 +66,18 @@ export function createHasanatQueryUseCases(repo: HasanatRepository) {
       return repo.findDenomsByIds(tenant, cleanIds);
     },
 
-    loadBatches: async (): Promise<StockBatch[]> => {
+    loadBatches: async (options?: {
+      limit?: number;
+      offset?: number;
+    }): Promise<{ batches: StockBatch[]; total: number; hasMore: boolean }> => {
       const tenant = getRequestTenant();
-      return tenant ? repo.listBatchesByWorkspace(tenant) : [];
+      if (!tenant) return { batches: [], total: 0, hasMore: false };
+      const [batches, total] = await Promise.all([
+        repo.listBatchesByWorkspace(tenant, options),
+        repo.countBatchesByWorkspace(tenant),
+      ]);
+      const offset = Math.max(options?.offset ?? 0, 0);
+      return { batches, total, hasMore: offset + batches.length < total };
     },
     loadBatchById: async (id: string): Promise<StockBatch | null> => {
       const tenant = getRequestTenant();
@@ -76,9 +93,26 @@ export function createHasanatQueryUseCases(repo: HasanatRepository) {
       return repo.findBatchesByIds(tenant, cleanIds);
     },
 
-    loadRedemptions: async (): Promise<Redemption[]> => {
+    loadRedemptions: async (query?: {
+      page?: number;
+      limit?: number;
+      from?: string;
+      to?: string;
+      kind?: "redeem" | "reversal";
+      studentId?: string;
+      distributionId?: string;
+    }): Promise<{
+      redemptions: Redemption[];
+      total: number;
+      page: number;
+      limit: number;
+      hasMore: boolean;
+    }> => {
       const tenant = getRequestTenant();
-      return tenant ? repo.listRedemptionsByWorkspace(tenant) : [];
+      if (!tenant) {
+        return { redemptions: [], total: 0, page: 1, limit: 50, hasMore: false };
+      }
+      return repo.listRedemptionsPage(tenant, query ?? {});
     },
     loadRedemptionById: async (id: string): Promise<Redemption | null> => {
       const tenant = getRequestTenant();

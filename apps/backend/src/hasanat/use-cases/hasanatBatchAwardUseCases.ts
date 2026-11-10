@@ -21,6 +21,7 @@ import {
 } from "@mms/shared";
 import { workspaceTodayIso } from "../../lib/workspaceDay.js";
 import { ConflictError } from "../../lib/httpErrors.js";
+import { throwRuleViolation } from "./hasanatRuleErrors.js";
 import type { HasanatRepository } from "../repository/hasanatRepository.js";
 import {
   findDistributionsByClientRequestIds,
@@ -68,11 +69,13 @@ export async function issueHasanatCardsBatch(
     ? [...options.recipients]
     : await listBatchRecipients(subdomain, body.target);
   if (recipients.length === 0) {
-    throw new ConflictError("No active students match this batch target.");
+    throw new ConflictError("No active students match this batch target.", "empty_batch_target");
   }
   if ((options.enforceInlineCap ?? true) && recipients.length > HASANAT_BATCH_INLINE_MAX) {
     throw new ConflictError(
       `This group has ${recipients.length} recipients; queue it as a background job instead.`,
+      "batch_too_large",
+      { recipients: recipients.length, maxInline: HASANAT_BATCH_INLINE_MAX },
     );
   }
 
@@ -124,7 +127,7 @@ export async function issueHasanatCardsBatch(
     quota: { used: quotaUsed, limit: actor.quotaLimit },
   });
   if (!rule.ok) {
-    throw new ConflictError(rule.violation.message);
+    throwRuleViolation(rule.violation);
   }
 
   const pointsPerUnit = denomination?.points ?? 0;

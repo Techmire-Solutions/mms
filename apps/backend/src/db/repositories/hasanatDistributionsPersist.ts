@@ -26,7 +26,7 @@ export async function saveDistribution(tenant: string, record: Distribution): Pr
         quantity: record.quantity ?? 1,
         // Restores and imports carry the stamped value; the conflict branch never rewrites it.
         pointsSnapshot: record.pointsSnapshot ?? 0,
-        clientRequestId: record.clientRequestId ?? null,
+        clientRequestId: null,
         reason: record.reason ?? "",
         issuedDate: requireDbDateValue(record.issuedDate, "issuedDate"),
         issuedByUserId: record.issuedByUserId ?? null,
@@ -37,7 +37,7 @@ export async function saveDistribution(tenant: string, record: Distribution): Pr
         deletionReason: record.deletionReason ?? null,
         restoredAt: record.restoredAt ? new Date(record.restoredAt) : null,
         restoredBy: record.restoredBy ?? null,
-        deletedWithCascade: record.deletedWithCascade ?? false,
+        deletedWithCascade: false,
         updatedAt: new Date(),
       })
       .onConflictDoUpdate({
@@ -66,7 +66,7 @@ export async function saveDistribution(tenant: string, record: Distribution): Pr
           // Restore provenance must survive the upsert (mms-soft-delete §2.5).
           restoredAt: record.restoredAt ? new Date(record.restoredAt) : null,
           restoredBy: record.restoredBy ?? null,
-          deletedWithCascade: record.deletedWithCascade ?? false,
+          deletedWithCascade: false,
           updatedAt: new Date(),
         },
       });
@@ -106,7 +106,7 @@ export async function bulkSaveDistributions(
           sessionId: r.sessionId ?? null,
           quantity: r.quantity ?? 1,
           pointsSnapshot: r.pointsSnapshot ?? 0,
-          clientRequestId: r.clientRequestId ?? null,
+          clientRequestId: null,
           reason: r.reason ?? "",
           issuedDate: requireDbDateValue(r.issuedDate, "issuedDate"),
           issuedByUserId: r.issuedByUserId ?? null,
@@ -117,7 +117,7 @@ export async function bulkSaveDistributions(
           deletionReason: r.deletionReason ?? null,
           restoredAt: r.restoredAt ? new Date(r.restoredAt) : null,
           restoredBy: r.restoredBy ?? null,
-          deletedWithCascade: r.deletedWithCascade ?? false,
+          deletedWithCascade: false,
           updatedAt: new Date(),
         })),
       )
@@ -191,7 +191,7 @@ export async function replaceDistributionsForWorkspace(
           sessionId: r.sessionId ?? null,
           quantity: r.quantity ?? 1,
           pointsSnapshot: r.pointsSnapshot ?? 0,
-          clientRequestId: r.clientRequestId ?? null,
+          clientRequestId: null,
           reason: r.reason ?? "",
           issuedDate: requireDbDateValue(r.issuedDate, "issuedDate"),
           issuedByUserId: r.issuedByUserId ?? null,
@@ -202,7 +202,7 @@ export async function replaceDistributionsForWorkspace(
           deletionReason: r.deletionReason ?? null,
           restoredAt: r.restoredAt ? new Date(r.restoredAt) : null,
           restoredBy: r.restoredBy ?? null,
-          deletedWithCascade: r.deletedWithCascade ?? false,
+          deletedWithCascade: false,
           updatedAt: new Date(),
         })),
       );
