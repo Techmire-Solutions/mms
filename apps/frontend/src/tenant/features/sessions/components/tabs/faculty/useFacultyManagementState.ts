@@ -15,6 +15,7 @@ export function useFacultyManagementState(
   const [customRole, setCustomRole] = useState("");
   const [status, setStatus] = useState<"active" | "inactive">("active");
   const [saving, setSaving] = useState(false);
+  const [saveError, setSaveError] = useState<string | null>(null);
 
   const { data: facultyData } = useFacultyContractList(
     { page: 1, limit: FACULTY_MODULE_MANIFEST.maxPageSize, status: "active" },
@@ -75,6 +76,7 @@ export function useFacultyManagementState(
   };
 
   const handleSave = async () => {
+    setSaveError(null);
     setSaving(true);
     try {
       const selectedMember = allFaculty.find((f) => String(f.id) === String(facultyId));
@@ -112,6 +114,8 @@ export function useFacultyManagementState(
 
       await onUpdate({ ...session, faculty: updatedFaculty });
       setModalOpen(false);
+    } catch (error) {
+      setSaveError(error instanceof Error ? error.message : "Could not save faculty");
     } finally {
       setSaving(false);
     }
@@ -130,6 +134,7 @@ export function useFacultyManagementState(
     status,
     setStatus,
     saving,
+    saveError,
     allFaculty,
     handleOpenAdd,
     handleOpenEdit,

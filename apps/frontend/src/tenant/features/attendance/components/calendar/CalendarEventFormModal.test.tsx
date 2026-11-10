@@ -60,7 +60,6 @@ describe("CalendarEventFormModal", () => {
     await act(async () => saveButton().click());
 
     expect(onSave).not.toHaveBeenCalled();
-    // The title is required by `academicCalendarEventWriteSchema`; its message is surfaced inline.
     expect(document.body.textContent).toContain("Title is required");
   });
 });

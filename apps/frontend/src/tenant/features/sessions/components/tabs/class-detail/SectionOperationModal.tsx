@@ -19,6 +19,8 @@ import { Textarea } from "@/components/ui/textarea";
 import { FORM_INPUT } from "@/components/ui/formStyles";
 import { useTranslation } from "@/hooks/useTranslation";
 import { useEnrollmentsCollection } from "@/tenant/hooks/collections/enrollments";
+import { useDirtySnapshot } from "@/lib/forms/useDirtySnapshot";
+import { EmptyState } from "@/components/app/EmptyState";
 
 export type SectionOperationKind = "merge" | "split" | "close";
 
@@ -79,6 +81,7 @@ export function SectionOperationModal(props: SectionOperationModalProps): React.
   const [chosen, setChosen] = useState<string[]>([]);
   const [day, setDay] = useState(today);
   const [reason, setReason] = useState("");
+  const [serverError, setServerError] = useState<string | null>(null);
 
   // Fresh operation draft whenever the operation, section or day changes (render-phase reset).
   const operationKey = `${kind}|${section.id}|${today}`;
@@ -105,21 +108,34 @@ export function SectionOperationModal(props: SectionOperationModalProps): React.
         ? Boolean(name.trim()) && chosen.length > 0 && capacityNumber >= chosen.length
         : !occupied;
   const canSave = !isPending && reasonValid && Boolean(day) && kindValid;
+  const { isDirty } = useDirtySnapshot(
+    { targetId, name, capacity, chosen, day, reason },
+    `${kind}|${section.id}|${today}`,
+  );
 
   const submit = async () => {
+    setServerError(null);
     const common = { effectiveOn: day, reason: reason.trim() };
-    const saved =
-      kind === "merge"
-        ? await props.onMerge({ ...common, targetSectionId: targetId })
-        : kind === "split"
-          ? await props.onSplit({
-              ...common,
-              name: name.trim(),
-              capacity: capacityNumber,
-              enrollmentIds: chosen,
-            })
-          : await props.onCloseSection(common);
-    if (saved) onDismiss();
+    try {
+      const saved =
+        kind === "merge"
+          ? await props.onMerge({ ...common, targetSectionId: targetId })
+          : kind === "split"
+            ? await props.onSplit({
+                ...common,
+                name: name.trim(),
+                capacity: capacityNumber,
+                enrollmentIds: chosen,
+              })
+            : await props.onCloseSection(common);
+      if (saved) {
+        onDismiss();
+      } else {
+        setServerError(t("sessions.staff.failed"));
+      }
+    } catch {
+      setServerError(t("sessions.staff.failed"));
+    }
   };
 
   return (
@@ -133,7 +149,8 @@ export function SectionOperationModal(props: SectionOperationModalProps): React.
       saveLabel={t(config.save)}
       saving={isPending}
       saveDisabled={!canSave}
-      isDirty={reason.trim().length > 0}
+      isDirty={isDirty}
+      error={serverError ?? undefined}
       discardUnsavedTitle={t("settings.unsavedChanges")}
       discardUnsavedDescription={t("enrollments.ops.discardDescription")}
       discardConfirmLabel={t("common.yes")}
@@ -197,6 +214,9 @@ export function SectionOperationModal(props: SectionOperationModalProps): React.
               <legend className="text-sm font-semibold">
                 {t("sessions.sections.ops.students")}
               </legend>
+              {roster.length === 0 ? (
+                <EmptyState title={t("enrollments.wizard.noStudents")} compact variant="dashed" />
+              ) : null}
               {roster.map((enrollment) => (
                 <FormCheckboxCard
                   key={enrollment.id}

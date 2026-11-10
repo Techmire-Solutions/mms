@@ -36,6 +36,7 @@ export function FacultyManagementTab({
     status,
     setStatus,
     saving,
+    saveError,
     allFaculty,
     handleOpenAdd,
     handleOpenEdit,
@@ -93,6 +94,7 @@ export function FacultyManagementTab({
         onClose={() => setModalOpen(false)}
         editingFaculty={editingFaculty}
         saving={saving}
+        saveError={saveError}
         facultyId={facultyId}
         onFacultyIdChange={setFacultyId}
         role={role}
