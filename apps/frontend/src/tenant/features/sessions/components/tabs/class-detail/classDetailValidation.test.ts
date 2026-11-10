@@ -1,8 +1,9 @@
 import { describe, expect, it } from "vitest";
 import { ClassSchema } from "@mms/shared";
+import type { TranslationFunction } from "@/lib/contexts/TranslationContext";
 import { validateClassDraft } from "./classDetailValidation";
 
-const t = (key: string) => key;
+const t = ((key: string) => key) as TranslationFunction;
 const validClass = () =>
   ClassSchema.parse({
     id: "c1",
