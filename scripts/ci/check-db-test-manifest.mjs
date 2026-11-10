@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 /**
- * Enrollment + attendance DB test manifest ratchet.
+ * Enrollment + attendance + hasanat DB test manifest ratchet.
  *
  * Counting cases from source keeps this dependency-free and makes an accidental deletion or
  * skip-as-comment visible. Counts may grow freely; they may only drop with a reviewed baseline
@@ -29,6 +29,9 @@ const BASELINE = {
   "attendanceSpecializedSubsystemsDb.integration.test.ts": 13,
   "attendanceStatusParityDb.integration.test.ts": 4,
   "attendanceUpdateMoveDb.integration.test.ts": 4,
+  // Hasanat: one-winner concurrency (redeem/void/issue/OCC/stock/quota) and DDL lifecycle guarantees.
+  "hasanatConcurrencyDb.integration.test.ts": 7,
+  "hasanatLifecycleCascadeDb.integration.test.ts": 7,
 };
 
 const update = process.argv.includes("--update");

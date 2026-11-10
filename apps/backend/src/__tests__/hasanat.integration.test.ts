@@ -636,3 +636,103 @@ describe("hasanat authorization", () => {
     await app.close();
   });
 });
+
+describe("hasanat request validation & read-only roles", () => {
+  beforeEach(() => {
+    process.env.JWT_SECRET = "test-secret";
+    vi.clearAllMocks();
+  });
+
+  const headers = (token: string) => ({
+    host: "demo.localhost",
+    authorization: `Bearer ${token}`,
+    "content-type": "application/json",
+  });
+  /** Body-less requests must not declare a JSON content type (Fastify rejects an empty JSON body). */
+  const plainHeaders = (token: string) => ({
+    host: "demo.localhost",
+    authorization: `Bearer ${token}`,
+  });
+
+  it("rejects an unknown status token instead of returning an empty list", async () => {
+    const app = await buildApp();
+    const res = await app.inject({
+      method: "GET",
+      url: "/api/hasanat/distributions?status=actve",
+      headers: headers(adminToken(app)),
+    });
+    expect(res.statusCode).toBe(400);
+    expect(res.json().type).toBe("validation_error");
+    expect(mockLoadDistributionsPage).not.toHaveBeenCalled();
+    await app.close();
+  });
+
+  it("rejects an unknown query key (strict query schema)", async () => {
+    const app = await buildApp();
+    const res = await app.inject({
+      method: "GET",
+      url: "/api/hasanat/distributions?bogus=1",
+      headers: headers(adminToken(app)),
+    });
+    expect(res.statusCode).toBe(400);
+    await app.close();
+  });
+
+  it("rejects a malformed JSON body before the handler runs", async () => {
+    const app = await buildApp();
+    const res = await app.inject({
+      method: "POST",
+      url: "/api/hasanat/distributions",
+      headers: headers(adminToken(app)),
+      payload: '{"batchId": "b1", ',
+    });
+    expect(res.statusCode).toBe(400);
+    expect(mockCreateDistribution).not.toHaveBeenCalled();
+    await app.close();
+  });
+
+  it("keeps read-only staff out of every write path", async () => {
+    const app = await buildApp();
+    const readOnly = headers(assistantTeacherToken(app));
+
+    const read = await app.inject({
+      method: "GET",
+      url: "/api/hasanat/distributions",
+      headers: plainHeaders(assistantTeacherToken(app)),
+    });
+    expect(read.statusCode).toBe(200);
+
+    const create = await app.inject({
+      method: "POST",
+      url: "/api/hasanat/distributions",
+      headers: readOnly,
+      payload: {
+        batchId: "b1",
+        denominationId: "d1",
+        quantity: 1,
+        issuedDate: "2026-11-10",
+      },
+    });
+    expect(create.statusCode).toBe(403);
+
+    const redeem = await app.inject({
+      method: "POST",
+      url: "/api/hasanat/distributions/hd1/redeem",
+      headers: readOnly,
+      payload: { reward: "Book", pointsUsed: 50, date: "2026-11-10" },
+    });
+    expect(redeem.statusCode).toBe(403);
+
+    const remove = await app.inject({
+      method: "DELETE",
+      url: "/api/hasanat/distributions/hd1",
+      headers: plainHeaders(assistantTeacherToken(app)),
+    });
+    expect(remove.statusCode).toBe(403);
+
+    expect(mockCreateDistribution).not.toHaveBeenCalled();
+    expect(mockRedeemCard).not.toHaveBeenCalled();
+    expect(mockDeleteDistribution).not.toHaveBeenCalled();
+    await app.close();
+  });
+});
