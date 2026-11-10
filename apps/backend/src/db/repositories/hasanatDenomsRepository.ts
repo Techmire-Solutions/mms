@@ -166,6 +166,7 @@ export async function bulkSaveDenoms(tenant: string, records: Denomination[]): P
 export async function replaceDenomsForWorkspace(
   tenant: string,
   records: Denomination[],
+  options: { allowHardPurge?: boolean } = {},
 ): Promise<void> {
   const subdomain = tenant.trim().toLowerCase();
   const uniqueMap = new Map<string, Denomination>();
@@ -176,6 +177,9 @@ export async function replaceDenomsForWorkspace(
   const uniqueRecords = Array.from(uniqueMap.values());
 
   await withTenant(subdomain, async (tx) => {
+    if (options.allowHardPurge) {
+      await tx.execute(sql`SELECT set_config('app.allow_hard_purge', 'true', true)`);
+    }
     await tx.delete(hasanatDenoms).where(eq(hasanatDenoms.workspaceSubdomain, subdomain));
     if (uniqueRecords.length > 0) {
       await tx.insert(hasanatDenoms).values(

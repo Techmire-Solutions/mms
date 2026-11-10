@@ -3,14 +3,14 @@ import { readFile } from "node:fs/promises";
 import { join } from "node:path";
 
 /**
- * Guard rails for the Hasanat schema/persistence hardening (migrations 0225–0229).
+ * Guard rails for the Hasanat schema/persistence hardening (migrations 0225–0232).
  *
  * These are source-level assertions: the invariants they protect (trigger-owned stock projection,
  * column-list SET NULL, per-card uniqueness, session attribution, restore provenance) cannot be
  * exercised without a live PostgreSQL, and the failure they prevent is a silent regression in a
  * later migration/edit rather than a runtime branch in this process.
  */
-describe("Hasanat schema & persistence invariants (0225–0229)", () => {
+describe("Hasanat schema & persistence invariants (0225–0232)", () => {
   const dir = join(process.cwd(), "src/db/migrations_drizzle");
   const read = (name: string) => readFile(join(dir, name), "utf-8");
 
@@ -20,6 +20,9 @@ describe("Hasanat schema & persistence invariants (0225–0229)", () => {
     "0227_hasanat_session_attribution.sql",
     "0228_hasanat_query_indexes.sql",
     "0229_hasanat_rls_and_timestamps.sql",
+    "0230_hasanat_card_value_and_idempotency.sql",
+    "0231_hasanat_denom_bounds.sql",
+    "0232_hasanat_ledger_immutability.sql",
   ] as const;
 
   it("tracks every hardening migration in the drizzle journal", async () => {
@@ -156,5 +159,84 @@ describe("Hasanat schema & persistence invariants (0225–0229)", () => {
     expect(report).not.toMatch(/ss\."studentId"/);
     // One points definition: no id/name guessing fallback.
     expect(report).not.toMatch(/WHEN .*denomination_id.*= 'den1'/i);
+  });
+
+  it("stamps an immutable card value and an idempotency key", async () => {
+    const sql = await read(migrations[5]);
+
+    expect(sql).toMatch(/ADD COLUMN IF NOT EXISTS "points_snapshot" integer NOT NULL DEFAULT 0/i);
+    expect(sql).toMatch(/ADD COLUMN IF NOT EXISTS "version" integer NOT NULL DEFAULT 0/i);
+    expect(sql).toMatch(/hasanat_dist_ws_client_request_uidx/i);
+    // The guard rejects any rewrite of the stamped value or the idempotency key.
+    expect(sql).toMatch(/points_snapshot is immutable/i);
+    expect(sql).toMatch(/client_request_id is immutable/i);
+    expect(sql).toMatch(/NEW\.version := OLD\.version \+ 1/i);
+  });
+
+  it("bounds denomination points at the database", async () => {
+    const sql = await read(migrations[6]);
+    expect(sql).toMatch(/hasanat_denoms_points_max_chk[\s\S]*?points <= 100000/i);
+  });
+
+  it("makes the ledger append-only and reversal-driven", async () => {
+    const sql = await read(migrations[7]);
+
+    expect(sql).toMatch(/ADD COLUMN IF NOT EXISTS "kind" varchar\(16\) NOT NULL DEFAULT 'redeem'/i);
+    expect(sql).toMatch(/ADD COLUMN IF NOT EXISTS "reversal_of_id" text/i);
+    expect(sql).toMatch(/DROP INDEX IF EXISTS "hasanat_redemp_ws_dist_uidx"/i);
+    expect(sql).toMatch(/hasanat_redemp_ws_reversal_uidx/i);
+    expect(sql).toMatch(/forbid_ledger_update/i);
+    expect(sql).toMatch(/BEFORE UPDATE ON "hasanat_redemptions"/i);
+    // The guard ignores reversed rows, so a reversal can reopen the card.
+    expect(sql).toMatch(/rev\.reversal_of_id = r\.id/i);
+  });
+
+  it("keeps card rules out of the repository adapters", async () => {
+    for (const file of ["hasanatCardOps.ts", "hasanatLedgerOps.ts"]) {
+      const source = await readFile(join(process.cwd(), "src/db/repositories", file), "utf-8");
+      expect(source, `${file} must not raise domain errors`).not.toMatch(
+        /from "[^"]*httpErrors\.js"/,
+      );
+      expect(source).not.toMatch(/throw new (ConflictError|NotFoundError)/);
+    }
+    // The old adapter that held the redemption policy is gone.
+    await expect(
+      readFile(join(process.cwd(), "src/db/repositories/hasanatRedeemCard.ts"), "utf-8"),
+    ).rejects.toThrow();
+  });
+
+  it("routes card writes through the domain use cases", async () => {
+    const facade = await readFile(
+      join(process.cwd(), "src/hasanat/use-cases/hasanatUseCases.ts"),
+      "utf-8",
+    );
+
+    expect(facade).toMatch(/issueHasanatCard/);
+    expect(facade).toMatch(/redeemHasanatCard/);
+    expect(facade).toMatch(/voidHasanatRedemption/);
+    expect(facade).toMatch(/changeHasanatCardStatus/);
+    // No bulk card write survives the facade.
+    expect(facade).not.toMatch(/upsertDistributions|upsertRedemptions|replaceRedemptions/);
+  });
+
+  it("does not allow a client to set the card status on create or edit", async () => {
+    const manifest = await readFile(
+      join(process.cwd(), "../../packages/shared/src/hasanat/hasanatModuleManifest.ts"),
+      "utf-8",
+    );
+
+    const createSchema = manifest.slice(
+      manifest.indexOf("export const distributionCreateSchema"),
+      manifest.indexOf("export const distributionUpdateSchema"),
+    );
+    const updateSchema = manifest.slice(
+      manifest.indexOf("export const distributionUpdateSchema"),
+      manifest.indexOf("export const distributionStatusSchema"),
+    );
+    expect(createSchema).not.toMatch(/status:/);
+    expect(updateSchema).not.toMatch(/status:/);
+    // Value-affecting fields are immutable after issue.
+    expect(updateSchema).not.toMatch(/quantity:/);
+    expect(updateSchema).not.toMatch(/denominationId:/);
   });
 });

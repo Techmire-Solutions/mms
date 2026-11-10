@@ -5,6 +5,7 @@
 import { and, eq, inArray, isNull, isNotNull } from "drizzle-orm";
 import { dedupeTrimmedIds, type Distribution } from "@mms/shared";
 import { hasanatDistributions } from "../schema.js";
+import { distributionColumns } from "./hasanatColumns.js";
 import { withTenantRead } from "../tenant-context.js";
 import { distributionRowToRecord } from "./hasanatDistributionsMappers.js";
 
@@ -17,34 +18,7 @@ export async function findDistributionById(
   const subdomain = tenant.trim().toLowerCase();
   return withTenantRead(subdomain, async (tx) => {
     const rows = await tx
-      .select({
-        id: hasanatDistributions.id,
-        workspaceSubdomain: hasanatDistributions.workspaceSubdomain,
-        batchId: hasanatDistributions.batchId,
-        denominationId: hasanatDistributions.denominationId,
-        denominationName: hasanatDistributions.denominationName,
-        recipientType: hasanatDistributions.recipientType,
-        recipientStudentId: hasanatDistributions.recipientStudentId,
-        recipientFacultyId: hasanatDistributions.recipientFacultyId,
-        recipientName: hasanatDistributions.recipientName,
-        recipientClass: hasanatDistributions.recipientClass,
-        classId: hasanatDistributions.classId,
-        sessionId: hasanatDistributions.sessionId,
-        quantity: hasanatDistributions.quantity,
-        reason: hasanatDistributions.reason,
-        issuedDate: hasanatDistributions.issuedDate,
-        issuedByUserId: hasanatDistributions.issuedByUserId,
-        issuedBy: hasanatDistributions.issuedBy,
-        status: hasanatDistributions.status,
-        deletedAt: hasanatDistributions.deletedAt,
-        deletedBy: hasanatDistributions.deletedBy,
-        deletionReason: hasanatDistributions.deletionReason,
-        restoredAt: hasanatDistributions.restoredAt,
-        restoredBy: hasanatDistributions.restoredBy,
-        deletedWithCascade: hasanatDistributions.deletedWithCascade,
-        createdAt: hasanatDistributions.createdAt,
-        updatedAt: hasanatDistributions.updatedAt,
-      })
+      .select(distributionColumns)
       .from(hasanatDistributions)
       .where(
         and(
@@ -84,34 +58,7 @@ export async function findDistributionsByIds(
     if (deletedCond) conditions.push(deletedCond);
 
     const rows = await tx
-      .select({
-        id: hasanatDistributions.id,
-        workspaceSubdomain: hasanatDistributions.workspaceSubdomain,
-        batchId: hasanatDistributions.batchId,
-        denominationId: hasanatDistributions.denominationId,
-        denominationName: hasanatDistributions.denominationName,
-        recipientType: hasanatDistributions.recipientType,
-        recipientStudentId: hasanatDistributions.recipientStudentId,
-        recipientFacultyId: hasanatDistributions.recipientFacultyId,
-        recipientName: hasanatDistributions.recipientName,
-        recipientClass: hasanatDistributions.recipientClass,
-        classId: hasanatDistributions.classId,
-        sessionId: hasanatDistributions.sessionId,
-        quantity: hasanatDistributions.quantity,
-        reason: hasanatDistributions.reason,
-        issuedDate: hasanatDistributions.issuedDate,
-        issuedByUserId: hasanatDistributions.issuedByUserId,
-        issuedBy: hasanatDistributions.issuedBy,
-        status: hasanatDistributions.status,
-        deletedAt: hasanatDistributions.deletedAt,
-        deletedBy: hasanatDistributions.deletedBy,
-        deletionReason: hasanatDistributions.deletionReason,
-        restoredAt: hasanatDistributions.restoredAt,
-        restoredBy: hasanatDistributions.restoredBy,
-        deletedWithCascade: hasanatDistributions.deletedWithCascade,
-        createdAt: hasanatDistributions.createdAt,
-        updatedAt: hasanatDistributions.updatedAt,
-      })
+      .select(distributionColumns)
       .from(hasanatDistributions)
       .where(and(...conditions));
     return rows.map(distributionRowToRecord);

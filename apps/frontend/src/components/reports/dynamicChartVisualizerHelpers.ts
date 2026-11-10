@@ -1,4 +1,4 @@
-import { getDenominationPoints } from "@mms/shared";
+import { resolveDistributionPoints } from "@mms/shared";
 import type { AggregatedItem, ChartOperation, FilterRule } from "./dynamicChartVisualizerTypes";
 
 export function isDateDimensionField(fieldName: string): boolean {
@@ -128,12 +128,18 @@ export function aggregateVisualizerRows(options: {
 
       groupItems.forEach((groupItem) => {
         if (collectionKey === "hasanat_distributions" && targetMetricField === "points") {
-          const points = getDenominationPoints(
-            groupItem.denominationId as string,
-            groupItem.denominationName as string,
-            denominations,
+          values.push(
+            resolveDistributionPoints(
+              {
+                pointsSnapshot:
+                  typeof groupItem.pointsSnapshot === "number" ? groupItem.pointsSnapshot : null,
+                denominationId:
+                  typeof groupItem.denominationId === "string" ? groupItem.denominationId : null,
+                quantity: typeof groupItem.quantity === "number" ? groupItem.quantity : 1,
+              },
+              denominations,
+            ),
           );
-          values.push(Number(groupItem.quantity || 1) * points);
         } else {
           const numericValue = Number(groupItem[targetMetricField]);
           if (!isNaN(numericValue)) {

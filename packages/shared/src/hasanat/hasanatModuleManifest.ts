@@ -1,12 +1,14 @@
 import type { Permission } from "../auth/permissions.js";
 import { z } from "zod";
 import { isoDateSchema } from "../core/isoDateSchema.js";
+import { HASANAT_CARD_STATUSES } from "./hasanatCardRules.js";
 
 export const denomRecordSchema = z
   .object({
     id: z.string(),
     name: z.string(),
-    points: z.number().default(0),
+    /** Domain bounds (`validateDenomPoints`) are 1..100000; 0 is tolerated on read only. */
+    points: z.number().int().min(0).max(100_000).default(0),
     color: z.string().default("emerald"),
     description: z.string().default(""),
     icon: z.string().default("Star"),
@@ -20,7 +22,7 @@ export const denomRecordInsertSchema = z
   .object({
     id: z.string().optional(),
     name: z.string().min(1, "Name is required"),
-    points: z.number().nonnegative(),
+    points: z.number().int().min(1).max(100_000),
     color: z.string().optional().default("emerald"),
     description: z.string().optional().default(""),
     icon: z.string().optional().default("Star"),
@@ -82,11 +84,19 @@ export const distributionRecordSchema = z
     /** `sessions.id` at issue time — stamped by the DB from `classId`. */
     sessionId: z.string().nullable().optional(),
     quantity: z.number().default(1),
+    /** Immutable card value stamped at issue (`denom.points × quantity`). */
+    pointsSnapshot: z.number().int().nonnegative().optional(),
+    /** Optimistic-concurrency token for card edits. */
+    version: z.number().int().nonnegative().optional(),
+    /** Client-generated idempotency key; a replay returns the original row. */
+    clientRequestId: z.string().nullable().optional(),
+    /** Derived expiry: an `active` card past this date reads as expired. */
+    expiresOn: isoDateSchema.nullable().optional(),
     reason: z.string().default(""),
     issuedDate: z.string(),
     issuedByUserId: z.string().nullable().optional(),
     issuedBy: z.string().nullable().optional(),
-    status: z.enum(["active", "redeemed", "returned"]).default("active"),
+    status: z.enum(HASANAT_CARD_STATUSES).default("active"),
     deletedAt: z.string().nullable().optional(),
     deletedBy: z.string().nullable().optional(),
     deletionReason: z.string().nullable().optional(),
@@ -98,7 +108,12 @@ export const distributionRecordSchema = z
   })
   .strict();
 
-export const distributionRecordInsertSchema = z
+/**
+ * Write payload for issuing a card. Server-owned fields are absent by construction: `status` moves
+ * only through the lifecycle action, `pointsSnapshot` is stamped from the deed, the soft-delete
+ * and restore sextuple is owned by the delete/restore paths, and `version` is assigned by the DB.
+ */
+export const distributionCreateSchema = z
   .object({
     id: z.string().optional(),
     batchId: z.string().min(1, "Batch is required"),
@@ -111,20 +126,53 @@ export const distributionRecordInsertSchema = z
     recipientClass: z.string().optional().default(""),
     classId: z.string().nullable().optional(),
     sessionId: z.string().nullable().optional(),
-    quantity: z.number().positive().default(1),
+    quantity: z.number().int().positive().default(1),
+    expiresOn: isoDateSchema.nullable().optional(),
     reason: z.string().optional().default(""),
     issuedDate: isoDateSchema,
     issuedByUserId: z.string().nullable().optional(),
     issuedBy: z.string().nullable().optional(),
-    status: z.enum(["active", "redeemed", "returned"]).optional().default("active"),
+    /** Idempotency key: replaying the same key returns the card already issued. */
+    clientRequestId: z.string().min(8).max(64).nullable().optional(),
   })
   .strict();
 
-export const distributionRecordUpdateSchema = distributionRecordInsertSchema.partial().strict();
+/**
+ * Card edit payload. Value-affecting fields (`quantity`, `denominationId`, `batchId`) are absent by
+ * design: the stamped `points_snapshot` is immutable, so a wrong value is voided and re-issued.
+ */
+export const distributionUpdateSchema = z
+  .object({
+    recipientType: z.enum(["student", "faculty"]).optional(),
+    recipientStudentId: z.string().nullable().optional(),
+    recipientFacultyId: z.string().nullable().optional(),
+    recipientName: z.string().optional(),
+    recipientClass: z.string().optional(),
+    classId: z.string().nullable().optional(),
+    sessionId: z.string().nullable().optional(),
+    expiresOn: isoDateSchema.nullable().optional(),
+    reason: z.string().optional(),
+    issuedDate: isoDateSchema.optional(),
+    issuedByUserId: z.string().nullable().optional(),
+    issuedBy: z.string().nullable().optional(),
+    expectedVersion: z.number().int().nonnegative(),
+  })
+  .strict();
+
+/** Card lifecycle action — the only way a persisted status changes. */
+export const distributionStatusSchema = z
+  .object({
+    status: z.enum(HASANAT_CARD_STATUSES),
+    reason: z.string().max(500).optional(),
+    expectedVersion: z.number().int().nonnegative(),
+  })
+  .strict();
+
+export const distributionRecordInsertSchema = distributionCreateSchema;
+export const distributionRecordUpdateSchema = distributionUpdateSchema;
 
 export type Distribution = z.infer<typeof distributionRecordSchema>;
 export type DistributionInsert = z.infer<typeof distributionRecordInsertSchema>;
-export type DistributionUpdate = z.infer<typeof distributionRecordUpdateSchema>;
 export const distributionListSchema = z.array(distributionRecordSchema);
 
 export const isDistributionDeleted = (distribution: { deletedAt?: string | null }): boolean =>
@@ -142,6 +190,10 @@ export const redemptionRecordSchema = z
     studentName: z.string().optional().default(""),
     reward: z.string().default(""),
     pointsUsed: z.number().default(0),
+    /** `redeem` burns value; `reversal` corrects one redemption (append-only ledger). */
+    kind: z.enum(["redeem", "reversal"]).default("redeem"),
+    reversalOfId: z.string().nullable().optional(),
+    clientRequestId: z.string().nullable().optional(),
     date: z.string(),
     approvedByUserId: z.string().nullable().optional(),
     approvedBy: z.string().nullable().optional(),
@@ -178,14 +230,29 @@ export const redemptionListSchema = z.array(redemptionRecordSchema);
 export const redeemCardBodySchema = z
   .object({
     reward: z.string().min(1, "Reward is required"),
-    pointsUsed: z.number().positive("Points used must be greater than 0"),
+    pointsUsed: z.number().int().positive("Points used must be greater than 0"),
     date: isoDateSchema,
     approvedByUserId: z.string().nullable().optional(),
     approvedBy: z.string().nullable().optional(),
+    /** Idempotency key: replaying the same key returns the original redemption. */
+    clientRequestId: z.string().min(8).max(64).nullable().optional(),
   })
   .strict();
 
 export type RedeemCardBody = z.infer<typeof redeemCardBodySchema>;
+
+/** Ledger correction: reverses one redemption without mutating it (append-only). */
+export const reverseRedemptionBodySchema = z
+  .object({
+    reason: z.string().min(1).max(500),
+  })
+  .strict();
+
+export type ReverseRedemptionBody = z.infer<typeof reverseRedemptionBodySchema>;
+
+export type DistributionCreate = z.infer<typeof distributionCreateSchema>;
+export type DistributionUpdate = z.infer<typeof distributionUpdateSchema>;
+export type DistributionStatusChange = z.infer<typeof distributionStatusSchema>;
 
 /** Hasanat Cards module manifest — aligns with globle1 universal module architecture. */
 export const HASANAT_MODULE_MANIFEST = {

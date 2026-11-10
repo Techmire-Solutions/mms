@@ -112,6 +112,7 @@ const mockDistributions: Distribution[] = [
     recipientName: "Ali Ahmed",
     recipientClass: "Hifz A",
     quantity: 2,
+    pointsSnapshot: 20,
     reason: "Exam excellence",
     issuedDate: "2026-01-01",
     issuedByUserId: "usr-1",
@@ -167,9 +168,9 @@ describe("Hasanat Sub-Modals", () => {
 
       expect(onSave).not.toHaveBeenCalled();
       const rewardError = container.querySelector("#reward-error");
-      const ptsError = container.querySelector("#pts-used-error");
       expect(rewardError).not.toBeNull();
-      expect(ptsError).not.toBeNull();
+      // Points are never empty: they come from the card's stamped value.
+      expect(container.querySelector("#pts-used-error")).toBeNull();
     });
 
     it("submits redemption when required fields are populated", async () => {
@@ -187,13 +188,15 @@ describe("Hasanat Sub-Modals", () => {
 
       const rewardInput = container.querySelector("#reward-given") as HTMLInputElement;
       const ptsInput = container.querySelector("#pts-used") as HTMLInputElement;
+      // The card value is stamped and locked — the operator cannot send a partial redemption.
+      expect((ptsInput as HTMLInputElement).readOnly).toBe(true);
+      expect((ptsInput as HTMLInputElement).value).toBe("20");
       const saveBtn = container.querySelector(
         '[data-testid="modal-save-btn"]',
       ) as HTMLButtonElement;
 
       await act(async () => {
         setInputValue(rewardInput, "Book Voucher");
-        setInputValue(ptsInput, "20");
       });
 
       await act(async () => {

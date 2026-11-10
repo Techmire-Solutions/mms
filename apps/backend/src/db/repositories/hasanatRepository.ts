@@ -30,9 +30,6 @@ export {
   listRedemptionsByWorkspace,
   findRedemptionById,
   findRedemptionsByIds,
-  saveRedemption,
-  bulkSaveRedemptions,
   replaceRedemptionsForWorkspace,
   deleteHasanatByWorkspace,
 } from "./hasanatRedemptionsRepository.js";
-export { redeemCard } from "./hasanatRedeemCard.js";

@@ -183,8 +183,9 @@ export async function aggregateHasanatCommandMetrics(
       .from(hasanatDenoms)
       .where(eq(hasanatDenoms.workspaceSubdomain, subdomain));
 
-    // Points: join distributions ⋈ denoms (LEFT JOIN; missing denom → 0 points).
-    const pointsExpr = sql<number>`coalesce(${hasanatDenoms.points}, 0) * ${hasanatDistributions.quantity}`;
+    // Points: the value stamped on each card at issue (0230) — no denomination join, so editing a
+    // deed can never rewrite historical totals.
+    const pointsExpr = sql<number>`${hasanatDistributions.pointsSnapshot}`;
     const [pointsRow] = await tx
       .select({
         totalPointsDistributed: sql<number>`coalesce(sum(${pointsExpr}), 0)::int`,
@@ -192,13 +193,6 @@ export async function aggregateHasanatCommandMetrics(
         pointsLastWeek: sql<number>`coalesce(sum(${pointsExpr}) filter (where ${hasanatDistributions.issuedDate} between ${lastWeekStartStr} and ${lastWeekEndStr}), 0)::int`,
       })
       .from(hasanatDistributions)
-      .leftJoin(
-        hasanatDenoms,
-        and(
-          eq(hasanatDistributions.workspaceSubdomain, hasanatDenoms.workspaceSubdomain),
-          eq(hasanatDistributions.denominationId, hasanatDenoms.id),
-        ),
-      )
       .where(activeDistributions);
 
     return {

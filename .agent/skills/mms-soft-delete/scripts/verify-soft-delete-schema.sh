@@ -38,7 +38,8 @@ const tenantEntityFiles = [
   "finance.ts",
   "attendance.ts",
   "faculty.ts",
-  "hasanat.ts",
+  // `hasanat.ts` is a barrel since the 0230-era split; the entity module declares the table.
+  "hasanatDistributions.ts",
   "examinationExamTables.ts",
 ];
 

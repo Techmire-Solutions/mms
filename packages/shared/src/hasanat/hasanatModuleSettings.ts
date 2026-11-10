@@ -7,6 +7,8 @@ import { INITIAL_HASANAT_FIELD_SEED } from "../settings/moduleFieldSetupFinance.
 export interface HasanatSettings {
   pointsPerUnit: number;
   autoApprovePayouts: boolean;
+  /** Instructor daily awarding cap; `0` = unlimited. */
+  dailyAwardLimitPerInstructor?: number;
   defaultViewLayout?: string;
   fields?: Record<string, unknown>;
   customFields?: [];
@@ -19,6 +21,7 @@ export interface HasanatSettings {
 export const DEFAULT_HASANAT_SETTINGS: HasanatSettings = {
   pointsPerUnit: 10,
   autoApprovePayouts: false,
+  dailyAwardLimitPerInstructor: 0,
   defaultViewLayout: "list",
   fields: {
     basic: INITIAL_HASANAT_FIELD_SEED.basic.map((f) => ({ ...f })),

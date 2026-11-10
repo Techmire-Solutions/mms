@@ -8,6 +8,7 @@ import {
 import { EntityMessagingActions } from "@/components/app/EntityMessagingActions";
 import { ModuleRowActionsMenu } from "@/components/app/ModuleRowActionsMenu";
 import { useTranslation } from "@/hooks/useTranslation";
+import { nextStatuses } from "@mms/shared";
 import type { Distribution } from "@/lib/data/hasanatData";
 
 type DistributionStatus = Distribution["status"];
@@ -49,7 +50,11 @@ export function DistributionsRowActions({
 }: DistributionsRowActionsProps): JSX.Element {
   const { t } = useTranslation();
 
-  const showStatus = canWrite && !showDeleted && statuses.length > 0;
+  // Only legal transitions are offered — `redeemed` is terminal (a reversal reopens the card).
+  const transitionOptions = statuses.filter((status) =>
+    nextStatuses(distribution.status).includes(status),
+  );
+  const showStatus = canWrite && !showDeleted && transitionOptions.length > 0;
   const showMessaging = Boolean(onMessage) && !showDeleted;
   const showExtras = showStatus || showMessaging;
 
@@ -81,7 +86,7 @@ export function DistributionsRowActions({
                     onChangeStatus(distribution.id, status as DistributionStatus)
                   }
                 >
-                  {statuses.map((status) => (
+                  {transitionOptions.map((status) => (
                     <DropdownMenuRadioItem key={status} value={status}>
                       {statusLabels[status]}
                     </DropdownMenuRadioItem>

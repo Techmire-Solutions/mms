@@ -1,7 +1,7 @@
 import type { CustomWidget } from "./pinnedWidgetTypes";
 import type { ReportCollectionsSnapshot } from "@/lib/reports/useReportCollections";
 import type { Denomination } from "@/lib/data/hasanatData";
-import { getDenominationPoints } from "@mms/shared";
+import { resolveDistributionPoints } from "@mms/shared";
 import {
   readContactsWidgetAggregate,
   readStudentsWidgetAggregate,
@@ -20,9 +20,12 @@ function resolveHasanatPoints(
   record: Record<string, unknown>,
   denominations: Denomination[] | undefined,
 ): number {
-  return getDenominationPoints(
-    typeof record.denominationId === "string" ? record.denominationId : null,
-    typeof record.denominationName === "string" ? record.denominationName : null,
+  return resolveDistributionPoints(
+    {
+      pointsSnapshot: typeof record.pointsSnapshot === "number" ? record.pointsSnapshot : null,
+      denominationId: typeof record.denominationId === "string" ? record.denominationId : null,
+      quantity: typeof record.quantity === "number" ? record.quantity : 1,
+    },
     denominations,
   );
 }
@@ -42,7 +45,8 @@ function computeGroupValue(
 
   for (const record of groupRecords) {
     if (widget.collection === "hasanat_distributions" && targetField === "points") {
-      numericTotal += Number(record.quantity || 1) * resolveHasanatPoints(record, denominations);
+      // The resolver already applies the card quantity when no snapshot exists.
+      numericTotal += resolveHasanatPoints(record, denominations);
       numericRecordCount++;
     } else {
       const rawValue = record[targetField];

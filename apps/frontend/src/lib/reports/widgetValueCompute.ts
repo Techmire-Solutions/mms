@@ -1,7 +1,7 @@
 import type { CustomWidget } from "./pinnedWidgetTypes";
 import type { ReportCollectionsSnapshot } from "@/lib/reports/useReportCollections";
 import type { Denomination } from "@/lib/data/hasanatData";
-import { getDenominationPoints } from "@mms/shared";
+import { resolveDistributionPoints } from "@mms/shared";
 import {
   formatGenericWidgetValue,
   readContactsTotalFromMetrics,
@@ -32,9 +32,12 @@ function resolveHasanatPoints(
   record: Record<string, unknown>,
   denominations: Denomination[] | undefined,
 ): number {
-  return getDenominationPoints(
-    typeof record.denominationId === "string" ? record.denominationId : null,
-    typeof record.denominationName === "string" ? record.denominationName : null,
+  return resolveDistributionPoints(
+    {
+      pointsSnapshot: typeof record.pointsSnapshot === "number" ? record.pointsSnapshot : null,
+      denominationId: typeof record.denominationId === "string" ? record.denominationId : null,
+      quantity: typeof record.quantity === "number" ? record.quantity : 1,
+    },
     denominations,
   );
 }
@@ -128,9 +131,8 @@ export function computeWidgetSingleValue(
     let numericRecordCount = 0;
     filteredRecords.forEach((filteredRecord) => {
       if (widget.collection === "hasanat_distributions" && targetField === "points") {
-        numericTotal +=
-          Number(filteredRecord.quantity || 1) *
-          resolveHasanatPoints(filteredRecord, collections.hasanat_denoms);
+        // The resolver already applies the card quantity when no snapshot exists.
+        numericTotal += resolveHasanatPoints(filteredRecord, collections.hasanat_denoms);
         numericRecordCount++;
       } else {
         const numericValue = Number(filteredRecord[targetField]);

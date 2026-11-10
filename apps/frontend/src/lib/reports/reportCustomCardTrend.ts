@@ -1,4 +1,4 @@
-import { getDenominationPoints, matchesWidgetFilter, type Denomination } from "@mms/shared";
+import { resolveDistributionPoints, matchesWidgetFilter, type Denomination } from "@mms/shared";
 import type { CustomCard } from "./reportCollectionTypes";
 
 /** Compares the current 30-day window to the preceding 30 days for a custom card trend. */
@@ -59,12 +59,18 @@ export function calculateCustomCardDynamicTrend(
     let count = 0;
     filteredRows.forEach((filteredRow) => {
       if (card.collection === "hasanat_distributions" && targetMetricField === "points") {
-        const points = getDenominationPoints(
-          typeof filteredRow.denominationId === "string" ? filteredRow.denominationId : null,
-          typeof filteredRow.denominationName === "string" ? filteredRow.denominationName : null,
+        const points = resolveDistributionPoints(
+          {
+            pointsSnapshot:
+              typeof filteredRow.pointsSnapshot === "number" ? filteredRow.pointsSnapshot : null,
+            denominationId:
+              typeof filteredRow.denominationId === "string" ? filteredRow.denominationId : null,
+            quantity: typeof filteredRow.quantity === "number" ? filteredRow.quantity : 1,
+          },
           denoms,
         );
-        sum += Number(filteredRow.quantity || 1) * points;
+        // `points` is already the card total (snapshot, or deed × quantity).
+        sum += points;
         count++;
       } else {
         const numericFieldValue = Number(filteredRow[targetMetricField]);

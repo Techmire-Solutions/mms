@@ -24,6 +24,9 @@ export async function saveDistribution(tenant: string, record: Distribution): Pr
         classId: record.classId ?? null,
         sessionId: record.sessionId ?? null,
         quantity: record.quantity ?? 1,
+        // Restores and imports carry the stamped value; the conflict branch never rewrites it.
+        pointsSnapshot: record.pointsSnapshot ?? 0,
+        clientRequestId: record.clientRequestId ?? null,
         reason: record.reason ?? "",
         issuedDate: requireDbDateValue(record.issuedDate, "issuedDate"),
         issuedByUserId: record.issuedByUserId ?? null,
@@ -102,6 +105,8 @@ export async function bulkSaveDistributions(
           classId: r.classId ?? null,
           sessionId: r.sessionId ?? null,
           quantity: r.quantity ?? 1,
+          pointsSnapshot: r.pointsSnapshot ?? 0,
+          clientRequestId: r.clientRequestId ?? null,
           reason: r.reason ?? "",
           issuedDate: requireDbDateValue(r.issuedDate, "issuedDate"),
           issuedByUserId: r.issuedByUserId ?? null,
@@ -150,6 +155,7 @@ export async function bulkSaveDistributions(
 export async function replaceDistributionsForWorkspace(
   tenant: string,
   records: Distribution[],
+  options: { allowHardPurge?: boolean } = {},
 ): Promise<void> {
   const subdomain = tenant.trim().toLowerCase();
   const uniqueMap = new Map<string, Distribution>();
@@ -160,6 +166,9 @@ export async function replaceDistributionsForWorkspace(
   const uniqueRecords = Array.from(uniqueMap.values());
 
   await withTenant(subdomain, async (tx) => {
+    if (options.allowHardPurge) {
+      await tx.execute(sql`SELECT set_config('app.allow_hard_purge', 'true', true)`);
+    }
     // Full-collection replace is only reachable from backup restore (which sets
     // `app.allow_hard_purge`) and the legacy 030 data migration.
     await tx
@@ -181,6 +190,8 @@ export async function replaceDistributionsForWorkspace(
           classId: r.classId ?? null,
           sessionId: r.sessionId ?? null,
           quantity: r.quantity ?? 1,
+          pointsSnapshot: r.pointsSnapshot ?? 0,
+          clientRequestId: r.clientRequestId ?? null,
           reason: r.reason ?? "",
           issuedDate: requireDbDateValue(r.issuedDate, "issuedDate"),
           issuedByUserId: r.issuedByUserId ?? null,
