@@ -7,6 +7,11 @@
  * badge behind.
  */
 
+import type {
+  HasanatStudentAwardDto,
+  HasanatStudentSummaryDto,
+  HasanatTierReconcileResultDto,
+} from "@mms/shared";
 import {
   evaluateTierChange,
   normalizeHasanatModulePreferences,
@@ -26,36 +31,12 @@ import {
 } from "../repository/hasanatRepositoryAdapter.js";
 import { auditAwardMutation } from "./hasanatAudit.js";
 
-export interface HasanatStudentAwardView {
-  id: string;
-  tierKey: string;
-  tierName: string;
-  earnedSnapshot: number;
-  awardedAt: string;
-  revokedAt?: string | null;
-  revokedReason?: string | null;
-}
+/** Wire shape is owned by the shared contract; never re-declare it here. */
+export type HasanatStudentAwardView = HasanatStudentAwardDto;
 
-export interface HasanatStudentSummary {
-  studentId: string;
-  /** Lifetime earned (tier basis) — optionally session-scoped. */
-  earned: number;
-  /** Value still available on active, non-deleted cards. */
-  balance: number;
-  /** Ledger net (redeems − reversals). */
-  redeemed: number;
-  tier: HasanatTier;
-  nextTier: HasanatTier | null;
-  pointsToNext: number;
-  percentToNext: number;
-  awards: HasanatStudentAwardView[];
-}
+export type HasanatStudentSummary = HasanatStudentSummaryDto;
 
-export interface TierReconcileResult {
-  students: number;
-  awarded: number;
-  revoked: number;
-}
+export type TierReconcileResult = HasanatTierReconcileResultDto;
 
 export async function loadHasanatTierLadder(tenant: string): Promise<HasanatTier[]> {
   const raw = await getHasanatModulePreferences(tenant.trim().toLowerCase());
@@ -221,16 +202,19 @@ async function applyTierPlans(
         earnedSnapshot: award.earnedSnapshot,
         awardedAt: now,
       },
+      studentId: award.studentId,
       tag: "hasanat.tier.granted",
     });
   }
   if (toRevoke.length > 0) {
-    const liveByeId = new Map<string, { tierKey: string }>();
+    const liveById = new Map<string, { tierKey: string; studentId: string }>();
     for (const state of states) {
-      for (const award of state.liveAwards) liveByeId.set(award.id, { tierKey: award.tierKey });
+      for (const award of state.liveAwards) {
+        liveById.set(award.id, { tierKey: award.tierKey, studentId: state.studentId });
+      }
     }
     for (const awardId of toRevoke) {
-      const live = liveByeId.get(awardId);
+      const live = liveById.get(awardId);
       await auditAwardMutation({
         tenant,
         actorUserId,
@@ -244,6 +228,7 @@ async function applyTierPlans(
           revokedAt: now,
           revokedReason: "recalculated_after_reduction",
         },
+        studentId: live?.studentId ?? null,
         reason: "recalculated_after_reduction",
         tag: "hasanat.tier.revoked",
       });

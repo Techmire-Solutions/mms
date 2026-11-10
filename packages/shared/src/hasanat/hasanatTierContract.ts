@@ -30,7 +30,17 @@ export const hasanatStudentSummarySchema = z.object({
 });
 
 export type HasanatTierDto = z.infer<typeof hasanatTierSchema>;
+export type HasanatStudentAwardDto = z.infer<typeof hasanatStudentAwardSchema>;
 export type HasanatStudentSummaryDto = z.infer<typeof hasanatStudentSummarySchema>;
+
+/** `POST /api/hasanat/tiers/reconcile` result (admin backfill). */
+export const hasanatTierReconcileResponseSchema = z.object({
+  students: z.number(),
+  awarded: z.number(),
+  revoked: z.number(),
+});
+
+export type HasanatTierReconcileResultDto = z.infer<typeof hasanatTierReconcileResponseSchema>;
 
 /** One per-student row of the Hasanat report (server read model, tier included). */
 export const hasanatStudentReportRowSchema = z.object({

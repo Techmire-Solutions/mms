@@ -2,6 +2,8 @@ import type { Permission } from "../auth/permissions.js";
 import { z } from "zod";
 import { isoDateSchema } from "../core/isoDateSchema.js";
 import { HASANAT_CARD_STATUSES } from "./hasanatCardRules.js";
+import { HASANAT_RECIPIENT_TYPES } from "./hasanatEnums.js";
+import { hasanatCommandMetricsSnapshotSchema } from "../settings/moduleCommandMetricsFinance.js";
 
 export const denomRecordSchema = z
   .object({
@@ -95,7 +97,7 @@ export const distributionRecordSchema = z
     batchId: z.string(),
     denominationId: z.string(),
     denominationName: z.string().default(""),
-    recipientType: z.enum(["student", "faculty"]).default("student"),
+    recipientType: z.enum(HASANAT_RECIPIENT_TYPES).default("student"),
     recipientStudentId: z.string().nullable().optional(),
     recipientFacultyId: z.string().nullable().optional(),
     recipientName: z.string().optional().default(""),
@@ -137,7 +139,7 @@ export const distributionCreateSchema = z
     batchId: z.string().min(1, "Batch is required"),
     denominationId: z.string().min(1, "Denomination is required"),
     denominationName: z.string().optional().default(""),
-    recipientType: z.enum(["student", "faculty"]).default("student"),
+    recipientType: z.enum(HASANAT_RECIPIENT_TYPES).default("student"),
     recipientStudentId: z.string().nullable().optional(),
     recipientFacultyId: z.string().nullable().optional(),
     recipientName: z.string().optional().default(""),
@@ -161,7 +163,7 @@ export const distributionCreateSchema = z
  */
 export const distributionUpdateSchema = z
   .object({
-    recipientType: z.enum(["student", "faculty"]).optional(),
+    recipientType: z.enum(HASANAT_RECIPIENT_TYPES).optional(),
     recipientStudentId: z.string().nullable().optional(),
     recipientFacultyId: z.string().nullable().optional(),
     recipientName: z.string().optional(),
@@ -200,27 +202,15 @@ export const filterActiveDistributions = <T extends { deletedAt?: string | null 
   distributions: T[],
 ): T[] => distributions.filter((d) => !isDistributionDeleted(d));
 
+export * from "./hasanatEnums.js";
 export * from "./hasanatRedemptionSchemas.js";
 
-/** `HasanatCommandMetricsSnapshot` schema (metrics route payload). */
-export const hasanatCommandMetricsSchema = z
-  .object({
-    totalStock: z.number(),
-    available: z.number(),
-    distributed: z.number(),
-    redeemed: z.number(),
-    active: z.number(),
-    returned: z.number(),
-    denominations: z.number(),
-    totalPointsDistributed: z.number(),
-    pointsThisWeek: z.number(),
-    pointsLastWeek: z.number(),
-  })
-  .passthrough();
-
-/** `GET /api/hasanat/metrics` envelope — the route replies `{ metrics }`. */
+/**
+ * `GET /api/hasanat/metrics` envelope — the route replies `{ metrics }`.
+ * Wraps the canonical snapshot schema (ints, non-negative, strict) rather than a second copy.
+ */
 export const hasanatCommandMetricsResponseSchema = z
-  .object({ metrics: hasanatCommandMetricsSchema })
+  .object({ metrics: hasanatCommandMetricsSnapshotSchema })
   .strict();
 
 export type DistributionCreate = z.infer<typeof distributionCreateSchema>;

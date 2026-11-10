@@ -5,28 +5,17 @@
  * ceiling; the tier module re-exports these so the facade keeps one import surface.
  */
 
-import { tierProgress, type HasanatTier } from "@mms/shared";
+import {
+  tierProgress,
+  type HasanatStudentReportResponseDto,
+  type HasanatStudentReportRowDto,
+} from "@mms/shared";
 import { loadHasanatStudentReport } from "../repository/hasanatRepositoryAdapter.js";
 import { loadHasanatTierLadder } from "./hasanatTierUseCases.js";
 
-export interface HasanatStudentReportEntry {
-  studentId: string;
-  studentName: string;
-  className: string;
-  faculty: string;
-  earned: number;
-  balance: number;
-  redeemed: number;
-  tierKey: string;
-  tierName: string;
-  pointsToNext: number;
-  percentToNext: number;
-}
-
-export interface HasanatStudentReport {
-  rows: HasanatStudentReportEntry[];
-  tiers: HasanatTier[];
-}
+/** Report row/response shapes are owned by the shared contract. */
+export type HasanatStudentReportEntry = HasanatStudentReportRowDto;
+export type HasanatStudentReport = HasanatStudentReportResponseDto;
 
 /**
  * Per-student report rows with their derived tier — one read-model query plus the pure ladder,

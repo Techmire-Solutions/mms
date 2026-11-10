@@ -453,4 +453,53 @@ describe("Hasanat schema & persistence invariants (0225–0232)", () => {
     expect(resolver).toMatch(/defined by the denomination/);
     expect(resolver).toMatch(/Invalid date/);
   });
+
+  it("keeps every database enum check aligned with the shared constants", async () => {
+    const {
+      HASANAT_CARD_STATUSES,
+      HASANAT_RECIPIENT_TYPES,
+      HASANAT_LEDGER_KINDS,
+      HASANAT_AWARD_KINDS,
+    } = await import("@mms/shared");
+
+    const readCheck = (source: string, name: string): string[] => {
+      const match = source.match(new RegExp(`${name}[^\\n]*in \\(([^)]*)\\)`));
+      expect(match, `${name} check missing`).not.toBeNull();
+      return (match?.[1] ?? "")
+        .split(",")
+        .map((token) => token.trim().replace(/^'|'$/g, ""))
+        .filter(Boolean)
+        .sort();
+    };
+
+    const distributions = await readFile(
+      join(process.cwd(), "src/db/schema/hasanatDistributions.ts"),
+      "utf-8",
+    );
+    const redemptions = await readFile(
+      join(process.cwd(), "src/db/schema/hasanatRedemptions.ts"),
+      "utf-8",
+    );
+    const tiers = await readFile(join(process.cwd(), "src/db/schema/hasanatTiers.ts"), "utf-8");
+
+    expect(readCheck(distributions, "hasanat_dist_status_chk")).toEqual(
+      [...HASANAT_CARD_STATUSES].sort(),
+    );
+    expect(readCheck(distributions, "hasanat_dist_recipient_type_chk")).toEqual(
+      [...HASANAT_RECIPIENT_TYPES].sort(),
+    );
+    expect(readCheck(redemptions, "hasanat_redemp_kind_chk")).toEqual(
+      [...HASANAT_LEDGER_KINDS].sort(),
+    );
+    expect(readCheck(tiers, "hasanat_award_kind_chk")).toEqual([...HASANAT_AWARD_KINDS].sort());
+  });
+
+  it("uses the canonical metrics snapshot schema instead of a second copy", async () => {
+    const manifest = await readFile(
+      join(process.cwd(), "../../packages/shared/src/hasanat/hasanatModuleManifest.ts"),
+      "utf-8",
+    );
+    expect(manifest).not.toMatch(/export const hasanatCommandMetricsSchema/);
+    expect(manifest).toMatch(/hasanatCommandMetricsSnapshotSchema/);
+  });
 });
