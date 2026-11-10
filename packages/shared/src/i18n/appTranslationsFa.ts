@@ -5170,6 +5170,7 @@ export const APP_TRANSLATIONS_FA: Partial<Record<AppTranslationKey, string>> = {
   "hasanat.item.distributions": "توزیع‌ها",
   "hasanat.loadFailed": "بارگذاری توزیع‌های حسنات ناموفق بود",
   "hasanat.loadFailedHint": "اتصال خود را بررسی کنید و دوباره تلاش کنید.",
+  "hasanat.redemptionsLoadFailed": "بارگذاری دفتر استبدال ناموفق بود",
   "hasanat.messaging.recipient": "دریافت‌کننده",
   "hasanat.metrics.active": "فعال",
   "hasanat.metrics.available": "آماده توزیع",

@@ -5196,6 +5196,7 @@ export const APP_TRANSLATIONS_EN = {
   "hasanat.item.distributions": "distributions",
   "hasanat.loadFailed": "Failed to load Hasanat distributions",
   "hasanat.loadFailedHint": "Check your connection and try again.",
+  "hasanat.redemptionsLoadFailed": "Failed to load the redemption ledger",
   "hasanat.messaging.recipient": "Recipient",
   "hasanat.metrics.active": "Active",
   "hasanat.metrics.available": "Available",

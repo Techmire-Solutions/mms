@@ -11,7 +11,10 @@ import type {
   ReverseRedemptionBody,
 } from "@mms/shared";
 import { tsrClient } from "@/lib/api";
-import { invalidateHasanatQueries } from "./invalidateHasanatQueries";
+import {
+  invalidateHasanatSetupQueries,
+  invalidateHasanatWorkQueries,
+} from "./invalidateHasanatQueries";
 
 /** Card fields the write API owns; sending them would be rejected by the strict schemas. */
 function toCreateBody(distribution: Distribution): DistributionCreate {
@@ -55,15 +58,15 @@ export function useHasanatMutations() {
   const queryClient = useQueryClient();
 
   const invalidateDistributions = () => {
-    invalidateHasanatQueries(queryClient);
+    invalidateHasanatWorkQueries(queryClient);
   };
 
   const replaceDenoms = tsrClient.hasanat.replaceDenoms.useMutation({
-    onSuccess: () => invalidateHasanatQueries(queryClient),
+    onSuccess: () => invalidateHasanatSetupQueries(queryClient),
   });
 
   const replaceBatches = tsrClient.hasanat.replaceBatches.useMutation({
-    onSuccess: () => invalidateHasanatQueries(queryClient),
+    onSuccess: () => invalidateHasanatSetupQueries(queryClient),
   });
 
   const createDistribution = tsrClient.hasanat.createDistribution.useMutation({
@@ -86,15 +89,15 @@ export function useHasanatMutations() {
   });
 
   const changeDistributionStatus = tsrClient.hasanat.changeDistributionStatus.useMutation({
-    onSuccess: () => invalidateHasanatQueries(queryClient),
+    onSuccess: () => invalidateHasanatWorkQueries(queryClient),
   });
   const reverseRedemption = tsrClient.hasanat.reverseRedemption.useMutation({
-    onSuccess: () => invalidateHasanatQueries(queryClient),
+    onSuccess: () => invalidateHasanatWorkQueries(queryClient),
   });
 
   // Atomic burn: the server locks the card and writes the ledger row + status together.
   const redeemCard = tsrClient.hasanat.redeemDistribution.useMutation({
-    onSuccess: () => invalidateHasanatQueries(queryClient),
+    onSuccess: () => invalidateHasanatWorkQueries(queryClient),
   });
 
   return {

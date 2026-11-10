@@ -5,11 +5,12 @@ import { useTranslation } from "@/hooks/useTranslation";
 import { useListRowMotion } from "@/hooks/useListRowMotion";
 import { formatDate, formatNumber, HASANAT_MODULE_MANIFEST } from "@mms/shared";
 import {
-  useHasanatRedemptionsCollection,
+  useHasanatRedemptionsState,
   useHasanatMutations,
 } from "@/tenant/features/hasanat/hooks/useHasanatApi";
 import { Button } from "@/components/ui/button";
 import { EmptyState } from "@/components/app/EmptyState";
+import { Skeleton } from "@/components/ui/skeleton";
 import { SectionHeader } from "@shared/ui";
 import type { WorkDirectoryViewMode } from "@/hooks/useWorkDirectoryViewMode";
 import {
@@ -42,13 +43,15 @@ export function RedemptionTracker({
 }: RedemptionTrackerProps): React.JSX.Element {
   const { t } = useTranslation();
   const rowMotion = useListRowMotion({ fade: true, duration: 0.1 });
-  const redemptions = useHasanatRedemptionsCollection();
+  const { redemptions, isLoading, isError, refetch } = useHasanatRedemptionsState();
   const { redeemCard } = useHasanatMutations();
   const [showModal, setShowModal] = useState(false);
+  const settled = !isLoading && !isError;
 
   useEffect(() => {
-    onFilteredCountChange?.(redemptions.length);
-  }, [redemptions.length, onFilteredCountChange]);
+    // Only a settled ledger has a meaningful count; reporting 0 mid-flight flashed a wrong badge.
+    if (settled) onFilteredCountChange?.(redemptions.length);
+  }, [settled, redemptions.length, onFilteredCountChange]);
 
   // Net consumed value: a reversal row subtracts from the ledger.
   const totalPoints = redemptions.reduce(
@@ -57,7 +60,7 @@ export function RedemptionTracker({
     0,
   );
 
-  const handleSave = async (redemption: Redemption) => {
+  const handleSave = async (redemption: Redemption & { clientRequestId?: string }) => {
     // One atomic request: the server locks the card, validates its value and writes the ledger
     // row + card status together. Never split this into "upsert list, then update the card".
     await redeemCard.mutateAsync(redemption.distributionId, {
@@ -66,6 +69,8 @@ export function RedemptionTracker({
       date: redemption.date,
       approvedByUserId: redemption.approvedByUserId ?? null,
       approvedBy: redemption.approvedBy ?? null,
+      // Replay-safe: the server returns the original ledger row for a repeated key.
+      ...(redemption.clientRequestId ? { clientRequestId: redemption.clientRequestId } : {}),
     });
     setShowModal(false);
   };
@@ -137,10 +142,16 @@ export function RedemptionTracker({
         layout="row"
         icon={<Star className="w-4 h-4 text-warning" aria-hidden="true" />}
         iconClassName="bg-warning/10"
-        title={t("hasanat.redemptionsSummary", {
-          count: redemptions.length,
-          points: formatNumber(totalPoints),
-        })}
+        title={
+          settled
+            ? t("hasanat.redemptionsSummary", {
+                count: redemptions.length,
+                points: formatNumber(totalPoints),
+              })
+            : isError
+              ? t("hasanat.redemptionsLoadFailed")
+              : t("common.loading")
+        }
         actions={
           canWrite && (
             <Button
@@ -154,25 +165,46 @@ export function RedemptionTracker({
         }
       />
 
-      <DataTable
-        tableId={REDEMPTION_TABLE_ID}
-        label={t("hasanat.tabs.redemptions")}
-        data={redemptions}
-        columns={columns}
-        filters={filters}
-        columnLayout={columnLayout}
-        defaultViewMode={viewMode}
-        renderCard={(redemption, index, ctx) => (
-          <RedemptionCard
-            redemption={redemption}
-            columnVisible={ctx.isColumnVisible}
-            motionProps={rowMotion(index * 0.04)}
-          />
-        )}
-        emptyState={
-          <EmptyState variant="dashed" icon={Gift} title={t("hasanat.empty.redemptions")} />
-        }
-      />
+      {isLoading ? (
+        <div className="space-y-3" aria-busy="true" aria-live="polite">
+          {[0, 1, 2].map((row) => (
+            <Skeleton key={row} className="h-14 w-full rounded-xl" />
+          ))}
+        </div>
+      ) : isError ? (
+        <div
+          role="alert"
+          className="rounded-xl border border-destructive/30 bg-destructive/5 p-5 text-center space-y-3"
+        >
+          <p className="text-sm font-semibold text-foreground">
+            {t("hasanat.redemptionsLoadFailed")}
+          </p>
+          <p className="text-xs text-muted-foreground">{t("hasanat.loadFailedHint")}</p>
+          <Button type="button" variant="outline" onClick={refetch} className="min-h-11">
+            {t("common.retry")}
+          </Button>
+        </div>
+      ) : (
+        <DataTable
+          tableId={REDEMPTION_TABLE_ID}
+          label={t("hasanat.tabs.redemptions")}
+          data={redemptions}
+          columns={columns}
+          filters={filters}
+          columnLayout={columnLayout}
+          defaultViewMode={viewMode}
+          renderCard={(redemption, index, ctx) => (
+            <RedemptionCard
+              redemption={redemption}
+              columnVisible={ctx.isColumnVisible}
+              motionProps={rowMotion(index * 0.04)}
+            />
+          )}
+          emptyState={
+            <EmptyState variant="dashed" icon={Gift} title={t("hasanat.empty.redemptions")} />
+          }
+        />
+      )}
 
       {canWrite && (
         <RedeemModal

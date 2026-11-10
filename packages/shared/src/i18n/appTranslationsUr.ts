@@ -5149,6 +5149,7 @@ export const APP_TRANSLATIONS_UR: Record<AppTranslationKey, string> = {
   "hasanat.item.distributions": "تقسیمیں",
   "hasanat.loadFailed": "حسنات تقسیم لوڈ نہیں ہو سکیں",
   "hasanat.loadFailedHint": "اپنا کنکشن چیک کریں اور دوبارہ کوشش کریں۔",
+  "hasanat.redemptionsLoadFailed": "استبدال لیجر لوڈ نہیں ہو سکا",
   "hasanat.messaging.recipient": "وصول کنندہ",
   "hasanat.metrics.active": "فعال",
   "hasanat.metrics.available": "دستیاب",

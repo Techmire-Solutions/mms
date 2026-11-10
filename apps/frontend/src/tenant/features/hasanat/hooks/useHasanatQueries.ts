@@ -2,7 +2,6 @@ import type {
   Denomination,
   StockBatch,
   Distribution,
-  Redemption,
   HasanatCommandMetricsSnapshot,
   HasanatReportComparisonQuery,
 } from "@mms/shared";
@@ -29,8 +28,7 @@ export {
 };
 export const HASANAT_API = HASANAT_MODULE_MANIFEST.restBasePath;
 
-/** Maximum ledger page the tracker requests (server cap is 200). */
-const LEDGER_TRACKER_PAGE_SIZE = 200;
+export * from "./useHasanatLedgerQueries";
 
 export function hasanatCommandMetricsQueryOptions() {
   return serverMetricsQueryOptions<HasanatCommandMetricsSnapshot>({
@@ -162,28 +160,6 @@ export function useHasanatReportAggregates(options?: {
     enabled: isAuthenticated && canRead && enabled,
     staleTime: 30_000,
   });
-}
-
-export function useHasanatRedemptions(options?: { enabled?: boolean }) {
-  const { isAuthenticated } = useAuth();
-  const { can } = usePermissions();
-  const canRead = can("hasanat.read");
-  return tsrClient.hasanat.listRedemptions.useQuery({
-    queryKey: [...HASANAT_REDEMPTIONS_QUERY_KEY, { limit: LEDGER_TRACKER_PAGE_SIZE }],
-    // The ledger endpoint is paginated; the tracker renders one bounded page (max 200) and the
-    // drawer links to the full history per card.
-    queryData: { query: { limit: LEDGER_TRACKER_PAGE_SIZE } },
-    enabled: isAuthenticated && canRead && (options?.enabled ?? true),
-    staleTime: 30_000,
-  });
-}
-
-export function useHasanatRedemptionsCollection(options?: { enabled?: boolean }): Redemption[] {
-  const query = useHasanatRedemptions(options);
-  if (!query.data || query.data.status !== 200) return [];
-  const body: unknown = query.data.body;
-  if (Array.isArray(body)) return body as Redemption[];
-  return (body as { redemptions?: Redemption[] } | null)?.redemptions ?? [];
 }
 
 export function useHasanatMetrics(options?: { enabled?: boolean }) {
