@@ -1,14 +1,21 @@
 import { initContract } from "@ts-rest/core";
 import { z } from "zod";
-import { studentRecordSchema } from "../students/studentsModuleManifest.js";
-import { widgetAggregateResultSchema } from "../schemas/common.dto.js";
+import { apiErrorResponseSchema } from "../schemas/api.dto.js";
+import { widgetAggregateResultSchema, widgetQuerySchema } from "../schemas/common.dto.js";
 import { studentLookupPutBodySchema } from "../schemas/studentLookup.dto.js";
+import { moduleFieldsPrefsAuditBodySchema } from "../schemas/csvExport.dto.js";
 import {
+  studentFieldConfigPutBodySchema,
+  studentPreferencesPutBodySchema,
+} from "../students/studentSetupConfigTypes.js";
+import {
+  studentsListQuerySchema,
   studentListPageResponseSchema,
   studentWrappedResponseSchema,
   studentBulkResultResponseSchema,
   studentPreferencesResponseSchema,
   studentLookupsResponseSchema,
+  studentResponseRecordSchema,
   studentCrudRoutes,
   studentCrudContract,
   studentOperationRoutes,
@@ -16,11 +23,14 @@ import {
 } from "./students.contract.routes.js";
 
 export {
+  apiErrorResponseSchema,
+  studentsListQuerySchema,
   studentListPageResponseSchema,
   studentWrappedResponseSchema,
   studentBulkResultResponseSchema,
   studentPreferencesResponseSchema,
   studentLookupsResponseSchema,
+  studentResponseRecordSchema,
   studentCrudRoutes,
   studentCrudContract,
   studentOperationRoutes,
@@ -29,18 +39,16 @@ export {
 
 const c = initContract();
 
-const errorResponse = z.unknown();
+const errorResponse = apiErrorResponseSchema;
 
-export const studentContract = c.router({
-  ...studentCrudRoutes,
-  ...studentOperationRoutes,
+/** Soft-delete, single restore, and bulk trash student contract routes. */
+export const studentSoftDeleteRoutes = {
   restore: {
-    method: "POST",
+    method: "POST" as const,
     path: "/api/students/:id/restore",
-    body: z.unknown(),
+    body: z.object({}).optional(),
     responses: {
-      200: z.object({ success: z.literal(true), student: studentRecordSchema }),
-      // Restore conflicts (GR, Student ID, contact) are answered as 400 validation errors.
+      200: z.object({ success: z.literal(true), student: studentResponseRecordSchema }),
       400: errorResponse,
       403: errorResponse,
       404: errorResponse,
@@ -49,7 +57,7 @@ export const studentContract = c.router({
     summary: "Restore a soft-deleted student",
   },
   bulkDelete: {
-    method: "POST",
+    method: "POST" as const,
     path: "/api/students/bulk-delete",
     body: z.object({
       ids: z.array(z.union([z.string(), z.number()])),
@@ -63,7 +71,7 @@ export const studentContract = c.router({
     summary: "Bulk delete students",
   },
   bulkRestore: {
-    method: "POST",
+    method: "POST" as const,
     path: "/api/students/bulk-restore",
     body: z.object({ ids: z.array(z.union([z.string(), z.number()])) }),
     responses: {
@@ -78,17 +86,22 @@ export const studentContract = c.router({
           }),
         ),
       }),
-      // Per-row restore conflicts are reported in `conflicts`; a whole-request conflict can 400.
       400: errorResponse,
       403: errorResponse,
       500: errorResponse,
     },
     summary: "Bulk restore students",
   },
+} as const;
+
+export const studentSoftDeleteContract = c.router(studentSoftDeleteRoutes);
+
+/** Setup field configuration, preferences, and lookups routes. */
+export const studentSetupRoutes = {
   setupAudit: {
-    method: "POST",
+    method: "POST" as const,
     path: "/api/students/setup-audit",
-    body: z.object({ area: z.enum(["fields", "preferences"]), summary: z.string() }),
+    body: moduleFieldsPrefsAuditBodySchema,
     responses: {
       200: z.object({ success: z.literal(true) }),
       403: errorResponse,
@@ -96,42 +109,8 @@ export const studentContract = c.router({
     },
     summary: "Log setup audit",
   },
-  resolve: {
-    method: "POST",
-    path: "/api/students/resolve",
-    body: z.object({ ids: z.array(z.string()) }),
-    responses: {
-      200: z.object({ students: z.array(studentRecordSchema) }),
-      403: errorResponse,
-      500: errorResponse,
-    },
-    summary: "Resolve students by IDs",
-  },
-  linkedContactIds: {
-    method: "GET",
-    path: "/api/students/linked-contact-ids",
-    query: z.object({ excludeId: z.string().optional() }).optional(),
-    responses: {
-      200: z.object({ contactIds: z.array(z.union([z.string(), z.number()])) }),
-      403: errorResponse,
-      500: errorResponse,
-    },
-    summary: "Get linked contact IDs",
-  },
-  widgetAggregates: {
-    method: "POST",
-    path: "/api/students/widget-aggregates",
-    body: z.object({ widgets: z.array(z.unknown()) }),
-    responses: {
-      200: z.object({ results: z.record(z.string(), widgetAggregateResultSchema) }),
-      403: errorResponse,
-      500: errorResponse,
-    },
-    summary: "Get widget aggregates",
-  },
-
   getFieldConfig: {
-    method: "GET",
+    method: "GET" as const,
     path: "/api/students/field-config",
     responses: {
       200: z.object({ config: z.record(z.string(), z.unknown()).nullable() }),
@@ -141,9 +120,9 @@ export const studentContract = c.router({
     summary: "Get field config",
   },
   updateFieldConfig: {
-    method: "PUT",
+    method: "PUT" as const,
     path: "/api/students/field-config",
-    body: z.unknown(),
+    body: studentFieldConfigPutBodySchema,
     responses: {
       200: z.object({ success: z.literal(true), config: z.record(z.string(), z.unknown()) }),
       403: errorResponse,
@@ -152,7 +131,7 @@ export const studentContract = c.router({
     summary: "Update field config",
   },
   getPreferences: {
-    method: "GET",
+    method: "GET" as const,
     path: "/api/students/preferences",
     responses: {
       200: z.object({ preferences: studentPreferencesResponseSchema }),
@@ -162,9 +141,9 @@ export const studentContract = c.router({
     summary: "Get preferences",
   },
   updatePreferences: {
-    method: "PUT",
+    method: "PUT" as const,
     path: "/api/students/preferences",
-    body: z.unknown(),
+    body: studentPreferencesPutBodySchema,
     responses: {
       200: z.object({ success: z.literal(true), preferences: studentPreferencesResponseSchema }),
       403: errorResponse,
@@ -173,7 +152,7 @@ export const studentContract = c.router({
     summary: "Update preferences",
   },
   getLookups: {
-    method: "GET",
+    method: "GET" as const,
     path: "/api/students/lookups",
     responses: {
       200: z.object({ lookups: studentLookupsResponseSchema }),
@@ -182,11 +161,8 @@ export const studentContract = c.router({
     },
     summary: "Get all lookups",
   },
-  // `GET /api/students/lookups/:kind` was declared here but never registered (only `GET /lookups`
-  // and `PUT /lookups/:kind` exist), so a generated client could call a route that 404s. Removed
-  // rather than registered: the bulk `GET /lookups` map is the only consumer surface.
   updateLookupKind: {
-    method: "PUT",
+    method: "PUT" as const,
     path: "/api/students/lookups/:kind",
     pathParams: z.object({ kind: z.string() }),
     body: studentLookupPutBodySchema,
@@ -198,4 +174,54 @@ export const studentContract = c.router({
     },
     summary: "Replace a specific lookup kind",
   },
+} as const;
+
+export const studentSetupContract = c.router(studentSetupRoutes);
+
+/** Aggregate queries, linked contacts, and metric reporting routes. */
+export const studentAggregateRoutes = {
+  resolve: {
+    method: "POST" as const,
+    path: "/api/students/resolve",
+    body: z.object({ ids: z.array(z.string()) }),
+    responses: {
+      200: z.object({ students: z.array(studentResponseRecordSchema) }),
+      403: errorResponse,
+      500: errorResponse,
+    },
+    summary: "Resolve students by IDs",
+  },
+  linkedContactIds: {
+    method: "GET" as const,
+    path: "/api/students/linked-contact-ids",
+    query: z.object({ excludeId: z.string().optional() }).optional(),
+    responses: {
+      200: z.object({ contactIds: z.array(z.union([z.string(), z.number()])) }),
+      403: errorResponse,
+      500: errorResponse,
+    },
+    summary: "Get linked contact IDs",
+  },
+  widgetAggregates: {
+    method: "POST" as const,
+    path: "/api/students/widget-aggregates",
+    body: z.object({ widgets: z.array(widgetQuerySchema) }),
+    responses: {
+      200: z.object({ results: z.record(z.string(), widgetAggregateResultSchema) }),
+      403: errorResponse,
+      500: errorResponse,
+    },
+    summary: "Get widget aggregates",
+  },
+} as const;
+
+export const studentAggregateContract = c.router(studentAggregateRoutes);
+
+/** Combined Students module contract. */
+export const studentContract = c.router({
+  ...studentCrudRoutes,
+  ...studentOperationRoutes,
+  ...studentSoftDeleteRoutes,
+  ...studentSetupRoutes,
+  ...studentAggregateRoutes,
 });

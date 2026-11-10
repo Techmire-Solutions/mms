@@ -4,6 +4,7 @@ import {
   sanitizeStudentsForViewer as sanitizeStudentRecords,
   type FieldDefinition,
   type Student,
+  type StudentClearanceOptions,
   type StudentsSettings,
   type TabDefinition,
 } from "@mms/shared";
@@ -39,25 +40,29 @@ function resolveSnapshot(settings: StudentsSettings | null): StudentsFieldConfig
   return settingsSnapshot(settings) ?? settingsSnapshot(normalizeStudentsSettings(null))!;
 }
 
-/** Strips student properties the viewer role cannot read (field-config + viewer role). */
+/** Strips student properties the viewer role cannot read (field-config + viewer role + PII clearance). */
 export async function sanitizeStudentForViewer(
   student: Student,
   viewerRole: string,
+  clearance?: StudentClearanceOptions,
 ): Promise<Student> {
   return sanitizeStudentRecord(
     student,
     viewerRole,
     resolveSnapshot(await loadStudentFieldConfig()),
+    clearance,
   );
 }
 
 export async function sanitizeStudentsForViewer(
   students: Student[],
   viewerRole: string,
+  clearance?: StudentClearanceOptions,
 ): Promise<Student[]> {
   return sanitizeStudentRecords(
     students,
     viewerRole,
     resolveSnapshot(await loadStudentFieldConfig()),
+    clearance,
   );
 }

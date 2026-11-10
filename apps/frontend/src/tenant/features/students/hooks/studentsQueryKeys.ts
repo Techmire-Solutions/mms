@@ -16,6 +16,10 @@ export const STUDENTS_WIDGET_AGGREGATES_QUERY_KEY = [
   "widget-aggregates",
 ] as const;
 
+/** Hierarchical detail cache key for single student records. */
+export const studentDetailQueryKey = (id: string | number) =>
+  [STUDENTS_MODULE_MANIFEST.collectionKey, "detail", String(id)] as const;
+
 /** Work list Query params — shared {@link StudentsListQuery} + FE-only `enabled`. */
 export type StudentsPaginatedParams = StudentsListQuery & {
   page: number;

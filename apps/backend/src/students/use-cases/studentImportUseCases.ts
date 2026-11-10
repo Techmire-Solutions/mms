@@ -11,6 +11,7 @@ import { runWithTenant } from "../../lib/tenantContext.js";
 import { throwIfBackgroundJobAborted } from "../../lib/backgroundJobAbort.js";
 import { broadcastCollection } from "../../lib/livePush.js";
 import { withTenant } from "../../db/tenant-context.js";
+import { redisGet, redisSet, redisDel } from "../../lib/redis.js";
 import { upsertContact } from "../../contacts/use-cases/contactWriteUseCases.js";
 import { findContactsMatchingUniqueValues } from "../../contacts/use-cases/contactLoadUseCases.js";
 import { createStudent } from "./studentWriteUseCases.js";
@@ -35,10 +36,12 @@ function onlyDigits(value: string): string {
 async function resolveImportContact(row: StudentImportRow): Promise<string> {
   const phone = row.phone?.trim() ?? "";
   const email = row.email?.trim() ?? "";
-  if (phone || email) {
+  const cnic = row.cnic?.trim() ?? "";
+  if (phone || email || cnic) {
     const matches = await findContactsMatchingUniqueValues({
       phoneDigits: phone ? [onlyDigits(phone)].filter(Boolean) : [],
       emails: email ? [email.toLowerCase()] : [],
+      scalars: cnic ? [{ fieldKey: "cnic", normalized: cnic }] : [],
     });
     const existing = matches[0];
     if (existing) return String(existing.id);
@@ -92,16 +95,31 @@ function buildImportPayload(row: StudentImportRow, contactId: string): Record<st
 /**
  * Persists one validated chunk of the students CSV import.
  *
- * Each row becomes a person contact (reused when the phone/email already exists) plus a student
+ * Each row becomes a person contact (reused when the phone/email/CNIC already exists) plus a student
  * linked to it, through the same `createStudent` domain path as the REST API — so GR auto-generation,
  * the strict write allowlist, GR/Student-ID uniqueness and contact-tag reconciliation all apply.
+ *
+ * Checkpointing: saves progress to Redis so worker retries resume without duplicating already-persisted rows.
  * Row failures are collected and reported by position instead of failing the whole batch.
  */
 export const importStudentRows: ImportBatchFn<StudentImportRow> = async (rows, ctx) => {
+  const checkpointKey = ctx.jobId ? `mms:${ctx.tenant}:import-checkpoint:${ctx.jobId}` : null;
+  let startOffset = 0;
+  if (checkpointKey) {
+    try {
+      const saved = await redisGet(checkpointKey);
+      if (saved) {
+        startOffset = Math.min(Number(saved), rows.length);
+      }
+    } catch {
+      startOffset = 0;
+    }
+  }
+
   const errors: ImportRowError[] = [];
   let imported = 0;
 
-  for (let index = 0; index < rows.length; index += 1) {
+  for (let index = startOffset; index < rows.length; index += 1) {
     throwIfBackgroundJobAborted(ctx.signal);
     const row = rows[index]!;
     // `ctx.offset` is the chunk's position in the original file: one persist call per 200 rows
@@ -136,11 +154,31 @@ export const importStudentRows: ImportBatchFn<StudentImportRow> = async (rows, c
         ),
       );
       imported += 1;
+
+      // Periodically update checkpoint to absorb worker interruptions
+      if (checkpointKey && (index + 1) % 20 === 0) {
+        try {
+          await redisSet(checkpointKey, String(index + 1), 86400);
+        } catch {
+          // Non-fatal
+        }
+      }
+      if (ctx.updateProgress && (index + 1) % 10 === 0) {
+        void ctx.updateProgress(index + 1, rows.length).catch(() => {});
+      }
     } catch (error: unknown) {
       errors.push({
         row: rowNumber,
         reason: error instanceof Error ? error.message : "Import failed",
       });
+    }
+  }
+
+  if (checkpointKey) {
+    try {
+      await redisDel(checkpointKey);
+    } catch {
+      // Non-fatal
     }
   }
 

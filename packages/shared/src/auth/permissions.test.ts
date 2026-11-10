@@ -65,6 +65,25 @@ describe("roleHasPermission", () => {
     expect(roleHasPermission("assistant_teacher", "hasanat.write")).toBe(false);
   });
 
+  it("evaluates student sensitive permissions (medical, iep, notes) by role", () => {
+    // Admin and principal hold students.medical.read and students.iep.read
+    expect(roleHasPermission("admin", "students.medical.read")).toBe(true);
+    expect(roleHasPermission("super_admin", "students.medical.read")).toBe(true);
+    expect(roleHasPermission("principal", "students.medical.read")).toBe(true);
+    expect(roleHasPermission("principal", "students.iep.read")).toBe(true);
+    expect(roleHasPermission("principal", "students.disciplinary.read")).toBe(true);
+
+    // Regular teachers cannot read sensitive medical/iep/disciplinary records
+    expect(roleHasPermission("teacher", "students.medical.read")).toBe(false);
+    expect(roleHasPermission("teacher", "students.iep.read")).toBe(false);
+    expect(roleHasPermission("teacher", "students.disciplinary.read")).toBe(false);
+    expect(roleHasPermission("assistant_teacher", "students.medical.read")).toBe(false);
+    expect(roleHasPermission("accountant", "students.medical.read")).toBe(false);
+
+    // Notes can be read by teachers who have read access
+    expect(roleHasPermission("teacher", "students.notes.read")).toBe(true);
+  });
+
   it("evaluates custom dynamic roles and customized permissions correctly", () => {
     const customSupervisorRole: WorkspaceRole = {
       id: "supervisor",
@@ -242,7 +261,15 @@ describe("getPermissionsForRole", () => {
 describe("getModulePermissions", () => {
   it("returns all permissions for a specific module", () => {
     const studentPerms = getModulePermissions("students");
-    expect(studentPerms).toEqual(["students.read", "students.write", "students.delete"]);
+    expect(studentPerms).toEqual([
+      "students.read",
+      "students.write",
+      "students.delete",
+      "students.notes.read",
+      "students.medical.read",
+      "students.iep.read",
+      "students.disciplinary.read",
+    ]);
 
     const financePerms = getModulePermissions("finance");
     expect(financePerms).toEqual(["finance.read", "finance.write", "finance.delete"]);

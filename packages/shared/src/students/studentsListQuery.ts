@@ -28,6 +28,8 @@ export interface StudentsListQuery {
   fatherName?: string;
   /** Exclude the current student from a relationship lookup. */
   excludeId?: string;
+  /** Internal scoping: restrict results to active enrollments in these section IDs. */
+  scopedSectionIds?: string[];
 }
 
 /** Work-directory filter presets — SSOT for schema + Filters menu. */

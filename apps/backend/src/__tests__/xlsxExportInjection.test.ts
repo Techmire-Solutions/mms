@@ -9,6 +9,7 @@ describe("XLSX export formula safety", () => {
       ["=2+2", "plain"],
       ["+SUM(A1)", "@cmd"],
       ["@DDE", "-1"],
+      ["|calc.exe", "%COMSPEC%"],
       ["\t=tab", "\r=cr"],
     ]);
     const workbook = new ExcelJS.Workbook();
@@ -21,8 +22,10 @@ describe("XLSX export formula safety", () => {
       [2, 2, "plain"],
       [3, 2, "@cmd"],
       [4, 2, "-1"],
-      [5, 1, "\t=tab"],
-      [5, 2, "\n=cr"],
+      [5, 1, "|calc.exe"],
+      [5, 2, "%COMSPEC%"],
+      [6, 1, "\t=tab"],
+      [6, 2, "\n=cr"],
     ];
     for (const [row, col, expected] of values) {
       const cell = sheet.getCell(row, col);

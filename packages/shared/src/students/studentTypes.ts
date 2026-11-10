@@ -1,4 +1,7 @@
 import type { SerializedEntityAuditFields } from "../core/softDelete.js";
+import { STANDARD_GENDERS, type StandardGender } from "../contacts/contactEntityTypes.js";
+
+export { STANDARD_GENDERS, type StandardGender };
 
 /** Active enrollment status for a student profile. */
 export const STUDENT_STATUS_VALUES = [
@@ -9,6 +12,23 @@ export const STUDENT_STATUS_VALUES = [
   "transferred",
 ] as const;
 export type StudentStatus = (typeof STUDENT_STATUS_VALUES)[number];
+
+/** Standard human blood group classifications. */
+export const STANDARD_BLOOD_GROUPS = ["A+", "A-", "B+", "B-", "AB+", "AB-", "O+", "O-"] as const;
+export type StandardBloodGroup = (typeof STANDARD_BLOOD_GROUPS)[number];
+
+/** Standard guardian and family relationship roles for student profile linking. */
+export const STUDENT_GUARDIAN_RELATIONSHIP_ROLES = [
+  "Parent",
+  "Father",
+  "Mother",
+  "Guardian",
+  "Primary Guardian",
+  "Secondary Guardian",
+  "Emergency Contact",
+  "Authorized Pickup",
+] as const;
+export type StudentGuardianRelationshipRole = (typeof STUDENT_GUARDIAN_RELATIONSHIP_ROLES)[number];
 
 /** Prefer configured status options; fall back to the shared default list. */
 export function resolveStudentStatuses(statuses?: readonly string[] | null): readonly string[] {
@@ -24,7 +44,8 @@ export interface Student extends SerializedEntityAuditFields {
   contactId: string | number;
   /** Hydrated from student Contact. */
   name?: string;
-  gender?: "male" | "female";
+  gender?: StandardGender | "male" | "female" | string;
+  bloodGroup?: StandardBloodGroup | string;
   dob?: string;
   phone?: string;
   email?: string;

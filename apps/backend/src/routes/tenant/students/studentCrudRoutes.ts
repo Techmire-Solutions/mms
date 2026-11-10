@@ -19,6 +19,10 @@ import {
   withStudentTenantScope,
 } from "./studentRouteHelpers.js";
 import { validateStudentWrite } from "./studentWriteValidation.js";
+import {
+  isStudentInAssignedSections,
+  resolveStudentAccessScope,
+} from "../../../students/use-cases/studentUseCases.js";
 
 const s = initServer();
 
@@ -49,10 +53,30 @@ export const studentCrudRoutes: FastifyPluginAsync = async (fastify) => {
           },
         };
       }
-      const result = await withStudentTenantScope(
-        String(request.tenant?.id),
+      const tenantId = String(request.tenant?.id);
+      const scope = await resolveStudentAccessScope(tenantId, user);
+      if (!scope.isUnrestricted && scope.assignedSectionIds.length === 0) {
+        return {
+          status: 200 as const,
+          body: {
+            students: [],
+            total: 0,
+            page: Number(query?.page ?? 1),
+            limit: Number(query?.limit ?? 50),
+            hasMore: false,
+          },
+        };
+      }
+      const queryWithScope = {
+        ...query,
         includeDeleted,
-        () => studentUseCases.loadStudentsPage({ ...query, includeDeleted, skipCount }),
+        skipCount,
+        ...(scope.isUnrestricted ? {} : { scopedSectionIds: scope.assignedSectionIds }),
+      };
+      const result = await withStudentTenantScope(
+        tenantId,
+        includeDeleted,
+        () => studentUseCases.loadStudentsPage(queryWithScope),
         { readOnly: true },
       );
       return {
@@ -89,8 +113,23 @@ export const studentCrudRoutes: FastifyPluginAsync = async (fastify) => {
             },
           };
         }
+        const tenantId = String(request.tenant?.id);
+        const scope = await resolveStudentAccessScope(tenantId, user);
+        if (!scope.isUnrestricted) {
+          const allowed = await isStudentInAssignedSections(tenantId, id, scope.assignedSectionIds);
+          if (!allowed) {
+            return {
+              status: 403 as const,
+              body: {
+                type: "forbidden",
+                message:
+                  "Access restricted: you may only view students enrolled in your assigned sections",
+              },
+            };
+          }
+        }
         const item = await withStudentTenantScope(
-          String(request.tenant?.id),
+          tenantId,
           includeDeleted,
           () => studentUseCases.loadStudentById(id, includeDeleted),
           { readOnly: true },

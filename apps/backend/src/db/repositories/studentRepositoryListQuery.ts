@@ -51,30 +51,33 @@ export function grNumberExpr(): SQL {
   return sql`lower(trim(COALESCE(${students.grNumber}, '')))`;
 }
 
-function buildSearchSql(search: string, useJoinedContacts = false): SQL | null {
+function buildSearchSql(search: string, useJoinedContacts = false, subdomain?: string): SQL | null {
   const normalized = search.trim().toLowerCase();
   if (!normalized) return null;
   const pattern = toSqlSearchPattern(normalized);
+  const tenantMatch = subdomain ? sql`${subdomain}` : contacts.workspaceSubdomain;
+  const studentTenantMatch = subdomain ? sql`${subdomain}` : students.workspaceSubdomain;
+
   const contactMatch = useJoinedContacts
     ? sql`(${contacts.id} IS NOT NULL AND (
         lower(COALESCE(${contacts.name}, '')) LIKE ${pattern}
         OR lower(concat_ws(' ', ${contacts.firstName}, ${contacts.lastName})) LIKE ${pattern}
         OR COALESCE(${contacts.cnic}, '') LIKE ${pattern}
-        OR EXISTS (SELECT 1 FROM ${contactPhones} cp WHERE cp.workspace_subdomain = ${contacts.workspaceSubdomain} AND cp.contact_id = ${contacts.id} AND lower(cp.number) LIKE ${pattern})
-        OR EXISTS (SELECT 1 FROM ${contactEmails} ce WHERE ce.workspace_subdomain = ${contacts.workspaceSubdomain} AND ce.contact_id = ${contacts.id} AND lower(ce.address) LIKE ${pattern})
-        OR EXISTS (SELECT 1 FROM ${contactRelationships} cr WHERE cr.workspace_subdomain = ${contacts.workspaceSubdomain} AND cr.contact_id = ${contacts.id} AND lower(trim(COALESCE(cr.name, ''))) LIKE ${pattern})
+        OR EXISTS (SELECT 1 FROM ${contactPhones} cp WHERE cp.workspace_subdomain = ${tenantMatch} AND cp.contact_id = ${contacts.id} AND lower(cp.number) LIKE ${pattern})
+        OR EXISTS (SELECT 1 FROM ${contactEmails} ce WHERE ce.workspace_subdomain = ${tenantMatch} AND ce.contact_id = ${contacts.id} AND lower(ce.address) LIKE ${pattern})
+        OR EXISTS (SELECT 1 FROM ${contactRelationships} cr WHERE cr.workspace_subdomain = ${tenantMatch} AND cr.contact_id = ${contacts.id} AND lower(trim(COALESCE(cr.name, ''))) LIKE ${pattern})
       ))`
     : sql`EXISTS (
         SELECT 1 FROM ${contacts} c
-        WHERE c.workspace_subdomain = ${students.workspaceSubdomain}
+        WHERE c.workspace_subdomain = ${studentTenantMatch}
           AND c.id = ${students.contactId}
           AND (
             lower(COALESCE(c.name, '')) LIKE ${pattern}
             OR lower(concat_ws(' ', c.first_name, c.last_name)) LIKE ${pattern}
             OR COALESCE(c.cnic, '') LIKE ${pattern}
-            OR EXISTS (SELECT 1 FROM ${contactPhones} cp WHERE cp.workspace_subdomain = c.workspace_subdomain AND cp.contact_id = c.id AND lower(cp.number) LIKE ${pattern})
-            OR EXISTS (SELECT 1 FROM ${contactEmails} ce WHERE ce.workspace_subdomain = c.workspace_subdomain AND ce.contact_id = c.id AND lower(ce.address) LIKE ${pattern})
-            OR EXISTS (SELECT 1 FROM ${contactRelationships} cr WHERE cr.workspace_subdomain = c.workspace_subdomain AND cr.contact_id = c.id AND lower(trim(COALESCE(cr.name, ''))) LIKE ${pattern})
+            OR EXISTS (SELECT 1 FROM ${contactPhones} cp WHERE cp.workspace_subdomain = ${studentTenantMatch} AND cp.contact_id = c.id AND lower(cp.number) LIKE ${pattern})
+            OR EXISTS (SELECT 1 FROM ${contactEmails} ce WHERE ce.workspace_subdomain = ${studentTenantMatch} AND ce.contact_id = c.id AND lower(ce.address) LIKE ${pattern})
+            OR EXISTS (SELECT 1 FROM ${contactRelationships} cr WHERE cr.workspace_subdomain = ${studentTenantMatch} AND cr.contact_id = c.id AND lower(trim(COALESCE(cr.name, ''))) LIKE ${pattern})
           )
       )`;
   return sql`(
@@ -140,14 +143,14 @@ export function buildListConditions(
 
   const search = query.search?.trim();
   if (search) {
-    const searchSql = buildSearchSql(search, useJoinedContacts);
+    const searchSql = buildSearchSql(search, useJoinedContacts, subdomain);
     if (searchSql) conditions.push(searchSql);
   }
 
   if (query.sessionId?.trim()) {
     conditions.push(sql`EXISTS (
       SELECT 1 FROM ${studentEnrolledSessions} ses
-      WHERE ses.workspace_subdomain = ${students.workspaceSubdomain}
+      WHERE ses.workspace_subdomain = ${subdomain}
         AND ses.student_id = ${students.id}
         AND ses.session_id = ${query.sessionId.trim()}
     )`);
@@ -157,7 +160,7 @@ export function buildListConditions(
   if (className) {
     conditions.push(sql`EXISTS (
       SELECT 1 FROM ${enrollments} e
-      WHERE e.workspace_subdomain = ${students.workspaceSubdomain}
+      WHERE e.workspace_subdomain = ${subdomain}
         AND e.student_id = ${students.id}
         AND e.deleted_at IS NULL
         AND (
@@ -185,7 +188,7 @@ export function buildListConditions(
       sql`${students.guardianContactId} IN (${ids})`,
       sql`EXISTS (
         SELECT 1 FROM ${contactRelationships} cr
-        WHERE cr.workspace_subdomain = ${students.workspaceSubdomain}
+        WHERE cr.workspace_subdomain = ${subdomain}
           AND cr.contact_id = ${students.contactId}
           AND cr.related_contact_id IN (${ids})
       )`,
@@ -205,7 +208,7 @@ export function buildListConditions(
       )
       OR EXISTS (
         SELECT 1 FROM ${contactRelationships} cr
-        WHERE cr.workspace_subdomain = ${students.workspaceSubdomain}
+        WHERE cr.workspace_subdomain = ${subdomain}
           AND cr.contact_id = ${students.contactId}
           AND lower(trim(COALESCE(cr.relationship, ''))) IN ('father', 'mother', 'guardian')
           AND lower(trim(COALESCE(cr.name, ''))) = ${fatherName}
@@ -218,6 +221,25 @@ export function buildListConditions(
 
   if (query.excludeId?.trim()) {
     conditions.push(ne(students.id, query.excludeId.trim()));
+  }
+
+  if (query.scopedSectionIds) {
+    if (query.scopedSectionIds.length === 0) {
+      // Scoped user with no section allocations has zero roster visibility
+      conditions.push(sql`1 = 0`);
+    } else {
+      const sectionIds = sql.join(
+        query.scopedSectionIds.map((id) => sql`${id}`),
+        sql`, `,
+      );
+      conditions.push(sql`EXISTS (
+        SELECT 1 FROM ${enrollments} e
+        WHERE e.workspace_subdomain = ${subdomain}
+          AND e.student_id = ${students.id}
+          AND e.deleted_at IS NULL
+          AND e.section_id IN (${sectionIds})
+      )`);
+    }
   }
 
   return conditions;
