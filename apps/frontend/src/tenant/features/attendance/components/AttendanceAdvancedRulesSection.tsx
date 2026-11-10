@@ -9,7 +9,6 @@ import { useTranslation } from "@/hooks/useTranslation";
 import { SectionCard } from "@/components/app/SectionCard";
 import { ToggleRow } from "@shared/ui";
 import { SETUP_SECTION_CARD_CLASS } from "@/components/ui/formStyles";
-import { ModuleSetupSaveFooter } from "@/components/app/ModuleSetupSaveFooter";
 
 export interface AttendanceAdvancedRulesSectionProps {
   settingsDraft: AttendanceSettings;
@@ -23,10 +22,6 @@ export interface AttendanceAdvancedRulesSectionProps {
 export function AttendanceAdvancedRulesSection({
   settingsDraft,
   upd,
-  isPrefsDirty,
-  saving,
-  saved,
-  onSave,
 }: AttendanceAdvancedRulesSectionProps): React.JSX.Element {
   const { t } = useTranslation();
 
@@ -109,17 +104,6 @@ export function AttendanceAdvancedRulesSection({
           </Badge>
         </div>
       </div>
-
-      <ModuleSetupSaveFooter
-        dirty={Boolean(isPrefsDirty)}
-        saving={Boolean(saving)}
-        saved={Boolean(saved)}
-        saveLabel={saving ? t("global.saving") : t("common.save")}
-        savedLabel={t("settings.savedBadge")}
-        onSave={onSave ?? (() => {})}
-        disableUnsavedGuard
-        footerClassName="mt-4 pt-3"
-      />
     </SectionCard>
   );
 }

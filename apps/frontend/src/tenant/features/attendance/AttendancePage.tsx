@@ -9,6 +9,7 @@ import { attendanceTransferSchema } from "@mms/shared";
 import { useGenericModuleExport } from "@/lib/backgroundJobs/useGenericModuleExport";
 import { AttendanceWorkTier } from "@/tenant/features/attendance/components/AttendanceWorkTier";
 import { AttendanceCsvImportDialog } from "@/tenant/features/attendance/components/AttendanceCsvImportDialog";
+import { ATTENDANCE_IMPORT_AVAILABLE } from "@/tenant/features/attendance/lib/attendanceCapabilities";
 import { AttendancePageHeaderActions } from "@/tenant/features/attendance/components/AttendancePageHeaderActions";
 import { ErrorBoundary } from "@/components/app/ErrorBoundary";
 import { ErrorState } from "@/components/app/ErrorState";
@@ -190,11 +191,13 @@ export default function Attendance() {
         </React.Suspense>
       )}
 
-      <AttendanceCsvImportDialog
-        open={importOpen}
-        onClose={() => setImportOpen(false)}
-        canWrite={c.canWriteAttendance}
-      />
+      {ATTENDANCE_IMPORT_AVAILABLE ? (
+        <AttendanceCsvImportDialog
+          open={importOpen}
+          onClose={() => setImportOpen(false)}
+          canWrite={c.canWriteAttendance}
+        />
+      ) : null}
     </ModulePageShell>
   );
 }

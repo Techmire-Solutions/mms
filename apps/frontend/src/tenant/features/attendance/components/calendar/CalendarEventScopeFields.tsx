@@ -17,6 +17,8 @@ export interface CalendarEventScopeFieldsProps {
   value: CalendarEventScopeValue;
   onChange: (next: CalendarEventScopeValue) => void;
   disabled?: boolean;
+  /** Field-level error from the event form's schema validation. */
+  error?: string;
 }
 
 /** Scope cascade for a calendar event: workspace → session → class → section. */
@@ -24,6 +26,7 @@ export function CalendarEventScopeFields({
   value,
   onChange,
   disabled,
+  error,
 }: CalendarEventScopeFieldsProps): React.JSX.Element {
   const { t } = useTranslation();
   const terms = useAcademicTerms();
@@ -38,7 +41,12 @@ export function CalendarEventScopeFields({
 
   return (
     <div className="grid gap-4 sm:grid-cols-2">
-      <Field id="calendar-event-scope" label={t("attendance.calendar.appliesTo")} required>
+      <Field
+        id="calendar-event-scope"
+        label={t("attendance.calendar.appliesTo")}
+        required
+        error={error}
+      >
         <FormSelect
           id="calendar-event-scope"
           name="scope"

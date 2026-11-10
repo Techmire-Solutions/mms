@@ -41,6 +41,7 @@ export const AttendanceSettings = function AttendanceSettings({
         unsavedWarning={unsavedWarning}
         saveLabel={t("common.save")}
         savedLabel={t("settings.savedBadge")}
+        footerClassName="sticky bottom-0 z-10 rounded-lg border border-border/60 bg-background/95 backdrop-blur"
         onSave={handleSave}
       />
     </ModuleSetupContent>

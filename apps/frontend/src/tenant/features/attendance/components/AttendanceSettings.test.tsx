@@ -60,6 +60,7 @@ describe("AttendanceSettings Component", () => {
   it("renders preferences section and save footer", () => {
     const html = renderToStaticMarkup(<AttendanceSettings />);
     expect(html).toContain("Preferences Section");
-    expect(html).toContain("Save Footer");
+    // Exactly one save footer for the single settings draft.
+    expect(html.match(/data-testid="save-footer"/g)).toHaveLength(1);
   });
 });

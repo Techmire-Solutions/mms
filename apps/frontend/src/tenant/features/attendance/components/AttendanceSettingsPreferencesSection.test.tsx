@@ -30,5 +30,7 @@ describe("AttendanceSettingsPreferencesSection Component", () => {
     expect(html).toContain("attendance.settings.qrAttendance");
     expect(html).toContain("attendance.settings.alerts");
     expect(html).toContain("attendance.settings.advanced");
+    // One draft, one save control: the page-level footer owns the action, sections do not duplicate it.
+    expect(html).not.toContain("settings.savedBadge");
   });
 });

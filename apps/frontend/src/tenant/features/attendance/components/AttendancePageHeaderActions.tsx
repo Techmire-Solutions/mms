@@ -2,6 +2,7 @@ import React from "react";
 import { ClipboardEdit, Download, Upload } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useTranslation } from "@/hooks/useTranslation";
+import { ATTENDANCE_IMPORT_AVAILABLE } from "@/tenant/features/attendance/lib/attendanceCapabilities";
 
 export interface AttendancePageHeaderActionsProps {
   canWrite: boolean;
@@ -39,9 +40,11 @@ export function AttendancePageHeaderActions({
           {t("common.export")}
         </Button>
       ) : null}
-      <Button variant="outline" icon={Upload} onClick={onImport}>
-        {t("common.import")}
-      </Button>
+      {ATTENDANCE_IMPORT_AVAILABLE ? (
+        <Button variant="outline" icon={Upload} onClick={onImport}>
+          {t("common.import")}
+        </Button>
+      ) : null}
       <Button variant="primary" icon={ClipboardEdit} onClick={onMarkAttendance}>
         {t("attendance.tabs.mark")}
       </Button>

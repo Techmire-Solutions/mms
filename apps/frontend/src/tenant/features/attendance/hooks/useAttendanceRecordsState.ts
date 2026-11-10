@@ -3,7 +3,12 @@ import { type AttendanceRecord } from "@/lib/data/attendanceData";
 import { useAttendanceConfig } from "@/hooks/useStandardModuleConfig";
 import { useSessionsCollection } from "@/tenant/hooks/collections/sessions";
 import { useModulePermissions } from "@/tenant/hooks/usePermissions";
-import { ATTENDANCE_MODULE_MANIFEST, type AppTranslationKey } from "@mms/shared";
+import {
+  ATTENDANCE_MODULE_MANIFEST,
+  attendanceRecordStatusSchema,
+  isoDateSchema,
+  type AppTranslationKey,
+} from "@mms/shared";
 import { useTranslation } from "@/hooks/useTranslation";
 import { useDebounce } from "@/hooks/useDebounce";
 import { notify } from "@/lib/notify";
@@ -130,8 +135,34 @@ export function useAttendanceRecordsState({
     setEditingRecord((current) => (current ? { ...current, [key]: value } : current));
   };
 
+  /**
+   * Inline-edit guard: the policy would reject these anyway, but a round trip loses the edit context.
+   * Mirrors `attendance_time_invalid` / status-time rules from the shared policy.
+   */
+  const editingRecordError = (record: AttendanceRecord): string | null => {
+    const HHMM = /^([01]\d|2[0-3]):[0-5]\d$/;
+    if (!isoDateSchema.safeParse(record.date).success) return t("attendance.toast.invalidDate");
+    if (!attendanceRecordStatusSchema.safeParse(record.status).success) {
+      return t("attendance.toast.invalidStatus");
+    }
+    const hasTimeIn = HHMM.test(record.timeIn || "");
+    const hasTimeOut = HHMM.test(record.timeOut || "");
+    if ((record.status === "late" || record.status === "half_day") && !hasTimeIn) {
+      return t("attendance.mark.validationTimeIn");
+    }
+    if (hasTimeIn && hasTimeOut && (record.timeOut ?? "") < (record.timeIn ?? "")) {
+      return t("attendance.mark.validationTimeOrder");
+    }
+    return null;
+  };
+
   const saveEditingRecord = async () => {
     if (!editingRecord || !canWriteAttendance) return;
+    const invalid = editingRecordError(editingRecord);
+    if (invalid) {
+      notify.error(t("attendance.toast.saveFailed"), { description: invalid });
+      return;
+    }
     try {
       await onUpdateRecord(editingRecord);
       notify.success(t("attendance.toast.updated"));
