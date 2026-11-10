@@ -68,13 +68,13 @@ describe("AttendanceExcuseForm", () => {
   it("renders the searched student picker, type select, date range and certificate control", async () => {
     await renderForm();
 
-    expect(saveButton()).toBeTruthy();
+    expect(saveButton()).not.toBeNull();
     const text = document.body.textContent ?? "";
     expect(text).toContain("attendance.excuses.student");
     expect(text).toContain("attendance.excuses.type");
     expect(text).toContain("attendance.excuses.from");
     expect(text).toContain("attendance.excuses.to");
     expect(text).toContain("attendance.excuses.attach");
-    expect(document.querySelector('input[type="file"]')).toBeTruthy();
+    expect(document.querySelector('input[type="file"]')).not.toBeNull();
   });
 });

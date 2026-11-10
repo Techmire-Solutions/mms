@@ -20,8 +20,8 @@ export interface Step6ConfirmationProps {
   feeResult: CalculatedFee | null | undefined;
   notes: string;
   onNotesChange: (notes: string) => void;
-  customFieldValues: Record<string, unknown>;
-  onCustomFieldChange: (id: string, value: unknown) => void;
+  notesRequired?: boolean;
+  notesError?: string;
 }
 
 /** Step 6 component for verifying all selected configuration details. */
@@ -32,8 +32,8 @@ export function Step6Confirmation({
   feeResult,
   notes,
   onNotesChange,
-  customFieldValues: _customFieldValues,
-  onCustomFieldChange: _onCustomFieldChange,
+  notesRequired = false,
+  notesError,
 }: Step6ConfirmationProps): React.JSX.Element {
   const { t } = useTranslation();
   const age = student ? calcAge(student.dob) : null;
@@ -137,7 +137,12 @@ export function Step6Confirmation({
         </Step6ConfirmationSection>
       </div>
 
-      <Field id="enrollment-notes" label={t("enrollments.detail.notes")}>
+      <Field
+        id="enrollment-notes"
+        label={t("enrollments.detail.notes")}
+        required={notesRequired}
+        error={notesError}
+      >
         <Textarea
           id="enrollment-notes"
           name="notes"

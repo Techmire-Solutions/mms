@@ -141,3 +141,32 @@ export function normalizeEnrollmentModulePreferences(
 }
 
 export { PREF_KEYS as ENROLLMENT_MODULE_PREFERENCE_KEYS };
+
+export interface EnrollmentPreferenceIssue {
+  field: keyof EnrollmentModulePreferences;
+  code: "required" | "integer" | "range" | "layout";
+}
+
+/** Client-side mirror of the server bounds (the API normalizer stays lenient for legacy callers). */
+export function validateEnrollmentPreferences(
+  preferences: Partial<EnrollmentModulePreferences>,
+): EnrollmentPreferenceIssue[] {
+  const issues: EnrollmentPreferenceIssue[] = [];
+  const positiveInt = (field: "maxStudentsPerClass" | "dropDeadlineDays", min: number) => {
+    const raw = String(preferences[field] ?? "").trim();
+    if (!raw) issues.push({ field, code: "required" });
+    else if (!/^\d+$/.test(raw)) issues.push({ field, code: "integer" });
+    else if (Number(raw) < min) issues.push({ field, code: "range" });
+  };
+  positiveInt("maxStudentsPerClass", 1);
+  positiveInt("dropDeadlineDays", 0);
+  const hours = String(preferences.waitlistOfferHours ?? "").trim();
+  if (!hours) issues.push({ field: "waitlistOfferHours", code: "required" });
+  else if (!/^\d+$/.test(hours)) issues.push({ field: "waitlistOfferHours", code: "integer" });
+  else if (Number(hours) < 1 || Number(hours) > 720)
+    issues.push({ field: "waitlistOfferHours", code: "range" });
+  const layout = preferences.defaultViewLayout;
+  if (layout !== undefined && !["table", "list", "cards"].includes(String(layout)))
+    issues.push({ field: "defaultViewLayout", code: "layout" });
+  return issues;
+}

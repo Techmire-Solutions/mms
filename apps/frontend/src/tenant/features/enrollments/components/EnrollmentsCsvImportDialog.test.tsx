@@ -8,6 +8,10 @@ vi.mock("@/hooks/useTranslation", async () => {
   return { useTranslation: useTranslationEnMock() };
 });
 
+vi.mock("@/lib/apiClient", () => ({
+  apiJson: vi.fn().mockResolvedValue({ errors: [] }),
+}));
+
 vi.mock("@/lib/download", () => ({
   triggerFileDownload: vi.fn(),
 }));

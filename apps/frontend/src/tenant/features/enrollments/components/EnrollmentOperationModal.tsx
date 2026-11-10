@@ -2,6 +2,10 @@ import React, { useState } from "react";
 import { ArrowRightLeft, LogOut, PauseCircle, RotateCcw, type LucideIcon } from "lucide-react";
 import {
   ENROLLMENT_DROP_REASON_CODES,
+  enrollmentReadmitBodySchema,
+  enrollmentSuspendBodySchema,
+  enrollmentTransferBodySchema,
+  enrollmentWithdrawBodySchema,
   todayISO,
   type AppTranslationKey,
   type Enrollment,
@@ -100,6 +104,7 @@ export function EnrollmentOperationModal(props: EnrollmentOperationModalProps): 
   const [toDay, setToDay] = useState(today);
   const [reason, setReason] = useState("");
   const [reasonCode, setReasonCode] = useState("");
+  const [formError, setFormError] = useState<string | null>(null);
 
   // Fresh operation draft whenever the operation or the enrollment being changed changes.
   const operationKey = `${kind}|${sessionId}|${currentClassId}|${currentSectionId}|${today}`;
@@ -115,39 +120,72 @@ export function EnrollmentOperationModal(props: EnrollmentOperationModalProps): 
       setDay(today);
       setToDay(today);
       setReason("");
+      setReasonCode("");
+      setFormError(null);
     }
   }
-
   const reasonValid = reason.trim().length >= 3;
   const rangeValid = kind !== "suspend" || toDay >= day;
+  const targetClass = session?.classes?.find((cls) => cls.id === target.classId);
+  const needsSection = (targetClass?.sections?.length ?? 0) > 0;
   const canSave =
     !isPending &&
     reasonValid &&
     Boolean(day) &&
     rangeValid &&
-    (config.picker !== "required" || Boolean(target.classId));
+    (config.picker !== "required" || Boolean(target.classId)) &&
+    (!needsSection || Boolean(target.sectionId));
+  const dirty = Boolean(
+    reason.trim() ||
+    reasonCode ||
+    target.classId ||
+    target.sectionId ||
+    day !== today ||
+    toDay !== today,
+  );
 
   const submit = async () => {
     const trimmed = reason.trim();
     const destination = { classId: target.classId, sectionId: target.sectionId || null };
+    setFormError(null);
     let saved = false;
-    if (kind === "transfer")
-      saved = await props.onTransfer({ ...destination, effectiveOn: day, reason: trimmed });
-    else if (kind === "withdraw")
-      saved = await props.onWithdraw({
+    if (kind === "transfer") {
+      const parsed = enrollmentTransferBodySchema.safeParse({
+        ...destination,
+        effectiveOn: day,
+        reason: trimmed,
+      });
+      if (!parsed.success) return setFormError(parsed.error.issues[0]?.message ?? null);
+      saved = await props.onTransfer(parsed.data);
+    } else if (kind === "withdraw") {
+      const parsed = enrollmentWithdrawBodySchema.safeParse({
         effectiveOn: day,
         reason: trimmed,
         ...(reasonCode
           ? { reasonCode: reasonCode as (typeof ENROLLMENT_DROP_REASON_CODES)[number] }
           : {}),
       });
-    else if (kind === "readmit")
-      saved = await props.onReadmit({ ...destination, effectiveOn: day, reason: trimmed });
-    else if (kind === "suspend")
-      saved = await props.onSuspend({ fromOn: day, toOn: toDay, reason: trimmed });
+      if (!parsed.success) return setFormError(parsed.error.issues[0]?.message ?? null);
+      saved = await props.onWithdraw(parsed.data);
+    } else if (kind === "readmit") {
+      const parsed = enrollmentReadmitBodySchema.safeParse({
+        ...destination,
+        effectiveOn: day,
+        reason: trimmed,
+      });
+      if (!parsed.success) return setFormError(parsed.error.issues[0]?.message ?? null);
+      saved = await props.onReadmit(parsed.data);
+    } else if (kind === "suspend") {
+      const parsed = enrollmentSuspendBodySchema.safeParse({
+        fromOn: day,
+        toOn: toDay,
+        reason: trimmed,
+      });
+      if (!parsed.success) return setFormError(parsed.error.issues[0]?.message ?? null);
+      saved = await props.onSuspend(parsed.data);
+    }
     if (saved) onClose();
   };
-
   return (
     <FormModal
       open={kind !== null}
@@ -160,11 +198,12 @@ export function EnrollmentOperationModal(props: EnrollmentOperationModalProps): 
       saveLabel={t(config.save)}
       saving={isPending}
       saveDisabled={!canSave}
-      isDirty={reason.trim().length > 0}
+      isDirty={dirty}
       discardUnsavedTitle={t("settings.unsavedChanges")}
       discardUnsavedDescription={t("enrollments.ops.discardDescription")}
       discardConfirmLabel={t("common.yes")}
       discardCancelLabel={t("common.cancel")}
+      error={formError ?? undefined}
       onSave={() => void submit()}
     >
       <div className="space-y-4 py-1 text-start">
@@ -181,6 +220,11 @@ export function EnrollmentOperationModal(props: EnrollmentOperationModalProps): 
               required={config.picker === "required"}
               disabled={isPending || !session}
             />
+            {needsSection && !target.sectionId ? (
+              <p role="status" className="text-xs text-muted-foreground sm:col-span-3">
+                {t("enrollments.ops.chooseSection")}
+              </p>
+            ) : null}
           </div>
         ) : null}
         <div className={kind === "suspend" ? "grid gap-4 sm:grid-cols-2" : undefined}>
@@ -189,6 +233,7 @@ export function EnrollmentOperationModal(props: EnrollmentOperationModalProps): 
               id="enrollment-op-date"
               name="effectiveOn"
               value={day}
+              min={kind === "suspend" ? undefined : (enrollment.startOn ?? enrollment.enrolledDate)}
               max={kind === "suspend" ? undefined : today}
               disabled={isPending}
               onChange={setDay}

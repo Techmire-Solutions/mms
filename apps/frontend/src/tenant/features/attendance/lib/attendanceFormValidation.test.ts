@@ -20,7 +20,7 @@ describe("validateAttendanceDraft", () => {
     expect(result.fieldErrors.studentId).toBe("Student is required");
     expect(result.fieldErrors.reason).toBe("Reason is required");
     expect(result.fieldErrors.toDate).toContain("before");
-    expect(result.message).toBeTruthy();
+    expect(result.message).toBe("Student is required");
   });
 
   it("accepts a valid draft and returns the parsed record", () => {

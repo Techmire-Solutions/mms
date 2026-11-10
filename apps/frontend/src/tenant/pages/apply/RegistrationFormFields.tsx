@@ -13,6 +13,7 @@ export interface RegistrationFormFieldsProps {
   draft: RegistrationFormDraft;
   update: <K extends keyof RegistrationFormDraft>(key: K, value: RegistrationFormDraft[K]) => void;
   disabled: boolean;
+  errors?: Partial<Record<keyof RegistrationFormDraft, string>>;
 }
 
 /** Applicant fields for the public registration form (labels are visible; no placeholders-as-labels). */
@@ -21,6 +22,7 @@ export function RegistrationFormFields({
   draft,
   update,
   disabled,
+  errors = {},
 }: RegistrationFormFieldsProps): React.JSX.Element {
   const { t } = useTranslation();
   const classLabel = (cls: PublicRegistrationView["classes"][number]) => {
@@ -34,23 +36,25 @@ export function RegistrationFormFields({
   return (
     <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
       <div className="sm:col-span-2">
-        <Field id="apply-class" label={t("apply.class")} required>
+        <Field id="apply-class" label={t("apply.class")} required error={errors.classId}>
           <FormSelect
             id="apply-class"
             name="classId"
             value={draft.classId}
             disabled={disabled}
             placeholder={t("common.selectPlaceholder")}
+            required
             onChange={(value) => update("classId", value)}
             options={view.classes.map((cls) => ({ value: cls.id, label: classLabel(cls) }))}
           />
         </Field>
       </div>
-      <Field id="apply-name" label={t("apply.fullName")} required>
+      <Field id="apply-name" label={t("apply.fullName")} required error={errors.fullName}>
         <Input
           id="apply-name"
           name="fullName"
           autoComplete="name"
+          required
           className={FORM_INPUT}
           value={draft.fullName}
           maxLength={150}
@@ -58,10 +62,16 @@ export function RegistrationFormFields({
           onChange={(event) => update("fullName", event.target.value)}
         />
       </Field>
-      <Field id="apply-guardian" label={t("apply.guardianName")} required>
+      <Field
+        id="apply-guardian"
+        label={t("apply.guardianName")}
+        required
+        error={errors.guardianName}
+      >
         <Input
           id="apply-guardian"
           name="guardianName"
+          required
           className={FORM_INPUT}
           value={draft.guardianName}
           maxLength={150}
@@ -69,20 +79,22 @@ export function RegistrationFormFields({
           onChange={(event) => update("guardianName", event.target.value)}
         />
       </Field>
-      <Field id="apply-dob" label={t("apply.dateOfBirth")} required>
+      <Field id="apply-dob" label={t("apply.dateOfBirth")} required error={errors.dateOfBirth}>
         <DatePicker
           id="apply-dob"
           name="dateOfBirth"
+          required
           value={draft.dateOfBirth}
           disabled={disabled}
           max={new Date().toISOString().slice(0, 10)}
           onChange={(value) => update("dateOfBirth", value)}
         />
       </Field>
-      <Field id="apply-gender" label={t("apply.gender")} required>
+      <Field id="apply-gender" label={t("apply.gender")} required error={errors.gender}>
         <FormSelect
           id="apply-gender"
           name="gender"
+          required
           value={draft.gender}
           disabled={disabled}
           placeholder={t("common.selectPlaceholder")}
@@ -95,10 +107,11 @@ export function RegistrationFormFields({
           ]}
         />
       </Field>
-      <Field id="apply-phone" label={t("apply.phone")} required>
+      <Field id="apply-phone" label={t("apply.phone")} required error={errors.phone}>
         <Input
           id="apply-phone"
           name="phone"
+          required
           type="tel"
           inputMode="tel"
           autoComplete="tel"
@@ -109,7 +122,7 @@ export function RegistrationFormFields({
           onChange={(event) => update("phone", event.target.value)}
         />
       </Field>
-      <Field id="apply-email" label={t("apply.email")}>
+      <Field id="apply-email" label={t("apply.email")} error={errors.email}>
         <Input
           id="apply-email"
           name="email"
@@ -123,7 +136,7 @@ export function RegistrationFormFields({
         />
       </Field>
       <div className="sm:col-span-2">
-        <Field id="apply-address" label={t("apply.address")}>
+        <Field id="apply-address" label={t("apply.address")} error={errors.address}>
           <Textarea
             id="apply-address"
             name="address"
@@ -136,7 +149,11 @@ export function RegistrationFormFields({
         </Field>
       </div>
       <div className="sm:col-span-2">
-        <Field id="apply-previous" label={t("apply.previousMadrasa")}>
+        <Field
+          id="apply-previous"
+          label={t("apply.previousMadrasa")}
+          error={errors.previousMadrasa}
+        >
           <Input
             id="apply-previous"
             name="previousMadrasa"

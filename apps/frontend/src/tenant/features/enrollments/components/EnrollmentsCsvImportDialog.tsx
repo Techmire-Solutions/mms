@@ -20,6 +20,7 @@ export function EnrollmentsCsvImportDialog({
       onClose={onClose}
       canWrite={canWrite}
       apiPath="/api/enrollments/import"
+      preflightPath="/api/enrollments/import/preflight"
       schema={enrollmentsTransferSchema}
       navKey="nav.enrollments"
     />

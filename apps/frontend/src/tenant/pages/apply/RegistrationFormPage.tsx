@@ -89,6 +89,7 @@ export default function RegistrationFormPage(): React.JSX.Element {
                   draft={form.draft}
                   update={form.update}
                   disabled={form.isPending}
+                  errors={form.errors}
                 />
                 {form.eligibility && !form.eligibility.eligible ? (
                   <Alert
