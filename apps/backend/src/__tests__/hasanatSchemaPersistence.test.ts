@@ -113,6 +113,10 @@ describe("Hasanat schema & persistence invariants (0225–0229)", () => {
     const sql = await read(migrations[4]);
 
     expect(sql).toMatch(/DROP POLICY IF EXISTS "hasanat_distributions_tenant_isolation"/i);
+    expect(sql).toMatch(
+      /DROP POLICY IF EXISTS "tenant_soft_delete_isolation" ON "hasanat_distributions"/i,
+    );
+    expect(sql).toMatch(/CREATE POLICY "tenant_soft_delete_isolation" ON "hasanat_distributions"/i);
     expect(sql).toMatch(/ALTER COLUMN %I TYPE timestamptz USING %I AT TIME ZONE ''UTC''/i);
     expect(sql).toMatch(/update_hasanat_distributions_updated_at/i);
   });

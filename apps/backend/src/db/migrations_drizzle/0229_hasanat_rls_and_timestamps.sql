@@ -23,6 +23,10 @@ DROP POLICY IF EXISTS "hasanat_denoms_tenant_isolation" ON "hasanat_denoms";
 DROP POLICY IF EXISTS "hasanat_batches_tenant_isolation" ON "hasanat_batches";
 DROP POLICY IF EXISTS "hasanat_redemptions_tenant_isolation" ON "hasanat_redemptions";
 --> statement-breakpoint
+-- PostgreSQL disallows ALTER COLUMN TYPE on columns referenced by active RLS policies.
+-- Drop tenant_soft_delete_isolation on hasanat_distributions before altering deleted_at.
+DROP POLICY IF EXISTS "tenant_soft_delete_isolation" ON "hasanat_distributions";
+--> statement-breakpoint
 
 -- 2. timestamp -> timestamptz ---------------------------------------------------
 -- The values were written by node-postgres from JS `Date` (UTC), so interpreting them as UTC is
@@ -65,7 +69,26 @@ BEGIN
 END $$;
 --> statement-breakpoint
 
--- 3. DB-owned updated_at --------------------------------------------------------
+-- 3. Restore tenant soft-delete isolation on hasanat_distributions ---------------
+CREATE POLICY "tenant_soft_delete_isolation" ON "hasanat_distributions"
+  FOR ALL
+  USING (
+    current_setting('app.rls_bypass', true) = 'on'
+    OR (
+      workspace_subdomain = current_setting('app.current_tenant', true)
+      AND (
+        deleted_at IS NULL
+        OR current_setting('app.include_deleted', true) = 'true'
+      )
+    )
+  )
+  WITH CHECK (
+    current_setting('app.rls_bypass', true) = 'on'
+    OR workspace_subdomain = current_setting('app.current_tenant', true)
+  );
+--> statement-breakpoint
+
+-- 4. DB-owned updated_at --------------------------------------------------------
 DROP TRIGGER IF EXISTS update_hasanat_denoms_updated_at ON "hasanat_denoms";
 CREATE TRIGGER update_hasanat_denoms_updated_at
 BEFORE UPDATE ON "hasanat_denoms"
