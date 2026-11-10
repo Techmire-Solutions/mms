@@ -1,5 +1,5 @@
 import React from "react";
-import { AnimatePresence, motion } from "framer-motion";
+import { AnimatePresence, m } from "framer-motion";
 import { ChevronDown, ChevronUp, Table as TableIcon } from "lucide-react";
 import { formatNumber } from "@mms/shared";
 import { Button } from "@/components/ui/button";
@@ -90,7 +90,7 @@ export function VisualizerDataMatrix({
 
       <AnimatePresence>
         {showDataTable && processedData.length > 0 && (
-          <motion.div
+          <m.div
             initial={{ opacity: 0, height: 0 }}
             animate={{ opacity: 1, height: "auto" }}
             exit={{ opacity: 0, height: 0 }}
@@ -152,7 +152,7 @@ export function VisualizerDataMatrix({
                 </Table>
               </div>
             </div>
-          </motion.div>
+          </m.div>
         )}
       </AnimatePresence>
     </div>

@@ -1,5 +1,5 @@
 import React from "react";
-import { motion } from "framer-motion";
+import { m } from "framer-motion";
 import { type Exam } from "@/lib/data/examinationData";
 import type { Student } from "@/lib/data/studentsData";
 import { getGrade } from "@/tenant/features/examinations/lib/gradeUtils";
@@ -38,7 +38,7 @@ export function EnterMarksStudentRow({
   const grade = percentage !== null ? getGrade(percentage) : null;
 
   return (
-    <motion.div
+    <m.div
       key={student.id}
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
@@ -88,6 +88,6 @@ export function EnterMarksStudentRow({
           </span>
         </div>
       </div>
-    </motion.div>
+    </m.div>
   );
 }

@@ -1,5 +1,5 @@
 import React from "react";
-import { motion, AnimatePresence } from "framer-motion";
+import { m, AnimatePresence } from "framer-motion";
 import CustomReportBuilder from "@/tenant/features/reports/components/CustomReportBuilder";
 import ComparisonMode from "@/tenant/features/reports/components/ComparisonMode";
 import DynamicChartVisualizer from "@/tenant/features/reports/components/DynamicChartVisualizer";
@@ -121,7 +121,7 @@ export function ModuleReportsToolPanels({
   return (
     <AnimatePresence mode="wait">
       {activeTab === "compare" && (
-        <motion.div
+        <m.div
           key="compare"
           initial={{ height: 0, opacity: 0 }}
           animate={{ height: "auto", opacity: 1 }}
@@ -131,10 +131,10 @@ export function ModuleReportsToolPanels({
           <div className="pb-4">
             <ComparisonMode category={category} onClose={onClosePanel} />
           </div>
-        </motion.div>
+        </m.div>
       )}
       {activeTab === "builder" && (
-        <motion.div
+        <m.div
           key="builder"
           initial={{ height: 0, opacity: 0 }}
           animate={{ height: "auto", opacity: 1 }}
@@ -144,10 +144,10 @@ export function ModuleReportsToolPanels({
           <div className="pb-4">
             <CustomReportBuilder initialSource={category} onClose={onClosePanel} />
           </div>
-        </motion.div>
+        </m.div>
       )}
       {activeTab === "visualizer" && (
-        <motion.div
+        <m.div
           key="visualizer"
           initial={{ height: 0, opacity: 0 }}
           animate={{ height: "auto", opacity: 1 }}
@@ -176,10 +176,10 @@ export function ModuleReportsToolPanels({
               onClose={onVisualizerClose}
             />
           </div>
-        </motion.div>
+        </m.div>
       )}
       {activeTab === "cardBuilder" && (
-        <motion.div
+        <m.div
           key="cardBuilder"
           initial={{ height: 0, opacity: 0 }}
           animate={{ height: "auto", opacity: 1 }}
@@ -189,10 +189,10 @@ export function ModuleReportsToolPanels({
           <div className="pb-4">
             <DynamicCardBuilder initialCollection={getInitialCollection()} />
           </div>
-        </motion.div>
+        </m.div>
       )}
       {activeTab === "saved" && (
-        <motion.div
+        <m.div
           key="saved"
           initial={{ height: 0, opacity: 0 }}
           animate={{ height: "auto", opacity: 1 }}
@@ -210,7 +210,7 @@ export function ModuleReportsToolPanels({
               />
             ) : null}
           </div>
-        </motion.div>
+        </m.div>
       )}
     </AnimatePresence>
   );

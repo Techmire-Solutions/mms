@@ -1,6 +1,6 @@
 import React from "react";
 import { ArrowRight, ArrowUpRight } from "lucide-react";
-import { motion } from "framer-motion";
+import { m } from "framer-motion";
 import { resolveWidgetTitle } from "@/lib/dashboardWidgets";
 import { getWidgetSubtitle } from "@/components/reports/pinnedWidgets/customWidgetLayoutHelpers";
 import {
@@ -87,7 +87,7 @@ export function CustomWidgetComfortableLayout({
   const colorTheme = COLOR_MAP[widget.color || ""] || COLOR_MAP.emerald;
 
   return (
-    <motion.div
+    <m.div
       layout
       whileHover={{ y: -4, scale: 1.015 }}
       transition={{ type: "spring", stiffness: 350, damping: 25 }}
@@ -228,6 +228,6 @@ export function CustomWidgetComfortableLayout({
           </div>
         )}
       </div>
-    </motion.div>
+    </m.div>
   );
 }

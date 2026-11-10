@@ -1,5 +1,5 @@
 import React, { useId, useCallback } from "react";
-import { motion, type PanInfo, useDragControls } from "framer-motion";
+import { m, type PanInfo, useDragControls } from "framer-motion";
 import { OverlayShell } from "@/components/app/OverlayShell";
 import { useReducedMotion } from "@/hooks/useReducedMotion";
 import { useTranslation } from "@/hooks/useTranslation";
@@ -101,7 +101,7 @@ export function DetailDrawerShell({
       containerClassName={getDrawerContainerPlacement(side)}
     >
       {({ containerRef }) => (
-        <motion.aside
+        <m.aside
           ref={containerRef}
           initial={initial}
           animate={animate}
@@ -174,7 +174,7 @@ export function DetailDrawerShell({
               {footer}
             </div>
           )}
-        </motion.aside>
+        </m.aside>
       )}
     </OverlayShell>
   );

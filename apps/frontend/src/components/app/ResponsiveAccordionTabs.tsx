@@ -1,5 +1,5 @@
 import React, { useRef, useState } from "react";
-import { motion, AnimatePresence } from "framer-motion";
+import { m, AnimatePresence } from "framer-motion";
 import { cn } from "@/lib/utils";
 import { useTranslation } from "@/hooks/useTranslation";
 import { useScrollSurfaceOnChange } from "@/lib/routing/useScrollSurfaceOnChange";
@@ -110,7 +110,7 @@ export const ResponsiveAccordionTabs = function ResponsiveAccordionTabs({
 
                 <AnimatePresence initial={false}>
                   {active ? (
-                    <motion.div
+                    <m.div
                       id={panelId}
                       key={tab.id}
                       initial={reducedMotion ? false : { height: 0, opacity: 0 }}
@@ -124,7 +124,7 @@ export const ResponsiveAccordionTabs = function ResponsiveAccordionTabs({
                       <div className="space-y-4 border-t border-border/70 px-3 py-4 sm:px-4">
                         {children}
                       </div>
-                    </motion.div>
+                    </m.div>
                   ) : null}
                 </AnimatePresence>
               </section>

@@ -1,5 +1,5 @@
 import React from "react";
-import { motion } from "framer-motion";
+import { m } from "framer-motion";
 import { formatDayName, formatLongDate, formatHijriDate } from "@mms/shared";
 import { useAuth } from "@/lib/contexts/AuthContext";
 import { useTranslation } from "@/hooks/useTranslation";
@@ -50,7 +50,7 @@ export function WelcomeBanner({
   );
 
   return (
-    <motion.header
+    <m.header
       // Content header: the global print rule only hides chrome headers.
       data-print-header
       initial={reducedMotion ? false : { opacity: 0, y: -8 }}
@@ -106,7 +106,7 @@ export function WelcomeBanner({
           ) : null}
         </div>
       </div>
-    </motion.header>
+    </m.header>
   );
 }
 

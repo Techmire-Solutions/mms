@@ -1,5 +1,5 @@
 import React, { memo, type ReactNode } from "react";
-import { motion, type HTMLMotionProps } from "framer-motion";
+import { m, type HTMLMotionProps } from "framer-motion";
 import { FORM_CARD } from "@/components/ui/formStyles";
 import { CARD_STRIPE_BASE, CARD_STRIPE_INSET } from "@/lib/ui/semanticTone";
 import { useReducedMotion } from "@/hooks/useReducedMotion";
@@ -46,7 +46,7 @@ const EntityCardBase = memo(function EntityCardBase({
       : accentClassName || "bg-primary/50 group-hover:bg-primary";
 
   return (
-    <motion.div
+    <m.div
       layout={!reducedMotion}
       variants={reducedMotion ? entityCardVariantsReduced : entityCardVariants}
       className={cn(
@@ -75,7 +75,7 @@ const EntityCardBase = memo(function EntityCardBase({
         />
       ) : null}
       {children}
-    </motion.div>
+    </m.div>
   );
 });
 

@@ -1,4 +1,4 @@
-import { motion } from "framer-motion";
+import { m } from "framer-motion";
 import { EmptyState } from "@/components/app/EmptyState";
 import { WORK_SURFACE_INNER } from "@/components/ui/formStyles";
 import { UserAvatar } from "@/components/app/UserAvatar";
@@ -39,7 +39,7 @@ export function OutstandingFeesTableMobileList({
   return (
     <>
       {rows.map((outstandingFee, index) => (
-        <motion.article
+        <m.article
           key={outstandingFee.id}
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
@@ -79,7 +79,7 @@ export function OutstandingFeesTableMobileList({
               />
             )}
           </div>
-        </motion.article>
+        </m.article>
       ))}
     </>
   );

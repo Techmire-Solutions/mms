@@ -1,5 +1,5 @@
 import { useMemo } from "react";
-import { AnimatePresence, motion } from "framer-motion";
+import { AnimatePresence, m } from "framer-motion";
 import { FormModal } from "@/components/app/FormModal";
 import { useAccountingCurrency } from "@/hooks/useCurrency";
 import { useTranslation } from "@/hooks/useTranslation";
@@ -120,7 +120,7 @@ export function SimpleTransactionWizard({
           }}
         >
           <AnimatePresence mode="wait">
-            <motion.div
+            <m.div
               key={step}
               initial={{ opacity: 0, x: 16 }}
               animate={{ opacity: 1, x: 0 }}
@@ -167,7 +167,7 @@ export function SimpleTransactionWizard({
                   onEditDetails={() => setStep(2)}
                 />
               )}
-            </motion.div>
+            </m.div>
           </AnimatePresence>
           <SimpleTransactionWizardFooter
             step={step}

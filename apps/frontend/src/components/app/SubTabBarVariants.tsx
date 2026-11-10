@@ -1,5 +1,5 @@
 import React from "react";
-import { motion } from "framer-motion";
+import { m } from "framer-motion";
 import { cn } from "@/lib/utils";
 import { SubTabBarBadge } from "@/components/app/SubTabBarBadge";
 import {
@@ -56,7 +56,7 @@ export function SubTabBarUnderlineVariant<K extends string>({
                 <SubTabBarBadge badge={tab.badge} active={active} interactive />
               )}
               {active && (
-                <motion.div
+                <m.div
                   layoutId={`${panelIdPrefix}-underline`}
                   className="absolute -bottom-px inset-x-0 h-0.5 bg-primary rounded-xs"
                   transition={{ type: "spring", stiffness: 450, damping: 35 }}

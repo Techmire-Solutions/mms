@@ -1,4 +1,4 @@
-import { AnimatePresence, motion } from "framer-motion";
+import { AnimatePresence, m } from "framer-motion";
 import { Clock, Pause, Play, Radio, XCircle, Zap } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { ProgressBar } from "@/components/app/ProgressBar";
@@ -45,7 +45,7 @@ export function MessageComposerDispatchControls({
     <>
       <AnimatePresence>
         {skippedCount > 0 && (
-          <motion.div
+          <m.div
             initial={{ opacity: 0, y: -6 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -6 }}
@@ -68,12 +68,12 @@ export function MessageComposerDispatchControls({
                 </Button>
               }
             />
-          </motion.div>
+          </m.div>
         )}
       </AnimatePresence>
       <AnimatePresence>
         {dispatchProgress && (
-          <motion.div
+          <m.div
             initial={{ opacity: 0, scale: 0.98 }}
             animate={{ opacity: 1, scale: 1 }}
             exit={{ opacity: 0, scale: 0.98 }}
@@ -129,7 +129,7 @@ export function MessageComposerDispatchControls({
                 total: String(dispatchProgress.total),
               })}
             />
-          </motion.div>
+          </m.div>
         )}
       </AnimatePresence>
       {!opening && onUseServerGatewayChange && (

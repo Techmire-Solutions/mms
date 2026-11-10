@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { motion, AnimatePresence } from "framer-motion";
+import { m, AnimatePresence } from "framer-motion";
 import { Filter, ChevronDown, ChevronUp, X } from "lucide-react";
 import { useSessionsCollection } from "@/tenant/hooks/collections/sessions";
 import { useTranslation } from "@/hooks/useTranslation";
@@ -152,7 +152,7 @@ export default function ReportFilters({
 
       <AnimatePresence>
         {open && (
-          <motion.div
+          <m.div
             initial={{ height: 0, opacity: 0 }}
             animate={{ height: "auto", opacity: 1 }}
             exit={{ height: 0, opacity: 0 }}
@@ -167,7 +167,7 @@ export default function ReportFilters({
               sessions={sessions}
               classes={classes}
             />
-          </motion.div>
+          </m.div>
         )}
       </AnimatePresence>
     </div>

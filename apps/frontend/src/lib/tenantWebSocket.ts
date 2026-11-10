@@ -195,9 +195,40 @@ export function connectTenantDatabaseSocket(handlers: TenantWebSocketHandlers): 
   const handleVisibilityChange = (): void => {
     if (document.visibilityState === "visible") ensureConnected();
   };
+  const closeSocket = (reason: string = "Page hidden"): void => {
+    clearReconnect();
+    if (socket) {
+      const s = socket;
+      socket = null;
+      s.onopen = null;
+      s.onmessage = null;
+      s.onerror = null;
+      s.onclose = null;
+      if (s.readyState === 0 /* CONNECTING */) {
+        const handleConnectingOpen = () => {
+          s.removeEventListener("open", handleConnectingOpen);
+          s.close(1000, reason);
+        };
+        s.addEventListener("open", handleConnectingOpen, { once: true });
+      } else if (s.readyState === 1 /* OPEN */) {
+        s.close(1000, reason);
+      }
+    }
+  };
+
+  const handlePageHide = (): void => {
+    closeSocket("Page navigating / bfcache");
+  };
+
+  const handlePageShow = (_event: PageTransitionEvent): void => {
+    ensureConnected();
+  };
+
   if (typeof window !== "undefined") {
     window.addEventListener("online", handleWake);
     window.addEventListener("focus", handleWake);
+    window.addEventListener("pagehide", handlePageHide);
+    window.addEventListener("pageshow", handlePageShow);
   }
   if (typeof document !== "undefined") {
     document.addEventListener("visibilitychange", handleVisibilityChange);
@@ -209,26 +240,12 @@ export function connectTenantDatabaseSocket(handlers: TenantWebSocketHandlers): 
     if (typeof window !== "undefined") {
       window.removeEventListener("online", handleWake);
       window.removeEventListener("focus", handleWake);
+      window.removeEventListener("pagehide", handlePageHide);
+      window.removeEventListener("pageshow", handlePageShow);
     }
     if (typeof document !== "undefined") {
       document.removeEventListener("visibilitychange", handleVisibilityChange);
     }
-    if (socket) {
-      const s = socket;
-      socket = null;
-      s.onopen = null;
-      s.onmessage = null;
-      s.onerror = null;
-      s.onclose = null;
-      if (s.readyState === WebSocket.CONNECTING) {
-        const handleConnectingOpen = () => {
-          s.removeEventListener("open", handleConnectingOpen);
-          s.close(1000, "Client unmounted");
-        };
-        s.addEventListener("open", handleConnectingOpen, { once: true });
-      } else if (s.readyState === WebSocket.OPEN) {
-        s.close(1000, "Client unmounted");
-      }
-    }
+    closeSocket("Client unmounted");
   };
 }

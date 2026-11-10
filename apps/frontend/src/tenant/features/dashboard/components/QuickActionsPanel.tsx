@@ -1,7 +1,7 @@
 import React from "react";
 import { WidgetCard } from "@/components/app/WidgetCard";
 import { Link } from "react-router-dom";
-import { motion } from "framer-motion";
+import { m } from "framer-motion";
 import { Sparkles } from "lucide-react";
 import { ROUTES } from "@/lib/config/routes";
 import type { DashboardQuickAction } from "@/lib/dashboardQuickActions";
@@ -42,7 +42,7 @@ export function QuickActionsPanel({ actions }: QuickActionsPanelProps): React.JS
           const label = t(quickAction.labelKey);
           const href = quickAction.route || ROUTES.home;
           return (
-            <motion.div
+            <m.div
               key={quickAction.id}
               initial={false}
               animate={{ opacity: 1, scale: 1 }}
@@ -76,7 +76,7 @@ export function QuickActionsPanel({ actions }: QuickActionsPanelProps): React.JS
                   </p>
                 </div>
               </Link>
-            </motion.div>
+            </m.div>
           );
         })}
       </div>

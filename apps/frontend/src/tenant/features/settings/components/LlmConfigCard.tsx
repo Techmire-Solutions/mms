@@ -1,6 +1,6 @@
 import type React from "react";
 import { Check, Edit2, Globe, Loader2, Trash2 } from "lucide-react";
-import { motion } from "framer-motion";
+import { m } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
@@ -32,7 +32,7 @@ export function LlmConfigCard({
   handleTestConnection,
 }: LlmConfigCardProps): React.JSX.Element {
   return (
-    <motion.div
+    <m.div
       layout
       whileHover={{ y: -2 }}
       transition={{ duration: 0.15 }}
@@ -151,6 +151,6 @@ export function LlmConfigCard({
           <Trash2 className="h-3.5 w-3.5" aria-hidden />
         </Button>
       </div>
-    </motion.div>
+    </m.div>
   );
 }

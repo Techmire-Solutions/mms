@@ -1,5 +1,5 @@
 import React from "react";
-import { motion } from "framer-motion";
+import { m } from "framer-motion";
 import { Check } from "lucide-react";
 import type { TranslationFunction } from "@/lib/contexts/TranslationContext";
 import type { AddUserFormState } from "../lib/addUserModalTypes";
@@ -11,7 +11,7 @@ export interface AddUserSuccessViewProps {
 
 export function AddUserSuccessView({ form, t }: AddUserSuccessViewProps): React.JSX.Element {
   return (
-    <motion.div
+    <m.div
       initial={{ opacity: 0, scale: 0.95 }}
       animate={{ opacity: 1, scale: 1 }}
       className="flex flex-col items-center justify-center gap-4 py-10 text-center"
@@ -27,6 +27,6 @@ export function AddUserSuccessView({ form, t }: AddUserSuccessViewProps): React.
             : t("users.addSuccessPassword", { name: form.name })}
         </p>
       </div>
-    </motion.div>
+    </m.div>
   );
 }

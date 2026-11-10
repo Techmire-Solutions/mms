@@ -1,6 +1,6 @@
 import React from "react";
 import { useSearchParams } from "react-router-dom";
-import { motion, AnimatePresence } from "framer-motion";
+import { m, AnimatePresence } from "framer-motion";
 import { User, Shield } from "lucide-react";
 import { useTranslation } from "@/hooks/useTranslation";
 import { usePlatformProfile } from "@/platform/hooks/usePlatformProfile";
@@ -65,7 +65,7 @@ export default function PlatformAccount(): React.JSX.Element {
             <SubTabBar tabs={tabs} value={activeTab} onChange={(key) => handleTabChange(key)} />
 
             <AnimatePresence mode="wait">
-              <motion.div
+              <m.div
                 key={activeTab}
                 initial={reducedMotion ? false : { opacity: 0, y: 8 }}
                 animate={{ opacity: 1, y: 0 }}
@@ -73,38 +73,38 @@ export default function PlatformAccount(): React.JSX.Element {
                 transition={{ duration: 0.2 }}
               >
                 {activeTab === "profile" && (
-                  <motion.div
+                  <m.div
                     variants={containerVariants}
                     initial={reducedMotion ? false : "hidden"}
                     animate="show"
                     className="grid grid-cols-1 lg:grid-cols-3 gap-8 items-start"
                   >
-                    <motion.div variants={cardVariants}>
+                    <m.div variants={cardVariants}>
                       <PlatformProfileCard profile={profile} />
-                    </motion.div>
+                    </m.div>
 
-                    <motion.div variants={cardVariants} className="lg:col-span-2">
+                    <m.div variants={cardVariants} className="lg:col-span-2">
                       <PlatformProfileNameForm
                         initialName={profile.name ?? ""}
                         initialPhone={profile.phone}
                       />
-                    </motion.div>
-                  </motion.div>
+                    </m.div>
+                  </m.div>
                 )}
 
                 {activeTab === "security" && (
-                  <motion.div
+                  <m.div
                     variants={containerVariants}
                     initial={reducedMotion ? false : "hidden"}
                     animate="show"
                     className="max-w-3xl"
                   >
-                    <motion.div variants={cardVariants}>
+                    <m.div variants={cardVariants}>
                       <PlatformProfilePasswordForm />
-                    </motion.div>
-                  </motion.div>
+                    </m.div>
+                  </m.div>
                 )}
-              </motion.div>
+              </m.div>
             </AnimatePresence>
           </div>
         )}

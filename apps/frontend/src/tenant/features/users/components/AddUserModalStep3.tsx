@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { AnimatePresence, motion } from "framer-motion";
+import { AnimatePresence, m } from "framer-motion";
 import { Eye, EyeOff, Lock, Mail } from "lucide-react";
 import { getPasswordPolicyHintKey } from "@mms/shared";
 import { Button } from "@/components/ui/button";
@@ -75,7 +75,7 @@ export function Step3({ form, setForm, errors }: AddUserStepProps): JSX.Element 
 
       <AnimatePresence mode="wait">
         {form.setupMethod === "invite" && (
-          <motion.div
+          <m.div
             key="invite"
             initial={{ opacity: 0, y: 6 }}
             animate={{ opacity: 1, y: 0 }}
@@ -90,11 +90,11 @@ export function Step3({ form, setForm, errors }: AddUserStepProps): JSX.Element 
               {t("users.addInviteBody", { email: form.email || "…" })}
             </p>
             <p className="text-xs text-muted-foreground">{t("users.addInvitePending")}</p>
-          </motion.div>
+          </m.div>
         )}
 
         {form.setupMethod === "password" && (
-          <motion.div
+          <m.div
             key="password"
             initial={{ opacity: 0, y: 6 }}
             animate={{ opacity: 1, y: 0 }}
@@ -149,7 +149,7 @@ export function Step3({ form, setForm, errors }: AddUserStepProps): JSX.Element 
                 {t("users.addForceReset")}
               </label>
             </div>
-          </motion.div>
+          </m.div>
         )}
       </AnimatePresence>
 

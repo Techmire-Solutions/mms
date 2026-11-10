@@ -1,5 +1,5 @@
 import React from "react";
-import { motion } from "framer-motion";
+import { m } from "framer-motion";
 import { Scale } from "lucide-react";
 import { formatMoney, formatDate } from "@mms/shared";
 import { EmptyState } from "@/components/app/EmptyState";
@@ -52,7 +52,7 @@ export function OverdueObligationsWidgetMobileList({
         const student = studentsById.get(String(overdueStudent.id));
         const hasPhone = Boolean(student?.phone);
         return (
-          <motion.article
+          <m.article
             key={`${overdueStudent.id}-${overdueStudent.dueDate}-${overdueStudent.amount}`}
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
@@ -109,7 +109,7 @@ export function OverdueObligationsWidgetMobileList({
                 />
               )}
             </div>
-          </motion.article>
+          </m.article>
         );
       })}
     </>

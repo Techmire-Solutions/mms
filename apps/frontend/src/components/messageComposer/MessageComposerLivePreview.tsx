@@ -1,4 +1,4 @@
-import { AnimatePresence, motion } from "framer-motion";
+import { AnimatePresence, m } from "framer-motion";
 import { CheckCheck, ChevronLeft, ChevronRight, Sparkles } from "lucide-react";
 import { calculateSmsSegments, formatDateTime, personalizeMessage } from "@mms/shared";
 import { Button } from "@/components/ui/button";
@@ -41,7 +41,7 @@ export function MessageComposerLivePreview({
 
   return (
     <AnimatePresence mode="wait">
-      <motion.div
+      <m.div
         key={`${previewIndex}-${channel}`}
         initial={reducedMotion ? false : { opacity: 0, y: 8 }}
         animate={{ opacity: 1, y: 0 }}
@@ -160,7 +160,7 @@ export function MessageComposerLivePreview({
             </div>
           </div>
         )}
-      </motion.div>
+      </m.div>
     </AnimatePresence>
   );
 }

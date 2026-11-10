@@ -1,5 +1,5 @@
 import React from "react";
-import { motion } from "framer-motion";
+import { m } from "framer-motion";
 
 export interface PlatformAuthFormProps {
   onSubmit: (event: React.FormEvent) => void;
@@ -15,7 +15,7 @@ export function PlatformAuthForm({
   children,
 }: PlatformAuthFormProps): React.JSX.Element {
   return (
-    <motion.form
+    <m.form
       initial={reducedMotion ? false : { opacity: 0, y: 10 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.25 }}
@@ -25,6 +25,6 @@ export function PlatformAuthForm({
       aria-busy={busy}
     >
       {children}
-    </motion.form>
+    </m.form>
   );
 }

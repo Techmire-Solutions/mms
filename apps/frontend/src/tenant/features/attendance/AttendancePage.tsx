@@ -1,5 +1,5 @@
 import React from "react";
-import { motion, AnimatePresence } from "framer-motion";
+import { m, AnimatePresence } from "framer-motion";
 import { UserCheck } from "lucide-react";
 import { ModulePageShell } from "@/components/app/ModulePageShell";
 import { ResponsiveAccordionTabs } from "@/components/app/ResponsiveAccordionTabs";
@@ -156,7 +156,7 @@ export default function Attendance() {
         panelIdPrefix="attendance-tab"
       >
         <AnimatePresence mode="wait">
-          <motion.div
+          <m.div
             key={c.effectiveTab + "-" + c.effectiveOpsTab + "-" + c.role}
             initial={{ opacity: 0, y: 8 }}
             animate={{ opacity: 1, y: 0 }}
@@ -176,7 +176,7 @@ export default function Attendance() {
                 renderContent()
               )}
             </ErrorBoundary>
-          </motion.div>
+          </m.div>
         </AnimatePresence>
       </ResponsiveAccordionTabs>
 

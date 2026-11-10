@@ -1,5 +1,5 @@
 import React, { useId } from "react";
-import { motion } from "framer-motion";
+import { m } from "framer-motion";
 import { OverlayShell } from "@/components/app/OverlayShell";
 import { ModalHeader } from "@/components/app/ModalHeader";
 import { FormModalTabs } from "@/components/app/FormModalTabs";
@@ -139,7 +139,7 @@ export function Modal<K extends string = string>({
       containerClassName="flex items-center justify-center p-3 sm:p-4"
     >
       {({ containerRef }) => (
-        <motion.div
+        <m.div
           ref={containerRef}
           initial={reducedMotion ? false : { opacity: 0, scale: 0.96, y: 12 }}
           animate={reducedMotion ? { opacity: 1 } : { opacity: 1, scale: 1, y: 0 }}
@@ -194,7 +194,7 @@ export function Modal<K extends string = string>({
               {resolvedFooter}
             </div>
           )}
-        </motion.div>
+        </m.div>
       )}
     </OverlayShell>
   );

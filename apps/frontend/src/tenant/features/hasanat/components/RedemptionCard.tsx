@@ -1,6 +1,6 @@
 import React from "react";
 import { Star } from "lucide-react";
-import { motion, type HTMLMotionProps } from "framer-motion";
+import { m, type HTMLMotionProps } from "framer-motion";
 import { formatDate } from "@mms/shared";
 import type { Redemption } from "@/lib/data/hasanatData";
 import { useTranslation } from "@/hooks/useTranslation";
@@ -65,5 +65,5 @@ export function RedemptionCard({
   );
 
   if (!motionProps) return card;
-  return <motion.div {...motionProps}>{card}</motion.div>;
+  return <m.div {...motionProps}>{card}</m.div>;
 }

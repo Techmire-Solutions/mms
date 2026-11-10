@@ -1,5 +1,5 @@
 import React from "react";
-import { motion } from "framer-motion";
+import { m } from "framer-motion";
 import { X, Sliders } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { SectionLabel } from "@/components/app/SectionLabel";
@@ -47,7 +47,7 @@ export default function CustomReportBuilder({
   } = useCustomReportBuilderState(initialSource);
 
   return (
-    <motion.div
+    <m.div
       initial={{ opacity: 0, y: 12 }}
       animate={{ opacity: 1, y: 0 }}
       exit={{ opacity: 0, y: 8 }}
@@ -113,6 +113,6 @@ export default function CustomReportBuilder({
           resolveFieldLabel={resolveFieldLabel}
         />
       </div>
-    </motion.div>
+    </m.div>
   );
 }

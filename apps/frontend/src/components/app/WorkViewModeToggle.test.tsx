@@ -10,23 +10,27 @@ declare global {
 }
 globalThis.IS_REACT_ACT_ENVIRONMENT = true;
 
-vi.mock("framer-motion", () => ({
-  motion: {
-    div: ({
-      layoutId,
-      className,
-      children,
-    }: {
-      layoutId?: string;
-      className?: string;
-      children?: React.ReactNode;
-    }) => (
-      <div data-layout-id={layoutId} className={className}>
-        {children}
-      </div>
-    ),
-  },
-}));
+vi.mock("framer-motion", () => {
+  const comp = ({
+    layoutId,
+    className,
+    children,
+  }: {
+    layoutId?: string;
+    className?: string;
+    children?: React.ReactNode;
+  }) => (
+    <div data-layout-id={layoutId} className={className}>
+      {children}
+    </div>
+  );
+  return {
+    m: new Proxy({}, { get: () => comp }),
+    motion: {
+      div: comp,
+    },
+  };
+});
 
 vi.mock("@/hooks/useTranslation", () => ({
   useTranslation: () => ({

@@ -1,5 +1,5 @@
 import React, { useMemo, useState } from "react";
-import { motion, AnimatePresence } from "framer-motion";
+import { m, AnimatePresence } from "framer-motion";
 import { User, BookOpen, CheckCircle2, Layers, DollarSign, ClipboardCheck } from "lucide-react";
 import {
   StepIndicator,
@@ -194,7 +194,7 @@ export const EnrollmentWizard = function EnrollmentWizard({
         }}
       >
         <AnimatePresence mode="wait" custom={direction}>
-          <motion.div
+          <m.div
             key={step}
             custom={direction}
             initial={{ opacity: 0, x: direction * 24 }}
@@ -252,7 +252,7 @@ export const EnrollmentWizard = function EnrollmentWizard({
                 }
               />
             )}
-          </motion.div>
+          </m.div>
         </AnimatePresence>
       </form>
 

@@ -1,6 +1,6 @@
 import React, { Suspense } from "react";
 import { Settings, Globe, Palette, ShieldCheck, Bell } from "lucide-react";
-import { motion, AnimatePresence } from "framer-motion";
+import { m, AnimatePresence } from "framer-motion";
 import { useSearchParams } from "react-router-dom";
 import { useTranslation } from "@/hooks/useTranslation";
 import { useReducedMotion } from "@/hooks/useReducedMotion";
@@ -80,7 +80,7 @@ export default function PlatformSettingsPage(): React.JSX.Element {
         panelIdPrefix="platform-settings-panel"
       >
         <AnimatePresence mode="wait">
-          <motion.div
+          <m.div
             key={activeSection}
             initial={reducedMotion ? false : { opacity: 0, y: 8 }}
             animate={{ opacity: 1, y: 0 }}
@@ -93,7 +93,7 @@ export default function PlatformSettingsPage(): React.JSX.Element {
               {activeSection === "notifications" && <PlatformNotificationsSettingsPanel />}
               {activeSection === "security" && <PlatformSecuritySettingsPanel />}
             </Suspense>
-          </motion.div>
+          </m.div>
         </AnimatePresence>
       </ResponsiveAccordionTabs>
     </ModulePageShell>

@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { GitCompare, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { motion } from "framer-motion";
+import { m } from "framer-motion";
 import { SubTabBar } from "@/components/app/SubTabBar";
 import { useTranslation } from "@/hooks/useTranslation";
 import { ComparisonModeCharts } from "@/components/reports/ComparisonModeCharts";
@@ -68,7 +68,7 @@ export default function ComparisonMode({
   }
 
   return (
-    <motion.div
+    <m.div
       initial={{ opacity: 0, y: 12 }}
       animate={{ opacity: 1, y: 0 }}
       exit={{ opacity: 0, y: 8 }}
@@ -127,6 +127,6 @@ export default function ComparisonMode({
           isContacts={isContacts}
         />
       </div>
-    </motion.div>
+    </m.div>
   );
 }

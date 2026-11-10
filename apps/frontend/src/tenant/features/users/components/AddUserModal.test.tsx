@@ -5,12 +5,18 @@ import { AddUserModal } from "./AddUserModal";
 
 (globalThis as { IS_REACT_ACT_ENVIRONMENT?: boolean }).IS_REACT_ACT_ENVIRONMENT = true;
 
-vi.mock("framer-motion", () => ({
-  motion: {
-    div: ({ children, ...props }: React.ComponentProps<"div">) => <div {...props}>{children}</div>,
-  },
-  AnimatePresence: ({ children }: { children?: React.ReactNode }) => <>{children}</>,
-}));
+vi.mock("framer-motion", () => {
+  const comp = ({ children, ...props }: React.ComponentProps<"div">) => (
+    <div {...props}>{children}</div>
+  );
+  return {
+    m: new Proxy({}, { get: () => comp }),
+    motion: {
+      div: comp,
+    },
+    AnimatePresence: ({ children }: { children?: React.ReactNode }) => <>{children}</>,
+  };
+});
 
 vi.mock("@/tenant/hooks/useGlobalSettings", () => ({
   useGlobalSettings: () => ({

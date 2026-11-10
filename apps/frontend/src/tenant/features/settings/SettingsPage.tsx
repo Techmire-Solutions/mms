@@ -1,6 +1,6 @@
 import React, { Suspense, useEffect, useMemo } from "react";
 import { useLocation, useSearchParams } from "react-router-dom";
-import { motion, AnimatePresence } from "framer-motion";
+import { m, AnimatePresence } from "framer-motion";
 import { Settings as SettingsIcon } from "lucide-react";
 import { ModulePageShell } from "@/components/app/ModulePageShell";
 import { useTranslation } from "@/hooks/useTranslation";
@@ -98,7 +98,7 @@ export default function Settings(): React.JSX.Element {
               panelIdPrefix="settings-panel"
             >
               <AnimatePresence mode="wait">
-                <motion.div
+                <m.div
                   key={effectiveTab}
                   initial={reducedMotion ? false : { opacity: 0, y: 8 }}
                   animate={{ opacity: 1, y: 0 }}
@@ -106,7 +106,7 @@ export default function Settings(): React.JSX.Element {
                   transition={{ duration: reducedMotion ? 0 : 0.18 }}
                 >
                   <SettingsContent section={effectiveTab} />
-                </motion.div>
+                </m.div>
               </AnimatePresence>
             </ResponsiveAccordionTabs>
           </ModulePageShell>

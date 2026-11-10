@@ -1,5 +1,5 @@
 import React from "react";
-import { motion } from "framer-motion";
+import { m } from "framer-motion";
 import { TableCell, TableRow } from "@/components/ui/table";
 import { ModuleTableSelectionCell } from "@/components/app/ModuleTableSelectionCell";
 import { workTableRowBg, workTableStickyCellBg } from "@/components/app/tableWorkSticky";
@@ -128,9 +128,9 @@ function WorkBatchTableRowComponent<TData extends { id: string | number }>(
   const motionProps = isMotion && rowMotion ? rowMotion(rowIndex * 0.02) : undefined;
 
   return isMotion ? (
-    <motion.tr key={idStr} {...motionProps} {...trProps}>
+    <m.tr key={idStr} {...motionProps} {...trProps}>
       {cells}
-    </motion.tr>
+    </m.tr>
   ) : (
     <TableRow key={idStr} {...trProps}>
       {cells}

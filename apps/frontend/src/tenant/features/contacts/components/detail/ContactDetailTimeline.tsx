@@ -1,6 +1,6 @@
 import React, { useRef, useState, useId } from "react";
 import type { ChangeEvent, FormEvent } from "react";
-import { motion } from "framer-motion";
+import { m } from "framer-motion";
 import { History, Send } from "lucide-react";
 import { useVirtualizer } from "@tanstack/react-virtual";
 import { type ContactActivity, formatDate } from "@mms/shared";
@@ -34,7 +34,7 @@ function ActivityItem({
 }): React.JSX.Element {
   const Icon = ICON_MAP[act.type] || History;
   return (
-    <motion.div
+    <m.div
       key={act.id}
       initial={reducedMotion ? false : { opacity: 0, y: 6 }}
       animate={{ opacity: 1, y: 0 }}
@@ -61,7 +61,7 @@ function ActivityItem({
           <span className="block mt-2 text-xs font-bold text-primary italic">— {act.by}</span>
         )}
       </div>
-    </motion.div>
+    </m.div>
   );
 }
 

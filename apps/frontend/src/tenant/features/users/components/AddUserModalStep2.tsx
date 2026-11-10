@@ -1,5 +1,5 @@
 import { useMemo } from "react";
-import { AnimatePresence, motion } from "framer-motion";
+import { AnimatePresence, m } from "framer-motion";
 import { CalendarClock } from "lucide-react";
 import { Checkbox } from "@/components/ui/checkbox";
 import { DatePicker } from "@/components/app/DatePicker";
@@ -63,7 +63,7 @@ export function Step2({ form, setForm, errors }: AddUserStepProps): JSX.Element 
         </div>
         <AnimatePresence>
           {form.temporaryRole && (
-            <motion.div
+            <m.div
               initial={{ opacity: 0, height: 0 }}
               animate={{ opacity: 1, height: "auto" }}
               exit={{ opacity: 0, height: 0 }}
@@ -80,7 +80,7 @@ export function Step2({ form, setForm, errors }: AddUserStepProps): JSX.Element 
                 aria-label={t("users.addTemporaryRole")}
                 className="w-full"
               />
-            </motion.div>
+            </m.div>
           )}
         </AnimatePresence>
       </div>

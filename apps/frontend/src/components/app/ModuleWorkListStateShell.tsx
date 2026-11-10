@@ -1,5 +1,5 @@
 import type { ReactNode } from "react";
-import { motion, AnimatePresence } from "framer-motion";
+import { m, AnimatePresence } from "framer-motion";
 import { ErrorBoundary } from "@/components/app/ErrorBoundary";
 import { ErrorState } from "@/components/app/ErrorState";
 import { ListPagination } from "@/components/app/ListPagination";
@@ -104,16 +104,11 @@ export function ModuleWorkListStateShell({
   return (
     <AnimatePresence mode="wait">
       {isError ? (
-        <motion.div
-          key="error"
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          exit={{ opacity: 0 }}
-        >
+        <m.div key="error" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
           <ErrorState title={errorTitle} description={errorHint} onRetry={onRetry} />
-        </motion.div>
+        </m.div>
       ) : isLoading ? (
-        <motion.div
+        <m.div
           key="skeleton"
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
@@ -128,9 +123,9 @@ export function ModuleWorkListStateShell({
             <TableSkeleton rows={6} cols={skeletonColumnCount} />
           )}
           <span className="sr-only">{loadingLabel}</span>
-        </motion.div>
+        </m.div>
       ) : (
-        <motion.div
+        <m.div
           key="list-view"
           initial={false}
           animate={{ opacity: 1 }}
@@ -157,7 +152,7 @@ export function ModuleWorkListStateShell({
               </p>
             ) : null}
           </ErrorBoundary>
-        </motion.div>
+        </m.div>
       )}
     </AnimatePresence>
   );

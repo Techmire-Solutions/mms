@@ -1,5 +1,5 @@
 import React, { type JSX } from "react";
-import { motion } from "framer-motion";
+import { m } from "framer-motion";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
@@ -47,7 +47,7 @@ export function WorkQueueItem<TData extends { id: string | number }>({
 }: WorkQueueItemProps<TData>): JSX.Element {
   const { t } = useTranslation();
   return (
-    <motion.li
+    <m.li
       key={idStr}
       {...rowMotion}
       onClick={() => onItemClick?.(item)}
@@ -111,6 +111,6 @@ export function WorkQueueItem<TData extends { id: string | number }>({
           {renderItemActions(item)}
         </div>
       )}
-    </motion.li>
+    </m.li>
   );
 }

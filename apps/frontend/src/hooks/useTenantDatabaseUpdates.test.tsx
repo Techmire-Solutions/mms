@@ -15,6 +15,13 @@ vi.mock("@/lib/contexts/AuthContext", () => ({
   useAuth: () => mockAuth,
 }));
 
+vi.mock("@/lib/runAfterFirstPaint", () => ({
+  runAfterFirstPaint: (fn: () => void) => {
+    fn();
+    return () => {};
+  },
+}));
+
 let capturedHandlers: {
   onDatabaseUpdate: (msg: {
     event: "database-update";

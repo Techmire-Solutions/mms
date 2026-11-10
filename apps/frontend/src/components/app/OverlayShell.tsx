@@ -1,6 +1,6 @@
 import React, { createContext, useContext, type RefObject } from "react";
 import { createPortal } from "react-dom";
-import { motion, AnimatePresence } from "framer-motion";
+import { m, AnimatePresence } from "framer-motion";
 import { useOverlayBehavior } from "@/hooks/useOverlayBehavior";
 import { useReducedMotion } from "@/hooks/useReducedMotion";
 import { OVERLAY_BACKDROP } from "@/components/ui/formStyles";
@@ -76,7 +76,7 @@ export function OverlayShell<T extends HTMLElement = HTMLElement>({
             containerClassName,
           )}
         >
-          <motion.div
+          <m.div
             aria-hidden="true"
             data-overlay-backdrop
             initial={reducedMotion ? false : { opacity: 0 }}

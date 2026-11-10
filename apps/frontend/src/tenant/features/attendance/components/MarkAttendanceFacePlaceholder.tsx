@@ -1,11 +1,11 @@
-import { motion } from "framer-motion";
+import { m } from "framer-motion";
 import { Scan } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Card } from "@/components/ui/card";
 import { useTranslation } from "@/hooks/useTranslation";
 
-const MotionCard = motion.create(Card);
+const MotionCard = m.create(Card);
 
 export interface MarkAttendanceFacePlaceholderProps {
   onClose: () => void;

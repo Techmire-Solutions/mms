@@ -1,7 +1,7 @@
 import React, { useMemo } from "react";
 import { Building2, Globe, Ban, PlusCircle } from "lucide-react";
 import { Link } from "react-router-dom";
-import { motion } from "framer-motion";
+import { m } from "framer-motion";
 import { useTranslation } from "@/hooks/useTranslation";
 import { useReducedMotion } from "@/hooks/useReducedMotion";
 import { usePlatformPermissions } from "@/platform/hooks/usePlatformPermissions";
@@ -45,7 +45,7 @@ export function PlatformDashboard(): React.JSX.Element {
   }, [sparkline]);
 
   return (
-    <motion.div
+    <m.div
       variants={reducedMotion ? undefined : containerVariantsConsole}
       initial={reducedMotion ? false : "hidden"}
       animate="show"
@@ -57,7 +57,7 @@ export function PlatformDashboard(): React.JSX.Element {
         canWorkspaces={canWorkspaces}
       />
 
-      <motion.div variants={reducedMotion ? undefined : itemVariants}>
+      <m.div variants={reducedMotion ? undefined : itemVariants}>
         {metricsError ? (
           <ErrorState
             title={t("platform.loadFailed")}
@@ -107,16 +107,16 @@ export function PlatformDashboard(): React.JSX.Element {
         ) : (
           <StatsSkeleton count={3} />
         )}
-      </motion.div>
+      </m.div>
 
       {metricsReady && totalWorkspaces > 0 ? (
-        <motion.div variants={reducedMotion ? undefined : itemVariants}>
+        <m.div variants={reducedMotion ? undefined : itemVariants}>
           <PlatformDashboardFleet />
-        </motion.div>
+        </m.div>
       ) : null}
 
       {metricsReady && totalWorkspaces > 0 ? (
-        <motion.div
+        <m.div
           variants={reducedMotion ? undefined : itemVariants}
           className="grid grid-cols-1 lg:grid-cols-3 gap-6 items-start"
         >
@@ -131,12 +131,12 @@ export function PlatformDashboard(): React.JSX.Element {
             canSystem={canSystem}
             canAdmins={canAdmins}
           />
-        </motion.div>
+        </m.div>
       ) : null}
 
-      <motion.div variants={reducedMotion ? undefined : itemVariants}>
+      <m.div variants={reducedMotion ? undefined : itemVariants}>
         <PlatformDashboardTelemetry />
-      </motion.div>
-    </motion.div>
+      </m.div>
+    </m.div>
   );
 }

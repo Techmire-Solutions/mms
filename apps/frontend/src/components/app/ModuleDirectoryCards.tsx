@@ -1,5 +1,5 @@
 import React, { useRef, useMemo, type ReactNode } from "react";
-import { motion } from "framer-motion";
+import { m } from "framer-motion";
 import { useVirtualizer } from "@tanstack/react-virtual";
 import { useReducedMotion } from "@/hooks/useReducedMotion";
 import { useTranslation } from "@/hooks/useTranslation";
@@ -95,14 +95,14 @@ export function ModuleDirectoryCards<T = unknown>({
 
   if (!isParameterized) {
     return (
-      <motion.div
+      <m.div
         variants={reducedMotion ? undefined : containerVariants}
         initial={reducedMotion ? false : "hidden"}
         animate={reducedMotion ? undefined : "visible"}
         className={cn("grid gap-4", COLS_MAP[cols], className)}
       >
         {children}
-      </motion.div>
+      </m.div>
     );
   }
 
