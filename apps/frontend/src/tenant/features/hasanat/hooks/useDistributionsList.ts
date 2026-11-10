@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import type { Distribution } from "@/lib/data/hasanatData";
+import type { Distribution, DistributionWrite } from "@/lib/data/hasanatData";
 import { HASANAT_MODULE_MANIFEST } from "@mms/shared";
 import { useTranslation } from "@/hooks/useTranslation";
 import { useDebounce } from "@/hooks/useDebounce";
@@ -12,7 +12,7 @@ import type { StatusBadgeConfigItem } from "@/components/app/StatusBadge";
 const DISTRIBUTION_SEARCH_DEBOUNCE_MS = 300;
 
 export interface UseDistributionsListStateOptions {
-  onCreate: (distribution: Distribution) => void | Promise<void>;
+  onCreate: (distribution: DistributionWrite) => void | Promise<void>;
   onUpdate: (distribution: Distribution) => void | Promise<void>;
   onFilteredCountChange?: (count: number) => void;
   canWrite?: boolean;

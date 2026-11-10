@@ -81,13 +81,13 @@ vi.mock("@/tenant/components/selectors/RegistryPersonSelect", () => ({
   }: {
     id: string;
     value: string;
-    onChange: (val: string) => void;
+    onChange: (val: string, name?: string) => void;
   }) => (
     <input
       data-testid="registry-person-select"
       id={id}
       value={value}
-      onChange={(e) => onChange(e.target.value)}
+      onChange={(e) => onChange(e.target.value, "Ali Ahmed")}
     />
   ),
 }));
@@ -100,13 +100,13 @@ vi.mock("@/tenant/components/selectors/UserActorSelect", () => ({
   }: {
     id: string;
     value: string;
-    onChange: (val: string) => void;
+    onChange: (val: string, name?: string) => void;
   }) => (
     <input
       data-testid="user-actor-select"
       id={id}
       value={value}
-      onChange={(e) => onChange(e.target.value)}
+      onChange={(e) => onChange(e.target.value, "Ali Ahmed")}
     />
   ),
 }));
@@ -251,6 +251,8 @@ describe("DistributeModal Component", () => {
         reason: "Quran memorization excellence",
         quantity: 1,
         issuedByUserId: "usr-1",
+        // The card keeps the display name stamped at issue time (not a blank recipient).
+        recipientName: "Ali Ahmed",
       }),
     );
   });

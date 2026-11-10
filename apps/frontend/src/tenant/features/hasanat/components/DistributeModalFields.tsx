@@ -8,6 +8,7 @@ import { useHasanatConfig } from "@/hooks/useStandardModuleConfig";
 import { useTranslation } from "@/hooks/useTranslation";
 import { type Denomination, type Distribution } from "@/lib/data/hasanatData";
 import { DistributeDenominationField } from "./DistributeDenominationField";
+import type { DistributionFieldUpdate } from "./DistributeRecipientFields";
 import {
   DistributeRecipientClassField,
   DistributeRecipientSelectField,
@@ -20,7 +21,7 @@ interface DistributeModalFieldsProps {
   selectedDenomination?: Denomination;
   totalAvailable: number;
   setData: Dispatch<SetStateAction<Partial<Distribution>>>;
-  updateField: (field: string, value: unknown) => void;
+  updateField: DistributionFieldUpdate;
   errors?: Record<string, string>;
   onDenomsChange?: (denoms: Denomination[]) => Promise<void> | void;
 }
@@ -106,7 +107,7 @@ export function DistributeModalFields({
                   const sanitized = event.target.value.replace(/[^0-9]/g, "");
                   updateField(
                     "quantity",
-                    sanitized === "" ? "" : Math.min(Number(sanitized), totalAvailable),
+                    sanitized === "" ? undefined : Math.min(Number(sanitized), totalAvailable),
                   );
                 }}
               />

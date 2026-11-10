@@ -1,12 +1,11 @@
 import { useQueryClient } from "@tanstack/react-query";
 import type { MutateOptions } from "@tanstack/react-query";
+import type { DistributionWrite } from "@/lib/data/hasanatData";
 import type {
   Denomination,
   StockBatch,
   Distribution,
-  DistributionCreate,
   DistributionStatusChange,
-  DistributionUpdate,
   RedeemCardBody,
   ReverseRedemptionBody,
 } from "@mms/shared";
@@ -15,44 +14,7 @@ import {
   invalidateHasanatSetupQueries,
   invalidateHasanatWorkQueries,
 } from "./invalidateHasanatQueries";
-
-/** Card fields the write API owns; sending them would be rejected by the strict schemas. */
-function toCreateBody(distribution: Distribution): DistributionCreate {
-  return {
-    batchId: distribution.batchId,
-    denominationId: distribution.denominationId,
-    denominationName: distribution.denominationName ?? "",
-    recipientType: distribution.recipientType,
-    recipientStudentId: distribution.recipientStudentId ?? null,
-    recipientFacultyId: distribution.recipientFacultyId ?? null,
-    recipientName: distribution.recipientName ?? "",
-    recipientClass: distribution.recipientClass ?? "",
-    classId: distribution.classId ?? null,
-    sessionId: distribution.sessionId ?? null,
-    quantity: distribution.quantity,
-    expiresOn: distribution.expiresOn ?? null,
-    reason: distribution.reason ?? "",
-    issuedDate: distribution.issuedDate,
-    issuedByUserId: distribution.issuedByUserId ?? null,
-    issuedBy: distribution.issuedBy ?? null,
-  };
-}
-
-/** Mutable fields + the OCC token. Value-affecting fields are immutable after issue. */
-function toUpdateBody(distribution: Distribution): DistributionUpdate {
-  return {
-    recipientType: distribution.recipientType,
-    recipientStudentId: distribution.recipientStudentId ?? null,
-    recipientFacultyId: distribution.recipientFacultyId ?? null,
-    recipientName: distribution.recipientName ?? "",
-    recipientClass: distribution.recipientClass ?? "",
-    classId: distribution.classId ?? null,
-    sessionId: distribution.sessionId ?? null,
-    expiresOn: distribution.expiresOn ?? null,
-    reason: distribution.reason ?? "",
-    expectedVersion: distribution.version ?? 0,
-  };
-}
+import { toCreateBody, toUpdateBody } from "../lib/hasanatMutationBodies";
 
 export function useHasanatMutations() {
   const queryClient = useQueryClient();
@@ -115,9 +77,9 @@ export function useHasanatMutations() {
     },
     createDistribution: {
       ...createDistribution,
-      mutate: (distribution: Distribution, opts?: MutateOptions) =>
+      mutate: (distribution: DistributionWrite, opts?: MutateOptions) =>
         createDistribution.mutate({ body: toCreateBody(distribution) }, opts),
-      mutateAsync: (distribution: Distribution) =>
+      mutateAsync: (distribution: DistributionWrite) =>
         createDistribution.mutateAsync({ body: toCreateBody(distribution) }),
     },
     updateDistribution: {

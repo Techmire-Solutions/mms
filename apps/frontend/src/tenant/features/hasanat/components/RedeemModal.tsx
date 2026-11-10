@@ -7,7 +7,8 @@ import { Field } from "@/components/app/FormPrimitives";
 import { UserActorSelect } from "@/tenant/components/selectors/UserActorSelect";
 import { FORM_INPUT } from "@/components/ui/formStyles";
 import { useTranslation } from "@/hooks/useTranslation";
-import { generateClientEntityId, todayISO } from "@mms/shared";
+import { generateClientEntityId, redeemCardBodySchema, todayISO } from "@mms/shared";
+import { mapZodFormErrors } from "@/lib/forms/mapZodFormErrors";
 import { Input } from "@/components/ui/input";
 import { FormSelect } from "@/components/app/FormSelect";
 
@@ -81,37 +82,54 @@ export function RedeemModal({ open, distributions, onClose, onSave }: RedeemModa
 
   const handleSave = async () => {
     if (submittingRef.current) return;
-    const newErrors: Record<string, string> = {};
-    if (!data.distributionId) {
-      newErrors.denominationId = t("common.required");
-    }
-    if (!data.reward?.trim()) {
-      newErrors.reward = t("common.required");
-    }
-    if (!data.pointsUsed || Number(data.pointsUsed) < 1) {
-      newErrors.pointsUsed = t("common.required");
-    }
 
-    if (Object.keys(newErrors).length > 0) {
-      setErrors(newErrors);
-      setSubmitError(t("common.formPleaseFixErrors"));
-      return;
+    const earlyErrors: Record<string, string> = {};
+    if (!data.distributionId) {
+      // The JSX renders `errors.distributionId`; the old handler wrote `denominationId`, so a
+      // missing card selection never showed its error.
+      earlyErrors.distributionId = t("common.required");
     }
 
     setSubmitError(null);
     const approvedBy =
       approvedByName || (data.approvedByUserId ? `User #${data.approvedByUserId}` : "");
+    // The shared redeem contract owns the bounds (positive integer points, ISO date).
+    const parsed = redeemCardBodySchema.safeParse({
+      reward: data.reward ?? "",
+      pointsUsed: Number(data.pointsUsed ?? 0),
+      date: data.date ?? "",
+      approvedByUserId: data.approvedByUserId || null,
+      approvedBy: approvedBy || null,
+      clientRequestId: requestId,
+    });
+    if (Object.keys(earlyErrors).length > 0 || !parsed.success) {
+      setErrors({
+        ...earlyErrors,
+        ...(parsed.success ? {} : mapZodFormErrors(parsed.error, (message) => message)),
+      });
+      setSubmitError(t("common.formPleaseFixErrors"));
+      return;
+    }
+
+    const payload: Redemption & { clientRequestId: string } = {
+      id: generateClientEntityId("red"),
+      distributionId: String(data.distributionId),
+      studentId: selectedDistribution?.recipientStudentId ?? null,
+      studentName: selectedDistribution?.recipientName || "",
+      reward: parsed.data.reward,
+      pointsUsed: parsed.data.pointsUsed,
+      kind: "redeem",
+      reversalOfId: null,
+      date: parsed.data.date,
+      approvedByUserId: parsed.data.approvedByUserId ?? null,
+      approvedBy: parsed.data.approvedBy ?? (approvedBy || null),
+      clientRequestId: requestId,
+    };
+
     submittingRef.current = true;
     setSubmitting(true);
     try {
-      await onSave({
-        ...data,
-        id: generateClientEntityId("red"),
-        pointsUsed: Number(data.pointsUsed),
-        studentName: selectedDistribution?.recipientName || "",
-        approvedBy,
-        clientRequestId: requestId,
-      } as Redemption & { clientRequestId: string });
+      await onSave(payload);
     } catch (error: unknown) {
       // Already redeemed / points above the card value are 409s from the atomic endpoint.
       setSubmitError(error instanceof Error ? error.message : t("common.formPleaseFixErrors"));
@@ -157,7 +175,7 @@ export function RedeemModal({ open, distributions, onClose, onSave }: RedeemModa
             onChange={(value) => {
               const card = activeDistributions.find((row) => row.id === value);
               updateField("distributionId", value);
-              updateField("pointsUsed", (card?.pointsSnapshot ?? 0) as Redemption["pointsUsed"]);
+              updateField("pointsUsed", card?.pointsSnapshot ?? 0);
             }}
             options={activeDistributions.map((distribution) => ({
               value: distribution.id,

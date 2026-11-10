@@ -13,6 +13,12 @@ import {
 import { useSessionsCollection } from "@/tenant/hooks/collections/sessions";
 import type { Distribution } from "@/lib/data/hasanatData";
 
+/** Typed field setter for the card draft — no `unknown`/`as` escape hatch. */
+export type DistributionFieldUpdate = <K extends keyof Distribution>(
+  field: K,
+  value: Partial<Distribution>[K],
+) => void;
+
 export interface DistributeRecipientTypeFieldProps {
   data: Partial<Distribution>;
   setData: Dispatch<SetStateAction<Partial<Distribution>>>;
@@ -63,6 +69,7 @@ export function DistributeRecipientTypeField({
                     recipientTypeOption.id === "faculty"
                       ? previousData.recipientFacultyId
                       : undefined,
+                  recipientName: "",
                 }))
               }
               className={`flex min-h-11 flex-1 items-center justify-center gap-1.5 rounded-lg border py-2 text-sm font-medium transition-colors ${
@@ -83,7 +90,7 @@ export function DistributeRecipientTypeField({
 export interface DistributeRecipientSelectFieldProps {
   data: Partial<Distribution>;
   setData: Dispatch<SetStateAction<Partial<Distribution>>>;
-  updateField: (field: string, value: unknown) => void;
+  updateField: DistributionFieldUpdate;
   errors?: Record<string, string>;
 }
 
@@ -107,20 +114,27 @@ export function DistributeRecipientSelectField({
         label={t("hasanat.fieldRecipient")}
         required
         value={recipientId}
-        onChange={(id) => {
+        onChange={(id, name) => {
+          // The card stores the display name at issue time; without it the ledger/report/voucher
+          // would show a blank recipient even though the picker resolved the person.
+          const recipientName = name?.trim() ? name : "";
           if (data.recipientType === "faculty") {
             updateField("recipientFacultyId", id);
+            updateField("recipientName", recipientName);
             setData((previousData) => ({
               ...previousData,
               recipientFacultyId: id,
               recipientStudentId: undefined,
+              recipientName,
             }));
           } else {
             updateField("recipientStudentId", id);
+            updateField("recipientName", recipientName);
             setData((previousData) => ({
               ...previousData,
               recipientStudentId: id,
               recipientFacultyId: undefined,
+              recipientName,
             }));
           }
         }}
@@ -132,7 +146,7 @@ export function DistributeRecipientSelectField({
 
 export interface DistributeRecipientClassFieldProps {
   data: Partial<Distribution>;
-  updateField: (field: string, value: unknown) => void;
+  updateField: DistributionFieldUpdate;
   isRequired?: boolean;
   errors?: Record<string, string>;
 }

@@ -246,6 +246,30 @@ describe("Hasanat Sub-Modals", () => {
   });
 
   describe("StockAddBatchModal", () => {
+    it("submits one batch on a double click", async () => {
+      const onSave = vi.fn(async () => undefined);
+      await act(async () => {
+        root.render(
+          <StockAddBatchModal open={true} denoms={mockDenoms} onClose={vi.fn()} onSave={onSave} />,
+        );
+      });
+
+      const qtyInput = container.querySelector("#batch-qty") as HTMLInputElement;
+      await act(async () => {
+        setInputValue(qtyInput, "5");
+      });
+
+      const saveBtn = container.querySelector(
+        '[data-testid="modal-save-btn"]',
+      ) as HTMLButtonElement;
+      await act(async () => {
+        saveBtn.click();
+        saveBtn.click();
+      });
+
+      expect(onSave).toHaveBeenCalledTimes(1);
+    });
+
     it("validates required fields on batch submission", async () => {
       const onSave = vi.fn();
       await act(async () => {
@@ -284,6 +308,63 @@ describe("Hasanat Sub-Modals", () => {
   });
 
   describe("DenominationModal", () => {
+    it("submits one denomination on a double click", async () => {
+      const onSave = vi.fn(async () => undefined);
+      await act(async () => {
+        root.render(
+          <DenominationModal open={true} denom={null} onClose={vi.fn()} onSave={onSave} />,
+        );
+      });
+
+      const nameInput = container.querySelector("#denom-name") as HTMLInputElement;
+      await act(async () => {
+        setInputValue(nameInput, "Gold Crown");
+      });
+
+      const saveBtn = container.querySelector(
+        '[data-testid="modal-save-btn"]',
+      ) as HTMLButtonElement;
+      await act(async () => {
+        saveBtn.click();
+        saveBtn.click();
+      });
+
+      expect(onSave).toHaveBeenCalledTimes(1);
+    });
+
+    it("rejects a denomination name that already exists", async () => {
+      const onSave = vi.fn();
+      await act(async () => {
+        root.render(
+          <DenominationModal
+            open={true}
+            denom={null}
+            existingDenoms={mockDenoms}
+            onClose={vi.fn()}
+            onSave={onSave}
+          />,
+        );
+      });
+
+      const nameInput = container.querySelector("#denom-name") as HTMLInputElement;
+      await act(async () => {
+        // Same name in a different case must be rejected (imports resolve deeds by name).
+        setInputValue(nameInput, "silver star");
+      });
+
+      const saveBtn = container.querySelector(
+        '[data-testid="modal-save-btn"]',
+      ) as HTMLButtonElement;
+      await act(async () => {
+        saveBtn.click();
+      });
+
+      expect(onSave).not.toHaveBeenCalled();
+      expect(container.querySelector("#denom-name-error")?.textContent).toBe(
+        "hasanat.denominations.duplicateName",
+      );
+    });
+
     it("validates card name and points before saving", async () => {
       const onSave = vi.fn();
       await act(async () => {

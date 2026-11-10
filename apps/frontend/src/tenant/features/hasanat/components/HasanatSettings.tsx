@@ -1,17 +1,12 @@
-import React, { useEffect } from "react";
+import React, { useEffect, useState } from "react";
+import { hasanatPreferencesPutBodySchema } from "@mms/shared";
 import { Star } from "lucide-react";
 import { SectionCard } from "@/components/app/SectionCard";
 import { ModuleSetupSaveFooter } from "@/components/app/ModuleSetupSaveFooter";
 import { useTranslation } from "@/hooks/useTranslation";
 import { FORM_INPUT, SETUP_SECTION_CARD_CLASS } from "@/components/ui/formStyles";
 import { Input } from "@/components/ui/input";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
+import { FormSelect } from "@/components/app/FormSelect";
 import { ToggleRow } from "@shared/ui";
 import { Field } from "@/components/app/FormPrimitives";
 import { useHasanatSetupPanelState } from "@/tenant/features/hasanat/hooks/useHasanatSetupPanelState";
@@ -28,6 +23,28 @@ export const HasanatSettings = function HasanatSettings({
   const { t } = useTranslation();
   const { settingsDraft, saved, saving, isPrefsDirty, upd, handleSave } =
     useHasanatSetupPanelState();
+  const [pointsError, setPointsError] = useState<string | null>(null);
+
+  // The draft may be 0 (a valid value); only a non-finite entry is invalid. Never mask it with a
+  // fallback — the old `|| 10` rendering made a cleared field look like 10.
+  const pointsValue = Number.isFinite(settingsDraft.pointsPerUnit)
+    ? String(settingsDraft.pointsPerUnit)
+    : "";
+
+  const savePreferences = async (): Promise<void> => {
+    const parsed = hasanatPreferencesPutBodySchema.safeParse({
+      pointsPerUnit: settingsDraft.pointsPerUnit,
+      autoApprovePayouts: settingsDraft.autoApprovePayouts,
+      defaultViewLayout: settingsDraft.defaultViewLayout,
+      awardScope: settingsDraft.awardScope,
+    });
+    if (!parsed.success || !Number.isFinite(settingsDraft.pointsPerUnit)) {
+      setPointsError(t("common.required"));
+      return;
+    }
+    setPointsError(null);
+    await handleSave();
+  };
 
   useEffect(() => {
     onPrefsDirtyChange?.(isPrefsDirty);
@@ -45,15 +62,23 @@ export const HasanatSettings = function HasanatSettings({
       >
         <div className="space-y-4">
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-            <Field id="points-per-unit" label={t("hasanat.settings.pointsPerUnit")}>
+            <Field
+              id="points-per-unit"
+              label={t("hasanat.settings.pointsPerUnit")}
+              error={pointsError ?? undefined}
+            >
               <Input
                 id="points-per-unit"
                 name="pointsPerUnit"
                 type="text"
                 inputMode="numeric"
                 className={FORM_INPUT}
-                value={settingsDraft.pointsPerUnit || 10}
-                onChange={(event) => upd("pointsPerUnit", Number(event.target.value))}
+                value={pointsValue}
+                onChange={(event) => {
+                  const digits = event.target.value.replace(/[^0-9]/g, "");
+                  upd("pointsPerUnit", digits === "" ? 0 : Number(digits));
+                  setPointsError(null);
+                }}
               />
             </Field>
           </div>
@@ -62,22 +87,21 @@ export const HasanatSettings = function HasanatSettings({
             label={t("hasanat.settings.awardScope")}
             hint={t("hasanat.settings.awardScopeHint")}
           >
-            <Select
+            <FormSelect
+              id="award-scope"
+              name="awardScope"
               value={settingsDraft.awardScope ?? "tenant"}
-              onValueChange={(value) =>
+              onChange={(value) =>
                 upd("awardScope", value === "assigned_classes" ? "assigned_classes" : "tenant")
               }
-            >
-              <SelectTrigger id="award-scope" className={FORM_INPUT}>
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="tenant">{t("hasanat.settings.awardScopeTenant")}</SelectItem>
-                <SelectItem value="assigned_classes">
-                  {t("hasanat.settings.awardScopeAssignedClasses")}
-                </SelectItem>
-              </SelectContent>
-            </Select>
+              options={[
+                { value: "tenant", label: t("hasanat.settings.awardScopeTenant") },
+                {
+                  value: "assigned_classes",
+                  label: t("hasanat.settings.awardScopeAssignedClasses"),
+                },
+              ]}
+            />
           </Field>
           <div className="pt-1">
             <ToggleRow
@@ -94,7 +118,7 @@ export const HasanatSettings = function HasanatSettings({
           saved={saved}
           saveLabel={saving ? t("global.saving") : t("common.save")}
           savedLabel={t("settings.savedBadge")}
-          onSave={handleSave}
+          onSave={() => void savePreferences()}
           disableUnsavedGuard
           footerClassName="mt-4 pt-3"
         />
@@ -107,7 +131,7 @@ export const HasanatSettings = function HasanatSettings({
         unsavedWarning={unsavedWarning}
         saveLabel={t("common.save")}
         savedLabel={t("settings.savedBadge")}
-        onSave={handleSave}
+        onSave={() => void savePreferences()}
       />
     </ModuleSetupContent>
   );
