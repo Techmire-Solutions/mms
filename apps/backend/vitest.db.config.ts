@@ -19,6 +19,10 @@ export default defineConfig({
     environment: "node",
     env: {
       NODE_ENV: "test",
+      // Date-sensitive attendance/exam logic must not depend on the runner's timezone (a midnight
+      // run in another zone used to change "today" mid-suite). Zone-specific behaviour is tested with
+      // an explicit IANA zone instead.
+      TZ: "UTC",
       LOG_LEVEL: "silent",
       JWT_SECRET: "test-secret-at-least-32-chars-long!!",
       PORT: "0",

@@ -180,6 +180,8 @@ if [[ "$WITH_DB" -eq 1 && "$NEED_BE_DB" -eq 1 ]]; then
     echo "Phase E: backend DB (--with-db)"
     pnpm --filter mms-backend run db:migrate
     pnpm --filter mms-backend run test:db
+    pnpm --filter mms-backend run test:db:coverage:attendance
+    node scripts/ci/check-attendance-coverage.mjs --coverage apps/backend/coverage-attendance-db
     node scripts/ci/check-db-test-hygiene.mjs
     node scripts/ci/check-db-test-manifest.mjs
     pnpm --filter mms-backend run test:db:concurrency
