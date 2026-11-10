@@ -334,3 +334,46 @@ describe("hasanat background jobs registration", () => {
     expect(HASANAT_IMPORT_JOB_KEY).toBe("hasanat:import");
   });
 });
+
+describe("batch award queue payload", () => {
+  it("enqueues a count-only payload so large groups never trip the 1 MB ceiling", async () => {
+    const { listBatchRecipients } = await import("../db/repositories/hasanatBatchRepository.js");
+    vi.mocked(listBatchRecipients).mockResolvedValueOnce(
+      Array.from({ length: 201 }, (_, index) => ({
+        studentId: `stu-${index}`,
+        studentName: `Student ${index}`,
+        classId: "cls1",
+        sessionId: "ses1",
+        sectionId: null,
+      })),
+    );
+    const { enqueueBackgroundJob } = await import("../services/backgroundJobWorkerService.js");
+
+    const facade = createHasanatCardWriteFacade({
+      repo: fakeRepo(),
+      crud: {
+        deleteById: vi.fn(async () => true),
+        restoreById: vi.fn(async () => true),
+        bulkDeleteByIds: vi.fn(async () => ({ succeeded: 0, failed: 0 })),
+        bulkRestoreByIds: vi.fn(async () => ({ succeeded: 0, failed: 0 })),
+      },
+      requireTenant: () => "demo",
+      requireActorUserId: () => "u1",
+      loadPreferences: async () => ({
+        pointsPerUnit: 1,
+        autoApprovePayouts: true,
+        defaultViewLayout: "list",
+        dailyAwardLimitPerInstructor: 0,
+        awardScope: "tenant" as const,
+        tierLadder: [],
+      }),
+    });
+
+    const result = await facade.batchAward(BATCH_BODY);
+    expect(result.queued).toBe(true);
+
+    const payload = vi.mocked(enqueueBackgroundJob).mock.calls[0]?.[3] as Record<string, unknown>;
+    expect(payload.recipientCount).toBe(201);
+    expect(payload.recipients).toBeUndefined();
+  });
+});

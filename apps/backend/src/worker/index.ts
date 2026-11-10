@@ -8,8 +8,6 @@ loadBackendEnv();
 import {
   QUEUE_PDF_RENDERING,
   QUEUE_BULK_EXPORT,
-  QUEUE_MESSAGING_BROADCAST,
-  QUEUE_SESSIONS_ROLLOVER,
   QUEUE_SETTINGS,
   getBullMQConnectionOptions,
   getQueuePrefix,
@@ -156,12 +154,8 @@ export async function startWorkerDaemon(): Promise<void> {
   registerDefaultBackgroundJobRunners();
 
   // Instantiate workers for all 3 queues
-  const queueNames = [
-    QUEUE_PDF_RENDERING,
-    QUEUE_BULK_EXPORT,
-    QUEUE_MESSAGING_BROADCAST,
-    QUEUE_SESSIONS_ROLLOVER,
-  ];
+  // Derived from QUEUE_SETTINGS so a new queue cannot be forgotten at boot.
+  const queueNames = Object.keys(QUEUE_SETTINGS);
   for (const queueName of queueNames) {
     try {
       const worker = createWorkerForQueue(queueName);

@@ -4,8 +4,6 @@ import { registerModuleAccess } from "../../middleware/requireTenantModule.js";
 import { HASANAT_MODULE_MANIFEST, hasanatCommandMetricsResponseSchema } from "@mms/shared";
 import { registerMetricsRoute } from "../../lib/crudRouter.js";
 import { hasanatUseCases } from "../../hasanat/use-cases/hasanatUseCases.js";
-import { registerHasanatBulkAwardRunner } from "../../hasanat/use-cases/hasanatBatchAwardJob.js";
-import { registerHasanatImportRunner } from "../../hasanat/use-cases/hasanatImportJob.js";
 import { hasanatSetupConfigRoutes } from "./hasanatSetupConfigRoutes.js";
 import { hasanatContractRouter } from "./hasanat/hasanatContractRouter.js";
 import { hasanatExportRoutes } from "./hasanat/hasanatExportRoutes.js";
@@ -22,9 +20,6 @@ export default async function hasanatRoutes(
 ): Promise<void> {
   fastify.addHook("preHandler", authenticateTenant);
   registerModuleAccess(fastify, "hasanat");
-  // Queue runner for groups above the inline cap (idempotent per process).
-  registerHasanatBulkAwardRunner();
-  registerHasanatImportRunner();
 
   await fastify.register(
     async (sub) => {

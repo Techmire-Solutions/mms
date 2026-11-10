@@ -5,6 +5,8 @@ export const QUEUE_BULK_EXPORT = "bulk-export";
 export const QUEUE_MESSAGING_BROADCAST = "messaging-broadcast";
 /** Long-running session rollover jobs get their own queue so CSV exports/imports cannot starve. */
 export const QUEUE_SESSIONS_ROLLOVER = "sessions-rollover";
+/** Point-award pipelines get their own queue so a long award cannot starve every module's export. */
+export const QUEUE_HASANAT_AWARDS = "hasanat-awards";
 
 export interface QueueConcurrencyAndPriority {
   concurrency: number;
@@ -27,6 +29,10 @@ export const QUEUE_SETTINGS: Record<string, QueueConcurrencyAndPriority> = {
   [QUEUE_SESSIONS_ROLLOVER]: {
     concurrency: 1,
     priority: 1,
+  },
+  [QUEUE_HASANAT_AWARDS]: {
+    concurrency: 2,
+    priority: 2,
   },
 };
 

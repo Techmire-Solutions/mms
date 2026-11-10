@@ -1,4 +1,5 @@
 import { registerAttendanceJobRunners } from "./backgroundJobAttendanceRunners.js";
+import { registerHasanatJobRunners } from "./backgroundJobHasanatRunners.js";
 import { randomUUID } from "node:crypto";
 import {
   CONTACTS_MODULE_MANIFEST,
@@ -84,6 +85,9 @@ export function registerDefaultBackgroundJobRunners(): void {
   const studentsModuleId = STUDENTS_MODULE_MANIFEST.moduleId;
   const sessionsModuleId = SESSIONS_MODULE_MANIFEST.moduleId;
   registerAttendanceJobRunners();
+  // Hasanat award/import jobs are consumed by the worker process; register them here so the worker
+  // and the API share one registry (a route plugin only ever runs in the API).
+  registerHasanatJobRunners();
   registerSessionRolloverJobRunner();
   registerSessionImportJobRunner();
   registerSessionsBulkJobRunners();

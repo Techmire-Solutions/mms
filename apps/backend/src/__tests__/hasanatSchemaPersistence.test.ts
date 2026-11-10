@@ -389,4 +389,43 @@ describe("Hasanat schema & persistence invariants (0225–0232)", () => {
     expect(archive).toMatch(/entity\.soft_deleted/);
     expect(archive).toMatch(/entity\.restored/);
   });
+
+  it("registers the hasanat runners in the shared registry, not a route plugin", async () => {
+    const registry = await readFile(
+      join(process.cwd(), "src/services/backgroundJobRunnerService.ts"),
+      "utf-8",
+    );
+    expect(registry).toMatch(/registerHasanatJobRunners\(\)/);
+
+    for (const file of [
+      "src/hasanat/use-cases/hasanatBatchAwardJob.ts",
+      "src/hasanat/use-cases/hasanatImportJob.ts",
+    ]) {
+      const route = await readFile(join(process.cwd(), "src/routes/tenant/hasanat.ts"), "utf-8");
+      expect(route, `${file} must not be registered from the route plugin`).not.toMatch(
+        new RegExp(file.split("/").pop()?.replace(".ts", "") ?? "___"),
+      );
+    }
+  });
+
+  it("makes queue writes retry-safe", async () => {
+    const batchRepo = await readFile(
+      join(process.cwd(), "src/db/repositories/hasanatBatchRepository.ts"),
+      "utf-8",
+    );
+    expect(batchRepo).toMatch(/onConflictDoNothing/);
+
+    const tierRepo = await readFile(
+      join(process.cwd(), "src/db/repositories/hasanatTierRepository.ts"),
+      "utf-8",
+    );
+    expect(tierRepo).toMatch(/onConflictDoNothing/);
+
+    const importJob = await readFile(
+      join(process.cwd(), "src/hasanat/use-cases/hasanatImportJob.ts"),
+      "utf-8",
+    );
+    expect(importJob).toMatch(/findDistributionsByClientRequestIds/);
+    expect(importJob).toMatch(/throwIfBackgroundJobAborted/);
+  });
 });

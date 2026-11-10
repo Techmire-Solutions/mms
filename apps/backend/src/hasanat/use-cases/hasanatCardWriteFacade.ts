@@ -193,7 +193,9 @@ export function createHasanatCardWriteFacade(options: {
             quotaLimit: preferences.dailyAwardLimitPerInstructor,
             awardScope: preferences.awardScope,
             bypassAwardScope: actor.bypassAwardScope,
-            recipients,
+            // Count only: the worker resolves the recipients, so a 10k-student group cannot trip
+            // the 1 MB job-payload ceiling at enqueue time.
+            recipientCount: recipients.length,
           },
         );
         return {
