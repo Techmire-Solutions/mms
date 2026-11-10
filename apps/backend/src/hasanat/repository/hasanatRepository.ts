@@ -8,10 +8,11 @@ import type {
   HasanatCommandMetricsSnapshot,
   HasanatReportAggregates,
   HasanatReportComparisonQuery,
-  RedeemCardBody,
   WidgetQuery,
   WidgetAggregateResult,
 } from "@mms/shared";
+import type { CardPatch, NewCardFields } from "../../db/repositories/hasanatCardOps.js";
+import type { NewRedemptionFields } from "../../db/repositories/hasanatLedgerOps.js";
 
 /**
  * Sole storage gateway for the hasanat module (denoms, batches, distributions,
@@ -74,19 +75,49 @@ export interface HasanatRepository {
     query: HasanatListQuery,
   ): Promise<HasanatDistributionsListPageResult>;
 
-  // Redemptions
+  // Card write primitives (rules live in `hasanat/use-cases/*`)
+  lockDistributionForUpdate(tenant: string, id: string): Promise<Distribution | null>;
+  /** Plain insert of an already-validated card; `pointsSnapshot` is stamped by the use case. */
+  insertDistribution(tenant: string, fields: NewCardFields): Promise<Distribution>;
+  /** Compare-and-set on `version`; `null` means the caller's copy was stale. */
+  updateDistributionVersioned(
+    tenant: string,
+    id: string,
+    patch: CardPatch,
+    expectedVersion: number,
+  ): Promise<Distribution | null>;
+  setDistributionStatus(
+    tenant: string,
+    id: string,
+    status: Distribution["status"],
+  ): Promise<Distribution | null>;
+  /** Cards issued by one instructor on one calendar day (the quota input). */
+  countIssuedByUserOnDate(tenant: string, userId: string, issuedDate: string): Promise<number>;
+  /** Transaction-scoped advisory lock for the quota check-then-insert. */
+  lockInstructorQuota(tenant: string, userId: string, issuedDate: string): Promise<void>;
+  findDistributionByClientRequestId(
+    tenant: string,
+    clientRequestId: string,
+  ): Promise<Distribution | null>;
+  findBatchRemaining(tenant: string, batchId: string): Promise<number | null>;
+
+  // Redemptions (append-only; corrections are reversal rows)
   listRedemptionsByWorkspace(tenant: string): Promise<Redemption[]>;
   findRedemptionById(tenant: string, id: string): Promise<Redemption | null>;
   findRedemptionsByIds(tenant: string, ids: string[]): Promise<Redemption[]>;
-  saveRedemption(tenant: string, record: Redemption): Promise<void>;
-  bulkSaveRedemptions(tenant: string, records: Redemption[]): Promise<void>;
-  replaceRedemptionsForWorkspace(tenant: string, records: Redemption[]): Promise<void>;
-  /** Atomic redemption: locks the card, validates its value, writes the ledger row + status. */
-  redeemCard(
+  appendRedemption(tenant: string, fields: NewRedemptionFields): Promise<Redemption>;
+  findRedemptionByClientRequestId(
     tenant: string,
-    distributionId: string,
-    body: RedeemCardBody,
-  ): Promise<{ redemption: Redemption }>;
+    clientRequestId: string,
+  ): Promise<Redemption | null>;
+  findLiveRedemptionForCard(tenant: string, distributionId: string): Promise<Redemption | null>;
+  findLedgerRow(tenant: string, id: string): Promise<Redemption | null>;
+  hasReversal(tenant: string, redemptionId: string): Promise<boolean>;
+  listCardLedger(tenant: string, distributionId: string): Promise<Redemption[]>;
+  replaceRedemptionsForWorkspace(tenant: string, records: Redemption[]): Promise<void>;
+
+  // Preferences
+  getModulePreferences?(tenant: string): Promise<Record<string, unknown> | null>;
 
   // Aggregates
   aggregateHasanatCommandMetrics(tenant: string): Promise<HasanatCommandMetricsSnapshot>;

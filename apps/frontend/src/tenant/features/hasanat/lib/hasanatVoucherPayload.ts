@@ -19,8 +19,11 @@ export function buildHasanatVoucherPayload({
   denomination = null,
   institution,
 }: BuildHasanatVoucherPayloadOptions): HasanatPayload {
-  const pointsPerUnit = denomination?.points ?? 1;
-  const totalPoints = pointsPerUnit * distribution.quantity;
+  // Stamped at issue (0230); falling back to the deed keeps pre-migration payloads printable.
+  const totalPoints =
+    typeof distribution.pointsSnapshot === "number"
+      ? distribution.pointsSnapshot
+      : (denomination?.points ?? 0) * distribution.quantity;
 
   return {
     institution,

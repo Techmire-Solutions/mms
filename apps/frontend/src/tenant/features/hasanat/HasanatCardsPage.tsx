@@ -124,7 +124,7 @@ export default function HasanatCards() {
                       c.runHasanatSave(() => c.createDistribution.mutateAsync(distribution))
                     }
                     onUpdateDistribution={(distribution) =>
-                      c.runHasanatSave(() => c.updateDistribution.mutateAsync(distribution))
+                      c.runHasanatSave(() => c.handleUpdateDistribution(distribution))
                     }
                     onFilteredCountChange={c.setFilteredCount}
                     onDelete={c.handleDeleteDistribution}

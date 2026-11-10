@@ -1,13 +1,69 @@
-import { describe, expect, it, vi } from "vitest";
+import { beforeEach, describe, expect, it, vi } from "vitest";
+import { distributionCreateSchema, type Distribution, type Redemption } from "@mms/shared";
 import { createHasanatUseCases } from "../hasanat/use-cases/hasanatUseCases.js";
+import * as hasanatCardUseCases from "../hasanat/use-cases/hasanatCardUseCases.js";
+import * as hasanatIssuanceUseCases from "../hasanat/use-cases/hasanatIssuanceUseCases.js";
+import * as hasanatQueryUseCases from "../hasanat/use-cases/hasanatQueryUseCases.js";
+import * as hasanatRedemptionUseCases from "../hasanat/use-cases/hasanatRedemptionUseCases.js";
 import type { HasanatRepository } from "../hasanat/repository/hasanatRepository.js";
-import { runWithTenant } from "../lib/tenantContext.js";
+import { bindRequestUserId, runWithTenant } from "../lib/tenantContext.js";
+
+const prefsState = vi.hoisted(() => ({ dailyAwardLimitPerInstructor: 0 }));
+
+vi.mock("../lib/workspaceDay.js", () => ({
+  workspaceTodayIso: vi.fn(async () => "2026-11-10"),
+}));
+
+vi.mock("../db/repositories/hasanatModulePreferencesRepository.js", () => ({
+  getHasanatModulePreferences: vi.fn(async () => ({ ...prefsState })),
+}));
+
+vi.mock("../lib/livePush.js", () => ({ broadcastCollection: vi.fn(async () => undefined) }));
+
+const ACTIVE_CARD: Distribution = {
+  id: "hd1",
+  batchId: "batch1",
+  denominationId: "den1",
+  denominationName: "Gold",
+  recipientType: "student",
+  recipientStudentId: "stu1",
+  recipientName: "Fatima",
+  recipientClass: "Hifz A",
+  classId: null,
+  sessionId: null,
+  quantity: 1,
+  pointsSnapshot: 50,
+  version: 3,
+  clientRequestId: null,
+  expiresOn: null,
+  reason: "Excellent recitation",
+  issuedDate: "2026-11-10",
+  issuedByUserId: "u1",
+  issuedBy: "Ustadha",
+  status: "active",
+};
+
+const DENOM = {
+  id: "den1",
+  name: "Gold",
+  points: 50,
+  color: "amber",
+  description: "",
+  icon: "Star",
+  active: true,
+};
+
+/** Bind the actor and tenant for one call — `enterWith` must sit in the calling context. */
+function asActor<T>(tenant: string, fn: () => Promise<T>, userId = "u1"): Promise<T> {
+  bindRequestUserId(userId);
+  return runWithTenant(tenant, fn);
+}
 
 function createFakeRepo(): HasanatRepository {
   return {
-    listDenomsByWorkspace: vi.fn().mockResolvedValue([]),
-    findDenomById: vi.fn().mockResolvedValue(null),
-    findDenomsByIds: vi.fn().mockResolvedValue([]),
+    listDenomsByWorkspace: vi.fn().mockResolvedValue([DENOM]),
+    findDenomById: vi.fn().mockResolvedValue(DENOM),
+    findDenomsByIds: vi.fn().mockResolvedValue([DENOM]),
     saveDenom: vi.fn().mockResolvedValue(undefined),
     bulkSaveDenoms: vi.fn().mockResolvedValue(undefined),
     replaceDenomsForWorkspace: vi.fn().mockResolvedValue(undefined),
@@ -20,11 +76,13 @@ function createFakeRepo(): HasanatRepository {
     replaceBatchesForWorkspace: vi.fn().mockResolvedValue(undefined),
 
     listDistributionsByWorkspace: vi.fn().mockResolvedValue([]),
-    findDistributionById: vi.fn().mockResolvedValue(null),
+    findDistributionById: vi.fn().mockResolvedValue(ACTIVE_CARD),
     findDistributionsByIds: vi.fn().mockResolvedValue([]),
     saveDistribution: vi.fn().mockResolvedValue(undefined),
     bulkSaveDistributions: vi.fn().mockResolvedValue(undefined),
     replaceDistributionsForWorkspace: vi.fn().mockResolvedValue(undefined),
+    bulkSoftDeleteDistributions: vi.fn().mockResolvedValue({ succeeded: 1, failed: 0 }),
+    bulkRestoreDistributions: vi.fn().mockResolvedValue({ succeeded: 1, failed: 0 }),
     listDistributionsPage: vi.fn().mockResolvedValue({
       distributions: [],
       total: 0,
@@ -33,43 +91,92 @@ function createFakeRepo(): HasanatRepository {
       hasMore: false,
     }),
 
+    lockDistributionForUpdate: vi.fn().mockResolvedValue(ACTIVE_CARD),
+    insertDistribution: vi
+      .fn()
+      .mockImplementation(
+        async (
+          _tenant: string,
+          fields: Parameters<HasanatRepository["insertDistribution"]>[1],
+        ) => ({
+          ...ACTIVE_CARD,
+          ...fields,
+          status: "active",
+          version: 0,
+        }),
+      ),
+    updateDistributionVersioned: vi.fn().mockResolvedValue({ ...ACTIVE_CARD, version: 4 }),
+    setDistributionStatus: vi
+      .fn()
+      .mockImplementation(async (_tenant: string, _id: string, status: Distribution["status"]) => ({
+        ...ACTIVE_CARD,
+        status,
+      })),
+    countIssuedByUserOnDate: vi.fn().mockResolvedValue(0),
+    lockInstructorQuota: vi.fn().mockResolvedValue(undefined),
+    findDistributionByClientRequestId: vi.fn().mockResolvedValue(null),
+    findBatchRemaining: vi.fn().mockResolvedValue(10),
+
     listRedemptionsByWorkspace: vi.fn().mockResolvedValue([]),
     findRedemptionById: vi.fn().mockResolvedValue(null),
     findRedemptionsByIds: vi.fn().mockResolvedValue([]),
-    saveRedemption: vi.fn().mockResolvedValue(undefined),
-    bulkSaveRedemptions: vi.fn().mockResolvedValue(undefined),
+    appendRedemption: vi
+      .fn()
+      .mockImplementation(
+        async (_tenant: string, fields: Parameters<HasanatRepository["appendRedemption"]>[1]) => ({
+          id: fields.id,
+          distributionId: fields.distributionId,
+          studentName: fields.studentName,
+          reward: fields.reward,
+          pointsUsed: fields.pointsUsed,
+          kind: fields.kind,
+          date: fields.date,
+        }),
+      ),
+    findRedemptionByClientRequestId: vi.fn().mockResolvedValue(null),
+    findLiveRedemptionForCard: vi.fn().mockResolvedValue(null),
+    findLedgerRow: vi.fn().mockResolvedValue(null),
+    hasReversal: vi.fn().mockResolvedValue(false),
+    listCardLedger: vi.fn().mockResolvedValue([]),
     replaceRedemptionsForWorkspace: vi.fn().mockResolvedValue(undefined),
-    redeemCard: vi.fn().mockResolvedValue({
-      redemption: {
-        id: "red1",
-        distributionId: "hd1",
-        studentName: "",
-        reward: "Book",
-        pointsUsed: 50,
-        date: "2026-01-01",
-      },
-    }),
 
     aggregateHasanatCommandMetrics: vi.fn().mockResolvedValue({
       totalStock: 10,
       available: 6,
-      distributed: 3,
+      distributed: 4,
       redeemed: 1,
-      active: 2,
+      active: 3,
       returned: 0,
-      denominations: 4,
-      totalPointsDistributed: 0,
-      pointsThisWeek: 0,
-      pointsLastWeek: 0,
+      denominations: 1,
+      totalPointsDistributed: 200,
+      pointsThisWeek: 50,
+      pointsLastWeek: 50,
     }),
     aggregateHasanatWidgetQueries: vi.fn().mockResolvedValue({}),
     loadHasanatReportAggregates: vi.fn().mockResolvedValue({
       comparison: { sessions: [], monthly: { a: [], b: [] } },
     }),
+    getModulePreferences: vi.fn(async () => ({ ...prefsState })),
   };
 }
 
+const ISSUE_BODY = distributionCreateSchema.parse({
+  batchId: "batch1",
+  denominationId: "den1",
+  quantity: 1,
+  recipientType: "student",
+  recipientStudentId: "stu1",
+  recipientName: "Fatima",
+  issuedDate: "2026-11-10",
+  reason: "Excellent recitation",
+});
+
 describe("hasanat use-cases (DI with fake repository)", () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+    prefsState.dailyAwardLimitPerInstructor = 0;
+  });
+
   it("loadDistributionsPage delegates to the injected repository with the active tenant", async () => {
     const repo = createFakeRepo();
     const useCases = createHasanatUseCases(repo);
@@ -80,33 +187,6 @@ describe("hasanat use-cases (DI with fake repository)", () => {
 
     expect(result).toEqual({ distributions: [], total: 0, page: 1, limit: 15, hasMore: false });
     expect(repo.listDistributionsPage).toHaveBeenCalledWith("demo", { page: 2, limit: 15 });
-  });
-
-  it("redeemCard delegates to the atomic repository path with the active tenant", async () => {
-    const repo = createFakeRepo();
-    const useCases = createHasanatUseCases(repo);
-    const body = {
-      reward: "Islamic Storybook",
-      pointsUsed: 50,
-      date: "2026-11-10",
-      approvedByUserId: "u-1",
-      approvedBy: "Ustadha Maryam",
-    };
-
-    const result = await runWithTenant("demo", () => useCases.redeemCard("hd-1", body));
-
-    expect(result.redemption.distributionId).toBe("hd1");
-    expect(repo.redeemCard).toHaveBeenCalledWith("demo", "hd-1", body);
-  });
-
-  it("redeemCard fails closed without a request tenant", async () => {
-    const repo = createFakeRepo();
-    const useCases = createHasanatUseCases(repo);
-
-    await expect(
-      useCases.redeemCard("hd-1", { reward: "Book", pointsUsed: 50, date: "2026-11-10" }),
-    ).rejects.toThrow(/Tenant context is required/i);
-    expect(repo.redeemCard).not.toHaveBeenCalled();
   });
 
   it("loadHasanatCommandMetrics delegates to the injected repository", async () => {
@@ -122,157 +202,207 @@ describe("hasanat use-cases (DI with fake repository)", () => {
   it("upsertDenoms delegates to the injected repository", async () => {
     const repo = createFakeRepo();
     const useCases = createHasanatUseCases(repo);
-    const denom = {
-      id: "d-1",
-      name: "Star",
-      points: 5,
-      color: "emerald",
-      description: "",
-      icon: "Star",
-      active: true,
-    };
 
-    const result = await runWithTenant("demo", () => useCases.upsertDenoms([denom]));
+    const result = await runWithTenant("demo", () => useCases.upsertDenoms([DENOM]));
 
-    expect(result).toEqual([denom]);
-    expect(repo.bulkSaveDenoms).toHaveBeenCalledWith("demo", [denom]);
+    expect(result).toEqual([DENOM]);
+    expect(repo.bulkSaveDenoms).toHaveBeenCalledWith("demo", [DENOM]);
   });
 
-  it("loadDenomById and loadDenomsByIds delegate to repository", async () => {
+  it("writes fail closed without a tenant instead of silently succeeding", async () => {
+    bindRequestUserId(null);
     const repo = createFakeRepo();
-    const fakeDenom = {
-      id: "d-1",
-      name: "Star",
-      points: 5,
-      color: "emerald",
-      description: "",
-      icon: "Star",
-      active: true,
-    };
-    (repo.findDenomById as any).mockResolvedValue(fakeDenom);
-    (repo.findDenomsByIds as any).mockResolvedValue([fakeDenom]);
     const useCases = createHasanatUseCases(repo);
 
-    const single = await runWithTenant("demo", () => useCases.loadDenomById("d-1"));
-    const multiple = await runWithTenant("demo", () => useCases.loadDenomsByIds(["d-1", "  "]));
-
-    expect(single).toEqual(fakeDenom);
-    expect(multiple).toEqual([fakeDenom]);
-    expect(repo.findDenomById).toHaveBeenCalledWith("demo", "d-1");
-    expect(repo.findDenomsByIds).toHaveBeenCalledWith("demo", ["d-1"]);
+    await expect(useCases.saveDenom(DENOM)).rejects.toThrow(/tenant/i);
+    expect(repo.saveDenom).not.toHaveBeenCalled();
   });
 
-  it("loadBatchById and loadBatchesByIds delegate to repository", async () => {
-    const repo = createFakeRepo();
-    const fakeBatch = {
-      id: "b-1",
-      denominationId: "d-1",
-      denominationName: "Star",
-      quantity: 100,
-      remaining: 80,
-      addedDate: "2026-09-01",
-      note: "",
-    };
-    (repo.findBatchById as any).mockResolvedValue(fakeBatch);
-    (repo.findBatchesByIds as any).mockResolvedValue([fakeBatch]);
-    const useCases = createHasanatUseCases(repo);
+  describe("issuance", () => {
+    it("stamps the immutable value from the deed and the authenticated issuer", async () => {
+      const repo = createFakeRepo();
+      const useCases = createHasanatUseCases(repo);
 
-    const single = await runWithTenant("demo", () => useCases.loadBatchById("b-1"));
-    const multiple = await runWithTenant("demo", () => useCases.loadBatchesByIds(["b-1", ""]));
+      await asActor("demo", () => useCases.createDistribution(ISSUE_BODY));
 
-    expect(single).toEqual(fakeBatch);
-    expect(multiple).toEqual([fakeBatch]);
-    expect(repo.findBatchById).toHaveBeenCalledWith("demo", "b-1");
-    expect(repo.findBatchesByIds).toHaveBeenCalledWith("demo", ["b-1"]);
+      expect(repo.insertDistribution).toHaveBeenCalledWith(
+        "demo",
+        expect.objectContaining({
+          pointsSnapshot: 50,
+          issuedByUserId: "u1",
+          quantity: 1,
+        }),
+      );
+    });
+
+    it("rejects an inactive denomination before writing", async () => {
+      const repo = createFakeRepo();
+      (repo.findDenomById as ReturnType<typeof vi.fn>).mockResolvedValue({
+        ...DENOM,
+        active: false,
+      });
+      const useCases = createHasanatUseCases(repo);
+
+      await expect(asActor("demo", () => useCases.createDistribution(ISSUE_BODY))).rejects.toThrow(
+        /inactive/i,
+      );
+      expect(repo.insertDistribution).not.toHaveBeenCalled();
+    });
+
+    it("enforces the instructor daily quota", async () => {
+      const repo = createFakeRepo();
+      prefsState.dailyAwardLimitPerInstructor = 5;
+      (repo.countIssuedByUserOnDate as ReturnType<typeof vi.fn>).mockResolvedValue(5);
+      const useCases = createHasanatUseCases(repo);
+
+      await expect(asActor("demo", () => useCases.createDistribution(ISSUE_BODY))).rejects.toThrow(
+        /Daily awarding limit/i,
+      );
+    });
+
+    it("replays an idempotent issuance instead of creating a duplicate", async () => {
+      const repo = createFakeRepo();
+      const replay = { ...ACTIVE_CARD, clientRequestId: "req-12345678" };
+      (repo.findDistributionByClientRequestId as ReturnType<typeof vi.fn>).mockResolvedValue(
+        replay,
+      );
+      const useCases = createHasanatUseCases(repo);
+
+      const result = await asActor("demo", () =>
+        useCases.createDistribution({ ...ISSUE_BODY, clientRequestId: "req-12345678" }),
+      );
+
+      expect(result).toEqual(replay);
+      expect(repo.insertDistribution).not.toHaveBeenCalled();
+    });
   });
 
-  it("loadRedemptionById and loadRedemptionsByIds delegate to repository", async () => {
-    const repo = createFakeRepo();
-    const fakeRedemption = {
-      id: "r-1",
-      distributionId: "dist-1",
-      studentName: "Alice",
-      reward: "Book",
+  describe("redemption", () => {
+    const redeemBody = {
+      reward: "Storybook",
       pointsUsed: 50,
-      date: "2026-09-01",
+      date: "2026-11-10",
     };
-    (repo.findRedemptionById as any).mockResolvedValue(fakeRedemption);
-    (repo.findRedemptionsByIds as any).mockResolvedValue([fakeRedemption]);
-    const useCases = createHasanatUseCases(repo);
 
-    const single = await runWithTenant("demo", () => useCases.loadRedemptionById("r-1"));
-    const multiple = await runWithTenant("demo", () => useCases.loadRedemptionsByIds(["r-1"]));
+    it("appends the ledger row and closes the card", async () => {
+      const repo = createFakeRepo();
+      const useCases = createHasanatUseCases(repo);
 
-    expect(single).toEqual(fakeRedemption);
-    expect(multiple).toEqual([fakeRedemption]);
-    expect(repo.findRedemptionById).toHaveBeenCalledWith("demo", "r-1");
-    expect(repo.findRedemptionsByIds).toHaveBeenCalledWith("demo", ["r-1"]);
+      const result = await asActor("demo", () => useCases.redeemCard("hd1", redeemBody));
+
+      expect(result.redemption.pointsUsed).toBe(50);
+      expect(repo.appendRedemption).toHaveBeenCalledWith(
+        "demo",
+        expect.objectContaining({ kind: "redeem", reversalOfId: null, pointsUsed: 50 }),
+      );
+      expect(repo.setDistributionStatus).toHaveBeenCalledWith("demo", "hd1", "redeemed");
+    });
+
+    it("rejects a partial redemption instead of forfeiting the remainder", async () => {
+      const repo = createFakeRepo();
+      const useCases = createHasanatUseCases(repo);
+
+      await expect(
+        asActor("demo", () => useCases.redeemCard("hd1", { ...redeemBody, pointsUsed: 20 })),
+      ).rejects.toThrow(/in full|partial/i);
+      expect(repo.appendRedemption).not.toHaveBeenCalled();
+    });
+
+    it("rejects redemption of a card that is no longer active", async () => {
+      const repo = createFakeRepo();
+      (repo.lockDistributionForUpdate as ReturnType<typeof vi.fn>).mockResolvedValue({
+        ...ACTIVE_CARD,
+        status: "returned",
+      });
+      const useCases = createHasanatUseCases(repo);
+
+      await expect(asActor("demo", () => useCases.redeemCard("hd1", redeemBody))).rejects.toThrow(
+        /returned/i,
+      );
+    });
+
+    it("reverses by appending a reversal row and reopening the card", async () => {
+      const repo = createFakeRepo();
+      (repo.findLedgerRow as ReturnType<typeof vi.fn>).mockResolvedValue({
+        id: "red1",
+        distributionId: "hd1",
+        studentName: "Fatima",
+        reward: "Storybook",
+        pointsUsed: 50,
+        kind: "redeem",
+        date: "2026-11-10",
+      } satisfies Redemption);
+      (repo.lockDistributionForUpdate as ReturnType<typeof vi.fn>).mockResolvedValue({
+        ...ACTIVE_CARD,
+        status: "redeemed",
+      });
+      const useCases = createHasanatUseCases(repo);
+
+      const result = await asActor("demo", () =>
+        useCases.voidRedemption("red1", { reason: "Issued in error" }),
+      );
+
+      expect(result.redemption.kind).toBe("reversal");
+      expect(repo.appendRedemption).toHaveBeenCalledWith(
+        "demo",
+        expect.objectContaining({ kind: "reversal", reversalOfId: "red1", pointsUsed: 50 }),
+      );
+      expect(repo.setDistributionStatus).toHaveBeenCalledWith("demo", "hd1", "active");
+    });
   });
 
-  it("loadDistributionsByIds filters soft-deleted items by default", async () => {
-    const repo = createFakeRepo();
-    const activeDist = {
-      id: "dist-1",
-      batchId: "b-1",
-      denominationId: "d-1",
-      denominationName: "Star",
-      recipientType: "student" as const,
-      recipientName: "Alice",
-      recipientClass: "1A",
-      quantity: 1,
-      reason: "Good deed",
-      issuedDate: "2026-09-01",
-      status: "active" as const,
-    };
-    const deletedDist = { ...activeDist, id: "dist-2", deletedAt: new Date().toISOString() };
-    (repo.findDistributionsByIds as any).mockImplementation(
-      async (_t: string, _ids: string[], opts?: any) => {
-        return opts?.includeDeleted || opts?.deleted === "deleted" ? [deletedDist] : [activeDist];
-      },
-    );
-    const useCases = createHasanatUseCases(repo);
+  describe("status lifecycle", () => {
+    it("allows active -> returned", async () => {
+      const repo = createFakeRepo();
+      const useCases = createHasanatUseCases(repo);
 
-    const activeOnly = await runWithTenant("demo", () =>
-      useCases.loadDistributionsByIds(["dist-1", "dist-2"]),
-    );
-    const archivedOnly = await runWithTenant("demo", () =>
-      useCases.loadDistributionsByIds(["dist-1", "dist-2"], true),
-    );
+      await asActor("demo", () =>
+        useCases.changeDistributionStatus("hd1", { status: "returned", expectedVersion: 3 }),
+      );
 
-    expect(repo.findDistributionsByIds).toHaveBeenCalledWith("demo", ["dist-1", "dist-2"], {
-      includeDeleted: false,
+      expect(repo.setDistributionStatus).toHaveBeenCalledWith("demo", "hd1", "returned");
     });
-    expect(activeOnly).toHaveLength(1);
-    expect(activeOnly[0].id).toBe("dist-1");
-    expect(repo.findDistributionsByIds).toHaveBeenCalledWith("demo", ["dist-1", "dist-2"], {
-      includeDeleted: true,
+
+    it("rejects redeemed -> active", async () => {
+      const repo = createFakeRepo();
+      (repo.lockDistributionForUpdate as ReturnType<typeof vi.fn>).mockResolvedValue({
+        ...ACTIVE_CARD,
+        status: "redeemed",
+      });
+      const useCases = createHasanatUseCases(repo);
+
+      await expect(
+        asActor("demo", () =>
+          useCases.changeDistributionStatus("hd1", { status: "active", expectedVersion: 3 }),
+        ),
+      ).rejects.toThrow(/cannot become/i);
+      expect(repo.setDistributionStatus).not.toHaveBeenCalled();
     });
-    expect(archivedOnly).toHaveLength(1);
-    expect(archivedOnly[0].id).toBe("dist-2");
+
+    it("rejects a stale edit", async () => {
+      const repo = createFakeRepo();
+      const useCases = createHasanatUseCases(repo);
+
+      await expect(
+        asActor("demo", () =>
+          useCases.updateDistributionById("hd1", {
+            reason: "typo",
+            expectedVersion: 99,
+          }),
+        ),
+      ).rejects.toThrow(/changed since/i);
+      expect(repo.updateDistributionVersioned).not.toHaveBeenCalled();
+    });
   });
 
-  it("returns empty defaults when no tenant context is bound", async () => {
-    const repo = createFakeRepo();
-    const useCases = createHasanatUseCases(repo);
-
-    const page = await useCases.loadDistributionsPage({ page: 1, limit: 15 });
-    const metrics = await useCases.loadHasanatCommandMetrics();
-    const singleBatch = await useCases.loadBatchById("b-1");
-    const batchList = await useCases.loadBatchesByIds(["b-1"]);
-    const singleDenom = await useCases.loadDenomById("d-1");
-    const denomList = await useCases.loadDenomsByIds(["d-1"]);
-    const singleRedemption = await useCases.loadRedemptionById("r-1");
-    const redemptionList = await useCases.loadRedemptionsByIds(["r-1"]);
-
-    expect(page).toEqual({ distributions: [], total: 0, page: 1, limit: 15, hasMore: false });
-    expect(metrics.totalStock).toBe(0);
-    expect(singleBatch).toBeNull();
-    expect(batchList).toEqual([]);
-    expect(singleDenom).toBeNull();
-    expect(denomList).toEqual([]);
-    expect(singleRedemption).toBeNull();
-    expect(redemptionList).toEqual([]);
-    expect(repo.listDistributionsPage).not.toHaveBeenCalled();
-    expect(repo.aggregateHasanatCommandMetrics).not.toHaveBeenCalled();
+  describe("decomposed use-case exports", () => {
+    it("exports all specialized use case handlers", () => {
+      expect(typeof hasanatCardUseCases.changeHasanatCardStatus).toBe("function");
+      expect(typeof hasanatCardUseCases.updateHasanatCard).toBe("function");
+      expect(typeof hasanatIssuanceUseCases.issueHasanatCard).toBe("function");
+      expect(typeof hasanatQueryUseCases.createHasanatQueryUseCases).toBe("function");
+      expect(typeof hasanatRedemptionUseCases.redeemHasanatCard).toBe("function");
+      expect(typeof hasanatRedemptionUseCases.voidHasanatRedemption).toBe("function");
+    });
   });
 });

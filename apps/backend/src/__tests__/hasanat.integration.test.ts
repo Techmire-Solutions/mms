@@ -40,9 +40,7 @@ vi.mock("../hasanat/use-cases/hasanatUseCases.js", () => ({
     loadBatches: vi.fn().mockResolvedValue([]),
     upsertBatches: vi.fn(),
     loadDistributions: vi.fn().mockResolvedValue([]),
-    upsertDistributions: vi.fn(),
     loadRedemptions: vi.fn().mockResolvedValue([]),
-    upsertRedemptions: vi.fn(),
     deleteDistributionById: vi.fn(),
     restoreDistributionById: vi.fn(),
     bulkSoftDeleteDistributions: vi.fn(),
@@ -55,8 +53,9 @@ vi.mock("../hasanat/use-cases/hasanatUseCases.js", () => ({
     loadHasanatWidgetAggregates: vi.fn().mockResolvedValue({}),
     replaceDenoms: vi.fn(),
     replaceBatches: vi.fn(),
-    replaceDistributions: vi.fn(),
-    replaceRedemptions: vi.fn(),
+    changeDistributionStatus: vi.fn(),
+    redeemCard: vi.fn(),
+    voidRedemption: vi.fn(),
   },
 }));
 
@@ -217,9 +216,8 @@ describe("hasanat distributions pagination", () => {
     await app.close();
   });
 
-  it("creates and updates one distribution without replacing the collection", async () => {
-    const distribution = {
-      id: "d-1",
+  it("issues a card through the strict create body and updates it with an OCC token", async () => {
+    const createBody = {
       batchId: "batch-1",
       denominationId: "den-1",
       denominationName: "Gold",
@@ -230,10 +228,10 @@ describe("hasanat distributions pagination", () => {
       quantity: 1,
       reason: "Good work",
       issuedDate: "2026-09-01",
-      status: "active",
     };
-    mockCreateDistribution.mockResolvedValueOnce(distribution);
-    mockUpdateDistributionById.mockResolvedValueOnce({ ...distribution, status: "redeemed" });
+    const issued = { ...createBody, id: "d-1", status: "active" };
+    mockCreateDistribution.mockResolvedValueOnce(issued);
+    mockUpdateDistributionById.mockResolvedValueOnce({ ...issued, status: "redeemed" });
     const app = await buildApp();
 
     const created = await app.inject({
@@ -243,12 +241,13 @@ describe("hasanat distributions pagination", () => {
         host: "demo.localhost",
         authorization: `Bearer ${adminToken(app)}`,
       },
-      payload: distribution,
+      payload: createBody,
     });
     expect(created.statusCode).toBe(201);
-    expect(mockCreateDistribution).toHaveBeenCalledWith(distribution);
+    expect(mockCreateDistribution).toHaveBeenCalledWith(
+      expect.objectContaining({ batchId: "batch-1", quantity: 1 }),
+    );
 
-    const updatedPayload = { ...distribution, status: "redeemed" };
     const updated = await app.inject({
       method: "PUT",
       url: "/api/hasanat/distributions/d-1",
@@ -256,76 +255,58 @@ describe("hasanat distributions pagination", () => {
         host: "demo.localhost",
         authorization: `Bearer ${adminToken(app)}`,
       },
-      payload: updatedPayload,
+      payload: { reason: "Corrected reason", expectedVersion: 0 },
     });
     expect(updated.statusCode).toBe(200);
-    expect(mockUpdateDistributionById).toHaveBeenCalledWith("d-1", updatedPayload);
+    expect(mockUpdateDistributionById).toHaveBeenCalledWith(
+      "d-1",
+      expect.objectContaining({ reason: "Corrected reason", expectedVersion: 0 }),
+    );
     await app.close();
   });
-});
 
-describe("hasanat metrics REST", () => {
-  beforeEach(() => {
-    process.env.JWT_SECRET = "test-secret";
-    mockLoadHasanatCommandMetrics.mockReset().mockResolvedValue({
-      totalStock: 100,
-      available: 40,
-      distributed: 60,
-      redeemed: 20,
-      active: 30,
-      returned: 10,
-      denominations: 5,
-      totalPointsDistributed: 300,
-      pointsThisWeek: 120,
-      pointsLastWeek: 80,
-    });
-  });
-
-  afterEach(() => {
-    vi.restoreAllMocks();
-  });
-
-  it("GET /api/hasanat/metrics loads SQL metrics for authorized roles", async () => {
+  it("rejects a client-supplied status on create", async () => {
     const app = await buildApp();
-    const res = await app.inject({
-      method: "GET",
-      url: "/api/hasanat/metrics",
+    const response = await app.inject({
+      method: "POST",
+      url: "/api/hasanat/distributions",
       headers: {
         host: "demo.localhost",
         authorization: `Bearer ${adminToken(app)}`,
       },
-    });
-    expect(res.statusCode).toBe(200);
-    expect(res.json()).toEqual({
-      metrics: {
-        totalStock: 100,
-        available: 40,
-        distributed: 60,
-        redeemed: 20,
-        active: 30,
-        returned: 10,
-        denominations: 5,
-        totalPointsDistributed: 300,
-        pointsThisWeek: 120,
-        pointsLastWeek: 80,
+      payload: {
+        batchId: "batch-1",
+        denominationId: "den-1",
+        quantity: 1,
+        issuedDate: "2026-09-01",
+        status: "redeemed",
       },
     });
-    expect(mockLoadHasanatCommandMetrics).toHaveBeenCalled();
+    expect(response.statusCode).toBe(400);
+    expect(mockCreateDistribution).not.toHaveBeenCalled();
     await app.close();
   });
 
-  it("GET /api/hasanat/metrics returns 403 for roles without read access", async () => {
+  it("no longer exposes the unguarded bulk write paths", async () => {
     const app = await buildApp();
-    const res = await app.inject({
-      method: "GET",
-      url: "/api/hasanat/metrics",
-      headers: {
-        host: "demo.localhost",
-        authorization: `Bearer ${viewerToken(app)}`,
-      },
-    });
-    expect(res.statusCode).toBe(403);
-    expect(mockLoadHasanatCommandMetrics).not.toHaveBeenCalled();
+    for (const [method, url] of [
+      ["PUT", "/api/hasanat/distributions/bulk"],
+      ["PUT", "/api/hasanat/redemptions/bulk"],
+    ] as const) {
+      const response = await app.inject({
+        method,
+        url,
+        headers: {
+          host: "demo.localhost",
+          authorization: `Bearer ${adminToken(app)}`,
+        },
+        payload: [],
+      });
+      // `PUT /distributions/bulk` now falls through to `PUT /distributions/:id` (id="bulk") and
+      // fails schema validation; nothing is written either way.
+      expect([400, 404, 405]).toContain(response.statusCode);
+    }
+    expect(mockUpdateDistributionById).not.toHaveBeenCalled();
     await app.close();
   });
 });

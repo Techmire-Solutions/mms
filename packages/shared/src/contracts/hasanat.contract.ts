@@ -16,10 +16,13 @@ import {
   distributionRecordSchema,
   redemptionRecordSchema,
   redeemCardBodySchema,
+  reverseRedemptionBodySchema,
+  distributionCreateSchema,
+  distributionUpdateSchema,
+  distributionStatusSchema,
   denomListSchema,
   batchListSchema,
   distributionListSchema,
-  redemptionListSchema,
 } from "../hasanat/hasanatModuleManifest.js";
 import { hasanatReportAggregatesSchema } from "../hasanat/hasanatReportAggregates.js";
 import { reportComparisonQuerySchema } from "../reports/reportComparisonQuery.js";
@@ -49,6 +52,7 @@ export const hasanatPreferencesResponseSchema = z.object({
   pointsPerUnit: z.number(),
   autoApprovePayouts: z.boolean(),
   defaultViewLayout: z.string(),
+  dailyAwardLimitPerInstructor: z.number(),
 });
 
 const hasanatWidgetAggregateResultSchema = z.object({
@@ -68,7 +72,7 @@ export const hasanatContract = c.router({
   createDistribution: {
     method: "POST",
     path: "/api/hasanat/distributions",
-    body: distributionRecordSchema,
+    body: distributionCreateSchema,
     responses: {
       201: z.object({ distribution: distributionRecordSchema }),
       403: ok,
@@ -79,7 +83,7 @@ export const hasanatContract = c.router({
   updateDistribution: {
     method: "PUT",
     path: "/api/hasanat/distributions/:id",
-    body: distributionRecordSchema,
+    body: distributionUpdateSchema,
     responses: {
       200: z.object({ distribution: distributionRecordSchema }),
       403: ok,
@@ -100,6 +104,32 @@ export const hasanatContract = c.router({
       500: ok,
     },
     summary: "Redeem a hasanat card (atomic: ledger row + card status)",
+  },
+  changeDistributionStatus: {
+    method: "POST",
+    path: "/api/hasanat/distributions/:id/status",
+    body: distributionStatusSchema,
+    responses: {
+      200: z.object({ distribution: distributionRecordSchema }),
+      403: ok,
+      404: ok,
+      409: ok,
+      500: ok,
+    },
+    summary: "Move a card through the legal status state machine",
+  },
+  reverseRedemption: {
+    method: "POST",
+    path: "/api/hasanat/redemptions/:id/reverse",
+    body: reverseRedemptionBodySchema,
+    responses: {
+      200: z.object({ redemption: redemptionRecordSchema }),
+      403: ok,
+      404: ok,
+      409: ok,
+      500: ok,
+    },
+    summary: "Reverse a redemption by appending a ledger reversal row",
   },
   bulkDeleteDistributions: {
     method: "POST",
@@ -167,17 +197,6 @@ export const hasanatContract = c.router({
       500: ok,
     },
     summary: "Replace distributions",
-  },
-  replaceRedemptions: {
-    method: "PUT",
-    path: "/api/hasanat/redemptions/bulk",
-    body: redemptionListSchema,
-    responses: {
-      200: z.object({ redemptions: z.array(redemptionRecordSchema) }),
-      403: ok,
-      500: ok,
-    },
-    summary: "Replace redemptions",
   },
   deleteDistribution: {
     method: "DELETE",

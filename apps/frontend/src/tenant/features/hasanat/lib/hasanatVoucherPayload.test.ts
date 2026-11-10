@@ -41,12 +41,13 @@ describe("buildHasanatVoucherPayload", () => {
     });
   });
 
-  it("falls back to the quantity when the denomination is unknown", () => {
+  it("does not invent points when neither the snapshot nor the deed is available", () => {
     const payload = buildHasanatVoucherPayload({
       distribution,
       institution: "Madrasa",
     });
 
-    expect(payload.totalPoints).toBe("2 Hasanat");
+    // A printed voucher must never show a value the backend did not compute.
+    expect(payload.totalPoints).toBe("0 Hasanat");
   });
 });

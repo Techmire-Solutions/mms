@@ -3,7 +3,7 @@ import {
   type Enrollment,
   formatMoney,
   formatNumber,
-  getDenominationPoints,
+  resolveDistributionPoints,
   matchesWidgetFilter,
   type QuestionBankQuestion,
   type QuestionBankResult,
@@ -52,12 +52,16 @@ export function computeCustomCard(
     let count = 0;
     filteredRows.forEach((filteredRow) => {
       if (card.collection === "hasanat_distributions" && targetMetricField === "points") {
-        const points = getDenominationPoints(
-          typeof filteredRow.denominationId === "string" ? filteredRow.denominationId : null,
-          typeof filteredRow.denominationName === "string" ? filteredRow.denominationName : null,
+        sum += resolveDistributionPoints(
+          {
+            pointsSnapshot:
+              typeof filteredRow.pointsSnapshot === "number" ? filteredRow.pointsSnapshot : null,
+            denominationId:
+              typeof filteredRow.denominationId === "string" ? filteredRow.denominationId : null,
+            quantity: typeof filteredRow.quantity === "number" ? filteredRow.quantity : 1,
+          },
           collections.hasanat_denoms,
         );
-        sum += Number(filteredRow.quantity || 1) * points;
         count++;
       } else {
         const numericFieldValue = Number(filteredRow[targetMetricField]);

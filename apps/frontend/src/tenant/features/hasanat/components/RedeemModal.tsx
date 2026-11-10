@@ -30,7 +30,8 @@ export function RedeemModal({ open, distributions, onClose, onSave }: RedeemModa
   const [data, setData] = useState<Partial<Redemption>>({
     distributionId: activeDistributions[0]?.id || "",
     reward: "",
-    pointsUsed: 0,
+    // Seeded from the card's stamped value; the field stays read-only.
+    pointsUsed: activeDistributions[0]?.pointsSnapshot ?? 0,
     date: todayISO(),
     approvedByUserId: "",
   });
@@ -61,7 +62,8 @@ export function RedeemModal({ open, distributions, onClose, onSave }: RedeemModa
       setData({
         distributionId: active[0]?.id || "",
         reward: "",
-        pointsUsed: 0,
+        // The card is burned at its stamped value — prefill it so the client cannot send a partial.
+        pointsUsed: active[0]?.pointsSnapshot ?? 0,
         date: todayISO(),
         approvedByUserId: "",
       });
@@ -142,7 +144,11 @@ export function RedeemModal({ open, distributions, onClose, onSave }: RedeemModa
             id="dist-sel"
             name="distributionId"
             value={data.distributionId || ""}
-            onChange={(value) => updateField("distributionId", value)}
+            onChange={(value) => {
+              const card = activeDistributions.find((row) => row.id === value);
+              updateField("distributionId", value);
+              updateField("pointsUsed", (card?.pointsSnapshot ?? 0) as Redemption["pointsUsed"]);
+            }}
             options={activeDistributions.map((distribution) => ({
               value: distribution.id,
               label: `${distribution.recipientName} — ${distribution.denominationName} × ${distribution.quantity}`,
@@ -182,13 +188,8 @@ export function RedeemModal({ open, distributions, onClose, onSave }: RedeemModa
               inputMode="numeric"
               className={FORM_INPUT}
               value={data.pointsUsed || ""}
-              onChange={(event) => {
-                const sanitized = event.target.value.replace(/[^0-9]/g, "");
-                updateField(
-                  "pointsUsed",
-                  (sanitized ? Number(sanitized) : 0) as Redemption["pointsUsed"],
-                );
-              }}
+              readOnly
+              aria-readonly="true"
               placeholder="0"
             />
           </Field>

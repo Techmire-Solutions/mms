@@ -8,13 +8,11 @@ import {
   useHasanatDistributions,
   useHasanatDistributionsCollection,
   useHasanatDenoms,
-  useHasanatDenomsCollection,
   useHasanatReportAggregates,
 } from "@/tenant/hooks/collections/hasanat";
 import { useTranslation } from "@/hooks/useTranslation";
 import { Skeleton } from "@/components/ui/skeleton";
 import { ErrorState } from "@/components/app/ErrorState";
-import { getDenominationPoints } from "@mms/shared";
 import { HasanatDistributionTable } from "@/components/reports/HasanatDistributionTable";
 
 const HasanatReportCharts = lazy(() =>
@@ -50,20 +48,14 @@ const HasanatReport = function HasanatReport({ filters }: HasanatReportProps): R
   const aggregatesQuery = useHasanatReportAggregates();
 
   const distributions = useHasanatDistributionsCollection();
-  const denominations = useHasanatDenomsCollection();
 
   const { distributionData, hasanatByFaculty } = (() => {
     const studentMap: Record<string, HasanatReportItem> = {};
     const facultyMap: Record<string, HasanatByFacultyItem> = {};
 
     distributions.forEach((distributionRecord) => {
-      const points = getDenominationPoints(
-        distributionRecord.denominationId,
-        distributionRecord.denominationName,
-        denominations,
-      );
-
-      const totalPoints = points * distributionRecord.quantity;
+      // The card's stamped value is authoritative; the live deed is never re-read.
+      const totalPoints = distributionRecord.pointsSnapshot ?? 0;
       const isRedeemed = distributionRecord.status === "redeemed";
 
       if (distributionRecord.recipientType === "student") {

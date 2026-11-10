@@ -4,11 +4,52 @@ import type {
   Denomination,
   StockBatch,
   Distribution,
-  Redemption,
+  DistributionCreate,
+  DistributionStatusChange,
+  DistributionUpdate,
   RedeemCardBody,
+  ReverseRedemptionBody,
 } from "@mms/shared";
 import { tsrClient } from "@/lib/api";
 import { invalidateHasanatQueries } from "./invalidateHasanatQueries";
+
+/** Card fields the write API owns; sending them would be rejected by the strict schemas. */
+function toCreateBody(distribution: Distribution): DistributionCreate {
+  return {
+    batchId: distribution.batchId,
+    denominationId: distribution.denominationId,
+    denominationName: distribution.denominationName ?? "",
+    recipientType: distribution.recipientType,
+    recipientStudentId: distribution.recipientStudentId ?? null,
+    recipientFacultyId: distribution.recipientFacultyId ?? null,
+    recipientName: distribution.recipientName ?? "",
+    recipientClass: distribution.recipientClass ?? "",
+    classId: distribution.classId ?? null,
+    sessionId: distribution.sessionId ?? null,
+    quantity: distribution.quantity,
+    expiresOn: distribution.expiresOn ?? null,
+    reason: distribution.reason ?? "",
+    issuedDate: distribution.issuedDate,
+    issuedByUserId: distribution.issuedByUserId ?? null,
+    issuedBy: distribution.issuedBy ?? null,
+  };
+}
+
+/** Mutable fields + the OCC token. Value-affecting fields are immutable after issue. */
+function toUpdateBody(distribution: Distribution): DistributionUpdate {
+  return {
+    recipientType: distribution.recipientType,
+    recipientStudentId: distribution.recipientStudentId ?? null,
+    recipientFacultyId: distribution.recipientFacultyId ?? null,
+    recipientName: distribution.recipientName ?? "",
+    recipientClass: distribution.recipientClass ?? "",
+    classId: distribution.classId ?? null,
+    sessionId: distribution.sessionId ?? null,
+    expiresOn: distribution.expiresOn ?? null,
+    reason: distribution.reason ?? "",
+    expectedVersion: distribution.version ?? 0,
+  };
+}
 
 export function useHasanatMutations() {
   const queryClient = useQueryClient();
@@ -44,7 +85,10 @@ export function useHasanatMutations() {
     onSuccess: invalidateDistributions,
   });
 
-  const replaceRedemptions = tsrClient.hasanat.replaceRedemptions.useMutation({
+  const changeDistributionStatus = tsrClient.hasanat.changeDistributionStatus.useMutation({
+    onSuccess: () => invalidateHasanatQueries(queryClient),
+  });
+  const reverseRedemption = tsrClient.hasanat.reverseRedemption.useMutation({
     onSuccess: () => invalidateHasanatQueries(queryClient),
   });
 
@@ -68,23 +112,33 @@ export function useHasanatMutations() {
     },
     createDistribution: {
       ...createDistribution,
+      mutate: (distribution: Distribution, opts?: MutateOptions) =>
+        createDistribution.mutate({ body: toCreateBody(distribution) }, opts),
       mutateAsync: (distribution: Distribution) =>
-        createDistribution.mutateAsync({ body: distribution }),
+        createDistribution.mutateAsync({ body: toCreateBody(distribution) }),
     },
     updateDistribution: {
       ...updateDistribution,
+      mutate: (distribution: Distribution, opts?: MutateOptions) =>
+        updateDistribution.mutate(
+          { params: { id: String(distribution.id) }, body: toUpdateBody(distribution) },
+          opts,
+        ),
       mutateAsync: (distribution: Distribution) =>
         updateDistribution.mutateAsync({
           params: { id: String(distribution.id) },
-          body: distribution,
+          body: toUpdateBody(distribution),
         }),
     },
-    replaceRedemptions: {
-      ...replaceRedemptions,
-      mutate: (redemptions: Redemption[], opts?: MutateOptions) =>
-        replaceRedemptions.mutate({ body: redemptions }, opts),
-      mutateAsync: (redemptions: Redemption[]) =>
-        replaceRedemptions.mutateAsync({ body: redemptions }),
+    changeDistributionStatus: {
+      ...changeDistributionStatus,
+      mutateAsync: (distributionId: string, body: DistributionStatusChange) =>
+        changeDistributionStatus.mutateAsync({ params: { id: distributionId }, body }),
+    },
+    reverseRedemption: {
+      ...reverseRedemption,
+      mutateAsync: (redemptionId: string, body: ReverseRedemptionBody) =>
+        reverseRedemption.mutateAsync({ params: { id: redemptionId }, body }),
     },
     redeemCard: {
       ...redeemCard,

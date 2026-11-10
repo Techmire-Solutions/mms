@@ -75,6 +75,7 @@ export function useHasanatCardsPageController() {
     replaceBatches,
     createDistribution,
     updateDistribution,
+    changeDistributionStatus,
     deleteDistribution,
     restoreDistribution,
     bulkDeleteDistributions,
@@ -106,6 +107,22 @@ export function useHasanatCardsPageController() {
   const handleBulkRestore = async (ids: string[]) => {
     await rawBulkRestore(ids);
     clearDistributionSelection();
+  };
+
+  /**
+   * A status change goes through the lifecycle endpoint (it enforces the state machine and the
+   * OCC version); every other edit uses the versioned card update.
+   */
+  const handleUpdateDistribution = async (distribution: Distribution): Promise<void> => {
+    const previous = distributions.find((row) => row.id === distribution.id);
+    if (previous && previous.status !== distribution.status) {
+      await changeDistributionStatus.mutateAsync(distribution.id, {
+        status: distribution.status,
+        expectedVersion: distribution.version ?? previous.version ?? 0,
+      });
+      return;
+    }
+    await updateDistribution.mutateAsync(distribution);
   };
 
   const handleMessageDistributions = (
@@ -213,6 +230,7 @@ export function useHasanatCardsPageController() {
     replaceBatches,
     createDistribution,
     updateDistribution,
+    handleUpdateDistribution,
     openDistribute,
     distributionSelection,
     refetchDistributions: () => {

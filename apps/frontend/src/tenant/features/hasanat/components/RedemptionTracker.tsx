@@ -50,8 +50,10 @@ export function RedemptionTracker({
     onFilteredCountChange?.(redemptions.length);
   }, [redemptions.length, onFilteredCountChange]);
 
+  // Net consumed value: a reversal row subtracts from the ledger.
   const totalPoints = redemptions.reduce(
-    (sum: number, redemption: Redemption) => sum + redemption.pointsUsed,
+    (sum: number, redemption: Redemption) =>
+      sum + (redemption.kind === "reversal" ? -redemption.pointsUsed : redemption.pointsUsed),
     0,
   );
 

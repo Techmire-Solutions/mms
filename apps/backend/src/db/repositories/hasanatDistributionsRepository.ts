@@ -7,6 +7,7 @@ import { and } from "drizzle-orm";
 import { type Distribution, type RepositoryListOptions } from "@mms/shared";
 import { buildTenantSoftDeleteConditions } from "../../services/genericRelationalService.js";
 import { hasanatDistributions } from "../schema.js";
+import { distributionColumns } from "./hasanatColumns.js";
 import { withTenantRead } from "../tenant-context.js";
 import { distributionRowToRecord } from "./hasanatDistributionsMappers.js";
 
@@ -37,34 +38,7 @@ export async function listDistributionsByWorkspace(
       deletedFilter,
     );
     const rows = await tx
-      .select({
-        id: hasanatDistributions.id,
-        workspaceSubdomain: hasanatDistributions.workspaceSubdomain,
-        batchId: hasanatDistributions.batchId,
-        denominationId: hasanatDistributions.denominationId,
-        denominationName: hasanatDistributions.denominationName,
-        recipientType: hasanatDistributions.recipientType,
-        recipientStudentId: hasanatDistributions.recipientStudentId,
-        recipientFacultyId: hasanatDistributions.recipientFacultyId,
-        recipientName: hasanatDistributions.recipientName,
-        recipientClass: hasanatDistributions.recipientClass,
-        classId: hasanatDistributions.classId,
-        sessionId: hasanatDistributions.sessionId,
-        quantity: hasanatDistributions.quantity,
-        reason: hasanatDistributions.reason,
-        issuedDate: hasanatDistributions.issuedDate,
-        issuedByUserId: hasanatDistributions.issuedByUserId,
-        issuedBy: hasanatDistributions.issuedBy,
-        status: hasanatDistributions.status,
-        deletedAt: hasanatDistributions.deletedAt,
-        deletedBy: hasanatDistributions.deletedBy,
-        deletionReason: hasanatDistributions.deletionReason,
-        restoredAt: hasanatDistributions.restoredAt,
-        restoredBy: hasanatDistributions.restoredBy,
-        deletedWithCascade: hasanatDistributions.deletedWithCascade,
-        createdAt: hasanatDistributions.createdAt,
-        updatedAt: hasanatDistributions.updatedAt,
-      })
+      .select(distributionColumns)
       .from(hasanatDistributions)
       .where(and(...conditions))
       .orderBy(hasanatDistributions.id)

@@ -1611,6 +1611,27 @@
       "when": 1795604400000,
       "tag": "0229_hasanat_rls_and_timestamps",
       "breakpoints": true
+    },
+    {
+      "idx": 230,
+      "version": "7",
+      "when": 1795690800000,
+      "tag": "0230_hasanat_card_value_and_idempotency",
+      "breakpoints": true
+    },
+    {
+      "idx": 231,
+      "version": "7",
+      "when": 1795777200000,
+      "tag": "0231_hasanat_denom_bounds",
+      "breakpoints": true
+    },
+    {
+      "idx": 232,
+      "version": "7",
+      "when": 1795863600000,
+      "tag": "0232_hasanat_ledger_immutability",
+      "breakpoints": true
     }
   ]
 }

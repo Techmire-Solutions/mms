@@ -103,6 +103,8 @@ export const hasanatPreferencesPutBodySchema = z
     pointsPerUnit: z.number().optional(),
     autoApprovePayouts: z.boolean().optional(),
     defaultViewLayout: z.string().optional(),
+    /** Instructor daily awarding cap; `0` disables the quota. */
+    dailyAwardLimitPerInstructor: z.number().int().min(0).max(10_000).optional(),
   })
   .passthrough();
 
@@ -111,6 +113,8 @@ export interface HasanatModulePreferences {
   pointsPerUnit: number;
   autoApprovePayouts: boolean;
   defaultViewLayout: string;
+  /** Instructor daily awarding cap enforced at issuance; `0` = unlimited. */
+  dailyAwardLimitPerInstructor: number;
 }
 
 /** Extracts preferences slice from a raw composed settings blob. */
@@ -120,6 +124,7 @@ export function normalizeHasanatModulePreferences(raw: unknown): HasanatModulePr
       pointsPerUnit: DEFAULT_HASANAT_SETTINGS.pointsPerUnit,
       autoApprovePayouts: DEFAULT_HASANAT_SETTINGS.autoApprovePayouts,
       defaultViewLayout: DEFAULT_HASANAT_SETTINGS.defaultViewLayout || "list",
+      dailyAwardLimitPerInstructor: 0,
     };
   }
 
@@ -137,6 +142,11 @@ export function normalizeHasanatModulePreferences(raw: unknown): HasanatModulePr
       typeof prefs.defaultViewLayout === "string"
         ? prefs.defaultViewLayout
         : DEFAULT_HASANAT_SETTINGS.defaultViewLayout || "list",
+    dailyAwardLimitPerInstructor:
+      typeof prefs.dailyAwardLimitPerInstructor === "number" &&
+      Number.isFinite(prefs.dailyAwardLimitPerInstructor)
+        ? Math.max(0, Math.trunc(prefs.dailyAwardLimitPerInstructor))
+        : 0,
   };
 }
 

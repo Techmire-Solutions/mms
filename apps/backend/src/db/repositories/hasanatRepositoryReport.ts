@@ -21,12 +21,11 @@ function activeDistributionWhere(subdomain: string, alias = "hd"): ReturnType<ty
 }
 
 /**
- * Points for one issued card. Single definition for the whole module: the denomination's own
- * `points` value, never a name/id guess. A card whose denomination row is gone contributes 0,
- * matching `aggregateHasanatCommandMetrics`.
+ * Points for one issued card: the value stamped at issue (`points_snapshot`, 0230). This is the
+ * module's single point definition — no denomination join, so a deed edit never rewrites history.
  */
-function denominationPointsSql(denAlias = "den"): ReturnType<typeof sql> {
-  return sql`COALESCE(${sql.raw(`${denAlias}.points`)}, 0)`;
+function cardPointsSql(alias = "hd"): ReturnType<typeof sql> {
+  return sql`COALESCE(${sql.raw(`${alias}.points_snapshot`)}, 0)`;
 }
 
 /** Hasanat report aggregates for ComparisonMode (session points + dual monthly ranges). */
@@ -50,7 +49,7 @@ export async function loadHasanatReportAggregatesSql(
 
     const sessionIds = dedupeTrimmedIds(comparisonQuery.sessionIds ?? []);
     if (sessionIds.length > 0) {
-      const pointsExpr = denominationPointsSql("den");
+      const pointsExpr = cardPointsSql("hd");
       // Points are attributed by the card's own session (`session_id`, stamped at issue time).
       // Joining through enrollments instead added a student's *lifetime* points to every session
       // they were enrolled in.
@@ -67,14 +66,11 @@ export async function loadHasanatReportAggregatesSql(
         )
         SELECT
           sel."sessionId" AS "sessionId",
-          COALESCE(SUM(hd.quantity * ${pointsExpr}), 0)::float8 AS hasanat
+          COALESCE(SUM(${pointsExpr}), 0)::float8 AS hasanat
         FROM selected sel
         LEFT JOIN hasanat_distributions hd
           ON ${activeDistributionWhere(subdomain, "hd")}
           AND hd.session_id = sel."sessionId"
-        LEFT JOIN hasanat_denoms den
-          ON den.workspace_subdomain = ${subdomain}
-          AND den.id = hd.denomination_id
         GROUP BY sel."sessionId"
       `);
 
@@ -98,15 +94,12 @@ export async function loadHasanatReportAggregatesSql(
       const cleanFrom = from?.trim();
       const cleanTo = to?.trim();
       if (!cleanFrom || !cleanTo) return [];
-      const pointsExpr = denominationPointsSql("den");
+      const pointsExpr = cardPointsSql("hd");
       const monthResult = await tx.execute(sql`
         SELECT
           to_char(hd.issued_date, 'YYYY-MM') AS "monthKey",
-          COALESCE(SUM(hd.quantity * ${pointsExpr}), 0)::float8 AS points
+          COALESCE(SUM(${pointsExpr}), 0)::float8 AS points
         FROM hasanat_distributions hd
-        LEFT JOIN hasanat_denoms den
-          ON den.workspace_subdomain = ${subdomain}
-          AND den.id = hd.denomination_id
         WHERE ${activeDistributionWhere(subdomain, "hd")}
           AND hd.issued_date >= ${cleanFrom}
           AND hd.issued_date <= ${cleanTo}

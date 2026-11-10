@@ -1,4 +1,4 @@
-import { getDenominationPoints } from "@mms/shared";
+import { resolveDistributionPoints } from "@mms/shared";
 import { useTranslation } from "@/hooks/useTranslation";
 import { usePermissions } from "@/tenant/hooks/usePermissions";
 import {
@@ -34,12 +34,8 @@ export function useHasanatChartData() {
 
     distributions.forEach((distribution) => {
       if (!distribution) return;
-      const points = getDenominationPoints(
-        distribution.denominationId,
-        distribution.denominationName,
-        denominations,
-      );
-      const totalPoints = Number(distribution.quantity || 1) * points;
+      // The card's stamped value already includes its quantity.
+      const totalPoints = resolveDistributionPoints(distribution, denominations);
       const reason = String(distribution.reason || "").toLowerCase();
       if (reason.includes("attendance") || reason.includes("absence")) {
         attendancePoints += totalPoints;

@@ -194,6 +194,7 @@ export async function bulkSaveBatches(tenant: string, records: StockBatch[]): Pr
 export async function replaceBatchesForWorkspace(
   tenant: string,
   records: StockBatch[],
+  options: { allowHardPurge?: boolean } = {},
 ): Promise<void> {
   const subdomain = tenant.trim().toLowerCase();
   const uniqueMap = new Map<string, StockBatch>();
@@ -204,6 +205,9 @@ export async function replaceBatchesForWorkspace(
   const uniqueRecords = Array.from(uniqueMap.values());
 
   await withTenant(subdomain, async (tx) => {
+    if (options.allowHardPurge) {
+      await tx.execute(sql`SELECT set_config('app.allow_hard_purge', 'true', true)`);
+    }
     await tx.delete(hasanatBatches).where(eq(hasanatBatches.workspaceSubdomain, subdomain));
     if (uniqueRecords.length > 0) {
       await tx.insert(hasanatBatches).values(

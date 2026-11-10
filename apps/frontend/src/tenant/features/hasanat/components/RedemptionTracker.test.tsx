@@ -11,6 +11,7 @@ const mockRedemptions: Redemption[] = [
     studentName: "Fatima Zahra",
     reward: "Islamic Storybook",
     pointsUsed: 50,
+    kind: "redeem",
     date: "2025-04-10",
     approvedBy: "Ustadha Maryam",
   },
