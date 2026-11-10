@@ -20,7 +20,6 @@ export function distributionRowToRecord(row: DistRow): Distribution {
     sessionId: row.sessionId ?? null,
     pointsSnapshot: row.pointsSnapshot,
     version: row.version,
-    clientRequestId: row.clientRequestId ?? null,
     expiresOn: row.expiresOn ?? null,
     quantity: row.quantity,
     reason: row.reason,

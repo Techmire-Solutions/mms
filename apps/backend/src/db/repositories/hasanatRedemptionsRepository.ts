@@ -25,7 +25,6 @@ export function redemptionRowToRecord(row: RedempRow): Redemption {
 
   if (row.studentId) redemption.studentId = row.studentId;
   if (row.reversalOfId) redemption.reversalOfId = row.reversalOfId;
-  if (row.clientRequestId) redemption.clientRequestId = row.clientRequestId;
   if (row.approvedByUserId) redemption.approvedByUserId = row.approvedByUserId;
   if (row.approvedBy) redemption.approvedBy = row.approvedBy;
 

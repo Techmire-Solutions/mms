@@ -14,6 +14,7 @@ import {
 } from "@mms/shared";
 import { withTenant } from "../../db/tenant-context.js";
 import { ConflictError, NotFoundError } from "../../lib/httpErrors.js";
+import { throwRuleViolation } from "./hasanatRuleErrors.js";
 import type { HasanatRepository } from "../repository/hasanatRepository.js";
 import { assertSessionWritable } from "./hasanatSessionGuard.js";
 
@@ -33,12 +34,16 @@ export async function changeHasanatCardStatus(
     }
     await assertSessionWritable(subdomain, card.sessionId);
     if (card.version !== undefined && card.version !== input.expectedVersion) {
-      throw new ConflictError("This card changed since you loaded it. Reload and try again.");
+      throw new ConflictError(
+        "This card changed since you loaded it. Reload and try again.",
+        "stale_card_version",
+        { currentVersion: card.version, expectedVersion: input.expectedVersion },
+      );
     }
 
     const rule = validateStatusTransition(card.status, input.status);
     if (!rule.ok) {
-      throw new ConflictError(rule.violation.message);
+      throwRuleViolation(rule.violation);
     }
 
     const updated = await repo.setDistributionStatus(subdomain, card.id, input.status);
@@ -79,7 +84,7 @@ export async function updateHasanatCard(
       patch.recipientFacultyId !== undefined ? patch.recipientFacultyId : card.recipientFacultyId,
     );
     if (!recipientCheck.ok) {
-      throw new ConflictError(recipientCheck.violation.message);
+      throwRuleViolation(recipientCheck.violation);
     }
 
     const updated = await repo.updateDistributionVersioned(

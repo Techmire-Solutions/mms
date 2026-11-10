@@ -15,6 +15,7 @@ import {
 import { withTenant } from "../../db/tenant-context.js";
 import { workspaceTodayIso } from "../../lib/workspaceDay.js";
 import { ConflictError, NotFoundError } from "../../lib/httpErrors.js";
+import { throwRuleViolation } from "./hasanatRuleErrors.js";
 import type { HasanatRepository } from "../repository/hasanatRepository.js";
 import { assertSessionWritable } from "./hasanatSessionGuard.js";
 
@@ -58,7 +59,7 @@ export async function redeemHasanatCard(
       today,
     });
     if (!rule.ok) {
-      throw new ConflictError(rule.violation.message);
+      throwRuleViolation(rule.violation);
     }
 
     const redemption = await repo.appendRedemption(subdomain, {

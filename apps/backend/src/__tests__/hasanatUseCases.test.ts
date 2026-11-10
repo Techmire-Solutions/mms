@@ -59,7 +59,6 @@ const ACTIVE_CARD: Distribution = {
   quantity: 1,
   pointsSnapshot: 50,
   version: 3,
-  clientRequestId: null,
   expiresOn: null,
   reason: "Excellent recitation",
   issuedDate: "2026-11-10",
@@ -87,6 +86,7 @@ function asActor<T>(tenant: string, fn: () => Promise<T>, userId = "u1"): Promis
 function createFakeRepo(): HasanatRepository {
   return {
     listDenomsByWorkspace: vi.fn().mockResolvedValue([DENOM]),
+    countDenomsByWorkspace: vi.fn().mockResolvedValue(1),
     findDenomById: vi.fn().mockResolvedValue(DENOM),
     findDenomsByIds: vi.fn().mockResolvedValue([DENOM]),
     saveDenom: vi.fn().mockResolvedValue(undefined),
@@ -94,6 +94,7 @@ function createFakeRepo(): HasanatRepository {
     replaceDenomsForWorkspace: vi.fn().mockResolvedValue(undefined),
 
     listBatchesByWorkspace: vi.fn().mockResolvedValue([]),
+    countBatchesByWorkspace: vi.fn().mockResolvedValue(0),
     findBatchById: vi.fn().mockResolvedValue(null),
     findBatchesByIds: vi.fn().mockResolvedValue([]),
     saveBatch: vi.fn().mockResolvedValue(undefined),
@@ -143,6 +144,13 @@ function createFakeRepo(): HasanatRepository {
     findBatchRemaining: vi.fn().mockResolvedValue(10),
 
     listRedemptionsByWorkspace: vi.fn().mockResolvedValue([]),
+    listRedemptionsPage: vi.fn().mockResolvedValue({
+      redemptions: [],
+      total: 0,
+      page: 1,
+      limit: 50,
+      hasMore: false,
+    }),
     findRedemptionById: vi.fn().mockResolvedValue(null),
     findRedemptionsByIds: vi.fn().mockResolvedValue([]),
     appendRedemption: vi

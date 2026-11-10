@@ -24,6 +24,7 @@ describe("Hasanat schema & persistence invariants (0225–0232)", () => {
     "0231_hasanat_denom_bounds.sql",
     "0232_hasanat_ledger_immutability.sql",
     "0233_hasanat_tier_awards.sql",
+    "0234_hasanat_ledger_list_index.sql",
   ] as const;
 
   it("tracks every hardening migration in the drizzle journal", async () => {
@@ -285,5 +286,62 @@ describe("Hasanat schema & persistence invariants (0225–0232)", () => {
     expect(component).toMatch(/useHasanatStudentReport/);
     expect(component).not.toMatch(/useHasanatDistributionsCollection/);
     expect(component).toMatch(/filters\.session/);
+  });
+
+  it("indexes the paginated ledger history", async () => {
+    const sql = await read(migrations[9]);
+    expect(sql).toMatch(
+      /"hasanat_redemp_ws_created_idx"[\s\S]*?\("workspace_subdomain", "created_at" DESC\)/i,
+    );
+  });
+
+  it("keeps idempotency keys and cascade internals out of read models", async () => {
+    const manifest = await readFile(
+      join(process.cwd(), "../../packages/shared/src/hasanat/hasanatModuleManifest.ts"),
+      "utf-8",
+    );
+    const recordSchemas = manifest.slice(
+      manifest.indexOf("export const distributionRecordSchema"),
+      manifest.indexOf("export const distributionCreateSchema"),
+    );
+    const redemptionSchema = manifest.slice(
+      manifest.indexOf("export const redemptionRecordSchema"),
+      manifest.indexOf("export const redemptionRecordInsertSchema"),
+    );
+    expect(recordSchemas).not.toMatch(/clientRequestId/);
+    expect(recordSchemas).not.toMatch(/deletedWithCascade/);
+    expect(redemptionSchema).not.toMatch(/clientRequestId/);
+  });
+
+  it("implements every route declared in the hasanat contract", async () => {
+    const contract = await readFile(
+      join(process.cwd(), "../../packages/shared/src/contracts/hasanat.contract.ts"),
+      "utf-8",
+    );
+    const tierBatch = await readFile(
+      join(process.cwd(), "../../packages/shared/src/contracts/hasanatTierBatch.contract.ts"),
+      "utf-8",
+    );
+    const router = await readFile(
+      join(process.cwd(), "src/routes/tenant/hasanat/hasanatContractRouter.ts"),
+      "utf-8",
+    );
+    const tierBatchHandlers = await readFile(
+      join(process.cwd(), "src/routes/tenant/hasanat/hasanatTierBatchHandlers.ts"),
+      "utf-8",
+    );
+
+    const contractKeys = [...(contract + tierBatch).matchAll(/^ {2}([a-zA-Z]+): \{/gm)].map(
+      (match) => match[1],
+    );
+    expect(contractKeys.length).toBeGreaterThan(15);
+
+    for (const key of contractKeys) {
+      const implemented =
+        new RegExp(`^  ${key}:`, "m").test(router) ||
+        new RegExp(`handle${key.charAt(0).toUpperCase()}${key.slice(1)}\b`).test(router) ||
+        new RegExp(`handle${key.charAt(0).toUpperCase()}${key.slice(1)}\b`).test(tierBatchHandlers);
+      expect(implemented, `contract route ${key} has no handler`).toBe(true);
+    }
   });
 });

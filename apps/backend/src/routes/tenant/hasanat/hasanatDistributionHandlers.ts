@@ -11,7 +11,7 @@ import type { ContractRouteArgs, ContractRouteResponse } from "../../../lib/cont
 import { canDeleteCollection, canWriteCollection } from "../../../services/rbacService.js";
 import { withTenant } from "../../../db/tenant-context.js";
 import { hasanatUseCases } from "../../../hasanat/use-cases/hasanatUseCases.js";
-import { ConflictError, NotFoundError } from "../../../lib/httpErrors.js";
+import { handleContractError } from "../../../lib/contractError.js";
 
 const forbidden = {
   status: 403 as const,
@@ -24,20 +24,6 @@ type StatusOf<K extends keyof typeof hasanatContract> = ContractRouteResponse<
 type ArgsOf<K extends keyof typeof hasanatContract> = ContractRouteArgs<
   (typeof hasanatContract)[K]
 >;
-
-function databaseError(message: string) {
-  return { status: 500 as const, body: { type: "database_error", message } };
-}
-
-function mapDomainError<T>(error: unknown, fallback: string): T {
-  if (error instanceof ConflictError) {
-    return { status: 409 as const, body: { type: "conflict", message: error.message } } as T;
-  }
-  if (error instanceof NotFoundError) {
-    return { status: 404 as const, body: { type: "not_found", message: error.message } } as T;
-  }
-  return databaseError(fallback) as T;
-}
 
 export async function handleCreateDistribution({
   body,
@@ -53,7 +39,10 @@ export async function handleCreateDistribution({
     );
     return { status: 201 as const, body: { distribution } };
   } catch (error: unknown) {
-    return mapDomainError(error, "Failed to issue the Hasanat card");
+    return handleContractError(request, error, {
+      status: 500,
+      body: { type: "database_error", message: "Failed to issue the Hasanat card" },
+    });
   }
 }
 
@@ -72,7 +61,10 @@ export async function handleUpdateDistribution({
     );
     return { status: 200 as const, body: { distribution } };
   } catch (error: unknown) {
-    return mapDomainError(error, "Failed to update the Hasanat card");
+    return handleContractError(request, error, {
+      status: 500,
+      body: { type: "database_error", message: "Failed to update the Hasanat card" },
+    });
   }
 }
 
@@ -91,7 +83,10 @@ export async function handleChangeDistributionStatus({
     );
     return { status: 200 as const, body: { distribution } };
   } catch (error: unknown) {
-    return mapDomainError(error, "Failed to change the card status");
+    return handleContractError(request, error, {
+      status: 500,
+      body: { type: "database_error", message: "Failed to change the card status" },
+    });
   }
 }
 
@@ -112,11 +107,17 @@ export async function handleDeleteDistribution({
       { readOnly: false },
     );
     if (!ok) {
-      return { status: 404 as const, body: { message: "Distribution not found" } };
+      return {
+        status: 404 as const,
+        body: { type: "not_found", message: "Distribution not found" },
+      };
     }
     return { status: 200 as const, body: { success: true as const } };
   } catch (error: unknown) {
-    return mapDomainError(error, "Failed to delete the Hasanat card");
+    return handleContractError(request, error, {
+      status: 500,
+      body: { type: "database_error", message: "Failed to delete the Hasanat card" },
+    });
   }
 }
 
@@ -133,11 +134,17 @@ export async function handleRestoreDistribution({
       { readOnly: false },
     );
     if (!ok) {
-      return { status: 404 as const, body: { message: "Distribution not found" } };
+      return {
+        status: 404 as const,
+        body: { type: "not_found", message: "Distribution not found" },
+      };
     }
     return { status: 200 as const, body: { success: true as const } };
   } catch (error: unknown) {
-    return mapDomainError(error, "Failed to restore the Hasanat card");
+    return handleContractError(request, error, {
+      status: 500,
+      body: { type: "database_error", message: "Failed to restore the Hasanat card" },
+    });
   }
 }
 
@@ -160,7 +167,10 @@ export async function handleBulkDeleteDistributions({
     );
     return { status: 200 as const, body: { success: true as const, ...result } };
   } catch (error: unknown) {
-    return mapDomainError(error, "Failed to bulk delete distributions");
+    return handleContractError(request, error, {
+      status: 500,
+      body: { type: "database_error", message: "Failed to bulk delete distributions" },
+    });
   }
 }
 
@@ -178,7 +188,10 @@ export async function handleBulkRestoreDistributions({
     );
     return { status: 200 as const, body: { success: true as const, ...result } };
   } catch (error: unknown) {
-    return mapDomainError(error, "Failed to bulk restore distributions");
+    return handleContractError(request, error, {
+      status: 500,
+      body: { type: "database_error", message: "Failed to bulk restore distributions" },
+    });
   }
 }
 
@@ -197,7 +210,10 @@ export async function handleRedeemDistribution({
     );
     return { status: 200 as const, body: result };
   } catch (error: unknown) {
-    return mapDomainError(error, "Failed to redeem the Hasanat card");
+    return handleContractError(request, error, {
+      status: 500,
+      body: { type: "database_error", message: "Failed to redeem the Hasanat card" },
+    });
   }
 }
 
@@ -216,6 +232,9 @@ export async function handleReverseRedemption({
     );
     return { status: 200 as const, body: result };
   } catch (error: unknown) {
-    return mapDomainError(error, "Failed to reverse the redemption");
+    return handleContractError(request, error, {
+      status: 500,
+      body: { type: "database_error", message: "Failed to reverse the redemption" },
+    });
   }
 }

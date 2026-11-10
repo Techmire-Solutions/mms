@@ -19,6 +19,7 @@ import {
 } from "./hasanatBatchAwardJob.js";
 import { reconcileTiersForCards } from "./hasanatTierUseCases.js";
 import { withTenant } from "../../db/tenant-context.js";
+import { ConflictError } from "../../lib/httpErrors.js";
 import { enqueueBackgroundJob } from "../../services/backgroundJobWorkerService.js";
 import { buildBackgroundJobId } from "../../lib/backgroundJobIds.js";
 import { broadcastCollection } from "../../lib/livePush.js";
@@ -120,7 +121,10 @@ export function createHasanatCardWriteFacade(options: {
       const actorUserId = requireActorUserId();
       const recipients = await resolveBatchAwardRecipients(tenant, body.target);
       if (recipients.length === 0) {
-        throw new Error("No active students match this batch target.");
+        throw new ConflictError(
+          "No active students match this batch target.",
+          "empty_batch_target",
+        );
       }
 
       if (recipients.length > HASANAT_BATCH_INLINE_MAX) {

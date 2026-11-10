@@ -25,7 +25,11 @@ import type { NewRedemptionFields } from "../../db/repositories/hasanatLedgerOps
  */
 export interface HasanatRepository {
   // Denoms
-  listDenomsByWorkspace(tenant: string): Promise<Denomination[]>;
+  listDenomsByWorkspace(
+    tenant: string,
+    options?: { limit?: number; offset?: number },
+  ): Promise<Denomination[]>;
+  countDenomsByWorkspace(tenant: string): Promise<number>;
   findDenomById(tenant: string, id: string): Promise<Denomination | null>;
   findDenomsByIds(tenant: string, ids: string[]): Promise<Denomination[]>;
   saveDenom(tenant: string, record: Denomination): Promise<void>;
@@ -33,7 +37,11 @@ export interface HasanatRepository {
   replaceDenomsForWorkspace(tenant: string, records: Denomination[]): Promise<void>;
 
   // Batches
-  listBatchesByWorkspace(tenant: string): Promise<StockBatch[]>;
+  listBatchesByWorkspace(
+    tenant: string,
+    options?: { limit?: number; offset?: number },
+  ): Promise<StockBatch[]>;
+  countBatchesByWorkspace(tenant: string): Promise<number>;
   findBatchById(tenant: string, id: string): Promise<StockBatch | null>;
   findBatchesByIds(tenant: string, ids: string[]): Promise<StockBatch[]>;
   saveBatch(tenant: string, record: StockBatch): Promise<void>;
@@ -103,6 +111,24 @@ export interface HasanatRepository {
 
   // Redemptions (append-only; corrections are reversal rows)
   listRedemptionsByWorkspace(tenant: string): Promise<Redemption[]>;
+  listRedemptionsPage(
+    tenant: string,
+    query: {
+      page?: number;
+      limit?: number;
+      from?: string;
+      to?: string;
+      kind?: "redeem" | "reversal";
+      studentId?: string;
+      distributionId?: string;
+    },
+  ): Promise<{
+    redemptions: Redemption[];
+    total: number;
+    page: number;
+    limit: number;
+    hasMore: boolean;
+  }>;
   findRedemptionById(tenant: string, id: string): Promise<Redemption | null>;
   findRedemptionsByIds(tenant: string, ids: string[]): Promise<Redemption[]>;
   appendRedemption(tenant: string, fields: NewRedemptionFields): Promise<Redemption>;

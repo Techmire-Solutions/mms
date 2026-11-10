@@ -1,6 +1,7 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { buildApp } from "../app.js";
 import { adminToken, assistantTeacherToken, viewerToken } from "./helpers/tokens.js";
+import { ConflictError, PolicyViolationError } from "../lib/httpErrors.js";
 
 vi.mock("../db/database.js", () => ({
   initDb: vi.fn().mockResolvedValue(undefined),
@@ -32,16 +33,20 @@ const mockLoadDistributionsPage = vi.fn();
 const mockLoadHasanatCommandMetrics = vi.fn();
 const mockCreateDistribution = vi.fn();
 const mockUpdateDistributionById = vi.fn();
+const mockLoadRedemptions = vi.fn();
+const mockRedeemCard = vi.fn();
+const mockBatchAward = vi.fn();
+const mockDeleteDistribution = vi.fn();
 
 vi.mock("../hasanat/use-cases/hasanatUseCases.js", () => ({
   hasanatUseCases: {
-    loadDenoms: vi.fn().mockResolvedValue([]),
+    loadDenoms: vi.fn().mockResolvedValue({ denoms: [], total: 0 }),
     upsertDenoms: vi.fn(),
-    loadBatches: vi.fn().mockResolvedValue([]),
+    loadBatches: vi.fn().mockResolvedValue({ batches: [], total: 0, hasMore: false }),
     upsertBatches: vi.fn(),
     loadDistributions: vi.fn().mockResolvedValue([]),
-    loadRedemptions: vi.fn().mockResolvedValue([]),
-    deleteDistributionById: vi.fn(),
+    loadRedemptions: (...args: unknown[]) => mockLoadRedemptions(...args),
+    deleteDistributionById: (...args: unknown[]) => mockDeleteDistribution(...args),
     restoreDistributionById: vi.fn(),
     bulkSoftDeleteDistributions: vi.fn(),
     bulkRestoreDistributions: vi.fn(),
@@ -54,8 +59,19 @@ vi.mock("../hasanat/use-cases/hasanatUseCases.js", () => ({
     replaceDenoms: vi.fn(),
     replaceBatches: vi.fn(),
     changeDistributionStatus: vi.fn(),
-    redeemCard: vi.fn(),
+    redeemCard: (...args: unknown[]) => mockRedeemCard(...args),
     voidRedemption: vi.fn(),
+    batchAward: (...args: unknown[]) => mockBatchAward(...args),
+    batchRecipients: vi.fn().mockResolvedValue({
+      recipients: [],
+      count: 0,
+      stockRemaining: null,
+      quotaRemaining: null,
+      requiresJob: false,
+    }),
+    getStudentSummary: vi.fn(),
+    getStudentReport: vi.fn().mockResolvedValue({ rows: [], tiers: [] }),
+    reconcileTiers: vi.fn(),
   },
 }));
 
@@ -307,6 +323,165 @@ describe("hasanat distributions pagination", () => {
       expect([400, 404, 405]).toContain(response.statusCode);
     }
     expect(mockUpdateDistributionById).not.toHaveBeenCalled();
+    await app.close();
+  });
+});
+describe("hasanat route hardening", () => {
+  beforeEach(() => {
+    process.env.JWT_SECRET = "test-secret";
+    vi.clearAllMocks();
+  });
+  afterEach(() => {
+    vi.restoreAllMocks();
+  });
+
+  const auth = (app: Awaited<ReturnType<typeof buildApp>>) => ({
+    host: "demo.localhost",
+    authorization: `Bearer ${adminToken(app)}`,
+  });
+
+  it("rejects an over-long path param before the use case runs", async () => {
+    const app = await buildApp();
+    const response = await app.inject({
+      method: "PUT",
+      url: `/api/hasanat/distributions/${"x".repeat(65)}`,
+      headers: auth(app),
+      payload: { reason: "typo", expectedVersion: 0 },
+    });
+    expect(response.statusCode).toBe(400);
+    expect(response.json().type).toBe("validation_error");
+    expect(mockUpdateDistributionById).not.toHaveBeenCalled();
+    await app.close();
+  });
+
+  it("caps the ledger page size and validates the date filters", async () => {
+    const app = await buildApp();
+
+    const tooBig = await app.inject({
+      method: "GET",
+      url: "/api/hasanat/redemptions?limit=500",
+      headers: auth(app),
+    });
+    expect(tooBig.statusCode).toBe(400);
+
+    const badDate = await app.inject({
+      method: "GET",
+      url: "/api/hasanat/redemptions?from=not-a-date",
+      headers: auth(app),
+    });
+    expect(badDate.statusCode).toBe(400);
+
+    mockLoadRedemptions.mockResolvedValueOnce({
+      redemptions: [],
+      total: 0,
+      page: 1,
+      limit: 50,
+      hasMore: false,
+    });
+    const ok = await app.inject({
+      method: "GET",
+      url: "/api/hasanat/redemptions?kind=reversal",
+      headers: auth(app),
+    });
+    expect(ok.statusCode).toBe(200);
+    expect(ok.json()).toMatchObject({ redemptions: [], total: 0, hasMore: false });
+    expect(mockLoadRedemptions).toHaveBeenCalledWith(expect.objectContaining({ kind: "reversal" }));
+    await app.close();
+  });
+
+  it("validates the batch recipient target and student report dates", async () => {
+    const app = await buildApp();
+
+    const noTarget = await app.inject({
+      method: "GET",
+      url: "/api/hasanat/distributions/batch/recipients",
+      headers: auth(app),
+    });
+    expect(noTarget.statusCode).toBe(400);
+
+    const badRange = await app.inject({
+      method: "GET",
+      url: "/api/hasanat/reports/students?from=yesterday",
+      headers: auth(app),
+    });
+    expect(badRange.statusCode).toBe(400);
+    await app.close();
+  });
+
+  it("maps typed domain errors to 409/422 with details", async () => {
+    const app = await buildApp();
+
+    mockCreateDistribution.mockRejectedValueOnce(
+      new ConflictError("Daily awarding limit reached (5 cards).", "quota_exceeded", {
+        used: 5,
+        limit: 5,
+      }),
+    );
+    const quota = await app.inject({
+      method: "POST",
+      url: "/api/hasanat/distributions",
+      headers: auth(app),
+      payload: {
+        batchId: "b1",
+        denominationId: "d1",
+        quantity: 1,
+        issuedDate: "2026-11-10",
+      },
+    });
+    expect(quota.statusCode).toBe(409);
+    expect(quota.json()).toMatchObject({
+      type: "quota_exceeded",
+      details: { used: 5, limit: 5 },
+    });
+
+    mockRedeemCard.mockRejectedValueOnce(
+      new PolicyViolationError(
+        "This card must be redeemed in full (50 points); partial redemption is not supported.",
+        "value_mismatch",
+        { code: "value_mismatch" },
+      ),
+    );
+    const partial = await app.inject({
+      method: "POST",
+      url: "/api/hasanat/distributions/hd1/redeem",
+      headers: auth(app),
+      payload: { reward: "Book", pointsUsed: 20, date: "2026-11-10" },
+    });
+    expect(partial.statusCode).toBe(422);
+    expect(partial.json().type).toBe("value_mismatch");
+
+    mockBatchAward.mockRejectedValueOnce(
+      new ConflictError("No active students match this batch target.", "empty_batch_target"),
+    );
+    const emptyBatch = await app.inject({
+      method: "POST",
+      url: "/api/hasanat/distributions/batch",
+      headers: auth(app),
+      payload: {
+        batchId: "b1",
+        denominationId: "d1",
+        target: { kind: "class", sessionId: "s1", classId: "c1" },
+        reason: "Weekly halaqa",
+        issuedDate: "2026-11-10",
+        clientRequestId: "req-abcdefgh",
+      },
+    });
+    expect(emptyBatch.statusCode).toBe(409);
+    expect(emptyBatch.json().type).toBe("empty_batch_target");
+    await app.close();
+  });
+
+  it("returns a typed envelope when a card is already archived", async () => {
+    const app = await buildApp();
+    mockDeleteDistribution.mockResolvedValueOnce(false);
+
+    const response = await app.inject({
+      method: "DELETE",
+      url: "/api/hasanat/distributions/hd1",
+      headers: auth(app),
+    });
+    expect(response.statusCode).toBe(404);
+    expect(response.json()).toMatchObject({ type: "not_found" });
     await app.close();
   });
 });

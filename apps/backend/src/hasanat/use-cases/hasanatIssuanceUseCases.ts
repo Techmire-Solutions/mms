@@ -15,7 +15,8 @@ import {
 } from "@mms/shared";
 import { withTenant } from "../../db/tenant-context.js";
 import { workspaceTodayIso } from "../../lib/workspaceDay.js";
-import { ConflictError, NotFoundError } from "../../lib/httpErrors.js";
+import { NotFoundError } from "../../lib/httpErrors.js";
+import { throwRuleViolation } from "./hasanatRuleErrors.js";
 import type { HasanatRepository } from "../repository/hasanatRepository.js";
 import { reconcileStudentTier } from "./hasanatTierUseCases.js";
 import { assertSessionWritable } from "./hasanatSessionGuard.js";
@@ -76,7 +77,7 @@ export async function issueHasanatCard(
       quota: { used: quotaUsed, limit: input.quotaLimit },
     });
     if (!rule.ok) {
-      throw new ConflictError(rule.violation.message);
+      throwRuleViolation(rule.violation);
     }
 
     if (!denomination) {

@@ -34,6 +34,20 @@ export type Denomination = z.infer<typeof denomRecordSchema>;
 export type DenominationInsert = z.infer<typeof denomRecordInsertSchema>;
 export const denomListSchema = z.array(denomRecordSchema);
 
+/** Denomination list envelope (bounded). */
+export const hasanatDenomsResponseSchema = z.object({
+  denoms: z.array(denomRecordSchema),
+  total: z.number(),
+});
+
+/** Shared `limit`/`offset` query for bounded setup lists. */
+export const hasanatListLimitQuerySchema = z
+  .object({
+    limit: z.coerce.number().int().min(1).max(1000).optional(),
+    offset: z.coerce.number().int().min(0).optional(),
+  })
+  .strict();
+
 export const batchRecordSchema = z
   .object({
     id: z.string(),
@@ -68,6 +82,13 @@ export type StockBatch = z.infer<typeof batchRecordSchema>;
 export type StockBatchInsert = z.infer<typeof batchRecordInsertSchema>;
 export const batchListSchema = z.array(batchRecordSchema);
 
+/** Batch stock list envelope (bounded page). */
+export const hasanatBatchesResponseSchema = z.object({
+  batches: z.array(batchRecordSchema),
+  total: z.number(),
+  hasMore: z.boolean(),
+});
+
 export const distributionRecordSchema = z
   .object({
     id: z.string(),
@@ -88,8 +109,6 @@ export const distributionRecordSchema = z
     pointsSnapshot: z.number().int().nonnegative().optional(),
     /** Optimistic-concurrency token for card edits. */
     version: z.number().int().nonnegative().optional(),
-    /** Client-generated idempotency key; a replay returns the original row. */
-    clientRequestId: z.string().nullable().optional(),
     /** Derived expiry: an `active` card past this date reads as expired. */
     expiresOn: isoDateSchema.nullable().optional(),
     reason: z.string().default(""),
@@ -102,7 +121,6 @@ export const distributionRecordSchema = z
     deletionReason: z.string().nullable().optional(),
     restoredAt: z.string().nullable().optional(),
     restoredBy: z.string().nullable().optional(),
-    deletedWithCascade: z.boolean().nullable().optional(),
     createdAt: z.string().optional(),
     updatedAt: z.string().optional(),
   })
@@ -182,73 +200,28 @@ export const filterActiveDistributions = <T extends { deletedAt?: string | null 
   distributions: T[],
 ): T[] => distributions.filter((d) => !isDistributionDeleted(d));
 
-export const redemptionRecordSchema = z
+export * from "./hasanatRedemptionSchemas.js";
+
+/** `HasanatCommandMetricsSnapshot` schema (metrics route payload). */
+export const hasanatCommandMetricsSchema = z
   .object({
-    id: z.string(),
-    distributionId: z.string(),
-    studentId: z.string().nullable().optional(),
-    studentName: z.string().optional().default(""),
-    reward: z.string().default(""),
-    pointsUsed: z.number().default(0),
-    /** `redeem` burns value; `reversal` corrects one redemption (append-only ledger). */
-    kind: z.enum(["redeem", "reversal"]).default("redeem"),
-    reversalOfId: z.string().nullable().optional(),
-    clientRequestId: z.string().nullable().optional(),
-    date: z.string(),
-    approvedByUserId: z.string().nullable().optional(),
-    approvedBy: z.string().nullable().optional(),
-    createdAt: z.string().optional(),
-    updatedAt: z.string().optional(),
+    totalStock: z.number(),
+    available: z.number(),
+    distributed: z.number(),
+    redeemed: z.number(),
+    active: z.number(),
+    returned: z.number(),
+    denominations: z.number(),
+    totalPointsDistributed: z.number(),
+    pointsThisWeek: z.number(),
+    pointsLastWeek: z.number(),
   })
+  .passthrough();
+
+/** `GET /api/hasanat/metrics` envelope — the route replies `{ metrics }`. */
+export const hasanatCommandMetricsResponseSchema = z
+  .object({ metrics: hasanatCommandMetricsSchema })
   .strict();
-
-export const redemptionRecordInsertSchema = z
-  .object({
-    id: z.string().optional(),
-    distributionId: z.string().min(1, "Distribution is required"),
-    studentId: z.string().nullable().optional(),
-    studentName: z.string().optional().default(""),
-    reward: z.string().min(1, "Reward is required"),
-    pointsUsed: z.number().positive("Points used must be greater than 0"),
-    date: isoDateSchema,
-    approvedByUserId: z.string().nullable().optional(),
-    approvedBy: z.string().nullable().optional(),
-  })
-  .strict();
-
-export type Redemption = z.infer<typeof redemptionRecordSchema>;
-export type RedemptionInsert = z.infer<typeof redemptionRecordInsertSchema>;
-export const redemptionListSchema = z.array(redemptionRecordSchema);
-
-/**
- * Body for the atomic `POST /api/hasanat/distributions/:id/redeem` action.
- *
- * The card id lives in the path; the server locks the card row, validates its value and writes the
- * ledger row plus the card status in one transaction. Clients must not model a redemption as
- * "insert ledger row, then update the card" — that flow can lose one write and double-spend.
- */
-export const redeemCardBodySchema = z
-  .object({
-    reward: z.string().min(1, "Reward is required"),
-    pointsUsed: z.number().int().positive("Points used must be greater than 0"),
-    date: isoDateSchema,
-    approvedByUserId: z.string().nullable().optional(),
-    approvedBy: z.string().nullable().optional(),
-    /** Idempotency key: replaying the same key returns the original redemption. */
-    clientRequestId: z.string().min(8).max(64).nullable().optional(),
-  })
-  .strict();
-
-export type RedeemCardBody = z.infer<typeof redeemCardBodySchema>;
-
-/** Ledger correction: reverses one redemption without mutating it (append-only). */
-export const reverseRedemptionBodySchema = z
-  .object({
-    reason: z.string().min(1).max(500),
-  })
-  .strict();
-
-export type ReverseRedemptionBody = z.infer<typeof reverseRedemptionBodySchema>;
 
 export type DistributionCreate = z.infer<typeof distributionCreateSchema>;
 export type DistributionUpdate = z.infer<typeof distributionUpdateSchema>;

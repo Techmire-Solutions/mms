@@ -71,6 +71,8 @@ export const hasanatRedemptions = pgTable(
       table.createdAt.desc(),
     ),
     index("hasanat_redemp_workspace_date_idx").on(table.workspaceSubdomain, table.date),
+    /** Ledger history ordering: newest first, one tenant descent. */
+    index("hasanat_redemp_ws_created_idx").on(table.workspaceSubdomain, table.createdAt.desc()),
     index("hasanat_redemp_workspace_approved_by_idx").on(
       table.workspaceSubdomain,
       table.approvedByUserId,

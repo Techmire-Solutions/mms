@@ -13,10 +13,13 @@ export function rethrowHasanatViolation(error: unknown): never {
   const constraint = (error as { constraint?: string } | null)?.constraint;
 
   if (code === "23514" && constraint === "hasanat_batches_remaining_chk") {
-    throw new ConflictError("Not enough Hasanat stock remaining in the selected batch.");
+    throw new ConflictError(
+      "Not enough Hasanat stock remaining in the selected batch.",
+      "insufficient_stock",
+    );
   }
   if (code === "23505" && constraint === "hasanat_redemp_ws_dist_uidx") {
-    throw new ConflictError("This Hasanat card has already been redeemed.");
+    throw new ConflictError("This Hasanat card has already been redeemed.", "already_redeemed");
   }
   if (code === "23514" && constraint === "hasanat_redemp_points_used_chk") {
     throw new ConflictError("Points used must be greater than 0.");

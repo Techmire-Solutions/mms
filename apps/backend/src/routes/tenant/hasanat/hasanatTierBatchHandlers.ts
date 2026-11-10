@@ -11,7 +11,7 @@ import type { ContractRouteArgs, ContractRouteResponse } from "../../../lib/cont
 import { canReadCollection, canWriteCollection } from "../../../services/rbacService.js";
 import { withTenant } from "../../../db/tenant-context.js";
 import { hasanatUseCases } from "../../../hasanat/use-cases/hasanatUseCases.js";
-import { ConflictError, NotFoundError } from "../../../lib/httpErrors.js";
+import { handleContractError } from "../../../lib/contractError.js";
 
 const forbidden = {
   status: 403 as const,
@@ -24,16 +24,6 @@ type StatusOf<K extends keyof typeof hasanatContract> = ContractRouteResponse<
 type ArgsOf<K extends keyof typeof hasanatContract> = ContractRouteArgs<
   (typeof hasanatContract)[K]
 >;
-
-function mapDomainError<T>(error: unknown, fallback: string): T {
-  if (error instanceof ConflictError) {
-    return { status: 409 as const, body: { type: "conflict", message: error.message } } as T;
-  }
-  if (error instanceof NotFoundError) {
-    return { status: 404 as const, body: { type: "not_found", message: error.message } } as T;
-  }
-  return { status: 500 as const, body: { type: "database_error", message: fallback } } as T;
-}
 
 export async function handleBatchAward({
   body,
@@ -52,7 +42,10 @@ export async function handleBatchAward({
     }
     return { status: 200 as const, body: result };
   } catch (error: unknown) {
-    return mapDomainError(error, "Failed to award the Hasanat batch");
+    return handleContractError(request, error, {
+      status: 500,
+      body: { type: "database_error", message: "Failed to award the Hasanat batch" },
+    });
   }
 }
 
@@ -94,7 +87,10 @@ export async function handleBatchRecipients({
     );
     return { status: 200 as const, body: result };
   } catch (error: unknown) {
-    return mapDomainError(error, "Failed to load batch recipients");
+    return handleContractError(request, error, {
+      status: 500,
+      body: { type: "database_error", message: "Failed to load batch recipients" },
+    });
   }
 }
 
@@ -113,7 +109,10 @@ export async function handleStudentSummary({
     );
     return { status: 200 as const, body: summary };
   } catch (error: unknown) {
-    return mapDomainError(error, "Failed to load the student summary");
+    return handleContractError(request, error, {
+      status: 500,
+      body: { type: "database_error", message: "Failed to load the student summary" },
+    });
   }
 }
 
@@ -130,7 +129,10 @@ export async function handleReconcileTiers({
     );
     return { status: 200 as const, body: result };
   } catch (error: unknown) {
-    return mapDomainError(error, "Failed to reconcile tier awards");
+    return handleContractError(request, error, {
+      status: 500,
+      body: { type: "database_error", message: "Failed to reconcile tier awards" },
+    });
   }
 }
 
@@ -154,6 +156,9 @@ export async function handleStudentReport({
     );
     return { status: 200 as const, body: report };
   } catch (error: unknown) {
-    return mapDomainError(error, "Failed to load the Hasanat report");
+    return handleContractError(request, error, {
+      status: 500,
+      body: { type: "database_error", message: "Failed to load the Hasanat report" },
+    });
   }
 }
