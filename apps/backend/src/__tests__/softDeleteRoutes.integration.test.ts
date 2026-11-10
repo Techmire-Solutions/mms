@@ -27,6 +27,13 @@ vi.mock("../db/tenant-context.js", () => ({
         return callback(mockTx);
       },
     ),
+  withTenantRead: vi
+    .fn()
+    .mockImplementation(
+      async (_tenant: string | null | undefined, callback: (tx: unknown) => Promise<unknown>) => {
+        return callback(mockTx);
+      },
+    ),
 }));
 
 vi.mock("../services/auth/authArtifactService.js", () => ({
@@ -60,6 +67,7 @@ vi.mock("../services/workspaceService.js", async (importOriginal) => {
 });
 
 const mockFindTenantUserRowById = vi.fn();
+const mockListAllTenantUsersByWorkspace = vi.fn();
 const mockFindTeacherById = vi.fn();
 const mockIsTeacherDeletedByUserId = vi.fn();
 
@@ -69,6 +77,8 @@ vi.mock("../db/repositories/tenantUserRepositoryHydrate.js", async (importOrigin
   return {
     ...actual,
     findTenantUserRowById: (...args: unknown[]) => mockFindTenantUserRowById(...args),
+    listAllTenantUsersByWorkspace: (...args: unknown[]) =>
+      mockListAllTenantUsersByWorkspace(...args),
   };
 });
 
@@ -129,6 +139,7 @@ vi.mock("../examinations/use-cases/examinationsUseCases.js", () => ({
 import { buildApp } from "../app.js";
 import { accountantToken, adminToken, teacherToken, signTenantToken } from "./helpers/tokens.js";
 import { redisGet, redisSet, clearInMemoryRedisFallback } from "../lib/redis.js";
+import { clearL1Cache } from "../lib/cache/index.js";
 import { softDeleteTenantUserRow } from "../db/repositories/tenantUserRepositoryPersist.js";
 
 describe("Soft Delete Route Semantics & Session Invalidation Integration", () => {
@@ -137,6 +148,7 @@ describe("Soft Delete Route Semantics & Session Invalidation Integration", () =>
   beforeEach(async () => {
     process.env.JWT_SECRET = "test-secret";
     clearInMemoryRedisFallback();
+    clearL1Cache();
     vi.clearAllMocks();
 
     // Tenant-aware, mirroring the real repository: rows are only visible inside
@@ -175,6 +187,33 @@ describe("Soft Delete Route Semantics & Session Invalidation Integration", () =>
 
     mockFindTeacherById.mockResolvedValue(null);
     mockIsTeacherDeletedByUserId.mockResolvedValue(false);
+
+    mockListAllTenantUsersByWorkspace.mockImplementation(async (tenant: string) => {
+      if (tenant !== "demo") return [];
+      return [
+        {
+          id: "u-admin",
+          email: "admin@test.com",
+          role: "admin",
+          workspaceSubdomain: "demo",
+          deletedAt: null,
+        },
+        {
+          id: "u-accountant",
+          email: "accountant@test.com",
+          role: "accountant",
+          workspaceSubdomain: "demo",
+          deletedAt: null,
+        },
+        {
+          id: "u-teacher",
+          email: "teacher@test.com",
+          role: "teacher",
+          workspaceSubdomain: "demo",
+          deletedAt: null,
+        },
+      ];
+    });
 
     if (!app) {
       app = await buildApp();
@@ -318,6 +357,27 @@ describe("Soft Delete Route Semantics & Session Invalidation Integration", () =>
         };
       }
       return null;
+    });
+
+    mockListAllTenantUsersByWorkspace.mockImplementation(async (tenant: string) => {
+      if (tenant !== "demo") return [];
+      return [
+        {
+          id: "u-admin",
+          email: "admin@test.com",
+          role: "admin",
+          workspaceSubdomain: "demo",
+          deletedAt: null,
+        },
+        {
+          id: targetUserId,
+          email: "staff99@test.com",
+          name: "Staff 99",
+          role: "teacher",
+          workspaceSubdomain: "demo",
+          deletedAt: userDeletedAt,
+        },
+      ];
     });
 
     const sessionKey = `mms:session:${targetUserId}:token-1`;
@@ -482,6 +542,27 @@ describe("Soft Delete Route Semantics & Session Invalidation Integration", () =>
         };
       }
       return null;
+    });
+
+    mockListAllTenantUsersByWorkspace.mockImplementation(async (tenant: string) => {
+      if (tenant !== "demo") return [];
+      return [
+        {
+          id: "u-admin",
+          email: "admin@test.com",
+          role: "admin",
+          workspaceSubdomain: "demo",
+          deletedAt: null,
+        },
+        {
+          id: targetTeacherId,
+          email: "teacher99@test.com",
+          name: "Teacher 99",
+          role: "teacher",
+          workspaceSubdomain: "demo",
+          deletedAt: teacherDeletedAt,
+        },
+      ];
     });
 
     const sessionKey = `mms:session:${targetTeacherId}:token-1`;

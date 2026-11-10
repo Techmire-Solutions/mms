@@ -35,10 +35,16 @@ vi.mock("../db/dbConnection.js", () => ({
   withActiveTransaction: async (_tx: unknown, cb: () => Promise<unknown>) => await cb(),
 }));
 
+const mockInvalidateTenantRbac = vi.fn().mockResolvedValue(undefined);
+vi.mock("../services/rbacService.js", () => ({
+  invalidateTenantRbac: (...args: unknown[]) => mockInvalidateTenantRbac(...args),
+}));
+
 import {
   findTenantUserRowById,
   listTenantUsersByIds,
   replaceTenantUsersForWorkspace,
+  restoreTenantUserRow,
   softDeleteTenantUserRow,
   upsertTenantUserRow,
 } from "../db/repositories/tenantUserRepository.js";
@@ -341,5 +347,15 @@ describe("tenantUsers workspace scoping (regression)", () => {
     const { columns, params } = collectSqlParts(mockWhere.mock.calls[0]?.[0]);
     expect(columns).toContain("workspace_subdomain");
     expect(params).toContain("dar-ul-quran");
+  });
+
+  it("softDeleteTenantUserRow and restoreTenantUserRow invalidate tenant rbac cache", async () => {
+    mockSelectWhere.mockResolvedValue([existingDbRow]);
+    await softDeleteTenantUserRow("dar-ul-quran", "u-1", "u-admin");
+    expect(mockInvalidateTenantRbac).toHaveBeenCalledWith("dar-ul-quran");
+
+    mockSelectWhere.mockResolvedValue([{ ...existingDbRow, deletedAt: new Date() }]);
+    await restoreTenantUserRow("dar-ul-quran", "u-1");
+    expect(mockInvalidateTenantRbac).toHaveBeenCalledWith("dar-ul-quran");
   });
 });
