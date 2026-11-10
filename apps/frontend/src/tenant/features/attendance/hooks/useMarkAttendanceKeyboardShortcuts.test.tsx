@@ -78,7 +78,7 @@ describe("useMarkAttendanceKeyboardShortcuts", () => {
     expect(onSubmit).toHaveBeenCalledTimes(1);
   });
 
-  it("handles Alt/Shift mark-all shortcuts for present, absent, late", () => {
+  it("handles Alt mark-all shortcuts for present, absent, late, half day and excused", () => {
     const onSaveDraft = vi.fn();
     const onSubmit = vi.fn();
     const onMarkAll = vi.fn();
@@ -98,11 +98,51 @@ describe("useMarkAttendanceKeyboardShortcuts", () => {
     window.dispatchEvent(new KeyboardEvent("keydown", { key: "p", altKey: true }));
     expect(onMarkAll).toHaveBeenCalledWith("present");
 
-    window.dispatchEvent(new KeyboardEvent("keydown", { key: "a", shiftKey: true }));
+    window.dispatchEvent(new KeyboardEvent("keydown", { key: "a", altKey: true }));
     expect(onMarkAll).toHaveBeenCalledWith("absent");
 
     window.dispatchEvent(new KeyboardEvent("keydown", { key: "l", altKey: true }));
     expect(onMarkAll).toHaveBeenCalledWith("late");
+
+    window.dispatchEvent(new KeyboardEvent("keydown", { key: "h", altKey: true }));
+    expect(onMarkAll).toHaveBeenCalledWith("half_day");
+
+    window.dispatchEvent(new KeyboardEvent("keydown", { key: "e", altKey: true }));
+    expect(onMarkAll).toHaveBeenCalledWith("excused");
+  });
+
+  /**
+   * Regression: `Shift+P` used to mass-mark the whole class — a shifted letter typed after clicking a
+   * cell marked everyone present with no undo.
+   */
+  it("ignores shifted letters and Cmd/Ctrl+Enter inside a text field", () => {
+    const onMarkAll = vi.fn();
+    const onSubmit = vi.fn();
+
+    act(() => {
+      root?.render(
+        <TestComponent
+          enabled={true}
+          canWrite={true}
+          onMarkAll={onMarkAll}
+          onSaveDraft={vi.fn()}
+          onSubmit={onSubmit}
+        />,
+      );
+    });
+
+    window.dispatchEvent(new KeyboardEvent("keydown", { key: "P", shiftKey: true }));
+    window.dispatchEvent(new KeyboardEvent("keydown", { key: "A", shiftKey: true }));
+    expect(onMarkAll).not.toHaveBeenCalled();
+
+    const input = document.createElement("textarea");
+    document.body.appendChild(input);
+    input.focus();
+    input.dispatchEvent(
+      new KeyboardEvent("keydown", { key: "Enter", metaKey: true, bubbles: true }),
+    );
+    expect(onSubmit).not.toHaveBeenCalled();
+    input.remove();
   });
 
   it("cleans up event listener on unmount", () => {

@@ -12,6 +12,7 @@ import {
   attendanceRecordsFromRows,
   buildOfflinePayload,
 } from "@/tenant/features/attendance/lib/markAttendanceRowUtils";
+import { flushAuditQueue } from "@/tenant/features/attendance/lib/markAttendanceQueue";
 import type {
   AttendanceRow,
   GeoData,
@@ -31,11 +32,20 @@ export interface UseMarkAttendancePersistenceOptions {
   setSubmitted: (submitted: boolean) => void;
   setSyncedMsg: (synced: boolean) => void;
   customFields: ModuleCustomField[];
-  persistBatch: (records: AttendanceRecord[], overrideReason?: string) => Promise<void>;
+  persistBatch: (
+    records: AttendanceRecord[],
+    overrideReason?: string,
+  ) => Promise<AttendanceRecord[]>;
   onOverrideRequired?: (
     records: AttendanceRecord[],
     retry: (reason: string) => Promise<void>,
   ) => void;
+  /** Adopt the server's persisted rows (ids + OCC versions) after a save. */
+  onPersisted?: (records: AttendanceRecord[]) => void;
+  /** Submit hook: persist marks, then lock the day server-side. */
+  onSubmitDay?: (classId: string, date: string) => Promise<unknown>;
+  /** Row-level validation/server failures, surfaced against the grid instead of a flat toast. */
+  onRowErrors?: (errors: Array<{ studentId?: string; message: string }>) => void;
 }
 
 /** True when the API refused the save because it needs an override justification. */
@@ -63,6 +73,9 @@ export function useMarkAttendancePersistence({
   customFields,
   persistBatch,
   onOverrideRequired,
+  onPersisted,
+  onSubmitDay,
+  onRowErrors,
 }: UseMarkAttendancePersistenceOptions) {
   const { t } = useTranslation();
 
@@ -118,18 +131,82 @@ export function useMarkAttendancePersistence({
    * When the API refuses the save because it needs a justification, the page is asked to collect one
    * and the same intent is retried — so a locked/past day is not a dead end.
    */
+  /**
+   * Client-side checks the policy would reject anyway.
+   *
+   * `late`/`half_day` need a valid time-in and a time-out cannot precede it; catching these before the
+   * request avoids a round trip and points at the offending row instead of a flattened message.
+   */
+  const validateRows = (): Array<{ studentId?: string; message: string }> => {
+    const HHMM = /^([01]\d|2[0-3]):[0-5]\d$/;
+    const errors: Array<{ studentId?: string; message: string }> = [];
+    for (const row of rows) {
+      if (row.status === "late" || row.status === "half_day") {
+        if (!HHMM.test(row.timeIn)) {
+          errors.push({
+            studentId: row.studentId,
+            message: `${row.name}: a ${row.status.replace("_", " ")} needs a time-in (HH:mm)`,
+          });
+          continue;
+        }
+      }
+      if (HHMM.test(row.timeIn) && row.timeOut && !HHMM.test(row.timeOut)) {
+        errors.push({ studentId: row.studentId, message: `${row.name}: invalid time-out` });
+        continue;
+      }
+      if (HHMM.test(row.timeIn) && HHMM.test(row.timeOut) && row.timeOut < row.timeIn) {
+        errors.push({
+          studentId: row.studentId,
+          message: `${row.name}: time-out is before time-in`,
+        });
+      }
+    }
+    return errors;
+  };
+
+  const extractServerRowErrors = (
+    error: unknown,
+  ): Array<{ studentId?: string; message: string }> => {
+    const candidate = error as {
+      body?: { errors?: Array<{ studentId?: string; message?: string }> };
+      errors?: Array<{ studentId?: string; message?: string }>;
+    };
+    const raw = candidate?.body?.errors ?? candidate?.errors;
+    if (!Array.isArray(raw)) return [];
+    return raw.map((entry) => ({
+      ...(entry.studentId ? { studentId: String(entry.studentId) } : {}),
+      message: String(entry.message ?? ""),
+    }));
+  };
+
   const saveWithIntent = async (
     intent: "draft" | "submit",
     overrideReason?: string,
   ): Promise<void> => {
     const payload = currentOfflinePayload();
+    const validationErrors = validateRows();
+    if (validationErrors.length > 0) {
+      onRowErrors?.(validationErrors);
+      notify.error(t("attendance.mark.validationTitle"), {
+        description: validationErrors[0]?.message,
+      });
+      return;
+    }
     try {
-      await persistBatch(buildRecords(rows), overrideReason);
+      const persisted = await persistBatch(buildRecords(rows), overrideReason);
+      onRowErrors?.([]);
+      flushAuditQueue();
+      onPersisted?.(persisted ?? []);
       if (intent === "draft") {
         setIsDraft(true);
         addAuditEntry(filters.classId, filters.date, { action: "draft_saved", by: role });
         notify.success(t("attendance.toast.draftSaved"));
         return;
+      }
+      // Submitting marks then locks the roster day: without this call the server-side day
+      // submission (and therefore `lockAfterSubmit`) could never be engaged from the UI.
+      if (onSubmitDay && filters.classId && filters.date) {
+        await onSubmitDay(filters.classId, filters.date);
       }
       setSubmitted(true);
       addAuditEntry(filters.classId, filters.date, {
@@ -140,6 +217,8 @@ export function useMarkAttendancePersistence({
       });
       notify.success(t("attendance.toast.submitted"));
     } catch (error) {
+      const serverRowErrors = extractServerRowErrors(error);
+      if (serverRowErrors.length > 0) onRowErrors?.(serverRowErrors);
       if (!overrideReason && isOverrideReasonRequired(error) && onOverrideRequired) {
         onOverrideRequired(buildRecords(rows), (reason) => saveWithIntent(intent, reason));
         return;

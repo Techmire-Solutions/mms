@@ -16,6 +16,7 @@ import {
   attendanceBulkRestoreHandler,
 } from "./attendanceBulkContractHandlers.js";
 import {
+  attendanceGetDaySubmissionHandler,
   attendanceReopenDayHandler,
   attendanceSubmitDayHandler,
 } from "./attendanceDaySubmissionHandlers.js";
@@ -75,6 +76,7 @@ export const attendanceContractRouter: FastifyPluginAsync = async (fastify) => {
     bulk: attendanceBulkHandler,
     bulkDelete: attendanceBulkDeleteHandler,
     bulkRestore: attendanceBulkRestoreHandler,
+    getDaySubmission: attendanceGetDaySubmissionHandler,
     submitDay: attendanceSubmitDayHandler,
     reopenDay: attendanceReopenDayHandler,
     listLeaves: attendanceListExcusesHandler,

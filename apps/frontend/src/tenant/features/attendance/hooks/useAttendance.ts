@@ -11,6 +11,7 @@ import {
   ATTENDANCE_METRICS_QUERY_KEY,
   ATTENDANCE_QUERY_KEY,
   ATTENDANCE_REPORT_AGGREGATES_QUERY_KEY,
+  attendanceQueryKeys,
 } from "./attendanceQueryKeys.js";
 import { assertContractOk } from "@/lib/apiContractError";
 
@@ -104,7 +105,7 @@ export function useAttendanceRoster(params: {
   const date = params.date?.trim() ?? "";
   const sectionId = params.sectionId?.trim() ?? "";
   const query = tsrClient.attendance.getRoster.useQuery({
-    queryKey: ["attendance", "roster", classId, date, sectionId] as const,
+    queryKey: attendanceQueryKeys.roster({ classId, date, sectionId }),
     queryData: {
       query: {
         classId,
@@ -140,58 +141,6 @@ export function useAttendanceRecordsCollection(options?: {
 }): AttendanceRecord[] {
   return useAttendanceRecords(options).data ?? [];
 }
-
-export function useAttendanceMutations() {
-  const queryClient = useQueryClient();
-
-  const invalidate = () => {
-    invalidateAttendanceQueries(queryClient);
-  };
-
-  /** Bulk upsert. The legacy name is retained for callers while the endpoint remains PUT /bulk. */
-  const bulkUpsert = tsrClient.attendance.bulk.useMutation({
-    onSuccess: invalidate,
-  });
-
-  const createRecord = tsrClient.attendance.create.useMutation({
-    onSuccess: invalidate,
-  });
-
-  const updateRecord = tsrClient.attendance.update.useMutation({
-    onSuccess: invalidate,
-  });
-
-  const deleteRecord = tsrClient.attendance.delete.useMutation({
-    onSuccess: invalidate,
-  });
-
-  const restoreRecord = tsrClient.attendance.restore.useMutation({
-    onSuccess: invalidate,
-  });
-
-  const bulkDeleteRecords = tsrClient.attendance.bulkDelete.useMutation({
-    onSuccess: invalidate,
-  });
-
-  const bulkRestoreRecords = tsrClient.attendance.bulkRestore.useMutation({
-    onSuccess: invalidate,
-  });
-
-  return {
-    bulkUpsert,
-    replaceAll: bulkUpsert,
-    createRecord,
-    updateRecord,
-    deleteRecord,
-    restoreRecord,
-    bulkDeleteRecords,
-    bulkRestoreRecords,
-  };
-}
-
-export { useAttendanceReportAggregates } from "./useAttendanceReportAggregates";
-
-// --- Contract-driven list queryOptions & mutation hooks ----------------------
 
 export function attendanceListQueryOptions(query: Record<string, unknown> = {}) {
   return queryOptions({
@@ -260,3 +209,6 @@ export function useAttendanceContractDelete() {
     onSuccess: () => invalidateAttendanceQueries(queryClient),
   });
 }
+
+export { useAttendanceMutations } from "./useAttendanceMutations.js";
+export { useAttendanceReportAggregates } from "./useAttendanceReportAggregates";

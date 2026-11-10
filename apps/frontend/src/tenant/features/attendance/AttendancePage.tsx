@@ -88,8 +88,8 @@ export default function Attendance() {
           }
           showActiveLabel={c.t("attendance.showActive")}
           showDeletedLabel={c.t("attendance.showDeleted")}
-          onFiltersChange={c.setFilters}
-          onOpsTabChange={c.setActiveOpsTab}
+          onFiltersChange={c.requestFiltersChange}
+          onOpsTabChange={c.requestOpsTabChange}
           onShowDeletedToggle={() => c.setShowDeleted((current) => !current)}
           onPersistRecords={c.persistRecords}
           onUpdateRecord={c.handleUpdateRecord}
@@ -98,6 +98,10 @@ export default function Attendance() {
           onBulkDeleteRecords={c.handleBulkDeleteRecords}
           onBulkRestoreRecords={c.handleBulkRestoreRecords}
           onMessage={c.handleMessageAttendance}
+          onSubmitDay={c.submitRosterDay}
+          onReopenDay={c.reopenRosterDay}
+          canReopenDay={c.canReopenAttendance}
+          onRosterDirtyChange={c.setRosterDirty}
           onTotalChange={c.setShownCount}
           columnProps={{
             isColumnVisible: c.columnLayout.isColumnVisible,

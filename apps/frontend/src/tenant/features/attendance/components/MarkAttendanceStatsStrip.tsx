@@ -14,7 +14,10 @@ export function MarkAttendanceStatsStrip({
   const { t } = useTranslation();
 
   return (
-    <div className="grid grid-cols-2 gap-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-autofit-md">
+    <div
+      aria-live="polite"
+      className="grid grid-cols-2 gap-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-autofit-md"
+    >
       {statuses.map((status) => (
         <div
           key={status.id}

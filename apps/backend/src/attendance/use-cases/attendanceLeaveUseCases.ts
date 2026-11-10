@@ -64,6 +64,31 @@ export async function recordApprovedLeave(
 }
 
 /**
+ * Current submission state of a roster day.
+ *
+ * A day that was never submitted reads as an unlocked record with zeroed timestamps, so the client can
+ * render one shape instead of special-casing 404.
+ */
+export async function readSubmittedAttendanceDay(
+  tenant: string,
+  classId: string,
+  date: string,
+): Promise<AttendanceDaySubmission> {
+  const existing = await repo.getAttendanceDaySubmission(tenant, classId, date.slice(0, 10));
+  if (existing) return existing;
+  return {
+    classId,
+    date: date.slice(0, 10),
+    submittedAt: new Date(0),
+    submittedBy: null,
+    reopenedAt: null,
+    reopenedBy: null,
+    reopenReason: null,
+    locked: false,
+  };
+}
+
+/**
  * Marks a class/day roster as submitted. Idempotent: submitting an already-submitted day returns the
  * existing state with `alreadySubmitted: true` instead of moving the timestamp (so two taps cannot
  * silently extend the lock).

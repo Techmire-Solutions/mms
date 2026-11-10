@@ -1,5 +1,4 @@
 import {
-  ATTENDANCE_MODULE_MANIFEST,
   composeAttendanceSettings,
   normalizeAttendanceModulePreferences,
   type AttendanceModulePreferences,
@@ -11,11 +10,9 @@ import {
   saveAttendancePreferencesAsync,
   setAttendancePreferencesMemory,
 } from "@/tenant/features/attendance/hooks/attendanceSetupConfigApi";
+import { attendanceQueryKeys } from "./attendanceQueryKeys.js";
 
-export const ATTENDANCE_PREFERENCES_QUERY_KEY = [
-  ATTENDANCE_MODULE_MANIFEST.collectionKey,
-  "preferences",
-] as const;
+export const ATTENDANCE_PREFERENCES_QUERY_KEY = attendanceQueryKeys.preferences;
 
 const setupConfigHooks = createModuleSetupConfigHooks<AttendanceModulePreferences>({
   preferencesQueryKey: ATTENDANCE_PREFERENCES_QUERY_KEY,

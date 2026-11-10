@@ -80,6 +80,9 @@ vi.mock("@/lib/api", () => ({
       restore: { useMutation: () => ({ mutateAsync: vi.fn() }) },
       bulkDelete: { useMutation: () => ({ mutateAsync: vi.fn() }) },
       bulkRestore: { useMutation: () => ({ mutateAsync: vi.fn() }) },
+      submitDay: { useMutation: () => ({ mutateAsync: vi.fn() }) },
+      reopenDay: { useMutation: () => ({ mutateAsync: vi.fn() }) },
+      getDaySubmission: { useQuery: () => ({ data: undefined, isLoading: false }) },
     },
   },
 }));
