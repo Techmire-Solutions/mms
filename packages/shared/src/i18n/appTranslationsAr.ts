@@ -5129,6 +5129,11 @@ export const APP_TRANSLATIONS_AR: Record<AppTranslationKey, string> = {
     "الموافقة تلقائياً على استرداد المكافآت دون مراجعة يدوية",
   "hasanat.settings.btnSave": "حفظ الإعدادات",
   "hasanat.settings.btnSaved": "تم الحفظ!",
+  "hasanat.settings.awardScope": "نطاق منح البطاقات",
+  "hasanat.settings.awardScopeHint":
+    "تقييد المعلمين بمنح البطاقات داخل الفصول التي يدرّسونها فقط. يمكن للمسؤولين المنح في أي مكان دائمًا.",
+  "hasanat.settings.awardScopeTenant": "المساحة كاملة",
+  "hasanat.settings.awardScopeAssignedClasses": "الفصول التي يدرّسونها فقط",
   "hasanat.settings.pointsPerUnit": "النقاط لكل بطاقة/وحدة",
   "hasanat.settings.saved": "تم حفظ إعدادات الحسنات",
   "hasanat.settings.saveFailed": "تعذر حفظ إعدادات الحسنات",

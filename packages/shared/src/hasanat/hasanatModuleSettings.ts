@@ -1,4 +1,5 @@
 import type { TabDefinition } from "../contacts/contactTypes.js";
+import type { HasanatAwardScope } from "./hasanatSetupConfigTypes.js";
 import type { ModuleFieldDef } from "../settings/moduleFieldSchema.js";
 import { INITIAL_HASANAT_FIELD_SEED } from "../settings/moduleFieldSetupFinance.js";
 
@@ -9,6 +10,8 @@ export interface HasanatSettings {
   autoApprovePayouts: boolean;
   /** Instructor daily awarding cap; `0` = unlimited. */
   dailyAwardLimitPerInstructor?: number;
+  /** Instructor recipient scope: whole tenant (default) or only the classes they teach. */
+  awardScope?: HasanatAwardScope;
   defaultViewLayout?: string;
   fields?: Record<string, unknown>;
   customFields?: [];
@@ -22,6 +25,7 @@ export const DEFAULT_HASANAT_SETTINGS: HasanatSettings = {
   pointsPerUnit: 10,
   autoApprovePayouts: false,
   dailyAwardLimitPerInstructor: 0,
+  awardScope: "tenant",
   defaultViewLayout: "list",
   fields: {
     basic: INITIAL_HASANAT_FIELD_SEED.basic.map((f) => ({ ...f })),

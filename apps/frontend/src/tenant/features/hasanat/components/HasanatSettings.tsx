@@ -5,6 +5,13 @@ import { ModuleSetupSaveFooter } from "@/components/app/ModuleSetupSaveFooter";
 import { useTranslation } from "@/hooks/useTranslation";
 import { FORM_INPUT, SETUP_SECTION_CARD_CLASS } from "@/components/ui/formStyles";
 import { Input } from "@/components/ui/input";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { ToggleRow } from "@shared/ui";
 import { Field } from "@/components/app/FormPrimitives";
 import { useHasanatSetupPanelState } from "@/tenant/features/hasanat/hooks/useHasanatSetupPanelState";
@@ -50,6 +57,28 @@ export const HasanatSettings = function HasanatSettings({
               />
             </Field>
           </div>
+          <Field
+            id="award-scope"
+            label={t("hasanat.settings.awardScope")}
+            hint={t("hasanat.settings.awardScopeHint")}
+          >
+            <Select
+              value={settingsDraft.awardScope ?? "tenant"}
+              onValueChange={(value) =>
+                upd("awardScope", value === "assigned_classes" ? "assigned_classes" : "tenant")
+              }
+            >
+              <SelectTrigger id="award-scope" className={FORM_INPUT}>
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="tenant">{t("hasanat.settings.awardScopeTenant")}</SelectItem>
+                <SelectItem value="assigned_classes">
+                  {t("hasanat.settings.awardScopeAssignedClasses")}
+                </SelectItem>
+              </SelectContent>
+            </Select>
+          </Field>
           <div className="pt-1">
             <ToggleRow
               label={t("hasanat.settings.autoApprovePayouts")}

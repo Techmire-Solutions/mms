@@ -163,6 +163,12 @@ export const COLLECTION_DELETE_PERMISSION: Record<string, Permission> = {
   obligation_collections: OBLIGATIONS_MODULE_MANIFEST.permissions.delete,
   workshop_events: WORKSHOPS_MODULE_MANIFEST.permissions.delete,
   workshop_participants: WORKSHOPS_MODULE_MANIFEST.permissions.delete,
+  // Hasanat delete/restore/void/reconcile is a distinct capability from daily write: instructors
+  // award cards, administrators reverse or erase them.
+  hasanat_distributions: HASANAT_MODULE_MANIFEST.permissions.delete,
+  hasanat_batches: HASANAT_MODULE_MANIFEST.permissions.delete,
+  hasanat_denoms: HASANAT_MODULE_MANIFEST.permissions.delete,
+  hasanat_redemptions: HASANAT_MODULE_MANIFEST.permissions.delete,
 };
 
 // `global_settings`/`branding` keep entries here even though `dbObjectRoutes.ts` no

@@ -10,6 +10,7 @@ import {
   batchCardRequestId,
   cardValue,
   generateClientEntityId,
+  normalizeHasanatModulePreferences,
   type Denomination,
   type HasanatTransferEntity,
 } from "@mms/shared";
@@ -17,11 +18,14 @@ import { registerModuleCsvImportJobRunner } from "../../lib/registerModuleCsvImp
 import { withTenant } from "../../db/tenant-context.js";
 import {
   findStudentsByNames,
+  hasanatRepository,
   insertBatchDistributions,
   listBatchesByWorkspace,
   listDenomsByWorkspace,
   type NewBatchCard,
 } from "../repository/hasanatRepositoryAdapter.js";
+import { assertAwardScope, resolveAwardScopeBypass } from "./hasanatAwardScope.js";
+import { auditCardState } from "./hasanatAudit.js";
 import { reconcileTiersForStudents } from "./hasanatTierUseCases.js";
 
 export const HASANAT_IMPORT_JOB_KEY = "hasanat:import";
@@ -200,11 +204,49 @@ export function registerHasanatImportRunner(): void {
         issuedBy: null,
       }));
 
+      // The CSV import is a write path like any other: instructor scope still applies.
+      const rawPreferences = hasanatRepository.getModulePreferences
+        ? await hasanatRepository.getModulePreferences(tenant)
+        : null;
+      await assertAwardScope({
+        tenant,
+        repo: hasanatRepository,
+        actorUserId: ctx.userId,
+        bypass: await resolveAwardScopeBypass(tenant, ctx.userId, hasanatRepository),
+        awardScope: normalizeHasanatModulePreferences(rawPreferences).awardScope,
+        classIds: [],
+        studentIds: cards.map((card) => card.studentId),
+      });
+
       await withTenant(tenant, async () => {
         await insertBatchDistributions(tenant, cards);
+        // Per-record audit; the import's actor is the enqueuing user.
+        for (const card of cards) {
+          await auditCardState({
+            tenant,
+            actorUserId: ctx.userId,
+            action: "CREATE",
+            cardId: card.id,
+            after: {
+              studentId: card.studentId,
+              classId: card.classId ?? null,
+              sessionId: card.sessionId ?? null,
+              batchId: card.batchId,
+              denominationId: card.denominationId,
+              quantity: card.quantity,
+              pointsSnapshot: card.pointsSnapshot ?? null,
+              status: "active",
+              issuedDate: card.issuedDate,
+              expiresOn: card.expiresOn ?? null,
+            },
+            reason: card.reason ?? null,
+            tag: "hasanat.import",
+          });
+        }
         await reconcileTiersForStudents(
           tenant,
           Array.from(new Set(cards.map((card) => card.studentId))),
+          { actorUserId: ctx.userId },
         );
       });
 

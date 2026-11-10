@@ -25,6 +25,7 @@ describe("Hasanat schema & persistence invariants (0225–0232)", () => {
     "0232_hasanat_ledger_immutability.sql",
     "0233_hasanat_tier_awards.sql",
     "0234_hasanat_ledger_list_index.sql",
+    "0235_audit_trail_immutability.sql",
   ] as const;
 
   it("tracks every hardening migration in the drizzle journal", async () => {
@@ -343,5 +344,49 @@ describe("Hasanat schema & persistence invariants (0225–0232)", () => {
         new RegExp(`handle${key.charAt(0).toUpperCase()}${key.slice(1)}\b`).test(tierBatchHandlers);
       expect(implemented, `contract route ${key} has no handler`).toBe(true);
     }
+  });
+
+  it("makes the audit trail append-only at the database", async () => {
+    const sql = await read(migrations[10]);
+    expect(sql).toMatch(/BEFORE UPDATE OR DELETE ON "audit_trail_events"/i);
+    expect(sql).toMatch(/ERRCODE = 'check_violation'/i);
+    expect(sql).toMatch(/app\.allow_audit_purge/);
+  });
+
+  it("audits every point-mutating use case", async () => {
+    const files = [
+      "src/hasanat/use-cases/hasanatIssuanceUseCases.ts",
+      "src/hasanat/use-cases/hasanatBatchAwardUseCases.ts",
+      "src/hasanat/use-cases/hasanatRedemptionUseCases.ts",
+      "src/hasanat/use-cases/hasanatCardUseCases.ts",
+      "src/hasanat/use-cases/hasanatTierUseCases.ts",
+      "src/hasanat/use-cases/hasanatImportJob.ts",
+    ];
+    for (const file of files) {
+      const content = await readFile(join(process.cwd(), file), "utf-8");
+      expect(content, `${file} emits no audit event`).toMatch(
+        /audit(Card|Ledger|Award|Setup)Mutation|auditCardState/,
+      );
+    }
+
+    const facade = await readFile(
+      join(process.cwd(), "src/hasanat/use-cases/hasanatCardWriteFacade.ts"),
+      "utf-8",
+    );
+    expect(facade).toMatch(/archiveCardEvidence|restoreCardEvidence/);
+
+    const setup = await readFile(
+      join(process.cwd(), "src/hasanat/use-cases/hasanatCatalogUseCases.ts"),
+      "utf-8",
+    );
+    expect(setup).toMatch(/auditSetupMutation/);
+
+    const archive = await readFile(
+      join(process.cwd(), "src/hasanat/use-cases/hasanatCardArchive.ts"),
+      "utf-8",
+    );
+    expect(archive).toMatch(/auditCardMutation/);
+    expect(archive).toMatch(/entity\.soft_deleted/);
+    expect(archive).toMatch(/entity\.restored/);
   });
 });

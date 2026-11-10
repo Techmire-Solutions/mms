@@ -21,6 +21,7 @@ import {
   denomListSchema,
   normalizeHasanatModulePreferences,
   type Denomination,
+  type HasanatModulePreferences,
   type Distribution,
   type DistributionCreate,
   type DistributionStatusChange,
@@ -32,6 +33,7 @@ import {
 } from "@mms/shared";
 import { createHasanatQueryUseCases } from "./hasanatQueryUseCases.js";
 import { issueHasanatCard } from "./hasanatIssuanceUseCases.js";
+import { replaceBatchesWithAudit, replaceDenomsWithAudit } from "./hasanatCatalogUseCases.js";
 import { redeemHasanatCard, voidHasanatRedemption } from "./hasanatRedemptionUseCases.js";
 import { changeHasanatCardStatus, updateHasanatCard } from "./hasanatCardUseCases.js";
 import {
@@ -40,10 +42,13 @@ import {
   reconcileTenantTiers,
 } from "./hasanatTierUseCases.js";
 
-/** Instructor daily awarding cap from the module preferences (`0` = unlimited). */
-async function loadQuotaLimit(tenant: string, repo: HasanatRepository): Promise<number> {
+/** Normalized module preferences (quota cap + award scope). */
+async function loadPreferences(
+  tenant: string,
+  repo: HasanatRepository,
+): Promise<HasanatModulePreferences> {
   const raw = repo.getModulePreferences ? await repo.getModulePreferences(tenant) : null;
-  return normalizeHasanatModulePreferences(raw).dailyAwardLimitPerInstructor;
+  return normalizeHasanatModulePreferences(raw);
 }
 
 export function createHasanatUseCases(repo: HasanatRepository = hasanatRepository) {
@@ -91,7 +96,7 @@ export function createHasanatUseCases(repo: HasanatRepository = hasanatRepositor
     crud: distributionCrud,
     requireTenant,
     requireActorUserId,
-    loadQuotaLimit: () => loadQuotaLimit(requireTenant(), repo),
+    loadPreferences: () => loadPreferences(requireTenant(), repo),
   });
 
   function requireActorUserId(): string {
@@ -109,25 +114,39 @@ export function createHasanatUseCases(repo: HasanatRepository = hasanatRepositor
       await repo.saveDenom(tenant, record);
       await broadcastCollection("hasanat_denoms");
     },
-    replaceDenoms: denomService.replace,
+    /**
+     * Replace the denomination catalogue: reconcile, then audit every changed row.
+     * Point values are configuration — a silent change would re-price every future award.
+     */
+    replaceDenoms: (records: Denomination[]) => replaceDenomsWithAudit(repo, denomService, records),
     saveBatch: async (record: StockBatch): Promise<void> => {
       const tenant = requireTenant();
       await repo.saveBatch(tenant, record);
       await broadcastCollection("hasanat_batches");
     },
-    replaceBatches: batchService.replace,
+    replaceBatches: (records: StockBatch[]) => replaceBatchesWithAudit(repo, batchService, records),
     upsertDenoms: (records: Denomination[]) =>
       upsertWithBroadcast(denomListSchema, records, repo.bulkSaveDenoms, "hasanat_denoms"),
     upsertBatches: (records: StockBatch[]) =>
       upsertWithBroadcast(batchListSchema, records, repo.bulkSaveBatches, "hasanat_batches"),
 
     // Card lifecycle
-    createDistribution: async (body: DistributionCreate): Promise<Distribution> => {
+    createDistribution: async (
+      body: DistributionCreate,
+      options?: { bypassAwardScope?: boolean },
+    ): Promise<Distribution> => {
       const tenant = requireTenant();
       const actorUserId = requireActorUserId();
+      const preferences = await loadPreferences(tenant, repo);
       const card = await issueHasanatCard(
         tenant,
-        { body, actorUserId, quotaLimit: await loadQuotaLimit(tenant, repo) },
+        {
+          body,
+          actorUserId,
+          quotaLimit: preferences.dailyAwardLimitPerInstructor,
+          awardScope: preferences.awardScope,
+          bypassAwardScope: options?.bypassAwardScope,
+        },
         repo,
       );
       await broadcastCollection("hasanat_distributions");
@@ -135,7 +154,9 @@ export function createHasanatUseCases(repo: HasanatRepository = hasanatRepositor
     },
     updateDistributionById: async (id: string, body: DistributionUpdate): Promise<Distribution> => {
       const tenant = requireTenant();
-      const card = await updateHasanatCard(tenant, id, body, repo);
+      const card = await updateHasanatCard(tenant, id, body, repo, {
+        userId: getRequestUserId(),
+      });
       await broadcastCollection("hasanat_distributions");
       return card;
     },
@@ -144,7 +165,9 @@ export function createHasanatUseCases(repo: HasanatRepository = hasanatRepositor
       body: DistributionStatusChange,
     ): Promise<Distribution> => {
       const tenant = requireTenant();
-      const card = await changeHasanatCardStatus(tenant, id, body, repo);
+      const card = await changeHasanatCardStatus(tenant, id, body, repo, {
+        userId: getRequestUserId(),
+      });
       await broadcastCollection("hasanat_distributions");
       return card;
     },
@@ -161,7 +184,8 @@ export function createHasanatUseCases(repo: HasanatRepository = hasanatRepositor
     }) => getHasanatStudentReport(requireTenant(), filters),
     getStudentSummary: async (studentId: string, sessionId?: string | null) =>
       getHasanatStudentSummary(requireTenant(), studentId, sessionId ?? null),
-    reconcileTiers: async () => reconcileTenantTiers(requireTenant()),
+    reconcileTiers: async () =>
+      reconcileTenantTiers(requireTenant(), { actorUserId: getRequestUserId() }),
 
     // Ledger
     redeemCard: async (

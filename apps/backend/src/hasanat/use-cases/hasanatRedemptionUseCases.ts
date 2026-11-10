@@ -18,6 +18,7 @@ import { ConflictError, NotFoundError } from "../../lib/httpErrors.js";
 import { throwRuleViolation } from "./hasanatRuleErrors.js";
 import type { HasanatRepository } from "../repository/hasanatRepository.js";
 import { assertSessionWritable } from "./hasanatSessionGuard.js";
+import { auditCardMutation, auditLedgerMutation } from "./hasanatAudit.js";
 
 export interface RedeemActor {
   userId?: string | null;
@@ -79,6 +80,24 @@ export async function redeemHasanatCard(
 
     await repo.setDistributionStatus(subdomain, card.id, "redeemed");
 
+    await auditLedgerMutation({
+      tenant: subdomain,
+      actorUserId: actor.userId ?? body.approvedByUserId ?? null,
+      action: "CREATE",
+      redemption,
+      reason: body.reward,
+      tag: "hasanat.redeem",
+    });
+    await auditCardMutation({
+      tenant: subdomain,
+      actorUserId: actor.userId ?? null,
+      action: "UPDATE",
+      card: { ...card, status: "redeemed" },
+      before: card,
+      tag: "hasanat.status.active.redeemed",
+      extra: { ledgerId: redemption.id },
+    });
+
     return { redemption };
   });
 }
@@ -138,6 +157,26 @@ export async function voidHasanatRedemption(
     });
 
     await repo.setDistributionStatus(subdomain, card.id, "active");
+
+    await auditLedgerMutation({
+      tenant: subdomain,
+      actorUserId: actor.userId ?? null,
+      action: "CREATE",
+      redemption: reversal,
+      reason: input.reason,
+      tag: "hasanat.reversal",
+      extra: { originalRedemptionId: original.id },
+    });
+    await auditCardMutation({
+      tenant: subdomain,
+      actorUserId: actor.userId ?? null,
+      action: "UPDATE",
+      card: { ...card, status: "active" },
+      before: card,
+      tag: "hasanat.status.redeemed.active",
+      reason: input.reason,
+      extra: { ledgerId: reversal.id },
+    });
 
     return { redemption: reversal };
   });

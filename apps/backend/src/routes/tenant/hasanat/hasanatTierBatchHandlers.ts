@@ -8,7 +8,11 @@
 import type { User } from "@mms/shared";
 import type { hasanatContract } from "@mms/shared";
 import type { ContractRouteArgs, ContractRouteResponse } from "../../../lib/contractRouterTypes.js";
-import { canReadCollection, canWriteCollection } from "../../../services/rbacService.js";
+import {
+  canDeleteCollection,
+  canReadCollection,
+  canWriteCollection,
+} from "../../../services/rbacService.js";
 import { withTenant } from "../../../db/tenant-context.js";
 import { hasanatUseCases } from "../../../hasanat/use-cases/hasanatUseCases.js";
 import { handleContractError } from "../../../lib/contractError.js";
@@ -34,7 +38,10 @@ export async function handleBatchAward({
   try {
     const result = await withTenant(
       String(request.tenant?.id),
-      () => hasanatUseCases.batchAward(body),
+      () =>
+        hasanatUseCases.batchAward(body, {
+          bypassAwardScope: canDeleteCollection(user, "hasanat_distributions"),
+        }),
       { readOnly: false },
     );
     if (result.queued) {
@@ -82,7 +89,11 @@ export async function handleBatchRecipients({
   try {
     const result = await withTenant(
       String(request.tenant?.id),
-      () => hasanatUseCases.batchRecipients({ target }),
+      () =>
+        hasanatUseCases.batchRecipients(
+          { target },
+          { bypassAwardScope: canDeleteCollection(user, "hasanat_distributions") },
+        ),
       { readOnly: true },
     );
     return { status: 200 as const, body: result };
@@ -120,7 +131,8 @@ export async function handleReconcileTiers({
   request,
 }: ArgsOf<"reconcileTiers">): Promise<StatusOf<"reconcileTiers">> {
   const user = request.user as User;
-  if (!canWriteCollection(user, "hasanat_distributions")) return forbidden;
+  // Tenant-wide award rebuild is an administrative repair, not a daily teaching action.
+  if (!canDeleteCollection(user, "hasanat_distributions")) return forbidden;
   try {
     const result = await withTenant(
       String(request.tenant?.id),

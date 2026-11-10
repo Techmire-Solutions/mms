@@ -5195,6 +5195,11 @@ export const APP_TRANSLATIONS_UR: Record<AppTranslationKey, string> = {
     "انعامات کی واپسی کو بغیر دستی جائزے کے خود بخود منظور کریں",
   "hasanat.settings.btnSave": "سیٹنگز محفوظ کریں",
   "hasanat.settings.btnSaved": "محفوظ!",
+  "hasanat.settings.awardScope": "اعطا کا دائرہ",
+  "hasanat.settings.awardScopeHint":
+    "اساتذہ کو صرف انہی کلاسوں میں کارڈ دینے کی اجازت دیں جو وہ پڑھاتے ہیں۔ منتظمین ہمیشہ کہیں بھی دے سکتے ہیں۔",
+  "hasanat.settings.awardScopeTenant": "پوری ورک اسپیس",
+  "hasanat.settings.awardScopeAssignedClasses": "صرف ان کی کلاسیں",
   "hasanat.settings.pointsPerUnit": "فی کارڈ/یونٹ پوائنٹس",
   "hasanat.settings.saved": "حسنات سیٹنگز محفوظ ہو گئیں",
   "hasanat.settings.saveFailed": "حسنات سیٹنگز محفوظ نہیں ہو سکیں",

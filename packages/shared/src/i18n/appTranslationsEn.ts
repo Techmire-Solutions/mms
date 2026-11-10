@@ -5242,6 +5242,11 @@ export const APP_TRANSLATIONS_EN = {
     "Automatically approve rewards redemption without manual review",
   "hasanat.settings.btnSave": "Save Settings",
   "hasanat.settings.btnSaved": "Saved!",
+  "hasanat.settings.awardScope": "Award scope",
+  "hasanat.settings.awardScopeHint":
+    "Restrict instructors to awarding cards inside the classes they teach. Administrators can always award anywhere.",
+  "hasanat.settings.awardScopeTenant": "Whole workspace",
+  "hasanat.settings.awardScopeAssignedClasses": "Only the classes they teach",
   "hasanat.settings.pointsPerUnit": "Points Per Card/Unit",
   "hasanat.settings.saved": "Hasanat settings saved",
   "hasanat.settings.saveFailed": "Could not save Hasanat settings",

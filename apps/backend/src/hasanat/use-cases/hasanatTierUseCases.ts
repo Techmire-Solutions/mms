@@ -21,10 +21,10 @@ import {
   listLiveStudentAwards,
   listStudentAwards,
   listTenantTierState,
-  loadHasanatStudentReport,
   revokeStudentAwards,
   type NewAward,
 } from "../repository/hasanatRepositoryAdapter.js";
+import { auditAwardMutation } from "./hasanatAudit.js";
 
 export interface HasanatStudentAwardView {
   id: string;
@@ -104,6 +104,7 @@ export async function getHasanatStudentSummary(
 export async function reconcileStudentTier(
   tenant: string,
   studentId: string,
+  options: { actorUserId?: string | null } = {},
 ): Promise<{ awarded: number; revoked: number }> {
   const subdomain = tenant.trim().toLowerCase();
   const [ladder, points, awards] = await Promise.all([
@@ -115,17 +116,18 @@ export async function reconcileStudentTier(
   const plan = evaluateTierChange(points.earned, awards, ladder);
 
   let awarded = 0;
+  let grantedAwardId: string | null = null;
   if (plan.award) {
-    awarded = (
-      await insertStudentAwards(subdomain, [
-        {
-          studentId,
-          tierKey: plan.award.key,
-          tierName: plan.award.name,
-          earnedSnapshot: points.earned,
-        },
-      ])
-    ).length;
+    const inserted = await insertStudentAwards(subdomain, [
+      {
+        studentId,
+        tierKey: plan.award.key,
+        tierName: plan.award.name,
+        earnedSnapshot: points.earned,
+      },
+    ]);
+    awarded = inserted.length;
+    grantedAwardId = inserted[0]?.id ?? null;
   }
 
   const revoked = await revokeStudentAwards(
@@ -133,6 +135,41 @@ export async function reconcileStudentTier(
     plan.revoke.map((award) => award.id),
     "recalculated_after_reduction",
   );
+
+  const now = new Date().toISOString();
+  if (plan.award && grantedAwardId) {
+    await auditAwardMutation({
+      tenant: subdomain,
+      actorUserId: options.actorUserId,
+      action: "CREATE",
+      award: {
+        id: grantedAwardId,
+        tierKey: plan.award.key,
+        tierName: plan.award.name,
+        earnedSnapshot: points.earned,
+        awardedAt: now,
+      },
+      tag: "hasanat.tier.granted",
+    });
+  }
+  for (const award of plan.revoke) {
+    await auditAwardMutation({
+      tenant: subdomain,
+      actorUserId: options.actorUserId,
+      action: "UPDATE",
+      award: {
+        id: award.id,
+        tierKey: award.tierKey,
+        tierName: award.tierName ?? "",
+        earnedSnapshot: award.earnedSnapshot,
+        awardedAt: award.awardedAt ?? now,
+        revokedAt: now,
+        revokedReason: "recalculated_after_reduction",
+      },
+      reason: "recalculated_after_reduction",
+      tag: "hasanat.tier.revoked",
+    });
+  }
 
   return { awarded, revoked };
 }
@@ -148,6 +185,7 @@ async function applyTierPlans(
   tenant: string,
   ladder: HasanatTier[],
   states: readonly TierStateRow[],
+  actorUserId?: string | null,
 ): Promise<TierReconcileResult> {
   const toInsert: NewAward[] = [];
   const toRevoke: string[] = [];
@@ -168,6 +206,49 @@ async function applyTierPlans(
 
   const inserted = await insertStudentAwards(tenant, toInsert);
   const revoked = await revokeStudentAwards(tenant, toRevoke, "recalculated_after_reduction");
+
+  // Award evidence is audited per record so a tier can never change without a hash-chained row.
+  const now = new Date().toISOString();
+  for (const award of inserted) {
+    await auditAwardMutation({
+      tenant,
+      actorUserId,
+      action: "CREATE",
+      award: {
+        id: award.id,
+        tierKey: award.tierKey,
+        tierName: award.tierName ?? "",
+        earnedSnapshot: award.earnedSnapshot,
+        awardedAt: now,
+      },
+      tag: "hasanat.tier.granted",
+    });
+  }
+  if (toRevoke.length > 0) {
+    const liveByeId = new Map<string, { tierKey: string }>();
+    for (const state of states) {
+      for (const award of state.liveAwards) liveByeId.set(award.id, { tierKey: award.tierKey });
+    }
+    for (const awardId of toRevoke) {
+      const live = liveByeId.get(awardId);
+      await auditAwardMutation({
+        tenant,
+        actorUserId,
+        action: "UPDATE",
+        award: {
+          id: awardId,
+          tierKey: live?.tierKey ?? "",
+          tierName: "",
+          earnedSnapshot: 0,
+          awardedAt: now,
+          revokedAt: now,
+          revokedReason: "recalculated_after_reduction",
+        },
+        reason: "recalculated_after_reduction",
+        tag: "hasanat.tier.revoked",
+      });
+    }
+  }
   return { students: states.length, awarded: inserted.length, revoked };
 }
 
@@ -178,81 +259,35 @@ async function applyTierPlans(
 export async function reconcileTiersForStudents(
   tenant: string,
   studentIds: readonly string[],
+  options: { actorUserId?: string | null } = {},
 ): Promise<TierReconcileResult> {
   if (studentIds.length === 0) return { students: 0, awarded: 0, revoked: 0 };
   const subdomain = tenant.trim().toLowerCase();
   const ladder = await loadHasanatTierLadder(subdomain);
   const states = await listTenantTierState(subdomain, studentIds);
-  return applyTierPlans(subdomain, ladder, states);
+  return applyTierPlans(subdomain, ladder, states, options.actorUserId);
 }
 
 /** Reconcile the students who own the given cards (after a delete/restore). */
 export async function reconcileTiersForCards(
   tenant: string,
   cardIds: readonly string[],
+  options: { actorUserId?: string | null } = {},
 ): Promise<TierReconcileResult> {
   const subdomain = tenant.trim().toLowerCase();
   const studentIds = await findStudentsForCards(subdomain, cardIds);
-  return reconcileTiersForStudents(subdomain, studentIds);
+  return reconcileTiersForStudents(subdomain, studentIds, options);
 }
 
 /** Tenant-wide reconciliation (admin backfill): one state query, batched writes. */
-export async function reconcileTenantTiers(tenant: string): Promise<TierReconcileResult> {
+export async function reconcileTenantTiers(
+  tenant: string,
+  options: { actorUserId?: string | null } = {},
+): Promise<TierReconcileResult> {
   const subdomain = tenant.trim().toLowerCase();
   const ladder = await loadHasanatTierLadder(subdomain);
   const states = await listTenantTierState(subdomain);
-  return applyTierPlans(subdomain, ladder, states);
+  return applyTierPlans(subdomain, ladder, states, options.actorUserId);
 }
 
-export interface HasanatStudentReportEntry {
-  studentId: string;
-  studentName: string;
-  className: string;
-  faculty: string;
-  earned: number;
-  balance: number;
-  redeemed: number;
-  tierKey: string;
-  tierName: string;
-  pointsToNext: number;
-  percentToNext: number;
-}
-
-export interface HasanatStudentReport {
-  rows: HasanatStudentReportEntry[];
-  tiers: HasanatTier[];
-}
-
-/**
- * Per-student report rows with their derived tier — one read-model query plus the pure ladder,
- * so the report never aggregates a paginated collection and never needs a per-student request.
- */
-export async function getHasanatStudentReport(
-  tenant: string,
-  filters: {
-    sessionId?: string | null;
-    classId?: string | null;
-    from?: string | null;
-    to?: string | null;
-  } = {},
-): Promise<HasanatStudentReport> {
-  const subdomain = tenant.trim().toLowerCase();
-  const [ladder, rows] = await Promise.all([
-    loadHasanatTierLadder(subdomain),
-    loadHasanatStudentReport(subdomain, filters),
-  ]);
-
-  return {
-    tiers: ladder,
-    rows: rows.map((row) => {
-      const progress = tierProgress(row.earned, ladder);
-      return {
-        ...row,
-        tierKey: progress.tier.key,
-        tierName: progress.tier.name,
-        pointsToNext: progress.pointsToNext,
-        percentToNext: progress.percentToNext,
-      };
-    }),
-  };
-}
+export * from "./hasanatStudentReadUseCases.js";

@@ -34,7 +34,11 @@ export async function handleCreateDistribution({
   try {
     const distribution = await withTenant(
       String(request.tenant?.id),
-      () => hasanatUseCases.createDistribution(body),
+      () =>
+        hasanatUseCases.createDistribution(body, {
+          // Admins (award-reversal right) issue outside their teaching scope.
+          bypassAwardScope: canDeleteCollection(user, "hasanat_distributions"),
+        }),
       { readOnly: false },
     );
     return { status: 201 as const, body: { distribution } };
@@ -75,6 +79,11 @@ export async function handleChangeDistributionStatus({
 }: ArgsOf<"changeDistributionStatus">): Promise<StatusOf<"changeDistributionStatus">> {
   const user = request.user as User;
   if (!canWriteCollection(user, "hasanat_distributions")) return forbidden;
+  // Returning a card reverses an award (it stops counting toward points), so it needs the
+  // same right as voiding: `hasanat.delete`, not plain write.
+  if (body.status === "returned" && !canDeleteCollection(user, "hasanat_distributions")) {
+    return forbidden;
+  }
   try {
     const distribution = await withTenant(
       String(request.tenant?.id),
@@ -223,7 +232,8 @@ export async function handleReverseRedemption({
   request,
 }: ArgsOf<"reverseRedemption">): Promise<StatusOf<"reverseRedemption">> {
   const user = request.user as User;
-  if (!canWriteCollection(user, "hasanat_distributions")) return forbidden;
+  // Voiding appends a reversal to the ledger: an evidence correction, not a daily write.
+  if (!canDeleteCollection(user, "hasanat_distributions")) return forbidden;
   try {
     const result = await withTenant(
       String(request.tenant?.id),

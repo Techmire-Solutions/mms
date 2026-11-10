@@ -11,6 +11,7 @@ import {
   generateClientEntityId,
   type Distribution,
   type DistributionCreate,
+  type HasanatAwardScope,
   validateIssuance,
 } from "@mms/shared";
 import { withTenant } from "../../db/tenant-context.js";
@@ -20,6 +21,8 @@ import { throwRuleViolation } from "./hasanatRuleErrors.js";
 import type { HasanatRepository } from "../repository/hasanatRepository.js";
 import { reconcileStudentTier } from "./hasanatTierUseCases.js";
 import { assertSessionWritable } from "./hasanatSessionGuard.js";
+import { assertAwardScope } from "./hasanatAwardScope.js";
+import { auditCardMutation } from "./hasanatAudit.js";
 import { findSessionIdForClass } from "../repository/hasanatRepositoryAdapter.js";
 
 export interface IssueCardInput {
@@ -28,6 +31,12 @@ export interface IssueCardInput {
   actorUserId: string;
   actorName?: string | null;
   quotaLimit: number | null | undefined;
+  /** Workspace award-scope preference (`tenant` disables the instructor scope check). */
+  awardScope?: HasanatAwardScope;
+  /** Admins (holders of `hasanat.delete`) award outside their classes. */
+  bypassAwardScope?: boolean;
+  /** Audit reason override (the batch path has no per-card reason). */
+  reason?: string | null;
 }
 
 /**
@@ -56,6 +65,17 @@ export async function issueHasanatCard(
       input.body.sessionId ??
       (input.body.classId ? await findSessionIdForClass(subdomain, input.body.classId) : null);
     await assertSessionWritable(subdomain, targetSessionId);
+
+    // Who may be awarded is checked before any rule so an out-of-scope request never reads stock.
+    await assertAwardScope({
+      tenant: subdomain,
+      repo,
+      actorUserId: input.actorUserId,
+      bypass: input.bypassAwardScope === true,
+      awardScope: input.awardScope ?? "tenant",
+      classIds: [input.body.classId ?? null],
+      studentIds: [input.body.recipientStudentId ?? null],
+    });
 
     // Serialize the quota check with concurrent issues by the same instructor on the same day.
     await repo.lockInstructorQuota(subdomain, input.actorUserId, input.body.issuedDate);
@@ -107,9 +127,20 @@ export async function issueHasanatCard(
       issuedBy: input.actorName ?? input.body.issuedBy ?? null,
     });
 
-    // Tier/badge evidence is reconciled in the same transaction as the points change.
+    // Audit first, then tier evidence — both ride the same transaction as the points change.
+    await auditCardMutation({
+      tenant: subdomain,
+      actorUserId: input.actorUserId,
+      action: "CREATE",
+      card,
+      reason: input.reason ?? null,
+      tag: "hasanat.issue",
+    });
+
     if (card.recipientStudentId) {
-      await reconcileStudentTier(subdomain, card.recipientStudentId);
+      await reconcileStudentTier(subdomain, card.recipientStudentId, {
+        actorUserId: input.actorUserId,
+      });
     }
 
     return card;
