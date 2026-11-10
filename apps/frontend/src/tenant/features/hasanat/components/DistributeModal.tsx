@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useRef, useState } from "react";
 import { Star } from "lucide-react";
 
 import { FormModal } from "@/components/app/FormModal";
@@ -26,7 +26,8 @@ export interface DistributeModalProps {
   denoms: Denomination[];
   batches: StockBatch[];
   onClose: () => void;
-  onSave: (dist: Distribution) => void | Promise<void>;
+  /** `clientRequestId` rides along so a replayed submit returns the original card, not a second one. */
+  onSave: (dist: Distribution & { clientRequestId?: string }) => void | Promise<void>;
   onDenomsChange?: (denoms: Denomination[]) => Promise<void> | void;
 }
 
@@ -41,6 +42,9 @@ export function DistributeModal({
   const { t } = useTranslation();
   const { user: authUser } = useAuth();
   const [submitting, setSubmitting] = useState(false);
+  /** Synchronous guard: two events in the same frame both read `submitting === false`. */
+  const submittingRef = useRef(false);
+  const [requestId, setRequestId] = useState<string>(() => generateClientEntityId("hdreq"));
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [submitError, setSubmitError] = useState<string | null>(null);
   const [data, setData] = useState<Partial<Distribution>>(() => ({
@@ -85,6 +89,8 @@ export function DistributeModal({
       });
       setErrors({});
       setSubmitError(null);
+      // One idempotency key per opened draft: a retried submit replays instead of awarding twice.
+      setRequestId(generateClientEntityId("hdreq"));
     }
   }
 
@@ -102,6 +108,7 @@ export function DistributeModal({
   const { orderedFields, isFieldEnabled, isFieldRequired } = useHasanatConfig();
 
   const handleSave = async () => {
+    if (submittingRef.current) return;
     const newErrors: Record<string, string> = {};
     if (!data.denominationId) {
       newErrors.denominationId = t("common.required");
@@ -158,14 +165,16 @@ export function DistributeModal({
     } else {
       delete payload.recipientFacultyId;
     }
+    submittingRef.current = true;
     setSubmitting(true);
     try {
-      await onSave(payload);
+      await onSave({ ...payload, clientRequestId: requestId });
     } catch (error: unknown) {
       // The DB rejects an over-issue (`hasanat_batches_remaining_chk`) and the API answers 409;
       // show that message instead of dropping the failure.
       setSubmitError(error instanceof Error ? error.message : t("common.formPleaseFixErrors"));
     } finally {
+      submittingRef.current = false;
       setSubmitting(false);
     }
   };

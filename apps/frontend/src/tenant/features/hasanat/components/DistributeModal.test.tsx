@@ -255,6 +255,45 @@ describe("DistributeModal Component", () => {
     );
   });
 
+  it("sends one idempotent request per opened draft, even on a double submit", async () => {
+    const onSave = vi.fn(async (_dist: { clientRequestId?: string }) => undefined);
+
+    await act(async () => {
+      root.render(
+        <DistributeModal
+          open={true}
+          denoms={mockDenoms}
+          batches={mockBatches}
+          onClose={vi.fn()}
+          onSave={onSave}
+        />,
+      );
+    });
+
+    const recipientInput = container.querySelector(
+      '[data-testid="registry-person-select"]',
+    ) as HTMLInputElement;
+    const reasonInput = container.querySelector("#reason") as HTMLInputElement;
+    const saveBtn = container.querySelector(
+      '[data-testid="distribute-save-btn"]',
+    ) as HTMLButtonElement;
+
+    await act(async () => {
+      setInputValue(recipientInput, "student-123");
+      setInputValue(reasonInput, "Quran memorization excellence");
+    });
+
+    // Two clicks in the same frame: the state flag has not committed yet, the ref guard must hold.
+    await act(async () => {
+      saveBtn.click();
+      saveBtn.click();
+    });
+
+    expect(onSave).toHaveBeenCalledTimes(1);
+    const payload = onSave.mock.calls[0]?.[0];
+    expect(payload.clientRequestId).toMatch(/^hdreq[0-9a-f-]{20,}$/);
+  });
+
   it("displays inline validation errors when submitted without required fields", async () => {
     const onSave = vi.fn();
 

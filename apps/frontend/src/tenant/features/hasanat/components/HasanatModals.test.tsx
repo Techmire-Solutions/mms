@@ -173,6 +173,37 @@ describe("Hasanat Sub-Modals", () => {
       expect(container.querySelector("#pts-used-error")).toBeNull();
     });
 
+    it("submits one idempotent redemption on a double click", async () => {
+      const onSave = vi.fn(async (_redemption: { clientRequestId?: string }) => undefined);
+      await act(async () => {
+        root.render(
+          <RedeemModal
+            open={true}
+            distributions={mockDistributions}
+            onClose={vi.fn()}
+            onSave={onSave}
+          />,
+        );
+      });
+
+      const rewardInput = container.querySelector("#reward-given") as HTMLInputElement;
+      await act(async () => {
+        setInputValue(rewardInput, "Book Voucher");
+      });
+
+      const saveBtn = container.querySelector(
+        '[data-testid="modal-save-btn"]',
+      ) as HTMLButtonElement;
+      await act(async () => {
+        saveBtn.click();
+        saveBtn.click();
+      });
+
+      expect(onSave).toHaveBeenCalledTimes(1);
+      const payload = onSave.mock.calls[0]?.[0];
+      expect(payload.clientRequestId).toMatch(/^redreq[0-9a-f-]{20,}$/);
+    });
+
     it("submits redemption when required fields are populated", async () => {
       const onSave = vi.fn();
       await act(async () => {

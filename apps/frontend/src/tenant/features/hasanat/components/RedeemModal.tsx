@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useRef, useState } from "react";
 import { Gift } from "lucide-react";
 import { type Redemption, type Distribution } from "@/lib/data/hasanatData";
 import { DatePicker } from "@/components/app/DatePicker";
@@ -15,7 +15,8 @@ interface RedeemModalProps {
   open: boolean;
   distributions: Distribution[];
   onClose: () => void;
-  onSave: (redemption: Redemption) => void | Promise<void>;
+  /** `clientRequestId` lets a retried redeem replay the original ledger row instead of 409-ing. */
+  onSave: (redemption: Redemption & { clientRequestId?: string }) => void | Promise<void>;
 }
 
 export function RedeemModal({ open, distributions, onClose, onSave }: RedeemModalProps) {
@@ -25,6 +26,9 @@ export function RedeemModal({ open, distributions, onClose, onSave }: RedeemModa
   );
   const [approvedByName, setApprovedByName] = useState("");
   const [submitting, setSubmitting] = useState(false);
+  /** Synchronous guard: two events in the same frame both read `submitting === false`. */
+  const submittingRef = useRef(false);
+  const [requestId, setRequestId] = useState<string>(() => generateClientEntityId("redreq"));
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [submitError, setSubmitError] = useState<string | null>(null);
   const [data, setData] = useState<Partial<Redemption>>({
@@ -70,10 +74,13 @@ export function RedeemModal({ open, distributions, onClose, onSave }: RedeemModa
       setApprovedByName("");
       setErrors({});
       setSubmitError(null);
+      // One idempotency key per opened draft: a retried redeem replays the same ledger row.
+      setRequestId(generateClientEntityId("redreq"));
     }
   }
 
   const handleSave = async () => {
+    if (submittingRef.current) return;
     const newErrors: Record<string, string> = {};
     if (!data.distributionId) {
       newErrors.denominationId = t("common.required");
@@ -94,6 +101,7 @@ export function RedeemModal({ open, distributions, onClose, onSave }: RedeemModa
     setSubmitError(null);
     const approvedBy =
       approvedByName || (data.approvedByUserId ? `User #${data.approvedByUserId}` : "");
+    submittingRef.current = true;
     setSubmitting(true);
     try {
       await onSave({
@@ -102,11 +110,13 @@ export function RedeemModal({ open, distributions, onClose, onSave }: RedeemModa
         pointsUsed: Number(data.pointsUsed),
         studentName: selectedDistribution?.recipientName || "",
         approvedBy,
-      } as Redemption);
+        clientRequestId: requestId,
+      } as Redemption & { clientRequestId: string });
     } catch (error: unknown) {
       // Already redeemed / points above the card value are 409s from the atomic endpoint.
       setSubmitError(error instanceof Error ? error.message : t("common.formPleaseFixErrors"));
     } finally {
+      submittingRef.current = false;
       setSubmitting(false);
     }
   };

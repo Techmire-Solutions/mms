@@ -5084,6 +5084,7 @@ export const APP_TRANSLATIONS_AR: Record<AppTranslationKey, string> = {
   "hasanat.item.distributions": "توزيعات",
   "hasanat.loadFailed": "فشل تحميل توزيعات الحسنات",
   "hasanat.loadFailedHint": "تحقق من الاتصال وحاول مرة أخرى.",
+  "hasanat.redemptionsLoadFailed": "تعذّر تحميل سجل الاستبدال",
   "hasanat.messaging.recipient": "المستفيد",
   "hasanat.metrics.active": "نشط",
   "hasanat.metrics.available": "المتاح",
