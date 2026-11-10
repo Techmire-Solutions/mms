@@ -115,7 +115,7 @@ beforeAll(async () => {
       workspaceSubdomain: TENANT,
       denominationId: DENOM,
       denominationName: "Gold",
-      quantity: 10,
+      quantity: 100,
       addedDate: ISSUED_DATE,
       addedBy: ACTOR.displayName,
       note: "",
