@@ -1576,6 +1576,41 @@
       "when": 1795172400000,
       "tag": "0224_attendance_half_day",
       "breakpoints": true
+    },
+    {
+      "idx": 225,
+      "version": "7",
+      "when": 1795258800000,
+      "tag": "0225_hasanat_stock_integrity",
+      "breakpoints": true
+    },
+    {
+      "idx": 226,
+      "version": "7",
+      "when": 1795345200000,
+      "tag": "0226_hasanat_ledger_and_person_fks",
+      "breakpoints": true
+    },
+    {
+      "idx": 227,
+      "version": "7",
+      "when": 1795431600000,
+      "tag": "0227_hasanat_session_attribution",
+      "breakpoints": true
+    },
+    {
+      "idx": 228,
+      "version": "7",
+      "when": 1795518000000,
+      "tag": "0228_hasanat_query_indexes",
+      "breakpoints": true
+    },
+    {
+      "idx": 229,
+      "version": "7",
+      "when": 1795604400000,
+      "tag": "0229_hasanat_rls_and_timestamps",
+      "breakpoints": true
     }
   ]
 }

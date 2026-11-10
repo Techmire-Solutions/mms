@@ -17,6 +17,7 @@ export function distributionRowToRecord(row: DistRow): Distribution {
     recipientName: row.recipientName ?? "",
     recipientClass: row.recipientClass,
     classId: row.classId ?? null,
+    sessionId: row.sessionId ?? null,
     quantity: row.quantity,
     reason: row.reason,
     issuedDate: row.issuedDate,

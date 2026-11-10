@@ -35,3 +35,4 @@ export {
   replaceRedemptionsForWorkspace,
   deleteHasanatByWorkspace,
 } from "./hasanatRedemptionsRepository.js";
+export { redeemCard } from "./hasanatRedeemCard.js";

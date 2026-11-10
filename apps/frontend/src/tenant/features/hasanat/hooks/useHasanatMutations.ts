@@ -1,6 +1,12 @@
 import { useQueryClient } from "@tanstack/react-query";
 import type { MutateOptions } from "@tanstack/react-query";
-import type { Denomination, StockBatch, Distribution, Redemption } from "@mms/shared";
+import type {
+  Denomination,
+  StockBatch,
+  Distribution,
+  Redemption,
+  RedeemCardBody,
+} from "@mms/shared";
 import { tsrClient } from "@/lib/api";
 import { invalidateHasanatQueries } from "./invalidateHasanatQueries";
 
@@ -42,6 +48,11 @@ export function useHasanatMutations() {
     onSuccess: () => invalidateHasanatQueries(queryClient),
   });
 
+  // Atomic burn: the server locks the card and writes the ledger row + status together.
+  const redeemCard = tsrClient.hasanat.redeemDistribution.useMutation({
+    onSuccess: () => invalidateHasanatQueries(queryClient),
+  });
+
   return {
     replaceDenoms: {
       ...replaceDenoms,
@@ -74,6 +85,13 @@ export function useHasanatMutations() {
         replaceRedemptions.mutate({ body: redemptions }, opts),
       mutateAsync: (redemptions: Redemption[]) =>
         replaceRedemptions.mutateAsync({ body: redemptions }),
+    },
+    redeemCard: {
+      ...redeemCard,
+      mutate: (distributionId: string, body: RedeemCardBody, opts?: MutateOptions) =>
+        redeemCard.mutate({ params: { id: distributionId }, body }, opts),
+      mutateAsync: (distributionId: string, body: RedeemCardBody) =>
+        redeemCard.mutateAsync({ params: { id: distributionId }, body }),
     },
     deleteDistribution: {
       ...deleteDistribution,

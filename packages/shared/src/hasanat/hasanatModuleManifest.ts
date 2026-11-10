@@ -79,6 +79,8 @@ export const distributionRecordSchema = z
     recipientClass: z.string().default(""),
     /** `session_classes.id` at issue time; `recipientClass` is the display snapshot. */
     classId: z.string().nullable().optional(),
+    /** `sessions.id` at issue time — stamped by the DB from `classId`. */
+    sessionId: z.string().nullable().optional(),
     quantity: z.number().default(1),
     reason: z.string().default(""),
     issuedDate: z.string(),
@@ -108,6 +110,7 @@ export const distributionRecordInsertSchema = z
     recipientName: z.string().optional().default(""),
     recipientClass: z.string().optional().default(""),
     classId: z.string().nullable().optional(),
+    sessionId: z.string().nullable().optional(),
     quantity: z.number().positive().default(1),
     reason: z.string().optional().default(""),
     issuedDate: isoDateSchema,
@@ -135,6 +138,7 @@ export const redemptionRecordSchema = z
   .object({
     id: z.string(),
     distributionId: z.string(),
+    studentId: z.string().nullable().optional(),
     studentName: z.string().optional().default(""),
     reward: z.string().default(""),
     pointsUsed: z.number().default(0),
@@ -150,9 +154,10 @@ export const redemptionRecordInsertSchema = z
   .object({
     id: z.string().optional(),
     distributionId: z.string().min(1, "Distribution is required"),
+    studentId: z.string().nullable().optional(),
     studentName: z.string().optional().default(""),
     reward: z.string().min(1, "Reward is required"),
-    pointsUsed: z.number().nonnegative().default(0),
+    pointsUsed: z.number().positive("Points used must be greater than 0"),
     date: isoDateSchema,
     approvedByUserId: z.string().nullable().optional(),
     approvedBy: z.string().nullable().optional(),
@@ -162,6 +167,25 @@ export const redemptionRecordInsertSchema = z
 export type Redemption = z.infer<typeof redemptionRecordSchema>;
 export type RedemptionInsert = z.infer<typeof redemptionRecordInsertSchema>;
 export const redemptionListSchema = z.array(redemptionRecordSchema);
+
+/**
+ * Body for the atomic `POST /api/hasanat/distributions/:id/redeem` action.
+ *
+ * The card id lives in the path; the server locks the card row, validates its value and writes the
+ * ledger row plus the card status in one transaction. Clients must not model a redemption as
+ * "insert ledger row, then update the card" — that flow can lose one write and double-spend.
+ */
+export const redeemCardBodySchema = z
+  .object({
+    reward: z.string().min(1, "Reward is required"),
+    pointsUsed: z.number().positive("Points used must be greater than 0"),
+    date: isoDateSchema,
+    approvedByUserId: z.string().nullable().optional(),
+    approvedBy: z.string().nullable().optional(),
+  })
+  .strict();
+
+export type RedeemCardBody = z.infer<typeof redeemCardBodySchema>;
 
 /** Hasanat Cards module manifest — aligns with globle1 universal module architecture. */
 export const HASANAT_MODULE_MANIFEST = {

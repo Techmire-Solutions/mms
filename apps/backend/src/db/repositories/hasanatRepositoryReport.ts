@@ -20,24 +20,13 @@ function activeDistributionWhere(subdomain: string, alias = "hd"): ReturnType<ty
   `;
 }
 
-function denominationPointsSql(hdAlias = "hd", denAlias = "den"): ReturnType<typeof sql> {
-  return sql`
-    COALESCE(
-      ${sql.raw(`${denAlias}.points`)},
-      CASE
-        WHEN ${sql.raw(`${hdAlias}.denomination_id`)} = 'den1' THEN 50
-        WHEN ${sql.raw(`${hdAlias}.denomination_id`)} = 'den2' THEN 150
-        WHEN ${sql.raw(`${hdAlias}.denomination_id`)} = 'den3' THEN 500
-        WHEN ${sql.raw(`${hdAlias}.denomination_id`)} = 'den4' THEN 1000
-        WHEN ${sql.raw(`${hdAlias}.denomination_id`)} = 'den5' THEN 2500
-        WHEN lower(trim(${sql.raw(`${hdAlias}.denomination_name`)})) LIKE '%silver%' THEN 150
-        WHEN lower(trim(${sql.raw(`${hdAlias}.denomination_name`)})) LIKE '%gold%' THEN 500
-        WHEN lower(trim(${sql.raw(`${hdAlias}.denomination_name`)})) LIKE '%platinum%' THEN 1000
-        WHEN lower(trim(${sql.raw(`${hdAlias}.denomination_name`)})) LIKE '%diamond%' THEN 2500
-        ELSE 50
-      END
-    )
-  `;
+/**
+ * Points for one issued card. Single definition for the whole module: the denomination's own
+ * `points` value, never a name/id guess. A card whose denomination row is gone contributes 0,
+ * matching `aggregateHasanatCommandMetrics`.
+ */
+function denominationPointsSql(denAlias = "den"): ReturnType<typeof sql> {
+  return sql`COALESCE(${sql.raw(`${denAlias}.points`)}, 0)`;
 }
 
 /** Hasanat report aggregates for ComparisonMode (session points + dual monthly ranges). */
@@ -61,7 +50,10 @@ export async function loadHasanatReportAggregatesSql(
 
     const sessionIds = dedupeTrimmedIds(comparisonQuery.sessionIds ?? []);
     if (sessionIds.length > 0) {
-      const pointsExpr = denominationPointsSql("hd", "den");
+      const pointsExpr = denominationPointsSql("den");
+      // Points are attributed by the card's own session (`session_id`, stamped at issue time).
+      // Joining through enrollments instead added a student's *lifetime* points to every session
+      // they were enrolled in.
       const compareSessionResult = await tx.execute(sql`
         WITH selected AS (
           SELECT s.id AS "sessionId"
@@ -72,30 +64,18 @@ export async function loadHasanatReportAggregatesSql(
               sessionIds.map((id) => sql`${id}`),
               sql`, `,
             )})
-        ),
-        session_students AS (
-          SELECT DISTINCT
-            sel."sessionId",
-            e.student_id AS "studentId"
-          FROM selected sel
-          INNER JOIN enrollments e
-            ON e.workspace_subdomain = ${subdomain}
-            AND e.deleted_at IS NULL
-            AND lower(trim(e.status)) <> 'cancelled'
-            AND e.session_id = sel."sessionId"
         )
         SELECT
-          ss."sessionId" AS "sessionId",
+          sel."sessionId" AS "sessionId",
           COALESCE(SUM(hd.quantity * ${pointsExpr}), 0)::float8 AS hasanat
-        FROM session_students ss
+        FROM selected sel
         LEFT JOIN hasanat_distributions hd
           ON ${activeDistributionWhere(subdomain, "hd")}
-          AND ss."studentId" IS NOT NULL
-          AND hd.recipient_student_id = ss."studentId"
+          AND hd.session_id = sel."sessionId"
         LEFT JOIN hasanat_denoms den
           ON den.workspace_subdomain = ${subdomain}
           AND den.id = hd.denomination_id
-        GROUP BY ss."sessionId"
+        GROUP BY sel."sessionId"
       `);
 
       comparison.sessions = ensureAllSessionsInComparison(
@@ -118,7 +98,7 @@ export async function loadHasanatReportAggregatesSql(
       const cleanFrom = from?.trim();
       const cleanTo = to?.trim();
       if (!cleanFrom || !cleanTo) return [];
-      const pointsExpr = denominationPointsSql("hd", "den");
+      const pointsExpr = denominationPointsSql("den");
       const monthResult = await tx.execute(sql`
         SELECT
           to_char(hd.issued_date, 'YYYY-MM') AS "monthKey",

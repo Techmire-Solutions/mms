@@ -39,6 +39,16 @@ function createFakeRepo(): HasanatRepository {
     saveRedemption: vi.fn().mockResolvedValue(undefined),
     bulkSaveRedemptions: vi.fn().mockResolvedValue(undefined),
     replaceRedemptionsForWorkspace: vi.fn().mockResolvedValue(undefined),
+    redeemCard: vi.fn().mockResolvedValue({
+      redemption: {
+        id: "red1",
+        distributionId: "hd1",
+        studentName: "",
+        reward: "Book",
+        pointsUsed: 50,
+        date: "2026-01-01",
+      },
+    }),
 
     aggregateHasanatCommandMetrics: vi.fn().mockResolvedValue({
       totalStock: 10,
@@ -70,6 +80,33 @@ describe("hasanat use-cases (DI with fake repository)", () => {
 
     expect(result).toEqual({ distributions: [], total: 0, page: 1, limit: 15, hasMore: false });
     expect(repo.listDistributionsPage).toHaveBeenCalledWith("demo", { page: 2, limit: 15 });
+  });
+
+  it("redeemCard delegates to the atomic repository path with the active tenant", async () => {
+    const repo = createFakeRepo();
+    const useCases = createHasanatUseCases(repo);
+    const body = {
+      reward: "Islamic Storybook",
+      pointsUsed: 50,
+      date: "2026-11-10",
+      approvedByUserId: "u-1",
+      approvedBy: "Ustadha Maryam",
+    };
+
+    const result = await runWithTenant("demo", () => useCases.redeemCard("hd-1", body));
+
+    expect(result.redemption.distributionId).toBe("hd1");
+    expect(repo.redeemCard).toHaveBeenCalledWith("demo", "hd-1", body);
+  });
+
+  it("redeemCard fails closed without a request tenant", async () => {
+    const repo = createFakeRepo();
+    const useCases = createHasanatUseCases(repo);
+
+    await expect(
+      useCases.redeemCard("hd-1", { reward: "Book", pointsUsed: 50, date: "2026-11-10" }),
+    ).rejects.toThrow(/Tenant context is required/i);
+    expect(repo.redeemCard).not.toHaveBeenCalled();
   });
 
   it("loadHasanatCommandMetrics delegates to the injected repository", async () => {

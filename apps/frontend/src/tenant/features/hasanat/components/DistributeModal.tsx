@@ -161,6 +161,10 @@ export function DistributeModal({
     setSubmitting(true);
     try {
       await onSave(payload);
+    } catch (error: unknown) {
+      // The DB rejects an over-issue (`hasanat_batches_remaining_chk`) and the API answers 409;
+      // show that message instead of dropping the failure.
+      setSubmitError(error instanceof Error ? error.message : t("common.formPleaseFixErrors"));
     } finally {
       setSubmitting(false);
     }

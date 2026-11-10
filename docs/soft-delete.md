@@ -211,7 +211,7 @@ index('students_workspace_deleted_records_idx')
 
 > **Production evidence (Lightdash):** Tables with both `WHERE deleted_at IS NULL` and `WHERE deleted_at IS NOT NULL` partial indexes outperform single-predicate indexes by up to 276× on skewed-status tables (17M active vs 3M archived rows).
 
-> **Gap (open):** Non-gold-standard tables (faculty, sessions, enrollments, finance, accounting, obligations, hasanat, examinations) currently have only Category A indexes. Category B and C partial indexes are pending migration `085`.
+> **Gap (open):** Non-gold-standard tables (faculty, sessions, enrollments, finance, accounting, obligations, examinations) currently have only Category A indexes. Category B and C partial indexes are pending migration `085`. `hasanat_distributions` is **closed**: 0047/0104 ship `hasanat_dist_workspace_active_idx` (B) and `hasanat_dist_workspace_deleted_records_idx` (C), and 0228 adds the `(tenant, updated_at DESC) WHERE deleted_at IS NULL` sort index.
 
 ### 2.4 Partial Unique Indexes — Soft-Delete Aware Uniqueness
 
@@ -387,6 +387,7 @@ PostgreSQL 15 introduced `UNIQUE NULLS NOT DISTINCT`, which treats `NULL` values
 | `accounting.ts` | `accounting_accounts`, `accounting_fiscal_years`, `accounting_entries` |
 | `obligations.ts` | `obligation_collections` |
 | `hasanat.ts` | `hasanat_distributions` |
+| `hasanat.ts` (ledger) | `hasanat_redemptions` — **append-only**: no sextuple, `forbid_hard_delete` guard, and child reads join the parent so a trashed card stops contributing (migration `0226`) |
 | `examinations.ts` | `exams`, `questions`, `tests`, `assessment_results` |
 | `examinationQuestionBankTables.ts` | question bank entity tables |
 | `messaging.ts` | `message_logs` |

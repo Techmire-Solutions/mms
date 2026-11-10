@@ -8,6 +8,7 @@ import type {
   HasanatCommandMetricsSnapshot,
   HasanatReportAggregates,
   HasanatReportComparisonQuery,
+  RedeemCardBody,
   WidgetQuery,
   WidgetAggregateResult,
 } from "@mms/shared";
@@ -80,6 +81,12 @@ export interface HasanatRepository {
   saveRedemption(tenant: string, record: Redemption): Promise<void>;
   bulkSaveRedemptions(tenant: string, records: Redemption[]): Promise<void>;
   replaceRedemptionsForWorkspace(tenant: string, records: Redemption[]): Promise<void>;
+  /** Atomic redemption: locks the card, validates its value, writes the ledger row + status. */
+  redeemCard(
+    tenant: string,
+    distributionId: string,
+    body: RedeemCardBody,
+  ): Promise<{ redemption: Redemption }>;
 
   // Aggregates
   aggregateHasanatCommandMetrics(tenant: string): Promise<HasanatCommandMetricsSnapshot>;
