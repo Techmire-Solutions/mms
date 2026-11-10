@@ -210,12 +210,12 @@ describe("attendance OCC under concurrency (real Postgres)", () => {
     ];
 
     let version: number | undefined;
-    for (const status of sequence) {
+    for (const [step, status] of sequence.entries()) {
       const [persisted] = await bulkSaveAttendanceRecords(TENANT, [
         mark(STUDENTS[0]!, status, version),
       ]);
       version = persisted?.version;
-      expect(version).toBe((sequence.indexOf(status) ?? 0) + 1);
+      expect(version).toBe(step + 1);
     }
 
     const rows = await marksFor();
