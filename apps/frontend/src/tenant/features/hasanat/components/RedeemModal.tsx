@@ -41,7 +41,6 @@ export function RedeemModal({ open, distributions, onClose, onSave }: RedeemModa
     approvedByUserId: "",
   });
   const [previousOpen, setPreviousOpen] = useState(open);
-  const [previousDistributions, setPreviousDistributions] = useState(distributions);
 
   const updateField = <K extends keyof Redemption>(field: K, value: Redemption[K]) => {
     setData((previousData: Partial<Redemption>) => ({ ...previousData, [field]: value }));
@@ -58,10 +57,9 @@ export function RedeemModal({ open, distributions, onClose, onSave }: RedeemModa
     (distribution) => distribution.id === data.distributionId,
   );
 
-  // Re-seed the draft during render when the modal is (re)opened or the source list changes.
-  if (previousOpen !== open || previousDistributions !== distributions) {
+  // Seed only on the closed → open transition; a ledger refetch must not wipe the draft.
+  if (previousOpen !== open) {
     setPreviousOpen(open);
-    setPreviousDistributions(distributions);
     if (open) {
       const active = distributions.filter((distribution) => distribution.status === "active");
       setData({
@@ -78,6 +76,20 @@ export function RedeemModal({ open, distributions, onClose, onSave }: RedeemModa
       // One idempotency key per opened draft: a retried redeem replays the same ledger row.
       setRequestId(generateClientEntityId("redreq"));
     }
+  }
+
+  // If the selected card leaves the active ledger, clear only the card-derived fields.
+  const fallbackDistribution = activeDistributions[0];
+  if (
+    open &&
+    fallbackDistribution &&
+    !activeDistributions.some((distribution) => distribution.id === data.distributionId)
+  ) {
+    setData((previousData) => ({
+      ...previousData,
+      distributionId: fallbackDistribution.id,
+      pointsUsed: fallbackDistribution.pointsSnapshot ?? 0,
+    }));
   }
 
   const handleSave = async () => {

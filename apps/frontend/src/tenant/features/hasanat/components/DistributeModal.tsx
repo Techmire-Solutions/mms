@@ -56,8 +56,6 @@ export function DistributeModal({
     issuedByUserId: authUser?.id || "",
   }));
   const [previousOpen, setPreviousOpen] = useState(open);
-  const [previousDenoms, setPreviousDenoms] = useState(denoms);
-  const [previousIssuedByUserId, setPreviousIssuedByUserId] = useState(authUser?.id);
 
   const updateField: DistributionFieldUpdate = (field, value) => {
     setData((previousData: Partial<Distribution>) => ({ ...previousData, [field]: value }));
@@ -70,15 +68,9 @@ export function DistributeModal({
     }
   };
 
-  // Re-seed the draft during render when the modal is (re)opened or its catalog/actor inputs change.
-  if (
-    previousOpen !== open ||
-    previousDenoms !== denoms ||
-    previousIssuedByUserId !== authUser?.id
-  ) {
+  // Seed only on the closed → open transition; Query refetches must never wipe a dirty draft.
+  if (previousOpen !== open) {
     setPreviousOpen(open);
-    setPreviousDenoms(denoms);
-    setPreviousIssuedByUserId(authUser?.id);
     if (open) {
       setData({
         ...EMPTY_DIST,
@@ -91,6 +83,16 @@ export function DistributeModal({
       // One idempotency key per opened draft: a retried submit replays instead of awarding twice.
       setRequestId(generateClientEntityId("hdreq"));
     }
+  }
+
+  // A catalog that arrives after open fills the empty/invalid default only; other fields stay.
+  const firstDenomId = denoms[0]?.id ?? "";
+  const denominationMissing =
+    Boolean(data.denominationId) &&
+    denoms.length > 0 &&
+    !denoms.some((denomination) => denomination.id === data.denominationId);
+  if (open && firstDenomId && (!data.denominationId || denominationMissing)) {
+    setData((previousData) => ({ ...previousData, denominationId: firstDenomId }));
   }
 
   const selectedDenomination = denoms.find(

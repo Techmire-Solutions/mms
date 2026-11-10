@@ -80,6 +80,45 @@ describe("tenant select adapters", () => {
     expect(container.textContent).toContain("registryPerson.refineSearch");
   });
 
+  it("connects an external registry error to the select for assistive tech", () => {
+    act(() =>
+      root.render(
+        <RegistryPersonSelect
+          id="person-select"
+          kind="student"
+          value=""
+          label="Student"
+          error="Cannot load person"
+          onChange={vi.fn()}
+        />,
+      ),
+    );
+    const select = container.querySelector("select")!;
+    expect(select.getAttribute("aria-invalid")).toBe("true");
+    expect(select.getAttribute("aria-describedby")).toBe("person-select-feedback");
+    expect(container.querySelector("#person-select-feedback")?.textContent).toBe(
+      "Cannot load person",
+    );
+  });
+
+  it("connects an external user-actor error to the select for assistive tech", () => {
+    act(() =>
+      root.render(
+        <UserActorSelect
+          id="actor-select"
+          value=""
+          label="Actor"
+          error="Cannot load user"
+          onChange={vi.fn()}
+        />,
+      ),
+    );
+    const select = container.querySelector("select")!;
+    expect(select.getAttribute("aria-invalid")).toBe("true");
+    expect(select.getAttribute("aria-describedby")).toBe("actor-select-feedback");
+    expect(container.querySelector("#actor-select-feedback")?.textContent).toBe("Cannot load user");
+  });
+
   it("keeps the authenticated-user fallback and supplies selected user names", () => {
     const onChange = vi.fn();
     act(() => root.render(<UserActorSelect value="" label="Actor" onChange={onChange} />));

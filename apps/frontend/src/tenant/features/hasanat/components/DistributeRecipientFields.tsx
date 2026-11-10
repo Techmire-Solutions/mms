@@ -1,7 +1,7 @@
 import React, { useState, type Dispatch, type SetStateAction } from "react";
 import { User, Users2 } from "lucide-react";
 import { RegistryPersonSelect } from "@/tenant/components/selectors/RegistryPersonSelect";
-import { Field, FieldErrorMessage, RequiredMark } from "@/components/app/FormPrimitives";
+import { Field, RequiredMark } from "@/components/app/FormPrimitives";
 import { FORM_INPUT, FORM_LABEL } from "@/components/ui/formStyles";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -89,14 +89,12 @@ export function DistributeRecipientTypeField({
 
 export interface DistributeRecipientSelectFieldProps {
   data: Partial<Distribution>;
-  setData: Dispatch<SetStateAction<Partial<Distribution>>>;
   updateField: DistributionFieldUpdate;
   errors?: Record<string, string>;
 }
 
 export function DistributeRecipientSelectField({
   data,
-  setData,
   updateField,
   errors,
 }: DistributeRecipientSelectFieldProps): React.JSX.Element {
@@ -114,32 +112,22 @@ export function DistributeRecipientSelectField({
         label={t("hasanat.fieldRecipient")}
         required
         value={recipientId}
+        error={errors?.recipientName}
         onChange={(id, name) => {
           // The card stores the display name at issue time; without it the ledger/report/voucher
           // would show a blank recipient even though the picker resolved the person.
           const recipientName = name?.trim() ? name : "";
           if (data.recipientType === "faculty") {
             updateField("recipientFacultyId", id);
+            updateField("recipientStudentId", undefined);
             updateField("recipientName", recipientName);
-            setData((previousData) => ({
-              ...previousData,
-              recipientFacultyId: id,
-              recipientStudentId: undefined,
-              recipientName,
-            }));
           } else {
             updateField("recipientStudentId", id);
+            updateField("recipientFacultyId", undefined);
             updateField("recipientName", recipientName);
-            setData((previousData) => ({
-              ...previousData,
-              recipientStudentId: id,
-              recipientFacultyId: undefined,
-              recipientName,
-            }));
           }
         }}
       />
-      <FieldErrorMessage id="recipient-error" message={errors?.recipientName} />
     </div>
   );
 }
@@ -172,6 +160,7 @@ export function DistributeRecipientClassField({
             sectionId: "",
           }}
           required={isRequired}
+          error={errors?.recipientClass}
           idPrefix="recp-class"
           onChange={(next) => {
             setSessionId(next.sessionId);
@@ -182,7 +171,6 @@ export function DistributeRecipientClassField({
             updateField("recipientClass", cls?.name ?? "");
           }}
         />
-        {errors?.recipientClass ? <FieldErrorMessage message={errors.recipientClass} /> : null}
       </div>
     );
   }

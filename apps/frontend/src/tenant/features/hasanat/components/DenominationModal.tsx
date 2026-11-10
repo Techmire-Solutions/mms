@@ -130,6 +130,8 @@ export function DenominationModal({
     setSubmitting(true);
     try {
       await onSave(payload);
+    } catch (error: unknown) {
+      setSubmitError(error instanceof Error ? error.message : t("common.formPleaseFixErrors"));
     } finally {
       submittingRef.current = false;
       setSubmitting(false);
@@ -220,6 +222,7 @@ export function DenominationModal({
               <Button
                 type="button"
                 aria-pressed={data.icon === icon}
+                aria-label={`${t("hasanat.denominations.icon")}: ${icon}`}
                 key={icon}
                 onClick={() => updateField("icon", icon)}
                 className={`min-h-11 min-w-11 rounded-lg text-lg flex items-center justify-center transition-all ${data.icon === icon ? "bg-primary/15 ring-2 ring-primary" : "bg-muted hover:bg-muted/80"}`}

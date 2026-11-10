@@ -78,17 +78,24 @@ vi.mock("@/tenant/components/selectors/RegistryPersonSelect", () => ({
     id,
     value,
     onChange,
+    error,
   }: {
     id: string;
     value: string;
     onChange: (val: string, name?: string) => void;
+    error?: string;
   }) => (
-    <input
-      data-testid="registry-person-select"
-      id={id}
-      value={value}
-      onChange={(e) => onChange(e.target.value, "Ali Ahmed")}
-    />
+    <div>
+      <input
+        data-testid="registry-person-select"
+        id={id}
+        value={value}
+        aria-invalid={Boolean(error)}
+        aria-describedby={error ? `${id}-feedback` : undefined}
+        onChange={(e) => onChange(e.target.value, "Ali Ahmed")}
+      />
+      {error ? <p id={`${id}-feedback`}>{error}</p> : null}
+    </div>
   ),
 }));
 
@@ -97,17 +104,24 @@ vi.mock("@/tenant/components/selectors/UserActorSelect", () => ({
     id,
     value,
     onChange,
+    error,
   }: {
     id: string;
     value: string;
     onChange: (val: string, name?: string) => void;
+    error?: string;
   }) => (
-    <input
-      data-testid="user-actor-select"
-      id={id}
-      value={value}
-      onChange={(e) => onChange(e.target.value, "Ali Ahmed")}
-    />
+    <div>
+      <input
+        data-testid="user-actor-select"
+        id={id}
+        value={value}
+        aria-invalid={Boolean(error)}
+        aria-describedby={error ? `${id}-feedback` : undefined}
+        onChange={(e) => onChange(e.target.value, "Ali Ahmed")}
+      />
+      {error ? <p id={`${id}-feedback`}>{error}</p> : null}
+    </div>
   ),
 }));
 
@@ -296,6 +310,41 @@ describe("DistributeModal Component", () => {
     expect(payload.clientRequestId).toMatch(/^hdreq[0-9a-f-]{20,}$/);
   });
 
+  it("preserves the draft when the catalog arrays are refetched", async () => {
+    await act(async () => {
+      root.render(
+        <DistributeModal
+          open={true}
+          denoms={mockDenoms}
+          batches={mockBatches}
+          onClose={vi.fn()}
+          onSave={vi.fn()}
+        />,
+      );
+    });
+
+    const reasonInput = container.querySelector("#reason") as HTMLInputElement;
+    await act(async () => {
+      setInputValue(reasonInput, "Draft reason survives refetch");
+    });
+
+    await act(async () => {
+      root.render(
+        <DistributeModal
+          open={true}
+          denoms={[...mockDenoms]}
+          batches={[...mockBatches]}
+          onClose={vi.fn()}
+          onSave={vi.fn()}
+        />,
+      );
+    });
+
+    expect((container.querySelector("#reason") as HTMLInputElement).value).toBe(
+      "Draft reason survives refetch",
+    );
+  });
+
   it("displays inline validation errors when submitted without required fields", async () => {
     const onSave = vi.fn();
 
@@ -321,7 +370,7 @@ describe("DistributeModal Component", () => {
     });
 
     expect(onSave).not.toHaveBeenCalled();
-    const recipientError = container.querySelector("#recipient-error");
+    const recipientError = container.querySelector("#hasanat-recipient-feedback");
     const reasonError = container.querySelector("#reason-error");
     expect(recipientError).not.toBeNull();
     expect(reasonError).not.toBeNull();

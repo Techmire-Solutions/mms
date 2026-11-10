@@ -22,6 +22,8 @@ export interface SessionClassSectionSelectProps {
   disabled?: boolean;
   /** Keeps the session fixed (e.g. a transfer stays inside its session). */
   lockSession?: boolean;
+  /** Validation error for the class level; wired to that select's aria attributes. */
+  error?: string;
 }
 
 /** Cascading session → class → section picker; changing a level clears the levels below it. */
@@ -34,6 +36,7 @@ export function SessionClassSectionSelect({
   required,
   disabled,
   lockSession,
+  error,
 }: SessionClassSectionSelectProps): React.JSX.Element {
   const { t } = useTranslation();
   const terms = useAcademicTerms();
@@ -54,7 +57,12 @@ export function SessionClassSectionSelect({
         />
       </Field>
       {levels !== "session" ? (
-        <Field id={`${idPrefix}-class`} label={terms.class.singular} required={required}>
+        <Field
+          id={`${idPrefix}-class`}
+          label={terms.class.singular}
+          required={required}
+          error={error}
+        >
           <FormSelect
             id={`${idPrefix}-class`}
             name="classId"

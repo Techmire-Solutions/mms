@@ -43,7 +43,6 @@ export function StockAddBatchModal({
     note: "",
   });
   const [previousOpen, setPreviousOpen] = useState(open);
-  const [previousDenoms, setPreviousDenoms] = useState(denoms);
 
   const updateField = <K extends keyof StockBatch>(field: K, value: StockBatch[K]) => {
     setData((previousData: Partial<StockBatch>) => ({ ...previousData, [field]: value }));
@@ -60,10 +59,9 @@ export function StockAddBatchModal({
     (denomination) => denomination.id === data.denominationId,
   );
 
-  // Re-seed the draft during render when the modal is (re)opened or the catalog changes.
-  if (previousOpen !== open || previousDenoms !== denoms) {
+  // Seed only on the closed → open transition; a catalog refetch must not wipe the draft.
+  if (previousOpen !== open) {
     setPreviousOpen(open);
-    setPreviousDenoms(denoms);
     if (open) {
       setData({
         denominationId: denoms[0]?.id || "",
@@ -75,6 +73,16 @@ export function StockAddBatchModal({
       setErrors({});
       setSubmitError(null);
     }
+  }
+
+  // A catalog that arrives after open fills the empty/invalid default only; other fields stay.
+  const firstDenomId = denoms[0]?.id ?? "";
+  const denominationMissing =
+    Boolean(data.denominationId) &&
+    denoms.length > 0 &&
+    !denoms.some((denomination) => denomination.id === data.denominationId);
+  if (open && firstDenomId && (!data.denominationId || denominationMissing)) {
+    setData((previousData) => ({ ...previousData, denominationId: firstDenomId }));
   }
 
   const handleSave = async () => {
@@ -116,6 +124,8 @@ export function StockAddBatchModal({
     setSubmitting(true);
     try {
       await onSave(payload);
+    } catch (error: unknown) {
+      setSubmitError(error instanceof Error ? error.message : t("common.formPleaseFixErrors"));
     } finally {
       submittingRef.current = false;
       setSubmitting(false);

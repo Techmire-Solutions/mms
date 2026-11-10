@@ -15,6 +15,8 @@ export interface UserActorSelectProps {
   id?: string;
   allowEmpty?: boolean;
   disabled?: boolean;
+  /** Field-level validation error; connected to the select via aria-describedby. */
+  error?: string;
 }
 
 export function UserActorSelect({
@@ -25,6 +27,7 @@ export function UserActorSelect({
   id,
   allowEmpty = false,
   disabled = false,
+  error,
 }: UserActorSelectProps): React.JSX.Element {
   const generatedId = React.useId();
   const selectId = id || generatedId;
@@ -71,7 +74,7 @@ export function UserActorSelect({
       searchPlaceholder={t("registryPerson.searchPlaceholder")}
       loadingLabel={t("common.loading")}
       isLoading={usersQuery.isFetching}
-      error={usersQuery.isError ? t("errors.state.generic") : undefined}
+      error={error ?? (usersQuery.isError ? t("errors.state.generic") : undefined)}
       onRetry={() => {
         void usersQuery.refetch();
       }}
