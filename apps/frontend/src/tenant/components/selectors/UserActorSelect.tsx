@@ -2,8 +2,10 @@ import { SearchableSelectField } from "@/components/app/SearchableSelectField";
 import React from "react";
 import { useAuth } from "@/lib/contexts/AuthContext";
 import { useTranslation } from "@/hooks/useTranslation";
+import { useDebounce } from "@/hooks/useDebounce";
 import { useUsersPaginated } from "@/tenant/hooks/collections/users";
 import type { WorkspaceUser } from "@mms/shared";
+import { SELECT_SEARCH_DEBOUNCE_MS } from "./selectSearch";
 
 export interface UserActorSelectProps {
   value: string;
@@ -29,7 +31,9 @@ export function UserActorSelect({
   const { t } = useTranslation();
   const { user: authUser } = useAuth();
   const [search, setSearch] = React.useState("");
-  const usersQuery = useUsersPaginated({ page: 1, limit: 50, search });
+  const debouncedSearch = useDebounce(search, SELECT_SEARCH_DEBOUNCE_MS);
+  const [pickedUser, setPickedUser] = React.useState<{ id: string; label: string } | null>(null);
+  const usersQuery = useUsersPaginated({ page: 1, limit: 50, search: debouncedSearch });
   const users: WorkspaceUser[] = usersQuery.data?.users ?? [];
 
   const selectedValue = value || authUser?.id || "";
@@ -39,11 +43,22 @@ export function UserActorSelect({
   if (selectedValue && !selectOptions.some((option) => option.value === selectedValue)) {
     selectOptions.unshift({
       value: selectedValue,
-      label: selectedValue === authUser?.id ? authUser.name || selectedValue : selectedValue,
+      label:
+        pickedUser?.id === selectedValue
+          ? pickedUser.label
+          : selectedValue === authUser?.id
+            ? authUser.name || selectedValue
+            : selectedValue,
     });
   }
 
   const placeholder = allowEmpty ? t("registryPerson.selectUser") : undefined;
+
+  const handleChange = (userId: string): void => {
+    const user = users.find((candidate) => candidate.id === userId);
+    setPickedUser(user ? { id: userId, label: user.name } : null);
+    onChange(userId, user?.name);
+  };
 
   return (
     <SearchableSelectField
@@ -51,7 +66,6 @@ export function UserActorSelect({
       label={label}
       required={required}
       disabled={disabled}
-      search={search}
       onSearchChange={setSearch}
       searchLabel={t("registryPerson.searchPlaceholder")}
       searchPlaceholder={t("registryPerson.searchPlaceholder")}
@@ -65,7 +79,7 @@ export function UserActorSelect({
       value={selectedValue}
       options={selectOptions}
       placeholder={placeholder}
-      onChange={(userId) => onChange(userId, users.find((user) => user.id === userId)?.name)}
+      onChange={handleChange}
       hint={usersQuery.data?.hasMore && !disabled ? t("registryPerson.refineSearch") : undefined}
     />
   );

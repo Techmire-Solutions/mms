@@ -3,6 +3,7 @@ import { createRoot, type Root } from "react-dom/client";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { RegistryPersonSelect } from "./RegistryPersonSelect";
 import { UserActorSelect } from "./UserActorSelect";
+import { SELECT_SEARCH_DEBOUNCE_MS } from "./selectSearch";
 
 const queries = vi.hoisted(() => ({ students: vi.fn(), faculty: vi.fn(), users: vi.fn() }));
 vi.mock("@/tenant/hooks/collections/students", () => ({
@@ -90,5 +91,102 @@ describe("tenant select adapters", () => {
       select.dispatchEvent(new Event("change", { bubbles: true }));
     });
     expect(onChange).toHaveBeenCalledWith("u", "Other user");
+  });
+
+  it("routes the dropdown's built-in search into the registry query after the debounce", () => {
+    vi.useFakeTimers();
+    try {
+      act(() =>
+        root.render(
+          <RegistryPersonSelect kind="student" value="" label="Student" onChange={vi.fn()} />,
+        ),
+      );
+      expect(container.querySelector("input")).toBeNull();
+      act(() =>
+        container
+          .querySelector("select")!
+          .dispatchEvent(new KeyboardEvent("keydown", { key: "z", bubbles: true })),
+      );
+      // The popover updates immediately; the registry lookup waits for the debounce.
+      expect(document.querySelector('input[role="combobox"]')).not.toBeNull();
+      expect(queries.students).toHaveBeenLastCalledWith({ page: 1, limit: 50, search: "" }, true);
+      act(() => {
+        vi.advanceTimersByTime(SELECT_SEARCH_DEBOUNCE_MS);
+      });
+      expect(queries.students).toHaveBeenLastCalledWith({ page: 1, limit: 50, search: "z" }, true);
+      expect(queries.faculty).toHaveBeenLastCalledWith({ page: 1, limit: 50, search: "z" }, false);
+    } finally {
+      vi.useRealTimers();
+    }
+  });
+
+  it("routes the user dropdown's built-in search into the users query after the debounce", () => {
+    vi.useFakeTimers();
+    try {
+      act(() => root.render(<UserActorSelect value="" label="Actor" onChange={vi.fn()} />));
+      act(() =>
+        container
+          .querySelector("select")!
+          .dispatchEvent(new KeyboardEvent("keydown", { key: "o", bubbles: true })),
+      );
+      expect(document.querySelector('input[role="combobox"]')).not.toBeNull();
+      expect(queries.users).toHaveBeenLastCalledWith({ page: 1, limit: 50, search: "" });
+      act(() => {
+        vi.advanceTimersByTime(SELECT_SEARCH_DEBOUNCE_MS);
+      });
+      expect(queries.users).toHaveBeenLastCalledWith({ page: 1, limit: 50, search: "o" });
+    } finally {
+      vi.useRealTimers();
+    }
+  });
+
+  it("keeps the picked person label after the built-in search resets the page", () => {
+    const onChange = vi.fn();
+    act(() =>
+      root.render(
+        <RegistryPersonSelect kind="student" value="" label="Student" onChange={onChange} />,
+      ),
+    );
+    const select = container.querySelector("select")!;
+    act(() => {
+      select.value = "a";
+      select.dispatchEvent(new Event("change", { bubbles: true }));
+    });
+    expect(onChange).toHaveBeenCalledWith("a", "Ali");
+
+    queries.students.mockReturnValue({
+      data: { body: { students: [{ id: "b", name: "Zain" }], hasMore: false } },
+      isFetching: false,
+      isError: false,
+      refetch: vi.fn(),
+    });
+    act(() =>
+      root.render(
+        <RegistryPersonSelect kind="student" value="a" label="Student" onChange={onChange} />,
+      ),
+    );
+    const labels = [...container.querySelectorAll("option")].map((option) => option.textContent);
+    expect(labels).toContain("Ali");
+  });
+
+  it("keeps the picked user label after the built-in search resets the page", () => {
+    const onChange = vi.fn();
+    act(() => root.render(<UserActorSelect value="" label="Actor" onChange={onChange} />));
+    const select = container.querySelector("select")!;
+    act(() => {
+      select.value = "u";
+      select.dispatchEvent(new Event("change", { bubbles: true }));
+    });
+    expect(onChange).toHaveBeenCalledWith("u", "Other user");
+
+    queries.users.mockReturnValue({
+      data: { users: [{ id: "x", name: "Someone else" }] },
+      isFetching: false,
+      isError: false,
+      refetch: vi.fn(),
+    });
+    act(() => root.render(<UserActorSelect value="u" label="Actor" onChange={onChange} />));
+    const labels = [...container.querySelectorAll("option")].map((option) => option.textContent);
+    expect(labels).toContain("Other user");
   });
 });

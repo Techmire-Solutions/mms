@@ -3,6 +3,8 @@ import React, { useState } from "react";
 import { useStudentsContractList } from "@/tenant/hooks/collections/students";
 import { useFacultyContractList } from "@/tenant/hooks/collections/faculty";
 import { useTranslation } from "@/hooks/useTranslation";
+import { useDebounce } from "@/hooks/useDebounce";
+import { SELECT_SEARCH_DEBOUNCE_MS } from "./selectSearch";
 
 /** Dropdown page size — searchable select, not a full dump (refine via search when `hasMore`). */
 const PERSON_SELECT_PAGE_SIZE = 50;
@@ -44,6 +46,8 @@ export function RegistryPersonSelect({
 }: RegistryPersonSelectProps): React.JSX.Element {
   const { t } = useTranslation();
   const [search, setSearch] = useState("");
+  const debouncedSearch = useDebounce(search, SELECT_SEARCH_DEBOUNCE_MS);
+  const [pickedPerson, setPickedPerson] = useState<{ id: string; label: string } | null>(null);
 
   const studentsEnabled = kind === "student";
   const facultyEnabled = kind === "faculty";
@@ -52,7 +56,7 @@ export function RegistryPersonSelect({
     {
       page: 1,
       limit: PERSON_SELECT_PAGE_SIZE,
-      search,
+      search: debouncedSearch,
     },
     studentsEnabled,
   );
@@ -61,7 +65,7 @@ export function RegistryPersonSelect({
     {
       page: 1,
       limit: PERSON_SELECT_PAGE_SIZE,
-      search,
+      search: debouncedSearch,
     },
     facultyEnabled,
   );
@@ -101,7 +105,10 @@ export function RegistryPersonSelect({
       return { value: String(row.id), label: optLabel };
     });
     if (value && !valueInOptions) {
-      list.unshift({ value, label: value });
+      list.unshift({
+        value,
+        label: pickedPerson?.id === value ? pickedPerson.label : value,
+      });
     }
     return list;
   })();
@@ -109,6 +116,15 @@ export function RegistryPersonSelect({
   const handleChange = (pickedId: string) => {
     const selected = options.find((row) => String(row.id) === pickedId);
     const selectedName = selected?.name ? String(selected.name) : "";
+    if (selected) {
+      const personName = selected.name ?? String(selected.id);
+      setPickedPerson({
+        id: pickedId,
+        label: selected.employeeId ? `${personName} (${selected.employeeId})` : personName,
+      });
+    } else {
+      setPickedPerson(null);
+    }
     onChange(pickedId, selectedName);
     onPick?.(pickedId, selectedName);
   };
@@ -119,7 +135,6 @@ export function RegistryPersonSelect({
       name={name ?? selectId}
       label={label}
       required={required}
-      search={search}
       onSearchChange={setSearch}
       searchLabel={searchLabel ?? t("registryPerson.searchPlaceholder")}
       searchPlaceholder={searchPlaceholder ?? t("registryPerson.searchPlaceholder")}

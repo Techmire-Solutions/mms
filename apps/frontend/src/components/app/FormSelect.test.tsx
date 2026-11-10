@@ -106,6 +106,52 @@ describe("FormSelect", () => {
     expect(document.querySelector('[role="status"]')?.textContent).toBe("common.noMatchingOptions");
   });
 
+  it("should report built-in search queries for remote lists and keep server matches verbatim", () => {
+    const onSearchChange = vi.fn();
+    const onChange = render({ onSearchChange, filterSearchLocally: false });
+    const select = container.querySelector<HTMLSelectElement>("select#acct")!;
+    act(() => {
+      select.dispatchEvent(new KeyboardEvent("keydown", { key: "z", bubbles: true }));
+    });
+    expect(onSearchChange).toHaveBeenCalledWith("z");
+    expect(document.querySelectorAll('[role="option"]')).toHaveLength(ACCOUNTS.length);
+
+    const input = document.querySelector<HTMLInputElement>('input[role="combobox"]')!;
+    act(() => {
+      root.render(
+        <FormSelect
+          id="acct"
+          value=""
+          onChange={onChange}
+          options={[{ value: "z", label: "Zainab" }]}
+          placeholder="Select account"
+          searchable
+          onSearchChange={onSearchChange}
+          filterSearchLocally={false}
+        />,
+      );
+    });
+    expect(
+      Array.from(document.querySelectorAll('[role="option"]'), (option) => option.textContent),
+    ).toEqual(["Zainab"]);
+
+    act(() => {
+      input.dispatchEvent(new KeyboardEvent("keydown", { key: "Enter", bubbles: true }));
+    });
+    expect(onChange).toHaveBeenCalledWith("z");
+  });
+
+  it("given a remote query in flight, should announce the searching state", () => {
+    render({ options: [], searchable: true, isSearching: true, onSearchChange: vi.fn() });
+    act(() => {
+      container
+        .querySelector("select")!
+        .dispatchEvent(new KeyboardEvent("keydown", { key: "a", bubbles: true }));
+    });
+    expect(document.querySelector('[role="status"]')?.textContent).toBe("common.loading");
+    expect(document.querySelector('[role="listbox"]')?.getAttribute("aria-busy")).toBe("true");
+  });
+
   it("given a short or disabled list, should stay a plain native select", () => {
     render({ options: ACCOUNTS.slice(0, 3) });
     expect(container.querySelector("select")?.hasAttribute("aria-expanded")).toBe(false);
