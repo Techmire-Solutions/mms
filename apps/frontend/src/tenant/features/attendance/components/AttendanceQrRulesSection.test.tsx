@@ -17,6 +17,7 @@ describe("AttendanceQrRulesSection Component", () => {
 
     expect(html).toContain("attendance.settings.qrAttendance");
     expect(html).toContain("attendance.settings.enableQr");
-    expect(html).toContain("common.save");
+    // The page-level footer owns Save; a section must not render a second one.
+    expect(html).not.toContain("common.save");
   });
 });

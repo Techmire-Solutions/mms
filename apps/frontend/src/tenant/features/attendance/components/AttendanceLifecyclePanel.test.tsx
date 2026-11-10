@@ -61,10 +61,18 @@ describe("AttendanceLifecyclePanel decisions", () => {
     document.body.innerHTML = "";
   });
 
-  function buttonByText(text: string): HTMLButtonElement | undefined {
-    return [...document.querySelectorAll("button")].find((button) =>
+  function buttonByText(text: string, root: ParentNode = document): HTMLButtonElement | undefined {
+    return [...root.querySelectorAll("button")].find((button) =>
       button.textContent?.includes(text),
     ) as HTMLButtonElement | undefined;
+  }
+
+  function dialog(): ParentNode {
+    return (
+      document.querySelector('[role="alertdialog"]') ??
+      document.querySelector('[role="dialog"]') ??
+      document.body
+    );
   }
 
   it("asks for confirmation before approving and sends the optional note", async () => {
@@ -76,7 +84,7 @@ describe("AttendanceLifecyclePanel decisions", () => {
     expect(document.body.textContent).toContain("attendance.excuses.approveTitle");
     expect(mocks.review.mutate).not.toHaveBeenCalled();
 
-    const confirm = buttonByText("attendance.excuses.approve");
+    const confirm = buttonByText("attendance.excuses.approve", dialog());
     await act(async () => confirm?.click());
     expect(mocks.review.mutateAsync).toHaveBeenCalledWith({
       params: { id: "leave-1" },
@@ -88,7 +96,7 @@ describe("AttendanceLifecyclePanel decisions", () => {
     await act(async () => root.render(<AttendanceLifecyclePanel />));
 
     await act(async () => buttonByText("attendance.excuses.cancel")?.click());
-    const confirm = buttonByText("attendance.excuses.cancel");
+    const confirm = buttonByText("attendance.excuses.cancel", dialog());
     await act(async () => confirm?.click());
 
     expect(mocks.cancel.mutateAsync).not.toHaveBeenCalled();
