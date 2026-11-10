@@ -14,6 +14,7 @@ import { Input } from "@/components/ui/input";
 import { EmptyState } from "@/components/app/EmptyState";
 import { AcademicCatalogSelect } from "@/components/common/catalog/AcademicCatalogSelect";
 import { notify } from "@/lib/notify";
+import { Alert } from "@/components/app/Alert";
 import { useTranslation } from "@/hooks/useTranslation";
 import {
   useSectionStaff,
@@ -39,6 +40,8 @@ export function SectionStaffPanel({
   const [subjectId, setSubjectId] = useState("");
   const [startOn, setStartOn] = useState(todayISO());
   const [reason, setReason] = useState("");
+  const [attempted, setAttempted] = useState(false);
+  const [formError, setFormError] = useState<string | null>(null);
   const rows: SectionStaffAssignment[] = staff.data ?? [];
   const current = rows.filter((row) => row.endOn === null);
   const history = rows.filter((row) => row.endOn !== null);
@@ -46,6 +49,12 @@ export function SectionStaffPanel({
     Boolean(facultyId && startOn && (role !== "subject_teacher" || subjectId)) && !assign.isPending;
 
   const submit = async () => {
+    setAttempted(true);
+    setFormError(null);
+    if (!facultyId || !startOn || (role === "subject_teacher" && !subjectId)) {
+      setFormError(t("common.formPleaseFixErrors"));
+      return;
+    }
     try {
       await assign.mutateAsync({
         facultyId,
@@ -58,6 +67,7 @@ export function SectionStaffPanel({
       setFacultyId("");
       setReason("");
     } catch (error) {
+      setFormError(error instanceof Error ? error.message : t("sessions.staff.failed"));
       notify.error(t("sessions.staff.failed"), {
         description: error instanceof Error ? error.message : undefined,
       });
@@ -69,6 +79,7 @@ export function SectionStaffPanel({
       await end.mutateAsync({ assignmentId, endOn });
       notify.success(t("sessions.staff.ended"));
     } catch (error) {
+      setFormError(error instanceof Error ? error.message : t("sessions.staff.failed"));
       notify.error(t("sessions.staff.failed"), {
         description: error instanceof Error ? error.message : undefined,
       });
@@ -78,8 +89,14 @@ export function SectionStaffPanel({
   return (
     <div className="space-y-5 text-start">
       <p className="text-sm text-muted-foreground text-pretty">{t("sessions.staff.changeHint")}</p>
+      {formError ? <Alert role="alert" density="compact" description={formError} /> : null}
       <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
-        <Field id="staff-faculty" label={t("sessions.staff.faculty")} required>
+        <Field
+          id="staff-faculty"
+          label={t("sessions.staff.faculty")}
+          required
+          error={attempted && !facultyId ? t("common.formPleaseFixErrors") : undefined}
+        >
           <FormSelect
             id="staff-faculty"
             value={facultyId}
@@ -107,6 +124,11 @@ export function SectionStaffPanel({
             id="staff-subject"
             label={t("sessions.staff.subject")}
             required={role === "subject_teacher"}
+            error={
+              attempted && role === "subject_teacher" && !subjectId
+                ? t("common.formPleaseFixErrors")
+                : undefined
+            }
           >
             <AcademicCatalogSelect
               kind="subjects"
@@ -117,7 +139,12 @@ export function SectionStaffPanel({
             />
           </Field>
         ) : null}
-        <Field id="staff-start" label={t("sessions.staff.startOn")} required>
+        <Field
+          id="staff-start"
+          label={t("sessions.staff.startOn")}
+          required
+          error={attempted && !startOn ? t("common.formPleaseFixErrors") : undefined}
+        >
           <DatePicker id="staff-start" value={startOn} onChange={setStartOn} required />
         </Field>
         <Field id="staff-reason" label={t("sessions.staff.reason")}>
