@@ -17,6 +17,7 @@ import {
   hasanatDenoms,
   hasanatDistributions,
   hasanatRedemptions,
+  hasanatStudentAwards,
   sessionClasses,
   sessions,
   students,
@@ -239,6 +240,9 @@ describe("hasanat parent archival behaviour", () => {
 
     await withTenant(TENANT, async (tx) => {
       await tx.execute(sql`SET LOCAL app.allow_hard_purge = 'true'`);
+      await tx
+        .delete(hasanatStudentAwards)
+        .where(eq(hasanatStudentAwards.studentId, STUDENT_PURGE));
       await tx.delete(students).where(eq(students.id, STUDENT_PURGE));
     });
 
