@@ -80,9 +80,16 @@ export const HasanatDistributionTable = function HasanatDistributionTable({
             className={`${WORK_SURFACE_INNER} space-y-3 p-3 ${selectedFaculty === hasanatRow.faculty ? "ring-1 ring-primary/20" : ""}`}
           >
             <div className="flex min-w-0 items-start justify-between gap-3">
-              <h4 className="truncate text-sm font-semibold text-foreground">
-                {hasanatRow.studentName}
-              </h4>
+              <div className="flex min-w-0 items-center gap-2">
+                <h4 className="truncate text-sm font-semibold text-foreground">
+                  {hasanatRow.studentName}
+                </h4>
+                {hasanatRow.tierName ? (
+                  <Badge pill tone="muted" className="shrink-0 text-4xs">
+                    {hasanatRow.tierName}
+                  </Badge>
+                ) : null}
+              </div>
               <Badge pill tone={hasanatRow.balance > 0 ? "warning" : "muted"} className="shrink-0">
                 {hasanatRow.balance}
               </Badge>
@@ -147,7 +154,16 @@ export const HasanatDistributionTable = function HasanatDistributionTable({
                 key={hasanatRow.studentName}
                 className={`hover:bg-muted/20 transition-colors ${selectedFaculty === hasanatRow.faculty ? "bg-primary/10" : ""}`}
               >
-                <TableCell className="px-3 py-2.5 font-medium">{hasanatRow.studentName}</TableCell>
+                <TableCell className="px-3 py-2.5 font-medium">
+                  <div className="flex items-center gap-2">
+                    <span className="truncate">{hasanatRow.studentName}</span>
+                    {hasanatRow.tierName ? (
+                      <Badge pill tone="muted" className="shrink-0 text-4xs">
+                        {hasanatRow.tierName}
+                      </Badge>
+                    ) : null}
+                  </div>
+                </TableCell>
                 <TableCell className="px-3 py-2.5 text-muted-foreground">
                   {hasanatRow.class}
                 </TableCell>

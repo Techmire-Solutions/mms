@@ -388,6 +388,7 @@ PostgreSQL 15 introduced `UNIQUE NULLS NOT DISTINCT`, which treats `NULL` values
 | `obligations.ts` | `obligation_collections` |
 | `hasanat.ts` | `hasanat_distributions` |
 | `hasanat.ts` (ledger) | `hasanat_redemptions` — **append-only**: no sextuple, `forbid_hard_delete` guard, and child reads join the parent so a trashed card stops contributing (migration `0226`) |
+| `hasanatTiers.ts` (evidence) | `hasanat_student_awards` — tier/badge **evidence**: never deleted, revoked via `revoked_at` + reason; `forbid_hard_delete` guard (migration `0233`) |
 | `examinations.ts` | `exams`, `questions`, `tests`, `assessment_results` |
 | `examinationQuestionBankTables.ts` | question bank entity tables |
 | `messaging.ts` | `message_logs` |

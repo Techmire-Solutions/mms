@@ -6,11 +6,13 @@
  * - `hasanatDenomsBatches.ts`: deeds and their stock batches.
  * - `hasanatDistributions.ts`: issued cards (soft-deletable, immutable value).
  * - `hasanatRedemptions.ts`: append-only redemption ledger.
+ * - `hasanatTiers.ts`: materialized tier/badge awards.
  * - `hasanatSetupConfig.ts`: field config and module preferences.
  * - `hasanatSchemaTypes.ts`: inferred row types.
  */
 export * from "./hasanatDenomsBatches.js";
 export * from "./hasanatDistributions.js";
 export * from "./hasanatRedemptions.js";
+export * from "./hasanatTiers.js";
 export * from "./hasanatSetupConfig.js";
 export * from "./hasanatSchemaTypes.js";

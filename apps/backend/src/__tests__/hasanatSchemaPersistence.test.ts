@@ -23,6 +23,7 @@ describe("Hasanat schema & persistence invariants (0225–0232)", () => {
     "0230_hasanat_card_value_and_idempotency.sql",
     "0231_hasanat_denom_bounds.sql",
     "0232_hasanat_ledger_immutability.sql",
+    "0233_hasanat_tier_awards.sql",
   ] as const;
 
   it("tracks every hardening migration in the drizzle journal", async () => {
@@ -238,5 +239,51 @@ describe("Hasanat schema & persistence invariants (0225–0232)", () => {
     // Value-affecting fields are immutable after issue.
     expect(updateSchema).not.toMatch(/quantity:/);
     expect(updateSchema).not.toMatch(/denominationId:/);
+  });
+
+  it("materialises tier awards without ever deleting evidence", async () => {
+    const sql = await read(migrations[8]);
+
+    expect(sql).toMatch(/CREATE TABLE IF NOT EXISTS "hasanat_student_awards"/i);
+    expect(sql).toMatch(/hasanat_award_ws_student_tier_uidx[\s\S]*?WHERE "revoked_at" IS NULL/i);
+    expect(sql).toMatch(/revoked_at/i);
+    expect(sql).toMatch(/FORCE ROW LEVEL SECURITY/i);
+    expect(sql).toMatch(/forbid_hard_delete/i);
+  });
+
+  it("keeps academic rollover away from Hasanat rows", async () => {
+    const rolloverFiles = [
+      "src/sessions/use-cases/sessionRolloverPlan.ts",
+      "src/sessions/use-cases/sessionRolloverUseCases.ts",
+      "src/sessions/use-cases/sessionRolloverJob.ts",
+      "src/sessions/repository/sessionRolloverRepository.ts",
+      "src/sessions/use-cases/sessionCompletionUseCases.ts",
+    ];
+    for (const file of rolloverFiles) {
+      const source = await readFile(join(process.cwd(), file), "utf-8");
+      // Rollover/completion must never move, reset or delete Hasanat points.
+      expect(source, `${file} must not touch hasanat`).not.toMatch(/hasanat/i);
+    }
+  });
+
+  it("serves the report from one read model instead of a paginated collection", async () => {
+    const repo = await readFile(
+      join(process.cwd(), "src/db/repositories/hasanatReportRepository.ts"),
+      "utf-8",
+    );
+    expect(repo).toMatch(/WITH cards AS/i);
+    expect(repo).toMatch(/points_snapshot/);
+    expect(repo).toMatch(/kind = 'reversal'/);
+
+    const component = await readFile(
+      join(
+        process.cwd(),
+        "../../apps/frontend/src/tenant/features/reports/components/HasanatReport.tsx",
+      ),
+      "utf-8",
+    );
+    expect(component).toMatch(/useHasanatStudentReport/);
+    expect(component).not.toMatch(/useHasanatDistributionsCollection/);
+    expect(component).toMatch(/filters\.session/);
   });
 });

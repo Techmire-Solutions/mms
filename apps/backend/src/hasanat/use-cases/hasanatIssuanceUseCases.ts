@@ -17,6 +17,9 @@ import { withTenant } from "../../db/tenant-context.js";
 import { workspaceTodayIso } from "../../lib/workspaceDay.js";
 import { ConflictError, NotFoundError } from "../../lib/httpErrors.js";
 import type { HasanatRepository } from "../repository/hasanatRepository.js";
+import { reconcileStudentTier } from "./hasanatTierUseCases.js";
+import { assertSessionWritable } from "./hasanatSessionGuard.js";
+import { findSessionIdForClass } from "../repository/hasanatRepositoryAdapter.js";
 
 export interface IssueCardInput {
   body: DistributionCreate;
@@ -47,6 +50,12 @@ export async function issueHasanatCard(
     const denomination = await repo.findDenomById(subdomain, input.body.denominationId);
     const batchRemaining = await repo.findBatchRemaining(subdomain, input.body.batchId);
 
+    // Cards belong to the session they are issued in; a closed session accepts no new points.
+    const targetSessionId =
+      input.body.sessionId ??
+      (input.body.classId ? await findSessionIdForClass(subdomain, input.body.classId) : null);
+    await assertSessionWritable(subdomain, targetSessionId);
+
     // Serialize the quota check with concurrent issues by the same instructor on the same day.
     await repo.lockInstructorQuota(subdomain, input.actorUserId, input.body.issuedDate);
     const quotaUsed = await repo.countIssuedByUserOnDate(
@@ -75,7 +84,7 @@ export async function issueHasanatCard(
       throw new NotFoundError("The selected denomination does not exist.");
     }
 
-    return repo.insertDistribution(subdomain, {
+    const card = await repo.insertDistribution(subdomain, {
       id: input.body.id?.trim() || generateClientEntityId("hd"),
       batchId: input.body.batchId,
       denominationId: input.body.denominationId,
@@ -96,5 +105,12 @@ export async function issueHasanatCard(
       issuedByUserId: input.actorUserId,
       issuedBy: input.actorName ?? input.body.issuedBy ?? null,
     });
+
+    // Tier/badge evidence is reconciled in the same transaction as the points change.
+    if (card.recipientStudentId) {
+      await reconcileStudentTier(subdomain, card.recipientStudentId);
+    }
+
+    return card;
   });
 }

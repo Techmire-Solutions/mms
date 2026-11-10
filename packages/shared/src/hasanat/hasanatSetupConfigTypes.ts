@@ -8,6 +8,11 @@ import {
   INITIAL_HASANAT_FIELD_SEED,
 } from "../settings/moduleFieldSetupFinance.js";
 import { getFlatFieldsConfig } from "../settings/moduleFieldConfigUtils.js";
+import {
+  DEFAULT_HASANAT_TIER_LADDER,
+  resolveTierLadder,
+  type HasanatTier,
+} from "./hasanatTierRules.js";
 
 /** Deep clone {@link INITIAL_HASANAT_FIELD_SEED} for default and Setup states. */
 export function cloneHasanatFieldSeed(): Record<string, FieldDefinition[]> {
@@ -105,6 +110,20 @@ export const hasanatPreferencesPutBodySchema = z
     defaultViewLayout: z.string().optional(),
     /** Instructor daily awarding cap; `0` disables the quota. */
     dailyAwardLimitPerInstructor: z.number().int().min(0).max(10_000).optional(),
+    /** Tier ladder (validated by `validateTierLadder`); omitted = keep the stored ladder. */
+    tierLadder: z
+      .array(
+        z
+          .object({
+            key: z.string().min(1).max(32),
+            name: z.string().min(1).max(60),
+            minPoints: z.number().int().min(0).max(1_000_000),
+          })
+          .strict(),
+      )
+      .min(1)
+      .max(12)
+      .optional(),
   })
   .passthrough();
 
@@ -115,6 +134,8 @@ export interface HasanatModulePreferences {
   defaultViewLayout: string;
   /** Instructor daily awarding cap enforced at issuance; `0` = unlimited. */
   dailyAwardLimitPerInstructor: number;
+  /** Workspace tier ladder; defaults to `DEFAULT_HASANAT_TIER_LADDER`. */
+  tierLadder: HasanatTier[];
 }
 
 /** Extracts preferences slice from a raw composed settings blob. */
@@ -125,6 +146,7 @@ export function normalizeHasanatModulePreferences(raw: unknown): HasanatModulePr
       autoApprovePayouts: DEFAULT_HASANAT_SETTINGS.autoApprovePayouts,
       defaultViewLayout: DEFAULT_HASANAT_SETTINGS.defaultViewLayout || "list",
       dailyAwardLimitPerInstructor: 0,
+      tierLadder: [...DEFAULT_HASANAT_TIER_LADDER],
     };
   }
 
@@ -147,6 +169,7 @@ export function normalizeHasanatModulePreferences(raw: unknown): HasanatModulePr
       Number.isFinite(prefs.dailyAwardLimitPerInstructor)
         ? Math.max(0, Math.trunc(prefs.dailyAwardLimitPerInstructor))
         : 0,
+    tierLadder: resolveTierLadder(prefs.tierLadder),
   };
 }
 

@@ -51,6 +51,34 @@ import {
 import { loadHasanatReportAggregatesSql } from "../../db/repositories/hasanatRepositoryReport.js";
 import { aggregateHasanatWidgetQueries } from "../../db/repositories/hasanatRepositoryWidgets.js";
 
+export {
+  findSessionIdForClass,
+  findSessionStatuses,
+} from "../../db/repositories/hasanatCardOps.js";
+export {
+  findDistributionsByClientRequestIds,
+  insertBatchDistributions,
+  listBatchRecipients,
+  findStudentsByNames,
+  type NewBatchCard,
+} from "../../db/repositories/hasanatBatchRepository.js";
+export { getHasanatModulePreferences } from "../../db/repositories/hasanatModulePreferencesRepository.js";
+export { loadHasanatStudentReport } from "../../db/repositories/hasanatReportRepository.js";
+export {
+  findStudentsForCards,
+  getStudentPoints,
+  insertStudentAwards,
+  listLiveStudentAwards,
+  listStudentAwards,
+  listTenantTierState,
+  revokeStudentAwards,
+  type NewAward,
+} from "../../db/repositories/hasanatTierRepository.js";
+export {
+  listBatchesByWorkspace,
+  listDenomsByWorkspace,
+} from "../../db/repositories/hasanatRepository.js";
+
 /**
  * Drizzle-backed adapter for {@link HasanatRepository}. Delegates to the
  * existing concrete repository functions (no SQL rewrite in this pass).

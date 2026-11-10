@@ -252,3 +252,4 @@ export async function findBatchRemaining(tenant: string, batchId: string): Promi
 }
 
 export type { DistributionRow };
+export { findSessionIdForClass, findSessionStatuses } from "./hasanatSessionOps.js";

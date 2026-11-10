@@ -7,11 +7,15 @@
  */
 
 /** Persisted card states. `expired` is derived (time-based), never stored. */
+import { OK, fail, type HasanatRuleResult } from "./hasanatRulePrimitives.js";
+
 export const HASANAT_CARD_STATUSES = ["active", "redeemed", "returned"] as const;
 export type HasanatCardStatus = (typeof HASANAT_CARD_STATUSES)[number];
 
 /** Derived lifecycle state shown in the UI — persisted status plus time-based expiry. */
 export type HasanatCardLifecycleState = HasanatCardStatus | "expired";
+
+export * from "./hasanatRulePrimitives.js";
 
 /**
  * Legal transitions. `redeemed` is terminal: the only way back is a ledger reversal, which the
@@ -24,39 +28,6 @@ export const HASANAT_CARD_TRANSITIONS: Readonly<
   redeemed: [],
   returned: ["active"],
 };
-
-export const HASANAT_RULE_CODES = [
-  "invalid_status_transition",
-  "unknown_denomination",
-  "inactive_denomination",
-  "non_positive_value",
-  "invalid_quantity",
-  "insufficient_stock",
-  "recipient_mismatch",
-  "future_issue_date",
-  "quota_exceeded",
-  "card_not_active",
-  "card_expired",
-  "insufficient_value",
-  "value_mismatch",
-  "invalid_points",
-] as const;
-
-export type HasanatRuleCode = (typeof HASANAT_RULE_CODES)[number];
-
-export interface HasanatRuleViolation {
-  code: HasanatRuleCode;
-  /** Human-readable, shown verbatim by the API and the UI. */
-  message: string;
-}
-
-export type HasanatRuleResult = { ok: true } | { ok: false; violation: HasanatRuleViolation };
-
-const OK: HasanatRuleResult = { ok: true };
-
-function fail(code: HasanatRuleCode, message: string): HasanatRuleResult {
-  return { ok: false, violation: { code, message } };
-}
 
 /** Whether `from → to` is a legal persisted transition. */
 export function canTransition(from: HasanatCardStatus, to: HasanatCardStatus): boolean {
@@ -209,67 +180,72 @@ export function validateRecipient(
   return OK;
 }
 
-export interface HasanatRedemptionInput {
-  card: {
-    status: HasanatCardStatus;
-    deletedAt?: string | null;
-    expiresOn?: string | null;
-    /** Immutable value stamped at issue (see `points_snapshot`). */
-    pointsSnapshot: number;
-  };
-  requestedPoints: number;
-  /** Tenant-local today, `YYYY-MM-DD`. */
-  today: string;
+/**
+ * A card belongs to the academic session it was issued in. Once that session is completed,
+ * cancelled or archived, Hasanat no longer accepts writes against it — the sanctioned override is
+ * reopening the session through the session lifecycle, not a second lock here.
+ */
+export function cardWriteBlockedBySessionStatus(sessionStatus: string | null | undefined): boolean {
+  const status = (sessionStatus ?? "").trim().toLowerCase();
+  return status === "completed" || status === "cancelled" || status === "archived";
 }
 
-/**
- * Redemption rule: an active, unexpired card is burned **at its exact value**.
- *
- * Partial redemption is deliberately rejected: the card model is all-or-nothing, and accepting a
- * smaller amount would silently forfeit the remainder (the card closes after one redemption).
- */
-export function validateRedemption(input: HasanatRedemptionInput): HasanatRuleResult {
-  if (input.card.deletedAt) {
-    return fail("card_not_active", "This card has been archived.");
+export function cardWriteBlockedMessage(sessionStatus: string): string {
+  return `This card belongs to a ${sessionStatus} session; reopen the session before changing Hasanat points.`;
+}
+
+export interface HasanatBatchIssuanceInput {
+  denomination: { points: number; active: boolean } | null | undefined;
+  recipientCount: number;
+  /** Live stock for the target batch; `null`/`undefined` skips the check (unknown). */
+  batchRemaining?: number | null;
+  issuedDate: string;
+  today: string;
+  /** Instructor usage for this issued date; `null` skips the check. */
+  quota?: { used: number; limit: number | null | undefined } | null;
+}
+
+/** Batch rules: the same deed/date/stock checks, plus the quota must fit the whole group. */
+export function validateBatchIssuance(input: HasanatBatchIssuanceInput): HasanatRuleResult {
+  const denom = input.denomination;
+  if (!denom) {
+    return fail("unknown_denomination", "The selected denomination does not exist.");
   }
-  if (input.card.status !== "active") {
-    return fail("card_not_active", `This card is already ${input.card.status}.`);
+  if (!denom.active) {
+    return fail("inactive_denomination", "The selected denomination is inactive.");
   }
-  if (input.card.expiresOn && input.today > input.card.expiresOn) {
-    return fail("card_expired", "This card has expired.");
+  const pointsCheck = validateDenomPoints(denom.points);
+  if (!pointsCheck.ok) return pointsCheck;
+
+  if (!Number.isInteger(input.recipientCount) || input.recipientCount < 1) {
+    return fail("invalid_quantity", "A batch award needs at least one recipient.");
   }
 
-  const value = Math.max(0, Math.trunc(input.card.pointsSnapshot));
-  if (value <= 0) {
-    return fail("non_positive_value", "This card has no point value to redeem.");
+  if (typeof input.batchRemaining === "number" && input.recipientCount > input.batchRemaining) {
+    return fail(
+      "insufficient_stock",
+      `Only ${input.batchRemaining} card(s) remain in the selected batch for ${input.recipientCount} recipient(s).`,
+    );
   }
 
-  const requested = Math.trunc(input.requestedPoints);
-  if (!Number.isFinite(requested) || requested <= 0) {
-    return fail("insufficient_value", "Points used must be greater than 0.");
+  if (input.issuedDate > input.today) {
+    return fail("future_issue_date", "The issue date cannot be in the future.");
   }
-  if (requested > value) {
-    return fail(
-      "insufficient_value",
-      `Points used (${requested}) exceeds the card value (${value}).`,
-    );
-  }
-  if (requested !== value) {
-    return fail(
-      "value_mismatch",
-      `This card must be redeemed in full (${value} points); partial redemption is not supported.`,
-    );
+
+  if (input.quota) {
+    const limit = Number.isFinite(input.quota.limit ?? NaN)
+      ? Math.trunc(input.quota.limit as number)
+      : 0;
+    if (limit > 0 && input.quota.used + input.recipientCount > limit) {
+      const remaining = Math.max(0, limit - input.quota.used);
+      return fail(
+        "quota_exceeded",
+        `The daily awarding limit leaves ${remaining} card(s) for this instructor.`,
+      );
+    }
   }
 
   return OK;
 }
 
-/** Consumed value of a card from its ledger rows (`redeem` adds, `reversal` subtracts). */
-export function consumedCardValue(
-  rows: ReadonlyArray<{ kind: "redeem" | "reversal"; pointsUsed: number }>,
-): number {
-  return rows.reduce(
-    (total, row) => total + (row.kind === "reversal" ? -row.pointsUsed : row.pointsUsed),
-    0,
-  );
-}
+export * from "./hasanatRedemptionRules.js";

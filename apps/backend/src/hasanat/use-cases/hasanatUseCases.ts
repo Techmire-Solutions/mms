@@ -15,6 +15,7 @@ import {
 } from "../../services/tenantBulkService.js";
 import { createGenericRelationalService } from "../../services/genericRelationalService.js";
 import { broadcastCollection } from "../../lib/livePush.js";
+import { createHasanatCardWriteFacade } from "./hasanatCardWriteFacade.js";
 import {
   batchListSchema,
   denomListSchema,
@@ -33,6 +34,11 @@ import { createHasanatQueryUseCases } from "./hasanatQueryUseCases.js";
 import { issueHasanatCard } from "./hasanatIssuanceUseCases.js";
 import { redeemHasanatCard, voidHasanatRedemption } from "./hasanatRedemptionUseCases.js";
 import { changeHasanatCardStatus, updateHasanatCard } from "./hasanatCardUseCases.js";
+import {
+  getHasanatStudentReport,
+  getHasanatStudentSummary,
+  reconcileTenantTiers,
+} from "./hasanatTierUseCases.js";
 
 /** Instructor daily awarding cap from the module preferences (`0` = unlimited). */
 async function loadQuotaLimit(tenant: string, repo: HasanatRepository): Promise<number> {
@@ -79,6 +85,14 @@ export function createHasanatUseCases(repo: HasanatRepository = hasanatRepositor
     if (!tenant) throw new Error("Tenant context is required for a Hasanat write");
     return tenant;
   }
+
+  const cardWrites = createHasanatCardWriteFacade({
+    repo,
+    crud: distributionCrud,
+    requireTenant,
+    requireActorUserId,
+    loadQuotaLimit: () => loadQuotaLimit(requireTenant(), repo),
+  });
 
   function requireActorUserId(): string {
     const userId = getRequestUserId();
@@ -134,10 +148,20 @@ export function createHasanatUseCases(repo: HasanatRepository = hasanatRepositor
       await broadcastCollection("hasanat_distributions");
       return card;
     },
-    deleteDistributionById: distributionCrud.deleteById,
-    restoreDistributionById: distributionCrud.restoreById,
-    bulkSoftDeleteDistributions: distributionCrud.bulkDeleteByIds,
-    bulkRestoreDistributions: distributionCrud.bulkRestoreByIds,
+
+    // Card delete/restore (tier-reconciled) and batch awarding.
+    ...cardWrites,
+
+    // Progression
+    getStudentReport: async (filters: {
+      sessionId?: string | null;
+      classId?: string | null;
+      from?: string | null;
+      to?: string | null;
+    }) => getHasanatStudentReport(requireTenant(), filters),
+    getStudentSummary: async (studentId: string, sessionId?: string | null) =>
+      getHasanatStudentSummary(requireTenant(), studentId, sessionId ?? null),
+    reconcileTiers: async () => reconcileTenantTiers(requireTenant()),
 
     // Ledger
     redeemCard: async (

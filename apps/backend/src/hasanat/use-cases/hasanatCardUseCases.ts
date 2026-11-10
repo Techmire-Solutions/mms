@@ -15,6 +15,7 @@ import {
 import { withTenant } from "../../db/tenant-context.js";
 import { ConflictError, NotFoundError } from "../../lib/httpErrors.js";
 import type { HasanatRepository } from "../repository/hasanatRepository.js";
+import { assertSessionWritable } from "./hasanatSessionGuard.js";
 
 /** Move a card through the legal state machine (`active → redeemed|returned`, `returned → active`). */
 export async function changeHasanatCardStatus(
@@ -30,6 +31,7 @@ export async function changeHasanatCardStatus(
     if (!card) {
       throw new NotFoundError("Hasanat card not found");
     }
+    await assertSessionWritable(subdomain, card.sessionId);
     if (card.version !== undefined && card.version !== input.expectedVersion) {
       throw new ConflictError("This card changed since you loaded it. Reload and try again.");
     }
@@ -62,6 +64,7 @@ export async function updateHasanatCard(
     if (!card) {
       throw new NotFoundError("Hasanat card not found");
     }
+    await assertSessionWritable(subdomain, card.sessionId);
     if (card.deletedAt) {
       throw new ConflictError("Restore this card before editing it.");
     }
