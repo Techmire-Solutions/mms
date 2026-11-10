@@ -8,7 +8,7 @@ import type { AddressInfo } from "node:net";
 import type { FastifyInstance } from "fastify";
 import websocketRoutes from "../routes/common/websocket.js";
 import { ACCESS_COOKIE } from "../services/auth/authCookieService.js";
-import { isTokenRevoked } from "../services/authSessionService.js";
+import { isTokenRevoked, isUserSessionRevoked } from "../services/authSessionService.js";
 import { getWorkspaceBySubdomain } from "../services/workspaceService.js";
 
 vi.mock("../services/authSessionService.js", () => ({
@@ -194,6 +194,28 @@ describe("WebSocket Route (/api/ws)", () => {
       cookie: `${ACCESS_COOKIE}=${token}`,
     });
     expect(res.code).toBe(4001);
+  });
+
+  it("rejects when isUserSessionRevoked returns true with 4001", async () => {
+    vi.mocked(isUserSessionRevoked).mockResolvedValueOnce(true);
+    const token = signToken({ id: "u-revoked", iat_ms: Date.now() });
+    const res = await connectAndWaitForClose(url, {
+      host: "demo.localhost",
+      origin: "http://demo.localhost:5173",
+      cookie: `${ACCESS_COOKIE}=${token}`,
+    });
+    expect(res.code).toBe(4001);
+  });
+
+  it("passes iat_ms to isUserSessionRevoked when present on token", async () => {
+    const specificIatMs = 1794304239212;
+    const token = signToken({ id: "u-precise", iat_ms: specificIatMs });
+    await connect(url, {
+      host: "demo.localhost",
+      origin: "http://demo.localhost:5173",
+      cookie: `${ACCESS_COOKIE}=${token}`,
+    });
+    expect(vi.mocked(isUserSessionRevoked)).toHaveBeenCalledWith("u-precise", specificIatMs);
   });
 
   it("rejects a session that has not passed 2FA with 4001", async () => {

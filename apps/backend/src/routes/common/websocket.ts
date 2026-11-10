@@ -23,6 +23,7 @@ interface DecodedToken {
   twoFactorVerified?: boolean;
   jti?: string;
   iat?: number;
+  iat_ms?: number;
 }
 
 interface SocketWithReadyState extends MinimalWebSocket {
@@ -148,11 +149,8 @@ export default async function websocketRoutes(app: FastifyInstance): Promise<voi
           return;
         }
 
-        if (
-          decoded.id &&
-          decoded.iat &&
-          (await isUserSessionRevoked(decoded.id, decoded.iat * 1000))
-        ) {
+        const issuedAtMs = decoded.iat_ms ?? (decoded.iat ? decoded.iat * 1000 : undefined);
+        if (decoded.id && issuedAtMs && (await isUserSessionRevoked(decoded.id, issuedAtMs))) {
           socket.close(4001, "Unauthorized - Session revoked");
           return;
         }
