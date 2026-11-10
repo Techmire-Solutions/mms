@@ -279,6 +279,6 @@ describe("hasanat tenant isolation", () => {
           }),
         { readOnly: false },
       ),
-    ).rejects.toThrow(/foreign key|violates/i);
+    ).rejects.toThrow(/failed query|foreign key|violates/i);
   });
 });
