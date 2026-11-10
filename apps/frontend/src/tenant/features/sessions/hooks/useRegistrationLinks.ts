@@ -1,4 +1,5 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { useState } from "react";
 import type { RegistrationLink, RegistrationLinkWrite } from "@mms/shared";
 import { useAuth } from "@/lib/contexts/AuthContext";
 import { isApiError } from "@/lib/apiError";
@@ -26,6 +27,7 @@ export function useRegistrationLinks(sessionId: string) {
 export function useRegistrationLinkActions(sessionId: string) {
   const { t } = useTranslation();
   const queryClient = useQueryClient();
+  const [saveError, setSaveError] = useState<string | null>(null);
   const onSettled = () => invalidateRegistrationQueries(queryClient);
   const saveMutation = useMutation({
     ...saveRegistrationLinkMutationOptions(sessionId),
@@ -40,14 +42,15 @@ export function useRegistrationLinkActions(sessionId: string) {
     id: string | undefined,
     body: RegistrationLinkWrite,
   ): Promise<RegistrationLink | null> => {
+    setSaveError(null);
     try {
       const saved = await saveMutation.mutateAsync({ id: id ?? crypto.randomUUID(), body });
       notify.success(t("sessions.registration.saved"));
       return saved;
     } catch (error) {
-      notify.error(t("sessions.registration.saveFailed"), {
-        description: isApiError(error) ? error.message : undefined,
-      });
+      const description = isApiError(error) ? error.message : undefined;
+      setSaveError(description ?? t("sessions.registration.saveFailed"));
+      notify.error(t("sessions.registration.saveFailed"), { description });
       return null;
     }
   };
@@ -74,5 +77,11 @@ export function useRegistrationLinkActions(sessionId: string) {
     }
   };
 
-  return { save, remove, copy, isPending: saveMutation.isPending || deleteMutation.isPending };
+  return {
+    save,
+    remove,
+    copy,
+    saveError,
+    isPending: saveMutation.isPending || deleteMutation.isPending,
+  };
 }
