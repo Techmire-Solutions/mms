@@ -2,11 +2,12 @@ import { and, eq, inArray, isNull, isNotNull, sql } from "drizzle-orm";
 import { dedupeTrimmedIds, type Distribution } from "@mms/shared";
 import { hasanatDistributions } from "../schema.js";
 import { withTenant } from "../tenant-context.js";
+import { runGuardedTenant } from "./hasanatConstraintErrors.js";
 import { requireDbDateValue } from "../../lib/dbDate.js";
 
 export async function saveDistribution(tenant: string, record: Distribution): Promise<void> {
   const subdomain = tenant.trim().toLowerCase();
-  await withTenant(subdomain, async (tx) => {
+  await runGuardedTenant(subdomain, async (tx) => {
     await tx
       .insert(hasanatDistributions)
       .values({
@@ -21,6 +22,7 @@ export async function saveDistribution(tenant: string, record: Distribution): Pr
         recipientName: record.recipientName ?? "",
         recipientClass: record.recipientClass ?? "",
         classId: record.classId ?? null,
+        sessionId: record.sessionId ?? null,
         quantity: record.quantity ?? 1,
         reason: record.reason ?? "",
         issuedDate: requireDbDateValue(record.issuedDate, "issuedDate"),
@@ -30,6 +32,9 @@ export async function saveDistribution(tenant: string, record: Distribution): Pr
         deletedAt: record.deletedAt ? new Date(record.deletedAt) : null,
         deletedBy: record.deletedBy ?? null,
         deletionReason: record.deletionReason ?? null,
+        restoredAt: record.restoredAt ? new Date(record.restoredAt) : null,
+        restoredBy: record.restoredBy ?? null,
+        deletedWithCascade: record.deletedWithCascade ?? false,
         updatedAt: new Date(),
       })
       .onConflictDoUpdate({
@@ -44,6 +49,8 @@ export async function saveDistribution(tenant: string, record: Distribution): Pr
           recipientName: record.recipientName ?? "",
           recipientClass: record.recipientClass ?? "",
           classId: record.classId ?? null,
+          // Never clear an attribution that the DB already stamped.
+          sessionId: sql`coalesce(${record.sessionId ?? null}, ${hasanatDistributions.sessionId})`,
           quantity: record.quantity ?? 1,
           reason: record.reason ?? "",
           issuedDate: requireDbDateValue(record.issuedDate, "issuedDate"),
@@ -53,6 +60,10 @@ export async function saveDistribution(tenant: string, record: Distribution): Pr
           deletedAt: record.deletedAt ? new Date(record.deletedAt) : null,
           deletedBy: record.deletedBy ?? null,
           deletionReason: record.deletionReason ?? null,
+          // Restore provenance must survive the upsert (mms-soft-delete §2.5).
+          restoredAt: record.restoredAt ? new Date(record.restoredAt) : null,
+          restoredBy: record.restoredBy ?? null,
+          deletedWithCascade: record.deletedWithCascade ?? false,
           updatedAt: new Date(),
         },
       });
@@ -73,7 +84,7 @@ export async function bulkSaveDistributions(
   const uniqueRecords = Array.from(uniqueMap.values());
   if (uniqueRecords.length === 0) return;
 
-  await withTenant(subdomain, async (tx) => {
+  await runGuardedTenant(subdomain, async (tx) => {
     await tx
       .insert(hasanatDistributions)
       .values(
@@ -89,6 +100,7 @@ export async function bulkSaveDistributions(
           recipientName: r.recipientName ?? "",
           recipientClass: r.recipientClass ?? "",
           classId: r.classId ?? null,
+          sessionId: r.sessionId ?? null,
           quantity: r.quantity ?? 1,
           reason: r.reason ?? "",
           issuedDate: requireDbDateValue(r.issuedDate, "issuedDate"),
@@ -98,6 +110,9 @@ export async function bulkSaveDistributions(
           deletedAt: r.deletedAt ? new Date(r.deletedAt) : null,
           deletedBy: r.deletedBy ?? null,
           deletionReason: r.deletionReason ?? null,
+          restoredAt: r.restoredAt ? new Date(r.restoredAt) : null,
+          restoredBy: r.restoredBy ?? null,
+          deletedWithCascade: r.deletedWithCascade ?? false,
           updatedAt: new Date(),
         })),
       )
@@ -113,6 +128,7 @@ export async function bulkSaveDistributions(
           recipientName: sql`excluded.recipient_name`,
           recipientClass: sql`excluded.recipient_class`,
           classId: sql`excluded.class_id`,
+          sessionId: sql`coalesce(excluded.session_id, ${hasanatDistributions.sessionId})`,
           quantity: sql`excluded.quantity`,
           reason: sql`excluded.reason`,
           issuedDate: sql`excluded.issued_date`,
@@ -122,6 +138,9 @@ export async function bulkSaveDistributions(
           deletedAt: sql`excluded.deleted_at`,
           deletedBy: sql`excluded.deleted_by`,
           deletionReason: sql`excluded.deletion_reason`,
+          restoredAt: sql`excluded.restored_at`,
+          restoredBy: sql`excluded.restored_by`,
+          deletedWithCascade: sql`excluded.deleted_with_cascade`,
           updatedAt: new Date(),
         },
       });
@@ -141,6 +160,8 @@ export async function replaceDistributionsForWorkspace(
   const uniqueRecords = Array.from(uniqueMap.values());
 
   await withTenant(subdomain, async (tx) => {
+    // Full-collection replace is only reachable from backup restore (which sets
+    // `app.allow_hard_purge`) and the legacy 030 data migration.
     await tx
       .delete(hasanatDistributions)
       .where(eq(hasanatDistributions.workspaceSubdomain, subdomain));
@@ -158,6 +179,7 @@ export async function replaceDistributionsForWorkspace(
           recipientName: r.recipientName ?? "",
           recipientClass: r.recipientClass ?? "",
           classId: r.classId ?? null,
+          sessionId: r.sessionId ?? null,
           quantity: r.quantity ?? 1,
           reason: r.reason ?? "",
           issuedDate: requireDbDateValue(r.issuedDate, "issuedDate"),
@@ -167,6 +189,9 @@ export async function replaceDistributionsForWorkspace(
           deletedAt: r.deletedAt ? new Date(r.deletedAt) : null,
           deletedBy: r.deletedBy ?? null,
           deletionReason: r.deletionReason ?? null,
+          restoredAt: r.restoredAt ? new Date(r.restoredAt) : null,
+          restoredBy: r.restoredBy ?? null,
+          deletedWithCascade: r.deletedWithCascade ?? false,
           updatedAt: new Date(),
         })),
       );
@@ -191,6 +216,7 @@ export async function bulkSoftDeleteDistributions(
         deletedAt: now,
         deletedBy: deletedBy || null,
         deletionReason: deletionReason || null,
+        deletedWithCascade: false,
         updatedAt: now,
       })
       .where(
@@ -212,7 +238,7 @@ export async function bulkSoftDeleteDistributions(
 export async function bulkRestoreDistributions(
   tenant: string,
   ids: string[],
-  _userId?: string,
+  userId?: string,
 ): Promise<{ succeeded: number; failed: number }> {
   const subdomain = tenant.trim().toLowerCase();
   const uniqueIds = dedupeTrimmedIds(ids);
@@ -225,6 +251,10 @@ export async function bulkRestoreDistributions(
         deletedAt: null,
         deletedBy: null,
         deletionReason: null,
+        // Resurrection provenance: a bulk restore must be as attributable as a single restore.
+        restoredAt: now,
+        restoredBy: userId || null,
+        deletedWithCascade: false,
         updatedAt: now,
       })
       .where(

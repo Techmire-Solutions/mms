@@ -1,4 +1,4 @@
-import { and, eq, inArray, sql } from "drizzle-orm";
+import { and, eq, inArray, isNull, sql } from "drizzle-orm";
 import { dedupeTrimmedIds, type Redemption } from "@mms/shared";
 import {
   hasanatDenoms,
@@ -8,9 +8,11 @@ import {
 } from "../schema.js";
 import { withTenant, withTenantRead } from "../tenant-context.js";
 import { requireDbDateValue } from "../../lib/dbDate.js";
+import { runGuardedTenant } from "./hasanatConstraintErrors.js";
 
 type RedempRow = typeof hasanatRedemptions.$inferSelect;
-function redemptionRowToRecord(row: RedempRow): Redemption {
+
+export function redemptionRowToRecord(row: RedempRow): Redemption {
   const redemption: Redemption = {
     id: row.id,
     distributionId: row.distributionId,
@@ -20,6 +22,7 @@ function redemptionRowToRecord(row: RedempRow): Redemption {
     date: row.date,
   };
 
+  if (row.studentId) redemption.studentId = row.studentId;
   if (row.approvedByUserId) redemption.approvedByUserId = row.approvedByUserId;
   if (row.approvedBy) redemption.approvedBy = row.approvedBy;
 
@@ -39,6 +42,7 @@ export async function listRedemptionsByWorkspace(
         id: hasanatRedemptions.id,
         workspaceSubdomain: hasanatRedemptions.workspaceSubdomain,
         distributionId: hasanatRedemptions.distributionId,
+        studentId: hasanatRedemptions.studentId,
         studentName: hasanatRedemptions.studentName,
         reward: hasanatRedemptions.reward,
         pointsUsed: hasanatRedemptions.pointsUsed,
@@ -49,7 +53,20 @@ export async function listRedemptionsByWorkspace(
         createdAt: hasanatRedemptions.createdAt,
       })
       .from(hasanatRedemptions)
-      .where(eq(hasanatRedemptions.workspaceSubdomain, subdomain))
+      // A trashed card must stop contributing to the redemption tracker.
+      .innerJoin(
+        hasanatDistributions,
+        and(
+          eq(hasanatDistributions.workspaceSubdomain, hasanatRedemptions.workspaceSubdomain),
+          eq(hasanatDistributions.id, hasanatRedemptions.distributionId),
+        ),
+      )
+      .where(
+        and(
+          eq(hasanatRedemptions.workspaceSubdomain, subdomain),
+          isNull(hasanatDistributions.deletedAt),
+        ),
+      )
       .orderBy(hasanatRedemptions.id)
       .limit(limit)
       .offset(offset);
@@ -67,6 +84,7 @@ export async function findRedemptionById(tenant: string, id: string): Promise<Re
         id: hasanatRedemptions.id,
         workspaceSubdomain: hasanatRedemptions.workspaceSubdomain,
         distributionId: hasanatRedemptions.distributionId,
+        studentId: hasanatRedemptions.studentId,
         studentName: hasanatRedemptions.studentName,
         reward: hasanatRedemptions.reward,
         pointsUsed: hasanatRedemptions.pointsUsed,
@@ -99,6 +117,7 @@ export async function findRedemptionsByIds(tenant: string, ids: string[]): Promi
         id: hasanatRedemptions.id,
         workspaceSubdomain: hasanatRedemptions.workspaceSubdomain,
         distributionId: hasanatRedemptions.distributionId,
+        studentId: hasanatRedemptions.studentId,
         studentName: hasanatRedemptions.studentName,
         reward: hasanatRedemptions.reward,
         pointsUsed: hasanatRedemptions.pointsUsed,
@@ -121,13 +140,14 @@ export async function findRedemptionsByIds(tenant: string, ids: string[]): Promi
 
 export async function saveRedemption(tenant: string, record: Redemption): Promise<void> {
   const subdomain = tenant.trim().toLowerCase();
-  await withTenant(subdomain, async (tx) => {
+  await runGuardedTenant(subdomain, async (tx) => {
     await tx
       .insert(hasanatRedemptions)
       .values({
         id: record.id,
         workspaceSubdomain: subdomain,
         distributionId: record.distributionId,
+        studentId: record.studentId ?? null,
         studentName: record.studentName ?? "",
         reward: record.reward,
         pointsUsed: record.pointsUsed ?? 0,
@@ -140,6 +160,7 @@ export async function saveRedemption(tenant: string, record: Redemption): Promis
         target: [hasanatRedemptions.workspaceSubdomain, hasanatRedemptions.id],
         set: {
           distributionId: record.distributionId,
+          studentId: record.studentId ?? null,
           studentName: record.studentName ?? "",
           reward: record.reward,
           pointsUsed: record.pointsUsed ?? 0,
@@ -163,7 +184,7 @@ export async function bulkSaveRedemptions(tenant: string, records: Redemption[])
   const uniqueRecords = Array.from(uniqueMap.values());
   if (uniqueRecords.length === 0) return;
 
-  await withTenant(subdomain, async (tx) => {
+  await runGuardedTenant(subdomain, async (tx) => {
     await tx
       .insert(hasanatRedemptions)
       .values(
@@ -171,6 +192,7 @@ export async function bulkSaveRedemptions(tenant: string, records: Redemption[])
           id: r.id,
           workspaceSubdomain: subdomain,
           distributionId: r.distributionId,
+          studentId: r.studentId ?? null,
           studentName: r.studentName ?? "",
           reward: r.reward,
           pointsUsed: r.pointsUsed ?? 0,
@@ -184,6 +206,7 @@ export async function bulkSaveRedemptions(tenant: string, records: Redemption[])
         target: [hasanatRedemptions.workspaceSubdomain, hasanatRedemptions.id],
         set: {
           distributionId: sql`excluded.distribution_id`,
+          studentId: sql`excluded.student_id`,
           studentName: sql`excluded.student_name`,
           reward: sql`excluded.reward`,
           pointsUsed: sql`excluded.points_used`,
@@ -209,6 +232,7 @@ export async function replaceRedemptionsForWorkspace(
   const uniqueRecords = Array.from(uniqueMap.values());
 
   await withTenant(subdomain, async (tx) => {
+    // Backup-restore path only; the caller sets `app.allow_hard_purge` for the ledger guard.
     await tx.delete(hasanatRedemptions).where(eq(hasanatRedemptions.workspaceSubdomain, subdomain));
     if (uniqueRecords.length > 0) {
       await tx.insert(hasanatRedemptions).values(
@@ -216,6 +240,7 @@ export async function replaceRedemptionsForWorkspace(
           id: r.id,
           workspaceSubdomain: subdomain,
           distributionId: r.distributionId,
+          studentId: r.studentId ?? null,
           studentName: r.studentName ?? "",
           reward: r.reward,
           pointsUsed: r.pointsUsed ?? 0,

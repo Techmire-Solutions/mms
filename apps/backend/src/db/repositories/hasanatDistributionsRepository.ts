@@ -49,6 +49,7 @@ export async function listDistributionsByWorkspace(
         recipientName: hasanatDistributions.recipientName,
         recipientClass: hasanatDistributions.recipientClass,
         classId: hasanatDistributions.classId,
+        sessionId: hasanatDistributions.sessionId,
         quantity: hasanatDistributions.quantity,
         reason: hasanatDistributions.reason,
         issuedDate: hasanatDistributions.issuedDate,

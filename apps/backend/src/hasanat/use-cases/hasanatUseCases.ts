@@ -22,6 +22,7 @@ import {
   redemptionListSchema,
   distributionRecordSchema,
   normalizeHasanatReportComparisonQuery,
+  type RedeemCardBody,
 } from "@mms/shared";
 
 const EMPTY_HASANAT_METRICS: HasanatCommandMetricsSnapshot = {
@@ -162,6 +163,22 @@ export function createHasanatUseCases(repo: HasanatRepository = hasanatRepositor
       await broadcastCollection("hasanat_redemptions");
     },
     replaceRedemptions: redemptionService.replace,
+
+    /**
+     * Atomic redemption — the only supported burn path. The repository locks the card and writes
+     * the ledger row + status in one transaction (`0226` guards duplicates at the DB level).
+     */
+    redeemCard: async (
+      distributionId: string,
+      body: RedeemCardBody,
+    ): Promise<{ redemption: Redemption }> => {
+      const tenant = getRequestTenant();
+      if (!tenant) throw new Error("Tenant context is required to redeem a Hasanat card");
+      const result = await repo.redeemCard(tenant, distributionId, body);
+      await broadcastCollection("hasanat_redemptions");
+      await broadcastCollection("hasanat_distributions");
+      return result;
+    },
 
     loadDistributions: distributionCrud.loadAll,
 

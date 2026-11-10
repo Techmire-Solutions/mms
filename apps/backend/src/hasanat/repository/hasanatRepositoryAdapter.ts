@@ -26,6 +26,7 @@ import {
   saveRedemption,
   bulkSaveRedemptions,
   replaceRedemptionsForWorkspace,
+  redeemCard,
 } from "../../db/repositories/hasanatRepository.js";
 import {
   listDistributionsPage,
@@ -66,6 +67,7 @@ export const hasanatRepository: HasanatRepository = {
   saveRedemption,
   bulkSaveRedemptions,
   replaceRedemptionsForWorkspace,
+  redeemCard,
   aggregateHasanatCommandMetrics,
   aggregateHasanatWidgetQueries,
   loadHasanatReportAggregates: loadHasanatReportAggregatesSql,

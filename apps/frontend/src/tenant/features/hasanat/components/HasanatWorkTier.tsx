@@ -152,7 +152,6 @@ export function HasanatWorkTier({
           {activeSubTab === "redemptions" && (
             <RedemptionTracker
               distributions={distributions}
-              onUpdateDistribution={onUpdateDistribution}
               onFilteredCountChange={onFilteredCountChange}
               canWrite={canWrite}
               columnLayout={redemptionColumnLayout}

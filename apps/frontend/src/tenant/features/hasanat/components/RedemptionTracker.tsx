@@ -26,7 +26,6 @@ const REDEMPTION_TABLE_ID = `${HASANAT_MODULE_MANIFEST.moduleId}_redemptions`;
 
 export interface RedemptionTrackerProps {
   distributions: Distribution[];
-  onUpdateDistribution: (distribution: Distribution) => void | Promise<void>;
   onFilteredCountChange?: (count: number) => void;
   canWrite?: boolean;
   /** Controller-owned column layout (`useHasanatRedemptionColumnLayout`). */
@@ -36,7 +35,6 @@ export interface RedemptionTrackerProps {
 
 export function RedemptionTracker({
   distributions,
-  onUpdateDistribution,
   onFilteredCountChange,
   canWrite = true,
   columnLayout,
@@ -45,7 +43,7 @@ export function RedemptionTracker({
   const { t } = useTranslation();
   const rowMotion = useListRowMotion({ fade: true, duration: 0.1 });
   const redemptions = useHasanatRedemptionsCollection();
-  const { replaceRedemptions } = useHasanatMutations();
+  const { redeemCard } = useHasanatMutations();
   const [showModal, setShowModal] = useState(false);
 
   useEffect(() => {
@@ -58,11 +56,15 @@ export function RedemptionTracker({
   );
 
   const handleSave = async (redemption: Redemption) => {
-    await replaceRedemptions.mutateAsync([...redemptions, redemption]);
-    const distribution = distributions.find((item) => item.id === redemption.distributionId);
-    if (distribution) {
-      await onUpdateDistribution({ ...distribution, status: "redeemed" as const });
-    }
+    // One atomic request: the server locks the card, validates its value and writes the ledger
+    // row + card status together. Never split this into "upsert list, then update the card".
+    await redeemCard.mutateAsync(redemption.distributionId, {
+      reward: redemption.reward,
+      pointsUsed: redemption.pointsUsed,
+      date: redemption.date,
+      approvedByUserId: redemption.approvedByUserId ?? null,
+      approvedBy: redemption.approvedBy ?? null,
+    });
     setShowModal(false);
   };
 

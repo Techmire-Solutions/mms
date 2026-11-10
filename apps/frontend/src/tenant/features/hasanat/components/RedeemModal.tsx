@@ -101,6 +101,9 @@ export function RedeemModal({ open, distributions, onClose, onSave }: RedeemModa
         studentName: selectedDistribution?.recipientName || "",
         approvedBy,
       } as Redemption);
+    } catch (error: unknown) {
+      // Already redeemed / points above the card value are 409s from the atomic endpoint.
+      setSubmitError(error instanceof Error ? error.message : t("common.formPleaseFixErrors"));
     } finally {
       setSubmitting(false);
     }

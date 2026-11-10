@@ -2,6 +2,7 @@ import { relations } from "drizzle-orm";
 import { workspaces } from "../platform.js";
 import { students } from "../students.js";
 import { faculty } from "../faculty.js";
+import { sessionClasses, sessions } from "../sessions.js";
 import {
   hasanatDenoms,
   hasanatBatches,
@@ -51,6 +52,14 @@ export const hasanatDistributionsRelations = relations(hasanatDistributions, ({ 
     fields: [hasanatDistributions.workspaceSubdomain, hasanatDistributions.recipientFacultyId],
     references: [faculty.workspaceSubdomain, faculty.id],
   }),
+  sessionClass: one(sessionClasses, {
+    fields: [hasanatDistributions.workspaceSubdomain, hasanatDistributions.classId],
+    references: [sessionClasses.workspaceSubdomain, sessionClasses.id],
+  }),
+  session: one(sessions, {
+    fields: [hasanatDistributions.workspaceSubdomain, hasanatDistributions.sessionId],
+    references: [sessions.workspaceSubdomain, sessions.id],
+  }),
   redemptions: many(hasanatRedemptions),
 }));
 
@@ -62,5 +71,9 @@ export const hasanatRedemptionsRelations = relations(hasanatRedemptions, ({ one 
   distribution: one(hasanatDistributions, {
     fields: [hasanatRedemptions.workspaceSubdomain, hasanatRedemptions.distributionId],
     references: [hasanatDistributions.workspaceSubdomain, hasanatDistributions.id],
+  }),
+  student: one(students, {
+    fields: [hasanatRedemptions.workspaceSubdomain, hasanatRedemptions.studentId],
+    references: [students.workspaceSubdomain, students.id],
   }),
 }));

@@ -30,14 +30,13 @@ vi.mock("@/tenant/features/hasanat/components/RedeemModal", () => ({
 vi.mock("@/tenant/features/hasanat/hooks/useHasanatApi", () => ({
   useHasanatRedemptionsCollection: () => mockRedemptions,
   useHasanatMutations: () => ({
-    replaceRedemptions: { mutateAsync: vi.fn() },
+    redeemCard: { mutateAsync: vi.fn() },
   }),
 }));
 
 describe("RedemptionTracker", () => {
   const baseProps = {
     distributions: [] as Distribution[],
-    onUpdateDistribution: vi.fn(),
   };
 
   it("renders mobile card with student name, reward, and points", () => {

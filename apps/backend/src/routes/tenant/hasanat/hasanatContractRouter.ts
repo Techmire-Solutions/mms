@@ -11,6 +11,7 @@ import {
 } from "../../../services/rbacService.js";
 import { withTenant } from "../../../db/tenant-context.js";
 import { hasanatUseCases } from "../../../hasanat/use-cases/hasanatUseCases.js";
+import { handleRedeemDistribution } from "./hasanatRedeemHandler.js";
 
 const s = initServer();
 
@@ -111,6 +112,7 @@ export const hasanatContractRouter: FastifyPluginAsync = async (fastify) => {
         };
       }
     },
+    redeemDistribution: handleRedeemDistribution,
     bulkDeleteDistributions: async ({
       body,
       request,

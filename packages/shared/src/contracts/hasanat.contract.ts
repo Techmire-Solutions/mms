@@ -15,6 +15,7 @@ import {
   batchRecordSchema,
   distributionRecordSchema,
   redemptionRecordSchema,
+  redeemCardBodySchema,
   denomListSchema,
   batchListSchema,
   distributionListSchema,
@@ -86,6 +87,19 @@ export const hasanatContract = c.router({
       500: ok,
     },
     summary: "Update a hasanat distribution",
+  },
+  redeemDistribution: {
+    method: "POST",
+    path: "/api/hasanat/distributions/:id/redeem",
+    body: redeemCardBodySchema,
+    responses: {
+      200: z.object({ redemption: redemptionRecordSchema }),
+      403: ok,
+      404: ok,
+      409: ok,
+      500: ok,
+    },
+    summary: "Redeem a hasanat card (atomic: ledger row + card status)",
   },
   bulkDeleteDistributions: {
     method: "POST",
