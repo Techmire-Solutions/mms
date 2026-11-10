@@ -1,4 +1,4 @@
-import { useState, useCallback } from "react";
+import { useCallback, useRef, useState } from "react";
 import type { FacultyMember } from "@mms/shared";
 import type { Class } from "@/lib/data/sessionsData";
 import { EMPTY_CLASS } from "./classDetailDraftDefaults";
@@ -22,12 +22,11 @@ export function useClassDetailDraft({
     sessionClass ? { ...sessionClass } : { ...EMPTY_CLASS, id: crypto.randomUUID() },
   );
 
-  // Re-seed the draft from the class being edited on every (re)open (render-phase reset).
-  const [prevOpen, setPrevOpen] = useState(open);
-  const [prevSessionClass, setPrevSessionClass] = useState(sessionClass);
-  if (prevOpen !== open || prevSessionClass !== sessionClass) {
-    setPrevOpen(open);
-    setPrevSessionClass(sessionClass);
+  // Re-seed only when the modal opens or the edited class identity changes. A parent refetch
+  // returns a new object with the same id; that must not wipe the in-progress draft.
+  const prevRef = useRef({ open, id: sessionClass?.id ?? null });
+  if (prevRef.current.open !== open || prevRef.current.id !== (sessionClass?.id ?? null)) {
+    prevRef.current = { open, id: sessionClass?.id ?? null };
     if (open) {
       setClassDraft(
         sessionClass ? { ...sessionClass } : { ...EMPTY_CLASS, id: crypto.randomUUID() },
