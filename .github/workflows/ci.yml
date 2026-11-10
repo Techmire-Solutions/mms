@@ -748,12 +748,18 @@ jobs:
       - name: Enrollments integration coverage ratchet
         run: node scripts/ci/check-enrollment-coverage.mjs --coverage apps/backend/coverage-enrollments-db
 
-      - name: Enrollments DB test hygiene and manifest
+      - name: Attendance DB coverage
+        run: pnpm --filter mms-backend run test:db:coverage:attendance
+
+      - name: Attendance integration coverage ratchet
+        run: node scripts/ci/check-attendance-coverage.mjs --coverage apps/backend/coverage-attendance-db
+
+      - name: DB test hygiene and manifest (enrollments + attendance)
         run: |
           node scripts/ci/check-db-test-hygiene.mjs
           node scripts/ci/check-db-test-manifest.mjs
 
-      - name: Repeat enrollment concurrency suite
+      - name: Repeat concurrency suites (enrollments + attendance)
         run: pnpm --filter mms-backend run test:db:concurrency
 
       - name: Shuffle enrollment DB files before execution
@@ -761,6 +767,7 @@ jobs:
           pnpm --filter mms-backend exec vitest run --config vitest.db.config.ts
           src/__tests__/db-integration/enrollment
           src/__tests__/db-integration/registration
+          src/__tests__/db-integration/attendance
           --sequence.shuffle.files --sequence.seed=20261108
 
   # Proves tenant isolation under the role production is supposed to use: a

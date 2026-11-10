@@ -59,3 +59,54 @@ describe("parseCheckInTime", () => {
     });
   });
 });
+
+describe("parseCheckInTime day boundaries", () => {
+  it("rolls an evening UTC instant onto the next workspace day", () => {
+    // 22:30Z is 03:30 the next morning in Asia/Karachi (UTC+5): the mark belongs to 03-11.
+    expect(
+      parseCheckInTime("2026-03-10T22:30:00Z", undefined, {
+        ...OPTIONS,
+        // The workspace has already rolled over to the 11th when the device uploads.
+        today: "2026-03-11",
+      }),
+    ).toEqual({
+      ok: true,
+      value: { date: "2026-03-11", time: "03:30" },
+    });
+  });
+
+  it("keeps a UTC instant just after midnight on the same workspace day", () => {
+    expect(parseCheckInTime("2026-03-10T00:30:00Z", undefined, OPTIONS)).toEqual({
+      ok: true,
+      value: { date: "2026-03-10", time: "05:30" },
+    });
+  });
+
+  it("refuses a mark dated in the future relative to the workspace day", () => {
+    expect(parseCheckInTime("08:00", "2026-03-11", OPTIONS)).toMatchObject({
+      ok: false,
+      code: "date_in_future",
+    });
+  });
+
+  it("refuses a mark older than the late-upload window", () => {
+    expect(parseCheckInTime("08:00", "2026-03-01", OPTIONS)).toMatchObject({
+      ok: false,
+      code: "date_too_old",
+    });
+  });
+
+  it("follows the DST transition in a zone that observes it", () => {
+    const newYork = { timeZone: "America/New_York", today: "2026-03-09", maxAgeDays: 7 };
+    // 2026-03-08 is the US spring-forward day: 07:30Z is 03:30 EDT (UTC-4), not 02:30.
+    expect(parseCheckInTime("2026-03-08T07:30:00Z", undefined, newYork)).toEqual({
+      ok: true,
+      value: { date: "2026-03-08", time: "03:30" },
+    });
+    // The day before, the same wall clock is EST (UTC-5).
+    expect(parseCheckInTime("2026-03-07T07:30:00Z", undefined, newYork)).toEqual({
+      ok: true,
+      value: { date: "2026-03-07", time: "02:30" },
+    });
+  });
+});

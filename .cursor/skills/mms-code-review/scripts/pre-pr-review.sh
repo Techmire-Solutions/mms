@@ -38,6 +38,8 @@ node scripts/check-tdd-pairing.mjs || true
 
 gate "Staged secrets" pnpm run check:secrets
 gate "Rules & skills integrity" node scripts/verify-rules-integrity.mjs
+# Attendance contract coverage: every contract path must appear in an app.inject test.
+gate "Attendance route injection" node scripts/ci/check-attendance-route-injection.mjs --strict
 gate "i18n completeness (en/ar/ur/fa)" pnpm run check:i18n
 gate "i18n unused keys" pnpm run check:i18n-unused
 gate "@mms/shared purity & boundaries" pnpm run check:shared-purity

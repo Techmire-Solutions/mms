@@ -276,3 +276,72 @@ describe("image upload multipart route", () => {
     }
   });
 });
+
+describe("excuse-certificate attachment upload (attendance purpose)", () => {
+  const boundary = "----mms-excuse-test";
+
+  function multipartBody(bytes: Buffer, filename: string, mime: string): Buffer {
+    return Buffer.concat([
+      Buffer.from(
+        `--${boundary}\r\nContent-Disposition: form-data; name="file"; filename="${filename}"\r\nContent-Type: ${mime}\r\n\r\n`,
+      ),
+      bytes,
+      Buffer.from(`\r\n--${boundary}--\r\n`),
+    ]);
+  }
+
+  async function register(asUser: Record<string, unknown> | null) {
+    vi.mocked(authenticateUploader).mockImplementation(async (request) => {
+      if (asUser) (request as { user?: unknown }).user = asUser;
+    });
+    const app = fastify({ logger: false });
+    app.addHook("onRequest", async () => {
+      bindRequestTenant("demo");
+    });
+    await app.register(uploadRoutes, { prefix: "/api/uploads" });
+    return app;
+  }
+
+  it("accepts a PDF certificate for an attendance writer", async () => {
+    const temp = await mkdtemp(join(tmpdir(), "mms-excuse-route-"));
+    vi.stubEnv("MMS_UPLOADS_DIR", temp);
+    const app = await register({ id: "u-teacher", role: "teacher" });
+    try {
+      const res = await app.inject({
+        method: "POST",
+        url: "/api/uploads/attachment?purpose=attendance_excuse",
+        headers: { "content-type": `multipart/form-data; boundary=${boundary}` },
+        payload: multipartBody(Buffer.from("%PDF-1.4 certificate"), "cert.pdf", "application/pdf"),
+      });
+
+      expect(res.statusCode).toBe(200);
+      expect(res.json()).toMatchObject({ purpose: "attendance_excuse" });
+      expect(String(res.json().url)).toContain("/tenants/demo/attachments/");
+    } finally {
+      await app.close();
+      vi.unstubAllEnvs();
+      await rm(temp, { recursive: true, force: true });
+    }
+  });
+
+  it("rejects an executable even for an allowed purpose", async () => {
+    const temp = await mkdtemp(join(tmpdir(), "mms-excuse-route-"));
+    vi.stubEnv("MMS_UPLOADS_DIR", temp);
+    const app = await register({ id: "u-teacher", role: "teacher" });
+    try {
+      const res = await app.inject({
+        method: "POST",
+        url: "/api/uploads/attachment?purpose=attendance_excuse",
+        headers: { "content-type": `multipart/form-data; boundary=${boundary}` },
+        payload: multipartBody(Buffer.from("MZ"), "payload.exe", "application/x-msdownload"),
+      });
+
+      expect(res.statusCode).toBe(400);
+      expect(res.json()).toMatchObject({ type: "validation_error" });
+    } finally {
+      await app.close();
+      vi.unstubAllEnvs();
+      await rm(temp, { recursive: true, force: true });
+    }
+  });
+});

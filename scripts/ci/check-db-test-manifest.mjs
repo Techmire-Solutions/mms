@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 /**
- * Enrollment DB test manifest ratchet.
+ * Enrollment + attendance DB test manifest ratchet.
  *
  * Counting cases from source keeps this dependency-free and makes an accidental deletion or
  * skip-as-comment visible. Counts may grow freely; they may only drop with a reviewed baseline
@@ -20,6 +20,15 @@ const BASELINE = {
   "enrollmentSsotDb.integration.test.ts": 2,
   "enrollmentsSubsystemsDb.integration.test.ts": 14,
   "registrationDb.integration.test.ts": 4,
+  // Attendance: the status domain, OCC/atomicity, concurrency, day submission, specialised subsystems.
+  "attendanceConcurrencyDb.integration.test.ts": 2,
+  "attendanceDaySubmissionDb.integration.test.ts": 8,
+  "attendanceIntegrityDb.integration.test.ts": 10,
+  "attendanceNotificationDedupeDb.integration.test.ts": 3,
+  "attendanceOccConcurrencyDb.integration.test.ts": 4,
+  "attendanceSpecializedSubsystemsDb.integration.test.ts": 13,
+  "attendanceStatusParityDb.integration.test.ts": 4,
+  "attendanceUpdateMoveDb.integration.test.ts": 4,
 };
 
 const update = process.argv.includes("--update");
@@ -44,7 +53,7 @@ for (const [name, floor] of Object.entries(BASELINE)) {
   const actual = counts[name];
   if (actual < floor) {
     console.error(
-      `✗ ${name}: ${actual} cases (baseline ${floor}). A required enrollment test disappeared.`,
+      `✗ ${name}: ${actual} cases (baseline ${floor}). A required DB test disappeared.`,
     );
     failed = true;
   }
