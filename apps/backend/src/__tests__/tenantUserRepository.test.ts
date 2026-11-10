@@ -35,12 +35,22 @@ vi.mock("../db/dbConnection.js", () => ({
   withActiveTransaction: async (_tx: unknown, cb: () => Promise<unknown>) => await cb(),
 }));
 
+const mockInvalidateTenantRbac = vi.fn().mockResolvedValue(undefined);
+vi.mock("../services/rbacService.js", () => ({
+  invalidateTenantRbac: (...args: unknown[]) => mockInvalidateTenantRbac(...args),
+}));
+
 import {
+  activateInvitedTenantUserRow,
   findTenantUserRowById,
   listTenantUsersByIds,
   replaceTenantUsersForWorkspace,
+  resetTenantUserPasswordRow,
+  restoreTenantUserRow,
   softDeleteTenantUserRow,
   upsertTenantUserRow,
+  verifyTenantUserEmailRow,
+  verifyTenantUserEmailRowGlobal,
 } from "../db/repositories/tenantUserRepository.js";
 
 const existingDbRow = {
@@ -341,5 +351,191 @@ describe("tenantUsers workspace scoping (regression)", () => {
     const { columns, params } = collectSqlParts(mockWhere.mock.calls[0]?.[0]);
     expect(columns).toContain("workspace_subdomain");
     expect(params).toContain("dar-ul-quran");
+  });
+
+  it("softDeleteTenantUserRow and restoreTenantUserRow invalidate tenant rbac cache", async () => {
+    mockSelectWhere.mockResolvedValue([existingDbRow]);
+    await softDeleteTenantUserRow("dar-ul-quran", "u-1", "u-admin");
+    expect(mockInvalidateTenantRbac).toHaveBeenCalledWith("dar-ul-quran");
+
+    mockSelectWhere.mockResolvedValue([{ ...existingDbRow, deletedAt: new Date() }]);
+    await restoreTenantUserRow("dar-ul-quran", "u-1");
+    expect(mockInvalidateTenantRbac).toHaveBeenCalledWith("dar-ul-quran");
+  });
+});
+
+describe("tenantUserLifecyclePersist operations", () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+    mockSelect.mockReturnValue({ from: mockSelectFrom });
+    mockSelectFrom.mockReturnValue({ where: mockSelectWhere });
+    mockUpdate.mockReturnValue({ set: mockSet });
+    mockSet.mockReturnValue({ where: mockWhere });
+    mockWhere.mockResolvedValue(undefined);
+    mockSelectWhere.mockResolvedValue([existingDbRow]);
+  });
+
+  describe("verifyTenantUserEmailRow", () => {
+    it("returns false if workspaceSubdomain is empty", async () => {
+      await expect(verifyTenantUserEmailRow("", "u-1")).resolves.toBe(false);
+      expect(mockUpdate).not.toHaveBeenCalled();
+    });
+
+    it("returns false if user is not found", async () => {
+      mockSelectWhere.mockResolvedValue([]);
+      await expect(verifyTenantUserEmailRow("dar-ul-quran", "u-not-found")).resolves.toBe(false);
+      expect(mockUpdate).not.toHaveBeenCalled();
+    });
+
+    it("returns false if user is soft-deleted", async () => {
+      mockSelectWhere.mockResolvedValue([{ ...existingDbRow, deletedAt: new Date() }]);
+      await expect(verifyTenantUserEmailRow("dar-ul-quran", "u-1")).resolves.toBe(false);
+      expect(mockUpdate).not.toHaveBeenCalled();
+    });
+
+    it("updates emailVerifiedAt and returns true for active user", async () => {
+      await expect(verifyTenantUserEmailRow("dar-ul-quran", "u-1")).resolves.toBe(true);
+      expect(mockUpdate).toHaveBeenCalledTimes(1);
+      expect(mockSet).toHaveBeenCalledWith(
+        expect.objectContaining({
+          emailVerifiedAt: expect.any(Date),
+          updatedAt: expect.any(Date),
+        }),
+      );
+    });
+  });
+
+  describe("verifyTenantUserEmailRowGlobal", () => {
+    it("returns false if user is not found", async () => {
+      mockSelectWhere.mockResolvedValue([]);
+      await expect(verifyTenantUserEmailRowGlobal("u-not-found")).resolves.toBe(false);
+      expect(mockUpdate).not.toHaveBeenCalled();
+    });
+
+    it("returns false if user is soft-deleted", async () => {
+      mockSelectWhere.mockResolvedValue([{ ...existingDbRow, deletedAt: new Date() }]);
+      await expect(verifyTenantUserEmailRowGlobal("u-1")).resolves.toBe(false);
+      expect(mockUpdate).not.toHaveBeenCalled();
+    });
+
+    it("returns false if user has empty workspaceSubdomain", async () => {
+      mockSelectWhere.mockResolvedValue([{ ...existingDbRow, workspaceSubdomain: "" }]);
+      await expect(verifyTenantUserEmailRowGlobal("u-1")).resolves.toBe(false);
+      expect(mockUpdate).not.toHaveBeenCalled();
+    });
+
+    it("updates emailVerifiedAt and returns true for active user", async () => {
+      await expect(verifyTenantUserEmailRowGlobal("u-1")).resolves.toBe(true);
+      expect(mockUpdate).toHaveBeenCalledTimes(1);
+      expect(mockSet).toHaveBeenCalledWith(
+        expect.objectContaining({
+          emailVerifiedAt: expect.any(Date),
+          updatedAt: expect.any(Date),
+        }),
+      );
+    });
+  });
+
+  describe("resetTenantUserPasswordRow", () => {
+    it("returns false if workspaceSubdomain is empty", async () => {
+      await expect(resetTenantUserPasswordRow("", "u-1", "new-hash")).resolves.toBe(false);
+      expect(mockUpdate).not.toHaveBeenCalled();
+    });
+
+    it("returns false if user is not found", async () => {
+      mockSelectWhere.mockResolvedValue([]);
+      await expect(resetTenantUserPasswordRow("dar-ul-quran", "u-1", "new-hash")).resolves.toBe(
+        false,
+      );
+      expect(mockUpdate).not.toHaveBeenCalled();
+    });
+
+    it("returns false if user is soft-deleted", async () => {
+      mockSelectWhere.mockResolvedValue([{ ...existingDbRow, deletedAt: new Date() }]);
+      await expect(resetTenantUserPasswordRow("dar-ul-quran", "u-1", "new-hash")).resolves.toBe(
+        false,
+      );
+      expect(mockUpdate).not.toHaveBeenCalled();
+    });
+
+    it("updates passwordHash and sets mustChangePassword to true", async () => {
+      await expect(
+        resetTenantUserPasswordRow("dar-ul-quran", "u-1", "salt:new-hash"),
+      ).resolves.toBe(true);
+      expect(mockUpdate).toHaveBeenCalledTimes(1);
+      expect(mockSet).toHaveBeenCalledWith(
+        expect.objectContaining({
+          passwordHash: "salt:new-hash",
+          mustChangePassword: true,
+          updatedAt: expect.any(Date),
+        }),
+      );
+    });
+  });
+
+  describe("activateInvitedTenantUserRow", () => {
+    it("returns false if workspaceSubdomain is empty", async () => {
+      await expect(activateInvitedTenantUserRow("", "u-1", "new-hash")).resolves.toBe(false);
+      expect(mockUpdate).not.toHaveBeenCalled();
+    });
+
+    it("returns false if user is not found", async () => {
+      mockSelectWhere.mockResolvedValue([]);
+      await expect(activateInvitedTenantUserRow("dar-ul-quran", "u-1", "new-hash")).resolves.toBe(
+        false,
+      );
+      expect(mockUpdate).not.toHaveBeenCalled();
+    });
+
+    it("returns false if user is soft-deleted", async () => {
+      mockSelectWhere.mockResolvedValue([{ ...existingDbRow, deletedAt: new Date() }]);
+      await expect(activateInvitedTenantUserRow("dar-ul-quran", "u-1", "new-hash")).resolves.toBe(
+        false,
+      );
+      expect(mockUpdate).not.toHaveBeenCalled();
+    });
+
+    it("updates passwordHash, sets mustChangePassword to false, and verifies email", async () => {
+      await expect(
+        activateInvitedTenantUserRow("dar-ul-quran", "u-1", "salt:activated-hash"),
+      ).resolves.toBe(true);
+      expect(mockUpdate).toHaveBeenCalledTimes(1);
+      expect(mockSet).toHaveBeenCalledWith(
+        expect.objectContaining({
+          passwordHash: "salt:activated-hash",
+          mustChangePassword: false,
+          emailVerifiedAt: expect.any(Date),
+          updatedAt: expect.any(Date),
+        }),
+      );
+    });
+  });
+
+  describe("softDeleteTenantUserRow & restoreTenantUserRow edge cases", () => {
+    it("softDeleteTenantUserRow returns false if user not found", async () => {
+      mockSelectWhere.mockResolvedValue([]);
+      await expect(softDeleteTenantUserRow("dar-ul-quran", "u-not-found", "u-admin")).resolves.toBe(
+        false,
+      );
+    });
+
+    it("softDeleteTenantUserRow returns false if user already deleted", async () => {
+      mockSelectWhere.mockResolvedValue([{ ...existingDbRow, deletedAt: new Date() }]);
+      await expect(softDeleteTenantUserRow("dar-ul-quran", "u-1", "u-admin")).resolves.toBe(false);
+    });
+
+    it("restoreTenantUserRow returns false if workspace is empty", async () => {
+      await expect(restoreTenantUserRow("", "u-1")).resolves.toBe(false);
+    });
+
+    it("restoreTenantUserRow returns false if user not found", async () => {
+      mockSelectWhere.mockResolvedValue([]);
+      await expect(restoreTenantUserRow("dar-ul-quran", "u-not-found")).resolves.toBe(false);
+    });
+
+    it("restoreTenantUserRow returns false if user is not deleted", async () => {
+      mockSelectWhere.mockResolvedValue([existingDbRow]);
+      await expect(restoreTenantUserRow("dar-ul-quran", "u-1")).resolves.toBe(false);
+    });
   });
 });

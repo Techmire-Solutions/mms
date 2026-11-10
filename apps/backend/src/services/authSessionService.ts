@@ -70,7 +70,7 @@ export function isTimestampRevoked(issuedAtMs: number, revokedAtMs: number): boo
   if (isSecondAligned) {
     const revokedSec = Math.floor(revokedAtMs / 1000);
     const issuedSec = Math.floor(issuedAtMs / 1000);
-    return issuedSec < revokedSec;
+    return issuedSec <= revokedSec;
   }
   return issuedAtMs <= revokedAtMs;
 }

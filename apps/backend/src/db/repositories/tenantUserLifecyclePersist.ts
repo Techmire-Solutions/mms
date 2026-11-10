@@ -6,6 +6,7 @@ import {
   findTenantUserRowByIdGlobal,
 } from "./tenantUserRepositoryHydrate.js";
 import { revokeAllUserSessions, revokeUserSessionKeys } from "../../services/authSessionService.js";
+import { invalidateTenantRbac } from "../../services/rbacService.js";
 import { invalidateMultiTierCache } from "../../lib/cache/index.js";
 
 export function tenantUserIdWhere(id: string, workspaceSubdomain: string) {
@@ -46,6 +47,7 @@ export async function softDeleteTenantUserRow(
   await revokeAllUserSessions(id);
   await revokeUserSessionKeys(id);
   await invalidateMultiTierCache({ tenantId: tenant, domain: "users", key: id });
+  await invalidateTenantRbac(tenant);
   return true;
 }
 
@@ -69,6 +71,7 @@ export async function restoreTenantUserRow(
       .where(tenantUserIdWhere(id, tenant));
   });
   await invalidateMultiTierCache({ tenantId: tenant, domain: "users", key: id });
+  await invalidateTenantRbac(tenant);
   return true;
 }
 
