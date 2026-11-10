@@ -21,6 +21,7 @@ export function FormSelect({ searchLabels, ...props }: FormSelectProps): React.J
     search: searchLabels?.search ?? t("common.search"),
     searchPlaceholder: searchLabels?.searchPlaceholder ?? t("common.searchPlaceholder"),
     noMatchingOptions: searchLabels?.noMatchingOptions ?? t("common.noMatchingOptions"),
+    searching: searchLabels?.searching ?? t("common.loading"),
   };
 
   return <SharedFormSelect searchLabels={resolvedSearchLabels} {...props} />;

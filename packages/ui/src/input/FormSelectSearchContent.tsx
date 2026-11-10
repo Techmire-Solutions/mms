@@ -1,5 +1,5 @@
 import * as React from "react";
-import { Check, Search } from "lucide-react";
+import { Check, Loader2, Search } from "lucide-react";
 import { Input } from "./Input";
 import { PopoverContent } from "../popover/Popover";
 import { cn } from "../utils";
@@ -15,6 +15,9 @@ export interface FormSelectSearchContentProps {
   searchLabel?: string;
   searchPlaceholder?: string;
   noMatchingOptionsLabel?: string;
+  /** True while a remote search requested by the caller is loading. */
+  isSearching?: boolean;
+  searchingLabel?: string;
 }
 
 /** Search box + filtered listbox rendered inside the FormSelect popover. */
@@ -27,6 +30,8 @@ export function FormSelectSearchContent({
   searchLabel = "Search",
   searchPlaceholder = "Search...",
   noMatchingOptionsLabel = "No matching options",
+  isSearching = false,
+  searchingLabel = "Searching...",
 }: FormSelectSearchContentProps): React.JSX.Element {
   const interactedOutsideRef = React.useRef(false);
   const listboxId = `${baseId}-search-listbox`;
@@ -73,11 +78,15 @@ export function FormSelectSearchContent({
           onKeyDown={search.handleSearchKeyDown}
           className="h-11 min-w-0 flex-1 border-0 bg-transparent px-0 shadow-none focus-visible:ring-0 focus-visible:ring-offset-0"
         />
+        {isSearching ? (
+          <Loader2 className="size-4 shrink-0 animate-spin text-muted-foreground" aria-hidden />
+        ) : null}
       </div>
       <div
         id={listboxId}
         role="listbox"
         aria-label={ariaLabel}
+        aria-busy={isSearching}
         className="max-h-80 min-h-0 flex-1 overflow-y-auto overscroll-contain py-1"
       >
         {filtered.map((option, index) => {
@@ -110,7 +119,7 @@ export function FormSelectSearchContent({
         })}
         {filtered.length === 0 ? (
           <p role="status" className="px-3 py-2 text-sm italic text-muted-foreground">
-            {noMatchingOptionsLabel}
+            {isSearching ? searchingLabel : noMatchingOptionsLabel}
           </p>
         ) : null}
       </div>

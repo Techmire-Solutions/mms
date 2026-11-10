@@ -30,17 +30,38 @@ export interface UseFormSelectSearchArgs {
   options: readonly FormSelectSearchOption[];
   value: string;
   onPick: (value: string) => void;
+  /**
+   * Reports every query change so a remote search can refetch the option list.
+   * When set, callers usually also set `filterLocally: false` so matches the
+   * server found on other fields (email, CNIC, phone) are not filtered out.
+   */
+  onQueryChange?: (query: string) => void;
+  /** Set false when `onQueryChange` drives a remote option list. Defaults true. */
+  filterLocally?: boolean;
 }
 
 /** Open/query/highlight state for the searchable FormSelect popover. */
-export function useFormSelectSearch({ options, value, onPick }: UseFormSelectSearchArgs) {
+export function useFormSelectSearch({
+  options,
+  value,
+  onPick,
+  onQueryChange,
+  filterLocally = true,
+}: UseFormSelectSearchArgs) {
   const [open, setOpen] = useState(false);
   const [query, setQuery] = useState("");
   const [highlightedIndex, setHighlightedIndex] = useState(0);
-  const filtered = useMemo(() => filterSelectOptions(options, query), [options, query]);
+  const filtered = useMemo(() => {
+    if (filterLocally) return filterSelectOptions(options, query);
+    // Remote results are already matched by the caller; only drop the empty
+    // placeholder while a query is active, mirroring local filtering.
+    if (!query.trim()) return [...options];
+    return options.filter((option) => option.value !== "");
+  }, [filterLocally, options, query]);
 
   const openWith = (initialQuery = ""): void => {
     setQuery(initialQuery);
+    onQueryChange?.(initialQuery);
     const selectedIndex = options.findIndex((option) => option.value === value);
     setHighlightedIndex(initialQuery || selectedIndex < 0 ? 0 : selectedIndex);
     setOpen(true);
@@ -49,10 +70,12 @@ export function useFormSelectSearch({ options, value, onPick }: UseFormSelectSea
   const close = (): void => {
     setOpen(false);
     setQuery("");
+    if (query !== "") onQueryChange?.("");
   };
 
   const changeQuery = (next: string): void => {
     setQuery(next);
+    onQueryChange?.(next);
     setHighlightedIndex(0);
   };
 

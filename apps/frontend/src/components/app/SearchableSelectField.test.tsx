@@ -6,13 +6,13 @@ import { SearchableSelectField, type SearchableSelectFieldProps } from "./Search
 vi.mock("@/hooks/useTranslation", () => ({ useTranslation: () => ({ t: (key: string) => key }) }));
 globalThis.IS_REACT_ACT_ENVIRONMENT = true;
 
-describe("SearchableSelectField controlled contract", () => {
+describe("SearchableSelectField", () => {
   let container: HTMLDivElement;
   let root: Root;
+  const onSearchChange = vi.fn();
   const defaults: SearchableSelectFieldProps = {
     label: "Person",
-    search: "",
-    onSearchChange: vi.fn(),
+    onSearchChange,
     searchLabel: "Find person",
     searchPlaceholder: "Search people",
     loadingLabel: "Loading people",
@@ -32,6 +32,7 @@ describe("SearchableSelectField controlled contract", () => {
   afterEach(() => {
     act(() => root.unmount());
     container.remove();
+    document.body.innerHTML = "";
     vi.clearAllMocks();
   });
 
@@ -45,6 +46,72 @@ describe("SearchableSelectField controlled contract", () => {
       "Loading people",
     );
     expect(container.querySelector('[aria-busy="true"]')).not.toBeNull();
+  });
+
+  it("filters the full option list inside the built-in search when no remote search is wired", () => {
+    const onChange = vi.fn();
+    render({
+      onSearchChange: undefined,
+      onChange,
+      value: "",
+      options: [
+        { value: "a", label: "Ali" },
+        { value: "b", label: "Bilal" },
+        { value: "c", label: "Fatima" },
+        { value: "d", label: "Hamza" },
+        { value: "e", label: "Khadija" },
+        { value: "f", label: "Zainab" },
+      ],
+    });
+    act(() => {
+      container
+        .querySelector("select")!
+        .dispatchEvent(new KeyboardEvent("keydown", { key: "f", bubbles: true }));
+    });
+    expect(
+      Array.from(document.querySelectorAll('[role="option"]'), (option) => option.textContent),
+    ).toEqual(["Fatima"]);
+    act(() => {
+      document
+        .querySelector('input[role="combobox"]')!
+        .dispatchEvent(new KeyboardEvent("keydown", { key: "Enter", bubbles: true }));
+    });
+    expect(onChange).toHaveBeenCalledWith("c");
+  });
+
+  it("renders no standalone search input above the dropdown", () => {
+    render();
+    expect(container.querySelector("input")).toBeNull();
+  });
+
+  it("types into the dropdown's built-in search and reports the query for remote filtering", () => {
+    render({
+      options: [
+        { value: "a", label: "Ali" },
+        { value: "b", label: "Bilal" },
+        { value: "c", label: "Fatima" },
+      ],
+    });
+    const select = container.querySelector("select")!;
+    act(() => {
+      select.dispatchEvent(new KeyboardEvent("keydown", { key: "a", bubbles: true }));
+    });
+    const searchInput = document.querySelector<HTMLInputElement>('input[role="combobox"]');
+    expect(searchInput).not.toBeNull();
+    expect(searchInput?.value).toBe("a");
+    expect(onSearchChange).toHaveBeenCalledWith("a");
+    expect(searchInput?.getAttribute("aria-label")).toBe("Find person");
+    expect(searchInput?.getAttribute("placeholder")).toBe("Search people");
+  });
+
+  it("keeps a short remote-backed list searchable through the popover", () => {
+    render({ options: [{ value: "kept", label: "Selected person" }] });
+    const select = container.querySelector("select")!;
+    expect(select.getAttribute("aria-expanded")).toBe("false");
+    act(() => {
+      select.dispatchEvent(new KeyboardEvent("keydown", { key: "Enter", bubbles: true }));
+    });
+    expect(document.querySelector('input[role="combobox"]')).not.toBeNull();
   });
 
   it("announces errors and delegates retry and selection", () => {

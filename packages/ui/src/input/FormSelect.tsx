@@ -17,6 +17,7 @@ export interface FormSelectSearchLabels {
   search?: string;
   searchPlaceholder?: string;
   noMatchingOptions?: string;
+  searching?: string;
 }
 
 export interface FormSelectProps {
@@ -34,6 +35,18 @@ export interface FormSelectProps {
    * on when there are at least `FORM_SELECT_SEARCH_MIN_OPTIONS` choices.
    */
   searchable?: boolean;
+  /**
+   * Reports typed search text to the caller — use it to refetch a remote list.
+   * Filtering stays inside the dropdown; there is no separate search field.
+   */
+  onSearchChange?: (query: string) => void;
+  /**
+   * Keep the loaded options while a remote search is in flight (`false`) instead
+   * of filtering them locally. Defaults to true for fully client-side lists.
+   */
+  filterSearchLocally?: boolean;
+  /** True while a remote search requested through `onSearchChange` is loading. */
+  isSearching?: boolean;
   "aria-label"?: string;
   "aria-invalid"?: boolean | "true" | "false";
   "aria-describedby"?: string;
@@ -58,6 +71,9 @@ export function FormSelect({
   name,
   required,
   searchable,
+  onSearchChange,
+  filterSearchLocally,
+  isSearching = false,
   "aria-label": ariaLabel,
   "aria-invalid": ariaInvalid,
   "aria-describedby": ariaDescribedBy,
@@ -87,7 +103,13 @@ export function FormSelect({
     () => listOptions.filter((option) => !option.disabled),
     [listOptions],
   );
-  const search = useFormSelectSearch({ options: searchOptions, value, onPick: onChange });
+  const search = useFormSelectSearch({
+    options: searchOptions,
+    value,
+    onPick: onChange,
+    onQueryChange: onSearchChange,
+    filterLocally: filterSearchLocally,
+  });
 
   const handleSelectKeyDown = (event: React.KeyboardEvent<HTMLSelectElement>): void => {
     if (event.ctrlKey || event.metaKey) return;
@@ -169,6 +191,8 @@ export function FormSelect({
           searchLabel={searchLabels?.search}
           searchPlaceholder={searchLabels?.searchPlaceholder}
           noMatchingOptionsLabel={searchLabels?.noMatchingOptions}
+          isSearching={isSearching}
+          searchingLabel={searchLabels?.searching}
         />
       ) : null}
     </Popover>

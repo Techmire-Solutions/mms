@@ -1,19 +1,27 @@
 import { useId } from "react";
 import { FORM_LABEL } from "../ui/formStyles";
 import { FormSelect, type FormSelectProps } from "./FormSelect";
-import { SearchBar } from "./SearchBar";
 import { RequiredMark } from "./FormField";
 import { Button } from "../ui/button";
 
 export interface SearchableSelectFieldProps extends Pick<
   FormSelectProps,
-  "value" | "onChange" | "options" | "placeholder" | "disabled" | "required" | "id" | "name"
+  | "value"
+  | "onChange"
+  | "options"
+  | "placeholder"
+  | "disabled"
+  | "required"
+  | "id"
+  | "name"
+  | "onSearchChange"
+  | "isSearching"
 > {
   label: string;
-  search: string;
-  onSearchChange: (search: string) => void;
-  searchLabel: string;
-  searchPlaceholder: string;
+  /** Overrides the built-in search input's accessible name. */
+  searchLabel?: string;
+  /** Overrides the built-in search input placeholder. */
+  searchPlaceholder?: string;
   loadingLabel: string;
   isLoading?: boolean;
   error?: string;
@@ -22,10 +30,12 @@ export interface SearchableSelectFieldProps extends Pick<
   hint?: string;
 }
 
+/**
+ * Labelled searchable select. Searching lives inside the FormSelect popover —
+ * there is deliberately no second, standalone search input above the field.
+ */
 export function SearchableSelectField({
   label,
-  search,
-  onSearchChange,
   searchLabel,
   searchPlaceholder,
   loadingLabel,
@@ -36,6 +46,7 @@ export function SearchableSelectField({
   hint,
   id,
   name,
+  onSearchChange,
   ...selectProps
 }: SearchableSelectFieldProps): React.JSX.Element {
   const generatedId = useId();
@@ -49,21 +60,16 @@ export function SearchableSelectField({
         {label}
         {selectProps.required && <RequiredMark />}
       </label>
-      {!selectProps.disabled && (
-        <SearchBar
-          id={`${selectId}-search`}
-          name={`${selectId}-search`}
-          value={search}
-          onChange={onSearchChange}
-          ariaLabel={searchLabel}
-          placeholder={searchPlaceholder}
-          isSearching={isLoading}
-        />
-      )}
       <FormSelect
         {...selectProps}
         id={selectId}
         name={name ?? selectId}
+        searchable
+        onSearchChange={onSearchChange}
+        /* A remote search owns matching (email/CNIC/phone), so keep its results verbatim. */
+        filterSearchLocally={onSearchChange ? false : undefined}
+        isSearching={isLoading}
+        searchLabels={{ search: searchLabel, searchPlaceholder }}
         aria-describedby={feedback ? feedbackId : undefined}
       />
       {feedback && (
