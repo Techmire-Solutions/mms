@@ -62,6 +62,32 @@ export function resolveStudentKeysToStripForViewer(
   return toStrip;
 }
 
+export interface StudentClearanceOptions {
+  canViewNotes?: boolean;
+  canViewMedical?: boolean;
+  canViewIep?: boolean;
+  canViewSensitivePii?: boolean;
+}
+
+/** Masks a national ID (CNIC/SSN) preserving only trailing digits: `***-**-1234`. */
+export function maskNationalId(val?: string | null): string | undefined {
+  if (!val) return undefined;
+  const str = String(val).trim();
+  if (str.length <= 4) return "****";
+  return `***-**-${str.slice(-4)}`;
+}
+
+/** Known confidential clinical, psychiatric, or IEP keys to shield from standard viewers. */
+const CONFIDENTIAL_PII_KEYS = [
+  "medicalNotes",
+  "physicianNotes",
+  "psychologicalEvaluation",
+  "iepDetails",
+  "specialEducationDetails",
+  "behavioralPlan",
+  "disciplinaryHistory",
+] as const;
+
 /**
  * Removes `keysToStrip` from a student record — both at the top level and inside the nested
  * `customFields` map.
@@ -70,7 +96,12 @@ export function resolveStudentKeysToStripForViewer(
  * (`studentRepositoryMappers.studentRowToRecord`), so deleting only the top-level key would still
  * expose a restricted custom value through `customFields`.
  */
-function stripStudentKeys(student: Student, keysToStrip: readonly string[]): Student {
+function stripStudentKeys(
+  student: Student,
+  keysToStrip: readonly string[],
+  clearance?: StudentClearanceOptions,
+  viewerRole?: string,
+): Student {
   const sanitized: Student = { ...student };
   for (const key of keysToStrip) {
     delete sanitized[key];
@@ -89,6 +120,49 @@ function stripStudentKeys(student: Student, keysToStrip: readonly string[]): Stu
       (sanitized as Record<string, unknown>).customFields = nextCustomFields;
     }
   }
+
+  // Apply clearance-based masking and redaction
+  const normalizedRole = (viewerRole ?? "").trim().toLowerCase();
+  const isAdminTier = ["super_admin", "admin", "principal", "registrar", "super_user"].includes(
+    normalizedRole,
+  );
+
+  const canViewNotes = clearance?.canViewNotes ?? (isAdminTier || normalizedRole === "teacher");
+  const canViewMedical = clearance?.canViewMedical ?? isAdminTier;
+  const canViewIep = clearance?.canViewIep ?? isAdminTier;
+  const canViewSensitivePii = clearance?.canViewSensitivePii ?? isAdminTier;
+
+  if (!canViewNotes && sanitized.notes !== undefined) {
+    delete sanitized.notes;
+  }
+
+  if (!canViewSensitivePii) {
+    if (sanitized.cnic) {
+      sanitized.cnic = maskNationalId(sanitized.cnic);
+    }
+    const cFields = (sanitized as { customFields?: Record<string, unknown> }).customFields;
+    if (cFields && typeof cFields.cnic === "string") {
+      cFields.cnic = maskNationalId(cFields.cnic);
+    }
+  }
+
+  if (!canViewMedical || !canViewIep) {
+    const cFields = (sanitized as { customFields?: Record<string, unknown> }).customFields;
+    for (const k of CONFIDENTIAL_PII_KEYS) {
+      delete sanitized[k];
+      if (cFields && k in cFields) {
+        delete cFields[k];
+      }
+    }
+    // If medicalConditions exists but user cannot view medical details, convert to safe boolean flag
+    if (!canViewMedical) {
+      if (Array.isArray(sanitized.medicalConditions) && sanitized.medicalConditions.length > 0) {
+        sanitized.hasMedicalAlert = true;
+      }
+      delete sanitized.medicalConditions;
+    }
+  }
+
   return sanitized;
 }
 
@@ -101,18 +175,18 @@ export function sanitizeStudentForViewer(
   student: Student,
   viewerRole: string,
   config: StudentsFieldConfigSnapshot,
+  clearance?: StudentClearanceOptions,
 ): Student {
   const keysToStrip = resolveStudentKeysToStripForViewer(viewerRole, config);
-  if (keysToStrip.length === 0) return student;
-  return stripStudentKeys(student, keysToStrip);
+  return stripStudentKeys(student, keysToStrip, clearance, viewerRole);
 }
 
 export function sanitizeStudentsForViewer(
   students: Student[],
   viewerRole: string,
   config: StudentsFieldConfigSnapshot,
+  clearance?: StudentClearanceOptions,
 ): Student[] {
   const keysToStrip = resolveStudentKeysToStripForViewer(viewerRole, config);
-  if (keysToStrip.length === 0) return students;
-  return students.map((student) => stripStudentKeys(student, keysToStrip));
+  return students.map((student) => stripStudentKeys(student, keysToStrip, clearance, viewerRole));
 }

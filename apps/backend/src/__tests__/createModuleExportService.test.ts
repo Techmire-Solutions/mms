@@ -85,6 +85,16 @@ describe("createModuleExportService multi-format export", () => {
     const buf = Buffer.from(result.content, "base64");
     expect(buf.slice(0, 2).toString()).toBe("PK"); // Zip archive signature for xlsx
   });
+
+  it("enforces MAX_MATERIALIZED_EXPORT_ROWS (10,000) ceiling on materialized formats to prevent worker OOM", async () => {
+    const largeIds = Array.from({ length: 10_001 }, (_, i) => String(i));
+    await expect(
+      exportService.buildExport({ includeIds: largeIds } as never, {
+        viewerRole: "admin",
+        format: "xlsx",
+      }),
+    ).rejects.toThrow(/exceeds 10,000 rows/);
+  });
 });
 
 describe("createModuleExportService OFFSET continuation", () => {

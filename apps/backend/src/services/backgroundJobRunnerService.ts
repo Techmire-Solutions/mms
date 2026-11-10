@@ -61,6 +61,7 @@ import { registerMessagingCampaignJobRunner } from "./messagingCampaignJobRunner
 import { registerFacultyBackgroundJobRunners } from "./backgroundJobFacultyRunners.js";
 import { registerTasksBackgroundJobRunners } from "./backgroundJobTasksRunners.js";
 import { registerStudentsImportJobRunner } from "../students/studentsImportService.js";
+import { registerStudentsBulkJobRunners } from "../students/studentsBulkStatusService.js";
 import {
   registerDocumentAndFinanceJobRunners,
   MAX_EXCEL_PAYLOAD_ENTRIES,
@@ -86,6 +87,7 @@ export function registerDefaultBackgroundJobRunners(): void {
   registerSessionRolloverJobRunner();
   registerSessionImportJobRunner();
   registerSessionsBulkJobRunners();
+  registerStudentsBulkJobRunners();
   registerEnrollmentsImportJobRunner();
 
   registerModuleCsvExportJobRunner({

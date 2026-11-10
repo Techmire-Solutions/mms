@@ -18,6 +18,10 @@ export const PERMISSION_RULES: Readonly<Record<Permission, PermissionRule>> = Ob
   "students.read": { module: "students", requiredActions: ["read"] },
   "students.write": { module: "students", requiredActions: ["create", "update"] },
   "students.delete": { module: "students", requiredActions: ["delete"] },
+  "students.notes.read": { module: "students", requiredActions: ["read"] },
+  "students.medical.read": { module: "students", requiredActions: ["manage"] },
+  "students.iep.read": { module: "students", requiredActions: ["manage"] },
+  "students.disciplinary.read": { module: "students", requiredActions: ["manage"] },
 
   // Faculty
   "faculty.read": { module: "faculty", requiredActions: ["read"] },

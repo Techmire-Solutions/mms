@@ -1,4 +1,9 @@
-import type { Student, User } from "@mms/shared";
+import {
+  type Student,
+  type User,
+  type StudentClearanceOptions,
+  roleHasPermission,
+} from "@mms/shared";
 import { createCollectionAuditHelper } from "../../../lib/createCollectionAuditHelper.js";
 import { studentUseCases } from "../../../students/use-cases/studentUseCases.js";
 import { StudentPermissionError } from "../../../students/use-cases/studentNormalizeUseCases.js";
@@ -8,13 +13,30 @@ import { enableIncludeDeleted } from "../../../lib/softDeleteHelpers.js";
 /** Thin Students audit helper — shared factory, same shape as Contacts/Faculty. */
 export const auditStudent = createCollectionAuditHelper("students", { subjectScoped: true });
 
-/** Strips student properties the viewer role cannot read (field-config + viewer role). */
+/** Resolves PII clearance flags based on the requesting user's institutional role. */
+export function resolveUserStudentClearance(user: User): StudentClearanceOptions {
+  const normalizedRole = (user.role ?? "").trim().toLowerCase();
+  const isAdminTier = ["super_admin", "admin", "principal", "registrar", "super_user"].includes(
+    normalizedRole,
+  );
+
+  return {
+    canViewNotes: roleHasPermission(user.role, "students.notes.read"),
+    canViewMedical: roleHasPermission(user.role, "students.medical.read"),
+    canViewIep: roleHasPermission(user.role, "students.iep.read"),
+    canViewSensitivePii: isAdminTier,
+  };
+}
+
+/** Strips student properties the viewer role cannot read (field-config + viewer role + PII clearance). */
 export async function sanitizeStudentsForUser(students: Student[], user: User): Promise<Student[]> {
-  return studentUseCases.sanitizeStudentsForViewer(students, user.role);
+  const clearance = resolveUserStudentClearance(user);
+  return studentUseCases.sanitizeStudentsForViewer(students, user.role, clearance);
 }
 
 export async function sanitizeOneStudentForUser(student: Student, user: User): Promise<Student> {
-  return studentUseCases.sanitizeStudentForViewer(student, user.role);
+  const clearance = resolveUserStudentClearance(user);
+  return studentUseCases.sanitizeStudentForViewer(student, user.role, clearance);
 }
 
 /** Runs work within tenant context, optionally enabling soft-delete reads. */

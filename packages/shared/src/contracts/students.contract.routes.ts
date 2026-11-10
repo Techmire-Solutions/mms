@@ -14,13 +14,61 @@ import {
 } from "../students/studentsListQuery.js";
 import { includeDeletedQuerySchema } from "../core/apiSchemas.js";
 
+export { studentRecordSchema, studentsListQuerySchema, studentsNextGrNumberQuerySchema };
+
 const c = initContract();
 
 const errorResponse = apiErrorResponseSchema;
 
+/**
+ * Hydrated student record schema for API read responses.
+ * Guarantees `id` and preserves hydrated identity and guardian fields.
+ */
+export const studentResponseRecordSchema = z
+  .object({
+    id: z.union([z.string(), z.number()]),
+    contactId: z.union([z.string(), z.number()]).nullish(),
+    studentId: z.string().optional(),
+    grNumber: z.string().optional(),
+    rollNumber: z.string().optional(),
+    name: z.string().optional(),
+    firstName: z.string().optional(),
+    lastName: z.string().optional(),
+    avatar: z.string().optional(),
+    gender: z.string().optional(),
+    isSyed: z.boolean().optional(),
+    bloodGroup: z.string().optional(),
+    dob: z.string().optional(),
+    phone: z.string().optional(),
+    email: z.string().optional(),
+    address: z.string().optional(),
+    city: z.string().optional(),
+    fatherContactId: z.union([z.string(), z.number()]).nullish(),
+    fatherName: z.string().optional(),
+    motherContactId: z.union([z.string(), z.number()]).nullish(),
+    motherName: z.string().optional(),
+    guardianContactId: z.union([z.string(), z.number()]).nullish(),
+    guardianName: z.string().optional(),
+    guardianRelationship: z.string().optional(),
+    emergencyContact: z.string().optional(),
+    emergencyPhone: z.string().optional(),
+    gradeLevel: z.string().optional(),
+    section: z.string().optional(),
+    status: z.string().optional(),
+    enrollmentDate: z.string().optional(),
+    discountType: z.string().optional(),
+    discountPct: z.number().optional(),
+    notes: z.string().optional(),
+    customFields: z.record(z.string(), z.unknown()).optional(),
+    deletedAt: z.string().nullable().optional(),
+  })
+  .catchall(z.unknown());
+
+export type StudentResponseRecord = z.infer<typeof studentResponseRecordSchema>;
+
 /** Envelope for paginated student list responses (`StudentsListPageResult`). */
 export const studentListPageResponseSchema = z.object({
-  students: z.array(studentRecordSchema),
+  students: z.array(studentResponseRecordSchema),
   total: z.number(),
   page: z.number(),
   limit: z.number(),
@@ -29,7 +77,7 @@ export const studentListPageResponseSchema = z.object({
 });
 
 /** `{ student }` envelope returned by get/create/update. */
-export const studentWrappedResponseSchema = z.object({ student: studentRecordSchema });
+export const studentWrappedResponseSchema = z.object({ student: studentResponseRecordSchema });
 
 /** `{ success: true, succeeded, failed }` bulk-operation envelope. */
 export const studentBulkResultResponseSchema = z.object({
@@ -70,8 +118,8 @@ export const studentCrudRoutes = {
     path: "/api/students",
     body: studentWireWriteSchema,
     responses: {
-      200: z.object({ student: studentRecordSchema }),
-      201: z.object({ student: studentRecordSchema }),
+      200: z.object({ student: studentResponseRecordSchema }),
+      201: z.object({ student: studentResponseRecordSchema }),
       400: errorResponse,
       403: errorResponse,
       409: errorResponse,
@@ -84,7 +132,7 @@ export const studentCrudRoutes = {
     path: "/api/students/:id",
     query: includeDeletedQuerySchema.optional(),
     responses: {
-      200: z.object({ student: studentRecordSchema }),
+      200: z.object({ student: studentResponseRecordSchema }),
       403: errorResponse,
       404: errorResponse,
       500: errorResponse,
@@ -96,7 +144,7 @@ export const studentCrudRoutes = {
     path: "/api/students/:id",
     body: studentWireWriteSchema,
     responses: {
-      200: z.object({ student: studentRecordSchema }),
+      200: z.object({ student: studentResponseRecordSchema }),
       400: errorResponse,
       403: errorResponse,
       404: errorResponse,

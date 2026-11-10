@@ -1,8 +1,8 @@
-// OWASP CSV-injection triggers: = + - @, plus a leading tab or carriage return
+// OWASP CSV-injection triggers: = + - @ | %, plus a leading tab or carriage return
 // (which Excel/Sheets strip before interpreting the formula).
-const FORMULA_INJECTION_PREFIX = /^[=+\-@\t\r]/;
+const FORMULA_INJECTION_PREFIX = /^[=+\-@|%\t\r]/;
 // A formula character hidden behind leading whitespace is still evaluated.
-const WHITESPACE_FORMULA_PREFIX = /^\s+[=+\-@]/;
+const WHITESPACE_FORMULA_PREFIX = /^\s+[=+\-@|%]/;
 // Plain negative numeric strings are data, not formulas — a leading `-` must survive.
 const NEGATIVE_NUMERIC_STRING = /^-(?:\d+(?:\.\d+)?|\.\d+)(?:[eE][+-]?\d+)?$/;
 

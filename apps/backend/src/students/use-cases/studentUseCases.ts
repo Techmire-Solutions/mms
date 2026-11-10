@@ -19,6 +19,11 @@ export * from "./studentSoftDeleteUseCases.js";
 export * from "./studentRestoreUseCases.js";
 export * from "./studentOperationUseCases.js";
 export * from "./studentSanitizeUseCases.js";
+export {
+  resolveStudentAccessScope,
+  isStudentInAssignedSections,
+  type StudentAccessScope,
+} from "../repository/studentScopingRepository.js";
 
 /**
  * Composition root — binds a `StudentsRepository` to every use case.
@@ -72,10 +77,16 @@ export function createStudentsUseCases(repo: StudentsRepository = studentsReposi
     ) => operation.checkStudentRegistrationDuplicate(input, repo, tenantOverride),
     migrateStudentsMissingGrNumbers: (userId?: string) =>
       operation.migrateStudentsMissingGrNumbers(repo, userId),
-    sanitizeStudentForViewer: (student: import("@mms/shared").Student, viewerRole: string) =>
-      sanitize.sanitizeStudentForViewer(student, viewerRole),
-    sanitizeStudentsForViewer: (students: import("@mms/shared").Student[], viewerRole: string) =>
-      sanitize.sanitizeStudentsForViewer(students, viewerRole),
+    sanitizeStudentForViewer: (
+      student: import("@mms/shared").Student,
+      viewerRole: string,
+      clearance?: import("@mms/shared").StudentClearanceOptions,
+    ) => sanitize.sanitizeStudentForViewer(student, viewerRole, clearance),
+    sanitizeStudentsForViewer: (
+      students: import("@mms/shared").Student[],
+      viewerRole: string,
+      clearance?: import("@mms/shared").StudentClearanceOptions,
+    ) => sanitize.sanitizeStudentsForViewer(students, viewerRole, clearance),
   };
 }
 

@@ -50,6 +50,11 @@ export const SESSIONS_EXPORT_TIMEOUT_MS =
 /** Enrollment imports resolve + write one row at a time (500-row body cap). */
 export const ENROLLMENTS_IMPORT_TIMEOUT_MS =
   Number(process.env.ENROLLMENTS_IMPORT_TIMEOUT_MS) || 10 * 60_000;
+/** Student CSV imports and exports walk up to 5,000 rows. */
+export const STUDENTS_IMPORT_TIMEOUT_MS =
+  Number(process.env.STUDENTS_IMPORT_TIMEOUT_MS) || 10 * 60_000;
+export const STUDENTS_EXPORT_TIMEOUT_MS =
+  Number(process.env.STUDENTS_EXPORT_TIMEOUT_MS) || 10 * 60_000;
 
 /**
  * A broadcast is `recipients × gateway latency`; bounding one attempt and
@@ -84,6 +89,9 @@ export function resolveJobExecutionTimeoutMs(moduleId: string, kind: string): nu
     // Batched Hasanat awards/imports write hundreds of cards; the 60s sandbox ceiling is too tight.
     "hasanat:bulk-award": ENROLLMENTS_IMPORT_TIMEOUT_MS,
     "hasanat:import": ENROLLMENTS_IMPORT_TIMEOUT_MS,
+    "students:import": STUDENTS_IMPORT_TIMEOUT_MS,
+    "students:export": STUDENTS_EXPORT_TIMEOUT_MS,
+    "students:bulk-status": STUDENTS_IMPORT_TIMEOUT_MS,
     // A manual scan walks every marked day of one workspace; the 60s sandbox ceiling is too tight.
     "attendance:absence-scan": SESSIONS_IMPORT_TIMEOUT_MS,
     "attendance:export": SESSIONS_EXPORT_TIMEOUT_MS,

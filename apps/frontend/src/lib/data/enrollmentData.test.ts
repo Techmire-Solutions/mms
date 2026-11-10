@@ -77,7 +77,7 @@ describe("enrollmentData dynamic calculations", () => {
       };
       const student: Partial<Student> = {
         dob: `${now.getFullYear() - 9}-01-01`,
-        gender: "Male" as unknown as Student["gender"],
+        gender: "Male",
       };
 
       expect(suggestClass(student, session)?.id).toBe("cls-male");

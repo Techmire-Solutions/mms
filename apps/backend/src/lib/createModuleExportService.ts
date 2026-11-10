@@ -11,8 +11,8 @@ import {
 } from "./csvExportStreamFactory.js";
 import { getSerializer } from "./exportSerializerResolver.js";
 
-/** JSON/XLSX materialize the result set; cap it instead of risking API OOM. */
-const MAX_MATERIALIZED_EXPORT_ROWS = 50_000;
+/** JSON/XLSX materialize the result set; cap it at 10,000 to prevent worker heap OOM. */
+export const MAX_MATERIALIZED_EXPORT_ROWS = 10_000;
 import { getRequestTenant } from "./tenantContext.js";
 import { xlsxSerializer } from "./xlsxExportSerializer.js";
 import {

@@ -9,6 +9,10 @@ import {
   registerLinkedContactIdsRoute,
 } from "../../../lib/crudRouter.js";
 import { sanitizeStudentsForUser } from "./studentRouteHelpers.js";
+import {
+  isStudentInAssignedSections,
+  resolveStudentAccessScope,
+} from "../../../students/use-cases/studentUseCases.js";
 
 /** Count, metrics, resolve, and widget aggregates routes. */
 export const studentAggregateRoutes: FastifyPluginAsync = async (sub) => {
@@ -33,8 +37,21 @@ export const studentAggregateRoutes: FastifyPluginAsync = async (sub) => {
   registerResolveRoute(sub, {
     collection: "students",
     loadByIdsFn: async (ids, request) => {
-      const students = await studentUseCases.loadStudentsByIds(ids);
-      return sanitizeStudentsForUser(students, request.user as User);
+      const user = request.user as User;
+      const tenantId = String(request.tenant?.id);
+      const scope = await resolveStudentAccessScope(tenantId, user);
+      let allowedIds = ids;
+      if (!scope.isUnrestricted) {
+        if (scope.assignedSectionIds.length === 0) return [];
+        const checks = await Promise.all(
+          ids.map(async (id) =>
+            (await isStudentInAssignedSections(tenantId, id, scope.assignedSectionIds)) ? id : null,
+          ),
+        );
+        allowedIds = checks.filter((id): id is string => id !== null);
+      }
+      const students = await studentUseCases.loadStudentsByIds(allowedIds);
+      return sanitizeStudentsForUser(students, user);
     },
     responseKey: "students",
     errorMessagePrefix: "students",
