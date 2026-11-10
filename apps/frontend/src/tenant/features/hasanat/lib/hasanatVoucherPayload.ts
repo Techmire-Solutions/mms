@@ -27,6 +27,8 @@ export function buildHasanatVoucherPayload({
 
   return {
     institution,
+    // `<cardId>|<points>|<issuedDate>` — unique per card and checkable against the printed slip.
+    qrPayload: `${distribution.id}|${totalPoints} Hasanat|${distribution.issuedDate}`,
     receiptNo: distribution.id,
     // A distribution has no donor field; leave it blank rather than inventing one.
     donorName: "",

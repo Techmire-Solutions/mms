@@ -60,12 +60,19 @@ export async function aggregateHasanatWidgetQueries(
   const results: Record<string, WidgetAggregateResult> = {};
   if (queries.length === 0) return results;
 
+  // The tenant total is only needed by percentage widgets; a count/dsum-only dashboard used to pay
+  // for this extra aggregate scan on every load.
+  const needsTotal = queries.some((query) => query.operation === "percentage");
+
   return withTenantRead(subdomain, async (tx) => {
-    const totalRows = await tx
-      .select({ count: sql<number>`count(*)::int` })
-      .from(hasanatDistributions)
-      .where(activeWorkspaceWhere(subdomain));
-    const totalCount = Number(totalRows[0]?.count ?? 0);
+    let totalCount = 0;
+    if (needsTotal) {
+      const totalRows = await tx
+        .select({ count: sql<number>`count(*)::int` })
+        .from(hasanatDistributions)
+        .where(activeWorkspaceWhere(subdomain));
+      totalCount = Number(totalRows[0]?.count ?? 0);
+    }
 
     const queryResults = await Promise.all(
       queries.map(async (query) => {

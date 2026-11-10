@@ -10,9 +10,29 @@
 
 import { registerHasanatBulkAwardRunner } from "../hasanat/use-cases/hasanatBatchAwardJob.js";
 import { registerHasanatImportRunner } from "../hasanat/use-cases/hasanatImportJob.js";
+import { registerModuleCsvExportJobRunner } from "../lib/registerModuleCsvExportJobRunner.js";
+import {
+  buildHasanatCsvExport,
+  generateHasanatCsvStreamChunks,
+  type HasanatExportOptions,
+  type HasanatExportQueryInput,
+} from "./hasanatExportService.js";
 
 /** Idempotent: each underlying `register…` guards on its own module-level flag. */
 export function registerHasanatJobRunners(): void {
   registerHasanatBulkAwardRunner();
   registerHasanatImportRunner();
+  // Without this the export route answers 503 (`hasBackgroundJobRunner` is process-local) and the
+  // module advertises an Export action it can never satisfy.
+  registerModuleCsvExportJobRunner({
+    moduleId: "hasanat",
+    entityNounPlural: "hasanat cards",
+    buildExport: (query, options) =>
+      buildHasanatCsvExport(query as HasanatExportQueryInput, options as HasanatExportOptions),
+    generateStreamChunks: (query, options) =>
+      generateHasanatCsvStreamChunks(
+        query as HasanatExportQueryInput,
+        options as HasanatExportOptions,
+      ),
+  });
 }

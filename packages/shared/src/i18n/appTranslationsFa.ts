@@ -9630,6 +9630,7 @@ export const APP_TRANSLATIONS_FA: Partial<Record<AppTranslationKey, string>> = {
   "examinations.templatePreset.report_card_typst": "کارنامه Typst دوجهته (A4)",
   "examinations.templatePreset.certificate_a4_landscape": "گواهی تقدیر (A4 افقی)",
   "hasanat.templateField.receiptNo": "شماره کوپن / رسید",
+  "hasanat.templateField.qrPayload": "بارگذاری QR (برای تأیید)",
   "hasanat.templateField.donorName": "اهداکننده / حامی",
   "hasanat.templateField.recipientName": "نام دریافت‌کننده",
   "hasanat.templateField.denomination": "واحد کوپن",

@@ -159,7 +159,11 @@ export function createHasanatQueryUseCases(repo: HasanatRepository) {
       return repo.findDistributionsByIds(tenant, cleanIds, { includeDeleted });
     },
     loadDistributionsPage: async (
-      query: HasanatListQuery & { includeDeleted?: boolean },
+      query: HasanatListQuery & {
+        includeDeleted?: boolean;
+        afterId?: string;
+        skipCount?: boolean | string;
+      },
     ): Promise<HasanatDistributionsListPageResult> => {
       const tenant = getRequestTenant();
       if (!tenant) {

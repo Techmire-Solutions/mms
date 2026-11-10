@@ -34,6 +34,7 @@ export function HasanatTemplateEditor({
 }: HasanatTemplateEditorProps): React.JSX.Element {
   const sampleData: HasanatPayload = {
     institution: "Madrasa Management System",
+    qrPayload: "hd-2026-904|50 Hasanat|" + new Date().toISOString().slice(0, 10),
     receiptNo: "HAS-2026-904",
     donorName: "Hajj Ahmad",
     recipientName: "Zaid bin Harith",
