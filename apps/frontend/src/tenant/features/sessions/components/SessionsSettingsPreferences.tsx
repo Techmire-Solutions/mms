@@ -12,19 +12,26 @@ export interface SessionsSettingsPreferencesProps {
   settingsDraft: SessionsSettings;
   typeOptions: string[];
   upd: <K extends keyof SessionsSettings>(field: K, value: SessionsSettings[K]) => void;
+  durationError?: string;
 }
 
 export function SessionsSettingsPreferences({
   settingsDraft,
   typeOptions,
   upd,
+  durationError,
 }: SessionsSettingsPreferencesProps): React.JSX.Element {
   const { t } = useTranslation();
 
   return (
     <div className="space-y-4 text-start">
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-        <Field label={t("sessions.settings.defaultDuration")} id="defaultDuration">
+        <Field
+          label={t("sessions.settings.defaultDuration")}
+          id="defaultDuration"
+          error={durationError}
+          required
+        >
           <Input
             id="defaultDuration"
             name="defaultDuration"

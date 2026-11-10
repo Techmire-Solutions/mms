@@ -3,6 +3,7 @@ import type { AttendanceLeave } from "@mms/shared";
 import { tsrClient } from "@/lib/api";
 import { notify } from "@/lib/notify";
 import { useTranslation } from "@/hooks/useTranslation";
+import { invalidateAttendanceQueries } from "@/tenant/features/attendance/hooks/invalidateAttendanceQueries";
 
 /**
  * Excuse / leave workflow + chronic-absence alerts.
@@ -33,6 +34,15 @@ function invalidation() {
   return { queryKey: ATTENDANCE_LIFECYCLE_QUERY_KEY };
 }
 
+/**
+ * A decision changes marks as well as the request: approving converts the covered absences, so the
+ * attendance list/roster/metrics must refresh even when the websocket push is unavailable.
+ */
+function invalidateDecisionCaches(queryClient: ReturnType<typeof useQueryClient>): void {
+  void queryClient.invalidateQueries(invalidation());
+  invalidateAttendanceQueries(queryClient);
+}
+
 export function useAttendanceExcuses() {
   const { t } = useTranslation();
   const queryClient = useQueryClient();
@@ -49,20 +59,32 @@ export function useAttendanceExcuses() {
       invalidate();
       notify.success(t("attendance.excuses.submitted"));
     },
+    onError: (error: unknown) =>
+      notify.error(t("attendance.excuses.submitFailed"), {
+        description: error instanceof Error ? error.message : String(error),
+      }),
   });
 
   const review = tsrClient.attendance.reviewLeave.useMutation({
     onSuccess: () => {
-      invalidate();
+      invalidateDecisionCaches(queryClient);
       notify.success(t("attendance.excuses.decided"));
     },
+    onError: (error: unknown) =>
+      notify.error(t("attendance.excuses.decisionFailed"), {
+        description: error instanceof Error ? error.message : String(error),
+      }),
   });
 
   const cancel = tsrClient.attendance.cancelLeave.useMutation({
     onSuccess: () => {
-      invalidate();
+      invalidateDecisionCaches(queryClient);
       notify.success(t("attendance.excuses.cancelled"));
     },
+    onError: (error: unknown) =>
+      notify.error(t("attendance.excuses.cancelFailed"), {
+        description: error instanceof Error ? error.message : String(error),
+      }),
   });
 
   return {
@@ -95,9 +117,13 @@ export function useAttendanceAbsenceAlerts() {
 
   const resolve = tsrClient.attendance.resolveAbsenceAlert.useMutation({
     onSuccess: () => {
-      invalidate();
+      invalidateDecisionCaches(queryClient);
       notify.success(t("attendance.alerts.resolved"));
     },
+    onError: (error: unknown) =>
+      notify.error(t("attendance.alerts.resolveFailed"), {
+        description: error instanceof Error ? error.message : String(error),
+      }),
   });
 
   return {

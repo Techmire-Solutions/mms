@@ -24,7 +24,7 @@ describe("AttendancePageHeaderActions", () => {
     container.remove();
   });
 
-  it("renders both Export and Import buttons when canWrite and canExport", () => {
+  it("renders Export but not Import while the import runner is unavailable", () => {
     const onExport = vi.fn();
     const onImport = vi.fn();
 
@@ -42,9 +42,10 @@ describe("AttendancePageHeaderActions", () => {
     });
 
     const exportBtn = container.querySelector("button:has(svg.lucide-download)");
+    // `POST /api/attendance/import` has no runner and always answers 503, so the action is not offered.
     const importBtn = container.querySelector("button:has(svg.lucide-upload)");
     expect(exportBtn).toBeTruthy();
-    expect(importBtn).toBeTruthy();
+    expect(importBtn).toBeNull();
 
     exportBtn?.dispatchEvent(new MouseEvent("click", { bubbles: true }));
     expect(onExport).toHaveBeenCalled();

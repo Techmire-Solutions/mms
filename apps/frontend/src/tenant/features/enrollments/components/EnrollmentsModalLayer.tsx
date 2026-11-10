@@ -1,4 +1,4 @@
-import type React from "react";
+import { useState } from "react";
 import { AnimatePresence } from "framer-motion";
 import { ErrorBoundary } from "@/components/app/ErrorBoundary";
 import { FormModal } from "@/components/app/FormModal";
@@ -6,6 +6,7 @@ import { EnrollmentDetail } from "@/tenant/features/enrollments/components/Enrol
 import { EnrollmentsListConfirmDialogs } from "@/tenant/features/enrollments/components/EnrollmentsListConfirmDialogs";
 import { EnrollmentWizard } from "@/tenant/features/enrollments/components/EnrollmentWizard";
 import type { Enrollment, EnrollmentInsert } from "@mms/shared";
+import { useTranslation } from "@/hooks/useTranslation";
 
 export interface EnrollmentsModalLayerProps {
   viewing: Enrollment | null;
@@ -58,6 +59,13 @@ export function EnrollmentsModalLayer({
   canDelete,
   onRestore,
 }: EnrollmentsModalLayerProps): React.JSX.Element {
+  const { t } = useTranslation();
+  const [wizardDirty, setWizardDirty] = useState(false);
+  const closeWizard = () => {
+    setWizardDirty(false);
+    onCloseWizard();
+  };
+
   return (
     <>
       <AnimatePresence>
@@ -79,14 +87,23 @@ export function EnrollmentsModalLayer({
 
       <FormModal
         open={showWizard}
-        onClose={onCloseWizard}
+        onClose={closeWizard}
         title={wizardTitle}
         size="xl"
         hideFooter
         panelClassName="h-modal-tall max-h-modal-tall"
+        isDirty={wizardDirty}
+        discardUnsavedTitle={t("settings.unsavedChanges")}
+        discardUnsavedDescription={t("enrollments.wizard.discardDescription")}
+        discardConfirmLabel={t("common.yes")}
+        discardCancelLabel={t("common.cancel")}
       >
         <ErrorBoundary>
-          <EnrollmentWizard onComplete={onCompleteWizard} onCancel={onCloseWizard} />
+          <EnrollmentWizard
+            onComplete={onCompleteWizard}
+            onCancel={closeWizard}
+            onDirtyChange={setWizardDirty}
+          />
         </ErrorBoundary>
       </FormModal>
 

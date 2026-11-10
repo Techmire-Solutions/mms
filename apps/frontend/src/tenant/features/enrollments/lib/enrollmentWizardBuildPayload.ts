@@ -10,7 +10,6 @@ export function buildEnrollmentPayload(params: {
   classInfo: Class | null;
   feeResult: CalculatedFee;
   notes: string;
-  customFieldValues: Record<string, unknown>;
   /** Section + roll number; the server defaults the section when omitted. */
   placement?: { sectionId: string; rollNo: string };
 }): EnrollmentInsert {

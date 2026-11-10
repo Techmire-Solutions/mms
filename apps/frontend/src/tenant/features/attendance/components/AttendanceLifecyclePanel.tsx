@@ -5,12 +5,14 @@ import { Button } from "@/components/ui/button";
 import { SectionCard } from "@/components/app/SectionCard";
 import type { AttendanceLeave } from "@mms/shared";
 import { useTranslation } from "@/hooks/useTranslation";
+import { notify } from "@/lib/notify";
 import type { AttendanceAlertRow } from "@/tenant/features/attendance/hooks/useAttendanceLifecycle";
 import {
   useAttendanceAbsenceAlerts,
   useAttendanceExcuses,
 } from "@/tenant/features/attendance/hooks/useAttendanceLifecycle";
 import { AttendanceExcuseForm } from "@/tenant/features/attendance/components/AttendanceExcuseForm";
+import { ConfirmAlertDialog } from "@/components/app/ConfirmAlertDialog";
 
 /**
  * Attendance lifecycle surfaces: the excuse review queue and the chronic-absence alerts.
@@ -23,6 +25,15 @@ export function AttendanceLifecyclePanel(): React.JSX.Element {
   const excuses = useAttendanceExcuses();
   const absence = useAttendanceAbsenceAlerts();
   const [showForm, setShowForm] = React.useState(false);
+  const [decision, setDecision] = React.useState<{
+    leave: AttendanceLeave;
+    decision: "approve" | "reject";
+  } | null>(null);
+  const [cancelTarget, setCancelTarget] = React.useState<AttendanceLeave | null>(null);
+  const [alertTarget, setAlertTarget] = React.useState<{
+    id: string;
+    status: "resolved" | "dismissed";
+  } | null>(null);
 
   const pending = excuses.leaves.filter((leave: AttendanceLeave) => leave.status === "pending");
   const decided = excuses.leaves.filter((leave: AttendanceLeave) => leave.status !== "pending");
@@ -41,11 +52,7 @@ export function AttendanceLifecyclePanel(): React.JSX.Element {
           </Button>
         }
       >
-        {showForm && (
-          <div className="mb-3">
-            <AttendanceExcuseForm onDone={() => setShowForm(false)} />
-          </div>
-        )}
+        <AttendanceExcuseForm open={showForm} onClose={() => setShowForm(false)} />
         {excuses.isLoading ? (
           <p className="text-sm text-muted-foreground">{t("common.loading")}</p>
         ) : excuses.isError ? (
@@ -89,12 +96,7 @@ export function AttendanceLifecyclePanel(): React.JSX.Element {
                         size="sm"
                         variant="ghost"
                         disabled={excuses.review.isPending}
-                        onClick={() =>
-                          excuses.review.mutate({
-                            params: { id: leave.id },
-                            body: { decision: "approve" },
-                          })
-                        }
+                        onClick={() => setDecision({ leave, decision: "approve" })}
                       >
                         <Check className="me-1 h-4 w-4" aria-hidden="true" />
                         {t("attendance.excuses.approve")}
@@ -104,12 +106,7 @@ export function AttendanceLifecyclePanel(): React.JSX.Element {
                         size="sm"
                         variant="ghost"
                         disabled={excuses.review.isPending}
-                        onClick={() =>
-                          excuses.review.mutate({
-                            params: { id: leave.id },
-                            body: { decision: "reject" },
-                          })
-                        }
+                        onClick={() => setDecision({ leave, decision: "reject" })}
                       >
                         <X className="me-1 h-4 w-4" aria-hidden="true" />
                         {t("attendance.excuses.reject")}
@@ -122,7 +119,7 @@ export function AttendanceLifecyclePanel(): React.JSX.Element {
                       size="sm"
                       variant="ghost"
                       disabled={excuses.cancel.isPending}
-                      onClick={() => excuses.cancel.mutate({ params: { id: leave.id }, body: {} })}
+                      onClick={() => setCancelTarget(leave)}
                     >
                       {t("attendance.excuses.cancel")}
                     </Button>
@@ -181,12 +178,7 @@ export function AttendanceLifecyclePanel(): React.JSX.Element {
                     size="sm"
                     variant="ghost"
                     disabled={absence.resolve.isPending}
-                    onClick={() =>
-                      absence.resolve.mutate({
-                        params: { id: alert.id },
-                        body: { status: "resolved" },
-                      })
-                    }
+                    onClick={() => setAlertTarget({ id: alert.id, status: "resolved" })}
                   >
                     {t("attendance.alerts.resolve")}
                   </Button>
@@ -195,12 +187,7 @@ export function AttendanceLifecyclePanel(): React.JSX.Element {
                     size="sm"
                     variant="ghost"
                     disabled={absence.resolve.isPending}
-                    onClick={() =>
-                      absence.resolve.mutate({
-                        params: { id: alert.id },
-                        body: { status: "dismissed" },
-                      })
-                    }
+                    onClick={() => setAlertTarget({ id: alert.id, status: "dismissed" })}
                   >
                     {t("attendance.alerts.dismiss")}
                   </Button>
@@ -210,6 +197,96 @@ export function AttendanceLifecyclePanel(): React.JSX.Element {
           </ul>
         )}
       </SectionCard>
+
+      <ConfirmAlertDialog
+        open={decision !== null}
+        onOpenChange={(open) => {
+          if (!open) setDecision(null);
+        }}
+        title={
+          decision?.decision === "reject"
+            ? t("attendance.excuses.rejectTitle")
+            : t("attendance.excuses.approveTitle")
+        }
+        description={
+          decision?.decision === "reject"
+            ? t("attendance.excuses.rejectBody")
+            : t("attendance.excuses.approveBody")
+        }
+        confirmLabel={
+          decision?.decision === "reject"
+            ? t("attendance.excuses.reject")
+            : t("attendance.excuses.approve")
+        }
+        destructive={decision?.decision === "reject"}
+        optionalReason={{
+          label: t("attendance.excuses.decideNoteLabel"),
+          placeholder: t("attendance.excuses.decideNotePlaceholder"),
+        }}
+        onConfirm={async (note) => {
+          if (!decision) return false;
+          const { leave, decision: choice } = decision;
+          setDecision(null);
+          await excuses.review.mutateAsync({
+            params: { id: leave.id },
+            body: { decision: choice, ...(note?.trim() ? { note: note.trim() } : {}) },
+          });
+          return true;
+        }}
+      />
+
+      <ConfirmAlertDialog
+        open={cancelTarget !== null}
+        onOpenChange={(open) => {
+          if (!open) setCancelTarget(null);
+        }}
+        title={t("attendance.excuses.cancelTitle")}
+        description={t("attendance.excuses.cancelBody")}
+        confirmLabel={t("attendance.excuses.cancel")}
+        destructive
+        optionalReason={{
+          label: t("attendance.excuses.cancelReasonLabel"),
+          placeholder: t("attendance.excuses.cancelReasonPlaceholder"),
+        }}
+        onConfirm={async (reason) => {
+          if (!cancelTarget) return false;
+          if (!reason?.trim()) {
+            notify.error(t("attendance.excuses.reasonRequired"));
+            return false;
+          }
+          const target = cancelTarget;
+          setCancelTarget(null);
+          await excuses.cancel.mutateAsync({
+            params: { id: target.id },
+            body: { reason: reason.trim() },
+          });
+          return true;
+        }}
+      />
+
+      <ConfirmAlertDialog
+        open={alertTarget !== null}
+        onOpenChange={(open) => {
+          if (!open) setAlertTarget(null);
+        }}
+        title={t("attendance.alerts.resolveTitle")}
+        description={t("attendance.alerts.resolveBody")}
+        confirmLabel={t("attendance.alerts.resolve")}
+        optionalReason={{
+          label: t("attendance.alerts.resolveNoteLabel"),
+          placeholder: t("attendance.alerts.resolveNotePlaceholder"),
+        }}
+        onConfirm={async (note) => {
+          if (!alertTarget) return false;
+          const target = alertTarget;
+          setAlertTarget(null);
+          await absence.resolve.mutateAsync({
+            params: { id: target.id },
+            body: { status: target.status, ...(note?.trim() ? { note: note.trim() } : {}) },
+          });
+          return true;
+        }}
+      />
     </div>
   );
 }

@@ -163,6 +163,7 @@ export function RegistrationLinksTab({
           session={session}
           entry={editing}
           isPending={actions.isPending}
+          serverError={actions.saveError}
           onClose={() => setModalOpen(false)}
           onSave={async (body) => (await actions.save(editing?.id, body)) !== null}
         />

@@ -193,6 +193,7 @@ export function DenominationsManager({
         <DenominationModal
           open={showModal}
           denom={editDenom}
+          existingDenoms={denoms}
           onClose={() => {
             setShowModal(false);
             setEditDenom(null);

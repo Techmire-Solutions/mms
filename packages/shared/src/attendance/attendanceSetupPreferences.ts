@@ -87,6 +87,17 @@ function sanitizeStreakThreshold(value: unknown): number {
 }
 
 /** Same for a stored minute budget: out-of-range values are clamped, not trusted. */
+/**
+ * A 1–100 percentage; anything non-finite or out of range becomes the default.
+ *
+ * 0 is rejected deliberately: a "low attendance" cutoff of 0 flags every student, which is what an
+ * emptied numeric input used to produce (`Number("") === 0`).
+ */
+function sanitizePercent(value: unknown, fallback: number): number {
+  if (typeof value !== "number" || !Number.isFinite(value)) return fallback;
+  return Math.min(100, Math.max(1, Math.round(value)));
+}
+
 function sanitizeMinutes(value: unknown, fallback: number): number {
   if (typeof value !== "number" || !Number.isFinite(value)) return fallback;
   return Math.min(Math.max(Math.round(value), 0), 240);
@@ -140,10 +151,12 @@ export function normalizeAttendanceModulePreferences(raw: unknown): AttendanceMo
       typeof prefs.qrEnabled === "boolean"
         ? prefs.qrEnabled
         : DEFAULT_ATTENDANCE_SETTINGS.qrEnabled,
-    lowAttendanceThreshold:
-      typeof prefs.lowAttendanceThreshold === "number"
-        ? prefs.lowAttendanceThreshold
-        : DEFAULT_ATTENDANCE_SETTINGS.lowAttendanceThreshold,
+    // Percentage: clamp rather than store an out-of-range number. An emptied numeric input used to
+    // arrive as 0, which flags every student; the field's `min`/`max` are hints, not validation.
+    lowAttendanceThreshold: sanitizePercent(
+      prefs.lowAttendanceThreshold,
+      DEFAULT_ATTENDANCE_SETTINGS.lowAttendanceThreshold,
+    ),
     absenceStreakThreshold: sanitizeStreakThreshold(prefs.absenceStreakThreshold),
     notifyParents:
       typeof prefs.notifyParents === "boolean"

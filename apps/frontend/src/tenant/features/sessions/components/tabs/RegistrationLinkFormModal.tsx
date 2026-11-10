@@ -10,6 +10,8 @@ import { ToggleRow } from "@shared/ui";
 import { FormCheckboxCard } from "@/components/app/FormCheckboxCard";
 import { useTranslation } from "@/hooks/useTranslation";
 import { useAcademicTerms } from "@/hooks/useAcademicTerms";
+import { useGlobalSettings } from "@/tenant/hooks/useGlobalSettings";
+import { dateInTimeZone, endOfDayInstant, startOfDayInstant } from "@/lib/date/zonedDay";
 
 export interface RegistrationLinkFormModalProps {
   open: boolean;
@@ -18,13 +20,8 @@ export interface RegistrationLinkFormModalProps {
   isPending: boolean;
   onClose: () => void;
   onSave: (body: RegistrationLinkWrite) => Promise<boolean>;
+  serverError?: string | null;
 }
-
-/** Day boundaries are sent as instants (start / end of the chosen local day). */
-const dayStart = (day: string) => (day ? new Date(`${day}T00:00:00`).toISOString() : null);
-const dayEnd = (day: string) => (day ? new Date(`${day}T23:59:59`).toISOString() : null);
-const toDay = (instant: string | null) =>
-  instant ? new Date(instant).toLocaleDateString("en-CA") : "";
 
 /** Create/edit a public registration link for a session. */
 export function RegistrationLinkFormModal({
@@ -34,9 +31,11 @@ export function RegistrationLinkFormModal({
   isPending,
   onClose,
   onSave,
+  serverError,
 }: RegistrationLinkFormModalProps): React.JSX.Element {
   const { t } = useTranslation();
   const terms = useAcademicTerms();
+  const { timezone } = useGlobalSettings();
   const [title, setTitle] = useState("");
   const [opensOn, setOpensOn] = useState("");
   const [closesOn, setClosesOn] = useState("");
@@ -44,6 +43,7 @@ export function RegistrationLinkFormModal({
   const [requiresReview, setRequiresReview] = useState(true);
   const [isActive, setIsActive] = useState(true);
   const [classIds, setClassIds] = useState<string[]>([]);
+  const [baseline, setBaseline] = useState<string | null>(null);
 
   // Reset the form from the edited link on every (re)open — render-phase reset, no effect.
   const [prevForm, setPrevForm] = useState<{
@@ -53,16 +53,44 @@ export function RegistrationLinkFormModal({
   if (!prevForm || prevForm.open !== open || prevForm.entry !== entry) {
     setPrevForm({ open, entry });
     if (open) {
-      setTitle(entry?.title ?? "");
-      setOpensOn(toDay(entry?.opensAt ?? null));
-      setClosesOn(toDay(entry?.closesAt ?? null));
-      setMaxSubmissions(entry?.maxSubmissions ? String(entry.maxSubmissions) : "");
-      setRequiresReview(entry?.requiresReview ?? true);
-      setIsActive(entry?.isActive ?? true);
-      setClassIds(entry?.classIds ?? []);
+      const nextTitle = entry?.title ?? "";
+      const nextOpens = entry?.opensAt ? dateInTimeZone(entry.opensAt, timezone) : "";
+      const nextCloses = entry?.closesAt ? dateInTimeZone(entry.closesAt, timezone) : "";
+      const nextCap = entry?.maxSubmissions ? String(entry.maxSubmissions) : "";
+      const nextReview = entry?.requiresReview ?? true;
+      const nextActive = entry?.isActive ?? true;
+      const nextClasses = entry?.classIds ?? [];
+      setTitle(nextTitle);
+      setOpensOn(nextOpens);
+      setClosesOn(nextCloses);
+      setMaxSubmissions(nextCap);
+      setRequiresReview(nextReview);
+      setIsActive(nextActive);
+      setClassIds(nextClasses);
+      setBaseline(
+        JSON.stringify({
+          title: nextTitle,
+          opensOn: nextOpens,
+          closesOn: nextCloses,
+          maxSubmissions: nextCap,
+          requiresReview: nextReview,
+          isActive: nextActive,
+          classIds: nextClasses,
+        }),
+      );
     }
   }
 
+  const snapshot = JSON.stringify({
+    title,
+    opensOn,
+    closesOn,
+    maxSubmissions,
+    requiresReview,
+    isActive,
+    classIds,
+  });
+  const isDirty = baseline !== null && snapshot !== baseline;
   const cap = maxSubmissions.trim() ? Number(maxSubmissions) : null;
   const capInvalid = cap !== null && (!Number.isInteger(cap) || cap < 1);
   const windowInvalid = Boolean(opensOn && closesOn && closesOn < opensOn);
@@ -83,11 +111,12 @@ export function RegistrationLinkFormModal({
       saveLabel={t("common.save")}
       saving={isPending}
       saveDisabled={isPending || capInvalid || windowInvalid}
-      isDirty
+      isDirty={isDirty}
       discardUnsavedTitle={t("settings.unsavedChanges")}
       discardUnsavedDescription={t("sessions.registration.discardDescription")}
       discardConfirmLabel={t("common.yes")}
       discardCancelLabel={t("common.cancel")}
+      error={serverError ?? undefined}
       onSave={() =>
         void (async () => {
           const saved = await onSave({
@@ -96,8 +125,8 @@ export function RegistrationLinkFormModal({
             requiresReview,
             maxSubmissions: cap,
             classIds,
-            opensAt: dayStart(opensOn),
-            closesAt: dayEnd(closesOn),
+            opensAt: startOfDayInstant(opensOn, timezone),
+            closesAt: endOfDayInstant(closesOn, timezone),
           });
           if (saved) onClose();
         })()

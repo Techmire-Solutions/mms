@@ -3,13 +3,14 @@ import { Field, FormSelectWithQuickCreate } from "@/components/app/FormPrimitive
 import { useTranslation } from "@/hooks/useTranslation";
 import type { Denomination, Distribution } from "@/lib/data/hasanatData";
 import { DenominationModal } from "./DenominationModal";
+import type { DistributionFieldUpdate } from "./DistributeRecipientFields";
 
 export interface DistributeDenominationFieldProps {
   denoms: Denomination[];
   data: Partial<Distribution>;
   selectedDenomination?: Denomination;
   totalAvailable: number;
-  updateField: (field: string, value: unknown) => void;
+  updateField: DistributionFieldUpdate;
   errors?: Record<string, string>;
   onDenomsChange?: (denoms: Denomination[]) => Promise<void> | void;
 }

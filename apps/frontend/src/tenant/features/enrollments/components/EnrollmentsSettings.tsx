@@ -1,6 +1,7 @@
 import React, { useEffect } from "react";
 import { ClipboardList } from "lucide-react";
 import { SectionCard } from "@/components/app/SectionCard";
+import { Alert } from "@/components/app/Alert";
 import { ModuleSetupSaveFooter } from "@/components/app/ModuleSetupSaveFooter";
 import { useTranslation } from "@/hooks/useTranslation";
 import { SETUP_SECTION_CARD_CLASS } from "@/components/ui/formStyles";
@@ -17,8 +18,16 @@ export const EnrollmentsSettings = function EnrollmentsSettings({
   onPrefsDirtyChange,
 }: EnrollmentsSettingsProps = {}): React.JSX.Element {
   const { t } = useTranslation();
-  const { settingsDraft, saved, saving, isPrefsDirty, upd, handleSave } =
-    useEnrollmentsSetupPanelState();
+  const {
+    settingsDraft,
+    saved,
+    saving,
+    isPrefsDirty,
+    preferenceErrors,
+    saveError,
+    upd,
+    handleSave,
+  } = useEnrollmentsSetupPanelState();
 
   useEffect(() => {
     onPrefsDirtyChange?.(isPrefsDirty);
@@ -36,7 +45,19 @@ export const EnrollmentsSettings = function EnrollmentsSettings({
         accentColor="primary"
         className={SETUP_SECTION_CARD_CLASS}
       >
-        <EnrollmentsPreferencesSection settingsDraft={settingsDraft} upd={upd} />
+        {saveError ? (
+          <Alert
+            role="alert"
+            tone="destructive"
+            title={t("settings.serverSaveFailed")}
+            description={saveError}
+          />
+        ) : null}
+        <EnrollmentsPreferencesSection
+          settingsDraft={settingsDraft}
+          upd={upd}
+          errors={preferenceErrors}
+        />
         <ModuleSetupSaveFooter
           dirty={isPrefsDirty}
           saving={saving}

@@ -10,6 +10,8 @@ export interface UseEnrollmentsSetupPanelStateReturn {
   setSaved: (value: boolean | ((curr: boolean) => boolean)) => void;
   saving: boolean;
   isPrefsDirty: boolean;
+  preferenceErrors: Partial<Record<keyof EnrollmentsSettings, string>>;
+  saveError: string | null;
   isDirty: boolean;
   handleSave: () => Promise<void>;
 }
@@ -22,12 +24,13 @@ export function useEnrollmentsSetupPanelState(): UseEnrollmentsSetupPanelStateRe
       config,
     });
 
-  const { saving, isPrefsDirty, handleSave } = useEnrollmentsSetupSaveActions({
-    settings,
-    settingsDraft,
-    setSaved,
-    saveSettingsAsync,
-  });
+  const { saving, isPrefsDirty, handleSave, preferenceErrors, saveError } =
+    useEnrollmentsSetupSaveActions({
+      settings,
+      settingsDraft,
+      setSaved,
+      saveSettingsAsync,
+    });
 
   return {
     settingsDraft,
@@ -36,6 +39,8 @@ export function useEnrollmentsSetupPanelState(): UseEnrollmentsSetupPanelStateRe
     setSaved,
     saving,
     isPrefsDirty,
+    preferenceErrors,
+    saveError,
     isDirty: isPrefsDirty,
     handleSave,
   };

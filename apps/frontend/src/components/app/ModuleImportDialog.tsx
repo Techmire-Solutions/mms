@@ -3,6 +3,7 @@ import { Download, FileSpreadsheet, Upload, AlertCircle, CheckCircle2 } from "lu
 import type { BackgroundJobRecord } from "@mms/shared";
 import { DashedFileDropZone } from "@/components/app/DashedFileDropZone";
 import { Modal } from "@/components/app/Modal";
+import { Alert } from "@/components/app/Alert";
 import { Button } from "@/components/ui/button";
 import { useTranslation } from "@/hooks/useTranslation";
 
@@ -17,6 +18,9 @@ export interface ModuleImportDialogProps<TRow = Record<string, unknown>> {
     parsedRows: TRow[];
     missingHeaders: string[];
     rowErrors: Array<{ row: number; error: string }>;
+    preflightErrors: Array<{ row: number; reason: string }>;
+    preflightUnavailable: string | null;
+    isPreflighting: boolean;
     isImporting: boolean;
     progress: { current: number; total: number } | null;
     completedJob: BackgroundJobRecord | null;
@@ -45,6 +49,9 @@ export function ModuleImportDialog<TRow = Record<string, unknown>>({
     parsedRows,
     missingHeaders,
     rowErrors,
+    preflightErrors,
+    preflightUnavailable,
+    isPreflighting,
     isImporting,
     progress,
     completedJob,
@@ -156,6 +163,25 @@ export function ModuleImportDialog<TRow = Record<string, unknown>>({
               </div>
             </div>
 
+            {isPreflighting ? (
+              <p role="status" className="text-xs text-muted-foreground">
+                {t("module.import.validating")}
+              </p>
+            ) : null}
+            {preflightUnavailable ? (
+              <Alert tone="warning" role="status" description={preflightUnavailable} />
+            ) : null}
+            {preflightErrors.length > 0 ? (
+              <Alert role="alert" tone="destructive" title={t("module.import.preflightBlocked")}>
+                <div className="space-y-1">
+                  {preflightErrors.slice(0, 5).map((issue, index) => (
+                    <p key={`${issue.row}-${index}`} className="text-xs">
+                      {t("module.import.rowError", { row: issue.row, error: issue.reason })}
+                    </p>
+                  ))}
+                </div>
+              </Alert>
+            ) : null}
             {isImporting ? (
               <div className="space-y-2">
                 <div className="flex justify-between text-xs text-muted-foreground">
@@ -187,7 +213,12 @@ export function ModuleImportDialog<TRow = Record<string, unknown>>({
                   variant="default"
                   size="sm"
                   onClick={() => void handleStartImport()}
-                  disabled={missingHeaders.length > 0}
+                  disabled={
+                    missingHeaders.length > 0 ||
+                    parsedRows.length === 0 ||
+                    preflightErrors.length > 0 ||
+                    isPreflighting
+                  }
                   className="gap-1.5 cursor-pointer disabled:cursor-not-allowed"
                 >
                   <Upload className="w-3.5 h-3.5" aria-hidden="true" />

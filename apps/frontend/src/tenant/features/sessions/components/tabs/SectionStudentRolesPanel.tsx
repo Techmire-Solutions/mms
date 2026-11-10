@@ -5,6 +5,7 @@ import { DatePicker } from "@/components/app/DatePicker";
 import { EmptyState } from "@/components/app/EmptyState";
 import { Field, FormSelect } from "@/components/app/FormPrimitives";
 import { notify } from "@/lib/notify";
+import { Alert } from "@/components/app/Alert";
 import { useTranslation } from "@/hooks/useTranslation";
 import { useEnrollmentsCollection } from "@/tenant/hooks/collections/enrollments";
 import {
@@ -35,6 +36,8 @@ export function SectionStudentRolesPanel({
   const [enrollmentId, setEnrollmentId] = useState("");
   const [role, setRole] = useState<SectionStudentRoleKind>("monitor");
   const [startOn, setStartOn] = useState(todayISO());
+  const [attempted, setAttempted] = useState(false);
+  const [formError, setFormError] = useState<string | null>(null);
   const roleLabel = (value: string) =>
     t(`sessions.studentRoles.role.${value as SectionStudentRoleKind}`);
   const rows = roles.data ?? [];
@@ -45,19 +48,32 @@ export function SectionStudentRolesPanel({
     });
 
   const add = async () => {
+    setAttempted(true);
+    setFormError(null);
+    if (!enrollmentId || !startOn) {
+      setFormError(t("common.formPleaseFixErrors"));
+      return;
+    }
     try {
       await addRole.mutateAsync({ enrollmentId, role, startOn });
       notify.success(t("sessions.staff.assigned"));
       setEnrollmentId("");
     } catch (error) {
+      setFormError(error instanceof Error ? error.message : t("sessions.staff.failed"));
       fail(error);
     }
   };
 
   return (
     <div className="space-y-5 text-start">
+      {formError ? <Alert role="alert" density="compact" description={formError} /> : null}
       <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
-        <Field id="student-role-enrollment" label={t("sessions.studentRoles.student")} required>
+        <Field
+          id="student-role-enrollment"
+          label={t("sessions.studentRoles.student")}
+          required
+          error={attempted && !enrollmentId ? t("common.formPleaseFixErrors") : undefined}
+        >
           <FormSelect
             id="student-role-enrollment"
             value={enrollmentId}
@@ -77,7 +93,12 @@ export function SectionStudentRolesPanel({
             options={SECTION_STUDENT_ROLES.map((value) => ({ value, label: roleLabel(value) }))}
           />
         </Field>
-        <Field id="student-role-start" label={t("sessions.staff.startOn")} required>
+        <Field
+          id="student-role-start"
+          label={t("sessions.staff.startOn")}
+          required
+          error={attempted && !startOn ? t("common.formPleaseFixErrors") : undefined}
+        >
           <DatePicker id="student-role-start" value={startOn} onChange={setStartOn} required />
         </Field>
       </div>

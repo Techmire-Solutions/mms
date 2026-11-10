@@ -8,6 +8,7 @@ import { ProgressBar } from "@/components/app/ProgressBar";
 import { EmptyState } from "@/components/app/EmptyState";
 import { Alert } from "@/components/app/Alert";
 import { useTranslation } from "@/hooks/useTranslation";
+import { handleRadioGroupKeyDown } from "@/lib/ui/radioGroupKeyboard";
 import {
   capacityLabel,
   effectiveCapacity,
@@ -109,6 +110,20 @@ export function Step4ClassAssignment({
         className="space-y-2"
         role="radiogroup"
         aria-label={t("enrollments.wizard.step4ClassesAria")}
+        onKeyDown={(event) =>
+          handleRadioGroupKeyDown(
+            event,
+            classes.filter(
+              (candidate) =>
+                !isCapacityFull(
+                  candidate.enrolled,
+                  candidate.maxStudents ?? (candidate as { capacity?: number }).capacity,
+                ),
+            ),
+            value ?? undefined,
+            handleSelect,
+          )
+        }
       >
         {classes.length === 0 && (
           <EmptyState title={t("enrollments.wizard.step4Empty")} icon={Layers} compact />
@@ -134,6 +149,7 @@ export function Step4ClassAssignment({
               type="button"
               role="radio"
               aria-checked={selected}
+              tabIndex={selected || (!value && classes[0]?.id === sessionClass.id) ? 0 : -1}
               disabled={full}
               onClick={() => !full && handleSelect(sessionClass)}
               variant="outline"

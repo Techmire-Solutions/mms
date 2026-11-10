@@ -12,6 +12,7 @@ import { triggerFileDownload } from "@/lib/download";
 import { notify } from "@/lib/notify";
 import { useTranslation } from "@/hooks/useTranslation";
 import { startServerModuleCsvImport } from "@/lib/backgroundJobs/startServerModuleCsvImport";
+import { apiJson } from "@/lib/apiClient";
 
 export interface ModuleCsvImportProgress {
   current: number;
@@ -33,6 +34,8 @@ export interface UseModuleCsvImportActionsOptions<TRow = Record<string, unknown>
   defaultLabel?: string;
   submitRows?: ModuleCsvImportSubmitRows<TRow>;
   maxRows?: number;
+  /** Optional server pre-flight endpoint (body `{ rows }`) that blocks the enqueue. */
+  preflightPath?: string;
   onSuccess?: () => void;
 }
 
@@ -40,7 +43,7 @@ export function useModuleCsvImportActions<TRow = Record<string, unknown>>(
   options: UseModuleCsvImportActionsOptions<TRow>,
 ) {
   const { t } = useTranslation();
-  const { apiPath, schema, submitRows, onSuccess, maxRows } = options;
+  const { apiPath, schema, submitRows, onSuccess, maxRows, preflightPath } = options;
   const effectiveModuleId = schema?.moduleId ?? options.moduleId ?? "module";
   const effectiveMappings = useMemo(
     () => schema?.importMappings ?? options.mappings ?? [],
@@ -61,6 +64,11 @@ export function useModuleCsvImportActions<TRow = Record<string, unknown>>(
   const [isImporting, setIsImporting] = useState(false);
   const [progress, setProgress] = useState<{ current: number; total: number } | null>(null);
   const [completedJob, setCompletedJob] = useState<BackgroundJobRecord | null>(null);
+  const [preflightErrors, setPreflightErrors] = useState<Array<{ row: number; reason: string }>>(
+    [],
+  );
+  const [isPreflighting, setIsPreflighting] = useState(false);
+  const [preflightUnavailable, setPreflightUnavailable] = useState<string | null>(null);
 
   const resetState = useCallback(() => {
     setFileName("");
@@ -70,6 +78,9 @@ export function useModuleCsvImportActions<TRow = Record<string, unknown>>(
     setIsImporting(false);
     setProgress(null);
     setCompletedJob(null);
+    setPreflightErrors([]);
+    setPreflightUnavailable(null);
+    setIsPreflighting(false);
   }, []);
 
   const handleDownloadTemplate = useCallback(() => {
@@ -107,16 +118,31 @@ export function useModuleCsvImportActions<TRow = Record<string, unknown>>(
         }
         setRowErrors(result.rowErrors);
         setParsedRows(result.rows);
+        if (preflightPath && result.rows.length > 0) {
+          setIsPreflighting(true);
+          try {
+            const preflight = await apiJson<{ errors?: Array<{ row: number; reason: string }> }>(
+              preflightPath,
+              { method: "POST", body: JSON.stringify({ rows: result.rows }) },
+            );
+            setPreflightErrors(preflight.errors ?? []);
+          } catch {
+            // A preflight outage must not lose the parsed file: the job still validates rows.
+            setPreflightUnavailable(t("module.import.preflightFailed"));
+          } finally {
+            setIsPreflighting(false);
+          }
+        }
       } catch (err) {
         const msg = err instanceof Error ? err.message : String(err);
         setRowErrors([{ row: 0, error: `${t("module.import.failed")}: ${msg}` }]);
       }
     },
-    [effectiveMappings, maxRows, resetState, schema, submitRows, t],
+    [effectiveMappings, maxRows, preflightPath, resetState, schema, submitRows, t],
   );
 
   const handleStartImport = useCallback(async () => {
-    if (parsedRows.length === 0 || isImporting) return;
+    if (parsedRows.length === 0 || isImporting || preflightErrors.length > 0) return;
     setIsImporting(true);
     setProgress({ current: 0, total: parsedRows.length });
 
@@ -146,7 +172,16 @@ export function useModuleCsvImportActions<TRow = Record<string, unknown>>(
     } finally {
       setIsImporting(false);
     }
-  }, [apiPath, defaultLabel, isImporting, onSuccess, parsedRows, submitRows, t]);
+  }, [
+    apiPath,
+    defaultLabel,
+    isImporting,
+    onSuccess,
+    parsedRows,
+    preflightErrors.length,
+    submitRows,
+    t,
+  ]);
 
   return {
     isOpen,
@@ -154,6 +189,9 @@ export function useModuleCsvImportActions<TRow = Record<string, unknown>>(
     fileName,
     parsedRows,
     missingHeaders,
+    preflightErrors,
+    preflightUnavailable,
+    isPreflighting,
     rowErrors,
     isImporting,
     progress,

@@ -2,9 +2,11 @@ import React, { useState } from "react";
 import { CalendarPlus } from "lucide-react";
 import {
   ACADEMIC_CALENDAR_EVENT_KINDS,
+  academicCalendarEventWriteSchema,
   type AcademicCalendarEvent,
   type AcademicCalendarEventKind,
   type AcademicCalendarEventWrite,
+  type AppTranslationKey,
 } from "@mms/shared";
 import { Field, FormSelect } from "@/components/app/FormPrimitives";
 import { FormModal } from "@/components/app/FormModal";
@@ -14,6 +16,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { DatePicker } from "@/components/app/DatePicker";
 import { useTranslation } from "@/hooks/useTranslation";
 import { CalendarEventScopeFields, type CalendarEventScopeValue } from "./CalendarEventScopeFields";
+import { validateAttendanceDraft } from "@/tenant/features/attendance/lib/attendanceFormValidation";
 
 export interface CalendarEventFormModalProps {
   open: boolean;
@@ -50,6 +53,8 @@ export function CalendarEventFormModal({
   const [endOn, setEndOn] = useState("");
   const [scope, setScope] = useState<CalendarEventScopeValue>(EMPTY_SCOPE);
   const [notes, setNotes] = useState("");
+  const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
+  const [formError, setFormError] = useState("");
 
   const [prevOpen, setPrevOpen] = useState(open);
   const [prevEntry, setPrevEntry] = useState(entry);
@@ -73,6 +78,8 @@ export function CalendarEventFormModal({
           : EMPTY_SCOPE,
       );
       setNotes(entry?.notes ?? "");
+      setFieldErrors({});
+      setFormError("");
     }
   }
 
@@ -81,15 +88,13 @@ export function CalendarEventFormModal({
     (scope.scope !== "workspace" && !scope.sessionId) ||
     ((scope.scope === "class" || scope.scope === "section") && !scope.classId) ||
     (scope.scope === "section" && !scope.sectionId);
-  const canSave = Boolean(title.trim() && startOn && endOn) && !rangeInvalid && !scopeIncomplete;
   const isDirty =
     Boolean(title.trim() || notes.trim()) ||
     (entry !== null &&
       (title !== entry.title || startOn !== entry.startOn || endOn !== entry.endOn));
 
   const handleSave = async () => {
-    if (!canSave) return;
-    const saved = await onSave({
+    const candidate = {
       title: title.trim(),
       kind,
       startOn,
@@ -99,8 +104,36 @@ export function CalendarEventFormModal({
       classId: scope.classId || null,
       sectionId: scope.sectionId || null,
       notes: notes.trim() || null,
-    });
-    if (saved) onClose();
+    };
+    const validation = validateAttendanceDraft(
+      academicCalendarEventWriteSchema,
+      candidate,
+      (message) => t(message as AppTranslationKey),
+    );
+    if (!validation.ok) {
+      setFieldErrors(validation.fieldErrors);
+      setFormError(
+        validation.message ||
+          (scopeIncomplete
+            ? t("attendance.calendar.scopeIncomplete")
+            : t("common.formPleaseFixErrors")),
+      );
+      if (scopeIncomplete && !validation.fieldErrors.scope) {
+        setFieldErrors((current) => ({
+          ...current,
+          scope: t("attendance.calendar.scopeIncomplete"),
+        }));
+      }
+      return;
+    }
+    setFieldErrors({});
+    setFormError("");
+    const saved = await onSave(validation.data!);
+    if (saved) {
+      onClose();
+    } else {
+      setFormError(t("attendance.calendar.saveFailed"));
+    }
   };
 
   return (
@@ -114,7 +147,8 @@ export function CalendarEventFormModal({
       cancelLabel={t("common.cancel")}
       saveLabel={t("common.save")}
       saving={isPending}
-      saveDisabled={isPending || !canSave}
+      saveDisabled={isPending}
+      error={formError || undefined}
       isDirty={isDirty}
       discardUnsavedTitle={t("settings.unsavedChanges")}
       discardUnsavedDescription={t("attendance.calendar.discardDescription")}
@@ -124,7 +158,12 @@ export function CalendarEventFormModal({
     >
       <div className="space-y-4 py-1 text-start">
         <div className="grid gap-4 sm:grid-cols-2">
-          <Field label={t("attendance.calendar.title")} id="calendar-event-title" required>
+          <Field
+            label={t("attendance.calendar.title")}
+            id="calendar-event-title"
+            required
+            error={fieldErrors.title}
+          >
             <Input
               id="calendar-event-title"
               name="title"
@@ -154,7 +193,12 @@ export function CalendarEventFormModal({
               }))}
             />
           </Field>
-          <Field label={t("attendance.calendar.startOn")} id="calendar-event-start" required>
+          <Field
+            label={t("attendance.calendar.startOn")}
+            id="calendar-event-start"
+            required
+            error={fieldErrors.startOn}
+          >
             <DatePicker
               id="calendar-event-start"
               name="startOn"
@@ -170,7 +214,7 @@ export function CalendarEventFormModal({
             label={t("attendance.calendar.endOn")}
             id="calendar-event-end"
             required
-            error={rangeInvalid ? t("attendance.calendar.rangeInvalid") : undefined}
+            error={rangeInvalid ? t("attendance.calendar.rangeInvalid") : fieldErrors.endOn}
           >
             <DatePicker
               id="calendar-event-end"
@@ -186,7 +230,15 @@ export function CalendarEventFormModal({
         <p className="text-xs text-muted-foreground">
           {t(`attendance.calendar.kindHints.${kind}`)}
         </p>
-        <CalendarEventScopeFields value={scope} onChange={setScope} disabled={isPending} />
+        <CalendarEventScopeFields
+          value={scope}
+          onChange={(next) => {
+            setScope(next);
+            setFieldErrors((current) => ({ ...current, scope: "" }));
+          }}
+          disabled={isPending}
+          error={fieldErrors.scope}
+        />
         <Field label={t("attendance.calendar.notes")} id="calendar-event-notes">
           <Textarea
             id="calendar-event-notes"

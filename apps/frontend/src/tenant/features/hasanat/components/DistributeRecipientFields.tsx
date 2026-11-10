@@ -1,7 +1,7 @@
 import React, { useState, type Dispatch, type SetStateAction } from "react";
 import { User, Users2 } from "lucide-react";
 import { RegistryPersonSelect } from "@/tenant/components/selectors/RegistryPersonSelect";
-import { Field, FieldErrorMessage, RequiredMark } from "@/components/app/FormPrimitives";
+import { Field, RequiredMark } from "@/components/app/FormPrimitives";
 import { FORM_INPUT, FORM_LABEL } from "@/components/ui/formStyles";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -12,6 +12,12 @@ import {
 } from "@/components/common/SessionClassSectionSelect";
 import { useSessionsCollection } from "@/tenant/hooks/collections/sessions";
 import type { Distribution } from "@/lib/data/hasanatData";
+
+/** Typed field setter for the card draft — no `unknown`/`as` escape hatch. */
+export type DistributionFieldUpdate = <K extends keyof Distribution>(
+  field: K,
+  value: Partial<Distribution>[K],
+) => void;
 
 export interface DistributeRecipientTypeFieldProps {
   data: Partial<Distribution>;
@@ -63,6 +69,7 @@ export function DistributeRecipientTypeField({
                     recipientTypeOption.id === "faculty"
                       ? previousData.recipientFacultyId
                       : undefined,
+                  recipientName: "",
                 }))
               }
               className={`flex min-h-11 flex-1 items-center justify-center gap-1.5 rounded-lg border py-2 text-sm font-medium transition-colors ${
@@ -82,14 +89,12 @@ export function DistributeRecipientTypeField({
 
 export interface DistributeRecipientSelectFieldProps {
   data: Partial<Distribution>;
-  setData: Dispatch<SetStateAction<Partial<Distribution>>>;
-  updateField: (field: string, value: unknown) => void;
+  updateField: DistributionFieldUpdate;
   errors?: Record<string, string>;
 }
 
 export function DistributeRecipientSelectField({
   data,
-  setData,
   updateField,
   errors,
 }: DistributeRecipientSelectFieldProps): React.JSX.Element {
@@ -107,32 +112,29 @@ export function DistributeRecipientSelectField({
         label={t("hasanat.fieldRecipient")}
         required
         value={recipientId}
-        onChange={(id) => {
+        error={errors?.recipientName}
+        onChange={(id, name) => {
+          // The card stores the display name at issue time; without it the ledger/report/voucher
+          // would show a blank recipient even though the picker resolved the person.
+          const recipientName = name?.trim() ? name : "";
           if (data.recipientType === "faculty") {
             updateField("recipientFacultyId", id);
-            setData((previousData) => ({
-              ...previousData,
-              recipientFacultyId: id,
-              recipientStudentId: undefined,
-            }));
+            updateField("recipientStudentId", undefined);
+            updateField("recipientName", recipientName);
           } else {
             updateField("recipientStudentId", id);
-            setData((previousData) => ({
-              ...previousData,
-              recipientStudentId: id,
-              recipientFacultyId: undefined,
-            }));
+            updateField("recipientFacultyId", undefined);
+            updateField("recipientName", recipientName);
           }
         }}
       />
-      <FieldErrorMessage id="recipient-error" message={errors?.recipientName} />
     </div>
   );
 }
 
 export interface DistributeRecipientClassFieldProps {
   data: Partial<Distribution>;
-  updateField: (field: string, value: unknown) => void;
+  updateField: DistributionFieldUpdate;
   isRequired?: boolean;
   errors?: Record<string, string>;
 }
@@ -158,6 +160,7 @@ export function DistributeRecipientClassField({
             sectionId: "",
           }}
           required={isRequired}
+          error={errors?.recipientClass}
           idPrefix="recp-class"
           onChange={(next) => {
             setSessionId(next.sessionId);
@@ -168,7 +171,6 @@ export function DistributeRecipientClassField({
             updateField("recipientClass", cls?.name ?? "");
           }}
         />
-        {errors?.recipientClass ? <FieldErrorMessage message={errors.recipientClass} /> : null}
       </div>
     );
   }

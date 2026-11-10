@@ -24,6 +24,24 @@ describe("SessionClassSectionSelect", () => {
     expect(sessionIdForClass(sessions, null)).toBe("");
   });
 
+  it("connects a class-level error to the class select", () => {
+    const html = renderToStaticMarkup(
+      <SessionClassSectionSelect
+        sessions={sessions}
+        value={{ sessionId: "s1", classId: "c1", sectionId: "" }}
+        onChange={vi.fn()}
+        error="Pick a class"
+        idPrefix="t"
+      />,
+    );
+
+    expect(html).toContain('id="t-class"');
+    expect(html).toContain('aria-invalid="true"');
+    expect(html).toContain('aria-describedby="t-class-error"');
+    expect(html).toContain('id="t-class-error"');
+    expect(html).toContain("Pick a class");
+  });
+
   it("given the levels prop, should render only the requested cascade depth", () => {
     // Arrange
     const value = { sessionId: "s1", classId: "c1", sectionId: "" };

@@ -70,6 +70,7 @@ export function SearchableSelectField({
         filterSearchLocally={onSearchChange ? false : undefined}
         isSearching={isLoading}
         searchLabels={{ search: searchLabel, searchPlaceholder }}
+        aria-invalid={Boolean(error)}
         aria-describedby={feedback ? feedbackId : undefined}
       />
       {feedback && (

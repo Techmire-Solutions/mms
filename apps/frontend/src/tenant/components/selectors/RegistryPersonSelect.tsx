@@ -22,6 +22,8 @@ export interface RegistryPersonSelectProps {
   searchLabel?: string;
   searchPlaceholder?: string;
   placeholder?: string;
+  /** Field-level validation error; connected to the select via aria-describedby. */
+  error?: string;
 }
 
 interface PersonItem {
@@ -43,6 +45,7 @@ export function RegistryPersonSelect({
   searchLabel,
   searchPlaceholder,
   placeholder: customPlaceholder,
+  error,
 }: RegistryPersonSelectProps): React.JSX.Element {
   const { t } = useTranslation();
   const [search, setSearch] = useState("");
@@ -140,7 +143,7 @@ export function RegistryPersonSelect({
       searchPlaceholder={searchPlaceholder ?? t("registryPerson.searchPlaceholder")}
       loadingLabel={t("common.loading")}
       isLoading={activeQuery.isFetching}
-      error={activeQuery.isError ? t("errors.state.generic") : undefined}
+      error={error ?? (activeQuery.isError ? t("errors.state.generic") : undefined)}
       onRetry={() => {
         void activeQuery.refetch();
       }}

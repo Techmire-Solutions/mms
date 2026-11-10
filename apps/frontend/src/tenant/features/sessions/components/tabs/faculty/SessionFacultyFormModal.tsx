@@ -1,4 +1,5 @@
 import React from "react";
+import { useDirtySnapshot } from "@/lib/forms/useDirtySnapshot";
 import { UserCheck } from "lucide-react";
 import { FormModal } from "@/components/app/FormModal";
 import { FormSelect } from "@/components/app/FormSelect";
@@ -14,6 +15,7 @@ interface SessionFacultyFormModalProps {
   onClose: () => void;
   editingFaculty: SessionFaculty | null;
   saving: boolean;
+  saveError?: string | null;
   facultyId: string;
   onFacultyIdChange: (id: string) => void;
   role: string;
@@ -31,6 +33,7 @@ export function SessionFacultyFormModal({
   onClose,
   editingFaculty,
   saving,
+  saveError,
   facultyId,
   onFacultyIdChange,
   role,
@@ -43,6 +46,10 @@ export function SessionFacultyFormModal({
   onSave,
 }: SessionFacultyFormModalProps): React.JSX.Element {
   const { t } = useTranslation();
+  const { isDirty } = useDirtySnapshot(
+    { facultyId, role, customRole, status },
+    `${open}|${editingFaculty?.id ?? "new"}`,
+  );
 
   return (
     <FormModal
@@ -55,6 +62,12 @@ export function SessionFacultyFormModal({
       onSave={onSave}
       saving={saving}
       saveDisabled={saving || !facultyId || (role === "Custom" && !customRole.trim())}
+      isDirty={isDirty}
+      discardUnsavedTitle={t("settings.unsavedChanges")}
+      discardUnsavedDescription={t("enrollments.ops.discardDescription")}
+      discardConfirmLabel={t("common.yes")}
+      discardCancelLabel={t("common.cancel")}
+      error={saveError ?? undefined}
       formId="session-faculty-form"
     >
       <form

@@ -1,5 +1,5 @@
 /** Orchestrator FormModal for configuring Class General Rules, Fees, Schedules, Budgets, Scholarships. */
-import React, { useState, useMemo } from "react";
+import React, { useMemo, useState } from "react";
 import { GraduationCap } from "lucide-react";
 import { FormModal } from "@/components/app/FormModal";
 import { useTranslation } from "@/hooks/useTranslation";
@@ -15,6 +15,9 @@ import {
 } from "./class-detail";
 import { useAcademicTerms } from "@/hooks/useAcademicTerms";
 import { ClassDetailTabBody } from "./ClassDetailTabBody";
+import { useDirtySnapshot } from "@/lib/forms/useDirtySnapshot";
+import { mapApiFormError } from "@/lib/forms/serverFormErrors";
+import { validateClassDraft } from "./class-detail/classDetailValidation";
 
 interface ClassDetailModalProps {
   open: boolean;
@@ -37,6 +40,7 @@ export function ClassDetailModal({
   const currencySymbol = activeCurrency?.symbol || "";
   const [activeTab, setActiveTab] = useState<ClassDetailTabId>("general");
   const [errors, setErrors] = useState<Record<string, string>>({});
+  const [serverError, setServerError] = useState<string | null>(null);
 
   const { data: facultyData } = useFacultyContractList(
     { page: 1, limit: FACULTY_MODULE_MANIFEST.maxPageSize, status: "active" },
@@ -73,6 +77,7 @@ export function ClassDetailModal({
     updateScholarship,
     updateEligibility,
   } = useClassDetailDraft({ open, sessionClass, allFaculty: facultyList });
+  const { isDirty } = useDirtySnapshot(classDraft, `${open}|${sessionClass?.id ?? "new"}`);
 
   // Ensure a faculty member assigned outside the active page is still resolved by id.
   const activeFacultyId = classDraft.facultyId;
@@ -115,23 +120,19 @@ export function ClassDetailModal({
     if (open) {
       setActiveTab("general");
       setErrors({});
+      setServerError(null);
     }
   }
 
   const handleSave = async () => {
-    const newErrors: Record<string, string> = {};
-    if (!classDraft.name?.trim()) {
-      newErrors.name = t("common.formPleaseFixErrors");
-      setActiveTab("general");
-    }
-    if (classDraft.minAge > 0 && classDraft.maxAge > 0 && classDraft.minAge > classDraft.maxAge) {
-      newErrors.maxAge = t("common.formPleaseFixErrors");
-      setActiveTab("general");
-    }
-    if (Object.keys(newErrors).length > 0) {
-      setErrors(newErrors);
+    setServerError(null);
+    const validation = validateClassDraft(classDraft, t);
+    if (Object.keys(validation.errors).length > 0) {
+      setErrors(validation.errors);
+      setActiveTab(validation.tab);
       return false;
     }
+    setErrors({});
 
     const activeFacultyId = classDraft.facultyId;
     let resolvedFacultyName = classDraft.facultyName;
@@ -151,8 +152,10 @@ export function ClassDetailModal({
         facultyName: resolvedFacultyName,
       });
       return saved !== false;
-    } catch {
-      // The session update handler already surfaced the failure; leave the modal open.
+    } catch (error) {
+      const mapped = mapApiFormError(error);
+      if (mapped.fieldErrors) setErrors(mapped.fieldErrors);
+      setServerError(mapped.message ?? t("settings.serverSaveFailed"));
       return false;
     }
   };
@@ -178,7 +181,12 @@ export function ClassDetailModal({
       saveOnTabChange={false}
       saving={saving}
       saveDisabled={saving || !classDraft.name?.trim()}
-      error={Object.values(errors)[0]}
+      isDirty={isDirty}
+      discardUnsavedTitle={t("settings.unsavedChanges")}
+      discardUnsavedDescription={t("enrollments.ops.discardDescription")}
+      discardConfirmLabel={t("common.yes")}
+      discardCancelLabel={t("common.cancel")}
+      error={[Object.values(errors)[0], serverError].filter(Boolean).join(" · ") || undefined}
       formId="class-detail-modal-form"
     >
       <form

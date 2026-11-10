@@ -4,6 +4,7 @@ import { type Session } from "@/lib/data/sessionsData";
 import { SEMANTIC_BADGE, WIZARD_SELECTION_DOT } from "@/lib/ui/semanticTone";
 import { StatusBadge, type StatusBadgeConfigItem } from "@/components/app/StatusBadge";
 import { useTranslation } from "@/hooks/useTranslation";
+import { handleRadioGroupKeyDown } from "@/lib/ui/radioGroupKeyboard";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { EmptyState } from "@/components/app/EmptyState";
@@ -66,6 +67,9 @@ export function Step2SelectSession({
         className="space-y-3"
         role="radiogroup"
         aria-label={t("enrollments.wizard.step2SessionsAria")}
+        onKeyDown={(event) =>
+          handleRadioGroupKeyDown(event, activeSessions, value ?? undefined, onChange)
+        }
       >
         {activeSessions.length === 0 && (
           <EmptyState title={t("enrollments.wizard.step2Empty")} compact icon={null} />
@@ -96,6 +100,7 @@ export function Step2SelectSession({
               type="button"
               role="radio"
               aria-checked={selected}
+              tabIndex={selected || (!value && activeSessions[0]?.id === session.id) ? 0 : -1}
               disabled={isFull}
               onClick={() => !isFull && onChange(session)}
               variant="outline"

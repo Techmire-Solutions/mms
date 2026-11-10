@@ -134,7 +134,7 @@ export function SessionLifecycleBar({ session }: { session: Session }): React.JS
         }
         saving={isPending}
         saveDisabled={isPending || !reasonValid || (action === "postpone" && !day)}
-        isDirty={reason.trim().length > 0}
+        isDirty={reason.trim().length > 0 || (action === "postpone" && day !== todayISO())}
         discardUnsavedTitle={t("settings.unsavedChanges")}
         discardUnsavedDescription={t("enrollments.ops.discardDescription")}
         discardConfirmLabel={t("common.yes")}

@@ -16,7 +16,7 @@ import {
 import { Step5FeeCalculation } from "@/tenant/features/enrollments/components/wizard/Step5FeeCalculation";
 import { Step6Confirmation } from "@/tenant/features/enrollments/components/wizard/Step6Confirmation";
 import { suggestClass, runFullEligibility, type CalculatedFee } from "@/lib/data/enrollmentData";
-import type { EnrollmentInsert } from "@mms/shared";
+import { enrollmentRecordInsertSchema, type EnrollmentInsert } from "@mms/shared";
 import { type Student } from "@/lib/data/studentsData";
 import { type Session, type Class } from "@/lib/data/sessionsData";
 import { useSessions } from "@/tenant/hooks/collections/sessions";
@@ -27,15 +27,19 @@ import { useTranslation } from "@/hooks/useTranslation";
 import { buildEnrollmentPayload } from "@/tenant/features/enrollments/lib/enrollmentWizardBuildPayload";
 import { EnrollmentWizardSuccess } from "@/tenant/features/enrollments/components/EnrollmentWizardSuccess";
 import { EnrollmentWizardFooter } from "@/tenant/features/enrollments/components/EnrollmentWizardFooter";
+import { isCapacityFull } from "@/tenant/features/enrollments/lib/enrollmentCapacity";
 
 export interface EnrollmentWizardProps {
   onComplete: (enrollment: EnrollmentInsert) => void | Promise<void>;
   onCancel: () => void;
+  /** Reports draft presence so the hosting FormModal can guard an accidental close. */
+  onDirtyChange?: (dirty: boolean) => void;
 }
 
 export const EnrollmentWizard = function EnrollmentWizard({
   onComplete,
   onCancel,
+  onDirtyChange,
 }: EnrollmentWizardProps): React.JSX.Element {
   const { t } = useTranslation();
   const sessionsQuery = useSessions();
@@ -60,13 +64,13 @@ export const EnrollmentWizard = function EnrollmentWizard({
   };
   const [feeResult, setFeeResult] = useState<CalculatedFee | null>(null);
   const [notes, setNotes] = useState<string>("");
-  const [customFieldValues, setCustomFieldValues] = useState<Record<string, unknown>>({});
+  const [attempted, setAttempted] = useState(false);
   const [done, setDone] = useState<boolean>(false);
   const [submitting, setSubmitting] = useState<boolean>(false);
   const [submitError, setSubmitError] = useState<string | null>(null);
   const [direction, setDirection] = useState<number>(1);
 
-  const { fields, customFields } = useEnrollmentConfig();
+  const { fields } = useEnrollmentConfig();
 
   const steps: Step[] = useMemo(
     () => [
@@ -79,16 +83,27 @@ export const EnrollmentWizard = function EnrollmentWizard({
     ],
     [t],
   );
+  const notesRequired = Boolean(fields.notes?.required);
+  const dirty = Boolean(
+    student ||
+    session ||
+    classInfo ||
+    placement.sectionId ||
+    placement.rollNo.trim() ||
+    notes.trim() ||
+    step > 0,
+  );
+  React.useEffect(() => {
+    onDirtyChange?.(dirty);
+  }, [dirty, onDirtyChange]);
 
   const suggested = student && session ? suggestClass(student, session) : null;
-
   // Eligibility is deterministic for the selected student/session: compute it once per
   // change instead of re-running every rule on every render for the footer disabled state.
   const eligibilityChecks = useMemo(
     () => (student && session ? runFullEligibility(student, session, suggested, []) : []),
     [student, session, suggested],
   );
-
   const canNext = (): boolean => {
     if (step === 0) return !!student;
     if (step === 1) return !!session;
@@ -99,6 +114,7 @@ export const EnrollmentWizard = function EnrollmentWizard({
       if (sections.length > 0) {
         const selectedSection = sections.find((section) => section.id === placement.sectionId);
         if (!selectedSection) return false;
+        if (isCapacityFull(selectedSection.enrolled, selectedSection.capacity)) return false;
       }
       return true;
     }
@@ -106,16 +122,11 @@ export const EnrollmentWizard = function EnrollmentWizard({
     return true;
   };
 
-  const canConfirm = (): boolean => {
-    if (fields.notes?.required && !notes.trim()) return false;
-    // Legacy custom-field truthiness check (settings.customFields)
-    const legacyOk = customFields.every(
-      (customField) => !customField.required || Boolean(customFieldValues[customField.id]),
-    );
-    return legacyOk;
-  };
+  const notesError = notesRequired && attempted && !notes.trim();
+  const canConfirm = (): boolean => !notesError;
 
   const go = (directionDelta: number) => {
+    setAttempted(false);
     setDirection(directionDelta);
     setStep((currentStep) => currentStep + directionDelta);
   };
@@ -126,24 +137,31 @@ export const EnrollmentWizard = function EnrollmentWizard({
     }
     go(1);
   };
-
   const handleSubmit = async () => {
-    if (!student || !session || !feeResult || submitting) return;
+    setAttempted(true);
+    if (!student || !session || !feeResult || notesError || submitting) {
+      if (!feeResult) setSubmitError(t("enrollments.wizard.feeNotReady"));
+      return;
+    }
 
-    const enrollment = buildEnrollmentPayload({
+    const payload = buildEnrollmentPayload({
       student,
       session,
       classInfo,
       feeResult,
       notes,
-      customFieldValues,
       placement,
     });
+    const parsed = enrollmentRecordInsertSchema.safeParse(payload);
+    if (!parsed.success) {
+      setSubmitError(parsed.error.issues[0]?.message ?? t("enrollments.toast.saveFailed"));
+      return;
+    }
 
     setSubmitting(true);
     try {
       setSubmitError(null);
-      await onComplete(enrollment);
+      await onComplete(parsed.data);
       setDone(true);
       window.setTimeout(() => onCancel(), 900);
     } catch (error) {
@@ -246,10 +264,8 @@ export const EnrollmentWizard = function EnrollmentWizard({
                 feeResult={feeResult}
                 notes={notes}
                 onNotesChange={setNotes}
-                customFieldValues={customFieldValues}
-                onCustomFieldChange={(id, value) =>
-                  setCustomFieldValues((previousValues) => ({ ...previousValues, [id]: value }))
-                }
+                notesRequired={notesRequired}
+                notesError={notesError ? t("enrollments.wizard.notesRequired") : undefined}
               />
             )}
           </m.div>

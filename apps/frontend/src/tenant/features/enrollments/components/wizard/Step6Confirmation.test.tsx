@@ -56,8 +56,6 @@ describe("Step6Confirmation Component", () => {
         feeResult={mockFeeResult}
         notes=""
         onNotesChange={vi.fn()}
-        customFieldValues={{}}
-        onCustomFieldChange={vi.fn()}
       />,
     );
 

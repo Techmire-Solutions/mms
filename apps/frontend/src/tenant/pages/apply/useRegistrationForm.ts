@@ -50,6 +50,7 @@ export type SubmitOutcome =
 export function useRegistrationForm(slug: string, view: PublicRegistrationView | undefined) {
   const [draft, setDraft] = useState<RegistrationFormDraft>(EMPTY);
   const [outcome, setOutcome] = useState<SubmitOutcome>({ kind: "idle" });
+  const [errors, setErrors] = useState<Partial<Record<keyof RegistrationFormDraft, string>>>({});
   const queryClient = useQueryClient();
   const mutation = useMutation({
     ...submitRegistrationMutationOptions(slug),
@@ -69,8 +70,18 @@ export function useRegistrationForm(slug: string, view: PublicRegistrationView |
     });
   }, [selectedClass, draft.dateOfBirth, draft.gender, view?.startDate]);
 
-  const update = <K extends keyof RegistrationFormDraft>(key: K, value: RegistrationFormDraft[K]) =>
+  const update = <K extends keyof RegistrationFormDraft>(
+    key: K,
+    value: RegistrationFormDraft[K],
+  ) => {
     setDraft((current) => ({ ...current, [key]: value }));
+    setErrors((current) => {
+      if (!current[key]) return current;
+      const next = { ...current };
+      delete next[key];
+      return next;
+    });
+  };
 
   const complete = Boolean(
     draft.classId &&
@@ -100,6 +111,14 @@ export function useRegistrationForm(slug: string, view: PublicRegistrationView |
         ...(draft.website ? { website: draft.website } : {}),
       });
       if (!parsed.success) {
+        const fieldErrors: Partial<Record<keyof RegistrationFormDraft, string>> = {};
+        for (const issue of parsed.error.issues) {
+          const field = issue.path[0];
+          if (typeof field === "string" && !(field in fieldErrors)) {
+            fieldErrors[field as keyof RegistrationFormDraft] = issue.message;
+          }
+        }
+        setErrors(fieldErrors);
         setOutcome({
           kind: "error",
           reasons: [],
@@ -128,6 +147,7 @@ export function useRegistrationForm(slug: string, view: PublicRegistrationView |
     canSubmit,
     submit,
     outcome,
+    errors,
     isPending: mutation.isPending,
     seatsLeft: selectedClass?.seatsLeft ?? null,
   };

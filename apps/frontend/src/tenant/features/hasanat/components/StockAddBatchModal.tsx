@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useRef, useState } from "react";
 import { Package } from "lucide-react";
 import { type Denomination, type StockBatch } from "@/lib/data/hasanatData";
 import { DatePicker } from "@/components/app/DatePicker";
@@ -8,7 +8,8 @@ import { UserActorSelect } from "@/tenant/components/selectors/UserActorSelect";
 import { FORM_INPUT } from "@/components/ui/formStyles";
 import { Input } from "@/components/ui/input";
 import { FormSelectWithQuickCreate } from "@/components/app/FormPrimitives";
-import { generateClientEntityId, todayISO } from "@mms/shared";
+import { generateClientEntityId, hasanatBatchCreateSchema, todayISO } from "@mms/shared";
+import { mapZodFormErrors } from "@/lib/forms/mapZodFormErrors";
 import { useTranslation } from "@/hooks/useTranslation";
 import { DenominationModal } from "./DenominationModal";
 
@@ -29,6 +30,8 @@ export function StockAddBatchModal({
 }: StockAddBatchModalProps): React.JSX.Element {
   const { t } = useTranslation();
   const [submitting, setSubmitting] = useState(false);
+  /** Synchronous guard: two events in the same frame both read `submitting === false`. */
+  const submittingRef = useRef(false);
   const [createDenomOpen, setCreateDenomOpen] = useState(false);
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [submitError, setSubmitError] = useState<string | null>(null);
@@ -40,7 +43,6 @@ export function StockAddBatchModal({
     note: "",
   });
   const [previousOpen, setPreviousOpen] = useState(open);
-  const [previousDenoms, setPreviousDenoms] = useState(denoms);
 
   const updateField = <K extends keyof StockBatch>(field: K, value: StockBatch[K]) => {
     setData((previousData: Partial<StockBatch>) => ({ ...previousData, [field]: value }));
@@ -57,10 +59,9 @@ export function StockAddBatchModal({
     (denomination) => denomination.id === data.denominationId,
   );
 
-  // Re-seed the draft during render when the modal is (re)opened or the catalog changes.
-  if (previousOpen !== open || previousDenoms !== denoms) {
+  // Seed only on the closed → open transition; a catalog refetch must not wipe the draft.
+  if (previousOpen !== open) {
     setPreviousOpen(open);
-    setPreviousDenoms(denoms);
     if (open) {
       setData({
         denominationId: denoms[0]?.id || "",
@@ -74,33 +75,59 @@ export function StockAddBatchModal({
     }
   }
 
-  const handleSave = async () => {
-    const newErrors: Record<string, string> = {};
-    if (!data.denominationId) {
-      newErrors.denominationId = t("common.required");
-    }
-    if (!data.quantity || Number(data.quantity) < 1) {
-      newErrors.quantity = t("common.required");
-    }
+  // A catalog that arrives after open fills the empty/invalid default only; other fields stay.
+  const firstDenomId = denoms[0]?.id ?? "";
+  const denominationMissing =
+    Boolean(data.denominationId) &&
+    denoms.length > 0 &&
+    !denoms.some((denomination) => denomination.id === data.denominationId);
+  if (open && firstDenomId && (!data.denominationId || denominationMissing)) {
+    setData((previousData) => ({ ...previousData, denominationId: firstDenomId }));
+  }
 
-    if (Object.keys(newErrors).length > 0) {
-      setErrors(newErrors);
+  const handleSave = async () => {
+    if (submittingRef.current) return;
+
+    setSubmitError(null);
+    const denomination = denoms.find((candidate) => candidate.id === data.denominationId);
+    // The shared batch contract owns the bounds (positive quantity, ISO added date).
+    const parsed = hasanatBatchCreateSchema.safeParse({
+      id: generateClientEntityId("bat"),
+      denominationId: data.denominationId ?? "",
+      denominationName: denomination?.name ?? "",
+      quantity: Number(data.quantity ?? 0),
+      addedDate: data.addedDate ?? "",
+      addedByUserId: data.addedByUserId || null,
+      addedBy: data.addedBy ?? null,
+      note: data.note ?? "",
+    });
+    if (!parsed.success) {
+      setErrors(mapZodFormErrors(parsed.error, (message) => message));
       setSubmitError(t("common.formPleaseFixErrors"));
       return;
     }
 
-    setSubmitError(null);
-    const denomination = denoms.find((candidate) => candidate.id === data.denominationId);
+    const payload: StockBatch = {
+      id: parsed.data.id ?? generateClientEntityId("bat"),
+      denominationId: parsed.data.denominationId,
+      denominationName: parsed.data.denominationName ?? "",
+      quantity: parsed.data.quantity,
+      // The DB projects `remaining` from quantity minus live cards; this is only the starting view.
+      remaining: parsed.data.remaining ?? parsed.data.quantity,
+      addedDate: parsed.data.addedDate,
+      addedByUserId: parsed.data.addedByUserId ?? null,
+      addedBy: parsed.data.addedBy ?? null,
+      note: parsed.data.note ?? "",
+    };
+
+    submittingRef.current = true;
     setSubmitting(true);
     try {
-      await onSave({
-        ...data,
-        id: generateClientEntityId("bat"),
-        quantity: Number(data.quantity),
-        remaining: Number(data.quantity),
-        denominationName: denomination?.name || "",
-      } as StockBatch);
+      await onSave(payload);
+    } catch (error: unknown) {
+      setSubmitError(error instanceof Error ? error.message : t("common.formPleaseFixErrors"));
     } finally {
+      submittingRef.current = false;
       setSubmitting(false);
     }
   };
@@ -170,10 +197,7 @@ export function StockAddBatchModal({
               value={data.quantity || ""}
               onChange={(event) => {
                 const sanitized = event.target.value.replace(/[^0-9]/g, "");
-                updateField(
-                  "quantity",
-                  (sanitized ? Number(sanitized) : 0) as StockBatch["quantity"],
-                );
+                updateField("quantity", sanitized ? Number(sanitized) : 0);
               }}
               placeholder="0"
             />
@@ -209,6 +233,7 @@ export function StockAddBatchModal({
         <DenominationModal
           open={createDenomOpen}
           denom={null}
+          existingDenoms={denoms}
           onClose={() => setCreateDenomOpen(false)}
           onSave={async (denom) => {
             await onDenomsChange([...denoms, denom]);

@@ -1,7 +1,18 @@
 import { Button } from "@/components/ui/button";
+import { todayISO } from "@mms/shared";
 import { tsrClient } from "@/lib/api";
 import { notify } from "@/lib/notify";
 import { useTranslation } from "@/hooks/useTranslation";
+
+/** First and last calendar day of a `YYYY-MM` month (date-only math, no timezone drift). */
+function monthBounds(month: string): { dateFrom: string; dateTo: string } {
+  const [year, monthNumber] = month.split("-").map(Number);
+  const lastDay = new Date(Date.UTC(year, monthNumber, 0)).getUTCDate();
+  return {
+    dateFrom: `${month}-01`,
+    dateTo: `${month}-${String(lastDay).padStart(2, "0")}`,
+  };
+}
 
 /**
  * Register / monthly-matrix export.
@@ -17,11 +28,10 @@ export function AttendanceRegisterExport({
   date?: string;
 }): React.JSX.Element {
   const { t } = useTranslation();
-  const month = (date || new Date().toISOString().slice(0, 10)).slice(0, 7);
-  const dateFrom = `${month}-01`;
-  const dateTo = new Date(Date.UTC(Number(month.slice(0, 4)), Number(month.slice(5, 7)), 0))
-    .toISOString()
-    .slice(0, 10);
+  // `todayISO()` is workspace-local; the old `toISOString()` slice could name the previous month
+  // around midnight in a UTC+5 school.
+  const month = (date || todayISO()).slice(0, 7);
+  const { dateFrom, dateTo } = monthBounds(month);
 
   const enqueue = tsrClient.attendance.exportMatrix.useMutation({
     onSuccess: () => notify.success(t("attendance.registerExport.queued")),
@@ -36,6 +46,10 @@ export function AttendanceRegisterExport({
       notify.error(t("attendance.registerExport.selectClass"));
       return;
     }
+    if (dateFrom > dateTo) {
+      notify.error(t("attendance.registerExport.failed"));
+      return;
+    }
     enqueue.mutate({
       body: { classId, dateFrom, dateTo, format },
     });
@@ -46,6 +60,11 @@ export function AttendanceRegisterExport({
       <span className="text-xs font-medium text-muted-foreground">
         {t("attendance.registerExport.title", { month })}
       </span>
+      {!classId ? (
+        <span className="text-xs text-muted-foreground">
+          {t("attendance.registerExport.selectClass")}
+        </span>
+      ) : null}
       <Button
         type="button"
         size="sm"

@@ -24,6 +24,7 @@ describe("AttendanceAlertsRulesSection Component", () => {
     expect(html).toContain("attendance.settings.alerts");
     expect(html).toContain("attendance.settings.lowThreshold");
     expect(html).toContain("attendance.settings.notifyParents");
-    expect(html).toContain("common.save");
+    // The page-level footer owns Save; a section must not render a second one.
+    expect(html).not.toContain("common.save");
   });
 });

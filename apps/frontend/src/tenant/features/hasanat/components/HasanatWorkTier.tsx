@@ -8,7 +8,12 @@ import { RedemptionTracker } from "@/tenant/features/hasanat/components/Redempti
 import { StockManager } from "@/tenant/features/hasanat/components/StockManager";
 import type { useHasanatDistributionColumnLayout } from "@/tenant/features/hasanat/hooks/useHasanatDistributionColumnLayout";
 import type { useHasanatRedemptionColumnLayout } from "@/tenant/features/hasanat/hooks/useHasanatRedemptionColumnLayout";
-import type { Denomination, Distribution, StockBatch } from "@/lib/data/hasanatData";
+import type {
+  Denomination,
+  Distribution,
+  DistributionWrite,
+  StockBatch,
+} from "@/lib/data/hasanatData";
 
 interface WorkTab {
   id: string;
@@ -33,7 +38,7 @@ interface HasanatWorkTierProps {
   onRetry: () => void;
   onUpdateBatches: (batches: StockBatch[]) => void | Promise<void>;
   onUpdateDenoms?: (denoms: Denomination[]) => void | Promise<void>;
-  onCreateDistribution: (distribution: Distribution) => void | Promise<void>;
+  onCreateDistribution: (distribution: DistributionWrite) => void | Promise<void>;
   onUpdateDistribution: (distribution: Distribution) => void | Promise<void>;
   onFilteredCountChange: (count: number) => void;
   onToggleDeleted: () => void;

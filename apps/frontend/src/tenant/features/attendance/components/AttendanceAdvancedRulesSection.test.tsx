@@ -23,6 +23,7 @@ describe("AttendanceAdvancedRulesSection Component", () => {
 
     expect(html).toContain("attendance.settings.advanced");
     expect(html).toContain("attendance.settings.offlineMode");
-    expect(html).toContain("common.save");
+    // The page-level footer owns Save; a section must not render a second one.
+    expect(html).not.toContain("common.save");
   });
 });

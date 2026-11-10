@@ -1,6 +1,6 @@
 import { type Dispatch, type SetStateAction } from "react";
 import { DatePicker } from "@/components/app/DatePicker";
-import { Field, FieldErrorMessage } from "@/components/app/FormPrimitives";
+import { Field } from "@/components/app/FormPrimitives";
 import { FORM_INPUT } from "@/components/ui/formStyles";
 import { Input } from "@/components/ui/input";
 import { UserActorSelect } from "@/tenant/components/selectors/UserActorSelect";
@@ -8,6 +8,7 @@ import { useHasanatConfig } from "@/hooks/useStandardModuleConfig";
 import { useTranslation } from "@/hooks/useTranslation";
 import { type Denomination, type Distribution } from "@/lib/data/hasanatData";
 import { DistributeDenominationField } from "./DistributeDenominationField";
+import type { DistributionFieldUpdate } from "./DistributeRecipientFields";
 import {
   DistributeRecipientClassField,
   DistributeRecipientSelectField,
@@ -20,7 +21,7 @@ interface DistributeModalFieldsProps {
   selectedDenomination?: Denomination;
   totalAvailable: number;
   setData: Dispatch<SetStateAction<Partial<Distribution>>>;
-  updateField: (field: string, value: unknown) => void;
+  updateField: DistributionFieldUpdate;
   errors?: Record<string, string>;
   onDenomsChange?: (denoms: Denomination[]) => Promise<void> | void;
 }
@@ -67,7 +68,6 @@ export function DistributeModalFields({
             <DistributeRecipientSelectField
               key="recipientName"
               data={data}
-              setData={setData}
               updateField={updateField}
               errors={errors}
             />
@@ -106,7 +106,7 @@ export function DistributeModalFields({
                   const sanitized = event.target.value.replace(/[^0-9]/g, "");
                   updateField(
                     "quantity",
-                    sanitized === "" ? "" : Math.min(Number(sanitized), totalAvailable),
+                    sanitized === "" ? undefined : Math.min(Number(sanitized), totalAvailable),
                   );
                 }}
               />
@@ -159,12 +159,9 @@ export function DistributeModalFields({
                 label={t("hasanat.fieldIssuedBy")}
                 required={isRequired}
                 value={data.issuedByUserId || ""}
-                onChange={(id) => {
-                  updateField("issuedByUserId", id);
-                  setData((previousData) => ({ ...previousData, issuedByUserId: id }));
-                }}
+                error={errors?.issuedBy}
+                onChange={(id) => updateField("issuedByUserId", id)}
               />
-              <FieldErrorMessage id="issued-by-error" message={errors?.issuedBy} />
             </div>
           );
         }

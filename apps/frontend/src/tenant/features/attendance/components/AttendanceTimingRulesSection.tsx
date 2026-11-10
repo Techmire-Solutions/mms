@@ -8,7 +8,7 @@ import { SectionCard } from "@/components/app/SectionCard";
 import { ToggleRow } from "@shared/ui";
 import { Field } from "@/components/app/FormPrimitives";
 import { FORM_INPUT, SETUP_SECTION_CARD_CLASS } from "@/components/ui/formStyles";
-import { ModuleSetupSaveFooter } from "@/components/app/ModuleSetupSaveFooter";
+import { useClampedNumberField } from "@/tenant/features/attendance/hooks/useClampedNumberField";
 
 export interface AttendanceTimingRulesSectionProps {
   settingsDraft: AttendanceSettings;
@@ -24,11 +24,23 @@ export function AttendanceTimingRulesSection({
   settingsDraft,
   upd,
   t,
-  isPrefsDirty,
-  saving,
-  saved,
-  onSave,
 }: AttendanceTimingRulesSectionProps): React.JSX.Element {
+  const lateThreshold = useClampedNumberField({
+    value: settingsDraft.lateThresholdMins,
+    min: 0,
+    max: Math.max(0, settingsDraft.autoAbsentAfterMins),
+    onChange: (value) => upd("lateThresholdMins", value),
+  });
+  const autoAbsent = useClampedNumberField({
+    value: settingsDraft.autoAbsentAfterMins,
+    min: 0,
+    max: 240,
+    onChange: (value) => {
+      upd("autoAbsentAfterMins", value);
+      if (settingsDraft.lateThresholdMins > value) upd("lateThresholdMins", value);
+    },
+  });
+
   return (
     <SectionCard
       accentColor="primary"
@@ -68,8 +80,10 @@ export function AttendanceTimingRulesSection({
                 inputMode="numeric"
                 min={0}
                 max={240}
-                value={settingsDraft.lateThresholdMins || ""}
-                onChange={(event) => upd("lateThresholdMins", Number(event.target.value))}
+                value={lateThreshold.text}
+                onFocus={lateThreshold.onFocus}
+                onBlur={lateThreshold.onBlur}
+                onChange={(event) => lateThreshold.setText(event.target.value)}
                 className={cn(FORM_INPUT, "w-24 text-center")}
               />
               <span className="text-xs text-muted-foreground">
@@ -91,8 +105,10 @@ export function AttendanceTimingRulesSection({
                 inputMode="numeric"
                 min={0}
                 max={240}
-                value={settingsDraft.autoAbsentAfterMins || ""}
-                onChange={(event) => upd("autoAbsentAfterMins", Number(event.target.value))}
+                value={autoAbsent.text}
+                onFocus={autoAbsent.onFocus}
+                onBlur={autoAbsent.onBlur}
+                onChange={(event) => autoAbsent.setText(event.target.value)}
                 className={cn(FORM_INPUT, "w-24 text-center")}
               />
               <span className="text-xs text-muted-foreground">
@@ -118,17 +134,6 @@ export function AttendanceTimingRulesSection({
           />
         </div>
       </div>
-
-      <ModuleSetupSaveFooter
-        dirty={Boolean(isPrefsDirty)}
-        saving={Boolean(saving)}
-        saved={Boolean(saved)}
-        saveLabel={saving ? t("global.saving") : t("common.save")}
-        savedLabel={t("settings.savedBadge")}
-        onSave={onSave ?? (() => {})}
-        disableUnsavedGuard
-        footerClassName="mt-4 pt-3"
-      />
     </SectionCard>
   );
 }

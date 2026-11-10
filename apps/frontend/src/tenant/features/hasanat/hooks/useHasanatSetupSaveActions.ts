@@ -3,7 +3,13 @@ import { type HasanatSettings } from "@mms/shared";
 import { useTranslation } from "@/hooks/useTranslation";
 import { notify } from "@/lib/notify";
 
-const PREF_KEYS = ["pointsPerUnit", "autoApprovePayouts", "defaultViewLayout"] as const;
+/** Every editable preference must be listed here, or its control saves nothing (dirty stays false). */
+const PREF_KEYS = [
+  "pointsPerUnit",
+  "autoApprovePayouts",
+  "defaultViewLayout",
+  "awardScope",
+] as const satisfies readonly (keyof HasanatSettings)[];
 
 /** Hasanat Setup save + dirty detection (§7 await / dirty). */
 export function useHasanatSetupSaveActions({

@@ -33,7 +33,6 @@ describe("buildEnrollmentPayload", () => {
       classInfo,
       feeResult,
       notes: "Test notes",
-      customFieldValues: { custom1: "val1" },
     });
 
     expect(payload.studentId).toBe("std-1");

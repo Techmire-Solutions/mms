@@ -1,7 +1,8 @@
-import { useState } from "react";
+import { useRef, useState } from "react";
 import { CreditCard } from "lucide-react";
 import { type Denomination } from "@/lib/data/hasanatData";
-import { generateClientEntityId } from "@mms/shared";
+import { generateClientEntityId, hasanatDenomCreateSchema } from "@mms/shared";
+import { mapZodFormErrors } from "@/lib/forms/mapZodFormErrors";
 import { FormModal } from "@/components/app/FormModal";
 import { Field } from "@/components/app/FormPrimitives";
 import { FORM_INPUT, FORM_LABEL } from "@/components/ui/formStyles";
@@ -28,14 +29,24 @@ const PRESET_ICONS = ["⭐", "🌟", "✨", "💎", "👑", "🏆", "🎖️", "
 export interface DenominationModalProps {
   open: boolean;
   denom: Denomination | null;
+  /** Sibling denominations — used to reject a duplicate name (imports resolve deeds by name). */
+  existingDenoms?: readonly Denomination[];
   onClose: () => void;
   onSave: (denom: Denomination) => void | Promise<void>;
 }
 
-export function DenominationModal({ open, denom, onClose, onSave }: DenominationModalProps) {
+export function DenominationModal({
+  open,
+  denom,
+  existingDenoms = [],
+  onClose,
+  onSave,
+}: DenominationModalProps) {
   const { t } = useTranslation();
   const [data, setData] = useState<Denomination>(denom || { ...EMPTY });
   const [submitting, setSubmitting] = useState(false);
+  /** Synchronous guard: two events in the same frame both read `submitting === false`. */
+  const submittingRef = useRef(false);
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [submitError, setSubmitError] = useState<string | null>(null);
   const [previousOpen, setPreviousOpen] = useState(open);
@@ -65,25 +76,64 @@ export function DenominationModal({ open, denom, onClose, onSave }: Denomination
   }
 
   const handleSave = async () => {
-    const newErrors: Record<string, string> = {};
-    if (!data.name?.trim()) {
-      newErrors.name = t("common.required");
+    if (submittingRef.current) return;
+
+    const name = data.name?.trim() ?? "";
+    const points = Number(data.points);
+    const earlyErrors: Record<string, string> = {};
+    if (!name) {
+      earlyErrors.name = t("common.required");
+    } else if (
+      existingDenoms.some(
+        (candidate) =>
+          candidate.id !== (denom?.id ?? "") &&
+          candidate.name.trim().toLowerCase() === name.toLowerCase(),
+      )
+    ) {
+      earlyErrors.name = t("hasanat.denominations.duplicateName");
     }
-    if (!data.points || Number(data.points) < 1) {
-      newErrors.points = t("common.required");
+    if (!Number.isFinite(points) || points < 1) {
+      earlyErrors.points = t("common.required");
     }
 
-    if (Object.keys(newErrors).length > 0) {
-      setErrors(newErrors);
+    setSubmitError(null);
+    // The shared write contract owns the remaining bounds (integer points, 1..100000).
+    const parsed = hasanatDenomCreateSchema.safeParse({
+      id: denom?.id ?? generateClientEntityId("den"),
+      name,
+      points,
+      color: data.color,
+      description: data.description,
+      icon: data.icon,
+      active: data.active,
+    });
+    if (Object.keys(earlyErrors).length > 0 || !parsed.success) {
+      setErrors({
+        ...earlyErrors,
+        ...(parsed.success ? {} : mapZodFormErrors(parsed.error, (message) => message)),
+      });
       setSubmitError(t("common.formPleaseFixErrors"));
       return;
     }
 
-    setSubmitError(null);
+    const payload: Denomination = {
+      id: parsed.data.id ?? denom?.id ?? generateClientEntityId("den"),
+      name: parsed.data.name,
+      points: parsed.data.points,
+      color: parsed.data.color ?? DEFAULT_DENOMINATION_COLOR,
+      description: parsed.data.description ?? "",
+      icon: parsed.data.icon ?? "Star",
+      active: parsed.data.active ?? true,
+    };
+
+    submittingRef.current = true;
     setSubmitting(true);
     try {
-      await onSave({ ...data, id: denom?.id || generateClientEntityId("den") });
+      await onSave(payload);
+    } catch (error: unknown) {
+      setSubmitError(error instanceof Error ? error.message : t("common.formPleaseFixErrors"));
     } finally {
+      submittingRef.current = false;
       setSubmitting(false);
     }
   };
@@ -172,6 +222,7 @@ export function DenominationModal({ open, denom, onClose, onSave }: Denomination
               <Button
                 type="button"
                 aria-pressed={data.icon === icon}
+                aria-label={`${t("hasanat.denominations.icon")}: ${icon}`}
                 key={icon}
                 onClick={() => updateField("icon", icon)}
                 className={`min-h-11 min-w-11 rounded-lg text-lg flex items-center justify-center transition-all ${data.icon === icon ? "bg-primary/15 ring-2 ring-primary" : "bg-muted hover:bg-muted/80"}`}

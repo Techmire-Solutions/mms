@@ -6,8 +6,10 @@ import { useHasanatConfig } from "@/hooks/useStandardModuleConfig";
 import { useTranslation } from "@/hooks/useTranslation";
 import { useAuth } from "@/lib/contexts/AuthContext";
 import { type Denomination, type Distribution, type StockBatch } from "@/lib/data/hasanatData";
-import { generateClientEntityId, todayISO } from "@mms/shared";
+import { generateClientEntityId, hasanatDistributionCreateSchema, todayISO } from "@mms/shared";
+import { mapZodFormErrors } from "@/lib/forms/mapZodFormErrors";
 import { DistributeModalFields } from "@/tenant/features/hasanat/components/DistributeModalFields";
+import type { DistributionFieldUpdate } from "@/tenant/features/hasanat/components/DistributeRecipientFields";
 
 const EMPTY_DIST: Partial<Distribution> = {
   denominationId: "",
@@ -54,14 +56,9 @@ export function DistributeModal({
     issuedByUserId: authUser?.id || "",
   }));
   const [previousOpen, setPreviousOpen] = useState(open);
-  const [previousDenoms, setPreviousDenoms] = useState(denoms);
-  const [previousIssuedByUserId, setPreviousIssuedByUserId] = useState(authUser?.id);
 
-  const updateField = (field: string, value: unknown) => {
-    setData(
-      (previousData: Partial<Distribution>) =>
-        ({ ...previousData, [field]: value }) as Partial<Distribution>,
-    );
+  const updateField: DistributionFieldUpdate = (field, value) => {
+    setData((previousData: Partial<Distribution>) => ({ ...previousData, [field]: value }));
     if (errors[field]) {
       setErrors((previousErrors) => {
         const next = { ...previousErrors };
@@ -71,15 +68,9 @@ export function DistributeModal({
     }
   };
 
-  // Re-seed the draft during render when the modal is (re)opened or its catalog/actor inputs change.
-  if (
-    previousOpen !== open ||
-    previousDenoms !== denoms ||
-    previousIssuedByUserId !== authUser?.id
-  ) {
+  // Seed only on the closed → open transition; Query refetches must never wipe a dirty draft.
+  if (previousOpen !== open) {
     setPreviousOpen(open);
-    setPreviousDenoms(denoms);
-    setPreviousIssuedByUserId(authUser?.id);
     if (open) {
       setData({
         ...EMPTY_DIST,
@@ -92,6 +83,16 @@ export function DistributeModal({
       // One idempotency key per opened draft: a retried submit replays instead of awarding twice.
       setRequestId(generateClientEntityId("hdreq"));
     }
+  }
+
+  // A catalog that arrives after open fills the empty/invalid default only; other fields stay.
+  const firstDenomId = denoms[0]?.id ?? "";
+  const denominationMissing =
+    Boolean(data.denominationId) &&
+    denoms.length > 0 &&
+    !denoms.some((denomination) => denomination.id === data.denominationId);
+  if (open && firstDenomId && (!data.denominationId || denominationMissing)) {
+    setData((previousData) => ({ ...previousData, denominationId: firstDenomId }));
   }
 
   const selectedDenomination = denoms.find(
@@ -109,39 +110,37 @@ export function DistributeModal({
 
   const handleSave = async () => {
     if (submittingRef.current) return;
-    const newErrors: Record<string, string> = {};
-    if (!data.denominationId) {
-      newErrors.denominationId = t("common.required");
-    }
+
+    // Cheap, domain-specific rules first: they carry copy the generic write schema cannot.
+    const earlyErrors: Record<string, string> = {};
     const recipientId =
       data.recipientType === "faculty" ? data.recipientFacultyId : data.recipientStudentId;
     if (!recipientId) {
-      newErrors.recipientName = t("common.required");
+      earlyErrors.recipientName = t("common.required");
     }
-    if (!data.quantity || Number(data.quantity) < 1) {
-      newErrors.quantity = t("common.required");
+    if (totalAvailable === 0) {
+      earlyErrors.quantity = t("hasanat.form.noStockAvailable");
+    } else if (!data.quantity || Number(data.quantity) < 1) {
+      earlyErrors.quantity = t("common.required");
     } else if (Number(data.quantity) > totalAvailable) {
-      newErrors.quantity = t("common.required");
+      earlyErrors.quantity = t("hasanat.form.quantityExceedsAvailable", {
+        available: totalAvailable,
+      });
     }
-    if (!data.issuedDate) {
-      newErrors.issuedDate = t("common.required");
-    }
-    if (!data.reason?.trim()) {
-      newErrors.reason = t("common.required");
-    }
-
     for (const field of orderedFields) {
       if (!isFieldEnabled(field.id) || !isFieldRequired(field.id)) continue;
       if (field.id === "recipientClass" && !data.recipientClass?.trim()) {
-        newErrors.recipientClass = t("common.required");
+        earlyErrors.recipientClass = t("common.required");
+      }
+      if (field.id === "reason" && !data.reason?.trim()) {
+        earlyErrors.reason = t("common.required");
       }
       if (field.id === "issuedBy" && !data.issuedByUserId && !authUser?.id) {
-        newErrors.issuedBy = t("common.required");
+        earlyErrors.issuedBy = t("common.required");
       }
     }
-
-    if (Object.keys(newErrors).length > 0) {
-      setErrors(newErrors);
+    if (Object.keys(earlyErrors).length > 0) {
+      setErrors(earlyErrors);
       setSubmitError(t("common.formPleaseFixErrors"));
       return;
     }
@@ -151,24 +150,55 @@ export function DistributeModal({
     const batch = batches.find(
       (candidate) => candidate.denominationId === data.denominationId && candidate.remaining > 0,
     );
-    const payload: Distribution = {
-      ...data,
+
+    // The shared write contract is the single source of validation: types, bounds, dates and the
+    // recipient exclusivity rule all come from `hasanatDistributionCreateSchema`.
+    const parsed = hasanatDistributionCreateSchema.safeParse({
       id: generateClientEntityId("dist"),
-      denominationName: denomination?.name || "",
-      batchId: batch?.id || "",
-      status: "active",
-      recipientName: "",
-      issuedByUserId: data.issuedByUserId || authUser?.id || "",
-    } as Distribution;
-    if (data.recipientType === "faculty") {
-      delete payload.recipientStudentId;
-    } else {
-      delete payload.recipientFacultyId;
+      batchId: batch?.id ?? "",
+      denominationId: data.denominationId ?? "",
+      denominationName: denomination?.name ?? "",
+      recipientType: data.recipientType ?? "student",
+      recipientStudentId:
+        data.recipientType === "faculty" ? null : (data.recipientStudentId ?? null),
+      recipientFacultyId:
+        data.recipientType === "faculty" ? (data.recipientFacultyId ?? null) : null,
+      recipientName: data.recipientName ?? "",
+      recipientClass: data.recipientClass ?? "",
+      classId: data.classId ?? null,
+      sessionId: data.sessionId ?? null,
+      quantity: Number(data.quantity),
+      expiresOn: data.expiresOn ?? null,
+      reason: data.reason ?? "",
+      issuedDate: data.issuedDate ?? "",
+      issuedByUserId: data.issuedByUserId || authUser?.id || null,
+      issuedBy: data.issuedBy ?? null,
+      clientRequestId: requestId,
+    });
+    if (!parsed.success) {
+      const fieldErrors = mapZodFormErrors(parsed.error, (message) => message);
+      // Map contract paths onto the field ids this form renders.
+      const recipientError = fieldErrors.recipientStudentId ?? fieldErrors.recipientFacultyId;
+      setErrors({
+        ...fieldErrors,
+        ...(recipientError ? { recipientName: recipientError } : {}),
+        ...(fieldErrors.batchId ? { denominationId: fieldErrors.batchId } : {}),
+      });
+      setSubmitError(t("common.formPleaseFixErrors"));
+      return;
     }
+
+    const payload = {
+      ...parsed.data,
+      id: parsed.data.id ?? generateClientEntityId("dist"),
+      clientRequestId: requestId,
+      status: "active" as const,
+    };
+
     submittingRef.current = true;
     setSubmitting(true);
     try {
-      await onSave({ ...payload, clientRequestId: requestId });
+      await onSave(payload);
     } catch (error: unknown) {
       // The DB rejects an over-issue (`hasanat_batches_remaining_chk`) and the API answers 409;
       // show that message instead of dropping the failure.

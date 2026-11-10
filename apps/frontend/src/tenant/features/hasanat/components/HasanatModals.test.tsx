@@ -243,9 +243,122 @@ describe("Hasanat Sub-Modals", () => {
         }),
       );
     });
+
+    it("preserves the redemption draft when the distributions array is refetched", async () => {
+      await act(async () => {
+        root.render(
+          <RedeemModal
+            open={true}
+            distributions={mockDistributions}
+            onClose={vi.fn()}
+            onSave={vi.fn()}
+          />,
+        );
+      });
+
+      const rewardInput = container.querySelector("#reward-given") as HTMLInputElement;
+      await act(async () => {
+        setInputValue(rewardInput, "Draft reward survives refetch");
+      });
+
+      await act(async () => {
+        root.render(
+          <RedeemModal
+            open={true}
+            distributions={[...mockDistributions]}
+            onClose={vi.fn()}
+            onSave={vi.fn()}
+          />,
+        );
+      });
+
+      expect((container.querySelector("#reward-given") as HTMLInputElement).value).toBe(
+        "Draft reward survives refetch",
+      );
+    });
   });
 
   describe("StockAddBatchModal", () => {
+    it("submits one batch on a double click", async () => {
+      const onSave = vi.fn(async () => undefined);
+      await act(async () => {
+        root.render(
+          <StockAddBatchModal open={true} denoms={mockDenoms} onClose={vi.fn()} onSave={onSave} />,
+        );
+      });
+
+      const qtyInput = container.querySelector("#batch-qty") as HTMLInputElement;
+      await act(async () => {
+        setInputValue(qtyInput, "5");
+      });
+
+      const saveBtn = container.querySelector(
+        '[data-testid="modal-save-btn"]',
+      ) as HTMLButtonElement;
+      await act(async () => {
+        saveBtn.click();
+        saveBtn.click();
+      });
+
+      expect(onSave).toHaveBeenCalledTimes(1);
+    });
+
+    it("preserves the batch draft when the denominations array is refetched", async () => {
+      await act(async () => {
+        root.render(
+          <StockAddBatchModal open={true} denoms={mockDenoms} onClose={vi.fn()} onSave={vi.fn()} />,
+        );
+      });
+
+      const qtyInput = container.querySelector("#batch-qty") as HTMLInputElement;
+      const noteInput = container.querySelector("#batch-note") as HTMLInputElement;
+      await act(async () => {
+        setInputValue(qtyInput, "7");
+        setInputValue(noteInput, "Draft note survives refetch");
+      });
+
+      await act(async () => {
+        root.render(
+          <StockAddBatchModal
+            open={true}
+            denoms={[...mockDenoms]}
+            onClose={vi.fn()}
+            onSave={vi.fn()}
+          />,
+        );
+      });
+
+      expect((container.querySelector("#batch-qty") as HTMLInputElement).value).toBe("7");
+      expect((container.querySelector("#batch-note") as HTMLInputElement).value).toBe(
+        "Draft note survives refetch",
+      );
+    });
+
+    it("shows the server error and keeps the draft when the batch save is rejected", async () => {
+      const onSave = vi.fn(async () => {
+        throw new Error("batch save rejected");
+      });
+      await act(async () => {
+        root.render(
+          <StockAddBatchModal open={true} denoms={mockDenoms} onClose={vi.fn()} onSave={onSave} />,
+        );
+      });
+
+      const qtyInput = container.querySelector("#batch-qty") as HTMLInputElement;
+      await act(async () => {
+        setInputValue(qtyInput, "5");
+      });
+
+      await act(async () => {
+        (container.querySelector('[data-testid="modal-save-btn"]') as HTMLButtonElement).click();
+      });
+
+      expect(container.querySelector('[data-testid="modal-error"]')?.textContent).toBe(
+        "batch save rejected",
+      );
+      expect((container.querySelector("#batch-qty") as HTMLInputElement).value).toBe("5");
+    });
+
     it("validates required fields on batch submission", async () => {
       const onSave = vi.fn();
       await act(async () => {
@@ -284,6 +397,104 @@ describe("Hasanat Sub-Modals", () => {
   });
 
   describe("DenominationModal", () => {
+    it("submits one denomination on a double click", async () => {
+      const onSave = vi.fn(async () => undefined);
+      await act(async () => {
+        root.render(
+          <DenominationModal open={true} denom={null} onClose={vi.fn()} onSave={onSave} />,
+        );
+      });
+
+      const nameInput = container.querySelector("#denom-name") as HTMLInputElement;
+      await act(async () => {
+        setInputValue(nameInput, "Gold Crown");
+      });
+
+      const saveBtn = container.querySelector(
+        '[data-testid="modal-save-btn"]',
+      ) as HTMLButtonElement;
+      await act(async () => {
+        saveBtn.click();
+        saveBtn.click();
+      });
+
+      expect(onSave).toHaveBeenCalledTimes(1);
+    });
+
+    it("rejects a denomination name that already exists", async () => {
+      const onSave = vi.fn();
+      await act(async () => {
+        root.render(
+          <DenominationModal
+            open={true}
+            denom={null}
+            existingDenoms={mockDenoms}
+            onClose={vi.fn()}
+            onSave={onSave}
+          />,
+        );
+      });
+
+      const nameInput = container.querySelector("#denom-name") as HTMLInputElement;
+      await act(async () => {
+        // Same name in a different case must be rejected (imports resolve deeds by name).
+        setInputValue(nameInput, "silver star");
+      });
+
+      const saveBtn = container.querySelector(
+        '[data-testid="modal-save-btn"]',
+      ) as HTMLButtonElement;
+      await act(async () => {
+        saveBtn.click();
+      });
+
+      expect(onSave).not.toHaveBeenCalled();
+      expect(container.querySelector("#denom-name-error")?.textContent).toBe(
+        "hasanat.denominations.duplicateName",
+      );
+    });
+
+    it("shows the server error and keeps the draft when the denomination save is rejected", async () => {
+      const onSave = vi.fn(async () => {
+        throw new Error("denomination save rejected");
+      });
+      await act(async () => {
+        root.render(
+          <DenominationModal open={true} denom={null} onClose={vi.fn()} onSave={onSave} />,
+        );
+      });
+
+      const nameInput = container.querySelector("#denom-name") as HTMLInputElement;
+      await act(async () => {
+        setInputValue(nameInput, "Gold Crown");
+      });
+
+      await act(async () => {
+        (container.querySelector('[data-testid="modal-save-btn"]') as HTMLButtonElement).click();
+      });
+
+      expect(container.querySelector('[data-testid="modal-error"]')?.textContent).toBe(
+        "denomination save rejected",
+      );
+      expect((container.querySelector("#denom-name") as HTMLInputElement).value).toBe("Gold Crown");
+    });
+
+    it("labels each preset icon button for assistive tech", async () => {
+      await act(async () => {
+        root.render(
+          <DenominationModal open={true} denom={null} onClose={vi.fn()} onSave={vi.fn()} />,
+        );
+      });
+
+      const iconButtons = [
+        ...container.querySelectorAll<HTMLButtonElement>(
+          'button[aria-label^="hasanat.denominations.icon:"]',
+        ),
+      ];
+      expect(iconButtons.length).toBeGreaterThan(0);
+      expect(iconButtons.every((button) => Boolean(button.getAttribute("aria-label")))).toBe(true);
+    });
+
     it("validates card name and points before saving", async () => {
       const onSave = vi.fn();
       await act(async () => {
