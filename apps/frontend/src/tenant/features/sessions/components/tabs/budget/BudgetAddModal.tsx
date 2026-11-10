@@ -1,4 +1,5 @@
-import React from "react";
+import React, { useState } from "react";
+import { useDirtySnapshot } from "@/lib/forms/useDirtySnapshot";
 import { Wallet } from "lucide-react";
 import { FormModal } from "@/components/app/FormModal";
 import { FormSelect } from "@/components/app/FormSelect";
@@ -39,6 +40,13 @@ export function BudgetAddModal({
   onSave,
 }: BudgetAddModalProps): React.JSX.Element {
   const { t } = useTranslation();
+  const [serverError, setServerError] = useState<string | null>(null);
+  const { isDirty } = useDirtySnapshot(
+    { targetClassId, detail, amount, budgetType },
+    `${open}|${budgetType}`,
+  );
+  const detailInvalid = !detail.trim();
+  const amountInvalid = !amount || amount <= 0;
 
   return (
     <FormModal
@@ -52,9 +60,22 @@ export function BudgetAddModal({
       icon={Wallet}
       cancelLabel={t("common.cancel")}
       saveLabel={t("common.save")}
-      onSave={onSave}
+      onSave={async () => {
+        setServerError(null);
+        try {
+          await onSave();
+        } catch (error) {
+          setServerError(error instanceof Error ? error.message : "Could not save budget");
+        }
+      }}
       saving={saving}
-      saveDisabled={saving || !targetClassId || !amount || amount <= 0}
+      saveDisabled={saving || !targetClassId || detailInvalid || amountInvalid}
+      isDirty={isDirty}
+      discardUnsavedTitle={t("settings.unsavedChanges")}
+      discardUnsavedDescription={t("enrollments.ops.discardDescription")}
+      discardConfirmLabel={t("common.yes")}
+      discardCancelLabel={t("common.cancel")}
+      error={serverError ?? undefined}
       formId="budget-add-form"
     >
       <form
@@ -77,7 +98,12 @@ export function BudgetAddModal({
           />
         </Field>
 
-        <Field id="budget-detail" label={t("sessions.budget.form.note")}>
+        <Field
+          id="budget-detail"
+          label={t("sessions.budget.form.note")}
+          required
+          error={detailInvalid ? t("common.formPleaseFixErrors") : undefined}
+        >
           <Input
             id="budget-detail"
             name="detail"
@@ -95,6 +121,7 @@ export function BudgetAddModal({
               : t("sessions.budget.form.amountPlain")
           }
           required
+          error={amountInvalid ? t("common.formPleaseFixErrors") : undefined}
         >
           <Input
             id="budget-amount"

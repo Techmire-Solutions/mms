@@ -25,6 +25,7 @@ export const SessionsSettings = function SessionsSettings({
   }, [isPrefsDirty, onPrefsDirtyChange]);
 
   const unsavedWarning = isPrefsDirty ? t("sessions.setup.unsavedPreferencesWarning") : undefined;
+  const durationInvalid = !/^[1-9]\d*$/.test(settingsDraft.defaultDuration.trim());
 
   return (
     <ModuleSetupContent>
@@ -38,6 +39,7 @@ export const SessionsSettings = function SessionsSettings({
           settingsDraft={settingsDraft}
           typeOptions={typeOptions}
           upd={upd}
+          durationError={durationInvalid ? t("common.formPleaseFixErrors") : undefined}
         />
       </SectionCard>
 
@@ -49,6 +51,7 @@ export const SessionsSettings = function SessionsSettings({
         saveLabel={t("common.save")}
         savedLabel={t("settings.savedBadge")}
         onSave={handleSave}
+        disabled={durationInvalid}
       />
     </ModuleSetupContent>
   );

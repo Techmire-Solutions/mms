@@ -13,6 +13,8 @@ export interface ModuleSetupSaveFooterProps {
   saveLabel: string;
   savedLabel: string;
   onSave: () => void | Promise<void>;
+  /** Optional form-level validity gate (e.g. an invalid field blocks Save). */
+  disabled?: boolean;
   /** Optional layout override (e.g. sticky Contacts chrome). */
   footerClassName?: string;
   buttonClassName?: string;
@@ -34,6 +36,7 @@ export function ModuleSetupSaveFooter({
   saveLabel,
   savedLabel,
   onSave,
+  disabled = false,
   footerClassName,
   buttonClassName,
   navigationBlockMessage,
@@ -62,7 +65,7 @@ export function ModuleSetupSaveFooter({
           onClick={() => {
             void onSave();
           }}
-          disabled={saving || !dirty}
+          disabled={saving || !dirty || disabled}
           aria-busy={saving}
           className={cn(
             saved ? "bg-success hover:bg-success/90 text-success-foreground ms-auto" : "ms-auto",
