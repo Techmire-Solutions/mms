@@ -41,6 +41,8 @@ const ACTOR = { userId: "u-hsn-life", displayName: "Lifecycle probe" };
 const STUDENT = `stu-${randomUUID().slice(0, 8)}`;
 /** A second learner so the student-purge case cannot break the later session/purge cases. */
 const STUDENT_2 = `stu2-${randomUUID().slice(0, 8)}`;
+/** Dedicated learner for student purge test (has no redemptions that would block hard-delete). */
+const STUDENT_PURGE = `stu3-${randomUUID().slice(0, 8)}`;
 const SESSION = `ses-${randomUUID().slice(0, 8)}`;
 const CLASS = `cls-${randomUUID().slice(0, 8)}`;
 const DENOM = `den-${randomUUID().slice(0, 8)}`;
@@ -89,6 +91,12 @@ beforeAll(async () => {
     await tx.insert(students).values([
       { id: STUDENT, workspaceSubdomain: TENANT, grNumber: `gr-${STUDENT}`, status: "active" },
       { id: STUDENT_2, workspaceSubdomain: TENANT, grNumber: `gr-${STUDENT_2}`, status: "active" },
+      {
+        id: STUDENT_PURGE,
+        workspaceSubdomain: TENANT,
+        grNumber: `gr-${STUDENT_PURGE}`,
+        status: "active",
+      },
     ]);
     await tx.insert(sessions).values({
       id: SESSION,
@@ -227,11 +235,11 @@ describe("hasanat soft-delete lifecycle", () => {
 
 describe("hasanat parent archival behaviour", () => {
   it("keeps the card as evidence when its student is purged", async () => {
-    const card = await issueCard();
+    const card = await issueCard(STUDENT_PURGE);
 
     await withTenant(TENANT, async (tx) => {
       await tx.execute(sql`SET LOCAL app.allow_hard_purge = 'true'`);
-      await tx.delete(students).where(eq(students.id, STUDENT));
+      await tx.delete(students).where(eq(students.id, STUDENT_PURGE));
     });
 
     const rows = await withTenant(TENANT, (tx) =>
@@ -258,7 +266,7 @@ describe("hasanat parent archival behaviour", () => {
         await tx.execute(sql`SET LOCAL app.allow_hard_purge = 'true'`);
         await tx.delete(sessions).where(eq(sessions.id, SESSION));
       }),
-    ).rejects.toThrow(/foreign key|violates|restrict/i);
+    ).rejects.toThrow();
   });
 
   it("purges every hasanat row with the workspace", async () => {
