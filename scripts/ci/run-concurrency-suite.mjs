@@ -10,6 +10,8 @@ const FILES = [
   "src/__tests__/db-integration/enrollmentConcurrencyDb.integration.test.ts",
   // Two staff marking one roster in different orders used to deadlock on the ON CONFLICT locks.
   "src/__tests__/db-integration/attendanceConcurrencyDb.integration.test.ts",
+  // Double redeem/void, idempotent issue, OCC, stock and quota races behind the Hasanat cards.
+  "src/__tests__/db-integration/hasanatConcurrencyDb.integration.test.ts",
 ];
 
 for (const file of FILES) {

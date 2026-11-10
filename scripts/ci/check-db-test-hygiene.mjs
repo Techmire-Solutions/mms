@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 /**
- * DB-test hygiene ratchet (enrollments + attendance).
+ * DB-test hygiene ratchet (enrollments + attendance + hasanat).
  *
  * Conditional database skips report green while asserting nothing. The repository rule bans
  * them (`dbTestSupport.ts`), and this gate keeps the enrollments/registration DB suites honest:
@@ -13,7 +13,9 @@ const ROOT = path.resolve(process.cwd(), "apps/backend/src/__tests__/db-integrat
 const BANNED = [/\bdbAvailable\b/, /\bctx\.skip\s*\(/, /\bit\.skip\s*\(/, /\bdescribe\.skip\s*\(/];
 const files = fs
   .readdirSync(ROOT)
-  .filter((name) => /^(enrollment|enrollments|registration|attendance).*\.test\.ts$/.test(name));
+  .filter((name) =>
+    /^(enrollment|enrollments|registration|attendance|hasanat).*\.test\.ts$/.test(name),
+  );
 
 const failures = [];
 for (const name of files) {
