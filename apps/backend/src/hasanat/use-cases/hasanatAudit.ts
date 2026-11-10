@@ -62,9 +62,12 @@ function ledgerSnapshot(redemption: Redemption): Record<string, unknown> {
   };
 }
 
-function awardSnapshot(award: HasanatStudentAwardView): Record<string, unknown> {
+function awardSnapshot(
+  award: HasanatStudentAwardView,
+  studentId?: string | null,
+): Record<string, unknown> {
   return {
-    studentId: (award as unknown as { studentId?: string }).studentId ?? null,
+    studentId: studentId ?? null,
     tierKey: award.tierKey,
     tierName: award.tierName,
     earnedSnapshot: award.earnedSnapshot,
@@ -150,14 +153,16 @@ export async function auditAwardMutation(
   input: HasanatAuditInput & {
     award: HasanatStudentAwardView;
     before?: HasanatStudentAwardView | null;
+    /** Owner of the award — the wire DTO is per-student, so the caller passes it explicitly. */
+    studentId?: string | null;
   },
 ): Promise<void> {
   await append(
     input,
     "hasanat_student_awards",
     String(input.award.id),
-    input.before ? awardSnapshot(input.before) : null,
-    awardSnapshot(input.award),
+    input.before ? awardSnapshot(input.before, input.studentId) : null,
+    awardSnapshot(input.award, input.studentId),
   );
 }
 

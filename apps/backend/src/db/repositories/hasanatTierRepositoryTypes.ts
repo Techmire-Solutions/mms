@@ -16,6 +16,7 @@ export interface StudentPoints {
 
 export interface AwardRow extends HasanatTierAward {
   id: string;
+  studentId: string;
   tierName: string;
   earnedSnapshot: number;
   awardedAt: string;
@@ -30,6 +31,7 @@ export interface NewAward {
 
 export function toAward(row: {
   id: string;
+  studentId: string;
   tierKey: string;
   tierName: string;
   earnedSnapshot: number;
@@ -39,6 +41,7 @@ export function toAward(row: {
 }): AwardRow {
   return {
     id: row.id,
+    studentId: row.studentId,
     tierKey: row.tierKey,
     tierName: row.tierName,
     earnedSnapshot: row.earnedSnapshot,

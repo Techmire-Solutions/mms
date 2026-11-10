@@ -73,6 +73,7 @@ export async function listStudentAwards(tenant: string, studentId: string): Prom
     const rows = await tx
       .select({
         id: hasanatStudentAwards.id,
+        studentId: hasanatStudentAwards.studentId,
         tierKey: hasanatStudentAwards.tierKey,
         tierName: hasanatStudentAwards.tierName,
         earnedSnapshot: hasanatStudentAwards.earnedSnapshot,
@@ -102,6 +103,7 @@ export async function listLiveStudentAwards(
     const rows = await tx
       .select({
         id: hasanatStudentAwards.id,
+        studentId: hasanatStudentAwards.studentId,
         tierKey: hasanatStudentAwards.tierKey,
         tierName: hasanatStudentAwards.tierName,
         earnedSnapshot: hasanatStudentAwards.earnedSnapshot,

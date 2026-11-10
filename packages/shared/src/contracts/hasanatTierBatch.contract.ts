@@ -8,6 +8,7 @@ import {
 import {
   hasanatStudentReportResponseSchema,
   hasanatStudentSummarySchema,
+  hasanatTierReconcileResponseSchema,
 } from "../hasanat/hasanatTierContract.js";
 
 const ok = z.unknown();
@@ -81,11 +82,7 @@ export const hasanatTierBatchContractRoutes = {
     path: "/api/hasanat/tiers/reconcile",
     body: z.object({}).optional(),
     responses: {
-      200: z.object({
-        students: z.number(),
-        awarded: z.number(),
-        revoked: z.number(),
-      }),
+      200: hasanatTierReconcileResponseSchema,
       403: ok,
       500: ok,
     },

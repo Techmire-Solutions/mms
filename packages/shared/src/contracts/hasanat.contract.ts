@@ -1,10 +1,6 @@
 import { initContract } from "@ts-rest/core";
 import { z } from "zod";
-import {
-  baseListQuerySchema,
-  bulkStringIdsBodySchema,
-  softDeleteBodySchema,
-} from "../core/apiSchemas.js";
+import { bulkStringIdsBodySchema, softDeleteBodySchema } from "../core/apiSchemas.js";
 import { widgetAggregatesBodySchema } from "../schemas/common.dto.js";
 import {
   denomRecordSchema,
@@ -25,6 +21,10 @@ import {
   hasanatRedemptionsPageResponseSchema,
 } from "../hasanat/hasanatModuleManifest.js";
 import { hasanatReportAggregatesSchema } from "../hasanat/hasanatReportAggregates.js";
+import {
+  hasanatDistributionsPageResponseSchema,
+  hasanatListQuerySchema,
+} from "../hasanat/hasanatListQuery.js";
 import { hasanatTierBatchContractRoutes } from "./hasanatTierBatch.contract.js";
 import { reportComparisonQuerySchema } from "../reports/reportComparisonQuery.js";
 
@@ -40,14 +40,6 @@ const hasanatBulkResultResponseSchema = z.object({
 });
 
 /** Envelope for paginated hasanat distribution list responses. */
-export const hasanatDistributionsPageResponseSchema = z.object({
-  distributions: z.array(distributionRecordSchema),
-  total: z.number(),
-  page: z.number(),
-  limit: z.number(),
-  hasMore: z.boolean(),
-});
-
 /** Normalized Hasanat Setup preferences (`HasanatModulePreferences`). */
 export const hasanatPreferencesResponseSchema = z.object({
   pointsPerUnit: z.number(),
@@ -67,8 +59,8 @@ export const hasanatContract = c.router({
   listDistributions: {
     method: "GET",
     path: "/api/hasanat/distributions",
-    query: baseListQuerySchema,
-    responses: { 200: hasanatDistributionsPageResponseSchema, 403: ok, 500: ok },
+    query: hasanatListQuerySchema,
+    responses: { 200: hasanatDistributionsPageResponseSchema, 400: ok, 403: ok, 500: ok },
     summary: "List hasanat distributions",
   },
   createDistribution: {

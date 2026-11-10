@@ -5,6 +5,7 @@
 
 import { z } from "zod";
 import { isoDateSchema } from "../core/isoDateSchema.js";
+import { HASANAT_LEDGER_KINDS } from "./hasanatEnums.js";
 
 export const redemptionRecordSchema = z
   .object({
@@ -15,7 +16,7 @@ export const redemptionRecordSchema = z
     reward: z.string().default(""),
     pointsUsed: z.number().default(0),
     /** `redeem` burns value; `reversal` corrects one redemption (append-only ledger). */
-    kind: z.enum(["redeem", "reversal"]).default("redeem"),
+    kind: z.enum(HASANAT_LEDGER_KINDS).default("redeem"),
     reversalOfId: z.string().nullable().optional(),
     date: z.string(),
     approvedByUserId: z.string().nullable().optional(),
@@ -46,7 +47,7 @@ export const hasanatLedgerListQuerySchema = z
     limit: z.coerce.number().int().min(1).max(200).optional(),
     from: isoDateSchema.optional(),
     to: isoDateSchema.optional(),
-    kind: z.enum(["redeem", "reversal"]).optional(),
+    kind: z.enum(HASANAT_LEDGER_KINDS).optional(),
     studentId: z.string().min(1).max(64).optional(),
     distributionId: z.string().min(1).max(64).optional(),
   })

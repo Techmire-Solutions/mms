@@ -116,6 +116,7 @@ describe("hasanatTierRepository", () => {
         [
           {
             id: "aw-1",
+            studentId: "stu-1",
             tierKey: "gold",
             tierName: "Gold",
             earnedSnapshot: 250,
@@ -130,6 +131,7 @@ describe("hasanatTierRepository", () => {
       expect(awards).toEqual([
         {
           id: "aw-1",
+          studentId: "stu-1",
           tierKey: "gold",
           tierName: "Gold",
           earnedSnapshot: 250,
@@ -145,6 +147,7 @@ describe("hasanatTierRepository", () => {
         [
           {
             id: "aw-2",
+            studentId: "stu-1",
             tierKey: "silver",
             tierName: "Silver",
             earnedSnapshot: 100,
@@ -172,6 +175,7 @@ describe("hasanatTierRepository", () => {
       txState.insertedRows = [
         {
           id: "aw-10",
+          studentId: "stu-1",
           tierKey: "bronze",
           tierName: "Bronze",
           earnedSnapshot: 50,
