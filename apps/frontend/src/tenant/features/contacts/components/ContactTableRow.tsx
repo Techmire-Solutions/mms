@@ -1,5 +1,5 @@
 import React from "react";
-import { motion } from "framer-motion";
+import { m } from "framer-motion";
 import { TableCell } from "@/components/ui/table";
 import { getDisplayName, type Contact, type ContactPreferences } from "@mms/shared";
 import { type useTranslation } from "@/hooks/useTranslation";
@@ -64,7 +64,7 @@ export const ContactTableRow = React.memo(function ContactTableRow({
   const rowMotion = useListRowMotion({ layout: "position", fade: true, duration: 0.1 });
 
   return (
-    <motion.tr
+    <m.tr
       {...rowMotion()}
       className={cn("hover:bg-muted/20 transition-colors group", isSelected && "bg-primary/5")}
     >
@@ -107,6 +107,6 @@ export const ContactTableRow = React.memo(function ContactTableRow({
           triggerClassName={MODULE_ROW_ACTIONS_TRIGGER_CLASS}
         />
       </TableCell>
-    </motion.tr>
+    </m.tr>
   );
 });

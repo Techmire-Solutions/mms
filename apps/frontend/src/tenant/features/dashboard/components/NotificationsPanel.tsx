@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { motion, AnimatePresence } from "framer-motion";
+import { m, AnimatePresence } from "framer-motion";
 import { Bell, X } from "lucide-react";
 import { useTranslation } from "@/hooks/useTranslation";
 import { useReducedMotion } from "@/hooks/useReducedMotion";
@@ -140,7 +140,7 @@ export function NotificationsPanel({ items, onOpen }: NotificationsPanelProps): 
               const meta = ICONS[notif.type] || ICONS.fee;
               const Icon = meta.icon;
               return (
-                <motion.article
+                <m.article
                   key={notif.id}
                   layout={!reducedMotion}
                   initial={reducedMotion ? false : { opacity: 0, height: 0 }}
@@ -195,7 +195,7 @@ export function NotificationsPanel({ items, onOpen }: NotificationsPanelProps): 
                   >
                     <X className="w-3.5 h-3.5" aria-hidden="true" />
                   </Button>
-                </motion.article>
+                </m.article>
               );
             })
           )}

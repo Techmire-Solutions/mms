@@ -1,5 +1,5 @@
 import React from "react";
-import { motion } from "framer-motion";
+import { m } from "framer-motion";
 import type { LucideIcon } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Card } from "@/components/ui/card";
@@ -57,7 +57,7 @@ export const StatCard = function StatCard({
   isActive = false,
 }: StatCardProps): React.JSX.Element {
   const theme = resolveAccent(accent);
-  const Comp = onClick ? motion.button : motion.div;
+  const Comp = onClick ? m.button : m.div;
   const buttonProps = onClick ? { type: "button" as const, "aria-pressed": isActive } : {};
   const isCompact = variant === "compact";
   const formattedValue = typeof value === "number" ? formatNumber(value) : value;

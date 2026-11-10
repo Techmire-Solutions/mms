@@ -231,7 +231,7 @@ describe("Static asset edge caching and Content-Encoding strategy", () => {
       },
     };
     setStaticAssetHeaders(htmlReply, "/dist/index.html");
-    expect(htmlHeaders["cache-control"]).toBe("no-cache, no-store, must-revalidate");
+    expect(htmlHeaders["cache-control"]).toBe("no-cache, must-revalidate");
     expect(htmlHeaders["pragma"]).toBe("no-cache");
     expect(htmlHeaders["vary"]).toBe("Accept-Encoding");
 
@@ -336,7 +336,7 @@ describe("Static asset edge caching and Content-Encoding strategy", () => {
       });
       expect(htmlRes.statusCode).toBe(200);
       expect(htmlRes.headers["content-encoding"]).toBe("br");
-      expect(htmlRes.headers["cache-control"]).toBe("no-cache, no-store, must-revalidate");
+      expect(htmlRes.headers["cache-control"]).toBe("no-cache, must-revalidate");
       expect(htmlRes.headers["pragma"]).toBe("no-cache");
     } finally {
       await app.close();

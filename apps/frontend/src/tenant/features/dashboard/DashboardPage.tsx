@@ -1,5 +1,5 @@
 import React from "react";
-import { motion, AnimatePresence } from "framer-motion";
+import { m, AnimatePresence } from "framer-motion";
 import { Settings, Printer } from "lucide-react";
 import { StatisticsGrid } from "@/tenant/features/dashboard/components/StatisticsGrid";
 import { DashboardRolePanel } from "@/tenant/features/dashboard/components/DashboardRolePanel";
@@ -137,7 +137,7 @@ export function DashboardPage() {
 
       <AnimatePresence>
         {canCustomize && isEditMode && isConfigReady && (
-          <motion.div
+          <m.div
             initial={reducedMotion ? false : { opacity: 0, height: 0, y: -20 }}
             animate={{ opacity: 1, height: "auto", y: 0 }}
             exit={reducedMotion ? undefined : { opacity: 0, height: 0, y: -20 }}
@@ -167,12 +167,12 @@ export function DashboardPage() {
               onReorderWidgets={handleReorderWidgets}
               onDone={() => setIsEditMode(false)}
             />
-          </motion.div>
+          </m.div>
         )}
       </AnimatePresence>
 
       <AnimatePresence mode="wait">
-        <motion.div
+        <m.div
           key={`metric-cards-${dashboardRole}`}
           initial={reducedMotion ? false : { opacity: 0 }}
           animate={{ opacity: 1 }}
@@ -218,7 +218,7 @@ export function DashboardPage() {
               </Button>
             </div>
           ) : null}
-        </motion.div>
+        </m.div>
       </AnimatePresence>
 
       <ErrorBoundary>
@@ -266,7 +266,7 @@ export function DashboardPage() {
       </ErrorBoundary>
 
       <AnimatePresence mode="wait">
-        <motion.div
+        <m.div
           key={`body-${dashboardRole}`}
           initial={reducedMotion ? false : { opacity: 0, y: 12 }}
           animate={{ opacity: 1, y: 0 }}
@@ -276,7 +276,7 @@ export function DashboardPage() {
           <ErrorBoundary>
             <DashboardRolePanel dashboardRole={dashboardRole} notifications={notifications} />
           </ErrorBoundary>
-        </motion.div>
+        </m.div>
       </AnimatePresence>
     </ModulePageShell>
   );

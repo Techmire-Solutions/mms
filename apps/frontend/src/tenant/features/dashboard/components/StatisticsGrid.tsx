@@ -1,5 +1,5 @@
 import React from "react";
-import { motion } from "framer-motion";
+import { m } from "framer-motion";
 import { Trash2, Plus, Pencil } from "lucide-react";
 import { useTranslation } from "@/hooks/useTranslation";
 import { Button } from "@/components/ui/button";
@@ -12,7 +12,7 @@ import type { StatItem } from "@/lib/dashboardWidgets";
 import { EmptyState } from "@/components/app/EmptyState";
 import { LayoutGrid } from "lucide-react";
 
-const MotionWidgetCard = motion.create(WidgetCard);
+const MotionWidgetCard = m.create(WidgetCard);
 
 export interface StatisticsGridProps {
   statItems: StatItem[];

@@ -1,5 +1,5 @@
 import React from "react";
-import { AnimatePresence, motion } from "framer-motion";
+import { AnimatePresence, m } from "framer-motion";
 import { ChevronLeft, ChevronRight, Loader2, UserPlus, X } from "lucide-react";
 import type { SystemUser } from "@mms/shared";
 import { FormModal } from "@/components/app/FormModal";
@@ -63,7 +63,7 @@ export function AddUserModal({
             }}
           >
             <AnimatePresence mode="wait">
-              <motion.div
+              <m.div
                 key={step}
                 initial={{ opacity: 0, x: 20 }}
                 animate={{ opacity: 1, x: 0 }}
@@ -73,7 +73,7 @@ export function AddUserModal({
                 {step === 1 && <Step1 form={form} setForm={setForm} errors={errors} />}
                 {step === 2 && <Step2 form={form} setForm={setForm} errors={errors} />}
                 {step === 3 && <Step3 form={form} setForm={setForm} errors={errors} />}
-              </motion.div>
+              </m.div>
             </AnimatePresence>
           </form>
           <div className="mt-6 flex w-full items-center justify-between gap-2">

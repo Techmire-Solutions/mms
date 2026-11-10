@@ -128,7 +128,11 @@ else
     [[ -n "$f" && -f "$f" ]] && FORMAT_FILES+=("$f")
   done <<< "$CHANGED_TEXT"
   if [[ "${#FORMAT_FILES[@]}" -gt 0 ]]; then
-    pnpm exec prettier --check --end-of-line auto --ignore-unknown "${FORMAT_FILES[@]}"
+    # Chunk args to avoid Windows command line length limits (8191 chars)
+    CHUNK_SIZE=40
+    for ((i=0; i<${#FORMAT_FILES[@]}; i+=CHUNK_SIZE)); do
+      pnpm exec prettier --check --end-of-line auto --ignore-unknown "${FORMAT_FILES[@]:i:CHUNK_SIZE}"
+    done
     note_ran "prettier"
   else
     note_skip "prettier(no-changes)"

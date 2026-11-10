@@ -1,5 +1,5 @@
 import React, { useMemo } from "react";
-import { motion } from "framer-motion";
+import { m } from "framer-motion";
 import { Download } from "lucide-react";
 import { formatDate } from "@mms/shared";
 import { useTranslation } from "@/hooks/useTranslation";
@@ -67,13 +67,13 @@ export function PlatformReports(): React.JSX.Element {
   );
 
   return (
-    <motion.div
+    <m.div
       variants={reducedMotion ? undefined : containerVariantsConsole}
       initial={reducedMotion ? false : "hidden"}
       animate="show"
       className="space-y-6 text-start"
     >
-      <motion.div
+      <m.div
         variants={reducedMotion ? undefined : itemVariants}
         className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-border/40 pb-4"
       >
@@ -110,8 +110,8 @@ export function PlatformReports(): React.JSX.Element {
             {t("platform.reports.exportCsv")}
           </Button>
         </div>
-      </motion.div>
-      <motion.div variants={reducedMotion ? undefined : itemVariants}>
+      </m.div>
+      <m.div variants={reducedMotion ? undefined : itemVariants}>
         <PlatformReportsMetrics
           totalWorkspaces={totalWorkspaces}
           activeWorkspaces={activeWorkspaces}
@@ -120,13 +120,13 @@ export function PlatformReports(): React.JSX.Element {
           isReady={metricsReady}
           isError={workspacesError}
         />
-      </motion.div>
+      </m.div>
 
-      <motion.div variants={reducedMotion ? undefined : itemVariants}>
+      <m.div variants={reducedMotion ? undefined : itemVariants}>
         <PlatformReportsGrowthChart workspaces={workspaces} />
-      </motion.div>
+      </m.div>
 
-      <motion.div variants={reducedMotion ? undefined : itemVariants}>
+      <m.div variants={reducedMotion ? undefined : itemVariants}>
         <PlatformReportsPieCharts
           totalWorkspaces={totalWorkspaces}
           activeWorkspaces={activeWorkspaces}
@@ -134,13 +134,13 @@ export function PlatformReports(): React.JSX.Element {
           verifyRequiredCount={verifyRequiredCount}
           verifyOptionalCount={verifyOptionalCount}
         />
-      </motion.div>
+      </m.div>
 
-      <motion.div variants={reducedMotion ? undefined : itemVariants}>
+      <m.div variants={reducedMotion ? undefined : itemVariants}>
         <PlatformReportsModuleAdoption />
-      </motion.div>
+      </m.div>
 
-      <motion.div variants={reducedMotion ? undefined : itemVariants}>
+      <m.div variants={reducedMotion ? undefined : itemVariants}>
         <PlatformReportsOperatorCard
           platformUser={platformUser}
           isSuperUser={isSuperUser}
@@ -150,7 +150,7 @@ export function PlatformReports(): React.JSX.Element {
           canAdmins={canAdmins}
           canSystem={canSystem}
         />
-      </motion.div>
-    </motion.div>
+      </m.div>
+    </m.div>
   );
 }

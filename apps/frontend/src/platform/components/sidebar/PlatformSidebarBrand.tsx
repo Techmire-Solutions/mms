@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { Link } from "react-router-dom";
 import { ShieldAlert, X } from "lucide-react";
-import { motion, AnimatePresence } from "framer-motion";
+import { m, AnimatePresence } from "framer-motion";
 import { useTranslation } from "@/hooks/useTranslation";
 import { Button } from "@shared/ui";
 import { ROUTES } from "@/lib/config/routes";
@@ -48,7 +48,7 @@ export function PlatformSidebarBrand({
         </div>
         <AnimatePresence>
           {(isMobile || !collapsed) && (
-            <motion.div
+            <m.div
               initial={reducedMotion ? false : { opacity: 0, width: 0 }}
               animate={{ opacity: 1, width: "auto" }}
               exit={reducedMotion ? undefined : { opacity: 0, width: 0 }}
@@ -60,7 +60,7 @@ export function PlatformSidebarBrand({
               <span className="text-2xs font-mono text-sidebar-muted-foreground uppercase tracking-wider leading-tight mt-0.5">
                 {t("platform.consoleTitle")}
               </span>
-            </motion.div>
+            </m.div>
           )}
         </AnimatePresence>
       </Link>

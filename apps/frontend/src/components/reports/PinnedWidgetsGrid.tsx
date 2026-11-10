@@ -1,6 +1,6 @@
 import type React from "react";
 import { LayoutDashboard, Pencil, Pin, PinOff, Trash2 } from "lucide-react";
-import { motion } from "framer-motion";
+import { m } from "framer-motion";
 import type { AppTranslationKey } from "@mms/shared";
 import { Button } from "@/components/ui/button";
 import { EmptyState } from "@/components/app/EmptyState";
@@ -70,7 +70,7 @@ export function PinnedWidgetsGrid({
       {filteredWidgets.map((widget) => {
         const typeLabelKey = WIDGET_TYPE_LABEL_KEYS[widget.widgetType || "kpi"];
         return (
-          <motion.div
+          <m.div
             key={widget.id}
             initial={{ opacity: 0, scale: 0.98 }}
             animate={{ opacity: 1, scale: 1 }}
@@ -138,7 +138,7 @@ export function PinnedWidgetsGrid({
             </div>
 
             <ErrorBoundary>{renderWidget(widget, collections)}</ErrorBoundary>
-          </motion.div>
+          </m.div>
         );
       })}
     </div>

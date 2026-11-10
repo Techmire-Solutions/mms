@@ -1,4 +1,4 @@
-import { AnimatePresence, motion } from "framer-motion";
+import { AnimatePresence, m } from "framer-motion";
 import { UploadCloud, Wifi, WifiOff } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -21,7 +21,7 @@ export function MarkAttendanceOfflineBanner({
   return (
     <AnimatePresence>
       {offline && (
-        <motion.div
+        <m.div
           initial={{ height: 0, opacity: 0 }}
           animate={{ height: "auto", opacity: 1 }}
           exit={{ height: 0, opacity: 0 }}
@@ -53,10 +53,10 @@ export function MarkAttendanceOfflineBanner({
               </Button>
             }
           />
-        </motion.div>
+        </m.div>
       )}
       {!offline && queue.length > 0 && (
-        <motion.div
+        <m.div
           initial={{ height: 0, opacity: 0 }}
           animate={{ height: "auto", opacity: 1 }}
           exit={{ height: 0, opacity: 0 }}
@@ -76,7 +76,7 @@ export function MarkAttendanceOfflineBanner({
           >
             <UploadCloud className="w-3 h-3" aria-hidden="true" /> {t("attendance.mark.syncNow")}
           </Button>
-        </motion.div>
+        </m.div>
       )}
     </AnimatePresence>
   );

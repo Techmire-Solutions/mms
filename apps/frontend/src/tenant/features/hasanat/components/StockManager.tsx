@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { motion } from "framer-motion";
+import { m } from "framer-motion";
 import { Plus, Package } from "lucide-react";
 import { type Denomination, type StockBatch } from "@/lib/data/hasanatData";
 import { Button } from "@/components/ui/button";
@@ -122,7 +122,7 @@ export function StockManager({
                   const batchPercentage =
                     batch.quantity > 0 ? Math.round((batch.remaining / batch.quantity) * 100) : 0;
                   return (
-                    <motion.div
+                    <m.div
                       key={batch.id}
                       initial={{ opacity: 0 }}
                       animate={{ opacity: 1 }}
@@ -155,7 +155,7 @@ export function StockManager({
                           {t("hasanat.stock.pctLeft", { pct: batchPercentage })}
                         </p>
                       </div>
-                    </motion.div>
+                    </m.div>
                   );
                 })}
               </div>

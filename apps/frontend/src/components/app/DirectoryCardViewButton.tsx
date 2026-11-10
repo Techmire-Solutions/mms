@@ -1,11 +1,11 @@
 import React from "react";
-import { motion } from "framer-motion";
+import { m } from "framer-motion";
 import { Eye } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useReducedMotion } from "@/hooks/useReducedMotion";
 import { cn } from "@/lib/utils";
 
-const MotionButton = motion.create(Button);
+const MotionButton = m.create(Button);
 
 export interface EntityCardViewButtonProps {
   label: string;

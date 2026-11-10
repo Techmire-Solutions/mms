@@ -70,7 +70,14 @@ export function setStaticAssetHeaders(reply: HeaderTarget, filePath: string): vo
   }
 
   // 3. Application shell entry & manifest files (index.html, site.webmanifest, manifest.json, sw.js)
-  if (/(?:^|[\\/])(?:index\.html|site\.webmanifest|manifest\.json|sw\.js)$/i.test(cleanPath)) {
+  if (/(?:^|[\\/])(?:index\.html)$/i.test(cleanPath)) {
+    reply.header("Cache-Control", "no-cache, must-revalidate");
+    reply.header("Pragma", "no-cache");
+    reply.header("Vary", "Accept-Encoding");
+    return;
+  }
+
+  if (/(?:^|[\\/])(?:site\.webmanifest|manifest\.json|sw\.js)$/i.test(cleanPath)) {
     reply.header("Cache-Control", "no-cache, no-store, must-revalidate");
     reply.header("Pragma", "no-cache");
     reply.header("Vary", "Accept-Encoding");

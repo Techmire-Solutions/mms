@@ -151,4 +151,40 @@ describe("tenantWebSocket", () => {
 
     globalThis.WebSocket = originalWS;
   });
+
+  it("closes socket on pagehide and reconnects on pageshow for bfcache compatibility", async () => {
+    const createdSockets: MockWebSocket[] = [];
+    class MockWebSocket extends EventTarget {
+      readyState = 1;
+      url = "";
+      closeCalls: Array<{ code?: number; reason?: string }> = [];
+      constructor(url: string) {
+        super();
+        this.url = url;
+        createdSockets.push(this);
+      }
+      close(code?: number, reason?: string) {
+        this.readyState = 3;
+        this.closeCalls.push({ code, reason });
+      }
+    }
+    const originalWS = globalThis.WebSocket;
+    // @ts-expect-error Mocking WebSocket constructor for test
+    globalThis.WebSocket = MockWebSocket;
+    const { connectTenantDatabaseSocket } = await import("@/lib/tenantWebSocket");
+    const disconnect = connectTenantDatabaseSocket({ onDatabaseUpdate: () => {} });
+    expect(createdSockets).toHaveLength(1);
+
+    // pagehide closes the socket
+    window.dispatchEvent(new Event("pagehide"));
+    expect(createdSockets[0].readyState).toBe(3);
+    expect(createdSockets[0].closeCalls[0]?.reason).toContain("bfcache");
+
+    // pageshow reconnects
+    window.dispatchEvent(new Event("pageshow"));
+    expect(createdSockets).toHaveLength(2);
+
+    disconnect();
+    globalThis.WebSocket = originalWS;
+  });
 });

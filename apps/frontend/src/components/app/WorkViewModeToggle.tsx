@@ -1,6 +1,6 @@
 import React from "react";
 import { LayoutGrid, Table } from "lucide-react";
-import { motion } from "framer-motion";
+import { m } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import { useTranslation } from "@/hooks/useTranslation";
 import { useReducedMotion } from "@/hooks/useReducedMotion";
@@ -69,7 +69,7 @@ export const WorkViewModeToggle = function WorkViewModeToggle({
             )}
           >
             {isSelected && (
-              <motion.div
+              <m.div
                 layoutId={reducedMotion ? undefined : activePillLayoutId}
                 className="absolute inset-0 rounded-lg bg-primary shadow-xs -z-elevated"
                 transition={

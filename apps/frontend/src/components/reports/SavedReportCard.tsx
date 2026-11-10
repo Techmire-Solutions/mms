@@ -1,6 +1,6 @@
 import React from "react";
 import { Bookmark, Clock, Play, Trash2, User } from "lucide-react";
-import { motion } from "framer-motion";
+import { m } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { StatusBadge } from "@/components/app/StatusBadge";
@@ -11,7 +11,7 @@ import { useReducedMotion } from "@/hooks/useReducedMotion";
 import { useDateFormat } from "@/lib/contexts/DateFormatContext";
 import { SAVED_REPORT_CATEGORY_BADGE_CLS } from "@/components/reports/savedReportsConstants";
 
-const MotionCard = motion.create(Card);
+const MotionCard = m.create(Card);
 
 export interface SavedReportCardProps {
   report: GenericSavedReport;

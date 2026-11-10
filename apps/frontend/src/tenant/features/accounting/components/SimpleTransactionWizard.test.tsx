@@ -35,13 +35,28 @@ vi.mock("@/tenant/features/accounting/hooks/useVoucherNumbering", async (importO
   };
 });
 
-vi.mock("framer-motion", () => ({
-  motion: {
-    div: ({ children, ...props }: React.ComponentProps<"div">) => <div {...props}>{children}</div>,
-    tr: ({ children, ...props }: React.ComponentProps<"tr">) => <tr {...props}>{children}</tr>,
-  },
-  AnimatePresence: ({ children }: { children?: React.ReactNode }) => <>{children}</>,
-}));
+vi.mock("framer-motion", () => {
+  const comp = ({ children, ...props }: React.ComponentProps<"div">) => (
+    <div {...props}>{children}</div>
+  );
+  const trComp = ({ children, ...props }: React.ComponentProps<"tr">) => (
+    <tr {...props}>{children}</tr>
+  );
+  const mObj = new Proxy(
+    {},
+    {
+      get: (_target, prop) => (prop === "tr" ? trComp : comp),
+    },
+  );
+  return {
+    m: mObj,
+    motion: {
+      div: comp,
+      tr: trComp,
+    },
+    AnimatePresence: ({ children }: { children?: React.ReactNode }) => <>{children}</>,
+  };
+});
 
 vi.mock("@/lib/contexts/AuthContext", () => ({
   useAuth: () => ({ user: { name: "Amina Accountant" } }),

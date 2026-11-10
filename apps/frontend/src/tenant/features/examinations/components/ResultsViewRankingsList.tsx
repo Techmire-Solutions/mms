@@ -1,5 +1,5 @@
 import React from "react";
-import { motion } from "framer-motion";
+import { m } from "framer-motion";
 import { Trophy, Award } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -58,7 +58,7 @@ export function ResultsViewRankingsList({
       ) : (
         <div className={cn("divide-y divide-border/50", CARD_STRIPE_INSET)} role="list">
           {rankedResults.map((rankedResult) => (
-            <motion.div
+            <m.div
               key={rankedResult.id}
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
@@ -167,7 +167,7 @@ export function ResultsViewRankingsList({
                   <Award className="w-3 h-3" aria-hidden="true" /> {t("examinations.certificate")}
                 </Button>
               )}
-            </motion.div>
+            </m.div>
           ))}
         </div>
       )}

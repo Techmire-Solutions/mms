@@ -1,5 +1,5 @@
 import type { JSX } from "react";
-import { motion } from "framer-motion";
+import { m } from "framer-motion";
 import { GripVertical, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useTranslation } from "@/hooks/useTranslation";
@@ -39,7 +39,7 @@ export function DraggableField({
   const reducedMotion = useReducedMotion();
 
   return (
-    <motion.div
+    <m.div
       layout={!reducedMotion}
       initial={reducedMotion ? false : { opacity: 0, y: -4 }}
       animate={{ opacity: 1, y: 0 }}
@@ -85,6 +85,6 @@ export function DraggableField({
           <X className="w-3 h-3" />
         </Button>
       </div>
-    </motion.div>
+    </m.div>
   );
 }

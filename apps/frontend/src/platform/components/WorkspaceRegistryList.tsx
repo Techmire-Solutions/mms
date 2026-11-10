@@ -1,6 +1,6 @@
 import React from "react";
 import { ArrowRight, ExternalLink } from "lucide-react";
-import { motion, AnimatePresence } from "framer-motion";
+import { m, AnimatePresence } from "framer-motion";
 import type { AppTranslationKey, PublicWorkspaceSummary } from "@mms/shared";
 import { ROUTES } from "@/lib/config/routes";
 import { getAppDomain, tenantUrl } from "@/lib/config/tenantConfig";
@@ -60,7 +60,7 @@ export default function WorkspaceRegistryList({
       <SectionLabel as="p" weight="semibold" className="text-center">
         {t(headingKey)}
       </SectionLabel>
-      <motion.ul
+      <m.ul
         variants={reducedMotion ? undefined : containerVariants}
         initial={reducedMotion ? false : "hidden"}
         animate={reducedMotion ? undefined : "show"}
@@ -78,7 +78,7 @@ export default function WorkspaceRegistryList({
             />
           ))}
         </AnimatePresence>
-      </motion.ul>
+      </m.ul>
       <p className="flex items-center justify-center gap-1.5 pt-1 text-center text-xs font-medium text-muted-foreground">
         <ExternalLink className="h-3.5 w-3.5" aria-hidden />
         {t("apex.opensSignInHint")}
@@ -105,7 +105,7 @@ const RegistryWorkspaceRow = function RegistryWorkspaceRow({
   const actionLabel = t(actionLabelKey, { name: workspace.madrasaName });
 
   return (
-    <motion.li variants={reducedMotion ? undefined : cardVariants} layout={!reducedMotion}>
+    <m.li variants={reducedMotion ? undefined : cardVariants} layout={!reducedMotion}>
       <a
         href={targetUrl}
         className={cn(
@@ -151,6 +151,6 @@ const RegistryWorkspaceRow = function RegistryWorkspaceRow({
           />
         </div>
       </a>
-    </motion.li>
+    </m.li>
   );
 };

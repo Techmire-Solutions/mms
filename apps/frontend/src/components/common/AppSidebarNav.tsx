@@ -1,7 +1,7 @@
 import React from "react";
 import { Link } from "react-router-dom";
 import { ChevronRight } from "lucide-react";
-import { motion, AnimatePresence } from "framer-motion";
+import { m, AnimatePresence } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import { SidebarNavItem } from "@/components/app/SidebarNavItem";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
@@ -95,7 +95,7 @@ export function AppSidebarNav({
         }`}
       >
         {sub.active && (
-          <motion.div
+          <m.div
             layoutId={reducedMotion ? undefined : `${layoutId}-sub`}
             className="absolute start-0 top-1/2 h-3 w-0.75 -translate-x-full -translate-y-1/2 rounded-e-full bg-sidebar-primary rtl:translate-x-full"
             transition={reducedMotion ? undefined : { type: "spring", stiffness: 300, damping: 30 }}
@@ -131,14 +131,14 @@ export function AppSidebarNav({
             />
             <AnimatePresence>
               {!collapsed && (
-                <motion.span
+                <m.span
                   initial={{ opacity: 0, width: 0 }}
                   animate={{ opacity: 1, width: "auto" }}
                   exit={{ opacity: 0, width: 0 }}
                   className="text-sm font-medium overflow-hidden whitespace-nowrap"
                 >
                   {group.label}
-                </motion.span>
+                </m.span>
               )}
             </AnimatePresence>
           </div>
@@ -156,7 +156,7 @@ export function AppSidebarNav({
 
         <AnimatePresence initial={false}>
           {group.open && !collapsed && (
-            <motion.div
+            <m.div
               initial={{ height: 0, opacity: 0 }}
               animate={{ height: "auto", opacity: 1 }}
               exit={{ height: 0, opacity: 0 }}
@@ -164,7 +164,7 @@ export function AppSidebarNav({
               className="overflow-hidden space-y-1 border-s border-sidebar-border/40 ps-7 ms-5"
             >
               {group.items.map(renderSubLink)}
-            </motion.div>
+            </m.div>
           )}
         </AnimatePresence>
       </div>

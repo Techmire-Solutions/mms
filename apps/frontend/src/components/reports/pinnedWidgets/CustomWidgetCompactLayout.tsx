@@ -1,5 +1,5 @@
 import React from "react";
-import { motion } from "framer-motion";
+import { m } from "framer-motion";
 import { cn } from "@/lib/utils";
 import { resolveWidgetTitle } from "@/lib/dashboardWidgets";
 import { isComposedWidgetType } from "@/components/dashboard-widgets/registry";
@@ -54,7 +54,7 @@ export function CustomWidgetCompactLayout({
     if (!computedCard) return <></>;
 
     return (
-      <motion.button
+      <m.button
         whileHover={{ scale: 1.04, y: -2 }}
         whileTap={{ scale: 0.96 }}
         transition={{ type: "spring", stiffness: 450, damping: 20 }}
@@ -75,7 +75,7 @@ export function CustomWidgetCompactLayout({
             t,
           )}
         </SectionLabel>
-      </motion.button>
+      </m.button>
     );
   }
 
@@ -172,7 +172,7 @@ function CompactMetricButton({
   isProgress?: boolean;
 }): React.JSX.Element {
   return (
-    <motion.button
+    <m.button
       whileHover={{ scale: 1.04, y: -2 }}
       whileTap={{ scale: 0.96 }}
       transition={{ type: "spring", stiffness: 450, damping: 20 }}
@@ -208,6 +208,6 @@ function CompactMetricButton({
           t,
         )}
       </SectionLabel>
-    </motion.button>
+    </m.button>
   );
 }

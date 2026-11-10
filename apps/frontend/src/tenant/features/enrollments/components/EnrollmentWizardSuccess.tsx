@@ -1,5 +1,5 @@
 import React from "react";
-import { motion } from "framer-motion";
+import { m } from "framer-motion";
 import { CheckCircle2 } from "lucide-react";
 import type { TranslationFunction } from "@/lib/contexts/TranslationContext";
 import type { Student } from "@/lib/data/studentsData";
@@ -17,7 +17,7 @@ export function EnrollmentWizardSuccess({
   session,
 }: EnrollmentWizardSuccessProps): React.JSX.Element {
   return (
-    <motion.div
+    <m.div
       initial={{ opacity: 0, scale: 0.96 }}
       animate={{ opacity: 1, scale: 1 }}
       className="flex flex-col items-center justify-center py-16 text-center px-6"
@@ -37,6 +37,6 @@ export function EnrollmentWizardSuccess({
       <p className="text-xs text-muted-foreground mt-0.5">
         {t("enrollments.wizard.submittedHint")}
       </p>
-    </motion.div>
+    </m.div>
   );
 }

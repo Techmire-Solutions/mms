@@ -1,7 +1,7 @@
 import React from "react";
 import { Link, useLocation } from "react-router-dom";
 import { ChevronRight } from "lucide-react";
-import { motion, AnimatePresence } from "framer-motion";
+import { m, AnimatePresence } from "framer-motion";
 import { useTranslation } from "@/hooks/useTranslation";
 import { Button } from "@/components/ui/button";
 import type { NavItem } from "@/lib/config/navConfig";
@@ -67,7 +67,7 @@ export function MobileSidebarNavItems({
 
               <AnimatePresence initial={false}>
                 {isMenuOpen && (
-                  <motion.div
+                  <m.div
                     id={subMenuId}
                     initial={{ height: 0, opacity: 0 }}
                     animate={{ height: "auto", opacity: 1 }}
@@ -94,7 +94,7 @@ export function MobileSidebarNavItems({
                           }`}
                         >
                           {isSubActive && (
-                            <motion.div
+                            <m.div
                               layoutId="mobile-sidebar-indicator-sub"
                               className="absolute start-0 top-1/2 h-3 w-0.75 -translate-x-full -translate-y-1/2 rounded-e-full bg-sidebar-primary rtl:translate-x-full"
                               transition={{ type: "spring", stiffness: 300, damping: 30 }}
@@ -107,7 +107,7 @@ export function MobileSidebarNavItems({
                         </Link>
                       );
                     })}
-                  </motion.div>
+                  </m.div>
                 )}
               </AnimatePresence>
             </div>
@@ -131,7 +131,7 @@ export function MobileSidebarNavItems({
             }`}
           >
             {isActive && (
-              <motion.div
+              <m.div
                 layoutId="mobile-sidebar-indicator"
                 className="absolute start-0 top-1/2 -translate-y-1/2 w-0.75 h-5 bg-sidebar-primary rounded-e-full"
                 transition={{ type: "spring", stiffness: 300, damping: 30 }}

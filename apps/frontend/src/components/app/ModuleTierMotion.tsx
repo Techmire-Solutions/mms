@@ -1,5 +1,5 @@
 import type React from "react";
-import { motion } from "framer-motion";
+import { m } from "framer-motion";
 import { useReducedMotion } from "@/hooks/useReducedMotion";
 
 interface ModuleTierMotionProps {
@@ -18,7 +18,7 @@ export function ModuleTierMotion({
 }: ModuleTierMotionProps): React.JSX.Element {
   const reducedMotion = useReducedMotion();
   return (
-    <motion.div
+    <m.div
       key={tier}
       initial={reducedMotion ? false : { opacity: 0, y: 8 }}
       animate={{ opacity: 1, y: 0 }}
@@ -28,6 +28,6 @@ export function ModuleTierMotion({
       aria-busy={ariaBusy}
     >
       {children}
-    </motion.div>
+    </m.div>
   );
 }

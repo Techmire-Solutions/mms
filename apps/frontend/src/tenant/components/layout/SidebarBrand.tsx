@@ -1,6 +1,6 @@
 import React from "react";
 import { Link } from "react-router-dom";
-import { motion, AnimatePresence } from "framer-motion";
+import { m, AnimatePresence } from "framer-motion";
 import { useBranding } from "@/tenant/hooks/useBranding";
 import { getInitials } from "@mms/shared";
 import { useTranslation } from "@/hooks/useTranslation";
@@ -30,7 +30,7 @@ export function SidebarBrand({ collapsed }: SidebarBrandProps): React.JSX.Elemen
         />
         <AnimatePresence>
           {!collapsed && (
-            <motion.div
+            <m.div
               initial={{ opacity: 0, width: 0 }}
               animate={{ opacity: 1, width: "auto" }}
               exit={{ opacity: 0, width: 0 }}
@@ -39,7 +39,7 @@ export function SidebarBrand({ collapsed }: SidebarBrandProps): React.JSX.Elemen
               <span className="text-sidebar-foreground font-semibold text-sm tracking-wide">
                 {branding.madrasaName || t("entry.productName")}
               </span>
-            </motion.div>
+            </m.div>
           )}
         </AnimatePresence>
       </Link>

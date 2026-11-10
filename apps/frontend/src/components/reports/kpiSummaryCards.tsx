@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { motion } from "framer-motion";
+import { m } from "framer-motion";
 import { Plus } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useTranslation } from "@/hooks/useTranslation";
@@ -72,7 +72,7 @@ export function KPICardsGrid({ cards, onAddCustom }: KPICardsGridProps): JSX.Ele
         const trend = TREND[kpi.trend];
         const Icon = kpi.icon;
         return (
-          <motion.article
+          <m.article
             key={kpi.id}
             initial={reducedMotion ? false : { opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
@@ -118,7 +118,7 @@ export function KPICardsGrid({ cards, onAddCustom }: KPICardsGridProps): JSX.Ele
               </div>
               <SubtextDisplay text={kpi.sub} />
             </footer>
-          </motion.article>
+          </m.article>
         );
       })}
       <Button

@@ -1,6 +1,6 @@
 import React from "react";
 import { Waypoints } from "lucide-react";
-import { motion } from "framer-motion";
+import { m } from "framer-motion";
 import { useTranslation } from "@/hooks/useTranslation";
 import { useReducedMotion } from "@/hooks/useReducedMotion";
 import { ModulePageShell } from "@/components/app/ModulePageShell";
@@ -22,16 +22,16 @@ export default function PlatformErdPage(): React.JSX.Element {
       headerTitle={t("platform.erdTitle")}
       headerSubtitle={t("platform.erdSubtitle")}
     >
-      <motion.div
+      <m.div
         variants={containerVariants}
         initial={reducedMotion ? false : "hidden"}
         animate="show"
         className="space-y-6"
       >
-        <motion.div variants={itemVariants}>
+        <m.div variants={itemVariants}>
           <ErdExplorer />
-        </motion.div>
-      </motion.div>
+        </m.div>
+      </m.div>
     </ModulePageShell>
   );
 }

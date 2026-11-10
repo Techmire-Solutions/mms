@@ -1,7 +1,7 @@
 import React from "react";
 import { Link } from "react-router-dom";
 import { Radio, Globe } from "lucide-react";
-import { motion } from "framer-motion";
+import { m } from "framer-motion";
 import { useTranslation } from "@/hooks/useTranslation";
 import { useReducedMotion } from "@/hooks/useReducedMotion";
 import { Button } from "@shared/ui";
@@ -28,7 +28,7 @@ export function PlatformDashboardBanner({
   const reducedMotion = useReducedMotion();
 
   return (
-    <motion.div
+    <m.div
       variants={reducedMotion ? undefined : itemVariants}
       className={cn(WORK_SURFACE, "p-6 sm:p-8 relative overflow-hidden")}
     >
@@ -79,6 +79,6 @@ export function PlatformDashboardBanner({
           </div>
         </div>
       </div>
-    </motion.div>
+    </m.div>
   );
 }

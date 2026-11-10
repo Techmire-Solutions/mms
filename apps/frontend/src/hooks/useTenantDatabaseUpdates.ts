@@ -10,6 +10,7 @@ import {
 } from "@/lib/backgroundJobs/backgroundJobStore";
 import { fetchBackgroundJob } from "@/lib/backgroundJobs/pollBackgroundJob";
 import { reportClientError } from "@/lib/clientErrorReporting";
+import { runAfterFirstPaint } from "@/lib/runAfterFirstPaint";
 
 let invalidateModulePromise: Promise<typeof import("@/lib/tenant/invalidateModuleQueries")> | null =
   null;
@@ -90,51 +91,59 @@ export function useTenantDatabaseUpdates(): void {
   useEffect(() => {
     if (!isAuthenticated || !authChecked) return;
 
-    return connectTenantDatabaseSocket({
-      onDatabaseUpdate: (message) => {
-        if (message.type === "object" && MODULE_ACCESS_INVALIDATION_KEYS.has(message.key)) {
-          void queryClient.invalidateQueries({ queryKey: MODULE_ACCESS_QUERY_KEY });
-          return;
-        }
-        if (message.type !== "collection") return;
-        scheduleInvalidate(message.key);
-      },
+    let disconnect: (() => void) | undefined;
+    const cancelDeferred = runAfterFirstPaint(() => {
+      disconnect = connectTenantDatabaseSocket({
+        onDatabaseUpdate: (message) => {
+          if (message.type === "object" && MODULE_ACCESS_INVALIDATION_KEYS.has(message.key)) {
+            void queryClient.invalidateQueries({ queryKey: MODULE_ACCESS_QUERY_KEY });
+            return;
+          }
+          if (message.type !== "collection") return;
+          scheduleInvalidate(message.key);
+        },
 
-      onJobEvent: (message: BackgroundJobEventMessage) => {
-        // Optimistically patch local job state to avoid hammering the backend on rapid progress events
-        const patched = patchLocalBackgroundJobOnly(message.jobId, {
-          status:
-            message.event === "job-progress"
-              ? "running"
-              : message.event === "job-failed"
-                ? "failed"
-                : "completed",
-          progress: message.progress,
-          hasDownload: message.hasDownload,
-          error: message.error,
-          completedAt: message.completedAt,
-        });
+        onJobEvent: (message: BackgroundJobEventMessage) => {
+          // Optimistically patch local job state to avoid hammering the backend on rapid progress events
+          const patched = patchLocalBackgroundJobOnly(message.jobId, {
+            status:
+              message.event === "job-progress"
+                ? "running"
+                : message.event === "job-failed"
+                  ? "failed"
+                  : "completed",
+            progress: message.progress,
+            hasDownload: message.hasDownload,
+            error: message.error,
+            completedAt: message.completedAt,
+          });
 
-        // Only fetch if missing locally or if it's the final event (to ensure we don't miss final DB state)
-        if (!patched || message.event !== "job-progress") {
-          void fetchBackgroundJob(message.jobId)
-            .then((job) => {
-              if (job) upsertLocalBackgroundJob(job);
-            })
-            .catch((err) => {
-              reportClientError(err, {
-                context: "useTenantDatabaseUpdates.fetchJob",
-                jobId: message.jobId,
+          // Only fetch if missing locally or if it's the final event (to ensure we don't miss final DB state)
+          if (!patched || message.event !== "job-progress") {
+            void fetchBackgroundJob(message.jobId)
+              .then((job) => {
+                if (job) upsertLocalBackgroundJob(job);
+              })
+              .catch((err) => {
+                reportClientError(err, {
+                  context: "useTenantDatabaseUpdates.fetchJob",
+                  jobId: message.jobId,
+                });
               });
-            });
-        }
+          }
 
-        // On completion, invalidate the relevant module collection so directory
-        // refreshes automatically (e.g. after a CSV import or bulk operation).
-        if (message.event === "job-completed" && message.moduleId) {
-          scheduleInvalidate(message.moduleId);
-        }
-      },
+          // On completion, invalidate the relevant module collection so directory
+          // refreshes automatically (e.g. after a CSV import or bulk operation).
+          if (message.event === "job-completed" && message.moduleId) {
+            scheduleInvalidate(message.moduleId);
+          }
+        },
+      });
     });
+
+    return () => {
+      cancelDeferred();
+      disconnect?.();
+    };
   }, [authChecked, isAuthenticated, queryClient, scheduleInvalidate]);
 }

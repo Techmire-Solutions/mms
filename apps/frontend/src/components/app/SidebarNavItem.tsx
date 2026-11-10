@@ -1,6 +1,6 @@
 import React from "react";
 import { Link } from "react-router-dom";
-import { motion, AnimatePresence } from "framer-motion";
+import { m, AnimatePresence } from "framer-motion";
 import { cn } from "@/lib/utils";
 import { prefetchRoute } from "@/lib/routing/routePrefetch";
 
@@ -62,7 +62,7 @@ export function SidebarNavItem({
       )}
     >
       {active && layoutId ? (
-        <motion.div
+        <m.div
           layoutId={reducedMotion ? undefined : layoutId}
           className="absolute start-0 top-1/2 -translate-y-1/2 w-0.75 h-5 bg-sidebar-primary rounded-e-full"
           transition={reducedMotion ? undefined : { type: "spring", stiffness: 300, damping: 30 }}
@@ -77,14 +77,14 @@ export function SidebarNavItem({
       />
       <AnimatePresence>
         {showLabel ? (
-          <motion.span
+          <m.span
             initial={reducedMotion ? false : { opacity: 0, width: 0 }}
             animate={{ opacity: 1, width: "auto" }}
             exit={reducedMotion ? undefined : { opacity: 0, width: 0 }}
             className="text-sm font-medium overflow-hidden whitespace-nowrap"
           >
             {label}
-          </motion.span>
+          </m.span>
         ) : null}
       </AnimatePresence>
     </Link>

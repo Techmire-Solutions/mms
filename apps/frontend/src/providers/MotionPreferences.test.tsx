@@ -9,6 +9,8 @@ declare global {
 globalThis.IS_REACT_ACT_ENVIRONMENT = true;
 
 vi.mock("framer-motion", () => ({
+  LazyMotion: ({ children }: { children: React.ReactNode }) => <>{children}</>,
+  domAnimation: {},
   MotionConfig: ({
     children,
     reducedMotion,

@@ -1,5 +1,5 @@
 import React from "react";
-import { AnimatePresence, motion } from "framer-motion";
+import { AnimatePresence, m } from "framer-motion";
 import * as TabsPrimitive from "@radix-ui/react-tabs";
 import type { SubTab } from "@/components/app/SubTabBar";
 import { useReducedMotion } from "@/hooks/useReducedMotion";
@@ -114,7 +114,7 @@ export const FormModalTabs = function FormModalTabs<K extends string = string>({
 
       <div ref={tabContentRef} className="min-w-0 flex-1 overflow-y-auto pe-1">
         <AnimatePresence mode="wait">
-          <motion.div
+          <m.div
             key={String(activeTab)}
             initial={reducedMotion ? false : { opacity: 0, x: 6 }}
             animate={reducedMotion ? { opacity: 1 } : { opacity: 1, x: 0 }}
@@ -123,7 +123,7 @@ export const FormModalTabs = function FormModalTabs<K extends string = string>({
             className="h-full"
           >
             {children}
-          </motion.div>
+          </m.div>
         </AnimatePresence>
       </div>
     </TabsPrimitive.Root>

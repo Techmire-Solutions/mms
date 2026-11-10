@@ -1,4 +1,4 @@
-import { motion } from "framer-motion";
+import { m } from "framer-motion";
 import { SEMANTIC_BADGE } from "@/lib/ui/semanticTone";
 import type { TranslationFunction } from "@/lib/contexts/TranslationContext";
 import { type useMessageComposerState } from "@/hooks/useMessageComposerState";
@@ -6,7 +6,7 @@ import { EntityMessagingIconActions } from "@/components/app/EntityMessagingActi
 import { StatusBadge } from "@/components/app/StatusBadge";
 import { TableRow } from "@/components/ui/table";
 
-export const MotionTableRow = motion.create(TableRow);
+export const MotionTableRow = m.create(TableRow);
 
 export interface OutstandingFeeRow {
   id: string;

@@ -1,6 +1,6 @@
 import React from "react";
 import { Search } from "lucide-react";
-import { AnimatePresence, motion } from "framer-motion";
+import { AnimatePresence, m } from "framer-motion";
 import { useReducedMotion } from "@/hooks/useReducedMotion";
 import { useOverlayBehavior } from "@/hooks/useOverlayBehavior";
 import { Input } from "@/components/ui/input";
@@ -71,7 +71,7 @@ export function CommandPaletteModal({
         aria-modal="true"
         aria-label={ariaLabel}
       >
-        <motion.div
+        <m.div
           initial={reducedMotion ? false : { opacity: 0, scale: 0.96, y: -8 }}
           animate={{ opacity: 1, scale: 1, y: 0 }}
           exit={reducedMotion ? undefined : { opacity: 0, scale: 0.96, y: -8 }}
@@ -140,7 +140,7 @@ export function CommandPaletteModal({
                 ) : null)}
             </div>
           ) : null}
-        </motion.div>
+        </m.div>
       </div>
     </AnimatePresence>
   );

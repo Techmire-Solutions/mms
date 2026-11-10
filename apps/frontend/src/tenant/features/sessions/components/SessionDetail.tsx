@@ -3,7 +3,7 @@
  * @description Detail drawer for Session records (Classes, Timetable, Discounts, Budget, Events, Tabarruk).
  */
 import React, { useState } from "react";
-import { motion, AnimatePresence } from "framer-motion";
+import { m, AnimatePresence } from "framer-motion";
 import { GraduationCap, Wallet, UserCheck, Link2, History, Award, ArrowRight } from "lucide-react";
 import { DetailDrawerShell } from "@/components/app/DetailDrawerShell";
 import {
@@ -199,7 +199,7 @@ export const SessionDetail = function SessionDetail({
           </div>
         ) : (
           <AnimatePresence mode="wait">
-            <motion.section
+            <m.section
               key={tab}
               initial={{ opacity: 0, x: isRtl ? -8 : 8 }}
               animate={{ opacity: 1, x: 0 }}
@@ -214,7 +214,7 @@ export const SessionDetail = function SessionDetail({
                 canMutate={canMutate}
                 onEdit={() => onEdit(session)}
               />
-            </motion.section>
+            </m.section>
           </AnimatePresence>
         )}
       </div>

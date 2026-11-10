@@ -1,6 +1,7 @@
 {
   "name": "@mms/shared",
   "version": "1.0.0",
+  "description": "Shared domain models, types, Zod schemas, manifests, and utilities for MMS.",
   "private": true,
   "sideEffects": false,
   "type": "module",

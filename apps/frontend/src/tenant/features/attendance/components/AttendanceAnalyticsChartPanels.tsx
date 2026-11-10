@@ -1,6 +1,6 @@
 import { ReportChartCard } from "@/tenant/components/moduleReports";
 import { LegendChip } from "@/components/app/LegendChip";
-import { motion } from "framer-motion";
+import { m } from "framer-motion";
 import {
   AreaChart,
   Area,
@@ -45,7 +45,7 @@ export function AttendanceAnalyticsChartPanels({
 }: AttendanceAnalyticsChartPanelsProps): React.JSX.Element {
   return (
     <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-      <motion.div
+      <m.div
         initial={{ opacity: 0, y: 15 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.35, delay: 0.2, ease: "easeOut" }}
@@ -74,9 +74,9 @@ export function AttendanceAnalyticsChartPanels({
             />
           </BarChart>
         </ReportChartCard>
-      </motion.div>
+      </m.div>
 
-      <motion.div
+      <m.div
         initial={{ opacity: 0, y: 15 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.35, delay: 0.25, ease: "easeOut" }}
@@ -108,9 +108,9 @@ export function AttendanceAnalyticsChartPanels({
             />
           </AreaChart>
         </ReportChartCard>
-      </motion.div>
+      </m.div>
 
-      <motion.div
+      <m.div
         initial={{ opacity: 0, y: 15 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.35, delay: 0.3, ease: "easeOut" }}
@@ -133,9 +133,9 @@ export function AttendanceAnalyticsChartPanels({
             />
           </BarChart>
         </ReportChartCard>
-      </motion.div>
+      </m.div>
 
-      <motion.div
+      <m.div
         initial={{ opacity: 0, y: 15 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.35, delay: 0.35, ease: "easeOut" }}
@@ -176,7 +176,7 @@ export function AttendanceAnalyticsChartPanels({
             <Tooltip contentStyle={chartTooltipStyle()} />
           </PieChart>
         </ReportChartCard>
-      </motion.div>
+      </m.div>
     </div>
   );
 }

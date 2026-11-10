@@ -1,7 +1,7 @@
 import React from "react";
 import { Link } from "react-router-dom";
 import { Users, MapPin } from "lucide-react";
-import { motion } from "framer-motion";
+import { m } from "framer-motion";
 import type { SessionsReportTodaySession } from "@mms/shared";
 import { useSessionsReportAggregates } from "@/tenant/hooks/collections/sessions";
 import { WidgetCard } from "@/components/app/WidgetCard";
@@ -116,7 +116,7 @@ export default function SessionsTable({ title, items }: SessionsTableProps) {
           />
         ) : (
           paginatedSessions.map((session, sessionIndex) => (
-            <motion.article
+            <m.article
               key={session.id}
               initial={{ opacity: 0, x: -8 }}
               animate={{ opacity: 1, x: 0 }}
@@ -162,7 +162,7 @@ export default function SessionsTable({ title, items }: SessionsTableProps) {
                   <span className="tabular-nums">{session.students}</span>
                 </span>
               </div>
-            </motion.article>
+            </m.article>
           ))
         )}
       </div>

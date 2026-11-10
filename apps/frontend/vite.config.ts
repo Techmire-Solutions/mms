@@ -181,7 +181,7 @@ export default defineConfig({
     }) as PluginOption,
     VitePWA({
       registerType: "autoUpdate",
-      injectRegister: "auto",
+      injectRegister: false,
       manifest: false,
       workbox: {
         // Precache the shell only (plus the app-shell entry closure added by the

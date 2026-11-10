@@ -1,5 +1,5 @@
 import React, { useEffect, useRef } from "react";
-import { AnimatePresence, motion } from "framer-motion";
+import { AnimatePresence, m } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { useTranslation } from "@/hooks/useTranslation";
@@ -147,7 +147,7 @@ export function BulkActionDock({
   return (
     <AnimatePresence>
       {selectedCount > 0 && (
-        <motion.div
+        <m.div
           ref={dockRef}
           role="region"
           aria-label={ariaLabel ?? t("common.bulkActionsToolbar")}
@@ -195,7 +195,7 @@ export function BulkActionDock({
               {resolvedTrailing}
             </div>
           )}
-        </motion.div>
+        </m.div>
       )}
     </AnimatePresence>
   );

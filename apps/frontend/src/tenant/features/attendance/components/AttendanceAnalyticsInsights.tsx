@@ -3,7 +3,7 @@ import { cn } from "@/lib/utils";
 import { CARD_STRIPE_INSET } from "@/lib/ui/semanticTone";
 import { ProgressBar } from "@/components/app/ProgressBar";
 import { Alert } from "@/components/app/Alert";
-import { motion } from "framer-motion";
+import { m } from "framer-motion";
 import type { StudentRateEntry } from "@/tenant/features/attendance/hooks/useAttendanceAnalyticsModel";
 import type { TranslationFunction } from "@/lib/contexts/TranslationContext";
 
@@ -23,7 +23,7 @@ export function AttendanceAnalyticsInsights({
   return (
     <>
       {lowAttendance.length > 0 && (
-        <motion.div
+        <m.div
           initial={{ opacity: 0, scale: 0.98 }}
           animate={{ opacity: 1, scale: 1 }}
           transition={{ duration: 0.3, delay: 0.4 }}
@@ -45,10 +45,10 @@ export function AttendanceAnalyticsInsights({
               ))}
             </div>
           </Alert>
-        </motion.div>
+        </m.div>
       )}
 
-      <motion.div
+      <m.div
         initial={{ opacity: 0, y: 15 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.35, delay: 0.45, ease: "easeOut" }}
@@ -82,7 +82,7 @@ export function AttendanceAnalyticsInsights({
             ))}
           </div>
         </Card>
-      </motion.div>
+      </m.div>
     </>
   );
 }

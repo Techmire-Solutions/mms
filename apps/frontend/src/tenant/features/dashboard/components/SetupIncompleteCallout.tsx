@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { motion, AnimatePresence } from "framer-motion";
+import { m, AnimatePresence } from "framer-motion";
 import { ArrowRight, Building2, X } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { type BrandingSettings } from "@mms/shared";
@@ -67,7 +67,7 @@ export function SetupIncompleteCallout({
 
   return (
     <AnimatePresence>
-      <motion.div
+      <m.div
         initial={reducedMotion ? false : { opacity: 0, y: -8 }}
         animate={{ opacity: 1, y: 0 }}
         exit={reducedMotion ? undefined : { opacity: 0, y: -8 }}
@@ -109,7 +109,7 @@ export function SetupIncompleteCallout({
         >
           <X className="h-4 w-4" aria-hidden />
         </Button>
-      </motion.div>
+      </m.div>
     </AnimatePresence>
   );
 }

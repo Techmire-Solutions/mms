@@ -1,5 +1,5 @@
 import { PinOff, Trash2, Pencil } from "lucide-react";
-import { motion, AnimatePresence } from "framer-motion";
+import { m, AnimatePresence } from "framer-motion";
 import { useTranslation } from "@/hooks/useTranslation";
 import { useReducedMotion } from "@/hooks/useReducedMotion";
 import { ErrorBoundary } from "@/components/app/ErrorBoundary";
@@ -49,7 +49,7 @@ export function DashboardWidgetsGrid({
             }
           }
           return (
-            <motion.div
+            <m.div
               key={widget.id}
               layout={!reducedMotion}
               initial={reducedMotion ? false : { opacity: 0, scale: 0.95 }}
@@ -113,7 +113,7 @@ export function DashboardWidgetsGrid({
                   </Button>
                 </div>
               ) : null}
-            </motion.div>
+            </m.div>
           );
         })}
       </AnimatePresence>

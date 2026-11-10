@@ -7,6 +7,7 @@ import { isApexHost } from "@mms/shared/tenantUtils";
 import { getAppDomain } from "@/lib/config/tenantConfig";
 import { ErrorBoundary } from "@/components/app/ErrorBoundary";
 import { installChunkLoadRecovery } from "@/lib/chunkLoadRecovery";
+import { runAfterFirstPaint } from "@/lib/runAfterFirstPaint";
 
 // Hashed chunk names change on every deploy while the PWA service worker keeps
 // the tab on the current revision. A lazy route whose chunk vanished after a
@@ -14,10 +15,11 @@ import { installChunkLoadRecovery } from "@/lib/chunkLoadRecovery";
 // (throttled) instead. Registered before render so no dynamic import can race it.
 installChunkLoadRecovery();
 
-// Error reporting is non-interactive: initialize it without blocking first
-// paint. The Sentry SDK (~170KB) now lives behind the lazy
-// clientErrorReporting -> clientErrorReportingCore dynamic-import boundary.
-void import("@/lib/clientErrorReporting").then(({ initErrorReporting }) => initErrorReporting());
+// Error reporting is non-interactive: defer initialization until after first paint
+// so Sentry and its network setup do not contend with initial rendering.
+runAfterFirstPaint(() => {
+  void import("@/lib/clientErrorReporting").then(({ initErrorReporting }) => initErrorReporting());
+});
 
 void import("@/lib/documentFavicon").then(
   ({ applyPlatformDocumentFavicon, applyTenantDocumentFavicon }) => {
@@ -69,5 +71,7 @@ ReactDOM.createRoot(rootElement).render(
   import.meta.env.DEV ? <React.StrictMode>{app}</React.StrictMode> : app,
 );
 
-// The service worker is registered by vite-plugin-pwa (`injectRegister: 'auto'`,
-// which injects `/registerSW.js`). Do not register it a second time here.
+// Register service worker deferred after first paint instead of eager injectRegister
+import("@/lib/registerServiceWorkerDeferred").then(({ registerServiceWorkerDeferred }) => {
+  registerServiceWorkerDeferred();
+});

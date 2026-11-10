@@ -1,6 +1,6 @@
 import React from "react";
 import type { ChangeEvent, RefObject } from "react";
-import { motion, AnimatePresence } from "framer-motion";
+import { m, AnimatePresence } from "framer-motion";
 import type { Contact } from "@mms/shared";
 import { useReducedMotion } from "@/hooks/useReducedMotion";
 import { ContactDetailOverview } from "@/tenant/features/contacts/components/detail/ContactDetailOverview";
@@ -71,7 +71,7 @@ export function ContactDetailDrawerContent({
 
   return (
     <AnimatePresence mode="wait">
-      <motion.div
+      <m.div
         key={activeTab}
         role="tabpanel"
         id={`contact-detail-drawer-${activeTab}`}
@@ -119,7 +119,7 @@ export function ContactDetailDrawerContent({
             onRequestDelete={onRequestDelete}
           />
         )}
-      </motion.div>
+      </m.div>
     </AnimatePresence>
   );
 }

@@ -1,5 +1,5 @@
 import React, { type ElementType, type ReactNode } from "react";
-import { motion } from "framer-motion";
+import { m } from "framer-motion";
 import { cn } from "@/lib/utils";
 import { CardRemoveButton } from "@/components/app/FormCardChrome";
 import { FORM_CARD } from "@/components/ui/formStyles";
@@ -44,7 +44,7 @@ export function FormListFieldCard({
   const hasHeaderContent = Boolean(Icon || label || typeSelect || headerExtras);
 
   return (
-    <motion.div
+    <m.div
       key={id}
       initial={reducedMotion ? false : { opacity: 0, y: 10 }}
       animate={{ opacity: 1, y: 0 }}
@@ -86,6 +86,6 @@ export function FormListFieldCard({
         </div>
       ) : null}
       {children}
-    </motion.div>
+    </m.div>
   );
 }

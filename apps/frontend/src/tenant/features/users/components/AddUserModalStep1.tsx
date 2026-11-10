@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { motion } from "framer-motion";
+import { m } from "framer-motion";
 import { Phone, Mail, X } from "lucide-react";
 import {
   getDisplayName,
@@ -70,7 +70,7 @@ export function Step1({ form, setForm, errors }: AddUserStepProps): JSX.Element 
       </div>
 
       {form.contactId && form.name ? (
-        <motion.div
+        <m.div
           initial={{ opacity: 0, y: 6 }}
           animate={{ opacity: 1, y: 0 }}
           className="relative rounded-xl border border-primary/30 bg-primary/5 p-4 space-y-2.5"
@@ -138,7 +138,7 @@ export function Step1({ form, setForm, errors }: AddUserStepProps): JSX.Element 
               </p>
             ) : null}
           </div>
-        </motion.div>
+        </m.div>
       ) : null}
 
       <Field id="add-user-status" label={t("users.fieldStatus")}>

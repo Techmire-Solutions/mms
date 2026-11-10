@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { motion } from "framer-motion";
+import { m } from "framer-motion";
 import { Plus, Edit2, Trash2, ToggleLeft, ToggleRight } from "lucide-react";
 import { type Denomination } from "@/lib/data/hasanatData";
 import { Button } from "@/components/ui/button";
@@ -11,7 +11,7 @@ import { DenominationModal } from "@/tenant/features/hasanat/components/Denomina
 import { cn } from "@/lib/utils";
 import { CARD_STRIPE_BASE, CARD_STRIPE_INSET } from "@/lib/ui/semanticTone";
 
-const MotionCard = motion.create(Card);
+const MotionCard = m.create(Card);
 
 export interface DenominationsManagerProps {
   denoms: Denomination[];

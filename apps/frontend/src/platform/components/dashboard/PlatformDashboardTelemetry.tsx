@@ -1,7 +1,7 @@
 import React from "react";
 import { Activity, ArrowRight } from "lucide-react";
 import { Link } from "react-router-dom";
-import { motion } from "framer-motion";
+import { m } from "framer-motion";
 import { useReducedMotion } from "@/hooks/useReducedMotion";
 import { itemVariants } from "@/platform/lib/animations";
 import { useTranslation } from "@/hooks/useTranslation";
@@ -23,7 +23,7 @@ export function PlatformDashboardTelemetry(): React.JSX.Element | null {
   if (!canSystem) return null;
 
   return (
-    <motion.div
+    <m.div
       variants={reducedMotion ? undefined : itemVariants}
       initial={reducedMotion ? false : "hidden"}
       animate="show"
@@ -53,6 +53,6 @@ export function PlatformDashboardTelemetry(): React.JSX.Element | null {
           <ArrowRight className="ms-1.5 h-4 w-4" aria-hidden />
         </Link>
       </Button>
-    </motion.div>
+    </m.div>
   );
 }

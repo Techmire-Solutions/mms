@@ -1,5 +1,5 @@
 import React from "react";
-import { motion, AnimatePresence } from "framer-motion";
+import { m, AnimatePresence } from "framer-motion";
 import { ChevronDown } from "lucide-react";
 import { cn } from "@/lib/utils";
 import type { SubTab } from "@/components/app/SubTabBar";
@@ -116,7 +116,7 @@ export function SubTabBarAccordionVariant<K extends string>({
               </button>
               <AnimatePresence initial={false}>
                 {active ? (
-                  <motion.div
+                  <m.div
                     id={panelId}
                     initial={reducedMotion ? false : { height: 0, opacity: 0 }}
                     animate={reducedMotion ? { opacity: 1 } : { height: "auto", opacity: 1 }}
@@ -127,7 +127,7 @@ export function SubTabBarAccordionVariant<K extends string>({
                     className="overflow-hidden"
                   >
                     <div className="space-y-3 border-t border-border/50 px-3 py-3">{children}</div>
-                  </motion.div>
+                  </m.div>
                 ) : null}
               </AnimatePresence>
             </section>

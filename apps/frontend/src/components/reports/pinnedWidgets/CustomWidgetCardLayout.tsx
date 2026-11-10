@@ -1,6 +1,6 @@
 import React from "react";
 import { Users } from "lucide-react";
-import { motion } from "framer-motion";
+import { m } from "framer-motion";
 import { WORK_SURFACE } from "@/components/ui/formStyles";
 import { StatCardBody } from "@/components/app/StatCardBody";
 import { useReducedMotion } from "@/hooks/useReducedMotion";
@@ -23,7 +23,7 @@ export function CustomWidgetCardLayout({
   const reducedMotion = useReducedMotion();
 
   return (
-    <motion.div
+    <m.div
       layout={!reducedMotion}
       whileHover={reducedMotion ? undefined : { y: -4, scale: 1.015 }}
       transition={{ type: "spring", stiffness: 350, damping: 25 }}
@@ -48,6 +48,6 @@ export function CustomWidgetCardLayout({
         footer={computedCard.sub}
         trend={computedCard.trend}
       />
-    </motion.div>
+    </m.div>
   );
 }

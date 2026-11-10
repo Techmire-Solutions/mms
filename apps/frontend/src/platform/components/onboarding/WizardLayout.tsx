@@ -1,6 +1,6 @@
 import React, { type ReactNode } from "react";
 import { Link } from "react-router-dom";
-import { motion } from "framer-motion";
+import { m } from "framer-motion";
 import { X } from "lucide-react";
 import { useTranslation } from "@/hooks/useTranslation";
 import { useReducedMotion } from "@/hooks/useReducedMotion";
@@ -76,7 +76,7 @@ export default function WizardLayout({
         aria-valuemax={steps.length}
         aria-valuetext={stepLabel}
       >
-        <motion.div
+        <m.div
           className="h-full rounded-xs bg-gradient-to-r from-primary to-secondary"
           initial={false}
           animate={{ width: `${(currentStep / steps.length) * 100}%` }}
@@ -93,7 +93,7 @@ export default function WizardLayout({
           <WizardStepIndicator steps={steps} current={currentStep} ariaLabel={stepLabel} />
         </nav>
 
-        <motion.section
+        <m.section
           key={currentStep}
           initial={reducedMotion ? false : { opacity: 0, y: 8 }}
           animate={{ opacity: 1, y: 0 }}
@@ -115,7 +115,7 @@ export default function WizardLayout({
             ) : null}
           </header>
           <div className="px-6 py-6 sm:px-8 sm:py-7">{children}</div>
-        </motion.section>
+        </m.section>
       </main>
     </div>
   );

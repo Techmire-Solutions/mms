@@ -13,13 +13,17 @@ vi.mock("@/hooks/useWorkDirectoryViewMode", () => ({
   useWorkDirectoryViewMode: () => ({ viewMode: "table" }),
 }));
 
-vi.mock("framer-motion", () => ({
-  motion: {
-    div: ({ children, ...props }: { children?: React.ReactNode }) => (
-      <div {...props}>{children}</div>
-    ),
-  },
-}));
+vi.mock("framer-motion", () => {
+  const comp = ({ children, ...props }: { children?: React.ReactNode }) => (
+    <div {...props}>{children}</div>
+  );
+  return {
+    m: new Proxy({}, { get: () => comp }),
+    motion: {
+      div: comp,
+    },
+  };
+});
 
 describe("JournalEntryLinesEditor", () => {
   it("uses FormCollectionShell add-another chrome", () => {

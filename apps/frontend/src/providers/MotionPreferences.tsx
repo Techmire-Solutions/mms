@@ -1,9 +1,9 @@
 import React from "react";
-import { MotionConfig } from "framer-motion";
+import { MotionConfig, LazyMotion, domAnimation } from "framer-motion";
 
 /**
  * Global framer-motion policy: animations follow the OS `prefers-reduced-motion`
- * setting.
+ * setting and load animation features asynchronously via LazyMotion.
  *
  * It intentionally does **not** live in `AppProviders`: that module is part of the
  * entry closure, so mounting `MotionConfig` there pulled the whole framer-motion
@@ -16,5 +16,9 @@ import { MotionConfig } from "framer-motion";
  * `vendor-motion` chunk reappears in the precache.
  */
 export function MotionPreferences({ children }: { children: React.ReactNode }): React.JSX.Element {
-  return <MotionConfig reducedMotion="user">{children}</MotionConfig>;
+  return (
+    <LazyMotion features={domAnimation} strict={true}>
+      <MotionConfig reducedMotion="user">{children}</MotionConfig>
+    </LazyMotion>
+  );
 }

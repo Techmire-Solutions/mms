@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { AnimatePresence, motion } from "framer-motion";
+import { AnimatePresence, m } from "framer-motion";
 import { Check, Info } from "lucide-react";
 import {
   isRbacModuleEnabled,
@@ -95,7 +95,7 @@ export function RoleCard({ role, selected, onSelect }: RoleCardProps): JSX.Eleme
 
       <AnimatePresence>
         {showPerms && (
-          <motion.div
+          <m.div
             id={permsId}
             initial={reducedMotion ? false : { height: 0 }}
             animate={{ height: "auto" }}
@@ -119,7 +119,7 @@ export function RoleCard({ role, selected, onSelect }: RoleCardProps): JSX.Eleme
                   </div>
                 ))}
             </div>
-          </motion.div>
+          </m.div>
         )}
       </AnimatePresence>
     </div>

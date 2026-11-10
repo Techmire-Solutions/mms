@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { Card } from "@/components/ui/card";
 import { Filter, X, ChevronDown, ChevronUp } from "lucide-react";
-import { motion, AnimatePresence } from "framer-motion";
+import { m, AnimatePresence } from "framer-motion";
 import { DatePicker } from "@/components/app/DatePicker";
 import { SectionFilterField } from "@/components/common/SectionFilterField";
 import { Button } from "@/components/ui/button";
@@ -153,7 +153,7 @@ export function AttendanceFilters({
 
       <AnimatePresence>
         {open && (
-          <motion.div
+          <m.div
             id="filters-panel"
             initial={{ height: 0, opacity: 0 }}
             animate={{ height: "auto", opacity: 1 }}
@@ -226,7 +226,7 @@ export function AttendanceFilters({
                 />
               </Field>
             </div>
-          </motion.div>
+          </m.div>
         )}
       </AnimatePresence>
     </Card>

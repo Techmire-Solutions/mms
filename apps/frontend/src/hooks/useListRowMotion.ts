@@ -21,7 +21,7 @@ export type ListRowMotionProps = Pick<
 /**
  * Returns a function producing motion props for list/table rows, honoring
  * `prefers-reduced-motion`. Call once at the component top; invoke per row,
- * optionally with a stagger delay (seconds): `<motion.tr {...rowMotion(index * 0.04)} />`.
+ * optionally with a stagger delay (seconds): `<m.tr {...rowMotion(index * 0.04)} />`.
  * Drops `exit` — no `AnimatePresence` wraps these lists, so exit never fires.
  */
 export function useListRowMotion({
