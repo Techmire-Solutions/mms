@@ -149,6 +149,9 @@ export async function insertStudentAwards(
             updatedAt: new Date(),
           })),
         )
+        // Derived evidence: a concurrent/retried reconcile that already granted this live tier is a
+        // no-op, not a chunk-killing unique violation.
+        .onConflictDoNothing()
         .returning();
       inserted.push(...rows.map(toAward));
     }

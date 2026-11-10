@@ -7,6 +7,7 @@ import {
   QUEUE_SETTINGS,
   QUEUE_SESSIONS_ROLLOVER,
   DEFAULT_JOB_OPTIONS,
+  QUEUE_HASANAT_AWARDS,
   getBullMQConnectionOptions,
   getQueuePrefix,
 } from "./queueConfig.js";
@@ -121,6 +122,14 @@ export function resolveQueueNameForJob(moduleId: string, kind: string): string {
 
   if (normalizedModule === "sessions" && normalizedKind === "promote") {
     return QUEUE_SESSIONS_ROLLOVER;
+  }
+
+  // Points are the module's money: a 10-minute award/import must not occupy a shared export slot.
+  if (
+    normalizedModule === "hasanat" &&
+    (normalizedKind === "bulk-award" || normalizedKind === "import")
+  ) {
+    return QUEUE_HASANAT_AWARDS;
   }
 
   if (

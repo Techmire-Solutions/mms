@@ -133,6 +133,10 @@ export async function insertBatchDistributions(
             updatedAt: new Date(),
           })),
         )
+        // Idempotent by construction: a retried job (or a concurrent re-delivery) re-inserts the same
+        // `client_request_id` and the row is skipped instead of aborting the chunk. Without this a
+        // BullMQ retry after a committed attempt turned into a permanent unique-violation failure.
+        .onConflictDoNothing()
         .returning({ id: hasanatDistributions.id });
       insertedIds.push(...rows.map((row) => row.id));
     }

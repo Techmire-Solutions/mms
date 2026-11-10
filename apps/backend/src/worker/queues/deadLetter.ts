@@ -1,5 +1,6 @@
 import { logger } from "../../lib/logger.js";
 import { markJobPermanentlyFailed } from "../../services/backgroundJobWorkerService.js";
+import { recordAuditEventSafely } from "../../services/auditTrailService.js";
 import { failPromotionRunFromDlq } from "../../services/sessionRolloverFinalizer.js";
 import type { EnqueuedJobData } from "./index.js";
 
@@ -32,6 +33,24 @@ export async function handleDeadLetterJob(
   ).catch((err) => {
     logger.error({ jobId: jobData.jobId, err }, "Failed to record dead-letter job in DB");
   });
+
+  // Points are evidence: a permanently failed award/import must leave a trace in the audit chain,
+  // otherwise the operator sees a failed job with no record of what it was trying to credit.
+  if (jobData.moduleId.trim().toLowerCase() === "hasanat") {
+    await recordAuditEventSafely({
+      workspaceSubdomain: jobData.tenantId,
+      tableName: "hasanat_distributions",
+      recordId: String(jobData.jobId),
+      actionType: "UPDATE",
+      realUserId: String(jobData.userId),
+      newState: {
+        tag: "hasanat.job.dead_letter",
+        kind: jobData.kind,
+        reason: failedReason,
+        label: jobData.label,
+      },
+    });
+  }
 
   if (
     jobData.moduleId.trim().toLowerCase() === "sessions" &&
