@@ -16,6 +16,7 @@ export {
   useHasanatDistributions,
   useHasanatDistributionsCollection,
   useHasanatReportAggregates,
+  useHasanatStudentReport,
   useHasanatRedemptions,
   useHasanatRedemptionsCollection,
   hasanatCommandMetricsQueryOptions,

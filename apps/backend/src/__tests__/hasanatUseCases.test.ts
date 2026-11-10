@@ -20,6 +20,31 @@ vi.mock("../db/repositories/hasanatModulePreferencesRepository.js", () => ({
 
 vi.mock("../lib/livePush.js", () => ({ broadcastCollection: vi.fn(async () => undefined) }));
 
+// Tier reconciliation is exercised in `hasanatTierAndBatch.test.ts`; here it must stay out of the DB.
+vi.mock("../hasanat/use-cases/hasanatTierUseCases.js", () => ({
+  reconcileStudentTier: vi.fn(async () => ({ awarded: 0, revoked: 0 })),
+  reconcileTiersForStudents: vi.fn(async () => ({ students: 0, awarded: 0, revoked: 0 })),
+  reconcileTiersForCards: vi.fn(async () => ({ students: 0, awarded: 0, revoked: 0 })),
+  reconcileTenantTiers: vi.fn(async () => ({ students: 0, awarded: 0, revoked: 0 })),
+  getHasanatStudentSummary: vi.fn(),
+  getHasanatStudentReport: vi.fn(),
+  loadHasanatTierLadder: vi.fn(async () => []),
+}));
+
+const sessionState = vi.hoisted(() => ({ statuses: new Map<string, string>() }));
+
+vi.mock("../db/repositories/hasanatCardOps.js", async (importOriginal) => {
+  const actual = await importOriginal<typeof import("../db/repositories/hasanatCardOps.js")>();
+  return {
+    ...actual,
+    findSessionStatuses: vi.fn(
+      async (_tenant: string, ids: string[]) =>
+        new Map(ids.map((id) => [id, sessionState.statuses.get(id) ?? "open"])),
+    ),
+    findSessionIdForClass: vi.fn(async () => "ses1"),
+  };
+});
+
 const ACTIVE_CARD: Distribution = {
   id: "hd1",
   batchId: "batch1",
@@ -175,6 +200,7 @@ describe("hasanat use-cases (DI with fake repository)", () => {
   beforeEach(() => {
     vi.clearAllMocks();
     prefsState.dailyAwardLimitPerInstructor = 0;
+    sessionState.statuses.clear();
   });
 
   it("loadDistributionsPage delegates to the injected repository with the active tenant", async () => {
@@ -319,6 +345,22 @@ describe("hasanat use-cases (DI with fake repository)", () => {
       await expect(asActor("demo", () => useCases.redeemCard("hd1", redeemBody))).rejects.toThrow(
         /returned/i,
       );
+    });
+
+    it("refuses to redeem a card whose academic session is closed", async () => {
+      const repo = createFakeRepo();
+      (repo.lockDistributionForUpdate as ReturnType<typeof vi.fn>).mockResolvedValue({
+        ...ACTIVE_CARD,
+        sessionId: "ses1",
+      });
+      sessionState.statuses.set("ses1", "completed");
+      const useCases = createHasanatUseCases(repo);
+
+      await expect(asActor("demo", () => useCases.redeemCard("hd1", redeemBody))).rejects.toThrow(
+        /completed session/i,
+      );
+      expect(repo.appendRedemption).not.toHaveBeenCalled();
+      sessionState.statuses.delete("ses1");
     });
 
     it("reverses by appending a reversal row and reopening the card", async () => {

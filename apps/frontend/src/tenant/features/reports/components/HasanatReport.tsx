@@ -4,12 +4,8 @@ import type {
   HasanatPieItem,
 } from "@/components/reports/hasanatReportSectionTypes";
 import { useBrandPalette } from "@/lib/contexts/BrandingPaletteContext";
-import {
-  useHasanatDistributions,
-  useHasanatDistributionsCollection,
-  useHasanatDenoms,
-  useHasanatReportAggregates,
-} from "@/tenant/hooks/collections/hasanat";
+import { useHasanatStudentReport } from "@/tenant/hooks/collections/hasanat";
+import type { HasanatStudentReportRowDto } from "@mms/shared";
 import { useTranslation } from "@/hooks/useTranslation";
 import { Skeleton } from "@/components/ui/skeleton";
 import { ErrorState } from "@/components/app/ErrorState";
@@ -43,56 +39,41 @@ const HasanatReport = function HasanatReport({ filters }: HasanatReportProps): R
   const [selectedFaculty, setSelectedFaculty] = useState<string | null>(null);
   const palette = useBrandPalette();
   const PIE_COLORS = (() => [palette.primary, palette.secondary, palette.charts[2]])();
-  const distQuery = useHasanatDistributions();
-  const denomsQuery = useHasanatDenoms();
-  const aggregatesQuery = useHasanatReportAggregates();
-
-  const distributions = useHasanatDistributionsCollection();
+  // Server read model: one statement for every student, session/date scoped and tier-aware.
+  const sessionId = filters.session && filters.session !== "all" ? filters.session : null;
+  const reportQuery = useHasanatStudentReport({
+    sessionId,
+    from: filters.dateFrom || null,
+    to: filters.dateTo || null,
+  });
+  const reportRows: HasanatStudentReportRowDto[] =
+    reportQuery.data && reportQuery.data.status === 200 ? reportQuery.data.body.rows : [];
 
   const { distributionData, hasanatByFaculty } = (() => {
-    const studentMap: Record<string, HasanatReportItem> = {};
     const facultyMap: Record<string, HasanatByFacultyItem> = {};
-
-    distributions.forEach((distributionRecord) => {
-      // The card's stamped value is authoritative; the live deed is never re-read.
-      const totalPoints = distributionRecord.pointsSnapshot ?? 0;
-      const isRedeemed = distributionRecord.status === "redeemed";
-
-      if (distributionRecord.recipientType === "student") {
-        const studentKey =
-          distributionRecord.recipientStudentId || distributionRecord.recipientName || "";
-        if (studentKey) {
-          const studentName = distributionRecord.recipientName || studentKey;
-          if (!studentMap[studentKey]) {
-            studentMap[studentKey] = {
-              studentName,
-              class: distributionRecord.recipientClass,
-              faculty: distributionRecord.issuedBy || "—",
-              distributed: 0,
-              redeemed: 0,
-              balance: 0,
-            };
-          }
-          studentMap[studentKey].distributed += totalPoints;
-          if (isRedeemed) studentMap[studentKey].redeemed += totalPoints;
-          else studentMap[studentKey].balance += totalPoints;
-        }
+    const items: HasanatReportItem[] = reportRows.map((row) => {
+      const faculty = row.faculty || "—";
+      if (!facultyMap[faculty]) {
+        facultyMap[faculty] = { faculty, totalDistributed: 0, totalRedeemed: 0 };
       }
+      facultyMap[faculty].totalDistributed += row.earned;
+      facultyMap[faculty].totalRedeemed += row.redeemed;
 
-      const facultyKey = distributionRecord.issuedBy || "—";
-      if (!facultyMap[facultyKey]) {
-        facultyMap[facultyKey] = {
-          faculty: facultyKey,
-          totalDistributed: 0,
-          totalRedeemed: 0,
-        };
-      }
-      facultyMap[facultyKey].totalDistributed += totalPoints;
-      if (isRedeemed) facultyMap[facultyKey].totalRedeemed += totalPoints;
+      return {
+        studentName: row.studentName,
+        class: row.className,
+        faculty,
+        distributed: row.earned,
+        redeemed: row.redeemed,
+        balance: row.balance,
+        tierName: row.tierName,
+        tierKey: row.tierKey,
+        percentToNext: row.percentToNext,
+      };
     });
 
     return {
-      distributionData: Object.values(studentMap),
+      distributionData: items,
       hasanatByFaculty: Object.values(facultyMap),
     };
   })();
@@ -140,16 +121,14 @@ const HasanatReport = function HasanatReport({ filters }: HasanatReportProps): R
     { name: t("hasanat.report.balancePieLabel"), value: totalBalance },
   ])() as HasanatPieItem[];
 
-  if (distQuery.isError || denomsQuery.isError || aggregatesQuery.isError) {
+  if (reportQuery.isError) {
     return (
       <div className="p-4">
         <ErrorState
           title={t("hasanat.loadFailed")}
           description={t("hasanat.loadFailedHint")}
           onRetry={() => {
-            void distQuery.refetch();
-            void denomsQuery.refetch();
-            void aggregatesQuery.refetch();
+            void reportQuery.refetch();
           }}
         />
       </div>

@@ -6,6 +6,7 @@ import type { hasanatDenoms, hasanatBatches } from "./hasanatDenomsBatches.js";
 import type { hasanatDistributions } from "./hasanatDistributions.js";
 import type { hasanatRedemptions } from "./hasanatRedemptions.js";
 import type { hasanatFieldConfigs, hasanatModulePreferences } from "./hasanatSetupConfig.js";
+import type { hasanatStudentAwards } from "./hasanatTiers.js";
 
 export type HasanatDenomRow = typeof hasanatDenoms.$inferSelect;
 export type InsertHasanatDenomRow = typeof hasanatDenoms.$inferInsert;
@@ -19,3 +20,5 @@ export type HasanatFieldConfigsRow = typeof hasanatFieldConfigs.$inferSelect;
 export type InsertHasanatFieldConfigsRow = typeof hasanatFieldConfigs.$inferInsert;
 export type HasanatModulePreferencesRow = typeof hasanatModulePreferences.$inferSelect;
 export type InsertHasanatModulePreferencesRow = typeof hasanatModulePreferences.$inferInsert;
+export type HasanatStudentAwardRow = typeof hasanatStudentAwards.$inferSelect;
+export type InsertHasanatStudentAwardRow = typeof hasanatStudentAwards.$inferInsert;

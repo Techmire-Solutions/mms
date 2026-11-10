@@ -8,6 +8,13 @@ import { canDeleteCollection, canReadCollection } from "../../../services/rbacSe
 import { withTenant } from "../../../db/tenant-context.js";
 import { hasanatUseCases } from "../../../hasanat/use-cases/hasanatUseCases.js";
 import {
+  handleBatchAward,
+  handleBatchRecipients,
+  handleReconcileTiers,
+  handleStudentReport,
+  handleStudentSummary,
+} from "./hasanatTierBatchHandlers.js";
+import {
   handleBulkDeleteDistributions,
   handleBulkRestoreDistributions,
   handleChangeDistributionStatus,
@@ -54,6 +61,11 @@ export const hasanatContractRouter: FastifyPluginAsync = async (fastify) => {
       }
     },
 
+    batchAward: handleBatchAward,
+    batchRecipients: handleBatchRecipients,
+    studentReport: handleStudentReport,
+    studentSummary: handleStudentSummary,
+    reconcileTiers: handleReconcileTiers,
     createDistribution: handleCreateDistribution,
     updateDistribution: handleUpdateDistribution,
     changeDistributionStatus: handleChangeDistributionStatus,

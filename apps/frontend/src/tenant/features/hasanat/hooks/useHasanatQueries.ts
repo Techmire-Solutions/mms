@@ -112,6 +112,29 @@ export function useHasanatDistributionsCollection(options?: {
   return [];
 }
 
+export function useHasanatStudentReport(filters?: {
+  sessionId?: string | null;
+  classId?: string | null;
+  from?: string | null;
+  to?: string | null;
+}) {
+  const { isAuthenticated } = useAuth();
+  const { can } = usePermissions();
+  const canRead = can("hasanat.read");
+  const query = {
+    ...(filters?.sessionId ? { sessionId: filters.sessionId } : {}),
+    ...(filters?.classId ? { classId: filters.classId } : {}),
+    ...(filters?.from ? { from: filters.from } : {}),
+    ...(filters?.to ? { to: filters.to } : {}),
+  };
+  return tsrClient.hasanat.studentReport.useQuery({
+    queryKey: [...HASANAT_REPORT_AGGREGATES_QUERY_KEY, "students", query],
+    queryData: { query },
+    enabled: isAuthenticated && canRead,
+    staleTime: 30_000,
+  });
+}
+
 export function useHasanatReportAggregates(options?: {
   enabled?: boolean;
   comparison?: HasanatReportComparisonQuery;

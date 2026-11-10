@@ -16,6 +16,7 @@ import { withTenant } from "../../db/tenant-context.js";
 import { workspaceTodayIso } from "../../lib/workspaceDay.js";
 import { ConflictError, NotFoundError } from "../../lib/httpErrors.js";
 import type { HasanatRepository } from "../repository/hasanatRepository.js";
+import { assertSessionWritable } from "./hasanatSessionGuard.js";
 
 export interface RedeemActor {
   userId?: string | null;
@@ -44,6 +45,7 @@ export async function redeemHasanatCard(
     if (!card) {
       throw new NotFoundError("Hasanat card not found");
     }
+    await assertSessionWritable(subdomain, card.sessionId);
 
     const rule = validateRedemption({
       card: {
@@ -111,6 +113,7 @@ export async function voidHasanatRedemption(
     if (!card) {
       throw new NotFoundError("Hasanat card not found");
     }
+    await assertSessionWritable(subdomain, card.sessionId);
     if (await repo.hasReversal(subdomain, original.id)) {
       throw new ConflictError("This redemption has already been reversed.");
     }

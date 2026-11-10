@@ -25,6 +25,7 @@ import {
   distributionListSchema,
 } from "../hasanat/hasanatModuleManifest.js";
 import { hasanatReportAggregatesSchema } from "../hasanat/hasanatReportAggregates.js";
+import { hasanatTierBatchContractRoutes } from "./hasanatTierBatch.contract.js";
 import { reportComparisonQuerySchema } from "../reports/reportComparisonQuery.js";
 
 const c = initContract();
@@ -62,6 +63,7 @@ const hasanatWidgetAggregateResultSchema = z.object({
 });
 
 export const hasanatContract = c.router({
+  ...hasanatTierBatchContractRoutes,
   listDistributions: {
     method: "GET",
     path: "/api/hasanat/distributions",
