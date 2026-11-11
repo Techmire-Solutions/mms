@@ -14,7 +14,11 @@ const messagingSmsDispatchBaseSchema = z
       )
       .min(1)
       .max(500),
-    message: z.string().min(1).max(10_000),
+    message: z
+      .string()
+      .min(1)
+      .max(10_000)
+      .refine((v) => v.trim().length > 0, "Message cannot be empty"),
     category: messageCategorySchema.optional().default("general"),
     queued: z.boolean().optional(),
     idempotencyKey: z
@@ -58,7 +62,11 @@ const messagingEmailDispatchBaseSchema = z
       .min(1)
       .max(500),
     subject: z.string().min(1).max(500),
-    message: z.string().min(1).max(50_000),
+    message: z
+      .string()
+      .min(1)
+      .max(50_000)
+      .refine((v) => v.trim().length > 0, "Message cannot be empty"),
     html: z.string().max(100_000).optional(),
     category: messageCategorySchema.optional().default("general"),
     queued: z.boolean().optional(),
@@ -97,7 +105,11 @@ const messagingWhatsAppDispatchBaseSchema = z
       )
       .min(1)
       .max(500),
-    message: z.string().min(1).max(10_000),
+    message: z
+      .string()
+      .min(1)
+      .max(10_000)
+      .refine((v) => v.trim().length > 0, "Message cannot be empty"),
     category: messageCategorySchema.optional().default("general"),
     queued: z.boolean().optional(),
     idempotencyKey: z

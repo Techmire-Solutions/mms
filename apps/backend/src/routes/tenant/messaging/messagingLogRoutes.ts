@@ -23,11 +23,12 @@ export const messagingLogRoutes: FastifyPluginAsync = async (fastify) => {
         .status(400)
         .send({ type: "validation_error", message: "Tenant context required" });
     }
+    const effectiveQuery = { ...parsedQuery.data };
+    if (!canClearMessagingLogs(user)) {
+      effectiveQuery.userId = String(user.id);
+    }
     try {
-      const page = await messagingUseCases.loadFilteredMessageLogs(
-        tenantSubdomain,
-        parsedQuery.data,
-      );
+      const page = await messagingUseCases.loadFilteredMessageLogs(tenantSubdomain, effectiveQuery);
       return reply.send(page);
     } catch (err) {
       return sendDatabaseError(reply, "Failed to load message logs", err);

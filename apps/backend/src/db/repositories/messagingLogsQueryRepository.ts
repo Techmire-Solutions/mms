@@ -34,6 +34,7 @@ export interface MessageLogsFilterQuery {
   category?: string;
   search?: string;
   status?: string;
+  userId?: string;
   startDate?: string;
   endDate?: string;
   page?: number;
@@ -67,13 +68,7 @@ export async function queryFilteredMessageLogs(
   const pageSize = Math.min(effectivePageSize, MESSAGE_LOGS_MAX_PAGE_SIZE);
 
   if (!subdomain) {
-    return {
-      logs: [],
-      total: 0,
-      page: 1,
-      pageSize,
-      hasMore: false,
-    };
+    return { logs: [], total: 0, page: 1, pageSize, hasMore: false };
   }
 
   const includeDeleted = query.includeDeleted === true;
@@ -97,6 +92,10 @@ export async function queryFilteredMessageLogs(
 
     if (query.status && query.status !== "all") {
       conditions.push(eq(messageLogs.status, query.status));
+    }
+
+    if (query.userId?.trim()) {
+      conditions.push(eq(messageLogs.userId, query.userId.trim()));
     }
 
     if (query.startDate?.trim()) {

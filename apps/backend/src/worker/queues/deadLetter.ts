@@ -71,6 +71,25 @@ export async function handleDeadLetterJob(
     });
   }
 
+  // Messaging broadcast batches permanently failing in queue must record an audit trail so
+  // operators have a definitive record of the unrecoverable dispatch failure.
+  if (jobData.moduleId.trim().toLowerCase() === "messaging") {
+    await recordAuditEventSafely({
+      workspaceSubdomain: jobData.tenantId,
+      tableName: "message_logs",
+      recordId: String(jobData.jobId),
+      actionType: "UPDATE",
+      realUserId: String(jobData.userId),
+      newState: {
+        tag: "messaging.job.dead_letter",
+        kind: jobData.kind,
+        reason: failedReason,
+        label: jobData.label,
+        reasonCode: "job_dead_letter",
+      },
+    });
+  }
+
   if (
     jobData.moduleId.trim().toLowerCase() === "sessions" &&
     jobData.kind.trim().toLowerCase() === "promote"

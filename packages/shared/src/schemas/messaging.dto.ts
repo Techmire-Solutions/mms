@@ -18,11 +18,15 @@ export const MESSAGE_LOG_RECORD_BATCH_MAX = 500;
 /** Default page size for messaging reports / log history. */
 export const MESSAGE_LOGS_DEFAULT_PAGE_SIZE = 50;
 
+const isNonEmpty = (v: string) => v.trim().length > 0;
+const nonEmptyBody = (max = 10_000) =>
+  z.string().min(1).max(max).refine(isNonEmpty, "Message body cannot be empty");
+
 const messageLogCreateBaseSchema = z
   .object({
     contactId: z.union([z.string(), z.number()]),
     channel: z.enum(["sms", "whatsapp", "email"]),
-    body: z.string().min(1).max(10_000),
+    body: nonEmptyBody(10_000),
     status: z.enum(["sent", "failed", "skipped"]).optional().default("sent"),
     subject: z.string().max(500).optional(),
     category: messageCategorySchema.optional().default("general"),
@@ -30,11 +34,11 @@ const messageLogCreateBaseSchema = z
   })
   .strict();
 
+const sanitizePreprocess = (raw: unknown) =>
+  !raw || typeof raw !== "object" || Array.isArray(raw) ? raw : deepSanitizeStrings(raw);
+
 /** Client-submitted dispatch attempt — server assigns id, userId, and sentAt. */
-export const messageLogCreateSchema = z.preprocess((raw) => {
-  if (!raw || typeof raw !== "object" || Array.isArray(raw)) return raw;
-  return deepSanitizeStrings(raw);
-}, messageLogCreateBaseSchema);
+export const messageLogCreateSchema = z.preprocess(sanitizePreprocess, messageLogCreateBaseSchema);
 
 export const messageRecordSchema = z
   .object({
@@ -67,7 +71,7 @@ const messageInsertBaseSchema = z
     userId: z.string().optional(),
     contactId: z.union([z.string(), z.number()]),
     channel: z.enum(["sms", "whatsapp", "email"]),
-    body: z.string().min(1),
+    body: nonEmptyBody(50_000),
     sentAt: z.string().optional(),
     status: messageStatusSchema.optional().default("sent"),
     subject: z.string().optional(),
@@ -79,16 +83,12 @@ const messageInsertBaseSchema = z
   })
   .strict();
 
-export const messageInsertSchema = z.preprocess((raw) => {
-  if (!raw || typeof raw !== "object" || Array.isArray(raw)) return raw;
-  return deepSanitizeStrings(raw);
-}, messageInsertBaseSchema);
-
+export const messageInsertSchema = z.preprocess(sanitizePreprocess, messageInsertBaseSchema);
 export type MessageInsert = z.infer<typeof messageInsertBaseSchema>;
-export const messageUpdateSchema = z.preprocess((raw) => {
-  if (!raw || typeof raw !== "object" || Array.isArray(raw)) return raw;
-  return deepSanitizeStrings(raw);
-}, messageInsertBaseSchema.partial().strict());
+export const messageUpdateSchema = z.preprocess(
+  sanitizePreprocess,
+  messageInsertBaseSchema.partial().strict(),
+);
 export type MessageUpdate = z.infer<typeof messageUpdateSchema>;
 
 const recordMessageLogsBaseSchema = z
@@ -99,10 +99,10 @@ const recordMessageLogsBaseSchema = z
   })
   .strict();
 
-export const recordMessageLogsSchema = z.preprocess((raw) => {
-  if (!raw || typeof raw !== "object" || Array.isArray(raw)) return raw;
-  return deepSanitizeStrings(raw);
-}, recordMessageLogsBaseSchema);
+export const recordMessageLogsSchema = z.preprocess(
+  sanitizePreprocess,
+  recordMessageLogsBaseSchema,
+);
 
 /** Columns the history directory may sort on (repository enforces the same allowlist). */
 export const MESSAGING_LOG_SORT_FIELDS = [
@@ -120,6 +120,7 @@ export const messagingLogsQuerySchema = z
     category: z.string().optional(),
     search: z.string().optional(),
     status: z.string().optional(),
+    userId: z.string().optional(),
     startDate: z.string().optional(),
     endDate: z.string().optional(),
     page: z.coerce.number().int().positive().optional().default(1),
@@ -151,10 +152,9 @@ export const MESSAGING_RECIPIENT_ROLES = [
 export function normalizeMessagingRecipientRole(
   role: string | undefined,
 ): (typeof MESSAGING_RECIPIENT_ROLES)[number] {
-  if ((MESSAGING_RECIPIENT_ROLES as readonly string[]).includes(role ?? "")) {
-    return role as (typeof MESSAGING_RECIPIENT_ROLES)[number];
-  }
-  return "all";
+  return (MESSAGING_RECIPIENT_ROLES as readonly string[]).includes(role ?? "")
+    ? (role as (typeof MESSAGING_RECIPIENT_ROLES)[number])
+    : "all";
 }
 export const MESSAGING_RECIPIENT_GENDERS = ["all", "male", "female", "unspecified"] as const;
 
@@ -266,10 +266,10 @@ const messagingCsvExportBodyBaseSchema = z
   .strict();
 
 /** POST /api/messaging/export/csv body. */
-export const messagingCsvExportBodySchema = z.preprocess((raw) => {
-  if (!raw || typeof raw !== "object" || Array.isArray(raw)) return raw;
-  return deepSanitizeStrings(raw);
-}, messagingCsvExportBodyBaseSchema);
+export const messagingCsvExportBodySchema = z.preprocess(
+  sanitizePreprocess,
+  messagingCsvExportBodyBaseSchema,
+);
 
 /** Client dispatch-log create payload (server assigns id/userId/sentAt). */
 export type MessageLogCreateDto = z.infer<typeof messageLogCreateBaseSchema>;
