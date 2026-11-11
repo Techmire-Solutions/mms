@@ -3888,6 +3888,7 @@ export const APP_TRANSLATIONS_AR: Record<AppTranslationKey, string> = {
   "examinations.resultCard.graceSaved": "تم حفظ التعديل.",
   "examinations.results": "النتائج",
   "examinations.resultsStats": "إحصائيات درجات الصف",
+  "examinations.resultsTruncated": "الترتيب مخفي لأن قائمة الدرجات غير مكتملة (تم بلوغ حد 10,000 علامة).",
   "examinations.saveFailed": "تعذر حفظ تغييرات الامتحانات. تحقق من الاتصال وحاول مرة أخرى.",
   "examinations.searchExams": "البحث في الامتحانات…",
   "examinations.selectExam": "اختر الامتحان",

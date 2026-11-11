@@ -6,9 +6,9 @@ vi.mock("../examinations/use-cases/examEligibilityGate.js", () => ({
   assertExamResultsEligible: assertEligible,
 }));
 
-const loadExamsByIds = vi.hoisted(() => vi.fn());
-vi.mock("../examinations/use-cases/examinationsUseCases.js", () => ({
-  examinationsUseCases: { loadExamsByIds },
+const findExamsByIds = vi.hoisted(() => vi.fn());
+vi.mock("../examinations/repository/examinationsRepositoryAdapter.js", () => ({
+  examinationsRepository: { findExamsByIds },
 }));
 
 const loadExamStudentSections = vi.hoisted(() => vi.fn());
@@ -33,7 +33,7 @@ const RESULTS = [
 
 beforeEach(() => {
   vi.clearAllMocks();
-  loadExamsByIds.mockResolvedValue([
+  findExamsByIds.mockResolvedValue([
     { id: "ex-1", name: "Midterm", date: "2026-03-10", classIds: ["cls-1"] },
   ]);
   loadExamStudentSections.mockResolvedValue([
@@ -48,14 +48,16 @@ describe("authorizeAndStampExamResults", () => {
     );
 
     expect(stamped[0]?.markedBy).toBe("u-teacher");
-    expect(assertEligible).toHaveBeenCalledWith(TEACHER, RESULTS);
+    // One exam load is shared with the gate and the teacher-scope rule.
+    expect(assertEligible).toHaveBeenCalledWith("demo", RESULTS, expect.any(Array));
+    expect(findExamsByIds).toHaveBeenCalledTimes(1);
     expect(assertExamScope).toHaveBeenCalledWith(TEACHER, "demo", [
       { classId: "cls-1", sectionId: "sec-a", onDate: "2026-03-10" },
     ]);
   });
 
   it("falls back to the class-level rule when the exam has no date", async () => {
-    loadExamsByIds.mockResolvedValue([
+    findExamsByIds.mockResolvedValue([
       { id: "ex-1", name: "Midterm", date: null, classIds: ["cls-1"] },
     ]);
 

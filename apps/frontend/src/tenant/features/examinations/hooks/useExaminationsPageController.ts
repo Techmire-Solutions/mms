@@ -51,11 +51,13 @@ export function useExaminationsPageController() {
   const resultsResult = useExaminationsResults();
   const examsEnvelope = examsResult.data?.body as Exam[] | { exams?: Exam[] } | null;
   const resultsEnvelope = resultsResult.data?.body as
-    ExamResult[] | { results?: ExamResult[] } | null;
+    ExamResult[] | { results?: ExamResult[]; hasMore?: boolean } | null;
   const exams = Array.isArray(examsEnvelope) ? examsEnvelope : (examsEnvelope?.exams ?? []);
   const examResults = Array.isArray(resultsEnvelope)
     ? resultsEnvelope
     : (resultsEnvelope?.results ?? []);
+  // The marks walker caps at 20×500; when it stops there, rankings/averages are incomplete.
+  const resultsTruncated = !Array.isArray(resultsEnvelope) && resultsEnvelope?.hasMore === true;
   const {
     replaceExams,
     replaceExamResults,
@@ -156,6 +158,7 @@ export function useExaminationsPageController() {
     setFilteredCount,
     exams,
     examResults,
+    resultsTruncated,
     examColumnLayout,
     resultsColumnLayout,
     listLoadFailed,

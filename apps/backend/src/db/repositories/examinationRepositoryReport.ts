@@ -26,13 +26,15 @@ function activeExamWhere(subdomain: string, alias = "e"): ReturnType<typeof sql>
 export async function loadExaminationsReportAggregatesSql(
   tenant: string,
   comparisonQuery?: ExaminationsReportComparisonQuery,
+  options?: { publishedOnly?: boolean },
 ): Promise<ExaminationsReportAggregates> {
   const subdomain = tenant.trim().toLowerCase();
   if (!subdomain) return { ...EMPTY_EXAMINATIONS_REPORT_AGGREGATES };
 
   // Analytics are not tied to ComparisonMode and are always returned: the reports tab used them
   // only as a client-side reduction over a capped marks page, which silently truncated.
-  const analytics = await loadExaminationsAnalytics(subdomain);
+  const publishedOnly = options?.publishedOnly === true;
+  const analytics = await loadExaminationsAnalytics(subdomain, { publishedOnly });
   const aggregates: ExaminationsReportAggregates = {
     ...EMPTY_EXAMINATIONS_REPORT_AGGREGATES,
     analytics,
@@ -75,6 +77,16 @@ export async function loadExaminationsReportAggregatesSql(
             er.marks_obtained + COALESCE(er.grace_marks, 0) AS marks_obtained
           FROM exam_results er
           WHERE er.workspace_subdomain = ${subdomain}
+          ${
+            publishedOnly
+              ? sql`AND EXISTS (
+                  SELECT 1 FROM exams ex
+                   WHERE ex.workspace_subdomain = er.workspace_subdomain
+                     AND ex.id = er.exam_id
+                     AND ex.results_finalized_at IS NOT NULL
+                )`
+              : sql``
+          }
         )
         SELECT
           sel."sessionId" AS "sessionId",
@@ -121,6 +133,7 @@ export async function loadExaminationsReportAggregatesSql(
         FROM exams e
         LEFT JOIN exam_results er ON er.exam_id = e.id AND er.workspace_subdomain = ${subdomain}
         WHERE ${activeExamWhere(subdomain, "e")}
+          ${publishedOnly ? sql`AND e.results_finalized_at IS NOT NULL` : sql``}
           AND e.date IS NOT NULL
           AND e.date >= ${from}::date
           AND e.date <= ${to}::date

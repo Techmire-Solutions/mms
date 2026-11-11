@@ -218,6 +218,9 @@ describe("eligibility batch", () => {
     const roster = batch.get(EXAM)?.rows ?? [];
     expect(roster).toHaveLength(1);
     expect(roster[0]?.studentId).toBe(STUDENT);
+    // Both exams share the class/enrollment window: the grouped attendance aggregate must produce
+    // the same roster for each exam.
+    expect(batch.get(EXAM_B)?.rows.map((row) => row.studentId)).toEqual([STUDENT]);
     // Withdrawn enrollments are not on the roster — the grid and the gate now agree.
     expect(roster.some((row) => row.studentId === WITHDRAWN)).toBe(false);
   });
@@ -226,6 +229,70 @@ describe("eligibility batch", () => {
     await setExamAttendanceGate(TENANT, { examId: EXAM, minAttendancePct: 75, actorId: "u-sub" });
     const view = await loadExamEligibility(TENANT, EXAM);
     expect(view.rows[0]?.state).toBe("unknown");
+  });
+
+  it("applies the strictest non-zero session threshold to a multi-session exam", async () => {
+    const sessionB = "ses-sub-b";
+    const classB = "cls-sub-b";
+    await withTenant(TENANT, async (tx) => {
+      await tx.execute(sql`SET LOCAL app.allow_hard_purge = 'true'`);
+      await tx
+        .update(sessions)
+        .set({ minAttendancePct: 60 })
+        .where(and(eq(sessions.workspaceSubdomain, TENANT), eq(sessions.id, SESSION)));
+      await tx.insert(sessions).values({
+        id: sessionB,
+        workspaceSubdomain: TENANT,
+        name: "Session B",
+        minAttendancePct: 75,
+      });
+      await tx.insert(sessionClasses).values({
+        id: classB,
+        workspaceSubdomain: TENANT,
+        sessionId: sessionB,
+        name: "Class B",
+      });
+      await tx.insert(examClasses).values({
+        workspaceSubdomain: TENANT,
+        examId: EXAM,
+        classId: classB,
+      });
+    });
+
+    // The exam has no threshold of its own: the stricter session (75) must win, not MIN(60, 75).
+    expect((await loadExamEligibility(TENANT, EXAM)).requiredPct).toBe(75);
+
+    // A session that disables its gate (0) must not dilute the strictest requirement.
+    await withTenant(TENANT, (tx) =>
+      tx
+        .update(sessions)
+        .set({ minAttendancePct: 0 })
+        .where(and(eq(sessions.workspaceSubdomain, TENANT), eq(sessions.id, SESSION))),
+    );
+    expect((await loadExamEligibility(TENANT, EXAM)).requiredPct).toBe(75);
+
+    await withTenant(TENANT, async (tx) => {
+      await tx.execute(sql`SET LOCAL app.allow_hard_purge = 'true'`);
+      await tx
+        .delete(examClasses)
+        .where(
+          and(
+            eq(examClasses.workspaceSubdomain, TENANT),
+            eq(examClasses.examId, EXAM),
+            eq(examClasses.classId, classB),
+          ),
+        );
+      await tx
+        .delete(sessionClasses)
+        .where(and(eq(sessionClasses.workspaceSubdomain, TENANT), eq(sessionClasses.id, classB)));
+      await tx
+        .delete(sessions)
+        .where(and(eq(sessions.workspaceSubdomain, TENANT), eq(sessions.id, sessionB)));
+      await tx
+        .update(sessions)
+        .set({ minAttendancePct: null })
+        .where(and(eq(sessions.workspaceSubdomain, TENANT), eq(sessions.id, SESSION)));
+    });
   });
 });
 
@@ -590,7 +657,9 @@ describe("eligibility overrides are revocable and audited", () => {
             eq(auditTrailEvents.workspaceSubdomain, TENANT),
             eq(auditTrailEvents.tableName, "exam_eligibility_overrides"),
           ),
-        ),
+        )
+        // Chain order is the identity order; without it a heap/partition scan can permute rows.
+        .orderBy(auditTrailEvents.id),
     );
     expect(events.map((event) => event.actionType)).toEqual(["CREATE", "UPDATE", "UPDATE"]);
     expect(events.some((event) => event.newState?.includes("eligibility_override_revoked"))).toBe(
@@ -624,6 +693,29 @@ describe("report analytics (real Postgres)", () => {
     expect(analytics?.gradeDistribution.reduce((sum, bucket) => sum + bucket.count, 0)).toBe(1);
     expect(analytics?.topPerformers[0]).toMatchObject({ studentId: STUDENT, exams: 1 });
     expect(analytics?.sectionAverages[0]?.total).toBe(1);
+  });
+
+  it("excludes draft marks from a published-only analytics read (read-only audience)", async () => {
+    await saveExamResult(TENANT, {
+      id: "er-analytics-draft",
+      examId: EXAM,
+      studentId: STUDENT,
+      marksObtained: 80,
+      markedBy: "u-sub",
+    });
+
+    // A grader sees the draft-derived analytics.
+    const all = await loadExaminationsReportAggregatesSql(TENANT);
+    expect(all.analytics?.subjectPassRates).toHaveLength(1);
+
+    // A caller who cannot grade only sees published marks: the exam is unpublished, so every
+    // aggregate is empty rather than exposing draft pass rates / top performers.
+    const publishedOnly = await loadExaminationsReportAggregatesSql(TENANT, undefined, {
+      publishedOnly: true,
+    });
+    expect(publishedOnly.analytics?.subjectPassRates).toEqual([]);
+    expect(publishedOnly.analytics?.topPerformers).toEqual([]);
+    expect(publishedOnly.analytics?.sectionAverages).toEqual([]);
   });
 });
 

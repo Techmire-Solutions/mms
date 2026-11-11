@@ -3953,6 +3953,7 @@ export const APP_TRANSLATIONS_FA: Partial<Record<AppTranslationKey, string>> = {
   "examinations.resultCard.graceSaved": "اصلاح ذخیره شد.",
   "examinations.results": "نتایج",
   "examinations.resultsStats": "آمار نمرات کلاس",
+  "examinations.resultsTruncated": "رتبه\u200cبندی پنهان است زیرا فهرست نمرات ناقص است (محدودیت ۱۰٬۰۰۰ نمره پر شد).",
   "examinations.saveFailed": "ذخیره تغییرات امتحانات ممکن نشد. اتصال را بررسی و دوباره تلاش کنید.",
   "examinations.searchExams": "جستجوی امتحانات…",
   "examinations.selectExam": "انتخاب امتحان",

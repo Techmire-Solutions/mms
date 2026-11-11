@@ -2,11 +2,18 @@ import { describe, expect, it } from "vitest";
 import {
   EXAM_STATUSES,
   EXAM_STATUS_TRANSITIONS,
+  PUBLISHABLE_EXAM_STATUSES,
+  PUBLISH_TARGET_STATUS,
+  UNPUBLISH_TARGET_STATUS,
   allowedNextStatuses,
   canTransitionExam,
+  isExamArchived,
   isExamLocked,
   isExamPublished,
   isExamStatus,
+  isPublishableExamStatus,
+  publishExamRejection,
+  unpublishExamRejection,
 } from "./examLifecycle.js";
 
 describe("exam lifecycle state machine", () => {
@@ -68,5 +75,71 @@ describe("exam lifecycle state machine", () => {
     ).toBe(true);
     expect(isExamLocked({ status: "cancelled", resultsFinalizedAt: null })).toBe(true);
     expect(isExamLocked({ status: "ongoing", resultsFinalizedAt: null })).toBe(false);
+  });
+});
+
+describe("administrative publication layer", () => {
+  it("publishes only an exam that has been sat", () => {
+    // An upcoming/scheduled exam cannot have final results; the generic table already refuses
+    // upcoming -> completed, so the administrative path must not sneak around it.
+    expect(publishExamRejection({ status: "upcoming" })).toBe("not_sat");
+    expect(publishExamRejection({ status: "scheduled" })).toBe("not_sat");
+    expect(publishExamRejection({ status: "ongoing" })).toBeNull();
+    expect(publishExamRejection({ status: "completed" })).toBeNull();
+    expect([...PUBLISHABLE_EXAM_STATUSES]).toEqual(["ongoing", "completed"]);
+    expect(isPublishableExamStatus("ongoing")).toBe(true);
+    expect(isPublishableExamStatus("upcoming")).toBe(false);
+  });
+
+  it("refuses to publish an archived, cancelled or already-published exam", () => {
+    expect(publishExamRejection({ status: "ongoing", deletedAt: "2026-03-01T00:00:00.000Z" })).toBe(
+      "archived",
+    );
+    expect(publishExamRejection({ status: "cancelled" })).toBe("cancelled");
+    expect(
+      publishExamRejection({
+        status: "completed",
+        resultsFinalizedAt: "2026-03-01T00:00:00.000Z",
+      }),
+    ).toBe("already_published");
+    // Archived wins over the other reasons: the operator is told to restore first.
+    expect(
+      publishExamRejection({
+        status: "cancelled",
+        deletedAt: "2026-03-01T00:00:00.000Z",
+        resultsFinalizedAt: "2026-03-01T00:00:00.000Z",
+      }),
+    ).toBe("archived");
+  });
+
+  it("unlocks only a published, non-archived exam", () => {
+    expect(unpublishExamRejection({ status: "ongoing" })).toBe("not_published");
+    expect(unpublishExamRejection({ status: "cancelled" })).toBe("not_published");
+    expect(
+      unpublishExamRejection({
+        status: "completed",
+        resultsFinalizedAt: "2026-03-01T00:00:00.000Z",
+      }),
+    ).toBeNull();
+    expect(
+      unpublishExamRejection({
+        status: "completed",
+        resultsFinalizedAt: "2026-03-01T00:00:00.000Z",
+        deletedAt: "2026-03-01T00:00:00.000Z",
+      }),
+    ).toBe("archived");
+  });
+
+  it("declares the target statuses the use cases write", () => {
+    expect(PUBLISH_TARGET_STATUS).toBe("completed");
+    // The unlock must rewind delivery so an unpublished exam cannot read as finalized (F8).
+    expect(UNPUBLISH_TARGET_STATUS).toBe("ongoing");
+    expect(canTransitionExam("completed", UNPUBLISH_TARGET_STATUS)).toBe(false);
+  });
+
+  it("detects the archive separately from publication and status", () => {
+    expect(isExamArchived({ deletedAt: null })).toBe(false);
+    expect(isExamArchived({})).toBe(false);
+    expect(isExamArchived({ deletedAt: "2026-03-01T00:00:00.000Z" })).toBe(true);
   });
 });

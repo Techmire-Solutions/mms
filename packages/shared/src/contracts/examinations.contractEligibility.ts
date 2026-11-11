@@ -1,4 +1,6 @@
 import { z } from "zod";
+import { MAX_GRACE_MARKS } from "../examinations/examinationsModuleManifest.js";
+import { resourceIdParamsSchema } from "../schemas/api.dto.js";
 
 /**
  * Exam attendance-gate routes (migration 0222).
@@ -7,6 +9,17 @@ import { z } from "zod";
  * surface, and adding a field there would ripple through every exam projection. These focused routes
  * own the gate, the audited overrides, and the results-finalisation stamp that completion needs.
  */
+
+/** Path params shared by the exam-scoped gate routes. */
+export const examIdParamsSchema = resourceIdParamsSchema;
+
+/** Path params for a gate/moderation route addressing one student's mark. */
+export const examStudentParamsSchema = z
+  .object({
+    id: z.string().trim().min(1).max(128),
+    studentId: z.string().trim().min(1).max(64),
+  })
+  .strict();
 
 export const examEligibilityStudentSchema = z
   .object({
@@ -57,7 +70,7 @@ export const examResultsFinalizationBodySchema = z
 /** Grace-mark adjustment on one mark. The raw `marks_obtained` is never rewritten. */
 export const examResultModerationBodySchema = z
   .object({
-    graceMarks: z.number().min(0).max(999999.99),
+    graceMarks: z.number().min(0).max(MAX_GRACE_MARKS),
     reason: z.string().trim().min(3).max(500),
     /** OCC token of the mark being moderated. */
     version: z.number().int().positive().optional(),
@@ -91,6 +104,7 @@ export const examinationEligibilityRoutes = {
   getExamEligibility: {
     method: "GET",
     path: "/api/examinations/exams/:id/eligibility",
+    pathParams: examIdParamsSchema,
     responses: {
       200: examEligibilityResponseSchema,
       403: errorResponse,
@@ -102,6 +116,7 @@ export const examinationEligibilityRoutes = {
   setExamAttendanceGate: {
     method: "PUT",
     path: "/api/examinations/exams/:id/attendance-gate",
+    pathParams: examIdParamsSchema,
     body: examAttendanceGateBodySchema,
     responses: {
       200: z.object({ examId: z.string(), minAttendancePct: z.number().nullable() }),
@@ -115,6 +130,7 @@ export const examinationEligibilityRoutes = {
   grantExamEligibilityOverride: {
     method: "POST",
     path: "/api/examinations/exams/:id/eligibility-overrides",
+    pathParams: examIdParamsSchema,
     body: examEligibilityOverrideBodySchema,
     responses: {
       200: z.object({ success: z.literal(true) }),
@@ -128,6 +144,7 @@ export const examinationEligibilityRoutes = {
   moderateExamResult: {
     method: "POST",
     path: "/api/examinations/exams/:id/results/:studentId/moderation",
+    pathParams: examStudentParamsSchema,
     body: examResultModerationBodySchema,
     responses: {
       200: examResultModerationResponseSchema,
@@ -142,6 +159,7 @@ export const examinationEligibilityRoutes = {
   revokeExamEligibilityOverride: {
     method: "POST",
     path: "/api/examinations/exams/:id/eligibility-overrides/:studentId/revoke",
+    pathParams: examStudentParamsSchema,
     body: examEligibilityRevokeBodySchema,
     responses: {
       200: z.object({ success: z.literal(true) }),
@@ -155,6 +173,7 @@ export const examinationEligibilityRoutes = {
   setExamResultsFinalized: {
     method: "POST",
     path: "/api/examinations/exams/:id/results-finalization",
+    pathParams: examIdParamsSchema,
     body: examResultsFinalizationBodySchema,
     responses: {
       200: examResultsFinalizationResponseSchema,

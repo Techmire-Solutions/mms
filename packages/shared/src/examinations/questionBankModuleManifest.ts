@@ -59,7 +59,7 @@ export const questionBankQuestionRecordSchema = z
     text: z.string(),
     options: z.array(z.string()),
     answer: z.string(),
-    marks: z.number().optional(),
+    marks: z.number().int().optional(),
     tags: z.array(z.string()).optional(),
     sourceCitations: z.array(questionBookCitationSchema).optional(),
     sources: z.array(questionSourceReferenceSchema).optional(),
@@ -85,7 +85,7 @@ export const questionBankQuestionInsertSchema = z
     text: z.string().min(1),
     options: z.array(z.string()).default([]),
     answer: z.string(),
-    marks: z.number().optional().default(1),
+    marks: z.number().int().nonnegative().optional().default(1),
     tags: z.array(z.string()).optional(),
     sourceCitations: z.array(questionBookCitationSchema).optional(),
   })
@@ -154,13 +154,13 @@ export const questionBankTestRecordSchema = z
     categoryId: z.string().nullable(),
     questionIds: z.array(z.string()),
     difficulty: z.enum(["easy", "medium", "hard", "mixed"]),
-    duration: z.number(),
+    duration: z.number().int(),
     createdAt: z.string(),
     updatedAt: z.string().optional(),
     examClass: z.string().optional(),
     /** `session_classes.id`; `examClass` is the display snapshot. */
     classId: z.string().nullable().optional(),
-    totalMarks: z.number().optional(),
+    totalMarks: z.number().int().optional(),
     instructions: z.string().optional(),
     sections: z
       .array(
@@ -185,11 +185,11 @@ export const questionBankTestInsertSchema = z
     categoryId: z.string().nullable().optional(),
     questionIds: z.array(z.string()).default([]),
     difficulty: z.enum(["easy", "medium", "hard", "mixed"]).default("mixed"),
-    duration: z.number().default(60),
+    duration: z.number().int().positive().default(60),
     examClass: z.string().optional(),
     /** `session_classes.id`; `examClass` is the display snapshot. */
     classId: z.string().nullable().optional(),
-    totalMarks: z.number().optional(),
+    totalMarks: z.number().int().positive().optional(),
     instructions: z.string().optional(),
     sections: z
       .array(

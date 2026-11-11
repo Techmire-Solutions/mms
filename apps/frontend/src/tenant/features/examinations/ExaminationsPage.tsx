@@ -101,6 +101,7 @@ export default function Examinations(): React.JSX.Element {
                   createExamKey={c.createExamKey}
                   exams={c.exams}
                   examResults={c.examResults}
+                  resultsTruncated={c.resultsTruncated}
                   examColumnLayout={c.examColumnLayout}
                   resultsColumnLayout={c.resultsColumnLayout}
                   onSubTabChange={c.setActiveSubTab}

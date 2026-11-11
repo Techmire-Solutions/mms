@@ -5,6 +5,11 @@ import type { StudentResultItem } from "@/tenant/features/examinations/component
 export interface ResultsViewProps {
   exams: Exam[];
   results: ExamResult[];
+  /**
+   * True when the client-side marks walk hit its safety cap. Ranks/averages over a partial set are
+   * wrong, so the view must not present them as complete.
+   */
+  resultsTruncated?: boolean;
   onFilteredCountChange?: (count: number) => void;
   isColumnVisible?: (key: string) => boolean;
   columnCustomizer?: ModuleColumnCustomizerProps;

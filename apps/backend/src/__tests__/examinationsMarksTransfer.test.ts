@@ -15,8 +15,13 @@ vi.mock("../services/backgroundJobWorkerService.js", () => ({
 }));
 
 const findExamById = vi.hoisted(() => vi.fn());
+const findExamResultVersionsByExam = vi.hoisted(() => vi.fn());
 vi.mock("../examinations/repository/examinationsRepositoryAdapter.js", () => ({
-  examinationsRepository: { findExamById, listExamResultsPage: vi.fn() },
+  examinationsRepository: {
+    findExamById,
+    findExamResultVersionsByExam,
+    listExamResultsPage: vi.fn(),
+  },
 }));
 
 const loadExamRoster = vi.hoisted(() => vi.fn());
@@ -29,6 +34,11 @@ const upsertExamResults = vi.hoisted(() =>
 );
 vi.mock("../examinations/use-cases/examinationsUseCases.js", () => ({
   examinationsUseCases: { upsertExamResults },
+}));
+
+const assertExamResultsEligible = vi.hoisted(() => vi.fn(async () => undefined));
+vi.mock("../examinations/use-cases/examEligibilityGate.js", () => ({
+  assertExamResultsEligible,
 }));
 
 const saveExportArtifact = vi.hoisted(() => vi.fn(async (..._args: unknown[]) => undefined));
@@ -55,6 +65,9 @@ beforeEach(() => {
   runners.clear();
   vi.clearAllMocks();
   findExamById.mockResolvedValue(EXAM);
+  findExamResultVersionsByExam.mockResolvedValue([]);
+  assertExamResultsEligible.mockReset();
+  assertExamResultsEligible.mockResolvedValue(undefined);
   loadExamRoster.mockResolvedValue([
     { studentId: "s-1", studentName: "A", rollNumber: "1", classId: "c-1", sectionId: null },
     { studentId: "s-2", studentName: "B", rollNumber: "2", classId: "c-1", sectionId: null },
@@ -96,6 +109,70 @@ describe("examinations:marks-import", () => {
       }),
     );
   });
+
+  it("echoes the stored id and OCC version for marks it replaces", async () => {
+    findExamResultVersionsByExam.mockResolvedValue([
+      { studentId: "s-1", id: "er-stored", version: 4 },
+    ]);
+    registerExaminationsMarksImportJobRunner();
+    const runner = runners.get("examinations:marks-import");
+
+    await runner!(
+      {
+        examId: "ex-1",
+        rows: [
+          { rollNumber: "1", marksObtained: 85 },
+          { rollNumber: "2", marksObtained: 70 },
+        ],
+      },
+      fakeCtx(),
+    );
+
+    const batch = upsertExamResults.mock.calls[0]?.[0] as Array<Record<string, unknown>>;
+    // The concurrent-edit guard only works if the importer sends the token the grid would send.
+    expect(batch.find((row) => row.studentId === "s-1")).toMatchObject({
+      id: "er-stored",
+      version: 4,
+    });
+    const newMark = batch.find((row) => row.studentId === "s-2");
+    expect(newMark).toBeDefined();
+    expect(newMark).not.toHaveProperty("version");
+  });
+
+  it("runs the eligibility gate for the chunk and again for every fallback row", async () => {
+    // Chunk rejected, first row rejected, second row allowed: the fallback must re-gate each row or
+    // a blocked student would slip through the row-by-row retry.
+    assertExamResultsEligible
+      .mockRejectedValueOnce(new Error("Below the exam attendance threshold"))
+      .mockRejectedValueOnce(new Error("Below the exam attendance threshold"));
+
+    registerExaminationsMarksImportJobRunner();
+    const runner = runners.get("examinations:marks-import");
+    const ctx = fakeCtx();
+
+    await runner!(
+      {
+        examId: "ex-1",
+        rows: [
+          { rollNumber: "1", marksObtained: 85 },
+          { rollNumber: "2", marksObtained: 70 },
+        ],
+      },
+      ctx,
+    );
+
+    expect(assertExamResultsEligible).toHaveBeenCalledTimes(3);
+    expect(upsertExamResults).toHaveBeenCalledTimes(1);
+    expect(ctx.complete).toHaveBeenCalledWith(
+      expect.objectContaining({
+        errors: expect.arrayContaining([
+          expect.objectContaining({
+            reason: expect.stringContaining("attendance threshold"),
+          }),
+        ]),
+      }),
+    );
+  });
 });
 
 describe("examinations:results-export", () => {
@@ -114,12 +191,47 @@ describe("examinations:results-export", () => {
     });
     const ctx = fakeCtx();
 
-    await runner!({ examId: "ex-1", label: "Export" }, ctx);
+    await runner!({ examId: "ex-1", label: "Export", includeInternal: true }, ctx);
 
     const csv = String(saveExportArtifact.mock.calls[0]?.[2]);
     expect(csv).toContain("Roll Number");
     expect(csv).toContain("Midterm");
     expect(csv).toContain("90");
+    expect(csv).toContain("Grace Marks");
     expect(ctx.complete).toHaveBeenCalledWith(expect.objectContaining({ hasDownload: true }));
+  });
+
+  it("exports only published marks and omits the moderation column for a non-grader", async () => {
+    registerExaminationsResultsExportJobRunner();
+    const runner = runners.get("examinations:results-export");
+    const repo = (await import("../examinations/repository/examinationsRepositoryAdapter.js"))
+      .examinationsRepository;
+    findExamById.mockResolvedValue({ ...EXAM, resultsFinalizedAt: "2026-03-11T00:00:00.000Z" });
+    const listExamResultsPage = repo.listExamResultsPage as unknown as ReturnType<typeof vi.fn>;
+    listExamResultsPage.mockResolvedValue({
+      results: [{ id: "r-1", examId: "ex-1", studentId: "s-1", marksObtained: 90, graceMarks: 2 }],
+      hasMore: false,
+    });
+    const ctx = fakeCtx();
+
+    // Older queued jobs carry no flag: the safe published-only mode applies.
+    await runner!({ examId: "ex-1", label: "Export" }, ctx);
+
+    expect(listExamResultsPage).toHaveBeenCalledWith(
+      "demo",
+      expect.objectContaining({ publishedOnly: true }),
+    );
+    const csv = String(saveExportArtifact.mock.calls[0]?.[2]);
+    expect(csv).not.toContain("Grace Marks");
+    expect(ctx.complete).toHaveBeenCalledWith(expect.objectContaining({ hasDownload: true }));
+  });
+
+  it("refuses a non-grader export of an unpublished exam (job replay guard)", async () => {
+    registerExaminationsResultsExportJobRunner();
+    const runner = runners.get("examinations:results-export");
+    findExamById.mockResolvedValue({ ...EXAM, resultsFinalizedAt: null });
+
+    await expect(runner!({ examId: "ex-1" }, fakeCtx())).rejects.toThrow("Exam not found");
+    expect(saveExportArtifact).not.toHaveBeenCalled();
   });
 });

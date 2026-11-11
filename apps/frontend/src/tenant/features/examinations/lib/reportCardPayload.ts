@@ -29,6 +29,8 @@ export interface ReportCardExamInput {
   name: string;
   subject?: string;
   totalMarks: number;
+  /** The exam's pass mark; a failed paper must print `F` on every card, not just the grid. */
+  passingMarks?: number;
   date: string;
 }
 
@@ -108,33 +110,29 @@ export function buildTermReportCardPayload({
   institution,
   mixedTermLabel,
 }: BuildTermReportCardPayloadOptions): TypstReportCardPayload {
-  const subjects = papers.map(({ exam, result: paperResult }) => {
-    // Same engine as the grid: raw-score grading, grace included, no unrounded/rounded split.
-    const score = resolveResultScore({
+  // One scoring pass per paper: the subject grade uses the exam's own pass mark (the grid's fail
+  // floor), and the same effective score feeds the weighted aggregate.
+  const scoredPapers = papers.map(({ exam, result: paperResult }) => ({
+    exam,
+    score: resolveResultScore({
       marksObtained: paperResult.marksObtained,
       totalMarks: exam.totalMarks,
-      passingMarks: 0,
+      passingMarks: exam.passingMarks ?? 0,
       graceMarks: paperResult.graceMarks,
-    });
-    return {
-      name: exam.subject || exam.name,
-      maxMarks: exam.totalMarks,
-      obtainedMarks: score.effectiveMarks,
-      grade: score.grade.label,
-      remarks: "",
-    };
-  });
+    }),
+  }));
+
+  const subjects = scoredPapers.map(({ exam, score }) => ({
+    name: exam.subject || exam.name,
+    maxMarks: exam.totalMarks,
+    obtainedMarks: score.effectiveMarks,
+    grade: score.grade.label,
+    remarks: "",
+  }));
 
   const totalMarks = papers.reduce((sum, paper) => sum + paper.exam.totalMarks, 0);
-  const obtainedMarks = papers.reduce((sum, paper) => {
-    const score = resolveResultScore({
-      marksObtained: paper.result.marksObtained,
-      totalMarks: paper.exam.totalMarks,
-      passingMarks: 0,
-      graceMarks: paper.result.graceMarks,
-    });
-    return sum + score.effectiveMarks;
-  }, 0);
+  const obtainedMarks = scoredPapers.reduce((sum, paper) => sum + paper.score.effectiveMarks, 0);
+  // A term aggregate has no single pass mark, so its grade is percentage-band-only (documented).
   const aggregate = resolveResultScore({
     marksObtained: obtainedMarks,
     totalMarks,
@@ -155,8 +153,8 @@ export function buildTermReportCardPayload({
     obtainedMarks,
     percentage: `${percentage}%`,
     grade: aggregate.grade.label,
-    ...(typeof result.classRank === "number" ? { rank: String(result.classRank) } : {}),
-    ...(typeof result.classSize === "number" ? { classSize: result.classSize } : {}),
+    // No rank/classSize: the selected papers form a term with no cohort aggregate yet, and printing
+    // the current single exam's position here made the "term position" depend on the selection.
     // Term-wide attendance/remarks are not modelled; bound fields print empty.
     attendance: "",
     remarks: "",

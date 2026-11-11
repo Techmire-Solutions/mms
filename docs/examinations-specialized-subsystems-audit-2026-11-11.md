@@ -1,5 +1,13 @@
 # Examinations Specialized Subsystems & API Audit — 2026-11-11
 
+> **Round 2 (same day):** re-verified this audit and corrected two claims — the multi-session
+> attendance fallback used `MIN` (the most lenient threshold, not the strictest), and the term report
+> card printed a single-exam rank as a term position. The reports ranking/averaging rounding, the
+> term-card fail floor, the grace-aware total guard (migration 0239), the eligibility N+1 rewrite and
+> truncation surfacing are audited and fixed in
+> [examinations-specialized-subsystems-audit-2026-11-11-round2.md](./examinations-specialized-subsystems-audit-2026-11-11-round2.md).
+
+
 **Scope:** the grade/weightage/rank engine, exam eligibility gating (attendance + money), moderation
 and supplementary exams, the Fastify/ts-rest API layer, error mapping, and serialization/privacy of
 marks.

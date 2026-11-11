@@ -57,6 +57,10 @@ export function examResultStaleWriteError(record: {
   return new ConflictError(
     `Marks for student ${record.studentId ?? "?"} in exam ${record.examId ?? "?"} were changed by someone else — reload and retry`,
     "stale_write",
+    {
+      ...(record.examId ? { examId: String(record.examId) } : {}),
+      ...(record.studentId ? { studentId: String(record.studentId) } : {}),
+    },
   );
 }
 
@@ -65,6 +69,7 @@ export function examResultsFinalizedError(examIds: readonly string[]): ConflictE
   return new ConflictError(
     `Results are published for exam ${examIds.join(", ")} — unpublish them (administrative unlock) before editing marks`,
     "exam_results_finalized",
+    { examIds: [...examIds] },
   );
 }
 

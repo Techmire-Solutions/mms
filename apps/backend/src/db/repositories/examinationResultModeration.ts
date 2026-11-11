@@ -1,9 +1,15 @@
 import { and, eq, sql } from "drizzle-orm";
-import { MAX_MARKS_OBTAINED, resolveResultScore } from "@mms/shared";
+import { resolveResultScore } from "@mms/shared";
 import { examResults, exams } from "../schema.js";
 import { withTenant } from "../tenant-context.js";
 import { recordModernAuditEvent } from "../../services/auditTrailService.js";
-import { ConflictError, NotFoundError, ValidationError } from "../../lib/httpErrors.js";
+import { ConflictError, NotFoundError } from "../../lib/httpErrors.js";
+import {
+  assertEffectiveWithinTotal,
+  assertGraceWithinRange,
+  effectiveMarks as computeEffectiveMarks,
+  normalizeModerationReason,
+} from "../../examinations/domain/moderation.js";
 import { assertMarksWritable } from "./examinationMarksLock.js";
 
 /**
@@ -49,14 +55,10 @@ export async function applyExamResultModeration(
   input: ExamResultModerationInput,
 ): Promise<ExamResultModerationResult> {
   const subdomain = tenant.trim().toLowerCase();
-  const reason = input.reason.trim();
-  if (reason.length < 3) throw new ValidationError("A moderation reason is required");
-  if (!Number.isFinite(input.graceMarks) || input.graceMarks < 0) {
-    throw new ValidationError("Grace marks must be a non-negative number");
-  }
-  if (input.graceMarks > MAX_MARKS_OBTAINED) {
-    throw new ValidationError(`Grace marks cannot exceed ${MAX_MARKS_OBTAINED}`);
-  }
+  // Domain rules (reason, grace range, effective bound) live in `examinations/domain/moderation`;
+  // this adapter only persists what the use case/moderation rules decided.
+  const reason = normalizeModerationReason(input.reason);
+  assertGraceWithinRange(input.graceMarks);
 
   return withTenant(subdomain, async (tx) => {
     await assertMarksWritable(tx, subdomain, [input.examId]);
@@ -92,15 +94,16 @@ export async function applyExamResultModeration(
       throw new ConflictError(
         `Marks for student ${input.studentId} in exam ${input.examId} were changed by someone else — reload and retry`,
         "stale_write",
+        {
+          examId: input.examId,
+          studentId: input.studentId,
+          ...(typeof input.version === "number" ? { version: input.version } : {}),
+        },
       );
     }
 
-    const effectiveMarks = Number(before.marksObtained) + input.graceMarks;
-    if (effectiveMarks > Number(exam.totalMarks)) {
-      throw new ValidationError(
-        `Marks plus grace (${effectiveMarks}) cannot exceed the exam total (${exam.totalMarks})`,
-      );
-    }
+    const effective = computeEffectiveMarks(Number(before.marksObtained), input.graceMarks);
+    assertEffectiveWithinTotal(effective, Number(exam.totalMarks));
 
     const moderatedAt = new Date();
     const [row] = await tx

@@ -71,6 +71,7 @@ export * from "../obligations/obligationsReportAggregates.js";
 // 10. Hasanat, Examinations & Question Bank
 // ---------------------------------------------------------------------------
 export * from "../examinations/examLifecycle.js";
+export * from "../examinations/examErrorDetails.js";
 export * from "../examinations/examinationsExportUtils.js";
 export * from "../examinations/resultScoring.js";
 export * from "../examinations/examinationsListQuery.js";

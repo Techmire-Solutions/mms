@@ -1,4 +1,4 @@
-import { toDbDate } from "../../lib/dbDate.js";
+import { requireDbDate } from "../../lib/dbDate.js";
 import { and, eq, inArray, sql } from "drizzle-orm";
 import type { Exam } from "@mms/shared";
 import { exams, examClasses } from "../schema.js";
@@ -10,6 +10,7 @@ import {
   scoringFrameChanges,
 } from "./examinationExamsAudit.js";
 import {
+  assertExamNotArchived,
   assertExamTransitionAllowed,
   assertPublishedExamImmutable,
   type ExamWriteState,
@@ -31,6 +32,7 @@ async function loadExamWriteStates(
       id: exams.id,
       status: exams.status,
       resultsFinalizedAt: exams.resultsFinalizedAt,
+      deletedAt: exams.deletedAt,
       name: exams.name,
       subjectId: exams.subjectId,
       totalMarks: exams.totalMarks,
@@ -68,7 +70,7 @@ function toWriteIntent(record: Exam) {
     name: record.name,
     totalMarks: record.totalMarks ?? 100,
     passingMarks: record.passingMarks ?? 50,
-    date: toDbDate(record.date),
+    date: requireDbDate(record.date, "date"),
     duration: record.duration ?? 60,
     classIds: (record.classIds ?? []).filter(Boolean).map(String),
     description: record.description ?? "",
@@ -80,6 +82,8 @@ export async function saveExam(tenant: string, record: Exam): Promise<void> {
   await withTenant(subdomain, async (tx) => {
     const states = await loadExamWriteStates(tx, subdomain, [record.id]);
     const current = states.get(record.id) ?? null;
+    // Archived rows are read-only until restored (the single-row path refused them already).
+    if (current) assertExamNotArchived(record.id, current);
     assertExamTransitionAllowed(current, record.status);
     if (current) assertPublishedExamImmutable(record.id, current, toWriteIntent(record));
 
@@ -95,7 +99,7 @@ export async function saveExam(tenant: string, record: Exam): Promise<void> {
     const passingMarks = record.passingMarks ?? 50;
     const duration = record.duration ?? 60;
     const description = record.description ?? "";
-    const date = toDbDate(record.date);
+    const date = requireDbDate(record.date, "date");
 
     const subjectId = resolvedSubject.id;
 
@@ -179,6 +183,7 @@ export async function bulkSaveExams(tenant: string, records: Exam[]): Promise<vo
     );
     for (const record of uniqueRecords) {
       const current = states.get(record.id) ?? null;
+      if (current) assertExamNotArchived(record.id, current);
       assertExamTransitionAllowed(current, record.status);
       if (current) assertPublishedExamImmutable(record.id, current, toWriteIntent(record));
     }
@@ -199,7 +204,7 @@ export async function bulkSaveExams(tenant: string, records: Exam[]): Promise<vo
           subjectId: subjectRefs[index].id,
           totalMarks: r.totalMarks ?? 100,
           passingMarks: r.passingMarks ?? 50,
-          date: toDbDate(r.date),
+          date: requireDbDate(r.date, "date"),
           duration: r.duration ?? 60,
           status: r.status ?? states.get(r.id)?.status ?? "upcoming",
           description: r.description ?? "",
@@ -222,16 +227,26 @@ export async function bulkSaveExams(tenant: string, records: Exam[]): Promise<vo
         },
       });
 
-    const frameChangesByExam = new Map<string, Record<string, { from: unknown; to: unknown }>>();
-    uniqueRecords.forEach((record, index) => {
-      const current = states.get(record.id);
-      if (!current) return;
-      const changes = scoringFrameChanges(current, {
-        ...toWriteIntent(record),
-        subjectId: subjectRefs[index]?.id ?? null,
-      });
-      if (changes) frameChangesByExam.set(record.id, changes);
-    });
+    // The bulk path is the one the UI actually saves through, so the lifecycle evidence must be
+    // emitted here: a created exam and every scoring-frame change (`total_marks`, `passing_marks`,
+    // schedule, subject, classes) re-grade every student and used to be silent on this path. The
+    // previous version computed this map and never read it.
+    for (const [index, record] of uniqueRecords.entries()) {
+      const current = states.get(record.id) ?? null;
+      const subjectId = subjectRefs[index]?.id ?? null;
+      const frameChanges = current
+        ? scoringFrameChanges(current, { ...toWriteIntent(record), subjectId })
+        : null;
+      if (frameChanges) {
+        await auditScoringFrameChange(tx, subdomain, record.id, frameChanges);
+      }
+      if (!current) {
+        await auditExamCreated(tx, subdomain, record.id, {
+          ...toWriteIntent(record),
+          subjectId,
+        });
+      }
+    }
 
     const examIds = uniqueRecords.map((r) => r.id);
     await tx

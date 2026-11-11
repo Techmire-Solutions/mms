@@ -20,6 +20,7 @@ export {
   listExamResultsByWorkspace,
   findExamResultById,
   findExamResultsByIds,
+  findExamResultVersionsByExam,
   saveExamResult,
   bulkSaveExamResults,
   replaceExamResultsForWorkspace,

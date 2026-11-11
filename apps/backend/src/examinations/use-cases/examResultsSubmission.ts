@@ -1,5 +1,5 @@
 import type { ExamResult, User } from "@mms/shared";
-import { examinationsUseCases } from "./examinationsUseCases.js";
+import { examinationsRepository } from "../repository/examinationsRepositoryAdapter.js";
 import { examEligibilityRepository as eligibilityRepo } from "../repository/examEligibilityAdapter.js";
 import { getRequestTenant } from "../../lib/tenantContext.js";
 import {
@@ -26,17 +26,22 @@ export async function authorizeAndStampExamResults(
   user: User,
   results: ExamResult[],
 ): Promise<ExamResult[]> {
-  await assertExamResultsEligible(user, results);
+  const tenant = getRequestTenant();
+  const examIds = [...new Set(results.map((result) => result.examId).filter(Boolean))];
+  // Load the batch's exams once and share them with the eligibility gate and the teacher-scope
+  // rule; the gate used to load the same rows again on every save.
+  const exams =
+    tenant && examIds.length > 0
+      ? await examinationsRepository.findExamsByIds(tenant, examIds)
+      : [];
+  // The gate takes the tenant explicitly so the queued import can run the same attendance/roster
+  // rule (`examinationsMarksImportService`); this request path passes the bound tenant.
+  await assertExamResultsEligible(tenant ?? "", results, exams);
   const stamped = results.map((result) => ({ ...result, markedBy: user.id }));
 
-  const tenant = getRequestTenant();
   if (!tenant || results.length === 0) return stamped;
 
-  const examIds = [...new Set(results.map((result) => result.examId).filter(Boolean))];
-  const [exams, sections] = await Promise.all([
-    examinationsUseCases.loadExamsByIds(examIds),
-    eligibilityRepo.loadExamStudentSections(tenant, examIds),
-  ]);
+  const sections = await eligibilityRepo.loadExamStudentSections(tenant, examIds);
   const examsById = new Map(exams.map((exam) => [exam.id, exam]));
   const sectionByKey = new Map(
     sections.map((section) => [`${section.examId}|${section.studentId}`, section]),

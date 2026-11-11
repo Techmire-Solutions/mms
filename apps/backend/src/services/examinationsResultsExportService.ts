@@ -23,6 +23,11 @@ const MAX_ROWS = 50_000;
 export interface ResultsExportJobPayload {
   examId: string;
   label?: string;
+  /**
+   * Graders receive the full broadsheet (draft marks + the moderation adjustment). Any other
+   * caller is published-only, matching `GET /results`; older queued jobs default to the safe mode.
+   */
+  includeInternal?: boolean;
 }
 
 export function registerExaminationsResultsExportJobRunner(): void {
@@ -34,20 +39,28 @@ export function registerExaminationsResultsExportJobRunner(): void {
     const exam = await examinationsRepository.findExamById(ctx.tenant, examId);
     if (!exam) throw new NotFoundError("Exam not found");
 
+    const includeInternal = data.includeInternal === true;
+    if (!includeInternal && !exam.resultsFinalizedAt) {
+      // A non-grader may not export a draft; the route already answers 404, this guards replays.
+      throw new NotFoundError("Exam not found");
+    }
+
     const roster = await examEligibilityRepository.loadExamRoster(ctx.tenant, examId);
     const rosterByStudent = new Map(roster.map((entry) => [entry.studentId, entry]));
 
     const grid: unknown[][] = [
-      [
-        "Roll Number",
-        "Student",
-        "Student ID",
-        "Marks Obtained",
-        "Grace Marks",
-        "Total Marks",
-        "Exam",
-        "Date",
-      ],
+      includeInternal
+        ? [
+            "Roll Number",
+            "Student",
+            "Student ID",
+            "Marks Obtained",
+            "Grace Marks",
+            "Total Marks",
+            "Exam",
+            "Date",
+          ]
+        : ["Roll Number", "Student", "Student ID", "Marks Obtained", "Total Marks", "Exam", "Date"],
     ];
     let cursor: string | undefined;
     let count = 0;
@@ -57,19 +70,21 @@ export function registerExaminationsResultsExportJobRunner(): void {
         examId,
         limit: PAGE_SIZE,
         ...(cursor ? { cursor } : {}),
+        publishedOnly: !includeInternal,
       });
       for (const result of page.results) {
         const entry = rosterByStudent.get(String(result.studentId));
-        grid.push([
+        const baseRow = [
           entry?.rollNumber ?? "",
           entry?.studentName ?? "",
           String(result.studentId),
           result.marksObtained,
-          result.graceMarks ?? "",
-          exam.totalMarks,
-          exam.name,
-          exam.date ?? "",
-        ]);
+        ];
+        grid.push(
+          includeInternal
+            ? [...baseRow, result.graceMarks ?? "", exam.totalMarks, exam.name, exam.date ?? ""]
+            : [...baseRow, exam.totalMarks, exam.name, exam.date ?? ""],
+        );
         count += 1;
       }
       if (!page.hasMore) break;

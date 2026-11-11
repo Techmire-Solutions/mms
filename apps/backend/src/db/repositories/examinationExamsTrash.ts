@@ -28,6 +28,10 @@ export async function replaceExamsForWorkspace(tenant: string, records: Exam[]):
   const uniqueRecords = Array.from(uniqueMap.values());
 
   await withTenant(subdomain, async (tx) => {
+    // Whole-collection replacement is the backup/restore path: it must be able to delete the rows
+    // it replaces. Setting the flag here (not only in the caller) keeps the replacement correct
+    // for the legacy data migration and the restore runner alike — mirrors the marks path.
+    await tx.execute(sql`SET LOCAL app.allow_hard_purge = 'true'`);
     const subjectRefs = await resolveCatalogRefsTx(
       tx,
       "subjects",
@@ -53,9 +57,21 @@ export async function replaceExamsForWorkspace(tenant: string, records: Exam[]):
           duration: r.duration ?? 60,
           status: r.status ?? "upcoming",
           description: r.description ?? "",
+          // A snapshot restore must reproduce the administrative state, not just the editable
+          // fields: dropping the publication stamp silently re-opened published marks, and
+          // dropping the per-exam gate silently disabled attendance eligibility (0238 review).
+          minAttendancePct:
+            r.minAttendancePct === null || r.minAttendancePct === undefined
+              ? null
+              : r.minAttendancePct,
+          resultsFinalizedAt: r.resultsFinalizedAt ? new Date(r.resultsFinalizedAt) : null,
           deletedAt: r.deletedAt ? new Date(r.deletedAt) : null,
           deletedBy: r.deletedBy ?? null,
           deletionReason: r.deletionReason ?? null,
+          restoredAt: r.restoredAt ? new Date(r.restoredAt) : null,
+          restoredBy: r.restoredBy ?? null,
+          deletedWithCascade: r.deletedWithCascade ?? false,
+          createdAt: r.createdAt ? new Date(r.createdAt) : new Date(),
           updatedAt: new Date(),
         })),
       );
@@ -174,6 +190,11 @@ export async function bulkRestoreExams(
         deletedAt: null,
         deletedBy: null,
         deletionReason: null,
+        // Resurrection provenance (soft-delete sextuple §5): clearing the deletion fields without
+        // stamping the restore made every restore unattributable in the trash/drawer evidence.
+        restoredAt: now,
+        restoredBy: userId || null,
+        deletedWithCascade: false,
         updatedAt: now,
       })
       .where(

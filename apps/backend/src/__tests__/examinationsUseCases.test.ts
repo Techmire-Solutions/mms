@@ -33,6 +33,7 @@ function createFakeRepo(): ExaminationsRepository {
     }),
     findExamResultById: vi.fn().mockResolvedValue(null),
     findExamResultsByIds: vi.fn().mockResolvedValue([]),
+    findExamResultVersionsByExam: vi.fn().mockResolvedValue([]),
     saveExamResult: vi.fn().mockResolvedValue(undefined),
     bulkSaveExamResults: vi.fn().mockResolvedValue(undefined),
     replaceExamResultsForWorkspace: vi.fn().mockResolvedValue(undefined),

@@ -1,5 +1,12 @@
 # Examinations Schema & Persistence Audit — 2026-11-11
 
+> **Round 2 (same day):** the residual gaps after 0237 — restore fidelity and provenance, the
+> publish/unpublish CAS race, the marks importer's OCC bypass, paper/section constraints, the
+> declared-vs-physical schema drift and the missing database-level published-exam guard — are
+> audited and fixed in
+> [examinations-schema-persistence-audit-2026-11-11-round2.md](./examinations-schema-persistence-audit-2026-11-11-round2.md)
+> (migration 0238).
+
 **Scope:** the Examinations persistence layer — Drizzle table definitions (`exams`, `exam_classes`,
 `exam_results`, `exam_eligibility_overrides`), the migration history that shaped them
 (0048 → 0236), the unique/partial indexes, the foreign-key graph into sessions, terms, classes,

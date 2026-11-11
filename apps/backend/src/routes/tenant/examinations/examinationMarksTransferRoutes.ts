@@ -1,8 +1,13 @@
 import type { FastifyPluginAsync } from "fastify";
 import type { User } from "@mms/shared";
-import { examMarksImportBodySchema } from "@mms/shared";
+import { examMarksImportBodySchema, resourceIdParamsSchema } from "@mms/shared";
 import { canReadCollection, canWriteCollection } from "../../../services/rbacService.js";
-import { sendForbidden, sendServiceUnavailable } from "../../../lib/httpErrors.js";
+import {
+  sendDatabaseError,
+  sendForbidden,
+  sendIfHttpDomainError,
+  sendServiceUnavailable,
+} from "../../../lib/httpErrors.js";
 import { parseRequest, replyValidationError } from "../../../lib/zodRequest.js";
 import { getRequestTenant } from "../../../lib/tenantContext.js";
 import {
@@ -40,8 +45,17 @@ export const examinationMarksTransferRoutes: FastifyPluginAsync = async (fastify
 
       const tenant = getRequestTenant();
       if (!tenant) return sendForbidden(reply);
-      const examId = String((request.params as { id?: string }).id ?? "").trim();
-      const exam = await loadExam(examId);
+      const params = parseRequest(resourceIdParamsSchema, request.params);
+      if (!params.ok) return replyValidationError(reply, params.message);
+      const examId = params.data.id;
+      let exam;
+      try {
+        exam = await loadExam(examId);
+      } catch (error) {
+        const mapped = sendIfHttpDomainError(reply, error);
+        if (mapped) return mapped;
+        return sendDatabaseError(reply, "Failed to load the exam", error);
+      }
       if (!exam) return reply.status(404).send({ type: "not_found", message: "Exam not found" });
       if (exam.resultsFinalizedAt) {
         return reply.status(409).send({
@@ -97,9 +111,24 @@ export const examinationMarksTransferRoutes: FastifyPluginAsync = async (fastify
     }
     const tenant = getRequestTenant();
     if (!tenant) return sendForbidden(reply);
-    const examId = String((request.params as { id?: string }).id ?? "").trim();
-    const exam = await loadExam(examId);
-    if (!exam) return reply.status(404).send({ type: "not_found", message: "Exam not found" });
+    const params = parseRequest(resourceIdParamsSchema, request.params);
+    if (!params.ok) return replyValidationError(reply, params.message);
+    const examId = params.data.id;
+    let exam;
+    try {
+      exam = await loadExam(examId);
+    } catch (error) {
+      const mapped = sendIfHttpDomainError(reply, error);
+      if (mapped) return mapped;
+      return sendDatabaseError(reply, "Failed to load the exam", error);
+    }
+    // The broadsheet obeys the same publication boundary as `GET /results`: a caller who cannot
+    // grade may only export published marks, and an unpublished exam is indistinguishable from a
+    // missing one. Graders keep the full sheet (they already see drafts in the grid).
+    const includeInternal = canWriteCollection(user, COLLECTION);
+    if (!exam || (!includeInternal && !exam.resultsFinalizedAt)) {
+      return reply.status(404).send({ type: "not_found", message: "Exam not found" });
+    }
 
     const userId = String(user.id);
     const idempotencyKey = buildDeterministicJobKey({
@@ -123,7 +152,7 @@ export const examinationMarksTransferRoutes: FastifyPluginAsync = async (fastify
           label: `Exporting marks for ${exam.name}`,
           createdAt: new Date().toISOString(),
         },
-        { examId, label: `Exported marks for ${exam.name}` },
+        { examId, includeInternal, label: `Exported marks for ${exam.name}` },
       );
       return reply.status(202).send({ job });
     } catch (error) {

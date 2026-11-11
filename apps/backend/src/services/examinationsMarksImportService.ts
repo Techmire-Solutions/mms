@@ -6,6 +6,7 @@ import { registerBackgroundJobRunner } from "./backgroundJobWorkerService.js";
 import { examinationsRepository } from "../examinations/repository/examinationsRepositoryAdapter.js";
 import { examEligibilityRepository } from "../examinations/repository/examEligibilityAdapter.js";
 import { examinationsUseCases } from "../examinations/use-cases/examinationsUseCases.js";
+import { assertExamResultsEligible } from "../examinations/use-cases/examEligibilityGate.js";
 
 /**
  * Bulk marks import (`examinations:marks-import`).
@@ -36,6 +37,7 @@ function planRow(
   row: { rollNumber: string; marksObtained: number | string },
   rosterByRoll: Map<string, string[]>,
   examTotalMarks: number,
+  existingByStudent: Map<string, { id: string; version: number }>,
 ): { result: ExamResult } | { error: string } {
   const roll = String(row.rollNumber ?? "").trim();
   const matches = rosterByRoll.get(roll) ?? [];
@@ -58,12 +60,16 @@ function planRow(
     return { error: `Marks cannot exceed ${MAX_MARKS_OBTAINED}` };
   }
   const studentId = matches[0]!;
+  // The grid echoes the stored id + version; the importer must too, or it takes the
+  // last-write-wins upsert branch and silently overwrites a concurrent correction.
+  const existing = existingByStudent.get(studentId);
   return {
     result: {
-      id: deterministicResultId(examId, studentId),
+      id: existing?.id ?? deterministicResultId(examId, studentId),
       examId: "",
       studentId,
       marksObtained: marks,
+      ...(existing ? { version: existing.version } : {}),
     } as unknown as ExamResult,
   };
 }
@@ -91,12 +97,23 @@ export function registerExaminationsMarksImportJobRunner(): void {
     const errors: Array<{ row: number; reason: string }> = [];
     let imported = 0;
 
+    // The importer is a non-interactive writer: echo the stored OCC identity of every mark it is
+    // about to replace, so a concurrent correction surfaces as a per-row `stale_write` error
+    // instead of being silently overwritten. Rows with no stored mark stay token-less inserts.
+    const existingByStudent = new Map<string, { id: string; version: number }>();
+    for (const ref of await examinationsRepository.findExamResultVersionsByExam(
+      ctx.tenant,
+      examId,
+    )) {
+      existingByStudent.set(ref.studentId, { id: ref.id, version: ref.version });
+    }
+
     for (let start = 0; start < rows.length; start += CHUNK_SIZE) {
       throwIfBackgroundJobAborted(ctx.signal);
       const slice = rows.slice(start, start + CHUNK_SIZE);
       const batch: ExamResult[] = [];
       for (const [offset, row] of slice.entries()) {
-        const planned = planRow(examId, row, rosterByRoll, exam.totalMarks);
+        const planned = planRow(examId, row, rosterByRoll, exam.totalMarks, existingByStudent);
         if ("error" in planned) {
           errors.push({ row: start + offset + 1, reason: planned.error });
         } else {
@@ -107,13 +124,18 @@ export function registerExaminationsMarksImportJobRunner(): void {
       }
       if (batch.length > 0) {
         try {
+          // The queued importer used to write marks without the attendance/roster/override gate
+          // that the grid save runs; a below-threshold student could be graded by CSV.
+          await assertExamResultsEligible(ctx.tenant, batch);
           await examinationsUseCases.upsertExamResults(batch);
           imported += batch.length;
         } catch {
-          // Attribute the failure row-by-row so one unpublished/over-bounds row does not fail the
-          // whole chunk (the persisted marks already carry the OCC/version guard).
+          // Attribute the failure row-by-row so one unpublished/over-bounds/blocked row does not
+          // fail the whole chunk; a stale row reports its OCC conflict instead of overwriting the
+          // mark, and the blocked row is rejected by the same gate.
           for (const [offset, result] of batch.entries()) {
             try {
+              await assertExamResultsEligible(ctx.tenant, [result]);
               await examinationsUseCases.upsertExamResults([result]);
               imported += 1;
             } catch (error) {

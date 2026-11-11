@@ -3966,6 +3966,7 @@ export const APP_TRANSLATIONS_EN = {
   "examinations.resultCard.graceSaved": "Moderation saved.",
   "examinations.results": "Results",
   "examinations.resultsStats": "Class score statistics",
+  "examinations.resultsTruncated": "Rankings are hidden because the mark list is incomplete (the 10,000-mark limit was reached).",
   "examinations.saveFailed":
     "Could not save examination changes. Check your connection and try again.",
   "examinations.searchExams": "Search exams…",

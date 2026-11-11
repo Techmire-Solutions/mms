@@ -1,6 +1,7 @@
 import type { FastifyRequest } from "fastify";
 import { ZodError } from "zod";
 import { isForeignKeyViolation } from "./pgErrors.js";
+import { mapConstraintError } from "./httpErrors.js";
 
 interface ContractErrorBody {
   type: string;
@@ -77,6 +78,13 @@ export function handleContractError(
       status: 409,
       body: { type: "conflict", message: "This record is still referenced by other records" },
     };
+  }
+
+  // Any other PostgreSQL constraint failure (unique/natural key, check trigger, numeric range,
+  // invalid text cast) is client-correctable: map it to 400/409 instead of the caller's 500.
+  const constraintMapped = mapConstraintError(error);
+  if (constraintMapped) {
+    return { status: constraintMapped.status, body: constraintMapped.body };
   }
 
   // A response that does not match its declared contract is a server bug, not a client error.

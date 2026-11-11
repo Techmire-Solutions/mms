@@ -7,6 +7,7 @@ import {
   primaryKey,
   foreignKey,
   varchar,
+  check,
 } from "drizzle-orm/pg-core";
 import { sql } from "drizzle-orm";
 import { workspaces } from "./platform.js";
@@ -40,6 +41,7 @@ export const questions = pgTable(
     index("questions_workspace_deleted_records_idx")
       .on(table.workspaceSubdomain, table.deletedAt)
       .where(sql`${table.deletedAt} is not null`),
+    check("questions_marks_non_negative_check", sql`${table.marks} >= 0`),
   ],
 );
 

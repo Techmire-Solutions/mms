@@ -364,7 +364,7 @@ describe("exam attendance gate (real Postgres)", () => {
     ] as never;
 
     await expect(
-      runWithTenant(TENANT, () => assertExamResultsEligible(ADMIN, blocked)),
+      runWithTenant(TENANT, () => assertExamResultsEligible(TENANT, blocked)),
     ).rejects.toMatchObject({ statusCode: 409, type: "exam_eligibility_blocked" });
 
     const { grantEligibilityOverride } =
@@ -377,7 +377,7 @@ describe("exam attendance gate (real Postgres)", () => {
     });
 
     await expect(
-      runWithTenant(TENANT, () => assertExamResultsEligible(ADMIN, blocked)),
+      runWithTenant(TENANT, () => assertExamResultsEligible(TENANT, blocked)),
     ).resolves.toBeUndefined();
   });
 
@@ -392,7 +392,7 @@ describe("exam attendance gate (real Postgres)", () => {
       },
     ] as never;
     await expect(
-      runWithTenant(TENANT, () => assertExamResultsEligible(ADMIN, overMarks)),
+      runWithTenant(TENANT, () => assertExamResultsEligible(TENANT, overMarks)),
     ).rejects.toMatchObject({ statusCode: 400, type: "exam_marks_out_of_range" });
   });
 
