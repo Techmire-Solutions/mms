@@ -47,6 +47,10 @@ export function apiContractError(response: ContractResponse, fallbackMessage: st
   const bodyMessage = typeof body?.message === "string" ? body.message.trim() : "";
   const type = typeof body?.type === "string" ? body.type : undefined;
   const code = typeof body?.code === "string" ? body.code : undefined;
+  const details =
+    body?.details !== null && typeof body?.details === "object" && !Array.isArray(body.details)
+      ? (body.details as Record<string, unknown>)
+      : undefined;
   const requestId = headerValue(response, "x-request-id") ?? undefined;
   const retryAfterSeconds = parseRetryAfterSeconds(headerValue(response, "retry-after"));
 
@@ -58,6 +62,7 @@ export function apiContractError(response: ContractResponse, fallbackMessage: st
     body?.errors,
     retryAfterSeconds,
     code,
+    details,
   );
 }
 

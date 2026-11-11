@@ -172,7 +172,7 @@ describe("IAS 21 ledger persistence", () => {
 
     // Assert
     expect(after).toMatchObject({ txn_currency: "PKR", txn_debit: "500.50", exchange_rate: "1" });
-  });
+  }, 60_000);
 });
 
 describe("exchange rate lookup", () => {

@@ -1667,6 +1667,20 @@
       "when": 1796295600000,
       "tag": "0237_exam_scoring_moderation",
       "breakpoints": true
+    },
+    {
+      "idx": 238,
+      "version": "7",
+      "when": 1796382000000,
+      "tag": "0238_exams_persistence_integrity",
+      "breakpoints": true
+    },
+    {
+      "idx": 239,
+      "version": "7",
+      "when": 1796468400000,
+      "tag": "0239_exam_total_guard_effective_score",
+      "breakpoints": true
     }
   ]
 }

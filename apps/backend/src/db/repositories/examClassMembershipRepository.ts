@@ -1,4 +1,5 @@
-import { and, count, eq, inArray, isNull } from "drizzle-orm";
+import { and, count, eq, inArray, isNotNull, isNull, sql } from "drizzle-orm";
+import { PUBLISHABLE_EXAM_STATUSES } from "@mms/shared";
 import {
   contacts,
   enrollments,
@@ -140,6 +141,19 @@ export async function setExamResultsFinalized(
     status: string;
     actorId: string;
     reason?: string | null;
+    /**
+     * Compare-and-set expectation for the publication stamp. The publish flow requires the exam to
+     * still be unpublished, the unlock flow requires it to still be published. A mismatch writes
+     * nothing and returns `null`, so two concurrent publishes cannot both succeed (0238 review).
+     */
+    expect?: "published" | "unpublished";
+    /**
+     * State precondition evaluated in the same UPDATE. `publishable` repeats the archived/status
+     * checks (a concurrent cancel or archive must not become "published"); `unlockable` repeats the
+     * archived check and refuses when an owning session is already completed, closing the unlock's
+     * pre-transaction TOCTOU. Optional so direct maintenance callers keep working.
+     */
+    require?: "publishable" | "unlockable";
   },
 ): Promise<{ examId: string; resultsFinalizedAt: Date | null; status: string } | null> {
   const subdomain = tenant.trim().toLowerCase();
@@ -154,6 +168,37 @@ export async function setExamResultsFinalized(
       .limit(1);
     if (!before) return null;
 
+    const expectedState =
+      input.expect === "published"
+        ? isNotNull(exams.resultsFinalizedAt)
+        : input.expect === "unpublished"
+          ? isNull(exams.resultsFinalizedAt)
+          : undefined;
+
+    const requiredState =
+      input.require === "publishable"
+        ? and(isNull(exams.deletedAt), inArray(exams.status, [...PUBLISHABLE_EXAM_STATUSES]))
+        : input.require === "unlockable"
+          ? and(
+              isNull(exams.deletedAt),
+              // Same joins as `findOwningSessionStatuses`: a completed session has already consumed
+              // the published marks as evidence, so the unlock must not race it.
+              sql`NOT EXISTS (
+                SELECT 1
+                  FROM "exam_classes" ec
+                  JOIN "session_classes" sc
+                    ON sc."workspace_subdomain" = ec."workspace_subdomain"
+                   AND sc."id" = ec."class_id"
+                  JOIN "sessions" s
+                    ON s."workspace_subdomain" = sc."workspace_subdomain"
+                   AND s."id" = sc."session_id"
+                 WHERE ec."workspace_subdomain" = ${subdomain}
+                   AND ec."exam_id" = ${input.examId}
+                   AND s."status" = 'completed'
+              )`,
+            )
+          : undefined;
+
     const [row] = await tx
       .update(exams)
       .set({
@@ -161,12 +206,22 @@ export async function setExamResultsFinalized(
         status: input.status,
         updatedAt: new Date(),
       })
-      .where(and(eq(exams.workspaceSubdomain, subdomain), eq(exams.id, input.examId)))
+      .where(
+        and(
+          eq(exams.workspaceSubdomain, subdomain),
+          eq(exams.id, input.examId),
+          expectedState,
+          requiredState,
+        ),
+      )
       .returning({
         id: exams.id,
         resultsFinalizedAt: exams.resultsFinalizedAt,
         status: exams.status,
       });
+    // Lost the race (another publisher/unpublisher moved the stamp first): nothing was written, so
+    // nothing must be audited and the caller gets the state conflict.
+    if (!row) return null;
 
     await recordModernAuditEvent(tx, {
       workspaceSubdomain: subdomain,

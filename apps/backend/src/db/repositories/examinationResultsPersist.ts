@@ -208,6 +208,14 @@ export async function replaceExamResultsForWorkspace(
           marksObtained: normalizeMarks(r.marksObtained),
           markedBy: r.markedBy ?? null,
           version: typeof r.version === "number" ? r.version : 1,
+          // A restore must reproduce the moderated result, not just the raw mark: omitting these
+          // silently discarded grace marks and their attribution (0238 review).
+          graceMarks: r.graceMarks ?? 0,
+          moderationReason: r.moderationReason ?? null,
+          moderatedBy: r.moderatedBy ?? null,
+          moderatedAt: r.moderatedAt ? new Date(r.moderatedAt) : null,
+          createdAt: r.createdAt ? new Date(r.createdAt) : new Date(),
+          updatedAt: r.updatedAt ? new Date(r.updatedAt) : new Date(),
         })),
       );
     }

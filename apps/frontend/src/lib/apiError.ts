@@ -5,6 +5,8 @@ export interface ApiErrorBody {
   errors?: unknown;
   /** Stable machine-readable reason, e.g. module-gate denials (`MODULE_DISABLED`). */
   code?: string;
+  /** Structured context carried by domain errors (e.g. the blocked-student list). */
+  details?: Record<string, unknown>;
 }
 
 /** Structured API failure — map `type` to `t('errors.*')` in UI. */
@@ -16,6 +18,11 @@ export class ApiError extends Error {
   /** Seconds to wait before retrying (from `Retry-After`). */
   readonly retryAfterSeconds?: number;
   readonly code?: string;
+  /**
+   * Machine-readable context on a domain rejection — e.g. `details.students` for an ineligible
+   * marks save, or `{ from, to }` for an illegal exam transition.
+   */
+  readonly details?: Record<string, unknown>;
 
   constructor(
     status: number,
@@ -25,6 +32,7 @@ export class ApiError extends Error {
     errors?: unknown,
     retryAfterSeconds?: number,
     code?: string,
+    details?: Record<string, unknown>,
   ) {
     super(message);
     this.name = "ApiError";
@@ -35,6 +43,7 @@ export class ApiError extends Error {
     this.errors = errors;
     this.retryAfterSeconds = retryAfterSeconds;
     this.code = code;
+    this.details = details;
   }
 }
 

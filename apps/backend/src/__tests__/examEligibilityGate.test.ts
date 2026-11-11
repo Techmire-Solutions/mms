@@ -8,22 +8,16 @@ vi.mock("../examinations/repository/examEligibilityAdapter.js", () => ({
   examEligibilityRepository: eligibility,
 }));
 
-vi.mock("../examinations/use-cases/examinationsUseCases.js", () => ({
-  examinationsUseCases: {
-    loadExamsByIds: vi.fn(),
-  },
-}));
+const examinations = vi.hoisted(() => ({ findExamsByIds: vi.fn() }));
 
-vi.mock("../lib/tenantContext.js", async (importOriginal) => {
-  const actual = await importOriginal<typeof import("../lib/tenantContext.js")>();
-  return { ...actual, getRequestTenant: () => "demo" };
-});
+vi.mock("../examinations/repository/examinationsRepositoryAdapter.js", () => ({
+  examinationsRepository: examinations,
+}));
 
 const { assertExamResultsEligible } =
   await import("../examinations/use-cases/examEligibilityGate.js");
-const { examinationsUseCases } = await import("../examinations/use-cases/examinationsUseCases.js");
-
-const ADMIN = { id: "u-1", role: "admin" } as never;
+const { examinationsRepository } =
+  await import("../examinations/repository/examinationsRepositoryAdapter.js");
 
 function row(state: "eligible" | "blocked" | "unknown", studentId: string) {
   return {
@@ -39,7 +33,7 @@ function row(state: "eligible" | "blocked" | "unknown", studentId: string) {
 
 beforeEach(() => {
   vi.clearAllMocks();
-  vi.mocked(examinationsUseCases.loadExamsByIds).mockResolvedValue([
+  vi.mocked(examinationsRepository.findExamsByIds).mockResolvedValue([
     { id: "ex-1", totalMarks: 100, passingMarks: 50, classIds: ["c-1"] },
     { id: "ex-2", totalMarks: 100, passingMarks: 50, classIds: ["c-1"] },
   ] as never);
@@ -55,7 +49,7 @@ describe("exam eligibility gate (batched)", () => {
     );
 
     await expect(
-      assertExamResultsEligible(ADMIN, [
+      assertExamResultsEligible("demo", [
         { id: "r1", examId: "ex-1", studentId: "s-1", marksObtained: 80 },
         { id: "r2", examId: "ex-2", studentId: "s-1", marksObtained: 81 },
       ] as never),
@@ -71,7 +65,7 @@ describe("exam eligibility gate (batched)", () => {
     );
 
     await expect(
-      assertExamResultsEligible(ADMIN, [
+      assertExamResultsEligible("demo", [
         { id: "r1", examId: "ex-1", studentId: "withdrawn-student", marksObtained: 80 },
       ] as never),
     ).rejects.toMatchObject({ statusCode: 409, type: "exam_student_not_enrolled" });
@@ -82,7 +76,7 @@ describe("exam eligibility gate (batched)", () => {
       new Map([["ex-1", { examId: "ex-1", requiredPct: 75, rows: [row("blocked", "s-1")] }]]),
     );
     await expect(
-      assertExamResultsEligible(ADMIN, [
+      assertExamResultsEligible("demo", [
         { id: "r1", examId: "ex-1", studentId: "s-1", marksObtained: 80 },
       ] as never),
     ).rejects.toMatchObject({ statusCode: 409, type: "exam_eligibility_blocked" });
@@ -91,7 +85,7 @@ describe("exam eligibility gate (batched)", () => {
       new Map([["ex-1", { examId: "ex-1", requiredPct: 75, rows: [row("unknown", "s-1")] }]]),
     );
     await expect(
-      assertExamResultsEligible(ADMIN, [
+      assertExamResultsEligible("demo", [
         { id: "r1", examId: "ex-1", studentId: "s-1", marksObtained: 80 },
       ] as never),
     ).rejects.toMatchObject({ statusCode: 409, type: "exam_eligibility_unknown" });
@@ -102,9 +96,51 @@ describe("exam eligibility gate (batched)", () => {
       new Map([["ex-1", { examId: "ex-1", requiredPct: null, rows: [row("eligible", "s-1")] }]]),
     );
     await expect(
-      assertExamResultsEligible(ADMIN, [
+      assertExamResultsEligible("demo", [
         { id: "r1", examId: "ex-1", studentId: "s-1", marksObtained: 120 },
       ] as never),
     ).rejects.toMatchObject({ statusCode: 400, type: "exam_marks_out_of_range" });
+  });
+
+  it("carries the blocked students and their decision evidence in `details`", async () => {
+    eligibility.loadExamEligibilityBatch.mockResolvedValue(
+      new Map([
+        [
+          "ex-1",
+          { examId: "ex-1", requiredPct: 75, rows: [row("blocked", "s-1"), row("blocked", "s-2")] },
+        ],
+      ]),
+    );
+
+    await expect(
+      assertExamResultsEligible("demo", [
+        { id: "r1", examId: "ex-1", studentId: "s-1", marksObtained: 80 },
+        { id: "r2", examId: "ex-1", studentId: "s-2", marksObtained: 70 },
+      ] as never),
+    ).rejects.toMatchObject({
+      statusCode: 409,
+      type: "exam_eligibility_blocked",
+      details: {
+        examId: "ex-1",
+        counts: { outOfRange: 0, notEnrolled: 0, unknown: 0, blocked: 2 },
+        truncated: false,
+        students: [
+          {
+            examId: "ex-1",
+            studentId: "s-1",
+            attendancePct: 40,
+            requiredPct: 75,
+            state: "blocked",
+          },
+          {
+            examId: "ex-1",
+            studentId: "s-2",
+            attendancePct: 40,
+            requiredPct: 75,
+            state: "blocked",
+          },
+        ],
+      },
+    });
   });
 });

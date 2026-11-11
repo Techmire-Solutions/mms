@@ -4,25 +4,17 @@ import { withTenant, withTenantRead } from "../tenant-context.js";
 import { recordModernAuditEvent } from "../../services/auditTrailService.js";
 import { ValidationError } from "../../lib/httpErrors.js";
 
-export type {
-  ExamEligibilityRow,
-  ExamEligibilityView,
-  ExamRosterEntry,
-  ExamStudentSection,
-} from "./examEligibilityBatchRepository.js";
-export {
-  loadExamEligibility,
-  loadExamEligibilityBatch,
-  loadExamRoster,
-  loadExamStudentSections,
-} from "./examEligibilityBatchRepository.js";
+export type { ExamEligibilityRow, ExamEligibilityView } from "./examEligibilityBatchRepository.js";
+export { loadExamEligibility, loadExamEligibilityBatch } from "./examEligibilityBatchRepository.js";
+export type { ExamRosterEntry, ExamStudentSection } from "./examEligibilityRosterRepository.js";
+export { loadExamRoster, loadExamStudentSections } from "./examEligibilityRosterRepository.js";
 
 /**
  * Exam eligibility writes: the exam-level gate, the audited overrides (grant / revoke) and the
  * active-override lookup the marks gate uses.
  *
- * The batched read path lives in `examEligibilityBatchRepository.ts`; the types are re-exported
- * above so callers keep one import surface.
+ * The batched read path lives in `examEligibilityBatchRepository.ts` and the roster reads in
+ * `examEligibilityRosterRepository.ts`; both are re-exported above so callers keep one surface.
  */
 
 /** Sets (or clears) the exam's own attendance gate. */

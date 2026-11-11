@@ -89,6 +89,16 @@ export interface ExaminationsRepository {
   }>;
   findExamResultById(tenant: string, id: string): Promise<ExamResult | null>;
   findExamResultsByIds(tenant: string, ids: string[]): Promise<ExamResult[]>;
+  /**
+   * Existing `(student, id, version)` marks for one exam.
+   *
+   * Non-interactive writers (the queued CSV import) must echo the stored OCC token, otherwise they
+   * take the last-write-wins upsert branch and silently replace a concurrent examiner's correction.
+   */
+  findExamResultVersionsByExam(
+    tenant: string,
+    examId: string,
+  ): Promise<Array<{ studentId: string; id: string; version: number }>>;
   saveExamResult(tenant: string, record: ExamResult): Promise<void>;
   bulkSaveExamResults(tenant: string, records: ExamResult[]): Promise<void>;
   replaceExamResultsForWorkspace(tenant: string, records: ExamResult[]): Promise<void>;
@@ -102,5 +112,6 @@ export interface ExaminationsRepository {
   loadExaminationsReportAggregates(
     tenant: string,
     comparisonQuery?: ExaminationsReportComparisonQuery,
+    options?: { publishedOnly?: boolean },
   ): Promise<ExaminationsReportAggregates>;
 }

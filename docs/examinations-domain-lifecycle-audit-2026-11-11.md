@@ -1,5 +1,13 @@
 # Examinations Domain & Lifecycle Audit — 2026-11-11
 
+> **Round 2 (same day):** re-verified this audit against the live code and corrected two claims — the
+> create/scoring-frame audit fix ran on a write path no route calls, and "published = locked" is
+> app-level for mark rows. The state-machine gaps (publish bypassing the transition table, the unlock
+> rewinding a terminal status, archived exams being editable, the finalize CAS missing state
+> predicates) and the import/route boundary defects are audited and fixed in
+> [examinations-domain-lifecycle-audit-2026-11-11-round2.md](./examinations-domain-lifecycle-audit-2026-11-11-round2.md).
+
+
 **Scope:** the Examinations *domain* layer — grading formulas, eligibility rules, the exam
 publication lifecycle, score invariants, batch transactional boundaries, and the separation between
 domain use cases, Fastify route handlers and Drizzle repositories.

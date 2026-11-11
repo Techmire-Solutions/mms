@@ -6,7 +6,7 @@ import {
   reportComparisonQuerySchema,
   type User,
 } from "@mms/shared";
-import { canReadCollection } from "../../../services/rbacService.js";
+import { canReadCollection, canWriteCollection } from "../../../services/rbacService.js";
 import { examinationsUseCases } from "../../../examinations/use-cases/examinationsUseCases.js";
 import { sendDatabaseError, sendForbidden } from "../../../lib/httpErrors.js";
 import { parseRequest, replyValidationError } from "../../../lib/zodRequest.js";
@@ -27,8 +27,12 @@ export async function examinationsReportRoutes(
       parseComparisonQueryParams(parsed.data),
     );
     try {
-      const aggregates =
-        await examinationsUseCases.loadExaminationsReportAggregates(comparisonQuery);
+      // A caller who cannot grade only sees published marks elsewhere (the results list), so the
+      // aggregates apply the same boundary instead of leaking draft-derived pass rates.
+      const aggregates = await examinationsUseCases.loadExaminationsReportAggregates(
+        comparisonQuery,
+        { publishedOnly: !canWriteCollection(user, COLLECTION) },
+      );
       return reply.send(aggregates);
     } catch (e) {
       request.log.error(e, "Failed to load examinations report aggregates");

@@ -70,4 +70,23 @@ describe("production error handler", () => {
     });
     expect(response.body).not.toContain("sensitive database connection detail");
   });
+
+  it("keeps a domain error's type and structured details instead of reporting server_error", async () => {
+    const { ConflictError } = await import("../lib/httpErrors.js");
+    const app = fastify({ logger: false, genReqId: () => "req-exam-lock-1" });
+    apps.push(app);
+    registerErrorHandlers(app, true);
+    app.get("/locked", async () => {
+      throw new ConflictError("Exam e-1 has not been sat yet", "exam_not_sat", { examId: "e-1" });
+    });
+
+    const response = await app.inject({ method: "GET", url: "/locked" });
+
+    expect(response.statusCode).toBe(409);
+    expect(response.json()).toEqual({
+      type: "exam_not_sat",
+      message: "Exam e-1 has not been sat yet",
+      details: { examId: "e-1" },
+    });
+  });
 });

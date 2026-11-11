@@ -30,9 +30,10 @@ export interface ExamEligibilityView {
 }
 
 /**
- * Effective attendance gate per exam in one query: the exam's own value wins; otherwise the
- * **strictest** owning session value applies (`MIN`). The previous code took an arbitrary
- * `LIMIT 1` session, so a multi-session exam could enforce any of them.
+ * Effective attendance gate per exam in one query: the exam's own value wins (0 disables);
+ * otherwise the **strictest non-zero** owning-session requirement applies (`MAX`). The previous
+ * code used `MIN`, which is the *most lenient* threshold — a 60 % session let a 65 % student pass
+ * even when another owning session required 75 %.
  */
 async function loadEffectiveThresholds(
   subdomain: string,
@@ -42,7 +43,7 @@ async function loadEffectiveThresholds(
   return withTenantRead(subdomain, async (tx) => {
     const result = await tx.execute<{ examId: string; requiredPct: string | null }>(sql`
       SELECT ec.exam_id AS "examId",
-             COALESCE(MAX(e.min_attendance_pct), MIN(s.min_attendance_pct)) AS "requiredPct"
+             COALESCE(MAX(e.min_attendance_pct), MAX(NULLIF(s.min_attendance_pct, 0))) AS "requiredPct"
         FROM exam_classes ec
         LEFT JOIN exams e
           ON e.workspace_subdomain = ec.workspace_subdomain AND e.id = ec.exam_id
@@ -99,46 +100,64 @@ export async function loadExamEligibilityBatch(
       countable: number;
       overridden: boolean;
     }>(sql`
-      SELECT ec.exam_id AS "examId",
-             e.student_id AS "studentId",
-             COALESCE(NULLIF(c.name, ''), e.student_name, e.student_id) AS "studentName",
-             e.class_id AS "classId",
-             COALESCE(att.present, 0)::int AS present,
-             COALESCE(att.countable, 0)::int AS countable,
+      WITH roster AS (
+        SELECT ec.exam_id AS "examId",
+               e.student_id AS "studentId",
+               e.student_name AS "studentName",
+               e.class_id AS "classId",
+               e.start_on AS "startOn",
+               e.end_on AS "endOn"
+          FROM exam_classes ec
+          JOIN enrollments e
+            ON e.workspace_subdomain = ec.workspace_subdomain
+           AND e.class_id = ec.class_id
+           AND e.deleted_at IS NULL
+           AND e.status NOT IN ('cancelled', 'withdrawn', 'promoted', 'retained', 'graduated', 'left')
+         WHERE ec.workspace_subdomain = ${subdomain}
+           AND ec.exam_id IN (${sql.join(
+             cleanIds.map((id) => sql`${id}`),
+             sql`, `,
+           )})
+      ),
+      windows AS (
+        SELECT DISTINCT "studentId", "classId", "startOn", "endOn" FROM roster
+      ),
+      counts AS (
+        SELECT w."studentId" AS "studentId",
+               w."classId" AS "classId",
+               count(a.id)::int AS countable,
+               count(a.id) FILTER (WHERE lower(trim(a.status)) IN (${attendedIn}))::int AS present
+          FROM windows w
+          LEFT JOIN attendance a
+            ON a.workspace_subdomain = ${subdomain}
+           AND a.student_id = w."studentId"
+           AND a.class_id = w."classId"
+           AND a.deleted_at IS NULL
+           AND (w."startOn" IS NULL OR a.date_on >= w."startOn")
+           AND (w."endOn" IS NULL OR a.date_on <= w."endOn")
+           AND ${countable("a")}
+         GROUP BY w."studentId", w."classId"
+      )
+      SELECT r."examId" AS "examId",
+             r."studentId" AS "studentId",
+             COALESCE(NULLIF(c.name, ''), r."studentName", r."studentId") AS "studentName",
+             r."classId" AS "classId",
+             COALESCE(cnt.countable, 0)::int AS countable,
+             COALESCE(cnt.present, 0)::int AS present,
              (o.exam_id IS NOT NULL) AS overridden
-        FROM exam_classes ec
-        JOIN enrollments e
-          ON e.workspace_subdomain = ec.workspace_subdomain
-         AND e.class_id = ec.class_id
-         AND e.deleted_at IS NULL
-         AND e.status NOT IN ('cancelled', 'withdrawn', 'promoted', 'retained', 'graduated', 'left')
+        FROM roster r
         LEFT JOIN students st
-          ON st.workspace_subdomain = e.workspace_subdomain AND st.id = e.student_id
+          ON st.workspace_subdomain = ${subdomain} AND st.id = r."studentId"
         LEFT JOIN contacts c
           ON c.workspace_subdomain = st.workspace_subdomain AND c.id = st.contact_id
-        LEFT JOIN LATERAL (
-          SELECT count(*) AS countable,
-                 count(*) FILTER (WHERE lower(trim(a.status)) IN (${attendedIn})) AS present
-            FROM attendance a
-           WHERE a.workspace_subdomain = e.workspace_subdomain
-             AND a.deleted_at IS NULL
-             AND a.student_id = e.student_id
-             AND a.class_id = e.class_id
-             AND (e.start_on IS NULL OR a.date_on >= e.start_on)
-             AND (e.end_on IS NULL OR a.date_on <= e.end_on)
-             AND ${countable("a")}
-        ) att ON true
+        LEFT JOIN counts cnt
+          ON cnt."studentId" = r."studentId" AND cnt."classId" = r."classId"
         LEFT JOIN exam_eligibility_overrides o
-          ON o.workspace_subdomain = ec.workspace_subdomain
-         AND o.exam_id = ec.exam_id
-         AND o.student_id = e.student_id
+          ON o.workspace_subdomain = ${subdomain}
+         AND o.exam_id = r."examId"
+         AND o.student_id = r."studentId"
          AND o.revoked_at IS NULL
-       WHERE ec.workspace_subdomain = ${subdomain}
-         AND ec.exam_id IN (${sql.join(
-           cleanIds.map((id) => sql`${id}`),
-           sql`, `,
-         )})
-       ORDER BY ec.exam_id, e.class_id, c.name
+       ORDER BY r."examId", r."classId", c.name
     `);
     return result.rows ?? [];
   });
@@ -166,120 +185,6 @@ export async function loadExamEligibilityBatch(
   }
 
   return views;
-}
-
-/** A mark's exact placement for teacher row-scoping: exam → student → class/section. */
-export interface ExamStudentSection {
-  examId: string;
-  studentId: string;
-  classId: string;
-  sectionId: string | null;
-}
-
-/**
- * Class/section of every roster student for the given exams, in one query.
- *
- * Used by the marks-submission guard to apply the exact-section teacher rule: the mark carries the
- * student, and the student's seat-holding enrollment carries the section the teacher must be
- * staffed on. One query for the whole batch.
- */
-export async function loadExamStudentSections(
-  tenant: string,
-  examIds: readonly string[],
-): Promise<ExamStudentSection[]> {
-  const subdomain = tenant.trim().toLowerCase();
-  const cleanIds = [...new Set(examIds.map((id) => String(id ?? "").trim()).filter(Boolean))];
-  if (cleanIds.length === 0) return [];
-  return withTenantRead(subdomain, async (tx) => {
-    const result = await tx.execute<{
-      examId: string;
-      studentId: string;
-      classId: string;
-      sectionId: string | null;
-    }>(sql`
-      SELECT ec.exam_id AS "examId",
-             e.student_id AS "studentId",
-             e.class_id AS "classId",
-             e.section_id AS "sectionId"
-        FROM exam_classes ec
-        JOIN enrollments e
-          ON e.workspace_subdomain = ec.workspace_subdomain
-         AND e.class_id = ec.class_id
-         AND e.deleted_at IS NULL
-         AND e.status NOT IN ('cancelled', 'withdrawn', 'promoted', 'retained', 'graduated', 'left')
-       WHERE ec.workspace_subdomain = ${subdomain}
-         AND ec.exam_id IN (${sql.join(
-           cleanIds.map((id) => sql`${id}`),
-           sql`, `,
-         )})
-    `);
-    return (result.rows ?? []).map((row) => ({
-      examId: String(row.examId),
-      studentId: String(row.studentId),
-      classId: String(row.classId),
-      sectionId: row.sectionId ? String(row.sectionId) : null,
-    }));
-  });
-}
-
-/** One roster student: the natural key a marks import matches on, plus display fields. */
-export interface ExamRosterEntry {
-  studentId: string;
-  studentName: string;
-  rollNumber: string;
-  classId: string;
-  sectionId: string | null;
-}
-
-/**
- * The exam's markable roster with roll numbers (deduplicated per student).
- *
- * Used by the marks importer (roll → student) and the broadsheet export (student names), so both
- * resolve against the same seat-holding enrollment set the marks grid uses.
- */
-export async function loadExamRoster(tenant: string, examId: string): Promise<ExamRosterEntry[]> {
-  const subdomain = tenant.trim().toLowerCase();
-  const cleanId = String(examId ?? "").trim();
-  if (!cleanId) return [];
-  return withTenantRead(subdomain, async (tx) => {
-    const result = await tx.execute<{
-      studentId: string;
-      studentName: string;
-      rollNumber: string | null;
-      classId: string;
-      sectionId: string | null;
-    }>(sql`
-      SELECT e.student_id AS "studentId",
-             COALESCE(NULLIF(e.student_name, ''), e.student_id) AS "studentName",
-             COALESCE(e.roll_no, '') AS "rollNumber",
-             e.class_id AS "classId",
-             e.section_id AS "sectionId"
-        FROM exam_classes ec
-        JOIN enrollments e
-          ON e.workspace_subdomain = ec.workspace_subdomain
-         AND e.class_id = ec.class_id
-         AND e.deleted_at IS NULL
-         AND e.status NOT IN ('cancelled', 'withdrawn', 'promoted', 'retained', 'graduated', 'left')
-       WHERE ec.workspace_subdomain = ${subdomain}
-         AND ec.exam_id = ${cleanId}
-       ORDER BY COALESCE(e.roll_no, ''), e.student_id
-    `);
-    const seen = new Set<string>();
-    const roster: ExamRosterEntry[] = [];
-    for (const row of result.rows ?? []) {
-      const studentId = String(row.studentId);
-      if (seen.has(studentId)) continue;
-      seen.add(studentId);
-      roster.push({
-        studentId,
-        studentName: String(row.studentName),
-        rollNumber: String(row.rollNumber ?? ""),
-        classId: String(row.classId),
-        sectionId: row.sectionId ? String(row.sectionId) : null,
-      });
-    }
-    return roster;
-  });
 }
 
 /** Single-exam view — a batch of one, so the endpoint and the gate never diverge. */

@@ -25,6 +25,7 @@ export interface ExaminationsWorkTierProps {
   createExamKey: number;
   exams: Exam[];
   examResults: ExamResult[];
+  resultsTruncated?: boolean;
   examColumnLayout: ReturnType<typeof useExaminationExamColumnLayout>;
   resultsColumnLayout: ReturnType<typeof useExaminationResultsColumnLayout>;
   onSubTabChange: (tab: string) => void;
@@ -50,6 +51,7 @@ export function ExaminationsWorkTier({
   createExamKey,
   exams,
   examResults,
+  resultsTruncated,
   examColumnLayout,
   resultsColumnLayout,
   onSubTabChange,
@@ -115,6 +117,7 @@ export function ExaminationsWorkTier({
             <ResultsView
               exams={exams}
               results={examResults}
+              resultsTruncated={resultsTruncated}
               onFilteredCountChange={onFilteredCountChange}
               isColumnVisible={resultsColumnLayout.isColumnVisible}
               columnCustomizer={{

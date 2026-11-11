@@ -119,8 +119,11 @@ export function useResultsViewData({
   const stats = (() => {
     if (rankedResults.length === 0) return null;
     // Average of the raw percentages, rounded once — the previous mean of already-rounded
-    // percentages drifted by up to half a point.
-    const totalRaw = rankedResults.reduce((sum, rankedResult) => sum + rankedResult.percentage, 0);
+    // percentages drifted by up to half a point (the code summed `percentage`, the comment lied).
+    const totalRaw = rankedResults.reduce(
+      (sum, rankedResult) => sum + rankedResult.rawPercentage,
+      0,
+    );
     const passed = rankedResults.filter((rankedResult) => rankedResult.passed).length;
     return {
       average: Math.round(totalRaw / rankedResults.length),

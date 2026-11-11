@@ -27,7 +27,10 @@ import {
   buildTermReportCardPayload,
   type ReportCardResultInput,
 } from "@/tenant/features/examinations/lib/reportCardPayload";
-import type { StudentExamPaper } from "@/tenant/features/examinations/lib/studentExamPapers";
+import {
+  initialTermPaperSelection,
+  type StudentExamPaper,
+} from "@/tenant/features/examinations/lib/studentExamPapers";
 
 export interface TermReportCardModalProps {
   result: ReportCardResultInput;
@@ -35,15 +38,6 @@ export interface TermReportCardModalProps {
   /** Paper whose result card opened this modal; always preselected. */
   currentExamId: string;
   onClose: () => void;
-}
-
-function initialSelection(papers: readonly StudentExamPaper[], currentExamId: string): Set<string> {
-  const current = papers.find((paper) => paper.exam.id === currentExamId);
-  const termName = current?.exam.name;
-  const preselected = papers.filter(
-    (paper) => paper.exam.id === currentExamId || paper.exam.name === termName,
-  );
-  return new Set(preselected.map((paper) => paper.exam.id));
 }
 
 export function TermReportCardModal({
@@ -60,7 +54,7 @@ export function TermReportCardModal({
   );
   const printRef = useRef<HTMLDivElement>(null);
   const [selectedIds, setSelectedIds] = useState<Set<string>>(() =>
-    initialSelection(papers, currentExamId),
+    initialTermPaperSelection(papers, currentExamId),
   );
 
   const selectedPapers = useMemo(

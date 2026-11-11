@@ -23,7 +23,18 @@ function gradeCaseSql(): ReturnType<typeof sql> {
     ELSE ${LOWEST_GRADE_BAND.label} END`;
 }
 
-function scoredCte(subdomain: string): ReturnType<typeof sql> {
+/**
+ * Published-only filter for a read-only audience.
+ *
+ * `GET /report-aggregates` used to aggregate every mark, including drafts, for any caller with
+ * `examinations.read` — the same role the marks list restricts to published exams. The route now
+ * passes this flag for non-graders so analytics obey the same boundary.
+ */
+function publishedOnlyFilter(value: boolean | undefined): ReturnType<typeof sql> {
+  return value ? sql`AND e.results_finalized_at IS NOT NULL` : sql``;
+}
+
+function scoredCte(subdomain: string, publishedOnly?: boolean): ReturnType<typeof sql> {
   return sql`WITH scored AS (
     SELECT er.student_id AS student_id,
            er.exam_id AS exam_id,
@@ -44,17 +55,19 @@ function scoredCte(subdomain: string): ReturnType<typeof sql> {
        AND sub.id = e.subject_id
      WHERE er.workspace_subdomain = ${subdomain}
        AND e.total_marks > 0
+       ${publishedOnlyFilter(publishedOnly)}
   )`;
 }
 
 export async function loadExaminationsAnalytics(
   tenant: string,
+  options?: { publishedOnly?: boolean },
 ): Promise<ExaminationsReportAnalytics> {
   const subdomain = tenant.trim().toLowerCase();
   if (!subdomain) {
     return { subjectPassRates: [], gradeDistribution: [], topPerformers: [], sectionAverages: [] };
   }
-  const cte = scoredCte(subdomain);
+  const cte = scoredCte(subdomain, options?.publishedOnly);
   return withTenantRead(subdomain, async (tx) => {
     const subjectRows = await tx.execute(
       sql`${cte}
@@ -77,6 +90,7 @@ export async function loadExaminationsAnalytics(
            AND e.deleted_at IS NULL
          WHERE er.workspace_subdomain = ${subdomain}
            AND e.total_marks > 0
+           ${publishedOnlyFilter(options?.publishedOnly)}
          GROUP BY 1`,
     );
 

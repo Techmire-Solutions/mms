@@ -1,6 +1,0 @@
-/api/examinations/exams/:id/attendance-gate
-/api/examinations/exams/:id/eligibility-overrides
-/api/examinations/exams/:id/eligibility-overrides/:studentId/revoke
-/api/examinations/exams/:id/results-finalization
-/api/examinations/field-config
-/api/examinations/preferences

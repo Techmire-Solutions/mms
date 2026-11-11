@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import type { Exam, ExamResult } from "@/lib/data/examinationData";
-import { collectStudentPapers } from "./studentExamPapers";
+import { collectStudentPapers, initialTermPaperSelection } from "./studentExamPapers";
 
 function exam(overrides: Partial<Exam> & Pick<Exam, "id">): Exam {
   return {
@@ -59,5 +59,33 @@ describe("collectStudentPapers", () => {
     expect(collectStudentPapers([exam({ id: "ex-1" })], [result("ex-1", "other")], "s1")).toEqual(
       [],
     );
+  });
+});
+
+describe("initialTermPaperSelection", () => {
+  it("preselects the current term's papers within the same calendar year only", () => {
+    const papers = collectStudentPapers(
+      [
+        exam({ id: "ex-2026-mid", name: "Mid-Term", date: "2026-01-10" }),
+        exam({ id: "ex-2026-final", name: "Mid-Term", date: "2026-06-10" }),
+        exam({ id: "ex-2025-mid", name: "Mid-Term", date: "2025-01-10" }),
+        exam({ id: "ex-2026-other", name: "Final-Term", date: "2026-07-10" }),
+      ],
+      [
+        result("ex-2026-mid", "s1"),
+        result("ex-2026-final", "s1"),
+        result("ex-2025-mid", "s1"),
+        result("ex-2026-other", "s1"),
+      ],
+      "s1",
+    );
+
+    expect([...initialTermPaperSelection(papers, "ex-2026-mid")].sort()).toEqual(
+      ["ex-2026-final", "ex-2026-mid"].sort(),
+    );
+  });
+
+  it("returns an empty selection when the current exam is not among the papers", () => {
+    expect(initialTermPaperSelection([], "missing")).toEqual(new Set());
   });
 });

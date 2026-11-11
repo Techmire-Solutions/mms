@@ -66,4 +66,14 @@ describe("ResultsView Component", () => {
     expect(html).toContain("Results Stats");
     expect(html).toContain("Rankings List");
   });
+
+  it("hides the ranks, averages and certificate entry when the marks list is incomplete", () => {
+    const html = renderToStaticMarkup(
+      <ResultsView exams={mockExams} results={[]} resultsTruncated />,
+    );
+
+    expect(html).toContain("examinations.resultsTruncated");
+    expect(html).not.toContain("Results Stats");
+    expect(html).not.toContain("Rankings List");
+  });
 });

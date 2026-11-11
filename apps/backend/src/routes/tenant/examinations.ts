@@ -1,7 +1,11 @@
 import { type FastifyInstance, type FastifyPluginOptions } from "fastify";
 import { authenticateTenant } from "../../middleware/authenticate.js";
 import { registerModuleAccess } from "../../middleware/requireTenantModule.js";
-import { EXAMINATIONS_MODULE_MANIFEST, examListSchema, examResultListSchema } from "@mms/shared";
+import {
+  EXAMINATIONS_MODULE_MANIFEST,
+  examBulkWriteSchema,
+  examMarksWriteListSchema,
+} from "@mms/shared";
 import {
   registerBulkRoutes,
   registerMetricsRoute,
@@ -46,7 +50,7 @@ export default async function examinationsRoutes(
       registerSoftDeletableBulkRoutes(sub, {
         path: "/exams",
         collection: EXAMS_COLLECTION,
-        schema: examListSchema,
+        schema: examBulkWriteSchema,
         loadFn: examinationsUseCases.loadExams,
         saveFn: examinationsUseCases.upsertExams,
         deleteFn: examinationsUseCases.deleteExamById,
@@ -64,7 +68,10 @@ export default async function examinationsRoutes(
       registerBulkRoutes(sub, {
         path: "/results",
         collection: RESULTS_COLLECTION,
-        schema: examResultListSchema,
+        // Strict marks-write contract: a missing mark is a 400, never a silent zero. The full
+        // record schema accepts moderation/soft-delete fields the persist layer ignores, so it
+        // must not be the write boundary (the CSV import writes through the use case instead).
+        schema: examMarksWriteListSchema,
         saveFn: examinationsUseCases.upsertExamResults,
         beforeSave: authorizeAndStampExamResults,
         responseKey: "results",

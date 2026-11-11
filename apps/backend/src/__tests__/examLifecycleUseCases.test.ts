@@ -49,7 +49,12 @@ describe("publishExamResults", () => {
 
     expect(repo.setExamResultsFinalized).toHaveBeenCalledWith(
       TENANT,
-      expect.objectContaining({ examId: EXAM, status: "completed", actorId: ACTOR }),
+      expect.objectContaining({
+        examId: EXAM,
+        status: "completed",
+        actorId: ACTOR,
+        require: "publishable",
+      }),
     );
     const call = repo.setExamResultsFinalized.mock.calls[0]?.[1] as {
       resultsFinalizedAt: Date | null;
@@ -69,7 +74,11 @@ describe("publishExamResults", () => {
     repo.findExamLifecycleState.mockResolvedValue(state({ deletedAt: new Date() }));
     await expect(
       publishExamResults(TENANT, { examId: EXAM, actorId: ACTOR }),
-    ).rejects.toMatchObject({ statusCode: 409, type: "exam_archived" });
+    ).rejects.toMatchObject({
+      statusCode: 409,
+      type: "exam_archived",
+      details: { examId: EXAM },
+    });
     expect(repo.setExamResultsFinalized).not.toHaveBeenCalled();
   });
 
@@ -89,12 +98,44 @@ describe("publishExamResults", () => {
     ).rejects.toMatchObject({ statusCode: 409, type: "exam_already_published" });
   });
 
+  it("refuses to publish an exam that has not been sat yet", async () => {
+    repo.findExamLifecycleState.mockResolvedValue(state({ status: "upcoming" }));
+    await expect(
+      publishExamResults(TENANT, { examId: EXAM, actorId: ACTOR }),
+    ).rejects.toMatchObject({
+      statusCode: 409,
+      type: "exam_not_sat",
+      details: { examId: EXAM },
+    });
+    expect(repo.countExamResultsForExam).not.toHaveBeenCalled();
+    expect(repo.setExamResultsFinalized).not.toHaveBeenCalled();
+  });
+
   it("refuses to publish an exam nobody sat", async () => {
     repo.countExamResultsForExam.mockResolvedValue(0);
     await expect(
       publishExamResults(TENANT, { examId: EXAM, actorId: ACTOR }),
     ).rejects.toMatchObject({ statusCode: 409, type: "exam_no_results" });
     expect(repo.setExamResultsFinalized).not.toHaveBeenCalled();
+  });
+
+  it("turns a lost publication race into a conflict instead of reporting success", async () => {
+    // Another publisher moved the stamp between the state read and the write: the CAS writes
+    // nothing and returns null; the re-read then reports the real reason.
+    repo.setExamResultsFinalized.mockResolvedValue(null);
+    repo.findExamLifecycleState
+      .mockResolvedValueOnce(state())
+      .mockResolvedValueOnce(
+        state({ status: "completed", resultsFinalizedAt: new Date("2026-03-01T00:00:00Z") }),
+      );
+
+    await expect(
+      publishExamResults(TENANT, { examId: EXAM, actorId: ACTOR }),
+    ).rejects.toMatchObject({ statusCode: 409, type: "exam_already_published" });
+    expect(repo.setExamResultsFinalized).toHaveBeenCalledWith(
+      TENANT,
+      expect.objectContaining({ expect: "unpublished", require: "publishable" }),
+    );
   });
 });
 
@@ -114,6 +155,20 @@ describe("unpublishExamResults", () => {
     await expect(
       unpublishExamResults(TENANT, { examId: EXAM, actorId: ACTOR, reason: "correct a mark" }),
     ).rejects.toMatchObject({ statusCode: 409, type: "exam_not_published" });
+  });
+
+  it("refuses to unlock an archived exam — restore it first", async () => {
+    repo.findExamLifecycleState.mockResolvedValue(
+      state({
+        status: "completed",
+        resultsFinalizedAt: new Date("2026-03-01T00:00:00Z"),
+        deletedAt: new Date("2026-03-02T00:00:00Z"),
+      }),
+    );
+    await expect(
+      unpublishExamResults(TENANT, { examId: EXAM, actorId: ACTOR, reason: "correct a mark" }),
+    ).rejects.toMatchObject({ statusCode: 409, type: "exam_archived" });
+    expect(repo.setExamResultsFinalized).not.toHaveBeenCalled();
   });
 
   it("refuses once an owning session is completed — the evidence was already consumed", async () => {
@@ -141,9 +196,23 @@ describe("unpublishExamResults", () => {
         resultsFinalizedAt: null,
         status: "ongoing",
         reason: "correct a mark",
+        expect: "published",
+        require: "unlockable",
       }),
     );
     expect(result.status).toBe("ongoing");
     expect(result.resultsFinalizedAt).toBeNull();
+  });
+
+  it("turns a lost unlock race into a conflict instead of reporting success", async () => {
+    repo.findExamLifecycleState.mockResolvedValue(published());
+    repo.findOwningSessionStatuses.mockResolvedValue(["open"]);
+    repo.setExamResultsFinalized.mockResolvedValue(null);
+
+    // The re-read shows no cause the pre-checks could name, so the caller gets the generic state
+    // conflict rather than a false "unlocked".
+    await expect(
+      unpublishExamResults(TENANT, { examId: EXAM, actorId: ACTOR, reason: "correct a mark" }),
+    ).rejects.toMatchObject({ statusCode: 409, type: "exam_state_changed" });
   });
 });

@@ -24,6 +24,7 @@ const ALWAYS_COLUMN_VISIBLE = (_key: string): boolean => true;
 export function ResultsView({
   exams,
   results,
+  resultsTruncated = false,
   onFilteredCountChange,
   isColumnVisible,
   columnCustomizer,
@@ -87,7 +88,16 @@ export function ResultsView({
         )}
       </div>
 
-      {exam && (
+      {resultsTruncated && (
+        <p
+          role="status"
+          className="rounded-lg border border-destructive/40 bg-destructive/5 px-3 py-2 text-sm font-medium text-destructive"
+        >
+          {t("examinations.resultsTruncated")}
+        </p>
+      )}
+
+      {exam && !resultsTruncated && (
         <>
           {stats && <ResultsViewStats stats={stats} t={t} />}
 

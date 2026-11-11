@@ -73,6 +73,11 @@ export const exams = pgTable(
     index("exams_workspace_subject_idx").on(table.workspaceSubdomain, table.subjectId),
     index("exams_workspace_date_idx").on(table.workspaceSubdomain, table.date),
     index("exams_workspace_status_idx").on(table.workspaceSubdomain, table.status),
+    // Exists since 0207 (`exams_workspace_unfinalized_idx`); mirrored in 0238 so the declared
+    // shape matches the database the completion queries run against.
+    index("exams_workspace_unfinalized_idx")
+      .on(table.workspaceSubdomain, table.status)
+      .where(sql`${table.resultsFinalizedAt} is null and ${table.deletedAt} is null`),
     index("exams_workspace_deleted_idx").on(table.workspaceSubdomain, table.deletedAt),
     index("exams_workspace_updated_at_active_idx")
       .on(table.workspaceSubdomain, table.updatedAt)

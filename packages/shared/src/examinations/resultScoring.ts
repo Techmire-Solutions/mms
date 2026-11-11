@@ -1,4 +1,4 @@
-import { getGrade, type GradeInfo } from "./gradeUtils.js";
+import { getGrade, getRankSuffix, type GradeInfo } from "./gradeUtils.js";
 
 /**
  * Single source of truth for examination scoring: percentage, letter grade, pass/fail and rank.
@@ -197,10 +197,7 @@ export function rankInExam<T>(
   });
 }
 
-/** `1st`, `2nd`, `3rd`, `4th` … for position labels. */
+/** `1st`, `2nd`, `3rd`, `4th` … — one implementation, shared with the printed labels. */
 export function ordinalPosition(position: number): string {
-  const suffixes = ["th", "st", "nd", "rd"];
-  const remainder = position % 100;
-  const suffix = suffixes[(remainder - 20) % 10] || suffixes[remainder] || suffixes[0];
-  return `${position}${suffix}`;
+  return getRankSuffix(position);
 }

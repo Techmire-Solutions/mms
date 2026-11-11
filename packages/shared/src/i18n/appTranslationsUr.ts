@@ -3935,6 +3935,7 @@ export const APP_TRANSLATIONS_UR: Record<AppTranslationKey, string> = {
   "examinations.resultCard.graceSaved": "ترمیم محفوظ ہو گئی۔",
   "examinations.results": "نتائج",
   "examinations.resultsStats": "کلاس کے نمبروں کے اعداد و شمار",
+  "examinations.resultsTruncated": "درجہ بندی چھپائی گئی ہے کیونکہ نمبروں کی فہرست نامکمل ہے (10,000 نمبروں کی حد پوری ہو گئی)۔",
   "examinations.saveFailed":
     "امتحانات کی تبدیلیاں محفوظ نہیں ہو سکیں۔ کنکشن چیک کریں اور دوبارہ کوشش کریں۔",
   "examinations.searchExams": "امتحانات تلاش کریں…",

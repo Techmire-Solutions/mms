@@ -10,13 +10,15 @@ import { ConflictError } from "../../lib/httpErrors.js";
  *
  * Lifecycle background: `exams.status` was previously copied from the request verbatim, so any
  * state could follow any other, and a published exam (results finalized) could still be re-dated,
- * re-weighted or re-classed. See docs/examinations-domain-lifecycle-audit-2026-11-11.md.
+ * re-weighted or re-classed. See docs/examinations-domain-lifecycle-audit-2026-11-11-round2.md.
  */
 
 /** The current persisted state the guards need. */
 export interface ExamWriteState {
   status: string;
   resultsFinalizedAt: Date | null;
+  /** Soft-delete marker; an archived exam is read-only until it is restored. */
+  deletedAt: Date | null;
   name: string;
   subjectId: string | null;
   totalMarks: number;
@@ -42,6 +44,7 @@ export function illegalExamTransitionError(from: string, to: string): ConflictEr
   return new ConflictError(
     `Exam status cannot move from "${from}" to "${to}" — reopen or archive it through the lifecycle actions instead`,
     "illegal_exam_transition",
+    { from, to },
   );
 }
 
@@ -49,6 +52,7 @@ export function examPublishedImmutableError(examId: string): ConflictError {
   return new ConflictError(
     `Exam ${examId} has published results — unpublish them (administrative unlock) before changing its schedule, subject, classes or marks`,
     "exam_published_immutable",
+    { examId },
   );
 }
 
@@ -56,7 +60,27 @@ export function examPublishedDeleteError(examId: string): ConflictError {
   return new ConflictError(
     `Exam ${examId} has published results — unpublish them before deleting the exam`,
     "unpublish_first",
+    { examId },
   );
+}
+
+export function examArchivedError(examId: string): ConflictError {
+  return new ConflictError(
+    `Exam ${examId} is archived — restore it before editing its schedule, marks or classes`,
+    "exam_archived",
+    { examId },
+  );
+}
+
+/**
+ * Archived (soft-deleted) exams are read-only.
+ *
+ * The single-row update path already refused archived rows (`genericRelationalService`); the bulk
+ * upsert that the UI actually uses did not, so a trashed exam could be re-dated or moved through
+ * the lifecycle. Both paths now share this guard.
+ */
+export function assertExamNotArchived(examId: string, state: { deletedAt: Date | null }): void {
+  if (state.deletedAt !== null) throw examArchivedError(examId);
 }
 
 /**

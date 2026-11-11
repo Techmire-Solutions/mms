@@ -1,5 +1,6 @@
 import type { FastifyError, FastifyInstance } from "fastify";
 import { PlatformError } from "../services/platform/platformErrorService.js";
+import { HttpDomainError, errorEnvelopeExtras } from "./httpErrors.js";
 import {
   dependencyForDiagnosticStage,
   getRequestDiagnosticContext,
@@ -12,6 +13,16 @@ export function registerErrorHandlers(app: FastifyInstance, isProd: boolean): vo
       return reply.status(400).send({
         type: "validation_error",
         message: "Invalid request",
+      });
+    }
+
+    // A domain error that escaped a handler still carries its status, type and structured context;
+    // the previous fallback reported `error.code` (undefined on HttpDomainError) as `server_error`.
+    if (error instanceof HttpDomainError) {
+      return reply.status(error.statusCode).send({
+        type: error.type,
+        message: error.message,
+        ...errorEnvelopeExtras(error),
       });
     }
 

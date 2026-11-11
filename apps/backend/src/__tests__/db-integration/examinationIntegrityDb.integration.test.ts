@@ -1,6 +1,6 @@
 import { and, eq, sql } from "drizzle-orm";
 import { afterAll, beforeAll, beforeEach, describe, expect, it } from "vitest";
-import type { ExamResult } from "@mms/shared";
+import type { Exam, ExamResult } from "@mms/shared";
 import { applyDrizzleMigrations } from "../../db/dbInit.js";
 import { beginLongLivedTenantTransaction, closeDatabase } from "../../db/dbConnection.js";
 import { withTenant } from "../../db/tenant-context.js";
@@ -15,10 +15,21 @@ import {
   workspaces,
 } from "../../db/schema.js";
 import {
+  applyExamResultModeration,
   bulkSaveExamResults,
+  listExamResultsByWorkspace,
+  replaceExamResultsForWorkspace,
   saveExamResult,
 } from "../../db/repositories/examinationResultsRepository.js";
-import { bulkSoftDeleteExams } from "../../db/repositories/examinationExamsRepository.js";
+import {
+  bulkRestoreExams,
+  bulkSaveExams,
+  bulkSoftDeleteExams,
+  listExamsByWorkspace,
+  replaceExamsForWorkspace,
+} from "../../db/repositories/examinationExamsRepository.js";
+import { setExamResultsFinalized } from "../../db/repositories/examClassMembershipRepository.js";
+import { setExamAttendanceGate } from "../../db/repositories/examEligibilityRepository.js";
 import { ConflictError } from "../../lib/httpErrors.js";
 import { extractPgErrorCode, requireDatabaseConnection } from "./dbTestSupport.js";
 
@@ -302,6 +313,37 @@ describe("database-enforced score invariants", () => {
     expect(code).toBe("23514");
   });
 
+  it("rejects lowering the total below a moderated effective score (grace included)", async () => {
+    await saveExamResult(TENANT, mark({ id: "er-grace-bound", marksObtained: 58 }));
+    await applyExamResultModeration(TENANT, {
+      examId: EXAM,
+      studentId: STUDENT_1,
+      graceMarks: 5,
+      reason: "board moderation",
+      actorId: "u-admin",
+    });
+
+    // The raw mark (58) is below 60, but the effective score (63) is not: the old guard compared the
+    // raw mark only and accepted the change, leaving a moderated score above the total.
+    const code = await pgCode(() =>
+      withTenant(TENANT, (tx) =>
+        tx
+          .update(exams)
+          .set({ totalMarks: 60 })
+          .where(and(eq(exams.workspaceSubdomain, TENANT), eq(exams.id, EXAM))),
+      ),
+    );
+    expect(code).toBe("23514");
+
+    // Lowering to exactly the effective score is allowed.
+    await withTenant(TENANT, (tx) =>
+      tx
+        .update(exams)
+        .set({ totalMarks: 63 })
+        .where(and(eq(exams.workspaceSubdomain, TENANT), eq(exams.id, EXAM))),
+    );
+  });
+
   it("rejects lowering the exam total below a recorded mark", async () => {
     await saveExamResult(TENANT, mark({ marksObtained: 88 }));
 
@@ -372,5 +414,354 @@ describe("mark writes are audited", () => {
     expect(events[0]?.recordId).toBe("er-audited");
     expect(events[0]?.actionType).toBe("CREATE");
     expect(events[0]?.newState).toContain('"marksObtained":55');
+  });
+});
+
+/** A full `Exam` record for the whole-collection restore path. */
+function examRecord(overrides: Partial<Exam> = {}): Exam {
+  return {
+    id: EXAM,
+    name: "Midterm",
+    subject: "",
+    subjectId: "",
+    totalMarks: 100,
+    passingMarks: 50,
+    date: "2026-03-10",
+    duration: 90,
+    classIds: [CLASS],
+    status: "ongoing",
+    description: "",
+    ...overrides,
+  } as Exam;
+}
+
+/** Captures the SQLSTATE of a rejected statement instead of failing the assertion path. */
+async function pgCode(run: () => Promise<unknown>): Promise<string | undefined> {
+  try {
+    await run();
+    return undefined;
+  } catch (error) {
+    return extractPgErrorCode(error);
+  }
+}
+
+describe("restore fidelity (real Postgres)", () => {
+  it("stamps restore provenance when an exam is brought back", async () => {
+    expect(
+      (await bulkSoftDeleteExams(TENANT, [EXAM], "u-deleter", "created by mistake")).succeeded,
+    ).toBe(1);
+    expect((await bulkRestoreExams(TENANT, [EXAM], "u-restorer")).succeeded).toBe(1);
+
+    const [row] = await withTenant(TENANT, (tx) =>
+      tx
+        .select({
+          deletedAt: exams.deletedAt,
+          deletedBy: exams.deletedBy,
+          restoredAt: exams.restoredAt,
+          restoredBy: exams.restoredBy,
+          deletedWithCascade: exams.deletedWithCascade,
+        })
+        .from(exams)
+        .where(and(eq(exams.workspaceSubdomain, TENANT), eq(exams.id, EXAM))),
+    );
+    expect(row?.deletedAt).toBeNull();
+    expect(row?.deletedBy).toBeNull();
+    expect(row?.restoredAt).toBeInstanceOf(Date);
+    expect(row?.restoredBy).toBe("u-restorer");
+    expect(row?.deletedWithCascade).toBe(false);
+  });
+
+  it("round-trips publication, the attendance gate and restore evidence in a whole-collection restore", async () => {
+    await replaceExamsForWorkspace(TENANT, [
+      examRecord({
+        status: "completed",
+        minAttendancePct: 74.5,
+        resultsFinalizedAt: "2026-03-10T09:00:00.000Z",
+        restoredAt: "2026-03-11T10:00:00.000Z",
+        restoredBy: "u-restorer",
+        deletedWithCascade: false,
+      }),
+    ]);
+
+    const [row] = await withTenant(TENANT, (tx) =>
+      tx
+        .select({
+          resultsFinalizedAt: exams.resultsFinalizedAt,
+          minAttendancePct: exams.minAttendancePct,
+          restoredAt: exams.restoredAt,
+          restoredBy: exams.restoredBy,
+        })
+        .from(exams)
+        .where(and(eq(exams.workspaceSubdomain, TENANT), eq(exams.id, EXAM))),
+    );
+    // A restore that drops the stamp silently re-opens published marks; dropping the gate
+    // silently disables attendance eligibility.
+    expect(row?.resultsFinalizedAt?.toISOString()).toBe("2026-03-10T09:00:00.000Z");
+    expect(Number(row?.minAttendancePct)).toBe(74.5);
+    expect(row?.restoredAt?.toISOString()).toBe("2026-03-11T10:00:00.000Z");
+    expect(row?.restoredBy).toBe("u-restorer");
+  });
+
+  it("round-trips grace marks and their attribution in a whole-collection marks restore", async () => {
+    await saveExamResult(TENANT, mark({ id: "er-mod", marksObtained: 60, markedBy: "u-1" }));
+    await applyExamResultModeration(TENANT, {
+      examId: EXAM,
+      studentId: STUDENT_1,
+      graceMarks: 2.5,
+      reason: "borderline script",
+      actorId: "u-2",
+    });
+
+    const before = await listExamResultsByWorkspace(TENANT);
+    expect(before[0]?.graceMarks).toBe(2.5);
+    expect(before[0]?.createdAt).toBeTruthy();
+
+    await replaceExamResultsForWorkspace(TENANT, before);
+    const restored = (await listExamResultsByWorkspace(TENANT)).find(
+      (row) => row.studentId === STUDENT_1,
+    );
+    expect(restored).toMatchObject({
+      marksObtained: 60,
+      graceMarks: 2.5,
+      moderationReason: "borderline script",
+      moderatedBy: "u-2",
+    });
+    expect(restored?.moderatedAt).toBeTruthy();
+  });
+});
+
+describe("publication compare-and-set (real Postgres)", () => {
+  it("writes a publish once and refuses a second write against the same stale expectation", async () => {
+    const publish = (at: string) => ({
+      examId: EXAM,
+      resultsFinalizedAt: new Date(at),
+      status: "completed" as const,
+      actorId: "u-admin",
+      reason: "publish",
+      expect: "unpublished" as const,
+    });
+
+    const first = await setExamResultsFinalized(TENANT, publish("2026-03-10T09:00:00.000Z"));
+    expect(first?.status).toBe("completed");
+
+    // The loser of a concurrent double-publish writes nothing.
+    const second = await setExamResultsFinalized(TENANT, publish("2026-03-10T10:00:00.000Z"));
+    expect(second).toBeNull();
+
+    const unlock = await setExamResultsFinalized(TENANT, {
+      examId: EXAM,
+      resultsFinalizedAt: null,
+      status: "ongoing",
+      actorId: "u-admin",
+      reason: "unlock",
+      expect: "published",
+    });
+    expect(unlock?.resultsFinalizedAt).toBeNull();
+
+    const staleUnlock = await setExamResultsFinalized(TENANT, {
+      examId: EXAM,
+      resultsFinalizedAt: null,
+      status: "ongoing",
+      actorId: "u-admin",
+      reason: "unlock again",
+      expect: "published",
+    });
+    expect(staleUnlock).toBeNull();
+  });
+});
+
+describe("published exam immutability at the database", () => {
+  it("rejects trashing or re-weighting a published exam (23514) and allows it after an unlock", async () => {
+    await setExamResultsFinalized(TENANT, {
+      examId: EXAM,
+      resultsFinalizedAt: new Date("2026-03-10T09:00:00.000Z"),
+      status: "completed",
+      actorId: "u-admin",
+      reason: "publish",
+      expect: "unpublished",
+    });
+
+    const trashCode = await pgCode(() =>
+      withTenant(TENANT, (tx) =>
+        tx
+          .update(exams)
+          .set({ deletedAt: new Date() })
+          .where(and(eq(exams.workspaceSubdomain, TENANT), eq(exams.id, EXAM))),
+      ),
+    );
+    expect(trashCode).toBe("23514");
+
+    const reweightCode = await pgCode(() =>
+      withTenant(TENANT, (tx) =>
+        tx
+          .update(exams)
+          .set({ totalMarks: 1 })
+          .where(and(eq(exams.workspaceSubdomain, TENANT), eq(exams.id, EXAM))),
+      ),
+    );
+    expect(reweightCode).toBe("23514");
+
+    await setExamResultsFinalized(TENANT, {
+      examId: EXAM,
+      resultsFinalizedAt: null,
+      status: "ongoing",
+      actorId: "u-admin",
+      reason: "unlock",
+      expect: "published",
+    });
+    // Unpublished again: the same trash write is legitimate.
+    await withTenant(TENANT, (tx) =>
+      tx
+        .update(exams)
+        .set({ deletedAt: new Date() })
+        .where(and(eq(exams.workspaceSubdomain, TENANT), eq(exams.id, EXAM))),
+    );
+  });
+});
+
+describe("exam list projection (real Postgres)", () => {
+  it("returns the per-exam attendance gate the eligibility endpoint set", async () => {
+    await setExamAttendanceGate(TENANT, {
+      examId: EXAM,
+      minAttendancePct: 74.5,
+      actorId: "u-admin",
+    });
+
+    const [exam] = await listExamsByWorkspace(TENANT);
+    expect(exam?.minAttendancePct).toBe(74.5);
+  });
+});
+
+describe("session archival keeps exam evidence intact (real Postgres)", () => {
+  it("keeps exams and marks when the session is archived, and blocks a hard purge (23503)", async () => {
+    await saveExamResult(TENANT, mark());
+
+    await withTenant(TENANT, (tx) =>
+      tx
+        .update(sessions)
+        .set({ deletedAt: new Date() })
+        .where(and(eq(sessions.workspaceSubdomain, TENANT), eq(sessions.id, SESSION))),
+    );
+
+    const active = await listExamsByWorkspace(TENANT);
+    expect(active.some((exam) => exam.id === EXAM)).toBe(true);
+    expect(await markRows()).toHaveLength(1);
+
+    // `exam_classes -> session_classes` is RESTRICT, so a session purge cannot vaporise the
+    // exam/marks evidence without deleting the exam explicitly first.
+    const code = await pgCode(() =>
+      withTenant(TENANT, async (tx) => {
+        await tx.execute(sql`SET LOCAL app.allow_hard_purge = 'true'`);
+        await tx
+          .delete(sessions)
+          .where(and(eq(sessions.workspaceSubdomain, TENANT), eq(sessions.id, SESSION)));
+      }),
+    );
+    expect(code).toBe("23503");
+
+    // Leave the shared fixture the way the other tests expect it.
+    await withTenant(TENANT, (tx) =>
+      tx
+        .update(sessions)
+        .set({ deletedAt: null })
+        .where(and(eq(sessions.workspaceSubdomain, TENANT), eq(sessions.id, SESSION))),
+    );
+  });
+});
+
+describe("state-machine guards on the live save path (real Postgres)", () => {
+  it("refuses a bulk save on an archived exam (409 exam_archived)", async () => {
+    await bulkSoftDeleteExams(TENANT, [EXAM], "u-deleter", "scheduling mistake");
+
+    await expect(
+      bulkSaveExams(TENANT, [examRecord({ name: "Renamed while trashed" })]),
+    ).rejects.toMatchObject({ statusCode: 409, type: "exam_archived" });
+
+    // Restoring keeps the original row untouched by the rejected save.
+    await bulkRestoreExams(TENANT, [EXAM], "u-restorer");
+    const [row] = await listExamsByWorkspace(TENANT);
+    expect(row?.name).toBe("Midterm");
+  });
+
+  it("audits exam creation and scoring-frame changes through the bulk save path", async () => {
+    const createdId = "ex-bulk-audited";
+    await bulkSaveExams(TENANT, [
+      examRecord({ id: createdId, name: "Bulk created", status: "ongoing" }),
+    ]);
+    // The UI edits through this path; a total-marks change re-grades every student and must be
+    // attributable here (the previous implementation only audited the unreachable single save).
+    await bulkSaveExams(TENANT, [examRecord({ totalMarks: 120 })]);
+
+    const events = await withTenant(TENANT, (tx) =>
+      tx
+        .select({
+          recordId: auditTrailEvents.recordId,
+          actionType: auditTrailEvents.actionType,
+          newState: auditTrailEvents.newState,
+        })
+        .from(auditTrailEvents)
+        .where(
+          and(
+            eq(auditTrailEvents.workspaceSubdomain, TENANT),
+            eq(auditTrailEvents.tableName, "exams"),
+          ),
+        ),
+    );
+    expect(
+      events.some((event) => event.recordId === createdId && event.actionType === "CREATE"),
+    ).toBe(true);
+    expect(events.some((event) => event.recordId === EXAM && event.newState?.includes("120"))).toBe(
+      true,
+    );
+  });
+
+  it("refuses to publish once a cancel has moved the status (CAS state predicate)", async () => {
+    await bulkSaveExams(TENANT, [examRecord({ status: "cancelled" })]);
+
+    const blocked = await setExamResultsFinalized(TENANT, {
+      examId: EXAM,
+      resultsFinalizedAt: new Date("2026-03-10T09:00:00.000Z"),
+      status: "completed",
+      actorId: "u-admin",
+      reason: "publish",
+      expect: "unpublished",
+      require: "publishable",
+    });
+    expect(blocked).toBeNull();
+  });
+
+  it("refuses to unlock once an owning session is completed (CAS state predicate)", async () => {
+    await setExamResultsFinalized(TENANT, {
+      examId: EXAM,
+      resultsFinalizedAt: new Date("2026-03-10T09:00:00.000Z"),
+      status: "completed",
+      actorId: "u-admin",
+      reason: "publish",
+      expect: "unpublished",
+    });
+    await withTenant(TENANT, (tx) =>
+      tx
+        .update(sessions)
+        .set({ status: "completed" })
+        .where(and(eq(sessions.workspaceSubdomain, TENANT), eq(sessions.id, SESSION))),
+    );
+
+    const blocked = await setExamResultsFinalized(TENANT, {
+      examId: EXAM,
+      resultsFinalizedAt: null,
+      status: "ongoing",
+      actorId: "u-admin",
+      reason: "unlock",
+      expect: "published",
+      require: "unlockable",
+    });
+    expect(blocked).toBeNull();
+
+    await withTenant(TENANT, (tx) =>
+      tx
+        .update(sessions)
+        .set({ status: "draft" })
+        .where(and(eq(sessions.workspaceSubdomain, TENANT), eq(sessions.id, SESSION))),
+    );
   });
 });

@@ -28,6 +28,8 @@ type ResultRow = Pick<
   | "moderationReason"
   | "moderatedBy"
   | "moderatedAt"
+  | "createdAt"
+  | "updatedAt"
 >;
 
 function resultRowToRecord(row: ResultRow): ExamResult {
@@ -43,6 +45,9 @@ function resultRowToRecord(row: ResultRow): ExamResult {
     moderationReason: row.moderationReason ?? null,
     moderatedBy: row.moderatedBy ?? null,
     moderatedAt: row.moderatedAt ? row.moderatedAt.toISOString() : null,
+    // Timestamps are part of the backup payload: the restore re-inserts them verbatim.
+    createdAt: row.createdAt.toISOString(),
+    updatedAt: row.updatedAt.toISOString(),
   };
 }
 
@@ -57,6 +62,8 @@ export const RESULT_COLUMNS = {
   moderationReason: examResults.moderationReason,
   moderatedBy: examResults.moderatedBy,
   moderatedAt: examResults.moderatedAt,
+  createdAt: examResults.createdAt,
+  updatedAt: examResults.updatedAt,
 };
 
 const DEFAULT_PAGE_SIZE = 500;
@@ -166,5 +173,48 @@ export async function findExamResultsByIds(tenant: string, ids: string[]): Promi
       .from(examResults)
       .where(and(eq(examResults.workspaceSubdomain, subdomain), inArray(examResults.id, cleanIds)));
     return rows.map(resultRowToRecord);
+  });
+}
+
+/** The OCC identity of every existing mark in one exam. */
+export interface ExamResultVersionRef {
+  studentId: string;
+  id: string;
+  version: number;
+}
+
+/**
+ * Existing mark versions for one exam, so a non-interactive writer can participate in OCC.
+ *
+ * The queued CSV marks import used to build rows without a token; that takes the last-write-wins
+ * upsert branch and silently overwrites a concurrent examiner's correction. Reading the current
+ * version per student lets the importer send the token the grid would have sent, turning a
+ * concurrent edit into a per-row `stale_write` instead of data loss.
+ *
+ * Scoped by the `(workspace, exam)` prefix of the natural-key unique index (0222/0236).
+ */
+export async function findExamResultVersionsByExam(
+  tenant: string,
+  examId: string,
+): Promise<ExamResultVersionRef[]> {
+  const subdomain = tenant.trim().toLowerCase();
+  const trimmedExamId = examId?.trim();
+  if (!trimmedExamId) return [];
+  return withTenantRead(subdomain, async (tx) => {
+    const rows = await tx
+      .select({
+        studentId: examResults.studentId,
+        id: examResults.id,
+        version: examResults.version,
+      })
+      .from(examResults)
+      .where(
+        and(eq(examResults.workspaceSubdomain, subdomain), eq(examResults.examId, trimmedExamId)),
+      );
+    return rows.map((row) => ({
+      studentId: row.studentId,
+      id: row.id,
+      version: row.version,
+    }));
   });
 }
